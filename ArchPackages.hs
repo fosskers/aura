@@ -29,6 +29,10 @@ chooseMakePkgConfFile = do
   then return userConfFile
   else return makePkgConfFile
 
+-- Excepts files like: *.pkg.tar.gz
+installPackageFiles :: [FilePath] -> IO ExitCode
+installPackageFiles files = pacman $ ["-U"] ++ files
+
 depsToInstall :: Package -> IO [Package]
 depsToInstall pkg = do
   deps <- determineDeps pkg
@@ -53,16 +57,20 @@ isArchPackage pkg = pacmanSuccess ["-Si",pkg]
 isAURPackage :: Package -> IO Bool
 isAURPackage = undefined
 
+getOrphans :: IO [String]
+getOrphans = pacmanQuiet ["-Qqdt"] >>= return . lines . tripleSnd
+
+-- These might not be necessary.
 getInstalledPackageDesc :: Package -> IO [(String,String)]
 getInstalledPackageDesc pkg = do
   installed <- isInstalled pkg
   if installed
-  then pacman ["-Qi",pkg] >>= return . getPackageDesc . tripleSnd
+  then pacmanQuiet ["-Qi",pkg] >>= return . getPackageDesc . tripleSnd
   else error $ pkg ++ " is not installed!"
 
 getNewestPackageDesc :: Package -> IO [(String,String)]
 getNewestPackageDesc pkg =
-    pacman ["-Si",pkg] >>= return . getPackageDesc . tripleSnd
+    pacmanQuiet ["-Si",pkg] >>= return . getPackageDesc . tripleSnd
     
 -- This isn't correct! Dependencies line wrap!
 -- Parses a package description from some source into an association list.
