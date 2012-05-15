@@ -5,6 +5,7 @@ module Pacman where
 
 import System.Process (readProcessWithExitCode, rawSystem)
 import System.Exit (ExitCode(..))
+import Utilities (tripleSnd)
 
 type Args = String
 
@@ -26,7 +27,21 @@ pacmanSuccess args = do
 pacmanFailure :: [Args] -> IO Bool
 pacmanFailure args = pacmanSuccess args >>= return . not
 
+-- Performs a pacmanQuiet and returns only the stdout.
+pacmanOutput :: [Args] -> IO String
+pacmanOutput args = pacmanQuiet args >>= return . tripleSnd
+
 getPacmanHelpMsg :: IO [String]
 getPacmanHelpMsg = do
-  (_,helpMsg,_) <- pacmanQuiet ["-h"]
+  helpMsg <- pacmanOutput ["-h"]
   return $ lines helpMsg
+
+-- Yields the lines given by `pacman -V` with the pacman image stripped.
+getVersionInfo :: IO [String]
+getVersionInfo = do
+  versionLines <- pacmanOutput ["-V"]
+  return . map (drop lineHeaderLength) . lines $ versionLines
+
+-- The amount of whitespace before text in the lines given by `pacman -V`
+lineHeaderLength :: Int
+lineHeaderLength = 23

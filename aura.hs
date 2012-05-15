@@ -3,9 +3,12 @@
 -- System libraries
 import System.Environment (getArgs)
 import System.Console.GetOpt
+import Text.Printf (printf)
 
 -- Custom libraries
 import Pacman
+
+data MouthState = Open | Closed deriving (Eq)
 
 data Flag = AURInstall | Help deriving (Eq)
 
@@ -19,10 +22,37 @@ options = [ Option ['A'] ["aursync"] (NoArg AURInstall) aDesc
 auraUsageMsg :: String
 auraUsageMsg = usageInfo "AURA only operations:" options
 
+-- Taken from: figlet -f small "aura"
+auraLogo :: String
+auraLogo = " __ _ _  _ _ _ __ _ \n" ++ 
+           "/ _` | || | '_/ _` |\n" ++
+           "\\__,_|\\_,_|_| \\__,_|"
+
+openMouth :: [String]
+openMouth = [ " .--."
+            , "/ _.-'"
+            , "\\  '-."
+            , " '--'"
+            ]
+
+closedMouth :: [String]
+closedMouth = [ " .--."
+              , "/ _..\\"
+              , "\\  ''/"
+              , " '--'"
+              ]
+
+printPacmanHead :: Int -> MouthState -> IO ()
+printPacmanHead pad mouth | mouth == Open = mapM_ printWithPad openMouth
+                          | otherwise     = mapM_ printWithPad closedMouth
+    where printWithPad line = putStrLn $ getPad ++ line
+          getPad            = concat . take pad . repeat $ " "
+
 {-
 argError :: String -> a
 argError msg = error $ usageInfo (msg ++ "\n" ++ usageMsg) options
 -}
+
 
 main = do
   args <- getArgs
@@ -49,3 +79,4 @@ getHelpMsg pacmanHelpMsg = replacedLines ++ "\n" ++ auraUsageMsg
           replace "pacman"      = "aura"
           replace "operations:" = "Inherited Pacman Operations:"
           replace otherWord     = otherWord
+
