@@ -11,6 +11,9 @@ import Pacman
 
 type Package = String
 
+packageCache :: FilePath
+packageCache = "/var/cache/pacman/pkg/"
+
 pacmanConfFile :: FilePath
 pacmanConfFile = "/etc/pacman.conf"
 
@@ -29,7 +32,7 @@ chooseMakePkgConfFile = do
   then return userConfFile
   else return makePkgConfFile
 
--- Excepts files like: *.pkg.tar.gz
+-- Expects files like: *.pkg.tar.gz
 installPackageFiles :: [FilePath] -> IO ExitCode
 installPackageFiles files = pacman $ ["-U"] ++ files
 
