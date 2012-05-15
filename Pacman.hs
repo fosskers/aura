@@ -25,3 +25,8 @@ pacmanSuccess args = do
 
 pacmanFailure :: [Args] -> IO Bool
 pacmanFailure args = pacmanSuccess args >>= return . not
+
+getPacmanHelpMsg :: IO [String]
+getPacmanHelpMsg = do
+  (_,helpMsg,_) <- pacmanQuiet ["-h"]
+  return $ lines helpMsg
