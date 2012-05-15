@@ -3,7 +3,7 @@
 
 name:                aura
 
-version:             0.1.0.0
+version:             0.1.1.0
 
 synopsis:            A package manager for Arch Linux and the AUR.
 
@@ -34,6 +34,7 @@ cabal-version:       >=1.8
 executable aura
   main-is:             aura.hs
 
-  other-modules:       Pacman
+  other-modules:       Pacman,
+                       Utilities
 
   build-depends:       base, process>=1.1.0.0, directory>=1.1.0.0
