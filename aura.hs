@@ -55,7 +55,9 @@ renderPill :: Int -> [String]
 renderPill pad = map (padString pad) pill
 
 renderPills :: Int -> [[String]]
-renderPills pills = undefined
+renderPills numOfPills = map render (take numOfPills pillPostitions)
+    where pillPostitions = [17,12,7]
+          render pos = renderPill pos ++ [raiseCursorBy 5]
 
 renderPacmanHead :: Int -> MouthState -> [String]
 renderPacmanHead pad Open   = map (padString pad) openMouth
@@ -101,34 +103,30 @@ getHelpMsg pacmanHelpMsg = replacedLines ++ "\n" ++ auraUsageMsg
 animateVersionMsg :: [String] -> IO ()
 animateVersionMsg verMsg = do
   mapM_ putStrLn . map (padString lineHeaderLength) $ verMsg
-  putStr $ raiseCursorBy 7
-  mapM_ putStrLn $ renderPill 17
-  putStr $ raiseCursorBy 4
-  mapM_ putStrLn $ renderPill 12
-  putStr $ raiseCursorBy 4
-  mapM_ putStrLn $ renderPill 7
-  putStr $ raiseCursorBy 4
-  repeatShit 5
-  --mapM_ putStrLn $ renderPacmanHead 0 Open
-  --putStr $ raiseCursorBy 4
-  --putStrLn "HEY"
-  --repeatShit 10
-  -- putStr clearGrid
-  putStr "\n\n\n\n\n\n\n"  -- This goes last.
-
--- THIS HOLDS ALL THE ANSWERS
-repeatShit :: Int -> IO ()
-repeatShit 0 = return ()
-repeatShit n = do
+  putStr $ raiseCursorBy 7  -- Initial reraising of the cursor.
+  drawPills 3
   mapM_ putStrLn $ renderPacmanHead 0 Open
   putStr $ raiseCursorBy 4
-  hFlush stdout
-  threadDelay 250000
-  mapM_ putStrLn $ renderPacmanHead 0 Closed
-  putStr $ raiseCursorBy 4
-  hFlush stdout
-  threadDelay 250000
-  repeatShit (n - 1)
+  takeABite 0
+  mapM_ pillEating pillsAndWidths
+  putStr clearGrid
+  putStrLn auraLogo
+  putStrLn "AURA Version 0.1.0.0"
+  putStr $ replicate 4 '\n'  -- This goes last.
+    where pillEating (p,w) = putStr clearGrid >> drawPills p >> takeABite w
+          pillsAndWidths   = [(2,5),(1,10),(0,15)]
+
+takeABite :: Int -> IO ()
+takeABite pad = drawHead Closed >> drawHead Open
+    where drawHead mouth = do
+            mapM_ putStrLn $ renderPacmanHead pad mouth
+            putStr $ raiseCursorBy 4
+            hFlush stdout
+            threadDelay 175000
+
+drawPills :: Int -> IO ()
+drawPills numOfPills = mapM_ (\aPill -> mapM_ putStrLn aPill) pills
+    where pills = renderPills numOfPills
 
 raiseCursorBy :: Int -> String
 raiseCursorBy 0 = ""
