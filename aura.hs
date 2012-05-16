@@ -14,15 +14,19 @@ data MouthState = Open | Closed deriving (Eq)
 
 data Flag = AURInstall | Version | Help deriving (Eq)
 
-options :: [OptDescr Flag]
-options = [ Option ['A'] ["aursync"] (NoArg AURInstall) aDesc
-          , Option ['V'] []          (NoArg Version)    ""
-          , Option ['h'] ["help"]    (NoArg Help)       ""
-          ]
+auraOptions :: [OptDescr Flag]
+auraOptions = [ Option ['A'] ["aursync"] (NoArg AURInstall) aDesc
+              ]
     where aDesc = "Install from the AUR."
 
+-- These are intercepted Pacman flags.
+pacmanOptions :: [OptDescr Flag]
+pacmanOptions = [ Option ['V'] ["version"] (NoArg Version) ""
+                , Option ['h'] ["help"]    (NoArg Help)    ""
+                ]
+
 auraUsageMsg :: String
-auraUsageMsg = usageInfo "AURA only operations:" options
+auraUsageMsg = usageInfo "AURA only operations:" auraOptions
 
 -- Taken from: figlet -f small "aura"
 auraLogo :: String
@@ -62,7 +66,7 @@ main = do
   executeOpts opts
 
 parseOpts :: [String] -> IO ([Flag],[String],[String])
-parseOpts args = case getOpt' Permute options args of
+parseOpts args = case getOpt' Permute (auraOptions ++ pacmanOptions) args of
                    (opts,nonOpts,pacOpts,_) -> return (opts,nonOpts,pacOpts) 
 
 executeOpts :: ([Flag],[String],[String]) -> IO ()
