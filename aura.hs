@@ -8,6 +8,7 @@ import System.Console.GetOpt
 import Text.Printf (printf)
 
 -- Custom libraries
+import Utilities (replaceByPatt)
 import Pacman
 
 data MouthState = Open | Closed deriving (Eq)
@@ -72,27 +73,29 @@ parseOpts args = case getOpt' Permute (auraOptions ++ pacmanOptions) args of
 executeOpts :: ([Flag],[String],[String]) -> IO ()
 executeOpts (flags,input,pacOpts) =
     case flags of
-      [Help]       -> getPacmanHelpMsg >>= putStrLn . getHelpMsg
+      [Help]       -> printHelpMsg pacOpts
       [Version]    -> getVersionInfo >>= animateVersionMsg
       [AURInstall] -> putStrLn "This option isn't ready yet."
       _            -> (pacman $ pacOpts ++ input) >> return ()
 
--- Crappy temp version.
--- Do this with regexes!
+printHelpMsg :: [String] -> IO ()
+printHelpMsg []      = getPacmanHelpMsg >>= putStrLn . getHelpMsg
+printHelpMsg pacOpts = (pacman $ pacOpts ++ ["-h"]) >> return ()
+
 getHelpMsg :: [String] -> String
 getHelpMsg pacmanHelpMsg = replacedLines ++ "\n" ++ auraUsageMsg
-    where replacedLines = unlines . map replaceWord $ pacmanHelpMsg
-          replaceWord   = unwords . map replace . words
-          replace "pacman"      = "aura"
-          replace "operations:" = "Inherited Pacman Operations:"
-          replace otherWord     = otherWord
+    where replacedLines = unlines $ map (replaceByPatt patterns) pacmanHelpMsg
+          patterns      = [ ("pacman","aura")
+                          , ("operations","Inherited Pacamn Operations")
+                          ]
 
+-- ANIMATED VERSION MESSAGE
 animateVersionMsg :: [String] -> IO ()
 animateVersionMsg verMsg = do
   mapM_ putStrLn . map (padString lineHeaderLength) $ verMsg
   putStr $ raiseCursorBy 7  -- Initial reraising of the cursor.
   drawPills 3
-  mapM_ putStrLn $ renderPacmanHead 0 Open
+  mapM_ putStrLn $ renderPacmanHead 0 Open  -- Initial rendering of head.
   putStr $ raiseCursorBy 4
   takeABite 0
   mapM_ pillEating pillsAndWidths

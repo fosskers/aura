@@ -5,6 +5,9 @@ module Utilities where
 import System.Process (readProcess, readProcessWithExitCode)
 import System.Exit (ExitCode(..))
 import Data.List (dropWhileEnd)
+import Text.Regex.Posix ((=~))
+
+type Pattern = (String,String)
 
 -- Like break, but kills the element that triggered the break.
 hardBreak :: (a -> Bool) -> [a] -> ([a],[a])
@@ -29,6 +32,13 @@ didProcessSucceed cmd args stdin = do
   case exitStatus of
     ExitSuccess -> return True
     _           -> return False
+
+-- Replaces a (p)attern with a (t)arget in a line if possible.
+replaceByPatt :: [Pattern] -> String -> String
+replaceByPatt [] line = line
+replaceByPatt ((p,t):ps) line | p == r    = replaceByPatt ps (b ++ t ++ a)
+                              | otherwise = line
+                         where (b,r,a) = line =~ p :: (String,String,String)
 
 -- I'd like a less hacky way to do this.
 -- THIS DOESN'T WORK
