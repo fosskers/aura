@@ -3,7 +3,7 @@
 
 name:                aura
 
-version:             0.1.1.0
+version:             0.2.0.0
 
 synopsis:            A package manager for Arch Linux and the AUR.
 
@@ -37,4 +37,7 @@ executable aura
   other-modules:       Pacman,
                        Utilities
 
-  build-depends:       base, process>=1.1.0.0, directory>=1.1.0.0
+  build-depends:       base,
+                       process>=1.1.0.0,
+                       directory>=1.1.0.0,
+                       regex-posix
