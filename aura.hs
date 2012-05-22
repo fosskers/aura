@@ -3,13 +3,12 @@
 -- AURA package manager for Arch Linux
 -- Written by Colin Woodbury <colingw@gmail.com>
 
--- System libraries
+-- System Libraries
 
 import System.Environment (getArgs)
 import System.Console.GetOpt
-import Text.Printf (printf)
 
--- Custom libraries
+-- Custom Libraries
 import Utilities (replaceByPatt)
 import AuraLogo
 import Pacman
@@ -75,6 +74,7 @@ animateVersionMsg verMsg = do
   mapM_ pillEating pillsAndWidths
   putStr clearGrid
   putStrLn auraLogo
-  putStrLn "AURA Version 0.2.0.0\n\n\n"
+  putStrLn "AURA Version 0.2.0.0"
+  putStrLn " by Colin Woodbury\n\n"
     where pillEating (p,w) = putStr clearGrid >> drawPills p >> takeABite w
           pillsAndWidths   = [(2,5),(1,10),(0,15)]

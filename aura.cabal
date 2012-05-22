@@ -35,6 +35,7 @@ executable aura
   main-is:             aura.hs
 
   other-modules:       Pacman,
+                       AuraLogo,
                        Utilities
 
   build-depends:       base,

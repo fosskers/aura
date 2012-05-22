@@ -1,12 +1,17 @@
 -- A library for dealing with the downloading and installion
--- of Arch Linux packages.
+-- of Arch User Repository packages.
 -- Written after studying the `packer` source code.
 
-module ArchPackages where
+module AURPackages where
 
-import System.Directory (getHomeDirectory, doesFileExist)
+-- System Libraries
+import System.Directory (getHomeDirectory, doesFileExist, getCurrentDirectory)
 import Control.Monad (filterM)
+import System.Exit (ExitCode)
+
+-- Custom Libraries
 import Utilities
+import MakePkg
 import Pacman
 
 type Package = String
@@ -36,12 +41,32 @@ chooseMakePkgConfFile = do
 installPackageFiles :: [FilePath] -> IO ExitCode
 installPackageFiles files = pacman $ ["-U"] ++ files
 
+-- Handles the building of Packages.
+-- All dependency handling is assumed complete by this point.
+buildPackages :: [Package] -> IO [FilePath]
+buildPackages []     = return []
+buildPackages (p:ps) = do
+  results <- withTempDir p build
+  return []
+    where build = do
+            pkgbuild <- downloadPKGBUILD p
+            (exitStatus,pkgName,output) <- makepkg pkgbuild
+            if didProcessSucceed exitStatus
+            then putStrLn "YES!"
+            else putStrLn "FUCK!"
+
+downloadPKGBUILD :: Package -> IO FilePath
+downloadPKGBUILD = undefined
+
 depsToInstall :: Package -> IO [Package]
 depsToInstall pkg = do
   deps <- determineDeps pkg
   filterM isNotInstalled deps
 
--- Recursion necessary here. 
+-- Check all build-deps and runtime-deps first. Install those first.
+-- Deps were: Arch packages -> Collect them all then run a batch `pacman`.
+--            AUR  packages -> Add them to the [Package] list. At the head?
+--                             Or else the later builds won't work?
 -- What about circular deps?
 determineDeps :: Package -> IO [Package]
 determineDeps pkg = undefined
