@@ -42,7 +42,7 @@ chooseMakePkgConfFile = do
 
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.gz
 installPackageFiles :: [FilePath] -> IO ExitCode
-installPackageFiles []    = return $ ExitFailure 1
+-- installPackageFiles []    = return $ ExitFailure 1
 installPackageFiles files = pacman $ ["-U"] ++ files
 
 -- Handles the building of Packages.
@@ -55,18 +55,17 @@ buildPackages (p:ps) = do
   results <- withTempDir p (build p)
   case results of
     (Just pkg,_)     -> buildPackages ps >>= return . (\pkgs -> pkg : pkgs)
-    (Nothing,output) -> do putStrLnA $ "Well, building " ++ p ++ " failed."
-                           putStrA "Dumping makepkg output in "
-                           timedMessage 1000000 ["3.. ","2.. ","1..\n"]
-                           putStrLn output
-                           putStrLnA "Also, the following weren't built:"
-                           mapM_ putStrLn ps
-                           -- What happens to pkgs that were already built
-                           -- and moved to the package cache?
-                           -- Prompt the user on whether they want to go ahead
-                           -- and install those. If not, just fuck it.
-                           return []
-
+    (Nothing,output) -> do
+        putStrLnA $ "Well, building " ++ p ++ " failed."
+        putStrA "Dumping makepkg output in "
+        timedMessage 1000000 ["3.. ","2.. ","1..\n"]
+        putStrLn output
+        putStrLnA "Also, the following weren't built:"
+        mapM_ putStrLn ps
+        putStrLnA "Some packages may have built properly."
+        answer <- yesNoPrompt "Would you like to install them? [y/n]" "^y"
+        if answer then return [] else error "So be it."
+        
 build :: Package -> IO (Maybe FilePath, String)
 build pkg = do
   pkgbuildPath <- downloadPKGBUILD pkg

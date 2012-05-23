@@ -15,6 +15,8 @@ import Text.Regex.Posix ((=~))
 
 type Pattern = (String,String)
 
+type Regex = String
+
 -- COlOUR THIS!
 putStrLnA :: String -> IO ()
 putStrLnA s = putStrA $ s ++ "\n"
@@ -56,13 +58,12 @@ replaceByPatt ((p,t):ps) line | p == m    = replaceByPatt ps (b ++ t ++ a)
                          where (b,m,a) = line =~ p :: (String,String,String)
 
 withTempDir :: FilePath -> IO a -> IO a
-withTempDir name action = do
-  withTempDirectory silent "." name $ \dir -> do
-    originalDirectory <- getCurrentDirectory
-    setCurrentDirectory dir
-    result <- action
-    setCurrentDirectory originalDirectory
-    return result
+withTempDir name action = withTempDirectory silent "." name $ \dir -> do
+                            originalDirectory <- getCurrentDirectory
+                            setCurrentDirectory dir
+                            result <- action
+                            setCurrentDirectory originalDirectory
+                            return result
 
 didProcessSucceed :: ExitCode -> Bool
 didProcessSucceed ExitSuccess = True
@@ -71,6 +72,13 @@ didProcessSucceed _           = False
 timedMessage :: Int -> [String] -> IO ()
 timedMessage delay msgs = mapM_ printMessage msgs
     where printMessage msg = putStr msg >> hFlush stdout >> threadDelay delay
+
+-- Takes a prompt message and a regex of valid answer patterns.
+yesNoPrompt :: String -> Regex -> IO Bool
+yesNoPrompt msg regex = do
+  putStrA $ msg ++ " "
+  response <- getLine
+  return (response =~ regex :: Bool)
 
 -- I'd like a less hacky way to do this.
 -- THIS DOESN'T WORK
