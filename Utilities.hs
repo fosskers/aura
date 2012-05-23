@@ -3,9 +3,9 @@
 module Utilities where
 
 -- System Libraries
+import System.Directory (getCurrentDirectory, setCurrentDirectory)
 import System.Process (readProcess, readProcessWithExitCode)
 import Distribution.Simple.Utils (withTempDirectory)
-import System.Directory (setCurrentDirectory)
 import Control.Concurrent (threadDelay)
 import Distribution.Verbosity (silent)
 import System.Exit (ExitCode(..))
@@ -51,21 +51,22 @@ didProcessSucceed cmd args stdin = do
 -- Replaces a (p)attern with a (t)arget in a line if possible.
 replaceByPatt :: [Pattern] -> String -> String
 replaceByPatt [] line = line
-replaceByPatt ((p,t):ps) line | p == r    = replaceByPatt ps (b ++ t ++ a)
+replaceByPatt ((p,t):ps) line | p == m    = replaceByPatt ps (b ++ t ++ a)
                               | otherwise = line
-                         where (b,r,a) = line =~ p :: (String,String,String)
+                         where (b,m,a) = line =~ p :: (String,String,String)
 
 withTempDir :: FilePath -> IO a -> IO a
 withTempDir name action = do
   withTempDirectory silent "." name $ \dir -> do
+    originalDirectory <- getCurrentDirectory
     setCurrentDirectory dir
     result <- action
-    setCurrentDirectory ".."
+    setCurrentDirectory originalDirectory
     return result
 
 didProcessSucceed :: ExitCode -> Bool
 didProcessSucceed ExitSuccess = True
-didProcessSucceed _          = False
+didProcessSucceed _           = False
 
 timedMessage :: Int -> [String] -> IO ()
 timedMessage delay msgs = mapM_ printMessage msgs

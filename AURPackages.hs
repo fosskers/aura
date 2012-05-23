@@ -46,12 +46,13 @@ installPackageFiles []    = return $ ExitFailure 1
 installPackageFiles files = pacman $ ["-U"] ++ files
 
 -- Handles the building of Packages.
--- All dependency handling is assumed complete by this point.
+-- Assumed: All pacman dependencies are already installed.
+--          All AUR dependencies have been added so that they come first.
 buildPackages :: [Package] -> IO [FilePath]
 buildPackages []     = return []
 buildPackages (p:ps) = do
   putStrLnA $ "Building `" ++ p ++ "`..."
-  results <- withTempDir p build
+  results <- withTempDir p (build p)
   case results of
     (Just pkg,_)     -> buildPackages ps >>= return . (\pkgs -> pkg : pkgs)
     (Nothing,output) -> do putStrLnA $ "Well, building " ++ p ++ " failed."
@@ -60,14 +61,20 @@ buildPackages (p:ps) = do
                            putStrLn output
                            putStrLnA "Also, the following weren't built:"
                            mapM_ putStrLn ps
+                           -- What happens to pkgs that were already built
+                           -- and moved to the package cache?
+                           -- Prompt the user on whether they want to go ahead
+                           -- and install those. If not, just fuck it.
                            return []
-    where build = do
-            pkgbuildPath <- downloadPKGBUILD p
-            (exitStatus,pkgName,output) <- makepkg pkgbuildPath
-            if didProcessSucceed exitStatus
-            then moveToCache pkgName >>= return . (\pkg -> (Just pkg,output))
-            else return (Nothing,output)
 
+build :: Package -> IO (Maybe FilePath, String)
+build pkg = do
+  pkgbuildPath <- downloadPKGBUILD pkg
+  (exitStatus,pkgName,output) <- makepkg pkgbuildPath
+  if didProcessSucceed exitStatus
+  then moveToCache pkgName >>= return . (\pkg -> (Just pkg,output))
+  else return (Nothing,output)
+            
 downloadPKGBUILD :: Package -> IO FilePath
 downloadPKGBUILD = undefined
 
