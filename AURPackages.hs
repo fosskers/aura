@@ -5,9 +5,10 @@
 module AURPackages where
 
 -- System Libraries
-import System.Directory (getHomeDirectory, doesFileExist, getCurrentDirectory)
+import System.Directory (getHomeDirectory, doesFileExist, renameFile)
+import System.FilePath ((</>))
 import Control.Monad (filterM)
-import System.Exit (ExitCode)
+import System.Exit (ExitCode(..))
 
 -- Custom Libraries
 import Utilities
@@ -19,6 +20,7 @@ type Package = String
 packageCache :: FilePath
 packageCache = "/var/cache/pacman/pkg/"
 
+{- Not certain if these are necessary yet.
 pacmanConfFile :: FilePath
 pacmanConfFile = "/etc/pacman.conf"
 
@@ -36,9 +38,11 @@ chooseMakePkgConfFile = do
   if exists
   then return userConfFile
   else return makePkgConfFile
+-}
 
--- Expects files like: *.pkg.tar.gz
+-- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.gz
 installPackageFiles :: [FilePath] -> IO ExitCode
+installPackageFiles []    = return $ ExitFailure 1
 installPackageFiles files = pacman $ ["-U"] ++ files
 
 -- Handles the building of Packages.
@@ -46,17 +50,31 @@ installPackageFiles files = pacman $ ["-U"] ++ files
 buildPackages :: [Package] -> IO [FilePath]
 buildPackages []     = return []
 buildPackages (p:ps) = do
+  putStrLnA $ "Building `" ++ p ++ "`..."
   results <- withTempDir p build
-  return []
+  case results of
+    (Just pkg,_)     -> buildPackages ps >>= return . (\pkgs -> pkg : pkgs)
+    (Nothing,output) -> do putStrLnA $ "Well, building " ++ p ++ " failed."
+                           putStrA "Dumping makepkg output in "
+                           timedMessage 1000000 ["3.. ","2.. ","1..\n"]
+                           putStrLn output
+                           putStrLnA "Also, the following weren't built:"
+                           mapM_ putStrLn ps
+                           return []
     where build = do
-            pkgbuild <- downloadPKGBUILD p
-            (exitStatus,pkgName,output) <- makepkg pkgbuild
+            pkgbuildPath <- downloadPKGBUILD p
+            (exitStatus,pkgName,output) <- makepkg pkgbuildPath
             if didProcessSucceed exitStatus
-            then putStrLn "YES!"
-            else putStrLn "FUCK!"
+            then moveToCache pkgName >>= return . (\pkg -> (Just pkg,output))
+            else return (Nothing,output)
 
 downloadPKGBUILD :: Package -> IO FilePath
 downloadPKGBUILD = undefined
+
+-- Moves a file to the pacman package cache and returns its location.
+moveToCache :: FilePath -> IO FilePath
+moveToCache pkg = renameFile pkg newName >> return newName
+    where newName = packageCache </> pkg
 
 depsToInstall :: Package -> IO [Package]
 depsToInstall pkg = do

@@ -2,15 +2,25 @@
 
 module Utilities where
 
-import System.Directory (setCurrentDirectory)
+-- System Libraries
 import System.Process (readProcess, readProcessWithExitCode)
 import Distribution.Simple.Utils (withTempDirectory)
+import System.Directory (setCurrentDirectory)
+import Control.Concurrent (threadDelay)
 import Distribution.Verbosity (silent)
 import System.Exit (ExitCode(..))
+import System.IO (stdout, hFlush)
 import Data.List (dropWhileEnd)
 import Text.Regex.Posix ((=~))
 
 type Pattern = (String,String)
+
+-- COlOUR THIS!
+putStrLnA :: String -> IO ()
+putStrLnA s = putStrA $ s ++ "\n"
+
+putStrA :: String -> IO ()
+putStrA s = putStr $ "aura >> " ++ s
 
 -- Like break, but kills the element that triggered the break.
 hardBreak :: (a -> Bool) -> [a] -> ([a],[a])
@@ -56,6 +66,10 @@ withTempDir name action = do
 didProcessSucceed :: ExitCode -> Bool
 didProcessSucceed ExitSuccess = True
 didProcessSucceed _          = False
+
+timedMessage :: Int -> [String] -> IO ()
+timedMessage delay msgs = mapM_ printMessage msgs
+    where printMessage msg = putStr msg >> hFlush stdout >> threadDelay delay
 
 -- I'd like a less hacky way to do this.
 -- THIS DOESN'T WORK
