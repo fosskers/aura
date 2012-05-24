@@ -18,6 +18,8 @@ import Pacman
 
 type Package = String
 
+type Url = String
+
 packageCache :: FilePath
 packageCache = "/var/cache/pacman/pkg/"
 
@@ -69,14 +71,14 @@ buildPackages lang (p:ps) = do
         
 build :: Package -> IO (Maybe FilePath, String)
 build pkg = do
-  pkgbuildPath <- downloadPKGBUILD pkg
+  pkgbuildPath <- downloadPkgbuild pkg
   (exitStatus,pkgName,output) <- makepkg pkgbuildPath
   if didProcessSucceed exitStatus
   then moveToCache pkgName >>= return . (\pkg -> (Just pkg,output))
   else return (Nothing,output)
             
-downloadPKGBUILD :: Package -> IO FilePath
-downloadPKGBUILD = undefined
+downloadPkgbuild :: Package -> IO FilePath
+downloadPkgbuild = undefined
 
 -- Moves a file to the pacman package cache and returns its location.
 moveToCache :: FilePath -> IO FilePath
@@ -110,10 +112,14 @@ isArchPackage pkg = pacmanSuccess ["-Si",pkg]
 isAURPackage :: Package -> IO Bool
 isAURPackage = undefined
 
+getPkgbuildUrl :: Package -> Url
+getPkgbuildUrl pkg = "https://aur.archlinux.org/packages/" </>
+                     take 2 pkg </> pkg </> "PKGBUILD"
+
+-- These might not be necessary.
 getOrphans :: IO [String]
 getOrphans = pacmanQuiet ["-Qqdt"] >>= return . lines . tripleSnd
 
--- These might not be necessary.
 getInstalledPackageDesc :: Package -> IO [(String,String)]
 getInstalledPackageDesc pkg = do
   installed <- isInstalled pkg
