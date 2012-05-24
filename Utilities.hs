@@ -58,12 +58,13 @@ replaceByPatt ((p,t):ps) line | p == m    = replaceByPatt ps (b ++ t ++ a)
                          where (b,m,a) = line =~ p :: (String,String,String)
 
 withTempDir :: FilePath -> IO a -> IO a
-withTempDir name action = withTempDirectory silent "." name $ \dir -> do
-                            originalDirectory <- getCurrentDirectory
-                            setCurrentDirectory dir
-                            result <- action
-                            setCurrentDirectory originalDirectory
-                            return result
+withTempDir name action = do
+  originalDirectory <- getCurrentDirectory
+  withTempDirectory silent originalDirectory name (\dir -> do     
+     setCurrentDirectory dir
+     result <- action
+     setCurrentDirectory originalDirectory
+     return result)
 
 didProcessSucceed :: ExitCode -> Bool
 didProcessSucceed ExitSuccess = True
