@@ -11,6 +11,7 @@ import Control.Monad (filterM)
 import System.Exit (ExitCode(..))
 
 -- Custom Libraries
+import AURLanguages
 import Utilities
 import MakePkg
 import Pacman
@@ -48,23 +49,23 @@ installPackageFiles files = pacman $ ["-U"] ++ files
 -- Handles the building of Packages.
 -- Assumed: All pacman dependencies are already installed.
 --          All AUR dependencies have been added so that they come first.
-buildPackages :: [Package] -> IO [FilePath]
-buildPackages []     = return []
-buildPackages (p:ps) = do
-  putStrLnA $ "Building `" ++ p ++ "`..."
+buildPackages :: Language -> [Package] -> IO [FilePath]
+buildPackages _ []        = return []
+buildPackages lang (p:ps) = do
+  putStrLnA $ buildPackagesMsg1 lang p
   results <- withTempDir p (build p)
   case results of
-    (Just pkg,_)     -> buildPackages ps >>= return . (\pkgs -> pkg : pkgs)
+    (Just pkg,_) -> buildPackages lang ps >>= return . (\pkgs -> pkg : pkgs)
     (Nothing,output) -> do
-        putStrLnA $ "Well, building " ++ p ++ " failed."
-        putStrA "Dumping makepkg output in "
+        putStrLnA $ buildPackagesMsg2 lang p
+        putStrA $ buildPackagesMsg3 lang
         timedMessage 1000000 ["3.. ","2.. ","1..\n"]
         putStrLn output
-        putStrLnA "Also, the following weren't built:"
+        putStrLnA $ buildPackagesMsg4 lang
         mapM_ putStrLn ps
-        putStrLnA "Some packages may have built properly."
-        answer <- yesNoPrompt "Would you like to install them? [y/n]" "^y"
-        if answer then return [] else error "So be it."
+        putStrLnA $ buildPackagesMsg5 lang
+        answer <- yesNoPrompt (buildPackagesMsg6 lang) "^y"
+        if answer then return [] else error (buildPackagesMsg7 lang)
         
 build :: Package -> IO (Maybe FilePath, String)
 build pkg = do
