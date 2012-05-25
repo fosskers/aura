@@ -5,7 +5,7 @@
 module AURPackages where
 
 -- System Libraries
-import System.Directory (getHomeDirectory, doesFileExist, renameFile)
+import System.Directory (renameFile)
 import System.FilePath ((</>))
 import Control.Monad (filterM)
 import System.Exit (ExitCode(..))
@@ -17,8 +17,6 @@ import MakePkg
 import Pacman
 
 type Package = String
-
-type Url = String
 
 packageCache :: FilePath
 packageCache = "/var/cache/pacman/pkg/"
@@ -77,8 +75,10 @@ build pkg = do
   then moveToCache pkgName >>= return . (\pkg -> (Just pkg,output))
   else return (Nothing,output)
             
+-- Assumption: The package given EXISTS as an AUR package.
+--             Non-existant packages should have been filtered out by now.
 downloadPkgbuild :: Package -> IO FilePath
-downloadPkgbuild = undefined
+downloadPkgbuild = downloadContents . getPkgbuildUrl
 
 -- Moves a file to the pacman package cache and returns its location.
 moveToCache :: FilePath -> IO FilePath

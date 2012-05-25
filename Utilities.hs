@@ -17,6 +17,8 @@ type Pattern = (String,String)
 
 type Regex = String
 
+type Url = String
+
 -- COlOUR THIS!
 putStrLnA :: String -> IO ()
 putStrLnA s = putStrA $ s ++ "\n"
@@ -80,6 +82,9 @@ yesNoPrompt msg regex = do
   putStrA $ msg ++ " "
   response <- getLine
   return (response =~ regex :: Bool)
+
+downloadContents :: Url -> IO FilePath
+downloadContents url = undefined
 
 -- I'd like a less hacky way to do this.
 -- THIS DOESN'T WORK
