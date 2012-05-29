@@ -4,21 +4,26 @@
 -- Written by Colin Woodbury <colingw@gmail.com>
 
 -- System Libraries
-
+import Control.Monad (filterM, when)
+import Data.List ((\\), nub, delete)
 import System.Environment (getArgs)
 import System.Console.GetOpt
 
 -- Custom Libraries
-import Utilities (replaceByPatt)
+import AuraLanguages
+import AURPackages
+import Utilities
 import AuraLogo
 import Pacman
 
-data Flag = AURInstall | Version | Help deriving (Eq)
+data Flag = AURInstall | Version | Help | JapOut deriving (Eq)
 
 auraOptions :: [OptDescr Flag]
 auraOptions = [ Option ['A'] ["aursync"] (NoArg AURInstall) aDesc
+              , Option [] ["japanese"]   (NoArg JapOut)     jDesc
               ]
     where aDesc = "Install from the AUR."
+          jDesc = "All aura output is given in Japanese."
 
 -- These are intercepted Pacman flags.
 pacmanOptions :: [OptDescr Flag]
@@ -36,24 +41,42 @@ argError msg = error $ usageInfo (msg ++ "\n" ++ usageMsg) options
 
 main = do
   args <- getArgs
-  opts <- parseOpts args
-  executeOpts opts
+  (auraFlags,pacFlags,input) <- parseOpts args
+  let (lang,auraFlags') = getLanguage auraFlags
+  executeOpts lang (auraFlags',pacFlags,input)
 
 parseOpts :: [String] -> IO ([Flag],[String],[String])
 parseOpts args = case getOpt' Permute (auraOptions ++ pacmanOptions) args of
                    (opts,nonOpts,pacOpts,_) -> return (opts,nonOpts,pacOpts) 
 
-executeOpts :: ([Flag],[String],[String]) -> IO ()
-executeOpts (flags,input,pacOpts) =
+getLanguage :: [Flag] -> (Language,[Flag])
+getLanguage flags | JapOut `elem` flags = (japanese, delete JapOut flags)
+                  | otherwise           = (english, flags)
+
+executeOpts :: Language -> ([Flag],[String],[String]) -> IO ()
+executeOpts lang (flags,input,pacOpts) =
     case flags of
       [Help]       -> printHelpMsg pacOpts
       [Version]    -> getVersionInfo >>= animateVersionMsg
-      [AURInstall] -> putStrLn "This option isn't ready yet."
-      _            -> (pacman $ pacOpts ++ input) >> return ()
+      [AURInstall] -> installPackages lang pacOpts input
+      _            -> (pacman $ pacOpts ++ input)
+
+installPackages :: Language -> [String] -> [String] -> IO ()
+installPackages lang pacOpts pkgs = do
+  uniques     <- filterM isNotInstalled $ nub pkgs
+  forPacman   <- filterM isArchPackage uniques
+  aurPkgNames <- filterM isAURPackage uniques
+  handleNonPackages lang $ uniques \\ (forPacman ++ aurPkgNames)
+  aurPackages <- mapM packagify aurPkgNames
+  (pacmanDeps,aurDeps) <- determineDeps aurPackages
+  let pacmanPkgs = nub $ pacmanDeps ++ forPacman
+  when (not $ null pacmanPkgs) (pacman $ ["-S"] ++ pacOpts ++ pacmanPkgs)
+  pkgFiles    <- buildPackages lang $ aurDeps ++ aurPackages
+  installPackageFiles pkgFiles
 
 printHelpMsg :: [String] -> IO ()
 printHelpMsg []      = getPacmanHelpMsg >>= putStrLn . getHelpMsg
-printHelpMsg pacOpts = (pacman $ pacOpts ++ ["-h"]) >> return ()
+printHelpMsg pacOpts = pacman $ pacOpts ++ ["-h"]
 
 getHelpMsg :: [String] -> String
 getHelpMsg pacmanHelpMsg = replacedLines ++ "\n" ++ auraUsageMsg

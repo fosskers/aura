@@ -70,6 +70,9 @@ didProcessSucceed :: ExitCode -> Bool
 didProcessSucceed ExitSuccess = True
 didProcessSucceed _           = False
 
+didProcessFail :: ExitCode -> Bool
+didProcessFail = not . didProcessSucceed
+
 timedMessage :: Int -> [String] -> IO ()
 timedMessage delay msgs = mapM_ printMessage msgs
     where printMessage msg = putStr msg >> hFlush stdout >> threadDelay delay

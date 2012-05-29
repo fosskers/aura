@@ -9,8 +9,8 @@ import Utilities (tripleSnd)
 
 type Args = String
 
-pacman :: [Args] -> IO ExitCode
-pacman args = rawSystem "pacman" args
+pacman :: [Args] -> IO ()
+pacman args = rawSystem "pacman" args >> return ()
 
 -- Runs pacman without producing any output.
 pacmanQuiet :: [Args] -> IO (ExitCode,String,String)

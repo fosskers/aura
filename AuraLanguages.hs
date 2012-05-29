@@ -4,6 +4,12 @@ module AuraLanguages where
 
 data Language = Eng | Jap deriving (Eq)
 
+english :: Language
+english = Eng
+
+japanese :: Language
+japanese = Jap
+
 buildPackagesMsg1 :: Language -> String -> String
 buildPackagesMsg1 Eng p = "Building `" ++ p ++ "`..."
 buildPackagesMsg1 Jap p = p ++ "を作成中"

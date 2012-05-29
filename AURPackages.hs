@@ -52,7 +52,7 @@ chooseMakePkgConfFile = do
 -}
 
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.gz
-installPackageFiles :: [FilePath] -> IO ExitCode
+installPackageFiles :: [FilePath] -> IO ()
 -- installPackageFiles []    = return $ ExitFailure 1
 installPackageFiles files = pacman $ ["-U"] ++ files
 
@@ -95,17 +95,19 @@ moveToCache :: FilePath -> IO FilePath
 moveToCache pkg = renameFile pkg newName >> return newName
     where newName = packageCache </> pkg
 
+{-
 depsToInstall :: Package -> IO [Package]
 depsToInstall pkg = do
   deps <- determineDeps pkg
   filterM (isNotInstalled . show) deps
+-}
 
 -- Check all build-deps and runtime-deps first. Install those first.
 -- Deps were: Arch packages -> Collect them all then run a batch `pacman`.
 --            AUR  packages -> Add them to the [Package] list. At the head?
 --                             Or else the later builds won't work?
 -- What about circular deps?
-determineDeps :: Package -> IO [Package]
+determineDeps :: [Package] -> IO ([String],[Package])
 determineDeps pkg = undefined
 
 isInstalled :: String -> IO Bool
