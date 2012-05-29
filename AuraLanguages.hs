@@ -1,6 +1,6 @@
--- Library for AUR output in different languages.
+-- Library for AURA output in different languages.
 
-module AURLanguages where
+module AuraLanguages where
 
 data Language = Eng | Jap deriving (Eq)
 
@@ -32,3 +32,7 @@ buildPackagesMsg6 Jap = "できたやつのインストールを続行する？ 
 buildPackagesMsg7 :: Language -> String
 buildPackagesMsg7 Eng = "So be it."
 buildPackagesMsg7 Jap = "分かった。脱出！"
+
+handleNonPackagesMsg1 :: Language -> String
+handleNonPackagesMsg1 Eng = "The following are not packages:"
+handleNonPackagesMsg1 Jap = "下記はパッケージではない："

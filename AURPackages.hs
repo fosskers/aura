@@ -11,12 +11,22 @@ import Control.Monad (filterM)
 import System.Exit (ExitCode(..))
 
 -- Custom Libraries
-import AURLanguages
+import AuraLanguages
 import Utilities
+import Internet
 import MakePkg
 import Pacman
 
-type Package = String
+data Package = Package { pkgNameOf :: String, pkgbuildOf :: String}
+               deriving (Eq)
+
+instance Show Package where
+    show = pkgNameOf
+
+packagify :: String -> IO Package
+packagify pkg = do
+  pkgbuild <- downloadPkgbuild pkg
+  return $ Package pkg pkgbuild
 
 packageCache :: FilePath
 packageCache = "/var/cache/pacman/pkg/"
@@ -52,33 +62,33 @@ installPackageFiles files = pacman $ ["-U"] ++ files
 buildPackages :: Language -> [Package] -> IO [FilePath]
 buildPackages _ []        = return []
 buildPackages lang (p:ps) = do
-  putStrLnA $ buildPackagesMsg1 lang p
-  results <- withTempDir p (build p)
+  putStrLnA $ buildPackagesMsg1 lang (show p)
+  results <- withTempDir (show p) (build p)
   case results of
     (Just pkg,_) -> buildPackages lang ps >>= return . (\pkgs -> pkg : pkgs)
     (Nothing,output) -> do
-        putStrLnA $ buildPackagesMsg2 lang p
+        putStrLnA $ buildPackagesMsg2 lang (show p)
         putStrA $ buildPackagesMsg3 lang
         timedMessage 1000000 ["3.. ","2.. ","1..\n"]
         putStrLn output
         putStrLnA $ buildPackagesMsg4 lang
-        mapM_ putStrLn ps
+        mapM_ (putStrLn . show) ps
         putStrLnA $ buildPackagesMsg5 lang
         answer <- yesNoPrompt (buildPackagesMsg6 lang) "^y"
         if answer then return [] else error (buildPackagesMsg7 lang)
         
 build :: Package -> IO (Maybe FilePath, String)
 build pkg = do
-  pkgbuildPath <- downloadPkgbuild pkg
-  (exitStatus,pkgName,output) <- makepkg pkgbuildPath
+  writeFile "PKGBUILD" $ pkgbuildOf pkg
+  (exitStatus,pkgName,output) <- makepkg []
   if didProcessSucceed exitStatus
   then moveToCache pkgName >>= return . (\pkg -> (Just pkg,output))
   else return (Nothing,output)
             
 -- Assumption: The package given EXISTS as an AUR package.
 --             Non-existant packages should have been filtered out by now.
-downloadPkgbuild :: Package -> IO FilePath
-downloadPkgbuild = downloadContents . getPkgbuildUrl
+downloadPkgbuild :: String -> IO String
+downloadPkgbuild = getUrlContents . getPkgbuildUrl
 
 -- Moves a file to the pacman package cache and returns its location.
 moveToCache :: FilePath -> IO FilePath
@@ -88,7 +98,7 @@ moveToCache pkg = renameFile pkg newName >> return newName
 depsToInstall :: Package -> IO [Package]
 depsToInstall pkg = do
   deps <- determineDeps pkg
-  filterM isNotInstalled deps
+  filterM (isNotInstalled . show) deps
 
 -- Check all build-deps and runtime-deps first. Install those first.
 -- Deps were: Arch packages -> Collect them all then run a batch `pacman`.
@@ -98,25 +108,32 @@ depsToInstall pkg = do
 determineDeps :: Package -> IO [Package]
 determineDeps pkg = undefined
 
-isInstalled :: Package -> IO Bool
+isInstalled :: String -> IO Bool
 isInstalled pkg = pacmanSuccess ["-Qq",pkg]
 
-isNotInstalled :: Package -> IO Bool
+isNotInstalled :: String -> IO Bool
 isNotInstalled pkg = do
   installed <- isInstalled pkg
   return $ not installed
 
-isArchPackage :: Package -> IO Bool
+isArchPackage :: String -> IO Bool
 isArchPackage pkg = pacmanSuccess ["-Si",pkg]
 
-isAURPackage :: Package -> IO Bool
-isAURPackage = undefined
+isAURPackage :: String -> IO Bool
+isAURPackage = doesUrlExist . getPkgbuildUrl
 
-getPkgbuildUrl :: Package -> Url
+getPkgbuildUrl :: String -> Url
 getPkgbuildUrl pkg = "https://aur.archlinux.org/packages/" </>
                      take 2 pkg </> pkg </> "PKGBUILD"
 
+-- TODO: Add guesses! "Did you mean xyz instead?"
+handleNonPackages :: Language -> [String] -> IO ()
+handleNonPackages lang nons = do
+  putStrLnA $ handleNonPackagesMsg1 lang
+  mapM_ putStrLn nons
+
 -- These might not be necessary.
+{-
 getOrphans :: IO [String]
 getOrphans = pacmanQuiet ["-Qqdt"] >>= return . lines . tripleSnd
 
@@ -136,3 +153,4 @@ getNewestPackageDesc pkg =
 getPackageDesc :: String -> [(String,String)]
 getPackageDesc = map (cleanFields . hardBreak (== ':')) . lines
     where cleanFields (x,y) = (rStrip x, lStrip y)
+-}
