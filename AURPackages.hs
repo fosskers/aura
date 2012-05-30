@@ -17,7 +17,9 @@ import Internet
 import MakePkg
 import Pacman
 
-data Package = Package { pkgNameOf :: String, pkgbuildOf :: String}
+type Pkgbuild = String
+
+data Package = Package { pkgNameOf :: String, pkgbuildOf :: Pkgbuild}
                deriving (Eq)
 
 instance Show Package where
@@ -86,8 +88,7 @@ build pkg = do
   else return (Nothing,output)
             
 -- Assumption: The package given EXISTS as an AUR package.
---             Non-existant packages should have been filtered out by now.
-downloadPkgbuild :: String -> IO String
+downloadPkgbuild :: String -> IO Pkgbuild
 downloadPkgbuild = getUrlContents . getPkgbuildUrl
 
 -- Moves a file to the pacman package cache and returns its location.
@@ -134,10 +135,21 @@ handleNonPackages lang nons = do
   putStrLnA $ handleNonPackagesMsg1 lang
   mapM_ putStrLn nons
 
+getInstalledAurPackages :: IO [String]
+getInstalledAurPackages = pacmanOutput ["-Qm"] >>= return . lines
+
+getTrueVerViaPkgbuild :: Pkgbuild -> String
+getTrueVerViaPkgbuild pkgb = pkgver ++ "-" ++ pkgrel
+    where pkgver = head $ getPkgbuildField "pkgver" pkgb
+          pkgrel = head $ getPkgbuildField "pkgrel" pkgb
+
+getPkgbuildField :: String -> Pkgbuild -> [String]
+getPkgbuildField field pkgb = undefined
+
 -- These might not be necessary.
 {-
 getOrphans :: IO [String]
-getOrphans = pacmanQuiet ["-Qqdt"] >>= return . lines . tripleSnd
+getOrphans = pacmanOutput ["-Qqdt"] >>= return . lines
 
 getInstalledPackageDesc :: Package -> IO [(String,String)]
 getInstalledPackageDesc pkg = do
