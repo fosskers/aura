@@ -1,0 +1,18 @@
+THE AURA PHILOSOPHY
+-------------------
+* Aura is Pacman.
+  Aura doesn't just mimic pacman... it _is_ pacman.
+  All pacman operations and their sub-options are allowed. 
+* Arch is Arch. AUR is AUR.
+  `-S` yields pacman packages and only pacman packages. This agrees with
+  the above. Thus in aura, the `-A` operation is introduced for obtaining
+  AUR packages. `-A` comes with with all the sub-options (-s, -u, etc.)
+  that you're used to.  
+* All at once.
+  Dependencies and packages are not built and installed one at a time.
+  All pacman dependencies are determined and installed first, then all AUR
+  packages are built then installed in a batch. 
+* Downgradibility
+  AUR package files that are built are moved to the package cache.
+  This allows for them to be easily downgraded when problems arise.
+  Other top AUR helper programs do not do this. 
