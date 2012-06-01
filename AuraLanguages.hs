@@ -10,6 +10,7 @@ english = Eng
 japanese :: Language
 japanese = Jap
 
+-- AURPackages functions
 buildPackagesMsg1 :: Language -> String -> String
 buildPackagesMsg1 Eng p = "Building `" ++ p ++ "`..."
 buildPackagesMsg1 Jap p = p ++ "を作成中"
@@ -42,3 +43,19 @@ buildPackagesMsg7 Jap = "分かった。脱出！"
 handleNonPackagesMsg1 :: Language -> String
 handleNonPackagesMsg1 Eng = "The following are not packages:"
 handleNonPackagesMsg1 Jap = "下記はパッケージではない："
+
+-- aura functions
+displayPkgbuildMsg1 :: Language -> String
+displayPkgbuildMsg1 Eng = "Make sure to thoroughly check PKGBUILDs " ++
+                          "before installing packages."
+displayPkgbuildMsg1 Jap = "パッケージをインストールする前は必ず" ++
+                          "PKGBUILDの内容を確認した方がいい。"
+
+displayPkgbuildMsg2 :: Language -> String -> String
+displayPkgbuildMsg2 Eng pkg = "Displaying PKGBUILD for `" ++ pkg ++ "`..."
+displayPkgbuildMsg2 Jap pkg = pkg ++ "のPKGBUILDは出力される。"
+
+displayPkgbuildMsg3 :: Language -> String
+displayPkgbuildMsg3 Eng = "That package does not exist."
+displayPkgbuildMsg3 Jap = "そのパッケージは存在しない。"
+

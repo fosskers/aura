@@ -5,7 +5,7 @@
 
 -- System Libraries
 import Control.Monad (filterM, when)
-import Data.List ((\\), nub, delete)
+import Data.List ((\\), nub, delete, sort)
 import System.Environment (getArgs)
 import System.Console.GetOpt
 
@@ -14,15 +14,19 @@ import AuraLanguages
 import AURPackages
 import Utilities
 import AuraLogo
+import Internet
 import Pacman
 
-data Flag = AURInstall | Version | Help | JapOut deriving (Eq)
+data Flag = AURInstall | GetPkgbuild | Version | Help | JapOut
+            deriving (Eq,Ord)
 
 auraOptions :: [OptDescr Flag]
-auraOptions = [ Option ['A'] ["aursync"] (NoArg AURInstall) aDesc
-              , Option [] ["japanese"]   (NoArg JapOut)     jDesc
+auraOptions = [ Option ['A'] ["aursync"]  (NoArg AURInstall)  aDesc
+              , Option ['p'] ["pkgbuild"] (NoArg GetPkgbuild) pDesc
+              , Option [] ["japanese"]    (NoArg JapOut)      jDesc
               ]
     where aDesc = "Install from the AUR."
+          pDesc = "(With -A) Outputs the contents of a package's PKGBUILD."
           jDesc = "All aura output is given in Japanese."
 
 -- These are intercepted Pacman flags.
@@ -56,11 +60,13 @@ getLanguage flags | JapOut `elem` flags = (japanese, delete JapOut flags)
 executeOpts :: Language -> ([Flag],[String],[String]) -> IO ()
 executeOpts lang (flags,input,pacOpts) =
     case flags of
-      [Help]       -> printHelpMsg pacOpts
-      [Version]    -> getVersionInfo >>= animateVersionMsg
-      [AURInstall] -> installPackages lang pacOpts input
-      _            -> (pacman $ pacOpts ++ input)
-
+      [Help]          -> printHelpMsg pacOpts
+      [Version]       -> getVersionInfo >>= animateVersionMsg
+      []              -> (pacman $ pacOpts ++ input)
+      (AURInstall:fs) -> case fs of
+                           [] -> installPackages lang pacOpts input
+                           [GetPkgbuild] -> displayPkgbuild lang input
+      
 installPackages :: Language -> [String] -> [String] -> IO ()
 installPackages lang pacOpts pkgs = do
   uniques     <- filterM isNotInstalled $ nub pkgs
@@ -73,6 +79,16 @@ installPackages lang pacOpts pkgs = do
   when (not $ null pacmanPkgs) (pacman $ ["-S"] ++ pacOpts ++ pacmanPkgs)
   pkgFiles    <- buildPackages lang $ aurDeps ++ aurPackages
   installPackageFiles pkgFiles
+
+displayPkgbuild :: Language -> [String] -> IO ()
+displayPkgbuild lang [] = putStrLnA $ displayPkgbuildMsg1 lang
+displayPkgbuild lang pkgs = mapM_ displayEach pkgs
+    where displayEach pkg = do
+            putStrLnA $ displayPkgbuildMsg2 lang pkg
+            itExists <- doesUrlExist $ getPkgbuildUrl pkg
+            if itExists
+            then downloadPkgbuild pkg >>= putStrLn
+            else putStrLnA $ displayPkgbuildMsg3 lang
 
 printHelpMsg :: [String] -> IO ()
 printHelpMsg []      = getPacmanHelpMsg >>= putStrLn . getHelpMsg
