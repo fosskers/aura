@@ -18,16 +18,18 @@ import Internet
 import Pkgbuild
 import Pacman
 
-data Flag = AURInstall | GetPkgbuild | Version | Help | JapOut
+data Flag = AURInstall | GetPkgbuild | Languages | Version | Help | JapOut
             deriving (Eq,Ord)
 
 auraOptions :: [OptDescr Flag]
 auraOptions = [ Option ['A'] ["aursync"]  (NoArg AURInstall)  aDesc
               , Option ['p'] ["pkgbuild"] (NoArg GetPkgbuild) pDesc
+              , Option [] ["languages"]   (NoArg Languages)   lDesc
               , Option [] ["japanese"]    (NoArg JapOut)      jDesc
               ]
     where aDesc = "Install from the AUR."
           pDesc = "(With -A) Outputs the contents of a package's PKGBUILD."
+          lDesc = "Display the available output languages for aura."
           jDesc = "All aura output is given in Japanese."
 
 -- These are intercepted Pacman flags.
@@ -61,6 +63,7 @@ getLanguage flags | JapOut `elem` flags = (japanese, delete JapOut flags)
 executeOpts :: Language -> ([Flag],[String],[String]) -> IO ()
 executeOpts lang (flags,input,pacOpts) =
     case sort flags of
+      [Languages]     -> displayOutputLanguages lang
       [Help]          -> printHelpMsg pacOpts
       [Version]       -> getVersionInfo >>= animateVersionMsg
       []              -> (pacman $ pacOpts ++ input)
@@ -91,6 +94,11 @@ displayPkgbuild lang pkgs = do
             if itExists
             then downloadPkgbuild pkg >>= putStrLn
             else putStrLnA $ displayPkgbuildMsg3 lang
+
+displayOutputLanguages :: Language -> IO ()
+displayOutputLanguages lang = do
+  putStrLnA $ displayOutputLanguagesMsg1 lang
+  mapM_ (putStrLn . show) allLanguages
 
 printHelpMsg :: [String] -> IO ()
 printHelpMsg []      = getPacmanHelpMsg >>= putStrLn . getHelpMsg

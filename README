@@ -16,3 +16,9 @@ THE AURA PHILOSOPHY
   AUR package files that are built are moved to the package cache.
   This allows for them to be easily downgraded when problems arise.
   Other top AUR helper programs do not do this. 
+* Arch Linux for Everyone
+  English is well established as the world's Lingua Franca, also being
+  the dominant language of computing and the internet. That said, it's
+  natural that some people are going to be more comfortable working
+  in their native language. From the beginning Aura has been built with
+  multiple-language support in mind, making it very easy to add new ones.
