@@ -15,6 +15,7 @@ import AURPackages
 import Utilities
 import AuraLogo
 import Internet
+import Pkgbuild
 import Pacman
 
 data Flag = AURInstall | GetPkgbuild | Version | Help | JapOut
@@ -59,7 +60,7 @@ getLanguage flags | JapOut `elem` flags = (japanese, delete JapOut flags)
 
 executeOpts :: Language -> ([Flag],[String],[String]) -> IO ()
 executeOpts lang (flags,input,pacOpts) =
-    case flags of
+    case sort flags of
       [Help]          -> printHelpMsg pacOpts
       [Version]       -> getVersionInfo >>= animateVersionMsg
       []              -> (pacman $ pacOpts ++ input)
@@ -69,7 +70,7 @@ executeOpts lang (flags,input,pacOpts) =
       
 installPackages :: Language -> [String] -> [String] -> IO ()
 installPackages lang pacOpts pkgs = do
-  uniques     <- filterM isNotInstalled $ nub pkgs
+  let uniques =  nub pkgs
   forPacman   <- filterM isArchPackage uniques
   aurPkgNames <- filterM isAURPackage uniques
   handleNonPackages lang $ uniques \\ (forPacman ++ aurPkgNames)
@@ -81,10 +82,11 @@ installPackages lang pacOpts pkgs = do
   installPackageFiles pkgFiles
 
 displayPkgbuild :: Language -> [String] -> IO ()
-displayPkgbuild lang [] = putStrLnA $ displayPkgbuildMsg1 lang
-displayPkgbuild lang pkgs = mapM_ displayEach pkgs
+displayPkgbuild lang pkgs = do
+  mapM_ displayEach pkgs
+  --putStrLnA $ displayPkgbuildMsg1 lang
     where displayEach pkg = do
-            putStrLnA $ displayPkgbuildMsg2 lang pkg
+            --putStrLnA $ displayPkgbuildMsg2 lang pkg
             itExists <- doesUrlExist $ getPkgbuildUrl pkg
             if itExists
             then downloadPkgbuild pkg >>= putStrLn
@@ -113,7 +115,7 @@ animateVersionMsg verMsg = do
   mapM_ pillEating pillsAndWidths
   putStr clearGrid
   putStrLn auraLogo
-  putStrLn "AURA Version 0.2.0.0"
+  putStrLn "AURA Version 0.2.1.0"
   putStrLn " by Colin Woodbury\n\n"
     where pillEating (p,w) = putStr clearGrid >> drawPills p >> takeABite w
           pillsAndWidths   = [(2,5),(1,10),(0,15)]

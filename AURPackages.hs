@@ -8,16 +8,14 @@ module AURPackages where
 import System.Directory (renameFile)
 import System.FilePath ((</>))
 import Control.Monad (filterM)
---import System.Exit (ExitCode(..))
 
 -- Custom Libraries
 import AuraLanguages
 import Utilities
+import Pkgbuild
 import Internet
 import MakePkg
 import Pacman
-
-type Pkgbuild = String
 
 data Package = Package { pkgNameOf :: String, pkgbuildOf :: Pkgbuild}
                deriving (Eq)
@@ -87,10 +85,6 @@ build pkg = do
   then moveToCache pkgName >>= return . (\pkg -> (Just pkg,output))
   else return (Nothing,output)
             
--- Assumption: The package given EXISTS as an AUR package.
-downloadPkgbuild :: String -> IO Pkgbuild
-downloadPkgbuild = getUrlContents . getPkgbuildUrl
-
 -- Moves a file to the pacman package cache and returns its location.
 moveToCache :: FilePath -> IO FilePath
 moveToCache pkg = renameFile pkg newName >> return newName
@@ -125,10 +119,6 @@ isArchPackage pkg = pacmanSuccess ["-Si",pkg]
 isAURPackage :: String -> IO Bool
 isAURPackage = doesUrlExist . getPkgbuildUrl
 
-getPkgbuildUrl :: String -> Url
-getPkgbuildUrl pkg = "https://aur.archlinux.org/packages/" </>
-                     take 2 pkg </> pkg </> "PKGBUILD"
-
 -- TODO: Add guesses! "Did you mean xyz instead?"
 handleNonPackages :: Language -> [String] -> IO ()
 handleNonPackages lang nons = do
@@ -137,14 +127,6 @@ handleNonPackages lang nons = do
 
 getInstalledAurPackages :: IO [String]
 getInstalledAurPackages = pacmanOutput ["-Qm"] >>= return . lines
-
-getTrueVerViaPkgbuild :: Pkgbuild -> String
-getTrueVerViaPkgbuild pkgb = pkgver ++ "-" ++ pkgrel
-    where pkgver = head $ getPkgbuildField "pkgver" pkgb
-          pkgrel = head $ getPkgbuildField "pkgrel" pkgb
-
-getPkgbuildField :: String -> Pkgbuild -> [String]
-getPkgbuildField field pkgb = undefined
 
 -- These might not be necessary.
 {-

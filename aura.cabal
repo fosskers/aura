@@ -3,7 +3,7 @@
 
 name:                aura
 
-version:             0.2.0.0
+version:             0.2.1.0
 
 synopsis:            A package manager for Arch Linux and the AUR.
 
@@ -31,14 +31,24 @@ build-type:          Simple
 
 cabal-version:       >=1.8
 
+source-repository head
+  type:     git
+  location: git://github.com/fosskers/aura.git
+
 executable aura
   main-is:             aura.hs
 
   other-modules:       Pacman,
                        AuraLogo,
-                       Utilities
+                       Utilities,
+                       Internet,
+                       AuraLanguages,
+                       AURPackages,
+                       MakePkg
 
-  build-depends:       base,
+  build-depends:       base >= 4.5.0.0 && < 5,
                        process>=1.1.0.0,
                        directory>=1.1.0.0,
-                       regex-posix
+                       regex-posix,
+                       filepath,
+                       Cabal
