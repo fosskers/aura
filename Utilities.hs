@@ -54,7 +54,7 @@ didProcessSucceed cmd args stdin = do
 replaceByPatt :: [Pattern] -> String -> String
 replaceByPatt [] line = line
 replaceByPatt ((p,t):ps) line | p == m    = replaceByPatt ps (b ++ t ++ a)
-                              | otherwise = line
+                              | otherwise = replaceByPatt ps line
                          where (b,m,a) = line =~ p :: (String,String,String)
 
 withTempDir :: FilePath -> IO a -> IO a
@@ -84,9 +84,5 @@ yesNoPrompt msg regex = do
   response <- getLine
   return (response =~ regex :: Bool)
 
--- I'd like a less hacky way to do this.
--- THIS DOESN'T WORK
-terminalWidth :: IO Int
-terminalWidth = do
-  heightAndWidth <- readProcess "stty" ["size"] ""
-  return . read . last . words $ heightAndWidth
+wordsLines :: String -> [String]
+wordsLines = concat . map words . lines

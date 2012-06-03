@@ -8,6 +8,8 @@ module AURPackages where
 import System.Directory (renameFile)
 import System.FilePath ((</>))
 import Control.Monad (filterM)
+import Text.Regex.Posix ((=~))
+import Data.List ((\\), nub)
 
 -- Custom Libraries
 import AuraLanguages
@@ -17,16 +19,33 @@ import Internet
 import MakePkg
 import Pacman
 
-data Package = Package { pkgNameOf :: String, pkgbuildOf :: Pkgbuild}
-               deriving (Eq)
+data Versioning = AtLeast String | MustBe String | Anything deriving (Eq)
 
+data Package = Package { pkgNameOf  :: String
+                       , versionOf  :: Versioning
+                       , pkgbuildOf :: Pkgbuild 
+                       } deriving (Eq)
+               
 instance Show Package where
     show = pkgNameOf
 
+-- This will explode if the package doesn't exist.
 packagify :: String -> IO Package
 packagify pkg = do
-  pkgbuild <- downloadPkgbuild pkg
-  return $ Package pkg pkgbuild
+  let (name,comp,ver) = pkg =~ "(>=|=)" :: (String,String,String)
+      versioning      = getVersioning comp ver
+  pkgbuild <- downloadPkgbuild name
+  return $ Package name versioning pkgbuild
+      where getVersioning c v | c == ">=" = AtLeast v
+                              | c == "="  = MustBe v
+                              | otherwise = Anything
+
+pkgNameWithVersion :: Package -> String
+pkgNameWithVersion pkg = pkgNameOf pkg ++ signAndVersion
+    where signAndVersion = case versionOf pkg of
+                             AtLeast v -> ">=" ++ v
+                             MustBe  v -> "="  ++ v
+                             Anything  -> ""
 
 packageCache :: FilePath
 packageCache = "/var/cache/pacman/pkg/"
@@ -81,41 +100,45 @@ build :: Package -> IO (Maybe FilePath, String)
 build pkg = do
   writeFile "PKGBUILD" $ pkgbuildOf pkg
   (exitStatus,pkgName,output) <- makepkg []
+  case didProcessSucceed exitStatus of
+    True -> moveToCache pkgName >>= return . (\pkg -> (Just pkg,output))
+    _    -> return (Nothing,output)
+  {-
   if didProcessSucceed exitStatus
   then moveToCache pkgName >>= return . (\pkg -> (Just pkg,output))
   else return (Nothing,output)
+-}
             
 -- Moves a file to the pacman package cache and returns its location.
 moveToCache :: FilePath -> IO FilePath
 moveToCache pkg = renameFile pkg newName >> return newName
     where newName = packageCache </> pkg
 
-{-
-depsToInstall :: Package -> IO [Package]
-depsToInstall pkg = do
-  deps <- determineDeps pkg
-  filterM (isNotInstalled . show) deps
--}
+getDepsToInstall :: [Package] -> IO ([String],[Package])
+getDepsToInstall pkgs = undefined
 
--- Check all build-deps and runtime-deps first. Install those first.
--- Deps were: Arch packages -> Collect them all then run a batch `pacman`.
---            AUR  packages -> Add them to the [Package] list. At the head?
---                             Or else the later builds won't work?
--- What about circular deps?
-determineDeps :: [Package] -> IO ([String],[Package])
-determineDeps pkg = undefined
+determineDeps :: Package -> IO ([String],[Package])
+determineDeps pkg = do
+  let depNames   = (getPkgbuildField "depends" $ pkgbuildOf pkg) ++
+                   (getPkgbuildField "makedepends" $ pkgbuildOf pkg)
+  aurPkgNames   <- filterM (isAURPackage . stripVerNum) depNames
+  aurPkgs       <- mapM packagify aurPkgNames
+  recursiveDeps <- mapM determineDeps aurPkgs
+  let allDeps = foldl fuse (depNames \\ aurPkgNames,aurPkgs) recursiveDeps
+  return $ (nub $ fst allDeps, nub $ snd allDeps)
+      where stripVerNum        = takeWhile (`notElem` "<>=")
+            fuse (ps,as) (p,a) = (p ++ ps, a ++ as)
 
 isInstalled :: String -> IO Bool
 isInstalled pkg = pacmanSuccess ["-Qq",pkg]
 
 isNotInstalled :: String -> IO Bool
-isNotInstalled pkg = do
-  installed <- isInstalled pkg
-  return $ not installed
+isNotInstalled pkg = pacmanFailure ["-Qq",pkg]
 
 isArchPackage :: String -> IO Bool
 isArchPackage pkg = pacmanSuccess ["-Si",pkg]
 
+-- A package is an AUR package if it's PKGBUILD exists on the Arch website.
 isAURPackage :: String -> IO Bool
 isAURPackage = doesUrlExist . getPkgbuildUrl
 

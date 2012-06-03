@@ -4,8 +4,8 @@
 -- Written by Colin Woodbury <colingw@gmail.com>
 
 -- System Libraries
-import Control.Monad (filterM, when)
 import Data.List ((\\), nub, delete, sort)
+import Control.Monad (filterM, when)
 import System.Environment (getArgs)
 import System.Console.GetOpt
 
@@ -78,7 +78,7 @@ installPackages lang pacOpts pkgs = do
   aurPkgNames <- filterM isAURPackage uniques
   handleNonPackages lang $ uniques \\ (forPacman ++ aurPkgNames)
   aurPackages <- mapM packagify aurPkgNames
-  (pacmanDeps,aurDeps) <- determineDeps aurPackages
+  (pacmanDeps,aurDeps) <- getDepsToInstall aurPackages
   let pacmanPkgs = nub $ pacmanDeps ++ forPacman
   when (not $ null pacmanPkgs) (pacman $ ["-S"] ++ pacOpts ++ pacmanPkgs)
   pkgFiles    <- buildPackages lang $ aurDeps ++ aurPackages
