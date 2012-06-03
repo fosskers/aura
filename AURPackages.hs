@@ -100,14 +100,9 @@ build :: Package -> IO (Maybe FilePath, String)
 build pkg = do
   writeFile "PKGBUILD" $ pkgbuildOf pkg
   (exitStatus,pkgName,output) <- makepkg []
-  case didProcessSucceed exitStatus of
-    True -> moveToCache pkgName >>= return . (\pkg -> (Just pkg,output))
-    _    -> return (Nothing,output)
-  {-
   if didProcessSucceed exitStatus
-  then moveToCache pkgName >>= return . (\pkg -> (Just pkg,output))
-  else return (Nothing,output)
--}
+     then moveToCache pkgName >>= return . (\pkg -> (Just pkg,output))
+     else return (Nothing,output)
             
 -- Moves a file to the pacman package cache and returns its location.
 moveToCache :: FilePath -> IO FilePath

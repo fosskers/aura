@@ -41,11 +41,6 @@ pacmanOptions = [ Option ['V'] ["version"] (NoArg Version) ""
 auraUsageMsg :: String
 auraUsageMsg = usageInfo "AURA only operations:" auraOptions
 
-{-
-argError :: String -> a
-argError msg = error $ usageInfo (msg ++ "\n" ++ usageMsg) options
--}
-
 main = do
   args <- getArgs
   (auraFlags,pacFlags,input) <- parseOpts args
@@ -92,8 +87,8 @@ displayPkgbuild lang pkgs = do
             --putStrLnA $ displayPkgbuildMsg2 lang pkg
             itExists <- doesUrlExist $ getPkgbuildUrl pkg
             if itExists
-            then downloadPkgbuild pkg >>= putStrLn
-            else putStrLnA $ displayPkgbuildMsg3 lang
+               then downloadPkgbuild pkg >>= putStrLn
+               else putStrLnA $ displayPkgbuildMsg3 lang
 
 displayOutputLanguages :: Language -> IO ()
 displayOutputLanguages lang = do
