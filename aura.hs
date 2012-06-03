@@ -69,9 +69,8 @@ executeOpts lang (flags,input,pacOpts) =
 installPackages :: Language -> [String] -> [String] -> IO ()
 installPackages lang pacOpts pkgs = do
   let uniques =  nub pkgs
-  forPacman   <- filterM isArchPackage uniques
-  aurPkgNames <- filterM isAURPackage uniques
-  handleNonPackages lang $ uniques \\ (forPacman ++ aurPkgNames)
+  (forPacman,aurPkgNames,nonPkgs) <- divideByPkgType uniques
+  handleNonPackages lang nonPkgs
   aurPackages <- mapM packagify aurPkgNames
   (pacmanDeps,aurDeps) <- getDepsToInstall aurPackages
   let pacmanPkgs = nub $ pacmanDeps ++ forPacman
