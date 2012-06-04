@@ -43,6 +43,14 @@ buildPackagesMsg7 :: Language -> String
 buildPackagesMsg7 English  = "So be it."
 buildPackagesMsg7 Japanese = "分かった。脱出！"
 
+getPacmanConflictsMsg1 :: Language -> String -> String -> String -> String
+getPacmanConflictsMsg1 English name rec req =
+    "The dependency `" ++ name ++ "` demands version " ++ req ++ ",\n" ++
+    "but the most recent version is " ++ rec ++ "."
+getPacmanConflictsMsg1 Japanese name rec req =
+    "パッケージ`" ++ name ++ "`はバージョン" ++ req ++ "を要するが" ++
+    "一番最新のバージョンは" ++ rec ++ "。"
+
 handleNonPackagesMsg1 :: Language -> String
 handleNonPackagesMsg1 English  = "The following are not packages:"
 handleNonPackagesMsg1 Japanese = "下記はパッケージではない："

@@ -41,6 +41,9 @@ rStrip xs = dropWhileEnd (== ' ') xs
 tripleSnd :: (a,b,c) -> b
 tripleSnd (a,b,c) = b
 
+tripleThrd :: (a,b,c) -> c
+tripleThrd (a,b,c) = c
+
 {-
 didProcessSucceed :: FilePath -> [String] -> String -> IO Bool
 didProcessSucceed cmd args stdin = do

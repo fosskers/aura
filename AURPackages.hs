@@ -113,13 +113,13 @@ getDepsToInstall :: [Package] -> IO ([String],[Package])
 getDepsToInstall pkgs = undefined
 
 -- Returns ([PacmanPackages], [AURPackages], [VirtualPackages])
-determineDeps :: Package -> IO ([String],[Package],[String])
-determineDeps pkg = do
+determineDeps :: Language -> Package -> IO ([String],[Package],[String])
+determineDeps lang pkg = do
   let depNames   = (getPkgbuildField "depends" $ pkgbuildOf pkg) ++
                    (getPkgbuildField "makedepends" $ pkgbuildOf pkg)
   (archPkgNames,aurPkgNames,other) <- divideByPkgType depNames
   aurPkgs       <- mapM packagify aurPkgNames
-  recursiveDeps <- mapM determineDeps aurPkgs
+  recursiveDeps <- mapM (determineDeps lang) aurPkgs
   let (ps,as,os) = foldl fuse (archPkgNames,aurPkgs,other) recursiveDeps
   return $ (nub ps, nubBy isSamePkg as, nub os)
       where fuse (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
@@ -131,13 +131,37 @@ divideByPkgType pkgs = do
   let remaining = pkgs \\ archPkgs
   aurPkgs  <- filterM (isAURPackage . stripVerNum) remaining
   return (archPkgs, aurPkgs, remaining \\ aurPkgs)
-      where stripVerNum = takeWhile (`notElem` "<>=")
+      where stripVerNum = fst . splitNameAndVer
 
 -- Note: Make sure to run this on the Virtual Packages first.
 mustInstall :: [String] -> IO [String]
 mustInstall pkgs = do
   necessaryDeps <- pacmanOutput $ ["-T"] ++ pkgs 
   return $ words necessaryDeps
+
+-- Check for pkg=specificvernum. Freak out if this is different from
+-- the version number given from `pacman -Si`.
+-- Also, you'll need to check if deps are Ignored Packages!
+getPacmanConflicts :: Language -> String -> String -> Maybe String
+getPacmanConflicts lang info pkg = 
+  if '=' `notElem` pkg
+  then Nothing
+  else if recentVer == requestedVer
+       then Nothing
+       else Just $ getPacmanConflictsMsg1 lang name recentVer requestedVer
+    where recentVer = getMostRecentVerNum info
+          (name,requestedVer) = splitNameAndVer pkg
+       
+-- Takes `pacman -Si` output as input
+getMostRecentVerNum :: String -> String
+getMostRecentVerNum info = tripleThrd match
+    where match     = thirdLine =~ ": " :: (String,String,String)
+          thirdLine = allLines !! 2  -- Version num is always the third line.
+          allLines  = lines info
+
+splitNameAndVer :: String -> (String,String)
+splitNameAndVer pkg = (before,after)
+    where (before,_,after) = (pkg =~ "[<>=]+" :: (String,String,String))
 
 isInstalled :: String -> IO Bool
 isInstalled pkg = pacmanSuccess ["-Qq",pkg]
