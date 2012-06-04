@@ -51,8 +51,6 @@ packageCache :: FilePath
 packageCache = "/var/cache/pacman/pkg/"
 
 {- Not certain if these are necessary yet.
-pacmanConfFile :: FilePath
-pacmanConfFile = "/etc/pacman.conf"
 
 makePkgConfFile :: FilePath
 makePkgConfFile = "/etc/makepkg.conf"

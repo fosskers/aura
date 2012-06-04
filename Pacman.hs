@@ -5,9 +5,13 @@ module Pacman where
 
 import System.Process (readProcessWithExitCode, rawSystem)
 import System.Exit (ExitCode(..))
+import Text.Regex.Posix ((=~))
 import Utilities (tripleSnd)
 
 type Args = String
+
+pacmanConfFile :: FilePath
+pacmanConfFile = "/etc/pacman.conf"
 
 pacman :: [Args] -> IO ()
 pacman args = rawSystem "pacman" args >> return ()
@@ -31,6 +35,14 @@ pacmanFailure args = pacmanSuccess args >>= return . not
 pacmanOutput :: [Args] -> IO String
 pacmanOutput args = pacmanQuiet args >>= return . tripleSnd
 
+getPacmanConf :: IO String
+getPacmanConf = readFile pacmanConfFile
+
+getIgnoredPkgs :: String -> [String]
+getIgnoredPkgs confFile = words $ takeWhile (not . (==) '\n') field
+    where (_,_,field) = confFile =~ pattern :: (String,String,String)
+          pattern     = "^IgnorePkg[ ]+= "
+
 getPacmanHelpMsg :: IO [String]
 getPacmanHelpMsg = do
   helpMsg <- pacmanOutput ["-h"]
@@ -45,3 +57,4 @@ getVersionInfo = do
 -- The amount of whitespace before text in the lines given by `pacman -V`
 lineHeaderLength :: Int
 lineHeaderLength = 23
+
