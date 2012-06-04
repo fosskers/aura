@@ -36,13 +36,13 @@ executable aura
   main-is:             aura.hs
 
   other-modules:       Pacman,
-                       AuraLogo,
-                       Utilities,
-                       Internet,
-                       AuraLanguages,
-                       AURPackages,
                        MakePkg,
-                       Pkgbuild
+                       AuraLogo,
+                       Pkgbuild,
+                       Internet,
+                       Utilities,
+                       AURPackages,
+                       AuraLanguages
 
   build-depends:       base >= 4 && < 5,
                        process>=1.1.0.0,

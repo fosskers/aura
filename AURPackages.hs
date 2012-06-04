@@ -112,16 +112,17 @@ moveToCache pkg = renameFile pkg newName >> return newName
 getDepsToInstall :: [Package] -> IO ([String],[Package])
 getDepsToInstall pkgs = undefined
 
-determineDeps :: Package -> IO ([String],[Package])
+-- Returns ([PacmanPackages], [AURPackages], [VirtualPackages])
+determineDeps :: Package -> IO ([String],[Package],[String])
 determineDeps pkg = do
   let depNames   = (getPkgbuildField "depends" $ pkgbuildOf pkg) ++
                    (getPkgbuildField "makedepends" $ pkgbuildOf pkg)
   (archPkgNames,aurPkgNames,other) <- divideByPkgType depNames
   aurPkgs       <- mapM packagify aurPkgNames
   recursiveDeps <- mapM determineDeps aurPkgs
-  let allDeps = foldl fuse (archPkgNames ++ other,aurPkgs) recursiveDeps
-  return $ (nub $ fst allDeps, nubBy isSamePkg $ snd allDeps)
-      where fuse (ps,as) (p,a) = (p ++ ps, a ++ as)
+  let (ps,as,os) = foldl fuse (archPkgNames,aurPkgs,other) recursiveDeps
+  return $ (nub ps, nubBy isSamePkg as, nub os)
+      where fuse (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
             isSamePkg a b = pkgNameWithVersion a == pkgNameWithVersion b
 
 divideByPkgType :: [String] -> IO ([String],[String],[String])
@@ -131,6 +132,12 @@ divideByPkgType pkgs = do
   aurPkgs  <- filterM (isAURPackage . stripVerNum) remaining
   return (archPkgs, aurPkgs, remaining \\ aurPkgs)
       where stripVerNum = takeWhile (`notElem` "<>=")
+
+-- Note: Make sure to run this on the Virtual Packages first.
+mustInstall :: [String] -> IO [String]
+mustInstall pkgs = do
+  necessaryDeps <- pacmanOutput $ ["-T"] ++ pkgs 
+  return $ words necessaryDeps
 
 isInstalled :: String -> IO Bool
 isInstalled pkg = pacmanSuccess ["-Qq",pkg]
