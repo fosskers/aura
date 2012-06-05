@@ -1,3 +1,9 @@
+WHAT IS AURA?
+-------------
+Aura is a package manager for Arch Linux. It's main purpose is as an
+`AUR helper`, in that it automates the process of installating packages
+from the Arch User Repositories.
+
 THE AURA PHILOSOPHY
 -------------------
 * Aura is Pacman.
@@ -22,3 +28,16 @@ THE AURA PHILOSOPHY
   natural that some people are going to be more comfortable working
   in their native language. From the beginning Aura has been built with
   multiple-language support in mind, making it very easy to add new ones.
+* Haskell
+  Aura is written in Haskell, which means easy developing and pretty code.
+  Aura code isn't complicated, and for the burgeoning Haskeller there
+  are examples of things like regexes and CLI argument handling which
+  could come in handy as a reference.
+
+LOCALISATION
+------------
+As mentioned in the Philosophy above, adding new languages to Aura is
+quite easy. However the currently available languages are limited to
+those known by the author. If you speak a language other than those
+available and would like it added to Aura, feel free to edit
+`AuraLanguage.hs` and issue a pull request on GitHub.

@@ -1,6 +1,5 @@
--- A library for dealing with the downloading and installion
+-- A library for dealing with the installion and management
 -- of Arch User Repository packages.
--- Written after studying the `packer` source code.
 
 module AURPackages where
 
@@ -107,8 +106,9 @@ moveToCache :: FilePath -> IO FilePath
 moveToCache pkg = renameFile pkg newName >> return newName
     where newName = packageCache </> pkg
 
-getDepsToInstall :: [Package] -> IO ([String],[Package])
-getDepsToInstall pkgs = undefined
+-- Returns either a list of error message or the deps to be installed.
+getDepsToInstall :: Language -> [Package] -> [String] -> IO (Either [String] ([String],[Package]))
+getDepsToInstall lang pkgs toIgnore = return $ Left ["This is not ready yet."]
 
 -- Returns ([PacmanPackages], [AURPackages], [VirtualPackages])
 determineDeps :: Language -> Package -> IO ([String],[Package],[String])
@@ -137,18 +137,18 @@ mustInstall pkgs = do
   necessaryDeps <- pacmanOutput $ ["-T"] ++ pkgs 
   return $ words necessaryDeps
 
--- Check for pkg=specificvernum. Freak out if this is different from
+-- Checks for pkg=specificvernum. Freaks out if this is different from
 -- the version number given from `pacman -Si`.
--- Also, you'll need to check if deps are Ignored Packages!
-getPacmanConflicts :: Language -> String -> String -> Maybe String
-getPacmanConflicts lang info pkg = 
-  if '=' `notElem` pkg
-  then Nothing
-  else if recentVer == requestedVer
-       then Nothing
-       else Just $ getPacmanConflictsMsg1 lang name recentVer requestedVer
-    where recentVer = getMostRecentVerNum info
-          (name,requestedVer) = splitNameAndVer pkg
+-- Also checks for Ignored Packages.
+getPacmanConflicts :: Language -> [String] -> String -> String -> Maybe String
+getPacmanConflicts lang toIgnore info pkg
+    | pkg `elem` toIgnore = Just failMessage1
+    | '=' `elem` pkg && recVer /= reqVer = Just failMessage2
+    | otherwise = Nothing    
+    where recVer        = getMostRecentVerNum info
+          (name,reqVer) = splitNameAndVer pkg
+          failMessage1  = getPacmanConflictsMsg2 lang pkg
+          failMessage2  = getPacmanConflictsMsg1 lang name recVer reqVer
        
 -- Takes `pacman -Si` output as input
 getMostRecentVerNum :: String -> String
@@ -175,10 +175,18 @@ isAURPackage :: String -> IO Bool
 isAURPackage = doesUrlExist . getPkgbuildUrl
 
 -- TODO: Add guesses! "Did you mean xyz instead?"
-handleNonPackages :: Language -> [String] -> IO ()
-handleNonPackages lang nons = do
-  putStrLnA $ handleNonPackagesMsg1 lang
+reportNonPackages :: Language -> [String] -> IO ()
+reportNonPackages _ []      = return ()
+reportNonPackages lang nons = do
+  putStrLnA $ reportNonPackagesMsg1 lang
   mapM_ putStrLn nons
+
+-- Same as the function above... 
+reportIgnoredPackages :: Language -> [String] -> IO ()
+reportIgnoredPackages _ []      = return ()
+reportIgnoredPackages lang pkgs = do
+  putStrLnA $ reportIgnoredPackagesMsg1 lang
+  mapM_ putStrLn pkgs
 
 getInstalledAurPackages :: IO [String]
 getInstalledAurPackages = pacmanOutput ["-Qm"] >>= return . lines

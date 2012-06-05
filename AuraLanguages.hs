@@ -13,14 +13,18 @@ english = English
 japanese :: Language
 japanese = Japanese
 
+-- Backticks
+bt :: String -> String
+bt cs = "`" ++ cs ++ "`"
+
 -- AURPackages functions
 buildPackagesMsg1 :: Language -> String -> String
-buildPackagesMsg1 English p  = "Building `" ++ p ++ "`..."
+buildPackagesMsg1 English p  = "Building " ++ bt p ++ "..."
 buildPackagesMsg1 Japanese p = p ++ "を作成中"
 
 buildPackagesMsg2 :: Language -> String -> String
-buildPackagesMsg2 English p  = "Well, building " ++ p ++ " failed."
-buildPackagesMsg2 Japanese p = p ++ "の作成は失敗したようだ。"
+buildPackagesMsg2 English p  = "Well, building " ++ bt p ++ " failed."
+buildPackagesMsg2 Japanese p = bt p ++ "の作成は失敗したようだ。"
 
 buildPackagesMsg3 :: Language -> String
 buildPackagesMsg3 English  = "Dumping makepkg output in "
@@ -33,7 +37,7 @@ buildPackagesMsg4 Japanese = "ちなみに下記のパッケージも作成さ�
 buildPackagesMsg5 :: Language -> String
 buildPackagesMsg5 English  = "Some packages may have built properly."
 buildPackagesMsg5 Japanese = "今のは失敗したけど前に作成のできたやつ" ++
-                        "があるかもしれない。"
+                             "があるかもしれない。"
 
 buildPackagesMsg6 :: Language -> String
 buildPackagesMsg6 English  = "Would you like to install them? [y/n]"
@@ -45,17 +49,33 @@ buildPackagesMsg7 Japanese = "分かった。脱出！"
 
 getPacmanConflictsMsg1 :: Language -> String -> String -> String -> String
 getPacmanConflictsMsg1 English name rec req =
-    "The dependency `" ++ name ++ "` demands version " ++ req ++ ",\n" ++
-    "but the most recent version is " ++ rec ++ "."
+    "The dependency " ++ bt name ++ " demands version " ++ bt req ++ ",\n" ++
+    "but the most recent version is " ++ bt rec ++ "."
 getPacmanConflictsMsg1 Japanese name rec req =
-    "パッケージ`" ++ name ++ "`はバージョン" ++ req ++ "を要するが" ++
-    "一番最新のバージョンは" ++ rec ++ "。"
+    "パッケージ" ++ bt name ++ "はバージョン" ++ bt req ++ "を要するが" ++
+    "一番最新のバージョンは" ++ bt rec ++ "。"
 
-handleNonPackagesMsg1 :: Language -> String
-handleNonPackagesMsg1 English  = "The following are not packages:"
-handleNonPackagesMsg1 Japanese = "下記はパッケージではない："
+getPacmanConflictsMsg2 :: Language -> String -> String
+getPacmanConflictsMsg2 English p  = bt p ++ " is an ignored package!"
+getPacmanConflictsMsg2 Japanese p = bt p ++ "は無視すべきと指摘されている！"
+
+reportNonPackagesMsg1 :: Language -> String
+reportNonPackagesMsg1 English  = "The following are not packages:"
+reportNonPackagesMsg1 Japanese = "下記はパッケージではない："
+
+reportIgnoredPackagesMsg1 :: Language -> String
+reportIgnoredPackagesMsg1 English  = "The following packages will be ignored:"
+reportIgnoredPackagesMsg1 Japanese = "下記のパッケージは無視される："
 
 -- aura functions
+executeOptsMsg1 :: Language -> String
+executeOptsMsg1 English  = "Conflicting flags given!"
+executeOptsMsg1 Japanese = "矛盾しているオプションあり。"
+
+installPackagesMsg1 :: Language -> String
+installPackagesMsg1 English  = "Dependency checking failed for these reasons:"
+installPackagesMsg1 Japanese = "Dependenciesの確認は以下の理由で失敗した："
+
 displayPkgbuildMsg1 :: Language -> String
 displayPkgbuildMsg1 English  = "Make sure to thoroughly check PKGBUILDs " ++
                                "before installing packages."
@@ -63,13 +83,13 @@ displayPkgbuildMsg1 Japanese = "パッケージをインストールする前は
                                "PKGBUILDの内容を確認した方がいい。"
 
 displayPkgbuildMsg2 :: Language -> String -> String
-displayPkgbuildMsg2 English pkg  = "Showing PKGBUILD for `" ++ pkg ++ "`..."
-displayPkgbuildMsg2 Japanese pkg = pkg ++ "のPKGBUILDは出力される。"
+displayPkgbuildMsg2 English pkg  = "Showing PKGBUILD for " ++ bt pkg ++ "..."
+displayPkgbuildMsg2 Japanese pkg = bt pkg ++ "のPKGBUILDは出力される。"
 
-displayPkgbuildMsg3 :: Language -> String
-displayPkgbuildMsg3 English  = "That package does not exist."
-displayPkgbuildMsg3 Japanese = "そのパッケージは存在しない。"
+displayPkgbuildMsg3 :: Language -> String -> String
+displayPkgbuildMsg3 English pkg  = bt pkg ++ " does not exist."
+displayPkgbuildMsg3 Japanese pkg = bt pkg ++ "は存在しない。"
 
 displayOutputLanguagesMsg1 :: Language -> String
-displayOutputLanguagesMsg1 English  = "The following languages are available:"
+displayOutputLanguagesMsg1 English = "The following languages are available:"
 displayOutputLanguagesMsg1 Japanese = "auraは以下の言語に対応している："
