@@ -27,7 +27,7 @@ auraOptions :: [OptDescr Flag]
 auraOptions = [ Option ['A'] ["aursync"]  (NoArg AURInstall)  aDesc
               , Option ['p'] ["pkgbuild"] (NoArg GetPkgbuild) pDesc
               , Option ['C'] ["cache"]    (NoArg Cache)       cDesc
-              , Option ['s'] ["search"]  (NoArg Search)       sDesc 
+              , Option ['s'] ["search"]   (NoArg Search)      sDesc 
               ]
     where aDesc = "Install from the AUR."
           pDesc = "(With -A) Outputs the contents of a package's PKGBUILD."
@@ -93,6 +93,7 @@ executeOpts lang (flags,input,pacOpts) =
       (Cache:fs)  -> case fs of
                        []       -> return ()
                        [Search] -> searchPackageCache input
+                       _        -> putStrLnA $ executeOptsMsg1 lang
       [Languages] -> displayOutputLanguages lang
       [Help]      -> printHelpMsg pacOpts
       [Version]   -> getVersionInfo >>= animateVersionMsg
@@ -143,7 +144,7 @@ searchPackageCache :: [String] -> IO ()
 searchPackageCache input = do
   cache <- packageCacheContents
   let pattern = unwords input
-      matches = filter (\p -> p =~ pattern :: Bool) cache
+      matches = sort $ filter (\p -> p =~ pattern :: Bool) cache
   mapM_ putStrLn matches
 
 --------
@@ -177,7 +178,7 @@ animateVersionMsg verMsg = do
   mapM_ pillEating pillsAndWidths
   putStr clearGrid
   putStrLn auraLogo
-  putStrLn "AURA Version 0.2.1.0"
+  putStrLn "AURA Version 0.3.0.0"
   putStrLn " by Colin Woodbury\n\n"
     where pillEating (p,w) = putStr clearGrid >> drawPills p >> takeABite w
           pillsAndWidths   = [(2,5),(1,10),(0,15)]
