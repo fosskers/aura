@@ -7,6 +7,7 @@
 import Data.List ((\\), nub, delete, sort, intersperse)
 import Control.Monad (filterM, when)
 import System.Environment (getArgs)
+import Text.Regex.Posix ((=~))
 import System.Console.GetOpt
 
 -- Custom Libraries
@@ -18,19 +19,25 @@ import Internet
 import Pkgbuild
 import Pacman
 
-data Flag = AURInstall | GetPkgbuild | Languages | Version | Help | JapOut
+data Flag = AURInstall | Cache | GetPkgbuild | Search | Refresh |
+            Languages | Version | Help | JapOut
             deriving (Eq,Ord)
 
 auraOptions :: [OptDescr Flag]
 auraOptions = [ Option ['A'] ["aursync"]  (NoArg AURInstall)  aDesc
               , Option ['p'] ["pkgbuild"] (NoArg GetPkgbuild) pDesc
+              , Option ['C'] ["cache"]    (NoArg Cache)       cDesc
+              , Option ['s'] ["search"]  (NoArg Search)       sDesc 
               ]
     where aDesc = "Install from the AUR."
           pDesc = "(With -A) Outputs the contents of a package's PKGBUILD."
+          cDesc = "Perform actions involving the package cache."
+          sDesc = "(With -C) Search the package cache via a regex pattern."
 
 -- These are intercepted Pacman flags.
 pacmanOptions :: [OptDescr Flag]
-pacmanOptions = [ Option ['V'] ["version"] (NoArg Version) ""
+pacmanOptions = [ Option ['y'] ["refresh"] (NoArg Refresh) ""                 
+                , Option ['V'] ["version"] (NoArg Version) ""
                 , Option ['h'] ["help"]    (NoArg Help)    ""
                 ]
 
@@ -40,6 +47,15 @@ languageOptions = [ Option [] ["languages"] (NoArg Languages) lDesc
                   ]
     where lDesc = "Display the available output languages for aura."
           jDesc = "All aura output is given in Japanese."
+
+interceptedFlags :: [(Flag,String)]
+interceptedFlags = [(Search,"-s"),(Refresh,"-y")]
+
+-- Converts an intercepted Pacman flag back into its raw string form.
+reconvertFlag :: Flag -> String
+reconvertFlag f = case f `lookup` interceptedFlags of
+                    Just x  -> x
+                    Nothing -> ""
 
 allFlags :: [OptDescr Flag]
 allFlags = auraOptions ++ pacmanOptions ++ languageOptions
@@ -67,15 +83,24 @@ getLanguage flags | JapOut `elem` flags = (japanese, delete JapOut flags)
 executeOpts :: Language -> ([Flag],[String],[String]) -> IO ()
 executeOpts lang (flags,input,pacOpts) =
     case sort flags of
-      [Languages]     -> displayOutputLanguages lang
-      [Help]          -> printHelpMsg pacOpts
-      [Version]       -> getVersionInfo >>= animateVersionMsg
-      []              -> (pacman $ pacOpts ++ input)
       (AURInstall:fs) -> case fs of
                            [] -> installPackages lang pacOpts input
                            [GetPkgbuild] -> displayPkgbuild lang input
+                           (Refresh:fs') -> do 
+                              syncDatabase lang
+                              executeOpts lang (AURInstall:fs',input,pacOpts)
                            _ -> putStrLnA $ executeOptsMsg1 lang
-      
+      (Cache:fs)  -> case fs of
+                       []       -> return ()
+                       [Search] -> searchPackageCache input
+      [Languages] -> displayOutputLanguages lang
+      [Help]      -> printHelpMsg pacOpts
+      [Version]   -> getVersionInfo >>= animateVersionMsg
+      _           -> pacman $ pacOpts ++ input ++ map reconvertFlag flags
+
+--------------------
+-- WORKING WITH `-A`
+--------------------      
 installPackages :: Language -> [String] -> [String] -> IO ()
 installPackages lang pacOpts pkgs = do
   confFile <- getPacmanConf
@@ -109,6 +134,21 @@ displayPkgbuild lang pkgs = do
                then downloadPkgbuild pkg >>= putStrLn
                else putStrLnA $ displayPkgbuildMsg3 lang pkg
 
+--------------------
+-- WORKING WITH `-C`
+--------------------
+-- As a one-liner if I felt like it:
+-- packageCacheContents >>= mapM_ putStrLn . filter (\p -> p =~ pat :: Bool) 
+searchPackageCache :: [String] -> IO ()
+searchPackageCache input = do
+  cache <- packageCacheContents
+  let pattern = unwords input
+      matches = filter (\p -> p =~ pattern :: Bool) cache
+  mapM_ putStrLn matches
+
+--------
+-- OTHER
+--------
 displayOutputLanguages :: Language -> IO ()
 displayOutputLanguages lang = do
   putStrLnA $ displayOutputLanguagesMsg1 lang

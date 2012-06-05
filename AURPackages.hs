@@ -46,9 +46,6 @@ pkgNameWithVersion pkg = pkgNameOf pkg ++ signAndVersion
                              MustBe  v -> "="  ++ v
                              Anything  -> ""
 
-packageCache :: FilePath
-packageCache = "/var/cache/pacman/pkg/"
-
 {- Not certain if these are necessary yet.
 
 makePkgConfFile :: FilePath
@@ -160,6 +157,9 @@ getMostRecentVerNum info = tripleThrd match
 splitNameAndVer :: String -> (String,String)
 splitNameAndVer pkg = (before,after)
     where (before,_,after) = (pkg =~ "[<>=]+" :: (String,String,String))
+
+virtualPkgBelongsTo :: String -> IO (Maybe String)
+virtualPkgBelongsTo = undefined
 
 isInstalled :: String -> IO Bool
 isInstalled pkg = pacmanSuccess ["-Qq",pkg]

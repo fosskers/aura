@@ -3,15 +3,23 @@
 
 module Pacman where
 
+-- System Libraries
 import System.Process (readProcessWithExitCode, rawSystem)
+import System.Directory (getDirectoryContents)
 import System.Exit (ExitCode(..))
 import Text.Regex.Posix ((=~))
-import Utilities (tripleSnd)
+
+-- Custom Libraries
+import Utilities (tripleSnd, putStrLnA)
+import AuraLanguages
 
 type Args = String
 
 pacmanConfFile :: FilePath
 pacmanConfFile = "/etc/pacman.conf"
+
+packageCache :: FilePath
+packageCache = "/var/cache/pacman/pkg/"
 
 pacman :: [Args] -> IO ()
 pacman args = rawSystem "pacman" args >> return ()
@@ -34,6 +42,14 @@ pacmanFailure args = pacmanSuccess args >>= return . not
 -- Performs a pacmanQuiet and returns only the stdout.
 pacmanOutput :: [Args] -> IO String
 pacmanOutput args = pacmanQuiet args >>= return . tripleSnd
+
+syncDatabase :: Language -> IO ()
+syncDatabase lang = do
+  putStrLnA $ syncDatabaseMsg1 lang
+  pacman ["-Sy"]
+
+packageCacheContents :: IO [String]
+packageCacheContents = getDirectoryContents packageCache
 
 getPacmanConf :: IO String
 getPacmanConf = readFile pacmanConfFile
