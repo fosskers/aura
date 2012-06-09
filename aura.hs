@@ -178,7 +178,7 @@ animateVersionMsg verMsg = do
   mapM_ pillEating pillsAndWidths
   putStr clearGrid
   putStrLn auraLogo
-  putStrLn "AURA Version 0.3.0.0"
+  putStrLn "AURA Version 0.3.0.1"
   putStrLn " by Colin Woodbury\n\n"
     where pillEating (p,w) = putStr clearGrid >> drawPills p >> takeABite w
           pillsAndWidths   = [(2,5),(1,10),(0,15)]

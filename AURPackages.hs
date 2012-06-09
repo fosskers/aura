@@ -18,15 +18,20 @@ import Internet
 import MakePkg
 import Pacman
 
+type ErrorMsg = String
+
 data Versioning = AtLeast String | MustBe String | Anything deriving (Eq)
 
 data Package = Package { pkgNameOf  :: String
                        , versionOf  :: Versioning
                        , pkgbuildOf :: Pkgbuild 
-                       } deriving (Eq)
+                       } 
                
 instance Show Package where
     show = pkgNameWithVersion
+
+instance Eq Package where
+    a == b = pkgNameWithVersion a == pkgNameWithVersion b
 
 -- This will explode if the package doesn't exist.
 packagify :: String -> IO Package
@@ -45,24 +50,6 @@ pkgNameWithVersion pkg = pkgNameOf pkg ++ signAndVersion
                              AtLeast v -> ">=" ++ v
                              MustBe  v -> "="  ++ v
                              Anything  -> ""
-
-{- Not certain if these are necessary yet.
-
-makePkgConfFile :: FilePath
-makePkgConfFile = "/etc/makepkg.conf"
-
-userMakePkgConfFile :: FilePath -> FilePath
-userMakePkgConfFile home = home ++ "/.makepkg.conf"
-
-chooseMakePkgConfFile :: IO FilePath
-chooseMakePkgConfFile = do
-  home         <- getHomeDirectory
-  let userConfFile = userMakePkgConfFile home
-  exists       <- doesFileExist userConfFile
-  if exists
-  then return userConfFile
-  else return makePkgConfFile
--}
 
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.gz
 installPackageFiles :: [FilePath] -> IO ()
@@ -104,21 +91,38 @@ moveToCache pkg = renameFile pkg newName >> return newName
     where newName = packageCache </> pkg
 
 -- Returns either a list of error message or the deps to be installed.
-getDepsToInstall :: Language -> [Package] -> [String] -> IO (Either [String] ([String],[Package]))
-getDepsToInstall lang pkgs toIgnore = return $ Left ["This is not ready yet."]
+{-
+Get each package's deps and fold the together.
+filterM a `mustInstall` across all the deps. 
+Check for the various kinds of conflicts:
+  Pacman: Package is ignored.
+          Version demanded is not installed, nor is it the same as the
+          latest version.
+  AUR: Package is ignored.
+       Version demanded is different from the one given in its PKGBUILD.
+  Virtual: Parent package is ignored.
+           Version demanded is not provided by the lastest version of
+           its parent package.
+Conflict checking returns `Maybe` values. If a `Just` is found _anywhere_
+then the entire dep check has to fail. Return a `Left` value with
+the appropriate conflict messages.
+If everything is okay, then return all the packages.
+-}
+getDepsToInstall :: Language -> [Package] -> [String] -> IO (Either [ErrorMsg] ([String],[Package]))
+getDepsToInstall lang pkgs toIgnore = do
+  return $ Left ["This is not ready yet."]
 
 -- Returns ([PacmanPackages], [AURPackages], [VirtualPackages])
 determineDeps :: Language -> Package -> IO ([String],[Package],[String])
 determineDeps lang pkg = do
-  let depNames   = (getPkgbuildField "depends" $ pkgbuildOf pkg) ++
-                   (getPkgbuildField "makedepends" $ pkgbuildOf pkg)
+  let depNames = (getPkgbuildField "depends" $ pkgbuildOf pkg) ++
+                 (getPkgbuildField "makedepends" $ pkgbuildOf pkg)
   (archPkgNames,aurPkgNames,other) <- divideByPkgType depNames
   aurPkgs       <- mapM packagify aurPkgNames
   recursiveDeps <- mapM (determineDeps lang) aurPkgs
   let (ps,as,os) = foldl fuse (archPkgNames,aurPkgs,other) recursiveDeps
-  return $ (nub ps, nubBy isSamePkg as, nub os)
+  return (nub ps, nub as, nub os)
       where fuse (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
-            isSamePkg a b = pkgNameWithVersion a == pkgNameWithVersion b
 
 divideByPkgType :: [String] -> IO ([String],[String],[String])
 divideByPkgType pkgs = do
