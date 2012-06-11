@@ -9,6 +9,7 @@ import System.FilePath ((</>))
 import Control.Monad (filterM)
 import Text.Regex.Posix ((=~))
 import Data.List ((\\), nub)
+import Data.Maybe (fromJust)
 
 -- Custom Libraries
 import AuraLanguages
@@ -115,7 +116,6 @@ makeVirtualPkg pkg = do
 -----------
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.gz
 installPackageFiles :: [FilePath] -> IO ()
--- installPackageFiles []    = return $ ExitFailure 1
 installPackageFiles files = pacman $ ["-U"] ++ files
 
 -- Handles the building of Packages.
@@ -153,28 +153,21 @@ moveToCache pkg = renameFile pkg newName >> return newName
     where newName = packageCache </> pkg
 
 -- Returns either a list of error message or the deps to be installed.
-{-
-Get each package's deps and fold the together.
-filterM a `mustInstall` across all the deps. 
-Check for the various kinds of conflicts.
-Conflict checking returns `Maybe` values. If a `Just` is found _anywhere_
-then the entire dep check has to fail. Return a `Left` value with
-the appropriate conflict messages.
-If everything is okay, then return all the packages.
--}
-getDepsToInstall :: Language -> [AURPkg] -> [String] -> IO (Either [ErrorMsg] ([String],[AURPkg]))
+getDepsToInstall :: Language -> [AURPkg] -> [String] ->
+                    IO (Either [ErrorMsg] ([String],[AURPkg]))
 getDepsToInstall lang pkgs toIgnore = do
   allDeps <- mapM (determineDeps lang) pkgs  -- Can this be done with foldM?
   let (ps,as,vs) = foldl groupPkgs ([],[],[]) allDeps
-  necPacPkgs <- filterM mustInstall ps
+  necPacPkgs <- filterM mustInstall ps >>= mapM makePacmanPkg
   necAURPkgs <- filterM (mustInstall . show) as
-  necVirPkgs <- filterM mustInstall vs
-  conflicts  <- getConflicts lang toIgnore necPacPkgs necAURPkgs necVirPkgs
+  necVirPkgs <- filterM mustInstall vs >>= mapM makeVirtualPkg
+  let conflicts = getConflicts lang toIgnore necPacPkgs necAURPkgs necVirPkgs
   if not $ null conflicts
      then return $ Left conflicts
      else do
-       providers <- mapM getProvidingPkg' necVirPkgs
-       return $ Right (nub $ providers ++ necPacPkgs, necAURPkgs)
+       let providers  = map (fromJust . providerPkgOf) necVirPkgs
+           pacmanPkgs = map pkgNameOf necPacPkgs
+       return $ Right (nub $ providers ++ pacmanPkgs, necAURPkgs)
 
 -- Returns ([PacmanPackages], [AURPackages], [VirtualPackages])
 determineDeps :: Language -> AURPkg -> IO ([String],[AURPkg],[String])
@@ -194,34 +187,26 @@ mustInstall pkg = do
   return $ length (words necessaryDeps) == 1
 
 {-
-  Pacman: Package is ignored.
-          Version demanded is not installed, nor is it the same as the
-          latest version.
-  AUR: Package is ignored.
-       Version demanded is different from the one given in its PKGBUILD.
   Virtual: Parent package is ignored.
            Version demanded is not provided by the lastest version of
            its parent package.
 -}
-getConflicts :: Language -> [String] -> [String] -> [AURPkg] -> [String] -> IO [ErrorMsg]
+getConflicts :: Language -> [String] -> [PacmanPkg] -> [AURPkg] ->
+                [VirtualPkg] -> [ErrorMsg]
 getConflicts lang toIgnore ps as vs = undefined
-
-getPacmanConflicts :: Language -> [String] -> String -> IO (Maybe String)
-getPacmanConflicts lang toIgnore pkg = do
-  pkgInfo <- pacmanOutput ["-Si",pkg]
-  return $ getPacmanConflicts' lang toIgnore pkgInfo pkg
 
 -- Checks for pkg=specificvernum. Freaks out if this is different from
 -- the version number given from `pacman -Si`.
 -- Also checks for Ignored Packages.
-getPacmanConflicts' :: Language -> [String] -> String -> String -> Maybe String
-getPacmanConflicts' lang toIgnore info pkg
-    | pkg `elem` toIgnore = Just failMessage1
-    | '=' `elem` pkg && recVer /= reqVer = Just failMessage2
+getPacmanConflicts :: Language -> [String] -> PacmanPkg -> Maybe String
+getPacmanConflicts lang toIgnore pkg
+    | isIgnored (pkgNameOf pkg) toIgnore = Just failMessage1
+    | '=' `elem` fullName && recVer /= reqVer = Just failMessage2
     | otherwise = Nothing    
-    where recVer        = getMostRecentVerNum info
-          (name,reqVer) = splitNameAndVer pkg
-          failMessage1  = getPacmanConflictsMsg2 lang pkg
+    where fullName      = pkgNameWithVersion pkg
+          recVer        = getMostRecentVerNum $ pkgInfoOf pkg
+          (name,reqVer) = splitNameAndVer fullName
+          failMessage1  = getPacmanConflictsMsg2 lang name
           failMessage2  = getPacmanConflictsMsg1 lang name recVer reqVer
        
 -- Takes `pacman -Si` output as input
@@ -231,18 +216,35 @@ getMostRecentVerNum info = tripleThrd match
           thirdLine = allLines !! 2  -- Version num is always the third line.
           allLines  = lines info
 
+-- Strangely identical to `getPacmanConflicts`...
 getAURConflicts :: Language -> [String] -> AURPkg -> Maybe String
-getAURConflicts lang toIgnore pkg = undefined
-                                    
-  
-                                  
+getAURConflicts lang toIgnore pkg 
+    | isIgnored (pkgNameOf pkg) toIgnore = Just failMessage1
+    | '=' `elem` fullName && pbVer /= reqVer = Just failMessage2
+    | otherwise = Nothing
+    where fullName      = pkgNameWithVersion pkg
+          pbVer         = head . getPkgbuildField "pkgver" . pkgbuildOf $ pkg
+          (name,reqVer) = splitNameAndVer fullName
+          failMessage1  = getPacmanConflictsMsg2 lang name
+          failMessage2  = getPacmanConflictsMsg1 lang name pbVer reqVer
+
+getVirtualConflicts :: Language -> [String] -> VirtualPkg -> Maybe String
+getVirtualConflicts lang toIgnore pkg
+    | providerPkgOf pkg == Nothing = Just failMessage1
+    | isIgnored provider toIgnore  = Just failMessage2
+--    | VERSION CHECKING! is all wrong, by the way.
+    | otherwise = Nothing
+    where pkgName      = pkgNameOf pkg
+          provider     = fromJust $ providerPkgOf pkg
+          failMessage1 = getVirtualConflictsMsg1 lang pkgName
+          failMessage2 = getVirtualConflictsMsg2 lang pkgName provider
 
 -- Yields a virtual package's providing package if there is one.
 getProvidingPkg :: String -> IO (Maybe String)
 getProvidingPkg virt = do
   candidates <- getProvidingPkg' virt
   let lined = lines candidates
-  if length lined /= 1
+  if length lined /= 1  -- No distinct answer? Then fail.
      then return Nothing
      else return . Just . head $ lined
 
@@ -307,8 +309,8 @@ reportIgnoredPackages lang pkgs = do
   putStrLnA $ reportIgnoredPackagesMsg1 lang
   mapM_ putStrLn pkgs
 
-getInstalledAurPackages :: IO [String]
-getInstalledAurPackages = pacmanOutput ["-Qm"] >>= return . lines
+getInstalledAURPackages :: IO [String]
+getInstalledAURPackages = pacmanOutput ["-Qm"] >>= return . lines
 
 -- These might not be necessary.
 {-

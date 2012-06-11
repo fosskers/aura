@@ -17,7 +17,7 @@ japanese = Japanese
 bt :: String -> String
 bt cs = "`" ++ cs ++ "`"
 
--- AURPackages functions
+-- AuraLib functions
 buildPackagesMsg1 :: Language -> String -> String
 buildPackagesMsg1 English p  = "Building " ++ bt p ++ "..."
 buildPackagesMsg1 Japanese p = p ++ "を作成中"
@@ -56,8 +56,24 @@ getPacmanConflictsMsg1 Japanese name rec req =
     "一番最新のバージョンは" ++ bt rec ++ "。"
 
 getPacmanConflictsMsg2 :: Language -> String -> String
-getPacmanConflictsMsg2 English p  = bt p ++ " is an ignored package!"
-getPacmanConflictsMsg2 Japanese p = bt p ++ "は無視すべきと指摘されている！"
+getPacmanConflictsMsg2 English p = 
+    bt p ++ " is an ignored package! See your `pacman.conf` file."
+getPacmanConflictsMsg2 Japanese p =
+    bt p ++ "は無視されるパッケージ！`pacman.conf`を参考に。"
+
+getVirtualConflictsMsg1 :: Language -> String -> String
+getVirtualConflictsMsg1 English p =
+    bt p ++ " exists in NO WAY as a package or as one provided by another!"
+getVirtualConflictsMsg1 Japanese p =
+    bt p ++ "はパッケージでもないし、他のパッケージにも提供されていない！"
+                                     
+getVirtualConflictsMsg2 :: Language -> String -> String -> String
+getVirtualConflictsMsg2 English p pro =
+    bt pro ++ " provides " ++ bt p ++ ", but " ++ bt pro ++
+    " is an ignored package."
+getVirtualConflictsMsg2 Japanese p pro =
+    bt p ++ "は" ++ bt pro ++ "に提供されているが、" ++ bt pro ++
+    "は無視されるパッケージ。"
 
 reportNonPackagesMsg1 :: Language -> String
 reportNonPackagesMsg1 English  = "The following are not packages:"
