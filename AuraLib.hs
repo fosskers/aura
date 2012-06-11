@@ -1,7 +1,7 @@
 -- A library for dealing with the installion and management
 -- of Arch User Repository packages.
 
-module AURPackages where
+module AuraLib where
 
 -- System Libraries
 import System.Directory (renameFile)
@@ -20,37 +20,99 @@ import Pacman
 
 type ErrorMsg = String
 
+class Package a where
+    pkgNameOf :: a -> String
+    versionOf :: a -> Versioning                 
+
 data Versioning = AtLeast String | MustBe String | Anything deriving (Eq)
 
-data Package = Package { pkgNameOf  :: String
-                       , versionOf  :: Versioning
-                       , pkgbuildOf :: Pkgbuild 
-                       } 
+---------------
+-- AUR Packages
+---------------
+data AURPkg = AURPkg String Versioning Pkgbuild
                
-instance Show Package where
+instance Package AURPkg where
+    pkgNameOf (AURPkg n _ _) = n
+    versionOf (AURPkg _ v _) = v
+
+instance Show AURPkg where
     show = pkgNameWithVersion
 
-instance Eq Package where
+instance Eq AURPkg where
     a == b = pkgNameWithVersion a == pkgNameWithVersion b
 
--- This will explode if the package doesn't exist.
-packagify :: String -> IO Package
-packagify pkg = do
-  let (name,comp,ver) = pkg =~ "(>=|=)" :: (String,String,String)
-      versioning      = getVersioning comp ver
-  pkgbuild <- downloadPkgbuild name
-  return $ Package name versioning pkgbuild
-      where getVersioning c v | c == ">=" = AtLeast v
-                              | c == "="  = MustBe v
-                              | otherwise = Anything
+pkgbuildOf :: AURPkg -> String
+pkgbuildOf (AURPkg _ _ p) = p
 
-pkgNameWithVersion :: Package -> String
+------------------
+-- Pacman Packages
+------------------
+data PacmanPkg = PacmanPkg String Versioning String
+
+instance Package PacmanPkg where
+    pkgNameOf (PacmanPkg n _ _) = n
+    versionOf (PacmanPkg _ v _) = v
+
+instance Show PacmanPkg where
+    show = pkgNameWithVersion
+
+pkgInfoOf :: PacmanPkg -> String
+pkgInfoOf (PacmanPkg _ _ i) = i
+
+-------------------
+-- Virtual Packages
+-------------------
+data VirtualPkg = VirtualPkg String Versioning (Maybe String)
+
+instance Package VirtualPkg where
+    pkgNameOf (VirtualPkg n _ _) = n
+    versionOf (VirtualPkg _ v _) = v
+
+instance Show VirtualPkg where
+    show = pkgNameWithVersion
+
+providerPkgOf :: VirtualPkg -> Maybe String
+providerPkgOf (VirtualPkg _ _ p) = p
+
+---------------------------------
+-- Functions common to `Package`s
+---------------------------------
+pkgNameWithVersion :: Package a => a -> String
 pkgNameWithVersion pkg = pkgNameOf pkg ++ signAndVersion
     where signAndVersion = case versionOf pkg of
                              AtLeast v -> ">=" ++ v
                              MustBe  v -> "="  ++ v
                              Anything  -> ""
 
+parseNameAndVersioning :: String -> (String,Versioning)
+parseNameAndVersioning pkg = (name, getVersioning comp ver)
+    where (name,comp,ver) = pkg =~ "(>=|=)" :: (String,String,String)
+          versioning      = getVersioning comp ver
+          getVersioning c v | c == ">=" = AtLeast v
+                            | c == "="  = MustBe v
+                            | otherwise = Anything
+
+makePacmanPkg :: String -> IO PacmanPkg
+makePacmanPkg pkg = do
+  let (name,ver) = parseNameAndVersioning pkg
+  info <- pacmanOutput ["-Si",name]
+  return $ PacmanPkg name ver info
+
+makeAURPkg :: String -> IO AURPkg
+makeAURPkg pkg = do
+  let (name,ver) = parseNameAndVersioning pkg
+  pkgbuild <- downloadPkgbuild pkg
+  return $ AURPkg name ver pkgbuild
+
+makeVirtualPkg :: String -> IO VirtualPkg
+makeVirtualPkg pkg = do
+  let (name,ver) = parseNameAndVersioning pkg
+  provider <- getProvidingPkg name
+  return $ VirtualPkg name ver provider
+
+-----------
+-- The Work
+-----------
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.gz
 installPackageFiles :: [FilePath] -> IO ()
 -- installPackageFiles []    = return $ ExitFailure 1
@@ -59,7 +121,7 @@ installPackageFiles files = pacman $ ["-U"] ++ files
 -- Handles the building of Packages.
 -- Assumed: All pacman dependencies are already installed.
 --          All AUR dependencies have been added so that they come first.
-buildPackages :: Language -> [Package] -> IO [FilePath]
+buildPackages :: Language -> [AURPkg] -> IO [FilePath]
 buildPackages _ []        = return []
 buildPackages lang (p:ps) = do
   putStrLnA $ buildPackagesMsg1 lang (show p)
@@ -77,7 +139,7 @@ buildPackages lang (p:ps) = do
         answer <- yesNoPrompt (buildPackagesMsg6 lang) "^y"
         if answer then return [] else error (buildPackagesMsg7 lang)
         
-build :: Package -> IO (Maybe FilePath, String)
+build :: AURPkg -> IO (Maybe FilePath, String)
 build pkg = do
   writeFile "PKGBUILD" $ pkgbuildOf pkg
   (exitStatus,pkgName,output) <- makepkg []
@@ -94,7 +156,44 @@ moveToCache pkg = renameFile pkg newName >> return newName
 {-
 Get each package's deps and fold the together.
 filterM a `mustInstall` across all the deps. 
-Check for the various kinds of conflicts:
+Check for the various kinds of conflicts.
+Conflict checking returns `Maybe` values. If a `Just` is found _anywhere_
+then the entire dep check has to fail. Return a `Left` value with
+the appropriate conflict messages.
+If everything is okay, then return all the packages.
+-}
+getDepsToInstall :: Language -> [AURPkg] -> [String] -> IO (Either [ErrorMsg] ([String],[AURPkg]))
+getDepsToInstall lang pkgs toIgnore = do
+  allDeps <- mapM (determineDeps lang) pkgs  -- Can this be done with foldM?
+  let (ps,as,vs) = foldl groupPkgs ([],[],[]) allDeps
+  necPacPkgs <- filterM mustInstall ps
+  necAURPkgs <- filterM (mustInstall . show) as
+  necVirPkgs <- filterM mustInstall vs
+  conflicts  <- getConflicts lang toIgnore necPacPkgs necAURPkgs necVirPkgs
+  if not $ null conflicts
+     then return $ Left conflicts
+     else do
+       providers <- mapM getProvidingPkg' necVirPkgs
+       return $ Right (nub $ providers ++ necPacPkgs, necAURPkgs)
+
+-- Returns ([PacmanPackages], [AURPackages], [VirtualPackages])
+determineDeps :: Language -> AURPkg -> IO ([String],[AURPkg],[String])
+determineDeps lang pkg = do
+  let depNames = (getPkgbuildField "depends" $ pkgbuildOf pkg) ++
+                 (getPkgbuildField "makedepends" $ pkgbuildOf pkg)
+  (archPkgNames,aurPkgNames,other) <- divideByPkgType depNames
+  aurPkgs       <- mapM makeAURPkg aurPkgNames
+  recursiveDeps <- mapM (determineDeps lang) aurPkgs
+  let (ps,as,os) = foldl groupPkgs (archPkgNames,aurPkgs,other) recursiveDeps
+  return (nub ps, nub as, nub os)
+
+-- Note: Make sure to run this on the Virtual Packages first.
+mustInstall :: String -> IO Bool
+mustInstall pkg = do
+  necessaryDeps <- pacmanOutput $ ["-T",pkg]
+  return $ length (words necessaryDeps) == 1
+
+{-
   Pacman: Package is ignored.
           Version demanded is not installed, nor is it the same as the
           latest version.
@@ -103,63 +202,20 @@ Check for the various kinds of conflicts:
   Virtual: Parent package is ignored.
            Version demanded is not provided by the lastest version of
            its parent package.
-Conflict checking returns `Maybe` values. If a `Just` is found _anywhere_
-then the entire dep check has to fail. Return a `Left` value with
-the appropriate conflict messages.
-If everything is okay, then return all the packages.
 -}
-getDepsToInstall :: Language -> [Package] -> [String] -> IO (Either [ErrorMsg] ([String],[Package]))
-getDepsToInstall lang pkgs toIgnore = do
-  allDeps <- mapM (determineDeps lang) pkgs  -- Can this be done with foldM?
-  let (ps,as,vs) = foldl groupPkgs ([],[],[]) allDeps
-  necPacPkgs <- filterM mustInstall ps
-  necAURPkgs <- filterM (mustInstall . show) as
-  necVirPkgs <- filterM mustInstall vs
-  conflicts  <- getConflicts necPacPkgs necAURPkgs necVirPkgs
-  if not $ null conflicts
-     then return $ Left conflicts
-     else do
-       providers <- mapM getProvidingPkg' necVirPkgs
-       return $ Right (nub $ providers ++ necPacPkgs, necAURPkgs)
+getConflicts :: Language -> [String] -> [String] -> [AURPkg] -> [String] -> IO [ErrorMsg]
+getConflicts lang toIgnore ps as vs = undefined
 
--- Returns ([PacmanPackages], [AURPackages], [VirtualPackages])
-determineDeps :: Language -> Package -> IO ([String],[Package],[String])
-determineDeps lang pkg = do
-  let depNames = (getPkgbuildField "depends" $ pkgbuildOf pkg) ++
-                 (getPkgbuildField "makedepends" $ pkgbuildOf pkg)
-  (archPkgNames,aurPkgNames,other) <- divideByPkgType depNames
-  aurPkgs       <- mapM packagify aurPkgNames
-  recursiveDeps <- mapM (determineDeps lang) aurPkgs
-  let (ps,as,os) = foldl groupPkgs (archPkgNames,aurPkgs,other) recursiveDeps
-  return (nub ps, nub as, nub os)
-
-getConflicts :: [String] -> [Package] -> [String] -> IO [ErrorMsg]
-getConflicts ps as vs = undefined
-
--- Used for folding.
-groupPkgs :: ([a],[b],[c]) -> ([a],[b],[c]) -> ([a],[b],[c])
-groupPkgs (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
-
--- This could be slow, depending on internet speeds, etc.
-divideByPkgType :: [String] -> IO ([String],[String],[String])
-divideByPkgType pkgs = do
-  archPkgs <- filterM (isArchPackage . stripVerNum) pkgs
-  let remaining = pkgs \\ archPkgs
-  aurPkgs  <- filterM (isAURPackage . stripVerNum) remaining
-  return (archPkgs, aurPkgs, remaining \\ aurPkgs)
-      where stripVerNum = fst . splitNameAndVer
-
--- Note: Make sure to run this on the Virtual Packages first.
-mustInstall :: String -> IO Bool
-mustInstall pkg = do
-  necessaryDeps <- pacmanOutput $ ["-T",pkg]
-  return $ length (words necessaryDeps) == 1
+getPacmanConflicts :: Language -> [String] -> String -> IO (Maybe String)
+getPacmanConflicts lang toIgnore pkg = do
+  pkgInfo <- pacmanOutput ["-Si",pkg]
+  return $ getPacmanConflicts' lang toIgnore pkgInfo pkg
 
 -- Checks for pkg=specificvernum. Freaks out if this is different from
 -- the version number given from `pacman -Si`.
 -- Also checks for Ignored Packages.
-getPacmanConflicts :: Language -> [String] -> String -> String -> Maybe String
-getPacmanConflicts lang toIgnore info pkg
+getPacmanConflicts' :: Language -> [String] -> String -> String -> Maybe String
+getPacmanConflicts' lang toIgnore info pkg
     | pkg `elem` toIgnore = Just failMessage1
     | '=' `elem` pkg && recVer /= reqVer = Just failMessage2
     | otherwise = Nothing    
@@ -175,9 +231,11 @@ getMostRecentVerNum info = tripleThrd match
           thirdLine = allLines !! 2  -- Version num is always the third line.
           allLines  = lines info
 
-splitNameAndVer :: String -> (String,String)
-splitNameAndVer pkg = (before,after)
-    where (before,_,after) = (pkg =~ "[<>=]+" :: (String,String,String))
+getAURConflicts :: Language -> [String] -> AURPkg -> Maybe String
+getAURConflicts lang toIgnore pkg = undefined
+                                    
+  
+                                  
 
 -- Yields a virtual package's providing package if there is one.
 getProvidingPkg :: String -> IO (Maybe String)
@@ -195,6 +253,9 @@ getProvidingPkg' virt = do
   let (name,_) = splitNameAndVer virt
   pacmanOutput ["-Ssq",name]
   
+isIgnored :: String -> [String] -> Bool
+isIgnored pkg toIgnore = pkg `elem` toIgnore
+
 isInstalled :: String -> IO Bool
 isInstalled pkg = pacmanSuccess ["-Qq",pkg]
 
@@ -207,6 +268,30 @@ isArchPackage pkg = pacmanSuccess ["-Si",pkg]
 -- A package is an AUR package if it's PKGBUILD exists on the Arch website.
 isAURPackage :: String -> IO Bool
 isAURPackage = doesUrlExist . getPkgbuildUrl
+
+isVirtualPkg :: String -> IO Bool
+isVirtualPkg pkg = do
+  provider <- getProvidingPkg pkg
+  case provider of
+    Just p  -> return True
+    Nothing -> return False
+
+splitNameAndVer :: String -> (String,String)
+splitNameAndVer pkg = (before,after)
+    where (before,_,after) = (pkg =~ "[<>=]+" :: (String,String,String))
+
+-- Used for folding.
+groupPkgs :: ([a],[b],[c]) -> ([a],[b],[c]) -> ([a],[b],[c])
+groupPkgs (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
+
+-- This could be slow, depending on internet speeds, etc.
+divideByPkgType :: [String] -> IO ([String],[String],[String])
+divideByPkgType pkgs = do
+  archPkgs <- filterM (isArchPackage . stripVerNum) pkgs
+  let remaining = pkgs \\ archPkgs
+  aurPkgs  <- filterM (isAURPackage . stripVerNum) remaining
+  return (archPkgs, aurPkgs, remaining \\ aurPkgs)
+      where stripVerNum = fst . splitNameAndVer
 
 -- TODO: Add guesses! "Did you mean xyz instead?"
 reportNonPackages :: Language -> [String] -> IO ()

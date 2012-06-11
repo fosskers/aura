@@ -12,11 +12,11 @@ import System.Console.GetOpt
 
 -- Custom Libraries
 import AuraLanguages
-import AURPackages
 import Utilities
 import AuraLogo
 import Internet
 import Pkgbuild
+import AuraLib
 import Pacman
 
 data Flag = AURInstall | Cache | GetPkgbuild | Search | Refresh |
@@ -112,7 +112,7 @@ installPackages lang pacOpts pkgs = do
   reportIgnoredPackages lang ignored
   (forPacman,aurPkgNames,nonPkgs) <- divideByPkgType toInstall
   reportNonPackages lang nonPkgs
-  aurPackages <- mapM packagify aurPkgNames
+  aurPackages <- mapM makeAURPkg aurPkgNames
   results     <- getDepsToInstall lang aurPackages toIgnore
   case results of
     Left errors -> do
