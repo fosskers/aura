@@ -8,7 +8,7 @@ import System.Directory (renameFile)
 import System.FilePath ((</>))
 import Control.Monad (filterM)
 import Text.Regex.Posix ((=~))
-import Data.List ((\\), nub, nubBy)
+import Data.List ((\\), nub)
 
 -- Custom Libraries
 import AuraLanguages
@@ -110,7 +110,17 @@ If everything is okay, then return all the packages.
 -}
 getDepsToInstall :: Language -> [Package] -> [String] -> IO (Either [ErrorMsg] ([String],[Package]))
 getDepsToInstall lang pkgs toIgnore = do
-  return $ Left ["This is not ready yet."]
+  allDeps <- mapM (determineDeps lang) pkgs  -- Can this be done with foldM?
+  let (ps,as,vs) = foldl groupPkgs ([],[],[]) allDeps
+  necPacPkgs <- filterM mustInstall ps
+  necAURPkgs <- filterM (mustInstall . show) as
+  necVirPkgs <- filterM mustInstall vs
+  conflicts  <- getConflicts necPacPkgs necAURPkgs necVirPkgs
+  if not $ null conflicts
+     then return $ Left conflicts
+     else do
+       providers <- mapM getProvidingPkg' necVirPkgs
+       return $ Right (nub $ providers ++ necPacPkgs, necAURPkgs)
 
 -- Returns ([PacmanPackages], [AURPackages], [VirtualPackages])
 determineDeps :: Language -> Package -> IO ([String],[Package],[String])
@@ -120,10 +130,17 @@ determineDeps lang pkg = do
   (archPkgNames,aurPkgNames,other) <- divideByPkgType depNames
   aurPkgs       <- mapM packagify aurPkgNames
   recursiveDeps <- mapM (determineDeps lang) aurPkgs
-  let (ps,as,os) = foldl fuse (archPkgNames,aurPkgs,other) recursiveDeps
+  let (ps,as,os) = foldl groupPkgs (archPkgNames,aurPkgs,other) recursiveDeps
   return (nub ps, nub as, nub os)
-      where fuse (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
 
+getConflicts :: [String] -> [Package] -> [String] -> IO [ErrorMsg]
+getConflicts ps as vs = undefined
+
+-- Used for folding.
+groupPkgs :: ([a],[b],[c]) -> ([a],[b],[c]) -> ([a],[b],[c])
+groupPkgs (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
+
+-- This could be slow, depending on internet speeds, etc.
 divideByPkgType :: [String] -> IO ([String],[String],[String])
 divideByPkgType pkgs = do
   archPkgs <- filterM (isArchPackage . stripVerNum) pkgs
@@ -133,10 +150,10 @@ divideByPkgType pkgs = do
       where stripVerNum = fst . splitNameAndVer
 
 -- Note: Make sure to run this on the Virtual Packages first.
-mustInstall :: [String] -> IO [String]
-mustInstall pkgs = do
-  necessaryDeps <- pacmanOutput $ ["-T"] ++ pkgs 
-  return $ words necessaryDeps
+mustInstall :: String -> IO Bool
+mustInstall pkg = do
+  necessaryDeps <- pacmanOutput $ ["-T",pkg]
+  return $ length (words necessaryDeps) == 1
 
 -- Checks for pkg=specificvernum. Freaks out if this is different from
 -- the version number given from `pacman -Si`.
@@ -162,9 +179,22 @@ splitNameAndVer :: String -> (String,String)
 splitNameAndVer pkg = (before,after)
     where (before,_,after) = (pkg =~ "[<>=]+" :: (String,String,String))
 
-virtualPkgBelongsTo :: String -> IO (Maybe String)
-virtualPkgBelongsTo = undefined
+-- Yields a virtual package's providing package if there is one.
+getProvidingPkg :: String -> IO (Maybe String)
+getProvidingPkg virt = do
+  candidates <- getProvidingPkg' virt
+  let lined = lines candidates
+  if length lined /= 1
+     then return Nothing
+     else return . Just . head $ lined
 
+-- Unsafe version.
+-- Only use on virtual packages that have guaranteed providers.
+getProvidingPkg' :: String -> IO String
+getProvidingPkg' virt = do
+  let (name,_) = splitNameAndVer virt
+  pacmanOutput ["-Ssq",name]
+  
 isInstalled :: String -> IO Bool
 isInstalled pkg = pacmanSuccess ["-Qq",pkg]
 
