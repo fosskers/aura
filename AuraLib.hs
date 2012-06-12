@@ -57,13 +57,16 @@ instance Package PacmanPkg where
 instance Show PacmanPkg where
     show = pkgNameWithVersion
 
+instance Eq PacmanPkg where
+    a == b = pkgNameWithVersion a == pkgNameWithVersion b
+
 pkgInfoOf :: PacmanPkg -> String
 pkgInfoOf (PacmanPkg _ _ i) = i
 
 -------------------
 -- Virtual Packages
 -------------------
-data VirtualPkg = VirtualPkg String Versioning (Maybe String)
+data VirtualPkg = VirtualPkg String Versioning (Maybe PacmanPkg)
 
 instance Package VirtualPkg where
     pkgNameOf (VirtualPkg n _ _) = n
@@ -72,7 +75,7 @@ instance Package VirtualPkg where
 instance Show VirtualPkg where
     show = pkgNameWithVersion
 
-providerPkgOf :: VirtualPkg -> Maybe String
+providerPkgOf :: VirtualPkg -> Maybe PacmanPkg
 providerPkgOf (VirtualPkg _ _ p) = p
 
 ---------------------------------
@@ -108,7 +111,10 @@ makeAURPkg pkg = do
 makeVirtualPkg :: String -> IO VirtualPkg
 makeVirtualPkg pkg = do
   let (name,ver) = parseNameAndVersioning pkg
-  provider <- getProvidingPkg name
+  providerName <- getProvidingPkg name
+  provider     <- case providerName of
+                    Nothing  -> return Nothing
+                    Just pro -> makePacmanPkg pro >>= return . Just
   return $ VirtualPkg name ver provider
 
 -----------
@@ -165,7 +171,7 @@ getDepsToInstall lang pkgs toIgnore = do
   if not $ null conflicts
      then return $ Left conflicts
      else do
-       let providers  = map (fromJust . providerPkgOf) necVirPkgs
+       let providers  = map (pkgNameOf . fromJust . providerPkgOf) necVirPkgs
            pacmanPkgs = map pkgNameOf necPacPkgs
        return $ Right (nub $ providers ++ pacmanPkgs, necAURPkgs)
 
@@ -192,9 +198,13 @@ mustInstall pkg = do
 --    the most recent version?
 getConflicts :: Language -> [String] -> [PacmanPkg] -> [AURPkg] ->
                 [VirtualPkg] -> [ErrorMsg]
-getConflicts lang toIgnore ps as vs = undefined
+getConflicts lang toIgnore ps as vs = pErr ++ aErr ++ vErr
+    where pErr = clean $ map (getPacmanConflicts lang toIgnore) ps
+          aErr = clean $ map (getAURConflicts lang toIgnore) as
+          vErr = clean $ map (getVirtualConflicts lang toIgnore) vs
+          clean = map fromJust . filter (/= Nothing)
 
-getPacmanConflicts :: Language -> [String] -> PacmanPkg -> Maybe String
+getPacmanConflicts :: Language -> [String] -> PacmanPkg -> Maybe ErrorMsg
 getPacmanConflicts lang toIgnore pkg = getRealPkgConflicts f lang toIgnore pkg
     where f = getMostRecentVerNum . pkgInfoOf
        
@@ -205,35 +215,41 @@ getMostRecentVerNum info = tripleThrd match
           thirdLine = allLines !! 2  -- Version num is always the third line.
           allLines  = lines info
 
-getAURConflicts :: Language -> [String] -> AURPkg -> Maybe String
+getAURConflicts :: Language -> [String] -> AURPkg -> Maybe ErrorMsg
 getAURConflicts lang toIgnore pkg = getRealPkgConflicts f lang toIgnore pkg
     where f = getTrueVerViaPkgbuild . pkgbuildOf
 
 -- Must be called with a (f)unction that yields the version number
 -- of the most up-to-date form of the package.
 getRealPkgConflicts :: Package a => (a -> String) -> Language -> [String] ->
-                       a -> Maybe String
+                       a -> Maybe ErrorMsg
 getRealPkgConflicts f lang toIgnore pkg
     | isIgnored (pkgNameOf pkg) toIgnore       = Just failMessage1
     | isVersionConflict (versionOf pkg) curVer = Just failMessage2
     | otherwise = Nothing    
     where curVer        = f pkg
-          fullName      = pkgNameWithVersion pkg          
-          (name,reqVer) = splitNameAndVer fullName
+          (name,reqVer) = splitNameAndVer $ pkgNameWithVersion pkg          
           failMessage1  = getRealPkgConflictsMsg2 lang name
           failMessage2  = getRealPkgConflictsMsg1 lang name curVer reqVer
 
 -- This can't be generalized as easily.
-getVirtualConflicts :: Language -> [String] -> VirtualPkg -> Maybe String
+getVirtualConflicts :: Language -> [String] -> VirtualPkg -> Maybe ErrorMsg
 getVirtualConflicts lang toIgnore pkg
     | providerPkgOf pkg == Nothing = Just failMessage1
     | isIgnored provider toIgnore  = Just failMessage2
---    | VERSION CHECKING! is all wrong, by the way.
+    | isVersionConflict (versionOf pkg) pVer = Just failMessage3
     | otherwise = Nothing
-    where pkgName      = pkgNameOf pkg
-          provider     = fromJust $ providerPkgOf pkg
-          failMessage1 = getVirtualConflictsMsg1 lang pkgName
-          failMessage2 = getVirtualConflictsMsg2 lang pkgName provider
+    where (name,ver)   = splitNameAndVer $ pkgNameWithVersion pkg
+          provider     = pkgNameOf . fromJust . providerPkgOf $ pkg
+          pVer         = getProvidedVerNum pkg
+          failMessage1 = getVirtualConflictsMsg1 lang name
+          failMessage2 = getVirtualConflictsMsg2 lang name provider
+          failMessage3 = getVirtualConflictsMsg3 lang name ver provider pVer
+
+getProvidedVerNum :: VirtualPkg -> String
+getProvidedVerNum pkg = snd $ splitNameAndVer match
+    where match = info =~ ("[ ]" ++ pkgNameOf pkg ++ ">?=[0-9.]+")
+          info  = pkgInfoOf . fromJust . providerPkgOf $ pkg
 
 -- Compares a (r)equested version number with a (c)urrent up-to-date one.
 -- The `MustBe` case uses regexes. A dependency demanding version 7.4

@@ -75,6 +75,17 @@ getVirtualConflictsMsg2 Japanese p pro =
     bt p ++ "は" ++ bt pro ++ "に提供されているが、" ++ bt pro ++
     "は無視されるパッケージ。"
 
+-- Fix this up. Inconsistent variable names too.
+getVirtualConflictsMsg3 :: Language -> String -> String -> String -> String ->
+                           String
+getVirtualConflictsMsg3 English d dVer pro proVer =
+    "The dependency " ++ bt d ++ " demands version " ++ bt dVer ++
+    " but its providing package " ++ bt pro ++ " gives version " ++ bt proVer
+getVirtualConflictsMsg3 Japanese d dVer pro proVer =
+    "仮のパッケージ" ++ bt d ++ "はバージョン" ++ bt dVer ++ "を要するが、" ++
+    "それを提供する" ++ bt pro ++ "はバージョン" ++ bt proVer ++
+    "しか提供しない"
+
 reportNonPackagesMsg1 :: Language -> String
 reportNonPackagesMsg1 English  = "The following are not packages:"
 reportNonPackagesMsg1 Japanese = "下記はパッケージではない："
