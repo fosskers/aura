@@ -47,18 +47,18 @@ buildPackagesMsg7 :: Language -> String
 buildPackagesMsg7 English  = "So be it."
 buildPackagesMsg7 Japanese = "分かった。脱出！"
 
-getPacmanConflictsMsg1 :: Language -> String -> String -> String -> String
-getPacmanConflictsMsg1 English name rec req =
+getRealPkgConflictsMsg1 :: Language -> String -> String -> String -> String
+getRealPkgConflictsMsg1 English name rec req =
     "The dependency " ++ bt name ++ " demands version " ++ bt req ++ ",\n" ++
     "but the most recent version is " ++ bt rec ++ "."
-getPacmanConflictsMsg1 Japanese name rec req =
+getRealPkgConflictsMsg1 Japanese name rec req =
     "パッケージ" ++ bt name ++ "はバージョン" ++ bt req ++ "を要するが" ++
     "一番最新のバージョンは" ++ bt rec ++ "。"
 
-getPacmanConflictsMsg2 :: Language -> String -> String
-getPacmanConflictsMsg2 English p = 
+getRealPkgConflictsMsg2 :: Language -> String -> String
+getRealPkgConflictsMsg2 English p = 
     bt p ++ " is an ignored package! See your `pacman.conf` file."
-getPacmanConflictsMsg2 Japanese p =
+getRealPkgConflictsMsg2 Japanese p =
     bt p ++ "は無視されるパッケージ！`pacman.conf`を参考に。"
 
 getVirtualConflictsMsg1 :: Language -> String -> String

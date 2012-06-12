@@ -25,7 +25,7 @@ class Package a where
     pkgNameOf :: a -> String
     versionOf :: a -> Versioning                 
 
-data Versioning = AtLeast String | MustBe String | Anything deriving (Eq)
+data Versioning = AtLeast String | MustBe String | Anything deriving (Eq,Show)
 
 ---------------
 -- AUR Packages
@@ -102,7 +102,7 @@ makePacmanPkg pkg = do
 makeAURPkg :: String -> IO AURPkg
 makeAURPkg pkg = do
   let (name,ver) = parseNameAndVersioning pkg
-  pkgbuild <- downloadPkgbuild pkg
+  pkgbuild <- downloadPkgbuild name
   return $ AURPkg name ver pkgbuild
 
 makeVirtualPkg :: String -> IO VirtualPkg
@@ -195,15 +195,8 @@ getConflicts :: Language -> [String] -> [PacmanPkg] -> [AURPkg] ->
 getConflicts lang toIgnore ps as vs = undefined
 
 getPacmanConflicts :: Language -> [String] -> PacmanPkg -> Maybe String
-getPacmanConflicts lang toIgnore pkg
-    | isIgnored (pkgNameOf pkg) toIgnore = Just failMessage1
-    | '=' `elem` fullName && recVer /= reqVer = Just failMessage2
-    | otherwise = Nothing    
-    where fullName      = pkgNameWithVersion pkg
-          recVer        = getMostRecentVerNum $ pkgInfoOf pkg
-          (name,reqVer) = splitNameAndVer fullName
-          failMessage1  = getPacmanConflictsMsg2 lang name
-          failMessage2  = getPacmanConflictsMsg1 lang name recVer reqVer
+getPacmanConflicts lang toIgnore pkg = getRealPkgConflicts f lang toIgnore pkg
+    where f = getMostRecentVerNum . pkgInfoOf
        
 -- Takes `pacman -Si` output as input
 getMostRecentVerNum :: String -> String
@@ -212,18 +205,25 @@ getMostRecentVerNum info = tripleThrd match
           thirdLine = allLines !! 2  -- Version num is always the third line.
           allLines  = lines info
 
--- Strangely identical to `getPacmanConflicts`...
 getAURConflicts :: Language -> [String] -> AURPkg -> Maybe String
-getAURConflicts lang toIgnore pkg 
-    | isIgnored (pkgNameOf pkg) toIgnore = Just failMessage1
-    | '=' `elem` fullName && pbVer /= reqVer = Just failMessage2
-    | otherwise = Nothing
-    where fullName      = pkgNameWithVersion pkg
-          pbVer         = head . getPkgbuildField "pkgver" . pkgbuildOf $ pkg
-          (name,reqVer) = splitNameAndVer fullName
-          failMessage1  = getPacmanConflictsMsg2 lang name
-          failMessage2  = getPacmanConflictsMsg1 lang name pbVer reqVer
+getAURConflicts lang toIgnore pkg = getRealPkgConflicts f lang toIgnore pkg
+    where f = getTrueVerViaPkgbuild . pkgbuildOf
 
+-- Must be called with a (f)unction that yields the version number
+-- of the most up-to-date form of the package.
+getRealPkgConflicts :: Package a => (a -> String) -> Language -> [String] ->
+                       a -> Maybe String
+getRealPkgConflicts f lang toIgnore pkg
+    | isIgnored (pkgNameOf pkg) toIgnore       = Just failMessage1
+    | isVersionConflict (versionOf pkg) curVer = Just failMessage2
+    | otherwise = Nothing    
+    where curVer        = f pkg
+          fullName      = pkgNameWithVersion pkg          
+          (name,reqVer) = splitNameAndVer fullName
+          failMessage1  = getRealPkgConflictsMsg2 lang name
+          failMessage2  = getRealPkgConflictsMsg1 lang name curVer reqVer
+
+-- This can't be generalized as easily.
 getVirtualConflicts :: Language -> [String] -> VirtualPkg -> Maybe String
 getVirtualConflicts lang toIgnore pkg
     | providerPkgOf pkg == Nothing = Just failMessage1
