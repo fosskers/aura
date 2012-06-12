@@ -127,8 +127,8 @@ buildPackages lang (p:ps) = do
   putStrLnA $ buildPackagesMsg1 lang (show p)
   results <- withTempDir (show p) (build p)
   case results of
-    (Just pkg,_) -> buildPackages lang ps >>= return . (\pkgs -> pkg : pkgs)
-    (Nothing,output) -> do
+    Right pkg   -> buildPackages lang ps >>= return . (\pkgs -> pkg : pkgs)
+    Left output -> do
         putStrLnA $ buildPackagesMsg2 lang (show p)
         putStrA $ buildPackagesMsg3 lang
         timedMessage 1000000 ["3.. ","2.. ","1..\n"]
@@ -139,13 +139,13 @@ buildPackages lang (p:ps) = do
         answer <- yesNoPrompt (buildPackagesMsg6 lang) "^y"
         if answer then return [] else error (buildPackagesMsg7 lang)
         
-build :: AURPkg -> IO (Maybe FilePath, String)
+build :: AURPkg -> IO (Either String FilePath)
 build pkg = do
   writeFile "PKGBUILD" $ pkgbuildOf pkg
   (exitStatus,pkgName,output) <- makepkg []
   if didProcessSucceed exitStatus
-     then moveToCache pkgName >>= return . (\pkg -> (Just pkg,output))
-     else return (Nothing,output)
+     then moveToCache pkgName >>= return . (\pkg -> Right pkg)
+     else return $ Left output
             
 -- Moves a file to the pacman package cache and returns its location.
 moveToCache :: FilePath -> IO FilePath
@@ -186,18 +186,14 @@ mustInstall pkg = do
   necessaryDeps <- pacmanOutput $ ["-T",pkg]
   return $ length (words necessaryDeps) == 1
 
-{-
-  Virtual: Parent package is ignored.
-           Version demanded is not provided by the lastest version of
-           its parent package.
--}
+-- Questions to be answered in conflict checks:
+-- 1. Is the package ignored in `pacman.conf`?
+-- 2. Is the version requested different from the one provided by
+--    the most recent version?
 getConflicts :: Language -> [String] -> [PacmanPkg] -> [AURPkg] ->
                 [VirtualPkg] -> [ErrorMsg]
 getConflicts lang toIgnore ps as vs = undefined
 
--- Checks for pkg=specificvernum. Freaks out if this is different from
--- the version number given from `pacman -Si`.
--- Also checks for Ignored Packages.
 getPacmanConflicts :: Language -> [String] -> PacmanPkg -> Maybe String
 getPacmanConflicts lang toIgnore pkg
     | isIgnored (pkgNameOf pkg) toIgnore = Just failMessage1
@@ -238,6 +234,16 @@ getVirtualConflicts lang toIgnore pkg
           provider     = fromJust $ providerPkgOf pkg
           failMessage1 = getVirtualConflictsMsg1 lang pkgName
           failMessage2 = getVirtualConflictsMsg2 lang pkgName provider
+
+-- Compares a (r)equested version number with a (c)urrent up-to-date one.
+-- The `MustBe` case uses regexes. A dependency demanding version 7.4
+-- SHOULD match as `okay` against version 7.4, 7.4.0.1, or even 7.4.0.1-2.
+isVersionConflict :: Versioning -> String -> Bool
+isVersionConflict Anything _    = False
+isVersionConflict (MustBe r) c  = not $ c =~ ("^" ++ r)
+isVersionConflict (AtLeast r) c | c > r = False
+                                | isVersionConflict (MustBe r) c = True
+                                | otherwise = False
 
 -- Yields a virtual package's providing package if there is one.
 getProvidingPkg :: String -> IO (Maybe String)
