@@ -119,10 +119,30 @@ installPackages lang pacOpts pkgs = do
       putStrLnA $ installPackagesMsg1 lang
       mapM_ putStrLn errors
     Right (pacmanDeps,aurDeps) -> do
-      let pacmanPkgs = nub $ pacmanDeps ++ forPacman
-      when (not $ null pacmanPkgs) (pacman $ ["-S"] ++ pacOpts ++ pacmanPkgs)
-      pkgFiles <- buildPackages lang $ aurDeps ++ aurPackages
-      installPackageFiles pkgFiles
+      let pacPkgs = nub $ pacmanDeps ++ forPacman
+          aurPkgsForInstall = aurDeps ++ aurPackages
+      if null aurPkgsForInstall
+         then return () -- putStrLnA $ installPackagesMsg2 lang
+         else do
+           reportPkgsToInstall lang pacPkgs aurPkgsForInstall
+           response <- yesNoPrompt (installPackagesMsg3 lang) "^y"
+           if not response
+              then putStrLnA $ installPackagesMsg4 lang
+              else proceedWithInstall lang pacOpts pacPkgs aurPkgsForInstall
+
+reportPkgsToInstall :: Language -> [String] -> [AURPkg] -> IO ()
+reportPkgsToInstall lang pacPkgs aurPkgs = do
+  when (not $ null pacPkgs) (putStrLnA (reportPkgsToInstallMsg1 lang) >>
+                             mapM_ putStrLn pacPkgs)
+  putStrLnA $ reportPkgsToInstallMsg2 lang
+  mapM_ (putStrLn . pkgNameOf) aurPkgs
+
+-- Go ahead and build and install everything.
+proceedWithInstall :: Language -> [String] -> [String] -> [AURPkg] -> IO ()
+proceedWithInstall lang pacOpts pacPkgs aurPkgs = do
+  when (not $ null pacPkgs) (pacman $ ["-S"] ++ pacOpts ++ pacPkgs)
+  pkgFiles <- buildPackages lang aurPkgs
+  installPackageFiles pkgFiles
 
 displayPkgbuild :: Language -> [String] -> IO ()
 displayPkgbuild lang pkgs = do

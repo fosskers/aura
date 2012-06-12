@@ -103,6 +103,28 @@ installPackagesMsg1 :: Language -> String
 installPackagesMsg1 English  = "Dependency checking failed for these reasons:"
 installPackagesMsg1 Japanese = "Dependenciesの確認は以下の理由で失敗した："
 
+installPackagesMsg2 :: Language -> String
+installPackagesMsg2 English  = "No valid packages specified."
+installPackagesMsg2 Japanese = "適当なパッケージを入力してください。"
+
+installPackagesMsg3 :: Language -> String
+installPackagesMsg3 English  = "Continue? [y/n]"
+installPackagesMsg3 Japanese = "続行？ [y/n]"
+
+installPackagesMsg4 :: Language -> String
+installPackagesMsg4 English  = "Installation manually aborted."
+installPackagesMsg4 Japanese = "続行は意図的に阻止された。"
+
+reportPkgsToInstallMsg1 :: Language -> String
+reportPkgsToInstallMsg1 English  = "Pacman packages to be installed:"
+reportPkgsToInstallMsg1 Japanese = "以下のPacmanのパッケージをインストールする："
+
+reportPkgsToInstallMsg2 :: Language -> String
+reportPkgsToInstallMsg2 English =
+    "AUR packages to be built and installed:"
+reportPkgsToInstallMsg2 Japanese =
+    "以下のAURのパッケージを作成し、インストールする予定："
+
 displayPkgbuildMsg1 :: Language -> String
 displayPkgbuildMsg1 English  = "Make sure to thoroughly check PKGBUILDs " ++
                                "before installing packages."

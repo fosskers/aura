@@ -84,6 +84,7 @@ timedMessage delay msgs = mapM_ printMessage msgs
 yesNoPrompt :: String -> Regex -> IO Bool
 yesNoPrompt msg regex = do
   putStrA $ msg ++ " "
+  hFlush stdout
   response <- getLine
   return (response =~ regex :: Bool)
 
