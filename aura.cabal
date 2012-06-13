@@ -49,4 +49,5 @@ executable aura
                        directory>=1.1.0.0,
                        regex-posix,
                        filepath,
+                       unix>=2.5.0.0,
                        Cabal
