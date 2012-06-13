@@ -8,6 +8,7 @@ import Data.List ((\\), nub, delete, sort, intersperse)
 import Control.Monad (filterM, when)
 import System.Environment (getArgs, getEnv)
 import Text.Regex.Posix ((=~))
+import System.FilePath ((</>))
 import System.Console.GetOpt
 
 -- Custom Libraries
@@ -26,12 +27,13 @@ data Flag = AURInstall | Cache | GetPkgbuild | Search | Refresh |
 auraOptions :: [OptDescr Flag]
 auraOptions = [ Option ['A'] ["aursync"]  (NoArg AURInstall)  aDesc
               , Option ['p'] ["pkgbuild"] (NoArg GetPkgbuild) pDesc
-              , Option ['C'] ["cache"]    (NoArg Cache)       cDesc
+              , Option ['C'] ["downgrade"] (NoArg Cache)      cDesc
               , Option ['s'] ["search"]   (NoArg Search)      sDesc 
               ]
-    where aDesc = "Install from the AUR."
+    where aDesc = "Install from the [A]UR."
           pDesc = "(With -A) Outputs the contents of a package's PKGBUILD."
-          cDesc = "Perform actions involving the package cache."
+          cDesc = "Perform actions involving the package [C]ache. " ++
+                  "Default action downgrades given packages."
           sDesc = "(With -C) Search the package cache via a regex pattern."
 
 -- These are intercepted Pacman flags.
@@ -66,6 +68,9 @@ auraUsageMsg = usageInfo "AURA only operations:" auraOptions
 languageMsg :: String
 languageMsg = usageInfo "Language options:" languageOptions
 
+auraVersion :: String
+auraVersion = "0.4.0.0"
+
 main = do
   args <- getArgs
   (auraFlags,pacFlags,input) <- parseOpts args
@@ -91,7 +96,7 @@ executeOpts lang (flags,input,pacOpts) =
                               executeOpts lang (AURInstall:fs',input,pacOpts)
                            _ -> putStrLnA $ executeOptsMsg1 lang
       (Cache:fs)  -> case fs of
-                       []       -> return ()
+                       []       -> downgradePackages lang input
                        [Search] -> searchPackageCache input
                        _        -> putStrLnA $ executeOptsMsg1 lang
       [Languages] -> displayOutputLanguages lang
@@ -158,13 +163,34 @@ displayPkgbuild lang pkgs = do
 --------------------
 -- WORKING WITH `-C`
 --------------------
+downgradePackages :: Language -> [String] -> IO ()
+downgradePackages lang pkgs = do
+  cache     <- packageCacheContents
+  installed <- filterM isInstalled pkgs
+  let notInstalled = pkgs \\ installed
+  when (not $ null notInstalled) (reportBadDowngradePkgs lang notInstalled)
+  selections <- mapM (getDowngradeChoice lang cache) installed
+  pacman $ ["-U"] ++ map (packageCache </>) selections
+
+reportBadDowngradePkgs :: Language -> [String] -> IO ()
+reportBadDowngradePkgs lang pkgs = putStrLnA "This isn't quite ready."
+               
+getDowngradeChoice :: Language -> [String] -> String -> IO String
+getDowngradeChoice lang cache pkg = do
+  let choices = getChoicesFromCache cache pkg
+  return ""  -- TEMPORARY
+
+getChoicesFromCache :: [String] -> String -> [String]
+getChoicesFromCache cache pkg = sort choices
+    where choices = filter (\p -> p =~ ("^" ++ pkg ++ "-[0-9]")) cache
+
 -- As a one-liner if I felt like it:
--- packageCacheContents >>= mapM_ putStrLn . filter (\p -> p =~ pat :: Bool) 
+-- packageCacheContents >>= mapM_ putStrLn . sort . filter (\p -> p =~ pat)
 searchPackageCache :: [String] -> IO ()
 searchPackageCache input = do
   cache <- packageCacheContents
   let pattern = unwords input
-      matches = sort $ filter (\p -> p =~ pattern :: Bool) cache
+      matches = sort $ filter (\p -> p =~ pattern) cache
   mapM_ putStrLn matches
 
 --------
@@ -198,7 +224,7 @@ animateVersionMsg verMsg = do
   mapM_ pillEating pillsAndWidths
   putStr clearGrid
   putStrLn auraLogo
-  putStrLn "AURA Version 0.4.0.0"
+  putStrLn $ "AURA Version " ++ auraVersion
   putStrLn " by Colin Woodbury\n\n"
     where pillEating (p,w) = putStr clearGrid >> drawPills p >> takeABite w
           pillsAndWidths   = [(2,5),(1,10),(0,15)]
