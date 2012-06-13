@@ -4,10 +4,10 @@ module Utilities where
 
 -- System Libraries
 import System.Directory (getCurrentDirectory, setCurrentDirectory)
-import System.Process (readProcess, readProcessWithExitCode)
 import Distribution.Simple.Utils (withTempDirectory)
 import Control.Concurrent (threadDelay)
 import Distribution.Verbosity (silent)
+import System.Environment (getEnv)
 import System.Exit (ExitCode(..))
 import System.IO (stdout, hFlush)
 import Data.List (dropWhileEnd)
@@ -44,15 +44,6 @@ tripleSnd (a,b,c) = b
 tripleThrd :: (a,b,c) -> c
 tripleThrd (a,b,c) = c
 
-{-
-didProcessSucceed :: FilePath -> [String] -> String -> IO Bool
-didProcessSucceed cmd args stdin = do
-  (exitStatus,_,_) <- readProcessWithExitCode cmd args stdin
-  case exitStatus of
-    ExitSuccess -> return True
-    _           -> return False
--}
-
 -- Replaces a (p)attern with a (t)arget in a line if possible.
 replaceByPatt :: [Pattern] -> String -> String
 replaceByPatt [] line = line
@@ -75,6 +66,15 @@ didProcessSucceed _           = False
 
 didProcessFail :: ExitCode -> Bool
 didProcessFail = not . didProcessSucceed
+
+getUser :: IO String
+getUser = getEnv "USER"
+
+getSudoUser :: IO String
+getSudoUser = getEnv "SUDO_USER"
+
+isUserRoot :: String -> Bool
+isUserRoot user = user == "root"
 
 timedMessage :: Int -> [String] -> IO ()
 timedMessage delay msgs = mapM_ printMessage msgs

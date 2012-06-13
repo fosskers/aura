@@ -5,9 +5,13 @@ import System.Directory (getDirectoryContents)
 import Text.Regex.Posix ((=~))
 import System.Exit (ExitCode)
 
-makepkg :: [String] -> IO (ExitCode,FilePath,String)
-makepkg opts = do
-  (exitStatus,out,err) <- readProcessWithExitCode "makepkg" opts ""
+-- This needs to be run as non-root!
+-- Building packages as non-root IS NOT safe!
+makepkg :: String -> [String] -> IO (ExitCode,FilePath,String)
+makepkg user opts = do
+  let command = "su"
+      opts    = [user,"-c","makepkg"]
+  (exitStatus,out,err) <- readProcessWithExitCode command opts ""
   contents <- getDirectoryContents "."
   let pkgFiles = filter (\file -> (file =~ ".pkg.tar.xz" :: Bool)) contents
       pkgName  = if null pkgFiles then "" else head pkgFiles

@@ -6,7 +6,7 @@
 -- System Libraries
 import Data.List ((\\), nub, delete, sort, intersperse)
 import Control.Monad (filterM, when)
-import System.Environment (getArgs)
+import System.Environment (getArgs, getEnv)
 import Text.Regex.Posix ((=~))
 import System.Console.GetOpt
 
@@ -198,7 +198,7 @@ animateVersionMsg verMsg = do
   mapM_ pillEating pillsAndWidths
   putStr clearGrid
   putStrLn auraLogo
-  putStrLn "AURA Version 0.3.0.1"
+  putStrLn "AURA Version 0.4.0.0"
   putStrLn " by Colin Woodbury\n\n"
     where pillEating (p,w) = putStr clearGrid >> drawPills p >> takeABite w
           pillsAndWidths   = [(2,5),(1,10),(0,15)]

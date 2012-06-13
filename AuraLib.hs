@@ -4,7 +4,8 @@
 module AuraLib where
 
 -- System Libraries
-import System.Directory (renameFile)
+import System.Directory (renameFile, getCurrentDirectory)
+import System.Posix.Files (setFileMode, accessModes)
 import System.FilePath ((</>))
 import Control.Monad (filterM)
 import Text.Regex.Posix ((=~))
@@ -131,7 +132,8 @@ buildPackages :: Language -> [AURPkg] -> IO [FilePath]
 buildPackages _ []        = return []
 buildPackages lang (p:ps) = do
   putStrLnA $ buildPackagesMsg1 lang (show p)
-  results <- withTempDir (show p) (build p)
+  user    <- getSudoUser
+  results <- withTempDir (show p) (build user p)
   case results of
     Right pkg   -> buildPackages lang ps >>= return . (\pkgs -> pkg : pkgs)
     Left output -> do
@@ -145,10 +147,12 @@ buildPackages lang (p:ps) = do
         answer <- yesNoPrompt (buildPackagesMsg6 lang) "^y"
         if answer then return [] else error (buildPackagesMsg7 lang)
         
-build :: AURPkg -> IO (Either String FilePath)
-build pkg = do
+build :: String -> AURPkg -> IO (Either String FilePath)
+build user pkg = do
+  currDir <- getCurrentDirectory
+  setFileMode currDir accessModes  -- Gives write access to the temp folder.
   writeFile "PKGBUILD" $ pkgbuildOf pkg
-  (exitStatus,pkgName,output) <- makepkg []
+  (exitStatus,pkgName,output) <- makepkg user []
   if didProcessSucceed exitStatus
      then moveToCache pkgName >>= return . (\pkg -> Right pkg)
      else return $ Left output
