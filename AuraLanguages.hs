@@ -125,11 +125,22 @@ reportPkgsToInstallMsg2 English =
 reportPkgsToInstallMsg2 Japanese =
     "以下のAURのパッケージを作成し、インストールする予定："
 
+reportBadDowngradePkgsMsg1 :: Language -> String
+reportBadDowngradePkgsMsg1 English = 
+    "The following aren't installed, and thus can't be downgraded:"
+reportBadDowngradePkgsMsg1 Japanese =
+    "このパッケージは最初からインストールしていないので、格下げはできない。"
+
+getDowngradeChoiceMsg1 English p =
+    "What version of " ++ bt p ++ " do you want?"
+getDowngradeChoiceMsg1 Japanese p =
+    bt p ++ "はどのバージョンにする？"
+
 displayPkgbuildMsg1 :: Language -> String
-displayPkgbuildMsg1 English  = "Make sure to thoroughly check PKGBUILDs " ++
-                               "before installing packages."
-displayPkgbuildMsg1 Japanese = "パッケージをインストールする前は必ず" ++
-                               "PKGBUILDの内容を確認した方がいい。"
+displayPkgbuildMsg1 English =
+    "Make sure to thoroughly check PKGBUILDs before installing packages."
+displayPkgbuildMsg1 Japanese =
+    "パッケージをインストールする前は必ずPKGBUILDの内容を確認した方がいい。"
 
 displayPkgbuildMsg2 :: Language -> String -> String
 displayPkgbuildMsg2 English pkg  = "Showing PKGBUILD for " ++ bt pkg ++ "..."

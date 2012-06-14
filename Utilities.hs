@@ -12,6 +12,7 @@ import System.Exit (ExitCode(..))
 import System.IO (stdout, hFlush)
 import Data.List (dropWhileEnd)
 import Text.Regex.Posix ((=~))
+import Text.Printf (printf)
 
 type Pattern = (String,String)
 
@@ -75,6 +76,22 @@ getSudoUser = getEnv "SUDO_USER"
 
 isUserRoot :: String -> Bool
 isUserRoot user = user == "root"
+
+-- Given a number of selections, allows the user to choose one.
+getSelection :: [String] -> IO String
+getSelection []      = return ""
+getSelection choiceLabels = do
+  let quantity = length choiceLabels
+      valids   = map show [1..quantity]
+      padding  = show . length . show $ quantity
+      choices  = zip valids choiceLabels
+  mapM_ (\(n,c)-> printf ("%" ++ padding ++ "s. %s\n") n c) choices
+  putStr ">> "
+  hFlush stdout
+  userChoice <- getLine
+  case userChoice `lookup` choices of
+    Just valid -> return valid
+    Nothing    -> getSelection choiceLabels  -- Ask again.
 
 timedMessage :: Int -> [String] -> IO ()
 timedMessage delay msgs = mapM_ printMessage msgs

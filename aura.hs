@@ -32,7 +32,7 @@ auraOptions = [ Option ['A'] ["aursync"]  (NoArg AURInstall)  aDesc
               ]
     where aDesc = "Install from the [A]UR."
           pDesc = "(With -A) Outputs the contents of a package's PKGBUILD."
-          cDesc = "Perform actions involving the package [C]ache. " ++
+          cDesc = "Perform actions involving the package [C]ache.\n" ++
                   "Default action downgrades given packages."
           sDesc = "(With -C) Search the package cache via a regex pattern."
 
@@ -69,7 +69,7 @@ languageMsg :: String
 languageMsg = usageInfo "Language options:" languageOptions
 
 auraVersion :: String
-auraVersion = "0.4.0.0"
+auraVersion = "0.4.1.0"
 
 main = do
   args <- getArgs
@@ -173,12 +173,15 @@ downgradePackages lang pkgs = do
   pacman $ ["-U"] ++ map (packageCache </>) selections
 
 reportBadDowngradePkgs :: Language -> [String] -> IO ()
-reportBadDowngradePkgs lang pkgs = putStrLnA "This isn't quite ready."
+reportBadDowngradePkgs lang pkgs = do
+  putStrLnA $ reportBadDowngradePkgsMsg1 lang
+  mapM_ putStrLn pkgs
                
 getDowngradeChoice :: Language -> [String] -> String -> IO String
 getDowngradeChoice lang cache pkg = do
   let choices = getChoicesFromCache cache pkg
-  return ""  -- TEMPORARY
+  putStrLnA $ getDowngradeChoiceMsg1 lang pkg
+  getSelection choices
 
 getChoicesFromCache :: [String] -> String -> [String]
 getChoicesFromCache cache pkg = sort choices
