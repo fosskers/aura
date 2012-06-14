@@ -18,7 +18,7 @@ contribution, and its a great opportunity to contribute to Open Source.
    requests will just be easiest if you have a working git/github setup.
 4. Minimal Haskell knowledge. You'll see just how much below.
 5. A brain (hopefully yours) with a language in it. I don't sprechen Deutsch,
-   "speak russian" nor do I "speak arabic", so that's where you come in.
+   говорить России, nor do I يتكلم العربية, so that's where you come in.
 
 *******************
 * GETTING STARTED *
