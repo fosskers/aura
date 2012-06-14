@@ -115,6 +115,10 @@ installPackagesMsg4 :: Language -> String
 installPackagesMsg4 English  = "Installation manually aborted."
 installPackagesMsg4 Japanese = "続行は意図的に阻止された。"
 
+installPackagesMsg5 :: Language -> String
+installPackagesMsg5 English  = "Determining dependencies..."
+installPackagesMsg5 Japanese = "要するパッケージを確認中・・・"
+
 reportPkgsToInstallMsg1 :: Language -> String
 reportPkgsToInstallMsg1 English  = "Pacman packages to be installed:"
 reportPkgsToInstallMsg1 Japanese = "以下のPacmanのパッケージをインストールする："

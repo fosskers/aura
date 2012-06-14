@@ -39,5 +39,5 @@ LOCALISATION
 As mentioned in the Philosophy above, adding new languages to Aura is
 quite easy. However the currently available languages are limited to
 those known by the author. If you speak a language other than those
-available and would like it added to Aura, feel free to edit
-`AuraLanguage.hs` and issue a pull request on GitHub.
+available and would like it added to Aura, please consult the 
+Localisation Guide provided.

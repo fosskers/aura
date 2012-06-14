@@ -128,10 +128,13 @@ installPackageFiles files = pacman $ ["-U"] ++ files
 -- Handles the building of Packages.
 -- Assumed: All pacman dependencies are already installed.
 --          All AUR dependencies have been added so that they come first.
+-- NOTE!! Building AUR packages will fuck up if there are AUR
+-- build depends that weren't installed first!!!
+-- FIX THIS!!
 buildPackages :: Language -> [AURPkg] -> IO [FilePath]
 buildPackages _ []        = return []
 buildPackages lang (p:ps) = do
-  putStrLnA $ buildPackagesMsg1 lang (show p)
+  putStrLnA $ buildPackagesMsg1 lang (pkgNameOf p)
   user    <- getSudoUser
   results <- withTempDir (show p) (build user p)
   case results of

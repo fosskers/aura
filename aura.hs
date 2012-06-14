@@ -118,6 +118,7 @@ installPackages lang pacOpts pkgs = do
   (forPacman,aurPkgNames,nonPkgs) <- divideByPkgType toInstall
   reportNonPackages lang nonPkgs
   aurPackages <- mapM makeAURPkg aurPkgNames
+  putStrLnA $ installPackagesMsg5 lang
   results     <- getDepsToInstall lang aurPackages toIgnore
   case results of
     Left errors -> do
