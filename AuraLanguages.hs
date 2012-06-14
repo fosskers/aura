@@ -20,7 +20,7 @@ bt cs = "`" ++ cs ++ "`"
 -- AuraLib functions
 buildPackagesMsg1 :: Language -> String -> String
 buildPackagesMsg1 English p  = "Building " ++ bt p ++ "..."
-buildPackagesMsg1 Japanese p = p ++ "を作成中"
+buildPackagesMsg1 Japanese p = bt p ++ "を作成中・・・"
 
 buildPackagesMsg2 :: Language -> String -> String
 buildPackagesMsg2 English p  = "Well, building " ++ bt p ++ " failed."
