@@ -1,6 +1,7 @@
--- Module for handlings PKGBUILDs
+-- Module for connecting to the AUR servers,
+-- downloading PKGBUILDs and source tarballs, and handling them.
 
-module Pkgbuild where
+module AurConnection where
 
 -- System Libaries
 import Text.Regex.Posix ((=~))
@@ -12,9 +13,17 @@ import Internet
 
 type Pkgbuild = String
 
+aurLink :: String
+aurLink = "https://aur.archlinux.org/packages/"
+
+getPkgBaseUrl :: String -> String
+getPkgBaseUrl pkg = aurLink </> take 2 pkg </> pkg
+
+------------
+-- PKGBUILDS
+------------
 getPkgbuildUrl :: String -> String
-getPkgbuildUrl pkg = "https://aur.archlinux.org/packages/" </>
-                     take 2 pkg </> pkg </> "PKGBUILD"
+getPkgbuildUrl pkg = getPkgBaseUrl pkg </> "PKGBUILD"                     
 
 -- Assumption: The package given EXISTS as an AUR package.
 downloadPkgbuild :: String -> IO Pkgbuild
@@ -35,3 +44,14 @@ getPkgbuildField field pkgb = wordsLines . filter notQuotes . parseField $ xs
           parseField  | null xs        = \_ -> ""
                       | head xs == '(' = takeWhile (not . (==) ')') . tail 
                       | otherwise      = takeWhile (not . (==) '\n')
+
+------------------
+-- SOURCE TARBALLS
+------------------
+getTarballUrl :: String -> String
+getTarballUrl pkg = getPkgBaseUrl pkg </> pkg ++ ".tar.gz"
+
+downloadSource :: FilePath -> String -> IO FilePath
+downloadSource path = saveUrlContents path . getTarballUrl 
+  
+  

@@ -1,3 +1,7 @@
+GENERAL
+-------
+Ignored packages need to be ignored at an earlier stage!!
+
 PKGBUILD ANALYSIS
 -----------------
 Develop a system for verifying PKBUILDs!

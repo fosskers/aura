@@ -6,7 +6,9 @@ module Utilities where
 import System.Directory (getCurrentDirectory, setCurrentDirectory)
 import Distribution.Simple.Utils (withTempDirectory)
 import Control.Concurrent (threadDelay)
+import System.FilePath (dropExtensions)
 import Distribution.Verbosity (silent)
+import System.Process (readProcess)
 import System.Environment (getEnv)
 import System.Exit (ExitCode(..))
 import System.IO (stdout, hFlush)
@@ -18,7 +20,7 @@ type Pattern = (String,String)
 
 type Regex = String
 
--- COlOUR THIS!
+-- COLOUR THIS!
 putStrLnA :: String -> IO ()
 putStrLnA s = putStrA $ s ++ "\n"
 
@@ -110,3 +112,8 @@ wordsLines = concat . map words . lines
 
 notNull :: [a] -> Bool
 notNull = not . null
+
+uncompress :: FilePath -> IO FilePath
+uncompress file = do
+  readProcess "tar" ["-zxvf",file] ""
+  return $ dropExtensions file

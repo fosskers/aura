@@ -4,7 +4,7 @@
 module AuraLib where
 
 -- System Libraries
-import System.Directory (renameFile, getCurrentDirectory)
+import System.Directory (renameFile, getCurrentDirectory, setCurrentDirectory)
 import System.Posix.Files (setFileMode, accessModes)
 import System.FilePath ((</>))
 import Control.Monad (filterM)
@@ -14,8 +14,8 @@ import Data.Maybe (fromJust)
 
 -- Custom Libraries
 import AuraLanguages
+import AurConnection
 import Utilities
-import Pkgbuild
 import Internet
 import MakePkg
 import Pacman
@@ -153,11 +153,17 @@ build :: String -> AURPkg -> IO (Either String FilePath)
 build user pkg = do
   currDir <- getCurrentDirectory
   setFileMode currDir accessModes  -- Gives write access to the temp folder.
-  writeFile "PKGBUILD" $ pkgbuildOf pkg
+  tarball   <- downloadSource currDir $ pkgNameOf pkg
+  sourceDir <- uncompress tarball
+  setFileMode sourceDir accessModes
+  setCurrentDirectory sourceDir
   (exitStatus,pkgName,output) <- makepkg user []
-  if didProcessSucceed exitStatus
-     then moveToCache pkgName >>= return . (\p -> Right p)
-     else return $ Left output
+  if not $ didProcessSucceed exitStatus
+     then return $ Left output
+     else do
+       path <- moveToCache pkgName
+       setCurrentDirectory currDir
+       return $ Right path
 
 -- Moves a file to the pacman package cache and returns its location.
 moveToCache :: FilePath -> IO FilePath
@@ -283,6 +289,20 @@ getProvidingPkg' :: String -> IO String
 getProvidingPkg' virt = do
   let (name,_) = splitNameAndVer virt
   pacmanOutput ["-Ssq",name]
+
+getInstalledAURPackages :: IO [String]
+getInstalledAURPackages = do
+  pkgs <- pacmanOutput ["-Qm"]
+  return . map fixName . lines $ pkgs
+      where fixName = (\(n,v) -> n ++ "=" ++ v) . hardBreak (\c -> c == ' ')
+
+isOutOfDate :: AURPkg -> Bool
+isOutOfDate pkg = trueVer == currVer
+    where trueVer = getTrueVerViaPkgbuild $ pkgbuildOf pkg
+          currVer = case versionOf pkg of
+                      MustBe v  -> v
+                      AtLeast v -> v
+                      Anything  -> ""  -- These might not be appropriate.
   
 isIgnored :: String -> [String] -> Bool
 isIgnored pkg toIgnore = pkg `elem` toIgnore
@@ -323,12 +343,6 @@ divideByPkgType pkgs = do
   aurPkgs  <- filterM (isAURPackage . stripVerNum) remaining
   return (archPkgs, aurPkgs, remaining \\ aurPkgs)
       where stripVerNum = fst . splitNameAndVer
-
-getInstalledAURPackages :: IO [String]
-getInstalledAURPackages = do
-  pkgs <- pacmanOutput ["-Qm"] >>= return . lines
-  return $ map fixName pkgs
-      where fixName = (\(n,v) -> n ++ "=" ++ v) . hardBreak (\c -> c == ' ')
 
 -- These might not be necessary.
 {-

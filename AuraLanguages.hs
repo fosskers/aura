@@ -153,6 +153,10 @@ upgradeAURPackagesMsg3 :: Language -> String
 upgradeAURPackagesMsg3 English  = "No AUR package upgrades necessary."
 upgradeAURPackagesMsg3 Japanese = "アップグレードは必要ない。"
 
+upgradeAURPackagesMsg4 :: Language -> String -> String
+upgradeAURPackagesMsg4 English p  = "Got " ++ bt p ++ "."
+upgradeAURPackagesMsg4 Japanese p = bt p ++ "、OK."
+
 displayPkgbuildMsg1 :: Language -> String
 displayPkgbuildMsg1 English =
     "Make sure to thoroughly check PKGBUILDs before installing packages."

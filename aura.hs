@@ -13,10 +13,10 @@ import System.Console.GetOpt
 
 -- Custom Libraries
 import AuraLanguages
+import AurConnection
 import Utilities
 import AuraLogo
 import Internet
-import Pkgbuild
 import AuraLib
 import Pacman
 
@@ -71,7 +71,7 @@ languageMsg :: String
 languageMsg = usageInfo "Language options:" languageOptions
 
 auraVersion :: String
-auraVersion = "0.4.1.1"
+auraVersion = "0.4.2.0"
 
 main :: IO ()
 main = do
@@ -171,12 +171,16 @@ buildAndInstallDep lang pkg = do
 upgradeAURPackages :: Language -> [String] -> IO ()
 upgradeAURPackages lang pkgs = do
   putStrLnA $ upgradeAURPackagesMsg1 lang
-  installedPkgs <- getInstalledAURPackages >>= mapM makeAURPkg
+  installedPkgs <- getInstalledAURPackages >>= mapM fetchAndReport
   putStrLnA $ upgradeAURPackagesMsg2 lang
   let toUpgrade = map pkgNameOf . filter (not . isOutOfDate) $ installedPkgs
   if null toUpgrade
      then putStrLnA $ upgradeAURPackagesMsg3 lang
      else installPackages lang [] $ toUpgrade ++ pkgs
+    where fetchAndReport p = do
+            aurPkg <- makeAURPkg p
+            putStrLnA $ upgradeAURPackagesMsg4 lang (pkgNameOf aurPkg)
+            return aurPkg
 
 displayPkgbuild :: Language -> [String] -> IO ()
 displayPkgbuild lang pkgs = do
