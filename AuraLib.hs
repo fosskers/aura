@@ -92,7 +92,6 @@ pkgNameWithVersion pkg = pkgNameOf pkg ++ signAndVersion
 parseNameAndVersioning :: String -> (String,Versioning)
 parseNameAndVersioning pkg = (name, getVersioning comp ver)
     where (name,comp,ver) = pkg =~ "(>=|=)" :: (String,String,String)
-          versioning      = getVersioning comp ver
           getVersioning c v | c == ">=" = AtLeast v
                             | c == "="  = MustBe v
                             | otherwise = Anything
@@ -122,8 +121,8 @@ makeVirtualPkg pkg = do
 -- The Work
 -----------
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.gz
-installPackageFiles :: [FilePath] -> IO ()
-installPackageFiles files = pacman $ ["-U"] ++ files
+installPackageFiles :: [String] -> [FilePath] -> IO ()
+installPackageFiles extraOpts files = pacman $ ["-U"] ++ extraOpts ++ files
 
 -- Handles the building of Packages.
 -- Assumed: All pacman dependencies are already installed.
@@ -157,9 +156,9 @@ build user pkg = do
   writeFile "PKGBUILD" $ pkgbuildOf pkg
   (exitStatus,pkgName,output) <- makepkg user []
   if didProcessSucceed exitStatus
-     then moveToCache pkgName >>= return . (\pkg -> Right pkg)
+     then moveToCache pkgName >>= return . (\p -> Right p)
      else return $ Left output
-            
+
 -- Moves a file to the pacman package cache and returns its location.
 moveToCache :: FilePath -> IO FilePath
 moveToCache pkg = renameFile pkg newName >> return newName
@@ -168,6 +167,7 @@ moveToCache pkg = renameFile pkg newName >> return newName
 -- Returns either a list of error message or the deps to be installed.
 getDepsToInstall :: Language -> [AURPkg] -> [String] ->
                     IO (Either [ErrorMsg] ([String],[AURPkg]))
+getDepsToInstall lang [] _ = return $ Left [getDepsToInstallMsg1 lang]
 getDepsToInstall lang pkgs toIgnore = do
   allDeps <- mapM (determineDeps lang) pkgs  -- Can this be done with foldM?
   let (ps,as,vs) = foldl groupPkgs ([],[],[]) allDeps
@@ -304,7 +304,7 @@ isVirtualPkg :: String -> IO Bool
 isVirtualPkg pkg = do
   provider <- getProvidingPkg pkg
   case provider of
-    Just p  -> return True
+    Just _  -> return True
     Nothing -> return False
 
 splitNameAndVer :: String -> (String,String)
@@ -323,20 +323,6 @@ divideByPkgType pkgs = do
   aurPkgs  <- filterM (isAURPackage . stripVerNum) remaining
   return (archPkgs, aurPkgs, remaining \\ aurPkgs)
       where stripVerNum = fst . splitNameAndVer
-
--- TODO: Add guesses! "Did you mean xyz instead?"
-reportNonPackages :: Language -> [String] -> IO ()
-reportNonPackages _ []      = return ()
-reportNonPackages lang nons = do
-  putStrLnA $ reportNonPackagesMsg1 lang
-  mapM_ putStrLn nons
-
--- Same as the function above... 
-reportIgnoredPackages :: Language -> [String] -> IO ()
-reportIgnoredPackages _ []      = return ()
-reportIgnoredPackages lang pkgs = do
-  putStrLnA $ reportIgnoredPackagesMsg1 lang
-  mapM_ putStrLn pkgs
 
 getInstalledAURPackages :: IO [String]
 getInstalledAURPackages = pacmanOutput ["-Qm"] >>= return . lines

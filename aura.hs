@@ -6,7 +6,7 @@
 -- System Libraries
 import Data.List ((\\), nub, delete, sort, intersperse)
 import Control.Monad (filterM, when)
-import System.Environment (getArgs, getEnv)
+import System.Environment (getArgs)
 import Text.Regex.Posix ((=~))
 import System.FilePath ((</>))
 import System.Console.GetOpt
@@ -71,6 +71,7 @@ languageMsg = usageInfo "Language options:" languageOptions
 auraVersion :: String
 auraVersion = "0.4.1.0"
 
+main :: IO ()
 main = do
   args <- getArgs
   (auraFlags,pacFlags,input) <- parseOpts args
@@ -126,29 +127,54 @@ installPackages lang pacOpts pkgs = do
       mapM_ putStrLn errors
     Right (pacmanDeps,aurDeps) -> do
       let pacPkgs = nub $ pacmanDeps ++ forPacman
-          aurPkgsForInstall = aurDeps ++ aurPackages
-      if null aurPkgsForInstall
-         then return () -- putStrLnA $ installPackagesMsg2 lang
+          pkgsAndOpts = pacOpts ++ pacPkgs
+      reportPkgsToInstall lang pacPkgs aurDeps aurPackages 
+      response <- yesNoPrompt (installPackagesMsg3 lang) "^y"
+      if not response
+         then putStrLnA $ installPackagesMsg4 lang
          else do
-           reportPkgsToInstall lang pacPkgs aurPkgsForInstall
-           response <- yesNoPrompt (installPackagesMsg3 lang) "^y"
-           if not response
-              then putStrLnA $ installPackagesMsg4 lang
-              else proceedWithInstall lang pacOpts pacPkgs aurPkgsForInstall
+           when (notNull pacPkgs) (pacman $ ["-S","--asdeps"] ++ pkgsAndOpts)
+           mapM_ (buildAndInstallDep lang) aurDeps
+           pkgFiles <- buildPackages lang aurPackages
+           installPackageFiles [] pkgFiles
 
-reportPkgsToInstall :: Language -> [String] -> [AURPkg] -> IO ()
-reportPkgsToInstall lang pacPkgs aurPkgs = do
-  when (not $ null pacPkgs) (putStrLnA (reportPkgsToInstallMsg1 lang) >>
-                             mapM_ putStrLn pacPkgs)
-  putStrLnA $ reportPkgsToInstallMsg2 lang
-  mapM_ (putStrLn . pkgNameOf) aurPkgs
+-- TODO: Add guesses! "Did you mean xyz instead?"
+reportNonPackages :: Language -> [String] -> IO ()
+reportNonPackages _ []      = return ()
+reportNonPackages lang nons = do
+  putStrLnA $ reportNonPackagesMsg1 lang
+  mapM_ putStrLn nons
 
+-- Same as the function above... 
+reportIgnoredPackages :: Language -> [String] -> IO ()
+reportIgnoredPackages _ []      = return ()
+reportIgnoredPackages lang pkgs = do
+  putStrLnA $ reportIgnoredPackagesMsg1 lang
+  mapM_ putStrLn pkgs
+
+reportPkgsToInstall :: Language -> [String] -> [AURPkg] -> [AURPkg] -> IO ()
+reportPkgsToInstall lang pacPkgs aurDeps aurPkgs = do
+  printIfThere putStrLn pacPkgs $ reportPkgsToInstallMsg1 lang
+  printIfThere (putStrLn . pkgNameOf) aurDeps $ reportPkgsToInstallMsg2 lang
+  printIfThere (putStrLn . pkgNameOf) aurPkgs $ reportPkgsToInstallMsg3 lang
+      where printIfThere f ps msg = when (notNull ps) (printPkgs f ps msg)
+            printPkgs f pkgs msg  = do
+              putStrLnA msg
+              mapM_ f pkgs
+             
+buildAndInstallDep :: Language -> AURPkg -> IO ()
+buildAndInstallDep lang pkg = do
+  path <- buildPackages lang [pkg]
+  installPackageFiles ["--asdeps"] path
+               
+{-
 -- Go ahead and build and install everything.
 proceedWithInstall :: Language -> [String] -> [String] -> [AURPkg] -> IO ()
 proceedWithInstall lang pacOpts pacPkgs aurPkgs = do
   when (not $ null pacPkgs) (pacman $ ["-S"] ++ pacOpts ++ pacPkgs)
   pkgFiles <- buildPackages lang aurPkgs
   installPackageFiles pkgFiles
+-}
 
 displayPkgbuild :: Language -> [String] -> IO ()
 displayPkgbuild lang pkgs = do

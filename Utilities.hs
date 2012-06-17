@@ -40,10 +40,10 @@ rStrip :: String -> String
 rStrip xs = dropWhileEnd (== ' ') xs
 
 tripleSnd :: (a,b,c) -> b
-tripleSnd (a,b,c) = b
+tripleSnd (_,b,_) = b
 
 tripleThrd :: (a,b,c) -> c
-tripleThrd (a,b,c) = c
+tripleThrd (_,_,c) = c
 
 -- Replaces a (p)attern with a (t)arget in a line if possible.
 replaceByPatt :: [Pattern] -> String -> String
@@ -107,3 +107,6 @@ yesNoPrompt msg regex = do
 
 wordsLines :: String -> [String]
 wordsLines = concat . map words . lines
+
+notNull :: [a] -> Bool
+notNull = not . null

@@ -5,7 +5,6 @@ module Internet where
 
 -- System Libraries
 import System.Process (readProcess, readProcessWithExitCode)
-import System.Exit (ExitCode)
 
 -- Custom Libraries
 import Utilities
@@ -14,9 +13,6 @@ type Url = String
 
 getUrlContents :: Url -> IO String
 getUrlContents url = readProcess "curl" ["-L","--fail","--silent",url] ""
-{-  (_,contents,_) <- readProcessWithExitCode "curl" ["-f",url] ""
-  return contents
--}
 
 doesUrlExist :: Url -> IO Bool
 doesUrlExist url = do

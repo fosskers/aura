@@ -47,6 +47,10 @@ buildPackagesMsg7 :: Language -> String
 buildPackagesMsg7 English  = "So be it."
 buildPackagesMsg7 Japanese = "分かった。脱出！"
 
+getDepsToInstallMsg1 :: Language -> String
+getDepsToInstallMsg1 English  = "No AUR packages specified for install."
+getDepsToInstallMsg1 Japanese = "パッケージは一つも指摘されていない。"
+
 getRealPkgConflictsMsg1 :: Language -> String -> String -> String -> String
 getRealPkgConflictsMsg1 English name rec req =
     "The dependency " ++ bt name ++ " demands version " ++ bt req ++ ",\n" ++
@@ -86,14 +90,6 @@ getVirtualConflictsMsg3 Japanese d dVer pro proVer =
     "それを提供する" ++ bt pro ++ "はバージョン" ++ bt proVer ++
     "しか提供しない"
 
-reportNonPackagesMsg1 :: Language -> String
-reportNonPackagesMsg1 English  = "The following are not packages:"
-reportNonPackagesMsg1 Japanese = "下記はパッケージではない："
-
-reportIgnoredPackagesMsg1 :: Language -> String
-reportIgnoredPackagesMsg1 English  = "The following packages will be ignored:"
-reportIgnoredPackagesMsg1 Japanese = "下記のパッケージは無視される："
-
 -- aura functions
 executeOptsMsg1 :: Language -> String
 executeOptsMsg1 English  = "Conflicting flags given!"
@@ -101,7 +97,7 @@ executeOptsMsg1 Japanese = "矛盾しているオプションあり。"
 
 installPackagesMsg1 :: Language -> String
 installPackagesMsg1 English  = "Dependency checking failed for these reasons:"
-installPackagesMsg1 Japanese = "Dependenciesの確認は以下の理由で失敗した："
+installPackagesMsg1 Japanese = "従属パッケージの確認は以下の理由で失敗した："
 
 installPackagesMsg2 :: Language -> String
 installPackagesMsg2 English  = "No valid packages specified."
@@ -117,24 +113,35 @@ installPackagesMsg4 Japanese = "続行は意図的に阻止された。"
 
 installPackagesMsg5 :: Language -> String
 installPackagesMsg5 English  = "Determining dependencies..."
-installPackagesMsg5 Japanese = "要するパッケージを確認中・・・"
+installPackagesMsg5 Japanese = "従属パッケージを確認中・・・"
+
+reportNonPackagesMsg1 :: Language -> String
+reportNonPackagesMsg1 English  = "The following are not packages:"
+reportNonPackagesMsg1 Japanese = "下記はパッケージではない："
+
+reportIgnoredPackagesMsg1 :: Language -> String
+reportIgnoredPackagesMsg1 English  = "The following packages will be ignored:"
+reportIgnoredPackagesMsg1 Japanese = "下記のパッケージは無視される："
 
 reportPkgsToInstallMsg1 :: Language -> String
-reportPkgsToInstallMsg1 English  = "Pacman packages to be installed:"
-reportPkgsToInstallMsg1 Japanese = "以下のPacmanのパッケージをインストールする："
+reportPkgsToInstallMsg1 English  = "Pacman dependencies:"
+reportPkgsToInstallMsg1 Japanese = "Pacmanの従属パッケージ："
 
 reportPkgsToInstallMsg2 :: Language -> String
-reportPkgsToInstallMsg2 English =
-    "AUR packages to be built and installed:"
-reportPkgsToInstallMsg2 Japanese =
-    "以下のAURのパッケージを作成し、インストールする予定："
+reportPkgsToInstallMsg2 English  = "AUR dependencies:"    
+reportPkgsToInstallMsg2 Japanese = "AURの従属パッケージ："
 
+reportPkgsToInstallMsg3 :: Language -> String
+reportPkgsToInstallMsg3 English  = "Main AUR packages:"    
+reportPkgsToInstallMsg3 Japanese = "主なAURパッケージ："
+    
 reportBadDowngradePkgsMsg1 :: Language -> String
 reportBadDowngradePkgsMsg1 English = 
     "The following aren't installed, and thus can't be downgraded:"
 reportBadDowngradePkgsMsg1 Japanese =
     "このパッケージは最初からインストールしていないので、格下げはできない。"
 
+getDowngradeChoiceMsg1 :: Language -> String -> String
 getDowngradeChoiceMsg1 English p =
     "What version of " ++ bt p ++ " do you want?"
 getDowngradeChoiceMsg1 Japanese p =

@@ -10,8 +10,9 @@ import System.Exit (ExitCode)
 makepkg :: String -> [String] -> IO (ExitCode,FilePath,String)
 makepkg user opts = do
   let command = "su"
-      opts    = [user,"-c","makepkg"]
-  (exitStatus,out,err) <- readProcessWithExitCode command opts ""
+      child   = unwords $ "makepkg" : opts 
+      suOpts    = [user,"-c",child]
+  (exitStatus,out,err) <- readProcessWithExitCode command suOpts ""
   contents <- getDirectoryContents "."
   let pkgFiles = filter (\file -> (file =~ ".pkg.tar.xz" :: Bool)) contents
       pkgName  = if null pkgFiles then "" else head pkgFiles

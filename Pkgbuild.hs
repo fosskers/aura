@@ -3,7 +3,6 @@
 module Pkgbuild where
 
 -- System Libaries
-import System.Process (readProcess)
 import Text.Regex.Posix ((=~))
 import System.FilePath ((</>))
 
