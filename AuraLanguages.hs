@@ -141,11 +141,17 @@ reportBadDowngradePkgsMsg1 English =
 reportBadDowngradePkgsMsg1 Japanese =
     "このパッケージは最初からインストールしていないので、格下げはできない。"
 
-getDowngradeChoiceMsg1 :: Language -> String -> String
-getDowngradeChoiceMsg1 English p =
-    "What version of " ++ bt p ++ " do you want?"
-getDowngradeChoiceMsg1 Japanese p =
-    bt p ++ "はどのバージョンにする？"
+upgradeAURPackagesMsg1 :: Language -> String
+upgradeAURPackagesMsg1 English  = "Fetching PKGBUILDs..."
+upgradeAURPackagesMsg1 Japanese = "PKGBUILDをダウンロード中・・・"
+
+upgradeAURPackagesMsg2 :: Language -> String
+upgradeAURPackagesMsg2 English  = "Comparing package versions..."
+upgradeAURPackagesMsg2 Japanese = "バージョンを比較中・・・"
+
+upgradeAURPackagesMsg3 :: Language -> String
+upgradeAURPackagesMsg3 English  = "No AUR package upgrades necessary."
+upgradeAURPackagesMsg3 Japanese = "アップグレードは必要ない。"
 
 displayPkgbuildMsg1 :: Language -> String
 displayPkgbuildMsg1 English =
@@ -160,6 +166,12 @@ displayPkgbuildMsg2 Japanese pkg = bt pkg ++ "のPKGBUILDは出力される。"
 displayPkgbuildMsg3 :: Language -> String -> String
 displayPkgbuildMsg3 English pkg  = bt pkg ++ " does not exist."
 displayPkgbuildMsg3 Japanese pkg = bt pkg ++ "は存在しない。"
+
+getDowngradeChoiceMsg1 :: Language -> String -> String
+getDowngradeChoiceMsg1 English p =
+    "What version of " ++ bt p ++ " do you want?"
+getDowngradeChoiceMsg1 Japanese p =
+    bt p ++ "はどのバージョンにする？"
 
 displayOutputLanguagesMsg1 :: Language -> String
 displayOutputLanguagesMsg1 English = "The following languages are available:"

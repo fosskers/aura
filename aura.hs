@@ -21,16 +21,18 @@ import AuraLib
 import Pacman
 
 data Flag = AURInstall | Cache | GetPkgbuild | Search | Refresh |
-            Languages | Version | Help | JapOut
+            Upgrade | Languages | Version | Help | JapOut
             deriving (Eq,Ord)
 
 auraOptions :: [OptDescr Flag]
-auraOptions = [ Option ['A'] ["aursync"]  (NoArg AURInstall)  aDesc
-              , Option ['p'] ["pkgbuild"] (NoArg GetPkgbuild) pDesc
-              , Option ['C'] ["downgrade"] (NoArg Cache)      cDesc
-              , Option ['s'] ["search"]   (NoArg Search)      sDesc 
+auraOptions = [ Option ['A'] ["aursync"]    (NoArg AURInstall)  aDesc
+              , Option ['u'] ["sysupgrade"] (NoArg Upgrade)     uDesc
+              , Option ['p'] ["pkgbuild"]   (NoArg GetPkgbuild) pDesc
+              , Option ['C'] ["downgrade"]  (NoArg Cache)       cDesc
+              , Option ['s'] ["search"]     (NoArg Search)      sDesc 
               ]
     where aDesc = "Install from the [A]UR."
+          uDesc = "(With -A) Upgrade all installed AUR packages."
           pDesc = "(With -A) Outputs the contents of a package's PKGBUILD."
           cDesc = "Perform actions involving the package [C]ache.\n" ++
                   "Default action downgrades given packages."
@@ -38,7 +40,7 @@ auraOptions = [ Option ['A'] ["aursync"]  (NoArg AURInstall)  aDesc
 
 -- These are intercepted Pacman flags.
 pacmanOptions :: [OptDescr Flag]
-pacmanOptions = [ Option ['y'] ["refresh"] (NoArg Refresh) ""                 
+pacmanOptions = [ Option ['y'] ["refresh"] (NoArg Refresh) ""
                 , Option ['V'] ["version"] (NoArg Version) ""
                 , Option ['h'] ["help"]    (NoArg Help)    ""
                 ]
@@ -69,7 +71,7 @@ languageMsg :: String
 languageMsg = usageInfo "Language options:" languageOptions
 
 auraVersion :: String
-auraVersion = "0.4.1.0"
+auraVersion = "0.4.1.1"
 
 main :: IO ()
 main = do
@@ -91,6 +93,7 @@ executeOpts lang (flags,input,pacOpts) =
     case sort flags of
       (AURInstall:fs) -> case fs of
                            [] -> installPackages lang pacOpts input
+                           [Upgrade]     -> upgradeAURPackages lang input
                            [GetPkgbuild] -> displayPkgbuild lang input
                            (Refresh:fs') -> do 
                               syncDatabase lang
@@ -158,23 +161,22 @@ reportPkgsToInstall lang pacPkgs aurDeps aurPkgs = do
   printIfThere (putStrLn . pkgNameOf) aurDeps $ reportPkgsToInstallMsg2 lang
   printIfThere (putStrLn . pkgNameOf) aurPkgs $ reportPkgsToInstallMsg3 lang
       where printIfThere f ps msg = when (notNull ps) (printPkgs f ps msg)
-            printPkgs f pkgs msg  = do
-              putStrLnA msg
-              mapM_ f pkgs
-             
+            printPkgs f pkgs msg  = putStrLnA msg >> mapM_ f pkgs
+
 buildAndInstallDep :: Language -> AURPkg -> IO ()
 buildAndInstallDep lang pkg = do
   path <- buildPackages lang [pkg]
   installPackageFiles ["--asdeps"] path
                
-{-
--- Go ahead and build and install everything.
-proceedWithInstall :: Language -> [String] -> [String] -> [AURPkg] -> IO ()
-proceedWithInstall lang pacOpts pacPkgs aurPkgs = do
-  when (not $ null pacPkgs) (pacman $ ["-S"] ++ pacOpts ++ pacPkgs)
-  pkgFiles <- buildPackages lang aurPkgs
-  installPackageFiles pkgFiles
--}
+upgradeAURPackages :: Language -> [String] -> IO ()
+upgradeAURPackages lang pkgs = do
+  putStrLnA $ upgradeAURPackagesMsg1 lang
+  installedPkgs <- getInstalledAURPackages >>= mapM makeAURPkg
+  putStrLnA $ upgradeAURPackagesMsg2 lang
+  let toUpgrade = map pkgNameOf . filter (not . isOutOfDate) $ installedPkgs
+  if null toUpgrade
+     then putStrLnA $ upgradeAURPackagesMsg3 lang
+     else installPackages lang [] $ toUpgrade ++ pkgs
 
 displayPkgbuild :: Language -> [String] -> IO ()
 displayPkgbuild lang pkgs = do

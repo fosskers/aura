@@ -325,7 +325,10 @@ divideByPkgType pkgs = do
       where stripVerNum = fst . splitNameAndVer
 
 getInstalledAURPackages :: IO [String]
-getInstalledAURPackages = pacmanOutput ["-Qm"] >>= return . lines
+getInstalledAURPackages = do
+  pkgs <- pacmanOutput ["-Qm"] >>= return . lines
+  return $ map fixName pkgs
+      where fixName = (\(n,v) -> n ++ "=" ++ v) . hardBreak (\c -> c == ' ')
 
 -- These might not be necessary.
 {-
