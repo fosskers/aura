@@ -157,6 +157,12 @@ upgradeAURPackagesMsg4 :: Language -> String -> String
 upgradeAURPackagesMsg4 English p  = "Got " ++ bt p ++ "."
 upgradeAURPackagesMsg4 Japanese p = bt p ++ "、OK."
 
+downloadTarballsMsg1 :: Language -> String -> String
+downloadTarballsMsg1 English p  =
+    "Downloading " ++ bt p ++ " source tarball..."
+downloadTarballsMsg1 Japanese p =
+    bt p ++ "のソースコードのターボールをダウンロード中・・・"
+
 displayPkgbuildMsg1 :: Language -> String
 displayPkgbuildMsg1 English =
     "Make sure to thoroughly check PKGBUILDs before installing packages."

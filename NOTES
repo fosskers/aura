@@ -19,10 +19,8 @@ dependencies, or make it so that they use more mainstream libraries, etc.
 OPTIONS TO IMPLEMENT
 --------------------
 -As -> `--search` Search for an AUR package
--Au -> `--sysupgrade` Upgrades all installed packages via a database.
 -Aw -> `--downloadonly` Downloads packages but doesn't do anything to it.
 -Av -> `--verbose` Doesn't suppress makepkg output.
--C  -> Allows packages to be downgraded from a list generated from the cache.
 
 OUT OF DATE
 -----------
@@ -43,9 +41,3 @@ RUN BY ROOT USER
 When run by the root user and not by sudo, check this and run makepkg
 with --runasroot. This is not a safe procedure, but the user must be
 responsible for their actions.
-
-PACKER
-------
-Where does packer get .install files?
-Packer syncs packages by downloading the PKGBUILD again and comparing
-  version numbers.

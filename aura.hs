@@ -5,6 +5,7 @@
 
 -- System Libraries
 import Data.List ((\\), nub, delete, sort, intersperse)
+import System.Directory (getCurrentDirectory)
 import Control.Monad (filterM, when)
 import System.Environment (getArgs)
 import Text.Regex.Posix ((=~))
@@ -21,18 +22,20 @@ import AuraLib
 import Pacman
 
 data Flag = AURInstall | Cache | GetPkgbuild | Search | Refresh |
-            Upgrade | Languages | Version | Help | JapOut
+            Upgrade | Download | Languages | Version | Help | JapOut
             deriving (Eq,Ord)
 
 auraOptions :: [OptDescr Flag]
-auraOptions = [ Option ['A'] ["aursync"]    (NoArg AURInstall)  aDesc
-              , Option ['u'] ["sysupgrade"] (NoArg Upgrade)     uDesc
-              , Option ['p'] ["pkgbuild"]   (NoArg GetPkgbuild) pDesc
-              , Option ['C'] ["downgrade"]  (NoArg Cache)       cDesc
-              , Option ['s'] ["search"]     (NoArg Search)      sDesc 
+auraOptions = [ Option ['A'] ["aursync"]      (NoArg AURInstall)  aDesc
+              , Option ['u'] ["sysupgrade"]   (NoArg Upgrade)     uDesc
+              , Option ['w'] ["downloadonly"] (NoArg Download)    wDesc
+              , Option ['p'] ["pkgbuild"]     (NoArg GetPkgbuild) pDesc
+              , Option ['C'] ["downgrade"]    (NoArg Cache)       cDesc
+              , Option ['s'] ["search"]       (NoArg Search)      sDesc 
               ]
     where aDesc = "Install from the [A]UR."
           uDesc = "(With -A) Upgrade all installed AUR packages."
+          wDesc = "(With -A) Downloads the source tarball only."
           pDesc = "(With -A) Outputs the contents of a package's PKGBUILD."
           cDesc = "Perform actions involving the package [C]ache.\n" ++
                   "Default action downgrades given packages."
@@ -53,7 +56,7 @@ languageOptions = [ Option [] ["languages"] (NoArg Languages) lDesc
           jDesc = "All aura output is given in Japanese."
 
 interceptedFlags :: [(Flag,String)]
-interceptedFlags = [(Search,"-s"),(Refresh,"-y")]
+interceptedFlags = [(Search,"-s"),(Refresh,"-y"),(Upgrade,"-u")]
 
 -- Converts an intercepted Pacman flag back into its raw string form.
 reconvertFlag :: Flag -> String
@@ -71,7 +74,7 @@ languageMsg :: String
 languageMsg = usageInfo "Language options:" languageOptions
 
 auraVersion :: String
-auraVersion = "0.4.2.0"
+auraVersion = "0.4.3.0"
 
 main :: IO ()
 main = do
@@ -94,6 +97,7 @@ executeOpts lang (flags,input,pacOpts) =
       (AURInstall:fs) -> case fs of
                            [] -> installPackages lang pacOpts input
                            [Upgrade]     -> upgradeAURPackages lang input
+                           [Download]    -> downloadTarballs lang input
                            [GetPkgbuild] -> displayPkgbuild lang input
                            (Refresh:fs') -> do 
                               syncDatabase lang
@@ -161,7 +165,7 @@ reportPkgsToInstall lang pacPkgs aurDeps aurPkgs = do
   printIfThere (putStrLn . pkgNameOf) aurDeps $ reportPkgsToInstallMsg2 lang
   printIfThere (putStrLn . pkgNameOf) aurPkgs $ reportPkgsToInstallMsg3 lang
       where printIfThere f ps msg = when (notNull ps) (printPkgs f ps msg)
-            printPkgs f pkgs msg  = putStrLnA msg >> mapM_ f pkgs
+            printPkgs f ps msg = putStrLnA msg >> mapM_ f ps >> putStrLn ""
 
 buildAndInstallDep :: Language -> AURPkg -> IO ()
 buildAndInstallDep lang pkg = do
@@ -171,9 +175,14 @@ buildAndInstallDep lang pkg = do
 upgradeAURPackages :: Language -> [String] -> IO ()
 upgradeAURPackages lang pkgs = do
   putStrLnA $ upgradeAURPackagesMsg1 lang
-  installedPkgs <- getInstalledAURPackages >>= mapM fetchAndReport
+  installedPkgs <- getInstalledAURPackages
+  confFile      <- getPacmanConf
+  let toIgnore   = getIgnoredPkgs confFile
+      notIgnored = \p -> fst (splitNameAndVer p) `notElem` toIgnore
+      legitPkgs  = filter notIgnored installedPkgs
+  toCheck <- mapM fetchAndReport legitPkgs
   putStrLnA $ upgradeAURPackagesMsg2 lang
-  let toUpgrade = map pkgNameOf . filter (not . isOutOfDate) $ installedPkgs
+  let toUpgrade = map pkgNameOf . filter (not . isOutOfDate) $ toCheck
   if null toUpgrade
      then putStrLnA $ upgradeAURPackagesMsg3 lang
      else installPackages lang [] $ toUpgrade ++ pkgs
@@ -181,6 +190,16 @@ upgradeAURPackages lang pkgs = do
             aurPkg <- makeAURPkg p
             putStrLnA $ upgradeAURPackagesMsg4 lang (pkgNameOf aurPkg)
             return aurPkg
+
+downloadTarballs :: Language -> [String] -> IO ()
+downloadTarballs lang pkgs = do
+  currDir  <- getCurrentDirectory
+  realPkgs <- filterM isAURPackage pkgs
+  reportNonPackages lang $ pkgs \\ realPkgs
+  mapM_ (downloadEach currDir) realPkgs
+      where downloadEach path pkg = do
+              putStrLnA $ downloadTarballsMsg1 lang pkg
+              downloadSource path pkg
 
 displayPkgbuild :: Language -> [String] -> IO ()
 displayPkgbuild lang pkgs = do

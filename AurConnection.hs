@@ -53,5 +53,3 @@ getTarballUrl pkg = getPkgBaseUrl pkg </> pkg ++ ".tar.gz"
 
 downloadSource :: FilePath -> String -> IO FilePath
 downloadSource path = saveUrlContents path . getTarballUrl 
-  
-  
