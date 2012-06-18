@@ -56,7 +56,8 @@ languageOptions = [ Option [] ["languages"] (NoArg Languages) lDesc
           jDesc = "All aura output is given in Japanese."
 
 interceptedFlags :: [(Flag,String)]
-interceptedFlags = [(Search,"-s"),(Refresh,"-y"),(Upgrade,"-u")]
+interceptedFlags = [ (Search,"-s"),(Refresh,"-y"),(Upgrade,"-u")
+                   , (Download,"-w")]
 
 -- Converts an intercepted Pacman flag back into its raw string form.
 reconvertFlag :: Flag -> String
@@ -74,7 +75,7 @@ languageMsg :: String
 languageMsg = usageInfo "Language options:" languageOptions
 
 auraVersion :: String
-auraVersion = "0.4.3.0"
+auraVersion = "0.4.3.1"
 
 main :: IO ()
 main = do
