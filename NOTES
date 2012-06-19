@@ -1,6 +1,5 @@
 GENERAL
 -------
-Ignored packages need to be ignored at an earlier stage!!
 
 PKGBUILD ANALYSIS
 -----------------
@@ -19,7 +18,6 @@ dependencies, or make it so that they use more mainstream libraries, etc.
 OPTIONS TO IMPLEMENT
 --------------------
 -As -> `--search` Search for an AUR package
--Aw -> `--downloadonly` Downloads packages but doesn't do anything to it.
 -Av -> `--verbose` Doesn't suppress makepkg output.
 
 OUT OF DATE

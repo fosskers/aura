@@ -141,21 +141,21 @@ reportBadDowngradePkgsMsg1 English =
 reportBadDowngradePkgsMsg1 Japanese =
     "このパッケージは最初からインストールしていないので、格下げはできない。"
 
-upgradeAURPackagesMsg1 :: Language -> String
-upgradeAURPackagesMsg1 English  = "Fetching PKGBUILDs..."
-upgradeAURPackagesMsg1 Japanese = "PKGBUILDをダウンロード中・・・"
+upgradeAURPkgsMsg1 :: Language -> String
+upgradeAURPkgsMsg1 English  = "Fetching PKGBUILDs..."
+upgradeAURPkgsMsg1 Japanese = "PKGBUILDをダウンロード中・・・"
 
-upgradeAURPackagesMsg2 :: Language -> String
-upgradeAURPackagesMsg2 English  = "Comparing package versions..."
-upgradeAURPackagesMsg2 Japanese = "バージョンを比較中・・・"
+upgradeAURPkgsMsg2 :: Language -> String
+upgradeAURPkgsMsg2 English  = "Comparing package versions..."
+upgradeAURPkgsMsg2 Japanese = "バージョンを比較中・・・"
 
-upgradeAURPackagesMsg3 :: Language -> String
-upgradeAURPackagesMsg3 English  = "No AUR package upgrades necessary."
-upgradeAURPackagesMsg3 Japanese = "アップグレードは必要ない。"
+upgradeAURPkgsMsg3 :: Language -> String
+upgradeAURPkgsMsg3 English  = "No AUR package upgrades necessary."
+upgradeAURPkgsMsg3 Japanese = "アップグレードは必要ない。"
 
-upgradeAURPackagesMsg4 :: Language -> String -> String
-upgradeAURPackagesMsg4 English p  = "Got " ++ bt p ++ "."
-upgradeAURPackagesMsg4 Japanese p = bt p ++ "、OK."
+upgradeAURPkgsMsg4 :: Language -> String -> String
+upgradeAURPkgsMsg4 English p  = "Got " ++ bt p ++ "."
+upgradeAURPkgsMsg4 Japanese p = bt p ++ "、OK."
 
 downloadTarballsMsg1 :: Language -> String -> String
 downloadTarballsMsg1 English p  =

@@ -97,8 +97,8 @@ executeOpts lang (flags,input,pacOpts) =
     case sort flags of
       (AURInstall:fs) -> case fs of
                            [] -> installPackages lang pacOpts input
-                           [Upgrade]     -> upgradeAURPackages lang input
-                           [Download]    -> downloadTarballs lang input
+                           [Upgrade]     -> upgradeAURPkgs lang pacOpts input
+                           [Download]    -> downloadTarballs lang  input
                            [GetPkgbuild] -> displayPkgbuild lang input
                            (Refresh:fs') -> do 
                               syncDatabase lang
@@ -117,6 +117,7 @@ executeOpts lang (flags,input,pacOpts) =
 -- WORKING WITH `-A`
 --------------------      
 installPackages :: Language -> [String] -> [String] -> IO ()
+installPackages _ _ [] = return ()
 installPackages lang pacOpts pkgs = do
   confFile <- getPacmanConf
   let uniques   = nub pkgs
@@ -131,8 +132,7 @@ installPackages lang pacOpts pkgs = do
   results     <- getDepsToInstall lang aurPackages toIgnore
   case results of
     Left errors -> do
-      putStrLnA $ installPackagesMsg1 lang
-      mapM_ putStrLn errors
+      printListWithTitle (installPackagesMsg1 lang) errors
     Right (pacmanDeps,aurDeps) -> do
       let pacPkgs = nub $ pacmanDeps ++ forPacman
           pkgsAndOpts = pacOpts ++ pacPkgs
@@ -146,19 +146,20 @@ installPackages lang pacOpts pkgs = do
            pkgFiles <- buildPackages lang aurPackages
            installPackageFiles [] pkgFiles
 
+printListWithTitle :: String -> [String] -> IO ()
+printListWithTitle msg items = putStrLnA msg >> mapM_ putStrLn items
+  
 -- TODO: Add guesses! "Did you mean xyz instead?"
 reportNonPackages :: Language -> [String] -> IO ()
 reportNonPackages _ []      = return ()
-reportNonPackages lang nons = do
-  putStrLnA $ reportNonPackagesMsg1 lang
-  mapM_ putStrLn nons
+reportNonPackages lang nons = printListWithTitle msg nons
+    where msg = reportNonPackagesMsg1 lang
 
 -- Same as the function above... 
 reportIgnoredPackages :: Language -> [String] -> IO ()
 reportIgnoredPackages _ []      = return ()
-reportIgnoredPackages lang pkgs = do
-  putStrLnA $ reportIgnoredPackagesMsg1 lang
-  mapM_ putStrLn pkgs
+reportIgnoredPackages lang pkgs = printListWithTitle msg pkgs
+    where msg = reportIgnoredPackagesMsg1 lang
 
 reportPkgsToInstall :: Language -> [String] -> [AURPkg] -> [AURPkg] -> IO ()
 reportPkgsToInstall lang pacPkgs aurDeps aurPkgs = do
@@ -173,23 +174,22 @@ buildAndInstallDep lang pkg = do
   path <- buildPackages lang [pkg]
   installPackageFiles ["--asdeps"] path
                
-upgradeAURPackages :: Language -> [String] -> IO ()
-upgradeAURPackages lang pkgs = do
-  putStrLnA $ upgradeAURPackagesMsg1 lang
+upgradeAURPkgs :: Language -> [String] -> [String] -> IO ()
+upgradeAURPkgs lang pacOpts pkgs = do
+  putStrLnA $ upgradeAURPkgsMsg1 lang
   installedPkgs <- getInstalledAURPackages
   confFile      <- getPacmanConf
   let toIgnore   = getIgnoredPkgs confFile
       notIgnored = \p -> fst (splitNameAndVer p) `notElem` toIgnore
       legitPkgs  = filter notIgnored installedPkgs
   toCheck <- mapM fetchAndReport legitPkgs
-  putStrLnA $ upgradeAURPackagesMsg2 lang
+  putStrLnA $ upgradeAURPkgsMsg2 lang
   let toUpgrade = map pkgNameOf . filter (not . isOutOfDate) $ toCheck
-  if null toUpgrade
-     then putStrLnA $ upgradeAURPackagesMsg3 lang
-     else installPackages lang [] $ toUpgrade ++ pkgs
+  when (notNull toUpgrade) (putStrLnA $ upgradeAURPkgsMsg3 lang)
+  installPackages lang pacOpts $ toUpgrade ++ pkgs
     where fetchAndReport p = do
             aurPkg <- makeAURPkg p
-            putStrLnA $ upgradeAURPackagesMsg4 lang (pkgNameOf aurPkg)
+            putStrLnA $ upgradeAURPkgsMsg4 lang (pkgNameOf aurPkg)
             return aurPkg
 
 downloadTarballs :: Language -> [String] -> IO ()
