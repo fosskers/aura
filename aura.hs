@@ -75,7 +75,7 @@ languageMsg :: String
 languageMsg = usageInfo "Language options:" languageOptions
 
 auraVersion :: String
-auraVersion = "0.4.3.1"
+auraVersion = "0.4.4.0"
 
 main :: IO ()
 main = do
@@ -96,18 +96,18 @@ executeOpts :: Language -> ([Flag],[String],[String]) -> IO ()
 executeOpts lang (flags,input,pacOpts) =
     case sort flags of
       (AURInstall:fs) -> case fs of
-                           [] -> installPackages lang pacOpts input
+                           []            -> installPackages lang pacOpts input
                            [Upgrade]     -> upgradeAURPkgs lang pacOpts input
                            [Download]    -> downloadTarballs lang  input
                            [GetPkgbuild] -> displayPkgbuild lang input
                            (Refresh:fs') -> do 
                               syncDatabase lang
                               executeOpts lang (AURInstall:fs',input,pacOpts)
-                           _ -> putStrLnA $ executeOptsMsg1 lang
+                           badFlags -> putStrLnA red $ executeOptsMsg1 lang
       (Cache:fs)  -> case fs of
                        []       -> downgradePackages lang input
                        [Search] -> searchPackageCache input
-                       _        -> putStrLnA $ executeOptsMsg1 lang
+                       badFlags -> putStrLnA red $ executeOptsMsg1 lang
       [Languages] -> displayOutputLanguages lang
       [Help]      -> printHelpMsg pacOpts
       [Version]   -> getVersionInfo >>= animateVersionMsg
@@ -128,46 +128,52 @@ installPackages lang pacOpts pkgs = do
   (forPacman,aurPkgNames,nonPkgs) <- divideByPkgType toInstall
   reportNonPackages lang nonPkgs
   aurPackages <- mapM makeAURPkg aurPkgNames
-  putStrLnA $ installPackagesMsg5 lang
+  putStrLnA green $ installPackagesMsg5 lang
   results     <- getDepsToInstall lang aurPackages toIgnore
   case results of
     Left errors -> do
-      printListWithTitle (installPackagesMsg1 lang) errors
+      printListWithTitle red noColour (installPackagesMsg1 lang) errors
     Right (pacmanDeps,aurDeps) -> do
       let pacPkgs = nub $ pacmanDeps ++ forPacman
           pkgsAndOpts = pacOpts ++ pacPkgs
       reportPkgsToInstall lang pacPkgs aurDeps aurPackages 
       response <- yesNoPrompt (installPackagesMsg3 lang) "^y"
       if not response
-         then putStrLnA $ installPackagesMsg4 lang
+         then putStrLnA red $ installPackagesMsg4 lang
          else do
            when (notNull pacPkgs) (pacman $ ["-S","--asdeps"] ++ pkgsAndOpts)
            mapM_ (buildAndInstallDep lang) aurDeps
            pkgFiles <- buildPackages lang aurPackages
            installPackageFiles [] pkgFiles
 
-printListWithTitle :: String -> [String] -> IO ()
-printListWithTitle msg items = putStrLnA msg >> mapM_ putStrLn items
+printListWithTitle :: Colour -> Colour -> String -> [String] -> IO ()
+printListWithTitle titleColour itemColour msg items = do
+  putStrLnA titleColour msg
+  mapM_ (putStrLn . colourize itemColour) items
+  putStrLn ""
   
 -- TODO: Add guesses! "Did you mean xyz instead?"
 reportNonPackages :: Language -> [String] -> IO ()
 reportNonPackages _ []      = return ()
-reportNonPackages lang nons = printListWithTitle msg nons
+reportNonPackages lang nons = printListWithTitle red cyan msg nons
     where msg = reportNonPackagesMsg1 lang
 
 -- Same as the function above... 
 reportIgnoredPackages :: Language -> [String] -> IO ()
 reportIgnoredPackages _ []      = return ()
-reportIgnoredPackages lang pkgs = printListWithTitle msg pkgs
+reportIgnoredPackages lang pkgs = printListWithTitle yellow cyan msg pkgs
     where msg = reportIgnoredPackagesMsg1 lang
 
 reportPkgsToInstall :: Language -> [String] -> [AURPkg] -> [AURPkg] -> IO ()
 reportPkgsToInstall lang pacPkgs aurDeps aurPkgs = do
-  printIfThere putStrLn pacPkgs $ reportPkgsToInstallMsg1 lang
-  printIfThere (putStrLn . pkgNameOf) aurDeps $ reportPkgsToInstallMsg2 lang
-  printIfThere (putStrLn . pkgNameOf) aurPkgs $ reportPkgsToInstallMsg3 lang
+  printIfThere printCyan pacPkgs $ reportPkgsToInstallMsg1 lang
+  printIfThere printPkgNameCyan aurDeps $ reportPkgsToInstallMsg2 lang
+  printIfThere printPkgNameCyan aurPkgs $ reportPkgsToInstallMsg3 lang
       where printIfThere f ps msg = when (notNull ps) (printPkgs f ps msg)
-            printPkgs f ps msg = putStrLnA msg >> mapM_ f ps >> putStrLn ""
+            printPkgs f ps msg = putStrLnA g msg >> mapM_ f ps >> putStrLn ""
+            printCyan = putStrLn . colourize cyan
+            printPkgNameCyan = putStrLn . colourize cyan . pkgNameOf
+            g = green
 
 buildAndInstallDep :: Language -> AURPkg -> IO ()
 buildAndInstallDep lang pkg = do
@@ -176,20 +182,20 @@ buildAndInstallDep lang pkg = do
                
 upgradeAURPkgs :: Language -> [String] -> [String] -> IO ()
 upgradeAURPkgs lang pacOpts pkgs = do
-  putStrLnA $ upgradeAURPkgsMsg1 lang
+  putStrLnA green $ upgradeAURPkgsMsg1 lang
   installedPkgs <- getInstalledAURPackages
   confFile      <- getPacmanConf
   let toIgnore   = getIgnoredPkgs confFile
       notIgnored = \p -> fst (splitNameAndVer p) `notElem` toIgnore
       legitPkgs  = filter notIgnored installedPkgs
   toCheck <- mapM fetchAndReport legitPkgs
-  putStrLnA $ upgradeAURPkgsMsg2 lang
+  putStrLnA green $ upgradeAURPkgsMsg2 lang
   let toUpgrade = map pkgNameOf . filter (not . isOutOfDate) $ toCheck
-  when (notNull toUpgrade) (putStrLnA $ upgradeAURPkgsMsg3 lang)
+  when (null toUpgrade) (putStrLnA yellow $ upgradeAURPkgsMsg3 lang)
   installPackages lang pacOpts $ toUpgrade ++ pkgs
     where fetchAndReport p = do
             aurPkg <- makeAURPkg p
-            putStrLnA $ upgradeAURPkgsMsg4 lang (pkgNameOf aurPkg)
+            putStrLnA noColour $ upgradeAURPkgsMsg4 lang (pkgNameOf aurPkg)
             return aurPkg
 
 downloadTarballs :: Language -> [String] -> IO ()
@@ -199,7 +205,7 @@ downloadTarballs lang pkgs = do
   reportNonPackages lang $ pkgs \\ realPkgs
   mapM_ (downloadEach currDir) realPkgs
       where downloadEach path pkg = do
-              putStrLnA $ downloadTarballsMsg1 lang pkg
+              putStrLnA noColour $ downloadTarballsMsg1 lang pkg
               downloadSource path pkg
 
 displayPkgbuild :: Language -> [String] -> IO ()
@@ -211,7 +217,7 @@ displayPkgbuild lang pkgs = do
             itExists <- doesUrlExist $ getPkgbuildUrl pkg
             if itExists
                then downloadPkgbuild pkg >>= putStrLn
-               else putStrLnA $ displayPkgbuildMsg3 lang pkg
+               else putStrLnA red $ displayPkgbuildMsg3 lang pkg
 
 --------------------
 -- WORKING WITH `-C`
@@ -226,14 +232,13 @@ downgradePackages lang pkgs = do
   pacman $ ["-U"] ++ map (packageCache </>) selections
 
 reportBadDowngradePkgs :: Language -> [String] -> IO ()
-reportBadDowngradePkgs lang pkgs = do
-  putStrLnA $ reportBadDowngradePkgsMsg1 lang
-  mapM_ putStrLn pkgs
+reportBadDowngradePkgs lang pkgs = printListWithTitle red cyan msg pkgs
+    where msg = reportBadDowngradePkgsMsg1 lang
                
 getDowngradeChoice :: Language -> [String] -> String -> IO String
 getDowngradeChoice lang cache pkg = do
   let choices = getChoicesFromCache cache pkg
-  putStrLnA $ getDowngradeChoiceMsg1 lang pkg
+  putStrLnA green $ getDowngradeChoiceMsg1 lang pkg
   getSelection choices
 
 getChoicesFromCache :: [String] -> String -> [String]
@@ -254,7 +259,7 @@ searchPackageCache input = do
 --------
 displayOutputLanguages :: Language -> IO ()
 displayOutputLanguages lang = do
-  putStrLnA $ displayOutputLanguagesMsg1 lang
+  putStrLnA green $ displayOutputLanguagesMsg1 lang
   mapM_ (putStrLn . show) allLanguages
 
 printHelpMsg :: [String] -> IO ()

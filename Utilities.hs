@@ -20,12 +20,56 @@ type Pattern = (String,String)
 
 type Regex = String
 
--- COLOUR THIS!
-putStrLnA :: String -> IO ()
-putStrLnA s = putStrA $ s ++ "\n"
+data Colour = NoColour | Red | Green | Yellow | Blue | Magenta | Cyan
+            deriving (Eq,Enum)
 
-putStrA :: String -> IO ()
-putStrA s = putStr $ "aura >> " ++ s
+noColour :: Colour
+noColour = NoColour
+
+red :: Colour
+red = Red
+
+green :: Colour
+green = Green
+
+yellow :: Colour
+yellow = Yellow
+
+blue :: Colour
+blue = Blue
+
+magenta :: Colour
+magenta = Magenta
+
+cyan :: Colour
+cyan = Cyan
+
+colours :: [Colour]
+colours = [Red ..]
+
+-- Shells react to these and print text wrapped in these codes in colour.
+escapeCodes :: [String]
+escapeCodes = [ "\x1b[31m","\x1b[32m","\x1b[33m","\x1b[34m"
+              , "\x1b[35m","\x1b[36m"]
+
+-- This needs to come after a section of coloured text or bad things happen.
+resetCode :: String
+resetCode = "\x1b[0m"
+
+coloursWithCodes :: [(Colour,String)]
+coloursWithCodes = zip colours escapeCodes
+
+colourize :: Colour -> String -> String
+colourize colour msg = case colour `lookup` coloursWithCodes of
+                         Just code -> code ++ msg ++ resetCode
+                         Nothing   -> msg
+
+-- COLOUR THIS!
+putStrLnA :: Colour -> String -> IO ()
+putStrLnA colour s = putStrA colour $ s ++ "\n"
+
+putStrA :: Colour -> String -> IO ()
+putStrA colour s = putStr $ "aura >> " ++ colourize colour s
 
 -- Like break, but kills the element that triggered the break.
 hardBreak :: (a -> Bool) -> [a] -> ([a],[a])
@@ -102,7 +146,7 @@ timedMessage delay msgs = mapM_ printMessage msgs
 -- Takes a prompt message and a regex of valid answer patterns.
 yesNoPrompt :: String -> Regex -> IO Bool
 yesNoPrompt msg regex = do
-  putStrA $ msg ++ " "
+  putStrA yellow $ msg ++ " "
   hFlush stdout
   response <- getLine
   return (response =~ regex :: Bool)

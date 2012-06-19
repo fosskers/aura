@@ -2,6 +2,8 @@
 
 module AuraLanguages where
 
+import Utilities
+
 data Language = English | Japanese deriving (Eq,Enum,Show)
 
 allLanguages :: [Language]
@@ -15,7 +17,7 @@ japanese = Japanese
 
 -- Backticks
 bt :: String -> String
-bt cs = "`" ++ cs ++ "`"
+bt cs = "`" ++ colourize cyan cs ++ "`"
 
 -- AuraLib functions
 buildPackagesMsg1 :: Language -> String -> String

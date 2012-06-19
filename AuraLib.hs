@@ -133,19 +133,19 @@ installPackageFiles extraOpts files = pacman $ ["-U"] ++ extraOpts ++ files
 buildPackages :: Language -> [AURPkg] -> IO [FilePath]
 buildPackages _ []        = return []
 buildPackages lang (p:ps) = do
-  putStrLnA $ buildPackagesMsg1 lang (pkgNameOf p)
+  putStrLnA green $ buildPackagesMsg1 lang (pkgNameOf p)
   user    <- getSudoUser
   results <- withTempDir (show p) (build user p)
   case results of
     Right pkg   -> buildPackages lang ps >>= return . (\pkgs -> pkg : pkgs)
     Left output -> do
-        putStrLnA $ buildPackagesMsg2 lang (show p)
-        putStrA $ buildPackagesMsg3 lang
+        putStrLnA red $ buildPackagesMsg2 lang (show p)
+        putStrA red $ buildPackagesMsg3 lang
         timedMessage 1000000 ["3.. ","2.. ","1..\n"]
         putStrLn output
-        putStrLnA $ buildPackagesMsg4 lang
+        putStrLnA red $ buildPackagesMsg4 lang
         mapM_ (putStrLn . show) ps
-        putStrLnA $ buildPackagesMsg5 lang
+        putStrLnA yellow $ buildPackagesMsg5 lang
         answer <- yesNoPrompt (buildPackagesMsg6 lang) "^y"
         if answer then return [] else error (buildPackagesMsg7 lang)
         

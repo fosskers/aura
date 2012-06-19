@@ -10,8 +10,8 @@ import System.Exit (ExitCode(..))
 import Text.Regex.Posix ((=~))
 
 -- Custom Libraries
-import Utilities (tripleSnd, putStrLnA)
 import AuraLanguages
+import Utilities 
 
 type Args = String
 
@@ -45,7 +45,7 @@ pacmanOutput args = pacmanQuiet args >>= return . tripleSnd
 
 syncDatabase :: Language -> IO ()
 syncDatabase lang = do
-  putStrLnA $ syncDatabaseMsg1 lang
+  putStrLnA green $ syncDatabaseMsg1 lang
   pacman ["-Sy"]
 
 packageCacheContents :: IO [String]
