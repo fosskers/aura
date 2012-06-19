@@ -5,6 +5,8 @@ module AuraLogo where
 import Control.Concurrent (threadDelay)
 import System.IO (stdout, hFlush)
 
+import Utilities (colourize, yellow, red)
+
 data MouthState = Open | Closed deriving (Eq)
 
 -- Taken from: figlet -f small "aura"
@@ -14,21 +16,24 @@ auraLogo = " __ _ _  _ _ _ __ _ \n" ++
            "\\__,_|\\_,_|_| \\__,_|"
 
 openMouth :: [String]
-openMouth = [ " .--."
+openMouth = map (colourize yellow)
+            [ " .--."
             , "/ _.-'"
             , "\\  '-."
             , " '--'"
             ]
 
 closedMouth :: [String]
-closedMouth = [ " .--."
+closedMouth = map (colourize yellow)
+              [ " .--."
               , "/ _..\\"
               , "\\  ''/"
               , " '--'"
               ]
 
 pill :: [String]
-pill = [ ""
+pill = map (colourize red)
+       [ ""
        , ".-."
        , "'-'"
        , ""

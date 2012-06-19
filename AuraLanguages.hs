@@ -2,7 +2,7 @@
 
 module AuraLanguages where
 
-import Utilities
+import Utilities (colourize, cyan)
 
 data Language = English | Japanese deriving (Eq,Enum,Show)
 
