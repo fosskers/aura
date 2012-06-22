@@ -7,7 +7,7 @@ module AuraLib where
 import System.Directory (renameFile, getCurrentDirectory, setCurrentDirectory)
 import System.Posix.Files (setFileMode, accessModes)
 import System.FilePath ((</>))
-import Control.Monad (filterM)
+import Control.Monad (filterM, when)
 import Text.Regex.Posix ((=~))
 import Data.List ((\\), nub)
 import Data.Maybe (fromJust)
@@ -125,11 +125,7 @@ installPackageFiles :: [String] -> [FilePath] -> IO ()
 installPackageFiles extraOpts files = pacman $ ["-U"] ++ extraOpts ++ files
 
 -- Handles the building of Packages.
--- Assumed: All pacman dependencies are already installed.
---          All AUR dependencies have been added so that they come first.
--- NOTE!! Building AUR packages will fuck up if there are AUR
--- build depends that weren't installed first!!!
--- FIX THIS!!
+-- Assumed: All pacman and AUR dependencies are already installed.
 buildPackages :: Language -> [AURPkg] -> IO [FilePath]
 buildPackages _ []        = return []
 buildPackages lang (p:ps) = do
@@ -138,13 +134,13 @@ buildPackages lang (p:ps) = do
   results <- withTempDir (show p) (build user p)
   case results of
     Right pkg   -> buildPackages lang ps >>= return . (\pkgs -> pkg : pkgs)
-    Left output -> do
+    Left errors -> do
         putStrLnA red $ buildPackagesMsg2 lang (show p)
         putStrA red $ buildPackagesMsg3 lang
         timedMessage 1000000 ["3.. ","2.. ","1..\n"]
-        putStrLn output
-        putStrLnA red $ buildPackagesMsg4 lang
-        mapM_ (putStrLn . show) ps
+        putStrLn errors
+        when (notNull ps) ((putStrLnA red $ buildPackagesMsg4 lang) >>
+                           mapM_ (putStrLn . show) ps)
         putStrLnA yellow $ buildPackagesMsg5 lang
         answer <- yesNoPrompt (buildPackagesMsg6 lang) "^y"
         if answer then return [] else error (buildPackagesMsg7 lang)
@@ -181,7 +177,7 @@ getDepsToInstall lang pkgs toIgnore = do
   necAURPkgs <- filterM (mustInstall . show) as
   necVirPkgs <- filterM mustInstall vs >>= mapM makeVirtualPkg
   let conflicts = getConflicts lang toIgnore necPacPkgs necAURPkgs necVirPkgs
-  if not $ null conflicts
+  if notNull conflicts
      then return $ Left conflicts
      else do
        let providers  = map (pkgNameOf . fromJust . providerPkgOf) necVirPkgs
@@ -199,7 +195,6 @@ determineDeps lang pkg = do
   let (ps,as,os) = foldl groupPkgs (archPkgNames,aurPkgs,other) recursiveDeps
   return (nub ps, nub as, nub os)
 
--- Note: Make sure to run this on the Virtual Packages first.
 mustInstall :: String -> IO Bool
 mustInstall pkg = do
   necessaryDeps <- pacmanOutput $ ["-T",pkg]

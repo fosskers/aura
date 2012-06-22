@@ -15,10 +15,35 @@ packages are depended on, and what packages use "fringe" dependencies.
 The goal would be to reduce the amount of programs that use these fringe
 dependencies, or make it so that they use more mainstream libraries, etc.
 
+CACHE DIR
+---------
+Check `pacman.conf` for the location of the cache dir.
+If a different one isn't specific then of course use the default.
+
+SETTINGS
+--------
+In future, a `Settings` data type may have to be created to store
+Language choice, Verbosity choice, Prompting choice, etc.
+For Verbosity, it will stop suppressing makepkg output and activate
+pacman verbosity as well.
+
+WELCOME MESSAGE
+---------------
+When aura is used for the first time, print a welcome message explaining it
+and its philosophy (no default prompting to view PKGBUILDs, etc).
+After that, write a file called `.aura_used` to a predictable location.
+When running aura, if that file does not exist, we know aura hasn't been
+used yet.
+If aura is run for the first time and a language flag is included, print
+the welcome message in that language.
+
 OPTIONS TO IMPLEMENT
 --------------------
 -As -> `--search` Search for an AUR package
 -Av -> `--verbose` Doesn't suppress makepkg output.
+-Cc -> `--clean` Deletes old packages. Users can supply how many versions
+       they want to keep.
+-Cb? -> `--backup`? Backs up the package cache to a given directory.
 
 OUT OF DATE
 -----------

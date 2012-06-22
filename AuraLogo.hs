@@ -5,7 +5,7 @@ module AuraLogo where
 import Control.Concurrent (threadDelay)
 import System.IO (stdout, hFlush)
 
-import Utilities (colourize, yellow, red)
+import Utilities (colourize, yellow)
 
 data MouthState = Open | Closed deriving (Eq)
 
@@ -32,8 +32,7 @@ closedMouth = map (colourize yellow)
               ]
 
 pill :: [String]
-pill = map (colourize red)
-       [ ""
+pill = [ ""
        , ".-."
        , "'-'"
        , ""
