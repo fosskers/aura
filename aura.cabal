@@ -1,6 +1,6 @@
 name:                aura
 
-version:             0.4.4.0
+version:             0.4.4.1
 
 synopsis:            A package manager for Arch Linux and the AUR, written in Haskell.
 

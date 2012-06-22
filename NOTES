@@ -23,7 +23,8 @@ If a different one isn't specific then of course use the default.
 SETTINGS
 --------
 In future, a `Settings` data type may have to be created to store
-Language choice, Verbosity choice, Prompting choice, etc.
+Language choice, Verbosity choice, Prompting choice, package cache location,
+etc.
 For Verbosity, it will stop suppressing makepkg output and activate
 pacman verbosity as well.
 

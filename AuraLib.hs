@@ -22,6 +22,9 @@ import Pacman
 
 type ErrorMsg = String
 
+-----------
+-- PACKAGES
+-----------
 class Package a where
     pkgNameOf :: a -> String
     versionOf :: a -> Versioning                 
@@ -164,7 +167,7 @@ build user pkg = do
 -- Moves a file to the pacman package cache and returns its location.
 moveToCache :: FilePath -> IO FilePath
 moveToCache pkg = renameFile pkg newName >> return newName
-    where newName = packageCache </> pkg
+    where newName = defaultPackageCache </> pkg
 
 -- Returns either a list of error message or the deps to be installed.
 getDepsToInstall :: Language -> [AURPkg] -> [String] ->

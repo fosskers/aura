@@ -19,8 +19,8 @@ type Arg = String
 pacmanConfFile :: FilePath
 pacmanConfFile = "/etc/pacman.conf"
 
-packageCache :: FilePath
-packageCache = "/var/cache/pacman/pkg/"
+defaultPackageCache :: FilePath
+defaultPackageCache = "/var/cache/pacman/pkg/"
 
 pacman :: [Arg] -> IO ()
 pacman args = rawSystem "pacman" args >> return ()
@@ -50,16 +50,25 @@ syncDatabase lang = do
   hFlush stdout  -- This is experimental. Trying to fix a colour bug.
   pacman ["-Sy"]
 
-packageCacheContents :: IO [String]
-packageCacheContents = getDirectoryContents packageCache
+-- This takes the contents of pacman.conf as an arg.
+packageCacheContents :: String -> IO [String]
+packageCacheContents = getDirectoryContents . getCachePath
 
 getPacmanConf :: IO String
 getPacmanConf = readFile pacmanConfFile
 
+getConfFileField :: String -> String -> [String]
+getConfFileField confFile field = words $ takeWhile (not . (==) '\n') entry
+    where (_,_,entry) = confFile =~ field :: (String,String,String)
+
 getIgnoredPkgs :: String -> [String]
-getIgnoredPkgs confFile = words $ takeWhile (not . (==) '\n') field
-    where (_,_,field) = confFile =~ pattern :: (String,String,String)
-          pattern     = "^IgnorePkg[ ]+= "
+getIgnoredPkgs confFile = getConfFileField confFile "^IgnorePkg[ ]+=[ ]+"
+
+getCachePath :: String -> FilePath
+getCachePath confFile = case getConfFileField confFile pattern of
+                          []    -> defaultPackageCache
+                          entry -> head entry
+    where pattern = "^CacheDir[ ]+=[ ]+"
 
 getPacmanHelpMsg :: IO [String]
 getPacmanHelpMsg = do

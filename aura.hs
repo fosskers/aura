@@ -75,7 +75,7 @@ languageMsg :: String
 languageMsg = usageInfo "Language options:" languageOptions
 
 auraVersion :: String
-auraVersion = "0.4.4.0"
+auraVersion = "0.4.4.1"
 
 main :: IO ()
 main = do
@@ -224,12 +224,14 @@ displayPkgbuild lang pkgs = do
 --------------------
 downgradePackages :: Language -> [String] -> IO ()
 downgradePackages lang pkgs = do
-  cache     <- packageCacheContents
+  confFile  <- getPacmanConf
+  cache     <- packageCacheContents confFile
   installed <- filterM isInstalled pkgs
   let notInstalled = pkgs \\ installed
+      cachePath    = getCachePath confFile
   when (not $ null notInstalled) (reportBadDowngradePkgs lang notInstalled)
   selections <- mapM (getDowngradeChoice lang cache) installed
-  pacman $ ["-U"] ++ map (packageCache </>) selections
+  pacman $ ["-U"] ++ map (cachePath </>) selections
 
 reportBadDowngradePkgs :: Language -> [String] -> IO ()
 reportBadDowngradePkgs lang pkgs = printListWithTitle red cyan msg pkgs
@@ -245,11 +247,10 @@ getChoicesFromCache :: [String] -> String -> [String]
 getChoicesFromCache cache pkg = sort choices
     where choices = filter (\p -> p =~ ("^" ++ pkg ++ "-[0-9]")) cache
 
--- As a one-liner if I felt like it:
--- packageCacheContents >>= mapM_ putStrLn . sort . filter (\p -> p =~ pat)
 searchPackageCache :: [String] -> IO ()
 searchPackageCache input = do
-  cache <- packageCacheContents
+  confFile <- getPacmanConf
+  cache    <- packageCacheContents confFile
   let pattern = unwords input
       matches = sort $ filter (\p -> p =~ pattern) cache
   mapM_ putStrLn matches
