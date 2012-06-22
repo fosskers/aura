@@ -22,6 +22,14 @@ import Pacman
 
 type ErrorMsg = String
 
+data Settings = Settings { langOf :: Language
+                         , ignoredPkgsOf :: [String]
+                         , cachePathOf ::FilePath
+                         }
+
+makeSettings :: Language -> [String] -> FilePath -> Settings
+makeSettings lang toIgnore cachePath = Settings lang toIgnore cachePath
+
 -----------
 -- PACKAGES
 -----------
@@ -129,14 +137,14 @@ installPackageFiles extraOpts files = pacman $ ["-U"] ++ extraOpts ++ files
 
 -- Handles the building of Packages.
 -- Assumed: All pacman and AUR dependencies are already installed.
-buildPackages :: Language -> [AURPkg] -> IO [FilePath]
+buildPackages :: Settings -> [AURPkg] -> IO [FilePath]
 buildPackages _ []        = return []
-buildPackages lang (p:ps) = do
+buildPackages settings (p:ps) = do
   putStrLnA green $ buildPackagesMsg1 lang (pkgNameOf p)
   user    <- getSudoUser
-  results <- withTempDir (show p) (build user p)
+  results <- withTempDir (show p) (build cachePath user p)
   case results of
-    Right pkg   -> buildPackages lang ps >>= return . (\pkgs -> pkg : pkgs)
+    Right pkg   -> buildPackages settings ps >>= return . (\pkgs -> pkg : pkgs)
     Left errors -> do
         putStrLnA red $ buildPackagesMsg2 lang (show p)
         putStrA red $ buildPackagesMsg3 lang
@@ -147,9 +155,11 @@ buildPackages lang (p:ps) = do
         putStrLnA yellow $ buildPackagesMsg5 lang
         answer <- yesNoPrompt (buildPackagesMsg6 lang) "^y"
         if answer then return [] else error (buildPackagesMsg7 lang)
+    where lang      = langOf settings
+          cachePath = cachePathOf settings
         
-build :: String -> AURPkg -> IO (Either String FilePath)
-build user pkg = do
+build :: FilePath -> String -> AURPkg -> IO (Either String FilePath)
+build cachePath user pkg = do
   currDir <- getCurrentDirectory
   setFileMode currDir accessModes  -- Gives write access to the temp folder.
   tarball   <- downloadSource currDir $ pkgNameOf pkg
@@ -160,20 +170,20 @@ build user pkg = do
   if not $ didProcessSucceed exitStatus
      then return $ Left output
      else do
-       path <- moveToCache pkgName
+       path <- moveToCache cachePath pkgName
        setCurrentDirectory currDir
        return $ Right path
 
 -- Moves a file to the pacman package cache and returns its location.
-moveToCache :: FilePath -> IO FilePath
-moveToCache pkg = renameFile pkg newName >> return newName
-    where newName = defaultPackageCache </> pkg
+moveToCache :: FilePath -> FilePath -> IO FilePath
+moveToCache cachePath pkg = renameFile pkg newName >> return newName
+    where newName = cachePath </> pkg
 
 -- Returns either a list of error message or the deps to be installed.
-getDepsToInstall :: Language -> [AURPkg] -> [String] ->
+getDepsToInstall :: Settings -> [AURPkg] -> 
                     IO (Either [ErrorMsg] ([String],[AURPkg]))
-getDepsToInstall lang [] _ = return $ Left [getDepsToInstallMsg1 lang]
-getDepsToInstall lang pkgs toIgnore = do
+getDepsToInstall ss [] = return $ Left [getDepsToInstallMsg1 (langOf ss)]
+getDepsToInstall ss pkgs = do
   allDeps <- mapM (determineDeps lang) pkgs  -- Can this be done with foldM?
   let (ps,as,vs) = foldl groupPkgs ([],[],[]) allDeps
   necPacPkgs <- filterM mustInstall ps >>= mapM makePacmanPkg
@@ -186,6 +196,8 @@ getDepsToInstall lang pkgs toIgnore = do
        let providers  = map (pkgNameOf . fromJust . providerPkgOf) necVirPkgs
            pacmanPkgs = map pkgNameOf necPacPkgs
        return $ Right (nub $ providers ++ pacmanPkgs, necAURPkgs)
+    where lang     = langOf ss
+          toIgnore = ignoredPkgsOf ss
 
 -- Returns ([PacmanPackages], [AURPackages], [VirtualPackages])
 determineDeps :: Language -> AURPkg -> IO ([String],[AURPkg],[String])

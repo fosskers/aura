@@ -81,8 +81,12 @@ main :: IO ()
 main = do
   args <- getArgs
   (auraFlags,pacFlags,input) <- parseOpts args
+  confFile <- getPacmanConf
   let (lang,auraFlags') = getLanguage auraFlags
-  executeOpts lang (auraFlags',pacFlags,input)
+      toIgnore  = getIgnoredPkgs confFile
+      cachePath = getCachePath confFile
+      settings  = makeSettings lang toIgnore cachePath
+  executeOpts settings (auraFlags',pacFlags,input)
 
 parseOpts :: [String] -> IO ([Flag],[String],[String])
 parseOpts args = case getOpt' Permute allFlags args of
@@ -92,23 +96,23 @@ getLanguage :: [Flag] -> (Language,[Flag])
 getLanguage flags | JapOut `elem` flags = (japanese, delete JapOut flags)
                   | otherwise           = (english, flags)
 
-executeOpts :: Language -> ([Flag],[String],[String]) -> IO ()
-executeOpts lang (flags,input,pacOpts) =
+executeOpts :: Settings -> ([Flag],[String],[String]) -> IO ()
+executeOpts ss (flags,input,pacOpts) =
     case sort flags of
       (AURInstall:fs) -> case fs of
-                           []            -> installPackages lang pacOpts input
-                           [Upgrade]     -> upgradeAURPkgs lang pacOpts input
-                           [Download]    -> downloadTarballs lang  input
-                           [GetPkgbuild] -> displayPkgbuild lang input
+                           []            -> installPackages ss pacOpts input
+                           [Upgrade]     -> upgradeAURPkgs ss pacOpts input
+                           [Download]    -> downloadTarballs (langOf ss) input
+                           [GetPkgbuild] -> displayPkgbuild (langOf ss) input
                            (Refresh:fs') -> do 
-                              syncDatabase lang
-                              executeOpts lang (AURInstall:fs',input,pacOpts)
-                           badFlags -> putStrLnA red $ executeOptsMsg1 lang
+                              syncDatabase (langOf ss)
+                              executeOpts ss (AURInstall:fs',input,pacOpts)
+                           _ -> putStrLnA red $ executeOptsMsg1 (langOf ss)
       (Cache:fs)  -> case fs of
-                       []       -> downgradePackages lang input
-                       [Search] -> searchPackageCache input
-                       badFlags -> putStrLnA red $ executeOptsMsg1 lang
-      [Languages] -> displayOutputLanguages lang
+                       []       -> downgradePackages ss input
+                       [Search] -> searchPackageCache ss input
+                       _ -> putStrLnA red $ executeOptsMsg1 (langOf ss)
+      [Languages] -> displayOutputLanguages $ langOf ss
       [Help]      -> printHelpMsg pacOpts
       [Version]   -> getVersionInfo >>= animateVersionMsg
       _           -> pacman $ pacOpts ++ input ++ map reconvertFlag flags
@@ -116,20 +120,19 @@ executeOpts lang (flags,input,pacOpts) =
 --------------------
 -- WORKING WITH `-A`
 --------------------      
-installPackages :: Language -> [String] -> [String] -> IO ()
+installPackages :: Settings -> [String] -> [String] -> IO ()
 installPackages _ _ [] = return ()
-installPackages lang pacOpts pkgs = do
-  confFile <- getPacmanConf
+installPackages settings pacOpts pkgs = do
   let uniques   = nub pkgs
-      toIgnore  = getIgnoredPkgs confFile
-      toInstall = uniques \\ toIgnore
+      toInstall = uniques \\ ignoredPkgsOf settings
       ignored   = uniques \\ toInstall
+      lang      = langOf settings
   reportIgnoredPackages lang ignored
   (forPacman,aurPkgNames,nonPkgs) <- divideByPkgType toInstall
   reportNonPackages lang nonPkgs
   aurPackages <- mapM makeAURPkg aurPkgNames
   putStrLnA green $ installPackagesMsg5 lang
-  results     <- getDepsToInstall lang aurPackages toIgnore
+  results     <- getDepsToInstall settings aurPackages
   case results of
     Left errors -> do
       printListWithTitle red noColour (installPackagesMsg1 lang) errors
@@ -142,8 +145,8 @@ installPackages lang pacOpts pkgs = do
          then putStrLnA red $ installPackagesMsg4 lang
          else do
            when (notNull pacPkgs) (pacman $ ["-S","--asdeps"] ++ pkgsAndOpts)
-           mapM_ (buildAndInstallDep lang) aurDeps
-           pkgFiles <- buildPackages lang aurPackages
+           mapM_ (buildAndInstallDep settings) aurDeps
+           pkgFiles <- buildPackages settings aurPackages
            installPackageFiles [] pkgFiles
 
 printListWithTitle :: Colour -> Colour -> String -> [String] -> IO ()
@@ -175,25 +178,24 @@ reportPkgsToInstall lang pacPkgs aurDeps aurPkgs = do
             printPkgNameCyan = putStrLn . colourize cyan . pkgNameOf
             g = green
 
-buildAndInstallDep :: Language -> AURPkg -> IO ()
-buildAndInstallDep lang pkg = do
-  path <- buildPackages lang [pkg]
+buildAndInstallDep :: Settings -> AURPkg -> IO ()
+buildAndInstallDep settings pkg = do
+  path <- buildPackages settings [pkg]
   installPackageFiles ["--asdeps"] path
                
-upgradeAURPkgs :: Language -> [String] -> [String] -> IO ()
-upgradeAURPkgs lang pacOpts pkgs = do
+upgradeAURPkgs :: Settings -> [String] -> [String] -> IO ()
+upgradeAURPkgs settings pacOpts pkgs = do
   putStrLnA green $ upgradeAURPkgsMsg1 lang
   installedPkgs <- getInstalledAURPackages
-  confFile      <- getPacmanConf
-  let toIgnore   = getIgnoredPkgs confFile
-      notIgnored = \p -> fst (splitNameAndVer p) `notElem` toIgnore
-      legitPkgs  = filter notIgnored installedPkgs
-  toCheck <- mapM fetchAndReport legitPkgs
+  toCheck       <- mapM fetchAndReport $ filter notIgnored installedPkgs
   putStrLnA green $ upgradeAURPkgsMsg2 lang
   let toUpgrade = map pkgNameOf . filter (not . isOutOfDate) $ toCheck
   when (null toUpgrade) (putStrLnA yellow $ upgradeAURPkgsMsg3 lang)
-  installPackages lang pacOpts $ toUpgrade ++ pkgs
-    where fetchAndReport p = do
+  installPackages settings pacOpts $ toUpgrade ++ pkgs
+    where lang       = langOf settings
+          toIgnore   = ignoredPkgsOf settings
+          notIgnored = \p -> fst (splitNameAndVer p) `notElem` toIgnore
+          fetchAndReport p = do
             aurPkg <- makeAURPkg p
             putStrLnA noColour $ upgradeAURPkgsMsg4 lang (pkgNameOf aurPkg)
             return aurPkg
@@ -211,27 +213,25 @@ downloadTarballs lang pkgs = do
 displayPkgbuild :: Language -> [String] -> IO ()
 displayPkgbuild lang pkgs = do
   mapM_ displayEach pkgs
-  --putStrLnA $ displayPkgbuildMsg1 lang
     where displayEach pkg = do
-            --putStrLnA $ displayPkgbuildMsg2 lang pkg
             itExists <- doesUrlExist $ getPkgbuildUrl pkg
             if itExists
                then downloadPkgbuild pkg >>= putStrLn
-               else putStrLnA red $ displayPkgbuildMsg3 lang pkg
+               else putStrLnA red $ displayPkgbuildMsg1 lang pkg
 
 --------------------
 -- WORKING WITH `-C`
 --------------------
-downgradePackages :: Language -> [String] -> IO ()
-downgradePackages lang pkgs = do
-  confFile  <- getPacmanConf
-  cache     <- packageCacheContents confFile
+downgradePackages :: Settings -> [String] -> IO ()
+downgradePackages settings pkgs = do
+  cache     <- packageCacheContents cachePath
   installed <- filterM isInstalled pkgs
   let notInstalled = pkgs \\ installed
-      cachePath    = getCachePath confFile
   when (not $ null notInstalled) (reportBadDowngradePkgs lang notInstalled)
   selections <- mapM (getDowngradeChoice lang cache) installed
   pacman $ ["-U"] ++ map (cachePath </>) selections
+      where cachePath = cachePathOf settings
+            lang      = langOf settings
 
 reportBadDowngradePkgs :: Language -> [String] -> IO ()
 reportBadDowngradePkgs lang pkgs = printListWithTitle red cyan msg pkgs
@@ -247,10 +247,9 @@ getChoicesFromCache :: [String] -> String -> [String]
 getChoicesFromCache cache pkg = sort choices
     where choices = filter (\p -> p =~ ("^" ++ pkg ++ "-[0-9]")) cache
 
-searchPackageCache :: [String] -> IO ()
-searchPackageCache input = do
-  confFile <- getPacmanConf
-  cache    <- packageCacheContents confFile
+searchPackageCache :: Settings -> [String] -> IO ()
+searchPackageCache settings input = do
+  cache <- packageCacheContents $ cachePathOf settings
   let pattern = unwords input
       matches = sort $ filter (\p -> p =~ pattern) cache
   mapM_ putStrLn matches

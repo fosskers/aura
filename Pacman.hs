@@ -23,7 +23,7 @@ defaultPackageCache :: FilePath
 defaultPackageCache = "/var/cache/pacman/pkg/"
 
 pacman :: [Arg] -> IO ()
-pacman args = rawSystem "pacman" args >> return ()
+pacman args = hFlush stdout >> rawSystem "pacman" args >> return ()
 
 -- Runs pacman without producing any output.
 pacmanQuiet :: [Arg] -> IO (ExitCode,String,String)
@@ -47,12 +47,11 @@ pacmanOutput args = pacmanQuiet args >>= return . tripleSnd
 syncDatabase :: Language -> IO ()
 syncDatabase lang = do
   putStrLnA green $ syncDatabaseMsg1 lang
-  hFlush stdout  -- This is experimental. Trying to fix a colour bug.
   pacman ["-Sy"]
 
--- This takes the contents of pacman.conf as an arg.
-packageCacheContents :: String -> IO [String]
-packageCacheContents = getDirectoryContents . getCachePath
+-- This takes the filepath of the package cache as an argument.
+packageCacheContents :: FilePath -> IO [String]
+packageCacheContents = getDirectoryContents
 
 getPacmanConf :: IO String
 getPacmanConf = readFile pacmanConfFile

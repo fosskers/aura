@@ -165,19 +165,9 @@ downloadTarballsMsg1 English p  =
 downloadTarballsMsg1 Japanese p =
     bt p ++ "のソースコードのターボールをダウンロード中・・・"
 
-displayPkgbuildMsg1 :: Language -> String
-displayPkgbuildMsg1 English =
-    "Make sure to thoroughly check PKGBUILDs before installing packages."
-displayPkgbuildMsg1 Japanese =
-    "パッケージをインストールする前は必ずPKGBUILDの内容を確認した方がいい。"
-
-displayPkgbuildMsg2 :: Language -> String -> String
-displayPkgbuildMsg2 English pkg  = "Showing PKGBUILD for " ++ bt pkg ++ "..."
-displayPkgbuildMsg2 Japanese pkg = bt pkg ++ "のPKGBUILDは出力される。"
-
-displayPkgbuildMsg3 :: Language -> String -> String
-displayPkgbuildMsg3 English pkg  = bt pkg ++ " does not exist."
-displayPkgbuildMsg3 Japanese pkg = bt pkg ++ "は存在しない。"
+displayPkgbuildMsg1 :: Language -> String -> String
+displayPkgbuildMsg1 English pkg  = bt pkg ++ " does not exist."
+displayPkgbuildMsg1 Japanese pkg = bt pkg ++ "は存在しない。"
 
 getDowngradeChoiceMsg1 :: Language -> String -> String
 getDowngradeChoiceMsg1 English p =
