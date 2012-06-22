@@ -20,6 +20,9 @@ type Pattern = (String,String)
 
 type Regex = String
 
+------------------
+-- COLOURED OUTPUT
+------------------
 data Colour = NoColour | Red | Green | Yellow | Blue | Magenta | Cyan
             deriving (Eq,Enum)
 
@@ -56,14 +59,23 @@ escapeCodes = [ "\x1b[31m","\x1b[32m","\x1b[33m","\x1b[34m"
 resetCode :: String
 resetCode = "\x1b[0m"
 
+resetCodeRegex :: String
+resetCodeRegex = "\x1b\\[0m"
+
 coloursWithCodes :: [(Colour,String)]
 coloursWithCodes = zip colours escapeCodes
 
-colourize :: Colour -> String -> String
-colourize colour msg = case colour `lookup` coloursWithCodes of
-                         Just code -> code ++ msg ++ resetCode
-                         Nothing   -> msg
-
+colourize:: Colour -> String -> String
+colourize colour msg =
+    case colour `lookup` coloursWithCodes of
+      Nothing   -> msg
+      Just code -> insertCodes code msg
+        where insertCodes code msg =
+                  case msg =~ resetCodeRegex :: (String,String,String) of
+                    (_,"","") -> code ++ msg ++ resetCode
+                    (_,_,"")  -> msg  -- We're done recursing.
+                    (b,m,a)   -> insertCodes code (b ++ code ++ a)
+  
 -- COLOUR THIS!
 putStrLnA :: Colour -> String -> IO ()
 putStrLnA colour s = putStrA colour $ s ++ "\n"

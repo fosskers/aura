@@ -2,7 +2,7 @@ name:                aura
 
 version:             0.4.4.0
 
-synopsis:            A package manager for Arch Linux and the AUR.
+synopsis:            A package manager for Arch Linux and the AUR, written in Haskell.
 
 description:         `aura` is a package manager for Arch Linux written
                      in Haskell. It connects to both the official Arch

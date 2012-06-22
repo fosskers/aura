@@ -1,4 +1,4 @@
--- pacman interface.
+-- An interface to `pacman`.
 -- Takes any pacman arguments and applies it to pacman through the shell.
 
 module Pacman where
@@ -7,13 +7,14 @@ module Pacman where
 import System.Process (readProcessWithExitCode, rawSystem)
 import System.Directory (getDirectoryContents)
 import System.Exit (ExitCode(..))
+import System.IO (hFlush, stdout)
 import Text.Regex.Posix ((=~))
 
 -- Custom Libraries
 import AuraLanguages
 import Utilities 
 
-type Args = String
+type Arg = String
 
 pacmanConfFile :: FilePath
 pacmanConfFile = "/etc/pacman.conf"
@@ -21,31 +22,32 @@ pacmanConfFile = "/etc/pacman.conf"
 packageCache :: FilePath
 packageCache = "/var/cache/pacman/pkg/"
 
-pacman :: [Args] -> IO ()
+pacman :: [Arg] -> IO ()
 pacman args = rawSystem "pacman" args >> return ()
 
 -- Runs pacman without producing any output.
-pacmanQuiet :: [Args] -> IO (ExitCode,String,String)
+pacmanQuiet :: [Arg] -> IO (ExitCode,String,String)
 pacmanQuiet args = readProcessWithExitCode "pacman" args ""
 
 -- Did a pacman process succeed?
-pacmanSuccess :: [Args] -> IO Bool
+pacmanSuccess :: [Arg] -> IO Bool
 pacmanSuccess args = do
   (exitStatus,_,_) <- pacmanQuiet args
   case exitStatus of
     ExitSuccess -> return True
     _           -> return False
 
-pacmanFailure :: [Args] -> IO Bool
+pacmanFailure :: [Arg] -> IO Bool
 pacmanFailure args = pacmanSuccess args >>= return . not
 
 -- Performs a pacmanQuiet and returns only the stdout.
-pacmanOutput :: [Args] -> IO String
+pacmanOutput :: [Arg] -> IO String
 pacmanOutput args = pacmanQuiet args >>= return . tripleSnd
 
 syncDatabase :: Language -> IO ()
 syncDatabase lang = do
   putStrLnA green $ syncDatabaseMsg1 lang
+  hFlush stdout  -- This is experimental. Trying to fix a colour bug.
   pacman ["-Sy"]
 
 packageCacheContents :: IO [String]
