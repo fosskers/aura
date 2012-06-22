@@ -15,11 +15,6 @@ packages are depended on, and what packages use "fringe" dependencies.
 The goal would be to reduce the amount of programs that use these fringe
 dependencies, or make it so that they use more mainstream libraries, etc.
 
-CACHE DIR
----------
-Check `pacman.conf` for the location of the cache dir.
-If a different one isn't specific then of course use the default.
-
 SETTINGS
 --------
 In future, a `Settings` data type may have to be created to store
@@ -45,6 +40,8 @@ OPTIONS TO IMPLEMENT
 -Cc -> `--clean` Deletes old packages. Users can supply how many versions
        they want to keep.
 -Cb? -> `--backup`? Backs up the package cache to a given directory.
+-Ci -> `--info` Gives some stats about the package cache.
+-   -> `--prompt` Prompt the user if they want to view PKGBUILDs.
 
 OUT OF DATE
 -----------

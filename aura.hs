@@ -97,22 +97,24 @@ getLanguage flags | JapOut `elem` flags = (japanese, delete JapOut flags)
                   | otherwise           = (english, flags)
 
 executeOpts :: Settings -> ([Flag],[String],[String]) -> IO ()
-executeOpts ss (flags,input,pacOpts) =
+executeOpts settings (flags,input,pacOpts) =
     case sort flags of
-      (AURInstall:fs) -> case fs of
-                           []            -> installPackages ss pacOpts input
-                           [Upgrade]     -> upgradeAURPkgs ss pacOpts input
-                           [Download]    -> downloadTarballs (langOf ss) input
-                           [GetPkgbuild] -> displayPkgbuild (langOf ss) input
-                           (Refresh:fs') -> do 
-                              syncDatabase (langOf ss)
-                              executeOpts ss (AURInstall:fs',input,pacOpts)
-                           _ -> putStrLnA red $ executeOptsMsg1 (langOf ss)
-      (Cache:fs)  -> case fs of
-                       []       -> downgradePackages ss input
-                       [Search] -> searchPackageCache ss input
-                       _ -> putStrLnA red $ executeOptsMsg1 (langOf ss)
-      [Languages] -> displayOutputLanguages $ langOf ss
+      (AURInstall:fs) ->
+          case fs of
+            []            -> installPackages settings pacOpts input
+            [Upgrade]     -> upgradeAURPkgs settings pacOpts input
+            [Download]    -> downloadTarballs (langOf settings) input
+            [GetPkgbuild] -> displayPkgbuild (langOf settings) input
+            (Refresh:fs') -> do 
+                      syncDatabase (langOf settings)
+                      executeOpts settings (AURInstall:fs',input,pacOpts)
+            _ -> putStrLnA red $ executeOptsMsg1 (langOf settings)
+      (Cache:fs)  ->
+          case fs of
+            []       -> downgradePackages settings input
+            [Search] -> searchPackageCache settings input
+            _ -> putStrLnA red $ executeOptsMsg1 (langOf settings)
+      [Languages] -> displayOutputLanguages $ langOf settings
       [Help]      -> printHelpMsg pacOpts
       [Version]   -> getVersionInfo >>= animateVersionMsg
       _           -> pacman $ pacOpts ++ input ++ map reconvertFlag flags

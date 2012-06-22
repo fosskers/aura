@@ -337,6 +337,9 @@ isVirtualPkg pkg = do
     Just _  -> return True
     Nothing -> return False
 
+countInstalledPackages :: IO Int
+countInstalledPackages = pacmanOutput ["-Qsq"] >>= return . length . lines  
+
 splitNameAndVer :: String -> (String,String)
 splitNameAndVer pkg = (before,after)
     where (before,_,after) = (pkg =~ "[<>=]+" :: (String,String,String))
