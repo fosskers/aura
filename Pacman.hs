@@ -44,6 +44,7 @@ pacmanFailure args = pacmanSuccess args >>= return . not
 pacmanOutput :: [Arg] -> IO String
 pacmanOutput args = pacmanQuiet args >>= return . tripleSnd
 
+-- QUESTION: Does `-v` affect this?
 syncDatabase :: Language -> IO ()
 syncDatabase lang = do
   putStrLnA green $ syncDatabaseMsg1 lang

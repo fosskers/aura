@@ -24,11 +24,12 @@ type ErrorMsg = String
 
 data Settings = Settings { langOf :: Language
                          , ignoredPkgsOf :: [String]
-                         , cachePathOf ::FilePath
+                         , cachePathOf :: FilePath
+                         , suppressMakepkg :: Bool
                          }
 
-makeSettings :: Language -> [String] -> FilePath -> Settings
-makeSettings lang toIgnore cachePath = Settings lang toIgnore cachePath
+makeSettings :: Language -> [String] -> FilePath -> Bool -> Settings
+makeSettings lang ignored cPath supp = Settings lang ignored cPath supp
 
 -----------
 -- PACKAGES
@@ -142,37 +143,48 @@ buildPackages _ []        = return []
 buildPackages settings (p:ps) = do
   putStrLnA green $ buildPackagesMsg1 lang (pkgNameOf p)
   user    <- getSudoUser
-  results <- withTempDir (show p) (build cachePath user p)
+  results <- withTempDir (show p) (build toSuppress cachePath user p)
   case results of
     Right pkg   -> buildPackages settings ps >>= return . (\pkgs -> pkg : pkgs)
-    Left errors -> do
-        putStrLnA red $ buildPackagesMsg2 lang (show p)
-        putStrA red $ buildPackagesMsg3 lang
-        timedMessage 1000000 ["3.. ","2.. ","1..\n"]
-        putStrLn errors
-        when (notNull ps) ((putStrLnA red $ buildPackagesMsg4 lang) >>
-                           mapM_ (putStrLn . show) ps)
-        putStrLnA yellow $ buildPackagesMsg5 lang
-        answer <- yesNoPrompt (buildPackagesMsg6 lang) "^y"
-        if answer then return [] else error (buildPackagesMsg7 lang)
-    where lang      = langOf settings
-          cachePath = cachePathOf settings
+    Left errors -> do        
+        toContinue <- buildFail settings (p:ps) errors
+        if toContinue then return [] else error (buildPackagesMsg7 lang)
+    where lang       = langOf settings
+          toSuppress = suppressMakepkg settings
+          cachePath  = cachePathOf settings
         
-build :: FilePath -> String -> AURPkg -> IO (Either String FilePath)
-build cachePath user pkg = do
+buildFail :: Settings -> [AURPkg] -> ErrorMsg -> IO Bool
+buildFail settings (p:ps) errors = do
+  putStrLnA red $ buildPackagesMsg2 lang (show p)
+  when (suppressMakepkg settings) (displayBuildErrors lang errors)
+  when (notNull ps) ((putStrLnA red $ buildPackagesMsg4 lang) >>
+                     mapM_ (putStrLn . colourize cyan . pkgNameOf) ps)
+  putStrLnA yellow $ buildPackagesMsg5 lang
+  yesNoPrompt (buildPackagesMsg6 lang) "^y"
+      where lang = langOf settings
+
+displayBuildErrors :: Language -> ErrorMsg -> IO ()
+displayBuildErrors lang errors = do
+  putStrA red $ buildPackagesMsg3 lang
+  timedMessage 1000000 ["3.. ","2.. ","1..\n"]
+  putStrLn errors
+
+build :: Bool -> FilePath -> String -> AURPkg -> IO (Either String FilePath)
+build toSuppress cachePath user pkg = do
   currDir <- getCurrentDirectory
   setFileMode currDir accessModes  -- Gives write access to the temp folder.
   tarball   <- downloadSource currDir $ pkgNameOf pkg
   sourceDir <- uncompress tarball
   setFileMode sourceDir accessModes
   setCurrentDirectory sourceDir
-  (exitStatus,pkgName,output) <- makepkg user []
+  (exitStatus,pkgName,output) <- makepkg' user []
   if not $ didProcessSucceed exitStatus
      then return $ Left output
      else do
        path <- moveToCache cachePath pkgName
        setCurrentDirectory currDir
        return $ Right path
+    where makepkg' = if toSuppress then makepkgQuiet else makepkgVerbose
 
 -- Moves a file to the pacman package cache and returns its location.
 moveToCache :: FilePath -> FilePath -> IO FilePath

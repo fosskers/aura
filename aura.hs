@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -O2 #-}
 
--- AURA package manager for Arch Linux
+-- `Aura` package manager for Arch Linux
 -- Written by Colin Woodbury <colingw@gmail.com>
 
 -- System Libraries
@@ -22,21 +22,23 @@ import AuraLib
 import Pacman
 
 data Flag = AURInstall | Cache | GetPkgbuild | Search | Refresh |
-            Upgrade | Download | Languages | Version | Help | JapOut
-            deriving (Eq,Ord)
+            Upgrade | Download | Unsuppress | Languages | Version | Help |
+            JapOut deriving (Eq,Ord)
 
 auraOptions :: [OptDescr Flag]
 auraOptions = [ Option ['A'] ["aursync"]      (NoArg AURInstall)  aDesc
               , Option ['u'] ["sysupgrade"]   (NoArg Upgrade)     uDesc
               , Option ['w'] ["downloadonly"] (NoArg Download)    wDesc
               , Option ['p'] ["pkgbuild"]     (NoArg GetPkgbuild) pDesc
+              , Option ['x'] ["unsuppress"]   (NoArg Unsuppress)  xDesc
               , Option ['C'] ["downgrade"]    (NoArg Cache)       cDesc
-              , Option ['s'] ["search"]       (NoArg Search)      sDesc 
+              , Option ['s'] ["search"]       (NoArg Search)      sDesc
               ]
     where aDesc = "Install from the [A]UR."
           uDesc = "(With -A) Upgrade all installed AUR packages."
-          wDesc = "(With -A) Downloads the source tarball only."
-          pDesc = "(With -A) Outputs the contents of a package's PKGBUILD."
+          wDesc = "(With -A) Download the source tarball only."
+          pDesc = "(With -A) Output the contents of a package's PKGBUILD."
+          xDesc = "(With -A) Unsuppress makepkg output."
           cDesc = "Perform actions involving the package [C]ache.\n" ++
                   "Default action downgrades given packages."
           sDesc = "(With -C) Search the package cache via a regex pattern."
@@ -82,11 +84,12 @@ main = do
   args <- getArgs
   (auraFlags,pacFlags,input) <- parseOpts args
   confFile <- getPacmanConf
-  let (lang,auraFlags') = getLanguage auraFlags
+  let (lang,auraFlags')  = getLanguage auraFlags
+      (supp,auraFlags'') = getSuppression auraFlags'
       toIgnore  = getIgnoredPkgs confFile
       cachePath = getCachePath confFile
-      settings  = makeSettings lang toIgnore cachePath
-  executeOpts settings (auraFlags',pacFlags,input)
+      settings  = makeSettings lang toIgnore cachePath supp
+  executeOpts settings (auraFlags'',pacFlags,input)
 
 parseOpts :: [String] -> IO ([Flag],[String],[String])
 parseOpts args = case getOpt' Permute allFlags args of
@@ -95,6 +98,12 @@ parseOpts args = case getOpt' Permute allFlags args of
 getLanguage :: [Flag] -> (Language,[Flag])
 getLanguage flags | JapOut `elem` flags = (japanese, delete JapOut flags)
                   | otherwise           = (english, flags)
+
+-- Similar to `getLanguage`...
+getSuppression :: [Flag] -> (Bool,[Flag])
+getSuppression flags
+    | Unsuppress `elem` flags = (False, delete Unsuppress flags)
+    | otherwise               = (True, flags)
 
 executeOpts :: Settings -> ([Flag],[String],[String]) -> IO ()
 executeOpts settings (flags,input,pacOpts) =
@@ -163,7 +172,6 @@ reportNonPackages _ []      = return ()
 reportNonPackages lang nons = printListWithTitle red cyan msg nons
     where msg = reportNonPackagesMsg1 lang
 
--- Same as the function above... 
 reportIgnoredPackages :: Language -> [String] -> IO ()
 reportIgnoredPackages _ []      = return ()
 reportIgnoredPackages lang pkgs = printListWithTitle yellow cyan msg pkgs
@@ -209,7 +217,7 @@ downloadTarballs lang pkgs = do
   reportNonPackages lang $ pkgs \\ realPkgs
   mapM_ (downloadEach currDir) realPkgs
       where downloadEach path pkg = do
-              putStrLnA noColour $ downloadTarballsMsg1 lang pkg
+              putStrLnA green $ downloadTarballsMsg1 lang pkg
               downloadSource path pkg
 
 displayPkgbuild :: Language -> [String] -> IO ()

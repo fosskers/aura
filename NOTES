@@ -1,5 +1,9 @@
 GENERAL
 -------
+Make a `yieldSettingsOf` function that yields all the settings as a big tuple?
+
+yieldSettingsOf :: Settings -> (Language,[String],FilePath,Bool)
+yieldSettingsOf (Settings la is cp sp) = (la,is,cp,sp)
 
 PKGBUILD ANALYSIS
 -----------------
@@ -14,14 +18,6 @@ Outputting a sort of "dependency tree/graph" that shows how much certain
 packages are depended on, and what packages use "fringe" dependencies.
 The goal would be to reduce the amount of programs that use these fringe
 dependencies, or make it so that they use more mainstream libraries, etc.
-
-SETTINGS
---------
-In future, a `Settings` data type may have to be created to store
-Language choice, Verbosity choice, Prompting choice, package cache location,
-etc.
-For Verbosity, it will stop suppressing makepkg output and activate
-pacman verbosity as well.
 
 WELCOME MESSAGE
 ---------------
@@ -42,6 +38,10 @@ OPTIONS TO IMPLEMENT
 -Cb? -> `--backup`? Backs up the package cache to a given directory.
 -Ci -> `--info` Gives some stats about the package cache.
 -   -> `--prompt` Prompt the user if they want to view PKGBUILDs.
+
+FLAGS UNUSED BY PACMAN
+----------------------
+a j x z
 
 OUT OF DATE
 -----------
