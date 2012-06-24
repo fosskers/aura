@@ -148,24 +148,24 @@ buildPackages settings (p:ps) = do
     Right pkg   -> buildPackages settings ps >>= return . (\pkgs -> pkg : pkgs)
     Left errors -> do        
         toContinue <- buildFail settings (p:ps) errors
-        if toContinue then return [] else error (buildPackagesMsg7 lang)
+        if toContinue then return [] else error (buildPackagesMsg2 lang)
     where lang       = langOf settings
           toSuppress = suppressMakepkg settings
           cachePath  = cachePathOf settings
         
 buildFail :: Settings -> [AURPkg] -> ErrorMsg -> IO Bool
 buildFail settings (p:ps) errors = do
-  putStrLnA red $ buildPackagesMsg2 lang (show p)
+  putStrLnA red $ buildFailMsg1 lang (show p)
   when (suppressMakepkg settings) (displayBuildErrors lang errors)
-  when (notNull ps) ((putStrLnA red $ buildPackagesMsg4 lang) >>
+  when (notNull ps) ((putStrLnA red $ buildFailMsg2 lang) >>
                      mapM_ (putStrLn . colourize cyan . pkgNameOf) ps)
-  putStrLnA yellow $ buildPackagesMsg5 lang
-  yesNoPrompt (buildPackagesMsg6 lang) "^y"
+  putStrLnA yellow $ buildFailMsg3 lang
+  yesNoPrompt (buildFailMsg4 lang) "^y"
       where lang = langOf settings
 
 displayBuildErrors :: Language -> ErrorMsg -> IO ()
 displayBuildErrors lang errors = do
-  putStrA red $ buildPackagesMsg3 lang
+  putStrA red $ displayBuildErrorsMsg1 lang
   timedMessage 1000000 ["3.. ","2.. ","1..\n"]
   putStrLn errors
 

@@ -32,7 +32,6 @@ the welcome message in that language.
 OPTIONS TO IMPLEMENT
 --------------------
 -As -> `--search` Search for an AUR package
--Av -> `--verbose` Doesn't suppress makepkg output.
 -Cc -> `--clean` Deletes old packages. Users can supply how many versions
        they want to keep.
 -Cb? -> `--backup`? Backs up the package cache to a given directory.

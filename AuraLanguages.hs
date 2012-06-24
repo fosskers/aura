@@ -24,30 +24,29 @@ buildPackagesMsg1 :: Language -> String -> String
 buildPackagesMsg1 English p  = "Building " ++ bt p ++ "..."
 buildPackagesMsg1 Japanese p = bt p ++ "を作成中・・・"
 
-buildPackagesMsg2 :: Language -> String -> String
-buildPackagesMsg2 English p  = "Well, building " ++ bt p ++ " failed."
-buildPackagesMsg2 Japanese p = bt p ++ "の作成は失敗したようだ。"
+buildPackagesMsg2 :: Language -> String
+buildPackagesMsg2 English  = "So be it."
+buildPackagesMsg2 Japanese = "分かった。脱出！"
 
-buildPackagesMsg3 :: Language -> String
-buildPackagesMsg3 English  = "Dumping makepkg output in "
-buildPackagesMsg3 Japanese = "抑えていたmakepkgの出力を受け取る用意・・・"
+buildFailMsg1 :: Language -> String -> String
+buildFailMsg1 English p  = "Well, building " ++ bt p ++ " failed."
+buildFailMsg1 Japanese p = bt p ++ "の作成は失敗したようだ。"
 
-buildPackagesMsg4 :: Language -> String
-buildPackagesMsg4 English  = "Also, the following weren't built:"
-buildPackagesMsg4 Japanese = "ちなみに下記のパッケージも作成されなかった："
+buildFailMsg2 :: Language -> String
+buildFailMsg2 English  = "Also, the following weren't built:"
+buildFailMsg2 Japanese = "ちなみに下記のパッケージも作成されなかった："
 
-buildPackagesMsg5 :: Language -> String
-buildPackagesMsg5 English  = "Some packages may have built properly."
-buildPackagesMsg5 Japanese = "今のは失敗したけど前に作成のできたやつ" ++
+buildFailMsg3 :: Language -> String
+buildFailMsg3 English  = "Some packages may have built properly."
+buildFailMsg3 Japanese = "今のは失敗したけど前に作成のできたやつ" ++
                              "があるかもしれない。"
+buildFailMsg4 :: Language -> String
+buildFailMsg4 English  = "Would you like to install them? [y/n]"
+buildFailMsg4 Japanese = "できたやつのインストールを続行する？ [y/n]"
 
-buildPackagesMsg6 :: Language -> String
-buildPackagesMsg6 English  = "Would you like to install them? [y/n]"
-buildPackagesMsg6 Japanese = "できたやつのインストールを続行する？ [y/n]"
-
-buildPackagesMsg7 :: Language -> String
-buildPackagesMsg7 English  = "So be it."
-buildPackagesMsg7 Japanese = "分かった。脱出！"
+displayBuildErrorsMsg1 :: Language -> String
+displayBuildErrorsMsg1 English  = "Dumping makepkg output in "
+displayBuildErrorsMsg1 Japanese = "抑えていたmakepkgの出力を受け取る用意・・・"
 
 getDepsToInstallMsg1 :: Language -> String
 getDepsToInstallMsg1 English  = "No AUR packages specified for install."
