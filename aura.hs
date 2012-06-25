@@ -40,6 +40,7 @@ main = do
       auraFlags' = filter (`notElem` settingsFlags) auraFlags
   executeOpts settings (auraFlags',pacFlags,input)
 
+-- After determining what Flag was given, dispatches a function.
 executeOpts :: Settings -> ([Flag],[String],[String]) -> IO ()
 executeOpts settings (flags,input,pacOpts) = do
     let pacOpts' = pacOpts ++ map (reconvertFlag dualFlagMap) flags
@@ -103,7 +104,6 @@ printListWithTitle titleColour itemColour msg items = do
   mapM_ (putStrLn . colourize itemColour) items
   putStrLn ""
   
--- TODO: Add guesses! "Did you mean xyz instead?"
 reportNonPackages :: Language -> [String] -> IO ()
 reportNonPackages _ []      = return ()
 reportNonPackages lang nons = printListWithTitle red cyan msg nons
@@ -217,8 +217,9 @@ getHelpMsg :: [String] -> String
 getHelpMsg pacmanHelpMsg = concat $ intersperse "\n" allMessages
     where allMessages   = [replacedLines,auraUsageMsg,dualFlagMsg,languageMsg]
           replacedLines = unlines $ map (replaceByPatt patterns) pacmanHelpMsg
+          colouredMsg   = colourize yellow "Inherited Pacman Operations" 
           patterns      = [ ("pacman","aura")
-                          , ("operations","Inherited Pacman Operations") ]
+                          , ("operations",colouredMsg) ]
 
 -- ANIMATED VERSION MESSAGE
 animateVersionMsg :: [String] -> IO ()

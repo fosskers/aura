@@ -3,6 +3,7 @@ module AuraFlags where
 import System.Console.GetOpt
 
 import AuraLanguages
+import Utilities
 
 type FlagMap = [(Flag,String)]
 
@@ -68,14 +69,17 @@ settingsFlags = [Unsuppress,NoConfirm,JapOut]
 allFlags :: [OptDescr Flag]
 allFlags = auraOptions ++ pacmanOptions ++ dualOptions ++ languageOptions
 
+makeUsageMsg :: Colour -> String -> [OptDescr Flag] -> String
+makeUsageMsg c msg flags = usageInfo (colourize c msg) flags
+
 auraUsageMsg :: String
-auraUsageMsg = usageInfo "AURA only operations:" auraOptions
+auraUsageMsg = makeUsageMsg yellow "AURA only operations:" auraOptions
 
 dualFlagMsg :: String
-dualFlagMsg = usageInfo "Dual functionality options:" dualOptions
+dualFlagMsg = makeUsageMsg yellow "Dual functionality options:" dualOptions
 
 languageMsg :: String
-languageMsg = usageInfo "Language options:" languageOptions
+languageMsg = makeUsageMsg yellow "Language options:" languageOptions
 
 -- Extracts desirable results from given Flags.
 -- Callers must supply an alternate value for when there are no matches.

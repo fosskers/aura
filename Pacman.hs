@@ -84,4 +84,3 @@ getVersionInfo = do
 -- The amount of whitespace before text in the lines given by `pacman -V`
 lineHeaderLength :: Int
 lineHeaderLength = 23
-
