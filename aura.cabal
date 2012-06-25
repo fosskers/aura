@@ -41,6 +41,7 @@ executable aura
                        AuraLogo,
                        Internet,
                        Utilities,
+                       AuraFlags,
                        AurConnection,
                        AuraLanguages
 

@@ -22,14 +22,12 @@ import Pacman
 
 type ErrorMsg = String
 
-data Settings = Settings { langOf :: Language
-                         , ignoredPkgsOf :: [String]
-                         , cachePathOf :: FilePath
+data Settings = Settings { langOf          :: Language
+                         , ignoredPkgsOf   :: [String]
+                         , cachePathOf     :: FilePath
                          , suppressMakepkg :: Bool
+                         , mustConfirm     :: Bool
                          }
-
-makeSettings :: Language -> [String] -> FilePath -> Bool -> Settings
-makeSettings lang ignored cPath supp = Settings lang ignored cPath supp
 
 -----------
 -- PACKAGES

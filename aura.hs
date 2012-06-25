@@ -4,93 +4,22 @@
 -- Written by Colin Woodbury <colingw@gmail.com>
 
 -- System Libraries
-import Data.List ((\\), nub, delete, sort, intersperse)
+import Data.List ((\\), nub, sort, intersperse)
 import System.Directory (getCurrentDirectory)
 import Control.Monad (filterM, when)
 import System.Environment (getArgs)
 import Text.Regex.Posix ((=~))
 import System.FilePath ((</>))
-import System.Console.GetOpt
 
 -- Custom Libraries
 import AuraLanguages
 import AurConnection
+import AuraFlags
 import Utilities
 import AuraLogo
 import Internet
 import AuraLib
 import Pacman
-
-type FlagMap = [(Flag,String)]
-
-data Flag = AURInstall | Cache | GetPkgbuild | Search | Refresh |
-            Upgrade | Download | Unsuppress | NoConfirm | Languages |
-            Version | Help | JapOut deriving (Eq,Ord)
-
-auraOptions :: [OptDescr Flag]
-auraOptions = [ Option ['A'] ["aursync"]      (NoArg AURInstall)  aDesc
-              , Option ['u'] ["sysupgrade"]   (NoArg Upgrade)     uDesc
-              , Option ['w'] ["downloadonly"] (NoArg Download)    wDesc
-              , Option ['p'] ["pkgbuild"]     (NoArg GetPkgbuild) pDesc
-              , Option ['x'] ["unsuppress"]   (NoArg Unsuppress)  xDesc
-              , Option ['C'] ["downgrade"]    (NoArg Cache)       cDesc
-              , Option ['s'] ["search"]       (NoArg Search)      sDesc
-              ]
-    where aDesc = "Install from the [A]UR."
-          uDesc = "(With -A) Upgrade all installed AUR packages."
-          wDesc = "(With -A) Download the source tarball only."
-          pDesc = "(With -A) Output the contents of a package's PKGBUILD."
-          xDesc = "(With -A) Unsuppress makepkg output."
-          cDesc = "Perform actions involving the package [C]ache.\n" ++
-                  "Default action downgrades given packages."
-          sDesc = "(With -C) Search the package cache via a regex pattern."
-
--- These are intercepted Pacman flags. Their functionality is different.
-pacmanOptions :: [OptDescr Flag]
-pacmanOptions = [ Option ['y'] ["refresh"] (NoArg Refresh) ""
-                , Option ['V'] ["version"] (NoArg Version) ""
-                , Option ['h'] ["help"]    (NoArg Help)    ""
-                ]
-
--- Options that have functionality stretching across both Aura and Pacman.
-dualOptions :: [OptDescr Flag]
-dualOptions = [ Option [] ["noconfirm"] (NoArg NoConfirm) ncDesc ]
-    where ncDesc = "Never ask for any Aura or Pacman confirmation."
-
-languageOptions :: [OptDescr Flag]
-languageOptions = [ Option [] ["languages"] (NoArg Languages) lDesc
-                  , Option [] ["japanese"]  (NoArg JapOut)    jDesc
-                  ]
-    where lDesc = "Display the available output languages for aura."
-          jDesc = "All aura output is given in Japanese."
-
--- `Hijacked` flags. They have original pacman functionality, but
--- that is masked and made unique in an Aura context.
-hijackedFlagMap :: FlagMap
-hijackedFlagMap = [ (Search,"-s"),(Refresh,"-y"),(Upgrade,"-u")
-                , (Download,"-w") ]
-
--- 
-dualFlagMap :: FlagMap
-dualFlagMap = [ (NoConfirm,"--noconfirm") ]
-
--- Converts an intercepted Pacman flag back into its raw string form.
-reconvertFlag :: FlagMap -> Flag -> String
-reconvertFlag flagMap f = case f `lookup` flagMap of
-                            Just x  -> x
-                            Nothing -> ""
-
-allFlags :: [OptDescr Flag]
-allFlags = auraOptions ++ pacmanOptions ++ dualOptions ++ languageOptions
-
-auraUsageMsg :: String
-auraUsageMsg = usageInfo "AURA only operations:" auraOptions
-
-dualFlagMsg :: String
-dualFlagMsg = usageInfo "Dual functionality options:" dualOptions
-
-languageMsg :: String
-languageMsg = usageInfo "Language options:" languageOptions
 
 auraVersion :: String
 auraVersion = "0.4.4.1"
@@ -100,30 +29,16 @@ main = do
   args <- getArgs
   (auraFlags,pacFlags,input) <- parseOpts args
   confFile <- getPacmanConf
-  let (lang,auraFlags')  = getLanguage auraFlags
-      (supp,auraFlags'') = getSuppression auraFlags'
-      toIgnore  = getIgnoredPkgs confFile
-      cachePath = getCachePath confFile
-      settings  = makeSettings lang toIgnore cachePath supp
-  executeOpts settings (auraFlags'',pacFlags,input)
-
-parseOpts :: [String] -> IO ([Flag],[String],[String])
-parseOpts args = case getOpt' Permute allFlags args of
-                   (opts,nonOpts,pacOpts,_) -> return (opts,nonOpts,pacOpts) 
-
-fishOutFlag :: [(Flag,a)] -> a -> [Flag] -> (a,[Flag])
-fishOutFlag [] alt flags         = (alt,flags)  -- We're done.
-fishOutFlag ((f,r):fs) alt flags | f `elem` flags = (r, delete f flags)
-                                 | otherwise      = fishOutFlag fs alt flags
-
-getLanguage :: [Flag] -> (Language,[Flag])
-getLanguage flags = fishOutFlag flagsAndResults english flags
-    where flagsAndResults = zip langFlags langFuns
-          langFlags       = [JapOut]
-          langFuns        = [japanese]
-
-getSuppression :: [Flag] -> (Bool,[Flag])
-getSuppression flags = fishOutFlag [(Unsuppress,False)] True flags
+  let language     = getLanguage auraFlags
+      suppression  = getSuppression auraFlags
+      confirmation = getConfirmation auraFlags
+      settings = Settings { langOf          = language
+                          , ignoredPkgsOf   = getIgnoredPkgs confFile
+                          , cachePathOf     = getCachePath confFile
+                          , suppressMakepkg = suppression
+                          , mustConfirm     = confirmation }
+      auraFlags' = filter (`notElem` settingsFlags) auraFlags
+  executeOpts settings (auraFlags',pacFlags,input)
 
 executeOpts :: Settings -> ([Flag],[String],[String]) -> IO ()
 executeOpts settings (flags,input,pacOpts) = do
