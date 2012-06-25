@@ -111,15 +111,19 @@ parseOpts :: [String] -> IO ([Flag],[String],[String])
 parseOpts args = case getOpt' Permute allFlags args of
                    (opts,nonOpts,pacOpts,_) -> return (opts,nonOpts,pacOpts) 
 
-getLanguage :: [Flag] -> (Language,[Flag])
-getLanguage flags | JapOut `elem` flags = (japanese, delete JapOut flags)
-                  | otherwise           = (english, flags)
+fishOutFlag :: [(Flag,a)] -> a -> [Flag] -> (a,[Flag])
+fishOutFlag [] alt flags         = (alt,flags)  -- We're done.
+fishOutFlag ((f,r):fs) alt flags | f `elem` flags = (r, delete f flags)
+                                 | otherwise      = fishOutFlag fs alt flags
 
--- Similar to `getLanguage`...
+getLanguage :: [Flag] -> (Language,[Flag])
+getLanguage flags = fishOutFlag flagsAndResults english flags
+    where flagsAndResults = zip langFlags langFuns
+          langFlags       = [JapOut]
+          langFuns        = [japanese]
+
 getSuppression :: [Flag] -> (Bool,[Flag])
-getSuppression flags
-    | Unsuppress `elem` flags = (False, delete Unsuppress flags)
-    | otherwise               = (True, flags)
+getSuppression flags = fishOutFlag [(Unsuppress,False)] True flags
 
 executeOpts :: Settings -> ([Flag],[String],[String]) -> IO ()
 executeOpts settings (flags,input,pacOpts) = do
@@ -143,7 +147,8 @@ executeOpts settings (flags,input,pacOpts) = do
       [Languages] -> displayOutputLanguages $ langOf settings
       [Help]      -> printHelpMsg pacOpts  -- Not pacOpts'.
       [Version]   -> getVersionInfo >>= animateVersionMsg
-      _           -> pacman $ pacOpts' ++ input ++ map (reconvertFlag hijackedFlagMap) flags
+      _           -> pacman $ pacOpts' ++ input ++ hijackedFlags
+          where hijackedFlags = map (reconvertFlag hijackedFlagMap) flags
 
 --------------------
 -- WORKING WITH `-A`
