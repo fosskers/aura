@@ -5,6 +5,8 @@ Make a `yieldSettingsOf` function that yields all the settings as a big tuple?
 yieldSettingsOf :: Settings -> (Language,[String],FilePath,Bool)
 yieldSettingsOf (Settings la is cp sp) = (la,is,cp,sp)
 
+Implement an option to display parts of the pacman log file.
+
 PKGBUILD ANALYSIS
 -----------------
 Develop a system for verifying PKBUILDs!
@@ -37,6 +39,8 @@ OPTIONS TO IMPLEMENT
 -Cb? -> `--backup`? Backs up the package cache to a given directory.
 -Ci -> `--info` Gives some stats about the package cache.
 -   -> `--prompt` Prompt the user if they want to view PKGBUILDs.
+-   -> `--noconfirm` This is already a pacman option. Don't ask for
+       any confirmation.
 
 FLAGS UNUSED BY PACMAN
 ----------------------

@@ -21,9 +21,11 @@ import Internet
 import AuraLib
 import Pacman
 
+type FlagMap = [(Flag,String)]
+
 data Flag = AURInstall | Cache | GetPkgbuild | Search | Refresh |
-            Upgrade | Download | Unsuppress | Languages | Version | Help |
-            JapOut deriving (Eq,Ord)
+            Upgrade | Download | Unsuppress | NoConfirm | Languages |
+            Version | Help | JapOut deriving (Eq,Ord)
 
 auraOptions :: [OptDescr Flag]
 auraOptions = [ Option ['A'] ["aursync"]      (NoArg AURInstall)  aDesc
@@ -43,12 +45,17 @@ auraOptions = [ Option ['A'] ["aursync"]      (NoArg AURInstall)  aDesc
                   "Default action downgrades given packages."
           sDesc = "(With -C) Search the package cache via a regex pattern."
 
--- These are intercepted Pacman flags.
+-- These are intercepted Pacman flags. Their functionality is different.
 pacmanOptions :: [OptDescr Flag]
 pacmanOptions = [ Option ['y'] ["refresh"] (NoArg Refresh) ""
                 , Option ['V'] ["version"] (NoArg Version) ""
                 , Option ['h'] ["help"]    (NoArg Help)    ""
                 ]
+
+-- Options that have functionality stretching across both Aura and Pacman.
+dualOptions :: [OptDescr Flag]
+dualOptions = [ Option [] ["noconfirm"] (NoArg NoConfirm) ncDesc ]
+    where ncDesc = "Never ask for any Aura or Pacman confirmation."
 
 languageOptions :: [OptDescr Flag]
 languageOptions = [ Option [] ["languages"] (NoArg Languages) lDesc
@@ -57,21 +64,30 @@ languageOptions = [ Option [] ["languages"] (NoArg Languages) lDesc
     where lDesc = "Display the available output languages for aura."
           jDesc = "All aura output is given in Japanese."
 
-interceptedFlags :: [(Flag,String)]
-interceptedFlags = [ (Search,"-s"),(Refresh,"-y"),(Upgrade,"-u")
-                   , (Download,"-w")]
+-- `Hijacked` flags. They have original pacman functionality, but
+-- that is masked and made unique in an Aura context.
+hijackedFlagMap :: FlagMap
+hijackedFlagMap = [ (Search,"-s"),(Refresh,"-y"),(Upgrade,"-u")
+                , (Download,"-w") ]
+
+-- 
+dualFlagMap :: FlagMap
+dualFlagMap = [ (NoConfirm,"--noconfirm") ]
 
 -- Converts an intercepted Pacman flag back into its raw string form.
-reconvertFlag :: Flag -> String
-reconvertFlag f = case f `lookup` interceptedFlags of
-                    Just x  -> x
-                    Nothing -> ""
+reconvertFlag :: FlagMap -> Flag -> String
+reconvertFlag flagMap f = case f `lookup` flagMap of
+                            Just x  -> x
+                            Nothing -> ""
 
 allFlags :: [OptDescr Flag]
-allFlags = auraOptions ++ pacmanOptions ++ languageOptions
+allFlags = auraOptions ++ pacmanOptions ++ dualOptions ++ languageOptions
 
 auraUsageMsg :: String
 auraUsageMsg = usageInfo "AURA only operations:" auraOptions
+
+dualFlagMsg :: String
+dualFlagMsg = usageInfo "Dual functionality options:" dualOptions
 
 languageMsg :: String
 languageMsg = usageInfo "Language options:" languageOptions
@@ -106,17 +122,18 @@ getSuppression flags
     | otherwise               = (True, flags)
 
 executeOpts :: Settings -> ([Flag],[String],[String]) -> IO ()
-executeOpts settings (flags,input,pacOpts) =
+executeOpts settings (flags,input,pacOpts) = do
+    let pacOpts' = pacOpts ++ map (reconvertFlag dualFlagMap) flags
     case sort flags of
       (AURInstall:fs) ->
           case fs of
-            []            -> installPackages settings pacOpts input
-            [Upgrade]     -> upgradeAURPkgs settings pacOpts input
+            []            -> installPackages settings pacOpts' input
+            [Upgrade]     -> upgradeAURPkgs settings pacOpts' input
             [Download]    -> downloadTarballs (langOf settings) input
             [GetPkgbuild] -> displayPkgbuild (langOf settings) input
             (Refresh:fs') -> do 
                       syncDatabase (langOf settings)
-                      executeOpts settings (AURInstall:fs',input,pacOpts)
+                      executeOpts settings (AURInstall:fs',input,pacOpts')
             _ -> putStrLnA red $ executeOptsMsg1 (langOf settings)
       (Cache:fs)  ->
           case fs of
@@ -124,9 +141,9 @@ executeOpts settings (flags,input,pacOpts) =
             [Search] -> searchPackageCache settings input
             _ -> putStrLnA red $ executeOptsMsg1 (langOf settings)
       [Languages] -> displayOutputLanguages $ langOf settings
-      [Help]      -> printHelpMsg pacOpts
+      [Help]      -> printHelpMsg pacOpts  -- Not pacOpts'.
       [Version]   -> getVersionInfo >>= animateVersionMsg
-      _           -> pacman $ pacOpts ++ input ++ map reconvertFlag flags
+      _           -> pacman $ pacOpts' ++ input ++ map (reconvertFlag hijackedFlagMap) flags
 
 --------------------
 -- WORKING WITH `-A`
@@ -278,7 +295,7 @@ printHelpMsg pacOpts = pacman $ pacOpts ++ ["-h"]
 
 getHelpMsg :: [String] -> String
 getHelpMsg pacmanHelpMsg = concat $ intersperse "\n" allMessages
-    where allMessages   = [replacedLines,auraUsageMsg,languageMsg]
+    where allMessages   = [replacedLines,auraUsageMsg,dualFlagMsg,languageMsg]
           replacedLines = unlines $ map (replaceByPatt patterns) pacmanHelpMsg
           patterns      = [ ("pacman","aura")
                           , ("operations","Inherited Pacman Operations") ]
