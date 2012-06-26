@@ -1,135 +1,94 @@
 {-# OPTIONS_GHC -O2 #-}
 
--- AURA package manager for Arch Linux
+-- `Aura` package manager for Arch Linux
 -- Written by Colin Woodbury <colingw@gmail.com>
 
 -- System Libraries
-import Data.List ((\\), nub, delete, sort, intersperse)
-import System.Directory (getCurrentDirectory)
+import Data.List ((\\), nub, sort, intersperse)
+import System.Directory (getCurrentDirectory, copyFile)
+import System.Posix.Files (fileExist)
 import Control.Monad (filterM, when)
 import System.Environment (getArgs)
+import System.Process (rawSystem)
 import Text.Regex.Posix ((=~))
 import System.FilePath ((</>))
-import System.Console.GetOpt
 
 -- Custom Libraries
 import AuraLanguages
 import AurConnection
+import AuraFlags
 import Utilities
 import AuraLogo
 import Internet
 import AuraLib
 import Pacman
 
-data Flag = AURInstall | Cache | GetPkgbuild | Search | Refresh |
-            Upgrade | Download | Languages | Version | Help | JapOut
-            deriving (Eq,Ord)
-
-auraOptions :: [OptDescr Flag]
-auraOptions = [ Option ['A'] ["aursync"]      (NoArg AURInstall)  aDesc
-              , Option ['u'] ["sysupgrade"]   (NoArg Upgrade)     uDesc
-              , Option ['w'] ["downloadonly"] (NoArg Download)    wDesc
-              , Option ['p'] ["pkgbuild"]     (NoArg GetPkgbuild) pDesc
-              , Option ['C'] ["downgrade"]    (NoArg Cache)       cDesc
-              , Option ['s'] ["search"]       (NoArg Search)      sDesc 
-              ]
-    where aDesc = "Install from the [A]UR."
-          uDesc = "(With -A) Upgrade all installed AUR packages."
-          wDesc = "(With -A) Downloads the source tarball only."
-          pDesc = "(With -A) Outputs the contents of a package's PKGBUILD."
-          cDesc = "Perform actions involving the package [C]ache.\n" ++
-                  "Default action downgrades given packages."
-          sDesc = "(With -C) Search the package cache via a regex pattern."
-
--- These are intercepted Pacman flags.
-pacmanOptions :: [OptDescr Flag]
-pacmanOptions = [ Option ['y'] ["refresh"] (NoArg Refresh) ""
-                , Option ['V'] ["version"] (NoArg Version) ""
-                , Option ['h'] ["help"]    (NoArg Help)    ""
-                ]
-
-languageOptions :: [OptDescr Flag]
-languageOptions = [ Option [] ["languages"] (NoArg Languages) lDesc
-                  , Option [] ["japanese"]  (NoArg JapOut)    jDesc
-                  ]
-    where lDesc = "Display the available output languages for aura."
-          jDesc = "All aura output is given in Japanese."
-
-interceptedFlags :: [(Flag,String)]
-interceptedFlags = [ (Search,"-s"),(Refresh,"-y"),(Upgrade,"-u")
-                   , (Download,"-w")]
-
--- Converts an intercepted Pacman flag back into its raw string form.
-reconvertFlag :: Flag -> String
-reconvertFlag f = case f `lookup` interceptedFlags of
-                    Just x  -> x
-                    Nothing -> ""
-
-allFlags :: [OptDescr Flag]
-allFlags = auraOptions ++ pacmanOptions ++ languageOptions
-
-auraUsageMsg :: String
-auraUsageMsg = usageInfo "AURA only operations:" auraOptions
-
-languageMsg :: String
-languageMsg = usageInfo "Language options:" languageOptions
-
 auraVersion :: String
-auraVersion = "0.4.4.1"
+auraVersion = "0.5.0.0"
 
 main :: IO ()
 main = do
   args <- getArgs
   (auraFlags,pacFlags,input) <- parseOpts args
-  let (lang,auraFlags') = getLanguage auraFlags
-  executeOpts lang (auraFlags',pacFlags,input)
+  confFile <- getPacmanConf
+  let language     = getLanguage auraFlags
+      suppression  = getSuppression auraFlags
+      confirmation = getConfirmation auraFlags
+      settings = Settings { langOf          = language
+                          , ignoredPkgsOf   = getIgnoredPkgs confFile
+                          , cachePathOf     = getCachePath confFile
+                          , logFilePathOf   = getLogFilePath confFile
+                          , suppressMakepkg = suppression
+                          , mustConfirm     = confirmation }
+      auraFlags' = filter (`notElem` settingsFlags) auraFlags
+  executeOpts settings (auraFlags',pacFlags,input)
 
-parseOpts :: [String] -> IO ([Flag],[String],[String])
-parseOpts args = case getOpt' Permute allFlags args of
-                   (opts,nonOpts,pacOpts,_) -> return (opts,nonOpts,pacOpts) 
-
-getLanguage :: [Flag] -> (Language,[Flag])
-getLanguage flags | JapOut `elem` flags = (japanese, delete JapOut flags)
-                  | otherwise           = (english, flags)
-
-executeOpts :: Language -> ([Flag],[String],[String]) -> IO ()
-executeOpts lang (flags,input,pacOpts) =
+-- After determining what Flag was given, dispatches a function.
+executeOpts :: Settings -> ([Flag],[String],[String]) -> IO ()
+executeOpts settings (flags,input,pacOpts) = do
+    let pacOpts' = pacOpts ++ convertedDualFlags
     case sort flags of
-      (AURInstall:fs) -> case fs of
-                           []            -> installPackages lang pacOpts input
-                           [Upgrade]     -> upgradeAURPkgs lang pacOpts input
-                           [Download]    -> downloadTarballs lang  input
-                           [GetPkgbuild] -> displayPkgbuild lang input
-                           (Refresh:fs') -> do 
-                              syncDatabase lang
-                              executeOpts lang (AURInstall:fs',input,pacOpts)
-                           badFlags -> putStrLnA red $ executeOptsMsg1 lang
-      (Cache:fs)  -> case fs of
-                       []       -> downgradePackages lang input
-                       [Search] -> searchPackageCache input
-                       badFlags -> putStrLnA red $ executeOptsMsg1 lang
-      [Languages] -> displayOutputLanguages lang
-      [Help]      -> printHelpMsg pacOpts
+      (AURInstall:fs) ->
+          case fs of
+            []            -> installPackages settings pacOpts' input
+            [Upgrade]     -> upgradeAURPkgs settings pacOpts' input
+            [Download]    -> downloadTarballs settings input
+            [GetPkgbuild] -> displayPkgbuild settings input
+            (Refresh:fs') -> do 
+                      syncDatabase pacOpts'
+                      executeOpts settings (AURInstall:fs',input,pacOpts')
+            badFlags -> scold settings executeOptsMsg1
+      (Cache:fs) ->
+          case fs of
+            []       -> downgradePackages settings input
+            [Search] -> searchPackageCache settings input
+            [Backup] -> backupCache settings input
+            badFlags -> scold settings executeOptsMsg1
+      [ViewLog]   -> viewLogFile $ logFilePathOf settings
+      [Languages] -> displayOutputLanguages settings
+      [Help]      -> printHelpMsg pacOpts  -- Not pacOpts'.
       [Version]   -> getVersionInfo >>= animateVersionMsg
-      _           -> pacman $ pacOpts ++ input ++ map reconvertFlag flags
+      pacmanFlags -> pacman $ pacOpts' ++ input ++ convertedHijackedFlags
+    where convert fm = filter notNull $ map (reconvertFlag fm) flags
+          convertedHijackedFlags = convert hijackedFlagMap
+          convertedDualFlags     = convert dualFlagMap
 
 --------------------
 -- WORKING WITH `-A`
 --------------------      
-installPackages :: Language -> [String] -> [String] -> IO ()
+installPackages :: Settings -> [String] -> [String] -> IO ()
 installPackages _ _ [] = return ()
-installPackages lang pacOpts pkgs = do
-  confFile <- getPacmanConf
+installPackages settings pacOpts pkgs = do
   let uniques   = nub pkgs
-      toIgnore  = getIgnoredPkgs confFile
-      toInstall = uniques \\ toIgnore
+      toInstall = uniques \\ ignoredPkgsOf settings
       ignored   = uniques \\ toInstall
+      lang      = langOf settings
   reportIgnoredPackages lang ignored
   (forPacman,aurPkgNames,nonPkgs) <- divideByPkgType toInstall
   reportNonPackages lang nonPkgs
   aurPackages <- mapM makeAURPkg aurPkgNames
-  putStrLnA green $ installPackagesMsg5 lang
-  results     <- getDepsToInstall lang aurPackages toIgnore
+  notify settings installPackagesMsg5
+  results     <- getDepsToInstall settings aurPackages
   case results of
     Left errors -> do
       printListWithTitle red noColour (installPackagesMsg1 lang) errors
@@ -137,13 +96,13 @@ installPackages lang pacOpts pkgs = do
       let pacPkgs = nub $ pacmanDeps ++ forPacman
           pkgsAndOpts = pacOpts ++ pacPkgs
       reportPkgsToInstall lang pacPkgs aurDeps aurPackages 
-      response <- yesNoPrompt (installPackagesMsg3 lang) "^y"
-      if not response
-         then putStrLnA red $ installPackagesMsg4 lang
+      okay <- optionalPrompt (mustConfirm settings) (installPackagesMsg3 lang)
+      if not okay
+         then scold settings installPackagesMsg4
          else do
            when (notNull pacPkgs) (pacman $ ["-S","--asdeps"] ++ pkgsAndOpts)
-           mapM_ (buildAndInstallDep lang) aurDeps
-           pkgFiles <- buildPackages lang aurPackages
+           mapM_ (buildAndInstallDep settings) aurDeps
+           pkgFiles <- buildPackages settings aurPackages
            installPackageFiles [] pkgFiles
 
 printListWithTitle :: Colour -> Colour -> String -> [String] -> IO ()
@@ -152,13 +111,11 @@ printListWithTitle titleColour itemColour msg items = do
   mapM_ (putStrLn . colourize itemColour) items
   putStrLn ""
   
--- TODO: Add guesses! "Did you mean xyz instead?"
 reportNonPackages :: Language -> [String] -> IO ()
 reportNonPackages _ []      = return ()
 reportNonPackages lang nons = printListWithTitle red cyan msg nons
     where msg = reportNonPackagesMsg1 lang
 
--- Same as the function above... 
 reportIgnoredPackages :: Language -> [String] -> IO ()
 reportIgnoredPackages _ []      = return ()
 reportIgnoredPackages lang pkgs = printListWithTitle yellow cyan msg pkgs
@@ -175,92 +132,117 @@ reportPkgsToInstall lang pacPkgs aurDeps aurPkgs = do
             printPkgNameCyan = putStrLn . colourize cyan . pkgNameOf
             g = green
 
-buildAndInstallDep :: Language -> AURPkg -> IO ()
-buildAndInstallDep lang pkg = do
-  path <- buildPackages lang [pkg]
+buildAndInstallDep :: Settings -> AURPkg -> IO ()
+buildAndInstallDep settings pkg = do
+  path <- buildPackages settings [pkg]
   installPackageFiles ["--asdeps"] path
                
-upgradeAURPkgs :: Language -> [String] -> [String] -> IO ()
-upgradeAURPkgs lang pacOpts pkgs = do
-  putStrLnA green $ upgradeAURPkgsMsg1 lang
+upgradeAURPkgs :: Settings -> [String] -> [String] -> IO ()
+upgradeAURPkgs settings pacOpts pkgs = do
+  notify settings upgradeAURPkgsMsg1
   installedPkgs <- getInstalledAURPackages
-  confFile      <- getPacmanConf
-  let toIgnore   = getIgnoredPkgs confFile
-      notIgnored = \p -> fst (splitNameAndVer p) `notElem` toIgnore
-      legitPkgs  = filter notIgnored installedPkgs
-  toCheck <- mapM fetchAndReport legitPkgs
-  putStrLnA green $ upgradeAURPkgsMsg2 lang
+  toCheck       <- mapM fetchAndReport $ filter notIgnored installedPkgs
+  notify settings upgradeAURPkgsMsg2
   let toUpgrade = map pkgNameOf . filter (not . isOutOfDate) $ toCheck
-  when (null toUpgrade) (putStrLnA yellow $ upgradeAURPkgsMsg3 lang)
-  installPackages lang pacOpts $ toUpgrade ++ pkgs
-    where fetchAndReport p = do
+  when (null toUpgrade) (warn settings upgradeAURPkgsMsg3)
+  installPackages settings pacOpts $ toUpgrade ++ pkgs
+    where lang       = langOf settings
+          toIgnore   = ignoredPkgsOf settings
+          notIgnored = \p -> fst (splitNameAndVer p) `notElem` toIgnore
+          fetchAndReport p = do
             aurPkg <- makeAURPkg p
             putStrLnA noColour $ upgradeAURPkgsMsg4 lang (pkgNameOf aurPkg)
             return aurPkg
 
-downloadTarballs :: Language -> [String] -> IO ()
-downloadTarballs lang pkgs = do
+downloadTarballs :: Settings -> [String] -> IO ()
+downloadTarballs settings pkgs = do
   currDir  <- getCurrentDirectory
   realPkgs <- filterM isAURPackage pkgs
-  reportNonPackages lang $ pkgs \\ realPkgs
+  reportNonPackages (langOf settings) $ pkgs \\ realPkgs
   mapM_ (downloadEach currDir) realPkgs
       where downloadEach path pkg = do
-              putStrLnA noColour $ downloadTarballsMsg1 lang pkg
+              notify settings (flip downloadTarballsMsg1 pkg)
               downloadSource path pkg
 
-displayPkgbuild :: Language -> [String] -> IO ()
-displayPkgbuild lang pkgs = do
+displayPkgbuild :: Settings -> [String] -> IO ()
+displayPkgbuild settings pkgs = do
   mapM_ displayEach pkgs
-  --putStrLnA $ displayPkgbuildMsg1 lang
     where displayEach pkg = do
-            --putStrLnA $ displayPkgbuildMsg2 lang pkg
             itExists <- doesUrlExist $ getPkgbuildUrl pkg
             if itExists
                then downloadPkgbuild pkg >>= putStrLn
-               else putStrLnA red $ displayPkgbuildMsg3 lang pkg
+               else scold settings (flip displayPkgbuildMsg1 pkg)
 
 --------------------
 -- WORKING WITH `-C`
 --------------------
-downgradePackages :: Language -> [String] -> IO ()
-downgradePackages lang pkgs = do
-  confFile  <- getPacmanConf
-  cache     <- packageCacheContents confFile
+downgradePackages :: Settings -> [String] -> IO ()
+downgradePackages settings pkgs = do
+  cache     <- packageCacheContents cachePath
   installed <- filterM isInstalled pkgs
   let notInstalled = pkgs \\ installed
-      cachePath    = getCachePath confFile
   when (not $ null notInstalled) (reportBadDowngradePkgs lang notInstalled)
-  selections <- mapM (getDowngradeChoice lang cache) installed
+  selections <- mapM (getDowngradeChoice settings cache) installed
   pacman $ ["-U"] ++ map (cachePath </>) selections
+      where cachePath = cachePathOf settings
+            lang      = langOf settings
 
 reportBadDowngradePkgs :: Language -> [String] -> IO ()
 reportBadDowngradePkgs lang pkgs = printListWithTitle red cyan msg pkgs
     where msg = reportBadDowngradePkgsMsg1 lang
                
-getDowngradeChoice :: Language -> [String] -> String -> IO String
-getDowngradeChoice lang cache pkg = do
+getDowngradeChoice :: Settings -> [String] -> String -> IO String
+getDowngradeChoice settings cache pkg = do
   let choices = getChoicesFromCache cache pkg
-  putStrLnA green $ getDowngradeChoiceMsg1 lang pkg
+  notify settings (flip getDowngradeChoiceMsg1 pkg)
   getSelection choices
 
 getChoicesFromCache :: [String] -> String -> [String]
 getChoicesFromCache cache pkg = sort choices
     where choices = filter (\p -> p =~ ("^" ++ pkg ++ "-[0-9]")) cache
 
-searchPackageCache :: [String] -> IO ()
-searchPackageCache input = do
-  confFile <- getPacmanConf
-  cache    <- packageCacheContents confFile
+-- No input yields the contents of the entire cache.
+searchPackageCache :: Settings -> [String] -> IO ()
+searchPackageCache settings input = do
+  cache <- packageCacheContents $ cachePathOf settings
   let pattern = unwords input
       matches = sort $ filter (\p -> p =~ pattern) cache
   mapM_ putStrLn matches
 
+backupCache :: Settings -> [String] -> IO ()
+backupCache settings []      = scold settings backupCacheMsg1
+backupCache settings (dir:_) = do
+  isRoot <- isUserRoot
+  exists <- fileExist dir
+  continueIfOkay isRoot exists
+      where continueIfOkay isRoot exists
+              | not isRoot = scold settings backupCacheMsg2
+              | not exists = scold settings backupCacheMsg3
+              | otherwise  = do
+              cache <- packageCacheContents $ cachePathOf settings
+              notify settings (flip backupCacheMsg4 dir)
+              notify settings (flip backupCacheMsg5 $ length cache)
+              notify settings backupCacheMsg6
+              putStrLn ""  -- So that the cursor has somewhere to rise to.
+              copyAndNotify settings dir cache 1
+
+copyAndNotify :: Settings -> FilePath -> [String] -> Int -> IO ()
+copyAndNotify _ _ [] _              = return ()
+copyAndNotify settings dir (p:ps) n = do
+  putStr $ raiseCursorBy 1
+  warn settings (flip copyAndNotifyMsg1 n)
+  copyFile (cachePath </> p) (dir </> p)
+  copyAndNotify settings dir ps $ n + 1
+      where cachePath = cachePathOf settings
 --------
 -- OTHER
 --------
-displayOutputLanguages :: Language -> IO ()
-displayOutputLanguages lang = do
-  putStrLnA green $ displayOutputLanguagesMsg1 lang
+viewLogFile :: FilePath -> IO ()
+viewLogFile logFilePath = rawSystem "more" [logFilePath] >> return ()
+
+displayOutputLanguages :: Settings -> IO ()
+displayOutputLanguages settings = do
+  notify settings displayOutputLanguagesMsg1
   mapM_ (putStrLn . show) allLanguages
 
 printHelpMsg :: [String] -> IO ()
@@ -269,10 +251,11 @@ printHelpMsg pacOpts = pacman $ pacOpts ++ ["-h"]
 
 getHelpMsg :: [String] -> String
 getHelpMsg pacmanHelpMsg = concat $ intersperse "\n" allMessages
-    where allMessages   = [replacedLines,auraUsageMsg,languageMsg]
+    where allMessages   = [replacedLines,auraUsageMsg,dualFlagMsg,languageMsg]
           replacedLines = unlines $ map (replaceByPatt patterns) pacmanHelpMsg
+          colouredMsg   = colourize yellow "Inherited Pacman Operations" 
           patterns      = [ ("pacman","aura")
-                          , ("operations","Inherited Pacman Operations") ]
+                          , ("operations",colouredMsg) ]
 
 -- ANIMATED VERSION MESSAGE
 animateVersionMsg :: [String] -> IO ()

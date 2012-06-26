@@ -24,30 +24,29 @@ buildPackagesMsg1 :: Language -> String -> String
 buildPackagesMsg1 English p  = "Building " ++ bt p ++ "..."
 buildPackagesMsg1 Japanese p = bt p ++ "を作成中・・・"
 
-buildPackagesMsg2 :: Language -> String -> String
-buildPackagesMsg2 English p  = "Well, building " ++ bt p ++ " failed."
-buildPackagesMsg2 Japanese p = bt p ++ "の作成は失敗したようだ。"
+buildPackagesMsg2 :: Language -> String
+buildPackagesMsg2 English  = "So be it."
+buildPackagesMsg2 Japanese = "分かった。脱出！"
 
-buildPackagesMsg3 :: Language -> String
-buildPackagesMsg3 English  = "Dumping makepkg output in "
-buildPackagesMsg3 Japanese = "抑えていたmakepkgの出力を受け取る用意・・・"
+buildFailMsg1 :: Language -> String -> String
+buildFailMsg1 English p  = "Well, building " ++ bt p ++ " failed."
+buildFailMsg1 Japanese p = bt p ++ "の作成は失敗したようだ。"
 
-buildPackagesMsg4 :: Language -> String
-buildPackagesMsg4 English  = "Also, the following weren't built:"
-buildPackagesMsg4 Japanese = "ちなみに下記のパッケージも作成されなかった："
+buildFailMsg2 :: Language -> String
+buildFailMsg2 English  = "Also, the following weren't built:"
+buildFailMsg2 Japanese = "ちなみに下記のパッケージも作成されなかった："
 
-buildPackagesMsg5 :: Language -> String
-buildPackagesMsg5 English  = "Some packages may have built properly."
-buildPackagesMsg5 Japanese = "今のは失敗したけど前に作成のできたやつ" ++
+buildFailMsg3 :: Language -> String
+buildFailMsg3 English  = "Some packages may have built properly."
+buildFailMsg3 Japanese = "今のは失敗したけど前に作成のできたやつ" ++
                              "があるかもしれない。"
+buildFailMsg4 :: Language -> String
+buildFailMsg4 English  = "Would you like to install them? [y/n]"
+buildFailMsg4 Japanese = "できたやつのインストールを続行する？ [y/n]"
 
-buildPackagesMsg6 :: Language -> String
-buildPackagesMsg6 English  = "Would you like to install them? [y/n]"
-buildPackagesMsg6 Japanese = "できたやつのインストールを続行する？ [y/n]"
-
-buildPackagesMsg7 :: Language -> String
-buildPackagesMsg7 English  = "So be it."
-buildPackagesMsg7 Japanese = "分かった。脱出！"
+displayBuildErrorsMsg1 :: Language -> String
+displayBuildErrorsMsg1 English  = "Dumping makepkg output in "
+displayBuildErrorsMsg1 Japanese = "抑えていたmakepkgの出力を受け取る用意・・・"
 
 getDepsToInstallMsg1 :: Language -> String
 getDepsToInstallMsg1 English  = "No AUR packages specified for install."
@@ -165,19 +164,9 @@ downloadTarballsMsg1 English p  =
 downloadTarballsMsg1 Japanese p =
     bt p ++ "のソースコードのターボールをダウンロード中・・・"
 
-displayPkgbuildMsg1 :: Language -> String
-displayPkgbuildMsg1 English =
-    "Make sure to thoroughly check PKGBUILDs before installing packages."
-displayPkgbuildMsg1 Japanese =
-    "パッケージをインストールする前は必ずPKGBUILDの内容を確認した方がいい。"
-
-displayPkgbuildMsg2 :: Language -> String -> String
-displayPkgbuildMsg2 English pkg  = "Showing PKGBUILD for " ++ bt pkg ++ "..."
-displayPkgbuildMsg2 Japanese pkg = bt pkg ++ "のPKGBUILDは出力される。"
-
-displayPkgbuildMsg3 :: Language -> String -> String
-displayPkgbuildMsg3 English pkg  = bt pkg ++ " does not exist."
-displayPkgbuildMsg3 Japanese pkg = bt pkg ++ "は存在しない。"
+displayPkgbuildMsg1 :: Language -> String -> String
+displayPkgbuildMsg1 English pkg  = bt pkg ++ " does not exist."
+displayPkgbuildMsg1 Japanese pkg = bt pkg ++ "は存在しない。"
 
 getDowngradeChoiceMsg1 :: Language -> String -> String
 getDowngradeChoiceMsg1 English p =
@@ -185,11 +174,35 @@ getDowngradeChoiceMsg1 English p =
 getDowngradeChoiceMsg1 Japanese p =
     bt p ++ "はどのバージョンにする？"
 
+backupCacheMsg1 :: Language -> String
+backupCacheMsg1 English  = "No backup location given."
+backupCacheMsg1 Japanese = "バックアップ先を入力してください。"
+
+backupCacheMsg2 :: Language -> String
+backupCacheMsg2 English  = "You must be root to backup the cache."
+backupCacheMsg2 Japanese = "rootじゃないとバックアップはできない。"
+
+backupCacheMsg3 :: Language -> String
+backupCacheMsg3 English  = "The backup location does not exist."
+backupCacheMsg3 Japanese = "バックアップ先は存在しない。"
+
+backupCacheMsg4 :: Language -> String -> String
+backupCacheMsg4 English dir  = "Backing up cache to " ++ bt dir
+backupCacheMsg4 Japanese dir = "キャッシュのバックアップ先：" ++ bt dir 
+
+backupCacheMsg5 :: Language -> Int -> String
+backupCacheMsg5 English n  = "Package files to backup: " ++ bt (show n)
+backupCacheMsg5 Japanese n = "パッケージのファイル数：" ++ bt (show n)
+
+backupCacheMsg6 :: Language -> String
+backupCacheMsg6 English  = "Backing up. This may take a few minutes..."
+backupCacheMsg6 Japanese = "バックアップ中。数分かかるかもしれない。"
+
+copyAndNotifyMsg1 :: Language -> Int -> String
+copyAndNotifyMsg1 English n  = "Copying #[" ++ colourize cyan (show n) ++ "]"
+copyAndNotifyMsg1 Japanese n =
+    "#[" ++ colourize cyan (show n) ++"]をコピー中・・・"
+
 displayOutputLanguagesMsg1 :: Language -> String
 displayOutputLanguagesMsg1 English = "The following languages are available:"
 displayOutputLanguagesMsg1 Japanese = "auraは以下の言語に対応している："
-
--- Pacman functions
-syncDatabaseMsg1 :: Language -> String
-syncDatabaseMsg1 English  = "Syncing package database..."
-syncDatabaseMsg1 Japanese = "パッケージのデータベースを同期・・・"
