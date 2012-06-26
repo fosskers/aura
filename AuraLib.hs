@@ -368,6 +368,24 @@ divideByPkgType pkgs = do
   return (archPkgs, aurPkgs, remaining \\ aurPkgs)
       where stripVerNum = fst . splitNameAndVer
 
+-------
+-- MISC  -- Too specific for `Utilities.hs`
+-------
+-- `IO ()` should be changed to `ExitCode` at some point.
+colouredMessage :: Colour -> Settings -> (Language -> String) -> IO ()
+colouredMessage c settings msg = putStrLnA c . msg . langOf $ settings
+
+notice :: Settings -> (Language -> String) -> IO ()
+notice settings msg = colouredMessage green settings msg
+
+warning :: Settings -> (Language -> String) -> IO ()
+warning settings msg = colouredMessage yellow settings msg
+
+failure :: Settings -> (Language -> String) -> IO ()
+failure settings msg = colouredMessage red settings msg
+
+
+
 -- These might not be necessary.
 {-
 getOrphans :: IO [String]

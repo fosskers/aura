@@ -5,7 +5,8 @@
 
 -- System Libraries
 import Data.List ((\\), nub, sort, intersperse)
-import System.Directory (getCurrentDirectory)
+import System.Directory (getCurrentDirectory, copyFile)
+import System.Posix.Files (fileExist)
 import Control.Monad (filterM, when)
 import System.Environment (getArgs)
 import System.Process (rawSystem)
@@ -61,9 +62,10 @@ executeOpts settings (flags,input,pacOpts) = do
           case fs of
             []       -> downgradePackages settings input
             [Search] -> searchPackageCache settings input
+            [Backup] -> backupCache settings input
             _ -> putStrLnA red $ executeOptsMsg1 (langOf settings)
       [ViewLog]   -> viewLogFile $ logFilePathOf settings
-      [Languages] -> displayOutputLanguages $ langOf settings
+      [Languages] -> displayOutputLanguages settings
       [Help]      -> printHelpMsg pacOpts  -- Not pacOpts'.
       [Version]   -> getVersionInfo >>= animateVersionMsg
       _           -> pacman $ pacOpts' ++ input ++ hijackedFlags
@@ -92,8 +94,8 @@ installPackages settings pacOpts pkgs = do
       let pacPkgs = nub $ pacmanDeps ++ forPacman
           pkgsAndOpts = pacOpts ++ pacPkgs
       reportPkgsToInstall lang pacPkgs aurDeps aurPackages 
-      response <- yesNoPrompt (installPackagesMsg3 lang) "^y"
-      if not response
+      okay <- optionalPrompt (mustConfirm settings) (installPackagesMsg3 lang)
+      if not okay
          then putStrLnA red $ installPackagesMsg4 lang
          else do
            when (notNull pacPkgs) (pacman $ ["-S","--asdeps"] ++ pkgsAndOpts)
@@ -197,6 +199,7 @@ getChoicesFromCache :: [String] -> String -> [String]
 getChoicesFromCache cache pkg = sort choices
     where choices = filter (\p -> p =~ ("^" ++ pkg ++ "-[0-9]")) cache
 
+-- No input yields the contents of the entire cache.
 searchPackageCache :: Settings -> [String] -> IO ()
 searchPackageCache settings input = do
   cache <- packageCacheContents $ cachePathOf settings
@@ -204,15 +207,30 @@ searchPackageCache settings input = do
       matches = sort $ filter (\p -> p =~ pattern) cache
   mapM_ putStrLn matches
 
+backupCache :: Settings -> [String] -> IO ()
+backupCache settings []      = failure settings backupCacheMsg1
+backupCache settings (dir:_) = do
+  isRoot <- isUserRoot
+  exists <- fileExist dir
+  continueIfOkay isRoot exists
+      where cachePath = cachePathOf settings
+            continueIfOkay isRoot exists
+              | not isRoot = failure settings backupCacheMsg2
+              | not exists = failure settings backupCacheMsg3
+              | otherwise  = do
+              notice settings (flip backupCacheMsg4 dir)
+              cache <- packageCacheContents cachePath
+              mapM_ (\p -> copyFile (cachePath </> p) (dir </> p)) cache
+
 --------
 -- OTHER
 --------
 viewLogFile :: FilePath -> IO ()
 viewLogFile logFilePath = rawSystem "more" [logFilePath] >> return ()
 
-displayOutputLanguages :: Language -> IO ()
-displayOutputLanguages lang = do
-  putStrLnA green $ displayOutputLanguagesMsg1 lang
+displayOutputLanguages :: Settings -> IO ()
+displayOutputLanguages settings = do
+  notice settings displayOutputLanguagesMsg1
   mapM_ (putStrLn . show) allLanguages
 
 printHelpMsg :: [String] -> IO ()

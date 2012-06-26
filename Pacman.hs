@@ -54,7 +54,8 @@ syncDatabase lang pacOpts = do
 
 -- This takes the filepath of the package cache as an argument.
 packageCacheContents :: FilePath -> IO [String]
-packageCacheContents = getDirectoryContents
+packageCacheContents ca = getDirectoryContents ca >>= return . filter dots
+    where dots p = p `notElem` [".",".."]
 
 getPacmanConf :: IO String
 getPacmanConf = readFile pacmanConfFile

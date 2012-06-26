@@ -174,6 +174,22 @@ getDowngradeChoiceMsg1 English p =
 getDowngradeChoiceMsg1 Japanese p =
     bt p ++ "はどのバージョンにする？"
 
+backupCacheMsg1 :: Language -> String
+backupCacheMsg1 English  = "No backup location given."
+backupCacheMsg1 Japanese = "バックアップ先を入力してください。"
+
+backupCacheMsg2 :: Language -> String
+backupCacheMsg2 English  = "You must be root to backup the cache."
+backupCacheMsg2 Japanese = "rootじゃないとバックアップはできない。"
+
+backupCacheMsg3 :: Language -> String
+backupCacheMsg3 English  = "The backup location does not exist."
+backupCacheMsg3 Japanese = "バックアップ先は存在しない。"
+
+backupCacheMsg4 :: Language -> String -> String
+backupCacheMsg4 English dir  = "Backing up cache to " ++ bt dir ++ "..."
+backupCacheMsg4 Japanese dir = "キャッシュを" ++ bt dir ++ "までバックアップ："
+
 displayOutputLanguagesMsg1 :: Language -> String
 displayOutputLanguagesMsg1 English = "The following languages are available:"
 displayOutputLanguagesMsg1 Japanese = "auraは以下の言語に対応している："

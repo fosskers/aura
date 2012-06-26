@@ -76,7 +76,6 @@ colourize colour msg =
                     (_,_,"")  -> msg  -- We're done recursing.
                     (b,m,a)   -> insertCodes code (b ++ code ++ a)
   
--- COLOUR THIS!
 putStrLnA :: Colour -> String -> IO ()
 putStrLnA colour s = putStrA colour $ s ++ "\n"
 
@@ -132,8 +131,9 @@ getUser = getEnv "USER"
 getSudoUser :: IO String
 getSudoUser = getEnv "SUDO_USER"
 
-isUserRoot :: String -> Bool
-isUserRoot user = user == "root"
+isUserRoot :: IO Bool
+isUserRoot = getUser >>= return . checkIfRoot
+    where checkIfRoot user = user == "root"
 
 -- Given a number of selections, allows the user to choose one.
 getSelection :: [String] -> IO String
@@ -162,6 +162,10 @@ yesNoPrompt msg regex = do
   hFlush stdout
   response <- getLine
   return (response =~ regex :: Bool)
+
+optionalPrompt :: Bool -> String -> IO Bool
+optionalPrompt True msg = yesNoPrompt msg "^y"
+optionalPrompt False _  = return True
 
 wordsLines :: String -> [String]
 wordsLines = concat . map words . lines
