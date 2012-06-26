@@ -24,7 +24,7 @@ import AuraLib
 import Pacman
 
 auraVersion :: String
-auraVersion = "0.4.4.1"
+auraVersion = "0.5.0.0"
 
 main :: IO ()
 main = do
@@ -46,7 +46,7 @@ main = do
 -- After determining what Flag was given, dispatches a function.
 executeOpts :: Settings -> ([Flag],[String],[String]) -> IO ()
 executeOpts settings (flags,input,pacOpts) = do
-    let pacOpts' = pacOpts ++ map (reconvertFlag dualFlagMap) flags
+    let pacOpts' = pacOpts ++ convertedDualFlags
     case sort flags of
       (AURInstall:fs) ->
           case fs of
@@ -68,8 +68,10 @@ executeOpts settings (flags,input,pacOpts) = do
       [Languages] -> displayOutputLanguages settings
       [Help]      -> printHelpMsg pacOpts  -- Not pacOpts'.
       [Version]   -> getVersionInfo >>= animateVersionMsg
-      pacmanFlags -> pacman $ pacOpts' ++ input ++ hijackedFlags
-          where hijackedFlags = map (reconvertFlag hijackedFlagMap) flags
+      pacmanFlags -> pacman $ pacOpts' ++ input ++ convertedHijackedFlags
+    where convert fm = filter notNull $ map (reconvertFlag fm) flags
+          convertedHijackedFlags = convert hijackedFlagMap
+          convertedDualFlags     = convert dualFlagMap
 
 --------------------
 -- WORKING WITH `-A`
