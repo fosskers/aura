@@ -187,8 +187,21 @@ backupCacheMsg3 English  = "The backup location does not exist."
 backupCacheMsg3 Japanese = "バックアップ先は存在しない。"
 
 backupCacheMsg4 :: Language -> String -> String
-backupCacheMsg4 English dir  = "Backing up cache to " ++ bt dir ++ "..."
-backupCacheMsg4 Japanese dir = "キャッシュを" ++ bt dir ++ "までバックアップ："
+backupCacheMsg4 English dir  = "Backing up cache to " ++ bt dir
+backupCacheMsg4 Japanese dir = "キャッシュのバックアップ先：" ++ bt dir 
+
+backupCacheMsg5 :: Language -> Int -> String
+backupCacheMsg5 English n  = "Package files to backup: " ++ bt (show n)
+backupCacheMsg5 Japanese n = "パッケージのファイル数：" ++ bt (show n)
+
+backupCacheMsg6 :: Language -> String
+backupCacheMsg6 English  = "Backing up. This may take a few minutes..."
+backupCacheMsg6 Japanese = "バックアップ中。数分かかるかもしれない。"
+
+copyAndNotifyMsg1 :: Language -> Int -> String
+copyAndNotifyMsg1 English n  = "Copying #[" ++ colourize cyan (show n) ++ "]"
+copyAndNotifyMsg1 Japanese n =
+    "#[" ++ colourize cyan (show n) ++"]をコピー中・・・"
 
 displayOutputLanguagesMsg1 :: Language -> String
 displayOutputLanguagesMsg1 English = "The following languages are available:"

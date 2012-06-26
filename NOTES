@@ -34,8 +34,6 @@ OPTIONS TO IMPLEMENT
 -As -> `--search` Search for an AUR package
 -Cc -> `--clean` Deletes old packages. Users can supply how many versions
        they want to keep.
--Cz -> `--backup` Backs up the package cache to a given directory.
-     	Check if they are root before proceeding.
 -Ci -> `--info` Gives some stats about the package cache.
 -   -> `--prompt` Prompt the user if they want to view PKGBUILDs.
 

@@ -213,15 +213,25 @@ backupCache settings (dir:_) = do
   isRoot <- isUserRoot
   exists <- fileExist dir
   continueIfOkay isRoot exists
-      where cachePath = cachePathOf settings
-            continueIfOkay isRoot exists
+      where continueIfOkay isRoot exists
               | not isRoot = scold settings backupCacheMsg2
               | not exists = scold settings backupCacheMsg3
               | otherwise  = do
+              cache <- packageCacheContents $ cachePathOf settings
               notify settings (flip backupCacheMsg4 dir)
-              cache <- packageCacheContents cachePath
-              mapM_ (\p -> copyFile (cachePath </> p) (dir </> p)) cache
+              notify settings (flip backupCacheMsg5 $ length cache)
+              notify settings backupCacheMsg6
+              putStrLn ""  -- So that the cursor has somewhere to rise to.
+              copyAndNotify settings dir cache 1
 
+copyAndNotify :: Settings -> FilePath -> [String] -> Int -> IO ()
+copyAndNotify _ _ [] _              = return ()
+copyAndNotify settings dir (p:ps) n = do
+  putStr $ raiseCursorBy 1
+  warn settings (flip copyAndNotifyMsg1 n)
+  copyFile (cachePath </> p) (dir </> p)
+  copyAndNotify settings dir ps $ n + 1
+      where cachePath = cachePathOf settings
 --------
 -- OTHER
 --------
