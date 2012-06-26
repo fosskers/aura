@@ -140,31 +140,31 @@ installPackageFiles extraOpts files = pacman $ ["-U"] ++ extraOpts ++ files
 buildPackages :: Settings -> [AURPkg] -> IO [FilePath]
 buildPackages _ []        = return []
 buildPackages settings (p:ps) = do
-  putStrLnA green $ buildPackagesMsg1 lang (pkgNameOf p)
+  notify settings (flip buildPackagesMsg1 $ pkgNameOf p)
   user    <- getSudoUser
   results <- withTempDir (show p) (build toSuppress cachePath user p)
   case results of
     Right pkg   -> buildPackages settings ps >>= return . (\pkgs -> pkg : pkgs)
     Left errors -> do        
-        toContinue <- buildFail settings (p:ps) errors
+        toContinue <- buildFail settings p ps errors
         if toContinue then return [] else error (buildPackagesMsg2 lang)
     where lang       = langOf settings
           toSuppress = suppressMakepkg settings
           cachePath  = cachePathOf settings
         
-buildFail :: Settings -> [AURPkg] -> ErrorMsg -> IO Bool
-buildFail settings (p:ps) errors = do
-  putStrLnA red $ buildFailMsg1 lang (show p)
-  when (suppressMakepkg settings) (displayBuildErrors lang errors)
-  when (notNull ps) ((putStrLnA red $ buildFailMsg2 lang) >>
+buildFail :: Settings -> AURPkg -> [AURPkg] -> ErrorMsg -> IO Bool
+buildFail settings p ps errors = do
+  scold settings (flip buildFailMsg1 (show p))
+  when (suppressMakepkg settings) (displayBuildErrors settings errors)
+  when (notNull ps) ((scold settings buildFailMsg2) >>
                      mapM_ (putStrLn . colourize cyan . pkgNameOf) ps)
-  putStrLnA yellow $ buildFailMsg3 lang
+  warn settings buildFailMsg3
   yesNoPrompt (buildFailMsg4 lang) "^y"
       where lang = langOf settings
 
-displayBuildErrors :: Language -> ErrorMsg -> IO ()
-displayBuildErrors lang errors = do
-  putStrA red $ displayBuildErrorsMsg1 lang
+displayBuildErrors :: Settings -> ErrorMsg -> IO ()
+displayBuildErrors settings errors = do
+  scold settings displayBuildErrorsMsg1
   timedMessage 1000000 ["3.. ","2.. ","1..\n"]
   putStrLn errors
 
@@ -375,16 +375,14 @@ divideByPkgType pkgs = do
 colouredMessage :: Colour -> Settings -> (Language -> String) -> IO ()
 colouredMessage c settings msg = putStrLnA c . msg . langOf $ settings
 
-notice :: Settings -> (Language -> String) -> IO ()
-notice settings msg = colouredMessage green settings msg
+notify :: Settings -> (Language -> String) -> IO ()
+notify settings msg = colouredMessage green settings msg
 
-warning :: Settings -> (Language -> String) -> IO ()
-warning settings msg = colouredMessage yellow settings msg
+warn :: Settings -> (Language -> String) -> IO ()
+warn settings msg = colouredMessage yellow settings msg
 
-failure :: Settings -> (Language -> String) -> IO ()
-failure settings msg = colouredMessage red settings msg
-
-
+scold :: Settings -> (Language -> String) -> IO ()
+scold settings msg = colouredMessage red settings msg
 
 -- These might not be necessary.
 {-

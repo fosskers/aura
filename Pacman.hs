@@ -11,7 +11,6 @@ import System.IO (hFlush, stdout)
 import Text.Regex.Posix ((=~))
 
 -- Custom Libraries
-import AuraLanguages
 import Utilities 
 
 type Arg = String
@@ -47,10 +46,8 @@ pacmanFailure args = pacmanSuccess args >>= return . not
 pacmanOutput :: [Arg] -> IO String
 pacmanOutput args = pacmanQuiet args >>= return . tripleSnd
 
-syncDatabase :: Language -> [String] -> IO ()
-syncDatabase lang pacOpts = do
-  putStrLnA green $ syncDatabaseMsg1 lang
-  pacman $ ["-Sy"] ++ pacOpts
+syncDatabase :: [String] -> IO ()
+syncDatabase pacOpts = pacman $ ["-Sy"] ++ pacOpts
 
 -- This takes the filepath of the package cache as an argument.
 packageCacheContents :: FilePath -> IO [String]

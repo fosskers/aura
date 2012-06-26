@@ -193,8 +193,3 @@ backupCacheMsg4 Japanese dir = "キャッシュを" ++ bt dir ++ "までバッ�
 displayOutputLanguagesMsg1 :: Language -> String
 displayOutputLanguagesMsg1 English = "The following languages are available:"
 displayOutputLanguagesMsg1 Japanese = "auraは以下の言語に対応している："
-
--- Pacman functions
-syncDatabaseMsg1 :: Language -> String
-syncDatabaseMsg1 English  = "Syncing package database..."
-syncDatabaseMsg1 Japanese = "パッケージのデータベースを同期・・・"

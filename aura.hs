@@ -52,23 +52,23 @@ executeOpts settings (flags,input,pacOpts) = do
           case fs of
             []            -> installPackages settings pacOpts' input
             [Upgrade]     -> upgradeAURPkgs settings pacOpts' input
-            [Download]    -> downloadTarballs (langOf settings) input
-            [GetPkgbuild] -> displayPkgbuild (langOf settings) input
+            [Download]    -> downloadTarballs settings input
+            [GetPkgbuild] -> displayPkgbuild settings input
             (Refresh:fs') -> do 
-                      syncDatabase (langOf settings) pacOpts'
+                      syncDatabase pacOpts'
                       executeOpts settings (AURInstall:fs',input,pacOpts')
-            _ -> putStrLnA red $ executeOptsMsg1 (langOf settings)
-      (Cache:fs)  ->
+            badFlags -> scold settings executeOptsMsg1
+      (Cache:fs) ->
           case fs of
             []       -> downgradePackages settings input
             [Search] -> searchPackageCache settings input
             [Backup] -> backupCache settings input
-            _ -> putStrLnA red $ executeOptsMsg1 (langOf settings)
+            badFlags -> scold settings executeOptsMsg1
       [ViewLog]   -> viewLogFile $ logFilePathOf settings
       [Languages] -> displayOutputLanguages settings
       [Help]      -> printHelpMsg pacOpts  -- Not pacOpts'.
       [Version]   -> getVersionInfo >>= animateVersionMsg
-      _           -> pacman $ pacOpts' ++ input ++ hijackedFlags
+      pacmanFlags -> pacman $ pacOpts' ++ input ++ hijackedFlags
           where hijackedFlags = map (reconvertFlag hijackedFlagMap) flags
 
 --------------------
@@ -85,7 +85,7 @@ installPackages settings pacOpts pkgs = do
   (forPacman,aurPkgNames,nonPkgs) <- divideByPkgType toInstall
   reportNonPackages lang nonPkgs
   aurPackages <- mapM makeAURPkg aurPkgNames
-  putStrLnA green $ installPackagesMsg5 lang
+  notify settings installPackagesMsg5
   results     <- getDepsToInstall settings aurPackages
   case results of
     Left errors -> do
@@ -96,7 +96,7 @@ installPackages settings pacOpts pkgs = do
       reportPkgsToInstall lang pacPkgs aurDeps aurPackages 
       okay <- optionalPrompt (mustConfirm settings) (installPackagesMsg3 lang)
       if not okay
-         then putStrLnA red $ installPackagesMsg4 lang
+         then scold settings installPackagesMsg4
          else do
            when (notNull pacPkgs) (pacman $ ["-S","--asdeps"] ++ pkgsAndOpts)
            mapM_ (buildAndInstallDep settings) aurDeps
@@ -137,12 +137,12 @@ buildAndInstallDep settings pkg = do
                
 upgradeAURPkgs :: Settings -> [String] -> [String] -> IO ()
 upgradeAURPkgs settings pacOpts pkgs = do
-  putStrLnA green $ upgradeAURPkgsMsg1 lang
+  notify settings upgradeAURPkgsMsg1
   installedPkgs <- getInstalledAURPackages
   toCheck       <- mapM fetchAndReport $ filter notIgnored installedPkgs
-  putStrLnA green $ upgradeAURPkgsMsg2 lang
+  notify settings upgradeAURPkgsMsg2
   let toUpgrade = map pkgNameOf . filter (not . isOutOfDate) $ toCheck
-  when (null toUpgrade) (putStrLnA yellow $ upgradeAURPkgsMsg3 lang)
+  when (null toUpgrade) (warn settings upgradeAURPkgsMsg3)
   installPackages settings pacOpts $ toUpgrade ++ pkgs
     where lang       = langOf settings
           toIgnore   = ignoredPkgsOf settings
@@ -152,24 +152,24 @@ upgradeAURPkgs settings pacOpts pkgs = do
             putStrLnA noColour $ upgradeAURPkgsMsg4 lang (pkgNameOf aurPkg)
             return aurPkg
 
-downloadTarballs :: Language -> [String] -> IO ()
-downloadTarballs lang pkgs = do
+downloadTarballs :: Settings -> [String] -> IO ()
+downloadTarballs settings pkgs = do
   currDir  <- getCurrentDirectory
   realPkgs <- filterM isAURPackage pkgs
-  reportNonPackages lang $ pkgs \\ realPkgs
+  reportNonPackages (langOf settings) $ pkgs \\ realPkgs
   mapM_ (downloadEach currDir) realPkgs
       where downloadEach path pkg = do
-              putStrLnA green $ downloadTarballsMsg1 lang pkg
+              notify settings (flip downloadTarballsMsg1 pkg)
               downloadSource path pkg
 
-displayPkgbuild :: Language -> [String] -> IO ()
-displayPkgbuild lang pkgs = do
+displayPkgbuild :: Settings -> [String] -> IO ()
+displayPkgbuild settings pkgs = do
   mapM_ displayEach pkgs
     where displayEach pkg = do
             itExists <- doesUrlExist $ getPkgbuildUrl pkg
             if itExists
                then downloadPkgbuild pkg >>= putStrLn
-               else putStrLnA red $ displayPkgbuildMsg1 lang pkg
+               else scold settings (flip displayPkgbuildMsg1 pkg)
 
 --------------------
 -- WORKING WITH `-C`
@@ -180,7 +180,7 @@ downgradePackages settings pkgs = do
   installed <- filterM isInstalled pkgs
   let notInstalled = pkgs \\ installed
   when (not $ null notInstalled) (reportBadDowngradePkgs lang notInstalled)
-  selections <- mapM (getDowngradeChoice lang cache) installed
+  selections <- mapM (getDowngradeChoice settings cache) installed
   pacman $ ["-U"] ++ map (cachePath </>) selections
       where cachePath = cachePathOf settings
             lang      = langOf settings
@@ -189,10 +189,10 @@ reportBadDowngradePkgs :: Language -> [String] -> IO ()
 reportBadDowngradePkgs lang pkgs = printListWithTitle red cyan msg pkgs
     where msg = reportBadDowngradePkgsMsg1 lang
                
-getDowngradeChoice :: Language -> [String] -> String -> IO String
-getDowngradeChoice lang cache pkg = do
+getDowngradeChoice :: Settings -> [String] -> String -> IO String
+getDowngradeChoice settings cache pkg = do
   let choices = getChoicesFromCache cache pkg
-  putStrLnA green $ getDowngradeChoiceMsg1 lang pkg
+  notify settings (flip getDowngradeChoiceMsg1 pkg)
   getSelection choices
 
 getChoicesFromCache :: [String] -> String -> [String]
@@ -208,17 +208,17 @@ searchPackageCache settings input = do
   mapM_ putStrLn matches
 
 backupCache :: Settings -> [String] -> IO ()
-backupCache settings []      = failure settings backupCacheMsg1
+backupCache settings []      = scold settings backupCacheMsg1
 backupCache settings (dir:_) = do
   isRoot <- isUserRoot
   exists <- fileExist dir
   continueIfOkay isRoot exists
       where cachePath = cachePathOf settings
             continueIfOkay isRoot exists
-              | not isRoot = failure settings backupCacheMsg2
-              | not exists = failure settings backupCacheMsg3
+              | not isRoot = scold settings backupCacheMsg2
+              | not exists = scold settings backupCacheMsg3
               | otherwise  = do
-              notice settings (flip backupCacheMsg4 dir)
+              notify settings (flip backupCacheMsg4 dir)
               cache <- packageCacheContents cachePath
               mapM_ (\p -> copyFile (cachePath </> p) (dir </> p)) cache
 
@@ -230,7 +230,7 @@ viewLogFile logFilePath = rawSystem "more" [logFilePath] >> return ()
 
 displayOutputLanguages :: Settings -> IO ()
 displayOutputLanguages settings = do
-  notice settings displayOutputLanguagesMsg1
+  notify settings displayOutputLanguagesMsg1
   mapM_ (putStrLn . show) allLanguages
 
 printHelpMsg :: [String] -> IO ()

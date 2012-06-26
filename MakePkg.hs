@@ -5,6 +5,7 @@ import System.Directory (getDirectoryContents)
 import Text.Regex.Posix ((=~))
 import System.Exit (ExitCode)
 
+makepkg :: String -> [String] -> IO (ExitCode,FilePath,String)
 makepkg = makepkgQuiet
 
 -- This needs to be run as non-root!
