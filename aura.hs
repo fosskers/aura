@@ -24,12 +24,12 @@ import AuraLib
 import Pacman
 
 auraVersion :: String
-auraVersion = "0.5.0.0"
+auraVersion = "0.5.0.1"
 
 main :: IO ()
 main = do
   args <- getArgs
-  (auraFlags,pacFlags,input) <- parseOpts args
+  (auraFlags,input,pacFlags) <- parseOpts args
   confFile <- getPacmanConf
   let language     = getLanguage auraFlags
       suppression  = getSuppression auraFlags
@@ -41,22 +41,22 @@ main = do
                           , suppressMakepkg = suppression
                           , mustConfirm     = confirmation }
       auraFlags' = filter (`notElem` settingsFlags) auraFlags
-  executeOpts settings (auraFlags',pacFlags,input)
+      pacFlags'  = pacFlags ++ reconvertFlags auraFlags dualFlagMap
+  executeOpts settings (auraFlags',input,pacFlags')
 
 -- After determining what Flag was given, dispatches a function.
 executeOpts :: Settings -> ([Flag],[String],[String]) -> IO ()
 executeOpts settings (flags,input,pacOpts) = do
-    let pacOpts' = pacOpts ++ convertedDualFlags
     case sort flags of
       (AURInstall:fs) ->
           case fs of
-            []            -> installPackages settings pacOpts' input
-            [Upgrade]     -> upgradeAURPkgs settings pacOpts' input
+            []            -> installPackages settings pacOpts input
+            [Upgrade]     -> upgradeAURPkgs settings pacOpts input
             [Download]    -> downloadTarballs settings input
             [GetPkgbuild] -> displayPkgbuild settings input
             (Refresh:fs') -> do 
-                      syncDatabase pacOpts'
-                      executeOpts settings (AURInstall:fs',input,pacOpts')
+                      syncDatabase pacOpts
+                      executeOpts settings (AURInstall:fs',input,pacOpts)
             badFlags -> scold settings executeOptsMsg1
       (Cache:fs) ->
           case fs of
@@ -66,12 +66,12 @@ executeOpts settings (flags,input,pacOpts) = do
             badFlags -> scold settings executeOptsMsg1
       [ViewLog]   -> viewLogFile $ logFilePathOf settings
       [Languages] -> displayOutputLanguages settings
-      [Help]      -> printHelpMsg pacOpts  -- Not pacOpts'.
+      [Help]      -> printHelpMsg pacOpts
       [Version]   -> getVersionInfo >>= animateVersionMsg
-      pacmanFlags -> pacman $ pacOpts' ++ input ++ convertedHijackedFlags
-    where convert fm = filter notNull $ map (reconvertFlag fm) flags
-          convertedHijackedFlags = convert hijackedFlagMap
-          convertedDualFlags     = convert dualFlagMap
+      pacmanFlags -> pacman $ pacOpts ++ input ++ convertedHijackedFlags
+    where convertedHijackedFlags = reconvertFlags flags hijackedFlagMap
+          
+
 
 --------------------
 -- WORKING WITH `-A`
@@ -103,7 +103,7 @@ installPackages settings pacOpts pkgs = do
            when (notNull pacPkgs) (pacman $ ["-S","--asdeps"] ++ pkgsAndOpts)
            mapM_ (buildAndInstallDep settings) aurDeps
            pkgFiles <- buildPackages settings aurPackages
-           installPackageFiles [] pkgFiles
+           installPackageFiles pacOpts pkgFiles
 
 printListWithTitle :: Colour -> Colour -> String -> [String] -> IO ()
 printListWithTitle titleColour itemColour msg items = do

@@ -61,6 +61,10 @@ hijackedFlagMap = [ (Search,"-s"),(Refresh,"-y"),(Upgrade,"-u")
 dualFlagMap :: FlagMap
 dualFlagMap = [ (NoConfirm,"--noconfirm") ]
 
+-- Does the whole lot and filters out the garbage.
+reconvertFlags :: [Flag] -> FlagMap -> [String]
+reconvertFlags flags fm = filter notNull $ map (reconvertFlag fm) flags
+
 -- Converts an intercepted Pacman flag back into its raw string form.
 reconvertFlag :: FlagMap -> Flag -> String
 reconvertFlag flagMap f = case f `lookup` flagMap of
