@@ -8,6 +8,7 @@ import Data.List ((\\), nub, sort, intersperse)
 import System.Directory (getCurrentDirectory)
 import Control.Monad (filterM, when)
 import System.Environment (getArgs)
+import System.Process (rawSystem)
 import Text.Regex.Posix ((=~))
 import System.FilePath ((</>))
 
@@ -35,6 +36,7 @@ main = do
       settings = Settings { langOf          = language
                           , ignoredPkgsOf   = getIgnoredPkgs confFile
                           , cachePathOf     = getCachePath confFile
+                          , logFilePathOf   = getLogFilePath confFile
                           , suppressMakepkg = suppression
                           , mustConfirm     = confirmation }
       auraFlags' = filter (`notElem` settingsFlags) auraFlags
@@ -52,7 +54,7 @@ executeOpts settings (flags,input,pacOpts) = do
             [Download]    -> downloadTarballs (langOf settings) input
             [GetPkgbuild] -> displayPkgbuild (langOf settings) input
             (Refresh:fs') -> do 
-                      syncDatabase (langOf settings)
+                      syncDatabase (langOf settings) pacOpts'
                       executeOpts settings (AURInstall:fs',input,pacOpts')
             _ -> putStrLnA red $ executeOptsMsg1 (langOf settings)
       (Cache:fs)  ->
@@ -60,6 +62,7 @@ executeOpts settings (flags,input,pacOpts) = do
             []       -> downgradePackages settings input
             [Search] -> searchPackageCache settings input
             _ -> putStrLnA red $ executeOptsMsg1 (langOf settings)
+      [ViewLog]   -> viewLogFile $ logFilePathOf settings
       [Languages] -> displayOutputLanguages $ langOf settings
       [Help]      -> printHelpMsg pacOpts  -- Not pacOpts'.
       [Version]   -> getVersionInfo >>= animateVersionMsg
@@ -204,6 +207,9 @@ searchPackageCache settings input = do
 --------
 -- OTHER
 --------
+viewLogFile :: FilePath -> IO ()
+viewLogFile logFilePath = rawSystem "more" [logFilePath] >> return ()
+
 displayOutputLanguages :: Language -> IO ()
 displayOutputLanguages lang = do
   putStrLnA green $ displayOutputLanguagesMsg1 lang

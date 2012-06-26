@@ -22,6 +22,9 @@ pacmanConfFile = "/etc/pacman.conf"
 defaultPackageCache :: FilePath
 defaultPackageCache = "/var/cache/pacman/pkg/"
 
+defaultLogFile :: FilePath
+defaultLogFile = "/var/log/pacman.log"
+
 pacman :: [Arg] -> IO ()
 pacman args = hFlush stdout >> rawSystem "pacman" args >> return ()
 
@@ -44,11 +47,10 @@ pacmanFailure args = pacmanSuccess args >>= return . not
 pacmanOutput :: [Arg] -> IO String
 pacmanOutput args = pacmanQuiet args >>= return . tripleSnd
 
--- QUESTION: Does `-v` affect this?
-syncDatabase :: Language -> IO ()
-syncDatabase lang = do
+syncDatabase :: Language -> [String] -> IO ()
+syncDatabase lang pacOpts = do
   putStrLnA green $ syncDatabaseMsg1 lang
-  pacman ["-Sy"]
+  pacman $ ["-Sy"] ++ pacOpts
 
 -- This takes the filepath of the package cache as an argument.
 packageCacheContents :: FilePath -> IO [String]
@@ -64,11 +66,19 @@ getConfFileField confFile field = words $ takeWhile (not . (==) '\n') entry
 getIgnoredPkgs :: String -> [String]
 getIgnoredPkgs confFile = getConfFileField confFile "^IgnorePkg[ ]+=[ ]+"
 
+-- For config file fields that only have one value.
+-- Caller must supply an alternative if the given field isn't found.
+getSingleEntry :: String -> String -> String -> String
+getSingleEntry confFile field alt = case getConfFileField confFile regex of
+                                      []    -> alt
+                                      entry -> head entry
+    where regex = "^" ++ field ++ "[ ]+=[ ]+"
+
 getCachePath :: String -> FilePath
-getCachePath confFile = case getConfFileField confFile pattern of
-                          []    -> defaultPackageCache
-                          entry -> head entry
-    where pattern = "^CacheDir[ ]+=[ ]+"
+getCachePath confFile = getSingleEntry confFile "CacheDir" defaultPackageCache
+
+getLogFilePath :: String -> FilePath
+getLogFilePath confFile = getSingleEntry confFile "LogFile" defaultLogFile
 
 getPacmanHelpMsg :: IO [String]
 getPacmanHelpMsg = do

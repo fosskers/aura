@@ -9,7 +9,7 @@ type FlagMap = [(Flag,String)]
 
 data Flag = AURInstall | Cache | GetPkgbuild | Search | Refresh |
             Upgrade | Download | Unsuppress | NoConfirm | Languages |
-            Version | Help | JapOut deriving (Eq,Ord)
+            ViewLog | Version | Help | JapOut deriving (Eq,Ord)
 
 auraOptions :: [OptDescr Flag]
 auraOptions = [ Option ['A'] ["aursync"]      (NoArg AURInstall)  aDesc
@@ -19,6 +19,7 @@ auraOptions = [ Option ['A'] ["aursync"]      (NoArg AURInstall)  aDesc
               , Option ['x'] ["unsuppress"]   (NoArg Unsuppress)  xDesc
               , Option ['C'] ["downgrade"]    (NoArg Cache)       cDesc
               , Option ['s'] ["search"]       (NoArg Search)      sDesc
+              , Option []    ["log"]          (NoArg ViewLog)     lDesc
               ]
     where aDesc = "Install from the [A]UR."
           uDesc = "(With -A) Upgrade all installed AUR packages."
@@ -28,6 +29,7 @@ auraOptions = [ Option ['A'] ["aursync"]      (NoArg AURInstall)  aDesc
           cDesc = "Perform actions involving the package [C]ache.\n" ++
                   "Default action downgrades given packages."
           sDesc = "(With -C) Search the package cache via a regex pattern."
+          lDesc = "View the Pacman log file. (uses `more`)"
 
 -- These are intercepted Pacman flags. Their functionality is different.
 pacmanOptions :: [OptDescr Flag]

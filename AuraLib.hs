@@ -25,6 +25,7 @@ type ErrorMsg = String
 data Settings = Settings { langOf          :: Language
                          , ignoredPkgsOf   :: [String]
                          , cachePathOf     :: FilePath
+                         , logFilePathOf   :: FilePath
                          , suppressMakepkg :: Bool
                          , mustConfirm     :: Bool
                          }
