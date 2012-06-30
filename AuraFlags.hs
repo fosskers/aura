@@ -8,30 +8,38 @@ import Utilities
 type FlagMap = [(Flag,String)]
 
 data Flag = AURInstall | Cache | GetPkgbuild | Search | Refresh |
-            Upgrade | Download | Unsuppress | NoConfirm | Languages |
-            Backup | ViewLog | Version | Help | JapOut deriving (Eq,Ord)
+            Upgrade | DelMDeps | Download | Unsuppress | NoConfirm |
+            Languages | Backup | ViewLog | Orphans | Version | Help |
+            JapOut deriving (Eq,Ord)
+
+auraOperations :: [OptDescr Flag]
+auraOperations = [ Option ['A'] ["aursync"]   (NoArg AURInstall) aDesc
+                 , Option ['C'] ["downgrade"] (NoArg Cache)      cDesc
+                 ]
+    where aDesc = "Install from the [A]UR."
+          cDesc = "Perform actions involving the package [C]ache.\n" ++
+                  "Default action downgrades given packages."
 
 auraOptions :: [OptDescr Flag]
-auraOptions = [ Option ['A'] ["aursync"]      (NoArg AURInstall)  aDesc
+auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    aDesc
+              , Option ['p'] ["pkgbuild"]     (NoArg GetPkgbuild) pDesc
               , Option ['u'] ["sysupgrade"]   (NoArg Upgrade)     uDesc
               , Option ['w'] ["downloadonly"] (NoArg Download)    wDesc
-              , Option ['p'] ["pkgbuild"]     (NoArg GetPkgbuild) pDesc
               , Option ['x'] ["unsuppress"]   (NoArg Unsuppress)  xDesc
-              , Option ['C'] ["downgrade"]    (NoArg Cache)       cDesc
               , Option ['s'] ["search"]       (NoArg Search)      sDesc
               , Option ['z'] ["backup"]       (NoArg Backup)      zDesc
               , Option []    ["log"]          (NoArg ViewLog)     lDesc
+              , Option []    ["orphans"]      (NoArg Orphans)     oDesc
               ]
-    where aDesc = "Install from the [A]UR."
+    where aDesc = "(With -A) Remove unneeded make dependencies after install."
           uDesc = "(With -A) Upgrade all installed AUR packages."
           wDesc = "(With -A) Download the source tarball only."
           pDesc = "(With -A) Output the contents of a package's PKGBUILD."
-          xDesc = "(With -A) Unsuppress makepkg output."
-          cDesc = "Perform actions involving the package [C]ache.\n" ++
-                  "Default action downgrades given packages."
+          xDesc = "(With -A) Unsuppress makepkg output."          
           sDesc = "(With -C) Search the package cache via a regex pattern."
           zDesc = "(With -C) Backup the package cache to a given directory."
           lDesc = "View the Pacman log file. (uses `more`)"
+          oDesc = "Display orphan packages. (No longer needed dependencies.)"
 
 -- These are intercepted Pacman flags. Their functionality is different.
 pacmanOptions :: [OptDescr Flag]
@@ -75,13 +83,17 @@ settingsFlags :: [Flag]
 settingsFlags = [Unsuppress,NoConfirm,JapOut]
 
 allFlags :: [OptDescr Flag]
-allFlags = auraOptions ++ pacmanOptions ++ dualOptions ++ languageOptions
+allFlags = auraOperations ++ auraOptions ++ pacmanOptions ++
+           dualOptions ++ languageOptions
 
 makeUsageMsg :: Colour -> String -> [OptDescr Flag] -> String
 makeUsageMsg c msg flags = usageInfo (colourize c msg) flags
 
-auraUsageMsg :: String
-auraUsageMsg = makeUsageMsg yellow "AURA only operations:" auraOptions
+auraOperMsg :: String
+auraOperMsg = makeUsageMsg yellow "Aura only operations:" auraOperations
+
+auraOptMsg :: String
+auraOptMsg = makeUsageMsg yellow "Subordinate options:" auraOptions
 
 dualFlagMsg :: String
 dualFlagMsg = makeUsageMsg yellow "Dual functionality options:" dualOptions

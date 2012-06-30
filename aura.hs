@@ -29,7 +29,7 @@ auraVersion = "0.5.0.1"
 main :: IO ()
 main = do
   args <- getArgs
-  (auraFlags,input,pacFlags) <- parseOpts args
+  (auraFlags,input,pacOpts) <- parseOpts args
   confFile <- getPacmanConf
   let language     = getLanguage auraFlags
       suppression  = getSuppression auraFlags
@@ -41,8 +41,8 @@ main = do
                           , suppressMakepkg = suppression
                           , mustConfirm     = confirmation }
       auraFlags' = filter (`notElem` settingsFlags) auraFlags
-      pacFlags'  = pacFlags ++ reconvertFlags auraFlags dualFlagMap
-  executeOpts settings (auraFlags',input,pacFlags')
+      pacOpts'  = pacOpts ++ reconvertFlags auraFlags dualFlagMap
+  executeOpts settings (auraFlags',input,pacOpts')
 
 -- After determining what Flag was given, dispatches a function.
 executeOpts :: Settings -> ([Flag],[String],[String]) -> IO ()
@@ -56,7 +56,8 @@ executeOpts settings (flags,input,pacOpts) = do
             [GetPkgbuild] -> displayPkgbuild settings input
             (Refresh:fs') -> do 
                       syncDatabase pacOpts
-                      executeOpts settings (AURInstall:fs',input,pacOpts)
+                      executeOpts settings (ai:fs',input,pacOpts)
+            (DelMDeps:fs')-> removeMakeDeps settings (ai:fs',input,pacOpts)
             badFlags -> scold settings executeOptsMsg1
       (Cache:fs) ->
           case fs of
@@ -65,14 +66,14 @@ executeOpts settings (flags,input,pacOpts) = do
             [Backup] -> backupCache settings input
             badFlags -> scold settings executeOptsMsg1
       [ViewLog]   -> viewLogFile $ logFilePathOf settings
+      [Orphans]   -> getOrphans >>= mapM_ putStrLn
       [Languages] -> displayOutputLanguages settings
       [Help]      -> printHelpMsg pacOpts
       [Version]   -> getVersionInfo >>= animateVersionMsg
       pacmanFlags -> pacman $ pacOpts ++ input ++ convertedHijackedFlags
     where convertedHijackedFlags = reconvertFlags flags hijackedFlagMap
+          ai = AURInstall
           
-
-
 --------------------
 -- WORKING WITH `-A`
 --------------------      
@@ -173,9 +174,26 @@ displayPkgbuild settings pkgs = do
                then downloadPkgbuild pkg >>= putStrLn
                else scold settings (flip displayPkgbuildMsg1 pkg)
 
+-- Uninstalles make dependencies that were only necessary for building
+-- and are no longer required by anything. This is the very definition of
+-- an `orphan` package, thus a before-after comparison of orphan packages
+-- is done to determine what needs to be uninstalled.
+removeMakeDeps :: Settings -> ([Flag],[String],[String]) -> IO ()
+removeMakeDeps settings (flags,input,pacOpts) = do
+  orphansBefore <- getOrphans
+  executeOpts settings (flags,input,pacOpts)
+  orphansAfter  <- getOrphans
+  let makedeps = orphansAfter \\ orphansBefore
+  when (notNull makedeps) $ notifyAndRemove makedeps
+      where notifyAndRemove makedeps = do
+              notify settings removeMakeDepsAfterMsg1
+              removePkgs makedeps pacOpts
+
 --------------------
 -- WORKING WITH `-C`
 --------------------
+-- Interactive. Gives the user a choice as to exactly what versions
+-- they want to downgrade to.
 downgradePackages :: Settings -> [String] -> IO ()
 downgradePackages settings pkgs = do
   cache     <- packageCacheContents cachePath
@@ -201,7 +219,7 @@ getChoicesFromCache :: [String] -> String -> [String]
 getChoicesFromCache cache pkg = sort choices
     where choices = filter (\p -> p =~ ("^" ++ pkg ++ "-[0-9]")) cache
 
--- No input yields the contents of the entire cache.
+-- `[]` as input yields the contents of the entire cache.
 searchPackageCache :: Settings -> [String] -> IO ()
 searchPackageCache settings input = do
   cache <- packageCacheContents $ cachePathOf settings
@@ -209,6 +227,9 @@ searchPackageCache settings input = do
       matches = sort $ filter (\p -> p =~ pattern) cache
   mapM_ putStrLn matches
 
+-- Two conditions must be met for backing-up to begin:
+-- 1. The user must be root (or using sudo).
+-- 2. The destination folder must already exist.
 backupCache :: Settings -> [String] -> IO ()
 backupCache settings []      = scold settings backupCacheMsg1
 backupCache settings (dir:_) = do
@@ -226,6 +247,7 @@ backupCache settings (dir:_) = do
               putStrLn ""  -- So that the cursor has somewhere to rise to.
               copyAndNotify settings dir cache 1
 
+-- Manages the copying and display of the real-time progress notifier.
 copyAndNotify :: Settings -> FilePath -> [String] -> Int -> IO ()
 copyAndNotify _ _ [] _              = return ()
 copyAndNotify settings dir (p:ps) n = do
@@ -251,7 +273,8 @@ printHelpMsg pacOpts = pacman $ pacOpts ++ ["-h"]
 
 getHelpMsg :: [String] -> String
 getHelpMsg pacmanHelpMsg = concat $ intersperse "\n" allMessages
-    where allMessages   = [replacedLines,auraUsageMsg,dualFlagMsg,languageMsg]
+    where allMessages   = [ replacedLines,auraOperMsg,auraOptMsg
+                           ,dualFlagMsg,languageMsg]
           replacedLines = unlines $ map (replaceByPatt patterns) pacmanHelpMsg
           colouredMsg   = colourize yellow "Inherited Pacman Operations" 
           patterns      = [ ("pacman","aura")

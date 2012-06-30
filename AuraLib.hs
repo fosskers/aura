@@ -351,6 +351,12 @@ isVirtualPkg pkg = do
 countInstalledPackages :: IO Int
 countInstalledPackages = pacmanOutput ["-Qsq"] >>= return . length . lines  
 
+getOrphans :: IO [String]
+getOrphans = pacmanOutput ["-Qqdt"] >>= return . lines
+
+removePkgs :: [String] -> [String] -> IO ()
+removePkgs pkgs pacOpts = pacman $ ["-Rsu"] ++ pkgs ++ pacOpts
+
 splitNameAndVer :: String -> (String,String)
 splitNameAndVer pkg = (before,after)
     where (before,_,after) = (pkg =~ "[<>=]+" :: (String,String,String))
@@ -384,11 +390,8 @@ warn settings msg = colouredMessage yellow settings msg
 scold :: Settings -> (Language -> String) -> IO ()
 scold settings msg = colouredMessage red settings msg
 
--- These might not be necessary.
 {-
-getOrphans :: IO [String]
-getOrphans = pacmanOutput ["-Qqdt"] >>= return . lines
-
+-- These might not be necessary.
 getInstalledPackageDesc :: Package -> IO [(String,String)]
 getInstalledPackageDesc pkg = do
   installed <- isInstalled pkg

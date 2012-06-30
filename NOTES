@@ -32,6 +32,9 @@ the welcome message in that language.
 OPTIONS TO IMPLEMENT
 --------------------
 -As -> `--search` Search for an AUR package
+-A? -> `--delmakedeps` Uninstall make deps after installation.
+       (Make sure they appear in the output of `--orphans` first)
+       THIS!!!! -> newMakeDeps = orphansAfter \\ orphansBefore
 -Cc -> `--clean` Deletes old packages. Users can supply how many versions
        they want to keep.
 -Ci -> `--info` Gives some stats about the package cache.
@@ -40,6 +43,7 @@ OPTIONS TO IMPLEMENT
 FLAGS UNUSED BY PACMAN
 ----------------------
 a j x z
+(Of these [x z] has been taken by Aura)
 
 OUT OF DATE
 -----------

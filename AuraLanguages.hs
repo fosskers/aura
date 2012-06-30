@@ -168,6 +168,10 @@ displayPkgbuildMsg1 :: Language -> String -> String
 displayPkgbuildMsg1 English pkg  = bt pkg ++ " does not exist."
 displayPkgbuildMsg1 Japanese pkg = bt pkg ++ "は存在しない。"
 
+removeMakeDepsAfterMsg1 :: Language -> String
+removeMakeDepsAfterMsg1 English  = "Removing unneeded make dependencies..."
+removeMakeDepsAfterMsg1 Japanese = "あと片付け。必要ないパッケージを削除："
+
 getDowngradeChoiceMsg1 :: Language -> String -> String
 getDowngradeChoiceMsg1 English p =
     "What version of " ++ bt p ++ " do you want?"
