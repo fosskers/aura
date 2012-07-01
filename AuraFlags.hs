@@ -7,10 +7,26 @@ import Utilities
 
 type FlagMap = [(Flag,String)]
 
-data Flag = AURInstall | Cache | GetPkgbuild | Search | Refresh |
-            Upgrade | DelMDeps | Download | Unsuppress | NoConfirm |
-            Languages | Backup | ViewLog | Orphans | Version | Help |
-            JapOut deriving (Eq,Ord)
+data Flag = AURInstall
+          | Cache
+          | GetPkgbuild
+          | Search
+          | Refresh
+          | Upgrade
+          | DelMDeps
+          | Download
+          | Unsuppress
+          | NoConfirm
+          | Languages
+          | Backup
+          | ViewLog
+          | Orphans
+          | Adopt
+          | Abandon
+          | Version
+          | Help
+          | JapOut
+            deriving (Eq,Ord)
 
 auraOperations :: [OptDescr Flag]
 auraOperations = [ Option ['A'] ["aursync"]   (NoArg AURInstall) aDesc
@@ -21,25 +37,29 @@ auraOperations = [ Option ['A'] ["aursync"]   (NoArg AURInstall) aDesc
                   "Default action downgrades given packages."
 
 auraOptions :: [OptDescr Flag]
-auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    aDesc
-              , Option ['p'] ["pkgbuild"]     (NoArg GetPkgbuild) pDesc
-              , Option ['u'] ["sysupgrade"]   (NoArg Upgrade)     uDesc
-              , Option ['w'] ["downloadonly"] (NoArg Download)    wDesc
-              , Option ['x'] ["unsuppress"]   (NoArg Unsuppress)  xDesc
-              , Option ['s'] ["search"]       (NoArg Search)      sDesc
-              , Option ['z'] ["backup"]       (NoArg Backup)      zDesc
-              , Option []    ["log"]          (NoArg ViewLog)     lDesc
-              , Option []    ["orphans"]      (NoArg Orphans)     oDesc
+auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    delma
+              , Option ['p'] ["pkgbuild"]     (NoArg GetPkgbuild) pkgbu
+              , Option ['u'] ["sysupgrade"]   (NoArg Upgrade)     sysup
+              , Option ['w'] ["downloadonly"] (NoArg Download)    downl
+              , Option ['x'] ["unsuppress"]   (NoArg Unsuppress)  unsup
+              , Option ['s'] ["search"]       (NoArg Search)      searc
+              , Option ['z'] ["backup"]       (NoArg Backup)      backu
+              , Option []    ["log"]          (NoArg ViewLog)     log
+              , Option []    ["orphans"]      (NoArg Orphans)     orpha
+              , Option []    ["adopt"]        (NoArg Adopt)       adopt
+              , Option []    ["abandon"]      (NoArg Abandon)     aband
               ]
-    where aDesc = "(With -A) Remove unneeded make dependencies after install."
-          uDesc = "(With -A) Upgrade all installed AUR packages."
-          wDesc = "(With -A) Download the source tarball only."
-          pDesc = "(With -A) Output the contents of a package's PKGBUILD."
-          xDesc = "(With -A) Unsuppress makepkg output."          
-          sDesc = "(With -C) Search the package cache via a regex pattern."
-          zDesc = "(With -C) Backup the package cache to a given directory."
-          lDesc = "View the Pacman log file. (uses `more`)"
-          oDesc = "Display orphan packages. (No longer needed dependencies.)"
+    where delma = "(With -A) Remove unneeded make dependencies after install."
+          sysup = "(With -A) Upgrade all installed AUR packages."
+          downl = "(With -A) Download the source tarball only."
+          pkgbu = "(With -A) Output the contents of a package's PKGBUILD."
+          unsup = "(With -A) Unsuppress makepkg output."          
+          searc = "(With -C) Search the package cache via a regex pattern."
+          backu = "(With -C) Backup the package cache to a given directory."
+          log   = "View the Pacman log file. (uses `more`)"
+          orpha = "Display orphan packages. (No longer needed dependencies.)"
+          adopt = "Adopt an orphan package. Shortcut for `-D --asexplicit`."
+          aband = "Uninstall all orphan packages."
 
 -- These are intercepted Pacman flags. Their functionality is different.
 pacmanOptions :: [OptDescr Flag]

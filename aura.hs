@@ -41,7 +41,7 @@ main = do
                           , suppressMakepkg = suppression
                           , mustConfirm     = confirmation }
       auraFlags' = filter (`notElem` settingsFlags) auraFlags
-      pacOpts'  = pacOpts ++ reconvertFlags auraFlags dualFlagMap
+      pacOpts'   = pacOpts ++ reconvertFlags auraFlags dualFlagMap
   executeOpts settings (auraFlags',input,pacOpts')
 
 -- After determining what Flag was given, dispatches a function.
@@ -67,12 +67,14 @@ executeOpts settings (flags,input,pacOpts) = do
             badFlags -> scold settings executeOptsMsg1
       [ViewLog]   -> viewLogFile $ logFilePathOf settings
       [Orphans]   -> getOrphans >>= mapM_ putStrLn
+      [Adopt]     -> pacman $ ["-D","--asexplicit"] ++ input
+      [Abandon]   -> getOrphans >>= flip removePkgs pacOpts
       [Languages] -> displayOutputLanguages settings
       [Help]      -> printHelpMsg pacOpts
       [Version]   -> getVersionInfo >>= animateVersionMsg
       pacmanFlags -> pacman $ pacOpts ++ input ++ convertedHijackedFlags
     where convertedHijackedFlags = reconvertFlags flags hijackedFlagMap
-          ai = AURInstall
+          ai = AURInstall  -- This is ugly.
           
 --------------------
 -- WORKING WITH `-A`
@@ -122,6 +124,7 @@ reportIgnoredPackages _ []      = return ()
 reportIgnoredPackages lang pkgs = printListWithTitle yellow cyan msg pkgs
     where msg = reportIgnoredPackagesMsg1 lang
 
+-- TODO: Make this cleaner.
 reportPkgsToInstall :: Language -> [String] -> [AURPkg] -> [AURPkg] -> IO ()
 reportPkgsToInstall lang pacPkgs aurDeps aurPkgs = do
   printIfThere printCyan pacPkgs $ reportPkgsToInstallMsg1 lang
@@ -174,7 +177,7 @@ displayPkgbuild settings pkgs = do
                then downloadPkgbuild pkg >>= putStrLn
                else scold settings (flip displayPkgbuildMsg1 pkg)
 
--- Uninstalles make dependencies that were only necessary for building
+-- Uninstalls make dependencies that were only necessary for building
 -- and are no longer required by anything. This is the very definition of
 -- an `orphan` package, thus a before-after comparison of orphan packages
 -- is done to determine what needs to be uninstalled.
