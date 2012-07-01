@@ -22,9 +22,13 @@ Arch is Arch. AUR is AUR.
 All together
 ------------
   Dependencies and packages are not built and installed one at a time.
-  Install order is as follow:
+
+  Install order is as follows:
+
     1. All pacman (ABS) dependencies (all at once).
+
     2. All AUR dependencies (one at a time).
+
     3. All AUR packages (all at once).
   
 Downgradibility
