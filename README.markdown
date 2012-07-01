@@ -60,7 +60,7 @@ Sample Usage
 #### Installing Packages
 Install an AUR package:
 
-    aura -A _package_
+    aura -A (package)
 
 Upgrade all installed AUR packages:
 
@@ -68,15 +68,15 @@ Upgrade all installed AUR packages:
 
 Checkout an AUR package's PKGBUILD:
 
-    aura -Ap _package_
+    aura -Ap (package)
 
 Install with makepkg output unsuppressed:
 
-    aura -Ax _package_
+    aura -Ax (package)
 
 Install and remove make dependencies afterwards:
 
-    aura -Aa _package_
+    aura -Aa (package)
 
 Go totally nuts:
 
@@ -85,15 +85,15 @@ Go totally nuts:
 #### Working with the Package Cache
 Downgrade a package (this is interactive):
 
-    aura -C _package_
+    aura -C (package)
 
 Search the package cache for package files via a regex:
 
-    aura -Cs _regex_
+    aura -Cs (regex)
 
 Backup the package cache:
 
-    aura -Cz _/path/to/backup/location/_
+    aura -Cz (/path/to/backup/location/)
 
 Localisation
 ============
