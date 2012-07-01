@@ -281,7 +281,7 @@ getVirtualConflicts lang toIgnore pkg
           failMessage3 = getVirtualConflictsMsg3 lang name ver provider pVer
 
 getProvidedVerNum :: VirtualPkg -> String
-getProvidedVerNum pkg = snd $ splitNameAndVer match
+getProvidedVerNum pkg = splitVer match
     where match = info =~ ("[ ]" ++ pkgNameOf pkg ++ ">?=[0-9.]+")
           info  = pkgInfoOf . fromJust . providerPkgOf $ pkg
 
@@ -361,6 +361,12 @@ splitNameAndVer :: String -> (String,String)
 splitNameAndVer pkg = (before,after)
     where (before,_,after) = (pkg =~ "[<>=]+" :: (String,String,String))
 
+splitName :: String -> String
+splitName = fst . splitNameAndVer
+
+splitVer :: String -> String
+splitVer = snd . splitNameAndVer
+
 -- Used for folding.
 groupPkgs :: ([a],[b],[c]) -> ([a],[b],[c]) -> ([a],[b],[c])
 groupPkgs (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
@@ -368,11 +374,10 @@ groupPkgs (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
 -- This could be slow, depending on internet speeds, etc.
 divideByPkgType :: [String] -> IO ([String],[String],[String])
 divideByPkgType pkgs = do
-  archPkgs <- filterM (isArchPackage . stripVerNum) pkgs
+  archPkgs <- filterM (isArchPackage . splitName) pkgs
   let remaining = pkgs \\ archPkgs
-  aurPkgs  <- filterM (isAURPackage . stripVerNum) remaining
+  aurPkgs  <- filterM (isAURPackage . splitName) remaining
   return (archPkgs, aurPkgs, remaining \\ aurPkgs)
-      where stripVerNum = fst . splitNameAndVer
 
 -------
 -- MISC  -- Too specific for `Utilities.hs`
@@ -380,6 +385,9 @@ divideByPkgType pkgs = do
 -- `IO ()` should be changed to `ExitCode` at some point.
 colouredMessage :: Colour -> Settings -> (Language -> String) -> IO ()
 colouredMessage c settings msg = putStrLnA c . msg . langOf $ settings
+
+say :: Settings -> (Language -> String) -> IO ()
+say settings msg = colouredMessage noColour settings msg
 
 notify :: Settings -> (Language -> String) -> IO ()
 notify settings msg = colouredMessage green settings msg

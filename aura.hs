@@ -42,7 +42,7 @@ main = do
                           , mustConfirm     = confirmation }
       auraFlags' = filter (`notElem` settingsFlags) auraFlags
       pacOpts'   = pacOpts ++ reconvertFlags auraFlags dualFlagMap
-  executeOpts settings (auraFlags',input,pacOpts')
+  executeOpts settings (auraFlags', nub input, nub pacOpts')
 
 -- After determining what Flag was given, dispatches a function.
 executeOpts :: Settings -> ([Flag],[String],[String]) -> IO ()
@@ -82,9 +82,8 @@ executeOpts settings (flags,input,pacOpts) = do
 installPackages :: Settings -> [String] -> [String] -> IO ()
 installPackages _ _ [] = return ()
 installPackages settings pacOpts pkgs = do
-  let uniques   = nub pkgs
-      toInstall = uniques \\ ignoredPkgsOf settings
-      ignored   = uniques \\ toInstall
+  let toInstall = pkgs \\ ignoredPkgsOf settings
+      ignored   = pkgs \\ toInstall
       lang      = langOf settings
   reportIgnoredPackages lang ignored
   (forPacman,aurPkgNames,nonPkgs) <- divideByPkgType toInstall
@@ -96,7 +95,7 @@ installPackages settings pacOpts pkgs = do
     Left errors -> do
       printListWithTitle red noColour (installPackagesMsg1 lang) errors
     Right (pacmanDeps,aurDeps) -> do
-      let pacPkgs = nub $ pacmanDeps ++ forPacman
+      let pacPkgs     = nub $ pacmanDeps ++ forPacman
           pkgsAndOpts = pacOpts ++ pacPkgs
       reportPkgsToInstall lang pacPkgs aurDeps aurPackages 
       okay <- optionalPrompt (mustConfirm settings) (installPackagesMsg3 lang)
@@ -104,9 +103,14 @@ installPackages settings pacOpts pkgs = do
          then scold settings installPackagesMsg4
          else do
            when (notNull pacPkgs) (pacman $ ["-S","--asdeps"] ++ pkgsAndOpts)
-           mapM_ (buildAndInstallDep settings) aurDeps
+           mapM_ (buildAndInstallDep settings pacOpts) aurDeps
            pkgFiles <- buildPackages settings aurPackages
            installPackageFiles pacOpts pkgFiles
+
+buildAndInstallDep :: Settings -> [String] -> AURPkg -> IO ()
+buildAndInstallDep settings pacOpts pkg = do
+  path <- buildPackages settings [pkg]
+  installPackageFiles (["--asdeps"] ++ pacOpts) path
 
 printListWithTitle :: Colour -> Colour -> String -> [String] -> IO ()
 printListWithTitle titleColour itemColour msg items = do
@@ -124,22 +128,14 @@ reportIgnoredPackages _ []      = return ()
 reportIgnoredPackages lang pkgs = printListWithTitle yellow cyan msg pkgs
     where msg = reportIgnoredPackagesMsg1 lang
 
--- TODO: Make this cleaner.
 reportPkgsToInstall :: Language -> [String] -> [AURPkg] -> [AURPkg] -> IO ()
 reportPkgsToInstall lang pacPkgs aurDeps aurPkgs = do
-  printIfThere printCyan pacPkgs $ reportPkgsToInstallMsg1 lang
-  printIfThere printPkgNameCyan aurDeps $ reportPkgsToInstallMsg2 lang
-  printIfThere printPkgNameCyan aurPkgs $ reportPkgsToInstallMsg3 lang
-      where printIfThere f ps msg = when (notNull ps) (printPkgs f ps msg)
-            printPkgs f ps msg = putStrLnA g msg >> mapM_ f ps >> putStrLn ""
-            printCyan = putStrLn . colourize cyan
-            printPkgNameCyan = putStrLn . colourize cyan . pkgNameOf
-            g = green
-
-buildAndInstallDep :: Settings -> AURPkg -> IO ()
-buildAndInstallDep settings pkg = do
-  path <- buildPackages settings [pkg]
-  installPackageFiles ["--asdeps"] path
+  printIfThere pacPkgs $ reportPkgsToInstallMsg1 lang
+  printIfThere (namesOf aurDeps) $ reportPkgsToInstallMsg2 lang
+  printIfThere (namesOf aurPkgs) $ reportPkgsToInstallMsg3 lang
+      where namesOf = map pkgNameOf
+            printIfThere ps msg = when (notNull ps)
+                                  (printListWithTitle green cyan msg ps)
                
 upgradeAURPkgs :: Settings -> [String] -> [String] -> IO ()
 upgradeAURPkgs settings pacOpts pkgs = do
@@ -150,12 +146,10 @@ upgradeAURPkgs settings pacOpts pkgs = do
   let toUpgrade = map pkgNameOf . filter (not . isOutOfDate) $ toCheck
   when (null toUpgrade) (warn settings upgradeAURPkgsMsg3)
   installPackages settings pacOpts $ toUpgrade ++ pkgs
-    where lang       = langOf settings
-          toIgnore   = ignoredPkgsOf settings
-          notIgnored = \p -> fst (splitNameAndVer p) `notElem` toIgnore
+    where notIgnored p = splitName p `notElem` ignoredPkgsOf settings
           fetchAndReport p = do
             aurPkg <- makeAURPkg p
-            putStrLnA noColour $ upgradeAURPkgsMsg4 lang (pkgNameOf aurPkg)
+            say settings (flip upgradeAURPkgsMsg4 $ pkgNameOf aurPkg)
             return aurPkg
 
 downloadTarballs :: Settings -> [String] -> IO ()
@@ -202,15 +196,14 @@ downgradePackages settings pkgs = do
   cache     <- packageCacheContents cachePath
   installed <- filterM isInstalled pkgs
   let notInstalled = pkgs \\ installed
-  when (not $ null notInstalled) (reportBadDowngradePkgs lang notInstalled)
+  when (not $ null notInstalled) (reportBadDowngradePkgs settings notInstalled)
   selections <- mapM (getDowngradeChoice settings cache) installed
   pacman $ ["-U"] ++ map (cachePath </>) selections
       where cachePath = cachePathOf settings
-            lang      = langOf settings
 
-reportBadDowngradePkgs :: Language -> [String] -> IO ()
-reportBadDowngradePkgs lang pkgs = printListWithTitle red cyan msg pkgs
-    where msg = reportBadDowngradePkgsMsg1 lang
+reportBadDowngradePkgs :: Settings -> [String] -> IO ()
+reportBadDowngradePkgs settings pkgs = printListWithTitle red cyan msg pkgs
+    where msg = reportBadDowngradePkgsMsg1 $ langOf settings
                
 getDowngradeChoice :: Settings -> [String] -> String -> IO String
 getDowngradeChoice settings cache pkg = do
@@ -259,6 +252,7 @@ copyAndNotify settings dir (p:ps) n = do
   copyFile (cachePath </> p) (dir </> p)
   copyAndNotify settings dir ps $ n + 1
       where cachePath = cachePathOf settings
+
 --------
 -- OTHER
 --------

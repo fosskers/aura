@@ -1,12 +1,12 @@
 What is Aura?
 =============
 Aura is a package manager for Arch Linux. It's main purpose is as an
-`AUR helper`, in that it automates the process of installating packages
+"AUR helper", in that it automates the process of installating packages
 from the Arch User Repositories.
 
 The Aura Philosophy
 ===================
-### Aura is Pacman.
+### Aura is Pacman
   Aura doesn't just mimic pacman... it _is_ pacman.
   All pacman operations and their sub-options are allowed.
   Some even hold special meaning in Aura as well.
@@ -14,7 +14,7 @@ The Aura Philosophy
 ### Arch is Arch. AUR is AUR.
   `-S` yields pacman packages and only pacman packages. This agrees with
   the above. Thus in aura, the `-A` operation is introduced for obtaining
-  AUR packages. `-A` comes with with all the sub-options (-s, -u, etc.)
+  AUR packages. `-A` comes with with all the sub-options (`-s`, `-u`, etc.)
   that you're used to.  
 
 ### All together
@@ -22,9 +22,7 @@ Dependencies and packages are not built and installed one at a time.
 Install order is as follows:
 
 1. All pacman (ABS) dependencies (all at once).
-
 2. All AUR dependencies (one at a time).
-
 3. All AUR packages (all at once).
   
 ### Downgradibility
