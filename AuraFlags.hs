@@ -58,7 +58,7 @@ auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    delma
           backu = "(With -C) Backup the package cache to a given directory."
           log   = "View the Pacman log file. (uses `more`)"
           orpha = "Display orphan packages. (No longer needed dependencies.)"
-          adopt = "Adopt an orphan package. Shortcut for `-D --asexplicit`."
+          adopt = "Deorphanize a package. Shortcut for `-D --asexplicit`."
           aband = "Uninstall all orphan packages."
 
 -- These are intercepted Pacman flags. Their functionality is different.
