@@ -5,6 +5,7 @@ module Utilities where
 -- System Libraries
 import System.Directory (getCurrentDirectory, setCurrentDirectory)
 import Distribution.Simple.Utils (withTempDirectory)
+import System.Posix.Files (setFileMode, accessModes)
 import Control.Concurrent (threadDelay)
 import System.FilePath (dropExtensions)
 import Distribution.Verbosity (silent)
@@ -82,6 +83,12 @@ putStrLnA colour s = putStrA colour $ s ++ "\n"
 putStrA :: Colour -> String -> IO ()
 putStrA colour s = putStr $ "aura >> " ++ colourize colour s
 
+printListWithTitle :: Colour -> Colour -> String -> [String] -> IO ()
+printListWithTitle titleColour itemColour msg items = do
+  putStrLnA titleColour msg
+  mapM_ (putStrLn . colourize itemColour) items
+  putStrLn ""
+
 -- Like break, but kills the element that triggered the break.
 hardBreak :: (a -> Bool) -> [a] -> ([a],[a])
 hardBreak _ [] = ([],[])
@@ -150,6 +157,9 @@ getSelection choiceLabels = do
   case userChoice `lookup` choices of
     Just valid -> return valid
     Nothing    -> getSelection choiceLabels  -- Ask again.
+
+allowFullAccess :: FilePath -> IO ()
+allowFullAccess dir = setFileMode dir accessModes
 
 timedMessage :: Int -> [String] -> IO ()
 timedMessage delay msgs = mapM_ printMessage msgs

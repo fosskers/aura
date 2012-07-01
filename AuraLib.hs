@@ -5,7 +5,6 @@ module AuraLib where
 
 -- System Libraries
 import System.Directory (renameFile, getCurrentDirectory, setCurrentDirectory)
-import System.Posix.Files (setFileMode, accessModes)
 import System.FilePath ((</>))
 import Control.Monad (filterM, when)
 import Text.Regex.Posix ((=~))
@@ -20,7 +19,7 @@ import Internet
 import MakePkg
 import Pacman
 
-type ErrorMsg = String
+type ErrMsg = String
 
 data Settings = Settings { langOf          :: Language
                          , ignoredPkgsOf   :: [String]
@@ -131,9 +130,9 @@ makeVirtualPkg pkg = do
 -----------
 -- The Work
 -----------
--- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.gz
+-- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
 installPackageFiles :: [String] -> [FilePath] -> IO ()
-installPackageFiles extraOpts files = pacman $ ["-U"] ++ extraOpts ++ files
+installPackageFiles pacOpts files = pacman $ ["-U"] ++ pacOpts ++ files
 
 -- Handles the building of Packages.
 -- Assumed: All pacman and AUR dependencies are already installed.
@@ -147,43 +146,43 @@ buildPackages settings (p:ps) = do
     Right pkg   -> buildPackages settings ps >>= return . (\pkgs -> pkg : pkgs)
     Left errors -> do        
         toContinue <- buildFail settings p ps errors
-        if toContinue then return [] else error (buildPackagesMsg2 lang)
-    where lang       = langOf settings
-          toSuppress = suppressMakepkg settings
+        if toContinue
+           then return []
+           else error . buildPackagesMsg2 . langOf $ settings
+    where toSuppress = suppressMakepkg settings
           cachePath  = cachePathOf settings
         
-buildFail :: Settings -> AURPkg -> [AURPkg] -> ErrorMsg -> IO Bool
-buildFail settings p ps errors = do
-  scold settings (flip buildFailMsg1 (show p))
-  when (suppressMakepkg settings) (displayBuildErrors settings errors)
-  when (notNull ps) ((scold settings buildFailMsg2) >>
-                     mapM_ (putStrLn . colourize cyan . pkgNameOf) ps)
-  warn settings buildFailMsg3
-  yesNoPrompt (buildFailMsg4 lang) "^y"
-      where lang = langOf settings
-
-displayBuildErrors :: Settings -> ErrorMsg -> IO ()
-displayBuildErrors settings errors = do
-  scold settings displayBuildErrorsMsg1
-  timedMessage 1000000 ["3.. ","2.. ","1..\n"]
-  putStrLn errors
-
 build :: Bool -> FilePath -> String -> AURPkg -> IO (Either String FilePath)
 build toSuppress cachePath user pkg = do
   currDir <- getCurrentDirectory
-  setFileMode currDir accessModes  -- Gives write access to the temp folder.
+  allowFullAccess currDir  -- Gives write access to the temp folder.
   tarball   <- downloadSource currDir $ pkgNameOf pkg
   sourceDir <- uncompress tarball
-  setFileMode sourceDir accessModes
+  allowFullAccess sourceDir
   setCurrentDirectory sourceDir
   (exitStatus,pkgName,output) <- makepkg' user []
-  if not $ didProcessSucceed exitStatus
+  if didProcessFail exitStatus
      then return $ Left output
      else do
        path <- moveToCache cachePath pkgName
        setCurrentDirectory currDir
        return $ Right path
     where makepkg' = if toSuppress then makepkgQuiet else makepkgVerbose
+
+buildFail :: Settings -> AURPkg -> [AURPkg] -> ErrMsg -> IO Bool
+buildFail settings p ps errors = do
+  scold settings (flip buildFailMsg1 (show p))
+  when (suppressMakepkg settings) (displayBuildErrors settings errors)
+  when (notNull ps) ((scold settings buildFailMsg2) >>
+                     mapM_ (putStrLn . colourize cyan . pkgNameOf) ps)
+  warn settings buildFailMsg3
+  yesNoPrompt (buildFailMsg4 $ langOf settings) "^y"
+
+displayBuildErrors :: Settings -> ErrMsg -> IO ()
+displayBuildErrors settings errors = do
+  scold settings displayBuildErrorsMsg1
+  timedMessage 1000000 ["3.. ","2.. ","1..\n"]
+  putStrLn errors
 
 -- Moves a file to the pacman package cache and returns its location.
 moveToCache :: FilePath -> FilePath -> IO FilePath
@@ -192,7 +191,7 @@ moveToCache cachePath pkg = renameFile pkg newName >> return newName
 
 -- Returns either a list of error message or the deps to be installed.
 getDepsToInstall :: Settings -> [AURPkg] -> 
-                    IO (Either [ErrorMsg] ([String],[AURPkg]))
+                    IO (Either [ErrMsg] ([String],[AURPkg]))
 getDepsToInstall ss [] = return $ Left [getDepsToInstallMsg1 (langOf ss)]
 getDepsToInstall ss pkgs = do
   allDeps <- mapM (determineDeps lang) pkgs  -- Can this be done with foldM?
@@ -200,7 +199,7 @@ getDepsToInstall ss pkgs = do
   necPacPkgs <- filterM mustInstall ps >>= mapM makePacmanPkg
   necAURPkgs <- filterM (mustInstall . show) as
   necVirPkgs <- filterM mustInstall vs >>= mapM makeVirtualPkg
-  let conflicts = getConflicts lang toIgnore necPacPkgs necAURPkgs necVirPkgs
+  let conflicts = getConflicts ss (necPacPkgs,necAURPkgs,necVirPkgs)
   if notNull conflicts
      then return $ Left conflicts
      else do
@@ -230,15 +229,16 @@ mustInstall pkg = do
 -- 1. Is the package ignored in `pacman.conf`?
 -- 2. Is the version requested different from the one provided by
 --    the most recent version?
-getConflicts :: Language -> [String] -> [PacmanPkg] -> [AURPkg] ->
-                [VirtualPkg] -> [ErrorMsg]
-getConflicts lang toIgnore ps as vs = pErr ++ aErr ++ vErr
-    where pErr = clean $ map (getPacmanConflicts lang toIgnore) ps
-          aErr = clean $ map (getAURConflicts lang toIgnore) as
-          vErr = clean $ map (getVirtualConflicts lang toIgnore) vs
-          clean = map fromJust . filter (/= Nothing)
+getConflicts :: Settings -> ([PacmanPkg],[AURPkg],[VirtualPkg]) -> [ErrMsg]
+getConflicts settings (ps,as,vs) = pErr ++ aErr ++ vErr
+    where pErr     = clean $ map (getPacmanConflicts lang toIgnore) ps
+          aErr     = clean $ map (getAURConflicts lang toIgnore) as
+          vErr     = clean $ map (getVirtualConflicts lang toIgnore) vs
+          clean    = map fromJust . filter (/= Nothing)
+          lang     = langOf settings
+          toIgnore = ignoredPkgsOf settings
 
-getPacmanConflicts :: Language -> [String] -> PacmanPkg -> Maybe ErrorMsg
+getPacmanConflicts :: Language -> [String] -> PacmanPkg -> Maybe ErrMsg
 getPacmanConflicts lang toIgnore pkg = getRealPkgConflicts f lang toIgnore pkg
     where f = getMostRecentVerNum . pkgInfoOf
        
@@ -249,14 +249,14 @@ getMostRecentVerNum info = tripleThrd match
           thirdLine = allLines !! 2  -- Version num is always the third line.
           allLines  = lines info
 
-getAURConflicts :: Language -> [String] -> AURPkg -> Maybe ErrorMsg
+getAURConflicts :: Language -> [String] -> AURPkg -> Maybe ErrMsg
 getAURConflicts lang toIgnore pkg = getRealPkgConflicts f lang toIgnore pkg
     where f = getTrueVerViaPkgbuild . pkgbuildOf
 
 -- Must be called with a (f)unction that yields the version number
 -- of the most up-to-date form of the package.
 getRealPkgConflicts :: Package a => (a -> String) -> Language -> [String] ->
-                       a -> Maybe ErrorMsg
+                       a -> Maybe ErrMsg
 getRealPkgConflicts f lang toIgnore pkg
     | isIgnored (pkgNameOf pkg) toIgnore       = Just failMessage1
     | isVersionConflict (versionOf pkg) curVer = Just failMessage2
@@ -267,7 +267,7 @@ getRealPkgConflicts f lang toIgnore pkg
           failMessage2  = getRealPkgConflictsMsg1 lang name curVer reqVer
 
 -- This can't be generalized as easily.
-getVirtualConflicts :: Language -> [String] -> VirtualPkg -> Maybe ErrorMsg
+getVirtualConflicts :: Language -> [String] -> VirtualPkg -> Maybe ErrMsg
 getVirtualConflicts lang toIgnore pkg
     | providerPkgOf pkg == Nothing = Just failMessage1
     | isIgnored provider toIgnore  = Just failMessage2

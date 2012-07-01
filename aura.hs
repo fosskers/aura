@@ -24,7 +24,7 @@ import AuraLib
 import Pacman
 
 auraVersion :: String
-auraVersion = "0.5.1.0"
+auraVersion = "0.5.2.0"
 
 main :: IO ()
 main = do
@@ -111,12 +111,6 @@ buildAndInstallDep :: Settings -> [String] -> AURPkg -> IO ()
 buildAndInstallDep settings pacOpts pkg = do
   path <- buildPackages settings [pkg]
   installPackageFiles (["--asdeps"] ++ pacOpts) path
-
-printListWithTitle :: Colour -> Colour -> String -> [String] -> IO ()
-printListWithTitle titleColour itemColour msg items = do
-  putStrLnA titleColour msg
-  mapM_ (putStrLn . colourize itemColour) items
-  putStrLn ""
   
 reportNonPackages :: Language -> [String] -> IO ()
 reportNonPackages _ []      = return ()
