@@ -59,31 +59,40 @@ Sample Usage
 ============
 #### Installing Packages
 Install an AUR package:
+
     aura -A _package_
 
 Upgrade all installed AUR packages:
+
     aura -Ayu
 
 Checkout an AUR package's PKGBUILD:
+
     aura -Ap _package_
 
 Install with makepkg output unsuppressed:
+
     aura -Ax _package_
 
 Install and remove make dependencies afterwards:
+
     aura -Aa _package_
 
 Go totally nuts:
+
     aura -Ayuax --noconfirm --japanese
 
 #### Working with the Package Cache
 Downgrade a package (this is interactive):
+
     aura -C _package_
 
 Search the package cache for package files via a regex:
+
     aura -Cs _regex_
 
 Backup the package cache:
+
     aura -Cz _/path/to/backup/location/_
 
 Localisation
