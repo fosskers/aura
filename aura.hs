@@ -4,14 +4,15 @@
 -- Written by Colin Woodbury <colingw@gmail.com>
 
 -- System Libraries
-import Data.List ((\\), nub, sort, intersperse)
-import System.Directory (getCurrentDirectory, copyFile)
+import Data.List ((\\), nub, sort, intersperse, groupBy)
+import System.Directory (getCurrentDirectory, copyFile, removeFile)
 import System.Posix.Files (fileExist)
 import Control.Monad (filterM, when)
 import System.Environment (getArgs)
 import System.Process (rawSystem)
 import Text.Regex.Posix ((=~))
 import System.FilePath ((</>))
+import Data.Char (isDigit)
 
 -- Custom Libraries
 import AuraLanguages
@@ -62,6 +63,7 @@ executeOpts settings (flags,input,pacOpts) = do
       (Cache:fs) ->
           case fs of
             []       -> downgradePackages settings input
+            [Clean]  -> preCleanCache settings input
             [Search] -> searchPackageCache settings input
             [Backup] -> backupCache settings input
             badFlags -> scold settings executeOptsMsg1
@@ -247,6 +249,35 @@ copyAndNotify settings dir (p:ps) n = do
   copyAndNotify settings dir ps $ n + 1
       where cachePath = cachePathOf settings
 
+preCleanCache :: Settings -> [String] -> IO ()
+preCleanCache settings [] = cleanCache settings 0
+preCleanCache settings (input:_)  -- Ignores all but first input element.
+    | all isDigit input = cleanCache settings $ read input
+    | otherwise         = scold settings $ flip preCleanCacheMsg1 input
+
+cleanCache :: Settings -> Int -> IO ()
+cleanCache ss toSave
+    | toSave < 0  = scold ss cleanCacheMsg1
+    | toSave == 0 = warn ss cleanCacheMsg2 >> pacman ["-Scc"]
+    | otherwise   = do
+        warn ss $ flip cleanCacheMsg3 toSave
+        okay <- optionalPrompt (mustConfirm ss) (cleanCacheMsg4 $ langOf ss)
+        if not okay
+           then scold ss cleanCacheMsg5
+           else do
+             notify ss cleanCacheMsg6
+             cache <- packageCacheContents $ cachePathOf ss
+             let grouped = map (take toSave . reverse) $ groupByPkgName cache
+                 toRemove  = cache \\ concat grouped
+                 filePaths = map (cachePathOf ss </>) toRemove
+             mapM_ removeFile filePaths
+
+-- Typically takes the contents of the package cache as an argument.
+groupByPkgName :: [String] -> [[String]]
+groupByPkgName pkgs = groupBy sameBaseName $ sort pkgs
+    where sameBaseName a b = baseName a == baseName b
+          baseName p = tripleFst (p =~ "-[0-9]+" :: (String,String,String))
+
 --------
 -- OTHER
 --------
@@ -265,7 +296,7 @@ printHelpMsg pacOpts = pacman $ pacOpts ++ ["-h"]
 getHelpMsg :: [String] -> String
 getHelpMsg pacmanHelpMsg = concat $ intersperse "\n" allMessages
     where allMessages   = [ replacedLines,auraOperMsg,auraOptMsg
-                           ,dualFlagMsg,languageMsg]
+                          , dualFlagMsg,languageMsg ]
           replacedLines = unlines $ map (replaceByPatt patterns) pacmanHelpMsg
           colouredMsg   = colourize yellow "Inherited Pacman Operations" 
           patterns      = [ ("pacman","aura")

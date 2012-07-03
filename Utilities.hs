@@ -103,6 +103,9 @@ lStrip xs = dropWhile (== ' ') xs
 rStrip :: String -> String
 rStrip xs = dropWhileEnd (== ' ') xs
 
+tripleFst :: (a,b,c) -> a
+tripleFst (a,_,_) = a
+
 tripleSnd :: (a,b,c) -> b
 tripleSnd (_,b,_) = b
 

@@ -207,6 +207,35 @@ copyAndNotifyMsg1 English n  = "Copying #[" ++ colourize cyan (show n) ++ "]"
 copyAndNotifyMsg1 Japanese n =
     "#[" ++ colourize cyan (show n) ++"]をコピー中・・・"
 
+preCleanCacheMsg1 :: Language -> String -> String
+preCleanCacheMsg1 English n  = bt n ++ " is not a number."
+preCleanCacheMsg1 Japanese n = bt n ++ "は数字はない。"
+
+cleanCacheMsg1 :: Language -> String
+cleanCacheMsg1 English  = "Invalid number given."
+cleanCacheMsg1 Japanese = "入力の数字は適切ではない。"
+
+cleanCacheMsg2 :: Language -> String
+cleanCacheMsg2 English  = "This will delete the ENTIRE package cache."
+cleanCacheMsg2 Japanese = "パッケージ・キャッシュは完全に削除される。"
+
+cleanCacheMsg3 :: Language -> Int -> String
+cleanCacheMsg3 English n  = bt (show n) ++ " of each package file will be kept."
+cleanCacheMsg3 Japanese n = "パッケージ・ファイルは" ++ bt (show n) ++
+                            "個保存される。"
+
+cleanCacheMsg4 :: Language -> String
+cleanCacheMsg4 English  = "The rest will be deleted. Okay?"
+cleanCacheMsg4 Japanese = "残りは全部削除される。承知する？"
+
+cleanCacheMsg5 :: Language -> String
+cleanCacheMsg5 English  = "Cache cleaning manually aborted."
+cleanCacheMsg5 Japanese = "削除の続行は意図的に阻止された。"
+
+cleanCacheMsg6 :: Language -> String
+cleanCacheMsg6 English  = "Cleaning package cache..."
+cleanCacheMsg6 Japanese = "パッケージ・キャッシュを掃除中・・・"
+
 displayOutputLanguagesMsg1 :: Language -> String
 displayOutputLanguagesMsg1 English = "The following languages are available:"
 displayOutputLanguagesMsg1 Japanese = "auraは以下の言語に対応している："

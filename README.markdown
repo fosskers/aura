@@ -78,7 +78,7 @@ Install and remove make dependencies afterwards:
 
     aura -Aa (package)
 
-Go totally nuts:
+Go totally nuts (not recommended):
 
     aura -Ayuax --noconfirm --japanese
 

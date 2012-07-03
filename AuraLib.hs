@@ -194,7 +194,8 @@ getDepsToInstall :: Settings -> [AURPkg] ->
                     IO (Either [ErrMsg] ([String],[AURPkg]))
 getDepsToInstall ss [] = return $ Left [getDepsToInstallMsg1 (langOf ss)]
 getDepsToInstall ss pkgs = do
-  allDeps <- mapM (determineDeps lang) pkgs  -- Can this be done with foldM?
+  -- Can this be done with foldM?
+  allDeps <- mapM (determineDeps $ langOf ss) pkgs
   let (ps,as,vs) = foldl groupPkgs ([],[],[]) allDeps
   necPacPkgs <- filterM mustInstall ps >>= mapM makePacmanPkg
   necAURPkgs <- filterM (mustInstall . show) as
@@ -206,8 +207,6 @@ getDepsToInstall ss pkgs = do
        let providers  = map (pkgNameOf . fromJust . providerPkgOf) necVirPkgs
            pacmanPkgs = map pkgNameOf necPacPkgs
        return $ Right (nub $ providers ++ pacmanPkgs, necAURPkgs)
-    where lang     = langOf ss
-          toIgnore = ignoredPkgsOf ss
 
 -- Returns ([PacmanPackages], [AURPackages], [VirtualPackages])
 determineDeps :: Language -> AURPkg -> IO ([String],[AURPkg],[String])

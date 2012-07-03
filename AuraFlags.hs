@@ -17,12 +17,13 @@ data Flag = AURInstall
           | Download
           | Unsuppress
           | NoConfirm
-          | Languages
           | Backup
+          | Clean
           | ViewLog
           | Orphans
           | Adopt
           | Abandon
+          | Languages
           | Version
           | Help
           | JapOut
@@ -42,6 +43,7 @@ auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    delma
               , Option ['u'] ["sysupgrade"]   (NoArg Upgrade)     sysup
               , Option ['w'] ["downloadonly"] (NoArg Download)    downl
               , Option ['x'] ["unsuppress"]   (NoArg Unsuppress)  unsup
+              , Option ['c'] ["clean"]        (NoArg Clean)       clean 
               , Option ['s'] ["search"]       (NoArg Search)      searc
               , Option ['z'] ["backup"]       (NoArg Backup)      backu
               , Option []    ["log"]          (NoArg ViewLog)     log
@@ -53,7 +55,8 @@ auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    delma
           sysup = "(With -A) Upgrade all installed AUR packages."
           downl = "(With -A) Download the source tarball only."
           pkgbu = "(With -A) Output the contents of a package's PKGBUILD."
-          unsup = "(With -A) Unsuppress makepkg output."          
+          unsup = "(With -A) Unsuppress makepkg output."
+          clean = "(With -C) Save `n` package files, and delete the rest."
           searc = "(With -C) Search the package cache via a regex pattern."
           backu = "(With -C) Backup the package cache to a given directory."
           log   = "View the Pacman log file. (uses `more`)"
@@ -83,8 +86,12 @@ languageOptions = [ Option [] ["languages"] (NoArg Languages) lDesc
 -- `Hijacked` flags. They have original pacman functionality, but
 -- that is masked and made unique in an Aura context.
 hijackedFlagMap :: FlagMap
-hijackedFlagMap = [ (Search,"-s"),(Refresh,"-y"),(Upgrade,"-u")
-                , (Download,"-w") ]
+hijackedFlagMap = [ (Search,"-s")
+                  , (Refresh,"-y")
+                  , (Upgrade,"-u")
+                  , (Download,"-w")
+                  , (Clean,"-c")
+                  ]
 
 dualFlagMap :: FlagMap
 dualFlagMap = [ (NoConfirm,"--noconfirm") ]
