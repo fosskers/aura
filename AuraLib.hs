@@ -6,10 +6,11 @@ module AuraLib where
 -- System Libraries
 import System.Directory (renameFile, getCurrentDirectory, setCurrentDirectory)
 import System.FilePath ((</>))
-import Control.Monad (filterM, when)
+import Control.Monad (filterM, when, unless)
 import Text.Regex.Posix ((=~))
 import Data.List ((\\), nub)
 import Data.Maybe (fromJust)
+import System.Exit (ExitCode(..))
 
 -- Custom Libraries
 import AuraLanguages
@@ -131,7 +132,7 @@ makeVirtualPkg pkg = do
 -- The Work
 -----------
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
-installPackageFiles :: [String] -> [FilePath] -> IO ()
+installPackageFiles :: [String] -> [FilePath] -> IO ExitCode
 installPackageFiles pacOpts files = pacman $ ["-U"] ++ pacOpts ++ files
 
 -- Handles the building of Packages.
@@ -173,8 +174,8 @@ buildFail :: Settings -> AURPkg -> [AURPkg] -> ErrMsg -> IO Bool
 buildFail settings p ps errors = do
   scold settings (flip buildFailMsg1 (show p))
   when (suppressMakepkg settings) (displayBuildErrors settings errors)
-  when (notNull ps) ((scold settings buildFailMsg2) >>
-                     mapM_ (putStrLn . colourize cyan . pkgNameOf) ps)
+  unless (null ps) ((scold settings buildFailMsg2) >>
+                    mapM_ (putStrLn . colourize cyan . pkgNameOf) ps)
   warn settings buildFailMsg3
   yesNoPrompt (buildFailMsg4 $ langOf settings) "^y"
 
@@ -340,6 +341,9 @@ isArchPackage pkg = pacmanSuccess ["-Si",pkg]
 isAURPackage :: String -> IO Bool
 isAURPackage = doesUrlExist . getPkgbuildUrl
 
+isntAURPackage :: String -> IO Bool
+isntAURPackage pkg = isAURPackage pkg >>= return . not
+
 isVirtualPkg :: String -> IO Bool
 isVirtualPkg pkg = do
   provider <- getProvidingPkg pkg
@@ -353,7 +357,8 @@ countInstalledPackages = pacmanOutput ["-Qsq"] >>= return . length . lines
 getOrphans :: IO [String]
 getOrphans = pacmanOutput ["-Qqdt"] >>= return . lines
 
-removePkgs :: [String] -> [String] -> IO ()
+removePkgs :: [String] -> [String] -> IO ExitCode
+removePkgs [] _         = returnSuccess
 removePkgs pkgs pacOpts = pacman $ ["-Rsu"] ++ pkgs ++ pacOpts
 
 splitNameAndVer :: String -> (String,String)
@@ -394,8 +399,10 @@ notify settings msg = colouredMessage green settings msg
 warn :: Settings -> (Language -> String) -> IO ()
 warn settings msg = colouredMessage yellow settings msg
 
-scold :: Settings -> (Language -> String) -> IO ()
-scold settings msg = colouredMessage red settings msg
+scold :: Settings -> (Language -> String) -> IO ExitCode
+scold settings msg = do
+  colouredMessage red settings msg
+  return $ ExitFailure 1
 
 {-
 -- These might not be necessary.

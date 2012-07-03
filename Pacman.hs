@@ -24,8 +24,12 @@ defaultPackageCache = "/var/cache/pacman/pkg/"
 defaultLogFile :: FilePath
 defaultLogFile = "/var/log/pacman.log"
 
-pacman :: [Arg] -> IO ()
-pacman args = hFlush stdout >> rawSystem "pacman" args >> return ()
+pacman :: [Arg] -> IO ExitCode
+pacman args = hFlush stdout >> rawSystem "pacman" args
+
+-- Slight evil-doing permitted here.
+pacman' :: [Arg] -> IO ()
+pacman' args = pacman args >> return ()
 
 -- Runs pacman without producing any output.
 pacmanQuiet :: [Arg] -> IO (ExitCode,String,String)
@@ -46,7 +50,7 @@ pacmanFailure args = pacmanSuccess args >>= return . not
 pacmanOutput :: [Arg] -> IO String
 pacmanOutput args = pacmanQuiet args >>= return . tripleSnd
 
-syncDatabase :: [String] -> IO ()
+syncDatabase :: [String] -> IO ExitCode
 syncDatabase pacOpts = pacman $ ["-Sy"] ++ pacOpts
 
 -- This takes the filepath of the package cache as an argument.
