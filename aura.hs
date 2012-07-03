@@ -233,11 +233,16 @@ backupCache settings (dir:_) = do
               | not exists = scold settings backupCacheMsg3
               | otherwise  = do
               cache <- packageCacheContents $ cachePathOf settings
-              notify settings (flip backupCacheMsg4 dir)
-              notify settings (flip backupCacheMsg5 $ length cache)
-              notify settings backupCacheMsg6
-              putStrLn ""  -- So that the cursor has somewhere to rise to.
-              copyAndNotify settings dir cache 1
+              notify settings $ flip backupCacheMsg4 dir
+              notify settings . flip backupCacheMsg5 . length $ cache
+              okay <- optionalPrompt (mustConfirm settings)
+                      (backupCacheMsg6 $ langOf settings)
+              if not okay
+                 then scold settings backupCacheMsg7
+                 else do
+                   notify settings backupCacheMsg8
+                   putStrLn ""  -- So that the cursor can rise.
+                   copyAndNotify settings dir cache 1
 
 -- Manages the copying and display of the real-time progress notifier.
 copyAndNotify :: Settings -> FilePath -> [String] -> Int -> IO ()

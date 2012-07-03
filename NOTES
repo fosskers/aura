@@ -32,8 +32,6 @@ the welcome message in that language.
 OPTIONS TO IMPLEMENT
 --------------------
 -As -> `--search` Search for an AUR package
--Cc -> `--clean` Deletes old packages. Users can supply how many versions
-       they want to keep.
 -Ci -> `--info` Gives some stats about the package cache.
 -   -> `--prompt` Prompt the user if they want to view PKGBUILDs.
 

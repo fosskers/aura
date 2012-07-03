@@ -199,8 +199,16 @@ backupCacheMsg5 English n  = "Package files to backup: " ++ bt (show n)
 backupCacheMsg5 Japanese n = "パッケージのファイル数：" ++ bt (show n)
 
 backupCacheMsg6 :: Language -> String
-backupCacheMsg6 English  = "Backing up. This may take a few minutes..."
-backupCacheMsg6 Japanese = "バックアップ中。数分かかるかもしれない。"
+backupCacheMsg6 English  = "Proceed with backup?"
+backupCacheMsg6 Japanese = "バックアップを実行する？"
+
+backupCacheMsg7 :: Language -> String
+backupCacheMsg7 English  = "Backup manually aborted."
+backupCacheMsg7 Japanese = "バックアップは意図的に阻止された。"
+
+backupCacheMsg8 :: Language -> String
+backupCacheMsg8 English  = "Backing up. This may take a few minutes..."
+backupCacheMsg8 Japanese = "バックアップ中。数分かかるかもしれない。"
 
 copyAndNotifyMsg1 :: Language -> Int -> String
 copyAndNotifyMsg1 English n  = "Copying #[" ++ colourize cyan (show n) ++ "]"
