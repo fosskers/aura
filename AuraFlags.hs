@@ -12,8 +12,8 @@ data Flag = AURInstall
           | GetPkgbuild
           | Search
           | Refresh
-          | Upgrade
           | DelMDeps
+          | Upgrade
           | Download
           | Unsuppress
           | NoConfirm
