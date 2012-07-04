@@ -132,8 +132,8 @@ reportPkgsToInstall lang pacPkgs aurDeps aurPkgs = do
   printIfThere (namesOf aurDeps) $ reportPkgsToInstallMsg2 lang
   printIfThere (namesOf aurPkgs) $ reportPkgsToInstallMsg3 lang
       where namesOf = map pkgNameOf
-            printIfThere ps msg = unless (null ps)
-                                  (printListWithTitle green cyan msg ps)
+            printIfThere ps msg = unless (null ps) $
+                                  printListWithTitle green cyan msg ps
                
 upgradeAURPkgs :: Settings -> [String] -> [String] -> IO ExitCode
 upgradeAURPkgs settings pacOpts pkgs = do
@@ -153,7 +153,7 @@ upgradeAURPkgs settings pacOpts pkgs = do
 downloadTarballs :: Settings -> [String] -> IO ExitCode
 downloadTarballs settings pkgs = do
   currDir   <- getCurrentDirectory
-  dontExist <- filterM isAURPackage pkgs
+  dontExist <- filterM isntAURPackage pkgs
   reportNonPackages (langOf settings) dontExist
   downloadEach currDir $ pkgs \\ dontExist
       where downloadEach _ [] = returnSuccess
