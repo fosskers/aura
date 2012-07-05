@@ -223,7 +223,7 @@ searchPackageCache :: Settings -> [String] -> IO ExitCode
 searchPackageCache settings input = do
   cache <- packageCacheContents $ cachePathOf settings
   let pattern = unwords input
-      matches = sort $ filter (\p -> p =~ pattern) cache
+      matches = sortPkgs $ filter (\p -> p =~ pattern) cache
   mapM_ putStrLn matches
   returnSuccess
 
