@@ -55,7 +55,7 @@ syncDatabase pacOpts = pacman $ ["-Sy"] ++ pacOpts
 
 -- This takes the filepath of the package cache as an argument.
 packageCacheContents :: FilePath -> IO [String]
-packageCacheContents ca = getDirectoryContents ca >>= return . filter dots
+packageCacheContents c = getDirectoryContents c >>= return . filter dots
     where dots p = p `notElem` [".",".."]
 
 getPacmanConf :: IO String

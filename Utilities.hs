@@ -84,6 +84,7 @@ putStrA :: Colour -> String -> IO ()
 putStrA colour s = putStr $ "aura >> " ++ colourize colour s
 
 printListWithTitle :: Colour -> Colour -> String -> [String] -> IO ()
+printListWithTitle _ _ _ [] = return ()
 printListWithTitle titleColour itemColour msg items = do
   putStrLnA titleColour msg
   mapM_ (putStrLn . colourize itemColour) items

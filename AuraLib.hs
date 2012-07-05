@@ -5,12 +5,13 @@ module AuraLib where
 
 -- System Libraries
 import System.Directory (renameFile, getCurrentDirectory, setCurrentDirectory)
-import System.FilePath ((</>))
 import Control.Monad (filterM, when, unless)
-import Text.Regex.Posix ((=~))
-import Data.List ((\\), nub)
-import Data.Maybe (fromJust)
+import Data.List ((\\), nub, sortBy)
 import System.Exit (ExitCode(..))
+import System.FilePath ((</>))
+import Text.Regex.Posix ((=~))
+import Data.Maybe (fromJust)
+import Data.Char (isDigit)
 
 -- Custom Libraries
 import AuraLanguages
@@ -361,6 +362,27 @@ removePkgs :: [String] -> [String] -> IO ExitCode
 removePkgs [] _         = returnSuccess
 removePkgs pkgs pacOpts = pacman $ ["-Rsu"] ++ pkgs ++ pacOpts
 
+-------
+-- MISC  -- Too specific for `Utilities.hs`
+-------
+-- `IO ()` should be changed to `ExitCode` at some point.
+colouredMessage :: Colour -> Settings -> (Language -> String) -> IO ()
+colouredMessage c settings msg = putStrLnA c . msg . langOf $ settings
+
+say :: Settings -> (Language -> String) -> IO ()
+say settings msg = colouredMessage noColour settings msg
+
+notify :: Settings -> (Language -> String) -> IO ()
+notify settings msg = colouredMessage green settings msg
+
+warn :: Settings -> (Language -> String) -> IO ()
+warn settings msg = colouredMessage yellow settings msg
+
+scold :: Settings -> (Language -> String) -> IO ExitCode
+scold settings msg = do
+  colouredMessage red settings msg
+  return $ ExitFailure 1
+
 splitNameAndVer :: String -> (String,String)
 splitNameAndVer pkg = (before,after)
     where (before,_,after) = (pkg =~ "[<>=]+" :: (String,String,String))
@@ -383,43 +405,30 @@ divideByPkgType pkgs = do
   aurPkgs  <- filterM (isAURPackage . splitName) remaining
   return (archPkgs, aurPkgs, remaining \\ aurPkgs)
 
--------
--- MISC  -- Too specific for `Utilities.hs`
--------
--- `IO ()` should be changed to `ExitCode` at some point.
-colouredMessage :: Colour -> Settings -> (Language -> String) -> IO ()
-colouredMessage c settings msg = putStrLnA c . msg . langOf $ settings
+sortPkgs :: [String] -> [String]
+sortPkgs pkgs = sortBy verNums pkgs
+    where verNums a b | nameOf a /= nameOf b = compare a b  -- Different pkgs.
+                      | otherwise            = compare (verOf a) (verOf b)
+          nameOf = fst . pkgFileNameAndVer
+          verOf  = snd . pkgFileNameAndVer
 
-say :: Settings -> (Language -> String) -> IO ()
-say settings msg = colouredMessage noColour settings msg
+-- linux-3.2.14-1-x86_64.pkg.tar.xz    -> ("linux",[3,2,14,1])
+-- wine-1.4rc6-1-x86_64.pkg.tar.xz     -> ("wine",[1,4,6,1])
+-- ruby-1.9.3_p125-4-x86_64.pkg.tar.xz -> ("ruby",[1,9,3,125,4])
+-- NOTE: regex stuff is a little sloppy here.
+pkgFileNameAndVer :: String -> (String,[Int])
+pkgFileNameAndVer p = (name,verNum')
+    where (name,_,_) = p =~ "-[0-9]+" :: (String,String,String)
+          verNum     = p =~ ("[0-9][-0-9a-z._]+-" ++ archs) :: String
+          archs      = "(a|x|i)"  -- Representing "(any|x86_64|i686)"
+          verNum'    = splitBySubVersion verNum
 
-notify :: Settings -> (Language -> String) -> IO ()
-notify settings msg = colouredMessage green settings msg
-
-warn :: Settings -> (Language -> String) -> IO ()
-warn settings msg = colouredMessage yellow settings msg
-
-scold :: Settings -> (Language -> String) -> IO ExitCode
-scold settings msg = do
-  colouredMessage red settings msg
-  return $ ExitFailure 1
-
-{-
--- These might not be necessary.
-getInstalledPackageDesc :: Package -> IO [(String,String)]
-getInstalledPackageDesc pkg = do
-  installed <- isInstalled pkg
-  if installed
-  then pacmanQuiet ["-Qi",pkg] >>= return . getPackageDesc . tripleSnd
-  else error $ pkg ++ " is not installed!"
-
-getNewestPackageDesc :: Package -> IO [(String,String)]
-getNewestPackageDesc pkg =
-    pacmanQuiet ["-Si",pkg] >>= return . getPackageDesc . tripleSnd
-    
--- This isn't correct! Dependencies line wrap!
--- Parses a package description from some source into an association list.
-getPackageDesc :: String -> [(String,String)]
-getPackageDesc = map (cleanFields . hardBreak (== ':')) . lines
-    where cleanFields (x,y) = (rStrip x, lStrip y)
--}
+-- Also discards any non-number version info, like `rc`, etc.
+-- Example: "3.2rc6-1" becomes [3,2,6,1]
+-- BUG: Explodes if arg doesn't start with a digit.
+splitBySubVersion :: String -> [Int]
+splitBySubVersion [] = []
+splitBySubVersion n  = firstSubVer : splitBySubVersion nextSet
+    where firstSubVer = read $ fst digitMatch
+          nextSet     = dropWhile (not . isDigit) $ snd digitMatch
+          digitMatch  = span isDigit n

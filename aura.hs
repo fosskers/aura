@@ -27,7 +27,7 @@ import Pacman
 auraVersion :: String
 auraVersion = "0.5.2.0"
 
-main :: IO ()
+main :: IO a
 main = do
   args <- getArgs
   (auraFlags,input,pacOpts) <- parseOpts args
@@ -47,20 +47,20 @@ main = do
   exitWith exitStatus
 
 -- After determining what Flag was given, dispatches a function.
+-- The `flags` must be sorted to guarantee the pattern matching
+-- below will work properly.
 executeOpts :: Settings -> ([Flag],[String],[String]) -> IO ExitCode
 executeOpts settings (flags,input,pacOpts) = do
     case sort flags of
       (AURInstall:fs) ->
           case fs of
-            []            -> installPackages settings pacOpts input
-            [Upgrade]     -> upgradeAURPkgs settings pacOpts input
-            [Download]    -> downloadTarballs settings input
-            [GetPkgbuild] -> displayPkgbuild settings input
-            (Refresh:fs') -> do 
-                      syncDatabase pacOpts
-                      executeOpts settings (ai:fs',input,pacOpts)
-            (DelMDeps:fs')-> removeMakeDeps settings (ai:fs',input,pacOpts)
-            badFlags -> scold settings executeOptsMsg1
+            []             -> installPackages settings pacOpts input
+            [Upgrade]      -> upgradeAURPkgs settings pacOpts input
+            [Download]     -> downloadTarballs settings input
+            [GetPkgbuild]  -> displayPkgbuild settings input
+            (Refresh:fs')  -> syncAndContinue settings (fs',input,pacOpts)
+            (DelMDeps:fs') -> removeMakeDeps settings (fs',input,pacOpts)
+            badFlags       -> scold settings executeOptsMsg1
       (Cache:fs) ->
           case fs of
             []       -> downgradePackages settings input
@@ -77,7 +77,6 @@ executeOpts settings (flags,input,pacOpts) = do
       [Version]   -> getVersionInfo >>= animateVersionMsg
       pacmanFlags -> pacman $ pacOpts ++ input ++ convertedHijackedFlags
     where convertedHijackedFlags = reconvertFlags flags hijackedFlagMap
-          ai = AURInstall  -- This is ugly.
           
 --------------------
 -- WORKING WITH `-A`
@@ -117,12 +116,10 @@ buildAndInstallDep settings pacOpts pkg = do
   installPackageFiles (["--asdeps"] ++ pacOpts) path
   
 reportNonPackages :: Language -> [String] -> IO ()
-reportNonPackages _ []      = return ()
 reportNonPackages lang nons = printListWithTitle red cyan msg nons
     where msg = reportNonPackagesMsg1 lang
 
 reportIgnoredPackages :: Language -> [String] -> IO ()
-reportIgnoredPackages _ []      = return ()
 reportIgnoredPackages lang pkgs = printListWithTitle yellow cyan msg pkgs
     where msg = reportIgnoredPackagesMsg1 lang
 
@@ -171,6 +168,11 @@ displayPkgbuild settings pkgs = do
     where dlEach []     = returnSuccess
           dlEach (p:ps) = downloadPkgbuild p >>= putStrLn >> dlEach ps
 
+syncAndContinue :: Settings -> ([Flag],[String],[String]) -> IO ExitCode
+syncAndContinue settings (flags,input,pacOpts) = do
+  syncDatabase pacOpts
+  executeOpts settings (AURInstall:flags,input,pacOpts)
+
 -- Uninstalls make dependencies that were only necessary for building
 -- and are no longer required by anything. This is the very definition of
 -- an `orphan` package, thus a before-after comparison of orphan packages
@@ -178,7 +180,7 @@ displayPkgbuild settings pkgs = do
 removeMakeDeps :: Settings -> ([Flag],[String],[String]) -> IO ExitCode
 removeMakeDeps settings (flags,input,pacOpts) = do
   orphansBefore <- getOrphans
-  exitStatus <- executeOpts settings (flags,input,pacOpts)
+  exitStatus <- executeOpts settings (AURInstall:flags,input,pacOpts)
   if didProcessFail exitStatus
      then returnFailure
      else do
@@ -247,10 +249,10 @@ backupCache settings (dir:_) = do
                  then scold settings backupCacheMsg7
                  else do
                    notify settings backupCacheMsg8
-                   putStrLn ""  -- So that the cursor can rise.
+                   putStrLn ""  -- So that the cursor can rise at first.
                    copyAndNotify settings dir cache 1
 
--- Manages the copying and display of the real-time progress notifier.
+-- Manages the file copying and display of the real-time progress notifier.
 copyAndNotify :: Settings -> FilePath -> [String] -> Int -> IO ExitCode
 copyAndNotify _ _ [] _              = returnSuccess
 copyAndNotify settings dir (p:ps) n = do
@@ -260,12 +262,15 @@ copyAndNotify settings dir (p:ps) n = do
   copyAndNotify settings dir ps $ n + 1
       where cachePath = cachePathOf settings
 
+-- Acts as a filter for the input to `cleanCache`.
 preCleanCache :: Settings -> [String] -> IO ExitCode
 preCleanCache settings [] = cleanCache settings 0
 preCleanCache settings (input:_)  -- Ignores all but first input element.
     | all isDigit input = cleanCache settings $ read input
     | otherwise         = scold settings $ flip preCleanCacheMsg1 input
 
+-- Keeps a certain number of package files in the cache according to
+-- a number provided by the user. The rest are deleted.
 cleanCache :: Settings -> Int -> IO ExitCode
 cleanCache ss toSave
     | toSave < 0  = scold ss cleanCacheMsg1
@@ -286,7 +291,7 @@ cleanCache ss toSave
 
 -- Typically takes the contents of the package cache as an argument.
 groupByPkgName :: [String] -> [[String]]
-groupByPkgName pkgs = groupBy sameBaseName $ sort pkgs
+groupByPkgName pkgs = groupBy sameBaseName $ sortPkgs pkgs
     where sameBaseName a b = baseName a == baseName b
           baseName p = tripleFst (p =~ "-[0-9]+" :: (String,String,String))
 
