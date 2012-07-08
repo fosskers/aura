@@ -51,7 +51,7 @@ auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    delma
               , Option []    ["adopt"]        (NoArg Adopt)       adopt
               , Option []    ["abandon"]      (NoArg Abandon)     aband
               ]
-    where delma = "(With -A) Remove unneeded make dependencies after install."
+    where delma = "(With -A) Remove unneeded make deps after install."
           sysup = "(With -A) Upgrade all installed AUR packages."
           downl = "(With -A) Download the source tarball only."
           pkgbu = "(With -A) Output the contents of a package's PKGBUILD."
