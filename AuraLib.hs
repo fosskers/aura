@@ -79,6 +79,9 @@ pkgInfoOf (PacmanPkg _ _ i) = i
 -------------------
 -- Virtual Packages
 -------------------
+-- Virtual packages also contain a record of their providing package.
+-- Providing packages are assumed to be Pacman (ABS) packages.
+-- Are there any instances where this isn't the case?
 data VirtualPkg = VirtualPkg String Versioning (Maybe PacmanPkg)
 
 instance Package VirtualPkg where
@@ -108,26 +111,28 @@ parseNameAndVersioning pkg = (name, getVersioning comp ver)
                             | c == "="  = MustBe v
                             | otherwise = Anything
 
-makePacmanPkg :: String -> IO PacmanPkg
-makePacmanPkg pkg = do
+-- Constructs anything of the Package type.
+makePackage :: Package a => (String -> Versioning -> t -> a) ->
+               (String -> IO t) -> String -> IO a
+makePackage typeCon getThirdField pkg = do
   let (name,ver) = parseNameAndVersioning pkg
-  info <- pacmanOutput ["-Si",name]
-  return $ PacmanPkg name ver info
+  thirdField <- getThirdField name
+  return $ typeCon name ver thirdField
+
+makePacmanPkg :: String -> IO PacmanPkg
+makePacmanPkg pkg = makePackage PacmanPkg getInfo pkg
+    where getInfo name = pacmanOutput ["-Si",name]
 
 makeAURPkg :: String -> IO AURPkg
-makeAURPkg pkg = do
-  let (name,ver) = parseNameAndVersioning pkg
-  pkgbuild <- downloadPkgbuild name
-  return $ AURPkg name ver pkgbuild
+makeAURPkg pkg = makePackage AURPkg downloadPkgbuild pkg
 
 makeVirtualPkg :: String -> IO VirtualPkg
-makeVirtualPkg pkg = do
-  let (name,ver) = parseNameAndVersioning pkg
-  providerName <- getProvidingPkg name
-  provider     <- case providerName of
-                    Nothing  -> return Nothing
-                    Just pro -> makePacmanPkg pro >>= return . Just
-  return $ VirtualPkg name ver provider
+makeVirtualPkg pkg = makePackage VirtualPkg getProvider pkg
+    where getProvider name = do
+            providerName <- getProvidingPkg name
+            case providerName of
+              Nothing  -> return Nothing
+              Just pro -> makePacmanPkg pro >>= return . Just
 
 -----------
 -- The Work
@@ -139,7 +144,7 @@ installPackageFiles pacOpts files = pacman $ ["-U"] ++ pacOpts ++ files
 -- Handles the building of Packages.
 -- Assumed: All pacman and AUR dependencies are already installed.
 buildPackages :: Settings -> [AURPkg] -> IO [FilePath]
-buildPackages _ []        = return []
+buildPackages _ []            = return []
 buildPackages settings (p:ps) = do
   notify settings (flip buildPackagesMsg1 $ pkgNameOf p)
   user    <- getSudoUser
