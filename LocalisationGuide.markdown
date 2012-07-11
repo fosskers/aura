@@ -77,8 +77,10 @@ english = English
 
   The format is thus:
 
+```haskell
 someLanguageName :: Language
-someLanguageName = (Exactly what you added to the `Language` field above)
+someLanguageName = ExactlyWhatYouAddedToTheLanguageFieldAbove
+```
 
 ### STEP THREE - TRANSLATION
 
@@ -187,7 +189,7 @@ data Flag = AURInstall  |
             Languages   |
             Version     |
             Help        |
-            JapOut	|  -- Added a pipe character...
+            JapOut      |  -- Added a pipe character...
             FrenchOut      -- ...and a Flag value for French!
             deriving (Eq,Ord)
 ```
