@@ -16,11 +16,11 @@ contribution, and its a great opportunity to contribute to Open Source.
 2. An editor. Whichever one you like.
    Vim users, run the following easter-egg command to unlock a better version:
 
-    :! perl -e "system('hpdfv' =~ tr/a-z/x-za-w/r)"
+   `:! perl -e "system('hpdfv' =~ tr/a-z/x-za-w/r)"`
 
    Emacs users can achieve a similar enhanced version with:
 
-    M-! perl -e "system('ylp' =~ tr/a-z/x-za-w/r)"
+   `M-! perl -e "system('ylp' =~ tr/a-z/x-za-w/r)"`
 
 3. git. As Aura is hosted on github, cloning, making changes and adding pull
    requests will just be easiest if you have a working git/github setup.
@@ -41,7 +41,7 @@ data Language = English | Japanese deriving (Eq,Enum,Show)
 
   This is where we define output languages for Aura. For the purpose of
 demonstration, we'll use `French` as the language we're adding.
-Add a new language by adding a new `value` to the Language data type.
+Add a new language by adding a new value to the Language data type.
 Like this:
 
 ```haskell
@@ -60,9 +60,9 @@ data Language = English | Japanese | French |
 
 ```haskell
 data Language = English  |
-     	      	Japanese |
-		French
-		deriving (Eq,Enum,Show)
+                Japanese |
+                French
+                deriving (Eq,Enum,Show)
 ```
 
 ###  STEP TWO - ALLOW ACCESS TO YOUR LANGUAGE
@@ -76,9 +76,9 @@ english = English
 ```
 
   The format is thus:
-<language name> :: Language
-<language name> = <Exactly what you added to the `Language` field above>
 
+someLanguageName :: Language
+someLanguageName = (Exactly what you added to the `Language` field above)
 
 ### STEP THREE - TRANSLATION
 
@@ -102,12 +102,14 @@ code the calling function is located. If you ever need more context as to
 what kind of message you're writing, checking the code directly will be
 quickest. The format is:
 
-<name of calling function>Msgx SomeLanguage = "The message."
+(name of calling function)Msgx SomeLanguage = "The message."
 
   Where `x` would be a number. The function name as a regex would thus be:
   (assuming `name` is the name of the calling function)
 
+```haskell
 name ++ "Msg[0-9]+"
+```
   
   This naming is nothing more than a convention. 
   So let's go ahead and add the French message:
@@ -149,6 +151,7 @@ the variables you've been given into the sentence depends on your language.
 
   Also, I enjoy backticks. As a convention I wrap up all package names in these
 messages in backticks, using the `bt` function as seen in the examples.
+This also colours them cyan.
 
 ### STEP 4 - COMMAND LINE FLAG
 
@@ -162,31 +165,31 @@ But for the interested:
 
 ```haskell
 data Flag = AURInstall  |
-     	    Cache       |
-	    GetPkgbuild |
-	    Search      |
-	    Refresh     |
+            Cache       |
+            GetPkgbuild |
+            Search      |
+            Refresh     |
             Languages   |
-	    Version     |
-	    Help        |
-	    JapOut
-  	    deriving (Eq,Ord)
+            Version     |
+            Help        |
+            JapOut
+            deriving (Eq,Ord)
 ```
 
   You could add French like this:
 
 ```haskell
 data Flag = AURInstall  |
-     	    Cache       |
-	    GetPkgbuild |
-	    Search      |
-	    Refresh     |
+            Cache       |
+            GetPkgbuild |
+            Search      |
+            Refresh     |
             Languages   |
-	    Version     |
-	    Help        |
-	    JapOut	|  -- Added a pipe character...
-	    FrenchOut      -- ...and a Flag value for French!
-  	    deriving (Eq,Ord)
+            Version     |
+            Help        |
+            JapOut	|  -- Added a pipe character...
+            FrenchOut      -- ...and a Flag value for French!
+            deriving (Eq,Ord)
 ```
 
   Then we need to add it to the options to be checked for:
@@ -206,11 +209,11 @@ languageOptions = [ Option [] ["languages"] (NoArg Languages) lDesc
 languageOptions :: [OptDescr Flag]
 languageOptions = [ Option [] ["languages"] (NoArg Languages) lDesc
                   , Option [] ["japanese"]  (NoArg JapOut)    jDesc
-		  , Option [] ["french"]    (NoArg FrenchOut) fDesc
+                  , Option [] ["french"]    (NoArg FrenchOut) fDesc
                   ]
     where lDesc = "Display the available output languages for aura."
           jDesc = "All aura output is given in Japanese."
-	  fDesc = "All aura output is given in French."
+          fDesc = "All aura output is given in French."
 ```
 
   Last step in the flag making:
