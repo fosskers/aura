@@ -2,6 +2,7 @@ Language Localisation Guide for AURA
 ====================================
 
 Welcome!
+
 こんにちは！
 
   If you're reading this then it's likely that you want to help localise Aura
@@ -15,11 +16,11 @@ contribution, and its a great opportunity to contribute to Open Source.
 2. An editor. Whichever one you like.
    Vim users, run the following easter-egg command to unlock a better version:
 
-   :! perl -e "system('hpdfv' =~ tr/a-z/x-za-w/r)"
+    :! perl -e "system('hpdfv' =~ tr/a-z/x-za-w/r)"
 
    Emacs users can achieve a similar enhanced version with:
 
-   M-! perl -e "system('ylp' =~ tr/a-z/x-za-w/r)"
+    M-! perl -e "system('ylp' =~ tr/a-z/x-za-w/r)"
 
 3. git. As Aura is hosted on github, cloning, making changes and adding pull
    requests will just be easiest if you have a working git/github setup.
@@ -34,36 +35,45 @@ contribution, and its a great opportunity to contribute to Open Source.
   All strings that contain messages for the user are stored in a single
 source file: `AuraLanguages.hs`. Let's take a look at the top:
 
+```haskell
 data Language = English | Japanese deriving (Eq,Enum,Show)
+```
 
   This is where we define output languages for Aura. For the purpose of
 demonstration, we'll use `French` as the language we're adding.
 Add a new language by adding a new `value` to the Language data type.
 Like this:
 
+```haskell
 data Language = English | Japanese | French deriving (Eq,Enum,Show)
+```
 
   Watch out for line wraps though. If the line gets too long, you can
 always try something like this:
 
+```haskell
 data Language = English | Japanese | French |
      	      	Elven | German | Chinese deriving (Eq,Enum,Show)
+```
 
   Or even:
 
+```haskell
 data Language = English  |
      	      	Japanese |
 		French
 		deriving (Eq,Enum,Show)
-
+```
 
 ###  STEP TWO - ALLOW ACCESS TO YOUR LANGUAGE
 
   To do this we need to define a very simple function.
 Here is the English version:
 
+```haskell
 english :: Language
 english = English
+```
 
   The format is thus:
 <language name> :: Language
@@ -76,10 +86,12 @@ english = English
 The user has passed some bogus / conflicting flags to Aura. 
 What to tell them?
 
+```haskell
 -- aura functions
 executeOptsMsg1 :: Language -> String
 executeOptsMsg1 English  = "Conflicting flags given!"
 executeOptsMsg1 Japanese = "矛盾しているオプションあり。"
+```
 
   All functions in Aura code that output messages to the user get that
 message with a dispatch. That is, they call a function with the current
@@ -100,31 +112,37 @@ name ++ "Msg[0-9]+"
   This naming is nothing more than a convention. 
   So let's go ahead and add the French message:
 
+```haskell
 -- aura functions
 executeOptsMsg1 :: Language -> String
 executeOptsMsg1 English  = "Conflicting flags given!"
 executeOptsMsg1 Japanese = "矛盾しているオプションあり。"
 executeOptsMsg1 French   = "Oh non! Les options sont terribles!"
+```
 
   High-school French at its finest.
 
   Sometimes you'll get functions with extra variables to put in the message:
 
+```haskell
 -- AuraLib functions
 buildPackagesMsg1 :: Language -> String -> String
 buildPackagesMsg1 English p  = "Building " ++ bt p ++ "..."
 buildPackagesMsg1 Japanese p = bt p ++ "を作成中・・・"
+```
 
   What the heck is `p`? Well it's probably a package name.
 To double check, just check out the function that calls this message dipatch.
 We know it's in `AuraLib.hs`, and the function is called `buildPackages`.
 Once you know what's going on, go ahead and add the translation:
 
+```haskell
 -- AuraLib functions
 buildPackagesMsg1 :: Language -> String -> String
 buildPackagesMsg1 English p  = "Building " ++ bt p ++ "..."
 buildPackagesMsg1 Japanese p = bt p ++ "を作成中・・・"
 buildPackagesMsg1 French p   = bt p ++ " est en cours de construction."
+```
 
   Obviously the syntax among languages is different, and so where you insert
 the variables you've been given into the sentence depends on your language.
@@ -142,6 +160,7 @@ for the new language you're adding too.
 the translations are done I can take care of the rest of the code editing.
 But for the interested:
 
+```haskell
 data Flag = AURInstall  |
      	    Cache       |
 	    GetPkgbuild |
@@ -152,9 +171,11 @@ data Flag = AURInstall  |
 	    Help        |
 	    JapOut
   	    deriving (Eq,Ord)
+```
 
   You could add French like this:
 
+```haskell
 data Flag = AURInstall  |
      	    Cache       |
 	    GetPkgbuild |
@@ -166,18 +187,22 @@ data Flag = AURInstall  |
 	    JapOut	|  -- Added a pipe character...
 	    FrenchOut      -- ...and a Flag value for French!
   	    deriving (Eq,Ord)
+```
 
   Then we need to add it to the options to be checked for:
 
+```haskell
 languageOptions :: [OptDescr Flag]
 languageOptions = [ Option [] ["languages"] (NoArg Languages) lDesc
                   , Option [] ["japanese"]  (NoArg JapOut)    jDesc
                   ]
     where lDesc = "Display the available output languages for aura."
           jDesc = "All aura output is given in Japanese."
+```
 
   ...would thus become:
 
+```haskell
 languageOptions :: [OptDescr Flag]
 languageOptions = [ Option [] ["languages"] (NoArg Languages) lDesc
                   , Option [] ["japanese"]  (NoArg JapOut)    jDesc
@@ -186,23 +211,28 @@ languageOptions = [ Option [] ["languages"] (NoArg Languages) lDesc
     where lDesc = "Display the available output languages for aura."
           jDesc = "All aura output is given in Japanese."
 	  fDesc = "All aura output is given in French."
+```
 
   Last step in the flag making:
 
+```haskell
 getLanguage :: [Flag] -> Language
 getLanguage = fishOutFlag flagsAndResults english
     where flagsAndResults = zip langFlags langFuns
           langFlags       = [JapOut]
           langFuns        = [japanese]
+```
 
   This function extracts your language selection from the rest of the options.
 Let's add French.
 
+```haskell
 getLanguage :: [Flag] -> Language
 getLanguage = fishOutFlag flagsAndResults english
     where flagsAndResults = zip langFlags langFuns
           langFlags       = [JapOut,FrenchOut]  -- We added
           langFuns        = [japanese,french]   -- some values here.
+```
 
   Where `FrenchOut` is the value you added to `Flags` above. `french` is
 the function you wrote in `AuraLanguages.hs` to return the name of your
