@@ -1,9 +1,5 @@
 GENERAL
 -------
-Make a `yieldSettingsOf` function that yields all the settings as a big tuple?
-
-yieldSettingsOf :: Settings -> (Language,[String],FilePath,Bool)
-yieldSettingsOf (Settings la is cp sp) = (la,is,cp,sp)
 
 PKGBUILD ANALYSIS
 -----------------
@@ -11,6 +7,7 @@ Develop a system for verifying PKBUILDs!
 Does a PKGBUILD: Have code outside of build() or package()?
        		 Perform certain forbidden actions?
 		 Download sources from fishy places?
+Realistically, this should be another program entirely.
 
 DEPENDENCY ANALYSIS
 -------------------
@@ -32,6 +29,7 @@ the welcome message in that language.
 OPTIONS TO IMPLEMENT
 --------------------
 -As -> `--search` Search for an AUR package
+-Ai -> `--info` Gives specific info on an AUR package.
 -Ci -> `--info` Gives some stats about the package cache.
 -   -> `--prompt` Prompt the user if they want to view PKGBUILDs.
 
@@ -43,16 +41,6 @@ a j x z
 OUT OF DATE
 -----------
 Once dependencies are determined, notify the user if any are O.o.D.
-
-AURA ADVICE
------------
-Every once and a while show a tip. For example:
-"Aura tip: Did you know you can use `-Qdt` to view all orphaned packages you
-have installed?"
-"Aura tip: `Ayu` is great for upgrading packages... it's also a tasty
-Japanese fish."
-"Aura tip: Did you know you can use Aura in different languages?
-Run Aura with the flag `--languages` to find out which ones."
 
 RUN BY ROOT USER
 ----------------

@@ -44,7 +44,7 @@ pacmanSuccess args = do
     _           -> return False
 
 pacmanFailure :: [Arg] -> IO Bool
-pacmanFailure args = pacmanSuccess args >>= return . not
+pacmanFailure args = pacmanSuccess args >>= notM
 
 -- Performs a pacmanQuiet and returns only the stdout.
 pacmanOutput :: [Arg] -> IO String

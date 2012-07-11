@@ -27,6 +27,18 @@ type Regex = String
 data Colour = NoColour | Red | Green | Yellow | Blue | Magenta | Cyan
             deriving (Eq,Enum)
 
+{-
+  Consider this:
+  names   = ["noColour","red","green","yellow","blue","magenta","cyan"]
+  colours = [NoColour ..]
+  namesAndColours = zip names colours
+  
+  Is there a way to `promote` strings, etc., into callable functions? a la:
+  map? makeFunction namesAndColours
+
+  Where the values from `names` are the callable function names, and
+  the values from `colours` are the functions they're bound to.
+-}
 noColour :: Colour
 noColour = NoColour
 
@@ -184,7 +196,7 @@ yesNoPrompt msg regex = do
   return (response =~ regex :: Bool)
 
 optionalPrompt :: Bool -> String -> IO Bool
-optionalPrompt True msg = yesNoPrompt msg "^y"
+optionalPrompt True msg = yesNoPrompt msg "^(y|Y)"
 optionalPrompt False _  = return True
 
 wordsLines :: String -> [String]
@@ -193,6 +205,11 @@ wordsLines = concat . map words . lines
 notNull :: [a] -> Bool
 notNull = not . null
 
+notM :: Monad m => Bool -> m Bool
+notM = return . not
+
+-- Is there a more built-in replacement for `tar` that wouldn't be
+-- required as a listed dependency in the PKGBUILD?
 uncompress :: FilePath -> IO FilePath
 uncompress file = do
   readProcess "tar" ["-zxvf",file] ""

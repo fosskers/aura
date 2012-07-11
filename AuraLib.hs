@@ -36,7 +36,7 @@ data Settings = Settings { langOf          :: Language
 -----------
 class Package a where
     pkgNameOf :: a -> String
-    versionOf :: a -> Versioning                 
+    versionOf :: a -> Versioning
 
 data Versioning = AtLeast String | MustBe String | Anything deriving (Eq,Show)
 
@@ -134,6 +134,22 @@ makeVirtualPkg pkg = makePackage VirtualPkg getProvider pkg
               Nothing  -> return Nothing
               Just pro -> makePacmanPkg pro >>= return . Just
 
+-- Yields a virtual package's providing package if there is one.
+getProvidingPkg :: String -> IO (Maybe String)
+getProvidingPkg virt = do
+  candidates <- getProvidingPkg' virt
+  let lined = lines candidates
+  if length lined /= 1  -- No distinct answer? Then fail.
+     then return Nothing
+     else return . Just . head $ lined
+
+-- Unsafe version.
+-- Only use on virtual packages that have guaranteed providers.
+getProvidingPkg' :: String -> IO String
+getProvidingPkg' virt = do
+  let (name,_) = splitNameAndVer virt
+  pacmanOutput ["-Ssq",name]
+
 -----------
 -- The Work
 -----------
@@ -183,7 +199,7 @@ buildFail settings p ps errors = do
   unless (null ps) ((scold settings buildFailMsg2) >>
                     mapM_ (putStrLn . colourize cyan . pkgNameOf) ps)
   warn settings buildFailMsg3
-  yesNoPrompt (buildFailMsg4 $ langOf settings) "^y"
+  yesNoPrompt (buildFailMsg4 $ langOf settings) "^(y|Y)"
 
 displayBuildErrors :: Settings -> ErrMsg -> IO ()
 displayBuildErrors settings errors = do
@@ -301,22 +317,6 @@ isVersionConflict (AtLeast r) c | c > r = False
                                 | isVersionConflict (MustBe r) c = True
                                 | otherwise = False
 
--- Yields a virtual package's providing package if there is one.
-getProvidingPkg :: String -> IO (Maybe String)
-getProvidingPkg virt = do
-  candidates <- getProvidingPkg' virt
-  let lined = lines candidates
-  if length lined /= 1  -- No distinct answer? Then fail.
-     then return Nothing
-     else return . Just . head $ lined
-
--- Unsafe version.
--- Only use on virtual packages that have guaranteed providers.
-getProvidingPkg' :: String -> IO String
-getProvidingPkg' virt = do
-  let (name,_) = splitNameAndVer virt
-  pacmanOutput ["-Ssq",name]
-
 getInstalledAURPackages :: IO [String]
 getInstalledAURPackages = do
   pkgs <- pacmanOutput ["-Qm"]
@@ -348,7 +348,7 @@ isAURPackage :: String -> IO Bool
 isAURPackage = doesUrlExist . getPkgbuildUrl
 
 isntAURPackage :: String -> IO Bool
-isntAURPackage pkg = isAURPackage pkg >>= return . not
+isntAURPackage pkg = isAURPackage pkg >>= notM
 
 isVirtualPkg :: String -> IO Bool
 isVirtualPkg pkg = do
@@ -370,7 +370,6 @@ removePkgs pkgs pacOpts = pacman $ ["-Rsu"] ++ pkgs ++ pacOpts
 -------
 -- MISC  -- Too specific for `Utilities.hs`
 -------
--- `IO ()` should be changed to `ExitCode` at some point.
 colouredMessage :: Colour -> Settings -> (Language -> String) -> IO ()
 colouredMessage c settings msg = putStrLnA c . msg . langOf $ settings
 

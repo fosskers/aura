@@ -35,12 +35,12 @@ main = do
   let language     = getLanguage auraFlags
       suppression  = getSuppression auraFlags
       confirmation = getConfirmation auraFlags
-      settings = Settings { langOf          = language
-                          , ignoredPkgsOf   = getIgnoredPkgs confFile
-                          , cachePathOf     = getCachePath confFile
-                          , logFilePathOf   = getLogFilePath confFile
-                          , suppressMakepkg = suppression
-                          , mustConfirm     = confirmation }
+      settings     = Settings { langOf          = language
+                              , ignoredPkgsOf   = getIgnoredPkgs confFile
+                              , cachePathOf     = getCachePath confFile
+                              , logFilePathOf   = getLogFilePath confFile
+                              , suppressMakepkg = suppression
+                              , mustConfirm     = confirmation }
       auraFlags' = filter (`notElem` settingsFlags) auraFlags
       pacOpts'   = pacOpts ++ reconvertFlags auraFlags dualFlagMap
   exitStatus <- executeOpts settings (auraFlags', nub input, nub pacOpts')
@@ -173,7 +173,7 @@ syncAndContinue settings (flags,input,pacOpts) = do
   syncDatabase pacOpts
   executeOpts settings (AURInstall:flags,input,pacOpts)
 
--- Uninstalls make dependencies that were only necessary for building
+-- Uninstalls `make` dependencies that were only necessary for building
 -- and are no longer required by anything. This is the very definition of
 -- an `orphan` package, thus a before-after comparison of orphan packages
 -- is done to determine what needs to be uninstalled.
@@ -184,10 +184,10 @@ removeMakeDeps settings (flags,input,pacOpts) = do
   if didProcessFail exitStatus
      then returnFailure
      else do
-       orphansAfter  <- getOrphans
-       let makedeps = orphansAfter \\ orphansBefore
-       unless (null makedeps) $ notify settings removeMakeDepsAfterMsg1
-       removePkgs makedeps pacOpts
+       orphansAfter <- getOrphans
+       let makeDeps = orphansAfter \\ orphansBefore
+       unless (null makeDeps) $ notify settings removeMakeDepsAfterMsg1
+       removePkgs makeDeps pacOpts
 
 --------------------
 -- WORKING WITH `-C`
