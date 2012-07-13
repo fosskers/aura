@@ -89,10 +89,10 @@ installPackagesPre _ _ [] = returnSuccess
 installPackagesPre ss pacOpts pkgs
   | isntTrueRoot $ environmentOf ss = installPackages ss pacOpts pkgs
   | otherwise = do
-      continue <- yesNoPrompt (installPackagesPreMsg1 $ langOf ss) "^(y|Y)"
-      if continue
-         then installPackages ss pacOpts pkgs
-         else notify ss installPackagesPreMsg2 >> returnSuccess
+  okay <- optionalPrompt (mustConfirm ss) (installPackagesPreMsg1 $ langOf ss)
+  if okay
+     then installPackages ss pacOpts pkgs
+     else notify ss installPackagesPreMsg2 >> returnSuccess
 
 installPackages :: Settings -> [String] -> [String] -> IO ExitCode
 installPackages settings pacOpts pkgs = do
