@@ -1,32 +1,37 @@
 module MakePkg where
 
-import System.Process (readProcessWithExitCode, rawSystem)
+-- System Libraries
 import System.Directory (getDirectoryContents)
 import Text.Regex.Posix ((=~))
 import System.Exit (ExitCode)
 
-makepkg :: String -> [String] -> IO (ExitCode,FilePath,String)
+-- Custom Libraries
+import Shell
+
+makepkg :: String -> IO (ExitCode,FilePath,String)
 makepkg = makepkgQuiet
 
--- This needs to be run as non-root!
+-- This should to be used as non-root.
 -- Building packages as root IS NOT safe!
-makepkgGen :: (String -> [String] -> String -> IO (ExitCode,String,String)) ->
-           String -> [String] -> IO (ExitCode,FilePath,String)
-makepkgGen f user opts = do
-  let command = "su"
-      child   = unwords $ "makepkg" : opts 
-      suOpts  = [user,"-c",child]
-  (exitStatus,out,err) <- f command suOpts ""
+makepkgGen :: (String -> [String] -> IO (ExitCode,String,String)) ->
+              String -> IO (ExitCode,FilePath,String)
+makepkgGen f user = do
+  (exitStatus,out,err) <- f command opts
   contents <- getDirectoryContents "."  -- I don't like this relative path.
   let pkgFiles = filter (\file -> (file =~ ".pkg.tar.xz")) contents
       pkgName  = if null pkgFiles then "" else head pkgFiles
   return $ (exitStatus,pkgName,out ++ "\n" ++ err)
+      where (command,opts) = determineRunStyle user
 
-makepkgQuiet :: String -> [String] -> IO (ExitCode,FilePath,String)
-makepkgQuiet user opts = makepkgGen readProcessWithExitCode user opts
+determineRunStyle :: String -> (String,[String])
+determineRunStyle "root" = ("makepkg",["--asroot"])
+determineRunStyle user   = ("su",[user,"-c","makepkg"])
 
-makepkgVerbose :: String -> [String] -> IO (ExitCode,FilePath,String)
-makepkgVerbose user opts = makepkgGen rawSystem' user opts
-    where rawSystem' c os _ = do
-            exitStatus <- rawSystem c os
+makepkgQuiet :: String -> IO (ExitCode,FilePath,String)
+makepkgQuiet user = makepkgGen quietShellCmd' user
+
+makepkgVerbose :: String -> IO (ExitCode,FilePath,String)
+makepkgVerbose user = makepkgGen shellCmd' user
+    where shellCmd' cmd opts = do
+            exitStatus <- shellCmd cmd opts
             return (exitStatus,"","")

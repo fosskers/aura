@@ -5,90 +5,24 @@ module Utilities where
 -- System Libraries
 import System.Directory (getCurrentDirectory, setCurrentDirectory)
 import Distribution.Simple.Utils (withTempDirectory)
-import System.Posix.Files (setFileMode, accessModes)
 import Control.Concurrent (threadDelay)
 import System.FilePath (dropExtensions)
 import Distribution.Verbosity (silent)
-import System.Process (readProcess)
-import System.Environment (getEnv)
-import System.Exit (ExitCode(..))
 import System.IO (stdout, hFlush)
 import Data.List (dropWhileEnd)
 import Text.Regex.Posix ((=~))
 import Text.Printf (printf)
 
+-- Custom Libraries
+import Shell
+
 type Pattern = (String,String)
 
 type Regex = String
 
-------------------
--- COLOURED OUTPUT
-------------------
-data Colour = NoColour | Red | Green | Yellow | Blue | Magenta | Cyan
-            deriving (Eq,Enum)
-
-{-
-  Consider this:
-  names   = ["noColour","red","green","yellow","blue","magenta","cyan"]
-  colours = [NoColour ..]
-  namesAndColours = zip names colours
-  
-  Is there a way to `promote` strings, etc., into callable functions? a la:
-  map? makeFunction namesAndColours
-
-  Where the values from `names` are the callable function names, and
-  the values from `colours` are the functions they're bound to.
--}
-noColour :: Colour
-noColour = NoColour
-
-red :: Colour
-red = Red
-
-green :: Colour
-green = Green
-
-yellow :: Colour
-yellow = Yellow
-
-blue :: Colour
-blue = Blue
-
-magenta :: Colour
-magenta = Magenta
-
-cyan :: Colour
-cyan = Cyan
-
-colours :: [Colour]
-colours = [Red ..]
-
--- Shells react to these and print text wrapped in these codes in colour.
-escapeCodes :: [String]
-escapeCodes = [ "\x1b[31m","\x1b[32m","\x1b[33m","\x1b[34m"
-              , "\x1b[35m","\x1b[36m"]
-
--- This needs to come after a section of coloured text or bad things happen.
-resetCode :: String
-resetCode = "\x1b[0m"
-
-resetCodeRegex :: String
-resetCodeRegex = "\x1b\\[0m"
-
-coloursWithCodes :: [(Colour,String)]
-coloursWithCodes = zip colours escapeCodes
-
-colourize:: Colour -> String -> String
-colourize colour msg =
-    case colour `lookup` coloursWithCodes of
-      Nothing   -> msg
-      Just code -> insertCodes code msg
-        where insertCodes code msg =
-                  case msg =~ resetCodeRegex :: (String,String,String) of
-                    (_,"","") -> code ++ msg ++ resetCode
-                    (_,_,"")  -> msg  -- We're done recursing.
-                    (b,m,a)   -> insertCodes code (b ++ code ++ a)
-  
+----------------
+-- CUSTOM OUTPUT
+----------------
 putStrLnA :: Colour -> String -> IO ()
 putStrLnA colour s = putStrA colour $ s ++ "\n"
 
@@ -141,29 +75,6 @@ withTempDir name action = do
      setCurrentDirectory originalDirectory
      return result)
 
-didProcessSucceed :: ExitCode -> Bool
-didProcessSucceed ExitSuccess = True
-didProcessSucceed _           = False
-
-didProcessFail :: ExitCode -> Bool
-didProcessFail = not . didProcessSucceed
-
-returnSuccess :: IO ExitCode
-returnSuccess = return ExitSuccess
-
-returnFailure :: IO ExitCode
-returnFailure = return $ ExitFailure 1
-
-getUser :: IO String
-getUser = getEnv "USER"
-
-getSudoUser :: IO String
-getSudoUser = getEnv "SUDO_USER"
-
-isUserRoot :: IO Bool
-isUserRoot = getUser >>= return . checkIfRoot
-    where checkIfRoot user = user == "root"
-
 -- Given a number of selections, allows the user to choose one.
 getSelection :: [String] -> IO String
 getSelection []      = return ""
@@ -180,9 +91,6 @@ getSelection choiceLabels = do
     Just valid -> return valid
     Nothing    -> getSelection choiceLabels  -- Ask again.
 
-allowFullAccess :: FilePath -> IO ()
-allowFullAccess dir = setFileMode dir accessModes
-
 timedMessage :: Int -> [String] -> IO ()
 timedMessage delay msgs = mapM_ printMessage msgs
     where printMessage msg = putStr msg >> hFlush stdout >> threadDelay delay
@@ -190,7 +98,7 @@ timedMessage delay msgs = mapM_ printMessage msgs
 -- Takes a prompt message and a regex of valid answer patterns.
 yesNoPrompt :: String -> Regex -> IO Bool
 yesNoPrompt msg regex = do
-  putStrA yellow $ msg ++ " "
+  putStrA yellow $ msg ++ " [y/n] "
   hFlush stdout
   response <- getLine
   return (response =~ regex :: Bool)
@@ -212,5 +120,5 @@ notM = return . not
 -- required as a listed dependency in the PKGBUILD?
 uncompress :: FilePath -> IO FilePath
 uncompress file = do
-  readProcess "tar" ["-zxvf",file] ""
+  _ <- quietShellCmd "tar" ["-zxvf",file]
   return $ dropExtensions file

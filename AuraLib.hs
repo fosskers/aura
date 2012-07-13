@@ -20,12 +20,14 @@ import Utilities
 import Internet
 import MakePkg
 import Pacman
+import Shell
 
 -- For build and package conflict errors.
 type ErrMsg = String
 
 -- The global settings as set by the user with command-line flags.
-data Settings = Settings { langOf          :: Language
+data Settings = Settings { environmentOf   :: Environment
+                         , langOf          :: Language
                          , ignoredPkgsOf   :: [String]
                          , cachePathOf     :: FilePath
                          , logFilePathOf   :: FilePath
@@ -169,7 +171,6 @@ buildPackages :: Settings -> [AURPkg] -> IO [FilePath]
 buildPackages _ []            = return []
 buildPackages settings (p:ps) = do
   notify settings (flip buildPackagesMsg1 $ pkgNameOf p)
-  user    <- getSudoUser
   results <- withTempDir (show p) (build toSuppress cachePath user p)
   case results of
     Right pkg   -> buildPackages settings ps >>= return . (\pkgs -> pkg : pkgs)
@@ -180,6 +181,7 @@ buildPackages settings (p:ps) = do
            else error . buildPackagesMsg2 . langOf $ settings
     where toSuppress = suppressMakepkg settings
           cachePath  = cachePathOf settings
+          user       = getTrueUser $ environmentOf settings
         
 -- Perform the actual build. Fails elegantly when build fails occur.
 build :: Bool -> FilePath -> String -> AURPkg -> IO (Either String FilePath)
@@ -190,7 +192,7 @@ build toSuppress cachePath user pkg = do
   sourceDir <- uncompress tarball
   allowFullAccess sourceDir
   setCurrentDirectory sourceDir
-  (exitStatus,pkgName,output) <- makepkg' user []
+  (exitStatus,pkgName,output) <- makepkg' user
   if didProcessFail exitStatus
      then return $ Left output
      else do
@@ -397,10 +399,11 @@ notify settings msg = colouredMessage green settings msg
 warn :: Settings -> (Language -> String) -> IO ()
 warn settings msg = colouredMessage yellow settings msg
 
-scold :: Settings -> (Language -> String) -> IO ExitCode
-scold settings msg = do
-  colouredMessage red settings msg
-  return $ ExitFailure 1
+scold :: Settings -> (Language -> String) -> IO ()
+scold settings msg = colouredMessage red settings msg
+
+scoldAndFail :: Settings -> (Language -> String) -> IO ExitCode
+scoldAndFail settings msg = scold settings msg >> return (ExitFailure 1)
 
 splitNameAndVer :: String -> (String,String)
 splitNameAndVer pkg = (before,after)

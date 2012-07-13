@@ -4,12 +4,12 @@
 -- Written by Colin Woodbury <colingw@gmail.com>
 
 -- System Libraries
-import Data.List ((\\), nub, sort, intersperse, groupBy)
 import System.Directory (getCurrentDirectory, copyFile, removeFile)
+import Data.List ((\\), nub, sort, intersperse, groupBy)
+import System.Environment (getArgs, getEnvironment)
 import Control.Monad (filterM, when, unless)
 import System.Exit (exitWith, ExitCode)
 import System.Posix.Files (fileExist)
-import System.Environment (getArgs)
 import System.Process (rawSystem)
 import Text.Regex.Posix ((=~))
 import System.FilePath ((</>))
@@ -23,6 +23,7 @@ import Utilities
 import AuraLogo
 import AuraLib
 import Pacman
+import Shell
 
 auraVersion :: String
 auraVersion = "0.6.0.0"
@@ -31,11 +32,13 @@ main :: IO a
 main = do
   args <- getArgs
   (auraFlags,input,pacOpts) <- parseOpts args
-  confFile <- getPacmanConf
+  confFile    <- getPacmanConf
+  environment <- getEnvironment
   let language     = getLanguage auraFlags
       suppression  = getSuppression auraFlags
       confirmation = getConfirmation auraFlags
-      settings     = Settings { langOf          = language
+      settings     = Settings { environmentOf   = environment
+                              , langOf          = language
                               , ignoredPkgsOf   = getIgnoredPkgs confFile
                               , cachePathOf     = getCachePath confFile
                               , logFilePathOf   = getLogFilePath confFile
@@ -54,20 +57,20 @@ executeOpts settings (flags,input,pacOpts) = do
     case sort flags of
       (AURInstall:fs) ->
           case fs of
-            []             -> installPackages settings pacOpts input
+            []             -> installPackagesPre settings pacOpts input
             [Upgrade]      -> upgradeAURPkgs settings pacOpts input
             [Download]     -> downloadTarballs settings input
             [GetPkgbuild]  -> displayPkgbuild settings input
             (Refresh:fs')  -> syncAndContinue settings (fs',input,pacOpts)
             (DelMDeps:fs') -> removeMakeDeps settings (fs',input,pacOpts)
-            badFlags       -> scold settings executeOptsMsg1
+            badFlags       -> scoldAndFail settings executeOptsMsg1
       (Cache:fs) ->
           case fs of
             []       -> downgradePackages settings input
             [Clean]  -> preCleanCache settings input
             [Search] -> searchPackageCache settings input
             [Backup] -> backupCache settings input
-            badFlags -> scold settings executeOptsMsg1
+            badFlags -> scoldAndFail settings executeOptsMsg1
       [ViewLog]   -> viewLogFile $ logFilePathOf settings
       [Orphans]   -> getOrphans >>= mapM_ putStrLn >> returnSuccess
       [Adopt]     -> pacman $ ["-D","--asexplicit"] ++ input
@@ -80,9 +83,18 @@ executeOpts settings (flags,input,pacOpts) = do
           
 --------------------
 -- WORKING WITH `-A`
---------------------      
+--------------------
+installPackagesPre :: Settings -> [String] -> [String] -> IO ExitCode
+installPackagesPre _ _ [] = returnSuccess
+installPackagesPre ss pacOpts pkgs
+  | isntTrueRoot $ environmentOf ss = installPackages ss pacOpts pkgs
+  | otherwise = do
+      continue <- yesNoPrompt (installPackagesPreMsg1 $ langOf ss) "^(y|Y)"
+      if continue
+         then installPackages ss pacOpts pkgs
+         else notify ss installPackagesPreMsg2 >> returnSuccess
+
 installPackages :: Settings -> [String] -> [String] -> IO ExitCode
-installPackages _ _ [] = returnSuccess
 installPackages settings pacOpts pkgs = do
   let toInstall = pkgs \\ ignoredPkgsOf settings
       ignored   = pkgs \\ toInstall
@@ -103,7 +115,7 @@ installPackages settings pacOpts pkgs = do
       reportPkgsToInstall lang pacPkgs aurDeps aurPackages 
       okay <- optionalPrompt (mustConfirm settings) (installPackagesMsg3 lang)
       if not okay
-         then scold settings installPackagesMsg4
+         then scoldAndFail settings installPackagesMsg4
          else do
            unless (null pacPkgs) (pacman' $ ["-S","--asdeps"] ++ pkgsAndOpts)
            mapM_ (buildAndInstallDep settings pacOpts) aurDeps
@@ -140,7 +152,7 @@ upgradeAURPkgs settings pacOpts pkgs = do
   notify settings upgradeAURPkgsMsg2
   let toUpgrade = map pkgNameOf . filter (not . isOutOfDate) $ toCheck
   when (null toUpgrade) (warn settings upgradeAURPkgsMsg3)
-  installPackages settings pacOpts $ toUpgrade ++ pkgs
+  installPackagesPre settings pacOpts $ toUpgrade ++ pkgs
     where notIgnored p = splitName p `notElem` ignoredPkgsOf settings
           fetchAndReport p = do
             aurPkg <- makeAURPkg p
@@ -156,7 +168,7 @@ downloadTarballs settings pkgs = do
       where downloadEach _ [] = returnSuccess
             downloadEach path (p:ps) = do
               notify settings $ flip downloadTarballsMsg1 p
-              downloadSource path p
+              _ <- downloadSource path p
               downloadEach path ps
 
 -- Very similar to `downloadTarballs`...
@@ -170,7 +182,7 @@ displayPkgbuild settings pkgs = do
 
 syncAndContinue :: Settings -> ([Flag],[String],[String]) -> IO ExitCode
 syncAndContinue settings (flags,input,pacOpts) = do
-  syncDatabase pacOpts
+  _ <- syncDatabase pacOpts
   executeOpts settings (AURInstall:flags,input,pacOpts)
 
 -- Uninstalls `make` dependencies that were only necessary for building
@@ -231,14 +243,13 @@ searchPackageCache settings input = do
 -- 1. The user must be root (or using sudo).
 -- 2. The destination folder must already exist.
 backupCache :: Settings -> [String] -> IO ExitCode
-backupCache settings []      = scold settings backupCacheMsg1
+backupCache settings []      = scoldAndFail settings backupCacheMsg1
 backupCache settings (dir:_) = do
-  isRoot <- isUserRoot
   exists <- fileExist dir
-  continueIfOkay isRoot exists
+  continueIfOkay (isUserRoot $ environmentOf settings) exists
       where continueIfOkay isRoot exists
-              | not isRoot = scold settings backupCacheMsg2
-              | not exists = scold settings backupCacheMsg3
+              | not isRoot = scoldAndFail settings backupCacheMsg2
+              | not exists = scoldAndFail settings backupCacheMsg3
               | otherwise  = do
               cache <- packageCacheContents $ cachePathOf settings
               notify settings $ flip backupCacheMsg4 dir
@@ -246,7 +257,7 @@ backupCache settings (dir:_) = do
               okay <- optionalPrompt (mustConfirm settings)
                       (backupCacheMsg6 $ langOf settings)
               if not okay
-                 then scold settings backupCacheMsg7
+                 then scoldAndFail settings backupCacheMsg7
                  else do
                    notify settings backupCacheMsg8
                    putStrLn ""  -- So that the cursor can rise at first.
@@ -267,19 +278,19 @@ preCleanCache :: Settings -> [String] -> IO ExitCode
 preCleanCache settings [] = cleanCache settings 0
 preCleanCache settings (input:_)  -- Ignores all but first input element.
     | all isDigit input = cleanCache settings $ read input
-    | otherwise         = scold settings $ flip preCleanCacheMsg1 input
+    | otherwise         = scoldAndFail settings $ flip preCleanCacheMsg1 input
 
 -- Keeps a certain number of package files in the cache according to
 -- a number provided by the user. The rest are deleted.
 cleanCache :: Settings -> Int -> IO ExitCode
 cleanCache ss toSave
-    | toSave < 0  = scold ss cleanCacheMsg1
+    | toSave < 0  = scoldAndFail ss cleanCacheMsg1
     | toSave == 0 = warn ss cleanCacheMsg2 >> pacman ["-Scc"]
     | otherwise   = do
         warn ss $ flip cleanCacheMsg3 toSave
         okay <- optionalPrompt (mustConfirm ss) (cleanCacheMsg4 $ langOf ss)
         if not okay
-           then scold ss cleanCacheMsg5
+           then scoldAndFail ss cleanCacheMsg5
            else do
              notify ss cleanCacheMsg6
              cache <- packageCacheContents $ cachePathOf ss

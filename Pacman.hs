@@ -4,7 +4,6 @@
 module Pacman where
 
 -- System Libraries
-import System.Process (readProcessWithExitCode, rawSystem)
 import System.Directory (getDirectoryContents)
 import System.Exit (ExitCode(..))
 import System.IO (hFlush, stdout)
@@ -12,6 +11,7 @@ import Text.Regex.Posix ((=~))
 
 -- Custom Libraries
 import Utilities 
+import Shell
 
 type Arg = String
 
@@ -25,7 +25,7 @@ defaultLogFile :: FilePath
 defaultLogFile = "/var/log/pacman.log"
 
 pacman :: [Arg] -> IO ExitCode
-pacman args = hFlush stdout >> rawSystem "pacman" args
+pacman args = hFlush stdout >> shellCmd "pacman" args
 
 -- Slight evil-doing permitted here.
 pacman' :: [Arg] -> IO ()
@@ -33,15 +33,13 @@ pacman' args = pacman args >> return ()
 
 -- Runs pacman without producing any output.
 pacmanQuiet :: [Arg] -> IO (ExitCode,String,String)
-pacmanQuiet args = readProcessWithExitCode "pacman" args ""
+pacmanQuiet args = quietShellCmd' "pacman" args
 
 -- Did a pacman process succeed?
 pacmanSuccess :: [Arg] -> IO Bool
 pacmanSuccess args = do
   (exitStatus,_,_) <- pacmanQuiet args
-  case exitStatus of
-    ExitSuccess -> return True
-    _           -> return False
+  return $ didProcessSucceed exitStatus
 
 pacmanFailure :: [Arg] -> IO Bool
 pacmanFailure args = pacmanSuccess args >>= notM

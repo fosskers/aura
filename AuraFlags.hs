@@ -1,9 +1,12 @@
 module AuraFlags where
 
+-- System Libraries
 import System.Console.GetOpt
 
+-- Custom Libraries
+import Shell (colourize, yellow, Colour)
+import Utilities (notNull)
 import AuraLanguages
-import Utilities
 
 type FlagMap = [(Flag,String)]
 
@@ -46,7 +49,7 @@ auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    delma
               , Option ['c'] ["clean"]        (NoArg Clean)       clean 
               , Option ['s'] ["search"]       (NoArg Search)      searc
               , Option ['z'] ["backup"]       (NoArg Backup)      backu
-              , Option []    ["log"]          (NoArg ViewLog)     log
+              , Option []    ["log"]          (NoArg ViewLog)     viewL
               , Option []    ["orphans"]      (NoArg Orphans)     orpha
               , Option []    ["adopt"]        (NoArg Adopt)       adopt
               , Option []    ["abandon"]      (NoArg Abandon)     aband
@@ -59,7 +62,7 @@ auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    delma
           clean = "(With -C) Save `n` package files, and delete the rest."
           searc = "(With -C) Search the package cache via a regex pattern."
           backu = "(With -C) Backup the package cache to a given directory."
-          log   = "View the Pacman log file. (uses `more`)"
+          viewL = "View the Pacman log file. (uses `more`)"
           orpha = "Display orphan packages. (No longer needed dependencies.)"
           adopt = "Deorphanize a package. Shortcut for `-D --asexplicit`."
           aband = "Uninstall all orphan packages."
