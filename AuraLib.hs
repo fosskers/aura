@@ -21,8 +21,10 @@ import Internet
 import MakePkg
 import Pacman
 
+-- For build and package conflict errors.
 type ErrMsg = String
 
+-- The global settings as set by the user with command-line flags.
 data Settings = Settings { langOf          :: Language
                          , ignoredPkgsOf   :: [String]
                          , cachePathOf     :: FilePath
@@ -40,6 +42,8 @@ class Package a where
 
 data Versioning = AtLeast String | MustBe String | Anything deriving (Eq,Show)
 
+-- I would like to reduce the following three sets of instance declarations
+-- to a single more polymorphic solution.
 ---------------
 -- AUR Packages
 ---------------
@@ -113,7 +117,9 @@ parseNameAndVersioning pkg = (name, getVersioning comp ver)
 
 -- Constructs anything of the Package type.
 makePackage :: Package a => (String -> Versioning -> t -> a) ->
-               (String -> IO t) -> String -> IO a
+                            (String -> IO t)                 ->
+                            String                           ->
+                            IO a
 makePackage typeCon getThirdField pkg = do
   let (name,ver) = parseNameAndVersioning pkg
   thirdField <- getThirdField name
@@ -175,6 +181,7 @@ buildPackages settings (p:ps) = do
     where toSuppress = suppressMakepkg settings
           cachePath  = cachePathOf settings
         
+-- Perform the actual build. Fails elegantly when build fails occur.
 build :: Bool -> FilePath -> String -> AURPkg -> IO (Either String FilePath)
 build toSuppress cachePath user pkg = do
   currDir <- getCurrentDirectory
@@ -192,18 +199,23 @@ build toSuppress cachePath user pkg = do
        return $ Right path
     where makepkg' = if toSuppress then makepkgQuiet else makepkgVerbose
 
+-- Inform the user that building failed. Ask them if they want to
+-- continue installing previous packages that built successfully.
+-- BUG: This prompting ignores `--noconfirm`.
 buildFail :: Settings -> AURPkg -> [AURPkg] -> ErrMsg -> IO Bool
 buildFail settings p ps errors = do
   scold settings (flip buildFailMsg1 (show p))
   when (suppressMakepkg settings) (displayBuildErrors settings errors)
-  unless (null ps) ((scold settings buildFailMsg2) >>
+  unless (null ps) (scold settings buildFailMsg2 >>
                     mapM_ (putStrLn . colourize cyan . pkgNameOf) ps)
   warn settings buildFailMsg3
   yesNoPrompt (buildFailMsg4 $ langOf settings) "^(y|Y)"
 
+-- If the user wasn't running Aura with `-x`, then this will
+-- show them the suppressed makepkg output. 
 displayBuildErrors :: Settings -> ErrMsg -> IO ()
 displayBuildErrors settings errors = do
-  scold settings displayBuildErrorsMsg1
+  putStrA red (displayBuildErrorsMsg1 $ langOf settings)
   timedMessage 1000000 ["3.. ","2.. ","1..\n"]
   putStrLn errors
 
@@ -242,6 +254,8 @@ determineDeps lang pkg = do
   let (ps,as,os) = foldl groupPkgs (archPkgNames,aurPkgs,other) recursiveDeps
   return (nub ps, nub as, nub os)
 
+-- If a package isn't installed, `pacman -T` will yield a single name.
+-- Any other type of output means installation is not required. 
 mustInstall :: String -> IO Bool
 mustInstall pkg = do
   necessaryDeps <- pacmanOutput $ ["-T",pkg]
@@ -264,7 +278,7 @@ getPacmanConflicts :: Language -> [String] -> PacmanPkg -> Maybe ErrMsg
 getPacmanConflicts lang toIgnore pkg = getRealPkgConflicts f lang toIgnore pkg
     where f = getMostRecentVerNum . pkgInfoOf
        
--- Takes `pacman -Si` output as input
+-- Takes `pacman -Si` output as input.
 getMostRecentVerNum :: String -> String
 getMostRecentVerNum info = tripleThrd match
     where match     = thirdLine =~ ": " :: (String,String,String)
@@ -313,7 +327,7 @@ getProvidedVerNum pkg = splitVer match
 isVersionConflict :: Versioning -> String -> Bool
 isVersionConflict Anything _    = False
 isVersionConflict (MustBe r) c  = not $ c =~ ("^" ++ r)
-isVersionConflict (AtLeast r) c | c > r = False
+isVersionConflict (AtLeast r) c | c > r = False  -- Bug? Same as `-Cs` ordering?
                                 | isVersionConflict (MustBe r) c = True
                                 | otherwise = False
 
@@ -350,6 +364,7 @@ isAURPackage = doesUrlExist . getPkgbuildUrl
 isntAURPackage :: String -> IO Bool
 isntAURPackage pkg = isAURPackage pkg >>= notM
 
+-- A package is a virtual package if it has a provider.
 isVirtualPkg :: String -> IO Bool
 isVirtualPkg pkg = do
   provider <- getProvidingPkg pkg
