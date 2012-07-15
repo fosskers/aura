@@ -19,6 +19,7 @@ data Flag = AURInstall
           | Upgrade
           | Download
           | Unsuppress
+          | HotEdit
           | NoConfirm
           | Backup
           | Clean
@@ -46,6 +47,7 @@ auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    delma
               , Option ['u'] ["sysupgrade"]   (NoArg Upgrade)     sysup
               , Option ['w'] ["downloadonly"] (NoArg Download)    downl
               , Option ['x'] ["unsuppress"]   (NoArg Unsuppress)  unsup
+              , Option []    ["hotedit"]      (NoArg HotEdit)     hotEd
               , Option ['c'] ["clean"]        (NoArg Clean)       clean 
               , Option ['s'] ["search"]       (NoArg Search)      searc
               , Option ['z'] ["backup"]       (NoArg Backup)      backu
@@ -59,6 +61,7 @@ auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    delma
           downl = "(With -A) Download the source tarball only."
           pkgbu = "(With -A) Output the contents of a package's PKGBUILD."
           unsup = "(With -A) Unsuppress makepkg output."
+          hotEd = "(With -A) Prompt for PKGBUILD editing before building."
           clean = "(With -C) Save `n` package files, and delete the rest."
           searc = "(With -C) Search the package cache via a regex pattern."
           backu = "(With -C) Backup the package cache to a given directory."
@@ -110,7 +113,7 @@ reconvertFlag flagMap f = case f `lookup` flagMap of
                             Nothing -> ""
 
 settingsFlags :: [Flag]
-settingsFlags = [Unsuppress,NoConfirm,JapOut]
+settingsFlags = [Unsuppress,NoConfirm,HotEdit,JapOut]
 
 allFlags :: [OptDescr Flag]
 allFlags = auraOperations ++ auraOptions ++ pacmanOptions ++
@@ -149,6 +152,9 @@ getSuppression = fishOutFlag [(Unsuppress,False)] True
 
 getConfirmation :: [Flag] -> Bool
 getConfirmation = fishOutFlag [(NoConfirm,False)] True
+
+getHotEdit :: [Flag] -> Bool
+getHotEdit = fishOutFlag [(HotEdit,True)] False
 
 parseOpts :: [String] -> IO ([Flag],[String],[String])
 parseOpts args = case getOpt' Permute allFlags args of

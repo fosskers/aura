@@ -33,6 +33,7 @@ data Settings = Settings { environmentOf   :: Environment
                          , logFilePathOf   :: FilePath
                          , suppressMakepkg :: Bool
                          , mustConfirm     :: Bool
+                         , mayHotEdit      :: Bool
                          }
 
 -----------
@@ -171,7 +172,7 @@ buildPackages :: Settings -> [AURPkg] -> IO [FilePath]
 buildPackages _ []            = return []
 buildPackages settings (p:ps) = do
   notify settings (flip buildPackagesMsg1 $ pkgNameOf p)
-  results <- withTempDir (show p) (build toSuppress cachePath user p)
+  results <- withTempDir (show p) (build settings p)
   case results of
     Right pkg   -> buildPackages settings ps >>= return . (\pkgs -> pkg : pkgs)
     Left errors -> do        
@@ -179,27 +180,37 @@ buildPackages settings (p:ps) = do
         if toContinue
            then return []
            else error . buildPackagesMsg2 . langOf $ settings
-    where toSuppress = suppressMakepkg settings
-          cachePath  = cachePathOf settings
-          user       = getTrueUser $ environmentOf settings
         
+-- Big and ugly.
 -- Perform the actual build. Fails elegantly when build fails occur.
-build :: Bool -> FilePath -> String -> AURPkg -> IO (Either String FilePath)
-build toSuppress cachePath user pkg = do
+build :: Settings -> AURPkg -> IO (Either String FilePath)
+build settings pkg = do
   currDir <- getCurrentDirectory
   allowFullAccess currDir  -- Gives write access to the temp folder.
   tarball   <- downloadSource currDir $ pkgNameOf pkg
   sourceDir <- uncompress tarball
   allowFullAccess sourceDir
   setCurrentDirectory sourceDir
+  checkHotEdit settings $ pkgNameOf pkg
   (exitStatus,pkgName,output) <- makepkg' user
   if didProcessFail exitStatus
      then return $ Left output
      else do
-       path <- moveToCache cachePath pkgName
+       path <- moveToCache (cachePathOf settings) pkgName
        setCurrentDirectory currDir
        return $ Right path
-    where makepkg' = if toSuppress then makepkgQuiet else makepkgVerbose
+    where makepkg'   = if toSuppress then makepkgQuiet else makepkgVerbose
+          toSuppress = suppressMakepkg settings
+          user       = getTrueUser $ environmentOf settings
+
+-- Allow the user to edit the PKGBUILD if they asked to do so.
+checkHotEdit :: Settings -> String -> IO ()
+checkHotEdit settings pkgName = when (mayHotEdit settings) promptForEdit
+    where msg    = checkHotEditMsg1 (langOf settings) pkgName
+          editor = getEditor $ environmentOf settings
+          promptForEdit = do
+            answer <- optionalPrompt (mustConfirm settings) msg
+            when answer $ openEditor editor "PKGBUILD"
 
 -- Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.

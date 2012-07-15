@@ -28,6 +28,11 @@ buildPackagesMsg2 :: Language -> String
 buildPackagesMsg2 English  = "So be it."
 buildPackagesMsg2 Japanese = "分かった。脱出！"
 
+checkHotEditMsg1 :: Language -> String -> String
+checkHotEditMsg1 English p  =
+    "Would you like to edit the PKGBUILD of " ++ bt p ++ "?"
+checkHotEditMsg1 Japanese p = bt p ++ "のPKGBUILDを編成？"
+
 buildFailMsg1 :: Language -> String -> String
 buildFailMsg1 English p  = "Well, building " ++ bt p ++ " failed."
 buildFailMsg1 Japanese p = bt p ++ "の作成は失敗したようだ。"

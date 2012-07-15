@@ -26,59 +26,61 @@ import Pacman
 import Shell
 
 auraVersion :: String
-auraVersion = "0.6.0.0"
+auraVersion = "0.7.0.0"
 
 main :: IO a
 main = do
   args <- getArgs
   (auraFlags,input,pacOpts) <- parseOpts args
-  confFile    <- getPacmanConf
-  environment <- getEnvironment
-  let language     = getLanguage auraFlags
-      suppression  = getSuppression auraFlags
-      confirmation = getConfirmation auraFlags
-      settings     = Settings { environmentOf   = environment
-                              , langOf          = language
-                              , ignoredPkgsOf   = getIgnoredPkgs confFile
-                              , cachePathOf     = getCachePath confFile
-                              , logFilePathOf   = getLogFilePath confFile
-                              , suppressMakepkg = suppression
-                              , mustConfirm     = confirmation }
-      auraFlags' = filter (`notElem` settingsFlags) auraFlags
+  let auraFlags' = filter (`notElem` settingsFlags) auraFlags
       pacOpts'   = pacOpts ++ reconvertFlags auraFlags dualFlagMap
+  settings   <- getSettings auraFlags
   exitStatus <- executeOpts settings (auraFlags', nub input, nub pacOpts')
   exitWith exitStatus
+
+getSettings :: [Flag] -> IO Settings
+getSettings auraFlags = do
+  confFile    <- getPacmanConf
+  environment <- getEnvironment
+  return $ Settings { environmentOf   = environment
+                    , langOf          = getLanguage auraFlags
+                    , ignoredPkgsOf   = getIgnoredPkgs confFile
+                    , cachePathOf     = getCachePath confFile
+                    , logFilePathOf   = getLogFilePath confFile
+                    , suppressMakepkg = getSuppression auraFlags
+                    , mustConfirm     = getConfirmation auraFlags
+                    , mayHotEdit      = getHotEdit auraFlags }
 
 -- After determining what Flag was given, dispatches a function.
 -- The `flags` must be sorted to guarantee the pattern matching
 -- below will work properly.
 executeOpts :: Settings -> ([Flag],[String],[String]) -> IO ExitCode
 executeOpts settings (flags,input,pacOpts) = do
-    case sort flags of
-      (AURInstall:fs) ->
-          case fs of
-            []             -> installPackagesPre settings pacOpts input
-            [Upgrade]      -> upgradeAURPkgs settings pacOpts input
-            [Download]     -> downloadTarballs settings input
-            [GetPkgbuild]  -> displayPkgbuild settings input
-            (Refresh:fs')  -> syncAndContinue settings (fs',input,pacOpts)
-            (DelMDeps:fs') -> removeMakeDeps settings (fs',input,pacOpts)
-            badFlags       -> scoldAndFail settings executeOptsMsg1
-      (Cache:fs) ->
-          case fs of
-            []       -> downgradePackages settings input
-            [Clean]  -> preCleanCache settings input
-            [Search] -> searchPackageCache settings input
-            [Backup] -> backupCache settings input
-            badFlags -> scoldAndFail settings executeOptsMsg1
-      [ViewLog]   -> viewLogFile $ logFilePathOf settings
-      [Orphans]   -> getOrphans >>= mapM_ putStrLn >> returnSuccess
-      [Adopt]     -> pacman $ ["-D","--asexplicit"] ++ input
-      [Abandon]   -> getOrphans >>= flip removePkgs pacOpts
-      [Languages] -> displayOutputLanguages settings
-      [Help]      -> printHelpMsg pacOpts
-      [Version]   -> getVersionInfo >>= animateVersionMsg
-      pacmanFlags -> pacman $ pacOpts ++ input ++ convertedHijackedFlags
+  case sort flags of
+    (AURInstall:fs) ->
+        case fs of
+          []             -> installPackagesPre settings pacOpts input
+          [Upgrade]      -> upgradeAURPkgs settings pacOpts input
+          [Download]     -> downloadTarballs settings input
+          [GetPkgbuild]  -> displayPkgbuild settings input
+          (Refresh:fs')  -> syncAndContinue settings (fs',input,pacOpts)
+          (DelMDeps:fs') -> removeMakeDeps settings (fs',input,pacOpts)
+          badFlags       -> scoldAndFail settings executeOptsMsg1
+    (Cache:fs) ->
+        case fs of
+          []       -> downgradePackages settings input
+          [Clean]  -> preCleanCache settings input
+          [Search] -> searchPackageCache settings input
+          [Backup] -> backupCache settings input
+          badFlags -> scoldAndFail settings executeOptsMsg1
+    [ViewLog]   -> viewLogFile $ logFilePathOf settings
+    [Orphans]   -> getOrphans >>= mapM_ putStrLn >> returnSuccess
+    [Adopt]     -> pacman $ ["-D","--asexplicit"] ++ input
+    [Abandon]   -> getOrphans >>= flip removePkgs pacOpts
+    [Languages] -> displayOutputLanguages settings
+    [Help]      -> printHelpMsg pacOpts
+    [Version]   -> getVersionInfo >>= animateVersionMsg
+    pacmanFlags -> pacman $ pacOpts ++ input ++ convertedHijackedFlags
     where convertedHijackedFlags = reconvertFlags flags hijackedFlagMap
           
 --------------------

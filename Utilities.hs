@@ -116,6 +116,10 @@ notNull = not . null
 notM :: Monad m => Bool -> m Bool
 notM = return . not
 
+-- Opens the editor of the user's choice.
+openEditor :: String -> String -> IO ()
+openEditor editor file = shellCmd editor [file] >> return ()
+
 -- Is there a more built-in replacement for `tar` that wouldn't be
 -- required as a listed dependency in the PKGBUILD?
 uncompress :: FilePath -> IO FilePath
