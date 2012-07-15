@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -O2 #-}
 
--- `Aura` package manager for Arch Linux
+-- `Aura` package manager for Arch Linux.
 -- Written by Colin Woodbury <colingw@gmail.com>
 
 -- System Libraries

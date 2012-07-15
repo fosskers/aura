@@ -2,7 +2,7 @@ What is Aura?
 =============
 Aura is a package manager for Arch Linux. It's main purpose is as an
 "AUR helper", in that it automates the process of installating packages
-from the Arch User Repositories.
+from the Arch User Repositories. It is, however, capable of much more.
 
 The Aura Philosophy
 ===================
@@ -12,7 +12,7 @@ The Aura Philosophy
   Some even hold special meaning in Aura as well.
 
 ### Arch is Arch. AUR is AUR.
-  `-S` yields pacman packages and only pacman packages. This agrees with
+  `-S` yields pacman packages and _only_ pacman packages. This agrees with
   the above. Thus in aura, the `-A` operation is introduced for obtaining
   AUR packages. `-A` comes with with all the sub-options (`-s`, `-u`, etc.)
   that you're used to.  
@@ -28,7 +28,8 @@ Install order is as follows:
 ### Quiet Building
   By default `makepkg` output is suppressed. If you want the people
   behind you to think you're a badass hacker, then this suppression
-  can be disabled by using `-x` alongside `-A`.
+  can be disabled by using `-x` alongside `-A`. Edit PKGBUILDs on the fly
+  with `--hotedit`.
   
 ### Downgradibility
   AUR package files that are built are moved to the package cache.
@@ -37,13 +38,13 @@ Install order is as follows:
 
 ### No Orphans
   Sometimes dependencies lose their *required* status, but remain
-  installed on your system. Sometimes AUR package build dependencies
+  installed on your system. Sometimes AUR package "build" dependencies
   aren't required at all after install. Packages like this just
   sit there, receiving upgrades for no reason.
   Aura helps keep track of and remove packages like this. 
 
 ### Arch Linux for Everyone
-  English is well established as the world's Lingua Franca, also being
+  English is well established as the world's Lingua Franca, and is also
   the dominant language of computing and the internet. That said, it's
   natural that some people are going to be more comfortable working
   in their native language. From the beginning Aura has been built with
@@ -94,6 +95,10 @@ Search the package cache for package files via a regex:
 Backup the package cache:
 
     aura -Cz (/path/to/backup/location/)
+
+Reduce the package cache to contain only 'x' of each package file:
+
+    aura -Cc 5
 
 Localisation
 ============

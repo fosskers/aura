@@ -16,9 +16,6 @@ OPTIONS TO IMPLEMENT
 -As -> `--search` Search for an AUR package
 -Ai -> `--info` Gives specific info on an AUR package.
 -Ci -> `--info` Gives some stats about the package cache.
--   -> `--prompt` Prompt the user if they want to view PKGBUILDs.
-       At program start up, lookup the `$EDITOR` variable and use that.
-       If it doesn't exist, use `vi`. I guess.
 -   -> `--philosophy` Outputs the aura philosophy.
 
 FLAGS UNUSED BY PACMAN
@@ -29,9 +26,3 @@ a j x z
 OUT OF DATE
 -----------
 Once dependencies are determined, notify the user if any are O.o.D.
-
-RUN BY ROOT USER
-----------------
-When run by the root user and not by sudo, check this and run makepkg
-with --runasroot. This is not a safe procedure, but the user must be
-responsible for their actions.
