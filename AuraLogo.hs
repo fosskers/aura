@@ -5,7 +5,7 @@ module AuraLogo where
 import Control.Concurrent (threadDelay)
 import System.IO (stdout, hFlush)
 
-import Utilities (colourize, yellow)
+import Shell (colourize, yellow)
 
 data MouthState = Open | Closed deriving (Eq)
 

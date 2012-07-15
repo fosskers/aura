@@ -1,8 +1,8 @@
 GENERAL
 -------
-Reorganize certain functions into a `Shell.hs`?
-`getUser` and other functions could go here.
-Also things like `system` and `rawSystem`.
+Protected package files? In a .conf file?
+You could give a list of regexes for packages that you never want deleted.
+When a `-Cc` comes along they wouldn't be deleted.
 
 DEPENDENCY ANALYSIS
 -------------------

@@ -2,7 +2,7 @@
 
 module AuraLanguages where
 
-import Utilities (colourize, cyan)
+import Shell (colourize, cyan)
 
 data Language = English | Japanese deriving (Eq,Enum,Show)
 
@@ -28,6 +28,11 @@ buildPackagesMsg2 :: Language -> String
 buildPackagesMsg2 English  = "So be it."
 buildPackagesMsg2 Japanese = "分かった。脱出！"
 
+checkHotEditMsg1 :: Language -> String -> String
+checkHotEditMsg1 English p  =
+    "Would you like to edit the PKGBUILD of " ++ bt p ++ "?"
+checkHotEditMsg1 Japanese p = bt p ++ "のPKGBUILDを編成？"
+
 buildFailMsg1 :: Language -> String -> String
 buildFailMsg1 English p  = "Well, building " ++ bt p ++ " failed."
 buildFailMsg1 Japanese p = bt p ++ "の作成は失敗したようだ。"
@@ -41,8 +46,8 @@ buildFailMsg3 English  = "Some packages may have built properly."
 buildFailMsg3 Japanese = "今のは失敗したけど前に作成のできたやつ" ++
                              "があるかもしれない。"
 buildFailMsg4 :: Language -> String
-buildFailMsg4 English  = "Would you like to install them? [y/n]"
-buildFailMsg4 Japanese = "できたやつのインストールを続行する？ [y/n]"
+buildFailMsg4 English  = "Would you like to install them?"
+buildFailMsg4 Japanese = "できたやつのインストールを続行する？"
 
 displayBuildErrorsMsg1 :: Language -> String
 displayBuildErrorsMsg1 English  = "Dumping makepkg output in "
@@ -96,6 +101,16 @@ executeOptsMsg1 :: Language -> String
 executeOptsMsg1 English  = "Conflicting flags given!"
 executeOptsMsg1 Japanese = "矛盾しているオプションあり。"
 
+installPackagesPreMsg1 :: Language -> String
+installPackagesPreMsg1 English  =
+    "You should never build packages as the true root. Are you okay with this?"
+installPackagesPreMsg1 Japanese =
+    "本当のrootユーザーとしてパッケージを作成するのが危険。続行？"
+
+installPackagesPreMsg2 :: Language -> String
+installPackagesPreMsg2 English  = "You've done the right thing."
+installPackagesPreMsg2 Japanese = "よしよし。"
+
 installPackagesMsg1 :: Language -> String
 installPackagesMsg1 English  = "Dependency checking failed for these reasons:"
 installPackagesMsg1 Japanese = "従属パッケージの確認は以下の理由で失敗した："
@@ -105,8 +120,8 @@ installPackagesMsg2 English  = "No valid packages specified."
 installPackagesMsg2 Japanese = "適当なパッケージを入力してください。"
 
 installPackagesMsg3 :: Language -> String
-installPackagesMsg3 English  = "Continue? [y/n]"
-installPackagesMsg3 Japanese = "続行？ [y/n]"
+installPackagesMsg3 English  = "Continue?"
+installPackagesMsg3 Japanese = "続行？"
 
 installPackagesMsg4 :: Language -> String
 installPackagesMsg4 English  = "Installation manually aborted."
