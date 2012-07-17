@@ -162,7 +162,7 @@ getProvidingPkg' virt = do
 ------------
 -- OPERATORS
 ------------
--- IO action won't be allowed unless user is root, or using sudo.
+-- IO action won't be allowed unless user is root, or using [$]udo.
 (|$|) :: Settings -> IO ExitCode -> IO ExitCode
 settings |$| action = mustBeRoot settings action
 
@@ -171,7 +171,7 @@ mustBeRoot settings action
   | isUserRoot $ environmentOf settings = action
   | otherwise = scoldAndFail settings mustBeRootMsg1
 
--- Prompt if the user is the True Root. This can be dangerous.
+-- Prompt if the user is the [+]rue Root. This can be dangerous.
 (|+|) :: Settings -> IO ExitCode -> IO ExitCode
 settings |+| action = trueRootCheck settings action
 

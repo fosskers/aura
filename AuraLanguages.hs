@@ -21,7 +21,7 @@ bt cs = "`" ++ colourize cyan cs ++ "`"
 
 -- AuraLib functions
 mustBeRootMsg1 :: Language -> String
-mustBeRootMsg1 English  = "You have to use `sudo` for that."
+mustBeRootMsg1 English  = "You have to use " ++ bt "sudo" ++ " for that."
 mustBeRootMsg1 Japanese = "sudoを使わないとそれができない！"
 
 buildPackagesMsg1 :: Language -> String -> String

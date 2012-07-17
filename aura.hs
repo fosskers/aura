@@ -26,7 +26,7 @@ import Pacman
 import Shell
 
 auraVersion :: String
-auraVersion = "0.7.0.0"
+auraVersion = "0.7.0.2"
 
 main :: IO a
 main = do
@@ -80,7 +80,7 @@ executeOpts ss (flags,input,pacOpts) = do
     [Languages] -> displayOutputLanguages ss
     [Help]      -> printHelpMsg pacOpts
     [Version]   -> getVersionInfo >>= animateVersionMsg
-    pacmanFlags -> ss |$| (pacman $ pacOpts ++ input ++ hijackedFlags)
+    pacmanFlags -> pacman $ pacOpts ++ input ++ hijackedFlags
     where hijackedFlags = reconvertFlags flags hijackedFlagMap
           
 --------------------
@@ -185,7 +185,7 @@ syncAndContinue settings (flags,input,pacOpts) = do
 removeMakeDeps :: Settings -> ([Flag],[String],[String]) -> IO ExitCode
 removeMakeDeps settings (flags,input,pacOpts) = do
   orphansBefore <- getOrphans
-  exitStatus <- executeOpts settings (AURInstall:flags,input,pacOpts)
+  exitStatus    <- executeOpts settings (AURInstall:flags,input,pacOpts)
   if didProcessFail exitStatus
      then returnFailure
      else do
@@ -200,6 +200,7 @@ removeMakeDeps settings (flags,input,pacOpts) = do
 -- Interactive. Gives the user a choice as to exactly what versions
 -- they want to downgrade to.
 downgradePackages :: Settings -> [String] -> IO ExitCode
+downgradePackages _ []          = returnSuccess                     
 downgradePackages settings pkgs = do
   cache     <- packageCacheContents cachePath
   installed <- filterM isInstalled pkgs
