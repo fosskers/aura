@@ -20,6 +20,10 @@ bt :: String -> String
 bt cs = "`" ++ colourize cyan cs ++ "`"
 
 -- AuraLib functions
+mustBeRootMsg1 :: Language -> String
+mustBeRootMsg1 English  = "You have to use `sudo` for that."
+mustBeRootMsg1 Japanese = "sudoを使わないとそれができない！"
+
 buildPackagesMsg1 :: Language -> String -> String
 buildPackagesMsg1 English p  = "Building " ++ bt p ++ "..."
 buildPackagesMsg1 Japanese p = bt p ++ "を作成中・・・"
@@ -101,15 +105,15 @@ executeOptsMsg1 :: Language -> String
 executeOptsMsg1 English  = "Conflicting flags given!"
 executeOptsMsg1 Japanese = "矛盾しているオプションあり。"
 
-installPackagesPreMsg1 :: Language -> String
-installPackagesPreMsg1 English  =
+trueRootCheckMsg1 :: Language -> String
+trueRootCheckMsg1 English  =
     "You should never build packages as the true root. Are you okay with this?"
-installPackagesPreMsg1 Japanese =
+trueRootCheckMsg1 Japanese =
     "本当のrootユーザーとしてパッケージを作成するのが危険。続行？"
 
-installPackagesPreMsg2 :: Language -> String
-installPackagesPreMsg2 English  = "You've done the right thing."
-installPackagesPreMsg2 Japanese = "よしよし。"
+trueRootCheckMsg2 :: Language -> String
+trueRootCheckMsg2 English  = "You've done the right thing."
+trueRootCheckMsg2 Japanese = "よしよし。"
 
 installPackagesMsg1 :: Language -> String
 installPackagesMsg1 English  = "Dependency checking failed for these reasons:"

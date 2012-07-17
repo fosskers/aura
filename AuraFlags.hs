@@ -4,7 +4,7 @@ module AuraFlags where
 import System.Console.GetOpt
 
 -- Custom Libraries
-import Shell (colourize, yellow, Colour)
+import Shell (colourize, yellow)
 import Utilities (notNull)
 import AuraLanguages
 
@@ -119,20 +119,20 @@ allFlags :: [OptDescr Flag]
 allFlags = auraOperations ++ auraOptions ++ pacmanOptions ++
            dualOptions ++ languageOptions
 
-makeUsageMsg :: Colour -> String -> [OptDescr Flag] -> String
-makeUsageMsg c msg flags = usageInfo (colourize c msg) flags
+makeUsageMsg :: String -> [OptDescr Flag] -> String
+makeUsageMsg msg flags = usageInfo (colourize yellow msg) flags
 
 auraOperMsg :: String
-auraOperMsg = makeUsageMsg yellow "Aura only operations:" auraOperations
+auraOperMsg = makeUsageMsg "Aura only operations:" auraOperations
 
 auraOptMsg :: String
-auraOptMsg = makeUsageMsg yellow "Subordinate options:" auraOptions
+auraOptMsg = makeUsageMsg "Subordinate options:" auraOptions
 
 dualFlagMsg :: String
-dualFlagMsg = makeUsageMsg yellow "Dual functionality options:" dualOptions
+dualFlagMsg = makeUsageMsg "Dual functionality options:" dualOptions
 
 languageMsg :: String
-languageMsg = makeUsageMsg yellow "Language options:" languageOptions
+languageMsg = makeUsageMsg "Language options:" languageOptions
 
 -- Extracts desirable results from given Flags.
 -- Callers must supply an alternate value for when there are no matches.
@@ -156,6 +156,7 @@ getConfirmation = fishOutFlag [(NoConfirm,False)] True
 getHotEdit :: [Flag] -> Bool
 getHotEdit = fishOutFlag [(HotEdit,True)] False
 
-parseOpts :: [String] -> IO ([Flag],[String],[String])
+-- Errors are dealt with manually in `aura.hs`.
+parseOpts :: [String] -> ([Flag],[String],[String])
 parseOpts args = case getOpt' Permute allFlags args of
-                   (opts,nonOpts,pacOpts,_) -> return (opts,nonOpts,pacOpts) 
+                   (opts,nonOpts,pacOpts,_) -> (opts,nonOpts,pacOpts) 

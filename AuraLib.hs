@@ -159,6 +159,31 @@ getProvidingPkg' virt = do
   let (name,_) = splitNameAndVer virt
   pacmanOutput ["-Ssq",name]
 
+------------
+-- OPERATORS
+------------
+-- IO action won't be allowed unless user is root, or using sudo.
+(|$|) :: Settings -> IO ExitCode -> IO ExitCode
+settings |$| action = mustBeRoot settings action
+
+mustBeRoot :: Settings -> IO ExitCode -> IO ExitCode
+mustBeRoot settings action
+  | isUserRoot $ environmentOf settings = action
+  | otherwise = scoldAndFail settings mustBeRootMsg1
+
+-- Prompt if the user is the True Root. This can be dangerous.
+(|+|) :: Settings -> IO ExitCode -> IO ExitCode
+settings |+| action = trueRootCheck settings action
+
+trueRootCheck :: Settings -> IO ExitCode -> IO ExitCode
+trueRootCheck ss action
+    | isntTrueRoot $ environmentOf ss = action
+    | otherwise = do
+    okay <- optionalPrompt (mustConfirm ss) (trueRootCheckMsg1 $ langOf ss)
+    if okay
+       then action
+       else notify ss trueRootCheckMsg2 >> returnSuccess
+
 -----------
 -- The Work
 -----------
