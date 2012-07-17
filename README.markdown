@@ -28,8 +28,15 @@ Install order is as follows:
 ### Quiet Building
   By default `makepkg` output is suppressed. If you want the people
   behind you to think you're a badass hacker, then this suppression
-  can be disabled by using `-x` alongside `-A`. Edit PKGBUILDs on the fly
-  with `--hotedit`.
+  can be disabled by using `-x` alongside `-A`.
+
+### Know your System
+  Editing PKGBUILDs mid-build is not default behaviour.
+  An Arch user should know _exactly_ what they're putting into their system,
+  thus research into prospective packages should be done beforehand.
+  However, for functionality's sake, the option `--hotedit` used with `-A`
+  will prompt the user for PKGBUILD editing. Regardless, as a responsible
+  user you must KNOW. WHAT. YOU. ARE. BUILDING.
   
 ### Downgradibility
   AUR package files that are built are moved to the package cache.
