@@ -21,6 +21,9 @@ OPTIONS TO IMPLEMENT
 -Ai -> `--info` Gives specific info on an AUR package.
 -Ci -> `--info` Gives some stats about the package cache.
 -   -> `--philosophy` Outputs the aura philosophy.
+-L  -> `--log` Show the pacman log using `less`.
+-Li -> `--info` Show instances of installation, etc, of a given package.
+-Ls -> `--search` Search the log file for a regex.
 
 FLAGS UNUSED BY PACMAN
 ----------------------

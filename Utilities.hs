@@ -124,5 +124,6 @@ openEditor editor file = shellCmd editor [file] >> return ()
 -- required as a listed dependency in the PKGBUILD?
 uncompress :: FilePath -> IO FilePath
 uncompress file = do
-  _ <- quietShellCmd "tar" ["-zxvf",file]
+  hFlush stdout  -- Prevents bsdtar output from occasionally leaking.
+  _ <- quietShellCmd "bsdtar" ["-zxvf",file]
   return $ dropExtensions file

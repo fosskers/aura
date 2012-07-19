@@ -376,12 +376,13 @@ getInstalledAURPackages = do
       where fixName = (\(n,v) -> n ++ "=" ++ v) . hardBreak (\c -> c == ' ')
 
 isOutOfDate :: AURPkg -> Bool
-isOutOfDate pkg = trueVer == currVer
-    where trueVer = getTrueVerViaPkgbuild $ pkgbuildOf pkg
-          currVer = case versionOf pkg of
-                      MustBe v  -> v
-                      AtLeast v -> v
-                      Anything  -> ""  -- These might not be appropriate.
+isOutOfDate pkg = trueVer > currVer
+  where trueVer = splitBySubVersion . getTrueVerViaPkgbuild . pkgbuildOf $ pkg
+        currVer = splitBySubVersion $
+                  case versionOf pkg of
+                    MustBe v  -> v
+                    AtLeast v -> v
+                    Anything  -> ""
   
 isIgnored :: String -> [String] -> Bool
 isIgnored pkg toIgnore = pkg `elem` toIgnore
@@ -486,7 +487,8 @@ pkgFileNameAndVer p = (name,verNum')
 -- BUG: Explodes if arg doesn't start with a digit.
 splitBySubVersion :: String -> [Int]
 splitBySubVersion [] = []
-splitBySubVersion n  = firstSubVer : splitBySubVersion nextSet
-    where firstSubVer = read $ fst digitMatch
-          nextSet     = dropWhile (not . isDigit) $ snd digitMatch
-          digitMatch  = span isDigit n
+splitBySubVersion n  =
+    case dropWhile (not . isDigit) n of
+      []   -> []  -- Version ended in non-digits.
+      rest -> read digits : (splitBySubVersion $ drop (length digits) rest)
+        where digits = takeWhile isDigit rest

@@ -143,7 +143,7 @@ upgradeAURPkgs settings pacOpts pkgs = do
   installedPkgs <- getInstalledAURPackages
   toCheck       <- mapM fetchAndReport $ filter notIgnored installedPkgs
   notify settings upgradeAURPkgsMsg2
-  let toUpgrade = map pkgNameOf . filter (not . isOutOfDate) $ toCheck
+  let toUpgrade = map pkgNameOf $ filter isOutOfDate toCheck
   when (null toUpgrade) (warn settings upgradeAURPkgsMsg3)
   installPackages settings pacOpts $ toUpgrade ++ pkgs
     where notIgnored p = splitName p `notElem` ignoredPkgsOf settings
@@ -300,7 +300,7 @@ groupByPkgName pkgs = groupBy sameBaseName $ sortPkgs pkgs
 -- OTHER
 --------
 viewLogFile :: FilePath -> IO ExitCode
-viewLogFile logFilePath = rawSystem "more" [logFilePath]
+viewLogFile logFilePath = rawSystem "less" [logFilePath]
 
 displayOutputLanguages :: Settings -> IO ExitCode
 displayOutputLanguages settings = do
