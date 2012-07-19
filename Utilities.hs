@@ -107,6 +107,9 @@ optionalPrompt :: Bool -> String -> IO Bool
 optionalPrompt True msg = yesNoPrompt msg "^(y|Y)"
 optionalPrompt False _  = return True
 
+searchLines :: Regex -> [String] -> [String]
+searchLines pat allLines = filter (\line -> line =~ pat) allLines
+
 wordsLines :: String -> [String]
 wordsLines = concat . map words . lines
 

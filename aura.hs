@@ -26,7 +26,7 @@ import Pacman
 import Shell
 
 auraVersion :: String
-auraVersion = "0.7.0.2"
+auraVersion = "0.7.1.0"
 
 main :: IO a
 main = do
@@ -73,7 +73,11 @@ executeOpts ss (flags,input,pacOpts) = do
           [Search] -> searchPackageCache ss input
           [Backup] -> ss |$| backupCache ss input
           badFlags -> scoldAndFail ss executeOptsMsg1
-    [ViewLog]   -> viewLogFile $ logFilePathOf ss
+    (LogFile:fs) ->
+        case fs of
+          []       -> viewLogFile $ logFilePathOf ss
+          [Search] -> searchLogFile ss input
+          badFlags -> scoldAndFail ss executeOptsMsg1
     [Orphans]   -> getOrphans >>= mapM_ putStrLn >> returnSuccess
     [Adopt]     -> ss |$| (pacman $ ["-D","--asexplicit"] ++ input)
     [Abandon]   -> ss |$| (getOrphans >>= flip removePkgs pacOpts)
@@ -227,10 +231,8 @@ getChoicesFromCache cache pkg = sort choices
 -- `[]` as input yields the contents of the entire cache.
 searchPackageCache :: Settings -> [String] -> IO ExitCode
 searchPackageCache settings input = do
-  cache <- packageCacheContents $ cachePathOf settings
-  let pattern = unwords input
-      matches = sortPkgs $ filter (\p -> p =~ pattern) cache
-  mapM_ putStrLn matches
+  cache <- packageCacheContents $ cachePathOf settings  
+  mapM_ putStrLn . sortPkgs . searchLines (unwords input) $ cache
   returnSuccess
 
 -- The destination folder must already exist for the back-up to being.
@@ -296,12 +298,22 @@ groupByPkgName pkgs = groupBy sameBaseName $ sortPkgs pkgs
     where sameBaseName a b = baseName a == baseName b
           baseName p = tripleFst (p =~ "-[0-9]+" :: (String,String,String))
 
---------
--- OTHER
---------
+--------------------
+-- WORKING WITH `-L`
+--------------------
 viewLogFile :: FilePath -> IO ExitCode
 viewLogFile logFilePath = rawSystem "less" [logFilePath]
 
+-- Very similar to `searchCache`. But is this worth generalizing?
+searchLogFile :: Settings -> [String] -> IO ExitCode
+searchLogFile settings input = do
+  logFile <- readFile (logFilePathOf settings) >>= return . lines
+  mapM_ putStrLn $ searchLines (unwords input) logFile
+  returnSuccess
+
+--------
+-- OTHER
+--------
 displayOutputLanguages :: Settings -> IO ExitCode
 displayOutputLanguages settings = do
   notify settings displayOutputLanguagesMsg1

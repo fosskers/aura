@@ -12,6 +12,7 @@ type FlagMap = [(Flag,String)]
 
 data Flag = AURInstall
           | Cache
+          | LogFile
           | GetPkgbuild
           | Search
           | Refresh
@@ -23,7 +24,6 @@ data Flag = AURInstall
           | NoConfirm
           | Backup
           | Clean
-          | ViewLog
           | Orphans
           | Adopt
           | Abandon
@@ -34,12 +34,15 @@ data Flag = AURInstall
             deriving (Eq,Ord)
 
 auraOperations :: [OptDescr Flag]
-auraOperations = [ Option ['A'] ["aursync"]   (NoArg AURInstall) aDesc
-                 , Option ['C'] ["downgrade"] (NoArg Cache)      cDesc
+auraOperations = [ Option ['A'] ["aursync"]   (NoArg AURInstall) aurSy
+                 , Option ['C'] ["downgrade"] (NoArg Cache)      downG
+                 , Option ['L'] ["logfile"]   (NoArg LogFile)    logFi
                  ]
-    where aDesc = "Install from the [A]UR."
-          cDesc = "Perform actions involving the package [C]ache.\n" ++
+    where aurSy = "Install from the [A]UR."
+          downG = "Perform actions involving the package [C]ache.\n" ++
                   "Default action downgrades given packages."
+          logFi = "Perform actions involving the pacman [L]ogfile.\n" ++
+                  "Default action opens the log for read-only viewing."
 
 auraOptions :: [OptDescr Flag]
 auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    delma
@@ -51,7 +54,6 @@ auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    delma
               , Option ['c'] ["clean"]        (NoArg Clean)       clean 
               , Option ['s'] ["search"]       (NoArg Search)      searc
               , Option ['z'] ["backup"]       (NoArg Backup)      backu
-              , Option []    ["log"]          (NoArg ViewLog)     viewL
               , Option []    ["orphans"]      (NoArg Orphans)     orpha
               , Option []    ["adopt"]        (NoArg Adopt)       adopt
               , Option []    ["abandon"]      (NoArg Abandon)     aband
@@ -63,9 +65,9 @@ auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    delma
           unsup = "(With -A) Unsuppress makepkg output."
           hotEd = "(With -A) Prompt for PKGBUILD editing before building."
           clean = "(With -C) Save `n` package files, and delete the rest."
-          searc = "(With -C) Search the package cache via a regex pattern."
           backu = "(With -C) Backup the package cache to a given directory."
-          viewL = "View the Pacman log file. (uses `more`)"
+          searc = "(With -C) Search the package cache via a regex.\n" ++
+                  "(With -L) Search the pacman log via a regex."
           orpha = "Display orphan packages. (No longer needed dependencies.)"
           adopt = "Deorphanize a package. Shortcut for `-D --asexplicit`."
           aband = "Uninstall all orphan packages."
