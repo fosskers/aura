@@ -26,7 +26,7 @@ import Pacman
 import Shell
 
 auraVersion :: String
-auraVersion = "0.7.2.0"
+auraVersion = "0.7.2.1"
 
 main :: IO a
 main = do
@@ -333,7 +333,7 @@ logLookUp settings logFile pkg = do
                    , logLookUpMsg3 (langOf settings) upgrades
                    , logLookUpMsg4 (langOf settings) ] ++ takeLast 5 matches
   putStrLn ""
-      where matches     = searchLines (" " ++ pkg ++ " ") logFile
+      where matches     = searchLines (" " ++ pkg ++ " \\(") logFile
             installDate = head matches =~ "\\[[-:0-9 ]+\\]"
             upgrades    = length $ searchLines " upgraded " matches
             takeLast n  = reverse . take n . reverse

@@ -98,6 +98,7 @@ languageOptions = [ Option [] ["languages"] (NoArg Languages) lDesc
 -- that is masked and made unique in an Aura context.
 hijackedFlagMap :: FlagMap
 hijackedFlagMap = [ (Search,"-s")
+                  , (Info,"-i")
                   , (Refresh,"-y")
                   , (Upgrade,"-u")
                   , (Download,"-w")
