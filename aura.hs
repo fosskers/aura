@@ -26,7 +26,7 @@ import Pacman
 import Shell
 
 auraVersion :: String
-auraVersion = "0.7.1.0"
+auraVersion = "0.7.2.0"
 
 main :: IO a
 main = do
@@ -77,6 +77,7 @@ executeOpts ss (flags,input,pacOpts) = do
         case fs of
           []       -> viewLogFile $ logFilePathOf ss
           [Search] -> searchLogFile ss input
+          [Info]   -> logInfoOnPkg ss input
           badFlags -> scoldAndFail ss executeOptsMsg1
     [Orphans]   -> getOrphans >>= mapM_ putStrLn >> returnSuccess
     [Adopt]     -> ss |$| (pacman $ ["-D","--asexplicit"] ++ input)
@@ -310,6 +311,32 @@ searchLogFile settings input = do
   logFile <- readFile (logFilePathOf settings) >>= return . lines
   mapM_ putStrLn $ searchLines (unwords input) logFile
   returnSuccess
+
+-- Are you failing at looking up anything,
+-- or succeeding at looking up nothing?
+logInfoOnPkg :: Settings -> [String] -> IO ExitCode
+logInfoOnPkg _ []           = returnFailure  -- Success?
+logInfoOnPkg settings input = do
+  logFile <- readFile (logFilePathOf settings) >>= return . lines
+  toCheck <- filterM isInstalled input  
+  if null toCheck
+     then returnFailure
+     else mapM_ (logLookUp settings logFile) toCheck >> returnSuccess
+
+-- Make internal to `logInfoOnPkg`?
+-- Assumed: All packages to look up _exist_.
+logLookUp :: Settings -> [String] -> String -> IO ()
+logLookUp _ _ [] = return ()
+logLookUp settings logFile pkg = do
+  mapM_ putStrLn $ [ logLookUpMsg1 (langOf settings) pkg
+                   , logLookUpMsg2 (langOf settings) installDate
+                   , logLookUpMsg3 (langOf settings) upgrades
+                   , logLookUpMsg4 (langOf settings) ] ++ takeLast 5 matches
+  putStrLn ""
+      where matches     = searchLines (" " ++ pkg ++ " ") logFile
+            installDate = head matches =~ "\\[[-:0-9 ]+\\]"
+            upgrades    = length $ searchLines " upgraded " matches
+            takeLast n  = reverse . take n . reverse
 
 --------
 -- OTHER

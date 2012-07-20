@@ -21,9 +21,7 @@ OPTIONS TO IMPLEMENT
 -Ai -> `--info` Gives specific info on an AUR package.
 -Ci -> `--info` Gives some stats about the package cache.
 -   -> `--philosophy` Outputs the aura philosophy.
--L  -> `--log` Show the pacman log using `less`.
--Li -> `--info` Show instances of installation, etc, of a given package.
--Ls -> `--search` Search the log file for a regex.
+-   -> `--tutorial` Teach new users how to build packages from scratch.
 
 FLAGS UNUSED BY PACMAN
 ----------------------
@@ -33,3 +31,11 @@ a j x z
 OUT OF DATE
 -----------
 Once dependencies are determined, notify the user if any are O.o.D.
+
+STABLE AND DEVEL
+----------------
+After 1.0 release, create a stable branch that manages the even numbered
+releases. The odd numbered releases iterate quicker and are like the
+release candidates for the even numbered releases.
+If necessary, create a new AUR package called `aura-stable` to manage
+the stable releases.

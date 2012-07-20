@@ -15,6 +15,7 @@ data Flag = AURInstall
           | LogFile
           | GetPkgbuild
           | Search
+          | Info
           | Refresh
           | DelMDeps
           | Upgrade
@@ -54,6 +55,7 @@ auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    delma
               , Option ['c'] ["clean"]        (NoArg Clean)       clean 
               , Option ['s'] ["search"]       (NoArg Search)      searc
               , Option ['z'] ["backup"]       (NoArg Backup)      backu
+              , Option ['i'] ["info"]         (NoArg Info)        infos
               , Option []    ["orphans"]      (NoArg Orphans)     orpha
               , Option []    ["adopt"]        (NoArg Adopt)       adopt
               , Option []    ["abandon"]      (NoArg Abandon)     aband
@@ -68,6 +70,7 @@ auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    delma
           backu = "(With -C) Backup the package cache to a given directory."
           searc = "(With -C) Search the package cache via a regex.\n" ++
                   "(With -L) Search the pacman log via a regex."
+          infos = "(With -L) View package history information."
           orpha = "Display orphan packages. (No longer needed dependencies.)"
           adopt = "Deorphanize a package. Shortcut for `-D --asexplicit`."
           aband = "Uninstall all orphan packages."
