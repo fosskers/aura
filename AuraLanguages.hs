@@ -264,15 +264,15 @@ cleanCacheMsg6 English  = "Cleaning package cache..."
 cleanCacheMsg6 Japanese = "パッケージ・キャッシュを掃除中・・・"
 
 logLookUpMsg1 :: Language -> String -> String
-logLookUpMsg1 English p  = "Package:             " ++ p
+logLookUpMsg1 English p  = "Package             : " ++ p
 logLookUpMsg1 Japanese p = "パッケージ：　　　　　" ++ p
 
 logLookUpMsg2 :: Language -> String -> String
-logLookUpMsg2 English date  = "First Install:       " ++ date
+logLookUpMsg2 English date  = "First Install       : " ++ date
 logLookUpMsg2 Japanese date = "初インストール：　　　" ++ date
 
 logLookUpMsg3 :: Language -> Int -> String
-logLookUpMsg3 English upgrades  = "Upgrades/Reinstalls: " ++ show upgrades
+logLookUpMsg3 English upgrades  = "Upgrades/Reinstalls : " ++ show upgrades
 logLookUpMsg3 Japanese upgrades = "アップグレード回数：　" ++ show upgrades
 
 logLookUpMsg4 :: Language -> String
