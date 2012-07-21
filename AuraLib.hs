@@ -371,8 +371,8 @@ isVersionConflict (AtLeast r) c | c > r = False  -- Bug? Same as `-Cs` ordering?
 
 getInstalledAURPackages :: IO [String]
 getInstalledAURPackages = do
-  pkgs <- pacmanOutput ["-Qm"]
-  return . map fixName . lines $ pkgs
+  pkgs <- pacmanOutput ["-Qm"] >>= return . lines
+  return $ map fixName pkgs
       where fixName = (\(n,v) -> n ++ "=" ++ v) . hardBreak (\c -> c == ' ')
 
 isOutOfDate :: AURPkg -> Bool

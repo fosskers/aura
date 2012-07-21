@@ -26,7 +26,7 @@ import Pacman
 import Shell
 
 auraVersion :: String
-auraVersion = "0.7.2.2"
+auraVersion = "0.7.2.3"
 
 main :: IO a
 main = do
@@ -315,17 +315,17 @@ searchLogFile settings input = do
 -- Are you failing at looking up anything,
 -- or succeeding at looking up nothing?
 logInfoOnPkg :: Settings -> [String] -> IO ExitCode
-logInfoOnPkg _ []           = returnFailure  -- Success?
-logInfoOnPkg settings input = do
-  logFile <- readFile (logFilePathOf settings) >>= return . lines
-  toCheck <- filterM isInstalled input  
+logInfoOnPkg _ [] = returnFailure  -- Success?
+logInfoOnPkg settings pkgs = do
+  logFile <- readFile (logFilePathOf settings)
+  let toCheck = filter (\p -> logFile =~ (" " ++ p ++ " ")) pkgs
   if null toCheck
      then returnFailure
      else mapM_ (logLookUp settings logFile) toCheck >> returnSuccess
 
 -- Make internal to `logInfoOnPkg`?
--- Assumed: All packages to look up _exist_.
-logLookUp :: Settings -> [String] -> String -> IO ()
+-- Assumed: The package to look up _exists_.
+logLookUp :: Settings -> String -> String -> IO ()
 logLookUp _ _ [] = return ()
 logLookUp settings logFile pkg = do
   mapM_ putStrLn $ [ logLookUpMsg1 (langOf settings) pkg
@@ -333,7 +333,7 @@ logLookUp settings logFile pkg = do
                    , logLookUpMsg3 (langOf settings) upgrades
                    , logLookUpMsg4 (langOf settings) ] ++ takeLast 5 matches
   putStrLn ""
-      where matches     = searchLines (" " ++ pkg ++ " \\(") logFile
+      where matches     = searchLines (" " ++ pkg ++ " \\(") $ lines logFile
             installDate = head matches =~ "\\[[-:0-9 ]+\\]"
             upgrades    = length $ searchLines " upgraded " matches
             takeLast n  = reverse . take n . reverse
