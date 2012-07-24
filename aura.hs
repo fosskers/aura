@@ -26,7 +26,7 @@ import Pacman
 import Shell
 
 auraVersion :: String
-auraVersion = "0.7.2.3"
+auraVersion = "0.7.2.4"
 
 main :: IO a
 main = do
@@ -157,26 +157,25 @@ upgradeAURPkgs settings pacOpts pkgs = do
             say settings (flip upgradeAURPkgsMsg4 $ pkgNameOf aurPkg)
             return aurPkg
 
+-- I feel like I could use this is more places.
+mapOverPkgs :: (String -> IO a) -> Settings -> [String] -> IO ExitCode
+mapOverPkgs f settings pkgs = do
+  dontExist <- filterM isntAURPackage pkgs
+  reportNonPackages (langOf settings) dontExist
+  mapM_ f $ pkgs \\ dontExist
+  returnSuccess  -- Temporary! Check return type of a mapM for all successes?
+
 downloadTarballs :: Settings -> [String] -> IO ExitCode
 downloadTarballs settings pkgs = do
-  currDir   <- getCurrentDirectory
-  dontExist <- filterM isntAURPackage pkgs
-  reportNonPackages (langOf settings) dontExist
-  downloadEach currDir $ pkgs \\ dontExist
-      where downloadEach _ [] = returnSuccess
-            downloadEach path (p:ps) = do
-              notify settings $ flip downloadTarballsMsg1 p
-              _ <- downloadSource path p
-              downloadEach path ps
+  currDir <- getCurrentDirectory
+  mapOverPkgs (downloadTBall currDir) settings pkgs
+      where downloadTBall path pkg = do
+              notify settings $ flip downloadTarballsMsg1 pkg
+              downloadSource path pkg
 
--- Very similar to `downloadTarballs`...
 displayPkgbuild :: Settings -> [String] -> IO ExitCode
-displayPkgbuild settings pkgs = do
-  dontExist <- filterM isntAURPackage pkgs
-  reportNonPackages (langOf settings) dontExist
-  dlEach $ pkgs \\ dontExist
-    where dlEach []     = returnSuccess
-          dlEach (p:ps) = downloadPkgbuild p >>= putStrLn >> dlEach ps
+displayPkgbuild settings pkgs =
+  mapOverPkgs (\p -> downloadPkgbuild p >>= putStrLn) settings pkgs
 
 syncAndContinue :: Settings -> ([Flag],[String],[String]) -> IO ExitCode
 syncAndContinue settings (flags,input,pacOpts) = do
