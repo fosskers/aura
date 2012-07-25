@@ -279,6 +279,10 @@ logLookUpMsg4 :: Language -> String
 logLookUpMsg4 English  = "Recent Actions:"
 logLookUpMsg4 Japanese = "近況："
 
+reportNotInLogMsg1 :: Language -> String
+reportNotInLogMsg1 English  = "These have not appeared in the log file:"
+reportNotInLogMsg1 Japanese = "logファイルには出ていない："
+
 displayOutputLanguagesMsg1 :: Language -> String
 displayOutputLanguagesMsg1 English  = "The following languages are available:"
 displayOutputLanguagesMsg1 Japanese = "auraは以下の言語に対応している："

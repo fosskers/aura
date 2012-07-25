@@ -158,24 +158,30 @@ upgradeAURPkgs settings pacOpts pkgs = do
             return aurPkg
 
 -- I feel like I could use this is more places.
-mapOverPkgs :: (String -> IO a) -> Settings -> [String] -> IO ExitCode
-mapOverPkgs f settings pkgs = do
-  dontExist <- filterM isntAURPackage pkgs
-  reportNonPackages (langOf settings) dontExist
-  mapM_ f $ pkgs \\ dontExist
-  returnSuccess  -- Temporary! Check return type of a mapM for all successes?
+mapOverPkgs :: Eq a => (a -> IO Bool) -> (Language -> [a] -> IO b) ->
+               (a -> IO c) -> Settings -> [a] -> IO ExitCode
+mapOverPkgs cond report fun settings pkgs = do
+  realPkgs <- filterM cond pkgs
+  report (langOf settings) $ pkgs \\ realPkgs
+  if null realPkgs
+     then returnFailure
+     else mapM_ fun realPkgs >> returnSuccess  -- Temporary!!
+
+onlyOverAURPkgs :: (String -> IO a) -> Settings -> [String] -> IO ExitCode
+onlyOverAURPkgs action settings pkgs =
+  mapOverPkgs isAURPackage reportNonPackages action settings pkgs
 
 downloadTarballs :: Settings -> [String] -> IO ExitCode
-downloadTarballs settings pkgs = do
+downloadTarballs ss pkgs = do
   currDir <- getCurrentDirectory
-  mapOverPkgs (downloadTBall currDir) settings pkgs
+  onlyOverAURPkgs (downloadTBall currDir) ss pkgs
       where downloadTBall path pkg = do
-              notify settings $ flip downloadTarballsMsg1 pkg
+              notify ss $ flip downloadTarballsMsg1 pkg
               downloadSource path pkg
 
 displayPkgbuild :: Settings -> [String] -> IO ExitCode
-displayPkgbuild settings pkgs =
-  mapOverPkgs (\p -> downloadPkgbuild p >>= putStrLn) settings pkgs
+displayPkgbuild settings pkgs = onlyOverAURPkgs action settings pkgs
+      where action p = downloadPkgbuild p >>= putStrLn
 
 syncAndContinue :: Settings -> ([Flag],[String],[String]) -> IO ExitCode
 syncAndContinue settings (flags,input,pacOpts) = do
@@ -317,10 +323,8 @@ logInfoOnPkg :: Settings -> [String] -> IO ExitCode
 logInfoOnPkg _ [] = returnFailure  -- Success?
 logInfoOnPkg settings pkgs = do
   logFile <- readFile (logFilePathOf settings)
-  let toCheck = filter (\p -> logFile =~ (" " ++ p ++ " ")) pkgs
-  if null toCheck
-     then returnFailure
-     else mapM_ (logLookUp settings logFile) toCheck >> returnSuccess
+  let cond = \p -> return (logFile =~ (" " ++ p ++ " ") :: Bool)
+  mapOverPkgs cond reportNotInLog (logLookUp settings logFile) settings pkgs
 
 -- Make internal to `logInfoOnPkg`?
 -- Assumed: The package to look up _exists_.
@@ -336,6 +340,10 @@ logLookUp settings logFile pkg = do
             installDate = head matches =~ "\\[[-:0-9 ]+\\]"
             upgrades    = length $ searchLines " upgraded " matches
             takeLast n  = reverse . take n . reverse
+
+reportNotInLog :: Language -> [String] -> IO ()
+reportNotInLog lang nons = printListWithTitle red cyan msg nons
+    where msg = reportNotInLogMsg1 lang
 
 --------
 -- OTHER
