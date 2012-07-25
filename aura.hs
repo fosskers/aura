@@ -7,9 +7,9 @@
 import System.Directory (getCurrentDirectory, copyFile, removeFile)
 import Data.List ((\\), nub, sort, intersperse, groupBy)
 import System.Environment (getArgs, getEnvironment)
-import Control.Monad (filterM, when, unless)
 import System.Exit (exitWith, ExitCode)
 import System.Posix.Files (fileExist)
+import Control.Monad (when, unless)
 import System.Process (rawSystem)
 import Text.Regex.Posix ((=~))
 import System.FilePath ((</>))
@@ -26,7 +26,7 @@ import Pacman
 import Shell
 
 auraVersion :: String
-auraVersion = "0.7.2.4"
+auraVersion = "0.7.2.6"
 
 main :: IO a
 main = do
@@ -157,20 +157,6 @@ upgradeAURPkgs settings pacOpts pkgs = do
             say settings (flip upgradeAURPkgsMsg4 $ pkgNameOf aurPkg)
             return aurPkg
 
--- I feel like I could use this is more places.
-mapOverPkgs :: Eq a => (a -> IO Bool) -> (Language -> [a] -> IO b) ->
-               (a -> IO c) -> Settings -> [a] -> IO ExitCode
-mapOverPkgs cond report fun settings pkgs = do
-  realPkgs <- filterM cond pkgs
-  report (langOf settings) $ pkgs \\ realPkgs
-  if null realPkgs
-     then returnFailure
-     else mapM_ fun realPkgs >> returnSuccess  -- Temporary!!
-
-onlyOverAURPkgs :: (String -> IO a) -> Settings -> [String] -> IO ExitCode
-onlyOverAURPkgs action settings pkgs =
-  mapOverPkgs isAURPackage reportNonPackages action settings pkgs
-
 downloadTarballs :: Settings -> [String] -> IO ExitCode
 downloadTarballs ss pkgs = do
   currDir <- getCurrentDirectory
@@ -210,19 +196,18 @@ removeMakeDeps settings (flags,input,pacOpts) = do
 -- Interactive. Gives the user a choice as to exactly what versions
 -- they want to downgrade to.
 downgradePackages :: Settings -> [String] -> IO ExitCode
-downgradePackages _ []          = returnSuccess                     
-downgradePackages settings pkgs = do
-  cache     <- packageCacheContents cachePath
-  installed <- filterM isInstalled pkgs
-  let notInstalled = pkgs \\ installed
-  unless (null notInstalled) (reportBadDowngradePkgs settings notInstalled)
-  selections <- mapM (getDowngradeChoice settings cache) installed
-  pacman $ ["-U"] ++ map (cachePath </>) selections
-      where cachePath = cachePathOf settings
+downgradePackages _ []    = returnSuccess
+downgradePackages ss pkgs = do
+  cache <- packageCacheContents cachePath
+  let action = getDowngradeChoice ss cache
+  choices <- mapOverPkgs isInstalled reportBadDowngradePkgs action ss pkgs
+  pacman $ ["-U"] ++ map (cachePath </>) choices
+      where cachePath = cachePathOf ss
 
-reportBadDowngradePkgs :: Settings -> [String] -> IO ()
-reportBadDowngradePkgs settings pkgs = printListWithTitle red cyan msg pkgs
-    where msg = reportBadDowngradePkgsMsg1 $ langOf settings
+reportBadDowngradePkgs :: Language -> [String] -> IO ()
+reportBadDowngradePkgs _ [] = return ()
+reportBadDowngradePkgs lang pkgs = printListWithTitle red cyan msg pkgs
+    where msg = reportBadDowngradePkgsMsg1 lang
                
 getDowngradeChoice :: Settings -> [String] -> String -> IO String
 getDowngradeChoice settings cache pkg = do
@@ -323,8 +308,9 @@ logInfoOnPkg :: Settings -> [String] -> IO ExitCode
 logInfoOnPkg _ [] = returnFailure  -- Success?
 logInfoOnPkg settings pkgs = do
   logFile <- readFile (logFilePathOf settings)
-  let cond = \p -> return (logFile =~ (" " ++ p ++ " ") :: Bool)
-  mapOverPkgs cond reportNotInLog (logLookUp settings logFile) settings pkgs
+  let cond   = \p -> return (logFile =~ (" " ++ p ++ " ") :: Bool)
+      action = logLookUp settings logFile
+  mapOverPkgs' cond reportNotInLog action settings pkgs
 
 -- Make internal to `logInfoOnPkg`?
 -- Assumed: The package to look up _exists_.
@@ -348,6 +334,10 @@ reportNotInLog lang nons = printListWithTitle red cyan msg nons
 --------
 -- OTHER
 --------
+onlyOverAURPkgs :: (String -> IO a) -> Settings -> [String] -> IO ExitCode
+onlyOverAURPkgs action settings pkgs =
+  mapOverPkgs' isAURPackage reportNonPackages action settings pkgs
+
 displayOutputLanguages :: Settings -> IO ExitCode
 displayOutputLanguages settings = do
   notify settings displayOutputLanguagesMsg1

@@ -119,10 +119,11 @@ parseNameAndVersioning pkg = (name, getVersioning comp ver)
                             | otherwise = Anything
 
 -- Constructs anything of the Package type.
-makePackage :: Package a => (String -> Versioning -> t -> a) ->
-                            (String -> IO t)                 ->
-                            String                           ->
-                            IO a
+makePackage :: Package a =>
+               (String -> Versioning -> t -> a)
+               -> (String -> IO t)
+               -> String
+               -> IO a
 makePackage typeCon getThirdField pkg = do
   let (name,ver) = parseNameAndVersioning pkg
   thirdField <- getThirdField name
@@ -184,8 +185,28 @@ trueRootCheck ss action
        then action
        else notify ss trueRootCheckMsg2 >> returnSuccess
 
+---------------
+-- ABSTRACTIONS
+---------------
+mapOverPkgs :: Eq a =>
+               (a -> IO Bool)                 -- A predicate for filtering.
+               -> (Language -> [a] -> IO ())  -- Notify of filtered packages.
+               -> (a -> IO b)                 -- Action to perform.
+               -> Settings
+               -> [a]                         -- Packages.
+               -> IO [b]                      -- Result of mapping.
+mapOverPkgs cond report fun settings pkgs = do
+  realPkgs <- filterM cond pkgs
+  report (langOf settings) $ pkgs \\ realPkgs
+  mapM fun realPkgs
+
+-- Same as `mapOverPkgs`, but returns an `ExitCode`.
+mapOverPkgs' cond report fun settings pkgs = do
+  result <- mapOverPkgs cond report fun settings pkgs
+  if null result then returnFailure else returnSuccess
+
 -----------
--- The Work
+-- THE WORK
 -----------
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
 installPackageFiles :: [String] -> [FilePath] -> IO ExitCode
