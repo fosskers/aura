@@ -10,7 +10,6 @@ import System.Environment (getArgs, getEnvironment)
 import System.Exit (exitWith, ExitCode)
 import System.Posix.Files (fileExist)
 import Control.Monad (when, unless)
-import System.Process (rawSystem)
 import Text.Regex.Posix ((=~))
 import System.FilePath ((</>))
 import Data.Char (isDigit)
@@ -26,7 +25,7 @@ import Pacman
 import Shell
 
 auraVersion :: String
-auraVersion = "0.7.2.6"
+auraVersion = "0.7.3.0"
 
 main :: IO a
 main = do
@@ -82,6 +81,7 @@ executeOpts ss (flags,input,pacOpts) = do
     [Orphans]   -> getOrphans >>= mapM_ putStrLn >> returnSuccess
     [Adopt]     -> ss |$| (pacman $ ["-D","--asexplicit"] ++ input)
     [Abandon]   -> ss |$| (getOrphans >>= flip removePkgs pacOpts)
+    [ViewConf]  -> viewConfFile
     [Languages] -> displayOutputLanguages ss
     [Help]      -> printHelpMsg pacOpts
     [Version]   -> getVersionInfo >>= animateVersionMsg
@@ -293,7 +293,7 @@ groupByPkgName pkgs = groupBy sameBaseName $ sortPkgs pkgs
 -- WORKING WITH `-L`
 --------------------
 viewLogFile :: FilePath -> IO ExitCode
-viewLogFile logFilePath = rawSystem "less" [logFilePath]
+viewLogFile logFilePath = shellCmd "less" [logFilePath]
 
 -- Very similar to `searchCache`. But is this worth generalizing?
 searchLogFile :: Settings -> [String] -> IO ExitCode
@@ -337,6 +337,9 @@ reportNotInLog lang nons = printListWithTitle red cyan msg nons
 onlyOverAURPkgs :: (String -> IO a) -> Settings -> [String] -> IO ExitCode
 onlyOverAURPkgs action settings pkgs =
   mapOverPkgs' isAURPackage reportNonPackages action settings pkgs
+
+viewConfFile :: IO ExitCode
+viewConfFile = shellCmd "less" [pacmanConfFile]
 
 displayOutputLanguages :: Settings -> IO ExitCode
 displayOutputLanguages settings = do

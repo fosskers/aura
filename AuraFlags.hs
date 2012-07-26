@@ -28,6 +28,7 @@ data Flag = AURInstall
           | Orphans
           | Adopt
           | Abandon
+          | ViewConf
           | Languages
           | Version
           | Help
@@ -59,6 +60,7 @@ auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    delma
               , Option []    ["orphans"]      (NoArg Orphans)     orpha
               , Option []    ["adopt"]        (NoArg Adopt)       adopt
               , Option []    ["abandon"]      (NoArg Abandon)     aband
+              , Option []    ["conf"]         (NoArg ViewConf)    vConf
               ]
     where delma = "(With -A) Remove unneeded make deps after install."
           sysup = "(With -A) Upgrade all installed AUR packages."
@@ -74,6 +76,7 @@ auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    delma
           orpha = "Display orphan packages. (No longer needed dependencies.)"
           adopt = "Deorphanize a package. Shortcut for `-D --asexplicit`."
           aband = "Uninstall all orphan packages."
+          vConf = "View pacman.conf."
 
 -- These are intercepted Pacman flags. Their functionality is different.
 pacmanOptions :: [OptDescr Flag]
