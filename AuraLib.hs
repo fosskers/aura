@@ -266,7 +266,7 @@ buildFail settings p ps errors = do
   scold settings (flip buildFailMsg1 (show p))
   when (suppressMakepkg settings) (displayBuildErrors settings errors)
   unless (null ps) (scold settings buildFailMsg2 >>
-                    mapM_ (putStrLn . colourize cyan . pkgNameOf) ps)
+                    mapM_ (putStrLn . cyan . pkgNameOf) ps)
   warn settings buildFailMsg3
   yesNoPrompt (buildFailMsg4 $ langOf settings) "^(y|Y)"
 
@@ -414,15 +414,16 @@ isInstalled pkg = pacmanSuccess ["-Qq",pkg]
 isNotInstalled :: String -> IO Bool
 isNotInstalled pkg = pacmanFailure ["-Qq",pkg]
 
-isArchPackage :: String -> IO Bool
-isArchPackage pkg = pacmanSuccess ["-Si",pkg]
+isABSPkg :: String -> IO Bool
+isABSPkg pkg = pacmanSuccess ["-Si",pkg]
 
 -- A package is an AUR package if it's PKGBUILD exists on the Arch website.
-isAURPackage :: String -> IO Bool
-isAURPackage = doesUrlExist . getPkgbuildUrl
+-- Requires internet access.
+isAURPkg :: String -> IO Bool
+isAURPkg = doesUrlExist . getPkgbuildUrl
 
-isntAURPackage :: String -> IO Bool
-isntAURPackage pkg = isAURPackage pkg >>= notM
+isntAURPkg :: String -> IO Bool
+isntAURPkg pkg = isAURPkg pkg >>= notM
 
 -- A package is a virtual package if it has a provider.
 isVirtualPkg :: String -> IO Bool
@@ -445,7 +446,7 @@ removePkgs pkgs pacOpts = pacman $ ["-Rsu"] ++ pkgs ++ pacOpts
 -------
 -- MISC  -- Too specific for `Utilities.hs`
 -------
-colouredMessage :: Colour -> Settings -> (Language -> String) -> IO ()
+colouredMessage :: Colouror -> Settings -> (Language -> String) -> IO ()
 colouredMessage c settings msg = putStrLnA c . msg . langOf $ settings
 
 say :: Settings -> (Language -> String) -> IO ()
@@ -480,9 +481,9 @@ groupPkgs (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
 -- This could be slow, depending on internet speeds, etc.
 divideByPkgType :: [String] -> IO ([String],[String],[String])
 divideByPkgType pkgs = do
-  archPkgs <- filterM (isArchPackage . splitName) pkgs
+  archPkgs <- filterM (isABSPkg . splitName) pkgs
   let remaining = pkgs \\ archPkgs
-  aurPkgs  <- filterM (isAURPackage . splitName) remaining
+  aurPkgs  <- filterM (isAURPkg . splitName) remaining
   return (archPkgs, aurPkgs, remaining \\ aurPkgs)
 
 sortPkgs :: [String] -> [String]

@@ -4,8 +4,8 @@ module AuraFlags where
 import System.Console.GetOpt
 
 -- Custom Libraries
-import Shell (colourize, yellow)
 import Utilities (notNull)
+import Shell (yellow)
 import AuraLanguages
 
 type FlagMap = [(Flag,String)]
@@ -129,7 +129,7 @@ allFlags = auraOperations ++ auraOptions ++ pacmanOptions ++
            dualOptions ++ languageOptions
 
 makeUsageMsg :: String -> [OptDescr Flag] -> String
-makeUsageMsg msg flags = usageInfo (colourize yellow msg) flags
+makeUsageMsg msg flags = usageInfo (yellow msg) flags
 
 auraOperMsg :: String
 auraOperMsg = makeUsageMsg "Aura only operations:" auraOperations

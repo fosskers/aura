@@ -2,10 +2,12 @@
 
 module AuraLogo where
 
+-- System Libraries
 import Control.Concurrent (threadDelay)
 import System.IO (stdout, hFlush)
 
-import Shell (colourize, yellow)
+-- Custom Libraries
+import Shell (yellow)
 
 data MouthState = Open | Closed deriving (Eq)
 
@@ -16,7 +18,7 @@ auraLogo = " __ _ _  _ _ _ __ _ \n" ++
            "\\__,_|\\_,_|_| \\__,_|"
 
 openMouth :: [String]
-openMouth = map (colourize yellow)
+openMouth = map yellow
             [ " .--."
             , "/ _.-'"
             , "\\  '-."
@@ -24,7 +26,7 @@ openMouth = map (colourize yellow)
             ]
 
 closedMouth :: [String]
-closedMouth = map (colourize yellow)
+closedMouth = map yellow
               [ " .--."
               , "/ _..\\"
               , "\\  ''/"

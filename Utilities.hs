@@ -23,17 +23,17 @@ type Regex = String
 ----------------
 -- CUSTOM OUTPUT
 ----------------
-putStrLnA :: Colour -> String -> IO ()
+putStrLnA :: Colouror -> String -> IO ()
 putStrLnA colour s = putStrA colour $ s ++ "\n"
 
-putStrA :: Colour -> String -> IO ()
-putStrA colour s = putStr $ "aura >> " ++ colourize colour s
+putStrA :: Colouror -> String -> IO ()
+putStrA colour s = putStr $ "aura >> " ++ colour s
 
-printListWithTitle :: Colour -> Colour -> String -> [String] -> IO ()
+printListWithTitle :: Colouror -> Colouror -> String -> [String] -> IO ()
 printListWithTitle _ _ _ [] = return ()
 printListWithTitle titleColour itemColour msg items = do
   putStrLnA titleColour msg
-  mapM_ (putStrLn . colourize itemColour) items
+  mapM_ (putStrLn . itemColour) items
   putStrLn ""
 
 -- Like break, but kills the element that triggered the break.

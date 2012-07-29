@@ -320,11 +320,12 @@ logLookUp settings logFile pkg = do
   mapM_ putStrLn $ [ logLookUpMsg1 (langOf settings) pkg
                    , logLookUpMsg2 (langOf settings) installDate
                    , logLookUpMsg3 (langOf settings) upgrades
-                   , logLookUpMsg4 (langOf settings) ] ++ takeLast 5 matches
+                   , logLookUpMsg4 (langOf settings) ] ++ recentStuff
   putStrLn ""
       where matches     = searchLines (" " ++ pkg ++ " \\(") $ lines logFile
             installDate = head matches =~ "\\[[-:0-9 ]+\\]"
             upgrades    = length $ searchLines " upgraded " matches
+            recentStuff = map ((:) ' ') $ takeLast 5 matches
             takeLast n  = reverse . take n . reverse
 
 reportNotInLog :: Language -> [String] -> IO ()
@@ -336,7 +337,7 @@ reportNotInLog lang nons = printListWithTitle red cyan msg nons
 --------
 onlyOverAURPkgs :: (String -> IO a) -> Settings -> [String] -> IO ExitCode
 onlyOverAURPkgs action settings pkgs =
-  mapOverPkgs' isAURPackage reportNonPackages action settings pkgs
+  mapOverPkgs' isAURPkg reportNonPackages action settings pkgs
 
 viewConfFile :: IO ExitCode
 viewConfFile = shellCmd "less" [pacmanConfFile]
@@ -356,7 +357,7 @@ getHelpMsg pacmanHelpMsg = concat $ intersperse "\n" allMessages
     where allMessages   = [ replacedLines,auraOperMsg,auraOptMsg
                           , dualFlagMsg,languageMsg ]
           replacedLines = unlines $ map (replaceByPatt patterns) pacmanHelpMsg
-          colouredMsg   = colourize yellow "Inherited Pacman Operations" 
+          colouredMsg   = yellow "Inherited Pacman Operations" 
           patterns      = [ ("pacman","aura")
                           , ("operations",colouredMsg) ]
 

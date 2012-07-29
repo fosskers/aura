@@ -14,6 +14,8 @@ import Data.Maybe(fromJust)
 data Colour = NoColour | Red | Green | Yellow | Blue | Magenta | Cyan
             deriving (Eq,Enum)
 
+type Colouror = String -> String
+
 {-
   Consider this:
   names   = ["noColour","red","green","yellow","blue","magenta","cyan"]
@@ -26,26 +28,26 @@ data Colour = NoColour | Red | Green | Yellow | Blue | Magenta | Cyan
   Where the values from `names` are the callable function names, and
   the values from `colours` are the functions they're bound to.
 -}
-noColour :: Colour
-noColour = NoColour
+noColour :: Colouror
+noColour = colourize NoColour
 
-red :: Colour
-red = Red
+red :: Colouror
+red = colourize Red
 
-green :: Colour
-green = Green
+green :: Colouror
+green = colourize Green
 
-yellow :: Colour
-yellow = Yellow
+yellow :: Colouror
+yellow = colourize Yellow
 
-blue :: Colour
-blue = Blue
+blue :: Colouror
+blue = colourize Blue
 
-magenta :: Colour
-magenta = Magenta
+magenta :: Colouror
+magenta = colourize Magenta
 
-cyan :: Colour
-cyan = Cyan
+cyan :: Colouror
+cyan = colourize Cyan
 
 colours :: [Colour]
 colours = [Red ..]
@@ -68,7 +70,7 @@ coloursWithCodes = zip colours escapeCodes
 colourize :: Colour -> String -> String
 colourize colour msg =
     case colour `lookup` coloursWithCodes of
-      Nothing   -> msg
+      Nothing   -> msg  -- `NoColour` will yield this.
       Just code -> insertCodes code msg
         where insertCodes code' msg' =
                   case msg' =~ resetCodeRegex :: (String,String,String) of

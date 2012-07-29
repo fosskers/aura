@@ -2,7 +2,7 @@
 
 module AuraLanguages where
 
-import Shell (colourize, cyan)
+import Shell (cyan, yellow)
 
 data Language = English | Japanese deriving (Eq,Enum,Show)
 
@@ -17,7 +17,7 @@ japanese = Japanese
 
 -- Backticks
 bt :: String -> String
-bt cs = "`" ++ colourize cyan cs ++ "`"
+bt cs = "`" ++ cyan cs ++ "`"
 
 -- AuraLib functions
 mustBeRootMsg1 :: Language -> String
@@ -230,9 +230,8 @@ backupCacheMsg8 English  = "Backing up. This may take a few minutes..."
 backupCacheMsg8 Japanese = "バックアップ中。数分かかるかもしれない。"
 
 copyAndNotifyMsg1 :: Language -> Int -> String
-copyAndNotifyMsg1 English n  = "Copying #[" ++ colourize cyan (show n) ++ "]"
-copyAndNotifyMsg1 Japanese n =
-    "#[" ++ colourize cyan (show n) ++"]をコピー中・・・"
+copyAndNotifyMsg1 English n  = "Copying #[" ++ cyan (show n) ++ "]"
+copyAndNotifyMsg1 Japanese n = "#[" ++ cyan (show n) ++"]をコピー中・・・"
 
 preCleanCacheMsg1 :: Language -> String -> String
 preCleanCacheMsg1 English n  = bt n ++ " is not a number."
@@ -264,20 +263,22 @@ cleanCacheMsg6 English  = "Cleaning package cache..."
 cleanCacheMsg6 Japanese = "パッケージ・キャッシュを掃除中・・・"
 
 logLookUpMsg1 :: Language -> String -> String
-logLookUpMsg1 English p  = "Package             : " ++ p
-logLookUpMsg1 Japanese p = "パッケージ：　　　　　" ++ p
+logLookUpMsg1 English p  = yellow "Package" ++ "             : " ++ p
+logLookUpMsg1 Japanese p = yellow "パッケージ" ++ "　　　　　：" ++ p
 
 logLookUpMsg2 :: Language -> String -> String
-logLookUpMsg2 English date  = "First Install       : " ++ date
-logLookUpMsg2 Japanese date = "初インストール：　　　" ++ date
+logLookUpMsg2 English date  = yellow "First Install" ++ "       : " ++ date
+logLookUpMsg2 Japanese date = yellow "初インストール" ++ "　　　：" ++ date
 
 logLookUpMsg3 :: Language -> Int -> String
-logLookUpMsg3 English upgrades  = "Upgrades/Reinstalls : " ++ show upgrades
-logLookUpMsg3 Japanese upgrades = "アップグレード回数：　" ++ show upgrades
+logLookUpMsg3 English upgrades  =
+    yellow "Upgrades/Reinstalls" ++ " : " ++ show upgrades
+logLookUpMsg3 Japanese upgrades =
+    yellow "アップグレード回数" ++ "　：" ++ show upgrades
 
 logLookUpMsg4 :: Language -> String
-logLookUpMsg4 English  = "Recent Actions:"
-logLookUpMsg4 Japanese = "近況："
+logLookUpMsg4 English  = yellow "Recent Actions" ++ "      :"
+logLookUpMsg4 Japanese = yellow "近況" ++ "　　　　　　　　："
 
 reportNotInLogMsg1 :: Language -> String
 reportNotInLogMsg1 English  = "These have not appeared in the log file:"
