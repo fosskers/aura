@@ -8,6 +8,8 @@ What of the license has to be present in the source code?
 
 Gain a foot in Arch Linux ARM!!
 
+Use a haskell (*.hs) file as a conf file, a la xmonad!
+
 DEPENDENCY ANALYSIS
 -------------------
 Outputting a sort of "dependency tree/graph" that shows how much certain
