@@ -30,19 +30,20 @@ auraVersion = "0.7.4.0"
 main :: IO a
 main = do
   args <- getArgs
-  let (auraFlags,input,pacOpts) = parseOpts args
+  let (language,rest) = parseLanguageFlag args
+      (auraFlags,input,pacOpts) = parseOpts language rest
       auraFlags' = filter (`notElem` settingsFlags) auraFlags
       pacOpts'   = pacOpts ++ reconvertFlags auraFlags dualFlagMap
-  settings   <- getSettings auraFlags
+  settings   <- getSettings language auraFlags
   exitStatus <- executeOpts settings (auraFlags', nub input, nub pacOpts')
   exitWith exitStatus
 
-getSettings :: [Flag] -> IO Settings
-getSettings auraFlags = do
+getSettings :: Language -> [Flag] -> IO Settings
+getSettings lang auraFlags = do
   confFile    <- getPacmanConf
   environment <- getEnvironment
   return $ Settings { environmentOf   = environment
-                    , langOf          = getLanguage auraFlags
+                    , langOf          = lang
                     , ignoredPkgsOf   = getIgnoredPkgs confFile
                     , cachePathOf     = getCachePath confFile
                     , logFilePathOf   = getLogFilePath confFile
@@ -84,7 +85,7 @@ executeOpts ss (flags,input,pacOpts) = do
     [Abandon]   -> ss |$| (getOrphans >>= flip removePkgs pacOpts)
     [ViewConf]  -> viewConfFile
     [Languages] -> displayOutputLanguages ss
-    [Help]      -> printHelpMsg pacOpts
+    [Help]      -> printHelpMsg ss pacOpts
     [Version]   -> getVersionInfo >>= animateVersionMsg
     pacmanFlags -> pacman $ pacOpts ++ input ++ hijackedFlags
     where hijackedFlags = reconvertFlags flags hijackedFlagMap
@@ -362,14 +363,18 @@ displayOutputLanguages settings = do
   mapM_ (putStrLn . show) allLanguages
   returnSuccess
 
-printHelpMsg :: [String] -> IO ExitCode
-printHelpMsg [] = getPacmanHelpMsg >>= putStrLn . getHelpMsg >> returnSuccess
-printHelpMsg pacOpts = pacman $ pacOpts ++ ["-h"]
+printHelpMsg :: Settings -> [String] -> IO ExitCode
+printHelpMsg settings [] = do
+  pacmanHelp <- getPacmanHelpMsg
+  putStrLn $ getHelpMsg settings pacmanHelp
+  returnSuccess
+printHelpMsg _ pacOpts = pacman $ pacOpts ++ ["-h"]
 
-getHelpMsg :: [String] -> String
-getHelpMsg pacmanHelpMsg = concat $ intersperse "\n" allMessages
-    where allMessages   = [ replacedLines,auraOperMsg,auraOptMsg
-                          , dualFlagMsg,languageMsg ]
+getHelpMsg :: Settings -> [String] -> String
+getHelpMsg settings pacmanHelpMsg = concat $ intersperse "\n" allMessages
+    where lang = langOf settings
+          allMessages   = [ replacedLines, auraOperMsg lang, auraOptMsg lang
+                          , dualFlagMsg lang]
           replacedLines = unlines $ map (replaceByPatt patterns) pacmanHelpMsg
           colouredMsg   = yellow "Inherited Pacman Operations" 
           patterns      = [ ("pacman","aura")

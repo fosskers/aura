@@ -15,11 +15,13 @@ english = English
 japanese :: Language
 japanese = Japanese
 
--- Backticks
+-- Wrap a String in backticks
 bt :: String -> String
 bt cs = "`" ++ cyan cs ++ "`"
 
+--------------------
 -- AuraLib functions
+--------------------
 mustBeRootMsg1 :: Language -> String
 mustBeRootMsg1 English  = "You have to use " ++ bt "sudo" ++ " for that."
 mustBeRootMsg1 Japanese = bt "sudo" ++ "を使わないとそれができない！"
@@ -100,7 +102,9 @@ getVirtualConflictsMsg3 Japanese d dVer pro proVer =
     "それを提供する" ++ bt pro ++ "はバージョン" ++ bt proVer ++
     "しか提供しない"
 
+-----------------
 -- aura functions
+-----------------
 executeOptsMsg1 :: Language -> String
 executeOptsMsg1 English  = "Conflicting flags given!"
 executeOptsMsg1 Japanese = "矛盾しているオプションあり。"
@@ -287,3 +291,96 @@ reportNotInLogMsg1 Japanese = "logファイルには出ていない："
 displayOutputLanguagesMsg1 :: Language -> String
 displayOutputLanguagesMsg1 English  = "The following languages are available:"
 displayOutputLanguagesMsg1 Japanese = "auraは以下の言語に対応している："
+
+----------------------
+-- AuraFlags functions
+----------------------
+aurSy :: Language -> String
+aurSy English  = "Install from the [A]UR."
+aurSy Japanese = "[A]URからインストール。"
+
+downG :: Language -> String
+downG English  = "Perform actions involving the package [C]ache.\n" ++
+                 "Default action downgrades given packages."
+downG Japanese = "キャッシュに関連する処理。\n" ++
+                 "デフォルトでパッケージをダウングレード。"
+
+logFi :: Language -> String
+logFi English  = "Perform actions involving the pacman [L]ogfile.\n" ++
+                 "Default action opens the log for read-only viewing."
+logFi Japanese = "[L]ogfileに関連する処理。\n" ++
+                 "デフォルトでlogfileを閲覧用に開く。"
+
+delma :: Language -> String
+delma English  = "(With -A) Remove unneeded make deps after install."
+delma Japanese = "（-Aで）インストール後、不要な従属パッケージを削除。"
+
+viewD :: Language -> String
+viewD English  = "(With -A) View all the deps of a package. Recursive."
+viewD Japanese = "（-Aで）パッケージの従属パッケージを出力。"
+
+pkgbu :: Language -> String
+pkgbu English  = "(With -A) Output the contents of a package's PKGBUILD."
+pkgbu Japanese = "（-Aで）パッケージのPKGBUILDの内容を出力。"
+
+sysup :: Language -> String
+sysup English  = "(With -A) Upgrade all installed AUR packages."
+sysup Japanese = "（-Aで）AURのパッケージを全部アップグレード。"
+
+downl :: Language -> String
+downl English  = "(With -A) Download the source tarball only."
+downl Japanese = "（-Aで）ソースのターボールをダウンロード。"
+
+unsup :: Language -> String
+unsup English  = "(With -A) Unsuppress makepkg output."
+unsup Japanese = "（-Aで）makepkgの出力を抑えない。"
+
+hotEd :: Language -> String
+hotEd English  = "(With -A) Prompt for PKGBUILD editing before building."
+hotEd Japanese = "（-Aで）パッケージの作成前、PKGBUILDを編成するか尋ねる。"
+
+clean :: Language -> String
+clean English  = "(With -C) Save `n` package files, and delete the rest."
+clean Japanese = "（-Cで）キャッシュにあるパッケージを`n`ずつ保存。他を削除。"
+
+searc :: Language -> String
+searc English  = "(With -C) Search the package cache via a regex.\n" ++
+                 "(With -L) Search the pacman log via a regex."
+searc Japanese = "（-Cで）regexを使ってキャッシュを探る。\n" ++
+                 "（-Lで）regexを使ってpacman.logを探る。"
+
+backu :: Language -> String
+backu English  = "(With -C) Backup the package cache to a given directory."
+backu Japanese = "（-Cで）キャッシュをバックアップ。"
+
+infos :: Language -> String
+infos English  = "(With -L) View package history information."
+infos Japanese = "（-Lで）パッケージのインストール歴など、情報を見る。"
+
+orpha :: Language -> String
+orpha English  = "Display orphan packages. (No longer needed dependencies.)"
+orpha Japanese = "インストールしている、不要な従属パッケージを出力。"
+
+adopt :: Language -> String
+adopt English  = "Deorphanize a package. Shortcut for `-D --asexplicit`."
+adopt Japanese = "パッケージを「従属」じゃなくする。"
+
+aband :: Language -> String
+aband English  = "Uninstall all orphan packages."
+aband Japanese = "不要な従属パッケージを全部削除。"
+
+vConf :: Language -> String
+vConf English  = "View pacman.conf."
+vConf Japanese = "pacman.confを閲覧。"
+
+noCon :: Language -> String
+noCon English  = "Never ask for any Aura or Pacman confirmation."
+noCon Japanese = "AuraでもPacmanでも、インストールなどの許可を得ずに行う。"
+
+langu :: Language -> String
+langu English  = "Display the available output languages for aura."
+langu Japanese = "Auraで使える言語を出力。"
+
+japOu :: Language -> String
+japOu English  = "All aura output is given in Japanese."
+japOu Japanese = "Auraの出力は全て日本語で出される。"

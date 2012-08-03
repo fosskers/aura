@@ -36,69 +36,57 @@ data Flag = AURInstall
           | JapOut
             deriving (Eq,Ord)
 
-auraOperations :: [OptDescr Flag]
-auraOperations = [ Option ['A'] ["aursync"]   (NoArg AURInstall) aurSy
-                 , Option ['C'] ["downgrade"] (NoArg Cache)      downG
-                 , Option ['L'] ["logfile"]   (NoArg LogFile)    logFi
-                 ]
-    where aurSy = "Install from the [A]UR."
-          downG = "Perform actions involving the package [C]ache.\n" ++
-                  "Default action downgrades given packages."
-          logFi = "Perform actions involving the pacman [L]ogfile.\n" ++
-                  "Default action opens the log for read-only viewing."
+type OptParts = ([Char],[String],Flag,(Language -> String))
 
-auraOptions :: [OptDescr Flag]
-auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    delma
-              , Option ['d'] ["deps"]         (NoArg ViewDeps)    viewD
-              , Option ['p'] ["pkgbuild"]     (NoArg GetPkgbuild) pkgbu
-              , Option ['u'] ["sysupgrade"]   (NoArg Upgrade)     sysup
-              , Option ['w'] ["downloadonly"] (NoArg Download)    downl
-              , Option ['x'] ["unsuppress"]   (NoArg Unsuppress)  unsup
-              , Option []    ["hotedit"]      (NoArg HotEdit)     hotEd
-              , Option ['c'] ["clean"]        (NoArg Clean)       clean 
-              , Option ['s'] ["search"]       (NoArg Search)      searc
-              , Option ['z'] ["backup"]       (NoArg Backup)      backu
-              , Option ['i'] ["info"]         (NoArg Info)        infos
-              , Option []    ["orphans"]      (NoArg Orphans)     orpha
-              , Option []    ["adopt"]        (NoArg Adopt)       adopt
-              , Option []    ["abandon"]      (NoArg Abandon)     aband
-              , Option []    ["conf"]         (NoArg ViewConf)    vConf
-              ]
-    where delma = "(With -A) Remove unneeded make deps after install."
-          viewD = "(With -A) View all the deps of a package. Recursive."
-          sysup = "(With -A) Upgrade all installed AUR packages."
-          downl = "(With -A) Download the source tarball only."
-          pkgbu = "(With -A) Output the contents of a package's PKGBUILD."
-          unsup = "(With -A) Unsuppress makepkg output."
-          hotEd = "(With -A) Prompt for PKGBUILD editing before building."
-          clean = "(With -C) Save `n` package files, and delete the rest."
-          backu = "(With -C) Backup the package cache to a given directory."
-          searc = "(With -C) Search the package cache via a regex.\n" ++
-                  "(With -L) Search the pacman log via a regex."
-          infos = "(With -L) View package history information."
-          orpha = "Display orphan packages. (No longer needed dependencies.)"
-          adopt = "Deorphanize a package. Shortcut for `-D --asexplicit`."
-          aband = "Uninstall all orphan packages."
-          vConf = "View pacman.conf."
+allFlags :: Language -> [OptDescr Flag]
+allFlags lang = concat $ map (\f -> f lang) [ auraOperations
+                                            , auraOptions
+                                            , pacmanOptions
+                                            , dualOptions ]
+
+makeOption :: Language -> OptParts -> OptDescr Flag
+makeOption lang (c,s,f,desc) = Option c s (NoArg f) $ desc lang
+
+auraOperations :: Language -> [OptDescr Flag]
+auraOperations lang = map (\optParts -> makeOption lang optParts)
+                      [ ( ['A'], ["aursync"],   AURInstall, aurSy )
+                      , ( ['C'], ["downgrade"], Cache,      downG )
+                      , ( ['L'], ["logfile"],   LogFile,    logFi ) ]
+
+auraOptions :: Language -> [OptDescr Flag]
+auraOptions lang = map (\optParts -> makeOption lang optParts)
+                   [ ( ['a'], ["delmakedeps"],  DelMDeps,    delma )
+                   , ( ['d'], ["deps"],         ViewDeps,    viewD )
+                   , ( ['p'], ["pkgbuild"],     GetPkgbuild, pkgbu )
+                   , ( ['u'], ["sysupgrade"],   Upgrade,     sysup )
+                   , ( ['w'], ["downloadonly"], Download,    downl )
+                   , ( ['x'], ["unsuppress"],   Unsuppress,  unsup )
+                   , ( [],    ["hotedit"],      HotEdit,     hotEd )
+                   , ( ['c'], ["clean"],        Clean,       clean )
+                   , ( ['b'], ["backup"],       Backup,      backu )
+                   , ( ['s'], ["search"],       Search,      searc )
+                   , ( ['i'], ["info"],         Info,        infos )
+                   , ( [],    ["orphans"],      Orphans,     orpha )
+                   , ( [],    ["adopt"],        Adopt,       adopt )
+                   , ( [],    ["abandon"],      Abandon,     aband )
+                   , ( [],    ["conf"],         ViewConf,    vConf ) 
+                   , ( [],    ["languages"],    Languages,   langu ) ]
 
 -- These are intercepted Pacman flags. Their functionality is different.
-pacmanOptions :: [OptDescr Flag]
-pacmanOptions = [ Option ['y'] ["refresh"] (NoArg Refresh) ""
-                , Option ['V'] ["version"] (NoArg Version) ""
-                , Option ['h'] ["help"]    (NoArg Help)    ""
-                ]
+pacmanOptions :: Language -> [OptDescr Flag]
+pacmanOptions lang = map (\optParts -> makeOption lang optParts)
+                     [ ( ['y'], ["refresh"], Refresh, blank )
+                     , ( ['V'], ["version"], Version, blank )
+                     , ( ['h'], ["help"],    Help,    blank ) ]
+    where blank _ = ""
 
 -- Options that have functionality stretching across both Aura and Pacman.
-dualOptions :: [OptDescr Flag]
-dualOptions = [ Option [] ["noconfirm"] (NoArg NoConfirm) ncDesc ]
-    where ncDesc = "Never ask for any Aura or Pacman confirmation."
+dualOptions :: Language -> [OptDescr Flag]
+dualOptions lang = map (\optParts -> makeOption lang optParts)
+                   [ ( [], ["noconfirm"], NoConfirm, noCon ) ]
 
 languageOptions :: [OptDescr Flag]
-languageOptions = [ Option [] ["languages"] (NoArg Languages) lDesc
-                  , Option [] ["japanese"]  (NoArg JapOut)    jDesc
-                  ]
-    where lDesc = "Display the available output languages for aura."
-          jDesc = "All aura output is given in Japanese."
+languageOptions = [ Option [] ["japanese"] (NoArg JapOut) "" ]
 
 -- `Hijacked` flags. They have original pacman functionality, but
 -- that is masked and made unique in an Aura context.
@@ -110,7 +98,7 @@ hijackedFlagMap = [ (Search,"-s")
                   , (Download,"-w")
                   , (Clean,"-c")
                   , (ViewDeps,"-d")
-                  ]
+                  , (Backup,"-b") ]
 
 dualFlagMap :: FlagMap
 dualFlagMap = [ (NoConfirm,"--noconfirm") ]
@@ -128,24 +116,17 @@ reconvertFlag flagMap f = case f `lookup` flagMap of
 settingsFlags :: [Flag]
 settingsFlags = [Unsuppress,NoConfirm,HotEdit,JapOut]
 
-allFlags :: [OptDescr Flag]
-allFlags = auraOperations ++ auraOptions ++ pacmanOptions ++
-           dualOptions ++ languageOptions
-
 makeUsageMsg :: String -> [OptDescr Flag] -> String
 makeUsageMsg msg flags = usageInfo (yellow msg) flags
 
-auraOperMsg :: String
-auraOperMsg = makeUsageMsg "Aura only operations:" auraOperations
+auraOperMsg :: Language -> String
+auraOperMsg lang = makeUsageMsg "Aura only operations:" $ auraOperations lang
 
-auraOptMsg :: String
-auraOptMsg = makeUsageMsg "Subordinate options:" auraOptions
+auraOptMsg :: Language -> String
+auraOptMsg lang = makeUsageMsg "Subordinate options:" $ auraOptions lang
 
-dualFlagMsg :: String
-dualFlagMsg = makeUsageMsg "Dual functionality options:" dualOptions
-
-languageMsg :: String
-languageMsg = makeUsageMsg "Language options:" languageOptions
+dualFlagMsg :: Language -> String
+dualFlagMsg lang = makeUsageMsg "Dual functionality options:" $ dualOptions lang
 
 -- Extracts desirable results from given Flags.
 -- Callers must supply an alternate value for when there are no matches.
@@ -169,7 +150,12 @@ getConfirmation = fishOutFlag [(NoConfirm,False)] True
 getHotEdit :: [Flag] -> Bool
 getHotEdit = fishOutFlag [(HotEdit,True)] False
 
+parseLanguageFlag :: [String] -> (Language,[String])
+parseLanguageFlag args =
+    case getOpt' Permute languageOptions args of
+      (langs,nonOpts,otherOpts,_) -> (getLanguage langs, nonOpts ++ otherOpts)
+
 -- Errors are dealt with manually in `aura.hs`.
-parseOpts :: [String] -> ([Flag],[String],[String])
-parseOpts args = case getOpt' Permute allFlags args of
-                   (opts,nonOpts,pacOpts,_) -> (opts,nonOpts,pacOpts) 
+parseOpts :: Language -> [String] -> ([Flag],[String],[String])
+parseOpts lang args = case getOpt' Permute (allFlags lang) args of
+                        (opts,nonOpts,pacOpts,_) -> (opts,nonOpts,pacOpts) 

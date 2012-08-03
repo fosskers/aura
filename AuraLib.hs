@@ -326,10 +326,10 @@ mustInstall pkg = do
 --    the most recent version?
 getConflicts :: Settings -> ([PacmanPkg],[AURPkg],[VirtualPkg]) -> [ErrMsg]
 getConflicts settings (ps,as,vs) = pErr ++ aErr ++ vErr
-    where pErr     = clean $ map (getPacmanConflicts lang toIgnore) ps
-          aErr     = clean $ map (getAURConflicts lang toIgnore) as
-          vErr     = clean $ map (getVirtualConflicts lang toIgnore) vs
-          clean    = map fromJust . filter (/= Nothing)
+    where pErr     = extract $ map (getPacmanConflicts lang toIgnore) ps
+          aErr     = extract $ map (getAURConflicts lang toIgnore) as
+          vErr     = extract $ map (getVirtualConflicts lang toIgnore) vs
+          extract  = map fromJust . filter (/= Nothing)
           lang     = langOf settings
           toIgnore = ignoredPkgsOf settings
 
