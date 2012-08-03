@@ -25,7 +25,7 @@ import Pacman
 import Shell
 
 auraVersion :: String
-auraVersion = "0.7.4.0"
+auraVersion = "0.8.0.0"
 
 main :: IO a
 main = do
