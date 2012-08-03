@@ -13,10 +13,11 @@ type FlagMap = [(Flag,String)]
 data Flag = AURInstall
           | Cache
           | LogFile
-          | GetPkgbuild
           | Search
           | Info
           | Refresh
+          | GetPkgbuild
+          | ViewDeps
           | DelMDeps
           | Upgrade
           | Download
@@ -48,6 +49,7 @@ auraOperations = [ Option ['A'] ["aursync"]   (NoArg AURInstall) aurSy
 
 auraOptions :: [OptDescr Flag]
 auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    delma
+              , Option ['d'] ["deps"]         (NoArg ViewDeps)    viewD
               , Option ['p'] ["pkgbuild"]     (NoArg GetPkgbuild) pkgbu
               , Option ['u'] ["sysupgrade"]   (NoArg Upgrade)     sysup
               , Option ['w'] ["downloadonly"] (NoArg Download)    downl
@@ -63,6 +65,7 @@ auraOptions = [ Option ['a'] ["delmakedeps"]  (NoArg DelMDeps)    delma
               , Option []    ["conf"]         (NoArg ViewConf)    vConf
               ]
     where delma = "(With -A) Remove unneeded make deps after install."
+          viewD = "(With -A) View all the deps of a package. Recursive."
           sysup = "(With -A) Upgrade all installed AUR packages."
           downl = "(With -A) Download the source tarball only."
           pkgbu = "(With -A) Output the contents of a package's PKGBUILD."
@@ -106,6 +109,7 @@ hijackedFlagMap = [ (Search,"-s")
                   , (Upgrade,"-u")
                   , (Download,"-w")
                   , (Clean,"-c")
+                  , (ViewDeps,"-d")
                   ]
 
 dualFlagMap :: FlagMap

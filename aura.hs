@@ -25,7 +25,7 @@ import Pacman
 import Shell
 
 auraVersion :: String
-auraVersion = "0.7.3.0"
+auraVersion = "0.7.4.0"
 
 main :: IO a
 main = do
@@ -60,6 +60,7 @@ executeOpts ss (flags,input,pacOpts) = do
         case fs of
           []             -> ss |+| (ss |$| installPackages ss pacOpts input)
           [Upgrade]      -> ss |+| (ss |$| upgradeAURPkgs ss pacOpts input)
+          [ViewDeps]     -> displayPkgDeps ss input
           [Download]     -> downloadTarballs ss input
           [GetPkgbuild]  -> displayPkgbuild ss input
           (Refresh:fs')  -> ss |$| syncAndContinue ss (fs',input,pacOpts)
@@ -156,6 +157,19 @@ upgradeAURPkgs settings pacOpts pkgs = do
             aurPkg <- makeAURPkg p
             say settings (flip upgradeAURPkgsMsg4 $ pkgNameOf aurPkg)
             return aurPkg
+
+displayPkgDeps :: Settings -> [String] -> IO ExitCode
+displayPkgDeps _ [] = returnFailure
+displayPkgDeps ss pkgs = do
+  aurPkgs <- mapOverPkgs isAURPkg reportNonPackages makeAURPkg ss pkgs
+  if null aurPkgs
+     then returnFailure
+     else do
+       allDeps <- mapM (determineDeps $ langOf ss) aurPkgs
+       let (ps, as, os) = foldl groupPkgs ([],[],[]) allDeps
+       providers <- mapM getProvidingPkg' os
+       reportPkgsToInstall (langOf ss) (nub $ ps ++ providers) (nub as) []
+       returnSuccess
 
 downloadTarballs :: Settings -> [String] -> IO ExitCode
 downloadTarballs ss pkgs = do
