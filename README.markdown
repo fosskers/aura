@@ -101,7 +101,7 @@ Search the package cache for package files via a regex:
 
 Backup the package cache:
 
-    aura -Cz (/path/to/backup/location/)
+    aura -Cb (/path/to/backup/location/)
 
 Reduce the package cache to contain only 'x' of each package file:
 

@@ -91,14 +91,14 @@ languageOptions = [ Option [] ["japanese"] (NoArg JapOut) "" ]
 -- `Hijacked` flags. They have original pacman functionality, but
 -- that is masked and made unique in an Aura context.
 hijackedFlagMap :: FlagMap
-hijackedFlagMap = [ (Search,"-s")
-                  , (Info,"-i")
-                  , (Refresh,"-y")
-                  , (Upgrade,"-u")
-                  , (Download,"-w")
+hijackedFlagMap = [ (Backup,"-b")
                   , (Clean,"-c")
                   , (ViewDeps,"-d")
-                  , (Backup,"-b") ]
+                  , (Info,"-i")
+                  , (Search,"-s")
+                  , (Upgrade,"-u")
+                  , (Download,"-w")
+                  , (Refresh,"-y") ]
 
 dualFlagMap :: FlagMap
 dualFlagMap = [ (NoConfirm,"--noconfirm") ]
