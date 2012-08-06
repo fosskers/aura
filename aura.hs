@@ -25,7 +25,7 @@ import Pacman
 import Shell
 
 auraVersion :: String
-auraVersion = "0.8.0.0"
+auraVersion = "0.8.0.1"
 
 main :: IO a
 main = do
@@ -175,13 +175,13 @@ displayPkgDeps ss pkgs = do
 downloadTarballs :: Settings -> [String] -> IO ExitCode
 downloadTarballs ss pkgs = do
   currDir <- getCurrentDirectory
-  onlyOverAURPkgs (downloadTBall currDir) ss pkgs
+  mapOverAURPkgs (downloadTBall currDir) ss pkgs
       where downloadTBall path pkg = do
               notify ss $ flip downloadTarballsMsg1 pkg
               downloadSource path pkg
 
 displayPkgbuild :: Settings -> [String] -> IO ExitCode
-displayPkgbuild settings pkgs = onlyOverAURPkgs action settings pkgs
+displayPkgbuild settings pkgs = mapOverAURPkgs action settings pkgs
       where action p = downloadPkgbuild p >>= putStrLn
 
 syncAndContinue :: Settings -> ([Flag],[String],[String]) -> IO ExitCode
@@ -350,8 +350,8 @@ reportNotInLog lang nons = printListWithTitle red cyan msg nons
 --------
 -- OTHER
 --------
-onlyOverAURPkgs :: (String -> IO a) -> Settings -> [String] -> IO ExitCode
-onlyOverAURPkgs action settings pkgs =
+mapOverAURPkgs :: (String -> IO a) -> Settings -> [String] -> IO ExitCode
+mapOverAURPkgs action settings pkgs =
   mapOverPkgs' isAURPkg reportNonPackages action settings pkgs
 
 viewConfFile :: IO ExitCode
