@@ -391,19 +391,13 @@ isVersionConflict (AtLeast r) c | c > r = False  -- Bug? Same as `-Cs` ordering?
                                 | otherwise = False
 
 getInstalledAURPackages :: IO [String]
-getInstalledAURPackages = do
-  pkgs <- pacmanOutput ["-Qm"] >>= return . lines
-  return $ map fixName pkgs
-      where fixName = (\(n,v) -> n ++ "=" ++ v) . hardBreak (\c -> c == ' ')
+getInstalledAURPackages = pacmanOutput ["-Qm"] >>= return . lines
 
-isOutOfDate :: AURPkg -> Bool
-isOutOfDate pkg = trueVer > currVer
-  where trueVer = splitBySubVersion . getTrueVerViaPkgbuild . pkgbuildOf $ pkg
-        currVer = splitBySubVersion $
-                  case versionOf pkg of
-                    MustBe v  -> v
-                    AtLeast v -> v
-                    Anything  -> ""
+-- Takes a PKGBUILD as input.
+isOutOfDate :: (String,String) -> Bool
+isOutOfDate (pkg,pkgbuild) = trueVer > currVer
+  where trueVer = splitBySubVersion $ getTrueVerViaPkgbuild pkgbuild
+        currVer = splitBySubVersion . last . words $ pkg
   
 isIgnored :: String -> [String] -> Bool
 isIgnored pkg toIgnore = pkg `elem` toIgnore
