@@ -5,7 +5,7 @@ module AuraLib where
 
 -- System Libraries
 import System.Directory (renameFile, getCurrentDirectory, setCurrentDirectory)
-import Control.Monad (filterM, when, unless)
+import Control.Monad (filterM, liftM, when, unless)
 import Data.List ((\\), nub, sortBy)
 import System.Exit (ExitCode(..))
 import System.FilePath ((</>))
@@ -142,7 +142,7 @@ makeVirtualPkg pkg = makePackage VirtualPkg getProvider pkg
             providerName <- getProvidingPkg name
             case providerName of
               Nothing  -> return Nothing
-              Just pro -> makePacmanPkg pro >>= return . Just
+              Just pro -> Just `liftM` makePacmanPkg pro
 
 -- Yields a virtual package's providing package if there is one.
 getProvidingPkg :: String -> IO (Maybe String)
@@ -220,7 +220,7 @@ buildPackages settings (p:ps) = do
   notify settings (flip buildPackagesMsg1 $ pkgNameOf p)
   results <- withTempDir (show p) (build settings p)
   case results of
-    Right pkg   -> buildPackages settings ps >>= return . (\pkgs -> pkg : pkgs)
+    Right pkg   -> (\pkgs -> pkg : pkgs) `liftM` buildPackages settings ps
     Left errors -> do        
         toContinue <- buildFail settings p ps errors
         if toContinue
@@ -392,7 +392,7 @@ isVersionConflict (AtLeast r) c | c > r = False  -- Bug? Same as `-Cs` ordering?
 
 getInstalledAURPackages :: IO [String]
 getInstalledAURPackages = do
-  pkgs <- pacmanOutput ["-Qm"] >>= return . lines
+  pkgs <- lines `liftM` pacmanOutput ["-Qm"]
   return $ map fixName pkgs
       where fixName = (\(n,v) -> n ++ "=" ++ v) . hardBreak (\c -> c == ' ')
 
@@ -423,7 +423,7 @@ isAURPkg :: String -> IO Bool
 isAURPkg = doesUrlExist . getPkgbuildUrl
 
 isntAURPkg :: String -> IO Bool
-isntAURPkg pkg = isAURPkg pkg >>= notM
+isntAURPkg pkg = not `liftM` isAURPkg pkg
 
 -- A package is a virtual package if it has a provider.
 isVirtualPkg :: String -> IO Bool
@@ -434,10 +434,10 @@ isVirtualPkg pkg = do
     Nothing -> return False
 
 countInstalledPackages :: IO Int
-countInstalledPackages = pacmanOutput ["-Qsq"] >>= return . length . lines  
+countInstalledPackages = (length . lines) `liftM` pacmanOutput ["-Qsq"]
 
 getOrphans :: IO [String]
-getOrphans = pacmanOutput ["-Qqdt"] >>= return . lines
+getOrphans = lines `liftM` pacmanOutput ["-Qqdt"]
 
 removePkgs :: [String] -> [String] -> IO ExitCode
 removePkgs [] _         = returnSuccess

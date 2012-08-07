@@ -111,13 +111,10 @@ searchLines :: Regex -> [String] -> [String]
 searchLines pat allLines = filter (\line -> line =~ pat) allLines
 
 wordsLines :: String -> [String]
-wordsLines = concat . map words . lines
+wordsLines ls = lines ls >>= words
 
 notNull :: [a] -> Bool
 notNull = not . null
-
-notM :: Monad m => Bool -> m Bool
-notM = return . not
 
 -- Opens the editor of the user's choice.
 openEditor :: String -> String -> IO ()

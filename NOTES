@@ -10,6 +10,9 @@ Gain a foot in Arch Linux ARM!!
 
 Use a haskell (*.hs) file as a conf file, a la xmonad!
 
+Upgrading can be sped up by making each `curl` usage its own child process.
+In other words, threads.
+
 DEPENDENCY ANALYSIS
 -------------------
 Outputting a sort of "dependency tree/graph" that shows how much certain

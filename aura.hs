@@ -9,7 +9,7 @@ import Data.List ((\\), nub, sort, intersperse, groupBy)
 import System.Environment (getArgs, getEnvironment)
 import System.Exit (exitWith, ExitCode)
 import System.Posix.Files (fileExist)
-import Control.Monad (when, unless)
+import Control.Monad (liftM, when, unless)
 import Text.Regex.Posix ((=~))
 import System.FilePath ((</>))
 import Data.Char (isDigit)
@@ -25,7 +25,7 @@ import Pacman
 import Shell
 
 auraVersion :: String
-auraVersion = "0.8.0.1"
+auraVersion = "0.8.0.2"
 
 main :: IO a
 main = do
@@ -187,7 +187,7 @@ displayPkgbuild settings pkgs = mapOverAURPkgs action settings pkgs
 syncAndContinue :: Settings -> ([Flag],[String],[String]) -> IO ExitCode
 syncAndContinue settings (flags,input,pacOpts) = do
   _ <- syncDatabase pacOpts
-  executeOpts settings (AURInstall:flags,input,pacOpts)
+  executeOpts settings (AURInstall:flags,input,pacOpts)  -- This is Evil.
 
 -- Uninstalls `make` dependencies that were only necessary for building
 -- and are no longer required by anything. This is the very definition of
@@ -220,7 +220,7 @@ downgradePackages ss pkgs = do
       where cachePath = cachePathOf ss
 
 reportBadDowngradePkgs :: Language -> [String] -> IO ()
-reportBadDowngradePkgs _ [] = return ()
+reportBadDowngradePkgs _ []      = return ()
 reportBadDowngradePkgs lang pkgs = printListWithTitle red cyan msg pkgs
     where msg = reportBadDowngradePkgsMsg1 lang
                
@@ -313,7 +313,7 @@ viewLogFile logFilePath = shellCmd "less" [logFilePath]
 -- Very similar to `searchCache`. But is this worth generalizing?
 searchLogFile :: Settings -> [String] -> IO ExitCode
 searchLogFile settings input = do
-  logFile <- readFile (logFilePathOf settings) >>= return . lines
+  logFile <- lines `liftM` readFile (logFilePathOf settings)
   mapM_ putStrLn $ searchLines (unwords input) logFile
   returnSuccess
 
@@ -335,8 +335,7 @@ logLookUp settings logFile pkg = do
   mapM_ putStrLn $ [ logLookUpMsg1 (langOf settings) pkg
                    , logLookUpMsg2 (langOf settings) installDate
                    , logLookUpMsg3 (langOf settings) upgrades
-                   , logLookUpMsg4 (langOf settings) ] ++ recentStuff
-  putStrLn ""
+                   , logLookUpMsg4 (langOf settings) ] ++ recentStuff ++ [""]
       where matches     = searchLines (" " ++ pkg ++ " \\(") $ lines logFile
             installDate = head matches =~ "\\[[-:0-9 ]+\\]"
             upgrades    = length $ searchLines " upgraded " matches

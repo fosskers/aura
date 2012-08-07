@@ -8,6 +8,7 @@ import System.Directory (getDirectoryContents)
 import System.Exit (ExitCode(..))
 import System.IO (hFlush, stdout)
 import Text.Regex.Posix ((=~))
+import Control.Monad (liftM)
 
 -- Custom Libraries
 import Utilities 
@@ -37,23 +38,21 @@ pacmanQuiet args = quietShellCmd' "pacman" args
 
 -- Did a pacman process succeed?
 pacmanSuccess :: [Arg] -> IO Bool
-pacmanSuccess args = do
-  (exitStatus,_,_) <- pacmanQuiet args
-  return $ didProcessSucceed exitStatus
+pacmanSuccess args = (didProcessSucceed . tripleFst) `liftM` pacmanQuiet args
 
 pacmanFailure :: [Arg] -> IO Bool
-pacmanFailure args = pacmanSuccess args >>= notM
+pacmanFailure args = not `liftM` pacmanSuccess args
 
 -- Performs a pacmanQuiet and returns only the stdout.
 pacmanOutput :: [Arg] -> IO String
-pacmanOutput args = pacmanQuiet args >>= return . tripleSnd
+pacmanOutput args = tripleSnd `liftM` pacmanQuiet args
 
-syncDatabase :: [String] -> IO ExitCode
+syncDatabase :: [Arg] -> IO ExitCode
 syncDatabase pacOpts = pacman $ ["-Sy"] ++ pacOpts
 
 -- This takes the filepath of the package cache as an argument.
 packageCacheContents :: FilePath -> IO [String]
-packageCacheContents c = getDirectoryContents c >>= return . filter dots
+packageCacheContents c = filter dots `liftM` getDirectoryContents c
     where dots p = p `notElem` [".",".."]
 
 getPacmanConf :: IO String
