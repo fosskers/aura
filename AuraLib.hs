@@ -163,6 +163,11 @@ getProvidingPkg' virt = do
 ------------
 -- OPERATORS
 ------------
+-- Fails immediately if a certain predicate is not met.
+(|?|) :: Bool -> IO ExitCode -> IO ExitCode
+True  |?| action = action
+False |?| _      = returnFailure
+
 -- IO action won't be allowed unless user is root, or using [$]udo.
 (|$|) :: Settings -> IO ExitCode -> IO ExitCode
 settings |$| action = mustBeRoot settings action
@@ -203,7 +208,7 @@ mapOverPkgs cond report fun settings pkgs = do
 -- Same as `mapOverPkgs`, but returns an `ExitCode`.
 mapOverPkgs' cond report fun settings pkgs = do
   result <- mapOverPkgs cond report fun settings pkgs
-  if null result then returnFailure else returnSuccess
+  notNull result |?| returnSuccess
 
 -----------
 -- THE WORK
