@@ -25,7 +25,7 @@ import Pacman
 import Shell
 
 auraVersion :: String
-auraVersion = "0.8.0.2"
+auraVersion = "0.8.0.3"
 
 main :: IO a
 main = do
@@ -160,7 +160,7 @@ upgradeAURPkgs settings pacOpts pkgs = do
             return aurPkg
 
 displayPkgDeps :: Settings -> [String] -> IO ExitCode
-displayPkgDeps _ [] = returnFailure
+displayPkgDeps _ []    = returnFailure
 displayPkgDeps ss pkgs = do
   aurPkgs <- mapOverPkgs isAURPkg reportNonPackages makeAURPkg ss pkgs
   notNull aurPkgs |?| do
@@ -316,7 +316,7 @@ searchLogFile settings input = do
 -- Are you failing at looking up anything,
 -- or succeeding at looking up nothing?
 logInfoOnPkg :: Settings -> [String] -> IO ExitCode
-logInfoOnPkg _ [] = returnFailure  -- Success?
+logInfoOnPkg _ []          = returnFailure  -- Success?
 logInfoOnPkg settings pkgs = do
   logFile <- readFile (logFilePathOf settings)
   let cond   = \p -> return (logFile =~ (" " ++ p ++ " ") :: Bool)
