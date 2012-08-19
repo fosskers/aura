@@ -86,7 +86,7 @@ dualOptions lang = map (\optParts -> makeOption lang optParts)
                    [ ( [], ["noconfirm"], NoConfirm, noCon ) ]
 
 languageOptions :: [OptDescr Flag]
-languageOptions = [ Option [] ["japanese"] (NoArg JapOut) "" ]
+languageOptions = [ Option [] ["japanese","nihongo"] (NoArg JapOut) "" ]
 
 -- `Hijacked` flags. They have original pacman functionality, but
 -- that is masked and made unique in an Aura context.
