@@ -368,12 +368,10 @@ printHelpMsg _ pacOpts = pacman $ pacOpts ++ ["-h"]
 getHelpMsg :: Settings -> [String] -> String
 getHelpMsg settings pacmanHelpMsg = concat $ intersperse "\n" allMessages
     where lang = langOf settings
-          allMessages   = [ replacedLines, auraOperMsg lang, auraOptMsg lang
-                          , dualFlagMsg lang]
+          allMessages   = [replacedLines, auraOperMsg lang, manpageMsg lang]
           replacedLines = unlines $ map (replaceByPatt patterns) pacmanHelpMsg
-          colouredMsg   = yellow "Inherited Pacman Operations" 
-          patterns      = [ ("pacman","aura")
-                          , ("operations",colouredMsg) ]
+          colouredMsg   = yellow $ inheritedOperTitle lang
+          patterns      = [("pacman","aura"), ("operations",colouredMsg)]
 
 -- ANIMATED VERSION MESSAGE
 animateVersionMsg :: [String] -> IO ExitCode

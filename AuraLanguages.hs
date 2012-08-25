@@ -288,13 +288,25 @@ reportNotInLogMsg1 :: Language -> String
 reportNotInLogMsg1 English  = "These have not appeared in the log file:"
 reportNotInLogMsg1 Japanese = "logファイルには出ていない："
 
+manpageMsg :: Language -> String
+manpageMsg English  = "See the aura man page for aura option details."
+manpageMsg Japanese = "選択肢の詳しいことは、auraのman pageまで。"
+
 displayOutputLanguagesMsg1 :: Language -> String
 displayOutputLanguagesMsg1 English  = "The following languages are available:"
-displayOutputLanguagesMsg1 Japanese = "auraは以下の言語に対応している："
+displayOutputLanguagesMsg1 Japanese = "auraは下記の言語に対応している："
 
 ----------------------
 -- AuraFlags functions
 ----------------------
+inheritedOperTitle :: Language -> String
+inheritedOperTitle English  = "Inherited Pacman Operations"
+inheritedOperTitle Japanese = "Pacmanからの引継選択肢"
+
+auraOperTitle :: Language -> String
+auraOperTitle English  = "Aura Only Operations:"
+auraOperTitle Japanese = "Auraだけの選択肢："
+
 aurSy :: Language -> String
 aurSy English  = green "Perform actions involving the [A]UR.\n" ++
                  "Default action installs from the [A]UR."
@@ -312,77 +324,3 @@ viewL English  = cyan "Perform actions involving the pacman [L]ogfile.\n" ++
                  "Default action opens the log for read-only viewing."
 viewL Japanese = cyan "[L]ogfileに関連する処理\n" ++
                  "デフォルトでlogfileを閲覧用に開く"
-
-delma :: Language -> String
-delma English  = green "(With -A)" ++ " Remove useless makedeps after install." 
-delma Japanese = green "（-Aで）" ++ "インストール後不要な従属パッケージを削除"
-
-viewD :: Language -> String
-viewD English  = green "(With -A)" ++ " View all the deps of a package."
-viewD Japanese = green "（-Aで）" ++ "パッケージの従属パッケージを出力"
-
-pkgbu :: Language -> String
-pkgbu English  = green "(With -A)" ++ " Output a package's PKGBUILD."
-pkgbu Japanese = green "（-Aで）" ++ "パッケージのPKGBUILDの内容を出力"
-
-sysup :: Language -> String
-sysup English  = green "(With -A)" ++ " Upgrade all installed AUR packages."
-sysup Japanese = green "（-Aで）" ++ "AURのパッケージを全部アップグレード"
-
-downl :: Language -> String
-downl English  = green "(With -A)" ++ " Download the source tarball only."
-downl Japanese = green "（-Aで）" ++ "ソースのターボールをダウンロード"
-
-unsup :: Language -> String
-unsup English  = green "(With -A)" ++ " Unsuppress makepkg output."
-unsup Japanese = green "（-Aで）" ++ "makepkgの出力を抑えない"
-
-hotEd :: Language -> String
-hotEd English  = green "(With -A) " ++ "Prompt for pre-build PKGBUILD editing."
-hotEd Japanese = green "（-Aで）" ++ "インストール前、PKGBUILDを編成するか確認"
-
-clean :: Language -> String
-clean English  = red "(With -C)" ++ " Save `n` package files, delete rest."
-clean Japanese = red "（-Cで）" ++ "キャッシュのファイルを`n`ずつ保存。他削除"
-
-backu :: Language -> String
-backu English  = red "(With -C)" ++ " Backup the cache to a given directory."
-backu Japanese = red "（-Cで）" ++ "キャッシュをバックアップ"
-
-searc :: Language -> String
-searc English  = red "(With -C)" ++ " Search the cache via a regex.\n" ++
-                 cyan "(With -L)" ++ " Search the pacman log via a regex."
-searc Japanese = red "（-Cで）" ++ "regexを使ってキャッシュを探る\n" ++
-                 cyan "（-Lで）" ++ "regexを使ってpacman.logを探る"
-
-infos :: Language -> String
-infos English  = cyan "(With -L)" ++ " View package history information."
-infos Japanese = cyan "（-Lで）" ++ "パッケージのインストール歴などを見る"
-
-orpha :: Language -> String
-orpha English  = "Display orphan packages. (Dependencies no longer needed.)"
-orpha Japanese = "インストールしている、不要な従属パッケージを出力"
-
-adopt :: Language -> String
-adopt English  = "Deorphanize a package. Shortcut for `-D --asexplicit`."
-adopt Japanese = "パッケージを「従属」じゃなくする"
-
-aband :: Language -> String
-aband English  = "Uninstall all orphan packages."
-aband Japanese = "不要な従属パッケージを全部削除"
-
-vConf :: Language -> String
-vConf English  = "View pacman.conf."
-vConf Japanese = "pacman.confを閲覧"
-
-noCon :: Language -> String
-noCon English  = "Never ask for any Aura or Pacman confirmation."
-noCon Japanese = "AuraでもPacmanでも、インストールなどの許可を得ずに行う"
-
-langu :: Language -> String
-langu English  = "Display the available output languages for aura."
-langu Japanese = "Auraで使える言語を出力"
-
-japOu :: Language -> String
-japOu English  = "All aura output is given in Japanese."
-japOu Japanese = "Auraの出力は全て日本語で出される"
