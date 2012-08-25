@@ -307,10 +307,10 @@ downG English  = red "Perform actions involving the package [C]ache.\n" ++
 downG Japanese = red "キャッシュに関連する処理\n" ++
                  "デフォルトでパッケージをダウングレード"
 
-logFi :: Language -> String
-logFi English  = cyan "Perform actions involving the pacman [L]ogfile.\n" ++
+viewL :: Language -> String
+viewL English  = cyan "Perform actions involving the pacman [L]ogfile.\n" ++
                  "Default action opens the log for read-only viewing."
-logFi Japanese = cyan "[L]ogfileに関連する処理\n" ++
+viewL Japanese = cyan "[L]ogfileに関連する処理\n" ++
                  "デフォルトでlogfileを閲覧用に開く"
 
 delma :: Language -> String

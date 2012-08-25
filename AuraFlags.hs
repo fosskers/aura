@@ -51,7 +51,7 @@ auraOperations :: Language -> [OptDescr Flag]
 auraOperations lang = map (\optParts -> makeOption lang optParts)
                       [ ( ['A'], ["aursync"],   AURInstall, aurSy )
                       , ( ['C'], ["downgrade"], Cache,      downG )
-                      , ( ['L'], ["logfile"],   LogFile,    logFi ) ]
+                      , ( ['L'], ["viewlog"],   LogFile,    viewL ) ]
 
 auraOptions :: Language -> [OptDescr Flag]
 auraOptions lang = map (\optParts -> makeOption lang optParts)

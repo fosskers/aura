@@ -27,6 +27,7 @@ OPTIONS TO IMPLEMENT
 -Ci -> `--info` Gives some stats about the package cache.
 -   -> `--philosophy` Outputs the aura philosophy.
 -   -> `--tutorial` Teach new users how to build packages from scratch.
+-O  -> For all actions involving orphaned packages.
 
 FLAGS UNUSED BY PACMAN
 ----------------------

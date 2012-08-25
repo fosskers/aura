@@ -28,6 +28,8 @@ build-type:          Simple
 
 cabal-version:       >=1.8
 
+extra-source-files:  aura.8
+
 source-repository head
   type:     git
   location: git://github.com/fosskers/aura.git

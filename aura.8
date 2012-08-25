@@ -24,29 +24,29 @@ managers.
  
 .SH OPERATIONS
 .P
-\-A, \-\-aursync
+\-A, \-\-aursync [package(s)]
 .RS 4
 Perform actions involving the [A]UR. Default action installs packages
 from the AUR. During building, makepkg output is \fInot\fR shown 
-by default. After building, the built .pkg.tar.xz file is moved
+by default. After building, the built \fI.pkg.tar.xz\fR file is moved
 to the package cache and installed from there. This allows for easy 
 AUR package downgrading.
 .RE 
 .P
-\-C, \-\-downgrade
+\-C, \-\-downgrade [package(s)]
 .RS 4
 Perform actions involving the package [C]ache. Default action downgrades
 specified packages. This process is interactive, allowing the user to choose
 from any previous version they have available in the package cache.
 .RE
 .P
-\-L, \-\-logfile
+\-L, \-\-viewlog
 .RS 4
 Perform actions involving the pacman [L]ogfile.
 Default action opens the log for read-only viewing.
 .RE
 
-.SH AUR SYNC OPTIONS
+.SH AUR SYNC OPTIONS (\fI\-A\fR)
 .P
 \-a, \-\-delmakedeps
 .RS 4
@@ -56,14 +56,14 @@ that while the package itself will be uninstalled, its package file will
 remain in the cache.
 .RE
 .P
-\-d, \-\-deps
+\-d, \-\-deps <package(s)>
 .RS 4
 View all the dependencies of a package. This process is recursive for
 AUR packages, so all dependencies of dependencies (and so on) will also
 be shown. This can aid the pre-install package research process.
 .RE
 .P
-\-p, \-\-pkgbuild
+\-p, \-\-pkgbuild <package(s)>
 .RS 4
 Outputs an AUR package's PKGBUILD. Use this before installing new packages
 to confirm that the build scripts aren't doing anything fishy.
@@ -75,7 +75,7 @@ Upgrade all installed AUR packages. \fI\-Au\fR is \fI\-Su\fR for AUR
 packages.
 .RE
 .P
-\-w, \-\-downloadonly
+\-w, \-\-downloadonly <package(s)>
 .RS 4
 Download the source tarball. This doesn't contain source code, but instead
 the PKGBUILD and .install file for the requested package. Running
@@ -102,11 +102,49 @@ as they will be much faster at presenting information than searching the
 AUR website manually.
 .RE
 
-.SH DOWNGRADE OPTIONS
+.SH DOWNGRADE OPTIONS (\fI\-C\fR)
 .P
+\-b, \-\-backup <path>
+.RS 4
+Backup the package cache to a given directory. The given directory must
+already exist. During copying, progress will be shown. If the copy takes too 
+long, you may want to reduce the number of older versions of each package by
+using \fI\-Cc\fR.
+.RE
+.P
+\-c, \-\-clean <versions-to-retain>
+.RS 4
+This saves a given number of package versions for each package and deletes
+the rest from the package cache. Count is made from the most recent version, 
+so using:
+.RS 4
+aura -Cc 3
+.RE
+would save the three most recent versions of each package file.
+Giving the number 0 as an argument is identical to \fI\-Scc\fR.
+.RE
+.P
+\-s, \-\-search <regex>
+.RS 4
+Search the package cache via a regex. Any package name that matches the regex
+will be output as\-is.
+.RE
 
-.SH LOGFILE OPTIONS
+.SH LOGFILE OPTIONS (\fI\-L\fR)
 .P
+\-i, \-\-info <package(s)>
+.RS 4
+Displays install / upgrade history for a given package. Under the `Recent
+Actions` section, only the last five entries will be displayed. If there are
+less than five actions ever performed with the package, what is available will
+be printed.
+.RE
+.P
+\-s, \-\-search <regex>
+.RS 4
+Search the pacman log file via a regex. Useful for singling out any and all
+actions performed on a package.
+.RE
 
 .SH OTHER OPTIONS
 .P
