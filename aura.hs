@@ -25,7 +25,7 @@ import Pacman
 import Shell
 
 auraVersion :: String
-auraVersion = "0.8.1.0"
+auraVersion = "0.9.0.0"
 
 main :: IO a
 main = do
@@ -80,9 +80,11 @@ executeOpts ss (flags,input,pacOpts) = do
           [Search] -> searchLogFile ss input
           [Info]   -> logInfoOnPkg ss input
           badFlags -> scoldAndFail ss executeOptsMsg1
-    [Orphans]   -> getOrphans >>= mapM_ putStrLn >> returnSuccess
-    [Adopt]     -> ss |$| (pacman $ ["-D","--asexplicit"] ++ input)
-    [Abandon]   -> ss |$| (getOrphans >>= flip removePkgs pacOpts)
+    (Orphans:fs) ->
+        case fs of
+          []        -> displayOrphans ss input
+          [Abandon] -> ss |$| (getOrphans >>= flip removePkgs pacOpts)
+          badFlags  -> scoldAndFail ss executeOptsMsg1
     [ViewConf]  -> viewConfFile
     [Languages] -> displayOutputLanguages ss
     [Help]      -> printHelpMsg ss pacOpts
@@ -341,6 +343,16 @@ logLookUp settings logFile pkg = do
 reportNotInLog :: Language -> [String] -> IO ()
 reportNotInLog lang nons = printListWithTitle red cyan msg nons
     where msg = reportNotInLogMsg1 lang
+
+-------------------
+-- WORKING WITH `O`
+-------------------
+displayOrphans :: Settings -> [String] -> IO ExitCode
+displayOrphans _ []    = getOrphans >>= mapM_ putStrLn >> returnSuccess
+displayOrphans ss pkgs = adoptPkg ss pkgs
+
+adoptPkg :: Settings -> [String] -> IO ExitCode
+adoptPkg ss pkgs = ss |$| (pacman $ ["-D","--asexplicit"] ++ pkgs)
 
 --------
 -- OTHER

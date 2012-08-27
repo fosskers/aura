@@ -13,6 +13,7 @@ type FlagMap = [(Flag,String)]
 data Flag = AURInstall
           | Cache
           | LogFile
+          | Orphans
           | Search
           | Info
           | Refresh
@@ -26,8 +27,6 @@ data Flag = AURInstall
           | NoConfirm
           | Backup
           | Clean
-          | Orphans
-          | Adopt
           | Abandon
           | ViewConf
           | Languages
@@ -51,24 +50,23 @@ auraOperations :: Language -> [OptDescr Flag]
 auraOperations lang = map makeOption
                       [ ( ['A'], ["aursync"],   AURInstall, aurSy lang )
                       , ( ['C'], ["downgrade"], Cache,      downG lang )
-                      , ( ['L'], ["viewlog"],   LogFile,    viewL lang ) ]
+                      , ( ['L'], ["viewlog"],   LogFile,    viewL lang ) 
+                      , ( ['O'], ["orphans"],   Orphans,    orpha lang ) ]
 
 auraOptions :: [OptDescr Flag]
 auraOptions = map makeOption
               [ ( ['a'], ["delmakedeps"],  DelMDeps,    "" )
+              , ( ['b'], ["backup"],       Backup,      "" )
+              , ( ['c'], ["clean"],        Clean,       "" )
               , ( ['d'], ["deps"],         ViewDeps,    "" )
+              , ( ['j'], ["abandon"],      Abandon,     "" )
+              , ( ['i'], ["info"],         Info,        "" )
               , ( ['p'], ["pkgbuild"],     GetPkgbuild, "" )
+              , ( ['s'], ["search"],       Search,      "" )
               , ( ['u'], ["sysupgrade"],   Upgrade,     "" )
               , ( ['w'], ["downloadonly"], Download,    "" )
               , ( ['x'], ["unsuppress"],   Unsuppress,  "" )
               , ( [],    ["hotedit"],      HotEdit,     "" )
-              , ( ['c'], ["clean"],        Clean,       "" )
-              , ( ['b'], ["backup"],       Backup,      "" )
-              , ( ['s'], ["search"],       Search,      "" )
-              , ( ['i'], ["info"],         Info,        "" )
-              , ( [],    ["orphans"],      Orphans,     "" )
-              , ( [],    ["adopt"],        Adopt,       "" )
-              , ( [],    ["abandon"],      Abandon,     "" )
               , ( [],    ["conf"],         ViewConf,    "" ) 
               , ( [],    ["languages"],    Languages,   "" ) ]
 
@@ -86,7 +84,7 @@ dualOptions = map makeOption
 
 languageOptions :: [OptDescr Flag]
 languageOptions = map makeOption
-                  [ ( [], ["japanese","nihongo"], JapOut, "" ) ]
+                  [ ( [], ["japanese","日本語"], JapOut, "" ) ]
 
 -- `Hijacked` flags. They have original pacman functionality, but
 -- that is masked and made unique in an Aura context.

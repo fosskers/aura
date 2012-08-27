@@ -27,12 +27,11 @@ OPTIONS TO IMPLEMENT
 -Ci -> `--info` Gives some stats about the package cache.
 -   -> `--philosophy` Outputs the aura philosophy.
 -   -> `--tutorial` Teach new users how to build packages from scratch.
--O  -> For all actions involving orphaned packages.
 
 FLAGS UNUSED BY PACMAN
 ----------------------
 a j x z
-(Of these [a x z] has been taken by Aura)
+(Of these [a j x z] has been taken by Aura)
 
 OUT OF DATE
 -----------
@@ -45,3 +44,8 @@ releases. The odd numbered releases iterate quicker and are like the
 release candidates for the even numbered releases.
 If necessary, create a new AUR package called `aura-stable` to manage
 the stable releases.
+
+BUGS
+----
+- `-Li` field `Upgrades/Reinstalls` is giving fishy numbers. Perhaps
+  it's not counting the reinstalls?

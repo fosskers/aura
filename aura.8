@@ -45,6 +45,17 @@ from any previous version they have available in the package cache.
 Perform actions involving the pacman [L]ogfile.
 Default action opens the log for read-only viewing.
 .RE
+.P
+\-O, \-\-orphans [package(s)]
+.RS 4
+Perform actions involving [O]rphan packages. Orphan packages are packages
+installed as dependencies, but are no longer required by any other package.
+\fI\-O\fR's default action can do one of two things. 
+If no extra argument is given, the current orphan packages installed
+are displayed. If a package name is given, it is `adopted`.
+This changes the package's install reason to `As Explicit`.
+This is a shortcut for `-D --asexplicit`.
+.RE
 
 .SH AUR SYNC OPTIONS (\fI\-A\fR)
 .P
@@ -146,36 +157,11 @@ Search the pacman log file via a regex. Useful for singling out any and all
 actions performed on a package.
 .RE
 
-.SH OTHER OPTIONS
+.SH ORPHAN PACKAGE OPTIONS (\fI\-O\fR)
 .P
-These options do not require a superordinate flag, such as \fI\-A\fR.
-.P
-\-\-orphans
-.RS 4
-Display orphan packages. These are packages that were installed as
-dependencies, but are no longer required by any package. These can be removed
-with \fI\-\-abandon\fR.
-.RE
-.P
-\-\-adopt
-.RS 4
-Deorphanize a package. Changes a package's install reason to `As Explicit`.
-This is a shortcut for `-D --asexplicit`.
-.RE
-.P
-\-\-abandon
+\-j, \-\-abandon
 .RS 4
 Uninstall all orphan packages. 
-.RE
-.P
-\-\-conf
-.RS 4
-View the pacman configuration file in read-only mode.
-.RE
-.P
-\-\-languages
-.RS 4
-Display the available output languages.
 .RE
 
 .SH PACMAN / AURA DUAL FUNCTIONALITY OPTIONS
@@ -187,15 +173,29 @@ say before building or installation, it is assumed the user answered in
 whatever way would progress the program.
 .RE
 
-.SH LANGUAGES
+.SH MISC. OPTIONS
+.P
+These options do not require a superordinate flag, such as \fI\-A\fR.
+.P
+\-\-conf
+.RS 4
+View the pacman configuration file in read-only mode.
+.RE
+.P
+\-\-languages
+.RS 4
+Display the available output languages.
+.RE
+
+.SH LANGUAGE OPTIONS
 .P
 Aura is available in multiple languages. As options, they can be used
-with either their English names or their native names written with
-Latin characters. The available languages are, in option form:
+with either their English names or their real names written their
+native characters. The available languages are, in option form:
 .P
 \-\-english (default)
 .P
-\-\-japanese, \-\-nihongo
+\-\-japanese, \-\-日本語
 
 .SH SEE ALSO
 .P

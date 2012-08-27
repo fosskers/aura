@@ -2,7 +2,7 @@
 
 module AuraLanguages where
 
-import Shell (cyan, yellow, green, red)
+import Shell (cyan, yellow, green, red, blue)
 
 data Language = English | Japanese deriving (Eq,Enum,Show)
 
@@ -309,7 +309,7 @@ auraOperTitle Japanese = "Auraだけの選択肢："
 
 aurSy :: Language -> String
 aurSy English  = green "Perform actions involving the [A]UR.\n" ++
-                 "Default action installs from the [A]UR."
+                 "Default action installs from the AUR."
 aurSy Japanese = green "[A]URに関連する処理\n" ++
                  "デフォルトでAURからインストール"
 
@@ -324,3 +324,9 @@ viewL English  = cyan "Perform actions involving the pacman [L]ogfile.\n" ++
                  "Default action opens the log for read-only viewing."
 viewL Japanese = cyan "[L]ogfileに関連する処理\n" ++
                  "デフォルトでlogfileを閲覧用に開く"
+
+orpha :: Language -> String
+orpha English  = blue "Perform actions involving [O]rphan packages.\n" ++
+                 "Default action lists all orphan packages."
+orpha Japanese = blue "必要とされていない従属パッケージに関する処理\n" ++
+                 "デフォルトでその従属パッケージの名前を出力"
