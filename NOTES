@@ -47,5 +47,3 @@ the stable releases.
 
 BUGS
 ----
-- `-Li` field `Upgrades/Reinstalls` is giving fishy numbers. Perhaps
-  it's not counting the reinstalls?

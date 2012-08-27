@@ -24,7 +24,7 @@ managers.
  
 .SH OPERATIONS
 .P
-\-A, \-\-aursync [package(s)]
+\fB\-A\fR, \-\-aursync [package(s)]
 .RS 4
 Perform actions involving the [A]UR. Default action installs packages
 from the AUR. During building, makepkg output is \fInot\fR shown 
@@ -33,20 +33,20 @@ to the package cache and installed from there. This allows for easy
 AUR package downgrading.
 .RE 
 .P
-\-C, \-\-downgrade [package(s)]
+\fB\-C\fR, \-\-downgrade [package(s)]
 .RS 4
 Perform actions involving the package [C]ache. Default action downgrades
 specified packages. This process is interactive, allowing the user to choose
 from any previous version they have available in the package cache.
 .RE
 .P
-\-L, \-\-viewlog
+\fB\-L\fR, \-\-viewlog
 .RS 4
 Perform actions involving the pacman [L]ogfile.
 Default action opens the log for read-only viewing.
 .RE
 .P
-\-O, \-\-orphans [package(s)]
+\fB\-O\fR, \-\-orphans [package(s)]
 .RS 4
 Perform actions involving [O]rphan packages. Orphan packages are packages
 installed as dependencies, but are no longer required by any other package.
@@ -59,7 +59,7 @@ This is a shortcut for `-D --asexplicit`.
 
 .SH AUR SYNC OPTIONS (\fI\-A\fR)
 .P
-\-a, \-\-delmakedeps
+\fB\-a\fR, \-\-delmakedeps
 .RS 4
 Uninstalls build dependencies that are no longer required after installing
 the main package. This prevents the creation of orphan packages. Also note
@@ -67,26 +67,26 @@ that while the package itself will be uninstalled, its package file will
 remain in the cache.
 .RE
 .P
-\-d, \-\-deps <package(s)>
+\fB\-d\fR, \-\-deps <package(s)>
 .RS 4
 View all the dependencies of a package. This process is recursive for
 AUR packages, so all dependencies of dependencies (and so on) will also
 be shown. This can aid the pre-install package research process.
 .RE
 .P
-\-p, \-\-pkgbuild <package(s)>
+\fB\-p\fR, \-\-pkgbuild <package(s)>
 .RS 4
 Outputs an AUR package's PKGBUILD. Use this before installing new packages
 to confirm that the build scripts aren't doing anything fishy.
 .RE
 .P
-\-u, \-\-sysupgrade
+\fB\-u\fR, \-\-sysupgrade
 .RS 4
 Upgrade all installed AUR packages. \fI\-Au\fR is \fI\-Su\fR for AUR
 packages.
 .RE
 .P
-\-w, \-\-downloadonly <package(s)>
+\fB\-w\fR, \-\-downloadonly <package(s)>
 .RS 4
 Download the source tarball. This doesn't contain source code, but instead
 the PKGBUILD and .install file for the requested package. Running
@@ -94,7 +94,7 @@ the PKGBUILD and .install file for the requested package. Running
 manually.
 .RE
 .P
-\-x, \-\-unsuppress
+\fB\-x\fR, \-\-unsuppress
 .RS 4
 Unsuppress \fImakepkg\fR output during building. By default this output
 is suppressed for a more silent install. Note that when this option
@@ -115,7 +115,7 @@ AUR website manually.
 
 .SH DOWNGRADE OPTIONS (\fI\-C\fR)
 .P
-\-b, \-\-backup <path>
+\fB\-b\fR, \-\-backup <path>
 .RS 4
 Backup the package cache to a given directory. The given directory must
 already exist. During copying, progress will be shown. If the copy takes too 
@@ -123,7 +123,7 @@ long, you may want to reduce the number of older versions of each package by
 using \fI\-Cc\fR.
 .RE
 .P
-\-c, \-\-clean <versions-to-retain>
+\fB\-c\fR, \-\-clean <versions-to-retain>
 .RS 4
 This saves a given number of package versions for each package and deletes
 the rest from the package cache. Count is made from the most recent version, 
@@ -135,7 +135,7 @@ would save the three most recent versions of each package file.
 Giving the number 0 as an argument is identical to \fI\-Scc\fR.
 .RE
 .P
-\-s, \-\-search <regex>
+\fB\-s\fR, \-\-search <regex>
 .RS 4
 Search the package cache via a regex. Any package name that matches the regex
 will be output as\-is.
@@ -143,7 +143,7 @@ will be output as\-is.
 
 .SH LOGFILE OPTIONS (\fI\-L\fR)
 .P
-\-i, \-\-info <package(s)>
+\fB\-i\fR, \-\-info <package(s)>
 .RS 4
 Displays install / upgrade history for a given package. Under the `Recent
 Actions` section, only the last five entries will be displayed. If there are
@@ -151,7 +151,7 @@ less than five actions ever performed with the package, what is available will
 be printed.
 .RE
 .P
-\-s, \-\-search <regex>
+\fB\-s\fR, \-\-search <regex>
 .RS 4
 Search the pacman log file via a regex. Useful for singling out any and all
 actions performed on a package.
@@ -159,7 +159,7 @@ actions performed on a package.
 
 .SH ORPHAN PACKAGE OPTIONS (\fI\-O\fR)
 .P
-\-j, \-\-abandon
+\fB\-j\fR, \-\-abandon
 .RS 4
 Uninstall all orphan packages. 
 .RE
