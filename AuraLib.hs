@@ -43,7 +43,17 @@ class Package a where
     pkgNameOf :: a -> String
     versionOf :: a -> Versioning
 
-data Versioning = AtLeast String | MustBe String | Anything deriving (Eq,Show)
+data Versioning = LessThan String
+                | AtLeast String
+                | MustBe String
+                | Anything
+                  deriving (Eq)
+
+instance Show Versioning where
+    show (LessThan v) = "<"  ++ v
+    show (AtLeast v)  = ">=" ++ v
+    show (MustBe  v)  = "="  ++ v
+    show Anything     = ""
 
 -- I would like to reduce the following three sets of instance declarations
 -- to a single more polymorphic solution.
@@ -57,10 +67,10 @@ instance Package AURPkg where
     versionOf (AURPkg _ v _) = v
 
 instance Show AURPkg where
-    show = pkgNameWithVersion
+    show = pkgNameWithVersioning
 
 instance Eq AURPkg where
-    a == b = pkgNameWithVersion a == pkgNameWithVersion b
+    a == b = pkgNameWithVersioning a == pkgNameWithVersioning b
 
 pkgbuildOf :: AURPkg -> String
 pkgbuildOf (AURPkg _ _ p) = p
@@ -75,10 +85,10 @@ instance Package PacmanPkg where
     versionOf (PacmanPkg _ v _) = v
 
 instance Show PacmanPkg where
-    show = pkgNameWithVersion
+    show = pkgNameWithVersioning
 
 instance Eq PacmanPkg where
-    a == b = pkgNameWithVersion a == pkgNameWithVersion b
+    a == b = pkgNameWithVersioning a == pkgNameWithVersioning b
 
 pkgInfoOf :: PacmanPkg -> String
 pkgInfoOf (PacmanPkg _ _ i) = i
@@ -96,7 +106,7 @@ instance Package VirtualPkg where
     versionOf (VirtualPkg _ v _) = v
 
 instance Show VirtualPkg where
-    show = pkgNameWithVersion
+    show = pkgNameWithVersioning
 
 providerPkgOf :: VirtualPkg -> Maybe PacmanPkg
 providerPkgOf (VirtualPkg _ _ p) = p
@@ -104,17 +114,15 @@ providerPkgOf (VirtualPkg _ _ p) = p
 ---------------------------------
 -- Functions common to `Package`s
 ---------------------------------
-pkgNameWithVersion :: Package a => a -> String
-pkgNameWithVersion pkg = pkgNameOf pkg ++ signAndVersion
-    where signAndVersion = case versionOf pkg of
-                             AtLeast v -> ">=" ++ v
-                             MustBe  v -> "="  ++ v
-                             Anything  -> ""
+pkgNameWithVersioning :: Package a => a -> String
+pkgNameWithVersioning pkg = pkgNameOf pkg ++ signAndVersion
+    where signAndVersion = show $ versionOf pkg
 
 parseNameAndVersioning :: String -> (String,Versioning)
 parseNameAndVersioning pkg = (name, getVersioning comp ver)
-    where (name,comp,ver) = pkg =~ "(>=|=)" :: (String,String,String)
-          getVersioning c v | c == ">=" = AtLeast v
+    where (name,comp,ver) = pkg =~ "(<|>=|=)" :: (String,String,String)
+          getVersioning c v | c == "<"  = LessThan v
+                            | c == ">=" = AtLeast v
                             | c == "="  = MustBe v
                             | otherwise = Anything
 
@@ -362,7 +370,7 @@ getRealPkgConflicts f lang toIgnore pkg
     | isVersionConflict (versionOf pkg) curVer = Just failMessage2
     | otherwise = Nothing    
     where curVer        = f pkg
-          (name,reqVer) = splitNameAndVer $ pkgNameWithVersion pkg          
+          (name,reqVer) = splitNameAndVer $ pkgNameWithVersioning pkg
           failMessage1  = getRealPkgConflictsMsg2 lang name
           failMessage2  = getRealPkgConflictsMsg1 lang name curVer reqVer
 
@@ -373,7 +381,7 @@ getVirtualConflicts lang toIgnore pkg
     | isIgnored provider toIgnore  = Just failMessage2
     | isVersionConflict (versionOf pkg) pVer = Just failMessage3
     | otherwise = Nothing
-    where (name,ver)   = splitNameAndVer $ pkgNameWithVersion pkg
+    where (name,ver)   = splitNameAndVer $ pkgNameWithVersioning pkg
           provider     = pkgNameOf . fromJust . providerPkgOf $ pkg
           pVer         = getProvidedVerNum pkg
           failMessage1 = getVirtualConflictsMsg1 lang name
@@ -389,11 +397,12 @@ getProvidedVerNum pkg = splitVer match
 -- The `MustBe` case uses regexes. A dependency demanding version 7.4
 -- SHOULD match as `okay` against version 7.4, 7.4.0.1, or even 7.4.0.1-2.
 isVersionConflict :: Versioning -> String -> Bool
-isVersionConflict Anything _    = False
-isVersionConflict (MustBe r) c  = not $ c =~ ("^" ++ r)
-isVersionConflict (AtLeast r) c | c > r = False  -- Bug? Same as `-Cs` ordering?
-                                | isVersionConflict (MustBe r) c = True
-                                | otherwise = False
+isVersionConflict Anything _     = False
+isVersionConflict (LessThan r) c = not $ comparableVer r < comparableVer c
+isVersionConflict (MustBe r) c   = not $ c =~ ("^" ++ r)
+isVersionConflict (AtLeast r) c  | comparableVer c > comparableVer r = False
+                                 | isVersionConflict (MustBe r) c = True
+                                 | otherwise = False
 
 getInstalledAURPackages :: IO [String]
 getInstalledAURPackages = do
@@ -403,13 +412,9 @@ getInstalledAURPackages = do
 
 isOutOfDate :: AURPkg -> Bool
 isOutOfDate pkg = trueVer > currVer
-  where trueVer = splitBySubVersion . getTrueVerViaPkgbuild . pkgbuildOf $ pkg
-        currVer = splitBySubVersion $
-                  case versionOf pkg of
-                    MustBe v  -> v
-                    AtLeast v -> v
-                    Anything  -> ""
-  
+  where trueVer = comparableVer . getTrueVerViaPkgbuild . pkgbuildOf $ pkg
+        currVer = comparableVer . show . versionOf $ pkg
+
 isIgnored :: String -> [String] -> Bool
 isIgnored pkg toIgnore = pkg `elem` toIgnore
 
@@ -493,7 +498,7 @@ divideByPkgType pkgs = do
 
 sortPkgs :: [String] -> [String]
 sortPkgs pkgs = sortBy verNums pkgs
-    where verNums a b | nameOf a /= nameOf b = compare a b  -- Different pkgs.
+    where verNums a b | nameOf a /= nameOf b = compare a b  -- Different pkgs
                       | otherwise            = compare (verOf a) (verOf b)
           nameOf = fst . pkgFileNameAndVer
           verOf  = snd . pkgFileNameAndVer
@@ -507,15 +512,14 @@ pkgFileNameAndVer p = (name,verNum')
     where (name,_,_) = p =~ "-[0-9]+" :: (String,String,String)
           verNum     = p =~ ("[0-9][-0-9a-z._]+-" ++ archs) :: String
           archs      = "(a|x|i)"  -- Representing "(any|x86_64|i686)"
-          verNum'    = splitBySubVersion verNum
+          verNum'    = comparableVer verNum
 
 -- Also discards any non-number version info, like `rc`, etc.
 -- Example: "3.2rc6-1" becomes [3,2,6,1]
--- BUG: Explodes if arg doesn't start with a digit.
-splitBySubVersion :: String -> [Int]
-splitBySubVersion [] = []
-splitBySubVersion n  =
+comparableVer :: String -> [Int]
+comparableVer [] = []
+comparableVer n  =
     case dropWhile (not . isDigit) n of
       []   -> []  -- Version ended in non-digits.
-      rest -> read digits : (splitBySubVersion $ drop (length digits) rest)
+      rest -> read digits : (comparableVer $ drop (length digits) rest)
         where digits = takeWhile isDigit rest

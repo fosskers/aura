@@ -95,6 +95,12 @@ executeOpts ss (flags,input,pacOpts) = do
 --------------------
 -- WORKING WITH `-A`
 --------------------
+{- Ideal look
+installPackages pkgs = toAurPkgs pkgs >>= getDeps >>= install
+
+This could work if Package was a sexy Monad and these operations
+could fail silently.
+-}
 installPackages :: Settings -> [String] -> [String] -> IO ExitCode
 installPackages _ _ [] = returnSuccess
 installPackages settings pacOpts pkgs = do

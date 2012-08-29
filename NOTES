@@ -47,3 +47,5 @@ the stable releases.
 
 BUGS
 ----
+Entries in PKGBUILD with a mandatory version break `-Ad`
+A `less-than` symbol is breaking things!
