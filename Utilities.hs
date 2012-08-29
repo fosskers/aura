@@ -27,7 +27,7 @@ putStrLnA :: Colouror -> String -> IO ()
 putStrLnA colour s = putStrA colour $ s ++ "\n"
 
 putStrA :: Colouror -> String -> IO ()
-putStrA colour s = putStr $ "aura >> " ++ colour s
+putStrA colour s = putStr $ "aura >>= " ++ colour s
 
 printListWithTitle :: Colouror -> Colouror -> String -> [String] -> IO ()
 printListWithTitle _ _ _ [] = return ()
