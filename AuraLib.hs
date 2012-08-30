@@ -41,15 +41,15 @@ data Settings = Settings { environmentOf   :: Environment
 -----------
 class Package a where
     pkgNameOf :: a -> String
-    versionOf :: a -> Versioning
+    versionOf :: a -> VersionDemand
 
-data Versioning = LessThan String
-                | AtLeast String
-                | MustBe String
-                | Anything
-                  deriving (Eq)
+data VersionDemand = LessThan String
+                   | AtLeast String
+                   | MustBe String
+                   | Anything
+                     deriving (Eq)
 
-instance Show Versioning where
+instance Show VersionDemand where
     show (LessThan v) = "<"  ++ v
     show (AtLeast v)  = ">=" ++ v
     show (MustBe  v)  = "="  ++ v
@@ -60,17 +60,17 @@ instance Show Versioning where
 ---------------
 -- AUR Packages
 ---------------
-data AURPkg = AURPkg String Versioning Pkgbuild
+data AURPkg = AURPkg String VersionDemand Pkgbuild
                
 instance Package AURPkg where
     pkgNameOf (AURPkg n _ _) = n
     versionOf (AURPkg _ v _) = v
 
 instance Show AURPkg where
-    show = pkgNameWithVersioning
+    show = pkgNameWithVersionDemand
 
 instance Eq AURPkg where
-    a == b = pkgNameWithVersioning a == pkgNameWithVersioning b
+    a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
 
 pkgbuildOf :: AURPkg -> String
 pkgbuildOf (AURPkg _ _ p) = p
@@ -78,17 +78,17 @@ pkgbuildOf (AURPkg _ _ p) = p
 ------------------
 -- Pacman Packages
 ------------------
-data PacmanPkg = PacmanPkg String Versioning String
+data PacmanPkg = PacmanPkg String VersionDemand String
 
 instance Package PacmanPkg where
     pkgNameOf (PacmanPkg n _ _) = n
     versionOf (PacmanPkg _ v _) = v
 
 instance Show PacmanPkg where
-    show = pkgNameWithVersioning
+    show = pkgNameWithVersionDemand
 
 instance Eq PacmanPkg where
-    a == b = pkgNameWithVersioning a == pkgNameWithVersioning b
+    a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
 
 pkgInfoOf :: PacmanPkg -> String
 pkgInfoOf (PacmanPkg _ _ i) = i
@@ -99,14 +99,14 @@ pkgInfoOf (PacmanPkg _ _ i) = i
 -- Virtual packages also contain a record of their providing package.
 -- Providing packages are assumed to be Pacman (ABS) packages.
 -- Are there any instances where this isn't the case?
-data VirtualPkg = VirtualPkg String Versioning (Maybe PacmanPkg)
+data VirtualPkg = VirtualPkg String VersionDemand (Maybe PacmanPkg)
 
 instance Package VirtualPkg where
     pkgNameOf (VirtualPkg n _ _) = n
     versionOf (VirtualPkg _ v _) = v
 
 instance Show VirtualPkg where
-    show = pkgNameWithVersioning
+    show = pkgNameWithVersionDemand
 
 providerPkgOf :: VirtualPkg -> Maybe PacmanPkg
 providerPkgOf (VirtualPkg _ _ p) = p
@@ -114,26 +114,26 @@ providerPkgOf (VirtualPkg _ _ p) = p
 ---------------------------------
 -- Functions common to `Package`s
 ---------------------------------
-pkgNameWithVersioning :: Package a => a -> String
-pkgNameWithVersioning pkg = pkgNameOf pkg ++ signAndVersion
+pkgNameWithVersionDemand :: Package a => a -> String
+pkgNameWithVersionDemand pkg = pkgNameOf pkg ++ signAndVersion
     where signAndVersion = show $ versionOf pkg
 
-parseNameAndVersioning :: String -> (String,Versioning)
-parseNameAndVersioning pkg = (name, getVersioning comp ver)
+parseNameAndVersionDemand :: String -> (String,VersionDemand)
+parseNameAndVersionDemand pkg = (name, getVersionDemand comp ver)
     where (name,comp,ver) = pkg =~ "(<|>=|=)" :: (String,String,String)
-          getVersioning c v | c == "<"  = LessThan v
-                            | c == ">=" = AtLeast v
-                            | c == "="  = MustBe v
-                            | otherwise = Anything
+          getVersionDemand c v | c == "<"  = LessThan v
+                               | c == ">=" = AtLeast v
+                               | c == "="  = MustBe v
+                               | otherwise = Anything
 
 -- Constructs anything of the Package type.
 makePackage :: Package a =>
-               (String -> Versioning -> t -> a)
+               (String -> VersionDemand -> t -> a)
                -> (String -> IO t)
                -> String
                -> IO a
 makePackage typeCon getThirdField pkg = do
-  let (name,ver) = parseNameAndVersioning pkg
+  let (name,ver) = parseNameAndVersionDemand pkg
   thirdField <- getThirdField name
   return $ typeCon name ver thirdField
 
@@ -370,7 +370,7 @@ getRealPkgConflicts f lang toIgnore pkg
     | isVersionConflict (versionOf pkg) curVer = Just failMessage2
     | otherwise = Nothing    
     where curVer        = f pkg
-          (name,reqVer) = splitNameAndVer $ pkgNameWithVersioning pkg
+          (name,reqVer) = splitNameAndVer $ pkgNameWithVersionDemand pkg
           failMessage1  = getRealPkgConflictsMsg2 lang name
           failMessage2  = getRealPkgConflictsMsg1 lang name curVer reqVer
 
@@ -381,7 +381,7 @@ getVirtualConflicts lang toIgnore pkg
     | isIgnored provider toIgnore  = Just failMessage2
     | isVersionConflict (versionOf pkg) pVer = Just failMessage3
     | otherwise = Nothing
-    where (name,ver)   = splitNameAndVer $ pkgNameWithVersioning pkg
+    where (name,ver)   = splitNameAndVer $ pkgNameWithVersionDemand pkg
           provider     = pkgNameOf . fromJust . providerPkgOf $ pkg
           pVer         = getProvidedVerNum pkg
           failMessage1 = getVirtualConflictsMsg1 lang name
@@ -396,7 +396,7 @@ getProvidedVerNum pkg = splitVer match
 -- Compares a (r)equested version number with a (c)urrent up-to-date one.
 -- The `MustBe` case uses regexes. A dependency demanding version 7.4
 -- SHOULD match as `okay` against version 7.4, 7.4.0.1, or even 7.4.0.1-2.
-isVersionConflict :: Versioning -> String -> Bool
+isVersionConflict :: VersionDemand -> String -> Bool
 isVersionConflict Anything _     = False
 isVersionConflict (LessThan r) c = not $ comparableVer r < comparableVer c
 isVersionConflict (MustBe r) c   = not $ c =~ ("^" ++ r)
