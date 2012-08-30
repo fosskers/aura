@@ -32,7 +32,7 @@ Install order is as follows:
 ### Run as Root, Build as a User
   `makepkg` gets very upset if you try to build a package as root.
   That said, a built package can't be handed off to pacman and installed
-  is you _don't_ run as root. Other AUR helpers ignore this problem,
+  if you _don't_ run as root. Other AUR helpers ignore this problem,
   but Aura does not. Even when run with `sudo`, packages are built
   with normal user privilages, then handed to pacman and installed as root.
 
