@@ -4,7 +4,9 @@ module AuraLanguages where
 
 import Shell (cyan, yellow, green, red, blue)
 
-data Language = English | Japanese deriving (Eq,Enum,Show)
+data Language = English
+              | Japanese
+                deriving (Eq,Enum,Show)
 
 allLanguages :: [Language]
 allLanguages = [English ..]

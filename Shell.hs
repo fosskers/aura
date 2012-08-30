@@ -136,7 +136,7 @@ isntTrueRoot = not . isTrueRoot
 
 -- This will get the true user name regardless of sudo-ing.
 getTrueUser :: Environment -> String
-getTrueUser env | isUserRoot env = "root"
+getTrueUser env | isTrueRoot env = "root"
                 | otherwise      = case getSudoUser env of
                                      Just user -> user
                                      Nothing   -> getUser env

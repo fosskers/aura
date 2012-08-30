@@ -35,56 +35,54 @@ data Flag = AURInstall
           | JapOut
             deriving (Eq,Ord)
 
-type OptParts = ([Char],[String],Flag,String)
-
 allFlags :: Language -> [OptDescr Flag]
 allFlags lang = concat [ auraOperations lang
                        , auraOptions
                        , pacmanOptions
                        , dualOptions ]
 
-makeOption :: OptParts -> OptDescr Flag
-makeOption (c,s,f,desc) = Option c s (NoArg f) desc
+simpleMakeOption :: ([Char],[String],Flag) -> OptDescr Flag
+simpleMakeOption (c,s,f) = Option c s (NoArg f) ""
 
 auraOperations :: Language -> [OptDescr Flag]
-auraOperations lang = map makeOption
-                      [ ( ['A'], ["aursync"],   AURInstall, aurSy lang )
-                      , ( ['C'], ["downgrade"], Cache,      downG lang )
-                      , ( ['L'], ["viewlog"],   LogFile,    viewL lang ) 
-                      , ( ['O'], ["orphans"],   Orphans,    orpha lang ) ]
+auraOperations lang =
+    [ Option ['A'] ["aursync"]   (NoArg AURInstall) (aurSy lang)
+    , Option ['C'] ["downgrade"] (NoArg Cache)      (downG lang)
+    , Option ['L'] ["viewlog"]   (NoArg LogFile)    (viewL lang)
+    , Option ['O'] ["orphans"]   (NoArg Orphans)    (orpha lang) ]
 
 auraOptions :: [OptDescr Flag]
-auraOptions = map makeOption
-              [ ( ['a'], ["delmakedeps"],  DelMDeps,    "" )
-              , ( ['b'], ["backup"],       Backup,      "" )
-              , ( ['c'], ["clean"],        Clean,       "" )
-              , ( ['d'], ["deps"],         ViewDeps,    "" )
-              , ( ['j'], ["abandon"],      Abandon,     "" )
-              , ( ['i'], ["info"],         Info,        "" )
-              , ( ['p'], ["pkgbuild"],     GetPkgbuild, "" )
-              , ( ['s'], ["search"],       Search,      "" )
-              , ( ['u'], ["sysupgrade"],   Upgrade,     "" )
-              , ( ['w'], ["downloadonly"], Download,    "" )
-              , ( ['x'], ["unsuppress"],   Unsuppress,  "" )
-              , ( [],    ["hotedit"],      HotEdit,     "" )
-              , ( [],    ["conf"],         ViewConf,    "" ) 
-              , ( [],    ["languages"],    Languages,   "" ) ]
+auraOptions = map simpleMakeOption
+              [ ( ['a'], ["delmakedeps"],  DelMDeps    )
+              , ( ['b'], ["backup"],       Backup      )
+              , ( ['c'], ["clean"],        Clean       )
+              , ( ['d'], ["deps"],         ViewDeps    )
+              , ( ['j'], ["abandon"],      Abandon     )
+              , ( ['i'], ["info"],         Info        )
+              , ( ['p'], ["pkgbuild"],     GetPkgbuild )
+              , ( ['s'], ["search"],       Search      )
+              , ( ['u'], ["sysupgrade"],   Upgrade     )
+              , ( ['w'], ["downloadonly"], Download    )
+              , ( ['x'], ["unsuppress"],   Unsuppress  )
+              , ( [],    ["hotedit"],      HotEdit     )
+              , ( [],    ["conf"],         ViewConf    ) 
+              , ( [],    ["languages"],    Languages   ) ]
 
 -- These are intercepted Pacman flags. Their functionality is different.
 pacmanOptions :: [OptDescr Flag]
-pacmanOptions = map makeOption
-                [ ( ['y'], ["refresh"], Refresh, "" )
-                , ( ['V'], ["version"], Version, "" )
-                , ( ['h'], ["help"],    Help,    "" ) ]
+pacmanOptions = map simpleMakeOption
+                [ ( ['y'], ["refresh"], Refresh )
+                , ( ['V'], ["version"], Version )
+                , ( ['h'], ["help"],    Help    ) ]
 
 -- Options that have functionality stretching across both Aura and Pacman.
 dualOptions :: [OptDescr Flag]
-dualOptions = map makeOption
-              [ ( [], ["noconfirm"], NoConfirm, "" ) ]
+dualOptions = map simpleMakeOption
+              [ ( [], ["noconfirm"], NoConfirm ) ]
 
 languageOptions :: [OptDescr Flag]
-languageOptions = map makeOption
-                  [ ( [], ["japanese","日本語"], JapOut, "" ) ]
+languageOptions = map simpleMakeOption
+                  [ ( [], ["japanese","日本語"], JapOut ) ]
 
 -- `Hijacked` flags. They have original pacman functionality, but
 -- that is masked and made unique in an Aura context.
