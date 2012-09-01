@@ -245,11 +245,7 @@ buildPackages settings (p:ps) = do
 build :: Settings -> AURPkg -> IO (Either String FilePath)
 build settings pkg = do
   currDir <- getCurrentDirectory
-  allowFullAccess currDir  -- Gives write access to the temp folder.
-  tarball   <- downloadSource currDir $ pkgNameOf pkg
-  sourceDir <- uncompress tarball
-  allowFullAccess sourceDir
-  setCurrentDirectory sourceDir
+  getSourceCode (pkgNameOf pkg) user currDir
   checkHotEdit settings $ pkgNameOf pkg
   (exitStatus,pkgName,output) <- makepkg' user
   if didProcessFail exitStatus
@@ -261,6 +257,14 @@ build settings pkg = do
     where makepkg'   = if toSuppress then makepkgQuiet else makepkgVerbose
           toSuppress = suppressMakepkg settings
           user       = getTrueUser $ environmentOf settings
+
+getSourceCode :: String -> String -> FilePath -> IO ()
+getSourceCode pkgName user currDir = do
+  chown user currDir []
+  tarball   <- downloadSource currDir pkgName
+  sourceDir <- uncompress tarball
+  chown user sourceDir ["-R"]
+  setCurrentDirectory sourceDir
 
 -- Allow the user to edit the PKGBUILD if they asked to do so.
 checkHotEdit :: Settings -> String -> IO ()
@@ -398,7 +402,7 @@ getProvidedVerNum pkg = splitVer match
 -- SHOULD match as `okay` against version 7.4, 7.4.0.1, or even 7.4.0.1-2.
 isVersionConflict :: VersionDemand -> String -> Bool
 isVersionConflict Anything _     = False
-isVersionConflict (LessThan r) c = not $ comparableVer r < comparableVer c
+isVersionConflict (LessThan r) c = not $ comparableVer c < comparableVer r
 isVersionConflict (MustBe r) c   = not $ c =~ ("^" ++ r)
 isVersionConflict (AtLeast r) c  | comparableVer c > comparableVer r = False
                                  | isVersionConflict (MustBe r) c = True

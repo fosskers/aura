@@ -151,3 +151,8 @@ getEditor env = case "EDITOR" `lookup` env of
 -------------------
 allowFullAccess :: FilePath -> IO ()
 allowFullAccess dir = setFileMode dir accessModes
+
+chown :: String -> FilePath -> [String] -> IO ()
+chown user path args = do
+  _ <- quietShellCmd "chown" $ args ++ [user,path]
+  return ()
