@@ -96,7 +96,7 @@ executeOpts ss (flags,input,pacOpts) = do
 -- WORKING WITH `-A`
 --------------------
 {- Ideal look
-installPackages pkgs = toAurPkgs pkgs >>= getDeps >>= install
+installPackages pkgs = toAurPkgs pkgs >>= getDeps >>= installDeps >>= install
 
 This could work if Package was a sexy Monad and these operations
 could fail silently.
@@ -128,13 +128,17 @@ installPackages settings pacOpts pkgs = do
            unless (null pacPkgs) (pacman' $ ["-S","--asdeps"] ++ pkgsAndOpts)
            mapM_ (buildAndInstallDep settings pacOpts) aurDeps
            pkgFiles <- buildPackages settings aurPackages
-           installPackageFiles pacOpts pkgFiles
+           case pkgFiles of
+             Just pfs -> installPackageFiles pacOpts pfs
+             Nothing  -> scoldAndFail settings installPackagesMsg6
 
 buildAndInstallDep :: Settings -> [String] -> AURPkg -> IO ExitCode
 buildAndInstallDep settings pacOpts pkg = do
-  path <- buildPackages settings [pkg]
-  installPackageFiles (["--asdeps"] ++ pacOpts) path
-  
+  pkgFile <- buildPackages settings [pkg]
+  case pkgFile of
+    Just pf -> installPackageFiles (["--asdeps"] ++ pacOpts) pf
+    Nothing -> returnFailure
+
 reportNonPackages :: Language -> [String] -> IO ()
 reportNonPackages lang nons = printListWithTitle red cyan msg nons
     where msg = reportNonPackagesMsg1 lang

@@ -227,22 +227,18 @@ installPackageFiles pacOpts files = pacman $ ["-U"] ++ pacOpts ++ files
 
 -- Handles the building of Packages.
 -- Assumed: All pacman and AUR dependencies are already installed.
-buildPackages :: Settings -> [AURPkg] -> IO [FilePath]
-buildPackages _ []            = return []
-buildPackages settings (p:ps) = do
+buildPackages :: Settings -> [AURPkg] -> IO (Maybe [FilePath])
+buildPackages _ [] = return Nothing
+buildPackages settings pkgs@(p:ps) = do
   notify settings (flip buildPackagesMsg1 $ pkgNameOf p)
   results <- withTempDir (show p) (build settings p)
   case results of
-    Right pkg   -> (\pkgs -> pkg : pkgs) `liftM` buildPackages settings ps
-    Left errors -> do        
-        toContinue <- buildFail settings p ps errors
-        if toContinue
-           then return []
-           else error . buildPackagesMsg2 . langOf $ settings
+    Right pkg   -> (fmap (pkg :)) `liftM` buildPackages settings ps
+    Left errors -> buildFail settings pkgs errors
         
 -- Big and ugly.
 -- Perform the actual build. Fails elegantly when build fails occur.
-build :: Settings -> AURPkg -> IO (Either String FilePath)
+build :: Settings -> AURPkg -> IO (Either ErrMsg FilePath)
 build settings pkg = do
   currDir <- getCurrentDirectory
   getSourceCode (pkgNameOf pkg) user currDir
@@ -278,14 +274,17 @@ checkHotEdit settings pkgName = when (mayHotEdit settings) promptForEdit
 -- Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
 -- BUG: This prompting ignores `--noconfirm`.
-buildFail :: Settings -> AURPkg -> [AURPkg] -> ErrMsg -> IO Bool
-buildFail settings p ps errors = do
+buildFail :: Settings -> [AURPkg] -> ErrMsg -> IO (Maybe [FilePath])
+buildFail settings (p:ps) errors = do
   scold settings (flip buildFailMsg1 (show p))
   when (suppressMakepkg settings) (displayBuildErrors settings errors)
   unless (null ps) (scold settings buildFailMsg2 >>
                     mapM_ (putStrLn . cyan . pkgNameOf) ps)
   warn settings buildFailMsg3
-  yesNoPrompt (buildFailMsg4 $ langOf settings) "^(y|Y)"
+  toContinue <- yesNoPrompt (buildFailMsg4 $ langOf settings) "^(y|Y)"
+  if toContinue
+     then return $ Just []
+     else return Nothing
 
 -- If the user wasn't running Aura with `-x`, then this will
 -- show them the suppressed makepkg output. 

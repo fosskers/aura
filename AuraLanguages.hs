@@ -32,10 +32,6 @@ buildPackagesMsg1 :: Language -> String -> String
 buildPackagesMsg1 English p  = "Building " ++ bt p ++ "..."
 buildPackagesMsg1 Japanese p = bt p ++ "を作成中・・・"
 
-buildPackagesMsg2 :: Language -> String
-buildPackagesMsg2 English  = "So be it."
-buildPackagesMsg2 Japanese = "分かった。脱出！"
-
 checkHotEditMsg1 :: Language -> String -> String
 checkHotEditMsg1 English p  =
     "Would you like to edit the PKGBUILD of " ++ bt p ++ "?"
@@ -140,6 +136,10 @@ installPackagesMsg4 Japanese = "続行は意図的に阻止された。"
 installPackagesMsg5 :: Language -> String
 installPackagesMsg5 English  = "Determining dependencies..."
 installPackagesMsg5 Japanese = "従属パッケージを確認中・・・"
+
+installPackagesMsg6 :: Language -> String
+installPackagesMsg6 English  = "Building failed."
+installPackagesMsg6 Japanese = "パッケージ作成は失敗した。"
 
 reportNonPackagesMsg1 :: Language -> String
 reportNonPackagesMsg1 English  = "The following are not packages:"
