@@ -8,6 +8,8 @@ import System.Exit(ExitCode(..))
 import Text.Regex.Posix ((=~))
 import Data.Maybe(fromJust)
 
+import Zero
+
 ------------------
 -- COLOURED OUTPUT
 ------------------
@@ -96,6 +98,9 @@ quietShellCmd' cmd args = readProcessWithExitCode cmd args ""
 -------------
 -- EXIT CODES
 -------------
+instance Zero ExitCode where
+    zero = ExitFailure 1
+
 didProcessSucceed :: ExitCode -> Bool
 didProcessSucceed ExitSuccess = True
 didProcessSucceed _           = False
@@ -107,7 +112,7 @@ returnSuccess :: IO ExitCode
 returnSuccess = return ExitSuccess
 
 returnFailure :: IO ExitCode
-returnFailure = return $ ExitFailure 1
+returnFailure = return zero
 
 ------------------------
 -- ENVIRONMENT VARIABLES

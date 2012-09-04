@@ -21,6 +21,7 @@ import Internet
 import MakePkg
 import Pacman
 import Shell
+import Zero
 
 -- For build and package conflict errors.
 type ErrMsg = String
@@ -157,9 +158,7 @@ getProvidingPkg :: String -> IO (Maybe String)
 getProvidingPkg virt = do
   candidates <- getProvidingPkg' virt
   let lined = lines candidates
-  if length lined /= 1  -- No distinct answer? Then fail.
-     then return Nothing
-     else return . Just . head $ lined
+  (length lined /= 1) ?>> (return . Just . head $ lined)
 
 -- Unsafe version.
 -- Only use on virtual packages that have guaranteed providers.
@@ -172,9 +171,9 @@ getProvidingPkg' virt = do
 -- OPERATORS
 ------------
 -- Fails immediately if a certain predicate is not met.
-(|?|) :: Bool -> IO ExitCode -> IO ExitCode
-True  |?| action = action
-False |?| _      = returnFailure
+(?>>) :: (Zero a, Monad m) => Bool -> m a -> m a
+True  ?>> action = action
+False ?>> _      = return zero
 
 -- IO action won't be allowed unless user is root, or using [$]udo.
 (|$|) :: Settings -> IO ExitCode -> IO ExitCode
@@ -201,22 +200,24 @@ trueRootCheck ss action
 ---------------
 -- ABSTRACTIONS
 ---------------
-mapOverPkgs :: Eq a =>
-               (a -> IO Bool)                 -- A predicate for filtering.
-               -> (Language -> [a] -> IO ())  -- Notify of filtered packages.
-               -> (a -> IO b)                 -- Action to perform.
-               -> Settings
-               -> [a]                         -- Packages.
-               -> IO [b]                      -- Result of mapping.
+{-
+type PkgMap = (Eq a) =>
+              (a -> IO Bool)                 -- A predicate for filtering.
+              -> (Language -> [a] -> IO ())  -- Notify of filtered packages.
+              -> (a -> IO b)                 -- Action to perform.
+              -> Settings
+              -> [a]                         -- Packages.
+-}
+--mapOverPkgs :: PkgMap -> IO [a]               
 mapOverPkgs cond report fun settings pkgs = do
   realPkgs <- filterM cond pkgs
   report (langOf settings) $ pkgs \\ realPkgs
   mapM fun realPkgs
 
--- Same as `mapOverPkgs`, but returns an `ExitCode`.
+--mapOverPkgs' :: PkgMap -> IO ExitCode
 mapOverPkgs' cond report fun settings pkgs = do
   result <- mapOverPkgs cond report fun settings pkgs
-  notNull result |?| returnSuccess
+  notNull result ?>> returnSuccess
 
 -----------
 -- THE WORK
@@ -282,9 +283,7 @@ buildFail settings (p:ps) errors = do
                     mapM_ (putStrLn . cyan . pkgNameOf) ps)
   warn settings buildFailMsg3
   toContinue <- yesNoPrompt (buildFailMsg4 $ langOf settings) "^(y|Y)"
-  if toContinue
-     then return $ Just []
-     else return Nothing
+  toContinue ?>> (return $ Just [])
 
 -- If the user wasn't running Aura with `-x`, then this will
 -- show them the suppressed makepkg output. 

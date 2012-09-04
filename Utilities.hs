@@ -21,21 +21,6 @@ type Pattern = (String,String)
 
 type Regex = String
 
--- A type that is part of the Zero class must define a function
--- `zeroVal` which returns its `most null` or `most plain` value.
--- See the definition for Int below.
-class Zero a where
-    zeroVal :: a
-
-instance Zero Int where
-    zeroVal = 0
-
-instance Zero a => Zero (Maybe a) where
-    zeroVal = Nothing
-
-instance Zero ExitCode where
-    zeroVal = ExitFailure 1
-
 ----------------
 -- CUSTOM OUTPUT
 ----------------

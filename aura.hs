@@ -175,7 +175,7 @@ displayPkgDeps :: Settings -> [String] -> IO ExitCode
 displayPkgDeps _ []    = returnFailure
 displayPkgDeps ss pkgs = do
   aurPkgs <- mapOverPkgs isAURPkg reportNonPackages makeAURPkg ss pkgs
-  notNull aurPkgs |?| do
+  notNull aurPkgs ?>> do
        allDeps <- mapM (determineDeps $ langOf ss) aurPkgs
        let (ps, as, os) = foldl groupPkgs ([],[],[]) allDeps
        providers <- mapM getProvidingPkg' os
@@ -207,7 +207,7 @@ removeMakeDeps :: Settings -> ([Flag],[String],[String]) -> IO ExitCode
 removeMakeDeps settings (flags,input,pacOpts) = do
   orphansBefore <- getOrphans
   exitStatus    <- executeOpts settings (AURInstall:flags,input,pacOpts)
-  didProcessSucceed exitStatus |?| do
+  didProcessSucceed exitStatus ?>> do
        orphansAfter <- getOrphans
        let makeDeps = orphansAfter \\ orphansBefore
        unless (null makeDeps) $ notify settings removeMakeDepsAfterMsg1
