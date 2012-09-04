@@ -171,9 +171,9 @@ getProvidingPkg' virt = do
 -- OPERATORS
 ------------
 -- Fails immediately if a certain predicate is not met.
-(?>>) :: (Zero a, Monad m) => Bool -> m a -> m a
-True  ?>> action = action
-False ?>> _      = return zero
+(?>>) :: (Eq a, Zero a, Eq b, Zero b, Monad m) => a -> m b -> m b
+val ?>> action | val == zero = return zero
+               | otherwise   = action
 
 -- IO action won't be allowed unless user is root, or using [$]udo.
 (|$|) :: Settings -> IO ExitCode -> IO ExitCode
@@ -211,7 +211,7 @@ type PkgMap = (Eq a) =>
 --mapOverPkgs :: PkgMap -> IO [a]               
 mapOverPkgs cond report fun settings pkgs = do
   realPkgs <- filterM cond pkgs
-  report (langOf settings) $ pkgs \\ realPkgs
+  _ <- report (langOf settings) $ pkgs \\ realPkgs
   mapM fun realPkgs
 
 --mapOverPkgs' :: PkgMap -> IO ExitCode
@@ -229,7 +229,7 @@ installPackageFiles pacOpts files = pacman $ ["-U"] ++ pacOpts ++ files
 -- Handles the building of Packages.
 -- Assumed: All pacman and AUR dependencies are already installed.
 buildPackages :: Settings -> [AURPkg] -> IO (Maybe [FilePath])
-buildPackages _ [] = return Nothing
+buildPackages _ [] = return $ Just []  -- Done recursing!
 buildPackages settings pkgs@(p:ps) = do
   notify settings (flip buildPackagesMsg1 $ pkgNameOf p)
   results <- withTempDir (show p) (build settings p)
@@ -441,9 +441,7 @@ isntAURPkg pkg = not `liftM` isAURPkg pkg
 isVirtualPkg :: String -> IO Bool
 isVirtualPkg pkg = do
   provider <- getProvidingPkg pkg
-  case provider of
-    Just _  -> return True
-    Nothing -> return False
+  provider ?>> return True
 
 countInstalledPackages :: IO Int
 countInstalledPackages = (length . lines) `liftM` pacmanOutput ["-Qsq"]

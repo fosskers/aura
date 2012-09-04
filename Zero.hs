@@ -16,3 +16,6 @@ instance Zero a => Zero [a] where
 
 instance Zero Char where
     zero = '\NUL'  -- Is there a better value for this?
+
+instance Zero Bool where
+    zero = False

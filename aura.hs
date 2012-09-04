@@ -12,6 +12,7 @@ import System.Posix.Files (fileExist)
 import Control.Monad (liftM, when, unless)
 import Text.Regex.Posix ((=~))
 import System.FilePath ((</>))
+import Data.Maybe (fromJust)
 import Data.Char (isDigit)
 
 -- Custom Libraries
@@ -134,10 +135,8 @@ installPackages settings pacOpts pkgs = do
 
 buildAndInstallDep :: Settings -> [String] -> AURPkg -> IO ExitCode
 buildAndInstallDep settings pacOpts pkg = do
-  pkgFile <- buildPackages settings [pkg]
-  case pkgFile of
-    Just pf -> installPackageFiles (["--asdeps"] ++ pacOpts) pf
-    Nothing -> returnFailure
+  pFile <- buildPackages settings [pkg]
+  pFile ?>> installPackageFiles (["--asdeps"] ++ pacOpts) (fromJust pFile)
 
 reportNonPackages :: Language -> [String] -> IO ()
 reportNonPackages lang nons = printListWithTitle red cyan msg nons
