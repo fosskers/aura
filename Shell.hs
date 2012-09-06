@@ -119,22 +119,34 @@ returnFailure = return zero
 ------------------------
 type Environment = [(String,String)]
 
--- There will never not be a USER environment variable.
-getUser :: Environment -> String
-getUser = fromJust . lookup "USER"
+getVar :: String -> Environment -> Maybe String
+getVar v env = v `lookup` env
+
+varExists :: String -> Environment -> Bool
+varExists v env = case getVar v env of
+                    Just _  -> True
+                    Nothing -> False
+
+-- As of `sudo 1.8.6`, the USER variable disappears when using `sudo`.
+getUser :: Environment -> Maybe String
+getUser = getVar "USER"
+
+getUser' :: Environment -> String
+getUser' = fromJust. getUser
 
 -- This variable won't exist if the current program wasn't run with `sudo`.
 getSudoUser :: Environment -> Maybe String
-getSudoUser = lookup "SUDO_USER"
+getSudoUser = getVar "SUDO_USER"
+
+getSudoUser' :: Environment -> String
+getSudoUser' = fromJust . getSudoUser
 
 -- Is the user root, or using sudo?
-isUserRoot :: Environment -> Bool
-isUserRoot = (==) "root" . getUser
+hasRootPriv :: Environment -> Bool
+hasRootPriv env = varExists "SUDO_USER" env || isTrueRoot env
 
--- A user using `sudo` will appear to be root, so we have to be careful.
--- With no `SUDO_USER` variable active, we know the user is the true `root`.
 isTrueRoot :: Environment -> Bool
-isTrueRoot env = isUserRoot env && getSudoUser env == Nothing
+isTrueRoot env = varExists "USER" env && getUser' env == "root"
 
 isntTrueRoot :: Environment -> Bool
 isntTrueRoot = not . isTrueRoot
@@ -142,9 +154,7 @@ isntTrueRoot = not . isTrueRoot
 -- This will get the true user name regardless of sudo-ing.
 getTrueUser :: Environment -> String
 getTrueUser env | isTrueRoot env = "root"
-                | otherwise      = case getSudoUser env of
-                                     Just user -> user
-                                     Nothing   -> getUser env
+                | otherwise      = getSudoUser' env
 
 getEditor :: Environment -> String
 getEditor env = case "EDITOR" `lookup` env of

@@ -181,7 +181,7 @@ settings |$| action = mustBeRoot settings action
 
 mustBeRoot :: Settings -> IO ExitCode -> IO ExitCode
 mustBeRoot settings action
-  | isUserRoot $ environmentOf settings = action
+  | hasRootPriv $ environmentOf settings = action
   | otherwise = scoldAndFail settings mustBeRootMsg1
 
 -- Prompt if the user is the [+]rue Root. This can be dangerous.
@@ -276,6 +276,7 @@ checkHotEdit settings pkgName = when (mayHotEdit settings) promptForEdit
 -- continue installing previous packages that built successfully.
 -- BUG: This prompting ignores `--noconfirm`.
 buildFail :: Settings -> [AURPkg] -> ErrMsg -> IO (Maybe [FilePath])
+buildFail _ [] _ = return Nothing
 buildFail settings (p:ps) errors = do
   scold settings (flip buildFailMsg1 (show p))
   when (suppressMakepkg settings) (displayBuildErrors settings errors)
