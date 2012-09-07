@@ -3,7 +3,6 @@
 module Shell where
 
 import System.Process (readProcess, readProcessWithExitCode, rawSystem)
-import System.Posix.Files (setFileMode, accessModes)
 import System.Exit(ExitCode(..))
 import Text.Regex.Posix ((=~))
 import Data.Maybe(fromJust)
@@ -116,24 +115,25 @@ returnFailure = return zero
 ------------------------
 type Environment = [(String,String)]
 
-getVar :: String -> Environment -> Maybe String
-getVar v env = v `lookup` env
+getEnvVar :: String -> Environment -> Maybe String
+getEnvVar v env = v `lookup` env
 
 varExists :: String -> Environment -> Bool
-varExists v env = case getVar v env of
+varExists v env = case getEnvVar v env of
                     Just _  -> True
                     Nothing -> False
 
 -- As of `sudo 1.8.6`, the USER variable disappears when using `sudo`.
 getUser :: Environment -> Maybe String
-getUser = getVar "USER"
+getUser = getEnvVar "USER"
 
+-- I live on the edge.
 getUser' :: Environment -> String
-getUser' = fromJust. getUser
+getUser' = fromJust . getUser
 
 -- This variable won't exist if the current program wasn't run with `sudo`.
 getSudoUser :: Environment -> Maybe String
-getSudoUser = getVar "SUDO_USER"
+getSudoUser = getEnvVar "SUDO_USER"
 
 getSudoUser' :: Environment -> String
 getSudoUser' = fromJust . getSudoUser
@@ -154,16 +154,13 @@ getTrueUser env | isTrueRoot env = "root"
                 | otherwise      = getSudoUser' env
 
 getEditor :: Environment -> String
-getEditor env = case "EDITOR" `lookup` env of
+getEditor env = case getEnvVar "EDITOR" env of
                   Just emacs -> emacs  -- ;)
                   Nothing    -> "vi"   -- `vi` should be available.
     
 -------------------
 -- FILE PERMISSIONS
 -------------------
-allowFullAccess :: FilePath -> IO ()
-allowFullAccess dir = setFileMode dir accessModes
-
 chown :: String -> FilePath -> [String] -> IO ()
 chown user path args = do
   _ <- quietShellCmd "chown" $ args ++ [user,path]
