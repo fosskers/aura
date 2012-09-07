@@ -98,9 +98,6 @@ quietShellCmd' cmd args = readProcessWithExitCode cmd args ""
 -------------
 -- EXIT CODES
 -------------
-instance Zero ExitCode where
-    zero = ExitFailure 1
-
 didProcessSucceed :: ExitCode -> Bool
 didProcessSucceed ExitSuccess = True
 didProcessSucceed _           = False

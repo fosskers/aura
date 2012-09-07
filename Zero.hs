@@ -1,5 +1,7 @@
 module Zero where
 
+import System.Exit(ExitCode(..))
+
 -- A type that is part of the Zero class must define a function
 -- `zero` which returns its `most null` or `most plain` value.
 class Zero a where
@@ -19,3 +21,6 @@ instance Zero Char where
 
 instance Zero Bool where
     zero = False
+
+instance Zero ExitCode where
+    zero = ExitFailure 1
