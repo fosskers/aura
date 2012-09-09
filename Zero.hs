@@ -1,3 +1,5 @@
+-- THIS NEEDS TO BE TAKEN OVER BY MonadPlus!!
+
 module Zero where
 
 import System.Exit(ExitCode(..))

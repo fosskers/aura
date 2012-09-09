@@ -107,12 +107,14 @@ executeOptsMsg1 :: Language -> String
 executeOptsMsg1 English  = "Conflicting flags given!"
 executeOptsMsg1 Japanese = "矛盾しているオプションあり。"
 
+-- Packages should not be built if the user is logged in as root!
 trueRootCheckMsg1 :: Language -> String
 trueRootCheckMsg1 English  =
     "You should never build packages as the true root. Are you okay with this?"
 trueRootCheckMsg1 Japanese =
     "本当のrootユーザーとしてパッケージを作成するのが危険。続行？"
 
+-- This is for when the user decides to refrain from building afterall.
 trueRootCheckMsg2 :: Language -> String
 trueRootCheckMsg2 English  = "You've done the right thing."
 trueRootCheckMsg2 Japanese = "よしよし。"
