@@ -170,8 +170,8 @@ reportBadDowngradePkgsMsg1 Japanese =
     "このパッケージは最初からインストールしていないので、格下げはできない。"
 
 upgradeAURPkgsMsg1 :: Language -> String
-upgradeAURPkgsMsg1 English  = "Fetching PKGBUILDs..."
-upgradeAURPkgsMsg1 Japanese = "PKGBUILDをダウンロード中・・・"
+upgradeAURPkgsMsg1 English  = "Fetching package information..."
+upgradeAURPkgsMsg1 Japanese = "パッケージ情報をダウンロード中・・・"
 
 upgradeAURPkgsMsg2 :: Language -> String
 upgradeAURPkgsMsg2 English  = "Comparing package versions..."

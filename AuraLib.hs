@@ -407,16 +407,16 @@ isVersionConflict (AtLeast r) c  | comparableVer c > comparableVer r = False
                                  | isVersionConflict (MustBe r) c = True
                                  | otherwise = False
 
-getInstalledAURPackages :: IO [String]
-getInstalledAURPackages = do
+getForeignPackages :: IO [(String,String)]
+getForeignPackages = do
   pkgs <- lines `liftM` pacmanOutput ["-Qm"]
   return $ map fixName pkgs
-      where fixName = (\(n,v) -> n ++ "=" ++ v) . hardBreak (\c -> c == ' ')
+      where fixName = hardBreak (== ' ')
 
-isOutOfDate :: AURPkg -> Bool
-isOutOfDate pkg = trueVer > currVer
-  where trueVer = comparableVer . getTrueVerViaPkgbuild . pkgbuildOf $ pkg
-        currVer = comparableVer . show . versionOf $ pkg
+isOutOfDate :: (PkgInfo,String) -> Bool
+isOutOfDate (info,v) = trueVer > currVer
+  where trueVer = comparableVer $ latestVerOf info
+        currVer = comparableVer v
 
 isIgnored :: String -> [String] -> Bool
 isIgnored pkg toIgnore = pkg `elem` toIgnore
@@ -499,10 +499,10 @@ divideByPkgType pkgs = do
 
 sortPkgs :: [String] -> [String]
 sortPkgs pkgs = sortBy verNums pkgs
-    where verNums a b | nameOf a /= nameOf b = compare a b  -- Different pkgs
-                      | otherwise            = compare (verOf a) (verOf b)
-          nameOf = fst . pkgFileNameAndVer
-          verOf  = snd . pkgFileNameAndVer
+    where verNums a b | name a /= name b = compare a b  -- Different pkgs
+                      | otherwise        = compare (ver a) (ver b)
+          name = fst . pkgFileNameAndVer
+          ver  = snd . pkgFileNameAndVer
 
 -- linux-3.2.14-1-x86_64.pkg.tar.xz    -> ("linux",[3,2,14,1])
 -- wine-1.4rc6-1-x86_64.pkg.tar.xz     -> ("wine",[1,4,6,1])
