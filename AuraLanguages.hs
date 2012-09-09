@@ -52,7 +52,7 @@ buildFailMsg1 Polish p   =
     "Budowanie " ++ bt p ++ " zakończyło się niepowodzeniem."
 
 buildFailMsg2 :: Language -> String
-buildFailMsg2 English  = "Also, the following weren't built:"
+buildFailMsg2 English  = "Also, the following weren’t built:"
 buildFailMsg2 Japanese = "ちなみに下記のパッケージも作成されなかった："
 buildFailMsg2 Polish   =
     "Dodatkowo, następujące pakiety nie zostały zbudowane:"
@@ -95,7 +95,7 @@ getRealPkgConflictsMsg2 English p =
     bt p ++ " is an ignored package! See your `pacman.conf` file."
 getRealPkgConflictsMsg2 Japanese p =
     bt p ++ "は無視されるパッケージ！`pacman.conf`を参考に。"
-getRealPkgConflictsMsg2 Polish p =
+getRealPkgConflictsMsg2 Polish p  =
     bt p ++ " jest ignorowany! Sprawdź plik `pacman.conf`."
 
 getVirtualConflictsMsg1 :: Language -> String -> String
@@ -139,7 +139,7 @@ getVirtualConflictsMsg3 Polish d dVer pro proVer =
 executeOptsMsg1 :: Language -> String
 executeOptsMsg1 English  = "Conflicting flags given!"
 executeOptsMsg1 Japanese = "矛盾しているオプションあり。"
-executeOptsMsg1 Polish   = "Niektóre flagi są w konflikcie!"
+executeOptsMsg1 Polish   = "Niektóre flagi są w konflikcie ze sobą!"
 
 -- Packages should not be built if the user is logged in as root!
 trueRootCheckMsg1 :: Language -> String
@@ -147,14 +147,14 @@ trueRootCheckMsg1 English  =
     "You should never build packages as the true root. Are you okay with this?"
 trueRootCheckMsg1 Japanese =
     "本当のrootユーザーとしてパッケージを作成するのが危険。続行？"
-trueRootCheckMsg1 Polish  =
+trueRootCheckMsg1 Polish   =
     "Nigdy nie powinieneś budować pakietów jako root. Na pewno kontynuować?"
 
 -- This is for when the user decides to refrain from building afterall.
 trueRootCheckMsg2 :: Language -> String
-trueRootCheckMsg2 English  = "You've done the right thing."
+trueRootCheckMsg2 English  = "You’ve done the right thing."
 trueRootCheckMsg2 Japanese = "よしよし。"
-trueRootCheckMsg2 Polish   = "Zrobiłeś dobrze."
+trueRootCheckMsg2 Polish   = "Postąpiłeś słusznie."
 
 installPackagesMsg1 :: Language -> String
 installPackagesMsg1 English  = "Dependency checking failed for these reasons:"
@@ -201,7 +201,7 @@ reportIgnoredPackagesMsg1 Polish   = "Poniższe pakiety zostaną zignorowane:"
 reportPkgsToInstallMsg1 :: Language -> String
 reportPkgsToInstallMsg1 English  = "Dependencies from repositories:"
 reportPkgsToInstallMsg1 Japanese = "Pacmanの従属パッケージ："
-reportPkgsToInstallsMsg1 Polish = "Zależności z repozytoriów:"
+reportPkgsToInstallsMsg1 Polish  = "Zależności z repozytoriów:"
 
 reportPkgsToInstallMsg2 :: Language -> String
 reportPkgsToInstallMsg2 English  = "AUR dependencies:"
@@ -211,11 +211,11 @@ reportPkgsToInstallMsg2 Polish   = "Zależności z AUR:"
 reportPkgsToInstallMsg3 :: Language -> String
 reportPkgsToInstallMsg3 English  = "Main AUR packages:"
 reportPkgsToInstallMsg3 Japanese = "主なAURパッケージ："
-reportPkgsToInstallMsg3 Polish   = "Główne pakiety z AUR:"
+reportPkgsToInstallMsg3 Polish   = "Pakiety z AUR:"
 
 reportBadDowngradePkgsMsg1 :: Language -> String
 reportBadDowngradePkgsMsg1 English  =
-    "The following aren't installed, and thus can't be downgraded:"
+    "The following aren’t installed, and thus can’t be downgraded:"
 reportBadDowngradePkgsMsg1 Japanese =
     "このパッケージは最初からインストールしていないので、格下げはできない。"
 reportBadDowngradePkgsMsg1 Polish   =
@@ -337,7 +337,7 @@ cleanCacheMsg3 Polish n   = bt (show n) ++ " wersji każdego pakietu zostanie za
 cleanCacheMsg4 :: Language -> String
 cleanCacheMsg4 English  = "The rest will be deleted. Okay?"
 cleanCacheMsg4 Japanese = "残りは全部削除される。承知する？"
-cleanCacheMsg4 Polish   = "Wszystko inne zostanie usunięte. Kontynuować?"
+cleanCacheMsg4 Polish   = "Wszystko inne zostanie usunięte. Na pewno?"
 
 cleanCacheMsg5 :: Language -> String
 cleanCacheMsg5 English  = "Cache cleaning manually aborted."
