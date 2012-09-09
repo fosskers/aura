@@ -158,17 +158,14 @@ reportPkgsToInstall lang pacPkgs aurDeps aurPkgs = do
 upgradeAURPkgs :: Settings -> [String] -> [String] -> IO ExitCode
 upgradeAURPkgs settings pacOpts pkgs = do
   notify settings upgradeAURPkgsMsg1
-  installedPkgs <- getInstalledAURPackages
-  toCheck       <- mapM fetchAndReport $ filter notIgnored installedPkgs
+  foreignPkgs <- filter (\(n,_) -> notIgnored n) `liftM` getForeignPackages
+  pkgInfo     <- getAURPkgInfo $ map fst foreignPkgs
+  let toCheck = zip pkgInfo (map snd foreignPkgs)
   notify settings upgradeAURPkgsMsg2
-  let toUpgrade = map fst $ filter isOutOfDate toCheck
+  let toUpgrade = map (nameOf . fst) $ filter isOutOfDate toCheck
   when (null toUpgrade) (warn settings upgradeAURPkgsMsg3)
   installPackages settings pacOpts $ toUpgrade ++ pkgs
-    where notIgnored p = splitName p `notElem` ignoredPkgsOf settings
-          fetchAndReport p = do
-            pkgbuild <- downloadPkgbuild . head . words $ p
-            say settings (flip upgradeAURPkgsMsg4 p)
-            return (p,pkgbuild)
+      where notIgnored p = splitName p `notElem` ignoredPkgsOf settings
 
 displayPkgDeps :: Settings -> [String] -> IO ExitCode
 displayPkgDeps _ []    = returnFailure

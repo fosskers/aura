@@ -15,7 +15,7 @@ import Internet
 -----------------------
 -- AUR API URL CREATION
 -----------------------
-data RPCType = Search | MultiInfo | MSearch deriving (Eq)
+data RPCType = PkgSearch | MultiInfo | MSearch deriving (Eq)
 
 makeRPCUrl :: RPCType -> [String] -> String
 makeRPCUrl t args = rpcBaseUrl ++ t' ++ args'
@@ -29,7 +29,7 @@ rpcBaseUrl = "https://aur.archlinux.org/rpc.php?"
 
 rpcAddType :: RPCType -> String
 rpcAddType t = "type=" ++ case t of
-                            Search    -> "search"
+                            PkgSearch -> "search"
                             MultiInfo -> "multiinfo"
                             MSearch   -> "msearch"
 
