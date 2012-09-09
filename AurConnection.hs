@@ -13,6 +13,32 @@ import Internet
 
 type Pkgbuild = String
 
+data RPCType = Search | Info | MultiInfo | MSearch deriving (Eq)
+
+makeRPCUrl :: RPCType -> [String] -> String
+makeRPCUrl t args = rpcBaseUrl ++ t' ++ args'
+    where t'    = rpcAddType t
+          args' = if t == MultiInfo
+                 then rpcAddMultiInfoArgs args
+                 else rpcAddArg args
+
+rpcBaseUrl :: String
+rpcBaseUrl = "https://aur.archlinux.org/rpc.php?"
+
+rpcAddType :: RPCType -> String
+rpcAddType t = "type=" ++ case t of
+                            Search    -> "search"
+                            Info      -> "info"
+                            MultiInfo -> "multiinfo"
+                            MSearch   -> "msearch"
+
+rpcAddArg :: [String] -> String
+rpcAddArg []    = []
+rpcAddArg (a:_) = "&arg=" ++ a
+
+rpcAddMultiInfoArgs :: [String] -> String
+rpcAddMultiInfoArgs = concat . map ("&arg[]=" ++)
+
 aurLink :: String
 aurLink = "https://aur.archlinux.org/packages/"
 
