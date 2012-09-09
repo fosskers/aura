@@ -3,10 +3,11 @@
 module Shell where
 
 import System.Process (readProcess, readProcessWithExitCode, rawSystem)
-import System.Posix.Files (setFileMode, accessModes)
 import System.Exit(ExitCode(..))
 import Text.Regex.Posix ((=~))
 import Data.Maybe(fromJust)
+
+import Zero
 
 ------------------
 -- COLOURED OUTPUT
@@ -107,47 +108,60 @@ returnSuccess :: IO ExitCode
 returnSuccess = return ExitSuccess
 
 returnFailure :: IO ExitCode
-returnFailure = return $ ExitFailure 1
+returnFailure = return zero
 
 ------------------------
 -- ENVIRONMENT VARIABLES
 ------------------------
 type Environment = [(String,String)]
 
--- There will never not be a USER environment variable.
-getUser :: Environment -> String
-getUser = fromJust . lookup "USER"
+getEnvVar :: String -> Environment -> Maybe String
+getEnvVar v env = v `lookup` env
+
+varExists :: String -> Environment -> Bool
+varExists v env = case getEnvVar v env of
+                    Just _  -> True
+                    Nothing -> False
+
+-- As of `sudo 1.8.6`, the USER variable disappears when using `sudo`.
+getUser :: Environment -> Maybe String
+getUser = getEnvVar "USER"
+
+-- I live on the edge.
+getUser' :: Environment -> String
+getUser' = fromJust . getUser
 
 -- This variable won't exist if the current program wasn't run with `sudo`.
 getSudoUser :: Environment -> Maybe String
-getSudoUser = lookup "SUDO_USER"
+getSudoUser = getEnvVar "SUDO_USER"
+
+getSudoUser' :: Environment -> String
+getSudoUser' = fromJust . getSudoUser
 
 -- Is the user root, or using sudo?
-isUserRoot :: Environment -> Bool
-isUserRoot = (==) "root" . getUser
+hasRootPriv :: Environment -> Bool
+hasRootPriv env = varExists "SUDO_USER" env || isTrueRoot env
 
--- A user using `sudo` will appear to be root, so we have to be careful.
--- With no `SUDO_USER` variable active, we know the user is the true `root`.
 isTrueRoot :: Environment -> Bool
-isTrueRoot env = isUserRoot env && getSudoUser env == Nothing
+isTrueRoot env = varExists "USER" env && getUser' env == "root"
 
 isntTrueRoot :: Environment -> Bool
 isntTrueRoot = not . isTrueRoot
 
 -- This will get the true user name regardless of sudo-ing.
 getTrueUser :: Environment -> String
-getTrueUser env | isUserRoot env = "root"
-                | otherwise      = case getSudoUser env of
-                                     Just user -> user
-                                     Nothing   -> getUser env
+getTrueUser env | isTrueRoot env = "root"
+                | otherwise      = getSudoUser' env
 
 getEditor :: Environment -> String
-getEditor env = case "EDITOR" `lookup` env of
+getEditor env = case getEnvVar "EDITOR" env of
                   Just emacs -> emacs  -- ;)
                   Nothing    -> "vi"   -- `vi` should be available.
     
 -------------------
 -- FILE PERMISSIONS
 -------------------
-allowFullAccess :: FilePath -> IO ()
-allowFullAccess dir = setFileMode dir accessModes
+chown :: String -> FilePath -> [String] -> IO ()
+chown user path args = do
+  _ <- quietShellCmd "chown" $ args ++ [user,path]
+  return ()

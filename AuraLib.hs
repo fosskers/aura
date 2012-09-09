@@ -5,7 +5,7 @@ module AuraLib where
 
 -- System Libraries
 import System.Directory (renameFile, getCurrentDirectory, setCurrentDirectory)
-import Control.Monad (filterM, when, unless)
+import Control.Monad (filterM, liftM, when, unless)
 import Data.List ((\\), nub, sortBy)
 import System.Exit (ExitCode(..))
 import System.FilePath ((</>))
@@ -21,6 +21,7 @@ import Internet
 import MakePkg
 import Pacman
 import Shell
+import Zero
 
 -- For build and package conflict errors.
 type ErrMsg = String
@@ -41,26 +42,36 @@ data Settings = Settings { environmentOf   :: Environment
 -----------
 class Package a where
     pkgNameOf :: a -> String
-    versionOf :: a -> Versioning
+    versionOf :: a -> VersionDemand
 
-data Versioning = AtLeast String | MustBe String | Anything deriving (Eq,Show)
+data VersionDemand = LessThan String
+                   | AtLeast String
+                   | MustBe String
+                   | Anything
+                     deriving (Eq)
+
+instance Show VersionDemand where
+    show (LessThan v) = "<"  ++ v
+    show (AtLeast v)  = ">=" ++ v
+    show (MustBe  v)  = "="  ++ v
+    show Anything     = ""
 
 -- I would like to reduce the following three sets of instance declarations
 -- to a single more polymorphic solution.
 ---------------
 -- AUR Packages
 ---------------
-data AURPkg = AURPkg String Versioning Pkgbuild
+data AURPkg = AURPkg String VersionDemand Pkgbuild
                
 instance Package AURPkg where
     pkgNameOf (AURPkg n _ _) = n
     versionOf (AURPkg _ v _) = v
 
 instance Show AURPkg where
-    show = pkgNameWithVersion
+    show = pkgNameWithVersionDemand
 
 instance Eq AURPkg where
-    a == b = pkgNameWithVersion a == pkgNameWithVersion b
+    a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
 
 pkgbuildOf :: AURPkg -> String
 pkgbuildOf (AURPkg _ _ p) = p
@@ -68,17 +79,17 @@ pkgbuildOf (AURPkg _ _ p) = p
 ------------------
 -- Pacman Packages
 ------------------
-data PacmanPkg = PacmanPkg String Versioning String
+data PacmanPkg = PacmanPkg String VersionDemand String
 
 instance Package PacmanPkg where
     pkgNameOf (PacmanPkg n _ _) = n
     versionOf (PacmanPkg _ v _) = v
 
 instance Show PacmanPkg where
-    show = pkgNameWithVersion
+    show = pkgNameWithVersionDemand
 
 instance Eq PacmanPkg where
-    a == b = pkgNameWithVersion a == pkgNameWithVersion b
+    a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
 
 pkgInfoOf :: PacmanPkg -> String
 pkgInfoOf (PacmanPkg _ _ i) = i
@@ -89,14 +100,14 @@ pkgInfoOf (PacmanPkg _ _ i) = i
 -- Virtual packages also contain a record of their providing package.
 -- Providing packages are assumed to be Pacman (ABS) packages.
 -- Are there any instances where this isn't the case?
-data VirtualPkg = VirtualPkg String Versioning (Maybe PacmanPkg)
+data VirtualPkg = VirtualPkg String VersionDemand (Maybe PacmanPkg)
 
 instance Package VirtualPkg where
     pkgNameOf (VirtualPkg n _ _) = n
     versionOf (VirtualPkg _ v _) = v
 
 instance Show VirtualPkg where
-    show = pkgNameWithVersion
+    show = pkgNameWithVersionDemand
 
 providerPkgOf :: VirtualPkg -> Maybe PacmanPkg
 providerPkgOf (VirtualPkg _ _ p) = p
@@ -104,28 +115,26 @@ providerPkgOf (VirtualPkg _ _ p) = p
 ---------------------------------
 -- Functions common to `Package`s
 ---------------------------------
-pkgNameWithVersion :: Package a => a -> String
-pkgNameWithVersion pkg = pkgNameOf pkg ++ signAndVersion
-    where signAndVersion = case versionOf pkg of
-                             AtLeast v -> ">=" ++ v
-                             MustBe  v -> "="  ++ v
-                             Anything  -> ""
+pkgNameWithVersionDemand :: Package a => a -> String
+pkgNameWithVersionDemand pkg = pkgNameOf pkg ++ signAndVersion
+    where signAndVersion = show $ versionOf pkg
 
-parseNameAndVersioning :: String -> (String,Versioning)
-parseNameAndVersioning pkg = (name, getVersioning comp ver)
-    where (name,comp,ver) = pkg =~ "(>=|=)" :: (String,String,String)
-          getVersioning c v | c == ">=" = AtLeast v
-                            | c == "="  = MustBe v
-                            | otherwise = Anything
+parseNameAndVersionDemand :: String -> (String,VersionDemand)
+parseNameAndVersionDemand pkg = (name, getVersionDemand comp ver)
+    where (name,comp,ver) = pkg =~ "(<|>=|=)" :: (String,String,String)
+          getVersionDemand c v | c == "<"  = LessThan v
+                               | c == ">=" = AtLeast v
+                               | c == "="  = MustBe v
+                               | otherwise = Anything
 
 -- Constructs anything of the Package type.
 makePackage :: Package a =>
-               (String -> Versioning -> t -> a)
+               (String -> VersionDemand -> t -> a)
                -> (String -> IO t)
                -> String
                -> IO a
 makePackage typeCon getThirdField pkg = do
-  let (name,ver) = parseNameAndVersioning pkg
+  let (name,ver) = parseNameAndVersionDemand pkg
   thirdField <- getThirdField name
   return $ typeCon name ver thirdField
 
@@ -142,16 +151,14 @@ makeVirtualPkg pkg = makePackage VirtualPkg getProvider pkg
             providerName <- getProvidingPkg name
             case providerName of
               Nothing  -> return Nothing
-              Just pro -> makePacmanPkg pro >>= return . Just
+              Just pro -> Just `liftM` makePacmanPkg pro
 
 -- Yields a virtual package's providing package if there is one.
 getProvidingPkg :: String -> IO (Maybe String)
 getProvidingPkg virt = do
   candidates <- getProvidingPkg' virt
   let lined = lines candidates
-  if length lined /= 1  -- No distinct answer? Then fail.
-     then return Nothing
-     else return . Just . head $ lined
+  (length lined /= 1) ?>> (return . Just . head $ lined)
 
 -- Unsafe version.
 -- Only use on virtual packages that have guaranteed providers.
@@ -163,13 +170,18 @@ getProvidingPkg' virt = do
 ------------
 -- OPERATORS
 ------------
+-- Fails immediately if a certain predicate is not met.
+(?>>) :: (Eq a, Zero a, Eq b, Zero b, Monad m) => a -> m b -> m b
+val ?>> action | val == zero = return zero
+               | otherwise   = action
+
 -- IO action won't be allowed unless user is root, or using [$]udo.
 (|$|) :: Settings -> IO ExitCode -> IO ExitCode
 settings |$| action = mustBeRoot settings action
 
 mustBeRoot :: Settings -> IO ExitCode -> IO ExitCode
 mustBeRoot settings action
-  | isUserRoot $ environmentOf settings = action
+  | hasRootPriv $ environmentOf settings = action
   | otherwise = scoldAndFail settings mustBeRootMsg1
 
 -- Prompt if the user is the [+]rue Root. This can be dangerous.
@@ -188,22 +200,24 @@ trueRootCheck ss action
 ---------------
 -- ABSTRACTIONS
 ---------------
-mapOverPkgs :: Eq a =>
-               (a -> IO Bool)                 -- A predicate for filtering.
-               -> (Language -> [a] -> IO ())  -- Notify of filtered packages.
-               -> (a -> IO b)                 -- Action to perform.
-               -> Settings
-               -> [a]                         -- Packages.
-               -> IO [b]                      -- Result of mapping.
+{-
+type PkgMap = (Eq a) =>
+              (a -> IO Bool)                 -- A predicate for filtering.
+              -> (Language -> [a] -> IO ())  -- Notify of filtered packages.
+              -> (a -> IO b)                 -- Action to perform.
+              -> Settings
+              -> [a]                         -- Packages.
+-}
+--mapOverPkgs :: PkgMap -> IO [a]               
 mapOverPkgs cond report fun settings pkgs = do
   realPkgs <- filterM cond pkgs
-  report (langOf settings) $ pkgs \\ realPkgs
+  _ <- report (langOf settings) $ pkgs \\ realPkgs
   mapM fun realPkgs
 
--- Same as `mapOverPkgs`, but returns an `ExitCode`.
+--mapOverPkgs' :: PkgMap -> IO ExitCode
 mapOverPkgs' cond report fun settings pkgs = do
   result <- mapOverPkgs cond report fun settings pkgs
-  if null result then returnFailure else returnSuccess
+  notNull result ?>> returnSuccess
 
 -----------
 -- THE WORK
@@ -214,29 +228,21 @@ installPackageFiles pacOpts files = pacman $ ["-U"] ++ pacOpts ++ files
 
 -- Handles the building of Packages.
 -- Assumed: All pacman and AUR dependencies are already installed.
-buildPackages :: Settings -> [AURPkg] -> IO [FilePath]
-buildPackages _ []            = return []
-buildPackages settings (p:ps) = do
+buildPackages :: Settings -> [AURPkg] -> IO (Maybe [FilePath])
+buildPackages _ [] = return $ Just []  -- Done recursing!
+buildPackages settings pkgs@(p:ps) = do
   notify settings (flip buildPackagesMsg1 $ pkgNameOf p)
   results <- withTempDir (show p) (build settings p)
   case results of
-    Right pkg   -> buildPackages settings ps >>= return . (\pkgs -> pkg : pkgs)
-    Left errors -> do        
-        toContinue <- buildFail settings p ps errors
-        if toContinue
-           then return []
-           else error . buildPackagesMsg2 . langOf $ settings
+    Right pkg   -> (fmap (pkg :)) `liftM` buildPackages settings ps
+    Left errors -> buildFail settings pkgs errors
         
 -- Big and ugly.
 -- Perform the actual build. Fails elegantly when build fails occur.
-build :: Settings -> AURPkg -> IO (Either String FilePath)
+build :: Settings -> AURPkg -> IO (Either ErrMsg FilePath)
 build settings pkg = do
   currDir <- getCurrentDirectory
-  allowFullAccess currDir  -- Gives write access to the temp folder.
-  tarball   <- downloadSource currDir $ pkgNameOf pkg
-  sourceDir <- uncompress tarball
-  allowFullAccess sourceDir
-  setCurrentDirectory sourceDir
+  getSourceCode (pkgNameOf pkg) user currDir
   checkHotEdit settings $ pkgNameOf pkg
   (exitStatus,pkgName,output) <- makepkg' user
   if didProcessFail exitStatus
@@ -248,6 +254,14 @@ build settings pkg = do
     where makepkg'   = if toSuppress then makepkgQuiet else makepkgVerbose
           toSuppress = suppressMakepkg settings
           user       = getTrueUser $ environmentOf settings
+
+getSourceCode :: String -> String -> FilePath -> IO ()
+getSourceCode pkgName user currDir = do
+  chown user currDir []
+  tarball   <- downloadSource currDir pkgName
+  sourceDir <- uncompress tarball
+  chown user sourceDir ["-R"]
+  setCurrentDirectory sourceDir
 
 -- Allow the user to edit the PKGBUILD if they asked to do so.
 checkHotEdit :: Settings -> String -> IO ()
@@ -261,14 +275,16 @@ checkHotEdit settings pkgName = when (mayHotEdit settings) promptForEdit
 -- Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
 -- BUG: This prompting ignores `--noconfirm`.
-buildFail :: Settings -> AURPkg -> [AURPkg] -> ErrMsg -> IO Bool
-buildFail settings p ps errors = do
+buildFail :: Settings -> [AURPkg] -> ErrMsg -> IO (Maybe [FilePath])
+buildFail _ [] _ = return Nothing
+buildFail settings (p:ps) errors = do
   scold settings (flip buildFailMsg1 (show p))
   when (suppressMakepkg settings) (displayBuildErrors settings errors)
   unless (null ps) (scold settings buildFailMsg2 >>
                     mapM_ (putStrLn . cyan . pkgNameOf) ps)
   warn settings buildFailMsg3
-  yesNoPrompt (buildFailMsg4 $ langOf settings) "^(y|Y)"
+  toContinue <- yesNoPrompt (buildFailMsg4 $ langOf settings) "^(y|Y)"
+  toContinue ?>> (return $ Just [])
 
 -- If the user wasn't running Aura with `-x`, then this will
 -- show them the suppressed makepkg output. 
@@ -357,7 +373,7 @@ getRealPkgConflicts f lang toIgnore pkg
     | isVersionConflict (versionOf pkg) curVer = Just failMessage2
     | otherwise = Nothing    
     where curVer        = f pkg
-          (name,reqVer) = splitNameAndVer $ pkgNameWithVersion pkg          
+          (name,reqVer) = splitNameAndVer $ pkgNameWithVersionDemand pkg
           failMessage1  = getRealPkgConflictsMsg2 lang name
           failMessage2  = getRealPkgConflictsMsg1 lang name curVer reqVer
 
@@ -368,7 +384,7 @@ getVirtualConflicts lang toIgnore pkg
     | isIgnored provider toIgnore  = Just failMessage2
     | isVersionConflict (versionOf pkg) pVer = Just failMessage3
     | otherwise = Nothing
-    where (name,ver)   = splitNameAndVer $ pkgNameWithVersion pkg
+    where (name,ver)   = splitNameAndVer $ pkgNameWithVersionDemand pkg
           provider     = pkgNameOf . fromJust . providerPkgOf $ pkg
           pVer         = getProvidedVerNum pkg
           failMessage1 = getVirtualConflictsMsg1 lang name
@@ -383,22 +399,25 @@ getProvidedVerNum pkg = splitVer match
 -- Compares a (r)equested version number with a (c)urrent up-to-date one.
 -- The `MustBe` case uses regexes. A dependency demanding version 7.4
 -- SHOULD match as `okay` against version 7.4, 7.4.0.1, or even 7.4.0.1-2.
-isVersionConflict :: Versioning -> String -> Bool
-isVersionConflict Anything _    = False
-isVersionConflict (MustBe r) c  = not $ c =~ ("^" ++ r)
-isVersionConflict (AtLeast r) c | c > r = False  -- Bug? Same as `-Cs` ordering?
-                                | isVersionConflict (MustBe r) c = True
-                                | otherwise = False
+isVersionConflict :: VersionDemand -> String -> Bool
+isVersionConflict Anything _     = False
+isVersionConflict (LessThan r) c = not $ comparableVer c < comparableVer r
+isVersionConflict (MustBe r) c   = not $ c =~ ("^" ++ r)
+isVersionConflict (AtLeast r) c  | comparableVer c > comparableVer r = False
+                                 | isVersionConflict (MustBe r) c = True
+                                 | otherwise = False
 
 getInstalledAURPackages :: IO [String]
-getInstalledAURPackages = pacmanOutput ["-Qm"] >>= return . lines
+getInstalledAURPackages = do
+  pkgs <- lines `liftM` pacmanOutput ["-Qm"]
+  return $ map fixName pkgs
+      where fixName = (\(n,v) -> n ++ "=" ++ v) . hardBreak (\c -> c == ' ')
 
--- Takes a PKGBUILD as input.
-isOutOfDate :: (String,String) -> Bool
-isOutOfDate (pkg,pkgbuild) = trueVer > currVer
-  where trueVer = splitBySubVersion $ getTrueVerViaPkgbuild pkgbuild
-        currVer = splitBySubVersion . last . words $ pkg
-  
+isOutOfDate :: AURPkg -> Bool
+isOutOfDate pkg = trueVer > currVer
+  where trueVer = comparableVer . getTrueVerViaPkgbuild . pkgbuildOf $ pkg
+        currVer = comparableVer . show . versionOf $ pkg
+
 isIgnored :: String -> [String] -> Bool
 isIgnored pkg toIgnore = pkg `elem` toIgnore
 
@@ -417,21 +436,19 @@ isAURPkg :: String -> IO Bool
 isAURPkg = doesUrlExist . getPkgbuildUrl
 
 isntAURPkg :: String -> IO Bool
-isntAURPkg pkg = isAURPkg pkg >>= notM
+isntAURPkg pkg = not `liftM` isAURPkg pkg
 
 -- A package is a virtual package if it has a provider.
 isVirtualPkg :: String -> IO Bool
 isVirtualPkg pkg = do
   provider <- getProvidingPkg pkg
-  case provider of
-    Just _  -> return True
-    Nothing -> return False
+  provider ?>> return True
 
 countInstalledPackages :: IO Int
-countInstalledPackages = pacmanOutput ["-Qsq"] >>= return . length . lines  
+countInstalledPackages = (length . lines) `liftM` pacmanOutput ["-Qsq"]
 
 getOrphans :: IO [String]
-getOrphans = pacmanOutput ["-Qqdt"] >>= return . lines
+getOrphans = lines `liftM` pacmanOutput ["-Qqdt"]
 
 removePkgs :: [String] -> [String] -> IO ExitCode
 removePkgs [] _         = returnSuccess
@@ -482,7 +499,7 @@ divideByPkgType pkgs = do
 
 sortPkgs :: [String] -> [String]
 sortPkgs pkgs = sortBy verNums pkgs
-    where verNums a b | nameOf a /= nameOf b = compare a b  -- Different pkgs.
+    where verNums a b | nameOf a /= nameOf b = compare a b  -- Different pkgs
                       | otherwise            = compare (verOf a) (verOf b)
           nameOf = fst . pkgFileNameAndVer
           verOf  = snd . pkgFileNameAndVer
@@ -496,15 +513,14 @@ pkgFileNameAndVer p = (name,verNum')
     where (name,_,_) = p =~ "-[0-9]+" :: (String,String,String)
           verNum     = p =~ ("[0-9][-0-9a-z._]+-" ++ archs) :: String
           archs      = "(a|x|i)"  -- Representing "(any|x86_64|i686)"
-          verNum'    = splitBySubVersion verNum
+          verNum'    = comparableVer verNum
 
 -- Also discards any non-number version info, like `rc`, etc.
 -- Example: "3.2rc6-1" becomes [3,2,6,1]
--- BUG: Explodes if arg doesn't start with a digit.
-splitBySubVersion :: String -> [Int]
-splitBySubVersion [] = []
-splitBySubVersion n  =
+comparableVer :: String -> [Int]
+comparableVer [] = []
+comparableVer n  =
     case dropWhile (not . isDigit) n of
       []   -> []  -- Version ended in non-digits.
-      rest -> read digits : (splitBySubVersion $ drop (length digits) rest)
+      rest -> read digits : (comparableVer $ drop (length digits) rest)
         where digits = takeWhile isDigit rest

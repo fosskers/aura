@@ -8,7 +8,10 @@ What of the license has to be present in the source code?
 
 Gain a foot in Arch Linux ARM!!
 
-Use a haskell (*.hs) file as a conf file, a la xmonad!
+Upgrading can be sped up by making each `curl` usage its own child process.
+In other words, threads.
+
+Make `determineDeps` faster by making it tail-call.
 
 DEPENDENCY ANALYSIS
 -------------------
@@ -28,7 +31,7 @@ OPTIONS TO IMPLEMENT
 FLAGS UNUSED BY PACMAN
 ----------------------
 a j x z
-(Of these [a x z] has been taken by Aura)
+(Of these [a j x z] has been taken by Aura)
 
 OUT OF DATE
 -----------
@@ -41,3 +44,6 @@ releases. The odd numbered releases iterate quicker and are like the
 release candidates for the even numbered releases.
 If necessary, create a new AUR package called `aura-stable` to manage
 the stable releases.
+
+BUGS
+----

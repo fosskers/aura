@@ -36,7 +36,9 @@ contribution, and its a great opportunity to contribute to Open Source.
 source file: `AuraLanguages.hs`. Let's take a look at the top:
 
 ```haskell
-data Language = English | Japanese deriving (Eq,Enum,Show)
+data Language = English
+              | Japanese
+                deriving (Eq,Enum,Show)
 ```
 
   This is where we define output languages for Aura. For the purpose of
@@ -45,23 +47,9 @@ Add a new language by adding a new value to the Language data type.
 Like this:
 
 ```haskell
-data Language = English | Japanese | French deriving (Eq,Enum,Show)
-```
-
-  Watch out for line wraps though. If the line gets too long, you can
-always try something like this:
-
-```haskell
-data Language = English | Japanese | French |
-     	      	Elven | German | Chinese deriving (Eq,Enum,Show)
-```
-
-  Or even:
-
-```haskell
-data Language = English  |
-                Japanese |
-                French
+data Language = English
+              | Japanese
+              | French
                 deriving (Eq,Enum,Show)
 ```
 
@@ -104,14 +92,9 @@ code the calling function is located. If you ever need more context as to
 what kind of message you're writing, checking the code directly will be
 quickest. The format is:
 
-(name of calling function)Msgx SomeLanguage = "The message."
+nameOfCallingFunctionMsgx SomeLanguage = "The message."
 
-  Where `x` would be a number. The function name as a regex would thus be:
-  (assuming `name` is the name of the calling function)
-
-```haskell
-name ++ "Msg[0-9]+"
-```
+  Where `x` would be a number. 
   
   This naming is nothing more than a convention. 
   So let's go ahead and add the French message:
@@ -165,6 +148,8 @@ for the new language you're adding too.
 the translations are done I can take care of the rest of the code editing.
 But for the interested:
 
+(In `aura.hs`)
+
 ```haskell
 data Flag = AURInstall  |
             Cache       |
@@ -196,27 +181,25 @@ data Flag = AURInstall  |
 
   Then we need to add it to the options to be checked for:
 
+  (In `AuraFlags.hs`)
+
 ```haskell
 languageOptions :: [OptDescr Flag]
-languageOptions = [ Option [] ["languages"] (NoArg Languages) lDesc
-                  , Option [] ["japanese"]  (NoArg JapOut)    jDesc
-                  ]
-    where lDesc = "Display the available output languages for aura."
-          jDesc = "All aura output is given in Japanese."
+languageOptions = map simpleMakeOption
+                  [ ( [], ["japanese","日本語"], JapOut ) ]
 ```
 
   ...would thus become:
 
 ```haskell
 languageOptions :: [OptDescr Flag]
-languageOptions = [ Option [] ["languages"] (NoArg Languages) lDesc
-                  , Option [] ["japanese"]  (NoArg JapOut)    jDesc
-                  , Option [] ["french"]    (NoArg FrenchOut) fDesc
-                  ]
-    where lDesc = "Display the available output languages for aura."
-          jDesc = "All aura output is given in Japanese."
-          fDesc = "All aura output is given in French."
+languageOptions = map simpleMakeOption
+                  [ ( [], ["japanese","日本語"],  JapOut    ) 
+                  , ( [], ["french", "francais"], FrenchOut ) ]
 ```
+
+  Notice how each language has two long options. Please feel free to
+  add your language's _real_ name in its native characters.
 
   Last step in the flag making:
 

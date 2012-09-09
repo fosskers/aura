@@ -1,6 +1,6 @@
 name:                aura
 
-version:             0.8.0.1
+version:             0.9.0.5
 
 synopsis:            A package manager for Arch Linux and the AUR, written in Haskell.
 
@@ -28,6 +28,8 @@ build-type:          Simple
 
 cabal-version:       >=1.8
 
+extra-source-files:  aura.8
+
 source-repository head
   type:     git
   location: git://github.com/fosskers/aura.git
@@ -35,7 +37,8 @@ source-repository head
 executable aura
   main-is:             aura.hs
 
-  other-modules:       Shell,
+  other-modules:       Zero,
+                       Shell,
                        Pacman,
                        AuraLib,
                        MakePkg,

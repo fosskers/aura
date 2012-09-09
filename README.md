@@ -14,8 +14,7 @@ The Aura Philosophy
 ### Arch is Arch. AUR is AUR.
   `-S` yields pacman packages and _only_ pacman packages. This agrees with
   the above. Thus in aura, the `-A` operation is introduced for obtaining
-  AUR packages. `-A` comes with with all the sub-options (`-s`, `-u`, etc.)
-  that you're used to.  
+  AUR packages. `-A` comes with sub-options you're used to (`-u`, `-w`, etc.).
 
 ### All together
 Dependencies and packages are not built and installed one at a time.
@@ -29,6 +28,13 @@ Install order is as follows:
   By default `makepkg` output is suppressed. If you want the people
   behind you to think you're a badass hacker, then this suppression
   can be disabled by using `-x` alongside `-A`.
+
+### Run as Root, Build as a User
+  `makepkg` gets very upset if you try to build a package as root.
+  That said, a built package can't be handed off to pacman and installed
+  if you _don't_ run as root. Other AUR helpers ignore this problem,
+  but Aura does not. Even when run with `sudo`, packages are built
+  with normal user privilages, then handed to pacman and installed as root.
 
 ### Know your System
   Editing PKGBUILDs mid-build is not default behaviour.

@@ -9,9 +9,10 @@ import Data.List ((\\), nub, sort, intersperse, groupBy)
 import System.Environment (getArgs, getEnvironment)
 import System.Exit (exitWith, ExitCode)
 import System.Posix.Files (fileExist)
-import Control.Monad (when, unless)
+import Control.Monad (liftM, when, unless)
 import Text.Regex.Posix ((=~))
 import System.FilePath ((</>))
+import Data.Maybe (fromJust)
 import Data.Char (isDigit)
 
 -- Custom Libraries
@@ -25,7 +26,7 @@ import Pacman
 import Shell
 
 auraVersion :: String
-auraVersion = "0.8.0.1"
+auraVersion = "0.9.0.5"
 
 main :: IO a
 main = do
@@ -80,9 +81,11 @@ executeOpts ss (flags,input,pacOpts) = do
           [Search] -> searchLogFile ss input
           [Info]   -> logInfoOnPkg ss input
           badFlags -> scoldAndFail ss executeOptsMsg1
-    [Orphans]   -> getOrphans >>= mapM_ putStrLn >> returnSuccess
-    [Adopt]     -> ss |$| (pacman $ ["-D","--asexplicit"] ++ input)
-    [Abandon]   -> ss |$| (getOrphans >>= flip removePkgs pacOpts)
+    (Orphans:fs) ->
+        case fs of
+          []        -> displayOrphans ss input
+          [Abandon] -> ss |$| (getOrphans >>= flip removePkgs pacOpts)
+          badFlags  -> scoldAndFail ss executeOptsMsg1
     [ViewConf]  -> viewConfFile
     [Languages] -> displayOutputLanguages ss
     [Help]      -> printHelpMsg ss pacOpts
@@ -93,6 +96,12 @@ executeOpts ss (flags,input,pacOpts) = do
 --------------------
 -- WORKING WITH `-A`
 --------------------
+{- Ideal look
+installPackages pkgs = toAurPkgs pkgs >>= getDeps >>= installDeps >>= install
+
+This could work if Package was a sexy Monad and these operations
+could fail silently.
+-}
 installPackages :: Settings -> [String] -> [String] -> IO ExitCode
 installPackages _ _ [] = returnSuccess
 installPackages settings pacOpts pkgs = do
@@ -120,13 +129,15 @@ installPackages settings pacOpts pkgs = do
            unless (null pacPkgs) (pacman' $ ["-S","--asdeps"] ++ pkgsAndOpts)
            mapM_ (buildAndInstallDep settings pacOpts) aurDeps
            pkgFiles <- buildPackages settings aurPackages
-           installPackageFiles pacOpts pkgFiles
+           case pkgFiles of
+             Just pfs -> installPackageFiles pacOpts pfs
+             Nothing  -> scoldAndFail settings installPackagesMsg6
 
 buildAndInstallDep :: Settings -> [String] -> AURPkg -> IO ExitCode
 buildAndInstallDep settings pacOpts pkg = do
-  path <- buildPackages settings [pkg]
-  installPackageFiles (["--asdeps"] ++ pacOpts) path
-  
+  pFile <- buildPackages settings [pkg]
+  pFile ?>> installPackageFiles (["--asdeps"] ++ pacOpts) (fromJust pFile)
+
 reportNonPackages :: Language -> [String] -> IO ()
 reportNonPackages lang nons = printListWithTitle red cyan msg nons
     where msg = reportNonPackagesMsg1 lang
@@ -160,12 +171,10 @@ upgradeAURPkgs settings pacOpts pkgs = do
             return (p,pkgbuild)
 
 displayPkgDeps :: Settings -> [String] -> IO ExitCode
-displayPkgDeps _ [] = returnFailure
+displayPkgDeps _ []    = returnFailure
 displayPkgDeps ss pkgs = do
   aurPkgs <- mapOverPkgs isAURPkg reportNonPackages makeAURPkg ss pkgs
-  if null aurPkgs
-     then returnFailure
-     else do
+  notNull aurPkgs ?>> do
        allDeps <- mapM (determineDeps $ langOf ss) aurPkgs
        let (ps, as, os) = foldl groupPkgs ([],[],[]) allDeps
        providers <- mapM getProvidingPkg' os
@@ -187,7 +196,7 @@ displayPkgbuild settings pkgs = mapOverAURPkgs action settings pkgs
 syncAndContinue :: Settings -> ([Flag],[String],[String]) -> IO ExitCode
 syncAndContinue settings (flags,input,pacOpts) = do
   _ <- syncDatabase pacOpts
-  executeOpts settings (AURInstall:flags,input,pacOpts)
+  executeOpts settings (AURInstall:flags,input,pacOpts)  -- This is Evil.
 
 -- Uninstalls `make` dependencies that were only necessary for building
 -- and are no longer required by anything. This is the very definition of
@@ -197,9 +206,7 @@ removeMakeDeps :: Settings -> ([Flag],[String],[String]) -> IO ExitCode
 removeMakeDeps settings (flags,input,pacOpts) = do
   orphansBefore <- getOrphans
   exitStatus    <- executeOpts settings (AURInstall:flags,input,pacOpts)
-  if didProcessFail exitStatus
-     then returnFailure
-     else do
+  didProcessSucceed exitStatus ?>> do
        orphansAfter <- getOrphans
        let makeDeps = orphansAfter \\ orphansBefore
        unless (null makeDeps) $ notify settings removeMakeDepsAfterMsg1
@@ -220,7 +227,7 @@ downgradePackages ss pkgs = do
       where cachePath = cachePathOf ss
 
 reportBadDowngradePkgs :: Language -> [String] -> IO ()
-reportBadDowngradePkgs _ [] = return ()
+reportBadDowngradePkgs _ []      = return ()
 reportBadDowngradePkgs lang pkgs = printListWithTitle red cyan msg pkgs
     where msg = reportBadDowngradePkgsMsg1 lang
                
@@ -313,14 +320,14 @@ viewLogFile logFilePath = shellCmd "less" [logFilePath]
 -- Very similar to `searchCache`. But is this worth generalizing?
 searchLogFile :: Settings -> [String] -> IO ExitCode
 searchLogFile settings input = do
-  logFile <- readFile (logFilePathOf settings) >>= return . lines
+  logFile <- lines `liftM` readFile (logFilePathOf settings)
   mapM_ putStrLn $ searchLines (unwords input) logFile
   returnSuccess
 
 -- Are you failing at looking up anything,
 -- or succeeding at looking up nothing?
 logInfoOnPkg :: Settings -> [String] -> IO ExitCode
-logInfoOnPkg _ [] = returnFailure  -- Success?
+logInfoOnPkg _ []          = returnFailure  -- Success?
 logInfoOnPkg settings pkgs = do
   logFile <- readFile (logFilePathOf settings)
   let cond   = \p -> return (logFile =~ (" " ++ p ++ " ") :: Bool)
@@ -335,8 +342,7 @@ logLookUp settings logFile pkg = do
   mapM_ putStrLn $ [ logLookUpMsg1 (langOf settings) pkg
                    , logLookUpMsg2 (langOf settings) installDate
                    , logLookUpMsg3 (langOf settings) upgrades
-                   , logLookUpMsg4 (langOf settings) ] ++ recentStuff
-  putStrLn ""
+                   , logLookUpMsg4 (langOf settings) ] ++ recentStuff ++ [""]
       where matches     = searchLines (" " ++ pkg ++ " \\(") $ lines logFile
             installDate = head matches =~ "\\[[-:0-9 ]+\\]"
             upgrades    = length $ searchLines " upgraded " matches
@@ -346,6 +352,16 @@ logLookUp settings logFile pkg = do
 reportNotInLog :: Language -> [String] -> IO ()
 reportNotInLog lang nons = printListWithTitle red cyan msg nons
     where msg = reportNotInLogMsg1 lang
+
+-------------------
+-- WORKING WITH `O`
+-------------------
+displayOrphans :: Settings -> [String] -> IO ExitCode
+displayOrphans _ []    = getOrphans >>= mapM_ putStrLn >> returnSuccess
+displayOrphans ss pkgs = adoptPkg ss pkgs
+
+adoptPkg :: Settings -> [String] -> IO ExitCode
+adoptPkg ss pkgs = ss |$| (pacman $ ["-D","--asexplicit"] ++ pkgs)
 
 --------
 -- OTHER
@@ -373,12 +389,10 @@ printHelpMsg _ pacOpts = pacman $ pacOpts ++ ["-h"]
 getHelpMsg :: Settings -> [String] -> String
 getHelpMsg settings pacmanHelpMsg = concat $ intersperse "\n" allMessages
     where lang = langOf settings
-          allMessages   = [ replacedLines, auraOperMsg lang, auraOptMsg lang
-                          , dualFlagMsg lang]
+          allMessages   = [replacedLines, auraOperMsg lang, manpageMsg lang]
           replacedLines = unlines $ map (replaceByPatt patterns) pacmanHelpMsg
-          colouredMsg   = yellow "Inherited Pacman Operations" 
-          patterns      = [ ("pacman","aura")
-                          , ("operations",colouredMsg) ]
+          colouredMsg   = yellow $ inheritedOperTitle lang
+          patterns      = [("pacman","aura"), ("operations",colouredMsg)]
 
 -- ANIMATED VERSION MESSAGE
 animateVersionMsg :: [String] -> IO ExitCode

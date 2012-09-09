@@ -1,0 +1,214 @@
+.\" Man page for `aura`
+.\" Written by Colin Woodbury <colingw@gmail.com>
+
+.TH aura 8 "September 2012" "Aura" "Aura Manual"
+
+.\" Disable hyphenation.
+.nh
+
+.SH NAME
+aura \- A package manager for Arch Linux and the AUR.
+
+.SH SYNOPSIS
+\fIaura\fR <operation> [options] [package(s)]
+
+.SH DESCRIPTION
+.P
+\fIaura\fR is a multi-lingual package manager for Arch Linux written in 
+Haskell.
+It connects to both the official Arch repositories and to the Arch User
+Repositories (AUR), allowing easy control of all packages on an Arch system.
+It allows \fIall\fR pacman operations and provides \fInew\fR custom ones
+for dealing with AUR packages. This differs from some other AUR package
+managers.
+ 
+.SH OPERATIONS
+.P
+\fB\-A\fR, \-\-aursync [package(s)]
+.RS 4
+Perform actions involving the [A]UR. Default action installs packages
+from the AUR. During building, makepkg output is \fInot\fR shown 
+by default. After building, the built \fI.pkg.tar.xz\fR file is moved
+to the package cache and installed from there. This allows for easy 
+AUR package downgrading.
+.RE 
+.P
+\fB\-C\fR, \-\-downgrade [package(s)]
+.RS 4
+Perform actions involving the package [C]ache. Default action downgrades
+specified packages. This process is interactive, allowing the user to choose
+from any previous version they have available in the package cache.
+.RE
+.P
+\fB\-L\fR, \-\-viewlog
+.RS 4
+Perform actions involving the pacman [L]ogfile.
+Default action opens the log for read-only viewing.
+.RE
+.P
+\fB\-O\fR, \-\-orphans [package(s)]
+.RS 4
+Perform actions involving [O]rphan packages. Orphan packages are packages
+installed as dependencies, but are no longer required by any other package.
+\fI\-O\fR's default action can do one of two things. 
+If no extra argument is given, the current orphan packages installed
+are displayed. If a package name is given, it is `adopted`.
+This changes the package's install reason to `As Explicit`.
+This is a shortcut for `-D --asexplicit`.
+.RE
+
+.SH AUR SYNC OPTIONS (\fI\-A\fR)
+.P
+\fB\-a\fR, \-\-delmakedeps
+.RS 4
+Uninstalls build dependencies that are no longer required after installing
+the main package. This prevents the creation of orphan packages. Also note
+that while the package itself will be uninstalled, its package file will
+remain in the cache.
+.RE
+.P
+\fB\-d\fR, \-\-deps <package(s)>
+.RS 4
+View all the dependencies of a package. This process is recursive for
+AUR packages, so all dependencies of dependencies (and so on) will also
+be shown. This can aid the pre-install package research process.
+.RE
+.P
+\fB\-p\fR, \-\-pkgbuild <package(s)>
+.RS 4
+Outputs an AUR package's PKGBUILD. Use this before installing new packages
+to confirm that the build scripts aren't doing anything fishy.
+.RE
+.P
+\fB\-u\fR, \-\-sysupgrade
+.RS 4
+Upgrade all installed AUR packages. \fI\-Au\fR is \fI\-Su\fR for AUR
+packages.
+.RE
+.P
+\fB\-w\fR, \-\-downloadonly <package(s)>
+.RS 4
+Download the source tarball. This doesn't contain source code, but instead
+the PKGBUILD and .install file for the requested package. Running
+\fImakepkg\fR in a directory with these files in it would build the package
+manually.
+.RE
+.P
+\fB\-x\fR, \-\-unsuppress
+.RS 4
+Unsuppress \fImakepkg\fR output during building. By default this output
+is suppressed for a more silent install. Note that when this option
+isn't used, \fImakepkg\fR output is actually collected and printed
+if any errors occur.
+.RE
+.P
+\-\-hotedit
+.RS 4
+Prompt the user immediately before a package is built to ask if they
+wish to view/edit the PKGBUILD.
+This is not default behavior and thus does not have a single\-letter option.
+Research into packages (and by extension, their PKGBUILDs) should be done
+before any building occurs. Please use \fI\-Ap\fR and \fI\-Ad\fR for this,
+as they will be much faster at presenting information than searching the
+AUR website manually.
+.RE
+
+.SH DOWNGRADE OPTIONS (\fI\-C\fR)
+.P
+\fB\-b\fR, \-\-backup <path>
+.RS 4
+Backup the package cache to a given directory. The given directory must
+already exist. During copying, progress will be shown. If the copy takes too 
+long, you may want to reduce the number of older versions of each package by
+using \fI\-Cc\fR.
+.RE
+.P
+\fB\-c\fR, \-\-clean <versions-to-retain>
+.RS 4
+This saves a given number of package versions for each package and deletes
+the rest from the package cache. Count is made from the most recent version, 
+so using:
+.RS 4
+aura -Cc 3
+.RE
+would save the three most recent versions of each package file.
+Giving the number 0 as an argument is identical to \fI\-Scc\fR.
+.RE
+.P
+\fB\-s\fR, \-\-search <regex>
+.RS 4
+Search the package cache via a regex. Any package name that matches the regex
+will be output as\-is.
+.RE
+
+.SH LOGFILE OPTIONS (\fI\-L\fR)
+.P
+\fB\-i\fR, \-\-info <package(s)>
+.RS 4
+Displays install / upgrade history for a given package. Under the `Recent
+Actions` section, only the last five entries will be displayed. If there are
+less than five actions ever performed with the package, what is available will
+be printed.
+.RE
+.P
+\fB\-s\fR, \-\-search <regex>
+.RS 4
+Search the pacman log file via a regex. Useful for singling out any and all
+actions performed on a package.
+.RE
+
+.SH ORPHAN PACKAGE OPTIONS (\fI\-O\fR)
+.P
+\fB\-j\fR, \-\-abandon
+.RS 4
+Uninstall all orphan packages. 
+.RE
+
+.SH PACMAN / AURA DUAL FUNCTIONALITY OPTIONS
+.P
+\-\-noconfirm
+.RS 4
+Never ask for any Aura or Pacman confirmation. Any time a prompt would appear,
+say before building or installation, it is assumed the user answered in
+whatever way would progress the program.
+.RE
+
+.SH MISC. OPTIONS
+.P
+These options do not require a superordinate flag, such as \fI\-A\fR.
+.P
+\-\-conf
+.RS 4
+View the pacman configuration file in read-only mode.
+.RE
+.P
+\-\-languages
+.RS 4
+Display the available output languages.
+.RE
+
+.SH LANGUAGE OPTIONS
+.P
+Aura is available in multiple languages. As options, they can be used
+with either their English names or their real names written in their
+native characters. The available languages are, in option form:
+.P
+\-\-english (default)
+.P
+\-\-japanese, \-\-日本語
+
+.SH SEE ALSO
+.P
+\fBpacman\fR(8), \fBpacman.conf\fR(5), \fBmakepkg\fR(8)
+
+.SH BUGS
+.P
+It is not recommended to install non-ABS, non-AUR packages with pacman or
+aura. Aura will assume they are AUR packages during a `-Au` and attempt
+to upgrade them. If a name collision occurs (that is, if there is
+a legitimate AUR package with the same name as the one you installed)
+previous installations could be overwritten. 
+
+.SH AUTHORS
+.P
+Colin Woodbury <colingw@gmail.com>
