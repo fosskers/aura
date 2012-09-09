@@ -141,6 +141,7 @@ executeOptsMsg1 English  = "Conflicting flags given!"
 executeOptsMsg1 Japanese = "矛盾しているオプションあり。"
 executeOptsMsg1 Polish   = "Niektóre flagi są w konflikcie!"
 
+-- Packages should not be built if the user is logged in as root!
 trueRootCheckMsg1 :: Language -> String
 trueRootCheckMsg1 English  =
     "You should never build packages as the true root. Are you okay with this?"
@@ -149,6 +150,7 @@ trueRootCheckMsg1 Japanese =
 trueRootCheckMsg1 Polish  =
     "Nigdy nie powinieneś budować pakietów jako root. Na pewno kontynuować?"
 
+-- This is for when the user decides to refrain from building afterall.
 trueRootCheckMsg2 :: Language -> String
 trueRootCheckMsg2 English  = "You've done the right thing."
 trueRootCheckMsg2 Japanese = "よしよし。"
@@ -197,9 +199,9 @@ reportIgnoredPackagesMsg1 Japanese = "下記のパッケージは無視される
 reportIgnoredPackagesMsg1 Polish   = "Poniższe pakiety zostaną zignorowane:"
 
 reportPkgsToInstallMsg1 :: Language -> String
-reportPkgsToInstallMsg1 English  = "Pacman dependencies:"
+reportPkgsToInstallMsg1 English  = "Dependencies from repositories:"
 reportPkgsToInstallMsg1 Japanese = "Pacmanの従属パッケージ："
-reportPkgsToInstallsMsg1 Polish = "Zależności z repozytorium:"
+reportPkgsToInstallsMsg1 Polish = "Zależności z repozytoriów:"
 
 reportPkgsToInstallMsg2 :: Language -> String
 reportPkgsToInstallMsg2 English  = "AUR dependencies:"
@@ -220,9 +222,9 @@ reportBadDowngradePkgsMsg1 Polish   =
     "Poniższe pakeity nie są zainstalowane, i nie mogą być zainstalowane w starszej wersji:"
 
 upgradeAURPkgsMsg1 :: Language -> String
-upgradeAURPkgsMsg1 English  = "Fetching PKGBUILDs..."
-upgradeAURPkgsMsg1 Japanese = "PKGBUILDをダウンロード中・・・"
-upgradeAURPkgsMsg1 Polish   = "Pobieranie PKGBUILDów..."
+upgradeAURPkgsMsg1 English  = "Fetching package information..."
+upgradeAURPkgsMsg1 Japanese = "パッケージ情報をダウンロード中・・・"
+upgradeAURPkgsMsg1 Polish   = "Pobieranie informacji o pakietach..."
 
 upgradeAURPkgsMsg2 :: Language -> String
 upgradeAURPkgsMsg2 English  = "Comparing package versions..."
