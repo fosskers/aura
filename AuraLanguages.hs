@@ -201,7 +201,7 @@ reportIgnoredPackagesMsg1 Polish   = "Poniższe pakiety zostaną zignorowane:"
 reportPkgsToInstallMsg1 :: Language -> String
 reportPkgsToInstallMsg1 English  = "Dependencies from repositories:"
 reportPkgsToInstallMsg1 Japanese = "Pacmanの従属パッケージ："
-reportPkgsToInstallsMsg1 Polish  = "Zależności z repozytoriów:"
+reportPkgsToInstallMsg1 Polish  = "Zależności z repozytoriów:"
 
 reportPkgsToInstallMsg2 :: Language -> String
 reportPkgsToInstallMsg2 English  = "AUR dependencies:"
@@ -296,7 +296,7 @@ backupCacheMsg5 Polish n   = "Pliki będące częścią kopii zapasowej: " ++ b
 backupCacheMsg6 :: Language -> String
 backupCacheMsg6 English  = "Proceed with backup?"
 backupCacheMsg6 Japanese = "バックアップを実行する？"
-backupCacheMsg  Polish   = "Kontynuować tworzenie kopii zapasowej?"
+backupCacheMsg6 Polish   = "Kontynuować tworzenie kopii zapasowej?"
 
 backupCacheMsg7 :: Language -> String
 backupCacheMsg7 English  = "Backup manually aborted."
