@@ -148,7 +148,7 @@ for the new language you're adding too.
 the translations are done I can take care of the rest of the code editing.
 But for the interested:
 
-(In `aura.hs`)
+(In `AuraFlags.hs`)
 
 ```haskell
 data Flag = AURInstall  |
