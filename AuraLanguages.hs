@@ -37,7 +37,7 @@ mustBeRootMsg1 Polish   =
 buildPackagesMsg1 :: Language -> String -> String
 buildPackagesMsg1 English p  = "Building " ++ bt p ++ "..."
 buildPackagesMsg1 Japanese p = bt p ++ "を作成中・・・"
-buildPackagesMsg1 Polish p   = "Budowanie " + bt p ++ "..."
+buildPackagesMsg1 Polish p   = "Budowanie " ++ bt p ++ "..."
 
 checkHotEditMsg1 :: Language -> String -> String
 checkHotEditMsg1 English p  =
@@ -271,12 +271,12 @@ getDowngradeChoiceMsg1 Polish p   =
 backupCacheMsg1 :: Language -> String
 backupCacheMsg1 English  = "No backup location given."
 backupCacheMsg1 Japanese = "バックアップ先を入力してください。"
-backupCacheMsg2 Polish   = "Nie podano lokalizacji kopii zapasowych."
+backupCacheMsg1 Polish   = "Nie podano lokalizacji kopii zapasowych."
 
 backupCacheMsg2 :: Language -> String
 backupCacheMsg2 English  = "You must be root to backup the cache."
 backupCacheMsg2 Japanese = "rootじゃないとバックアップはできない。"
-backupCacheMsg2 Polish  = "Musisz być rootem, by zrobić kopię zapasową pamięci podręcznej."
+backupCacheMsg2 Polish   = "Musisz być rootem, by zrobić kopię zapasową pamięci podręcznej."
 
 backupCacheMsg3 :: Language -> String
 backupCacheMsg3 English  = "The backup location does not exist."
