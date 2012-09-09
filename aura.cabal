@@ -49,10 +49,11 @@ executable aura
                        AurConnection,
                        AuraLanguages
 
-  build-depends:       base >= 4 && < 5,
-                       process>=1.1.0.0,
-                       directory>=1.1.0.0,
-                       regex-posix,
+  build-depends:       Cabal,
+                       json,
                        filepath,
+                       regex-posix,
                        unix>=2.5.0.0,
-                       Cabal
+                       base >= 4 && < 5,
+                       process>=1.1.0.0,
+                       directory>=1.1.0.0
