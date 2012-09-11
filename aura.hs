@@ -163,12 +163,12 @@ upgradeAURPkgs settings pacOpts pkgs = do
   pkgInfo     <- getAURPkgInfo $ map fst foreignPkgs
   let toCheck = zip pkgInfo (map snd foreignPkgs)
   notify settings upgradeAURPkgsMsg2
-  let toUpgrade = map (\(p,v) -> (nameOf p, v)) $ filter isOutOfDate toCheck
-      prettify  = \(n,v) -> n ++ " => " ++ v
+  let toUpgrade = filter isOutOfDate toCheck
+      prettify  = \(p,v) -> nameOf p ++ " : " ++ v ++ " => " ++ latestVerOf p
   if null toUpgrade
      then warn settings upgradeAURPkgsMsg3
      else reportPkgsToUpgrade (langOf settings) $ map prettify toUpgrade
-  installPackages settings pacOpts $ (map fst toUpgrade) ++ pkgs
+  installPackages settings pacOpts $ (map (nameOf . fst) toUpgrade) ++ pkgs
       where notIgnored p = splitName p `notElem` ignoredPkgsOf settings
 
 reportPkgsToUpgrade :: Language -> [String] -> IO ()
