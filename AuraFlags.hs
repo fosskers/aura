@@ -34,6 +34,7 @@ data Flag = AURInstall
           | Help
           | JapOut
           | PolishOut
+          | CroatianOut
             deriving (Eq,Ord)
 
 allFlags :: Language -> [OptDescr Flag]
@@ -83,8 +84,9 @@ dualOptions = map simpleMakeOption
 
 languageOptions :: [OptDescr Flag]
 languageOptions = map simpleMakeOption
-                  [ ( [], ["japanese","日本語"], JapOut    )
-                  , ( [], ["polish","polski"],   PolishOut ) ]
+                  [ ( [], ["japanese","日本語"],   JapOut    )
+                  , ( [], ["polish","polski"],     PolishOut )
+                  , ( [], ["croatian","hrvatski"], CroatianOut ) ]
 
 -- `Hijacked` flags. They have original pacman functionality, but
 -- that is masked and made unique in an Aura context.
@@ -127,8 +129,8 @@ fishOutFlag ((f,r):fs) alt flags | f `elem` flags = r
 getLanguage :: [Flag] -> Language
 getLanguage = fishOutFlag flagsAndResults english
     where flagsAndResults = zip langFlags langFuns
-          langFlags       = [JapOut,PolishOut]
-          langFuns        = [japanese,polish]
+          langFlags       = [JapOut,PolishOut,CroatianOut]
+          langFuns        = [japanese,polish,croatian]
 
 getSuppression :: [Flag] -> Bool
 getSuppression = fishOutFlag [(Unsuppress,False)] True
