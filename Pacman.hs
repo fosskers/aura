@@ -59,7 +59,7 @@ getPacmanConf :: IO String
 getPacmanConf = readFile pacmanConfFile
 
 getConfFileField :: String -> String -> [String]
-getConfFileField confFile field = words $ takeWhile (not . (==) '\n') entry
+getConfFileField confFile field = words $ takeWhile (/= '\n') entry
     where (_,_,entry) = confFile =~ field :: (String,String,String)
 
 getIgnoredPkgs :: String -> [String]
