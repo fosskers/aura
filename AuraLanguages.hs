@@ -21,11 +21,14 @@ translatorsAndLangs = zip allLanguages translators
 
 translators :: [[String]]
 translators = [ [ "Aura Translators:"
-                , " Chris \"Kwpolska\" Warrick (Polish)" ]
+                , " Chris \"Kwpolska\" Warrick (Polish)"
+                , " Denis Kasak (Crotian)" ]              
               , [ "Auraの翻訳者："
-                , "Chris \"Kwpolska\" Warrick（ポーランド語）" ]
+                , "クリッス \"Kwpolska\" ヲーリック（ポーランド語）"
+                , "デニス・カサック（クロアチア語）" ]
               , [ "Tłumacze Aury:"
-                , " Chris \"Kwpolska\" Warrick (polski)" ] ]
+                , " Chris \"Kwpolska\" Warrick (polski)"
+                , " Denis Kasak (Crotian)" ] ]
 
 allLanguages :: [Language]
 allLanguages = [English ..]
@@ -280,6 +283,7 @@ reportPkgsToUpgradeMsg1 :: Language -> String
 reportPkgsToUpgradeMsg1 English  = "AUR Packages to upgrade:"
 reportPkgsToUpgradeMsg1 Japanese = "アップグレードするAURパッケージ："
 reportPkgsToUpgradeMsg1 Polish   = reportPkgsToUpgradeMsg1 English
+reportPkgsToUpgradeMsg1 Croatian = reportPkgsToUpgradeMsg1 English
 
 reportBadDowngradePkgsMsg1 :: Language -> String
 reportBadDowngradePkgsMsg1 English  =

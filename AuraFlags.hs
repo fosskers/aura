@@ -84,8 +84,8 @@ dualOptions = map simpleMakeOption
 
 languageOptions :: [OptDescr Flag]
 languageOptions = map simpleMakeOption
-                  [ ( [], ["japanese","日本語"],   JapOut    )
-                  , ( [], ["polish","polski"],     PolishOut )
+                  [ ( [], ["japanese","日本語"],   JapOut      )
+                  , ( [], ["polish","polski"],     PolishOut   )
                   , ( [], ["croatian","hrvatski"], CroatianOut ) ]
 
 -- `Hijacked` flags. They have original pacman functionality, but
