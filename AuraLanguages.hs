@@ -22,7 +22,7 @@ translators :: [[String]]
 translators = [ [ "Aura Translators:"
                 , " Chris \"Kwpolska\" Warrick (Polish)" ]
               , [ "Auraの翻訳者："
-                , "　クリッス・ヲーリック （ポーランド語）" ]
+                , "Chris \"Kwpolska\" Warrick（ポーランド語）" ]
               , [ "Tłumacze Aury:"
                 , " Chris \"Kwpolska\" Warrick (polski)" ] ]
 
