@@ -26,7 +26,7 @@ import Pacman
 import Shell
 
 auraVersion :: String
-auraVersion = "0.9.1.1"
+auraVersion = "0.9.1.3"
 
 main :: IO a
 main = do
@@ -163,10 +163,17 @@ upgradeAURPkgs settings pacOpts pkgs = do
   pkgInfo     <- getAURPkgInfo $ map fst foreignPkgs
   let toCheck = zip pkgInfo (map snd foreignPkgs)
   notify settings upgradeAURPkgsMsg2
-  let toUpgrade = map (nameOf . fst) $ filter isOutOfDate toCheck
-  when (null toUpgrade) (warn settings upgradeAURPkgsMsg3)
-  installPackages settings pacOpts $ toUpgrade ++ pkgs
+  let toUpgrade = filter isOutOfDate toCheck
+      prettify  = \(p,v) -> nameOf p ++ " : " ++ v ++ " => " ++ latestVerOf p
+  if null toUpgrade
+     then warn settings upgradeAURPkgsMsg3
+     else reportPkgsToUpgrade (langOf settings) $ map prettify toUpgrade
+  installPackages settings pacOpts $ (map (nameOf . fst) toUpgrade) ++ pkgs
       where notIgnored p = splitName p `notElem` ignoredPkgsOf settings
+
+reportPkgsToUpgrade :: Language -> [String] -> IO ()
+reportPkgsToUpgrade lang pkgs = printListWithTitle green cyan msg pkgs
+    where msg = reportPkgsToUpgradeMsg1 lang
 
 displayPkgDeps :: Settings -> [String] -> IO ExitCode
 displayPkgDeps _ []    = returnFailure

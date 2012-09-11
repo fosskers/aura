@@ -28,6 +28,8 @@ type Colouror = String -> String
 
   Where the values from `names` are the callable function names, and
   the values from `colours` are the functions they're bound to.
+
+  Could the preprocessor do something like this?
 -}
 noColour :: Colouror
 noColour = colourize NoColour
@@ -116,7 +118,7 @@ returnFailure = return zero
 type Environment = [(String,String)]
 
 getEnvVar :: String -> Environment -> Maybe String
-getEnvVar v env = v `lookup` env
+getEnvVar v = lookup v
 
 varExists :: String -> Environment -> Bool
 varExists v env = case getEnvVar v env of
@@ -162,6 +164,4 @@ getEditor env = case getEnvVar "EDITOR" env of
 -- FILE PERMISSIONS
 -------------------
 chown :: String -> FilePath -> [String] -> IO ()
-chown user path args = do
-  _ <- quietShellCmd "chown" $ args ++ [user,path]
-  return ()
+chown user path args = quietShellCmd "chown" (args ++ [user,path]) >> return ()

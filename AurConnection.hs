@@ -99,8 +99,8 @@ getPkgbuildField field pkgb = wordsLines . filter notQuotes . parseField $ xs
           pattern     = "^" ++ field ++ "="
           notQuotes c = c `notElem` ['\'','"']
           parseField  | null xs        = \_ -> ""
-                      | head xs == '(' = takeWhile (not . (==) ')') . tail 
-                      | otherwise      = takeWhile (not . (==) '\n')
+                      | head xs == '(' = takeWhile (/= ')') . tail
+                      | otherwise      = takeWhile (/= '\n')
 
 ------------------
 -- SOURCE TARBALLS
