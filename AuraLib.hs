@@ -226,15 +226,25 @@ mapOverPkgs' cond report fun settings pkgs = do
 installPackageFiles :: [String] -> [FilePath] -> IO ExitCode
 installPackageFiles pacOpts files = pacman $ ["-U"] ++ pacOpts ++ files
 
+-- All building occurs within temp directories in the package cache.
+buildPackages :: Settings -> [AURPkg] -> IO (Maybe [FilePath])
+buildPackages _ [] = return Nothing
+buildPackages settings pkgs = do
+  currDir <- getCurrentDirectory
+  setCurrentDirectory $ cachePathOf settings
+  results <- buildPackages' settings pkgs
+  setCurrentDirectory currDir
+  return results
+
 -- Handles the building of Packages.
 -- Assumed: All pacman and AUR dependencies are already installed.
-buildPackages :: Settings -> [AURPkg] -> IO (Maybe [FilePath])
-buildPackages _ [] = return $ Just []  -- Done recursing!
-buildPackages settings pkgs@(p:ps) = do
+buildPackages' :: Settings -> [AURPkg] -> IO (Maybe [FilePath])
+buildPackages' _ [] = return $ Just []  -- Done recursing!
+buildPackages' settings pkgs@(p:ps) = do
   notify settings (flip buildPackagesMsg1 $ pkgNameOf p)
   results <- withTempDir (show p) (build settings p)
   case results of
-    Right pkg   -> (fmap (pkg :)) `liftM` buildPackages settings ps
+    Right pkg   -> (fmap (pkg :)) `liftM` buildPackages' settings ps
     Left errors -> buildFail settings pkgs errors
         
 -- Big and ugly.

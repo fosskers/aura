@@ -230,6 +230,12 @@ reportPkgsToInstallMsg3 English  = "Main AUR packages:"
 reportPkgsToInstallMsg3 Japanese = "主なAURパッケージ："
 reportPkgsToInstallMsg3 Polish   = "Pakiety z AUR:"
 
+-- Needs a Polish translation.
+reportPkgsToUpgradeMsg1 :: Language -> String
+reportPkgsToUpgradeMsg1 English  = "AUR Packages to upgrade:"
+reportPkgsToUpgradeMsg1 Japanese = "アップグレードするAURパッケージ："
+reportPkgsToUpgradeMsg1 Polish   = reportPkgsToUpgradeMsg1 English
+
 reportBadDowngradePkgsMsg1 :: Language -> String
 reportBadDowngradePkgsMsg1 English  =
     "The following aren’t installed, and thus can’t be downgraded:"
