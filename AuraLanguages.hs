@@ -20,11 +20,11 @@ translatorsAndLangs = zip allLanguages translators
 
 translators :: [[String]]
 translators = [ [ "Aura Translators:"
-                , " Chris Warrick (Polish)" ]
+                , " Chris \"Kwpolska\" Warrick (Polish)" ]
               , [ "Auraの翻訳者："
                 , "　クリッス・ヲーリック （ポーランド語）" ]
-              , [ "Aura Translators:"  -- This needs Polish.
-                , " Chris Warrick (Polski)" ] ]
+              , [ "Tłumacze Aury:"
+                , " Chris \"Kwpolska\" Warrick (polski)" ] ]
 
 allLanguages :: [Language]
 allLanguages = [English ..]
