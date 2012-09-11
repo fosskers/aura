@@ -89,7 +89,8 @@ executeOpts ss (flags,input,pacOpts) = do
     [ViewConf]  -> viewConfFile
     [Languages] -> displayOutputLanguages ss
     [Help]      -> printHelpMsg ss pacOpts
-    [Version]   -> getVersionInfo >>= animateVersionMsg
+    [Version]   -> getVersionInfo >>= animateVersionMsg ss
+    []          -> executeOpts ss ([Help],[],[])
     pacmanFlags -> pacman $ pacOpts ++ input ++ hijackedFlags
     where hijackedFlags = reconvertFlags flags hijackedFlagMap
           
@@ -392,8 +393,8 @@ getHelpMsg settings pacmanHelpMsg = concat $ intersperse "\n" allMessages
           patterns      = [("pacman","aura"), ("operations",colouredMsg)]
 
 -- ANIMATED VERSION MESSAGE
-animateVersionMsg :: [String] -> IO ExitCode
-animateVersionMsg verMsg = do
+animateVersionMsg :: Settings -> [String] -> IO ExitCode
+animateVersionMsg settings verMsg = do
   mapM_ putStrLn $ map (padString lineHeaderLength) verMsg  -- Version message
   putStr $ raiseCursorBy 7  -- Initial reraising of the cursor.
   drawPills 3
@@ -404,7 +405,8 @@ animateVersionMsg verMsg = do
   putStr clearGrid
   putStrLn auraLogo
   putStrLn $ "AURA Version " ++ auraVersion
-  putStrLn " by Colin Woodbury\n\n"
+  putStrLn " by Colin Woodbury\n"
+  mapM_ putStrLn . translatorMsg . langOf $ settings
   returnSuccess
     where pillEating (p,w) = putStr clearGrid >> drawPills p >> takeABite w
           pillsAndWidths   = [(2,5),(1,10),(0,15)]

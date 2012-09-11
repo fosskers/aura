@@ -1,6 +1,12 @@
 -- Library for AURA output in different languages.
 
+{- AURA TRANSLATORS - The best people ever!
+Chris Warrick (Polish)
+-}
+
 module AuraLanguages where
+
+import Data.Maybe (fromJust)
 
 import Shell (cyan, yellow, green, red, blue)
 
@@ -8,6 +14,17 @@ data Language = English
               | Japanese
               | Polish
                 deriving (Eq,Enum,Show)
+
+translatorsAndLangs :: [(Language,[String])]
+translatorsAndLangs = zip allLanguages translators
+
+translators :: [[String]]
+translators = [ [ "Aura Translators:"
+                , " Chris Warrick (Polish)" ]
+              , [ "Auraの翻訳者："
+                , "　クリッス・ヲーリック （ポーランド語）" ]
+              , [ "Aura Translators:"  -- This needs Polish.
+                , " Chris Warrick (Polski)" ] ]
 
 allLanguages :: [Language]
 allLanguages = [English ..]
@@ -380,12 +397,17 @@ reportNotInLogMsg1 Polish   = "Tych pakietów nie ma w dzienniku:"
 manpageMsg :: Language -> String
 manpageMsg English  = "See the aura man page for aura option details."
 manpageMsg Japanese = "選択肢の詳しいことは、auraのman pageまで。"
-manpageMsg Polish   = "W podręczniku man dla aura znajduje się więcej informacji o opcjach Aury."
+manpageMsg Polish   =
+    "W podręczniku man dla aura znajduje się więcej informacji o opcjach Aury."
 
 displayOutputLanguagesMsg1 :: Language -> String
 displayOutputLanguagesMsg1 English  = "The following languages are available:"
 displayOutputLanguagesMsg1 Japanese = "auraは下記の言語に対応している："
 displayOutputLanguagesMsg1 Polish   = "Następujące języki są dostępne:"
+
+-- The `lookup` will never fail.
+translatorMsg :: Language -> [String]
+translatorMsg lang = fromJust $ lookup lang translatorsAndLangs
 
 ----------------------
 -- AuraFlags functions
@@ -421,13 +443,15 @@ viewL English  = cyan "Perform actions involving the pacman [L]ogfile.\n" ++
                  "Default action opens the log for read-only viewing."
 viewL Japanese = cyan "[L]ogfileに関連する処理\n" ++
                  "デフォルトでlogfileを閲覧用に開く"
-viewL Polish   = cyan "Wykonuje akcje związane z dziennikiem ([L]ogiem) pacmana.\n" ++
-                 "Domyślnie otwiera log w trybie tylko do odczytu."
+viewL Polish   =
+    cyan "Wykonuje akcje związane z dziennikiem ([L]ogiem) pacmana.\n" ++
+    "Domyślnie otwiera log w trybie tylko do odczytu."
 
 orpha :: Language -> String
 orpha English  = blue "Perform actions involving [O]rphan packages.\n" ++
                  "Default action lists all orphan packages."
 orpha Japanese = blue "必要とされていない従属パッケージに関する処理\n" ++
                  "デフォルトでその従属パッケージの名前を出力"
-orpha Polish   = blue "Wykonuje akcje związane z [O]sieroconymi pakietami.\n" ++
-                 "Domyślnie wyświetla wszystkie osierocone pakiety."
+orpha Polish   =
+    blue "Wykonuje akcje związane z [O]sieroconymi pakietami.\n" ++
+    "Domyślnie wyświetla wszystkie osierocone pakiety."
