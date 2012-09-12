@@ -1,7 +1,8 @@
 -- Library for AURA output in different languages.
 
 {- AURA TRANSLATORS - The best people ever!
-Chris Warrick (Polish)
+Chris "Kwpolska" Warrick (Polish)
+Denis Kasak (Croatian)
 -}
 
 module AuraLanguages where
@@ -28,7 +29,7 @@ translators = [ [ "Aura Translators:"
                 , "デニス・カサック（クロアチア語）" ]
               , [ "Tłumacze Aury:"
                 , " Chris \"Kwpolska\" Warrick (polski)"
-                , " Denis Kasak (Croatian)" ]
+                , " Denis Kasak (chorwacki)" ]
               , [ "" ] ]  -- Needs Croatian translation!
 
 allLanguages :: [Language]
