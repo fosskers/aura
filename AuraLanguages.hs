@@ -29,7 +29,9 @@ translators = [ [ "Aura Translators:"
               , [ "Tłumacze Aury:"
                 , " Chris \"Kwpolska\" Warrick (polski)"
                 , " Denis Kasak (Croatian)" ]
-              , [ "" ] ]  -- Needs Croatian translation!
+              , [ "Aura Prevoditelji:"
+                , " Chris \"Kwpolska\" Warrick (poljski)"
+                , " Denis Kasak (hrvatski)" ] ]
 
 allLanguages :: [Language]
 allLanguages = [English ..]
