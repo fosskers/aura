@@ -22,13 +22,14 @@ translatorsAndLangs = zip allLanguages translators
 translators :: [[String]]
 translators = [ [ "Aura Translators:"
                 , " Chris \"Kwpolska\" Warrick (Polish)"
-                , " Denis Kasak (Crotian)" ]              
+                , " Denis Kasak (Croatian)" ]
               , [ "Auraの翻訳者："
                 , "クリッス \"Kwpolska\" ヲーリック（ポーランド語）"
                 , "デニス・カサック（クロアチア語）" ]
               , [ "Tłumacze Aury:"
                 , " Chris \"Kwpolska\" Warrick (polski)"
-                , " Denis Kasak (Crotian)" ] ]
+                , " Denis Kasak (Croatian)" ]
+              , [ "" ] ]  -- Needs Croatian translation!
 
 allLanguages :: [Language]
 allLanguages = [English ..]
