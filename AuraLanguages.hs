@@ -284,7 +284,7 @@ reportPkgsToInstallMsg3 Croatian = "Glavni AUR paketi:"
 reportPkgsToUpgradeMsg1 :: Language -> String
 reportPkgsToUpgradeMsg1 English  = "AUR Packages to upgrade:"
 reportPkgsToUpgradeMsg1 Japanese = "アップグレードするAURパッケージ："
-reportPkgsToUpgradeMsg1 Polish   = reportPkgsToUpgradeMsg1 English
+reportPkgsToUpgradeMsg1 Polish   = "Pakiety z AUR do zaktualizowania:"
 reportPkgsToUpgradeMsg1 Croatian = reportPkgsToUpgradeMsg1 English
 
 reportBadDowngradePkgsMsg1 :: Language -> String
