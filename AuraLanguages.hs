@@ -1,7 +1,8 @@
 -- Library for AURA output in different languages.
 
 {- AURA TRANSLATORS - The best people ever!
-Chris Warrick (Polish)
+Chris "Kwpolska" Warrick (Polish)
+Denis Kasak (Croatian)
 -}
 
 module AuraLanguages where
@@ -28,7 +29,7 @@ translators = [ [ "Aura Translators:"
                 , "デニス・カサック（クロアチア語）" ]
               , [ "Tłumacze Aury:"
                 , " Chris \"Kwpolska\" Warrick (polski)"
-                , " Denis Kasak (Croatian)" ]
+                , " Denis Kasak (chorwacki)" ]
               , [ "" ] ]  -- Needs Croatian translation!
 
 allLanguages :: [Language]
@@ -283,7 +284,7 @@ reportPkgsToInstallMsg3 Croatian = "Glavni AUR paketi:"
 reportPkgsToUpgradeMsg1 :: Language -> String
 reportPkgsToUpgradeMsg1 English  = "AUR Packages to upgrade:"
 reportPkgsToUpgradeMsg1 Japanese = "アップグレードするAURパッケージ："
-reportPkgsToUpgradeMsg1 Polish   = reportPkgsToUpgradeMsg1 English
+reportPkgsToUpgradeMsg1 Polish   = "Pakiety z AUR do zaktualizowania:"
 reportPkgsToUpgradeMsg1 Croatian = reportPkgsToUpgradeMsg1 English
 
 reportBadDowngradePkgsMsg1 :: Language -> String
