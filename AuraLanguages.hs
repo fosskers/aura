@@ -21,16 +21,18 @@ translatorsAndLangs :: [(Language,[String])]
 translatorsAndLangs = zip allLanguages translators
 
 translators :: [[String]]
-translators = [ [ "Aura Translators:"
+translators = [ [ "Aura Translators:"  --English
                 , " Chris \"Kwpolska\" Warrick (Polish)"
                 , " Denis Kasak (Croatian)" ]
-              , [ "Auraの翻訳者："
+              , [ "Auraの翻訳者："  -- Japanese
                 , "クリッス \"Kwpolska\" ヲーリック（ポーランド語）"
                 , "デニス・カサック（クロアチア語）" ]
-              , [ "Tłumacze Aury:"
+              , [ "Tłumacze Aury:"  -- Polish
                 , " Chris \"Kwpolska\" Warrick (polski)"
                 , " Denis Kasak (chorwacki)" ]
-              , [ "" ] ]  -- Needs Croatian translation!
+              , [ "Aura Prevoditelji:"  -- Croatian
+                , " Chris \"Kwpolska\" Warrick (poljski)"
+                , " Denis Kasak (hrvatski)" ] ]
 
 allLanguages :: [Language]
 allLanguages = [English ..]
@@ -285,7 +287,7 @@ reportPkgsToUpgradeMsg1 :: Language -> String
 reportPkgsToUpgradeMsg1 English  = "AUR Packages to upgrade:"
 reportPkgsToUpgradeMsg1 Japanese = "アップグレードするAURパッケージ："
 reportPkgsToUpgradeMsg1 Polish   = "Pakiety z AUR do zaktualizowania:"
-reportPkgsToUpgradeMsg1 Croatian = reportPkgsToUpgradeMsg1 English
+reportPkgsToUpgradeMsg1 Croatian = "AUR paketi za nadograditi:"
 
 reportBadDowngradePkgsMsg1 :: Language -> String
 reportBadDowngradePkgsMsg1 English  =
