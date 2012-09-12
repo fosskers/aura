@@ -9,7 +9,7 @@ import Data.List ((\\), nub, sort, intersperse, groupBy)
 import System.Environment (getArgs, getEnvironment)
 import System.Exit (exitWith, ExitCode)
 import System.Posix.Files (fileExist)
-import Control.Monad (liftM, when, unless)
+import Control.Monad (liftM, unless)
 import Text.Regex.Posix ((=~))
 import System.FilePath ((</>))
 import Data.Maybe (fromJust)
@@ -26,7 +26,7 @@ import Pacman
 import Shell
 
 auraVersion :: String
-auraVersion = "0.9.1.4"
+auraVersion = "0.9.1.5"
 
 main :: IO a
 main = do
@@ -90,8 +90,9 @@ executeOpts ss (flags,input,pacOpts) = do
     [Languages] -> displayOutputLanguages ss
     [Help]      -> printHelpMsg ss pacOpts
     [Version]   -> getVersionInfo >>= animateVersionMsg ss
-    []          -> executeOpts ss ([Help],[],[])
-    pacmanFlags -> pacman $ pacOpts ++ input ++ hijackedFlags
+    []          -> if null pacOpts
+                      then executeOpts ss ([Help],[],[])
+                      else pacman $ pacOpts ++ input ++ hijackedFlags
     where hijackedFlags = reconvertFlags flags hijackedFlagMap
           
 --------------------
