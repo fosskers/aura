@@ -49,7 +49,7 @@ takeABite pad = drawMouth Closed >> drawMouth Open
             threadDelay 125000
 
 drawPills :: Int -> IO ()
-drawPills numOfPills = mapM_ (\aPill -> mapM_ putStrLn aPill) pills
+drawPills numOfPills = mapM_ putStrLn pills
     where pills = renderPills numOfPills
 
 raiseCursorBy :: Int -> String
@@ -63,8 +63,8 @@ clearGrid = blankLines ++ raiseCursorBy 4
 renderPill :: Int -> [String]
 renderPill pad = map (padString pad) pill
 
-renderPills :: Int -> [[String]]
-renderPills numOfPills = map render (take numOfPills pillPostitions)
+renderPills :: Int -> [String]
+renderPills numOfPills = concat $ map render (take numOfPills pillPostitions)
     where pillPostitions = [17,12,7]
           render pos = renderPill pos ++ [raiseCursorBy 5]
 

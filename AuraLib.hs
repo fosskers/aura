@@ -423,8 +423,8 @@ getForeignPackages = do
   return $ map fixName pkgs
       where fixName = hardBreak (== ' ')
 
-isOutOfDate :: (PkgInfo,String) -> Bool
-isOutOfDate (info,v) = trueVer > currVer
+isntMostRecent :: (PkgInfo,String) -> Bool
+isntMostRecent (info,v) = trueVer > currVer
   where trueVer = comparableVer $ latestVerOf info
         currVer = comparableVer v
 

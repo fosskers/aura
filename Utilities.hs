@@ -126,3 +126,7 @@ uncompress :: FilePath -> IO FilePath
 uncompress file = do
   _ <- quietShellCmd' "bsdtar" ["-zxvf",file]
   return $ dropExtensions file
+
+eitherToBool :: Either a b -> Bool
+eitherToBool (Right _) = True
+eitherToBool (Left _)  = False

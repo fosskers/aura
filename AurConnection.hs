@@ -45,28 +45,46 @@ rpcAddMultiInfoArgs = concat . map ("&arg\\[\\]=" ++)
 -------
 -- Extend this later as needed.
 data PkgInfo = PkgInfo { nameOf :: String
+                       , maintainerOf :: String
                        , latestVerOf :: String
+                       , sourceURLOf :: String
+                       , licenseOf :: String
+                       , votesOf :: String
+                       , isOutOfDate :: Bool
+                       , descriptionOf :: String
                        } deriving (Eq,Show)
 
-getAURPkgInfo :: [String] -> IO [PkgInfo]
+getAURPkgInfo :: [String] -> IO (Either String [PkgInfo])
 getAURPkgInfo pkgs = do
   infoJSON <- getUrlContents $ makeRPCUrl MultiInfo pkgs
-  return . unwrapResult . parseJSON $ infoJSON
+  return . resultToEither . parseInfoJSON $ infoJSON
 
 -- Monads rock my world.
-parseJSON :: String -> Result [PkgInfo]
-parseJSON json = decode json >>= valFromObj "results" >>= mapM makePkgInfo
+parseInfoJSON :: String -> Result [PkgInfo]
+parseInfoJSON json = decode json >>= apiFailCheck >>= forgePkgInfo
+    where forgePkgInfo j = valFromObj "results" j >>= mapM makePkgInfo
+
+apiFailCheck :: JSObject JSValue -> Result (JSObject JSValue)
+apiFailCheck json = do
+  isError <- valFromObj "type" json >>= return . (== "error")
+  if isError then Error "AUR API lookup failed." else Ok json
 
 makePkgInfo :: JSObject JSValue -> Result PkgInfo
 makePkgInfo pkgJSON = do
-  name    <- valFromObj "Name" pkgJSON
-  version <- valFromObj "Version" pkgJSON
-  return $ PkgInfo name version
-
--- This is dubious.
-unwrapResult :: Result a -> a
-unwrapResult (Ok x)    = x
-unwrapResult (Error e) = error e
+  na <- valFromObj "Name" pkgJSON
+  ma <- valFromObj "Maintainer" pkgJSON
+  ve <- valFromObj "Version" pkgJSON
+  ur <- valFromObj "URL" pkgJSON
+  li <- valFromObj "License" pkgJSON
+  vo <- valFromObj "NumVotes" pkgJSON
+  ou <- valFromObj "OutOfDate" pkgJSON >>= return . (== "1")
+  de <- valFromObj "Description" pkgJSON
+  return $ PkgInfo na ma ve ur li vo ou de
+{- Is this possible?
+  return $ foldl PkgInfo `liftM` mapM (flip valFromObj pkgJSON) fields
+  where fields = [ "Name","Maintainer","Version","URL","License"
+                 , "NumVotes","OutOfDate","Description" ]
+-}
 
 ------------
 -- PKGBUILDS

@@ -26,7 +26,7 @@ import Pacman
 import Shell
 
 auraVersion :: String
-auraVersion = "0.9.1.5"
+auraVersion = "0.9.1.6"
 
 main :: IO a
 main = do
@@ -56,12 +56,14 @@ getSettings lang auraFlags = do
 -- The `flags` must be sorted to guarantee the pattern matching
 -- below will work properly.
 executeOpts :: Settings -> ([Flag],[String],[String]) -> IO ExitCode
+executeOpts ss ([],[],[]) = executeOpts ss ([Help],[],[])
 executeOpts ss (flags,input,pacOpts) = do
   case sort flags of
     (AURInstall:fs) ->
         case fs of
           []             -> ss |+| (ss |$| installPackages ss pacOpts input)
           [Upgrade]      -> ss |+| (ss |$| upgradeAURPkgs ss pacOpts input)
+          [Info]         -> aurPkgInfo ss input
           [ViewDeps]     -> displayPkgDeps ss input
           [Download]     -> downloadTarballs ss input
           [GetPkgbuild]  -> displayPkgbuild ss input
@@ -90,9 +92,7 @@ executeOpts ss (flags,input,pacOpts) = do
     [Languages] -> displayOutputLanguages ss
     [Help]      -> printHelpMsg ss pacOpts
     [Version]   -> getVersionInfo >>= animateVersionMsg ss
-    []          -> if null pacOpts
-                      then executeOpts ss ([Help],[],[])
-                      else pacman $ pacOpts ++ input ++ hijackedFlags
+    pacmanFlags -> pacman $ pacOpts ++ input ++ hijackedFlags
     where hijackedFlags = reconvertFlags flags hijackedFlagMap
           
 --------------------
@@ -160,21 +160,27 @@ reportPkgsToInstall lang pacPkgs aurDeps aurPkgs = do
 upgradeAURPkgs :: Settings -> [String] -> [String] -> IO ExitCode
 upgradeAURPkgs settings pacOpts pkgs = do
   notify settings upgradeAURPkgsMsg1
-  foreignPkgs <- filter (\(n,_) -> notIgnored n) `liftM` getForeignPackages
-  pkgInfo     <- getAURPkgInfo $ map fst foreignPkgs
-  let toCheck = zip pkgInfo (map snd foreignPkgs)
-  notify settings upgradeAURPkgsMsg2
-  let toUpgrade = filter isOutOfDate toCheck
-      prettify  = \(p,v) -> nameOf p ++ " : " ++ v ++ " => " ++ latestVerOf p
-  if null toUpgrade
-     then warn settings upgradeAURPkgsMsg3
-     else reportPkgsToUpgrade (langOf settings) $ map prettify toUpgrade
-  installPackages settings pacOpts $ (map (nameOf . fst) toUpgrade) ++ pkgs
-      where notIgnored p = splitName p `notElem` ignoredPkgsOf settings
+  foreignPkgs   <- filter (\(n,_) -> notIgnored n) `liftM` getForeignPackages
+  pkgInfoEither <- getAURPkgInfo $ map fst foreignPkgs
+  lookupSuccess pkgInfoEither ?>> do
+    let pkgInfo   = (\(Right ps) -> ps) pkgInfoEither  -- Dirty.
+        toCheck   = zip pkgInfo (map snd foreignPkgs)
+        toUpgrade = filter isntMostRecent toCheck
+    notify settings upgradeAURPkgsMsg2
+    if null toUpgrade
+       then warn settings upgradeAURPkgsMsg3
+       else reportPkgsToUpgrade (langOf settings) $ map prettify toUpgrade
+    installPackages settings pacOpts $ (map (nameOf . fst) toUpgrade) ++ pkgs
+      where notIgnored p   = splitName p `notElem` ignoredPkgsOf settings
+            prettify (p,v) = nameOf p ++ " : " ++ v ++ " => " ++ latestVerOf p
+            lookupSuccess  = eitherToBool
 
 reportPkgsToUpgrade :: Language -> [String] -> IO ()
 reportPkgsToUpgrade lang pkgs = printListWithTitle green cyan msg pkgs
     where msg = reportPkgsToUpgradeMsg1 lang
+
+aurPkgInfo :: Settings -> [String] -> IO ExitCode
+aurPkgInfo ss pkgs = returnSuccess
 
 displayPkgDeps :: Settings -> [String] -> IO ExitCode
 displayPkgDeps _ []    = returnFailure
