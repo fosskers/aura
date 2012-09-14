@@ -45,7 +45,6 @@ rpcAddMultiInfoArgs = concat . map ("&arg\\[\\]=" ++)
 -------
 -- Extend this later as needed.
 data PkgInfo = PkgInfo { nameOf :: String
-                       , maintainerOf :: String
                        , latestVerOf :: String
                        , sourceURLOf :: String
                        , licenseOf :: String
@@ -71,18 +70,17 @@ apiFailCheck json = do
 
 makePkgInfo :: JSObject JSValue -> Result PkgInfo
 makePkgInfo pkgJSON = do
-  na <- valFromObj "Name" pkgJSON
-  ma <- valFromObj "Maintainer" pkgJSON
-  ve <- valFromObj "Version" pkgJSON
   ur <- valFromObj "URL" pkgJSON
+  na <- valFromObj "Name" pkgJSON
+  ve <- valFromObj "Version" pkgJSON
   li <- valFromObj "License" pkgJSON
   vo <- valFromObj "NumVotes" pkgJSON
-  ou <- valFromObj "OutOfDate" pkgJSON >>= return . (== "1")
   de <- valFromObj "Description" pkgJSON
-  return $ PkgInfo na ma ve ur li vo ou de
+  ou <- valFromObj "OutOfDate" pkgJSON >>= return . (/= "0")
+  return $ PkgInfo na ve ur li vo ou de
 {- Is this possible?
   return $ foldl PkgInfo `liftM` mapM (flip valFromObj pkgJSON) fields
-  where fields = [ "Name","Maintainer","Version","URL","License"
+  where fields = [ "Name","Version","URL","License"
                  , "NumVotes","OutOfDate","Description" ]
 -}
 

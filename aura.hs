@@ -180,7 +180,12 @@ reportPkgsToUpgrade lang pkgs = printListWithTitle green cyan msg pkgs
     where msg = reportPkgsToUpgradeMsg1 lang
 
 aurPkgInfo :: Settings -> [String] -> IO ExitCode
-aurPkgInfo ss pkgs = returnSuccess
+aurPkgInfo ss pkgs = do
+  pkgInfos <- getAURPkgInfo pkgs
+  pkgInfos ?>> mapM_ (displayAurPkgInfo ss) pkgInfos >> returnSuccess
+
+displayAurPkgInfo :: Settings -> PkgInfo -> IO ()
+displayAurPkgInfo ss info = putStrLn $ nameOf info
 
 displayPkgDeps :: Settings -> [String] -> IO ExitCode
 displayPkgDeps _ []    = returnFailure
