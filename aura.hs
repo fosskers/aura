@@ -24,6 +24,7 @@ import AuraLogo
 import AuraLib
 import Pacman
 import Shell
+import Zero
 
 auraVersion :: String
 auraVersion = "0.9.1.6"
@@ -182,10 +183,15 @@ reportPkgsToUpgrade lang pkgs = printListWithTitle green cyan msg pkgs
 aurPkgInfo :: Settings -> [String] -> IO ExitCode
 aurPkgInfo ss pkgs = do
   pkgInfos <- getAURPkgInfo pkgs
-  pkgInfos ?>> mapM_ (displayAurPkgInfo ss) pkgInfos >> returnSuccess
+  case pkgInfos of
+    Left e   -> putStrLn e >> returnFailure
+    Right is -> mapM_ (displayAurPkgInfo ss) is >> returnSuccess
 
 displayAurPkgInfo :: Settings -> PkgInfo -> IO ()
-displayAurPkgInfo ss info = putStrLn $ nameOf info
+displayAurPkgInfo ss info = putStrLn $ renderAurPkgInfo ss info
+
+renderAurPkgInfo :: Settings -> PkgInfo -> String
+renderAurPkgInfo ss info = nameOf info ++ " => " ++ latestVerOf info
 
 displayPkgDeps :: Settings -> [String] -> IO ExitCode
 displayPkgDeps _ []    = returnFailure

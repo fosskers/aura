@@ -170,11 +170,6 @@ getProvidingPkg' virt = do
 ------------
 -- OPERATORS
 ------------
--- Fails immediately if a certain predicate is not met.
-(?>>) :: (Eq a, Zero a, Eq b, Zero b, Monad m) => a -> m b -> m b
-val ?>> action | val == zero = return zero
-               | otherwise   = action
-
 -- IO action won't be allowed unless user is root, or using [$]udo.
 (|$|) :: Settings -> IO ExitCode -> IO ExitCode
 settings |$| action = mustBeRoot settings action
