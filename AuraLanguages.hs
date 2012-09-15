@@ -583,7 +583,7 @@ aurPkgInfoFields English  = [ "Name","Version","AUR Status","Project URL","Licen
                             , "Votes","Description" ]
 aurPkgInfoFields Japanese = [ "名前","バージョン","パッケージ状態"
                             , "プロジェクト","ライセンス","投票数","概要" ]
-aurPkgInfoFields English  = [ "Nazwa","Wersja","Status w AUR","URL","Licencja"
+aurPkgInfoFields Polish   = [ "Nazwa","Wersja","Status w AUR","URL","Licencja"
                             , "Głosy","Opis" ]
 aurPkgInfoFields _        = aurPkgInfoFields English
 
