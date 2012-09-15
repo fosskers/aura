@@ -7,6 +7,7 @@ import Control.Concurrent (threadDelay)
 import System.IO (stdout, hFlush)
 
 -- Custom Libraries
+import Utilities (prePad)
 import Shell (yellow)
 
 data MouthState = Open | Closed deriving (Eq)
@@ -73,5 +74,6 @@ renderPacmanHead pad Open   = map (padString pad) openMouth
 renderPacmanHead pad Closed = map (padString pad) closedMouth
 
 padString :: Int -> String -> String
-padString pad cs = getPad ++ cs
-    where getPad = concat . take pad . repeat $ " "
+padString pad cs = prePad cs ' ' (pad + length cs)
+--padString pad cs = getPad ++ cs
+--    where getPad = take pad $ repeat ' '

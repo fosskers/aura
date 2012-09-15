@@ -46,10 +46,10 @@ rpcAddMultiInfoArgs = concat . map ("&arg\\[\\]=" ++)
 -- Extend this later as needed.
 data PkgInfo = PkgInfo { nameOf :: String
                        , latestVerOf :: String
-                       , sourceURLOf :: String
+                       , isOutOfDate :: Bool
+                       , projectURLOf :: String
                        , licenseOf :: String
                        , votesOf :: String
-                       , isOutOfDate :: Bool
                        , descriptionOf :: String
                        } deriving (Eq,Show)
 
@@ -77,7 +77,7 @@ makePkgInfo pkgJSON = do
   vo <- valFromObj "NumVotes" pkgJSON
   de <- valFromObj "Description" pkgJSON
   ou <- valFromObj "OutOfDate" pkgJSON >>= return . (/= "0")
-  return $ PkgInfo na ve ur li vo ou de
+  return $ PkgInfo na ve ou ur li vo de
 {- Is this possible?
   return $ foldl PkgInfo `liftM` mapM (flip valFromObj pkgJSON) fields
   where fields = [ "Name","Version","URL","License"

@@ -53,6 +53,10 @@ croatian = Croatian
 bt :: String -> String
 bt cs = "`" ++ cyan cs ++ "`"
 
+whitespace :: Language -> Char
+whitespace Japanese = '　'
+whitespace _ = ' '
+
 --------------------
 -- AuraLib functions
 --------------------
@@ -571,3 +575,20 @@ orpha Polish   =
 orpha Croatian =
     blue "Izvršava radnje vezane uz pakete bez roditelja ([O]rphan).\n" ++
     "Prešutna (default) radnja je izlistavanje paketa bez roditelja."
+
+--------------------------
+-- AurConnection functions
+--------------------------
+aurPkgInfoFields :: Language -> [String]
+aurPkgInfoFields English  = [ "Name","Version","AUR Status","Project URL","License"
+                            , "Votes","Description" ]
+aurPkgInfoFields Japanese = [ "名前","バージョン","パッケージ状態"
+                            , "プロジェクト","ライセンス","投票数","概要" ]
+aurPkgInfoFields _        = aurPkgInfoFields English
+
+outOfDateMsg :: Language -> Bool -> String
+outOfDateMsg English True   = red "Out of Date!"
+outOfDateMsg English False  = green "Up to Date"
+outOfDateMsg Japanese True  = red "AURで要更新！"
+outOfDateMsg Japanese False = green "最新"
+outOfDateMsg _ status       = outOfDateMsg English status

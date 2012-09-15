@@ -27,7 +27,7 @@ import Shell
 import Zero
 
 auraVersion :: String
-auraVersion = "0.9.1.6"
+auraVersion = "0.9.2.0"
 
 main :: IO a
 main = do
@@ -163,8 +163,8 @@ upgradeAURPkgs settings pacOpts pkgs = do
   notify settings upgradeAURPkgsMsg1
   foreignPkgs   <- filter (\(n,_) -> notIgnored n) `liftM` getForeignPackages
   pkgInfoEither <- getAURPkgInfo $ map fst foreignPkgs
-  lookupSuccess pkgInfoEither ?>> do
-    let pkgInfo   = (\(Right ps) -> ps) pkgInfoEither  -- Dirty.
+  pkgInfoEither ?>> do
+    let pkgInfo   = fromRight pkgInfoEither
         toCheck   = zip pkgInfo (map snd foreignPkgs)
         toUpgrade = filter isntMostRecent toCheck
     notify settings upgradeAURPkgsMsg2
@@ -174,7 +174,6 @@ upgradeAURPkgs settings pacOpts pkgs = do
     installPackages settings pacOpts $ (map (nameOf . fst) toUpgrade) ++ pkgs
       where notIgnored p   = splitName p `notElem` ignoredPkgsOf settings
             prettify (p,v) = nameOf p ++ " : " ++ v ++ " => " ++ latestVerOf p
-            lookupSuccess  = eitherToBool
 
 reportPkgsToUpgrade :: Language -> [String] -> IO ()
 reportPkgsToUpgrade lang pkgs = printListWithTitle green cyan msg pkgs
@@ -183,15 +182,27 @@ reportPkgsToUpgrade lang pkgs = printListWithTitle green cyan msg pkgs
 aurPkgInfo :: Settings -> [String] -> IO ExitCode
 aurPkgInfo ss pkgs = do
   pkgInfos <- getAURPkgInfo pkgs
-  case pkgInfos of
-    Left e   -> putStrLn e >> returnFailure
-    Right is -> mapM_ (displayAurPkgInfo ss) is >> returnSuccess
+  pkgInfos ?>> do
+    mapM_ (displayAurPkgInfo ss) (fromRight pkgInfos) >> returnSuccess
 
 displayAurPkgInfo :: Settings -> PkgInfo -> IO ()
-displayAurPkgInfo ss info = putStrLn $ renderAurPkgInfo ss info
+displayAurPkgInfo ss info = putStrLn $ renderAurPkgInfo ss info ++ "\n"
 
 renderAurPkgInfo :: Settings -> PkgInfo -> String
-renderAurPkgInfo ss info = nameOf info ++ " => " ++ latestVerOf info
+renderAurPkgInfo ss info = concat $ intersperse "\n" fieldsAndEntries
+    where fieldsAndEntries = map combine $ zip paddedFields entries
+          combine (f,e)    = f ++ " : " ++ e
+          paddedFields     = map (\x -> postPad x ws longestField) fields
+          ws               = whitespace $ langOf ss
+          longestField     = maximum $ map length fields
+          fields           = aurPkgInfoFields $ langOf ss
+          entries          = [ nameOf info
+                             , latestVerOf info
+                             , outOfDateMsg (langOf ss) $ isOutOfDate info
+                             , projectURLOf info
+                             , licenseOf info
+                             , votesOf info
+                             , descriptionOf info ]
 
 displayPkgDeps :: Settings -> [String] -> IO ExitCode
 displayPkgDeps _ []    = returnFailure

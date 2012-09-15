@@ -127,6 +127,14 @@ uncompress file = do
   _ <- quietShellCmd' "bsdtar" ["-zxvf",file]
   return $ dropExtensions file
 
-eitherToBool :: Either a b -> Bool
-eitherToBool (Right _) = True
-eitherToBool (Left _)  = False
+fromRight :: Either a b -> b
+fromRight (Right x) = x
+fromRight (Left _)  = error "Value given was a Left."
+
+-- The Int argument is the final length of the padded String,
+-- not the length of the pad.
+postPad :: [a] -> a -> Int -> [a]
+postPad xs x len = take len $ xs ++ repeat x
+
+prePad :: [a] -> a -> Int -> [a]
+prePad xs x len = take (len - length xs) (repeat x) ++ xs

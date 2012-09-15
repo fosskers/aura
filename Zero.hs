@@ -35,7 +35,7 @@ instance Zero ExitCode where
     zero = ExitFailure 1
     isZero = zeroDefault
 
-instance (Zero a, Zero b) => Zero (Either a b) where
+instance (Zero a) => Zero (Either a b) where
     zero = Left zero
     isZero (Left _)  = True
     isZero (Right _) = False
