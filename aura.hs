@@ -27,7 +27,7 @@ import Shell
 import Zero
 
 auraVersion :: String
-auraVersion = "0.9.2.0"
+auraVersion = "0.9.2.1"
 
 main :: IO a
 main = do
