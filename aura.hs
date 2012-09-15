@@ -65,6 +65,7 @@ executeOpts ss (flags,input,pacOpts) = do
           []             -> ss |+| (ss |$| installPackages ss pacOpts input)
           [Upgrade]      -> ss |+| (ss |$| upgradeAURPkgs ss pacOpts input)
           [Info]         -> aurPkgInfo ss input
+          [Search]       -> aurSearch input
           [ViewDeps]     -> displayPkgDeps ss input
           [Download]     -> downloadTarballs ss input
           [GetPkgbuild]  -> displayPkgbuild ss input
@@ -162,7 +163,7 @@ upgradeAURPkgs :: Settings -> [String] -> [String] -> IO ExitCode
 upgradeAURPkgs settings pacOpts pkgs = do
   notify settings upgradeAURPkgsMsg1
   foreignPkgs   <- filter (\(n,_) -> notIgnored n) `liftM` getForeignPackages
-  pkgInfoEither <- getAURPkgInfo $ map fst foreignPkgs
+  pkgInfoEither <- aurInfoLookup $ map fst foreignPkgs
   pkgInfoEither ?>> do
     let pkgInfo   = fromRight pkgInfoEither
         toCheck   = zip pkgInfo (map snd foreignPkgs)
@@ -181,7 +182,7 @@ reportPkgsToUpgrade lang pkgs = printListWithTitle green cyan msg pkgs
 
 aurPkgInfo :: Settings -> [String] -> IO ExitCode
 aurPkgInfo ss pkgs = do
-  pkgInfos <- getAURPkgInfo pkgs
+  pkgInfos <- aurInfoLookup pkgs
   pkgInfos ?>> do
     mapM_ (displayAurPkgInfo ss) (fromRight pkgInfos) >> returnSuccess
 
@@ -203,6 +204,22 @@ renderAurPkgInfo ss info = concat $ intersperse "\n" fieldsAndEntries
                              , licenseOf info
                              , votesOf info
                              , descriptionOf info ]
+
+aurSearch :: [String] -> IO ExitCode
+aurSearch []        = returnFailure
+aurSearch (regex:_) = do
+  searchResults <- aurSearchLookup regex
+  searchResults ?>> do
+    mapM_ (putStrLn . renderSearchResult regex) (fromRight searchResults)
+    returnSuccess
+
+renderSearchResult :: String -> PkgInfo -> String
+renderSearchResult regex info = "aur/" ++ n ++ " " ++ v ++ "\n    " ++ d
+    where c cs = case cs =~ regex of (b,m,a) -> b ++ cyan m ++ a
+          n = c $ nameOf info
+          d = c $ descriptionOf info
+          v | isOutOfDate info = red $ latestVerOf info
+            | otherwise        = green $ latestVerOf info
 
 displayPkgDeps :: Settings -> [String] -> IO ExitCode
 displayPkgDeps _ []    = returnFailure

@@ -35,7 +35,7 @@ rpcAddType t = "type=" ++ case t of
 
 rpcAddArg :: [String] -> String
 rpcAddArg []    = []
-rpcAddArg (a:_) = "&arg=" ++ a
+rpcAddArg (a:_) = "&arg=" ++ a  -- This needs to be fixed! Regex!
 
 rpcAddMultiInfoArgs :: [String] -> String
 rpcAddMultiInfoArgs = concat . map ("&arg\\[\\]=" ++)
@@ -53,9 +53,15 @@ data PkgInfo = PkgInfo { nameOf :: String
                        , descriptionOf :: String
                        } deriving (Eq,Show)
 
-getAURPkgInfo :: [String] -> IO (Either String [PkgInfo])
-getAURPkgInfo pkgs = do
-  infoJSON <- getUrlContents $ makeRPCUrl MultiInfo pkgs
+aurSearchLookup :: String -> IO (Either String [PkgInfo])
+aurSearchLookup regex = getAURPkgInfo [regex] PkgSearch
+
+aurInfoLookup :: [String] -> IO (Either String [PkgInfo])
+aurInfoLookup pkgs = getAURPkgInfo pkgs MultiInfo
+
+getAURPkgInfo :: [String] -> RPCType -> IO (Either String [PkgInfo])
+getAURPkgInfo items rpcType = do
+  infoJSON <- getUrlContents $ makeRPCUrl rpcType items
   return . resultToEither . parseInfoJSON $ infoJSON
 
 -- Monads rock my world.
