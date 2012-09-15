@@ -14,7 +14,8 @@ The Aura Philosophy
 ### Arch is Arch. AUR is AUR.
   `-S` yields pacman packages and _only_ pacman packages. This agrees with
   the above. Thus in aura, the `-A` operation is introduced for obtaining
-  AUR packages. `-A` comes with sub-options you're used to (`-u`, `-w`, etc.).
+  AUR packages. `-A` comes with sub-options you're used to (`-u`, `-s`,
+  `-i`, etc.).
 
 ### All together
 Dependencies and packages are not built and installed one at a time.
@@ -79,6 +80,10 @@ Install an AUR package:
 Upgrade all installed AUR packages:
 
     aura -Ayu
+
+Look up information on an AUR package:
+
+    aura -Ai (package)
 
 Checkout an AUR package's PKGBUILD:
 
