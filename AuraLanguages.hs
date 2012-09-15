@@ -584,6 +584,8 @@ aurPkgInfoFields English  = [ "Name","Version","AUR Status","Project URL","Licen
                             , "Votes","Description" ]
 aurPkgInfoFields Japanese = [ "名前","バージョン","パッケージ状態"
                             , "プロジェクト","ライセンス","投票数","概要" ]
+aurPkgInfoFields Croatian = [ "Ime","Verzija","AUR Stanje","URL Projekta","Licenca"
+                            , "Glasovi","Opis" ]
 aurPkgInfoFields _        = aurPkgInfoFields English
 
 outOfDateMsg :: Language -> Bool -> String
@@ -591,4 +593,6 @@ outOfDateMsg English True   = red "Out of Date!"
 outOfDateMsg English False  = green "Up to Date"
 outOfDateMsg Japanese True  = red "AURで要更新！"
 outOfDateMsg Japanese False = green "最新"
+outOfDateMsg Croatian True  = red "Zastarjelo!"
+outOfDateMsg Croatian False = green "Ažurirano"
 outOfDateMsg _ status       = outOfDateMsg English status
