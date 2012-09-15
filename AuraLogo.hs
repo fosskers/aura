@@ -75,5 +75,3 @@ renderPacmanHead pad Closed = map (padString pad) closedMouth
 
 padString :: Int -> String -> String
 padString pad cs = prePad cs ' ' (pad + length cs)
---padString pad cs = getPad ++ cs
---    where getPad = take pad $ repeat ' '
