@@ -493,6 +493,7 @@ groupPkgs :: ([a],[b],[c]) -> ([a],[b],[c]) -> ([a],[b],[c])
 groupPkgs (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
 
 -- This could be slow, depending on internet speeds, etc.
+-- CHANGE THIS TO USE JSON!!
 divideByPkgType :: [String] -> IO ([String],[String],[String])
 divideByPkgType pkgs = do
   archPkgs <- filterM (isABSPkg . splitName) pkgs

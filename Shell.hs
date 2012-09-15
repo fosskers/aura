@@ -145,7 +145,9 @@ hasRootPriv :: Environment -> Bool
 hasRootPriv env = varExists "SUDO_USER" env || isTrueRoot env
 
 isTrueRoot :: Environment -> Bool
-isTrueRoot env = varExists "USER" env && getUser' env == "root"
+isTrueRoot env = varExists "USER" env   &&
+                 getUser' env == "root" &&
+                 not (varExists "SUDO_USER" env)
 
 isntTrueRoot :: Environment -> Bool
 isntTrueRoot = not . isTrueRoot
