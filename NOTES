@@ -6,12 +6,9 @@ When a `-Cc` comes along they wouldn't be deleted.
 
 What of the license has to be present in the source code?
 
-Gain a foot in Arch Linux ARM!!
-
-Upgrading can be sped up by making each `curl` usage its own child process.
-In other words, threads.
-
 Make `determineDeps` faster by making it tail-call.
+
+Add `AUR URL` and `Last updated` to `-Ai` output.
 
 DEPENDENCY ANALYSIS
 -------------------
@@ -22,16 +19,9 @@ dependencies, or make it so that they use more mainstream libraries, etc.
 
 OPTIONS TO IMPLEMENT
 --------------------
--As -> `--search` Search for an AUR package
--Ai -> `--info` Gives specific info on an AUR package.
 -Ci -> `--info` Gives some stats about the package cache.
 -   -> `--philosophy` Outputs the aura philosophy.
 -   -> `--tutorial` Teach new users how to build packages from scratch.
-
-FLAGS UNUSED BY PACMAN
-----------------------
-a j x z
-(Of these [a j x z] has been taken by Aura)
 
 OUT OF DATE
 -----------

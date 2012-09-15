@@ -133,10 +133,8 @@ makePackage :: Package a =>
                -> (String -> IO t)
                -> String
                -> IO a
-makePackage typeCon getThirdField pkg = do
-  let (name,ver) = parseNameAndVersionDemand pkg
-  thirdField <- getThirdField name
-  return $ typeCon name ver thirdField
+makePackage typeCon thirdField pkg = typeCon name ver `liftM` thirdField name
+    where (name,ver) = parseNameAndVersionDemand pkg
 
 makePacmanPkg :: String -> IO PacmanPkg
 makePacmanPkg pkg = makePackage PacmanPkg getInfo pkg

@@ -77,7 +77,7 @@ withTempDir name action = do
 
 -- Given a number of selections, allows the user to choose one.
 getSelection :: [String] -> IO String
-getSelection []      = return ""
+getSelection [] = return ""
 getSelection choiceLabels = do
   let quantity = length choiceLabels
       valids   = map show [1..quantity]
