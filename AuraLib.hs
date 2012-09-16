@@ -145,11 +145,8 @@ makeAURPkg pkg = makePackage AURPkg downloadPkgbuild pkg
 
 makeVirtualPkg :: String -> IO VirtualPkg
 makeVirtualPkg pkg = makePackage VirtualPkg getProvider pkg
-    where getProvider name = do
-            providerName <- getProvidingPkg name
-            case providerName of
-              Nothing  -> return Nothing
-              Just pro -> Just `liftM` makePacmanPkg pro
+    where getProvider n =
+            getProvidingPkg n ?>>= (Just `liftM`) . makePacmanPkg . fromJust
 
 -- Yields a virtual package's providing package if there is one.
 getProvidingPkg :: String -> IO (Maybe String)
@@ -193,7 +190,7 @@ trueRootCheck ss action
 ---------------
 -- ABSTRACTIONS
 ---------------
-{-
+{- Help?
 type PkgMap = (a -> IO Bool)                 -- A predicate for filtering.
               -> (Language -> [a] -> IO ())  -- Notify of filtered packages.
               -> (a -> IO b)                 -- Action to perform.
@@ -220,12 +217,8 @@ installPkgFiles pacOpts files = pacman $ ["-U"] ++ pacOpts ++ files
 -- All building occurs within temp directories in the package cache.
 buildPackages :: Settings -> [AURPkg] -> IO (Maybe [FilePath])
 buildPackages _ [] = return Nothing
-buildPackages settings pkgs = do
-  currDir <- getCurrentDirectory
-  setCurrentDirectory $ cachePathOf settings
-  results <- buildPackages' settings pkgs
-  setCurrentDirectory currDir
-  return results
+buildPackages settings pkgs = inDir cache $ buildPackages' settings pkgs
+    where cache = cachePathOf settings
 
 -- Handles the building of Packages.
 -- Assumed: All pacman and AUR dependencies are already installed.
@@ -238,7 +231,7 @@ buildPackages' settings pkgs@(p:ps) = do
     Right pkg   -> (fmap (pkg :)) `liftM` buildPackages' settings ps
     Left errors -> buildFail settings pkgs errors
         
--- Big and ugly.
+-- Kinda ugly.
 -- Perform the actual build. Fails elegantly when build fails occur.
 build :: Settings -> AURPkg -> IO (Either ErrMsg FilePath)
 build settings pkg = do

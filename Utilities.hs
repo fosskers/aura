@@ -138,3 +138,11 @@ postPad xs x len = take len $ xs ++ repeat x
 
 prePad :: [a] -> a -> Int -> [a]
 prePad xs x len = take (len - length xs) (repeat x) ++ xs
+
+inDir :: FilePath -> IO a -> IO a
+inDir dir action = do
+  curr <- getCurrentDirectory
+  setCurrentDirectory dir
+  result <- action
+  setCurrentDirectory curr
+  return result
