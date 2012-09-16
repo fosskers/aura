@@ -210,7 +210,7 @@ mapOverPkgs cond report fun settings pkgs = do
 --mapOverPkgs' :: PkgMap -> IO ExitCode
 mapOverPkgs' cond report fun settings pkgs = do
   result <- mapOverPkgs cond report fun settings pkgs
-  notNull result ?>> returnSuccess
+  result ?>> returnSuccess
 
 -----------
 -- THE WORK

@@ -14,12 +14,12 @@ instance Zero Int where
     zero = 0
     isZero = zeroDefault
 
-instance Zero a => Zero (Maybe a) where
+instance Zero (Maybe a) where
     zero = Nothing
     isZero Nothing  = True
     isZero (Just _) = False
 
-instance Zero a => Zero [a] where
+instance Zero [a] where
     zero = []
     isZero xs = null xs
 
