@@ -156,7 +156,7 @@ getProvidingPkg :: String -> IO (Maybe String)
 getProvidingPkg virt = do
   candidates <- getProvidingPkg' virt
   let lined = lines candidates
-  (length lined /= 1) ?>> (return . Just . head $ lined)
+  return (length lined /= 1) ?>> (return . Just . head $ lined)
 
 -- Unsafe version.
 -- Only use on virtual packages that have guaranteed providers.
@@ -194,30 +194,28 @@ trueRootCheck ss action
 -- ABSTRACTIONS
 ---------------
 {-
-type PkgMap = (Eq a) =>
-              (a -> IO Bool)                 -- A predicate for filtering.
+type PkgMap = (a -> IO Bool)                 -- A predicate for filtering.
               -> (Language -> [a] -> IO ())  -- Notify of filtered packages.
               -> (a -> IO b)                 -- Action to perform.
               -> Settings
               -> [a]                         -- Packages.
 -}
---mapOverPkgs :: PkgMap -> IO [a]               
-mapOverPkgs cond report fun settings pkgs = do
+
+--mapPkgs :: Eq a => PkgMap -> IO [a]               
+mapPkgs cond report fun settings pkgs = do
   realPkgs <- filterM cond pkgs
   _ <- report (langOf settings) $ pkgs \\ realPkgs
   mapM fun realPkgs
 
---mapOverPkgs' :: PkgMap -> IO ExitCode
-mapOverPkgs' cond report fun settings pkgs = do
-  result <- mapOverPkgs cond report fun settings pkgs
-  result ?>> returnSuccess
+--mapPkgs' :: PkgMap -> IO ExitCode
+mapPkgs' c r f s p = mapPkgs c r f s p ?>> returnSuccess
 
 -----------
 -- THE WORK
 -----------
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
-installPackageFiles :: [String] -> [FilePath] -> IO ExitCode
-installPackageFiles pacOpts files = pacman $ ["-U"] ++ pacOpts ++ files
+installPkgFiles :: [String] -> [FilePath] -> IO ExitCode
+installPkgFiles pacOpts files = pacman $ ["-U"] ++ pacOpts ++ files
 
 -- All building occurs within temp directories in the package cache.
 buildPackages :: Settings -> [AURPkg] -> IO (Maybe [FilePath])
@@ -268,12 +266,10 @@ getSourceCode pkgName user currDir = do
 
 -- Allow the user to edit the PKGBUILD if they asked to do so.
 checkHotEdit :: Settings -> String -> IO ()
-checkHotEdit settings pkgName = when (mayHotEdit settings) promptForEdit
+checkHotEdit settings pkgName = return (mayHotEdit settings) ?>> do
+    optionalPrompt (mustConfirm settings) msg ?>> openEditor editor "PKGBUILD"
     where msg    = checkHotEditMsg1 (langOf settings) pkgName
           editor = getEditor $ environmentOf settings
-          promptForEdit = do
-            answer <- optionalPrompt (mustConfirm settings) msg
-            when answer $ openEditor editor "PKGBUILD"
 
 -- Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
@@ -286,8 +282,7 @@ buildFail settings (p:ps) errors = do
   unless (null ps) (scold settings buildFailMsg2 >>
                     mapM_ (putStrLn . cyan . pkgNameOf) ps)
   warn settings buildFailMsg3
-  toContinue <- yesNoPrompt (buildFailMsg4 $ langOf settings) "^(y|Y)"
-  toContinue ?>> (return $ Just [])
+  yesNoPrompt (buildFailMsg4 $ langOf settings) "^(y|Y)" ?>> return (Just [])
 
 -- If the user wasn't running Aura with `-x`, then this will
 -- show them the suppressed makepkg output. 
@@ -411,10 +406,8 @@ isVersionConflict (AtLeast r) c  | comparableVer c > comparableVer r = False
                                  | otherwise = False
 
 getForeignPackages :: IO [(String,String)]
-getForeignPackages = do
-  pkgs <- lines `liftM` pacmanOutput ["-Qm"]
-  return $ map fixName pkgs
-      where fixName = hardBreak (== ' ')
+getForeignPackages = map fixName `liftM` lines `liftM` pacmanOutput ["-Qm"]
+    where fixName = hardBreak (== ' ')
 
 isntMostRecent :: (PkgInfo,String) -> Bool
 isntMostRecent (info,v) = trueVer > currVer
@@ -443,9 +436,7 @@ isntAURPkg pkg = not `liftM` isAURPkg pkg
 
 -- A package is a virtual package if it has a provider.
 isVirtualPkg :: String -> IO Bool
-isVirtualPkg pkg = do
-  provider <- getProvidingPkg pkg
-  provider ?>> return True
+isVirtualPkg pkg = getProvidingPkg pkg ?>> return True
 
 countInstalledPackages :: IO Int
 countInstalledPackages = (length . lines) `liftM` pacmanOutput ["-Qsq"]
