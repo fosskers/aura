@@ -180,9 +180,9 @@ reportPkgsToUpgrade lang pkgs = printListWithTitle green cyan msg pkgs
     where msg = reportPkgsToUpgradeMsg1 lang
 
 aurPkgInfo :: Settings -> [String] -> IO ExitCode
-aurPkgInfo ss pkgs = aurInfoLookup pkgs ?>>= \pkgInfos -> do
-                       mapM_ (displayAurPkgInfo ss) (fromRight pkgInfos)
-                       returnSuccess
+aurPkgInfo ss pkgs = aurInfoLookup pkgs ?>>=
+                     mapM_ (displayAurPkgInfo ss) . fromRight >>
+                     returnSuccess
 
 displayAurPkgInfo :: Settings -> PkgInfo -> IO ()
 displayAurPkgInfo ss info = putStrLn $ renderAurPkgInfo ss info ++ "\n"
@@ -205,8 +205,8 @@ renderAurPkgInfo ss info = concat $ intersperse "\n" fieldsAndEntries
 
 aurSearch :: [String] -> IO ExitCode
 aurSearch []        = returnFailure
-aurSearch (regex:_) = aurSearchLookup regex ?>>= \searchResults -> do
-    mapM_ (putStrLn . renderSearchResult regex) (fromRight searchResults)
+aurSearch (regex:_) = aurSearchLookup regex ?>>=
+    mapM_ (putStrLn . renderSearchResult regex) . fromRight >>
     returnSuccess
 
 renderSearchResult :: String -> PkgInfo -> String

@@ -416,8 +416,12 @@ isInstalled pkg = pacmanSuccess ["-Qq",pkg]
 isNotInstalled :: String -> IO Bool
 isNotInstalled pkg = pacmanFailure ["-Qq",pkg]
 
-isABSPkg :: String -> IO Bool
-isABSPkg pkg = pacmanSuccess ["-Si",pkg]
+isRepoPkg :: String -> IO Bool
+isRepoPkg pkg = pacmanSuccess ["-Si",pkg]
+
+-- Beautiful.
+filterAURPkgs :: [String] -> IO [String]
+filterAURPkgs pkgs = aurInfoLookup pkgs ?>>= return . map nameOf . fromRight
 
 -- A package is an AUR package if it's PKGBUILD exists on the Arch website.
 -- Requires internet access.
@@ -476,14 +480,15 @@ splitVer = snd . splitNameAndVer
 groupPkgs :: ([a],[b],[c]) -> ([a],[b],[c]) -> ([a],[b],[c])
 groupPkgs (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
 
--- This could be slow, depending on internet speeds, etc.
--- CHANGE THIS TO USE JSON!!
 divideByPkgType :: [String] -> IO ([String],[String],[String])
 divideByPkgType pkgs = do
-  archPkgs <- filterM (isABSPkg . splitName) pkgs
-  let remaining = pkgs \\ archPkgs
-  aurPkgs  <- filterM (isAURPkg . splitName) remaining
-  return (archPkgs, aurPkgs, remaining \\ aurPkgs)
+  aurPkgNames  <- filterAURPkgs namesOnly
+  repoPkgNames <- filterM isRepoPkg $ namesOnly \\ aurPkgNames
+  let aurPkgs  = filter (flip elem aurPkgNames . splitName) pkgs
+      repoPkgs = filter (flip elem repoPkgNames . splitName) pkgs
+      others   = (pkgs \\ aurPkgs) \\ repoPkgs
+  return (repoPkgs, aurPkgs, others)
+      where namesOnly = map splitName pkgs
 
 sortPkgs :: [String] -> [String]
 sortPkgs pkgs = sortBy verNums pkgs
