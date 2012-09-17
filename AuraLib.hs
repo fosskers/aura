@@ -314,11 +314,11 @@ determineDeps :: Language -> AURPkg -> IO ([String],[AURPkg],[String])
 determineDeps lang pkg = do
   let depNames = (getPkgbuildField "depends" $ pkgbuildOf pkg) ++
                  (getPkgbuildField "makedepends" $ pkgbuildOf pkg)
-  (archPkgNames,aurPkgNames,other) <- divideByPkgType depNames
+  (repoPkgNames,aurPkgNames,other) <- divideByPkgType depNames
   aurPkgs       <- mapM makeAURPkg aurPkgNames
   recursiveDeps <- mapM (determineDeps lang) aurPkgs
-  let (ps,as,os) = foldl groupPkgs (archPkgNames,aurPkgs,other) recursiveDeps
-  return (nub ps, nub as, nub os)
+  let (rs,as,os) = foldl groupPkgs (repoPkgNames,aurPkgs,other) recursiveDeps
+  return (nub rs, nub as, nub os)
 
 -- If a package isn't installed, `pacman -T` will yield a single name.
 -- Any other type of output means installation is not required. 
