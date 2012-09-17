@@ -21,7 +21,11 @@ instance Zero (Maybe a) where
 
 instance Zero [a] where
     zero = []
-    isZero xs = null xs
+    isZero = null
+
+instance Zero () where
+    zero = ()
+    isZero = zeroDefault
 
 instance Zero Char where
     zero = '\NUL'  -- Is there a better value for this?
@@ -43,7 +47,20 @@ instance (Zero a) => Zero (Either a b) where
 zeroDefault :: (Eq a, Zero a) => a -> Bool
 zeroDefault x = x == zero
 
--- Fails immediately if a certain predicate is not met.
-(?>>) :: (Zero a, Zero b, Monad m) => a -> m b -> m b
-val ?>> action | isZero val = return zero
-               | otherwise  = action
+{-
+ Allows monadic functions to fail immediately if the result of
+ one action is it's `zero` value.
+
+ Made infix 2 since (>>) and (>>=) are infix 1, thus the following
+ are equivalent:
+
+ action ?>>= action >>= action
+ action ?>>= (action >>= action)
+-}
+infixl 2 ?>>
+(?>>) :: (Monad m, Zero a, Zero b) => m a -> m b -> m b
+m1 ?>> m2 = m1 >>= \x -> if isZero x then return zero else m2
+
+infixl 2 ?>>=
+(?>>=) :: (Monad m, Zero a, Zero b) => m a -> (a -> m b) -> m b
+m1 ?>>= m2 = m1 >>= \x -> if isZero x then return zero else m2 x

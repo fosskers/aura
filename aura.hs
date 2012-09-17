@@ -134,13 +134,13 @@ installPackages settings pacOpts pkgs = do
            mapM_ (buildAndInstallDep settings pacOpts) aurDeps
            pkgFiles <- buildPackages settings aurPackages
            case pkgFiles of
-             Just pfs -> installPackageFiles pacOpts pfs
+             Just pfs -> installPkgFiles pacOpts pfs
              Nothing  -> scoldAndFail settings installPackagesMsg6
 
 buildAndInstallDep :: Settings -> [String] -> AURPkg -> IO ExitCode
-buildAndInstallDep settings pacOpts pkg = do
-  pFile <- buildPackages settings [pkg]
-  pFile ?>> installPackageFiles (["--asdeps"] ++ pacOpts) (fromJust pFile)
+buildAndInstallDep settings pacOpts pkg =
+  buildPackages settings [pkg] ?>>=
+  installPkgFiles (["--asdeps"] ++ pacOpts) . fromJust
 
 reportNonPackages :: Language -> [String] -> IO ()
 reportNonPackages lang nons = printListWithTitle red cyan msg nons
@@ -162,9 +162,8 @@ reportPkgsToInstall lang pacPkgs aurDeps aurPkgs = do
 upgradeAURPkgs :: Settings -> [String] -> [String] -> IO ExitCode
 upgradeAURPkgs settings pacOpts pkgs = do
   notify settings upgradeAURPkgsMsg1
-  foreignPkgs   <- filter (\(n,_) -> notIgnored n) `liftM` getForeignPackages
-  pkgInfoEither <- aurInfoLookup $ map fst foreignPkgs
-  pkgInfoEither ?>> do
+  foreignPkgs <- filter (\(n,_) -> notIgnored n) `liftM` getForeignPackages
+  (aurInfoLookup $ map fst foreignPkgs) ?>>= \pkgInfoEither -> do
     let pkgInfo   = fromRight pkgInfoEither
         toCheck   = zip pkgInfo (map snd foreignPkgs)
         toUpgrade = filter isntMostRecent toCheck
@@ -181,10 +180,9 @@ reportPkgsToUpgrade lang pkgs = printListWithTitle green cyan msg pkgs
     where msg = reportPkgsToUpgradeMsg1 lang
 
 aurPkgInfo :: Settings -> [String] -> IO ExitCode
-aurPkgInfo ss pkgs = do
-  pkgInfos <- aurInfoLookup pkgs
-  pkgInfos ?>> do
-    mapM_ (displayAurPkgInfo ss) (fromRight pkgInfos) >> returnSuccess
+aurPkgInfo ss pkgs = aurInfoLookup pkgs ?>>=
+                     mapM_ (displayAurPkgInfo ss) . fromRight >>
+                     returnSuccess
 
 displayAurPkgInfo :: Settings -> PkgInfo -> IO ()
 displayAurPkgInfo ss info = putStrLn $ renderAurPkgInfo ss info ++ "\n"
@@ -207,10 +205,8 @@ renderAurPkgInfo ss info = concat $ intersperse "\n" fieldsAndEntries
 
 aurSearch :: [String] -> IO ExitCode
 aurSearch []        = returnFailure
-aurSearch (regex:_) = do
-  searchResults <- aurSearchLookup regex
-  searchResults ?>> do
-    mapM_ (putStrLn . renderSearchResult regex) (fromRight searchResults)
+aurSearch (regex:_) = aurSearchLookup regex ?>>=
+    mapM_ (putStrLn . renderSearchResult regex) . fromRight >>
     returnSuccess
 
 renderSearchResult :: String -> PkgInfo -> String
@@ -222,10 +218,9 @@ renderSearchResult regex info = "aur/" ++ n ++ " " ++ v ++ "\n    " ++ d
             | otherwise        = green $ latestVerOf info
 
 displayPkgDeps :: Settings -> [String] -> IO ExitCode
-displayPkgDeps _ []    = returnFailure
-displayPkgDeps ss pkgs = do
-  aurPkgs <- mapOverPkgs isAURPkg reportNonPackages makeAURPkg ss pkgs
-  aurPkgs ?>> do
+displayPkgDeps _ []  = returnFailure
+displayPkgDeps ss pkgs =
+  mapPkgs isAURPkg reportNonPackages makeAURPkg ss pkgs ?>>= \aurPkgs -> do
        allDeps <- mapM (determineDeps $ langOf ss) aurPkgs
        let (ps, as, os) = foldl groupPkgs ([],[],[]) allDeps
        providers <- mapM getProvidingPkg' os
@@ -235,13 +230,13 @@ displayPkgDeps ss pkgs = do
 downloadTarballs :: Settings -> [String] -> IO ExitCode
 downloadTarballs ss pkgs = do
   currDir <- getCurrentDirectory
-  mapOverAURPkgs (downloadTBall currDir) ss pkgs
+  mapAURPkgs (downloadTBall currDir) ss pkgs
       where downloadTBall path pkg = do
               notify ss $ flip downloadTarballsMsg1 pkg
               downloadSource path pkg
 
 displayPkgbuild :: Settings -> [String] -> IO ExitCode
-displayPkgbuild settings pkgs = mapOverAURPkgs action settings pkgs
+displayPkgbuild settings pkgs = mapAURPkgs action settings pkgs
       where action p = downloadPkgbuild p >>= putStrLn
 
 syncAndContinue :: Settings -> ([Flag],[String],[String]) -> IO ExitCode
@@ -249,19 +244,14 @@ syncAndContinue settings (flags,input,pacOpts) = do
   _ <- syncDatabase pacOpts
   executeOpts settings (AURInstall:flags,input,pacOpts)  -- This is Evil.
 
--- Uninstalls `make` dependencies that were only necessary for building
--- and are no longer required by anything. This is the very definition of
--- an `orphan` package, thus a before-after comparison of orphan packages
--- is done to determine what needs to be uninstalled.
 removeMakeDeps :: Settings -> ([Flag],[String],[String]) -> IO ExitCode
 removeMakeDeps settings (flags,input,pacOpts) = do
   orphansBefore <- getOrphans
-  exitStatus    <- executeOpts settings (AURInstall:flags,input,pacOpts)
-  exitStatus ?>> do
-       orphansAfter <- getOrphans
-       let makeDeps = orphansAfter \\ orphansBefore
-       unless (null makeDeps) $ notify settings removeMakeDepsAfterMsg1
-       removePkgs makeDeps pacOpts
+  executeOpts settings (AURInstall:flags,input,pacOpts) ?>> do
+    orphansAfter <- getOrphans
+    let makeDeps = orphansAfter \\ orphansBefore
+    unless (null makeDeps) $ notify settings removeMakeDepsAfterMsg1
+    removePkgs makeDeps pacOpts
 
 --------------------
 -- WORKING WITH `-C`
@@ -273,7 +263,7 @@ downgradePackages _ []    = returnSuccess
 downgradePackages ss pkgs = do
   cache <- packageCacheContents cachePath
   let action = getDowngradeChoice ss cache
-  choices <- mapOverPkgs isInstalled reportBadDowngradePkgs action ss pkgs
+  choices <- mapPkgs isInstalled reportBadDowngradePkgs action ss pkgs
   pacman $ ["-U"] ++ map (cachePath </>) choices
       where cachePath = cachePathOf ss
 
@@ -383,7 +373,7 @@ logInfoOnPkg settings pkgs = do
   logFile <- readFile (logFilePathOf settings)
   let cond   = \p -> return (logFile =~ (" " ++ p ++ " ") :: Bool)
       action = logLookUp settings logFile
-  mapOverPkgs' cond reportNotInLog action settings pkgs
+  mapPkgs' cond reportNotInLog action settings pkgs
 
 -- Make internal to `logInfoOnPkg`?
 -- Assumed: The package to look up _exists_.
@@ -417,9 +407,8 @@ adoptPkg ss pkgs = ss |$| (pacman $ ["-D","--asexplicit"] ++ pkgs)
 --------
 -- OTHER
 --------
-mapOverAURPkgs :: (String -> IO a) -> Settings -> [String] -> IO ExitCode
-mapOverAURPkgs action settings pkgs =
-  mapOverPkgs' isAURPkg reportNonPackages action settings pkgs
+mapAURPkgs :: (String -> IO a) -> Settings -> [String] -> IO ExitCode
+mapAURPkgs action ss pkgs = mapPkgs' isAURPkg reportNonPackages action ss pkgs
 
 viewConfFile :: IO ExitCode
 viewConfFile = shellCmd "less" [pacmanConfFile]

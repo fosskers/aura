@@ -145,18 +145,15 @@ makeAURPkg pkg = makePackage AURPkg downloadPkgbuild pkg
 
 makeVirtualPkg :: String -> IO VirtualPkg
 makeVirtualPkg pkg = makePackage VirtualPkg getProvider pkg
-    where getProvider name = do
-            providerName <- getProvidingPkg name
-            case providerName of
-              Nothing  -> return Nothing
-              Just pro -> Just `liftM` makePacmanPkg pro
+    where getProvider n =
+            getProvidingPkg n ?>>= (Just `liftM`) . makePacmanPkg . fromJust
 
 -- Yields a virtual package's providing package if there is one.
 getProvidingPkg :: String -> IO (Maybe String)
 getProvidingPkg virt = do
   candidates <- getProvidingPkg' virt
   let lined = lines candidates
-  (length lined /= 1) ?>> (return . Just . head $ lined)
+  return (length lined /= 1) ?>> (return . Just . head $ lined)
 
 -- Unsafe version.
 -- Only use on virtual packages that have guaranteed providers.
@@ -193,41 +190,35 @@ trueRootCheck ss action
 ---------------
 -- ABSTRACTIONS
 ---------------
-{-
-type PkgMap = (Eq a) =>
-              (a -> IO Bool)                 -- A predicate for filtering.
+{- Help?
+type PkgMap = (a -> IO Bool)                 -- A predicate for filtering.
               -> (Language -> [a] -> IO ())  -- Notify of filtered packages.
               -> (a -> IO b)                 -- Action to perform.
               -> Settings
               -> [a]                         -- Packages.
 -}
---mapOverPkgs :: PkgMap -> IO [a]               
-mapOverPkgs cond report fun settings pkgs = do
+
+--mapPkgs :: Eq a => PkgMap -> IO [a]               
+mapPkgs cond report fun settings pkgs = do
   realPkgs <- filterM cond pkgs
   _ <- report (langOf settings) $ pkgs \\ realPkgs
   mapM fun realPkgs
 
---mapOverPkgs' :: PkgMap -> IO ExitCode
-mapOverPkgs' cond report fun settings pkgs = do
-  result <- mapOverPkgs cond report fun settings pkgs
-  result ?>> returnSuccess
+--mapPkgs' :: PkgMap -> IO ExitCode
+mapPkgs' c r f s p = mapPkgs c r f s p ?>> returnSuccess
 
 -----------
 -- THE WORK
 -----------
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
-installPackageFiles :: [String] -> [FilePath] -> IO ExitCode
-installPackageFiles pacOpts files = pacman $ ["-U"] ++ pacOpts ++ files
+installPkgFiles :: [String] -> [FilePath] -> IO ExitCode
+installPkgFiles pacOpts files = pacman $ ["-U"] ++ pacOpts ++ files
 
 -- All building occurs within temp directories in the package cache.
 buildPackages :: Settings -> [AURPkg] -> IO (Maybe [FilePath])
 buildPackages _ [] = return Nothing
-buildPackages settings pkgs = do
-  currDir <- getCurrentDirectory
-  setCurrentDirectory $ cachePathOf settings
-  results <- buildPackages' settings pkgs
-  setCurrentDirectory currDir
-  return results
+buildPackages settings pkgs = inDir cache $ buildPackages' settings pkgs
+    where cache = cachePathOf settings
 
 -- Handles the building of Packages.
 -- Assumed: All pacman and AUR dependencies are already installed.
@@ -240,7 +231,7 @@ buildPackages' settings pkgs@(p:ps) = do
     Right pkg   -> (fmap (pkg :)) `liftM` buildPackages' settings ps
     Left errors -> buildFail settings pkgs errors
         
--- Big and ugly.
+-- Kinda ugly.
 -- Perform the actual build. Fails elegantly when build fails occur.
 build :: Settings -> AURPkg -> IO (Either ErrMsg FilePath)
 build settings pkg = do
@@ -268,12 +259,10 @@ getSourceCode pkgName user currDir = do
 
 -- Allow the user to edit the PKGBUILD if they asked to do so.
 checkHotEdit :: Settings -> String -> IO ()
-checkHotEdit settings pkgName = when (mayHotEdit settings) promptForEdit
+checkHotEdit settings pkgName = return (mayHotEdit settings) ?>> do
+    optionalPrompt (mustConfirm settings) msg ?>> openEditor editor "PKGBUILD"
     where msg    = checkHotEditMsg1 (langOf settings) pkgName
           editor = getEditor $ environmentOf settings
-          promptForEdit = do
-            answer <- optionalPrompt (mustConfirm settings) msg
-            when answer $ openEditor editor "PKGBUILD"
 
 -- Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
@@ -286,8 +275,7 @@ buildFail settings (p:ps) errors = do
   unless (null ps) (scold settings buildFailMsg2 >>
                     mapM_ (putStrLn . cyan . pkgNameOf) ps)
   warn settings buildFailMsg3
-  toContinue <- yesNoPrompt (buildFailMsg4 $ langOf settings) "^(y|Y)"
-  toContinue ?>> (return $ Just [])
+  yesNoPrompt (buildFailMsg4 $ langOf settings) "^(y|Y)" ?>> return (Just [])
 
 -- If the user wasn't running Aura with `-x`, then this will
 -- show them the suppressed makepkg output. 
@@ -326,11 +314,11 @@ determineDeps :: Language -> AURPkg -> IO ([String],[AURPkg],[String])
 determineDeps lang pkg = do
   let depNames = (getPkgbuildField "depends" $ pkgbuildOf pkg) ++
                  (getPkgbuildField "makedepends" $ pkgbuildOf pkg)
-  (archPkgNames,aurPkgNames,other) <- divideByPkgType depNames
+  (repoPkgNames,aurPkgNames,other) <- divideByPkgType depNames
   aurPkgs       <- mapM makeAURPkg aurPkgNames
   recursiveDeps <- mapM (determineDeps lang) aurPkgs
-  let (ps,as,os) = foldl groupPkgs (archPkgNames,aurPkgs,other) recursiveDeps
-  return (nub ps, nub as, nub os)
+  let (rs,as,os) = foldl groupPkgs (repoPkgNames,aurPkgs,other) recursiveDeps
+  return (nub rs, nub as, nub os)
 
 -- If a package isn't installed, `pacman -T` will yield a single name.
 -- Any other type of output means installation is not required. 
@@ -411,10 +399,8 @@ isVersionConflict (AtLeast r) c  | comparableVer c > comparableVer r = False
                                  | otherwise = False
 
 getForeignPackages :: IO [(String,String)]
-getForeignPackages = do
-  pkgs <- lines `liftM` pacmanOutput ["-Qm"]
-  return $ map fixName pkgs
-      where fixName = hardBreak (== ' ')
+getForeignPackages = map fixName `liftM` lines `liftM` pacmanOutput ["-Qm"]
+    where fixName = hardBreak (== ' ')
 
 isntMostRecent :: (PkgInfo,String) -> Bool
 isntMostRecent (info,v) = trueVer > currVer
@@ -430,8 +416,12 @@ isInstalled pkg = pacmanSuccess ["-Qq",pkg]
 isNotInstalled :: String -> IO Bool
 isNotInstalled pkg = pacmanFailure ["-Qq",pkg]
 
-isABSPkg :: String -> IO Bool
-isABSPkg pkg = pacmanSuccess ["-Si",pkg]
+isRepoPkg :: String -> IO Bool
+isRepoPkg pkg = pacmanSuccess ["-Si",pkg]
+
+-- Beautiful.
+filterAURPkgs :: [String] -> IO [String]
+filterAURPkgs pkgs = aurInfoLookup pkgs ?>>= return . map nameOf . fromRight
 
 -- A package is an AUR package if it's PKGBUILD exists on the Arch website.
 -- Requires internet access.
@@ -443,9 +433,7 @@ isntAURPkg pkg = not `liftM` isAURPkg pkg
 
 -- A package is a virtual package if it has a provider.
 isVirtualPkg :: String -> IO Bool
-isVirtualPkg pkg = do
-  provider <- getProvidingPkg pkg
-  provider ?>> return True
+isVirtualPkg pkg = getProvidingPkg pkg ?>> return True
 
 countInstalledPackages :: IO Int
 countInstalledPackages = (length . lines) `liftM` pacmanOutput ["-Qsq"]
@@ -492,14 +480,15 @@ splitVer = snd . splitNameAndVer
 groupPkgs :: ([a],[b],[c]) -> ([a],[b],[c]) -> ([a],[b],[c])
 groupPkgs (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
 
--- This could be slow, depending on internet speeds, etc.
--- CHANGE THIS TO USE JSON!!
 divideByPkgType :: [String] -> IO ([String],[String],[String])
 divideByPkgType pkgs = do
-  archPkgs <- filterM (isABSPkg . splitName) pkgs
-  let remaining = pkgs \\ archPkgs
-  aurPkgs  <- filterM (isAURPkg . splitName) remaining
-  return (archPkgs, aurPkgs, remaining \\ aurPkgs)
+  aurPkgNames  <- filterAURPkgs namesOnly
+  repoPkgNames <- filterM isRepoPkg $ namesOnly \\ aurPkgNames
+  let aurPkgs  = filter (flip elem aurPkgNames . splitName) pkgs
+      repoPkgs = filter (flip elem repoPkgNames . splitName) pkgs
+      others   = (pkgs \\ aurPkgs) \\ repoPkgs
+  return (repoPkgs, aurPkgs, others)
+      where namesOnly = map splitName pkgs
 
 sortPkgs :: [String] -> [String]
 sortPkgs pkgs = sortBy verNums pkgs
