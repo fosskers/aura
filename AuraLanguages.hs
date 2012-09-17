@@ -53,9 +53,10 @@ croatian = Croatian
 bt :: String -> String
 bt cs = "`" ++ cyan cs ++ "`"
 
+-- What other languages have unique whitespace characters?
 whitespace :: Language -> Char
-whitespace Japanese = '　'
-whitespace _ = ' '
+whitespace Japanese = '　'  -- \12288
+whitespace _ = ' '          -- \32
 
 --------------------
 -- AuraLib functions
@@ -63,10 +64,8 @@ whitespace _ = ' '
 mustBeRootMsg1 :: Language -> String
 mustBeRootMsg1 English  = "You have to use " ++ bt "sudo" ++ " for that."
 mustBeRootMsg1 Japanese = bt "sudo" ++ "を使わないとそれができない！"
-mustBeRootMsg1 Polish   =
-    "Musisz użyć " ++ bt "sudo" ++ ", żeby to zrobić."
-mustBeRootMsg1 Croatian =
-    "Morate koristiti" ++ bt "sudo" ++ "za ovu radnju."
+mustBeRootMsg1 Polish   = "Musisz użyć " ++ bt "sudo" ++ ", żeby to zrobić."
+mustBeRootMsg1 Croatian = "Morate koristiti" ++ bt "sudo" ++ "za ovu radnju."
 
 buildPackagesMsg1 :: Language -> String -> String
 buildPackagesMsg1 English p  = "Building " ++ bt p ++ "..."
@@ -269,7 +268,7 @@ reportIgnoredPackagesMsg1 Polish   = "Poniższe pakiety zostaną zignorowane:"
 reportIgnoredPackagesMsg1 Croatian = "Sljedeći paketi će biti ignorirani:"
 
 reportPkgsToInstallMsg1 :: Language -> String
-reportPkgsToInstallMsg1 English  = "Dependencies from repositories:"
+reportPkgsToInstallMsg1 English  = "Repository dependencies:"
 reportPkgsToInstallMsg1 Japanese = "Pacmanの従属パッケージ："
 reportPkgsToInstallMsg1 Polish   = "Zależności z repozytoriów:"
 reportPkgsToInstallMsg1 Croatian = "Zavisnosti iz repozitorija:"

@@ -104,7 +104,7 @@ yesNoPrompt msg regex = do
   return (response =~ regex :: Bool)
 
 optionalPrompt :: Bool -> String -> IO Bool
-optionalPrompt True msg = yesNoPrompt msg "^(y|Y)"
+optionalPrompt True msg = yesNoPrompt msg "^(y|Y|\\B)"
 optionalPrompt False _  = return True
 
 searchLines :: Regex -> [String] -> [String]
