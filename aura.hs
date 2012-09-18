@@ -165,8 +165,8 @@ upgradeAURPkgs settings pacOpts pkgs = do
   foreignPkgs <- filter (\(n,_) -> notIgnored n) `liftM` getForeignPackages
   (aurInfoLookup $ map fst foreignPkgs) ?>>= \pkgInfoEither -> do
     let pkgInfo   = fromRight pkgInfoEither
-        toCheck   = zip pkgInfo (map snd foreignPkgs)
-        toUpgrade = filter isntMostRecent toCheck
+        aurPkgs   = filter (\(n,_) -> n `elem` map nameOf pkgInfo) foreignPkgs
+        toUpgrade = filter isntMostRecent $ zip pkgInfo (map snd aurPkgs)
     notify settings upgradeAURPkgsMsg2
     if null toUpgrade
        then warn settings upgradeAURPkgsMsg3
