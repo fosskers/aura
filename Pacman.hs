@@ -80,16 +80,12 @@ getLogFilePath :: String -> FilePath
 getLogFilePath confFile = getSingleEntry confFile "LogFile" defaultLogFile
 
 getPacmanHelpMsg :: IO [String]
-getPacmanHelpMsg = do
-  helpMsg <- pacmanOutput ["-h"]
-  return $ lines helpMsg
+getPacmanHelpMsg = lines `liftM` pacmanOutput ["-h"] 
 
 -- Yields the lines given by `pacman -V` with the pacman image stripped.
 getVersionInfo :: IO [String]
-getVersionInfo = do
-  versionLines <- pacmanOutput ["-V"]
-  return . map (drop lineHeaderLength) . lines $ versionLines
+getVersionInfo = (map (drop verMsgPad) . lines) `liftM` pacmanOutput ["-V"]
 
 -- The amount of whitespace before text in the lines given by `pacman -V`
-lineHeaderLength :: Int
-lineHeaderLength = 23
+verMsgPad :: Int
+verMsgPad = 23

@@ -437,7 +437,7 @@ getHelpMsg settings pacmanHelpMsg = concat $ intersperse "\n" allMessages
 -- ANIMATED VERSION MESSAGE
 animateVersionMsg :: Settings -> [String] -> IO ExitCode
 animateVersionMsg settings verMsg = do
-  mapM_ putStrLn $ map (padString lineHeaderLength) verMsg  -- Version message
+  mapM_ putStrLn $ map (padString verMsgPad) verMsg  -- Version message
   putStr $ raiseCursorBy 7  -- Initial reraising of the cursor.
   drawPills 3
   mapM_ putStrLn $ renderPacmanHead 0 Open  -- Initial rendering of head.
