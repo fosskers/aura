@@ -27,7 +27,7 @@ import Shell
 import Zero
 
 auraVersion :: String
-auraVersion = "0.9.3.1"
+auraVersion = "0.9.3.2"
 
 main :: IO a
 main = do
@@ -152,9 +152,9 @@ reportIgnoredPackages lang pkgs = printListWithTitle yellow cyan msg pkgs
 
 reportPkgsToInstall :: Language -> [String] -> [AURPkg] -> [AURPkg] -> IO ()
 reportPkgsToInstall lang pacPkgs aurDeps aurPkgs = do
-  printIfThere pacPkgs $ reportPkgsToInstallMsg1 lang
-  printIfThere (namesOf aurDeps) $ reportPkgsToInstallMsg2 lang
-  printIfThere (namesOf aurPkgs) $ reportPkgsToInstallMsg3 lang
+  printIfThere (sort pacPkgs) $ reportPkgsToInstallMsg1 lang
+  printIfThere (sort $ namesOf aurDeps) $ reportPkgsToInstallMsg2 lang
+  printIfThere (sort $ namesOf aurPkgs) $ reportPkgsToInstallMsg3 lang
       where namesOf = map pkgNameOf
             printIfThere ps msg = unless (null ps) $
                                   printListWithTitle green cyan msg ps
@@ -218,15 +218,17 @@ renderSearchResult regex info = "aur/" ++ n ++ " " ++ v ++ "\n    " ++ d
             | otherwise        = green $ latestVerOf info
 
 displayPkgDeps :: Settings -> [String] -> IO ExitCode
-displayPkgDeps _ []  = returnFailure
+displayPkgDeps _ []    = returnFailure
 displayPkgDeps ss pkgs =
-  mapPkgs isAURPkg reportNonPackages makeAURPkg ss pkgs ?>>= \aurPkgs -> do
-       allDeps <- mapM (determineDeps $ langOf ss) aurPkgs
-       let (ps, as, os) = foldl groupPkgs ([],[],[]) allDeps
-       providers <- mapM getProvidingPkg' os
-       reportPkgsToInstall (langOf ss) (nub $ ps ++ providers) (nub as) []
-       returnSuccess
+    aurInfoLookup pkgs ?>>= \infoE -> do
+      aurPkgs <- mapM makeAURPkg . map nameOf . fromRight $ infoE
+      allDeps <- mapM (determineDeps $ langOf ss) aurPkgs
+      let (ps,as,_) = foldl groupPkgs ([],[],[]) allDeps
+      reportPkgsToInstall (langOf ss) (n ps) (nub as) []
+      returnSuccess
+          where n = nub . map splitName
 
+-- TODO: Fix to use `aurInfoLookup`
 downloadTarballs :: Settings -> [String] -> IO ExitCode
 downloadTarballs ss pkgs = do
   currDir <- getCurrentDirectory

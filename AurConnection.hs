@@ -21,8 +21,8 @@ makeRPCUrl :: RPCType -> [String] -> String
 makeRPCUrl t args = rpcBaseUrl ++ t' ++ args'
     where t'    = rpcAddType t
           args' = if t == MultiInfo
-                 then rpcAddMultiInfoArgs args
-                 else rpcAddArg args
+                  then rpcAddMultiInfoArgs args
+                  else rpcAddArg args
 
 rpcBaseUrl :: String
 rpcBaseUrl = "https://aur.archlinux.org/rpc.php?"
@@ -114,7 +114,9 @@ getTrueVerViaPkgbuild pkgb = pkgver ++ "-" ++ pkgrel
           pkgrel = head $ getPkgbuildField "pkgrel" pkgb
 
 -- Warning: This may give nonsensical output if the field item
---          utilises bash variables!
+--          utilises bash variables or string expansions!
+-- BUG: This needs to have its functionality extended.
+--      Or, I need a tool that will parse bash but NOT execute it.
 getPkgbuildField :: String -> Pkgbuild -> [String]
 getPkgbuildField field pkgb = wordsLines . filter notQuotes . parseField $ xs
     where (_,_,xs)    = pkgb =~ pattern :: (String,String,String)
