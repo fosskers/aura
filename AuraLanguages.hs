@@ -80,27 +80,27 @@ mustBeRootMsg1 Croatian = "Morate koristiti" ++ bt "sudo" ++ "za ovu radnju."
 mustBeRootMsg1 Swedish	= "Du måste använda " ++ bt "sudo" ++ " för det."
 
 buildPackagesMsg1 :: Language -> String -> String
-buildPackagesMsg1 English p  = "Building " ++ bt p ++ "..."
+buildPackagesMsg1 English  p = "Building " ++ bt p ++ "..."
 buildPackagesMsg1 Japanese p = bt p ++ "を作成中・・・"
-buildPackagesMsg1 Polish p   = "Budowanie " ++ bt p ++ "..."
+buildPackagesMsg1 Polish   p = "Budowanie " ++ bt p ++ "..."
 buildPackagesMsg1 Croatian p = "Gradim " ++ bt p ++ "..."
-buildPackagesMsg1 Swedish p = "Bygger paket " ++ bt p ++ "..."
+buildPackagesMsg1 Swedish  p = "Bygger paket " ++ bt p ++ "..."
 
 checkHotEditMsg1 :: Language -> String -> String
-checkHotEditMsg1 English p  =
+checkHotEditMsg1 English  p =
     "Would you like to edit the PKGBUILD of " ++ bt p ++ "?"
 checkHotEditMsg1 Japanese p = bt p ++ "のPKGBUILDを編成？"
-checkHotEditMsg1 Polish p   = "Czy chcesz edytować PKGBUILD " ++ bt p ++ "?"
+checkHotEditMsg1 Polish   p = "Czy chcesz edytować PKGBUILD " ++ bt p ++ "?"
 checkHotEditMsg1 Croatian p = "Želite li izmjeniti PKGBUILD " ++ bt p ++ "?"
-checkHotEditMsg1 Swedish p = "Vill du ändra PKGBUILD-filen ifrån " ++ bt p ++ "?"
+checkHotEditMsg1 Swedish  p = "Vill du ändra PKGBUILD-filen ifrån " ++ bt p ++ "?"
 
 buildFailMsg1 :: Language -> String -> String
-buildFailMsg1 English p  = "Well, building " ++ bt p ++ " failed."
+buildFailMsg1 English  p = "Well, building " ++ bt p ++ " failed."
 buildFailMsg1 Japanese p = bt p ++ "の作成は失敗したようだ。"
-buildFailMsg1 Polish p   =
+buildFailMsg1 Polish   p =
     "Budowanie " ++ bt p ++ " zakończyło się niepowodzeniem."
 buildFailMsg1 Croatian p = "Izgradnja " ++ bt p ++ " nije uspjela."
-buildFailMsg1 Swedish p = "Det gick inte att bygga paketet " ++ bt p ++ "."
+buildFailMsg1 Swedish  p = "Det gick inte att bygga paketet " ++ bt p ++ "."
 
 buildFailMsg2 :: Language -> String
 buildFailMsg2 English  = "Also, the following weren’t built:"
@@ -108,7 +108,7 @@ buildFailMsg2 Japanese = "ちなみに下記のパッケージも作成されな
 buildFailMsg2 Polish   =
     "Dodatkowo, następujące pakiety nie zostały zbudowane:"
 buildFailMsg2 Croatian = "Dodatno, ni sljedeće nije izgrađeno:"
-buildFailMsg2 Swedish = "Det gick heller inte att bygga följande paket:"
+buildFailMsg2 Swedish  = "Det gick heller inte att bygga följande paket:"
 
 buildFailMsg3 :: Language -> String
 buildFailMsg3 English  = "Some packages may have built properly."
@@ -117,7 +117,7 @@ buildFailMsg3 Japanese = "今のは失敗したけど前に作成のできたや
 buildFailMsg3 Polish   = "Niektóre pakiety mogły zostać zbudowane " ++
                          "prawidłowo."
 buildFailMsg3 Croatian = "Neki paketi su možda izgrađeni uspješno."
-buildFailMsg3 Swedish = "Vissa paket kanske har byggts ordentligt (Osäker)."
+buildFailMsg3 Swedish  = "Vissa paket kanske har byggts ordentligt (Osäker)."
 
 buildFailMsg4 :: Language -> String
 buildFailMsg4 English  = "Would you like to install them?"
@@ -131,7 +131,7 @@ displayBuildErrorsMsg1 English  = "Dumping makepkg output in "
 displayBuildErrorsMsg1 Japanese = "抑えていたmakepkgの出力を受け取る用意・・・"
 displayBuildErrorsMsg1 Polish   = "Wyjście makepkg:"
 displayBuildErrorsMsg1 Croatian = "Zapisujem makepkg ispis u "
-displayBuildErrorsMsg1 Swedish = "Dumpar makepkgs utskrift i "
+displayBuildErrorsMsg1 Swedish  = "Dumpar makepkgs utskrift i "
 
 getDepsToInstallMsg1 :: Language -> String
 getDepsToInstallMsg1 English  = "No AUR packages specified for install."
@@ -139,7 +139,7 @@ getDepsToInstallMsg1 Japanese = "パッケージは一つも指摘されてい�
 getDepsToInstallMsg1 Polish   = "Nie podano pakietów z AUR do zainstalowania."
 getDepsToInstallMsg1 Croatian = 
     "Nijedan AUR paket nije specificiran za instalaciju."
-getDepsToInstallMsg1 Swedish = "Inga AUR-paket är valda för installation."
+getDepsToInstallMsg1 Swedish  = "Inga AUR-paket är valda för installation."
 
 getRealPkgConflictsMsg1 :: Language -> String -> String -> String -> String
 getRealPkgConflictsMsg1 English name rec req =
@@ -159,27 +159,27 @@ getRealPkgConflictsMsg1 Swedish name rec req =
     "men den senaste versionen är " ++ bt rec ++ "."
 
 getRealPkgConflictsMsg2 :: Language -> String -> String
-getRealPkgConflictsMsg2 English p  =
+getRealPkgConflictsMsg2 English  p =
     bt p ++ " is an ignored package! See your `pacman.conf` file."
 getRealPkgConflictsMsg2 Japanese p =
     bt p ++ "は無視されるパッケージ！`pacman.conf`を参考に。"
-getRealPkgConflictsMsg2 Polish p   =
+getRealPkgConflictsMsg2 Polish   p =
     bt p ++ " jest ignorowany! Sprawdź plik `pacman.conf`."
 getRealPkgConflictsMsg2 Croatian p =
     bt p ++ " je ignoriran paket! Pogledajte svoj `pacman.conf`."
-getRealPkgConflictsMsg2 Swedish p  = 
+getRealPkgConflictsMsg2 Swedish  p = 
     bt p ++ " är ett ignorerat paket! Kolla din `pacman.conf`-fil."
 
 getVirtualConflictsMsg1 :: Language -> String -> String
-getVirtualConflictsMsg1 English p  =
+getVirtualConflictsMsg1 English  p =
     bt p ++ " exists in NO WAY as a package or as one provided by another!"
 getVirtualConflictsMsg1 Japanese p =
     bt p ++ "はパッケージでもないし、他のパッケージにも提供されていない！"
-getVirtualConflictsMsg1 Polish p   =
+getVirtualConflictsMsg1 Polish   p =
     bt p ++ " nie istnieje jako pakiet lub jako pakiet dostarczany przez inny!"
-getVirtualConflictsMsg1 Croatian p   =
+getVirtualConflictsMsg1 Croatian p =
     bt p ++ " ne postoji kao paket niti ga bilo koji paket pruža!"
-getVirtualConflictsMsg1 Swedish p =
+getVirtualConflictsMsg1 Swedish  p =
     bt p ++ " existerar varken som ett paket eller som ett tillhandahållet av ett annat!"
 
 getVirtualConflictsMsg2 :: Language -> String -> String -> String
@@ -228,7 +228,7 @@ executeOptsMsg1 English  = "Conflicting flags given!"
 executeOptsMsg1 Japanese = "矛盾しているオプションあり。"
 executeOptsMsg1 Polish   = "Niektóre flagi są w konflikcie ze sobą!"
 executeOptsMsg1 Croatian = "Predane zastavice su konfliktne!"
-executeOptsMsg1 Swedish = "Givna flaggor är i konflikt!"
+executeOptsMsg1 Swedish  = "Givna flaggor är i konflikt!"
 
 -- Packages should not be built if the user is logged in as root!
 trueRootCheckMsg1 :: Language -> String
@@ -240,7 +240,7 @@ trueRootCheckMsg1 Polish   =
     "Nigdy nie powinieneś budować pakietów jako root. Na pewno kontynuować?"
 trueRootCheckMsg1 Croatian =
     "Pakete ne bi trebalo graditi s pravim root ovlastima. Nastavi?"
-trueRootCheckMsg1 Swedish =
+trueRootCheckMsg1 Swedish  =
     "Det är starkt rekommenderat att INTE vara inloggad som root när man bygger paket. Vill du fortsätta ändå?"
 
 -- This is for when the user decides to refrain from building afterall.
@@ -249,7 +249,7 @@ trueRootCheckMsg2 English  = "You’ve done the right thing."
 trueRootCheckMsg2 Japanese = "よしよし。"
 trueRootCheckMsg2 Polish   = "Postąpiłeś słusznie."
 trueRootCheckMsg2 Croatian = "Učinili ste Ispravnu Stvar."
-trueRootCheckMsg2 Swedish = "Phew."
+trueRootCheckMsg2 Swedish  = "Phew."
 
 installPackagesMsg1 :: Language -> String
 installPackagesMsg1 English  = "Dependency checking failed for these reasons:"
@@ -348,7 +348,7 @@ reportBadDowngradePkgsMsg1 Polish   =
     "Poniższe pakeity nie są zainstalowane, i nie mogą być zainstalowane w starszej wersji:"
 reportBadDowngradePkgsMsg1 Croatian =
     "Sljedeći paketi nisu instalirani te se stoga ne mogu vratiti na stare verzije:"
-reportBadDowngradePkgsMsg1 Swedish =
+reportBadDowngradePkgsMsg1 Swedish  =
     "Följande paket är inte installerade, och kan därför inte bli nergraderade:"
 
 upgradeAURPkgsMsg1 :: Language -> String
@@ -372,12 +372,13 @@ upgradeAURPkgsMsg3 Polish   = "Nie jest wymagana aktualizacja pakietów z AUR."
 upgradeAURPkgsMsg3 Croatian = "Svi AUR paketi su ažurirani."
 upgradeAURPkgsMsg3 Swedish  = "Inga AUR-paketsuppgraderingar behövs."
 
+-- Obsolete.
 upgradeAURPkgsMsg4 :: Language -> String -> String
-upgradeAURPkgsMsg4 English p  = "Got " ++ bt p ++ "."
+upgradeAURPkgsMsg4 English  p = "Got " ++ bt p ++ "."
 upgradeAURPkgsMsg4 Japanese p = bt p ++ "、OK."
-upgradeAURPkgsMsg4 Polish p   = "Otrzymano" ++ bt p ++ "."
+upgradeAURPkgsMsg4 Polish   p = "Otrzymano" ++ bt p ++ "."
 upgradeAURPkgsMsg4 Croatian p = bt p ++ " preuzet."
-upgradeAURPkgsMsg4 Swedish p = "Fick " ++ bt p ++ "."
+upgradeAURPkgsMsg4 Swedish  p = "Fick " ++ bt p ++ "."
 
 downloadTarballsMsg1 :: Language -> String -> String
 downloadTarballsMsg1 English p  =
@@ -392,11 +393,11 @@ downloadTarballsMsg1 Swedish p =
     "Laddar ner " ++ bt p ++ " källkodspaket (tarball)..."
 
 displayPkgbuildMsg1 :: Language -> String -> String
-displayPkgbuildMsg1 English pkg  = bt pkg ++ " does not exist."
+displayPkgbuildMsg1 English  pkg = bt pkg ++ " does not exist."
 displayPkgbuildMsg1 Japanese pkg = bt pkg ++ "は存在しない。"
-displayPkgbuildMsg1 Polish pkg   = bt pkg ++ " nie istnieje."
+displayPkgbuildMsg1 Polish   pkg = bt pkg ++ " nie istnieje."
 displayPkgbuildMsg1 Croatian pkg = bt pkg ++ " ne postoji."
-displayPkgbuildMsg1 Swedish pkg  = bt pkg ++ " finns inte."
+displayPkgbuildMsg1 Swedish  pkg = bt pkg ++ " finns inte."
 
 removeMakeDepsAfterMsg1 :: Language -> String
 removeMakeDepsAfterMsg1 English  = "Removing unneeded make dependencies..."
@@ -443,18 +444,18 @@ backupCacheMsg3 Croatian = "Lokacija sigurnosne kopije ne postoji."
 backupCacheMsg3 Swedish  = "Specifierad backup-plats finns inte."
 
 backupCacheMsg4 :: Language -> String -> String
-backupCacheMsg4 English dir  = "Backing up cache to " ++ bt dir
+backupCacheMsg4 English  dir = "Backing up cache to " ++ bt dir
 backupCacheMsg4 Japanese dir = "キャッシュのバックアップ先：" ++ bt dir
-backupCacheMsg4 Polish dir   = "Tworzenie kopii zapasowej pamięci podręcznej w " ++ bt dir
+backupCacheMsg4 Polish   dir = "Tworzenie kopii zapasowej pamięci podręcznej w " ++ bt dir
 backupCacheMsg4 Croatian dir = "Stvaram sigurnosnu kopiju u " ++ bt dir
-backupCacheMsg4 Swedish dir  = "Tar backup på cache-filer till " ++ bt dir
+backupCacheMsg4 Swedish  dir = "Tar backup på cache-filer till " ++ bt dir
 
 backupCacheMsg5 :: Language -> Int -> String
-backupCacheMsg5 English n  = "Package files to backup: " ++ bt (show n)
+backupCacheMsg5 English  n = "Package files to backup: " ++ bt (show n)
 backupCacheMsg5 Japanese n = "パッケージのファイル数：" ++ bt (show n)
-backupCacheMsg5 Polish n   = "Pliki będące częścią kopii zapasowej: " ++ bt (show n)
+backupCacheMsg5 Polish   n = "Pliki będące częścią kopii zapasowej: " ++ bt (show n)
 backupCacheMsg5 Croatian n = "Datoteke koje su dio sigurnosne kopije: " ++ bt (show n)
-backupCacheMsg5 Swedish n  = "Paket-filer att ta backup på: " ++ bt (show n)
+backupCacheMsg5 Swedish  n = "Paket-filer att ta backup på: " ++ bt (show n)
 
 backupCacheMsg6 :: Language -> String
 backupCacheMsg6 English  = "Proceed with backup?"
@@ -481,18 +482,18 @@ backupCacheMsg8 Swedish  = "Tar backup. Det här kan ta ett tag..."
 
 
 copyAndNotifyMsg1 :: Language -> Int -> String
-copyAndNotifyMsg1 English n  = "Copying #[" ++ cyan (show n) ++ "]"
+copyAndNotifyMsg1 English  n = "Copying #[" ++ cyan (show n) ++ "]"
 copyAndNotifyMsg1 Japanese n = "#[" ++ cyan (show n) ++"]をコピー中・・・"
-copyAndNotifyMsg1 Polish n   = "Kopiowanie #[" ++ cyan (show n) ++ "]"
+copyAndNotifyMsg1 Polish   n = "Kopiowanie #[" ++ cyan (show n) ++ "]"
 copyAndNotifyMsg1 Croatian n = "Kopiranje #[" ++ cyan (show n) ++ "]"
-copyAndNotifyMsg1 Swedish n  = "Kopierar #[" ++ cyan (show n) ++ "]"
+copyAndNotifyMsg1 Swedish  n = "Kopierar #[" ++ cyan (show n) ++ "]"
 
 preCleanCacheMsg1 :: Language -> String -> String
-preCleanCacheMsg1 English n  = bt n ++ " is not a number."
+preCleanCacheMsg1 English  n = bt n ++ " is not a number."
 preCleanCacheMsg1 Japanese n = bt n ++ "は数字はない。"
-preCleanCacheMsg1 Polish n   = bt n ++ " nie jest liczbą."
+preCleanCacheMsg1 Polish   n = bt n ++ " nie jest liczbą."
 preCleanCacheMsg1 Croatian n = bt n ++ " nije broj. "
-preCleanCacheMsg1 Swedish n  = bt n ++ " är inte ett nummer."
+preCleanCacheMsg1 Swedish  n = bt n ++ " är inte ett nummer."
 
 cleanCacheMsg1 :: Language -> String
 cleanCacheMsg1 English  = "Invalid number given."
@@ -509,12 +510,12 @@ cleanCacheMsg2 Croatian = "Ovo će izbrisati CIJELO skladište paketa."
 cleanCacheMsg2 Swedish  = "Detta kommer ta bort HELA paket-cachen."
 
 cleanCacheMsg3 :: Language -> Int -> String
-cleanCacheMsg3 English n  = bt (show n) ++ " of each package file will be kept."
+cleanCacheMsg3 English  n = bt (show n) ++ " of each package file will be kept."
 cleanCacheMsg3 Japanese n = "パッケージ・ファイルは" ++ bt (show n) ++
                             "個保存される。"
-cleanCacheMsg3 Polish n   = bt (show n) ++ " wersji każdego pakietu zostanie zachowane."
+cleanCacheMsg3 Polish   n = bt (show n) ++ " wersji każdego pakietu zostanie zachowane."
 cleanCacheMsg3 Croatian n = bt (show n) ++ " zadnjih verzija svakog paketa će biti zadržano."
-cleanCacheMsg3 Swedish n  = bt (show n) ++ " av varje paketfil kommer att sparas."
+cleanCacheMsg3 Swedish  n = bt (show n) ++ " av varje paketfil kommer att sparas."
 
 cleanCacheMsg4 :: Language -> String
 cleanCacheMsg4 English  = "The rest will be deleted. Okay?"
@@ -540,18 +541,18 @@ cleanCacheMsg6 Croatian = "Čišćenje skladišta paketa..."
 cleanCacheMsg6 Swedish  = "Rensar paket-cache..."
 
 logLookUpMsg1 :: Language -> String -> String
-logLookUpMsg1 English p  = yellow "Package"     ++ "        : " ++ p
+logLookUpMsg1 English  p = yellow "Package"     ++ "        : " ++ p
 logLookUpMsg1 Japanese p = yellow "パッケージ"  ++ "　　　　　：" ++ p
-logLookUpMsg1 Polish p   = yellow "Pakiet"      ++ "        : " ++ p
+logLookUpMsg1 Polish   p = yellow "Pakiet"      ++ "        : " ++ p
 logLookUpMsg1 Croatian p = yellow "Paket"       ++ "        : " ++ p
-logLookUpMsg1 Swedish p  = yellow "Paket"       ++ "        : " ++ p
+logLookUpMsg1 Swedish  p = yellow "Paket"       ++ "        : " ++ p
 
 logLookUpMsg2 :: Language -> String -> String
-logLookUpMsg2 English date  = yellow "First Install"        ++ "  : " ++ date
-logLookUpMsg2 Japanese date = yellow "初インストール"       ++ "　　　：" ++ date
-logLookUpMsg2 Polish date   = yellow "Pierwsza instalacja"  ++ "  : " ++ date
-logLookUpMsg2 Croatian date = yellow "Prva instalacija"     ++ "  : " ++ date
-logLookUpMsg2 Swedish date  = yellow "Första installation"  ++ "  : " ++ date
+logLookUpMsg2 English  d = yellow "First Install"        ++ "  : " ++ d
+logLookUpMsg2 Japanese d = yellow "初インストール"       ++ "　　　：" ++ d
+logLookUpMsg2 Polish   d = yellow "Pierwsza instalacja"  ++ "  : " ++ d
+logLookUpMsg2 Croatian d = yellow "Prva instalacija"     ++ "  : " ++ d
+logLookUpMsg2 Swedish  d = yellow "Första installation"  ++ "  : " ++ d
 
 logLookUpMsg3 :: Language -> Int -> String
 logLookUpMsg3 English upgrades  =
@@ -685,13 +686,13 @@ aurPkgInfoFields Swedish  = [ "Namn", "Version", "AUR Status", "Projekt URL", "L
                             , "Röster", "Beskrivning"]
 
 outOfDateMsg :: Language -> Bool -> String
-outOfDateMsg English True   = red "Out of Date!"
-outOfDateMsg English False  = green "Up to Date"
+outOfDateMsg English  True  = red "Out of Date!"
+outOfDateMsg English  False = green "Up to Date"
 outOfDateMsg Japanese True  = red "AURで要更新！"
 outOfDateMsg Japanese False = green "最新"
-outOfDateMsg Polish True    = red "Nieaktualny!"
-outOfDateMsg Polish False   = green "Aktualny"
+outOfDateMsg Polish   True  = red "Nieaktualny!"
+outOfDateMsg Polish   False = green "Aktualny"
 outOfDateMsg Croatian True  = red "Zastarjelo!"
 outOfDateMsg Croatian False = green "Ažurirano"
-outOfDateMsg Swedish True   = red "Utdaterad!"
-outOfDateMsg Swedish False  = green "Aktuell"
+outOfDateMsg Swedish  True  = red "Utdaterad!"
+outOfDateMsg Swedish  False = green "Aktuell"

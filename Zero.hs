@@ -9,6 +9,7 @@ import System.Exit(ExitCode(..))
 class Zero a where
     zero :: a
     isZero :: a -> Bool
+    --isZero = zeroDefault  -- How do you define a default function?
 
 instance Zero Int where
     zero = 0
