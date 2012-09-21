@@ -272,8 +272,8 @@ buildFail _ [] _ = return Nothing
 buildFail settings (p:ps) errors = do
   scold settings (flip buildFailMsg1 (show p))
   when (suppressMakepkg settings) (displayBuildErrors settings errors)
-  unless (null ps) (scold settings buildFailMsg2 >>
-                    mapM_ (putStrLn . cyan . pkgNameOf) ps)
+  unless (null ps) $ scold settings buildFailMsg2 >>
+                     mapM_ (putStrLn . cyan . pkgNameOf) ps
   warn settings buildFailMsg3
   yesNoPrompt (buildFailMsg4 $ langOf settings) "^(y|Y)" ?>> return (Just [])
 

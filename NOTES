@@ -12,6 +12,8 @@ Add `AUR URL` and `Last updated` to `-Ai` output.
 
 Calls to pacman should check for the `$PACMAN` var.
 
+Make checks to `-Si` more `en masse`.
+
 DEPENDENCY ANALYSIS
 -------------------
 Outputting a sort of "dependency tree/graph" that shows how much certain

@@ -58,10 +58,10 @@ zeroDefault x = x == zero
  action ?>>= action >>= action
  action ?>>= (action >>= action)
 -}
-infixl 2 ?>>
+infixr 2 ?>>
 (?>>) :: (Monad m, Zero a, Zero b) => m a -> m b -> m b
 m1 ?>> m2 = m1 >>= \x -> if isZero x then return zero else m2
 
-infixl 2 ?>>=
+infixr 2 ?>>=
 (?>>=) :: (Monad m, Zero a, Zero b) => m a -> (a -> m b) -> m b
 m1 ?>>= m2 = m1 >>= \x -> if isZero x then return zero else m2 x

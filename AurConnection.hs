@@ -84,6 +84,16 @@ makePkgInfo pkgJSON = do
   de <- valFromObj "Description" pkgJSON
   ou <- valFromObj "OutOfDate" pkgJSON >>= return . (/= "0")
   return $ PkgInfo na ve ou ur li vo de
+{-
+makePkgInfo pkgJSON = makePkgInfo' (\x -> PkgInfo x) pkgJSON fields
+    where fields = [ "Name","Version","URL","License"
+                   , "NumVotes","OutOfDate","Description" ]
+
+makePkgInfo' acc pkgJSON []     = return acc
+makePkgInfo' acc pkgJSON (f:fs) = do
+  x <- valFromObj f pkgJSON
+  makePkgInfo' (acc x) pkgJSON fs
+-}
 {- Is this possible?
   return $ foldl PkgInfo `liftM` mapM (flip valFromObj pkgJSON) fields
   where fields = [ "Name","Version","URL","License"

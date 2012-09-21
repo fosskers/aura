@@ -20,7 +20,7 @@ makepkgGen f user = do
   contents <- getDirectoryContents "."  -- I don't like this relative path.
   let pkgFiles = filter (\file -> (file =~ ".pkg.tar.xz")) contents
       pkgName  = if null pkgFiles then "" else head pkgFiles
-  return $ (exitStatus,pkgName,out ++ "\n" ++ err)
+  return $ (exitStatus,pkgName,err ++ "\n" ++ out)
       where (command,opts) = determineRunStyle user
 
 determineRunStyle :: String -> (String,[String])

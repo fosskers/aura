@@ -98,7 +98,7 @@ timedMessage delay msgs = mapM_ printMessage msgs
 -- Takes a prompt message and a regex of valid answer patterns.
 yesNoPrompt :: String -> Regex -> IO Bool
 yesNoPrompt msg regex = do
-  putStrA yellow $ msg ++ " [y/n] "
+  putStrA yellow $ msg ++ " [Y/n] "
   hFlush stdout
   response <- getLine
   return (response =~ regex :: Bool)
