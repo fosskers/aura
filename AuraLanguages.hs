@@ -26,21 +26,22 @@ translators :: [[String]]
 translators = [ [ "Aura Translators:"  --English
                 , " Chris \"Kwpolska\" Warrick (Polish)"
                 , " Denis Kasak (Croatian)"
-		, " Fredrik Haikarainen (Swedish)" ]
+                , " Fredrik Haikarainen (Swedish)" ]
               , [ "Auraの翻訳者："  -- Japanese
                 , "クリッス \"Kwpolska\" ヲーリック（ポーランド語）"
-                , "デニス・カサック（クロアチア語）" 
-                , "フレドリック・ハイカライネン" ]
+                , "デニス・カサック（クロアチア語）"
+                , "フレドリック・ハイカライネン" ] -- not missing ()’s here?
               , [ "Tłumacze Aury:"  -- Polish
                 , " Chris \"Kwpolska\" Warrick (polski)"
-                , " Denis Kasak (chorwacki)" ]
+                , " Denis Kasak (chorwacki)"
+                , " Fredrik Haikarainen (szwedzki)"]
               , [ "Aura Prevoditelji:"  -- Croatian
                 , " Chris \"Kwpolska\" Warrick (poljski)"
                 , " Denis Kasak (hrvatski)" ]
-	      , [ "Aura Översättare:"   -- Swedish
-		, " Chris \"Kwpolska\" Warrick (polska)"
-		, " Denis Kasak (kroatiska)"
-		, " Fredrik Haikarainen (svenska)" ] ] 
+              , [ "Aura Översättare:"   -- Swedish
+                , " Chris \"Kwpolska\" Warrick (polska)"
+                , " Denis Kasak (kroatiska)"
+                , " Fredrik Haikarainen (svenska)" ] ]
 
 allLanguages :: [Language]
 allLanguages = [English ..]
@@ -77,7 +78,7 @@ mustBeRootMsg1 English  = "You have to use " ++ bt "sudo" ++ " for that."
 mustBeRootMsg1 Japanese = bt "sudo" ++ "を使わないとそれができない！"
 mustBeRootMsg1 Polish   = "Musisz użyć " ++ bt "sudo" ++ ", żeby to zrobić."
 mustBeRootMsg1 Croatian = "Morate koristiti" ++ bt "sudo" ++ "za ovu radnju."
-mustBeRootMsg1 Swedish	= "Du måste använda " ++ bt "sudo" ++ " för det."
+mustBeRootMsg1 Swedish        = "Du måste använda " ++ bt "sudo" ++ " för det."
 
 buildPackagesMsg1 :: Language -> String -> String
 buildPackagesMsg1 English  p = "Building " ++ bt p ++ "..."
@@ -129,7 +130,7 @@ buildFailMsg4 Swedish = "Vill du installera dem?"
 displayBuildErrorsMsg1 :: Language -> String
 displayBuildErrorsMsg1 English  = "Dumping makepkg output in "
 displayBuildErrorsMsg1 Japanese = "抑えていたmakepkgの出力を受け取る用意・・・"
-displayBuildErrorsMsg1 Polish   = "Wyjście makepkg:"
+displayBuildErrorsMsg1 Polish   = "Wyjście makepkg zostanie wypisane za"
 displayBuildErrorsMsg1 Croatian = "Zapisujem makepkg ispis u "
 displayBuildErrorsMsg1 Swedish  = "Dumpar makepkgs utskrift i "
 
@@ -137,7 +138,7 @@ getDepsToInstallMsg1 :: Language -> String
 getDepsToInstallMsg1 English  = "No AUR packages specified for install."
 getDepsToInstallMsg1 Japanese = "パッケージは一つも指摘されていない。"
 getDepsToInstallMsg1 Polish   = "Nie podano pakietów z AUR do zainstalowania."
-getDepsToInstallMsg1 Croatian = 
+getDepsToInstallMsg1 Croatian =
     "Nijedan AUR paket nije specificiran za instalaciju."
 getDepsToInstallMsg1 Swedish  = "Inga AUR-paket är valda för installation."
 
@@ -154,7 +155,7 @@ getRealPkgConflictsMsg1 Polish name rec req =
 getRealPkgConflictsMsg1 Croatian name rec req =
     "Zavisnost " ++ bt name ++ " zahtjeva inačicu " ++ bt req ++
     ",\n" ++ "ali najnovija inačica je " ++ bt rec ++ "."
-getRealPkgConflictsMsg1 Swedish name rec req = 
+getRealPkgConflictsMsg1 Swedish name rec req =
     "Beroendepaketet " ++ bt name ++ " kräver version " ++ bt req ++ ",\n" ++
     "men den senaste versionen är " ++ bt rec ++ "."
 
@@ -167,7 +168,7 @@ getRealPkgConflictsMsg2 Polish   p =
     bt p ++ " jest ignorowany! Sprawdź plik `pacman.conf`."
 getRealPkgConflictsMsg2 Croatian p =
     bt p ++ " je ignoriran paket! Pogledajte svoj `pacman.conf`."
-getRealPkgConflictsMsg2 Swedish  p = 
+getRealPkgConflictsMsg2 Swedish  p =
     bt p ++ " är ett ignorerat paket! Kolla din `pacman.conf`-fil."
 
 getVirtualConflictsMsg1 :: Language -> String -> String
@@ -417,7 +418,7 @@ getDowngradeChoiceMsg1 Polish p   =
     "Którą wersję pakietu " ++ bt p ++ " zainstalować?"
 getDowngradeChoiceMsg1 Croatian p   =
     "Koju verziju paketa " ++ bt p ++ " želite?"
-getDowngradeChoiceMsg1 Swedish p = 
+getDowngradeChoiceMsg1 Swedish p =
     "Vilken version av " ++ bt p ++ " vill du ha?"
 
 backupCacheMsg1 :: Language -> String
@@ -432,7 +433,7 @@ backupCacheMsg2 English  = "You must be root to backup the cache."
 backupCacheMsg2 Japanese = "rootじゃないとバックアップはできない。"
 backupCacheMsg2 Polish   =
     "Musisz być rootem, by zrobić kopię zapasową pamięci podręcznej."
-backupCacheMsg2 Croatian = 
+backupCacheMsg2 Croatian =
     "Za stvaranje sigurnosne kopije skladišta potrebne su root ovlasti."
 backupCacheMsg2 Swedish  = "Du måste vara root för att ta backup på cache-filer."
 
@@ -626,7 +627,7 @@ aurSy Polish   = green "Wykonuje akcje związane z [A]UR.\n" ++
 aurSy Croatian = green "Izvršava radnje vezane uz [A]UR.\n" ++
                  "Prešutna (default) radnja je instaliranje paketa iz AUR-a."
 aurSy Swedish  = green "Utför åtgärder involverandes [A]UR.\n" ++
-		 "Standard-åtgärd installerar ifrån AUR."
+                 "Standard-åtgärd installerar ifrån AUR."
 
 downG :: Language -> String
 downG English  = red "Perform actions involving the package [C]ache.\n" ++
@@ -640,7 +641,7 @@ downG Croatian =
     red "Izvršava radnje vezane uz skladište ([C]ache) paketa.\n" ++
     "Prešutna (default) radnja je vraćanje paketa na prijašnju verziju."
 downG Swedish  = red "Utför åtgärder involverandes paket-[C]ache.\n" ++
-		 "Standard-åtgärd nergraderar valda paket."
+                 "Standard-åtgärd nergraderar valda paket."
 
 viewL :: Language -> String
 viewL English  = cyan "Perform actions involving the pacman [L]ogfile.\n" ++
@@ -654,7 +655,7 @@ viewL Croatian =
     cyan "Izvršavanje radnje vezane uz pacman dnevnik ([L]ogfile).\n" ++
     "Prešutna (default) radnja je ispis dnevnika."
 viewL Swedish  = cyan "Utför åtgärder involverandes pacmans [L]ogfil.\n" ++
-		 "Standard-åtgärd öppnar loggen med read-only-attribut."
+                 "Standard-åtgärd öppnar loggen med read-only-attribut."
 
 orpha :: Language -> String
 orpha English  = blue "Perform actions involving [O]rphan packages.\n" ++
@@ -667,8 +668,8 @@ orpha Polish   =
 orpha Croatian =
     blue "Izvršava radnje vezane uz pakete bez roditelja ([O]rphan).\n" ++
     "Prešutna (default) radnja je izlistavanje paketa bez roditelja."
-orpha Swedish  = blue "Utför åtgärder involverandes [O]rphan-paket.\n" ++ 
-		 "Standard-åtgärd listar alla orphan-paket."
+orpha Swedish  = blue "Utför åtgärder involverandes [O]rphan-paket.\n" ++
+                 "Standard-åtgärd listar alla orphan-paket."
 
 --------------------------
 -- AurConnection functions
