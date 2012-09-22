@@ -675,16 +675,17 @@ orpha Swedish  = blue "Utför åtgärder involverandes [O]rphan-paket.\n" ++
 -- AurConnection functions
 --------------------------
 aurPkgInfoFields :: Language -> [String]
-aurPkgInfoFields English  = [ "Name","Version","AUR Status","Project URL","License"
-                            , "Votes","Description" ]
+aurPkgInfoFields English  = [ "Name","Version","AUR Status","Project URL"
+                            ,"AUR URL","License", "Votes","Description" ]
 aurPkgInfoFields Japanese = [ "名前","バージョン","パッケージ状態"
-                            , "プロジェクト","ライセンス","投票数","概要" ]
-aurPkgInfoFields Polish   = [ "Nazwa","Wersja","Status w AUR","URL","Licencja"
-                            , "Głosy","Opis" ]
-aurPkgInfoFields Croatian = [ "Ime","Verzija","AUR Stanje","URL Projekta","Licenca"
-                            , "Glasovi","Opis" ]
-aurPkgInfoFields Swedish  = [ "Namn", "Version", "AUR Status", "Projekt URL", "Licens"
-                            , "Röster", "Beskrivning"]
+                            , "プロジェクト","パッケージページ","ライセンス"
+                            ,"投票数","概要" ]
+aurPkgInfoFields Polish   = [ "Nazwa","Wersja","Status w AUR","URL","AUR URL"
+                            , "Licencja","Głosy","Opis" ]
+aurPkgInfoFields Croatian = [ "Ime","Verzija","AUR Stanje","URL Projekta"
+                            , "AUR URL","Licenca","Glasovi","Opis" ]
+aurPkgInfoFields Swedish  = [ "Namn","Version","AUR Status","Projekt URL"
+                            , "AUR URL","Licens","Röster","Beskrivning"]
 
 outOfDateMsg :: Language -> Bool -> String
 outOfDateMsg English  True  = red "Out of Date!"

@@ -24,6 +24,9 @@ makeRPCUrl t args = rpcBaseUrl ++ t' ++ args'
                   then rpcAddMultiInfoArgs args
                   else rpcAddArg args
 
+aurPkgUrl :: String -> String
+aurPkgUrl n = "https://aur.archlinux.org/packages.php?ID=" ++ n
+
 rpcBaseUrl :: String
 rpcBaseUrl = "https://aur.archlinux.org/rpc.php?"
 
@@ -48,6 +51,7 @@ data PkgInfo = PkgInfo { nameOf :: String
                        , latestVerOf :: String
                        , isOutOfDate :: Bool
                        , projectURLOf :: String
+                       , aurURLOf :: String
                        , licenseOf :: String
                        , votesOf :: String
                        , descriptionOf :: String
@@ -82,8 +86,9 @@ makePkgInfo pkgJSON = do
   li <- valFromObj "License" pkgJSON
   vo <- valFromObj "NumVotes" pkgJSON
   de <- valFromObj "Description" pkgJSON
+  au <- valFromObj "ID" pkgJSON >>= return . aurPkgUrl
   ou <- valFromObj "OutOfDate" pkgJSON >>= return . (/= "0")
-  return $ PkgInfo na ve ou ur li vo de
+  return $ PkgInfo na ve ou ur au li vo de
 {-
 makePkgInfo pkgJSON = makePkgInfo' (\x -> PkgInfo x) pkgJSON fields
     where fields = [ "Name","Version","URL","License"

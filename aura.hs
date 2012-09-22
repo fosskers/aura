@@ -27,7 +27,7 @@ import Shell
 import Zero
 
 auraVersion :: String
-auraVersion = "0.9.3.2"
+auraVersion = "0.9.3.3"
 
 main :: IO a
 main = do
@@ -199,6 +199,7 @@ renderAurPkgInfo ss info = concat $ intersperse "\n" fieldsAndEntries
                              , latestVerOf info
                              , outOfDateMsg (langOf ss) $ isOutOfDate info
                              , projectURLOf info
+                             , aurURLOf info
                              , licenseOf info
                              , votesOf info
                              , descriptionOf info ]
