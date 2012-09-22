@@ -30,7 +30,7 @@ translators = [ [ "Aura Translators:"  --English
               , [ "Auraの翻訳者："  -- Japanese
                 , "クリッス \"Kwpolska\" ヲーリック（ポーランド語）"
                 , "デニス・カサック（クロアチア語）"
-                , "フレドリック・ハイカライネン" ] -- not missing ()’s here?
+                , "フレドリック・ハイカライネン（スウェーデン語）" ]
               , [ "Tłumacze Aury:"  -- Polish
                 , " Chris \"Kwpolska\" Warrick (polski)"
                 , " Denis Kasak (chorwacki)"
@@ -78,7 +78,7 @@ mustBeRootMsg1 English  = "You have to use " ++ bt "sudo" ++ " for that."
 mustBeRootMsg1 Japanese = bt "sudo" ++ "を使わないとそれができない！"
 mustBeRootMsg1 Polish   = "Musisz użyć " ++ bt "sudo" ++ ", żeby to zrobić."
 mustBeRootMsg1 Croatian = "Morate koristiti" ++ bt "sudo" ++ "za ovu radnju."
-mustBeRootMsg1 Swedish        = "Du måste använda " ++ bt "sudo" ++ " för det."
+mustBeRootMsg1 Swedish  = "Du måste använda " ++ bt "sudo" ++ " för det."
 
 buildPackagesMsg1 :: Language -> String -> String
 buildPackagesMsg1 English  p = "Building " ++ bt p ++ "..."
@@ -125,7 +125,7 @@ buildFailMsg4 English  = "Would you like to install them?"
 buildFailMsg4 Japanese = "できたやつのインストールを続行する？"
 buildFailMsg4 Polish   = "Czy chcesz je zainstalować?"
 buildFailMsg4 Croatian = "Želite li ih instalirati?"
-buildFailMsg4 Swedish = "Vill du installera dem?"
+buildFailMsg4 Swedish  = "Vill du installera dem?"
 
 displayBuildErrorsMsg1 :: Language -> String
 displayBuildErrorsMsg1 English  = "Dumping makepkg output in "
@@ -390,7 +390,7 @@ downloadTarballsMsg1 Polish p   =
     "Pobieranie paczki źródłowej " ++ bt p ++ "..."
 downloadTarballsMsg1 Croatian p =
     "Preuzimanje izvornog paketa (tarball) " ++ bt p ++ "..."
-downloadTarballsMsg1 Swedish p =
+downloadTarballsMsg1 Swedish p  =
     "Laddar ner " ++ bt p ++ " källkodspaket (tarball)..."
 
 displayPkgbuildMsg1 :: Language -> String -> String

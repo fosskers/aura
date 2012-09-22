@@ -6,7 +6,7 @@ module AuraLib where
 -- System Libraries
 import System.Directory (renameFile, getCurrentDirectory, setCurrentDirectory)
 import Control.Monad (filterM, liftM, when, unless)
-import Data.List ((\\), nub, sortBy)
+import Data.List ((\\), nub, sortBy, intersperse)
 import System.Exit (ExitCode(..))
 import System.FilePath ((</>))
 import Text.Regex.Posix ((=~))
@@ -423,6 +423,14 @@ isRepoPkg pkg = pacmanSuccess ["-Si",pkg]
 filterAURPkgs :: [String] -> IO [String]
 filterAURPkgs pkgs = aurInfoLookup pkgs ?>>= return . map nameOf . fromRight
 
+-- Much faster than `filterM isRepoPkg pkgs`
+filterRepoPkgs :: [String] -> IO [String]
+filterRepoPkgs pkgs = do
+  repoPkgs <- pacmanOutput ["-Ssq",pkgs']
+  return . filter (`elem` pkgs) . lines $ repoPkgs
+    where pkgs' = "^(" ++ prep pkgs ++ ")$"
+          prep  = concat . intersperse "|"
+
 -- A package is an AUR package if it's PKGBUILD exists on the Arch website.
 -- Requires internet access.
 isAURPkg :: String -> IO Bool
@@ -483,7 +491,7 @@ groupPkgs (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
 divideByPkgType :: [String] -> IO ([String],[String],[String])
 divideByPkgType pkgs = do
   aurPkgNames  <- filterAURPkgs namesOnly
-  repoPkgNames <- filterM isRepoPkg $ namesOnly \\ aurPkgNames
+  repoPkgNames <- filterRepoPkgs $ namesOnly \\ aurPkgNames
   let aurPkgs  = filter (flip elem aurPkgNames . splitName) pkgs
       repoPkgs = filter (flip elem repoPkgNames . splitName) pkgs
       others   = (pkgs \\ aurPkgs) \\ repoPkgs
