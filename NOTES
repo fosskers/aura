@@ -8,8 +8,6 @@ What of the license has to be present in the source code?
 
 Make `determineDeps` faster by making it tail-call.
 
-Add `AUR URL` and `Last updated` to `-Ai` output.
-
 Calls to pacman should check for the `$PACMAN` var.
 
 When outputing repo dependencies, show what repo they're from?

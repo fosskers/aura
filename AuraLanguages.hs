@@ -556,7 +556,7 @@ logLookUpMsg2 Swedish  d = yellow "Första installation"  ++ "  : " ++ d
 
 logLookUpMsg3 :: Language -> Int -> String
 logLookUpMsg3 English upgrades  =
-    yellow "Upgrades" ++ "   : " ++ show upgrades
+    yellow "Upgrades" ++ "       : " ++ show upgrades
 logLookUpMsg3 Japanese upgrades =
     yellow "アップグレード回数" ++ "　：" ++ show upgrades
 logLookUpMsg3 Polish upgrades   =

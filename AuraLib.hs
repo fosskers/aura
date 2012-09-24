@@ -312,7 +312,7 @@ getDepsToInstall ss pkgs = do
            pacmanPkgs = map pkgNameOf necPacPkgs
        return $ Right (nub $ providers ++ pacmanPkgs, necAURPkgs)
 
--- Returns ([PacmanPackages], [AURPackages], [VirtualPackages])
+-- Returns ([RepoPackages], [AURPackages], [VirtualPackages])
 determineDeps :: Language -> AURPkg -> IO ([String],[AURPkg],[String])
 determineDeps lang pkg = do
   let depNames = (getPkgbuildField "depends" $ pkgbuildOf pkg) ++
