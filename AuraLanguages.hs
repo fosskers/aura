@@ -112,9 +112,8 @@ buildFailMsg2 Croatian = "Dodatno, ni sljedeće nije izgrađeno:"
 buildFailMsg2 Swedish  = "Det gick heller inte att bygga följande paket:"
 
 buildFailMsg3 :: Language -> String
-buildFailMsg3 English  = "Some packages may have built properly."
-buildFailMsg3 Japanese = "今のは失敗したけど前に作成のできたやつ" ++
-                             "があるかもしれない。"
+buildFailMsg3 English  = "However, these packages were successfully built:"
+buildFailMsg3 Japanese = "しかし、以下のパッケージファイルは無事作成された："
 buildFailMsg3 Polish   = "Niektóre pakiety mogły zostać zbudowane " ++
                          "prawidłowo."
 buildFailMsg3 Croatian = "Neki paketi su možda izgrađeni uspješno."

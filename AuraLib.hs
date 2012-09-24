@@ -7,8 +7,8 @@ module AuraLib where
 import System.Directory (renameFile, getCurrentDirectory, setCurrentDirectory)
 import Control.Monad (filterM, liftM, when, unless)
 import Data.List ((\\), nub, sortBy, intersperse)
+import System.FilePath ((</>), takeFileName)
 import System.Exit (ExitCode(..))
-import System.FilePath ((</>))
 import Text.Regex.Posix ((=~))
 import Data.Maybe (fromJust)
 import Data.Char (isDigit)
@@ -210,26 +210,28 @@ mapPkgs' c r f s p = mapPkgs c r f s p ?>> returnSuccess
 -----------
 -- THE WORK
 -----------
+type MaybePaths = Maybe [FilePath]
+
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
 installPkgFiles :: [String] -> [FilePath] -> IO ExitCode
 installPkgFiles pacOpts files = pacman $ ["-U"] ++ pacOpts ++ files
 
 -- All building occurs within temp directories in the package cache.
-buildPackages :: Settings -> [AURPkg] -> IO (Maybe [FilePath])
+buildPackages :: Settings -> [AURPkg] -> IO MaybePaths
 buildPackages _ [] = return Nothing
-buildPackages settings pkgs = inDir cache $ buildPackages' settings pkgs
-    where cache = cachePathOf settings
+buildPackages ss pkgs = inDir cache $ buildPackages' ss (Just []) pkgs
+    where cache = cachePathOf ss
 
 -- Handles the building of Packages.
 -- Assumed: All pacman and AUR dependencies are already installed.
-buildPackages' :: Settings -> [AURPkg] -> IO (Maybe [FilePath])
-buildPackages' _ [] = return $ Just []  -- Done recursing!
-buildPackages' settings pkgs@(p:ps) = do
+buildPackages' :: Settings -> MaybePaths -> [AURPkg] -> IO MaybePaths
+buildPackages' _ builtPs [] = return builtPs  -- Done recursing!
+buildPackages' settings builtPs pkgs@(p:ps) = do
   notify settings (flip buildPackagesMsg1 $ pkgNameOf p)
   results <- withTempDir (show p) (build settings p)
   case results of
-    Right pkg   -> (fmap (pkg :)) `liftM` buildPackages' settings ps
-    Left errors -> buildFail settings pkgs errors
+    Right pkg   -> buildPackages' settings ((pkg :) `fmap` builtPs) ps
+    Left errors -> buildFail settings builtPs pkgs errors
         
 -- Kinda ugly.
 -- Perform the actual build. Fails elegantly when build fails occur.
@@ -267,15 +269,16 @@ checkHotEdit settings pkgName = return (mayHotEdit settings) ?>> do
 -- Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
 -- BUG: This prompting ignores `--noconfirm`.
-buildFail :: Settings -> [AURPkg] -> ErrMsg -> IO (Maybe [FilePath])
-buildFail _ [] _ = return Nothing
-buildFail settings (p:ps) errors = do
+buildFail :: Settings -> MaybePaths -> [AURPkg] -> ErrMsg -> IO MaybePaths
+buildFail _ _ [] _ = return Nothing
+buildFail settings builtPs (p:ps) errors = do
   scold settings (flip buildFailMsg1 (show p))
   when (suppressMakepkg settings) (displayBuildErrors settings errors)
-  unless (null ps) $ scold settings buildFailMsg2 >>
-                     mapM_ (putStrLn . cyan . pkgNameOf) ps
-  warn settings buildFailMsg3
-  yesNoPrompt (buildFailMsg4 $ langOf settings) "^(y|Y)" ?>> return (Just [])
+  unless (null ps) $ printList red cyan (buildFailMsg2 lang) (map pkgNameOf ps)
+  (return $ fromJust builtPs) ?>>= \bps -> do
+      printList yellow cyan (buildFailMsg3 lang) $ map takeFileName bps
+      yesNoPrompt (buildFailMsg4 lang) ?>> return builtPs
+    where lang = langOf settings
 
 -- If the user wasn't running Aura with `-x`, then this will
 -- show them the suppressed makepkg output. 

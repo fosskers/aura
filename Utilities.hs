@@ -29,9 +29,9 @@ putStrLnA colour s = putStrA colour $ s ++ "\n"
 putStrA :: Colouror -> String -> IO ()
 putStrA colour s = putStr $ "aura >>= " ++ colour s
 
-printListWithTitle :: Colouror -> Colouror -> String -> [String] -> IO ()
-printListWithTitle _ _ _ [] = return ()
-printListWithTitle titleColour itemColour msg items = do
+printList :: Colouror -> Colouror -> String -> [String] -> IO ()
+printList _ _ _ [] = return ()
+printList titleColour itemColour msg items = do
   putStrLnA titleColour msg
   mapM_ (putStrLn . itemColour) items
   putStrLn ""
@@ -96,15 +96,15 @@ timedMessage delay msgs = mapM_ printMessage msgs
     where printMessage msg = putStr msg >> hFlush stdout >> threadDelay delay
 
 -- Takes a prompt message and a regex of valid answer patterns.
-yesNoPrompt :: String -> Regex -> IO Bool
-yesNoPrompt msg regex = do
+yesNoPrompt :: String -> IO Bool
+yesNoPrompt msg = do
   putStrA yellow $ msg ++ " [Y/n] "
   hFlush stdout
   response <- getLine
-  return (response =~ regex :: Bool)
+  return (response =~ "y|Y|\\B" :: Bool)
 
 optionalPrompt :: Bool -> String -> IO Bool
-optionalPrompt True msg = yesNoPrompt msg "^(y|Y|\\B)"
+optionalPrompt True msg = yesNoPrompt msg
 optionalPrompt False _  = return True
 
 searchLines :: Regex -> [String] -> [String]
