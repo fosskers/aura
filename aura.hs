@@ -211,8 +211,8 @@ aurSearch (regex:_) = aurSearchLookup regex ?>>=
     returnSuccess
 
 renderSearchResult :: String -> PkgInfo -> String
-renderSearchResult regex info = "aur/" ++ n ++ " " ++ v ++ "\n    " ++ d
-    where c cs = case cs =~ regex of (b,m,a) -> b ++ cyan m ++ a
+renderSearchResult reg info = yellow "aur/" ++ n ++ " " ++ v ++ "\n    " ++ d
+    where c cs = case cs =~ reg of (b,m,a) -> b ++ cyan m ++ a
           n = c $ nameOf info
           d = c $ descriptionOf info
           v | isOutOfDate info = red $ latestVerOf info

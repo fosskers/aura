@@ -12,6 +12,8 @@ Add `AUR URL` and `Last updated` to `-Ai` output.
 
 Calls to pacman should check for the `$PACMAN` var.
 
+When outputing repo dependencies, show what repo they're from?
+
 DEPENDENCY ANALYSIS
 -------------------
 Outputting a sort of "dependency tree/graph" that shows how much certain
