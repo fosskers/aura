@@ -27,7 +27,7 @@ import Shell
 import Zero
 
 auraVersion :: String
-auraVersion = "0.9.3.3"
+auraVersion = "0.9.3.4"
 
 main :: IO a
 main = do
@@ -120,17 +120,17 @@ installPackages settings pacOpts pkgs = do
   results     <- getDepsToInstall settings aurPackages
   case results of
     Left errors -> do
-      printListWithTitle red noColour (installPackagesMsg1 lang) errors
+      printList red noColour (installPackagesMsg1 lang) errors
       returnFailure
     Right (pacmanDeps,aurDeps) -> do
-      let pacPkgs     = nub $ pacmanDeps ++ forPacman
-          pkgsAndOpts = pacOpts ++ pacPkgs
-      reportPkgsToInstall lang pacPkgs aurDeps aurPackages 
+      let repoPkgs    = nub $ pacmanDeps ++ forPacman
+          pkgsAndOpts = pacOpts ++ repoPkgs
+      reportPkgsToInstall lang repoPkgs aurDeps aurPackages 
       okay <- optionalPrompt (mustConfirm settings) (installPackagesMsg3 lang)
       if not okay
          then scoldAndFail settings installPackagesMsg4
          else do
-           unless (null pacPkgs) (pacman' $ ["-S","--asdeps"] ++ pkgsAndOpts)
+           unless (null repoPkgs) (pacman' $ ["-S","--asdeps"] ++ pkgsAndOpts)
            mapM_ (buildAndInstallDep settings pacOpts) aurDeps
            pkgFiles <- buildPackages settings aurPackages
            case pkgFiles of
@@ -143,11 +143,11 @@ buildAndInstallDep settings pacOpts pkg =
   installPkgFiles (["--asdeps"] ++ pacOpts) . fromJust
 
 reportNonPackages :: Language -> [String] -> IO ()
-reportNonPackages lang nons = printListWithTitle red cyan msg nons
+reportNonPackages lang nons = printList red cyan msg nons
     where msg = reportNonPackagesMsg1 lang
 
 reportIgnoredPackages :: Language -> [String] -> IO ()
-reportIgnoredPackages lang pkgs = printListWithTitle yellow cyan msg pkgs
+reportIgnoredPackages lang pkgs = printList yellow cyan msg pkgs
     where msg = reportIgnoredPackagesMsg1 lang
 
 reportPkgsToInstall :: Language -> [String] -> [AURPkg] -> [AURPkg] -> IO ()
@@ -156,8 +156,7 @@ reportPkgsToInstall lang pacPkgs aurDeps aurPkgs = do
   printIfThere (sort $ namesOf aurDeps) $ reportPkgsToInstallMsg2 lang
   printIfThere (sort $ namesOf aurPkgs) $ reportPkgsToInstallMsg3 lang
       where namesOf = map pkgNameOf
-            printIfThere ps msg = unless (null ps) $
-                                  printListWithTitle green cyan msg ps
+            printIfThere ps m = unless (null ps) $ printList green cyan m ps
                
 upgradeAURPkgs :: Settings -> [String] -> [String] -> IO ExitCode
 upgradeAURPkgs settings pacOpts pkgs = do
@@ -176,7 +175,7 @@ upgradeAURPkgs settings pacOpts pkgs = do
             prettify (p,v) = nameOf p ++ " : " ++ v ++ " => " ++ latestVerOf p
 
 reportPkgsToUpgrade :: Language -> [String] -> IO ()
-reportPkgsToUpgrade lang pkgs = printListWithTitle green cyan msg pkgs
+reportPkgsToUpgrade lang pkgs = printList green cyan msg pkgs
     where msg = reportPkgsToUpgradeMsg1 lang
 
 aurPkgInfo :: Settings -> [String] -> IO ExitCode
@@ -272,7 +271,7 @@ downgradePackages ss pkgs = do
 
 reportBadDowngradePkgs :: Language -> [String] -> IO ()
 reportBadDowngradePkgs _ []      = return ()
-reportBadDowngradePkgs lang pkgs = printListWithTitle red cyan msg pkgs
+reportBadDowngradePkgs lang pkgs = printList red cyan msg pkgs
     where msg = reportBadDowngradePkgsMsg1 lang
                
 getDowngradeChoice :: Settings -> [String] -> String -> IO String
@@ -394,7 +393,7 @@ logLookUp settings logFile pkg = do
             takeLast n  = reverse . take n . reverse
 
 reportNotInLog :: Language -> [String] -> IO ()
-reportNotInLog lang nons = printListWithTitle red cyan msg nons
+reportNotInLog lang nons = printList red cyan msg nons
     where msg = reportNotInLogMsg1 lang
 
 -------------------
