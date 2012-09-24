@@ -41,7 +41,7 @@ rpcAddArg []    = []
 rpcAddArg (a:_) = "&arg=" ++ a  -- This needs to be fixed! Regex!
 
 rpcAddMultiInfoArgs :: [String] -> String
-rpcAddMultiInfoArgs = concat . map ("&arg\\[\\]=" ++)
+rpcAddMultiInfoArgs = concat . map ("&arg[]=" ++)
 
 -------
 -- JSON
