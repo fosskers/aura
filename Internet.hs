@@ -5,6 +5,9 @@ module Internet where
 
 -- System Libraries
 import System.FilePath (splitFileName, (</>))
+import System.IO
+import Network.Curl
+import qualified Data.ByteString as B
 
 -- Custom Libraries
 import Shell
@@ -13,14 +16,21 @@ type Url = String
 
 doesUrlExist :: Url -> IO Bool
 doesUrlExist url = do
-  (exitStatus,_,_) <- quietShellCmd' "curl" ["-f","--head",url]
-  return $ didProcessSucceed exitStatus
+  (head,_) <- curlHead url []
+  return $ head /= "HTTP/1.1 404 Not Found"
 
 getUrlContents :: Url -> IO String
-getUrlContents url = quietShellCmd "curl" ["-L","--fail","--silent",url]
+getUrlContents url = do
+  (_,cont) <- curlGetString url []
+  return cont
+
+curlGetByteString :: URLString -> [CurlOption] -> IO (CurlCode,B.ByteString)
+curlGetByteString = curlGetString_
 
 saveUrlContents :: FilePath -> Url -> IO FilePath
-saveUrlContents path url = quietShellCmd "curl" args >> return filePath
-    where args     = [url,"-L","--fail","--silent","--output",filePath]
-          filePath = path </> file
+saveUrlContents path url = do
+  h <- openFile filePath WriteMode
+  (_,cont) <- curlGetByteString url []
+  B.hPutStr h cont >> hClose h >> return filePath
+    where filePath = path </> file
           (_,file) = splitFileName url
