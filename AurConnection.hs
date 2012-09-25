@@ -4,12 +4,11 @@
 module AurConnection where
 
 -- System Libaries
-import Text.Regex.Posix ((=~))
 import System.FilePath ((</>))
 import Text.JSON
 
 -- Custom Libraries
-import Utilities (wordsLines)
+import Bash (getField)
 import Internet
 
 -----------------------
@@ -128,18 +127,8 @@ getTrueVerViaPkgbuild pkgb = pkgver ++ "-" ++ pkgrel
     where pkgver = head $ getPkgbuildField "pkgver" pkgb
           pkgrel = head $ getPkgbuildField "pkgrel" pkgb
 
--- Warning: This may give nonsensical output if the field item
---          utilises bash variables or string expansions!
--- BUG: This needs to have its functionality extended.
---      Or, I need a tool that will parse bash but NOT execute it.
 getPkgbuildField :: String -> Pkgbuild -> [String]
-getPkgbuildField field pkgb = wordsLines . filter notQuotes . parseField $ xs
-    where (_,_,xs)    = pkgb =~ pattern :: (String,String,String)
-          pattern     = "^" ++ field ++ "="
-          notQuotes c = c `notElem` ['\'','"']
-          parseField  | null xs        = \_ -> ""
-                      | head xs == '(' = takeWhile (/= ')') . tail
-                      | otherwise      = takeWhile (/= '\n')
+getPkgbuildField = getField
 
 ------------------
 -- SOURCE TARBALLS

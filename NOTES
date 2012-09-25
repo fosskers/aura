@@ -6,7 +6,8 @@ When a `-Cc` comes along they wouldn't be deleted.
 
 What of the license has to be present in the source code?
 
-Make `determineDeps` faster by making it tail-call.
+Make `determineDeps` faster by making it tail-call and determining
+whether a package has already been checked. If so, don't check it again.
 
 Calls to pacman should check for the `$PACMAN` var.
 

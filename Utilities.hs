@@ -36,6 +36,15 @@ printList titleColour itemColour msg items = do
   mapM_ (putStrLn . itemColour) items
   putStrLn ""
 
+-----------
+-- PLUMBING
+-----------
+-- A traditional `split` function.
+split :: Eq a => a -> [a] -> [[a]]
+split _ [] = []
+split x xs = fst xs' : split x (snd xs')
+    where xs' = hardBreak (== x) xs
+
 -- Like break, but kills the element that triggered the break.
 hardBreak :: (a -> Bool) -> [a] -> ([a],[a])
 hardBreak _ [] = ([],[])
