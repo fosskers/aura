@@ -5,10 +5,11 @@
 module Bash where
 
 -- System Libraries
+import Control.Applicative ((<$>), (<*>))
 import Text.Regex.Posix ((=~))
 
 -- Custom Libraries
-import Utilities (wordsLines, hardBreak, split)
+import Utilities (wordsLines, hardBreak)
 
 type Script = String
 type Buffer = String
@@ -27,10 +28,13 @@ getField field script = (wordsLines . noQs . parseField $ xs) >>= braceExpand
 
 -- Try these. Open in emacs, uncomment, hit `C-c C-l` then fire away.
 --testd = braceExpand "haskell-json"
---testf = braceExpand "perl-{fun,happiness}"
+--testf = braceExpand "perl-{fun,happiness}-is-definite"
 --testg = braceExpand "perl-{omg,thisis-{embedded,abanana-{wow,yes}},butcool}"
+--testh = braceExpand "lol-{expand,me}-{for,fun}"
 braceExpand :: String -> [String]
-braceExpand = fst . braceExpand'
+braceExpand entry | null rest = expanded
+                  | otherwise = (++) <$> expanded <*> braceExpand rest
+    where (expanded,rest) = braceExpand' entry
 
 braceExpand' :: String -> ([String],String)
 braceExpand' []    = ([],[])
