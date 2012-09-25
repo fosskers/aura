@@ -1,28 +1,31 @@
 -- A library that serves as an abstraction for dealing with the internet.
--- At the moment, I'm cheating and using `curl`.
 
 module Internet where
 
 -- System Libraries
+import qualified Data.ByteString as B (ByteString, hPutStr)
+import System.IO (hClose, openFile, IOMode(WriteMode))
 import System.FilePath (splitFileName, (</>))
-import System.IO
-import Network.Curl
-import qualified Data.ByteString as B
-
--- Custom Libraries
-import Shell
+import Control.Monad (liftM)
+import Network.Curl ( curlHead
+                    , curlGetString
+                    , curlGetString_
+                    , URLString
+                    , CurlOption
+                    , CurlCode )
 
 type Url = String
 
+-- Arbitrary...?
+error404 :: String
+error404 = "HTTP/1.1 404 Not Found"
+
 doesUrlExist :: Url -> IO Bool
-doesUrlExist url = do
-  (head,_) <- curlHead url []
-  return $ head /= "HTTP/1.1 404 Not Found"
+doesUrlExist url = (no404 . fst) `liftM` curlHead url []
+    where no404 = (/=) error404
 
 getUrlContents :: Url -> IO String
-getUrlContents url = do
-  (_,cont) <- curlGetString url []
-  return cont
+getUrlContents url = snd `liftM` curlGetString url []
 
 curlGetByteString :: URLString -> [CurlOption] -> IO (CurlCode,B.ByteString)
 curlGetByteString = curlGetString_
