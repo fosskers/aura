@@ -114,8 +114,7 @@ buildFailMsg2 Swedish  = "Det gick heller inte att bygga följande paket:"
 buildFailMsg3 :: Language -> String
 buildFailMsg3 English  = "However, these packages were successfully built:"
 buildFailMsg3 Japanese = "しかし、以下のパッケージファイルは無事作成された："
-buildFailMsg3 Polish   = "Niektóre pakiety mogły zostać zbudowane " ++
-                         "prawidłowo."
+buildFailMsg3 Polish   = "Następujące pakiety zostały zbudowane pomyślnie:"
 buildFailMsg3 Croatian = "Neki paketi su možda izgrađeni uspješno."
 buildFailMsg3 Swedish  = "Vissa paket kanske har byggts ordentligt (Osäker)."
 
@@ -679,8 +678,8 @@ aurPkgInfoFields English  = [ "Name","Version","AUR Status","Project URL"
 aurPkgInfoFields Japanese = [ "名前","バージョン","パッケージ状態"
                             , "プロジェクト","パッケージページ","ライセンス"
                             ,"投票数","概要" ]
-aurPkgInfoFields Polish   = [ "Nazwa","Wersja","Status w AUR","URL","AUR URL"
-                            , "Licencja","Głosy","Opis" ]
+aurPkgInfoFields Polish   = [ "Nazwa","Wersja","Status w AUR","URL Projektu"
+                            , "URL AUR", "Licencja","Głosy","Opis" ]
 aurPkgInfoFields Croatian = [ "Ime","Verzija","AUR Stanje","URL Projekta"
                             , "AUR URL","Licenca","Glasovi","Opis" ]
 aurPkgInfoFields Swedish  = [ "Namn","Version","AUR Status","Projekt URL"
