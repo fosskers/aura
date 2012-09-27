@@ -31,6 +31,7 @@ getField field script = (wordsLines . noQs . parseField $ xs) >>= braceExpand
 --testf = braceExpand "perl-{fun,happiness}-is-definite"
 --testg = braceExpand "perl-{omg,thisis-{embedded,abanana-{wow,yes}},butcool}"
 --testh = braceExpand "lol-{expand,me}-{for,fun}"
+--testj = braceExpand "{what,will}-{happen,here?}"
 braceExpand :: String -> [String]
 braceExpand entry | null rest = expanded
                   | otherwise = (++) <$> expanded <*> braceExpand rest

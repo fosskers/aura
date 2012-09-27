@@ -37,7 +37,8 @@ source-repository head
 executable aura
   main-is:             aura.hs
 
-  other-modules:       Zero,
+  other-modules:       Bash,
+                       Zero,
                        Shell,
                        Pacman,
                        AuraLib,
