@@ -128,7 +128,7 @@ buildFailMsg4 Swedish  = "Vill du installera dem?"
 displayBuildErrorsMsg1 :: Language -> String
 displayBuildErrorsMsg1 English  = "Dumping makepkg output in "
 displayBuildErrorsMsg1 Japanese = "抑えていたmakepkgの出力を受け取る用意・・・"
-displayBuildErrorsMsg1 Polish   = "Wyjście makepkg zostanie wypisane za"
+displayBuildErrorsMsg1 Polish   = "Wyjście makepkg zostanie wypisane za "
 displayBuildErrorsMsg1 Croatian = "Zapisujem makepkg ispis u "
 displayBuildErrorsMsg1 Swedish  = "Dumpar makepkgs utskrift i "
 
@@ -327,7 +327,7 @@ reportPkgsToInstallMsg2 Swedish  = "Beroenden ifrån AUR:"
 reportPkgsToInstallMsg3 :: Language -> String
 reportPkgsToInstallMsg3 English  = "Main AUR packages:"
 reportPkgsToInstallMsg3 Japanese = "主なAURパッケージ："
-reportPkgsToInstallMsg3 Polish   = "Pakiety z AUR:"
+reportPkgsToInstallMsg3 Polish   = "Główne pakiety z AUR:"
 reportPkgsToInstallMsg3 Croatian = "Glavni AUR paketi:"
 reportPkgsToInstallMsg3 Swedish  = "Huvudpaket ifrån AUR:"
 
@@ -370,14 +370,6 @@ upgradeAURPkgsMsg3 Japanese = "アップグレードは必要ない。"
 upgradeAURPkgsMsg3 Polish   = "Nie jest wymagana aktualizacja pakietów z AUR."
 upgradeAURPkgsMsg3 Croatian = "Svi AUR paketi su ažurirani."
 upgradeAURPkgsMsg3 Swedish  = "Inga AUR-paketsuppgraderingar behövs."
-
--- Obsolete.
-upgradeAURPkgsMsg4 :: Language -> String -> String
-upgradeAURPkgsMsg4 English  p = "Got " ++ bt p ++ "."
-upgradeAURPkgsMsg4 Japanese p = bt p ++ "、OK."
-upgradeAURPkgsMsg4 Polish   p = "Otrzymano" ++ bt p ++ "."
-upgradeAURPkgsMsg4 Croatian p = bt p ++ " preuzet."
-upgradeAURPkgsMsg4 Swedish  p = "Fick " ++ bt p ++ "."
 
 downloadTarballsMsg1 :: Language -> String -> String
 downloadTarballsMsg1 English p  =
@@ -504,7 +496,7 @@ cleanCacheMsg1 Swedish  = "Ogiltigt nummer specifierat."
 cleanCacheMsg2 :: Language -> String
 cleanCacheMsg2 English  = "This will delete the ENTIRE package cache."
 cleanCacheMsg2 Japanese = "パッケージ・キャッシュは完全に削除される。"
-cleanCacheMsg2 Polish   = "To usunie WSZYSTKIE pliki z pamięci podręcznej."
+cleanCacheMsg2 Polish   = "To usunie WSZYSTKIE pakiety z pamięci podręcznej."
 cleanCacheMsg2 Croatian = "Ovo će izbrisati CIJELO skladište paketa."
 cleanCacheMsg2 Swedish  = "Detta kommer ta bort HELA paket-cachen."
 
@@ -512,7 +504,8 @@ cleanCacheMsg3 :: Language -> Int -> String
 cleanCacheMsg3 English  n = bt (show n) ++ " of each package file will be kept."
 cleanCacheMsg3 Japanese n = "パッケージ・ファイルは" ++ bt (show n) ++
                             "個保存される。"
-cleanCacheMsg3 Polish   n = bt (show n) ++ " wersji każdego pakietu zostanie zachowane."
+cleanCacheMsg3 Polish   n =
+    bt (show n) ++ " wersji każdego pakietu zostanie zachowane."
 cleanCacheMsg3 Croatian n = bt (show n) ++ " zadnjih verzija svakog paketa će biti zadržano."
 cleanCacheMsg3 Swedish  n = bt (show n) ++ " av varje paketfil kommer att sparas."
 
@@ -527,7 +520,8 @@ cleanCacheMsg4 Swedish  = "Resten kommer att tas bort. Är det OK?"
 cleanCacheMsg5 :: Language -> String
 cleanCacheMsg5 English  = "Cache cleaning manually aborted."
 cleanCacheMsg5 Japanese = "削除の続行は意図的に阻止された。"
-cleanCacheMsg5 Polish   = "Czyszczenie pamięci podręcznej zostało przerwane przez użytkownika."
+cleanCacheMsg5 Polish   =
+    "Czyszczenie pamięci podręcznej zostało przerwane przez użytkownika."
 cleanCacheMsg5 Croatian =
     "Čišćenje skladišta paketa prekinuto od strane korisnika."
 cleanCacheMsg5 Swedish  = "Cache-rensning avbröts manuellt."
@@ -538,6 +532,8 @@ cleanCacheMsg6 Japanese = "パッケージ・キャッシュを掃除中・・�
 cleanCacheMsg6 Polish   = "Czyszczenie pamięci podręcznej..."
 cleanCacheMsg6 Croatian = "Čišćenje skladišta paketa..."
 cleanCacheMsg6 Swedish  = "Rensar paket-cache..."
+
+-- The next four strings need proper alignment, IMO.  --Kw
 
 logLookUpMsg1 :: Language -> String -> String
 logLookUpMsg1 English  p = yellow "Package"     ++ "        : " ++ p
@@ -583,7 +579,7 @@ manpageMsg :: Language -> String
 manpageMsg English  = "See the aura man page for aura option details."
 manpageMsg Japanese = "選択肢の詳しいことは、auraのman pageまで。"
 manpageMsg Polish   =
-    "W podręczniku man dla aura znajduje się więcej informacji o opcjach Aury."
+    "W podręczniku man dla aura znajduje się więcej informacji o opcjach."
 manpageMsg Croatian = "Pogledajte Aura man stranicu za detalje o opcijama."
 manpageMsg Swedish  = "Hänvisa till auras `man`-sida för detaljerade alternativ."
 
