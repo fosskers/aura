@@ -371,14 +371,6 @@ upgradeAURPkgsMsg3 Polish   = "Nie jest wymagana aktualizacja pakietów z AUR."
 upgradeAURPkgsMsg3 Croatian = "Svi AUR paketi su ažurirani."
 upgradeAURPkgsMsg3 Swedish  = "Inga AUR-paketsuppgraderingar behövs."
 
--- Obsolete.
-upgradeAURPkgsMsg4 :: Language -> String -> String
-upgradeAURPkgsMsg4 English  p = "Got " ++ bt p ++ "."
-upgradeAURPkgsMsg4 Japanese p = bt p ++ "、OK."
-upgradeAURPkgsMsg4 Polish   p = "Otrzymano" ++ bt p ++ "."
-upgradeAURPkgsMsg4 Croatian p = bt p ++ " preuzet."
-upgradeAURPkgsMsg4 Swedish  p = "Fick " ++ bt p ++ "."
-
 downloadTarballsMsg1 :: Language -> String -> String
 downloadTarballsMsg1 English p  =
     "Downloading " ++ bt p ++ " source tarball..."
