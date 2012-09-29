@@ -7,6 +7,7 @@
 import System.Directory (getCurrentDirectory, copyFile, removeFile)
 import Data.List ((\\), nub, sort, intersperse, groupBy)
 import System.Environment (getArgs, getEnvironment)
+import System.Console.ANSI (hideCursor, showCursor)
 import System.Exit (exitWith, ExitCode)
 import System.Posix.Files (fileExist)
 import Control.Monad (liftM, unless)
@@ -439,6 +440,7 @@ getHelpMsg settings pacmanHelpMsg = concat $ intersperse "\n" allMessages
 -- ANIMATED VERSION MESSAGE
 animateVersionMsg :: Settings -> [String] -> IO ExitCode
 animateVersionMsg settings verMsg = do
+  hideCursor
   mapM_ putStrLn $ map (padString verMsgPad) verMsg  -- Version message
   putStr $ raiseCursorBy 7  -- Initial reraising of the cursor.
   drawPills 3
@@ -451,6 +453,7 @@ animateVersionMsg settings verMsg = do
   putStrLn $ "AURA Version " ++ auraVersion
   putStrLn " by Colin Woodbury\n"
   mapM_ putStrLn . translatorMsg . langOf $ settings
+  showCursor
   returnSuccess
     where pillEating (p,w) = putStr clearGrid >> drawPills p >> takeABite w
           pillsAndWidths   = [(2,5),(1,10),(0,15)]

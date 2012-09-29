@@ -8,11 +8,11 @@ url="https://github.com/fosskers/aura"
 license=('GPL-3')
 arch=('i686' 'x86_64')
 makedepends=('ghc' 'haskell-regex-base' 'haskell-regex-posix' 'haskell-json'
-             'haskell-curl')
+             'haskell-curl' 'haskell-ansi-terminal')
 depends=('gmp' 'pacman')
 options=('strip')
 source=(https://github.com/downloads/fosskers/aura/${_hkgname}-${pkgver}.tar.gz)
-md5sums=('a5a66cb66943ae7673d31b6ccdfe728c')
+md5sums=('87cde4bb99fc19af502d7db853b4d9ea')
 build() {
     cd ${srcdir}/${_hkgname}-${pkgver}
     runhaskell Setup configure --prefix=/usr --docdir=/usr/share/doc/${pkgname} -O
