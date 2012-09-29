@@ -1,11 +1,14 @@
--- THIS NEEDS TO BE TAKEN OVER BY MonadPlus!!
+-- A module which allows halting or continuing of Monadic actions based on
+-- the values within the Monads.
+-- Can this be taken over by MonadPlus?
 
 module Zero where
 
 import System.Exit(ExitCode(..))
 
--- A type that is part of the Zero class must define a function
+-- A type that is part of the Zero class must define two functions:
 -- `zero` which returns its `most null` or `most plain` value.
+-- `isZero` which tests if a given value is its type's `zero` value.
 class Zero a where
     zero :: a
     isZero :: a -> Bool
@@ -50,7 +53,7 @@ zeroDefault x = x == zero
 
 {-
  Allows monadic functions to fail immediately if the result of
- one action is it's `zero` value.
+ one action is its `zero` value.
 
  Made infix 2 since (>>) and (>>=) are infix 1, thus the following
  are equivalent:

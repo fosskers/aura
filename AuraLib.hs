@@ -153,7 +153,7 @@ getProvidingPkg :: String -> IO (Maybe String)
 getProvidingPkg virt = do
   candidates <- getProvidingPkg' virt
   let lined = lines candidates
-  return (length lined /= 1) ?>> (return . Just . head $ lined)
+  return (length lined == 1) ?>> (return . Just . head $ lined)
 
 -- Unsafe version.
 -- Only use on virtual packages that have guaranteed providers.

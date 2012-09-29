@@ -15,7 +15,7 @@ type Script = String
 type Buffer = String
 
 -- Warning: This may give nonsensical output if the field item
---          utilises bash variables or string expansions!
+--          utilises bash variables!
 getField :: String -> Script -> [String]
 getField field script = (wordsLines . noQs . parseField $ xs) >>= braceExpand
     where (_,_,xs)    = script =~ pattern :: (String,String,String)
