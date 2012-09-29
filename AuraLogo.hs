@@ -3,6 +3,7 @@
 module AuraLogo where
 
 -- System Libraries
+import System.Console.ANSI (cursorUpLineCode)
 import Control.Concurrent (threadDelay)
 import System.IO (stdout, hFlush)
 
@@ -54,8 +55,7 @@ drawPills numOfPills = mapM_ putStrLn pills
     where pills = renderPills numOfPills
 
 raiseCursorBy :: Int -> String
-raiseCursorBy 0 = ""
-raiseCursorBy n = "\r\b\r" ++ raiseCursorBy (n - 1)
+raiseCursorBy = cursorUpLineCode
 
 clearGrid :: String
 clearGrid = blankLines ++ raiseCursorBy 4
