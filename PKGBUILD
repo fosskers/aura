@@ -12,7 +12,7 @@ makedepends=('ghc' 'haskell-regex-base' 'haskell-regex-posix' 'haskell-json'
 depends=('gmp' 'pacman')
 options=('strip')
 source=(https://github.com/downloads/fosskers/aura/${_hkgname}-${pkgver}.tar.gz)
-md5sums=('87cde4bb99fc19af502d7db853b4d9ea')
+md5sums=('6ff97586732404662870fb28c62f7de6')
 build() {
     cd ${srcdir}/${_hkgname}-${pkgver}
     runhaskell Setup configure --prefix=/usr --docdir=/usr/share/doc/${pkgname} -O
