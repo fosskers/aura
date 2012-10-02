@@ -4,7 +4,7 @@ Aura Changelog
 1.0.0.0
 -------
 - Fixed `-V` message in terminals other than urxvt.
-- New `haskell-alsa-terminal` library to do this.
+- New `haskell-ansi-terminal` library to do this.
 
 0.10.0.0
 --------
