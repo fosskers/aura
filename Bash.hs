@@ -32,9 +32,9 @@ getField field script = (wordsLines . noQs . parseField $ xs) >>= braceExpand
 --testh = braceExpand "lol-{expand,me}-{for,fun}"
 --testj = braceExpand "{what,will}-{happen,here?}"
 braceExpand :: String -> [String]
-braceExpand entry | null rest = exp
-                  | otherwise = [a ++ b | a <- exp, b <- braceExpand rest]
-    where (exp,rest) = braceExpand' entry
+braceExpand entry | null rest = expd
+                  | otherwise = [a ++ b | a <- expd, b <- braceExpand rest]
+    where (expd,rest) = braceExpand' entry
 
 braceExpand' :: String -> ([String],String)
 braceExpand' []    = ([],[])

@@ -30,13 +30,5 @@ OUT OF DATE
 -----------
 Once dependencies are determined, notify the user if any are O.o.D.
 
-STABLE AND DEVEL
-----------------
-After 1.0 release, create a stable branch that manages the even numbered
-releases. The odd numbered releases iterate quicker and are like the
-release candidates for the even numbered releases.
-If necessary, create a new AUR package called `aura-stable` to manage
-the stable releases.
-
 BUGS
 ----
