@@ -197,7 +197,7 @@ getRealPkgConflictsMsg2 Croatian p =
     bt p ++ " je ignoriran paket! Pogledajte svoj `pacman.conf`."
 getRealPkgConflictsMsg2 Swedish  p =
     bt p ++ " är ett ignorerat paket! Kolla din `pacman.conf`-fil."
-getRealPkgConflectsMsg2 German   p =
+getRealPkgConflictsMsg2 German   p =
     bt p ++ " ist ein ignoriertes Paket! Siehe /etc/pacman.conf."
 
 getVirtualConflictsMsg1 :: Language -> String -> String
@@ -211,7 +211,7 @@ getVirtualConflictsMsg1 Croatian p =
     bt p ++ " ne postoji kao paket niti ga bilo koji paket pruža!"
 getVirtualConflictsMsg1 Swedish  p =
     bt p ++ " existerar varken som ett paket eller som ett tillhandahållet av ett annat!"
-getVirtualCofnlectsMsg1 German   p =
+getVirtualConflictsMsg1 German   p =
     bt p ++ " existiert nicht als Paket oder als Bereitstellung eines anderen!"
 
 getVirtualConflictsMsg2 :: Language -> String -> String -> String
@@ -230,7 +230,7 @@ getVirtualConflictsMsg2 Croatian p pro =
 getVirtualConflictsMsg2 Swedish p pro =
     bt pro ++ " tillhandahåller " ++ bt p ++ ", men " ++ bt pro ++
     " är ett ignorerat paket."
-getVirtualConflectsMsg2 German  p pro =
+getVirtualConflictsMsg2 German  p pro =
     bt pro ++ " stellt " ++ bt p ++ " bereit, aber " ++ bt pro ++
     " ist ein ignoriertes Paket."
 
@@ -254,7 +254,7 @@ getVirtualConflictsMsg3 Croatian d dVer pro proVer =
 getVirtualConflictsMsg3 Swedish d dVer pro proVer =
     "Beroendepaket " ++ bt d ++ " kräver version " ++ bt dVer ++
     " men dens tillhandahållande paket " ++ bt pro ++ " ger version " ++ bt proVer
-getVirtualConflectsMsg3 German d dVer pro proVer =
+getVirtualConflictsMsg3 German d dVer pro proVer =
     "Die Abhängigkeit " ++ bt d ++ " verlangt Version " ++ bt dVer ++
     " aber dessen bereitstellendes Paket " ++ bt pro ++ " gibt Version " ++ bt proVer
 
@@ -631,7 +631,7 @@ logLookUpMsg2 Japanese d = yellow "初インストール"       ++ "　　　：
 logLookUpMsg2 Polish   d = yellow "Pierwsza instalacja"  ++ "  : " ++ d
 logLookUpMsg2 Croatian d = yellow "Prva instalacija"     ++ "  : " ++ d
 logLookUpMsg2 Swedish  d = yellow "Första installation"  ++ "  : " ++ d
-logLookupMsg2 German   d = yellow "Erste Installation"   ++ "  : " ++ d
+logLookUpMsg2 German   d = yellow "Erste Installation"   ++ "  : " ++ d
 
 logLookUpMsg3 :: Language -> Int -> String
 logLookUpMsg3 English upgrades  =
