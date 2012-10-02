@@ -5,7 +5,6 @@
 module Bash where
 
 -- System Libraries
-import Control.Applicative ((<$>), (<*>))
 import Text.Regex.Posix ((=~))
 
 -- Custom Libraries
@@ -33,9 +32,9 @@ getField field script = (wordsLines . noQs . parseField $ xs) >>= braceExpand
 --testh = braceExpand "lol-{expand,me}-{for,fun}"
 --testj = braceExpand "{what,will}-{happen,here?}"
 braceExpand :: String -> [String]
-braceExpand entry | null rest = expanded
-                  | otherwise = (++) <$> expanded <*> braceExpand rest
-    where (expanded,rest) = braceExpand' entry
+braceExpand entry | null rest = exp
+                  | otherwise = [a ++ b | a <- exp, b <- braceExpand rest]
+    where (exp,rest) = braceExpand' entry
 
 braceExpand' :: String -> ([String],String)
 braceExpand' []    = ([],[])

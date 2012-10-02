@@ -9,7 +9,7 @@ import Text.JSON
 
 -- Custom Libraries
 import Bash (getField)
-import Aura.Internet
+import Internet
 
 -----------------------
 -- AUR API URL CREATION

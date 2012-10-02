@@ -13,12 +13,12 @@ import Data.Maybe (fromJust)
 import Data.Char (isDigit)
 
 -- Custom Libraries
-import Aura.Languages
 import Aura.AurConnection
-import Aura.Internet
+import Aura.Languages
 import Aura.MakePkg
 import Aura.Pacman
 import Utilities
+import Internet
 import Shell
 import Zero
 

@@ -16,8 +16,8 @@ import Data.Maybe (fromJust)
 import Data.Char (isDigit)
 
 -- Custom Libraries
-import Aura.Languages
 import Aura.AurConnection
+import Aura.Languages
 import Aura.AuraLib
 import Aura.Pacman
 import Aura.Flags
