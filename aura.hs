@@ -17,14 +17,14 @@ import Data.Maybe (fromJust)
 import Data.Char (isDigit)
 
 -- Custom Libraries
-import AuraLanguages
-import AurConnection
-import AuraFlags
+import Aura.Languages
+import Aura.AurConnection
+import Aura.AuraLib
+import Aura.Pacman
+import Aura.Shell
+import Aura.Flags
+import Aura.Logo
 import Utilities
-import AuraLogo
-import AuraLib
-import Pacman
-import Shell
 import Zero
 
 auraVersion :: String

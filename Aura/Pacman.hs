@@ -1,7 +1,7 @@
 -- An interface to `pacman`.
 -- Takes any pacman arguments and applies it to pacman through the shell.
 
-module Pacman where
+module Aura.Pacman where
 
 -- System Libraries
 import System.Directory (getDirectoryContents)
@@ -12,7 +12,7 @@ import Control.Monad (liftM)
 
 -- Custom Libraries
 import Utilities 
-import Shell
+import Aura.Shell
 
 type Arg = String
 

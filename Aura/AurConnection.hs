@@ -1,7 +1,7 @@
 -- Module for connecting to the AUR servers,
 -- downloading PKGBUILDs and source tarballs, and handling them.
 
-module AurConnection where
+module Aura.AurConnection where
 
 -- System Libaries
 import System.FilePath ((</>))
@@ -9,7 +9,7 @@ import Text.JSON
 
 -- Custom Libraries
 import Bash (getField)
-import Internet
+import Aura.Internet
 
 -----------------------
 -- AUR API URL CREATION

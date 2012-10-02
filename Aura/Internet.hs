@@ -1,6 +1,6 @@
 -- A library that serves as an abstraction for dealing with the internet.
 
-module Internet where
+module Aura.Internet where
 
 -- System Libraries
 import qualified Data.ByteString as B (ByteString, hPutStr)

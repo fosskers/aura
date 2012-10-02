@@ -6,11 +6,11 @@ Denis Kasak (Croatian)
 Fredrik Haikarainen (Swedish)
 -}
 
-module AuraLanguages where
+module Aura.Languages where
 
 import Data.Maybe (fromJust)
 
-import Shell (cyan, yellow, green, red, blue)
+import Aura.Shell (cyan, yellow, green, red, blue)
 
 data Language = English
               | Japanese

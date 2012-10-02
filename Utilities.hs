@@ -14,7 +14,7 @@ import Text.Regex.Posix ((=~))
 import Text.Printf (printf)
 
 -- Custom Libraries
-import Shell
+import Aura.Shell
 
 type Pattern = (String,String)
 

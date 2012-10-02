@@ -1,7 +1,7 @@
 -- A library for dealing with the installion and management
 -- of Arch User Repository packages.
 
-module AuraLib where
+module Aura.AuraLib where
 
 -- System Libraries
 import System.Directory (renameFile, getCurrentDirectory, setCurrentDirectory)
@@ -14,13 +14,13 @@ import Data.Maybe (fromJust)
 import Data.Char (isDigit)
 
 -- Custom Libraries
-import AuraLanguages
-import AurConnection
+import Aura.Languages
+import Aura.AurConnection
+import Aura.Internet
+import Aura.MakePkg
+import Aura.Pacman
+import Aura.Shell
 import Utilities
-import Internet
-import MakePkg
-import Pacman
-import Shell
 import Zero
 
 -- For build and package conflict errors.

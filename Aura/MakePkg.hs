@@ -1,4 +1,4 @@
-module MakePkg where
+module Aura.MakePkg where
 
 -- System Libraries
 import System.Directory (getDirectoryContents)
@@ -6,7 +6,7 @@ import Text.Regex.Posix ((=~))
 import System.Exit (ExitCode)
 
 -- Custom Libraries
-import Shell
+import Aura.Shell
 
 makepkg :: String -> IO (ExitCode,FilePath,String)
 makepkg = makepkgQuiet

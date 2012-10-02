@@ -1,12 +1,12 @@
-module AuraFlags where
+module Aura.Flags where
 
 -- System Libraries
 import System.Console.GetOpt
 
 -- Custom Libraries
 import Utilities (notNull)
-import Shell (yellow)
-import AuraLanguages
+import Aura.Shell (yellow)
+import Aura.Languages
 
 type FlagMap = [(Flag,String)]
 

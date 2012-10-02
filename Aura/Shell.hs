@@ -1,6 +1,6 @@
 -- An abstraction layer for shell-related tasks.
 
-module Shell where
+module Aura.Shell where
 
 import System.Process (readProcess, readProcessWithExitCode, rawSystem)
 import System.Exit(ExitCode(..))

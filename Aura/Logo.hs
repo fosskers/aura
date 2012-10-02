@@ -1,6 +1,6 @@
 -- Library for printing an animated AURA version message.
 
-module AuraLogo where
+module Aura.Logo where
 
 -- System Libraries
 import System.Console.ANSI (cursorUpLineCode)
@@ -8,8 +8,8 @@ import Control.Concurrent (threadDelay)
 import System.IO (stdout, hFlush)
 
 -- Custom Libraries
+import Aura.Shell (yellow)
 import Utilities (prePad)
-import Shell (yellow)
 
 data MouthState = Open | Closed deriving (Eq)
 
