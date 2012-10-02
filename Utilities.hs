@@ -3,7 +3,6 @@
 module Utilities where
 
 -- System Libraries
-import System.Directory (getCurrentDirectory, setCurrentDirectory)
 import Distribution.Simple.Utils (withTempDirectory)
 import Control.Concurrent (threadDelay)
 import System.FilePath (dropExtensions)
@@ -14,7 +13,7 @@ import Text.Regex.Posix ((=~))
 import Text.Printf (printf)
 
 -- Custom Libraries
-import Aura.Shell
+import Shell
 
 type Pattern = (String,String)
 
@@ -77,12 +76,8 @@ replaceByPatt ((p,t):ps) line | p == m    = replaceByPatt ps (b ++ t ++ a)
 
 withTempDir :: FilePath -> IO a -> IO a
 withTempDir name action = do
-  originalDirectory <- getCurrentDirectory
-  withTempDirectory silent originalDirectory name (\dir -> do     
-     setCurrentDirectory dir
-     result <- action
-     setCurrentDirectory originalDirectory
-     return result)
+  curr <- pwd
+  withTempDirectory silent curr name (\dir -> inDir dir action)
 
 -- Given a number of selections, allows the user to choose one.
 getSelection :: [String] -> IO String
@@ -129,10 +124,8 @@ notNull = not . null
 openEditor :: String -> String -> IO ()
 openEditor editor file = shellCmd editor [file] >> return ()
 
--- Is there a more built-in replacement for `tar` that wouldn't be
--- required as a listed dependency in the PKGBUILD?
-uncompress :: FilePath -> IO FilePath
-uncompress file = do
+decompress :: FilePath -> IO FilePath
+decompress file = do
   _ <- quietShellCmd' "bsdtar" ["-zxvf",file]
   return $ dropExtensions file
 
@@ -148,10 +141,6 @@ postPad xs x len = take len $ xs ++ repeat x
 prePad :: [a] -> a -> Int -> [a]
 prePad xs x len = take (len - length xs) (repeat x) ++ xs
 
+-- Perform an action within a given directory.
 inDir :: FilePath -> IO a -> IO a
-inDir dir action = do
-  curr <- getCurrentDirectory
-  setCurrentDirectory dir
-  result <- action
-  setCurrentDirectory curr
-  return result
+inDir dir io = pwd >>= \cur -> cd dir >> io >>= \res -> cd cur >> return res

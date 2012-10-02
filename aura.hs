@@ -4,7 +4,6 @@
 -- Written by Colin Woodbury <colingw@gmail.com>
 
 -- System Libraries
-import System.Directory (getCurrentDirectory, copyFile, removeFile)
 import Data.List ((\\), nub, sort, intersperse, groupBy)
 import System.Environment (getArgs, getEnvironment)
 import System.Console.ANSI (hideCursor, showCursor)
@@ -21,14 +20,14 @@ import Aura.Languages
 import Aura.AurConnection
 import Aura.AuraLib
 import Aura.Pacman
-import Aura.Shell
 import Aura.Flags
 import Aura.Logo
 import Utilities
+import Shell
 import Zero
 
 auraVersion :: String
-auraVersion = "1.0.0.0"
+auraVersion = "1.0.1.0"
 
 main :: IO a
 main = do
@@ -232,7 +231,7 @@ displayPkgDeps ss pkgs =
 -- TODO: Fix to use `aurInfoLookup`
 downloadTarballs :: Settings -> [String] -> IO ExitCode
 downloadTarballs ss pkgs = do
-  currDir <- getCurrentDirectory
+  currDir <- pwd
   mapAURPkgs (downloadTBall currDir) ss pkgs
       where downloadTBall path pkg = do
               notify ss $ flip downloadTarballsMsg1 pkg
@@ -318,7 +317,7 @@ copyAndNotify _ _ [] _              = returnSuccess
 copyAndNotify settings dir (p:ps) n = do
   putStr $ raiseCursorBy 1
   warn settings (flip copyAndNotifyMsg1 n)
-  copyFile (cachePath </> p) (dir </> p)
+  cp (cachePath </> p) (dir </> p)
   copyAndNotify settings dir ps $ n + 1
       where cachePath = cachePathOf settings
 
@@ -346,7 +345,7 @@ cleanCache ss toSave
              let grouped = map (take toSave . reverse) $ groupByPkgName cache
                  toRemove  = cache \\ concat grouped
                  filePaths = map (cachePathOf ss </>) toRemove
-             mapM_ removeFile filePaths  -- Error handling?
+             mapM_ rm filePaths  -- Error handling?
              returnSuccess
 
 -- Typically takes the contents of the package cache as an argument.

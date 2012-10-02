@@ -4,7 +4,6 @@
 module Aura.AuraLib where
 
 -- System Libraries
-import System.Directory (renameFile, getCurrentDirectory, setCurrentDirectory)
 import Control.Monad (filterM, liftM, when, unless)
 import Data.List ((\\), nub, sortBy, intersperse)
 import System.FilePath ((</>), takeFileName)
@@ -19,8 +18,8 @@ import Aura.AurConnection
 import Aura.Internet
 import Aura.MakePkg
 import Aura.Pacman
-import Aura.Shell
 import Utilities
+import Shell
 import Zero
 
 -- For build and package conflict errors.
@@ -237,7 +236,7 @@ buildPackages' settings builtPs pkgs@(p:ps) = do
 -- Perform the actual build. Fails elegantly when build fails occur.
 build :: Settings -> AURPkg -> IO (Either ErrMsg FilePath)
 build settings pkg = do
-  currDir <- getCurrentDirectory
+  currDir <- pwd
   getSourceCode (pkgNameOf pkg) user currDir
   checkHotEdit settings $ pkgNameOf pkg
   (exitStatus,pkgName,output) <- makepkg' user
@@ -245,7 +244,7 @@ build settings pkg = do
      then return $ Left output
      else do
        path <- moveToCache (cachePathOf settings) pkgName
-       setCurrentDirectory currDir
+       cd currDir
        return $ Right path
     where makepkg'   = if toSuppress then makepkgQuiet else makepkgVerbose
           toSuppress = suppressMakepkg settings
@@ -255,9 +254,9 @@ getSourceCode :: String -> String -> FilePath -> IO ()
 getSourceCode pkgName user currDir = do
   chown user currDir []
   tarball   <- downloadSource currDir pkgName
-  sourceDir <- uncompress tarball
+  sourceDir <- decompress tarball
   chown user sourceDir ["-R"]
-  setCurrentDirectory sourceDir
+  cd sourceDir
 
 -- Allow the user to edit the PKGBUILD if they asked to do so.
 checkHotEdit :: Settings -> String -> IO ()
@@ -290,7 +289,7 @@ displayBuildErrors settings errors = do
 
 -- Moves a file to the pacman package cache and returns its location.
 moveToCache :: FilePath -> FilePath -> IO FilePath
-moveToCache cachePath pkg = renameFile pkg newName >> return newName
+moveToCache cachePath pkg = mv pkg newName >> return newName
     where newName = cachePath </> pkg
 
 -- Returns either a list of error message or the deps to be installed.

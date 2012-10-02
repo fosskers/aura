@@ -8,8 +8,8 @@ import Control.Concurrent (threadDelay)
 import System.IO (stdout, hFlush)
 
 -- Custom Libraries
-import Aura.Shell (yellow)
 import Utilities (prePad)
+import Shell (yellow)
 
 data MouthState = Open | Closed deriving (Eq)
 

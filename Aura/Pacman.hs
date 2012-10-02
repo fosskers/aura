@@ -4,7 +4,6 @@
 module Aura.Pacman where
 
 -- System Libraries
-import System.Directory (getDirectoryContents)
 import System.Exit (ExitCode(..))
 import System.IO (hFlush, stdout)
 import Text.Regex.Posix ((=~))
@@ -12,7 +11,7 @@ import Control.Monad (liftM)
 
 -- Custom Libraries
 import Utilities 
-import Aura.Shell
+import Shell
 
 type Arg = String
 
@@ -52,7 +51,7 @@ syncDatabase pacOpts = pacman $ ["-Sy"] ++ pacOpts
 
 -- This takes the filepath of the package cache as an argument.
 packageCacheContents :: FilePath -> IO [String]
-packageCacheContents c = filter dots `liftM` getDirectoryContents c
+packageCacheContents c = filter dots `liftM` ls c
     where dots p = p `notElem` [".",".."]
 
 getPacmanConf :: IO String

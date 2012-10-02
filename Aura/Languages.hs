@@ -10,7 +10,7 @@ module Aura.Languages where
 
 import Data.Maybe (fromJust)
 
-import Aura.Shell (cyan, yellow, green, red, blue)
+import Shell (cyan, yellow, green, red, blue)
 
 data Language = English
               | Japanese

@@ -5,7 +5,7 @@ import System.Console.GetOpt
 
 -- Custom Libraries
 import Utilities (notNull)
-import Aura.Shell (yellow)
+import Shell (yellow)
 import Aura.Languages
 
 type FlagMap = [(Flag,String)]
