@@ -4,6 +4,7 @@
 Chris "Kwpolska" Warrick (Polish)
 Denis Kasak (Croatian)
 Fredrik Haikarainen (Swedish)
+Alejandro Gómez (Spanish)
 -}
 
 module AuraLanguages where
@@ -18,6 +19,7 @@ data Language = English
               | Croatian
               | Swedish
               | German
+              | Spanish
                 deriving (Eq,Enum,Show)
 
 translatorsAndLangs :: [(Language,[String])]
@@ -28,32 +30,44 @@ translators = [ [ "Aura Translators:"  --English
                 , " Chris \"Kwpolska\" Warrick (Polish)"
                 , " Denis Kasak (Croatian)"
                 , " Fredrik Haikarainen (Swedish)"
-                , " Lukas Niederbremer (German)" ]
+                , " Lukas Niederbremer (German)"
+                , " Alejandro Gómez (Spanish)" ]
               , [ "Auraの翻訳者："  -- Japanese
                 , "クリッス \"Kwpolska\" ヲーリック（ポーランド語）"
                 , "デニス・カサック（クロアチア語）"
                 , "フレドリック・ハイカライネン（スウェーデン語）"
-                , "ルークNiederbremer（ドイツ語）" ]  -- google translated, not sure :)
+                , "ルークNiederbremer（ドイツ語）"  -- google translated, not sure :)
+                , "アレハンドロ·ゴメス（スペイン語）" ]
               , [ "Tłumacze Aury:"  -- Polish
                 , " Chris \"Kwpolska\" Warrick (polski)"
                 , " Denis Kasak (chorwacki)"
                 , " Fredrik Haikarainen (szwedzki)"
-                , " Lukas Niederbremer (niemiecki)" ]
+                , " Lukas Niederbremer (niemiecki)"
+                , " Alejandro Gómez (hiszpański)" ]
               , [ "Aura Prevoditelji:"  -- Croatian
                 , " Chris \"Kwpolska\" Warrick (poljski)"
                 , " Denis Kasak (hrvatski)"
                 , " Fredrik Haikarainen (švedski)"
-                , " Lukas Niederbremer (njemački)" ]
+                , " Lukas Niederbremer (njemački)"
+                , " Alejandro Gómez (španjolski)" ]
               , [ "Aura Översättare:"   -- Swedish
                 , " Chris \"Kwpolska\" Warrick (polska)"
                 , " Denis Kasak (kroatiska)"
                 , " Fredrik Haikarainen (svenska)"
-                , " Lukas Niederbremer (tyska)" ]
+                , " Lukas Niederbremer (tyska)"
+                , " Alejandro Gómez (spanska)" ]
               , [ "Aura Übersetzer:"  -- German
                 , " Chris \"Kwpolska\" Warrick (Polnisch)"
                 , " Denis Kasak (Kroatisch)"
                 , " Fredrik Haikarainen (Schwedisch)"
-                , " Lukas Niederbremer (Deutsch)" ]
+                , " Lukas Niederbremer (Deutsch)"
+                , " Alejandro Gómez (Spanisch)" ]
+              , [ "Traductores de Aura:"  -- Spanish
+                , " Chris \"Kwpolska\" Warrick (Polaco)"
+                , " Denis Kasak (Croata)"
+                , " Fredrik Haikarainen (Sueco)"
+                , " Lukas Niederbremer (Alemán)"
+                , " Alejandro Gómez (Español)" ]
               ]
 
 allLanguages :: [Language]
@@ -77,6 +91,9 @@ swedish = Swedish
 german :: Language
 german = German
 
+spanish :: Language
+spanish = Spanish
+
 -- Wrap a String in backticks
 bt :: String -> String
 bt cs = "`" ++ cyan cs ++ "`"
@@ -96,6 +113,7 @@ mustBeRootMsg1 Polish   = "Musisz użyć " ++ bt "sudo" ++ ", żeby to zrobić."
 mustBeRootMsg1 Croatian = "Morate koristiti" ++ bt "sudo" ++ "za ovu radnju."
 mustBeRootMsg1 Swedish  = "Du måste använda " ++ bt "sudo" ++ " för det."
 mustBeRootMsg1 German   = "Sie müssen dafür " ++ bt "sudo" ++ " benutzen."
+mustBeRootMsg1 Spanish  = "Tienes que utilizar " ++ bt "sudo" ++ " para eso."
 
 buildPackagesMsg1 :: Language -> String -> String
 buildPackagesMsg1 English  p = "Building " ++ bt p ++ "..."
@@ -104,6 +122,7 @@ buildPackagesMsg1 Polish   p = "Budowanie " ++ bt p ++ "..."
 buildPackagesMsg1 Croatian p = "Gradim " ++ bt p ++ "..."
 buildPackagesMsg1 Swedish  p = "Bygger paket " ++ bt p ++ "..."
 buildPackagesMsg1 German   p = "Baue Paket " ++ bt p ++ "..."
+buildPackagesMsg1 Spanish  p = "Construyendo " ++ bt p ++ "..."
 
 checkHotEditMsg1 :: Language -> String -> String
 checkHotEditMsg1 English  p =
@@ -114,6 +133,8 @@ checkHotEditMsg1 Croatian p = "Želite li izmjeniti PKGBUILD " ++ bt p ++ "?"
 checkHotEditMsg1 Swedish  p = "Vill du ändra PKGBUILD-filen ifrån " ++ bt p ++ "?"
 checkHotEditMsg1 German   p =
     "Möchten Sie die PKGBUILD-Datei für " ++ bt p ++ " bearbeiten?"
+checkHotEditMsg1 Spanish p =
+    "¿Te gustaría editar el PKGBUILD de " ++ bt p ++ "?"
 
 buildFailMsg1 :: Language -> String -> String
 buildFailMsg1 English  p = "Well, building " ++ bt p ++ " failed."
@@ -123,6 +144,7 @@ buildFailMsg1 Polish   p =
 buildFailMsg1 Croatian p = "Izgradnja " ++ bt p ++ " nije uspjela."
 buildFailMsg1 Swedish  p = "Det gick inte att bygga paketet " ++ bt p ++ "."
 buildFailMsg1 German   p = "Bauen von " ++ bt p ++ " ist fehlgeschlagen."
+buildFailMsg1 Spanish  p = "La construcción de " ++ bt p ++ " ha fallado."
 
 buildFailMsg2 :: Language -> String
 buildFailMsg2 English  = "Also, the following weren’t built:"
@@ -132,6 +154,7 @@ buildFailMsg2 Polish   =
 buildFailMsg2 Croatian = "Dodatno, ni sljedeće nije izgrađeno:"
 buildFailMsg2 Swedish  = "Det gick heller inte att bygga följande paket:"
 buildFailMsg2 German   = "Die folgenden Pakete wurden zusätzlich nicht gebaut:"
+buildFailMsg2 Spanish  = "Los siguientes paquetes no se han construido:"
 
 buildFailMsg3 :: Language -> String
 buildFailMsg3 English  = "However, these packages were successfully built:"
@@ -140,6 +163,7 @@ buildFailMsg3 Polish   = "Następujące pakiety zostały zbudowane pomyślnie:"
 buildFailMsg3 Croatian = "Neki paketi su možda izgrađeni uspješno."
 buildFailMsg3 Swedish  = "Vissa paket kanske har byggts ordentligt (Osäker)."
 buildFailMsg3 German   = "Diese Pakete wurden wiederrum erfolgreich gebaut:"
+buildFailMsg3 Spanish  = "Sin embargo, los siguientes paquetes se han construido:"
 
 buildFailMsg4 :: Language -> String
 buildFailMsg4 English  = "Would you like to install them?"
@@ -148,6 +172,7 @@ buildFailMsg4 Polish   = "Czy chcesz je zainstalować?"
 buildFailMsg4 Croatian = "Želite li ih instalirati?"
 buildFailMsg4 Swedish  = "Vill du installera dem?"
 buildFailMsg4 German   = "Möchten sie diese installieren?"
+buildFailMsg4 Spanish  = "¿Te gustaría instalarlos?"
 
 displayBuildErrorsMsg1 :: Language -> String
 displayBuildErrorsMsg1 English  = "Dumping makepkg output in "
@@ -156,6 +181,7 @@ displayBuildErrorsMsg1 Polish   = "Wyjście makepkg zostanie wypisane za "
 displayBuildErrorsMsg1 Croatian = "Zapisujem makepkg ispis u "
 displayBuildErrorsMsg1 Swedish  = "Dumpar makepkgs utskrift i "
 displayBuildErrorsMsg1 German   = "Schreibe makepkg Ausgabe in "
+displayBuildErrorsMsg1 Spanish  = "Volcando la salida de makepkg en "
 
 getDepsToInstallMsg1 :: Language -> String
 getDepsToInstallMsg1 English  = "No AUR packages specified for install."
@@ -165,6 +191,7 @@ getDepsToInstallMsg1 Croatian =
     "Nijedan AUR paket nije specificiran za instalaciju."
 getDepsToInstallMsg1 Swedish  = "Inga AUR-paket är valda för installation."
 getDepsToInstallMsg1 German   = "Keine AUR Pakete zur Installation vermerkt."
+getDepsToInstallMsg1 Spanish  = "No se han especificado paquetes de AUR para instalar."
 
 getRealPkgConflictsMsg1 :: Language -> String -> String -> String -> String
 getRealPkgConflictsMsg1 English name rec req =
@@ -185,6 +212,9 @@ getRealPkgConflictsMsg1 Swedish name rec req =
 getRealPkgConflictsMsg1 German name rec req =
     "Die Abhängigkeit " ++ bt name ++ " verlangt Version " ++ bt req ++ ",\n" ++
     "aber die neuste Version ist " ++ bt rec ++ "."
+getRealPkgConflictsMsg1 Spanish name rec req =
+    "La dependencia " ++ bt name ++ " requiere la versión " ++ bt req ++ ",\n" ++
+    "pero la versión más reciente es " ++ bt rec ++ "."
 
 getRealPkgConflictsMsg2 :: Language -> String -> String
 getRealPkgConflictsMsg2 English  p =
@@ -199,6 +229,8 @@ getRealPkgConflictsMsg2 Swedish  p =
     bt p ++ " är ett ignorerat paket! Kolla din `pacman.conf`-fil."
 getRealPkgConflictsMsg2 German   p =
     bt p ++ " ist ein ignoriertes Paket! Siehe /etc/pacman.conf."
+getRealPkgConflictsMsg2 Spanish  p =
+    "¡" ++ bt p ++ " es un paquete ignorado! Revisa tu fichero `pacman.conf`."
 
 getVirtualConflictsMsg1 :: Language -> String -> String
 getVirtualConflictsMsg1 English  p =
@@ -213,6 +245,8 @@ getVirtualConflictsMsg1 Swedish  p =
     bt p ++ " existerar varken som ett paket eller som ett tillhandahållet av ett annat!"
 getVirtualConflictsMsg1 German   p =
     bt p ++ " existiert nicht als Paket oder als Bereitstellung eines anderen!"
+getVirtualConflictsMsg1 Spanish  p =
+    "¡" ++ bt p ++ " no existe como paquete ni es provisto por ninguno!"
 
 getVirtualConflictsMsg2 :: Language -> String -> String -> String
 getVirtualConflictsMsg2 English p pro =
@@ -233,6 +267,9 @@ getVirtualConflictsMsg2 Swedish p pro =
 getVirtualConflictsMsg2 German  p pro =
     bt pro ++ " stellt " ++ bt p ++ " bereit, aber " ++ bt pro ++
     " ist ein ignoriertes Paket."
+getVirtualConflictsMsg2 Spanish p pro =
+    bt pro ++ " provee " ++ bt p ++ ", pero " ++ bt pro ++
+    " es un paquete ignorado."
 
 -- Fix this up. Inconsistent variable names too.
 getVirtualConflictsMsg3 :: Language -> String -> String -> String -> String ->
@@ -257,6 +294,9 @@ getVirtualConflictsMsg3 Swedish d dVer pro proVer =
 getVirtualConflictsMsg3 German d dVer pro proVer =
     "Die Abhängigkeit " ++ bt d ++ " verlangt Version " ++ bt dVer ++
     " aber dessen bereitstellendes Paket " ++ bt pro ++ " gibt Version " ++ bt proVer
+getVirtualConflictsMsg3 Spanish d dVer pro proVer =
+    "La dependencia " ++ bt d ++ " requiere la versión " ++ bt dVer ++
+    " pero el paquete " ++ bt pro ++ ", que la provee, da la versión " ++ bt proVer
 
 -----------------
 -- aura functions
@@ -268,6 +308,7 @@ executeOptsMsg1 Polish   = "Niektóre flagi są w konflikcie ze sobą!"
 executeOptsMsg1 Croatian = "Predane zastavice su konfliktne!"
 executeOptsMsg1 Swedish  = "Givna flaggor är i konflikt!"
 executeOptsMsg1 German   = "Gegebene Kommandozeilenflags sind widersprüchlich!"
+executeOptsMsg1 Spanish  = "¡Flags contradictorios!"
 
 -- Packages should not be built if the user is logged in as root!
 trueRootCheckMsg1 :: Language -> String
@@ -283,6 +324,8 @@ trueRootCheckMsg1 Swedish  =
     "Det är starkt rekommenderat att INTE vara inloggad som root när man bygger paket. Vill du fortsätta ändå?"
 trueRootCheckMsg1 German   =
     "Sie sollten niemals Pakete als der echte root Nutzer bauen. Sind sie sicher, dass Sie dies tun wollen?"
+trueRootCheckMsg1 Spanish =
+    "Nunca deberías construir paquetes como root real. ¿Estás de acuerdo con esto?"
 
 -- This is for when the user decides to refrain from building afterall.
 trueRootCheckMsg2 :: Language -> String
@@ -292,6 +335,7 @@ trueRootCheckMsg2 Polish   = "Postąpiłeś słusznie."
 trueRootCheckMsg2 Croatian = "Učinili ste Ispravnu Stvar."
 trueRootCheckMsg2 Swedish  = "Phew."
 trueRootCheckMsg2 German   = "Eine weise Entscheidung."
+trueRootCheckMsg2 Spanish  = "Has tomado la decision correcta."
 
 installPackagesMsg1 :: Language -> String
 installPackagesMsg1 English  = "Dependency checking failed for these reasons:"
@@ -302,6 +346,7 @@ installPackagesMsg1 Croatian =
     "Provjera zavisnosti nije uspjela iz sljedećih razloga:"
 installPackagesMsg1 Swedish  = "Beroende-kollen misslyckades pga följande skäl:"
 installPackagesMsg1 German   = "Abhängigkeitsüberprüfung schlug Fehl aus folgenden Gründen:"
+installPackagesMsg1 Spanish  = "La comprobación de dependencias falló por los siguientes motivos:"
 
 installPackagesMsg2 :: Language -> String
 installPackagesMsg2 English  = "No valid packages specified."
@@ -310,6 +355,7 @@ installPackagesMsg2 Polish   = "Nie podano prawidłowych pakietów."
 installPackagesMsg2 Croatian = "Nije specificiran nijedan ispravan paket."
 installPackagesMsg2 Swedish  = "Inga giltiga paket valda."
 installPackagesMsg2 German   = "Keine gültigen Pakete angegeben."
+installPackagesMsg2 Spanish  = "No se ha especificado ningún paquete válido."
 
 installPackagesMsg3 :: Language -> String
 installPackagesMsg3 English  = "Continue?"
@@ -318,6 +364,7 @@ installPackagesMsg3 Polish   = "Kontynuować?"
 installPackagesMsg3 Croatian = "Nastavi?"
 installPackagesMsg3 Swedish  = "Fortsätta?"
 installPackagesMsg3 German   = "Fortsetzen?"
+installPackagesMsg3 Spanish  = "¿Continuar?"
 
 installPackagesMsg4 :: Language -> String
 installPackagesMsg4 English  = "Installation manually aborted."
@@ -328,6 +375,7 @@ installPackagesMsg4 Croatian =
     "Instalacija prekinuta od strane korisnika."
 installPackagesMsg4 Swedish  = "Installationen avbröts manuellt."
 installPackagesMsg4 German   = "Installation durch Benutzer abgebrochen."
+installPackagesMsg4 Spanish  = "Instalación abortada manualmente."
 
 installPackagesMsg5 :: Language -> String
 installPackagesMsg5 English  = "Determining dependencies..."
@@ -336,6 +384,7 @@ installPackagesMsg5 Polish   = "Ustalanie zależności..."
 installPackagesMsg5 Croatian = "Određivanje zavisnosti..."
 installPackagesMsg5 Swedish  = "Avgör beroenden..."
 installPackagesMsg5 German   = "Bestimme Abhängigkeiten..."
+installPackagesMsg5 Spanish  = "Determinando dependencias..."
 
 installPackagesMsg6 :: Language -> String
 installPackagesMsg6 English  = "Building failed."
@@ -344,6 +393,7 @@ installPackagesMsg6 Polish   = "Budowanie nie powiodło się."
 installPackagesMsg6 Croatian = "Izgradnja nije uspjela."
 installPackagesMsg6 Swedish  = "Gick inte att bygga paket."
 installPackagesMsg6 German   = "Bauen fehlgeschlagen."
+installPackagesMsg6 Spanish  = "La construcción falló."
 
 reportNonPackagesMsg1 :: Language -> String
 reportNonPackagesMsg1 English  = "The following are not packages:"
@@ -352,6 +402,7 @@ reportNonPackagesMsg1 Polish   = "To nie są pakiety:"
 reportNonPackagesMsg1 Croatian = "Ovo nisu paketi:"
 reportNonPackagesMsg1 Swedish  = "Följande är inte paket:"
 reportNonPackagesMsg1 German   = "Folgende sind keine Pakete:"
+reportNonPackagesMsg1 Spanish  = "Los siguientes no son paquetes:"
 
 reportIgnoredPackagesMsg1 :: Language -> String
 reportIgnoredPackagesMsg1 English  = "The following packages will be ignored:"
@@ -360,6 +411,7 @@ reportIgnoredPackagesMsg1 Polish   = "Poniższe pakiety zostaną zignorowane:"
 reportIgnoredPackagesMsg1 Croatian = "Sljedeći paketi će biti ignorirani:"
 reportIgnoredPackagesMsg1 Swedish  = "Följande paket kommer att ignoreras: "
 reportIgnoredPackagesMsg1 German   = "Die folgenden Pakete werden ignoriert:"
+reportIgnoredPackagesMsg1 Spanish  = "Los siguientes paquetes serán ignorados:"
 
 reportPkgsToInstallMsg1 :: Language -> String
 reportPkgsToInstallMsg1 English  = "Repository dependencies:"
@@ -368,6 +420,7 @@ reportPkgsToInstallMsg1 Polish   = "Zależności z repozytoriów:"
 reportPkgsToInstallMsg1 Croatian = "Zavisnosti iz repozitorija:"
 reportPkgsToInstallMsg1 Swedish  = "Beroenden ifrån lager:"
 reportPkgsToInstallMsg1 German   = "Abhängigkeiten in den Paketquellen:"
+reportPkgsToInstallMsg1 Spanish  = "Dependencias en el repositorio:"
 
 reportPkgsToInstallMsg2 :: Language -> String
 reportPkgsToInstallMsg2 English  = "AUR dependencies:"
@@ -376,6 +429,7 @@ reportPkgsToInstallMsg2 Polish   = "Zależności z AUR:"
 reportPkgsToInstallMsg2 Croatian = "Zavisnosti iz AUR-a:"
 reportPkgsToInstallMsg2 Swedish  = "Beroenden ifrån AUR:"
 reportPkgsToInstallMsg2 German   = "Abhängigkeiten im AUR:"
+reportPkgsToInstallMsg2 Spanish  = "Dependencias en AUR:"
 
 reportPkgsToInstallMsg3 :: Language -> String
 reportPkgsToInstallMsg3 English  = "Main AUR packages:"
@@ -384,6 +438,7 @@ reportPkgsToInstallMsg3 Polish   = "Główne pakiety z AUR:"
 reportPkgsToInstallMsg3 Croatian = "Glavni AUR paketi:"
 reportPkgsToInstallMsg3 Swedish  = "Huvudpaket ifrån AUR:"
 reportPkgsToInstallMsg3 German   = "Hauptpaket aus dem AUR:"
+reportPkgsToInstallMsg3 Spanish  = "Paquetes principales de AUR:"
 
 reportPkgsToUpgradeMsg1 :: Language -> String
 reportPkgsToUpgradeMsg1 English  = "AUR Packages to upgrade:"
@@ -392,6 +447,7 @@ reportPkgsToUpgradeMsg1 Polish   = "Pakiety z AUR do zaktualizowania:"
 reportPkgsToUpgradeMsg1 Croatian = "AUR paketi za nadograditi:"
 reportPkgsToUpgradeMsg1 Swedish  = "AUR-paket att uppgradera:"
 reportPkgsToUpgradeMsg1 German   = "Zu aktualisierendes AUR Paket:"
+reportPkgsToUpgradeMsg1 Spanish  = "Paquetes de AUR a actualizar:"
 
 reportBadDowngradePkgsMsg1 :: Language -> String
 reportBadDowngradePkgsMsg1 English  =
@@ -406,6 +462,8 @@ reportBadDowngradePkgsMsg1 Swedish  =
     "Följande paket är inte installerade, och kan därför inte bli nergraderade:"
 reportBadDowngradePkgsMsg1 German   =
     "Folgende Pakete sind nicht installiert und können daher nicht downgraded werden:"
+reportBadDowngradePkgsMsg1 Spanish  =
+    "Los siguientes paquetes no están instalados, por lo que no se pueden retornar a versiones antiguas:"
 
 upgradeAURPkgsMsg1 :: Language -> String
 upgradeAURPkgsMsg1 English  = "Fetching package information..."
@@ -414,6 +472,7 @@ upgradeAURPkgsMsg1 Polish   = "Pobieranie informacji o pakietach..."
 upgradeAURPkgsMsg1 Croatian = "Preuzimanje podataka o paketima..."
 upgradeAURPkgsMsg1 Swedish  = "Hämtar paketinformation..."
 upgradeAURPkgsMsg1 German   = "Rufe Paketinformationen ab..."
+upgradeAURPkgsMsg1 Spanish  = "Obteniendo información de paquetes..."
 
 upgradeAURPkgsMsg2 :: Language -> String
 upgradeAURPkgsMsg2 English  = "Comparing package versions..."
@@ -422,6 +481,7 @@ upgradeAURPkgsMsg2 Polish   = "Porównywanie wersji pakietów..."
 upgradeAURPkgsMsg2 Croatian = "Uspoređivanje verzija paketa..."
 upgradeAURPkgsMsg2 Swedish  = "Jämför paket-versioner..."
 upgradeAURPkgsMsg2 German   = "Vergleiche Paketversionen..."
+upgradeAURPkgsMsg2 Spanish  = "Comparando versiones de paquetes..."
 
 upgradeAURPkgsMsg3 :: Language -> String
 upgradeAURPkgsMsg3 English  = "No AUR package upgrades necessary."
@@ -430,6 +490,7 @@ upgradeAURPkgsMsg3 Polish   = "Nie jest wymagana aktualizacja pakietów z AUR."
 upgradeAURPkgsMsg3 Croatian = "Svi AUR paketi su ažurirani."
 upgradeAURPkgsMsg3 Swedish  = "Inga AUR-paketsuppgraderingar behövs."
 upgradeAURPkgsMsg3 German   = "Keine AUR Paketaktualisierungen notwendig."
+upgradeAURPkgsMsg3 Spanish  = "No ha sido necesario actualizar paquetes de AUR."
 
 downloadTarballsMsg1 :: Language -> String -> String
 downloadTarballsMsg1 English p  =
@@ -444,6 +505,8 @@ downloadTarballsMsg1 Swedish p  =
     "Laddar ner " ++ bt p ++ " källkodspaket (tarball)..."
 downloadTarballsMsg1 German p   =
     "Lade Quelltext von " ++ bt p ++ " (tarball)..."
+downloadTarballsMsg1 Spanish p  =
+    "Descargando los fuentes comprimidos (tarball) de " ++ bt p ++ " ..."
 
 displayPkgbuildMsg1 :: Language -> String -> String
 displayPkgbuildMsg1 English  pkg = bt pkg ++ " does not exist."
@@ -452,6 +515,7 @@ displayPkgbuildMsg1 Polish   pkg = bt pkg ++ " nie istnieje."
 displayPkgbuildMsg1 Croatian pkg = bt pkg ++ " ne postoji."
 displayPkgbuildMsg1 Swedish  pkg = bt pkg ++ " finns inte."
 displayPkgbuildMsg1 German   pkg = bt pkg ++ " existiert nicht."
+displayPkgbuildMsg1 Spanish  pkg = bt pkg ++ " no existe."
 
 removeMakeDepsAfterMsg1 :: Language -> String
 removeMakeDepsAfterMsg1 English  = "Removing unneeded make dependencies..."
@@ -462,6 +526,7 @@ removeMakeDepsAfterMsg1 Croatian =
     "Uklanjanje nepotrebnih zavisnosti vezanih uz izgradnju..."
 removeMakeDepsAfterMsg1 Swedish  = "Tar bort obehövda beroenden för `make`..."
 removeMakeDepsAfterMsg1 German   = "Entferne nicht mehr benötigte make Abhängigkeiten..."
+removeMakeDepsAfterMsg1 Spanish  = "Removiendo dependencias make innecesarias..."
 
 getDowngradeChoiceMsg1 :: Language -> String -> String
 getDowngradeChoiceMsg1 English p =
@@ -476,6 +541,8 @@ getDowngradeChoiceMsg1 Swedish p =
     "Vilken version av " ++ bt p ++ " vill du ha?"
 getDowngradeChoiceMsg1 German p =
     "Welche Version von " ++ bt p ++ " möchten Sie haben?"
+getDowngradeChoiceMsg1 Spanish p =
+    "¿Qué versión de " ++ bt p ++ " quieres?"
 
 backupCacheMsg1 :: Language -> String
 backupCacheMsg1 English  = "No backup location given."
@@ -484,6 +551,7 @@ backupCacheMsg1 Polish   = "Nie podano lokalizacji kopii zapasowych."
 backupCacheMsg1 Croatian = "Lokacija sigurnosne kopije nije specifirana."
 backupCacheMsg1 Swedish  = "Ingen backup-plats specifierad."
 backupCacheMsg1 German   = "Kein Sicherungsort angegeben."
+backupCacheMsg1 Spanish  = "No se ha especificado localización para la copia de seguridad."
 
 backupCacheMsg2 :: Language -> String
 backupCacheMsg2 English  = "You must be root to backup the cache."
@@ -494,6 +562,7 @@ backupCacheMsg2 Croatian =
     "Za stvaranje sigurnosne kopije skladišta potrebne su root ovlasti."
 backupCacheMsg2 Swedish  = "Du måste vara root för att ta backup på cache-filer."
 backupCacheMsg2 German   = "Sie müssen root sein um den Cache zu sichern."
+backupCacheMsg2 Spanish  = "Debes ser root para hacer una copia de seguridad de la caché."
 
 backupCacheMsg3 :: Language -> String
 backupCacheMsg3 English  = "The backup location does not exist."
@@ -502,6 +571,7 @@ backupCacheMsg3 Polish   = "Lokalizacja kopii zapasowych nie istnieje."
 backupCacheMsg3 Croatian = "Lokacija sigurnosne kopije ne postoji."
 backupCacheMsg3 Swedish  = "Specifierad backup-plats finns inte."
 backupCacheMsg3 German   = "Der Sicherungsort existiert nicht."
+backupCacheMsg3 Spanish  = "La localización para copia de seguridad no existe."
 
 backupCacheMsg4 :: Language -> String -> String
 backupCacheMsg4 English  dir = "Backing up cache to " ++ bt dir
@@ -510,6 +580,7 @@ backupCacheMsg4 Polish   dir = "Tworzenie kopii zapasowej pamięci podręcznej w
 backupCacheMsg4 Croatian dir = "Stvaram sigurnosnu kopiju u " ++ bt dir
 backupCacheMsg4 Swedish  dir = "Tar backup på cache-filer till " ++ bt dir
 backupCacheMsg4 German   dir = "Sichere Cache in " ++ bt dir
+backupCacheMsg4 Spanish  dir = "Haciendo una copia de seguridad de la caché en " ++ bt dir
 
 backupCacheMsg5 :: Language -> Int -> String
 backupCacheMsg5 English  n = "Package files to backup: " ++ bt (show n)
@@ -518,6 +589,7 @@ backupCacheMsg5 Polish   n = "Pliki będące częścią kopii zapasowej: " ++ b
 backupCacheMsg5 Croatian n = "Datoteke koje su dio sigurnosne kopije: " ++ bt (show n)
 backupCacheMsg5 Swedish  n = "Paket-filer att ta backup på: " ++ bt (show n)
 backupCacheMsg5 German   n = "Zu sichernde Paketdateien: " ++ bt (show n)
+backupCacheMsg5 Spanish  n = "Ficheros de paquetes de los que se hará copia de seguridad: " ++ bt (show n)
 
 backupCacheMsg6 :: Language -> String
 backupCacheMsg6 English  = "Proceed with backup?"
@@ -526,6 +598,7 @@ backupCacheMsg6 Polish   = "Kontynuować tworzenie kopii zapasowej?"
 backupCacheMsg6 Croatian = "Nastavi sa stvaranjem sigurnosne kopije?"
 backupCacheMsg6 Swedish  = "Fortsätt med backup?"
 backupCacheMsg6 German   = "Sicherung fortsetzen?"
+backupCacheMsg6 Spanish  = "¿Proceder con la copia de seguridad?"
 
 backupCacheMsg7 :: Language -> String
 backupCacheMsg7 English  = "Backup manually aborted."
@@ -536,6 +609,7 @@ backupCacheMsg7 Croatian =
     "Stvaranje sigurnosne kopije prekinuto od strane korisnika."
 backupCacheMsg7 Swedish  = "Backup avbröts manuellt."
 backupCacheMsg7 German   = "Backup durch Benutzer abgebrochen."
+backupCacheMsg7 Spanish  = "Copia de seguridad abortada manualmente."
 
 backupCacheMsg8 :: Language -> String
 backupCacheMsg8 English  = "Backing up. This may take a few minutes..."
@@ -544,6 +618,7 @@ backupCacheMsg8 Polish   = "Tworzenie kopii zapasowej. To może potrwać kilka m
 backupCacheMsg8 Croatian = "Stvaranje sigurnosne kopije. Ovo može potrajati nekoliko minuta..."
 backupCacheMsg8 Swedish  = "Tar backup. Det här kan ta ett tag..."
 backupCacheMsg8 German   = "Sichere. Dies kann ein paar Minuten dauern..."
+backupCacheMsg8 Spanish  = "Haciendo copia de seguridad. Esto puede tardar unos minutos..."
 
 
 copyAndNotifyMsg1 :: Language -> Int -> String
@@ -553,6 +628,7 @@ copyAndNotifyMsg1 Polish   n = "Kopiowanie #[" ++ cyan (show n) ++ "]"
 copyAndNotifyMsg1 Croatian n = "Kopiranje #[" ++ cyan (show n) ++ "]"
 copyAndNotifyMsg1 Swedish  n = "Kopierar #[" ++ cyan (show n) ++ "]"
 copyAndNotifyMsg1 German   n = "Kopiere #[" ++ cyan (show n) ++ "]"
+copyAndNotifyMsg1 Spanish  n = "Copiando #[" ++ cyan (show n) ++ "]"
 
 preCleanCacheMsg1 :: Language -> String -> String
 preCleanCacheMsg1 English  n = bt n ++ " is not a number."
@@ -561,6 +637,7 @@ preCleanCacheMsg1 Polish   n = bt n ++ " nie jest liczbą."
 preCleanCacheMsg1 Croatian n = bt n ++ " nije broj. "
 preCleanCacheMsg1 Swedish  n = bt n ++ " är inte ett nummer."
 preCleanCacheMsg1 German   n = bt n ++ " ist keine Nummer."
+preCleanCacheMsg1 Spanish  n = bt n ++ " no es un número."
 
 cleanCacheMsg1 :: Language -> String
 cleanCacheMsg1 English  = "Invalid number given."
@@ -569,6 +646,7 @@ cleanCacheMsg1 Polish   = "Nieprawidłowa liczba."
 cleanCacheMsg1 Croatian = "Pogrešan broj."
 cleanCacheMsg1 Swedish  = "Ogiltigt nummer specifierat."
 cleanCacheMsg1 German   = "Ungültige Nummer gegeben."
+cleanCacheMsg1 Spanish  = "Número inválido."
 
 cleanCacheMsg2 :: Language -> String
 cleanCacheMsg2 English  = "This will delete the ENTIRE package cache."
@@ -577,6 +655,7 @@ cleanCacheMsg2 Polish   = "To usunie WSZYSTKIE pakiety z pamięci podręcznej."
 cleanCacheMsg2 Croatian = "Ovo će izbrisati CIJELO skladište paketa."
 cleanCacheMsg2 Swedish  = "Detta kommer ta bort HELA paket-cachen."
 cleanCacheMsg2 German   = "Das wird den GESAMTEN Paketcache leeren."
+cleanCacheMsg2 Spanish  = "Esto eliminará POR COMPLETO la caché de paquetes."
 
 cleanCacheMsg3 :: Language -> Int -> String
 cleanCacheMsg3 English  n = bt (show n) ++ " of each package file will be kept."
@@ -587,6 +666,7 @@ cleanCacheMsg3 Polish   n =
 cleanCacheMsg3 Croatian n = bt (show n) ++ " zadnjih verzija svakog paketa će biti zadržano."
 cleanCacheMsg3 Swedish  n = bt (show n) ++ " av varje paketfil kommer att sparas."
 cleanCacheMsg3 German   n = bt (show n) ++ " jeder Paketdatei wird behalten."
+cleanCacheMsg3 Spanish  n = bt (show n) ++ " ficheros de cada paquete se mantendrán."
 
 cleanCacheMsg4 :: Language -> String
 cleanCacheMsg4 English  = "The rest will be deleted. Okay?"
@@ -596,6 +676,7 @@ cleanCacheMsg4 Croatian =
     "Ostali paketi će biti izbrisani iz skladišta. Jeste li sigurni?"
 cleanCacheMsg4 Swedish  = "Resten kommer att tas bort. Är det OK?"
 cleanCacheMsg4 German   = "Der Rest wird gelöscht. Ist das OK?"
+cleanCacheMsg4 Spanish  = "El resto se eliminará. ¿OK?"
 
 cleanCacheMsg5 :: Language -> String
 cleanCacheMsg5 English  = "Cache cleaning manually aborted."
@@ -606,6 +687,7 @@ cleanCacheMsg5 Croatian =
     "Čišćenje skladišta paketa prekinuto od strane korisnika."
 cleanCacheMsg5 Swedish  = "Cache-rensning avbröts manuellt."
 cleanCacheMsg5 German   = "Säubern des Caches durch Benutzer abgebrochen."
+cleanCacheMsg5 Spanish  = "Limpieza de la caché abortada manualmente."
 
 cleanCacheMsg6 :: Language -> String
 cleanCacheMsg6 English  = "Cleaning package cache..."
@@ -614,6 +696,7 @@ cleanCacheMsg6 Polish   = "Czyszczenie pamięci podręcznej..."
 cleanCacheMsg6 Croatian = "Čišćenje skladišta paketa..."
 cleanCacheMsg6 Swedish  = "Rensar paket-cache..."
 cleanCacheMsg6 German   = "Säubere Paketcache..."
+cleanCacheMsg6 Spanish  = "Limpiando la caché de paquetes..."
 
 -- The next four strings need proper alignment, IMO.  --Kw
 
@@ -624,6 +707,7 @@ logLookUpMsg1 Polish   p = yellow "Pakiet"      ++ "        : " ++ p
 logLookUpMsg1 Croatian p = yellow "Paket"       ++ "        : " ++ p
 logLookUpMsg1 Swedish  p = yellow "Paket"       ++ "        : " ++ p
 logLookUpMsg1 German   p = yellow "Paket"       ++ "        : " ++ p
+logLookUpMsg1 Spanish  p = yellow "Paquete "    ++ "        : " ++ p
 
 logLookUpMsg2 :: Language -> String -> String
 logLookUpMsg2 English  d = yellow "First Install"        ++ "  : " ++ d
@@ -632,6 +716,7 @@ logLookUpMsg2 Polish   d = yellow "Pierwsza instalacja"  ++ "  : " ++ d
 logLookUpMsg2 Croatian d = yellow "Prva instalacija"     ++ "  : " ++ d
 logLookUpMsg2 Swedish  d = yellow "Första installation"  ++ "  : " ++ d
 logLookUpMsg2 German   d = yellow "Erste Installation"   ++ "  : " ++ d
+logLookUpMsg2 Spanish  d = yellow "Primera instalación"  ++ "  : " ++ d
 
 logLookUpMsg3 :: Language -> Int -> String
 logLookUpMsg3 English upgrades  =
@@ -646,6 +731,8 @@ logLookUpMsg3 Swedish upgrades  =
     yellow "Uppgraderingar" ++ "   : " ++ show upgrades
 logLookUpMsg3 German upgrades =
     yellow "Aktualisierungen" ++ " : " ++ show upgrades
+logLookUpMsg3 Spanish upgrades  =
+    yellow "Actualizaciones " ++ "       : " ++ show upgrades
 
 logLookUpMsg4 :: Language -> String
 logLookUpMsg4 English  = yellow "Recent Actions" ++ " :"
@@ -654,6 +741,7 @@ logLookUpMsg4 Polish   = yellow "Ostatnie akcje" ++ " :"
 logLookUpMsg4 Croatian = yellow "Nedavne radnje" ++ " :"
 logLookUpMsg4 Swedish  = yellow "Nyliga händelser" ++ " :"
 logLookUpMsg4 German   = yellow "Letzte Aktionen"  ++ "  :"
+logLookUpMsg4 Spanish  = yellow "Acciones Recientes" ++ " :"
 
 reportNotInLogMsg1 :: Language -> String
 reportNotInLogMsg1 English  = "These have not appeared in the log file:"
@@ -662,6 +750,7 @@ reportNotInLogMsg1 Polish   = "Tych pakietów nie ma w dzienniku:"
 reportNotInLogMsg1 Croatian = "Ovih paketa nema u dnevniku:"
 reportNotInLogMsg1 Swedish  = "Dessa har inte framkommit i loggfiler:"
 reportNotInLogMsg1 German   = "Diese sind nicht in der Logdatei aufgetaucht:"
+reportNotInLogMsg1 Spanish  = "Estos no aparecen en el fichero log:"
 
 manpageMsg :: Language -> String
 manpageMsg English  = "See the aura man page for aura option details."
@@ -671,6 +760,7 @@ manpageMsg Polish   =
 manpageMsg Croatian = "Pogledajte Aura man stranicu za detalje o opcijama."
 manpageMsg Swedish  = "Hänvisa till auras `man`-sida för detaljerade alternativ."
 manpageMsg German   = "Lesen Sie die aura man-Seite für Details zu aura Optionen."
+manpageMsg Spanish  = "Lee la página de manual de aura para detalles sobre las opciones."
 
 displayOutputLanguagesMsg1 :: Language -> String
 displayOutputLanguagesMsg1 English  = "The following languages are available:"
@@ -679,6 +769,7 @@ displayOutputLanguagesMsg1 Polish   = "Następujące języki są dostępne:"
 displayOutputLanguagesMsg1 Croatian = "Dostupni su sljedeći jezici:"
 displayOutputLanguagesMsg1 Swedish  = "Följande språk är tillängliga:"
 displayOutputLanguagesMsg1 German   = "Die folgenden Sprachen sind verfügbar:"
+displayOutputLanguagesMsg1 Spanish  = "Los siguientes idiomas están disponibles:"
 
 -- The `lookup` will never fail.
 translatorMsg :: Language -> [String]
@@ -694,6 +785,7 @@ inheritedOperTitle Polish   = "Operacje z Pacmana"
 inheritedOperTitle Croatian = "Pacman operacije"
 inheritedOperTitle Swedish  = "Ärvda pacman-operationer"
 inheritedOperTitle German   = "Von Pacman geerbte Operationen"
+inheritedOperTitle Spanish  = "Operaciones Heredadas de Pacman"
 
 auraOperTitle :: Language -> String
 auraOperTitle English  = "Aura Only Operations:"
@@ -702,6 +794,7 @@ auraOperTitle Polish   = "Operacje Aury:"
 auraOperTitle Croatian = "Aura operacije:"
 auraOperTitle Swedish  = "Aura-specifika operationer:"
 auraOperTitle German   = "Aura-spezifische Operationen:"
+auraOperTitle Spanish  = "Operaciones Exclusivas de Aura:"
 
 aurSy :: Language -> String
 aurSy English  = green "Perform actions involving the [A]UR.\n" ++
@@ -716,6 +809,8 @@ aurSy Swedish  = green "Utför åtgärder involverandes [A]UR.\n" ++
                  "Standard-åtgärd installerar ifrån AUR."
 aurSy German   = green "Führe Aktionen aus die das [A]UR betreffen.\n" ++
                  "Standardaktion installiert aus dem AUR."
+aurSy Spanish  = green "Realizar acciones relacionadas con el [A]UR.\n" ++
+                 "La acción por defecto es instalar desde AUR."
 
 downG :: Language -> String
 downG English  = red "Perform actions involving the package [C]ache.\n" ++
@@ -732,6 +827,8 @@ downG Swedish  = red "Utför åtgärder involverandes paket-[C]ache.\n" ++
                  "Standard-åtgärd nergraderar valda paket."
 downG German   = red "Führe Aktionen aus die den Paket[C]ache betreffen.\n" ++
                  "Standardaktion downgradet gegebene Pakete."
+downG English  = red "Realizar acciones relacionadas con la [C]aché.\n" ++
+                 "La acción por defecto es retornar a versiones antiguas de los paquetes especificados."
 
 viewL :: Language -> String
 viewL English  = cyan "Perform actions involving the pacman [L]ogfile.\n" ++
@@ -748,6 +845,8 @@ viewL Swedish  = cyan "Utför åtgärder involverandes pacmans [L]ogfil.\n" ++
                  "Standard-åtgärd öppnar loggen med read-only-attribut."
 viewL German   = cyan "Führe Aktionen aus die die Pacman [L]ogdatei betreffen.\n" ++
                  "Standardaktion öffnet den Log (nur Lesen)"
+viewL Spanish  = cyan "Realizar acciones relacionadas con el fichero [L]og de pacman.\n" ++
+                 "La acción por defecto es abrir el log en modo sólo lectura."
 
 orpha :: Language -> String
 orpha English  = blue "Perform actions involving [O]rphan packages.\n" ++
@@ -764,6 +863,8 @@ orpha Swedish  = blue "Utför åtgärder involverandes [O]rphan-paket.\n" ++
                  "Standard-åtgärd listar alla orphan-paket."
 orpha German   = blue "Führe Aktionen aus die verwaiste ([O]rphans) Pakete betreffen.\n" ++
                  "Standardaktion listet alle verwaisten Pakete auf."
+orpha English  = blue "Realizar acciones relacionadas con paquetes huérfanos ([O]rphan).\n" ++
+                 "La acción por defecto es listar todos los paquetes huérfanos."
 
 --------------------------
 -- AurConnection functions
@@ -782,6 +883,8 @@ aurPkgInfoFields Swedish  = [ "Namn","Version","AUR Status","Projekt URL"
                             , "AUR URL","Licens","Röster","Beskrivning"]
 aurPkgInfoFields German   = [ "Name","Version","AUR Status","Projekt URL"
                             , "AUR URL","Lizenz","Stimmen","Beschreibung"]
+aurPkgInfoFields Spanish  = [ "Nombre","Versión","Estado en AUR","URL del proyecto"
+                            ,"URL en AUR","Licencia", "Votos","Descripción" ]
 
 outOfDateMsg :: Language -> Bool -> String
 outOfDateMsg English  True  = red "Out of Date!"
@@ -796,3 +899,5 @@ outOfDateMsg Swedish  True  = red "Utdaterad!"
 outOfDateMsg Swedish  False = green "Aktuell"
 outOfDateMsg German   True  = red "Veraltet!"
 outOfDateMsg German   False = green "Aktuell"
+outOfDateMsg Spanish  True  = red "¡Desactualizado!"
+outOfDateMsg Spanish  False = green "Actualizado"
