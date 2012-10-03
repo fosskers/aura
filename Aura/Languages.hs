@@ -1,9 +1,10 @@
 -- Library for AURA output in different languages.
 
 {- AURA TRANSLATORS - The best people ever!
-Chris "Kwpolska" Warrick (Polish)
-Denis Kasak (Croatian)
-Fredrik Haikarainen (Swedish)
+Chris "Kwpolska" Warrick | Polish
+Denis Kasak              | Croatian
+Fredrik Haikarainen      | Swedish
+Lukas Niederbremer       | German
 -}
 
 module Aura.Languages where

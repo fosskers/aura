@@ -33,7 +33,7 @@ main :: IO a
 main = do
   args <- getArgs
   let (language,rest) = parseLanguageFlag args
-      (auraFlags,input,pacOpts) = parseOpts language rest
+      (auraFlags,input,pacOpts) = parseFlags language rest
       auraFlags' = filter (`notElem` settingsFlags) auraFlags
       pacOpts'   = pacOpts ++ reconvertFlags auraFlags dualFlagMap
   settings   <- getSettings language auraFlags

@@ -151,6 +151,6 @@ parseLanguageFlag args =
       (langs,nonOpts,otherOpts,_) -> (getLanguage langs, nonOpts ++ otherOpts)
 
 -- Errors are dealt with manually in `aura.hs`.
-parseOpts :: Language -> [String] -> ([Flag],[String],[String])
-parseOpts lang args = case getOpt' Permute (allFlags lang) args of
-                        (opts,nonOpts,pacOpts,_) -> (opts,nonOpts,pacOpts) 
+parseFlags :: Language -> [String] -> ([Flag],[String],[String])
+parseFlags lang args = case getOpt' Permute (allFlags lang) args of
+                         (opts,nonOpts,pacOpts,_) -> (opts,nonOpts,pacOpts) 

@@ -1,6 +1,11 @@
 Aura Changelog
 ==============
 
+1.0.1.0
+-------
+- German translation (use with --german).
+  Thanks to Lukas Niederbremer!
+
 1.0.0.0
 -------
 - Fixed `-V` message in terminals other than urxvt.
