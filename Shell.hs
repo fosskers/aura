@@ -2,12 +2,46 @@
 
 module Shell where
 
+-- System Libraries
 import System.Process (readProcess, readProcessWithExitCode, rawSystem)
-import System.Exit(ExitCode(..))
+import System.Exit (ExitCode(..))
 import Text.Regex.Posix ((=~))
-import Data.Maybe(fromJust)
+import Data.Maybe (fromJust)
+import System.Directory ( getDirectoryContents
+                        , setCurrentDirectory
+                        , getCurrentDirectory
+                        , removeFile
+                        , renameFile
+                        , copyFile )
 
+-- Custom Libraries
 import Zero
+
+----------------------
+-- SYSTEM CALL ALIASES
+----------------------
+pwd :: IO String
+pwd = getCurrentDirectory
+
+rm :: FilePath -> IO ()
+rm = removeFile
+
+ls :: FilePath -> IO [FilePath]
+ls = getDirectoryContents
+
+mv :: FilePath -> FilePath -> IO ()
+mv = renameFile
+
+cd :: FilePath -> IO ()
+cd = setCurrentDirectory
+
+cp :: FilePath -> FilePath -> IO ()
+cp = copyFile
+
+chown :: String -> FilePath -> [String] -> IO ()
+chown user path args = do
+  _ <- quietShellCmd "chown" (args ++ [user,path])
+  return ()
 
 ------------------
 -- COLOURED OUTPUT
@@ -161,9 +195,3 @@ getEditor :: Environment -> String
 getEditor env = case getEnvVar "EDITOR" env of
                   Just emacs -> emacs  -- ;)
                   Nothing    -> "vi"   -- `vi` should be available.
-    
--------------------
--- FILE PERMISSIONS
--------------------
-chown :: String -> FilePath -> [String] -> IO ()
-chown user path args = quietShellCmd "chown" (args ++ [user,path]) >> return ()

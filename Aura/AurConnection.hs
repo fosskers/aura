@@ -1,7 +1,7 @@
 -- Module for connecting to the AUR servers,
 -- downloading PKGBUILDs and source tarballs, and handling them.
 
-module AurConnection where
+module Aura.AurConnection where
 
 -- System Libaries
 import System.FilePath ((</>))

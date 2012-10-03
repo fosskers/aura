@@ -6,7 +6,7 @@ Denis Kasak (Croatian)
 Fredrik Haikarainen (Swedish)
 -}
 
-module AuraLanguages where
+module Aura.Languages where
 
 import Data.Maybe (fromJust)
 

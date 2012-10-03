@@ -1,10 +1,9 @@
 -- An interface to `pacman`.
 -- Takes any pacman arguments and applies it to pacman through the shell.
 
-module Pacman where
+module Aura.Pacman where
 
 -- System Libraries
-import System.Directory (getDirectoryContents)
 import System.Exit (ExitCode(..))
 import System.IO (hFlush, stdout)
 import Text.Regex.Posix ((=~))
@@ -52,7 +51,7 @@ syncDatabase pacOpts = pacman $ ["-Sy"] ++ pacOpts
 
 -- This takes the filepath of the package cache as an argument.
 packageCacheContents :: FilePath -> IO [String]
-packageCacheContents c = filter dots `liftM` getDirectoryContents c
+packageCacheContents c = filter dots `liftM` ls c
     where dots p = p `notElem` [".",".."]
 
 getPacmanConf :: IO String

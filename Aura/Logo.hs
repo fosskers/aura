@@ -1,6 +1,6 @@
 -- Library for printing an animated AURA version message.
 
-module AuraLogo where
+module Aura.Logo where
 
 -- System Libraries
 import System.Console.ANSI (cursorUpLineCode)
