@@ -121,7 +121,6 @@ Reduce the package cache to contain only 'x' of each package file:
 Localisation
 ============
 As mentioned in the Philosophy above, adding new languages to Aura is
-quite easy. However the currently available languages are limited to
-those known by the author. If you speak a language other than those
-available and would like it added to Aura, please consult the 
-Localisation Guide provided.
+quite easy. If you speak a language other than those available and
+would like it added to Aura, please consult the Localisation Guide
+provided.
