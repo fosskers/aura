@@ -115,7 +115,7 @@ searchLines :: Regex -> [String] -> [String]
 searchLines pat allLines = filter (\line -> line =~ pat) allLines
 
 wordsLines :: String -> [String]
-wordsLines ls = lines ls >>= words
+wordsLines xs = lines xs >>= words
 
 notNull :: [a] -> Bool
 notNull = not . null
