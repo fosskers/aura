@@ -5,7 +5,7 @@ Aura Changelog
 -------
 - German translation (use with --german).
   Thanks to Lukas Niederbremer!
-- Spanish translation (with with --spanish)
+- Spanish translation (use with --spanish)
   Thanks to Alejandro Gómez!
 
 1.0.0.0
