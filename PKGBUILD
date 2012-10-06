@@ -7,9 +7,10 @@ pkgdesc="A package manager for Arch Linux and the AUR written in Haskell."
 url="https://github.com/fosskers/aura"
 license=('GPL-3')
 arch=('i686' 'x86_64')
-makedepends=('ghc' 'haskell-regex-base' 'haskell-regex-posix' 'haskell-json'
-             'haskell-curl' 'haskell-ansi-terminal')
-depends=('gmp' 'pacman')
+#makedepends=('ghc' 'haskell-regex-base' 'haskell-regex-posix' 'haskell-json'
+#             'haskell-curl' 'haskell-ansi-terminal')
+depends=('gmp' 'pacman' 'ghc' 'haskell-regex-base' 'haskell-regex-posix'
+         'haskell-json' 'haskell-curl' 'haskell-ansi-terminal')
 options=('strip')
 source=(https://github.com/downloads/fosskers/aura/${_hkgname}-${pkgver}.tar.gz)
 md5sums=('6ff97586732404662870fb28c62f7de6')
