@@ -24,3 +24,57 @@ Aura Changelog
 -------
 - Dependency determining speed up.
 - Added AUR URL to `-Ai`.
+
+0.9.3.2
+-------
+- Swedish translation.
+  Thanks to Fredrik Haikarainen!
+
+0.9.2.0
+-------
+- `-Ai` and `-As`!
+
+0.9.1.0
+-------
+- `-Au` is about 20 times faster.
+
+0.9.?.?
+-------
+- Polish translation.
+  Thanks to Chris "Kwpolska" Warrick!
+- Croatian translation.
+  Thanks to Denis Kasak!
+
+0.9.0.0
+-------
+- New `-O` operation for dealing with orphan packages.
+- A man page!
+
+0.8.0.0
+-------
+- Help message now supports multiple languages.
+- Broke "no overlapping options" convention. 
+`-Cz` is now `-Cb`.
+- New option `-Ad`. Lists _all_ dependencies of an AUR package.
+  This is to aid pre-building research.
+  This option shows information you can't get from looking at PKGBUILDS!
+
+0.7.3.0
+-------
+- New option `--conf`. Lets you quickly view your pacman.conf.
+
+0.7.2.3
+-------
+- `--log` is now `-L`.
+- New option `-Ls`. Search the log file via a regex.
+- New option `-Li`. Reports information on a given package that has had
+  any appearance in the log file.
+
+0.7.0.0
+-------
+- `--hotedit` option added.
+- `Shell` library added.
+
+0.6.0.0
+-------
+- Aura passes proper exit codes to the shell upon completion.
