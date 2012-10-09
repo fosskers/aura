@@ -40,15 +40,15 @@ executable aura
   other-modules:       Bash,
                        Zero,
                        Shell,
-                       Pacman,
-                       AuraLib,
-                       MakePkg,
-                       AuraLogo,
                        Internet,
                        Utilities,
-                       AuraFlags,
-                       AurConnection,
-                       AuraLanguages
+                       Aura.Logo,
+                       Aura.Flags,
+                       Aura.Pacman,
+                       Aura.AuraLib,
+                       Aura.MakePkg,
+                       Aura.Languages,
+                       Aura.AurConnection
 
   build-depends:       curl,
                        json,

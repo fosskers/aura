@@ -9,6 +9,7 @@ Aura Changelog
   Thanks to Alejandro Gómez!
 - Replaced regex-posix with regex-pcre.
 - `-As` now highlights properly.
+- Moved a number of modules to `Aura/`
 
 1.0.0.0
 -------
