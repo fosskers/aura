@@ -7,6 +7,8 @@ Aura Changelog
   Thanks to Lukas Niederbremer!
 - Spanish translation (use with --spanish)
   Thanks to Alejandro Gómez!
+- Replaced regex-posix with regex-pcre.
+- `-As` now highlights properly.
 
 1.0.0.0
 -------

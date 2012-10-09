@@ -9,7 +9,7 @@ import System.FilePath (dropExtensions)
 import Distribution.Verbosity (silent)
 import System.IO (stdout, hFlush)
 import Data.List (dropWhileEnd)
-import Text.Regex.Posix ((=~))
+import Text.Regex.PCRE ((=~))
 import Text.Printf (printf)
 
 -- Custom Libraries

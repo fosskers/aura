@@ -5,7 +5,7 @@ module Shell where
 -- System Libraries
 import System.Process (readProcess, readProcessWithExitCode, rawSystem)
 import System.Exit (ExitCode(..))
-import Text.Regex.Posix ((=~))
+import Text.Regex.PCRE ((=~))
 import Data.Maybe (fromJust)
 import System.Directory ( getDirectoryContents
                         , setCurrentDirectory

@@ -55,7 +55,7 @@ executable aura
                        Cabal,
                        filepath,
                        bytestring,
-                       regex-posix,
+                       regex-pcre,
                        ansi-terminal,
                        unix>=2.5.0.0,
                        base >= 4 && < 5,

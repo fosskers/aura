@@ -10,8 +10,8 @@ import System.Console.ANSI (hideCursor, showCursor)
 import System.Exit (exitWith, ExitCode)
 import System.Posix.Files (fileExist)
 import Control.Monad (liftM, unless)
-import Text.Regex.Posix ((=~))
 import System.FilePath ((</>))
+import Text.Regex.PCRE ((=~))
 import Data.Maybe (fromJust)
 import Data.Char (isDigit)
 
@@ -211,7 +211,7 @@ aurSearch (regex:_) = aurSearchLookup regex ?>>=
 
 renderSearchResult :: String -> PkgInfo -> String
 renderSearchResult reg info = yellow "aur/" ++ n ++ " " ++ v ++ "\n    " ++ d
-    where c cs = case cs =~ reg of (b,m,a) -> b ++ cyan m ++ a
+    where c cs = case cs =~ ("(?i)" ++ reg) of (b,m,a) -> b ++ cyan m ++ a
           n = c $ nameOf info
           d = c $ descriptionOf info
           v | isOutOfDate info = red $ latestVerOf info

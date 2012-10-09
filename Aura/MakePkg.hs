@@ -1,7 +1,7 @@
 module Aura.MakePkg where
 
 -- System Libraries
-import Text.Regex.Posix ((=~))
+import Text.Regex.PCRE ((=~))
 import System.Exit (ExitCode)
 
 -- Custom Libraries
