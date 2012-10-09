@@ -8,7 +8,7 @@ import Control.Monad (filterM, liftM, when, unless)
 import Data.List ((\\), nub, sortBy, intersperse)
 import System.FilePath ((</>), takeFileName)
 import System.Exit (ExitCode(..))
-import Text.Regex.Posix ((=~))
+import Text.Regex.PCRE ((=~))
 import Data.Maybe (fromJust)
 import Data.Char (isDigit)
 

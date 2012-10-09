@@ -6,7 +6,7 @@ module Aura.Pacman where
 -- System Libraries
 import System.Exit (ExitCode(..))
 import System.IO (hFlush, stdout)
-import Text.Regex.Posix ((=~))
+import Text.Regex.PCRE ((=~))
 import Control.Monad (liftM)
 
 -- Custom Libraries
