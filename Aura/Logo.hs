@@ -3,13 +3,12 @@
 module Aura.Logo where
 
 -- System Libraries
-import System.Console.ANSI (cursorUpLineCode)
 import Control.Concurrent (threadDelay)
 import System.IO (stdout, hFlush)
 
 -- Custom Libraries
+import Shell (yellow, cursorUpLineCode)
 import Utilities (prePad)
-import Shell (yellow)
 
 data MouthState = Open | Closed deriving (Eq)
 

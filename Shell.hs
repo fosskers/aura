@@ -1,10 +1,20 @@
 -- An abstraction layer for shell-related tasks.
 
+{- CITATION
+
+`Escape Codes` section is directly borrowed from:
+  library: ansi-terminal
+  author:  Max Bolingbroke
+  contact: <batterseapower@hotmail.com>
+
+-}
+
 module Shell where
 
 -- System Libraries
 import System.Process (readProcess, readProcessWithExitCode, rawSystem)
 import System.Exit (ExitCode(..))
+import Data.List (intersperse)
 import Text.Regex.PCRE ((=~))
 import Data.Maybe (fromJust)
 import System.Directory ( getDirectoryContents
@@ -42,6 +52,28 @@ chown :: String -> FilePath -> [String] -> IO ()
 chown user path args = do
   _ <- quietShellCmd "chown" (args ++ [user,path])
   return ()
+
+---------------
+-- ESCAPE CODES
+---------------
+-- Code borrowed from `ansi-terminal` library by Max Bolingbroke.
+csi :: [Int] -> String -> String
+csi args code = "\ESC[" ++ concat (intersperse ";" (map show args)) ++ code
+
+cursorUpLineCode :: Int -> String
+cursorUpLineCode n = csi [n] "F"
+
+hideCursor :: IO ()
+hideCursor = putStr hideCursorCode
+
+showCursor :: IO ()
+showCursor = putStr showCursorCode
+
+hideCursorCode :: String
+hideCursorCode = csi [] "?25l"
+
+showCursorCode :: String
+showCursorCode = csi [] "?25h"
 
 ------------------
 -- COLOURED OUTPUT

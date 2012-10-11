@@ -6,7 +6,6 @@
 -- System Libraries
 import Data.List ((\\), nub, sort, intersperse, groupBy)
 import System.Environment (getArgs, getEnvironment)
-import System.Console.ANSI (hideCursor, showCursor)
 import System.Exit (exitWith, ExitCode)
 import System.Posix.Files (fileExist)
 import Control.Monad (liftM, unless)
