@@ -156,10 +156,11 @@ getProvidingPkg virt = do
 
 -- Unsafe version.
 -- Only use on virtual packages that have guaranteed providers.
+-- Adding "$" to the pkg name (technically a regex) fixes a bug.
 getProvidingPkg' :: String -> IO String
 getProvidingPkg' virt = do
   let (name,_) = splitNameAndVer virt
-  pacmanOutput ["-Ssq",name]
+  pacmanOutput ["-Ssq",name ++ "$"]
 
 ------------
 -- OPERATORS
