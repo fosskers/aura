@@ -52,11 +52,11 @@ executable aura
 
   build-depends:       curl,
                        json,
+                       unix,
                        Cabal,
+                       process,
                        filepath,
+                       directory,
                        bytestring,
                        regex-pcre,
-                       unix>=2.5.0.0,
-                       base >= 4 && < 5,
-                       process>=1.1.0.0,
-                       directory>=1.1.0.0
+                       base >= 4 && < 5
