@@ -41,7 +41,8 @@ instance Zero Bool where
 
 instance Zero ExitCode where
     zero = ExitFailure 1
-    isZero = zeroDefault
+    isZero (ExitFailure _) = True
+    isZero _               = False
 
 instance (Zero a) => Zero (Either a b) where
     zero = Left zero
