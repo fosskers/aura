@@ -3,27 +3,47 @@
 -- `Aura` package manager for Arch Linux.
 -- Written by Colin Woodbury <colingw@gmail.com>
 
--- System Libraries
-import Data.List ((\\), nub, sort, intersperse, groupBy)
-import System.Environment (getArgs, getEnvironment)
-import System.Exit (exitWith, ExitCode)
-import System.Posix.Files (fileExist)
-import Control.Monad (liftM, unless)
-import System.FilePath ((</>))
-import Text.Regex.PCRE ((=~))
-import Data.Maybe (fromJust)
-import Data.Char (isDigit)
-
--- Custom Libraries
-import Zero
-import Shell
-import Utilities
-import Aura.Logo
-import Aura.Flags
-import Aura.Pacman
-import Aura.AuraLib
-import Aura.Languages
-import Aura.AurConnection
+--                       -
+--             ---------------------
+--       ---------------------------------
+--   -----------------------------------------
+--  -------------------------------------------
+--------------------------------------------------
+---------------------------------------------------
+-----------------------------------------------------
+-------------------------------------------------------
+--------------------------------------------------------
+---------------------------------------------------------
+import Data.List ((\\), nub, sort, intersperse, groupBy) --
+import System.Environment (getArgs, getEnvironment) ------
+import System.Exit (exitWith, ExitCode) --------------
+import System.Posix.Files (fileExist) ------------
+import Control.Monad (liftM, unless) ---------
+import System.FilePath ((</>)) -----------             ______             ___
+import Text.Regex.PCRE ((=~)) --------                /      \           /
+import Data.Maybe (fromJust) -----                   /        \         /
+import Data.Char (isDigit) ---                      /          \       /
+--------------------------                          |   aura   |       |   au
+import Zero ------------------                      \          /       \
+import Shell ---------------------                   \        /         \
+import Utilities ---------------------                \______/           \___
+import Aura.Logo -------------------------
+import Aura.Flags ----------------------------
+import Aura.Pacman -------------------------------
+import Aura.AuraLib ----------------------------------
+import Aura.Languages ------------------------------------
+import Aura.AurConnection ---------------------------------
+---------------------------------------------------------
+--------------------------------------------------------
+-------------------------------------------------------
+-----------------------------------------------------
+---------------------------------------------------
+--------------------------------------------------
+--  -------------------------------------------
+--   -----------------------------------------
+--       ---------------------------------
+--             ---------------------
+--                       -
 
 auraVersion :: String
 auraVersion = "1.0.1.0"
