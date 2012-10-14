@@ -3,7 +3,7 @@
 -- I refuse to execute PKGBUILDs to access their variables.
 
 {- POMODOROS
-Oct. 14 => XXXX
+Oct. 14 => XXXX XXX
 -}
 
 module Bash where
@@ -14,48 +14,68 @@ import Text.Regex.PCRE ((=~))
 -- Custom Libraries
 import Utilities (wordsLines, hardBreak, tupTrip, tripleFst)
 
-type Script  = String
-type Buffer  = String
-type BashVar = (String,BashType)
+--------
+-- TYPES
+--------
+type Script = String
+type Buffer = String
 
-data BashType = BashStr String | BashArr [String] deriving (Eq,Show)
+data Variable a = Variable String (Value a) deriving (Eq,Show)
 
-bashVar :: String -> BashType -> BashVar
-bashVar = (,)
+data Value a = Value { valOf :: a }
+             | Array { arrOf :: [a] }
+               deriving (Eq,Show)
 
-fromBashStr :: BashType -> String
-fromBashStr (BashStr s) = s
-fromBashStr _           = error "Argument not a BashStr!"
+instance Functor Variable where
+    fmap f (Variable n v) = Variable n $ f `fmap` v
 
-fromBashArr :: BashType -> [String]
-fromBashArr (BashArr a) = a
-fromBashArr _           = error "Argument not a BashArr!"
+instance Functor Value where
+    fmap f (Value a) = Value $ f a
+    fmap f (Array a) = Array $ f `fmap` a
 
-test = do
-  contents <- readFile "spotifyPKGBUILD"
-  mapM_ print $ getBashVars contents
+variable :: String -> Value a -> Variable a
+variable name val = Variable name val
 
-getBashVars :: Script -> [BashVar]
-getBashVars script = getBashVars' script []
-    where getBashVars' s bvs = case extractBashVar s of
-                                 Nothing     -> bvs
-                                 Just (bv,r) -> getBashVars' r (bv : bvs)
+value :: a -> Value a
+value val = Value val
+
+array :: [a] -> Value a
+array vals = Array vals
+
+----------
+-- TESTING
+----------
+dotest file = do
+  contents <- readFile file
+  mapM_ print $ getGlobalVars contents
+
+test1 = dotest "spotifyPKGBUILD"
+test2 = dotest "PKGBUILD"
+
+-----------
+-- THE WORK
+-----------
+getGlobalVars :: Script -> [Variable String]
+getGlobalVars script = getGlobalVars' script []
+    where getGlobalVars' s bvs = case extractVariable s of
+                                   Nothing     -> bvs
+                                   Just (bv,r) -> getGlobalVars' r (bv : bvs)
 
 -- Parses out the first BashVar it finds and returns the rest of the script.
-extractBashVar :: Script -> Maybe (BashVar,Script)
-extractBashVar script =
+extractVariable :: Script -> Maybe (Variable String,Script)
+extractVariable script =
     case script =~ "^[a-z_]+=" :: (String,String,String) of
       (_,"",a) -> Nothing
-      (_,m,a)  -> Just (bashVar name vval, rest)
+      (_,m,a)  -> case parseValue a of
+                    (val,rest) -> Just (variable name val, rest)
           where name = init m
-                (vval,rest) = parseVarVal a
 
-parseVarVal :: Script -> (BashType,Script)
-parseVarVal script = (vval,rest)
+parseValue :: Script -> (Value String,Script)
+parseValue script = (vval,rest)
     where (field,rest,isArray) = parseField script
           vval = if not isArray
-                 then BashStr $ noQs field
-                 else BashArr $ parseElements field
+                 then value $ noQs field
+                 else array $ parseElements field
 
 -- Also returns a Bool to indicate if the field was an array or not.
 parseField :: Script -> (String,Script,Bool)
@@ -116,6 +136,9 @@ braceSearch ('{':cs) b bs  = braceSearch cs' "" (bs ++ bs')
     where (bs',cs') = braceExpand' (b ++ "{" ++ cs)
 braceSearch (c:cs)   b bs  = braceSearch cs (b ++ [c]) bs
 
+-----------
+-- PLUMBING
+-----------
 noQs :: String -> String
 noQs = filter notQuotes
     where notQuotes c = c `notElem` ['\'','"']
