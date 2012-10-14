@@ -3,7 +3,7 @@
 -- I refuse to execute PKGBUILDs to access their variables.
 
 {- POMODOROS
-Oct. 14 => XXXX XXX
+Oct. 14 => XXXX XXXX XXXX
 -}
 
 module Bash where
@@ -12,7 +12,8 @@ module Bash where
 import Text.Regex.PCRE ((=~))
 
 -- Custom Libraries
-import Utilities (wordsLines, hardBreak, tupTrip, tripleFst)
+import Utilities (hardBreak, tupTrip, tripleFst)
+import Zero ((?>>=))
 
 --------
 -- TYPES
@@ -20,18 +21,24 @@ import Utilities (wordsLines, hardBreak, tupTrip, tripleFst)
 type Script = String
 type Buffer = String
 
-data Variable a = Variable String (Value a) deriving (Eq,Show)
+data Variable a = Variable { varNameOf :: String
+                           , valueOf :: Value a }
+                  deriving (Eq,Show)
 
 data Value a = Value { valOf :: a }
              | Array { arrOf :: [a] }
-               deriving (Eq,Show)
+               deriving (Eq)
 
 instance Functor Variable where
     fmap f (Variable n v) = Variable n $ f `fmap` v
 
 instance Functor Value where
-    fmap f (Value a) = Value $ f a
+    fmap f (Value v) = Value $ f v
     fmap f (Array a) = Array $ f `fmap` a
+
+instance Show a => Show (Value a) where
+    show (Value v) = show v
+    show (Array a) = unwords $ map show a
 
 variable :: String -> Value a -> Variable a
 variable name val = Variable name val
@@ -45,16 +52,45 @@ array vals = Array vals
 ----------
 -- TESTING
 ----------
+{-
 dotest file = do
   contents <- readFile file
-  mapM_ print $ getGlobalVars contents
+  let x = getGlobalVars contents
+  print $ referenceArray x "depends"
+  print $ referenceArray x "makedepends"
+  print $ referenceArray x "license"
 
 test1 = dotest "spotifyPKGBUILD"
 test2 = dotest "PKGBUILD"
 
+{-
+test3 = do
+  vars <- test1
+  putStrLn $ varReplace vars "http://repository.spotify.com/pool/non-free/s/${pkgname}/${pkgname}-client_${pkgver}${_anotherpkgver}${_carch}.deb"
+-}
+
+test4 = dotest "shutterPKGBUILD"
+test5 = dotest "tjP" 
+test6 = dotest "bbP"
+-}
+
 -----------
 -- THE WORK
 -----------
+-- Reference a value from a (hopefully) known variable.
+reference :: (Value String -> a) -> [Variable String] -> String -> Maybe a
+reference f globals name = 
+    case valLookup globals name of
+      Nothing  -> Nothing
+      Just val -> Just . f . fmap (varReplace globals) $ val
+
+referenceValue :: [Variable String] -> String -> Maybe String
+referenceValue globals name = reference fromValue globals name
+
+referenceArray :: [Variable String] -> String -> Maybe [String]
+referenceArray globals name = reference fromArray globals name ?>>= \a ->
+                              Just . concat . map braceExpand $ a
+
 getGlobalVars :: Script -> [Variable String]
 getGlobalVars script = getGlobalVars' script []
     where getGlobalVars' s bvs = case extractVariable s of
@@ -65,7 +101,7 @@ getGlobalVars script = getGlobalVars' script []
 extractVariable :: Script -> Maybe (Variable String,Script)
 extractVariable script =
     case script =~ "^[a-z_]+=" :: (String,String,String) of
-      (_,"",a) -> Nothing
+      (_,"",_) -> Nothing
       (_,m,a)  -> case parseValue a of
                     (val,rest) -> Just (variable name val, rest)
           where name = init m
@@ -93,18 +129,48 @@ parseElements s = concat . map (flip parseElements' []) . lines $ s
 
 parseElements' :: String -> [String] -> [String]
 parseElements' "" es = es
-parseElements' s es  | not . isQuote . head $ s' = parseElements' "" (s' : es)
+parseElements' s es  | not . isQuote . head $ s' =
+                         parseElements' "" (words s' ++ es)
                      | otherwise = parseElements' rest (e : es)
-    where s' = dropWhile (== ' ') s
+    where s' = dropWhile (`elem` whitespace) s
           (e,rest) = hardBreak (== head s') $ tail s'
           isQuote  = (`elem` ['\'','"'])
 
+varReplace :: Show a => [Variable a] -> String -> String
+varReplace globals string =
+    case string =~ "\\${?[\\w]+}?" :: (String,String,String) of
+      (_,"",_)  -> string
+      (b,m,a)   -> varReplace globals $ b ++ replaced ++ a
+          where replaced = case valLookup globals $ noVarNoise m of
+                             Just v  -> noQs $ show v
+                             Nothing -> pErr $ "Uninitialized var: " ++ m
+
+valLookup :: [Variable a] -> String -> Maybe (Value a)
+valLookup vs name = case varLookup vs name of
+                      Nothing -> Nothing
+                      Just v  -> Just $ valueOf v
+
+varLookup :: [Variable a] -> String -> Maybe (Variable a)
+varLookup [] _        = Nothing
+varLookup (v:vs) name | varNameOf v == name = Just v
+                      | otherwise           = varLookup vs name
+
+fromValue :: Value a -> a
+fromValue (Value v) = v
+fromValue _         = error "Argument is not a Value!"
+
+fromArray :: Value a -> [a]
+fromArray (Array a) = a
+fromArray _         = error "Argument is not an Array!"
+
 -- Warning: This may give nonsensical output if the field item
 --          utilises bash variables!
+{-
 getField :: String -> Script -> [String]
 getField field script = (wordsLines . noQs . parseField' $ xs) >>= braceExpand
     where (_,_,xs)    = script =~ pattern :: (String,String,String)
           pattern     = "^" ++ field ++ "="
+-}
 
 -- Try these. Open in emacs, uncomment, hit `C-c C-l` then fire away.
 --testd = braceExpand "haskell-json"
@@ -142,3 +208,13 @@ braceSearch (c:cs)   b bs  = braceSearch cs (b ++ [c]) bs
 noQs :: String -> String
 noQs = filter notQuotes
     where notQuotes c = c `notElem` ['\'','"']
+
+noVarNoise :: String -> String
+noVarNoise = filter notVarNoise
+    where notVarNoise c = c `notElem` ['$','{','}']
+
+pErr :: String -> t
+pErr msg = error $ "Parse error. " ++ msg
+
+whitespace :: [Char]
+whitespace = [' ','\t']
