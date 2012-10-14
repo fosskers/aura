@@ -1,6 +1,12 @@
 Aura Changelog
 ==============
 
+1.0.2.0
+-------
+- Bug fixes.
+- Extended the Bash parser. PKGBUILDs that had bash variables in their
+  dependency arrays will now be parsed correctly.
+
 1.0.1.0
 -------
 - German translation (use with --german).

@@ -14,7 +14,7 @@ sourceDir :: String
 sourceDir = "/home/colin/code/haskell/aura/"
 
 main :: IO ()
-main = cd sourceDir >> do --shellCmd "cabal" ["check"] ?>> do
+main = cd sourceDir >> shellCmd "cabal" ["check"] ?>> do
          removeOldFiles
          makeNewPkgFile
          alterPKGBUILD
@@ -28,10 +28,10 @@ isPkgFile :: String -> Bool
 isPkgFile f = f =~ "^aura-"
 
 makeNewPkgFile :: IO ()
-makeNewPkgFile = {- shellCmd "cabal" ["sdist"] >> -} inDir "dist/" $ do
+makeNewPkgFile = shellCmd "cabal" ["sdist"] >> inDir "dist/" (do
     pkgs <- ls "."
     let latest = last . sortPkgFiles . filter isPkgFile $ pkgs
-    cp latest $ sourceDir </> latest
+    cp latest $ sourceDir </> latest)
 
 sortPkgFiles :: [String] -> [String]
 sortPkgFiles [] = []
