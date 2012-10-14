@@ -21,6 +21,7 @@ import Utilities
 import Internet
 import Shell
 import Zero
+import Bash
 
 -- For build and package conflict errors.
 type ErrMsg = String
@@ -315,13 +316,16 @@ getDepsToInstall ss pkgs = do
 -- Returns ([RepoPackages], [AURPackages], [VirtualPackages])
 determineDeps :: Language -> AURPkg -> IO ([String],[AURPkg],[String])
 determineDeps lang pkg = do
-  let depNames = (getPkgbuildField "depends" $ pkgbuildOf pkg) ++
-                 (getPkgbuildField "makedepends" $ pkgbuildOf pkg)
+  let globals  = getGlobalVars $ pkgbuildOf pkg
+      depNames = getDeps globals "depends" ++ getDeps globals "makedepends"
   (repoPkgNames,aurPkgNames,other) <- divideByPkgType depNames
   aurPkgs       <- mapM makeAURPkg aurPkgNames
   recursiveDeps <- mapM (determineDeps lang) aurPkgs
   let (rs,as,os) = foldl groupPkgs (repoPkgNames,aurPkgs,other) recursiveDeps
   return (nub rs, nub as, nub os)
+      where getDeps gs s = case referenceArray gs s of
+                             Nothing -> []
+                             Just ds -> ds
 
 -- If a package isn't installed, `pacman -T` will yield a single name.
 -- Any other type of output means installation is not required. 
@@ -335,8 +339,8 @@ mustInstall pkg = do
 -- 2. Is the version requested different from the one provided by
 --    the most recent version?
 getConflicts :: Settings -> ([PacmanPkg],[AURPkg],[VirtualPkg]) -> [ErrMsg]
-getConflicts settings (ps,as,vs) = pErr ++ aErr ++ vErr
-    where pErr     = extract $ map (getPacmanConflicts lang toIgnore) ps
+getConflicts settings (ps,as,vs) = rErr ++ aErr ++ vErr
+    where rErr     = extract $ map (getPacmanConflicts lang toIgnore) ps
           aErr     = extract $ map (getAURConflicts lang toIgnore) as
           vErr     = extract $ map (getVirtualConflicts lang toIgnore) vs
           extract  = map fromJust . filter (/= Nothing)

@@ -5,11 +5,12 @@ module Aura.AurConnection where
 
 -- System Libaries
 import System.FilePath ((</>))
+import Data.Maybe (fromJust)
 import Text.JSON
 
 -- Custom Libraries
-import Bash (getField)
 import Internet
+import Bash
 
 -----------------------
 -- AUR API URL CREATION
@@ -124,11 +125,12 @@ downloadPkgbuild = getUrlContents . getPkgbuildUrl
 
 getTrueVerViaPkgbuild :: Pkgbuild -> String
 getTrueVerViaPkgbuild pkgb = pkgver ++ "-" ++ pkgrel
-    where pkgver = head $ getPkgbuildField "pkgver" pkgb
-          pkgrel = head $ getPkgbuildField "pkgrel" pkgb
+    where globals = getGlobalVars pkgb
+          pkgver  = fromJust $ referenceValue globals "pkgver"
+          pkgrel  = fromJust $ referenceValue globals "pkgrel"
 
-getPkgbuildField :: String -> Pkgbuild -> [String]
-getPkgbuildField = getField
+--getPkgbuildField :: String -> Pkgbuild -> [String]
+--getPkgbuildField = getField
 
 ------------------
 -- SOURCE TARBALLS
