@@ -52,27 +52,19 @@ array vals = Array vals
 ----------
 -- TESTING
 ----------
-{-
 dotest file = do
   contents <- readFile file
   let x = getGlobalVars contents
   print $ referenceArray x "depends"
   print $ referenceArray x "makedepends"
   print $ referenceArray x "license"
+  print $ referenceArray x "source"
 
 test1 = dotest "spotifyPKGBUILD"
 test2 = dotest "PKGBUILD"
-
-{-
-test3 = do
-  vars <- test1
-  putStrLn $ varReplace vars "http://repository.spotify.com/pool/non-free/s/${pkgname}/${pkgname}-client_${pkgver}${_anotherpkgver}${_carch}.deb"
--}
-
 test4 = dotest "shutterPKGBUILD"
 test5 = dotest "tjP" 
 test6 = dotest "bbP"
--}
 
 -----------
 -- THE WORK
@@ -80,7 +72,7 @@ test6 = dotest "bbP"
 -- Reference a value from a (hopefully) known variable.
 reference :: (Value String -> a) -> [Variable String] -> String -> Maybe a
 reference f globals name = 
-    case valLookup globals name of
+    case valLookup globals name of  -- I want to use ?>>= here.
       Nothing  -> Nothing
       Just val -> Just . f . fmap (varReplace globals) $ val
 
@@ -97,7 +89,7 @@ getGlobalVars script = getGlobalVars' script []
                                    Nothing     -> bvs
                                    Just (bv,r) -> getGlobalVars' r (bv : bvs)
 
--- Parses out the first BashVar it finds and returns the rest of the script.
+-- Parses out the first Variable it finds and returns the rest of the script.
 extractVariable :: Script -> Maybe (Variable String,Script)
 extractVariable script =
     case script =~ "^[a-z_]+=" :: (String,String,String) of
@@ -107,21 +99,17 @@ extractVariable script =
           where name = init m
 
 parseValue :: Script -> (Value String,Script)
-parseValue script = (vval,rest)
-    where (field,rest,isArray) = parseField script
-          vval = if not isArray
-                 then value $ noQs field
-                 else array $ parseElements field
+--parseValue ""      = ("","")  -- Is this necessary?
+parseValue ('(':r) = parseValue' handleArray ')' r
+parseValue oneLine = parseValue' handleValue '\n' oneLine
 
--- Also returns a Bool to indicate if the field was an array or not.
-parseField :: Script -> (String,Script,Bool)
-parseField ""      = ("","",False)
-parseField ('(':r) = tupTrip True  $ hardBreak (== ')') r
-parseField oneLine = tupTrip False $ hardBreak (== '\n') oneLine
+parseValue' :: Eq a => ([a] -> t) -> a -> [a] -> (t, [a])
+parseValue' h c s = case hardBreak (== c) s of
+                      (field,rest) -> (h field,rest)
 
--- Discards the remainder.
-parseField' :: Script -> String
-parseField' = tripleFst . parseField
+handleArray, handleValue :: String -> Value String
+handleArray = array . parseElements
+handleValue = value . noQs
 
 -- Bash strings can be surrounded by ' or ".
 parseElements :: String -> [String]
@@ -162,15 +150,6 @@ fromValue _         = error "Argument is not a Value!"
 fromArray :: Value a -> [a]
 fromArray (Array a) = a
 fromArray _         = error "Argument is not an Array!"
-
--- Warning: This may give nonsensical output if the field item
---          utilises bash variables!
-{-
-getField :: String -> Script -> [String]
-getField field script = (wordsLines . noQs . parseField' $ xs) >>= braceExpand
-    where (_,_,xs)    = script =~ pattern :: (String,String,String)
-          pattern     = "^" ++ field ++ "="
--}
 
 -- Try these. Open in emacs, uncomment, hit `C-c C-l` then fire away.
 --testd = braceExpand "haskell-json"
