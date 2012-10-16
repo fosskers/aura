@@ -13,8 +13,6 @@ Calls to pacman should check for the `$PACMAN` var.
 
 When outputing repo dependencies, show what repo they're from?
 
-Update README
-
 Get rid of mapAURPkgs
 
 DEPENDENCY ANALYSIS

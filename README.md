@@ -46,13 +46,13 @@ Install order is as follows:
   user you must KNOW. WHAT. YOU. ARE. BUILDING.
   
 ### Downgradibility
-  AUR package files that are built are moved to the package cache.
+  Built AUR package files are moved to the package cache.
   This allows for them to be easily downgraded when problems arise.
   Other top AUR helper programs do not do this. 
 
 ### No Orphans
   Sometimes dependencies lose their *required* status, but remain
-  installed on your system. Sometimes AUR package "build" dependencies
+  installed on your system. Sometimes AUR package "makedepends"
   aren't required at all after install. Packages like this just
   sit there, receiving upgrades for no reason.
   Aura helps keep track of and remove packages like this. 
@@ -85,9 +85,17 @@ Look up information on an AUR package:
 
     aura -Ai (package)
 
-Checkout an AUR package's PKGBUILD:
+Search the AUR via a regex:
+
+    aura -As (regex)
+
+Display an AUR package's PKGBUILD:
 
     aura -Ap (package)
+
+Display an AUR package's dependencies (and those deps' deps too):
+
+    aura -Ad (package)
 
 Install with makepkg output unsuppressed:
 
@@ -96,10 +104,6 @@ Install with makepkg output unsuppressed:
 Install and remove make dependencies afterwards:
 
     aura -Aa (package)
-
-Go totally nuts (not recommended):
-
-    aura -Ayuax --noconfirm --japanese
 
 #### Working with the Package Cache
 Downgrade a package (this is interactive):
@@ -117,6 +121,30 @@ Backup the package cache:
 Reduce the package cache to contain only 'x' of each package file:
 
     aura -Cc 5
+
+#### Working with the Pacman Log
+Display install / upgrade history for a package:
+
+    aura -Li (package)
+
+Search the pacman logfile via a regex:
+
+    aura -Ls (regex)
+
+#### Working with Orphan Packages
+Display orphan packages:
+
+    aura -O
+
+Adopt an orphan package:
+
+    aura -O (package)
+
+Uninstall all orphan packages:
+
+    aura -Oj
+
+More information is available in aura's manpage.
 
 Localisation
 ============

@@ -12,7 +12,7 @@ module Bash where
 import Text.Regex.PCRE ((=~))
 
 -- Custom Libraries
-import Utilities (hardBreak, tupTrip, tripleFst)
+import Utilities (hardBreak)
 import Zero ((?>>=))
 
 --------
@@ -52,6 +52,7 @@ array vals = Array vals
 ----------
 -- TESTING
 ----------
+{-
 dotest file = do
   contents <- readFile file
   let x = getGlobalVars contents
@@ -65,6 +66,7 @@ test2 = dotest "PKGBUILD"
 test4 = dotest "shutterPKGBUILD"
 test5 = dotest "tjP" 
 test6 = dotest "bbP"
+-}
 
 -----------
 -- THE WORK
