@@ -3,6 +3,10 @@
 -- `Aura` package manager for Arch Linux.
 -- Written by Colin Woodbury <colingw@gmail.com>
 
+{- POMODOROS
+2012 Oct 16 - X
+-}
+
 --                       -
 --             ---------------------
 --       ---------------------------------
@@ -87,7 +91,7 @@ executeOpts ss (flags,input,pacOpts) = do
           [Search]       -> aurSearch input
           [ViewDeps]     -> displayPkgDeps ss input
           [Download]     -> downloadTarballs ss input
-          [GetPkgbuild]  -> displayPkgbuild ss input
+          [GetPkgbuild]  -> displayPkgbuild input
           (Refresh:fs')  -> ss |$| syncAndContinue ss (fs',input,pacOpts)
           (DelMDeps:fs') -> ss |$| removeMakeDeps ss (fs',input,pacOpts)
           badFlags       -> scoldAndFail ss executeOptsMsg1
@@ -247,18 +251,18 @@ displayPkgDeps ss pkgs =
       returnSuccess
           where n = nub . map splitName
 
--- TODO: Fix to use `aurInfoLookup`
 downloadTarballs :: Settings -> [String] -> IO ExitCode
 downloadTarballs ss pkgs = do
   currDir <- pwd
-  mapAURPkgs (downloadTBall currDir) ss pkgs
-      where downloadTBall path pkg = do
+  filterAURPkgs pkgs ?>>= mapM_ (downloadTBall currDir) >> returnSuccess
+    where downloadTBall path pkg = do
               notify ss $ flip downloadTarballsMsg1 pkg
               downloadSource path pkg
 
-displayPkgbuild :: Settings -> [String] -> IO ExitCode
-displayPkgbuild settings pkgs = mapAURPkgs action settings pkgs
-      where action p = downloadPkgbuild p >>= putStrLn
+displayPkgbuild :: [String] -> IO ExitCode
+displayPkgbuild pkgs =
+  filterAURPkgs pkgs ?>>= mapM_ download >> returnSuccess
+      where download p = downloadPkgbuild p >>= putStrLn
 
 syncAndContinue :: Settings -> ([Flag],[String],[String]) -> IO ExitCode
 syncAndContinue settings (flags,input,pacOpts) = do
@@ -428,9 +432,6 @@ adoptPkg ss pkgs = ss |$| (pacman $ ["-D","--asexplicit"] ++ pkgs)
 --------
 -- OTHER
 --------
-mapAURPkgs :: (String -> IO a) -> Settings -> [String] -> IO ExitCode
-mapAURPkgs action ss pkgs = mapPkgs' isAURPkg reportNonPackages action ss pkgs
-
 viewConfFile :: IO ExitCode
 viewConfFile = shellCmd "less" [pacmanConfFile]
 
