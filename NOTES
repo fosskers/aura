@@ -6,21 +6,9 @@ When a `-Cc` comes along they wouldn't be deleted.
 
 What of the license has to be present in the source code?
 
-Make `determineDeps` faster by making it tail-call and determining
-whether a package has already been checked. If so, don't check it again.
-
 Calls to pacman should check for the `$PACMAN` var.
 
 When outputing repo dependencies, show what repo they're from?
-
-Get rid of mapAURPkgs
-
-DEPENDENCY ANALYSIS
--------------------
-Outputting a sort of "dependency tree/graph" that shows how much certain
-packages are depended on, and what packages use "fringe" dependencies.
-The goal would be to reduce the amount of programs that use these fringe
-dependencies, or make it so that they use more mainstream libraries, etc.
 
 OPTIONS TO IMPLEMENT
 --------------------

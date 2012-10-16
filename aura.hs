@@ -4,7 +4,7 @@
 -- Written by Colin Woodbury <colingw@gmail.com>
 
 {- POMODOROS
-2012 Oct 16 - X
+2012 Oct 16 - XX
 -}
 
 --                       -
@@ -164,22 +164,6 @@ buildAndInstallDep :: Settings -> [String] -> AURPkg -> IO ExitCode
 buildAndInstallDep settings pacOpts pkg =
   buildPackages settings [pkg] ?>>=
   installPkgFiles (["--asdeps"] ++ pacOpts) . fromJust
-
-reportNonPackages :: Language -> [String] -> IO ()
-reportNonPackages lang nons = printList red cyan msg nons
-    where msg = reportNonPackagesMsg1 lang
-
-reportIgnoredPackages :: Language -> [String] -> IO ()
-reportIgnoredPackages lang pkgs = printList yellow cyan msg pkgs
-    where msg = reportIgnoredPackagesMsg1 lang
-
-reportPkgsToInstall :: Language -> [String] -> [AURPkg] -> [AURPkg] -> IO ()
-reportPkgsToInstall lang pacPkgs aurDeps aurPkgs = do
-  printIfThere (sort pacPkgs) $ reportPkgsToInstallMsg1 lang
-  printIfThere (sort $ namesOf aurDeps) $ reportPkgsToInstallMsg2 lang
-  printIfThere (sort $ namesOf aurPkgs) $ reportPkgsToInstallMsg3 lang
-      where namesOf = map pkgNameOf
-            printIfThere ps m = unless (null ps) $ printList green cyan m ps
                
 upgradeAURPkgs :: Settings -> [String] -> [String] -> IO ExitCode
 upgradeAURPkgs settings pacOpts pkgs = do
@@ -196,10 +180,6 @@ upgradeAURPkgs settings pacOpts pkgs = do
     installPackages settings pacOpts $ (map (nameOf . fst) toUpgrade) ++ pkgs
       where notIgnored p   = splitName p `notElem` ignoredPkgsOf settings
             prettify (p,v) = nameOf p ++ " : " ++ v ++ " => " ++ latestVerOf p
-
-reportPkgsToUpgrade :: Language -> [String] -> IO ()
-reportPkgsToUpgrade lang pkgs = printList green cyan msg pkgs
-    where msg = reportPkgsToUpgradeMsg1 lang
 
 aurPkgInfo :: Settings -> [String] -> IO ExitCode
 aurPkgInfo ss pkgs = aurInfoLookup pkgs ?>>=
@@ -291,11 +271,6 @@ downgradePackages ss pkgs = do
   choices <- mapPkgs isInstalled reportBadDowngradePkgs action ss pkgs
   pacman $ ["-U"] ++ map (cachePath </>) choices
       where cachePath = cachePathOf ss
-
-reportBadDowngradePkgs :: Language -> [String] -> IO ()
-reportBadDowngradePkgs _ []      = return ()
-reportBadDowngradePkgs lang pkgs = printList red cyan msg pkgs
-    where msg = reportBadDowngradePkgsMsg1 lang
                
 getDowngradeChoice :: Settings -> [String] -> String -> IO String
 getDowngradeChoice settings cache pkg = do
@@ -415,10 +390,6 @@ logLookUp settings logFile pkg = do
             recentStuff = map ((:) ' ') $ takeLast 5 matches
             takeLast n  = reverse . take n . reverse
 
-reportNotInLog :: Language -> [String] -> IO ()
-reportNotInLog lang nons = printList red cyan msg nons
-    where msg = reportNotInLogMsg1 lang
-
 -------------------
 -- WORKING WITH `O`
 -------------------
@@ -428,6 +399,37 @@ displayOrphans ss pkgs = adoptPkg ss pkgs
 
 adoptPkg :: Settings -> [String] -> IO ExitCode
 adoptPkg ss pkgs = ss |$| (pacman $ ["-D","--asexplicit"] ++ pkgs)
+
+----------
+-- REPORTS
+----------
+badReport :: (Language -> String) -> Language -> [String] -> IO ()
+badReport m lang pkgs = return pkgs ?>> printList red cyan (m lang) pkgs
+
+reportNonPackages :: Language -> [String] -> IO ()
+reportNonPackages lang nons = badReport reportNonPackagesMsg1 lang nons 
+
+reportIgnoredPackages :: Language -> [String] -> IO ()
+reportIgnoredPackages lang pkgs = printList yellow cyan msg pkgs
+    where msg = reportIgnoredPackagesMsg1 lang
+
+reportPkgsToInstall :: Language -> [String] -> [AURPkg] -> [AURPkg] -> IO ()
+reportPkgsToInstall lang pacPkgs aurDeps aurPkgs = do
+  printIfThere (sort pacPkgs) $ reportPkgsToInstallMsg1 lang
+  printIfThere (sort $ namesOf aurDeps) $ reportPkgsToInstallMsg2 lang
+  printIfThere (sort $ namesOf aurPkgs) $ reportPkgsToInstallMsg3 lang
+      where namesOf = map pkgNameOf
+            printIfThere ps m = unless (null ps) $ printList green cyan m ps
+
+reportPkgsToUpgrade :: Language -> [String] -> IO ()
+reportPkgsToUpgrade lang pkgs = printList green cyan msg pkgs
+    where msg = reportPkgsToUpgradeMsg1 lang
+
+reportBadDowngradePkgs :: Language -> [String] -> IO ()
+reportBadDowngradePkgs lang ps = badReport reportBadDowngradePkgsMsg1 lang ps
+
+reportNotInLog :: Language -> [String] -> IO ()
+reportNotInLog lang nons = badReport reportNotInLogMsg1 lang nons
 
 --------
 -- OTHER
