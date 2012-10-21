@@ -1,10 +1,28 @@
 {-# OPTIONS_GHC -O2 #-}
 
--- `Aura` package manager for Arch Linux.
--- Written by Colin Woodbury <colingw@gmail.com>
+{-
+
+Copyright 2012 Colin Woodbury <colingw@gmail.com>
+
+This file is part of Aura.
+
+Aura is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Aura is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Aura.  If not, see <http://www.gnu.org/licenses/>.
+
+-}
 
 {- POMODOROS
-2012 Oct 16 - XX
+2012 Oct 16 - XXX
 -}
 
 --                       -
@@ -206,6 +224,7 @@ renderAurPkgInfo ss info = concat $ intersperse "\n" fieldsAndEntries
                              , votesOf info
                              , descriptionOf info ]
 
+-- This is quite limited. It only accepts one word/pattern.
 aurSearch :: [String] -> IO ExitCode
 aurSearch []        = returnFailure
 aurSearch (regex:_) = aurSearchLookup regex ?>>=
@@ -240,8 +259,7 @@ downloadTarballs ss pkgs = do
               downloadSource path pkg
 
 displayPkgbuild :: [String] -> IO ExitCode
-displayPkgbuild pkgs =
-  filterAURPkgs pkgs ?>>= mapM_ download >> returnSuccess
+displayPkgbuild pkgs = filterAURPkgs pkgs ?>>= mapM_ download >> returnSuccess
       where download p = downloadPkgbuild p >>= putStrLn
 
 syncAndContinue :: Settings -> ([Flag],[String],[String]) -> IO ExitCode

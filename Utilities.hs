@@ -1,5 +1,26 @@
 -- Utility functions that don't fit in a particular library.
 
+{-
+
+Copyright 2012 Colin Woodbury <colingw@gmail.com>
+
+This file is part of Aura.
+
+Aura is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Aura is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Aura.  If not, see <http://www.gnu.org/licenses/>.
+
+-}
+
 module Utilities where
 
 -- System Libraries
@@ -53,10 +74,13 @@ hardBreak p xs = (firstHalf, secondHalf')
           secondHalf' = if null secondHalf then [] else tail secondHalf
 
 lStrip :: String -> String
-lStrip xs = dropWhile (== ' ') xs
+lStrip = dropWhile (`elem` whitespaces)
 
 rStrip :: String -> String
-rStrip xs = dropWhileEnd (== ' ') xs
+rStrip = dropWhileEnd (`elem` whitespaces)
+
+whitespaces :: [Char]
+whitespaces = [' ','\t']
 
 tripleFst :: (a,b,c) -> a
 tripleFst (a,_,_) = a

@@ -10,6 +10,8 @@ Calls to pacman should check for the `$PACMAN` var.
 
 When outputing repo dependencies, show what repo they're from?
 
+Move aura to haskell-http.
+
 OPTIONS TO IMPLEMENT
 --------------------
 -Ci -> `--info` Gives some stats about the package cache.

@@ -2,7 +2,29 @@
 -- reliable way, this hacked-together bash parser will have to do.
 -- I refuse to execute PKGBUILDs to access their variables.
 
+{-
+
+Copyright 2012 Colin Woodbury <colingw@gmail.com>
+
+This file is part of Aura.
+
+Aura is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Aura is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Aura.  If not, see <http://www.gnu.org/licenses/>.
+
+-}
+
 {- POMODOROS
+Oct. 20 => X
 Oct. 14 => XXXX XXXX XXXX
 -}
 
@@ -12,7 +34,7 @@ module Bash where
 import Text.Regex.PCRE ((=~))
 
 -- Custom Libraries
-import Utilities (hardBreak)
+import Utilities (hardBreak, lStrip)
 import Zero ((?>>=))
 
 --------
@@ -52,21 +74,24 @@ array vals = Array vals
 ----------
 -- TESTING
 ----------
-{-
 dotest file = do
   contents <- readFile file
   let x = getGlobalVars contents
-  print $ referenceArray x "depends"
   print $ referenceArray x "makedepends"
   print $ referenceArray x "license"
   print $ referenceArray x "source"
+  print $ referenceArray x "depends"
+
+dotest2 file = do
+  contents <- readFile file
+  print $ getGlobalVars contents
 
 test1 = dotest "spotifyPKGBUILD"
 test2 = dotest "PKGBUILD"
 test4 = dotest "shutterPKGBUILD"
 test5 = dotest "tjP" 
 test6 = dotest "bbP"
--}
+test7 = dotest "yiP"
 
 -----------
 -- THE WORK
@@ -115,15 +140,14 @@ handleValue = value . noQs
 
 -- Bash strings can be surrounded by ' or ".
 parseElements :: String -> [String]
-parseElements s = concat . map (flip parseElements' []) . lines $ s
+parseElements s = concat . map (flip parseElements' [] . lStrip) . lines $ s
 
 parseElements' :: String -> [String] -> [String]
-parseElements' "" es = es
-parseElements' s es  | not . isQuote . head $ s' =
-                         parseElements' "" (words s' ++ es)
-                     | otherwise = parseElements' rest (e : es)
-    where s' = dropWhile (`elem` whitespace) s
-          (e,rest) = hardBreak (== head s') $ tail s'
+parseElements' [] es = es
+parseElements' s es  | not . isQuote . head $ s =
+                         parseElements' "" (words s ++ es)
+                     | otherwise = parseElements' (lStrip rest) (e : es)
+    where (e,rest) = hardBreak (== head s) $ tail s
           isQuote  = (`elem` ['\'','"'])
 
 varReplace :: Show a => [Variable a] -> String -> String
@@ -196,6 +220,3 @@ noVarNoise = filter notVarNoise
 
 pErr :: String -> t
 pErr msg = error $ "Parse error. " ++ msg
-
-whitespace :: [Char]
-whitespace = [' ','\t']

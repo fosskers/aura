@@ -1,12 +1,32 @@
 -- Library for AURA output in different languages.
 
 {- AURA TRANSLATORS - The best people ever!
-<<<<<<< HEAD:Aura/Languages.hs
 Chris "Kwpolska" Warrick | Polish
 Denis Kasak              | Croatian
 Fredrik Haikarainen      | Swedish
 Lukas Niederbremer       | German
 Alejandro Gómez          | Spanish
+-}
+
+{-
+
+Copyright 2012 Colin Woodbury <colingw@gmail.com>
+
+This file is part of Aura.
+
+Aura is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Aura is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Aura.  If not, see <http://www.gnu.org/licenses/>.
+
 -}
 
 module Aura.Languages where
@@ -197,25 +217,25 @@ getDepsToInstallMsg1 Spanish  = "No se han especificado paquetes de AUR para ins
 
 getRealPkgConflictsMsg1 :: Language -> String -> String -> String -> String
 getRealPkgConflictsMsg1 English name rec req =
-    "The dependency " ++ bt name ++ " demands version " ++ bt req ++ ",\n" ++
+    "The dependency " ++ bt name ++ " demands version " ++ bt req ++
     "but the most recent version is " ++ bt rec ++ "."
 getRealPkgConflictsMsg1 Japanese name rec req =
     "パッケージ" ++ bt name ++ "はバージョン" ++ bt req ++ "を要するが" ++
     "一番最新のバージョンは" ++ bt rec ++ "。"
 getRealPkgConflictsMsg1 Polish name rec req =
     "Zależność " ++ bt name ++ " powinna być w wersji " ++ bt req ++
-    ",\n" ++ "ale najnowsza wersja to " ++ bt rec ++ "."
+    ", ale najnowsza wersja to " ++ bt rec ++ "."
 getRealPkgConflictsMsg1 Croatian name rec req =
     "Zavisnost " ++ bt name ++ " zahtjeva inačicu " ++ bt req ++
-    ",\n" ++ "ali najnovija inačica je " ++ bt rec ++ "."
+    ", ali najnovija inačica je " ++ bt rec ++ "."
 getRealPkgConflictsMsg1 Swedish name rec req =
-    "Beroendepaketet " ++ bt name ++ " kräver version " ++ bt req ++ ",\n" ++
+    "Beroendepaketet " ++ bt name ++ " kräver version " ++ bt req ++
     "men den senaste versionen är " ++ bt rec ++ "."
 getRealPkgConflictsMsg1 German name rec req =
-    "Die Abhängigkeit " ++ bt name ++ " verlangt Version " ++ bt req ++ ",\n" ++
+    "Die Abhängigkeit " ++ bt name ++ " verlangt Version " ++ bt req ++
     "aber die neuste Version ist " ++ bt rec ++ "."
 getRealPkgConflictsMsg1 Spanish name rec req =
-    "La dependencia " ++ bt name ++ " requiere la versión " ++ bt req ++ ",\n" ++
+    "La dependencia " ++ bt name ++ " requiere la versión " ++ bt req ++
     "pero la versión más reciente es " ++ bt rec ++ "."
 
 getRealPkgConflictsMsg2 :: Language -> String -> String

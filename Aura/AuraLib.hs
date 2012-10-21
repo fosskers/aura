@@ -1,6 +1,31 @@
 -- A library for dealing with the installion and management
 -- of Arch User Repository packages.
 
+{-
+
+Copyright 2012 Colin Woodbury <colingw@gmail.com>
+
+This file is part of Aura.
+
+Aura is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Aura is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Aura.  If not, see <http://www.gnu.org/licenses/>.
+
+-}
+
+{- POMODOROS
+Oct. 21 => X
+-}
+
 module Aura.AuraLib where
 
 -- System Libraries
@@ -161,7 +186,7 @@ getProvidingPkg virt = do
 getProvidingPkg' :: String -> IO String
 getProvidingPkg' virt = do
   let (name,_) = splitNameAndVer virt
-  pacmanOutput ["-Ssq",name ++ "$"]
+  nub `liftM` pacmanOutput ["-Ssq",name ++ "$"]
 
 ------------
 -- OPERATORS
@@ -198,7 +223,6 @@ type PkgMap = (a -> IO Bool)                 -- A predicate for filtering.
               -> Settings
               -> [a]                         -- Packages.
 -}
-
 --mapPkgs :: Eq a => PkgMap -> IO [a]               
 mapPkgs cond report fun settings pkgs = do
   realPkgs <- filterM cond pkgs
@@ -370,10 +394,11 @@ getRealPkgConflicts f lang toIgnore pkg
     | isIgnored (pkgNameOf pkg) toIgnore       = Just failMessage1
     | isVersionConflict (versionOf pkg) curVer = Just failMessage2
     | otherwise = Nothing    
-    where curVer        = f pkg
-          (name,reqVer) = splitNameAndVer $ pkgNameWithVersionDemand pkg
-          failMessage1  = getRealPkgConflictsMsg2 lang name
-          failMessage2  = getRealPkgConflictsMsg1 lang name curVer reqVer
+    where curVer       = f pkg
+          name         = pkgNameOf pkg
+          reqVer       = show $ versionOf pkg
+          failMessage1 = getRealPkgConflictsMsg2 lang name
+          failMessage2 = getRealPkgConflictsMsg1 lang name curVer reqVer
 
 -- This can't be generalized as easily.
 getVirtualConflicts :: Language -> [String] -> VirtualPkg -> Maybe ErrMsg
@@ -382,7 +407,8 @@ getVirtualConflicts lang toIgnore pkg
     | isIgnored provider toIgnore  = Just failMessage2
     | isVersionConflict (versionOf pkg) pVer = Just failMessage3
     | otherwise = Nothing
-    where (name,ver)   = splitNameAndVer $ pkgNameWithVersionDemand pkg
+    where name         = pkgNameOf pkg
+          ver          = show $ versionOf pkg
           provider     = pkgNameOf . fromJust . providerPkgOf $ pkg
           pVer         = getProvidedVerNum pkg
           failMessage1 = getVirtualConflictsMsg1 lang name
