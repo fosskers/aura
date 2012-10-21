@@ -74,6 +74,7 @@ array vals = Array vals
 ----------
 -- TESTING
 ----------
+{-
 dotest file = do
   contents <- readFile file
   let x = getGlobalVars contents
@@ -92,6 +93,7 @@ test4 = dotest "shutterPKGBUILD"
 test5 = dotest "tjP" 
 test6 = dotest "bbP"
 test7 = dotest "yiP"
+-}
 
 -----------
 -- THE WORK
