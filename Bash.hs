@@ -35,7 +35,7 @@ import Text.Regex.PCRE ((=~))
 
 -- Custom Libraries
 import Utilities (hardBreak, lStrip)
-import Zero ((?>>=))
+import Zero
 
 --------
 -- TYPES
@@ -43,32 +43,31 @@ import Zero ((?>>=))
 type Script = String
 type Buffer = String
 
-data Variable a = Variable { varNameOf :: String
-                           , valueOf :: Value a }
-                  deriving (Eq,Show)
+data Variable = Variable { varNameOf :: String
+                         , valueOf :: Value }
+                deriving (Eq,Show)
 
-data Value a = Value { valOf :: a }
-             | Array { arrOf :: [a] }
-               deriving (Eq)
+data Value = Value { valOf :: String }
+           | Array { arrOf :: [String] }
+             deriving (Eq)
 
-instance Functor Variable where
-    fmap f (Variable n v) = Variable n $ f `fmap` v
-
-instance Functor Value where
-    fmap f (Value v) = Value $ f v
-    fmap f (Array a) = Array $ f `fmap` a
-
-instance Show a => Show (Value a) where
+instance Show Value where
     show (Value v) = show v
     show (Array a) = unwords $ map show a
 
-variable :: String -> Value a -> Variable a
+instance Zero Value where
+    zero = value ""
+    isZero (Value "") = True
+    isZero (Array []) = True
+    isZero _          = False
+
+variable :: String -> Value -> Variable
 variable name val = Variable name val
 
-value :: a -> Value a
+value :: String -> Value
 value val = Value val
 
-array :: [a] -> Value a
+array :: [String] -> Value
 array vals = Array vals
 
 ----------
@@ -98,28 +97,28 @@ test7 = dotest "yiP"
 -----------
 -- THE WORK
 -----------
--- Reference a value from a (hopefully) known variable.
-reference :: (Value String -> a) -> [Variable String] -> String -> Maybe a
-reference f globals name = 
-    case valLookup globals name of  -- I want to use ?>>= here.
-      Nothing  -> Nothing
-      Just val -> Just . f . fmap (varReplace globals) $ val
+-- Reference a value from a (hopefully) known (v)ariable.
+reference :: Zero a => ((String -> String) -> Value -> a) -> [Variable]
+          -> String -> Maybe a
+reference f vs name = valLookup vs name ?>>= Just . f (varReplace vs)
 
-referenceValue :: [Variable String] -> String -> Maybe String
-referenceValue globals name = reference fromValue globals name
+referenceValue :: [Variable] -> String -> Maybe String
+referenceValue globals name = reference f globals name
+    where f g = g . fromValue
 
-referenceArray :: [Variable String] -> String -> Maybe [String]
-referenceArray globals name = reference fromArray globals name ?>>= \a ->
-                              Just . concat . map braceExpand $ a
+referenceArray :: [Variable] -> String -> Maybe [String]
+referenceArray vs name = reference f vs name ?>>= Just . cm braceExpand
+    where f g  = map g . fromArray
+          cm h = concat . map h
 
-getGlobalVars :: Script -> [Variable String]
+getGlobalVars :: Script -> [Variable]
 getGlobalVars script = getGlobalVars' script []
     where getGlobalVars' s bvs = case extractVariable s of
                                    Nothing     -> bvs
                                    Just (bv,r) -> getGlobalVars' r (bv : bvs)
 
 -- Parses out the first Variable it finds and returns the rest of the script.
-extractVariable :: Script -> Maybe (Variable String,Script)
+extractVariable :: Script -> Maybe (Variable,Script)
 extractVariable script =
     case script =~ "^[a-z_]+=" :: (String,String,String) of
       (_,"",_) -> Nothing
@@ -127,7 +126,7 @@ extractVariable script =
                     (val,rest) -> Just (variable name val, rest)
           where name = init m
 
-parseValue :: Script -> (Value String,Script)
+parseValue :: Script -> (Value,Script)
 --parseValue ""      = ("","")  -- Is this necessary?
 parseValue ('(':r) = parseValue' handleArray ')' r
 parseValue oneLine = parseValue' handleValue '\n' oneLine
@@ -136,7 +135,7 @@ parseValue' :: Eq a => ([a] -> t) -> a -> [a] -> (t, [a])
 parseValue' h c s = case hardBreak (== c) s of
                       (field,rest) -> (h field,rest)
 
-handleArray, handleValue :: String -> Value String
+handleArray, handleValue :: String -> Value
 handleArray = array . parseElements
 handleValue = value . noQs
 
@@ -152,7 +151,7 @@ parseElements' s es  | not . isQuote . head $ s =
     where (e,rest) = hardBreak (== head s) $ tail s
           isQuote  = (`elem` ['\'','"'])
 
-varReplace :: Show a => [Variable a] -> String -> String
+varReplace :: [Variable] -> String -> String
 varReplace globals string =
     case string =~ "\\${?[\\w]+}?" :: (String,String,String) of
       (_,"",_)  -> string
@@ -161,21 +160,21 @@ varReplace globals string =
                              Just v  -> noQs $ show v
                              Nothing -> pErr $ "Uninitialized var: " ++ m
 
-valLookup :: [Variable a] -> String -> Maybe (Value a)
+valLookup :: [Variable] -> String -> Maybe Value
 valLookup vs name = case varLookup vs name of
                       Nothing -> Nothing
                       Just v  -> Just $ valueOf v
 
-varLookup :: [Variable a] -> String -> Maybe (Variable a)
+varLookup :: [Variable] -> String -> Maybe Variable
 varLookup [] _        = Nothing
 varLookup (v:vs) name | varNameOf v == name = Just v
                       | otherwise           = varLookup vs name
 
-fromValue :: Value a -> a
+fromValue :: Value -> String
 fromValue (Value v) = v
 fromValue _         = error "Argument is not a Value!"
 
-fromArray :: Value a -> [a]
+fromArray :: Value -> [String]
 fromArray (Array a) = a
 fromArray _         = error "Argument is not an Array!"
 
