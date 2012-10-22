@@ -38,9 +38,9 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 ---------------------------------------------------------
 import Data.List ((\\), nub, sort, intersperse, groupBy) --
 import System.Environment (getArgs, getEnvironment) ------
-import System.Exit (exitWith, ExitCode) --------------
-import System.Posix.Files (fileExist) ------------
-import Control.Monad (liftM, unless) ---------
+import Control.Monad (liftM, unless, filterM) --------
+import System.Exit (exitWith, ExitCode) ----------
+import System.Posix.Files (fileExist) --------
 import System.FilePath ((</>)) -----------             ______             ___
 import Text.Regex.PCRE ((=~)) --------                /      \           /
 import Data.Maybe (fromJust) -----                   /        \         /
@@ -284,10 +284,12 @@ removeMakeDeps settings (flags,input,pacOpts) = do
 downgradePackages :: Settings -> [String] -> IO ExitCode
 downgradePackages _ []    = returnSuccess
 downgradePackages ss pkgs = do
-  cache <- packageCacheContents cachePath
-  let action = getDowngradeChoice ss cache
-  choices <- mapPkgs isInstalled reportBadDowngradePkgs action ss pkgs
-  pacman $ ["-U"] ++ map (cachePath </>) choices
+  reals <- filterM isInstalled pkgs
+  reportBadDowngradePkgs (langOf ss) (pkgs \\ reals)
+  return reals ?>> do
+    cache   <- packageCacheContents cachePath
+    choices <- mapM (getDowngradeChoice ss cache) reals
+    pacman $ ["-U"] ++ map (cachePath </>) choices
       where cachePath = cachePathOf ss
                
 getDowngradeChoice :: Settings -> [String] -> String -> IO String
@@ -389,9 +391,12 @@ logInfoOnPkg :: Settings -> [String] -> IO ExitCode
 logInfoOnPkg _ []          = returnFailure  -- Success?
 logInfoOnPkg settings pkgs = do
   logFile <- readFile (logFilePathOf settings)
-  let cond   = \p -> return (logFile =~ (" " ++ p ++ " ") :: Bool)
-      action = logLookUp settings logFile
-  mapPkgs' cond reportNotInLog action settings pkgs
+  let inLog p = return (logFile =~ (" " ++ p ++ " "))
+  reals <- filterM inLog pkgs
+  reportNotInLog (langOf settings) (pkgs \\ reals)
+  return reals ?>> do
+    mapM_ (logLookUp settings logFile) reals
+    returnSuccess
 
 -- Make internal to `logInfoOnPkg`?
 -- Assumed: The package to look up _exists_.

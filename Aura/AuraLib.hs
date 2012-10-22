@@ -213,25 +213,6 @@ trueRootCheck ss action
        then action
        else notify ss trueRootCheckMsg2 >> returnSuccess
 
----------------
--- ABSTRACTIONS
----------------
-{- Help?
-type PkgMap = (a -> IO Bool)                 -- A predicate for filtering.
-              -> (Language -> [a] -> IO ())  -- Notify of filtered packages.
-              -> (a -> IO b)                 -- Action to perform.
-              -> Settings
-              -> [a]                         -- Packages.
--}
---mapPkgs :: Eq a => PkgMap -> IO [a]               
-mapPkgs cond report fun settings pkgs = do
-  realPkgs <- filterM cond pkgs
-  _ <- report (langOf settings) $ pkgs \\ realPkgs
-  mapM fun realPkgs
-
---mapPkgs' :: PkgMap -> IO ExitCode
-mapPkgs' c r f s p = mapPkgs c r f s p ?>> returnSuccess
-
 -----------
 -- THE WORK
 -----------
