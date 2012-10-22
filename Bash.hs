@@ -24,6 +24,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 {- POMODOROS
+Oct. 22 => X
 Oct. 20 => X
 Oct. 14 => XXXX XXXX XXXX
 -}
@@ -35,7 +36,6 @@ import Text.Regex.PCRE ((=~))
 
 -- Custom Libraries
 import Utilities (hardBreak, lStrip)
-import Zero
 
 --------
 -- TYPES
@@ -47,19 +47,11 @@ data Variable = Variable { varNameOf :: String
                          , valueOf :: Value }
                 deriving (Eq,Show)
 
-data Value = Value { valOf :: String }
-           | Array { arrOf :: [String] }
-             deriving (Eq)
+data Value = Value String | Array [String] deriving (Eq)
 
 instance Show Value where
     show (Value v) = show v
     show (Array a) = unwords $ map show a
-
-instance Zero Value where
-    zero = value ""
-    isZero (Value "") = True
-    isZero (Array []) = True
-    isZero _          = False
 
 variable :: String -> Value -> Variable
 variable name val = Variable name val
@@ -98,16 +90,16 @@ test7 = dotest "yiP"
 -- THE WORK
 -----------
 -- Reference a value from a (hopefully) known (v)ariable.
-reference :: Zero a => ((String -> String) -> Value -> a) -> [Variable]
-          -> String -> Maybe a
-reference f vs name = valLookup vs name ?>>= Just . f (varReplace vs)
+reference :: ((String -> String) -> Value -> a) -> [Variable] -> String
+          -> Maybe a
+reference f vs name = valLookup vs name >>= Just . f (varReplace vs)
 
 referenceValue :: [Variable] -> String -> Maybe String
 referenceValue globals name = reference f globals name
     where f g = g . fromValue
 
 referenceArray :: [Variable] -> String -> Maybe [String]
-referenceArray vs name = reference f vs name ?>>= Just . cm braceExpand
+referenceArray vs name = reference f vs name >>= Just . cm braceExpand
     where f g  = map g . fromArray
           cm h = concat . map h
 
@@ -127,7 +119,6 @@ extractVariable script =
           where name = init m
 
 parseValue :: Script -> (Value,Script)
---parseValue ""      = ("","")  -- Is this necessary?
 parseValue ('(':r) = parseValue' handleArray ')' r
 parseValue oneLine = parseValue' handleValue '\n' oneLine
 
