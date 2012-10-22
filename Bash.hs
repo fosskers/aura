@@ -33,6 +33,7 @@ module Bash where
 
 -- System Libraries
 import Text.Regex.PCRE ((=~))
+import Control.Monad (liftM)
 
 -- Custom Libraries
 import Utilities (hardBreak, lStrip)
@@ -43,8 +44,7 @@ import Utilities (hardBreak, lStrip)
 type Script = String
 type Buffer = String
 
-data Variable = Variable { varNameOf :: String
-                         , valueOf :: Value }
+data Variable = Variable { varNameOf :: String, valueOf :: Value }
                 deriving (Eq,Show)
 
 data Value = Value String | Array [String] deriving (Eq)
@@ -92,14 +92,14 @@ test7 = dotest "yiP"
 -- Reference a value from a (hopefully) known (v)ariable.
 reference :: ((String -> String) -> Value -> a) -> [Variable] -> String
           -> Maybe a
-reference f vs name = valLookup vs name >>= Just . f (varReplace vs)
+reference f vs name = f (varReplace vs) `liftM` valLookup vs name
 
 referenceValue :: [Variable] -> String -> Maybe String
 referenceValue globals name = reference f globals name
     where f g = g . fromValue
 
 referenceArray :: [Variable] -> String -> Maybe [String]
-referenceArray vs name = reference f vs name >>= Just . cm braceExpand
+referenceArray vs name = cm braceExpand `liftM` reference f vs name
     where f g  = map g . fromArray
           cm h = concat . map h
 
@@ -152,9 +152,7 @@ varReplace globals string =
                              Nothing -> pErr $ "Uninitialized var: " ++ m
 
 valLookup :: [Variable] -> String -> Maybe Value
-valLookup vs name = case varLookup vs name of
-                      Nothing -> Nothing
-                      Just v  -> Just $ valueOf v
+valLookup vs name = valueOf `liftM` varLookup vs name
 
 varLookup :: [Variable] -> String -> Maybe Variable
 varLookup [] _        = Nothing
