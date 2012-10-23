@@ -209,8 +209,7 @@ getDepsToInstallMsg1 :: Language -> String
 getDepsToInstallMsg1 English  = "No AUR packages specified for install."
 getDepsToInstallMsg1 Japanese = "パッケージは一つも指摘されていない。"
 getDepsToInstallMsg1 Polish   = "Nie podano pakietów z AUR do zainstalowania."
-getDepsToInstallMsg1 Croatian =
-    "Nijedan AUR paket nije specificiran za instalaciju."
+getDepsToInstallMsg1 Croatian = "Nijedan AUR paket nije specificiran za instalaciju."
 getDepsToInstallMsg1 Swedish  = "Inga AUR-paket är valda för installation."
 getDepsToInstallMsg1 German   = "Keine AUR Pakete zur Installation vermerkt."
 getDepsToInstallMsg1 Spanish  = "No se han especificado paquetes de AUR para instalar."
@@ -226,8 +225,8 @@ getRealPkgConflictsMsg1 Polish name rec req =
     "Zależność " ++ bt name ++ " powinna być w wersji " ++ bt req ++
     ", ale najnowsza wersja to " ++ bt rec ++ "."
 getRealPkgConflictsMsg1 Croatian name rec req =
-    "Zavisnost " ++ bt name ++ " zahtjeva inačicu " ++ bt req ++
-    ", ali najnovija inačica je " ++ bt rec ++ "."
+    "Zavisnost " ++ bt name ++ " zahtjeva verziju " ++ bt req ++
+    ", a najnovija dostupna verzija je " ++ bt rec ++ "."
 getRealPkgConflictsMsg1 Swedish name rec req =
     "Beroendepaketet " ++ bt name ++ " kräver version " ++ bt req ++
     "men den senaste versionen är " ++ bt rec ++ "."
