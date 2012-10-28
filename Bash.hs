@@ -24,6 +24,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 {- POMODOROS
+Oct. 28 => X
 Oct. 22 => X
 Oct. 20 => X
 Oct. 14 => XXXX XXXX XXXX
@@ -84,6 +85,7 @@ test4 = dotest "shutterPKGBUILD"
 test5 = dotest "tjP" 
 test6 = dotest "bbP"
 test7 = dotest "yiP"
+test8 = dotest "pqP"
 -}
 
 -----------
@@ -136,11 +138,11 @@ parseElements s = concat . map (flip parseElements' [] . lStrip) . lines $ s
 
 parseElements' :: String -> [String] -> [String]
 parseElements' [] es = es
-parseElements' s es  | not . isQuote . head $ s =
-                         parseElements' "" (words s ++ es)
-                     | otherwise = parseElements' (lStrip rest) (e : es)
-    where (e,rest) = hardBreak (== head s) $ tail s
-          isQuote  = (`elem` ['\'','"'])
+parseElements' s es  = parseElements' (lStrip rest) (e : es)
+    where (e,rest)   = hardBreak (`elem` delim) s'
+          (delim,s') | notQuote (head s) = ([' ','\n'],s)
+                     | otherwise         = ([head s],tail s)
+          notQuote   = (`notElem` ['\'','"'])
 
 varReplace :: [Variable] -> String -> String
 varReplace globals string =
