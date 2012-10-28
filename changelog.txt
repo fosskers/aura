@@ -1,6 +1,11 @@
 Aura Changelog
 ==============
 
+1.0.2.2
+-------
+- Fixed parsing bug in `Bash`.
+  If one package fell victim, a whole `-Au` session would fail.
+
 1.0.2.1
 -------
 - Added License info to source files.

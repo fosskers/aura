@@ -1,7 +1,7 @@
 # Maintainer: Colin Woodbury <colingw@gmail.com>
 _hkgname=aura
 pkgname=aura
-pkgver=1.0.2.1
+pkgver=1.0.2.2
 pkgrel=1
 pkgdesc="A package manager for Arch Linux and the AUR written in Haskell."
 url="https://github.com/fosskers/aura"
