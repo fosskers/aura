@@ -16,6 +16,8 @@ With colours:
 - Repo is purple.
 - Package name should be white.
 
+In `divideByPkgType`, change order to get for Repo packages first.
+
 OPTIONS TO IMPLEMENT
 --------------------
 -Ci -> `--info` Gives some stats about the package cache.
