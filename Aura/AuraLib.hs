@@ -23,6 +23,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 {- POMODOROS
+Oct. 30 => X
 Oct. 21 => X
 -}
 
@@ -54,6 +55,7 @@ type ErrMsg = String
 -- The global settings as set by the user with command-line flags.
 data Settings = Settings { environmentOf   :: Environment
                          , langOf          :: Language
+                         , pacman          :: Pacman
                          , ignoredPkgsOf   :: [String]
                          , cachePathOf     :: FilePath
                          , logFilePathOf   :: FilePath
@@ -219,8 +221,8 @@ trueRootCheck ss action
 type MaybePaths = Maybe [FilePath]
 
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
-installPkgFiles :: [String] -> [FilePath] -> IO ExitCode
-installPkgFiles pacOpts files = pacman $ ["-U"] ++ pacOpts ++ files
+installPkgFiles :: Settings -> [String] -> [FilePath] -> IO ExitCode
+installPkgFiles ss pacOpts files = pacman ss $ ["-U"] ++ pacOpts ++ files
 
 -- All building occurs within temp directories in the package cache.
 buildPackages :: Settings -> [AURPkg] -> IO MaybePaths
@@ -463,9 +465,9 @@ countInstalledPackages = (length . lines) `liftM` pacmanOutput ["-Qsq"]
 getOrphans :: IO [String]
 getOrphans = lines `liftM` pacmanOutput ["-Qqdt"]
 
-removePkgs :: [String] -> [String] -> IO ExitCode
-removePkgs [] _         = returnSuccess
-removePkgs pkgs pacOpts = pacman $ ["-Rsu"] ++ pkgs ++ pacOpts
+removePkgs :: Settings -> [String] -> [String] -> IO ExitCode
+removePkgs _ [] _          = returnSuccess
+removePkgs ss pkgs pacOpts = pacman ss $ ["-Rsu"] ++ pkgs ++ pacOpts
 
 -------
 -- MISC  -- Too specific for `Utilities.hs`

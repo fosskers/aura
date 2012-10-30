@@ -34,7 +34,11 @@ import Control.Monad (liftM)
 import Utilities 
 import Shell
 
-type Arg = String
+type ShellArg = String
+type Pacman   = [String] -> IO ExitCode
+
+defaultCmd :: String
+defaultCmd = "pacman"
 
 pacmanConfFile :: FilePath
 pacmanConfFile = "/etc/pacman.conf"
@@ -45,35 +49,36 @@ defaultPackageCache = "/var/cache/pacman/pkg/"
 defaultLogFile :: FilePath
 defaultLogFile = "/var/log/pacman.log"
 
-pacman :: [Arg] -> IO ExitCode
-pacman args = hFlush stdout >> shellCmd "pacman" args
-
--- Slight evil-doing permitted here.
-pacman' :: [Arg] -> IO ()
-pacman' args = pacman args >> return ()
+pacmanCmd :: String -> [ShellArg] -> IO ExitCode
+pacmanCmd cmd args = hFlush stdout >> shellCmd cmd args
 
 -- Runs pacman without producing any output.
-pacmanQuiet :: [Arg] -> IO (ExitCode,String,String)
+pacmanQuiet :: [ShellArg] -> IO (ExitCode,String,String)
 pacmanQuiet args = quietShellCmd' "pacman" args
 
 -- Did a pacman process succeed?
-pacmanSuccess :: [Arg] -> IO Bool
+pacmanSuccess :: [ShellArg] -> IO Bool
 pacmanSuccess args = (didProcessSucceed . tripleFst) `liftM` pacmanQuiet args
 
-pacmanFailure :: [Arg] -> IO Bool
+pacmanFailure :: [ShellArg] -> IO Bool
 pacmanFailure args = not `liftM` pacmanSuccess args
 
 -- Performs a pacmanQuiet and returns only the stdout.
-pacmanOutput :: [Arg] -> IO String
+pacmanOutput :: [ShellArg] -> IO String
 pacmanOutput args = tripleSnd `liftM` pacmanQuiet args
 
-syncDatabase :: [Arg] -> IO ExitCode
-syncDatabase pacOpts = pacman $ ["-Sy"] ++ pacOpts
+syncDatabase :: Pacman -> [ShellArg] -> IO ExitCode
+syncDatabase pacman pacOpts = pacman $ ["-Sy"] ++ pacOpts
 
 -- This takes the filepath of the package cache as an argument.
 packageCacheContents :: FilePath -> IO [String]
 packageCacheContents c = filter dots `liftM` ls c
     where dots p = p `notElem` [".",".."]
+
+getPacmanCmd :: Environment -> Pacman
+getPacmanCmd env = case getEnvVar "PACMAN" env of
+                     Nothing  -> pacmanCmd defaultCmd
+                     Just cmd -> pacmanCmd cmd
 
 getPacmanConf :: IO String
 getPacmanConf = readFile pacmanConfFile

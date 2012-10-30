@@ -22,7 +22,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 {- POMODOROS
-2012 Oct 16 - XXX
+2012 Oct 30 => X
+2012 Oct 16 => XXX
 -}
 
 --                       -
@@ -87,6 +88,7 @@ getSettings lang auraFlags = do
   environment <- getEnvironment
   return $ Settings { environmentOf   = environment
                     , langOf          = lang
+                    , pacman          = getPacmanCmd environment
                     , ignoredPkgsOf   = getIgnoredPkgs confFile
                     , cachePathOf     = getCachePath confFile
                     , logFilePathOf   = getLogFilePath confFile
@@ -129,13 +131,13 @@ executeOpts ss (flags,input,pacOpts) = do
     (Orphans:fs) ->
         case fs of
           []        -> displayOrphans ss input
-          [Abandon] -> ss |$| (getOrphans >>= flip removePkgs pacOpts)
+          [Abandon] -> ss |$| (getOrphans >>= \ps -> removePkgs ss ps pacOpts)
           badFlags  -> scoldAndFail ss executeOptsMsg1
     [ViewConf]  -> viewConfFile
     [Languages] -> displayOutputLanguages ss
     [Help]      -> printHelpMsg ss pacOpts
     [Version]   -> getVersionInfo >>= animateVersionMsg ss
-    pacmanFlags -> pacman $ pacOpts ++ input ++ hijackedFlags
+    pacmanFlags -> pacman ss $ pacOpts ++ input ++ hijackedFlags
     where hijackedFlags = reconvertFlags flags hijackedFlagMap
           
 --------------------
@@ -149,16 +151,16 @@ could fail silently.
 -}
 installPackages :: Settings -> [String] -> [String] -> IO ExitCode
 installPackages _ _ [] = returnSuccess
-installPackages settings pacOpts pkgs = do
-  let toInstall = pkgs \\ ignoredPkgsOf settings
+installPackages ss pacOpts pkgs = do
+  let toInstall = pkgs \\ ignoredPkgsOf ss
       ignored   = pkgs \\ toInstall
-      lang      = langOf settings
+      lang      = langOf ss
   reportIgnoredPackages lang ignored
   (forPacman,aurPkgNames,nonPkgs) <- divideByPkgType toInstall
   reportNonPackages lang nonPkgs
   aurPackages <- mapM makeAURPkg aurPkgNames
-  notify settings installPackagesMsg5
-  results     <- getDepsToInstall settings aurPackages
+  notify ss installPackagesMsg5
+  results     <- getDepsToInstall ss aurPackages
   case results of
     Left errors -> do
       printList red noColour (installPackagesMsg1 lang) errors
@@ -167,36 +169,37 @@ installPackages settings pacOpts pkgs = do
       let repoPkgs    = nub $ pacmanDeps ++ forPacman
           pkgsAndOpts = pacOpts ++ repoPkgs
       reportPkgsToInstall lang repoPkgs aurDeps aurPackages 
-      okay <- optionalPrompt (mustConfirm settings) (installPackagesMsg3 lang)
+      okay <- optionalPrompt (mustConfirm ss) (installPackagesMsg3 lang)
       if not okay
-         then scoldAndFail settings installPackagesMsg4
+         then scoldAndFail ss installPackagesMsg4
          else do
-           unless (null repoPkgs) (pacman' $ ["-S","--asdeps"] ++ pkgsAndOpts)
-           mapM_ (buildAndInstallDep settings pacOpts) aurDeps
-           pkgFiles <- buildPackages settings aurPackages
+           unless (null repoPkgs) $ do
+                 pacman ss (["-S","--asdeps"] ++ pkgsAndOpts) >> return ()
+           mapM_ (buildAndInstallDep ss pacOpts) aurDeps
+           pkgFiles <- buildPackages ss aurPackages
            case pkgFiles of
-             Just pfs -> installPkgFiles pacOpts pfs
-             Nothing  -> scoldAndFail settings installPackagesMsg6
+             Just pfs -> installPkgFiles ss pacOpts pfs
+             Nothing  -> scoldAndFail ss installPackagesMsg6
 
 buildAndInstallDep :: Settings -> [String] -> AURPkg -> IO ExitCode
-buildAndInstallDep settings pacOpts pkg =
-  buildPackages settings [pkg] ?>>=
-  installPkgFiles (["--asdeps"] ++ pacOpts) . fromJust
+buildAndInstallDep ss pacOpts pkg =
+  buildPackages ss [pkg] ?>>=
+  installPkgFiles ss (["--asdeps"] ++ pacOpts) . fromJust
                
 upgradeAURPkgs :: Settings -> [String] -> [String] -> IO ExitCode
-upgradeAURPkgs settings pacOpts pkgs = do
-  notify settings upgradeAURPkgsMsg1
+upgradeAURPkgs ss pacOpts pkgs = do
+  notify ss upgradeAURPkgsMsg1
   foreignPkgs <- filter (\(n,_) -> notIgnored n) `liftM` getForeignPackages
   (aurInfoLookup $ map fst foreignPkgs) ?>>= \pkgInfoEither -> do
     let pkgInfo   = fromRight pkgInfoEither
         aurPkgs   = filter (\(n,_) -> n `elem` map nameOf pkgInfo) foreignPkgs
         toUpgrade = filter isntMostRecent $ zip pkgInfo (map snd aurPkgs)
-    notify settings upgradeAURPkgsMsg2
+    notify ss upgradeAURPkgsMsg2
     if null toUpgrade
-       then warn settings upgradeAURPkgsMsg3
-       else reportPkgsToUpgrade (langOf settings) $ map prettify toUpgrade
-    installPackages settings pacOpts $ (map (nameOf . fst) toUpgrade) ++ pkgs
-      where notIgnored p   = splitName p `notElem` ignoredPkgsOf settings
+       then warn ss upgradeAURPkgsMsg3
+       else reportPkgsToUpgrade (langOf ss) $ map prettify toUpgrade
+    installPackages ss pacOpts $ (map (nameOf . fst) toUpgrade) ++ pkgs
+      where notIgnored p   = splitName p `notElem` ignoredPkgsOf ss
             prettify (p,v) = nameOf p ++ " : " ++ v ++ " => " ++ latestVerOf p
 
 aurPkgInfo :: Settings -> [String] -> IO ExitCode
@@ -264,7 +267,7 @@ displayPkgbuild pkgs = filterAURPkgs pkgs ?>>= mapM_ download >> returnSuccess
 
 syncAndContinue :: Settings -> ([Flag],[String],[String]) -> IO ExitCode
 syncAndContinue settings (flags,input,pacOpts) = do
-  _ <- syncDatabase pacOpts
+  _ <- syncDatabase (pacman settings) pacOpts
   executeOpts settings (AURInstall:flags,input,pacOpts)  -- This is Evil.
 
 removeMakeDeps :: Settings -> ([Flag],[String],[String]) -> IO ExitCode
@@ -274,7 +277,7 @@ removeMakeDeps settings (flags,input,pacOpts) = do
     orphansAfter <- getOrphans
     let makeDeps = orphansAfter \\ orphansBefore
     unless (null makeDeps) $ notify settings removeMakeDepsAfterMsg1
-    removePkgs makeDeps pacOpts
+    removePkgs settings makeDeps pacOpts
 
 --------------------
 -- WORKING WITH `-C`
@@ -289,7 +292,7 @@ downgradePackages ss pkgs = do
   return reals ?>> do
     cache   <- packageCacheContents cachePath
     choices <- mapM (getDowngradeChoice ss cache) reals
-    pacman $ ["-U"] ++ map (cachePath </>) choices
+    pacman ss $ ["-U"] ++ map (cachePath </>) choices
       where cachePath = cachePathOf ss
                
 getDowngradeChoice :: Settings -> [String] -> String -> IO String
@@ -351,7 +354,7 @@ preCleanCache settings (input:_)  -- Ignores all but first input element.
 cleanCache :: Settings -> Int -> IO ExitCode
 cleanCache ss toSave
     | toSave < 0  = scoldAndFail ss cleanCacheMsg1
-    | toSave == 0 = warn ss cleanCacheMsg2 >> pacman ["-Scc"]
+    | toSave == 0 = warn ss cleanCacheMsg2 >> pacman ss ["-Scc"]
     | otherwise   = do
         warn ss $ flip cleanCacheMsg3 toSave
         okay <- optionalPrompt (mustConfirm ss) (cleanCacheMsg4 $ langOf ss)
@@ -421,7 +424,7 @@ displayOrphans _ []    = getOrphans >>= mapM_ putStrLn >> returnSuccess
 displayOrphans ss pkgs = adoptPkg ss pkgs
 
 adoptPkg :: Settings -> [String] -> IO ExitCode
-adoptPkg ss pkgs = ss |$| (pacman $ ["-D","--asexplicit"] ++ pkgs)
+adoptPkg ss pkgs = ss |$| (pacman ss $ ["-D","--asexplicit"] ++ pkgs)
 
 ----------
 -- REPORTS
@@ -471,7 +474,7 @@ printHelpMsg settings [] = do
   pacmanHelp <- getPacmanHelpMsg
   putStrLn $ getHelpMsg settings pacmanHelp
   returnSuccess
-printHelpMsg _ pacOpts = pacman $ pacOpts ++ ["-h"]
+printHelpMsg settings pacOpts = pacman settings $ pacOpts ++ ["-h"]
 
 getHelpMsg :: Settings -> [String] -> String
 getHelpMsg settings pacmanHelpMsg = concat $ intersperse "\n" allMessages
