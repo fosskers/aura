@@ -69,7 +69,7 @@ import Aura.AurConnection ---------------------------------
 --                       -
 
 auraVersion :: String
-auraVersion = "1.0.2.2"
+auraVersion = "1.0.3.0"
 
 main :: IO a
 main = do
