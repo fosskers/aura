@@ -890,22 +890,26 @@ orpha Spanish  = blue "Realizar acciones relacionadas con paquetes huérfanos ([
 --------------------------
 -- AurConnection functions
 --------------------------
-aurPkgInfoFields :: Language -> [String]
-aurPkgInfoFields English  = [ "Name","Version","AUR Status","Project URL"
-                            ,"AUR URL","License", "Votes","Description" ]
-aurPkgInfoFields Japanese = [ "名前","バージョン","パッケージ状態"
-                            , "プロジェクト","パッケージページ","ライセンス"
-                            ,"投票数","概要" ]
-aurPkgInfoFields Polish   = [ "Nazwa","Wersja","Status w AUR","URL Projektu"
-                            , "URL AUR", "Licencja","Głosy","Opis" ]
-aurPkgInfoFields Croatian = [ "Ime","Verzija","AUR Stanje","URL Projekta"
-                            , "AUR URL","Licenca","Glasovi","Opis" ]
-aurPkgInfoFields Swedish  = [ "Namn","Version","AUR Status","Projekt URL"
-                            , "AUR URL","Licens","Röster","Beskrivning"]
-aurPkgInfoFields German   = [ "Name","Version","AUR Status","Projekt URL"
-                            , "AUR URL","Lizenz","Stimmen","Beschreibung"]
-aurPkgInfoFields Spanish  = [ "Nombre","Versión","Estado en AUR","URL del proyecto"
-                            ,"URL en AUR","Licencia", "Votos","Descripción" ]
+infoFields :: Language -> [String]
+infoFields English  = [ "Repository","Name","Version","AUR Status"
+                      , "Project URL","AUR URL","License", "Votes"
+                      , "Description" ]
+infoFields Japanese = [ "リポジトリ","名前","バージョン","パッケージ状態"
+                      , "プロジェクト","パッケージページ","ライセンス"
+                      , "投票数","概要" ]
+infoFields Polish   = [ "Repository","Nazwa","Wersja","Status w AUR"
+                      , "URL Projektu","URL AUR", "Licencja","Głosy","Opis" ]
+infoFields Croatian = [ "Repository","Ime","Verzija","AUR Stanje"
+                      , "URL Projekta","AUR URL","Licenca","Glasovi","Opis" ]
+infoFields Swedish  = [ "Repository","Namn","Version","AUR Status"
+                      , "Projekt URL","AUR URL","Licens","Röster"
+                      , "Beskrivning"]
+infoFields German   = [ "Repository","Name","Version","AUR Status"
+                      , "Projekt URL","AUR URL","Lizenz","Stimmen"
+                      , "Beschreibung"]
+infoFields Spanish  = [ "Repository","Nombre","Versión","Estado en AUR"
+                      , "URL del proyecto","URL en AUR","Licencia", "Votos"
+                      , "Descripción" ]
 
 outOfDateMsg :: Language -> Bool -> String
 outOfDateMsg English  True  = red "Out of Date!"

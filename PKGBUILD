@@ -10,6 +10,7 @@ arch=('i686' 'x86_64')
 makedepends=('ghc' 'haskell-regex-base' 'haskell-regex-pcre' 'haskell-json'
              'haskell-curl')
 depends=('gmp' 'pacman')
+optdepends=('pacman-color: For coloured pacman output in Aura.')
 options=('strip')
 source=(https://github.com/downloads/fosskers/aura/${_hkgname}-${pkgver}.tar.gz)
 md5sums=('8dafa7078e1d3647d5ea81d575a41249')

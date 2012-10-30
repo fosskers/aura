@@ -217,11 +217,12 @@ renderAurPkgInfo ss info = concat $ intersperse "\n" fieldsAndEntries
           paddedFields     = map (\x -> postPad x ws longestField) fields
           ws               = whitespace $ langOf ss
           longestField     = maximum $ map length fields
-          fields           = aurPkgInfoFields $ langOf ss
-          entries          = [ nameOf info
+          fields           = infoFields $ langOf ss
+          entries          = [ magenta "aur"
+                             , nameOf info
                              , latestVerOf info
                              , outOfDateMsg (langOf ss) $ isOutOfDate info
-                             , projectURLOf info
+                             , cyan $ projectURLOf info
                              , aurURLOf info
                              , licenseOf info
                              , votesOf info
@@ -235,8 +236,8 @@ aurSearch (regex:_) = aurSearchLookup regex ?>>=
     returnSuccess
 
 renderSearchResult :: String -> PkgInfo -> String
-renderSearchResult reg info = yellow "aur/" ++ n ++ " " ++ v ++ "\n    " ++ d
-    where c cs = case cs =~ ("(?i)" ++ reg) of (b,m,a) -> b ++ cyan m ++ a
+renderSearchResult r info = magenta "aur/" ++ n ++ " " ++ v ++ "\n    " ++ d
+    where c cs = case cs =~ ("(?i)" ++ r) of (b,m,a) -> b ++ cyan m ++ a
           n = c $ nameOf info
           d = c $ descriptionOf info
           v | isOutOfDate info = red $ latestVerOf info
