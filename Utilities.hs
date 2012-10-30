@@ -91,9 +91,6 @@ tripleSnd (_,b,_) = b
 tripleThrd :: (a,b,c) -> c
 tripleThrd (_,_,c) = c
 
-tupTrip :: c -> (a,b) -> (a,b,c)
-tupTrip c (a,b) = (a,b,c)
-
 -- Replaces a (p)attern with a (t)arget in a line if possible.
 replaceByPatt :: [Pattern] -> String -> String
 replaceByPatt [] line = line
@@ -140,9 +137,6 @@ optionalPrompt False _  = return True
 
 searchLines :: Regex -> [String] -> [String]
 searchLines pat allLines = filter (\line -> line =~ pat) allLines
-
-wordsLines :: String -> [String]
-wordsLines xs = lines xs >>= words
 
 notNull :: [a] -> Bool
 notNull = not . null

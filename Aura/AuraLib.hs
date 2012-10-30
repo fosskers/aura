@@ -44,7 +44,6 @@ import Aura.Languages
 import Aura.MakePkg
 import Aura.Pacman
 import Utilities
-import Internet
 import Shell
 import Zero
 import Bash
@@ -429,12 +428,6 @@ isIgnored pkg toIgnore = pkg `elem` toIgnore
 isInstalled :: String -> IO Bool
 isInstalled pkg = pacmanSuccess ["-Qq",pkg]
 
-isNotInstalled :: String -> IO Bool
-isNotInstalled pkg = pacmanFailure ["-Qq",pkg]
-
-isRepoPkg :: String -> IO Bool
-isRepoPkg pkg = pacmanSuccess ["-Si",pkg]
-
 -- Beautiful.
 filterAURPkgs :: [String] -> IO [String]
 filterAURPkgs pkgs = aurInfoLookup pkgs ?>>= return . map nameOf . fromRight
@@ -446,21 +439,6 @@ filterRepoPkgs pkgs = do
   return . filter (`elem` pkgs) . lines $ repoPkgs
     where pkgs' = "^(" ++ prep pkgs ++ ")$"
           prep  = concat . intersperse "|"
-
--- A package is an AUR package if it's PKGBUILD exists on the Arch website.
--- Requires internet access.
-isAURPkg :: String -> IO Bool
-isAURPkg = doesUrlExist . getPkgbuildUrl
-
-isntAURPkg :: String -> IO Bool
-isntAURPkg pkg = not `liftM` isAURPkg pkg
-
--- A package is a virtual package if it has a provider.
-isVirtualPkg :: String -> IO Bool
-isVirtualPkg pkg = getProvidingPkg pkg ?>> return True
-
-countInstalledPackages :: IO Int
-countInstalledPackages = (length . lines) `liftM` pacmanOutput ["-Qsq"]
 
 getOrphans :: IO [String]
 getOrphans = lines `liftM` pacmanOutput ["-Qqdt"]
@@ -506,8 +484,8 @@ groupPkgs (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
 
 divideByPkgType :: [String] -> IO ([String],[String],[String])
 divideByPkgType pkgs = do
-  aurPkgNames  <- filterAURPkgs namesOnly
-  repoPkgNames <- filterRepoPkgs $ namesOnly \\ aurPkgNames
+  repoPkgNames <- filterRepoPkgs namesOnly
+  aurPkgNames  <- filterAURPkgs $ namesOnly \\ repoPkgNames
   let aurPkgs  = filter (flip elem aurPkgNames . splitName) pkgs
       repoPkgs = filter (flip elem repoPkgNames . splitName) pkgs
       others   = (pkgs \\ aurPkgs) \\ repoPkgs

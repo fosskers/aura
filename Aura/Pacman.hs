@@ -60,9 +60,6 @@ pacmanQuiet args = quietShellCmd' "pacman" args
 pacmanSuccess :: [ShellArg] -> IO Bool
 pacmanSuccess args = (didProcessSucceed . tripleFst) `liftM` pacmanQuiet args
 
-pacmanFailure :: [ShellArg] -> IO Bool
-pacmanFailure args = not `liftM` pacmanSuccess args
-
 -- Performs a pacmanQuiet and returns only the stdout.
 pacmanOutput :: [ShellArg] -> IO String
 pacmanOutput args = tripleSnd `liftM` pacmanQuiet args
