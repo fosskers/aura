@@ -138,6 +138,7 @@ parseElements s = concat . map (flip parseElements' [] . lStrip) . lines $ s
 
 parseElements' :: String -> [String] -> [String]
 parseElements' [] es = es
+parseElements' ('\\':s) es = parseElements' (lStrip s) es
 parseElements' s es  = parseElements' (lStrip rest) (e : es)
     where (e,rest)   = hardBreak (`elem` delim) s'
           (delim,s') | notQuote (head s) = ([' ','\n'],s)
