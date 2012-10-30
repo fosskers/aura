@@ -23,6 +23,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 {- POMODOROS
+Oct. 30 => X
 Oct. 21 => X
 -}
 
@@ -43,7 +44,6 @@ import Aura.Languages
 import Aura.MakePkg
 import Aura.Pacman
 import Utilities
-import Internet
 import Shell
 import Zero
 import Bash
@@ -54,6 +54,7 @@ type ErrMsg = String
 -- The global settings as set by the user with command-line flags.
 data Settings = Settings { environmentOf   :: Environment
                          , langOf          :: Language
+                         , pacman          :: Pacman
                          , ignoredPkgsOf   :: [String]
                          , cachePathOf     :: FilePath
                          , logFilePathOf   :: FilePath
@@ -219,8 +220,8 @@ trueRootCheck ss action
 type MaybePaths = Maybe [FilePath]
 
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
-installPkgFiles :: [String] -> [FilePath] -> IO ExitCode
-installPkgFiles pacOpts files = pacman $ ["-U"] ++ pacOpts ++ files
+installPkgFiles :: Settings -> [String] -> [FilePath] -> IO ExitCode
+installPkgFiles ss pacOpts files = pacman ss $ ["-U"] ++ pacOpts ++ files
 
 -- All building occurs within temp directories in the package cache.
 buildPackages :: Settings -> [AURPkg] -> IO MaybePaths
@@ -427,12 +428,6 @@ isIgnored pkg toIgnore = pkg `elem` toIgnore
 isInstalled :: String -> IO Bool
 isInstalled pkg = pacmanSuccess ["-Qq",pkg]
 
-isNotInstalled :: String -> IO Bool
-isNotInstalled pkg = pacmanFailure ["-Qq",pkg]
-
-isRepoPkg :: String -> IO Bool
-isRepoPkg pkg = pacmanSuccess ["-Si",pkg]
-
 -- Beautiful.
 filterAURPkgs :: [String] -> IO [String]
 filterAURPkgs pkgs = aurInfoLookup pkgs ?>>= return . map nameOf . fromRight
@@ -445,27 +440,12 @@ filterRepoPkgs pkgs = do
     where pkgs' = "^(" ++ prep pkgs ++ ")$"
           prep  = concat . intersperse "|"
 
--- A package is an AUR package if it's PKGBUILD exists on the Arch website.
--- Requires internet access.
-isAURPkg :: String -> IO Bool
-isAURPkg = doesUrlExist . getPkgbuildUrl
-
-isntAURPkg :: String -> IO Bool
-isntAURPkg pkg = not `liftM` isAURPkg pkg
-
--- A package is a virtual package if it has a provider.
-isVirtualPkg :: String -> IO Bool
-isVirtualPkg pkg = getProvidingPkg pkg ?>> return True
-
-countInstalledPackages :: IO Int
-countInstalledPackages = (length . lines) `liftM` pacmanOutput ["-Qsq"]
-
 getOrphans :: IO [String]
 getOrphans = lines `liftM` pacmanOutput ["-Qqdt"]
 
-removePkgs :: [String] -> [String] -> IO ExitCode
-removePkgs [] _         = returnSuccess
-removePkgs pkgs pacOpts = pacman $ ["-Rsu"] ++ pkgs ++ pacOpts
+removePkgs :: Settings -> [String] -> [String] -> IO ExitCode
+removePkgs _ [] _          = returnSuccess
+removePkgs ss pkgs pacOpts = pacman ss $ ["-Rsu"] ++ pkgs ++ pacOpts
 
 -------
 -- MISC  -- Too specific for `Utilities.hs`
@@ -504,8 +484,8 @@ groupPkgs (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
 
 divideByPkgType :: [String] -> IO ([String],[String],[String])
 divideByPkgType pkgs = do
-  aurPkgNames  <- filterAURPkgs namesOnly
-  repoPkgNames <- filterRepoPkgs $ namesOnly \\ aurPkgNames
+  repoPkgNames <- filterRepoPkgs namesOnly
+  aurPkgNames  <- filterAURPkgs $ namesOnly \\ repoPkgNames
   let aurPkgs  = filter (flip elem aurPkgNames . splitName) pkgs
       repoPkgs = filter (flip elem repoPkgNames . splitName) pkgs
       others   = (pkgs \\ aurPkgs) \\ repoPkgs

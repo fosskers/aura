@@ -1,20 +1,8 @@
 GENERAL
 -------
-Protected package files? In a .conf file?
-You could give a list of regexes for packages that you never want deleted.
-When a `-Cc` comes along they wouldn't be deleted.
-
-What of the license has to be present in the source code?
-
-Calls to pacman should check for the `$PACMAN` var.
-
 When outputing repo dependencies, show what repo they're from?
 
 Move aura to haskell-http.
-
-With colours:
-- Repo is purple.
-- Package name should be white.
 
 In `divideByPkgType`, change order to get for Repo packages first.
 

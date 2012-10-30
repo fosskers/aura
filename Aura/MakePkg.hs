@@ -1,5 +1,3 @@
-module Aura.MakePkg where
-
 {-
 
 Copyright 2012 Colin Woodbury <colingw@gmail.com>
@@ -21,6 +19,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
+module Aura.MakePkg where
+
 -- System Libraries
 import Text.Regex.PCRE ((=~))
 import System.Exit (ExitCode)
@@ -37,7 +37,7 @@ makepkgGen :: (String -> [String] -> IO (ExitCode,String,String)) ->
               String -> IO (ExitCode,FilePath,String)
 makepkgGen f user = do
   (exitStatus,out,err) <- f command opts
-  contents <- ls "."  -- I don't like this relative path.
+  contents <- pwd >>= ls
   let pkgFiles = filter (\file -> (file =~ ".pkg.tar.xz")) contents
       pkgName  = if null pkgFiles then "" else head pkgFiles
   return $ (exitStatus,pkgName,err ++ "\n" ++ out)
