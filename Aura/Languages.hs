@@ -6,6 +6,7 @@ Denis Kasak              | Croatian
 Fredrik Haikarainen      | Swedish
 Lukas Niederbremer       | German
 Alejandro Gómez          | Spanish
+Henry "Ingvij" Kupty     | Portuguese
 -}
 
 {-
@@ -42,6 +43,7 @@ data Language = English
               | Swedish
               | German
               | Spanish
+              | Portuguese
                 deriving (Eq,Enum,Show)
 
 translatorsAndLangs :: [(Language,[String])]
@@ -53,7 +55,8 @@ translators = [ [ "Aura Translators:"  --English
                 , " Denis Kasak (Croatian)"
                 , " Fredrik Haikarainen (Swedish)"
                 , " Lukas Niederbremer (German)"
-                , " Alejandro Gómez (Spanish)" ]
+                , " Alejandro Gómez (Spanish)" 
+                , " Henry \"Ingvij\" Kupty (Portuguese)"]
               , [ "Auraの翻訳者："  -- Japanese
                 , "クリッス \"Kwpolska\" ヲーリック（ポーランド語）"
                 , "デニス・カサック（クロアチア語）"
@@ -65,31 +68,43 @@ translators = [ [ "Aura Translators:"  --English
                 , " Denis Kasak (chorwacki)"
                 , " Fredrik Haikarainen (szwedzki)"
                 , " Lukas Niederbremer (niemiecki)"
-                , " Alejandro Gómez (hiszpański)" ]
+                , " Alejandro Gómez (hiszpański)" 
+                , " Henry \"Ingvij\" Kupty (portugalski)"]
               , [ "Aura Prevoditelji:"  -- Croatian
                 , " Chris \"Kwpolska\" Warrick (poljski)"
                 , " Denis Kasak (hrvatski)"
                 , " Fredrik Haikarainen (švedski)"
                 , " Lukas Niederbremer (njemački)"
-                , " Alejandro Gómez (španjolski)" ]
+                , " Alejandro Gómez (španjolski)" 
+                , " Henry \"Ingvij\" Kupty (portugalski)"]
               , [ "Aura Översättare:"   -- Swedish
                 , " Chris \"Kwpolska\" Warrick (polska)"
                 , " Denis Kasak (kroatiska)"
                 , " Fredrik Haikarainen (svenska)"
                 , " Lukas Niederbremer (tyska)"
-                , " Alejandro Gómez (spanska)" ]
+                , " Alejandro Gómez (spanska)"
+                , " Henry \"Ingvij\" Kupty (portugisiska)"]
               , [ "Aura Übersetzer:"  -- German
                 , " Chris \"Kwpolska\" Warrick (Polnisch)"
                 , " Denis Kasak (Kroatisch)"
                 , " Fredrik Haikarainen (Schwedisch)"
                 , " Lukas Niederbremer (Deutsch)"
-                , " Alejandro Gómez (Spanisch)" ]
+                , " Alejandro Gómez (Spanisch)" 
+                , " Henry \"Ingvij\" Kupty (Portugiesisch)"]
               , [ "Traductores de Aura:"  -- Spanish
                 , " Chris \"Kwpolska\" Warrick (Polaco)"
                 , " Denis Kasak (Croata)"
                 , " Fredrik Haikarainen (Sueco)"
                 , " Lukas Niederbremer (Alemán)"
-                , " Alejandro Gómez (Español)" ]
+                , " Alejandro Gómez (Español)" 
+                , " Henry \"Ingvij\" Kupty (Portugués)"]
+              , [ "Tradutores de Aura:"  -- Portuguese
+                , " Chris \"Kwpolska\" Warrick (Polonês)"
+                , " Denis Kasak (Croata)"
+                , " Fredrik Haikarainen (Sueco)"
+                , " Lukas Niederbremer (Alemão)"
+                , " Alejandro Gómez (Espanhol)"
+                , " Henry \"Ingvij\" Kupty (Português)" ]
               ]
 
 allLanguages :: [Language]
@@ -116,6 +131,9 @@ german = German
 spanish :: Language
 spanish = Spanish
 
+portuguese :: Language
+portuguese = Portuguese
+
 -- Wrap a String in backticks
 bt :: String -> String
 bt cs = "`" ++ cyan cs ++ "`"
@@ -136,6 +154,7 @@ mustBeRootMsg1 Croatian = "Morate koristiti" ++ bt "sudo" ++ "za ovu radnju."
 mustBeRootMsg1 Swedish  = "Du måste använda " ++ bt "sudo" ++ " för det."
 mustBeRootMsg1 German   = "Sie müssen dafür " ++ bt "sudo" ++ " benutzen."
 mustBeRootMsg1 Spanish  = "Tienes que utilizar " ++ bt "sudo" ++ " para eso."
+mustBeRootMsg1 Portuguese = "Utilize " ++ bt "sudo" ++ "para isso."
 
 buildPackagesMsg1 :: Language -> String -> String
 buildPackagesMsg1 English  p = "Building " ++ bt p ++ "..."
@@ -145,6 +164,7 @@ buildPackagesMsg1 Croatian p = "Gradim " ++ bt p ++ "..."
 buildPackagesMsg1 Swedish  p = "Bygger paket " ++ bt p ++ "..."
 buildPackagesMsg1 German   p = "Baue Paket " ++ bt p ++ "..."
 buildPackagesMsg1 Spanish  p = "Construyendo " ++ bt p ++ "..."
+buildPackagesMsg1 Portuguese p = "Compilando " ++ br p ++ "..."
 
 checkHotEditMsg1 :: Language -> String -> String
 checkHotEditMsg1 English  p =
@@ -157,6 +177,7 @@ checkHotEditMsg1 German   p =
     "Möchten Sie die PKGBUILD-Datei für " ++ bt p ++ " bearbeiten?"
 checkHotEditMsg1 Spanish p =
     "¿Te gustaría editar el PKGBUILD de " ++ bt p ++ "?"
+checkHotEditMsg1 Portuguese p = "Desejaria editar o PKGBUILD de " ++ bt p ++ "?"
 
 buildFailMsg1 :: Language -> String -> String
 buildFailMsg1 English  p = "Well, building " ++ bt p ++ " failed."
@@ -167,6 +188,7 @@ buildFailMsg1 Croatian p = "Izgradnja " ++ bt p ++ " nije uspjela."
 buildFailMsg1 Swedish  p = "Det gick inte att bygga paketet " ++ bt p ++ "."
 buildFailMsg1 German   p = "Bauen von " ++ bt p ++ " ist fehlgeschlagen."
 buildFailMsg1 Spanish  p = "La construcción de " ++ bt p ++ " ha fallado."
+buildFailMsg1 Portuguese p = "Falha na compilação do pacote " ++ bt p ++ "."
 
 buildFailMsg2 :: Language -> String
 buildFailMsg2 English  = "Also, the following weren’t built:"
@@ -177,6 +199,7 @@ buildFailMsg2 Croatian = "Dodatno, ni sljedeće nije izgrađeno:"
 buildFailMsg2 Swedish  = "Det gick heller inte att bygga följande paket:"
 buildFailMsg2 German   = "Die folgenden Pakete wurden zusätzlich nicht gebaut:"
 buildFailMsg2 Spanish  = "Los siguientes paquetes no se han construido:"
+buildFailMsg2 Portuguese = "Os pacotes a seguir não foram compilados:"
 
 buildFailMsg3 :: Language -> String
 buildFailMsg3 English  = "However, these packages were successfully built:"
@@ -186,6 +209,7 @@ buildFailMsg3 Croatian = "Neki paketi su možda izgrađeni uspješno."
 buildFailMsg3 Swedish  = "Vissa paket kanske har byggts ordentligt (Osäker)."
 buildFailMsg3 German   = "Diese Pakete wurden wiederrum erfolgreich gebaut:"
 buildFailMsg3 Spanish  = "Sin embargo, los siguientes paquetes se han construido:"
+buildFailMsg3 Portuguese = "Entretanto, os seguintes pacotes compilaram com sucesso:"
 
 buildFailMsg4 :: Language -> String
 buildFailMsg4 English  = "Would you like to install them?"
@@ -195,6 +219,7 @@ buildFailMsg4 Croatian = "Želite li ih instalirati?"
 buildFailMsg4 Swedish  = "Vill du installera dem?"
 buildFailMsg4 German   = "Möchten sie diese installieren?"
 buildFailMsg4 Spanish  = "¿Te gustaría instalarlos?"
+buildFailMsg4 Portuguese = "Gostaria de instalá-los?"
 
 displayBuildErrorsMsg1 :: Language -> String
 displayBuildErrorsMsg1 English  = "Dumping makepkg output in "
@@ -204,6 +229,7 @@ displayBuildErrorsMsg1 Croatian = "Zapisujem makepkg ispis u "
 displayBuildErrorsMsg1 Swedish  = "Dumpar makepkgs utskrift i "
 displayBuildErrorsMsg1 German   = "Schreibe makepkg Ausgabe in "
 displayBuildErrorsMsg1 Spanish  = "Volcando la salida de makepkg en "
+displayBuildErrorsMsg1 Portuguese = "Despejando a saída do makepkg em "
 
 getDepsToInstallMsg1 :: Language -> String
 getDepsToInstallMsg1 English  = "No AUR packages specified for install."
@@ -213,6 +239,7 @@ getDepsToInstallMsg1 Croatian = "Nijedan AUR paket nije specificiran za instalac
 getDepsToInstallMsg1 Swedish  = "Inga AUR-paket är valda för installation."
 getDepsToInstallMsg1 German   = "Keine AUR Pakete zur Installation vermerkt."
 getDepsToInstallMsg1 Spanish  = "No se han especificado paquetes de AUR para instalar."
+getDepsToInstallMsg1 Portuguese = "Nenhum pacote AUR foi especificado para instalação."
 
 getRealPkgConflictsMsg1 :: Language -> String -> String -> String -> String
 getRealPkgConflictsMsg1 English name rec req =
@@ -236,6 +263,9 @@ getRealPkgConflictsMsg1 German name rec req =
 getRealPkgConflictsMsg1 Spanish name rec req =
     "La dependencia " ++ bt name ++ " requiere la versión " ++ bt req ++
     "pero la versión más reciente es " ++ bt rec ++ "."
+getRealPkgConflictsMsg1 Portuguese name rec req =
+   "A dependência " ++ bt name ++ " exige a versão " ++ bt req ++ 
+   "mas a versao mais recente e" ++ bt rec ++ "."
 
 getRealPkgConflictsMsg2 :: Language -> String -> String
 getRealPkgConflictsMsg2 English  p =
