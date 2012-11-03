@@ -30,9 +30,11 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Languages where
+{- POMODOROS
+2012 Nov 03 => X
+-}
 
-import Data.Maybe (fromJust)
+module Aura.Languages where
 
 import Shell (cyan, yellow, green, red, blue)
 
@@ -46,66 +48,47 @@ data Language = English
               | Portuguese
                 deriving (Eq,Enum,Show)
 
-translatorsAndLangs :: [(Language,[String])]
-translatorsAndLangs = zip allLanguages translators
+translators :: [String]
+translators = [ " Chris \"Kwpolska\" Warrick"
+              , " Denis Kasak"
+              , " Fredrik Haikarainen"
+              , " Lukas Niederbremer"
+              , " Alejandro Gómez"
+              , " Henry \"Ingvij\" Kupty" ]
 
-translators :: [[String]]
-translators = [ [ "Aura Translators:"  --English
-                , " Chris \"Kwpolska\" Warrick (Polish)"
-                , " Denis Kasak (Croatian)"
-                , " Fredrik Haikarainen (Swedish)"
-                , " Lukas Niederbremer (German)"
-                , " Alejandro Gómez (Spanish)" 
-                , " Henry \"Ingvij\" Kupty (Portuguese)"]
-              , [ "Auraの翻訳者："  -- Japanese
-                , "クリッス \"Kwpolska\" ヲーリック（ポーランド語）"
-                , "デニス・カサック（クロアチア語）"
-                , "フレドリック・ハイカライネン（スウェーデン語）"
-                , "ルークNiederbremer（ドイツ語）"
-                , "アレハンドロ·ゴメス（スペイン語）" ]
-              , [ "Tłumacze Aury:"  -- Polish
-                , " Chris \"Kwpolska\" Warrick (polski)"
-                , " Denis Kasak (chorwacki)"
-                , " Fredrik Haikarainen (szwedzki)"
-                , " Lukas Niederbremer (niemiecki)"
-                , " Alejandro Gómez (hiszpański)" 
-                , " Henry \"Ingvij\" Kupty (portugalski)"]
-              , [ "Aura Prevoditelji:"  -- Croatian
-                , " Chris \"Kwpolska\" Warrick (poljski)"
-                , " Denis Kasak (hrvatski)"
-                , " Fredrik Haikarainen (švedski)"
-                , " Lukas Niederbremer (njemački)"
-                , " Alejandro Gómez (španjolski)" 
-                , " Henry \"Ingvij\" Kupty (portugalski)"]
-              , [ "Aura Översättare:"   -- Swedish
-                , " Chris \"Kwpolska\" Warrick (polska)"
-                , " Denis Kasak (kroatiska)"
-                , " Fredrik Haikarainen (svenska)"
-                , " Lukas Niederbremer (tyska)"
-                , " Alejandro Gómez (spanska)"
-                , " Henry \"Ingvij\" Kupty (portugisiska)"]
-              , [ "Aura Übersetzer:"  -- German
-                , " Chris \"Kwpolska\" Warrick (Polnisch)"
-                , " Denis Kasak (Kroatisch)"
-                , " Fredrik Haikarainen (Schwedisch)"
-                , " Lukas Niederbremer (Deutsch)"
-                , " Alejandro Gómez (Spanisch)" 
-                , " Henry \"Ingvij\" Kupty (Portugiesisch)"]
-              , [ "Traductores de Aura:"  -- Spanish
-                , " Chris \"Kwpolska\" Warrick (Polaco)"
-                , " Denis Kasak (Croata)"
-                , " Fredrik Haikarainen (Sueco)"
-                , " Lukas Niederbremer (Alemán)"
-                , " Alejandro Gómez (Español)" 
-                , " Henry \"Ingvij\" Kupty (Portugués)"]
-              , [ "Tradutores de Aura:"  -- Portuguese
-                , " Chris \"Kwpolska\" Warrick (Polonês)"
-                , " Denis Kasak (Croata)"
-                , " Fredrik Haikarainen (Sueco)"
-                , " Lukas Niederbremer (Alemão)"
-                , " Alejandro Gómez (Espanhol)"
-                , " Henry \"Ingvij\" Kupty (Português)" ]
-              ]
+languageNames :: Language -> [String]
+languageNames English  = [ "Polish","Croatian","Swedish","German"
+                         , "Spanish","Portuguese" ]
+languageNames Japanese = [ "ポーランド語","クロアチア語","スウェーデン語"
+                         , "ドイツ語","スペイン語","ポルトガル語" ]
+languageNames Polish   = [ "polski","chorwacki","szwedzki","niemiecki"
+                         , "hiszpański","portugalski" ]
+languageNames Croatian = [ "poljski","hrvatski","švedski","njemački"
+                         , "španjolski","portugalski" ]
+languageNames Swedish  = [ "polska","kroatiska","svenska","tyska"
+                         , "spanska","portugisiska" ]
+languageNames German   = [ "Polnisch","Kroatisch","Schwedisch","Deutsch"
+                         , "Spanisch","Portugiesisch" ]
+languageNames Spanish  = [ "Polaco","Croata","Sueco","Alemán","Español"
+                         , "Portugués" ]
+languageNames Portuguese = [ "Polonês","Croata","Sueco","Alemão","Espanhol"
+                           , "Português" ]
+
+translatorMsg :: Language -> [String]
+translatorMsg lang = title : names
+    where title = translatorMsgTitle lang
+          names = map appendLang . zip translators . languageNames $ lang
+          appendLang (n,l) = n ++ " (" ++ l ++ ")"
+
+translatorMsgTitle :: Language -> String
+translatorMsgTitle English  = "Aura Translators:"
+translatorMsgTitle Japanese = "Auraの翻訳者："
+translatorMsgTitle Polish   = "Tłumacze Aury:"
+translatorMsgTitle Croatian = "Aura Prevoditelji:"
+translatorMsgTitle Swedish  = "Aura Översättare:"
+translatorMsgTitle German   = "Aura Übersetzer:"
+translatorMsgTitle Spanish  = "Traductores de Aura:"
+translatorMsgTitle Portuguese = "Tradutores de Aura:"
 
 allLanguages :: [Language]
 allLanguages = [English ..]
@@ -883,10 +866,6 @@ displayOutputLanguagesMsg1 Swedish  = "Följande språk är tillängliga:"
 displayOutputLanguagesMsg1 German   = "Die folgenden Sprachen sind verfügbar:"
 displayOutputLanguagesMsg1 Spanish  = "Los siguientes idiomas están disponibles:"
 displayOutputLanguagesMsg1 Portuguese = "Os seguintes idiomas estão disponíveis:"
-
--- The `lookup` will never fail.
-translatorMsg :: Language -> [String]
-translatorMsg lang = fromJust $ lookup lang translatorsAndLangs
 
 ----------------------
 -- AuraFlags functions
