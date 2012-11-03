@@ -3,7 +3,10 @@ Aura Changelog
 
 1.0.3.0
 -------
-- Support for `pacman-color` added.
+- Portuguese translation added. Thanks to Henry "Ingvij" Kupty!
+- Support for `pacman-color` added. Run sudo with `-E` a la:
+    sudo -E aura -Ayu
+- Fixed backslash parsing bug in `Bash`.
 
 1.0.2.2
 -------

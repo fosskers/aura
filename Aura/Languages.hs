@@ -164,7 +164,7 @@ buildPackagesMsg1 Croatian p = "Gradim " ++ bt p ++ "..."
 buildPackagesMsg1 Swedish  p = "Bygger paket " ++ bt p ++ "..."
 buildPackagesMsg1 German   p = "Baue Paket " ++ bt p ++ "..."
 buildPackagesMsg1 Spanish  p = "Construyendo " ++ bt p ++ "..."
-buildPackagesMsg1 Portuguese p = "Compilando " ++ br p ++ "..."
+buildPackagesMsg1 Portuguese p = "Compilando " ++ bt p ++ "..."
 
 checkHotEditMsg1 :: Language -> String -> String
 checkHotEditMsg1 English  p =
@@ -355,9 +355,9 @@ getVirtualConflictsMsg3 German d dVer pro proVer =
 getVirtualConflictsMsg3 Spanish d dVer pro proVer =
     "La dependencia " ++ bt d ++ " requiere la versión " ++ bt dVer ++
     " pero el paquete " ++ bt pro ++ ", que la provee, da la versión " ++ bt proVer
-getVirtualConfictsMsg3 Portuguese d dVer pro proVer = 
+getVirtualConflictsMsg3 Portuguese d dVer pro proVer = 
     "A dependência " ++ bt d ++ " requer a versão " ++ bt dVer ++ 
-    " entretanto, o pacote" ++ bt pro ++ ", que o provê, possui a versão " ++ bt proVer
+    " entretanto, o pacote " ++ bt pro ++ ", que o provê, possui a versão " ++ bt proVer
 
 -----------------
 -- aura functions
@@ -629,7 +629,7 @@ getDowngradeChoiceMsg1 German p =
     "Welche Version von " ++ bt p ++ " möchten Sie haben?"
 getDowngradeChoiceMsg1 Spanish p =
     "¿Qué versión de " ++ bt p ++ " quieres?"
-getDowngradeChoiceMSG1 Portuguese p =
+getDowngradeChoiceMsg1 Portuguese p =
      "Qual versão de " ++ bt p ++ " deseja?"
 
 backupCacheMsg1 :: Language -> String
@@ -872,7 +872,7 @@ manpageMsg Croatian = "Pogledajte Aura man stranicu za detalje o opcijama."
 manpageMsg Swedish  = "Hänvisa till auras `man`-sida för detaljerade alternativ."
 manpageMsg German   = "Lesen Sie die aura man-Seite für Details zu aura Optionen."
 manpageMsg Spanish  = "Lee la página de manual de aura para detalles sobre las opciones."
-manpageMsg Portuguese = "Leia a man page do aura para mais detalhes sobre as opções
+manpageMsg Portuguese = "Leia a man page do aura para mais detalhes sobre as opções"
 
 displayOutputLanguagesMsg1 :: Language -> String
 displayOutputLanguagesMsg1 English  = "The following languages are available:"
