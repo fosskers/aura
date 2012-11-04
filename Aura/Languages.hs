@@ -31,7 +31,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 {- POMODOROS
-2012 Nov 03 => X
+2012 Nov 03 => XX
 -}
 
 module Aura.Languages where
