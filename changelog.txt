@@ -3,6 +3,7 @@ Aura Changelog
 
 1.0.3.0
 -------
+- Compatibility with AUR 2.0 added.
 - Portuguese translation added. Thanks to Henry "Ingvij" Kupty!
 - Support for `pacman-color` added. Run sudo with `-E` a la:
     sudo -E aura -Ayu

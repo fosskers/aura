@@ -41,9 +41,8 @@ data RPCType = PkgSearch | MultiInfo | MSearch deriving (Eq)
 makeRPCUrl :: RPCType -> [String] -> String
 makeRPCUrl t args = rpcBaseUrl ++ t' ++ args'
     where t'    = rpcAddType t
-          args' = if t == MultiInfo
-                  then rpcAddMultiInfoArgs args
-                  else rpcAddArg args
+          args' | t == MultiInfo = rpcAddMultiInfoArgs args
+                | otherwise      = rpcAddArg args
 
 aurPkgUrl :: String -> String
 aurPkgUrl n = "https://aur.archlinux.org/packages.php?ID=" ++ n
@@ -105,26 +104,16 @@ makePkgInfo pkgJSON = do
   na <- valFromObj "Name" pkgJSON
   ve <- valFromObj "Version" pkgJSON
   li <- valFromObj "License" pkgJSON
-  vo <- valFromObj "NumVotes" pkgJSON
+  vo <- valFromObj "NumVotes" pkgJSON >>= return . show . extractRat
   de <- valFromObj "Description" pkgJSON
-  au <- valFromObj "ID" pkgJSON >>= return . aurPkgUrl
-  ou <- valFromObj "OutOfDate" pkgJSON >>= return . (/= "0")
+  au <- valFromObj "ID" pkgJSON >>= return . aurPkgUrl . show . extractRat
+  ou <- valFromObj "OutOfDate" pkgJSON >>= return . (/= 0) . extractRat
   return $ PkgInfo na ve ou ur au li vo de
-{-
-makePkgInfo pkgJSON = makePkgInfo' (\x -> PkgInfo x) pkgJSON fields
-    where fields = [ "Name","Version","URL","License"
-                   , "NumVotes","OutOfDate","Description" ]
 
-makePkgInfo' acc pkgJSON []     = return acc
-makePkgInfo' acc pkgJSON (f:fs) = do
-  x <- valFromObj f pkgJSON
-  makePkgInfo' (acc x) pkgJSON fs
--}
-{- Is this possible?
-  return $ foldl PkgInfo `liftM` mapM (flip valFromObj pkgJSON) fields
-  where fields = [ "Name","Version","URL","License"
-                 , "NumVotes","OutOfDate","Description" ]
--}
+-- Temporary fix.
+extractRat :: JSValue -> Int
+extractRat (JSRational _ r) = round $ fromRational r
+extractRat _                = error "THE SYSTEM IS DOWN"
 
 ------------
 -- PKGBUILDS
@@ -144,14 +133,12 @@ getPkgbuildUrl pkg = getPkgBaseUrl pkg </> "PKGBUILD"
 downloadPkgbuild :: String -> IO Pkgbuild
 downloadPkgbuild = getUrlContents . getPkgbuildUrl
 
+-- This is more work than it needs to be.
 getTrueVerViaPkgbuild :: Pkgbuild -> String
 getTrueVerViaPkgbuild pkgb = pkgver ++ "-" ++ pkgrel
     where globals = getGlobalVars pkgb
           pkgver  = fromJust $ referenceValue globals "pkgver"
           pkgrel  = fromJust $ referenceValue globals "pkgrel"
-
---getPkgbuildField :: String -> Pkgbuild -> [String]
---getPkgbuildField = getField
 
 ------------------
 -- SOURCE TARBALLS
