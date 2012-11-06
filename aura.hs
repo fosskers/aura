@@ -78,7 +78,8 @@ main = do
       (auraFlags,input,pacOpts) = parseFlags language rest
       auraFlags' = filter (`notElem` settingsFlags) auraFlags
       pacOpts'   = pacOpts ++ reconvertFlags auraFlags dualFlagMap
-  settings   <- getSettings language auraFlags
+  settings <- getSettings language auraFlags
+  unless (Debug `notElem` auraFlags) $ displaySettings settings
   exitStatus <- executeOpts settings (auraFlags', nub input, nub pacOpts')
   exitWith exitStatus
 
@@ -95,6 +96,22 @@ getSettings lang auraFlags = do
                     , suppressMakepkg = getSuppression auraFlags
                     , mustConfirm     = getConfirmation auraFlags
                     , mayHotEdit      = getHotEdit auraFlags }
+
+displaySettings :: Settings -> IO ()
+displaySettings ss = do
+  let yn a = if a then "Yes!" else "No."
+      env  = environmentOf ss
+      pac  = case getEnvVar "PACMAN" env of Nothing -> "pacman"; Just c -> c
+  mapM_ putStrLn [ --"True User         => " ++ getTrueUser env
+                   "Using Sudo?       => " ++ yn (varExists "SUDO_USER" env)
+                 , "Language          => " ++ show (langOf ss)
+                 , "Pacman Command    => " ++ pac
+                 , "Ignored Pkgs      => " ++ unwords (ignoredPkgsOf ss)
+                 , "Pkg Cache Path    => " ++ cachePathOf ss
+                 , "Log File Path     => " ++ logFilePathOf ss
+                 , "Silent Building?  => " ++ yn (suppressMakepkg ss)
+                 , "Must Confirm?     => " ++ yn (mustConfirm ss)
+                 , "PKGBUILD editing? => " ++ yn (mayHotEdit ss) ]
 
 -- After determining what Flag was given, dispatches a function.
 -- The `flags` must be sorted to guarantee the pattern matching
@@ -225,7 +242,7 @@ renderAurPkgInfo ss info = concat $ intersperse "\n" fieldsAndEntries
                              , cyan $ projectURLOf info
                              , aurURLOf info
                              , licenseOf info
-                             , votesOf info
+                             , show $ votesOf info
                              , descriptionOf info ]
 
 -- This is quite limited. It only accepts one word/pattern.

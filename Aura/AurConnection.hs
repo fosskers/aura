@@ -44,8 +44,8 @@ makeRPCUrl t args = rpcBaseUrl ++ t' ++ args'
           args' | t == MultiInfo = rpcAddMultiInfoArgs args
                 | otherwise      = rpcAddArg args
 
-aurPkgUrl :: String -> String
-aurPkgUrl n = "https://aur.archlinux.org/packages.php?ID=" ++ n
+aurPkgUrl :: Int -> String
+aurPkgUrl n = "https://aur.archlinux.org/packages.php?ID=" ++ show n
 
 rpcBaseUrl :: String
 rpcBaseUrl = "https://aur.archlinux.org/rpc.php?"
@@ -73,7 +73,7 @@ data PkgInfo = PkgInfo { nameOf :: String
                        , projectURLOf :: String
                        , aurURLOf :: String
                        , licenseOf :: String
-                       , votesOf :: String
+                       , votesOf :: Int
                        , descriptionOf :: String
                        } deriving (Eq,Show)
 
@@ -98,22 +98,23 @@ apiFailCheck json = do
   isError <- valFromObj "type" json >>= return . (== "error")
   if isError then Error "AUR API lookup failed." else Ok json
 
+-- Upgrade to AUR 2.0 changed several return types to Ints,
+-- but Text.JSON parses them as Rationals.
 makePkgInfo :: JSObject JSValue -> Result PkgInfo
 makePkgInfo pkgJSON = do
   ur <- valFromObj "URL" pkgJSON
   na <- valFromObj "Name" pkgJSON
   ve <- valFromObj "Version" pkgJSON
   li <- valFromObj "License" pkgJSON
-  vo <- valFromObj "NumVotes" pkgJSON >>= return . show . extractRat
+  vo <- valFromObj "NumVotes" pkgJSON >>= return . fromJSRat
   de <- valFromObj "Description" pkgJSON
-  au <- valFromObj "ID" pkgJSON >>= return . aurPkgUrl . show . extractRat
-  ou <- valFromObj "OutOfDate" pkgJSON >>= return . (/= 0) . extractRat
+  au <- valFromObj "ID" pkgJSON >>= return . aurPkgUrl . fromJSRat
+  ou <- valFromObj "OutOfDate" pkgJSON >>= return . (/= 0) . fromJSRat
   return $ PkgInfo na ve ou ur au li vo de
 
--- Temporary fix.
-extractRat :: JSValue -> Int
-extractRat (JSRational _ r) = round $ fromRational r
-extractRat _                = error "THE SYSTEM IS DOWN"
+fromJSRat :: JSValue -> Int
+fromJSRat (JSRational _ r) = round (fromRational r :: Float)
+fromJSRat _                = error "JSValue given was not a JSRational!"
 
 ------------
 -- PKGBUILDS

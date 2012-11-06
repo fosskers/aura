@@ -27,11 +27,13 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -- System Libraries
 import System.Console.GetOpt
+--import Data.Maybe (fromJust)
 
 -- Custom Libraries
 import Utilities (notNull)
 import Shell (yellow)
 import Aura.Languages
+--import Zero ((?>>=))
 
 type FlagMap = [(Flag,String)]
 
@@ -50,6 +52,7 @@ data Flag = AURInstall
           | Unsuppress
           | HotEdit
           | NoConfirm
+          | Debug
           | Backup
           | Clean
           | Abandon
@@ -97,7 +100,8 @@ auraOptions = map simpleMakeOption
               , ( ['x'], ["unsuppress"],   Unsuppress  )
               , ( [],    ["hotedit"],      HotEdit     )
               , ( [],    ["conf"],         ViewConf    ) 
-              , ( [],    ["languages"],    Languages   ) ]
+              , ( [],    ["languages"],    Languages   ) 
+              , ( [],    ["auradebug"],    Debug       ) ]
 
 -- These are intercepted Pacman flags. Their functionality is different.
 pacmanOptions :: [OptDescr Flag]
@@ -113,13 +117,13 @@ dualOptions = map simpleMakeOption
 
 languageOptions :: [OptDescr Flag]
 languageOptions = map simpleMakeOption
-                  [ ( [], ["japanese","日本語"],   JapOut      )
-                  , ( [], ["polish","polski"],     PolishOut   )
-                  , ( [], ["croatian","hrvatski"], CroatianOut )
-                  , ( [], ["swedish","svenska"],   SwedishOut  )
-                  , ( [], ["german", "deutsch"],   GermanOut   )
-                  , ( [], ["spanish", "español"],  SpanishOut  )
-                  , ( [], ["portuguese","português"], PortuOut ) ]
+                  [ ( [], ["japanese","日本語"],      JapOut      )
+                  , ( [], ["polish","polski"],        PolishOut   )
+                  , ( [], ["croatian","hrvatski"],    CroatianOut )
+                  , ( [], ["swedish","svenska"],      SwedishOut  )
+                  , ( [], ["german","deutsch"],       GermanOut   )
+                  , ( [], ["spanish","español"],      SpanishOut  )
+                  , ( [], ["portuguese","português"], PortuOut    ) ]
 
 -- `Hijacked` flags. They have original pacman functionality, but
 -- that is masked and made unique in an Aura context.
@@ -135,7 +139,7 @@ hijackedFlagMap = [ (Backup,"-b")
 
 dualFlagMap :: FlagMap
 dualFlagMap = [ (NoConfirm,"--noconfirm") ]
-
+ 
 -- Does the whole lot and filters out the garbage.
 reconvertFlags :: [Flag] -> FlagMap -> [String]
 reconvertFlags flags fm = filter notNull $ map (reconvertFlag fm) flags
@@ -143,11 +147,13 @@ reconvertFlags flags fm = filter notNull $ map (reconvertFlag fm) flags
 -- Converts an intercepted Pacman flag back into its raw string form.
 reconvertFlag :: FlagMap -> Flag -> String
 reconvertFlag flagMap f = case f `lookup` flagMap of
-                            Just x  -> x
                             Nothing -> ""
+                            Just x  -> x
+-- This is wrong somehow. Why?
+--reconvertFlag flagMap f = return (f `lookup` flagMap) ?>>= fromJust
 
 settingsFlags :: [Flag]
-settingsFlags = [Unsuppress,NoConfirm,HotEdit,JapOut]
+settingsFlags = [Unsuppress,NoConfirm,HotEdit,Debug]
 
 auraOperMsg :: Language -> String
 auraOperMsg lang = usageInfo (yellow $ auraOperTitle lang) $ auraOperations lang
