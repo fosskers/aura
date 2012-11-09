@@ -1,6 +1,19 @@
 Aura Changelog
 ==============
 
+1.0.?.?
+-------
+- Moved haskell dependencies out of `makedepends` field and into
+  `depends` field in PKGBUILD. Makedepends can usually be ignored
+  after building, but haskell packages are a pain to rebuild
+  and reregister at every build. It's more realistic to just keep
+  them installed. This is what other haskell packages in the AUR
+  do as well.
+
+1.0.3.1
+-------
+- Added `--auradebug` option.
+
 1.0.3.0
 -------
 - Compatibility with AUR 2.0 added.

@@ -9,8 +9,6 @@ Create `auraup` script for upgrading aura when things break.
 OPTIONS TO IMPLEMENT
 --------------------
 -Ci -> `--info` Gives some stats about the package cache.
--   -> `--philosophy` Outputs the aura philosophy.
--   -> `--tutorial` Teach new users how to build packages from scratch.
 
 OUT OF DATE
 -----------

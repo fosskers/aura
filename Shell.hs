@@ -78,6 +78,54 @@ showCursorCode = csi [] "?25h"
 ------------------
 -- COLOURED OUTPUT
 ------------------
+{-
++int _set_color_sequence(const char* name, char* dest)
++{
++	int ret = 0;
++
++	if(strcmp(name, "black") == 0) {
++		strncpy(dest, "\033[0;30m", COLOR_LEN);
++	} else if(strcmp(name, "red") == 0) {
++		strncpy(dest, "\033[0;31m", COLOR_LEN);
++	} else if(strcmp(name, "green") == 0) {
++		strncpy(dest, "\033[0;32m", COLOR_LEN);
++	} else if(strcmp(name, "yellow") == 0) {
++		strncpy(dest, "\033[0;33m", COLOR_LEN);
++	} else if(strcmp(name, "blue") == 0) {
++		strncpy(dest, "\033[0;34m", COLOR_LEN);
++	} else if(strcmp(name, "magenta") == 0) {
++		strncpy(dest, "\033[0;35m", COLOR_LEN);
++	} else if(strcmp(name, "cyan") == 0) {
++		strncpy(dest, "\033[0;36m", COLOR_LEN);
++	} else if(strcmp(name, "white") == 0) {
++		strncpy(dest, "\033[0;37m", COLOR_LEN);
++	} else if(strcmp(name, "gray") == 0) {
++		strncpy(dest, "\033[1;30m", COLOR_LEN);
++	} else if(strcmp(name, "intensive red") == 0) {
++		strncpy(dest, "\033[1;31m", COLOR_LEN);
++	} else if(strcmp(name, "intensive green") == 0) {
++		strncpy(dest, "\033[1;32m", COLOR_LEN);
++	} else if(strcmp(name, "intensive yellow") == 0) {
++		strncpy(dest, "\033[1;33m", COLOR_LEN);
++	} else if(strcmp(name, "intensive blue") == 0) {
++		strncpy(dest, "\033[1;34m", COLOR_LEN);
++	} else if(strcmp(name, "intensive magenta") == 0) {
++		strncpy(dest, "\033[1;35m", COLOR_LEN);
++	} else if(strcmp(name, "intensive cyan") == 0) {
++		strncpy(dest, "\033[1;36m", COLOR_LEN);
++	} else if(strcmp(name, "intensive white") == 0) {
++		strncpy(dest, "\033[1;37m", COLOR_LEN);
++	} else if(strcmp(name, "intensive foreground") == 0) {
++		strncpy(dest, "\033[m\033[1m", COLOR_LEN);
++	} else if(strcmp(name, "none") == 0) {
++		strncpy(dest, "\033[m", COLOR_LEN);
++	} else {
++		ret = 1;
++	}
++	dest[COLOR_LEN] = '\0';
++	return(ret);
++-}
+
 data Colour = NoColour | Red | Green | Yellow | Blue | Magenta | Cyan
             deriving (Eq,Enum)
 
@@ -220,8 +268,9 @@ isntTrueRoot = not . isTrueRoot
 
 -- This will get the true user name regardless of sudo-ing.
 getTrueUser :: Environment -> String
-getTrueUser env | isTrueRoot env = "root"
-                | otherwise      = getSudoUser' env
+getTrueUser env | isTrueRoot env  = "root"
+                | hasRootPriv env = getSudoUser' env
+                | otherwise       = getUser' env
 
 getEditor :: Environment -> String
 getEditor env = case getEnvVar "EDITOR" env of
