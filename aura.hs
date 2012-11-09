@@ -79,7 +79,7 @@ main = do
       auraFlags' = filter (`notElem` settingsFlags) auraFlags
       pacOpts'   = pacOpts ++ reconvertFlags auraFlags dualFlagMap
   settings <- getSettings language auraFlags
-  unless (Debug `notElem` auraFlags) $ displaySettings settings
+  unless (Debug `notElem` auraFlags) $ debugOutput settings
   exitStatus <- executeOpts settings (auraFlags', nub input, nub pacOpts')
   exitWith exitStatus
 
@@ -87,9 +87,10 @@ getSettings :: Language -> [Flag] -> IO Settings
 getSettings lang auraFlags = do
   confFile    <- getPacmanConf
   environment <- getEnvironment
+  pmanCommand <- getPacmanCmd environment
   return $ Settings { environmentOf   = environment
                     , langOf          = lang
-                    , pacman          = getPacmanCmd environment
+                    , pacman          = pmanCommand
                     , ignoredPkgsOf   = getIgnoredPkgs confFile
                     , cachePathOf     = getCachePath confFile
                     , logFilePathOf   = getLogFilePath confFile
@@ -97,16 +98,16 @@ getSettings lang auraFlags = do
                     , mustConfirm     = getConfirmation auraFlags
                     , mayHotEdit      = getHotEdit auraFlags }
 
-displaySettings :: Settings -> IO ()
-displaySettings ss = do
+debugOutput :: Settings -> IO ()
+debugOutput ss = do
   let yn a = if a then "Yes!" else "No."
       env  = environmentOf ss
-      pac  = case getEnvVar "PACMAN" env of Nothing -> "pacman"; Just c -> c
+  pmanCommand <- getPacmanCmd' env
   mapM_ putStrLn [ "User              => " ++ getUser' env
                  , "True User         => " ++ getTrueUser env
                  , "Using Sudo?       => " ++ yn (varExists "SUDO_USER" env)
                  , "Language          => " ++ show (langOf ss)
-                 , "Pacman Command    => " ++ pac
+                 , "Pacman Command    => " ++ pmanCommand
                  , "Ignored Pkgs      => " ++ unwords (ignoredPkgsOf ss)
                  , "Pkg Cache Path    => " ++ cachePathOf ss
                  , "Log File Path     => " ++ logFilePathOf ss

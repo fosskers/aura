@@ -40,6 +40,9 @@ type Pacman   = [String] -> IO ExitCode
 defaultCmd :: String
 defaultCmd = "pacman"
 
+pacmanColorCmd :: String
+pacmanColorCmd = "pacman-color"
+
 pacmanConfFile :: FilePath
 pacmanConfFile = "/etc/pacman.conf"
 
@@ -72,10 +75,18 @@ packageCacheContents :: FilePath -> IO [String]
 packageCacheContents c = filter dots `liftM` ls c
     where dots p = p `notElem` [".",".."]
 
-getPacmanCmd :: Environment -> Pacman
-getPacmanCmd env = case getEnvVar "PACMAN" env of
-                     Nothing  -> pacmanCmd defaultCmd
-                     Just cmd -> pacmanCmd cmd
+-- I'm sad that I had to make this Monadic. And a lot uglier.
+getPacmanCmd :: Environment -> IO Pacman
+getPacmanCmd env = pacmanCmd `liftM` getPacmanCmd' env
+
+getPacmanCmd' :: Environment -> IO String
+getPacmanCmd' env = case getEnvVar "PACMAN" env of
+                     Just cmd -> return cmd
+                     Nothing  -> do
+                       installed <- pacmanSuccess ["-Qq",pacmanColorCmd]
+                       if installed
+                          then return pacmanColorCmd
+                          else return defaultCmd
 
 getPacmanConf :: IO String
 getPacmanConf = readFile pacmanConfFile
