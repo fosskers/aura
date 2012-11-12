@@ -1,7 +1,7 @@
 Aura Changelog
 ==============
 
-1.0.?.?
+1.0.3.2
 -------
 - Moved haskell dependencies out of `makedepends` field and into
   `depends` field in PKGBUILD. Makedepends can usually be ignored
@@ -9,6 +9,7 @@ Aura Changelog
   and reregister at every build. It's more realistic to just keep
   them installed. This is what other haskell packages in the AUR
   do as well.
+- Fixed pacman-color issues.
 
 1.0.3.1
 -------
