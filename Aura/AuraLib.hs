@@ -235,7 +235,7 @@ buildPackages' :: Settings -> MaybePaths -> [AURPkg] -> IO MaybePaths
 buildPackages' _ builtPs [] = return builtPs  -- Done recursing!
 buildPackages' settings builtPs pkgs@(p:ps) = do
   notify settings (flip buildPackagesMsg1 $ pkgNameOf p)
-  results <- withTempDir (show p) (build settings p)
+  results <- withTempDir (pkgNameOf p) (build settings p)
   case results of
     Right pkg   -> buildPackages' settings ((pkg :) `fmap` builtPs) ps
     Left errors -> buildFail settings builtPs pkgs errors
@@ -432,13 +432,15 @@ isInstalled pkg = pacmanSuccess ["-Qq",pkg]
 filterAURPkgs :: [String] -> IO [String]
 filterAURPkgs pkgs = aurInfoLookup pkgs ?>>= return . map nameOf . fromRight
 
--- Much faster than `filterM isRepoPkg pkgs`
 filterRepoPkgs :: [String] -> IO [String]
 filterRepoPkgs pkgs = do
   repoPkgs <- pacmanOutput ["-Ssq",pkgs']
   return . filter (`elem` pkgs) . lines $ repoPkgs
     where pkgs' = "^(" ++ prep pkgs ++ ")$"
-          prep  = concat . intersperse "|"
+          prep  = specs . concat . intersperse "|"
+          specs []     = []
+          specs (c:cs) | c `elem` "+" = ['[',c,']'] ++ specs cs
+                       | otherwise    = c : specs cs
 
 getOrphans :: IO [String]
 getOrphans = lines `liftM` pacmanOutput ["-Qqdt"]

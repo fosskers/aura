@@ -6,6 +6,10 @@ Move aura to haskell-http.
 
 Create `auraup` script for upgrading aura when things break.
 
+Add info to README and man page about pro `-C` use.
+
+Finish up the colouring stuff (bold white, etc)
+
 OPTIONS TO IMPLEMENT
 --------------------
 -Ci -> `--info` Gives some stats about the package cache.
