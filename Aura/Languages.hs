@@ -157,7 +157,7 @@ buildPackagesMsg1 Swedish  p   = "Bygger paket " ++ bt p ++ "..."
 buildPackagesMsg1 German   p   = "Baue Paket " ++ bt p ++ "..."
 buildPackagesMsg1 Spanish  p   = "Construyendo " ++ bt p ++ "..."
 buildPackagesMsg1 Portuguese p = "Compilando " ++ bt p ++ "..."
-buildPackagesMsg1 French p     = "Création de " ++ bt p ++ "…"
+buildPackagesMsg1 French p     = "Construction de " ++ bt p ++ "…"
 
 checkHotEditMsg1 :: Language -> String -> String
 checkHotEditMsg1 English  p   =
@@ -184,7 +184,7 @@ buildFailMsg1 Swedish  p   = "Det gick inte att bygga paketet " ++ bt p ++ "."
 buildFailMsg1 German   p   = "Bauen von " ++ bt p ++ " ist fehlgeschlagen."
 buildFailMsg1 Spanish  p   = "La construcción de " ++ bt p ++ " ha fallado."
 buildFailMsg1 Portuguese p = "Falha na compilação do pacote " ++ bt p ++ "."
-buildFailMsg1 French p     = "Bon, la création de " ++ bt p ++ " a échouée."
+buildFailMsg1 French p     = "Bon, la construction de " ++ bt p ++ " a échouée."
 
 buildFailMsg2 :: Language -> String
 buildFailMsg2 English    = "Also, the following weren’t built:"
@@ -196,7 +196,7 @@ buildFailMsg2 Swedish    = "Det gick heller inte att bygga följande paket:"
 buildFailMsg2 German     = "Die folgenden Pakete wurden zusätzlich nicht gebaut:"
 buildFailMsg2 Spanish    = "Los siguientes paquetes no se han construido:"
 buildFailMsg2 Portuguese = "Os pacotes a seguir não foram compilados:"
-buildFailMsg2 French     = "En outre, les paquets suivants n'ont pu être créés :"
+buildFailMsg2 French     = "En outre, les paquets suivants n'ont pu être construits :"
 
 buildFailMsg3 :: Language -> String
 buildFailMsg3 English    = "However, these packages were successfully built:"
@@ -207,7 +207,7 @@ buildFailMsg3 Swedish    = "Vissa paket kanske har byggts ordentligt (Osäker)."
 buildFailMsg3 German     = "Diese Pakete wurden wiederrum erfolgreich gebaut:"
 buildFailMsg3 Spanish    = "Sin embargo, los siguientes paquetes se han construido:"
 buildFailMsg3 Portuguese = "Entretanto, os seguintes pacotes compilaram com sucesso:"
-buildFailMsg3 French     = "Cependant, les paquets suivants ont été créés avec succès :"
+buildFailMsg3 French     = "Cependant, les paquets suivants ont été construits avec succès :"
 
 buildFailMsg4 :: Language -> String
 buildFailMsg4 English    = "Would you like to install them?"
@@ -407,7 +407,7 @@ trueRootCheckMsg1 Spanish =
 trueRootCheckMsg1 Portuguese = 
     "Não deveria compilar pacotes como o root de fato. Ainda assim, deseja prosseguir?"
 trueRootCheckMsg1 French =
-    "Il n'est pas sage de créer des paquets avec le compte root. Voulez-vous continuer ?"
+    "Il n'est pas sage de construire des paquets avec le compte root. Voulez-vous continuer ?"
 
 -- This is for when the user decides to refrain from building afterall.
 trueRootCheckMsg2 :: Language -> String
@@ -490,7 +490,7 @@ installPackagesMsg6 Swedish    = "Gick inte att bygga paket."
 installPackagesMsg6 German     = "Bauen fehlgeschlagen."
 installPackagesMsg6 Spanish    = "La construcción falló."
 installPackagesMsg6 Portuguese = "Falha na compilação."
-installPackagesMsg6 French     = "Création ratée."
+installPackagesMsg6 French     = "Construction ratée."
 
 reportNonPackagesMsg1 :: Language -> String
 reportNonPackagesMsg1 English    = "The following are not packages:"
