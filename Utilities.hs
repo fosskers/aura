@@ -26,7 +26,7 @@ module Utilities where
 -- System Libraries
 import Distribution.Simple.Utils (withTempDirectory)
 import Control.Concurrent (threadDelay)
-import System.FilePath (dropExtensions)
+import System.FilePath (dropExtension)
 import Distribution.Verbosity (silent)
 import System.IO (stdout, hFlush)
 import Data.List (dropWhileEnd)
@@ -145,10 +145,12 @@ notNull = not . null
 openEditor :: String -> String -> IO ()
 openEditor editor file = shellCmd editor [file] >> return ()
 
+-- All tarballs should be of the format `.tar.gz`
+-- Thus calling dropExtension twice should remove that section.
 decompress :: FilePath -> IO FilePath
 decompress file = do
   _ <- quietShellCmd' "bsdtar" ["-zxvf",file]
-  return $ dropExtensions file
+  return . dropExtension . dropExtension $ file
 
 fromRight :: Either a b -> b
 fromRight (Right x) = x

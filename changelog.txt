@@ -1,6 +1,10 @@
 Aura Changelog
 ==============
 
+1.0.4.0
+-------
+- Added Russian translation. Thanks to Kyrylo Silin!
+
 1.0.3.2
 -------
 - Moved haskell dependencies out of `makedepends` field and into
