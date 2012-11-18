@@ -5,6 +5,7 @@ Aura Changelog
 -------
 - Added French translation. Thanks to Ma Jiehong!
 - Added Russian translation. Thanks to Kyrylo Silin!
+- Fixed bug where packages with dots in their name wouldn't build.
 
 1.0.3.2
 -------
