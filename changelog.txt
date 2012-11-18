@@ -3,6 +3,7 @@ Aura Changelog
 
 1.0.4.0
 -------
+- Added French translation. Thanks to Ma Jiehong!
 - Added Russian translation. Thanks to Kyrylo Silin!
 
 1.0.3.2

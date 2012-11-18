@@ -7,6 +7,7 @@ Fredrik Haikarainen      | Swedish
 Lukas Niederbremer       | German
 Alejandro Gómez          | Spanish
 Henry "Ingvij" Kupty     | Portuguese
+Ma Jiehong               | French
 -}
 
 {-
@@ -56,7 +57,7 @@ translators = [ " Chris \"Kwpolska\" Warrick"
               , " Lukas Niederbremer"
               , " Alejandro Gómez"
               , " Henry \"Ingvij\" Kupty" 
-              , " Ma Jiehong (French)" ]
+              , " Ma Jiehong" ]
 
 languageNames :: Language -> [String]
 languageNames English    = [ "Polish","Croatian","Swedish","German"
