@@ -337,7 +337,7 @@ getVirtualConflictsMsg2 Portuguese p pro =
     bt pro ++ " provê " ++ bt p ++ ", mas " ++ bt pro ++ 
     "é um pacote ignorado."
 getVirtualConflictsMsg2 French p pro =
-    bt pro " fourni " ++ bt p ++ ", mais " ++ bt pro ++
+    bt pro ++ " fourni " ++ bt p ++ ", mais " ++ bt pro ++
     " est un paquet ignoré."
 
 -- Fix this up. Inconsistent variable names too.
@@ -501,7 +501,7 @@ reportNonPackagesMsg1 Swedish    = "Följande är inte paket:"
 reportNonPackagesMsg1 German     = "Folgende sind keine Pakete:"
 reportNonPackagesMsg1 Spanish    = "Los siguientes no son paquetes:"
 reportNonPackagesMsg1 Portuguese = "Os seguintes não são pacotes:"
-reportNonPackagesMsg1 French     = "Les éléments suivants ne sont pas des paquets :"
+reportNonPackagesMsg1 French     = "Les éléments suivants ne sont pas des paquets:"
 
 reportIgnoredPackagesMsg1 :: Language -> String
 reportIgnoredPackagesMsg1 English    = "The following packages will be ignored:"
@@ -522,8 +522,8 @@ reportPkgsToInstallMsg1 Croatian   = "Zavisnosti iz repozitorija:"
 reportPkgsToInstallMsg1 Swedish    = "Beroenden ifrån lager:"
 reportPkgsToInstallMsg1 German     = "Abhängigkeiten in den Paketquellen:"
 reportPkgsToInstallMsg1 Spanish    = "Dependencias en el repositorio:"
-reportPkgsToInstallMsg1 Portuguese = "Dependências no repositório:" ""
-reportPkgsToInstallMsg1 French     = "Dépendances du dépôt :" -- may need some check here
+reportPkgsToInstallMsg1 Portuguese = "Dependências no repositório:"
+reportPkgsToInstallMsg1 French     = "Dépendances du dépôt:"
 
 reportPkgsToInstallMsg2 :: Language -> String
 reportPkgsToInstallMsg2 English    = "AUR dependencies:"
