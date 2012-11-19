@@ -40,7 +40,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Languages where
 
-import Shell (cyan, yellow, green, red, blue)
+import Shell (cyan, yellow, green, red, blue, bWhite)
 
 data Language = English
               | Japanese
@@ -64,33 +64,18 @@ translators = [ " Chris \"Kwpolska\" Warrick"
               , " Ma Jiehong"
               , " Kyrylo Silin" ]
 
+-- These need updating!
 languageNames :: Language -> [String]
-languageNames English    = [ "Polish","Croatian","Swedish","German"
-                         , "Spanish","Portuguese" ]
-languageNames Japanese   = [ "ポーランド語","クロアチア語","スウェーデン語"
-                         , "ドイツ語","スペイン語","ポルトガル語" ]
-languageNames Polish     = [ "polski","chorwacki","szwedzki","niemiecki"
-                         , "hiszpański","portugalski" ]
-languageNames Croatian   = [ "poljski","hrvatski","švedski","njemački"
-                         , "španjolski","portugalski" ]
-languageNames Swedish    = [ "polska","kroatiska","svenska","tyska"
-                         , "spanska","portugisiska" ]
-languageNames German     = [ "Polnisch","Kroatisch","Schwedisch","Deutsch"
-                         , "Spanisch","Portugiesisch" ]
-languageNames Spanish    = [ "Polaco","Croata","Sueco","Alemán","Español"
-                         , "Portugués" ]
-languageNames Portuguese = [ "Polonês","Croata","Sueco","Alemão","Espanhol"
-                           , "Português" ]
-languageNames French     = [ "Polonais","Croate","Suedois","Alemand","Espagnol"
-                           , "Portugais", "Français" ]
-languageNames Russian    = [ "Польский","Хорватский","Шведский","Немецкий"
-                           , "Испанский","Португальский", "Русский" ]
-
-translatorMsg :: Language -> [String]
-translatorMsg lang = title : names
-    where title = translatorMsgTitle lang
-          names = map appendLang . zip translators . languageNames $ lang
-          appendLang (n,l) = n ++ " (" ++ l ++ ")"
+languageNames English    = [ "Polish","Croatian","Swedish","German","Spanish","Portuguese","French","Russian" ]
+languageNames Japanese   = [ "ポーランド語","クロアチア語","スウェーデン語","ドイツ語","スペイン語","ポルトガル語","フランス語","ロシア語" ]
+languageNames Polish     = [ "polski","chorwacki","szwedzki","niemiecki","hiszpański","portugalski" ]
+languageNames Croatian   = [ "poljski","hrvatski","švedski","njemački","španjolski","portugalski" ]
+languageNames Swedish    = [ "polska","kroatiska","svenska","tyska","spanska","portugisiska" ]
+languageNames German     = [ "Polnisch","Kroatisch","Schwedisch","Deutsch","Spanisch","Portugiesisch" ]
+languageNames Spanish    = [ "Polaco","Croata","Sueco","Alemán","Español","Portugués" ]
+languageNames Portuguese = [ "Polonês","Croata","Sueco","Alemão","Espanhol","Português" ]
+languageNames French     = [ "Polonais","Croate","Suedois","Alemand","Espagnol","Portugais", "Français" ]
+languageNames Russian    = [ "Польский","Хорватский","Шведский","Немецкий","Испанский","Португальский", "Русский" ]
 
 translatorMsgTitle :: Language -> String
 translatorMsgTitle English    = "Aura Translators:"
@@ -103,6 +88,12 @@ translatorMsgTitle Spanish    = "Traductores de Aura:"
 translatorMsgTitle Portuguese = "Tradutores de Aura:"
 translatorMsgTitle French     = "Traduction d'Aura:"
 translatorMsgTitle Russian    = "Переводчики Aura:"
+
+translatorMsg :: Language -> [String]
+translatorMsg lang = title : names
+    where title = translatorMsgTitle lang
+          names = map appendLang . zip translators . languageNames $ lang
+          appendLang (n,l) = n ++ " (" ++ l ++ ")"
 
 allLanguages :: [Language]
 allLanguages = [English ..]
@@ -965,16 +956,19 @@ orpha Russian    = blue "Совершить действия с участием
 -- AurConnection functions
 --------------------------
 infoFields :: Language -> [String]
-infoFields English    = [ "Repository","Name","Version","AUR Status","Project URL","AUR URL","License", "Votes","Description" ]
-infoFields Japanese   = [ "リポジトリ","名前","バージョン","パッケージ状態","プロジェクト","パッケージページ","ライセンス","投票数","概要" ]
-infoFields Polish     = [ "Repository","Nazwa","Wersja","Status w AUR","URL Projektu","URL AUR","Licencja","Głosy","Opis" ]
-infoFields Croatian   = [ "Repository","Ime","Verzija","AUR Stanje","URL Projekta","AUR URL","Licenca","Glasovi","Opis" ]
-infoFields Swedish    = [ "Repository","Namn","Version","AUR Status","Projekt URL","AUR URL","Licens","Röster","Beskrivning" ]
-infoFields German     = [ "Repository","Name","Version","AUR Status","Projekt URL","AUR URL","Lizenz","Stimmen","Beschreibung" ]
-infoFields Spanish    = [ "Repository","Nombre","Versión","Estado en AUR","URL del proyecto","URL en AUR","Licencia", "Votos","Descripción" ]
-infoFields Portuguese = [ "Repositório","Nome","Versão","Estado no AUR","URL do projeto","URL no AUR","Licença", "Votos","Descrição" ]
-infoFields French     = [ "Dépôt","Nom","Version","AUR Statut","URL du projet","URL AUR","License", "Votes","Description" ]
-infoFields Russian    = [ "Репозиторий","Название","Версия","Статус в AUR","URL проекта","URL в AUR","Лицензия", "Рейтинг","Описание" ]
+infoFields = map bWhite . infoFields'
+
+infoFields' :: Language -> [String]
+infoFields' English    = [ "Repository","Name","Version","AUR Status","Project URL","AUR URL","License", "Votes","Description" ]
+infoFields' Japanese   = [ "リポジトリ","名前","バージョン","パッケージ状態","プロジェクト","パッケージページ","ライセンス","投票数","概要" ]
+infoFields' Polish     = [ "Repository","Nazwa","Wersja","Status w AUR","URL Projektu","URL AUR","Licencja","Głosy","Opis" ]
+infoFields' Croatian   = [ "Repository","Ime","Verzija","AUR Stanje","URL Projekta","AUR URL","Licenca","Glasovi","Opis" ]
+infoFields' Swedish    = [ "Repository","Namn","Version","AUR Status","Projekt URL","AUR URL","Licens","Röster","Beskrivning" ]
+infoFields' German     = [ "Repository","Name","Version","AUR Status","Projekt URL","AUR URL","Lizenz","Stimmen","Beschreibung" ]
+infoFields' Spanish    = [ "Repository","Nombre","Versión","Estado en AUR","URL del proyecto","URL en AUR","Licencia", "Votos","Descripción" ]
+infoFields' Portuguese = [ "Repositório","Nome","Versão","Estado no AUR","URL do projeto","URL no AUR","Licença", "Votos","Descrição" ]
+infoFields' French     = [ "Dépôt","Nom","Version","AUR Statut","URL du projet","URL AUR","License", "Votes","Description" ]
+infoFields' Russian    = [ "Репозиторий","Название","Версия","Статус в AUR","URL проекта","URL в AUR","Лицензия", "Рейтинг","Описание" ]
 
 outOfDateMsg :: Language -> Bool -> String
 outOfDateMsg English    True  = red "Out of Date!"

@@ -9,6 +9,10 @@
 
 -}
 
+{- POMODORS
+2012 Nov. 19 => XXX
+-}
+
 module Shell where
 
 -- System Libraries
@@ -78,108 +82,129 @@ showCursorCode = csi [] "?25h"
 ------------------
 -- COLOURED OUTPUT
 ------------------
-{-
-+int _set_color_sequence(const char* name, char* dest)
-+{
-+	int ret = 0;
-+
-+	if(strcmp(name, "black") == 0) {
-+		strncpy(dest, "\033[0;30m", COLOR_LEN);
-+	} else if(strcmp(name, "red") == 0) {
-+		strncpy(dest, "\033[0;31m", COLOR_LEN);
-+	} else if(strcmp(name, "green") == 0) {
-+		strncpy(dest, "\033[0;32m", COLOR_LEN);
-+	} else if(strcmp(name, "yellow") == 0) {
-+		strncpy(dest, "\033[0;33m", COLOR_LEN);
-+	} else if(strcmp(name, "blue") == 0) {
-+		strncpy(dest, "\033[0;34m", COLOR_LEN);
-+	} else if(strcmp(name, "magenta") == 0) {
-+		strncpy(dest, "\033[0;35m", COLOR_LEN);
-+	} else if(strcmp(name, "cyan") == 0) {
-+		strncpy(dest, "\033[0;36m", COLOR_LEN);
-+	} else if(strcmp(name, "white") == 0) {
-+		strncpy(dest, "\033[0;37m", COLOR_LEN);
-+	} else if(strcmp(name, "gray") == 0) {
-+		strncpy(dest, "\033[1;30m", COLOR_LEN);
-+	} else if(strcmp(name, "intensive red") == 0) {
-+		strncpy(dest, "\033[1;31m", COLOR_LEN);
-+	} else if(strcmp(name, "intensive green") == 0) {
-+		strncpy(dest, "\033[1;32m", COLOR_LEN);
-+	} else if(strcmp(name, "intensive yellow") == 0) {
-+		strncpy(dest, "\033[1;33m", COLOR_LEN);
-+	} else if(strcmp(name, "intensive blue") == 0) {
-+		strncpy(dest, "\033[1;34m", COLOR_LEN);
-+	} else if(strcmp(name, "intensive magenta") == 0) {
-+		strncpy(dest, "\033[1;35m", COLOR_LEN);
-+	} else if(strcmp(name, "intensive cyan") == 0) {
-+		strncpy(dest, "\033[1;36m", COLOR_LEN);
-+	} else if(strcmp(name, "intensive white") == 0) {
-+		strncpy(dest, "\033[1;37m", COLOR_LEN);
-+	} else if(strcmp(name, "intensive foreground") == 0) {
-+		strncpy(dest, "\033[m\033[1m", COLOR_LEN);
-+	} else if(strcmp(name, "none") == 0) {
-+		strncpy(dest, "\033[m", COLOR_LEN);
-+	} else {
-+		ret = 1;
-+	}
-+	dest[COLOR_LEN] = '\0';
-+	return(ret);
-+-}
-
-data Colour = NoColour | Red | Green | Yellow | Blue | Magenta | Cyan
-            deriving (Eq,Enum)
+-- ANSI codes referenced from: www.bluesock.org/~willg/dev/ansi.html
+data Colour = NoColour
+            | Black | Red | Green | Yellow | Blue | Magenta | Cyan | White
+            | BRed | BGreen | BYellow | BBlue | BMagenta | BCyan | BWhite
+  --          | BForeground
+            deriving (Eq,Enum,Show)
 
 type Colouror = String -> String
 
-{-
-  Consider this:
-  names   = ["noColour","red","green","yellow","blue","magenta","cyan"]
-  colours = [NoColour ..]
-  namesAndColours = zip names colours
-  
-  Is there a way to `promote` strings, etc., into callable functions? a la:
-  map? makeFunction namesAndColours
+{- TESTING
+colourTest :: IO ()
+colourTest = mapM_ (\c -> putStrLn $ c "XENON") allColourFuns
 
-  Where the values from `names` are the callable function names, and
-  the values from `colours` are the functions they're bound to.
-
-  Could the preprocessor do something like this?
+allColourFuns :: [Colouror]
+allColourFuns = [ black,red,green,yellow,blue,magenta,cyan,white
+                , bRed,bGreen,bYellow,bBlue,bMagenta,bCyan,bWhite ]
 -}
+
 noColour :: Colouror
 noColour = colourize NoColour
 
-red :: Colouror
-red = colourize Red
-
-green :: Colouror
-green = colourize Green
-
-yellow :: Colouror
-yellow = colourize Yellow
-
-blue :: Colouror
-blue = colourize Blue
-
-magenta :: Colouror
+-- Normal colours
+black,red,green,yellow,blue,magenta,cyan,white :: Colouror
+black   = colourize Black
+red     = colourize Red
+green   = colourize Green
+yellow  = colourize Yellow
+blue    = colourize Blue
 magenta = colourize Magenta
+cyan    = colourize Cyan
+white   = colourize White
 
-cyan :: Colouror
-cyan = colourize Cyan
+-- Bold/intense colours
+bRed,bGreen,bYellow,bBlue,bMagenta,bCyan,bWhite :: Colouror
+bRed        = colourize BRed
+bGreen      = colourize BGreen
+bYellow     = colourize BYellow
+bBlue       = colourize BBlue
+bMagenta    = colourize BMagenta
+bCyan       = colourize BCyan
+bWhite      = colourize BWhite
+--bForeground = colourize BForeground
 
 colours :: [Colour]
-colours = [Red ..]
+colours = [Black ..]
 
--- Shells react to these and print text wrapped in these codes in colour.
+{- ANSI Escape Codes for Colours
+Shells react to these and print text wrapped in these codes in colour.
+Format is: \ESC[x(;y)m
+where `x` is a colour code and `y` is an "attribute". See below.
+
+*************************
+*   Code    * Attribute *
+*************************
+*     0     *  normal   *
+*************************
+*     1     *   bold    *
+*************************
+*     4     * underline *
+*************************
+*     5     *   blink   *
+*************************
+*     7     *  reverse  *
+*************************
+*     8     * invisible *
+*************************
+
+*******************************************
+*        Code        * Foreground Colours *
+*******************************************
+*         30         *       black        *
+*******************************************
+*         31         *        red         *
+*******************************************
+*         32         *       green        *
+*******************************************
+*         33         *       yellow       *
+*******************************************
+*         34         *        blue        *
+*******************************************
+*         35         *      magenta       *
+*******************************************
+*         36         *        cyan        *
+*******************************************
+*         37         *       white        *
+*******************************************
+
+*******************************************
+*        Code        * Background Colours *
+*******************************************
+*         40         *       black        *
+*******************************************
+*         41         *        red         *
+*******************************************
+*         42         *       green        *
+*******************************************
+*         43         *       yellow       *
+*******************************************
+*         44         *        blue        *
+*******************************************
+*         45         *      magenta       *
+*******************************************
+*         46         *        cyan        *
+*******************************************
+*         47         *       white        *
+*******************************************
+
+-}
 escapeCodes :: [String]
-escapeCodes = [ "\x1b[31m","\x1b[32m","\x1b[33m","\x1b[34m"
-              , "\x1b[35m","\x1b[36m"]
+escapeCodes = normalCodes ++ boldCodes
+
+normalCodes :: [String]
+normalCodes = map (\n -> csi [0,n] "m") [30..37]
+
+boldCodes :: [String]
+boldCodes = map (\n -> csi [1,n] "m") [31..37]
 
 -- This needs to come after a section of coloured text or bad things happen.
 resetCode :: String
-resetCode = "\x1b[0m"
+resetCode = "\ESC[0m"
 
 resetCodeRegex :: String
-resetCodeRegex = "\x1b\\[0m"
+resetCodeRegex = "\ESC\\[0m"
 
 coloursWithCodes :: [(Colour,String)]
 coloursWithCodes = zip colours escapeCodes
