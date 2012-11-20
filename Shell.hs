@@ -86,18 +86,24 @@ showCursorCode = csi [] "?25h"
 data Colour = NoColour
             | Black | Red | Green | Yellow | Blue | Magenta | Cyan | White
             | BRed | BGreen | BYellow | BBlue | BMagenta | BCyan | BWhite
-  --          | BForeground
+            | BForeground
             deriving (Eq,Enum,Show)
 
 type Colouror = String -> String
 
-{- TESTING
+-- TESTING
+{-
 colourTest :: IO ()
 colourTest = mapM_ (\c -> putStrLn $ c "XENON") allColourFuns
 
 allColourFuns :: [Colouror]
 allColourFuns = [ black,red,green,yellow,blue,magenta,cyan,white
-                , bRed,bGreen,bYellow,bBlue,bMagenta,bCyan,bWhite ]
+                , bRed,bGreen,bYellow,bBlue,bMagenta,bCyan,bWhite
+                , bForeground ]
+
+testCodes :: IO ()
+testCodes = mapM_ (putStrLn . (++ resetCode) . (++ "ARGON")) codes
+    where codes = map (\n -> csi [1,n] "m") [20..50] --[30..37]
 -}
 
 noColour :: Colouror
@@ -123,7 +129,7 @@ bBlue       = colourize BBlue
 bMagenta    = colourize BMagenta
 bCyan       = colourize BCyan
 bWhite      = colourize BWhite
---bForeground = colourize BForeground
+bForeground = colourize BForeground
 
 colours :: [Colour]
 colours = [Black ..]
@@ -191,13 +197,16 @@ where `x` is a colour code and `y` is an "attribute". See below.
 
 -}
 escapeCodes :: [String]
-escapeCodes = normalCodes ++ boldCodes
+escapeCodes = normalCodes ++ boldCodes ++ bForegroundCode
 
 normalCodes :: [String]
 normalCodes = map (\n -> csi [0,n] "m") [30..37]
 
 boldCodes :: [String]
-boldCodes = map (\n -> csi [1,n] "m") [31..37]
+boldCodes = map (\n -> csi [1,n] "m") $ [31..37]
+
+bForegroundCode :: [String]
+bForegroundCode = ["\ESC[m\ESC[1m"]
 
 -- This needs to come after a section of coloured text or bad things happen.
 resetCode :: String

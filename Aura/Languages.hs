@@ -40,7 +40,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Languages where
 
-import Shell (cyan, yellow, green, red, blue, bWhite)
+import Shell (cyan, yellow, green, red, blue, bForeground)
 
 data Language = English
               | Japanese
@@ -956,7 +956,7 @@ orpha Russian    = blue "Совершить действия с участием
 -- AurConnection functions
 --------------------------
 infoFields :: Language -> [String]
-infoFields = map bWhite . infoFields'
+infoFields = map bForeground . infoFields'
 
 infoFields' :: Language -> [String]
 infoFields' English    = [ "Repository","Name","Version","AUR Status","Project URL","AUR URL","License", "Votes","Description" ]

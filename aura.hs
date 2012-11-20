@@ -237,8 +237,8 @@ renderAurPkgInfo ss info = concat $ intersperse "\n" fieldsAndEntries
           ws               = whitespace $ langOf ss
           longestField     = maximum $ map length fields
           fields           = infoFields $ langOf ss
-          entries          = [ magenta "aur"
-                             , nameOf info
+          entries          = [ bMagenta "aur"
+                             , bWhite $ nameOf info
                              , latestVerOf info
                              , outOfDateMsg (langOf ss) $ isOutOfDate info
                              , cyan $ projectURLOf info
