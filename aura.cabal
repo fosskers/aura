@@ -50,7 +50,8 @@ executable aura
                        Aura.Languages,
                        Aura.AurConnection
 
-  build-depends:       curl,
+  build-depends:       url,
+                       curl,
                        json,
                        unix,
                        Cabal,

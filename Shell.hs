@@ -92,7 +92,6 @@ data Colour = NoColour
 type Colouror = String -> String
 
 -- TESTING
-{-
 colourTest :: IO ()
 colourTest = mapM_ (\c -> putStrLn $ c "XENON") allColourFuns
 
@@ -104,7 +103,6 @@ allColourFuns = [ black,red,green,yellow,blue,magenta,cyan,white
 testCodes :: IO ()
 testCodes = mapM_ (putStrLn . (++ resetCode) . (++ "ARGON")) codes
     where codes = map (\n -> csi [1,n] "m") [20..50] --[30..37]
--}
 
 noColour :: Colouror
 noColour = colourize NoColour
@@ -121,7 +119,7 @@ cyan    = colourize Cyan
 white   = colourize White
 
 -- Bold/intense colours
-bRed,bGreen,bYellow,bBlue,bMagenta,bCyan,bWhite :: Colouror
+bRed,bGreen,bYellow,bBlue,bMagenta,bCyan,bWhite,bForeground :: Colouror
 bRed        = colourize BRed
 bGreen      = colourize BGreen
 bYellow     = colourize BYellow
@@ -203,7 +201,7 @@ normalCodes :: [String]
 normalCodes = map (\n -> csi [0,n] "m") [30..37]
 
 boldCodes :: [String]
-boldCodes = map (\n -> csi [1,n] "m") $ [31..37]
+boldCodes = map (\n -> csi [1,n] "m") [31..37]
 
 bForegroundCode :: [String]
 bForegroundCode = ["\ESC[m\ESC[1m"]

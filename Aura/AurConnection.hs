@@ -25,6 +25,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.AurConnection where
 
 -- System Libaries
+import Network.URL (exportURL, importURL, add_param)
 import System.FilePath ((</>))
 import Data.Maybe (fromJust)
 import Text.JSON
@@ -38,30 +39,25 @@ import Bash
 -----------------------
 data RPCType = PkgSearch | MultiInfo | MSearch deriving (Eq)
 
-makeRPCUrl :: RPCType -> [String] -> String
-makeRPCUrl t args = rpcBaseUrl ++ t' ++ args'
-    where t'    = rpcAddType t
-          args' | t == MultiInfo = rpcAddMultiInfoArgs args
-                | otherwise      = rpcAddArg args
-
 aurPkgUrl :: Int -> String
 aurPkgUrl n = "https://aur.archlinux.org/packages.php?ID=" ++ show n
 
 rpcBaseUrl :: String
-rpcBaseUrl = "https://aur.archlinux.org/rpc.php?"
+rpcBaseUrl = "https://aur.archlinux.org/rpc.php"
 
-rpcAddType :: RPCType -> String
-rpcAddType t = "type=" ++ case t of
-                            PkgSearch -> "search"
-                            MultiInfo -> "multiinfo"
-                            MSearch   -> "msearch"
+-- the `fromJust` should never fail.
+makeRPCUrl :: RPCType -> [String] -> String
+makeRPCUrl t ps = exportURL . addParams . fromJust . importURL $ rpcBaseUrl
+    where addParams u = flip add_param (rpcType t) $ addP u t
+          addP u MultiInfo = foldl (\u' a -> add_param u' ("arg[]",a)) u ps
+          addP u _         = add_param u $ ("arg",unwords ps)
 
-rpcAddArg :: [String] -> String
-rpcAddArg []    = []
-rpcAddArg (a:_) = "&arg=" ++ a  -- This needs to be fixed! Regex!
-
-rpcAddMultiInfoArgs :: [String] -> String
-rpcAddMultiInfoArgs = concat . map ("&arg[]=" ++)
+rpcType :: RPCType -> (String,String)
+rpcType t = ("type",tname)
+    where tname = case t of
+                    PkgSearch -> "search"
+                    MultiInfo -> "multiinfo"
+                    MSearch   -> "msearch"
 
 -------
 -- JSON
@@ -84,8 +80,8 @@ aurInfoLookup :: [String] -> IO (Either String [PkgInfo])
 aurInfoLookup pkgs = getAURPkgInfo pkgs MultiInfo
 
 getAURPkgInfo :: [String] -> RPCType -> IO (Either String [PkgInfo])
-getAURPkgInfo items rpcType = do
-  infoJSON <- getUrlContents $ makeRPCUrl rpcType items
+getAURPkgInfo items t = do
+  infoJSON <- getUrlContents $ makeRPCUrl t items
   return . resultToEither . parseInfoJSON $ infoJSON
 
 -- Monads rock my world.

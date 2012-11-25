@@ -8,7 +8,7 @@ url="https://github.com/fosskers/aura"
 license=('GPL-3')
 arch=('i686' 'x86_64')
 depends=('gmp' 'pacman' 'ghc' 'haskell-regex-base' 'haskell-regex-pcre' 
-         'haskell-curl' 'haskell-json')
+         'haskell-curl' 'haskell-json' 'haskell-url')
 optdepends=('pacman-color: For coloured pacman output in Aura.')
 options=('strip')
 source=(https://github.com/downloads/fosskers/aura/${_hkgname}-${pkgver}.tar.gz)

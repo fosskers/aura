@@ -167,7 +167,10 @@ installPackages pkgs = toAurPkgs pkgs >>= getDeps >>= installDeps >>= install
 
 This could work if Package was a sexy Monad and these operations
 could fail silently.
+
+Work in progress in Aura/Build.hs
 -}
+
 installPackages :: Settings -> [String] -> [String] -> IO ExitCode
 installPackages _ _ [] = returnSuccess
 installPackages ss pacOpts pkgs = do
@@ -238,7 +241,7 @@ renderAurPkgInfo ss info = concat $ intersperse "\n" fieldsAndEntries
           longestField     = maximum $ map length fields
           fields           = infoFields $ langOf ss
           entries          = [ bMagenta "aur"
-                             , bWhite $ nameOf info
+                             , bForeground $ nameOf info
                              , latestVerOf info
                              , outOfDateMsg (langOf ss) $ isOutOfDate info
                              , cyan $ projectURLOf info
