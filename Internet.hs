@@ -21,29 +21,22 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Internet where
+module Internet
+    ( getUrlContents
+    , saveUrlContents ) where
 
 -- System Libraries
 import qualified Data.ByteString as B (ByteString, hPutStr)
 import System.IO (hClose, openFile, IOMode(WriteMode))
 import System.FilePath (splitFileName, (</>))
 import Control.Monad (liftM)
-import Network.Curl ( curlHead
-                    , curlGetString
+import Network.Curl ( curlGetString
                     , curlGetString_
                     , URLString
                     , CurlOption
                     , CurlCode )
 
 type Url = String
-
--- Arbitrary...?
-error404 :: String
-error404 = "HTTP/1.1 404 Not Found"
-
-doesUrlExist :: Url -> IO Bool
-doesUrlExist url = (no404 . fst) `liftM` curlHead url []
-    where no404 = (/=) error404
 
 getUrlContents :: Url -> IO String
 getUrlContents url = snd `liftM` curlGetString url []
