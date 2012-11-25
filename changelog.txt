@@ -1,6 +1,14 @@
 Aura Changelog
 ==============
 
+1.0.5.0
+-------
+- Fixed bug where packages with `+` in their name couldn't be
+  searched or built.
+- `-As` now allows multi-word searches, as it always should have.
+- `pacman-color` integration is more complete.
+  Still does not read the color.conf directly.
+
 1.0.4.0
 -------
 - Added French translation. Thanks to Ma Jiehong!

@@ -92,6 +92,7 @@ data Colour = NoColour
 type Colouror = String -> String
 
 -- TESTING
+{-
 colourTest :: IO ()
 colourTest = mapM_ (\c -> putStrLn $ c "XENON") allColourFuns
 
@@ -103,6 +104,7 @@ allColourFuns = [ black,red,green,yellow,blue,magenta,cyan,white
 testCodes :: IO ()
 testCodes = mapM_ (putStrLn . (++ resetCode) . (++ "ARGON")) codes
     where codes = map (\n -> csi [1,n] "m") [20..50] --[30..37]
+-}
 
 noColour :: Colouror
 noColour = colourize NoColour
