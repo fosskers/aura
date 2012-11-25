@@ -21,11 +21,6 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-{- POMODOROS
-2012 Oct 30 => X
-2012 Oct 16 => XXX
--}
-
 --                       -
 --             ---------------------
 --       ---------------------------------
@@ -252,9 +247,9 @@ renderAurPkgInfo ss info = concat $ intersperse "\n" fieldsAndEntries
 
 -- This is quite limited. It only accepts one word/pattern.
 aurSearch :: [String] -> IO ExitCode
-aurSearch []        = returnFailure
-aurSearch (regex:_) = aurSearchLookup regex ?>>=
-    mapM_ (putStrLn . renderSearchResult regex) . fromRight >>
+aurSearch []    = returnFailure
+aurSearch regex = aurSearchLookup regex ?>>=
+    mapM_ (putStrLn . renderSearchResult (unwords regex)) . fromRight >>
     returnSuccess
 
 renderSearchResult :: String -> PkgInfo -> String

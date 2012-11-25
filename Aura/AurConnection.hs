@@ -22,7 +22,14 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.AurConnection where
+module Aura.AurConnection
+    ( aurInfoLookup
+    , aurSearchLookup
+    , getTrueVerViaPkgbuild
+    , downloadPkgbuild
+    , downloadSource
+    , Pkgbuild
+    , PkgInfo(..) ) where
 
 -- System Libaries
 import Network.URL (exportURL, importURL, add_param)
@@ -73,8 +80,8 @@ data PkgInfo = PkgInfo { nameOf :: String
                        , descriptionOf :: String
                        } deriving (Eq,Show)
 
-aurSearchLookup :: String -> IO (Either String [PkgInfo])
-aurSearchLookup regex = getAURPkgInfo [regex] PkgSearch
+aurSearchLookup :: [String] -> IO (Either String [PkgInfo])
+aurSearchLookup regex = getAURPkgInfo regex PkgSearch
 
 aurInfoLookup :: [String] -> IO (Either String [PkgInfo])
 aurInfoLookup pkgs = getAURPkgInfo pkgs MultiInfo
