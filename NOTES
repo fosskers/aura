@@ -6,11 +6,26 @@ Move aura to haskell-http.
 
 Create `auraup` script for upgrading aura when things break.
 
-Is the BUGS entry in the man page still valid?
-
 OPTIONS TO IMPLEMENT
 --------------------
--Ci -> `--info` Gives some stats about the package cache.
+- `Ci` `info` -> Gives some stats about the package cache.
+- `Auk` `--diff` -> Gives a diff report between the last and the new
+  		    PKGBUILDs for all targets of an `-Au`.
+		    Stores the new PKGBUILD in the format: pkgname.pb
+		    Doesn't do a diff if a previous saved PKGBUILD
+		    does not exist. 
+		    Flags to use: `--text` `--suppress-common-lines`
+		    Use `colordiff`!		    	     	  
+- `save` -> Records versions of all packages installed and saves them
+  	    to a file in a set location. Timestamps the file. Use `-Q`.
+- `restore` -> Restores a saved state.
+  	       1. All packages are returned to whatever version
+	       	  they used to be in the saved state.
+	       2. Packages installed now but not in the saved state
+	       	  are removed.
+               3. Packages that should be restored to a previous
+	       	  version but don't have the appropriate file in the
+		  cache will be reported.
 
 OUT OF DATE
 -----------

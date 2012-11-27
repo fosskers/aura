@@ -22,10 +22,14 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Internet
-    ( getUrlContents
+    ( toURL
+    , fromURL
+    , addParam
+    , getUrlContents
     , saveUrlContents ) where
 
 -- System Libraries
+import qualified Network.URL as U (exportURL, importURL, add_param, URL)
 import qualified Data.ByteString as B (ByteString, hPutStr)
 import System.IO (hClose, openFile, IOMode(WriteMode))
 import System.FilePath (splitFileName, (</>))
@@ -36,15 +40,30 @@ import Network.Curl ( curlGetString
                     , CurlOption
                     , CurlCode )
 
-type Url = String
+--------------------------------
+-- NETWORK.URL ABSTRACTION LAYER
+--------------------------------
+type URL = U.URL
 
-getUrlContents :: Url -> IO String
+fromURL :: URL -> String
+fromURL = U.exportURL
+
+toURL :: String -> Maybe URL
+toURL = U.importURL
+
+addParam :: URL -> (String,String) -> URL
+addParam = U.add_param
+
+-------------
+-- CONNECTION
+-------------
+getUrlContents :: String -> IO String
 getUrlContents url = snd `liftM` curlGetString url []
 
 curlGetByteString :: URLString -> [CurlOption] -> IO (CurlCode,B.ByteString)
 curlGetByteString = curlGetString_
 
-saveUrlContents :: FilePath -> Url -> IO FilePath
+saveUrlContents :: FilePath -> String -> IO FilePath
 saveUrlContents path url = do
   h <- openFile filePath WriteMode
   (_,cont) <- curlGetByteString url []

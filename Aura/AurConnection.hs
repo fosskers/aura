@@ -32,7 +32,6 @@ module Aura.AurConnection
     , PkgInfo(..) ) where
 
 -- System Libaries
-import Network.URL (exportURL, importURL, add_param)
 import System.FilePath ((</>))
 import Data.Maybe (fromJust)
 import Text.JSON
@@ -54,10 +53,10 @@ rpcBaseUrl = "https://aur.archlinux.org/rpc.php"
 
 -- the `fromJust` should never fail.
 makeRPCUrl :: RPCType -> [String] -> String
-makeRPCUrl t ps = exportURL . addParams . fromJust . importURL $ rpcBaseUrl
-    where addParams u = flip add_param (rpcType t) $ addP u t
-          addP u MultiInfo = foldl (\u' a -> add_param u' ("arg[]",a)) u ps
-          addP u _         = add_param u $ ("arg",unwords ps)
+makeRPCUrl t ps = fromURL . addParams . fromJust . toURL $ rpcBaseUrl
+    where addParams u = flip addParam (rpcType t) $ addP u t
+          addP u MultiInfo = foldl (\u' a -> addParam u' ("arg[]",a)) u ps
+          addP u _         = addParam u $ ("arg",unwords ps)
 
 rpcType :: RPCType -> (String,String)
 rpcType t = ("type",tname)
