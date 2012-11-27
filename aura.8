@@ -85,9 +85,9 @@ Outputs an AUR package's PKGBUILD. Use this before installing new packages
 to confirm that the build scripts aren't doing anything fishy.
 .RE
 .P
-\fB\-s\fR, \-\-search <regex>
+\fB\-s\fR, \-\-search <word(s)>
 .RS 4
-Search the AUR via a regex. As of Sept. 15 2012, only a single word
+Search the AUR via words only (no regex).
 is allowed.
 .RE
 .P
@@ -229,6 +229,14 @@ native characters. The available languages are, in option form:
 If you have \fIpacman\-color\fR installed, the pacman output given by aura
 will be in colour. If you have pacman-color installed but don't want colour,
 set your $PACMAN variable to just \fIpacman\fR.
+
+.SH PRO TIPS
+.P
+1. If you build a package and then choose not to install it, the built
+package file will still be moved to the cache. You can then install it
+whenever you want with \fI\-C\fR.
+.P
+2. Research packages using \fI\-Ad\fR, \fI\-Ai\fR, and \fI\-Ap\fR!
 
 .SH SEE ALSO
 .P

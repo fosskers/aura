@@ -6,7 +6,7 @@ Move aura to haskell-http.
 
 Create `auraup` script for upgrading aura when things break.
 
-Add info to README and man page about pro `-C` use.
+Is the BUGS entry in the man page still valid?
 
 OPTIONS TO IMPLEMENT
 --------------------
