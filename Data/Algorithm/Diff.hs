@@ -45,17 +45,17 @@ dstep cd dls = hd : pairMaxes rst
   where (hd:rst) = nextDLs dls
         nextDLs [] = []
         nextDLs (dl:rest) = dl':dl'':nextDLs rest
-          where dl'  = addsnake cd $ dl {poi=poi dl + 1, path=(F : pdl)}
-                dl'' = addsnake cd $ dl {poj=poj dl + 1, path=(S : pdl)}
+          where dl'  = addSnake cd $ dl { poi=poi dl + 1, path=(F : pdl) }
+                dl'' = addSnake cd $ dl { poj=poj dl + 1, path=(S : pdl) }
                 pdl  = path dl
         pairMaxes []  = []
         pairMaxes [x] = [x]
         pairMaxes (x:y:rest) = max x y : pairMaxes rest
 
-addsnake :: (Int -> Int -> Bool) -> DL -> DL
-addsnake cd dl
-    | cd pi pj  = addsnake cd $
-                 dl {poi = pi + 1, poj = pj + 1, path=(B : path dl)}
+addSnake :: (Int -> Int -> Bool) -> DL -> DL
+addSnake cd dl
+    | cd pi pj  = addSnake cd $
+                 dl { poi = pi + 1, poj = pj + 1, path = (B : path dl) }
     | otherwise = dl
     where pi = poi dl
           pj = poj dl
@@ -63,10 +63,11 @@ addsnake cd dl
 lcs :: (a -> a -> Bool) -> [a] -> [a] -> [DI]
 lcs eq as bs = path . head . dropWhile cond . concat .
                iterate (dstep cd) . (: []) .
-               addsnake cd $ DL { poi=0, poj=0, path=[] }
-    where cond dl = poi dl /= lena || poj dl /= lenb
-          cd      = canDiag eq as bs lena lenb
-          lena    = length as; lenb = length bs
+               addSnake cd $ DL { poi = 0, poj = 0, path = [] }
+    where cond = \dl -> poi dl /= lena || poj dl /= lenb
+          cd   = canDiag eq as bs lena lenb
+          lena = length as
+          lenb = length bs
 
 -- | Takes two lists and returns a list indicating the differences
 -- between them.
