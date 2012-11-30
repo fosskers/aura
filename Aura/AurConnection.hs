@@ -54,8 +54,8 @@ rpcBaseUrl = "https://aur.archlinux.org/rpc.php"
 -- the `fromJust` should never fail.
 makeRPCUrl :: RPCType -> [String] -> String
 makeRPCUrl t ps = fromURL . addParams . fromJust . toURL $ rpcBaseUrl
-    where addParams u = flip addParam (rpcType t) $ addP u t
-          addP u MultiInfo = foldl (\u' a -> addParam u' ("arg[]",a)) u ps
+    where addParams u      = addParam (addP u t) $ rpcType t
+          addP u MultiInfo = foldl (\u' p -> addParam u' ("arg[]",p)) u ps
           addP u _         = addParam u $ ("arg",unwords ps)
 
 rpcType :: RPCType -> (String,String)

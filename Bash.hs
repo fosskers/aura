@@ -58,10 +58,10 @@ variable :: String -> Value -> Variable
 variable name val = Variable name val
 
 value :: String -> Value
-value val = Value val
+value = Value
 
 array :: [String] -> Value
-array vals = Array vals
+array = Array
 
 ----------
 -- TESTING
