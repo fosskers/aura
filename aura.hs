@@ -178,6 +178,7 @@ installPackages ss pacOpts pkgs = do
   (forPacman,aurPkgNames,nonPkgs) <- divideByPkgType toInstall
   reportNonPackages lang nonPkgs
   aurPackages <- mapM makeAURPkg aurPkgNames
+  unless (not $ diffPkgbuilds ss) $ reportPkgbuildDiffs ss aurPackages
   notify ss installPackagesMsg5
   results     <- getDepsToInstall ss aurPackages
   case results of
@@ -467,6 +468,23 @@ reportPkgsToInstall lang pacPkgs aurDeps aurPkgs = do
   printIfThere (sort $ namesOf aurPkgs) $ reportPkgsToInstallMsg3 lang
       where namesOf = map pkgNameOf
             printIfThere ps m = unless (null ps) $ printList green cyan m ps
+
+reportPkgbuildDiffs :: Settings -> [AURPkg] -> IO ()
+reportPkgbuildDiffs ss ps | not $ diffPkgbuilds ss = return ()
+                          | otherwise = mapM_ displayDiff ps
+    where displayDiff p = do
+            let name = pkgNameOf p
+            isStored <- hasPkgbuildStored name
+            if not isStored
+               then warn ss $ flip reportPkgbuildDiffsMsg1 name
+               else do
+                 let new = pkgbuildOf p
+                 old <- readPkgbuild name
+                 case comparePkgbuilds old new of
+                   "" -> notify ss $ flip reportPkgbuildDiffsMsg2 name
+                   d  -> do
+                      warn ss $ flip reportPkgbuildDiffsMsg3 name
+                      putStrLn $ d ++ "\n"
 
 reportPkgsToUpgrade :: Language -> [String] -> IO ()
 reportPkgsToUpgrade lang pkgs = printList green cyan msg pkgs

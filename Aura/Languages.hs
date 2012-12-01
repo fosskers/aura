@@ -491,6 +491,19 @@ reportPkgsToInstallMsg3 Portuguese = "Pacotes principais do AUR:"
 reportPkgsToInstallMsg3 French     = "Principaux paquets AUR :"
 reportPkgsToInstallMsg3 Russian    = "Главные пакеты из AUR:"
 
+-- Needs translations.
+reportPkgbuildDiffsMsg1 :: Language -> String -> String
+reportPkgbuildDiffsMsg1 Japanese p = bt p ++ "のPKGBUILDはまだ保存されていない。"
+reportPkgbuildDiffsMsg1 _        p = bt p ++ " has no stored PKGBUILD yet."
+
+reportPkgbuildDiffsMsg2 :: Language -> String -> String
+reportPkgbuildDiffsMsg2 Japanese p = bt p ++ "のPKGBUILDは最新。"
+reportPkgbuildDiffsMsg2 _        p = bt p ++ "'s PKGBUILD is up to date."
+
+reportPkgbuildDiffsMsg3 :: Language -> String -> String
+reportPkgbuildDiffsMsg3 Japanese p = bt p ++ "のPKGBUILD変更報告："
+reportPkgbuildDiffsMsg3 _        p = bt p ++ " PKGBUILD changes:"
+
 reportPkgsToUpgradeMsg1 :: Language -> String
 reportPkgsToUpgradeMsg1 English    = "AUR Packages to upgrade:"
 reportPkgsToUpgradeMsg1 Japanese   = "アップグレードするAURパッケージ："
