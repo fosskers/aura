@@ -494,14 +494,17 @@ reportPkgsToInstallMsg3 Russian    = "Главные пакеты из AUR:"
 -- Needs translations.
 reportPkgbuildDiffsMsg1 :: Language -> String -> String
 reportPkgbuildDiffsMsg1 Japanese p = bt p ++ "のPKGBUILDはまだ保存されていない。"
+reportPkgbuildDiffsMsg1 Russian  p = "У " ++ bt p ++ " ещё нет сохраненного PKGBUILD."
 reportPkgbuildDiffsMsg1 _        p = bt p ++ " has no stored PKGBUILD yet."
 
 reportPkgbuildDiffsMsg2 :: Language -> String -> String
 reportPkgbuildDiffsMsg2 Japanese p = bt p ++ "のPKGBUILDは最新。"
+reportPkgbuildDiffsMsg2 Russian  p = "PKGBUILD " ++ bt p ++ " является новейшим."
 reportPkgbuildDiffsMsg2 _        p = bt p ++ " PKGBUILD is up to date."
 
 reportPkgbuildDiffsMsg3 :: Language -> String -> String
 reportPkgbuildDiffsMsg3 Japanese p = bt p ++ "のPKGBUILD変更報告："
+reportPkgbuildDiffsMsg3 Russian  p = "Изменения, вносимые " ++ bt p ++ " PKGBUILD:"
 reportPkgbuildDiffsMsg3 _        p = bt p ++ " PKGBUILD changes:"
 
 reportPkgsToUpgradeMsg1 :: Language -> String
