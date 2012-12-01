@@ -1,6 +1,3 @@
--- A library for dealing with the installion and management
--- of Arch User Repository packages.
-
 {-
 
 Copyright 2012 Colin Woodbury <colingw@gmail.com>
@@ -22,34 +19,26 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-{- POMODOROS
-Oct. 30 => X
-Oct. 21 => X
--}
+module Aura.General where
 
-module Aura.AuraLib where
-
--- System Libraries
-import Control.Monad (filterM, liftM, when, unless)
 import Data.List ((\\), nub, sortBy, intersperse)
-import System.FilePath ((</>), takeFileName)
 import System.Exit (ExitCode(..))
 import Text.Regex.PCRE ((=~))
+import Control.Monad (liftM)
 import Data.Maybe (fromJust)
 import Data.Char (isDigit)
 
--- Custom Libraries
 import Aura.AurConnection
 import Aura.Languages
 import Aura.Settings
-import Aura.MakePkg
 import Aura.Pacman
 import Utilities
 import Shell
 import Zero
-import Bash
 
--- For build and package conflict errors.
+--------
+-- TYPES
+--------
 type ErrMsg = String
 
 -----------
@@ -202,205 +191,6 @@ trueRootCheck ss action
     if okay
        then action
        else notify ss trueRootCheckMsg2 >> returnSuccess
-
------------
--- THE WORK
------------
-type MaybePaths = Maybe [FilePath]
-
--- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
-installPkgFiles :: Settings -> [String] -> [FilePath] -> IO ExitCode
-installPkgFiles ss pacOpts files = pacman ss $ ["-U"] ++ pacOpts ++ files
-
--- All building occurs within temp directories in the package cache.
-buildPackages :: Settings -> [AURPkg] -> IO MaybePaths
-buildPackages _ [] = return Nothing
-buildPackages ss pkgs = inDir cache $ buildPackages' ss (Just []) pkgs
-    where cache = cachePathOf ss
-
--- Handles the building of Packages.
--- Assumed: All pacman and AUR dependencies are already installed.
-buildPackages' :: Settings -> MaybePaths -> [AURPkg] -> IO MaybePaths
-buildPackages' _ builtPs [] = return builtPs  -- Done recursing!
-buildPackages' settings builtPs pkgs@(p:ps) = do
-  notify settings (flip buildPackagesMsg1 $ pkgNameOf p)
-  results <- withTempDir (pkgNameOf p) (build settings p)
-  case results of
-    Right pkg   -> buildPackages' settings ((pkg :) `fmap` builtPs) ps
-    Left errors -> buildFail settings builtPs pkgs errors
-        
--- Kinda ugly.
--- Perform the actual build. Fails elegantly when build fails occur.
-build :: Settings -> AURPkg -> IO (Either ErrMsg FilePath)
-build settings pkg = do
-  currDir <- pwd
-  getSourceCode (pkgNameOf pkg) user currDir
-  checkHotEdit settings $ pkgNameOf pkg
-  (exitStatus,pkgName,output) <- makepkg' user
-  if didProcessFail exitStatus
-     then return $ Left output
-     else do
-       path <- moveToCache (cachePathOf settings) pkgName
-       cd currDir
-       return $ Right path
-    where makepkg'   = if toSuppress then makepkgQuiet else makepkgVerbose
-          toSuppress = suppressMakepkg settings
-          user       = getTrueUser $ environmentOf settings
-
-getSourceCode :: String -> String -> FilePath -> IO ()
-getSourceCode pkgName user currDir = do
-  chown user currDir []
-  tarball   <- downloadSource currDir pkgName
-  sourceDir <- decompress tarball
-  chown user sourceDir ["-R"]
-  cd sourceDir
-
--- Allow the user to edit the PKGBUILD if they asked to do so.
-checkHotEdit :: Settings -> String -> IO ()
-checkHotEdit settings pkgName = return (mayHotEdit settings) ?>> do
-    optionalPrompt (mustConfirm settings) msg ?>> openEditor editor "PKGBUILD"
-    where msg    = checkHotEditMsg1 (langOf settings) pkgName
-          editor = getEditor $ environmentOf settings
-
--- Inform the user that building failed. Ask them if they want to
--- continue installing previous packages that built successfully.
--- BUG: This prompting ignores `--noconfirm`.
-buildFail :: Settings -> MaybePaths -> [AURPkg] -> ErrMsg -> IO MaybePaths
-buildFail _ _ [] _ = return Nothing
-buildFail settings builtPs (p:ps) errors = do
-  scold settings (flip buildFailMsg1 (show p))
-  when (suppressMakepkg settings) (displayBuildErrors settings errors)
-  unless (null ps) $ printList red cyan (buildFailMsg2 lang) (map pkgNameOf ps)
-  (return $ fromJust builtPs) ?>>= \bps -> do
-      printList yellow cyan (buildFailMsg3 lang) $ map takeFileName bps
-      yesNoPrompt (buildFailMsg4 lang) ?>> return builtPs
-    where lang = langOf settings
-
--- If the user wasn't running Aura with `-x`, then this will
--- show them the suppressed makepkg output. 
-displayBuildErrors :: Settings -> ErrMsg -> IO ()
-displayBuildErrors settings errors = do
-  putStrA red (displayBuildErrorsMsg1 $ langOf settings)
-  timedMessage 1000000 ["3.. ","2.. ","1..\n"]
-  putStrLn errors
-
--- Moves a file to the pacman package cache and returns its location.
-moveToCache :: FilePath -> FilePath -> IO FilePath
-moveToCache cachePath pkg = mv pkg newName >> return newName
-    where newName = cachePath </> pkg
-
--- Returns either a list of error message or the deps to be installed.
-getDepsToInstall :: Settings -> [AURPkg] -> 
-                    IO (Either [ErrMsg] ([String],[AURPkg]))
-getDepsToInstall ss [] = return $ Left [getDepsToInstallMsg1 (langOf ss)]
-getDepsToInstall ss pkgs = do
-  -- Can this be done with foldM?
-  allDeps <- mapM (determineDeps $ langOf ss) pkgs
-  let (ps,as,vs) = foldl groupPkgs ([],[],[]) allDeps
-  necPacPkgs <- filterM mustInstall ps >>= mapM makePacmanPkg
-  necAURPkgs <- filterM (mustInstall . show) as
-  necVirPkgs <- filterM mustInstall vs >>= mapM makeVirtualPkg
-  let conflicts = getConflicts ss (necPacPkgs,necAURPkgs,necVirPkgs)
-  if notNull conflicts
-     then return $ Left conflicts
-     else do
-       let providers  = map (pkgNameOf . fromJust . providerPkgOf) necVirPkgs
-           pacmanPkgs = map pkgNameOf necPacPkgs
-       return $ Right (nub $ providers ++ pacmanPkgs, necAURPkgs)
-
--- Returns ([RepoPackages], [AURPackages], [VirtualPackages])
-determineDeps :: Language -> AURPkg -> IO ([String],[AURPkg],[String])
-determineDeps lang pkg = do
-  let globals  = getGlobalVars $ pkgbuildOf pkg
-      depNames = getDeps globals "depends" ++ getDeps globals "makedepends"
-  (repoPkgNames,aurPkgNames,other) <- divideByPkgType depNames
-  aurPkgs       <- mapM makeAURPkg aurPkgNames
-  recursiveDeps <- mapM (determineDeps lang) aurPkgs
-  let (rs,as,os) = foldl groupPkgs (repoPkgNames,aurPkgs,other) recursiveDeps
-  return (nub rs, nub as, nub os)
-      where getDeps gs s = case referenceArray gs s of
-                             Nothing -> []
-                             Just ds -> ds
-
--- If a package isn't installed, `pacman -T` will yield a single name.
--- Any other type of output means installation is not required. 
-mustInstall :: String -> IO Bool
-mustInstall pkg = do
-  necessaryDeps <- pacmanOutput $ ["-T",pkg]
-  return $ length (words necessaryDeps) == 1
-
--- Questions to be answered in conflict checks:
--- 1. Is the package ignored in `pacman.conf`?
--- 2. Is the version requested different from the one provided by
---    the most recent version?
-getConflicts :: Settings -> ([PacmanPkg],[AURPkg],[VirtualPkg]) -> [ErrMsg]
-getConflicts settings (ps,as,vs) = rErr ++ aErr ++ vErr
-    where rErr     = extract $ map (getPacmanConflicts lang toIgnore) ps
-          aErr     = extract $ map (getAURConflicts lang toIgnore) as
-          vErr     = extract $ map (getVirtualConflicts lang toIgnore) vs
-          extract  = map fromJust . filter (/= Nothing)
-          lang     = langOf settings
-          toIgnore = ignoredPkgsOf settings
-
-getPacmanConflicts :: Language -> [String] -> PacmanPkg -> Maybe ErrMsg
-getPacmanConflicts lang toIgnore pkg = getRealPkgConflicts f lang toIgnore pkg
-    where f = getMostRecentVerNum . pkgInfoOf
-       
--- Takes `pacman -Si` output as input.
-getMostRecentVerNum :: String -> String
-getMostRecentVerNum info = tripleThrd match
-    where match     = thirdLine =~ ": " :: (String,String,String)
-          thirdLine = allLines !! 2  -- Version num is always the third line.
-          allLines  = lines info
-
-getAURConflicts :: Language -> [String] -> AURPkg -> Maybe ErrMsg
-getAURConflicts lang toIgnore pkg = getRealPkgConflicts f lang toIgnore pkg
-    where f = getTrueVerViaPkgbuild . pkgbuildOf
-
--- Must be called with a (f)unction that yields the version number
--- of the most up-to-date form of the package.
-getRealPkgConflicts :: Package a => (a -> String) -> Language -> [String] ->
-                       a -> Maybe ErrMsg
-getRealPkgConflicts f lang toIgnore pkg
-    | isIgnored (pkgNameOf pkg) toIgnore       = Just failMessage1
-    | isVersionConflict (versionOf pkg) curVer = Just failMessage2
-    | otherwise = Nothing    
-    where curVer       = f pkg
-          name         = pkgNameOf pkg
-          reqVer       = show $ versionOf pkg
-          failMessage1 = getRealPkgConflictsMsg2 lang name
-          failMessage2 = getRealPkgConflictsMsg1 lang name curVer reqVer
-
--- This can't be generalized as easily.
-getVirtualConflicts :: Language -> [String] -> VirtualPkg -> Maybe ErrMsg
-getVirtualConflicts lang toIgnore pkg
-    | providerPkgOf pkg == Nothing = Just failMessage1
-    | isIgnored provider toIgnore  = Just failMessage2
-    | isVersionConflict (versionOf pkg) pVer = Just failMessage3
-    | otherwise = Nothing
-    where name         = pkgNameOf pkg
-          ver          = show $ versionOf pkg
-          provider     = pkgNameOf . fromJust . providerPkgOf $ pkg
-          pVer         = getProvidedVerNum pkg
-          failMessage1 = getVirtualConflictsMsg1 lang name
-          failMessage2 = getVirtualConflictsMsg2 lang name provider
-          failMessage3 = getVirtualConflictsMsg3 lang name ver provider pVer
-
-getProvidedVerNum :: VirtualPkg -> String
-getProvidedVerNum pkg = splitVer match
-    where match = info =~ ("[ ]" ++ pkgNameOf pkg ++ ">?=[0-9.]+")
-          info  = pkgInfoOf . fromJust . providerPkgOf $ pkg
-
--- Compares a (r)equested version number with a (c)urrent up-to-date one.
--- The `MustBe` case uses regexes. A dependency demanding version 7.4
--- SHOULD match as `okay` against version 7.4, 7.4.0.1, or even 7.4.0.1-2.
-isVersionConflict :: VersionDemand -> String -> Bool
-isVersionConflict Anything _     = False
-isVersionConflict (LessThan r) c = not $ comparableVer c < comparableVer r
-isVersionConflict (MustBe r) c   = not $ c =~ ("^" ++ r)
-isVersionConflict (AtLeast r) c  | comparableVer c > comparableVer r = False
-                                 | isVersionConflict (MustBe r) c = True
-                                 | otherwise = False
 
 getForeignPackages :: IO [(String,String)]
 getForeignPackages = map fixName `liftM` lines `liftM` pacmanOutput ["-Qm"]

@@ -44,10 +44,13 @@ executable aura
                        Utilities,
                        Aura.Logo,
                        Aura.Flags,
+                       Aura.Build,
                        Aura.Pacman,
-                       Aura.AuraLib,
+                       Aura.General,
                        Aura.MakePkg,
+                       Aura.Settings,
                        Aura.Languages,
+                       Aura.Dependencies,
                        Aura.AurConnection
 
   build-depends:       url,

@@ -30,7 +30,7 @@ module Aura.Pkgbuilds
 
 import System.Directory (doesFileExist)
 
-import Aura.AuraLib (AURPkg, pkgNameOf, pkgbuildOf)
+import Aura.General (AURPkg, pkgNameOf, pkgbuildOf)
 import ColourDiff
 
 pkgbuildCache :: String
