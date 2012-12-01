@@ -68,7 +68,7 @@ translators = [ " Chris \"Kwpolska\" Warrick"
 languageNames :: Language -> [String]
 languageNames English    = [ "Polish","Croatian","Swedish","German","Spanish","Portuguese","French","Russian" ]
 languageNames Japanese   = [ "ポーランド語","クロアチア語","スウェーデン語","ドイツ語","スペイン語","ポルトガル語","フランス語","ロシア語" ]
-languageNames Polish     = [ "polski","chorwacki","szwedzki","niemiecki","hiszpański","portugalski" ]
+languageNames Polish     = [ "polski","chorwacki","szwedzki","niemiecki","hiszpański","portugalski","francuski","rosyjski" ]
 languageNames Croatian   = [ "poljski","hrvatski","švedski","njemački","španjolski","portugalski" ]
 languageNames Swedish    = [ "polska","kroatiska","svenska","tyska","spanska","portugisiska" ]
 languageNames German     = [ "Polnisch","Kroatisch","Schwedisch","Deutsch","Spanisch","Portugiesisch" ]
@@ -493,15 +493,21 @@ reportPkgsToInstallMsg3 Russian    = "Главные пакеты из AUR:"
 
 -- Needs translations.
 reportPkgbuildDiffsMsg1 :: Language -> String -> String
+reportPkgbuildDiffsMsg1 English  p = bt p ++ " has no stored PKGBUILD yet."
 reportPkgbuildDiffsMsg1 Japanese p = bt p ++ "のPKGBUILDはまだ保存されていない。"
+reportPkgbuildDiffsMsg1 Polish   p = bt p ++ " nie ma jeszcze przechowywanego pliku PKGBUILD."
 reportPkgbuildDiffsMsg1 _        p = bt p ++ " has no stored PKGBUILD yet."
 
 reportPkgbuildDiffsMsg2 :: Language -> String -> String
+reportPkgbuildDiffsMsg2 English  p = bt p ++ "'s PKGBUILD is up to date."
 reportPkgbuildDiffsMsg2 Japanese p = bt p ++ "のPKGBUILDは最新。"
+reportPkgbuildDiffsMsg2 Polish   p = "PKGBUILD pakietu " ++ bt p ++ "jest aktualny."
 reportPkgbuildDiffsMsg2 _        p = bt p ++ "'s PKGBUILD is up to date."
 
 reportPkgbuildDiffsMsg3 :: Language -> String -> String
+reportPkgbuildDiffsMsg3 English  p = bt p ++ " PKGBUILD changes:"
 reportPkgbuildDiffsMsg3 Japanese p = bt p ++ "のPKGBUILD変更報告："
+reportPkgbuildDiffsMsg3 Polish   p = "Zmiany w PKGBUILD dla " ++ bt p ++ ":"
 reportPkgbuildDiffsMsg3 _        p = bt p ++ " PKGBUILD changes:"
 
 reportPkgsToUpgradeMsg1 :: Language -> String
@@ -974,7 +980,7 @@ infoFields = map bForeground . infoFields'
 infoFields' :: Language -> [String]
 infoFields' English    = [ "Repository","Name","Version","AUR Status","Project URL","AUR URL","License", "Votes","Description" ]
 infoFields' Japanese   = [ "リポジトリ","名前","バージョン","パッケージ状態","プロジェクト","パッケージページ","ライセンス","投票数","概要" ]
-infoFields' Polish     = [ "Repository","Nazwa","Wersja","Status w AUR","URL Projektu","URL AUR","Licencja","Głosy","Opis" ]
+infoFields' Polish     = [ "Repository","Nazwa","Wersja","Status w AUR","URL Projektu","URL w AUR","Licencja","Głosy","Opis" ]
 infoFields' Croatian   = [ "Repository","Ime","Verzija","AUR Stanje","URL Projekta","AUR URL","Licenca","Glasovi","Opis" ]
 infoFields' Swedish    = [ "Repository","Namn","Version","AUR Status","Projekt URL","AUR URL","Licens","Röster","Beskrivning" ]
 infoFields' German     = [ "Repository","Name","Version","AUR Status","Projekt URL","AUR URL","Lizenz","Stimmen","Beschreibung" ]
