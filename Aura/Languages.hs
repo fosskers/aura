@@ -498,7 +498,7 @@ reportPkgbuildDiffsMsg1 _        p = bt p ++ " has no stored PKGBUILD yet."
 
 reportPkgbuildDiffsMsg2 :: Language -> String -> String
 reportPkgbuildDiffsMsg2 Japanese p = bt p ++ "のPKGBUILDは最新。"
-reportPkgbuildDiffsMsg2 _        p = bt p ++ "'s PKGBUILD is up to date."
+reportPkgbuildDiffsMsg2 _        p = bt p ++ " PKGBUILD is up to date."
 
 reportPkgbuildDiffsMsg3 :: Language -> String -> String
 reportPkgbuildDiffsMsg3 Japanese p = bt p ++ "のPKGBUILD変更報告："

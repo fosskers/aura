@@ -41,6 +41,7 @@ import Data.Char (isDigit)
 -- Custom Libraries
 import Aura.AurConnection
 import Aura.Languages
+import Aura.Settings
 import Aura.MakePkg
 import Aura.Pacman
 import Utilities
@@ -50,19 +51,6 @@ import Bash
 
 -- For build and package conflict errors.
 type ErrMsg = String
-
--- The global settings as set by the user with command-line flags.
-data Settings = Settings { environmentOf   :: Environment
-                         , langOf          :: Language
-                         , pacman          :: Pacman
-                         , ignoredPkgsOf   :: [String]
-                         , cachePathOf     :: FilePath
-                         , logFilePathOf   :: FilePath
-                         , suppressMakepkg :: Bool
-                         , mustConfirm     :: Bool
-                         , mayHotEdit      :: Bool
-                         , diffPkgbuilds   :: Bool
-                         }
 
 -----------
 -- PACKAGES
