@@ -54,11 +54,11 @@ dstep cd dls = hd : pairMaxes rst
 
 addSnake :: (Int -> Int -> Bool) -> DL -> DL
 addSnake cd dl
-    | cd pi pj  = addSnake cd $
-                 dl { poi = pi + 1, poj = pj + 1, path = (B : path dl) }
+    | cd pj pk  = addSnake cd $
+                 dl { poi = pj + 1, poj = pk + 1, path = (B : path dl) }
     | otherwise = dl
-    where pi = poi dl
-          pj = poj dl
+    where pj = poi dl
+          pk = poj dl
 
 lcs :: (a -> a -> Bool) -> [a] -> [a] -> [DI]
 lcs eq as bs = path . head . dropWhile cond . concat .
@@ -88,6 +88,7 @@ getDiffBy eq a b = markup a b . reverse $ lcs eq a b
           markup _ _ _ = []
 
 -- | generalized `getGroupedDiff`
+getGroupedDiffBy :: (t -> t -> Bool) -> [t] -> [t] -> [(DI,[t])]
 getGroupedDiffBy eq a b = map go . groupBy (\x y -> fst x == fst y) $
                           getDiffBy eq a b
-    where go ((d,x) : xs) = (d, x : map snd xs)
+    where go = \((d,x):xs) -> (d, x : map snd xs)

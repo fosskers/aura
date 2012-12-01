@@ -24,9 +24,13 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Pkgbuilds
     ( comparePkgbuilds
     , hasPkgbuildStored
+    , storePkgbuilds
     , readPkgbuild
     , writePkgbuild ) where
 
+import System.Directory (doesFileExist)
+
+import Aura.AuraLib (AURPkg, pkgNameOf, pkgbuildOf)
 import ColourDiff
 
 pkgbuildCache :: String
@@ -42,10 +46,13 @@ comparePkgbuilds :: String -> String -> String
 comparePkgbuilds old new = diff (lines old) (lines new)
 
 hasPkgbuildStored :: String -> IO Bool
-hasPkgbuildStored = undefined
+hasPkgbuildStored = doesFileExist . pkgbuildPath 
+
+storePkgbuilds :: [AURPkg] -> IO ()
+storePkgbuilds = mapM_ (\p -> writePkgbuild (pkgNameOf p) (pkgbuildOf p))
 
 readPkgbuild :: String -> IO String
-readPkgbuild name = readFile $ pkgbuildPath name
+readPkgbuild = readFile . pkgbuildPath
 
 writePkgbuild :: String -> String -> IO ()
 writePkgbuild name p = writeFile (pkgbuildPath name) p

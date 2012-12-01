@@ -49,9 +49,9 @@ import Aura.Logo -------------------------
 import Aura.Flags ----------------------------
 import Aura.Pacman -------------------------------
 import Aura.AuraLib ----------------------------------
-import Aura.Languages ------------------------------------
-import Aura.AurConnection ---------------------------------
----------------------------------------------------------
+import Aura.Pkgbuilds ------------------------------------
+import Aura.Languages -------------------------------------
+import Aura.AurConnection -------------------------------
 --------------------------------------------------------
 -------------------------------------------------------
 -----------------------------------------------------
@@ -192,6 +192,7 @@ installPackages ss pacOpts pkgs = do
          else do
            unless (null repoPkgs) $ do
                  pacman ss (["-S","--asdeps"] ++ pkgsAndOpts) >> return ()
+           storePkgbuilds $ aurPackages ++ aurDeps
            mapM_ (buildAndInstallDep ss pacOpts) aurDeps
            pkgFiles <- buildPackages ss aurPackages
            case pkgFiles of
