@@ -1,5 +1,3 @@
-module Aura.Flags where
-
 {-
 
 Copyright 2012 Colin Woodbury <colingw@gmail.com>
@@ -25,15 +23,27 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 2012 Nov 03 => X
 -}
 
+module Aura.Flags
+    ( parseLanguageFlag
+    , parseFlags 
+    , settingsFlags
+    , reconvertFlags
+    , dualFlagMap
+    , hijackedFlagMap
+    , getSuppression
+    , getConfirmation
+    , getHotEdit
+    , getDiffStatus
+    , auraOperMsg
+    , Flag(..) ) where
+
 -- System Libraries
 import System.Console.GetOpt
---import Data.Maybe (fromJust)
 
 -- Custom Libraries
 import Utilities (notNull)
 import Shell (yellow)
 import Aura.Languages
---import Zero ((?>>=))
 
 type FlagMap = [(Flag,String)]
 
@@ -52,6 +62,7 @@ data Flag = AURInstall
           | Unsuppress
           | HotEdit
           | NoConfirm
+          | DiffPkgbuilds
           | Debug
           | Backup
           | Clean
@@ -89,21 +100,22 @@ auraOperations lang =
 
 auraOptions :: [OptDescr Flag]
 auraOptions = map simpleMakeOption
-              [ ( ['a'], ["delmakedeps"],  DelMDeps    )
-              , ( ['b'], ["backup"],       Backup      )
-              , ( ['c'], ["clean"],        Clean       )
-              , ( ['d'], ["deps"],         ViewDeps    )
-              , ( ['j'], ["abandon"],      Abandon     )
-              , ( ['i'], ["info"],         Info        )
-              , ( ['p'], ["pkgbuild"],     GetPkgbuild )
-              , ( ['s'], ["search"],       Search      )
-              , ( ['u'], ["sysupgrade"],   Upgrade     )
-              , ( ['w'], ["downloadonly"], Download    )
-              , ( ['x'], ["unsuppress"],   Unsuppress  )
-              , ( [],    ["hotedit"],      HotEdit     )
-              , ( [],    ["conf"],         ViewConf    ) 
-              , ( [],    ["languages"],    Languages   ) 
-              , ( [],    ["auradebug"],    Debug       ) ]
+              [ ( ['a'], ["delmakedeps"],  DelMDeps      )
+              , ( ['b'], ["backup"],       Backup        )
+              , ( ['c'], ["clean"],        Clean         )
+              , ( ['d'], ["deps"],         ViewDeps      )
+              , ( ['j'], ["abandon"],      Abandon       )
+              , ( ['k'], ["diff"],         DiffPkgbuilds )
+              , ( ['i'], ["info"],         Info          )
+              , ( ['p'], ["pkgbuild"],     GetPkgbuild   )
+              , ( ['s'], ["search"],       Search        )
+              , ( ['u'], ["sysupgrade"],   Upgrade       )
+              , ( ['w'], ["downloadonly"], Download      )
+              , ( ['x'], ["unsuppress"],   Unsuppress    )
+              , ( [],    ["hotedit"],      HotEdit       )
+              , ( [],    ["conf"],         ViewConf      ) 
+              , ( [],    ["languages"],    Languages     ) 
+              , ( [],    ["auradebug"],    Debug         ) ]
 
 -- These are intercepted Pacman flags. Their functionality is different.
 pacmanOptions :: [OptDescr Flag]
@@ -136,6 +148,7 @@ hijackedFlagMap = [ (Backup,"-b")
                   , (Clean,"-c")
                   , (ViewDeps,"-d")
                   , (Info,"-i")
+                  , (DiffPkgbuilds,"-k")
                   , (Search,"-s")
                   , (Upgrade,"-u")
                   , (Download,"-w")
@@ -157,7 +170,7 @@ reconvertFlag flagMap f = case f `lookup` flagMap of
 --reconvertFlag flagMap f = return (f `lookup` flagMap) ?>>= fromJust
 
 settingsFlags :: [Flag]
-settingsFlags = [Unsuppress,NoConfirm,HotEdit,Debug]
+settingsFlags = [Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug]
 
 auraOperMsg :: Language -> String
 auraOperMsg lang = usageInfo (yellow $ auraOperTitle lang) $ auraOperations lang
@@ -186,6 +199,9 @@ getConfirmation = fishOutFlag [(NoConfirm,False)] True
 
 getHotEdit :: [Flag] -> Bool
 getHotEdit = fishOutFlag [(HotEdit,True)] False
+
+getDiffStatus :: [Flag] -> Bool
+getDiffStatus = fishOutFlag [(DiffPkgbuilds,True)] False
 
 parseLanguageFlag :: [String] -> (Language,[String])
 parseLanguageFlag args =

@@ -61,6 +61,7 @@ data Settings = Settings { environmentOf   :: Environment
                          , suppressMakepkg :: Bool
                          , mustConfirm     :: Bool
                          , mayHotEdit      :: Bool
+                         , diffPkgbuilds   :: Bool
                          }
 
 -----------

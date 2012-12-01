@@ -91,7 +91,8 @@ getSettings lang auraFlags = do
                     , logFilePathOf   = getLogFilePath confFile
                     , suppressMakepkg = getSuppression auraFlags
                     , mustConfirm     = getConfirmation auraFlags
-                    , mayHotEdit      = getHotEdit auraFlags }
+                    , mayHotEdit      = getHotEdit auraFlags 
+                    , diffPkgbuilds   = getDiffStatus auraFlags }
 
 debugOutput :: Settings -> IO ()
 debugOutput ss = do
@@ -108,7 +109,8 @@ debugOutput ss = do
                  , "Log File Path     => " ++ logFilePathOf ss
                  , "Silent Building?  => " ++ yn (suppressMakepkg ss)
                  , "Must Confirm?     => " ++ yn (mustConfirm ss)
-                 , "PKGBUILD editing? => " ++ yn (mayHotEdit ss) ]
+                 , "PKGBUILD editing? => " ++ yn (mayHotEdit ss) 
+                 , "Diff PKGBUILDs?   => " ++ yn (diffPkgbuilds ss) ]
 
 -- After determining what Flag was given, dispatches a function.
 -- The `flags` must be sorted to guarantee the pattern matching
