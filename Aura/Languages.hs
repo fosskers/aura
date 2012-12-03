@@ -74,7 +74,7 @@ languageNames Swedish    = [ "polska","kroatiska","svenska","tyska","spanska","p
 languageNames German     = [ "Polnisch","Kroatisch","Schwedisch","Deutsch","Spanisch","Portugiesisch" ]
 languageNames Spanish    = [ "Polaco","Croata","Sueco","Alemán","Español","Portugués" ]
 languageNames Portuguese = [ "Polonês","Croata","Sueco","Alemão","Espanhol","Português" ]
-languageNames French     = [ "Polonais","Croate","Suedois","Alemand","Espagnol","Portugais", "Français" ]
+languageNames French     = [ "Polonais","Croate","Suedois","Alemand","Espagnol","Portugais", "Français", "Russe" ]
 languageNames Russian    = [ "Польский","Хорватский","Шведский","Немецкий","Испанский","Португальский", "Русский" ]
 
 translatorMsgTitle :: Language -> String
@@ -86,7 +86,7 @@ translatorMsgTitle Swedish    = "Aura Översättare:"
 translatorMsgTitle German     = "Aura Übersetzer:"
 translatorMsgTitle Spanish    = "Traductores de Aura:"
 translatorMsgTitle Portuguese = "Tradutores de Aura:"
-translatorMsgTitle French     = "Traduction d'Aura:"
+translatorMsgTitle French     = "Traduction d'Aura :"
 translatorMsgTitle Russian    = "Переводчики Aura:"
 
 translatorMsg :: Language -> [String]
@@ -248,7 +248,7 @@ getDepsToInstallMsg1 Portuguese = "Nenhum pacote AUR foi especificado para insta
 getDepsToInstallMsg1 French     = "Aucun paquet AUR n'a été spécifié pour l'installation."
 getDepsToInstallMsg1 Russian    = "Пакеты AUR для установки не указаны."
 
--- Is there anyway for the French line to be shorter?
+-- Is there anyway for the French line to be shorter? -> Is that better now?
 getRealPkgConflictsMsg1 :: Language -> String -> String -> String -> String
 getRealPkgConflictsMsg1 English    p r d = "The dependency " ++ bt p ++ " demands version " ++ bt d ++ "but the most recent version is " ++ bt r ++ "."
 getRealPkgConflictsMsg1 Japanese   p r d = "パッケージ" ++ bt p ++ "はバージョン" ++ bt d ++ "を要するが" ++ "一番最新のバージョンは" ++ bt r ++ "。"
@@ -258,7 +258,7 @@ getRealPkgConflictsMsg1 Swedish    p r d = "Beroendepaketet " ++ bt p ++ " kräv
 getRealPkgConflictsMsg1 German     p r d = "Die Abhängigkeit " ++ bt p ++ " verlangt Version " ++ bt d ++ "aber die neuste Version ist " ++ bt r ++ "."
 getRealPkgConflictsMsg1 Spanish    p r d = "La dependencia " ++ bt p ++ " duiere la versión " ++ bt d ++ "pero la versión más reciente es " ++ bt r ++ "."
 getRealPkgConflictsMsg1 Portuguese p r d = "A dependência " ++ bt p ++ " exige a versão " ++ bt d ++ "mas a versão mais recente é " ++ bt r ++ "."
-getRealPkgConflictsMsg1 French     p r d = bt p ++ " est une dépendance nécessitant une version " ++ bt d ++ ", mais la version la plus récente est la " ++ bt r ++ "."
+getRealPkgConflictsMsg1 French     p r d = bt p ++ " est une dépendance nécessitant une version " ++ bt d ++ ", mais la plus récente est la " ++ bt r ++ "."
 getRealPkgConflictsMsg1 Russian    p r d = "Зависимость " ++ bt p ++ " требует версию " ++ bt d ++ ", однако самой последней версией является " ++ bt r ++ "."
 
 getRealPkgConflictsMsg2 :: Language -> String -> String
@@ -495,14 +495,17 @@ reportPkgsToInstallMsg3 Russian    = "Главные пакеты из AUR:"
 reportPkgbuildDiffsMsg1 :: Language -> String -> String
 reportPkgbuildDiffsMsg1 Japanese p = bt p ++ "のPKGBUILDはまだ保存されていない。"
 reportPkgbuildDiffsMsg1 _        p = bt p ++ " has no stored PKGBUILD yet."
+reportPkgbuildDiffsMsg1 French   p = bt p ++ " n'a pas encore de PKGBUILD enrigistré."
 
 reportPkgbuildDiffsMsg2 :: Language -> String -> String
 reportPkgbuildDiffsMsg2 Japanese p = bt p ++ "のPKGBUILDは最新。"
 reportPkgbuildDiffsMsg2 _        p = bt p ++ " PKGBUILD is up to date."
+reportPkgbuildDiffsMsg2 French   p = "Le PKGBUILD de " ++ bt p ++ " est à jour."
 
 reportPkgbuildDiffsMsg3 :: Language -> String -> String
 reportPkgbuildDiffsMsg3 Japanese p = bt p ++ "のPKGBUILD変更報告："
 reportPkgbuildDiffsMsg3 _        p = bt p ++ " PKGBUILD changes:"
+reportPkgbuildDiffsMsg3 French   p = "Changements du PKGBUILD de " ++ bt p
 
 reportPkgsToUpgradeMsg1 :: Language -> String
 reportPkgsToUpgradeMsg1 English    = "AUR Packages to upgrade:"
@@ -1000,7 +1003,7 @@ outOfDateMsg Spanish    True  = red "¡Desactualizado!"
 outOfDateMsg Spanish    False = green "Actualizado"
 outOfDateMsg Portuguese True  = red "Desatualizado!"
 outOfDateMsg Portuguese False = green "Atualizado"
-outOfDateMsg French     True  = green "Périmé !"
-outOfDateMsg French     False = red "À jour"
+outOfDateMsg French     True  = red "Périmé !"
+outOfDateMsg French     False = green "À jour"
 outOfDateMsg Russian    True  = red "Устарел!"
 outOfDateMsg Russian    False = green "Новейший"
