@@ -24,6 +24,9 @@ build() {
 
     # Directory for storing PKGBUILDs
     mkdir -p "$pkgdir/var/cache/aura/pkgbuilds"
+
+    # Directory for storing installed package states
+    mkdir -p "$pkgdir/var/cache/aura/states"
 }
 package() {
     cd ${srcdir}/${_hkgname}-${pkgver}

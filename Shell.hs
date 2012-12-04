@@ -20,6 +20,7 @@ import System.Process (readProcess, readProcessWithExitCode, rawSystem)
 import System.Exit (ExitCode(..))
 import Data.List (intersperse)
 import Text.Regex.PCRE ((=~))
+import Control.Monad (liftM)
 import Data.Maybe (fromJust)
 import System.Directory ( getDirectoryContents
                         , setCurrentDirectory
@@ -42,6 +43,12 @@ rm = removeFile
 
 ls :: FilePath -> IO [FilePath]
 ls = getDirectoryContents
+
+-- Would this work?
+-- drop 2 `liftM` getDirectoryContents
+ls' :: FilePath -> IO [FilePath]
+ls' p = noDots `liftM` getDirectoryContents p
+    where noDots = filter (`notElem` [".",".."])
 
 mv :: FilePath -> FilePath -> IO ()
 mv = renameFile

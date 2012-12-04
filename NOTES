@@ -6,17 +6,11 @@ Move aura to haskell-http.
 
 Create `auraup` script for upgrading aura when things break.
 
-`--diff` => Use `/var/cache/aura/pkgbuilds`
 `--save` => Use `/var/cache/aura/states`
 
 OPTIONS TO IMPLEMENT
 --------------------
 - `Ci` `info` -> Gives some stats about the package cache.
-- `Auk` `--diff` -> Gives a diff report between the last and the new
-  		    PKGBUILDs for all targets of an `-Au`.
-		    Stores the new PKGBUILD in the format: pkgname.pb
-		    Doesn't do a diff if a previous saved PKGBUILD
-		    does not exist. 
 - `save` -> Records versions of all packages installed and saves them
   	    to a file in a set location. Timestamps the file. Use `-Q`.
 - `restore` -> Restores a saved state.
