@@ -24,8 +24,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.State where
 
 import qualified Data.Map.Lazy as M
+import System.FilePath ((</>))
 import Control.Monad (liftM)
-
 
 import Aura.Pacman (pacmanOutput)
 import Aura.Time
@@ -51,8 +51,8 @@ currentState :: IO State
 currentState = do
   pkgs <- rawCurrentState
   time <- (toSimpleTime . toUTCTime) `liftM` getClockTime
-  let namesAndVers = map (\p -> (\(x:y:_) -> (x,y)) $ words p) $ pkgs  -- Fug
-  return . State time . M.fromAscList $ namesAndVers
+  let namesVers = map (\p -> (\(x:y:_) -> (x,y)) $ words p) $ pkgs  -- Fugly
+  return . State time . M.fromAscList $ namesVers
 
 compareStates :: State -> State -> StateDiff
 compareStates old curr = M.foldrWithKey status ([],[]) $ pkgsOf curr
@@ -72,8 +72,13 @@ getStateFiles :: IO [FilePath]
 getStateFiles = ls' stateCache
 
 saveState :: IO ()
-saveState = undefined
+saveState = do
+  state <- currentState
+  let filename = stateCache </> dotFormat (timeOf state)
+  writeFile filename $ show state
 
 restoreState :: IO ()
 restoreState = undefined
 
+readState :: FilePath -> IO State
+readState name = read `liftM` readFile (stateCache </> name)

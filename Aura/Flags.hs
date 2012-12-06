@@ -68,6 +68,7 @@ data Flag = AURInstall
           | Clean
           | Abandon
           | ViewConf
+          | SaveState
           | Languages
           | Version
           | Help
@@ -112,6 +113,7 @@ auraOptions = map simpleMakeOption
               , ( ['u'], ["sysupgrade"],   Upgrade       )
               , ( ['w'], ["downloadonly"], Download      )
               , ( ['x'], ["unsuppress"],   Unsuppress    )
+              , ( [],    ["save"],         SaveState     )
               , ( [],    ["hotedit"],      HotEdit       )
               , ( [],    ["conf"],         ViewConf      ) 
               , ( [],    ["languages"],    Languages     ) 

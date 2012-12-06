@@ -63,6 +63,9 @@ import Aura.AurConnection ---------------------------
 --             ---------------------
 --                       -
 
+-- Get this into pacman head!
+import Aura.State
+
 auraVersion :: String
 auraVersion = "1.0.6.0"
 
@@ -115,6 +118,7 @@ executeOpts ss (flags,input,pacOpts) = do
           []        -> displayOrphans ss input
           [Abandon] -> ss |$| (getOrphans >>= \ps -> removePkgs ss ps pacOpts)
           badFlags  -> scoldAndFail ss executeOptsMsg1
+    [SaveState] -> ss |$| (saveState >> returnSuccess)
     [ViewConf]  -> viewConfFile
     [Languages] -> displayOutputLanguages ss
     [Help]      -> printHelpMsg ss pacOpts
