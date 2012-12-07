@@ -25,6 +25,7 @@ module Aura.State where
 
 import qualified Data.Map.Lazy as M
 import System.FilePath ((</>))
+import System.Exit (ExitCode)
 import Control.Monad (liftM)
 
 import Aura.Pacman (pacmanOutput)
@@ -77,8 +78,19 @@ saveState = do
   let filename = stateCache </> dotFormat (timeOf state)
   writeFile filename $ show state
 
-restoreState :: IO ()
+restoreState :: IO ExitCode
 restoreState = undefined
+{-
+restoreState = do
+  curr <- currentState
+  past <- getStateFiles >>= getChoice >>= readState
+  let (cand,remo) = compareStates past curr
+      (down,nope) = downgradable cand  -- Pass a cache data structure too?
+  unless (null nope) $ printListWithTitle blah "NO VERSION TO DG TO" nope
+  -- You need to retain the version to downgrade to, silly!
+  -- More work to do up top.
+  downgradeAndRemove down remo
+-}
 
 readState :: FilePath -> IO State
 readState name = read `liftM` readFile (stateCache </> name)

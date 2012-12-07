@@ -1,6 +1,10 @@
 Aura Changelog
 ==============
 
+1.?.?.0
+-------
+- New libraries: Aura.Time, Aura.State
+
 1.0.6.0
 -------
 - New libraries: ColourDiff, Data.Algorithm.Diff, Aura.Pkgbuilds

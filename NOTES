@@ -6,13 +6,9 @@ Move aura to haskell-http.
 
 Create `auraup` script for upgrading aura when things break.
 
-`--save` => Use `/var/cache/aura/states`
-
 OPTIONS TO IMPLEMENT
 --------------------
 - `Ci` `info` -> Gives some stats about the package cache.
-- `save` -> Records versions of all packages installed and saves them
-  	    to a file in a set location. Timestamps the file. Use `-Q`.
 - `restore` -> Restores a saved state.
   	       1. All packages are returned to whatever version
 	       	  they used to be in the saved state.
