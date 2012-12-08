@@ -139,7 +139,7 @@ Work in progress in Aura/Build.hs
 -}
 
 installPackages :: Settings -> [String] -> [String] -> IO ExitCode
-installPackages _ _ [] = returnSuccess
+installPackages _ _ [] = returnFailure
 installPackages ss pacOpts pkgs = do
   let toInstall = pkgs \\ ignoredPkgsOf ss
       ignored   = pkgs \\ toInstall

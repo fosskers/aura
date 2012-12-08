@@ -235,9 +235,10 @@ displayBuildErrorsMsg1 Portuguese = "Despejando a saída do makepkg em "
 displayBuildErrorsMsg1 French     = "Redirection de la sortie de makepkg dans "
 displayBuildErrorsMsg1 Russian    = "Вывод makepkg записывается в "
 
+-- This needs updating.
 getDepsToInstallMsg1 :: Language -> String
-getDepsToInstallMsg1 English    = "No AUR packages specified for install."
-getDepsToInstallMsg1 Japanese   = "パッケージは一つも指摘されていない。"
+getDepsToInstallMsg1 English    = "No AUR packages specified for install, or no internet connection."
+getDepsToInstallMsg1 Japanese   = "パッケージは一つも指摘されていないか、インタネットに繋がっていない。"
 getDepsToInstallMsg1 Polish     = "Nie podano pakietów z AUR do zainstalowania."
 getDepsToInstallMsg1 Croatian   = "Nijedan AUR paket nije specificiran za instalaciju."
 getDepsToInstallMsg1 Swedish    = "Inga AUR-paket är valda för installation."
@@ -247,7 +248,7 @@ getDepsToInstallMsg1 Portuguese = "Nenhum pacote AUR foi especificado para insta
 getDepsToInstallMsg1 French     = "Aucun paquet AUR n'a été spécifié pour l'installation."
 getDepsToInstallMsg1 Russian    = "Пакеты AUR для установки не указаны."
 
--- Is there anyway for the French line to be shorter? -> Is that better now?
+-- Is there anyway for the French line to be shorter? -> Is that better now? -> Yes thank you @Jiehong
 getRealPkgConflictsMsg1 :: Language -> String -> String -> String -> String
 getRealPkgConflictsMsg1 English    p r d = "The dependency " ++ bt p ++ " demands version " ++ bt d ++ "but the most recent version is " ++ bt r ++ "."
 getRealPkgConflictsMsg1 Japanese   p r d = "パッケージ" ++ bt p ++ "はバージョン" ++ bt d ++ "を要するが" ++ "一番最新のバージョンは" ++ bt r ++ "。"
