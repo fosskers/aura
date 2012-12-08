@@ -69,7 +69,7 @@ languageNames :: Language -> [String]
 languageNames English    = [ "Polish","Croatian","Swedish","German","Spanish","Portuguese","French","Russian" ]
 languageNames Japanese   = [ "ポーランド語","クロアチア語","スウェーデン語","ドイツ語","スペイン語","ポルトガル語","フランス語","ロシア語" ]
 languageNames Polish     = [ "polski","chorwacki","szwedzki","niemiecki","hiszpański","portugalski","francuski","rosyjski" ]
-languageNames Croatian   = [ "poljski","hrvatski","švedski","njemački","španjolski","portugalski" ]
+languageNames Croatian   = [ "poljski","hrvatski","švedski","njemački","španjolski","portugalski","francuski","ruski" ]
 languageNames Swedish    = [ "polska","kroatiska","svenska","tyska","spanska","portugisiska" ]
 languageNames German     = [ "Polnisch","Kroatisch","Schwedisch","Deutsch","Spanisch","Portugiesisch" ]
 languageNames Spanish    = [ "Polaco","Croata","Sueco","Alemán","Español","Portugués" ]
@@ -495,6 +495,7 @@ reportPkgbuildDiffsMsg1 :: Language -> String -> String
 reportPkgbuildDiffsMsg1 English  p = bt p ++ " has no stored PKGBUILD yet."
 reportPkgbuildDiffsMsg1 Japanese p = bt p ++ "のPKGBUILDはまだ保存されていない。"
 reportPkgbuildDiffsMsg1 Polish   p = bt p ++ " nie ma jeszcze przechowywanego pliku PKGBUILD."
+reportPkgbuildDiffsMsg1 Croatian p = bt p ++ " još nema pohranjen PKGBUILD."
 reportPkgbuildDiffsMsg1 French   p = bt p ++ " n'a pas encore de PKGBUILD enrigistré."
 reportPkgbuildDiffsMsg1 Russian  p = "У " ++ bt p ++ " ещё нет сохраненного PKGBUILD."
 reportPkgbuildDiffsMsg1 _        p = bt p ++ " has no stored PKGBUILD yet."
@@ -502,7 +503,8 @@ reportPkgbuildDiffsMsg1 _        p = bt p ++ " has no stored PKGBUILD yet."
 reportPkgbuildDiffsMsg2 :: Language -> String -> String
 reportPkgbuildDiffsMsg2 English  p = bt p ++ "'s PKGBUILD is up to date."
 reportPkgbuildDiffsMsg2 Japanese p = bt p ++ "のPKGBUILDは最新。"
-reportPkgbuildDiffsMsg2 Polish   p = "PKGBUILD pakietu " ++ bt p ++ "jest aktualny."
+reportPkgbuildDiffsMsg2 Polish   p = "PKGBUILD pakietu " ++ bt p ++ " jest aktualny."
+reportPkgbuildDiffsMsg2 Croatian p = "PKGBUILD paketa " ++ bt p ++ " je na najnovijoj verziji."
 reportPkgbuildDiffsMsg2 Russian  p = "PKGBUILD " ++ bt p ++ " является новейшим."
 reportPkgbuildDiffsMsg2 French   p = "Le PKGBUILD de " ++ bt p ++ " est à jour."
 reportPkgbuildDiffsMsg2 _        p = bt p ++ " PKGBUILD is up to date."
@@ -511,6 +513,7 @@ reportPkgbuildDiffsMsg3 :: Language -> String -> String
 reportPkgbuildDiffsMsg3 English  p = bt p ++ " PKGBUILD changes:"
 reportPkgbuildDiffsMsg3 Japanese p = bt p ++ "のPKGBUILD変更報告："
 reportPkgbuildDiffsMsg3 Polish   p = "Zmiany w PKGBUILD dla " ++ bt p ++ ":"
+reportPkgbuildDiffsMsg3 Croatian p = "Promjene u PKGBUILD-u za " ++ bt p ++ ":"
 reportPkgbuildDiffsMsg3 Russian  p = "Изменения, вносимые " ++ bt p ++ " PKGBUILD:"
 reportPkgbuildDiffsMsg3 French   p = "Changements du PKGBUILD de " ++ bt p
 reportPkgbuildDiffsMsg3 _        p = bt p ++ " PKGBUILD changes:"
