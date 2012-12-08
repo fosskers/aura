@@ -202,22 +202,17 @@ displayAurPkgInfo :: Settings -> PkgInfo -> IO ()
 displayAurPkgInfo ss info = putStrLn $ renderAurPkgInfo ss info ++ "\n"
 
 renderAurPkgInfo :: Settings -> PkgInfo -> String
-renderAurPkgInfo ss info = concat $ intersperse "\n" fieldsAndEntries
-    where fieldsAndEntries = map combine $ zip paddedFields entries
-          combine (f,e)    = f ++ " : " ++ e
-          paddedFields     = map (\x -> postPad x ws longestField) fields
-          ws               = whitespace $ langOf ss
-          longestField     = maximum $ map length fields
-          fields           = infoFields $ langOf ss
-          entries          = [ bMagenta "aur"
-                             , bForeground $ nameOf info
-                             , latestVerOf info
-                             , outOfDateMsg (langOf ss) $ isOutOfDate info
-                             , cyan $ projectURLOf info
-                             , aurURLOf info
-                             , licenseOf info
-                             , show $ votesOf info
-                             , descriptionOf info ]
+renderAurPkgInfo ss info = entrify ss fields entries
+    where fields  = infoFields $ langOf ss
+          entries = [ bMagenta "aur"
+                    , bForeground $ nameOf info
+                    , latestVerOf info
+                    , outOfDateMsg (langOf ss) $ isOutOfDate info
+                    , cyan $ projectURLOf info
+                    , aurURLOf info
+                    , licenseOf info
+                    , show $ votesOf info
+                    , descriptionOf info ]
 
 -- This is quite limited. It only accepts one word/pattern.
 aurSearch :: [String] -> IO ExitCode
@@ -386,27 +381,25 @@ logInfoOnPkg :: Settings -> [String] -> IO ExitCode
 logInfoOnPkg _ []          = returnFailure  -- Success?
 logInfoOnPkg settings pkgs = do
   logFile <- readFile (logFilePathOf settings)
-  let inLog p = return (logFile =~ (" " ++ p ++ " "))
-  reals <- filterM inLog pkgs
+  let inLog p = logFile =~ (" " ++ p ++ " ")
+      reals   = filter inLog pkgs
   reportNotInLog (langOf settings) (pkgs \\ reals)
   return reals ?>> do
-    mapM_ (logLookUp settings logFile) reals
+    mapM_ (putStrLn . renderLogLookUp settings logFile) reals
     returnSuccess
 
--- Make internal to `logInfoOnPkg`?
--- Assumed: The package to look up _exists_.
-logLookUp :: Settings -> String -> String -> IO ()
-logLookUp _ _ [] = return ()
-logLookUp settings logFile pkg = do
-  mapM_ putStrLn $ [ logLookUpMsg1 (langOf settings) pkg
-                   , logLookUpMsg2 (langOf settings) installDate
-                   , logLookUpMsg3 (langOf settings) upgrades
-                   , logLookUpMsg4 (langOf settings) ] ++ recentStuff ++ [""]
-      where matches     = searchLines (" " ++ pkg ++ " \\(") $ lines logFile
-            installDate = head matches =~ "\\[[-:0-9 ]+\\]"
-            upgrades    = length $ searchLines " upgraded " matches
-            recentStuff = map ((:) ' ') $ takeLast 5 matches
-            takeLast n  = reverse . take n . reverse
+renderLogLookUp :: Settings -> String -> String -> String
+renderLogLookUp ss logFile pkg = entrify ss fields entries ++ "\n" ++ recent
+    where fields      = map yellow . logLookUpFields . langOf $ ss
+          matches     = searchLines (" " ++ pkg ++ " \\(") $ lines logFile
+          installDate = head matches =~ "\\[[-:0-9 ]+\\]"
+          upgrades    = length $ searchLines " upgraded " matches
+          recent      = unlines . map ((:) ' ') . takeLast 5 $ matches
+          takeLast n  = reverse . take n . reverse
+          entries     = [ pkg
+                        , installDate
+                        , show upgrades
+                        , "" ]
 
 -------------------
 -- WORKING WITH `O`

@@ -819,54 +819,17 @@ cleanCacheMsg6 Portuguese = "Limpando cache de pacotes..."
 cleanCacheMsg6 French     = "Nettoyage du cache des paquets…"
 cleanCacheMsg6 Russian    = "Очистка кэша пакета..."
 
--- TODO: Fix this manual alignment garbage!
-logLookUpMsg1 :: Language -> String -> String
-logLookUpMsg1 English    p = yellow "Package"     ++ "        : " ++ p
-logLookUpMsg1 Japanese   p = yellow "パッケージ"  ++ "　　　　　：" ++ p
-logLookUpMsg1 Polish     p = yellow "Pakiet"      ++ "        : " ++ p
-logLookUpMsg1 Croatian   p = yellow "Paket"       ++ "        : " ++ p
-logLookUpMsg1 Swedish    p = yellow "Paket"       ++ "        : " ++ p
-logLookUpMsg1 German     p = yellow "Paket"       ++ "        : " ++ p
-logLookUpMsg1 Spanish    p = yellow "Paquete"     ++ "        : " ++ p
-logLookUpMsg1 Portuguese p = yellow "Pacote"      ++ "        : " ++ p
-logLookUpMsg1 French     p = yellow "Paquet"      ++ "        : " ++ p
-logLookUpMsg1 Russian    p = yellow "Пакет"       ++ "        : " ++ p
-
-logLookUpMsg2 :: Language -> String -> String
-logLookUpMsg2 English    d = yellow "First Install"        ++ "  : " ++ d
-logLookUpMsg2 Japanese   d = yellow "初インストール"       ++ "　　　：" ++ d
-logLookUpMsg2 Polish     d = yellow "Pierwsza instalacja"  ++ "  : " ++ d
-logLookUpMsg2 Croatian   d = yellow "Prva instalacija"     ++ "  : " ++ d
-logLookUpMsg2 Swedish    d = yellow "Första installation"  ++ "  : " ++ d
-logLookUpMsg2 German     d = yellow "Erste Installation"   ++ "  : " ++ d
-logLookUpMsg2 Spanish    d = yellow "Primera instalación"  ++ "  : " ++ d
-logLookUpMsg2 Portuguese d = yellow "Primeira instalação"  ++ "  : " ++ d
-logLookUpMsg2 French     d = yellow "Première installation " ++ "  : " ++ d
-logLookUpMsg2 Russian    d = yellow "Первая установка"   ++ "  : " ++ d
-
-logLookUpMsg3 :: Language -> Int -> String
-logLookUpMsg3 English    upgrades = yellow "Upgrades"           ++ "       : " ++ show upgrades
-logLookUpMsg3 Japanese   upgrades = yellow "アップグレード回数" ++ "　："      ++ show upgrades
-logLookUpMsg3 Polish     upgrades = yellow "Aktualizacje"       ++ "   : "     ++ show upgrades
-logLookUpMsg3 Croatian   upgrades = yellow "Nadogradnje"        ++ "   : "     ++ show upgrades
-logLookUpMsg3 Swedish    upgrades = yellow "Uppgraderingar"     ++ "   : "     ++ show upgrades
-logLookUpMsg3 German     upgrades = yellow "Aktualisierungen"   ++ " : "       ++ show upgrades
-logLookUpMsg3 Spanish    upgrades = yellow "Actualizaciones "   ++ "       : " ++ show upgrades
-logLookUpMsg3 Portuguese upgrades = yellow "Atualizações"       ++ "       : " ++ show upgrades
-logLookUpMsg3 French     upgrades = yellow "Mises à jours :" ++ "       : "    ++ show upgrades    
-logLookUpMsg3 Russian    upgrades = yellow "Обновления"         ++ "  : "      ++ show upgrades
-
-logLookUpMsg4 :: Language -> String
-logLookUpMsg4 English    = yellow "Recent Actions"     ++ " :"
-logLookUpMsg4 Japanese   = yellow "近況"               ++ "　　　　　　　　："
-logLookUpMsg4 Polish     = yellow "Ostatnie akcje"     ++ " :"
-logLookUpMsg4 Croatian   = yellow "Nedavne radnje"     ++ " :"
-logLookUpMsg4 Swedish    = yellow "Nyliga händelser"   ++ " :"
-logLookUpMsg4 German     = yellow "Letzte Aktionen"    ++ " :"
-logLookUpMsg4 Spanish    = yellow "Acciones Recientes" ++ " :"
-logLookUpMsg4 Portuguese = yellow "Ações Recentes"     ++ " :"
-logLookUpMsg4 French     = yellow "Actions récentes"   ++ " :"
-logLookUpMsg4 Russian    = yellow "Недавние действия"  ++ " :"
+logLookUpFields :: Language -> [String]
+logLookUpFields English    = [ "Package","First Install","Upgrades","Recent Actions" ]
+logLookUpFields Japanese   = [ "パッケージ","初インストール","アップグレード回数","近況" ]
+logLookUpFields Polish     = [ "Pakiet","Pierwsza instalacja","Aktualizacje","Ostatnie akcje" ]
+logLookUpFields Croatian   = [ "Paket","Prva instalacija","Nadogradnje","Nedavne radnje" ]
+logLookUpFields Swedish    = [ "Paket","Första installation","Uppgraderingar","Nyliga händelser" ]
+logLookUpFields German     = [ "Paket","Erste Installation","Aktualisierungen","Letzte Aktionen" ]
+logLookUpFields Spanish    = [ "Paquete","Primera instalación","Actualizaciones","Acciones Recientes" ]
+logLookUpFields Portuguese = [ "Pacote","Primeira instalação","Atualizações","Ações Recentes" ]
+logLookUpFields French     = [ "Paquet","Première installation","Mises à jours ","Actions récentes" ]
+logLookUpFields Russian    = [ "Пакет","Первая установка","Обновления","Недавние действия" ]
 
 reportNotInLogMsg1 :: Language -> String
 reportNotInLogMsg1 English    = "These have not appeared in the log file:"

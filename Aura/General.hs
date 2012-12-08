@@ -300,3 +300,16 @@ comparableVer n  =
       []   -> []  -- Version ended in non-digits.
       rest -> read digits : (comparableVer $ drop (length digits) rest)
         where digits = takeWhile isDigit rest
+
+-- Format two lists into two nice rows a la `-Qi` or `-Si`.
+entrify :: Settings -> [String] -> [String] -> String
+entrify ss fs es = concat $ intersperse "\n" fsEs
+    where fsEs = map combine $ zip fs' es
+          fs'  = padding ss fs
+          combine (f,e) = f ++ " : " ++ e
+
+-- Right-pads strings according to the longest string in the group.
+padding :: Settings -> [String] -> [String]
+padding ss fs = map (\x -> postPad x ws longest) fs
+    where ws      = whitespace $ langOf ss
+          longest = maximum $ map length fs
