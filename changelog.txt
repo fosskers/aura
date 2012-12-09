@@ -1,9 +1,13 @@
 Aura Changelog
 ==============
 
-1.?.?.0
+1.0.7.0
 -------
 - New libraries: Aura.Time, Aura.State
+- Moved `-C` functionality to `Aura.C`
+- New secret option you don't get to find out about until 1.1
+- Fixed manually alignment stupidity with `-Li`.
+- Bug fixes
 
 1.0.6.0
 -------
