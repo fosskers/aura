@@ -71,8 +71,8 @@ syncDatabase :: Pacman -> [ShellArg] -> IO ExitCode
 syncDatabase pacman pacOpts = pacman $ ["-Sy"] ++ pacOpts
 
 -- This takes the filepath of the package cache as an argument.
-packageCacheContents :: FilePath -> IO [String]
-packageCacheContents c = filter dots `liftM` ls c
+cacheContents :: FilePath -> IO [String]
+cacheContents c = filter dots `liftM` ls c
     where dots p = p `notElem` [".",".."]
 
 -- I'm sad that I had to make this Monadic. And a lot uglier.

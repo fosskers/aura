@@ -31,16 +31,16 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -----------------------------------------------------
 -------------------------------------------------------
 --------------------------------------------------------
----------------------------------------------------------
-import Data.List ((\\), nub, sort, intersperse, groupBy) --
-import Control.Monad (liftM, unless, filterM) ------------
-import System.Exit (exitWith, ExitCode) --------------
-import System.Posix.Files (fileExist) ------------
-import System.Environment (getArgs) ----------
-import System.FilePath ((</>)) -----------             ______             ___
+----------------------------------------------------------
+-----------------------------------------------------------
+----------------------------------------------------------
+import Data.List ((\\), nub, sort, intersperse) ------
+import Control.Monad (liftM, unless) -------------
+import System.Exit (exitWith, ExitCode) ------
+import System.Environment (getArgs) ------             ______             ___
 import Text.Regex.PCRE ((=~)) --------                /      \           /
 import Data.Maybe (fromJust) -----                   /        \         /
-import Data.Char (isDigit) ---                      /          \       /
+------------------------------                      /          \       /
 --------------------------                          |   aura   |       |   au
 import Zero ------------------                      \          /       \
 import Shell ---------------------                   \        /         \
@@ -48,14 +48,14 @@ import Utilities ---------------------                \______/           \___
 import Aura.Logo -------------------------
 import Aura.Flags ----------------------------
 import Aura.Build --------------------------------
-import Aura.Pacman -----------------------------------
-import Aura.General --------------------------------------
-import Aura.Settings --------------------------------------
-import Aura.Pkgbuilds ------------------------------------
-import Aura.Languages ----------------------------------
-import Aura.Dependencies ------------------------------
-import Aura.AurConnection ---------------------------
----------------------------------------------------
+import Aura.State ------------------------------------
+import Aura.Pacman ---------------------------------------
+import Aura.General ---------------------------------------
+import Aura.Settings -------------------------------------
+import Aura.Pkgbuilds ----------------------------------
+import Aura.Languages ---------------------------------
+import Aura.Dependencies ----------------------------
+import Aura.AurConnection -------------------------
 --------------------------------------------------
 --  -------------------------------------------
 --   -----------------------------------------
@@ -63,11 +63,10 @@ import Aura.AurConnection ---------------------------
 --             ---------------------
 --                       -
 
--- Get this into pacman head!
-import Aura.State
+import qualified Aura.C as C
 
 auraVersion :: String
-auraVersion = "1.0.6.0"
+auraVersion = "1.0.7.0"
 
 main :: IO a
 main = do
@@ -102,10 +101,10 @@ executeOpts ss (flags,input,pacOpts) = do
           badFlags       -> scoldAndFail ss executeOptsMsg1
     (Cache:fs) ->
         case fs of
-          []       -> ss |$| downgradePackages ss input
-          [Clean]  -> ss |$| preCleanCache ss input
-          [Search] -> searchPackageCache ss input
-          [Backup] -> ss |$| backupCache ss input
+          []       -> ss |$| C.downgradePackages ss input
+          [Clean]  -> ss |$| C.cleanCache ss input
+          [Search] -> C.searchCache ss input
+          [Backup] -> ss |$| C.backupCache ss input
           badFlags -> scoldAndFail ss executeOptsMsg1
     (LogFile:fs) ->
         case fs of
@@ -267,102 +266,6 @@ removeMakeDeps settings (flags,input,pacOpts) = do
     removePkgs settings makeDeps pacOpts
 
 --------------------
--- WORKING WITH `-C`
---------------------
--- Interactive. Gives the user a choice as to exactly what versions
--- they want to downgrade to.
-downgradePackages :: Settings -> [String] -> IO ExitCode
-downgradePackages _ []    = returnSuccess
-downgradePackages ss pkgs = do
-  reals <- filterM isInstalled pkgs
-  reportBadDowngradePkgs (langOf ss) (pkgs \\ reals)
-  return reals ?>> do
-    cache   <- packageCacheContents cachePath
-    choices <- mapM (getDowngradeChoice ss cache) reals
-    pacman ss $ ["-U"] ++ map (cachePath </>) choices
-      where cachePath = cachePathOf ss
-               
-getDowngradeChoice :: Settings -> [String] -> String -> IO String
-getDowngradeChoice settings cache pkg = do
-  let choices = getChoicesFromCache cache pkg
-  notify settings (flip getDowngradeChoiceMsg1 pkg)
-  getSelection choices
-
-getChoicesFromCache :: [String] -> String -> [String]
-getChoicesFromCache cache pkg = sort choices
-    where choices = filter (\p -> p =~ ("^" ++ pkg ++ "-[0-9]")) cache
-
--- `[]` as input yields the contents of the entire cache.
-searchPackageCache :: Settings -> [String] -> IO ExitCode
-searchPackageCache settings input = do
-  cache <- packageCacheContents $ cachePathOf settings  
-  mapM_ putStrLn . sortPkgs . searchLines (unwords input) $ cache
-  returnSuccess
-
--- The destination folder must already exist for the back-up to being.
-backupCache :: Settings -> [String] -> IO ExitCode
-backupCache settings []      = scoldAndFail settings backupCacheMsg1
-backupCache settings (dir:_) = do
-  exists <- fileExist dir
-  if not exists
-     then scoldAndFail settings backupCacheMsg3
-     else do
-       cache <- packageCacheContents $ cachePathOf settings
-       notify settings $ flip backupCacheMsg4 dir
-       notify settings . flip backupCacheMsg5 . length $ cache
-       okay <- optionalPrompt (mustConfirm settings)
-               (backupCacheMsg6 $ langOf settings)
-       if not okay
-          then scoldAndFail settings backupCacheMsg7
-          else do
-            notify settings backupCacheMsg8
-            putStrLn ""  -- So that the cursor can rise at first.
-            copyAndNotify settings dir cache 1
-
--- Manages the file copying and display of the real-time progress notifier.
-copyAndNotify :: Settings -> FilePath -> [String] -> Int -> IO ExitCode
-copyAndNotify _ _ [] _              = returnSuccess
-copyAndNotify settings dir (p:ps) n = do
-  putStr $ raiseCursorBy 1
-  warn settings (flip copyAndNotifyMsg1 n)
-  cp (cachePath </> p) (dir </> p)
-  copyAndNotify settings dir ps $ n + 1
-      where cachePath = cachePathOf settings
-
--- Acts as a filter for the input to `cleanCache`.
-preCleanCache :: Settings -> [String] -> IO ExitCode
-preCleanCache settings [] = cleanCache settings 0
-preCleanCache settings (input:_)  -- Ignores all but first input element.
-  | all isDigit input = cleanCache settings $ read input
-  | otherwise         = scoldAndFail settings $ flip preCleanCacheMsg1 input
-
--- Keeps a certain number of package files in the cache according to
--- a number provided by the user. The rest are deleted.
-cleanCache :: Settings -> Int -> IO ExitCode
-cleanCache ss toSave
-    | toSave < 0  = scoldAndFail ss cleanCacheMsg1
-    | toSave == 0 = warn ss cleanCacheMsg2 >> pacman ss ["-Scc"]
-    | otherwise   = do
-        warn ss $ flip cleanCacheMsg3 toSave
-        okay <- optionalPrompt (mustConfirm ss) (cleanCacheMsg4 $ langOf ss)
-        if not okay
-           then scoldAndFail ss cleanCacheMsg5
-           else do
-             notify ss cleanCacheMsg6
-             cache <- packageCacheContents $ cachePathOf ss
-             let grouped = map (take toSave . reverse) $ groupByPkgName cache
-                 toRemove  = cache \\ concat grouped
-                 filePaths = map (cachePathOf ss </>) toRemove
-             mapM_ rm filePaths  -- Error handling?
-             returnSuccess
-
--- Typically takes the contents of the package cache as an argument.
-groupByPkgName :: [String] -> [[String]]
-groupByPkgName pkgs = groupBy sameBaseName $ sortPkgs pkgs
-    where sameBaseName a b = baseName a == baseName b
-          baseName p = tripleFst (p =~ "-[0-9]+" :: (String,String,String))
-
---------------------
 -- WORKING WITH `-L`
 --------------------
 viewLogFile :: FilePath -> IO ExitCode
@@ -414,9 +317,6 @@ adoptPkg ss pkgs = ss |$| (pacman ss $ ["-D","--asexplicit"] ++ pkgs)
 ----------
 -- REPORTS
 ----------
-badReport :: (Language -> String) -> Language -> [String] -> IO ()
-badReport m lang pkgs = return pkgs ?>> printList red cyan (m lang) pkgs
-
 reportNonPackages :: Language -> [String] -> IO ()
 reportNonPackages lang nons = badReport reportNonPackagesMsg1 lang nons 
 
@@ -452,9 +352,6 @@ reportPkgbuildDiffs ss ps | not $ diffPkgbuilds ss = return ()
 reportPkgsToUpgrade :: Language -> [String] -> IO ()
 reportPkgsToUpgrade lang pkgs = printList green cyan msg pkgs
     where msg = reportPkgsToUpgradeMsg1 lang
-
-reportBadDowngradePkgs :: Language -> [String] -> IO ()
-reportBadDowngradePkgs lang ps = badReport reportBadDowngradePkgsMsg1 lang ps
 
 reportNotInLog :: Language -> [String] -> IO ()
 reportNotInLog lang nons = badReport reportNotInLogMsg1 lang nons

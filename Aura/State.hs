@@ -40,7 +40,7 @@ data State = State { timeOf :: SimpleTime
              deriving (Eq,Show,Read)
 
 -- ([toDowngrade],[toRemove])
-type StateDiff = ([String],[String])
+type StateDiff = ([(String,String)],[String])
 
 stateCache :: FilePath
 stateCache = "/var/cache/aura/states"
@@ -61,9 +61,9 @@ compareStates old curr = M.foldrWithKey status ([],[]) $ pkgsOf curr
                                Nothing -> (d, k : r)
                                Just v' -> if v == v'
                                           then (d,r)
-                                          else (k : d, r)
+                                          else ((k,v) : d, r)
 
-pkgsToDowngrade :: StateDiff -> [String]
+pkgsToDowngrade :: StateDiff -> [(String,String)]
 pkgsToDowngrade = fst
 
 pkgsToRemove :: StateDiff -> [String]
@@ -82,13 +82,12 @@ restoreState :: IO ExitCode
 restoreState = undefined
 {-
 restoreState = do
-  curr <- currentState
-  past <- getStateFiles >>= getChoice >>= readState
+  curr  <- currentState
+  past  <- getStateFiles >>= getChoice >>= readState
+  cache <- C.cacheEntries
   let (cand,remo) = compareStates past curr
-      (down,nope) = downgradable cand  -- Pass a cache data structure too?
+      (down,nope) = partition (C.downgradable cache) cand
   unless (null nope) $ printListWithTitle blah "NO VERSION TO DG TO" nope
-  -- You need to retain the version to downgrade to, silly!
-  -- More work to do up top.
   downgradeAndRemove down remo
 -}
 

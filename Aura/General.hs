@@ -249,6 +249,9 @@ scold settings msg = colouredMessage red settings msg
 scoldAndFail :: Settings -> (Language -> String) -> IO ExitCode
 scoldAndFail settings msg = scold settings msg >> return (ExitFailure 1)
 
+badReport :: (Language -> String) -> Language -> [String] -> IO ()
+badReport m lang pkgs = return pkgs ?>> printList red cyan (m lang) pkgs
+
 splitNameAndVer :: String -> (String,String)
 splitNameAndVer pkg = (before,after)
     where (before,_,after) = (pkg =~ "[<>=]+" :: (String,String,String))

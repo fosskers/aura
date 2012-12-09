@@ -40,7 +40,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Languages where
 
-import Shell (cyan, yellow, green, red, blue, bForeground)
+import Shell (cyan, green, red, blue, bForeground)
 
 data Language = English
               | Japanese
