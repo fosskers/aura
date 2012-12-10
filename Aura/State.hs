@@ -30,6 +30,7 @@ import Data.Maybe (catMaybes)
 import Control.Monad (liftM,unless)
 import Data.List (partition)
 
+import Aura.General (warn)
 import Aura.Languages
 import Aura.Settings
 import Aura.Pacman (pacmanOutput)
@@ -73,7 +74,7 @@ compareStates old curr = M.foldrWithKey status ([],[]) $ pkgsOf curr
                                Nothing -> (d, k : r)
                                Just v' -> if v == v'
                                           then (d,r)
-                                          else ((k,v) : d, r)
+                                          else ((k,v') : d, r)
 
 getStateFiles :: IO [FilePath]
 getStateFiles = ls' stateCache
@@ -101,6 +102,10 @@ readState name = read `liftM` readFile (stateCache </> name)
 -- How does pacman do simultaneous removals and upgrades?
 -- I've seen it happen plenty of times.
 downgradeAndRemove :: Settings -> [FilePath] -> [String] -> IO ExitCode
-downgradeAndRemove ss down remo =
-  pacman ss (["-U"] ++ map (cachePathOf ss </>) down) ?>>
-  pacman ss (["-R"] ++ remo)
+downgradeAndRemove ss [] [] = warn ss downgradeAndRemoveMsg1 >> returnSuccess
+downgradeAndRemove ss down remo
+    | null remo = downgrade
+    | null down = remove
+    | otherwise = downgrade ?>> remove
+    where downgrade = pacman ss $ ["-U"] ++ map (cachePathOf ss </>) down
+          remove    = pacman ss $ ["-R"] ++ remo

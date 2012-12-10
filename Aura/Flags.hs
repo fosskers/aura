@@ -19,10 +19,6 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-{- POMODOROS
-2012 Nov 03 => X
--}
-
 module Aura.Flags
     ( parseLanguageFlag
     , parseFlags 
@@ -69,6 +65,7 @@ data Flag = AURInstall
           | Abandon
           | ViewConf
           | SaveState
+          | RestoreState
           | Languages
           | Version
           | Help
@@ -114,6 +111,7 @@ auraOptions = map simpleMakeOption
               , ( ['w'], ["downloadonly"], Download      )
               , ( ['x'], ["unsuppress"],   Unsuppress    )
               , ( [],    ["save"],         SaveState     )
+              , ( [],    ["restore"],      RestoreState  )
               , ( [],    ["hotedit"],      HotEdit       )
               , ( [],    ["conf"],         ViewConf      ) 
               , ( [],    ["languages"],    Languages     ) 

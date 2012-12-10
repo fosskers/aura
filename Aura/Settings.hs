@@ -80,6 +80,7 @@ debugOutput ss = do
                  , "PKGBUILD editing? => " ++ yn (mayHotEdit ss) 
                  , "Diff PKGBUILDs?   => " ++ yn (diffPkgbuilds ss) ]
 
+{-
 sampleSettings :: Settings
 sampleSettings = Settings { environmentOf = undefined
                           , langOf        = English
@@ -91,3 +92,4 @@ sampleSettings = Settings { environmentOf = undefined
                           , mustConfirm   = False
                           , mayHotEdit    = False
                           , diffPkgbuilds = False }
+-}

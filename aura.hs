@@ -117,12 +117,13 @@ executeOpts ss (flags,input,pacOpts) = do
           []        -> displayOrphans ss input
           [Abandon] -> ss |$| (getOrphans >>= \ps -> removePkgs ss ps pacOpts)
           badFlags  -> scoldAndFail ss executeOptsMsg1
-    [SaveState] -> ss |$| (saveState >> returnSuccess)
-    [ViewConf]  -> viewConfFile
-    [Languages] -> displayOutputLanguages ss
-    [Help]      -> printHelpMsg ss pacOpts
-    [Version]   -> getVersionInfo >>= animateVersionMsg ss
-    pacmanFlags -> pacman ss $ pacOpts ++ input ++ hijackedFlags
+    [SaveState]    -> ss |$| (saveState >> returnSuccess)
+    [RestoreState] -> ss |$| restoreState ss
+    [ViewConf]     -> viewConfFile
+    [Languages]    -> displayOutputLanguages ss
+    [Help]         -> printHelpMsg ss pacOpts
+    [Version]      -> getVersionInfo >>= animateVersionMsg ss
+    pacmanFlags    -> pacman ss $ pacOpts ++ input ++ hijackedFlags
     where hijackedFlags = reconvertFlags flags hijackedFlagMap
           
 --------------------

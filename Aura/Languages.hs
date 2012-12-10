@@ -989,3 +989,7 @@ outOfDateMsg Russian    False = green "Новейший"
 restoreStateMsg1 :: Language -> String
 restoreStateMsg1 Japanese = "対象バージョンがないパッケージ："
 restoreStateMsg1 _        = "Requested downgrade versions not available for:"
+
+downgradeAndRemoveMsg1 :: Language -> String
+downgradeAndRemoveMsg1 Japanese = "パッケージを変更する必要ない。"
+downgradeAndRemoveMsg1 _        = "No packages need changing."
