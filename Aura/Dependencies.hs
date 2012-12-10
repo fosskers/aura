@@ -33,6 +33,7 @@ import Aura.Pacman (pacmanOutput)
 import Aura.Languages
 import Aura.Settings
 import Aura.General
+import Aura.Utils
 
 import Utilities (notNull, tripleThrd)
 import Bash

@@ -19,14 +19,20 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Settings where
+module Aura.Settings
+    ( getSettings
+    , debugOutput
+    , Settings(..) ) where
 
 import System.Environment (getEnvironment)
 
 import Aura.Languages
 import Aura.Pacman
 import Aura.Flags
+
 import Shell
+
+---
 
 -- The global settings as set by the user with command-line flags.
 data Settings = Settings { environmentOf   :: Environment
@@ -73,3 +79,15 @@ debugOutput ss = do
                  , "Must Confirm?     => " ++ yn (mustConfirm ss)
                  , "PKGBUILD editing? => " ++ yn (mayHotEdit ss) 
                  , "Diff PKGBUILDs?   => " ++ yn (diffPkgbuilds ss) ]
+
+sampleSettings :: Settings
+sampleSettings = Settings { environmentOf = undefined
+                          , langOf        = English
+                          , pacman        = pacmanCmd "pacman"
+                          , ignoredPkgsOf = []
+                          , cachePathOf   = "/var/cache/pacman/pkg"
+                          , logFilePathOf = "/var/log/pacman.log"
+                          , suppressMakepkg = True
+                          , mustConfirm   = False
+                          , mayHotEdit    = False
+                          , diffPkgbuilds = False }

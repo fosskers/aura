@@ -982,3 +982,10 @@ outOfDateMsg French     True  = red "Périmé !"
 outOfDateMsg French     False = green "À jour"
 outOfDateMsg Russian    True  = red "Устарел!"
 outOfDateMsg Russian    False = green "Новейший"
+
+------------------
+-- State functions
+------------------
+restoreStateMsg1 :: Language -> String
+restoreStateMsg1 Japanese = "対象バージョンがないパッケージ："
+restoreStateMsg1 _        = "Requested downgrade versions not available for:"

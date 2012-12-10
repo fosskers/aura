@@ -21,17 +21,17 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.General where
 
-import Data.List ((\\), nub, sortBy, intersperse)
+import Data.List ((\\), nub, intersperse)
 import System.Exit (ExitCode(..))
 import Text.Regex.PCRE ((=~))
 import Control.Monad (liftM)
 import Data.Maybe (fromJust)
-import Data.Char (isDigit)
 
 import Aura.AurConnection
 import Aura.Languages
 import Aura.Settings
 import Aura.Pacman
+import Aura.Utils
 import Utilities
 import Shell
 import Zero
@@ -229,7 +229,7 @@ removePkgs _ [] _          = returnSuccess
 removePkgs ss pkgs pacOpts = pacman ss $ ["-Rsu"] ++ pkgs ++ pacOpts
 
 -------
--- MISC  -- Too specific for `Utilities.hs`
+-- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`
 -------
 colouredMessage :: Colouror -> Settings -> (Language -> String) -> IO ()
 colouredMessage c settings msg = putStrLnA c . msg . langOf $ settings
@@ -252,20 +252,6 @@ scoldAndFail settings msg = scold settings msg >> return (ExitFailure 1)
 badReport :: (Language -> String) -> Language -> [String] -> IO ()
 badReport m lang pkgs = return pkgs ?>> printList red cyan (m lang) pkgs
 
-splitNameAndVer :: String -> (String,String)
-splitNameAndVer pkg = (before,after)
-    where (before,_,after) = (pkg =~ "[<>=]+" :: (String,String,String))
-
-splitName :: String -> String
-splitName = fst . splitNameAndVer
-
-splitVer :: String -> String
-splitVer = snd . splitNameAndVer
-
--- Used for folding.
-groupPkgs :: ([a],[b],[c]) -> ([a],[b],[c]) -> ([a],[b],[c])
-groupPkgs (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
-
 divideByPkgType :: [String] -> IO ([String],[String],[String])
 divideByPkgType pkgs = do
   repoPkgNames <- filterRepoPkgs namesOnly
@@ -275,34 +261,6 @@ divideByPkgType pkgs = do
       others   = (pkgs \\ aurPkgs) \\ repoPkgs
   return (repoPkgs, aurPkgs, others)
       where namesOnly = map splitName pkgs
-
-sortPkgs :: [String] -> [String]
-sortPkgs pkgs = sortBy verNums pkgs
-    where verNums a b | name a /= name b = compare a b  -- Different pkgs
-                      | otherwise        = compare (ver a) (ver b)
-          name = fst . pkgFileNameAndVer
-          ver  = snd . pkgFileNameAndVer
-
--- linux-3.2.14-1-x86_64.pkg.tar.xz    -> ("linux",[3,2,14,1])
--- wine-1.4rc6-1-x86_64.pkg.tar.xz     -> ("wine",[1,4,6,1])
--- ruby-1.9.3_p125-4-x86_64.pkg.tar.xz -> ("ruby",[1,9,3,125,4])
--- NOTE: regex stuff is a little sloppy here.
-pkgFileNameAndVer :: String -> (String,[Int])
-pkgFileNameAndVer p = (name,verNum')
-    where (name,_,_) = p =~ "-[0-9]+" :: (String,String,String)
-          verNum     = p =~ ("[0-9][-0-9a-z._]+-" ++ archs) :: String
-          archs      = "(a|x|i)"  -- Representing "(any|x86_64|i686)"
-          verNum'    = comparableVer verNum
-
--- Also discards any non-number version info, like `rc`, etc.
--- Example: "3.2rc6-1" becomes [3,2,6,1]
-comparableVer :: String -> [Int]
-comparableVer [] = []
-comparableVer n  =
-    case dropWhile (not . isDigit) n of
-      []   -> []  -- Version ended in non-digits.
-      rest -> read digits : (comparableVer $ drop (length digits) rest)
-        where digits = takeWhile isDigit rest
 
 -- Format two lists into two nice rows a la `-Qi` or `-Si`.
 entrify :: Settings -> [String] -> [String] -> String

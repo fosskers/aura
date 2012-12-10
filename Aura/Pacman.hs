@@ -31,11 +31,12 @@ import Text.Regex.PCRE ((=~))
 import Control.Monad (liftM)
 
 -- Custom Libraries
+import Aura.Cache
 import Utilities 
 import Shell
 
 type ShellArg = String
-type Pacman   = [String] -> IO ExitCode
+type Pacman   = [ShellArg] -> IO ExitCode
 
 defaultCmd :: String
 defaultCmd = "pacman"
@@ -45,9 +46,6 @@ pacmanColorCmd = "pacman-color"
 
 pacmanConfFile :: FilePath
 pacmanConfFile = "/etc/pacman.conf"
-
-defaultPackageCache :: FilePath
-defaultPackageCache = "/var/cache/pacman/pkg/"
 
 defaultLogFile :: FilePath
 defaultLogFile = "/var/log/pacman.log"
@@ -69,11 +67,6 @@ pacmanOutput args = tripleSnd `liftM` pacmanQuiet args
 
 syncDatabase :: Pacman -> [ShellArg] -> IO ExitCode
 syncDatabase pacman pacOpts = pacman $ ["-Sy"] ++ pacOpts
-
--- This takes the filepath of the package cache as an argument.
-cacheContents :: FilePath -> IO [String]
-cacheContents c = filter dots `liftM` ls c
-    where dots p = p `notElem` [".",".."]
 
 -- I'm sad that I had to make this Monadic. And a lot uglier.
 getPacmanCmd :: Environment -> IO Pacman

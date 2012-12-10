@@ -26,21 +26,32 @@ module Aura.State where
 import qualified Data.Map.Lazy as M
 import System.FilePath ((</>))
 import System.Exit (ExitCode)
-import Control.Monad (liftM)
+import Data.Maybe (catMaybes)
+import Control.Monad (liftM,unless)
+import Data.List (partition)
 
+import Aura.Languages
+import Aura.Settings
 import Aura.Pacman (pacmanOutput)
+import Aura.Utils (comparableVer)
+import Aura.Cache
 import Aura.Time
-import Shell (ls')
+
+import Utilities (printList,getSelection)
+import Shell (ls',cyan,red,returnSuccess)
+import Zero ((?>>))
+
+---
 
 --------
 -- TYPES
 --------
 data State = State { timeOf :: SimpleTime 
-                   , pkgsOf :: (M.Map String String) }
+                   , pkgsOf :: (M.Map String [Int]) }
              deriving (Eq,Show,Read)
 
 -- ([toDowngrade],[toRemove])
-type StateDiff = ([(String,String)],[String])
+type StateDiff = ([SimplePkg],[String])
 
 stateCache :: FilePath
 stateCache = "/var/cache/aura/states"
@@ -52,7 +63,8 @@ currentState :: IO State
 currentState = do
   pkgs <- rawCurrentState
   time <- (toSimpleTime . toUTCTime) `liftM` getClockTime
-  let namesVers = map (\p -> (\(x:y:_) -> (x,y)) $ words p) $ pkgs  -- Fugly
+  let namesVers = map (\p -> pair $ words p) $ pkgs
+      pair      = \(x:y:_) -> (x, comparableVer y)
   return . State time . M.fromAscList $ namesVers
 
 compareStates :: State -> State -> StateDiff
@@ -63,12 +75,6 @@ compareStates old curr = M.foldrWithKey status ([],[]) $ pkgsOf curr
                                           then (d,r)
                                           else ((k,v) : d, r)
 
-pkgsToDowngrade :: StateDiff -> [(String,String)]
-pkgsToDowngrade = fst
-
-pkgsToRemove :: StateDiff -> [String]
-pkgsToRemove = snd
-
 getStateFiles :: IO [FilePath]
 getStateFiles = ls' stateCache
 
@@ -78,18 +84,23 @@ saveState = do
   let filename = stateCache </> dotFormat (timeOf state)
   writeFile filename $ show state
 
-restoreState :: IO ExitCode
-restoreState = undefined
-{-
-restoreState = do
+restoreState :: Settings -> IO ExitCode
+restoreState ss = do
   curr  <- currentState
-  past  <- getStateFiles >>= getChoice >>= readState
-  cache <- C.cacheEntries
+  past  <- getStateFiles >>= getSelection >>= readState
+  cache <- cacheContents $ cachePathOf ss
   let (cand,remo) = compareStates past curr
-      (down,nope) = partition (C.downgradable cache) cand
-  unless (null nope) $ printListWithTitle blah "NO VERSION TO DG TO" nope
-  downgradeAndRemove down remo
--}
+      (down,nope) = partition (flip downgradable cache) cand
+      message     = restoreStateMsg1 $ langOf ss
+  unless (null nope) $ printList red cyan message (map fst nope)
+  downgradeAndRemove ss (catMaybes $ map (flip getFilename cache) down) remo
 
 readState :: FilePath -> IO State
 readState name = read `liftM` readFile (stateCache </> name)
+
+-- How does pacman do simultaneous removals and upgrades?
+-- I've seen it happen plenty of times.
+downgradeAndRemove :: Settings -> [FilePath] -> [String] -> IO ExitCode
+downgradeAndRemove ss down remo =
+  pacman ss (["-U"] ++ map (cachePathOf ss </>) down) ?>>
+  pacman ss (["-R"] ++ remo)
