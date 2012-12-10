@@ -1,6 +1,10 @@
 Aura Changelog
 ==============
 
+1.?.?.0
+-------
+- Moved certain general functions to `Aura.Utils`
+
 1.0.7.0
 -------
 - New libraries: Aura.Time, Aura.State

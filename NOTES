@@ -7,14 +7,6 @@ Move aura to haskell-http.
 OPTIONS TO IMPLEMENT
 --------------------
 - `Ci` `info` -> Gives some stats about the package cache.
-- `restore` -> Restores a saved state.
-  	       1. All packages are returned to whatever version
-	       	  they used to be in the saved state.
-	       2. Packages installed now but not in the saved state
-	       	  are removed.
-               3. Packages that should be restored to a previous
-	       	  version but don't have the appropriate file in the
-		  cache will be reported.
 
 OUT OF DATE
 -----------
