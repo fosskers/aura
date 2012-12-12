@@ -4,14 +4,14 @@ pkgname=aura
 pkgver=1.0.7.0
 pkgrel=1
 pkgdesc="A package manager for Arch Linux and the AUR written in Haskell."
-url="https://github.com/fosskers/aura"
+url="https://bitbucket.org/fosskers/aura"
 license=('GPL-3')
 arch=('i686' 'x86_64')
 depends=('gmp' 'pacman' 'ghc' 'haskell-regex-base' 'haskell-regex-pcre' 
          'haskell-curl' 'haskell-json' 'haskell-url')
 optdepends=('pacman-color: For coloured pacman output in Aura.')
 options=('strip')
-source=(https://github.com/downloads/fosskers/aura/${_hkgname}-${pkgver}.tar.gz)
+source=(https://bitbucket.org/fosskers/aura/downloads/${_hkgname}-${pkgver}.tar.gz)
 md5sums=('9c4f261d9f6b7529b524a5dd8e3e69cd')
 build() {
     cd ${srcdir}/${_hkgname}-${pkgver}
