@@ -29,8 +29,6 @@ import Text.Regex.PCRE ((=~))
 import System.Exit (ExitCode)
 import Data.Maybe (fromJust)
 
-import Aura.Pacman (syncDatabase)
-import Aura.Flags (Flag(..))
 import Aura.AurConnection
 import Aura.Dependencies
 import Aura.Languages
