@@ -53,7 +53,6 @@ installPackages ss pacOpts pkgs = do
   reportIgnoredPackages lang ignored
   (forPacman,aurPkgNames,nonPkgs) <- divideByPkgType toInstall
   reportNonPackages lang nonPkgs
-  notify ss installPackagesMsg7
   aurPackages <- mapM makeAURPkg aurPkgNames
   when (diffPkgbuilds ss) $ reportPkgbuildDiffs ss aurPackages
   aurPackages <- checkHotEdit ss aurPackages

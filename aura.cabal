@@ -1,6 +1,6 @@
 name:                aura
 
-version:             1.0.7.0
+version:             1.0.8.0
 
 synopsis:            A package manager for Arch Linux and the AUR, written in Haskell.
 
@@ -44,12 +44,17 @@ executable aura
                        Utilities,
                        ColourDiff,
                        Data.Algorithm.Diff,
-                       Aura.C
+                       Aura.A,
+                       Aura.C,
+                       Aura.L,
+                       Aura.O,
                        Aura.Logo,
                        Aura.Time,
+                       Aura.Build,
+                       Aura.Cache,
                        Aura.Flags,
                        Aura.State,
-                       Aura.Build,
+                       Aura.Utils,
                        Aura.Pacman,
                        Aura.General,
                        Aura.MakePkg,
