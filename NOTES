@@ -8,12 +8,10 @@ OPTIONS TO IMPLEMENT
 --------------------
 - `Ci` `info` -> Gives some stats about the package cache.
 
-FIXING HOTEDIT
---------------
-1. Before depchecks, ask the user if they want to edit.
-2. Write the current PKGBUILD to a temp file, edit it, and read it back.
-3. During the `build` stage, download the source, and overwrite the
-   included PKGBUILD if and only if HOTEDIT is active.
+COMPLETIONS
+-----------
+- Fish completions go in /etc/fish/completions
+- Bash completions go in /usr/share/bash-completion/completions
 
 OUT OF DATE
 -----------
