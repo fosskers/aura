@@ -1,9 +1,11 @@
 Aura Changelog
 ==============
 
-1.?.?.0
+1.0.8.0
 -------
 - Moved certain general functions to `Aura.Utils`
+- Moved `-L`, `-O`, `-A` functions out of `aura.hs`.
+- The license message is now more badass.
 
 1.0.7.0
 -------
