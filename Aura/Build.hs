@@ -61,20 +61,20 @@ buildPackages' settings builtPs pkgs@(p:ps) = do
 -- Kinda ugly.
 -- Perform the actual build. Fails elegantly when build fails occur.
 build :: Settings -> AURPkg -> IO (Either ErrMsg FilePath)
-build settings pkg = do
+build ss pkg = do
   currDir <- pwd
   getSourceCode (pkgNameOf pkg) user currDir
-  checkHotEdit settings $ pkgNameOf pkg
+  when (mayHotEdit ss) $ overwritePB pkg
   (exitStatus,pkgName,output) <- makepkg' user
   if didProcessFail exitStatus
      then return $ Left output
      else do
-       path <- moveToCache (cachePathOf settings) pkgName
+       path <- moveToCache (cachePathOf ss) pkgName
        cd currDir
        return $ Right path
     where makepkg'   = if toSuppress then makepkgQuiet else makepkgVerbose
-          toSuppress = suppressMakepkg settings
-          user       = getTrueUser $ environmentOf settings
+          toSuppress = suppressMakepkg ss
+          user       = getTrueUser $ environmentOf ss
 
 getSourceCode :: String -> String -> FilePath -> IO ()
 getSourceCode pkgName user currDir = do
@@ -85,11 +85,22 @@ getSourceCode pkgName user currDir = do
   cd sourceDir
 
 -- Allow the user to edit the PKGBUILD if they asked to do so.
-checkHotEdit :: Settings -> String -> IO ()
-checkHotEdit settings pkgName = return (mayHotEdit settings) ?>> do
-    optionalPrompt (mustConfirm settings) msg ?>> openEditor editor "PKGBUILD"
-    where msg    = checkHotEditMsg1 (langOf settings) pkgName
-          editor = getEditor $ environmentOf settings
+hotEdit :: Settings -> [AURPkg] -> IO [AURPkg]
+hotEdit ss pkgs = withTempDir "hotedit" . flip mapM pkgs $ \p -> do
+  answer <- optionalPrompt (mustConfirm ss) (msg p)
+  if not answer
+     then return p
+     else do
+       let filename = pkgNameOf p ++ "-PKGBUILD"
+       writeFile filename $ pkgbuildOf p
+       openEditor editor filename
+       new <- readFile filename
+       return $ AURPkg (pkgNameOf p) (versionOf p) new
+    where msg p  = checkHotEditMsg1 (langOf ss) $ pkgNameOf p
+          editor = getEditor $ environmentOf ss
+
+overwritePB :: AURPkg -> IO ()
+overwritePB pkg = writeFile "PKGBUILD" $ pkgbuildOf pkg
 
 -- Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.

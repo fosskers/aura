@@ -23,7 +23,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.A where
 
-import Control.Monad (unless, liftM)
+import Control.Monad (when, unless, liftM)
 import Data.List ((\\), nub, sort)
 import Text.Regex.PCRE ((=~))
 import System.Exit (ExitCode)
@@ -53,10 +53,12 @@ installPackages ss pacOpts pkgs = do
   reportIgnoredPackages lang ignored
   (forPacman,aurPkgNames,nonPkgs) <- divideByPkgType toInstall
   reportNonPackages lang nonPkgs
+  notify ss installPackagesMsg7
   aurPackages <- mapM makeAURPkg aurPkgNames
-  unless (not $ diffPkgbuilds ss) $ reportPkgbuildDiffs ss aurPackages
+  when (diffPkgbuilds ss) $ reportPkgbuildDiffs ss aurPackages
+  aurPackages <- checkHotEdit ss aurPackages
   notify ss installPackagesMsg5
-  results     <- getDepsToInstall ss aurPackages
+  results <- getDepsToInstall ss aurPackages
   case results of
     Left errors -> do
       printList red noColour (installPackagesMsg1 lang) errors
@@ -80,9 +82,13 @@ installPackages ss pacOpts pkgs = do
 
 buildAndInstallDep :: Settings -> [String] -> AURPkg -> IO ExitCode
 buildAndInstallDep ss pacOpts pkg =
-  buildPackages ss [pkg] ?>>=
-  installPkgFiles ss (["--asdeps"] ++ pacOpts) . fromJust
-               
+  (checkHotEdit ss [pkg] >>= buildPackages ss) ?>>=
+  installPkgFiles ss ("--asdeps" : pacOpts) . fromJust
+
+checkHotEdit :: Settings -> [AURPkg] -> IO [AURPkg]
+checkHotEdit ss pkgs | mayHotEdit ss = hotEdit ss pkgs
+                     | otherwise     = return pkgs
+
 upgradeAURPkgs :: Settings -> [String] -> [String] -> IO ExitCode
 upgradeAURPkgs ss pacOpts pkgs = do
   notify ss upgradeAURPkgsMsg1
