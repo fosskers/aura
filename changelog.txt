@@ -5,6 +5,7 @@ Aura Changelog
 -------
 - Moved certain general functions to `Aura.Utils`
 - Moved `-L`, `-O`, `-A` functions out of `aura.hs`.
+- `--hotedit` functionality altered (fix).
 - The license message is now more badass.
 
 1.0.7.0
