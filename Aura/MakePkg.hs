@@ -38,7 +38,7 @@ makepkgGen :: (String -> [String] -> IO (ExitCode,String,String)) ->
 makepkgGen f user = do
   (exitStatus,out,err) <- f command opts
   contents <- pwd >>= ls
-  let pkgFiles = filter (\file -> (file =~ ".pkg.tar.xz")) contents
+  let pkgFiles = filter (\file -> (file =~ ".pkg.tar")) contents
       pkgName  = if null pkgFiles then "" else head pkgFiles
   return $ (exitStatus,pkgName,err ++ "\n" ++ out)
       where (command,opts) = determineRunStyle user
