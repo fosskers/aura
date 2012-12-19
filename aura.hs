@@ -56,7 +56,7 @@ import qualified Aura.O as O
 ---
 
 auraVersion :: String
-auraVersion = "1.0.8.0"
+auraVersion = "1.0.8.1"
 
 main :: IO a
 main = do
