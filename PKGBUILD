@@ -22,6 +22,8 @@ build() {
     mkdir -p "$pkgdir/usr/share/man/man8/"
     install -m 644 aura.8 "$pkgdir/usr/share/man/man8/aura.8"
 
+    install -m 644 bashcompletion.sh "$pkgdir/usr/share/bash-completion/completions/aura"
+
     # Directory for storing PKGBUILDs
     mkdir -p "$pkgdir/var/cache/aura/pkgbuilds"
 
