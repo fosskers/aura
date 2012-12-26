@@ -52,7 +52,7 @@ data Language = English
               | Portuguese
               | French
               | Russian
-                deriving (Eq,Enum,Show)
+                deriving (Eq,Enum,Read,Show)
 
 translators :: [String]
 translators = [ " Chris \"Kwpolska\" Warrick"

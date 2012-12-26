@@ -4,6 +4,10 @@ When outputing repo dependencies, show what repo they're from?
 
 Move aura to haskell-http.
 
+RC FILE
+-------
+When reading the serialized conf file, consider using `readMaybe`.
+
 OPTIONS TO IMPLEMENT
 --------------------
 - `Ci` `info` -> Gives some stats about the package cache.

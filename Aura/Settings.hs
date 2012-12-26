@@ -34,10 +34,21 @@ import Shell
 
 ---
 
+{-
+data ConfigFile = AuraConfig { langOp     :: Language
+                             , pacmanOp   :: String
+                             , editorOp   :: String
+                             , makepkgOp  :: Bool
+                             , confirmOp  :: Bool
+                             , hoteditOp  :: Bool
+                             , diffOp     :: Bool } deriving (Read,Show)
+-}
+
 -- The global settings as set by the user with command-line flags.
 data Settings = Settings { environmentOf   :: Environment
                          , langOf          :: Language
                          , pacman          :: Pacman
+                         , editorOf        :: String
                          , ignoredPkgsOf   :: [String]
                          , cachePathOf     :: FilePath
                          , logFilePathOf   :: FilePath
@@ -54,6 +65,7 @@ getSettings lang auraFlags = do
   return $ Settings { environmentOf   = environment
                     , langOf          = lang
                     , pacman          = pmanCommand
+                    , editorOf        = getEditor environment
                     , ignoredPkgsOf   = getIgnoredPkgs confFile
                     , cachePathOf     = getCachePath confFile
                     , logFilePathOf   = getLogFilePath confFile
@@ -72,6 +84,7 @@ debugOutput ss = do
                  , "Using Sudo?       => " ++ yn (varExists "SUDO_USER" env)
                  , "Language          => " ++ show (langOf ss)
                  , "Pacman Command    => " ++ pmanCommand
+                 , "Editor            => " ++ editorOf ss
                  , "Ignored Pkgs      => " ++ unwords (ignoredPkgsOf ss)
                  , "Pkg Cache Path    => " ++ cachePathOf ss
                  , "Log File Path     => " ++ logFilePathOf ss
