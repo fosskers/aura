@@ -113,7 +113,7 @@ auraOptions = map simpleMakeOption
               , ( [],    ["save"],         SaveState     )
               , ( [],    ["restore"],      RestoreState  )
               , ( [],    ["hotedit"],      HotEdit       )
-              , ( [],    ["conf"],         ViewConf      ) 
+              , ( [],    ["viewconf"],     ViewConf      ) 
               , ( [],    ["languages"],    Languages     ) 
               , ( [],    ["auradebug"],    Debug         ) ]
 

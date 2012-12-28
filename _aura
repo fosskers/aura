@@ -186,7 +186,8 @@ _aura_get_command() {
 _aura() {
     typeset -A opt_args
 
-    # options for passing to _arguments: main pacman commands
+    # options for passing to _arguments
+    # A C L O are aura commands. The rest are from pacman.
     typeset -a _aura_opts_commands
     _aura_opts_commands=(
         '-A[Install and manage AUR packages]'
@@ -199,6 +200,7 @@ _aura() {
         '-U[Upgrade packages]'
         '-V[Display version information]'
         '-h[Help message]'
+	'--languages[Display available output languages]'
     )
 
     # options for passing to _arguments: options common to all commands
