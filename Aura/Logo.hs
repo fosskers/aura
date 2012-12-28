@@ -85,7 +85,7 @@ renderPill :: Int -> [String]
 renderPill pad = map (padString pad) pill
 
 renderPills :: Int -> [String]
-renderPills numOfPills = concat $ map render (take numOfPills pillPostitions)
+renderPills numOfPills = take numOfPills pillPostitions >>= render
     where pillPostitions = [17,12,7]
           render pos = renderPill pos ++ [raiseCursorBy 5]
 

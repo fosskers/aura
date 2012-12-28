@@ -101,9 +101,8 @@ referenceValue globals name = reference f globals name
     where f g = g . fromValue
 
 referenceArray :: [Variable] -> String -> Maybe [String]
-referenceArray vs name = cm braceExpand `liftM` reference f vs name
+referenceArray vs name = (>>= braceExpand) `liftM` reference f vs name
     where f g  = map g . fromArray
-          cm h = concat . map h
 
 getGlobalVars :: Script -> [Variable]
 getGlobalVars script = getGlobalVars' script []
@@ -134,7 +133,7 @@ handleValue = value . noQs
 
 -- Bash strings can be surrounded by ' or ".
 parseElements :: String -> [String]
-parseElements s = concat . map (flip parseElements' [] . lStrip) . lines $ s
+parseElements s = lines s >>= flip parseElements' [] . lStrip
 
 parseElements' :: String -> [String] -> [String]
 parseElements' [] es = es

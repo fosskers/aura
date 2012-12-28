@@ -29,8 +29,8 @@ import Data.Algorithm.Diff
 import Shell (red, green)
 
 diff :: [String] -> [String] -> String
-diff [] new  = concat $ map green new
-diff old []  = concat $ map red old
+diff [] new  = new >>= green
+diff old []  = old >>= red
 diff old new | length diffResult == 1 = ""  -- The two files are equal.
              | otherwise              = concat $ fold diffResult
     where fold ((B,ss):xs) = (last ss :) . ("\n" :) . fold' $ xs
