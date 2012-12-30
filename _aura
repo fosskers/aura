@@ -202,11 +202,12 @@ _aura() {
         '-U[Upgrade packages]'
         '-V[Display version information]'
         '-h[Help message]'
-	'--viewconf[View the pacman config file read-only]'
-	'--languages[Display available output languages]'
+        '--viewconf[View the pacman config file read-only]'
+        '--languages[Display available output languages]'
+        # '--save[Make a record of all installed packages]'
+        # '--restore[Restore a previously saved package state]'
     )
-	# '--save[Make a record of all installed packages]'
-	# '--restore[Restore a previously saved package state]'
+
 
     # options for passing to _arguments: options common to all commands
     typeset -a _aura_opts_common
@@ -227,38 +228,36 @@ _aura() {
     # options for passing to _arguments: options for --aursync commands
     typeset -a _aura_opts_aursync
     _aura_opts_aursync=(
-	'-a[Uninstall unneeded build deps after installation.]'
-	'-d[Display a package's dependencies. Recursive for AUR deps.]'
-	'-i[Display AUR package information.]'
-	'-p[Display an AUR package's PKGBUILD.]'
-	'-s[Search the AUR. Words only. No regex.]'
-	'-u[Upgrade all installed AUR packages.]'
-	'-w[Download an AUR package's source tarball.]'
-	'-x[Unsuppress makepkg output during building.]'
-	'--hotedit[Prompt user to edit PKGBUILD before dep checks.]'
+        '-a[Uninstall unneeded build deps after installation.]'
+        '-d[Display package dependencies. Recursive for AUR deps.]'
+        '-i[Display AUR package information.]'
+        # '-k[Show PKGBUILD diffs when upgrading.]'
+        '-p[Display an AUR package PKGBUILD.]'
+        '-s[Search the AUR. Words only. No regex.]'
+        '-u[Upgrade all installed AUR packages.]'
+        '-w[Download an AUR package source tarball.]'
+        '-x[Unsuppress makepkg output during building.]'
+        '--hotedit[Prompt user to edit PKGBUILD before dep checks.]'
     )
-    	# '-k[Show PKGBUILD diffs when upgrading.]'
 
     # options for passing to _arguments: options for --downgrade commands
     typeset -a _aura_opts_downgrade
     _aura_opts_downgrade=(
-	'-b[Backup the cache to a given directory.]'
-	'-c[Given n, save n versions of each package file. Delete rest.]'
-	'-s[Search the cache via a regex.]'
+        '-b[Backup the cache to a given directory.]'
+        '-c[Given n, save n versions of each package file. Delete rest.]'
+        '-s[Search the cache via a regex.]'
     )
 
     # options for passing to _arguments: options for --viewlog commands
     typeset -a _aura_opts_viewlog
     _aura_opts_viewlog=(
-	'-i[View package installation history.]'
-	'-s[Search log file via a regex.]'
+        '-i[View package installation history.]'
+        '-s[Search log file via a regex.]'
     )
 
     # options for passing to _arguments: options for --orphans commands
     typeset -a _aura_opts_orphans
-    _aura_opts_orphans=(
-	'-j[Uninstall all orphan packages.]'
-    )
+    _aura_opts_orphans=( '-j[Uninstall all orphan packages.]' )
 
     # options for passing to _arguments: options for --upgrade commands
     typeset -a _aura_opts_pkgfile
@@ -332,10 +331,10 @@ _aura() {
     )
 
     case $words[2] in
-        -A*) _arguments -s : "_aura_opts_aursync[@]"   ;;
-        -C*) _arguments -s : "_aura_opts_downgrade[@]" ;;
-        -L*) _arguments -s : "_aura_opts_viewlog[@]"   ;;
-        -O*) _arguments -s : "_aura_opts_orphans[@]"   ;;
+        -A*) _arguments -s : "$_aura_opts_aursync[@]"   ;;
+        -C*) _arguments -s : "$_aura_opts_downgrade[@]" ;;
+        -L*) _arguments -s : "$_aura_opts_viewlog[@]"   ;;
+        -O*) _arguments -s : "$_aura_opts_orphans[@]"   ;;
         -Q*g*) # ipkg groups
             _arguments -s : \
                 "$_aura_opts_common[@]" \
@@ -376,7 +375,7 @@ _aura() {
         -V*)  _aura_action_version  ;;
         -h*)  _aura_action_help     ;;
         -  )  _aura_action_none     ;;
-        *  )  return 1                ;;
+        *  )  return 1              ;;
     esac
 }
 
