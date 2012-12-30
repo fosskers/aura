@@ -4,6 +4,7 @@ Aura Changelog
 1.0.8.1
 -------
 - Bash completions added.
+- zsh completions added.
 - Changed `--conf` to `--viewconf`
 - Fixed bug involving "symlink" Haskell error.
 

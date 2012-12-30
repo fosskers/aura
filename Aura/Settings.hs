@@ -34,16 +34,6 @@ import Shell
 
 ---
 
-{-
-data ConfigFile = AuraConfig { langOp     :: Language
-                             , pacmanOp   :: String
-                             , editorOp   :: String
-                             , makepkgOp  :: Bool
-                             , confirmOp  :: Bool
-                             , hoteditOp  :: Bool
-                             , diffOp     :: Bool } deriving (Read,Show)
--}
-
 -- The global settings as set by the user with command-line flags.
 data Settings = Settings { environmentOf   :: Environment
                          , langOf          :: Language
