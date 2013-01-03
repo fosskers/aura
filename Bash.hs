@@ -23,13 +23,6 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-{- POMODOROS
-Oct. 28 => X
-Oct. 22 => X
-Oct. 20 => X
-Oct. 14 => XXXX XXXX XXXX
--}
-
 module Bash where
 
 -- System Libraries

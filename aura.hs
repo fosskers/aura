@@ -48,10 +48,10 @@ import Utilities (replaceByPatt)
 import Shell
 import Zero
 
-import qualified Aura.A as A
-import qualified Aura.C as C
-import qualified Aura.L as L
-import qualified Aura.O as O
+import qualified Aura.Commands.A as A
+import qualified Aura.Commands.C as C
+import qualified Aura.Commands.L as L
+import qualified Aura.Commands.O as O
 
 ---
 

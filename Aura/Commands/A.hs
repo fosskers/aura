@@ -21,7 +21,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.A where
+module Aura.Commands.A where
 
 import Control.Monad (when, unless, liftM)
 import Data.List ((\\), nub, sort)

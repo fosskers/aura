@@ -21,7 +21,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.L
+module Aura.Commands.L
     ( viewLogFile
     , searchLogFile
     , logInfoOnPkg ) where

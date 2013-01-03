@@ -1,5 +1,26 @@
 -- An abstraction layer for shell-related tasks.
 
+{-
+
+Copyright 2012 Colin Woodbury <colingw@gmail.com>
+
+This file is part of Aura.
+
+Aura is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Aura is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Aura.  If not, see <http://www.gnu.org/licenses/>.
+
+-}
+
 {- CITATION
 
 `Escape Codes` section is directly borrowed from:
@@ -7,10 +28,6 @@
   author:  Max Bolingbroke
   contact: <batterseapower@hotmail.com>
 
--}
-
-{- POMODORS
-2012 Nov. 19 => XXX
 -}
 
 module Shell where
@@ -47,7 +64,7 @@ ls = getDirectoryContents
 -- Would this work?
 -- drop 2 `liftM` getDirectoryContents
 ls' :: FilePath -> IO [FilePath]
-ls' p = noDots `liftM` getDirectoryContents p
+ls' p = noDots `liftM` ls p
     where noDots = filter (`notElem` [".",".."])
 
 mv :: FilePath -> FilePath -> IO ()
