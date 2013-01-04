@@ -31,6 +31,7 @@ import Text.Regex.PCRE ((=~))
 import Control.Monad (liftM)
 import Data.List ((\\))
 
+import Aura.Colour.TextColouring (yellow)
 import Aura.General (badReport, entrify)
 import Aura.Languages
 import Aura.Settings

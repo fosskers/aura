@@ -36,7 +36,6 @@ module Shell where
 import System.Process (readProcess, readProcessWithExitCode, rawSystem)
 import System.Exit (ExitCode(..))
 import Data.List (intersperse)
-import Text.Regex.PCRE ((=~))
 import Control.Monad (liftM)
 import Data.Maybe (fromJust)
 import System.Directory ( getDirectoryContents

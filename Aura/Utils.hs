@@ -23,10 +23,49 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Utils where
 
+import System.IO (stdout, hFlush)
 import Text.Regex.PCRE ((=~))
 import Data.List (sortBy)
 import Data.Char (isDigit)
 
+import Aura.Colour.TextColouring
+
+---
+
+----------------
+-- CUSTOM OUTPUT
+----------------
+putStrLnA :: Colouror -> String -> IO ()
+putStrLnA colour s = putStrA colour $ s ++ "\n"
+
+putStrA :: Colouror -> String -> IO ()
+putStrA colour s = putStr $ "aura >>= " ++ colour s
+
+printList :: Colouror -> Colouror -> String -> [String] -> IO ()
+printList _ _ _ [] = return ()
+printList titleColour itemColour msg items = do
+  putStrLnA titleColour msg
+  mapM_ (putStrLn . itemColour) items
+  putStrLn ""
+
+----------
+-- PROMPTS
+----------
+-- Takes a prompt message and a regex of valid answer patterns.
+yesNoPrompt :: String -> IO Bool
+yesNoPrompt msg = do
+  putStrA yellow $ msg ++ " [Y/n] "
+  hFlush stdout
+  response <- getLine
+  return (response =~ "y|Y|\\B" :: Bool)
+
+optionalPrompt :: Bool -> String -> IO Bool
+optionalPrompt True msg = yesNoPrompt msg
+optionalPrompt False _  = return True
+
+-------
+-- MISC
+-------
 splitNameAndVer :: String -> (String,String)
 splitNameAndVer pkg = (before,after)
     where (before,_,after) = (pkg =~ "[<>=]+" :: (String,String,String))

@@ -27,13 +27,17 @@ import Data.Maybe (fromJust)
 import System.FilePath ((</>), takeFileName)
 
 import Aura.AurConnection (downloadSource)
+import Aura.Colour.TextColouring
 import Aura.Languages
 import Aura.Settings
 import Aura.General
 import Aura.MakePkg
+import Aura.Utils
 import Utilities
 import Shell
 import Zero
+
+---
 
 type MaybePaths = Maybe [FilePath]
 

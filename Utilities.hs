@@ -36,25 +36,11 @@ import Text.Printf (printf)
 -- Custom Libraries
 import Shell
 
+---
+
 type Pattern = (String,String)
 
 type Regex = String
-
-----------------
--- CUSTOM OUTPUT
-----------------
-putStrLnA :: Colouror -> String -> IO ()
-putStrLnA colour s = putStrA colour $ s ++ "\n"
-
-putStrA :: Colouror -> String -> IO ()
-putStrA colour s = putStr $ "aura >>= " ++ colour s
-
-printList :: Colouror -> Colouror -> String -> [String] -> IO ()
-printList _ _ _ [] = return ()
-printList titleColour itemColour msg items = do
-  putStrLnA titleColour msg
-  mapM_ (putStrLn . itemColour) items
-  putStrLn ""
 
 -----------
 -- PLUMBING
@@ -122,18 +108,6 @@ getSelection choiceLabels = do
 timedMessage :: Int -> [String] -> IO ()
 timedMessage delay msgs = mapM_ printMessage msgs
     where printMessage msg = putStr msg >> hFlush stdout >> threadDelay delay
-
--- Takes a prompt message and a regex of valid answer patterns.
-yesNoPrompt :: String -> IO Bool
-yesNoPrompt msg = do
-  putStrA yellow $ msg ++ " [Y/n] "
-  hFlush stdout
-  response <- getLine
-  return (response =~ "y|Y|\\B" :: Bool)
-
-optionalPrompt :: Bool -> String -> IO Bool
-optionalPrompt True msg = yesNoPrompt msg
-optionalPrompt False _  = return True
 
 searchLines :: Regex -> [String] -> [String]
 searchLines pat allLines = filter (\line -> line =~ pat) allLines

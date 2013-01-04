@@ -30,16 +30,17 @@ import Data.Maybe (catMaybes)
 import Control.Monad (liftM,unless)
 import Data.List (partition)
 
+import Aura.Colour.TextColouring (cyan,red)
+import Aura.Utils (comparableVer,printList)
 import Aura.General (warn)
 import Aura.Languages
 import Aura.Settings
 import Aura.Pacman (pacmanOutput)
-import Aura.Utils (comparableVer)
 import Aura.Cache
 import Aura.Time
 
-import Utilities (printList,getSelection)
-import Shell (ls',cyan,red,returnSuccess)
+import Utilities (getSelection)
+import Shell (ls',returnSuccess)
 import Zero ((?>>))
 
 ---

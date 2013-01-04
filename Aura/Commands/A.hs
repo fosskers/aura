@@ -29,6 +29,7 @@ import Text.Regex.PCRE ((=~))
 import System.Exit (ExitCode)
 import Data.Maybe (fromJust)
 
+import Aura.Colour.TextColouring
 import Aura.AurConnection
 import Aura.Dependencies
 import Aura.Languages
@@ -38,7 +39,7 @@ import Aura.General
 import Aura.Build
 import Aura.Utils
 
-import Utilities (printList, optionalPrompt, fromRight)
+import Utilities (fromRight)
 import Shell
 import Zero
 

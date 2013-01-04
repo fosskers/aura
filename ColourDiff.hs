@@ -26,7 +26,10 @@ module ColourDiff ( diff ) where
 import Data.List (intersperse)
 
 import Data.Algorithm.Diff
-import Shell (red, green)
+
+import Aura.Colour.TextColouring (red, green)
+
+---
 
 diff :: [String] -> [String] -> String
 diff [] new  = new >>= green

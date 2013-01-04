@@ -38,7 +38,7 @@ import System.Console.GetOpt
 
 -- Custom Libraries
 import Utilities (notNull)
-import Shell (yellow)
+import Aura.Colour.TextColouring (yellow)
 import Aura.Languages
 
 type FlagMap = [(Flag,String)]

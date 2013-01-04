@@ -33,14 +33,11 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-{- POMODOROS
-2012 Nov 18 => XXX
-2012 Nov 03 => XX
--}
-
 module Aura.Languages where
 
-import Shell (cyan, green, red, blue, bForeground)
+import Aura.Colour.TextColouring (cyan, green, red, blue, bForeground)
+
+---
 
 data Language = English
               | Japanese

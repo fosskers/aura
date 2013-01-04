@@ -37,6 +37,7 @@ import System.Environment (getArgs)
 import Control.Monad (unless)
 
 import Aura.State (restoreState, saveState)
+import Aura.Colour.TextColouring (yellow)
 import Aura.Languages
 import Aura.Settings
 import Aura.General

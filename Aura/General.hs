@@ -27,6 +27,7 @@ import Text.Regex.PCRE ((=~))
 import Control.Monad (liftM)
 import Data.Maybe (fromJust)
 
+import Aura.Colour.TextColouring
 import Aura.AurConnection
 import Aura.Languages
 import Aura.Settings
