@@ -69,9 +69,10 @@ Install order is as follows:
   Aura code demonstrates:
   * Regexes
   * CLI flag handling
-  * Monad Transformers
+  * Monad Transformers (soon)
   * usage of Parsec
-  which could come in handy as a reference.
+
+  Please feel free to use Aura as a simple Haskell reference.
 
 Sample Usage
 ============
