@@ -1,6 +1,10 @@
 Aura Changelog
 ==============
 
+1.?.?.0
+-------
+- Aura now reads `color.conf`.
+
 1.0.8.1
 -------
 - Bash completions added.

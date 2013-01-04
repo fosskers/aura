@@ -66,9 +66,12 @@ Install order is as follows:
 
 ### Haskell
   Aura is written in Haskell, which means easy developing and pretty code.
-  Aura code isn't complicated, and for the burgeoning Haskeller there
-  are examples of things like regexes and CLI argument handling which
-  could come in handy as a reference.
+  Aura code demonstrates:
+  * Regexes
+  * CLI flag handling
+  * Monad Transformers
+  * usage of Parsec
+  which could come in handy as a reference.
 
 Sample Usage
 ============
