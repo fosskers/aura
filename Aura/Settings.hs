@@ -26,6 +26,8 @@ module Aura.Settings
 
 import System.Environment (getEnvironment)
 
+import Aura.Colour.TextColouring (Colouror)
+import Aura.Colour.PacmanColorConf
 import Aura.Languages
 import Aura.Pacman
 import Aura.Flags
@@ -45,13 +47,21 @@ data Settings = Settings { environmentOf   :: Environment
                          , suppressMakepkg :: Bool
                          , mustConfirm     :: Bool
                          , mayHotEdit      :: Bool
-                         , diffPkgbuilds   :: Bool }
+                         , diffPkgbuilds   :: Bool
+                         , pcRed           :: Colouror
+                         , pcGreen         :: Colouror
+                         , pcYellow        :: Colouror
+                         , pcBlue          :: Colouror
+                         , pcMagenta       :: Colouror
+                         , pcCyan          :: Colouror
+                         , pcWhite         :: Colouror }
 
 getSettings :: Language -> [Flag] -> IO Settings
 getSettings lang auraFlags = do
   confFile    <- getPacmanConf
   environment <- getEnvironment
   pmanCommand <- getPacmanCmd environment
+  colourFuncs <- getColours
   return $ Settings { environmentOf   = environment
                     , langOf          = lang
                     , pacman          = pmanCommand
@@ -61,8 +71,15 @@ getSettings lang auraFlags = do
                     , logFilePathOf   = getLogFilePath confFile
                     , suppressMakepkg = getSuppression auraFlags
                     , mustConfirm     = getConfirmation auraFlags
-                    , mayHotEdit      = getHotEdit auraFlags 
-                    , diffPkgbuilds   = getDiffStatus auraFlags }
+                    , mayHotEdit      = getHotEdit auraFlags
+                    , diffPkgbuilds   = getDiffStatus auraFlags
+                    , pcRed           = redf colourFuncs
+                    , pcGreen         = greenf colourFuncs
+                    , pcYellow        = yellowf colourFuncs
+                    , pcBlue          = bluef colourFuncs
+                    , pcMagenta       = magentaf colourFuncs
+                    , pcCyan          = cyanf colourFuncs
+                    , pcWhite         = whitef colourFuncs }
 
 debugOutput :: Settings -> IO ()
 debugOutput ss = do

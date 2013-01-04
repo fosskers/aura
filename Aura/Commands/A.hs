@@ -115,31 +115,30 @@ displayAurPkgInfo ss info = putStrLn $ renderAurPkgInfo ss info ++ "\n"
 
 renderAurPkgInfo :: Settings -> PkgInfo -> String
 renderAurPkgInfo ss info = entrify ss fields entries
-    where fields  = infoFields $ langOf ss
-          entries = [ bMagenta "aur"
-                    , bForeground $ nameOf info
+    where fields  = map (pcWhite ss) . infoFields . langOf $ ss
+          entries = [ pcMagenta ss "aur"
+                    , pcWhite ss $ nameOf info
                     , latestVerOf info
                     , outOfDateMsg (langOf ss) $ isOutOfDate info
-                    , cyan $ projectURLOf info
+                    , pcCyan ss $ projectURLOf info
                     , aurURLOf info
                     , licenseOf info
                     , show $ votesOf info
                     , descriptionOf info ]
 
--- This is quite limited. It only accepts one word/pattern.
-aurSearch :: [String] -> IO ExitCode
-aurSearch []    = returnFailure
-aurSearch regex = aurSearchLookup regex ?>>=
-    mapM_ (putStrLn . renderSearchResult (unwords regex)) . fromRight >>
+aurSearch :: Settings -> [String] -> IO ExitCode
+aurSearch _ []     = returnFailure
+aurSearch ss regex = aurSearchLookup regex ?>>=
+    mapM_ (putStrLn . renderSearch ss (unwords regex)) . fromRight >>
     returnSuccess
 
-renderSearchResult :: String -> PkgInfo -> String
-renderSearchResult r info = magenta "aur/" ++ n ++ " " ++ v ++ "\n    " ++ d
+renderSearch :: Settings -> String -> PkgInfo -> String
+renderSearch ss r i = pcMagenta ss "aur/" ++ n ++ " " ++ v ++ "\n    " ++ d
     where c cs = case cs =~ ("(?i)" ++ r) of (b,m,a) -> b ++ cyan m ++ a
-          n = c $ nameOf info
-          d = c $ descriptionOf info
-          v | isOutOfDate info = red $ latestVerOf info
-            | otherwise        = green $ latestVerOf info
+          n = c $ nameOf i
+          d = c $ descriptionOf i
+          v | isOutOfDate i = red $ latestVerOf i
+            | otherwise     = green $ latestVerOf i
 
 displayPkgDeps :: Settings -> [String] -> IO ExitCode
 displayPkgDeps _ []    = returnFailure

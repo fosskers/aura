@@ -83,7 +83,7 @@ executeOpts ss (flags,input,pacOpts) = do
           []             -> ss |+| (ss |$| A.installPackages ss pacOpts input)
           [Upgrade]      -> ss |+| (ss |$| A.upgradeAURPkgs ss pacOpts input)
           [Info]         -> A.aurPkgInfo ss input
-          [Search]       -> A.aurSearch input
+          [Search]       -> A.aurSearch ss input
           [ViewDeps]     -> A.displayPkgDeps ss input
           [Download]     -> A.downloadTarballs ss input
           [GetPkgbuild]  -> A.displayPkgbuild input

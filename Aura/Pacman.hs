@@ -25,6 +25,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Pacman where
 
 -- System Libraries
+import System.Directory (doesFileExist)
 import System.Exit (ExitCode(..))
 import System.IO (hFlush, stdout)
 import Text.Regex.PCRE ((=~))
@@ -76,7 +77,7 @@ getPacmanCmd' :: Environment -> IO String
 getPacmanCmd' env = case getEnvVar "PACMAN" env of
                      Just cmd -> return cmd
                      Nothing  -> do
-                       installed <- pacmanSuccess ["-Qq",pacmanColorCmd]
+                       installed <- doesFileExist pacmanColorCmd
                        if installed
                           then return pacmanColorCmd
                           else return defaultCmd

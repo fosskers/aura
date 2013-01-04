@@ -1,3 +1,5 @@
+-- Parser library that maps entries in `color.conf` to `Colouror` functions.
+
 {-
 
 Copyright 2012 Colin Woodbury <colingw@gmail.com>
@@ -23,7 +25,6 @@ module Aura.Colour.Parser ( parseConf ) where
 
 import Text.ParserCombinators.Parsec
 import Control.Applicative ((<$))
-import Data.Maybe (catMaybes)
 
 import Aura.Colour.TextColouring
 
@@ -31,7 +32,7 @@ import Aura.Colour.TextColouring
 
 -- BUG: Extra blank lines at the end of the file break the parser.
 parseConf :: String -> Either ParseError [Maybe (Colour,Colouror)]
-parseConf input = parse confFile "(readFile)" input
+parseConf input = parse confFile "(color.conf)" input
 
 confFile :: CharParser () [Maybe (Colour,Colouror)]
 confFile = line `endBy` newline
@@ -45,8 +46,8 @@ comment = char '#' >> many (noneOf "\n") >> return Nothing
 -- How could this be converted to the Applicative style?
 variable :: CharParser () (Maybe (Colour,Colouror))
 variable = do
-  name <- varName
-  string " = "
+  name   <- varName
+  _      <- string " = "
   colour <- varValue
   return $ Just (name,colour)
 
