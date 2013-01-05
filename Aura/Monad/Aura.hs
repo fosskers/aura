@@ -24,7 +24,9 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Monad.Aura
     ( Aura
     , runAura
-    , failure ) where
+    , failure
+    , liftIO
+    , ask ) where
 
 import Control.Monad.Reader
 import Control.Monad.Error
