@@ -23,7 +23,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Monad.Aura
     ( Aura
-    , runAura ) where
+    , runAura
+    , failure ) where
 
 import Control.Monad.Reader
 import Control.Monad.Error
@@ -32,6 +33,14 @@ import Aura.Settings (Settings)
 
 ---
 
+{- The Aura Monad. Functions of note:
+return  : yields a successful value.
+failure : yields an error.
+(>>=)   : fails on the first error.
+liftIO  : Perform intermittent IO using `liftIO`.
+ask     : Obtain run-time settings.
+runAura : Unwraps an Aura action. Must be passed `Settings` as well.
+-}
 newtype Aura a = A { runA :: ErrorT AuraError (ReaderT Settings IO) a }
     deriving (Monad, MonadError AuraError, MonadReader Settings, MonadIO)
 
@@ -44,3 +53,6 @@ instance Error AuraError where
 
 runAura :: Aura a -> Settings -> IO (Either AuraError a)
 runAura a ss = runReaderT (runErrorT (runA a)) ss
+
+failure :: String -> Aura ()
+failure = throwError . M

@@ -70,7 +70,7 @@ Install order is as follows:
   Aura code demonstrates:
   * Regexes
   * CLI flag handling
-  * Monad Transformers (soon)
+  * Monad Transformers
   * usage of Parsec
 
 Sample Usage

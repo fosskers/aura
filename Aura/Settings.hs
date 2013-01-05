@@ -1,6 +1,6 @@
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -99,17 +99,3 @@ debugOutput ss = do
                  , "Must Confirm?     => " ++ yn (mustConfirm ss)
                  , "PKGBUILD editing? => " ++ yn (mayHotEdit ss) 
                  , "Diff PKGBUILDs?   => " ++ yn (diffPkgbuilds ss) ]
-
-{-
-sampleSettings :: Settings
-sampleSettings = Settings { environmentOf = undefined
-                          , langOf        = English
-                          , pacman        = pacmanCmd "pacman"
-                          , ignoredPkgsOf = []
-                          , cachePathOf   = "/var/cache/pacman/pkg"
-                          , logFilePathOf = "/var/log/pacman.log"
-                          , suppressMakepkg = True
-                          , mustConfirm   = False
-                          , mayHotEdit    = False
-                          , diffPkgbuilds = False }
--}
