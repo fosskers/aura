@@ -30,11 +30,12 @@ import System.IO (hFlush, stdout)
 import Text.Regex.PCRE ((=~))
 import Control.Monad (liftM)
 
-import Aura.Shell (shellCmd, quietShellCmd)
+import Aura.Shell (shellCmd, quietShellCmd, quietShellCmd')
+import Aura.Settings.Definition (pacmanCmdOf)
 import Aura.Monad.Aura
 import Aura.Cache
 
-import Shell (Environment, getEnvVar)
+import Shell (Environment, getEnvVar, didProcessSucceed)
 import Utilities 
 
 ---
@@ -89,29 +90,33 @@ getLogFilePath confFile = singleEntry confFile "LogFile" defaultLogFile
 ----------
 -- ACTIONS
 ----------
-pacman :: String -> [ShellArg] -> Aura ()
-pacman cmd args = liftIO (hFlush stdout >> shellCmd cmd args)
+pacman :: [ShellArg] -> Aura ()
+pacman args = do
+  cmd <- pacmanCmdOf `liftM` ask
+  liftIO (hFlush stdout)
+  shellCmd cmd args
 
 -- Runs pacman without producing any output.
-pacmanQuiet :: [ShellArg] -> Aura String
-pacmanQuiet args = quietShellCmd "pacman" args
+--pacmanQuiet :: [ShellArg] -> Aura String
+--pacmanQuiet args = quietShellCmd "pacman" args
 
 -- Did a pacman process succeed?
 pacmanSuccess :: [ShellArg] -> Aura Bool
-pacmanSuccess args = (didProcessSucceed . tripleFst) `liftM` pacmanQuiet args
+pacmanSuccess args = success `liftM` quietShellCmd' "pacman" args
+    where success = didProcessSucceed . tripleFst
 
 -- Performs a pacmanQuiet and returns only the stdout.
-pacmanOutput :: [ShellArg] -> IO String
-pacmanOutput args = tripleSnd `liftM` pacmanQuiet args
+pacmanOutput :: [ShellArg] -> Aura String
+pacmanOutput args = quietShellCmd "pacman" args
 
-syncDatabase :: String -> [ShellArg] -> IO ExitCode
-syncDatabase cmd pacOpts = pacman cmd $ ["-Sy"] ++ pacOpts
+syncDatabase :: [ShellArg] -> Aura ()
+syncDatabase pacOpts = pacman $ ["-Sy"] ++ pacOpts
 
-getPacmanHelpMsg :: IO [String]
+getPacmanHelpMsg :: Aura [String]
 getPacmanHelpMsg = lines `liftM` pacmanOutput ["-h"] 
 
 -- Yields the lines given by `pacman -V` with the pacman image stripped.
-getVersionInfo :: IO [String]
+getVersionInfo :: Aura [String]
 getVersionInfo = (map (drop verMsgPad) . lines) `liftM` pacmanOutput ["-V"]
 
 -- The amount of whitespace before text in the lines given by `pacman -V`
