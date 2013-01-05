@@ -3,7 +3,7 @@
 
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -24,26 +24,28 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Pacman where
 
--- System Libraries
 import System.Directory (doesFileExist)
 import System.Exit (ExitCode(..))
 import System.IO (hFlush, stdout)
 import Text.Regex.PCRE ((=~))
 import Control.Monad (liftM)
 
--- Custom Libraries
+import Aura.Shell (shellCmd, quietShellCmd)
+import Aura.Monad.Aura
 import Aura.Cache
+
+import Shell (Environment, getEnvVar)
 import Utilities 
-import Shell
+
+---
 
 type ShellArg = String
-type Pacman   = [ShellArg] -> IO ExitCode
 
 defaultCmd :: String
 defaultCmd = "pacman"
 
 pacmanColorCmd :: String
-pacmanColorCmd = "pacman-color"
+pacmanColorCmd = "/usr/bin/pacman-color"
 
 pacmanConfFile :: FilePath
 pacmanConfFile = "/etc/pacman.conf"
@@ -51,30 +53,8 @@ pacmanConfFile = "/etc/pacman.conf"
 defaultLogFile :: FilePath
 defaultLogFile = "/var/log/pacman.log"
 
-pacmanCmd :: String -> [ShellArg] -> IO ExitCode
-pacmanCmd cmd args = hFlush stdout >> shellCmd cmd args
-
--- Runs pacman without producing any output.
-pacmanQuiet :: [ShellArg] -> IO (ExitCode,String,String)
-pacmanQuiet args = quietShellCmd' "pacman" args
-
--- Did a pacman process succeed?
-pacmanSuccess :: [ShellArg] -> IO Bool
-pacmanSuccess args = (didProcessSucceed . tripleFst) `liftM` pacmanQuiet args
-
--- Performs a pacmanQuiet and returns only the stdout.
-pacmanOutput :: [ShellArg] -> IO String
-pacmanOutput args = tripleSnd `liftM` pacmanQuiet args
-
-syncDatabase :: Pacman -> [ShellArg] -> IO ExitCode
-syncDatabase pacman pacOpts = pacman $ ["-Sy"] ++ pacOpts
-
--- I'm sad that I had to make this Monadic. And a lot uglier.
-getPacmanCmd :: Environment -> IO Pacman
-getPacmanCmd env = pacmanCmd `liftM` getPacmanCmd' env
-
-getPacmanCmd' :: Environment -> IO String
-getPacmanCmd' env = case getEnvVar "PACMAN" env of
+getPacmanCmd :: Environment -> IO String
+getPacmanCmd env = case getEnvVar "PACMAN" env of
                      Just cmd -> return cmd
                      Nothing  -> do
                        installed <- doesFileExist pacmanColorCmd
@@ -94,17 +74,38 @@ getIgnoredPkgs confFile = getConfFileField confFile "^IgnorePkg[ ]+=[ ]+"
 
 -- For config file fields that only have one value.
 -- Caller must supply an alternative if the given field isn't found.
-getSingleEntry :: String -> String -> String -> String
-getSingleEntry confFile field alt = case getConfFileField confFile regex of
+singleEntry :: String -> String -> String -> String
+singleEntry confFile field alt = case getConfFileField confFile regex of
                                       []    -> alt
                                       entry -> head entry
     where regex = "^" ++ field ++ "[ ]+=[ ]+"
 
 getCachePath :: String -> FilePath
-getCachePath confFile = getSingleEntry confFile "CacheDir" defaultPackageCache
+getCachePath confFile = singleEntry confFile "CacheDir" defaultPackageCache
 
 getLogFilePath :: String -> FilePath
-getLogFilePath confFile = getSingleEntry confFile "LogFile" defaultLogFile
+getLogFilePath confFile = singleEntry confFile "LogFile" defaultLogFile
+
+----------
+-- ACTIONS
+----------
+pacman :: String -> [ShellArg] -> Aura ()
+pacman cmd args = liftIO (hFlush stdout >> shellCmd cmd args)
+
+-- Runs pacman without producing any output.
+pacmanQuiet :: [ShellArg] -> Aura String
+pacmanQuiet args = quietShellCmd "pacman" args
+
+-- Did a pacman process succeed?
+pacmanSuccess :: [ShellArg] -> Aura Bool
+pacmanSuccess args = (didProcessSucceed . tripleFst) `liftM` pacmanQuiet args
+
+-- Performs a pacmanQuiet and returns only the stdout.
+pacmanOutput :: [ShellArg] -> IO String
+pacmanOutput args = tripleSnd `liftM` pacmanQuiet args
+
+syncDatabase :: String -> [ShellArg] -> IO ExitCode
+syncDatabase cmd pacOpts = pacman cmd $ ["-Sy"] ++ pacOpts
 
 getPacmanHelpMsg :: IO [String]
 getPacmanHelpMsg = lines `liftM` pacmanOutput ["-h"] 

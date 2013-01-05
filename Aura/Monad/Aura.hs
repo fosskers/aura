@@ -31,7 +31,7 @@ module Aura.Monad.Aura
 import Control.Monad.Reader
 import Control.Monad.Error
 
-import Aura.Settings (Settings)
+import Aura.Settings.Definition (Settings)
 
 ---
 

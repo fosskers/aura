@@ -19,42 +19,19 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Settings
+module Aura.Settings.Enable
     ( getSettings
-    , debugOutput
-    , Settings(..) ) where
+    , debugOutput ) where
 
 import System.Environment (getEnvironment)
 
-import Aura.Colour.TextColouring (Colouror)
+import Aura.Languages (Language)
+import Aura.Settings.Definition
 import Aura.Colour.PacmanColorConf
-import Aura.Languages
 import Aura.Pacman
 import Aura.Flags
 
-import Shell
-
 ---
-
--- The global settings as set by the user with command-line flags.
-data Settings = Settings { environmentOf   :: Environment
-                         , langOf          :: Language
-                         , pacman          :: Pacman
-                         , editorOf        :: String
-                         , ignoredPkgsOf   :: [String]
-                         , cachePathOf     :: FilePath
-                         , logFilePathOf   :: FilePath
-                         , suppressMakepkg :: Bool
-                         , mustConfirm     :: Bool
-                         , mayHotEdit      :: Bool
-                         , diffPkgbuilds   :: Bool
-                         , pcRed           :: Colouror
-                         , pcGreen         :: Colouror
-                         , pcYellow        :: Colouror
-                         , pcBlue          :: Colouror
-                         , pcMagenta       :: Colouror
-                         , pcCyan          :: Colouror
-                         , pcWhite         :: Colouror }
 
 getSettings :: Language -> [Flag] -> IO Settings
 getSettings lang auraFlags = do
