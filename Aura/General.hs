@@ -190,8 +190,7 @@ sudo action = do
 
 -- Prompt if the user is the true Root. Building as it can be dangerous.
 trueRoot :: Aura () -> Aura ()
-trueRoot action = do
-  ss <- ask
+trueRoot action = ask >>= \ss -> do
   if isntTrueRoot $ environmentOf ss
      then action
      else do

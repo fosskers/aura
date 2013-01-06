@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -30,41 +30,40 @@ import Data.List (nub)
 
 import Aura.AurConnection (getTrueVerViaPkgbuild)
 import Aura.Pacman (pacmanOutput)
+import Aura.Settings.Base
+import Aura.Monad.Aura
 import Aura.Languages
-import Aura.Settings
 import Aura.General
 import Aura.Utils
 
 import Utilities (notNull, tripleThrd)
 import Bash
 
--- Returns either a list of error message or the deps to be installed.
-getDepsToInstall :: Settings -> [AURPkg] -> 
-                    IO (Either [ErrMsg] ([String],[AURPkg]))
-getDepsToInstall ss [] = return $ Left [getDepsToInstallMsg1 (langOf ss)]
-getDepsToInstall ss pkgs = do
-  -- Can this be done with foldM?
-  allDeps <- mapM (determineDeps $ langOf ss) pkgs
+-- Returns the deps to be installed, or fails nicely.
+getDepsToInstall :: [AURPkg] -> Aura ([String],[AURPkg])
+getDepsToInstall []   = ask >>= failure . getDepsToInstallMsg1 . langOf
+getDepsToInstall pkgs = ask >>= \ss -> do
+  allDeps <- mapM determineDeps pkgs
   let (ps,as,vs) = foldl groupPkgs ([],[],[]) allDeps
   necPacPkgs <- filterM mustInstall ps >>= mapM makePacmanPkg
   necAURPkgs <- filterM (mustInstall . show) as
   necVirPkgs <- filterM mustInstall vs >>= mapM makeVirtualPkg
   let conflicts = getConflicts ss (necPacPkgs,necAURPkgs,necVirPkgs)
   if notNull conflicts
-     then return $ Left conflicts
+     then failure $ unlines conflicts
      else do
        let providers  = map (pkgNameOf . fromJust . providerPkgOf) necVirPkgs
            pacmanPkgs = map pkgNameOf necPacPkgs
-       return $ Right (nub $ providers ++ pacmanPkgs, necAURPkgs)
+       return $ (nub $ providers ++ pacmanPkgs, necAURPkgs)
 
 -- Returns ([RepoPackages], [AURPackages], [VirtualPackages])
-determineDeps :: Language -> AURPkg -> IO ([String],[AURPkg],[String])
-determineDeps lang pkg = do
+determineDeps :: AURPkg -> Aura ([String],[AURPkg],[String])
+determineDeps pkg = do
   let globals  = getGlobalVars $ pkgbuildOf pkg
       depNames = getDeps globals "depends" ++ getDeps globals "makedepends"
   (repoPkgNames,aurPkgNames,other) <- divideByPkgType depNames
   aurPkgs       <- mapM makeAURPkg aurPkgNames
-  recursiveDeps <- mapM (determineDeps lang) aurPkgs
+  recursiveDeps <- mapM determineDeps aurPkgs
   let (rs,as,os) = foldl groupPkgs (repoPkgNames,aurPkgs,other) recursiveDeps
   return (nub rs, nub as, nub os)
       where getDeps gs s = case referenceArray gs s of
@@ -73,7 +72,7 @@ determineDeps lang pkg = do
 
 -- If a package isn't installed, `pacman -T` will yield a single name.
 -- Any other type of output means installation is not required. 
-mustInstall :: String -> IO Bool
+mustInstall :: String -> Aura Bool
 mustInstall pkg = do
   necessaryDeps <- pacmanOutput $ ["-T",pkg]
   return $ length (words necessaryDeps) == 1

@@ -68,8 +68,7 @@ build built ps@(p:_) = do
         
 -- Perform the actual build.
 build' :: [AURPkg] -> Aura (FilePath,[AURPkg])
-build' (p:ps) = do
-  ss <- ask
+build' (p:ps) = ask >>= \ss -> do
   let makepkg'   = if toSuppress then makepkgQuiet else makepkgVerbose
       toSuppress = suppressMakepkg ss
       user       = getTrueUser $ environmentOf ss
@@ -92,8 +91,7 @@ getSourceCode pkgName user currDir = liftIO $ do
 -- Allow the user to edit the PKGBUILD if they asked to do so.
 -- Ugly. Aura Monad within IO Monad within Aura Monad.
 hotEdit :: [AURPkg] -> Aura [AURPkg]
-hotEdit pkgs = do
-  ss <- ask
+hotEdit pkgs = ask >>= \ss -> do
   withTempDir "hotedit" . forM pkgs $ \p -> liftIO $ do
     let msg p = checkHotEditMsg1 (langOf ss) $ pkgNameOf p               
     answer <- runAura (optionalPrompt (msg p)) ss
@@ -116,8 +114,7 @@ overwritePkgbuild p = (mayHotEdit `liftM` ask) >>= check
 -- continue installing previous packages that built successfully.
 buildFail :: [FilePath] -> [AURPkg] -> String -> Aura (FilePath,[AURPkg])
 buildFail _ [] _ = failure "You should never see this message."
-buildFail built (p:ps) errors = do
-  ss <- ask
+buildFail built (p:ps) errors = ask >>= \ss -> do
   let lang = langOf ss
   scold (flip buildFailMsg1 (show p))
   displayBuildErrors errors
@@ -129,12 +126,11 @@ buildFail built (p:ps) errors = do
 -- If the user wasn't running Aura with `-x`, then this will
 -- show them the suppressed makepkg output. 
 displayBuildErrors :: ErrMsg -> Aura ()
-displayBuildErrors errors = do
-  settings <- ask
-  if not $ suppressMakepkg settings
+displayBuildErrors errors = ask >>= \ss -> do
+  if not $ suppressMakepkg ss
      then return ()  -- User has already seen the output.
      else do
-       putStrA red (displayBuildErrorsMsg1 $ langOf settings)
+       putStrA red (displayBuildErrorsMsg1 $ langOf ss)
        liftIO $ (timedMessage 1000000 ["3.. ","2.. ","1..\n"] >>
                  putStrLn errors)
 

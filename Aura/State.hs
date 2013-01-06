@@ -112,4 +112,3 @@ downgradeAndRemove down remo
     where remove    = pacman $ ["-R"] ++ remo
           downgrade = ask >>= \ss ->
                       pacman $ ["-U"] ++ map (cachePathOf ss </>) down
-          
