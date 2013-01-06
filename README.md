@@ -43,12 +43,13 @@ Install order is as follows:
   thus research into prospective packages should be done beforehand.
   However, for functionality's sake, the option `--hotedit` used with `-A`
   will prompt the user for PKGBUILD editing. Regardless, as a responsible
-  user you must KNOW. WHAT. YOU. ARE. BUILDING.
+  user you must know what you are building.
   
 ### Downgradibility
   Built AUR package files are moved to the package cache.
   This allows for them to be easily downgraded when problems arise.
-  Other top AUR helper programs do not do this. 
+  Other top AUR helper programs do not do this.
+  Options `--save` and `--restore` aid you during system breakage.
 
 ### No Orphans
   Sometimes dependencies lose their *required* status, but remain
@@ -75,6 +76,19 @@ Install order is as follows:
 
 Sample Usage
 ============
+#### New with Aura 1.1
+Install and show recent PKGBUILD changes (also works with -u):
+
+    aura -Ak (package)
+
+Store a record of all installed packages:
+
+    aura --save
+
+Restore a saved record. Rolls back and uninstalls packages as necessary :
+
+   aura --restore
+
 #### Installing Packages
 Install an AUR package:
 
