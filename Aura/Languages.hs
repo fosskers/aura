@@ -331,30 +331,30 @@ executeOptsMsg1 French     = "Arguments contradictoires !"
 executeOptsMsg1 Russian    = "Даны конфликтующие флаги!"
 
 -- Packages should not be built if the user is logged in as root!
-trueRootCheckMsg1 :: Language -> String
-trueRootCheckMsg1 English    = "You should never build packages as the true root. Are you okay with this?"
-trueRootCheckMsg1 Japanese   = "本当のrootユーザーとしてパッケージを作成するのが危険。続行？"
-trueRootCheckMsg1 Polish     = "Nigdy nie powinieneś budować pakietów jako root. Na pewno kontynuować?"
-trueRootCheckMsg1 Croatian   = "Pakete ne bi trebalo graditi s pravim root ovlastima. Nastavi?"
-trueRootCheckMsg1 Swedish    = "Det är starkt rekommenderat att INTE vara inloggad som root när man bygger paket. Vill du fortsätta ändå?"
-trueRootCheckMsg1 German     = "Sie sollten niemals Pakete als der echte root Nutzer bauen. Sind sie sicher, dass Sie dies tun wollen?"
-trueRootCheckMsg1 Spanish    = "Nunca deberías construir paquetes como root real. ¿Estás de acuerdo con esto?"
-trueRootCheckMsg1 Portuguese = "Não deveria compilar pacotes como o root de fato. Ainda assim, deseja prosseguir?"
-trueRootCheckMsg1 French     = "Il n'est pas sage de construire des paquets avec le compte root. Voulez-vous continuer ?"
-trueRootCheckMsg1 Russian    = "Вам никогда не следует собирать пакеты под настоящим рутом. Договорились?"
+trueRootMsg1 :: Language -> String
+trueRootMsg1 English    = "You should never build packages as the true root. Are you okay with this?"
+trueRootMsg1 Japanese   = "本当のrootユーザーとしてパッケージを作成するのが危険。続行？"
+trueRootMsg1 Polish     = "Nigdy nie powinieneś budować pakietów jako root. Na pewno kontynuować?"
+trueRootMsg1 Croatian   = "Pakete ne bi trebalo graditi s pravim root ovlastima. Nastavi?"
+trueRootMsg1 Swedish    = "Det är starkt rekommenderat att INTE vara inloggad som root när man bygger paket. Vill du fortsätta ändå?"
+trueRootMsg1 German     = "Sie sollten niemals Pakete als der echte root Nutzer bauen. Sind sie sicher, dass Sie dies tun wollen?"
+trueRootMsg1 Spanish    = "Nunca deberías construir paquetes como root real. ¿Estás de acuerdo con esto?"
+trueRootMsg1 Portuguese = "Não deveria compilar pacotes como o root de fato. Ainda assim, deseja prosseguir?"
+trueRootMsg1 French     = "Il n'est pas sage de construire des paquets avec le compte root. Voulez-vous continuer ?"
+trueRootMsg1 Russian    = "Вам никогда не следует собирать пакеты под настоящим рутом. Договорились?"
 
 -- This is for when the user decides to refrain from building afterall.
-trueRootCheckMsg2 :: Language -> String
-trueRootCheckMsg2 English    = "You’ve done the right thing."
-trueRootCheckMsg2 Japanese   = "よしよし。"
-trueRootCheckMsg2 Polish     = "Postąpiłeś słusznie."
-trueRootCheckMsg2 Croatian   = "Učinili ste Ispravnu Stvar."
-trueRootCheckMsg2 Swedish    = "Phew."
-trueRootCheckMsg2 German     = "Eine weise Entscheidung."
-trueRootCheckMsg2 Spanish    = "Has tomado la decision correcta."
-trueRootCheckMsg2 Portuguese = "Ainda bem que tem juízo!"
-trueRootCheckMsg2 French     = "C'est la bonne décision."
-trueRootCheckMsg2 Russian    = "Вы выбрали православный путь."
+trueRootMsg2 :: Language -> String
+trueRootMsg2 English    = "You’ve done the right thing."
+trueRootMsg2 Japanese   = "よしよし。"
+trueRootMsg2 Polish     = "Postąpiłeś słusznie."
+trueRootMsg2 Croatian   = "Učinili ste Ispravnu Stvar."
+trueRootMsg2 Swedish    = "Phew."
+trueRootMsg2 German     = "Eine weise Entscheidung."
+trueRootMsg2 Spanish    = "Has tomado la decision correcta."
+trueRootMsg2 Portuguese = "Ainda bem que tem juízo!"
+trueRootMsg2 French     = "C'est la bonne décision."
+trueRootMsg2 Russian    = "Вы выбрали православный путь."
 
 installPackagesMsg1 :: Language -> String
 installPackagesMsg1 English    = "Dependency checking failed for these reasons:"

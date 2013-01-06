@@ -19,42 +19,21 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Settings
+module Aura.Settings.Enable
     ( getSettings
-    , debugOutput
-    , Settings(..) ) where
+    , debugOutput ) where
 
 import System.Environment (getEnvironment)
 
-import Aura.Colour.TextColouring (Colouror)
 import Aura.Colour.PacmanColorConf
-import Aura.Languages
+import Aura.Languages (Language)
+import Aura.Settings.Base
 import Aura.Pacman
 import Aura.Flags
 
 import Shell
 
 ---
-
--- The global settings as set by the user with command-line flags.
-data Settings = Settings { environmentOf   :: Environment
-                         , langOf          :: Language
-                         , pacman          :: Pacman
-                         , editorOf        :: String
-                         , ignoredPkgsOf   :: [String]
-                         , cachePathOf     :: FilePath
-                         , logFilePathOf   :: FilePath
-                         , suppressMakepkg :: Bool
-                         , mustConfirm     :: Bool
-                         , mayHotEdit      :: Bool
-                         , diffPkgbuilds   :: Bool
-                         , pcRed           :: Colouror
-                         , pcGreen         :: Colouror
-                         , pcYellow        :: Colouror
-                         , pcBlue          :: Colouror
-                         , pcMagenta       :: Colouror
-                         , pcCyan          :: Colouror
-                         , pcWhite         :: Colouror }
 
 getSettings :: Language -> [Flag] -> IO Settings
 getSettings lang auraFlags = do
@@ -64,7 +43,7 @@ getSettings lang auraFlags = do
   colourFuncs <- getColours
   return $ Settings { environmentOf   = environment
                     , langOf          = lang
-                    , pacman          = pmanCommand
+                    , pacmanCmdOf     = pmanCommand
                     , editorOf        = getEditor environment
                     , ignoredPkgsOf   = getIgnoredPkgs confFile
                     , cachePathOf     = getCachePath confFile
@@ -85,12 +64,11 @@ debugOutput :: Settings -> IO ()
 debugOutput ss = do
   let yn a = if a then "Yes!" else "No."
       env  = environmentOf ss
-  pmanCommand <- getPacmanCmd' env
   mapM_ putStrLn [ "User              => " ++ getUser' env
                  , "True User         => " ++ getTrueUser env
                  , "Using Sudo?       => " ++ yn (varExists "SUDO_USER" env)
                  , "Language          => " ++ show (langOf ss)
-                 , "Pacman Command    => " ++ pmanCommand
+                 , "Pacman Command    => " ++ pacmanCmdOf ss
                  , "Editor            => " ++ editorOf ss
                  , "Ignored Pkgs      => " ++ unwords (ignoredPkgsOf ss)
                  , "Pkg Cache Path    => " ++ cachePathOf ss

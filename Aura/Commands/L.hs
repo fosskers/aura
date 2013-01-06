@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -26,44 +26,38 @@ module Aura.Commands.L
     , searchLogFile
     , logInfoOnPkg ) where
 
-import System.Exit (ExitCode)
 import Text.Regex.PCRE ((=~))
 import Control.Monad (liftM)
 import Data.List ((\\))
 
 import Aura.Colour.TextColouring (yellow)
 import Aura.General (badReport, entrify)
+import Aura.Shell (shellCmd)
+import Aura.Settings.Base
+import Aura.Monad.Aura
 import Aura.Languages
-import Aura.Settings
 
 import Utilities (searchLines)
-import Shell
-import Zero
 
 ---
 
-viewLogFile :: FilePath -> IO ExitCode
+viewLogFile :: FilePath -> Aura ()
 viewLogFile logFilePath = shellCmd "less" [logFilePath]
 
 -- Very similar to `searchCache`. But is this worth generalizing?
-searchLogFile :: Settings -> [String] -> IO ExitCode
-searchLogFile settings input = do
-  logFile <- lines `liftM` readFile (logFilePathOf settings)
+searchLogFile :: [String] -> Aura ()
+searchLogFile input = ask >>= \ss -> liftIO $ do
+  logFile <- lines `liftM` readFile (logFilePathOf ss)
   mapM_ putStrLn $ searchLines (unwords input) logFile
-  returnSuccess
 
--- Are you failing at looking up anything,
--- or succeeding at looking up nothing?
-logInfoOnPkg :: Settings -> [String] -> IO ExitCode
-logInfoOnPkg _ []          = returnFailure  -- Success?
-logInfoOnPkg settings pkgs = do
-  logFile <- readFile (logFilePathOf settings)
+logInfoOnPkg :: [String] -> Aura ()
+logInfoOnPkg []   = return ()
+logInfoOnPkg pkgs = ask >>= \ss -> do
+  logFile <- liftIO $ readFile (logFilePathOf ss)
   let inLog p = logFile =~ (" " ++ p ++ " ")
       reals   = filter inLog pkgs
-  reportNotInLog (langOf settings) (pkgs \\ reals)
-  return reals ?>> do
-    mapM_ (putStrLn . renderLogLookUp settings logFile) reals
-    returnSuccess
+  reportNotInLog (pkgs \\ reals)
+  liftIO $ mapM_ (putStrLn . renderLogLookUp ss logFile) reals
 
 renderLogLookUp :: Settings -> String -> String -> String
 renderLogLookUp ss logFile pkg = entrify ss fields entries ++ "\n" ++ recent
@@ -81,5 +75,5 @@ renderLogLookUp ss logFile pkg = entrify ss fields entries ++ "\n" ++ recent
 ------------
 -- REPORTING
 ------------
-reportNotInLog :: Language -> [String] -> IO ()
-reportNotInLog lang nons = badReport reportNotInLogMsg1 lang nons
+reportNotInLog :: [String] -> Aura ()
+reportNotInLog nons = badReport reportNotInLogMsg1 nons

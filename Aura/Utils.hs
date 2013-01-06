@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -23,49 +23,72 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Utils where
 
+import Distribution.Simple.Utils (withTempDirectory)
+import Distribution.Verbosity (silent)
 import System.IO (stdout, hFlush)
 import Text.Regex.PCRE ((=~))
 import Data.List (sortBy)
 import Data.Char (isDigit)
 
+import Aura.Settings.Base (mustConfirm)
 import Aura.Colour.TextColouring
+import Aura.Monad.Aura
+
+import Utilities (inDir)
+import Shell (pwd)
 
 ---
 
 ----------------
 -- CUSTOM OUTPUT
 ----------------
-putStrLnA :: Colouror -> String -> IO ()
+putStrLnA :: Colouror -> String -> Aura ()
 putStrLnA colour s = putStrA colour $ s ++ "\n"
 
-putStrA :: Colouror -> String -> IO ()
-putStrA colour s = putStr $ "aura >>= " ++ colour s
+putStrLnA' :: Colouror -> String -> String
+putStrLnA' colour s = putStrA' colour s ++ "\n"
 
-printList :: Colouror -> Colouror -> String -> [String] -> IO ()
-printList _ _ _ [] = return ()
-printList titleColour itemColour msg items = do
-  putStrLnA titleColour msg
-  mapM_ (putStrLn . itemColour) items
-  putStrLn ""
+putStrA :: Colouror -> String -> Aura ()
+putStrA colour = liftIO . putStr . putStrA' colour
+
+putStrA' :: Colouror -> String -> String
+putStrA' colour s = "aura >>= " ++ colour s
+
+printList :: Colouror -> Colouror -> String -> [String] -> Aura ()
+printList _ _ _ []        = return ()
+printList tc ic msg items = liftIO . putStrLn . printList' tc ic msg $ items
+
+printList' :: Colouror -> Colouror -> String -> [String] -> String
+printList' tc ic m is = putStrLnA' tc m ++ colouredItems
+    where colouredItems = is >>= \i -> ic i ++ "\n"
 
 ----------
 -- PROMPTS
 ----------
 -- Takes a prompt message and a regex of valid answer patterns.
-yesNoPrompt :: String -> IO Bool
+yesNoPrompt :: String -> Aura Bool
 yesNoPrompt msg = do
   putStrA yellow $ msg ++ " [Y/n] "
-  hFlush stdout
-  response <- getLine
-  return (response =~ "y|Y|\\B" :: Bool)
+  liftIO $ hFlush stdout
+  response <- liftIO getLine
+  return $ response =~ "y|Y|\\B"
 
-optionalPrompt :: Bool -> String -> IO Bool
-optionalPrompt True msg = yesNoPrompt msg
-optionalPrompt False _  = return True
+optionalPrompt :: String -> Aura Bool
+optionalPrompt msg = ask >>= check
+    where check ss | mustConfirm ss = yesNoPrompt msg
+                   | otherwise      = return True
 
 -------
 -- MISC
 -------
+withTempDir :: FilePath -> Aura a -> Aura a
+withTempDir name action = do
+  ss   <- ask
+  curr <- liftIO pwd
+  let inTemp = withTempDirectory silent curr name
+  result <- liftIO $ inTemp (\dir -> inDir dir (runAura action ss))
+  wrap result
+
 splitNameAndVer :: String -> (String,String)
 splitNameAndVer pkg = (before,after)
     where (before,_,after) = (pkg =~ "[<>=]+" :: (String,String,String))

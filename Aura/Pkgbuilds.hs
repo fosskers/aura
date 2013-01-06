@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -31,7 +31,11 @@ module Aura.Pkgbuilds
 import System.Directory (doesFileExist)
 
 import Aura.General (AURPkg, pkgNameOf, pkgbuildOf)
+import Aura.Monad.Aura
+
 import ColourDiff
+
+---
 
 pkgbuildCache :: String
 pkgbuildCache = "/var/cache/aura/pkgbuilds/"
@@ -45,14 +49,14 @@ pkgbuildPath p = pkgbuildCache ++ toFilename p
 comparePkgbuilds :: String -> String -> String
 comparePkgbuilds old new = diff (lines old) (lines new)
 
-hasPkgbuildStored :: String -> IO Bool
-hasPkgbuildStored = doesFileExist . pkgbuildPath 
+hasPkgbuildStored :: String -> Aura Bool
+hasPkgbuildStored = liftIO . doesFileExist . pkgbuildPath 
 
-storePkgbuilds :: [AURPkg] -> IO ()
+storePkgbuilds :: [AURPkg] -> Aura ()
 storePkgbuilds = mapM_ (\p -> writePkgbuild (pkgNameOf p) (pkgbuildOf p))
 
-readPkgbuild :: String -> IO String
-readPkgbuild = readFile . pkgbuildPath
+readPkgbuild :: String -> Aura String
+readPkgbuild = liftIO . readFile . pkgbuildPath
 
-writePkgbuild :: String -> String -> IO ()
-writePkgbuild name p = writeFile (pkgbuildPath name) p
+writePkgbuild :: String -> String -> Aura ()
+writePkgbuild name p = liftIO $ writeFile (pkgbuildPath name) p

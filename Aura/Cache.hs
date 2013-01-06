@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -34,7 +34,9 @@ module Aura.Cache
 import qualified Data.Map.Lazy as M
 import Control.Monad (liftM)
 
+import Aura.Monad.Aura
 import Aura.Utils (pkgFileNameAndVer)
+
 import Shell (ls)
 
 ---
@@ -53,11 +55,11 @@ cache = M.fromList . map pair
     where pair p = (simplePkg p, p)
 
 -- This takes the filepath of the package cache as an argument.
-rawCacheContents :: FilePath -> IO [String]
-rawCacheContents c = filter dots `liftM` ls c
+rawCacheContents :: FilePath -> Aura [String]
+rawCacheContents c = filter dots `liftM` liftIO (ls c)
     where dots p = p `notElem` [".",".."]
 
-cacheContents :: FilePath -> IO Cache
+cacheContents :: FilePath -> Aura Cache
 cacheContents c = cache `liftM` rawCacheContents c
 
 downgradable :: SimplePkg -> Cache -> Bool

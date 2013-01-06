@@ -25,19 +25,24 @@ module Aura.Monad.Aura
     ( Aura
     , runAura
     , failure
+    , catch
+    , wrap
+    , getErrorMsg
     , liftIO
     , ask ) where
 
 import Control.Monad.Reader
 import Control.Monad.Error
 
-import Aura.Settings (Settings)
+import Aura.Settings.Base (Settings)
 
 ---
 
 {- The Aura Monad. Functions of note:
 return  : yields a successful value.
 failure : yields an error.
+catch   : catches an error.
+wrap    : If given an Either, rewraps it into an Aura Monad.
 (>>=)   : fails on the first error.
 liftIO  : Perform intermittent IO using `liftIO`.
 ask     : Obtain run-time settings.
@@ -47,14 +52,24 @@ newtype Aura a = A { runA :: ErrorT AuraError (ReaderT Settings IO) a }
     deriving (Monad, MonadError AuraError, MonadReader Settings, MonadIO)
 
 -- This needs to be expanded.
-data AuraError = E | M String deriving (Eq,Show)
+data AuraError = M String deriving (Eq,Show)
 
 instance Error AuraError where
-    noMsg  = E
+    noMsg  = M "No error message given."
     strMsg = M
 
 runAura :: Aura a -> Settings -> IO (Either AuraError a)
 runAura a ss = runReaderT (runErrorT (runA a)) ss
 
-failure :: String -> Aura ()
+failure :: String -> Aura a
 failure = throwError . M
+
+catch :: Aura a -> (String -> Aura a) -> Aura a
+catch a h = catchError a (\(M m) -> h m)
+
+wrap :: Either AuraError a -> Aura a
+wrap (Left (M m)) = failure m
+wrap (Right a)    = return a
+
+getErrorMsg :: AuraError -> String
+getErrorMsg (M s) = s

@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -32,40 +32,43 @@ import Data.List ((\\),sort,groupBy)
 import System.FilePath ((</>))
 import Text.Regex.PCRE ((=~))
 import Control.Monad (filterM)
-import System.Exit (ExitCode)
+import Control.Monad (liftM)
 import Data.Char (isDigit)
 
 import Aura.Logo (raiseCursorBy)
+import Aura.Pacman (pacman)
+import Aura.Settings.Base
+import Aura.Monad.Aura
 import Aura.Languages
-import Aura.Settings
 import Aura.General
 import Aura.Cache
 import Aura.Utils
 
-import Shell (rm, cp, returnSuccess)
-import Zero ((?>>))
+import Shell (rm, cp)
 import Utilities
 
 ---
 
 -- Interactive. Gives the user a choice as to exactly what versions
 -- they want to downgrade to.
-downgradePackages :: Settings -> [String] -> IO ExitCode
-downgradePackages _ []    = returnSuccess
-downgradePackages ss pkgs = do
+downgradePackages :: [String] -> Aura ()
+downgradePackages []   = return ()
+downgradePackages pkgs = do
   reals <- filterM isInstalled pkgs
-  reportBadDowngradePkgs (langOf ss) (pkgs \\ reals)
-  return reals ?>> do
-    cache   <- cacheContents cachePath
-    choices <- mapM (getDowngradeChoice ss cache) reals
-    pacman ss $ ["-U"] ++ map (cachePath </>) choices
-      where cachePath = cachePathOf ss
+  reportBadDowngradePkgs (pkgs \\ reals)
+  cachePath <- cachePathOf `liftM` ask
+  if null reals
+     then return ()
+     else do
+       cache   <- cacheContents cachePath
+       choices <- mapM (getDowngradeChoice cache) reals
+       pacman $ ["-U"] ++ map (cachePath </>) choices
                
-getDowngradeChoice :: Settings -> Cache -> String -> IO String
-getDowngradeChoice settings cache pkg = do
+getDowngradeChoice :: Cache -> String -> Aura String
+getDowngradeChoice cache pkg = do
   let choices = getChoicesFromCache cache pkg
-  notify settings (flip getDowngradeChoiceMsg1 pkg)
-  getSelection choices
+  notify (flip getDowngradeChoiceMsg1 pkg)
+  liftIO $ getSelection choices
 
 getChoicesFromCache :: Cache -> String -> [String]
 getChoicesFromCache cache pkg = sort choices
@@ -73,70 +76,67 @@ getChoicesFromCache cache pkg = sort choices
           match p = p =~ ("^" ++ pkg ++ "-[0-9]")
 
 -- `[]` as input yields the contents of the entire cache.
-searchCache :: Settings -> [String] -> IO ExitCode
-searchCache settings input = do
-  cache <- cacheContents $ cachePathOf settings
+searchCache :: [String] -> Aura ()
+searchCache input = do
+  cache <- ask >>= cacheContents . cachePathOf
   let results = sortPkgs . searchLines (unwords input) . allFilenames $ cache
-  mapM_ putStrLn results
-  returnSuccess
+  liftIO $ mapM_ putStrLn results
 
 -- The destination folder must already exist for the back-up to being.
-backupCache :: Settings -> [String] -> IO ExitCode
-backupCache settings []      = scoldAndFail settings backupCacheMsg1
-backupCache settings (dir:_) = do
-  exists <- fileExist dir
+backupCache :: [String] -> Aura ()
+backupCache []      = scoldAndFail backupCacheMsg1
+backupCache (dir:_) = ask >>= \ss -> do
+  exists <- liftIO $ fileExist dir
   if not exists
-     then scoldAndFail settings backupCacheMsg3
+     then scoldAndFail backupCacheMsg3
      else do
-       cache <- cacheContents $ cachePathOf settings
-       notify settings $ flip backupCacheMsg4 dir
-       notify settings . flip backupCacheMsg5 . size $ cache
-       okay <- optionalPrompt (mustConfirm settings)
-               (backupCacheMsg6 $ langOf settings)
+       cache <- cacheContents $ cachePathOf ss
+       notify $ flip backupCacheMsg4 dir
+       notify . flip backupCacheMsg5 . size $ cache
+       okay <- optionalPrompt (backupCacheMsg6 $ langOf ss)
        if not okay
-          then scoldAndFail settings backupCacheMsg7
+          then scoldAndFail backupCacheMsg7
           else do
-            notify settings backupCacheMsg8
-            putStrLn ""  -- So that the cursor can rise at first.
-            copyAndNotify settings dir (allFilenames cache) 1
+            notify backupCacheMsg8
+            liftIO $ putStrLn ""  -- So that the cursor can rise at first.
+            copyAndNotify dir (allFilenames cache) 1
 
 -- Manages the file copying and display of the real-time progress notifier.
-copyAndNotify :: Settings -> FilePath -> [String] -> Int -> IO ExitCode
-copyAndNotify _ _ [] _              = returnSuccess
-copyAndNotify settings dir (p:ps) n = do
-  putStr $ raiseCursorBy 1
-  warn settings (flip copyAndNotifyMsg1 n)
-  cp (cachePath </> p) (dir </> p)
-  copyAndNotify settings dir ps $ n + 1
-      where cachePath = cachePathOf settings
+copyAndNotify :: FilePath -> [String] -> Int -> Aura ()
+copyAndNotify _ [] _       = return ()
+copyAndNotify dir (p:ps) n = do
+  cachePath <- cachePathOf `liftM` ask
+  liftIO $ putStr $ raiseCursorBy 1
+  warn (flip copyAndNotifyMsg1 n)
+  liftIO $ cp (cachePath </> p) (dir </> p)
+  copyAndNotify dir ps $ n + 1
 
 -- Acts as a filter for the input to `cleanCache`.
-cleanCache :: Settings -> [String] -> IO ExitCode
-cleanCache settings [] = cleanCache' settings 0
-cleanCache settings (input:_)  -- Ignores all but first input element.
-  | all isDigit input = cleanCache' settings $ read input
-  | otherwise         = scoldAndFail settings $ flip preCleanCacheMsg1 input
+cleanCache :: [String] -> Aura ()
+cleanCache [] = cleanCache' 0
+cleanCache (input:_)  -- Ignores all but first input element.
+  | all isDigit input = cleanCache' $ read input
+  | otherwise         = scoldAndFail $ flip preCleanCacheMsg1 input
 
 -- Keeps a certain number of package files in the cache according to
 -- a number provided by the user. The rest are deleted.
-cleanCache' :: Settings -> Int -> IO ExitCode
-cleanCache' ss toSave
-    | toSave < 0  = scoldAndFail ss cleanCacheMsg1
-    | toSave == 0 = warn ss cleanCacheMsg2 >> pacman ss ["-Scc"]
-    | otherwise   = do
-        warn ss $ flip cleanCacheMsg3 toSave
-        okay <- optionalPrompt (mustConfirm ss) (cleanCacheMsg4 $ langOf ss)
+cleanCache' :: Int -> Aura ()
+cleanCache' toSave
+    | toSave < 0  = scoldAndFail cleanCacheMsg1
+    | toSave == 0 = warn cleanCacheMsg2 >> pacman ["-Scc"]
+    | otherwise   = ask >>= \ss -> do
+        warn $ flip cleanCacheMsg3 toSave
+        okay <- optionalPrompt (cleanCacheMsg4 $ langOf ss)
         if not okay
-           then scoldAndFail ss cleanCacheMsg5
+           then scoldAndFail cleanCacheMsg5
            else do
-             notify ss cleanCacheMsg6
+             notify cleanCacheMsg6
              cache <- cacheContents $ cachePathOf ss
              let files     = allFilenames cache
                  grouped   = map (take toSave . reverse) $ groupByName files
                  toRemove  = files \\ concat grouped
                  filePaths = map (cachePathOf ss </>) toRemove
-             mapM_ rm filePaths  -- Error handling?
-             returnSuccess
+             liftIO $ mapM_ rm filePaths
 
 -- Typically takes the contents of the package cache as an argument.
 groupByName :: [String] -> [[String]]
@@ -147,5 +147,5 @@ groupByName pkgs = groupBy sameBaseName $ sortPkgs pkgs
 ------------
 -- REPORTING
 ------------
-reportBadDowngradePkgs :: Language -> [String] -> IO ()
-reportBadDowngradePkgs lang ps = badReport reportBadDowngradePkgsMsg1 lang ps
+reportBadDowngradePkgs :: [String] -> Aura ()
+reportBadDowngradePkgs ps = badReport reportBadDowngradePkgsMsg1 ps

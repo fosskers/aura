@@ -1,9 +1,14 @@
 Aura Changelog
 ==============
 
-1.?.?.0
+1.1.0.0
 -------
+- New `--save` and `--restore` options.
+- New option `-Ak` for showing PKGBUILD diffs when upgrading.
 - Aura now reads `color.conf`.
+- Massive breaking API changes everywhere.
+- Aura now runs on the Aura Monad.
+- Code is quite cleaner now.
 
 1.0.8.1
 -------

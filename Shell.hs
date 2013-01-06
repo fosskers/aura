@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -102,9 +102,6 @@ hideCursorCode = csi [] "?25l"
 showCursorCode :: String
 showCursorCode = csi [] "?25h"
 
-------------------
--- COLOURED OUTPUT
-------------------
 ---------------
 -- SYSTEM CALLS
 ---------------
