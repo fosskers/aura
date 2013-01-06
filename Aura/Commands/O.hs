@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -25,18 +25,15 @@ module Aura.Commands.O
     ( displayOrphans
     , adoptPkg ) where
 
-import System.Exit (ExitCode)
-
-import Aura.General (getOrphans, (|$|))
-import Aura.Settings
-
-import Shell (returnSuccess)
+import Aura.General (getOrphans, sudo)
+import Aura.Pacman (pacman)
+import Aura.Monad.Aura
 
 ---
 
-displayOrphans :: Settings -> [String] -> IO ExitCode
-displayOrphans _ []    = getOrphans >>= mapM_ putStrLn >> returnSuccess
-displayOrphans ss pkgs = adoptPkg ss pkgs
+displayOrphans :: [String] -> Aura ()
+displayOrphans []   = getOrphans >>= liftIO . mapM_ putStrLn
+displayOrphans pkgs = adoptPkg pkgs
 
-adoptPkg :: Settings -> [String] -> IO ExitCode
-adoptPkg ss pkgs = ss |$| (pacman ss $ ["-D","--asexplicit"] ++ pkgs)
+adoptPkg :: [String] -> Aura ()
+adoptPkg pkgs = sudo (pacman $ ["-D","--asexplicit"] ++ pkgs)

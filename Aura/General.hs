@@ -177,9 +177,9 @@ getProvidingPkg' virt = do
   let (name,_) = splitNameAndVer virt
   nub `liftM` pacmanOutput ["-Ssq",name ++ "$"]
 
-------------
--- OPERATORS
-------------
+-----------
+-- THE WORK
+-----------
 -- Action won't be allowed unless user is root, or using sudo.
 sudo :: Aura () -> Aura ()
 sudo action = do
