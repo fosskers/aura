@@ -26,6 +26,7 @@ module Aura.Monad.Aura
     , runAura
     , failure
     , catch
+    , wrap
     , liftIO
     , ask ) where
 
@@ -40,6 +41,7 @@ import Aura.Settings.Base (Settings)
 return  : yields a successful value.
 failure : yields an error.
 catch   : catches an error.
+wrap    : If given an Either, rewraps it into an Aura Monad.
 (>>=)   : fails on the first error.
 liftIO  : Perform intermittent IO using `liftIO`.
 ask     : Obtain run-time settings.
@@ -63,3 +65,7 @@ failure = throwError . M
 
 catch :: Aura a -> (String -> Aura a) -> Aura a
 catch a h = catchError a (\(M m) -> h m)
+
+wrap :: Either AuraError a -> Aura a
+wrap (Left (M m)) = failure m
+wrap (Right a)    = return a

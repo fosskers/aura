@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -23,17 +23,13 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Utilities where
 
--- System Libraries
-import Distribution.Simple.Utils (withTempDirectory)
 import Control.Concurrent (threadDelay)
 import System.FilePath (dropExtension)
-import Distribution.Verbosity (silent)
 import System.IO (stdout, hFlush)
 import Data.List (dropWhileEnd)
 import Text.Regex.PCRE ((=~))
 import Text.Printf (printf)
 
--- Custom Libraries
 import Shell
 
 ---
@@ -83,11 +79,6 @@ replaceByPatt [] line = line
 replaceByPatt ((p,t):ps) line | p == m    = replaceByPatt ps (b ++ t ++ a)
                               | otherwise = replaceByPatt ps line
                          where (b,m,a) = line =~ p :: (String,String,String)
-
-withTempDir :: FilePath -> IO a -> IO a
-withTempDir name action = do
-  curr <- pwd
-  withTempDirectory silent curr name (\dir -> inDir dir action)
 
 -- Given a number of selections, allows the user to choose one.
 getSelection :: [String] -> IO String

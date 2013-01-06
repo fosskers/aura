@@ -44,51 +44,42 @@ import Zero
 
 ---
 
-type MaybePaths = Maybe [FilePath]
-
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
 installPkgFiles :: [String] -> [FilePath] -> Aura ()
 installPkgFiles pacOpts files = pacman $ ["-U"] ++ pacOpts ++ files
 
 -- All building occurs within temp directories in the package cache.
-buildPackages :: [AURPkg] -> Aura MaybePaths
-buildPackages []   = return Nothing
-buildPackages pkgs = do
-  cache <- cachePathOf `liftM` ask
-  inDir cache $ buildPackages' (Just []) pkgs
+buildPackages :: [AURPkg] -> Aura [FilePath]
+buildPackages []   = return []
+buildPackages pkgs = ask >>= \ss -> do
+  let cache = cachePathOf ss
+  result <- liftIO $ inDir cache (runAura (build [] pkgs) ss)
+  wrap result
 
--- Handles the building of Packages.
+-- Handles the building of Packages. Fails nicely.
 -- Assumed: All pacman and AUR dependencies are already installed.
-buildPackages' :: MaybePaths -> [AURPkg] -> Aura MaybePaths
-buildPackages' builtPs []          = return builtPs  -- Done recursing!
-buildPackages' builtPs pkgs@(p:ps) = do
-  notify (flip buildPackagesMsg1 $ pkgNameOf p)
---  ss <- ask
-  results <- withTempDir (pkgNameOf p) (build p)
-  case results of
-    Right pkg   -> buildPackages' ((pkg :) `fmap` builtPs) ps
-    Left errors -> buildFail builtPs pkgs errors
+build :: [FilePath] -> [AURPkg] -> Aura [FilePath]
+build built []       = return $ filter notNull built
+build built ps@(p:_) = do
+  notify (flip buildPackagesMsg1 pn)
+  (path,rest) <- catch (withTempDir pn (build' ps)) (buildFail built ps)
+  build (path : built) rest
+      where pn = pkgNameOf p
         
--- Kinda ugly.
--- Perform the actual build. Fails elegantly when build fails occur.
-build :: AURPkg -> Aura (Either ErrMsg FilePath)
-build pkg = do
+-- Perform the actual build.
+build' :: [AURPkg] -> Aura (FilePath,[AURPkg])
+build' (p:ps) = do
   ss <- ask
   let makepkg'   = if toSuppress then makepkgQuiet else makepkgVerbose
       toSuppress = suppressMakepkg ss
       user       = getTrueUser $ environmentOf ss
   curr <- liftIO pwd
-  getSourceCode (pkgNameOf pkg) user curr
-  overwritePkgbuild pkg
-  (exitStatus,pName,output) <- makepkg' user
-  if didProcessFail exitStatus
-     then return $ Left output
-     else moveToCache pName >>= \fp -> liftIO (cd curr) >> return (Right fp)
-{-
-       path <- moveToCache pkgName
-       liftIO $ cd currDir
-       return $ Right path
--}
+  getSourceCode (pkgNameOf p) user curr
+  overwritePkgbuild p
+  pName <- makepkg' user
+  path <- moveToCache pName
+  liftIO $ cd curr
+  return (path,ps)
 
 getSourceCode :: String -> String -> FilePath -> Aura ()
 getSourceCode pkgName user currDir = liftIO $ do
@@ -103,7 +94,7 @@ getSourceCode pkgName user currDir = liftIO $ do
 hotEdit :: [AURPkg] -> Aura [AURPkg]
 hotEdit pkgs = do
   ss <- ask
-  liftIO . withTempDir "hotedit" . forM pkgs $ \p -> do
+  withTempDir "hotedit" . forM pkgs $ \p -> liftIO $ do
     let msg p = checkHotEditMsg1 (langOf ss) $ pkgNameOf p               
     answer <- runAura (optionalPrompt (msg p)) ss
     if not $ fromRight answer
@@ -123,20 +114,17 @@ overwritePkgbuild p = (mayHotEdit `liftM` ask) >>= check
 
 -- Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
-buildFail :: MaybePaths -> [AURPkg] -> ErrMsg -> Aura MaybePaths
-buildFail _ [] _ = return Nothing
-buildFail builtPs (p:ps) errors = do
+buildFail :: [FilePath] -> [AURPkg] -> String -> Aura (FilePath,[AURPkg])
+buildFail _ [] _ = failure "You should never see this message."
+buildFail built (p:ps) errors = do
   ss <- ask
   let lang = langOf ss
   scold (flip buildFailMsg1 (show p))
   displayBuildErrors errors
   printList red cyan (buildFailMsg2 lang) (map pkgNameOf ps)
-  case fromJust builtPs of
-     []  -> return Nothing
-     bps -> do
-       printList yellow cyan (buildFailMsg3 lang) $ map takeFileName bps
-       response <- optionalPrompt (buildFailMsg4 lang)
-       if response then return builtPs else return Nothing
+  printList yellow cyan (buildFailMsg3 lang) $ map takeFileName built
+  response <- optionalPrompt (buildFailMsg4 lang)
+  if response then return ("",[]) else failure "Build failure."
 
 -- If the user wasn't running Aura with `-x`, then this will
 -- show them the suppressed makepkg output. 
