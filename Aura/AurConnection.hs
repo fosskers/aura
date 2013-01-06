@@ -133,8 +133,8 @@ getPkgbuildUrl :: String -> String
 getPkgbuildUrl pkg = getPkgBaseUrl pkg </> "PKGBUILD"                     
 
 -- Assumption: The package given EXISTS as an AUR package.
-downloadPkgbuild :: String -> IO Pkgbuild
-downloadPkgbuild = getUrlContents . getPkgbuildUrl
+downloadPkgbuild :: String -> Aura Pkgbuild
+downloadPkgbuild = liftIO . getUrlContents . getPkgbuildUrl
 
 -- This is more work than it needs to be.
 getTrueVerViaPkgbuild :: Pkgbuild -> String

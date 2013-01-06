@@ -21,7 +21,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Build
     ( installPkgFiles
-    , buildPackages ) where
+    , buildPackages
+    , hotEdit ) where
 
 import Control.Monad (when, unless, liftM, forM)
 import System.FilePath ((</>), takeFileName)

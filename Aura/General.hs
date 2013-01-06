@@ -150,7 +150,7 @@ makePacmanPkg pkg = makePackage PacmanPkg getInfo pkg
     where getInfo name = pacmanOutput ["-Si",name]
 
 makeAURPkg :: String -> Aura AURPkg
-makeAURPkg pkg = makePackage AURPkg (liftIO . downloadPkgbuild) pkg
+makeAURPkg pkg = makePackage AURPkg downloadPkgbuild pkg
 
 makeVirtualPkg :: String -> Aura VirtualPkg
 makeVirtualPkg pkg = makePackage VirtualPkg getProvider pkg

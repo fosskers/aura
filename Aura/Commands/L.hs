@@ -26,7 +26,6 @@ module Aura.Commands.L
     , searchLogFile
     , logInfoOnPkg ) where
 
-import System.Exit (ExitCode)
 import Text.Regex.PCRE ((=~))
 import Control.Monad (liftM)
 import Data.List ((\\))
