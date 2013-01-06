@@ -4,13 +4,11 @@ When outputing repo dependencies, show what repo they're from?
 
 Move aura to haskell-http.
 
+SINCE 1.1
+---------
+Lack of internet causes JSON errors
 Factor out the constant calls to `langOf` please!!
-
-Rework `build` to use `catchError`?
-
-RC FILE
--------
-When reading the serialized conf file, consider using `readMaybe`.
+ - optionalPrompt... where else?
 
 OPTIONS TO IMPLEMENT
 --------------------

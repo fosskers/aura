@@ -119,8 +119,13 @@ buildFail built (p:ps) errors = ask >>= \ss -> do
   displayBuildErrors errors
   printList red cyan (buildFailMsg2 lang) (map pkgNameOf ps)
   printList yellow cyan (buildFailMsg3 lang) $ map takeFileName built
-  response <- optionalPrompt (buildFailMsg4 lang)
-  if response then return ("",[]) else failure "Build failure."
+  if null built
+     then return ("",[])
+     else do
+       response <- optionalPrompt (buildFailMsg4 lang)
+       if response
+          then return ("",[])
+          else scoldAndFail buildFailMsg5
 
 -- If the user wasn't running Aura with `-x`, then this will
 -- show them the suppressed makepkg output. 

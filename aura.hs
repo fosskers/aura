@@ -67,10 +67,10 @@ main = do
   let (language,rest) = parseLanguageFlag args
       (auraFlags,input,pacOpts) = parseFlags language rest
       auraFlags' = filter (`notElem` settingsFlags) auraFlags
-      pacOpts'   = pacOpts ++ reconvertFlags auraFlags dualFlagMap
+      pacOpts'   = nub $ pacOpts ++ reconvertFlags auraFlags dualFlagMap
   settings <- getSettings language auraFlags
   unless (Debug `notElem` auraFlags) $ debugOutput settings
-  result <- runAura (executeOpts (auraFlags',nub input,nub pacOpts')) settings
+  result <- runAura (executeOpts (auraFlags',nub input,pacOpts')) settings
   case result of
     Left e  -> putStrLn (getErrorMsg e) >> (exitWith $ ExitFailure 1)
     Right _ -> exitWith ExitSuccess
@@ -80,7 +80,7 @@ main = do
 -- below will work properly.
 executeOpts :: ([Flag],[String],[String]) -> Aura ()
 executeOpts ([],[],[]) = executeOpts ([Help],[],[])
-executeOpts (flags,input,pacOpts) = ask >>= \ss -> do
+executeOpts (flags,input,pacOpts) = do
   case sort flags of
     (AURInstall:fs) ->
         case fs of
@@ -103,7 +103,7 @@ executeOpts (flags,input,pacOpts) = ask >>= \ss -> do
           badFlags -> scoldAndFail executeOptsMsg1
     (LogFile:fs) ->
         case fs of
-          []       -> L.viewLogFile $ logFilePathOf ss
+          []       -> ask >>= L.viewLogFile . logFilePathOf
           [Search] -> L.searchLogFile input
           [Info]   -> L.logInfoOnPkg input
           badFlags -> scoldAndFail executeOptsMsg1

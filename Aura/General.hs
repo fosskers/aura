@@ -253,8 +253,10 @@ warn msg = colouredMessage yellow msg
 scold :: (Language -> String) -> Aura ()
 scold msg = colouredMessage red msg
 
-scoldAndFail :: (Language -> String) -> Aura ()
-scoldAndFail msg = renderColour red msg >>= failure
+scoldAndFail :: (Language -> String) -> Aura a
+scoldAndFail msg = do
+  lang <- langOf `liftM` ask
+  failure . putStrA' red . msg $ lang
 
 badReport :: (Language -> String) -> [String] -> Aura ()
 badReport _ []     = return ()

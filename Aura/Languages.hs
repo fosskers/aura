@@ -220,6 +220,18 @@ buildFailMsg4 Portuguese = "Gostaria de instalá-los?"
 buildFailMsg4 French     = "Voulez-vous les installer ?"
 buildFailMsg4 Russian    = "Желаете ли вы их установить?"
 
+buildFailMsg5 :: Language -> String
+buildFailMsg5 English    = "Building failed."
+buildFailMsg5 Japanese   = "パッケージ作成は失敗した。"
+buildFailMsg5 Polish     = "Budowanie nie powiodło się."
+buildFailMsg5 Croatian   = "Izgradnja nije uspjela."
+buildFailMsg5 Swedish    = "Gick inte att bygga paket."
+buildFailMsg5 German     = "Bauen fehlgeschlagen."
+buildFailMsg5 Spanish    = "La construcción falló."
+buildFailMsg5 Portuguese = "Falha na compilação."
+buildFailMsg5 French     = "Construction ratée."
+buildFailMsg5 Russian    = "Сборка не удалась."
+
 displayBuildErrorsMsg1 :: Language -> String
 displayBuildErrorsMsg1 English    = "Dumping makepkg output in "
 displayBuildErrorsMsg1 Japanese   = "抑えていたmakepkgの出力を受け取る用意・・・"
@@ -415,18 +427,6 @@ installPackagesMsg5 Spanish    = "Determinando dependencias..."
 installPackagesMsg5 Portuguese = "Determinando as dependências..."
 installPackagesMsg5 French     = "Détermination des dépendances en cours…"
 installPackagesMsg5 Russian    = "Определение зависимостей..."
-
-installPackagesMsg6 :: Language -> String
-installPackagesMsg6 English    = "Building failed."
-installPackagesMsg6 Japanese   = "パッケージ作成は失敗した。"
-installPackagesMsg6 Polish     = "Budowanie nie powiodło się."
-installPackagesMsg6 Croatian   = "Izgradnja nije uspjela."
-installPackagesMsg6 Swedish    = "Gick inte att bygga paket."
-installPackagesMsg6 German     = "Bauen fehlgeschlagen."
-installPackagesMsg6 Spanish    = "La construcción falló."
-installPackagesMsg6 Portuguese = "Falha na compilação."
-installPackagesMsg6 French     = "Construction ratée."
-installPackagesMsg6 Russian    = "Сборка не удалась."
 
 reportNonPackagesMsg1 :: Language -> String
 reportNonPackagesMsg1 English    = "The following are not packages:"
