@@ -31,7 +31,7 @@ import Text.Regex.PCRE ((=~))
 import Control.Monad (liftM)
 
 import Aura.Shell (shellCmd, quietShellCmd, quietShellCmd')
-import Aura.Settings.Definition (pacmanCmdOf)
+import Aura.Settings.Base (pacmanCmdOf)
 import Aura.Monad.Aura
 import Aura.Cache
 

@@ -25,9 +25,9 @@ module Aura.Settings.Enable
 
 import System.Environment (getEnvironment)
 
-import Aura.Languages (Language)
-import Aura.Settings.Definition
 import Aura.Colour.PacmanColorConf
+import Aura.Languages (Language)
+import Aura.Settings.Base
 import Aura.Pacman
 import Aura.Flags
 

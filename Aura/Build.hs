@@ -1,6 +1,6 @@
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -19,20 +19,25 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Build where
+module Aura.Build
+    ( installPkgFiles
+    , buildPackages ) where
 
-import System.Exit (ExitCode(..))
-import Control.Monad (when, unless)
-import Data.Maybe (fromJust)
+import Control.Monad (when, unless, liftM, forM)
 import System.FilePath ((</>), takeFileName)
+import System.Exit (ExitCode(..))
+import Data.Maybe (fromJust)
 
 import Aura.AurConnection (downloadSource)
 import Aura.Colour.TextColouring
+import Aura.Pacman (pacman)
+import Aura.Settings.Base
+import Aura.Monad.Aura
 import Aura.Languages
-import Aura.Settings
 import Aura.General
 import Aura.MakePkg
 import Aura.Utils
+
 import Utilities
 import Shell
 import Zero
@@ -42,46 +47,51 @@ import Zero
 type MaybePaths = Maybe [FilePath]
 
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
-installPkgFiles :: Settings -> [String] -> [FilePath] -> IO ExitCode
-installPkgFiles ss pacOpts files = pacman ss $ ["-U"] ++ pacOpts ++ files
+installPkgFiles :: [String] -> [FilePath] -> Aura ()
+installPkgFiles pacOpts files = pacman $ ["-U"] ++ pacOpts ++ files
 
 -- All building occurs within temp directories in the package cache.
-buildPackages :: Settings -> [AURPkg] -> IO MaybePaths
-buildPackages _ [] = return Nothing
-buildPackages ss pkgs = inDir cache $ buildPackages' ss (Just []) pkgs
-    where cache = cachePathOf ss
+buildPackages :: [AURPkg] -> Aura MaybePaths
+buildPackages []   = return Nothing
+buildPackages pkgs = do
+  cache <- cachePathOf `liftM` ask
+  inDir cache $ buildPackages' (Just []) pkgs
 
 -- Handles the building of Packages.
 -- Assumed: All pacman and AUR dependencies are already installed.
-buildPackages' :: Settings -> MaybePaths -> [AURPkg] -> IO MaybePaths
-buildPackages' _ builtPs [] = return builtPs  -- Done recursing!
-buildPackages' settings builtPs pkgs@(p:ps) = do
-  notify settings (flip buildPackagesMsg1 $ pkgNameOf p)
-  results <- withTempDir (pkgNameOf p) (build settings p)
+buildPackages' :: MaybePaths -> [AURPkg] -> Aura MaybePaths
+buildPackages' builtPs []          = return builtPs  -- Done recursing!
+buildPackages' builtPs pkgs@(p:ps) = do
+  notify (flip buildPackagesMsg1 $ pkgNameOf p)
+--  ss <- ask
+  results <- withTempDir (pkgNameOf p) (build p)
   case results of
-    Right pkg   -> buildPackages' settings ((pkg :) `fmap` builtPs) ps
-    Left errors -> buildFail settings builtPs pkgs errors
+    Right pkg   -> buildPackages' ((pkg :) `fmap` builtPs) ps
+    Left errors -> buildFail builtPs pkgs errors
         
 -- Kinda ugly.
 -- Perform the actual build. Fails elegantly when build fails occur.
-build :: Settings -> AURPkg -> IO (Either ErrMsg FilePath)
-build ss pkg = do
-  currDir <- pwd
-  getSourceCode (pkgNameOf pkg) user currDir
-  when (mayHotEdit ss) $ overwritePB pkg
-  (exitStatus,pkgName,output) <- makepkg' user
+build :: AURPkg -> Aura (Either ErrMsg FilePath)
+build pkg = do
+  ss <- ask
+  let makepkg'   = if toSuppress then makepkgQuiet else makepkgVerbose
+      toSuppress = suppressMakepkg ss
+      user       = getTrueUser $ environmentOf ss
+  curr <- liftIO pwd
+  getSourceCode (pkgNameOf pkg) user curr
+  overwritePkgbuild pkg
+  (exitStatus,pName,output) <- makepkg' user
   if didProcessFail exitStatus
      then return $ Left output
-     else do
-       path <- moveToCache (cachePathOf ss) pkgName
-       cd currDir
+     else moveToCache pName >>= \fp -> liftIO (cd curr) >> return (Right fp)
+{-
+       path <- moveToCache pkgName
+       liftIO $ cd currDir
        return $ Right path
-    where makepkg'   = if toSuppress then makepkgQuiet else makepkgVerbose
-          toSuppress = suppressMakepkg ss
-          user       = getTrueUser $ environmentOf ss
+-}
 
-getSourceCode :: String -> String -> FilePath -> IO ()
-getSourceCode pkgName user currDir = do
+getSourceCode :: String -> String -> FilePath -> Aura ()
+getSourceCode pkgName user currDir = liftIO $ do
   chown user currDir []
   tarball   <- downloadSource currDir pkgName
   sourceDir <- decompress tarball
@@ -89,46 +99,60 @@ getSourceCode pkgName user currDir = do
   cd sourceDir
 
 -- Allow the user to edit the PKGBUILD if they asked to do so.
-hotEdit :: Settings -> [AURPkg] -> IO [AURPkg]
-hotEdit ss pkgs = withTempDir "hotedit" . flip mapM pkgs $ \p -> do
-  answer <- optionalPrompt (mustConfirm ss) (msg p)
-  if not answer
-     then return p
-     else do
-       let filename = pkgNameOf p ++ "-PKGBUILD"
-       writeFile filename $ pkgbuildOf p
-       openEditor editor filename
-       new <- readFile filename
-       return $ AURPkg (pkgNameOf p) (versionOf p) new
-    where msg p  = checkHotEditMsg1 (langOf ss) $ pkgNameOf p
-          editor = getEditor $ environmentOf ss
+-- Ugly. Aura Monad within IO Monad within Aura Monad.
+hotEdit :: [AURPkg] -> Aura [AURPkg]
+hotEdit pkgs = do
+  ss <- ask
+  liftIO . withTempDir "hotedit" . forM pkgs $ \p -> do
+    let msg p = checkHotEditMsg1 (langOf ss) $ pkgNameOf p               
+    answer <- runAura (optionalPrompt (msg p)) ss
+    if not $ fromRight answer
+       then return p
+       else do
+         let filename = pkgNameOf p ++ "-PKGBUILD"
+             editor   = getEditor $ environmentOf ss
+         writeFile filename $ pkgbuildOf p
+         openEditor editor filename
+         new <- readFile filename
+         return $ AURPkg (pkgNameOf p) (versionOf p) new
 
-overwritePB :: AURPkg -> IO ()
-overwritePB pkg = writeFile "PKGBUILD" $ pkgbuildOf pkg
+overwritePkgbuild :: AURPkg -> Aura ()
+overwritePkgbuild p = (mayHotEdit `liftM` ask) >>= check
+    where check True  = liftIO . writeFile "PKGBUILD" . pkgbuildOf $ p
+          check False = return ()
 
 -- Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
--- BUG: This prompting ignores `--noconfirm`.
-buildFail :: Settings -> MaybePaths -> [AURPkg] -> ErrMsg -> IO MaybePaths
-buildFail _ _ [] _ = return Nothing
-buildFail settings builtPs (p:ps) errors = do
-  scold settings (flip buildFailMsg1 (show p))
-  when (suppressMakepkg settings) (displayBuildErrors settings errors)
-  unless (null ps) $ printList red cyan (buildFailMsg2 lang) (map pkgNameOf ps)
-  (return $ fromJust builtPs) ?>>= \bps -> do
-      printList yellow cyan (buildFailMsg3 lang) $ map takeFileName bps
-      yesNoPrompt (buildFailMsg4 lang) ?>> return builtPs
-    where lang = langOf settings
+buildFail :: MaybePaths -> [AURPkg] -> ErrMsg -> Aura MaybePaths
+buildFail _ [] _ = return Nothing
+buildFail builtPs (p:ps) errors = do
+  ss <- ask
+  let lang = langOf ss
+  scold (flip buildFailMsg1 (show p))
+  displayBuildErrors errors
+  printList red cyan (buildFailMsg2 lang) (map pkgNameOf ps)
+  case fromJust builtPs of
+     []  -> return Nothing
+     bps -> do
+       printList yellow cyan (buildFailMsg3 lang) $ map takeFileName bps
+       response <- optionalPrompt (buildFailMsg4 lang)
+       if response then return builtPs else return Nothing
 
 -- If the user wasn't running Aura with `-x`, then this will
 -- show them the suppressed makepkg output. 
-displayBuildErrors :: Settings -> ErrMsg -> IO ()
-displayBuildErrors settings errors = do
-  putStrA red (displayBuildErrorsMsg1 $ langOf settings)
-  timedMessage 1000000 ["3.. ","2.. ","1..\n"]
-  putStrLn errors
+displayBuildErrors :: ErrMsg -> Aura ()
+displayBuildErrors errors = do
+  settings <- ask
+  if not $ suppressMakepkg settings
+     then return ()  -- User has already seen the output.
+     else do
+       putStrA red (displayBuildErrorsMsg1 $ langOf settings)
+       liftIO $ (timedMessage 1000000 ["3.. ","2.. ","1..\n"] >>
+                 putStrLn errors)
 
 -- Moves a file to the pacman package cache and returns its location.
-moveToCache :: FilePath -> FilePath -> IO FilePath
-moveToCache cachePath pkg = mv pkg newName >> return newName
-    where newName = cachePath </> pkg
+moveToCache :: FilePath -> Aura FilePath
+moveToCache pkg = do
+  newName <- ((</> pkg) . cachePathOf) `liftM` ask
+  liftIO (mv pkg newName)
+  return newName

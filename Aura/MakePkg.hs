@@ -1,6 +1,8 @@
+-- Interface to `makepkg`.
+
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -21,37 +23,41 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.MakePkg where
 
--- System Libraries
 import Text.Regex.PCRE ((=~))
 import System.Exit (ExitCode)
 
--- Custom Libraries
-import Shell
+import Aura.Monad.Aura
+import Aura.Shell (shellCmd, quietShellCmd', checkExitCode')
 
-makepkg :: String -> IO (ExitCode,FilePath,String)
+import Shell (pwd, ls)
+
+---
+
+makepkg :: String -> Aura String
 makepkg = makepkgQuiet
 
 -- This should to be used as non-root.
 -- Building packages as root IS NOT safe!
-makepkgGen :: (String -> [String] -> IO (ExitCode,String,String)) ->
-              String -> IO (ExitCode,FilePath,String)
+makepkgGen :: (String -> [String] -> Aura String) -> String -> Aura String
 makepkgGen f user = do
-  (exitStatus,out,err) <- f command opts
-  contents <- pwd >>= ls
-  let pkgFiles = filter (\file -> (file =~ ".pkg.tar")) contents
-      pkgName  = if null pkgFiles then "" else head pkgFiles
-  return $ (exitStatus,pkgName,err ++ "\n" ++ out)
+  output <- f command opts
+  files  <- liftIO (pwd >>= ls)
+  let pkgFiles = filter (\file -> (file =~ ".pkg.tar")) files
+  return $ if null pkgFiles then "" else head pkgFiles
       where (command,opts) = determineRunStyle user
 
 determineRunStyle :: String -> (String,[String])
 determineRunStyle "root" = ("makepkg",["--asroot"])
 determineRunStyle user   = ("su",[user,"-c","makepkg"])
 
-makepkgQuiet :: String -> IO (ExitCode,FilePath,String)
-makepkgQuiet user = makepkgGen quietShellCmd' user
+makepkgQuiet :: String -> Aura String
+makepkgQuiet user = makepkgGen quiet user
+    where quiet cmd opts = do
+            (status,out,err) <- quietShellCmd' cmd opts
+            let output = err ++ "\n" ++ out
+            checkExitCode' output status
+            return output
 
-makepkgVerbose :: String -> IO (ExitCode,FilePath,String)
-makepkgVerbose user = makepkgGen shellCmd' user
-    where shellCmd' cmd opts = do
-            exitStatus <- shellCmd cmd opts
-            return (exitStatus,"","")
+makepkgVerbose :: String -> Aura String
+makepkgVerbose user = makepkgGen verbose user
+    where verbose cmd opts = shellCmd cmd opts >> return ""

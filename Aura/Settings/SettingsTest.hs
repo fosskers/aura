@@ -1,8 +1,10 @@
 module Aura.Settings.SettingsTest ( sampleSettings ) where
 
 import Aura.Colour.TextColouring
+import Aura.Settings.Base
 import Aura.Languages
-import Aura.Settings.Definition
+
+---
 
 sampleSettings :: Settings
 sampleSettings = Settings { environmentOf = undefined

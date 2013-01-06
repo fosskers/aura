@@ -28,6 +28,7 @@ import Text.Regex.PCRE ((=~))
 import Data.List (sortBy)
 import Data.Char (isDigit)
 
+import Aura.Settings.Base (mustConfirm)
 import Aura.Colour.TextColouring
 import Aura.Monad.Aura
 
@@ -67,9 +68,10 @@ yesNoPrompt msg = do
   response <- liftIO getLine
   return $ response =~ "y|Y|\\B"
 
-optionalPrompt :: Bool -> String -> Aura Bool
-optionalPrompt True msg = yesNoPrompt msg
-optionalPrompt False _  = return True
+optionalPrompt :: String -> Aura Bool
+optionalPrompt msg = ask >>= check
+    where check ss | mustConfirm ss = yesNoPrompt msg
+                   | otherwise      = return True
 
 -------
 -- MISC

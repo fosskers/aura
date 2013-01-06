@@ -28,7 +28,7 @@ import Control.Monad (liftM)
 import Data.Maybe (fromJust)
 
 import Aura.Colour.TextColouring
-import Aura.Settings.Definition
+import Aura.Settings.Base
 import Aura.AurConnection
 import Aura.Monad.Aura
 import Aura.Languages
@@ -195,7 +195,7 @@ trueRoot action = do
   if isntTrueRoot $ environmentOf ss
      then action
      else do
-       okay <- optionalPrompt (mustConfirm ss) (trueRootMsg1 $ langOf ss)
+       okay <- optionalPrompt (trueRootMsg1 $ langOf ss)
        if okay
           then action
           else notify trueRootMsg2

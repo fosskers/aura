@@ -19,7 +19,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Settings.Definition ( Settings(..) ) where
+module Aura.Settings.Base ( Settings(..) ) where
 
 import Aura.Colour.TextColouring (Colouror)
 import Aura.Languages (Language)

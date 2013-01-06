@@ -4,6 +4,10 @@ When outputing repo dependencies, show what repo they're from?
 
 Move aura to haskell-http.
 
+Factor out the constant calls to `langOf` please!!
+
+Rework `build` to use `catchError`?
+
 RC FILE
 -------
 When reading the serialized conf file, consider using `readMaybe`.

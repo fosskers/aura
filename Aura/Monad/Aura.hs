@@ -25,19 +25,21 @@ module Aura.Monad.Aura
     ( Aura
     , runAura
     , failure
+    , catch
     , liftIO
     , ask ) where
 
 import Control.Monad.Reader
 import Control.Monad.Error
 
-import Aura.Settings.Definition (Settings)
+import Aura.Settings.Base (Settings)
 
 ---
 
 {- The Aura Monad. Functions of note:
 return  : yields a successful value.
 failure : yields an error.
+catch   : catches an error.
 (>>=)   : fails on the first error.
 liftIO  : Perform intermittent IO using `liftIO`.
 ask     : Obtain run-time settings.
@@ -58,3 +60,6 @@ runAura a ss = runReaderT (runErrorT (runA a)) ss
 
 failure :: String -> Aura a
 failure = throwError . M
+
+catch :: Aura a -> (String -> Aura a) -> Aura a
+catch a h = catchError a (\(M m) -> h m)
