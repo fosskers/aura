@@ -24,10 +24,8 @@ module Aura.Build
     , buildPackages
     , hotEdit ) where
 
-import Control.Monad (when, unless, liftM, forM)
 import System.FilePath ((</>), takeFileName)
-import System.Exit (ExitCode(..))
-import Data.Maybe (fromJust)
+import Control.Monad (liftM, forM)
 
 import Aura.AurConnection (downloadSource)
 import Aura.Colour.TextColouring
@@ -41,7 +39,6 @@ import Aura.Utils
 
 import Utilities
 import Shell
-import Zero
 
 ---
 
@@ -69,6 +66,7 @@ build built ps@(p:_) = do
         
 -- Perform the actual build.
 build' :: [AURPkg] -> Aura (FilePath,[AURPkg])
+build' []     = failure "build' : You should never see this."
 build' (p:ps) = ask >>= \ss -> do
   let makepkg'   = if toSuppress then makepkgQuiet else makepkgVerbose
       toSuppress = suppressMakepkg ss
@@ -77,7 +75,7 @@ build' (p:ps) = ask >>= \ss -> do
   getSourceCode (pkgNameOf p) user curr
   overwritePkgbuild p
   pName <- makepkg' user
-  path <- moveToCache pName
+  path  <- moveToCache pName
   liftIO $ cd curr
   return (path,ps)
 
@@ -94,7 +92,7 @@ getSourceCode pkgName user currDir = liftIO $ do
 hotEdit :: [AURPkg] -> Aura [AURPkg]
 hotEdit pkgs = ask >>= \ss -> do
   withTempDir "hotedit" . forM pkgs $ \p -> liftIO $ do
-    let msg p = checkHotEditMsg1 (langOf ss) $ pkgNameOf p               
+    let msg = checkHotEditMsg1 (langOf ss) . pkgNameOf
     answer <- runAura (optionalPrompt (msg p)) ss
     if not $ fromRight answer
        then return p
@@ -114,7 +112,7 @@ overwritePkgbuild p = (mayHotEdit `liftM` ask) >>= check
 -- Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
 buildFail :: [FilePath] -> [AURPkg] -> String -> Aura (FilePath,[AURPkg])
-buildFail _ [] _ = failure "You should never see this message."
+buildFail _ [] _ = failure "buildFail : You should never see this message."
 buildFail built (p:ps) errors = ask >>= \ss -> do
   let lang = langOf ss
   scold (flip buildFailMsg1 (show p))

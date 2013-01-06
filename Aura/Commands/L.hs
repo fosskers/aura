@@ -38,7 +38,6 @@ import Aura.Monad.Aura
 import Aura.Languages
 
 import Utilities (searchLines)
-import Zero
 
 ---
 

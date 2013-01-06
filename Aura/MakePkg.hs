@@ -24,7 +24,6 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.MakePkg where
 
 import Text.Regex.PCRE ((=~))
-import System.Exit (ExitCode)
 
 import Aura.Monad.Aura
 import Aura.Shell (shellCmd, quietShellCmd', checkExitCode')
@@ -33,14 +32,11 @@ import Shell (pwd, ls)
 
 ---
 
-makepkg :: String -> Aura String
-makepkg = makepkgQuiet
-
 -- This should to be used as non-root.
 -- Building packages as root IS NOT safe!
-makepkgGen :: (String -> [String] -> Aura String) -> String -> Aura String
+makepkgGen :: (String -> [String] -> Aura a) -> String -> Aura FilePath
 makepkgGen f user = do
-  output <- f command opts
+  _ <- f command opts
   files  <- liftIO (pwd >>= ls)
   let pkgFiles = filter (\file -> (file =~ ".pkg.tar")) files
   return $ if null pkgFiles then "" else head pkgFiles
@@ -50,14 +46,13 @@ determineRunStyle :: String -> (String,[String])
 determineRunStyle "root" = ("makepkg",["--asroot"])
 determineRunStyle user   = ("su",[user,"-c","makepkg"])
 
-makepkgQuiet :: String -> Aura String
+makepkgQuiet :: String -> Aura FilePath
 makepkgQuiet user = makepkgGen quiet user
     where quiet cmd opts = do
             (status,out,err) <- quietShellCmd' cmd opts
             let output = err ++ "\n" ++ out
             checkExitCode' output status
-            return output
 
-makepkgVerbose :: String -> Aura String
+makepkgVerbose :: String -> Aura FilePath
 makepkgVerbose user = makepkgGen verbose user
-    where verbose cmd opts = shellCmd cmd opts >> return ""
+    where verbose cmd opts = shellCmd cmd opts

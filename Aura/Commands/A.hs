@@ -23,10 +23,9 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Commands.A where
 
-import Control.Monad (when, unless, liftM)
+import Control.Monad (unless, liftM)
 import Data.List ((\\), nub, sort)
 import Text.Regex.PCRE ((=~))
-import Data.Maybe (fromJust)
 
 import Aura.Colour.TextColouring
 import Aura.Pacman (pacman)
@@ -40,9 +39,7 @@ import Aura.General
 import Aura.Build
 import Aura.Utils
 
-import Utilities (fromRight)
 import Shell
-import Zero
 
 ---
 

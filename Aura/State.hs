@@ -25,7 +25,6 @@ module Aura.State where
 
 import qualified Data.Map.Lazy as M
 import System.FilePath ((</>))
-import System.Exit (ExitCode)
 import Data.Maybe (catMaybes)
 import Control.Monad (liftM,unless)
 import Data.List (partition)
@@ -41,8 +40,7 @@ import Aura.Cache
 import Aura.Time
 
 import Utilities (getSelection)
-import Shell (ls',returnSuccess)
-import Zero ((?>>))
+import Shell (ls')
 
 ---
 

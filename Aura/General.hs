@@ -22,10 +22,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.General where
 
 import Data.List ((\\), nub, intersperse)
-import System.Exit (ExitCode(..))
 import Text.Regex.PCRE ((=~))
 import Control.Monad (liftM)
-import Data.Maybe (fromJust)
 
 import Aura.Colour.TextColouring
 import Aura.Settings.Base
@@ -37,7 +35,6 @@ import Aura.Utils
 
 import Utilities
 import Shell
-import Zero
 
 ---
 
@@ -260,7 +257,7 @@ scoldAndFail :: (Language -> String) -> Aura ()
 scoldAndFail msg = renderColour red msg >>= failure
 
 badReport :: (Language -> String) -> [String] -> Aura ()
-badReport msg []   = return ()
+badReport _ []     = return ()
 badReport msg pkgs = ask >>= \ss -> printList red cyan (msg $ langOf ss) pkgs
 
 divideByPkgType :: [String] -> Aura ([String],[String],[String])

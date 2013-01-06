@@ -50,7 +50,6 @@ import Aura.Logo
 
 import Utilities (replaceByPatt)
 import Shell hiding (shellCmd)
-import Zero
 
 import qualified Aura.Commands.A as A
 import qualified Aura.Commands.C as C
@@ -73,7 +72,7 @@ main = do
   unless (Debug `notElem` auraFlags) $ debugOutput settings
   result <- runAura (executeOpts (auraFlags',nub input,nub pacOpts')) settings
   case result of
-    Left e  -> putStrLn "NOOO!" >> (exitWith $ ExitFailure 1)
+    Left e  -> putStrLn (getErrorMsg e) >> (exitWith $ ExitFailure 1)
     Right _ -> exitWith ExitSuccess
 
 -- After determining what Flag was given, dispatches a function.

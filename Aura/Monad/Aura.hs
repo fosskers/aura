@@ -27,6 +27,7 @@ module Aura.Monad.Aura
     , failure
     , catch
     , wrap
+    , getErrorMsg
     , liftIO
     , ask ) where
 
@@ -51,10 +52,10 @@ newtype Aura a = A { runA :: ErrorT AuraError (ReaderT Settings IO) a }
     deriving (Monad, MonadError AuraError, MonadReader Settings, MonadIO)
 
 -- This needs to be expanded.
-data AuraError = E | M String deriving (Eq,Show)
+data AuraError = M String deriving (Eq,Show)
 
 instance Error AuraError where
-    noMsg  = E
+    noMsg  = M "No error message given."
     strMsg = M
 
 runAura :: Aura a -> Settings -> IO (Either AuraError a)
@@ -69,3 +70,6 @@ catch a h = catchError a (\(M m) -> h m)
 wrap :: Either AuraError a -> Aura a
 wrap (Left (M m)) = failure m
 wrap (Right a)    = return a
+
+getErrorMsg :: AuraError -> String
+getErrorMsg (M s) = s

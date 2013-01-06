@@ -25,7 +25,6 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Pacman where
 
 import System.Directory (doesFileExist)
-import System.Exit (ExitCode(..))
 import System.IO (hFlush, stdout)
 import Text.Regex.PCRE ((=~))
 import Control.Monad (liftM)
@@ -96,10 +95,6 @@ pacman args = do
   liftIO (hFlush stdout)
   shellCmd cmd args
 
--- Runs pacman without producing any output.
---pacmanQuiet :: [ShellArg] -> Aura String
---pacmanQuiet args = quietShellCmd "pacman" args
-
 -- Did a pacman process succeed?
 pacmanSuccess :: [ShellArg] -> Aura Bool
 pacmanSuccess args = success `liftM` quietShellCmd' "pacman" args
@@ -113,7 +108,7 @@ syncDatabase :: [ShellArg] -> Aura ()
 syncDatabase pacOpts = pacman $ ["-Sy"] ++ pacOpts
 
 getPacmanHelpMsg :: Aura [String]
-getPacmanHelpMsg = lines `liftM` pacmanOutput ["-h"] 
+getPacmanHelpMsg = lines `liftM` pacmanOutput ["-h"]
 
 -- Yields the lines given by `pacman -V` with the pacman image stripped.
 getVersionInfo :: Aura [String]

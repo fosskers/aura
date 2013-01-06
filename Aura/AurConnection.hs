@@ -85,6 +85,7 @@ aurInfoLookup :: [String] -> Aura [PkgInfo]
 aurInfoLookup pkgs = getAURPkgInfo pkgs MultiInfo
 
 getAURPkgInfo :: [String] -> RPCType -> Aura [PkgInfo]
+getAURPkgInfo [] _    = return []
 getAURPkgInfo items t = do
   infoJSON <- liftIO . getUrlContents . makeRPCUrl t $ items
   case resultToEither $ parseInfoJSON infoJSON of
