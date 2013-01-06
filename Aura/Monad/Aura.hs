@@ -56,5 +56,5 @@ instance Error AuraError where
 runAura :: Aura a -> Settings -> IO (Either AuraError a)
 runAura a ss = runReaderT (runErrorT (runA a)) ss
 
-failure :: String -> Aura ()
+failure :: String -> Aura a
 failure = throwError . M

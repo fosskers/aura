@@ -1,6 +1,6 @@
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -28,14 +28,18 @@ import Control.Monad (liftM)
 import Data.Maybe (fromJust)
 
 import Aura.Colour.TextColouring
+import Aura.Settings.Definition
 import Aura.AurConnection
+import Aura.Monad.Aura
 import Aura.Languages
-import Aura.Settings
 import Aura.Pacman
 import Aura.Utils
+
 import Utilities
 import Shell
 import Zero
+
+---
 
 --------
 -- TYPES
@@ -135,35 +139,40 @@ parseNameAndVersionDemand pkg = (name, getVersionDemand comp ver)
 -- Constructs anything of the Package type.
 makePackage :: Package a =>
                (String -> VersionDemand -> t -> a)
-               -> (String -> IO t)
+               -> (String -> Aura t)
                -> String
-               -> IO a
+               -> Aura a
 makePackage typeCon thirdField pkg = typeCon name ver `liftM` thirdField name
     where (name,ver) = parseNameAndVersionDemand pkg
 
-makePacmanPkg :: String -> IO PacmanPkg
+makePacmanPkg :: String -> Aura PacmanPkg
 makePacmanPkg pkg = makePackage PacmanPkg getInfo pkg
     where getInfo name = pacmanOutput ["-Si",name]
 
-makeAURPkg :: String -> IO AURPkg
-makeAURPkg pkg = makePackage AURPkg downloadPkgbuild pkg
+makeAURPkg :: String -> Aura AURPkg
+makeAURPkg pkg = makePackage AURPkg (liftIO . downloadPkgbuild) pkg
 
-makeVirtualPkg :: String -> IO VirtualPkg
+makeVirtualPkg :: String -> Aura VirtualPkg
 makeVirtualPkg pkg = makePackage VirtualPkg getProvider pkg
-    where getProvider n =
-            getProvidingPkg n ?>>= (Just `liftM`) . makePacmanPkg . fromJust
+    where getProvider n = do
+            provider <- getProvidingPkg n
+            case provider of
+              Nothing -> return Nothing
+              Just p  -> Just `liftM` makePacmanPkg p
 
 -- Yields a virtual package's providing package if there is one.
-getProvidingPkg :: String -> IO (Maybe String)
+getProvidingPkg :: String -> Aura (Maybe String)
 getProvidingPkg virt = do
   candidates <- getProvidingPkg' virt
   let lined = lines candidates
-  return (length lined == 1) ?>> (return . Just . head $ lined)
+  if length lined /= 1
+     then return Nothing
+     else return . Just . head $ lined
 
 -- Unsafe version.
 -- Only use on virtual packages that have guaranteed providers.
 -- Adding "$" to the pkg name (technically a regex) fixes a bug.
-getProvidingPkg' :: String -> IO String
+getProvidingPkg' :: String -> Aura String
 getProvidingPkg' virt = do
   let (name,_) = splitNameAndVer virt
   nub `liftM` pacmanOutput ["-Ssq",name ++ "$"]
@@ -171,29 +180,27 @@ getProvidingPkg' virt = do
 ------------
 -- OPERATORS
 ------------
--- IO action won't be allowed unless user is root, or using [$]udo.
-(|$|) :: Settings -> IO ExitCode -> IO ExitCode
-settings |$| action = mustBeRoot settings action
+-- Action won't be allowed unless user is root, or using sudo.
+sudo :: Aura () -> Aura ()
+sudo action = do
+  hasPerms <- (hasRootPriv . environmentOf) `liftM` ask
+  if hasPerms
+     then action
+     else scoldAndFail mustBeRootMsg1
 
-mustBeRoot :: Settings -> IO ExitCode -> IO ExitCode
-mustBeRoot settings action
-  | hasRootPriv $ environmentOf settings = action
-  | otherwise = scoldAndFail settings mustBeRootMsg1
+-- Prompt if the user is the true Root. Building as it can be dangerous.
+trueRoot :: Aura () -> Aura ()
+trueRoot action = do
+  ss <- ask
+  if isntTrueRoot $ environmentOf ss
+     then action
+     else do
+       okay <- optionalPrompt (mustConfirm ss) (trueRootMsg1 $ langOf ss)
+       if okay
+          then action
+          else notify trueRootMsg2
 
--- Prompt if the user is the [+]rue Root. This can be dangerous.
-(|+|) :: Settings -> IO ExitCode -> IO ExitCode
-settings |+| action = trueRootCheck settings action
-
-trueRootCheck :: Settings -> IO ExitCode -> IO ExitCode
-trueRootCheck ss action
-    | isntTrueRoot $ environmentOf ss = action
-    | otherwise = do
-    okay <- optionalPrompt (mustConfirm ss) (trueRootCheckMsg1 $ langOf ss)
-    if okay
-       then action
-       else notify ss trueRootCheckMsg2 >> returnSuccess
-
-getForeignPackages :: IO [(String,String)]
+getForeignPackages :: Aura [(String,String)]
 getForeignPackages = map fixName `liftM` lines `liftM` pacmanOutput ["-Qm"]
     where fixName = hardBreak (== ' ')
 
@@ -205,14 +212,14 @@ isntMostRecent (info,v) = trueVer > currVer
 isIgnored :: String -> [String] -> Bool
 isIgnored pkg toIgnore = pkg `elem` toIgnore
 
-isInstalled :: String -> IO Bool
+isInstalled :: String -> Aura Bool
 isInstalled pkg = pacmanSuccess ["-Qq",pkg]
 
 -- Beautiful.
-filterAURPkgs :: [String] -> IO [String]
-filterAURPkgs pkgs = aurInfoLookup pkgs ?>>= return . map nameOf . fromRight
+filterAURPkgs :: [String] -> Aura [String]
+filterAURPkgs pkgs = map nameOf `liftM` aurInfoLookup pkgs
 
-filterRepoPkgs :: [String] -> IO [String]
+filterRepoPkgs :: [String] -> Aura [String]
 filterRepoPkgs pkgs = do
   repoPkgs <- pacmanOutput ["-Ssq",pkgs']
   return . filter (`elem` pkgs) . lines $ repoPkgs
@@ -222,38 +229,42 @@ filterRepoPkgs pkgs = do
           specs (c:cs) | c `elem` "+" = ['[',c,']'] ++ specs cs
                        | otherwise    = c : specs cs
 
-getOrphans :: IO [String]
+getOrphans :: Aura [String]
 getOrphans = lines `liftM` pacmanOutput ["-Qqdt"]
 
-removePkgs :: Settings -> [String] -> [String] -> IO ExitCode
-removePkgs _ [] _          = returnSuccess
-removePkgs ss pkgs pacOpts = pacman ss $ ["-Rsu"] ++ pkgs ++ pacOpts
+removePkgs :: [String] -> [String] -> Aura ()
+removePkgs [] _         = return ()
+removePkgs pkgs pacOpts = pacman  $ ["-Rsu"] ++ pkgs ++ pacOpts
 
 -------
 -- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`
 -------
-colouredMessage :: Colouror -> Settings -> (Language -> String) -> IO ()
-colouredMessage c settings msg = putStrLnA c . msg . langOf $ settings
+colouredMessage :: Colouror -> (Language -> String) -> Aura ()
+colouredMessage c msg = ask >>= putStrLnA c . msg . langOf
 
-say :: Settings -> (Language -> String) -> IO ()
-say settings msg = colouredMessage noColour settings msg
+renderColour :: Colouror -> (Language -> String) -> Aura String
+renderColour c msg = ask >>= return . c . msg . langOf
 
-notify :: Settings -> (Language -> String) -> IO ()
-notify settings msg = colouredMessage green settings msg
+say :: (Language -> String) -> Aura ()
+say msg = colouredMessage noColour msg
 
-warn :: Settings -> (Language -> String) -> IO ()
-warn settings msg = colouredMessage yellow settings msg
+notify :: (Language -> String) -> Aura ()
+notify msg = colouredMessage green msg
 
-scold :: Settings -> (Language -> String) -> IO ()
-scold settings msg = colouredMessage red settings msg
+warn :: (Language -> String) -> Aura ()
+warn msg = colouredMessage yellow msg
 
-scoldAndFail :: Settings -> (Language -> String) -> IO ExitCode
-scoldAndFail settings msg = scold settings msg >> return (ExitFailure 1)
+scold :: (Language -> String) -> Aura ()
+scold msg = colouredMessage red msg
 
-badReport :: (Language -> String) -> Language -> [String] -> IO ()
-badReport m lang pkgs = return pkgs ?>> printList red cyan (m lang) pkgs
+scoldAndFail :: (Language -> String) -> Aura ()
+scoldAndFail msg = renderColour red msg >>= failure
 
-divideByPkgType :: [String] -> IO ([String],[String],[String])
+badReport :: (Language -> String) -> [String] -> Aura ()
+badReport msg []   = return ()
+badReport msg pkgs = ask >>= \ss -> printList red cyan (msg $ langOf ss) pkgs
+
+divideByPkgType :: [String] -> Aura ([String],[String],[String])
 divideByPkgType pkgs = do
   repoPkgNames <- filterRepoPkgs namesOnly
   aurPkgNames  <- filterAURPkgs $ namesOnly \\ repoPkgNames

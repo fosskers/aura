@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -29,37 +29,45 @@ import Data.List (sortBy)
 import Data.Char (isDigit)
 
 import Aura.Colour.TextColouring
+import Aura.Monad.Aura
 
 ---
 
 ----------------
 -- CUSTOM OUTPUT
 ----------------
-putStrLnA :: Colouror -> String -> IO ()
+putStrLnA :: Colouror -> String -> Aura ()
 putStrLnA colour s = putStrA colour $ s ++ "\n"
 
-putStrA :: Colouror -> String -> IO ()
-putStrA colour s = putStr $ "aura >>= " ++ colour s
+putStrLnA' :: Colouror -> String -> String
+putStrLnA' colour s = putStrA' colour s ++ "\n"
 
-printList :: Colouror -> Colouror -> String -> [String] -> IO ()
-printList _ _ _ [] = return ()
-printList titleColour itemColour msg items = do
-  putStrLnA titleColour msg
-  mapM_ (putStrLn . itemColour) items
-  putStrLn ""
+putStrA :: Colouror -> String -> Aura ()
+putStrA colour = liftIO . putStr . putStrA' colour
+
+putStrA' :: Colouror -> String -> String
+putStrA' colour s = "aura >>= " ++ colour s
+
+printList :: Colouror -> Colouror -> String -> [String] -> Aura ()
+printList _ _ _ []        = return ()
+printList tc ic msg items = liftIO . putStrLn . printList' tc ic msg $ items
+
+printList' :: Colouror -> Colouror -> String -> [String] -> String
+printList' tc ic m is = putStrLnA' tc m ++ colouredItems
+    where colouredItems = is >>= \i -> ic i ++ "\n"
 
 ----------
 -- PROMPTS
 ----------
 -- Takes a prompt message and a regex of valid answer patterns.
-yesNoPrompt :: String -> IO Bool
+yesNoPrompt :: String -> Aura Bool
 yesNoPrompt msg = do
   putStrA yellow $ msg ++ " [Y/n] "
-  hFlush stdout
-  response <- getLine
-  return (response =~ "y|Y|\\B" :: Bool)
+  liftIO $ hFlush stdout
+  response <- liftIO getLine
+  return $ response =~ "y|Y|\\B"
 
-optionalPrompt :: Bool -> String -> IO Bool
+optionalPrompt :: Bool -> String -> Aura Bool
 optionalPrompt True msg = yesNoPrompt msg
 optionalPrompt False _  = return True
 

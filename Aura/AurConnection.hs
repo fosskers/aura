@@ -3,7 +3,7 @@
 
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -31,12 +31,12 @@ module Aura.AurConnection
     , Pkgbuild
     , PkgInfo(..) ) where
 
--- System Libaries
 import System.FilePath ((</>))
 import Data.Maybe (fromJust)
 import Text.JSON
 
--- Custom Libraries
+import Aura.Monad.Aura
+
 import Internet
 import Bash
 
@@ -69,28 +69,28 @@ rpcType t = ("type",tname)
 -- JSON
 -------
 -- Extend this later as needed.
-data PkgInfo = PkgInfo { nameOf :: String
-                       , latestVerOf :: String
-                       , isOutOfDate :: Bool
-                       , projectURLOf :: String
-                       , aurURLOf :: String
-                       , licenseOf :: String
-                       , votesOf :: Int
-                       , descriptionOf :: String
-                       } deriving (Eq,Show)
+data PkgInfo = PkgInfo { nameOf        :: String
+                       , latestVerOf   :: String
+                       , isOutOfDate   :: Bool
+                       , projectURLOf  :: String
+                       , aurURLOf      :: String
+                       , licenseOf     :: String
+                       , votesOf       :: Int
+                       , descriptionOf :: String } deriving (Eq,Show)
 
-aurSearchLookup :: [String] -> IO (Either String [PkgInfo])
+aurSearchLookup :: [String] -> Aura [PkgInfo]
 aurSearchLookup regex = getAURPkgInfo regex PkgSearch
 
-aurInfoLookup :: [String] -> IO (Either String [PkgInfo])
+aurInfoLookup :: [String] -> Aura [PkgInfo]
 aurInfoLookup pkgs = getAURPkgInfo pkgs MultiInfo
 
-getAURPkgInfo :: [String] -> RPCType -> IO (Either String [PkgInfo])
+getAURPkgInfo :: [String] -> RPCType -> Aura [PkgInfo]
 getAURPkgInfo items t = do
-  infoJSON <- getUrlContents $ makeRPCUrl t items
-  return . resultToEither . parseInfoJSON $ infoJSON
+  infoJSON <- liftIO . getUrlContents . makeRPCUrl t $ items
+  case resultToEither $ parseInfoJSON infoJSON of
+    Left e     -> failure e
+    Right info -> return info
 
--- Monads rock my world.
 parseInfoJSON :: String -> Result [PkgInfo]
 parseInfoJSON json = decode json >>= apiFailCheck >>= forgePkgInfo
     where forgePkgInfo j = valFromObj "results" j >>= mapM makePkgInfo
