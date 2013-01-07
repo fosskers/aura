@@ -64,6 +64,11 @@ printList' :: Colouror -> Colouror -> String -> [String] -> String
 printList' tc ic m is = putStrLnA' tc m ++ colouredItems
     where colouredItems = is >>= \i -> ic i ++ "\n"
 
+scoldAndFail :: (Language -> String) -> Aura a
+scoldAndFail msg = do
+  lang <- langOf `liftM` ask
+  failure . putStrA' red . msg $ lang
+
 ----------
 -- PROMPTS
 ----------

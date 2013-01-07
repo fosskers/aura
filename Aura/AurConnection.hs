@@ -35,7 +35,9 @@ import System.FilePath ((</>))
 import Data.Maybe (fromJust)
 import Text.JSON
 
+import Aura.Utils (scoldAndFail)
 import Aura.Monad.Aura
+import Aura.Languages
 
 import Internet
 import Bash
@@ -89,7 +91,7 @@ getAURPkgInfo [] _    = return []
 getAURPkgInfo items t = do
   infoJSON <- liftIO . getUrlContents . makeRPCUrl t $ items
   case resultToEither $ parseInfoJSON infoJSON of
-    Left e     -> failure e
+    Left _     -> scoldAndFail getAURPkgInfoMsg1
     Right info -> return info
 
 parseInfoJSON :: String -> Result [PkgInfo]

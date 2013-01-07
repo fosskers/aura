@@ -244,7 +244,7 @@ displayBuildErrorsMsg1 Portuguese = "Despejando a saída do makepkg em "
 displayBuildErrorsMsg1 French     = "Redirection de la sortie de makepkg dans "
 displayBuildErrorsMsg1 Russian    = "Вывод makepkg записывается в "
 
--- This needs updating.
+-- Is this still used?
 getDepsToInstallMsg1 :: Language -> String
 getDepsToInstallMsg1 English    = "No AUR packages specified for install, or no internet connection."
 getDepsToInstallMsg1 Japanese   = "パッケージは一つも指摘されていないか、インタネットに繋がっていない。"
@@ -257,7 +257,6 @@ getDepsToInstallMsg1 Portuguese = "Nenhum pacote AUR foi especificado para insta
 getDepsToInstallMsg1 French     = "Aucun paquet AUR n'a été spécifié pour l'installation."
 getDepsToInstallMsg1 Russian    = "Пакеты AUR для установки не указаны."
 
--- Is there anyway for the French line to be shorter? -> Is that better now? -> Yes thank you @Jiehong
 getRealPkgConflictsMsg1 :: Language -> String -> String -> String -> String
 getRealPkgConflictsMsg1 English    p r d = "The dependency " ++ bt p ++ " demands version " ++ bt d ++ "but the most recent version is " ++ bt r ++ "."
 getRealPkgConflictsMsg1 Japanese   p r d = "パッケージ" ++ bt p ++ "はバージョン" ++ bt d ++ "を要するが" ++ "一番最新のバージョンは" ++ bt r ++ "。"
@@ -954,6 +953,10 @@ orpha Russian    = blue "Совершить действия с участием
 --------------------------
 -- AurConnection functions
 --------------------------
+getAURPkgInfoMsg1 :: Language -> String
+getAURPkgInfoMsg1 Japanese = "AURのAPIに繋げなかった。ネット接続状態を確認して下さい。"
+getAURPkgInfoMsg1 _        = "AUR API lookup failed. Please check your connection."
+
 infoFields :: Language -> [String]
 infoFields English    = [ "Repository","Name","Version","AUR Status","Project URL","AUR URL","License", "Votes","Description" ]
 infoFields Japanese   = [ "リポジトリ","名前","バージョン","パッケージ状態","プロジェクト","パッケージページ","ライセンス","投票数","概要" ]

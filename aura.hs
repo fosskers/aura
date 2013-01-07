@@ -46,6 +46,7 @@ import Aura.Languages
 import Aura.General
 import Aura.Pacman
 import Aura.Flags
+import Aura.Utils
 import Aura.Logo
 
 import Utilities (replaceByPatt)

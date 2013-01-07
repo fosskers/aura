@@ -4,14 +4,6 @@ When outputing repo dependencies, show what repo they're from?
 
 Move aura to haskell-http.
 
-Add a `known to fail` message for packages like dwarffortress.
-
-SINCE 1.1
----------
-Lack of internet causes JSON errors
-Factor out the constant calls to `langOf` please!!
- - optionalPrompt... where else?
-
 OPTIONS TO IMPLEMENT
 --------------------
 - `Ci` `info` -> Gives some stats about the package cache.
