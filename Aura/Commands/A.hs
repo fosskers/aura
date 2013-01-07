@@ -48,7 +48,6 @@ installPackages _ []         = return ()
 installPackages pacOpts pkgs = ask >>= \ss -> do
   let toInstall = pkgs \\ ignoredPkgsOf ss
       ignored   = pkgs \\ toInstall
-      lang      = langOf ss
   reportIgnoredPackages ignored
   (repo,aur,nons) <- knownBadPkgCheck toInstall >>= divideByPkgType
   reportNonPackages nons
@@ -58,7 +57,7 @@ installPackages pacOpts pkgs = ask >>= \ss -> do
   let repoPkgs    = nub $ repoDeps ++ repo
       pkgsAndOpts = pacOpts ++ repoPkgs
   reportPkgsToInstall repoPkgs aurDeps aurPkgs
-  okay <- optionalPrompt (installPackagesMsg3 lang)
+  okay <- optionalPrompt installPackagesMsg3
   if not okay
      then scoldAndFail installPackagesMsg4
      else do
@@ -75,8 +74,8 @@ knownBadPkgCheck (p:ps) = ask >>= \ss -> do
     Nothing -> (p :) `liftM` knownBadPkgCheck ps
     Just r  -> do
       scold $ flip knownBadPkgCheckMsg1 p
-      putStrLnA cyan r
-      okay <- optionalPrompt (knownBadPkgCheckMsg2 $ langOf ss)
+      putStrLnA yellow r
+      okay <- optionalPrompt knownBadPkgCheckMsg2
       if okay then (p :) `liftM` knownBadPkgCheck ps else knownBadPkgCheck ps
 
 depCheckFailure :: String -> Aura a

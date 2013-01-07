@@ -92,7 +92,7 @@ getSourceCode pkgName user currDir = liftIO $ do
 hotEdit :: [AURPkg] -> Aura [AURPkg]
 hotEdit pkgs = ask >>= \ss -> do
   withTempDir "hotedit" . forM pkgs $ \p -> liftIO $ do
-    let msg = checkHotEditMsg1 (langOf ss) . pkgNameOf
+    let msg = flip checkHotEditMsg1 . pkgNameOf
     answer <- runAura (optionalPrompt (msg p)) ss
     if not $ fromRight answer
        then return p
@@ -122,7 +122,7 @@ buildFail built (p:ps) errors = ask >>= \ss -> do
   if null built
      then return ("",[])
      else do
-       response <- optionalPrompt (buildFailMsg4 lang)
+       response <- optionalPrompt buildFailMsg4
        if response
           then return ("",[])
           else scoldAndFail buildFailMsg5

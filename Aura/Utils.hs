@@ -27,11 +27,13 @@ import Distribution.Simple.Utils (withTempDirectory)
 import Distribution.Verbosity (silent)
 import System.IO (stdout, hFlush)
 import Text.Regex.PCRE ((=~))
-import Data.List (sortBy)
+import Control.Monad (liftM)
 import Data.Char (isDigit)
+import Data.List (sortBy)
 
-import Aura.Settings.Base (mustConfirm)
+import Aura.Settings.Base (mustConfirm, langOf)
 import Aura.Colour.TextColouring
+import Aura.Languages (Language)
 import Aura.Monad.Aura
 
 import Utilities (inDir)
@@ -66,14 +68,15 @@ printList' tc ic m is = putStrLnA' tc m ++ colouredItems
 -- PROMPTS
 ----------
 -- Takes a prompt message and a regex of valid answer patterns.
-yesNoPrompt :: String -> Aura Bool
+yesNoPrompt :: (Language -> String) -> Aura Bool
 yesNoPrompt msg = do
-  putStrA yellow $ msg ++ " [Y/n] "
+  lang <- langOf `liftM` ask
+  putStrA yellow $ msg lang ++ " [Y/n] "
   liftIO $ hFlush stdout
   response <- liftIO getLine
   return $ response =~ "y|Y|\\B"
 
-optionalPrompt :: String -> Aura Bool
+optionalPrompt :: (Language -> String) -> Aura Bool
 optionalPrompt msg = ask >>= check
     where check ss | mustConfirm ss = yesNoPrompt msg
                    | otherwise      = return True

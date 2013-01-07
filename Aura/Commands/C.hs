@@ -93,7 +93,7 @@ backupCache (dir:_) = ask >>= \ss -> do
        cache <- cacheContents $ cachePathOf ss
        notify $ flip backupCacheMsg4 dir
        notify . flip backupCacheMsg5 . size $ cache
-       okay <- optionalPrompt (backupCacheMsg6 $ langOf ss)
+       okay <- optionalPrompt backupCacheMsg6
        if not okay
           then scoldAndFail backupCacheMsg7
           else do
@@ -126,7 +126,7 @@ cleanCache' toSave
     | toSave == 0 = warn cleanCacheMsg2 >> pacman ["-Scc"]
     | otherwise   = ask >>= \ss -> do
         warn $ flip cleanCacheMsg3 toSave
-        okay <- optionalPrompt (cleanCacheMsg4 $ langOf ss)
+        okay <- optionalPrompt cleanCacheMsg4
         if not okay
            then scoldAndFail cleanCacheMsg5
            else do

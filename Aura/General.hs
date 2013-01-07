@@ -191,7 +191,7 @@ trueRoot action = ask >>= \ss -> do
   if isntTrueRoot $ environmentOf ss
      then action
      else do
-       okay <- optionalPrompt (trueRootMsg1 $ langOf ss)
+       okay <- optionalPrompt trueRootMsg1
        if okay
           then action
           else notify trueRootMsg2
