@@ -7,7 +7,8 @@ _aura()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     opts="--languages --noconfirm --conf -A -C -L -O \
-          --aursync --downgrade --viewlog --orphans"
+          --aursync --downgrade --viewlog --orphans  \
+          --save --restore"
 
     case ${prev} in
 	-A|--aursync)
