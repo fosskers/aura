@@ -29,8 +29,8 @@ build-type:          Simple
 cabal-version:       >=1.8
 
 extra-source-files:  aura.8,
-                     bashcompletion.sh,
-                     _aura
+                     completions/bashcompletion.sh,
+                     completions/_aura
 
 source-repository head
   type:     git

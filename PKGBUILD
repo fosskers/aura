@@ -13,7 +13,7 @@ depends=('gmp' 'pacman' 'ghc' 'haskell-regex-base' 'haskell-regex-pcre'
 optdepends=('pacman-color: For coloured pacman output in Aura.')
 options=('strip')
 source=(https://bitbucket.org/fosskers/aura/downloads/${_hkgname}-${pkgver}.tar.gz)
-md5sums=('753cb6c66d6917a5472da87919361619')
+md5sums=('e2abb29e7720c83b3858e84731fdd77c')
 build() {
     cd ${srcdir}/${_hkgname}-${pkgver}
     runhaskell Setup configure --prefix=/usr --docdir=/usr/share/doc/${pkgname} -O
