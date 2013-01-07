@@ -67,7 +67,7 @@ main = do
   args <- getArgs
   let (language,rest) = parseLanguageFlag args
       (auraFlags,input,pacOpts) = parseFlags language rest
-      auraFlags' = filter (`notElem` settingsFlags) auraFlags
+      auraFlags' = filterSettingsFlags auraFlags
       pacOpts'   = nub $ pacOpts ++ reconvertFlags auraFlags dualFlagMap
   settings <- getSettings language auraFlags
   unless (Debug `notElem` auraFlags) $ debugOutput settings

@@ -46,7 +46,8 @@ getSettings lang auraFlags = do
                     , langOf          = lang
                     , pacmanCmdOf     = pmanCommand
                     , editorOf        = getEditor environment
-                    , ignoredPkgsOf   = getIgnoredPkgs confFile
+                    , ignoredPkgsOf   = getIgnoredPkgs confFile ++
+                                        getIgnoredAuraPkgs auraFlags
                     , wontBuildOf     = getBadPackages lang
                     , cachePathOf     = getCachePath confFile
                     , logFilePathOf   = getLogFilePath confFile

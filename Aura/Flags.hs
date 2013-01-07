@@ -30,16 +30,20 @@ module Aura.Flags
     , getConfirmation
     , getHotEdit
     , getDiffStatus
+    , filterSettingsFlags
+    , getIgnoredAuraPkgs
     , auraOperMsg
     , Flag(..) ) where
 
--- System Libraries
 import System.Console.GetOpt
 
--- Custom Libraries
-import Utilities (notNull)
+
 import Aura.Colour.TextColouring (yellow)
 import Aura.Languages
+
+import Utilities (notNull, split)
+
+---
 
 type FlagMap = [(Flag,String)]
 
@@ -58,6 +62,7 @@ data Flag = AURInstall
           | Unsuppress
           | HotEdit
           | NoConfirm
+          | Ignore String
           | DiffPkgbuilds
           | Debug
           | Backup
@@ -97,7 +102,8 @@ auraOperations lang =
     , Option ['O'] ["orphans"]   (NoArg Orphans)    (orpha lang) ]
 
 auraOptions :: [OptDescr Flag]
-auraOptions = map simpleMakeOption
+auraOptions = (Option [] ["aurignore"] (ReqArg Ignore "") "") :
+              map simpleMakeOption
               [ ( ['a'], ["delmakedeps"],  DelMDeps      )
               , ( ['b'], ["backup"],       Backup        )
               , ( ['c'], ["clean"],        Clean         )
@@ -166,11 +172,15 @@ reconvertFlag :: FlagMap -> Flag -> String
 reconvertFlag flagMap f = case f `lookup` flagMap of
                             Nothing -> ""
                             Just x  -> x
--- This is wrong somehow. Why?
---reconvertFlag flagMap f = return (f `lookup` flagMap) ?>>= fromJust
 
 settingsFlags :: [Flag]
 settingsFlags = [Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug]
+
+filterSettingsFlags :: [Flag] -> [Flag]
+filterSettingsFlags []              = []
+filterSettingsFlags ((Ignore _):fs) = filterSettingsFlags fs
+filterSettingsFlags (f:fs) | f `elem` settingsFlags = filterSettingsFlags fs
+                           | otherwise = f : filterSettingsFlags fs
 
 auraOperMsg :: Language -> String
 auraOperMsg lang = usageInfo (yellow $ auraOperTitle lang) $ auraOperations lang
@@ -190,6 +200,11 @@ getLanguage = fishOutFlag flagsAndResults english
                             , RussianOut ]
           langFuns        = [ japanese,polish,croatian,swedish,german
                             , spanish,portuguese,french,russian ]
+
+getIgnoredAuraPkgs :: [Flag] -> [String]
+getIgnoredAuraPkgs [] = []
+getIgnoredAuraPkgs ((Ignore ps):_) = split ',' ps
+getIgnoredAuraPkgs (_:fs) = getIgnoredAuraPkgs fs
 
 getSuppression :: [Flag] -> Bool
 getSuppression = fishOutFlag [(Unsuppress,False)] True

@@ -246,8 +246,8 @@ displayBuildErrorsMsg1 Russian    = "Вывод makepkg записывается
 
 -- Is this still used?
 getDepsToInstallMsg1 :: Language -> String
-getDepsToInstallMsg1 English    = "No AUR packages specified for install, or no internet connection."
-getDepsToInstallMsg1 Japanese   = "パッケージは一つも指摘されていないか、インタネットに繋がっていない。"
+getDepsToInstallMsg1 English    = "No AUR packages specified for install."
+getDepsToInstallMsg1 Japanese   = "パッケージは一つも指摘されていない。"
 getDepsToInstallMsg1 Polish     = "Nie podano pakietów z AUR do zainstalowania."
 getDepsToInstallMsg1 Croatian   = "Nijedan AUR paket nije specificiran za instalaciju."
 getDepsToInstallMsg1 Swedish    = "Inga AUR-paket är valda för installation."
