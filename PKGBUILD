@@ -2,7 +2,7 @@
 _hkgname=aura
 pkgname=aura
 pkgver=1.1.0.0
-pkgrel=1
+pkgrel=3
 pkgdesc="A package manager for Arch Linux and the AUR written in Haskell."
 url="https://github.com/fosskers/aura"
 license=('GPL-3')
@@ -13,7 +13,7 @@ depends=('gmp' 'pacman' 'ghc' 'haskell-regex-base' 'haskell-regex-pcre'
 optdepends=('pacman-color: For coloured pacman output in Aura.')
 options=('strip')
 source=(https://bitbucket.org/fosskers/aura/downloads/${_hkgname}-${pkgver}.tar.gz)
-md5sums=('453645a80866deb4f5a022a306489f86')
+md5sums=('34150f4e4c00018237668c2d13491d2a')
 build() {
     cd ${srcdir}/${_hkgname}-${pkgver}
     runhaskell Setup configure --prefix=/usr --docdir=/usr/share/doc/${pkgname} -O
@@ -25,11 +25,11 @@ build() {
 
     # Installing bash completions
     mkdir -p "$pkgdir/usr/share/bash-completion/completions/"
-    install -m 644 bashcompletion.sh "$pkgdir/usr/share/bash-completion/completions/aura"
+    install -m 644 completions/bashcompletion.sh "$pkgdir/usr/share/bash-completion/completions/aura"
 
     # Installing zsh completions
     mkdir -p "$pkgdir/usr/share/zsh/site-functions/"
-    install -m 644 _aura "$pkgdir/usr/share/zsh/site-functions/_aura"
+    install -m 644 completions/_aura "$pkgdir/usr/share/zsh/site-functions/_aura"
 
     # Directory for storing PKGBUILDs
     mkdir -p "$pkgdir/var/cache/aura/pkgbuilds"
