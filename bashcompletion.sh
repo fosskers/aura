@@ -14,7 +14,8 @@ _aura()
 	-A|--aursync)
 	    opts="-a --delmakedeps -d --deps -k --diff -i --info \
                   -p --pkgbuild -s --search -u --sysupgrade      \
-                  -d --downloadonly -x --unsuppress --hotedit"
+                  -d --downloadonly -x --unsuppress --hotedit    \
+                  --aurignore="
 	    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
 	    return 0
 	    ;;

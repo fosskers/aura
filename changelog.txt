@@ -5,6 +5,7 @@ Aura Changelog
 -------
 - New `--save` and `--restore` options.
 - New option `-Ak` for showing PKGBUILD diffs when upgrading.
+- New option `--aurignore` for ignoring AUR packages.
 - Aura now reads `color.conf`.
 - Massive breaking API changes everywhere.
 - Aura now runs on the Aura Monad.

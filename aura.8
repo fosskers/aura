@@ -118,6 +118,15 @@ isn't used, \fImakepkg\fR output is actually collected and printed
 if any errors occur.
 .RE
 .P
+\-\-aurignore=<package>(,<package>,...)
+.RS 4
+Ignore the given packages when installing and upgrading. \fIMust\fR be run
+like:
+.RS 6
+"aura -A foo --aurignore=bar" or "aura -A foo --aurignore=bar,baz,biff"
+.RE
+.RE
+.P
 \-\-hotedit
 .RS 4
 Prompt the user immediately before dependency checks to ask if they
@@ -203,6 +212,11 @@ Stores a record of all currently installed packages and their versions.
 Restores a record kept with \fI\-\-save\fR. Attempts to downgrade any
 packages that were upgraded since the chosen save. Will remove any
 that weren't installed at the time.
+.RE
+.P
+\-\-auradebug
+.RS 4
+Display settings information when running aura.
 .RE
 .P
 \-\-viewconf
