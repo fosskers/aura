@@ -87,7 +87,7 @@ Store a record of all installed packages:
 
 Restore a saved record. Rolls back and uninstalls packages as necessary :
 
-   aura --restore
+    aura --restore
 
 #### Installing Packages
 Install an AUR package:
