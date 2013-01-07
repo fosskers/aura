@@ -428,6 +428,14 @@ installPackagesMsg5 Portuguese = "Determinando as dependências..."
 installPackagesMsg5 French     = "Détermination des dépendances en cours…"
 installPackagesMsg5 Russian    = "Определение зависимостей..."
 
+knownBadPkgCheckMsg1 :: Language -> String -> String
+knownBadPkgCheckMsg1 Japanese p = bt p ++ "の作成は失敗すると知られている。理由："
+knownBadPkgCheckMsg1 _        p = bt p ++ " is known to fail at building. Reason:"
+
+knownBadPkgCheckMsg2 :: Language -> String
+knownBadPkgCheckMsg2 Japanese = "それでもやってみる？"
+knownBadPkgCheckMsg2 _        = "Will you try anyway?"
+
 reportNonPackagesMsg1 :: Language -> String
 reportNonPackagesMsg1 English    = "The following are not packages:"
 reportNonPackagesMsg1 Japanese   = "下記はパッケージではない："

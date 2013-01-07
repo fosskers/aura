@@ -23,7 +23,7 @@ module Aura.Settings.BadPackages where
 
 import Aura.Languages
 
-data Reason = R String
+type Reason = String
 
 -- These packages fail to build for various reasons.
 getBadPackages :: Language -> [(String,Reason)]
@@ -36,17 +36,7 @@ getBadPackages lang = [ ( "dwarffortress-ironhand", cond lang )
                       , ( "mcedit", circDep lang "pymclevel"  ) ]
 
 cond :: Language -> Reason
-cond = R . condMsg1
+cond = condMsg1
 
 circDep :: Language -> String -> Reason
-circDep l s = R $ circDepMsg1 l s
-
-getReason :: Reason -> String
-getReason (R s) = s
-
-wontBuildCheck :: [String] -> [(String,Reason)] -> [String]
-wontBuildCheck [] rs     = []
-wontBuildCheck (p:ps) rs =
-    case p `lookup` rs of
-      Nothing -> wontBuildCheck ps rs
-      Just r  -> (p ++ " : " ++ getReason r) : wontBuildCheck ps rs
+circDep = circDepMsg1
