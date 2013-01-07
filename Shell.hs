@@ -45,8 +45,7 @@ import System.Directory ( getDirectoryContents
                         , renameFile
                         , copyFile )
 
--- Custom Libraries
-import Zero
+---
 
 ----------------------
 -- SYSTEM CALL ALIASES
@@ -126,12 +125,6 @@ didProcessSucceed _           = False
 
 didProcessFail :: ExitCode -> Bool
 didProcessFail = not . didProcessSucceed
-
-returnSuccess :: IO ExitCode
-returnSuccess = return ExitSuccess
-
-returnFailure :: IO ExitCode
-returnFailure = return zero
 
 ------------------------
 -- ENVIRONMENT VARIABLES
