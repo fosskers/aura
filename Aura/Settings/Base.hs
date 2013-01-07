@@ -22,6 +22,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Settings.Base ( Settings(..) ) where
 
 import Aura.Colour.TextColouring (Colouror)
+import Aura.Settings.BadPackages (Reason)
 import Aura.Languages (Language)
 
 import Shell (Environment)
@@ -34,6 +35,7 @@ data Settings = Settings { environmentOf   :: Environment
                          , pacmanCmdOf     :: String
                          , editorOf        :: String
                          , ignoredPkgsOf   :: [String]
+                         , wontBuildOf     :: [(String,Reason)]
                          , cachePathOf     :: FilePath
                          , logFilePathOf   :: FilePath
                          , suppressMakepkg :: Bool

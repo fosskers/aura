@@ -4,6 +4,8 @@ When outputing repo dependencies, show what repo they're from?
 
 Move aura to haskell-http.
 
+Add a `known to fail` message for packages like dwarffortress.
+
 SINCE 1.1
 ---------
 Lack of internet causes JSON errors

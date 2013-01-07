@@ -26,6 +26,7 @@ module Aura.Settings.Enable
 import System.Environment (getEnvironment)
 
 import Aura.Colour.PacmanColorConf
+import Aura.Settings.BadPackages
 import Aura.Languages (Language)
 import Aura.Settings.Base
 import Aura.Pacman
@@ -46,6 +47,7 @@ getSettings lang auraFlags = do
                     , pacmanCmdOf     = pmanCommand
                     , editorOf        = getEditor environment
                     , ignoredPkgsOf   = getIgnoredPkgs confFile
+                    , wontBuildOf     = getBadPackages lang
                     , cachePathOf     = getCachePath confFile
                     , logFilePathOf   = getLogFilePath confFile
                     , suppressMakepkg = getSuppression auraFlags

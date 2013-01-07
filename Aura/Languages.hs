@@ -990,3 +990,14 @@ restoreStateMsg1 _        = "Requested downgrade versions not available for:"
 downgradeAndRemoveMsg1 :: Language -> String
 downgradeAndRemoveMsg1 Japanese = "パッケージを変更する必要ない。"
 downgradeAndRemoveMsg1 _        = "No packages need changing."
+
+------------------------
+-- BadPackages functions
+------------------------
+condMsg1 :: Language -> String
+condMsg1 Japanese = "アーキテクチャーによる従属パッケージあり。"
+condMsg1 _        = "Conditional dependencies based on architecture."
+
+circDepMsg1 :: Language -> String -> String
+circDepMsg1 Japanese p = bt p ++ "と互いに従属している。"
+circDepMsg1 _        p = "Has a circular dependency with " ++ bt p ++ "."
