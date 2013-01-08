@@ -25,12 +25,15 @@ module Aura.Logo where
 
 -- System Libraries
 import Control.Concurrent (threadDelay)
-import System.IO (stdout, hFlush)
+import System.IO          (stdout, hFlush)
 
 -- Custom Libraries
-import Aura.Colour.TextColouring (yellow)
-import Shell (cursorUpLineCode)
-import Utilities (prePad)
+import Aura.Colour.Text (yellow)
+
+import Utilities        (prePad)
+import Shell            (cursorUpLineCode)
+
+---
 
 data MouthState = Open | Closed deriving (Eq)
 

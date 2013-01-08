@@ -27,12 +27,12 @@ module Aura.Commands.L
     , logInfoOnPkg ) where
 
 import Text.Regex.PCRE ((=~))
-import Control.Monad (liftM)
-import Data.List ((\\))
+import Control.Monad   (liftM)
+import Data.List       ((\\))
 
-import Aura.Colour.TextColouring (yellow)
-import Aura.General (badReport, entrify)
-import Aura.Shell (shellCmd)
+import Aura.Colour.Text (yellow)
+import Aura.General     (badReport, entrify)
+import Aura.Shell       (shellCmd)
 import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages

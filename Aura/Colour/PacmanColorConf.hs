@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -26,10 +26,10 @@ module Aura.Colour.PacmanColorConf
     , ColourSettings(..) ) where
 
 import System.Directory (doesFileExist)
-import Data.Maybe (catMaybes)
+import Data.Maybe       (catMaybes)
 
-import Aura.Colour.TextColouring
 import Aura.Colour.Parser
+import Aura.Colour.Text
 
 ---
 

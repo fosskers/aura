@@ -24,15 +24,16 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.State where
 
 import qualified Data.Map.Lazy as M
-import System.FilePath ((</>))
-import Data.Maybe (catMaybes)
-import Control.Monad (liftM,unless)
-import Data.List (partition)
 
-import Aura.Colour.TextColouring (cyan,red)
-import Aura.Utils (comparableVer,printList)
-import Aura.Pacman (pacmanOutput, pacman)
-import Aura.General (warn)
+import System.FilePath ((</>))
+import Control.Monad   (liftM, unless)
+import Data.Maybe      (catMaybes)
+import Data.List       (partition)
+
+import Aura.Colour.Text (cyan, red)
+import Aura.General     (warn)
+import Aura.Pacman      (pacmanOutput, pacman)
+import Aura.Utils       (comparableVer,printList)
 import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages
@@ -40,7 +41,7 @@ import Aura.Cache
 import Aura.Time
 
 import Utilities (getSelection)
-import Shell (ls')
+import Shell     (ls')
 
 ---
 

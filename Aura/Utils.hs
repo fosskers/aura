@@ -24,20 +24,20 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Utils where
 
 import Distribution.Simple.Utils (withTempDirectory)
-import Distribution.Verbosity (silent)
-import System.IO (stdout, hFlush)
-import Text.Regex.PCRE ((=~))
-import Control.Monad (liftM)
-import Data.Char (isDigit)
-import Data.List (sortBy)
+import Distribution.Verbosity    (silent)
+import Text.Regex.PCRE           ((=~))
+import Control.Monad             (liftM)
+import System.IO                 (stdout, hFlush)
+import Data.Char                 (isDigit)
+import Data.List                 (sortBy)
 
 import Aura.Settings.Base (mustConfirm, langOf)
-import Aura.Colour.TextColouring
-import Aura.Languages (Language)
+import Aura.Languages     (Language)
+import Aura.Colour.Text
 import Aura.Monad.Aura
 
 import Utilities (inDir)
-import Shell (pwd)
+import Shell     (pwd)
 
 ---
 

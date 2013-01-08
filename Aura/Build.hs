@@ -25,12 +25,12 @@ module Aura.Build
     , hotEdit ) where
 
 import System.FilePath ((</>), takeFileName)
-import Control.Monad (liftM, forM)
+import Control.Monad   (liftM, forM)
 
 import Aura.AurConnection (downloadSource)
-import Aura.Colour.TextColouring
-import Aura.Pacman (pacman)
+import Aura.Pacman        (pacman)
 import Aura.Settings.Base
+import Aura.Colour.Text
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.General

@@ -31,14 +31,14 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-import Data.List (intersperse, (\\), nub, sort)
-import System.Exit (ExitCode(..), exitWith)
 import System.Environment (getArgs)
-import Control.Monad (unless)
+import Control.Monad      (unless)
+import System.Exit        (ExitCode(..), exitWith)
+import Data.List          (intersperse, (\\), nub, sort)
 
-import Aura.State (restoreState, saveState)
-import Aura.Colour.TextColouring (yellow)
-import Aura.Shell (shellCmd)
+import Aura.Colour.Text (yellow)
+import Aura.State       (restoreState, saveState)
+import Aura.Shell       (shellCmd)
 import Aura.Settings.Enable
 import Aura.Settings.Base
 import Aura.Monad.Aura
@@ -119,15 +119,17 @@ executeOpts (flags,input,pacOpts) = do
     [Languages]    -> displayOutputLanguages
     [Help]         -> printHelpMsg pacOpts
     [Version]      -> getVersionInfo >>= animateVersionMsg
-    pacmanFlags    -> pacman $ pacOpts ++ input ++ hijackedFlags
+    pacmanFlags    -> catch (pacman $ pacOpts ++ input ++ hijackedFlags)
+                      pacmanFailure
     where hijackedFlags = reconvertFlags flags hijackedFlagMap
 
--- This two functions contain evil, and must be in `aura.hs` to work.
+-- `-y` was included in the flags. Sync database before continuing.
 syncAndContinue :: ([Flag],[String],[String]) -> Aura ()
 syncAndContinue (flags,input,pacOpts) = do
   syncDatabase pacOpts
-  executeOpts (AURInstall:flags,input,pacOpts)  -- This is Evil.
+  executeOpts (AURInstall:flags,input,pacOpts)
 
+-- `-a` was used with `-A`.
 removeMakeDeps :: ([Flag],[String],[String]) -> Aura ()
 removeMakeDeps (flags,input,pacOpts) = do
   orphansBefore <- getOrphans

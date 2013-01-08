@@ -14,7 +14,7 @@ Kyrylo Silin             | Russian
 
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -35,7 +35,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Languages where
 
-import Aura.Colour.TextColouring (cyan, green, red, blue)
+import Aura.Colour.Text (cyan, green, red, blue)
 
 ---
 
@@ -1012,3 +1012,10 @@ condMsg1 _        = "Conditional dependencies based on architecture."
 circDepMsg1 :: Language -> String -> String
 circDepMsg1 Japanese p = bt p ++ "と互いに従属している。"
 circDepMsg1 _        p = "Has a circular dependency with " ++ bt p ++ "."
+
+-------------------
+-- Pacman functions
+-------------------
+pacmanFailureMsg1 :: Language -> String
+pacmanFailureMsg1 Japanese = "入力を確認して下さい。"
+pacmanFailureMsg1 _        = "Please check your input."

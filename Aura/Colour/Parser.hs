@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -26,7 +26,7 @@ module Aura.Colour.Parser ( parseConf ) where
 import Text.ParserCombinators.Parsec
 import Control.Applicative ((<$))
 
-import Aura.Colour.TextColouring
+import Aura.Colour.Text
 
 ---
 

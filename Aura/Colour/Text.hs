@@ -19,7 +19,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Colour.TextColouring where
+module Aura.Colour.Text where
 
 import Text.Regex.PCRE ((=~))
 

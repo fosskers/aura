@@ -27,7 +27,7 @@ import Data.List (intersperse)
 
 import Data.Algorithm.Diff
 
-import Aura.Colour.TextColouring (red, green)
+import Aura.Colour.Text (red, green)
 
 ---
 

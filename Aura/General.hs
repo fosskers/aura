@@ -21,13 +21,13 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.General where
 
-import Data.List ((\\), nub, intersperse)
 import Text.Regex.PCRE ((=~))
-import Control.Monad (liftM)
+import Control.Monad   (liftM)
+import Data.List       ((\\), nub, intersperse)
 
-import Aura.Colour.TextColouring
 import Aura.Settings.Base
 import Aura.AurConnection
+import Aura.Colour.Text
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Pacman

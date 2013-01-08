@@ -37,8 +37,7 @@ module Aura.Flags
 
 import System.Console.GetOpt
 
-
-import Aura.Colour.TextColouring (yellow)
+import Aura.Colour.Text (yellow)
 import Aura.Languages
 
 import Utilities (notNull, split)

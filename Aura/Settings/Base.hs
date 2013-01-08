@@ -21,9 +21,9 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Settings.Base ( Settings(..) ) where
 
-import Aura.Colour.TextColouring (Colouror)
 import Aura.Settings.BadPackages (Reason)
-import Aura.Languages (Language)
+import Aura.Colour.Text          (Colouror)
+import Aura.Languages            (Language)
 
 import Shell (Environment)
 

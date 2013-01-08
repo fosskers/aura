@@ -25,12 +25,14 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Pacman where
 
 import System.Directory (doesFileExist)
-import System.IO (hFlush, stdout)
-import Text.Regex.PCRE ((=~))
-import Control.Monad (liftM)
+import Text.Regex.PCRE  ((=~))
+import Control.Monad    (liftM)
+import System.IO        (hFlush, stdout)
 
-import Aura.Shell (shellCmd, quietShellCmd, quietShellCmd')
 import Aura.Settings.Base (pacmanCmdOf)
+import Aura.Languages     (pacmanFailureMsg1)
+import Aura.Shell         (shellCmd, quietShellCmd, quietShellCmd')
+import Aura.Utils         (scoldAndFail)
 import Aura.Monad.Aura
 import Aura.Cache
 
@@ -99,6 +101,10 @@ pacman args = do
 pacmanSuccess :: [ShellArg] -> Aura Bool
 pacmanSuccess args = success `liftM` quietShellCmd' "pacman" args
     where success = didProcessSucceed . tripleFst
+
+-- Handler for pacman call failures.
+pacmanFailure :: String -> Aura a
+pacmanFailure _ = scoldAndFail pacmanFailureMsg1
 
 -- Performs a pacmanQuiet and returns only the stdout.
 pacmanOutput :: [ShellArg] -> Aura String
