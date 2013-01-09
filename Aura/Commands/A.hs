@@ -96,7 +96,7 @@ upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
   let notIgnored p = splitName p `notElem` ignoredPkgsOf ss
   notify upgradeAURPkgsMsg1
   foreignPkgs <- filter (\(n,_) -> notIgnored n) `liftM` getForeignPackages
-  pkgInfo <- aurInfoLookup $ map fst foreignPkgs
+  pkgInfo     <- aurInfoLookup $ map fst foreignPkgs
   let aurPkgs   = filter (\(n,_) -> n `elem` map nameOf pkgInfo) foreignPkgs
       toUpgrade = filter isntMostRecent $ zip pkgInfo (map snd aurPkgs)
   notify upgradeAURPkgsMsg2

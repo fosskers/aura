@@ -23,7 +23,7 @@ module Aura.General where
 
 import Text.Regex.PCRE ((=~))
 import Control.Monad   (liftM)
-import Data.List       ((\\), nub, intersperse)
+import Data.List       ((\\), nub, intersperse, isSuffixOf)
 
 import Aura.Settings.Base
 import Aura.AurConnection
@@ -197,8 +197,18 @@ trueRoot action = ask >>= \ss -> do
           else notify trueRootMsg2
 
 getForeignPackages :: Aura [(String,String)]
-getForeignPackages = map fixName `liftM` lines `liftM` pacmanOutput ["-Qm"]
+getForeignPackages = (map fixName . lines) `liftM` pacmanOutput ["-Qm"]
     where fixName = hardBreak (== ' ')
+
+getOrphans :: Aura [String]
+getOrphans = lines `liftM` pacmanOutput ["-Qqdt"]
+
+getDevelPkgs :: Aura [String]
+getDevelPkgs = (filter isDevelPkg . map fst) `liftM` getForeignPackages
+
+isDevelPkg :: String -> Bool
+isDevelPkg p = any (\suff -> isSuffixOf suff p) suffixes
+    where suffixes = ["-git","-hg","-svn","-darcs","-cvs","-bzr"]
 
 isntMostRecent :: (PkgInfo,String) -> Bool
 isntMostRecent (info,v) = trueVer > currVer
@@ -224,9 +234,6 @@ filterRepoPkgs pkgs = do
           specs []     = []
           specs (c:cs) | c `elem` "+" = ['[',c,']'] ++ specs cs
                        | otherwise    = c : specs cs
-
-getOrphans :: Aura [String]
-getOrphans = lines `liftM` pacmanOutput ["-Qqdt"]
 
 removePkgs :: [String] -> [String] -> Aura ()
 removePkgs [] _         = return ()

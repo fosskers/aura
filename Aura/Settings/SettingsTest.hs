@@ -1,7 +1,7 @@
 module Aura.Settings.SettingsTest ( sampleSettings ) where
 
-import Aura.Colour.TextColouring
 import Aura.Settings.Base
+import Aura.Colour.Text
 import Aura.Languages
 
 ---
@@ -12,6 +12,7 @@ sampleSettings = Settings { environmentOf = undefined
                           , pacmanCmdOf   = "pacman"
                           , editorOf      = "emacs"
                           , ignoredPkgsOf = []
+                          , wontBuildOf   = []
                           , cachePathOf   = "/var/cache/pacman/pkg"
                           , logFilePathOf = "/var/log/pacman.log"
                           , suppressMakepkg = True
