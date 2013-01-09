@@ -30,6 +30,7 @@ module Aura.Flags
     , getConfirmation
     , getHotEdit
     , getDiffStatus
+    , getRebuildDevel
     , filterSettingsFlags
     , getIgnoredAuraPkgs
     , auraOperMsg
@@ -63,6 +64,7 @@ data Flag = AURInstall
           | NoConfirm
           | Ignore String
           | DiffPkgbuilds
+          | Devel
           | Debug
           | Backup
           | Clean
@@ -115,6 +117,7 @@ auraOptions = (Option [] ["aurignore"] (ReqArg Ignore "") "") :
               , ( ['u'], ["sysupgrade"],   Upgrade       )
               , ( ['w'], ["downloadonly"], Download      )
               , ( ['x'], ["unsuppress"],   Unsuppress    )
+              , ( [],    ["devel"],        Devel         )
               , ( [],    ["save"],         SaveState     )
               , ( [],    ["restore"],      RestoreState  )
               , ( [],    ["hotedit"],      HotEdit       )
@@ -173,7 +176,7 @@ reconvertFlag flagMap f = case f `lookup` flagMap of
                             Just x  -> x
 
 settingsFlags :: [Flag]
-settingsFlags = [Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug]
+settingsFlags = [Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel]
 
 filterSettingsFlags :: [Flag] -> [Flag]
 filterSettingsFlags []              = []
@@ -216,6 +219,9 @@ getHotEdit = fishOutFlag [(HotEdit,True)] False
 
 getDiffStatus :: [Flag] -> Bool
 getDiffStatus = fishOutFlag [(DiffPkgbuilds,True)] False
+
+getRebuildDevel :: [Flag] -> Bool
+getRebuildDevel = fishOutFlag [(Devel,True)] False
 
 parseLanguageFlag :: [String] -> (Language,[String])
 parseLanguageFlag args =

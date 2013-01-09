@@ -86,6 +86,7 @@ buildAndInstallDep pacOpts pkg =
   checkHotEdit [pkg] >>= buildPackages >>=
   installPkgFiles ("--asdeps" : pacOpts)
 
+-- Prompts the user to edit PKGBUILDs if they ran aura with `--hotedit`.
 checkHotEdit :: [AURPkg] -> Aura [AURPkg]
 checkHotEdit pkgs = ask >>= check
     where check ss | mayHotEdit ss = hotEdit pkgs
@@ -97,14 +98,18 @@ upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
   notify upgradeAURPkgsMsg1
   foreignPkgs <- filter (\(n,_) -> notIgnored n) `liftM` getForeignPackages
   pkgInfo     <- aurInfoLookup $ map fst foreignPkgs
-  let aurPkgs   = filter (\(n,_) -> n `elem` map nameOf pkgInfo) foreignPkgs
-      toUpgrade = filter isntMostRecent $ zip pkgInfo (map snd aurPkgs)
+  let aurPkgs    = filter (\(n,_) -> n `elem` map nameOf pkgInfo) foreignPkgs
+      toUpgrade  = filter isntMostRecent $ zip pkgInfo (map snd aurPkgs)
+--  toUpgrade' <- (toUpgrade ++) `liftM` develPkgCheck
   notify upgradeAURPkgsMsg2
   if null toUpgrade
      then warn upgradeAURPkgsMsg3
      else reportPkgsToUpgrade $ map prettify toUpgrade
   installPackages pacOpts $ (map (nameOf . fst) toUpgrade) ++ pkgs
     where prettify (p,v) = nameOf p ++ " : " ++ v ++ " => " ++ latestVerOf p
+
+develPkgCheck :: Aura [String]
+develPkgCheck = undefined
 
 aurPkgInfo :: [String] -> Aura ()
 aurPkgInfo pkgs = aurInfoLookup pkgs >>= mapM_ displayAurPkgInfo

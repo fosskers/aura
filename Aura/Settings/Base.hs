@@ -42,6 +42,7 @@ data Settings = Settings { environmentOf   :: Environment
                          , mustConfirm     :: Bool
                          , mayHotEdit      :: Bool
                          , diffPkgbuilds   :: Bool
+                         , rebuildDevel    :: Bool
                          , pcRed           :: Colouror
                          , pcGreen         :: Colouror
                          , pcYellow        :: Colouror
