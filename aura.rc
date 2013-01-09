@@ -1,8 +1,0 @@
-AuraConfig { langOp    = English
-    	   , pacmanOp  = "pacman"
-           , editorOp  = "vi"
-           , makepkgOp = True
-           , confirmOp = True
-           , hoteditOp = False
-           , diffOp    = False
-           }

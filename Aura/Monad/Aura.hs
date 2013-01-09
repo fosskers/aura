@@ -23,6 +23,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Monad.Aura
     ( Aura
+    , AuraError
     , runAura
     , failure
     , catch

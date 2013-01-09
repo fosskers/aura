@@ -32,7 +32,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 import System.Environment (getArgs)
-import Control.Monad      (unless)
+import Control.Monad      (unless, liftM)
 import System.Exit        (ExitCode(..), exitWith)
 import Data.List          (intersperse, (\\), nub, sort)
 
@@ -62,19 +62,31 @@ import qualified Aura.Commands.O as O
 auraVersion :: String
 auraVersion = "1.1.0.0"
 
+type UserInput = (Language,[Flag],[String],[String])
+
 main :: IO a
-main = do
-  args <- getArgs
-  let (language,rest) = parseLanguageFlag args
-      (auraFlags,input,pacOpts) = parseFlags language rest
-      auraFlags' = filterSettingsFlags auraFlags
-      pacOpts'   = nub $ pacOpts ++ reconvertFlags auraFlags dualFlagMap
-  settings <- getSettings language auraFlags
-  unless (Debug `notElem` auraFlags) $ debugOutput settings
-  result <- runAura (executeOpts (auraFlags',nub input,pacOpts')) settings
-  case result of
-    Left e  -> putStrLn (getErrorMsg e) >> (exitWith $ ExitFailure 1)
-    Right _ -> exitWith ExitSuccess
+main = getArgs >>= prepSettings . processFlags >>= execute >>= exit
+
+processFlags :: [String] -> UserInput
+processFlags args = (language,flags,input,pacOpts')
+    where (language,rest) = parseLanguageFlag args
+          (flags,input,pacOpts) = parseFlags language rest
+          pacOpts' = nub $ pacOpts ++ reconvertFlags flags dualFlagMap
+
+-- Set the local environment.
+prepSettings :: UserInput -> IO (UserInput,Settings)
+prepSettings ui@(lang,flags,_,_) = (,) ui `liftM` getSettings lang flags
+
+-- Hand user input to the Aura Monad and run it.
+execute :: (UserInput,Settings) -> IO (Either AuraError ())
+execute ((_,flags,input,pacOpts),ss) = do
+  let flags' = filterSettingsFlags flags
+  unless (Debug `notElem` flags) $ debugOutput ss
+  runAura (executeOpts (flags',nub input,pacOpts)) ss
+
+exit :: Either AuraError () -> IO a
+exit (Left e)  = putStrLn (getErrorMsg e) >> (exitWith $ ExitFailure 1)
+exit (Right _) = exitWith ExitSuccess
 
 -- After determining what Flag was given, dispatches a function.
 -- The `flags` must be sorted to guarantee the pattern matching
