@@ -24,7 +24,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Colour.Parser ( parseConf ) where
 
 import Text.ParserCombinators.Parsec
-import Control.Applicative ((<$))
+import Control.Applicative ((<$),(*>),(<*))
 
 import Aura.Colour.Text
 
@@ -32,13 +32,13 @@ import Aura.Colour.Text
 
 -- BUG: Extra blank lines at the end of the file break the parser.
 parseConf :: String -> Either ParseError [Maybe (Colour,Colouror)]
-parseConf input = parse confFile "(color.conf)" input
+parseConf input = parse confFile "(/etc/pacman.d/color.conf)" input
 
 confFile :: CharParser () [Maybe (Colour,Colouror)]
-confFile = line `endBy` newline
+confFile = many line
 
 line :: CharParser () (Maybe (Colour,Colouror))
-line = spaces >> (comment <|> variable)
+line = spaces *> (comment <|> variable) <* skipMany (char '\n')
 
 comment :: CharParser () (Maybe a)
 comment = char '#' >> many (noneOf "\n") >> return Nothing

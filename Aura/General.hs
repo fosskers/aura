@@ -203,8 +203,8 @@ getForeignPackages = (map fixName . lines) `liftM` pacmanOutput ["-Qm"]
 getOrphans :: Aura [String]
 getOrphans = lines `liftM` pacmanOutput ["-Qqdt"]
 
-getDevelPkgs :: Aura [String]
-getDevelPkgs = (filter isDevelPkg . map fst) `liftM` getForeignPackages
+getDevelPkgs :: Aura [(String,String)]
+getDevelPkgs = filter (isDevelPkg . fst) `liftM` getForeignPackages
 
 isDevelPkg :: String -> Bool
 isDevelPkg p = any (\suff -> isSuffixOf suff p) suffixes

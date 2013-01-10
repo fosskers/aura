@@ -108,7 +108,7 @@ upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
   installPackages pacOpts $ (map (nameOf . fst) toUpgrade) ++ pkgs
     where prettify (p,v) = nameOf p ++ " : " ++ v ++ " => " ++ latestVerOf p
 
-develPkgCheck :: Aura [String]
+develPkgCheck :: Aura [(String,String)]
 develPkgCheck = undefined
 
 aurPkgInfo :: [String] -> Aura ()
