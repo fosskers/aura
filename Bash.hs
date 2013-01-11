@@ -4,7 +4,7 @@
 
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -25,12 +25,12 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Bash where
 
--- System Libraries
 import Text.Regex.PCRE ((=~))
 import Control.Monad (liftM)
 
--- Custom Libraries
 import Utilities (hardBreak, lStrip)
+
+---
 
 --------
 -- TYPES
