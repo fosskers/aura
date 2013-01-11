@@ -59,10 +59,10 @@ import qualified Aura.Commands.O as O
 
 ---
 
+type UserInput = ([Flag],[String],[String])
+
 auraVersion :: String
 auraVersion = "1.1.0.0"
-
-type UserInput = ([Flag],[String],[String])
 
 main :: IO a
 main = getArgs >>= prepSettings . processFlags >>= execute >>= exit
@@ -92,8 +92,8 @@ exit (Right _) = exitWith ExitSuccess
 -- The `flags` must be sorted to guarantee the pattern matching
 -- below will work properly.
 executeOpts :: UserInput -> Aura ()
-executeOpts ([],[],[]) = executeOpts ([Help],[],[])
-executeOpts (flags,input,pacOpts) = do
+executeOpts ([],_,[]) = executeOpts ([Help],[],[])
+executeOpts (flags,input,pacOpts) =
   case sort flags of
     (AURInstall:fs) ->
         case fs of
@@ -136,13 +136,13 @@ executeOpts (flags,input,pacOpts) = do
     where hijackedFlags = reconvertFlags flags hijackedFlagMap
 
 -- `-y` was included in the flags. Sync database before continuing.
-syncAndContinue :: ([Flag],[String],[String]) -> Aura ()
+syncAndContinue :: UserInput -> Aura ()
 syncAndContinue (flags,input,pacOpts) = do
   syncDatabase pacOpts
   executeOpts (AURInstall:flags,input,pacOpts)
 
 -- `-a` was used with `-A`.
-removeMakeDeps :: ([Flag],[String],[String]) -> Aura ()
+removeMakeDeps :: UserInput -> Aura ()
 removeMakeDeps (flags,input,pacOpts) = do
   orphansBefore <- getOrphans
   executeOpts (AURInstall:flags,input,pacOpts)
