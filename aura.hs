@@ -49,7 +49,7 @@ import Aura.Flags
 import Aura.Utils
 import Aura.Logo
 
-import Utilities (replaceByPatt)
+import Utilities (replaceByPatt, tripleFst)
 import Shell hiding (shellCmd)
 
 import qualified Aura.Commands.A as A
@@ -62,27 +62,27 @@ import qualified Aura.Commands.O as O
 auraVersion :: String
 auraVersion = "1.1.0.0"
 
-type UserInput = (Language,[Flag],[String],[String])
+type UserInput = ([Flag],[String],[String])
 
 main :: IO a
 main = getArgs >>= prepSettings . processFlags >>= execute >>= exit
 
-processFlags :: [String] -> UserInput
-processFlags args = (language,flags,input,pacOpts')
+processFlags :: [String] -> (UserInput,Language)
+processFlags args = ((flags,nub input,pacOpts'),language)
     where (language,rest) = parseLanguageFlag args
           (flags,input,pacOpts) = parseFlags language rest
           pacOpts' = nub $ pacOpts ++ reconvertFlags flags dualFlagMap
 
 -- Set the local environment.
-prepSettings :: UserInput -> IO (UserInput,Settings)
-prepSettings ui@(lang,flags,_,_) = (,) ui `liftM` getSettings lang flags
+prepSettings :: (UserInput,Language) -> IO (UserInput,Settings)
+prepSettings (ui,lang) = (,) ui `liftM` getSettings lang (tripleFst ui)
 
 -- Hand user input to the Aura Monad and run it.
 execute :: (UserInput,Settings) -> IO (Either AuraError ())
-execute ((_,flags,input,pacOpts),ss) = do
+execute ((flags,input,pacOpts),ss) = do
   let flags' = filterSettingsFlags flags
   unless (Debug `notElem` flags) $ debugOutput ss
-  runAura (executeOpts (flags',nub input,pacOpts)) ss
+  runAura (executeOpts (flags',input,pacOpts)) ss
 
 exit :: Either AuraError () -> IO a
 exit (Left e)  = putStrLn (getErrorMsg e) >> (exitWith $ ExitFailure 1)
@@ -91,7 +91,7 @@ exit (Right _) = exitWith ExitSuccess
 -- After determining what Flag was given, dispatches a function.
 -- The `flags` must be sorted to guarantee the pattern matching
 -- below will work properly.
-executeOpts :: ([Flag],[String],[String]) -> Aura ()
+executeOpts :: UserInput -> Aura ()
 executeOpts ([],[],[]) = executeOpts ([Help],[],[])
 executeOpts (flags,input,pacOpts) = do
   case sort flags of
