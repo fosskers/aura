@@ -81,4 +81,11 @@ debugOutput ss = do
                  , "Must Confirm?     => " ++ yn (mustConfirm ss)
                  , "PKGBUILD editing? => " ++ yn (mayHotEdit ss) 
                  , "Diff PKGBUILDs?   => " ++ yn (diffPkgbuilds ss)
-                 , "Rebuild Devel?    => " ++ yn (rebuildDevel ss) ]
+                 , "Rebuild Devel?    => " ++ yn (rebuildDevel ss)
+                 , "Colour Test       => " ++ pcRed ss "RED"         ++
+                                              pcGreen ss "GREEN"     ++
+                                              pcYellow ss "YELLOW"   ++
+                                              pcBlue ss "BLUE"       ++
+                                              pcMagenta ss "MAGENTA" ++
+                                              pcCyan ss "CYAN"       ++
+                                              pcWhite ss "WHITE" ]
