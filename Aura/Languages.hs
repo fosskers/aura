@@ -10,6 +10,7 @@ Alejandro Gómez          | Spanish
 Henry "Ingvij" Kupty     | Portuguese
 Ma Jiehong               | French
 Kyrylo Silin             | Russian
+Bob Valantin             | Italian
 -}
 
 {-
@@ -49,6 +50,7 @@ data Language = English
               | Portuguese
               | French
               | Russian
+              | Italian
                 deriving (Eq,Enum,Read,Show)
 
 translators :: [String]
@@ -59,20 +61,22 @@ translators = [ " Chris \"Kwpolska\" Warrick"
               , " Alejandro Gómez"
               , " Henry \"Ingvij\" Kupty" 
               , " Ma Jiehong"
-              , " Kyrylo Silin" ]
+              , " Kyrylo Silin" 
+              , " Bob Valantin" ]
 
 -- These need updating!
 languageNames :: Language -> [String]
-languageNames English    = [ "Polish","Croatian","Swedish","German","Spanish","Portuguese","French","Russian" ]
-languageNames Japanese   = [ "ポーランド語","クロアチア語","スウェーデン語","ドイツ語","スペイン語","ポルトガル語","フランス語","ロシア語" ]
-languageNames Polish     = [ "polski","chorwacki","szwedzki","niemiecki","hiszpański","portugalski","francuski","rosyjski" ]
-languageNames Croatian   = [ "poljski","hrvatski","švedski","njemački","španjolski","portugalski","francuski","ruski" ]
-languageNames Swedish    = [ "polska","kroatiska","svenska","tyska","spanska","portugisiska" ]
-languageNames German     = [ "Polnisch","Kroatisch","Schwedisch","Deutsch","Spanisch","Portugiesisch" ]
-languageNames Spanish    = [ "Polaco","Croata","Sueco","Alemán","Español","Portugués" ]
-languageNames Portuguese = [ "Polonês","Croata","Sueco","Alemão","Espanhol","Português" ]
-languageNames French     = [ "Polonais","Croate","Suedois","Alemand","Espagnol","Portugais", "Français", "Russe" ]
-languageNames Russian    = [ "Польский","Хорватский","Шведский","Немецкий","Испанский","Португальский", "Русский" ]
+languageNames English    = [ "Polish","Croatian","Swedish","German","Spanish","Portuguese","French","Russian", "Italian" ]
+languageNames Japanese   = [ "ポーランド語","クロアチア語","スウェーデン語","ドイツ語","スペイン語","ポルトガル語","フランス語","ロシア語", "" ]
+languageNames Polish     = [ "polski","chorwacki","szwedzki","niemiecki","hiszpański","portugalski","francuski","rosyjski", "" ]
+languageNames Croatian   = [ "poljski","hrvatski","švedski","njemački","španjolski","portugalski","francuski","ruski", "" ]
+languageNames Swedish    = [ "polska","kroatiska","svenska","tyska","spanska","portugisiska", "" ]
+languageNames German     = [ "Polnisch","Kroatisch","Schwedisch","Deutsch","Spanisch","Portugiesisch", "" ]
+languageNames Spanish    = [ "Polaco","Croata","Sueco","Alemán","Español","Portugués", "" ]
+languageNames Portuguese = [ "Polonês","Croata","Sueco","Alemão","Espanhol","Português", "" ]
+languageNames French     = [ "Polonais","Croate","Suedois","Alemand","Espagnol","Portugais", "Français", "Russe", "" ]
+languageNames Russian    = [ "Польский","Хорватский","Шведский","Немецкий","Испанский","Португальский", "Русский", "" ]
+languageNames Italian   = [ "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano" ]
 
 translatorMsgTitle :: Language -> String
 translatorMsgTitle English    = "Aura Translators:"
@@ -85,6 +89,7 @@ translatorMsgTitle Spanish    = "Traductores de Aura:"
 translatorMsgTitle Portuguese = "Tradutores de Aura:"
 translatorMsgTitle French     = "Traduction d'Aura :"
 translatorMsgTitle Russian    = "Переводчики Aura:"
+translatorMsgTitle Italian    = "Traduttori di Aura:"
 
 translatorMsg :: Language -> [String]
 translatorMsg lang = title : names
@@ -125,6 +130,9 @@ french = French
 russian :: Language
 russian = Russian
 
+italian :: Language
+italian = Italian
+
 -- Wrap a String in backticks
 bt :: String -> String
 bt cs = "`" ++ cyan cs ++ "`"
@@ -147,6 +155,7 @@ mustBeRootMsg1 Spanish    = "Tienes que utilizar " ++ bt "sudo" ++ " para eso."
 mustBeRootMsg1 Portuguese = "Utilize " ++ bt "sudo" ++ "para isso."
 mustBeRootMsg1 French     = "Vous devez utiliser " ++ bt "sudo" ++ " pour ça."
 mustBeRootMsg1 Russian    = "Необходимо использовать " ++ bt "sudo" ++ " для этого."
+mustBeRootMsg1 Italian    = "È necessario utilizzare " ++ bt "sudo" ++ " per questo."
 
 buildPackagesMsg1 :: Language -> String -> String
 buildPackagesMsg1 English    p = "Building " ++ bt p ++ "..."
@@ -159,6 +168,7 @@ buildPackagesMsg1 Spanish    p = "Construyendo " ++ bt p ++ "..."
 buildPackagesMsg1 Portuguese p = "Compilando " ++ bt p ++ "..."
 buildPackagesMsg1 French     p = "Construction de " ++ bt p ++ "…"
 buildPackagesMsg1 Russian    p = "Сборка " ++ bt p ++ "..."
+buildPackagesMsg1 Italian    p = "Compilazione di " ++ bt p ++ "..."
 
 checkHotEditMsg1 :: Language -> String -> String
 checkHotEditMsg1 English    p = "Would you like to edit the PKGBUILD of " ++ bt p ++ "?"
@@ -171,6 +181,7 @@ checkHotEditMsg1 Spanish    p = "¿Te gustaría editar el PKGBUILD de " ++ bt p 
 checkHotEditMsg1 Portuguese p = "Desejaria editar o PKGBUILD de " ++ bt p ++ "?"
 checkHotEditMsg1 French     p = "Voulez-vous éditer le PKGBUILD de " ++ bt p ++ " ?"
 checkHotEditMsg1 Russian    p = "Отредактировать PKGBUILD пакета " ++ bt p ++ "?"
+checkHotEditMsg1 Italian    p = "Volete modificare il PKGBUILD di " ++ bt p ++ "?"
 
 buildFailMsg1 :: Language -> String -> String
 buildFailMsg1 English    p = "Well, building " ++ bt p ++ " failed."
@@ -183,6 +194,7 @@ buildFailMsg1 Spanish    p = "La construcción de " ++ bt p ++ " ha fallado."
 buildFailMsg1 Portuguese p = "Falha na compilação do pacote " ++ bt p ++ "."
 buildFailMsg1 French     p = "Bon, la construction de " ++ bt p ++ " a échouée."
 buildFailMsg1 Russian    p = "Что ж, сборка " ++ bt p ++ " не удалась."
+buildFailMsg1 Italian    p = "La compilazione di " ++ bt p ++ "è fallita."
 
 buildFailMsg2 :: Language -> String
 buildFailMsg2 English    = "Also, the following weren’t built:"
@@ -195,6 +207,7 @@ buildFailMsg2 Spanish    = "Los siguientes paquetes no se han construido:"
 buildFailMsg2 Portuguese = "Os pacotes a seguir não foram compilados:"
 buildFailMsg2 French     = "En outre, les paquets suivants n'ont pu être construits :"
 buildFailMsg2 Russian    = "К тому же следующие пакеты не были собраны:"
+buildFailMsg2 Italian    = "Inoltre non è stato possibile cotruire i seguenti pacchetti:"
 
 buildFailMsg3 :: Language -> String
 buildFailMsg3 English    = "However, these packages were successfully built:"
@@ -207,6 +220,7 @@ buildFailMsg3 Spanish    = "Sin embargo, los siguientes paquetes se han construi
 buildFailMsg3 Portuguese = "Entretanto, os seguintes pacotes compilaram com sucesso:"
 buildFailMsg3 French     = "Cependant, les paquets suivants ont été construits avec succès :"
 buildFailMsg3 Russian    = "Однако эти пакеты были успешно собраны:"
+buildFailMsg3 Italian    = "Comunque questi pacchetti sono stato compilati con successo:"
 
 buildFailMsg4 :: Language -> String
 buildFailMsg4 English    = "Would you like to install them?"
@@ -219,6 +233,7 @@ buildFailMsg4 Spanish    = "¿Te gustaría instalarlos?"
 buildFailMsg4 Portuguese = "Gostaria de instalá-los?"
 buildFailMsg4 French     = "Voulez-vous les installer ?"
 buildFailMsg4 Russian    = "Желаете ли вы их установить?"
+buildFailMsg4 Italian    = "Volete installarli?"
 
 buildFailMsg5 :: Language -> String
 buildFailMsg5 English    = "Building failed."
@@ -231,6 +246,7 @@ buildFailMsg5 Spanish    = "La construcción falló."
 buildFailMsg5 Portuguese = "Falha na compilação."
 buildFailMsg5 French     = "Construction ratée."
 buildFailMsg5 Russian    = "Сборка не удалась."
+buildFailMsg5 Italian    = "Compilazione fallita."
 
 displayBuildErrorsMsg1 :: Language -> String
 displayBuildErrorsMsg1 English    = "Dumping makepkg output in "
@@ -243,6 +259,7 @@ displayBuildErrorsMsg1 Spanish    = "Volcando la salida de makepkg en "
 displayBuildErrorsMsg1 Portuguese = "Despejando a saída do makepkg em "
 displayBuildErrorsMsg1 French     = "Redirection de la sortie de makepkg dans "
 displayBuildErrorsMsg1 Russian    = "Вывод makepkg записывается в "
+displayBuildErrorsMsg1 Italian    = "Salvataggio dell'output di makepkg in "
 
 -- Is this still used?
 getDepsToInstallMsg1 :: Language -> String
@@ -256,6 +273,7 @@ getDepsToInstallMsg1 Spanish    = "No se han especificado paquetes de AUR para i
 getDepsToInstallMsg1 Portuguese = "Nenhum pacote AUR foi especificado para instalação."
 getDepsToInstallMsg1 French     = "Aucun paquet AUR n'a été spécifié pour l'installation."
 getDepsToInstallMsg1 Russian    = "Пакеты AUR для установки не указаны."
+getDepsToInstallMsg1 Italian    = "Nessun pacchetto di AUR specificato per l'installazione."
 
 getRealPkgConflictsMsg1 :: Language -> String -> String -> String -> String
 getRealPkgConflictsMsg1 English    p r d = "The dependency " ++ bt p ++ " demands version " ++ bt d ++ "but the most recent version is " ++ bt r ++ "."
@@ -268,6 +286,7 @@ getRealPkgConflictsMsg1 Spanish    p r d = "La dependencia " ++ bt p ++ " duiere
 getRealPkgConflictsMsg1 Portuguese p r d = "A dependência " ++ bt p ++ " exige a versão " ++ bt d ++ "mas a versão mais recente é " ++ bt r ++ "."
 getRealPkgConflictsMsg1 French     p r d = bt p ++ " est une dépendance nécessitant une version " ++ bt d ++ ", mais la plus récente est la " ++ bt r ++ "."
 getRealPkgConflictsMsg1 Russian    p r d = "Зависимость " ++ bt p ++ " требует версию " ++ bt d ++ ", однако самой последней версией является " ++ bt r ++ "."
+getRealPkgConflictsMsg1 Italian    p r d = "La dipendenza " ++ bt p ++ " richiede la versione " ++ bt d ++ "ma la versione disponibile è " ++ bt r ++ "."
 
 getRealPkgConflictsMsg2 :: Language -> String -> String
 getRealPkgConflictsMsg2 English    p = bt p ++ " is an ignored package! See your `pacman.conf` file."    
@@ -280,6 +299,7 @@ getRealPkgConflictsMsg2 Spanish    p = "¡" ++ bt p ++ " es un paquete ignorado!
 getRealPkgConflictsMsg2 Portuguese p = bt p ++ " é um pacote ignorado conforme configuração em `pacman.conf`!"
 getRealPkgConflictsMsg2 French     p = "Le paquet " ++ bt p ++ " est ignoré. Vous devriez jeter un œil à votre `pacman.conf`."
 getRealPkgConflictsMsg2 Russian    p = "Пакет " ++ bt p ++ " игнорируется! Проверьте ваш файл `pacman.conf`."
+getRealPkgConflictsMsg2 Italian    p = bt p ++ " è un pacchetto ignorato, controllare `pacman.conf`."
 
 getVirtualConflictsMsg1 :: Language -> String -> String
 getVirtualConflictsMsg1 English    p = bt p ++ " exists in NO WAY as a package or as one provided by another!"
@@ -292,6 +312,7 @@ getVirtualConflictsMsg1 Spanish    p = "¡" ++ bt p ++ " no existe como paquete 
 getVirtualConflictsMsg1 Portuguese p = bt p ++ " não existe como um pacote e não é provido por nenhum!"
 getVirtualConflictsMsg1 French     p = bt p ++ " n'est ni un paquet existant, ni un paquet fourni par un autre !"
 getVirtualConflictsMsg1 Russian    p = bt p ++ " никоим образом не существует в виде пакета или пакета, " ++ " предоставленного другим пакетом!"
+getVirtualConflictsMsg1 Italian    p = bt p ++ " non esiste e non è distribuito da nessun'altro."
 
 getVirtualConflictsMsg2 :: Language -> String -> String -> String
 getVirtualConflictsMsg2 English    p pro = bt pro ++ " provides " ++ bt p ++ ", but " ++ bt pro ++ " is an ignored package."
@@ -304,6 +325,7 @@ getVirtualConflictsMsg2 Spanish    p pro = bt pro ++ " provee " ++ bt p ++ ", pe
 getVirtualConflictsMsg2 Portuguese p pro = bt pro ++ " provê " ++ bt p ++ ", mas " ++ bt pro ++ "é um pacote ignorado."
 getVirtualConflictsMsg2 French     p pro = bt pro ++ " fourni " ++ bt p ++ ", mais " ++ bt pro ++ " est un paquet ignoré."
 getVirtualConflictsMsg2 Russian    p pro = bt pro ++ " предоставляет " ++ bt p ++ ", но " ++ bt pro ++ " является игнорируемым пакетом."
+getVirtualConflictsMsg2 Italian    p pro = bt pro ++ " distribuisce " ++ bt p ++ " ma " ++ bt pro ++ " è un pacchetto ignorato."
 
 getVirtualConflictsMsg3 :: Language -> String -> String -> String -> String -> String
 getVirtualConflictsMsg3 English    d dv p pv = "The dependency " ++ bt d ++ " demands version " ++ bt dv ++ " but its providing package " ++
@@ -325,6 +347,8 @@ getVirtualConflictsMsg3 French     d dv p pv = "La dépendance " ++ bt d ++ " n�
                                                bt p ++ ") ne le fait qu'en version " ++ bt pv ++ "."
 getVirtualConflictsMsg3 Russian    d dv p pv = "Зависимость " ++ bt d ++ " должна быть версии " ++ bt dv ++ ", но предоставленный для неё пакет " ++
                                                bt p ++ " имеет версию " ++ bt pv
+getVirtualConflictsMsg3 Italian    d dv p pv = "La dipendenza " ++ bt d ++ " richiede la versione " ++ bt dv ++ " ma il pacchetto " ++
+                                               bt p ++ " distribuisce la versione " ++ bt pv
 
 -----------------
 -- aura functions
@@ -340,6 +364,7 @@ executeOptsMsg1 Spanish    = "¡Flags contradictorios!"
 executeOptsMsg1 Portuguese = "Flags conflitantes!"
 executeOptsMsg1 French     = "Arguments contradictoires !"
 executeOptsMsg1 Russian    = "Даны конфликтующие флаги!"
+executeOptsMsg1 Italian    = "Argomenti in conflitto!"
 
 -- Packages should not be built if the user is logged in as root!
 trueRootMsg1 :: Language -> String
@@ -353,6 +378,7 @@ trueRootMsg1 Spanish    = "Nunca deberías construir paquetes como root real. ¿
 trueRootMsg1 Portuguese = "Não deveria compilar pacotes como o root de fato. Ainda assim, deseja prosseguir?"
 trueRootMsg1 French     = "Il n'est pas sage de construire des paquets avec le compte root. Voulez-vous continuer ?"
 trueRootMsg1 Russian    = "Вам никогда не следует собирать пакеты под настоящим рутом. Договорились?"
+trueRootMsg1 Italian    = "Non si dovrebbero compilare pacchetti come root. Volete Continuare?"
 
 -- This is for when the user decides to refrain from building afterall.
 trueRootMsg2 :: Language -> String
@@ -366,6 +392,7 @@ trueRootMsg2 Spanish    = "Has tomado la decision correcta."
 trueRootMsg2 Portuguese = "Ainda bem que tem juízo!"
 trueRootMsg2 French     = "C'est la bonne décision."
 trueRootMsg2 Russian    = "Вы выбрали православный путь."
+trueRootMsg2 Italian    = "Hai fatto la cosa giusta."
 
 installPackagesMsg1 :: Language -> String
 installPackagesMsg1 English    = "Dependency checking failed for these reasons:"
@@ -378,6 +405,7 @@ installPackagesMsg1 Spanish    = "La comprobación de dependencias falló por lo
 installPackagesMsg1 Portuguese = "Não foi possível checar as dependências pelas seguintes razões:"
 installPackagesMsg1 French     = "La vérification des dépendances a faillie pour les raisons suivantes :"
 installPackagesMsg1 Russian    = "Проверка зависимостей не удалась из-за:"
+installPackagesMsg1 Italian    = "Il controllo delle dipendenze è fallito per i seguenti motivi:"
 
 installPackagesMsg2 :: Language -> String
 installPackagesMsg2 English    = "No valid packages specified."
@@ -390,6 +418,7 @@ installPackagesMsg2 Spanish    = "No se ha especificado ningún paquete válido.
 installPackagesMsg2 Portuguese = "Nenhum pacote válido foi especificado."
 installPackagesMsg2 French     = "Aucun paquet valide spécifié."
 installPackagesMsg2 Russian    = "Валидные пакеты не указаны."
+installPackagesMsg2 Italian    = "Nessun pacchetto valido specificato."
 
 installPackagesMsg3 :: Language -> String
 installPackagesMsg3 English    = "Continue?"
@@ -402,6 +431,7 @@ installPackagesMsg3 Spanish    = "¿Continuar?"
 installPackagesMsg3 Portuguese = "Continuar?"
 installPackagesMsg3 French     = "Continuer ?"
 installPackagesMsg3 Russian    = "Продолжить?"
+installPackagesMsg3 Italian    = "Continuare?"
 
 installPackagesMsg4 :: Language -> String
 installPackagesMsg4 English    = "Installation manually aborted."
@@ -414,6 +444,7 @@ installPackagesMsg4 Spanish    = "Instalación abortada manualmente."
 installPackagesMsg4 Portuguese = "Instalação manual abortada."
 installPackagesMsg4 French     = "Installation manuelle annulée."
 installPackagesMsg4 Russian    = "Пользователь прервал установку."
+installPackagesMsg4 Italian    = "Installazione manuale interrotta."
 
 installPackagesMsg5 :: Language -> String
 installPackagesMsg5 English    = "Determining dependencies..."
@@ -426,6 +457,7 @@ installPackagesMsg5 Spanish    = "Determinando dependencias..."
 installPackagesMsg5 Portuguese = "Determinando as dependências..."
 installPackagesMsg5 French     = "Détermination des dépendances en cours…"
 installPackagesMsg5 Russian    = "Определение зависимостей..."
+installPackagesMsg5 Italian    = "Determinazione dipendenze..."
 
 knownBadPkgCheckMsg1 :: Language -> String -> String
 knownBadPkgCheckMsg1 Japanese p = bt p ++ "の作成は失敗すると知られている。理由："
@@ -446,6 +478,7 @@ reportNonPackagesMsg1 Spanish    = "Los siguientes no son paquetes:"
 reportNonPackagesMsg1 Portuguese = "Os seguintes não são pacotes:"
 reportNonPackagesMsg1 French     = "Les éléments suivants ne sont pas des paquets:"
 reportNonPackagesMsg1 Russian    = "Ниже указано то, что не является пакетами:"
+reportNonPackagesMsg1 Italian    = "I seguenti non sono pacchetti:"
 
 reportIgnoredPackagesMsg1 :: Language -> String
 reportIgnoredPackagesMsg1 English    = "The following packages will be ignored:"
@@ -458,6 +491,7 @@ reportIgnoredPackagesMsg1 Spanish    = "Los siguientes paquetes serán ignorados
 reportIgnoredPackagesMsg1 Portuguese = "Os seguintes pacotes serão ignorados:"
 reportIgnoredPackagesMsg1 French     = "Les paquets suivants seront ignorés :"
 reportIgnoredPackagesMsg1 Russian    = "Следующие пакеты будут проигнорированы:"
+reportIgnoredPackagesMsg1 Italian    = "I seguenti pacchetti verranno ignorati:"
 
 reportPkgsToInstallMsg1 :: Language -> String
 reportPkgsToInstallMsg1 English    = "Repository dependencies:"
@@ -470,6 +504,7 @@ reportPkgsToInstallMsg1 Spanish    = "Dependencias en el repositorio:"
 reportPkgsToInstallMsg1 Portuguese = "Dependências no repositório:"
 reportPkgsToInstallMsg1 French     = "Dépendances du dépôt:"
 reportPkgsToInstallMsg1 Russian    = "Зависимости из репозитория:"
+reportPkgsToInstallMsg1 Italian    = "Dipendenze nei repository:"
 
 reportPkgsToInstallMsg2 :: Language -> String
 reportPkgsToInstallMsg2 English    = "AUR dependencies:"
@@ -482,6 +517,7 @@ reportPkgsToInstallMsg2 Spanish    = "Dependencias en AUR:"
 reportPkgsToInstallMsg2 Portuguese = "Dependências no AUR:"
 reportPkgsToInstallMsg2 French     = "Dépendances AUR :"
 reportPkgsToInstallMsg2 Russian    = "Зависимости из AUR:"
+reportPkgsToInstallMsg2 Italian    = "Dipendenze in AUR:"
 
 reportPkgsToInstallMsg3 :: Language -> String
 reportPkgsToInstallMsg3 English    = "Main AUR packages:"
@@ -494,6 +530,7 @@ reportPkgsToInstallMsg3 Spanish    = "Paquetes principales de AUR:"
 reportPkgsToInstallMsg3 Portuguese = "Pacotes principais do AUR:"
 reportPkgsToInstallMsg3 French     = "Principaux paquets AUR :"
 reportPkgsToInstallMsg3 Russian    = "Главные пакеты из AUR:"
+reportPkgsToInstallMsg3 Italian    = "Pacchetto principale di AUR"
 
 -- Needs translations.
 reportPkgbuildDiffsMsg1 :: Language -> String -> String
@@ -504,6 +541,7 @@ reportPkgbuildDiffsMsg1 Croatian p = bt p ++ " još nema pohranjen PKGBUILD."
 reportPkgbuildDiffsMsg1 Spanish  p = bt p ++ " no tiene PKGBUILD todavía."
 reportPkgbuildDiffsMsg1 French   p = bt p ++ " n'a pas encore de PKGBUILD enrigistré."
 reportPkgbuildDiffsMsg1 Russian  p = "У " ++ bt p ++ " ещё нет сохраненного PKGBUILD."
+reportPkgbuildDiffsMsg1 Italian  p = bt p ++ " non ci sono PKGBUILD salvati"
 reportPkgbuildDiffsMsg1 _        p = bt p ++ " has no stored PKGBUILD yet."
 
 reportPkgbuildDiffsMsg2 :: Language -> String -> String
@@ -514,6 +552,7 @@ reportPkgbuildDiffsMsg2 Croatian p = "PKGBUILD paketa " ++ bt p ++ " je na najno
 reportPkgbuildDiffsMsg2 Spanish  p = "El PKGBUILD de " ++ bt p ++ " está actualizado."
 reportPkgbuildDiffsMsg2 Russian  p = "PKGBUILD " ++ bt p ++ " является новейшим."
 reportPkgbuildDiffsMsg2 French   p = "Le PKGBUILD de " ++ bt p ++ " est à jour."
+reportPkgbuildDiffsMsg2 Italian  p = "Il PKGBUILD di " ++ bt p ++ " è aggiornato."
 reportPkgbuildDiffsMsg2 _        p = bt p ++ " PKGBUILD is up to date."
 
 reportPkgbuildDiffsMsg3 :: Language -> String -> String
@@ -524,6 +563,7 @@ reportPkgbuildDiffsMsg3 Croatian p = "Promjene u PKGBUILD-u za " ++ bt p ++ ":"
 reportPkgbuildDiffsMsg3 Spanish  p = "Cambios en el PKGBUILD de " ++ bt p ++ ":"
 reportPkgbuildDiffsMsg3 Russian  p = "Изменения, вносимые " ++ bt p ++ " PKGBUILD:"
 reportPkgbuildDiffsMsg3 French   p = "Changements du PKGBUILD de " ++ bt p
+reportPkgbuildDiffsMsg3 Italian  p = "Cambiamenti nel PKGBUILD di " ++ bt p ++":"
 reportPkgbuildDiffsMsg3 _        p = bt p ++ " PKGBUILD changes:"
 
 reportPkgsToUpgradeMsg1 :: Language -> String
@@ -537,6 +577,7 @@ reportPkgsToUpgradeMsg1 Spanish    = "Paquetes de AUR a actualizar:"
 reportPkgsToUpgradeMsg1 Portuguese = "Pacotes do AUR para atualizar:"
 reportPkgsToUpgradeMsg1 French     = "Paquets AUR à mettre à jour :"
 reportPkgsToUpgradeMsg1 Russian    = "Пакеты AUR, готовые для обновления:"
+reportOkgsToUpgradeMsg1 Italian    = "Pacchetti in AUR da aggiornare:"
 
 reportBadDowngradePkgsMsg1 :: Language -> String
 reportBadDowngradePkgsMsg1 English    = "The following aren’t installed, and thus can’t be downgraded:"
@@ -549,6 +590,7 @@ reportBadDowngradePkgsMsg1 Spanish    = "Los siguientes paquetes no están insta
 reportBadDowngradePkgsMsg1 Portuguese = "Os seguintes pacotes não estão instalados, logo não podem retornar a uma versão anterior:"
 reportBadDowngradePkgsMsg1 French     = "Les paquets suivants ne sont pas installés ; ils ne peuvent être rétrogradés :"
 reportBadDowngradePkgsMsg1 Russian    = "Следующие пакеты не установлены, а следовательно, не могут быть откачены к старой версии:"
+reportBadDowngradePkgsMsg1 Italian    = "I seguenti pacchetti non sono stati installati e non posso essere retrocessi:"
 
 upgradeAURPkgsMsg1 :: Language -> String
 upgradeAURPkgsMsg1 English    = "Fetching package information..."
@@ -561,6 +603,7 @@ upgradeAURPkgsMsg1 Spanish    = "Obteniendo información de paquetes..."
 upgradeAURPkgsMsg1 Portuguese = "Obtendo informação dos pacotes..."
 upgradeAURPkgsMsg1 French     = "Obtention des informations des paquets en cours…"
 upgradeAURPkgsMsg1 Russian    = "Сборка информации о пакетах..."
+upgradeAURPkgsMsg1 Italian    = "Ottengo le informazioni del pacchetto..."
 
 upgradeAURPkgsMsg2 :: Language -> String
 upgradeAURPkgsMsg2 English    = "Comparing package versions..."
@@ -573,6 +616,7 @@ upgradeAURPkgsMsg2 Spanish    = "Comparando versiones de paquetes..."
 upgradeAURPkgsMsg2 Portuguese = "Comparando versões dos pacotes..."
 upgradeAURPkgsMsg2 French     = "Comparaison des versions des paquets en cours…"
 upgradeAURPkgsMsg2 Russian    = "Сравнение версий пакетов..."
+upgradeAURPkgsMsg2 Italian    = "Confronto le ersioni del pacchetto..."
 
 upgradeAURPkgsMsg3 :: Language -> String
 upgradeAURPkgsMsg3 English    = "No AUR package upgrades necessary."
@@ -585,6 +629,7 @@ upgradeAURPkgsMsg3 Spanish    = "No ha sido necesario actualizar paquetes de AUR
 upgradeAURPkgsMsg3 Portuguese = "Nenhum pacote do AUR precisa de atualização."
 upgradeAURPkgsMsg3 French     = "Aucune mise à jour de paquets AUR n'est nécessaire."
 upgradeAURPkgsMsg3 Russian    = "Обновление пакетов из AUR не требуется."
+upgradeAURPkgsMsg3 Italian    = "Non è necessario aggiornare pacchetti di AUR."
 
 downloadTarballsMsg1 :: Language -> String -> String
 downloadTarballsMsg1 English    p = "Downloading " ++ bt p ++ " source tarball..."
@@ -597,6 +642,7 @@ downloadTarballsMsg1 Spanish    p = "Descargando los fuentes comprimidos (tarbal
 downloadTarballsMsg1 Portuguese p = "Baixando os fontes (tarball) de " ++ bt p ++ " ..."
 downloadTarballsMsg1 French     p = "Téléchargement de l'archive de " ++ bt p ++ " en cours…"
 downloadTarballsMsg1 Russian    p = "Загрузка исходного архива " ++ bt p ++ "..."
+downloadTarballsMsg1 Italian    p = "Downlaod del tarball di " ++ bt p ++ " in corso..."
 
 displayPkgbuildMsg1 :: Language -> String -> String
 displayPkgbuildMsg1 English    pkg = bt pkg ++ " does not exist."
@@ -609,6 +655,7 @@ displayPkgbuildMsg1 Spanish    pkg = bt pkg ++ " no existe."
 displayPkgbuildMsg1 Portuguese pkg = bt pkg ++ " não existe."
 displayPkgbuildMsg1 French     pkg = bt pkg ++ "n'existe pas."
 displayPkgbuildMsg1 Russian    pkg = bt pkg ++ " не существует."
+displayPkgbuildMsg1 Italian    pkg = bt pkg ++ " inesistente."
 
 removeMakeDepsAfterMsg1 :: Language -> String
 removeMakeDepsAfterMsg1 English    = "Removing unneeded make dependencies..."
@@ -621,6 +668,7 @@ removeMakeDepsAfterMsg1 Spanish    = "Removiendo dependencias make innecesarias.
 removeMakeDepsAfterMsg1 Portuguese = "Removendo dependências `make` desnecessárias..."
 removeMakeDepsAfterMsg1 French     = "Suppression des dépendances inutiles…"
 removeMakeDepsAfterMsg1 Russian    = "Удаление ненужных зависимостей make..."
+removeMakeDepsAfterMsg1 Italian    = "Rimuovo le dipendenze di compilazione..."
 
 getDowngradeChoiceMsg1 :: Language -> String -> String
 getDowngradeChoiceMsg1 English    p = "What version of " ++ bt p ++ " do you want?"
@@ -633,6 +681,7 @@ getDowngradeChoiceMsg1 Spanish    p = "¿Qué versión de " ++ bt p ++ " quieres
 getDowngradeChoiceMsg1 Portuguese p = "Qual versão de " ++ bt p ++ " deseja?"
 getDowngradeChoiceMsg1 French     p = "Quelle version de " ++ bt p ++ " voulez-vous ?"
 getDowngradeChoiceMsg1 Russian    p = "Какую версию " ++ bt p ++ " вы хотите?"
+getDowngradeChoiceMsg1 Italian    p = "Quale versione di " ++ bt p ++ " preferisci?"
 
 backupCacheMsg1 :: Language -> String
 backupCacheMsg1 English    = "No backup location given."
@@ -645,6 +694,7 @@ backupCacheMsg1 Spanish    = "No se ha especificado localización para la copia 
 backupCacheMsg1 Portuguese = "Ainda não disse onde quer guardar o backup..."
 backupCacheMsg1 French     = "Aucun lieu pour les copies de sauvegardes n'est spécifié."
 backupCacheMsg1 Russian    = "Не указан путь к бэкапу."
+backupCacheMsg1 Italian    = "Path per il salvataggio non specificato."
 
 backupCacheMsg2 :: Language -> String
 backupCacheMsg2 English    = "You must be root to backup the cache."
@@ -657,6 +707,7 @@ backupCacheMsg2 Spanish    = "Debes ser root para hacer una copia de seguridad d
 backupCacheMsg2 Portuguese = "Precisa ser root para fazer um backup do cache."
 backupCacheMsg2 French     = "Vous devez être `root` pour faire une copie de sauvegarde du cache."
 backupCacheMsg2 Russian    = "Чтобы создать бэкап кэша, вы должны быть рутом"
+backupCacheMsg2 Italian    = "Devi essere root per salvare la cache."
 
 backupCacheMsg3 :: Language -> String
 backupCacheMsg3 English    = "The backup location does not exist."
@@ -669,6 +720,7 @@ backupCacheMsg3 Spanish    = "La localización para copia de seguridad no existe
 backupCacheMsg3 Portuguese = "O caminho indicado para o backup não existe."
 backupCacheMsg3 French     = "Le lieu des copies de sauvegarde spécifié n'existe pas."
 backupCacheMsg3 Russian    = "Путь к бэкапу не существует."
+backupCacheMsg3 Italian    = "L'indirizzo del salvataggio non esiste."
 
 backupCacheMsg4 :: Language -> String -> String
 backupCacheMsg4 English    dir = "Backing up cache to " ++ bt dir
@@ -681,6 +733,7 @@ backupCacheMsg4 Spanish    dir = "Haciendo una copia de seguridad de la caché e
 backupCacheMsg4 Portuguese dir = "Backup do cache sendo feito em " ++ bt dir
 backupCacheMsg4 French     dir = "Copie de sauvegarde dans " ++ bt dir ++ "."
 backupCacheMsg4 Russian    dir = "Бэкап создается в директории " ++ bt dir
+backupCacheMsg4 Italian    dir = "Salvataggio della chace in " ++ bt dir
 
 backupCacheMsg5 :: Language -> Int -> String
 backupCacheMsg5 English    n = "Package files to backup: " ++ bt (show n)
@@ -693,6 +746,7 @@ backupCacheMsg5 Spanish    n = "Ficheros de paquetes de los que se hará copia d
 backupCacheMsg5 Portuguese n = "Arquivos de pacotes para backup: " ++ bt (show n)
 backupCacheMsg5 French     n = "Copie de sauvegarde des fichiers de paquets suivants : " ++ bt (show n)
 backupCacheMsg5 Russian    n = "Упакуйте файлы для бэкапа: " ++ bt (show n)
+backupCacheMsg5 Italian    n = "File del pacchetto da salvare: " ++ bt (show n)
 
 backupCacheMsg6 :: Language -> String
 backupCacheMsg6 English    = "Proceed with backup?"
@@ -705,6 +759,7 @@ backupCacheMsg6 Spanish    = "¿Proceder con la copia de seguridad?"
 backupCacheMsg6 Portuguese = "Proceder com o backup?"
 backupCacheMsg6 French     = "Procéder à la copie de sauvegarde ?"
 backupCacheMsg6 Russian    = "Продолжить создание бэкапа?"
+backupCacheMsg6 Italian    = "Procedere con il salvataggio?"
 
 backupCacheMsg7 :: Language -> String
 backupCacheMsg7 English    = "Backup manually aborted."
@@ -717,6 +772,7 @@ backupCacheMsg7 Spanish    = "Copia de seguridad abortada manualmente."
 backupCacheMsg7 Portuguese = "Backup manualmente abortado."
 backupCacheMsg7 French     = "Copie de sauvegarde manuelle annulée."
 backupCacheMsg7 Russian    = "Создание бэкапа прервано пользователем."
+backupCacheMsg7 Italian    = "Salvataggio manuale interrotto."
 
 backupCacheMsg8 :: Language -> String
 backupCacheMsg8 English    = "Backing up. This may take a few minutes..."
@@ -729,6 +785,7 @@ backupCacheMsg8 Spanish    = "Haciendo copia de seguridad. Esto puede tardar uno
 backupCacheMsg8 Portuguese = "Efetuando backup. Isso pode levar alguns minutos..."
 backupCacheMsg8 French     = "Copie de sauvegarde en cours. Ceci peut prendre quelques minutes…"
 backupCacheMsg8 Russian    = "Создается бэкап. Это может занять пару минут..."
+backupCacheMsg8 Italian    = "Salvataggio. Questo potrebbe richiedere qualche minuto..."
 
 copyAndNotifyMsg1 :: Language -> Int -> String
 copyAndNotifyMsg1 English    n = "Copying #[" ++ cyan (show n) ++ "]"
@@ -741,6 +798,7 @@ copyAndNotifyMsg1 Spanish    n = "Copiando #[" ++ cyan (show n) ++ "]"
 copyAndNotifyMsg1 Portuguese n = "Copiando #[" ++ cyan (show n) ++ "]"
 copyAndNotifyMsg1 French     n = "Copie de #[" ++ cyan (show n) ++ "]"
 copyAndNotifyMsg1 Russian    n = "Копируется #[" ++ cyan (show n) ++ "]"
+copyAndNotifyMsg1 Italian    n = "Copiando #[" ++cyan (show n) ++ "]"
 
 preCleanCacheMsg1 :: Language -> String -> String
 preCleanCacheMsg1 English    n = bt n ++ " is not a number."
@@ -753,6 +811,7 @@ preCleanCacheMsg1 Spanish    n = bt n ++ " no es un número."
 preCleanCacheMsg1 Portuguese n = bt n ++ " não é um número."
 preCleanCacheMsg1 French     n = bt n ++ " n'est pas un nombre."
 preCleanCacheMsg1 Russian    n = bt n ++ " не является числом."
+preCleanCahceMsg1 Italian    n = bt n ++ " non è un numero."
 
 cleanCacheMsg1 :: Language -> String
 cleanCacheMsg1 English    = "Invalid number given."
@@ -765,6 +824,7 @@ cleanCacheMsg1 Spanish    = "Número inválido."
 cleanCacheMsg1 Portuguese = "Número inválido."
 cleanCacheMsg1 French     = "Nombre invalide."
 cleanCacheMsg1 Russian    = "Дано невалидное число."
+cleanCacheMsg1 Italian    = "Numero non valido."
 
 cleanCacheMsg2 :: Language -> String
 cleanCacheMsg2 English    = "This will delete the ENTIRE package cache."
@@ -777,6 +837,7 @@ cleanCacheMsg2 Spanish    = "Esto eliminará POR COMPLETO la caché de paquetes.
 cleanCacheMsg2 Portuguese = "Isso eliminara TODOS OS PACOTES do cache."
 cleanCacheMsg2 French     = "Ceci va COMPLÉTEMENT supprimer le cache des paquets."
 cleanCacheMsg2 Russian    = "Это действие ВСЕЦЕЛО уничтожит кэш пакетов."
+celanCacheMsg2 Italian    = "Questo cancellera l'INTERA cache dei pacchetti."
 
 cleanCacheMsg3 :: Language -> Int -> String
 cleanCacheMsg3 English    n = bt (show n) ++ " of each package file will be kept."
@@ -789,6 +850,7 @@ cleanCacheMsg3 Spanish    n = bt (show n) ++ " ficheros de cada paquete se mante
 cleanCacheMsg3 Portuguese n = bt (show n) ++ " arquivos de cada pacote serão mantidos."
 cleanCacheMsg3 French     n = bt (show n) ++ " fichiers de chaque paquet sera conservé."
 cleanCacheMsg3 Russian    n = bt (show n) ++ " версии каждого пакета будут нетронуты."
+cleanCacheMsg3 Italian    n = bt (show n) ++ " di ciascun pacchetto sarà mantenuto."
 
 cleanCacheMsg4 :: Language -> String
 cleanCacheMsg4 English    = "The rest will be deleted. Okay?"
@@ -801,6 +863,7 @@ cleanCacheMsg4 Spanish    = "El resto se eliminará. ¿OK?"
 cleanCacheMsg4 Portuguese = "O resto será deletado. OK?"
 cleanCacheMsg4 French     = "Le reste sera supprimé. Êtes-vous d'accord ?"
 cleanCacheMsg4 Russian    = "Всё остальное будет удалено. Годится?"
+cleanCahceMsg4 Italian    = "Il resto verrà mantenuto. Continuare?"
 
 cleanCacheMsg5 :: Language -> String
 cleanCacheMsg5 English    = "Cache cleaning manually aborted."
@@ -813,6 +876,7 @@ cleanCacheMsg5 Spanish    = "Limpieza de la caché abortada manualmente."
 cleanCacheMsg5 Portuguese = "Limpeza do cache abortada manualmente."
 cleanCacheMsg5 French     = "Le nettoyage du cache a été arrêté manuellement."
 cleanCacheMsg5 Russian    = "Очистка кэша прервана пользователем."
+cleanCahceMsg5 Italian    = "Pulitura manuale della cache interrotta."
 
 cleanCacheMsg6 :: Language -> String
 cleanCacheMsg6 English    = "Cleaning package cache..."
@@ -825,6 +889,7 @@ cleanCacheMsg6 Spanish    = "Limpiando la caché de paquetes..."
 cleanCacheMsg6 Portuguese = "Limpando cache de pacotes..."
 cleanCacheMsg6 French     = "Nettoyage du cache des paquets…"
 cleanCacheMsg6 Russian    = "Очистка кэша пакета..."
+cleanCacheMsg6 Italian    = "Ripulisco la cache..."
 
 logLookUpFields :: Language -> [String]
 logLookUpFields English    = [ "Package","First Install","Upgrades","Recent Actions" ]
@@ -837,6 +902,7 @@ logLookUpFields Spanish    = [ "Paquete","Primera instalación","Actualizaciones
 logLookUpFields Portuguese = [ "Pacote","Primeira instalação","Atualizações","Ações Recentes" ]
 logLookUpFields French     = [ "Paquet","Première installation","Mises à jours ","Actions récentes" ]
 logLookUpFields Russian    = [ "Пакет","Первая установка","Обновления","Недавние действия" ]
+logLookUpFields Italian    = [ "Package","Prima installazione","Upgrades","Azioni recenti" ]
 
 reportNotInLogMsg1 :: Language -> String
 reportNotInLogMsg1 English    = "These have not appeared in the log file:"
@@ -849,6 +915,7 @@ reportNotInLogMsg1 Spanish    = "Estos no aparecen en el fichero log:"
 reportNotInLogMsg1 Portuguese = "Os seguintes não apareceram no log de arquivo:"
 reportNotInLogMsg1 French     = "Ceci n'apparaît pas des les journaux (log) :"
 reportNotInLogMsg1 Russian    = "Следующих пакетов нет в лог-файле:"
+reportNotInLogMsg1 Italian    = "Questo non apparirà nei file di log;"
 
 manpageMsg :: Language -> String
 manpageMsg English    = "See the aura man page for aura option details."
@@ -861,6 +928,7 @@ manpageMsg Spanish    = "Lee la página de manual de aura para detalles sobre la
 manpageMsg Portuguese = "Leia a man page do aura para mais detalhes sobre as opções"
 manpageMsg French     = "Voir le manuel d'Aura (`man aura`) pour le détail des options."
 manpageMsg Russian    = "Чтобы узнать подробное описание опций aura, см. мануал."
+manpageMsg Italian    = "Guardare la man page di Aura per maggiori dettagli sulle opzioni."
 
 displayOutputLanguagesMsg1 :: Language -> String
 displayOutputLanguagesMsg1 English    = "The following languages are available:"
@@ -873,6 +941,7 @@ displayOutputLanguagesMsg1 Spanish    = "Los siguientes idiomas están disponibl
 displayOutputLanguagesMsg1 Portuguese = "Os seguintes idiomas estão disponíveis:"
 displayOutputLanguagesMsg1 French     = "Les langues suivantes sont disponibles :"
 displayOutputLanguagesMsg1 Russian    = "Доступны следующие языки:"
+displayOutputLanguagesMsg1 Italian    = "Sono disponibili le seguenti lingue:"
 
 ----------------------
 -- AuraFlags functions
@@ -888,6 +957,7 @@ inheritedOperTitle Spanish     = "Operaciones Heredadas de Pacman"
 inheritedOperTitle Portuguese  = "Operações herdadas do Pacman"
 inheritedOperTitle French      = "Opérations héritées de Pacman"
 inheritedOperTitle Russian     = "Позаимствованные из pacman действия"
+inheritedOperTitle Italian     = "Operazioni riguardanti Pacman"
 
 auraOperTitle :: Language -> String
 auraOperTitle English    = "Aura Only Operations:"
@@ -900,6 +970,7 @@ auraOperTitle Spanish    = "Operaciones Exclusivas de Aura:"
 auraOperTitle Portuguese = "Operações exclusivas do Aura:"
 auraOperTitle French     = "Opérations propres à Aura :"
 auraOperTitle Russian    = "Специфичные для aura действия:"
+auraOperTitle Italian    = "Operazioni esclusive di Aura:"
 
 aurSy :: Language -> String
 aurSy English    = green "Perform actions involving the [A]UR.\n" ++ "Default action installs from the AUR."
@@ -912,6 +983,7 @@ aurSy Spanish    = green "Realizar acciones relacionadas con el [A]UR.\n" ++ "La
 aurSy Portuguese = green "Realizar ações envolvendo o [A]UR.\n" ++ "Ação padrão instala do AUR."
 aurSy French     = green "Actions impliquant [A]UR.\n" ++ "Par default, installe depuis AUR."
 aurSy Russian    = green "Совершить действия с участием [A]UR.\n" ++ "Действие по умолчанию устанавливает из AUR."
+aurSy Italian    = green "Azioni riguardanti [A]UR.\n" ++ "Di default installa da AUR."
 
 -- Any way for the Spanish line to be shorter?
 downG :: Language -> String
@@ -925,6 +997,7 @@ downG Spanish    = red "Realizar acciones relacionadas con la [C]aché.\n" ++ "L
 downG Portuguese = red "Realiza ações relacionadas ao [C]ache.\n" ++ "Ação padrão retorna os pacotes informados às suas versões anteriores."
 downG French     = red "Actions impliquant le [C]ache des paquets.\n" ++ "Par default, rétrograde les paquets spécifiés."
 downG Russian    = red "Совершить действия с участием кэша пакета ([C]ache).\n" ++ "Действие по умолчанию откатывает данные пакеты к старым версиям."
+downG Italian    = red "Azioni riguardanti la [C]ache dei pacchetti.\n" ++ "Di default retrocede il pacchetti."
 
 viewL :: Language -> String
 viewL English    = cyan "Perform actions involving the pacman [L]ogfile.\n" ++ "Default action opens the log for read-only viewing."
@@ -937,7 +1010,8 @@ viewL Spanish    = cyan "Realizar acciones relacionadas con el fichero [L]og de 
 viewL Portuguese = cyan "Realiza ações relacionadas ao [L]ogfile do Pacman.\n" ++ "Ação padrão abre o arquivo de log apenas para leitura."
 viewL French     = cyan "Actions impliquant le [L]ogfile (journal) de Pacman.\n" ++ "Par default, ouvre le journal en lecture seule."
 viewL Russian    = cyan "Совершить действия с участием [L]og-файлов pacman.\n" ++ "Действие по умолчанию открывает лог для просмотра в режиме для чтения."
-
+viewL Italian    = cyan "Azioni riguardanti i [L]ogfile di pacman.\n" ++ "Di default visualizza il log in sola lettura.
+"
 orpha :: Language -> String
 orpha English    = blue "Perform actions involving [O]rphan packages.\n" ++ "Default action lists all orphan packages."
 orpha Japanese   = blue "必要とされていない従属パッケージに関する処理\n" ++ "デフォルトでその従属パッケージの名前を出力"
@@ -949,6 +1023,7 @@ orpha Spanish    = blue "Realizar acciones relacionadas con paquetes huérfanos 
 orpha Portuguese = blue "Realiza ações com pacotes [O]rfãos.\n" ++ "Ação padrão lista todos os pactes orfãos."
 orpha French     = blue "Actions impliquant les paquets [O]rphelins.\n" ++ "Par default, liste l'ensemble des paquets orphelins."
 orpha Russian    = blue "Совершить действия с участием [O]сиротевших пакетов.\n" ++ "Действие по умолчанию берёт в расчёт все осиротевшие пакеты."
+orpha Italian    = blue "Azioni riguardanti i pacchetti [O]rfani.\n" ++ "Di default elenca i pacchetti orfani."
 
 --------------------------
 -- AurConnection functions
@@ -968,6 +1043,8 @@ infoFields Spanish    = [ "Repository","Nombre","Versión","Estado en AUR","URL 
 infoFields Portuguese = [ "Repositório","Nome","Versão","Estado no AUR","URL do projeto","URL no AUR","Licença", "Votos","Descrição" ]
 infoFields French     = [ "Dépôt","Nom","Version","AUR Statut","URL du projet","URL AUR","License", "Votes","Description" ]
 infoFields Russian    = [ "Репозиторий","Название","Версия","Статус в AUR","URL проекта","URL в AUR","Лицензия", "Рейтинг","Описание" ]
+infoFields Italian    = [ "Repository","Nome","Versione","Stato in AUR","URL","URL AUR","Licenza","Voti","Descrizione" ]
+
 
 outOfDateMsg :: Language -> Bool -> String
 outOfDateMsg English    True  = red "Out of Date!"
@@ -990,6 +1067,8 @@ outOfDateMsg French     True  = red "Périmé !"
 outOfDateMsg French     False = green "À jour"
 outOfDateMsg Russian    True  = red "Устарел!"
 outOfDateMsg Russian    False = green "Новейший"
+outOfDateMsg Italian    True  = red "Out of Date!"
+outOfDateMsg Italian    False = green "Aggiornato"
 
 ------------------
 -- State functions
