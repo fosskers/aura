@@ -23,6 +23,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.MakePkg where
 
+import Control.Monad (liftM)
 import Text.Regex.PCRE ((=~))
 
 import Aura.Monad.Aura
@@ -32,27 +33,24 @@ import Shell (pwd, ls)
 
 ---
 
--- This should to be used as non-root.
--- Building packages as root IS NOT safe!
-makepkgGen :: (String -> [String] -> Aura a) -> String -> Aura FilePath
-makepkgGen f user = do
-  _ <- f command opts
-  files  <- liftIO (pwd >>= ls)
-  let pkgFiles = filter (\file -> (file =~ ".pkg.tar")) files
-  return $ if null pkgFiles then "" else head pkgFiles
-      where (command,opts) = determineRunStyle user
+-- Builds a package with `makepkg`.
+-- Some packages create multiple .pkg.tar files. These are all returned.
+makepkgGen :: (String -> [String] -> Aura a) -> String -> Aura [FilePath]
+makepkgGen f user =
+    f cmd opts >> filter (=~ ".pkg.tar") `liftM` liftIO (pwd >>= ls)
+      where (cmd,opts) = determineRunStyle user
 
 determineRunStyle :: String -> (String,[String])
 determineRunStyle "root" = ("makepkg",["--asroot"])
 determineRunStyle user   = ("su",[user,"-c","makepkg"])
 
-makepkgQuiet :: String -> Aura FilePath
+makepkgQuiet :: String -> Aura [FilePath]
 makepkgQuiet user = makepkgGen quiet user
     where quiet cmd opts = do
             (status,out,err) <- quietShellCmd' cmd opts
             let output = err ++ "\n" ++ out
             checkExitCode' output status
 
-makepkgVerbose :: String -> Aura FilePath
+makepkgVerbose :: String -> Aura [FilePath]
 makepkgVerbose user = makepkgGen verbose user
     where verbose cmd opts = shellCmd cmd opts

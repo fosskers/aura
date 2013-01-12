@@ -60,12 +60,12 @@ build :: [FilePath] -> [AURPkg] -> Aura [FilePath]
 build built []       = return $ filter notNull built
 build built ps@(p:_) = do
   notify (flip buildPackagesMsg1 pn)
-  (path,rest) <- catch (withTempDir pn (build' ps)) (buildFail built ps)
-  build (path : built) rest
+  (paths,rest) <- catch (withTempDir pn (build' ps)) (buildFail built ps)
+  build (paths ++ built) rest
       where pn = pkgNameOf p
         
 -- Perform the actual build.
-build' :: [AURPkg] -> Aura (FilePath,[AURPkg])
+build' :: [AURPkg] -> Aura ([FilePath],[AURPkg])
 build' []     = failure "build' : You should never see this."
 build' (p:ps) = ask >>= \ss -> do
   let makepkg'   = if toSuppress then makepkgQuiet else makepkgVerbose
@@ -74,10 +74,10 @@ build' (p:ps) = ask >>= \ss -> do
   curr <- liftIO pwd
   getSourceCode (pkgNameOf p) user curr
   overwritePkgbuild p
-  pName <- makepkg' user
-  path  <- moveToCache pName
+  pNames <- makepkg' user
+  paths  <- moveToCache pNames
   liftIO $ cd curr
-  return (path,ps)
+  return (paths,ps)
 
 getSourceCode :: String -> String -> FilePath -> Aura ()
 getSourceCode pkgName user currDir = liftIO $ do
@@ -111,7 +111,7 @@ overwritePkgbuild p = (mayHotEdit `liftM` ask) >>= check
 
 -- Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
-buildFail :: [FilePath] -> [AURPkg] -> String -> Aura (FilePath,[AURPkg])
+buildFail :: [FilePath] -> [AURPkg] -> String -> Aura ([FilePath],[AURPkg])
 buildFail _ [] _ = failure "buildFail : You should never see this message."
 buildFail built (p:ps) errors = ask >>= \ss -> do
   let lang = langOf ss
@@ -120,11 +120,11 @@ buildFail built (p:ps) errors = ask >>= \ss -> do
   printList red cyan (buildFailMsg2 lang) (map pkgNameOf ps)
   printList yellow cyan (buildFailMsg3 lang) $ map takeFileName built
   if null built
-     then return ("",[])
+     then return ([],[])
      else do
        response <- optionalPrompt buildFailMsg4
        if response
-          then return ("",[])
+          then return ([],[])
           else scoldAndFail buildFailMsg5
 
 -- If the user wasn't running Aura with `-x`, then this will
@@ -139,8 +139,9 @@ displayBuildErrors errors = ask >>= \ss -> do
                  putStrLn errors)
 
 -- Moves a file to the pacman package cache and returns its location.
-moveToCache :: FilePath -> Aura FilePath
-moveToCache pkg = do
-  newName <- ((</> pkg) . cachePathOf) `liftM` ask
-  liftIO (mv pkg newName)
-  return newName
+moveToCache :: [FilePath] -> Aura [FilePath]
+moveToCache []     = return []
+moveToCache (p:ps) = do
+  newName <- ((</> p) . cachePathOf) `liftM` ask
+  liftIO (mv p newName)
+  (newName :) `liftM` moveToCache ps
