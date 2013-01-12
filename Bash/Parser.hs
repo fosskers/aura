@@ -23,7 +23,6 @@ module Bash.Parser where
 
 import Text.ParserCombinators.Parsec
 import Control.Applicative ((<*),(*>))
-import Data.Maybe (catMaybes)
 
 import Bash.Base
 
@@ -31,7 +30,7 @@ import Bash.Base
 
 parseBash :: String -> String -> Either ParseError [Variable]
 parseBash p input = parse bashFile filename input
-    where filename = "(" ++ p ++ "PKGBUILD)"
+    where filename = "(" ++ p ++ " PKGBUILD)"
 
 bashFile = many field
 

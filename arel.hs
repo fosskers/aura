@@ -1,25 +1,33 @@
 -- arel - Helps create aura releases.
 
+import System.Exit (ExitCode(..))
 import System.FilePath ((</>))
 import Text.Regex.PCRE ((=~))
 import Control.Monad (liftM)
 import Data.List (sortBy)
 
-import Aura.AuraLib (comparableVer)
+import Aura.Utils (comparableVer)
+
 import Utilities (tripleSnd, inDir)
-import Zero ((?>>))
 import Shell
+
+---
 
 sourceDir :: String
 sourceDir = "/home/colin/code/haskell/aura/"
 
 main :: IO ()
-main = cd sourceDir >> shellCmd "cabal" ["check"] ?>> do
-         removeOldFiles
-         makeNewPkgFile
-         alterPKGBUILD
-         makeTarball
-         putStrLn "Done."
+main = do
+  cd sourceDir
+  result <- shellCmd "cabal" ["check"]
+  case result of
+    ExitFailure _ -> putStrLn "arel: cabal check failed"
+    ExitSuccess   -> do
+      removeOldFiles
+      makeNewPkgFile
+      alterPKGBUILD
+      makeTarball
+      putStrLn "Done."
 
 removeOldFiles :: IO ()
 removeOldFiles = filter isPkgFile `liftM` ls sourceDir >>= mapM_ rm
