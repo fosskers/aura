@@ -4,9 +4,6 @@ When outputing repo dependencies, show what repo they're from?
 
 Move aura to haskell-http.
 
-Add `--devel` option
- - git hg cvs svn darcs bzr
-
 Make `--save` automatic?
 
 Look into `aurvote`.
@@ -14,8 +11,6 @@ Look into `aurvote`.
 Package completion for bash
 
 Deleting saved states
-
-Powerpill
 
 OPTIONS TO IMPLEMENT
 --------------------

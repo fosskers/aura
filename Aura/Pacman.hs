@@ -1,3 +1,5 @@
+{-# LANGUAGE MultiWayIf #-}
+
 -- An interface to `pacman`.
 -- Takes any pacman arguments and applies it to pacman through the shell.
 
@@ -49,6 +51,9 @@ defaultCmd = "pacman"
 pacmanColorCmd :: String
 pacmanColorCmd = "/usr/bin/pacman-color"
 
+powerPillCmd :: String
+powerPillCmd = "/usr/bin/powerpill"
+
 pacmanConfFile :: FilePath
 pacmanConfFile = "/etc/pacman.conf"
 
@@ -59,10 +64,11 @@ getPacmanCmd :: Environment -> IO String
 getPacmanCmd env = case getEnvVar "PACMAN" env of
                      Just cmd -> return cmd
                      Nothing  -> do
-                       installed <- doesFileExist pacmanColorCmd
-                       if installed
-                          then return pacmanColorCmd
-                          else return defaultCmd
+                       pacmanColor <- doesFileExist pacmanColorCmd
+                       powerPill   <- doesFileExist powerPillCmd
+                       if | powerPill   -> return powerPillCmd
+                          | pacmanColor -> return pacmanColorCmd
+                          | otherwise   -> return defaultCmd
 
 getPacmanConf :: IO String
 getPacmanConf = readFile pacmanConfFile
