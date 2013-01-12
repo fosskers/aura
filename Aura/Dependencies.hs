@@ -145,7 +145,8 @@ getProvidedVerNum pkg = splitVer match
 isVersionConflict :: VersionDemand -> String -> Bool
 isVersionConflict Anything _     = False
 isVersionConflict (LessThan r) c = not $ comparableVer c < comparableVer r
-isVersionConflict (MustBe r) c   = not $ c =~ ("^" ++ r)
-isVersionConflict (AtLeast r) c  | comparableVer c > comparableVer r = False
+isVersionConflict (MoreThan r) c = not $ comparableVer c > comparableVer r
+isVersionConflict (MustBe r)   c = not $ c =~ ("^" ++ r)
+isVersionConflict (AtLeast r)  c | comparableVer c > comparableVer r = False
                                  | isVersionConflict (MustBe r) c = True
                                  | otherwise = False

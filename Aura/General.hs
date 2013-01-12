@@ -52,6 +52,7 @@ class Package a where
 
 data VersionDemand = LessThan String
                    | AtLeast String
+                   | MoreThan String
                    | MustBe String
                    | Anything
                      deriving (Eq)
@@ -59,6 +60,7 @@ data VersionDemand = LessThan String
 instance Show VersionDemand where
     show (LessThan v) = "<"  ++ v
     show (AtLeast v)  = ">=" ++ v
+    show (MoreThan v) = ">"  ++ v
     show (MustBe  v)  = "="  ++ v
     show Anything     = ""
 
@@ -127,9 +129,10 @@ pkgNameWithVersionDemand pkg = pkgNameOf pkg ++ signAndVersion
 
 parseNameAndVersionDemand :: String -> (String,VersionDemand)
 parseNameAndVersionDemand pkg = (name, getVersionDemand comp ver)
-    where (name,comp,ver) = pkg =~ "(<|>=|=)" :: (String,String,String)
+    where (name,comp,ver) = pkg =~ "(<|>=|>|=)" :: (String,String,String)
           getVersionDemand c v | c == "<"  = LessThan v
                                | c == ">=" = AtLeast v
+                               | c == ">"  = MoreThan v
                                | c == "="  = MustBe v
                                | otherwise = Anything
 
@@ -221,7 +224,6 @@ isIgnored pkg toIgnore = pkg `elem` toIgnore
 isInstalled :: String -> Aura Bool
 isInstalled pkg = pacmanSuccess ["-Qq",pkg]
 
--- Beautiful.
 filterAURPkgs :: [String] -> Aura [String]
 filterAURPkgs pkgs = map nameOf `liftM` aurInfoLookup pkgs
 
