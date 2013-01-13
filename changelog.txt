@@ -2,8 +2,10 @@ Aura Changelog
 ==============
 1.1.1.0
 -------
+- New option `--devel`. Rebuilds all devel packages installed.
 - Support for `powerpill` added. It will be used if installed, unless
   the PACMAN variable is specifically set to something different.
+- Aura can now handle PKGBUILDs that produce multiple .pkg.tar files.
 - Bug fixes
 
 1.1.0.0
