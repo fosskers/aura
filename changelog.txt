@@ -3,6 +3,7 @@ Aura Changelog
 1.1.1.0
 -------
 - New option `--devel`. Rebuilds all devel packages installed.
+- Italian translation added! Thank you Bob Valantin!
 - Support for `powerpill` added. It will be used if installed, unless
   the PACMAN variable is specifically set to something different.
 - Aura can now handle PKGBUILDs that produce multiple .pkg.tar files.
