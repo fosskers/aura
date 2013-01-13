@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -36,21 +36,26 @@ diff [] new  = new >>= green
 diff old []  = old >>= red
 diff old new | length diffResult == 1 = ""  -- The two files are equal.
              | otherwise              = concat $ fold diffResult
-    where fold ((B,ss):xs) = (last ss :) . ("\n" :) . fold' $ xs
+    where fold ((B,ss):xs) = (p (last ss) :) . ("\n" :) . fold' $ xs
           fold xs          = fold' xs
           fold' = snd . foldr format (B,[])
           diffResult = getGroupedDiff old new
 
 -- (B,[]) will never occur. getGroupedDiff will never produce such a value.
+-- This is hard to understand when coming back to it after a while.
 format :: (DI,[String]) -> (DI,[String]) -> (DI,[String])
-format (B,x:_)  (_,[])  = (B,  [x])
+format (B,x:_)  (_,[])  = (B,  [p x])
 format x@(di,_) (_,[])  = (di, colour x)
-format (B,x:[]) (_,acc) = (B,  x : "\n" : acc)
-format (B,ss)   (_,acc) = (B,  head ss : "\n\n" : last ss : "\n" : acc)
+format (B,x:[]) (_,acc) = (B,  p x : "\n" : acc)
+format (B,ss)   (_,acc) = (B,  p (head ss) : "\n\n" : p (last ss) : "\n" : acc)
 format x@(S,_)  (F,acc) = (S,  colour x ++ "\n" : acc)
 format x@(di,_) (_,acc) = (di, colour x ++ "\n" : acc)
 
 colour :: (DI,[String]) -> [String]
-colour (S,ss) = intersperse "\n" $ map (\s -> green $ "+ " ++ s) ss
-colour (F,ss) = intersperse "\n" $ map (\s -> red   $ "- " ++ s) ss
+colour (S,ss) = intersperse "\n" $ map (\s -> green $ "+" ++ s) ss
+colour (F,ss) = intersperse "\n" $ map (\s -> red   $ "-" ++ s) ss
 colour (B,ss) = intersperse "\n" ss
+
+-- Pad a string with a single space.
+p :: String -> String
+p = (' ' :)
