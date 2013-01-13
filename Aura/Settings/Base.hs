@@ -39,10 +39,11 @@ data Settings = Settings { environmentOf   :: Environment
                          , cachePathOf     :: FilePath
                          , logFilePathOf   :: FilePath
                          , suppressMakepkg :: Bool
-                         , mustConfirm     :: Bool
-                         , mayHotEdit      :: Bool
+                         , delMakeDeps     :: Bool
                          , diffPkgbuilds   :: Bool
                          , rebuildDevel    :: Bool
+                         , mayHotEdit      :: Bool
+                         , mustConfirm     :: Bool
                          , pcRed           :: Colouror
                          , pcGreen         :: Colouror
                          , pcYellow        :: Colouror

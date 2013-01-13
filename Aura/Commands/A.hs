@@ -21,7 +21,14 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Commands.A where
+module Aura.Commands.A
+    ( installPackages
+    , upgradeAURPkgs
+    , aurPkgInfo
+    , aurSearch
+    , displayPkgDeps
+    , downloadTarballs
+    , displayPkgbuild ) where
 
 import Text.Regex.PCRE ((=~))
 import Control.Monad   (unless, liftM)
@@ -45,7 +52,19 @@ import Shell
 
 installPackages :: [String] -> [String] -> Aura ()
 installPackages _ []         = return ()
-installPackages pacOpts pkgs = ask >>= \ss -> do
+installPackages pacOpts pkgs = ask >>= \ss ->
+  if not $ delMakeDeps ss
+     then installPackages' pacOpts pkgs
+     else do  -- `-a` was used with `-A`.
+       orphansBefore <- getOrphans
+       installPackages' pacOpts pkgs
+       orphansAfter <- getOrphans
+       let makeDeps = orphansAfter \\ orphansBefore
+       unless (null makeDeps) $ notify removeMakeDepsAfterMsg1
+       removePkgs makeDeps pacOpts
+
+installPackages' :: [String] -> [String] -> Aura ()
+installPackages' pacOpts pkgs = ask >>= \ss -> do
   let toInstall = pkgs \\ ignoredPkgsOf ss
       ignored   = pkgs \\ toInstall
   reportIgnoredPackages ignored

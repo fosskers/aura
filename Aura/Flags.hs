@@ -27,6 +27,7 @@ module Aura.Flags
     , dualFlagMap
     , hijackedFlagMap
     , getSuppression
+    , getDelMakeDeps
     , getConfirmation
     , getHotEdit
     , getDiffStatus
@@ -178,7 +179,8 @@ reconvertFlag flagMap f = case f `lookup` flagMap of
                             Just x  -> x
 
 settingsFlags :: [Flag]
-settingsFlags = [Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel]
+settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
+                , DelMDeps ]
 
 filterSettingsFlags :: [Flag] -> [Flag]
 filterSettingsFlags []              = []
@@ -212,6 +214,9 @@ getIgnoredAuraPkgs (_:fs) = getIgnoredAuraPkgs fs
 
 getSuppression :: [Flag] -> Bool
 getSuppression = fishOutFlag [(Unsuppress,False)] True
+
+getDelMakeDeps :: [Flag] -> Bool
+getDelMakeDeps = fishOutFlag [(DelMDeps,True)] False
 
 getConfirmation :: [Flag] -> Bool
 getConfirmation = fishOutFlag [(NoConfirm,False)] True

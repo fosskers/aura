@@ -34,7 +34,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 import System.Environment (getArgs)
 import Control.Monad      (unless, liftM)
 import System.Exit        (ExitCode(..), exitWith)
-import Data.List          (intersperse, (\\), nub, sort)
+import Data.List          (intersperse, nub, sort)
 
 import Aura.Colour.Text (yellow)
 import Aura.State       (restoreState, saveState)
@@ -91,6 +91,8 @@ exit (Right _) = exitWith ExitSuccess
 -- After determining what Flag was given, dispatches a function.
 -- The `flags` must be sorted to guarantee the pattern matching
 -- below will work properly.
+-- If no matches on Aura flags are found, the flags are assumed to be
+-- pacman's.
 executeOpts :: UserInput -> Aura ()
 executeOpts ([],_,[]) = executeOpts ([Help],[],[])
 executeOpts (flags,input,pacOpts) =
@@ -105,7 +107,6 @@ executeOpts (flags,input,pacOpts) =
           [Download]     -> A.downloadTarballs input
           [GetPkgbuild]  -> A.displayPkgbuild input
           (Refresh:fs')  -> sudo $ syncAndContinue (fs',input,pacOpts)
-          (DelMDeps:fs') -> sudo $ removeMakeDeps (fs',input,pacOpts)
           badFlags       -> scoldAndFail executeOptsMsg1
     (Cache:fs) ->
         case fs of
@@ -140,16 +141,6 @@ syncAndContinue :: UserInput -> Aura ()
 syncAndContinue (flags,input,pacOpts) = do
   syncDatabase pacOpts
   executeOpts (AURInstall:flags,input,pacOpts)
-
--- `-a` was used with `-A`.
-removeMakeDeps :: UserInput -> Aura ()
-removeMakeDeps (flags,input,pacOpts) = do
-  orphansBefore <- getOrphans
-  executeOpts (AURInstall:flags,input,pacOpts)
-  orphansAfter <- getOrphans
-  let makeDeps = orphansAfter \\ orphansBefore
-  unless (null makeDeps) $ notify removeMakeDepsAfterMsg1
-  removePkgs makeDeps pacOpts
 
 ----------
 -- GENERAL

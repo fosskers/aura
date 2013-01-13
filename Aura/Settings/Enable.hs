@@ -52,6 +52,7 @@ getSettings lang auraFlags = do
                     , cachePathOf     = getCachePath confFile
                     , logFilePathOf   = getLogFilePath confFile
                     , suppressMakepkg = getSuppression auraFlags
+                    , delMakeDeps     = getDelMakeDeps auraFlags
                     , mustConfirm     = getConfirmation auraFlags
                     , mayHotEdit      = getHotEdit auraFlags
                     , diffPkgbuilds   = getDiffStatus auraFlags
