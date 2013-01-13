@@ -147,7 +147,8 @@ languageOptions = map simpleMakeOption
                   , ( [], ["spanish","español"],      SpanishOut  )
                   , ( [], ["portuguese","português"], PortuOut    )
                   , ( [], ["french","français"],      FrenchOut   )
-                  , ( [], ["russian","русский"],      RussianOut  ) ]
+                  , ( [], ["russian","русский"],      RussianOut  )
+                  , ( [], ["italian,"italiano"],      ItalianOut  ) ]
 
 -- `Hijacked` flags. They have original pacman functionality, but
 -- that is masked and made unique in an Aura context.
@@ -199,9 +200,9 @@ getLanguage = fishOutFlag flagsAndResults english
     where flagsAndResults = zip langFlags langFuns
           langFlags       = [ JapOut,PolishOut,CroatianOut,SwedishOut
                             , GermanOut,SpanishOut,PortuOut,FrenchOut
-                            , RussianOut ]
+                            , RussianOut,ItalianOut ]
           langFuns        = [ japanese,polish,croatian,swedish,german
-                            , spanish,portuguese,french,russian ]
+                            , spanish,portuguese,french,russian,italian ]
 
 getIgnoredAuraPkgs :: [Flag] -> [String]
 getIgnoredAuraPkgs [] = []
