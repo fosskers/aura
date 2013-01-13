@@ -1,4 +1,4 @@
--- Library for AURA output in different languages.
+-- Library for Aura output in different languages.
 -- All normal restrictions on line length do not apply for this file, and this file only.
 
 {- AURA TRANSLATORS - The best people ever!
@@ -577,7 +577,7 @@ reportPkgsToUpgradeMsg1 Spanish    = "Paquetes de AUR a actualizar:"
 reportPkgsToUpgradeMsg1 Portuguese = "Pacotes do AUR para atualizar:"
 reportPkgsToUpgradeMsg1 French     = "Paquets AUR à mettre à jour :"
 reportPkgsToUpgradeMsg1 Russian    = "Пакеты AUR, готовые для обновления:"
-reportOkgsToUpgradeMsg1 Italian    = "Pacchetti in AUR da aggiornare:"
+reportPkgsToUpgradeMsg1 Italian    = "Pacchetti in AUR da aggiornare:"
 
 reportBadDowngradePkgsMsg1 :: Language -> String
 reportBadDowngradePkgsMsg1 English    = "The following aren’t installed, and thus can’t be downgraded:"
@@ -811,7 +811,7 @@ preCleanCacheMsg1 Spanish    n = bt n ++ " no es un número."
 preCleanCacheMsg1 Portuguese n = bt n ++ " não é um número."
 preCleanCacheMsg1 French     n = bt n ++ " n'est pas un nombre."
 preCleanCacheMsg1 Russian    n = bt n ++ " не является числом."
-preCleanCahceMsg1 Italian    n = bt n ++ " non è un numero."
+preCleanCacheMsg1 Italian    n = bt n ++ " non è un numero."
 
 cleanCacheMsg1 :: Language -> String
 cleanCacheMsg1 English    = "Invalid number given."
@@ -837,7 +837,7 @@ cleanCacheMsg2 Spanish    = "Esto eliminará POR COMPLETO la caché de paquetes.
 cleanCacheMsg2 Portuguese = "Isso eliminara TODOS OS PACOTES do cache."
 cleanCacheMsg2 French     = "Ceci va COMPLÉTEMENT supprimer le cache des paquets."
 cleanCacheMsg2 Russian    = "Это действие ВСЕЦЕЛО уничтожит кэш пакетов."
-celanCacheMsg2 Italian    = "Questo cancellera l'INTERA cache dei pacchetti."
+cleanCacheMsg2 Italian    = "Questo cancellera l'INTERA cache dei pacchetti."
 
 cleanCacheMsg3 :: Language -> Int -> String
 cleanCacheMsg3 English    n = bt (show n) ++ " of each package file will be kept."
@@ -863,7 +863,7 @@ cleanCacheMsg4 Spanish    = "El resto se eliminará. ¿OK?"
 cleanCacheMsg4 Portuguese = "O resto será deletado. OK?"
 cleanCacheMsg4 French     = "Le reste sera supprimé. Êtes-vous d'accord ?"
 cleanCacheMsg4 Russian    = "Всё остальное будет удалено. Годится?"
-cleanCahceMsg4 Italian    = "Il resto verrà mantenuto. Continuare?"
+cleanCacheMsg4 Italian    = "Il resto verrà mantenuto. Continuare?"
 
 cleanCacheMsg5 :: Language -> String
 cleanCacheMsg5 English    = "Cache cleaning manually aborted."
@@ -876,7 +876,7 @@ cleanCacheMsg5 Spanish    = "Limpieza de la caché abortada manualmente."
 cleanCacheMsg5 Portuguese = "Limpeza do cache abortada manualmente."
 cleanCacheMsg5 French     = "Le nettoyage du cache a été arrêté manuellement."
 cleanCacheMsg5 Russian    = "Очистка кэша прервана пользователем."
-cleanCahceMsg5 Italian    = "Pulitura manuale della cache interrotta."
+cleanCacheMsg5 Italian    = "Pulitura manuale della cache interrotta."
 
 cleanCacheMsg6 :: Language -> String
 cleanCacheMsg6 English    = "Cleaning package cache..."
@@ -1011,6 +1011,7 @@ viewL Portuguese = cyan "Realiza ações relacionadas ao [L]ogfile do Pacman.\n"
 viewL French     = cyan "Actions impliquant le [L]ogfile (journal) de Pacman.\n" ++ "Par default, ouvre le journal en lecture seule."
 viewL Russian    = cyan "Совершить действия с участием [L]og-файлов pacman.\n" ++ "Действие по умолчанию открывает лог для просмотра в режиме для чтения."
 viewL Italian    = cyan "Azioni riguardanti i [L]ogfile di pacman.\n" ++ "Di default visualizza il log in sola lettura."
+
 orpha :: Language -> String
 orpha English    = blue "Perform actions involving [O]rphan packages.\n" ++ "Default action lists all orphan packages."
 orpha Japanese   = blue "必要とされていない従属パッケージに関する処理\n" ++ "デフォルトでその従属パッケージの名前を出力"
