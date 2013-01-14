@@ -21,4 +21,4 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Bash.Base where
 
-data Variable = Variable String | Array [String] deriving (Eq,Show)
+type Variable = (String,[String])
