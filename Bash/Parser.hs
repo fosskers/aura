@@ -1,3 +1,5 @@
+-- Improved Bash (PKGBUILD) parser for Aura.
+
 {-
 
 Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
@@ -33,28 +35,41 @@ parseBash :: String -> String -> Either ParseError [Variable]
 parseBash p input = parse bashFile filename input
     where filename = "(" ++ p ++ " PKGBUILD)"
 
+-- A Bash file could have many fields, or none.
 bashFile :: CharParser () [Variable]
-bashFile = many field
+bashFile = blanks *> many field
 
--- There are many things a field could have that we don't care about.
-field = blanks *> skipMany1 (comment <|> try command <|> try function) *>
+-- There are many kinds of field, but we only care about two.
+field :: CharParser () Variable
+field = skipMany (comment <|> try command <|> try function) *>
         (variable <|> ifStatement <?> "valid field") <* blanks
 
 ------------------
 -- UNNEEDED FIELDS
 ------------------
-comment = (char '#' >> many (noneOf "\n") >> blanks)
-          <?> "valid comment"
+comment :: CharParser () Field
+comment = spaces >> char '#' >> many (noneOf "\n") >>= \c ->  blanks >>
+          return (Comment c) <?> "valid comment"
 
 -- A command looks like: name -flags target
-command :: CharParser () ()
-command = (spaces >> many1 letter >> space >> noneOf "\n" >> blanks)
-          <?> "valid command"
+command :: CharParser () Field
+command = do
+  spaces
+  name <- commandName
+  args <- commandArgs
+  blanks
+  return $ Command (name,args)
+
+commandName = many1 letter
+
+-- Not perfect yet.
+commandArgs = manyTill (space >> (many $ noneOf " \n")) (try newline)
 
 -- A function looks like: name() { ... }
-function = many1 (noneOf "=(") >> string "()" >> spaces >>
-           between (char '{') (char '}') (many field) >> return ()
-           <?> "valid function definition"
+function :: CharParser () Field
+function = many1 (noneOf "=(}") >> string "()" >> spaces >> char '{' >>
+           manyTill anyChar (try $ string "\n}") >> blanks >>
+           return Function <?> "valid function definition"
 
 ----------------
 -- NEEDED FIELDS
@@ -102,4 +117,4 @@ newlines :: CharParser () ()
 newlines = skipMany (char '\n')
 
 blanks :: CharParser () ()
-blanks = skipMany (space <|> newline)
+blanks = skipMany (try space <|> try newline)
