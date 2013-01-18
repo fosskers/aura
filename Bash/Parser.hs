@@ -21,6 +21,10 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
+{- KNOWN BUGS
+A `command` MUST have args or the parser will break.
+-}
+
 module Bash.Parser where  --( parseBash ) where
 
 import Text.ParserCombinators.Parsec
@@ -31,56 +35,55 @@ import Bash.Base
 
 ---
 
-parseBash :: String -> String -> Either ParseError [Variable]
+parseBash :: String -> String -> Either ParseError [Field]
 parseBash p input = parse bashFile filename input
     where filename = "(" ++ p ++ " PKGBUILD)"
 
 -- A Bash file could have many fields, or none.
-bashFile :: CharParser () [Variable]
-bashFile = blanks *> many field
+bashFile :: CharParser () [Field]
+bashFile = spaces *> many field <* spaces
 
 -- There are many kinds of field, but we only care about two.
-field :: CharParser () Variable
-field = skipMany (comment <|> try command <|> try function) *>
-        (variable <|> ifStatement <?> "valid field") <* blanks
+field :: CharParser () Field
+field = many (try comment <|> try command <|> try function) *>
+        (variable <|> ifStatement <?> "valid field")
 
 ------------------
 -- UNNEEDED FIELDS
 ------------------
+-- A comment looks like: # blah blah blah
 comment :: CharParser () Field
-comment = spaces >> char '#' >> many (noneOf "\n") >>= \c ->  blanks >>
-          return (Comment c) <?> "valid comment"
+comment = spaces >> char '#' >> Comment `liftM` many (noneOf "\n")
+          <?> "valid comment"
 
 -- A command looks like: name -flags target
+-- How can I make the args optional?
 command :: CharParser () Field
 command = do
   spaces
-  name <- commandName
-  args <- commandArgs
-  blanks
-  return $ Command (name,args)
+  name <- many1 alphaNum
+  char ' '
+  args <- words `liftM` many (noneOf "\n")
+  return (Command (name,args)) <?> "valid command"
 
-commandName = many1 letter
-
--- Not perfect yet.
-commandArgs = manyTill (space >> (many $ noneOf " \n")) (try newline)
-
--- A function looks like: name() { ... }
+-- A function looks like: name() { ... } and is filled with fields.
 function :: CharParser () Field
-function = many1 (noneOf "=(}") >> string "()" >> spaces >> char '{' >>
-           manyTill anyChar (try $ string "\n}") >> blanks >>
-           return Function <?> "valid function definition"
+function = spaces >> many1 (noneOf " =(}\n") >> string "()" >> string " {" >>
+           spaces >> Function `liftM` manyTill coms (try $ char '}')
+           <?> "valid function definition"
+               where coms = (try comment <|> try command) <* spaces
 
-----------------
--- NEEDED FIELDS
-----------------
--- A variable looks like: name=string or name=(string string string)
-variable :: CharParser () Variable
+ ----------------
+ -- NEEDED FIELDS
+ ----------------
+ -- A variable looks like: name=string or name=(string string string)
+variable :: CharParser () Field
 variable = do
+  spaces
   name <- many1 (alphaNum <|> char '_')
   char '='
-  entry <- (array <|> single) <* blanks
-  return (name,entry) <?> "valid variable definition"
+  entry <- (array <|> single)
+  return (Variable (name,entry)) <?> "valid variable definition"
 
 array :: CharParser () [String]
 array = between (char '(') (char ')') (concat `liftM` many single)
@@ -88,7 +91,7 @@ array = between (char '(') (char ')') (concat `liftM` many single)
 
 -- Strings can be surrounded by single quotes, double quotes, or nothing.
 single :: CharParser () [String]
-single = (spaces *> (singleQuoted <|> doubleQuoted <|> unQuoted) <* blanks)
+single = (spaces *> (singleQuoted <|> doubleQuoted <|> unQuoted) <* spaces)
          <?> "valid Bash string"
 
 -- Literal string. ${...} comes out as-is. No string extrapolation.
@@ -108,13 +111,5 @@ doubleQuoted =
 unQuoted :: CharParser () [String]
 unQuoted = (: []) `liftM` many1 (noneOf "() \n") <?> "unquoted string"
 
-ifStatement = return ("NOTHING",[])
-
------------
--- PLUMBING
------------
-newlines :: CharParser () ()
-newlines = skipMany (char '\n')
-
-blanks :: CharParser () ()
-blanks = skipMany (try space <|> try newline)
+ifStatement :: CharParser () Field
+ifStatement = return $ Control ("NOTHING",[])
