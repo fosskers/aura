@@ -25,10 +25,11 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Bash where
 
+import Control.Arrow   (first)
+import Control.Monad   (liftM)
 import Text.Regex.PCRE ((=~))
-import Control.Monad (liftM)
 
-import Utilities (hardBreak, lStrip)
+import Utilities (hardBreak, lStrip, notNull)
 
 ---
 
@@ -168,6 +169,15 @@ fromArray _         = error "Argument is not an Array!"
 --testg = braceExpand "perl-{omg,thisis-{embedded,abanana-{wow,yes}},butcool}"
 --testh = braceExpand "lol-{expand,me}-{for,fun}"
 --testj = braceExpand "{that,this}-{is,isn't}-{funny,hilarious}"
+--testk = braceExpand "{pkgname}"
+--testi = braceExpand "troll-{}"
+--testl = braceExpand "troll2-{,fun,yay}"
+
+-- | Bash strings are extrapolated when they contain a brace pair
+-- with two or more substrings separated by commas within them.
+-- Example: sandwiches-are-{beautiful,fine}
+-- Note that strings like: empty-{}  or  lamp-{shade}
+-- will not be expanded and will retain their braces.
 braceExpand :: String -> [String]
 braceExpand entry | null rest = expd
                   | otherwise = [a ++ b | a <- expd, b <- braceExpand rest]
@@ -175,22 +185,22 @@ braceExpand entry | null rest = expd
 
 braceExpand' :: String -> ([String],String)
 braceExpand' []    = ([],[])
-braceExpand' entry = (map (stem ++) roots, snd rest)
-    where stem      = fst stemRoots 
-          roots     = fst rest
-          rest      = (\cs -> braceSearch cs "" []) . snd $ stemRoots
-          stemRoots = hardBreak (== '{') entry 
+braceExpand' entry = case braceSearch rest of
+                       ([],rest')    -> ([stem], rest')
+                       (roots,rest') -> (map (stem ++) roots, rest')
+    where (stem,rest) = hardBreak (== '{') entry
 
--- Hacked together parser. How did I do?
-braceSearch :: String -> Buffer -> [Buffer] -> ([String],String)
-braceSearch "" b bs        = (b : bs, "")
-braceSearch (',':cs) [] bs = braceSearch cs "" bs
-braceSearch (',':cs) b bs  = braceSearch cs "" $ b : bs
-braceSearch ('}':cs) [] bs = (bs, cs)
-braceSearch ('}':cs) b bs  = (b : bs, cs)
-braceSearch ('{':cs) b bs  = braceSearch cs' "" (bs ++ bs')
+braceSearch :: String -> ([String],String)
+braceSearch entry = first (filter notNull) $ braceSearch' entry "" []
+
+braceSearch' :: String -> Buffer -> [Buffer] -> ([String],String)
+braceSearch' "" b bs        = (b : bs, "")
+braceSearch' (',':cs)  b bs = braceSearch' cs "" $ b : bs
+braceSearch' ('}':cs)  b [] = (["{" ++ b ++ "}"], cs)
+braceSearch' ('}':cs)  b bs = (b : bs, cs)
+braceSearch' ('{':cs)  b bs = braceSearch' cs' "" (bs ++ bs')
     where (bs',cs') = braceExpand' (b ++ "{" ++ cs)
-braceSearch (c:cs)   b bs  = braceSearch cs (b ++ [c]) bs
+braceSearch' (c:cs)    b bs = braceSearch' cs (b ++ [c]) bs
 
 -----------
 -- PLUMBING
