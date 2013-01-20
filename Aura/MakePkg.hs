@@ -21,7 +21,9 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.MakePkg where
+module Aura.MakePkg
+    ( makepkgQuiet
+    , makepkgVerbose ) where
 
 import Control.Monad (liftM)
 import Text.Regex.PCRE ((=~))

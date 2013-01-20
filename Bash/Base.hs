@@ -21,9 +21,9 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Bash.Base where
 
-data Field = Comment String
-           | Command (String,[String])
-           | Function [Field]
-           | Variable (String,[String])
-           | Control (String,[Field])
+data Field = Comment  String
+           | Command  String [String]
+           | Function String [Field]
+           | Variable String [String]
+           | Control  String [Field]
              deriving (Eq,Show)

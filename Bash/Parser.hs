@@ -21,14 +21,10 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-{- KNOWN BUGS
-A `command` MUST have args or the parser will break.
--}
-
 module Bash.Parser where  --( parseBash ) where
 
 import Text.ParserCombinators.Parsec
-import Control.Applicative ((<*),(*>),(<$>))
+import Control.Applicative ((<*),(*>),(<*>),(<$>))
 import Control.Monad (liftM)
 
 import Bash.Base
@@ -43,47 +39,42 @@ parseBash p input = parse bashFile filename input
 bashFile :: CharParser () [Field]
 bashFile = spaces *> many field <* spaces
 
--- There are many kinds of field, but we only care about two.
+-- There are many kinds of fields. Commands need to be parsed last.
 field :: CharParser () Field
-field = many (try comment <|> try command <|> try function) *>
-        (variable <|> ifStatement <?> "valid field")
+field = choice [ try comment, try function, try variable, try command ]
+        <?> "valid field"
+--        , try ifStatement ] <?> "valid field"
 
-------------------
--- UNNEEDED FIELDS
-------------------
 -- A comment looks like: # blah blah blah
 comment :: CharParser () Field
 comment = spaces >> char '#' >> Comment `liftM` many (noneOf "\n")
           <?> "valid comment"
 
 -- A command looks like: name -flags target
--- How can I make the args optional?
+-- Arguments are optional.
+-- In its current form, this parser gets too zealous, and happily parses
+-- over other fields it shouldn't. Making it last in `field` avoids this.
+-- The culprit is `option`, which returns [] as if it parsed no args,
+-- even when its actually parsing a function or a variable.
 command :: CharParser () Field
-command = do
-  spaces
-  name <- many1 alphaNum
-  char ' '
-  args <- words `liftM` many (noneOf "\n")
-  return (Command (name,args)) <?> "valid command"
+command = spaces *> (Command <$> many1 alphaNum <*> option [] (try args))
+    where args = char ' ' >> words `liftM` many (noneOf "\n")
 
--- A function looks like: name() { ... } and is filled with fields.
+-- A function looks like: name() { ... \n} and is filled with fields.
 function :: CharParser () Field
-function = spaces >> many1 (noneOf " =(}\n") >> string "()" >> string " {" >>
-           spaces >> Function `liftM` manyTill coms (try $ char '}')
+function = spaces >> many1 (noneOf " =(}\n") >>= \name -> string "() {" >>
+           spaces >> Function name `liftM` manyTill field' (try $ char '}')
            <?> "valid function definition"
-               where coms = (try comment <|> try command) <* spaces
+               where field' = field <* spaces
 
- ----------------
- -- NEEDED FIELDS
- ----------------
- -- A variable looks like: name=string or name=(string string string)
+-- A variable looks like: name=string or name=(string string string)
 variable :: CharParser () Field
 variable = do
   spaces
   name <- many1 (alphaNum <|> char '_')
   char '='
   entry <- (array <|> single)
-  return (Variable (name,entry)) <?> "valid variable definition"
+  return (Variable name entry) <?> "valid variable definition"
 
 array :: CharParser () [String]
 array = between (char '(') (char ')') (concat `liftM` many single)
@@ -112,4 +103,4 @@ unQuoted :: CharParser () [String]
 unQuoted = (: []) `liftM` many1 (noneOf "() \n") <?> "unquoted string"
 
 ifStatement :: CharParser () Field
-ifStatement = return $ Control ("NOTHING",[])
+ifStatement = spaces >> return (Control "NOTHING" [])
