@@ -77,12 +77,12 @@ variable = do
   return (Variable name entry) <?> "valid variable definition"
 
 array :: CharParser () [String]
-array = between (char '(') (char ')') (concat `liftM` many single)
+array = char '(' >> spaces >> concat `liftM` manyTill single (try $ char ')')
         <?> "valid array"
 
 -- | Strings can be surrounded by single quotes, double quotes, or nothing.
 single :: CharParser () [String]
-single = (spaces *> (singleQuoted <|> doubleQuoted <|> unQuoted) <* spaces)
+single = (singleQuoted <|> doubleQuoted <|> try unQuoted) <* spaces
          <?> "valid Bash string"
 
 -- | Literal string. ${...} comes out as-is. No string extrapolation.
@@ -99,7 +99,7 @@ doubleQuoted =
 
 -- | Replaces ${...}. Strings can be extrapolated!
 unQuoted :: CharParser () [String]
-unQuoted = (: []) `liftM` many1 (noneOf "() \n") <?> "unquoted string"
+unQuoted = extrapolated []
 
 ifStatement :: CharParser () Field
 ifStatement = spaces >> return (Control "NOTHING" [])
@@ -109,21 +109,16 @@ ifStatement = spaces >> return (Control "NOTHING" [])
 -- Example: sandwiches-are-{beautiful,fine}
 -- Note that strings like: empty-{}  or  lamp-{shade}
 -- will not be expanded and will retain their braces.
--- BUG: A brace pair at the front of a string breaks the parser.
--- Example: {this,that}-ball
+-- BUG: The statement immediately above this is a lie.
 extrapolated :: [Char] -> CharParser () [String]
 extrapolated stops = do
-  stem  <- many . noneOf $ stops ++ " \n{"
-  roots <- option [""]   $ try braceSection
+  stem  <- many . noneOf $ stops ++ " \n{()"
+  roots <- option [""]   $ try (bracePair stops)
   return $ map (stem ++) roots
-      where innards = concat `liftM` (extrapolated ",}" `sepBy` (char ','))
-            braceSection = between (char '{') (char '}') innards >>= \is ->
-                           option [""] $ extrapolated stops      >>= \rs ->
-                           return $ [ i ++ r | i <- is, r <- rs ]
 
-{- This isn't working properly.
-braceSection :: [Char] -> CharParser () [String]
-braceSection stops = (++) <$> between (char '{') (char '}') innards <*>
-                     option [""] (extrapolated stops)
-    where innards = concat `liftM` (extrapolated ",}" `sepBy` (char ','))
--}
+bracePair :: [Char] -> CharParser () [String]
+bracePair stops = do
+  is <- between (char '{') (char '}') innards
+  rs <- option [""] $ extrapolated stops
+  return $ [ i ++ r | i <- is, r <- rs ]
+      where innards = liftM concat (extrapolated ",}" `sepBy` (char ','))
