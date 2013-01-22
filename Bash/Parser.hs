@@ -1,4 +1,4 @@
--- Improved Bash (PKGBUILD) parser for Aura.
+-- Improved Bash parser for Aura, built with Parsec.
 
 {-
 
@@ -33,7 +33,7 @@ import Bash.Base
 
 parseBash :: String -> String -> Either ParseError [Field]
 parseBash p input = parse bashFile filename input
-    where filename = "(" ++ p ++ " PKGBUILD)"
+    where filename = "(" ++ p ++ ")"
 
 -- | A Bash file could have many fields, or none.
 bashFile :: CharParser () [Field]
@@ -42,8 +42,7 @@ bashFile = spaces *> many field <* spaces
 -- | There are many kinds of fields. Commands need to be parsed last.
 field :: CharParser () Field
 field = choice [ try comment, try function, try variable, try command ]
-        <?> "valid field"
---        , try ifStatement ] <?> "valid field"
+        <* spaces <?> "valid field"
 
 -- | A comment looks like: # blah blah blah
 comment :: CharParser () Field
@@ -63,11 +62,11 @@ command = spaces *> (Command <$> many1 alphaNum <*> option [] (try args))
 -- | A function looks like: name() { ... \n} and is filled with fields.
 function :: CharParser () Field
 function = spaces >> many1 (noneOf " =(}\n") >>= \name -> string "() {" >>
-           spaces >> Function name `liftM` manyTill field' (try $ char '}')
+           spaces >> Function name `liftM` manyTill field (try $ char '}')
            <?> "valid function definition"
-               where field' = field <* spaces
 
 -- | A variable looks like: name=string or name=(string string string)
+-- Can this be made Applicative?
 variable :: CharParser () Field
 variable = do
   spaces
@@ -101,9 +100,6 @@ doubleQuoted =
 unQuoted :: CharParser () [String]
 unQuoted = extrapolated []
 
-ifStatement :: CharParser () Field
-ifStatement = spaces >> return (Control "NOTHING" [])
-
 -- | Bash strings are extrapolated when they contain a brace pair
 -- with two or more substrings separated by commas within them.
 -- Example: sandwiches-are-{beautiful,fine}
@@ -122,3 +118,6 @@ bracePair stops = do
   rs <- option [""] $ extrapolated stops
   return $ [ i ++ r | i <- is, r <- rs ]
       where innards = liftM concat (extrapolated ",}" `sepBy` (char ','))
+
+ifStatement :: CharParser () Field
+ifStatement = spaces >> return (Control "NOTHING" [])

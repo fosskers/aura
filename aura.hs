@@ -37,8 +37,8 @@ import System.Exit        (ExitCode(..), exitWith)
 import Data.List          (intersperse, nub, sort)
 
 import Aura.Colour.Text (yellow)
-import Aura.State       (restoreState, saveState)
 import Aura.Shell       (shellCmd)
+import Aura.State       (restoreState, saveState)
 import Aura.Settings.Enable
 import Aura.Settings.Base
 import Aura.Monad.Aura
@@ -73,11 +73,11 @@ processFlags args = ((flags,nub input,pacOpts'),language)
           (flags,input,pacOpts) = parseFlags language rest
           pacOpts' = nub $ pacOpts ++ reconvertFlags flags dualFlagMap
 
--- Set the local environment.
+-- | Set the local environment.
 prepSettings :: (UserInput,Language) -> IO (UserInput,Settings)
 prepSettings (ui,lang) = (,) ui `liftM` getSettings lang (tripleFst ui)
 
--- Hand user input to the Aura Monad and run it.
+-- | Hand user input to the Aura Monad and run it.
 execute :: (UserInput,Settings) -> IO (Either AuraError ())
 execute ((flags,input,pacOpts),ss) = do
   let flags' = filterSettingsFlags flags
@@ -88,7 +88,7 @@ exit :: Either AuraError () -> IO a
 exit (Left e)  = putStrLn (getErrorMsg e) >> (exitWith $ ExitFailure 1)
 exit (Right _) = exitWith ExitSuccess
 
--- After determining what Flag was given, dispatches a function.
+-- | After determining what Flag was given, dispatches a function.
 -- The `flags` must be sorted to guarantee the pattern matching
 -- below will work properly.
 -- If no matches on Aura flags are found, the flags are assumed to be
@@ -154,7 +154,7 @@ displayOutputLanguages = do
   liftIO $ mapM_ (putStrLn . show) allLanguages
 
 printHelpMsg :: [String] -> Aura ()
-printHelpMsg [] = ask >>= \ss -> do
+pprintHelpMsg [] = ask >>= \ss -> do
   pacmanHelp <- getPacmanHelpMsg
   liftIO . putStrLn . getHelpMsg ss $ pacmanHelp
 printHelpMsg pacOpts = pacman $ pacOpts ++ ["-h"]
@@ -167,22 +167,26 @@ getHelpMsg settings pacmanHelpMsg = concat $ intersperse "\n" allMessages
           colouredMsg   = yellow $ inheritedOperTitle lang
           patterns      = [("pacman","aura"), ("operations",colouredMsg)]
 
--- ANIMATED VERSION MESSAGE
+-- | Animated version message.
 animateVersionMsg :: [String] -> Aura ()
 animateVersionMsg verMsg = ask >>= \ss -> liftIO $ do
   hideCursor
   mapM_ putStrLn $ map (padString verMsgPad) verMsg  -- Version message
-  putStr $ raiseCursorBy 7  -- Initial reraising of the cursor.
+  raiseCursorBy 7  -- Initial reraising of the cursor.
   drawPills 3
   mapM_ putStrLn $ renderPacmanHead 0 Open  -- Initial rendering of head.
-  putStr $ raiseCursorBy 4
-  takeABite 0
+  raiseCursorBy 4
+  takeABite 0  -- Initial bite animation.
   mapM_ pillEating pillsAndWidths
-  putStr clearGrid
+  clearGrid
+  version ss
+  showCursor
+    where pillEating (p,w) = clearGrid >> drawPills p >> takeABite w
+          pillsAndWidths   = [(2,5),(1,10),(0,15)]
+
+version :: Settings -> IO ()
+version ss = do
   putStrLn auraLogo
   putStrLn $ "AURA Version " ++ auraVersion
   putStrLn " by Colin Woodbury\n"
   mapM_ putStrLn . translatorMsg . langOf $ ss
-  showCursor
-    where pillEating (p,w) = putStr clearGrid >> drawPills p >> takeABite w
-          pillsAndWidths   = [(2,5),(1,10),(0,15)]

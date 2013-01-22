@@ -23,11 +23,9 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Logo where
 
--- System Libraries
 import Control.Concurrent (threadDelay)
 import System.IO          (stdout, hFlush)
 
--- Custom Libraries
 import Aura.Colour.Text (yellow)
 
 import Utilities        (prePad)
@@ -48,29 +46,26 @@ openMouth = map yellow
             [ " .--."
             , "/ _.-'"
             , "\\  '-."
-            , " '--'"
-            ]
+            , " '--'" ]
 
 closedMouth :: [String]
 closedMouth = map yellow
               [ " .--."
               , "/ _..\\"
               , "\\  ''/"
-              , " '--'"
-              ]
+              , " '--'" ]
 
 pill :: [String]
 pill = [ ""
        , ".-."
        , "'-'"
-       , ""
-       ]       
+       , "" ]
 
 takeABite :: Int -> IO ()
 takeABite pad = drawMouth Closed >> drawMouth Open
     where drawMouth mouth = do
             mapM_ putStrLn $ renderPacmanHead pad mouth
-            putStr $ raiseCursorBy 4
+            raiseCursorBy 4
             hFlush stdout
             threadDelay 125000
 
@@ -78,11 +73,14 @@ drawPills :: Int -> IO ()
 drawPills numOfPills = mapM_ putStrLn pills
     where pills = renderPills numOfPills
 
-raiseCursorBy :: Int -> String
-raiseCursorBy = cursorUpLineCode
+raiseCursorBy :: Int -> IO ()
+raiseCursorBy = putStr . raiseCursorBy'
 
-clearGrid :: String
-clearGrid = blankLines ++ raiseCursorBy 4
+raiseCursorBy' :: Int -> String
+raiseCursorBy' = cursorUpLineCode
+
+clearGrid :: IO ()
+clearGrid = putStr blankLines >> raiseCursorBy 4
     where blankLines = concat . replicate 4 . padString 23 $ "\n"
 
 renderPill :: Int -> [String]
@@ -91,7 +89,7 @@ renderPill pad = map (padString pad) pill
 renderPills :: Int -> [String]
 renderPills numOfPills = take numOfPills pillPostitions >>= render
     where pillPostitions = [17,12,7]
-          render pos = renderPill pos ++ [raiseCursorBy 5]
+          render pos = renderPill pos ++ [raiseCursorBy' 5]
 
 renderPacmanHead :: Int -> MouthState -> [String]
 renderPacmanHead pad Open   = map (padString pad) openMouth
