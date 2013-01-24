@@ -21,9 +21,28 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Bash.Base where
 
+---
+
 data Field = Comment  String
-           | Command  String [String]
            | Function String [Field]
-           | Variable String [String]
            | Control  String [Field]
+           | Variable String [BashString]
+           | Command  String [BashString]
              deriving (Eq,Show)
+
+-- | While `String` is the main data type in Bash, there are three
+-- subtypes each with different behaviour.
+data BashString = SingleQ String
+                | DoubleQ String
+                | NoQuote String
+                  deriving (Eq,Show)
+
+type Namespace = [Field]
+
+-- | Convert a list of Fields into a Namespace.
+-- Namespaces should typically contain the names of all functions as well,
+-- but this one will only contain global variable names.
+namespace :: [Field] -> Namespace
+namespace = filter isVar
+    where isVar (Variable _ _) = True
+          isVar _ = False

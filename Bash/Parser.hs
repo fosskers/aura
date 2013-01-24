@@ -57,7 +57,9 @@ comment = spaces >> char '#' >> Comment `liftM` many (noneOf "\n")
 -- even when its actually parsing a function or a variable.
 command :: CharParser () Field
 command = spaces *> (Command <$> many1 alphaNum <*> option [] (try args))
-    where args = char ' ' >> words `liftM` many (noneOf "\n")
+    where args = undefined  -- Fix meeee.
+--    where args = char ' ' >> concat `liftM` many1 single
+--    where args = char ' ' >> words `liftM` many (noneOf "\n")
 
 -- | A function looks like: name() { ... \n} and is filled with fields.
 function :: CharParser () Field
@@ -75,30 +77,30 @@ variable = do
   entry <- (array <|> single)
   return (Variable name entry) <?> "valid variable definition"
 
-array :: CharParser () [String]
+array :: CharParser () [BashString]
 array = char '(' >> spaces >> concat `liftM` manyTill single (try $ char ')')
         <?> "valid array"
 
 -- | Strings can be surrounded by single quotes, double quotes, or nothing.
-single :: CharParser () [String]
+single :: CharParser () [BashString]
 single = (singleQuoted <|> doubleQuoted <|> try unQuoted) <* spaces
          <?> "valid Bash string"
 
 -- | Literal string. ${...} comes out as-is. No string extrapolation.
-singleQuoted :: CharParser () [String]
-singleQuoted =
-    between (char '\'') (char '\'') ((: []) <$> many1 (noneOf ['\n','\'']))
-    <?> "single quoted string"
+singleQuoted :: CharParser () [BashString]
+singleQuoted = between (char '\'') (char '\'')
+               ((\s -> [SingleQ s]) <$> many1 (noneOf ['\n','\'']))
+               <?> "single quoted string"
 
 -- | Replaces ${...}. No string extrapolation.
-doubleQuoted :: CharParser () [String]
-doubleQuoted =
-    between (char '"') (char '"') ((: []) <$> many1 (noneOf ['\n','"']))
-    <?> "double quoted string"
+doubleQuoted :: CharParser () [BashString]
+doubleQuoted = between (char '"') (char '"')
+               ((\s -> [DoubleQ s]) <$> many1 (noneOf ['\n','"']))
+               <?> "double quoted string"
 
 -- | Replaces ${...}. Strings can be extrapolated!
-unQuoted :: CharParser () [String]
-unQuoted = extrapolated []
+unQuoted :: CharParser () [BashString]
+unQuoted = map NoQuote `liftM` extrapolated []
 
 -- | Bash strings are extrapolated when they contain a brace pair
 -- with two or more substrings separated by commas within them.
