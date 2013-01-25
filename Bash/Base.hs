@@ -30,11 +30,12 @@ data Field = Comment  String
            | Command  String [BashString]
              deriving (Eq,Show)
 
--- | While `String` is the main data type in Bash, there are three
+-- | While `String` is the main data type in Bash, there are four
 -- subtypes each with different behaviour.
 data BashString = SingleQ String
                 | DoubleQ String
                 | NoQuote String
+                | Backtic Field   -- Contains commands.
                   deriving (Eq,Show)
 
 type Namespace = [Field]

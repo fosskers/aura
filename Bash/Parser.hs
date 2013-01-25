@@ -58,7 +58,7 @@ comment = spaces >> char '#' >> Comment `liftM` many (noneOf "\n")
 -- Note: `args` is a bit of a hack.
 command :: CharParser () Field
 command = spaces *> (Command <$> many1 alphaNum <*> option [] (try args))
-    where args = char ' ' >> many (noneOf "\n") >>= \line ->
+    where args = char ' ' >> many (noneOf "`\n") >>= \line ->
                  case parse (many1 single) "(command)" line of
                    Left e   -> fail "Failed parsing strings in a command"
                    Right bs -> return $ concat bs
@@ -85,8 +85,8 @@ array = char '(' >> spaces >> concat `liftM` manyTill single (try $ char ')')
 
 -- | Strings can be surrounded by single quotes, double quotes, or nothing.
 single :: CharParser () [BashString]
-single = (singleQuoted <|> doubleQuoted <|> try unQuoted) <* spaces
-         <?> "valid Bash string"
+single = (singleQuoted <|> doubleQuoted <|> backticked <|> try unQuoted)
+         <* spaces <?> "valid Bash string"
 
 -- | Literal string. ${...} comes out as-is. No string extrapolation.
 singleQuoted :: CharParser () [BashString]
@@ -99,6 +99,11 @@ doubleQuoted :: CharParser () [BashString]
 doubleQuoted = between (char '"') (char '"')
                ((\s -> [DoubleQ s]) <$> many1 (noneOf ['\n','"']))
                <?> "double quoted string"
+
+-- | Contains commands.
+backticked :: CharParser () [BashString]
+backticked = between (char '`') (char '`') ((\c -> [Backtic c]) <$> command)
+             <?> "backticked string"
 
 -- | Replaces ${...}. Strings can be extrapolated!
 unQuoted :: CharParser () [BashString]
