@@ -55,11 +55,13 @@ comment = spaces >> char '#' >> Comment `liftM` many (noneOf "\n")
 -- over other fields it shouldn't. Making it last in `field` avoids this.
 -- The culprit is `option`, which returns [] as if it parsed no args,
 -- even when its actually parsing a function or a variable.
+-- Note: `args` is a bit of a hack.
 command :: CharParser () Field
 command = spaces *> (Command <$> many1 alphaNum <*> option [] (try args))
-    where args = undefined  -- Fix meeee.
---    where args = char ' ' >> concat `liftM` many1 single
---    where args = char ' ' >> words `liftM` many (noneOf "\n")
+    where args = char ' ' >> many (noneOf "\n") >>= \line ->
+                 case parse (many1 single) "(command)" line of
+                   Left e   -> fail "Failed parsing strings in a command"
+                   Right bs -> return $ concat bs
 
 -- | A function looks like: name() { ... \n} and is filled with fields.
 function :: CharParser () Field
@@ -110,16 +112,14 @@ unQuoted = map NoQuote `liftM` extrapolated []
 -- BUG: The statement immediately above this is a lie.
 extrapolated :: [Char] -> CharParser () [String]
 extrapolated stops = do
-  stem  <- many . noneOf $ stops ++ " \n{()"
-  roots <- option [""]   $ try (bracePair stops)
-  return $ map (stem ++) roots
+  xs <- plain <|> bracePair
+  ys <- option [""] $ try (extrapolated stops)
+  return $ [ x ++ y | x <- xs, y <- ys ]
+      where plain = (: []) `liftM` many1 (noneOf $ " \n{()" ++ stops)
 
-bracePair :: [Char] -> CharParser () [String]
-bracePair stops = do
-  is <- between (char '{') (char '}') innards
-  rs <- option [""] $ extrapolated stops
-  return $ [ i ++ r | i <- is, r <- rs ]
-      where innards = liftM concat (extrapolated ",}" `sepBy` (char ','))
+bracePair :: CharParser () [String]
+bracePair = between (char '{') (char '}') innards <?> "valid {...} string"
+    where innards = liftM concat (extrapolated ",}" `sepBy` (char ','))
 
 ifStatement :: CharParser () Field
 ifStatement = spaces >> return (Control "NOTHING" [])
