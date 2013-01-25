@@ -33,8 +33,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 import System.Environment (getArgs)
 import Control.Monad      (unless, liftM)
-import System.Exit        (ExitCode(..), exitWith)
-import Data.List          (intersperse, nub, sort)
+import System.Exit        (exitSuccess, exitFailure)
+import Data.List          (nub, sort, intercalate)
 
 import Aura.Colour.Text (yellow)
 import Aura.Shell       (shellCmd)
@@ -85,8 +85,8 @@ execute ((flags,input,pacOpts),ss) = do
   runAura (executeOpts (flags',input,pacOpts)) ss
 
 exit :: Either AuraError () -> IO a
-exit (Left e)  = putStrLn (getErrorMsg e) >> (exitWith $ ExitFailure 1)
-exit (Right _) = exitWith ExitSuccess
+exit (Left e)  = putStrLn (getErrorMsg e) >> exitFailure
+exit (Right _) = exitSuccess
 
 -- | After determining what Flag was given, dispatches a function.
 -- The `flags` must be sorted to guarantee the pattern matching
@@ -151,16 +151,16 @@ viewConfFile = shellCmd "less" [pacmanConfFile]
 displayOutputLanguages :: Aura ()
 displayOutputLanguages = do
   notify displayOutputLanguagesMsg1
-  liftIO $ mapM_ (putStrLn . show) allLanguages
+  liftIO $ mapM_ print allLanguages
 
 printHelpMsg :: [String] -> Aura ()
-pprintHelpMsg [] = ask >>= \ss -> do
+printHelpMsg [] = ask >>= \ss -> do
   pacmanHelp <- getPacmanHelpMsg
   liftIO . putStrLn . getHelpMsg ss $ pacmanHelp
 printHelpMsg pacOpts = pacman $ pacOpts ++ ["-h"]
 
 getHelpMsg :: Settings -> [String] -> String
-getHelpMsg settings pacmanHelpMsg = concat $ intersperse "\n" allMessages
+getHelpMsg settings pacmanHelpMsg = intercalate "\n" allMessages
     where lang = langOf settings
           allMessages   = [replacedLines, auraOperMsg lang, manpageMsg lang]
           replacedLines = unlines $ map (replaceByPatt patterns) pacmanHelpMsg
@@ -171,7 +171,7 @@ getHelpMsg settings pacmanHelpMsg = concat $ intersperse "\n" allMessages
 animateVersionMsg :: [String] -> Aura ()
 animateVersionMsg verMsg = ask >>= \ss -> liftIO $ do
   hideCursor
-  mapM_ putStrLn $ map (padString verMsgPad) verMsg  -- Version message
+  mapM_ (putStrLn . padString verMsgPad) verMsg  -- Version message
   raiseCursorBy 7  -- Initial reraising of the cursor.
   drawPills 3
   mapM_ putStrLn $ renderPacmanHead 0 Open  -- Initial rendering of head.

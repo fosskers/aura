@@ -29,6 +29,7 @@ import System.IO (stdout, hFlush)
 import Data.List (dropWhileEnd)
 import Text.Regex.PCRE ((=~))
 import Text.Printf (printf)
+import Control.Monad (void)
 
 import Shell
 
@@ -88,7 +89,7 @@ getSelection choiceLabels = do
       valids   = map show [1..quantity]
       padding  = show . length . show $ quantity
       choices  = zip valids choiceLabels
-  mapM_ (\(n,c)-> printf ("%" ++ padding ++ "s. %s\n") n c) choices
+  mapM_ (uncurry (printf ("%" ++ padding ++ "s. %s\n"))) choices
   putStr ">> "
   hFlush stdout
   userChoice <- getLine
@@ -97,18 +98,18 @@ getSelection choiceLabels = do
     Nothing    -> getSelection choiceLabels  -- Ask again.
 
 timedMessage :: Int -> [String] -> IO ()
-timedMessage delay msgs = mapM_ printMessage msgs
+timedMessage delay = mapM_ printMessage
     where printMessage msg = putStr msg >> hFlush stdout >> threadDelay delay
 
 searchLines :: Regex -> [String] -> [String]
-searchLines pat allLines = filter (\line -> line =~ pat) allLines
+searchLines pat = filter (=~ pat)
 
 notNull :: [a] -> Bool
 notNull = not . null
 
 -- Opens the editor of the user's choice.
 openEditor :: String -> String -> IO ()
-openEditor editor file = shellCmd editor [file] >> return ()
+openEditor editor file = void $ shellCmd editor [file]
 
 -- All tarballs should be of the format `.tar.gz`
 -- Thus calling dropExtension twice should remove that section.
@@ -127,7 +128,7 @@ postPad :: [a] -> a -> Int -> [a]
 postPad xs x len = take len $ xs ++ repeat x
 
 prePad :: [a] -> a -> Int -> [a]
-prePad xs x len = take (len - length xs) (repeat x) ++ xs
+prePad xs x len = replicate (len - length xs) x ++ xs
 
 -- Perform an action within a given directory.
 inDir :: FilePath -> IO a -> IO a

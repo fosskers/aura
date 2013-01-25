@@ -35,9 +35,9 @@ module Shell where
 -- System Libraries
 import System.Process (readProcess, readProcessWithExitCode, rawSystem)
 import System.Exit (ExitCode(..))
-import Data.List (intersperse)
+import Data.List (intercalate)
 import Control.Monad (liftM)
-import Data.Maybe (fromJust)
+import Data.Maybe (fromMaybe, fromJust)
 import System.Directory ( getDirectoryContents
                         , setCurrentDirectory
                         , getCurrentDirectory
@@ -84,7 +84,7 @@ chown user path args = do
 ---------------
 -- Code borrowed from `ansi-terminal` library by Max Bolingbroke.
 csi :: [Int] -> String -> String
-csi args code = "\ESC[" ++ concat (intersperse ";" (map show args)) ++ code
+csi args code = "\ESC[" ++ intercalate ";" (map show args) ++ code
 
 cursorUpLineCode :: Int -> String
 cursorUpLineCode n = csi [n] "F"
@@ -132,7 +132,7 @@ didProcessFail = not . didProcessSucceed
 type Environment = [(String,String)]
 
 getEnvVar :: String -> Environment -> Maybe String
-getEnvVar v = lookup v
+getEnvVar = lookup
 
 varExists :: String -> Environment -> Bool
 varExists v env = case getEnvVar v env of
@@ -173,6 +173,4 @@ getTrueUser env | isTrueRoot env  = "root"
                 | otherwise       = getUser' env
 
 getEditor :: Environment -> String
-getEditor env = case getEnvVar "EDITOR" env of
-                  Just emacs -> emacs  -- ;)
-                  Nothing    -> "vi"   -- `vi` should be available.
+getEditor env = fromMaybe "vi" $ getEnvVar "EDITOR" env
