@@ -83,7 +83,8 @@ array :: CharParser () [BashString]
 array = char '(' >> spaces >> concat `liftM` manyTill single (try $ char ')')
         <?> "valid array"
 
--- | Strings can be surrounded by single quotes, double quotes, or nothing.
+-- | Strings can be surrounded by single quotes, double quotes, backticks,
+-- or nothing.
 single :: CharParser () [BashString]
 single = (singleQuoted <|> doubleQuoted <|> backticked <|> try unQuoted)
          <* spaces <?> "valid Bash string"
@@ -127,4 +128,4 @@ bracePair = between (char '{') (char '}') innards <?> "valid {...} string"
     where innards = liftM concat (extrapolated ",}" `sepBy` char ',')
 
 ifStatement :: CharParser () Field
-ifStatement = spaces >> return (Control "NOTHING" [])
+ifStatement = spaces >> return (Control "NOTHING YET" [])

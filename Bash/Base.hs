@@ -21,6 +21,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Bash.Base where
 
+import qualified Data.Map.Lazy as M
+
 ---
 
 data Field = Comment  String
@@ -35,15 +37,35 @@ data Field = Comment  String
 data BashString = SingleQ String
                 | DoubleQ String
                 | NoQuote String
-                | Backtic Field   -- Contains commands.
+                | Backtic Field   -- Contains a Command.
                   deriving (Eq,Show)
 
-type Namespace = [Field]
+type Namespace = M.Map String [BashString]
+type Script    = [Field]  -- A parsed Bash script.
 
 -- | Convert a list of Fields into a Namespace.
 -- Namespaces should typically contain the names of all functions as well,
 -- but this one will only contain global variable names.
 namespace :: [Field] -> Namespace
-namespace = filter isVar
-    where isVar (Variable _ _) = True
-          isVar _ = False
+namespace [] = M.empty
+namespace (Variable n bs : fs) = M.insert n bs $ namespace fs
+namespace (_:fs) = namespace fs
+
+-- | At the moment, only returns the equivalent of ${foo[0]}.
+getVar :: Namespace -> String -> Maybe String
+getVar ns s = case M.lookup s ns of
+                Nothing -> Nothing
+                Just bs -> Just . fromBashString . head $ bs
+
+fromBashString :: BashString -> String
+fromBashString (SingleQ s) = surround '\'' s
+fromBashString (DoubleQ s) = surround '"' s
+fromBashString (NoQuote s) = s
+fromBashString (Backtic c) = surround '`' $ fromCommand c
+
+fromCommand :: Field -> String
+fromCommand (Command c as) = unwords $ c : map fromBashString as
+fromCommand _ = error "Argument given was not a Command."
+
+surround :: Char -> String -> String
+surround c s = c : s ++ [c]
