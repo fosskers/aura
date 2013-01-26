@@ -94,9 +94,13 @@ Install an AUR package:
 
     aura -A (package)
 
-Upgrade all installed AUR packages:
+Author's favourite (upgrades, remove make deps, shows PKGBUILD diffs):
 
-    aura -Ayu
+    aura -Akua
+
+Just upgrade all installed AUR packages (works with `-y`):
+
+    aura -Au
 
 Look up information on an AUR package:
 
