@@ -29,7 +29,7 @@ module Aura.Time
     , SimpleTime ) where
 
 import System.Time (getClockTime, toUTCTime, CalendarTime(..), Month(..))
-import Data.List (intersperse)
+import Data.List (intercalate)
 
 data SimpleTime = SimpleTime { yearOf   :: Int
                              , monthOf  :: Month
@@ -46,7 +46,7 @@ toSimpleTime c = SimpleTime { yearOf   = ctYear c
                             , minuteOf = ctMin c }
 
 dotFormat :: SimpleTime -> String
-dotFormat t = concat $ intersperse "." items
+dotFormat t = intercalate "." items
     where items = [ show $ yearOf t
                   , take 3 . show . monthOf $ t
                   , show $ dayOf t

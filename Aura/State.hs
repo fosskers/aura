@@ -27,7 +27,7 @@ import qualified Data.Map.Lazy as M
 
 import System.FilePath ((</>))
 import Control.Monad   (liftM, unless)
-import Data.Maybe      (catMaybes)
+import Data.Maybe      (mapMaybe)
 import Data.List       (partition)
 
 import Aura.Colour.Text (cyan, red)
@@ -45,11 +45,8 @@ import Shell     (ls')
 
 ---
 
---------
--- TYPES
---------
 data State = State { timeOf :: SimpleTime 
-                   , pkgsOf :: (M.Map String [Int]) }
+                   , pkgsOf :: M.Map String [Int] }
              deriving (Eq,Show,Read)
 
 -- ([toDowngrade],[toRemove])
@@ -65,8 +62,8 @@ currentState :: Aura State
 currentState = do
   pkgs <- rawCurrentState
   time <- (toSimpleTime . toUTCTime) `liftM` liftIO getClockTime
-  let namesVers = map (\p -> pair $ words p) $ pkgs
-      pair      = \(x:y:_) -> (x, comparableVer y)
+  let namesVers    = map (pair . words) pkgs
+      pair (x:y:_) = (x, comparableVer y)
   return . State time . M.fromAscList $ namesVers
 
 compareStates :: State -> State -> StateDiff
@@ -95,7 +92,7 @@ restoreState = ask >>= \ss -> do
       (down,nope) = partition (flip downgradable cache) cand
       message     = restoreStateMsg1 $ langOf ss
   unless (null nope) $ printList red cyan message (map fst nope)
-  downgradeAndRemove (catMaybes $ map (flip getFilename cache) down) remo
+  downgradeAndRemove (mapMaybe (flip getFilename cache) down) remo
 
 readState :: FilePath -> Aura State
 readState name = liftIO (read `liftM` readFile (stateCache </> name))
@@ -108,6 +105,6 @@ downgradeAndRemove down remo
     | null remo = downgrade
     | null down = remove
     | otherwise = downgrade >> remove
-    where remove    = pacman $ ["-R"] ++ remo
+    where remove    = pacman $ "-R" : remo
           downgrade = ask >>= \ss ->
-                      pacman $ ["-U"] ++ map (cachePathOf ss </>) down
+                      pacman $ "-U" : map (cachePathOf ss </>) down

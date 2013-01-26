@@ -76,7 +76,7 @@ variable = do
   spaces
   name <- many1 (alphaNum <|> char '_')
   char '='
-  entry <- (array <|> single)
+  entry <- array <|> single
   return (Variable name entry) <?> "valid variable definition"
 
 array :: CharParser () [BashString]
@@ -119,12 +119,12 @@ extrapolated :: [Char] -> CharParser () [String]
 extrapolated stops = do
   xs <- plain <|> bracePair
   ys <- option [""] $ try (extrapolated stops)
-  return $ [ x ++ y | x <- xs, y <- ys ]
+  return [ x ++ y | x <- xs, y <- ys ]
       where plain = (: []) `liftM` many1 (noneOf $ " \n{()" ++ stops)
 
 bracePair :: CharParser () [String]
 bracePair = between (char '{') (char '}') innards <?> "valid {...} string"
-    where innards = liftM concat (extrapolated ",}" `sepBy` (char ','))
+    where innards = liftM concat (extrapolated ",}" `sepBy` char ',')
 
 ifStatement :: CharParser () Field
 ifStatement = spaces >> return (Control "NOTHING" [])

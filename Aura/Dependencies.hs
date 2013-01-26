@@ -25,7 +25,7 @@ module Aura.Dependencies where
 
 import Control.Monad (filterM)
 import Text.Regex.PCRE ((=~))
-import Data.Maybe (fromJust)
+import Data.Maybe (fromMaybe, fromJust, isNothing)
 import Data.List (nub)
 
 import Aura.AurConnection (getTrueVerViaPkgbuild)
@@ -54,7 +54,7 @@ getDepsToInstall pkgs = ask >>= \ss -> do
      else do
        let providers  = map (pkgNameOf . fromJust . providerPkgOf) necVirPkgs
            pacmanPkgs = map pkgNameOf necPacPkgs
-       return $ (nub $ providers ++ pacmanPkgs, necAURPkgs)
+       return (nub $ providers ++ pacmanPkgs, necAURPkgs)
 
 -- Returns ([RepoPackages], [AURPackages], [VirtualPackages])
 determineDeps :: AURPkg -> Aura ([String],[AURPkg],[String])
@@ -66,15 +66,13 @@ determineDeps pkg = do
   recursiveDeps <- mapM determineDeps aurPkgs
   let (rs,as,os) = foldl groupPkgs (repoPkgNames,aurPkgs,other) recursiveDeps
   return (nub rs, nub as, nub os)
-      where getDeps gs s = case referenceArray gs s of
-                             Nothing -> []
-                             Just ds -> ds
+      where getDeps gs s = fromMaybe [] $ referenceArray gs s
 
 -- If a package isn't installed, `pacman -T` will yield a single name.
 -- Any other type of output means installation is not required. 
 mustInstall :: String -> Aura Bool
 mustInstall pkg = do
-  necessaryDeps <- pacmanOutput $ ["-T",pkg]
+  necessaryDeps <- pacmanOutput ["-T",pkg]
   return $ length (words necessaryDeps) == 1
 
 -- Questions to be answered in conflict checks:
@@ -91,7 +89,7 @@ getConflicts settings (ps,as,vs) = rErr ++ aErr ++ vErr
           toIgnore = ignoredPkgsOf settings
 
 getPacmanConflicts :: Language -> [String] -> PacmanPkg -> Maybe ErrMsg
-getPacmanConflicts lang toIgnore pkg = getRealPkgConflicts f lang toIgnore pkg
+getPacmanConflicts = getRealPkgConflicts f
     where f = getMostRecentVerNum . pkgInfoOf
        
 -- Takes `pacman -Si` output as input.
@@ -102,7 +100,7 @@ getMostRecentVerNum info = tripleThrd match
           allLines  = lines info
 
 getAURConflicts :: Language -> [String] -> AURPkg -> Maybe ErrMsg
-getAURConflicts lang toIgnore pkg = getRealPkgConflicts f lang toIgnore pkg
+getAURConflicts = getRealPkgConflicts f
     where f = getTrueVerViaPkgbuild . pkgbuildOf
 
 -- Must be called with a (f)unction that yields the version number
@@ -122,8 +120,8 @@ getRealPkgConflicts f lang toIgnore pkg
 -- This can't be generalized as easily.
 getVirtualConflicts :: Language -> [String] -> VirtualPkg -> Maybe ErrMsg
 getVirtualConflicts lang toIgnore pkg
-    | providerPkgOf pkg == Nothing = Just failMessage1
-    | isIgnored provider toIgnore  = Just failMessage2
+    | isNothing (providerPkgOf pkg) = Just failMessage1
+    | isIgnored provider toIgnore   = Just failMessage2
     | isVersionConflict (versionOf pkg) pVer = Just failMessage3
     | otherwise = Nothing
     where name         = pkgNameOf pkg
@@ -144,9 +142,9 @@ getProvidedVerNum pkg = splitVer match
 -- SHOULD match as `okay` against version 7.4, 7.4.0.1, or even 7.4.0.1-2.
 isVersionConflict :: VersionDemand -> String -> Bool
 isVersionConflict Anything _     = False
-isVersionConflict (LessThan r) c = not $ comparableVer c < comparableVer r
-isVersionConflict (MoreThan r) c = not $ comparableVer c > comparableVer r
-isVersionConflict (MustBe r)   c = not $ c =~ ("^" ++ r)
+isVersionConflict (LessThan r) c = comparableVer c >= comparableVer r
+isVersionConflict (MoreThan r) c = comparableVer c <= comparableVer r
+isVersionConflict (MustBe r)   c = not $ c =~ ('^' : r)
 isVersionConflict (AtLeast r)  c | comparableVer c > comparableVer r = False
                                  | isVersionConflict (MustBe r) c = True
                                  | otherwise = False

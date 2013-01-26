@@ -88,7 +88,7 @@ installPackages' pacOpts pkgs = ask >>= \ss -> do
 
 knownBadPkgCheck :: [String] -> Aura [String]
 knownBadPkgCheck []     = return []
-knownBadPkgCheck (p:ps) = ask >>= \ss -> do
+knownBadPkgCheck (p:ps) = ask >>= \ss ->
   case p `lookup` wontBuildOf ss of
     Nothing -> (p :) `liftM` knownBadPkgCheck ps
     Just r  -> do
@@ -124,7 +124,7 @@ upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
   if null toUpgrade && null devel
      then warn upgradeAURPkgsMsg3
      else reportPkgsToUpgrade $ map prettify toUpgrade ++ devel
-  installPackages pacOpts $ (map (nameOf . fst) toUpgrade) ++ pkgs ++ devel
+  installPackages pacOpts $ map (nameOf . fst) toUpgrade ++ pkgs ++ devel
     where prettify (p,v) = nameOf p ++ " : " ++ v ++ " => " ++ latestVerOf p
 
 develPkgCheck :: Aura [String]
@@ -169,7 +169,7 @@ displayPkgDeps :: [String] -> Aura ()
 displayPkgDeps []   = return ()
 displayPkgDeps pkgs = do
   info    <- aurInfoLookup pkgs
-  aurPkgs <- mapM makeAURPkg $ map nameOf info
+  aurPkgs <- mapM (makeAURPkg . nameOf) info
   allDeps <- mapM determineDeps aurPkgs
   let (ps,as,_) = foldl groupPkgs ([],[],[]) allDeps
   reportPkgsToInstall (n ps) (nub as) []
@@ -200,7 +200,7 @@ reportPkgsToInstall pacPkgs aurDeps aurPkgs = do
             pl      = printList green cyan
 
 reportNonPackages :: [String] -> Aura ()
-reportNonPackages nons = badReport reportNonPackagesMsg1 nons 
+reportNonPackages = badReport reportNonPackagesMsg1
 
 reportIgnoredPackages :: [String] -> Aura ()
 reportIgnoredPackages pkgs = do

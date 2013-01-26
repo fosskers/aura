@@ -38,6 +38,7 @@ module Aura.Flags
     , Flag(..) ) where
 
 import System.Console.GetOpt
+import Data.Maybe (fromMaybe)
 
 import Aura.Colour.Text (yellow)
 import Aura.Languages
@@ -105,7 +106,7 @@ auraOperations lang =
     , Option ['O'] ["orphans"]   (NoArg Orphans)    (orpha lang) ]
 
 auraOptions :: [OptDescr Flag]
-auraOptions = (Option [] ["aurignore"] (ReqArg Ignore "") "") :
+auraOptions = Option [] ["aurignore"] (ReqArg Ignore "") "" :
               map simpleMakeOption
               [ ( ['a'], ["delmakedeps"],  DelMDeps      )
               , ( ['b'], ["backup"],       Backup        )
@@ -174,9 +175,7 @@ reconvertFlags flags fm = filter notNull $ map (reconvertFlag fm) flags
 
 -- Converts an intercepted Pacman flag back into its raw string form.
 reconvertFlag :: FlagMap -> Flag -> String
-reconvertFlag flagMap f = case f `lookup` flagMap of
-                            Nothing -> ""
-                            Just x  -> x
+reconvertFlag flagMap f = fromMaybe "" $ f `lookup` flagMap
 
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
@@ -184,7 +183,7 @@ settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
 
 filterSettingsFlags :: [Flag] -> [Flag]
 filterSettingsFlags []              = []
-filterSettingsFlags ((Ignore _):fs) = filterSettingsFlags fs
+filterSettingsFlags (Ignore _ : fs) = filterSettingsFlags fs
 filterSettingsFlags (f:fs) | f `elem` settingsFlags = filterSettingsFlags fs
                            | otherwise = f : filterSettingsFlags fs
 
@@ -209,7 +208,7 @@ getLanguage = fishOutFlag flagsAndResults english
 
 getIgnoredAuraPkgs :: [Flag] -> [String]
 getIgnoredAuraPkgs [] = []
-getIgnoredAuraPkgs ((Ignore ps):_) = split ',' ps
+getIgnoredAuraPkgs (Ignore ps : _) = split ',' ps
 getIgnoredAuraPkgs (_:fs) = getIgnoredAuraPkgs fs
 
 getSuppression :: [Flag] -> Bool

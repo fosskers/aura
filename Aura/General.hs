@@ -23,7 +23,7 @@ module Aura.General where
 
 import Text.Regex.PCRE ((=~))
 import Control.Monad   (liftM)
-import Data.List       ((\\), nub, intersperse, isSuffixOf)
+import Data.List       ((\\), nub, intercalate, isSuffixOf)
 
 import Aura.Settings.Base
 import Aura.AurConnection
@@ -58,10 +58,10 @@ data VersionDemand = LessThan String
                      deriving (Eq)
 
 instance Show VersionDemand where
-    show (LessThan v) = "<"  ++ v
+    show (LessThan v) = '<' : v
     show (AtLeast v)  = ">=" ++ v
-    show (MoreThan v) = ">"  ++ v
-    show (MustBe  v)  = "="  ++ v
+    show (MoreThan v) = '>' : v
+    show (MustBe  v)  = '=' : v
     show Anything     = ""
 
 -- I would like to reduce the following three sets of instance declarations
@@ -146,14 +146,14 @@ makePackage typeCon thirdField pkg = typeCon name ver `liftM` thirdField name
     where (name,ver) = parseNameAndVersionDemand pkg
 
 makePacmanPkg :: String -> Aura PacmanPkg
-makePacmanPkg pkg = makePackage PacmanPkg getInfo pkg
+makePacmanPkg = makePackage PacmanPkg getInfo
     where getInfo name = pacmanOutput ["-Si",name]
 
 makeAURPkg :: String -> Aura AURPkg
-makeAURPkg pkg = makePackage AURPkg downloadPkgbuild pkg
+makeAURPkg = makePackage AURPkg downloadPkgbuild
 
 makeVirtualPkg :: String -> Aura VirtualPkg
-makeVirtualPkg pkg = makePackage VirtualPkg getProvider pkg
+makeVirtualPkg = makePackage VirtualPkg getProvider
     where getProvider n = do
             provider <- getProvidingPkg n
             case provider of
@@ -190,7 +190,7 @@ sudo action = do
 
 -- Prompt if the user is the true Root. Building as it can be dangerous.
 trueRoot :: Aura () -> Aura ()
-trueRoot action = ask >>= \ss -> do
+trueRoot action = ask >>= \ss ->
   if isntTrueRoot $ environmentOf ss
      then action
      else do
@@ -210,7 +210,7 @@ getDevelPkgs :: Aura [String]
 getDevelPkgs = (filter isDevelPkg . map fst) `liftM` getForeignPackages
 
 isDevelPkg :: String -> Bool
-isDevelPkg p = any (\suff -> isSuffixOf suff p) suffixes
+isDevelPkg p = any (`isSuffixOf` p) suffixes
     where suffixes = ["-git","-hg","-svn","-darcs","-cvs","-bzr"]
 
 isntMostRecent :: (PkgInfo,String) -> Bool
@@ -232,7 +232,7 @@ filterRepoPkgs pkgs = do
   repoPkgs <- pacmanOutput ["-Ssq",pkgs']
   return . filter (`elem` pkgs) . lines $ repoPkgs
     where pkgs' = "^(" ++ prep pkgs ++ ")$"
-          prep  = specs . concat . intersperse "|"
+          prep  = specs . intercalate "|"
           specs []     = []
           specs (c:cs) | c `elem` "+" = ['[',c,']'] ++ specs cs
                        | otherwise    = c : specs cs
@@ -248,19 +248,19 @@ colouredMessage :: Colouror -> (Language -> String) -> Aura ()
 colouredMessage c msg = ask >>= putStrLnA c . msg . langOf
 
 renderColour :: Colouror -> (Language -> String) -> Aura String
-renderColour c msg = ask >>= return . c . msg . langOf
+renderColour c msg = (c . msg . langOf) `liftM` ask
 
 say :: (Language -> String) -> Aura ()
-say msg = colouredMessage noColour msg
+say = colouredMessage noColour
 
 notify :: (Language -> String) -> Aura ()
-notify msg = colouredMessage green msg
+notify = colouredMessage green
 
 warn :: (Language -> String) -> Aura ()
-warn msg = colouredMessage yellow msg
+warn = colouredMessage yellow
 
 scold :: (Language -> String) -> Aura ()
-scold msg = colouredMessage red msg
+scold = colouredMessage red
 
 badReport :: (Language -> String) -> [String] -> Aura ()
 badReport _ []     = return ()
@@ -278,10 +278,10 @@ divideByPkgType pkgs = do
 
 -- Format two lists into two nice rows a la `-Qi` or `-Si`.
 entrify :: Settings -> [String] -> [String] -> String
-entrify ss fs es = concat $ intersperse "\n" fsEs
-    where fsEs = map combine $ zip fs' es
+entrify ss fs es = intercalate "\n" fsEs
+    where fsEs = zipWith combine fs' es
           fs'  = padding ss fs
-          combine (f,e) = f ++ " : " ++ e
+          combine f e = f ++ " : " ++ e
 
 -- Right-pads strings according to the longest string in the group.
 padding :: Settings -> [String] -> [String]

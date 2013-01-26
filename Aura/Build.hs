@@ -25,7 +25,7 @@ module Aura.Build
     , hotEdit ) where
 
 import System.FilePath ((</>), takeFileName)
-import Control.Monad   (liftM, forM)
+import Control.Monad   (liftM, forM, when)
 
 import Aura.AurConnection (downloadSource)
 import Aura.Pacman        (pacman)
@@ -88,15 +88,14 @@ getSourceCode pkgName user currDir = liftIO $ do
   cd sourceDir
 
 -- Allow the user to edit the PKGBUILD if they asked to do so.
--- Ugly. Aura Monad within IO Monad within Aura Monad.
 hotEdit :: [AURPkg] -> Aura [AURPkg]
-hotEdit pkgs = ask >>= \ss -> do
-  withTempDir "hotedit" . forM pkgs $ \p -> liftIO $ do
+hotEdit pkgs = ask >>= \ss ->
+  withTempDir "hotedit" . forM pkgs $ \p -> do
     let msg = flip checkHotEditMsg1 . pkgNameOf
-    answer <- runAura (optionalPrompt (msg p)) ss
-    if not $ fromRight answer
+    answer <- optionalPrompt (msg p)
+    if not answer
        then return p
-       else do
+       else liftIO $ do
          let filename = pkgNameOf p ++ "-PKGBUILD"
              editor   = getEditor $ environmentOf ss
          writeFile filename $ pkgbuildOf p
@@ -130,13 +129,9 @@ buildFail built (p:ps) errors = ask >>= \ss -> do
 -- If the user wasn't running Aura with `-x`, then this will
 -- show them the suppressed makepkg output. 
 displayBuildErrors :: ErrMsg -> Aura ()
-displayBuildErrors errors = ask >>= \ss -> do
-  if not $ suppressMakepkg ss
-     then return ()  -- User has already seen the output.
-     else do
-       putStrA red (displayBuildErrorsMsg1 $ langOf ss)
-       liftIO $ (timedMessage 1000000 ["3.. ","2.. ","1..\n"] >>
-                 putStrLn errors)
+displayBuildErrors errors = ask >>= \ss -> when (suppressMakepkg ss) $ do
+  putStrA red (displayBuildErrorsMsg1 $ langOf ss)
+  liftIO (timedMessage 1000000 ["3.. ","2.. ","1..\n"] >> putStrLn errors)
 
 -- Moves a file to the pacman package cache and returns its location.
 moveToCache :: [FilePath] -> Aura [FilePath]

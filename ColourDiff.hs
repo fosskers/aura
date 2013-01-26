@@ -52,8 +52,8 @@ format x@(S,_)  (F,acc) = (S,  colour x ++ "\n" : acc)
 format x@(di,_) (_,acc) = (di, colour x ++ "\n" : acc)
 
 colour :: (DI,[String]) -> [String]
-colour (S,ss) = intersperse "\n" $ map (\s -> green $ "+" ++ s) ss
-colour (F,ss) = intersperse "\n" $ map (\s -> red   $ "-" ++ s) ss
+colour (S,ss) = intersperse "\n" $ map (\s -> green $ '+' : s) ss
+colour (F,ss) = intersperse "\n" $ map (\s -> red   $ '-' : s) ss
 colour (B,ss) = intersperse "\n" ss
 
 -- Pad a string with a single space.

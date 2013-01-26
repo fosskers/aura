@@ -59,7 +59,7 @@ downgradePackages pkgs = do
   unless (null reals) $ do
     cache   <- cacheContents cachePath
     choices <- mapM (getDowngradeChoice cache) reals
-    pacman $ ["-U"] ++ map (cachePath </>) choices
+    pacman $ "-U" : map (cachePath </>) choices
                
 getDowngradeChoice :: Cache -> String -> Aura String
 getDowngradeChoice cache pkg = do
@@ -154,4 +154,4 @@ groupByName pkgs = groupBy sameBaseName $ sortPkgs pkgs
 -- REPORTING
 ------------
 reportBadDowngradePkgs :: [String] -> Aura ()
-reportBadDowngradePkgs ps = badReport reportBadDowngradePkgsMsg1 ps
+reportBadDowngradePkgs = badReport reportBadDowngradePkgsMsg1

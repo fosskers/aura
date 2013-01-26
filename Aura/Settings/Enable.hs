@@ -42,28 +42,28 @@ getSettings lang auraFlags = do
   environment <- getEnvironment
   pmanCommand <- getPacmanCmd environment
   colourFuncs <- getColours
-  return $ Settings { environmentOf   = environment
-                    , langOf          = lang
-                    , pacmanCmdOf     = pmanCommand
-                    , editorOf        = getEditor environment
-                    , ignoredPkgsOf   = getIgnoredPkgs confFile ++
-                                        getIgnoredAuraPkgs auraFlags
-                    , wontBuildOf     = getBadPackages lang
-                    , cachePathOf     = getCachePath confFile
-                    , logFilePathOf   = getLogFilePath confFile
-                    , suppressMakepkg = getSuppression auraFlags
-                    , delMakeDeps     = getDelMakeDeps auraFlags
-                    , mustConfirm     = getConfirmation auraFlags
-                    , mayHotEdit      = getHotEdit auraFlags
-                    , diffPkgbuilds   = getDiffStatus auraFlags
-                    , rebuildDevel    = getRebuildDevel auraFlags
-                    , pcRed           = redf colourFuncs
-                    , pcGreen         = greenf colourFuncs
-                    , pcYellow        = yellowf colourFuncs
-                    , pcBlue          = bluef colourFuncs
-                    , pcMagenta       = magentaf colourFuncs
-                    , pcCyan          = cyanf colourFuncs
-                    , pcWhite         = whitef colourFuncs }
+  return Settings { environmentOf   = environment
+                  , langOf          = lang
+                  , pacmanCmdOf     = pmanCommand
+                  , editorOf        = getEditor environment
+                  , ignoredPkgsOf   = getIgnoredPkgs confFile ++
+                                      getIgnoredAuraPkgs auraFlags
+                  , wontBuildOf     = getBadPackages lang
+                  , cachePathOf     = getCachePath confFile
+                  , logFilePathOf   = getLogFilePath confFile
+                  , suppressMakepkg = getSuppression auraFlags
+                  , delMakeDeps     = getDelMakeDeps auraFlags
+                  , mustConfirm     = getConfirmation auraFlags
+                  , mayHotEdit      = getHotEdit auraFlags
+                  , diffPkgbuilds   = getDiffStatus auraFlags
+                  , rebuildDevel    = getRebuildDevel auraFlags
+                  , pcRed           = redf colourFuncs
+                  , pcGreen         = greenf colourFuncs
+                  , pcYellow        = yellowf colourFuncs
+                  , pcBlue          = bluef colourFuncs
+                  , pcMagenta       = magentaf colourFuncs
+                  , pcCyan          = cyanf colourFuncs
+                  , pcWhite         = whitef colourFuncs }
 
 debugOutput :: Settings -> IO ()
 debugOutput ss = do

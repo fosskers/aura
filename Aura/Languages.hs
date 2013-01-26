@@ -94,8 +94,8 @@ translatorMsgTitle Italian    = "Traduttori di Aura:"
 translatorMsg :: Language -> [String]
 translatorMsg lang = title : names
     where title = translatorMsgTitle lang
-          names = map appendLang . zip translators . languageNames $ lang
-          appendLang (n,l) = n ++ " (" ++ l ++ ")"
+          names = zipWith appendLang translators $ languageNames lang
+          appendLang n l = n ++ " (" ++ l ++ ")"
 
 allLanguages :: [Language]
 allLanguages = [English ..]

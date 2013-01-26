@@ -54,5 +54,4 @@ makepkgQuiet user = makepkgGen quiet user
             checkExitCode' output status
 
 makepkgVerbose :: String -> Aura [FilePath]
-makepkgVerbose user = makepkgGen verbose user
-    where verbose cmd opts = shellCmd cmd opts
+makepkgVerbose user = makepkgGen shellCmd user

@@ -99,7 +99,7 @@ withTempDir name action = do
 
 splitNameAndVer :: String -> (String,String)
 splitNameAndVer pkg = (before,after)
-    where (before,_,after) = (pkg =~ "[<>=]+" :: (String,String,String))
+    where (before,_,after) = pkg =~ "[<>=]+" :: (String,String,String)
 
 splitName :: String -> String
 splitName = fst . splitNameAndVer
@@ -112,7 +112,7 @@ groupPkgs :: ([a],[b],[c]) -> ([a],[b],[c]) -> ([a],[b],[c])
 groupPkgs (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
 
 sortPkgs :: [String] -> [String]
-sortPkgs pkgs = sortBy verNums pkgs
+sortPkgs = sortBy verNums
     where verNums a b | name a /= name b = compare a b  -- Different pkgs
                       | otherwise        = compare (ver a) (ver b)
           name = fst . pkgFileNameAndVer
@@ -136,5 +136,5 @@ comparableVer [] = []
 comparableVer n  =
     case dropWhile (not . isDigit) n of
       []   -> []  -- Version ended in non-digits.
-      rest -> read digits : (comparableVer $ drop (length digits) rest)
+      rest -> read digits : comparableVer (drop (length digits) rest)
         where digits = takeWhile isDigit rest

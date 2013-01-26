@@ -76,4 +76,4 @@ renderLogLookUp ss logFile pkg = entrify ss fields entries ++ "\n" ++ recent
 -- REPORTING
 ------------
 reportNotInLog :: [String] -> Aura ()
-reportNotInLog nons = badReport reportNotInLogMsg1 nons
+reportNotInLog = badReport reportNotInLogMsg1
