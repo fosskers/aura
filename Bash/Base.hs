@@ -51,15 +51,14 @@ namespace [] = M.empty
 namespace (Variable n bs : fs) = M.insert n bs $ namespace fs
 namespace (_:fs) = namespace fs
 
--- | At the moment, only returns the equivalent of ${foo[0]}.
-getVar :: Namespace -> String -> Maybe String
+getVar :: Namespace -> String -> Maybe [String]
 getVar ns s = case M.lookup s ns of
                 Nothing -> Nothing
-                Just bs -> Just . fromBashString . head $ bs
+                Just bs -> Just $ map fromBashString bs
 
 fromBashString :: BashString -> String
-fromBashString (SingleQ s) = surround '\'' s
-fromBashString (DoubleQ s) = surround '"' s
+fromBashString (SingleQ s) = s
+fromBashString (DoubleQ s) = s
 fromBashString (NoQuote s) = s
 fromBashString (Backtic c) = surround '`' $ fromCommand c
 

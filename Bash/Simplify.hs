@@ -5,10 +5,11 @@
   That is:
 
   foo="bar"       # All instances of $foo will be replaced.
-  baz=`uname -r`  # $baz will replaced but uname won't be evaluated.
+  baz=`uname -r`  # $baz will be replaced but uname won't be evaluated.
 
   As all Bash variables are also secretly arrays, lines like
   ${foo[0]} or ${foo[@]} will also be respected and simplified.
+  (Not yet implemented)
 
 -}
 
@@ -36,9 +37,10 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Bash.Simplify ( simplify ) where
 
 import Control.Monad.Trans.State.Lazy
-import Control.Monad   (liftM)
 import Text.Regex.PCRE ((=~))
-import Data.Maybe (fromMaybe)
+import Data.Map.Lazy   (adjust)
+import Control.Monad   (liftM)
+import Data.Maybe      (fromMaybe)
 
 import Bash.Base
 
@@ -53,8 +55,11 @@ replace :: Field -> State Namespace Field
 replace c@(Comment _)   = return c
 replace (Function n fs) = Function n `liftM` mapM replace fs
 replace (Control  n fs) = Control  n `liftM` mapM replace fs
-replace (Variable n bs) = Variable n `liftM` mapM replaceString bs
 replace (Command  n bs) = Command  n `liftM` mapM replaceString bs
+replace (Variable n bs) = do
+  bs' <- mapM replaceString bs
+  get >>= put . adjust (\_ -> bs') n  -- Update the Namespace.
+  return $ Variable n bs'
 
 replaceString :: BashString -> State Namespace BashString
 replaceString s@(SingleQ _) = return s
@@ -62,9 +67,11 @@ replaceString (DoubleQ s)   = DoubleQ `liftM` replaceString' s
 replaceString (NoQuote s)   = NoQuote `liftM` replaceString' s
 replaceString (Backtic f)   = Backtic `liftM` replace f
 
+-- | Doesn't yet support ${foo[...]}
 replaceString' :: String -> State Namespace String
 replaceString' s = get >>= \ns ->
    case s =~ "\\${?[\\w]+}?" :: (String,String,String) of
      (_,"",_) -> return s
      (b,m,a)  -> ((b ++ replaced) ++) `liftM` replaceString' a
-         where replaced = fromMaybe m $ getVar ns m
+         where replaced = fromMaybe m (head `liftM` getVar ns m')
+               m'       = filter (`notElem` "${}") m
