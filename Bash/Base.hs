@@ -46,10 +46,10 @@ type Script    = [Field]  -- A parsed Bash script.
 -- | Convert a list of Fields into a Namespace.
 -- Namespaces should typically contain the names of all functions as well,
 -- but this one will only contain global variable names.
-namespace :: [Field] -> Namespace
-namespace [] = M.empty
-namespace (Variable n bs : fs) = M.insert n bs $ namespace fs
-namespace (_:fs) = namespace fs
+toNamespace :: [Field] -> Namespace
+toNamespace [] = M.empty
+toNamespace (Variable n bs : fs) = M.insert n bs $ toNamespace fs
+toNamespace (_:fs) = toNamespace fs
 
 getVar :: Namespace -> String -> Maybe [String]
 getVar ns s = case M.lookup s ns of
@@ -60,11 +60,8 @@ fromBashString :: BashString -> String
 fromBashString (SingleQ s) = s
 fromBashString (DoubleQ s) = s
 fromBashString (NoQuote s) = s
-fromBashString (Backtic c) = surround '`' $ fromCommand c
+fromBashString (Backtic c) = '`' : fromCommand c ++ "`"
 
 fromCommand :: Field -> String
 fromCommand (Command c as) = unwords $ c : map fromBashString as
 fromCommand _ = error "Argument given was not a Command."
-
-surround :: Char -> String -> String
-surround c s = c : s ++ [c]

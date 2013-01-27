@@ -21,7 +21,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Bash.Parser where  --( parseBash ) where
+module Bash.Parser ( parseBash ) where
 
 import Text.ParserCombinators.Parsec
 import Control.Applicative ((<*),(*>),(<*>),(<$>))

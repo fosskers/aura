@@ -36,6 +36,7 @@ import Aura.Languages
 import Aura.General
 import Aura.MakePkg
 import Aura.Utils
+import Aura.Bash
 
 import Utilities
 import Shell
@@ -95,13 +96,15 @@ hotEdit pkgs = ask >>= \ss ->
     answer <- optionalPrompt (msg p)
     if not answer
        then return p
-       else liftIO $ do
-         let filename = pkgNameOf p ++ "-PKGBUILD"
-             editor   = getEditor $ environmentOf ss
-         writeFile filename $ pkgbuildOf p
-         openEditor editor filename
-         new <- readFile filename
-         return $ AURPkg (pkgNameOf p) (versionOf p) new
+       else do
+         newPB <- liftIO $ do
+                    let filename = pkgNameOf p ++ "-PKGBUILD"
+                        editor   = getEditor $ environmentOf ss
+                    writeFile filename $ pkgbuildOf p
+                    openEditor editor filename
+                    readFile filename
+         newNS <- globals (pkgNameOf p) newPB  -- Reparse PKGBUILD.
+         return $ AURPkg (pkgNameOf p) (versionOf p) newPB newNS
 
 overwritePkgbuild :: AURPkg -> Aura ()
 overwritePkgbuild p = (mayHotEdit `liftM` ask) >>= check

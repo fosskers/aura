@@ -32,6 +32,9 @@ import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Pacman
 import Aura.Utils
+import Aura.Bash
+
+import Bash.Base
 
 import Utilities
 import Shell
@@ -69,11 +72,11 @@ instance Show VersionDemand where
 ---------------
 -- AUR Packages
 ---------------
-data AURPkg = AURPkg String VersionDemand Pkgbuild
+data AURPkg = AURPkg String VersionDemand Pkgbuild Namespace
                
 instance Package AURPkg where
-    pkgNameOf (AURPkg n _ _) = n
-    versionOf (AURPkg _ v _) = v
+    pkgNameOf (AURPkg n _ _ _) = n
+    versionOf (AURPkg _ v _ _) = v
 
 instance Show AURPkg where
     show = pkgNameWithVersionDemand
@@ -82,7 +85,10 @@ instance Eq AURPkg where
     a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
 
 pkgbuildOf :: AURPkg -> String
-pkgbuildOf (AURPkg _ _ p) = p
+pkgbuildOf (AURPkg _ _ p _) = p
+
+namespaceOf :: AURPkg -> Namespace
+namespaceOf (AURPkg _ _ _ ns) = ns
 
 ------------------
 -- Pacman Packages
@@ -136,25 +142,21 @@ parseNameAndVersionDemand pkg = (name, getVersionDemand comp ver)
                                | c == "="  = MustBe v
                                | otherwise = Anything
 
--- Constructs anything of the Package type.
-makePackage :: Package a =>
-               (String -> VersionDemand -> t -> a)
-               -> (String -> Aura t)
-               -> String
-               -> Aura a
-makePackage typeCon thirdField pkg = typeCon name ver `liftM` thirdField name
+makePacmanPkg :: String -> Aura PacmanPkg
+makePacmanPkg pkg = PacmanPkg name ver `liftM` pacmanOutput ["-Si",name]
     where (name,ver) = parseNameAndVersionDemand pkg
 
-makePacmanPkg :: String -> Aura PacmanPkg
-makePacmanPkg = makePackage PacmanPkg getInfo
-    where getInfo name = pacmanOutput ["-Si",name]
-
 makeAURPkg :: String -> Aura AURPkg
-makeAURPkg = makePackage AURPkg downloadPkgbuild
+makeAURPkg pkg = do
+  pkgbuild  <- downloadPkgbuild name
+  namespace <- globals name pkgbuild
+  return $ AURPkg name ver pkgbuild namespace
+      where (name,ver) = parseNameAndVersionDemand pkg
 
 makeVirtualPkg :: String -> Aura VirtualPkg
-makeVirtualPkg = makePackage VirtualPkg getProvider
-    where getProvider n = do
+makeVirtualPkg pkg = VirtualPkg name ver `liftM` getProvider pkg
+    where (name,ver) = parseNameAndVersionDemand pkg
+          getProvider n = do
             provider <- getProvidingPkg n
             case provider of
               Nothing -> return Nothing

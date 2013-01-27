@@ -23,21 +23,23 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Dependencies where
 
-import Control.Monad (filterM)
 import Text.Regex.PCRE ((=~))
-import Data.Maybe (fromMaybe, fromJust, isNothing)
-import Data.List (nub)
+import Control.Monad   (filterM)
+import Data.Maybe      (fromJust, isNothing)
+import Data.List       (nub)
 
 import Aura.AurConnection (getTrueVerViaPkgbuild)
-import Aura.Pacman (pacmanOutput)
+import Aura.Pacman        (pacmanOutput)
 import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.General
 import Aura.Utils
+import Aura.Bash
 
 import Utilities (notNull, tripleThrd)
-import Bash
+
+---
 
 -- Returns the deps to be installed, or fails nicely.
 getDepsToInstall :: [AURPkg] -> Aura ([String],[AURPkg])
@@ -59,14 +61,13 @@ getDepsToInstall pkgs = ask >>= \ss -> do
 -- Returns ([RepoPackages], [AURPackages], [VirtualPackages])
 determineDeps :: AURPkg -> Aura ([String],[AURPkg],[String])
 determineDeps pkg = do
-  let globals  = getGlobalVars $ pkgbuildOf pkg
-      depNames = getDeps globals "depends" ++ getDeps globals "makedepends"
-  (repoPkgNames,aurPkgNames,other) <- divideByPkgType depNames
+  let ns   = namespaceOf pkg
+      deps = concatMap (value ns) ["depends","makedepends","checkdepends"]
+  (repoPkgNames,aurPkgNames,other) <- divideByPkgType deps
   aurPkgs       <- mapM makeAURPkg aurPkgNames
   recursiveDeps <- mapM determineDeps aurPkgs
   let (rs,as,os) = foldl groupPkgs (repoPkgNames,aurPkgs,other) recursiveDeps
   return (nub rs, nub as, nub os)
-      where getDeps gs s = fromMaybe [] $ referenceArray gs s
 
 -- If a package isn't installed, `pacman -T` will yield a single name.
 -- Any other type of output means installation is not required. 
@@ -101,7 +102,7 @@ getMostRecentVerNum info = tripleThrd match
 
 getAURConflicts :: Language -> [String] -> AURPkg -> Maybe ErrMsg
 getAURConflicts = getRealPkgConflicts f
-    where f = getTrueVerViaPkgbuild . pkgbuildOf
+    where f = getTrueVerViaPkgbuild . namespaceOf
 
 -- Must be called with a (f)unction that yields the version number
 -- of the most up-to-date form of the package.

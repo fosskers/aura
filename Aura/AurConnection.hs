@@ -40,8 +40,9 @@ import Aura.Utils (scoldAndFail)
 import Aura.Monad.Aura
 import Aura.Languages
 
+import Bash.Base
+
 import Internet
-import Bash
 
 -----------------------
 -- AUR API URL CREATION
@@ -136,16 +137,13 @@ getPkgBaseUrl pkg = aurLink </> take 2 pkg </> pkg
 getPkgbuildUrl :: String -> String
 getPkgbuildUrl pkg = getPkgBaseUrl pkg </> "PKGBUILD"                     
 
--- Assumption: The package given EXISTS as an AUR package.
 downloadPkgbuild :: String -> Aura Pkgbuild
 downloadPkgbuild = liftIO . getUrlContents . getPkgbuildUrl
 
--- This is more work than it needs to be.
-getTrueVerViaPkgbuild :: Pkgbuild -> String
-getTrueVerViaPkgbuild pkgb = pkgver ++ "-" ++ pkgrel
-    where globals = getGlobalVars pkgb
-          pkgver  = fromJust $ referenceValue globals "pkgver"
-          pkgrel  = fromJust $ referenceValue globals "pkgrel"
+getTrueVerViaPkgbuild :: Namespace -> String
+getTrueVerViaPkgbuild ns = pkgver ++ "-" ++ pkgrel
+    where pkgver  = head . fromJust . getVar ns $ "pkgver"
+          pkgrel  = head . fromJust . getVar ns $ "pkgrel"
 
 ------------------
 -- SOURCE TARBALLS

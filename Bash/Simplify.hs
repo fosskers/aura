@@ -28,13 +28,16 @@ Aura is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
+p
 You should have received a copy of the GNU General Public License
 along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Bash.Simplify ( simplify ) where
+module Bash.Simplify
+    ( simplify
+    , simpScript
+    , simpNamespace ) where
 
 import Control.Monad.Trans.State.Lazy
 import Text.Regex.PCRE ((=~))
@@ -48,8 +51,14 @@ import Bash.Base
 
 -- | Simplify a parsed Bash script.
 -- The Namespace _can_ be altered partway through.
-simplify :: Namespace -> Script -> Script
-simplify ns sc = evalState (mapM replace sc) ns
+simplify :: Namespace -> Script -> (Script,Namespace)
+simplify ns sc = runState (mapM replace sc) ns
+
+simpScript :: Namespace -> Script -> Script
+simpScript ns = fst . simplify ns
+
+simpNamespace :: Namespace -> Script -> Namespace
+simpNamespace ns = snd . simplify ns
 
 replace :: Field -> State Namespace Field
 replace c@(Comment _)   = return c
@@ -58,7 +67,7 @@ replace (Control  n fs) = Control  n `liftM` mapM replace fs
 replace (Command  n bs) = Command  n `liftM` mapM replaceString bs
 replace (Variable n bs) = do
   bs' <- mapM replaceString bs
-  get >>= put . adjust (\_ -> bs') n  -- Update the Namespace.
+  get >>= put . adjust (const bs') n  -- Update the Namespace.
   return $ Variable n bs'
 
 replaceString :: BashString -> State Namespace BashString
