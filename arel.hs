@@ -1,10 +1,10 @@
 -- arel - Helps create aura releases.
 
-import System.Exit (ExitCode(..))
 import System.FilePath ((</>))
 import Text.Regex.PCRE ((=~))
-import Control.Monad (liftM)
-import Data.List (sortBy)
+import Control.Monad   (liftM, void)
+import System.Exit     (ExitCode(..))
+import Data.List       (sortBy)
 
 import Aura.Utils (comparableVer)
 
@@ -45,7 +45,7 @@ sortPkgFiles :: [String] -> [String]
 sortPkgFiles [] = []
 sortPkgFiles fs = sortBy verNums fs
     where verNums a b = compare (ver a) (ver b)
-          ver f = comparableVer $ (f =~ "-[0-9.]+.tar" :: String)
+          ver f = comparableVer (f =~ "-[0-9.]+.tar" :: String)
 
 alterPKGBUILD :: IO ()
 alterPKGBUILD = do
@@ -56,4 +56,4 @@ alterPKGBUILD = do
   mv "PKGBUILD.new" "PKGBUILD"
 
 makeTarball :: IO ()
-makeTarball = quietShellCmd' "makepkg" ["--source"] >> return ()
+makeTarball = void (quietShellCmd' "makepkg" ["--source"])

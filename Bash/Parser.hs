@@ -60,7 +60,7 @@ command :: CharParser () Field
 command = spaces *> (Command <$> many1 alphaNum <*> option [] (try args))
     where args = char ' ' >> many (noneOf "`\n") >>= \line ->
                  case parse (many1 single) "(command)" line of
-                   Left e   -> fail "Failed parsing strings in a command"
+                   Left _   -> fail "Failed parsing strings in a command"
                    Right bs -> return $ concat bs
 
 -- | A function looks like: name() { ... \n} and is filled with fields.
