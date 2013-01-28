@@ -21,7 +21,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Bash.Parser ( parseBash ) where
+module Bash.Parser where  --( parseBash ) where
 
 import Text.ParserCombinators.Parsec
 import Control.Applicative ((<*),(*>),(<*>),(<$>))
@@ -66,21 +66,17 @@ command = spaces *> (Command <$> many1 alphaNum <*> option [] (try args))
 -- | A function looks like: name() { ... \n} and is filled with fields.
 function :: CharParser () Field
 function = spaces >> many1 (noneOf " =(}\n") >>= \name -> string "() {" >>
-           spaces >> Function name `liftM` manyTill field (try $ char '}')
+           spaces >> Function name `liftM` manyTill field (char '}')
            <?> "valid function definition"
 
 -- | A variable looks like: name=string or name=(string string string)
--- Can this be made Applicative?
 variable :: CharParser () Field
-variable = do
-  spaces
-  name <- many1 (alphaNum <|> char '_')
-  char '='
-  entry <- array <|> single
-  return (Variable name entry) <?> "valid variable definition"
+variable = spaces >> many1 (alphaNum <|> char '_') >>= \name ->
+           char '=' >> Variable name `liftM` (array <|> single)
+           <?> "valid variable definition"
 
 array :: CharParser () [BashString]
-array = char '(' >> spaces >> concat `liftM` manyTill single (try $ char ')')
+array = char '(' >> spaces >> concat `liftM` manyTill single (char ')')
         <?> "valid array"
 
 -- | Strings can be surrounded by single quotes, double quotes, backticks,
@@ -121,11 +117,11 @@ extrapolated stops = do
   xs <- plain <|> bracePair
   ys <- option [""] $ try (extrapolated stops)
   return [ x ++ y | x <- xs, y <- ys ]
-      where plain = (: []) `liftM` many1 (noneOf $ " \n{()" ++ stops)
+      where plain = (: []) `liftM` many1 (noneOf $ " \n{}()" ++ stops)
 
 bracePair :: CharParser () [String]
 bracePair = between (char '{') (char '}') innards <?> "valid {...} string"
     where innards = liftM concat (extrapolated ",}" `sepBy` char ',')
 
 ifStatement :: CharParser () Field
-ifStatement = spaces >> return (Control "NOTHING YET" [])
+ifStatement = spaces >> return (IfBlock "NOTHING YET" [])

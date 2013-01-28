@@ -61,14 +61,13 @@ simpNamespace :: Namespace -> Script -> Namespace
 simpNamespace ns = snd . simplify ns
 
 replace :: Field -> State Namespace Field
-replace c@(Comment _)   = return c
 replace (Function n fs) = Function n `liftM` mapM replace fs
-replace (Control  n fs) = Control  n `liftM` mapM replace fs
 replace (Command  n bs) = Command  n `liftM` mapM replaceString bs
 replace (Variable n bs) = do
   bs' <- mapM replaceString bs
   get >>= put . adjust (const bs') n  -- Update the Namespace.
   return $ Variable n bs'
+replace somethingElse   = return somethingElse
 
 replaceString :: BashString -> State Namespace BashString
 replaceString s@(SingleQ _) = return s
