@@ -24,7 +24,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Bash.Parser where  --( parseBash ) where
 
 import Text.ParserCombinators.Parsec
-import Control.Applicative ((<*),(*>),(<*>),(<$>))
+import Control.Applicative ((<*),(*>),(<*>),(<$>),(<$))
 import Control.Monad (liftM)
 
 import Bash.Base
@@ -123,5 +123,19 @@ bracePair :: CharParser () [String]
 bracePair = between (char '{') (char '}') innards <?> "valid {...} string"
     where innards = liftM concat (extrapolated ",}" `sepBy` char ',')
 
-ifStatement :: CharParser () Field
-ifStatement = spaces >> return (IfBlock "NOTHING YET" [])
+ifBlock :: CharParser () Field
+ifBlock = ifBlock' "if "
+
+ifBlock' :: String -> CharParser () Field
+ifBlock' word = do
+  spaces
+  string word
+  cond <- between (char '[') (string "]; then") (many1 $ noneOf "]\n")
+  body <- manyTill field (fi <|> elif)  -- HERE! THIS!
+  IfBlock cond body `liftM` (fi <|> elif)
+      where fi   = Nothing <$ (string "fi" <* space)
+            elif = Just <$> ifBlock' "elif "
+
+-- Parse it but don't eat input!!!
+          
+              
