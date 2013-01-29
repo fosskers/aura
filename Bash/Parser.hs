@@ -41,7 +41,8 @@ bashFile = spaces *> many field <* spaces
 
 -- | There are many kinds of fields. Commands need to be parsed last.
 field :: CharParser () Field
-field = choice [ try comment, try function, try variable, try command ]
+field = choice [ try comment, try variable, try function
+               , try ifBlock, try command ]
         <* spaces <?> "valid field"
 
 -- | A comment looks like: # blah blah blah
@@ -130,12 +131,15 @@ ifBlock' :: String -> CharParser () Field
 ifBlock' word = do
   spaces
   string word
-  cond <- between (char '[') (string "]; then") (many1 $ noneOf "]\n")
-  body <- manyTill field (fi <|> elif)  -- HERE! THIS!
+  cond <- Just <$> between (char '[') (string "]; then") (many1 $ noneOf "]\n")
+  body <- manyTill field (try (lookAhead fi) <|> try (lookAhead elif))
   IfBlock cond body `liftM` (fi <|> elif)
       where fi   = Nothing <$ (string "fi" <* space)
             elif = Just <$> ifBlock' "elif "
 
--- Parse it but don't eat input!!!
-          
-              
+ifBody :: CharParser () Field
+ifBody = undefined
+
+-- Don't forget about `else` statements. They don't have a condition,
+-- but do have a body. Nothing can come after them.
+-- Thus, an `else` value should look like: IfBlock Nothing [Fields] Nothing

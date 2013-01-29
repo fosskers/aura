@@ -28,7 +28,7 @@ import qualified Data.Map.Lazy as M
 data Field = Comment  String
            | Function String [Field]
            | ForBlock String [Field]
-           | IfBlock  String [Field] (Maybe Field)  -- Might have an `elif`.
+           | IfBlock  (Maybe String) [Field] (Maybe Field)
            | Variable String [BashString]
            | Command  String [BashString]
              deriving (Eq,Show)
