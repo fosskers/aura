@@ -1073,6 +1073,10 @@ outOfDateMsg Italian    False = green "Aggiornato"
 ------------------
 -- State functions
 ------------------
+saveStateMsg1 :: Language -> String
+saveStateMsg1 Japanese = "現在パッケージ状態保存完了。"
+saveStateMsg1 _        = "Saved package state."
+
 restoreStateMsg1 :: Language -> String
 restoreStateMsg1 Japanese = "対象バージョンがないパッケージ："
 restoreStateMsg1 _        = "Requested downgrade versions not available for:"

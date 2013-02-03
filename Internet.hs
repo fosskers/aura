@@ -28,31 +28,29 @@ module Internet
     , getUrlContents
     , saveUrlContents ) where
 
--- System Libraries
-import qualified Network.URL as U (exportURL, importURL, add_param, URL)
 import qualified Data.ByteString as B (ByteString, hPutStr)
-import System.IO (hClose, openFile, IOMode(WriteMode))
+import Network.URL     (exportURL, importURL, add_param, URL)
+import System.IO       (hClose, openFile, IOMode(WriteMode))
 import System.FilePath (splitFileName, (</>))
-import Control.Monad (liftM)
+import Control.Monad   (liftM)
 import Network.Curl ( curlGetString
                     , curlGetString_
                     , URLString
-                    , CurlOption
-                    , CurlCode )
+                    , CurlOption )
+
+---
 
 --------------------------------
 -- NETWORK.URL ABSTRACTION LAYER
 --------------------------------
-type URL = U.URL
-
 fromURL :: URL -> String
-fromURL = U.exportURL
+fromURL = exportURL
 
 toURL :: String -> Maybe URL
-toURL = U.importURL
+toURL = importURL
 
 addParam :: URL -> (String,String) -> URL
-addParam = U.add_param
+addParam = add_param
 
 -------------
 -- CONNECTION
@@ -60,13 +58,13 @@ addParam = U.add_param
 getUrlContents :: String -> IO String
 getUrlContents url = snd `liftM` curlGetString url []
 
-curlGetByteString :: URLString -> [CurlOption] -> IO (CurlCode,B.ByteString)
-curlGetByteString = curlGetString_
+curlGetByteString :: URLString -> [CurlOption] -> IO B.ByteString
+curlGetByteString url co = snd `liftM` curlGetString_ url co
 
 saveUrlContents :: FilePath -> String -> IO FilePath
 saveUrlContents path url = do
   h <- openFile filePath WriteMode
-  (_,cont) <- curlGetByteString url []
-  B.hPutStr h cont >> hClose h >> return filePath
+  content <- curlGetByteString url []
+  B.hPutStr h content >> hClose h >> return filePath
     where filePath = path </> file
           (_,file) = splitFileName url

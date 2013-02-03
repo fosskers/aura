@@ -31,7 +31,7 @@ import Data.Maybe      (mapMaybe)
 import Data.List       (partition)
 
 import Aura.Colour.Text (cyan, red)
-import Aura.General     (warn)
+import Aura.General     (warn,notify)
 import Aura.Pacman      (pacmanOutput, pacman)
 import Aura.Utils       (comparableVer,printList)
 import Aura.Settings.Base
@@ -82,6 +82,7 @@ saveState = do
   state <- currentState
   let filename = stateCache </> dotFormat (timeOf state)
   liftIO $ writeFile filename (show state)
+  notify saveStateMsg1
 
 restoreState :: Aura ()
 restoreState = ask >>= \ss -> do
