@@ -27,11 +27,19 @@ import qualified Data.Map.Lazy as M
 
 data Field = Comment  String
            | Function String [Field]
-           | ForBlock String [Field]
-           | IfBlock  (Maybe String) [Field] (Maybe Field)
+           | ForBlock BashFor
+           | IfBlock  BashIf
            | Variable String [BashString]
            | Command  String [BashString]
              deriving (Eq,Show)
+
+data BashIf = If String [Field] (Maybe BashIf)
+            | Else [Field]
+              deriving (Eq,Show)
+
+data BashFor = Incr  -- for (x;y;z); do ... done  -- Incomplete!
+             | Iter String BashString [Field]  -- for x in y; do ... done
+               deriving (Eq,Show)
 
 -- | While `String` is the main data type in Bash, there are four
 -- subtypes each with different behaviour.

@@ -21,7 +21,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Bash.Parser where  --( parseBash ) where
+module Bash.Parser ( parseBash ) where
 
 import Text.ParserCombinators.Parsec
 import Control.Applicative ((<*),(*>),(<*>),(<$>),(<$))
@@ -36,17 +36,17 @@ parseBash p input = parse bashFile filename input
     where filename = "(" ++ p ++ ")"
 
 -- | A Bash file could have many fields, or none.
-bashFile :: CharParser () [Field]
+bashFile :: Parser [Field]
 bashFile = spaces *> many field <* spaces
 
 -- | There are many kinds of fields. Commands need to be parsed last.
-field :: CharParser () Field
+field :: Parser Field
 field = choice [ try comment, try variable, try function
                , try ifBlock, try command ]
         <* spaces <?> "valid field"
 
 -- | A comment looks like: # blah blah blah
-comment :: CharParser () Field
+comment :: Parser Field
 comment = spaces >> char '#' >> Comment `liftM` many (noneOf "\n")
           <?> "valid comment"
 
@@ -57,7 +57,7 @@ comment = spaces >> char '#' >> Comment `liftM` many (noneOf "\n")
 -- The culprit is `option`, which returns [] as if it parsed no args,
 -- even when its actually parsing a function or a variable.
 -- Note: `args` is a bit of a hack.
-command :: CharParser () Field
+command :: Parser Field
 command = spaces *> (Command <$> many1 alphaNum <*> option [] (try args))
     where args = char ' ' >> many (noneOf "`\n") >>= \line ->
                  case parse (many1 single) "(command)" line of
@@ -65,46 +65,46 @@ command = spaces *> (Command <$> many1 alphaNum <*> option [] (try args))
                    Right bs -> return $ concat bs
 
 -- | A function looks like: name() { ... \n} and is filled with fields.
-function :: CharParser () Field
+function :: Parser Field
 function = spaces >> many1 (noneOf " =(}\n") >>= \name -> string "() {" >>
            spaces >> Function name `liftM` manyTill field (char '}')
            <?> "valid function definition"
 
 -- | A variable looks like: name=string or name=(string string string)
-variable :: CharParser () Field
+variable :: Parser Field
 variable = spaces >> many1 (alphaNum <|> char '_') >>= \name ->
            char '=' >> Variable name `liftM` (array <|> single)
            <?> "valid variable definition"
 
-array :: CharParser () [BashString]
+array :: Parser [BashString]
 array = char '(' >> spaces >> concat `liftM` manyTill single (char ')')
         <?> "valid array"
 
 -- | Strings can be surrounded by single quotes, double quotes, backticks,
 -- or nothing.
-single :: CharParser () [BashString]
+single :: Parser [BashString]
 single = (singleQuoted <|> doubleQuoted <|> backticked <|> try unQuoted)
          <* spaces <?> "valid Bash string"
 
 -- | Literal string. ${...} comes out as-is. No string extrapolation.
-singleQuoted :: CharParser () [BashString]
+singleQuoted :: Parser [BashString]
 singleQuoted = between (char '\'') (char '\'')
                ((\s -> [SingleQ s]) <$> many1 (noneOf ['\n','\'']))
                <?> "single quoted string"
 
 -- | Replaces ${...}. No string extrapolation.
-doubleQuoted :: CharParser () [BashString]
+doubleQuoted :: Parser [BashString]
 doubleQuoted = between (char '"') (char '"')
                ((\s -> [DoubleQ s]) <$> many1 (noneOf ['\n','"']))
                <?> "double quoted string"
 
 -- | Contains commands.
-backticked :: CharParser () [BashString]
+backticked :: Parser [BashString]
 backticked = between (char '`') (char '`') ((\c -> [Backtic c]) <$> command)
              <?> "backticked string"
 
 -- | Replaces ${...}. Strings can be extrapolated!
-unQuoted :: CharParser () [BashString]
+unQuoted :: Parser [BashString]
 unQuoted = map NoQuote `liftM` extrapolated []
 
 -- | Bash strings are extrapolated when they contain a brace pair
@@ -113,33 +113,42 @@ unQuoted = map NoQuote `liftM` extrapolated []
 -- Note that strings like: empty-{}  or  lamp-{shade}
 -- will not be expanded and will retain their braces.
 -- BUG: The statement immediately above this is a lie.
-extrapolated :: [Char] -> CharParser () [String]
+extrapolated :: [Char] -> Parser [String]
 extrapolated stops = do
   xs <- plain <|> bracePair
   ys <- option [""] $ try (extrapolated stops)
   return [ x ++ y | x <- xs, y <- ys ]
       where plain = (: []) `liftM` many1 (noneOf $ " \n{}()" ++ stops)
 
-bracePair :: CharParser () [String]
+bracePair :: Parser [String]
 bracePair = between (char '{') (char '}') innards <?> "valid {...} string"
     where innards = liftM concat (extrapolated ",}" `sepBy` char ',')
 
-ifBlock :: CharParser () Field
-ifBlock = ifBlock' "if "
+------------------
+-- `IF` STATEMENTS
+------------------
+ifBlock :: Parser Field
+ifBlock = IfBlock `liftM` ifBlock' "if " fiElifElse
 
-ifBlock' :: String -> CharParser () Field
-ifBlock' word = do
+ifBlock' :: String -> Parser sep -> Parser BashIf
+ifBlock' word sep = do
   spaces
   string word
-  cond <- Just <$> between (char '[') (string "]; then") (many1 $ noneOf "]\n")
-  body <- manyTill field (try (lookAhead fi) <|> try (lookAhead elif))
-  IfBlock cond body `liftM` (fi <|> elif)
-      where fi   = Nothing <$ (string "fi" <* space)
-            elif = Just <$> ifBlock' "elif "
+  cond <- ifCond
+  body <- ifBody sep
+  If cond body `liftM` (fi <|> try elif <|> elys)
 
-ifBody :: CharParser () Field
-ifBody = undefined
+-- Inefficient?
+fiElifElse :: Parser (Maybe BashIf)
+fiElifElse = choice $ map (try . lookAhead) [fi, elif, elys]
 
--- Don't forget about `else` statements. They don't have a condition,
--- but do have a body. Nothing can come after them.
--- Thus, an `else` value should look like: IfBlock Nothing [Fields] Nothing
+fi, elif, elys :: Parser (Maybe BashIf)
+fi   = Nothing <$ (string "fi" <* space)
+elif = Just <$> ifBlock' "elif " fiElifElse
+elys = Just <$> (string "else" >> space >> Else `liftM` ifBody fi)
+
+ifCond :: Parser String
+ifCond = between (char '[') (string "]; then") (many1 $ noneOf "]\n")
+
+ifBody :: Parser sep -> Parser [Field]
+ifBody sep = manyTill field sep
