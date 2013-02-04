@@ -85,7 +85,7 @@ Store a record of all installed packages:
 
     aura --save
 
-Restore a saved record. Rolls back and uninstalls packages as necessary :
+Restore a saved record. Rolls back and uninstalls packages as necessary:
 
     aura --restore
 
@@ -94,7 +94,7 @@ Install an AUR package:
 
     aura -A (package)
 
-Author's favourite (upgrades, remove make deps, shows PKGBUILD diffs):
+Author's favourite (upgrades, removes make deps, shows PKGBUILD diffs):
 
     aura -Akua
 

@@ -22,14 +22,10 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Internet
-    ( toURL
-    , fromURL
-    , addParam
-    , getUrlContents
+    ( getUrlContents
     , saveUrlContents ) where
 
 import qualified Data.ByteString as B (ByteString, hPutStr)
-import Network.URL     (exportURL, importURL, add_param, URL)
 import System.IO       (hClose, openFile, IOMode(WriteMode))
 import System.FilePath (splitFileName, (</>))
 import Control.Monad   (liftM)
@@ -39,18 +35,6 @@ import Network.Curl ( curlGetString
                     , CurlOption )
 
 ---
-
---------------------------------
--- NETWORK.URL ABSTRACTION LAYER
---------------------------------
-fromURL :: URL -> String
-fromURL = exportURL
-
-toURL :: String -> Maybe URL
-toURL = importURL
-
-addParam :: URL -> (String,String) -> URL
-addParam = add_param
 
 -------------
 -- CONNECTION

@@ -33,12 +33,14 @@ module Aura.AurConnection
 
 import System.FilePath ((</>))
 import Control.Monad   (liftM)
+import Network.HTTP    (urlEncodeVars)
 import Data.Maybe      (fromJust)
+import Data.List       (intercalate)
 import Text.JSON
 
-import Aura.Utils (scoldAndFail)
 import Aura.Monad.Aura
 import Aura.Languages
+import Aura.Utils (scoldAndFail)
 
 import Bash.Base
 
@@ -53,14 +55,16 @@ aurPkgUrl :: Int -> String
 aurPkgUrl n = "https://aur.archlinux.org/packages.php?ID=" ++ show n
 
 rpcBaseUrl :: String
-rpcBaseUrl = "https://aur.archlinux.org/rpc.php"
+rpcBaseUrl = "https://aur.archlinux.org/rpc.php?"
 
--- the `fromJust` should never fail.
+-- Had to do a bit off a hack, since `urlEncodeVars` wasn't encoding
+-- things in the necessary way.
 makeRPCUrl :: RPCType -> [String] -> String
-makeRPCUrl t ps = fromURL . addParams . fromJust . toURL $ rpcBaseUrl
-    where addParams u      = addParam (addP u t) $ rpcType t
-          addP u MultiInfo = foldl (\u' p -> addParam u' ("arg[]",p)) u ps
-          addP u _         = addParam u ("arg",unwords ps)
+makeRPCUrl t ps = rpcBaseUrl ++ ps'
+    where ps' = intercalate "&" (t' : encodedPs t)
+          encodedPs MultiInfo = map (\p -> urlEncodeVars [("arg[]",p)]) ps
+          encodedPs _         = [urlEncodeVars [("arg",unwords ps)]]
+          t' = urlEncodeVars [rpcType t]
 
 rpcType :: RPCType -> (String,String)
 rpcType t = ("type",tname)
@@ -142,8 +146,8 @@ downloadPkgbuild = liftIO . getUrlContents . getPkgbuildUrl
 
 getTrueVerViaPkgbuild :: Namespace -> String
 getTrueVerViaPkgbuild ns = pkgver ++ "-" ++ pkgrel
-    where pkgver  = head . fromJust . getVar ns $ "pkgver"
-          pkgrel  = head . fromJust . getVar ns $ "pkgrel"
+    where pkgver = head . fromJust . getVar ns $ "pkgver"
+          pkgrel = head . fromJust . getVar ns $ "pkgrel"
 
 ------------------
 -- SOURCE TARBALLS
