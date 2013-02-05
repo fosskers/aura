@@ -6,9 +6,8 @@ _aura()
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="--languages --noconfirm --conf -A -C -L -O \
-          --aursync --downgrade --viewlog --orphans  \
-          --save --restore"
+    opts="--languages --noconfirm --conf -A -B -C -L -O \
+          --aursync --save --downgrade --viewlog --orphans"
 
     case ${prev} in
 	-A|--aursync)
@@ -16,6 +15,11 @@ _aura()
                   -p --pkgbuild -s --search -u --sysupgrade      \
                   -d --downloadonly -x --unsuppress --hotedit    \
                   --aurignore="
+	    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+	    return 0
+	    ;;
+	-B|--save)
+	    opts="-r --restore"
 	    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
 	    return 0
 	    ;;

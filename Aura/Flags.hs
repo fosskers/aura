@@ -50,6 +50,7 @@ import Utilities (notNull, split)
 type FlagMap = [(Flag,String)]
 
 data Flag = AURInstall
+          | SaveState
           | Cache
           | LogFile
           | Orphans
@@ -68,11 +69,10 @@ data Flag = AURInstall
           | DiffPkgbuilds
           | Devel
           | Debug
-          | Backup
+          | CacheBackup
           | Clean
           | Abandon
           | ViewConf
-          | SaveState
           | RestoreState
           | Languages
           | Version
@@ -101,6 +101,7 @@ simpleMakeOption (c,s,f) = Option c s (NoArg f) ""
 auraOperations :: Language -> [OptDescr Flag]
 auraOperations lang =
     [ Option ['A'] ["aursync"]   (NoArg AURInstall) (aurSy lang)
+    , Option ['B'] ["save"]      (NoArg SaveState)  (saveS lang)
     , Option ['C'] ["downgrade"] (NoArg Cache)      (downG lang)
     , Option ['L'] ["viewlog"]   (NoArg LogFile)    (viewL lang)
     , Option ['O'] ["orphans"]   (NoArg Orphans)    (orpha lang) ]
@@ -109,20 +110,19 @@ auraOptions :: [OptDescr Flag]
 auraOptions = Option [] ["aurignore"] (ReqArg Ignore "") "" :
               map simpleMakeOption
               [ ( ['a'], ["delmakedeps"],  DelMDeps      )
-              , ( ['b'], ["backup"],       Backup        )
+              , ( ['b'], ["backup"],       CacheBackup   )
               , ( ['c'], ["clean"],        Clean         )
               , ( ['d'], ["deps"],         ViewDeps      )
               , ( ['j'], ["abandon"],      Abandon       )
               , ( ['k'], ["diff"],         DiffPkgbuilds )
               , ( ['i'], ["info"],         Info          )
               , ( ['p'], ["pkgbuild"],     GetPkgbuild   )
+              , ( ['r'], ["restore"],      RestoreState  )
               , ( ['s'], ["search"],       Search        )
               , ( ['u'], ["sysupgrade"],   Upgrade       )
               , ( ['w'], ["downloadonly"], Download      )
               , ( ['x'], ["unsuppress"],   Unsuppress    )
               , ( [],    ["devel"],        Devel         )
-              , ( [],    ["save"],         SaveState     )
-              , ( [],    ["restore"],      RestoreState  )
               , ( [],    ["hotedit"],      HotEdit       )
               , ( [],    ["viewconf"],     ViewConf      ) 
               , ( [],    ["languages"],    Languages     ) 
@@ -156,11 +156,12 @@ languageOptions = map simpleMakeOption
 -- `Hijacked` flags. They have original pacman functionality, but
 -- that is masked and made unique in an Aura context.
 hijackedFlagMap :: FlagMap
-hijackedFlagMap = [ (Backup,"-b")
+hijackedFlagMap = [ (CacheBackup,"-b")
                   , (Clean,"-c")
                   , (ViewDeps,"-d")
                   , (Info,"-i")
                   , (DiffPkgbuilds,"-k")
+                  , (RestoreState,"-r")
                   , (Search,"-s")
                   , (Upgrade,"-u")
                   , (Download,"-w")

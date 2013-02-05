@@ -36,7 +36,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Languages where
 
-import Aura.Colour.Text (cyan, green, red, blue)
+import Aura.Colour.Text (cyan, green, red, blue, yellow)
 
 ---
 
@@ -984,6 +984,11 @@ aurSy Portuguese = green "Realizar ações envolvendo o [A]UR.\n" ++ "Ação pad
 aurSy French     = green "Actions impliquant [A]UR.\n" ++ "Par default, installe depuis AUR."
 aurSy Russian    = green "Совершить действия с участием [A]UR.\n" ++ "Действие по умолчанию устанавливает из AUR."
 aurSy Italian    = green "Azioni riguardanti [A]UR.\n" ++ "Di default installa da AUR."
+
+-- NEEDS TRANSLATIONS
+saveS :: Language -> String
+saveS Japanese = yellow "パッケージの設置状態に関する処理\n" ++ "デフォルトでインストール状態を保存する。"
+saveS _        = yellow "Manage the [S]aving and restoring of the global package state.\n" ++ "Default action saves this state."
 
 -- Any way for the Spanish line to be shorter?
 downG :: Language -> String

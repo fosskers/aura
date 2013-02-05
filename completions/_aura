@@ -193,6 +193,7 @@ _aura() {
     typeset -a _aura_opts_commands
     _aura_opts_commands=(
         '-A[Install and manage AUR packages]'
+        '-B[Manage the global package state]'
         '-C[Manage the package cache]'
         '-L[Analyse the pacman log file]'
         '-O[Manage orphan packages]'
@@ -204,22 +205,21 @@ _aura() {
         '-h[Help message]'
         '--viewconf[View the pacman config file read-only]'
         '--languages[Display available output languages]'
-        '--save[Make a record of all installed packages]'
-        '--restore[Restore a previously saved package state]'
     )
 
 
     # options for passing to _arguments: options common to all commands
+    # Options commented out are supposed to be supported, but aren't.
     typeset -a _aura_opts_common
     _aura_opts_common=(
-        '-b[Alternate database location]:database_location:_files -/'
+#        '-b[Alternate database location]:database_location:_files -/'
         '-h[Display syntax for the given operation]'
-        '-r[Set alternate installation root]:installation root:_files -/'
+#        '-r[Set alternate installation root]:installation root:_files -/'
         '-v[Be more verbose]'
         '--auradebug[Show aura settings information.]'
-        '--cachedir[Alternate package cache location]:cache_location:_files -/'
-        '--config[An alternate configuration file]:config file:_files'
-        '--logfile[An alternate log file]:config file:_files'
+#        '--cachedir[Alternate package cache location]:cache_location:_files -/'
+#        '--config[An alternate configuration file]:config file:_files'
+#        '--logfile[An alternate log file]:config file:_files'
         '--noconfirm[Do not ask for confirmation in Aura or Pacman]'
         '--noprogressbar[Do not show a progress bar when downloading files]'
         '--noscriptlet[Do not execute the install scriptlet if one exists]'
@@ -240,6 +240,12 @@ _aura() {
         '-x[Unsuppress makepkg output during building.]'
         '--aurignore=[Ignore AUR packages when installing.]'
         '--hotedit[Prompt user to edit PKGBUILD before dep checks.]'
+    )
+
+    # options for passing to _arguments: options for --save commands
+    typeset -a _aura_opts_save
+    _aura_opts_save=(
+        '-r[Restore a previously saved package state]'
     )
 
     # options for passing to _arguments: options for --downgrade commands
@@ -334,6 +340,7 @@ _aura() {
 
     case $words[2] in
         -A*) _arguments -s : "$_aura_opts_common[@]" "$_aura_opts_aursync[@]"   ;;
+        -B*) _arguemnts -s : "$_aura_opts_common[@]" "$_aura_opts_save[@]"      ;;
         -C*) _arguments -s : "$_aura_opts_common[@]" "$_aura_opts_downgrade[@]" ;;
         -L*) _arguments -s : "$_aura_opts_common[@]" "$_aura_opts_viewlog[@]"   ;;
         -O*) _arguments -s : "$_aura_opts_common[@]" "$_aura_opts_orphans[@]"   ;;

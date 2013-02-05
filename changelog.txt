@@ -1,5 +1,11 @@
 Aura Changelog
 ==============
+1.1.3.0
+-------
+- Changed `--save` and `--restore` to `-B` and `-Br`.
+  `--save` is now just an alias for `-B`, but `--restore`
+  must be used with `-B`.
+
 1.1.2.1
 -------
 - Added message to `--save`.

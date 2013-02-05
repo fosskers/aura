@@ -12,6 +12,8 @@ Package completion for bash
 
 Deleting saved states
 
+Result of `-Br` need to be sorted better!
+
 OPTIONS TO IMPLEMENT
 --------------------
 - `Ci` `info` -> Gives some stats about the package cache.

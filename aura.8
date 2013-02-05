@@ -1,7 +1,7 @@
 .\" Man page for `aura`
 .\" Written by Colin Woodbury <colingw@gmail.com>
 
-.TH aura 8 "January 2013" "Aura" "Aura Manual"
+.TH aura 8 "February 2013" "Aura" "Aura Manual"
 
 .\" Disable hyphenation.
 .nh
@@ -32,6 +32,12 @@ by default. After building, the built \fI.pkg.tar.xz\fR file is moved
 to the package cache and installed from there. This allows for easy 
 AUR package downgrading.
 .RE 
+.P
+\fB\-B\fR, \-\-save
+.RS 4
+Manage the saving and restoring of the global package state. Default action
+stores a record of all currently installed packages and their versions.
+.RE
 .P
 \fB\-C\fR, \-\-downgrade [package(s)]
 .RS 4
@@ -145,6 +151,15 @@ as they will be much faster at presenting information than searching the
 AUR website manually.
 .RE
 
+.SH GLOBAL PACKAGE STATE OPTIONS (\fI\-B\fR)
+.P
+\fB\-r\fR, \-\-restore
+.RS 4
+Restores a record kept with \fI\-B\fR. Attempts to downgrade any
+packages that were upgraded since the chosen save. Will remove any
+that weren't installed at the time.
+.RE
+
 .SH DOWNGRADE OPTIONS (\fI\-C\fR)
 .P
 \fB\-b\fR, \-\-backup <path>
@@ -208,18 +223,6 @@ whatever way would progress the program.
 .SH MISC. OPTIONS
 .P
 These options do not require a superordinate flag, such as \fI\-A\fR.
-.P
-\-\-save
-.RS 4
-Stores a record of all currently installed packages and their versions.
-.RE
-.P
-\-\-restore
-.RS 4
-Restores a record kept with \fI\-\-save\fR. Attempts to downgrade any
-packages that were upgraded since the chosen save. Will remove any
-that weren't installed at the time.
-.RE
 .P
 \-\-auradebug
 .RS 4

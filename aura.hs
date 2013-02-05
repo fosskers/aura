@@ -38,7 +38,6 @@ import Data.List          (nub, sort, intercalate)
 
 import Aura.Colour.Text (yellow)
 import Aura.Shell       (shellCmd)
-import Aura.State       (restoreState, saveState)
 import Aura.Settings.Enable
 import Aura.Settings.Base
 import Aura.Monad.Aura
@@ -52,10 +51,11 @@ import Aura.Logo
 import Utilities (replaceByPatt, tripleFst)
 import Shell hiding (shellCmd)
 
-import qualified Aura.Commands.A as A
-import qualified Aura.Commands.C as C
-import qualified Aura.Commands.L as L
-import qualified Aura.Commands.O as O
+import Aura.Commands.A as A
+import Aura.Commands.B as B
+import Aura.Commands.C as C
+import Aura.Commands.L as L
+import Aura.Commands.O as O
 
 ---
 
@@ -108,13 +108,18 @@ executeOpts (flags,input,pacOpts) =
           [GetPkgbuild]  -> A.displayPkgbuild input
           (Refresh:fs')  -> sudo $ syncAndContinue (fs',input,pacOpts)
           badFlags       -> scoldAndFail executeOptsMsg1
+    (SaveState:fs) ->
+        case fs of
+          []             -> sudo B.saveState
+          [RestoreState] -> sudo B.restoreState
+          badFlags       -> scoldAndFail executeOptsMsg1
     (Cache:fs) ->
         case fs of
-          []       -> sudo $ C.downgradePackages input
-          [Clean]  -> sudo $ C.cleanCache input
-          [Search] -> C.searchCache input
-          [Backup] -> sudo $ C.backupCache input
-          badFlags -> scoldAndFail executeOptsMsg1
+          []            -> sudo $ C.downgradePackages input
+          [Clean]       -> sudo $ C.cleanCache input
+          [Search]      -> C.searchCache input
+          [CacheBackup] -> sudo $ C.backupCache input
+          badFlags      -> scoldAndFail executeOptsMsg1
     (LogFile:fs) ->
         case fs of
           []       -> ask >>= L.viewLogFile . logFilePathOf
@@ -126,13 +131,11 @@ executeOpts (flags,input,pacOpts) =
           []        -> O.displayOrphans input
           [Abandon] -> sudo $ getOrphans >>= flip removePkgs pacOpts
           badFlags  -> scoldAndFail executeOptsMsg1
-    [SaveState]    -> sudo saveState
-    [RestoreState] -> sudo restoreState
-    [ViewConf]     -> viewConfFile
-    [Languages]    -> displayOutputLanguages
-    [Help]         -> printHelpMsg pacOpts
-    [Version]      -> getVersionInfo >>= animateVersionMsg
-    pacmanFlags    -> catch (pacman $ pacOpts ++ input ++ hijackedFlags)
+    [ViewConf]  -> viewConfFile
+    [Languages] -> displayOutputLanguages
+    [Help]      -> printHelpMsg pacOpts
+    [Version]   -> getVersionInfo >>= animateVersionMsg
+    pacmanFlags -> catch (pacman $ pacOpts ++ input ++ hijackedFlags)
                       pacmanFailure
     where hijackedFlags = reconvertFlags flags hijackedFlagMap
 
