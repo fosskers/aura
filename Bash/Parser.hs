@@ -58,8 +58,9 @@ comment = spaces >> char '#' >> Comment `liftM` many (noneOf "\n")
 -- even when its actually parsing a function or a variable.
 -- Note: `args` is a bit of a hack.
 command :: Parser Field
-command = spaces *> (Command <$> many1 alphaNum <*> option [] (try args))
-    where args = char ' ' >> many (noneOf "`\n") >>= \line ->
+command = spaces *> (Command <$> many1 commandChar <*> option [] (try args))
+    where commandChar = alphaNum <|> oneOf "./"
+          args = char ' ' >> many (noneOf "`\n") >>= \line ->
                  case parse (many1 single) "(command)" line of
                    Left _   -> fail "Failed parsing strings in a command"
                    Right bs -> return $ concat bs
@@ -128,10 +129,13 @@ bracePair = between (char '{') (char '}') innards <?> "valid {...} string"
 -- `IF` STATEMENTS
 ------------------
 ifBlock :: Parser Field
-ifBlock = IfBlock `liftM` ifBlock' "if " fiElifElse
+ifBlock = IfBlock `liftM` (realIfBlock <|> andStatement)
 
-ifBlock' :: String -> Parser sep -> Parser BashIf
-ifBlock' word sep = do
+realIfBlock :: Parser BashIf
+realIfBlock = realIfBlock' "if " fiElifElse
+
+realIfBlock' :: String -> Parser sep -> Parser BashIf
+realIfBlock' word sep = do
   spaces
   string word
   cond <- ifCond
@@ -144,11 +148,25 @@ fiElifElse = choice $ map (try . lookAhead) [fi, elif, elys]
 
 fi, elif, elys :: Parser (Maybe BashIf)
 fi   = Nothing <$ (string "fi" <* space)
-elif = Just <$> ifBlock' "elif " fiElifElse
+elif = Just <$> realIfBlock' "elif " fiElifElse
 elys = Just <$> (string "else" >> space >> Else `liftM` ifBody fi)
 
-ifCond :: Parser String
-ifCond = between (char '[') (string "]; then") (many1 $ noneOf "]\n")
+ifCond :: Parser Comparison
+ifCond = between (char '[') (string "]; then") comparison
 
 ifBody :: Parser sep -> Parser [Field]
 ifBody sep = manyTill field sep
+
+-- Note: If you write Bash like this:
+--    [ some comparison ] && normal bash code
+-- you should be shot.
+andStatement :: Parser BashIf
+andStatement = do
+  spaces
+  cond <- between (char '[') (string "] && ") comparison
+  body <- field
+  return $ If cond [body] Nothing
+
+comparison :: Parser Comparison
+comparison = spaces >> single >>= \(left:_) -> string "= " >> single >>=
+             \(right:_) -> return (Comp left right) <?> "valid comparison"

@@ -33,9 +33,11 @@ data Field = Comment  String
            | Command  String [BashString]
              deriving (Eq,Show)
 
-data BashIf = If String [Field] (Maybe BashIf)
+data BashIf = If Comparison [Field] (Maybe BashIf)
             | Else [Field]
               deriving (Eq,Show)
+
+data Comparison = Comp BashString BashString deriving (Eq,Show)
 
 data BashFor = Incr  -- for (x;y;z); do ... done  -- Incomplete!
              | Iter String BashString [Field]  -- for x in y; do ... done
