@@ -70,7 +70,7 @@ installPackages' pacOpts pkgs = ask >>= \ss -> do
   reportIgnoredPackages ignored
   (repo,aur,nons) <- knownBadPkgCheck toInstall >>= divideByPkgType
   reportNonPackages nons
-  aurPkgs <- mapM makeAURPkg aur >>= reportPkgbuildDiffs >>= checkHotEdit
+  aurPkgs <- mapM aurPkg aur >>= reportPkgbuildDiffs >>= checkHotEdit
   notify installPackagesMsg5
   (repoDeps,aurDeps) <- catch (getDepsToInstall aurPkgs) depCheckFailure
   let repoPkgs    = nub $ repoDeps ++ repo
@@ -83,8 +83,7 @@ installPackages' pacOpts pkgs = ask >>= \ss -> do
        unless (null repoPkgs) $ pacman (["-S","--asdeps"] ++ pkgsAndOpts)
        storePkgbuilds $ aurPkgs ++ aurDeps
        mapM_ (buildAndInstallDep pacOpts) aurDeps
-       pkgFiles <- buildPackages aurPkgs
-       installPkgFiles pacOpts pkgFiles
+       buildPackages aurPkgs >>= installPkgFiles pacOpts
 
 knownBadPkgCheck :: [String] -> Aura [String]
 knownBadPkgCheck []     = return []
@@ -105,7 +104,7 @@ buildAndInstallDep pacOpts pkg =
   checkHotEdit [pkg] >>= buildPackages >>=
   installPkgFiles ("--asdeps" : pacOpts)
 
--- Prompts the user to edit PKGBUILDs if they ran aura with `--hotedit`.
+-- | Prompts the user to edit PKGBUILDs if they ran aura with `--hotedit`.
 checkHotEdit :: [AURPkg] -> Aura [AURPkg]
 checkHotEdit pkgs = ask >>= check
     where check ss | mayHotEdit ss = hotEdit pkgs
@@ -117,8 +116,8 @@ upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
   notify upgradeAURPkgsMsg1
   foreignPkgs <- filter (\(n,_) -> notIgnored n) `liftM` getForeignPackages
   pkgInfo     <- aurInfoLookup $ map fst foreignPkgs
-  let aurPkgs    = filter (\(n,_) -> n `elem` map nameOf pkgInfo) foreignPkgs
-      toUpgrade  = filter isntMostRecent $ zip pkgInfo (map snd aurPkgs)
+  let aurPkgs   = filter (\(n,_) -> n `elem` map nameOf pkgInfo) foreignPkgs
+      toUpgrade = filter isntMostRecent $ zip pkgInfo (map snd aurPkgs)
   devel <- develPkgCheck
   notify upgradeAURPkgsMsg2
   if null toUpgrade && null devel
@@ -169,7 +168,7 @@ displayPkgDeps :: [String] -> Aura ()
 displayPkgDeps []   = return ()
 displayPkgDeps pkgs = do
   info    <- aurInfoLookup pkgs
-  aurPkgs <- mapM (makeAURPkg . nameOf) info
+  aurPkgs <- mapM (aurPkg . nameOf) info
   allDeps <- mapM determineDeps aurPkgs
   let (ps,as,_) = foldl groupPkgs ([],[],[]) allDeps
   reportPkgsToInstall (n ps) (nub as) []

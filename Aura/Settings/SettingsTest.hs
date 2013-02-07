@@ -16,9 +16,11 @@ sampleSettings = Settings { environmentOf = undefined
                           , cachePathOf   = "/var/cache/pacman/pkg"
                           , logFilePathOf = "/var/log/pacman.log"
                           , suppressMakepkg = True
+                          , delMakeDeps   = False
                           , mustConfirm   = False
                           , mayHotEdit    = False
                           , diffPkgbuilds = False
+                          , rebuildDevel  = False
                           , pcRed         = red
                           , pcGreen       = green
                           , pcYellow      = yellow

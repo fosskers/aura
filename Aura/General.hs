@@ -142,25 +142,25 @@ parseNameAndVersionDemand pkg = (name, getVersionDemand comp ver)
                                | c == "="  = MustBe v
                                | otherwise = Anything
 
-makePacmanPkg :: String -> Aura PacmanPkg
-makePacmanPkg pkg = PacmanPkg name ver `liftM` pacmanOutput ["-Si",name]
+pacmanPkg :: String -> Aura PacmanPkg
+pacmanPkg pkg = PacmanPkg name ver `liftM` pacmanOutput ["-Si",name]
     where (name,ver) = parseNameAndVersionDemand pkg
 
-makeAURPkg :: String -> Aura AURPkg
-makeAURPkg pkg = do
+aurPkg :: String -> Aura AURPkg
+aurPkg pkg = do
   pkgbuild  <- downloadPkgbuild name
   namespace <- globals name pkgbuild
   return $ AURPkg name ver pkgbuild namespace
       where (name,ver) = parseNameAndVersionDemand pkg
 
-makeVirtualPkg :: String -> Aura VirtualPkg
-makeVirtualPkg pkg = VirtualPkg name ver `liftM` getProvider pkg
+virtualPkg :: String -> Aura VirtualPkg
+virtualPkg pkg = VirtualPkg name ver `liftM` getProvider pkg
     where (name,ver) = parseNameAndVersionDemand pkg
           getProvider n = do
             provider <- getProvidingPkg n
             case provider of
               Nothing -> return Nothing
-              Just p  -> Just `liftM` makePacmanPkg p
+              Just p  -> Just `liftM` pacmanPkg p
 
 -- Yields a virtual package's providing package if there is one.
 getProvidingPkg :: String -> Aura (Maybe String)
@@ -182,25 +182,20 @@ getProvidingPkg' virt = do
 -----------
 -- THE WORK
 -----------
--- Action won't be allowed unless user is root, or using sudo.
+-- | Action won't be allowed unless user is root, or using sudo.
 sudo :: Aura () -> Aura ()
 sudo action = do
   hasPerms <- (hasRootPriv . environmentOf) `liftM` ask
-  if hasPerms
-     then action
-     else scoldAndFail mustBeRootMsg1
+  if hasPerms then action else scoldAndFail mustBeRootMsg1
 
--- Prompt if the user is the true Root. Building as it can be dangerous.
+-- | Prompt if the user is the true Root. Building as it can be dangerous.
 trueRoot :: Aura () -> Aura ()
 trueRoot action = ask >>= \ss ->
-  if isntTrueRoot $ environmentOf ss
-     then action
-     else do
+  if isntTrueRoot $ environmentOf ss then action else do
        okay <- optionalPrompt trueRootMsg1
-       if okay
-          then action
-          else notify trueRootMsg2
+       if okay then action else notify trueRootMsg2
 
+-- `-Qm` yields a list of sorted values.
 getForeignPackages :: Aura [(String,String)]
 getForeignPackages = (map fixName . lines) `liftM` pacmanOutput ["-Qm"]
     where fixName = hardBreak (== ' ')
@@ -231,8 +226,8 @@ filterAURPkgs pkgs = map nameOf `liftM` aurInfoLookup pkgs
 
 filterRepoPkgs :: [String] -> Aura [String]
 filterRepoPkgs pkgs = do
-  repoPkgs <- pacmanOutput ["-Ssq",pkgs']
-  return . filter (`elem` pkgs) . lines $ repoPkgs
+  repoPkgs <- lines `liftM` pacmanOutput ["-Ssq",pkgs']
+  return $ filter (`elem` repoPkgs) pkgs
     where pkgs' = "^(" ++ prep pkgs ++ ")$"
           prep  = specs . intercalate "|"
           specs []     = []
@@ -242,6 +237,16 @@ filterRepoPkgs pkgs = do
 removePkgs :: [String] -> [String] -> Aura ()
 removePkgs [] _         = return ()
 removePkgs pkgs pacOpts = pacman  $ ["-Rsu"] ++ pkgs ++ pacOpts
+
+divideByPkgType :: [String] -> Aura ([String],[String],[String])
+divideByPkgType pkgs = do
+  repoPkgNames <- filterRepoPkgs namesOnly
+  aurPkgNames  <- filterAURPkgs $ namesOnly \\ repoPkgNames
+  let aurPkgs  = filter (flip elem aurPkgNames . splitName) pkgs
+      repoPkgs = filter (flip elem repoPkgNames . splitName) pkgs
+      others   = (pkgs \\ aurPkgs) \\ repoPkgs
+  return (repoPkgs, aurPkgs, others)
+      where namesOnly = map splitName pkgs
 
 -------
 -- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`
@@ -267,26 +272,3 @@ scold = colouredMessage red
 badReport :: (Language -> String) -> [String] -> Aura ()
 badReport _ []     = return ()
 badReport msg pkgs = ask >>= \ss -> printList red cyan (msg $ langOf ss) pkgs
-
-divideByPkgType :: [String] -> Aura ([String],[String],[String])
-divideByPkgType pkgs = do
-  repoPkgNames <- filterRepoPkgs namesOnly
-  aurPkgNames  <- filterAURPkgs $ namesOnly \\ repoPkgNames
-  let aurPkgs  = filter (flip elem aurPkgNames . splitName) pkgs
-      repoPkgs = filter (flip elem repoPkgNames . splitName) pkgs
-      others   = (pkgs \\ aurPkgs) \\ repoPkgs
-  return (repoPkgs, aurPkgs, others)
-      where namesOnly = map splitName pkgs
-
--- Format two lists into two nice rows a la `-Qi` or `-Si`.
-entrify :: Settings -> [String] -> [String] -> String
-entrify ss fs es = intercalate "\n" fsEs
-    where fsEs = zipWith combine fs' es
-          fs'  = padding ss fs
-          combine f e = f ++ " : " ++ e
-
--- Right-pads strings according to the longest string in the group.
-padding :: Settings -> [String] -> [String]
-padding ss fs = map (\x -> postPad x ws longest) fs
-    where ws      = whitespace $ langOf ss
-          longest = maximum $ map length fs

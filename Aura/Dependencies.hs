@@ -47,9 +47,9 @@ getDepsToInstall []   = ask >>= failure . getDepsToInstallMsg1 . langOf
 getDepsToInstall pkgs = ask >>= \ss -> do
   allDeps <- mapM determineDeps pkgs
   let (ps,as,vs) = foldl groupPkgs ([],[],[]) allDeps
-  necPacPkgs <- filterM mustInstall ps >>= mapM makePacmanPkg
+  necPacPkgs <- filterM mustInstall ps >>= mapM pacmanPkg
   necAURPkgs <- filterM (mustInstall . show) as
-  necVirPkgs <- filterM mustInstall vs >>= mapM makeVirtualPkg
+  necVirPkgs <- filterM mustInstall vs >>= mapM virtualPkg
   let conflicts = getConflicts ss (necPacPkgs,necAURPkgs,necVirPkgs)
   if notNull conflicts
      then failure $ unlines conflicts
@@ -64,7 +64,7 @@ determineDeps pkg = do
   let ns   = namespaceOf pkg
       deps = concatMap (value ns) ["depends","makedepends","checkdepends"]
   (repoPkgNames,aurPkgNames,other) <- divideByPkgType deps
-  aurPkgs       <- mapM makeAURPkg aurPkgNames
+  aurPkgs       <- mapM aurPkg aurPkgNames
   recursiveDeps <- mapM determineDeps aurPkgs
   let (rs,as,os) = foldl groupPkgs (repoPkgNames,aurPkgs,other) recursiveDeps
   return (nub rs, nub as, nub os)
