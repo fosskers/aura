@@ -30,7 +30,7 @@ module Aura.Pkgbuilds
 
 import System.Directory (doesFileExist)
 
-import Aura.General (AURPkg, pkgNameOf, pkgbuildOf)
+import Aura.Core (AURPkg, pkgNameOf, pkgbuildOf)
 import Aura.Monad.Aura
 
 import ColourDiff

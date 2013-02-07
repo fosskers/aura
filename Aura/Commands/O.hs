@@ -25,7 +25,7 @@ module Aura.Commands.O
     ( displayOrphans
     , adoptPkg ) where
 
-import Aura.General (getOrphans, sudo)
+import Aura.Core   (getOrphans, sudo)
 import Aura.Pacman (pacman)
 import Aura.Monad.Aura
 

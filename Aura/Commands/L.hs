@@ -31,7 +31,7 @@ import Control.Monad   (liftM)
 import Data.List       ((\\))
 
 import Aura.Colour.Text (yellow)
-import Aura.General     (badReport)
+import Aura.Core        (badReport)
 import Aura.Shell       (shellCmd)
 import Aura.Utils       (entrify)
 import Aura.Settings.Base

@@ -33,10 +33,10 @@ import Aura.Settings.Base
 import Aura.Colour.Text
 import Aura.Monad.Aura
 import Aura.Languages
-import Aura.General
 import Aura.MakePkg
 import Aura.Utils
 import Aura.Bash
+import Aura.Core
 
 import Utilities
 import Shell

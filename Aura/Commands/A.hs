@@ -42,9 +42,9 @@ import Aura.Colour.Text
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Pkgbuilds
-import Aura.General
 import Aura.Build
 import Aura.Utils
+import Aura.Core
 
 import Shell
 

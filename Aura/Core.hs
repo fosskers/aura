@@ -19,7 +19,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.General where
+module Aura.Core where
 
 import Text.Regex.PCRE ((=~))
 import Control.Monad   (liftM)

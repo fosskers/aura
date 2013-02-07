@@ -31,9 +31,9 @@ import Data.Maybe      (mapMaybe)
 import Data.List       (partition)
 
 import Aura.Colour.Text (cyan, red)
-import Aura.General     (warn,notify)
 import Aura.Pacman      (pacmanOutput, pacman)
 import Aura.Utils       (comparableVer,printList)
+import Aura.Core        (warn,notify)
 import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages

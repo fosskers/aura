@@ -39,9 +39,9 @@ import Aura.Pacman (pacman)
 import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages
-import Aura.General
 import Aura.Cache
 import Aura.Utils
+import Aura.Core
 
 import Shell (rm, cp)
 import Utilities
