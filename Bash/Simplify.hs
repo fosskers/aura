@@ -41,8 +41,8 @@ module Bash.Simplify
 
 import Control.Monad.Trans.State.Lazy
 import Text.Regex.PCRE ((=~))
-import Data.Map.Lazy   (adjust)
 import Control.Monad   (liftM)
+import Data.Map.Lazy   (insert)
 import Data.Maybe      (fromMaybe)
 
 import Bash.Base
@@ -52,7 +52,7 @@ import Bash.Base
 -- | Simplify a parsed Bash script.
 -- The Namespace _can_ be altered partway through.
 simplify :: Namespace -> Script -> (Script,Namespace)
-simplify ns sc = runState (mapM replace sc) ns
+simplify ns sc = runState (replace sc) ns
 
 simpScript :: Namespace -> Script -> Script
 simpScript ns = fst . simplify ns
@@ -60,26 +60,43 @@ simpScript ns = fst . simplify ns
 simpNamespace :: Namespace -> Script -> Namespace
 simpNamespace ns = snd . simplify ns
 
-replace :: Field -> State Namespace Field
-replace (Function n fs) = Function n `liftM` mapM replace fs
-replace (Command  n bs) = Command  n `liftM` mapM replaceString bs
-replace (Variable n bs) = do
-  bs' <- mapM replaceString bs
-  get >>= put . adjust (const bs') n  -- Update the Namespace.
-  return $ Variable n bs'
-replace somethingElse   = return somethingElse
+replace :: [Field] -> State Namespace [Field]
+replace []     = return []
+replace (IfBlock i : rs) = replaceIf i >>= \fs -> (fs ++) `liftM` replace rs
+replace (f:fs) = replace' f >>= \f' -> (f' :) `liftM` replace fs
 
-replaceString :: BashString -> State Namespace BashString
-replaceString s@(SingleQ _) = return s
-replaceString (DoubleQ s)   = DoubleQ `liftM` replaceString' s
-replaceString (NoQuote s)   = NoQuote `liftM` replaceString' s
-replaceString (Backtic f)   = Backtic `liftM` replace f
+replace' :: Field -> State Namespace Field
+replace' (Function n fs) = Function n `liftM` replace fs
+replace' (Command  n bs) = Command  n `liftM` mapM replaceStr bs
+replace' (Variable n bs) = do
+  bs' <- mapM replaceStr bs
+  get >>= put . insert n bs'  -- Update the Namespace.
+  return $ Variable n bs'
+replace' somethingElse = return somethingElse
+
+replaceStr :: BashString -> State Namespace BashString
+replaceStr s@(SingleQ _) = return s
+replaceStr (DoubleQ s)   = DoubleQ `liftM` replaceStr' s
+replaceStr (NoQuote s)   = NoQuote `liftM` replaceStr' s
+replaceStr (Backtic f)   = Backtic `liftM` replace' f
 
 -- | Doesn't yet support ${foo[...]}
-replaceString' :: String -> State Namespace String
-replaceString' s = get >>= \ns ->
+replaceStr' :: String -> State Namespace String
+replaceStr' s = get >>= \ns ->
    case s =~ "\\${?[\\w]+}?" :: (String,String,String) of
      (_,"",_) -> return s
-     (b,m,a)  -> ((b ++ replaced) ++) `liftM` replaceString' a
+     (b,m,a)  -> ((b ++ replaced) ++) `liftM` replaceStr' a
          where replaced = fromMaybe m (head `liftM` getVar ns m')
                m'       = filter (`notElem` "${}") m
+
+-- | An `if` statement can have an [el]if or [el]se, but it might not.
+replaceIf :: BashIf -> State Namespace [Field]
+replaceIf i@(If (Comp l r) fs el) = do
+  left  <- fromBashString `liftM` replaceStr l
+  right <- fromBashString `liftM` replaceStr r
+  if left == right  -- Only checks for equality at the moment.
+     then replace fs
+     else case el of
+            Nothing  -> return [IfBlock i]
+            Just el' -> replaceIf el'
+replaceIf (Else fs) = replace fs

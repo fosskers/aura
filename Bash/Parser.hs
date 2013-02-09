@@ -136,8 +136,7 @@ realIfBlock = realIfBlock' "if " fiElifElse
 
 realIfBlock' :: String -> Parser sep -> Parser BashIf
 realIfBlock' word sep = do
-  spaces
-  string word
+  spaces >> string word
   cond <- ifCond
   body <- ifBody sep
   If cond body `liftM` (fi <|> try elif <|> elys)
@@ -157,9 +156,8 @@ ifCond = between (char '[') (string "]; then") comparison
 ifBody :: Parser sep -> Parser [Field]
 ifBody sep = manyTill field sep
 
--- Note: If you write Bash like this:
+-- Note: Don't write Bash like this:
 --    [ some comparison ] && normal bash code
--- you should be shot.
 andStatement :: Parser BashIf
 andStatement = do
   spaces
@@ -167,6 +165,7 @@ andStatement = do
   body <- field
   return $ If cond [body] Nothing
 
+-- Only tries to parse equality checks at the moment.
 comparison :: Parser Comparison
 comparison = spaces >> single >>= \(left:_) -> string "= " >> single >>=
              \(right:_) -> return (Comp left right) <?> "valid comparison"
