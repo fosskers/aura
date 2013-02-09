@@ -34,6 +34,7 @@ data Settings = Settings { environmentOf   :: Environment
                          , langOf          :: Language
                          , pacmanCmdOf     :: String
                          , editorOf        :: String
+                         , carchOf         :: String
                          , ignoredPkgsOf   :: [String]
                          , wontBuildOf     :: [(String,Reason)]
                          , cachePathOf     :: FilePath

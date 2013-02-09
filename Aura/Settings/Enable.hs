@@ -25,9 +25,10 @@ module Aura.Settings.Enable
 
 import System.Environment (getEnvironment)
 
+import Aura.Languages (Language)
+import Aura.MakePkg   (makepkgConfFile)
 import Aura.Colour.PacmanColorConf
 import Aura.Settings.BadPackages
-import Aura.Languages (Language)
 import Aura.Settings.Base
 import Aura.Pacman
 import Aura.Flags
@@ -42,10 +43,13 @@ getSettings lang auraFlags = do
   environment <- getEnvironment
   pmanCommand <- getPacmanCmd environment
   colourFuncs <- getColours
+  makepkgConf <- readFile makepkgConfFile
   return Settings { environmentOf   = environment
                   , langOf          = lang
                   , pacmanCmdOf     = pmanCommand
                   , editorOf        = getEditor environment
+                  , carchOf         = singleEntry makepkgConf "CARCH"
+                                      "COULDN'T READ $CARCH"
                   , ignoredPkgsOf   = getIgnoredPkgs confFile ++
                                       getIgnoredAuraPkgs auraFlags
                   , wontBuildOf     = getBadPackages lang
@@ -75,6 +79,7 @@ debugOutput ss = do
                  , "Language          => " ++ show (langOf ss)
                  , "Pacman Command    => " ++ pacmanCmdOf ss
                  , "Editor            => " ++ editorOf ss
+                 , "$CARCH            => " ++ show (carchOf ss)
                  , "Ignored Pkgs      => " ++ unwords (ignoredPkgsOf ss)
                  , "Pkg Cache Path    => " ++ cachePathOf ss
                  , "Log File Path     => " ++ logFilePathOf ss

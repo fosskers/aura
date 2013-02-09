@@ -85,8 +85,9 @@ getIgnoredPkgs confFile = getConfFileField confFile "^IgnorePkg[ ]+=[ ]+"
 singleEntry :: String -> String -> String -> String
 singleEntry confFile field alt = case getConfFileField confFile regex of
                                       []    -> alt
-                                      entry -> head entry
-    where regex = "^" ++ field ++ "[ ]+=[ ]+"
+                                      entry -> noQs $ head entry
+    where regex = "^" ++ field ++ "[ ]*=[ ]*"
+          noQs  = filter (`notElem` "\"")
 
 getCachePath :: String -> FilePath
 getCachePath confFile = singleEntry confFile "CacheDir" defaultPackageCache

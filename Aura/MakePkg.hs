@@ -23,7 +23,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.MakePkg
     ( makepkgQuiet
-    , makepkgVerbose ) where
+    , makepkgVerbose
+    , makepkgConfFile ) where
 
 import Control.Monad (liftM)
 import Text.Regex.PCRE ((=~))
@@ -34,6 +35,9 @@ import Aura.Shell (shellCmd, quietShellCmd', checkExitCode')
 import Shell (pwd, ls)
 
 ---
+
+makepkgConfFile :: FilePath
+makepkgConfFile = "/etc/makepkg.conf"
 
 -- Builds a package with `makepkg`.
 -- Some packages create multiple .pkg.tar files. These are all returned.

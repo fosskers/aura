@@ -54,12 +54,15 @@ data BashString = SingleQ String
 type Namespace = M.Map String [BashString]
 type Script    = [Field]  -- A parsed Bash script.
 
+insert :: String -> [BashString] -> Namespace -> Namespace
+insert = M.insert
+
 -- | Convert a list of Fields into a Namespace.
 -- Namespaces should typically contain the names of all functions as well,
 -- but this one will only contain global variable names.
 toNamespace :: [Field] -> Namespace
 toNamespace [] = M.empty
-toNamespace (Variable n bs : fs) = M.insert n bs $ toNamespace fs
+toNamespace (Variable n bs : fs) = insert n bs $ toNamespace fs
 toNamespace (_:fs) = toNamespace fs
 
 getVar :: Namespace -> String -> Maybe [String]
