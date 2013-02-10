@@ -5,6 +5,12 @@ Aura Changelog
 - Changed `--save` and `--restore` to `-B` and `-Br`.
   `--save` is now just an alias for `-B`, but `--restore`
   must be used with `-B`.
+- New option `-Bc` for removing old unneeded package states.
+- `-Br` output is now sorted better and makes more sense.
+- Bash Parser can now properly parse `if` blocks, meaning packages
+  that have conditional dependencies based on architecutre will now
+  build properly.
+- API Change: `Aura.General` is now `Aura.Core`
 
 1.1.2.1
 -------

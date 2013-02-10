@@ -111,6 +111,7 @@ executeOpts (flags,input,pacOpts) =
     (SaveState:fs) ->
         case fs of
           []             -> sudo B.saveState
+          [Clean]        -> sudo $ B.cleanStates input
           [RestoreState] -> sudo B.restoreState
           badFlags       -> scoldAndFail executeOptsMsg1
     (Cache:fs) ->

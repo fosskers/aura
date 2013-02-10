@@ -19,7 +19,7 @@ _aura()
 	    return 0
 	    ;;
 	-B|--save)
-	    opts="-r --restore"
+	    opts="-c --clean -r --restore"
 	    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
 	    return 0
 	    ;;

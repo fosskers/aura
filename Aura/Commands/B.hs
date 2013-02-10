@@ -21,6 +21,33 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Commands.B
     ( saveState
-    , restoreState ) where
+    , restoreState
+    , cleanStates ) where
 
-import Aura.State (saveState, restoreState)
+import System.FilePath ((</>))
+import Data.Char       (isDigit)
+
+import Aura.Utils (scoldAndFail,optionalPrompt)
+import Aura.Core  (warn)
+import Aura.Monad.Aura
+import Aura.Languages
+import Aura.State
+
+import Shell (rm)
+
+---
+
+-- Pretty similar to `-Cc`...
+cleanStates :: [String] -> Aura ()
+cleanStates []        = cleanStates' 0
+cleanStates (input:_) | all isDigit input = cleanStates' $ read input
+                      | otherwise = scoldAndFail cleanStates_1
+
+cleanStates' :: Int -> Aura ()
+cleanStates' n = do
+  okay <- optionalPrompt (flip cleanStates_2 n)
+  if not okay
+     then warn cleanStates_3
+     else do
+       states <- getStateFiles
+       liftIO . mapM_ rm . map (stateCache </>) . drop n . reverse $ states

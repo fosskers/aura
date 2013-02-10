@@ -14,7 +14,7 @@ aura \- A package manager for Arch Linux and the AUR.
 
 .SH DESCRIPTION
 .P
-\fIaura\fR is a multi-lingual package manager for Arch Linux written in 
+\fIaura\fR is a secure, multilingual package manager for Arch Linux written in 
 Haskell.
 It connects to both the official Arch repositories and to the Arch User
 Repositories (AUR), allowing easy control of all packages on an Arch system.
@@ -153,6 +153,12 @@ AUR website manually.
 
 .SH GLOBAL PACKAGE STATE OPTIONS (\fI\-B\fR)
 .P
+\fB\-c\fR, \-\-clean <states-to-retain>
+.RS 4
+Saves a given number of the most recently saved package states and removes
+the rest.
+.RE
+.P
 \fB\-r\fR, \-\-restore
 .RS 4
 Restores a record kept with \fI\-B\fR. Attempts to downgrade any
@@ -172,7 +178,7 @@ using \fI\-Cc\fR.
 .P
 \fB\-c\fR, \-\-clean <versions-to-retain>
 .RS 4
-This saves a given number of package versions for each package and deletes
+Saves a given number of package versions for each package and deletes
 the rest from the package cache. Count is made from the most recent version, 
 so using:
 .RS 4

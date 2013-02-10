@@ -1090,6 +1090,21 @@ downgradeAndRemoveMsg1 :: Language -> String
 downgradeAndRemoveMsg1 Japanese = "パッケージを変更する必要ない。"
 downgradeAndRemoveMsg1 _        = "No packages need changing."
 
+----------------
+-- `B` functions
+----------------
+cleanStates_1 :: Language -> String
+cleanStates_1 Japanese = "入力は数字ではない。"
+cleanStates_1 _        = "Input isn't a valid number."
+
+cleanStates_2 :: Language -> Int -> String
+cleanStates_2 Japanese n = bt (show n) ++ "個のパッケージ状態記録だけが残される。その他削除？"
+cleanStates_2 _        n = bt (show n) ++ " package states will be kept. Remove the rest?"
+
+cleanStates_3 :: Language -> String
+cleanStates_3 Japanese = "何も削除しないで終了。"
+cleanStates_3 _        = "No package states were removed."
+
 ------------------------
 -- BadPackages functions
 ------------------------

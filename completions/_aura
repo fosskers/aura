@@ -245,6 +245,7 @@ _aura() {
     # options for passing to _arguments: options for --save commands
     typeset -a _aura_opts_save
     _aura_opts_save=(
+        '-c[Given n, save n recent package states and remove the rest.']
         '-r[Restore a previously saved package state]'
     )
 
