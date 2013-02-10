@@ -2,8 +2,6 @@ GENERAL
 -------
 When outputing repo dependencies, show what repo they're from?
 
-Move aura to haskell-http.
-
 Make `--save` automatic?
 
 Look into `aurvote`.

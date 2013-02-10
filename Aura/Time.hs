@@ -29,7 +29,11 @@ module Aura.Time
     , SimpleTime ) where
 
 import System.Time (getClockTime, toUTCTime, CalendarTime(..), Month(..))
-import Data.List (intercalate)
+import Text.Printf (printf)
+import Data.Maybe  (fromJust)
+import Data.List   (intercalate,elemIndex)
+
+---
 
 data SimpleTime = SimpleTime { yearOf   :: Int
                              , monthOf  :: Month
@@ -48,7 +52,11 @@ toSimpleTime c = SimpleTime { yearOf   = ctYear c
 dotFormat :: SimpleTime -> String
 dotFormat t = intercalate "." items
     where items = [ show $ yearOf t
-                  , take 3 . show . monthOf $ t
-                  , show $ dayOf t
-                  , show $ hourOf t
-                  , show $ minuteOf t ]
+                  , printf "%02d(%s)" (monthNum $ monthOf t)
+                    (take 3 . show . monthOf $ t)
+                  , printf "%02d" (dayOf t)
+                  , printf "%02d" (hourOf t)
+                  , printf "%02d" (minuteOf t) ]
+
+monthNum :: Month -> Int
+monthNum m = 1 + fromJust (elemIndex m [January ..])

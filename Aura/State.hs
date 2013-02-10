@@ -28,7 +28,7 @@ import qualified Data.Map.Lazy as M
 import System.FilePath ((</>))
 import Control.Monad   (liftM, unless)
 import Data.Maybe      (mapMaybe)
-import Data.List       (partition)
+import Data.List       (partition,sort)
 
 import Aura.Colour.Text (cyan, red)
 import Aura.Pacman      (pacmanOutput, pacman)
@@ -45,9 +45,9 @@ import Shell     (ls')
 
 ---
 
-data State = State { timeOf :: SimpleTime 
-                   , pkgsOf :: M.Map String [Int] }
-             deriving (Eq,Show,Read)
+data PkgState = PkgState { timeOf :: SimpleTime
+                         , pkgsOf :: M.Map String [Int] }
+                deriving (Eq,Show,Read)
 
 -- ([toDowngrade],[toRemove])
 type StateDiff = ([SimplePkg],[String])
@@ -58,15 +58,15 @@ stateCache = "/var/cache/aura/states"
 rawCurrentState :: Aura [String]
 rawCurrentState = lines `liftM` pacmanOutput ["-Q"]
 
-currentState :: Aura State
+currentState :: Aura PkgState
 currentState = do
   pkgs <- rawCurrentState
   time <- (toSimpleTime . toUTCTime) `liftM` liftIO getClockTime
   let namesVers    = map (pair . words) pkgs
       pair (x:y:_) = (x, comparableVer y)
-  return . State time . M.fromAscList $ namesVers
+  return . PkgState time . M.fromAscList $ namesVers
 
-compareStates :: State -> State -> StateDiff
+compareStates :: PkgState -> PkgState -> StateDiff
 compareStates old curr = M.foldrWithKey status ([],[]) $ pkgsOf curr
     where status k v (d,r) = case M.lookup k (pkgsOf old) of
                                Nothing -> (d, k : r)
@@ -75,7 +75,7 @@ compareStates old curr = M.foldrWithKey status ([],[]) $ pkgsOf curr
                                           else ((k,v') : d, r)
 
 getStateFiles :: Aura [FilePath]
-getStateFiles = liftIO $ ls' stateCache
+getStateFiles = sort `liftM` (liftIO $ ls' stateCache)
 
 saveState :: Aura ()
 saveState = do
@@ -95,7 +95,7 @@ restoreState = ask >>= \ss -> do
   unless (null nope) $ printList red cyan message (map fst nope)
   downgradeAndRemove (mapMaybe (flip getFilename cache) down) remo
 
-readState :: FilePath -> Aura State
+readState :: FilePath -> Aura PkgState
 readState name = liftIO (read `liftM` readFile (stateCache </> name))
 
 -- How does pacman do simultaneous removals and upgrades?
