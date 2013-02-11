@@ -1108,13 +1108,13 @@ cleanStates_3 _        = "No package states were removed."
 ------------------------
 -- BadPackages functions
 ------------------------
-condMsg1 :: Language -> String
-condMsg1 Japanese = "アーキテクチャーによる従属パッケージあり。"
-condMsg1 _        = "Conditional dependencies based on architecture."
+circDep_1 :: Language -> String -> String
+circDep_1 Japanese p = bt p ++ "と互いに従属している。"
+circDep_1 _        p = "Has a circular dependency with " ++ bt p ++ "."
 
-circDepMsg1 :: Language -> String -> String
-circDepMsg1 Japanese p = bt p ++ "と互いに従属している。"
-circDepMsg1 _        p = "Has a circular dependency with " ++ bt p ++ "."
+bashisms_1 :: Language -> String
+bashisms_1 Japanese = "PKGBUILDのBashコードが複雑すぎる。"
+bashisms_1 _        = "Too many bashisms in PKGBUILD."
 
 -------------------
 -- Pacman functions

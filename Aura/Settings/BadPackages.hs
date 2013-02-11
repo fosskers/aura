@@ -27,16 +27,10 @@ type Reason = String
 
 -- These packages fail to build for various reasons.
 getBadPackages :: Language -> [(String,Reason)]
-getBadPackages lang = [ ( "dwarffortress-ironhand", cond lang )
-                      , ( "dwarffortress-mayday",   cond lang )
-                      , ( "dwarffortress-phoebus",  cond lang )
-                      , ( "android-sdk",            cond lang )
-                      , ( "dolphinviewer",          cond lang )
-                      , ( "pymclevel", circDep lang "mcedit"  )
-                      , ( "mcedit", circDep lang "pymclevel"  ) ]
-
-cond :: Language -> Reason
-cond = condMsg1
+getBadPackages lang = [ ( "insync", bashisms lang ) ]
 
 circDep :: Language -> String -> Reason
-circDep = circDepMsg1
+circDep = circDep_1
+
+bashisms :: Language -> Reason
+bashisms = bashisms_1
