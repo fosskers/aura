@@ -11,6 +11,7 @@ sampleSettings = Settings { environmentOf = undefined
                           , langOf        = English
                           , pacmanCmdOf   = "pacman"
                           , editorOf      = "emacs"
+                          , carchOf       = "x86_64"
                           , ignoredPkgsOf = []
                           , wontBuildOf   = []
                           , cachePathOf   = "/var/cache/pacman/pkg"

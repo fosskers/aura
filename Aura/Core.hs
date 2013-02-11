@@ -149,8 +149,7 @@ pacmanPkg pkg = PacmanPkg name ver `liftM` pacmanOutput ["-Si",name]
 aurPkg :: String -> Aura AURPkg
 aurPkg pkg = do
   pkgbuild  <- downloadPkgbuild name
-  carch     <- ((: []) . NoQuote . carchOf) `liftM` ask
-  namespace <- insert "CARCH" carch `liftM` globals name pkgbuild
+  namespace <- globals name pkgbuild
   return $ AURPkg name ver pkgbuild namespace
       where (name,ver) = parseNameAndVersionDemand pkg
 

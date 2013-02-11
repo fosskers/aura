@@ -26,8 +26,10 @@ module Aura.Bash
     , value ) where
 
 import Text.Parsec.Error (ParseError)
-import Data.Maybe (fromMaybe)
+import Control.Monad (liftM)
+import Data.Maybe    (fromMaybe)
 
+import Aura.Settings.Base
 import Aura.Monad.Aura
 
 import Bash.Simplify
@@ -37,15 +39,18 @@ import Bash.Base
 ---
 
 globals :: String -> String -> Aura Namespace
-globals pn pb =
-    case globals' pn pb of
-      Left e   -> liftIO (print e) >> failure "PKGBUILD parse failed."
-      Right ns -> return ns
+globals pn pb = do
+  carch <- ((: []) . NoQuote . carchOf) `liftM` ask
+  case globals' carch pn pb of
+    Left e   -> liftIO (print e) >> failure "PKGBUILD parse failed."
+    Right ns -> return ns
 
-globals' :: String -> String -> Either ParseError Namespace
-globals' pn pb = case parseBash pn pb of
-                   Left e  -> Left e
-                   Right s -> Right $ simpNamespace (toNamespace s) s
+globals' :: [BashString] -> String -> String -> Either ParseError Namespace
+globals' ca pn pb =
+    case parseBash pn pb of
+      Left  e -> Left e
+      Right s -> Right $ simpNamespace namespace s
+          where namespace = insert "CARCH" ca (toNamespace s)
 
 value :: Namespace -> String -> [String]
 value ns v = fromMaybe [] $ getVar ns v

@@ -11,3 +11,5 @@ test_getDevelPkgs = runAura getDevelPkgs sampleSettings
 -- Should produce `Right []`
 test01 = runAura ((map fst `liftM` getForeignPackages) >>= filterRepoPkgs)
          sampleSettings
+
+test02 = runAura (namespaceOf `liftM` aurPkg "dwarffortress-ironhand") sampleSettings

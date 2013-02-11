@@ -92,3 +92,5 @@ executable aura
                        regex-pcre,
                        transformers,
                        base >= 4 && < 5
+
+  ghc-options:         -O2

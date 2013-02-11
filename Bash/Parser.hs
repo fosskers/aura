@@ -151,7 +151,7 @@ elif = Just <$> realIfBlock' "elif " fiElifElse
 elys = Just <$> (string "else" >> space >> Else `liftM` ifBody fi)
 
 ifCond :: Parser Comparison
-ifCond = between (char '[') (string "]; then") comparison
+ifCond = comparison <* string "; then"
 
 ifBody :: Parser sep -> Parser [Field]
 ifBody sep = manyTill field sep
@@ -161,11 +161,18 @@ ifBody sep = manyTill field sep
 andStatement :: Parser BashIf
 andStatement = do
   spaces
-  cond <- between (char '[') (string "] && ") comparison
+  cond <- comparison <* string " && "
   body <- field
   return $ If cond [body] Nothing
 
 -- Only tries to parse equality checks at the moment.
 comparison :: Parser Comparison
-comparison = spaces >> single >>= \(left:_) -> string "= " >> single >>=
-             \(right:_) -> return (Comp left right) <?> "valid comparison"
+comparison = do
+  spaces >> leftBs >> spaces
+  left <- head `liftM` single
+  try (string "= ") <|> string "== "
+  right <- head `liftM` single
+  rightBs
+  return (Comp left right) <?> "valid comparison"
+      where leftBs  = skipMany1 $ char '['
+            rightBs = skipMany1 $ char ']'
