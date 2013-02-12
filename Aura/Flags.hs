@@ -87,7 +87,7 @@ data Flag = AURInstall
           | FrenchOut
           | RussianOut
           | ItalianOut
-            deriving (Eq,Ord)
+            deriving (Eq,Ord,Show)
 
 allFlags :: Language -> [OptDescr Flag]
 allFlags lang = concat [ auraOperations lang

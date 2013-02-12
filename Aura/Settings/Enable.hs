@@ -37,14 +37,17 @@ import Shell
 
 ---
 
-getSettings :: Language -> [Flag] -> IO Settings
-getSettings lang auraFlags = do
+getSettings :: Language -> ([Flag],[String],[String]) -> IO Settings
+getSettings lang (auraFlags,input,pacOpts) = do
   confFile    <- getPacmanConf
   environment <- getEnvironment
   pmanCommand <- getPacmanCmd environment
   colourFuncs <- getColours
   makepkgConf <- readFile makepkgConfFile
-  return Settings { environmentOf   = environment
+  return Settings { inputOf         = input
+                  , pacOptsOf       = pacOpts
+                  , otherOpsOf      = map show auraFlags
+                  , environmentOf   = environment
                   , langOf          = lang
                   , pacmanCmdOf     = pmanCommand
                   , editorOf        = getEditor environment
@@ -76,6 +79,9 @@ debugOutput ss = do
   mapM_ putStrLn [ "User              => " ++ getUser' env
                  , "True User         => " ++ getTrueUser env
                  , "Using Sudo?       => " ++ yn (varExists "SUDO_USER" env)
+                 , "Pacman Flags      => " ++ unwords (pacOptsOf ss)
+                 , "Other Flags       => " ++ unwords (otherOpsOf ss)
+                 , "Other input       => " ++ unwords (inputOf ss)
                  , "Language          => " ++ show (langOf ss)
                  , "Pacman Command    => " ++ pacmanCmdOf ss
                  , "Editor            => " ++ editorOf ss

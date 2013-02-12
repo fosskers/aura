@@ -48,7 +48,7 @@ import Aura.Utils
 import Aura.Core
 import Aura.Logo
 
-import Utilities (replaceByPatt, tripleFst)
+import Utilities (replaceByPatt)
 import Shell hiding (shellCmd)
 
 import Aura.Commands.A as A
@@ -75,7 +75,7 @@ processFlags args = ((flags,nub input,pacOpts'),language)
 
 -- | Set the local environment.
 prepSettings :: (UserInput,Language) -> IO (UserInput,Settings)
-prepSettings (ui,lang) = (,) ui `liftM` getSettings lang (tripleFst ui)
+prepSettings (ui,lang) = (,) ui `liftM` getSettings lang ui
 
 -- | Hand user input to the Aura Monad and run it.
 execute :: (UserInput,Settings) -> IO (Either AuraError ())
