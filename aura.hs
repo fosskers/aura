@@ -62,7 +62,7 @@ import Aura.Commands.O as O
 type UserInput = ([Flag],[String],[String])
 
 auraVersion :: String
-auraVersion = "1.1.3.0"
+auraVersion = "1.1.3.1"
 
 main :: IO a
 main = getArgs >>= prepSettings . processFlags >>= execute >>= exit
@@ -136,7 +136,7 @@ executeOpts (flags,input,pacOpts) =
     [Languages] -> displayOutputLanguages
     [Help]      -> printHelpMsg pacOpts
     [Version]   -> getVersionInfo >>= animateVersionMsg
-    pacmanFlags -> catch (pacman $ pacOpts ++ input ++ hijackedFlags)
+    pacmanFlags -> catch (pacman $ pacOpts ++ hijackedFlags ++ input)
                       pacmanFailure
     where hijackedFlags = reconvertFlags flags hijackedFlagMap
 
