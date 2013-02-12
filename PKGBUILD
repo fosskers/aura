@@ -14,7 +14,7 @@ optdepends=('pacman-color: For coloured pacman output in Aura.'
             'powerpill:    For faster repository downloads.')
 options=('strip')
 source=(https://bitbucket.org/fosskers/aura/downloads/${_hkgname}-${pkgver}.tar.gz)
-md5sums=('a5421f47d0dcdf510ea8d3ea04e982ef')
+md5sums=('0341a2df57c97c60c0fc473f8f4388d0')
 build() {
     cd ${srcdir}/${_hkgname}-${pkgver}
     runhaskell Setup configure --prefix=/usr --docdir=/usr/share/doc/${pkgname} -O

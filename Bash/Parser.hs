@@ -170,7 +170,7 @@ comparison :: Parser Comparison
 comparison = do
   spaces >> leftBs >> spaces
   left <- head `liftM` single
-  try (string "= ") <|> string "== "
+  try (string "= ") <|> string "== " <|> string "-eq "
   right <- head `liftM` single
   rightBs
   return (Comp left right) <?> "valid comparison"

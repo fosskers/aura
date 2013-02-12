@@ -11,6 +11,7 @@ Aura Changelog
   that have conditional dependencies based on architecutre will now
   build properly.
 - API Change: `Aura.General` is now `Aura.Core`
+- Dep Change: `haskell-url` no longer needed.
 
 1.1.2.1
 -------
