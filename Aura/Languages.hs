@@ -1062,7 +1062,7 @@ aurSy Serbian    = green "Извршава радње везане за [A]UR.\n
 -- NEEDS TRANSLATIONS
 saveS :: Language -> String
 saveS Japanese = yellow "パッケージの設置状態に関する処理\n" ++ "デフォルトでインストール状態を保存する。"
-saveS Serbian  = yellow "Управља чувањем и повраћањем глобалног стања пакета.\n" ++ "Уобичајена радња чува тренутно стање."
+saveS Serbian  = yellow "Управља чувањем и враћањем глобалног стања пакета.\n" ++ "Уобичајена радња чува тренутно стање."
 saveS _        = yellow "Manage the [S]aving and restoring of the global package state.\n" ++ "Default action saves this state."
 
 -- Any way for the Spanish line to be shorter?
