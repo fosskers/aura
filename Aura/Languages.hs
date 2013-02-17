@@ -79,7 +79,7 @@ languageNames Spanish    = [ "Polaco","Croata","Sueco","Alemán","Español","Por
 languageNames Portuguese = [ "Polonês","Croata","Sueco","Alemão","Espanhol","Português", "", "" ]
 languageNames French     = [ "Polonais","Croate","Suedois","Alemand","Espagnol","Portugais", "Français", "Russe", "", "" ]
 languageNames Russian    = [ "Польский","Хорватский","Шведский","Немецкий","Испанский","Португальский", "Русский", "", "" ]
-languageNames Italian   = [ "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "" ]
+languageNames Italian    = [ "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "" ]
 languageNames Serbian    = [ "Пољски","Хрватски","Шведски","Немачки","Шпански","Португалски","Француски","Руски","Италијански","Српски" ]
 
 translatorMsgTitle :: Language -> String
@@ -371,7 +371,7 @@ getVirtualConflictsMsg3 Russian    d dv p pv = "Зависимость " ++ bt d
                                                bt p ++ " имеет версию " ++ bt pv
 getVirtualConflictsMsg3 Italian    d dv p pv = "La dipendenza " ++ bt d ++ " richiede la versione " ++ bt dv ++ " ma il pacchetto " ++
                                                bt p ++ " distribuisce la versione " ++ bt pv
-getVirtualConflictsMsg3 Serbian    d dv p pv = "Зависност " ++ bt d ++ " захтева верзију " ++ bt dv ++ ", али пакет " ++ bt p ++ 
+getVirtualConflictsMsg3 Serbian    d dv p pv = "Зависност " ++ bt d ++ " захтева верзију " ++ bt dv ++ ", али пакет " ++ bt p ++
                                                " пружа верзију " ++ bt pv
 
 -----------------
