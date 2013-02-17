@@ -25,7 +25,7 @@ module Aura.Settings.Enable
 
 import System.Environment (getEnvironment)
 
-import Aura.Languages (Language)
+import Aura.Languages (Language( NotSpecified ), getLanguageFromEnvironment)
 import Aura.MakePkg   (makepkgConfFile)
 import Aura.Colour.PacmanColorConf
 import Aura.Settings.BadPackages
@@ -48,7 +48,7 @@ getSettings lang (auraFlags,input,pacOpts) = do
                   , pacOptsOf       = pacOpts
                   , otherOpsOf      = map show auraFlags
                   , environmentOf   = environment
-                  , langOf          = lang
+                  , langOf          = checkLang lang environment
                   , pacmanCmdOf     = pmanCommand
                   , editorOf        = getEditor environment
                   , carchOf         = singleEntry makepkgConf "CARCH"
@@ -101,3 +101,8 @@ debugOutput ss = do
                                               pcMagenta ss "MAGENTA" ++
                                               pcCyan ss "CYAN"       ++
                                               pcWhite ss "WHITE" ]
+
+checkLang :: Language -> Environment -> Language
+checkLang NotSpecified env = getLanguageFromEnvironment $ getLangVar env
+checkLang lang         _   = lang
+

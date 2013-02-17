@@ -41,7 +41,8 @@ import Aura.Colour.Text (cyan, green, red, blue, yellow)
 
 ---
 
-data Language = English
+data Language = NotSpecified
+              | English
               | Japanese
               | Polish
               | Croatian
@@ -105,6 +106,9 @@ translatorMsg lang = title : names
 allLanguages :: [Language]
 allLanguages = [English ..]
 
+notSpecified :: Language
+notSpecified = NotSpecified
+
 english :: Language
 english = English
 
@@ -148,6 +152,22 @@ bt cs = "`" ++ cyan cs ++ "`"
 whitespace :: Language -> Char
 whitespace Japanese = '　'  -- \12288
 whitespace _ = ' '          -- \32
+
+getLanguageFromEnvironment :: String -> Language
+getLanguageFromEnvironment "C"          = english
+getLanguageFromEnvironment ('e':'n':xs) = english
+getLanguageFromEnvironment ('j':'a':xs) = japanese
+getLanguageFromEnvironment ('p':'l':xs) = polish
+getLanguageFromEnvironment ('h':'r':xs) = croatian
+getLanguageFromEnvironment ('s':'v':xs) = swedish
+getLanguageFromEnvironment ('d':'e':xs) = german
+getLanguageFromEnvironment ('e':'s':xs) = spanish
+getLanguageFromEnvironment ('p':'t':xs) = portuguese
+getLanguageFromEnvironment ('f':'r':xs) = french
+getLanguageFromEnvironment ('r':'u':xs) = russian
+getLanguageFromEnvironment ('i':'t':xs) = italian
+getLanguageFromEnvironment ('s':'r':xs) = serbian
+getLanguageFromEnvironment _            = english
 
 --------------------
 -- AuraLib functions
