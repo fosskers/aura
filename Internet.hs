@@ -23,12 +23,15 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Internet
     ( getUrlContents
-    , saveUrlContents ) where
+    , saveUrlContents
+    , urlEncodeVars ) where
 
 import qualified Data.ByteString as B (ByteString, hPutStr)
-import System.IO       (hClose, openFile, IOMode(WriteMode))
+
 import System.FilePath (splitFileName, (</>))
 import Control.Monad   (liftM)
+import Network.HTTP    (urlEncodeVars)
+import System.IO       (hClose, openFile, IOMode(WriteMode))
 import Network.Curl ( curlGetString
                     , curlGetString_
                     , URLString
@@ -36,9 +39,6 @@ import Network.Curl ( curlGetString
 
 ---
 
--------------
--- CONNECTION
--------------
 getUrlContents :: String -> IO String
 getUrlContents url = snd `liftM` curlGetString url []
 

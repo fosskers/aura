@@ -33,7 +33,6 @@ module Aura.AurConnection
 
 import System.FilePath ((</>))
 import Control.Monad   (liftM)
-import Network.HTTP    (urlEncodeVars)
 import Data.Maybe      (fromJust)
 import Data.List       (intercalate)
 import Text.JSON
