@@ -60,6 +60,9 @@ pacmanConfFile = "/etc/pacman.conf"
 defaultLogFile :: FilePath
 defaultLogFile = "/var/log/pacman.log"
 
+lockFile :: FilePath
+lockFile = "/var/lib/pacman/db.lck"
+
 getPacmanCmd :: Environment -> IO String
 getPacmanCmd env = case getEnvVar "PACMAN" env of
                      Just cmd -> return cmd

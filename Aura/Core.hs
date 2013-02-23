@@ -21,9 +21,10 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Core where
 
-import Text.Regex.PCRE ((=~))
-import Control.Monad   (liftM)
-import Data.List       ((\\), nub, intercalate, isSuffixOf)
+import System.Directory (doesFileExist)
+import Text.Regex.PCRE  ((=~))
+import Control.Monad    (liftM,when)
+import Data.List        ((\\), nub, intercalate, isSuffixOf)
 
 import Aura.Settings.Base
 import Aura.AurConnection
@@ -247,6 +248,12 @@ divideByPkgType pkgs = do
       others   = (pkgs \\ aurPkgs) \\ repoPkgs
   return (repoPkgs, aurPkgs, others)
       where namesOnly = map splitName pkgs
+
+-- | Block further action until the database is free.
+checkDBLock :: Aura ()
+checkDBLock = do
+  locked <- liftIO $ doesFileExist lockFile
+  when locked $ warn checkDBLock_1 >> liftIO getLine >> checkDBLock
 
 -------
 -- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`

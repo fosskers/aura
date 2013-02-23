@@ -150,8 +150,13 @@ whitespace Japanese = '　'  -- \12288
 whitespace _ = ' '          -- \32
 
 --------------------
--- AuraLib functions
+-- Core functions
 --------------------
+-- NEEDS TRANSLATION
+checkDBLock_1 :: Language -> String
+checkDBLock_1 Japanese = "パッケージデータベースが今閉鎖状態。開放したらキーを押して続行をどうぞ。"
+checkDBLock_1 _        = "The package database is locked. Press enter when it's unlocked to continue."
+
 mustBeRootMsg1 :: Language -> String
 mustBeRootMsg1 English    = "You have to use " ++ bt "sudo" ++ " for that."
 mustBeRootMsg1 Japanese   = bt "sudo" ++ "を使わないとそれができない！"

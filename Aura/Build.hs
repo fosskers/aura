@@ -45,7 +45,7 @@ import Shell
 
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
 installPkgFiles :: [String] -> [FilePath] -> Aura ()
-installPkgFiles pacOpts files = pacman $ ["-U"] ++ pacOpts ++ files
+installPkgFiles pacOpts files = checkDBLock >> pacman (["-U"] ++ pacOpts ++ files)
 
 -- All building occurs within temp directories in the package cache.
 buildPackages :: [AURPkg] -> Aura [FilePath]
