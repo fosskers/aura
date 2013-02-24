@@ -41,8 +41,7 @@ import Aura.Colour.Text (cyan, green, red, blue, yellow)
 
 ---
 
-data Language = NotSpecified
-              | English
+data Language = English
               | Japanese
               | Polish
               | Croatian
@@ -106,9 +105,6 @@ translatorMsg lang = title : names
 allLanguages :: [Language]
 allLanguages = [English ..]
 
-notSpecified :: Language
-notSpecified = NotSpecified
-
 english :: Language
 english = English
 
@@ -153,21 +149,19 @@ whitespace :: Language -> Char
 whitespace Japanese = '　'  -- \12288
 whitespace _ = ' '          -- \32
 
-getLanguageFromEnvironment :: String -> Language
-getLanguageFromEnvironment "C"          = english
-getLanguageFromEnvironment ('e':'n':xs) = english
-getLanguageFromEnvironment ('j':'a':xs) = japanese
-getLanguageFromEnvironment ('p':'l':xs) = polish
-getLanguageFromEnvironment ('h':'r':xs) = croatian
-getLanguageFromEnvironment ('s':'v':xs) = swedish
-getLanguageFromEnvironment ('d':'e':xs) = german
-getLanguageFromEnvironment ('e':'s':xs) = spanish
-getLanguageFromEnvironment ('p':'t':xs) = portuguese
-getLanguageFromEnvironment ('f':'r':xs) = french
-getLanguageFromEnvironment ('r':'u':xs) = russian
-getLanguageFromEnvironment ('i':'t':xs) = italian
-getLanguageFromEnvironment ('s':'r':xs) = serbian
-getLanguageFromEnvironment _            = english
+langFromEnv :: String -> Language
+langFromEnv ('j':'a':_) = japanese
+langFromEnv ('p':'l':_) = polish
+langFromEnv ('h':'r':_) = croatian
+langFromEnv ('s':'v':_) = swedish
+langFromEnv ('d':'e':_) = german
+langFromEnv ('e':'s':_) = spanish
+langFromEnv ('p':'t':_) = portuguese
+langFromEnv ('f':'r':_) = french
+langFromEnv ('r':'u':_) = russian
+langFromEnv ('i':'t':_) = italian
+langFromEnv ('s':'r':_) = serbian
+langFromEnv _           = english
 
 --------------------
 -- AuraLib functions
