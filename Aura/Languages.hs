@@ -105,42 +105,6 @@ translatorMsg lang = title : names
 allLanguages :: [Language]
 allLanguages = [English ..]
 
-english :: Language
-english = English
-
-japanese :: Language
-japanese = Japanese
-
-polish :: Language
-polish = Polish
-
-croatian :: Language
-croatian = Croatian
-
-swedish :: Language
-swedish = Swedish
-
-german :: Language
-german = German
-
-spanish :: Language
-spanish = Spanish
-
-portuguese :: Language
-portuguese = Portuguese
-
-french :: Language
-french = French
-
-russian :: Language
-russian = Russian
-
-italian :: Language
-italian = Italian
-
-serbian :: Language
-serbian = Serbian
-
 -- Wrap a String in backticks
 bt :: String -> String
 bt cs = "`" ++ cyan cs ++ "`"
@@ -150,18 +114,18 @@ whitespace Japanese = '　'  -- \12288
 whitespace _ = ' '          -- \32
 
 langFromEnv :: String -> Language
-langFromEnv ('j':'a':_) = japanese
-langFromEnv ('p':'l':_) = polish
-langFromEnv ('h':'r':_) = croatian
-langFromEnv ('s':'v':_) = swedish
-langFromEnv ('d':'e':_) = german
-langFromEnv ('e':'s':_) = spanish
-langFromEnv ('p':'t':_) = portuguese
-langFromEnv ('f':'r':_) = french
-langFromEnv ('r':'u':_) = russian
-langFromEnv ('i':'t':_) = italian
-langFromEnv ('s':'r':_) = serbian
-langFromEnv _           = english
+langFromEnv ('j':'a':_) = Japanese
+langFromEnv ('p':'l':_) = Polish
+langFromEnv ('h':'r':_) = Croatian
+langFromEnv ('s':'v':_) = Swedish
+langFromEnv ('d':'e':_) = German
+langFromEnv ('e':'s':_) = Spanish
+langFromEnv ('p':'t':_) = Portuguese
+langFromEnv ('f':'r':_) = French
+langFromEnv ('r':'u':_) = Russian
+langFromEnv ('i':'t':_) = Italian
+langFromEnv ('s':'r':_) = Serbian
+langFromEnv _           = English
 
 --------------------
 -- Core functions

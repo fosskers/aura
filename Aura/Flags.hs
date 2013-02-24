@@ -206,9 +206,7 @@ getLanguage = fishOutFlag flagsAndResults Nothing
           langFlags       = [ JapOut,PolishOut,CroatianOut,SwedishOut
                             , GermanOut,SpanishOut,PortuOut,FrenchOut
                             , RussianOut,ItalianOut,SerbianOut ]
-          langFuns        = map Just [ japanese,polish,croatian,swedish,german
-                                     , spanish,portuguese,french,russian,italian
-                                     , serbian ]
+          langFuns        = map Just [Japanese ..]
 
 getIgnoredAuraPkgs :: [Flag] -> [String]
 getIgnoredAuraPkgs [] = []
@@ -241,7 +239,7 @@ parseLanguageFlag args =
 -- I don't like this.
 parseFlags :: Maybe Language -> [String] -> ([Flag],[String],[String])
 parseFlags (Just lang) args = parseFlags' lang args
-parseFlags Nothing     args = parseFlags' english args
+parseFlags Nothing     args = parseFlags' English args
 
 -- Errors are dealt with manually in `aura.hs`.
 parseFlags' :: Language -> [String] -> ([Flag],[String],[String])
