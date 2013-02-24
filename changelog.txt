@@ -1,5 +1,12 @@
 Aura Changelog
 ==============
+1.1.4.1
+-------
+- Support for the $LANG environment variable.
+- Aura will now pause before post-build installation if the package database
+  lock exists. This means you can run multiple instances of Aura and avoid
+  crashes.
+
 1.1.4.0
 -------
 - Serbian translation added. Thank you, Filip Brcic!
