@@ -25,7 +25,7 @@ module Aura.Settings.Enable
 
 import System.Environment (getEnvironment)
 
-import Aura.Languages (Language)
+import Aura.Languages (Language,langFromEnv)
 import Aura.MakePkg   (makepkgConfFile)
 import Aura.Colour.PacmanColorConf
 import Aura.Settings.BadPackages
@@ -37,25 +37,26 @@ import Shell
 
 ---
 
-getSettings :: Language -> ([Flag],[String],[String]) -> IO Settings
+getSettings :: Maybe Language -> ([Flag],[String],[String]) -> IO Settings
 getSettings lang (auraFlags,input,pacOpts) = do
   confFile    <- getPacmanConf
   environment <- getEnvironment
   pmanCommand <- getPacmanCmd environment
   colourFuncs <- getColours
   makepkgConf <- readFile makepkgConfFile
+  let language = checkLang lang environment
   return Settings { inputOf         = input
                   , pacOptsOf       = pacOpts
                   , otherOpsOf      = map show auraFlags
                   , environmentOf   = environment
-                  , langOf          = lang
+                  , langOf          = language
                   , pacmanCmdOf     = pmanCommand
                   , editorOf        = getEditor environment
                   , carchOf         = singleEntry makepkgConf "CARCH"
                                       "COULDN'T READ $CARCH"
                   , ignoredPkgsOf   = getIgnoredPkgs confFile ++
                                       getIgnoredAuraPkgs auraFlags
-                  , wontBuildOf     = getBadPackages lang
+                  , wontBuildOf     = getBadPackages language
                   , cachePathOf     = getCachePath confFile
                   , logFilePathOf   = getLogFilePath confFile
                   , suppressMakepkg = getSuppression auraFlags
@@ -101,3 +102,8 @@ debugOutput ss = do
                                               pcMagenta ss "MAGENTA" ++
                                               pcCyan ss "CYAN"       ++
                                               pcWhite ss "WHITE" ]
+
+checkLang :: Maybe Language -> Environment -> Language
+checkLang Nothing env   = langFromEnv $ getLangVar env
+checkLang (Just lang) _ = lang
+

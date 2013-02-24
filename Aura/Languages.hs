@@ -149,6 +149,20 @@ whitespace :: Language -> Char
 whitespace Japanese = '　'  -- \12288
 whitespace _ = ' '          -- \32
 
+langFromEnv :: String -> Language
+langFromEnv ('j':'a':_) = japanese
+langFromEnv ('p':'l':_) = polish
+langFromEnv ('h':'r':_) = croatian
+langFromEnv ('s':'v':_) = swedish
+langFromEnv ('d':'e':_) = german
+langFromEnv ('e':'s':_) = spanish
+langFromEnv ('p':'t':_) = portuguese
+langFromEnv ('f':'r':_) = french
+langFromEnv ('r':'u':_) = russian
+langFromEnv ('i':'t':_) = italian
+langFromEnv ('s':'r':_) = serbian
+langFromEnv _           = english
+
 --------------------
 -- Core functions
 --------------------

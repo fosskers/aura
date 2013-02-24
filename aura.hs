@@ -67,14 +67,14 @@ auraVersion = "1.1.4.0"
 main :: IO a
 main = getArgs >>= prepSettings . processFlags >>= execute >>= exit
 
-processFlags :: [String] -> (UserInput,Language)
+processFlags :: [String] -> (UserInput,Maybe Language)
 processFlags args = ((flags,nub input,pacOpts'),language)
     where (language,rest) = parseLanguageFlag args
           (flags,input,pacOpts) = parseFlags language rest
           pacOpts' = nub $ pacOpts ++ reconvertFlags flags dualFlagMap
 
 -- | Set the local environment.
-prepSettings :: (UserInput,Language) -> IO (UserInput,Settings)
+prepSettings :: (UserInput,Maybe Language) -> IO (UserInput,Settings)
 prepSettings (ui,lang) = (,) ui `liftM` getSettings lang ui
 
 -- | Hand user input to the Aura Monad and run it.

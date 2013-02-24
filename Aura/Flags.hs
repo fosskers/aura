@@ -200,15 +200,15 @@ fishOutFlag [] alt _             = alt
 fishOutFlag ((f,r):fs) alt flags | f `elem` flags = r
                                  | otherwise      = fishOutFlag fs alt flags
 
-getLanguage :: [Flag] -> Language
-getLanguage = fishOutFlag flagsAndResults english
+getLanguage :: [Flag] -> Maybe Language
+getLanguage = fishOutFlag flagsAndResults Nothing
     where flagsAndResults = zip langFlags langFuns
           langFlags       = [ JapOut,PolishOut,CroatianOut,SwedishOut
                             , GermanOut,SpanishOut,PortuOut,FrenchOut
                             , RussianOut,ItalianOut,SerbianOut ]
-          langFuns        = [ japanese,polish,croatian,swedish,german
-                            , spanish,portuguese,french,russian,italian
-                            , serbian ]
+          langFuns        = map Just [ japanese,polish,croatian,swedish,german
+                                     , spanish,portuguese,french,russian,italian
+                                     , serbian ]
 
 getIgnoredAuraPkgs :: [Flag] -> [String]
 getIgnoredAuraPkgs [] = []
@@ -233,12 +233,17 @@ getDiffStatus = fishOutFlag [(DiffPkgbuilds,True)] False
 getRebuildDevel :: [Flag] -> Bool
 getRebuildDevel = fishOutFlag [(Devel,True)] False
 
-parseLanguageFlag :: [String] -> (Language,[String])
+parseLanguageFlag :: [String] -> (Maybe Language,[String])
 parseLanguageFlag args =
     case getOpt' Permute languageOptions args of
       (langs,nonOpts,otherOpts,_) -> (getLanguage langs, nonOpts ++ otherOpts)
 
+-- I don't like this.
+parseFlags :: Maybe Language -> [String] -> ([Flag],[String],[String])
+parseFlags (Just lang) args = parseFlags' lang args
+parseFlags Nothing     args = parseFlags' english args
+
 -- Errors are dealt with manually in `aura.hs`.
-parseFlags :: Language -> [String] -> ([Flag],[String],[String])
-parseFlags lang args = case getOpt' Permute (allFlags lang) args of
+parseFlags' :: Language -> [String] -> ([Flag],[String],[String])
+parseFlags' lang args = case getOpt' Permute (allFlags lang) args of
                          (opts,nonOpts,pacOpts,_) -> (opts,nonOpts,pacOpts) 
