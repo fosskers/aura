@@ -201,7 +201,7 @@ fishOutFlag ((f,r):fs) alt flags | f `elem` flags = r
                                  | otherwise      = fishOutFlag fs alt flags
 
 getLanguage :: [Flag] -> Language
-getLanguage = fishOutFlag flagsAndResults english
+getLanguage = fishOutFlag flagsAndResults notSpecified
     where flagsAndResults = zip langFlags langFuns
           langFlags       = [ JapOut,PolishOut,CroatianOut,SwedishOut
                             , GermanOut,SpanishOut,PortuOut,FrenchOut

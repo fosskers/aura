@@ -174,3 +174,7 @@ getTrueUser env | isTrueRoot env  = "root"
 
 getEditor :: Environment -> String
 getEditor env = fromMaybe "vi" $ getEnvVar "EDITOR" env
+
+-- This will get the LANG variable from the environment
+getLangVar :: Environment -> String
+getLangVar env = fromMaybe "C" $ getEnvVar "LANG" env
