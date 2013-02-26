@@ -94,7 +94,7 @@ aurInfoLookup pkgs = getAURPkgInfo pkgs MultiInfo
 getAURPkgInfo :: [String] -> RPCType -> Aura [PkgInfo]
 getAURPkgInfo [] _    = return []
 getAURPkgInfo items t = do
-  infoJSON <- liftIO . getUrlContents . makeRPCUrl t $ items
+  infoJSON <- liftIO . urlContents . makeRPCUrl t $ items
   case resultToEither $ parseInfoJSON infoJSON of
     Left _     -> scoldAndFail getAURPkgInfoMsg1
     Right info -> return info
@@ -141,7 +141,7 @@ getPkgbuildUrl :: String -> String
 getPkgbuildUrl pkg = getPkgBaseUrl pkg </> "PKGBUILD"                     
 
 downloadPkgbuild :: String -> Aura Pkgbuild
-downloadPkgbuild = liftIO . getUrlContents . getPkgbuildUrl
+downloadPkgbuild = liftIO . urlContents . getPkgbuildUrl
 
 getTrueVerViaPkgbuild :: Namespace -> String
 getTrueVerViaPkgbuild ns = pkgver ++ "-" ++ pkgrel

@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -22,33 +22,31 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Internet
-    ( getUrlContents
-    , saveUrlContents
-    , urlEncodeVars ) where
+    ( urlContents
+    , urlEncodeVars
+    , saveUrlContents ) where
 
 import qualified Data.ByteString as B (ByteString, hPutStr)
 
 import System.FilePath (splitFileName, (</>))
 import Control.Monad   (liftM)
-import Network.HTTP    (urlEncodeVars)
+import Network.Curl    (curlGetString_, CurlBuffer)
+import Network.HTTP    (urlEncodeVars, simpleHTTP, getRequest, getResponseBody)
 import System.IO       (hClose, openFile, IOMode(WriteMode))
-import Network.Curl ( curlGetString
-                    , curlGetString_
-                    , URLString
-                    , CurlOption )
 
 ---
 
-getUrlContents :: String -> IO String
-getUrlContents url = snd `liftM` curlGetString url []
-
-curlGetByteString :: URLString -> [CurlOption] -> IO B.ByteString
-curlGetByteString url co = snd `liftM` curlGetString_ url co
+urlContents :: CurlBuffer ty => String -> IO ty
+urlContents url = snd `liftM` curlGetString_ url []
 
 saveUrlContents :: FilePath -> String -> IO FilePath
 saveUrlContents path url = do
-  h <- openFile filePath WriteMode
-  content <- curlGetByteString url []
-  B.hPutStr h content >> hClose h >> return filePath
+  handle  <- openFile filePath WriteMode
+  content <- urlContents url
+  B.hPutStr handle content >> hClose handle >> return filePath
     where filePath = path </> file
           (_,file) = splitFileName url
+
+--- TESTING
+--testUrl = "https://aur.archlinux.org/rpc.php?type=multiinfo&arg%5B%5D=aura"
+--test    = getResponseBody `liftM` simpleHTTP (getRequest testUrl)
