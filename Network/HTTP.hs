@@ -36,8 +36,8 @@ urlEncodeVars [] = []
 urlEncodeVars ((n,v):t) = urlEncode n ++ '=' : foldl (\x y -> x ++ ',' : urlEncode y)
                           (urlEncode $ v) (map snd same) ++ urlEncodeRest diff
     where (same,diff) = partition ((== n) . fst) t
-          urlEncodeRest []   = []
-          urlEncodeRest diff = '&' : urlEncodeVars diff
+          urlEncodeRest [] = []
+          urlEncodeRest d  = '&' : urlEncodeVars d
 
 -- | Encode a single Haskell Char to a list of Word8 values, in UTF8 format.
 -- Taken from utf8-string by Eric Mertens <emertens@galois.com>

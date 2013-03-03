@@ -96,7 +96,7 @@ getAURPkgInfo [] _    = return []
 getAURPkgInfo items t = do
   infoJSON <- liftIO . urlContents . makeRPCUrl t $ items
   case resultToEither $ parseInfoJSON infoJSON of
-    Left _     -> scoldAndFail getAURPkgInfoMsg1
+    Left _     -> scoldAndFail getAURPkgInfo_1
     Right info -> return info
 
 parseInfoJSON :: String -> Result [PkgInfo]

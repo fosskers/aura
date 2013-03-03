@@ -187,14 +187,14 @@ getProvidingPkg' virt = do
 sudo :: Aura () -> Aura ()
 sudo action = do
   hasPerms <- (hasRootPriv . environmentOf) `liftM` ask
-  if hasPerms then action else scoldAndFail mustBeRootMsg1
+  if hasPerms then action else scoldAndFail mustBeRoot_1
 
 -- | Prompt if the user is the true Root. Building as it can be dangerous.
 trueRoot :: Aura () -> Aura ()
 trueRoot action = ask >>= \ss ->
   if isntTrueRoot $ environmentOf ss then action else do
-       okay <- optionalPrompt trueRootMsg1
-       if okay then action else notify trueRootMsg2
+       okay <- optionalPrompt trueRoot_1
+       if okay then action else notify trueRoot_2
 
 -- `-Qm` yields a list of sorted values.
 getForeignPackages :: Aura [(String,String)]

@@ -32,7 +32,7 @@ import Control.Monad    (liftM)
 import System.IO        (hFlush, stdout)
 
 import Aura.Settings.Base (pacmanCmdOf)
-import Aura.Languages     (pacmanFailureMsg1)
+import Aura.Languages     (pacmanFailure_1)
 import Aura.Shell         (shellCmd, quietShellCmd, quietShellCmd')
 import Aura.Utils         (scoldAndFail)
 import Aura.Monad.Aura
@@ -114,7 +114,7 @@ pacmanSuccess args = success `liftM` quietShellCmd' "pacman" args
 
 -- Handler for pacman call failures.
 pacmanFailure :: String -> Aura a
-pacmanFailure _ = scoldAndFail pacmanFailureMsg1
+pacmanFailure _ = scoldAndFail pacmanFailure_1
 
 -- Performs a pacmanQuiet and returns only the stdout.
 pacmanOutput :: [ShellArg] -> Aura String

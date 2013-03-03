@@ -64,7 +64,7 @@ downgradePackages pkgs = do
 getDowngradeChoice :: Cache -> String -> Aura String
 getDowngradeChoice cache pkg = do
   let choices = getChoicesFromCache cache pkg
-  notify (flip getDowngradeChoiceMsg1 pkg)
+  notify (flip getDowngradeChoice_1 pkg)
   liftIO $ getSelection choices
 
 getChoicesFromCache :: Cache -> String -> [String]
@@ -81,26 +81,26 @@ searchCache input = do
 
 -- The destination folder must already exist for the back-up to begin.
 backupCache :: [FilePath] -> Aura ()
-backupCache []      = scoldAndFail backupCacheMsg1
+backupCache []      = scoldAndFail backupCache_1
 backupCache (dir:_) = do
   exists <- liftIO $ fileExist dir
   if not exists
-     then scoldAndFail backupCacheMsg3
+     then scoldAndFail backupCache_3
      else confirmBackup dir >>= backup dir
 
 confirmBackup :: FilePath -> Aura Cache
 confirmBackup dir = do
   cache <- ask >>= cacheContents . cachePathOf
-  notify $ flip backupCacheMsg4 dir
-  notify . flip backupCacheMsg5 . size $ cache
-  okay <- optionalPrompt backupCacheMsg6
+  notify $ flip backupCache_4 dir
+  notify . flip backupCache_5 . size $ cache
+  okay <- optionalPrompt backupCache_6
   if not okay
-     then scoldAndFail backupCacheMsg7
+     then scoldAndFail backupCache_7
      else return cache
 
 backup :: FilePath -> Cache -> Aura ()
 backup dir cache = do
-  notify backupCacheMsg8
+  notify backupCache_8
   liftIO $ putStrLn ""  -- So that the cursor can rise at first.
   copyAndNotify dir (allFilenames cache) 1
 
@@ -110,7 +110,7 @@ copyAndNotify _ [] _       = return ()
 copyAndNotify dir (p:ps) n = do
   cachePath <- cachePathOf `liftM` ask
   liftIO $ raiseCursorBy 1
-  warn (flip copyAndNotifyMsg1 n)
+  warn (flip copyAndNotify_1 n)
   liftIO $ cp (cachePath </> p) (dir </> p)
   copyAndNotify dir ps $ n + 1
 
@@ -119,24 +119,24 @@ cleanCache :: [String] -> Aura ()
 cleanCache [] = cleanCache' 0
 cleanCache (input:_)  -- Ignores all but first input element.
   | all isDigit input = cleanCache' $ read input
-  | otherwise         = scoldAndFail $ flip preCleanCacheMsg1 input
+  | otherwise         = scoldAndFail $ flip preCleanCache_1 input
 
 -- Keeps a certain number of package files in the cache according to
 -- a number provided by the user. The rest are deleted.
 cleanCache' :: Int -> Aura ()
 cleanCache' toSave
-    | toSave < 0  = scoldAndFail cleanCacheMsg1
-    | toSave == 0 = warn cleanCacheMsg2 >> pacman ["-Scc"]  -- Needed?
+    | toSave < 0  = scoldAndFail cleanCache_1
+    | toSave == 0 = warn cleanCache_2 >> pacman ["-Scc"]  -- Needed?
     | otherwise   = do
-        warn $ flip cleanCacheMsg3 toSave
-        okay <- optionalPrompt cleanCacheMsg4
+        warn $ flip cleanCache_3 toSave
+        okay <- optionalPrompt cleanCache_4
         if not okay
-           then scoldAndFail cleanCacheMsg5
+           then scoldAndFail cleanCache_5
            else clean toSave
 
 clean :: Int -> Aura ()
 clean toSave = ask >>= \ss -> do
-  notify cleanCacheMsg6
+  notify cleanCache_6
   cache <- cacheContents $ cachePathOf ss
   let files     = allFilenames cache
       grouped   = map (take toSave . reverse) $ groupByName files
@@ -154,4 +154,4 @@ groupByName pkgs = groupBy sameBaseName $ sortPkgs pkgs
 -- REPORTING
 ------------
 reportBadDowngradePkgs :: [String] -> Aura ()
-reportBadDowngradePkgs = badReport reportBadDowngradePkgsMsg1
+reportBadDowngradePkgs = badReport reportBadDowngradePkgs_1

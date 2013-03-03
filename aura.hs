@@ -105,31 +105,31 @@ executeOpts (flags,input,pacOpts) =
           [Download]     -> A.downloadTarballs input
           [GetPkgbuild]  -> A.displayPkgbuild input
           (Refresh:fs')  -> sudo $ syncAndContinue (fs',input,pacOpts)
-          badFlags       -> scoldAndFail executeOptsMsg1
+          badFlags       -> scoldAndFail executeOpts_1
     (SaveState:fs) ->
         case fs of
           []             -> sudo B.saveState
           [Clean]        -> sudo $ B.cleanStates input
           [RestoreState] -> sudo B.restoreState
-          badFlags       -> scoldAndFail executeOptsMsg1
+          badFlags       -> scoldAndFail executeOpts_1
     (Cache:fs) ->
         case fs of
           []            -> sudo $ C.downgradePackages input
           [Clean]       -> sudo $ C.cleanCache input
           [Search]      -> C.searchCache input
           [CacheBackup] -> sudo $ C.backupCache input
-          badFlags      -> scoldAndFail executeOptsMsg1
+          badFlags      -> scoldAndFail executeOpts_1
     (LogFile:fs) ->
         case fs of
           []       -> ask >>= L.viewLogFile . logFilePathOf
           [Search] -> L.searchLogFile input
           [Info]   -> L.logInfoOnPkg input
-          badFlags -> scoldAndFail executeOptsMsg1
+          badFlags -> scoldAndFail executeOpts_1
     (Orphans:fs) ->
         case fs of
           []        -> O.displayOrphans input
           [Abandon] -> sudo $ getOrphans >>= flip removePkgs pacOpts
-          badFlags  -> scoldAndFail executeOptsMsg1
+          badFlags  -> scoldAndFail executeOpts_1
     [ViewConf]  -> viewConfFile
     [Languages] -> displayOutputLanguages
     [Help]      -> printHelpMsg pacOpts
@@ -152,7 +152,7 @@ viewConfFile = shellCmd "less" [pacmanConfFile]
 
 displayOutputLanguages :: Aura ()
 displayOutputLanguages = do
-  notify displayOutputLanguagesMsg1
+  notify displayOutputLanguages_1
   liftIO $ mapM_ print allLanguages
 
 printHelpMsg :: [String] -> Aura ()

@@ -26,7 +26,7 @@ module Internet
     , urlEncodeVars
     , saveUrlContents ) where
 
-import qualified Data.ByteString as B (ByteString, hPutStr)
+import qualified Data.ByteString as B (hPutStr)
 
 import System.FilePath (splitFileName, (</>))
 import Control.Monad   (liftM)

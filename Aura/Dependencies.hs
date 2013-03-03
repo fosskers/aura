@@ -43,7 +43,7 @@ import Utilities (notNull, tripleThrd)
 
 -- Returns the deps to be installed, or fails nicely.
 getDepsToInstall :: [AURPkg] -> Aura ([String],[AURPkg])
-getDepsToInstall []   = ask >>= failure . getDepsToInstallMsg1 . langOf
+getDepsToInstall []   = ask >>= failure . getDepsToInstall_1 . langOf
 getDepsToInstall pkgs = ask >>= \ss -> do
   allDeps <- mapM determineDeps pkgs
   let (ps,as,vs) = foldl groupPkgs ([],[],[]) allDeps
@@ -115,8 +115,8 @@ getRealPkgConflicts f lang toIgnore pkg
     where curVer       = f pkg
           name         = pkgNameOf pkg
           reqVer       = show $ versionOf pkg
-          failMessage1 = getRealPkgConflictsMsg2 lang name
-          failMessage2 = getRealPkgConflictsMsg1 lang name curVer reqVer
+          failMessage1 = getRealPkgConflicts_2 lang name
+          failMessage2 = getRealPkgConflicts_1 lang name curVer reqVer
 
 -- This can't be generalized as easily.
 getVirtualConflicts :: Language -> [String] -> VirtualPkg -> Maybe ErrMsg
@@ -129,9 +129,9 @@ getVirtualConflicts lang toIgnore pkg
           ver          = show $ versionOf pkg
           provider     = pkgNameOf . fromJust . providerPkgOf $ pkg
           pVer         = getProvidedVerNum pkg
-          failMessage1 = getVirtualConflictsMsg1 lang name
-          failMessage2 = getVirtualConflictsMsg2 lang name provider
-          failMessage3 = getVirtualConflictsMsg3 lang name ver provider pVer
+          failMessage1 = getVirtualConflicts_1 lang name
+          failMessage2 = getVirtualConflicts_2 lang name provider
+          failMessage3 = getVirtualConflicts_3 lang name ver provider pVer
 
 getProvidedVerNum :: VirtualPkg -> String
 getProvidedVerNum pkg = splitVer match

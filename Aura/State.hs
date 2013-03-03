@@ -82,7 +82,7 @@ saveState = do
   state <- currentState
   let filename = stateCache </> dotFormat (timeOf state)
   liftIO $ writeFile filename (show state)
-  notify saveStateMsg1
+  notify saveState_1
 
 restoreState :: Aura ()
 restoreState = ask >>= \ss -> do
@@ -91,7 +91,7 @@ restoreState = ask >>= \ss -> do
   cache <- cacheContents $ cachePathOf ss
   let (cand,remo) = compareStates past curr
       (down,nope) = partition (flip downgradable cache) cand
-      message     = restoreStateMsg1 $ langOf ss
+      message     = restoreState_1 $ langOf ss
   unless (null nope) $ printList red cyan message (map fst nope)
   downgradeAndRemove (mapMaybe (flip getFilename cache) down) remo
 
@@ -101,7 +101,7 @@ readState name = liftIO (read `liftM` readFile (stateCache </> name))
 -- How does pacman do simultaneous removals and upgrades?
 -- I've seen it happen plenty of times.
 downgradeAndRemove :: [FilePath] -> [String] -> Aura ()
-downgradeAndRemove [] [] = warn downgradeAndRemoveMsg1
+downgradeAndRemove [] [] = warn downgradeAndRemove_1
 downgradeAndRemove down remo
     | null remo = downgrade
     | null down = remove

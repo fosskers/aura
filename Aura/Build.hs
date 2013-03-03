@@ -60,7 +60,7 @@ buildPackages pkgs = ask >>= \ss -> do
 build :: [FilePath] -> [AURPkg] -> Aura [FilePath]
 build built []       = return $ filter notNull built
 build built ps@(p:_) = do
-  notify (flip buildPackagesMsg1 pn)
+  notify (flip buildPackages_1 pn)
   (paths,rest) <- catch (withTempDir pn (build' ps)) (buildFail built ps)
   build (paths ++ built) rest
       where pn = pkgNameOf p
@@ -92,7 +92,7 @@ getSourceCode pkgName user currDir = liftIO $ do
 hotEdit :: [AURPkg] -> Aura [AURPkg]
 hotEdit pkgs = ask >>= \ss ->
   withTempDir "hotedit" . forM pkgs $ \p -> do
-    let msg = flip checkHotEditMsg1 . pkgNameOf
+    let msg = flip checkHotEdit_1 . pkgNameOf
     answer <- optionalPrompt (msg p)
     if not answer
        then return p
@@ -117,23 +117,23 @@ buildFail :: [FilePath] -> [AURPkg] -> String -> Aura ([FilePath],[AURPkg])
 buildFail _ [] _ = failure "buildFail : You should never see this message."
 buildFail built (p:ps) errors = ask >>= \ss -> do
   let lang = langOf ss
-  scold (flip buildFailMsg1 (show p))
+  scold (flip buildFail_1 (show p))
   displayBuildErrors errors
-  printList red cyan (buildFailMsg2 lang) (map pkgNameOf ps)
-  printList yellow cyan (buildFailMsg3 lang) $ map takeFileName built
+  printList red cyan (buildFail_2 lang) (map pkgNameOf ps)
+  printList yellow cyan (buildFail_3 lang) $ map takeFileName built
   if null built
      then return ([],[])
      else do
-       response <- optionalPrompt buildFailMsg4
+       response <- optionalPrompt buildFail_4
        if response
           then return ([],[])
-          else scoldAndFail buildFailMsg5
+          else scoldAndFail buildFail_5
 
 -- If the user wasn't running Aura with `-x`, then this will
 -- show them the suppressed makepkg output. 
 displayBuildErrors :: ErrMsg -> Aura ()
 displayBuildErrors errors = ask >>= \ss -> when (suppressMakepkg ss) $ do
-  putStrA red (displayBuildErrorsMsg1 $ langOf ss)
+  putStrA red (displayBuildErrors_1 $ langOf ss)
   liftIO (timedMessage 1000000 ["3.. ","2.. ","1..\n"] >> putStrLn errors)
 
 -- Moves a file to the pacman package cache and returns its location.
