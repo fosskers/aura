@@ -32,7 +32,7 @@ import Shell (Environment)
 -- The global settings as set by the user with command-line flags.
 data Settings = Settings { inputOf         :: [String]
                          , pacOptsOf       :: [String]
-                         , otherOpsOf      :: [String]
+                         , otherOptsOf     :: [String]
                          , environmentOf   :: Environment
                          , langOf          :: Language
                          , pacmanCmdOf     :: String
