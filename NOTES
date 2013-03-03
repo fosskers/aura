@@ -8,9 +8,9 @@ Look into `aurvote`.
 
 Package completion for bash
 
-OPTIONS TO IMPLEMENT
---------------------
-- `Ci` `info` -> Gives some stats about the package cache.
+Is it possible to convert Aura to use gettext and printf?
+
+Update localisation guide!
 
 COMPLETIONS
 -----------

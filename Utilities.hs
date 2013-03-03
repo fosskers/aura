@@ -1,4 +1,4 @@
--- Utility functions that don't fit in a particular library.
+-- Utility functions too general even for Aura.Utils
 
 {-
 
@@ -24,12 +24,12 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Utilities where
 
 import Control.Concurrent (threadDelay)
-import System.FilePath (dropExtension)
-import System.IO (stdout, hFlush)
-import Data.List (dropWhileEnd)
-import Text.Regex.PCRE ((=~))
-import Text.Printf (printf)
-import Control.Monad (void)
+import System.FilePath    (dropExtension)
+import Text.Regex.PCRE    ((=~))
+import Control.Monad      (void)
+import Text.Printf        (printf)
+import System.IO          (stdout, hFlush)
+import Data.List          (dropWhileEnd)
 
 import Shell
 
@@ -39,16 +39,15 @@ type Pattern = (String,String)
 
 type Regex = String
 
------------
--- PLUMBING
------------
--- A traditional `split` function.
+---
+
+-- | A traditional `split` function.
 split :: Eq a => a -> [a] -> [[a]]
 split _ [] = []
 split x xs = fst xs' : split x (snd xs')
     where xs' = hardBreak (== x) xs
 
--- Like break, but kills the element that triggered the break.
+-- | Like break, but kills the element that triggered the break.
 hardBreak :: (a -> Bool) -> [a] -> ([a],[a])
 hardBreak _ [] = ([],[])
 hardBreak p xs = (firstHalf, secondHalf')
@@ -56,15 +55,15 @@ hardBreak p xs = (firstHalf, secondHalf')
           secondHalf  = dropWhile (not . p) xs
           secondHalf' = if null secondHalf then [] else tail secondHalf
 
-lStrip :: String -> String
+-- | Traditional whitespace stripping.
+lStrip, rStrip :: String -> String
 lStrip = dropWhile (`elem` whitespaces)
-
-rStrip :: String -> String
 rStrip = dropWhileEnd (`elem` whitespaces)
 
 whitespaces :: [Char]
 whitespaces = [' ','\t']
 
+-- I'm surprised the following three functions don't already exist.
 tripleFst :: (a,b,c) -> a
 tripleFst (a,_,_) = a
 
@@ -74,14 +73,14 @@ tripleSnd (_,b,_) = b
 tripleThrd :: (a,b,c) -> c
 tripleThrd (_,_,c) = c
 
--- Replaces a (p)attern with a (t)arget in a line if possible.
+-- | Replaces a (p)attern with a (t)arget in a line if possible.
 replaceByPatt :: [Pattern] -> String -> String
 replaceByPatt [] line = line
 replaceByPatt ((p,t):ps) line | p == m    = replaceByPatt ps (b ++ t ++ a)
                               | otherwise = replaceByPatt ps line
                          where (b,m,a) = line =~ p :: (String,String,String)
 
--- Given a number of selections, allows the user to choose one.
+-- | Given a number of selections, allows the user to choose one.
 getSelection :: [String] -> IO String
 getSelection [] = return ""
 getSelection choiceLabels = do
@@ -97,6 +96,7 @@ getSelection choiceLabels = do
     Just valid -> return valid
     Nothing    -> getSelection choiceLabels  -- Ask again.
 
+-- | Print a list of Strings with a given interval in between.
 timedMessage :: Int -> [String] -> IO ()
 timedMessage delay = mapM_ printMessage
     where printMessage msg = putStr msg >> hFlush stdout >> threadDelay delay
@@ -107,7 +107,7 @@ searchLines pat = filter (=~ pat)
 notNull :: [a] -> Bool
 notNull = not . null
 
--- Opens the editor of the user's choice.
+-- | Opens the editor of the user's choice.
 openEditor :: String -> String -> IO ()
 openEditor editor file = void $ shellCmd editor [file]
 
@@ -118,18 +118,19 @@ decompress file = do
   _ <- quietShellCmd' "bsdtar" ["-zxvf",file]
   return . dropExtension . dropExtension $ file
 
+-- | Surprised this doesn't exist already either.
 fromRight :: Either a b -> b
 fromRight (Right x) = x
 fromRight (Left _)  = error "Value given was a Left."
 
 -- The Int argument is the final length of the padded String,
--- not the length of the pad.
+-- not the length of the pad. Is that stupid?
 postPad :: [a] -> a -> Int -> [a]
 postPad xs x len = take len $ xs ++ repeat x
 
 prePad :: [a] -> a -> Int -> [a]
 prePad xs x len = replicate (len - length xs) x ++ xs
 
--- Perform an action within a given directory.
+-- | Perform an action within a given directory.
 inDir :: FilePath -> IO a -> IO a
 inDir dir io = pwd >>= \cur -> cd dir >> io >>= \res -> cd cur >> return res

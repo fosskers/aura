@@ -1,7 +1,7 @@
 -- Library for Aura output in different languages.
 -- All normal restrictions on line length do not apply for this file, and this file only.
 
-{- AURA TRANSLATORS - The best people ever!
+{- AURA TRANSLATORS - Thank you all
 Chris "Kwpolska" Warrick | Polish
 Denis Kasak              | Croatian
 Fredrik Haikarainen      | Swedish

@@ -33,7 +33,7 @@ contribution, and its a great opportunity to contribute to Open Source.
 ### STEP ONE - TELL HASKELL ABOUT THE NEW LANGUAGE 
 
   All strings that contain messages for the user are stored in a single
-source file: `AuraLanguages.hs`. Let's take a look at the top:
+source file: `Aura/Languages.hs`. Let's take a look at the top:
 
 ```haskell
 data Language = English
@@ -53,22 +53,30 @@ data Language = English
                 deriving (Eq,Enum,Show)
 ```
 
-###  STEP TWO - ALLOW ACCESS TO YOUR LANGUAGE
+###  STEP TWO - ADDING YOUR LANGUAGE'S LOCALE CODE
 
-  To do this we need to define a very simple function.
-Here is the English version:
-
-```haskell
-english :: Language
-english = English
-```
-
-  The format is thus:
+  See the function `langFromEnv`. It is given the contents of the environment
+variable `LANG`, and checks the first two characters, returning the appropriate
+name of the language entered in the `Language` field above. English is the
+default.
 
 ```haskell
-someLanguageName :: Language
-someLanguageName = ExactlyWhatYouAddedToTheLanguageFieldAbove
+langFromEnv :: String -> Language
+langFromEnv ('j':'a':_) = Japanese
+langFromEnv _           = English
 ```
+
+  For French, we would add a new field above `English`.
+
+```haskell
+langFromEnv :: String -> Language
+langFromEnv ('j':'a':_) = Japanese
+langFromEnv ('f':'r':_) = French
+langFromEnv _           = English
+```
+
+  Don't know your locale code? You can find them all in
+`/usr/share/i18n/locales`.
 
 ### STEP THREE - TRANSLATION
 
@@ -77,10 +85,12 @@ The user has passed some bogus / conflicting flags to Aura.
 What to tell them?
 
 ```haskell
--- aura functions
-executeOptsMsg1 :: Language -> String
-executeOptsMsg1 English  = "Conflicting flags given!"
-executeOptsMsg1 Japanese = "矛盾しているオプションあり。"
+----------------
+-- `A` functions
+----------------
+executeOpts_1 :: Language -> String
+executeOpts_1 English  = "Conflicting flags given!"
+executeOpts_1 Japanese = "矛盾しているオプションあり。"
 ```
 
   All functions in Aura code that output messages to the user get that
@@ -92,7 +102,7 @@ code the calling function is located. If you ever need more context as to
 what kind of message you're writing, checking the code directly will be
 quickest. The format is:
 
-nameOfCallingFunctionMsgx SomeLanguage = "The message."
+nameOfCallingFunction_x SomeLanguage = "The message."
 
   Where `x` would be a number. 
   
@@ -100,35 +110,39 @@ nameOfCallingFunctionMsgx SomeLanguage = "The message."
   So let's go ahead and add the French message:
 
 ```haskell
--- aura functions
-executeOptsMsg1 :: Language -> String
-executeOptsMsg1 English  = "Conflicting flags given!"
-executeOptsMsg1 Japanese = "矛盾しているオプションあり。"
-executeOptsMsg1 French   = "Oh non! Les options sont terribles!"
+----------------
+-- `A` functions
+----------------
+executeOpts_1 :: Language -> String
+executeOpts_1 English  = "Conflicting flags given!"
+executeOpts_1 Japanese = "矛盾しているオプションあり。"
+executeOpts_1 French   = "Arguments contradictoires!"
 ```
-
-  High-school French at its finest.
 
   Sometimes you'll get functions with extra variables to put in the message:
 
 ```haskell
--- AuraLib functions
-buildPackagesMsg1 :: Language -> String -> String
-buildPackagesMsg1 English p  = "Building " ++ bt p ++ "..."
-buildPackagesMsg1 Japanese p = bt p ++ "を作成中・・・"
+-----------------
+-- Core functions
+-----------------
+buildPackages_1 :: Language -> String -> String
+buildPackages_1 English  p = "Building " ++ bt p ++ "..."
+buildPackages_1 Japanese p = bt p ++ "を作成中・・・"
 ```
 
   What the heck is `p`? Well it's probably a package name.
-To double check, just check out the function that calls this message dipatch.
-We know it's in `AuraLib.hs`, and the function is called `buildPackages`.
+To double check, just check out the function that calls this message dispatch.
+We know it's in `Core.hs`, and the function is called `buildPackages`.
 Once you know what's going on, go ahead and add the translation:
 
 ```haskell
--- AuraLib functions
-buildPackagesMsg1 :: Language -> String -> String
-buildPackagesMsg1 English p  = "Building " ++ bt p ++ "..."
-buildPackagesMsg1 Japanese p = bt p ++ "を作成中・・・"
-buildPackagesMsg1 French p   = bt p ++ " est en cours de construction."
+-----------------
+-- Core functions
+-----------------
+buildPackages_1 :: Language -> String -> String
+buildPackages_1 English  p = "Building " ++ bt p ++ "..."
+buildPackages_1 Japanese p = bt p ++ "を作成中・・・"
+buildPackages_1 French   p = "Construction de " ++ bt p ++ "…"
 ```
 
   Obviously the syntax among languages is different, and so where you insert
@@ -148,40 +162,39 @@ for the new language you're adding too.
 the translations are done I can take care of the rest of the code editing.
 But for the interested:
 
-(In `AuraFlags.hs`)
+(In `Aura/Flags.hs`)
 
 ```haskell
-data Flag = AURInstall  |
-            Cache       |
-            GetPkgbuild |
-            Search      |
-            Refresh     |
-            Languages   |
-            Version     |
-            Help        |
-            JapOut
-            deriving (Eq,Ord)
+data Flag = AURInstall
+          | Cache
+          | GetPkgbuild
+          | Search
+          | Refresh
+          | Languages
+          | Version
+          | Help
+          | JapOut
+            deriving (Eq,Ord,Show)
 ```
 
   You could add French like this:
 
-```haskell
-data Flag = AURInstall  |
-            Cache       |
-            GetPkgbuild |
-            Search      |
-            Refresh     |
-            Languages   |
-            Version     |
-            Help        |
-            JapOut      |  -- Added a pipe character...
-            FrenchOut      -- ...and a Flag value for French!
-            deriving (Eq,Ord)
+data Flag = AURInstall
+          | Cache
+          | GetPkgbuild
+          | Search
+          | Refresh
+          | Languages
+          | Version
+          | Help
+          | JapOut
+          | FrenchOut  -- Added a pipe character and the Flag name.
+            deriving (Eq,Ord,Show)
 ```
 
   Then we need to add it to the options to be checked for:
 
-  (In `AuraFlags.hs`)
+  (In `Aura/Flags.hs`)
 
 ```haskell
 languageOptions :: [OptDescr Flag]
@@ -195,7 +208,7 @@ languageOptions = map simpleMakeOption
 languageOptions :: [OptDescr Flag]
 languageOptions = map simpleMakeOption
                   [ ( [], ["japanese","日本語"],  JapOut    ) 
-                  , ( [], ["french", "francais"], FrenchOut ) ]
+                  , ( [], ["french", "français"], FrenchOut ) ]
 ```
 
   Notice how each language has two long options. Please feel free to
@@ -204,27 +217,25 @@ languageOptions = map simpleMakeOption
   Last step in the flag making:
 
 ```haskell
-getLanguage :: [Flag] -> Language
-getLanguage = fishOutFlag flagsAndResults english
+getLanguage :: [Flag] -> Maybe Language
+getLanguage = fishOutFlag flagsAndResults Nothing
     where flagsAndResults = zip langFlags langFuns
-          langFlags       = [JapOut]
-          langFuns        = [japanese]
+          langFlags       = [ JapOut ]
+          langFuns        = map Just [Japanese ..]
 ```
 
   This function extracts your language selection from the rest of the options.
 Let's add French.
 
 ```haskell
-getLanguage :: [Flag] -> Language
-getLanguage = fishOutFlag flagsAndResults english
+getLanguage :: [Flag] -> Maybe Language
+getLanguage = fishOutFlag flagsAndResults Nothing
     where flagsAndResults = zip langFlags langFuns
-          langFlags       = [JapOut,FrenchOut]  -- We added
-          langFuns        = [japanese,french]   -- some values here.
+          langFlags       = [ JapOut,FrenchOut ]  -- Only this changes.
+          langFuns        = map Just [Japanese ..]
 ```
 
-  Where `FrenchOut` is the value you added to `Flags` above. `french` is
-the function you wrote in `AuraLanguages.hs` to return the name of your
-language. 
+  Where `FrenchOut` is the value you added to `Flags` above.
 
 ### STEP FIVE - PULL REQUEST
 
@@ -235,7 +246,7 @@ instructions, this shouldn't take long. Furthermore, I won't be able to
 proofread the translation itself, as I don't speak your language.
 You could hide your doomsday take-over plans in my code and I'd never know.
 
-### STEP SIX - INTERNET GLORY?
+### STEP SIX - YOU'VE HELPED OTHER ARCH USERS WHO SPEAK YOUR LANGUAGE
 
   You've done a great thing by increasing Aura's usability. Your name
 will be included in both Aura's README and in its `-V` version message.

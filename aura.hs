@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -O2 #-}
-
 {-
 
 Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>

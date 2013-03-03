@@ -31,7 +31,7 @@ import qualified Data.ByteString as B (ByteString, hPutStr)
 import System.FilePath (splitFileName, (</>))
 import Control.Monad   (liftM)
 import Network.Curl    (curlGetString_, CurlBuffer)
-import Network.HTTP    (urlEncodeVars, simpleHTTP, getRequest, getResponseBody)
+import Network.HTTP    (urlEncodeVars)
 import System.IO       (hClose, openFile, IOMode(WriteMode))
 
 ---
@@ -46,7 +46,3 @@ saveUrlContents path url = do
   B.hPutStr handle content >> hClose handle >> return filePath
     where filePath = path </> file
           (_,file) = splitFileName url
-
---- TESTING
---testUrl = "https://aur.archlinux.org/rpc.php?type=multiinfo&arg%5B%5D=aura"
---test    = getResponseBody `liftM` simpleHTTP (getRequest testUrl)
