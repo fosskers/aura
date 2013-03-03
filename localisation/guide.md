@@ -179,6 +179,7 @@ data Flag = AURInstall
 
   You could add French like this:
 
+```haskell
 data Flag = AURInstall
           | Cache
           | GetPkgbuild

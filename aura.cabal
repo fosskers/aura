@@ -44,6 +44,7 @@ executable aura
                        Utilities,
                        ColourDiff,
                        Data.Algorithm.Diff,
+                       Network.HTTP,
                        Aura.Bash,
                        Aura.Core,
                        Aura.Logo,
@@ -78,7 +79,6 @@ executable aura
 
   build-depends:       mtl,
                        curl,
-                       HTTP,
                        json,
                        unix,
                        array,
