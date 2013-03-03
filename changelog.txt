@@ -1,5 +1,12 @@
 Aura Changelog
 ==============
+1.1.4.2
+-------
+- Haskell deps have been moved back to `makedepends`.
+- haskell-http removed as dependency.
+- API Change: function naming conventions in `Aura/Languages.hs` has been
+  changed. The localisation guide was also updated to reflect this.
+
 1.1.4.1
 -------
 - Support for the $LANG environment variable.
