@@ -67,7 +67,7 @@ translators = [ " Chris \"Kwpolska\" Warrick"
               , " Bob Valantin"
               , " Filip Brcic" ]
 
--- These need updating!
+-- These need updating! Or removing...
 languageNames :: Language -> [String]
 languageNames English    = [ "Polish","Croatian","Swedish","German","Spanish","Portuguese","French","Russian", "Italian", "Serbian" ]
 languageNames Japanese   = [ "ポーランド語","クロアチア語","スウェーデン語","ドイツ語","スペイン語","ポルトガル語","フランス語","ロシア語", "", "" ]
@@ -127,13 +127,43 @@ langFromEnv ('i':'t':_) = Italian
 langFromEnv ('s':'r':_) = Serbian
 langFromEnv _           = English
 
---------------------
--- Core functions
---------------------
+----------------------
+-- Aura/Core functions
+----------------------
 -- NEEDS TRANSLATION
 checkDBLock_1 :: Language -> String
 checkDBLock_1 Japanese = "パッケージデータベースが今閉鎖状態。開放したらキーを押して続行をどうぞ。"
 checkDBLock_1 _        = "The package database is locked. Press enter when it's unlocked to continue."
+
+-- Packages should not be built if the user is logged in as root!
+trueRoot_1 :: Language -> String
+trueRoot_1 English    = "You should never build packages as the true root. Are you okay with this?"
+trueRoot_1 Japanese   = "本当のrootユーザーとしてパッケージを作成するのが危険。続行？"
+trueRoot_1 Polish     = "Nigdy nie powinieneś budować pakietów jako root. Na pewno kontynuować?"
+trueRoot_1 Croatian   = "Pakete ne bi trebalo graditi s pravim root ovlastima. Nastavi?"
+trueRoot_1 Swedish    = "Det är starkt rekommenderat att INTE vara inloggad som root när man bygger paket. Vill du fortsätta ändå?"
+trueRoot_1 German     = "Sie sollten niemals Pakete als der echte root Nutzer bauen. Sind sie sicher, dass Sie dies tun wollen?"
+trueRoot_1 Spanish    = "Nunca deberías construir paquetes como root real. ¿Estás de acuerdo con esto?"
+trueRoot_1 Portuguese = "Não deveria compilar pacotes como o root de fato. Ainda assim, deseja prosseguir?"
+trueRoot_1 French     = "Il n'est pas sage de construire des paquets avec le compte root. Voulez-vous continuer ?"
+trueRoot_1 Russian    = "Вам никогда не следует собирать пакеты под настоящим рутом. Договорились?"
+trueRoot_1 Italian    = "Non si dovrebbero compilare pacchetti come root. Volete Continuare?"
+trueRoot_1 Serbian    = "Не би требало градити пакете са правим root овлашћењима. Желите ли наставити?"
+
+-- This is for when the user decides to refrain from building afterall.
+trueRoot_2 :: Language -> String
+trueRoot_2 English    = "You’ve done the right thing."
+trueRoot_2 Japanese   = "よしよし。"
+trueRoot_2 Polish     = "Postąpiłeś słusznie."
+trueRoot_2 Croatian   = "Učinili ste Ispravnu Stvar."
+trueRoot_2 Swedish    = "Phew."
+trueRoot_2 German     = "Eine weise Entscheidung."
+trueRoot_2 Spanish    = "Has tomado la decision correcta."
+trueRoot_2 Portuguese = "Ainda bem que tem juízo!"
+trueRoot_2 French     = "C'est la bonne décision."
+trueRoot_2 Russian    = "Вы выбрали православный путь."
+trueRoot_2 Italian    = "Hai fatto la cosa giusta."
+trueRoot_2 Serbian    = "Исправно сте поступили."
 
 mustBeRoot_1 :: Language -> String
 mustBeRoot_1 English    = "You have to use " ++ bt "sudo" ++ " for that."
@@ -149,6 +179,9 @@ mustBeRoot_1 Russian    = "Необходимо использовать " ++ bt
 mustBeRoot_1 Italian    = "È necessario utilizzare " ++ bt "sudo" ++ " per questo."
 mustBeRoot_1 Serbian    = "Морате да користите " ++ bt "sudo" ++ " за ову радњу."
 
+-----------------------
+-- Aura/Build functions
+-----------------------
 buildPackages_1 :: Language -> String -> String
 buildPackages_1 English    p = "Building " ++ bt p ++ "..."
 buildPackages_1 Japanese   p = bt p ++ "を作成中・・・"
@@ -261,6 +294,9 @@ displayBuildErrors_1 Russian    = "Вывод makepkg записывается �
 displayBuildErrors_1 Italian    = "Salvataggio dell'output di makepkg in "
 displayBuildErrors_1 Serbian    = "Уписујем излаз makepkg-а у "
 
+------------------------------
+-- Aura/Dependencies functions
+------------------------------
 -- Is this still used?
 getDepsToInstall_1 :: Language -> String
 getDepsToInstall_1 English    = "No AUR packages specified for install."
@@ -374,36 +410,37 @@ executeOpts_1 Russian    = "Даны конфликтующие флаги!"
 executeOpts_1 Italian    = "Argomenti in conflitto!"
 executeOpts_1 Serbian    = "Захтеване опције су контрадикторне!"
 
--- Packages should not be built if the user is logged in as root!
-trueRoot_1 :: Language -> String
-trueRoot_1 English    = "You should never build packages as the true root. Are you okay with this?"
-trueRoot_1 Japanese   = "本当のrootユーザーとしてパッケージを作成するのが危険。続行？"
-trueRoot_1 Polish     = "Nigdy nie powinieneś budować pakietów jako root. Na pewno kontynuować?"
-trueRoot_1 Croatian   = "Pakete ne bi trebalo graditi s pravim root ovlastima. Nastavi?"
-trueRoot_1 Swedish    = "Det är starkt rekommenderat att INTE vara inloggad som root när man bygger paket. Vill du fortsätta ändå?"
-trueRoot_1 German     = "Sie sollten niemals Pakete als der echte root Nutzer bauen. Sind sie sicher, dass Sie dies tun wollen?"
-trueRoot_1 Spanish    = "Nunca deberías construir paquetes como root real. ¿Estás de acuerdo con esto?"
-trueRoot_1 Portuguese = "Não deveria compilar pacotes como o root de fato. Ainda assim, deseja prosseguir?"
-trueRoot_1 French     = "Il n'est pas sage de construire des paquets avec le compte root. Voulez-vous continuer ?"
-trueRoot_1 Russian    = "Вам никогда не следует собирать пакеты под настоящим рутом. Договорились?"
-trueRoot_1 Italian    = "Non si dovrebbero compilare pacchetti come root. Volete Continuare?"
-trueRoot_1 Serbian    = "Не би требало градити пакете са правим root овлашћењима. Желите ли наставити?"
+manpageMsg :: Language -> String
+manpageMsg English    = "See the aura man page for aura option details."
+manpageMsg Japanese   = "選択肢の詳しいことは、auraのman pageまで。"
+manpageMsg Polish     = "W podręczniku man dla aura znajduje się więcej informacji o opcjach."
+manpageMsg Croatian   = "Pogledajte Aura man stranicu za detalje o opcijama."
+manpageMsg Swedish    = "Hänvisa till auras `man`-sida för detaljerade alternativ."
+manpageMsg German     = "Lesen Sie die aura man-Seite für Details zu aura Optionen."
+manpageMsg Spanish    = "Lee la página de manual de aura para detalles sobre las opciones."
+manpageMsg Portuguese = "Leia a man page do aura para mais detalhes sobre as opções"
+manpageMsg French     = "Voir le manuel d'Aura (`man aura`) pour le détail des options."
+manpageMsg Russian    = "Чтобы узнать подробное описание опций aura, см. мануал."
+manpageMsg Italian    = "Guardare la man page di Aura per maggiori dettagli sulle opzioni."
+manpageMsg Serbian    = "За детаље о опцијама, погледајте man страницу Аура."
 
--- This is for when the user decides to refrain from building afterall.
-trueRoot_2 :: Language -> String
-trueRoot_2 English    = "You’ve done the right thing."
-trueRoot_2 Japanese   = "よしよし。"
-trueRoot_2 Polish     = "Postąpiłeś słusznie."
-trueRoot_2 Croatian   = "Učinili ste Ispravnu Stvar."
-trueRoot_2 Swedish    = "Phew."
-trueRoot_2 German     = "Eine weise Entscheidung."
-trueRoot_2 Spanish    = "Has tomado la decision correcta."
-trueRoot_2 Portuguese = "Ainda bem que tem juízo!"
-trueRoot_2 French     = "C'est la bonne décision."
-trueRoot_2 Russian    = "Вы выбрали православный путь."
-trueRoot_2 Italian    = "Hai fatto la cosa giusta."
-trueRoot_2 Serbian    = "Исправно сте поступили."
+displayOutputLanguages_1 :: Language -> String
+displayOutputLanguages_1 English    = "The following languages are available:"
+displayOutputLanguages_1 Japanese   = "auraは下記の言語に対応している："
+displayOutputLanguages_1 Polish     = "Następujące języki są dostępne:"
+displayOutputLanguages_1 Croatian   = "Dostupni su sljedeći jezici:"
+displayOutputLanguages_1 Swedish    = "Följande språk är tillängliga:"
+displayOutputLanguages_1 German     = "Die folgenden Sprachen sind verfügbar:"
+displayOutputLanguages_1 Spanish    = "Los siguientes idiomas están disponibles:"
+displayOutputLanguages_1 Portuguese = "Os seguintes idiomas estão disponíveis:"
+displayOutputLanguages_1 French     = "Les langues suivantes sont disponibles :"
+displayOutputLanguages_1 Russian    = "Доступны следующие языки:"
+displayOutputLanguages_1 Italian    = "Sono disponibili le seguenti lingue:"
+displayOutputLanguages_1 Serbian    = "Доступни су следећи језици:"
 
+----------------------------
+-- Aura/Commands/A functions
+----------------------------
 installPackages_1 :: Language -> String
 installPackages_1 English    = "Dependency checking failed for these reasons:"
 installPackages_1 Japanese   = "従属パッケージの確認は以下の理由で失敗した："
@@ -474,11 +511,13 @@ installPackages_5 Russian    = "Определение зависимостей.
 installPackages_5 Italian    = "Determinazione dipendenze..."
 installPackages_5 Serbian    = "Утврђивање зависности..."
 
+-- NEEDS TRANSLATION
 knownBadPkgCheck_1 :: Language -> String -> String
 knownBadPkgCheck_1 Japanese p = bt p ++ "の作成は失敗すると知られている。理由："
 knownBadPkgCheck_1 Serbian  p = "Познато је да се " ++ bt p ++ " неуспешно гради. Разлог:"
 knownBadPkgCheck_1 _        p = bt p ++ " is known to fail at building. Reason:"
 
+-- NEEDS TRANSLATION
 knownBadPkgCheck_2 :: Language -> String
 knownBadPkgCheck_2 Japanese = "それでもやってみる？"
 knownBadPkgCheck_2 Serbian  = "Желите ли ипак да пробате?"
@@ -703,6 +742,30 @@ removeMakeDepsAfter_1 Russian    = "Удаление ненужных завис
 removeMakeDepsAfter_1 Italian    = "Rimuovo le dipendenze di compilazione..."
 removeMakeDepsAfter_1 Serbian    = "Уклањање непотребних зависности за изградњу..."
 
+----------------------------
+-- Aura/Commands/B functions
+----------------------------
+-- NEEDS TRANSLATION
+cleanStates_1 :: Language -> String
+cleanStates_1 Japanese = "入力は数字ではない。"
+cleanStates_1 Serbian  = "Улаз није валидан број."
+cleanStates_1 _        = "Input isn't a valid number."
+
+-- NEEDS TRANSLATION
+cleanStates_2 :: Language -> Int -> String
+cleanStates_2 Japanese n = bt (show n) ++ "個のパッケージ状態記録だけが残される。その他削除？"
+cleanStates_2 Serbian  n = bt (show n) ++ " стања пакета ће бити сачувано. Уклонити остатак?"
+cleanStates_2 _        n = bt (show n) ++ " package states will be kept. Remove the rest?"
+
+-- NEEDS TRANSLATION
+cleanStates_3 :: Language -> String
+cleanStates_3 Japanese = "何も削除しないで終了。"
+cleanStates_3 Serbian  = "Ниједно стање пакета није уклоњено."
+cleanStates_3 _        = "No package states were removed."
+
+----------------------------
+-- Aura/Commands/C functions
+----------------------------
 getDowngradeChoice_1 :: Language -> String -> String
 getDowngradeChoice_1 English    p = "What version of " ++ bt p ++ " do you want?"
 getDowngradeChoice_1 Japanese   p = bt p ++ "はどのバージョンにする？"
@@ -941,6 +1004,9 @@ cleanCache_6 Russian    = "Очистка кэша пакета..."
 cleanCache_6 Italian    = "Ripulisco la cache..."
 cleanCache_6 Serbian    = "Чишћење кеша..."
 
+----------------------------
+-- Aura/Commands/L functions
+----------------------------
 logLookUpFields :: Language -> [String]
 logLookUpFields English    = [ "Package","First Install","Upgrades","Recent Actions" ]
 logLookUpFields Japanese   = [ "パッケージ","初インストール","アップグレード回数","近況" ]
@@ -969,36 +1035,8 @@ reportNotInLog_1 Russian    = "Следующих пакетов нет в ло�
 reportNotInLog_1 Italian    = "Questo non apparirà nei file di log;"
 reportNotInLog_1 Serbian    = "Ови пакети се не спомињу у дневнику:"
 
-manpageMsg :: Language -> String
-manpageMsg English    = "See the aura man page for aura option details."
-manpageMsg Japanese   = "選択肢の詳しいことは、auraのman pageまで。"
-manpageMsg Polish     = "W podręczniku man dla aura znajduje się więcej informacji o opcjach."
-manpageMsg Croatian   = "Pogledajte Aura man stranicu za detalje o opcijama."
-manpageMsg Swedish    = "Hänvisa till auras `man`-sida för detaljerade alternativ."
-manpageMsg German     = "Lesen Sie die aura man-Seite für Details zu aura Optionen."
-manpageMsg Spanish    = "Lee la página de manual de aura para detalles sobre las opciones."
-manpageMsg Portuguese = "Leia a man page do aura para mais detalhes sobre as opções"
-manpageMsg French     = "Voir le manuel d'Aura (`man aura`) pour le détail des options."
-manpageMsg Russian    = "Чтобы узнать подробное описание опций aura, см. мануал."
-manpageMsg Italian    = "Guardare la man page di Aura per maggiori dettagli sulle opzioni."
-manpageMsg Serbian    = "За детаље о опцијама, погледајте man страницу Аура."
-
-displayOutputLanguages_1 :: Language -> String
-displayOutputLanguages_1 English    = "The following languages are available:"
-displayOutputLanguages_1 Japanese   = "auraは下記の言語に対応している："
-displayOutputLanguages_1 Polish     = "Następujące języki są dostępne:"
-displayOutputLanguages_1 Croatian   = "Dostupni su sljedeći jezici:"
-displayOutputLanguages_1 Swedish    = "Följande språk är tillängliga:"
-displayOutputLanguages_1 German     = "Die folgenden Sprachen sind verfügbar:"
-displayOutputLanguages_1 Spanish    = "Los siguientes idiomas están disponibles:"
-displayOutputLanguages_1 Portuguese = "Os seguintes idiomas estão disponíveis:"
-displayOutputLanguages_1 French     = "Les langues suivantes sont disponibles :"
-displayOutputLanguages_1 Russian    = "Доступны следующие языки:"
-displayOutputLanguages_1 Italian    = "Sono disponibili le seguenti lingue:"
-displayOutputLanguages_1 Serbian    = "Доступни су следећи језици:"
-
 ----------------------
--- AuraFlags functions
+-- Aura/Flags functions
 ----------------------
 inheritedOperTitle :: Language -> String
 inheritedOperTitle English     = "Inherited Pacman Operations"
@@ -1042,13 +1080,12 @@ aurSy Russian    = green "Совершить действия с участие�
 aurSy Italian    = green "Azioni riguardanti [A]UR.\n" ++ "Di default installa da AUR."
 aurSy Serbian    = green "Извршава радње везане за [A]UR.\n" ++ "Уобичајена радња инсталира из AUR-а."
 
--- NEEDS TRANSLATIONS
+-- NEEDS TRANSLATION
 saveS :: Language -> String
 saveS Japanese = yellow "パッケージの設置状態に関する処理\n" ++ "デフォルトでインストール状態を保存する。"
 saveS Serbian  = yellow "Управља чувањем и враћањем глобалног стања пакета.\n" ++ "Уобичајена радња чува тренутно стање."
 saveS _        = yellow "Manage the [S]aving and restoring of the global package state.\n" ++ "Default action saves this state."
 
--- Any way for the Spanish line to be shorter?
 downG :: Language -> String
 downG English    = red "Perform actions involving the package [C]ache.\n" ++ "Default action downgrades given packages."
 downG Japanese   = red "キャッシュに関連する処理\n" ++ "デフォルトでパッケージをダウングレード"
@@ -1091,9 +1128,10 @@ orpha Russian    = blue "Совершить действия с участием
 orpha Italian    = blue "Azioni riguardanti i pacchetti [O]rfani.\n" ++ "Di default elenca i pacchetti orfani."
 orpha Serbian    = blue "Извршава радње везане за пакете без родитеља.\n" ++ "Уобичајена радња листа пакете без родитеља."
 
---------------------------
--- AurConnection functions
---------------------------
+-------------------------------
+-- Aura/AurConnection functions
+-------------------------------
+-- NEEDS TRANSLATION
 getAURPkgInfo_1 :: Language -> String
 getAURPkgInfo_1 Japanese = "AURのAPIに繋げなかった。ネット接続状態を確認して下さい。"
 getAURPkgInfo_1 Serbian  = "Приступ AUR-у није успео. Проверите вашу везу."
@@ -1112,7 +1150,6 @@ infoFields French     = [ "Dépôt","Nom","Version","AUR Statut","URL du projet"
 infoFields Russian    = [ "Репозиторий","Название","Версия","Статус в AUR","URL проекта","URL в AUR","Лицензия", "Рейтинг","Описание" ]
 infoFields Italian    = [ "Repository","Nome","Versione","Stato in AUR","URL","URL AUR","Licenza","Voti","Descrizione" ]
 infoFields Serbian    = [ "Ризница","Име","Верзија","Статус у AUR-у","Страница пројекта","Страница у AUR-у","Лиценца","Гласови","Опис" ]
-
 
 outOfDateMsg :: Language -> Bool -> String
 outOfDateMsg English    True  = red "Out of Date!"
@@ -1140,58 +1177,46 @@ outOfDateMsg Italian    False = green "Aggiornato"
 outOfDateMsg Serbian    True  = red "Застарео!"
 outOfDateMsg Serbian    False = green "Ажуран"
 
-------------------
--- State functions
-------------------
+-----------------------
+-- Aura/State functions
+-----------------------
+-- NEEDS TRANSLATION
 saveState_1 :: Language -> String
 saveState_1 Japanese = "現在パッケージ状態保存完了。"
 saveState_1 Serbian  = "Сачувано стање пакета."
 saveState_1 _        = "Saved package state."
 
+-- NEEDS TRANSLATION
 restoreState_1 :: Language -> String
 restoreState_1 Japanese = "対象バージョンがないパッケージ："
 restoreState_1 Serbian  = "Захтеване старе верзије нису доступне за:"
 restoreState_1 _        = "Requested downgrade versions not available for:"
 
+-- NEEDS TRANSLATION
 downgradeAndRemove_1 :: Language -> String
 downgradeAndRemove_1 Japanese = "パッケージを変更する必要ない。"
 downgradeAndRemove_1 Serbian  = "Ниједан пакет не захтева измене."
 downgradeAndRemove_1 _        = "No packages need changing."
 
-----------------
--- `B` functions
-----------------
-cleanStates_1 :: Language -> String
-cleanStates_1 Japanese = "入力は数字ではない。"
-cleanStates_1 Serbian  = "Улаз није валидан број."
-cleanStates_1 _        = "Input isn't a valid number."
-
-cleanStates_2 :: Language -> Int -> String
-cleanStates_2 Japanese n = bt (show n) ++ "個のパッケージ状態記録だけが残される。その他削除？"
-cleanStates_2 Serbian  n = bt (show n) ++ " стања пакета ће бити сачувано. Уклонити остатак?"
-cleanStates_2 _        n = bt (show n) ++ " package states will be kept. Remove the rest?"
-
-cleanStates_3 :: Language -> String
-cleanStates_3 Japanese = "何も削除しないで終了。"
-cleanStates_3 Serbian  = "Ниједно стање пакета није уклоњено."
-cleanStates_3 _        = "No package states were removed."
-
-------------------------
--- BadPackages functions
-------------------------
+--------------------------------------
+-- Aura/Settings/BadPackages functions
+--------------------------------------
+-- NEEDS TRANSLATION
 circDep_1 :: Language -> String -> String
 circDep_1 Japanese p = bt p ++ "と互いに従属している。"
 circDep_1 Serbian  p = "Има кружну зависност са " ++ bt p ++ "."
 circDep_1 _        p = "Has a circular dependency with " ++ bt p ++ "."
 
+-- NEEDS TRANSLATION
 bashisms_1 :: Language -> String
 bashisms_1 Japanese = "PKGBUILDのBashコードが複雑すぎる。"
 bashisms_1 Serbian  = "Превише „bash-изама“ у PKGBUILD-у."
 bashisms_1 _        = "Too many bashisms in PKGBUILD."
 
--------------------
--- Pacman functions
--------------------
+------------------------
+-- Aura/Pacman functions
+------------------------
+-- NEEDS TRANSLATION
 pacmanFailure_1 :: Language -> String
 pacmanFailure_1 Japanese = "入力を確認して下さい。"
 pacmanFailure_1 Serbian  = "Молим Вас, проверите ваш унос."
