@@ -83,11 +83,11 @@ Install and show recent PKGBUILD changes (also works with -u):
 
 Store a record of all installed packages:
 
-    aura --save
+    aura -B
 
 Restore a saved record. Rolls back and uninstalls packages as necessary:
 
-    aura --restore
+    aura -Br
 
 #### Installing Packages
 Install an AUR package:

@@ -49,7 +49,7 @@ Like this:
 ```haskell
 data Language = English
               | Japanese
-              | French
+              | French  -- Added a pipe character and the Language name.
                 deriving (Eq,Enum,Show)
 ```
 
@@ -86,7 +86,7 @@ What to tell them?
 
 ```haskell
 ----------------
--- `A` functions
+-- aura functions
 ----------------
 executeOpts_1 :: Language -> String
 executeOpts_1 English  = "Conflicting flags given!"
@@ -111,7 +111,7 @@ nameOfCallingFunction_x SomeLanguage = "The message."
 
 ```haskell
 ----------------
--- `A` functions
+-- aura functions
 ----------------
 executeOpts_1 :: Language -> String
 executeOpts_1 English  = "Conflicting flags given!"
@@ -123,7 +123,7 @@ executeOpts_1 French   = "Arguments contradictoires!"
 
 ```haskell
 -----------------
--- Core functions
+-- Aura/Build functions
 -----------------
 buildPackages_1 :: Language -> String -> String
 buildPackages_1 English  p = "Building " ++ bt p ++ "..."
@@ -132,12 +132,12 @@ buildPackages_1 Japanese p = bt p ++ "を作成中・・・"
 
   What the heck is `p`? Well it's probably a package name.
 To double check, just check out the function that calls this message dispatch.
-We know it's in `Core.hs`, and the function is called `buildPackages`.
+We know it's in `Aura/Build.hs`, and the function is called `buildPackages`.
 Once you know what's going on, go ahead and add the translation:
 
 ```haskell
 -----------------
--- Core functions
+-- Aura/Build functions
 -----------------
 buildPackages_1 :: Language -> String -> String
 buildPackages_1 English  p = "Building " ++ bt p ++ "..."
@@ -189,7 +189,7 @@ data Flag = AURInstall
           | Version
           | Help
           | JapOut
-          | FrenchOut  -- Added a pipe character and the Flag name.
+          | FrenchOut
             deriving (Eq,Ord,Show)
 ```
 
@@ -247,7 +247,7 @@ instructions, this shouldn't take long. Furthermore, I won't be able to
 proofread the translation itself, as I don't speak your language.
 You could hide your doomsday take-over plans in my code and I'd never know.
 
-### STEP SIX - YOU'VE HELPED OTHER ARCH USERS WHO SPEAK YOUR LANGUAGE
+### STEP SIX - YOU'VE HELPED OTHERS WHO SPEAK YOUR LANGUAGE
 
   You've done a great thing by increasing Aura's usability. Your name
 will be included in both Aura's README and in its `-V` version message.
