@@ -2,15 +2,9 @@ GENERAL
 -------
 When outputing repo dependencies, show what repo they're from?
 
-Make `--save` automatic?
-
-Look into `aurvote`.
-
 Package completion for bash
 
 Is it possible to convert Aura to use gettext and printf?
-
-Update localisation guide!
 
 COMPLETIONS
 -----------
