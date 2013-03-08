@@ -27,13 +27,13 @@ import Control.Monad    (liftM,when)
 import Data.List        ((\\), nub, intercalate, isSuffixOf)
 
 import Aura.Settings.Base
-import Aura.AurConnection
 import Aura.Colour.Text
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Pacman
 import Aura.Utils
 import Aura.Bash
+import Aura.AUR
 
 import Bash.Base
 

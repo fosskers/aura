@@ -27,8 +27,9 @@ module Aura.Build
 import System.FilePath ((</>), takeFileName)
 import Control.Monad   (liftM, forM, when)
 
-import Aura.AurConnection (downloadSource)
-import Aura.Pacman        (pacman)
+
+import Aura.Pacman (pacman)
+import Aura.AUR    (downloadSource)
 import Aura.Settings.Base
 import Aura.Colour.Text
 import Aura.Monad.Aura

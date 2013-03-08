@@ -2,8 +2,8 @@ Automatic Package Record Backups with Cron
 ==========================================
 
  When upgrading packages, sometimes things just go wrong. I tend to keep on top
-of my upgrading and my `.pacnew`s, but even so I'll get a system-crippling
-update may twice a year - just frequent enough to keep me on my toes.
+of my upgrading and my `.pacnew` files, but even so I'll get a system-crippling
+update maybe twice a year - just frequent enough to keep me on my toes.
 
 
  `aura -B` comes to the rescue at times like these. Options prefixed with the `-B`

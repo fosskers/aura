@@ -28,8 +28,8 @@ import Control.Monad   (filterM)
 import Data.Maybe      (fromJust, isNothing)
 import Data.List       (nub)
 
-import Aura.AurConnection (getTrueVerViaPkgbuild)
-import Aura.Pacman        (pacmanOutput)
+import Aura.Pacman (pacmanOutput)
+import Aura.AUR    (getTrueVerViaPkgbuild)
 import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages

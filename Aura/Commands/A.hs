@@ -36,7 +36,6 @@ import Data.List       ((\\), nub, sort)
 
 import Aura.Pacman (pacman)
 import Aura.Settings.Base
-import Aura.AurConnection
 import Aura.Dependencies
 import Aura.Colour.Text
 import Aura.Monad.Aura
@@ -45,6 +44,7 @@ import Aura.Pkgbuilds
 import Aura.Build
 import Aura.Utils
 import Aura.Core
+import Aura.AUR
 
 import Shell
 
