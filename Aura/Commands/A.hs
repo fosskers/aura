@@ -32,7 +32,7 @@ module Aura.Commands.A
 
 import Text.Regex.PCRE ((=~))
 import Control.Monad   (unless, liftM)
-import Data.List       ((\\), nub, sort)
+import Data.List       ((\\), nub, nubBy, sort)
 
 import Aura.Pacman (pacman)
 import Aura.Settings.Base
@@ -171,8 +171,9 @@ displayPkgDeps pkgs = do
   aurPkgs <- mapM (aurPkg . nameOf) info
   allDeps <- mapM determineDeps aurPkgs
   let (ps,as,_) = foldl groupPkgs ([],[],[]) allDeps
-  reportPkgsToInstall (n ps) (nub as) []
+  reportPkgsToInstall (n ps) (nubBy sameName as) []
     where n = nub . map splitName
+          sameName a b = pkgNameOf a == pkgNameOf b
 
 downloadTarballs :: [String] -> Aura ()
 downloadTarballs pkgs = do

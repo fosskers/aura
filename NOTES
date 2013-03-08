@@ -6,6 +6,8 @@ Package completion for bash
 
 Is it possible to convert Aura to use gettext and printf?
 
+Extend `-Ai`. 
+
 COMPLETIONS
 -----------
 - Fish completions go in /etc/fish/completions

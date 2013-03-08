@@ -104,7 +104,7 @@ hotEdit pkgs = ask >>= \ss ->
                     writeFile filename $ pkgbuildOf p
                     openEditor editor filename
                     readFile filename
-         newNS <- globals (pkgNameOf p) newPB  -- Reparse PKGBUILD.
+         newNS <- namespace (pkgNameOf p) newPB  -- Reparse PKGBUILD.
          return $ AURPkg (pkgNameOf p) (versionOf p) newPB newNS
 
 overwritePkgbuild :: AURPkg -> Aura ()

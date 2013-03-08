@@ -22,7 +22,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.Bash
-    ( globals
+    ( namespace
     , value ) where
 
 import Text.Parsec.Error (ParseError)
@@ -38,19 +38,19 @@ import Bash.Base
 
 ---
 
-globals :: String -> String -> Aura Namespace
-globals pn pb = do
+namespace :: String -> String -> Aura Namespace
+namespace pn pb = do
   carch <- ((: []) . NoQuote . carchOf) `liftM` ask
-  case globals' carch pn pb of
+  case namespace' carch pn pb of
     Left e   -> liftIO (print e) >> failure "PKGBUILD parse failed."
     Right ns -> return ns
 
-globals' :: [BashString] -> String -> String -> Either ParseError Namespace
-globals' ca pn pb =
+namespace' :: [BashString] -> String -> String -> Either ParseError Namespace
+namespace' ca pn pb =
     case parseBash pn pb of
       Left  e -> Left e
-      Right s -> Right $ simpNamespace namespace s
-          where namespace = insert "CARCH" ca (toNamespace s)
+      Right s -> Right $ simpNamespace ns s
+          where ns = insert "CARCH" ca (toNamespace s)
 
 value :: Namespace -> String -> [String]
 value ns v = fromMaybe [] $ getVar ns v
