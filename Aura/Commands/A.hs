@@ -184,8 +184,8 @@ downloadTarballs pkgs = do
               liftIO $ downloadSource path pkg
 
 displayPkgbuild :: [String] -> Aura ()
-displayPkgbuild pkgs = filterAURPkgs pkgs >>= mapM_ download
-      where download p = downloadPkgbuild p >>= liftIO . putStrLn
+displayPkgbuild pkgs = filterAURPkgs pkgs >>= mapM_ dnload
+      where dnload p = downloadPkgbuild p >>= liftIO . putStrLn
 
 ------------
 -- REPORTING

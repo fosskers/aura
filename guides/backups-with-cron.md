@@ -15,8 +15,9 @@ the files in your package cache.
  By setting up cron jobs, we can automate the process of saving these records
 and clearing out old ones. To set up cron jobs, we need to edit our `crontab`.
 A `crontab` is a listing of timings and programs to run. It's a schedule for
-our cron jobs. You can edit your user's crontab with `crontab -e`. This will
-open your default editor.
+our cron jobs. Since `aura -B` is typically ran with `sudo`, we'll need
+to edit root's crontab. You can do this with `sudo crontab -e`. This will
+open root's default editor.
 
 
  See `man 5 crontab` for more details into the editing of crontabs. For now,
@@ -24,10 +25,10 @@ simply copying the following two entries can get you started:
 
 ```
 # Save a package record at 8pm on Wednesday and Sunday every week.
-* 20 * * wed,sun root /usr/bin/aura -B
+* 20 * * wed,sun /usr/bin/aura -B
 
 # Reduce the package record number to 5 once a month at 8:01pm.
-1 20 1 * * root /usr/bin/aura -Bc 5 --noconfirm
+1 20 1 * * /usr/bin/aura -Bc 5 --noconfirm
 ```
 
  Since both of these entries would touch the same files, we set them one minute
@@ -42,5 +43,5 @@ P.S. I also use the following job to keep the size of my package cache down:
 
 ```
 # Clean out the package cache once a month in the same way.
-* 20 1 * * root /usr/bin/aura -Cc 5 --noconfirm
+* 20 1 * * /usr/bin/aura -Cc 5 --noconfirm
 ```
