@@ -25,7 +25,7 @@ simply copying the following two entries can get you started:
 
 ```
 # Save a package record at 8pm on Wednesday and Sunday every week.
-* 20 * * wed,sun /usr/bin/aura -B
+0 20 * * wed,sun /usr/bin/aura -B
 
 # Reduce the package record number to 5 once a month at 8:01pm.
 1 20 1 * * /usr/bin/aura -Bc 5 --noconfirm
@@ -43,5 +43,5 @@ P.S. I also use the following job to keep the size of my package cache down:
 
 ```
 # Clean out the package cache once a month in the same way.
-* 20 1 * * /usr/bin/aura -Cc 5 --noconfirm
+0 20 1 * * /usr/bin/aura -Cc 5 --noconfirm
 ```
