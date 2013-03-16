@@ -24,7 +24,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Cache
     ( defaultPackageCache
     , cacheContents
-    , downgradable
+    , alterable
     , getFilename
     , allFilenames
     , size
@@ -62,11 +62,11 @@ rawCacheContents c = filter dots `liftM` liftIO (ls c)
 cacheContents :: FilePath -> Aura Cache
 cacheContents c = cache `liftM` rawCacheContents c
 
-downgradable :: SimplePkg -> Cache -> Bool
-downgradable = M.member
+alterable :: Cache -> SimplePkg -> Bool
+alterable c p = M.member p c
 
-getFilename :: SimplePkg -> Cache -> Maybe FilePath
-getFilename = M.lookup
+getFilename :: Cache -> SimplePkg -> Maybe FilePath
+getFilename c p = M.lookup p c
 
 allFilenames :: Cache -> [FilePath]
 allFilenames = M.elems

@@ -8,6 +8,9 @@ Is it possible to convert Aura to use gettext and printf?
 
 Extend `-Ai`. 
 
+To change build location, just change the value `cachePathOf`.
+Everything else is abstracted sufficiently.
+
 COMPLETIONS
 -----------
 - Fish completions go in /etc/fish/completions

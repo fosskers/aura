@@ -1193,10 +1193,10 @@ restoreState_1 Serbian  = "Захтеване старе верзије нису
 restoreState_1 _        = "Requested downgrade versions not available for:"
 
 -- NEEDS TRANSLATION
-downgradeAndRemove_1 :: Language -> String
-downgradeAndRemove_1 Japanese = "パッケージを変更する必要ない。"
-downgradeAndRemove_1 Serbian  = "Ниједан пакет не захтева измене."
-downgradeAndRemove_1 _        = "No packages need changing."
+reinstallAndRemove_1 :: Language -> String
+reinstallAndRemove_1 Japanese = "パッケージを変更する必要ない。"
+reinstallAndRemove_1 Serbian  = "Ниједан пакет не захтева измене."
+reinstallAndRemove_1 _        = "No packages need changing."
 
 --------------------------------------
 -- Aura/Settings/BadPackages functions

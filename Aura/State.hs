@@ -21,12 +21,17 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.State where
+module Aura.State
+    ( saveState
+    , restoreState
+    , stateCache
+    , getStateFiles ) where
 
 import qualified Data.Map.Lazy as M
 
 import System.FilePath ((</>))
 import Control.Monad   (liftM, unless)
+import Control.Arrow   (first)
 import Data.Maybe      (mapMaybe)
 import Data.List       (partition,sort)
 
@@ -49,7 +54,7 @@ data PkgState = PkgState { timeOf :: SimpleTime
                          , pkgsOf :: M.Map String [Int] }
                 deriving (Eq,Show,Read)
 
--- ([toDowngrade],[toRemove])
+-- ([toAlter],[toRemove])
 type StateDiff = ([SimplePkg],[String])
 
 stateCache :: FilePath
@@ -62,17 +67,25 @@ currentState :: Aura PkgState
 currentState = do
   pkgs <- rawCurrentState
   time <- (toSimpleTime . toUTCTime) `liftM` liftIO getClockTime
-  let namesVers    = map (pair . words) pkgs
-      pair (x:y:_) = (x, comparableVer y)
+  let namesVers = map (pair . words) pkgs
+      pair      = \(x:y:_) -> (x, comparableVer y)
   return . PkgState time . M.fromAscList $ namesVers
 
 compareStates :: PkgState -> PkgState -> StateDiff
-compareStates old curr = M.foldrWithKey status ([],[]) $ pkgsOf curr
+compareStates old curr = first (olds old curr ++) $ toChangeAndRemove old curr
+
+-- | All packages that were changed and newly installed.
+toChangeAndRemove :: PkgState -> PkgState -> StateDiff
+toChangeAndRemove old curr = M.foldrWithKey status ([],[]) $ pkgsOf curr
     where status k v (d,r) = case M.lookup k (pkgsOf old) of
                                Nothing -> (d, k : r)
                                Just v' -> if v == v'
                                           then (d,r)
                                           else ((k,v') : d, r)
+
+-- | Packages that were uninstalled since the last record.
+olds :: PkgState -> PkgState -> [SimplePkg]
+olds old curr = M.assocs $ M.difference (pkgsOf old) (pkgsOf curr)
 
 getStateFiles :: Aura [FilePath]
 getStateFiles = sort `liftM` (liftIO $ ls' stateCache)
@@ -84,28 +97,30 @@ saveState = do
   liftIO $ writeFile filename (show state)
   notify saveState_1
 
+-- | Does its best to restore a state chosen by the user.
 restoreState :: Aura ()
 restoreState = ask >>= \ss -> do
   curr  <- currentState
   past  <- getStateFiles >>= liftIO . getSelection >>= readState
   cache <- cacheContents $ cachePathOf ss
-  let (cand,remo) = compareStates past curr
-      (down,nope) = partition (flip downgradable cache) cand
+  let (rein,remo) = compareStates past curr
+      (okay,nope) = partition (alterable cache) rein
       message     = restoreState_1 $ langOf ss
   unless (null nope) $ printList red cyan message (map fst nope)
-  downgradeAndRemove (mapMaybe (flip getFilename cache) down) remo
+  reinstallAndRemove (mapMaybe (getFilename cache) okay) remo
 
 readState :: FilePath -> Aura PkgState
 readState name = liftIO (read `liftM` readFile (stateCache </> name))
 
 -- How does pacman do simultaneous removals and upgrades?
 -- I've seen it happen plenty of times.
-downgradeAndRemove :: [FilePath] -> [String] -> Aura ()
-downgradeAndRemove [] [] = warn downgradeAndRemove_1
-downgradeAndRemove down remo
-    | null remo = downgrade
+-- | `reinstalling` can mean true reinstalling, or just altering.
+reinstallAndRemove :: [FilePath] -> [String] -> Aura ()
+reinstallAndRemove [] [] = warn reinstallAndRemove_1
+reinstallAndRemove down remo
+    | null remo = reinstall
     | null down = remove
-    | otherwise = downgrade >> remove
+    | otherwise = reinstall >> remove
     where remove    = pacman $ "-R" : remo
-          downgrade = ask >>= \ss ->
+          reinstall = ask >>= \ss ->
                       pacman $ "-U" : map (cachePathOf ss </>) down
