@@ -26,12 +26,13 @@ module Aura.Flags
     , reconvertFlags
     , dualFlagMap
     , hijackedFlagMap
-    , getSuppression
-    , getDelMakeDeps
-    , getConfirmation
-    , getHotEdit
-    , getDiffStatus
-    , getRebuildDevel
+    , suppressionStatus
+    , delMakeDepsStatus
+    , confirmationStatus
+    , hotEditStatus
+    , pbDiffStatus
+    , rebuildDevelStatus
+    , customizepkgStatus
     , filterSettingsFlags
     , getIgnoredAuraPkgs
     , auraOperMsg
@@ -68,6 +69,7 @@ data Flag = AURInstall
           | Ignore String
           | DiffPkgbuilds
           | Devel
+          | Customizepkg
           | Debug
           | CacheBackup
           | Clean
@@ -123,6 +125,7 @@ auraOptions = Option [] ["aurignore"] (ReqArg Ignore "") "" :
               , ( ['u'], ["sysupgrade"],   Upgrade       )
               , ( ['w'], ["downloadonly"], Download      )
               , ( ['x'], ["unsuppress"],   Unsuppress    )
+              , ( [],    ["custom"],       Customizepkg  )
               , ( [],    ["devel"],        Devel         )
               , ( [],    ["hotedit"],      HotEdit       )
               , ( [],    ["viewconf"],     ViewConf      ) 
@@ -182,7 +185,7 @@ reconvertFlag flagMap f = fromMaybe "" $ f `lookup` flagMap
 
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
-                , DelMDeps ]
+                , DelMDeps,Customizepkg ]
 
 filterSettingsFlags :: [Flag] -> [Flag]
 filterSettingsFlags []              = []
@@ -213,23 +216,26 @@ getIgnoredAuraPkgs [] = []
 getIgnoredAuraPkgs (Ignore ps : _) = split ',' ps
 getIgnoredAuraPkgs (_:fs) = getIgnoredAuraPkgs fs
 
-getSuppression :: [Flag] -> Bool
-getSuppression = fishOutFlag [(Unsuppress,False)] True
+suppressionStatus :: [Flag] -> Bool
+suppressionStatus = fishOutFlag [(Unsuppress,False)] True
 
-getDelMakeDeps :: [Flag] -> Bool
-getDelMakeDeps = fishOutFlag [(DelMDeps,True)] False
+delMakeDepsStatus :: [Flag] -> Bool
+delMakeDepsStatus = fishOutFlag [(DelMDeps,True)] False
 
-getConfirmation :: [Flag] -> Bool
-getConfirmation = fishOutFlag [(NoConfirm,False)] True
+confirmationStatus :: [Flag] -> Bool
+confirmationStatus = fishOutFlag [(NoConfirm,False)] True
 
-getHotEdit :: [Flag] -> Bool
-getHotEdit = fishOutFlag [(HotEdit,True)] False
+hotEditStatus :: [Flag] -> Bool
+hotEditStatus = fishOutFlag [(HotEdit,True)] False
 
-getDiffStatus :: [Flag] -> Bool
-getDiffStatus = fishOutFlag [(DiffPkgbuilds,True)] False
+pbDiffStatus :: [Flag] -> Bool
+pbDiffStatus = fishOutFlag [(DiffPkgbuilds,True)] False
 
-getRebuildDevel :: [Flag] -> Bool
-getRebuildDevel = fishOutFlag [(Devel,True)] False
+rebuildDevelStatus :: [Flag] -> Bool
+rebuildDevelStatus = fishOutFlag [(Devel,True)] False
+
+customizepkgStatus :: [Flag] -> Bool
+customizepkgStatus = fishOutFlag [(Customizepkg,True)] False
 
 parseLanguageFlag :: [String] -> (Maybe Language,[String])
 parseLanguageFlag args =

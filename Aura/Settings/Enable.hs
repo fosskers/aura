@@ -59,12 +59,13 @@ getSettings lang (auraFlags,input,pacOpts) = do
                   , wontBuildOf     = getBadPackages language
                   , cachePathOf     = getCachePath confFile
                   , logFilePathOf   = getLogFilePath confFile
-                  , suppressMakepkg = getSuppression auraFlags
-                  , delMakeDeps     = getDelMakeDeps auraFlags
-                  , mustConfirm     = getConfirmation auraFlags
-                  , mayHotEdit      = getHotEdit auraFlags
-                  , diffPkgbuilds   = getDiffStatus auraFlags
-                  , rebuildDevel    = getRebuildDevel auraFlags
+                  , suppressMakepkg = suppressionStatus auraFlags
+                  , delMakeDeps     = delMakeDepsStatus auraFlags
+                  , mustConfirm     = confirmationStatus auraFlags
+                  , mayHotEdit      = hotEditStatus auraFlags
+                  , diffPkgbuilds   = pbDiffStatus auraFlags
+                  , rebuildDevel    = rebuildDevelStatus auraFlags
+                  , useCustomizepkg = customizepkgStatus auraFlags
                   , pcRed           = redf colourFuncs
                   , pcGreen         = greenf colourFuncs
                   , pcYellow        = yellowf colourFuncs
@@ -95,6 +96,7 @@ debugOutput ss = do
                  , "PKGBUILD editing? => " ++ yn (mayHotEdit ss) 
                  , "Diff PKGBUILDs?   => " ++ yn (diffPkgbuilds ss)
                  , "Rebuild Devel?    => " ++ yn (rebuildDevel ss)
+                 , "Use Customizepkg? => " ++ yn (useCustomizepkg ss)
                  , "Colour Test       => " ++ pcRed ss "RED"         ++
                                               pcGreen ss "GREEN"     ++
                                               pcYellow ss "YELLOW"   ++

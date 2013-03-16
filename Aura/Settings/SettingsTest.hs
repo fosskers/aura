@@ -25,6 +25,7 @@ sampleSettings = Settings { environmentOf = undefined
                           , mayHotEdit    = False
                           , diffPkgbuilds = False
                           , rebuildDevel  = False
+                          , useCustomizepkg = False
                           , pcRed         = red
                           , pcGreen       = green
                           , pcYellow      = yellow
