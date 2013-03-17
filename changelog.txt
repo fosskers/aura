@@ -1,5 +1,12 @@
 Aura Changelog
 ==============
+1.1.4.3
+-------
+- Fixed flaw in `-Br`.
+- Fixed repititious `-Ad` output.
+- API Change: Aura/AurConnection renamed to Aura/AUR
+- API Change: function names in Aura/Languages now have better names.
+
 1.1.4.2
 -------
 - Haskell deps have been moved back to `makedepends`.
