@@ -29,7 +29,7 @@ import Control.Monad   (liftM, forM, when)
 
 
 import Aura.Pacman (pacman)
-import Aura.AUR    (downloadSource)
+import Aura.AUR    (sourceTarball)
 import Aura.Settings.Base
 import Aura.Colour.Text
 import Aura.Monad.Aura
@@ -84,7 +84,7 @@ build' (p:ps) = ask >>= \ss -> do
 getSourceCode :: String -> String -> FilePath -> Aura ()
 getSourceCode pkgName user currDir = liftIO $ do
   chown user currDir []
-  tarball   <- downloadSource currDir pkgName
+  tarball   <- sourceTarball currDir pkgName
   sourceDir <- decompress tarball
   chown user sourceDir ["-R"]
   cd sourceDir

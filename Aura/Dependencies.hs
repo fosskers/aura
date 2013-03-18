@@ -29,7 +29,7 @@ import Data.Maybe      (fromJust, isNothing)
 import Data.List       (nub)
 
 import Aura.Pacman (pacmanOutput)
-import Aura.AUR    (getTrueVerViaPkgbuild)
+import Aura.AUR    (trueVerViaPkgbuild)
 import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages
@@ -102,7 +102,7 @@ getMostRecentVerNum info = tripleThrd match
 
 getAURConflicts :: Language -> [String] -> AURPkg -> Maybe ErrMsg
 getAURConflicts = getRealPkgConflicts f
-    where f = getTrueVerViaPkgbuild . namespaceOf
+    where f = trueVerViaPkgbuild . namespaceOf
 
 -- Must be called with a (f)unction that yields the version number
 -- of the most up-to-date form of the package.

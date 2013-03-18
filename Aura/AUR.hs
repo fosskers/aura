@@ -25,9 +25,9 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.AUR
     ( aurInfoLookup
     , aurSearchLookup
-    , getTrueVerViaPkgbuild
+    , trueVerViaPkgbuild
     , downloadPkgbuild
-    , downloadSource
+    , sourceTarball
     , Pkgbuild
     , PkgInfo(..) ) where
 
@@ -58,8 +58,8 @@ rpcBaseUrl = "https://aur.archlinux.org/rpc.php?"
 
 -- Had to do a bit off a hack, since `urlEncodeVars` wasn't encoding
 -- things in the necessary way.
-makeRPCUrl :: RPCType -> [String] -> String
-makeRPCUrl t ps = rpcBaseUrl ++ ps'
+rpcUrl :: RPCType -> [String] -> String
+rpcUrl t ps = rpcBaseUrl ++ ps'
     where ps' = intercalate "&" (t' : encodedPs t)
           encodedPs MultiInfo = map (\p -> urlEncodeVars [("arg[]",p)]) ps
           encodedPs _         = [urlEncodeVars [("arg",unwords ps)]]
@@ -94,14 +94,14 @@ aurInfoLookup pkgs = getAURPkgInfo pkgs MultiInfo
 getAURPkgInfo :: [String] -> RPCType -> Aura [PkgInfo]
 getAURPkgInfo [] _    = return []
 getAURPkgInfo items t = do
-  infoJSON <- liftIO . urlContents . makeRPCUrl t $ items
+  infoJSON <- liftIO . urlContents . rpcUrl t $ items
   case resultToEither $ parseInfoJSON infoJSON of
     Left _     -> scoldAndFail getAURPkgInfo_1
     Right info -> return info
 
 parseInfoJSON :: String -> Result [PkgInfo]
 parseInfoJSON json = decode json >>= apiFailCheck >>= forgePkgInfo
-    where forgePkgInfo j = valFromObj "results" j >>= mapM makePkgInfo
+    where forgePkgInfo j = valFromObj "results" j >>= mapM pkgInfo
 
 apiFailCheck :: JSObject JSValue -> Result (JSObject JSValue)
 apiFailCheck json = do
@@ -110,8 +110,8 @@ apiFailCheck json = do
 
 -- Upgrade to AUR 2.0 changed several return types to Ints,
 -- but Text.JSON parses them as Rationals.
-makePkgInfo :: JSObject JSValue -> Result PkgInfo
-makePkgInfo pkgJSON = do
+pkgInfo :: JSObject JSValue -> Result PkgInfo
+pkgInfo pkgJSON = do
   ur <- valFromObj "URL" pkgJSON
   na <- valFromObj "Name" pkgJSON
   ve <- valFromObj "Version" pkgJSON
@@ -134,25 +134,25 @@ type Pkgbuild = String
 aurLink :: String
 aurLink = "https://aur.archlinux.org/packages/"
 
-getPkgBaseUrl :: String -> String
-getPkgBaseUrl pkg = aurLink </> take 2 pkg </> pkg
+pkgBaseUrl :: String -> String
+pkgBaseUrl pkg = aurLink </> take 2 pkg </> pkg
 
-getPkgbuildUrl :: String -> String
-getPkgbuildUrl pkg = getPkgBaseUrl pkg </> "PKGBUILD"                     
+pkgbuildUrl :: String -> String
+pkgbuildUrl pkg = pkgBaseUrl pkg </> "PKGBUILD"
 
 downloadPkgbuild :: String -> Aura Pkgbuild
-downloadPkgbuild = liftIO . urlContents . getPkgbuildUrl
+downloadPkgbuild = liftIO . urlContents . pkgbuildUrl
 
-getTrueVerViaPkgbuild :: Namespace -> String
-getTrueVerViaPkgbuild ns = pkgver ++ "-" ++ pkgrel
+trueVerViaPkgbuild :: Namespace -> String
+trueVerViaPkgbuild ns = pkgver ++ "-" ++ pkgrel
     where pkgver = head . fromJust . getVar ns $ "pkgver"
           pkgrel = head . fromJust . getVar ns $ "pkgrel"
 
 ------------------
 -- SOURCE TARBALLS
 ------------------
-getTarballUrl :: String -> String
-getTarballUrl pkg = getPkgBaseUrl pkg </> pkg ++ ".tar.gz"
+tarballUrl :: String -> String
+tarballUrl pkg = pkgBaseUrl pkg </> pkg ++ ".tar.gz"
 
-downloadSource :: FilePath -> String -> IO FilePath
-downloadSource path = saveUrlContents path . getTarballUrl 
+sourceTarball :: FilePath -> String -> IO FilePath
+sourceTarball path = saveUrlContents path . tarballUrl

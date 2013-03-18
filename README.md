@@ -85,7 +85,7 @@ Store a record of all installed packages:
 
     aura -B
 
-Restore a saved record. Rolls back and uninstalls packages as necessary:
+Restore a saved record. Rolls back, uninstalls, and reinstalls packages as necessary:
 
     aura -Br
 

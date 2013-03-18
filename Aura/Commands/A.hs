@@ -181,7 +181,7 @@ downloadTarballs pkgs = do
   filterAURPkgs pkgs >>= mapM_ (downloadTBall currDir)
     where downloadTBall path pkg = do
               notify $ flip downloadTarballs_1 pkg
-              liftIO $ downloadSource path pkg
+              liftIO $ sourceTarball path pkg
 
 displayPkgbuild :: [String] -> Aura ()
 displayPkgbuild pkgs = filterAURPkgs pkgs >>= mapM_ dnload
