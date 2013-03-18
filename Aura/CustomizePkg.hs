@@ -24,9 +24,9 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.CustomizePkg where
 
 import Aura.Monad.Aura (Aura)
-import Aura.Core       (AURPkg)
+import Aura.Core       (AURPkg, notify)
 
 ---
 
 customizepkg :: [AURPkg] -> Aura [AURPkg]
-customizepkg = return
+customizepkg pkgs = notify (\_ -> "CUSTOMIZE!!") >> return pkgs

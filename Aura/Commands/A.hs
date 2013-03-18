@@ -37,6 +37,7 @@ import Data.List       ((\\), nub, nubBy, sort)
 import Aura.Pacman (pacman)
 import Aura.Settings.Base
 import Aura.Dependencies
+import Aura.CustomizePkg
 import Aura.Colour.Text
 import Aura.Monad.Aura
 import Aura.Languages
@@ -49,6 +50,16 @@ import Aura.AUR
 import Shell
 
 ---
+
+type PBHandler = [AURPkg] -> Aura [AURPkg]
+
+-- | The user can handle PKGBUILDs in multiple ways.
+-- `--hotedit` takes the highest priority.
+pbHandler :: Aura PBHandler
+pbHandler = ask >>= check
+    where check ss | mayHotEdit ss      = return hotEdit
+                   | useCustomizepkg ss = return customizepkg
+                   | otherwise          = return return
 
 installPackages :: [String] -> [String] -> Aura ()
 installPackages _ []         = return ()
@@ -70,7 +81,8 @@ installPackages' pacOpts pkgs = ask >>= \ss -> do
   reportIgnoredPackages ignored
   (repo,aur,nons) <- knownBadPkgCheck toInstall >>= divideByPkgType
   reportNonPackages nons
-  aurPkgs <- mapM aurPkg aur >>= reportPkgbuildDiffs >>= checkHotEdit
+  handler <- pbHandler
+  aurPkgs <- mapM aurPkg aur >>= reportPkgbuildDiffs >>= handler
   notify installPackages_5
   (repoDeps,aurDeps) <- catch (getDepsToInstall aurPkgs) depCheckFailure
   let repoPkgs    = nub $ repoDeps ++ repo
@@ -82,7 +94,7 @@ installPackages' pacOpts pkgs = ask >>= \ss -> do
      else do
        unless (null repoPkgs) $ pacman (["-S","--asdeps"] ++ pkgsAndOpts)
        storePkgbuilds $ aurPkgs ++ aurDeps
-       mapM_ (buildAndInstallDep pacOpts) aurDeps
+       mapM_ (buildAndInstallDep handler pacOpts) aurDeps
        buildPackages aurPkgs >>= installPkgFiles pacOpts
 
 knownBadPkgCheck :: [String] -> Aura [String]
@@ -99,16 +111,10 @@ knownBadPkgCheck (p:ps) = ask >>= \ss ->
 depCheckFailure :: String -> Aura a
 depCheckFailure m = scold installPackages_1 >> failure m
 
-buildAndInstallDep :: [String] -> AURPkg -> Aura ()
-buildAndInstallDep pacOpts pkg =
-  checkHotEdit [pkg] >>= buildPackages >>=
+buildAndInstallDep :: PBHandler -> [String] -> AURPkg -> Aura ()
+buildAndInstallDep handler pacOpts pkg =
+  handler [pkg] >>= buildPackages >>=
   installPkgFiles ("--asdeps" : pacOpts)
-
--- | Prompts the user to edit PKGBUILDs if they ran aura with `--hotedit`.
-checkHotEdit :: [AURPkg] -> Aura [AURPkg]
-checkHotEdit pkgs = ask >>= check
-    where check ss | mayHotEdit ss = hotEdit pkgs
-                   | otherwise     = return pkgs
 
 upgradeAURPkgs :: [String] -> [String] -> Aura ()
 upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
