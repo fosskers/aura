@@ -21,12 +21,10 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Build
     ( installPkgFiles
-    , buildPackages
-    , hotEdit ) where
+    , buildPackages ) where
 
 import System.FilePath ((</>), takeFileName)
-import Control.Monad   (liftM, forM, when)
-
+import Control.Monad   (liftM, when)
 
 import Aura.Pacman (pacman)
 import Aura.AUR    (sourceTarball)
@@ -36,7 +34,6 @@ import Aura.Monad.Aura
 import Aura.Languages
 import Aura.MakePkg
 import Aura.Utils
-import Aura.Bash
 import Aura.Core
 
 import Utilities
@@ -88,24 +85,6 @@ getSourceCode pkgName user currDir = liftIO $ do
   sourceDir <- decompress tarball
   chown user sourceDir ["-R"]
   cd sourceDir
-
--- Allow the user to edit the PKGBUILD if they asked to do so.
-hotEdit :: [AURPkg] -> Aura [AURPkg]
-hotEdit pkgs = ask >>= \ss ->
-  withTempDir "hotedit" . forM pkgs $ \p -> do
-    let msg = flip checkHotEdit_1 . pkgNameOf
-    answer <- optionalPrompt (msg p)
-    if not answer
-       then return p
-       else do
-         newPB <- liftIO $ do
-                    let filename = pkgNameOf p ++ "-PKGBUILD"
-                        editor   = getEditor $ environmentOf ss
-                    writeFile filename $ pkgbuildOf p
-                    openEditor editor filename
-                    readFile filename
-         newNS <- namespace (pkgNameOf p) newPB  -- Reparse PKGBUILD.
-         return $ AURPkg (pkgNameOf p) (versionOf p) newPB newNS
 
 overwritePkgbuild :: AURPkg -> Aura ()
 overwritePkgbuild p = (mayHotEdit `liftM` ask) >>= check

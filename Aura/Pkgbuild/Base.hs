@@ -1,5 +1,3 @@
--- Library for handling the storing and diff'ing of PKGBUILDs.
-
 {-
 
 Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
@@ -21,19 +19,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Pkgbuilds
-    ( comparePkgbuilds
-    , hasPkgbuildStored
-    , storePkgbuilds
-    , readPkgbuild
-    , writePkgbuild ) where
-
-import System.Directory (doesFileExist)
-
-import Aura.Core (AURPkg, pkgNameOf, pkgbuildOf)
-import Aura.Monad.Aura
-
-import ColourDiff
+module Aura.Pkgbuild.Base where
 
 ---
 
@@ -45,18 +31,3 @@ toFilename = (++ ".pb")
 
 pkgbuildPath :: String -> FilePath
 pkgbuildPath p = pkgbuildCache ++ toFilename p
-
-comparePkgbuilds :: String -> String -> String
-comparePkgbuilds old new = diff (lines old) (lines new)
-
-hasPkgbuildStored :: String -> Aura Bool
-hasPkgbuildStored = liftIO . doesFileExist . pkgbuildPath 
-
-storePkgbuilds :: [AURPkg] -> Aura ()
-storePkgbuilds = mapM_ (\p -> writePkgbuild (pkgNameOf p) (pkgbuildOf p))
-
-readPkgbuild :: String -> Aura String
-readPkgbuild = liftIO . readFile . pkgbuildPath
-
-writePkgbuild :: String -> String -> Aura ()
-writePkgbuild name p = liftIO $ writeFile (pkgbuildPath name) p
