@@ -341,7 +341,7 @@ _aura() {
 
     case $words[2] in
         -A*) _arguments -s : "$_aura_opts_common[@]" "$_aura_opts_aursync[@]"   ;;
-        -B*) _arguemnts -s : "$_aura_opts_common[@]" "$_aura_opts_save[@]"      ;;
+        -B*) _arguments -s : "$_aura_opts_common[@]" "$_aura_opts_save[@]"      ;;
         -C*) _arguments -s : "$_aura_opts_common[@]" "$_aura_opts_downgrade[@]" ;;
         -L*) _arguments -s : "$_aura_opts_common[@]" "$_aura_opts_viewlog[@]"   ;;
         -O*) _arguments -s : "$_aura_opts_common[@]" "$_aura_opts_orphans[@]"   ;;
