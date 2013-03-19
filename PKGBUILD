@@ -11,10 +11,14 @@ depends=('gmp' 'pacman' 'pcre' 'curl')
 makedepends=('ghc' 'haskell-regex-base' 'haskell-regex-pcre' 'haskell-curl'
              'haskell-json' 'haskell-mtl' 'haskell-parsec' 'haskell-transformers')
 optdepends=('pacman-color: For coloured pacman output in Aura.'
-            'powerpill:    For faster repository downloads.')
+            'powerpill:    For faster repository downloads.'
+            'customizepkg: For auto-editing of PKGBUILDs.')
+provides=('aura')
+conflicts=('aura-git')
 options=('strip')
 source=(https://bitbucket.org/fosskers/aura/downloads/${_hkgname}-${pkgver}.tar.gz)
 md5sums=('4429f6b7b768b8fd66372bd417991e75')
+
 build() {
     cd ${srcdir}/${_hkgname}-${pkgver}
     runhaskell Setup configure --prefix=/usr --docdir=/usr/share/doc/${pkgname} -O
