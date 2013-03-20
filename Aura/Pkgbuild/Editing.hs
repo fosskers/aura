@@ -1,4 +1,4 @@
--- Handles the editing of PKGBUILDs.
+-- For handling the editing of PKGBUILDs.
 
 {-
 
@@ -22,41 +22,52 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.Pkgbuild.Editing
-    ( hotEdit ) where
+    ( hotEdit
+    , customizepkg ) where
 
-import Control.Monad (forM)
+import System.FilePath     ((</>))
+import Control.Monad       (forM, void)
 
 import Aura.Settings.Base (environmentOf)
-import Aura.Languages     (checkHotEdit_1)
 import Aura.Bash          (namespace)
+import Aura.Pkgbuild.Base
 import Aura.Monad.Aura
+import Aura.Languages
 import Aura.Utils
 import Aura.Core
 
-import Utilities (openEditor)
-import Shell     (getEditor)
+import Utilities (openEditor, ifFile, ifM)
+import Shell     (getEditor, quietShellCmd)
 
 ---
 
 edit :: (FilePath -> IO ()) -> AURPkg -> Aura AURPkg
 edit f p = do
   newPB <- liftIO $ do
-             let filename = pkgNameOf p ++ "-PKGBUILD"
              writeFile filename $ pkgbuildOf p
              f filename
              readFile filename
   newNS <- namespace (pkgNameOf p) newPB  -- Reparse PKGBUILD.
   return $ AURPkg (pkgNameOf p) (versionOf p) newPB newNS
+      where filename = "PKGBUILD"
 
 -- | Allow the user to edit the PKGBUILD if they asked to do so.
 hotEdit :: [AURPkg] -> Aura [AURPkg]
-hotEdit pkgs = ask >>= \ss ->
-  withTempDir "hotedit" . forM pkgs $ \p -> do
-    let msg = flip checkHotEdit_1 . pkgNameOf
-    answer <- optionalPrompt (msg p)
-    if not answer
-       then return p
-       else edit (hotEdit' (getEditor $ environmentOf ss)) p
+hotEdit pkgs = ask >>= \ss -> withTempDir "hotedit" . forM pkgs $ \p -> do
+  let cond = optionalPrompt (flip hotEdit_1 $ pkgNameOf p)
+      act  = edit (openEditor (getEditor $ environmentOf ss))
+  ifM cond act (return ()) p
 
-hotEdit' :: String -> FilePath -> IO ()
-hotEdit' editor filename = openEditor editor filename
+-- | Runs `customizepkg` on whatever PKGBUILD it can.
+-- To work, a package needs an entry in `/etc/customizepkg.d/`
+customizepkg :: [AURPkg] -> Aura [AURPkg]
+customizepkg = ifFile customizepkg' (scold customizepkg_1) bin
+    where bin = "/usr/bin/customizepkg"
+
+customizepkg' :: [AURPkg] -> Aura [AURPkg]
+customizepkg' pkgs = withTempDir "customizepkg" . forM pkgs $ \p -> do
+  let conf = customizepkgPath </> pkgNameOf p
+  ifFile (edit customize) (return ()) conf p
+
+customize :: FilePath -> IO ()
+customize pb = void $ quietShellCmd "customizepkg" ["--modify",pb]

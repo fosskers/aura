@@ -23,8 +23,11 @@ module Aura.Pkgbuild.Base where
 
 ---
 
-pkgbuildCache :: String
+pkgbuildCache :: FilePath
 pkgbuildCache = "/var/cache/aura/pkgbuilds/"
+
+customizepkgPath :: FilePath
+customizepkgPath = "/etc/customizepkg.d/"
 
 toFilename :: String -> FilePath
 toFilename = (++ ".pb")

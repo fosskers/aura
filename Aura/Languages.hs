@@ -196,20 +196,6 @@ buildPackages_1 Russian    p = "Сборка " ++ bt p ++ "..."
 buildPackages_1 Italian    p = "Compilazione di " ++ bt p ++ "..."
 buildPackages_1 Serbian    p = "Градим " ++ bt p ++ "..."
 
-checkHotEdit_1 :: Language -> String -> String
-checkHotEdit_1 English    p = "Would you like to edit the PKGBUILD of " ++ bt p ++ "?"
-checkHotEdit_1 Japanese   p = bt p ++ "のPKGBUILDを編成？"
-checkHotEdit_1 Polish     p = "Czy chcesz edytować PKGBUILD " ++ bt p ++ "?"
-checkHotEdit_1 Croatian   p = "Želite li izmjeniti PKGBUILD " ++ bt p ++ "?"
-checkHotEdit_1 Swedish    p = "Vill du ändra PKGBUILD-filen ifrån " ++ bt p ++ "?"
-checkHotEdit_1 German     p = "Möchten Sie die PKGBUILD-Datei für " ++ bt p ++ " bearbeiten?"
-checkHotEdit_1 Spanish    p = "¿Te gustaría editar el PKGBUILD de " ++ bt p ++ "?"
-checkHotEdit_1 Portuguese p = "Desejaria editar o PKGBUILD de " ++ bt p ++ "?"
-checkHotEdit_1 French     p = "Voulez-vous éditer le PKGBUILD de " ++ bt p ++ " ?"
-checkHotEdit_1 Russian    p = "Отредактировать PKGBUILD пакета " ++ bt p ++ "?"
-checkHotEdit_1 Italian    p = "Volete modificare il PKGBUILD di " ++ bt p ++ "?"
-checkHotEdit_1 Serbian    p = "Желите ли да измените PKGBUILD за " ++ bt p ++ "?"
-
 buildFail_1 :: Language -> String -> String
 buildFail_1 English    p = "Well, building " ++ bt p ++ " failed."
 buildFail_1 Japanese   p = bt p ++ "の作成は失敗したようだ。"
@@ -1129,7 +1115,7 @@ orpha Italian    = blue "Azioni riguardanti i pacchetti [O]rfani.\n" ++ "Di defa
 orpha Serbian    = blue "Извршава радње везане за пакете без родитеља.\n" ++ "Уобичајена радња листа пакете без родитеља."
 
 -------------------------------
--- Aura/AurConnection functions
+-- Aura/AUR functions
 -------------------------------
 -- NEEDS TRANSLATION
 getAURPkgInfo_1 :: Language -> String
@@ -1221,3 +1207,24 @@ pacmanFailure_1 :: Language -> String
 pacmanFailure_1 Japanese = "入力を確認して下さい。"
 pacmanFailure_1 Serbian  = "Молим Вас, проверите ваш унос."
 pacmanFailure_1 _        = "Please check your input."
+
+----------------------------------
+-- Aura/Pkgbuild/Editing functions
+----------------------------------
+hotEdit_1 :: Language -> String -> String
+hotEdit_1 English    p = "Would you like to edit the PKGBUILD of " ++ bt p ++ "?"
+hotEdit_1 Japanese   p = bt p ++ "のPKGBUILDを編成？"
+hotEdit_1 Polish     p = "Czy chcesz edytować PKGBUILD " ++ bt p ++ "?"
+hotEdit_1 Croatian   p = "Želite li izmjeniti PKGBUILD " ++ bt p ++ "?"
+hotEdit_1 Swedish    p = "Vill du ändra PKGBUILD-filen ifrån " ++ bt p ++ "?"
+hotEdit_1 German     p = "Möchten Sie die PKGBUILD-Datei für " ++ bt p ++ " bearbeiten?"
+hotEdit_1 Spanish    p = "¿Te gustaría editar el PKGBUILD de " ++ bt p ++ "?"
+hotEdit_1 Portuguese p = "Desejaria editar o PKGBUILD de " ++ bt p ++ "?"
+hotEdit_1 French     p = "Voulez-vous éditer le PKGBUILD de " ++ bt p ++ " ?"
+hotEdit_1 Russian    p = "Отредактировать PKGBUILD пакета " ++ bt p ++ "?"
+hotEdit_1 Italian    p = "Volete modificare il PKGBUILD di " ++ bt p ++ "?"
+hotEdit_1 Serbian    p = "Желите ли да измените PKGBUILD за " ++ bt p ++ "?"
+
+customizepkg_1 :: Language -> String
+customizepkg_1 Japanese = bt "customizepkg" ++ "はインストールされていない。"
+customizepkg_1 _        = bt "customizepkg" ++ "isn't installed."

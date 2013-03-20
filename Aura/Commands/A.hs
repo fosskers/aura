@@ -39,7 +39,6 @@ import Aura.Pkgbuild.Records
 import Aura.Pkgbuild.Editing
 import Aura.Settings.Base
 import Aura.Dependencies
-import Aura.CustomizePkg
 import Aura.Colour.Text
 import Aura.Monad.Aura
 import Aura.Languages

@@ -23,13 +23,16 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Utilities where
 
-import Control.Concurrent (threadDelay)
-import System.FilePath    (dropExtension)
-import Text.Regex.PCRE    ((=~))
-import Control.Monad      (void)
-import Text.Printf        (printf)
-import System.IO          (stdout, hFlush)
-import Data.List          (dropWhileEnd)
+
+import Control.Monad.Trans (liftIO, MonadIO)
+import Control.Concurrent  (threadDelay)
+import System.Directory    (doesFileExist)
+import System.FilePath     (dropExtension)
+import Text.Regex.PCRE     ((=~))
+import Control.Monad       (void)
+import Text.Printf         (printf)
+import System.IO           (stdout, hFlush)
+import Data.List           (dropWhileEnd)
 
 import Shell
 
@@ -134,3 +137,17 @@ prePad xs x len = replicate (len - length xs) x ++ xs
 -- | Perform an action within a given directory.
 inDir :: FilePath -> IO a -> IO a
 inDir dir io = pwd >>= \cur -> cd dir >> io >>= \res -> cd cur >> return res
+
+---------
+-- MONADS
+---------
+-- | Simple control flow for Monads.
+ifM :: Monad m => m Bool -> (x -> m x) -> m () -> x -> m x
+ifM cond a1 a2 x = do
+  success <- cond
+  if success then a1 x else a2 >> return x
+
+-- | If a file exists, it performs action `a`.
+-- If the file doesn't exist, it performs `b` and returns the argument.
+ifFile :: MonadIO m => (x -> m x) -> m () -> FilePath -> x -> m x
+ifFile a1 a2 file x = ifM (liftIO $ doesFileExist file) a1 a2 x
