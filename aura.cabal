@@ -45,6 +45,7 @@ executable aura
                        ColourDiff,
                        Data.Algorithm.Diff,
                        Network.HTTP,
+                       Aura.ABS,
                        Aura.AUR,
                        Aura.Bash,
                        Aura.Core,
