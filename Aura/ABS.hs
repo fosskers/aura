@@ -36,10 +36,27 @@ import           Bash.Base
 
 -- Stuff --
 
-data PkgInfo = PkgInfo { nameOf    :: String
-                       , absPathOf :: String
+-- | PKGBUILD file read into a string
+type PkgBuild = String
+
+-- | File system root for the synchronised ABS tree
+absBasePath :: String
+absPath = "/var/abs"
+
+data PkgInfo = PkgInfo {
+                       -- | Name of the package (not including repo)
+                       nameOf           :: String
+                       -- | Repository (core, extras, community)
+                       , repository    :: String
+                       -- | Latest available version
+                       , latestVerOf   :: String
+                       -- | Path to the relevant directory in the ABS tree
+                       , absPathOf     :: String
+                       -- | Package description
+                       , descriptionOf :: String
                        } deriving (Eq,Show)
 
+-- | Get info about the named package
 getABSPkgInfo :: [String] -> Aura [PkgInfo]
 getABSPkgInfo [] = return []
 getABSPkgInto items = undefined
