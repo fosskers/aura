@@ -1,5 +1,11 @@
 Aura Changelog
 ==============
+1.1.5.0
+-------
+- `customizepkg` now usable with Aura.
+  Activate with the `--custom` option.
+- API Change: Aura/Pkgbuilds now a set of libraries as Aura/Pkgbuild/*
+
 1.1.4.3
 -------
 - Fixed flaw in `-Br`.
