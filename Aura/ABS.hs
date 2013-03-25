@@ -23,29 +23,31 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.ABS where
 
-import           Control.Monad   (liftM)
-import           Data.List       (intercalate)
-import           Data.Maybe      (fromJust)
-import           System.FilePath ((</>))
+import           Control.Monad    (filterM, liftM, forM)
+import           Data.List        (intercalate)
+import           Data.Maybe       (fromJust)
+import           System.Directory (doesDirectoryExist, getDirectoryContents)
+import           System.FilePath
+import           Text.Regex.PCRE  ((=~))
 
 import           Aura.Languages
 import           Aura.Monad.Aura
-import           Aura.Utils      (scoldAndFail)
+import           Aura.Utils       (scoldAndFail)
 
 import           Bash.Base
 
 -- Stuff --
 
--- | PKGBUILD file read into a string
+-- | PKGBUILD file read into a string.
 type PkgBuild = String
 
--- | File system root for the synchronised ABS tree
-absBasePath :: String
-absPath = "/var/abs"
+-- | File system root for the synchronised ABS tree.
+absBasePath :: FilePath
+absBasePath = "/var/abs"
 
 data PkgInfo = PkgInfo {
                        -- | Name of the package (not including repo)
-                       nameOf           :: String
+                       nameOf          :: String
                        -- | Repository (core, extras, community)
                        , repository    :: String
                        -- | Latest available version
@@ -56,7 +58,27 @@ data PkgInfo = PkgInfo {
                        , descriptionOf :: String
                        } deriving (Eq,Show)
 
--- | Get info about the named package
-getABSPkgInfo :: [String] -> Aura [PkgInfo]
-getABSPkgInfo [] = return []
-getABSPkgInto items = undefined
+-- | Get info about the named package from the exact package name.
+getABSPkgInfo :: String -> Aura PkgInfo
+getABSPkgInfo pkgname = undefined
+
+-- | Find a matching list of packages given a name. This only matches
+-- on the name of the package.
+-- Returns a list of potential paths to packages (the package directory).
+findPkg :: String -> Aura [String]
+findPkg pattern = 
+  let isDownDir = (flip notElem) [".", ".."]
+      liftFilter f a = do
+        a' <- a
+        return $ filter f a' 
+  in liftIO $ do
+    repos <- (liftM $ fmap (absBasePath </>))
+      $ liftFilter isDownDir 
+      $ getDirectoryContents absBasePath
+    packages <- mapM (\repo -> (liftM $ fmap (repo </>)) 
+      $ liftFilter isDownDir 
+      $ getDirectoryContents repo) repos
+    return 
+      $ filter (\pkg -> pkg =~ pattern) 
+      $ (liftM concat) packages 
+
