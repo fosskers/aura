@@ -151,3 +151,6 @@ ifM cond a1 a2 x = do
 -- If the file doesn't exist, it performs `b` and returns the argument.
 ifFile :: MonadIO m => (x -> m x) -> m () -> FilePath -> x -> m x
 ifFile a1 a2 file x = ifM (liftIO $ doesFileExist file) a1 a2 x
+
+nothing :: Monad m => m ()
+nothing = return ()

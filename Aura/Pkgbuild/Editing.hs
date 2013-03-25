@@ -36,7 +36,7 @@ import Aura.Languages
 import Aura.Utils
 import Aura.Core
 
-import Utilities (openEditor, ifFile, ifM)
+import Utilities (openEditor, ifFile, ifM, nothing)
 import Shell     (getEditor, quietShellCmd)
 
 ---
@@ -56,7 +56,7 @@ hotEdit :: [AURPkg] -> Aura [AURPkg]
 hotEdit pkgs = ask >>= \ss -> withTempDir "hotedit" . forM pkgs $ \p -> do
   let cond = optionalPrompt (flip hotEdit_1 $ pkgNameOf p)
       act  = edit (openEditor (getEditor $ environmentOf ss))
-  ifM cond act (return ()) p
+  ifM cond act nothing p
 
 -- | Runs `customizepkg` on whatever PKGBUILD it can.
 -- To work, a package needs an entry in `/etc/customizepkg.d/`
@@ -67,7 +67,7 @@ customizepkg = ifFile customizepkg' (scold customizepkg_1) bin
 customizepkg' :: [AURPkg] -> Aura [AURPkg]
 customizepkg' pkgs = withTempDir "customizepkg" . forM pkgs $ \p -> do
   let conf = customizepkgPath </> pkgNameOf p
-  ifFile (edit customize) (return ()) conf p
+  ifFile (edit customize) nothing conf p
 
 customize :: FilePath -> IO ()
 customize pb = void $ quietShellCmd "customizepkg" ["--modify",pb]
