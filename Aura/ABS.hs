@@ -21,7 +21,11 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.ABS where
+module Aura.ABS (
+   getABSPkgInfo
+  ,findPkg
+  )
+where
 
 import           Control.Monad    (filterM, liftM, forM)
 import           Data.List        (intercalate)

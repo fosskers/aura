@@ -26,3 +26,23 @@ You should have received a copy of the GNU General Public License
 along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
+
+import Aura.ABS
+
+module Aura.Commands.M 
+  ( installPackages
+  , absPkgInfo
+  , absSearch
+  ) where
+
+  installPackages :: [String] -> [String] -> Aura ()
+  installPackages = undefined
+
+  -- | Display package info for an ABS package to stdout
+  absPkgInfo :: [String] -> Aura ()
+  absPkgInfo = undefined
+
+  -- | Search ABS for any packages matching the given patterns
+  absSearch :: [String] -< Aura ()
+  absSearch = undefined
+
