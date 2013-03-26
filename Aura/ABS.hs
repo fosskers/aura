@@ -25,7 +25,8 @@ module Aura.ABS where
 
 import           Control.Monad    (filterM, liftM, forM)
 import           Data.List        (intercalate)
-import           Data.Maybe       (fromJust)
+import           Data.Maybe       (fromJust,mapMaybe)
+import qualified Data.Map as M
 import           System.Directory (doesDirectoryExist, getDirectoryContents)
 import           System.FilePath
 import           Text.Regex.PCRE  ((=~))
@@ -35,6 +36,7 @@ import           Aura.Monad.Aura
 import           Aura.Utils       (scoldAndFail)
 
 import           Bash.Base
+import Utilities (split)
 
 -- Stuff --
 
@@ -45,22 +47,41 @@ type PkgBuild = String
 absBasePath :: FilePath
 absBasePath = "/var/abs"
 
+-- | Get PKGBUILD location from a package name (just appends /PKGBUILD)
+pkgBuildFile :: FilePath -> FilePath
+pkgBuildFile pkgName = absBasePath </> pkgName </> "PKGBUILD"
+
 data PkgInfo = PkgInfo {
                        -- | Name of the package (not including repo)
                        nameOf          :: String
-                       -- | Repository (core, extras, community)
-                       , repository    :: String
                        -- | Latest available version
                        , latestVerOf   :: String
-                       -- | Path to the relevant directory in the ABS tree
-                       , absPathOf     :: String
                        -- | Package description
                        , descriptionOf :: String
                        } deriving (Eq,Show)
 
 -- | Get info about the named package from the exact package name.
 getABSPkgInfo :: String -> Aura PkgInfo
-getABSPkgInfo pkgname = undefined
+getABSPkgInfo pkgName = liftIO $ do
+  pkgbuild <- readFile $ pkgBuildFile pkgName
+  case parsePkgBuild pkgbuild of
+    Just pi -> return pi
+    Nothing -> fail $ "No info for package " ++ pkgName
+
+-- | Parse a PKGBUILD into PkgInfo if possible
+parsePkgBuild :: String -> Maybe PkgInfo
+parsePkgBuild pkgbuild =
+  let l = lines pkgbuild
+      props = mapMaybe (\line -> case split '=' line of
+        a : b : _ -> Just (a,b)
+        _ -> Nothing
+        ) l
+      propMap = M.fromList props
+  in do
+    name <- M.lookup "pkgname" propMap
+    version <- M.lookup "pkgver"propMap 
+    desc <- M.lookup "pkgdesc" propMap
+    return $ PkgInfo name version desc
 
 -- | Find a matching list of packages given a name. This only matches
 -- on the name of the package.
@@ -80,5 +101,4 @@ findPkg pattern =
       $ getDirectoryContents repo) repos
     return 
       $ filter (\pkg -> pkg =~ pattern) 
-      $ (liftM concat) packages 
-
+      $ (liftM concat) packages
