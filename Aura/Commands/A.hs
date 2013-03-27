@@ -195,6 +195,11 @@ displayPkgbuild :: [String] -> Aura ()
 displayPkgbuild pkgs = filterAURPkgs pkgs >>= mapM_ dnload
       where dnload p = downloadPkgbuild p >>= liftIO . putStrLn
 
+isntMostRecent :: (PkgInfo,String) -> Bool
+isntMostRecent (info,v) = trueVer > currVer
+  where trueVer = comparableVer $ latestVerOf info
+        currVer = comparableVer v
+
 ------------
 -- REPORTING
 ------------

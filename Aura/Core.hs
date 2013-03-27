@@ -210,11 +210,6 @@ isDevelPkg :: String -> Bool
 isDevelPkg p = any (`isSuffixOf` p) suffixes
     where suffixes = ["-git","-hg","-svn","-darcs","-cvs","-bzr"]
 
-isntMostRecent :: (PkgInfo,String) -> Bool
-isntMostRecent (info,v) = trueVer > currVer
-  where trueVer = comparableVer $ latestVerOf info
-        currVer = comparableVer v
-
 isIgnored :: String -> [String] -> Bool
 isIgnored pkg toIgnore = pkg `elem` toIgnore
 
