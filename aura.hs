@@ -109,7 +109,8 @@ executeOpts (flags,input,pacOpts) =
           badFlags       -> scoldAndFail executeOpts_1
     (ABSInstall:fs) ->
         case fs of
-          [Search]       -> M.absSearch input 
+          [Search]       -> M.absSearch input
+          [Info]         -> M.absInfo input
           badFlags       -> scoldAndFail executeOpts_1
     (SaveState:fs) ->
         case fs of

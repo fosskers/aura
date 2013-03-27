@@ -43,8 +43,6 @@ import           Aura.Utils       (scoldAndFail)
 import           Bash.Base
 import           Utilities        (split)
 
-import           Debug.Trace
-
 -- Stuff --
 
 -- | PKGBUILD file read into a string.
@@ -59,10 +57,14 @@ pkgBuildFile :: FilePath -> FilePath
 pkgBuildFile pkgName = absBasePath </> pkgName </> "PKGBUILD"
 
 data PkgInfo = PkgInfo {
+                       -- | Repository
+                       repositoryOf    :: String
                        -- | Name of the package (not including repo)
-                       nameOf          :: String
+                       , nameOf          :: String
                        -- | Latest available version
                        , latestVerOf   :: String
+                       -- | Location of
+                       , locationOf :: String
                        -- | Package description
                        , descriptionOf :: String
                        } deriving (Eq,Show)
@@ -71,7 +73,7 @@ data PkgInfo = PkgInfo {
 absInfoLookup :: String -> Aura PkgInfo
 absInfoLookup pkgName = liftIO $ do
   pkgbuild <- readFile $ pkgBuildFile pkgName
-  case parsePkgBuild pkgbuild of
+  case parsePkgBuild pkgName pkgbuild of
     Just pi -> return pi
     Nothing -> fail $ "No info for package " ++ pkgName
 
@@ -81,19 +83,23 @@ absSearchLookup pattern = do
   mapM absInfoLookup pkg
 
 -- | Parse a PKGBUILD into PkgInfo if possible
-parsePkgBuild :: String -> Maybe PkgInfo
-parsePkgBuild pkgbuild =
+parsePkgBuild :: String -> String -> Maybe PkgInfo
+parsePkgBuild pkgloc pkgbuild =
   let l = lines pkgbuild
       props = mapMaybe (\line -> case split '=' line of
         a : b : _ -> Just (a,b)
         _ -> Nothing
         ) l
       propMap = M.fromList props
+      repo' = case reverse $ split '/' pkgloc of
+        _ : a : _ -> Just a
+        _ -> Nothing
   in do
     name <- M.lookup "pkgname" propMap
     version <- M.lookup "pkgver"propMap
     desc <- M.lookup "pkgdesc" propMap
-    return $ PkgInfo name version desc
+    repo <- repo'
+    return $ PkgInfo repo name version pkgloc desc
 
 -- | Find a matching list of packages given a name. This only matches
 -- on the name of the package.

@@ -63,8 +63,9 @@ module Aura.Commands.M
   renderAbsPkgInfo :: Settings -> PkgInfo -> String
   renderAbsPkgInfo ss info = entrify ss fields entries
     where fields  = map (pcWhite ss) . absInfoFields . langOf $ ss
-          entries = [ pcMagenta ss "abs"
+          entries = [ pcMagenta ss $ repositoryOf info
                     , pcWhite ss $ nameOf info
                     , latestVerOf info
+                    , locationOf info
                     , descriptionOf info ]
 
