@@ -27,22 +27,44 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-import Aura.ABS
-
 module Aura.Commands.M 
   ( installPackages
-  , absPkgInfo
   , absSearch
+  , absInfo
   ) where
+
+  import Aura.ABS
+  import Aura.Monad.Aura
+  import Aura.Settings.Base
+  import Aura.Utils (entrify)
+  import Aura.Languages
 
   installPackages :: [String] -> [String] -> Aura ()
   installPackages = undefined
 
-  -- | Display package info for an ABS package to stdout
-  absPkgInfo :: [String] -> Aura ()
-  absPkgInfo = undefined
+  -- | Get info about the specified package (-i)
+  absInfo :: [String] -> Aura ()
+  absInfo search = do
+    q <- mapM absInfoLookup search
+    mapM_ displayAbsPkgInfo q
 
-  -- | Search ABS for any packages matching the given patterns
-  absSearch :: [String] -< Aura ()
-  absSearch = undefined
+  -- | Search ABS for any packages matching the given patterns (-s)
+  absSearch :: [String] -> Aura ()
+  absSearch search = do
+    q <- mapM absSearchLookup search
+    mapM_ displayAbsPkgInfo $ concat q
+
+  -- | Display ABS package info
+  displayAbsPkgInfo :: PkgInfo -> Aura ()
+  displayAbsPkgInfo info = ask >>= \ss ->
+    liftIO $ putStrLn $ renderAbsPkgInfo ss info ++ "\n"
+
+  -- | Format a PkgInfo into a string
+  renderAbsPkgInfo :: Settings -> PkgInfo -> String
+  renderAbsPkgInfo ss info = entrify ss fields entries
+    where fields  = map (pcWhite ss) . absInfoFields . langOf $ ss
+          entries = [ pcMagenta ss "abs"
+                    , pcWhite ss $ nameOf info
+                    , latestVerOf info
+                    , descriptionOf info ]
 

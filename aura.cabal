@@ -70,6 +70,7 @@ executable aura
                        Aura.Commands.C,
                        Aura.Commands.L,
                        Aura.Commands.O,
+                       Aura.Commands.M,
                        Aura.Pkgbuild.Base,
                        Aura.Pkgbuild.Records,
                        Aura.Pkgbuild.Editing,

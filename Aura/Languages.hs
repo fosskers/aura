@@ -1066,6 +1066,9 @@ aurSy Russian    = green "Совершить действия с участие�
 aurSy Italian    = green "Azioni riguardanti [A]UR.\n" ++ "Di default installa da AUR."
 aurSy Serbian    = green "Извршава радње везане за [A]UR.\n" ++ "Уобичајена радња инсталира из AUR-а."
 
+absSy :: Language -> String
+absSy _ = green "Perform actions involving the ABS tree.\n" ++ "Default action builds and installs from ABS"
+
 -- NEEDS TRANSLATION
 saveS :: Language -> String
 saveS Japanese = yellow "パッケージの設置状態に関する処理\n" ++ "デフォルトでインストール状態を保存する。"
@@ -1162,6 +1165,12 @@ outOfDateMsg Italian    True  = red "Out of Date!"
 outOfDateMsg Italian    False = green "Aggiornato"
 outOfDateMsg Serbian    True  = red "Застарео!"
 outOfDateMsg Serbian    False = green "Ажуран"
+
+-----------------------
+-- Aura/ABS functions
+-----------------------
+absInfoFields :: Language -> [String]
+absInfoFields = (\x -> (take 3 x) ++ (drop (length x - 1) x)) . infoFields
 
 -----------------------
 -- Aura/State functions

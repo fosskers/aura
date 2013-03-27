@@ -22,15 +22,16 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.ABS (
-   getABSPkgInfo
-  ,findPkg
+   absInfoLookup
+  ,absSearchLookup
+  ,PkgInfo(..)
   )
 where
 
-import           Control.Monad    (filterM, liftM, forM)
+import           Control.Monad    (filterM, forM, liftM)
 import           Data.List        (intercalate)
-import           Data.Maybe       (fromJust,mapMaybe)
-import qualified Data.Map as M
+import qualified Data.Map         as M
+import           Data.Maybe       (fromJust, mapMaybe)
 import           System.Directory (doesDirectoryExist, getDirectoryContents)
 import           System.FilePath
 import           Text.Regex.PCRE  ((=~))
@@ -40,7 +41,9 @@ import           Aura.Monad.Aura
 import           Aura.Utils       (scoldAndFail)
 
 import           Bash.Base
-import Utilities (split)
+import           Utilities        (split)
+
+import           Debug.Trace
 
 -- Stuff --
 
@@ -65,12 +68,17 @@ data PkgInfo = PkgInfo {
                        } deriving (Eq,Show)
 
 -- | Get info about the named package from the exact package name.
-getABSPkgInfo :: String -> Aura PkgInfo
-getABSPkgInfo pkgName = liftIO $ do
+absInfoLookup :: String -> Aura PkgInfo
+absInfoLookup pkgName = liftIO $ do
   pkgbuild <- readFile $ pkgBuildFile pkgName
   case parsePkgBuild pkgbuild of
     Just pi -> return pi
     Nothing -> fail $ "No info for package " ++ pkgName
+
+absSearchLookup :: String -> Aura [PkgInfo]
+absSearchLookup pattern = do
+  pkg <- findPkg pattern
+  mapM absInfoLookup pkg
 
 -- | Parse a PKGBUILD into PkgInfo if possible
 parsePkgBuild :: String -> Maybe PkgInfo
@@ -83,7 +91,7 @@ parsePkgBuild pkgbuild =
       propMap = M.fromList props
   in do
     name <- M.lookup "pkgname" propMap
-    version <- M.lookup "pkgver"propMap 
+    version <- M.lookup "pkgver"propMap
     desc <- M.lookup "pkgdesc" propMap
     return $ PkgInfo name version desc
 
@@ -91,18 +99,19 @@ parsePkgBuild pkgbuild =
 -- on the name of the package.
 -- Returns a list of potential paths to packages (the package directory).
 findPkg :: String -> Aura [String]
-findPkg pattern = 
+findPkg pattern =
   let isDownDir = (flip notElem) [".", ".."]
       liftFilter f a = do
         a' <- a
-        return $ filter f a' 
+        return $ filter f a'
   in liftIO $ do
-    repos <- (liftM $ fmap (absBasePath </>))
-      $ liftFilter isDownDir 
+    entries <- (liftM $ fmap (absBasePath </>))
+      $ liftFilter isDownDir
       $ getDirectoryContents absBasePath
-    packages <- mapM (\repo -> (liftM $ fmap (repo </>)) 
-      $ liftFilter isDownDir 
+    repos <- filterM doesDirectoryExist entries
+    entries' <- liftM concat $ mapM (\repo -> (liftM $ fmap (repo </>))
+      $ liftFilter isDownDir
       $ getDirectoryContents repo) repos
-    return 
-      $ filter (\pkg -> pkg =~ pattern) 
-      $ (liftM concat) packages
+    packages <- filterM doesDirectoryExist entries'
+    return
+      $ filter (\pkg -> pkg =~ pattern) packages
