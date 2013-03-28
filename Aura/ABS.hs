@@ -36,6 +36,7 @@ import           System.Directory (doesDirectoryExist, getDirectoryContents)
 import           System.FilePath
 import           Text.Regex.PCRE  ((=~))
 
+import           Aura.Bash
 import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Utils       (scoldAndFail)
@@ -60,22 +61,20 @@ data PkgInfo = PkgInfo {
                        -- | Repository
                        repositoryOf    :: String
                        -- | Name of the package (not including repo)
-                       , nameOf          :: String
+                       , nameOf        :: String
                        -- | Latest available version
                        , latestVerOf   :: String
                        -- | Location of
-                       , locationOf :: String
+                       , locationOf    :: String
                        -- | Package description
                        , descriptionOf :: String
                        } deriving (Eq,Show)
 
 -- | Get info about the named package from the exact package name.
 absInfoLookup :: String -> Aura PkgInfo
-absInfoLookup pkgName = liftIO $ do
-  pkgbuild <- readFile $ pkgBuildFile pkgName
-  case parsePkgBuild pkgName pkgbuild of
-    Just pi -> return pi
-    Nothing -> fail $ "No info for package " ++ pkgName
+absInfoLookup pkgName = do
+  pkgbuild <- liftIO $ readFile $ pkgBuildFile pkgName
+  parsePkgBuild pkgName pkgbuild
 
 absSearchLookup :: String -> Aura [PkgInfo]
 absSearchLookup pattern = do
@@ -83,21 +82,20 @@ absSearchLookup pattern = do
   mapM absInfoLookup pkg
 
 -- | Parse a PKGBUILD into PkgInfo if possible
-parsePkgBuild :: String -> String -> Maybe PkgInfo
+parsePkgBuild :: String -> String -> Aura PkgInfo
 parsePkgBuild pkgloc pkgbuild =
-  let l = lines pkgbuild
-      props = mapMaybe (\line -> case split '=' line of
-        a : b -> Just (a,intercalate "=" b)
-        _ -> Nothing
-        ) l
-      propMap = M.fromList props
-      repo' = case reverse $ split '/' pkgloc of
-        _ : a : _ -> Just a
-        _ -> Nothing
+  let repo' = case reverse $ split '/' pkgloc of
+        _ : a : _ -> return a
+        _ -> failure $ "Unable to extract repository name: " ++ pkgloc
+      ns' = namespace pkgloc pkgbuild
+      getVal ns key = case value ns key of 
+        a : _ -> return a
+        [] -> failure $ "Unable to extract value for key " ++ key
   in do
-    name <- M.lookup "pkgname" propMap
-    version <- M.lookup "pkgver"propMap
-    desc <- M.lookup "pkgdesc" propMap
+    ns <- ns'
+    name <- getVal ns "pkgname"
+    version <- getVal ns "pkgver"
+    desc <- getVal ns "pkgdesc"
     repo <- repo'
     return $ PkgInfo repo name version pkgloc desc
 
