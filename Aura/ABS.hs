@@ -28,12 +28,13 @@ module Aura.ABS (
   )
 where
 
-import           Control.Monad    (filterM, forM, liftM)
+import           Control.Monad    (filterM, forM, liftM, join)
 import           Data.List        (intercalate)
 import qualified Data.Map         as M
 import           Data.Maybe       (fromJust, mapMaybe)
 import           System.Directory (doesDirectoryExist, getDirectoryContents)
 import           System.FilePath
+import           System.IO        (utf8)
 import           Text.Regex.PCRE  ((=~))
 
 import           Aura.Bash
@@ -42,7 +43,7 @@ import           Aura.Monad.Aura
 import           Aura.Utils       (scoldAndFail)
 
 import           Bash.Base
-import           Utilities        (split)
+import           Utilities        (split, readFileEncoding)
 
 -- Stuff --
 
@@ -73,7 +74,7 @@ data PkgInfo = PkgInfo {
 -- | Get info about the named package from the exact package name.
 absInfoLookup :: String -> Aura PkgInfo
 absInfoLookup pkgName = do
-  pkgbuild <- liftIO $ readFile $ pkgBuildFile pkgName
+  pkgbuild <- liftIO $ readFileEncoding utf8 $ pkgBuildFile pkgName
   parsePkgBuild pkgName pkgbuild
 
 absSearchLookup :: String -> Aura [PkgInfo]
@@ -88,7 +89,7 @@ parsePkgBuild pkgloc pkgbuild =
         _ : a : _ -> return a
         _ -> failure $ "Unable to extract repository name: " ++ pkgloc
       ns' = namespace pkgloc pkgbuild
-      getVal ns key = case value ns key of 
+      getVal ns key = case value ns key of
         a : _ -> return a
         [] -> failure $ "Unable to extract value for key " ++ key
   in do

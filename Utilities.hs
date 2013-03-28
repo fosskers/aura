@@ -31,8 +31,8 @@ import System.FilePath     (dropExtension)
 import Text.Regex.PCRE     ((=~))
 import Control.Monad       (void)
 import Text.Printf         (printf)
-import System.IO           (stdout, hFlush)
 import Data.List           (dropWhileEnd)
+import System.IO
 
 import Shell
 
@@ -137,6 +137,13 @@ prePad xs x len = replicate (len - length xs) x ++ xs
 -- | Perform an action within a given directory.
 inDir :: FilePath -> IO a -> IO a
 inDir dir io = pwd >>= \cur -> cd dir >> io >>= \res -> cd cur >> return res
+
+-- | Read a file with the given encoding.
+readFileEncoding :: TextEncoding -> FilePath -> IO String
+readFileEncoding enc name = do
+  handle <- openFile name ReadMode
+  hSetEncoding handle enc
+  hGetContents handle
 
 ---------
 -- MONADS
