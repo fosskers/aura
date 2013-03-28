@@ -1169,6 +1169,7 @@ outOfDateMsg Serbian    False = green "Ажуран"
 -----------------------
 -- Aura/ABS functions
 -----------------------
+-- NEEDS TRANSLATION
 absInfoFields :: Language -> [String]
 absInfoFields _ = [ "Repository","Name","Version","ABS path","Description" ]
 

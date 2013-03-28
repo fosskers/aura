@@ -87,7 +87,7 @@ parsePkgBuild :: String -> String -> Maybe PkgInfo
 parsePkgBuild pkgloc pkgbuild =
   let l = lines pkgbuild
       props = mapMaybe (\line -> case split '=' line of
-        a : b : _ -> Just (a,b)
+        a : b -> Just (a,intercalate "=" b)
         _ -> Nothing
         ) l
       propMap = M.fromList props
