@@ -29,7 +29,7 @@ type Reason = String
 getBadPackages :: Language -> [(String,Reason)]
 getBadPackages lang = [ ( "insync", bashisms lang ) ]
 
-circDep :: Language -> String -> Reason
+circDep :: String -> Language -> Reason
 circDep = circDep_1
 
 bashisms :: Language -> Reason

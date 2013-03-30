@@ -103,7 +103,7 @@ knownBadPkgCheck (p:ps) = ask >>= \ss ->
   case p `lookup` wontBuildOf ss of
     Nothing -> (p :) `liftM` knownBadPkgCheck ps
     Just r  -> do
-      scold $ flip knownBadPkgCheck_1 p
+      scold $ knownBadPkgCheck_1 p
       putStrLnA yellow r
       okay <- optionalPrompt knownBadPkgCheck_2
       if okay then (p :) `liftM` knownBadPkgCheck ps else knownBadPkgCheck ps
@@ -149,7 +149,7 @@ renderAurPkgInfo ss info = entrify ss fields entries
           entries = [ pcMagenta ss "aur"
                     , pcWhite ss $ nameOf info
                     , latestVerOf info
-                    , outOfDateMsg (langOf ss) $ isOutOfDate info
+                    , outOfDateMsg (isOutOfDate info) $ langOf ss
                     , pcCyan ss $ projectURLOf info
                     , aurURLOf info
                     , licenseOf info
@@ -188,7 +188,7 @@ downloadTarballs pkgs = do
   currDir <- liftIO pwd
   filterAURPkgs pkgs >>= mapM_ (downloadTBall currDir)
     where downloadTBall path pkg = do
-              notify $ flip downloadTarballs_1 pkg
+              notify $ downloadTarballs_1 pkg
               liftIO $ sourceTarball path pkg
 
 displayPkgbuild :: [String] -> Aura ()
@@ -224,14 +224,14 @@ reportPkgbuildDiffs ps = ask >>= check
             let name = pkgNameOf p
             isStored <- hasPkgbuildStored name
             if not isStored
-               then warn $ flip reportPkgbuildDiffs_1 name
+               then warn $ reportPkgbuildDiffs_1 name
                else do
                  let new = pkgbuildOf p
                  old <- readPkgbuild name
                  case comparePkgbuilds old new of
-                   "" -> notify $ flip reportPkgbuildDiffs_2 name
+                   "" -> notify $ reportPkgbuildDiffs_2 name
                    d  -> do
-                      warn $ flip reportPkgbuildDiffs_3 name
+                      warn $ reportPkgbuildDiffs_3 name
                       liftIO $ putStrLn $ d ++ "\n"
 
 reportPkgsToUpgrade :: [String] -> Aura ()

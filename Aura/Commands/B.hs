@@ -45,7 +45,7 @@ cleanStates (input:_) | all isDigit input = cleanStates' $ read input
 
 cleanStates' :: Int -> Aura ()
 cleanStates' n = do
-  okay <- optionalPrompt (flip cleanStates_2 n)
+  okay <- optionalPrompt $ cleanStates_2 n
   if not okay
      then warn cleanStates_3
      else do

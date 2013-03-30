@@ -8,11 +8,6 @@ Is it possible to convert Aura to use gettext and printf?
 
 Extend `-Ai`. 
 
-To change build location, just change the value `cachePathOf`.
-Everything else is abstracted sufficiently.
-
-Look at pcre binding code
-
 Change arg order in Aura/Languages
 
 COMPLETIONS

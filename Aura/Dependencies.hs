@@ -115,8 +115,8 @@ getRealPkgConflicts f lang toIgnore pkg
     where curVer       = f pkg
           name         = pkgNameOf pkg
           reqVer       = show $ versionOf pkg
-          failMessage1 = getRealPkgConflicts_2 lang name
-          failMessage2 = getRealPkgConflicts_1 lang name curVer reqVer
+          failMessage1 = getRealPkgConflicts_2 name lang
+          failMessage2 = getRealPkgConflicts_1 name curVer reqVer lang
 
 -- This can't be generalized as easily.
 getVirtualConflicts :: Language -> [String] -> VirtualPkg -> Maybe ErrMsg
@@ -129,9 +129,9 @@ getVirtualConflicts lang toIgnore pkg
           ver          = show $ versionOf pkg
           provider     = pkgNameOf . fromJust . providerPkgOf $ pkg
           pVer         = getProvidedVerNum pkg
-          failMessage1 = getVirtualConflicts_1 lang name
-          failMessage2 = getVirtualConflicts_2 lang name provider
-          failMessage3 = getVirtualConflicts_3 lang name ver provider pVer
+          failMessage1 = getVirtualConflicts_1 name lang
+          failMessage2 = getVirtualConflicts_2 name provider lang
+          failMessage3 = getVirtualConflicts_3 name ver provider pVer lang
 
 getProvidedVerNum :: VirtualPkg -> String
 getProvidedVerNum pkg = splitVer match

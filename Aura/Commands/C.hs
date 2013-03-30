@@ -64,7 +64,7 @@ downgradePackages pkgs = do
 getDowngradeChoice :: Cache -> String -> Aura String
 getDowngradeChoice cache pkg = do
   let choices = getChoicesFromCache cache pkg
-  notify (flip getDowngradeChoice_1 pkg)
+  notify $ getDowngradeChoice_1 pkg
   liftIO $ getSelection choices
 
 getChoicesFromCache :: Cache -> String -> [String]
@@ -91,8 +91,8 @@ backupCache (dir:_) = do
 confirmBackup :: FilePath -> Aura Cache
 confirmBackup dir = do
   cache <- ask >>= cacheContents . cachePathOf
-  notify $ flip backupCache_4 dir
-  notify . flip backupCache_5 . size $ cache
+  notify $ backupCache_4 dir
+  notify . backupCache_5 . size $ cache
   okay <- optionalPrompt backupCache_6
   if not okay
      then scoldAndFail backupCache_7
@@ -110,7 +110,7 @@ copyAndNotify _ [] _       = return ()
 copyAndNotify dir (p:ps) n = do
   cachePath <- cachePathOf `liftM` ask
   liftIO $ raiseCursorBy 1
-  warn (flip copyAndNotify_1 n)
+  warn $ copyAndNotify_1 n
   liftIO $ cp (cachePath </> p) (dir </> p)
   copyAndNotify dir ps $ n + 1
 
@@ -119,7 +119,7 @@ cleanCache :: [String] -> Aura ()
 cleanCache [] = cleanCache' 0
 cleanCache (input:_)  -- Ignores all but first input element.
   | all isDigit input = cleanCache' $ read input
-  | otherwise         = scoldAndFail $ flip preCleanCache_1 input
+  | otherwise         = scoldAndFail $ preCleanCache_1 input
 
 -- Keeps a certain number of package files in the cache according to
 -- a number provided by the user. The rest are deleted.
@@ -128,7 +128,7 @@ cleanCache' toSave
     | toSave < 0  = scoldAndFail cleanCache_1
     | toSave == 0 = warn cleanCache_2 >> pacman ["-Scc"]  -- Needed?
     | otherwise   = do
-        warn $ flip cleanCache_3 toSave
+        warn $ cleanCache_3 toSave
         okay <- optionalPrompt cleanCache_4
         if not okay
            then scoldAndFail cleanCache_5
