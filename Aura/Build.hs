@@ -49,8 +49,8 @@ installPkgFiles pacOpts files = checkDBLock >> pacman (["-U"] ++ pacOpts ++ file
 buildPackages :: [AURPkg] -> Aura [FilePath]
 buildPackages []   = return []
 buildPackages pkgs = ask >>= \ss -> do
-  let cache = cachePathOf ss
-  result <- liftIO $ inDir cache (runAura (build [] pkgs) ss)
+  let buildPath = buildPathOf ss
+  result <- liftIO $ inDir buildPath (runAura (build [] pkgs) ss)
   wrap result
 
 -- Handles the building of Packages. Fails nicely.
@@ -74,7 +74,7 @@ build' (p:ps) = ask >>= \ss -> do
   getSourceCode (pkgNameOf p) user curr
   overwritePkgbuild p
   pNames <- makepkg' user
-  paths  <- moveToCache pNames
+  paths  <- moveToBuildPath pNames
   liftIO $ cd curr
   return (paths,ps)
 
@@ -117,9 +117,9 @@ displayBuildErrors errors = ask >>= \ss -> when (suppressMakepkg ss) $ do
   liftIO (timedMessage 1000000 ["3.. ","2.. ","1..\n"] >> putStrLn errors)
 
 -- Moves a file to the pacman package cache and returns its location.
-moveToCache :: [FilePath] -> Aura [FilePath]
-moveToCache []     = return []
-moveToCache (p:ps) = do
-  newName <- ((</> p) . cachePathOf) `liftM` ask
+moveToBuildPath :: [FilePath] -> Aura [FilePath]
+moveToBuildPath []     = return []
+moveToBuildPath (p:ps) = do
+  newName <- ((</> p) . buildPathOf) `liftM` ask
   liftIO (mv p newName)
-  (newName :) `liftM` moveToCache ps
+  (newName :) `liftM` moveToBuildPath ps

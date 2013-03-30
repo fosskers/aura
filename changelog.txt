@@ -1,5 +1,10 @@
 Aura Changelog
 ==============
+1.1.5.1
+-------
+- New option `--build` for specifying AUR package build path.
+- Vote number now shown in `-As` output.
+
 1.1.5.0
 -------
 - `customizepkg` now usable with Aura.

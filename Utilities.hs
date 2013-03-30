@@ -147,6 +147,12 @@ ifM cond a1 a2 x = do
   success <- cond
   if success then a1 x else a2 >> return x
 
+-- | When `False`, returns the second `x` argument instead.
+ifM2 :: Monad m => m Bool -> (x -> m x) -> m () -> x -> x -> m x
+ifM2 cond a1 a2 x1 x2 = do
+  success <- cond
+  if success then a1 x1 else a2 >> return x2
+
 -- | If a file exists, it performs action `a`.
 -- If the file doesn't exist, it performs `b` and returns the argument.
 ifFile :: MonadIO m => (x -> m x) -> m () -> FilePath -> x -> m x

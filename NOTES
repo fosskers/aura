@@ -11,10 +11,13 @@ Extend `-Ai`.
 To change build location, just change the value `cachePathOf`.
 Everything else is abstracted sufficiently.
 
+Look at pcre binding code
+
+Change arg order in Aura/Languages
+
 COMPLETIONS
 -----------
 - Fish completions go in /etc/fish/completions
-- Bash completions go in /usr/share/bash-completion/completions
 
 OUT OF DATE
 -----------
