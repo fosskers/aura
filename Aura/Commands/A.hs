@@ -79,13 +79,13 @@ installPackages' pacOpts pkgs = ask >>= \ss -> do
   let toInstall = pkgs \\ ignoredPkgsOf ss
       ignored   = pkgs \\ toInstall
   reportIgnoredPackages ignored
-  (repo,aur,nons) <- knownBadPkgCheck toInstall >>= divideByPkgType
+  (_,aur,nons) <- knownBadPkgCheck toInstall >>= divideByPkgType ignoreRepos
   reportNonPackages nons
   handler <- pbHandler
   aurPkgs <- mapM aurPkg aur >>= reportPkgbuildDiffs >>= handler
   notify installPackages_5
   (repoDeps,aurDeps) <- catch (getDepsToInstall aurPkgs) depCheckFailure
-  let repoPkgs    = nub $ repoDeps ++ repo
+  let repoPkgs    = nub repoDeps
       pkgsAndOpts = pacOpts ++ repoPkgs
   reportPkgsToInstall repoPkgs aurDeps aurPkgs
   okay <- optionalPrompt installPackages_3

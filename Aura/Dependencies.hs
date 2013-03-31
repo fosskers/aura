@@ -63,7 +63,7 @@ determineDeps :: AURPkg -> Aura ([String],[AURPkg],[String])
 determineDeps pkg = do
   let ns   = namespaceOf pkg
       deps = concatMap (value ns) ["depends","makedepends","checkdepends"]
-  (repoPkgNames,aurPkgNames,other) <- divideByPkgType deps
+  (repoPkgNames,aurPkgNames,other) <- divideByPkgType filterRepoPkgs deps
   aurPkgs       <- mapM aurPkg aurPkgNames
   recursiveDeps <- mapM determineDeps aurPkgs
   let (rs,as,os) = foldl groupPkgs (repoPkgNames,aurPkgs,other) recursiveDeps

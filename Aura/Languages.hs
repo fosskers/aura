@@ -509,9 +509,10 @@ knownBadPkgCheck_2 Japanese = "それでもやってみる？"
 knownBadPkgCheck_2 Serbian  = "Желите ли ипак да пробате?"
 knownBadPkgCheck_2 _        = "Will you try anyway?"
 
+-- NEEDS UPDATE TO REFLECT CHANGED ENGLISH
 reportNonPackages_1 :: Language -> String
-reportNonPackages_1 English    = "The following are not packages:"
-reportNonPackages_1 Japanese   = "下記はパッケージではない："
+reportNonPackages_1 English    = "The following are not AUR packages:"
+reportNonPackages_1 Japanese   = "下記はAURパッケージではない："
 reportNonPackages_1 Polish     = "To nie są pakiety:"
 reportNonPackages_1 Croatian   = "Ovo nisu paketi:"
 reportNonPackages_1 Swedish    = "Följande är inte paket:"

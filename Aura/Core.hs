@@ -221,10 +221,15 @@ isIgnored pkg toIgnore = pkg `elem` toIgnore
 isInstalled :: String -> Aura Bool
 isInstalled pkg = pacmanSuccess ["-Qq",pkg]
 
-filterAURPkgs :: [String] -> Aura [String]
+type PkgFilter = [String] -> Aura [String]
+
+ignoreRepos :: PkgFilter
+ignoreRepos _ = return []
+
+filterAURPkgs :: PkgFilter
 filterAURPkgs pkgs = map nameOf `liftM` aurInfoLookup pkgs
 
-filterRepoPkgs :: [String] -> Aura [String]
+filterRepoPkgs :: PkgFilter
 filterRepoPkgs pkgs = do
   repoPkgs <- lines `liftM` pacmanOutput ["-Ssq",pkgs']
   return $ filter (`elem` repoPkgs) pkgs
@@ -238,9 +243,9 @@ removePkgs :: [String] -> [String] -> Aura ()
 removePkgs [] _         = return ()
 removePkgs pkgs pacOpts = pacman  $ ["-Rsu"] ++ pkgs ++ pacOpts
 
-divideByPkgType :: [String] -> Aura ([String],[String],[String])
-divideByPkgType pkgs = do
-  repoPkgNames <- filterRepoPkgs namesOnly
+divideByPkgType :: PkgFilter -> [String] -> Aura ([String],[String],[String])
+divideByPkgType repoFilter pkgs = do
+  repoPkgNames <- repoFilter namesOnly
   aurPkgNames  <- filterAURPkgs $ namesOnly \\ repoPkgNames
   let aurPkgs  = filter (flip elem aurPkgNames . splitName) pkgs
       repoPkgs = filter (flip elem repoPkgNames . splitName) pkgs
