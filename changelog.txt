@@ -1,9 +1,11 @@
 Aura Changelog
 ==============
-1.1.5.1
+1.1.6.0
 -------
 - New option `--build` for specifying AUR package build path.
 - Vote number now shown in `-As` output.
+- Fixed Repo/AUR name collision bug.
+- API Change: Argument order for functions in `Aura/Languages` changed.
 
 1.1.5.0
 -------
