@@ -145,6 +145,10 @@ readFileEncoding enc name = do
   hSetEncoding handle enc
   hGetContents handle
 
+-- | Read a file with UTF-8 encoding
+readFileUTF8 :: FilePath -> IO String
+readFileUTF8 = readFileEncoding utf8
+
 ---------
 -- MONADS
 ---------

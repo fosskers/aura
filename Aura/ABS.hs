@@ -34,7 +34,6 @@ import qualified Data.Map         as M
 import           Data.Maybe       (fromJust, mapMaybe)
 import           System.Directory (doesDirectoryExist, getDirectoryContents)
 import           System.FilePath
-import           System.IO        (utf8)
 import           Text.Regex.PCRE  ((=~))
 
 import           Aura.Bash
@@ -43,7 +42,7 @@ import           Aura.Monad.Aura
 import           Aura.Utils       (scoldAndFail)
 
 import           Bash.Base
-import           Utilities        (split, readFileEncoding)
+import           Utilities        (split, readFileUTF8)
 
 -- Stuff --
 
@@ -74,7 +73,7 @@ data PkgInfo = PkgInfo {
 -- | Get info about the named package from the exact package name.
 absInfoLookup :: String -> Aura PkgInfo
 absInfoLookup pkgName = do
-  pkgbuild <- liftIO $ readFileEncoding utf8 $ pkgBuildFile pkgName
+  pkgbuild <- liftIO $ readFileUTF8 $ pkgBuildFile pkgName
   parsePkgBuild pkgName pkgbuild
 
 absSearchLookup :: String -> Aura [PkgInfo]
