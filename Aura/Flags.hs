@@ -34,7 +34,8 @@ module Aura.Flags
     , rebuildDevelStatus
     , customizepkgStatus
     , filterSettingsFlags
-    , getIgnoredAuraPkgs
+    , ignoredAuraPkgs
+    , buildPath
     , auraOperMsg
     , Flag(..) ) where
 
@@ -68,6 +69,7 @@ data Flag = ABSInstall
           | HotEdit
           | NoConfirm
           | Ignore String
+          | BuildPath FilePath
           | DiffPkgbuilds
           | Devel
           | Customizepkg
@@ -112,7 +114,8 @@ auraOperations lang =
     , Option ['O'] ["orphans"]   (NoArg Orphans)    (orpha lang) ]
 
 auraOptions :: [OptDescr Flag]
-auraOptions = Option [] ["aurignore"] (ReqArg Ignore "") "" :
+auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
+              Option [] ["build"]     (ReqArg BuildPath "" ) "" :
               map simpleMakeOption
               [ ( ['a'], ["delmakedeps"],  DelMDeps      )
               , ( ['b'], ["backup"],       CacheBackup   )
@@ -190,8 +193,9 @@ settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
                 , DelMDeps,Customizepkg ]
 
 filterSettingsFlags :: [Flag] -> [Flag]
-filterSettingsFlags []              = []
-filterSettingsFlags (Ignore _ : fs) = filterSettingsFlags fs
+filterSettingsFlags []                 = []
+filterSettingsFlags (Ignore _ : fs)    = filterSettingsFlags fs
+filterSettingsFlags (BuildPath _ : fs) = filterSettingsFlags fs
 filterSettingsFlags (f:fs) | f `elem` settingsFlags = filterSettingsFlags fs
                            | otherwise = f : filterSettingsFlags fs
 
@@ -213,10 +217,15 @@ getLanguage = fishOutFlag flagsAndResults Nothing
                             , RussianOut,ItalianOut,SerbianOut ]
           langFuns        = map Just [Japanese ..]
 
-getIgnoredAuraPkgs :: [Flag] -> [String]
-getIgnoredAuraPkgs [] = []
-getIgnoredAuraPkgs (Ignore ps : _) = split ',' ps
-getIgnoredAuraPkgs (_:fs) = getIgnoredAuraPkgs fs
+ignoredAuraPkgs :: [Flag] -> [String]
+ignoredAuraPkgs [] = []
+ignoredAuraPkgs (Ignore ps : _) = split ',' ps
+ignoredAuraPkgs (_:fs) = ignoredAuraPkgs fs
+
+buildPath :: [Flag] -> FilePath
+buildPath [] = ""
+buildPath (BuildPath p : _) = p
+buildPath (_:fs) = buildPath fs
 
 suppressionStatus :: [Flag] -> Bool
 suppressionStatus = fishOutFlag [(Unsuppress,False)] True

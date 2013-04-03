@@ -40,6 +40,7 @@ data Settings = Settings { inputOf         :: [String]
                          , carchOf         :: String
                          , ignoredPkgsOf   :: [String]
                          , wontBuildOf     :: [(String,Reason)]
+                         , buildPathOf     :: FilePath
                          , cachePathOf     :: FilePath
                          , logFilePathOf   :: FilePath
                          , suppressMakepkg :: Bool

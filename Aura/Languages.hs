@@ -298,86 +298,86 @@ getDepsToInstall_1 Russian    = "Пакеты AUR для установки не
 getDepsToInstall_1 Italian    = "Nessun pacchetto di AUR specificato per l'installazione."
 getDepsToInstall_1 Serbian    = "Ниједан AUR пакет није специфициран за инсталацију."
 
-getRealPkgConflicts_1 :: Language -> String -> String -> String -> String
-getRealPkgConflicts_1 English    p r d = "The dependency " ++ bt p ++ " demands version " ++ bt d ++ "but the most recent version is " ++ bt r ++ "."
-getRealPkgConflicts_1 Japanese   p r d = "パッケージ" ++ bt p ++ "はバージョン" ++ bt d ++ "を要するが" ++ "一番最新のバージョンは" ++ bt r ++ "。"
-getRealPkgConflicts_1 Polish     p r d = "Zależność " ++ bt p ++ " powinna być w wersji " ++ bt d ++ ", ale najnowsza wersja to " ++ bt r ++ "."
-getRealPkgConflicts_1 Croatian   p r d = "Zavisnost " ++ bt p ++ " zahtjeva verziju " ++ bt d ++ ", a najnovija dostupna verzija je " ++ bt r ++ "."
-getRealPkgConflicts_1 Swedish    p r d = "Beroendepaketet " ++ bt p ++ " kräver version " ++ bt d ++ "men den senaste versionen är " ++ bt r ++ "."
-getRealPkgConflicts_1 German     p r d = "Die Abhängigkeit " ++ bt p ++ " verlangt Version " ++ bt d ++ "aber die neuste Version ist " ++ bt r ++ "."
-getRealPkgConflicts_1 Spanish    p r d = "La dependencia " ++ bt p ++ " duiere la versión " ++ bt d ++ "pero la versión más reciente es " ++ bt r ++ "."
-getRealPkgConflicts_1 Portuguese p r d = "A dependência " ++ bt p ++ " exige a versão " ++ bt d ++ "mas a versão mais recente é " ++ bt r ++ "."
-getRealPkgConflicts_1 French     p r d = bt p ++ " est une dépendance nécessitant une version " ++ bt d ++ ", mais la plus récente est la " ++ bt r ++ "."
-getRealPkgConflicts_1 Russian    p r d = "Зависимость " ++ bt p ++ " требует версию " ++ bt d ++ ", однако самой последней версией является " ++ bt r ++ "."
-getRealPkgConflicts_1 Italian    p r d = "La dipendenza " ++ bt p ++ " richiede la versione " ++ bt d ++ "ma la versione disponibile è " ++ bt r ++ "."
-getRealPkgConflicts_1 Serbian    p r d = "Зависност " ++ bt p ++ " захтева верзију " ++ bt d ++ ", али најновија верзија је " ++ bt r ++ "."
+getRealPkgConflicts_1 :: String -> String -> String -> Language -> String
+getRealPkgConflicts_1 p r d English    = "The dependency " ++ bt p ++ " demands version " ++ bt d ++ "but the most recent version is " ++ bt r ++ "."
+getRealPkgConflicts_1 p r d Japanese   = "パッケージ" ++ bt p ++ "はバージョン" ++ bt d ++ "を要するが" ++ "一番最新のバージョンは" ++ bt r ++ "。"
+getRealPkgConflicts_1 p r d Polish     = "Zależność " ++ bt p ++ " powinna być w wersji " ++ bt d ++ ", ale najnowsza wersja to " ++ bt r ++ "."
+getRealPkgConflicts_1 p r d Croatian   = "Zavisnost " ++ bt p ++ " zahtjeva verziju " ++ bt d ++ ", a najnovija dostupna verzija je " ++ bt r ++ "."
+getRealPkgConflicts_1 p r d Swedish    = "Beroendepaketet " ++ bt p ++ " kräver version " ++ bt d ++ "men den senaste versionen är " ++ bt r ++ "."
+getRealPkgConflicts_1 p r d German     = "Die Abhängigkeit " ++ bt p ++ " verlangt Version " ++ bt d ++ "aber die neuste Version ist " ++ bt r ++ "."
+getRealPkgConflicts_1 p r d Spanish    = "La dependencia " ++ bt p ++ " duiere la versión " ++ bt d ++ "pero la versión más reciente es " ++ bt r ++ "."
+getRealPkgConflicts_1 p r d Portuguese = "A dependência " ++ bt p ++ " exige a versão " ++ bt d ++ "mas a versão mais recente é " ++ bt r ++ "."
+getRealPkgConflicts_1 p r d French     = bt p ++ " est une dépendance nécessitant une version " ++ bt d ++ ", mais la plus récente est la " ++ bt r ++ "."
+getRealPkgConflicts_1 p r d Russian    = "Зависимость " ++ bt p ++ " требует версию " ++ bt d ++ ", однако самой последней версией является " ++ bt r ++ "."
+getRealPkgConflicts_1 p r d Italian    = "La dipendenza " ++ bt p ++ " richiede la versione " ++ bt d ++ "ma la versione disponibile è " ++ bt r ++ "."
+getRealPkgConflicts_1 p r d Serbian    = "Зависност " ++ bt p ++ " захтева верзију " ++ bt d ++ ", али најновија верзија је " ++ bt r ++ "."
 
-getRealPkgConflicts_2 :: Language -> String -> String
-getRealPkgConflicts_2 English    p = bt p ++ " is an ignored package! See your `pacman.conf` file."    
-getRealPkgConflicts_2 Japanese   p = bt p ++ "は無視されるパッケージ！`pacman.conf`を参考に。"
-getRealPkgConflicts_2 Polish     p = bt p ++ " jest ignorowany! Sprawdź plik `pacman.conf`."
-getRealPkgConflicts_2 Croatian   p = bt p ++ " je ignoriran paket! Pogledajte svoj `pacman.conf`."
-getRealPkgConflicts_2 Swedish    p = bt p ++ " är ett ignorerat paket! Kolla din `pacman.conf`-fil."
-getRealPkgConflicts_2 German     p = bt p ++ " ist ein ignoriertes Paket! Siehe /etc/pacman.conf."
-getRealPkgConflicts_2 Spanish    p = "¡" ++ bt p ++ " es un paquete ignorado! Revisa tu fichero `pacman.conf`."
-getRealPkgConflicts_2 Portuguese p = bt p ++ " é um pacote ignorado conforme configuração em `pacman.conf`!"
-getRealPkgConflicts_2 French     p = "Le paquet " ++ bt p ++ " est ignoré. Vous devriez jeter un œil à votre `pacman.conf`."
-getRealPkgConflicts_2 Russian    p = "Пакет " ++ bt p ++ " игнорируется! Проверьте ваш файл `pacman.conf`."
-getRealPkgConflicts_2 Italian    p = bt p ++ " è un pacchetto ignorato, controllare `pacman.conf`."
-getRealPkgConflicts_2 Serbian    p = "Пакет " ++ bt p ++ " је игнорисан! Видите ваш фајл „pacman.conf“."
+getRealPkgConflicts_2 :: String -> Language -> String
+getRealPkgConflicts_2 p English    = bt p ++ " is an ignored package! See your `pacman.conf` file."    
+getRealPkgConflicts_2 p Japanese   = bt p ++ "は無視されるパッケージ！`pacman.conf`を参考に。"
+getRealPkgConflicts_2 p Polish     = bt p ++ " jest ignorowany! Sprawdź plik `pacman.conf`."
+getRealPkgConflicts_2 p Croatian   = bt p ++ " je ignoriran paket! Pogledajte svoj `pacman.conf`."
+getRealPkgConflicts_2 p Swedish    = bt p ++ " är ett ignorerat paket! Kolla din `pacman.conf`-fil."
+getRealPkgConflicts_2 p German     = bt p ++ " ist ein ignoriertes Paket! Siehe /etc/pacman.conf."
+getRealPkgConflicts_2 p Spanish    = "¡" ++ bt p ++ " es un paquete ignorado! Revisa tu fichero `pacman.conf`."
+getRealPkgConflicts_2 p Portuguese = bt p ++ " é um pacote ignorado conforme configuração em `pacman.conf`!"
+getRealPkgConflicts_2 p French     = "Le paquet " ++ bt p ++ " est ignoré. Vous devriez jeter un œil à votre `pacman.conf`."
+getRealPkgConflicts_2 p Russian    = "Пакет " ++ bt p ++ " игнорируется! Проверьте ваш файл `pacman.conf`."
+getRealPkgConflicts_2 p Italian    = bt p ++ " è un pacchetto ignorato, controllare `pacman.conf`."
+getRealPkgConflicts_2 p Serbian    = "Пакет " ++ bt p ++ " је игнорисан! Видите ваш фајл „pacman.conf“."
 
-getVirtualConflicts_1 :: Language -> String -> String
-getVirtualConflicts_1 English    p = bt p ++ " exists in NO WAY as a package or as one provided by another!"
-getVirtualConflicts_1 Japanese   p = bt p ++ "はパッケージでもないし、他のパッケージにも提供されていない！"
-getVirtualConflicts_1 Polish     p = bt p ++ " nie istnieje jako pakiet lub jako pakiet dostarczany przez inny!"
-getVirtualConflicts_1 Croatian   p = bt p ++ " ne postoji kao paket niti ga bilo koji paket pruža!"
-getVirtualConflicts_1 Swedish    p = bt p ++ " existerar varken som ett paket eller som ett tillhandahållet av ett annat!"
-getVirtualConflicts_1 German     p = bt p ++ " existiert nicht als Paket oder als Bereitstellung eines anderen!"
-getVirtualConflicts_1 Spanish    p = "¡" ++ bt p ++ " no existe como paquete ni es provisto por ninguno!"
-getVirtualConflicts_1 Portuguese p = bt p ++ " não existe como um pacote e não é provido por nenhum!"
-getVirtualConflicts_1 French     p = bt p ++ " n'est ni un paquet existant, ni un paquet fourni par un autre !"
-getVirtualConflicts_1 Russian    p = bt p ++ " никоим образом не существует в виде пакета или пакета, " ++ " предоставленного другим пакетом!"
-getVirtualConflicts_1 Italian    p = bt p ++ " non esiste e non è distribuito da nessun'altro."
-getVirtualConflicts_1 Serbian    p = bt p ++ " не постоји као пакет нити га други пакет пружа!"
+getVirtualConflicts_1 :: String -> Language -> String
+getVirtualConflicts_1 p English    = bt p ++ " exists in NO WAY as a package or as one provided by another!"
+getVirtualConflicts_1 p Japanese   = bt p ++ "はパッケージでもないし、他のパッケージにも提供されていない！"
+getVirtualConflicts_1 p Polish     = bt p ++ " nie istnieje jako pakiet lub jako pakiet dostarczany przez inny!"
+getVirtualConflicts_1 p Croatian   = bt p ++ " ne postoji kao paket niti ga bilo koji paket pruža!"
+getVirtualConflicts_1 p Swedish    = bt p ++ " existerar varken som ett paket eller som ett tillhandahållet av ett annat!"
+getVirtualConflicts_1 p German     = bt p ++ " existiert nicht als Paket oder als Bereitstellung eines anderen!"
+getVirtualConflicts_1 p Spanish    = "¡" ++ bt p ++ " no existe como paquete ni es provisto por ninguno!"
+getVirtualConflicts_1 p Portuguese = bt p ++ " não existe como um pacote e não é provido por nenhum!"
+getVirtualConflicts_1 p French     = bt p ++ " n'est ni un paquet existant, ni un paquet fourni par un autre !"
+getVirtualConflicts_1 p Russian    = bt p ++ " никоим образом не существует в виде пакета или пакета, " ++ " предоставленного другим пакетом!"
+getVirtualConflicts_1 p Italian    = bt p ++ " non esiste e non è distribuito da nessun'altro."
+getVirtualConflicts_1 p Serbian    = bt p ++ " не постоји као пакет нити га други пакет пружа!"
 
-getVirtualConflicts_2 :: Language -> String -> String -> String
-getVirtualConflicts_2 English    p pro = bt pro ++ " provides " ++ bt p ++ ", but " ++ bt pro ++ " is an ignored package."
-getVirtualConflicts_2 Japanese   p pro = bt p ++ "は" ++ bt pro ++ "に提供されているが、" ++ bt pro ++ "は無視されるパッケージ。"
-getVirtualConflicts_2 Polish     p pro = bt pro ++ " dostarcza " ++ bt p ++ ", ale " ++ bt pro ++ " jest ignorowany."
-getVirtualConflicts_2 Croatian   p pro = bt pro ++ " pruža  " ++ bt p ++ ", ali " ++ bt pro ++ " je ignoriran paket."
-getVirtualConflicts_2 Swedish    p pro = bt pro ++ " tillhandahåller " ++ bt p ++ ", men " ++ bt pro ++ " är ett ignorerat paket."
-getVirtualConflicts_2 German     p pro = bt pro ++ " stellt " ++ bt p ++ " bereit, aber " ++ bt pro ++ " ist ein ignoriertes Paket."
-getVirtualConflicts_2 Spanish    p pro = bt pro ++ " provee " ++ bt p ++ ", pero " ++ bt pro ++ " es un paquete ignorado."
-getVirtualConflicts_2 Portuguese p pro = bt pro ++ " provê " ++ bt p ++ ", mas " ++ bt pro ++ "é um pacote ignorado."
-getVirtualConflicts_2 French     p pro = bt pro ++ " fourni " ++ bt p ++ ", mais " ++ bt pro ++ " est un paquet ignoré."
-getVirtualConflicts_2 Russian    p pro = bt pro ++ " предоставляет " ++ bt p ++ ", но " ++ bt pro ++ " является игнорируемым пакетом."
-getVirtualConflicts_2 Italian    p pro = bt pro ++ " distribuisce " ++ bt p ++ " ma " ++ bt pro ++ " è un pacchetto ignorato."
-getVirtualConflicts_2 Serbian    p pro = bt pro ++ " пружа " ++ bt p ++ ", али је " ++ bt pro ++ " игнорисан пакет."
+getVirtualConflicts_2 :: String -> String -> Language -> String
+getVirtualConflicts_2 p pro English    = bt pro ++ " provides " ++ bt p ++ ", but " ++ bt pro ++ " is an ignored package."
+getVirtualConflicts_2 p pro Japanese   = bt p ++ "は" ++ bt pro ++ "に提供されているが、" ++ bt pro ++ "は無視されるパッケージ。"
+getVirtualConflicts_2 p pro Polish     = bt pro ++ " dostarcza " ++ bt p ++ ", ale " ++ bt pro ++ " jest ignorowany."
+getVirtualConflicts_2 p pro Croatian   = bt pro ++ " pruža  " ++ bt p ++ ", ali " ++ bt pro ++ " je ignoriran paket."
+getVirtualConflicts_2 p pro Swedish    = bt pro ++ " tillhandahåller " ++ bt p ++ ", men " ++ bt pro ++ " är ett ignorerat paket."
+getVirtualConflicts_2 p pro German     = bt pro ++ " stellt " ++ bt p ++ " bereit, aber " ++ bt pro ++ " ist ein ignoriertes Paket."
+getVirtualConflicts_2 p pro Spanish    = bt pro ++ " provee " ++ bt p ++ ", pero " ++ bt pro ++ " es un paquete ignorado."
+getVirtualConflicts_2 p pro Portuguese = bt pro ++ " provê " ++ bt p ++ ", mas " ++ bt pro ++ "é um pacote ignorado."
+getVirtualConflicts_2 p pro French     = bt pro ++ " fourni " ++ bt p ++ ", mais " ++ bt pro ++ " est un paquet ignoré."
+getVirtualConflicts_2 p pro Russian    = bt pro ++ " предоставляет " ++ bt p ++ ", но " ++ bt pro ++ " является игнорируемым пакетом."
+getVirtualConflicts_2 p pro Italian    = bt pro ++ " distribuisce " ++ bt p ++ " ma " ++ bt pro ++ " è un pacchetto ignorato."
+getVirtualConflicts_2 p pro Serbian    = bt pro ++ " пружа " ++ bt p ++ ", али је " ++ bt pro ++ " игнорисан пакет."
 
-getVirtualConflicts_3 :: Language -> String -> String -> String -> String -> String
-getVirtualConflicts_3 English    d dv p pv = "The dependency " ++ bt d ++ " demands version " ++ bt dv ++ " but its providing package " ++
-                                               bt p ++ " gives version " ++ bt pv
-getVirtualConflicts_3 Japanese   d dv p pv = "仮のパッケージ" ++ bt d ++ "はバージョン" ++ bt dv ++ "を要するが、" ++ "それを提供する" ++
-                                               bt p ++ "はバージョン" ++ bt pv ++ "しか提供しない"
-getVirtualConflicts_3 Polish     d dv p pv = "Zależność " ++ bt d ++ " powinna być w wersji " ++ bt dv ++ ", ale pakiet dostarczający (" ++
-                                               bt p ++ ") jest w wersji " ++ bt pv
-getVirtualConflicts_3 Croatian   d dv p pv = "Zavisnost " ++ bt d ++ " zahtjeva verziju " ++ bt dv ++ ", ali paket " ++ bt p ++ " pruža verziju " ++ bt pv
-getVirtualConflicts_3 Swedish    d dv p pv = "Beroendepaket " ++ bt d ++ " kräver version " ++ bt dv ++ " men dens tillhandahållande paket " ++
-                                               bt p ++ " ger version " ++ bt pv
-getVirtualConflicts_3 German     d dv p pv = "Die Abhängigkeit " ++ bt d ++ " verlangt Version " ++ bt dv ++ " aber dessen bereitstellendes Paket " ++
-                                               bt p ++ " gibt Version " ++ bt pv
-getVirtualConflicts_3 Spanish    d dv p pv = "La dependencia " ++ bt d ++ " requiere la versión " ++ bt dv ++ " pero el paquete " ++
-                                               bt p ++ ", que la provee, da la versión " ++ bt pv
-getVirtualConflicts_3 Portuguese d dv p pv = "A dependência " ++ bt d ++ " requer a versão " ++ bt dv ++ " entretanto, o pacote " ++
-                                               bt p ++ ", que o provê, possui a versão " ++ bt pv
-getVirtualConflicts_3 French     d dv p pv = "La dépendance " ++ bt d ++ " nécessite la version " ++ bt dv ++ ", mais le paquet qui la fournie (" ++
-                                               bt p ++ ") ne le fait qu'en version " ++ bt pv ++ "."
-getVirtualConflicts_3 Russian    d dv p pv = "Зависимость " ++ bt d ++ " должна быть версии " ++ bt dv ++ ", но предоставленный для неё пакет " ++
-                                               bt p ++ " имеет версию " ++ bt pv
-getVirtualConflicts_3 Italian    d dv p pv = "La dipendenza " ++ bt d ++ " richiede la versione " ++ bt dv ++ " ma il pacchetto " ++
-                                               bt p ++ " distribuisce la versione " ++ bt pv
-getVirtualConflicts_3 Serbian    d dv p pv = "Зависност " ++ bt d ++ " захтева верзију " ++ bt dv ++ ", али пакет " ++ bt p ++
-                                               " пружа верзију " ++ bt pv
+getVirtualConflicts_3 :: String -> String -> String -> String -> Language -> String
+getVirtualConflicts_3 d dv p pv English    = "The dependency " ++ bt d ++ " demands version " ++ bt dv ++ " but its providing package " ++
+                                             bt p ++ " gives version " ++ bt pv
+getVirtualConflicts_3 d dv p pv Japanese   = "仮のパッケージ" ++ bt d ++ "はバージョン" ++ bt dv ++ "を要するが、" ++ "それを提供する" ++
+                                             bt p ++ "はバージョン" ++ bt pv ++ "しか提供しない"
+getVirtualConflicts_3 d dv p pv Polish     = "Zależność " ++ bt d ++ " powinna być w wersji " ++ bt dv ++ ", ale pakiet dostarczający (" ++
+                                             bt p ++ ") jest w wersji " ++ bt pv
+getVirtualConflicts_3 d dv p pv Croatian   = "Zavisnost " ++ bt d ++ " zahtjeva verziju " ++ bt dv ++ ", ali paket " ++ bt p ++ " pruža verziju " ++ bt pv
+getVirtualConflicts_3 d dv p pv Swedish    = "Beroendepaket " ++ bt d ++ " kräver version " ++ bt dv ++ " men dens tillhandahållande paket " ++
+                                             bt p ++ " ger version " ++ bt pv
+getVirtualConflicts_3 d dv p pv German     = "Die Abhängigkeit " ++ bt d ++ " verlangt Version " ++ bt dv ++ " aber dessen bereitstellendes Paket " ++
+                                             bt p ++ " gibt Version " ++ bt pv
+getVirtualConflicts_3 d dv p pv Spanish    = "La dependencia " ++ bt d ++ " requiere la versión " ++ bt dv ++ " pero el paquete " ++
+                                             bt p ++ ", que la provee, da la versión " ++ bt pv
+getVirtualConflicts_3 d dv p pv Portuguese = "A dependência " ++ bt d ++ " requer a versão " ++ bt dv ++ " entretanto, o pacote " ++
+                                             bt p ++ ", que o provê, possui a versão " ++ bt pv
+getVirtualConflicts_3 d dv p pv French     = "La dépendance " ++ bt d ++ " nécessite la version " ++ bt dv ++ ", mais le paquet qui la fournie (" ++
+                                             bt p ++ ") ne le fait qu'en version " ++ bt pv ++ "."
+getVirtualConflicts_3 d dv p pv Russian    = "Зависимость " ++ bt d ++ " должна быть версии " ++ bt dv ++ ", но предоставленный для неё пакет " ++
+                                             bt p ++ " имеет версию " ++ bt pv
+getVirtualConflicts_3 d dv p pv Italian    = "La dipendenza " ++ bt d ++ " richiede la versione " ++ bt dv ++ " ma il pacchetto " ++
+                                             bt p ++ " distribuisce la versione " ++ bt pv
+getVirtualConflicts_3 d dv p pv Serbian    = "Зависност " ++ bt d ++ " захтева верзију " ++ bt dv ++ ", али пакет " ++ bt p ++
+                                             " пружа верзију " ++ bt pv
 
 -----------------
 -- aura functions
@@ -498,10 +498,10 @@ installPackages_5 Italian    = "Determinazione dipendenze..."
 installPackages_5 Serbian    = "Утврђивање зависности..."
 
 -- NEEDS TRANSLATION
-knownBadPkgCheck_1 :: Language -> String -> String
-knownBadPkgCheck_1 Japanese p = bt p ++ "の作成は失敗すると知られている。理由："
-knownBadPkgCheck_1 Serbian  p = "Познато је да се " ++ bt p ++ " неуспешно гради. Разлог:"
-knownBadPkgCheck_1 _        p = bt p ++ " is known to fail at building. Reason:"
+knownBadPkgCheck_1 :: String -> Language -> String
+knownBadPkgCheck_1 p Japanese = bt p ++ "の作成は失敗すると知られている。理由："
+knownBadPkgCheck_1 p Serbian  = "Познато је да се " ++ bt p ++ " неуспешно гради. Разлог:"
+knownBadPkgCheck_1 p _        = bt p ++ " is known to fail at building. Reason:"
 
 -- NEEDS TRANSLATION
 knownBadPkgCheck_2 :: Language -> String
@@ -509,9 +509,10 @@ knownBadPkgCheck_2 Japanese = "それでもやってみる？"
 knownBadPkgCheck_2 Serbian  = "Желите ли ипак да пробате?"
 knownBadPkgCheck_2 _        = "Will you try anyway?"
 
+-- NEEDS UPDATE TO REFLECT CHANGED ENGLISH
 reportNonPackages_1 :: Language -> String
-reportNonPackages_1 English    = "The following are not packages:"
-reportNonPackages_1 Japanese   = "下記はパッケージではない："
+reportNonPackages_1 English    = "The following are not AUR packages:"
+reportNonPackages_1 Japanese   = "下記はAURパッケージではない："
 reportNonPackages_1 Polish     = "To nie są pakiety:"
 reportNonPackages_1 Croatian   = "Ovo nisu paketi:"
 reportNonPackages_1 Swedish    = "Följande är inte paket:"
@@ -580,41 +581,38 @@ reportPkgsToInstall_3 Italian    = "Pacchetto principale di AUR"
 reportPkgsToInstall_3 Serbian    = "Главни пакети из AUR-а:"
 
 -- Needs translations.
-reportPkgbuildDiffs_1 :: Language -> String -> String
-reportPkgbuildDiffs_1 English  p = bt p ++ " has no stored PKGBUILD yet."
-reportPkgbuildDiffs_1 Japanese p = bt p ++ "のPKGBUILDはまだ保存されていない。"
-reportPkgbuildDiffs_1 Polish   p = bt p ++ " nie ma jeszcze przechowywanego pliku PKGBUILD."
-reportPkgbuildDiffs_1 Croatian p = bt p ++ " još nema pohranjen PKGBUILD."
-reportPkgbuildDiffs_1 Spanish  p = bt p ++ " no tiene PKGBUILD todavía."
-reportPkgbuildDiffs_1 French   p = bt p ++ " n'a pas encore de PKGBUILD enrigistré."
-reportPkgbuildDiffs_1 Russian  p = "У " ++ bt p ++ " ещё нет сохраненного PKGBUILD."
-reportPkgbuildDiffs_1 Italian  p = bt p ++ " non ci sono PKGBUILD salvati"
-reportPkgbuildDiffs_1 Serbian  p = bt p ++ " још нема похрањен PKGBUILD."
-reportPkgbuildDiffs_1 _        p = bt p ++ " has no stored PKGBUILD yet."
+reportPkgbuildDiffs_1 :: String -> Language -> String
+reportPkgbuildDiffs_1 p Japanese  = bt p ++ "のPKGBUILDはまだ保存されていない。"
+reportPkgbuildDiffs_1 p Polish   = bt p ++ " nie ma jeszcze przechowywanego pliku PKGBUILD."
+reportPkgbuildDiffs_1 p Croatian = bt p ++ " još nema pohranjen PKGBUILD."
+reportPkgbuildDiffs_1 p Spanish  = bt p ++ " no tiene PKGBUILD todavía."
+reportPkgbuildDiffs_1 p French   = bt p ++ " n'a pas encore de PKGBUILD enrigistré."
+reportPkgbuildDiffs_1 p Russian  = "У " ++ bt p ++ " ещё нет сохраненного PKGBUILD."
+reportPkgbuildDiffs_1 p Italian  = bt p ++ " non ci sono PKGBUILD salvati"
+reportPkgbuildDiffs_1 p Serbian  = bt p ++ " још нема похрањен PKGBUILD."
+reportPkgbuildDiffs_1 p _        = bt p ++ " has no stored PKGBUILD yet."
 
-reportPkgbuildDiffs_2 :: Language -> String -> String
-reportPkgbuildDiffs_2 English  p = bt p ++ "'s PKGBUILD is up to date."
-reportPkgbuildDiffs_2 Japanese p = bt p ++ "のPKGBUILDは最新。"
-reportPkgbuildDiffs_2 Polish   p = "PKGBUILD pakietu " ++ bt p ++ " jest aktualny."
-reportPkgbuildDiffs_2 Croatian p = "PKGBUILD paketa " ++ bt p ++ " je na najnovijoj verziji."
-reportPkgbuildDiffs_2 Spanish  p = "El PKGBUILD de " ++ bt p ++ " está actualizado."
-reportPkgbuildDiffs_2 Russian  p = "PKGBUILD " ++ bt p ++ " является новейшим."
-reportPkgbuildDiffs_2 French   p = "Le PKGBUILD de " ++ bt p ++ " est à jour."
-reportPkgbuildDiffs_2 Italian  p = "Il PKGBUILD di " ++ bt p ++ " è aggiornato."
-reportPkgbuildDiffs_2 Serbian  p = "PKGBUILD пакета " ++ bt p ++ " је ажуран."
-reportPkgbuildDiffs_2 _        p = bt p ++ " PKGBUILD is up to date."
+reportPkgbuildDiffs_2 :: String -> Language -> String
+reportPkgbuildDiffs_2 p Japanese  = bt p ++ "のPKGBUILDは最新。"
+reportPkgbuildDiffs_2 p Polish   = "PKGBUILD pakietu " ++ bt p ++ " jest aktualny."
+reportPkgbuildDiffs_2 p Croatian = "PKGBUILD paketa " ++ bt p ++ " je na najnovijoj verziji."
+reportPkgbuildDiffs_2 p Spanish  = "El PKGBUILD de " ++ bt p ++ " está actualizado."
+reportPkgbuildDiffs_2 p Russian  = "PKGBUILD " ++ bt p ++ " является новейшим."
+reportPkgbuildDiffs_2 p French   = "Le PKGBUILD de " ++ bt p ++ " est à jour."
+reportPkgbuildDiffs_2 p Italian  = "Il PKGBUILD di " ++ bt p ++ " è aggiornato."
+reportPkgbuildDiffs_2 p Serbian  = "PKGBUILD пакета " ++ bt p ++ " је ажуран."
+reportPkgbuildDiffs_2 p _        = bt p ++ " PKGBUILD is up to date."
 
-reportPkgbuildDiffs_3 :: Language -> String -> String
-reportPkgbuildDiffs_3 English  p = bt p ++ " PKGBUILD changes:"
-reportPkgbuildDiffs_3 Japanese p = bt p ++ "のPKGBUILD変更報告："
-reportPkgbuildDiffs_3 Polish   p = "Zmiany w PKGBUILD dla " ++ bt p ++ ":"
-reportPkgbuildDiffs_3 Croatian p = "Promjene u PKGBUILD-u za " ++ bt p ++ ":"
-reportPkgbuildDiffs_3 Spanish  p = "Cambios en el PKGBUILD de " ++ bt p ++ ":"
-reportPkgbuildDiffs_3 Russian  p = "Изменения, вносимые " ++ bt p ++ " PKGBUILD:"
-reportPkgbuildDiffs_3 French   p = "Changements du PKGBUILD de " ++ bt p
-reportPkgbuildDiffs_3 Italian  p = "Cambiamenti nel PKGBUILD di " ++ bt p ++":"
-reportPkgbuildDiffs_3 Serbian  p = "Промене PKGBUILD-a за " ++ bt p ++ ":"
-reportPkgbuildDiffs_3 _        p = bt p ++ " PKGBUILD changes:"
+reportPkgbuildDiffs_3 :: String -> Language -> String
+reportPkgbuildDiffs_3 p Japanese = bt p ++ "のPKGBUILD変更報告："
+reportPkgbuildDiffs_3 p Polish   = "Zmiany w PKGBUILD dla " ++ bt p ++ ":"
+reportPkgbuildDiffs_3 p Croatian = "Promjene u PKGBUILD-u za " ++ bt p ++ ":"
+reportPkgbuildDiffs_3 p Spanish  = "Cambios en el PKGBUILD de " ++ bt p ++ ":"
+reportPkgbuildDiffs_3 p Russian  = "Изменения, вносимые " ++ bt p ++ " PKGBUILD:"
+reportPkgbuildDiffs_3 p French   = "Changements du PKGBUILD de " ++ bt p
+reportPkgbuildDiffs_3 p Italian  = "Cambiamenti nel PKGBUILD di " ++ bt p ++":"
+reportPkgbuildDiffs_3 p Serbian  = "Промене PKGBUILD-a за " ++ bt p ++ ":"
+reportPkgbuildDiffs_3 p _        = bt p ++ " PKGBUILD changes:"
 
 reportPkgsToUpgrade_1 :: Language -> String
 reportPkgsToUpgrade_1 English    = "AUR Packages to upgrade:"
@@ -686,33 +684,33 @@ upgradeAURPkgs_3 Russian    = "Обновление пакетов из AUR не
 upgradeAURPkgs_3 Italian    = "Non è necessario aggiornare pacchetti di AUR."
 upgradeAURPkgs_3 Serbian    = "Ажурирање пакета из AUR-а није потребно."
 
-downloadTarballs_1 :: Language -> String -> String
-downloadTarballs_1 English    p = "Downloading " ++ bt p ++ " source tarball..."
-downloadTarballs_1 Japanese   p = bt p ++ "のソースコードのターボールをダウンロード中・・・"
-downloadTarballs_1 Polish     p = "Pobieranie paczki źródłowej " ++ bt p ++ "..."
-downloadTarballs_1 Croatian   p = "Preuzimanje izvornog paketa (tarball) " ++ bt p ++ "..."
-downloadTarballs_1 Swedish    p = "Laddar ner " ++ bt p ++ " källkodspaket (tarball)..."
-downloadTarballs_1 German     p = "Lade Quelltext von " ++ bt p ++ " (tarball)..."
-downloadTarballs_1 Spanish    p = "Descargando los fuentes comprimidos (tarball) de " ++ bt p ++ " ..."
-downloadTarballs_1 Portuguese p = "Baixando os fontes (tarball) de " ++ bt p ++ " ..."
-downloadTarballs_1 French     p = "Téléchargement de l'archive de " ++ bt p ++ " en cours…"
-downloadTarballs_1 Russian    p = "Загрузка исходного архива " ++ bt p ++ "..."
-downloadTarballs_1 Italian    p = "Downlaod del tarball di " ++ bt p ++ " in corso..."
-downloadTarballs_1 Serbian    p = "Преузимање архиве изворног кода за " ++ bt p ++ "..."
+downloadTarballs_1 :: String -> Language -> String
+downloadTarballs_1 p English    = "Downloading " ++ bt p ++ " source tarball..."
+downloadTarballs_1 p Japanese   = bt p ++ "のソースコードのターボールをダウンロード中・・・"
+downloadTarballs_1 p Polish     = "Pobieranie paczki źródłowej " ++ bt p ++ "..."
+downloadTarballs_1 p Croatian   = "Preuzimanje izvornog paketa (tarball) " ++ bt p ++ "..."
+downloadTarballs_1 p Swedish    = "Laddar ner " ++ bt p ++ " källkodspaket (tarball)..."
+downloadTarballs_1 p German     = "Lade Quelltext von " ++ bt p ++ " (tarball)..."
+downloadTarballs_1 p Spanish    = "Descargando los fuentes comprimidos (tarball) de " ++ bt p ++ " ..."
+downloadTarballs_1 p Portuguese = "Baixando os fontes (tarball) de " ++ bt p ++ " ..."
+downloadTarballs_1 p French     = "Téléchargement de l'archive de " ++ bt p ++ " en cours…"
+downloadTarballs_1 p Russian    = "Загрузка исходного архива " ++ bt p ++ "..."
+downloadTarballs_1 p Italian    = "Downlaod del tarball di " ++ bt p ++ " in corso..."
+downloadTarballs_1 p Serbian    = "Преузимање архиве изворног кода за " ++ bt p ++ "..."
 
-displayPkgbuild_1 :: Language -> String -> String
-displayPkgbuild_1 English    pkg = bt pkg ++ " does not exist."
-displayPkgbuild_1 Japanese   pkg = bt pkg ++ "は存在しない。"
-displayPkgbuild_1 Polish     pkg = bt pkg ++ " nie istnieje."
-displayPkgbuild_1 Croatian   pkg = bt pkg ++ " ne postoji."
-displayPkgbuild_1 Swedish    pkg = bt pkg ++ " finns inte."
-displayPkgbuild_1 German     pkg = bt pkg ++ " existiert nicht."
-displayPkgbuild_1 Spanish    pkg = bt pkg ++ " no existe."
-displayPkgbuild_1 Portuguese pkg = bt pkg ++ " não existe."
-displayPkgbuild_1 French     pkg = bt pkg ++ "n'existe pas."
-displayPkgbuild_1 Russian    pkg = bt pkg ++ " не существует."
-displayPkgbuild_1 Italian    pkg = bt pkg ++ " inesistente."
-displayPkgbuild_1 Serbian    pkg = bt pkg ++ " не постоји."
+displayPkgbuild_1 :: String -> Language -> String
+displayPkgbuild_1 p English    = bt p ++ " does not exist."
+displayPkgbuild_1 p Japanese   = bt p ++ "は存在しない。"
+displayPkgbuild_1 p Polish     = bt p ++ " nie istnieje."
+displayPkgbuild_1 p Croatian   = bt p ++ " ne postoji."
+displayPkgbuild_1 p Swedish    = bt p ++ " finns inte."
+displayPkgbuild_1 p German     = bt p ++ " existiert nicht."
+displayPkgbuild_1 p Spanish    = bt p ++ " no existe."
+displayPkgbuild_1 p Portuguese = bt p ++ " não existe."
+displayPkgbuild_1 p French     = bt p ++ "n'existe pas."
+displayPkgbuild_1 p Russian    = bt p ++ " не существует."
+displayPkgbuild_1 p Italian    = bt p ++ " inesistente."
+displayPkgbuild_1 p Serbian    = bt p ++ " не постоји."
 
 removeMakeDepsAfter_1 :: Language -> String
 removeMakeDepsAfter_1 English    = "Removing unneeded make dependencies..."
@@ -738,10 +736,10 @@ cleanStates_1 Serbian  = "Улаз није валидан број."
 cleanStates_1 _        = "Input isn't a valid number."
 
 -- NEEDS TRANSLATION
-cleanStates_2 :: Language -> Int -> String
-cleanStates_2 Japanese n = bt (show n) ++ "個のパッケージ状態記録だけが残される。その他削除？"
-cleanStates_2 Serbian  n = bt (show n) ++ " стања пакета ће бити сачувано. Уклонити остатак?"
-cleanStates_2 _        n = bt (show n) ++ " package states will be kept. Remove the rest?"
+cleanStates_2 :: Int -> Language -> String
+cleanStates_2 n Japanese = bt (show n) ++ "個のパッケージ状態記録だけが残される。その他削除？"
+cleanStates_2 n Serbian  = bt (show n) ++ " стања пакета ће бити сачувано. Уклонити остатак?"
+cleanStates_2 n _        = bt (show n) ++ " package states will be kept. Remove the rest?"
 
 -- NEEDS TRANSLATION
 cleanStates_3 :: Language -> String
@@ -752,19 +750,19 @@ cleanStates_3 _        = "No package states were removed."
 ----------------------------
 -- Aura/Commands/C functions
 ----------------------------
-getDowngradeChoice_1 :: Language -> String -> String
-getDowngradeChoice_1 English    p = "What version of " ++ bt p ++ " do you want?"
-getDowngradeChoice_1 Japanese   p = bt p ++ "はどのバージョンにする？"
-getDowngradeChoice_1 Polish     p = "Którą wersję pakietu " ++ bt p ++ " zainstalować?"
-getDowngradeChoice_1 Croatian   p = "Koju verziju paketa " ++ bt p ++ " želite?"
-getDowngradeChoice_1 Swedish    p = "Vilken version av " ++ bt p ++ " vill du ha?"
-getDowngradeChoice_1 German     p = "Welche Version von " ++ bt p ++ " möchten Sie haben?"
-getDowngradeChoice_1 Spanish    p = "¿Qué versión de " ++ bt p ++ " quieres?"
-getDowngradeChoice_1 Portuguese p = "Qual versão de " ++ bt p ++ " deseja?"
-getDowngradeChoice_1 French     p = "Quelle version de " ++ bt p ++ " voulez-vous ?"
-getDowngradeChoice_1 Russian    p = "Какую версию " ++ bt p ++ " вы хотите?"
-getDowngradeChoice_1 Italian    p = "Quale versione di " ++ bt p ++ " preferisci?"
-getDowngradeChoice_1 Serbian    p = "Коју верзију " ++ bt p ++ "-а желите?"
+getDowngradeChoice_1 :: String -> Language -> String
+getDowngradeChoice_1 p English    = "What version of " ++ bt p ++ " do you want?"
+getDowngradeChoice_1 p Japanese   = bt p ++ "はどのバージョンにする？"
+getDowngradeChoice_1 p Polish     = "Którą wersję pakietu " ++ bt p ++ " zainstalować?"
+getDowngradeChoice_1 p Croatian   = "Koju verziju paketa " ++ bt p ++ " želite?"
+getDowngradeChoice_1 p Swedish    = "Vilken version av " ++ bt p ++ " vill du ha?"
+getDowngradeChoice_1 p German     = "Welche Version von " ++ bt p ++ " möchten Sie haben?"
+getDowngradeChoice_1 p Spanish    = "¿Qué versión de " ++ bt p ++ " quieres?"
+getDowngradeChoice_1 p Portuguese = "Qual versão de " ++ bt p ++ " deseja?"
+getDowngradeChoice_1 p French     = "Quelle version de " ++ bt p ++ " voulez-vous ?"
+getDowngradeChoice_1 p Russian    = "Какую версию " ++ bt p ++ " вы хотите?"
+getDowngradeChoice_1 p Italian    = "Quale versione di " ++ bt p ++ " preferisci?"
+getDowngradeChoice_1 p Serbian    = "Коју верзију " ++ bt p ++ "-а желите?"
 
 backupCache_1 :: Language -> String
 backupCache_1 English    = "No backup location given."
@@ -808,33 +806,33 @@ backupCache_3 Russian    = "Путь к бэкапу не существует."
 backupCache_3 Italian    = "L'indirizzo del salvataggio non esiste."
 backupCache_3 Serbian    = "Путања ка бекапу не постоји."
 
-backupCache_4 :: Language -> String -> String
-backupCache_4 English    dir = "Backing up cache to " ++ bt dir
-backupCache_4 Japanese   dir = "キャッシュのバックアップ先：" ++ bt dir
-backupCache_4 Polish     dir = "Tworzenie kopii zapasowej pamięci podręcznej w " ++ bt dir
-backupCache_4 Croatian   dir = "Stvaram sigurnosnu kopiju u " ++ bt dir
-backupCache_4 Swedish    dir = "Tar backup på cache-filer till " ++ bt dir
-backupCache_4 German     dir = "Sichere Cache in " ++ bt dir
-backupCache_4 Spanish    dir = "Haciendo una copia de seguridad de la caché en " ++ bt dir
-backupCache_4 Portuguese dir = "Backup do cache sendo feito em " ++ bt dir
-backupCache_4 French     dir = "Copie de sauvegarde dans " ++ bt dir ++ "."
-backupCache_4 Russian    dir = "Бэкап создается в директории " ++ bt dir
-backupCache_4 Italian    dir = "Salvataggio della chace in " ++ bt dir
-backupCache_4 Serbian    dir = "Бекапујем кеш у " ++ bt dir
+backupCache_4 :: FilePath -> Language -> String
+backupCache_4 dir English    = "Backing up cache to " ++ bt dir
+backupCache_4 dir Japanese   = "キャッシュのバックアップ先：" ++ bt dir
+backupCache_4 dir Polish     = "Tworzenie kopii zapasowej pamięci podręcznej w " ++ bt dir
+backupCache_4 dir Croatian   = "Stvaram sigurnosnu kopiju u " ++ bt dir
+backupCache_4 dir Swedish    = "Tar backup på cache-filer till " ++ bt dir
+backupCache_4 dir German     = "Sichere Cache in " ++ bt dir
+backupCache_4 dir Spanish    = "Haciendo una copia de seguridad de la caché en " ++ bt dir
+backupCache_4 dir Portuguese = "Backup do cache sendo feito em " ++ bt dir
+backupCache_4 dir French     = "Copie de sauvegarde dans " ++ bt dir ++ "."
+backupCache_4 dir Russian    = "Бэкап создается в директории " ++ bt dir
+backupCache_4 dir Italian    = "Salvataggio della chace in " ++ bt dir
+backupCache_4 dir Serbian    = "Бекапујем кеш у " ++ bt dir
 
-backupCache_5 :: Language -> Int -> String
-backupCache_5 English    n = "Package files to backup: " ++ bt (show n)
-backupCache_5 Japanese   n = "パッケージのファイル数：" ++ bt (show n)
-backupCache_5 Polish     n = "Pliki będące częścią kopii zapasowej: " ++ bt (show n)
-backupCache_5 Croatian   n = "Datoteke koje su dio sigurnosne kopije: " ++ bt (show n)
-backupCache_5 Swedish    n = "Paket-filer att ta backup på: " ++ bt (show n)
-backupCache_5 German     n = "Zu sichernde Paketdateien: " ++ bt (show n)
-backupCache_5 Spanish    n = "Ficheros de paquetes de los que se hará copia de seguridad: " ++ bt (show n)
-backupCache_5 Portuguese n = "Arquivos de pacotes para backup: " ++ bt (show n)
-backupCache_5 French     n = "Copie de sauvegarde des fichiers de paquets suivants : " ++ bt (show n)
-backupCache_5 Russian    n = "Упакуйте файлы для бэкапа: " ++ bt (show n)
-backupCache_5 Italian    n = "File del pacchetto da salvare: " ++ bt (show n)
-backupCache_5 Serbian    n = "Датотеке за бекап: " ++ bt (show n)
+backupCache_5 :: Int -> Language -> String
+backupCache_5 n English    = "Package files to backup: " ++ bt (show n)
+backupCache_5 n Japanese   = "パッケージのファイル数：" ++ bt (show n)
+backupCache_5 n Polish     = "Pliki będące częścią kopii zapasowej: " ++ bt (show n)
+backupCache_5 n Croatian   = "Datoteke koje su dio sigurnosne kopije: " ++ bt (show n)
+backupCache_5 n Swedish    = "Paket-filer att ta backup på: " ++ bt (show n)
+backupCache_5 n German     = "Zu sichernde Paketdateien: " ++ bt (show n)
+backupCache_5 n Spanish    = "Ficheros de paquetes de los que se hará copia de seguridad: " ++ bt (show n)
+backupCache_5 n Portuguese = "Arquivos de pacotes para backup: " ++ bt (show n)
+backupCache_5 n French     = "Copie de sauvegarde des fichiers de paquets suivants : " ++ bt (show n)
+backupCache_5 n Russian    = "Упакуйте файлы для бэкапа: " ++ bt (show n)
+backupCache_5 n Italian    = "File del pacchetto da salvare: " ++ bt (show n)
+backupCache_5 n Serbian    = "Датотеке за бекап: " ++ bt (show n)
 
 backupCache_6 :: Language -> String
 backupCache_6 English    = "Proceed with backup?"
@@ -878,33 +876,33 @@ backupCache_8 Russian    = "Создается бэкап. Это может з�
 backupCache_8 Italian    = "Salvataggio. Questo potrebbe richiedere qualche minuto..."
 backupCache_8 Serbian    = "Бекапујем. Ово може да потраје пар минута..."
 
-copyAndNotify_1 :: Language -> Int -> String
-copyAndNotify_1 English    n = "Copying #[" ++ cyan (show n) ++ "]"
-copyAndNotify_1 Japanese   n = "#[" ++ cyan (show n) ++"]をコピー中・・・"
-copyAndNotify_1 Polish     n = "Kopiowanie #[" ++ cyan (show n) ++ "]"
-copyAndNotify_1 Croatian   n = "Kopiranje #[" ++ cyan (show n) ++ "]"
-copyAndNotify_1 Swedish    n = "Kopierar #[" ++ cyan (show n) ++ "]"
-copyAndNotify_1 German     n = "Kopiere #[" ++ cyan (show n) ++ "]"
-copyAndNotify_1 Spanish    n = "Copiando #[" ++ cyan (show n) ++ "]"
-copyAndNotify_1 Portuguese n = "Copiando #[" ++ cyan (show n) ++ "]"
-copyAndNotify_1 French     n = "Copie de #[" ++ cyan (show n) ++ "]"
-copyAndNotify_1 Russian    n = "Копируется #[" ++ cyan (show n) ++ "]"
-copyAndNotify_1 Italian    n = "Copiando #[" ++cyan (show n) ++ "]"
-copyAndNotify_1 Serbian    n = "Копирам #[" ++ cyan (show n) ++ "]"
+copyAndNotify_1 :: Int -> Language -> String
+copyAndNotify_1 n English    = "Copying #[" ++ cyan (show n) ++ "]"
+copyAndNotify_1 n Japanese   = "#[" ++ cyan (show n) ++"]をコピー中・・・"
+copyAndNotify_1 n Polish     = "Kopiowanie #[" ++ cyan (show n) ++ "]"
+copyAndNotify_1 n Croatian   = "Kopiranje #[" ++ cyan (show n) ++ "]"
+copyAndNotify_1 n Swedish    = "Kopierar #[" ++ cyan (show n) ++ "]"
+copyAndNotify_1 n German     = "Kopiere #[" ++ cyan (show n) ++ "]"
+copyAndNotify_1 n Spanish    = "Copiando #[" ++ cyan (show n) ++ "]"
+copyAndNotify_1 n Portuguese = "Copiando #[" ++ cyan (show n) ++ "]"
+copyAndNotify_1 n French     = "Copie de #[" ++ cyan (show n) ++ "]"
+copyAndNotify_1 n Russian    = "Копируется #[" ++ cyan (show n) ++ "]"
+copyAndNotify_1 n Italian    = "Copiando #[" ++cyan (show n) ++ "]"
+copyAndNotify_1 n Serbian    = "Копирам #[" ++ cyan (show n) ++ "]"
 
-preCleanCache_1 :: Language -> String -> String
-preCleanCache_1 English    n = bt n ++ " is not a number."
-preCleanCache_1 Japanese   n = bt n ++ "は数字はない。"
-preCleanCache_1 Polish     n = bt n ++ " nie jest liczbą."
-preCleanCache_1 Croatian   n = bt n ++ " nije broj. "
-preCleanCache_1 Swedish    n = bt n ++ " är inte ett nummer."
-preCleanCache_1 German     n = bt n ++ " ist keine Nummer."
-preCleanCache_1 Spanish    n = bt n ++ " no es un número."
-preCleanCache_1 Portuguese n = bt n ++ " não é um número."
-preCleanCache_1 French     n = bt n ++ " n'est pas un nombre."
-preCleanCache_1 Russian    n = bt n ++ " не является числом."
-preCleanCache_1 Italian    n = bt n ++ " non è un numero."
-preCleanCache_1 Serbian    n = bt n ++ " није број."
+preCleanCache_1 :: String -> Language -> String
+preCleanCache_1 n English    = bt n ++ " is not a number."
+preCleanCache_1 n Japanese   = bt n ++ "は数字はない。"
+preCleanCache_1 n Polish     = bt n ++ " nie jest liczbą."
+preCleanCache_1 n Croatian   = bt n ++ " nije broj. "
+preCleanCache_1 n Swedish    = bt n ++ " är inte ett nummer."
+preCleanCache_1 n German     = bt n ++ " ist keine Nummer."
+preCleanCache_1 n Spanish    = bt n ++ " no es un número."
+preCleanCache_1 n Portuguese = bt n ++ " não é um número."
+preCleanCache_1 n French     = bt n ++ " n'est pas un nombre."
+preCleanCache_1 n Russian    = bt n ++ " не является числом."
+preCleanCache_1 n Italian    = bt n ++ " non è un numero."
+preCleanCache_1 n Serbian    = bt n ++ " није број."
 
 cleanCache_1 :: Language -> String
 cleanCache_1 English    = "Invalid number given."
@@ -934,19 +932,19 @@ cleanCache_2 Russian    = "Это действие ВСЕЦЕЛО уничтож
 cleanCache_2 Italian    = "Questo cancellera l'INTERA cache dei pacchetti."
 cleanCache_2 Serbian    = "Ово ће избрисати ЦЕО кеш пакета."
 
-cleanCache_3 :: Language -> Int -> String
-cleanCache_3 English    n = bt (show n) ++ " of each package file will be kept."
-cleanCache_3 Japanese   n = "パッケージ・ファイルは" ++ bt (show n) ++ "個保存される。"
-cleanCache_3 Polish     n = bt (show n) ++ " wersji każdego pakietu zostanie zachowane."
-cleanCache_3 Croatian   n = bt (show n) ++ " zadnjih verzija svakog paketa će biti zadržano."
-cleanCache_3 Swedish    n = bt (show n) ++ " av varje paketfil kommer att sparas."
-cleanCache_3 German     n = bt (show n) ++ " jeder Paketdatei wird behalten."
-cleanCache_3 Spanish    n = bt (show n) ++ " ficheros de cada paquete se mantendrán."
-cleanCache_3 Portuguese n = bt (show n) ++ " arquivos de cada pacote serão mantidos."
-cleanCache_3 French     n = bt (show n) ++ " fichiers de chaque paquet sera conservé."
-cleanCache_3 Russian    n = bt (show n) ++ " версии каждого пакета будут нетронуты."
-cleanCache_3 Italian    n = bt (show n) ++ " di ciascun pacchetto sarà mantenuto."
-cleanCache_3 Serbian    n = bt (show n) ++ " верзије сваког од пакета ће бити сачуване."
+cleanCache_3 :: Int -> Language -> String
+cleanCache_3 n English    = bt (show n) ++ " of each package file will be kept."
+cleanCache_3 n Japanese   = "パッケージ・ファイルは" ++ bt (show n) ++ "個保存される。"
+cleanCache_3 n Polish     = bt (show n) ++ " wersji każdego pakietu zostanie zachowane."
+cleanCache_3 n Croatian   = bt (show n) ++ " zadnjih verzija svakog paketa će biti zadržano."
+cleanCache_3 n Swedish    = bt (show n) ++ " av varje paketfil kommer att sparas."
+cleanCache_3 n German     = bt (show n) ++ " jeder Paketdatei wird behalten."
+cleanCache_3 n Spanish    = bt (show n) ++ " ficheros de cada paquete se mantendrán."
+cleanCache_3 n Portuguese = bt (show n) ++ " arquivos de cada pacote serão mantidos."
+cleanCache_3 n French     = bt (show n) ++ " fichiers de chaque paquet sera conservé."
+cleanCache_3 n Russian    = bt (show n) ++ " версии каждого пакета будут нетронуты."
+cleanCache_3 n Italian    = bt (show n) ++ " di ciascun pacchetto sarà mantenuto."
+cleanCache_3 n Serbian    = bt (show n) ++ " верзије сваког од пакета ће бити сачуване."
 
 cleanCache_4 :: Language -> String
 cleanCache_4 English    = "The rest will be deleted. Okay?"
@@ -1140,31 +1138,31 @@ infoFields Russian    = [ "Репозиторий","Название","Верс�
 infoFields Italian    = [ "Repository","Nome","Versione","Stato in AUR","URL","URL AUR","Licenza","Voti","Descrizione" ]
 infoFields Serbian    = [ "Ризница","Име","Верзија","Статус у AUR-у","Страница пројекта","Страница у AUR-у","Лиценца","Гласови","Опис" ]
 
-outOfDateMsg :: Language -> Bool -> String
-outOfDateMsg English    True  = red "Out of Date!"
-outOfDateMsg English    False = green "Up to Date"
-outOfDateMsg Japanese   True  = red "AURで要更新！"
-outOfDateMsg Japanese   False = green "最新"
-outOfDateMsg Polish     True  = red "Nieaktualny!"
-outOfDateMsg Polish     False = green "Aktualny"
-outOfDateMsg Croatian   True  = red "Zastarjelo!"
-outOfDateMsg Croatian   False = green "Ažurirano"
-outOfDateMsg Swedish    True  = red "Utdaterad!"
-outOfDateMsg Swedish    False = green "Aktuell"
-outOfDateMsg German     True  = red "Veraltet!"
-outOfDateMsg German     False = green "Aktuell"
-outOfDateMsg Spanish    True  = red "¡Desactualizado!"
-outOfDateMsg Spanish    False = green "Actualizado"
-outOfDateMsg Portuguese True  = red "Desatualizado!"
-outOfDateMsg Portuguese False = green "Atualizado"
-outOfDateMsg French     True  = red "Périmé !"
-outOfDateMsg French     False = green "À jour"
-outOfDateMsg Russian    True  = red "Устарел!"
-outOfDateMsg Russian    False = green "Новейший"
-outOfDateMsg Italian    True  = red "Out of Date!"
-outOfDateMsg Italian    False = green "Aggiornato"
-outOfDateMsg Serbian    True  = red "Застарео!"
-outOfDateMsg Serbian    False = green "Ажуран"
+outOfDateMsg :: Bool -> Language -> String
+outOfDateMsg True  English    = red "Out of Date!"
+outOfDateMsg False English    = green "Up to Date"
+outOfDateMsg True  Japanese   = red "AURで要更新！"
+outOfDateMsg False Japanese   = green "最新"
+outOfDateMsg True  Polish     = red "Nieaktualny!"
+outOfDateMsg False Polish     = green "Aktualny"
+outOfDateMsg True  Croatian   = red "Zastarjelo!"
+outOfDateMsg False Croatian   = green "Ažurirano"
+outOfDateMsg True  Swedish    = red "Utdaterad!"
+outOfDateMsg False Swedish    = green "Aktuell"
+outOfDateMsg True  German     = red "Veraltet!"
+outOfDateMsg False German     = green "Aktuell"
+outOfDateMsg True  Spanish    = red "¡Desactualizado!"
+outOfDateMsg False Spanish    = green "Actualizado"
+outOfDateMsg True  Portuguese = red "Desatualizado!"
+outOfDateMsg False Portuguese = green "Atualizado"
+outOfDateMsg True  French     = red "Périmé !"
+outOfDateMsg False French     = green "À jour"
+outOfDateMsg True  Russian    = red "Устарел!"
+outOfDateMsg False Russian    = green "Новейший"
+outOfDateMsg True  Italian    = red "Out of Date!"
+outOfDateMsg False Italian    = green "Aggiornato"
+outOfDateMsg True  Serbian    = red "Застарео!"
+outOfDateMsg False Serbian    = green "Ажуран"
 
 -----------------------
 -- Aura/ABS functions
@@ -1198,10 +1196,10 @@ reinstallAndRemove_1 _        = "No packages need changing."
 -- Aura/Settings/BadPackages functions
 --------------------------------------
 -- NEEDS TRANSLATION
-circDep_1 :: Language -> String -> String
-circDep_1 Japanese p = bt p ++ "と互いに従属している。"
-circDep_1 Serbian  p = "Има кружну зависност са " ++ bt p ++ "."
-circDep_1 _        p = "Has a circular dependency with " ++ bt p ++ "."
+circDep_1 :: String -> Language -> String
+circDep_1 p Japanese = bt p ++ "と互いに従属している。"
+circDep_1 p Serbian  = "Има кружну зависност са " ++ bt p ++ "."
+circDep_1 p _        = "Has a circular dependency with " ++ bt p ++ "."
 
 -- NEEDS TRANSLATION
 bashisms_1 :: Language -> String
@@ -1221,19 +1219,19 @@ pacmanFailure_1 _        = "Please check your input."
 ----------------------------------
 -- Aura/Pkgbuild/Editing functions
 ----------------------------------
-hotEdit_1 :: Language -> String -> String
-hotEdit_1 English    p = "Would you like to edit the PKGBUILD of " ++ bt p ++ "?"
-hotEdit_1 Japanese   p = bt p ++ "のPKGBUILDを編成？"
-hotEdit_1 Polish     p = "Czy chcesz edytować PKGBUILD " ++ bt p ++ "?"
-hotEdit_1 Croatian   p = "Želite li izmjeniti PKGBUILD " ++ bt p ++ "?"
-hotEdit_1 Swedish    p = "Vill du ändra PKGBUILD-filen ifrån " ++ bt p ++ "?"
-hotEdit_1 German     p = "Möchten Sie die PKGBUILD-Datei für " ++ bt p ++ " bearbeiten?"
-hotEdit_1 Spanish    p = "¿Te gustaría editar el PKGBUILD de " ++ bt p ++ "?"
-hotEdit_1 Portuguese p = "Desejaria editar o PKGBUILD de " ++ bt p ++ "?"
-hotEdit_1 French     p = "Voulez-vous éditer le PKGBUILD de " ++ bt p ++ " ?"
-hotEdit_1 Russian    p = "Отредактировать PKGBUILD пакета " ++ bt p ++ "?"
-hotEdit_1 Italian    p = "Volete modificare il PKGBUILD di " ++ bt p ++ "?"
-hotEdit_1 Serbian    p = "Желите ли да измените PKGBUILD за " ++ bt p ++ "?"
+hotEdit_1 :: String -> Language -> String
+hotEdit_1 p English    = "Would you like to edit the PKGBUILD of " ++ bt p ++ "?"
+hotEdit_1 p Japanese   = bt p ++ "のPKGBUILDを編成？"
+hotEdit_1 p Polish     = "Czy chcesz edytować PKGBUILD " ++ bt p ++ "?"
+hotEdit_1 p Croatian   = "Želite li izmjeniti PKGBUILD " ++ bt p ++ "?"
+hotEdit_1 p Swedish    = "Vill du ändra PKGBUILD-filen ifrån " ++ bt p ++ "?"
+hotEdit_1 p German     = "Möchten Sie die PKGBUILD-Datei für " ++ bt p ++ " bearbeiten?"
+hotEdit_1 p Spanish    = "¿Te gustaría editar el PKGBUILD de " ++ bt p ++ "?"
+hotEdit_1 p Portuguese = "Desejaria editar o PKGBUILD de " ++ bt p ++ "?"
+hotEdit_1 p French     = "Voulez-vous éditer le PKGBUILD de " ++ bt p ++ " ?"
+hotEdit_1 p Russian    = "Отредактировать PKGBUILD пакета " ++ bt p ++ "?"
+hotEdit_1 p Italian    = "Volete modificare il PKGBUILD di " ++ bt p ++ "?"
+hotEdit_1 p Serbian    = "Желите ли да измените PKGBUILD за " ++ bt p ++ "?"
 
 customizepkg_1 :: Language -> String
 customizepkg_1 Japanese = bt "customizepkg" ++ "はインストールされていない。"

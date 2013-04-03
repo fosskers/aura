@@ -17,6 +17,7 @@ sampleSettings = Settings { environmentOf = undefined
                           , otherOptsOf   = []
                           , ignoredPkgsOf = []
                           , wontBuildOf   = []
+                          , buildPathOf   = "/var/cache/pacman/pkg"
                           , cachePathOf   = "/var/cache/pacman/pkg"
                           , logFilePathOf = "/var/log/pacman.log"
                           , suppressMakepkg = True

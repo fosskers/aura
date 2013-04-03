@@ -54,7 +54,7 @@ edit f p = do
 -- | Allow the user to edit the PKGBUILD if they asked to do so.
 hotEdit :: [AURPkg] -> Aura [AURPkg]
 hotEdit pkgs = ask >>= \ss -> withTempDir "hotedit" . forM pkgs $ \p -> do
-  let cond = optionalPrompt (flip hotEdit_1 $ pkgNameOf p)
+  let cond = optionalPrompt (hotEdit_1 $ pkgNameOf p)
       act  = edit (openEditor (getEditor $ environmentOf ss))
   ifM cond act nothing p
 

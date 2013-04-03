@@ -24,6 +24,7 @@ module Aura.Settings.Enable
     , debugOutput ) where
 
 import System.Environment (getEnvironment)
+import System.Directory   (doesDirectoryExist)
 
 import Aura.Languages (Language,langFromEnv)
 import Aura.MakePkg   (makepkgConfFile)
@@ -33,6 +34,7 @@ import Aura.Settings.Base
 import Aura.Pacman
 import Aura.Flags
 
+import Utilities (ifM2,nothing)
 import Shell
 
 ---
@@ -44,6 +46,7 @@ getSettings lang (auraFlags,input,pacOpts) = do
   pmanCommand <- getPacmanCmd environment
   colourFuncs <- getColours
   makepkgConf <- readFile makepkgConfFile
+  buildPath'  <- checkBuildPath (buildPath auraFlags) (getCachePath confFile)
   let language = checkLang lang environment
   return Settings { inputOf         = input
                   , pacOptsOf       = pacOpts
@@ -55,8 +58,9 @@ getSettings lang (auraFlags,input,pacOpts) = do
                   , carchOf         = singleEntry makepkgConf "CARCH"
                                       "COULDN'T READ $CARCH"
                   , ignoredPkgsOf   = getIgnoredPkgs confFile ++
-                                      getIgnoredAuraPkgs auraFlags
+                                      ignoredAuraPkgs auraFlags
                   , wontBuildOf     = getBadPackages language
+                  , buildPathOf     = buildPath'
                   , cachePathOf     = getCachePath confFile
                   , logFilePathOf   = getLogFilePath confFile
                   , suppressMakepkg = suppressionStatus auraFlags
@@ -89,6 +93,7 @@ debugOutput ss = do
                  , "Editor            => " ++ editorOf ss
                  , "$CARCH            => " ++ carchOf ss
                  , "Ignored Pkgs      => " ++ unwords (ignoredPkgsOf ss)
+                 , "Build Path        => " ++ buildPathOf ss
                  , "Pkg Cache Path    => " ++ cachePathOf ss
                  , "Log File Path     => " ++ logFilePathOf ss
                  , "Silent Building?  => " ++ yn (suppressMakepkg ss)
@@ -109,3 +114,6 @@ checkLang :: Maybe Language -> Environment -> Language
 checkLang Nothing env   = langFromEnv $ getLangVar env
 checkLang (Just lang) _ = lang
 
+-- | Defaults to the cache path if no (legal) build path was given.
+checkBuildPath :: FilePath -> FilePath -> IO FilePath
+checkBuildPath bp = ifM2 (doesDirectoryExist bp) return nothing bp
