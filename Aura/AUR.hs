@@ -154,5 +154,7 @@ trueVerViaPkgbuild ns = pkgver ++ "-" ++ pkgrel
 tarballUrl :: String -> String
 tarballUrl pkg = pkgBaseUrl pkg </> pkg ++ ".tar.gz"
 
-sourceTarball :: FilePath -> String -> IO FilePath
+sourceTarball :: FilePath -- ^ Where to save the tarball.
+  -> String  -- ^ Package name.
+  -> IO FilePath -- ^ Saved tarball location.
 sourceTarball path = saveUrlContents path . tarballUrl
