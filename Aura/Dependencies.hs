@@ -42,7 +42,7 @@ import Utilities (notNull, tripleThrd)
 ---
 
 -- Returns the deps to be installed, or fails nicely.
-getDepsToInstall :: [AURPkg] -> Aura ([String],[AURPkg])
+getDepsToInstall :: SourcePackage a => [a] -> Aura ([String],[AURPkg])
 getDepsToInstall []   = ask >>= failure . getDepsToInstall_1 . langOf
 getDepsToInstall pkgs = ask >>= \ss -> do
   allDeps <- mapM determineDeps pkgs
@@ -59,7 +59,7 @@ getDepsToInstall pkgs = ask >>= \ss -> do
        return (nub $ providers ++ pacmanPkgs, necAURPkgs)
 
 -- Returns ([RepoPackages], [AURPackages], [VirtualPackages])
-determineDeps :: AURPkg -> Aura ([String],[AURPkg],[String])
+determineDeps :: SourcePackage a => a -> Aura ([String],[AURPkg],[String])
 determineDeps pkg = do
   let ns   = namespaceOf pkg
       deps = concatMap (value ns) ["depends","makedepends","checkdepends"]

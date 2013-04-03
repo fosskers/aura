@@ -68,28 +68,46 @@ instance Show VersionDemand where
     show (MustBe  v)  = '=' : v
     show Anything     = ""
 
+---------------
+-- Source Packages
+---------------
+
+class (Package a, Show a, Eq a) => SourcePackage a where
+  -- | Fetch and extract the source code corresponding to the given package.
+  getSource :: a -- ^ Package (currently AUR or ABS)
+    -> FilePath -- ^ Directory in which to extract the package.
+    -> IO FilePath -- ^ Path to the extracted source.
+
+  -- | Read the PKGBUILD of the package as a string.
+  pkgbuildOf :: a -- ^ Package.
+    -> String -- ^ PKGBUILD read in as a string.
+
+  namespaceOf :: a -- ^ Package
+    -> Namespace -- ^ Parsed key/value pairs from the PKGBUILD.
+
 -- I would like to reduce the following three sets of instance declarations
 -- to a single more polymorphic solution.
 ---------------
 -- AUR Packages
 ---------------
-data AURPkg = AURPkg String VersionDemand Pkgbuild Namespace
-               
+data AURPkg = AURPkg String VersionDemand Pkgbuild Namespace 
+
 instance Package AURPkg where
-    pkgNameOf (AURPkg n _ _ _) = n
-    versionOf (AURPkg _ v _ _) = v
+  pkgNameOf (AURPkg n _ _ _) = n
+  versionOf (AURPkg _ v _ _) = v
+
+instance SourcePackage AURPkg where
+  getSource a fp = do
+    tarball <- sourceTarball fp (pkgNameOf a)
+    decompress tarball
+  pkgbuildOf (AURPkg _ _ p _) = p
+  namespaceOf (AURPkg _ _ _ ns) = ns
 
 instance Show AURPkg where
     show = pkgNameWithVersionDemand
 
 instance Eq AURPkg where
     a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
-
-pkgbuildOf :: AURPkg -> String
-pkgbuildOf (AURPkg _ _ p _) = p
-
-namespaceOf :: AURPkg -> Namespace
-namespaceOf (AURPkg _ _ _ ns) = ns
 
 ------------------
 -- Pacman Packages
