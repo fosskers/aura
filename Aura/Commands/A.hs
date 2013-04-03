@@ -61,7 +61,11 @@ pbHandler = ask >>= check
                    | useCustomizepkg ss = return customizepkg
                    | otherwise          = return return
 
-installPackages :: [String] -> [String] -> Aura ()
+-- | High level 'install' command. Handles installing
+-- dependencies.
+installPackages :: [String] -- ^ Package options
+  -> [String] -- ^ Packages to install
+  -> Aura ()
 installPackages _ []         = return ()
 installPackages pacOpts pkgs = ask >>= \ss ->
   if not $ delMakeDeps ss

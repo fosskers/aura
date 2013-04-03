@@ -27,6 +27,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
+{- | The 'M' module deals with all commands involving building from the ABS tree.
+-}
 module Aura.Commands.M 
   ( installPackages
   , absSearch

@@ -21,6 +21,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
+{- | Handles all ABS related functions.
+-}
 module Aura.ABS (
    absInfoLookup
   ,absSearchLookup
@@ -64,7 +66,7 @@ data PkgInfo = PkgInfo {
                        , nameOf        :: String
                        -- | Latest available version
                        , latestVerOf   :: String
-                       -- | Location of
+                       -- | Directory containing the package source (in ABS tree)
                        , locationOf    :: String
                        -- | Package description
                        , descriptionOf :: String
@@ -76,6 +78,7 @@ absInfoLookup pkgName = do
   pkgbuild <- liftIO $ readFileUTF8 $ pkgBuildFile pkgName
   parsePkgBuild pkgName pkgbuild
 
+-- | Search for packages matching the given pattern.
 absSearchLookup :: String -> Aura [PkgInfo]
 absSearchLookup pattern = do
   pkg <- findPkg pattern
