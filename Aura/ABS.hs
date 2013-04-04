@@ -26,7 +26,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.ABS (
    absInfoLookup
   ,absSearchLookup
-  ,PkgInfo(..)
+  ,renderPkgInfo
+  ,PkgInfo
   )
 where
 
@@ -38,11 +39,12 @@ import           System.Directory (doesDirectoryExist, getDirectoryContents)
 import           System.FilePath
 import           Text.Regex.PCRE  ((=~))
 
-import           Aura.Bash
+import qualified          Aura.Bash as B
 import           Aura.Core
 import           Aura.Languages
 import           Aura.Monad.Aura
-import           Aura.Utils       (scoldAndFail)
+import Aura.Settings.Base
+import           Aura.Utils       (entrify,scoldAndFail)
 
 import           Bash.Base
 import           Utilities        (split, readFileUTF8)
@@ -52,22 +54,6 @@ import           Utilities        (split, readFileUTF8)
 ---------------
 -- ABS Packages
 ---------------
-data ABSPkg = ABSPkg String VersionDemand Pkgbuild Namespace
-
-instance Show ABSPkg where
-  show = pkgNameWithVersionDemand
-
-instance Eq ABSPkg where
-  a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
-
-instance Package ABSPkg where
-  pkgNameOf (ABSPkg n _ _ _) = n
-  versionOf (ABSPkg _ v _ _) = v
-
-instance SourcePackage ABSPkg where
-  pkgbuildOf (ABSPkg _ _ p _) = p
-  namespaceOf (ABSPkg _ _ _ n) = n
-  getSource a fp = undefined
 
 -- | File system root for the synchronised ABS tree.
 absBasePath :: FilePath
@@ -83,12 +69,31 @@ data PkgInfo = PkgInfo {
                        -- | Name of the package (not including repo)
                        , nameOf        :: String
                        -- | Latest available version
-                       , latestVerOf   :: String
+                       , latestVerOf   :: VersionDemand
                        -- | Directory containing the package source (in ABS tree)
                        , locationOf    :: String
                        -- | Package description
                        , descriptionOf :: String
-                       } deriving (Eq,Show)
+                       -- | PKGBUILD read into a string.
+                       , pkgbuild :: String
+                       -- | Namespace (key/value) pairs.
+                       , namespace :: Namespace
+                       }
+
+instance Package PkgInfo where
+  pkgNameOf = nameOf
+  versionOf = latestVerOf
+
+instance Show PkgInfo where
+  show = pkgNameWithVersionDemand
+
+instance Eq PkgInfo where
+  a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
+
+instance SourcePackage PkgInfo where
+  pkgbuildOf = pkgbuild
+  namespaceOf = namespace
+  getSource a fp = undefined
 
 -- | Get info about the named package from the exact package name.
 absInfoLookup :: String -> Aura PkgInfo
@@ -102,23 +107,33 @@ absSearchLookup pattern = do
   pkg <- findPkg pattern
   mapM absInfoLookup pkg
 
+-- | Format a PkgInfo into a string
+renderPkgInfo :: Settings -> PkgInfo -> String
+renderPkgInfo ss info = entrify ss fields entries
+  where fields  = map (pcWhite ss) . absInfoFields . langOf $ ss
+        entries = [ pcMagenta ss $ repositoryOf info
+                  , pcWhite ss $ nameOf info
+                  , show . latestVerOf $ info
+                  , locationOf info
+                  , descriptionOf info ]
+
 -- | Parse a PKGBUILD into PkgInfo if possible
 parsePkgBuild :: String -> String -> Aura PkgInfo
 parsePkgBuild pkgloc pkgbuild =
   let repo' = case reverse $ split '/' pkgloc of
         _ : a : _ -> return a
         _ -> failure $ "Unable to extract repository name: " ++ pkgloc
-      ns' = namespace pkgloc pkgbuild
-      getVal ns key = case value ns key of
+      ns' = B.namespace pkgloc pkgbuild
+      getVal ns key = case B.value ns key of
         a : _ -> return a
         [] -> failure $ "Unable to extract value for key " ++ key
   in do
     ns <- ns'
     name <- getVal ns "pkgname"
-    version <- getVal ns "pkgver"
+    version <- MustBe `liftM` getVal ns "pkgver"
     desc <- getVal ns "pkgdesc"
     repo <- repo'
-    return $ PkgInfo repo name version pkgloc desc
+    return $ PkgInfo repo name version pkgloc desc pkgbuild ns
 
 -- | Find a matching list of packages given a name. This only matches
 -- on the name of the package.

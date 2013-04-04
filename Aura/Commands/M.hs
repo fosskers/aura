@@ -38,7 +38,6 @@ module Aura.Commands.M
   import Aura.ABS
   import Aura.Monad.Aura
   import Aura.Settings.Base
-  import Aura.Utils (entrify)
   import Aura.Languages
 
   installPackages :: [String] -> [String] -> Aura ()
@@ -59,15 +58,5 @@ module Aura.Commands.M
   -- | Display ABS package info
   displayAbsPkgInfo :: PkgInfo -> Aura ()
   displayAbsPkgInfo info = ask >>= \ss ->
-    liftIO $ putStrLn $ renderAbsPkgInfo ss info ++ "\n"
-
-  -- | Format a PkgInfo into a string
-  renderAbsPkgInfo :: Settings -> PkgInfo -> String
-  renderAbsPkgInfo ss info = entrify ss fields entries
-    where fields  = map (pcWhite ss) . absInfoFields . langOf $ ss
-          entries = [ pcMagenta ss $ repositoryOf info
-                    , pcWhite ss $ nameOf info
-                    , latestVerOf info
-                    , locationOf info
-                    , descriptionOf info ]
+    liftIO $ putStrLn $ renderPkgInfo ss info ++ "\n"
 
