@@ -108,6 +108,17 @@ pacmanPkg :: String -> Aura PacmanPkg
 pacmanPkg pkg = PacmanPkg name ver `liftM` pacmanOutput ["-Si",name]
     where (name,ver) = parseNameAndVersionDemand pkg
 
+-- | Get only those packages that are accessible by pacman.
+filterRepoPkgs :: PkgFilter
+filterRepoPkgs pkgs = do
+  repoPkgs <- lines `liftM` pacmanOutput ["-Ssq",pkgs']
+  return $ filter (`elem` repoPkgs) pkgs
+    where pkgs' = "^(" ++ prep pkgs ++ ")$"
+          prep  = specs . intercalate "|"
+          specs []     = []
+          specs (c:cs) | c `elem` "+" = ['[',c,']'] ++ specs cs
+                       | otherwise    = c : specs cs
+
 ---------------------------------
 -- Functions common to `Package`s
 ---------------------------------

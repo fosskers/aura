@@ -44,16 +44,6 @@ import Utilities (notNull, tripleThrd)
 ignoreRepos :: PkgFilter
 ignoreRepos _ = return []
 
-filterRepoPkgs :: PkgFilter
-filterRepoPkgs pkgs = do
-  repoPkgs <- lines `liftM` pacmanOutput ["-Ssq",pkgs']
-  return $ filter (`elem` repoPkgs) pkgs
-    where pkgs' = "^(" ++ prep pkgs ++ ")$"
-          prep  = specs . intercalate "|"
-          specs []     = []
-          specs (c:cs) | c `elem` "+" = ['[',c,']'] ++ specs cs
-                       | otherwise    = c : specs cs
-
 -- |Split a list of packages into:
 --  - Repo packages.
 --  - AUR packages.
