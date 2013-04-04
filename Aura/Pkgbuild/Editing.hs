@@ -35,6 +35,8 @@ import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Utils
 import Aura.Core
+-- TODO remove this
+import Aura.AUR
 
 import Utilities (openEditor, ifFile, ifM, nothing)
 import Shell     (getEditor, quietShellCmd)

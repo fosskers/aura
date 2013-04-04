@@ -39,6 +39,7 @@ import           System.FilePath
 import           Text.Regex.PCRE  ((=~))
 
 import           Aura.Bash
+import           Aura.Core
 import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Utils       (scoldAndFail)
@@ -48,8 +49,25 @@ import           Utilities        (split, readFileUTF8)
 
 -- Stuff --
 
--- | PKGBUILD file read into a string.
-type PkgBuild = String
+---------------
+-- ABS Packages
+---------------
+data ABSPkg = ABSPkg String VersionDemand Pkgbuild Namespace
+
+instance Show ABSPkg where
+  show = pkgNameWithVersionDemand
+
+instance Eq ABSPkg where
+  a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
+
+instance Package ABSPkg where
+  pkgNameOf (ABSPkg n _ _ _) = n
+  versionOf (ABSPkg _ v _ _) = v
+
+instance SourcePackage ABSPkg where
+  pkgbuildOf (ABSPkg _ _ p _) = p
+  namespaceOf (ABSPkg _ _ _ n) = n
+  getSource a fp = undefined
 
 -- | File system root for the synchronised ABS tree.
 absBasePath :: FilePath
@@ -60,7 +78,7 @@ pkgBuildFile :: FilePath -> FilePath
 pkgBuildFile pkgName = absBasePath </> pkgName </> "PKGBUILD"
 
 data PkgInfo = PkgInfo {
-                       -- | Repository
+                       -- | Repository (core/extra etc.)
                        repositoryOf    :: String
                        -- | Name of the package (not including repo)
                        , nameOf        :: String

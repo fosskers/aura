@@ -60,6 +60,7 @@ executable aura
                        Aura.Pacman,
                        Aura.MakePkg,
                        Aura.Languages,
+                       Aura.Virtual,
                        Aura.Monad.Aura,
                        Aura.Dependencies,
                        Aura.Colour.Text,

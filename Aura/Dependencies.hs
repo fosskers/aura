@@ -24,12 +24,13 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Dependencies where
 
 import Text.Regex.PCRE ((=~))
-import Control.Monad   (filterM)
+import Control.Monad   (filterM,liftM,when)
 import Data.Maybe      (fromJust, isNothing)
-import Data.List       (nub)
+import Data.List        ((\\), nub, intercalate, isSuffixOf)
 
 import Aura.Pacman (pacmanOutput)
-import Aura.AUR    (trueVerViaPkgbuild)
+import Aura.AUR
+import Aura.Virtual
 import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages
@@ -40,6 +41,32 @@ import Aura.Core
 import Utilities (notNull, tripleThrd)
 
 ---
+ignoreRepos :: PkgFilter
+ignoreRepos _ = return []
+
+filterRepoPkgs :: PkgFilter
+filterRepoPkgs pkgs = do
+  repoPkgs <- lines `liftM` pacmanOutput ["-Ssq",pkgs']
+  return $ filter (`elem` repoPkgs) pkgs
+    where pkgs' = "^(" ++ prep pkgs ++ ")$"
+          prep  = specs . intercalate "|"
+          specs []     = []
+          specs (c:cs) | c `elem` "+" = ['[',c,']'] ++ specs cs
+                       | otherwise    = c : specs cs
+
+-- |Split a list of packages into:
+--  - Repo packages.
+--  - AUR packages.
+--  - Other stuff.
+divideByPkgType :: PkgFilter -> [String] -> Aura ([String],[String],[String])
+divideByPkgType repoFilter pkgs = do
+  repoPkgNames <- repoFilter namesOnly
+  aurPkgNames  <- filterAURPkgs $ namesOnly \\ repoPkgNames
+  let aurPkgs  = filter (flip elem aurPkgNames . splitName) pkgs
+      repoPkgs = filter (flip elem repoPkgNames . splitName) pkgs
+      others   = (pkgs \\ aurPkgs) \\ repoPkgs
+  return (repoPkgs, aurPkgs, others)
+      where namesOnly = map splitName pkgs
 
 -- Returns the deps to be installed, or fails nicely.
 getDepsToInstall :: SourcePackage a => [a] -> Aura ([String],[AURPkg])
