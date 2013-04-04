@@ -75,15 +75,15 @@ instance Show VersionDemand where
 class (Package a, Show a, Eq a) => SourcePackage a where
   -- | Fetch and extract the source code corresponding to the given package.
   getSource :: a -- ^ Package (currently AUR or ABS)
-    -> FilePath -- ^ Directory in which to extract the package.
-    -> IO FilePath -- ^ Path to the extracted source.
+            -> FilePath -- ^ Directory in which to extract the package.
+            -> IO FilePath -- ^ Path to the extracted source.
 
   -- | Read the PKGBUILD of the package as a string.
   pkgbuildOf :: a -- ^ Package.
-    -> String -- ^ PKGBUILD read in as a string.
+             -> String -- ^ PKGBUILD read in as a string.
 
   namespaceOf :: a -- ^ Package
-    -> Namespace -- ^ Parsed key/value pairs from the PKGBUILD.
+              -> Namespace -- ^ Parsed key/value pairs from the PKGBUILD.
 
 -- I would like to reduce the following three sets of instance declarations
 -- to a single more polymorphic solution.
