@@ -31,23 +31,24 @@ module Aura.ABS (
   )
 where
 
-import           Control.Monad    (filterM, forM, liftM, join)
-import           Data.List        (intercalate)
-import qualified Data.Map         as M
-import           Data.Maybe       (fromJust, mapMaybe)
-import           System.Directory (doesDirectoryExist, getDirectoryContents)
+import           Control.Monad      (filterM, forM, join, liftM)
+import           Data.List          (intercalate)
+import qualified Data.Map           as M
+import           Data.Maybe         (fromJust, mapMaybe)
+import           System.Directory   (doesDirectoryExist, getDirectoryContents)
 import           System.FilePath
-import           Text.Regex.PCRE  ((=~))
+import           Text.Regex.PCRE    ((=~))
 
-import qualified          Aura.Bash as B
+import qualified Aura.Bash          as B
 import           Aura.Core
 import           Aura.Languages
 import           Aura.Monad.Aura
-import Aura.Settings.Base
-import           Aura.Utils       (entrify,scoldAndFail)
+import           Aura.Settings.Base
+import           Aura.Utils         (entrify, scoldAndFail)
 
 import           Bash.Base
-import           Utilities        (split, readFileUTF8)
+import           Shell              (shellCmd)
+import           Utilities          (readFileUTF8, split)
 
 -- Stuff --
 
@@ -75,9 +76,9 @@ data PkgInfo = PkgInfo {
                        -- | Package description
                        , descriptionOf :: String
                        -- | PKGBUILD read into a string.
-                       , pkgbuild :: String
+                       , pkgbuild      :: String
                        -- | Namespace (key/value) pairs.
-                       , namespace :: Namespace
+                       , namespace     :: Namespace
                        }
 
 instance Package PkgInfo where
@@ -93,7 +94,10 @@ instance Eq PkgInfo where
 instance SourcePackage PkgInfo where
   pkgbuildOf = pkgbuild
   namespaceOf = namespace
-  getSource a fp = undefined
+  getSource a fp = do
+    let loc = locationOf a
+    shellCmd "cp" ["-R", loc, fp]
+    return $ fp </> (takeBaseName loc)
 
 -- | Get info about the named package from the exact package name.
 absInfoLookup :: String -> Aura PkgInfo
