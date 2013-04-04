@@ -133,6 +133,7 @@ langFromEnv _           = English
 -- NEEDS TRANSLATION
 checkDBLock_1 :: Language -> String
 checkDBLock_1 Japanese = "パッケージデータベースが今閉鎖状態。開放したらキーを押して続行をどうぞ。"
+checkDBLock_1 Croatian = "Baza paketa je zaključana. Kad se otključa, pritisnite enter da biste nastavili."
 checkDBLock_1 _        = "The package database is locked. Press enter when it's unlocked to continue."
 
 -- Packages should not be built if the user is logged in as root!
@@ -500,12 +501,14 @@ installPackages_5 Serbian    = "Утврђивање зависности..."
 -- NEEDS TRANSLATION
 knownBadPkgCheck_1 :: String -> Language -> String
 knownBadPkgCheck_1 p Japanese = bt p ++ "の作成は失敗すると知られている。理由："
+knownBadPkgCheck_1 p Croatian = "Poznato je da se " ++ bt p ++ " neuspješno gradi. Razlog:"
 knownBadPkgCheck_1 p Serbian  = "Познато је да се " ++ bt p ++ " неуспешно гради. Разлог:"
 knownBadPkgCheck_1 p _        = bt p ++ " is known to fail at building. Reason:"
 
 -- NEEDS TRANSLATION
 knownBadPkgCheck_2 :: Language -> String
 knownBadPkgCheck_2 Japanese = "それでもやってみる？"
+knownBadPkgCheck_2 Croatian = "Želite li ipak pokušati?"
 knownBadPkgCheck_2 Serbian  = "Желите ли ипак да пробате?"
 knownBadPkgCheck_2 _        = "Will you try anyway?"
 
@@ -514,7 +517,7 @@ reportNonPackages_1 :: Language -> String
 reportNonPackages_1 English    = "The following are not AUR packages:"
 reportNonPackages_1 Japanese   = "下記はAURパッケージではない："
 reportNonPackages_1 Polish     = "To nie są pakiety:"
-reportNonPackages_1 Croatian   = "Ovo nisu paketi:"
+reportNonPackages_1 Croatian   = "Ovo nisu AUR paketi:"
 reportNonPackages_1 Swedish    = "Följande är inte paket:"
 reportNonPackages_1 German     = "Folgende sind keine Pakete:"
 reportNonPackages_1 Spanish    = "Los siguientes no son paquetes:"
@@ -732,18 +735,21 @@ removeMakeDepsAfter_1 Serbian    = "Уклањање непотребних за
 -- NEEDS TRANSLATION
 cleanStates_1 :: Language -> String
 cleanStates_1 Japanese = "入力は数字ではない。"
+cleanStates_1 Croatian = "Unos ne predstavlja broj."
 cleanStates_1 Serbian  = "Улаз није валидан број."
 cleanStates_1 _        = "Input isn't a valid number."
 
 -- NEEDS TRANSLATION
 cleanStates_2 :: Int -> Language -> String
 cleanStates_2 n Japanese = bt (show n) ++ "個のパッケージ状態記録だけが残される。その他削除？"
+cleanStates_2 n Croatian = bt (show n) ++ " stanja paketa će biti zadržano. Ukloniti ostatak?"
 cleanStates_2 n Serbian  = bt (show n) ++ " стања пакета ће бити сачувано. Уклонити остатак?"
 cleanStates_2 n _        = bt (show n) ++ " package states will be kept. Remove the rest?"
 
 -- NEEDS TRANSLATION
 cleanStates_3 :: Language -> String
 cleanStates_3 Japanese = "何も削除しないで終了。"
+cleanStates_3 Croatian = "Nijedno stanje paketa nije uklonjeno."
 cleanStates_3 Serbian  = "Ниједно стање пакета није уклоњено."
 cleanStates_3 _        = "No package states were removed."
 
@@ -1067,6 +1073,7 @@ aurSy Serbian    = green "Извршава радње везане за [A]UR.\n
 -- NEEDS TRANSLATION
 saveS :: Language -> String
 saveS Japanese = yellow "パッケージの設置状態に関する処理\n" ++ "デフォルトでインストール状態を保存する。"
+saveS Croatian = yellow "Upravlja spremanjem i vraćanjem globalnog stanja paketa.\n" ++ "Prešutna (default) radnja je spremanje trenutnog stanja paketa."
 saveS Serbian  = yellow "Управља чувањем и враћањем глобалног стања пакета.\n" ++ "Уобичајена радња чува тренутно стање."
 saveS _        = yellow "Manage the [S]aving and restoring of the global package state.\n" ++ "Default action saves this state."
 
@@ -1118,6 +1125,7 @@ orpha Serbian    = blue "Извршава радње везане за паке�
 -- NEEDS TRANSLATION
 getAURPkgInfo_1 :: Language -> String
 getAURPkgInfo_1 Japanese = "AURのAPIに繋げなかった。ネット接続状態を確認して下さい。"
+getAURPkgInfo_1 Croatian = "Pristup AUR-u nije uspio. Provjerite vašu vezu."
 getAURPkgInfo_1 Serbian  = "Приступ AUR-у није успео. Проверите вашу везу."
 getAURPkgInfo_1 _        = "AUR API lookup failed. Please check your connection."
 
@@ -1167,18 +1175,21 @@ outOfDateMsg False Serbian    = green "Ажуран"
 -- NEEDS TRANSLATION
 saveState_1 :: Language -> String
 saveState_1 Japanese = "現在パッケージ状態保存完了。"
+saveState_1 Croatian = "Stanje paketa spremljeno."
 saveState_1 Serbian  = "Сачувано стање пакета."
 saveState_1 _        = "Saved package state."
 
 -- NEEDS TRANSLATION
 restoreState_1 :: Language -> String
 restoreState_1 Japanese = "対象バージョンがないパッケージ："
+restoreState_1 Croatian = "Tražene stare verzije nisu dostupne za:"
 restoreState_1 Serbian  = "Захтеване старе верзије нису доступне за:"
 restoreState_1 _        = "Requested downgrade versions not available for:"
 
 -- NEEDS TRANSLATION
 reinstallAndRemove_1 :: Language -> String
 reinstallAndRemove_1 Japanese = "パッケージを変更する必要ない。"
+reinstallAndRemove_1 Croatian = "Nema paketa kojima su potrebne izmjene."
 reinstallAndRemove_1 Serbian  = "Ниједан пакет не захтева измене."
 reinstallAndRemove_1 _        = "No packages need changing."
 
@@ -1188,12 +1199,14 @@ reinstallAndRemove_1 _        = "No packages need changing."
 -- NEEDS TRANSLATION
 circDep_1 :: String -> Language -> String
 circDep_1 p Japanese = bt p ++ "と互いに従属している。"
+circDep_1 p Croatian = "Ima kružnu zavisnost sa " ++ bt p ++ "."
 circDep_1 p Serbian  = "Има кружну зависност са " ++ bt p ++ "."
 circDep_1 p _        = "Has a circular dependency with " ++ bt p ++ "."
 
 -- NEEDS TRANSLATION
 bashisms_1 :: Language -> String
 bashisms_1 Japanese = "PKGBUILDのBashコードが複雑すぎる。"
+bashisms_1 Croatian = "Previše „bash-izama“ u PKGBUILD-u."
 bashisms_1 Serbian  = "Превише „bash-изама“ у PKGBUILD-у."
 bashisms_1 _        = "Too many bashisms in PKGBUILD."
 
@@ -1203,6 +1216,7 @@ bashisms_1 _        = "Too many bashisms in PKGBUILD."
 -- NEEDS TRANSLATION
 pacmanFailure_1 :: Language -> String
 pacmanFailure_1 Japanese = "入力を確認して下さい。"
+pacmanFailure_1 Croatian = "Provjerite vaš unos."
 pacmanFailure_1 Serbian  = "Молим Вас, проверите ваш унос."
 pacmanFailure_1 _        = "Please check your input."
 
@@ -1225,4 +1239,5 @@ hotEdit_1 p Serbian    = "Желите ли да измените PKGBUILD за 
 
 customizepkg_1 :: Language -> String
 customizepkg_1 Japanese = bt "customizepkg" ++ "はインストールされていない。"
+customizepkg_1 Croatian = bt "customizepkg" ++ "nije instaliran."
 customizepkg_1 _        = bt "customizepkg" ++ "isn't installed."
