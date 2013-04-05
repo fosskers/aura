@@ -49,7 +49,7 @@ import Utilities (notNull, tripleThrd)
 ignoreRepos :: PkgFilter
 ignoreRepos _ = return []
 
--- |Split a list of packages into:
+-- | Split a list of packages into:
 --  - Repo packages.
 --  - AUR packages.
 --  - Other stuff.

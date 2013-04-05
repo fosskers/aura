@@ -51,6 +51,7 @@ type PkgFilter = [String] -> Aura [String]
 -- PACKAGES
 -----------
 class Package a where
+    pkg :: String -> Aura a
     pkgNameOf :: a -> String
     versionOf :: a -> VersionDemand
 
@@ -96,6 +97,7 @@ class (Package a, Show a, Eq a) => SourcePackage a where
 data PacmanPkg = PacmanPkg String VersionDemand String
 
 instance Package PacmanPkg where
+    pkg = pacmanPkg
     pkgNameOf (PacmanPkg n _ _) = n
     versionOf (PacmanPkg _ v _) = v
 

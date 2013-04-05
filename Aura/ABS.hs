@@ -35,6 +35,7 @@ import           Control.Monad      (filterM, liftM)
 import           System.Directory   (doesDirectoryExist, getDirectoryContents)
 import           System.FilePath
 import           Text.Regex.PCRE    ((=~))
+import           Data.List          (find)
 
 import qualified Aura.Bash          as B
 import           Aura.Core
@@ -79,6 +80,7 @@ data PkgInfo = PkgInfo {
                        } deriving (Show)
 
 instance Package PkgInfo where
+  pkg = absPkg
   pkgNameOf = nameOf
   versionOf = latestVerOf
 
@@ -93,6 +95,14 @@ instance SourcePackage PkgInfo where
     shellCmd "cp" ["-R", loc, fp]
     return $ fp </> (takeBaseName loc)
   parsePkgbuild = parseLocalPkgBuild
+
+-- | Construct a PkgInfo for a string.
+absPkg :: String -> Aura PkgInfo
+absPkg pkgName = do
+  pkgs <- absSearchLookup pkgName
+  case (find (\a -> nameOf a == pkgName) pkgs) of
+    Just a -> return a
+    Nothing -> failure $ "No matching packages for " ++ pkgName
 
 -- | Get info about the named package from the exact package name.
 absInfoLookup :: String -> Aura PkgInfo

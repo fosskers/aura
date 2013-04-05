@@ -45,6 +45,7 @@ import Data.List        ((\\), nub, intercalate, isSuffixOf)
 data VirtualPkg = VirtualPkg String VersionDemand (Maybe PacmanPkg)
 
 instance Package VirtualPkg where
+    pkg = virtualPkg
     pkgNameOf (VirtualPkg n _ _) = n
     versionOf (VirtualPkg _ v _) = v
 

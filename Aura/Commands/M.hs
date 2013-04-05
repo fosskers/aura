@@ -58,7 +58,11 @@ module Aura.Commands.M
                      | useCustomizepkg ss = return customizepkg
                      | otherwise          = return return
 
-  installPackages :: [String] -> [String] -> Aura ()
+  -- | High level 'install' command. Handles installing
+  -- dependencies.
+  installPackages :: [String] -- ^ Package options
+    -> [String] -- ^ Packages to install
+    -> Aura ()
   installPackages = undefined
 
   -- | Get info about the specified package (-i)

@@ -58,6 +58,7 @@ import Internet
 data AURPkg = AURPkg String VersionDemand Pkgbuild Namespace 
 
 instance Package AURPkg where
+  pkg = aurPkg
   pkgNameOf (AURPkg n _ _ _) = n
   versionOf (AURPkg _ v _ _) = v
 
