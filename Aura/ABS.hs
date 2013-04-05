@@ -27,6 +27,7 @@ module Aura.ABS (
    absInfoLookup
   ,absSearchLookup
   ,renderPkgInfo
+  ,parseLocalPkgBuild
   ,PkgInfo
   )
 where
@@ -79,14 +80,11 @@ data PkgInfo = PkgInfo {
                        , pkgbuild      :: String
                        -- | Namespace (key/value) pairs.
                        , namespace     :: Namespace
-                       }
+                       } deriving (Show)
 
 instance Package PkgInfo where
   pkgNameOf = nameOf
   versionOf = latestVerOf
-
-instance Show PkgInfo where
-  show = pkgNameWithVersionDemand
 
 instance Eq PkgInfo where
   a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
@@ -121,13 +119,36 @@ renderPkgInfo ss info = entrify ss fields entries
                   , locationOf info
                   , descriptionOf info ]
 
--- | Parse a PKGBUILD into PkgInfo if possible
-parsePkgBuild :: String -> String -> Aura PkgInfo
+-- | Parse a PKGBUILD into PkgInfo if possible. Fails if:
+--   - Unable to extract repo name from the location
+--   - Unable to extract a specific key from the PKGBUILD.
+parsePkgBuild :: String -- ^ Package location on disk
+              -> String -- ^ PKGBUILD contents as string
+              -> Aura PkgInfo
 parsePkgBuild pkgloc pkgbuild =
   let repo' = case reverse $ split '/' pkgloc of
         _ : a : _ -> return a
         _ -> failure $ "Unable to extract repository name: " ++ pkgloc
-      ns' = B.namespace pkgloc pkgbuild
+  in do
+    repo <- repo'
+    parsePkgBuild' repo pkgloc pkgbuild
+
+{- | Parse a PKGBUILD for a 'local' package - e.g. one not residing
+in an ABS repository location. This will be true for any packages
+that are being built.
+-}
+parseLocalPkgBuild :: String -- ^ PKGBuild location (not that important)
+                   -> String -- ^ PKGBUILD contents as string
+                   -> Aura PkgInfo
+parseLocalPkgBuild pkgloc pkgbuild = 
+  parsePkgBuild' "local" pkgloc pkgbuild
+
+parsePkgBuild' :: String -- ^ Repository name
+               -> String -- ^ Pkgbuild location on disk.
+               -> String -- ^ PKGBUILD contents
+               -> Aura PkgInfo
+parsePkgBuild' repo pkgloc pkgbuild = 
+  let ns' = B.namespace pkgloc pkgbuild
       getVal ns key = case B.value ns key of
         a : _ -> return a
         [] -> failure $ "Unable to extract value for key " ++ key
@@ -136,8 +157,7 @@ parsePkgBuild pkgloc pkgbuild =
     name <- getVal ns "pkgname"
     version <- MustBe `liftM` getVal ns "pkgver"
     desc <- getVal ns "pkgdesc"
-    repo <- repo'
-    return $ PkgInfo repo name version pkgloc desc pkgbuild ns
+    return $ PkgInfo repo name version pkgloc desc pkgbuild ns               
 
 -- | Find a matching list of packages given a name. This only matches
 -- on the name of the package.
