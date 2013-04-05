@@ -24,7 +24,7 @@ module Aura.Core where
 import System.Directory (doesFileExist)
 import Text.Regex.PCRE  ((=~))
 import Control.Monad    (liftM,when)
-import Data.List        ((\\), nub, intercalate, isSuffixOf)
+import Data.List        (intercalate, isSuffixOf)
 
 import Aura.Settings.Base
 import Aura.Colour.Text
@@ -32,7 +32,6 @@ import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Pacman
 import Aura.Utils
-import Aura.Bash
 
 import Bash.Base
 

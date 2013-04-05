@@ -31,10 +31,7 @@ module Aura.ABS (
   )
 where
 
-import           Control.Monad      (filterM, forM, join, liftM)
-import           Data.List          (intercalate)
-import qualified Data.Map           as M
-import           Data.Maybe         (fromJust, mapMaybe)
+import           Control.Monad      (filterM, liftM)
 import           System.Directory   (doesDirectoryExist, getDirectoryContents)
 import           System.FilePath
 import           Text.Regex.PCRE    ((=~))
@@ -44,7 +41,7 @@ import           Aura.Core
 import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Settings.Base
-import           Aura.Utils         (entrify, scoldAndFail)
+import           Aura.Utils         (entrify)
 
 import           Bash.Base
 import           Shell              (shellCmd)
