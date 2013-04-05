@@ -35,26 +35,23 @@ import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Utils
 import Aura.Core
--- TODO remove this
-import Aura.AUR
 
 import Utilities (openEditor, ifFile, ifM, nothing)
 import Shell     (getEditor, quietShellCmd)
 
 ---
 
-edit :: (FilePath -> IO ()) -> AURPkg -> Aura AURPkg
+edit :: SourcePackage a => (FilePath -> IO ()) -> a -> Aura a
 edit f p = do
   newPB <- liftIO $ do
              writeFile filename $ pkgbuildOf p
              f filename
              readFile filename
-  newNS <- namespace (pkgNameOf p) newPB  -- Reparse PKGBUILD.
-  return $ AURPkg (pkgNameOf p) (versionOf p) newPB newNS
+  parsePkgbuild filename newPB
       where filename = "PKGBUILD"
 
 -- | Allow the user to edit the PKGBUILD if they asked to do so.
-hotEdit :: [AURPkg] -> Aura [AURPkg]
+hotEdit :: SourcePackage a => [a] -> Aura [a]
 hotEdit pkgs = ask >>= \ss -> withTempDir "hotedit" . forM pkgs $ \p -> do
   let cond = optionalPrompt (hotEdit_1 $ pkgNameOf p)
       act  = edit (openEditor (getEditor $ environmentOf ss))
@@ -62,11 +59,11 @@ hotEdit pkgs = ask >>= \ss -> withTempDir "hotedit" . forM pkgs $ \p -> do
 
 -- | Runs `customizepkg` on whatever PKGBUILD it can.
 -- To work, a package needs an entry in `/etc/customizepkg.d/`
-customizepkg :: [AURPkg] -> Aura [AURPkg]
+customizepkg :: SourcePackage a => [a] -> Aura [a]
 customizepkg = ifFile customizepkg' (scold customizepkg_1) bin
     where bin = "/usr/bin/customizepkg"
 
-customizepkg' :: [AURPkg] -> Aura [AURPkg]
+customizepkg' :: SourcePackage a => [a] -> Aura [a]
 customizepkg' pkgs = withTempDir "customizepkg" . forM pkgs $ \p -> do
   let conf = customizepkgPath </> pkgNameOf p
   ifFile (edit customize) nothing conf p

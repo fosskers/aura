@@ -27,7 +27,6 @@ module Aura.ABS (
    absInfoLookup
   ,absSearchLookup
   ,renderPkgInfo
-  ,parseLocalPkgBuild
   ,PkgInfo
   )
 where
@@ -96,6 +95,7 @@ instance SourcePackage PkgInfo where
     let loc = locationOf a
     shellCmd "cp" ["-R", loc, fp]
     return $ fp </> (takeBaseName loc)
+  parsePkgbuild = parseLocalPkgBuild
 
 -- | Get info about the named package from the exact package name.
 absInfoLookup :: String -> Aura PkgInfo

@@ -86,6 +86,11 @@ class (Package a, Show a, Eq a) => SourcePackage a where
   namespaceOf :: a -- ^ Package
               -> Namespace -- ^ Parsed key/value pairs from the PKGBUILD.
 
+  -- | Parse a PKGBUILD file to create a SourcePackage.
+  parsePkgbuild :: String -- ^ PKGBUILD location on disk
+                -> String -- ^ PKGBUILD contents
+                -> Aura a
+
 ------------------
 -- Pacman Packages
 ------------------
