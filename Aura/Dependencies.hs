@@ -21,7 +21,12 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Dependencies where
+module Aura.Dependencies
+  ( ignoreRepos
+  , divideByPkgType
+  , getDepsToInstall
+  , determineDeps
+  ) where
 
 import Text.Regex.PCRE ((=~))
 import Control.Monad   (filterM,liftM,when)
