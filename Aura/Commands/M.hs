@@ -35,10 +35,28 @@ module Aura.Commands.M
   , absInfo
   ) where
 
+  import Control.Monad   (unless, liftM)
+  import Data.List       ((\\), nub, nubBy, sort)
+
   import Aura.ABS
+  import Aura.Core
+  import Aura.Utils
   import Aura.Monad.Aura
   import Aura.Settings.Base
+  import Aura.Pkgbuild.Records
+  import Aura.Pkgbuild.Editing
+  import Aura.Colour.Text
   import Aura.Languages
+
+  type PBHandler = [PkgInfo] -> Aura [PkgInfo]
+
+  -- | The user can handle PKGBUILDs in multiple ways.
+  -- `--hotedit` takes the highest priority.
+  pbHandler :: Aura PBHandler
+  pbHandler = ask >>= check
+      where check ss | mayHotEdit ss      = return hotEdit
+                     | useCustomizepkg ss = return customizepkg
+                     | otherwise          = return return
 
   installPackages :: [String] -> [String] -> Aura ()
   installPackages = undefined
@@ -59,4 +77,3 @@ module Aura.Commands.M
   displayAbsPkgInfo :: PkgInfo -> Aura ()
   displayAbsPkgInfo info = ask >>= \ss ->
     liftIO $ putStrLn $ renderPkgInfo ss info ++ "\n"
-

@@ -80,14 +80,14 @@ class (Package a, Show a, Eq a) => SourcePackage a where
 
   -- | Read the PKGBUILD of the package as a string.
   pkgbuildOf :: a -- ^ Package.
-             -> String -- ^ PKGBUILD read in as a string.
+             -> Pkgbuild -- ^ PKGBUILD read in as a string.
 
   namespaceOf :: a -- ^ Package
               -> Namespace -- ^ Parsed key/value pairs from the PKGBUILD.
 
   -- | Parse a PKGBUILD file to create a SourcePackage.
   parsePkgbuild :: String -- ^ PKGBUILD location on disk
-                -> String -- ^ PKGBUILD contents
+                -> Pkgbuild -- ^ PKGBUILD contents
                 -> Aura a
 
 ------------------
