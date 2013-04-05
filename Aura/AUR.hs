@@ -68,14 +68,14 @@ instance SourcePackage AURPkg where
   pkgbuildOf (AURPkg _ _ p _) = p
   namespaceOf (AURPkg _ _ _ ns) = ns
   parsePkgbuild loc b = 
-    let getVal ns key = case B.value ns key of
-        a : _ -> return a
-        [] -> failure $ "Unable to extract value for key " ++ key
+    let getVal ns key = case value ns key of
+          a : _ -> return a
+          [] -> failure $ "Unable to extract value for key " ++ key
     in do
       newNS <- namespace loc b  -- Reparse PKGBUILD.
       name <- getVal newNS "pkgname"
-      version <- getVal newNS "pkgver"
-      return $ AURPkg name version newPB newNS
+      version <- MustBe `liftM` getVal newNS "pkgver"
+      return $ AURPkg name version b newNS
 
 instance Show AURPkg where
     show = pkgNameWithVersionDemand
