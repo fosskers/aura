@@ -21,17 +21,17 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Virtual 
+module Aura.Packages.Virtual 
   ( VirtualPkg(..)
-   ,providerPkgOf
-   ,virtualPkg
-   ,getProvidingPkg 
-  ) where
+  , providerPkgOf
+  , virtualPkg
+  , providingPkg ) where
 
 import Aura.Core
 import Aura.Monad.Aura
-import Aura.Pacman (pacmanOutput)
 import Aura.Utils (splitNameAndVer)
+import Aura.Pacman (pacmanOutput)
+import Aura.Packages.Repository (repoPkg,RepoPkg)
 
 import Control.Monad    (liftM,when)
 import Data.List        ((\\), nub, intercalate, isSuffixOf)
@@ -42,7 +42,7 @@ import Data.List        ((\\), nub, intercalate, isSuffixOf)
 -- Virtual packages also contain a record of their providing package.
 -- Providing packages are assumed to be Pacman (ABS) packages.
 -- Are there any instances where this isn't the case?
-data VirtualPkg = VirtualPkg String VersionDemand (Maybe PacmanPkg)
+data VirtualPkg = VirtualPkg String VersionDemand (Maybe RepoPkg)
 
 instance Package VirtualPkg where
     pkgNameOf (VirtualPkg n _ _) = n
@@ -51,26 +51,22 @@ instance Package VirtualPkg where
 instance Show VirtualPkg where
     show = pkgNameWithVersionDemand
 
-providerPkgOf :: VirtualPkg -> Maybe PacmanPkg
+providerPkgOf :: VirtualPkg -> Maybe RepoPkg
 providerPkgOf (VirtualPkg _ _ p) = p
-
--------------------
--- working stuff
--------------------
 
 virtualPkg :: String -> Aura VirtualPkg
 virtualPkg pkg = VirtualPkg name ver `liftM` getProvider pkg
     where (name,ver) = parseNameAndVersionDemand pkg
           getProvider n = do
-            provider <- getProvidingPkg n
+            provider <- providingPkg n
             case provider of
               Nothing -> return Nothing
-              Just p  -> Just `liftM` pacmanPkg p
+              Just p  -> Just `liftM` repoPkg p
 
 -- Yields a virtual package's providing package if there is one.
-getProvidingPkg :: String -> Aura (Maybe String)
-getProvidingPkg virt = do
-  candidates <- getProvidingPkg' virt
+providingPkg :: String -> Aura (Maybe String)
+providingPkg virt = do
+  candidates <- providingPkg' virt
   let lined = lines candidates
   if length lined /= 1
      then return Nothing
@@ -79,7 +75,7 @@ getProvidingPkg virt = do
 -- Unsafe version.
 -- Only use on virtual packages that have guaranteed providers.
 -- Adding "$" to the pkg name (technically a regex) fixes a bug.
-getProvidingPkg' :: String -> Aura String
-getProvidingPkg' virt = do
+providingPkg' :: String -> Aura String
+providingPkg' virt = do
   let (name,_) = splitNameAndVer virt
   nub `liftM` pacmanOutput ["-Ssq",name ++ "$"]

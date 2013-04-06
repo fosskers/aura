@@ -23,31 +23,29 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 {- | Handles all ABS related functions.
 -}
-module Aura.ABS (
-   absInfoLookup
-  ,absSearchLookup
-  ,renderPkgInfo
-  ,PkgInfo
-  )
-where
+module Aura.Packages.ABS
+    ( absInfoLookup
+    , absSearchLookup
+    , renderPkgInfo
+    , PkgInfo ) where
 
-import           Control.Monad      (filterM, liftM)
-import           System.Directory   (doesDirectoryExist, getDirectoryContents)
-import           System.FilePath
-import           Text.Regex.PCRE    ((=~))
+import Control.Monad    (filterM, liftM)
+import Text.Regex.PCRE  ((=~))
+import System.Directory (doesDirectoryExist, getDirectoryContents)
+import System.FilePath
 
-import qualified Aura.Bash          as B
-import           Aura.Core
-import           Aura.Languages
-import           Aura.Monad.Aura
-import           Aura.Settings.Base
-import           Aura.Utils         (entrify)
+import Aura.Bash
+import Aura.Core
+import Aura.Languages
+import Aura.Monad.Aura
+import Aura.Colour.Text
+import Aura.Settings.Base
+import Aura.Utils (entrify)
 
-import           Bash.Base
-import           Shell              (shellCmd)
-import           Utilities          (readFileUTF8, split)
+import Shell     (shellCmd)
+import Utilities (readFileUTF8, split)
 
--- Stuff --
+---
 
 ---------------
 -- ABS Packages
@@ -58,8 +56,8 @@ absBasePath :: FilePath
 absBasePath = "/var/abs"
 
 -- | Get PKGBUILD location from a package name (just appends /PKGBUILD)
-pkgBuildFile :: FilePath -> FilePath
-pkgBuildFile pkgName = absBasePath </> pkgName </> "PKGBUILD"
+pkgBuildFile :: String -> String -> FilePath
+pkgBuildFile repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
 
 data PkgInfo = PkgInfo {
                        -- | Repository (core/extra etc.)
@@ -85,7 +83,7 @@ instance Package PkgInfo where
 instance Eq PkgInfo where
   a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
 
-instance SourcePackage PkgInfo where
+instance Buildable PkgInfo where
   pkgbuildOf = pkgbuild
   namespaceOf = namespace
   getSource a fp = do
@@ -109,9 +107,9 @@ absSearchLookup pattern = do
 -- | Format a PkgInfo into a string
 renderPkgInfo :: Settings -> PkgInfo -> String
 renderPkgInfo ss info = entrify ss fields entries
-  where fields  = map (pcWhite ss) . absInfoFields . langOf $ ss
-        entries = [ pcMagenta ss $ repositoryOf info
-                  , pcWhite ss $ nameOf info
+  where fields  = map white . absInfoFields . langOf $ ss
+        entries = [ magenta $ repositoryOf info
+                  , white $ nameOf info
                   , show . latestVerOf $ info
                   , locationOf info
                   , descriptionOf info ]

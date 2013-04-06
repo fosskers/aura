@@ -46,9 +46,9 @@ type ErrMsg = String
 type Pkgbuild = String
 type PkgFilter = [String] -> Aura [String]
 
------------
--- PACKAGES
------------
+----------------
+-- Package Class
+----------------
 class Package a where
     pkgNameOf :: a -> String
     versionOf :: a -> VersionDemand
@@ -67,60 +67,16 @@ instance Show VersionDemand where
     show (MustBe  v)  = '=' : v
     show Anything     = ""
 
----------------
--- Source Packages
----------------
-
-class (Package a, Show a, Eq a) => SourcePackage a where
+------------------
+-- Buildable Class
+------------------
+class (Package a) => Buildable a where
   -- | Fetch and extract the source code corresponding to the given package.
-  getSource :: a -- ^ Package (currently AUR or ABS)
-            -> FilePath -- ^ Directory in which to extract the package.
-            -> IO FilePath -- ^ Path to the extracted source.
-
-  -- | Read the PKGBUILD of the package as a string.
-  pkgbuildOf :: a -- ^ Package.
-             -> Pkgbuild -- ^ PKGBUILD read in as a string.
-
-  namespaceOf :: a -- ^ Package
-              -> Namespace -- ^ Parsed key/value pairs from the PKGBUILD.
-
-  -- | Parse a PKGBUILD file to create a SourcePackage.
-  parsePkgbuild :: String -- ^ PKGBUILD location on disk
-                -> Pkgbuild -- ^ PKGBUILD contents
-                -> Aura a
-
-------------------
--- Pacman Packages
-------------------
-data PacmanPkg = PacmanPkg String VersionDemand String
-
-instance Package PacmanPkg where
-    pkgNameOf (PacmanPkg n _ _) = n
-    versionOf (PacmanPkg _ v _) = v
-
-instance Show PacmanPkg where
-    show = pkgNameWithVersionDemand
-
-instance Eq PacmanPkg where
-    a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
-
-pkgInfoOf :: PacmanPkg -> String
-pkgInfoOf (PacmanPkg _ _ i) = i
-
-pacmanPkg :: String -> Aura PacmanPkg
-pacmanPkg pkg = PacmanPkg name ver `liftM` pacmanOutput ["-Si",name]
-    where (name,ver) = parseNameAndVersionDemand pkg
-
--- | Get only those packages that are accessible by pacman.
-filterRepoPkgs :: PkgFilter
-filterRepoPkgs pkgs = do
-  repoPkgs <- lines `liftM` pacmanOutput ["-Ssq",pkgs']
-  return $ filter (`elem` repoPkgs) pkgs
-    where pkgs' = "^(" ++ prep pkgs ++ ")$"
-          prep  = specs . intercalate "|"
-          specs []     = []
-          specs (c:cs) | c `elem` "+" = ['[',c,']'] ++ specs cs
-                       | otherwise    = c : specs cs
+  source :: a           -- ^ Package (currently AUR or ABS)
+         -> FilePath    -- ^ Directory in which to extract the package.
+         -> IO FilePath -- ^ Path to the extracted source.
+  pkgbuildOf  :: a -> Pkgbuild
+  namespaceOf :: a -> Namespace
 
 ---------------------------------
 -- Functions common to `Package`s
