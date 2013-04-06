@@ -62,8 +62,6 @@ executable aura
                        Aura.Monad.Aura,
                        Aura.Dependencies,
                        Aura.Colour.Text,
-                       Aura.Colour.Parser,
-                       Aura.Colour.PacmanColorConf,
                        Aura.Commands.A,
                        Aura.Commands.B,
                        Aura.Commands.C,

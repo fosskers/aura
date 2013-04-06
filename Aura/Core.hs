@@ -35,8 +35,6 @@ import Aura.Utils
 import Aura.Bash
 import Aura.AUR
 
-import Bash.Base
-
 import Utilities
 import Shell
 

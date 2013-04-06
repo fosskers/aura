@@ -22,7 +22,6 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Settings.Base ( Settings(..) ) where
 
 import Aura.Settings.BadPackages (Reason)
-import Aura.Colour.Text          (Colouror)
 import Aura.Languages            (Language)
 
 import Shell (Environment)
@@ -49,11 +48,4 @@ data Settings = Settings { inputOf         :: [String]
                          , rebuildDevel    :: Bool
                          , mayHotEdit      :: Bool
                          , mustConfirm     :: Bool
-                         , useCustomizepkg :: Bool
-                         , pcRed           :: Colouror
-                         , pcGreen         :: Colouror
-                         , pcYellow        :: Colouror
-                         , pcBlue          :: Colouror
-                         , pcMagenta       :: Colouror
-                         , pcCyan          :: Colouror
-                         , pcWhite         :: Colouror }
+                         , useCustomizepkg :: Bool }

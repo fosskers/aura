@@ -145,12 +145,12 @@ displayAurPkgInfo info = ask >>= \ss ->
 
 renderAurPkgInfo :: Settings -> PkgInfo -> String
 renderAurPkgInfo ss info = entrify ss fields entries
-    where fields  = map (pcWhite ss) . infoFields . langOf $ ss
-          entries = [ pcMagenta ss "aur"
-                    , pcWhite ss $ nameOf info
+    where fields  = map white . infoFields . langOf $ ss
+          entries = [ magenta "aur"
+                    , white $ nameOf info
                     , latestVerOf info
                     , outOfDateMsg (isOutOfDate info) $ langOf ss
-                    , pcCyan ss $ projectURLOf info
+                    , cyan $ projectURLOf info
                     , aurURLOf info
                     , licenseOf info
                     , show $ votesOf info
@@ -165,10 +165,10 @@ aurSearch regex = ask >>= \ss -> do
 renderSearch :: Settings -> String -> PkgInfo -> String
 renderSearch ss r i = repo ++ n ++ " " ++ v ++ " (" ++ l ++ ")\n    " ++ d
     where c cs = case cs =~ ("(?i)" ++ r) of (b,m,a) -> b ++ cyan m ++ a
-          repo = pcMagenta ss "aur/"
+          repo = magenta "aur/"
           n = c $ nameOf i
           d = c $ descriptionOf i
-          l = pcYellow ss . show . votesOf $ i  -- `l` for likes?
+          l = yellow . show . votesOf $ i  -- `l` for likes?
           v | isOutOfDate i = red $ latestVerOf i
             | otherwise     = green $ latestVerOf i
 

@@ -10,8 +10,7 @@ arch=('i686' 'x86_64')
 depends=('gmp' 'pacman' 'pcre' 'curl')
 makedepends=('ghc' 'haskell-regex-base' 'haskell-regex-pcre' 'haskell-curl'
              'haskell-json' 'haskell-mtl' 'haskell-parsec' 'haskell-transformers')
-optdepends=('pacman-color: For coloured pacman output in Aura.'
-            'powerpill:    For faster repository downloads.'
+optdepends=('powerpill:    For faster repository downloads.'
             'customizepkg: For auto-editing of PKGBUILDs.')
 provides=('aura')
 conflicts=('aura-git')

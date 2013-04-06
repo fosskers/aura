@@ -48,9 +48,6 @@ type ShellArg = String
 defaultCmd :: String
 defaultCmd = "pacman"
 
-pacmanColorCmd :: String
-pacmanColorCmd = "/usr/bin/pacman-color"
-
 powerPillCmd :: String
 powerPillCmd = "/usr/bin/powerpill"
 
@@ -66,12 +63,10 @@ lockFile = "/var/lib/pacman/db.lck"
 getPacmanCmd :: Environment -> IO String
 getPacmanCmd env = case getEnvVar "PACMAN" env of
                      Just cmd -> return cmd
-                     Nothing  -> do
-                       pacmanColor <- doesFileExist pacmanColorCmd
-                       powerPill   <- doesFileExist powerPillCmd
-                       if | powerPill   -> return powerPillCmd
-                          | pacmanColor -> return pacmanColorCmd
-                          | otherwise   -> return defaultCmd
+                     Nothing  -> do  -- Left space for more options later.
+                       powerPill <- doesFileExist powerPillCmd
+                       if | powerPill -> return powerPillCmd
+                          | otherwise -> return defaultCmd
 
 getPacmanConf :: IO String
 getPacmanConf = readFile pacmanConfFile

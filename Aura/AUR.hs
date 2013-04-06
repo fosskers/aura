@@ -33,7 +33,6 @@ module Aura.AUR
 
 import System.FilePath ((</>))
 import Control.Monad   (liftM)
-import Data.Maybe      (fromJust)
 import Data.List       (intercalate)
 import Text.JSON
 
