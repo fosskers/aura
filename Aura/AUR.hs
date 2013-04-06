@@ -23,25 +23,64 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.AUR
-    ( aurInfoLookup
+    ( aurPkg
+    , filterAURPkgs
+    , aurInfoLookup
     , aurSearchLookup
     , trueVerViaPkgbuild
     , downloadPkgbuild
     , sourceTarball
-    , Pkgbuild
-    , PkgInfo(..) ) where
+    , PkgInfo(..)
+    , AURPkg(..) ) where
 
 import System.FilePath ((</>))
 import Control.Monad   (liftM)
 import Data.List       (intercalate)
 import Text.JSON
 
+import Aura.Bash
+import Aura.Core
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Utils (scoldAndFail)
-import Aura.Bash  (value,Namespace)
+
+--import Bash.Base
+import Utilities (decompress)
 
 import Internet
+
+---
+
+---------------
+-- AUR Packages
+---------------
+data AURPkg = AURPkg String VersionDemand Pkgbuild Namespace 
+
+instance Package AURPkg where
+  pkgNameOf (AURPkg n _ _ _) = n
+  versionOf (AURPkg _ v _ _) = v
+
+instance SourcePackage AURPkg where
+  getSource a fp = do
+    tarball <- sourceTarball fp (pkgNameOf a)
+    decompress tarball
+  pkgbuildOf (AURPkg _ _ p _) = p
+  namespaceOf (AURPkg _ _ _ ns) = ns
+  parsePkgbuild loc b = 
+    let getVal ns key = case value ns key of
+          a : _ -> return a
+          [] -> failure $ "Unable to extract value for key " ++ key
+    in do
+      newNS <- namespace loc b  -- Reparse PKGBUILD.
+      name <- getVal newNS "pkgname"
+      version <- MustBe `liftM` getVal newNS "pkgver"
+      return $ AURPkg name version b newNS
+
+instance Show AURPkg where
+    show = pkgNameWithVersionDemand
+
+instance Eq AURPkg where
+    a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
 
 -----------------------
 -- AUR API URL CREATION
@@ -125,10 +164,20 @@ fromJSRat (JSRational _ r) = round (fromRational r :: Float)
 fromJSRat _                = error "JSValue given was not a JSRational!"
 
 ------------
+-- AURPkg
+------------
+aurPkg :: String -> Aura AURPkg
+aurPkg pkg = do
+  pkgbuild  <- downloadPkgbuild name
+  AURPkg name ver pkgbuild `liftM` namespace name pkgbuild
+      where (name,ver) = parseNameAndVersionDemand pkg
+
+filterAURPkgs :: PkgFilter
+filterAURPkgs pkgs = map nameOf `liftM` aurInfoLookup pkgs
+
+------------
 -- PKGBUILDS
 ------------
-type Pkgbuild = String
-
 aurLink :: String
 aurLink = "https://aur.archlinux.org/packages/"
 
@@ -152,5 +201,7 @@ trueVerViaPkgbuild ns = pkgver ++ "-" ++ pkgrel
 tarballUrl :: String -> String
 tarballUrl pkg = pkgBaseUrl pkg </> pkg ++ ".tar.gz"
 
-sourceTarball :: FilePath -> String -> IO FilePath
+sourceTarball :: FilePath -- ^ Where to save the tarball.
+  -> String  -- ^ Package name.
+  -> IO FilePath -- ^ Saved tarball location.
 sourceTarball path = saveUrlContents path . tarballUrl

@@ -24,7 +24,7 @@ module Aura.Core where
 import System.Directory (doesFileExist)
 import Text.Regex.PCRE  ((=~))
 import Control.Monad    (liftM,when)
-import Data.List        ((\\), nub, intercalate, isSuffixOf)
+import Data.List        (intercalate, isSuffixOf)
 
 import Aura.Settings.Base
 import Aura.Colour.Text
@@ -32,8 +32,7 @@ import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Pacman
 import Aura.Utils
-import Aura.Bash
-import Aura.AUR
+import Aura.Bash (Namespace)
 
 import Utilities
 import Shell
@@ -44,6 +43,8 @@ import Shell
 -- TYPES
 --------
 type ErrMsg = String
+type Pkgbuild = String
+type PkgFilter = [String] -> Aura [String]
 
 -----------
 -- PACKAGES
@@ -66,28 +67,27 @@ instance Show VersionDemand where
     show (MustBe  v)  = '=' : v
     show Anything     = ""
 
--- I would like to reduce the following three sets of instance declarations
--- to a single more polymorphic solution.
 ---------------
--- AUR Packages
+-- Source Packages
 ---------------
-data AURPkg = AURPkg String VersionDemand Pkgbuild Namespace
-               
-instance Package AURPkg where
-    pkgNameOf (AURPkg n _ _ _) = n
-    versionOf (AURPkg _ v _ _) = v
 
-instance Show AURPkg where
-    show = pkgNameWithVersionDemand
+class (Package a, Show a, Eq a) => SourcePackage a where
+  -- | Fetch and extract the source code corresponding to the given package.
+  getSource :: a -- ^ Package (currently AUR or ABS)
+            -> FilePath -- ^ Directory in which to extract the package.
+            -> IO FilePath -- ^ Path to the extracted source.
 
-instance Eq AURPkg where
-    a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
+  -- | Read the PKGBUILD of the package as a string.
+  pkgbuildOf :: a -- ^ Package.
+             -> Pkgbuild -- ^ PKGBUILD read in as a string.
 
-pkgbuildOf :: AURPkg -> String
-pkgbuildOf (AURPkg _ _ p _) = p
+  namespaceOf :: a -- ^ Package
+              -> Namespace -- ^ Parsed key/value pairs from the PKGBUILD.
 
-namespaceOf :: AURPkg -> Namespace
-namespaceOf (AURPkg _ _ _ ns) = ns
+  -- | Parse a PKGBUILD file to create a SourcePackage.
+  parsePkgbuild :: String -- ^ PKGBUILD location on disk
+                -> Pkgbuild -- ^ PKGBUILD contents
+                -> Aura a
 
 ------------------
 -- Pacman Packages
@@ -107,23 +107,20 @@ instance Eq PacmanPkg where
 pkgInfoOf :: PacmanPkg -> String
 pkgInfoOf (PacmanPkg _ _ i) = i
 
--------------------
--- Virtual Packages
--------------------
--- Virtual packages also contain a record of their providing package.
--- Providing packages are assumed to be Pacman (ABS) packages.
--- Are there any instances where this isn't the case?
-data VirtualPkg = VirtualPkg String VersionDemand (Maybe PacmanPkg)
+pacmanPkg :: String -> Aura PacmanPkg
+pacmanPkg pkg = PacmanPkg name ver `liftM` pacmanOutput ["-Si",name]
+    where (name,ver) = parseNameAndVersionDemand pkg
 
-instance Package VirtualPkg where
-    pkgNameOf (VirtualPkg n _ _) = n
-    versionOf (VirtualPkg _ v _) = v
-
-instance Show VirtualPkg where
-    show = pkgNameWithVersionDemand
-
-providerPkgOf :: VirtualPkg -> Maybe PacmanPkg
-providerPkgOf (VirtualPkg _ _ p) = p
+-- | Get only those packages that are accessible by pacman.
+filterRepoPkgs :: PkgFilter
+filterRepoPkgs pkgs = do
+  repoPkgs <- lines `liftM` pacmanOutput ["-Ssq",pkgs']
+  return $ filter (`elem` repoPkgs) pkgs
+    where pkgs' = "^(" ++ prep pkgs ++ ")$"
+          prep  = specs . intercalate "|"
+          specs []     = []
+          specs (c:cs) | c `elem` "+" = ['[',c,']'] ++ specs cs
+                       | otherwise    = c : specs cs
 
 ---------------------------------
 -- Functions common to `Package`s
@@ -140,42 +137,6 @@ parseNameAndVersionDemand pkg = (name, getVersionDemand comp ver)
                                | c == ">"  = MoreThan v
                                | c == "="  = MustBe v
                                | otherwise = Anything
-
-pacmanPkg :: String -> Aura PacmanPkg
-pacmanPkg pkg = PacmanPkg name ver `liftM` pacmanOutput ["-Si",name]
-    where (name,ver) = parseNameAndVersionDemand pkg
-
-aurPkg :: String -> Aura AURPkg
-aurPkg pkg = do
-  pkgbuild  <- downloadPkgbuild name
-  AURPkg name ver pkgbuild `liftM` namespace name pkgbuild
-      where (name,ver) = parseNameAndVersionDemand pkg
-
-virtualPkg :: String -> Aura VirtualPkg
-virtualPkg pkg = VirtualPkg name ver `liftM` getProvider pkg
-    where (name,ver) = parseNameAndVersionDemand pkg
-          getProvider n = do
-            provider <- getProvidingPkg n
-            case provider of
-              Nothing -> return Nothing
-              Just p  -> Just `liftM` pacmanPkg p
-
--- Yields a virtual package's providing package if there is one.
-getProvidingPkg :: String -> Aura (Maybe String)
-getProvidingPkg virt = do
-  candidates <- getProvidingPkg' virt
-  let lined = lines candidates
-  if length lined /= 1
-     then return Nothing
-     else return . Just . head $ lined
-
--- Unsafe version.
--- Only use on virtual packages that have guaranteed providers.
--- Adding "$" to the pkg name (technically a regex) fixes a bug.
-getProvidingPkg' :: String -> Aura String
-getProvidingPkg' virt = do
-  let (name,_) = splitNameAndVer virt
-  nub `liftM` pacmanOutput ["-Ssq",name ++ "$"]
 
 -----------
 -- THE WORK
@@ -208,48 +169,15 @@ isDevelPkg :: String -> Bool
 isDevelPkg p = any (`isSuffixOf` p) suffixes
     where suffixes = ["-git","-hg","-svn","-darcs","-cvs","-bzr"]
 
-isntMostRecent :: (PkgInfo,String) -> Bool
-isntMostRecent (info,v) = trueVer > currVer
-  where trueVer = comparableVer $ latestVerOf info
-        currVer = comparableVer v
-
 isIgnored :: String -> [String] -> Bool
 isIgnored pkg toIgnore = pkg `elem` toIgnore
 
 isInstalled :: String -> Aura Bool
 isInstalled pkg = pacmanSuccess ["-Qq",pkg]
 
-type PkgFilter = [String] -> Aura [String]
-
-ignoreRepos :: PkgFilter
-ignoreRepos _ = return []
-
-filterAURPkgs :: PkgFilter
-filterAURPkgs pkgs = map nameOf `liftM` aurInfoLookup pkgs
-
-filterRepoPkgs :: PkgFilter
-filterRepoPkgs pkgs = do
-  repoPkgs <- lines `liftM` pacmanOutput ["-Ssq",pkgs']
-  return $ filter (`elem` repoPkgs) pkgs
-    where pkgs' = "^(" ++ prep pkgs ++ ")$"
-          prep  = specs . intercalate "|"
-          specs []     = []
-          specs (c:cs) | c `elem` "+" = ['[',c,']'] ++ specs cs
-                       | otherwise    = c : specs cs
-
 removePkgs :: [String] -> [String] -> Aura ()
 removePkgs [] _         = return ()
 removePkgs pkgs pacOpts = pacman  $ ["-Rsu"] ++ pkgs ++ pacOpts
-
-divideByPkgType :: PkgFilter -> [String] -> Aura ([String],[String],[String])
-divideByPkgType repoFilter pkgs = do
-  repoPkgNames <- repoFilter namesOnly
-  aurPkgNames  <- filterAURPkgs $ namesOnly \\ repoPkgNames
-  let aurPkgs  = filter (flip elem aurPkgNames . splitName) pkgs
-      repoPkgs = filter (flip elem repoPkgNames . splitName) pkgs
-      others   = (pkgs \\ aurPkgs) \\ repoPkgs
-  return (repoPkgs, aurPkgs, others)
-      where namesOnly = map splitName pkgs
 
 -- | Block further action until the database is free.
 checkDBLock :: Aura ()

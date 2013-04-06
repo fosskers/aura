@@ -21,15 +21,21 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Dependencies where
+module Aura.Dependencies
+  ( ignoreRepos
+  , divideByPkgType
+  , getDepsToInstall
+  , determineDeps
+  ) where
 
 import Text.Regex.PCRE ((=~))
-import Control.Monad   (filterM)
+import Control.Monad   (filterM,liftM,when)
 import Data.Maybe      (fromJust, isNothing)
-import Data.List       (nub)
+import Data.List        ((\\), nub, intercalate, isSuffixOf)
 
 import Aura.Pacman (pacmanOutput)
-import Aura.AUR    (trueVerViaPkgbuild)
+import Aura.AUR
+import Aura.Virtual
 import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages
@@ -40,9 +46,25 @@ import Aura.Core
 import Utilities (notNull, tripleThrd)
 
 ---
+ignoreRepos :: PkgFilter
+ignoreRepos _ = return []
+
+-- |Split a list of packages into:
+--  - Repo packages.
+--  - AUR packages.
+--  - Other stuff.
+divideByPkgType :: PkgFilter -> [String] -> Aura ([String],[String],[String])
+divideByPkgType repoFilter pkgs = do
+  repoPkgNames <- repoFilter namesOnly
+  aurPkgNames  <- filterAURPkgs $ namesOnly \\ repoPkgNames
+  let aurPkgs  = filter (flip elem aurPkgNames . splitName) pkgs
+      repoPkgs = filter (flip elem repoPkgNames . splitName) pkgs
+      others   = (pkgs \\ aurPkgs) \\ repoPkgs
+  return (repoPkgs, aurPkgs, others)
+      where namesOnly = map splitName pkgs
 
 -- Returns the deps to be installed, or fails nicely.
-getDepsToInstall :: [AURPkg] -> Aura ([String],[AURPkg])
+getDepsToInstall :: SourcePackage a => [a] -> Aura ([String],[AURPkg])
 getDepsToInstall []   = ask >>= failure . getDepsToInstall_1 . langOf
 getDepsToInstall pkgs = ask >>= \ss -> do
   allDeps <- mapM determineDeps pkgs
@@ -59,7 +81,7 @@ getDepsToInstall pkgs = ask >>= \ss -> do
        return (nub $ providers ++ pacmanPkgs, necAURPkgs)
 
 -- Returns ([RepoPackages], [AURPackages], [VirtualPackages])
-determineDeps :: AURPkg -> Aura ([String],[AURPkg],[String])
+determineDeps :: SourcePackage a => a -> Aura ([String],[AURPkg],[String])
 determineDeps pkg = do
   let ns   = namespaceOf pkg
       deps = concatMap (value ns) ["depends","makedepends","checkdepends"]

@@ -54,6 +54,7 @@ import Aura.Commands.B as B
 import Aura.Commands.C as C
 import Aura.Commands.L as L
 import Aura.Commands.O as O
+import Aura.Commands.M as M
 
 ---
 
@@ -105,6 +106,11 @@ executeOpts (flags,input,pacOpts) =
           [Download]     -> A.downloadTarballs input
           [GetPkgbuild]  -> A.displayPkgbuild input
           (Refresh:fs')  -> sudo $ syncAndContinue (fs',input,pacOpts)
+          badFlags       -> scoldAndFail executeOpts_1
+    (ABSInstall:fs) ->
+        case fs of
+          [Search]       -> M.absSearch input
+          [Info]         -> M.absInfo input
           badFlags       -> scoldAndFail executeOpts_1
     (SaveState:fs) ->
         case fs of

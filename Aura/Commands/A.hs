@@ -61,7 +61,11 @@ pbHandler = ask >>= check
                    | useCustomizepkg ss = return customizepkg
                    | otherwise          = return return
 
-installPackages :: [String] -> [String] -> Aura ()
+-- | High level 'install' command. Handles installing
+-- dependencies.
+installPackages :: [String] -- ^ Package options
+  -> [String] -- ^ Packages to install
+  -> Aura ()
 installPackages _ []         = return ()
 installPackages pacOpts pkgs = ask >>= \ss ->
   if not $ delMakeDeps ss
@@ -195,10 +199,15 @@ displayPkgbuild :: [String] -> Aura ()
 displayPkgbuild pkgs = filterAURPkgs pkgs >>= mapM_ dnload
       where dnload p = downloadPkgbuild p >>= liftIO . putStrLn
 
+isntMostRecent :: (PkgInfo,String) -> Bool
+isntMostRecent (info,v) = trueVer > currVer
+  where trueVer = comparableVer $ latestVerOf info
+        currVer = comparableVer v
+
 ------------
 -- REPORTING
 ------------
-reportPkgsToInstall :: [String] -> [AURPkg] -> [AURPkg] -> Aura ()
+reportPkgsToInstall :: SourcePackage a => [String] -> [a] -> [a] -> Aura ()
 reportPkgsToInstall pacPkgs aurDeps aurPkgs = do
   lang <- langOf `liftM` ask
   pl (reportPkgsToInstall_1 lang) (sort pacPkgs)
@@ -215,7 +224,7 @@ reportIgnoredPackages pkgs = do
   lang <- langOf `liftM` ask
   printList yellow cyan (reportIgnoredPackages_1 lang) pkgs
 
-reportPkgbuildDiffs :: [AURPkg] -> Aura [AURPkg]
+reportPkgbuildDiffs :: SourcePackage a => [a] -> Aura [a]
 reportPkgbuildDiffs [] = return []
 reportPkgbuildDiffs ps = ask >>= check
     where check ss | not $ diffPkgbuilds ss = return ps

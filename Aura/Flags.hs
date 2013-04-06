@@ -51,7 +51,8 @@ import Utilities (notNull, split)
 
 type FlagMap = [(Flag,String)]
 
-data Flag = AURInstall
+data Flag = ABSInstall
+          | AURInstall
           | SaveState
           | Cache
           | LogFile
@@ -109,6 +110,7 @@ auraOperations lang =
     , Option ['B'] ["save"]      (NoArg SaveState)  (saveS lang)
     , Option ['C'] ["downgrade"] (NoArg Cache)      (downG lang)
     , Option ['L'] ["viewlog"]   (NoArg LogFile)    (viewL lang)
+    , Option ['M'] ["abssync"]   (NoArg ABSInstall) (absSy lang)
     , Option ['O'] ["orphans"]   (NoArg Orphans)    (orpha lang) ]
 
 auraOptions :: [OptDescr Flag]

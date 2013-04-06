@@ -27,7 +27,6 @@ import System.FilePath ((</>), takeFileName)
 import Control.Monad   (liftM, when)
 
 import Aura.Pacman (pacman)
-import Aura.AUR    (sourceTarball)
 import Aura.Settings.Base
 import Aura.Colour.Text
 import Aura.Monad.Aura
@@ -46,7 +45,7 @@ installPkgFiles :: [String] -> [FilePath] -> Aura ()
 installPkgFiles pacOpts files = checkDBLock >> pacman (["-U"] ++ pacOpts ++ files)
 
 -- All building occurs within temp directories in the package cache.
-buildPackages :: [AURPkg] -> Aura [FilePath]
+buildPackages :: SourcePackage a => [a] -> Aura [FilePath]
 buildPackages []   = return []
 buildPackages pkgs = ask >>= \ss -> do
   let buildPath = buildPathOf ss
@@ -55,7 +54,7 @@ buildPackages pkgs = ask >>= \ss -> do
 
 -- Handles the building of Packages. Fails nicely.
 -- Assumed: All pacman and AUR dependencies are already installed.
-build :: [FilePath] -> [AURPkg] -> Aura [FilePath]
+build :: SourcePackage a => [FilePath] -> [a] -> Aura [FilePath]
 build built []       = return $ filter notNull built
 build built ps@(p:_) = do
   notify (flip buildPackages_1 pn)
@@ -64,36 +63,35 @@ build built ps@(p:_) = do
       where pn = pkgNameOf p
         
 -- Perform the actual build.
-build' :: [AURPkg] -> Aura ([FilePath],[AURPkg])
+build' :: SourcePackage a => [a] -> Aura ([FilePath],[a])
 build' []     = failure "build' : You should never see this."
 build' (p:ps) = ask >>= \ss -> do
   let makepkg'   = if toSuppress then makepkgQuiet else makepkgVerbose
       toSuppress = suppressMakepkg ss
       user       = getTrueUser $ environmentOf ss
   curr <- liftIO pwd
-  getSourceCode (pkgNameOf p) user curr
+  getSourceCode p user curr
   overwritePkgbuild p
   pNames <- makepkg' user
   paths  <- moveToBuildPath pNames
   liftIO $ cd curr
   return (paths,ps)
 
-getSourceCode :: String -> String -> FilePath -> Aura ()
-getSourceCode pkgName user currDir = liftIO $ do
+getSourceCode :: SourcePackage a => a -> String -> FilePath -> Aura ()
+getSourceCode pkg user currDir = liftIO $ do
   chown user currDir []
-  tarball   <- sourceTarball currDir pkgName
-  sourceDir <- decompress tarball
+  sourceDir <- getSource pkg currDir
   chown user sourceDir ["-R"]
   cd sourceDir
 
-overwritePkgbuild :: AURPkg -> Aura ()
+overwritePkgbuild :: SourcePackage a => a -> Aura ()
 overwritePkgbuild p = (mayHotEdit `liftM` ask) >>= check
     where check True  = liftIO . writeFile "PKGBUILD" . pkgbuildOf $ p
           check False = return ()
 
 -- Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
-buildFail :: [FilePath] -> [AURPkg] -> String -> Aura ([FilePath],[AURPkg])
+buildFail :: SourcePackage a => [FilePath] -> [a] -> String -> Aura ([FilePath],[a])
 buildFail _ [] _ = failure "buildFail : You should never see this message."
 buildFail built (p:ps) errors = ask >>= \ss -> do
   let lang = langOf ss
