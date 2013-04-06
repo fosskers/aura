@@ -23,7 +23,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Bash
     ( namespace
-    , value ) where
+    , value 
+    , Namespace ) where
 
 import Text.Parsec.Error (ParseError)
 import Control.Monad (liftM)

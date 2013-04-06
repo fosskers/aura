@@ -28,7 +28,6 @@ import System.Directory   (doesDirectoryExist)
 
 import Aura.Languages (Language,langFromEnv)
 import Aura.MakePkg   (makepkgConfFile)
-import Aura.Colour.PacmanColorConf
 import Aura.Settings.BadPackages
 import Aura.Settings.Base
 import Aura.Pacman
@@ -44,7 +43,6 @@ getSettings lang (auraFlags,input,pacOpts) = do
   confFile    <- getPacmanConf
   environment <- getEnvironment
   pmanCommand <- getPacmanCmd environment
-  colourFuncs <- getColours
   makepkgConf <- readFile makepkgConfFile
   buildPath'  <- checkBuildPath (buildPath auraFlags) (getCachePath confFile)
   let language = checkLang lang environment
@@ -69,14 +67,7 @@ getSettings lang (auraFlags,input,pacOpts) = do
                   , mayHotEdit      = hotEditStatus auraFlags
                   , diffPkgbuilds   = pbDiffStatus auraFlags
                   , rebuildDevel    = rebuildDevelStatus auraFlags
-                  , useCustomizepkg = customizepkgStatus auraFlags
-                  , pcRed           = redf colourFuncs
-                  , pcGreen         = greenf colourFuncs
-                  , pcYellow        = yellowf colourFuncs
-                  , pcBlue          = bluef colourFuncs
-                  , pcMagenta       = magentaf colourFuncs
-                  , pcCyan          = cyanf colourFuncs
-                  , pcWhite         = whitef colourFuncs }
+                  , useCustomizepkg = customizepkgStatus auraFlags }
 
 debugOutput :: Settings -> IO ()
 debugOutput ss = do
@@ -101,14 +92,7 @@ debugOutput ss = do
                  , "PKGBUILD editing? => " ++ yn (mayHotEdit ss) 
                  , "Diff PKGBUILDs?   => " ++ yn (diffPkgbuilds ss)
                  , "Rebuild Devel?    => " ++ yn (rebuildDevel ss)
-                 , "Use Customizepkg? => " ++ yn (useCustomizepkg ss)
-                 , "Colour Test       => " ++ pcRed ss "RED"         ++
-                                              pcGreen ss "GREEN"     ++
-                                              pcYellow ss "YELLOW"   ++
-                                              pcBlue ss "BLUE"       ++
-                                              pcMagenta ss "MAGENTA" ++
-                                              pcCyan ss "CYAN"       ++
-                                              pcWhite ss "WHITE" ]
+                 , "Use Customizepkg? => " ++ yn (useCustomizepkg ss) ]
 
 checkLang :: Maybe Language -> Environment -> Language
 checkLang Nothing env   = langFromEnv $ getLangVar env

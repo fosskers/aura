@@ -32,12 +32,13 @@ module Aura.ABS (
 where
 
 import           Control.Monad      (filterM, liftM)
+import           Data.List          (find)
 import           System.Directory   (doesDirectoryExist, getDirectoryContents)
 import           System.FilePath
 import           Text.Regex.PCRE    ((=~))
-import           Data.List          (find)
 
 import qualified Aura.Bash          as B
+import           Aura.Colour.Text
 import           Aura.Core
 import           Aura.Languages
 import           Aura.Monad.Aura
@@ -119,9 +120,9 @@ absSearchLookup pattern = do
 -- | Format a PkgInfo into a string
 renderPkgInfo :: Settings -> PkgInfo -> String
 renderPkgInfo ss info = entrify ss fields entries
-  where fields  = map (pcWhite ss) . absInfoFields . langOf $ ss
-        entries = [ pcMagenta ss $ repositoryOf info
-                  , pcWhite ss $ nameOf info
+  where fields  = map white . absInfoFields . langOf $ ss
+        entries = [ magenta $ repositoryOf info
+                  , white $ nameOf info
                   , show . latestVerOf $ info
                   , locationOf info
                   , descriptionOf info ]
@@ -147,14 +148,14 @@ that are being built.
 parseLocalPkgBuild :: String -- ^ PKGBuild location (not that important)
                    -> String -- ^ PKGBUILD contents as string
                    -> Aura PkgInfo
-parseLocalPkgBuild pkgloc pkgbuild = 
+parseLocalPkgBuild pkgloc pkgbuild =
   parsePkgBuild' "local" pkgloc pkgbuild
 
 parsePkgBuild' :: String -- ^ Repository name
                -> String -- ^ Pkgbuild location on disk.
                -> String -- ^ PKGBUILD contents
                -> Aura PkgInfo
-parsePkgBuild' repo pkgloc pkgbuild = 
+parsePkgBuild' repo pkgloc pkgbuild =
   let ns' = B.namespace pkgloc pkgbuild
       getVal ns key = case B.value ns key of
         a : _ -> return a
@@ -164,7 +165,7 @@ parsePkgBuild' repo pkgloc pkgbuild =
     name <- getVal ns "pkgname"
     version <- MustBe `liftM` getVal ns "pkgver"
     desc <- getVal ns "pkgdesc"
-    return $ PkgInfo repo name version pkgloc desc pkgbuild ns               
+    return $ PkgInfo repo name version pkgloc desc pkgbuild ns
 
 -- | Find a matching list of packages given a name. This only matches
 -- on the name of the package.

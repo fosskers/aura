@@ -26,14 +26,13 @@ import Text.Regex.PCRE  ((=~))
 import Control.Monad    (liftM,when)
 import Data.List        (intercalate, isSuffixOf)
 
+import Aura.Bash (Namespace)
 import Aura.Settings.Base
 import Aura.Colour.Text
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Pacman
 import Aura.Utils
-
-import Bash.Base
 
 import Utilities
 import Shell

@@ -35,19 +35,16 @@ module Aura.AUR
 
 import System.FilePath ((</>))
 import Control.Monad   (liftM)
-import Data.Maybe      (fromJust)
 import Data.List       (intercalate)
 import Text.JSON
 
-import Aura.Bash
+import Aura.Bash (value, namespace, Namespace)
 import Aura.Core
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Utils (scoldAndFail)
 
-import Bash.Base
 import Utilities (decompress)
-
 import Internet
 
 -- I would like to reduce the following three sets of instance declarations
@@ -194,8 +191,8 @@ downloadPkgbuild = liftIO . urlContents . pkgbuildUrl
 
 trueVerViaPkgbuild :: Namespace -> String
 trueVerViaPkgbuild ns = pkgver ++ "-" ++ pkgrel
-    where pkgver = head . fromJust . getVar ns $ "pkgver"
-          pkgrel = head . fromJust . getVar ns $ "pkgrel"
+    where pkgver = head $ value ns "pkgver"
+          pkgrel = head $ value ns "pkgrel"
 
 ------------------
 -- SOURCE TARBALLS
