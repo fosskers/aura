@@ -153,17 +153,17 @@ renderAurPkgInfo ss info = entrify ss fields entries
                     , cyan $ projectURLOf info
                     , aurURLOf info
                     , licenseOf info
-                    , show $ votesOf info
+                    , yellow . show . votesOf $ info
                     , descriptionOf info ]
 
 aurSearch :: [String] -> Aura ()
 aurSearch []    = return ()
-aurSearch regex = ask >>= \ss -> do
+aurSearch regex = do
     results <- aurSearchLookup regex
-    mapM_ (liftIO . putStrLn . renderSearch ss (unwords regex)) results
+    mapM_ (liftIO . putStrLn . renderSearch (unwords regex)) results
 
-renderSearch :: Settings -> String -> PkgInfo -> String
-renderSearch ss r i = repo ++ n ++ " " ++ v ++ " (" ++ l ++ ")\n    " ++ d
+renderSearch :: String -> PkgInfo -> String
+renderSearch r i = repo ++ n ++ " " ++ v ++ " (" ++ l ++ ")\n    " ++ d
     where c cs = case cs =~ ("(?i)" ++ r) of (b,m,a) -> b ++ cyan m ++ a
           repo = magenta "aur/"
           n = c $ nameOf i
