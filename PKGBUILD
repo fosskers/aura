@@ -2,7 +2,7 @@
 _hkgname=aura
 pkgname=aura
 pkgver=1.1.6.0
-pkgrel=1
+pkgrel=2
 pkgdesc="A secure package manager for Arch Linux and the AUR written in Haskell."
 url="https://github.com/fosskers/aura"
 license=('GPL-3')
@@ -17,12 +17,17 @@ provides=('aura')
 conflicts=('aura-git')
 options=('strip')
 source=(https://bitbucket.org/fosskers/aura/downloads/${_hkgname}-${pkgver}.tar.gz)
-md5sums=('744a01237a7396f2c987ab16c19872e6')
+md5sums=('f41a4beda6517b695378cd6d2ad3842e')
 
 build() {
     cd ${srcdir}/${_hkgname}-${pkgver}
     runhaskell Setup configure --prefix=/usr --docdir=/usr/share/doc/${pkgname} -O
     runhaskell Setup build
+}
+
+package() {
+    cd ${srcdir}/${_hkgname}-${pkgver}
+    runhaskell Setup copy --destdir=${pkgdir}
 
     # Installing man page
     mkdir -p "$pkgdir/usr/share/man/man8/"
@@ -41,8 +46,4 @@ build() {
 
     # Directory for storing installed package states
     mkdir -p "$pkgdir/var/cache/aura/states"
-}
-package() {
-    cd ${srcdir}/${_hkgname}-${pkgver}
-    runhaskell Setup copy --destdir=${pkgdir}
 }

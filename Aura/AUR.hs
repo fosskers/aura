@@ -40,8 +40,7 @@ import Text.JSON
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Utils (scoldAndFail)
-
-import Bash.Base
+import Aura.Bash  (value,Namespace)
 
 import Internet
 
@@ -145,8 +144,8 @@ downloadPkgbuild = liftIO . urlContents . pkgbuildUrl
 
 trueVerViaPkgbuild :: Namespace -> String
 trueVerViaPkgbuild ns = pkgver ++ "-" ++ pkgrel
-    where pkgver = head . fromJust . getVar ns $ "pkgver"
-          pkgrel = head . fromJust . getVar ns $ "pkgrel"
+    where pkgver = head $ value ns "pkgver"
+          pkgrel = head $ value ns "pkgrel"
 
 ------------------
 -- SOURCE TARBALLS

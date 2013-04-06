@@ -65,6 +65,7 @@ toNamespace [] = M.empty
 toNamespace (Variable n bs : fs) = insert n bs $ toNamespace fs
 toNamespace (_:fs) = toNamespace fs
 
+-- | Never call this directly. Use `value` in `Aura/Bash`.
 getVar :: Namespace -> String -> Maybe [String]
 getVar ns s = case M.lookup s ns of
                 Nothing -> Nothing
