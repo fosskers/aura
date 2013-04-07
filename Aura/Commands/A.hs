@@ -164,10 +164,11 @@ aurSearch regex = do
 
 renderSearch :: String -> PkgInfo -> String
 renderSearch r i = repo ++ n ++ " " ++ v ++ " (" ++ l ++ ")\n    " ++ d
-    where c cs = case cs =~ ("(?i)" ++ r) of (b,m,a) -> b ++ bCyan m ++ a
+    where c cl cs = case cs =~ ("(?i)" ++ r) of
+                      (b,m,a) -> cl b ++ bCyan m ++ cl a
           repo = magenta "aur/"
-          n = bForeground $ c . nameOf $ i
-          d = c $ descriptionOf i
+          n = c bForeground $ nameOf i
+          d = c noColour $ descriptionOf i
           l = yellow . show . votesOf $ i  -- `l` for likes?
           v | isOutOfDate i = red $ latestVerOf i
             | otherwise     = green $ latestVerOf i
