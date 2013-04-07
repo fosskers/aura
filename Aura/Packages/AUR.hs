@@ -57,9 +57,9 @@ instance Package AURPkg where
   versionOf (AURPkg _ v _ _) = v
 
 instance Buildable AURPkg where
-  source a fp = sourceTarball fp (pkgNameOf a) >>= decompress
   pkgbuildOf  (AURPkg _ _ p _)  = p
   namespaceOf (AURPkg _ _ _ ns) = ns
+  source p fp = sourceTarball fp (pkgNameOf p) >>= decompress
 {-}
   parsePkgbuild loc b = 
     let getVal ns key = case value ns key of

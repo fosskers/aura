@@ -71,12 +71,12 @@ instance Show VersionDemand where
 -- Buildable Class
 ------------------
 class (Package a) => Buildable a where
+  pkgbuildOf  :: a -> Pkgbuild
+  namespaceOf :: a -> Namespace
   -- | Fetch and extract the source code corresponding to the given package.
   source :: a           -- ^ Package (currently AUR or ABS)
          -> FilePath    -- ^ Directory in which to extract the package.
          -> IO FilePath -- ^ Path to the extracted source.
-  pkgbuildOf  :: a -> Pkgbuild
-  namespaceOf :: a -> Namespace
 
 ---------------------------------
 -- Functions common to `Package`s

@@ -21,15 +21,11 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-{- | Handles all ABS related functions.
--}
-module Aura.Packages.ABS
-    ( absInfoLookup
-    , absSearchLookup
-    , renderPkgInfo
-    , PkgInfo ) where
+-- Handles all ABS related functions.
 
-import Control.Monad    (filterM, liftM)
+module Aura.Packages.ABS where
+
+import Control.Monad    (filterM, liftM, void)
 import Text.Regex.PCRE  ((=~))
 import System.Directory (doesDirectoryExist, getDirectoryContents)
 import System.FilePath
@@ -40,58 +36,71 @@ import Aura.Languages
 import Aura.Monad.Aura
 import Aura.Colour.Text
 import Aura.Settings.Base
-import Aura.Utils (entrify)
+import Aura.Pacman (pacmanOutput)
+import Aura.Utils  (entrify)
 
-import Shell     (shellCmd)
 import Utilities (readFileUTF8, split)
+
+import qualified Aura.Shell as A (quietShellCmd)  -- Aura - Has failure checks
+import qualified Shell      as S (quietShellCmd)  -- IO   - Doesn't
 
 ---
 
 ---------------
 -- ABS Packages
 ---------------
+data ABSPkg = ABSPkg String String VersionDemand Pkgbuild Namespace
+
+instance Package ABSPkg where
+  pkgNameOf (ABSPkg n _ _ _ _) = n
+  versionOf (ABSPkg _ _ v _ _) = v
+
+instance Buildable ABSPkg where
+  pkgbuildOf  (ABSPkg _ _ _ p _)  = p
+  namespaceOf (ABSPkg _ _ _ _ ns) = ns
+  source p fp = do
+      let loc = absBasePath </> repoOf p </> pkgNameOf p
+      S.quietShellCmd "cp" ["-R",loc,fp]
+      return $ fp </> pkgNameOf p
+
+instance Eq ABSPkg where
+  a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
+
+repoOf :: ABSPkg -> String
+repoOf (ABSPkg _ r _ _ _) = r
+
+----------
+--- ABSPkg
+----------
+absPkg :: String -> Aura ABSPkg
+absPkg pkg = do
+  repo <- repository name
+  absSync repo name
+  pkgbuild <- liftIO . readFile . pkgbuildPath repo $ name
+  ABSPkg name repo ver pkgbuild `liftM` namespace name pkgbuild
+      where (name,ver) = parseNameAndVersionDemand pkg
 
 -- | File system root for the synchronised ABS tree.
 absBasePath :: FilePath
 absBasePath = "/var/abs"
 
--- | Get PKGBUILD location from a package name (just appends /PKGBUILD)
-pkgBuildFile :: String -> String -> FilePath
-pkgBuildFile repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
+pkgbuildPath :: String -> String -> FilePath
+pkgbuildPath repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
 
-data PkgInfo = PkgInfo {
-                       -- | Repository (core/extra etc.)
-                       repositoryOf    :: String
-                       -- | Name of the package (not including repo)
-                       , nameOf        :: String
-                       -- | Latest available version
-                       , latestVerOf   :: VersionDemand
-                       -- | Directory containing the package source (in ABS tree)
-                       , locationOf    :: String
-                       -- | Package description
-                       , descriptionOf :: String
-                       -- | PKGBUILD read into a string.
-                       , pkgbuild      :: String
-                       -- | Namespace (key/value) pairs.
-                       , namespace     :: Namespace
-                       } deriving (Show)
+-- | The repository that a package belongs to.
+-- For now, only packages in the three official repos are allowed.
+repository :: String -> Aura String
+repository p = do
+  info <- (head . lines) `liftM` pacmanOutput ["-Si",p]
+  let (_,_,repo) = info =~ "Repository[ ]+: " :: (String,String,String)
+  if not $ repo =~ "(^core|^community|^extra)"
+     then failure $ repo </> p ++ " cannot be synced."
+     else return repo
 
-instance Package PkgInfo where
-  pkgNameOf = nameOf
-  versionOf = latestVerOf
+absSync :: String -> String -> Aura ()
+absSync repo name = void $ A.quietShellCmd "abs" [repo </> name]
 
-instance Eq PkgInfo where
-  a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
-
-instance Buildable PkgInfo where
-  pkgbuildOf = pkgbuild
-  namespaceOf = namespace
-  getSource a fp = do
-    let loc = locationOf a
-    shellCmd "cp" ["-R", loc, fp]
-    return $ fp </> (takeBaseName loc)
-  parsePkgbuild = parseLocalPkgBuild
-
+{-}
 -- | Get info about the named package from the exact package name.
 absInfoLookup :: String -> Aura PkgInfo
 absInfoLookup pkgName = do
@@ -174,3 +183,4 @@ findPkg pattern =
     packages <- filterM doesDirectoryExist entries'
     return
       $ filter (\pkg -> pkg =~ pattern) packages
+-}
