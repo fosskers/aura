@@ -19,6 +19,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
+-- Agnostically builds packages. They can be either AUR or ABS.
+
 module Aura.Build
     ( installPkgFiles
     , buildPackages ) where
@@ -45,7 +47,7 @@ installPkgFiles :: [String] -> [FilePath] -> Aura ()
 installPkgFiles pacOpts files = checkDBLock >> pacman (["-U"] ++ pacOpts ++ files)
 
 -- All building occurs within temp directories in the package cache.
-buildPackages :: SourcePackage a => [a] -> Aura [FilePath]
+buildPackages :: (Buildable a, Show a) => [a] -> Aura [FilePath]
 buildPackages []   = return []
 buildPackages pkgs = ask >>= \ss -> do
   let buildPath = buildPathOf ss
@@ -53,17 +55,17 @@ buildPackages pkgs = ask >>= \ss -> do
   wrap result
 
 -- Handles the building of Packages. Fails nicely.
--- Assumed: All pacman and AUR dependencies are already installed.
-build :: SourcePackage a => [FilePath] -> [a] -> Aura [FilePath]
+-- Assumed: All dependencies are already installed.
+build :: (Buildable a, Show a) => [FilePath] -> [a] -> Aura [FilePath]
 build built []       = return $ filter notNull built
 build built ps@(p:_) = do
-  notify (flip buildPackages_1 pn)
+  notify $ buildPackages_1 pn
   (paths,rest) <- catch (withTempDir pn (build' ps)) (buildFail built ps)
   build (paths ++ built) rest
       where pn = pkgNameOf p
         
 -- Perform the actual build.
-build' :: SourcePackage a => [a] -> Aura ([FilePath],[a])
+build' :: Buildable a => [a] -> Aura ([FilePath],[a])
 build' []     = failure "build' : You should never see this."
 build' (p:ps) = ask >>= \ss -> do
   let makepkg'   = if toSuppress then makepkgQuiet else makepkgVerbose
@@ -77,25 +79,26 @@ build' (p:ps) = ask >>= \ss -> do
   liftIO $ cd curr
   return (paths,ps)
 
-getSourceCode :: SourcePackage a => a -> String -> FilePath -> Aura ()
+getSourceCode :: Buildable a => a -> String -> FilePath -> Aura ()
 getSourceCode pkg user currDir = liftIO $ do
   chown user currDir []
-  sourceDir <- getSource pkg currDir
+  sourceDir <- source pkg currDir
   chown user sourceDir ["-R"]
   cd sourceDir
 
-overwritePkgbuild :: SourcePackage a => a -> Aura ()
+overwritePkgbuild :: Buildable a => a -> Aura ()
 overwritePkgbuild p = (mayHotEdit `liftM` ask) >>= check
     where check True  = liftIO . writeFile "PKGBUILD" . pkgbuildOf $ p
           check False = return ()
 
 -- Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
-buildFail :: SourcePackage a => [FilePath] -> [a] -> String -> Aura ([FilePath],[a])
+buildFail :: (Buildable a, Show a) =>
+             [FilePath] -> [a] -> String -> Aura ([FilePath],[a])
 buildFail _ [] _ = failure "buildFail : You should never see this message."
 buildFail built (p:ps) errors = ask >>= \ss -> do
   let lang = langOf ss
-  scold (flip buildFail_1 (show p))
+  scold (buildFail_1 (show p))
   displayBuildErrors errors
   printList red cyan (buildFail_2 lang) (map pkgNameOf ps)
   printList yellow cyan (buildFail_3 lang) $ map takeFileName built

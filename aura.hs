@@ -61,7 +61,7 @@ import Aura.Commands.M as M
 type UserInput = ([Flag],[String],[String])
 
 auraVersion :: String
-auraVersion = "1.1.6.0"
+auraVersion = "1.2.0.0"
 
 main :: IO a
 main = getArgs >>= prepSettings . processFlags >>= execute >>= exit
@@ -107,11 +107,13 @@ executeOpts (flags,input,pacOpts) =
           [GetPkgbuild]  -> A.displayPkgbuild input
           (Refresh:fs')  -> sudo $ syncAndContinue (fs',input,pacOpts)
           badFlags       -> scoldAndFail executeOpts_1
+{-}
     (ABSInstall:fs) ->
         case fs of
           [Search]       -> M.absSearch input
           [Info]         -> M.absInfo input
           badFlags       -> scoldAndFail executeOpts_1
+-}
     (SaveState:fs) ->
         case fs of
           []             -> sudo B.saveState

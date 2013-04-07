@@ -77,6 +77,7 @@ class (Package a) => Buildable a where
   source :: a           -- ^ Package (currently AUR or ABS)
          -> FilePath    -- ^ Directory in which to extract the package.
          -> IO FilePath -- ^ Path to the extracted source.
+  rewrap :: a -> Namespace -> a
 
 ---------------------------------
 -- Functions common to `Package`s

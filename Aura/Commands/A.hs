@@ -39,13 +39,13 @@ import Aura.Pkgbuild.Records
 import Aura.Pkgbuild.Editing
 import Aura.Settings.Base
 import Aura.Dependencies
+import Aura.Packages.AUR
 import Aura.Colour.Text
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Build
 import Aura.Utils
 import Aura.Core
-import Aura.AUR
 
 import Shell
 
@@ -207,7 +207,7 @@ isntMostRecent (info,v) = trueVer > currVer
 ------------
 -- REPORTING
 ------------
-reportPkgsToInstall :: SourcePackage a => [String] -> [a] -> [a] -> Aura ()
+reportPkgsToInstall :: Buildable a => [String] -> [a] -> [a] -> Aura ()
 reportPkgsToInstall pacPkgs aurDeps aurPkgs = do
   lang <- langOf `liftM` ask
   pl (reportPkgsToInstall_1 lang) (sort pacPkgs)
@@ -224,7 +224,7 @@ reportIgnoredPackages pkgs = do
   lang <- langOf `liftM` ask
   printList yellow cyan (reportIgnoredPackages_1 lang) pkgs
 
-reportPkgbuildDiffs :: SourcePackage a => [a] -> Aura [a]
+reportPkgbuildDiffs :: Buildable a => [a] -> Aura [a]
 reportPkgbuildDiffs [] = return []
 reportPkgbuildDiffs ps = ask >>= check
     where check ss | not $ diffPkgbuilds ss = return ps

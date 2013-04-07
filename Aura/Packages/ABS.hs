@@ -62,6 +62,7 @@ instance Buildable ABSPkg where
       let loc = absBasePath </> repoOf p </> pkgNameOf p
       S.quietShellCmd "cp" ["-R",loc,fp]
       return $ fp </> pkgNameOf p
+  rewrap (ABSPkg n r v p ns) ns' = ABSPkg n r v p ns'
 
 instance Eq ABSPkg where
   a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
