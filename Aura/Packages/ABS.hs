@@ -63,23 +63,21 @@ instance Buildable ABSPkg where
       S.quietShellCmd "cp" ["-R",loc,fp]
       return $ fp </> pkgNameOf p
   rewrap (ABSPkg n r v p ns) ns' = ABSPkg n r v p ns'
+  buildable pkg = do
+      repo <- repository name
+      absSync repo name
+      pkgbuild <- liftIO . readFile . pkgbuildPath repo $ name
+      ABSPkg name repo ver pkgbuild `liftM` namespace name pkgbuild
+          where (name,ver) = parseNameAndVersionDemand pkg
+
+instance Show ABSPkg where
+    show = pkgNameWithVersionDemand
 
 instance Eq ABSPkg where
   a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
 
 repoOf :: ABSPkg -> String
 repoOf (ABSPkg _ r _ _ _) = r
-
-----------
---- ABSPkg
-----------
-absPkg :: String -> Aura ABSPkg
-absPkg pkg = do
-  repo <- repository name
-  absSync repo name
-  pkgbuild <- liftIO . readFile . pkgbuildPath repo $ name
-  ABSPkg name repo ver pkgbuild `liftM` namespace name pkgbuild
-      where (name,ver) = parseNameAndVersionDemand pkg
 
 -- | File system root for the synchronised ABS tree.
 absBasePath :: FilePath

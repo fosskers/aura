@@ -25,13 +25,12 @@ module Aura.Dependencies
   ( ignoreRepos
   , divideByPkgType
   , getDepsToInstall
-  , determineDeps
-  ) where
+  , determineDeps ) where
 
 import Text.Regex.PCRE ((=~))
-import Control.Monad   (filterM,liftM,when)
+import Control.Monad   (filterM)
 import Data.Maybe      (fromJust, isNothing)
-import Data.List        ((\\), nub, intercalate, isSuffixOf)
+import Data.List        ((\\), nub)
 
 import Aura.Pacman (pacmanOutput)
 import Aura.Packages.AUR
@@ -47,10 +46,8 @@ import Aura.Core
 import Utilities (notNull, tripleThrd)
 
 ---
-ignoreRepos :: PkgFilter
-ignoreRepos _ = return []
 
--- |Split a list of packages into:
+-- | Split a list of packages into:
 --  - Repo packages.
 --  - AUR packages.
 --  - Other stuff.
@@ -88,7 +85,7 @@ determineDeps pkg = do
   let ns   = namespaceOf pkg
       deps = concatMap (value ns) ["depends","makedepends","checkdepends"]
   (repoPkgNames,aurPkgNames,other) <- divideByPkgType filterRepoPkgs deps
-  aurPkgs       <- mapM aurPkg aurPkgNames
+  aurPkgs       <- mapM buildable aurPkgNames
   recursiveDeps <- mapM determineDeps aurPkgs
   let (rs,as,os) = foldl groupPkgs (repoPkgNames,aurPkgs,other) recursiveDeps
   return (nub rs, nub as, nub os)

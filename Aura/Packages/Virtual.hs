@@ -33,8 +33,8 @@ import Aura.Utils (splitNameAndVer)
 import Aura.Pacman (pacmanOutput)
 import Aura.Packages.Repository (repoPkg,RepoPkg)
 
-import Control.Monad    (liftM,when)
-import Data.List        ((\\), nub, intercalate, isSuffixOf)
+import Control.Monad (liftM)
+import Data.List     (nub)
 
 -------------------
 -- Virtual Packages

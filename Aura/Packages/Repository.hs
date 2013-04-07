@@ -59,3 +59,6 @@ filterRepoPkgs pkgs = do
           specs []     = []
           specs (c:cs) | c `elem` "+" = ['[',c,']'] ++ specs cs
                        | otherwise    = c : specs cs
+
+ignoreRepos :: PkgFilter
+ignoreRepos _ = return []

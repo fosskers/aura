@@ -47,14 +47,14 @@ import Aura.Core
 import Aura.Logo
 
 import Utilities (replaceByPatt)
-import Shell hiding (shellCmd)
+import Shell     (showCursor, hideCursor)
 
 import Aura.Commands.A as A
 import Aura.Commands.B as B
 import Aura.Commands.C as C
 import Aura.Commands.L as L
-import Aura.Commands.O as O
 import Aura.Commands.M as M
+import Aura.Commands.O as O
 
 ---
 
@@ -98,7 +98,7 @@ executeOpts (flags,input,pacOpts) =
   case sort flags of
     (AURInstall:fs) ->
         case fs of
-          []             -> trueRoot (sudo $ A.installPackages pacOpts input)
+          []             -> trueRoot (sudo $ A.install pacOpts input)
           [Upgrade]      -> trueRoot (sudo $ A.upgradeAURPkgs pacOpts input)
           [Info]         -> A.aurPkgInfo input
           [Search]       -> A.aurSearch input

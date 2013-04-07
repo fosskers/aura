@@ -24,7 +24,7 @@ module Aura.Core where
 import System.Directory (doesFileExist)
 import Text.Regex.PCRE  ((=~))
 import Control.Monad    (liftM,when)
-import Data.List        (intercalate, isSuffixOf)
+import Data.List        (isSuffixOf)
 
 import Aura.Settings.Base
 import Aura.Colour.Text
@@ -77,7 +77,8 @@ class (Package a) => Buildable a where
   source :: a           -- ^ Package (currently AUR or ABS)
          -> FilePath    -- ^ Directory in which to extract the package.
          -> IO FilePath -- ^ Path to the extracted source.
-  rewrap :: a -> Namespace -> a
+  rewrap :: a -> Namespace -> a  -- ^ Assign a new Namespace.
+  buildable :: String -> Aura a  -- ^ Create Buildable data.
 
 ---------------------------------
 -- Functions common to `Package`s

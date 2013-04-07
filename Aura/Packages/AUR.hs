@@ -23,8 +23,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.Packages.AUR
-    ( aurPkg
-    , filterAURPkgs
+    ( filterAURPkgs
     , aurInfoLookup
     , aurSearchLookup
     , trueVerViaPkgbuild
@@ -60,22 +59,17 @@ instance Buildable AURPkg where
   pkgbuildOf  (AURPkg _ _ p _)  = p
   namespaceOf (AURPkg _ _ _ ns) = ns
   source p fp = sourceTarball fp (pkgNameOf p) >>= decompress
-  rewrap (AURPkg n v p ns) ns' = AURPkg n v p ns'
+  rewrap (AURPkg n v p _) ns = AURPkg n v p ns
+  buildable pkg = do
+      pkgbuild  <- downloadPkgbuild name
+      AURPkg name ver pkgbuild `liftM` namespace name pkgbuild
+          where (name,ver) = parseNameAndVersionDemand pkg
 
 instance Show AURPkg where
     show = pkgNameWithVersionDemand
 
 instance Eq AURPkg where
     a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
-
----------
--- AURPkg
----------
-aurPkg :: String -> Aura AURPkg
-aurPkg pkg = do
-  pkgbuild  <- downloadPkgbuild name
-  AURPkg name ver pkgbuild `liftM` namespace name pkgbuild
-      where (name,ver) = parseNameAndVersionDemand pkg
 
 filterAURPkgs :: PkgFilter
 filterAURPkgs pkgs = map nameOf `liftM` aurInfoLookup pkgs

@@ -1,8 +1,4 @@
--- Handles all `-M` operations
-{-
-  'M' operations 'make' packages from ABS builds. B would have been better but was already
-  taken.
--}
+-- Handles all `-M` operations for building from the ABS.
 
 {-
 
@@ -27,13 +23,11 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-{- | The 'M' module deals with all commands involving building from the ABS tree.
--}
 module Aura.Commands.M where {-}
   ( installPackages
   , absSearch
-  , absInfo
-  ) where
+  , absInfo ) where
+
   import Control.Monad   (unless, liftM)
   import Data.List       ((\\), nub, nubBy, sort)
 
