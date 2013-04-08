@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
+
 {-
 
 Copyright 2012, 2013
@@ -25,22 +27,15 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Packages.ABS where
 
-import System.Directory (doesDirectoryExist, getDirectoryContents)
 import Text.Regex.PCRE  ((=~))
-import Control.Monad    (filterM, liftM, void)
+import Control.Monad    (liftM, void)
 import System.FilePath
 
 import Aura.Packages.Repository (filterRepoPkgs)
 import Aura.Pacman              (pacmanOutput)
-import Aura.Utils               (entrify)
-import Aura.Settings.Base
-import Aura.Colour.Text
 import Aura.Monad.Aura
-import Aura.Languages
 import Aura.Core
 import Aura.Bash
-
-import Utilities (readFileUTF8, split)
 
 import qualified Aura.Shell as A (quietShellCmd)  -- Aura - Has failure checks
 import qualified Shell      as S (quietShellCmd)  -- IO   - Doesn't
@@ -63,7 +58,7 @@ instance Buildable ABSPkg where
       let loc = absBasePath </> repoOf p </> pkgNameOf p
       S.quietShellCmd "cp" ["-R",loc,fp]
       return $ fp </> pkgNameOf p
-  rewrap (ABSPkg n r v p ns) ns' = ABSPkg n r v p ns'
+  rewrap (ABSPkg n r v p _) ns = ABSPkg n r v p ns
   buildable pkg = do
       repo <- repository name
       absSync repo name
