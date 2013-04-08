@@ -1,8 +1,4 @@
--- Handles all `-M` operations
-{-
-  'M' operations 'make' packages from ABS builds. B would have been better but was already
-  taken.
--}
+-- Handles all `-M` operations for building from the ABS.
 
 {-
 
@@ -27,21 +23,18 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-{- | The 'M' module deals with all commands involving building from the ABS tree.
--}
-module Aura.Commands.M 
+module Aura.Commands.M where {-}
   ( installPackages
   , absSearch
-  , absInfo
-  ) where
+  , absInfo ) where
 
   import Control.Monad   (unless, liftM)
   import Data.List       ((\\), nub, nubBy, sort)
 
-  import Aura.ABS
   import Aura.Core
   import Aura.Utils
   import Aura.Monad.Aura
+  import Aura.Packages.ABS
   import Aura.Settings.Base
   import Aura.Pkgbuild.Records
   import Aura.Pkgbuild.Editing
@@ -81,3 +74,4 @@ module Aura.Commands.M
   displayAbsPkgInfo :: PkgInfo -> Aura ()
   displayAbsPkgInfo info = ask >>= \ss ->
     liftIO $ putStrLn $ renderPkgInfo ss info ++ "\n"
+-}

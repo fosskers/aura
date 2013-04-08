@@ -25,17 +25,17 @@ module Aura.Dependencies
   ( ignoreRepos
   , divideByPkgType
   , getDepsToInstall
-  , determineDeps
-  ) where
+  , determineDeps ) where
 
 import Text.Regex.PCRE ((=~))
-import Control.Monad   (filterM,liftM,when)
+import Control.Monad   (filterM)
 import Data.Maybe      (fromJust, isNothing)
-import Data.List        ((\\), nub, intercalate, isSuffixOf)
+import Data.List        ((\\), nub)
 
 import Aura.Pacman (pacmanOutput)
-import Aura.AUR
-import Aura.Virtual
+import Aura.Packages.AUR
+import Aura.Packages.Virtual
+import Aura.Packages.Repository
 import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages
@@ -46,8 +46,6 @@ import Aura.Core
 import Utilities (notNull, tripleThrd)
 
 ---
-ignoreRepos :: PkgFilter
-ignoreRepos _ = return []
 
 -- | Split a list of packages into:
 --  - Repo packages.
@@ -64,29 +62,30 @@ divideByPkgType repoFilter pkgs = do
       where namesOnly = map splitName pkgs
 
 -- Returns the deps to be installed, or fails nicely.
-getDepsToInstall :: SourcePackage a => [a] -> Aura ([String],[AURPkg])
+getDepsToInstall :: Buildable a => [a] -> Aura ([String],[AURPkg])
 getDepsToInstall []   = ask >>= failure . getDepsToInstall_1 . langOf
 getDepsToInstall pkgs = ask >>= \ss -> do
   allDeps <- mapM determineDeps pkgs
   let (ps,as,vs) = foldl groupPkgs ([],[],[]) allDeps
-  necPacPkgs <- filterM mustInstall ps >>= mapM pacmanPkg
+  necRepPkgs <- filterM mustInstall ps >>= mapM repoPkg
   necAURPkgs <- filterM (mustInstall . show) as
   necVirPkgs <- filterM mustInstall vs >>= mapM virtualPkg
-  let conflicts = getConflicts ss (necPacPkgs,necAURPkgs,necVirPkgs)
+  let conflicts = getConflicts ss (necRepPkgs,necAURPkgs,necVirPkgs)
   if notNull conflicts
      then failure $ unlines conflicts
      else do
        let providers  = map (pkgNameOf . fromJust . providerPkgOf) necVirPkgs
-           pacmanPkgs = map pkgNameOf necPacPkgs
-       return (nub $ providers ++ pacmanPkgs, necAURPkgs)
+           repoPkgs   = map pkgNameOf necRepPkgs
+       return (nub $ providers ++ repoPkgs, necAURPkgs)
 
 -- Returns ([RepoPackages], [AURPackages], [VirtualPackages])
-determineDeps :: SourcePackage a => a -> Aura ([String],[AURPkg],[String])
+-- TODO: THIS THIS THIS.
+determineDeps :: Buildable a => a -> Aura ([String],[AURPkg],[String])
 determineDeps pkg = do
   let ns   = namespaceOf pkg
       deps = concatMap (value ns) ["depends","makedepends","checkdepends"]
   (repoPkgNames,aurPkgNames,other) <- divideByPkgType filterRepoPkgs deps
-  aurPkgs       <- mapM aurPkg aurPkgNames
+  aurPkgs       <- mapM package aurPkgNames
   recursiveDeps <- mapM determineDeps aurPkgs
   let (rs,as,os) = foldl groupPkgs (repoPkgNames,aurPkgs,other) recursiveDeps
   return (nub rs, nub as, nub os)
@@ -102,17 +101,17 @@ mustInstall pkg = do
 -- 1. Is the package ignored in `pacman.conf`?
 -- 2. Is the version requested different from the one provided by
 --    the most recent version?
-getConflicts :: Settings -> ([PacmanPkg],[AURPkg],[VirtualPkg]) -> [ErrMsg]
+getConflicts :: Settings -> ([RepoPkg],[AURPkg],[VirtualPkg]) -> [ErrMsg]
 getConflicts settings (ps,as,vs) = rErr ++ aErr ++ vErr
-    where rErr     = extract $ map (getPacmanConflicts lang toIgnore) ps
+    where rErr     = extract $ map (getRepoConflicts lang toIgnore) ps
           aErr     = extract $ map (getAURConflicts lang toIgnore) as
           vErr     = extract $ map (getVirtualConflicts lang toIgnore) vs
           extract  = map fromJust . filter (/= Nothing)
           lang     = langOf settings
           toIgnore = ignoredPkgsOf settings
 
-getPacmanConflicts :: Language -> [String] -> PacmanPkg -> Maybe ErrMsg
-getPacmanConflicts = getRealPkgConflicts f
+getRepoConflicts :: Language -> [String] -> RepoPkg -> Maybe ErrMsg
+getRepoConflicts = getRealPkgConflicts f
     where f = getMostRecentVerNum . pkgInfoOf
        
 -- Takes `pacman -Si` output as input.

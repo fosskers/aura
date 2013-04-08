@@ -22,9 +22,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.AUR
-    ( aurPkg
-    , filterAURPkgs
+module Aura.Packages.AUR
+    ( filterAURPkgs
     , aurInfoLookup
     , aurSearchLookup
     , trueVerViaPkgbuild
@@ -47,39 +46,32 @@ import Aura.Utils (scoldAndFail)
 import Utilities (decompress)
 import Internet
 
--- I would like to reduce the following three sets of instance declarations
--- to a single more polymorphic solution.
----------------
--- AUR Packages
----------------
+---
+
 data AURPkg = AURPkg String VersionDemand Pkgbuild Namespace 
 
 instance Package AURPkg where
-  pkg = aurPkg
+  package pkg = do
+      pkgbuild  <- downloadPkgbuild name
+      AURPkg name ver pkgbuild `liftM` namespace name pkgbuild
+          where (name,ver) = parseNameAndVersionDemand pkg
   pkgNameOf (AURPkg n _ _ _) = n
   versionOf (AURPkg _ v _ _) = v
 
-instance SourcePackage AURPkg where
-  getSource a fp = do
-    tarball <- sourceTarball fp (pkgNameOf a)
-    decompress tarball
-  pkgbuildOf (AURPkg _ _ p _) = p
+instance Buildable AURPkg where
+  pkgbuildOf  (AURPkg _ _ p _)  = p
   namespaceOf (AURPkg _ _ _ ns) = ns
-  parsePkgbuild loc b = 
-    let getVal ns key = case value ns key of
-          a : _ -> return a
-          [] -> failure $ "Unable to extract value for key " ++ key
-    in do
-      newNS <- namespace loc b  -- Reparse PKGBUILD.
-      name <- getVal newNS "pkgname"
-      version <- MustBe `liftM` getVal newNS "pkgver"
-      return $ AURPkg name version b newNS
+  source p fp = sourceTarball fp (pkgNameOf p) >>= decompress
+  rewrap (AURPkg n v p _) ns = AURPkg n v p ns
 
 instance Show AURPkg where
     show = pkgNameWithVersionDemand
 
 instance Eq AURPkg where
     a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
+
+filterAURPkgs :: PkgFilter
+filterAURPkgs pkgs = map nameOf `liftM` aurInfoLookup pkgs
 
 -----------------------
 -- AUR API URL CREATION
@@ -161,18 +153,6 @@ pkgInfo pkgJSON = do
 fromJSRat :: JSValue -> Int
 fromJSRat (JSRational _ r) = round (fromRational r :: Float)
 fromJSRat _                = error "JSValue given was not a JSRational!"
-
-------------
--- AURPkg
-------------
-aurPkg :: String -> Aura AURPkg
-aurPkg pkg = do
-  pkgbuild  <- downloadPkgbuild name
-  AURPkg name ver pkgbuild `liftM` namespace name pkgbuild
-      where (name,ver) = parseNameAndVersionDemand pkg
-
-filterAURPkgs :: PkgFilter
-filterAURPkgs pkgs = map nameOf `liftM` aurInfoLookup pkgs
 
 ------------
 -- PKGBUILDS

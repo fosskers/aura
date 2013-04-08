@@ -1,8 +1,11 @@
-module Aura.Settings.SettingsTest ( sampleSettings ) where
+module Aura.Settings.SettingsTest
+    ( sampleSettings
+    , runAura ) where
 
 import Aura.Settings.Base
 import Aura.Colour.Text
 import Aura.Languages
+import Aura.Monad.Aura (runAura)
 
 ---
 
@@ -26,11 +29,4 @@ sampleSettings = Settings { environmentOf = undefined
                           , mayHotEdit    = False
                           , diffPkgbuilds = False
                           , rebuildDevel  = False
-                          , useCustomizepkg = False
-                          , pcRed         = red
-                          , pcGreen       = green
-                          , pcYellow      = yellow
-                          , pcBlue        = blue
-                          , pcMagenta     = magenta
-                          , pcCyan        = cyan
-                          , pcWhite       = white }
+                          , useCustomizepkg = False }
