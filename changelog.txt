@@ -1,5 +1,12 @@
 Aura Changelog
 ==============
+1.1.6.1
+-------
+- Compatable with pacman 4.1
+- All pacman-color support removed
+- `-As` output slightly altered to match pacman.
+- Bug fixes.
+
 1.1.6.0
 -------
 - New option `--build` for specifying AUR package build path.

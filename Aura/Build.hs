@@ -119,5 +119,5 @@ moveToBuildPath :: [FilePath] -> Aura [FilePath]
 moveToBuildPath []     = return []
 moveToBuildPath (p:ps) = do
   newName <- ((</> p) . buildPathOf) `liftM` ask
-  liftIO (mv p newName)
+  liftIO $ mv p newName
   (newName :) `liftM` moveToBuildPath ps
