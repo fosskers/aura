@@ -110,6 +110,8 @@ executeOpts (flags,input,pacOpts) =
     (ABSInstall:fs) ->
         case fs of
           []       -> trueRoot (sudo $ M.install pacOpts input)
+          [Search]       -> M.absSearch input
+          [Info]         -> M.absInfo input
           badFlags -> scoldAndFail executeOpts_1
     (SaveState:fs) ->
         case fs of

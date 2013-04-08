@@ -26,10 +26,11 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 {- | Handles all ABS related functions.
 -}
 module Aura.Packages.ABS (
-   absInfoLookup
+   absPkg
   ,absSearchLookup
   ,absSync
   ,filterABSPkgs
+  ,repoOf
   ,ABSPkg
   )
 where
@@ -55,8 +56,6 @@ import Utilities (readFileUTF8, split)
 import qualified Aura.Shell as A (quietShellCmd)  -- Aura - Has failure checks
 import qualified Shell      as S (quietShellCmd)  -- IO   - Doesn't
 
-
-
 ---------------
 -- ABS Packages
 ---------------
@@ -75,7 +74,7 @@ instance Buildable ABSPkg where
       S.quietShellCmd "cp" ["-R",loc,fp]
       return $ fp </> pkgNameOf p
   rewrap (ABSPkg n r v p _) ns = ABSPkg n r v p ns
-
+\
 
 instance Show ABSPkg where
     show = pkgNameWithVersionDemand
@@ -96,9 +95,6 @@ pkgbuildPath repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
 absSync :: String -> String -> Aura ()
 absSync repo name = void $ A.quietShellCmd "abs" [repo </> name]
 
--- TODO: Consider removing
-absInfoLookup = absPkg
-
 -- | Construct a ABSPkg for a string.
 absPkg :: String -> Aura ABSPkg
 absPkg pkgName = do
@@ -110,8 +106,8 @@ absPkg pkgName = do
 -- | Search for packages matching the given pattern.
 absSearchLookup :: String -> Aura [ABSPkg]
 absSearchLookup pattern = do
-  pkg <- findPkg pattern
-  mapM absInfoLookup pkg
+  pkgs <- findPkg pattern
+  mapM (\a -> liftIO (readFileUTF8 $ a </> "PKGBUILD") >>= parsePkgBuild a) pkgs
 
 -- | Parse a PKGBUILD into ABSPkg if possible. Fails if:
 --   - Unable to extract repo name from the location

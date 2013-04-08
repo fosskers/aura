@@ -23,33 +23,48 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Commands.M ( install ) where
+module Aura.Commands.M ( 
+  install
+  , absInfo
+  , absSearch
+ ) where
 
 import qualified Aura.Install as I
 
 import Aura.Packages.ABS
 import Aura.Monad.Aura
 import Aura.Core
+import Aura.Colour.Text
+import Aura.Languages
+import Aura.Settings.Base
+import Aura.Utils
 
-{-}
-  -- | Get info about the specified package (-i)
-  absInfo :: [String] -> Aura ()
-  absInfo search = do
-    q <- mapM absInfoLookup search
-    mapM_ displayAbsPkgInfo q
+-- | Get info about the specified package (-i)
+absInfo :: [String] -> Aura ()
+absInfo search = do
+  q <- mapM absPkg search
+  mapM_ displayAbsPkgInfo q
 
-  -- | Search ABS for any packages matching the given patterns (-s)
-  absSearch :: [String] -> Aura ()
-  absSearch search = do
-    q <- mapM absSearchLookup search
-    mapM_ displayAbsPkgInfo $ concat q
+-- | Search ABS for any packages matching the given patterns (-s)
+absSearch :: [String] -> Aura ()
+absSearch search = do
+  q <- mapM absSearchLookup search
+  mapM_ displayAbsPkgInfo $ concat q
 
-  -- | Display ABS package info
-  displayAbsPkgInfo :: PkgInfo -> Aura ()
-  displayAbsPkgInfo info = ask >>= \ss ->
-    liftIO $ putStrLn $ renderPkgInfo ss info ++ "\n"
--}
+-- | Display ABS package info
+displayAbsPkgInfo :: ABSPkg -> Aura ()
+displayAbsPkgInfo info = ask >>= \ss ->
+  liftIO $ putStrLn $ renderPkgInfo ss info ++ "\n"
+
 
 install :: [String] -> [String] -> Aura ()
 install pacOpts pkgs = I.install b filterABSPkgs pacOpts pkgs
     where b = package :: String -> Aura ABSPkg  -- Force the type.
+
+-- | Format a PkgInfo into a string
+renderPkgInfo :: Settings -> ABSPkg -> String
+renderPkgInfo ss info = entrify ss fields entries
+  where fields  = map white . absInfoFields . langOf $ ss
+        entries = [ magenta $ repoOf info
+                  , white $ pkgNameOf info
+                  , show . versionOf $ info ]
