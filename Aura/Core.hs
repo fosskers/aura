@@ -49,7 +49,7 @@ type PkgFilter = [String] -> Aura [String]
 ----------------
 -- Package Class
 ----------------
-class Package a where
+class (Show a, Eq a) => Package a where
     pkgNameOf :: a -> String
     versionOf :: a -> VersionDemand
 

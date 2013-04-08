@@ -51,6 +51,9 @@ instance Package VirtualPkg where
 instance Show VirtualPkg where
     show = pkgNameWithVersionDemand
 
+instance Eq VirtualPkg where
+    a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
+
 providerPkgOf :: VirtualPkg -> Maybe RepoPkg
 providerPkgOf (VirtualPkg _ _ p) = p
 
