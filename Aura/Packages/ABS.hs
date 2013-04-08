@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
+
 {-
 
 Copyright 2012, 2013
@@ -27,10 +29,12 @@ module Aura.Packages.ABS (
    absInfoLookup
   ,absSearchLookup
   ,absSync
+  ,filterABSPkgs
   ,ABSPkg
   )
 where
 
+import Data.List (find)
 import Control.Monad    (filterM, liftM, void)
 import Text.Regex.PCRE  ((=~))
 import System.Directory (doesDirectoryExist, getDirectoryContents)
@@ -44,6 +48,7 @@ import Aura.Colour.Text
 import Aura.Settings.Base
 import Aura.Pacman (pacmanOutput)
 import Aura.Utils  (entrify)
+import Aura.Packages.Repository (filterRepoPkgs)
 
 import Utilities (readFileUTF8, split)
 
@@ -69,7 +74,8 @@ instance Buildable ABSPkg where
       let loc = absBasePath </> repoOf p </> pkgNameOf p
       S.quietShellCmd "cp" ["-R",loc,fp]
       return $ fp </> pkgNameOf p
-  rewrap (ABSPkg n r v p ns) ns' = ABSPkg n r v p ns'
+  rewrap (ABSPkg n r v p _) ns = ABSPkg n r v p ns
+
 
 instance Show ABSPkg where
     show = pkgNameWithVersionDemand
@@ -90,19 +96,16 @@ pkgbuildPath repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
 absSync :: String -> String -> Aura ()
 absSync repo name = void $ A.quietShellCmd "abs" [repo </> name]
 
+-- TODO: Consider removing
+absInfoLookup = absPkg
+
 -- | Construct a ABSPkg for a string.
 absPkg :: String -> Aura ABSPkg
 absPkg pkgName = do
   pkgs <- absSearchLookup pkgName
-  case (find (\a -> nameOf a == pkgName) pkgs) of
+  case (find (\a -> pkgNameOf a == pkgName) pkgs) of
     Just a -> return a
     Nothing -> failure $ "No matching packages for " ++ pkgName
-
--- | Get info about the named package from the exact package name.
-absInfoLookup :: String -> Aura ABSPkg
-absInfoLookup pkgName = do
-  pkgbuild <- liftIO $ readFileUTF8 $ pkgBuildFile pkgName
-  parsePkgBuild pkgName pkgbuild
 
 -- | Search for packages matching the given pattern.
 absSearchLookup :: String -> Aura [ABSPkg]
@@ -129,8 +132,8 @@ parsePkgBuild' :: String -- ^ Repository name
                -> String -- ^ PKGBUILD contents
                -> Aura ABSPkg
 parsePkgBuild' repo pkgloc pkgbuild =
-  let ns' = B.namespace pkgloc pkgbuild
-      getVal ns key = case B.value ns key of
+  let ns' = namespace pkgloc pkgbuild
+      getVal ns key = case value ns key of
         a : _ -> return a
         [] -> failure $ "Unable to extract value for key " ++ key
   in do
@@ -160,3 +163,6 @@ findPkg pattern =
     packages <- filterM doesDirectoryExist entries'
     return
       $ filter (\pkg -> pkg =~ pattern) packages
+
+filterABSPkgs :: PkgFilter
+filterABSPkgs = filterRepoPkgs

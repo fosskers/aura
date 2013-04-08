@@ -47,7 +47,7 @@ installPkgFiles :: [String] -> [FilePath] -> Aura ()
 installPkgFiles pacOpts files = checkDBLock >> pacman (["-U"] ++ pacOpts ++ files)
 
 -- All building occurs within temp directories in the package cache.
-buildPackages :: (Buildable a, Show a) => [a] -> Aura [FilePath]
+buildPackages :: Buildable a => [a] -> Aura [FilePath]
 buildPackages []   = return []
 buildPackages pkgs = ask >>= \ss -> do
   let buildPath = buildPathOf ss
@@ -56,7 +56,7 @@ buildPackages pkgs = ask >>= \ss -> do
 
 -- Handles the building of Packages. Fails nicely.
 -- Assumed: All dependencies are already installed.
-build :: (Buildable a, Show a) => [FilePath] -> [a] -> Aura [FilePath]
+build :: Buildable a => [FilePath] -> [a] -> Aura [FilePath]
 build built []       = return $ filter notNull built
 build built ps@(p:_) = do
   notify $ buildPackages_1 pn
@@ -93,8 +93,7 @@ overwritePkgbuild p = (mayHotEdit `liftM` ask) >>= check
 
 -- Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
-buildFail :: (Buildable a, Show a) =>
-             [FilePath] -> [a] -> String -> Aura ([FilePath],[a])
+buildFail :: Buildable a => [FilePath] -> [a] -> String -> Aura ([FilePath],[a])
 buildFail _ [] _ = failure "buildFail : You should never see this message."
 buildFail built (p:ps) errors = ask >>= \ss -> do
   let lang = langOf ss

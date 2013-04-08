@@ -49,7 +49,9 @@ import Shell
 
 ---
 
-install = I.install
+install :: [String] -> [String] -> Aura ()
+install pacOpts pkgs = I.install b filterAURPkgs pacOpts pkgs
+    where b = package :: String -> Aura AURPkg  -- Force the type.
 
 upgradeAURPkgs :: [String] -> [String] -> Aura ()
 upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
@@ -113,7 +115,7 @@ displayPkgDeps []   = return ()
 displayPkgDeps pkgs = do
   info    <- aurInfoLookup pkgs
   aurPkgs <- (mapM (package . nameOf) info) :: Aura [AURPkg]
-  allDeps <- mapM determineDeps aurPkgs
+  allDeps <- mapM (depCheck filterAURPkgs) aurPkgs
   let (ps,as,_) = foldl groupPkgs ([],[],[]) allDeps
   I.reportPkgsToInstall (n ps) (nubBy sameName as) []
     where n = nub . map splitName

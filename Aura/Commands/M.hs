@@ -23,41 +23,15 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Commands.M where {-}
-  ( installPackages
-  , absSearch
-  , absInfo ) where
+module Aura.Commands.M ( install ) where
 
-  import Control.Monad   (unless, liftM)
-  import Data.List       ((\\), nub, nubBy, sort)
+import qualified Aura.Install as I
 
-  import Aura.Core
-  import Aura.Utils
-  import Aura.Monad.Aura
-  import Aura.Packages.ABS
-  import Aura.Settings.Base
-  import Aura.Pkgbuild.Records
-  import Aura.Pkgbuild.Editing
-  import Aura.Colour.Text
-  import Aura.Languages
+import Aura.Packages.ABS
+import Aura.Monad.Aura
+import Aura.Core
 
-  type PBHandler = [PkgInfo] -> Aura [PkgInfo]
-
-  -- | The user can handle PKGBUILDs in multiple ways.
-  -- `--hotedit` takes the highest priority.
-  pbHandler :: Aura PBHandler
-  pbHandler = ask >>= check
-      where check ss | mayHotEdit ss      = return hotEdit
-                     | useCustomizepkg ss = return customizepkg
-                     | otherwise          = return return
-
-  -- | High level 'install' command. Handles installing
-  -- dependencies.
-  installPackages :: [String] -- ^ Package options
-    -> [String] -- ^ Packages to install
-    -> Aura ()
-  installPackages = undefined
-
+{-}
   -- | Get info about the specified package (-i)
   absInfo :: [String] -> Aura ()
   absInfo search = do
@@ -75,3 +49,7 @@ module Aura.Commands.M where {-}
   displayAbsPkgInfo info = ask >>= \ss ->
     liftIO $ putStrLn $ renderPkgInfo ss info ++ "\n"
 -}
+
+install :: [String] -> [String] -> Aura ()
+install pacOpts pkgs = I.install b filterABSPkgs pacOpts pkgs
+    where b = package :: String -> Aura ABSPkg  -- Force the type.

@@ -24,13 +24,13 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Dependencies
   ( ignoreRepos
   , divideByPkgType
-  , getDepsToInstall
-  , determineDeps ) where
+  , depCheck
+  , depsToInstall ) where
 
 import Text.Regex.PCRE ((=~))
 import Control.Monad   (filterM)
 import Data.Maybe      (fromJust, isNothing)
-import Data.List        ((\\), nub)
+import Data.List       ((\\), nub)
 
 import Aura.Pacman (pacmanOutput)
 import Aura.Packages.AUR
@@ -47,48 +47,44 @@ import Utilities (notNull, tripleThrd)
 
 ---
 
--- | Split a list of packages into:
---  - Repo packages.
---  - AUR packages.
---  - Other stuff.
-divideByPkgType :: PkgFilter -> [String] -> Aura ([String],[String],[String])
-divideByPkgType repoFilter pkgs = do
-  repoPkgNames <- repoFilter namesOnly
-  aurPkgNames  <- filterAURPkgs $ namesOnly \\ repoPkgNames
-  let aurPkgs  = filter (flip elem aurPkgNames . splitName) pkgs
+divideByPkgType ::
+    PkgFilter -> PkgFilter -> [String] -> Aura ([String],[String],[String])
+divideByPkgType repoPF mainPF pkgs = do
+  repoPkgNames <- repoPF namesOnly
+  custPkgNames <- mainPF $ namesOnly \\ repoPkgNames
+  let custom   = filter (flip elem custPkgNames . splitName) pkgs
       repoPkgs = filter (flip elem repoPkgNames . splitName) pkgs
-      others   = (pkgs \\ aurPkgs) \\ repoPkgs
-  return (repoPkgs, aurPkgs, others)
+      others   = (pkgs \\ custom) \\ repoPkgs
+  return (repoPkgs, custom, others)
       where namesOnly = map splitName pkgs
 
 -- Returns the deps to be installed, or fails nicely.
-getDepsToInstall :: Buildable a => [a] -> Aura ([String],[AURPkg])
-getDepsToInstall []   = ask >>= failure . getDepsToInstall_1 . langOf
-getDepsToInstall pkgs = ask >>= \ss -> do
-  allDeps <- mapM determineDeps pkgs
+depsToInstall :: Buildable a => PkgFilter -> [a] -> Aura ([String],[a])
+depsToInstall _ []        = ask >>= failure . getDepsToInstall_1 . langOf
+depsToInstall mainPF pkgs = ask >>= \ss -> do
+  allDeps <- mapM (depCheck mainPF) pkgs
   let (ps,as,vs) = foldl groupPkgs ([],[],[]) allDeps
   necRepPkgs <- filterM mustInstall ps >>= mapM package
-  necAURPkgs <- filterM (mustInstall . show) as
+  necCusPkgs <- filterM (mustInstall . show) as
   necVirPkgs <- filterM mustInstall vs >>= mapM package
-  let conflicts = getConflicts ss (necRepPkgs,necAURPkgs,necVirPkgs)
-  if notNull conflicts
-     then failure $ unlines conflicts
+  let flicts = conflicts ss (necRepPkgs,necCusPkgs,necVirPkgs)
+  if notNull flicts
+     then failure $ unlines flicts
      else do
-       let providers  = map (pkgNameOf . fromJust . providerPkgOf) necVirPkgs
-           repoPkgs   = map pkgNameOf necRepPkgs
-       return (nub $ providers ++ repoPkgs, necAURPkgs)
+       let providers = map (pkgNameOf . fromJust . providerPkgOf) necVirPkgs
+           repoPkgs  = map pkgNameOf necRepPkgs
+       return (nub $ providers ++ repoPkgs, necCusPkgs)
 
 -- Returns ([RepoPackages], [AURPackages], [VirtualPackages])
--- TODO: THIS THIS THIS.
-determineDeps :: Buildable a => a -> Aura ([String],[AURPkg],[String])
-determineDeps pkg = do
+depCheck :: Buildable a => PkgFilter -> a -> Aura ([String],[a],[String])
+depCheck mainPF pkg = do
   let ns   = namespaceOf pkg
       deps = concatMap (value ns) ["depends","makedepends","checkdepends"]
-  (repoPkgNames,aurPkgNames,other) <- divideByPkgType filterRepoPkgs deps
-  aurPkgs       <- mapM package aurPkgNames
-  recursiveDeps <- mapM determineDeps aurPkgs
-  let (rs,as,os) = foldl groupPkgs (repoPkgNames,aurPkgs,other) recursiveDeps
-  return (nub rs, nub as, nub os)
+  (repoNames,custNames,other) <- divideByPkgType filterRepoPkgs mainPF deps
+  customPkgs    <- mapM package custNames
+  recursiveDeps <- mapM (depCheck mainPF) customPkgs
+  let (rs,tb,os) = foldl groupPkgs (repoNames,customPkgs,other) recursiveDeps
+  return (nub rs, nub tb, nub os)
 
 -- If a package isn't installed, `pacman -T` will yield a single name.
 -- Any other type of output means installation is not required. 
@@ -101,35 +97,35 @@ mustInstall pkg = do
 -- 1. Is the package ignored in `pacman.conf`?
 -- 2. Is the version requested different from the one provided by
 --    the most recent version?
-getConflicts :: Settings -> ([RepoPkg],[AURPkg],[VirtualPkg]) -> [ErrMsg]
-getConflicts settings (ps,as,vs) = rErr ++ aErr ++ vErr
-    where rErr     = extract $ map (getRepoConflicts lang toIgnore) ps
-          aErr     = extract $ map (getAURConflicts lang toIgnore) as
-          vErr     = extract $ map (getVirtualConflicts lang toIgnore) vs
+conflicts :: Buildable a => Settings -> ([RepoPkg],[a],[VirtualPkg]) -> [ErrMsg]
+conflicts settings (ps,as,vs) = rErr ++ aErr ++ vErr
+    where rErr     = extract $ map (repoConflicts lang toIgnore) ps
+          aErr     = extract $ map (customConflicts lang toIgnore) as
+          vErr     = extract $ map (virtualConflicts lang toIgnore) vs
           extract  = map fromJust . filter (/= Nothing)
           lang     = langOf settings
           toIgnore = ignoredPkgsOf settings
 
-getRepoConflicts :: Language -> [String] -> RepoPkg -> Maybe ErrMsg
-getRepoConflicts = getRealPkgConflicts f
-    where f = getMostRecentVerNum . pkgInfoOf
+repoConflicts :: Language -> [String] -> RepoPkg -> Maybe ErrMsg
+repoConflicts = realPkgConflicts f
+    where f = mostRecentVerNum . pkgInfoOf
        
 -- Takes `pacman -Si` output as input.
-getMostRecentVerNum :: String -> String
-getMostRecentVerNum info = tripleThrd match
+mostRecentVerNum :: String -> String
+mostRecentVerNum info = tripleThrd match
     where match     = thirdLine =~ ": " :: (String,String,String)
           thirdLine = allLines !! 2  -- Version num is always the third line.
           allLines  = lines info
 
-getAURConflicts :: Language -> [String] -> AURPkg -> Maybe ErrMsg
-getAURConflicts = getRealPkgConflicts f
+customConflicts :: Buildable a => Language -> [String] -> a -> Maybe ErrMsg
+customConflicts = realPkgConflicts f
     where f = trueVerViaPkgbuild . namespaceOf
 
 -- Must be called with a (f)unction that yields the version number
 -- of the most up-to-date form of the package.
-getRealPkgConflicts :: Package a => (a -> String) -> Language -> [String] ->
-                       a -> Maybe ErrMsg
-getRealPkgConflicts f lang toIgnore pkg
+realPkgConflicts :: Package a => (a -> String) -> Language -> [String] ->
+                    a -> Maybe ErrMsg
+realPkgConflicts f lang toIgnore pkg
     | isIgnored (pkgNameOf pkg) toIgnore       = Just failMessage1
     | isVersionConflict (versionOf pkg) curVer = Just failMessage2
     | otherwise = Nothing    
@@ -140,8 +136,8 @@ getRealPkgConflicts f lang toIgnore pkg
           failMessage2 = getRealPkgConflicts_1 name curVer reqVer lang
 
 -- This can't be generalized as easily.
-getVirtualConflicts :: Language -> [String] -> VirtualPkg -> Maybe ErrMsg
-getVirtualConflicts lang toIgnore pkg
+virtualConflicts :: Language -> [String] -> VirtualPkg -> Maybe ErrMsg
+virtualConflicts lang toIgnore pkg
     | isNothing (providerPkgOf pkg) = Just failMessage1
     | isIgnored provider toIgnore   = Just failMessage2
     | isVersionConflict (versionOf pkg) pVer = Just failMessage3
@@ -149,13 +145,13 @@ getVirtualConflicts lang toIgnore pkg
     where name         = pkgNameOf pkg
           ver          = show $ versionOf pkg
           provider     = pkgNameOf . fromJust . providerPkgOf $ pkg
-          pVer         = getProvidedVerNum pkg
+          pVer         = providedVerNum pkg
           failMessage1 = getVirtualConflicts_1 name lang
           failMessage2 = getVirtualConflicts_2 name provider lang
           failMessage3 = getVirtualConflicts_3 name ver provider pVer lang
 
-getProvidedVerNum :: VirtualPkg -> String
-getProvidedVerNum pkg = splitVer match
+providedVerNum :: VirtualPkg -> String
+providedVerNum pkg = splitVer match
     where match = info =~ ("[ ]" ++ pkgNameOf pkg ++ ">?=[0-9.]+")
           info  = pkgInfoOf . fromJust . providerPkgOf $ pkg
 

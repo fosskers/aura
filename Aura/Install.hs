@@ -1,3 +1,5 @@
+{-# LANGUAGE NoMonomorphismRestriction #-}
+
 {-
 
 Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
@@ -43,6 +45,49 @@ import Aura.Core
 
 ---
 
+-- | High level 'install' command. Handles installing
+-- dependencies.
+install :: Buildable a => (String -> Aura a)  -- ^ Constructor for Buildable data
+        -> PkgFilter  -- ^ How do you wish to filter AUR/ABS packages?
+        -> [String]   -- ^ Pacman flags.
+        -> [String]   -- ^ Package names.
+        -> Aura ()
+install _ _ _ []         = return ()
+install custom mainPF pacOpts pkgs = ask >>= \ss ->
+  if not $ delMakeDeps ss
+     then install' custom mainPF pacOpts pkgs
+     else do  -- `-a` was used.
+       orphansBefore <- getOrphans
+       install' custom mainPF pacOpts pkgs
+       orphansAfter <- getOrphans
+       let makeDeps = orphansAfter \\ orphansBefore
+       unless (null makeDeps) $ notify removeMakeDepsAfter_1
+       removePkgs makeDeps pacOpts
+
+install' :: Buildable a =>
+            (String -> Aura a) -> PkgFilter -> [String] -> [String] -> Aura ()
+install' custom mainPF pacOpts pkgs = ask >>= \ss -> do
+  let toInstall = pkgs \\ ignoredPkgsOf ss
+      ignored   = pkgs \\ toInstall
+  reportIgnoredPackages ignored
+  (_,okay,nons) <- knownBadPkgCheck toInstall >>= divideByPkgType ignoreRepos mainPF
+  reportNonPackages nons
+  handler <- pbHandler
+  toBuild <- mapM custom okay >>= pkgbuildDiffs >>= handler
+  notify install_5
+  (repoDeps,buildDeps) <- catch (depsToInstall mainPF toBuild) depCheckFailure
+  let repoPkgs    = nub repoDeps
+      pkgsAndOpts = pacOpts ++ repoPkgs
+  reportPkgsToInstall repoPkgs buildDeps toBuild
+  continue <- optionalPrompt install_3
+  if not continue
+     then scoldAndFail install_4
+     else do
+       unless (null repoPkgs) $ pacman (["-S","--asdeps"] ++ pkgsAndOpts)
+       storePkgbuilds $ toBuild ++ buildDeps
+       mapM_ (buildAndInstallDep pacOpts) buildDeps
+       buildPackages toBuild >>= installPkgFiles pacOpts
+
 -- | The user can handle PKGBUILDs in multiple ways.
 -- `--hotedit` takes the highest priority.
 pbHandler :: Buildable a => Aura ([a] -> Aura [a])
@@ -50,46 +95,6 @@ pbHandler = ask >>= check
     where check ss | mayHotEdit ss      = return hotEdit
                    | useCustomizepkg ss = return customizepkg
                    | otherwise          = return return
-
--- | High level 'install' command. Handles installing
--- dependencies.
-install :: [String] -- ^ Package options
-        -> [String] -- ^ Packages to install
-        -> Aura ()
-install _ []         = return ()
-install pacOpts pkgs = ask >>= \ss ->
-  if not $ delMakeDeps ss
-     then install' pacOpts pkgs
-     else do  -- `-a` was used with `-A`.
-       orphansBefore <- getOrphans
-       install' pacOpts pkgs
-       orphansAfter <- getOrphans
-       let makeDeps = orphansAfter \\ orphansBefore
-       unless (null makeDeps) $ notify removeMakeDepsAfter_1
-       removePkgs makeDeps pacOpts
-
-install' :: [String] -> [String] -> Aura ()
-install' pacOpts pkgs = ask >>= \ss -> do
-  let toInstall = pkgs \\ ignoredPkgsOf ss
-      ignored   = pkgs \\ toInstall
-  reportIgnoredPackages ignored
-  (_,aur,nons) <- knownBadPkgCheck toInstall >>= divideByPkgType ignoreRepos
-  reportNonPackages nons
-  handler <- pbHandler
-  aurPkgs <- mapM package aur >>= reportPkgbuildDiffs >>= handler
-  notify install_5
-  (repoDeps,aurDeps) <- catch (getDepsToInstall aurPkgs) depCheckFailure
-  let repoPkgs    = nub repoDeps
-      pkgsAndOpts = pacOpts ++ repoPkgs
-  reportPkgsToInstall repoPkgs aurDeps aurPkgs
-  okay <- optionalPrompt install_3
-  if not okay
-     then scoldAndFail install_4
-     else do
-       unless (null repoPkgs) $ pacman (["-S","--asdeps"] ++ pkgsAndOpts)
-       storePkgbuilds $ aurPkgs ++ aurDeps
-       mapM_ (buildAndInstallDep handler pacOpts) aurDeps
-       buildPackages aurPkgs >>= installPkgFiles pacOpts
 
 knownBadPkgCheck :: [String] -> Aura [String]
 knownBadPkgCheck []     = return []
@@ -105,10 +110,9 @@ knownBadPkgCheck (p:ps) = ask >>= \ss ->
 depCheckFailure :: String -> Aura a
 depCheckFailure m = scold install_1 >> failure m
 
-buildAndInstallDep :: (Buildable a, Show a) =>
-                      ([a] -> Aura [a]) -> [String] -> a -> Aura ()
-buildAndInstallDep handler pacOpts pkg =
-  handler [pkg] >>= buildPackages >>=
+buildAndInstallDep :: Buildable a => [String] -> a -> Aura ()
+buildAndInstallDep pacOpts pkg =
+  pbHandler >>= \h -> h [pkg] >>= buildPackages >>=
   installPkgFiles ("--asdeps" : pacOpts)
 
 ------------
@@ -131,9 +135,9 @@ reportIgnoredPackages pkgs = do
   lang <- langOf `liftM` ask
   printList yellow cyan (reportIgnoredPackages_1 lang) pkgs
 
-reportPkgbuildDiffs :: Buildable a => [a] -> Aura [a]
-reportPkgbuildDiffs [] = return []
-reportPkgbuildDiffs ps = ask >>= check
+pkgbuildDiffs :: Buildable a => [a] -> Aura [a]
+pkgbuildDiffs [] = return []
+pkgbuildDiffs ps = ask >>= check
     where check ss | not $ diffPkgbuilds ss = return ps
                    | otherwise = mapM_ displayDiff ps >> return ps
           displayDiff p = do

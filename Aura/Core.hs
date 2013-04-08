@@ -50,7 +50,7 @@ type PkgFilter = [String] -> Aura [String]
 ----------------
 -- Package Class
 ----------------
-class Package a where
+class (Show a, Eq a) => Package a where
     -- | Get the Package with the given name.
     package :: String -> Aura a
     pkgNameOf :: a -> String

@@ -107,13 +107,10 @@ executeOpts (flags,input,pacOpts) =
           [GetPkgbuild]  -> A.displayPkgbuild input
           (Refresh:fs')  -> sudo $ syncAndContinue (fs',input,pacOpts)
           badFlags       -> scoldAndFail executeOpts_1
-{-}
     (ABSInstall:fs) ->
         case fs of
-          [Search]       -> M.absSearch input
-          [Info]         -> M.absInfo input
-          badFlags       -> scoldAndFail executeOpts_1
--}
+          []       -> trueRoot (sudo $ M.install pacOpts input)
+          badFlags -> scoldAndFail executeOpts_1
     (SaveState:fs) ->
         case fs of
           []             -> sudo B.saveState
