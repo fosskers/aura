@@ -98,7 +98,6 @@ absPkg pkgName = do
     Just a -> return a
     Nothing -> failure $ "No matching packages for " ++ pkgName
 
-
 -- | Get info about the named package from the exact package name.
 absInfoLookup :: String -> Aura ABSPkg
 absInfoLookup pkgName = do

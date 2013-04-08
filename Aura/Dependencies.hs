@@ -67,9 +67,9 @@ getDepsToInstall []   = ask >>= failure . getDepsToInstall_1 . langOf
 getDepsToInstall pkgs = ask >>= \ss -> do
   allDeps <- mapM determineDeps pkgs
   let (ps,as,vs) = foldl groupPkgs ([],[],[]) allDeps
-  necRepPkgs <- filterM mustInstall ps >>= mapM repoPkg
+  necRepPkgs <- filterM mustInstall ps >>= mapM package
   necAURPkgs <- filterM (mustInstall . show) as
-  necVirPkgs <- filterM mustInstall vs >>= mapM virtualPkg
+  necVirPkgs <- filterM mustInstall vs >>= mapM package
   let conflicts = getConflicts ss (necRepPkgs,necAURPkgs,necVirPkgs)
   if notNull conflicts
      then failure $ unlines conflicts

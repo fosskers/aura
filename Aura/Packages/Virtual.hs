@@ -24,7 +24,6 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Packages.Virtual 
   ( VirtualPkg(..)
   , providerPkgOf
-  , virtualPkg
   , providingPkg ) where
 
 import Aura.Core
@@ -62,7 +61,7 @@ virtualPkg pkg = VirtualPkg name ver `liftM` getProvider pkg
             provider <- providingPkg n
             case provider of
               Nothing -> return Nothing
-              Just p  -> Just `liftM` repoPkg p
+              Just p  -> Just `liftM` package p
 
 -- Yields a virtual package's providing package if there is one.
 providingPkg :: String -> Aura (Maybe String)
