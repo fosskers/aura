@@ -53,7 +53,7 @@ import Aura.Packages.Repository (filterRepoPkgs)
 
 import Utilities (readFileUTF8, split)
 
-import qualified Aura.Shell as A (quietShellCmd)  -- Aura - Has failure checks
+import qualified Aura.Shell as A (quietShellCmd, shellCmd)  -- Aura - Has failure checks
 import qualified Shell      as S (quietShellCmd)  -- IO   - Doesn't
 
 ---------------
@@ -91,8 +91,8 @@ absBasePath = "/var/abs"
 pkgbuildPath :: String -> String -> FilePath
 pkgbuildPath repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
 
-absSync :: String -> String -> Aura ()
-absSync repo name = void $ A.quietShellCmd "abs" [repo </> name]
+absSync :: Aura ()
+absSync = void $ A.shellCmd "abs" []
 
 -- | Construct a ABSPkg for a string.
 absPkg :: String -> Aura ABSPkg

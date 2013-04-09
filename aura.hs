@@ -109,10 +109,11 @@ executeOpts (flags,input,pacOpts) =
           badFlags       -> scoldAndFail executeOpts_1
     (ABSInstall:fs) ->
         case fs of
-          []       -> trueRoot (sudo $ M.install pacOpts input)
+          []             -> trueRoot (sudo $ M.install pacOpts input)
           [Search]       -> M.absSearch input
           [Info]         -> M.absInfo input
-          badFlags -> scoldAndFail executeOpts_1
+          (Refresh:fs')  -> sudo $ syncABSAndContinue (fs',input,pacOpts)
+          badFlags       -> scoldAndFail executeOpts_1
     (SaveState:fs) ->
         case fs of
           []             -> sudo B.saveState
@@ -150,6 +151,11 @@ syncAndContinue :: UserInput -> Aura ()
 syncAndContinue (flags,input,pacOpts) = do
   syncDatabase pacOpts
   executeOpts (AURInstall:flags,input,pacOpts)
+
+syncABSAndContinue :: UserInput -> Aura ()
+syncABSAndContinue (flags,input,pacOpts) = do
+  M.absSync
+  executeOpts (ABSInstall:flags,input,pacOpts)
 
 ----------
 -- GENERAL

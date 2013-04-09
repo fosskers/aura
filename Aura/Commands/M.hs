@@ -27,6 +27,7 @@ module Aura.Commands.M (
   install
   , absInfo
   , absSearch
+  , absSync
  ) where
 
 import qualified Aura.Install as I
