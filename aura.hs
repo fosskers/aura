@@ -112,6 +112,7 @@ executeOpts (flags,input,pacOpts) =
           []             -> trueRoot (sudo $ M.install pacOpts input)
           [Search]       -> M.absSearch input
           [Info]         -> M.absInfo input
+          [GetPkgbuild]  -> M.displayPkgbuild input
           (Refresh:fs')  -> sudo $ syncABSAndContinue (fs',input,pacOpts)
           badFlags       -> scoldAndFail executeOpts_1
     (SaveState:fs) ->

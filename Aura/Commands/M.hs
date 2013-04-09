@@ -28,6 +28,7 @@ module Aura.Commands.M (
   , absInfo
   , absSearch
   , absSync
+  , displayPkgbuild
  ) where
 
 import qualified Aura.Install as I
@@ -53,17 +54,27 @@ absSearch search = do
   q <- mapM absSearchLookup search
   mapM_ displayAbsPkgInfo $ concat q
 
+-- | Display PKGBUILD
+displayPkgbuild :: [String] -> Aura ()
+displayPkgbuild pkgNames = do
+  pkgs <- mapM absPkg pkgNames
+  mapM_ (liftIO . putStrLn . pkgbuildOf) pkgs
+
+-- | Install packages, managing dependencies
+install :: [String] -> [String] -> Aura ()
+install pacOpts pkgs = I.install b filterABSPkgs pacOpts pkgs
+    where b = package :: String -> Aura ABSPkg  -- Force the type.
+
+----------
+-- Helpers
+----------
+
 -- | Display ABS package info
 displayAbsPkgInfo :: ABSPkg -> Aura ()
 displayAbsPkgInfo info = do
   ss <- ask
   pkginfo <- renderPkgInfo ss info
   liftIO $ putStrLn $ pkginfo ++ "\n"
-
--- | Install packages, managing dependencies
-install :: [String] -> [String] -> Aura ()
-install pacOpts pkgs = I.install b filterABSPkgs pacOpts pkgs
-    where b = package :: String -> Aura ABSPkg  -- Force the type.
 
 -- | Format a PkgInfo into a string
 renderPkgInfo :: Settings -> ABSPkg -> Aura String
