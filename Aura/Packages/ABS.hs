@@ -127,7 +127,6 @@ parsePkgBuild pkgloc pkgbuild =
     ns <- ns'
     name <- getVal ns "pkgname"
     version <- MustBe `liftM` getVal ns "pkgver"
-    desc <- getVal ns "pkgdesc"
     return $ ABSPkg name repo version pkgbuild ns 
 
 -- | Find a matching list of packages given a name. This only matches

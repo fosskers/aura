@@ -29,11 +29,15 @@ module Aura.Commands.M (
   , absSearch
   , absSync
   , displayPkgbuild
+  , displayPkgDeps
  ) where
+
+import Data.List       (nub, nubBy)
 
 import qualified Aura.Install as I
 
 import Aura.Bash
+import Aura.Dependencies
 import Aura.Packages.ABS
 import Aura.Monad.Aura
 import Aura.Core
@@ -45,7 +49,7 @@ import Aura.Utils
 -- | Get info about the specified package (-i)
 absInfo :: [String] -> Aura ()
 absInfo search = do
-  q <- mapM absPkg search
+  q <- mapM package search
   mapM_ displayAbsPkgInfo q
 
 -- | Search ABS for any packages matching the given patterns (-s)
@@ -59,6 +63,17 @@ displayPkgbuild :: [String] -> Aura ()
 displayPkgbuild pkgNames = do
   pkgs <- mapM absPkg pkgNames
   mapM_ (liftIO . putStrLn . pkgbuildOf) pkgs
+
+-- | Display package dependencies
+displayPkgDeps :: [String] -> Aura ()
+displayPkgDeps []   = return ()
+displayPkgDeps pkgs = do
+  info    <- mapM package pkgs :: Aura [ABSPkg]
+  allDeps <- mapM (depCheck filterABSPkgs) info
+  let (ps,as,_) = foldl groupPkgs ([],[],[]) allDeps
+  I.reportPkgsToInstall (n ps) (nubBy sameName as) []
+    where n = nub . map splitName
+          sameName a b = pkgNameOf a == pkgNameOf b
 
 -- | Install packages, managing dependencies
 install :: [String] -> [String] -> Aura ()
@@ -81,7 +96,7 @@ renderPkgInfo :: Settings -> ABSPkg -> Aura String
 renderPkgInfo ss info = do
     description <- case (value ns "pkgdesc") of
       a : _ -> return a
-      _ -> failure $ pkgBuildKeyMissing (langOf ss) "pkgdesc"
+      _ -> return $ red . missingDescription $ langOf ss
     let entries = [ magenta $ repoOf info
                     , white $ pkgNameOf info
                     , show . versionOf $ info

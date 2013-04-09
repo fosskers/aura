@@ -1182,6 +1182,9 @@ absInfoFields _ = [ "Repository","Name","Version","Description" ]
 pkgBuildKeyMissing :: Language -> String -> String
 pkgBuildKeyMissing _ key = "Unable to parse key " ++ key ++ " from PKGBUILD."
 
+missingDescription :: Language -> String
+missingDescription _ = "No description."
+
 -----------------------
 -- Aura/State functions
 -----------------------
