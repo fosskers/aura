@@ -31,6 +31,7 @@ module Aura.Commands.M (
 
 import qualified Aura.Install as I
 
+import Aura.Bash
 import Aura.Packages.ABS
 import Aura.Monad.Aura
 import Aura.Core
@@ -53,18 +54,27 @@ absSearch search = do
 
 -- | Display ABS package info
 displayAbsPkgInfo :: ABSPkg -> Aura ()
-displayAbsPkgInfo info = ask >>= \ss ->
-  liftIO $ putStrLn $ renderPkgInfo ss info ++ "\n"
+displayAbsPkgInfo info = do
+  ss <- ask
+  pkginfo <- renderPkgInfo ss info
+  liftIO $ putStrLn $ pkginfo ++ "\n"
 
-
+-- | Install packages, managing dependencies
 install :: [String] -> [String] -> Aura ()
 install pacOpts pkgs = I.install b filterABSPkgs pacOpts pkgs
     where b = package :: String -> Aura ABSPkg  -- Force the type.
 
 -- | Format a PkgInfo into a string
-renderPkgInfo :: Settings -> ABSPkg -> String
-renderPkgInfo ss info = entrify ss fields entries
-  where fields  = map white . absInfoFields . langOf $ ss
-        entries = [ magenta $ repoOf info
-                  , white $ pkgNameOf info
-                  , show . versionOf $ info ]
+renderPkgInfo :: Settings -> ABSPkg -> Aura String
+renderPkgInfo ss info = do
+    description <- case (value ns "pkgdesc") of
+      a : _ -> return a
+      _ -> failure $ pkgBuildKeyMissing (langOf ss) "pkgdesc"
+    let entries = [ magenta $ repoOf info
+                    , white $ pkgNameOf info
+                    , show . versionOf $ info
+                    , description ]
+    return $ entrify ss fields entries
+  where ns = namespaceOf info
+        fields  = map white . absInfoFields . langOf $ ss
+          

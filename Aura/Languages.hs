@@ -1177,7 +1177,10 @@ outOfDateMsg False Serbian    = green "Ажуран"
 -----------------------
 -- NEEDS TRANSLATION
 absInfoFields :: Language -> [String]
-absInfoFields _ = [ "Repository","Name","Version" ]
+absInfoFields _ = [ "Repository","Name","Version","Description" ]
+
+pkgBuildKeyMissing :: Language -> String -> String
+pkgBuildKeyMissing _ key = "Unable to parse key " ++ key ++ " from PKGBUILD."
 
 -----------------------
 -- Aura/State functions
