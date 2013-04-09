@@ -74,7 +74,6 @@ instance Buildable ABSPkg where
       S.quietShellCmd "cp" ["-R",loc,fp]
       return $ fp </> pkgNameOf p
   rewrap (ABSPkg n r v p _) ns = ABSPkg n r v p ns
-\
 
 instance Show ABSPkg where
     show = pkgNameWithVersionDemand
