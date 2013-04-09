@@ -118,25 +118,17 @@ parsePkgBuild pkgloc pkgbuild =
   let repo' = case reverse $ split '/' pkgloc of
         _ : a : _ -> return a
         _ -> failure $ "Unable to extract repository name: " ++ pkgloc
-  in do
-    repo <- repo'
-    parsePkgBuild' repo pkgloc pkgbuild
-
-parsePkgBuild' :: String -- ^ Repository name
-               -> String -- ^ Pkgbuild location on disk.
-               -> String -- ^ PKGBUILD contents
-               -> Aura ABSPkg
-parsePkgBuild' repo pkgloc pkgbuild =
-  let ns' = namespace pkgloc pkgbuild
+      ns' = namespace pkgloc pkgbuild
       getVal ns key = case value ns key of
         a : _ -> return a
         [] -> failure $ "Unable to extract value for key " ++ key
   in do
+    repo <- repo'
     ns <- ns'
     name <- getVal ns "pkgname"
     version <- MustBe `liftM` getVal ns "pkgver"
     desc <- getVal ns "pkgdesc"
-    return $ ABSPkg name repo version pkgbuild ns
+    return $ ABSPkg name repo version pkgbuild ns 
 
 -- | Find a matching list of packages given a name. This only matches
 -- on the name of the package.
