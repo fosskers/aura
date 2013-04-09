@@ -28,6 +28,7 @@ module Aura.Commands.M (
   , absInfo
   , absSearch
   , absSync
+  , absSyncLocal
   , displayPkgbuild
   , displayPkgDeps
  ) where

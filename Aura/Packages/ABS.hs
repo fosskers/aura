@@ -29,6 +29,7 @@ module Aura.Packages.ABS (
    absPkg
   ,absSearchLookup
   ,absSync
+  ,absSyncLocal
   ,filterABSPkgs
   ,repoOf
   ,ABSPkg
@@ -36,6 +37,7 @@ module Aura.Packages.ABS (
 where
 
 import Data.List (find)
+import Data.Maybe (mapMaybe)
 import Control.Monad    (filterM, liftM, void)
 import Text.Regex.PCRE  ((=~))
 import System.Directory (doesDirectoryExist, getDirectoryContents)
@@ -93,6 +95,15 @@ pkgbuildPath repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
 
 absSync :: Aura ()
 absSync = void $ A.shellCmd "abs" []
+
+absSyncLocal :: Aura ()
+absSyncLocal = do
+  paths <- findPkg ""
+  let pkgNames = mapMaybe getRepoAndName paths
+  void $ A.shellCmd "abs" pkgNames
+    where getRepoAndName pkg = case reverse $ split '/' pkg of
+            a : b : _ -> Just $ b </> a
+            _ -> Nothing
 
 -- | Construct a ABSPkg for a string.
 absPkg :: String -> Aura ABSPkg
