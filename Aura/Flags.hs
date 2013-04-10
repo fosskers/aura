@@ -37,6 +37,7 @@ module Aura.Flags
     , ignoredAuraPkgs
     , buildPath
     , auraOperMsg
+    , keepSourceStatus
     , Flag(..) ) where
 
 import System.Console.GetOpt
@@ -73,6 +74,7 @@ data Flag = ABSInstall
           | DiffPkgbuilds
           | Devel
           | Customizepkg
+          | KeepSource
           | Debug
           | CacheBackup
           | Clean
@@ -135,7 +137,8 @@ auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
               , ( [],    ["hotedit"],      HotEdit       )
               , ( [],    ["viewconf"],     ViewConf      ) 
               , ( [],    ["languages"],    Languages     ) 
-              , ( [],    ["auradebug"],    Debug         ) ]
+              , ( [],    ["auradebug"],    Debug         )
+              , ( [],    ["allsource"],    KeepSource    ) ]
 
 -- These are intercepted Pacman flags. Their functionality is different.
 pacmanOptions :: [OptDescr Flag]
@@ -190,7 +193,7 @@ reconvertFlag flagMap f = fromMaybe "" $ f `lookup` flagMap
 
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
-                , DelMDeps,Customizepkg ]
+                , DelMDeps,Customizepkg,KeepSource ]
 
 filterSettingsFlags :: [Flag] -> [Flag]
 filterSettingsFlags []                 = []
@@ -247,6 +250,9 @@ rebuildDevelStatus = fishOutFlag [(Devel,True)] False
 
 customizepkgStatus :: [Flag] -> Bool
 customizepkgStatus = fishOutFlag [(Customizepkg,True)] False
+
+keepSourceStatus :: [Flag] -> Bool
+keepSourceStatus = fishOutFlag [(KeepSource, True)] False 
 
 parseLanguageFlag :: [String] -> (Maybe Language,[String])
 parseLanguageFlag args =

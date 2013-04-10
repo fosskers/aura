@@ -26,7 +26,7 @@ module Aura.Build
     , buildPackages ) where
 
 import System.FilePath ((</>), takeFileName)
-import Control.Monad   (liftM, when)
+import Control.Monad   (liftM, when, void)
 
 import Aura.Pacman (pacman)
 import Aura.Settings.Base
@@ -41,6 +41,10 @@ import Utilities
 import Shell
 
 ---
+
+-- TODO should this be elsewhere
+srcPkgStore :: FilePath
+srcPkgStore = "/var/cache/aura/src"
 
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
 installPkgFiles :: [String] -> [FilePath] -> Aura ()
@@ -69,13 +73,18 @@ build' :: Buildable a => [a] -> Aura ([FilePath],[a])
 build' []     = failure "build' : You should never see this."
 build' (p:ps) = ask >>= \ss -> do
   let makepkg'   = if toSuppress then makepkgQuiet else makepkgVerbose
+      makesrc u  = if toKeepSource 
+                      then makepkgSource u True >>= void . moveToSourcePath
+                      else return ()
       toSuppress = suppressMakepkg ss
+      toKeepSource = keepSource ss
       user       = getTrueUser $ environmentOf ss
   curr <- liftIO pwd
   getSourceCode p user curr
   overwritePkgbuild p
   pNames <- makepkg' user
   paths  <- moveToBuildPath pNames
+  makesrc user
   liftIO $ cd curr
   return (paths,ps)
 
@@ -121,5 +130,13 @@ moveToBuildPath :: [FilePath] -> Aura [FilePath]
 moveToBuildPath []     = return []
 moveToBuildPath (p:ps) = do
   newName <- ((</> p) . buildPathOf) `liftM` ask
+  liftIO $ mv p newName
+  (newName :) `liftM` moveToBuildPath ps
+
+-- Moves a file to the aura src package cache and returns its location.
+moveToSourcePath :: [FilePath] -> Aura [FilePath]
+moveToSourcePath []     = return []
+moveToSourcePath (p:ps) = do
+  let newName = srcPkgStore </> p
   liftIO $ mv p newName
   (newName :) `liftM` moveToBuildPath ps

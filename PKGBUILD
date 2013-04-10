@@ -43,6 +43,9 @@ package() {
     # Directory for storing PKGBUILDs
     mkdir -p "$pkgdir/var/cache/aura/pkgbuilds"
 
+    # Directory for storing source packages
+    mkdir -p "$pkgdir/var/cache/aura/src"
+
     # Directory for storing installed package states
     mkdir -p "$pkgdir/var/cache/aura/states"
 }
