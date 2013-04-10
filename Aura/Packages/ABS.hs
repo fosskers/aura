@@ -90,12 +90,15 @@ repoOf (ABSPkg _ r _ _ _) = r
 absBasePath :: FilePath
 absBasePath = "/var/abs"
 
+-- Takes a repository and package name and constructs the path to the PKGBUILD.
 pkgbuildPath :: String -> String -> FilePath
 pkgbuildPath repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
 
+-- | Sync the full ABS tree.
 absSync :: Aura ()
 absSync = void $ A.shellCmd "abs" []
 
+-- | Sync only the parts of the ABS tree which already exists on the system.
 absSyncLocal :: Aura ()
 absSyncLocal = do
   paths <- findPkg ""
