@@ -34,6 +34,7 @@ module Aura.Commands.M (
  ) where
 
 import Data.List       (nub, nubBy)
+import Text.Regex.PCRE ((=~))
 
 import qualified Aura.Install as I
 
@@ -56,8 +57,11 @@ absInfo search = do
 -- | Search ABS for any packages matching the given patterns (-s)
 absSearch :: [String] -> Aura ()
 absSearch search = do
-  q <- mapM absSearchLookup search
-  mapM_ displayAbsPkgInfo $ concat q
+  q <- mapM lookupWithTerm search
+  mapM_ (uncurry displaySearch) $ concat q
+  where lookupWithTerm term = do
+          res <- absSearchLookup term 
+          mapM (\r -> return (term, r)) res
 
 -- | Display PKGBUILD
 displayPkgbuild :: [String] -> Aura ()
@@ -92,7 +96,7 @@ displayAbsPkgInfo info = do
   pkginfo <- renderPkgInfo ss info
   liftIO $ putStrLn $ pkginfo ++ "\n"
 
--- | Format a PkgInfo into a string
+-- | Format an ABSPkg into a string
 renderPkgInfo :: Settings -> ABSPkg -> Aura String
 renderPkgInfo ss info = do
     description <- case (value ns "pkgdesc") of
@@ -105,4 +109,27 @@ renderPkgInfo ss info = do
     return $ entrify ss fields entries
   where ns = namespaceOf info
         fields  = map white . absInfoFields . langOf $ ss
-          
+
+-- | Display search results. Search term will be highlighted in the results.
+displaySearch :: String -- ^ Search term
+              -> ABSPkg -- ^ Search result
+              -> Aura ()
+displaySearch term info = do
+  ss <- ask
+  pkginfo <- renderSearch ss term info
+  liftIO $ putStrLn pkginfo
+
+-- | Render an ABSPkg into a search string.
+renderSearch :: Settings -> String -> ABSPkg -> Aura String
+renderSearch ss r i = do
+  desc <- case (value ns "pkgdesc") of
+    a : _ -> return a
+    _ -> return $ red . missingDescription $ langOf ss
+  let d = c noColour desc
+  return $ repo ++ "/" ++ n ++ " " ++ v ++ " \n    " ++ d
+    where c cl cs = case cs =~ ("(?i)" ++ r) of
+                      (b,m,a) -> cl b ++ bCyan m ++ cl a
+          repo = magenta $ repoOf i
+          ns = namespaceOf i
+          n = c bForeground $ pkgNameOf i
+          v = green . tail . show $ versionOf i
