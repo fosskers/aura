@@ -59,9 +59,8 @@ absSearch :: [String] -> Aura ()
 absSearch search = do
   q <- mapM lookupWithTerm search
   mapM_ (uncurry displaySearch) $ concat q
-  where lookupWithTerm term = do
-          res <- absSearchLookup term 
-          mapM (\r -> return (term, r)) res
+  where lookupWithTerm term = absSearchLookup term >>= 
+          mapM (\r -> return (term, r))
 
 -- | Display PKGBUILD
 displayPkgbuild :: [String] -> Aura ()
