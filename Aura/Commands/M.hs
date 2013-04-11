@@ -92,22 +92,21 @@ install pacOpts pkgs = I.install b filterABSPkgs pacOpts pkgs
 displayAbsPkgInfo :: ABSPkg -> Aura ()
 displayAbsPkgInfo info = do
   ss <- ask
-  pkginfo <- renderPkgInfo ss info
+  let pkginfo = renderPkgInfo ss info
   liftIO $ putStrLn $ pkginfo ++ "\n"
 
 -- | Format an ABSPkg into a string
-renderPkgInfo :: Settings -> ABSPkg -> Aura String
-renderPkgInfo ss info = do
-    description <- case (value ns "pkgdesc") of
-      a : _ -> return a
-      _ -> return $ red . missingDescription $ langOf ss
-    let entries = [ magenta $ repoOf info
+renderPkgInfo :: Settings -> ABSPkg -> String
+renderPkgInfo ss info = entrify ss fields entries
+  where ns = namespaceOf info
+        fields  = map white . absInfoFields . langOf $ ss
+        description = case (value ns "pkgdesc") of
+          a : _ -> a
+          _ -> red . missingDescription $ langOf ss
+        entries = [ magenta $ repoOf info
                     , white $ pkgNameOf info
                     , show . versionOf $ info
                     , description ]
-    return $ entrify ss fields entries
-  where ns = namespaceOf info
-        fields  = map white . absInfoFields . langOf $ ss
 
 -- | Display search results. Search term will be highlighted in the results.
 displaySearch :: String -- ^ Search term
@@ -115,20 +114,19 @@ displaySearch :: String -- ^ Search term
               -> Aura ()
 displaySearch term info = do
   ss <- ask
-  pkginfo <- renderSearch ss term info
+  let pkginfo = renderSearch ss term info
   liftIO $ putStrLn pkginfo
 
 -- | Render an ABSPkg into a search string.
-renderSearch :: Settings -> String -> ABSPkg -> Aura String
-renderSearch ss r i = do
-  desc <- case (value ns "pkgdesc") of
-    a : _ -> return a
-    _ -> return $ red . missingDescription $ langOf ss
-  let d = c noColour desc
-  return $ repo ++ "/" ++ n ++ " " ++ v ++ " \n    " ++ d
+renderSearch :: Settings -> String -> ABSPkg -> String
+renderSearch ss r i =
+  repo ++ "/" ++ n ++ " " ++ v ++ " \n    " ++ d
     where c cl cs = case cs =~ ("(?i)" ++ r) of
                       (b,m,a) -> cl b ++ bCyan m ++ cl a
           repo = magenta $ repoOf i
           ns = namespaceOf i
           n = c bForeground $ pkgNameOf i
           v = green . tail . show $ versionOf i
+          d = case (value ns "pkgdesc") of
+            a : _ -> c noColour a
+            _ -> red . missingDescription $ langOf ss
