@@ -23,15 +23,14 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Commands.M ( 
-  install
-  , absInfo
-  , absSearch
-  , absSync
-  , absSyncLocal
-  , displayPkgbuild
-  , displayPkgDeps
- ) where
+module Aura.Commands.M
+    ( install
+    , absInfo
+    , absSearch
+    , absSync
+    , absSyncLocal
+    , displayPkgbuild
+    , displayPkgDeps ) where
 
 import Data.List       (nub, nubBy)
 import Text.Regex.PCRE ((=~))
@@ -90,8 +89,7 @@ install pacOpts pkgs = I.install b filterABSPkgs pacOpts pkgs
 
 -- | Display ABS package info
 displayAbsPkgInfo :: ABSPkg -> Aura ()
-displayAbsPkgInfo info = do
-  ss <- ask
+displayAbsPkgInfo info = ask >>= \ss -> do
   let pkginfo = renderPkgInfo ss info
   liftIO $ putStrLn $ pkginfo ++ "\n"
 

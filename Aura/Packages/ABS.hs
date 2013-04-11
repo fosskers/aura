@@ -25,16 +25,14 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 {- | Handles all ABS related functions.
 -}
-module Aura.Packages.ABS (
-   absPkg
-  ,absSearchLookup
-  ,absSync
-  ,absSyncLocal
-  ,filterABSPkgs
-  ,repoOf
-  ,ABSPkg
-  )
-where
+module Aura.Packages.ABS
+    ( absPkg
+    , absSearchLookup
+    , absSync
+    , absSyncLocal
+    , filterABSPkgs
+    , repoOf
+    , ABSPkg ) where
 
 import Data.List (find)
 import Data.Maybe (mapMaybe)
@@ -55,8 +53,8 @@ import Aura.Packages.Repository (filterRepoPkgs)
 
 import Utilities (readFileUTF8, split)
 
-import qualified Aura.Shell as A (quietShellCmd, shellCmd)  -- Aura - Has failure checks
-import qualified Shell      as S (quietShellCmd)  -- IO   - Doesn't
+import qualified Aura.Shell as A (quietShellCmd, shellCmd)
+import qualified Shell      as S (quietShellCmd)
 
 ---------------
 -- ABS Packages
