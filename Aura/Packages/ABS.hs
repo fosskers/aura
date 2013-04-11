@@ -86,11 +86,9 @@ instance Eq ABSPkg where
 repoOf :: ABSPkg -> String
 repoOf (ABSPkg _ r _ _ _) = r
 
--- | File system root for the synchronised ABS tree.
 absBasePath :: FilePath
 absBasePath = "/var/abs"
 
--- Takes a repository and package name and constructs the path to the PKGBUILD.
 pkgbuildPath :: String -> String -> FilePath
 pkgbuildPath repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
 
