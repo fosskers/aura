@@ -37,14 +37,13 @@ import Control.Monad   (liftM)
 import Data.List       (intercalate)
 import Text.JSON
 
-import Aura.Bash
+import Aura.Bash (value, namespace, Namespace)
 import Aura.Core
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Utils (scoldAndFail)
 
 import Utilities (decompress)
-
 import Internet
 
 ---
@@ -52,6 +51,10 @@ import Internet
 data AURPkg = AURPkg String VersionDemand Pkgbuild Namespace 
 
 instance Package AURPkg where
+  package pkg = do
+      pkgbuild  <- downloadPkgbuild name
+      AURPkg name ver pkgbuild `liftM` namespace name pkgbuild
+          where (name,ver) = parseNameAndVersionDemand pkg
   pkgNameOf (AURPkg n _ _ _) = n
   versionOf (AURPkg _ v _ _) = v
 
@@ -60,10 +63,6 @@ instance Buildable AURPkg where
   namespaceOf (AURPkg _ _ _ ns) = ns
   source p fp = sourceTarball fp (pkgNameOf p) >>= decompress
   rewrap (AURPkg n v p _) ns = AURPkg n v p ns
-  buildable pkg = do
-      pkgbuild  <- downloadPkgbuild name
-      AURPkg name ver pkgbuild `liftM` namespace name pkgbuild
-          where (name,ver) = parseNameAndVersionDemand pkg
 
 instance Show AURPkg where
     show = pkgNameWithVersionDemand

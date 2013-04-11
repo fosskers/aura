@@ -64,9 +64,9 @@ depsToInstall _ []        = ask >>= failure . getDepsToInstall_1 . langOf
 depsToInstall mainPF pkgs = ask >>= \ss -> do
   allDeps <- mapM (depCheck mainPF) pkgs
   let (ps,as,vs) = foldl groupPkgs ([],[],[]) allDeps
-  necRepPkgs <- filterM mustInstall ps >>= mapM repoPkg
+  necRepPkgs <- filterM mustInstall ps >>= mapM package
   necCusPkgs <- filterM (mustInstall . show) as
-  necVirPkgs <- filterM mustInstall vs >>= mapM virtualPkg
+  necVirPkgs <- filterM mustInstall vs >>= mapM package
   let flicts = conflicts ss (necRepPkgs,necCusPkgs,necVirPkgs)
   if notNull flicts
      then failure $ unlines flicts
@@ -81,7 +81,7 @@ depCheck mainPF pkg = do
   let ns   = namespaceOf pkg
       deps = concatMap (value ns) ["depends","makedepends","checkdepends"]
   (repoNames,custNames,other) <- divideByPkgType filterRepoPkgs mainPF deps
-  customPkgs    <- mapM buildable custNames
+  customPkgs    <- mapM package custNames
   recursiveDeps <- mapM (depCheck mainPF) customPkgs
   let (rs,tb,os) = foldl groupPkgs (repoNames,customPkgs,other) recursiveDeps
   return (nub rs, nub tb, nub os)
