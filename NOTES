@@ -8,7 +8,7 @@ Is it possible to convert Aura to use gettext and printf?
 
 Extend `-Ai`. 
 
-Change arg order in Aura/Languages
+IMPLEMENT `--no-pp` option to disable powerpill no matter what!
 
 COMPLETIONS
 -----------
