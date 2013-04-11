@@ -33,6 +33,7 @@ import Aura.Pacman (pacmanOutput)
 data RepoPkg = RepoPkg String VersionDemand String
 
 instance Package RepoPkg where
+    package = repoPkg
     pkgNameOf (RepoPkg n _ _) = n
     versionOf (RepoPkg _ v _) = v
 

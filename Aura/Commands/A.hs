@@ -51,7 +51,7 @@ import Shell
 
 install :: [String] -> [String] -> Aura ()
 install pacOpts pkgs = I.install b filterAURPkgs pacOpts pkgs
-    where b = buildable :: String -> Aura AURPkg  -- Force the type.
+    where b = package :: String -> Aura AURPkg  -- Force the type.
 
 upgradeAURPkgs :: [String] -> [String] -> Aura ()
 upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
@@ -101,10 +101,11 @@ aurSearch regex = do
 
 renderSearch :: String -> PkgInfo -> String
 renderSearch r i = repo ++ n ++ " " ++ v ++ " (" ++ l ++ ")\n    " ++ d
-    where c cs = case cs =~ ("(?i)" ++ r) of (b,m,a) -> b ++ cyan m ++ a
+    where c cl cs = case cs =~ ("(?i)" ++ r) of
+                      (b,m,a) -> cl b ++ bCyan m ++ cl a
           repo = magenta "aur/"
-          n = c $ nameOf i
-          d = c $ descriptionOf i
+          n = c bForeground $ nameOf i
+          d = c noColour $ descriptionOf i
           l = yellow . show . votesOf $ i  -- `l` for likes?
           v | isOutOfDate i = red $ latestVerOf i
             | otherwise     = green $ latestVerOf i
@@ -113,7 +114,7 @@ displayPkgDeps :: [String] -> Aura ()
 displayPkgDeps []   = return ()
 displayPkgDeps pkgs = do
   info    <- aurInfoLookup pkgs
-  aurPkgs <- (mapM (buildable . nameOf) info) :: Aura [AURPkg]
+  aurPkgs <- (mapM (package . nameOf) info) :: Aura [AURPkg]
   allDeps <- mapM (depCheck filterAURPkgs) aurPkgs
   let (ps,as,_) = foldl groupPkgs ([],[],[]) allDeps
   I.reportPkgsToInstall (n ps) (nubBy sameName as) []

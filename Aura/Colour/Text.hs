@@ -149,6 +149,7 @@ coloursWithCodes :: [(Colour,String)]
 coloursWithCodes = zip colours escapeCodes
 
 colourize :: Colour -> String -> String
+colourize _ ""       = ""
 colourize colour msg =
     case colour `lookup` coloursWithCodes of
       Nothing   -> msg  -- `NoColour` will yield this.
