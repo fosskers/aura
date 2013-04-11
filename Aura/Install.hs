@@ -1,5 +1,3 @@
-{-# LANGUAGE NoMonomorphismRestriction #-}
-
 {-
 
 Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>

@@ -143,11 +143,10 @@ executeOpts (flags,input,pacOpts) =
                       pacmanFailure
     where hijackedFlags = reconvertFlags flags hijackedFlagMap
 
--- `-y` was included in the flags. Sync database before continuing.
+-- `-y` was included with `-A`. Sync database before continuing.
 syncAndContinue :: UserInput -> Aura ()
-syncAndContinue (flags,input,pacOpts) = do
-  syncDatabase pacOpts
-  executeOpts (AURInstall:flags,input,pacOpts)
+syncAndContinue (flags,input,pacOpts) =
+  syncDatabase pacOpts >> executeOpts (AURInstall:flags,input,pacOpts)
 
 ----------
 -- GENERAL
