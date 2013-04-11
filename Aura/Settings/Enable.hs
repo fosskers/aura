@@ -67,7 +67,8 @@ getSettings lang (auraFlags,input,pacOpts) = do
                   , mayHotEdit      = hotEditStatus auraFlags
                   , diffPkgbuilds   = pbDiffStatus auraFlags
                   , rebuildDevel    = rebuildDevelStatus auraFlags
-                  , useCustomizepkg = customizepkgStatus auraFlags }
+                  , useCustomizepkg = customizepkgStatus auraFlags
+                  , keepSource      = keepSourceStatus auraFlags }
 
 debugOutput :: Settings -> IO ()
 debugOutput ss = do
@@ -92,7 +93,8 @@ debugOutput ss = do
                  , "PKGBUILD editing? => " ++ yn (mayHotEdit ss) 
                  , "Diff PKGBUILDs?   => " ++ yn (diffPkgbuilds ss)
                  , "Rebuild Devel?    => " ++ yn (rebuildDevel ss)
-                 , "Use Customizepkg? => " ++ yn (useCustomizepkg ss) ]
+                 , "Use Customizepkg? => " ++ yn (useCustomizepkg ss)
+                 , "Keep source?      => " ++ yn (keepSource ss) ]
 
 checkLang :: Maybe Language -> Environment -> Language
 checkLang Nothing env   = langFromEnv $ getLangVar env

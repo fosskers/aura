@@ -26,6 +26,7 @@ import Text.Regex.PCRE  ((=~))
 import Control.Monad    (liftM,when)
 import Data.List        (isSuffixOf)
 
+import Aura.Bash (Namespace)
 import Aura.Settings.Base
 import Aura.Colour.Text
 import Aura.Monad.Aura
@@ -50,6 +51,8 @@ type PkgFilter = [String] -> Aura [String]
 -- Package Class
 ----------------
 class (Show a, Eq a) => Package a where
+    -- | Get the Package with the given name.
+    package :: String -> Aura a
     pkgNameOf :: a -> String
     versionOf :: a -> VersionDemand
 
@@ -78,7 +81,6 @@ class (Package a) => Buildable a where
          -> FilePath    -- ^ Directory in which to extract the package.
          -> IO FilePath -- ^ Path to the extracted source.
   rewrap :: a -> Namespace -> a  -- ^ Assign a new Namespace.
-  buildable :: String -> Aura a  -- ^ Create Buildable data.
 
 ---------------------------------
 -- Functions common to `Package`s

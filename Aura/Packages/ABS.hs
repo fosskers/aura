@@ -23,24 +23,40 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
--- Handles all ABS related functions.
+{- | Handles all ABS related functions.
+-}
+module Aura.Packages.ABS (
+   absPkg
+  ,absSearchLookup
+  ,absSync
+  ,absSyncLocal
+  ,filterABSPkgs
+  ,repoOf
+  ,ABSPkg
+  )
+where
 
-module Aura.Packages.ABS where
-
+import Data.List (find)
+import Data.Maybe (mapMaybe)
+import Control.Monad    (filterM, liftM, void)
 import Text.Regex.PCRE  ((=~))
-import Control.Monad    (liftM, void)
+import System.Directory (doesDirectoryExist, getDirectoryContents)
 import System.FilePath
 
-import Aura.Packages.Repository (filterRepoPkgs)
-import Aura.Pacman              (pacmanOutput)
-import Aura.Monad.Aura
-import Aura.Core
 import Aura.Bash
+import Aura.Core
+import Aura.Languages
+import Aura.Monad.Aura
+import Aura.Colour.Text
+import Aura.Settings.Base
+import Aura.Pacman (pacmanOutput)
+import Aura.Utils  (entrify)
+import Aura.Packages.Repository (filterRepoPkgs)
 
-import qualified Aura.Shell as A (quietShellCmd)  -- Aura - Has failure checks
+import Utilities (readFileUTF8, split)
+
+import qualified Aura.Shell as A (quietShellCmd, shellCmd)  -- Aura - Has failure checks
 import qualified Shell      as S (quietShellCmd)  -- IO   - Doesn't
-
----
 
 ---------------
 -- ABS Packages
@@ -48,6 +64,7 @@ import qualified Shell      as S (quietShellCmd)  -- IO   - Doesn't
 data ABSPkg = ABSPkg String String VersionDemand Pkgbuild Namespace
 
 instance Package ABSPkg where
+  package = absPkg
   pkgNameOf (ABSPkg n _ _ _ _) = n
   versionOf (ABSPkg _ _ v _ _) = v
 
@@ -59,12 +76,6 @@ instance Buildable ABSPkg where
       S.quietShellCmd "cp" ["-R",loc,fp]
       return $ fp </> pkgNameOf p
   rewrap (ABSPkg n r v p _) ns = ABSPkg n r v p ns
-  buildable pkg = do
-      repo <- repository name
-      absSync repo name
-      pkgbuild <- liftIO . readFile . pkgbuildPath repo $ name
-      ABSPkg name repo ver pkgbuild `liftM` namespace name pkgbuild
-          where (name,ver) = parseNameAndVersionDemand pkg
 
 instance Show ABSPkg where
     show = pkgNameWithVersionDemand
@@ -75,25 +86,81 @@ instance Eq ABSPkg where
 repoOf :: ABSPkg -> String
 repoOf (ABSPkg _ r _ _ _) = r
 
--- | File system root for the synchronised ABS tree.
 absBasePath :: FilePath
 absBasePath = "/var/abs"
 
 pkgbuildPath :: String -> String -> FilePath
 pkgbuildPath repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
 
--- | The repository that a package belongs to.
--- For now, only packages in the three official repos are allowed.
-repository :: String -> Aura String
-repository p = do
-  info <- (head . lines) `liftM` pacmanOutput ["-Si",p]
-  let (_,_,repo) = info =~ "Repository[ ]+: " :: (String,String,String)
-  if not $ repo =~ "(^core|^community|^extra)"
-     then failure $ repo </> p ++ " cannot be synced."
-     else return repo
+-- | Sync the full ABS tree.
+absSync :: Aura ()
+absSync = void $ A.shellCmd "abs" []
 
-absSync :: String -> String -> Aura ()
-absSync repo name = void $ A.quietShellCmd "abs" [repo </> name]
+-- | Sync only the parts of the ABS tree which already exists on the system.
+absSyncLocal :: Aura ()
+absSyncLocal = do
+  paths <- findPkg ""
+  let pkgNames = mapMaybe getRepoAndName paths
+  void $ A.shellCmd "abs" pkgNames
+    where getRepoAndName pkg = case reverse $ split '/' pkg of
+            a : b : _ -> Just $ b </> a
+            _ -> Nothing
+
+-- | Construct a ABSPkg for a string.
+absPkg :: String -> Aura ABSPkg
+absPkg pkgName = do
+  pkgs <- absSearchLookup pkgName
+  case (find (\a -> pkgNameOf a == pkgName) pkgs) of
+    Just a -> return a
+    Nothing -> failure $ "No matching packages for " ++ pkgName
+
+-- | Search for packages matching the given pattern.
+absSearchLookup :: String -> Aura [ABSPkg]
+absSearchLookup pattern = do
+  pkgs <- findPkg pattern
+  mapM (\a -> liftIO (readFileUTF8 $ a </> "PKGBUILD") >>= parsePkgBuild a) pkgs
+
+-- | Parse a PKGBUILD into ABSPkg if possible. Fails if:
+--   - Unable to extract repo name from the location
+--   - Unable to extract a specific key from the PKGBUILD.
+parsePkgBuild :: String -- ^ Package location on disk
+              -> String -- ^ PKGBUILD contents as string
+              -> Aura ABSPkg
+parsePkgBuild pkgloc pkgbuild =
+  let repo' = case reverse $ split '/' pkgloc of
+        _ : a : _ -> return a
+        _ -> failure $ "Unable to extract repository name: " ++ pkgloc
+      ns' = namespace pkgloc pkgbuild
+      getVal ns key = case value ns key of
+        a : _ -> return a
+        [] -> failure $ "Unable to extract value for key " ++ key
+  in do
+    repo <- repo'
+    ns <- ns'
+    name <- getVal ns "pkgname"
+    version <- MustBe `liftM` getVal ns "pkgver"
+    return $ ABSPkg name repo version pkgbuild ns 
+
+-- | Find a matching list of packages given a name. This only matches
+-- on the name of the package.
+-- Returns a list of potential paths to packages (the package directory).
+findPkg :: String -> Aura [String]
+findPkg pattern =
+  let isDownDir = (flip notElem) [".", ".."]
+      liftFilter f a = do
+        a' <- a
+        return $ filter f a'
+  in liftIO $ do
+    entries <- (liftM $ fmap (absBasePath </>))
+      $ liftFilter isDownDir
+      $ getDirectoryContents absBasePath
+    repos <- filterM doesDirectoryExist entries
+    entries' <- liftM concat $ mapM (\repo -> (liftM $ fmap (repo </>))
+      $ liftFilter isDownDir
+      $ getDirectoryContents repo) repos
+    packages <- filterM doesDirectoryExist entries'
+    return
+      $ filter (\pkg -> pkg =~ pattern) packages
 
 filterABSPkgs :: PkgFilter
 filterABSPkgs = filterRepoPkgs
