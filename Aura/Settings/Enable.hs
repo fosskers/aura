@@ -42,7 +42,7 @@ getSettings :: Maybe Language -> ([Flag],[String],[String]) -> IO Settings
 getSettings lang (auraFlags,input,pacOpts) = do
   confFile    <- getPacmanConf
   environment <- getEnvironment
-  pmanCommand <- getPacmanCmd environment
+  pmanCommand <- getPacmanCmd environment $ noPowerPillStatus auraFlags
   makepkgConf <- readFile makepkgConfFile
   buildPath'  <- checkBuildPath (buildPath auraFlags) (getCachePath confFile)
   let language = checkLang lang environment
@@ -67,7 +67,8 @@ getSettings lang (auraFlags,input,pacOpts) = do
                   , mayHotEdit      = hotEditStatus auraFlags
                   , diffPkgbuilds   = pbDiffStatus auraFlags
                   , rebuildDevel    = rebuildDevelStatus auraFlags
-                  , useCustomizepkg = customizepkgStatus auraFlags }
+                  , useCustomizepkg = customizepkgStatus auraFlags
+                  , noPowerPill     = noPowerPillStatus auraFlags }
 
 debugOutput :: Settings -> IO ()
 debugOutput ss = do
@@ -92,7 +93,8 @@ debugOutput ss = do
                  , "PKGBUILD editing? => " ++ yn (mayHotEdit ss) 
                  , "Diff PKGBUILDs?   => " ++ yn (diffPkgbuilds ss)
                  , "Rebuild Devel?    => " ++ yn (rebuildDevel ss)
-                 , "Use Customizepkg? => " ++ yn (useCustomizepkg ss) ]
+                 , "Use Customizepkg? => " ++ yn (useCustomizepkg ss)
+                 , "Forego PowerPill? => " ++ yn (noPowerPill ss) ]
 
 checkLang :: Maybe Language -> Environment -> Language
 checkLang Nothing env   = langFromEnv $ getLangVar env

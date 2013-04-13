@@ -19,25 +19,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Flags
-    ( parseLanguageFlag
-    , parseFlags 
-    , settingsFlags
-    , reconvertFlags
-    , dualFlagMap
-    , hijackedFlagMap
-    , suppressionStatus
-    , delMakeDepsStatus
-    , confirmationStatus
-    , hotEditStatus
-    , pbDiffStatus
-    , rebuildDevelStatus
-    , customizepkgStatus
-    , filterSettingsFlags
-    , ignoredAuraPkgs
-    , buildPath
-    , auraOperMsg
-    , Flag(..) ) where
+module Aura.Flags where
 
 import System.Console.GetOpt
 import Data.Maybe (fromMaybe)
@@ -78,6 +60,7 @@ data Flag = AURInstall
           | Abandon
           | ViewConf
           | RestoreState
+          | NoPowerPill
           | Languages
           | Version
           | Help
@@ -128,12 +111,13 @@ auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
               , ( ['u'], ["sysupgrade"],   Upgrade       )
               , ( ['w'], ["downloadonly"], Download      )
               , ( ['x'], ["unsuppress"],   Unsuppress    )
+              , ( [],    ["auradebug"],    Debug         )
               , ( [],    ["custom"],       Customizepkg  )
               , ( [],    ["devel"],        Devel         )
               , ( [],    ["hotedit"],      HotEdit       )
-              , ( [],    ["viewconf"],     ViewConf      ) 
-              , ( [],    ["languages"],    Languages     ) 
-              , ( [],    ["auradebug"],    Debug         ) ]
+              , ( [],    ["languages"],    Languages     )
+              , ( [],    ["no-pp"],        NoPowerPill   )
+              , ( [],    ["viewconf"],     ViewConf      ) ]
 
 -- These are intercepted Pacman flags. Their functionality is different.
 pacmanOptions :: [OptDescr Flag]
@@ -175,6 +159,7 @@ hijackedFlagMap = [ (CacheBackup,"-b")
                   , (Download,"-w")
                   , (Refresh,"-y") ]
 
+-- These are flags which do the same thing in Aura or Pacman.
 dualFlagMap :: FlagMap
 dualFlagMap = [ (NoConfirm,"--noconfirm") ]
  
@@ -188,7 +173,7 @@ reconvertFlag flagMap f = fromMaybe "" $ f `lookup` flagMap
 
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
-                , DelMDeps,Customizepkg ]
+                , DelMDeps,Customizepkg,NoPowerPill ]
 
 filterSettingsFlags :: [Flag] -> [Flag]
 filterSettingsFlags []                 = []
@@ -245,6 +230,9 @@ rebuildDevelStatus = fishOutFlag [(Devel,True)] False
 
 customizepkgStatus :: [Flag] -> Bool
 customizepkgStatus = fishOutFlag [(Customizepkg,True)] False
+
+noPowerPillStatus :: [Flag] -> Bool
+noPowerPillStatus = fishOutFlag [(NoPowerPill,True)] False
 
 parseLanguageFlag :: [String] -> (Maybe Language,[String])
 parseLanguageFlag args =

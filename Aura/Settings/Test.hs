@@ -1,4 +1,4 @@
-module Aura.Settings.SettingsTest ( sampleSettings ) where
+module Aura.Settings.Test ( sampleSettings ) where
 
 import Aura.Settings.Base
 import Aura.Colour.Text
@@ -27,10 +27,4 @@ sampleSettings = Settings { environmentOf = undefined
                           , diffPkgbuilds = False
                           , rebuildDevel  = False
                           , useCustomizepkg = False
-                          , pcRed         = red
-                          , pcGreen       = green
-                          , pcYellow      = yellow
-                          , pcBlue        = blue
-                          , pcMagenta     = magenta
-                          , pcCyan        = cyan
-                          , pcWhite       = white }
+                          , noPowerPill   = False }

@@ -60,13 +60,14 @@ defaultLogFile = "/var/log/pacman.log"
 lockFile :: FilePath
 lockFile = "/var/lib/pacman/db.lck"
 
-getPacmanCmd :: Environment -> IO String
-getPacmanCmd env = case getEnvVar "PACMAN" env of
-                     Just cmd -> return cmd
-                     Nothing  -> do  -- Left space for more options later.
-                       powerPill <- doesFileExist powerPillCmd
-                       if | powerPill -> return powerPillCmd
-                          | otherwise -> return defaultCmd
+getPacmanCmd :: Environment -> Bool -> IO String
+getPacmanCmd env nopp =
+    case getEnvVar "PACMAN" env of
+      Just cmd -> return cmd
+      Nothing  -> do  -- Left space for more options later.
+        powerPill <- doesFileExist powerPillCmd
+        if | powerPill && not nopp -> return powerPillCmd
+           | otherwise -> return defaultCmd
 
 getPacmanConf :: IO String
 getPacmanConf = readFile pacmanConfFile
