@@ -8,9 +8,9 @@ Is it possible to convert Aura to use gettext and printf?
 
 Extend `-Ai`. 
 
-IMPLEMENT `--no-pp` option to disable powerpill no matter what!
-
 Add info about the double-search shell command
+
+Add `-Mc` option to remove the contents of /var/abs (after prompting, of course)
 
 COMPLETIONS
 -----------

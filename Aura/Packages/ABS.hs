@@ -87,6 +87,9 @@ instance Eq ABSPkg where
 repoOf :: ABSPkg -> String
 repoOf (ABSPkg _ r _ _ _) = r
 
+-------
+-- WORK
+-------
 absBasePath :: FilePath
 absBasePath = "/var/abs"
 

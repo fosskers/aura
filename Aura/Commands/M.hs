@@ -1,4 +1,22 @@
--- Handles all `-M` operations for building from the ABS.
+{- Handles all `-M` operations for building from the ABS.
+
+* On `-M` suboptions in general *
+ Note that `-M` interacts with your _local_ copy of the
+ Arch Build System Tree. `-i` `-p` or `-s` are thus _local_ searches
+ of whatever you have in your /var/abs/
+
+* On `-y` *
+ Using `-My` makes an `abs` shell call on all the packages in your
+ local tree. It does _not_ sync the entire ABS tree. For that, simply
+ use `sudo abs`.
+
+* On Building Packages *
+ Using just `-M` to build a package from the ABS tree will attempt
+ to build with the PKGBUILD from your local tree unless it doesn't
+ exist, at which point a fresh copy will be synced with `abs` and
+ then built.
+
+-}
 
 {-
 
@@ -37,15 +55,22 @@ import Text.Regex.PCRE ((=~))
 
 import qualified Aura.Install as I
 
-import Aura.Bash
+import Aura.Settings.Base
 import Aura.Dependencies
 import Aura.Packages.ABS
-import Aura.Monad.Aura
-import Aura.Core
 import Aura.Colour.Text
+import Aura.Monad.Aura
 import Aura.Languages
-import Aura.Settings.Base
 import Aura.Utils
+import Aura.Bash
+import Aura.Core
+
+---
+
+-- | Install packages, managing dependencies
+install :: [String] -> [String] -> Aura ()
+install pacOpts pkgs = I.install b filterABSPkgs pacOpts pkgs
+    where b = package :: String -> Aura ABSPkg  -- Force the type.
 
 -- | Get info about the specified package (-i)
 absInfo :: [String] -> Aura ()
@@ -78,15 +103,9 @@ displayPkgDeps pkgs = do
     where n = nub . map splitName
           sameName a b = pkgNameOf a == pkgNameOf b
 
--- | Install packages, managing dependencies
-install :: [String] -> [String] -> Aura ()
-install pacOpts pkgs = I.install b filterABSPkgs pacOpts pkgs
-    where b = package :: String -> Aura ABSPkg  -- Force the type.
-
 ----------
 -- Helpers
 ----------
-
 -- | Display ABS package info
 displayAbsPkgInfo :: ABSPkg -> Aura ()
 displayAbsPkgInfo info = ask >>= \ss -> do
