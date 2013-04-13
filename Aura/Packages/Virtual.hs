@@ -26,11 +26,11 @@ module Aura.Packages.Virtual
   , providerPkgOf
   , providingPkg ) where
 
-import Aura.Core
-import Aura.Monad.Aura
-import Aura.Utils (splitNameAndVer)
+import Aura.Packages.Repository (RepoPkg)
 import Aura.Pacman (pacmanOutput)
-import Aura.Packages.Repository (repoPkg,RepoPkg)
+import Aura.Utils (splitNameAndVer)
+import Aura.Monad.Aura
+import Aura.Core
 
 import Control.Monad (liftM)
 import Data.List     (nub)
@@ -44,9 +44,15 @@ import Data.List     (nub)
 data VirtualPkg = VirtualPkg String VersionDemand (Maybe RepoPkg)
 
 instance Package VirtualPkg where
-    package = virtualPkg
     pkgNameOf (VirtualPkg n _ _) = n
     versionOf (VirtualPkg _ v _) = v
+    package pkg = VirtualPkg name ver `liftM` getProvider pkg
+        where (name,ver)    = parseNameAndVersionDemand pkg
+              getProvider n = do
+                 provider <- providingPkg n
+                 case provider of
+                   Nothing -> return Nothing
+                   Just p  -> Just `liftM` package p
 
 instance Show VirtualPkg where
     show = pkgNameWithVersionDemand
@@ -56,15 +62,6 @@ instance Eq VirtualPkg where
 
 providerPkgOf :: VirtualPkg -> Maybe RepoPkg
 providerPkgOf (VirtualPkg _ _ p) = p
-
-virtualPkg :: String -> Aura VirtualPkg
-virtualPkg pkg = VirtualPkg name ver `liftM` getProvider pkg
-    where (name,ver) = parseNameAndVersionDemand pkg
-          getProvider n = do
-            provider <- providingPkg n
-            case provider of
-              Nothing -> return Nothing
-              Just p  -> Just `liftM` package p
 
 -- Yields a virtual package's providing package if there is one.
 providingPkg :: String -> Aura (Maybe String)

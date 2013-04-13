@@ -51,10 +51,9 @@ type PkgFilter = [String] -> Aura [String]
 -- Package Class
 ----------------
 class (Show a, Eq a) => Package a where
-    -- | Get the Package with the given name.
-    package :: String -> Aura a
     pkgNameOf :: a -> String
     versionOf :: a -> VersionDemand
+    package :: String -> Aura a
 
 data VersionDemand = LessThan String
                    | AtLeast String

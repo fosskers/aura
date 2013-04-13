@@ -64,10 +64,10 @@ instance Package ABSPkg where
   pkgNameOf (ABSPkg n _ _ _ _) = n
   versionOf (ABSPkg _ _ v _ _) = v
   package pkgName = do
-  pkgs <- absSearchLookup pkgName
-  case (find (\a -> pkgNameOf a == pkgName) pkgs) of
-    Just a -> return a
-    Nothing -> failure $ "No matching packages for " ++ pkgName
+      pkgs <- absSearchLookup pkgName
+      case (find (\a -> pkgNameOf a == pkgName) pkgs) of
+        Just a -> return a
+        Nothing -> failure $ "No matching packages for " ++ pkgName
 
 instance Buildable ABSPkg where
   pkgbuildOf  (ABSPkg _ _ _ p _)  = p

@@ -33,9 +33,10 @@ import Aura.Pacman (pacmanOutput)
 data RepoPkg = RepoPkg String VersionDemand String
 
 instance Package RepoPkg where
-    package = repoPkg
     pkgNameOf (RepoPkg n _ _) = n
     versionOf (RepoPkg _ v _) = v
+    package pkg = RepoPkg name ver `liftM` pacmanOutput ["-Si",name]
+        where (name,ver) = parseNameAndVersionDemand pkg
 
 instance Show RepoPkg where
     show = pkgNameWithVersionDemand
@@ -45,10 +46,6 @@ instance Eq RepoPkg where
 
 pkgInfoOf :: RepoPkg -> String
 pkgInfoOf (RepoPkg _ _ i) = i
-
-repoPkg :: String -> Aura RepoPkg
-repoPkg pkg = RepoPkg name ver `liftM` pacmanOutput ["-Si",name]
-    where (name,ver) = parseNameAndVersionDemand pkg
 
 -- | Get only those packages that are accessible by pacman.
 filterRepoPkgs :: PkgFilter
