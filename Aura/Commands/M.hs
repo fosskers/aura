@@ -64,7 +64,7 @@ absSearch search = do
 -- | Display PKGBUILD
 displayPkgbuild :: [String] -> Aura ()
 displayPkgbuild pkgNames = do
-  pkgs <- mapM absPkg pkgNames
+  pkgs <- mapM package pkgNames :: Aura [ABSPkg]
   mapM_ (liftIO . putStrLn . pkgbuildOf) pkgs
 
 -- | Display package dependencies

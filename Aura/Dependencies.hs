@@ -75,7 +75,10 @@ depsToInstall mainPF pkgs = ask >>= \ss -> do
            repoPkgs  = map pkgNameOf necRepPkgs
        return (nub $ providers ++ repoPkgs, necCusPkgs)
 
--- Returns ([RepoPackages], [AURPackages], [VirtualPackages])
+-- Nick, I don't know if you intended on this or not, but using `package`
+-- here instead of `buildable` forces some pretty epic polymorphism.
+-- It took me quite a while to figure out how this was compiling.
+-- | Returns ([RepoPackages], [CustomPackages], [VirtualPackages])
 depCheck :: Buildable a => PkgFilter -> a -> Aura ([String],[a],[String])
 depCheck mainPF pkg = do
   let ns   = namespaceOf pkg
@@ -83,8 +86,8 @@ depCheck mainPF pkg = do
   (repoNames,custNames,other) <- divideByPkgType filterRepoPkgs mainPF deps
   customPkgs    <- mapM package custNames
   recursiveDeps <- mapM (depCheck mainPF) customPkgs
-  let (rs,tb,os) = foldl groupPkgs (repoNames,customPkgs,other) recursiveDeps
-  return (nub rs, nub tb, nub os)
+  let (rs,cs,os) = foldl groupPkgs (repoNames,customPkgs,other) recursiveDeps
+  return (nub rs, nub cs, nub os)
 
 -- If a package isn't installed, `pacman -T` will yield a single name.
 -- Any other type of output means installation is not required. 

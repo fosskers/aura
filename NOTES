@@ -10,6 +10,8 @@ Extend `-Ai`.
 
 IMPLEMENT `--no-pp` option to disable powerpill no matter what!
 
+Add info about the double-search shell command
+
 COMPLETIONS
 -----------
 - Fish completions go in /etc/fish/completions

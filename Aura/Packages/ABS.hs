@@ -26,8 +26,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 {- | Handles all ABS related functions.
 -}
 module Aura.Packages.ABS
-    ( absPkg
-    , absSearchLookup
+    ( absSearchLookup
     , absSync
     , absSyncLocal
     , filterABSPkgs
@@ -62,9 +61,13 @@ import qualified Shell      as S (quietShellCmd)
 data ABSPkg = ABSPkg String String VersionDemand Pkgbuild Namespace
 
 instance Package ABSPkg where
-  package = absPkg
   pkgNameOf (ABSPkg n _ _ _ _) = n
   versionOf (ABSPkg _ _ v _ _) = v
+  package pkgName = do
+  pkgs <- absSearchLookup pkgName
+  case (find (\a -> pkgNameOf a == pkgName) pkgs) of
+    Just a -> return a
+    Nothing -> failure $ "No matching packages for " ++ pkgName
 
 instance Buildable ABSPkg where
   pkgbuildOf  (ABSPkg _ _ _ p _)  = p
@@ -90,29 +93,23 @@ absBasePath = "/var/abs"
 pkgbuildPath :: String -> String -> FilePath
 pkgbuildPath repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
 
+-- Make this react to `-x` as well? Wouldn't be hard.
+-- It would just be a matter of switching between `shellCmd`
+-- and `quietShellCmd`.
 -- | Sync the full ABS tree.
 absSync :: Aura ()
-absSync = void $ A.shellCmd "abs" []
+absSync = A.shellCmd "abs" []
 
 -- | Sync only the parts of the ABS tree which already exists on the system.
 absSyncLocal :: Aura ()
 absSyncLocal = do
   paths <- findPkg ""
-  let pkgNames = mapMaybe getRepoAndName paths
+  let pkgNames = mapMaybe repoAndName paths
   void $ A.shellCmd "abs" pkgNames
-    where getRepoAndName pkg = case reverse $ split '/' pkg of
+    where repoAndName pkg = case reverse $ split '/' pkg of
             a : b : _ -> Just $ b </> a
             _ -> Nothing
 
--- | Construct a ABSPkg for a string.
-absPkg :: String -> Aura ABSPkg
-absPkg pkgName = do
-  pkgs <- absSearchLookup pkgName
-  case (find (\a -> pkgNameOf a == pkgName) pkgs) of
-    Just a -> return a
-    Nothing -> failure $ "No matching packages for " ++ pkgName
-
--- | Search for packages matching the given pattern.
 absSearchLookup :: String -> Aura [ABSPkg]
 absSearchLookup pattern = do
   pkgs <- findPkg pattern
