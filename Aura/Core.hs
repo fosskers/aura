@@ -33,7 +33,6 @@ import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Pacman
 import Aura.Utils
-import Aura.Bash (Namespace)
 
 import Utilities
 import Shell

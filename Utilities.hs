@@ -23,7 +23,6 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Utilities where
 
-
 import Control.Monad.Trans (liftIO, MonadIO)
 import Control.Concurrent  (threadDelay)
 import System.Directory    (doesFileExist)
@@ -137,6 +136,9 @@ prePad xs x len = replicate (len - length xs) x ++ xs
 -- | Perform an action within a given directory.
 inDir :: FilePath -> IO a -> IO a
 inDir dir io = pwd >>= \cur -> cd dir >> io >>= \res -> cd cur >> return res
+
+noDots :: [String] -> [String]
+noDots = filter (`notElem` [".",".."])
 
 -- | Read a file with the given encoding.
 readFileEncoding :: TextEncoding -> FilePath -> IO String

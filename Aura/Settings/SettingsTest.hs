@@ -29,4 +29,5 @@ sampleSettings = Settings { environmentOf = undefined
                           , mayHotEdit    = False
                           , diffPkgbuilds = False
                           , rebuildDevel  = False
-                          , useCustomizepkg = False }
+                          , useCustomizepkg = False
+                          , keepSource    = False }

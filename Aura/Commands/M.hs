@@ -12,9 +12,8 @@
 
 * On Building Packages *
  Using just `-M` to build a package from the ABS tree will attempt
- to build with the PKGBUILD from your local tree unless it doesn't
- exist, at which point a fresh copy will be synced with `abs` and
- then built.
+ to build with the PKGBUILD from your local tree. If it doesn't
+ exist, a fresh copy will be synced with `abs` and then built.
 
 -}
 
@@ -46,7 +45,6 @@ module Aura.Commands.M
     , absInfo
     , absSearch
     , absSync
-    , absSyncLocal
     , displayPkgbuild
     , displayPkgDeps ) where
 

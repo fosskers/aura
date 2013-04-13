@@ -148,15 +148,15 @@ executeOpts (flags,input,pacOpts) =
                       pacmanFailure
     where hijackedFlags = reconvertFlags flags hijackedFlagMap
 
--- `-y` was included with `-A`. Sync database before continuing.
+-- | `-y` was included with `-A`. Sync database before continuing.
 syncAndContinue :: UserInput -> Aura ()
 syncAndContinue (flags,input,pacOpts) =
   syncDatabase pacOpts >> executeOpts (AURInstall:flags,input,pacOpts)
 
+-- | `-y` was included with `-M`. Sync local ABS tree before continuing.
 syncABSAndContinue :: UserInput -> Aura ()
-syncABSAndContinue (flags,input,pacOpts) = do
-  M.absSync
-  executeOpts (ABSInstall:flags,input,pacOpts)
+syncABSAndContinue (flags,input,pacOpts) =
+  M.absSync >> executeOpts (ABSInstall:flags,input,pacOpts)
 
 ----------
 -- GENERAL

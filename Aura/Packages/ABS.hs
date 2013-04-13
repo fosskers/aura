@@ -28,32 +28,30 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Packages.ABS
     ( absSearchLookup
     , absSync
-    , absSyncLocal
     , filterABSPkgs
     , repoOf
+    , findPkg
     , ABSPkg ) where
 
-import Data.List (find)
-import Data.Maybe (mapMaybe)
-import Control.Monad    (filterM, liftM, void)
+import System.Directory (doesDirectoryExist)
+import System.FilePath  ((</>), takeBaseName)
 import Text.Regex.PCRE  ((=~))
-import System.Directory (doesDirectoryExist, getDirectoryContents)
-import System.FilePath
+import Control.Monad    (filterM, liftM)
+import Data.Maybe       (mapMaybe)
+import Data.List        (find)
 
-import Aura.Bash
-import Aura.Core
-import Aura.Languages
-import Aura.Monad.Aura
-import Aura.Colour.Text
-import Aura.Settings.Base
-import Aura.Pacman (pacmanOutput)
-import Aura.Utils  (entrify)
 import Aura.Packages.Repository (filterRepoPkgs)
+import Aura.Monad.Aura
+import Aura.Core
+import Aura.Bash
 
 import Utilities (readFileUTF8, split)
+import Shell     (ls'')
 
-import qualified Aura.Shell as A (quietShellCmd, shellCmd)
+import qualified Aura.Shell as A (shellCmd)
 import qualified Shell      as S (quietShellCmd)
+
+---
 
 ---------------
 -- ABS Packages
@@ -99,20 +97,14 @@ pkgbuildPath repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
 -- Make this react to `-x` as well? Wouldn't be hard.
 -- It would just be a matter of switching between `shellCmd`
 -- and `quietShellCmd`.
--- | Sync the full ABS tree.
-absSync :: Aura ()
-absSync = A.shellCmd "abs" []
-
 -- | Sync only the parts of the ABS tree which already exists on the system.
-absSyncLocal :: Aura ()
-absSyncLocal = do
-  paths <- findPkg ""
-  let pkgNames = mapMaybe repoAndName paths
-  void $ A.shellCmd "abs" pkgNames
+absSync :: Aura ()
+absSync = mapMaybe repoAndName `liftM` findPkg "" >>= A.shellCmd "abs"
     where repoAndName pkg = case reverse $ split '/' pkg of
-            a : b : _ -> Just $ b </> a
-            _ -> Nothing
+            n:r:_ -> Just $ r </> n
+            _     -> Nothing
 
+-- Misleading function name?
 absSearchLookup :: String -> Aura [ABSPkg]
 absSearchLookup pattern = do
   pkgs <- findPkg pattern
@@ -143,22 +135,10 @@ parsePkgBuild pkgloc pkgbuild =
 -- on the name of the package.
 -- Returns a list of potential paths to packages (the package directory).
 findPkg :: String -> Aura [String]
-findPkg pattern =
-  let isDownDir = (flip notElem) [".", ".."]
-      liftFilter f a = do
-        a' <- a
-        return $ filter f a'
-  in liftIO $ do
-    entries <- (liftM $ fmap (absBasePath </>))
-      $ liftFilter isDownDir
-      $ getDirectoryContents absBasePath
-    repos <- filterM doesDirectoryExist entries
-    entries' <- liftM concat $ mapM (\repo -> (liftM $ fmap (repo </>))
-      $ liftFilter isDownDir
-      $ getDirectoryContents repo) repos
-    packages <- filterM doesDirectoryExist entries'
-    return
-      $ filter (\pkg -> pkg =~ pattern) packages
+findPkg pattern = liftIO $ do
+  repos    <- ls'' absBasePath >>= filterM doesDirectoryExist
+  packages <- concat `liftM` mapM ls'' repos
+  return $ filter (\pkg -> takeBaseName pkg =~ pattern) packages
 
 filterABSPkgs :: PkgFilter
 filterABSPkgs = filterRepoPkgs

@@ -33,6 +33,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Shell where
 
 -- System Libraries
+import System.FilePath ((</>))
 import System.Process (readProcess, readProcessWithExitCode, rawSystem)
 import System.Exit (ExitCode(..))
 import Data.List (intercalate)
@@ -64,6 +65,10 @@ ls = getDirectoryContents
 ls' :: FilePath -> IO [FilePath]
 ls' p = noDots `liftM` ls p
     where noDots = filter (`notElem` [".",".."])
+
+-- | Returns every file's full file path.
+ls'' :: FilePath -> IO [FilePath]
+ls'' p = map (p </>) `liftM` ls' p
 
 mv :: FilePath -> FilePath -> IO ()
 mv = renameFile

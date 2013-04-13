@@ -25,7 +25,6 @@ import Control.Monad (liftM)
 import Data.List     (intercalate)
 
 import Aura.Core
-import Aura.Monad.Aura
 import Aura.Pacman (pacmanOutput)
 
 ---
