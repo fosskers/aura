@@ -54,7 +54,7 @@ instance Package AURPkg where
   pkgNameOf (AURPkg n _ _ _) = n
   versionOf (AURPkg _ v _ _) = v
   package pkg = do
-      pkgbuild  <- downloadPkgbuild name
+      pkgbuild <- downloadPkgbuild name
       AURPkg name ver pkgbuild `liftM` namespace name pkgbuild
           where (name,ver) = parseNameAndVersionDemand pkg
 
