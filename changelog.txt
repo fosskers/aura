@@ -1,5 +1,11 @@
 Aura Changelog
 ==============
+1.1.6.2
+-------
+- New option `--no-pp`. Disables use of powerpill, even if you have it.
+- This is a light release, as major work is being done on version 1.2 on
+  another development branch.
+
 1.1.6.1
 -------
 - Compatable with pacman 4.1
