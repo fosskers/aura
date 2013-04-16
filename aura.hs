@@ -1,3 +1,5 @@
+{-# LANGUAGE TupleSections #-}
+
 {-
 
 Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
@@ -73,7 +75,7 @@ processFlags args = ((flags,nub input,pacOpts'),language)
 
 -- | Set the local environment.
 prepSettings :: (UserInput,Maybe Language) -> IO (UserInput,Settings)
-prepSettings (ui,lang) = (,) ui `liftM` getSettings lang ui
+prepSettings (ui,lang) = (ui,) `liftM` getSettings lang ui
 
 -- | Hand user input to the Aura Monad and run it.
 execute :: (UserInput,Settings) -> IO (Either AuraError ())

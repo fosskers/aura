@@ -41,7 +41,7 @@ import Aura.Settings.Base (Settings)
 
 {- The Aura Monad. Functions of note:
 return  : yields a successful value.
-failure : yields an error.
+failure : yields an error and bypasses all other operations.
 catch   : catches an error.
 wrap    : If given an Either, rewraps it into an Aura Monad.
 (>>=)   : fails on the first error.
@@ -63,7 +63,7 @@ runAura :: Aura a -> Settings -> IO (Either AuraError a)
 runAura a = runReaderT $ runErrorT (runA a)
 
 failure :: String -> Aura a
-failure = throwError . M
+failure = throwError . strMsg
 
 catch :: Aura a -> (String -> Aura a) -> Aura a
 catch a h = catchError a (\(M m) -> h m)

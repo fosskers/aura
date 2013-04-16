@@ -203,7 +203,7 @@ _aura() {
         '-U[Upgrade packages]'
         '-V[Display version information]'
         '-h[Help message]'
-        '--no-pp[Don't use powerpill]'
+        '--no-pp[Do not use powerpill]'
         '--viewconf[View the pacman config file read-only]'
         '--languages[Display available output languages]'
     )
