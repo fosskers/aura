@@ -25,13 +25,16 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 {- | Handles all ABS related functions.
 -}
-module Aura.Packages.ABS
+module Aura.Packages.ABS where {-}
 --    ( absSearchLookup
     ( absSync
     , filterABSPkgs
     , repoOf
 --    , findPkg
     , ABSPkg ) where
+-}
+
+import qualified Data.Set as S
 
 import System.Directory (doesDirectoryExist)
 import System.FilePath  ((</>), takeBaseName)
@@ -46,7 +49,7 @@ import Aura.Core
 import Aura.Bash
 
 import Utilities (readFileUTF8, split)
-import Shell     (ls'')
+import Shell     (ls', ls'')
 
 import qualified Aura.Shell as A (shellCmd)
 import qualified Shell      as S (quietShellCmd)
@@ -62,6 +65,9 @@ instance Package ABSPkg where
   pkgNameOf (ABSPkg n _ _ _ _) = n
   versionOf (ABSPkg _ _ v _ _) = v
   package pkgName = undefined
+  -- `package` is in the Aura Monad. Should I keep an ABSTree in Settings?
+  -- Lazy evaluation should guarantee it will never be made unless `-M` options
+  -- are used, thus no time/memory wasted.
       
       
 {-}
@@ -92,29 +98,40 @@ repoOf (ABSPkg _ r _ _ _) = r
 -------
 -- WORK
 -------
+type ABSTree = [(String,S.Set String)]
+
 absBasePath :: FilePath
 absBasePath = "/var/abs"
 
 pkgbuildPath :: String -> String -> FilePath
 pkgbuildPath repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
 
-repository :: String -> IO (Maybe String)
-repository pkg = undefined
+-- | The repository a package belongs to.
+repository :: ABSTree -> String -> Maybe String
+repository [] _ = Nothing
+repository ((r,ps):rs) p | S.member p ps = Just r
+                         | otherwise     = repository rs p
 
--- | Yield full filepaths to all packages in the ABS tree.
--- TODO: MAKE THIS RETURN [(String,Set String)]
--- Where each tuple contains a repo name and all the packages in it.
-absTree :: IO [FilePath]
+-- | All repos with all their packages in the local tree.
+absTree :: IO ABSTree
 absTree = do
   repos <- ls'' absBasePath >>= filterM doesDirectoryExist
-  concat `liftM` mapM ls'' repos
+  mapM (\r -> ls' r >>= \ps -> return (takeBaseName r, S.fromList ps)) repos
 
+-- | All packages in the local ABS tree in the form: "repo/package"
+flatABSTree :: ABSTree -> [String]
+flatABSTree tree = concatMap fold tree
+    where fold (r,ps) = S.foldr (\p acc -> (r </> p) : acc) [] ps
+
+{-}
 -- | All packages in the ABS tree that matched a pattern.
 absLookup :: String -> Aura [ABSPkg]
 absLookup pattern = do
   pkgs <- filter (\pkg -> takeBaseName pkg =~ pattern) `liftM` liftIO absTree
   mapM (\a -> liftIO (readFileUTF8 $ a </> "PKGBUILD") >>= parsePkgBuild a) pkgs
+-}
 
+{-}
 -- Make this react to `-x` as well? Wouldn't be hard.
 -- It would just be a matter of switching between `shellCmd`
 -- and `quietShellCmd`.
@@ -124,6 +141,7 @@ absSync = mapMaybe repoAndName `liftM` liftIO absTree >>= A.shellCmd "abs"
     where repoAndName pkg = case reverse $ split '/' pkg of
             n:r:_ -> Just $ r </> n
             _     -> Nothing
+-}
 
 singleSync :: String -> Aura ()
 singleSync = A.shellCmd "abs" . (: [])
