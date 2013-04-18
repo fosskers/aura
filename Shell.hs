@@ -34,11 +34,11 @@ module Shell where
 
 -- System Libraries
 import System.FilePath ((</>))
-import System.Process (readProcess, readProcessWithExitCode, rawSystem)
-import System.Exit (ExitCode(..))
-import Data.List (intercalate)
-import Control.Monad (liftM)
-import Data.Maybe (fromMaybe, fromJust)
+import System.Process  (readProcess, readProcessWithExitCode, rawSystem)
+import Control.Monad   (void)
+import System.Exit     (ExitCode(..))
+import Data.Maybe      (fromMaybe, fromJust)
+import Data.List       (intercalate)
 import System.Directory ( getDirectoryContents
                         , setCurrentDirectory
                         , getCurrentDirectory
@@ -61,14 +61,14 @@ ls :: FilePath -> IO [FilePath]
 ls = getDirectoryContents
 
 -- Would this work?
--- drop 2 `liftM` getDirectoryContents
+-- drop 2 `fmap` getDirectoryContents
 ls' :: FilePath -> IO [FilePath]
-ls' p = noDots `liftM` ls p
+ls' p = noDots `fmap` ls p
     where noDots = filter (`notElem` [".",".."])
 
 -- | Returns every file's full file path.
 ls'' :: FilePath -> IO [FilePath]
-ls'' p = map (p </>) `liftM` ls' p
+ls'' p = map (p </>) `fmap` ls' p
 
 mv :: FilePath -> FilePath -> IO ()
 mv = renameFile
@@ -80,9 +80,7 @@ cp :: FilePath -> FilePath -> IO ()
 cp = copyFile
 
 chown :: String -> FilePath -> [String] -> IO ()
-chown user path args = do
-  _ <- quietShellCmd "chown" (args ++ [user,path])
-  return ()
+chown user path args = void $ quietShellCmd "chown" (args ++ [user,path])
 
 ---------------
 -- ESCAPE CODES

@@ -31,7 +31,6 @@ module Aura.Commands.A
     , displayPkgbuild ) where
 
 import Text.Regex.PCRE ((=~))
-import Control.Monad   (liftM)
 import Data.List       (nub, nubBy)
 
 import qualified Aura.Install as I
@@ -57,7 +56,7 @@ upgradeAURPkgs :: [String] -> [String] -> Aura ()
 upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
   let notIgnored p = splitName p `notElem` ignoredPkgsOf ss
   notify upgradeAURPkgs_1
-  foreignPkgs <- filter (\(n,_) -> notIgnored n) `liftM` getForeignPackages
+  foreignPkgs <- filter (\(n,_) -> notIgnored n) `fmap` getForeignPackages
   pkgInfo     <- aurInfoLookup $ map fst foreignPkgs
   let aurPkgs   = filter (\(n,_) -> n `elem` map nameOf pkgInfo) foreignPkgs
       toUpgrade = filter isntMostRecent $ zip pkgInfo (map snd aurPkgs)
@@ -143,5 +142,5 @@ isntMostRecent (info,v) = trueVer > currVer
 ------------
 reportPkgsToUpgrade :: [String] -> Aura ()
 reportPkgsToUpgrade pkgs = do
-  lang <- langOf `liftM` ask
+  lang <- langOf `fmap` ask
   printList green cyan (reportPkgsToUpgrade_1 lang) pkgs

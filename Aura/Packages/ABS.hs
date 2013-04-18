@@ -39,7 +39,7 @@ import qualified Data.Set as S
 import System.Directory (doesDirectoryExist)
 import System.FilePath  ((</>), takeBaseName)
 import Text.Regex.PCRE  ((=~))
-import Control.Monad    (filterM, liftM)
+import Control.Monad    (filterM)
 import Data.Maybe       (mapMaybe)
 import Data.List        (find)
 
@@ -127,7 +127,7 @@ flatABSTree tree = concatMap fold tree
 -- | All packages in the ABS tree that matched a pattern.
 absLookup :: String -> Aura [ABSPkg]
 absLookup pattern = do
-  pkgs <- filter (\pkg -> takeBaseName pkg =~ pattern) `liftM` liftIO absTree
+  pkgs <- filter (\pkg -> takeBaseName pkg =~ pattern) `fmap` liftIO absTree
   mapM (\a -> liftIO (readFileUTF8 $ a </> "PKGBUILD") >>= parsePkgBuild a) pkgs
 -}
 
@@ -137,7 +137,7 @@ absLookup pattern = do
 -- and `quietShellCmd`.
 -- | Sync only the parts of the ABS tree which already exists on the system.
 absSync :: Aura ()
-absSync = mapMaybe repoAndName `liftM` liftIO absTree >>= A.shellCmd "abs"
+absSync = mapMaybe repoAndName `fmap` liftIO absTree >>= A.shellCmd "abs"
     where repoAndName pkg = case reverse $ split '/' pkg of
             n:r:_ -> Just $ r </> n
             _     -> Nothing
@@ -164,7 +164,7 @@ parsePkgBuild pkgloc pkgbuild =
     repo <- repo'
     ns <- ns'
     name <- getVal ns "pkgname"
-    version <- MustBe `liftM` getVal ns "pkgver"
+    version <- MustBe `fmap` getVal ns "pkgver"
     return $ ABSPkg name repo version pkgbuild ns 
 
 filterABSPkgs :: PkgFilter

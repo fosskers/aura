@@ -27,7 +27,6 @@ module Aura.MakePkg
     , makepkgSource
     , makepkgConfFile ) where
 
-import Control.Monad (liftM)
 import Text.Regex.PCRE ((=~))
 import Data.List (intercalate)
 
@@ -48,13 +47,13 @@ makepkgSource :: String -- ^ User
 makepkgSource user allsource =
   let allsourceOpt = if allsource then "--allsource" else "-S"
       (cmd, opts) = determineRunStyle user [allsourceOpt]
-  in quietShellCmd cmd opts >> filter (=~ ".src.tar") `liftM` liftIO (pwd >>= ls)
+  in quietShellCmd cmd opts >> filter (=~ ".src.tar") `fmap` liftIO (pwd >>= ls)
 
 -- Builds a package with `makepkg`.
 -- Some packages create multiple .pkg.tar files. These are all returned.
 makepkgGen :: (String -> [String] -> Aura a) -> String -> Aura [FilePath]
 makepkgGen f user =
-    f cmd opts >> filter (=~ ".pkg.tar") `liftM` liftIO (pwd >>= ls)
+    f cmd opts >> filter (=~ ".pkg.tar") `fmap` liftIO (pwd >>= ls)
       where (cmd,opts) = determineRunStyle user []
 
 determineRunStyle :: String -> [String] -> (String,[String])

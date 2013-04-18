@@ -23,7 +23,7 @@ module Aura.Core where
 
 import System.Directory (doesFileExist)
 import Text.Regex.PCRE  ((=~))
-import Control.Monad    (liftM,when)
+import Control.Monad    (when)
 import Data.List        (isSuffixOf)
 
 import Aura.Bash (Namespace)
@@ -102,7 +102,7 @@ parseNameAndVersionDemand pkg = (name, getVersionDemand comp ver)
 -- | Action won't be allowed unless user is root, or using sudo.
 sudo :: Aura () -> Aura ()
 sudo action = do
-  hasPerms <- (hasRootPriv . environmentOf) `liftM` ask
+  hasPerms <- (hasRootPriv . environmentOf) `fmap` ask
   if hasPerms then action else scoldAndFail mustBeRoot_1
 
 -- | Prompt if the user is the true Root. Building as it can be dangerous.
@@ -114,14 +114,14 @@ trueRoot action = ask >>= \ss ->
 
 -- `-Qm` yields a list of sorted values.
 getForeignPackages :: Aura [(String,String)]
-getForeignPackages = (map fixName . lines) `liftM` pacmanOutput ["-Qm"]
+getForeignPackages = (map fixName . lines) `fmap` pacmanOutput ["-Qm"]
     where fixName = hardBreak (== ' ')
 
 getOrphans :: Aura [String]
-getOrphans = lines `liftM` pacmanOutput ["-Qqdt"]
+getOrphans = lines `fmap` pacmanOutput ["-Qqdt"]
 
 getDevelPkgs :: Aura [String]
-getDevelPkgs = (filter isDevelPkg . map fst) `liftM` getForeignPackages
+getDevelPkgs = (filter isDevelPkg . map fst) `fmap` getForeignPackages
 
 isDevelPkg :: String -> Bool
 isDevelPkg p = any (`isSuffixOf` p) suffixes
@@ -150,7 +150,7 @@ colouredMessage :: Colouror -> (Language -> String) -> Aura ()
 colouredMessage c msg = ask >>= putStrLnA c . msg . langOf
 
 renderColour :: Colouror -> (Language -> String) -> Aura String
-renderColour c msg = (c . msg . langOf) `liftM` ask
+renderColour c msg = (c . msg . langOf) `fmap` ask
 
 say :: (Language -> String) -> Aura ()
 say = colouredMessage noColour

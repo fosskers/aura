@@ -30,7 +30,7 @@ module Aura.State
 import qualified Data.Map.Lazy as M
 
 import System.FilePath ((</>))
-import Control.Monad   (liftM, unless)
+import Control.Monad   (unless)
 import Control.Arrow   (first)
 import Data.Maybe      (mapMaybe)
 import Data.List       (partition,sort)
@@ -61,12 +61,12 @@ stateCache :: FilePath
 stateCache = "/var/cache/aura/states"
 
 rawCurrentState :: Aura [String]
-rawCurrentState = lines `liftM` pacmanOutput ["-Q"]
+rawCurrentState = lines `fmap` pacmanOutput ["-Q"]
 
 currentState :: Aura PkgState
 currentState = do
   pkgs <- rawCurrentState
-  time <- (toSimpleTime . toUTCTime) `liftM` liftIO getClockTime
+  time <- (toSimpleTime . toUTCTime) `fmap` liftIO getClockTime
   let namesVers = map (pair . words) pkgs
       pair      = \(x:y:_) -> (x, comparableVer y)
   return . PkgState time . M.fromAscList $ namesVers
@@ -88,7 +88,7 @@ olds :: PkgState -> PkgState -> [SimplePkg]
 olds old curr = M.assocs $ M.difference (pkgsOf old) (pkgsOf curr)
 
 getStateFiles :: Aura [FilePath]
-getStateFiles = sort `liftM` (liftIO $ ls' stateCache)
+getStateFiles = sort `fmap` (liftIO $ ls' stateCache)
 
 saveState :: Aura ()
 saveState = do
@@ -110,7 +110,7 @@ restoreState = ask >>= \ss -> do
   reinstallAndRemove (mapMaybe (getFilename cache) okay) remo
 
 readState :: FilePath -> Aura PkgState
-readState name = liftIO (read `liftM` readFile (stateCache </> name))
+readState name = liftIO (read `fmap` readFile (stateCache </> name))
 
 -- How does pacman do simultaneous removals and upgrades?
 -- I've seen it happen plenty of times.

@@ -30,7 +30,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 import System.Environment (getArgs)
-import Control.Monad      (unless, liftM)
+import Control.Monad      (unless)
 import System.Exit        (exitSuccess, exitFailure)
 import Data.List          (nub, sort, intercalate)
 
@@ -74,7 +74,7 @@ processFlags args = ((flags,nub input,pacOpts'),language)
 
 -- | Set the local environment.
 prepSettings :: (UserInput,Maybe Language) -> IO (UserInput,Settings)
-prepSettings (ui,lang) = (,) ui `liftM` getSettings lang ui
+prepSettings (ui,lang) = (,) ui `fmap` getSettings lang ui
 
 -- | Hand user input to the Aura Monad and run it.
 execute :: (UserInput,Settings) -> IO (Either AuraError ())

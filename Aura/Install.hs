@@ -27,7 +27,7 @@ module Aura.Install
     , reportPkgsToInstall ) where
 
 import Data.List     (sort,nub,(\\))
-import Control.Monad (unless,liftM)
+import Control.Monad (unless)
 
 import Aura.Pacman (pacman)
 import Aura.Pkgbuild.Records
@@ -98,12 +98,12 @@ knownBadPkgCheck :: [String] -> Aura [String]
 knownBadPkgCheck []     = return []
 knownBadPkgCheck (p:ps) = ask >>= \ss ->
   case p `lookup` wontBuildOf ss of
-    Nothing -> (p :) `liftM` knownBadPkgCheck ps
+    Nothing -> (p :) `fmap` knownBadPkgCheck ps
     Just r  -> do
       scold $ knownBadPkgCheck_1 p
       putStrLnA yellow r
       okay <- optionalPrompt knownBadPkgCheck_2
-      if okay then (p :) `liftM` knownBadPkgCheck ps else knownBadPkgCheck ps
+      if okay then (p :) `fmap` knownBadPkgCheck ps else knownBadPkgCheck ps
 
 depCheckFailure :: String -> Aura a
 depCheckFailure m = scold install_1 >> failure m
@@ -118,7 +118,7 @@ buildAndInstallDep pacOpts pkg =
 ------------
 reportPkgsToInstall :: Buildable a => [String] -> [a] -> [a] -> Aura ()
 reportPkgsToInstall pacPkgs aurDeps aurPkgs = do
-  lang <- langOf `liftM` ask
+  lang <- langOf `fmap` ask
   pl (reportPkgsToInstall_1 lang) (sort pacPkgs)
   pl (reportPkgsToInstall_2 lang) (sort $ namesOf aurDeps)
   pl (reportPkgsToInstall_3 lang) (sort $ namesOf aurPkgs)
@@ -130,7 +130,7 @@ reportNonPackages = badReport reportNonPackages_1
 
 reportIgnoredPackages :: [String] -> Aura ()
 reportIgnoredPackages pkgs = do
-  lang <- langOf `liftM` ask
+  lang <- langOf `fmap` ask
   printList yellow cyan (reportIgnoredPackages_1 lang) pkgs
 
 pkgbuildDiffs :: Buildable a => [a] -> Aura [a]

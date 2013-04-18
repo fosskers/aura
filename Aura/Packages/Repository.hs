@@ -21,7 +21,6 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Packages.Repository where
 
-import Control.Monad (liftM)
 import Data.List     (intercalate)
 
 import Aura.Core
@@ -34,7 +33,7 @@ data RepoPkg = RepoPkg String VersionDemand String
 instance Package RepoPkg where
     pkgNameOf (RepoPkg n _ _) = n
     versionOf (RepoPkg _ v _) = v
-    package pkg = RepoPkg name ver `liftM` pacmanOutput ["-Si",name]
+    package pkg = RepoPkg name ver `fmap` pacmanOutput ["-Si",name]
         where (name,ver) = parseNameAndVersionDemand pkg
 
 instance Show RepoPkg where
@@ -49,7 +48,7 @@ pkgInfoOf (RepoPkg _ _ i) = i
 -- | Get only those packages that are accessible by pacman.
 filterRepoPkgs :: PkgFilter
 filterRepoPkgs pkgs = do
-  repoPkgs <- lines `liftM` pacmanOutput ["-Ssq",pkgs']
+  repoPkgs <- lines `fmap` pacmanOutput ["-Ssq",pkgs']
   return $ filter (`elem` repoPkgs) pkgs
     where pkgs' = "^(" ++ prep pkgs ++ ")$"
           prep  = specs . intercalate "|"

@@ -33,7 +33,6 @@ module Aura.Packages.AUR
     , AURPkg(..) ) where
 
 import System.FilePath ((</>))
-import Control.Monad   (liftM)
 import Data.List       (intercalate)
 import Text.JSON
 
@@ -55,7 +54,7 @@ instance Package AURPkg where
   versionOf (AURPkg _ v _ _) = v
   package pkg = do
       pkgbuild <- downloadPkgbuild name
-      AURPkg name ver pkgbuild `liftM` namespace name pkgbuild
+      AURPkg name ver pkgbuild `fmap` namespace name pkgbuild
           where (name,ver) = parseNameAndVersionDemand pkg
 
 instance Buildable AURPkg where
@@ -71,7 +70,7 @@ instance Eq AURPkg where
     a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
 
 filterAURPkgs :: PkgFilter
-filterAURPkgs pkgs = map nameOf `liftM` aurInfoLookup pkgs
+filterAURPkgs pkgs = map nameOf `fmap` aurInfoLookup pkgs
 
 -----------------------
 -- AUR API URL CREATION
@@ -133,7 +132,7 @@ parseInfoJSON json = decode json >>= apiFailCheck >>= forgePkgInfo
 
 apiFailCheck :: JSObject JSValue -> Result (JSObject JSValue)
 apiFailCheck json = do
-  isError <- (== "error") `liftM` valFromObj "type" json
+  isError <- (== "error") `fmap` valFromObj "type" json
   if isError then Error "AUR API lookup failed." else Ok json
 
 -- Upgrade to AUR 2.0 changed several return types to Ints,
@@ -144,10 +143,10 @@ pkgInfo pkgJSON = do
   na <- valFromObj "Name" pkgJSON
   ve <- valFromObj "Version" pkgJSON
   li <- valFromObj "License" pkgJSON
-  vo <- fromJSRat `liftM` valFromObj "NumVotes" pkgJSON
+  vo <- fromJSRat `fmap` valFromObj "NumVotes" pkgJSON
   de <- valFromObj "Description" pkgJSON
-  au <- (aurPkgUrl . fromJSRat) `liftM` valFromObj "ID" pkgJSON
-  ou <- ((/= 0) . fromJSRat) `liftM` valFromObj "OutOfDate" pkgJSON
+  au <- (aurPkgUrl . fromJSRat) `fmap` valFromObj "ID" pkgJSON
+  ou <- ((/= 0) . fromJSRat) `fmap` valFromObj "OutOfDate" pkgJSON
   return $ PkgInfo na ve ou ur au li vo de
 
 fromJSRat :: JSValue -> Int

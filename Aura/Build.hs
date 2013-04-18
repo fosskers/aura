@@ -26,7 +26,7 @@ module Aura.Build
     , buildPackages ) where
 
 import System.FilePath ((</>), takeFileName)
-import Control.Monad   (liftM, when, void)
+import Control.Monad   (when, void)
 
 import Aura.Pacman (pacman)
 import Aura.Settings.Base
@@ -96,7 +96,7 @@ getSourceCode pkg user currDir = liftIO $ do
   cd sourceDir
 
 overwritePkgbuild :: Buildable a => a -> Aura ()
-overwritePkgbuild p = (mayHotEdit `liftM` ask) >>= check
+overwritePkgbuild p = (mayHotEdit `fmap` ask) >>= check
     where check True  = liftIO . writeFile "PKGBUILD" . pkgbuildOf $ p
           check False = return ()
 
@@ -129,9 +129,9 @@ displayBuildErrors errors = ask >>= \ss -> when (suppressMakepkg ss) $ do
 moveToBuildPath :: [FilePath] -> Aura [FilePath]
 moveToBuildPath []     = return []
 moveToBuildPath (p:ps) = do
-  newName <- ((</> p) . buildPathOf) `liftM` ask
+  newName <- ((</> p) . buildPathOf) `fmap` ask
   liftIO $ mv p newName
-  (newName :) `liftM` moveToBuildPath ps
+  (newName :) `fmap` moveToBuildPath ps
 
 -- Moves a file to the aura src package cache and returns its location.
 moveToSourcePath :: [FilePath] -> Aura [FilePath]
@@ -139,4 +139,4 @@ moveToSourcePath []     = return []
 moveToSourcePath (p:ps) = do
   let newName = srcPkgStore </> p
   liftIO $ mv p newName
-  (newName :) `liftM` moveToBuildPath ps
+  (newName :) `fmap` moveToBuildPath ps

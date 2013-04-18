@@ -26,7 +26,7 @@ module Aura.Pkgbuild.Editing
     , customizepkg ) where
 
 import System.FilePath     ((</>))
-import Control.Monad       (forM, void, liftM)
+import Control.Monad       (forM, void)
 
 import Aura.Settings.Base (environmentOf)
 import Aura.Bash          (namespace)
@@ -47,7 +47,7 @@ edit f p = do
              writeFile filename $ pkgbuildOf p
              f filename
              readFile filename
-  rewrap p `liftM` namespace (pkgNameOf p) newPB  -- Reparse PKGBUILD.
+  rewrap p `fmap` namespace (pkgNameOf p) newPB  -- Reparse PKGBUILD.
       where filename = "PKGBUILD"
 
 -- | Allow the user to edit the PKGBUILD if they asked to do so.

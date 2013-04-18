@@ -29,7 +29,6 @@ module Internet
 import qualified Data.ByteString as B (hPutStr)
 
 import System.FilePath (splitFileName, (</>))
-import Control.Monad   (liftM)
 import Network.Curl    (curlGetString_, CurlBuffer)
 import Network.HTTP    (urlEncodeVars)
 import System.IO       (hClose, openFile, IOMode(WriteMode))
@@ -37,7 +36,7 @@ import System.IO       (hClose, openFile, IOMode(WriteMode))
 ---
 
 urlContents :: CurlBuffer ty => String -> IO ty
-urlContents url = snd `liftM` curlGetString_ url []
+urlContents url = snd `fmap` curlGetString_ url []
 
 saveUrlContents :: FilePath -> String -> IO FilePath
 saveUrlContents path url = do

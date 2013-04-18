@@ -32,7 +32,6 @@ import Aura.Utils (splitNameAndVer)
 import Aura.Monad.Aura
 import Aura.Core
 
-import Control.Monad (liftM)
 import Data.List     (nub)
 
 -------------------
@@ -46,13 +45,13 @@ data VirtualPkg = VirtualPkg String VersionDemand (Maybe RepoPkg)
 instance Package VirtualPkg where
     pkgNameOf (VirtualPkg n _ _) = n
     versionOf (VirtualPkg _ v _) = v
-    package pkg = VirtualPkg name ver `liftM` getProvider pkg
+    package pkg = VirtualPkg name ver `fmap` getProvider pkg
         where (name,ver)    = parseNameAndVersionDemand pkg
               getProvider n = do
                  provider <- providingPkg n
                  case provider of
                    Nothing -> return Nothing
-                   Just p  -> Just `liftM` package p
+                   Just p  -> Just `fmap` package p
 
 instance Show VirtualPkg where
     show = pkgNameWithVersionDemand
@@ -78,4 +77,4 @@ providingPkg virt = do
 providingPkg' :: String -> Aura String
 providingPkg' virt = do
   let (name,_) = splitNameAndVer virt
-  nub `liftM` pacmanOutput ["-Ssq",name ++ "$"]
+  nub `fmap` pacmanOutput ["-Ssq",name ++ "$"]

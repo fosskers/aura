@@ -26,7 +26,6 @@ module Aura.Utils where
 import Distribution.Simple.Utils (withTempDirectory)
 import Distribution.Verbosity    (silent)
 import Text.Regex.PCRE           ((=~))
-import Control.Monad             (liftM)
 import System.IO                 (stdout, hFlush)
 import Data.Char                 (isDigit)
 import Data.List                 (sortBy,intercalate)
@@ -66,7 +65,7 @@ printList' tc ic m is = putStrLnA' tc m ++ colouredItems
 
 scoldAndFail :: (Language -> String) -> Aura a
 scoldAndFail msg = do
-  lang <- langOf `liftM` ask
+  lang <- langOf `fmap` ask
   failure . putStrA' red . msg $ lang
 
 ----------
@@ -75,7 +74,7 @@ scoldAndFail msg = do
 -- Takes a prompt message and a regex of valid answer patterns.
 yesNoPrompt :: (Language -> String) -> Aura Bool
 yesNoPrompt msg = do
-  lang <- langOf `liftM` ask
+  lang <- langOf `fmap` ask
   putStrA yellow $ msg lang ++ " [Y/n] "
   liftIO $ hFlush stdout
   response <- liftIO getLine
