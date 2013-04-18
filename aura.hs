@@ -110,8 +110,8 @@ executeOpts (flags,input,pacOpts) =
     (ABSInstall:fs) ->
         case fs of
           []             -> trueRoot (sudo $ M.install pacOpts input)
-          [Search]       -> M.absSearch input
-          [Info]         -> M.absInfo input
+--          [Search]       -> M.absSearch input
+--          [Info]         -> M.absInfo input
           [ViewDeps]     -> M.displayPkgDeps input
           [GetPkgbuild]  -> M.displayPkgbuild input
           (Refresh:fs')  -> sudo $ syncABSAndContinue (fs',input,pacOpts)

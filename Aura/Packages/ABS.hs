@@ -40,10 +40,12 @@ import System.Directory (doesDirectoryExist)
 import System.FilePath  ((</>), takeBaseName)
 import Text.Regex.PCRE  ((=~))
 import Control.Monad    (filterM)
-import Data.Maybe       (mapMaybe)
+import Data.Maybe       (mapMaybe, fromJust)
 import Data.List        (find)
 
 import Aura.Packages.Repository (filterRepoPkgs)
+import Aura.Pacman              (pacmanOutput)
+import Aura.Settings.Base       (absTreeOf)
 import Aura.Monad.Aura
 import Aura.Core
 import Aura.Bash
@@ -64,18 +66,11 @@ data ABSPkg = ABSPkg String String VersionDemand Pkgbuild Namespace
 instance Package ABSPkg where
   pkgNameOf (ABSPkg n _ _ _ _) = n
   versionOf (ABSPkg _ _ v _ _) = v
-  package pkgName = undefined
-  -- `package` is in the Aura Monad. Should I keep an ABSTree in Settings?
-  -- Lazy evaluation should guarantee it will never be made unless `-M` options
-  -- are used, thus no time/memory wasted.
-      
-      
-{-}
-      pkgs <- absSearchLookup pkgName
-      case (find (\a -> pkgNameOf a == pkgName) pkgs) of
-        Just a -> return a
-        Nothing -> failure $ "No matching packages for " ++ pkgName
--}
+  package pkg = do
+      repo     <- repository' pkg
+      pkgbuild <- liftIO $ readFileUTF8 (pkgbuildPath repo name)
+      ABSPkg name repo ver pkgbuild `fmap` namespace name pkgbuild
+      where (name,ver) = parseNameAndVersionDemand pkg
 
 instance Buildable ABSPkg where
   pkgbuildOf  (ABSPkg _ _ _ p _)  = p
@@ -106,11 +101,32 @@ absBasePath = "/var/abs"
 pkgbuildPath :: String -> String -> FilePath
 pkgbuildPath repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
 
+inTree :: ABSTree -> String -> Bool
+inTree tree p = case repository tree p of
+                  Nothing -> False
+                  Just r  -> True
+
 -- | The repository a package belongs to.
 repository :: ABSTree -> String -> Maybe String
 repository [] _ = Nothing
 repository ((r,ps):rs) p | S.member p ps = Just r
                          | otherwise     = repository rs p
+
+-- This is pretty ugly.
+-- | The repository a package _should_ belong to.
+-- Fails if the package is not in any repository.
+repository' :: String -> Aura String
+repository' p = absTreeOf `fmap` ask >>= \tree ->
+  if inTree tree p
+     then return . fromJust . repository tree $ p
+     else do
+       i <- pacmanOutput ["-Si",p]
+       case i of
+         "" -> failure $ p ++ " is not a package in any repository."
+         _  -> do
+           let pat = "Repository[ ]+: "
+               (_,_,repo) = (head $ lines i) =~ pat :: (String,String,String)
+           return repo
 
 -- | All repos with all their packages in the local tree.
 absTree :: IO ABSTree
@@ -120,7 +136,7 @@ absTree = do
 
 -- | All packages in the local ABS tree in the form: "repo/package"
 flatABSTree :: ABSTree -> [String]
-flatABSTree tree = concatMap fold tree
+flatABSTree = concatMap fold
     where fold (r,ps) = S.foldr (\p acc -> (r </> p) : acc) [] ps
 
 {-}
@@ -131,17 +147,13 @@ absLookup pattern = do
   mapM (\a -> liftIO (readFileUTF8 $ a </> "PKGBUILD") >>= parsePkgBuild a) pkgs
 -}
 
-{-}
 -- Make this react to `-x` as well? Wouldn't be hard.
 -- It would just be a matter of switching between `shellCmd`
 -- and `quietShellCmd`.
+-- THIS SHOULD HAVE A PROMPT FOR THE USER.
 -- | Sync only the parts of the ABS tree which already exists on the system.
 absSync :: Aura ()
-absSync = mapMaybe repoAndName `fmap` liftIO absTree >>= A.shellCmd "abs"
-    where repoAndName pkg = case reverse $ split '/' pkg of
-            n:r:_ -> Just $ r </> n
-            _     -> Nothing
--}
+absSync = (flatABSTree . absTreeOf) `fmap` ask >>= A.shellCmd "abs"
 
 singleSync :: String -> Aura ()
 singleSync = A.shellCmd "abs" . (: [])
