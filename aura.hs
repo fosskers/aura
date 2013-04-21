@@ -62,7 +62,7 @@ import Aura.Commands.O as O
 type UserInput = ([Flag],[String],[String])
 
 auraVersion :: String
-auraVersion = "1.1.6.2"
+auraVersion = "1.1.6.3"
 
 main :: IO a
 main = getArgs >>= prepSettings . processFlags >>= execute >>= exit
