@@ -1176,8 +1176,17 @@ outOfDateMsg False Serbian    = green "Ажуран"
 -- Aura/ABS functions
 -----------------------
 -- NEEDS TRANSLATION
+absSync_1 :: Language -> String
+absSync_1 Japanese = "ローカルABS Treeを同期？"
+absSync_1 _        = "Sync the local ABS Tree?"
+
+absSync_2 :: Language -> String
+absSync_2 Japanese = "ローカルABS Treeを同期中・・・"
+absSync_2 _        = "Syncing local ABS Tree..."
+
 absInfoFields :: Language -> [String]
-absInfoFields _ = [ "Repository","Name","Version","Description" ]
+absInfoFields _ = [ "Repository","Name","Version","Dependencies"
+                  , "Make Deps", "Description" ]
 
 pkgBuildKeyMissing :: Language -> String -> String
 pkgBuildKeyMissing _ key = "Unable to parse key " ++ key ++ " from PKGBUILD."

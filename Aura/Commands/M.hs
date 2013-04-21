@@ -43,7 +43,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Commands.M
     ( install
     , absInfo
-    , absSearch
+--    , absSearch
     , absSync
     , displayPkgbuild
     , displayPkgDeps ) where
@@ -72,17 +72,17 @@ install pacOpts pkgs = I.install b filterABSPkgs pacOpts pkgs
 
 -- | Get info about the specified package (-i)
 absInfo :: [String] -> Aura ()
-absInfo search = do
-  q <- mapM package search
-  mapM_ displayAbsPkgInfo q
+absInfo pkgs = mapM package pkgs >>= mapM_ displayAbsPkgInfo
 
 -- | Search ABS for any packages matching the given patterns (-s)
+{-}
 absSearch :: [String] -> Aura ()
 absSearch search = do
   q <- mapM lookupWithTerm search
   mapM_ (uncurry displaySearch) $ concat q
   where lookupWithTerm term = absSearchLookup term >>= 
           mapM (\r -> return (term, r))
+-}
 
 -- | Display PKGBUILD
 displayPkgbuild :: [String] -> Aura ()
@@ -106,22 +106,20 @@ displayPkgDeps pkgs = do
 ----------
 -- | Display ABS package info
 displayAbsPkgInfo :: ABSPkg -> Aura ()
-displayAbsPkgInfo info = ask >>= \ss -> do
-  let pkginfo = renderPkgInfo ss info
-  liftIO $ putStrLn $ pkginfo ++ "\n"
+displayAbsPkgInfo pkg = ask >>= \ss -> do
+  liftIO . putStrLn . renderPkgInfo ss $ pkg
 
 -- | Format an ABSPkg into a string
 renderPkgInfo :: Settings -> ABSPkg -> String
-renderPkgInfo ss info = entrify ss fields entries
-  where ns = namespaceOf info
-        fields  = map white . absInfoFields . langOf $ ss
-        description = case (value ns "pkgdesc") of
-          a : _ -> a
-          _ -> red . missingDescription $ langOf ss
-        entries = [ magenta $ repoOf info
-                    , white $ pkgNameOf info
-                    , show . versionOf $ info
-                    , description ]
+renderPkgInfo ss pkg = entrify ss fields entries
+  where ns      = namespaceOf pkg
+        fields  = map bForeground . absInfoFields . langOf $ ss
+        entries = [ magenta $ repoOf pkg
+                  , bForeground $ pkgNameOf pkg
+                  , concat $ value ns "pkgver" ++ ["-"] ++ value ns "pkgrel"
+                  , unwords $ value ns "depends"
+                  , unwords $ value ns "makedepends"
+                  , concat $ value ns "pkgdesc" ]
 
 -- | Display search results. Search term will be highlighted in the results.
 displaySearch :: String -- ^ Search term

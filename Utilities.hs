@@ -154,6 +154,7 @@ readFileUTF8 = readFileEncoding utf8
 ---------
 -- MONADS
 ---------
+-- These functions need to be organized better!
 -- | Simple control flow for Monads.
 ifM :: Monad m => m Bool -> (x -> m x) -> m () -> x -> m x
 ifM cond a1 a2 x = do
@@ -165,6 +166,11 @@ ifM2 :: Monad m => m Bool -> (x -> m x) -> m () -> x -> x -> m x
 ifM2 cond a1 a2 x1 x2 = do
   success <- cond
   if success then a1 x1 else a2 >> return x2
+
+ifM3 :: Monad m => m Bool -> m () -> m ()
+ifM3 cond a = do
+  success <- cond
+  if success then a else nothing
 
 -- | If a file exists, it performs action `a`.
 -- If the file doesn't exist, it performs `b` and returns the argument.

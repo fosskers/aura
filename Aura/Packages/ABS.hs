@@ -1,5 +1,7 @@
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 
+-- Handles all ABS related functions.
+
 {-
 
 Copyright 2012, 2013
@@ -23,34 +25,32 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-{- | Handles all ABS related functions.
--}
-module Aura.Packages.ABS where {-}
---    ( absSearchLookup
-    ( absSync
+module Aura.Packages.ABS
+    ( ABSPkg
+    , absSync
+    , absTree
     , filterABSPkgs
-    , repoOf
---    , findPkg
-    , ABSPkg ) where
--}
+    , repoOf ) where
 
 import qualified Data.Set as S
 
 import System.Directory (doesDirectoryExist)
 import System.FilePath  ((</>), takeBaseName)
 import Text.Regex.PCRE  ((=~))
-import Control.Monad    (filterM)
+import Control.Monad    (filterM, when)
 import Data.Maybe       (mapMaybe, fromJust)
 import Data.List        (find)
 
 import Aura.Packages.Repository (filterRepoPkgs)
-import Aura.Pacman              (pacmanOutput)
 import Aura.Settings.Base       (absTreeOf)
+import Aura.Pacman              (pacmanOutput)
+import Aura.Utils               (optionalPrompt)
 import Aura.Monad.Aura
-import Aura.Core
+import Aura.Languages
 import Aura.Bash
+import Aura.Core
 
-import Utilities (readFileUTF8, split)
+import Utilities (readFileUTF8, split, ifM3)
 import Shell     (ls', ls'')
 
 import qualified Aura.Shell as A (shellCmd)
@@ -67,7 +67,7 @@ instance Package ABSPkg where
   pkgNameOf (ABSPkg n _ _ _ _) = n
   versionOf (ABSPkg _ _ v _ _) = v
   package pkg = do
-      repo     <- repository' pkg
+      repo     <- repository pkg
       pkgbuild <- liftIO $ readFileUTF8 (pkgbuildPath repo name)
       ABSPkg name repo ver pkgbuild `fmap` namespace name pkgbuild
       where (name,ver) = parseNameAndVersionDemand pkg
@@ -102,23 +102,17 @@ pkgbuildPath :: String -> String -> FilePath
 pkgbuildPath repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
 
 inTree :: ABSTree -> String -> Bool
-inTree tree p = case repository tree p of
+inTree tree p = case repository' tree p of
                   Nothing -> False
                   Just r  -> True
-
--- | The repository a package belongs to.
-repository :: ABSTree -> String -> Maybe String
-repository [] _ = Nothing
-repository ((r,ps):rs) p | S.member p ps = Just r
-                         | otherwise     = repository rs p
 
 -- This is pretty ugly.
 -- | The repository a package _should_ belong to.
 -- Fails if the package is not in any repository.
-repository' :: String -> Aura String
-repository' p = absTreeOf `fmap` ask >>= \tree ->
+repository :: String -> Aura String
+repository p = absTreeOf `fmap` ask >>= \tree ->
   if inTree tree p
-     then return . fromJust . repository tree $ p
+     then return . fromJust . repository' tree $ p
      else do
        i <- pacmanOutput ["-Si",p]
        case i of
@@ -127,6 +121,12 @@ repository' p = absTreeOf `fmap` ask >>= \tree ->
            let pat = "Repository[ ]+: "
                (_,_,repo) = (head $ lines i) =~ pat :: (String,String,String)
            return repo
+
+-- | The repository a package belongs to.
+repository' :: ABSTree -> String -> Maybe String
+repository' [] _ = Nothing
+repository' ((r,ps):rs) p | S.member p ps = Just r
+                          | otherwise     = repository' rs p
 
 -- | All repos with all their packages in the local tree.
 absTree :: IO ABSTree
@@ -150,34 +150,15 @@ absLookup pattern = do
 -- Make this react to `-x` as well? Wouldn't be hard.
 -- It would just be a matter of switching between `shellCmd`
 -- and `quietShellCmd`.
--- THIS SHOULD HAVE A PROMPT FOR THE USER.
+-- Should this tell the user how many packages they'll be syncing?
 -- | Sync only the parts of the ABS tree which already exists on the system.
 absSync :: Aura ()
-absSync = (flatABSTree . absTreeOf) `fmap` ask >>= A.shellCmd "abs"
+absSync = ifM3 (optionalPrompt absSync_1) $ do
+            notify absSync_2
+            (flatABSTree . absTreeOf) `fmap` ask >>= A.shellCmd "abs"
 
 singleSync :: String -> Aura ()
 singleSync = A.shellCmd "abs" . (: [])
-
--- | Parse a PKGBUILD into ABSPkg if possible. Fails if:
---   - Unable to extract repo name from the location
---   - Unable to extract a specific key from the PKGBUILD.
-parsePkgBuild :: String -- ^ Package location on disk
-              -> String -- ^ PKGBUILD contents as string
-              -> Aura ABSPkg
-parsePkgBuild pkgloc pkgbuild =
-  let repo' = case reverse $ split '/' pkgloc of
-        _ : a : _ -> return a
-        _ -> failure $ "Unable to extract repository name: " ++ pkgloc
-      ns' = namespace pkgloc pkgbuild
-      getVal ns key = case value ns key of
-        a : _ -> return a
-        [] -> failure $ "Unable to extract value for key " ++ key
-  in do
-    repo <- repo'
-    ns <- ns'
-    name <- getVal ns "pkgname"
-    version <- MustBe `fmap` getVal ns "pkgver"
-    return $ ABSPkg name repo version pkgbuild ns 
 
 filterABSPkgs :: PkgFilter
 filterABSPkgs = filterRepoPkgs
