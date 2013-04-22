@@ -48,8 +48,8 @@ module Aura.Commands.M
     , displayPkgbuild
     , displayPkgDeps ) where
 
-import Data.List       (nub, nubBy)
 import Text.Regex.PCRE ((=~))
+import Data.List       (nub, nubBy)
 
 import qualified Aura.Install as I
 
@@ -72,7 +72,7 @@ install pacOpts pkgs = I.install b filterABSPkgs pacOpts pkgs
 
 -- | Get info about the specified package (-i)
 absInfo :: [String] -> Aura ()
-absInfo pkgs = mapM package pkgs >>= mapM_ displayAbsPkgInfo
+absInfo pkgs = packages pkgs >>= mapM_ displayAbsPkgInfo
 
 -- | Search ABS for any packages matching the given patterns (-s)
 {-}
@@ -86,17 +86,15 @@ absSearch search = do
 
 -- | Display PKGBUILD
 displayPkgbuild :: [String] -> Aura ()
-displayPkgbuild pkgNames = do
-  pkgs <- mapM package pkgNames :: Aura [ABSPkg]
-  mapM_ (liftIO . putStrLn . pkgbuildOf) pkgs
+displayPkgbuild pkgs =
+    (packages pkgs :: Aura [ABSPkg]) >>= mapM_ (liftIO . putStrLn . pkgbuildOf)
 
 -- | Display package dependencies
 displayPkgDeps :: [String] -> Aura ()
 displayPkgDeps []   = return ()
 displayPkgDeps pkgs = do
-  info    <- mapM package pkgs :: Aura [ABSPkg]
-  allDeps <- mapM (depCheck filterABSPkgs) info
-  let (ps,as,_) = foldl groupPkgs ([],[],[]) allDeps
+  deps <- (packages pkgs :: Aura [ABSPkg]) >>= mapM (depCheck filterABSPkgs)
+  let (ps,as,_) = foldl groupPkgs ([],[],[]) deps
   I.reportPkgsToInstall (n ps) (nubBy sameName as) []
     where n = nub . map splitName
           sameName a b = pkgNameOf a == pkgNameOf b
@@ -106,7 +104,7 @@ displayPkgDeps pkgs = do
 ----------
 -- | Display ABS package info
 displayAbsPkgInfo :: ABSPkg -> Aura ()
-displayAbsPkgInfo pkg = ask >>= \ss -> do
+displayAbsPkgInfo pkg = ask >>= \ss ->
   liftIO . putStrLn . renderPkgInfo ss $ pkg
 
 -- | Format an ABSPkg into a string
@@ -122,13 +120,9 @@ renderPkgInfo ss pkg = entrify ss fields entries
                   , concat $ value ns "pkgdesc" ]
 
 -- | Display search results. Search term will be highlighted in the results.
-displaySearch :: String -- ^ Search term
-              -> ABSPkg -- ^ Search result
-              -> Aura ()
-displaySearch term info = do
-  ss <- ask
-  let pkginfo = renderSearch ss term info
-  liftIO $ putStrLn pkginfo
+displaySearch :: String -> ABSPkg -> Aura ()
+displaySearch term pkg = ask >>= \ss ->
+  liftIO . putStrLn $ renderSearch ss term pkg
 
 -- | Render an ABSPkg into a search string.
 renderSearch :: Settings -> String -> ABSPkg -> String

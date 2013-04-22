@@ -112,6 +112,9 @@ trueRoot action = ask >>= \ss ->
        okay <- optionalPrompt trueRoot_1
        if okay then action else notify trueRoot_2
 
+packages :: Package a => [String] -> Aura [a]
+packages = mapM package
+
 -- `-Qm` yields a list of sorted values.
 getForeignPackages :: Aura [(String,String)]
 getForeignPackages = (map fixName . lines) `fmap` pacmanOutput ["-Qm"]
