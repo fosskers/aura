@@ -66,19 +66,18 @@ command = spaces *> (Command <$> many1 commandChar <*> option [] (try args))
 
 -- | A function looks like: name() { ... \n} and is filled with fields.
 function :: Parser Field
-function = spaces >> many1 (noneOf " =(}\n") >>= \name -> string "() {" >>
-           spaces >> Function name `fmap` manyTill field (char '}')
-           <?> "valid function definition"
+function = Function <$> name <*> body <?> "valid function definition"
+    where name = spaces *> many1 (noneOf " =(}\n")
+          body = string "() {" *> spaces *> manyTill field (char '}')
 
 -- | A variable looks like: name=string or name=(string string string)
 variable :: Parser Field
-variable = spaces >> many1 (alphaNum <|> char '_') >>= \name ->
-           char '=' >> Variable name `fmap` (array <|> single)
-           <?> "valid variable definition"
+variable = Variable <$> name <*> (array <|> single) <?> "valid var definition"
+    where name = spaces *> many1 (alphaNum <|> char '_') <* char '='
 
 array :: Parser [BashString]
-array = char '(' >> spaces >> concat `fmap` manyTill single (char ')')
-        <?> "valid array"
+array = concat <$> array' <?> "valid array"
+    where array' = char '(' *> spaces *> manyTill single (char ')')
 
 -- | Strings can be surrounded by single quotes, double quotes, backticks,
 -- or nothing.
@@ -134,20 +133,18 @@ realIfBlock :: Parser BashIf
 realIfBlock = realIfBlock' "if " fiElifElse
 
 realIfBlock' :: String -> Parser sep -> Parser BashIf
-realIfBlock' word sep = do
-  spaces >> string word
-  cond <- ifCond
-  body <- ifBody sep
-  If cond body `fmap` (fi <|> try elif <|> elys)
+realIfBlock' word sep =
+    spaces *> string word *> (If <$> ifCond <*> ifBody sep <*> rest)
+    where rest = fi <|> try elif <|> elys
 
 -- Inefficient?
 fiElifElse :: Parser (Maybe BashIf)
 fiElifElse = choice $ map (try . lookAhead) [fi, elif, elys]
 
 fi, elif, elys :: Parser (Maybe BashIf)
-fi   = Nothing <$ (string "fi" <* space)
-elif = Just <$> realIfBlock' "elif " fiElifElse
-elys = Just <$> (string "else" >> space >> Else `fmap` ifBody fi)
+fi   = Nothing <$  (string "fi" <* space)
+elif = Just    <$> realIfBlock' "elif " fiElifElse
+elys = Just    <$> (string "else" >> space >> Else `fmap` ifBody fi)
 
 ifCond :: Parser Comparison
 ifCond = comparison <* string "; then"
