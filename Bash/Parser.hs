@@ -25,7 +25,6 @@ module Bash.Parser ( parseBash ) where
 
 import Text.ParserCombinators.Parsec
 import Control.Applicative ((<*),(*>),(<*>),(<$>),(<$))
-import Control.Monad (liftM)
 
 import Bash.Base
 
@@ -47,8 +46,8 @@ field = choice [ try comment, try variable, try function
 
 -- | A comment looks like: # blah blah blah
 comment :: Parser Field
-comment = spaces >> char '#' >> Comment `liftM` many (noneOf "\n")
-          <?> "valid comment"
+comment = Comment <$> comment' <?> "valid comment"
+    where comment' = spaces *> char '#' *> many (noneOf "\n")
 
 -- | A command looks like: name -flags target
 -- Arguments are optional.
@@ -68,17 +67,17 @@ command = spaces *> (Command <$> many1 commandChar <*> option [] (try args))
 -- | A function looks like: name() { ... \n} and is filled with fields.
 function :: Parser Field
 function = spaces >> many1 (noneOf " =(}\n") >>= \name -> string "() {" >>
-           spaces >> Function name `liftM` manyTill field (char '}')
+           spaces >> Function name `fmap` manyTill field (char '}')
            <?> "valid function definition"
 
 -- | A variable looks like: name=string or name=(string string string)
 variable :: Parser Field
 variable = spaces >> many1 (alphaNum <|> char '_') >>= \name ->
-           char '=' >> Variable name `liftM` (array <|> single)
+           char '=' >> Variable name `fmap` (array <|> single)
            <?> "valid variable definition"
 
 array :: Parser [BashString]
-array = char '(' >> spaces >> concat `liftM` manyTill single (char ')')
+array = char '(' >> spaces >> concat `fmap` manyTill single (char ')')
         <?> "valid array"
 
 -- | Strings can be surrounded by single quotes, double quotes, backticks,
@@ -106,7 +105,7 @@ backticked = between (char '`') (char '`') ((\c -> [Backtic c]) <$> command)
 
 -- | Replaces ${...}. Strings can be extrapolated!
 unQuoted :: Parser [BashString]
-unQuoted = map NoQuote `liftM` extrapolated []
+unQuoted = map NoQuote <$> extrapolated []
 
 -- | Bash strings are extrapolated when they contain a brace pair
 -- with two or more substrings separated by commas within them.
@@ -119,17 +118,17 @@ extrapolated stops = do
   xs <- plain <|> bracePair
   ys <- option [""] $ try (extrapolated stops)
   return [ x ++ y | x <- xs, y <- ys ]
-      where plain = (: []) `liftM` many1 (noneOf $ " \n{}()" ++ stops)
+      where plain = (: []) `fmap` many1 (noneOf $ " \n{}()" ++ stops)
 
 bracePair :: Parser [String]
 bracePair = between (char '{') (char '}') innards <?> "valid {...} string"
-    where innards = liftM concat (extrapolated ",}" `sepBy` char ',')
+    where innards = fmap concat (extrapolated ",}" `sepBy` char ',')
 
 ------------------
 -- `IF` STATEMENTS
 ------------------
 ifBlock :: Parser Field
-ifBlock = IfBlock `liftM` (realIfBlock <|> andStatement)
+ifBlock = IfBlock <$> (realIfBlock <|> andStatement)
 
 realIfBlock :: Parser BashIf
 realIfBlock = realIfBlock' "if " fiElifElse
@@ -139,7 +138,7 @@ realIfBlock' word sep = do
   spaces >> string word
   cond <- ifCond
   body <- ifBody sep
-  If cond body `liftM` (fi <|> try elif <|> elys)
+  If cond body `fmap` (fi <|> try elif <|> elys)
 
 -- Inefficient?
 fiElifElse :: Parser (Maybe BashIf)
@@ -148,7 +147,7 @@ fiElifElse = choice $ map (try . lookAhead) [fi, elif, elys]
 fi, elif, elys :: Parser (Maybe BashIf)
 fi   = Nothing <$ (string "fi" <* space)
 elif = Just <$> realIfBlock' "elif " fiElifElse
-elys = Just <$> (string "else" >> space >> Else `liftM` ifBody fi)
+elys = Just <$> (string "else" >> space >> Else `fmap` ifBody fi)
 
 ifCond :: Parser Comparison
 ifCond = comparison <* string "; then"
@@ -169,9 +168,9 @@ andStatement = do
 comparison :: Parser Comparison
 comparison = do
   spaces >> leftBs >> spaces
-  left <- head `liftM` single
+  left <- head `fmap` single
   try (string "= ") <|> string "== " <|> string "-eq "
-  right <- head `liftM` single
+  right <- head `fmap` single
   rightBs
   return (Comp left right) <?> "valid comparison"
       where leftBs  = skipMany1 $ char '['
