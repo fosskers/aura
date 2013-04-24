@@ -37,7 +37,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Languages where
 
-import Aura.Colour.Text (cyan, green, red, blue, yellow)
+import Aura.Colour.Text (cyan, green, red, blue, yellow, bForeground)
 
 ---
 
@@ -1132,19 +1132,20 @@ getAURPkgInfo_1 Croatian = "Pristup AUR-u nije uspio. Provjerite vašu vezu."
 getAURPkgInfo_1 Serbian  = "Приступ AUR-у није успео. Проверите вашу везу."
 getAURPkgInfo_1 _        = "AUR API lookup failed. Please check your connection."
 
+-- `Maintainer` value NEEDS UPDATING!
 infoFields :: Language -> [String]
-infoFields English    = [ "Repository","Name","Version","AUR Status","Project URL","AUR URL","License", "Votes","Description" ]
-infoFields Japanese   = [ "リポジトリ","名前","バージョン","パッケージ状態","プロジェクト","パッケージページ","ライセンス","投票数","概要" ]
-infoFields Polish     = [ "Repository","Nazwa","Wersja","Status w AUR","URL Projektu","URL w AUR","Licencja","Głosy","Opis" ]
-infoFields Croatian   = [ "Repository","Ime","Verzija","AUR Stanje","URL Projekta","AUR URL","Licenca","Glasovi","Opis" ]
-infoFields Swedish    = [ "Repository","Namn","Version","AUR Status","Projekt URL","AUR URL","Licens","Röster","Beskrivning" ]
-infoFields German     = [ "Repository","Name","Version","AUR Status","Projekt URL","AUR URL","Lizenz","Stimmen","Beschreibung" ]
-infoFields Spanish    = [ "Repository","Nombre","Versión","Estado en AUR","URL del proyecto","URL en AUR","Licencia", "Votos","Descripción" ]
-infoFields Portuguese = [ "Repositório","Nome","Versão","Estado no AUR","URL do projeto","URL no AUR","Licença", "Votos","Descrição" ]
-infoFields French     = [ "Dépôt","Nom","Version","AUR Statut","URL du projet","URL AUR","License", "Votes","Description" ]
-infoFields Russian    = [ "Репозиторий","Название","Версия","Статус в AUR","URL проекта","URL в AUR","Лицензия", "Рейтинг","Описание" ]
-infoFields Italian    = [ "Repository","Nome","Versione","Stato in AUR","URL","URL AUR","Licenza","Voti","Descrizione" ]
-infoFields Serbian    = [ "Ризница","Име","Верзија","Статус у AUR-у","Страница пројекта","Страница у AUR-у","Лиценца","Гласови","Опис" ]
+infoFields English    = [ "Repository","Name","Version","AUR Status","Maintainer","Project URL","AUR URL","License", "Votes","Description" ]
+infoFields Japanese   = [ "リポジトリ","名前","バージョン","パッケージ状態","管理者","プロジェクト","パッケージページ","ライセンス","投票数","概要" ]
+infoFields Polish     = [ "Repository","Nazwa","Wersja","Status w AUR","Maintainer","URL Projektu","URL w AUR","Licencja","Głosy","Opis" ]
+infoFields Croatian   = [ "Repository","Ime","Verzija","AUR Stanje","Maintainer","URL Projekta","AUR URL","Licenca","Glasovi","Opis" ]
+infoFields Swedish    = [ "Repository","Namn","Version","AUR Status","Maintainer","Projekt URL","AUR URL","Licens","Röster","Beskrivning" ]
+infoFields German     = [ "Repository","Name","Version","AUR Status","Maintainer","Projekt URL","AUR URL","Lizenz","Stimmen","Beschreibung" ]
+infoFields Spanish    = [ "Repository","Nombre","Versión","Estado en AUR","Maintainer","URL del proyecto","URL en AUR","Licencia", "Votos","Descripción" ]
+infoFields Portuguese = [ "Repositório","Nome","Versão","Estado no AUR","Maintainer","URL do projeto","URL no AUR","Licença", "Votos","Descrição" ]
+infoFields French     = [ "Dépôt","Nom","Version","AUR Statut","Maintainer","URL du projet","URL AUR","License", "Votes","Description" ]
+infoFields Russian    = [ "Репозиторий","Название","Версия","Статус в AUR","Maintainer","URL проекта","URL в AUR","Лицензия", "Рейтинг","Описание" ]
+infoFields Italian    = [ "Repository","Nome","Versione","Stato in AUR","Maintainer","URL","URL AUR","Licenza","Voti","Descrizione" ]
+infoFields Serbian    = [ "Ризница","Име","Верзија","Статус у AUR-у","Maintainer","Страница пројекта","Страница у AUR-у","Лиценца","Гласови","Опис" ]
 
 outOfDateMsg :: Bool -> Language -> String
 outOfDateMsg True  English    = red "Out of Date!"
@@ -1171,6 +1172,11 @@ outOfDateMsg True  Italian    = red "Out of Date!"
 outOfDateMsg False Italian    = green "Aggiornato"
 outOfDateMsg True  Serbian    = red "Застарео!"
 outOfDateMsg False Serbian    = green "Ажуран"
+
+orphanedMsg :: Maybe String -> Language -> String
+orphanedMsg (Just m) _       = bForeground m
+orphanedMsg Nothing Japanese = red "いない"
+orphanedMsg Nothing _        = red "Orphaned!"
 
 -----------------------
 -- Aura/ABS functions

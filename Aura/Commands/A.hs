@@ -81,11 +81,12 @@ displayAurPkgInfo info = ask >>= \ss ->
 
 renderAurPkgInfo :: Settings -> PkgInfo -> String
 renderAurPkgInfo ss info = entrify ss fields entries
-    where fields  = map white . infoFields . langOf $ ss
+    where fields  = map bForeground . infoFields . langOf $ ss
           entries = [ magenta "aur"
-                    , white $ nameOf info
+                    , bForeground $ nameOf info
                     , latestVerOf info
                     , outOfDateMsg (isOutOfDate info) $ langOf ss
+                    , orphanedMsg (maintainerOf info) $ langOf ss
                     , cyan $ projectURLOf info
                     , aurURLOf info
                     , licenseOf info

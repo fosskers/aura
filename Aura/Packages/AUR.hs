@@ -32,15 +32,16 @@ module Aura.Packages.AUR
     , PkgInfo(..)
     , AURPkg(..) ) where
 
+import Control.Applicative ((<$>), (<*>), pure)
 import System.FilePath ((</>))
 import Data.List       (intercalate)
 import Text.JSON
 
-import Aura.Bash (value, namespace, Namespace)
-import Aura.Core
+import Aura.Utils (scoldAndFail)
+import Aura.Bash  (value, namespace, Namespace)
 import Aura.Monad.Aura
 import Aura.Languages
-import Aura.Utils (scoldAndFail)
+import Aura.Core
 
 import Utilities (decompress)
 import Internet
@@ -105,12 +106,13 @@ rpcType t = ("type",tname)
 -- Extend this later as needed.
 data PkgInfo = PkgInfo { nameOf        :: String
                        , latestVerOf   :: String
-                       , isOutOfDate   :: Bool
                        , projectURLOf  :: String
                        , aurURLOf      :: String
                        , licenseOf     :: String
-                       , votesOf       :: Int
-                       , descriptionOf :: String } deriving (Eq,Show)
+                       , descriptionOf :: String
+                       , maintainerOf  :: Maybe String
+                       , isOutOfDate   :: Bool
+                       , votesOf       :: Int } deriving (Eq,Show)
 
 aurSearchLookup :: [String] -> Aura [PkgInfo]
 aurSearchLookup regex = getAURPkgInfo regex PkgSearch
@@ -135,23 +137,29 @@ apiFailCheck json = do
   isError <- (== "error") `fmap` valFromObj "type" json
   if isError then Error "AUR API lookup failed." else Ok json
 
--- Upgrade to AUR 2.0 changed several return types to Ints,
--- but Text.JSON parses them as Rationals.
+-- For some reason, if I forego the `maintainer` variable with:
+--   pure (resultToMaybe $ valFromObj "Maintainer" pkgJSON)
+-- it refuses to compile.
 pkgInfo :: JSObject JSValue -> Result PkgInfo
-pkgInfo pkgJSON = do
-  ur <- valFromObj "URL" pkgJSON
-  na <- valFromObj "Name" pkgJSON
-  ve <- valFromObj "Version" pkgJSON
-  li <- valFromObj "License" pkgJSON
-  vo <- fromJSRat `fmap` valFromObj "NumVotes" pkgJSON
-  de <- valFromObj "Description" pkgJSON
-  au <- (aurPkgUrl . fromJSRat) `fmap` valFromObj "ID" pkgJSON
-  ou <- ((/= 0) . fromJSRat) `fmap` valFromObj "OutOfDate" pkgJSON
-  return $ PkgInfo na ve ou ur au li vo de
+pkgInfo pkgJSON = PkgInfo
+                  <$> valFromObj "Name" pkgJSON
+                  <*> valFromObj "Version" pkgJSON
+                  <*> valFromObj "URL" pkgJSON
+                  <*> (aurPkgUrl . fromJSRat) `fmap` valFromObj "ID" pkgJSON
+                  <*> valFromObj "License" pkgJSON
+                  <*> valFromObj "Description" pkgJSON
+                  <*> pure maintainer
+                  <*> ((/= 0) . fromJSRat) `fmap` valFromObj "OutOfDate" pkgJSON
+                  <*> fromJSRat `fmap` valFromObj "NumVotes" pkgJSON
+    where maintainer = resultToMaybe $ valFromObj "Maintainer" pkgJSON
 
 fromJSRat :: JSValue -> Int
 fromJSRat (JSRational _ r) = round (fromRational r :: Float)
 fromJSRat _                = error "JSValue given was not a JSRational!"
+
+resultToMaybe :: Result a -> Maybe a
+resultToMaybe (Ok a) = Just a
+resultToMaybe _      = Nothing
 
 ------------
 -- PKGBUILDS
@@ -179,7 +187,7 @@ trueVerViaPkgbuild ns = pkgver ++ "-" ++ pkgrel
 tarballUrl :: String -> String
 tarballUrl pkg = pkgBaseUrl pkg </> pkg ++ ".tar.gz"
 
-sourceTarball :: FilePath -- ^ Where to save the tarball.
-  -> String  -- ^ Package name.
-  -> IO FilePath -- ^ Saved tarball location.
+sourceTarball :: FilePath    -- ^ Where to save the tarball.
+              -> String      -- ^ Package name.
+              -> IO FilePath -- ^ Saved tarball location.
 sourceTarball path = saveUrlContents path . tarballUrl

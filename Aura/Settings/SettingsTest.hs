@@ -20,6 +20,7 @@ sampleSettings = Settings { environmentOf = undefined
                           , otherOptsOf   = []
                           , ignoredPkgsOf = []
                           , wontBuildOf   = []
+                          , absTreeOf     = []
                           , buildPathOf   = "/var/cache/pacman/pkg"
                           , cachePathOf   = "/var/cache/pacman/pkg"
                           , logFilePathOf = "/var/log/pacman.log"
