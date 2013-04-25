@@ -56,7 +56,7 @@ newtype Aura a = A { runA :: ErrorT AuraError (ReaderT Settings IO) a }
 data AuraError = M String deriving (Eq,Show)
 
 instance Error AuraError where
-    noMsg  = M "No error message given."
+    noMsg  = strMsg "No error message given."
     strMsg = M
 
 runAura :: Aura a -> Settings -> IO (Either AuraError a)

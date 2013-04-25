@@ -47,14 +47,58 @@ newtype Aura a = A { runA :: ErrorT AuraError (ReaderT Settings IO) a }
 
 runAura :: Aura a -> Settings -> IO (Either AuraError a)
 runAura a = runReaderT $ runErrorT (runA a)
+
+data AuraError = M String deriving (Eq,Show)
+
+instance Error AuraError where
+    noMsg  = strMsg "No error message given."
+    strMsg = M
 ```
 
-It is an `ErrorT` at the top, meaning its binding (>>=) behaviour is the same
-as an `Error` Monad. This allows failure to halt actions partway through.
+The Aura Monad is an `ErrorT` at the top, meaning its binding (>>=) behaviour
+is the same as an `Error` Monad. This allows failure to halt actions partway
+through.
 
-It is a `ReaderT`, meaning we can obtain the local runtime settings by
-using the `ask` function anywhere we wish in a function in the Aura Monad.
+It is a `ReaderT` and has a MonadReader instance, meaning we can obtain
+the local runtime settings by using the `ask` function anywhere we wish
+in a function in the Aura Monad.
 
-It is `IO` at its base, meaning we can perform IO actions with `liftIO` in
-any function in the Aura Monad. To extract it's inner value, we use
-the helper function `runAura`. 
+It is `IO` at its base and has a MonadIO instance, meaning we can perform
+IO actions with `liftIO` in any function in the Aura Monad.
+To extract it's inner value, we use the helper function `runAura`.
+
+#### Why the Aura Monad?
+The Aura Monad is convenient for two reasons:
+1. The local runtime settings are referenced heavily throughout
+   the Aura code. Passing a `Settings` parameter around explicitely makes for long
+   function signatures. Furthmore, being accessed from an internal Reader Monad
+   also means its access is _read-only_. This way, no other set of `Settings`
+   could ever be referenced.
+2. Being an `ErrorT`, it can fail. These failures can also be caught elegantly,
+   demanding no need for try/catch blocks a la imperitive languages. Example:
+
+```haskell
+foo :: Whatever -> Aura Whatever
+foo w = risky w >>= more >>= evenMore >>= most
+```
+
+Here, if `risky` fails, `more`, `evenMore`, and `most` will never execute.
+Anything binding `foo` at a higher level would also fail accordingly if not
+caught.
+
+In essence, if you've ever programmed in a language with error
+handling and an idea of constant global variables, you've programmed in
+the Aura Monad.
+
+---
+
+### String Dispatching
+No Strings meant for user-viewed output are hardcoded. All current translations
+of all Strings are kept in `Aura/Languages.hs`. Messages are fetched by
+helper functions after being passed the current runtime `Language` stored in
+`Settings`. This leads to:
+1. More advanced String manipulation, regardless of language.
+2. More convenient translation work.
+3. (Unfortunately) larger executable size.
+
+See the Localisation Guide for more information.
