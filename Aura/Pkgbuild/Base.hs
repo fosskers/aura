@@ -21,6 +21,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Pkgbuild.Base where
 
+import Aura.Bash
+
 ---
 
 pkgbuildCache :: FilePath
@@ -34,3 +36,8 @@ toFilename = (++ ".pb")
 
 pkgbuildPath :: String -> FilePath
 pkgbuildPath p = pkgbuildCache ++ toFilename p
+
+trueVersion :: Namespace -> String
+trueVersion ns = pkgver ++ "-" ++ pkgrel
+    where pkgver = head $ value ns "pkgver"
+          pkgrel = head $ value ns "pkgrel"

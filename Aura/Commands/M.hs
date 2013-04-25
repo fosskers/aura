@@ -53,6 +53,7 @@ import Data.List       (nub, nubBy)
 
 import qualified Aura.Install as I
 
+import Aura.Pkgbuild.Base (trueVersion)
 import Aura.Settings.Base
 import Aura.Dependencies
 import Aura.Packages.ABS
@@ -114,7 +115,7 @@ renderPkgInfo ss pkg = entrify ss fields entries
         fields  = map bForeground . absInfoFields . langOf $ ss
         entries = [ magenta $ repoOf pkg
                   , bForeground $ pkgNameOf pkg
-                  , concat $ value ns "pkgver" ++ ["-"] ++ value ns "pkgrel"
+                  , trueVersion ns
                   , unwords $ value ns "depends"
                   , unwords $ value ns "makedepends"
                   , concat $ value ns "pkgdesc" ]

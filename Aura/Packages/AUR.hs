@@ -26,15 +26,14 @@ module Aura.Packages.AUR
     ( filterAURPkgs
     , aurInfoLookup
     , aurSearchLookup
-    , trueVerViaPkgbuild
     , downloadPkgbuild
     , sourceTarball
     , PkgInfo(..)
     , AURPkg(..) ) where
 
 import Control.Applicative ((<$>), (<*>), pure)
-import System.FilePath ((</>))
-import Data.List       (intercalate)
+import System.FilePath     ((</>))
+import Data.List           (intercalate)
 import Text.JSON
 
 import Aura.Utils (scoldAndFail)
@@ -157,13 +156,14 @@ fromJSRat :: JSValue -> Int
 fromJSRat (JSRational _ r) = round (fromRational r :: Float)
 fromJSRat _                = error "JSValue given was not a JSRational!"
 
+-- | A companion to the provided `resultToEither` function.
 resultToMaybe :: Result a -> Maybe a
 resultToMaybe (Ok a) = Just a
 resultToMaybe _      = Nothing
 
-------------
--- PKGBUILDS
-------------
+----------------
+-- AUR PKGBUILDS
+----------------
 aurLink :: String
 aurLink = "https://aur.archlinux.org/packages/"
 
@@ -175,11 +175,6 @@ pkgbuildUrl pkg = pkgBaseUrl pkg </> "PKGBUILD"
 
 downloadPkgbuild :: String -> Aura Pkgbuild
 downloadPkgbuild = liftIO . urlContents . pkgbuildUrl
-
-trueVerViaPkgbuild :: Namespace -> String
-trueVerViaPkgbuild ns = pkgver ++ "-" ++ pkgrel
-    where pkgver = head $ value ns "pkgver"
-          pkgrel = head $ value ns "pkgrel"
 
 ------------------
 -- SOURCE TARBALLS

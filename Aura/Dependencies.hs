@@ -32,11 +32,12 @@ import Control.Monad   (filterM)
 import Data.Maybe      (fromJust, isNothing)
 import Data.List       ((\\), nub)
 
-import Aura.Pacman (pacmanOutput)
-import Aura.Packages.AUR
-import Aura.Packages.Virtual
+import Aura.Pkgbuild.Base (trueVersion)
+import Aura.Pacman        (pacmanOutput)
 import Aura.Packages.Repository
+import Aura.Packages.Virtual
 import Aura.Settings.Base
+import Aura.Packages.AUR
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Utils
@@ -122,7 +123,7 @@ mostRecentVerNum info = tripleThrd match
 
 customConflicts :: Buildable a => Language -> [String] -> a -> Maybe ErrMsg
 customConflicts = realPkgConflicts f
-    where f = trueVerViaPkgbuild . namespaceOf
+    where f = trueVersion . namespaceOf
 
 -- Must be called with a (f)unction that yields the version number
 -- of the most up-to-date form of the package.
