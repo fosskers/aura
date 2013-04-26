@@ -30,16 +30,16 @@ module Aura.Packages.ABS
     , absSync
     , absTree
     , filterABSPkgs
-    , repoOf ) where
+    , repoOf
+    , treeSearch ) where
 
 import qualified Data.Set as S
 
 import System.Directory (doesDirectoryExist)
 import System.FilePath  ((</>), takeBaseName)
 import Text.Regex.PCRE  ((=~))
-import Control.Monad    (filterM, when)
-import Data.Maybe       (mapMaybe, fromJust)
-import Data.List        (find)
+import Control.Monad    (filterM)
+import Data.Maybe       (fromJust)
 
 import Aura.Packages.Repository (filterRepoPkgs)
 import Aura.Settings.Base       (absTreeOf)
@@ -50,7 +50,7 @@ import Aura.Languages
 import Aura.Bash
 import Aura.Core
 
-import Utilities (readFileUTF8, split, ifM3)
+import Utilities (readFileUTF8, ifM3)
 import Shell     (ls', ls'')
 
 import qualified Aura.Shell as A (shellCmd)
@@ -104,7 +104,7 @@ pkgbuildPath repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
 inTree :: ABSTree -> String -> Bool
 inTree tree p = case repository' tree p of
                   Nothing -> False
-                  Just r  -> True
+                  Just _  -> True
 
 -- This is pretty ugly.
 -- | The repository a package _should_ belong to.
@@ -120,6 +120,7 @@ repository p = absTreeOf `fmap` ask >>= \tree ->
          _  -> do
            let pat = "Repository[ ]+: "
                (_,_,repo) = (head $ lines i) =~ pat :: (String,String,String)
+           singleSync $ repo </> p
            return repo
 
 -- | The repository a package belongs to.
@@ -139,13 +140,12 @@ flatABSTree :: ABSTree -> [String]
 flatABSTree = concatMap fold
     where fold (r,ps) = S.foldr (\p acc -> (r </> p) : acc) [] ps
 
-{-}
--- | All packages in the ABS tree that matched a pattern.
-absLookup :: String -> Aura [ABSPkg]
-absLookup pattern = do
-  pkgs <- filter (\pkg -> takeBaseName pkg =~ pattern) `fmap` liftIO absTree
-  mapM (\a -> liftIO (readFileUTF8 $ a </> "PKGBUILD") >>= parsePkgBuild a) pkgs
--}
+-- | All packages in the local ABS tree which match a given pattern.
+treeSearch :: String -> Aura [ABSPkg]
+treeSearch pattern = absTreeOf `fmap` ask >>= \tree -> do
+  let matches = concatMap (fold . snd) tree
+      fold    = S.foldr (\p acc -> if p =~ pattern then p : acc else acc) []
+  mapM package matches
 
 -- Make this react to `-x` as well? Wouldn't be hard.
 -- It would just be a matter of switching between `shellCmd`
@@ -158,7 +158,7 @@ absSync = ifM3 (optionalPrompt absSync_1) $ do
             (flatABSTree . absTreeOf) `fmap` ask >>= A.shellCmd "abs"
 
 singleSync :: String -> Aura ()
-singleSync = A.shellCmd "abs" . (: [])
+singleSync p = notify (singleSync_1 p) >> A.shellCmd "abs" [p]
 
 filterABSPkgs :: PkgFilter
 filterABSPkgs = filterRepoPkgs

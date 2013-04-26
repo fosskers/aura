@@ -1190,8 +1190,12 @@ absSync_2 :: Language -> String
 absSync_2 Japanese = "ローカルABS Treeを同期中・・・"
 absSync_2 _        = "Syncing local ABS Tree..."
 
+singleSync_1 :: String -> Language -> String
+singleSync_1 p Japanese = bt p ++ "をABS Treeに同期・・・"
+singleSync_1 p _        = "Syncing " ++ bt p ++ " to the local ABS Tree..."
+
 absInfoFields :: Language -> [String]
-absInfoFields _ = [ "Repository","Name","Version","Dependencies"
+absInfoFields _ = [ "Repository","Name","Version","Depends On"
                   , "Make Deps", "Description" ]
 
 pkgBuildKeyMissing :: Language -> String -> String

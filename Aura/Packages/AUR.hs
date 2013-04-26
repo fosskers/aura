@@ -37,7 +37,7 @@ import Data.List           (intercalate)
 import Text.JSON
 
 import Aura.Utils (scoldAndFail)
-import Aura.Bash  (value, namespace, Namespace)
+import Aura.Bash  (namespace, Namespace)
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Core

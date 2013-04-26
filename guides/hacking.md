@@ -16,12 +16,15 @@ Aura code has examples of:
 ### For Aura Hacking
 The `main` function is housed in `aura.hs`. All function dispatches occur here.
 General libraries also housed in the root folder:
-- `Bash/` (A custom Bash script parser and simplifier)
+- `Bash/`               (A custom Bash script parser and simplifier)
 - `Data/Algorithm/Diff` (A classic diff algorithm)
-- `Network/HTTP` (A copy of key functions from Network.HTTP)
+- `Network/HTTP`        (A copy of key functions from Network.HTTP)
+- `Internet`            (For https requests)
+- `Shell`               (Shell access in the IO Monad)
+- `Utilities`           (Random helper functions)
 
 Aura specific libraries are housed in `Aura/`. The main areas are:
-- `Aura/`          (General libraries)
+- `Aura/`          (General Aura-specific libraries)
 - `Aura/Commands/` (Functions that back the main capital letter Aura operations)
 - `Aura/Monad/`    (Everything to do with the Aura Monad)
 - `Aura/Packages/` (Backends for handling various package types)
@@ -30,7 +33,8 @@ Aura specific libraries are housed in `Aura/`. The main areas are:
 
 ### The Aura Monad
 Many functions in the Aura code are within the Aura Monad.
-The Aura Monad is in essence a glorified IO Monad.
+The Aura Monad is a stack of Monad Transformers, but is
+in essence a glorified IO Monad.
 
 ```haskell
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -61,7 +65,7 @@ through.
 
 It is a `ReaderT` and has a MonadReader instance, meaning we can obtain
 the local runtime settings by using the `ask` function anywhere we wish
-in a function in the Aura Monad.
+in a function within the Aura Monad.
 
 It is `IO` at its base and has a MonadIO instance, meaning we can perform
 IO actions with `liftIO` in any function in the Aura Monad.
@@ -72,8 +76,8 @@ The Aura Monad is convenient for two reasons:
 1. The local runtime settings are referenced heavily throughout
    the Aura code. Passing a `Settings` parameter around explicitely makes for long
    function signatures. Furthmore, being accessed from an internal Reader Monad
-   also means its access is _read-only_. This way, no other set of `Settings`
-   could ever be referenced.
+   also means its access is _read-only_. This way, the run-time settings
+   could never be altered unknowingly.
 2. Being an `ErrorT`, it can fail. These failures can also be caught elegantly,
    demanding no need for try/catch blocks a la imperitive languages. Example:
 
@@ -90,6 +94,27 @@ In essence, if you've ever programmed in a language with error
 handling and an idea of constant global variables, you've programmed in
 the Aura Monad.
 
+#### Notes on Aura Monad Style
+Access to `Settings` is frequently needed, thus calls to `ask` are plentiful.
+When writing a function in the Aura Monad with `do` notation and calling `ask`,
+please do so in the following way:
+
+```haskell
+foo :: Whatever -> Aura Whatever
+foo w = ask >>= \ss -> do
+  ...  -- Rest of the function.
+```
+
+If you only need one function out of `Settings`, you can do:
+
+```haskell
+foo :: Whatever -> Aura Whatever
+foo w = cachePathOf `fmap` ask >>= \path -> do
+  ...  -- Rest of the function.
+```
+
+The idea is to keep interaction with `ask` to the first line, before `do`.
+
 ---
 
 ### String Dispatching
@@ -97,7 +122,7 @@ No Strings meant for user-viewed output are hardcoded. All current translations
 of all Strings are kept in `Aura/Languages.hs`. Messages are fetched by
 helper functions after being passed the current runtime `Language` stored in
 `Settings`. This leads to:
-1. More advanced String manipulation, regardless of language.
+1. More advanced String manipulation, regardless of spoken language.
 2. More convenient translation work.
 3. (Unfortunately) larger executable size.
 

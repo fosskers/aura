@@ -43,7 +43,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Commands.M
     ( install
     , absInfo
---    , absSearch
+    , absSearch
     , absSync
     , displayPkgbuild
     , displayPkgDeps ) where
@@ -76,14 +76,9 @@ absInfo :: [String] -> Aura ()
 absInfo pkgs = packages pkgs >>= mapM_ displayAbsPkgInfo
 
 -- | Search ABS for any packages matching the given patterns (-s)
-{-}
 absSearch :: [String] -> Aura ()
-absSearch search = do
-  q <- mapM lookupWithTerm search
-  mapM_ (uncurry displaySearch) $ concat q
-  where lookupWithTerm term = absSearchLookup term >>= 
-          mapM (\r -> return (term, r))
--}
+absSearch pat = treeSearch pat' >>= mapM_ (liftIO . putStrLn . renderSearch pat')
+    where pat' = unwords pat
 
 -- | Display PKGBUILD
 displayPkgbuild :: [String] -> Aura ()
@@ -120,21 +115,12 @@ renderPkgInfo ss pkg = entrify ss fields entries
                   , unwords $ value ns "makedepends"
                   , concat $ value ns "pkgdesc" ]
 
--- | Display search results. Search term will be highlighted in the results.
-displaySearch :: String -> ABSPkg -> Aura ()
-displaySearch term pkg = ask >>= \ss ->
-  liftIO . putStrLn $ renderSearch ss term pkg
-
--- | Render an ABSPkg into a search string.
-renderSearch :: Settings -> String -> ABSPkg -> String
-renderSearch ss r i =
-  repo ++ "/" ++ n ++ " " ++ v ++ " \n    " ++ d
-    where c cl cs = case cs =~ ("(?i)" ++ r) of
+renderSearch :: String -> ABSPkg -> String
+renderSearch pat pkg = repo ++ "/" ++ n ++ " " ++ v ++ " \n    " ++ d
+    where c cl cs = case cs =~ ("(?i)" ++ pat) of
                       (b,m,a) -> cl b ++ bCyan m ++ cl a
-          repo = magenta $ repoOf i
-          ns = namespaceOf i
-          n = c bForeground $ pkgNameOf i
-          v = green . tail . show $ versionOf i
-          d = case (value ns "pkgdesc") of
-            a : _ -> c noColour a
-            _ -> red . missingDescription $ langOf ss
+          repo = magenta $ repoOf pkg
+          ns   = namespaceOf pkg
+          n    = c bForeground $ pkgNameOf pkg
+          v    = green $ trueVersion ns
+          d    = head $ value ns "pkgdesc"

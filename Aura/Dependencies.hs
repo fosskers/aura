@@ -37,7 +37,6 @@ import Aura.Pacman        (pacmanOutput)
 import Aura.Packages.Repository
 import Aura.Packages.Virtual
 import Aura.Settings.Base
-import Aura.Packages.AUR
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Utils
