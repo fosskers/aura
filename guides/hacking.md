@@ -108,6 +108,7 @@ foo w = ask >>= \ss -> do
 If you only need one function out of `Settings`, you can do:
 
 ```haskell
+-- For example, if I only need the cache path from Settings...
 foo :: Whatever -> Aura Whatever
 foo w = cachePathOf `fmap` ask >>= \path -> do
   ...  -- Rest of the function.

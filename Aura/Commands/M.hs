@@ -80,12 +80,10 @@ absSearch :: [String] -> Aura ()
 absSearch pat = treeSearch pat' >>= mapM_ (liftIO . putStrLn . renderSearch pat')
     where pat' = unwords pat
 
--- | Display PKGBUILD
 displayPkgbuild :: [String] -> Aura ()
 displayPkgbuild pkgs =
     (packages pkgs :: Aura [ABSPkg]) >>= mapM_ (liftIO . putStrLn . pkgbuildOf)
 
--- | Display package dependencies
 displayPkgDeps :: [String] -> Aura ()
 displayPkgDeps []   = return ()
 displayPkgDeps pkgs = do
@@ -95,17 +93,11 @@ displayPkgDeps pkgs = do
     where n = nub . map splitName
           sameName a b = pkgNameOf a == pkgNameOf b
 
-----------
--- Helpers
-----------
--- | Display ABS package info
 displayAbsPkgInfo :: ABSPkg -> Aura ()
-displayAbsPkgInfo pkg = ask >>= \ss ->
-  liftIO . putStrLn . renderPkgInfo ss $ pkg
+displayAbsPkgInfo pkg = ask >>= liftIO . putStrLn . renderPkgInfo pkg
 
--- | Format an ABSPkg into a string
-renderPkgInfo :: Settings -> ABSPkg -> String
-renderPkgInfo ss pkg = entrify ss fields entries
+renderPkgInfo :: ABSPkg -> Settings -> String
+renderPkgInfo pkg ss = entrify ss fields entries
   where ns      = namespaceOf pkg
         fields  = map bForeground . absInfoFields . langOf $ ss
         entries = [ magenta $ repoOf pkg
@@ -113,7 +105,7 @@ renderPkgInfo ss pkg = entrify ss fields entries
                   , trueVersion ns
                   , unwords $ value ns "depends"
                   , unwords $ value ns "makedepends"
-                  , concat $ value ns "pkgdesc" ]
+                  , concat  $ value ns "pkgdesc" ]
 
 renderSearch :: String -> ABSPkg -> String
 renderSearch pat pkg = repo ++ "/" ++ n ++ " " ++ v ++ " \n    " ++ d

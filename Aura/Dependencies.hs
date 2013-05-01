@@ -47,6 +47,7 @@ import Utilities (notNull, tripleThrd)
 
 ---
 
+-- `PkgFilter` is in the Aura Monad, so this function must be too.
 divideByPkgType ::
     PkgFilter -> PkgFilter -> [String] -> Aura ([String],[String],[String])
 divideByPkgType repoPF mainPF pkgs = do
@@ -89,12 +90,10 @@ depCheck mainPF pkg = do
   let (rs,cs,os) = foldl groupPkgs (repoNames,customPkgs,other) recursiveDeps
   return (nub rs, nub cs, nub os)
 
--- If a package isn't installed, `pacman -T` will yield a single name.
+-- | If a package isn't installed, `pacman -T` will yield a single name.
 -- Any other type of output means installation is not required. 
 mustInstall :: String -> Aura Bool
-mustInstall pkg = do
-  necessaryDeps <- pacmanOutput ["-T",pkg]
-  return $ length (words necessaryDeps) == 1
+mustInstall pkg = ((==) 1 . length . words) `fmap` pacmanOutput ["-T",pkg]
 
 -- Questions to be answered in conflict checks:
 -- 1. Is the package ignored in `pacman.conf`?
@@ -113,7 +112,7 @@ repoConflicts :: Language -> [String] -> RepoPkg -> Maybe ErrMsg
 repoConflicts = realPkgConflicts f
     where f = mostRecentVerNum . pkgInfoOf
        
--- Takes `pacman -Si` output as input.
+-- | Takes `pacman -Si` output as input.
 mostRecentVerNum :: String -> String
 mostRecentVerNum info = tripleThrd match
     where match     = thirdLine =~ ": " :: (String,String,String)
@@ -165,7 +164,7 @@ isVersionConflict :: VersionDemand -> String -> Bool
 isVersionConflict Anything _     = False
 isVersionConflict (LessThan r) c = comparableVer c >= comparableVer r
 isVersionConflict (MoreThan r) c = comparableVer c <= comparableVer r
-isVersionConflict (MustBe r)   c = not $ c =~ ('^' : r)
-isVersionConflict (AtLeast r)  c | comparableVer c > comparableVer r = False
+isVersionConflict (MustBe   r) c = not $ c =~ ('^' : r)
+isVersionConflict (AtLeast  r) c | comparableVer c > comparableVer r = False
                                  | isVersionConflict (MustBe r) c = True
                                  | otherwise = False

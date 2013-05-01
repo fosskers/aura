@@ -26,8 +26,8 @@ module Aura.Install
     ( install
     , reportPkgsToInstall ) where
 
-import Data.List     (sort,nub,(\\))
 import Control.Monad (unless)
+import Data.List     (sort,nub,(\\))
 
 import Aura.Pacman (pacman)
 import Aura.Pkgbuild.Records
@@ -117,20 +117,18 @@ buildAndInstallDep pacOpts pkg =
 -- REPORTING
 ------------
 reportPkgsToInstall :: Buildable a => [String] -> [a] -> [a] -> Aura ()
-reportPkgsToInstall pacPkgs aurDeps aurPkgs = do
-  lang <- langOf `fmap` ask
+reportPkgsToInstall pacPkgs cusDeps cusPkgs = langOf `fmap` ask >>= \lang -> do
   pl (reportPkgsToInstall_1 lang) (sort pacPkgs)
-  pl (reportPkgsToInstall_2 lang) (sort $ namesOf aurDeps)
-  pl (reportPkgsToInstall_3 lang) (sort $ namesOf aurPkgs)
-      where namesOf = map pkgNameOf
-            pl      = printList green cyan
+  pl (reportPkgsToInstall_2 lang) (sort $ namesOf cusDeps)
+  pl (reportPkgsToInstall_3 lang) (sort $ namesOf cusPkgs)
+      where pl      = printList green cyan
+            namesOf = map pkgNameOf
 
 reportNonPackages :: [String] -> Aura ()
 reportNonPackages = badReport reportNonPackages_1
 
 reportIgnoredPackages :: [String] -> Aura ()
-reportIgnoredPackages pkgs = do
-  lang <- langOf `fmap` ask
+reportIgnoredPackages pkgs = langOf `fmap` ask >>= \lang ->
   printList yellow cyan (reportIgnoredPackages_1 lang) pkgs
 
 pkgbuildDiffs :: Buildable a => [a] -> Aura [a]

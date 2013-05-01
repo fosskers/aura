@@ -23,8 +23,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Utils where
 
-import Distribution.Simple.Utils (withTempDirectory)
-import Distribution.Verbosity    (silent)
+import System.IO.Temp            (withTempDirectory)
 import Text.Regex.PCRE           ((=~))
 import System.IO                 (stdout, hFlush)
 import Data.Char                 (isDigit)
@@ -89,10 +88,9 @@ optionalPrompt msg = ask >>= check
 -- MISC
 -------
 withTempDir :: FilePath -> Aura a -> Aura a
-withTempDir name action = do
-  ss   <- ask
+withTempDir name action = ask >>= \ss -> do
   curr <- liftIO pwd
-  let inTemp = withTempDirectory silent curr name
+  let inTemp = withTempDirectory curr name
   result <- liftIO $ inTemp (\dir -> inDir dir (runAura action ss))
   wrap result
 

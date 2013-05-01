@@ -112,6 +112,7 @@ executeOpts (flags,input,pacOpts) =
           []             -> trueRoot (sudo $ M.install pacOpts input)
           [Search]       -> M.absSearch input
           [Info]         -> M.absInfo input
+--          [Clean]        -> sudo M.cleanTree
           [ViewDeps]     -> M.displayPkgDeps input
           [GetPkgbuild]  -> M.displayPkgbuild input
           (Refresh:fs')  -> sudo $ syncABSAndContinue (fs',input,pacOpts)
@@ -124,11 +125,11 @@ executeOpts (flags,input,pacOpts) =
           badFlags       -> scoldAndFail executeOpts_1
     (Cache:fs) ->
         case fs of
-          []            -> sudo $ C.downgradePackages input
-          [Clean]       -> sudo $ C.cleanCache input
-          [Search]      -> C.searchCache input
-          [CacheBackup] -> sudo $ C.backupCache input
-          badFlags      -> scoldAndFail executeOpts_1
+          []             -> sudo $ C.downgradePackages input
+          [Clean]        -> sudo $ C.cleanCache input
+          [Search]       -> C.searchCache input
+          [CacheBackup]  -> sudo $ C.backupCache input
+          badFlags       -> scoldAndFail executeOpts_1
     (LogFile:fs) ->
         case fs of
           []       -> ask >>= L.viewLogFile . logFilePathOf

@@ -9,14 +9,15 @@ license=('GPL-3')
 arch=('i686' 'x86_64')
 depends=('gmp' 'pacman' 'pcre' 'curl' 'abs')
 makedepends=('ghc' 'haskell-regex-base' 'haskell-regex-pcre' 'haskell-curl'
-             'haskell-json' 'haskell-mtl' 'haskell-parsec' 'haskell-transformers')
+             'haskell-json' 'haskell-mtl' 'haskell-parsec' 'haskell-transformers'
+             'haskell-temporary')
 optdepends=('powerpill:    For faster repository downloads.'
             'customizepkg: For auto-editing of PKGBUILDs.')
 provides=('aura')
-conflicts=('aura-git')
+conflicts=('aura-git' 'aura-bin')
 options=('strip')
 source=(https://bitbucket.org/fosskers/aura/downloads/${_hkgname}-${pkgver}.tar.gz)
-md5sums=('a541ec1646182891a925a22976503d34')
+md5sums=('fa11364029a54b1b98ece0e50f09c6b2')
 
 build() {
     cd ${srcdir}/${_hkgname}-${pkgver}
