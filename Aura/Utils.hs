@@ -104,9 +104,11 @@ splitName = fst . splitNameAndVer
 splitVer :: String -> String
 splitVer = snd . splitNameAndVer
 
--- Used for folding.
-groupPkgs :: ([a],[b],[c]) -> ([a],[b],[c]) -> ([a],[b],[c])
-groupPkgs (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
+groupPkgs :: [([a],[b],[c])] -> ([a],[b],[c])
+groupPkgs = foldl groupPkgs' ([],[],[])
+
+groupPkgs' :: ([a],[b],[c]) -> ([a],[b],[c]) -> ([a],[b],[c])
+groupPkgs' (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
 
 sortPkgs :: [String] -> [String]
 sortPkgs = sortBy verNums

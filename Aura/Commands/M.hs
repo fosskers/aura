@@ -69,9 +69,10 @@ import Aura.Core
 
 -- For now!
 buildHandle :: [String] -> BuildHandle
-buildHandle pacOpts = BH { mainPF   = filterABSPkgs
-                         , subPF    = filterABSPkgs
-                         , subBuild = \ps -> pacman (["-S","--asdeps"] ++ pacOpts ++ map pkgNameOf ps) }
+buildHandle pacOpts =
+    BH { mainPF   = filterABSPkgs
+       , subPF    = filterABSPkgs
+       , subBuild = \ps -> pacman (["-S","--asdeps"] ++ pacOpts ++ map pkgNameOf ps) }
 
 -- | Install packages, managing dependencies.
 -- We force the types on some polymorphic functions here.
@@ -96,9 +97,9 @@ displayPkgbuild pkgs =
 displayPkgDeps :: [String] -> Aura ()
 displayPkgDeps []   = return ()
 displayPkgDeps pkgs = do
-  deps <- (packages pkgs :: Aura [ABSPkg]) >>= mapM (depCheck $ buildHandle [])
-  let (subs,mains,_) = foldl groupPkgs ([],[],[]) deps
-  I.reportPkgsToInstall subs mains []
+  deps <- packages pkgs >>= mapM (depCheck $ buildHandle [])
+  let (subs,mains,_) = groupPkgs deps :: ([RepoPkg],[ABSPkg],[String])
+  I.reportPkgsToInstall subs mains ([] :: [ABSPkg])
 
 displayAbsPkgInfo :: ABSPkg -> Aura ()
 displayAbsPkgInfo pkg = ask >>= liftIO . putStrLn . renderPkgInfo pkg

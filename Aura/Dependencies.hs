@@ -71,8 +71,7 @@ depsToInstall :: (Package p, Buildable b) => (Settings -> p -> Maybe ErrMsg) ->
                  BuildHandle -> [b] -> Aura ([p],[b])
 depsToInstall _ _ []    = ask >>= failure . getDepsToInstall_1 . langOf
 depsToInstall subConflict bh pkgs = ask >>= \ss -> do
-  allDeps <- mapM (depCheck bh) pkgs
-  let (subs,mains,virts) = foldl groupPkgs ([],[],[]) allDeps
+  (subs,mains,virts) <- groupPkgs `fmap` mapM (depCheck bh) pkgs
   necSubPkgs  <- filterM (mustInstall . show) subs
   necMainPkgs <- filterM (mustInstall . show) mains
   necVirPkgs  <- filterM mustInstall virts >>= packages
@@ -92,7 +91,7 @@ depCheck bh pkg = do
   mainPkgs      <- packages mainNames
   subPkgs       <- packages subNames
   recursiveDeps <- mapM (depCheck bh) mainPkgs
-  let (ss,ms,os) = foldl groupPkgs (subPkgs,mainPkgs,other) recursiveDeps
+  let (ss,ms,os) = foldl groupPkgs' (subPkgs,mainPkgs,other) recursiveDeps
   return (nub ss, nub ms, nub os)
 
 -- Moving to a libalpm backend will make this less hacked.

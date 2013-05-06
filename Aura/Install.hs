@@ -51,7 +51,7 @@ install, install' :: (Package p, Buildable b) =>
                   -> [String]     -- ^ Pacman flags.
                   -> [String]     -- ^ Package names.
                   -> Aura ()
-install _ _ _ _ []         = return ()
+install _ _ _ _ [] = return ()
 install custom subConflict bh pacOpts pkgs = ask >>= \ss ->
   if not $ delMakeDeps ss
      then install' custom subConflict bh pacOpts pkgs
@@ -74,7 +74,7 @@ install' custom subConflict bh pacOpts pkgs = ask >>= \ss -> do
   toBuild <- mapM custom okay >>= pkgbuildDiffs >>= handler
   notify install_5
   (subDeps,mainDeps) <- catch (depsToInstall subConflict bh toBuild) depCheckFailure
---  reportPkgsToInstall subDeps mainDeps toBuild  -- This has to change.
+  reportPkgsToInstall subDeps mainDeps toBuild
   continue <- optionalPrompt install_3
   if not continue
      then scoldAndFail install_4
@@ -114,13 +114,13 @@ buildAndInstallDep pacOpts pkg =
 ------------
 -- REPORTING
 ------------
-reportPkgsToInstall :: Package p => [p] -> [p] -> [p] -> Aura ()
-reportPkgsToInstall subPkgs mainDeps mainPkgs = langOf `fmap` ask >>= \lang -> do
-  pl (reportPkgsToInstall_1 lang) (sort $ namesOf subPkgs)
-  pl (reportPkgsToInstall_2 lang) (sort $ namesOf mainDeps)
-  pl (reportPkgsToInstall_3 lang) (sort $ namesOf mainPkgs)
-      where pl      = printList green cyan
-            namesOf = map pkgNameOf
+reportPkgsToInstall :: (Package p1, Package p2, Package p3) =>
+                       [p1] -> [p2] -> [p3] -> Aura ()
+reportPkgsToInstall sd md mp = langOf `fmap` ask >>= \lang -> do
+  pl (reportPkgsToInstall_1 lang) (sort $ map pkgNameOf sd)
+  pl (reportPkgsToInstall_2 lang) (sort $ map pkgNameOf md)
+  pl (reportPkgsToInstall_3 lang) (sort $ map pkgNameOf mp)
+      where pl = printList green cyan
 
 reportNonPackages :: [String] -> Aura ()
 reportNonPackages = badReport reportNonPackages_1

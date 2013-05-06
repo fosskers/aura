@@ -34,8 +34,8 @@ import Text.Regex.PCRE ((=~))
 
 import qualified Aura.Install as I
 
-import Aura.Packages.Repository (filterRepoPkgs)
-import Aura.Pacman              (pacman)
+import Aura.Pacman (pacman)
+import Aura.Packages.Repository
 import Aura.Settings.Base
 import Aura.Dependencies
 import Aura.Packages.AUR
@@ -51,9 +51,10 @@ import Shell
 
 -- For now.
 buildHandle :: [String] -> BuildHandle
-buildHandle pacOpts = BH { mainPF   = filterAURPkgs
-                         , subPF    = filterRepoPkgs
-                         , subBuild = \ps -> pacman (["-S","--asdeps"] ++ pacOpts ++ map pkgNameOf ps) }
+buildHandle pacOpts =
+    BH { mainPF   = filterAURPkgs
+       , subPF    = filterRepoPkgs
+       , subBuild = \ps -> pacman (["-S","--asdeps"] ++ pacOpts ++ map pkgNameOf ps) }
 
 install :: [String] -> [String] -> Aura ()
 install pacOpts pkgs = I.install b c (buildHandle pacOpts) pacOpts pkgs
@@ -121,11 +122,10 @@ renderSearch r i = repo ++ n ++ " " ++ v ++ " (" ++ l ++ ")\n    " ++ d
 displayPkgDeps :: [String] -> Aura ()
 displayPkgDeps []   = return ()
 displayPkgDeps pkgs = do
-  info    <- aurInfoLookup pkgs
-  aurPkgs <- (mapM (package . nameOf) info) :: Aura [AURPkg]
+  aurPkgs <- aurInfoLookup pkgs >>= mapM (package . nameOf)
   allDeps <- mapM (depCheck $ buildHandle []) aurPkgs
-  let (subs,mains,_) = foldl groupPkgs ([],[],[]) allDeps
-  I.reportPkgsToInstall subs mains []
+  let (subs,mains,_) = groupPkgs allDeps :: ([RepoPkg],[AURPkg],[String])
+  I.reportPkgsToInstall subs mains ([] :: [AURPkg])
 
 downloadTarballs :: [String] -> Aura ()
 downloadTarballs pkgs = do
