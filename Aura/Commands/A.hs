@@ -31,10 +31,11 @@ module Aura.Commands.A
     , displayPkgbuild ) where
 
 import Text.Regex.PCRE ((=~))
-import Data.List       (nub, nubBy)
 
 import qualified Aura.Install as I
 
+import Aura.Packages.Repository (filterRepoPkgs)
+import Aura.Pacman              (pacman)
 import Aura.Settings.Base
 import Aura.Dependencies
 import Aura.Packages.AUR
@@ -48,9 +49,16 @@ import Shell
 
 ---
 
+-- For now.
+buildHandle :: [String] -> BuildHandle
+buildHandle pacOpts = BH { mainPF   = filterAURPkgs
+                         , subPF    = filterRepoPkgs
+                         , subBuild = \ps -> pacman (["-S","--asdeps"] ++ pacOpts ++ map pkgNameOf ps) }
+
 install :: [String] -> [String] -> Aura ()
-install pacOpts pkgs = I.install b filterAURPkgs pacOpts pkgs
-    where b = package :: String -> Aura AURPkg  -- Force the type.
+install pacOpts pkgs = I.install b c (buildHandle pacOpts) pacOpts pkgs
+    where b = package  :: String -> Aura AURPkg
+          c = conflict :: Settings -> AURPkg -> Maybe ErrMsg
 
 upgradeAURPkgs :: [String] -> [String] -> Aura ()
 upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
@@ -115,11 +123,9 @@ displayPkgDeps []   = return ()
 displayPkgDeps pkgs = do
   info    <- aurInfoLookup pkgs
   aurPkgs <- (mapM (package . nameOf) info) :: Aura [AURPkg]
-  allDeps <- mapM (depCheck filterAURPkgs) aurPkgs
-  let (ps,as,_) = foldl groupPkgs ([],[],[]) allDeps
-  I.reportPkgsToInstall (n ps) (nubBy sameName as) []
-    where n = nub . map splitName
-          sameName a b = pkgNameOf a == pkgNameOf b
+  allDeps <- mapM (depCheck $ buildHandle []) aurPkgs
+  let (subs,mains,_) = foldl groupPkgs ([],[],[]) allDeps
+  I.reportPkgsToInstall subs mains []
 
 downloadTarballs :: [String] -> Aura ()
 downloadTarballs pkgs = do

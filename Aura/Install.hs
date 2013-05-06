@@ -27,9 +27,8 @@ module Aura.Install
     , reportPkgsToInstall ) where
 
 import Control.Monad (unless)
-import Data.List     (sort,nub,(\\))
+import Data.List     (sort, (\\))
 
-import Aura.Pacman (pacman)
 import Aura.Pkgbuild.Records
 import Aura.Pkgbuild.Editing
 import Aura.Settings.Base
@@ -45,70 +44,69 @@ import Aura.Core
 
 -- | High level 'install' command. Handles installing
 -- dependencies.
-install :: Buildable a => (String -> Aura a)  -- ^ Constructor for Buildable data
-        -> PkgFilter  -- ^ How do you wish to filter AUR/ABS packages?
-        -> [String]   -- ^ Pacman flags.
-        -> [String]   -- ^ Package names.
-        -> Aura ()
-install _ _ _ []         = return ()
-install custom mainPF pacOpts pkgs = ask >>= \ss ->
+install, install' :: (Package p, Buildable b) =>
+                     (String -> Aura b)  -- ^ Constructor for Buildable data
+                  -> (Settings -> p -> Maybe ErrMsg)
+                  -> BuildHandle  -- ^ For filtering packages and building deps.
+                  -> [String]     -- ^ Pacman flags.
+                  -> [String]     -- ^ Package names.
+                  -> Aura ()
+install _ _ _ _ []         = return ()
+install custom subConflict bh pacOpts pkgs = ask >>= \ss ->
   if not $ delMakeDeps ss
-     then install' custom mainPF pacOpts pkgs
+     then install' custom subConflict bh pacOpts pkgs
      else do  -- `-a` was used.
        orphansBefore <- getOrphans
-       install' custom mainPF pacOpts pkgs
+       install' custom subConflict bh pacOpts pkgs
        orphansAfter <- getOrphans
        let makeDeps = orphansAfter \\ orphansBefore
        unless (null makeDeps) $ notify removeMakeDepsAfter_1
        removePkgs makeDeps pacOpts
 
-install' :: Buildable a =>
-            (String -> Aura a) -> PkgFilter -> [String] -> [String] -> Aura ()
-install' custom mainPF pacOpts pkgs = ask >>= \ss -> do
+install' custom subConflict bh pacOpts pkgs = ask >>= \ss -> do
   let toInstall = pkgs \\ ignoredPkgsOf ss
       ignored   = pkgs \\ toInstall
+      mainPkgs  = mainPF bh
   reportIgnoredPackages ignored
-  (_,okay,nons) <- knownBadPkgCheck toInstall >>= divideByPkgType ignoreRepos mainPF
+  (_,okay,nons) <- badPkgCheck toInstall >>= divideByPkgType ignoreRepos mainPkgs
   reportNonPackages nons
   handler <- pbHandler
   toBuild <- mapM custom okay >>= pkgbuildDiffs >>= handler
   notify install_5
-  (repoDeps,buildDeps) <- catch (depsToInstall mainPF toBuild) depCheckFailure
-  let repoPkgs    = nub repoDeps
-      pkgsAndOpts = pacOpts ++ repoPkgs
-  reportPkgsToInstall repoPkgs buildDeps toBuild
+  (subDeps,mainDeps) <- catch (depsToInstall subConflict bh toBuild) depCheckFailure
+--  reportPkgsToInstall subDeps mainDeps toBuild  -- This has to change.
   continue <- optionalPrompt install_3
   if not continue
      then scoldAndFail install_4
      else do
-       unless (null repoPkgs) $ pacman (["-S","--asdeps"] ++ pkgsAndOpts)
-       storePkgbuilds $ toBuild ++ buildDeps
-       mapM_ (buildAndInstallDep pacOpts) buildDeps
+       unless (null subDeps) $ subBuild bh subDeps
+       storePkgbuilds $ toBuild ++ mainDeps
+       mapM_ (buildAndInstallDep pacOpts) mainDeps
        buildPackages toBuild >>= installPkgFiles pacOpts
 
 -- | The user can handle PKGBUILDs in multiple ways.
 -- `--hotedit` takes the highest priority.
-pbHandler :: Buildable a => Aura ([a] -> Aura [a])
+pbHandler :: Buildable b => Aura ([b] -> Aura [b])
 pbHandler = ask >>= check
     where check ss | mayHotEdit ss      = return hotEdit
                    | useCustomizepkg ss = return customizepkg
                    | otherwise          = return return
 
-knownBadPkgCheck :: [String] -> Aura [String]
-knownBadPkgCheck []     = return []
-knownBadPkgCheck (p:ps) = ask >>= \ss ->
+badPkgCheck :: [String] -> Aura [String]
+badPkgCheck []     = return []
+badPkgCheck (p:ps) = ask >>= \ss ->
   case p `lookup` wontBuildOf ss of
-    Nothing -> (p :) `fmap` knownBadPkgCheck ps
+    Nothing -> (p :) `fmap` badPkgCheck ps
     Just r  -> do
-      scold $ knownBadPkgCheck_1 p
+      scold $ badPkgCheck_1 p
       putStrLnA yellow r
-      okay <- optionalPrompt knownBadPkgCheck_2
-      if okay then (p :) `fmap` knownBadPkgCheck ps else knownBadPkgCheck ps
+      okay <- optionalPrompt badPkgCheck_2
+      if okay then (p :) `fmap` badPkgCheck ps else badPkgCheck ps
 
 depCheckFailure :: String -> Aura a
 depCheckFailure m = scold install_1 >> failure m
 
-buildAndInstallDep :: Buildable a => [String] -> a -> Aura ()
+buildAndInstallDep :: Buildable b => [String] -> b -> Aura ()
 buildAndInstallDep pacOpts pkg =
   pbHandler >>= \h -> h [pkg] >>= buildPackages >>=
   installPkgFiles ("--asdeps" : pacOpts)
@@ -116,11 +114,11 @@ buildAndInstallDep pacOpts pkg =
 ------------
 -- REPORTING
 ------------
-reportPkgsToInstall :: Buildable a => [String] -> [a] -> [a] -> Aura ()
-reportPkgsToInstall pacPkgs cusDeps cusPkgs = langOf `fmap` ask >>= \lang -> do
-  pl (reportPkgsToInstall_1 lang) (sort pacPkgs)
-  pl (reportPkgsToInstall_2 lang) (sort $ namesOf cusDeps)
-  pl (reportPkgsToInstall_3 lang) (sort $ namesOf cusPkgs)
+reportPkgsToInstall :: Package p => [p] -> [p] -> [p] -> Aura ()
+reportPkgsToInstall subPkgs mainDeps mainPkgs = langOf `fmap` ask >>= \lang -> do
+  pl (reportPkgsToInstall_1 lang) (sort $ namesOf subPkgs)
+  pl (reportPkgsToInstall_2 lang) (sort $ namesOf mainDeps)
+  pl (reportPkgsToInstall_3 lang) (sort $ namesOf mainPkgs)
       where pl      = printList green cyan
             namesOf = map pkgNameOf
 
@@ -131,7 +129,7 @@ reportIgnoredPackages :: [String] -> Aura ()
 reportIgnoredPackages pkgs = langOf `fmap` ask >>= \lang ->
   printList yellow cyan (reportIgnoredPackages_1 lang) pkgs
 
-pkgbuildDiffs :: Buildable a => [a] -> Aura [a]
+pkgbuildDiffs :: Buildable b => [b] -> Aura [b]
 pkgbuildDiffs [] = return []
 pkgbuildDiffs ps = ask >>= check
     where check ss | not $ diffPkgbuilds ss = return ps

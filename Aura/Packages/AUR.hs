@@ -36,8 +36,9 @@ import System.FilePath     ((</>))
 import Data.List           (intercalate)
 import Text.JSON
 
-import Aura.Utils (scoldAndFail)
-import Aura.Bash  (namespace, Namespace)
+import Aura.Conflicts (buildableConflicts)
+import Aura.Utils     (scoldAndFail)
+import Aura.Bash      (namespace, Namespace)
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Core
@@ -52,6 +53,7 @@ data AURPkg = AURPkg String VersionDemand Pkgbuild Namespace
 instance Package AURPkg where
   pkgNameOf (AURPkg n _ _ _) = n
   versionOf (AURPkg _ v _ _) = v
+  conflict = buildableConflicts
   package pkg = do
       pkgbuild <- downloadPkgbuild name
       AURPkg name ver pkgbuild `fmap` namespace name pkgbuild

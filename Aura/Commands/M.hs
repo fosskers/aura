@@ -49,14 +49,15 @@ module Aura.Commands.M
     , displayPkgDeps ) where
 
 import Text.Regex.PCRE ((=~))
-import Data.List       (nub, nubBy)
 
 import qualified Aura.Install as I
 
 import Aura.Pkgbuild.Base (trueVersion)
+import Aura.Pacman        (pacman)
 import Aura.Settings.Base
 import Aura.Dependencies
 import Aura.Packages.ABS
+import Aura.Packages.Repository
 import Aura.Colour.Text
 import Aura.Monad.Aura
 import Aura.Languages
@@ -66,10 +67,18 @@ import Aura.Core
 
 ---
 
--- | Install packages, managing dependencies
+-- For now!
+buildHandle :: [String] -> BuildHandle
+buildHandle pacOpts = BH { mainPF   = filterABSPkgs
+                         , subPF    = filterABSPkgs
+                         , subBuild = \ps -> pacman (["-S","--asdeps"] ++ pacOpts ++ map pkgNameOf ps) }
+
+-- | Install packages, managing dependencies.
+-- We force the types on some polymorphic functions here.
 install :: [String] -> [String] -> Aura ()
-install pacOpts pkgs = I.install b filterABSPkgs pacOpts pkgs
-    where b = package :: String -> Aura ABSPkg  -- Force the type.
+install pacOpts pkgs = I.install b c (buildHandle pacOpts) pacOpts pkgs
+    where b = package  :: String -> Aura ABSPkg
+          c = conflict :: Settings -> RepoPkg -> Maybe ErrMsg
 
 -- | Get info about the specified package (-i)
 absInfo :: [String] -> Aura ()
@@ -87,11 +96,9 @@ displayPkgbuild pkgs =
 displayPkgDeps :: [String] -> Aura ()
 displayPkgDeps []   = return ()
 displayPkgDeps pkgs = do
-  deps <- (packages pkgs :: Aura [ABSPkg]) >>= mapM (depCheck filterABSPkgs)
-  let (ps,as,_) = foldl groupPkgs ([],[],[]) deps
-  I.reportPkgsToInstall (n ps) (nubBy sameName as) []
-    where n = nub . map splitName
-          sameName a b = pkgNameOf a == pkgNameOf b
+  deps <- (packages pkgs :: Aura [ABSPkg]) >>= mapM (depCheck $ buildHandle [])
+  let (subs,mains,_) = foldl groupPkgs ([],[],[]) deps
+  I.reportPkgsToInstall subs mains []
 
 displayAbsPkgInfo :: ABSPkg -> Aura ()
 displayAbsPkgInfo pkg = ask >>= liftIO . putStrLn . renderPkgInfo pkg

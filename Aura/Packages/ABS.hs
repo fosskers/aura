@@ -43,6 +43,7 @@ import Data.Maybe       (fromJust)
 
 import Aura.Packages.Repository (filterRepoPkgs)
 import Aura.Settings.Base       (absTreeOf)
+import Aura.Conflicts           (buildableConflicts)
 import Aura.Pacman              (pacmanOutput)
 import Aura.Utils               (optionalPrompt)
 import Aura.Monad.Aura
@@ -66,6 +67,7 @@ data ABSPkg = ABSPkg String String VersionDemand Pkgbuild Namespace
 instance Package ABSPkg where
   pkgNameOf (ABSPkg n _ _ _ _) = n
   versionOf (ABSPkg _ _ v _ _) = v
+  conflict = buildableConflicts
   package pkg = do
       repo     <- repository pkg
       pkgbuild <- liftIO $ readFileUTF8 (pkgbuildPath repo name)

@@ -26,13 +26,20 @@ module Aura.Packages.Virtual
   , providerPkgOf
   , providingPkg ) where
 
-import Aura.Packages.Repository (RepoPkg)
-import Aura.Pacman (pacmanOutput)
-import Aura.Utils (splitNameAndVer)
+import Text.Regex.PCRE ((=~))
+import Data.Maybe      (fromJust, isNothing)
+import Data.List       (nub)
+
+import Aura.Conflicts (isVersionConflict)
+import Aura.Pacman    (pacmanOutput)
+import Aura.Utils     (splitNameAndVer, splitVer)
+import Aura.Packages.Repository
+import Aura.Settings.Base
 import Aura.Monad.Aura
+import Aura.Languages
 import Aura.Core
 
-import Data.List     (nub)
+---
 
 -------------------
 -- Virtual Packages
@@ -45,6 +52,7 @@ data VirtualPkg = VirtualPkg String VersionDemand (Maybe RepoPkg)
 instance Package VirtualPkg where
     pkgNameOf (VirtualPkg n _ _) = n
     versionOf (VirtualPkg _ v _) = v
+    conflict = virtualConflicts
     package pkg = VirtualPkg name ver `fmap` getProvider pkg
         where (name,ver)    = parseNameAndVersionDemand pkg
               getProvider n = do
@@ -78,3 +86,25 @@ providingPkg' :: String -> Aura String
 providingPkg' virt = do
   let (name,_) = splitNameAndVer virt
   nub `fmap` pacmanOutput ["-Ssq",name ++ "$"]
+
+-- This can't be generalized as easily.
+virtualConflicts :: Settings -> VirtualPkg -> Maybe ErrMsg
+virtualConflicts ss pkg
+    | isNothing (providerPkgOf pkg) = Just failMsg1
+    | isIgnored provider toIgnore   = Just failMsg2
+    | isVersionConflict (versionOf pkg) pVer = Just failMsg3
+    | otherwise = Nothing
+    where name     = pkgNameOf pkg
+          ver      = show $ versionOf pkg
+          provider = pkgNameOf . fromJust . providerPkgOf $ pkg
+          pVer     = providedVerNum pkg
+          lang     = langOf ss
+          toIgnore = ignoredPkgsOf ss
+          failMsg1 = getVirtualConflicts_1 name lang
+          failMsg2 = getVirtualConflicts_2 name provider lang
+          failMsg3 = getVirtualConflicts_3 name ver provider pVer lang
+
+providedVerNum :: VirtualPkg -> String
+providedVerNum pkg = splitVer match
+    where match = info =~ ("[ ]" ++ pkgNameOf pkg ++ ">?=[0-9.]+")
+          info  = pkgInfoOf . fromJust . providerPkgOf $ pkg

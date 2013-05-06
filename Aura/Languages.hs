@@ -499,18 +499,18 @@ install_5 Italian    = "Determinazione dipendenze..."
 install_5 Serbian    = "Утврђивање зависности..."
 
 -- NEEDS TRANSLATION
-knownBadPkgCheck_1 :: String -> Language -> String
-knownBadPkgCheck_1 p Japanese = bt p ++ "の作成は失敗すると知られている。理由："
-knownBadPkgCheck_1 p Croatian = "Poznato je da se " ++ bt p ++ " neuspješno gradi. Razlog:"
-knownBadPkgCheck_1 p Serbian  = "Познато је да се " ++ bt p ++ " неуспешно гради. Разлог:"
-knownBadPkgCheck_1 p _        = bt p ++ " is known to fail at building. Reason:"
+badPkgCheck_1 :: String -> Language -> String
+badPkgCheck_1 p Japanese = bt p ++ "の作成は失敗すると知られている。理由："
+badPkgCheck_1 p Croatian = "Poznato je da se " ++ bt p ++ " neuspješno gradi. Razlog:"
+badPkgCheck_1 p Serbian  = "Познато је да се " ++ bt p ++ " неуспешно гради. Разлог:"
+badPkgCheck_1 p _        = bt p ++ " is known to fail at building. Reason:"
 
 -- NEEDS TRANSLATION
-knownBadPkgCheck_2 :: Language -> String
-knownBadPkgCheck_2 Japanese = "それでもやってみる？"
-knownBadPkgCheck_2 Croatian = "Želite li ipak pokušati?"
-knownBadPkgCheck_2 Serbian  = "Желите ли ипак да пробате?"
-knownBadPkgCheck_2 _        = "Will you try anyway?"
+badPkgCheck_2 :: Language -> String
+badPkgCheck_2 Japanese = "それでもやってみる？"
+badPkgCheck_2 Croatian = "Želite li ipak pokušati?"
+badPkgCheck_2 Serbian  = "Желите ли ипак да пробате?"
+badPkgCheck_2 _        = "Will you try anyway?"
 
 -- NEEDS UPDATE TO REFLECT CHANGED ENGLISH
 reportNonPackages_1 :: Language -> String

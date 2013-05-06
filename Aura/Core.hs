@@ -1,3 +1,5 @@
+{-# LANGUAGE Rank2Types #-}  -- Not sure if this is correct.
+
 {-
 
 Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
@@ -42,17 +44,9 @@ import Shell
 --------
 -- TYPES
 --------
-type ErrMsg = String
-type Pkgbuild = String
+type ErrMsg    = String
+type Pkgbuild  = String
 type PkgFilter = [String] -> Aura [String]
-
-----------------
--- Package Class
-----------------
-class (Show a, Eq a) => Package a where
-    pkgNameOf :: a -> String
-    versionOf :: a -> VersionDemand
-    package :: String -> Aura a
 
 data VersionDemand = LessThan String
                    | AtLeast String
@@ -60,6 +54,20 @@ data VersionDemand = LessThan String
                    | MustBe String
                    | Anything
                      deriving (Eq)
+
+-- These functions names could use changing.
+data BuildHandle = BH { mainPF      :: PkgFilter
+                      , subPF       :: PkgFilter
+                      , subBuild    :: Package p => [p] -> Aura () }
+
+----------------
+-- Package Class
+----------------
+class (Show a, Eq a) => Package a where
+    pkgNameOf :: a -> String
+    versionOf :: a -> VersionDemand
+    conflict  :: Settings -> a -> Maybe ErrMsg
+    package   :: String -> Aura a
 
 instance Show VersionDemand where
     show (LessThan v) = '<' : v
@@ -71,7 +79,7 @@ instance Show VersionDemand where
 ------------------
 -- Buildable Class
 ------------------
-class (Package a) => Buildable a where
+class Package a => Buildable a where
   pkgbuildOf  :: a -> Pkgbuild
   namespaceOf :: a -> Namespace
   -- | Fetch and extract the source code corresponding to the given package.
