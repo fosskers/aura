@@ -8,9 +8,13 @@ Is it possible to convert Aura to use gettext and printf?
 
 Extend `-Ai`. 
 
-Add info about the double-search shell command
+Add info about the double-search shell command to man page
 
 Add `-Mc` option to remove the contents of /var/abs (after prompting, of course)
+
+Make a screencast about simple Aura usage
+
+Find out who blogs about Arch Linux and send them plugs
 
 COMPLETIONS
 -----------

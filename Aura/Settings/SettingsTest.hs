@@ -31,4 +31,5 @@ sampleSettings = Settings { environmentOf = undefined
                           , diffPkgbuilds = False
                           , rebuildDevel  = False
                           , useCustomizepkg = False
-                          , keepSource    = False }
+                          , keepSource    = False
+                          , buildABSDeps  = False }

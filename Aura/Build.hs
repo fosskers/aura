@@ -69,22 +69,18 @@ build built ps@(p:_) = do
       where pn = pkgNameOf p
         
 -- Perform the actual build.
+-- TODO: Clean this up.
 build' :: Buildable a => [a] -> Aura ([FilePath],[a])
 build' []     = failure "build' : You should never see this."
 build' (p:ps) = ask >>= \ss -> do
-  let makepkg'   = if toSuppress then makepkgQuiet else makepkgVerbose
-      makesrc u  = if toKeepSource 
-                      then makepkgSource u True >>= void . moveToSourcePath
-                      else return ()
-      toSuppress = suppressMakepkg ss
-      toKeepSource = keepSource ss
-      user       = getTrueUser $ environmentOf ss
+  let user       = getTrueUser $ environmentOf ss
+      makepkg'   = if suppressMakepkg ss then makepkgQuiet else makepkgVerbose
   curr <- liftIO pwd
   getSourceCode p user curr
   overwritePkgbuild p
   pNames <- makepkg' user
   paths  <- moveToBuildPath pNames
-  makesrc user
+  when (keepSource ss) $ makepkgSource user True >>= void . moveToSourcePath
   liftIO $ cd curr
   return (paths,ps)
 

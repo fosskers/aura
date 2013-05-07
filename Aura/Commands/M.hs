@@ -67,17 +67,25 @@ import Aura.Core
 
 ---
 
--- For now!
-buildHandle :: [String] -> BuildHandle
-buildHandle pacOpts =
-    BH { mainPF   = filterABSPkgs
-       , subPF    = filterABSPkgs
+-- | All repo dependencies will be installed via pacman.
+defaultHandle :: [String] -> BuildHandle
+defaultHandle pacOpts =
+    BH { mainPF   = \_ -> return []
+       , subPF    = filterRepoPkgs
        , subBuild = \ps -> pacman (["-S","--asdeps"] ++ pacOpts ++ map pkgNameOf ps) }
+
+-- | All repo dependencies will be built manually.
+manualHandle :: [String] -> BuildHandle
+manualHandle pacOpts = BH { mainPF   = filterABSPkgs
+                          , subPF    = \_  -> return []
+                          , subBuild = \_  -> return () }
 
 -- | Install packages, managing dependencies.
 -- We force the types on some polymorphic functions here.
 install :: [String] -> [String] -> Aura ()
-install pacOpts pkgs = I.install b c (buildHandle pacOpts) pacOpts pkgs
+install pacOpts pkgs = buildABSDeps `fmap` ask >>= \manual -> do
+  let handle = if manual then manualHandle else defaultHandle
+  I.install b c (handle pacOpts) pacOpts pkgs
     where b = package  :: String -> Aura ABSPkg
           c = conflict :: Settings -> RepoPkg -> Maybe ErrMsg
 
@@ -97,7 +105,7 @@ displayPkgbuild pkgs =
 displayPkgDeps :: [String] -> Aura ()
 displayPkgDeps []   = return ()
 displayPkgDeps pkgs = do
-  deps <- packages pkgs >>= mapM (depCheck $ buildHandle [])
+  deps <- packages pkgs >>= mapM (depCheck $ defaultHandle [])
   let (subs,mains,_) = groupPkgs deps :: ([RepoPkg],[ABSPkg],[String])
   I.reportPkgsToInstall subs mains ([] :: [ABSPkg])
 

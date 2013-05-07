@@ -52,4 +52,5 @@ data Settings = Settings { inputOf         :: [String]
                          , mayHotEdit      :: Bool
                          , mustConfirm     :: Bool
                          , useCustomizepkg :: Bool 
-                         , keepSource      :: Bool }
+                         , keepSource      :: Bool
+                         , buildABSDeps    :: Bool }

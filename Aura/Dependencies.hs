@@ -69,7 +69,7 @@ divideByPkgType subPF' mainPF' pkgs = do
 -- | Returns all dependencies to be installed, or fails nicely.
 depsToInstall :: (Package p, Buildable b) => (Settings -> p -> Maybe ErrMsg) ->
                  BuildHandle -> [b] -> Aura ([p],[b])
-depsToInstall _ _ []    = ask >>= failure . getDepsToInstall_1 . langOf
+depsToInstall _ _ [] = ask >>= failure . getDepsToInstall_1 . langOf
 depsToInstall subConflict bh pkgs = ask >>= \ss -> do
   (subs,mains,virts) <- groupPkgs `fmap` mapM (depCheck bh) pkgs
   necSubPkgs  <- filterM (mustInstall . show) subs

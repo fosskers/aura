@@ -38,6 +38,7 @@ module Aura.Flags
     , buildPath
     , auraOperMsg
     , keepSourceStatus
+    , buildABSDepsStatus
     , Flag(..) ) where
 
 import System.Console.GetOpt
@@ -75,6 +76,7 @@ data Flag = ABSInstall
           | Devel
           | Customizepkg
           | KeepSource
+          | BuildABSDeps
           | Debug
           | CacheBackup
           | Clean
@@ -132,13 +134,14 @@ auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
               , ( ['u'], ["sysupgrade"],   Upgrade       )
               , ( ['w'], ["downloadonly"], Download      )
               , ( ['x'], ["unsuppress"],   Unsuppress    )
+              , ( [],    ["absdeps"],      BuildABSDeps  )
+              , ( [],    ["allsource"],    KeepSource    )
+              , ( [],    ["auradebug"],    Debug         )
               , ( [],    ["custom"],       Customizepkg  )
               , ( [],    ["devel"],        Devel         )
               , ( [],    ["hotedit"],      HotEdit       )
-              , ( [],    ["viewconf"],     ViewConf      ) 
-              , ( [],    ["languages"],    Languages     ) 
-              , ( [],    ["auradebug"],    Debug         )
-              , ( [],    ["allsource"],    KeepSource    ) ]
+              , ( [],    ["languages"],    Languages     )
+              , ( [],    ["viewconf"],     ViewConf      ) ]
 
 -- These are intercepted Pacman flags. Their functionality is different.
 pacmanOptions :: [OptDescr Flag]
@@ -193,7 +196,7 @@ reconvertFlag flagMap f = fromMaybe "" $ f `lookup` flagMap
 
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
-                , DelMDeps,Customizepkg,KeepSource ]
+                , DelMDeps,Customizepkg,KeepSource,BuildABSDeps ]
 
 filterSettingsFlags :: [Flag] -> [Flag]
 filterSettingsFlags []                 = []
@@ -230,29 +233,15 @@ buildPath [] = ""
 buildPath (BuildPath p : _) = p
 buildPath (_:fs) = buildPath fs
 
-suppressionStatus :: [Flag] -> Bool
-suppressionStatus = fishOutFlag [(Unsuppress,False)] True
-
-delMakeDepsStatus :: [Flag] -> Bool
-delMakeDepsStatus = fishOutFlag [(DelMDeps,True)] False
-
-confirmationStatus :: [Flag] -> Bool
+suppressionStatus  = fishOutFlag [(Unsuppress,False)] True
+delMakeDepsStatus  = fishOutFlag [(DelMDeps,True)] False
 confirmationStatus = fishOutFlag [(NoConfirm,False)] True
-
-hotEditStatus :: [Flag] -> Bool
-hotEditStatus = fishOutFlag [(HotEdit,True)] False
-
-pbDiffStatus :: [Flag] -> Bool
-pbDiffStatus = fishOutFlag [(DiffPkgbuilds,True)] False
-
-rebuildDevelStatus :: [Flag] -> Bool
+hotEditStatus      = fishOutFlag [(HotEdit,True)] False
+pbDiffStatus       = fishOutFlag [(DiffPkgbuilds,True)] False
 rebuildDevelStatus = fishOutFlag [(Devel,True)] False
-
-customizepkgStatus :: [Flag] -> Bool
 customizepkgStatus = fishOutFlag [(Customizepkg,True)] False
-
-keepSourceStatus :: [Flag] -> Bool
-keepSourceStatus = fishOutFlag [(KeepSource, True)] False 
+keepSourceStatus   = fishOutFlag [(KeepSource,True)] False
+buildABSDepsStatus = fishOutFlag [(BuildABSDeps,True)] False
 
 parseLanguageFlag :: [String] -> (Maybe Language,[String])
 parseLanguageFlag args =

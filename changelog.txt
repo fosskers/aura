@@ -2,6 +2,7 @@ Aura Changelog
 ==============
 1.2.0.0
 -------
+- New operator `-M` for building ABS packages. Has its own family of options.
 - `-Ai` now shows Maintainer name.
 
 1.1.6.1
