@@ -30,7 +30,7 @@ module Aura.Commands.C
 import System.Posix.Files (fileExist)
 import System.FilePath    ((</>))
 import Text.Regex.PCRE    ((=~))
-import Control.Monad      (filterM, liftM, unless)
+import Control.Monad      (filterM, unless)
 import Data.List          ((\\), sort, groupBy)
 import Data.Char          (isDigit)
 
@@ -55,7 +55,7 @@ downgradePackages []   = return ()
 downgradePackages pkgs = do
   reals <- filterM isInstalled pkgs
   reportBadDowngradePkgs (pkgs \\ reals)
-  cachePath <- cachePathOf `liftM` ask
+  cachePath <- cachePathOf `fmap` ask
   unless (null reals) $ do
     cache   <- cacheContents cachePath
     choices <- mapM (getDowngradeChoice cache) reals
@@ -108,7 +108,7 @@ backup dir cache = do
 copyAndNotify :: FilePath -> [String] -> Int -> Aura ()
 copyAndNotify _ [] _       = return ()
 copyAndNotify dir (p:ps) n = do
-  cachePath <- cachePathOf `liftM` ask
+  cachePath <- cachePathOf `fmap` ask
   liftIO $ raiseCursorBy 1
   warn $ copyAndNotify_1 n
   liftIO $ cp (cachePath </> p) (dir </> p)

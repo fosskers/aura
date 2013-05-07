@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
+
 -- Improved Bash parser for Aura, built with Parsec.
 
 {-

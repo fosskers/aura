@@ -32,7 +32,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 import System.Environment (getArgs)
-import Control.Monad      (unless, liftM)
+import Control.Monad      (unless)
 import System.Exit        (exitSuccess, exitFailure)
 import Data.List          (nub, sort, intercalate)
 
@@ -49,12 +49,13 @@ import Aura.Core
 import Aura.Logo
 
 import Utilities (replaceByPatt)
-import Shell hiding (shellCmd)
+import Shell     (showCursor, hideCursor)
 
 import Aura.Commands.A as A
 import Aura.Commands.B as B
 import Aura.Commands.C as C
 import Aura.Commands.L as L
+import Aura.Commands.M as M
 import Aura.Commands.O as O
 
 ---
@@ -62,7 +63,7 @@ import Aura.Commands.O as O
 type UserInput = ([Flag],[String],[String])
 
 auraVersion :: String
-auraVersion = "1.1.6.3"
+auraVersion = "1.2.0.0"
 
 main :: IO a
 main = getArgs >>= prepSettings . processFlags >>= execute >>= exit
@@ -75,7 +76,7 @@ processFlags args = ((flags,nub input,pacOpts'),language)
 
 -- | Set the local environment.
 prepSettings :: (UserInput,Maybe Language) -> IO (UserInput,Settings)
-prepSettings (ui,lang) = (ui,) `liftM` getSettings lang ui
+prepSettings (ui,lang) = (ui,) `fmap` getSettings lang ui
 
 -- | Hand user input to the Aura Monad and run it.
 execute :: (UserInput,Settings) -> IO (Either AuraError ())
@@ -99,7 +100,7 @@ executeOpts (flags,input,pacOpts) =
   case sort flags of
     (AURInstall:fs) ->
         case fs of
-          []             -> trueRoot (sudo $ A.installPackages pacOpts input)
+          []             -> trueRoot (sudo $ A.install pacOpts input)
           [Upgrade]      -> trueRoot (sudo $ A.upgradeAURPkgs pacOpts input)
           [Info]         -> A.aurPkgInfo input
           [Search]       -> A.aurSearch input
@@ -107,6 +108,16 @@ executeOpts (flags,input,pacOpts) =
           [Download]     -> A.downloadTarballs input
           [GetPkgbuild]  -> A.displayPkgbuild input
           (Refresh:fs')  -> sudo $ syncAndContinue (fs',input,pacOpts)
+          badFlags       -> scoldAndFail executeOpts_1
+    (ABSInstall:fs) ->
+        case fs of
+          []             -> trueRoot (sudo $ M.install pacOpts input)
+          [Search]       -> M.absSearch input
+          [Info]         -> M.absInfo input
+          [Clean]        -> sudo M.cleanABSTree
+          [ViewDeps]     -> M.displayPkgDeps input
+          [GetPkgbuild]  -> M.displayPkgbuild input
+          (Refresh:fs')  -> sudo $ syncABSAndContinue (fs',input,pacOpts)
           badFlags       -> scoldAndFail executeOpts_1
     (SaveState:fs) ->
         case fs of
@@ -116,11 +127,11 @@ executeOpts (flags,input,pacOpts) =
           badFlags       -> scoldAndFail executeOpts_1
     (Cache:fs) ->
         case fs of
-          []            -> sudo $ C.downgradePackages input
-          [Clean]       -> sudo $ C.cleanCache input
-          [Search]      -> C.searchCache input
-          [CacheBackup] -> sudo $ C.backupCache input
-          badFlags      -> scoldAndFail executeOpts_1
+          []             -> sudo $ C.downgradePackages input
+          [Clean]        -> sudo $ C.cleanCache input
+          [Search]       -> C.searchCache input
+          [CacheBackup]  -> sudo $ C.backupCache input
+          badFlags       -> scoldAndFail executeOpts_1
     (LogFile:fs) ->
         case fs of
           []       -> ask >>= L.viewLogFile . logFilePathOf
@@ -140,11 +151,15 @@ executeOpts (flags,input,pacOpts) =
                       pacmanFailure
     where hijackedFlags = reconvertFlags flags hijackedFlagMap
 
--- `-y` was included in the flags. Sync database before continuing.
+-- | `-y` was included with `-A`. Sync database before continuing.
 syncAndContinue :: UserInput -> Aura ()
-syncAndContinue (flags,input,pacOpts) = do
-  syncDatabase pacOpts
-  executeOpts (AURInstall:flags,input,pacOpts)
+syncAndContinue (flags,input,pacOpts) =
+  syncDatabase pacOpts >> executeOpts (AURInstall:flags,input,pacOpts)
+
+-- | `-y` was included with `-M`. Sync local ABS tree before continuing.
+syncABSAndContinue :: UserInput -> Aura ()
+syncABSAndContinue (flags,input,pacOpts) =
+  M.absSync >> executeOpts (ABSInstall:flags,input,pacOpts)
 
 ----------
 -- GENERAL

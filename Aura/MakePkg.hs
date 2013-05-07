@@ -24,13 +24,14 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.MakePkg
     ( makepkgQuiet
     , makepkgVerbose
+    , makepkgSource
     , makepkgConfFile ) where
 
-import Control.Monad (liftM)
 import Text.Regex.PCRE ((=~))
+import Data.List (intercalate)
 
 import Aura.Monad.Aura
-import Aura.Shell (shellCmd, quietShellCmd', checkExitCode')
+import Aura.Shell (shellCmd, quietShellCmd, quietShellCmd', checkExitCode')
 
 import Shell (pwd, ls)
 
@@ -39,16 +40,25 @@ import Shell (pwd, ls)
 makepkgConfFile :: FilePath
 makepkgConfFile = "/etc/makepkg.conf"
 
+-- | Make a source package.
+makepkgSource :: String -- ^ User
+              -> Bool -- ^ Include downloaded sources (--allsource)
+              -> Aura [FilePath]
+makepkgSource user allsource =
+  let allsourceOpt = if allsource then "--allsource" else "-S"
+      (cmd, opts) = determineRunStyle user [allsourceOpt]
+  in quietShellCmd cmd opts >> filter (=~ ".src.tar") `fmap` liftIO (pwd >>= ls)
+
 -- Builds a package with `makepkg`.
 -- Some packages create multiple .pkg.tar files. These are all returned.
 makepkgGen :: (String -> [String] -> Aura a) -> String -> Aura [FilePath]
 makepkgGen f user =
-    f cmd opts >> filter (=~ ".pkg.tar") `liftM` liftIO (pwd >>= ls)
-      where (cmd,opts) = determineRunStyle user
+    f cmd opts >> filter (=~ ".pkg.tar") `fmap` liftIO (pwd >>= ls)
+      where (cmd,opts) = determineRunStyle user []
 
-determineRunStyle :: String -> (String,[String])
-determineRunStyle "root" = ("makepkg",["--asroot"])
-determineRunStyle user   = ("su",[user,"-c","makepkg"])
+determineRunStyle :: String -> [String] -> (String,[String])
+determineRunStyle "root" opts = ("makepkg",["--asroot"] ++ opts)
+determineRunStyle user opts = ("su",[user,"-c","makepkg " ++ intercalate " " opts])
 
 makepkgQuiet :: String -> Aura [FilePath]
 makepkgQuiet user = makepkgGen quiet user

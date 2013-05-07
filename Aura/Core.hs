@@ -1,3 +1,5 @@
+{-# LANGUAGE Rank2Types #-}  -- Not sure if this is correct.
+
 {-
 
 Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
@@ -23,17 +25,16 @@ module Aura.Core where
 
 import System.Directory (doesFileExist)
 import Text.Regex.PCRE  ((=~))
-import Control.Monad    (liftM,when)
-import Data.List        ((\\), nub, intercalate, isSuffixOf)
+import Control.Monad    (when)
+import Data.List        (isSuffixOf)
 
+import Aura.Bash (Namespace)
 import Aura.Settings.Base
 import Aura.Colour.Text
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Pacman
 import Aura.Utils
-import Aura.Bash
-import Aura.AUR
 
 import Utilities
 import Shell
@@ -43,14 +44,9 @@ import Shell
 --------
 -- TYPES
 --------
-type ErrMsg = String
-
------------
--- PACKAGES
------------
-class Package a where
-    pkgNameOf :: a -> String
-    versionOf :: a -> VersionDemand
+type ErrMsg    = String
+type Pkgbuild  = String
+type PkgFilter = [String] -> Aura [String]
 
 data VersionDemand = LessThan String
                    | AtLeast String
@@ -59,6 +55,22 @@ data VersionDemand = LessThan String
                    | Anything
                      deriving (Eq)
 
+-- These functions names could use changing.
+data BuildHandle = BH { pkgLabel  :: String
+                      , initialPF :: PkgFilter 
+                      , mainPF    :: PkgFilter
+                      , subPF     :: PkgFilter
+                      , subBuild  :: Package p => [p] -> Aura () }
+
+----------------
+-- Package Class
+----------------
+class (Show a, Eq a) => Package a where
+    pkgNameOf :: a -> String
+    versionOf :: a -> VersionDemand
+    conflict  :: Settings -> a -> Maybe ErrMsg
+    package   :: String -> Aura a
+
 instance Show VersionDemand where
     show (LessThan v) = '<' : v
     show (AtLeast v)  = ">=" ++ v
@@ -66,64 +78,17 @@ instance Show VersionDemand where
     show (MustBe  v)  = '=' : v
     show Anything     = ""
 
--- I would like to reduce the following three sets of instance declarations
--- to a single more polymorphic solution.
----------------
--- AUR Packages
----------------
-data AURPkg = AURPkg String VersionDemand Pkgbuild Namespace
-               
-instance Package AURPkg where
-    pkgNameOf (AURPkg n _ _ _) = n
-    versionOf (AURPkg _ v _ _) = v
-
-instance Show AURPkg where
-    show = pkgNameWithVersionDemand
-
-instance Eq AURPkg where
-    a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
-
-pkgbuildOf :: AURPkg -> String
-pkgbuildOf (AURPkg _ _ p _) = p
-
-namespaceOf :: AURPkg -> Namespace
-namespaceOf (AURPkg _ _ _ ns) = ns
-
 ------------------
--- Pacman Packages
+-- Buildable Class
 ------------------
-data PacmanPkg = PacmanPkg String VersionDemand String
-
-instance Package PacmanPkg where
-    pkgNameOf (PacmanPkg n _ _) = n
-    versionOf (PacmanPkg _ v _) = v
-
-instance Show PacmanPkg where
-    show = pkgNameWithVersionDemand
-
-instance Eq PacmanPkg where
-    a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
-
-pkgInfoOf :: PacmanPkg -> String
-pkgInfoOf (PacmanPkg _ _ i) = i
-
--------------------
--- Virtual Packages
--------------------
--- Virtual packages also contain a record of their providing package.
--- Providing packages are assumed to be Pacman (ABS) packages.
--- Are there any instances where this isn't the case?
-data VirtualPkg = VirtualPkg String VersionDemand (Maybe PacmanPkg)
-
-instance Package VirtualPkg where
-    pkgNameOf (VirtualPkg n _ _) = n
-    versionOf (VirtualPkg _ v _) = v
-
-instance Show VirtualPkg where
-    show = pkgNameWithVersionDemand
-
-providerPkgOf :: VirtualPkg -> Maybe PacmanPkg
-providerPkgOf (VirtualPkg _ _ p) = p
+class Package a => Buildable a where
+  pkgbuildOf  :: a -> Pkgbuild
+  namespaceOf :: a -> Namespace
+  -- | Fetch and extract the source code corresponding to the given package.
+  source :: a           -- ^ Package (currently AUR or ABS)
+         -> FilePath    -- ^ Directory in which to extract the package.
+         -> IO FilePath -- ^ Path to the extracted source.
+  rewrap :: a -> Namespace -> a  -- ^ Assign a new Namespace.
 
 ---------------------------------
 -- Functions common to `Package`s
@@ -141,49 +106,13 @@ parseNameAndVersionDemand pkg = (name, getVersionDemand comp ver)
                                | c == "="  = MustBe v
                                | otherwise = Anything
 
-pacmanPkg :: String -> Aura PacmanPkg
-pacmanPkg pkg = PacmanPkg name ver `liftM` pacmanOutput ["-Si",name]
-    where (name,ver) = parseNameAndVersionDemand pkg
-
-aurPkg :: String -> Aura AURPkg
-aurPkg pkg = do
-  pkgbuild  <- downloadPkgbuild name
-  AURPkg name ver pkgbuild `liftM` namespace name pkgbuild
-      where (name,ver) = parseNameAndVersionDemand pkg
-
-virtualPkg :: String -> Aura VirtualPkg
-virtualPkg pkg = VirtualPkg name ver `liftM` getProvider pkg
-    where (name,ver) = parseNameAndVersionDemand pkg
-          getProvider n = do
-            provider <- getProvidingPkg n
-            case provider of
-              Nothing -> return Nothing
-              Just p  -> Just `liftM` pacmanPkg p
-
--- Yields a virtual package's providing package if there is one.
-getProvidingPkg :: String -> Aura (Maybe String)
-getProvidingPkg virt = do
-  candidates <- getProvidingPkg' virt
-  let lined = lines candidates
-  if length lined /= 1
-     then return Nothing
-     else return . Just . head $ lined
-
--- Unsafe version.
--- Only use on virtual packages that have guaranteed providers.
--- Adding "$" to the pkg name (technically a regex) fixes a bug.
-getProvidingPkg' :: String -> Aura String
-getProvidingPkg' virt = do
-  let (name,_) = splitNameAndVer virt
-  nub `liftM` pacmanOutput ["-Ssq",name ++ "$"]
-
 -----------
 -- THE WORK
 -----------
 -- | Action won't be allowed unless user is root, or using sudo.
 sudo :: Aura () -> Aura ()
 sudo action = do
-  hasPerms <- (hasRootPriv . environmentOf) `liftM` ask
+  hasPerms <- (hasRootPriv . environmentOf) `fmap` ask
   if hasPerms then action else scoldAndFail mustBeRoot_1
 
 -- | Prompt if the user is the true Root. Building as it can be dangerous.
@@ -193,25 +122,23 @@ trueRoot action = ask >>= \ss ->
        okay <- optionalPrompt trueRoot_1
        if okay then action else notify trueRoot_2
 
+packages :: Package a => [String] -> Aura [a]
+packages = mapM package
+
 -- `-Qm` yields a list of sorted values.
 getForeignPackages :: Aura [(String,String)]
-getForeignPackages = (map fixName . lines) `liftM` pacmanOutput ["-Qm"]
+getForeignPackages = (map fixName . lines) `fmap` pacmanOutput ["-Qm"]
     where fixName = hardBreak (== ' ')
 
 getOrphans :: Aura [String]
-getOrphans = lines `liftM` pacmanOutput ["-Qqdt"]
+getOrphans = lines `fmap` pacmanOutput ["-Qqdt"]
 
 getDevelPkgs :: Aura [String]
-getDevelPkgs = (filter isDevelPkg . map fst) `liftM` getForeignPackages
+getDevelPkgs = (filter isDevelPkg . map fst) `fmap` getForeignPackages
 
 isDevelPkg :: String -> Bool
 isDevelPkg p = any (`isSuffixOf` p) suffixes
     where suffixes = ["-git","-hg","-svn","-darcs","-cvs","-bzr"]
-
-isntMostRecent :: (PkgInfo,String) -> Bool
-isntMostRecent (info,v) = trueVer > currVer
-  where trueVer = comparableVer $ latestVerOf info
-        currVer = comparableVer v
 
 isIgnored :: String -> [String] -> Bool
 isIgnored pkg toIgnore = pkg `elem` toIgnore
@@ -219,37 +146,9 @@ isIgnored pkg toIgnore = pkg `elem` toIgnore
 isInstalled :: String -> Aura Bool
 isInstalled pkg = pacmanSuccess ["-Qq",pkg]
 
-type PkgFilter = [String] -> Aura [String]
-
-ignoreRepos :: PkgFilter
-ignoreRepos _ = return []
-
-filterAURPkgs :: PkgFilter
-filterAURPkgs pkgs = map nameOf `liftM` aurInfoLookup pkgs
-
-filterRepoPkgs :: PkgFilter
-filterRepoPkgs pkgs = do
-  repoPkgs <- lines `liftM` pacmanOutput ["-Ssq",pkgs']
-  return $ filter (`elem` repoPkgs) pkgs
-    where pkgs' = "^(" ++ prep pkgs ++ ")$"
-          prep  = specs . intercalate "|"
-          specs []     = []
-          specs (c:cs) | c `elem` "+" = ['[',c,']'] ++ specs cs
-                       | otherwise    = c : specs cs
-
 removePkgs :: [String] -> [String] -> Aura ()
 removePkgs [] _         = return ()
 removePkgs pkgs pacOpts = pacman  $ ["-Rsu"] ++ pkgs ++ pacOpts
-
-divideByPkgType :: PkgFilter -> [String] -> Aura ([String],[String],[String])
-divideByPkgType repoFilter pkgs = do
-  repoPkgNames <- repoFilter namesOnly
-  aurPkgNames  <- filterAURPkgs $ namesOnly \\ repoPkgNames
-  let aurPkgs  = filter (flip elem aurPkgNames . splitName) pkgs
-      repoPkgs = filter (flip elem repoPkgNames . splitName) pkgs
-      others   = (pkgs \\ aurPkgs) \\ repoPkgs
-  return (repoPkgs, aurPkgs, others)
-      where namesOnly = map splitName pkgs
 
 -- | Block further action until the database is free.
 checkDBLock :: Aura ()
@@ -264,7 +163,7 @@ colouredMessage :: Colouror -> (Language -> String) -> Aura ()
 colouredMessage c msg = ask >>= putStrLnA c . msg . langOf
 
 renderColour :: Colouror -> (Language -> String) -> Aura String
-renderColour c msg = (c . msg . langOf) `liftM` ask
+renderColour c msg = (c . msg . langOf) `fmap` ask
 
 say :: (Language -> String) -> Aura ()
 say = colouredMessage noColour

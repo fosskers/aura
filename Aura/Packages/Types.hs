@@ -1,6 +1,7 @@
 {-
 
-Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013
+Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -19,25 +20,13 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Pkgbuild.Base where
+module Aura.Packages.Types
+    ( ABSPkg
+    , AURPkg
+    , RepoPkg
+    , VirtualPkg ) where
 
-import Aura.Bash
-
----
-
-pkgbuildCache :: FilePath
-pkgbuildCache = "/var/cache/aura/pkgbuilds/"
-
-customizepkgPath :: FilePath
-customizepkgPath = "/etc/customizepkg.d/"
-
-toFilename :: String -> FilePath
-toFilename = (++ ".pb")
-
-pkgbuildPath :: String -> FilePath
-pkgbuildPath p = pkgbuildCache ++ toFilename p
-
-trueVersion :: Namespace -> String
-trueVersion ns = pkgver ++ "-" ++ pkgrel
-    where pkgver = head $ value ns "pkgver"
-          pkgrel = head $ value ns "pkgrel"
+import Aura.Packages.Repository (RepoPkg)
+import Aura.Packages.Virtual    (VirtualPkg)
+import Aura.Packages.AUR        (AURPkg)
+import Aura.Packages.ABS        (ABSPkg)

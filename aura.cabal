@@ -1,6 +1,6 @@
 name:                aura
 
-version:             1.1.6.3
+version:             1.2.0.0
 
 synopsis:            A secure package manager for Arch Linux and the AUR, written in Haskell.
 
@@ -45,7 +45,6 @@ executable aura
                        ColourDiff,
                        Data.Algorithm.Diff,
                        Network.HTTP,
-                       Aura.AUR,
                        Aura.Bash,
                        Aura.Core,
                        Aura.Logo,
@@ -53,6 +52,7 @@ executable aura
                        Aura.Build,
                        Aura.Cache,
                        Aura.Flags,
+                       Aura.Install,
                        Aura.Shell,
                        Aura.State,
                        Aura.Utils,
@@ -62,11 +62,17 @@ executable aura
                        Aura.Monad.Aura,
                        Aura.Dependencies,
                        Aura.Colour.Text,
+                       Aura.Packages.ABS,
+                       Aura.Packages.AUR,
+                       Aura.Packages.Repository,
+                       Aura.Packages.Types,
+                       Aura.Packages.Virtual,
                        Aura.Commands.A,
                        Aura.Commands.B,
                        Aura.Commands.C,
                        Aura.Commands.L,
                        Aura.Commands.O,
+                       Aura.Commands.M,
                        Aura.Pkgbuild.Base,
                        Aura.Pkgbuild.Records,
                        Aura.Pkgbuild.Editing,
@@ -82,12 +88,12 @@ executable aura
                        json,
                        unix,
                        array,
-                       Cabal,
                        parsec,
                        process,
                        filepath,
                        old-time,
                        directory,
+                       temporary,
                        containers,
                        bytestring,
                        regex-pcre,

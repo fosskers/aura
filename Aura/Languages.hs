@@ -37,7 +37,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Languages where
 
-import Aura.Colour.Text (cyan, green, red, blue, yellow)
+import Aura.Colour.Text (cyan, green, red, blue, yellow, magenta, bForeground)
 
 ---
 
@@ -183,33 +183,33 @@ mustBeRoot_1 Serbian    = "Морате да користите " ++ bt "sudo" +
 -----------------------
 -- Aura/Build functions
 -----------------------
-buildPackages_1 :: Language -> String -> String
-buildPackages_1 English    p = "Building " ++ bt p ++ "..."
-buildPackages_1 Japanese   p = bt p ++ "を作成中・・・"
-buildPackages_1 Polish     p = "Budowanie " ++ bt p ++ "..."
-buildPackages_1 Croatian   p = "Gradim " ++ bt p ++ "..."
-buildPackages_1 Swedish    p = "Bygger paket " ++ bt p ++ "..."
-buildPackages_1 German     p = "Baue Paket " ++ bt p ++ "..."
-buildPackages_1 Spanish    p = "Construyendo " ++ bt p ++ "..."
-buildPackages_1 Portuguese p = "Compilando " ++ bt p ++ "..."
-buildPackages_1 French     p = "Construction de " ++ bt p ++ "…"
-buildPackages_1 Russian    p = "Сборка " ++ bt p ++ "..."
-buildPackages_1 Italian    p = "Compilazione di " ++ bt p ++ "..."
-buildPackages_1 Serbian    p = "Градим " ++ bt p ++ "..."
+buildPackages_1 :: String -> Language -> String
+buildPackages_1 p English    = "Building " ++ bt p ++ "..."
+buildPackages_1 p Japanese   = bt p ++ "を作成中・・・"
+buildPackages_1 p Polish     = "Budowanie " ++ bt p ++ "..."
+buildPackages_1 p Croatian   = "Gradim " ++ bt p ++ "..."
+buildPackages_1 p Swedish    = "Bygger paket " ++ bt p ++ "..."
+buildPackages_1 p German     = "Baue Paket " ++ bt p ++ "..."
+buildPackages_1 p Spanish    = "Construyendo " ++ bt p ++ "..."
+buildPackages_1 p Portuguese = "Compilando " ++ bt p ++ "..."
+buildPackages_1 p French     = "Construction de " ++ bt p ++ "…"
+buildPackages_1 p Russian    = "Сборка " ++ bt p ++ "..."
+buildPackages_1 p Italian    = "Compilazione di " ++ bt p ++ "..."
+buildPackages_1 p Serbian    = "Градим " ++ bt p ++ "..."
 
-buildFail_1 :: Language -> String -> String
-buildFail_1 English    p = "Well, building " ++ bt p ++ " failed."
-buildFail_1 Japanese   p = bt p ++ "の作成は失敗したようだ。"
-buildFail_1 Polish     p = "Budowanie " ++ bt p ++ " zakończyło się niepowodzeniem."
-buildFail_1 Croatian   p = "Izgradnja " ++ bt p ++ " nije uspjela."
-buildFail_1 Swedish    p = "Det gick inte att bygga paketet " ++ bt p ++ "."
-buildFail_1 German     p = "Bauen von " ++ bt p ++ " ist fehlgeschlagen."
-buildFail_1 Spanish    p = "La construcción de " ++ bt p ++ " ha fallado."
-buildFail_1 Portuguese p = "Falha na compilação do pacote " ++ bt p ++ "."
-buildFail_1 French     p = "Bon, la construction de " ++ bt p ++ " a échouée."
-buildFail_1 Russian    p = "Что ж, сборка " ++ bt p ++ " не удалась."
-buildFail_1 Italian    p = "La compilazione di " ++ bt p ++ "è fallita."
-buildFail_1 Serbian    p = "Изградња пакета " ++ bt p ++ " није успела."
+buildFail_1 :: String -> Language -> String
+buildFail_1 p English    = "Well, building " ++ bt p ++ " failed."
+buildFail_1 p Japanese   = bt p ++ "の作成は失敗したようだ。"
+buildFail_1 p Polish     = "Budowanie " ++ bt p ++ " zakończyło się niepowodzeniem."
+buildFail_1 p Croatian   = "Izgradnja " ++ bt p ++ " nije uspjela."
+buildFail_1 p Swedish    = "Det gick inte att bygga paketet " ++ bt p ++ "."
+buildFail_1 p German     = "Bauen von " ++ bt p ++ " ist fehlgeschlagen."
+buildFail_1 p Spanish    = "La construcción de " ++ bt p ++ " ha fallado."
+buildFail_1 p Portuguese = "Falha na compilação do pacote " ++ bt p ++ "."
+buildFail_1 p French     = "Bon, la construction de " ++ bt p ++ " a échouée."
+buildFail_1 p Russian    = "Что ж, сборка " ++ bt p ++ " не удалась."
+buildFail_1 p Italian    = "La compilazione di " ++ bt p ++ "è fallita."
+buildFail_1 p Serbian    = "Изградња пакета " ++ bt p ++ " није успела."
 
 buildFail_2 :: Language -> String
 buildFail_2 English    = "Also, the following weren’t built:"
@@ -428,89 +428,93 @@ displayOutputLanguages_1 Serbian    = "Доступни су следећи је
 ----------------------------
 -- Aura/Commands/A functions
 ----------------------------
-installPackages_1 :: Language -> String
-installPackages_1 English    = "Dependency checking failed for these reasons:"
-installPackages_1 Japanese   = "従属パッケージの確認は以下の理由で失敗した："
-installPackages_1 Polish     = "Sprawdzanie zależności nie powiodło się z następujących powodów:"
-installPackages_1 Croatian   = "Provjera zavisnosti nije uspjela iz sljedećih razloga:"
-installPackages_1 Swedish    = "Beroende-kollen misslyckades pga följande skäl:"
-installPackages_1 German     = "Abhängigkeitsüberprüfung schlug Fehl aus folgenden Gründen:"
-installPackages_1 Spanish    = "La comprobación de dependencias falló por los siguientes motivos:"
-installPackages_1 Portuguese = "Não foi possível checar as dependências pelas seguintes razões:"
-installPackages_1 French     = "La vérification des dépendances a faillie pour les raisons suivantes :"
-installPackages_1 Russian    = "Проверка зависимостей не удалась из-за:"
-installPackages_1 Italian    = "Il controllo delle dipendenze è fallito per i seguenti motivi:"
-installPackages_1 Serbian    = "Провера зависности није успела из следећих разлога:"
+auraCheck_1 :: Language -> String
+auraCheck_1 Japanese = "Auraアップグレードあり。先にAuraだけを？"
+auraCheck_1 _        = "Aura update available. Update it first?"
 
-installPackages_2 :: Language -> String
-installPackages_2 English    = "No valid packages specified."
-installPackages_2 Japanese   = "適当なパッケージを入力してください。"
-installPackages_2 Polish     = "Nie podano prawidłowych pakietów."
-installPackages_2 Croatian   = "Nije specificiran nijedan ispravan paket."
-installPackages_2 Swedish    = "Inga giltiga paket valda."
-installPackages_2 German     = "Keine gültigen Pakete angegeben."
-installPackages_2 Spanish    = "No se ha especificado ningún paquete válido."
-installPackages_2 Portuguese = "Nenhum pacote válido foi especificado."
-installPackages_2 French     = "Aucun paquet valide spécifié."
-installPackages_2 Russian    = "Валидные пакеты не указаны."
-installPackages_2 Italian    = "Nessun pacchetto valido specificato."
-installPackages_2 Serbian    = "Ниједан исправан пакет није специфициран."
+install_1 :: Language -> String
+install_1 English    = "Dependency checking failed for these reasons:"
+install_1 Japanese   = "従属パッケージの確認は以下の理由で失敗した："
+install_1 Polish     = "Sprawdzanie zależności nie powiodło się z następujących powodów:"
+install_1 Croatian   = "Provjera zavisnosti nije uspjela iz sljedećih razloga:"
+install_1 Swedish    = "Beroende-kollen misslyckades pga följande skäl:"
+install_1 German     = "Abhängigkeitsüberprüfung schlug Fehl aus folgenden Gründen:"
+install_1 Spanish    = "La comprobación de dependencias falló por los siguientes motivos:"
+install_1 Portuguese = "Não foi possível checar as dependências pelas seguintes razões:"
+install_1 French     = "La vérification des dépendances a faillie pour les raisons suivantes :"
+install_1 Russian    = "Проверка зависимостей не удалась из-за:"
+install_1 Italian    = "Il controllo delle dipendenze è fallito per i seguenti motivi:"
+install_1 Serbian    = "Провера зависности није успела из следећих разлога:"
 
-installPackages_3 :: Language -> String
-installPackages_3 English    = "Continue?"
-installPackages_3 Japanese   = "続行？"
-installPackages_3 Polish     = "Kontynuować?"
-installPackages_3 Croatian   = "Nastavi?"
-installPackages_3 Swedish    = "Fortsätta?"
-installPackages_3 German     = "Fortsetzen?"
-installPackages_3 Spanish    = "¿Continuar?"
-installPackages_3 Portuguese = "Continuar?"
-installPackages_3 French     = "Continuer ?"
-installPackages_3 Russian    = "Продолжить?"
-installPackages_3 Italian    = "Continuare?"
-installPackages_3 Serbian    = "Наставити?"
+install_2 :: Language -> String
+install_2 English    = "No valid packages specified."
+install_2 Japanese   = "適当なパッケージを入力してください。"
+install_2 Polish     = "Nie podano prawidłowych pakietów."
+install_2 Croatian   = "Nije specificiran nijedan ispravan paket."
+install_2 Swedish    = "Inga giltiga paket valda."
+install_2 German     = "Keine gültigen Pakete angegeben."
+install_2 Spanish    = "No se ha especificado ningún paquete válido."
+install_2 Portuguese = "Nenhum pacote válido foi especificado."
+install_2 French     = "Aucun paquet valide spécifié."
+install_2 Russian    = "Валидные пакеты не указаны."
+install_2 Italian    = "Nessun pacchetto valido specificato."
+install_2 Serbian    = "Ниједан исправан пакет није специфициран."
 
-installPackages_4 :: Language -> String
-installPackages_4 English    = "Installation manually aborted."
-installPackages_4 Japanese   = "続行は意図的に阻止された。"
-installPackages_4 Polish     = "Instalacja została przerwana przez użytkownika."
-installPackages_4 Croatian   = "Instalacija prekinuta od strane korisnika."
-installPackages_4 Swedish    = "Installationen avbröts manuellt."
-installPackages_4 German     = "Installation durch Benutzer abgebrochen."
-installPackages_4 Spanish    = "Instalación abortada manualmente."
-installPackages_4 Portuguese = "Instalação manual abortada."
-installPackages_4 French     = "Installation manuelle annulée."
-installPackages_4 Russian    = "Пользователь прервал установку."
-installPackages_4 Italian    = "Installazione manuale interrotta."
-installPackages_4 Serbian    = "Инсталација је ручно прекинута."
+install_3 :: Language -> String
+install_3 English    = "Continue?"
+install_3 Japanese   = "続行？"
+install_3 Polish     = "Kontynuować?"
+install_3 Croatian   = "Nastavi?"
+install_3 Swedish    = "Fortsätta?"
+install_3 German     = "Fortsetzen?"
+install_3 Spanish    = "¿Continuar?"
+install_3 Portuguese = "Continuar?"
+install_3 French     = "Continuer ?"
+install_3 Russian    = "Продолжить?"
+install_3 Italian    = "Continuare?"
+install_3 Serbian    = "Наставити?"
 
-installPackages_5 :: Language -> String
-installPackages_5 English    = "Determining dependencies..."
-installPackages_5 Japanese   = "従属パッケージを確認中・・・"
-installPackages_5 Polish     = "Ustalanie zależności..."
-installPackages_5 Croatian   = "Određivanje zavisnosti..."
-installPackages_5 Swedish    = "Avgör beroenden..."
-installPackages_5 German     = "Bestimme Abhängigkeiten..."
-installPackages_5 Spanish    = "Determinando dependencias..."
-installPackages_5 Portuguese = "Determinando as dependências..."
-installPackages_5 French     = "Détermination des dépendances en cours…"
-installPackages_5 Russian    = "Определение зависимостей..."
-installPackages_5 Italian    = "Determinazione dipendenze..."
-installPackages_5 Serbian    = "Утврђивање зависности..."
+install_4 :: Language -> String
+install_4 English    = "Installation manually aborted."
+install_4 Japanese   = "続行は意図的に阻止された。"
+install_4 Polish     = "Instalacja została przerwana przez użytkownika."
+install_4 Croatian   = "Instalacija prekinuta od strane korisnika."
+install_4 Swedish    = "Installationen avbröts manuellt."
+install_4 German     = "Installation durch Benutzer abgebrochen."
+install_4 Spanish    = "Instalación abortada manualmente."
+install_4 Portuguese = "Instalação manual abortada."
+install_4 French     = "Installation manuelle annulée."
+install_4 Russian    = "Пользователь прервал установку."
+install_4 Italian    = "Installazione manuale interrotta."
+install_4 Serbian    = "Инсталација је ручно прекинута."
 
--- NEEDS TRANSLATION
-knownBadPkgCheck_1 :: String -> Language -> String
-knownBadPkgCheck_1 p Japanese = bt p ++ "の作成は失敗すると知られている。理由："
-knownBadPkgCheck_1 p Croatian = "Poznato je da se " ++ bt p ++ " neuspješno gradi. Razlog:"
-knownBadPkgCheck_1 p Serbian  = "Познато је да се " ++ bt p ++ " неуспешно гради. Разлог:"
-knownBadPkgCheck_1 p _        = bt p ++ " is known to fail at building. Reason:"
+install_5 :: Language -> String
+install_5 English    = "Determining dependencies..."
+install_5 Japanese   = "従属パッケージを確認中・・・"
+install_5 Polish     = "Ustalanie zależności..."
+install_5 Croatian   = "Određivanje zavisnosti..."
+install_5 Swedish    = "Avgör beroenden..."
+install_5 German     = "Bestimme Abhängigkeiten..."
+install_5 Spanish    = "Determinando dependencias..."
+install_5 Portuguese = "Determinando as dependências..."
+install_5 French     = "Détermination des dépendances en cours…"
+install_5 Russian    = "Определение зависимостей..."
+install_5 Italian    = "Determinazione dipendenze..."
+install_5 Serbian    = "Утврђивање зависности..."
 
 -- NEEDS TRANSLATION
-knownBadPkgCheck_2 :: Language -> String
-knownBadPkgCheck_2 Japanese = "それでもやってみる？"
-knownBadPkgCheck_2 Croatian = "Želite li ipak pokušati?"
-knownBadPkgCheck_2 Serbian  = "Желите ли ипак да пробате?"
-knownBadPkgCheck_2 _        = "Will you try anyway?"
+badPkgCheck_1 :: String -> Language -> String
+badPkgCheck_1 p Japanese = bt p ++ "の作成は失敗すると知られている。理由："
+badPkgCheck_1 p Croatian = "Poznato je da se " ++ bt p ++ " neuspješno gradi. Razlog:"
+badPkgCheck_1 p Serbian  = "Познато је да се " ++ bt p ++ " неуспешно гради. Разлог:"
+badPkgCheck_1 p _        = bt p ++ " is known to fail at building. Reason:"
+
+-- NEEDS TRANSLATION
+badPkgCheck_2 :: Language -> String
+badPkgCheck_2 Japanese = "それでもやってみる？"
+badPkgCheck_2 Croatian = "Želite li ipak pokušati?"
+badPkgCheck_2 Serbian  = "Желите ли ипак да пробате?"
+badPkgCheck_2 _        = "Will you try anyway?"
 
 -- NEEDS UPDATE TO REFLECT CHANGED ENGLISH
 reportNonPackages_1 :: Language -> String
@@ -555,33 +559,33 @@ reportPkgsToInstall_1 Russian    = "Зависимости из репозито
 reportPkgsToInstall_1 Italian    = "Dipendenze nei repository:"
 reportPkgsToInstall_1 Serbian    = "Зависности из ризница:"
 
-reportPkgsToInstall_2 :: Language -> String
-reportPkgsToInstall_2 English    = "AUR dependencies:"
-reportPkgsToInstall_2 Japanese   = "AURの従属パッケージ："
-reportPkgsToInstall_2 Polish     = "Zależności z AUR:"
-reportPkgsToInstall_2 Croatian   = "Zavisnosti iz AUR-a:"
-reportPkgsToInstall_2 Swedish    = "Beroenden ifrån AUR:"
-reportPkgsToInstall_2 German     = "Abhängigkeiten im AUR:"
-reportPkgsToInstall_2 Spanish    = "Dependencias en AUR:"
-reportPkgsToInstall_2 Portuguese = "Dependências no AUR:"
-reportPkgsToInstall_2 French     = "Dépendances AUR :"
-reportPkgsToInstall_2 Russian    = "Зависимости из AUR:"
-reportPkgsToInstall_2 Italian    = "Dipendenze in AUR:"
-reportPkgsToInstall_2 Serbian    = "Зависности из AUR-а:"
+reportPkgsToInstall_2 :: String -> Language -> String
+reportPkgsToInstall_2 l English    = l ++ " dependencies:"
+reportPkgsToInstall_2 l Japanese   = l ++ "の従属パッケージ："
+reportPkgsToInstall_2 l Polish     = "Zależności z " ++ l ++ ":"
+reportPkgsToInstall_2 l Croatian   = "Zavisnosti iz " ++ l ++ "-a:"
+reportPkgsToInstall_2 l Swedish    = "Beroenden ifrån " ++ l ++ ":"
+reportPkgsToInstall_2 l German     = "Abhängigkeiten im " ++ l ++ ":"
+reportPkgsToInstall_2 l Spanish    = "Dependencias en " ++ l ++ ":"
+reportPkgsToInstall_2 l Portuguese = "Dependências no " ++ l ++ ":"
+reportPkgsToInstall_2 l French     = "Dépendances " ++ l ++ " :"
+reportPkgsToInstall_2 l Russian    = "Зависимости из " ++ l ++ ":"
+reportPkgsToInstall_2 l Italian    = "Dipendenze in " ++ l ++ ":"
+reportPkgsToInstall_2 l Serbian    = "Зависности из " ++ l ++ "-а:"
 
-reportPkgsToInstall_3 :: Language -> String
-reportPkgsToInstall_3 English    = "Main AUR packages:"
-reportPkgsToInstall_3 Japanese   = "主なAURパッケージ："
-reportPkgsToInstall_3 Polish     = "Główne pakiety z AUR:"
-reportPkgsToInstall_3 Croatian   = "Glavni AUR paketi:"
-reportPkgsToInstall_3 Swedish    = "Huvudpaket ifrån AUR:"
-reportPkgsToInstall_3 German     = "Hauptpaket aus dem AUR:"
-reportPkgsToInstall_3 Spanish    = "Paquetes principales de AUR:"
-reportPkgsToInstall_3 Portuguese = "Pacotes principais do AUR:"
-reportPkgsToInstall_3 French     = "Principaux paquets AUR :"
-reportPkgsToInstall_3 Russian    = "Главные пакеты из AUR:"
-reportPkgsToInstall_3 Italian    = "Pacchetto principale di AUR"
-reportPkgsToInstall_3 Serbian    = "Главни пакети из AUR-а:"
+reportPkgsToInstall_3 :: String -> Language -> String
+reportPkgsToInstall_3 l English    = "Main " ++ l ++ " packages:"
+reportPkgsToInstall_3 l Japanese   = "主な" ++ l ++ "パッケージ："
+reportPkgsToInstall_3 l Polish     = "Główne pakiety z " ++ l ++ ":"
+reportPkgsToInstall_3 l Croatian   = "Glavni " ++ l ++ " paketi:"
+reportPkgsToInstall_3 l Swedish    = "Huvudpaket ifrån " ++ l ++ ":"
+reportPkgsToInstall_3 l German     = "Hauptpaket aus dem " ++ l ++ ":"
+reportPkgsToInstall_3 l Spanish    = "Paquetes principales de " ++ l ++ ":"
+reportPkgsToInstall_3 l Portuguese = "Pacotes principais do " ++ l ++ ":"
+reportPkgsToInstall_3 l French     = "Principaux paquets " ++ l ++ " :"
+reportPkgsToInstall_3 l Russian    = "Главные пакеты из " ++ l ++ ":"
+reportPkgsToInstall_3 l Italian    = "Pacchetto principale di " ++ l ++ ":"
+reportPkgsToInstall_3 l Serbian    = "Главни пакети из " ++ l ++ "-а:"
 
 -- Needs translations.
 reportPkgbuildDiffs_1 :: String -> Language -> String
@@ -1025,6 +1029,18 @@ reportNotInLog_1 Russian    = "Следующих пакетов нет в ло�
 reportNotInLog_1 Italian    = "Questo non apparirà nei file di log;"
 reportNotInLog_1 Serbian    = "Ови пакети се не спомињу у дневнику:"
 
+----------------------------
+-- Aura/Commands/M functions
+----------------------------
+-- NEEDS TRANSLATION
+cleanABSTree_1 :: Language -> String
+cleanABSTree_1 Japanese = "ABS Treeの中身を削除？"
+cleanABSTree_1 _        = "Delete the entire ABS Tree?"
+
+cleanABSTree_2 :: Language -> String
+cleanABSTree_2 Japanese = "ABS Treeの中身を削除中・・・"
+cleanABSTree_2 _        = "Clearing out ABS Tree..."
+
 ----------------------
 -- Aura/Flags functions
 ----------------------
@@ -1069,6 +1085,9 @@ aurSy French     = green "Actions impliquant [A]UR.\n" ++ "Par default, installe
 aurSy Russian    = green "Совершить действия с участием [A]UR.\n" ++ "Действие по умолчанию устанавливает из AUR."
 aurSy Italian    = green "Azioni riguardanti [A]UR.\n" ++ "Di default installa da AUR."
 aurSy Serbian    = green "Извршава радње везане за [A]UR.\n" ++ "Уобичајена радња инсталира из AUR-а."
+
+absSy :: Language -> String
+absSy _ = magenta "Perform actions involving the ABS tree.\n" ++ "Default action [M]anually builds from ABS."
 
 -- NEEDS TRANSLATION
 saveS :: Language -> String
@@ -1129,19 +1148,20 @@ getAURPkgInfo_1 Croatian = "Pristup AUR-u nije uspio. Provjerite vašu vezu."
 getAURPkgInfo_1 Serbian  = "Приступ AUR-у није успео. Проверите вашу везу."
 getAURPkgInfo_1 _        = "AUR API lookup failed. Please check your connection."
 
+-- `Maintainer` value NEEDS UPDATING!
 infoFields :: Language -> [String]
-infoFields English    = [ "Repository","Name","Version","AUR Status","Project URL","AUR URL","License", "Votes","Description" ]
-infoFields Japanese   = [ "リポジトリ","名前","バージョン","パッケージ状態","プロジェクト","パッケージページ","ライセンス","投票数","概要" ]
-infoFields Polish     = [ "Repository","Nazwa","Wersja","Status w AUR","URL Projektu","URL w AUR","Licencja","Głosy","Opis" ]
-infoFields Croatian   = [ "Repository","Ime","Verzija","AUR Stanje","URL Projekta","AUR URL","Licenca","Glasovi","Opis" ]
-infoFields Swedish    = [ "Repository","Namn","Version","AUR Status","Projekt URL","AUR URL","Licens","Röster","Beskrivning" ]
-infoFields German     = [ "Repository","Name","Version","AUR Status","Projekt URL","AUR URL","Lizenz","Stimmen","Beschreibung" ]
-infoFields Spanish    = [ "Repository","Nombre","Versión","Estado en AUR","URL del proyecto","URL en AUR","Licencia", "Votos","Descripción" ]
-infoFields Portuguese = [ "Repositório","Nome","Versão","Estado no AUR","URL do projeto","URL no AUR","Licença", "Votos","Descrição" ]
-infoFields French     = [ "Dépôt","Nom","Version","AUR Statut","URL du projet","URL AUR","License", "Votes","Description" ]
-infoFields Russian    = [ "Репозиторий","Название","Версия","Статус в AUR","URL проекта","URL в AUR","Лицензия", "Рейтинг","Описание" ]
-infoFields Italian    = [ "Repository","Nome","Versione","Stato in AUR","URL","URL AUR","Licenza","Voti","Descrizione" ]
-infoFields Serbian    = [ "Ризница","Име","Верзија","Статус у AUR-у","Страница пројекта","Страница у AUR-у","Лиценца","Гласови","Опис" ]
+infoFields English    = [ "Repository","Name","Version","AUR Status","Maintainer","Project URL","AUR URL","License", "Votes","Description" ]
+infoFields Japanese   = [ "リポジトリ","名前","バージョン","パッケージ状態","管理者","プロジェクト","パッケージページ","ライセンス","投票数","概要" ]
+infoFields Polish     = [ "Repository","Nazwa","Wersja","Status w AUR","Maintainer","URL Projektu","URL w AUR","Licencja","Głosy","Opis" ]
+infoFields Croatian   = [ "Repository","Ime","Verzija","AUR Stanje","Maintainer","URL Projekta","AUR URL","Licenca","Glasovi","Opis" ]
+infoFields Swedish    = [ "Repository","Namn","Version","AUR Status","Maintainer","Projekt URL","AUR URL","Licens","Röster","Beskrivning" ]
+infoFields German     = [ "Repository","Name","Version","AUR Status","Maintainer","Projekt URL","AUR URL","Lizenz","Stimmen","Beschreibung" ]
+infoFields Spanish    = [ "Repository","Nombre","Versión","Estado en AUR","Maintainer","URL del proyecto","URL en AUR","Licencia", "Votos","Descripción" ]
+infoFields Portuguese = [ "Repositório","Nome","Versão","Estado no AUR","Maintainer","URL do projeto","URL no AUR","Licença", "Votos","Descrição" ]
+infoFields French     = [ "Dépôt","Nom","Version","AUR Statut","Maintainer","URL du projet","URL AUR","License", "Votes","Description" ]
+infoFields Russian    = [ "Репозиторий","Название","Версия","Статус в AUR","Maintainer","URL проекта","URL в AUR","Лицензия", "Рейтинг","Описание" ]
+infoFields Italian    = [ "Repository","Nome","Versione","Stato in AUR","Maintainer","URL","URL AUR","Licenza","Voti","Descrizione" ]
+infoFields Serbian    = [ "Ризница","Име","Верзија","Статус у AUR-у","Maintainer","Страница пројекта","Страница у AUR-у","Лиценца","Гласови","Опис" ]
 
 outOfDateMsg :: Bool -> Language -> String
 outOfDateMsg True  English    = red "Out of Date!"
@@ -1168,6 +1188,37 @@ outOfDateMsg True  Italian    = red "Out of Date!"
 outOfDateMsg False Italian    = green "Aggiornato"
 outOfDateMsg True  Serbian    = red "Застарео!"
 outOfDateMsg False Serbian    = green "Ажуран"
+
+orphanedMsg :: Maybe String -> Language -> String
+orphanedMsg (Just m) _       = bForeground m
+orphanedMsg Nothing Japanese = red "いない"
+orphanedMsg Nothing _        = red "Orphaned!"
+
+-----------------------
+-- Aura/ABS functions
+-----------------------
+-- NEEDS TRANSLATION
+absSync_1 :: Language -> String
+absSync_1 Japanese = "ローカルABS Treeを同期？"
+absSync_1 _        = "Sync the local ABS Tree?"
+
+absSync_2 :: Language -> String
+absSync_2 Japanese = "ローカルABS Treeを同期中・・・"
+absSync_2 _        = "Syncing local ABS Tree..."
+
+singleSync_1 :: String -> Language -> String
+singleSync_1 p Japanese = bt p ++ "をABS Treeに同期・・・"
+singleSync_1 p _        = "Syncing " ++ bt p ++ " to the local ABS Tree..."
+
+absInfoFields :: Language -> [String]
+absInfoFields _ = [ "Repository","Name","Version","Depends On"
+                  , "Make Deps", "Description" ]
+
+pkgBuildKeyMissing :: Language -> String -> String
+pkgBuildKeyMissing _ key = "Unable to parse key " ++ key ++ " from PKGBUILD."
+
+missingDescription :: Language -> String
+missingDescription _ = "No description."
 
 -----------------------
 -- Aura/State functions

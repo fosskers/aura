@@ -1,5 +1,11 @@
 Aura Changelog
 ==============
+1.2.0.0
+-------
+- New operator `-M` for building ABS packages. Has its own family of options.
+- Updates to Aura are now prioritized like pacman updates.
+- `-Ai` now shows Maintainer name.
+
 1.1.6.2
 -------
 - New option `--no-pp`. Disables use of powerpill, even if you have it.

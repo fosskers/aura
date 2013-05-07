@@ -33,6 +33,8 @@ import Aura.Settings.Base
 import Aura.Pacman
 import Aura.Flags
 
+import Aura.Packages.ABS (absTree)
+
 import Utilities (ifM2,nothing)
 import Shell
 
@@ -45,6 +47,7 @@ getSettings lang (auraFlags,input,pacOpts) = do
   pmanCommand <- getPacmanCmd environment $ noPowerPillStatus auraFlags
   makepkgConf <- readFile makepkgConfFile
   buildPath'  <- checkBuildPath (buildPath auraFlags) (getCachePath confFile)
+  tree        <- absTree
   let language = checkLang lang environment
   return Settings { inputOf         = input
                   , pacOptsOf       = pacOpts
@@ -58,6 +61,7 @@ getSettings lang (auraFlags,input,pacOpts) = do
                   , ignoredPkgsOf   = getIgnoredPkgs confFile ++
                                       ignoredAuraPkgs auraFlags
                   , wontBuildOf     = getBadPackages language
+                  , absTreeOf       = tree
                   , buildPathOf     = buildPath'
                   , cachePathOf     = getCachePath confFile
                   , logFilePathOf   = getLogFilePath confFile
@@ -68,7 +72,9 @@ getSettings lang (auraFlags,input,pacOpts) = do
                   , diffPkgbuilds   = pbDiffStatus auraFlags
                   , rebuildDevel    = rebuildDevelStatus auraFlags
                   , useCustomizepkg = customizepkgStatus auraFlags
-                  , noPowerPill     = noPowerPillStatus auraFlags }
+                  , noPowerPill     = noPowerPillStatus auraFlags
+                  , keepSource      = keepSourceStatus auraFlags
+                  , buildABSDeps    = buildABSDepsStatus auraFlags }
 
 debugOutput :: Settings -> IO ()
 debugOutput ss = do
@@ -94,7 +100,8 @@ debugOutput ss = do
                  , "Diff PKGBUILDs?   => " ++ yn (diffPkgbuilds ss)
                  , "Rebuild Devel?    => " ++ yn (rebuildDevel ss)
                  , "Use Customizepkg? => " ++ yn (useCustomizepkg ss)
-                 , "Forego PowerPill? => " ++ yn (noPowerPill ss) ]
+                 , "Forego PowerPill? => " ++ yn (noPowerPill ss)
+                 , "Keep source?      => " ++ yn (keepSource ss) ]
 
 checkLang :: Maybe Language -> Environment -> Language
 checkLang Nothing env   = langFromEnv $ getLangVar env

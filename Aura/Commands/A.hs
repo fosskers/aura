@@ -22,7 +22,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.Commands.A
-    ( installPackages
+    ( install
     , upgradeAURPkgs
     , aurPkgInfo
     , aurSearch
@@ -31,106 +31,66 @@ module Aura.Commands.A
     , displayPkgbuild ) where
 
 import Text.Regex.PCRE ((=~))
-import Control.Monad   (unless, liftM)
-import Data.List       ((\\), nub, nubBy, sort)
+
+import qualified Aura.Install as I
 
 import Aura.Pacman (pacman)
-import Aura.Pkgbuild.Records
-import Aura.Pkgbuild.Editing
+import Aura.Packages.Repository
 import Aura.Settings.Base
 import Aura.Dependencies
+import Aura.Packages.AUR
 import Aura.Colour.Text
 import Aura.Monad.Aura
 import Aura.Languages
-import Aura.Build
 import Aura.Utils
 import Aura.Core
-import Aura.AUR
 
 import Shell
 
 ---
 
-type PBHandler = [AURPkg] -> Aura [AURPkg]
+-- For now.
+buildHandle :: [String] -> BuildHandle
+buildHandle pacOpts =
+    BH { pkgLabel = "AUR"
+       , initialPF = filterAURPkgs
+       , mainPF    = filterAURPkgs
+       , subPF     = filterRepoPkgs
+       , subBuild  = \ps -> pacman (["-S","--asdeps"] ++ pacOpts ++ map pkgNameOf ps) }
 
--- | The user can handle PKGBUILDs in multiple ways.
--- `--hotedit` takes the highest priority.
-pbHandler :: Aura PBHandler
-pbHandler = ask >>= check
-    where check ss | mayHotEdit ss      = return hotEdit
-                   | useCustomizepkg ss = return customizepkg
-                   | otherwise          = return return
-
-installPackages :: [String] -> [String] -> Aura ()
-installPackages _ []         = return ()
-installPackages pacOpts pkgs = ask >>= \ss ->
-  if not $ delMakeDeps ss
-     then installPackages' pacOpts pkgs
-     else do  -- `-a` was used with `-A`.
-       orphansBefore <- getOrphans
-       installPackages' pacOpts pkgs
-       orphansAfter <- getOrphans
-       let makeDeps = orphansAfter \\ orphansBefore
-       unless (null makeDeps) $ notify removeMakeDepsAfter_1
-       removePkgs makeDeps pacOpts
-
-installPackages' :: [String] -> [String] -> Aura ()
-installPackages' pacOpts pkgs = ask >>= \ss -> do
-  let toInstall = pkgs \\ ignoredPkgsOf ss
-      ignored   = pkgs \\ toInstall
-  reportIgnoredPackages ignored
-  (_,aur,nons) <- knownBadPkgCheck toInstall >>= divideByPkgType ignoreRepos
-  reportNonPackages nons
-  handler <- pbHandler
-  aurPkgs <- mapM aurPkg aur >>= reportPkgbuildDiffs >>= handler
-  notify installPackages_5
-  (repoDeps,aurDeps) <- catch (getDepsToInstall aurPkgs) depCheckFailure
-  let repoPkgs    = nub repoDeps
-      pkgsAndOpts = pacOpts ++ repoPkgs
-  reportPkgsToInstall repoPkgs aurDeps aurPkgs
-  okay <- optionalPrompt installPackages_3
-  if not okay
-     then scoldAndFail installPackages_4
-     else do
-       unless (null repoPkgs) $ pacman (["-S","--asdeps"] ++ pkgsAndOpts)
-       storePkgbuilds $ aurPkgs ++ aurDeps
-       mapM_ (buildAndInstallDep handler pacOpts) aurDeps
-       buildPackages aurPkgs >>= installPkgFiles pacOpts
-
-knownBadPkgCheck :: [String] -> Aura [String]
-knownBadPkgCheck []     = return []
-knownBadPkgCheck (p:ps) = ask >>= \ss ->
-  case p `lookup` wontBuildOf ss of
-    Nothing -> (p :) `liftM` knownBadPkgCheck ps
-    Just r  -> do
-      scold $ knownBadPkgCheck_1 p
-      putStrLnA yellow r
-      okay <- optionalPrompt knownBadPkgCheck_2
-      if okay then (p :) `liftM` knownBadPkgCheck ps else knownBadPkgCheck ps
-
-depCheckFailure :: String -> Aura a
-depCheckFailure m = scold installPackages_1 >> failure m
-
-buildAndInstallDep :: PBHandler -> [String] -> AURPkg -> Aura ()
-buildAndInstallDep handler pacOpts pkg =
-  handler [pkg] >>= buildPackages >>=
-  installPkgFiles ("--asdeps" : pacOpts)
+install :: [String] -> [String] -> Aura ()
+install pacOpts pkgs = I.install b c (buildHandle pacOpts) pacOpts pkgs
+    where b = package  :: String -> Aura AURPkg
+          c = conflict :: Settings -> AURPkg -> Maybe ErrMsg
 
 upgradeAURPkgs :: [String] -> [String] -> Aura ()
 upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
   let notIgnored p = splitName p `notElem` ignoredPkgsOf ss
   notify upgradeAURPkgs_1
-  foreignPkgs <- filter (\(n,_) -> notIgnored n) `liftM` getForeignPackages
+  foreignPkgs <- filter (\(n,_) -> notIgnored n) `fmap` getForeignPackages
   pkgInfo     <- aurInfoLookup $ map fst foreignPkgs
   let aurPkgs   = filter (\(n,_) -> n `elem` map nameOf pkgInfo) foreignPkgs
       toUpgrade = filter isntMostRecent $ zip pkgInfo (map snd aurPkgs)
-  devel <- develPkgCheck
-  notify upgradeAURPkgs_2
-  if null toUpgrade && null devel
-     then warn upgradeAURPkgs_3
-     else reportPkgsToUpgrade $ map prettify toUpgrade ++ devel
-  installPackages pacOpts $ map (nameOf . fst) toUpgrade ++ pkgs ++ devel
-    where prettify (p,v) = nameOf p ++ " : " ++ v ++ " => " ++ latestVerOf p
+  auraFirst <- auraCheck $ map (nameOf . fst) toUpgrade
+  if auraFirst
+     then auraUpgrade pacOpts
+     else do
+       devel <- develPkgCheck
+       notify upgradeAURPkgs_2
+       if null toUpgrade && null devel
+          then warn upgradeAURPkgs_3
+          else reportPkgsToUpgrade $ map prettify toUpgrade ++ devel
+       install pacOpts $ map (nameOf . fst) toUpgrade ++ pkgs ++ devel
+           where prettify (p,v) = nameOf p ++ " : " ++ v ++ " => " ++ latestVerOf p
+
+auraCheck :: [String] -> Aura Bool
+auraCheck toUpgrade = do
+  if "aura" `elem` toUpgrade
+     then optionalPrompt auraCheck_1
+     else return False
+
+auraUpgrade :: [String] -> Aura ()
+auraUpgrade pacOpts = install pacOpts ["aura"]
 
 develPkgCheck :: Aura [String]
 develPkgCheck = ask >>= \ss ->
@@ -145,11 +105,12 @@ displayAurPkgInfo info = ask >>= \ss ->
 
 renderAurPkgInfo :: Settings -> PkgInfo -> String
 renderAurPkgInfo ss info = entrify ss fields entries
-    where fields  = map white . infoFields . langOf $ ss
+    where fields  = map bForeground . infoFields . langOf $ ss
           entries = [ magenta "aur"
-                    , white $ nameOf info
+                    , bForeground $ nameOf info
                     , latestVerOf info
                     , outOfDateMsg (isOutOfDate info) $ langOf ss
+                    , orphanedMsg (maintainerOf info) $ langOf ss
                     , cyan $ projectURLOf info
                     , aurURLOf info
                     , licenseOf info
@@ -176,13 +137,10 @@ renderSearch r i = repo ++ n ++ " " ++ v ++ " (" ++ l ++ ")\n    " ++ d
 displayPkgDeps :: [String] -> Aura ()
 displayPkgDeps []   = return ()
 displayPkgDeps pkgs = do
-  info    <- aurInfoLookup pkgs
-  aurPkgs <- mapM (aurPkg . nameOf) info
-  allDeps <- mapM determineDeps aurPkgs
-  let (ps,as,_) = foldl groupPkgs ([],[],[]) allDeps
-  reportPkgsToInstall (n ps) (nubBy sameName as) []
-    where n = nub . map splitName
-          sameName a b = pkgNameOf a == pkgNameOf b
+  aurPkgs <- aurInfoLookup pkgs >>= mapM (package . nameOf)
+  allDeps <- mapM (depCheck $ buildHandle []) aurPkgs
+  let (subs,mains,_) = groupPkgs allDeps :: ([RepoPkg],[AURPkg],[String])
+  I.reportPkgsToInstall (buildHandle []) subs mains ([] :: [AURPkg])
 
 downloadTarballs :: [String] -> Aura ()
 downloadTarballs pkgs = do
@@ -196,46 +154,15 @@ displayPkgbuild :: [String] -> Aura ()
 displayPkgbuild pkgs = filterAURPkgs pkgs >>= mapM_ dnload
       where dnload p = downloadPkgbuild p >>= liftIO . putStrLn
 
+isntMostRecent :: (PkgInfo,String) -> Bool
+isntMostRecent (info,v) = trueVer > currVer
+  where trueVer = comparableVer $ latestVerOf info
+        currVer = comparableVer v
+
 ------------
 -- REPORTING
 ------------
-reportPkgsToInstall :: [String] -> [AURPkg] -> [AURPkg] -> Aura ()
-reportPkgsToInstall pacPkgs aurDeps aurPkgs = do
-  lang <- langOf `liftM` ask
-  pl (reportPkgsToInstall_1 lang) (sort pacPkgs)
-  pl (reportPkgsToInstall_2 lang) (sort $ namesOf aurDeps)
-  pl (reportPkgsToInstall_3 lang) (sort $ namesOf aurPkgs)
-      where namesOf = map pkgNameOf
-            pl      = printList green cyan
-
-reportNonPackages :: [String] -> Aura ()
-reportNonPackages = badReport reportNonPackages_1
-
-reportIgnoredPackages :: [String] -> Aura ()
-reportIgnoredPackages pkgs = do
-  lang <- langOf `liftM` ask
-  printList yellow cyan (reportIgnoredPackages_1 lang) pkgs
-
-reportPkgbuildDiffs :: [AURPkg] -> Aura [AURPkg]
-reportPkgbuildDiffs [] = return []
-reportPkgbuildDiffs ps = ask >>= check
-    where check ss | not $ diffPkgbuilds ss = return ps
-                   | otherwise = mapM_ displayDiff ps >> return ps
-          displayDiff p = do
-            let name = pkgNameOf p
-            isStored <- hasPkgbuildStored name
-            if not isStored
-               then warn $ reportPkgbuildDiffs_1 name
-               else do
-                 let new = pkgbuildOf p
-                 old <- readPkgbuild name
-                 case comparePkgbuilds old new of
-                   "" -> notify $ reportPkgbuildDiffs_2 name
-                   d  -> do
-                      warn $ reportPkgbuildDiffs_3 name
-                      liftIO $ putStrLn $ d ++ "\n"
-
 reportPkgsToUpgrade :: [String] -> Aura ()
 reportPkgsToUpgrade pkgs = do
-  lang <- langOf `liftM` ask
+  lang <- langOf `fmap` ask
   printList green cyan (reportPkgsToUpgrade_1 lang) pkgs

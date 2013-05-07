@@ -21,15 +21,19 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Dependencies where
+module Aura.Dependencies
+  ( ignoreRepos
+  , divideByPkgType
+  , depCheck
+  , depsToInstall ) where
 
-import Text.Regex.PCRE ((=~))
 import Control.Monad   (filterM)
-import Data.Maybe      (fromJust, isNothing)
-import Data.List       (nub)
+import Data.Maybe      (fromJust, mapMaybe)
+import Data.List       ((\\), nub)
 
-import Aura.Pacman (pacmanOutput)
-import Aura.AUR    (trueVerViaPkgbuild)
+import Aura.Pacman        (pacmanOutput)
+import Aura.Packages.Repository
+import Aura.Packages.Virtual
 import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages
@@ -37,115 +41,68 @@ import Aura.Utils
 import Aura.Bash
 import Aura.Core
 
-import Utilities (notNull, tripleThrd)
+import Utilities (notNull)
 
 ---
 
--- Returns the deps to be installed, or fails nicely.
-getDepsToInstall :: [AURPkg] -> Aura ([String],[AURPkg])
-getDepsToInstall []   = ask >>= failure . getDepsToInstall_1 . langOf
-getDepsToInstall pkgs = ask >>= \ss -> do
-  allDeps <- mapM determineDeps pkgs
-  let (ps,as,vs) = foldl groupPkgs ([],[],[]) allDeps
-  necPacPkgs <- filterM mustInstall ps >>= mapM pacmanPkg
-  necAURPkgs <- filterM (mustInstall . show) as
-  necVirPkgs <- filterM mustInstall vs >>= mapM virtualPkg
-  let conflicts = getConflicts ss (necPacPkgs,necAURPkgs,necVirPkgs)
-  if notNull conflicts
-     then failure $ unlines conflicts
-     else do
-       let providers  = map (pkgNameOf . fromJust . providerPkgOf) necVirPkgs
-           pacmanPkgs = map pkgNameOf necPacPkgs
-       return (nub $ providers ++ pacmanPkgs, necAURPkgs)
+{- NOTE
 
--- Returns ([RepoPackages], [AURPackages], [VirtualPackages])
-determineDeps :: AURPkg -> Aura ([String],[AURPkg],[String])
-determineDeps pkg = do
+`Main Packages` are either AUR or ABS packages.
+`Sub Packages`  are either ABS or Repository packages.
+
+These can (or should) freely overlap.
+
+-}
+
+-- `PkgFilter` is in the Aura Monad, so this function must be too.
+divideByPkgType ::
+    PkgFilter -> PkgFilter -> [String] -> Aura ([String],[String],[String])
+divideByPkgType subPF' mainPF' pkgs = do
+  subPkgNames  <- subPF' namesOnly
+  mainPkgNames <- mainPF' $ namesOnly \\ subPkgNames
+  let mains  = filter (flip elem mainPkgNames . splitName) pkgs
+      subs   = filter (flip elem subPkgNames  . splitName) pkgs
+      others = (pkgs \\ mains) \\ subs
+  return (subs, mains, others)
+      where namesOnly = map splitName pkgs
+
+-- | Returns all dependencies to be installed, or fails nicely.
+depsToInstall :: (Package p, Buildable b) => (Settings -> p -> Maybe ErrMsg) ->
+                 BuildHandle -> [b] -> Aura ([p],[b])
+depsToInstall _ _ [] = ask >>= failure . getDepsToInstall_1 . langOf
+depsToInstall subConflict bh pkgs = ask >>= \ss -> do
+  (subs,mains,virts) <- groupPkgs `fmap` mapM (depCheck bh) pkgs
+  necSubPkgs  <- filterM (mustInstall . show) subs
+  necMainPkgs <- filterM (mustInstall . show) mains
+  necVirPkgs  <- filterM mustInstall virts >>= packages
+  let flicts = conflicts subConflict ss (necSubPkgs,necMainPkgs,necVirPkgs)
+  if notNull flicts
+     then failure $ unlines flicts
+     else do
+       let providers = map (pkgNameOf . fromJust . providerPkgOf) necVirPkgs
+       providers' <- packages $ (providers \\ map pkgNameOf necSubPkgs)
+       return (providers' ++ necSubPkgs, necMainPkgs)
+
+depCheck :: (Package p, Buildable b) => BuildHandle -> b -> Aura ([p],[b],[String])
+depCheck bh pkg = do
   let ns   = namespaceOf pkg
       deps = concatMap (value ns) ["depends","makedepends","checkdepends"]
-  (repoPkgNames,aurPkgNames,other) <- divideByPkgType filterRepoPkgs deps
-  aurPkgs       <- mapM aurPkg aurPkgNames
-  recursiveDeps <- mapM determineDeps aurPkgs
-  let (rs,as,os) = foldl groupPkgs (repoPkgNames,aurPkgs,other) recursiveDeps
-  return (nub rs, nub as, nub os)
+  (subNames,mainNames,other) <- divideByPkgType (subPF bh) (mainPF bh) deps
+  mainPkgs      <- packages mainNames
+  subPkgs       <- packages subNames
+  recursiveDeps <- mapM (depCheck bh) mainPkgs
+  let (ss,ms,os) = foldl groupPkgs' (subPkgs,mainPkgs,other) recursiveDeps
+  return (nub ss, nub ms, nub os)
 
--- If a package isn't installed, `pacman -T` will yield a single name.
+-- Moving to a libalpm backend will make this less hacked.
+-- | If a package isn't installed, `pacman -T` will yield a single name.
 -- Any other type of output means installation is not required. 
 mustInstall :: String -> Aura Bool
-mustInstall pkg = do
-  necessaryDeps <- pacmanOutput ["-T",pkg]
-  return $ length (words necessaryDeps) == 1
+mustInstall pkg = ((==) 1 . length . words) `fmap` pacmanOutput ["-T",pkg]
 
--- Questions to be answered in conflict checks:
--- 1. Is the package ignored in `pacman.conf`?
--- 2. Is the version requested different from the one provided by
---    the most recent version?
-getConflicts :: Settings -> ([PacmanPkg],[AURPkg],[VirtualPkg]) -> [ErrMsg]
-getConflicts settings (ps,as,vs) = rErr ++ aErr ++ vErr
-    where rErr     = extract $ map (getPacmanConflicts lang toIgnore) ps
-          aErr     = extract $ map (getAURConflicts lang toIgnore) as
-          vErr     = extract $ map (getVirtualConflicts lang toIgnore) vs
-          extract  = map fromJust . filter (/= Nothing)
-          lang     = langOf settings
-          toIgnore = ignoredPkgsOf settings
-
-getPacmanConflicts :: Language -> [String] -> PacmanPkg -> Maybe ErrMsg
-getPacmanConflicts = getRealPkgConflicts f
-    where f = getMostRecentVerNum . pkgInfoOf
-       
--- Takes `pacman -Si` output as input.
-getMostRecentVerNum :: String -> String
-getMostRecentVerNum info = tripleThrd match
-    where match     = thirdLine =~ ": " :: (String,String,String)
-          thirdLine = allLines !! 2  -- Version num is always the third line.
-          allLines  = lines info
-
-getAURConflicts :: Language -> [String] -> AURPkg -> Maybe ErrMsg
-getAURConflicts = getRealPkgConflicts f
-    where f = trueVerViaPkgbuild . namespaceOf
-
--- Must be called with a (f)unction that yields the version number
--- of the most up-to-date form of the package.
-getRealPkgConflicts :: Package a => (a -> String) -> Language -> [String] ->
-                       a -> Maybe ErrMsg
-getRealPkgConflicts f lang toIgnore pkg
-    | isIgnored (pkgNameOf pkg) toIgnore       = Just failMessage1
-    | isVersionConflict (versionOf pkg) curVer = Just failMessage2
-    | otherwise = Nothing    
-    where curVer       = f pkg
-          name         = pkgNameOf pkg
-          reqVer       = show $ versionOf pkg
-          failMessage1 = getRealPkgConflicts_2 name lang
-          failMessage2 = getRealPkgConflicts_1 name curVer reqVer lang
-
--- This can't be generalized as easily.
-getVirtualConflicts :: Language -> [String] -> VirtualPkg -> Maybe ErrMsg
-getVirtualConflicts lang toIgnore pkg
-    | isNothing (providerPkgOf pkg) = Just failMessage1
-    | isIgnored provider toIgnore   = Just failMessage2
-    | isVersionConflict (versionOf pkg) pVer = Just failMessage3
-    | otherwise = Nothing
-    where name         = pkgNameOf pkg
-          ver          = show $ versionOf pkg
-          provider     = pkgNameOf . fromJust . providerPkgOf $ pkg
-          pVer         = getProvidedVerNum pkg
-          failMessage1 = getVirtualConflicts_1 name lang
-          failMessage2 = getVirtualConflicts_2 name provider lang
-          failMessage3 = getVirtualConflicts_3 name ver provider pVer lang
-
-getProvidedVerNum :: VirtualPkg -> String
-getProvidedVerNum pkg = splitVer match
-    where match = info =~ ("[ ]" ++ pkgNameOf pkg ++ ">?=[0-9.]+")
-          info  = pkgInfoOf . fromJust . providerPkgOf $ pkg
-
--- Compares a (r)equested version number with a (c)urrent up-to-date one.
--- The `MustBe` case uses regexes. A dependency demanding version 7.4
--- SHOULD match as `okay` against version 7.4, 7.4.0.1, or even 7.4.0.1-2.
-isVersionConflict :: VersionDemand -> String -> Bool
-isVersionConflict Anything _     = False
-isVersionConflict (LessThan r) c = comparableVer c >= comparableVer r
-isVersionConflict (MoreThan r) c = comparableVer c <= comparableVer r
-isVersionConflict (MustBe r)   c = not $ c =~ ('^' : r)
-isVersionConflict (AtLeast r)  c | comparableVer c > comparableVer r = False
-                                 | isVersionConflict (MustBe r) c = True
-                                 | otherwise = False
+conflicts :: (Package p, Buildable b) => (Settings -> p -> Maybe ErrMsg) ->
+             Settings -> ([p],[b],[VirtualPkg]) -> [ErrMsg]
+conflicts subConflict ss (subs,mains,virts) = sErr ++ mErr ++ vErr
+    where sErr = mapMaybe (subConflict ss) subs
+          mErr = mapMaybe (conflict ss) mains
+          vErr = mapMaybe (conflict ss) virts

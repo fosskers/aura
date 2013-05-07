@@ -32,7 +32,6 @@ module Aura.Cache
     , SimplePkg ) where
 
 import qualified Data.Map.Lazy as M
-import Control.Monad (liftM)
 
 import Aura.Monad.Aura
 import Aura.Utils (pkgFileNameAndVer)
@@ -56,11 +55,11 @@ cache = M.fromList . map pair
 
 -- This takes the filepath of the package cache as an argument.
 rawCacheContents :: FilePath -> Aura [String]
-rawCacheContents c = filter dots `liftM` liftIO (ls c)
+rawCacheContents c = filter dots `fmap` liftIO (ls c)
     where dots p = p `notElem` [".",".."]
 
 cacheContents :: FilePath -> Aura Cache
-cacheContents c = cache `liftM` rawCacheContents c
+cacheContents c = cache `fmap` rawCacheContents c
 
 alterable :: Cache -> SimplePkg -> Bool
 alterable c p = M.member p c

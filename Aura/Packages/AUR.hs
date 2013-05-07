@@ -22,26 +22,57 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.AUR
-    ( aurInfoLookup
+module Aura.Packages.AUR
+    ( filterAURPkgs
+    , aurInfoLookup
     , aurSearchLookup
-    , trueVerViaPkgbuild
     , downloadPkgbuild
     , sourceTarball
-    , Pkgbuild
-    , PkgInfo(..) ) where
+    , PkgInfo(..)
+    , AURPkg(..) ) where
 
-import System.FilePath ((</>))
-import Control.Monad   (liftM)
-import Data.List       (intercalate)
+import Control.Applicative ((<$>), (<*>), pure)
+import System.FilePath     ((</>))
+import Data.List           (intercalate)
 import Text.JSON
 
+import Aura.Conflicts (buildableConflicts)
+import Aura.Utils     (scoldAndFail)
+import Aura.Bash      (namespace, Namespace)
 import Aura.Monad.Aura
 import Aura.Languages
-import Aura.Utils (scoldAndFail)
-import Aura.Bash  (value,Namespace)
+import Aura.Core
 
+import Utilities (decompress)
 import Internet
+
+---
+
+data AURPkg = AURPkg String VersionDemand Pkgbuild Namespace 
+
+instance Package AURPkg where
+  pkgNameOf (AURPkg n _ _ _) = n
+  versionOf (AURPkg _ v _ _) = v
+  conflict = buildableConflicts
+  package pkg = do
+      pkgbuild <- downloadPkgbuild name
+      AURPkg name ver pkgbuild `fmap` namespace name pkgbuild
+          where (name,ver) = parseNameAndVersionDemand pkg
+
+instance Buildable AURPkg where
+  pkgbuildOf  (AURPkg _ _ p _)  = p
+  namespaceOf (AURPkg _ _ _ ns) = ns
+  source p fp = sourceTarball fp (pkgNameOf p) >>= decompress
+  rewrap (AURPkg n v p _) ns = AURPkg n v p ns
+
+instance Show AURPkg where
+    show = pkgNameWithVersionDemand
+
+instance Eq AURPkg where
+    a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
+
+filterAURPkgs :: PkgFilter
+filterAURPkgs pkgs = map nameOf `fmap` aurInfoLookup pkgs
 
 -----------------------
 -- AUR API URL CREATION
@@ -76,12 +107,13 @@ rpcType t = ("type",tname)
 -- Extend this later as needed.
 data PkgInfo = PkgInfo { nameOf        :: String
                        , latestVerOf   :: String
-                       , isOutOfDate   :: Bool
                        , projectURLOf  :: String
                        , aurURLOf      :: String
                        , licenseOf     :: String
-                       , votesOf       :: Int
-                       , descriptionOf :: String } deriving (Eq,Show)
+                       , descriptionOf :: String
+                       , maintainerOf  :: Maybe String
+                       , isOutOfDate   :: Bool
+                       , votesOf       :: Int } deriving (Eq,Show)
 
 aurSearchLookup :: [String] -> Aura [PkgInfo]
 aurSearchLookup regex = getAURPkgInfo regex PkgSearch
@@ -103,32 +135,37 @@ parseInfoJSON json = decode json >>= apiFailCheck >>= forgePkgInfo
 
 apiFailCheck :: JSObject JSValue -> Result (JSObject JSValue)
 apiFailCheck json = do
-  isError <- (== "error") `liftM` valFromObj "type" json
+  isError <- (== "error") `fmap` valFromObj "type" json
   if isError then Error "AUR API lookup failed." else Ok json
 
--- Upgrade to AUR 2.0 changed several return types to Ints,
--- but Text.JSON parses them as Rationals.
+-- For some reason, if I forego the `maintainer` variable with:
+--   pure (resultToMaybe $ valFromObj "Maintainer" pkgJSON)
+-- it refuses to compile.
 pkgInfo :: JSObject JSValue -> Result PkgInfo
-pkgInfo pkgJSON = do
-  ur <- valFromObj "URL" pkgJSON
-  na <- valFromObj "Name" pkgJSON
-  ve <- valFromObj "Version" pkgJSON
-  li <- valFromObj "License" pkgJSON
-  vo <- fromJSRat `liftM` valFromObj "NumVotes" pkgJSON
-  de <- valFromObj "Description" pkgJSON
-  au <- (aurPkgUrl . fromJSRat) `liftM` valFromObj "ID" pkgJSON
-  ou <- ((/= 0) . fromJSRat) `liftM` valFromObj "OutOfDate" pkgJSON
-  return $ PkgInfo na ve ou ur au li vo de
+pkgInfo pkgJSON = PkgInfo
+                  <$> valFromObj "Name" pkgJSON
+                  <*> valFromObj "Version" pkgJSON
+                  <*> valFromObj "URL" pkgJSON
+                  <*> (aurPkgUrl . fromJSRat) `fmap` valFromObj "ID" pkgJSON
+                  <*> valFromObj "License" pkgJSON
+                  <*> valFromObj "Description" pkgJSON
+                  <*> pure maintainer
+                  <*> ((/= 0) . fromJSRat) `fmap` valFromObj "OutOfDate" pkgJSON
+                  <*> fromJSRat `fmap` valFromObj "NumVotes" pkgJSON
+    where maintainer = resultToMaybe $ valFromObj "Maintainer" pkgJSON
 
 fromJSRat :: JSValue -> Int
 fromJSRat (JSRational _ r) = round (fromRational r :: Float)
 fromJSRat _                = error "JSValue given was not a JSRational!"
 
-------------
--- PKGBUILDS
-------------
-type Pkgbuild = String
+-- | A companion to the provided `resultToEither` function.
+resultToMaybe :: Result a -> Maybe a
+resultToMaybe (Ok a) = Just a
+resultToMaybe _      = Nothing
 
+----------------
+-- AUR PKGBUILDS
+----------------
 aurLink :: String
 aurLink = "https://aur.archlinux.org/packages/"
 
@@ -141,16 +178,13 @@ pkgbuildUrl pkg = pkgBaseUrl pkg </> "PKGBUILD"
 downloadPkgbuild :: String -> Aura Pkgbuild
 downloadPkgbuild = liftIO . urlContents . pkgbuildUrl
 
-trueVerViaPkgbuild :: Namespace -> String
-trueVerViaPkgbuild ns = pkgver ++ "-" ++ pkgrel
-    where pkgver = head $ value ns "pkgver"
-          pkgrel = head $ value ns "pkgrel"
-
 ------------------
 -- SOURCE TARBALLS
 ------------------
 tarballUrl :: String -> String
 tarballUrl pkg = pkgBaseUrl pkg </> pkg ++ ".tar.gz"
 
-sourceTarball :: FilePath -> String -> IO FilePath
+sourceTarball :: FilePath    -- ^ Where to save the tarball.
+              -> String      -- ^ Package name.
+              -> IO FilePath -- ^ Saved tarball location.
 sourceTarball path = saveUrlContents path . tarballUrl

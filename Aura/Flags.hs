@@ -19,7 +19,28 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Flags where
+module Aura.Flags
+    ( parseLanguageFlag
+    , parseFlags 
+    , settingsFlags
+    , reconvertFlags
+    , dualFlagMap
+    , hijackedFlagMap
+    , suppressionStatus
+    , delMakeDepsStatus
+    , confirmationStatus
+    , hotEditStatus
+    , pbDiffStatus
+    , rebuildDevelStatus
+    , customizepkgStatus
+    , filterSettingsFlags
+    , ignoredAuraPkgs
+    , buildPath
+    , auraOperMsg
+    , noPowerPillStatus
+    , keepSourceStatus
+    , buildABSDepsStatus
+    , Flag(..) ) where
 
 import System.Console.GetOpt
 import Data.Maybe (fromMaybe)
@@ -33,7 +54,8 @@ import Utilities (notNull, split)
 
 type FlagMap = [(Flag,String)]
 
-data Flag = AURInstall
+data Flag = ABSInstall
+          | AURInstall
           | SaveState
           | Cache
           | LogFile
@@ -54,6 +76,8 @@ data Flag = AURInstall
           | DiffPkgbuilds
           | Devel
           | Customizepkg
+          | KeepSource
+          | BuildABSDeps
           | Debug
           | CacheBackup
           | Clean
@@ -92,6 +116,7 @@ auraOperations lang =
     , Option ['B'] ["save"]      (NoArg SaveState)  (saveS lang)
     , Option ['C'] ["downgrade"] (NoArg Cache)      (downG lang)
     , Option ['L'] ["viewlog"]   (NoArg LogFile)    (viewL lang)
+    , Option ['M'] ["abssync"]   (NoArg ABSInstall) (absSy lang)
     , Option ['O'] ["orphans"]   (NoArg Orphans)    (orpha lang) ]
 
 auraOptions :: [OptDescr Flag]
@@ -111,6 +136,8 @@ auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
               , ( ['u'], ["sysupgrade"],   Upgrade       )
               , ( ['w'], ["downloadonly"], Download      )
               , ( ['x'], ["unsuppress"],   Unsuppress    )
+              , ( [],    ["absdeps"],      BuildABSDeps  )
+              , ( [],    ["allsource"],    KeepSource    )
               , ( [],    ["auradebug"],    Debug         )
               , ( [],    ["custom"],       Customizepkg  )
               , ( [],    ["devel"],        Devel         )
@@ -173,7 +200,7 @@ reconvertFlag flagMap f = fromMaybe "" $ f `lookup` flagMap
 
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
-                , DelMDeps,Customizepkg,NoPowerPill ]
+                , DelMDeps,Customizepkg,NoPowerPill,KeepSource,BuildABSDeps ]
 
 filterSettingsFlags :: [Flag] -> [Flag]
 filterSettingsFlags []                 = []
@@ -210,29 +237,16 @@ buildPath [] = ""
 buildPath (BuildPath p : _) = p
 buildPath (_:fs) = buildPath fs
 
-suppressionStatus :: [Flag] -> Bool
-suppressionStatus = fishOutFlag [(Unsuppress,False)] True
-
-delMakeDepsStatus :: [Flag] -> Bool
-delMakeDepsStatus = fishOutFlag [(DelMDeps,True)] False
-
-confirmationStatus :: [Flag] -> Bool
+suppressionStatus  = fishOutFlag [(Unsuppress,False)] True
+delMakeDepsStatus  = fishOutFlag [(DelMDeps,True)] False
 confirmationStatus = fishOutFlag [(NoConfirm,False)] True
-
-hotEditStatus :: [Flag] -> Bool
-hotEditStatus = fishOutFlag [(HotEdit,True)] False
-
-pbDiffStatus :: [Flag] -> Bool
-pbDiffStatus = fishOutFlag [(DiffPkgbuilds,True)] False
-
-rebuildDevelStatus :: [Flag] -> Bool
+hotEditStatus      = fishOutFlag [(HotEdit,True)] False
+pbDiffStatus       = fishOutFlag [(DiffPkgbuilds,True)] False
 rebuildDevelStatus = fishOutFlag [(Devel,True)] False
-
-customizepkgStatus :: [Flag] -> Bool
 customizepkgStatus = fishOutFlag [(Customizepkg,True)] False
-
-noPowerPillStatus :: [Flag] -> Bool
-noPowerPillStatus = fishOutFlag [(NoPowerPill,True)] False
+noPowerPillStatus  = fishOutFlag [(NoPowerPill,True)] False
+keepSourceStatus   = fishOutFlag [(KeepSource,True)] False
+buildABSDepsStatus = fishOutFlag [(BuildABSDeps,True)] False
 
 parseLanguageFlag :: [String] -> (Maybe Language,[String])
 parseLanguageFlag args =

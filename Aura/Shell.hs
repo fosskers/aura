@@ -29,7 +29,6 @@ module Aura.Shell
     , checkExitCode' ) where
 
 import System.Exit (ExitCode)
-import Control.Monad (liftM)
 
 import Aura.Monad.Aura
 
@@ -43,7 +42,7 @@ shellCmd :: String -> [String] -> Aura ()
 shellCmd cmd args = liftIO (S.shellCmd cmd args) >>= checkExitCode
 
 quietShellCmd :: String -> [String] -> Aura String
-quietShellCmd cmd args = tripleSnd `liftM` liftIO (S.quietShellCmd' cmd args)
+quietShellCmd cmd args = tripleSnd `fmap` liftIO (S.quietShellCmd' cmd args)
 
 -- More verbose return type.
 quietShellCmd' :: String -> [String] -> Aura (ExitCode,String,String)

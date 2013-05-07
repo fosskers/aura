@@ -1,22 +1,23 @@
 # Maintainer: Colin Woodbury <colingw@gmail.com>
 _hkgname=aura
 pkgname=aura
-pkgver=1.1.6.3
+pkgver=1.2.0.0
 pkgrel=1
 pkgdesc="A secure package manager for Arch Linux and the AUR written in Haskell."
 url="https://github.com/fosskers/aura"
 license=('GPL-3')
 arch=('i686' 'x86_64')
-depends=('gmp' 'pacman' 'pcre' 'curl')
+depends=('gmp' 'pacman' 'pcre' 'curl' 'abs')
 makedepends=('ghc' 'haskell-regex-base' 'haskell-regex-pcre' 'haskell-curl'
-             'haskell-json' 'haskell-mtl' 'haskell-parsec' 'haskell-transformers')
+             'haskell-json' 'haskell-mtl' 'haskell-parsec' 'haskell-transformers'
+             'haskell-temporary')
 optdepends=('powerpill:    For faster repository downloads.'
             'customizepkg: For auto-editing of PKGBUILDs.')
 provides=('aura')
-conflicts=('aura-git')
+conflicts=('aura-git' 'aura-bin')
 options=('strip')
 source=(https://bitbucket.org/fosskers/aura/downloads/${_hkgname}-${pkgver}.tar.gz)
-md5sums=('b7b85f7bed7d0d93ef8a975a0cffe517')
+md5sums=('fa11364029a54b1b98ece0e50f09c6b2')
 
 build() {
     cd ${srcdir}/${_hkgname}-${pkgver}
@@ -42,6 +43,9 @@ package() {
 
     # Directory for storing PKGBUILDs
     mkdir -p "$pkgdir/var/cache/aura/pkgbuilds"
+
+    # Directory for storing source packages
+    mkdir -p "$pkgdir/var/cache/aura/src"
 
     # Directory for storing installed package states
     mkdir -p "$pkgdir/var/cache/aura/states"

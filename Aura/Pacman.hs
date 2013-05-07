@@ -28,7 +28,6 @@ module Aura.Pacman where
 
 import System.Directory (doesFileExist)
 import Text.Regex.PCRE  ((=~))
-import Control.Monad    (liftM)
 import System.IO        (hFlush, stdout)
 
 import Aura.Settings.Base (pacmanCmdOf)
@@ -99,13 +98,13 @@ getLogFilePath confFile = singleEntry confFile "LogFile" defaultLogFile
 ----------
 pacman :: [ShellArg] -> Aura ()
 pacman args = do
-  cmd <- pacmanCmdOf `liftM` ask
+  cmd <- pacmanCmdOf `fmap` ask
   liftIO (hFlush stdout)
   shellCmd cmd args
 
 -- Did a pacman process succeed?
 pacmanSuccess :: [ShellArg] -> Aura Bool
-pacmanSuccess args = success `liftM` quietShellCmd' "pacman" args
+pacmanSuccess args = success `fmap` quietShellCmd' "pacman" args
     where success = didProcessSucceed . tripleFst
 
 -- Handler for pacman call failures.
@@ -120,11 +119,11 @@ syncDatabase :: [ShellArg] -> Aura ()
 syncDatabase pacOpts = pacman $ ["-Sy"] ++ pacOpts
 
 getPacmanHelpMsg :: Aura [String]
-getPacmanHelpMsg = lines `liftM` pacmanOutput ["-h"]
+getPacmanHelpMsg = lines `fmap` pacmanOutput ["-h"]
 
 -- Yields the lines given by `pacman -V` with the pacman image stripped.
 getVersionInfo :: Aura [String]
-getVersionInfo = (map (drop verMsgPad) . lines) `liftM` pacmanOutput ["-V"]
+getVersionInfo = (map (drop verMsgPad) . lines) `fmap` pacmanOutput ["-V"]
 
 -- The amount of whitespace before text in the lines given by `pacman -V`
 verMsgPad :: Int

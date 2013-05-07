@@ -1,8 +1,11 @@
-module Aura.Settings.Test ( sampleSettings ) where
+module Aura.Settings.SettingsTest
+    ( sampleSettings
+    , runAura ) where
 
 import Aura.Settings.Base
 import Aura.Colour.Text
 import Aura.Languages
+import Aura.Monad.Aura (runAura)
 
 ---
 
@@ -17,6 +20,7 @@ sampleSettings = Settings { environmentOf = undefined
                           , otherOptsOf   = []
                           , ignoredPkgsOf = []
                           , wontBuildOf   = []
+                          , absTreeOf     = []
                           , buildPathOf   = "/var/cache/pacman/pkg"
                           , cachePathOf   = "/var/cache/pacman/pkg"
                           , logFilePathOf = "/var/log/pacman.log"
@@ -27,4 +31,6 @@ sampleSettings = Settings { environmentOf = undefined
                           , diffPkgbuilds = False
                           , rebuildDevel  = False
                           , useCustomizepkg = False
-                          , noPowerPill   = False }
+                          , noPowerPill   = False
+                          , keepSource    = False
+                          , buildABSDeps  = False }

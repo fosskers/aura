@@ -27,7 +27,6 @@ module Aura.Bash
     , Namespace ) where
 
 import Text.Parsec.Error (ParseError)
-import Control.Monad (liftM)
 import Data.Maybe    (fromMaybe)
 
 import Aura.Settings.Base
@@ -41,7 +40,7 @@ import Bash.Base
 
 namespace :: String -> String -> Aura Namespace
 namespace pn pb = do
-  carch <- ((: []) . NoQuote . carchOf) `liftM` ask
+  carch <- ((: []) . NoQuote . carchOf) `fmap` ask
   case namespace' carch pn pb of
     Left e   -> liftIO (print e) >> failure "PKGBUILD parse failed."
     Right ns -> return ns
