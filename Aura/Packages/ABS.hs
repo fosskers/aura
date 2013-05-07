@@ -29,6 +29,7 @@ module Aura.Packages.ABS
     ( ABSPkg
     , absSync
     , absTree
+    , absBasePath
     , filterABSPkgs
     , repoOf
     , treeSearch ) where
@@ -156,8 +157,8 @@ treeSearch pattern = absTreeOf `fmap` ask >>= \tree -> do
 -- | Sync only the parts of the ABS tree which already exists on the system.
 absSync :: Aura ()
 absSync = ifM3 (optionalPrompt absSync_1) $ do
-            notify absSync_2
-            (flatABSTree . absTreeOf) `fmap` ask >>= A.shellCmd "abs"
+  notify absSync_2
+  (flatABSTree . absTreeOf) `fmap` ask >>= A.shellCmd "abs"
 
 singleSync :: String -> Aura ()
 singleSync p = notify (singleSync_1 p) >> A.shellCmd "abs" [p]

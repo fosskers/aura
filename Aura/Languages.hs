@@ -1025,6 +1025,18 @@ reportNotInLog_1 Russian    = "Следующих пакетов нет в ло�
 reportNotInLog_1 Italian    = "Questo non apparirà nei file di log;"
 reportNotInLog_1 Serbian    = "Ови пакети се не спомињу у дневнику:"
 
+----------------------------
+-- Aura/Commands/M functions
+----------------------------
+-- NEEDS TRANSLATION
+cleanABSTree_1 :: Language -> String
+cleanABSTree_1 Japanese = "ABS Treeの中身を削除？"
+cleanABSTree_1 _        = "Delete the entire ABS Tree?"
+
+cleanABSTree_2 :: Language -> String
+cleanABSTree_2 Japanese = "ABS Treeの中身を削除中・・・"
+cleanABSTree_2 _        = "Clearing out ABS Tree..."
+
 ----------------------
 -- Aura/Flags functions
 ----------------------

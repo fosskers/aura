@@ -45,10 +45,12 @@ module Aura.Commands.M
     , absInfo
     , absSearch
     , absSync
+    , cleanABSTree
     , displayPkgbuild
     , displayPkgDeps ) where
 
-import Text.Regex.PCRE ((=~))
+import System.Directory (removeDirectoryRecursive)
+import Text.Regex.PCRE  ((=~))
 
 import qualified Aura.Install as I
 
@@ -65,6 +67,8 @@ import Aura.Utils
 import Aura.Bash
 import Aura.Core
 
+import Utilities (ifM3)
+
 ---
 
 -- | All repo dependencies will be installed via pacman.
@@ -76,9 +80,9 @@ defaultHandle pacOpts =
 
 -- | All repo dependencies will be built manually.
 manualHandle :: [String] -> BuildHandle
-manualHandle pacOpts = BH { mainPF   = filterABSPkgs
-                          , subPF    = \_  -> return []
-                          , subBuild = \_  -> return () }
+manualHandle _ = BH { mainPF   = filterABSPkgs
+                    , subPF    = \_  -> return []
+                    , subBuild = \_  -> return () }
 
 -- | Install packages, managing dependencies.
 -- We force the types on some polymorphic functions here.
@@ -97,6 +101,11 @@ absInfo pkgs = packages pkgs >>= mapM_ displayAbsPkgInfo
 absSearch :: [String] -> Aura ()
 absSearch pat = treeSearch pat' >>= mapM_ (liftIO . putStrLn . renderSearch pat')
     where pat' = unwords pat
+
+cleanABSTree :: Aura ()
+cleanABSTree = ifM3 (optionalPrompt cleanABSTree_1) $ do
+  warn cleanABSTree_2
+  liftIO $ removeDirectoryRecursive absBasePath
 
 displayPkgbuild :: [String] -> Aura ()
 displayPkgbuild pkgs =
