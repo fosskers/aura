@@ -428,6 +428,10 @@ displayOutputLanguages_1 Serbian    = "Доступни су следећи је
 ----------------------------
 -- Aura/Commands/A functions
 ----------------------------
+auraCheck_1 :: Language -> String
+auraCheck_1 Japanese = "Auraアップグレードあり。先にAuraだけを？"
+auraCheck_1 _        = "Aura update available. Update it first?"
+
 install_1 :: Language -> String
 install_1 English    = "Dependency checking failed for these reasons:"
 install_1 Japanese   = "従属パッケージの確認は以下の理由で失敗した："

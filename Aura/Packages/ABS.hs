@@ -52,7 +52,7 @@ import Aura.Languages
 import Aura.Bash
 import Aura.Core
 
-import Utilities (readFileUTF8, ifM3)
+import Utilities (readFileUTF8, whenM)
 import Shell     (ls', ls'')
 
 import qualified Aura.Shell as A (shellCmd)
@@ -156,7 +156,7 @@ treeSearch pattern = absTreeOf `fmap` ask >>= \tree -> do
 -- Should this tell the user how many packages they'll be syncing?
 -- | Sync only the parts of the ABS tree which already exists on the system.
 absSync :: Aura ()
-absSync = ifM3 (optionalPrompt absSync_1) $ do
+absSync = whenM (optionalPrompt absSync_1) $ do
   notify absSync_2
   (flatABSTree . absTreeOf) `fmap` ask >>= A.shellCmd "abs"
 

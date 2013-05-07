@@ -70,13 +70,26 @@ upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
   pkgInfo     <- aurInfoLookup $ map fst foreignPkgs
   let aurPkgs   = filter (\(n,_) -> n `elem` map nameOf pkgInfo) foreignPkgs
       toUpgrade = filter isntMostRecent $ zip pkgInfo (map snd aurPkgs)
-  devel <- develPkgCheck
-  notify upgradeAURPkgs_2
-  if null toUpgrade && null devel
-     then warn upgradeAURPkgs_3
-     else reportPkgsToUpgrade $ map prettify toUpgrade ++ devel
-  install pacOpts $ map (nameOf . fst) toUpgrade ++ pkgs ++ devel
-    where prettify (p,v) = nameOf p ++ " : " ++ v ++ " => " ++ latestVerOf p
+  auraFirst <- auraCheck $ map (nameOf . fst) toUpgrade
+  if auraFirst
+     then auraUpgrade pacOpts
+     else do
+       devel <- develPkgCheck
+       notify upgradeAURPkgs_2
+       if null toUpgrade && null devel
+          then warn upgradeAURPkgs_3
+          else reportPkgsToUpgrade $ map prettify toUpgrade ++ devel
+       install pacOpts $ map (nameOf . fst) toUpgrade ++ pkgs ++ devel
+           where prettify (p,v) = nameOf p ++ " : " ++ v ++ " => " ++ latestVerOf p
+
+auraCheck :: [String] -> Aura Bool
+auraCheck toUpgrade = do
+  if "aura" `elem` toUpgrade
+     then optionalPrompt auraCheck_1
+     else return False
+
+auraUpgrade :: [String] -> Aura ()
+auraUpgrade pacOpts = install pacOpts ["aura"]
 
 develPkgCheck :: Aura [String]
 develPkgCheck = ask >>= \ss ->

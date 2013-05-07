@@ -167,8 +167,9 @@ ifM2 cond a1 a2 x1 x2 = do
   success <- cond
   if success then a1 x1 else a2 >> return x2
 
-ifM3 :: Monad m => m Bool -> m () -> m ()
-ifM3 cond a = do
+-- | Like `when`, but with a Monadic condition.
+whenM :: Monad m => m Bool -> m () -> m ()
+whenM cond a = do
   success <- cond
   if success then a else nothing
 

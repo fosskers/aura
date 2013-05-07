@@ -67,7 +67,7 @@ import Aura.Utils
 import Aura.Bash
 import Aura.Core
 
-import Utilities (ifM3)
+import Utilities (whenM)
 
 ---
 
@@ -105,7 +105,7 @@ absSearch pat = treeSearch pat' >>= mapM_ (liftIO . putStrLn . renderSearch pat'
     where pat' = unwords pat
 
 cleanABSTree :: Aura ()
-cleanABSTree = ifM3 (optionalPrompt cleanABSTree_1) $ do
+cleanABSTree = whenM (optionalPrompt cleanABSTree_1) $ do
   warn cleanABSTree_2
   liftIO $ removeDirectoryRecursive absBasePath
 
