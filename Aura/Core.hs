@@ -56,10 +56,11 @@ data VersionDemand = LessThan String
                      deriving (Eq)
 
 -- These functions names could use changing.
-data BuildHandle = BH { pkgLabel    :: String
-                      , mainPF      :: PkgFilter
-                      , subPF       :: PkgFilter
-                      , subBuild    :: Package p => [p] -> Aura () }
+data BuildHandle = BH { pkgLabel  :: String
+                      , initialPF :: PkgFilter 
+                      , mainPF    :: PkgFilter
+                      , subPF     :: PkgFilter
+                      , subBuild  :: Package p => [p] -> Aura () }
 
 ----------------
 -- Package Class

@@ -53,9 +53,10 @@ import Shell
 buildHandle :: [String] -> BuildHandle
 buildHandle pacOpts =
     BH { pkgLabel = "AUR"
-       , mainPF   = filterAURPkgs
-       , subPF    = filterRepoPkgs
-       , subBuild = \ps -> pacman (["-S","--asdeps"] ++ pacOpts ++ map pkgNameOf ps) }
+       , initialPF = filterAURPkgs
+       , mainPF    = filterAURPkgs
+       , subPF     = filterRepoPkgs
+       , subBuild  = \ps -> pacman (["-S","--asdeps"] ++ pacOpts ++ map pkgNameOf ps) }
 
 install :: [String] -> [String] -> Aura ()
 install pacOpts pkgs = I.install b c (buildHandle pacOpts) pacOpts pkgs

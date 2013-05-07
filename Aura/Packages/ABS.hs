@@ -39,7 +39,7 @@ import qualified Data.Set as S
 import System.Directory (doesDirectoryExist)
 import System.FilePath  ((</>), takeBaseName)
 import Text.Regex.PCRE  ((=~))
-import Control.Monad    (filterM)
+import Control.Monad    (filterM, void)
 import Data.Maybe       (fromJust)
 
 import Aura.Packages.Repository (filterRepoPkgs)
@@ -55,7 +55,7 @@ import Aura.Core
 import Utilities (readFileUTF8, whenM)
 import Shell     (ls', ls'')
 
-import qualified Aura.Shell as A (shellCmd)
+import qualified Aura.Shell as A (quietShellCmd, shellCmd)
 import qualified Shell      as S (quietShellCmd)
 
 ---
@@ -161,7 +161,7 @@ absSync = whenM (optionalPrompt absSync_1) $ do
   (flatABSTree . absTreeOf) `fmap` ask >>= A.shellCmd "abs"
 
 singleSync :: String -> Aura ()
-singleSync p = notify (singleSync_1 p) >> A.shellCmd "abs" [p]
+singleSync p = notify (singleSync_1 p) >> void (A.quietShellCmd "abs" [p])
 
 filterABSPkgs :: PkgFilter
 filterABSPkgs = filterRepoPkgs

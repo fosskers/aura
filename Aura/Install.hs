@@ -66,7 +66,7 @@ install custom subConflict bh pacOpts pkgs = ask >>= \ss ->
 install' custom subConflict bh pacOpts pkgs = ask >>= \ss -> do
   let toInstall = pkgs \\ ignoredPkgsOf ss
       ignored   = pkgs \\ toInstall
-      mainPkgs  = mainPF bh
+      mainPkgs  = initialPF bh
   reportIgnoredPackages ignored
   (_,okay,nons) <- badPkgCheck toInstall >>= divideByPkgType ignoreRepos mainPkgs
   reportNonPackages nons

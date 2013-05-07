@@ -49,7 +49,7 @@ module Aura.Commands.M
     , displayPkgbuild
     , displayPkgDeps ) where
 
-import System.Directory (removeDirectoryRecursive)
+import System.Directory (removeDirectoryRecursive, createDirectory)
 import Text.Regex.PCRE  ((=~))
 
 import qualified Aura.Install as I
@@ -75,16 +75,18 @@ import Utilities (whenM)
 defaultHandle :: [String] -> BuildHandle
 defaultHandle pacOpts =
     BH { pkgLabel = "ABS"
-       , mainPF   = \_ -> return []
-       , subPF    = filterRepoPkgs
-       , subBuild = \ps -> pacman (["-S","--asdeps"] ++ pacOpts ++ map pkgNameOf ps) }
+       , initialPF = filterABSPkgs
+       , mainPF    = \_ -> return []
+       , subPF     = filterRepoPkgs
+       , subBuild  = \ps -> pacman (["-S","--asdeps"] ++ pacOpts ++ map pkgNameOf ps) }
 
 -- | All repo dependencies will be built manually.
 manualHandle :: [String] -> BuildHandle
 manualHandle _ = BH { pkgLabel = "ABS"
-                    , mainPF   = filterABSPkgs
-                    , subPF    = \_  -> return []
-                    , subBuild = \_  -> return () }
+                    , initialPF = filterABSPkgs
+                    , mainPF    = filterABSPkgs
+                    , subPF     = \_  -> return []
+                    , subBuild  = \_  -> return () }
 
 -- | Install packages, managing dependencies.
 -- We force the types on some polymorphic functions here.
@@ -108,6 +110,7 @@ cleanABSTree :: Aura ()
 cleanABSTree = whenM (optionalPrompt cleanABSTree_1) $ do
   warn cleanABSTree_2
   liftIO $ removeDirectoryRecursive absBasePath
+  liftIO $ createDirectory absBasePath
 
 displayPkgbuild :: [String] -> Aura ()
 displayPkgbuild pkgs =
