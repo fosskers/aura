@@ -52,7 +52,8 @@ import Shell
 -- For now.
 buildHandle :: [String] -> BuildHandle
 buildHandle pacOpts =
-    BH { mainPF   = filterAURPkgs
+    BH { pkgLabel = "AUR"
+       , mainPF   = filterAURPkgs
        , subPF    = filterRepoPkgs
        , subBuild = \ps -> pacman (["-S","--asdeps"] ++ pacOpts ++ map pkgNameOf ps) }
 
@@ -125,7 +126,7 @@ displayPkgDeps pkgs = do
   aurPkgs <- aurInfoLookup pkgs >>= mapM (package . nameOf)
   allDeps <- mapM (depCheck $ buildHandle []) aurPkgs
   let (subs,mains,_) = groupPkgs allDeps :: ([RepoPkg],[AURPkg],[String])
-  I.reportPkgsToInstall subs mains ([] :: [AURPkg])
+  I.reportPkgsToInstall (buildHandle []) subs mains ([] :: [AURPkg])
 
 downloadTarballs :: [String] -> Aura ()
 downloadTarballs pkgs = do

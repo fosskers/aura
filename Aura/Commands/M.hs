@@ -74,13 +74,15 @@ import Utilities (ifM3)
 -- | All repo dependencies will be installed via pacman.
 defaultHandle :: [String] -> BuildHandle
 defaultHandle pacOpts =
-    BH { mainPF   = \_ -> return []
+    BH { pkgLabel = "ABS"
+       , mainPF   = \_ -> return []
        , subPF    = filterRepoPkgs
        , subBuild = \ps -> pacman (["-S","--asdeps"] ++ pacOpts ++ map pkgNameOf ps) }
 
 -- | All repo dependencies will be built manually.
 manualHandle :: [String] -> BuildHandle
-manualHandle _ = BH { mainPF   = filterABSPkgs
+manualHandle _ = BH { pkgLabel = "ABS"
+                    , mainPF   = filterABSPkgs
                     , subPF    = \_  -> return []
                     , subBuild = \_  -> return () }
 
@@ -116,7 +118,7 @@ displayPkgDeps []   = return ()
 displayPkgDeps pkgs = do
   deps <- packages pkgs >>= mapM (depCheck $ defaultHandle [])
   let (subs,mains,_) = groupPkgs deps :: ([RepoPkg],[ABSPkg],[String])
-  I.reportPkgsToInstall subs mains ([] :: [ABSPkg])
+  I.reportPkgsToInstall (defaultHandle []) subs mains ([] :: [ABSPkg])
 
 displayAbsPkgInfo :: ABSPkg -> Aura ()
 displayAbsPkgInfo pkg = ask >>= liftIO . putStrLn . renderPkgInfo pkg
