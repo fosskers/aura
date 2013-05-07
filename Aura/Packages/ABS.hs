@@ -36,7 +36,7 @@ module Aura.Packages.ABS
 
 import qualified Data.Set as S
 
-import System.Directory (doesDirectoryExist)
+import System.Directory (doesDirectoryExist, doesFileExist)
 import System.FilePath  ((</>), takeBaseName)
 import Text.Regex.PCRE  ((=~))
 import Control.Monad    (filterM, void)
@@ -70,7 +70,7 @@ instance Package ABSPkg where
   versionOf (ABSPkg _ _ v _ _) = v
   conflict = buildableConflicts
   package pkg = do
-      repo     <- repository pkg
+      repo     <- repository name
       pkgbuild <- liftIO $ readFileUTF8 (pkgbuildPath repo name)
       ABSPkg name repo ver pkgbuild `fmap` namespace name pkgbuild
       where (name,ver) = parseNameAndVersionDemand pkg
@@ -109,6 +109,9 @@ inTree tree p = case repository' tree p of
                   Nothing -> False
                   Just _  -> True
 
+inTree' :: String -> IO Bool
+inTree' p = doesFileExist $ absBasePath </> p
+
 -- This is pretty ugly.
 -- | The repository a package _should_ belong to.
 -- Fails if the package is not in any repository.
@@ -123,8 +126,13 @@ repository p = absTreeOf `fmap` ask >>= \tree ->
          _  -> do
            let pat = "Repository[ ]+: "
                (_,_,repo) = (head $ lines i) =~ pat :: (String,String,String)
-           singleSync $ repo </> p
-           return repo
+               fullName   = repo </> p
+           present <- liftIO (inTree' fullName)
+           if present
+              then return repo
+              else do
+                singleSync fullName
+                return repo
 
 -- | The repository a package belongs to.
 repository' :: ABSTree -> String -> Maybe String
