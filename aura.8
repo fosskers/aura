@@ -52,6 +52,12 @@ Perform actions involving the pacman [L]ogfile.
 Default action opens the log for read-only viewing.
 .RE
 .P
+\fB\-M\fR, \-\-abssync
+.RS 4
+Perform actions involving the ABS Tree.
+Allows you to [M]anually build repository packages.
+.RE
+.P
 \fB\-O\fR, \-\-orphans [package(s)]
 .RS 4
 Perform actions involving [O]rphan packages. Orphan packages are packages
@@ -295,6 +301,19 @@ whenever you want with \fI\-C\fR.
 3. When upgrading, use \fI\-Akua\fR instead of just \fI\-Au\fR.
 This will remove make deps, as well as show PKGBUILD diffs before
 building.
+.P
+4. If you want to search both the Repos and the AUR at the same time,
+you can use the following shell functions:
+.RS 4
+Bash => function search() {
+          aura -Ss $1 && aura -As $1
+        }
+
+Fish => function search
+          aura -Ss $argv
+          aura -As $argv
+        end
+.RE
 
 .SH SEE ALSO
 .P
@@ -308,28 +327,32 @@ to upgrade them. If a name collision occurs (that is, if there is
 a legitimate AUR package with the same name as the one you installed)
 previous installations could be overwritten. 
 
-.SH AUTHORS
+.SH AUTHOR
 .P
 Colin Woodbury <colingw@gmail.com>
 
+.SH CONTRIBUTORS
+.P
+Nicholas Clarke <nicholas.clarke@sanger.ac.uk>
+
 .SH TRANSLATORS
 .P
-Chris "Kwpolska" Warrick <kwpolska@kwpolska.tk> (Polish)
+(  Polish  ) Chris "Kwpolska" Warrick <kwpolska@kwpolska.tk>
 .P
-Denis Kasak <denis.kasak@gmail.com> (Croatian)
+( Croatian ) Denis Kasak <denis.kasak@gmail.com>
 .P
-Fredrik Haikarainen (Swedish)
+( Swedish  ) Fredrik Haikarainen
 .P
-Lukas Niederbremer <Lukas.Niederbremer@HS-Osnabrueck.de> (German)
+(  German  ) Lukas Niederbremer <Lukas.Niederbremer@HS-Osnabrueck.de>
 .P
-Alejandro Gómez <alejandroogomez@gmail.com> (Spanish)
+( Spanish  ) Alejandro Gómez <alejandroogomez@gmail.com>
 .P
-Henry "Ingvij" Kupty (Portuguese)
+(Portuguese) Henry "Ingvij" Kupty
 .P
-Ma Jiehong (French)
+(  French  ) Ma Jiehong
 .P
-Kyrylo Silin <kyrylosilin@gmail.com> (Russian)
+( Russian  ) Kyrylo Silin <kyrylosilin@gmail.com>
 .P
-Bob Valantin (Italian)
+( Italian  ) Bob Valantin
 .P
-Filip Brcic (Serbian)
+( Serbian  ) Filip Brcic

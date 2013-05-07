@@ -37,7 +37,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Languages where
 
-import Aura.Colour.Text (cyan, green, red, blue, yellow, bForeground)
+import Aura.Colour.Text (cyan, green, red, blue, yellow, magenta, bForeground)
 
 ---
 
@@ -1071,7 +1071,7 @@ aurSy Italian    = green "Azioni riguardanti [A]UR.\n" ++ "Di default installa d
 aurSy Serbian    = green "Извршава радње везане за [A]UR.\n" ++ "Уобичајена радња инсталира из AUR-а."
 
 absSy :: Language -> String
-absSy _ = green "Perform actions involving the ABS tree.\n" ++ "Default action builds and installs from ABS"
+absSy _ = magenta "Perform actions involving the ABS tree.\n" ++ "Default action [M]anually builds from ABS."
 
 -- NEEDS TRANSLATION
 saveS :: Language -> String
