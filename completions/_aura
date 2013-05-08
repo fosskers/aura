@@ -235,6 +235,7 @@ _aura() {
         '-i[Display AUR package information.]'
         '-k[Show PKGBUILD diffs when upgrading.]'
         '-p[Display an AUR package PKGBUILD.]'
+        '-q[Display less information for certain operations.]'
         '-s[Search the AUR. Words only. No regex.]'
         '-u[Upgrade all installed AUR packages.]'
         '-w[Download an AUR package source tarball.]'
@@ -297,6 +298,7 @@ _aura() {
         '-k[Check package files]'
         '-l[List package contents]'
         '-m[List installed packages not found in sync db(s)]'
+        '-q[Display less information for certain operations.]'
         '-t[List packages not required by any package]'
         '-u[List packages that can be upgraded]'
     )
@@ -329,6 +331,7 @@ _aura() {
         '-i[View package information]'
         '-l[List all packages in a repository]'
         '-p[Print download URIs for each package to be installed]'
+        '-q[Display less information for certain operations.]'
         '-u[Upgrade all out-of-date packages]'
         '-w[Download packages only]'
         '-y[Download fresh package databases]'

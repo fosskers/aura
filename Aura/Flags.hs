@@ -29,6 +29,7 @@ module Aura.Flags
     , suppressionStatus
     , delMakeDepsStatus
     , confirmationStatus
+    , quietStatus
     , hotEditStatus
     , pbDiffStatus
     , rebuildDevelStatus
@@ -72,6 +73,7 @@ data Flag = ABSInstall
           | TreeSync
           | HotEdit
           | NoConfirm
+          | Quiet
           | Ignore String
           | BuildPath FilePath
           | DiffPkgbuilds
@@ -132,6 +134,7 @@ auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
               , ( ['k'], ["diff"],         DiffPkgbuilds )
               , ( ['i'], ["info"],         Info          )
               , ( ['p'], ["pkgbuild"],     GetPkgbuild   )
+              , ( ['q'], ["quiet"],        Quiet         )
               , ( ['r'], ["restore"],      RestoreState  )
               , ( ['s'], ["search"],       Search        )
               , ( ['t'], ["treesync"],     TreeSync      )
@@ -191,7 +194,8 @@ hijackedFlagMap = [ (CacheBackup,"-b")
 
 -- These are flags which do the same thing in Aura or Pacman.
 dualFlagMap :: FlagMap
-dualFlagMap = [ (NoConfirm,"--noconfirm") ]
+dualFlagMap = [ (Quiet,"-q")
+              , (NoConfirm,"--noconfirm") ]
  
 -- Does the whole lot and filters out the garbage.
 reconvertFlags :: [Flag] -> FlagMap -> [String]
@@ -203,7 +207,7 @@ reconvertFlag flagMap f = fromMaybe "" $ f `lookup` flagMap
 
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
-                , DelMDeps,Customizepkg,NoPowerPill,KeepSource,BuildABSDeps ]
+                , DelMDeps,Customizepkg,Quiet,NoPowerPill,KeepSource,BuildABSDeps ]
 
 filterSettingsFlags :: [Flag] -> [Flag]
 filterSettingsFlags []                 = []
@@ -245,6 +249,7 @@ delMakeDepsStatus  = fishOutFlag [(DelMDeps,True)] False
 confirmationStatus = fishOutFlag [(NoConfirm,False)] True
 hotEditStatus      = fishOutFlag [(HotEdit,True)] False
 pbDiffStatus       = fishOutFlag [(DiffPkgbuilds,True)] False
+quietStatus        = fishOutFlag [(Quiet,True)] False
 rebuildDevelStatus = fishOutFlag [(Devel,True)] False
 customizepkgStatus = fishOutFlag [(Customizepkg,True)] False
 noPowerPillStatus  = fishOutFlag [(NoPowerPill,True)] False
