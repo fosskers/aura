@@ -31,6 +31,7 @@ module Aura.Packages.ABS
     , absTree
     , absBasePath
     , filterABSPkgs
+    , pkgsInTree
     , repoOf
     , treeSearch ) where
 
@@ -103,6 +104,9 @@ absBasePath = "/var/abs"
 
 pkgbuildPath :: String -> String -> FilePath
 pkgbuildPath repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
+
+pkgsInTree :: [String] -> Aura [String]
+pkgsInTree pkgs = absTreeOf `fmap` ask >>= \t -> return (filter (inTree t) pkgs)
 
 inTree :: ABSTree -> String -> Bool
 inTree tree p = case repository' tree p of

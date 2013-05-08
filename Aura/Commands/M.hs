@@ -4,6 +4,9 @@
  Note that `-M` interacts with your _local_ copy of the
  Arch Build System Tree. `-i` `-p` or `-s` are thus _local_ searches
  of whatever you have in your /var/abs/
+ If a package you're looking for isn't present in the local tree,
+ nothing will show up, even if you know it otherwise exists in
+ the repositories.
 
 * On `-y` *
  Using `-My` makes an `abs` shell call on all the packages in your
@@ -99,7 +102,7 @@ install pacOpts pkgs = buildABSDeps `fmap` ask >>= \manual -> do
 
 -- | Get info about the specified package (-i)
 absInfo :: [String] -> Aura ()
-absInfo pkgs = packages pkgs >>= mapM_ displayAbsPkgInfo
+absInfo ps = pkgsInTree ps >>= packages >>= mapM_ displayAbsPkgInfo
 
 -- | Search ABS for any packages matching the given patterns (-s)
 absSearch :: [String] -> Aura ()
@@ -113,13 +116,13 @@ cleanABSTree = whenM (optionalPrompt cleanABSTree_1) $ do
   liftIO $ createDirectory absBasePath
 
 displayPkgbuild :: [String] -> Aura ()
-displayPkgbuild pkgs =
-    (packages pkgs :: Aura [ABSPkg]) >>= mapM_ (liftIO . putStrLn . pkgbuildOf)
+displayPkgbuild ps = pkgsInTree ps >>= \ps' -> (packages ps' :: Aura [ABSPkg]) >>=
+                     mapM_ (liftIO . putStrLn . pkgbuildOf)
 
 displayPkgDeps :: [String] -> Aura ()
 displayPkgDeps []   = return ()
 displayPkgDeps pkgs = do
-  deps <- packages pkgs >>= mapM (depCheck $ defaultHandle [])
+  deps <- pkgsInTree pkgs >>= packages >>= mapM (depCheck $ defaultHandle [])
   let (subs,mains,_) = groupPkgs deps :: ([RepoPkg],[ABSPkg],[String])
   I.reportPkgsToInstall (defaultHandle []) subs mains ([] :: [ABSPkg])
 
