@@ -69,6 +69,7 @@ data Flag = ABSInstall
           | Upgrade
           | Download
           | Unsuppress
+          | TreeSync
           | HotEdit
           | NoConfirm
           | Ignore String
@@ -133,6 +134,7 @@ auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
               , ( ['p'], ["pkgbuild"],     GetPkgbuild   )
               , ( ['r'], ["restore"],      RestoreState  )
               , ( ['s'], ["search"],       Search        )
+              , ( ['t'], ["treesync"],     TreeSync      )
               , ( ['u'], ["sysupgrade"],   Upgrade       )
               , ( ['w'], ["downloadonly"], Download      )
               , ( ['x'], ["unsuppress"],   Unsuppress    )
@@ -182,6 +184,7 @@ hijackedFlagMap = [ (CacheBackup,"-b")
                   , (DiffPkgbuilds,"-k")
                   , (RestoreState,"-r")
                   , (Search,"-s")
+                  , (TreeSync,"-t")
                   , (Upgrade,"-u")
                   , (Download,"-w")
                   , (Refresh,"-y") ]

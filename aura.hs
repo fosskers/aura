@@ -112,6 +112,7 @@ executeOpts (flags,input,pacOpts) =
     (ABSInstall:fs) ->
         case fs of
           []             -> trueRoot (sudo $ M.install pacOpts input)
+          [TreeSync]     -> sudo $ M.addToTree input
           [Search]       -> M.absSearch input
           [Info]         -> M.absInfo input
           [Clean]        -> sudo M.cleanABSTree

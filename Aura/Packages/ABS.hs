@@ -31,16 +31,18 @@ module Aura.Packages.ABS
     , absTree
     , absBasePath
     , filterABSPkgs
+    , nameAndRepo
     , pkgsInTree
     , repoOf
+    , singleSync
     , treeSearch ) where
 
-import qualified Data.Set as S
+import qualified Data.Set as Se
 
 import System.Directory (doesDirectoryExist, doesFileExist)
 import System.FilePath  ((</>), takeBaseName)
 import Text.Regex.PCRE  ((=~))
-import Control.Monad    (filterM, void)
+import Control.Monad    (filterM, void, unless)
 import Data.Maybe       (fromJust)
 
 import Aura.Packages.Repository (filterRepoPkgs)
@@ -53,11 +55,11 @@ import Aura.Languages
 import Aura.Bash
 import Aura.Core
 
-import Utilities (readFileUTF8, whenM)
+import Utilities (readFileUTF8, whenM, split)
 import Shell     (ls', ls'')
 
-import qualified Aura.Shell as A (quietShellCmd, shellCmd)
-import qualified Shell      as S (quietShellCmd)
+import qualified Aura.Shell as A  (quietShellCmd, shellCmd)
+import qualified Shell      as Sh (quietShellCmd)
 
 ---
 
@@ -81,7 +83,7 @@ instance Buildable ABSPkg where
   namespaceOf (ABSPkg _ _ _ _ ns) = ns
   source p fp = do
       let loc = absBasePath </> repoOf p </> pkgNameOf p
-      S.quietShellCmd "cp" ["-R",loc,fp]
+      Sh.quietShellCmd "cp" ["-R",loc,fp]
       return $ fp </> pkgNameOf p
   rewrap (ABSPkg n r v p _) ns = ABSPkg n r v p ns
 
@@ -97,7 +99,7 @@ repoOf (ABSPkg _ r _ _ _) = r
 -------
 -- WORK
 -------
-type ABSTree = [(String,S.Set String)]
+type ABSTree = [(String,Se.Set String)]
 
 absBasePath :: FilePath
 absBasePath = "/var/abs"
@@ -127,42 +129,45 @@ repository p = absTreeOf `fmap` ask >>= \tree ->
 -- | The repository a package belongs to.
 repository' :: ABSTree -> String -> Maybe String
 repository' [] _ = Nothing
-repository' ((r,ps):rs) p | S.member p ps = Just r
+repository' ((r,ps):rs) p | Se.member p ps = Just r
                           | otherwise     = repository' rs p
 
--- This is pretty ugly.
 repository'' :: String -> Aura String
 repository'' p = do
+  fullName <- nameAndRepo p
+  case fullName of
+    Nothing -> langOf `fmap` ask >>= failure . repository_1 p
+    Just fn -> do
+      present <- liftIO (inTree' fn)
+      unless present $ singleSync fn
+      return . head . split '/' $ fn
+
+nameAndRepo :: String -> Aura (Maybe String)
+nameAndRepo p = do
   i <- pacmanOutput ["-Si",p]
   case i of
-    "" -> langOf `fmap` ask >>= failure . repository_1 p
+    "" -> return Nothing
     _  -> do
       let pat = "Repository[ ]+: "
           (_,_,repo) = (head $ lines i) =~ pat :: (String,String,String)
-          fullName   = repo </> p
-      present <- liftIO (inTree' fullName)
-      if present
-         then return repo
-         else do
-           singleSync fullName
-           return repo
+      return . Just $ repo </> p
 
 -- | All repos with all their packages in the local tree.
 absTree :: IO ABSTree
 absTree = do
   repos <- ls'' absBasePath >>= filterM doesDirectoryExist
-  mapM (\r -> ls' r >>= \ps -> return (takeBaseName r, S.fromList ps)) repos
+  mapM (\r -> ls' r >>= \ps -> return (takeBaseName r, Se.fromList ps)) repos
 
 -- | All packages in the local ABS tree in the form: "repo/package"
 flatABSTree :: ABSTree -> [String]
 flatABSTree = concatMap fold
-    where fold (r,ps) = S.foldr (\p acc -> (r </> p) : acc) [] ps
+    where fold (r,ps) = Se.foldr (\p acc -> (r </> p) : acc) [] ps
 
 -- | All packages in the local ABS tree which match a given pattern.
 treeSearch :: String -> Aura [ABSPkg]
 treeSearch pattern = absTreeOf `fmap` ask >>= \tree -> do
   let matches = concatMap (fold . snd) tree
-      fold    = S.foldr (\p acc -> if p =~ pattern then p : acc else acc) []
+      fold    = Se.foldr (\p acc -> if p =~ pattern then p : acc else acc) []
   mapM package matches
 
 -- Make this react to `-x` as well? Wouldn't be hard.

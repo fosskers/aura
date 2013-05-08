@@ -48,12 +48,14 @@ module Aura.Commands.M
     , absInfo
     , absSearch
     , absSync
+    , addToTree
     , cleanABSTree
     , displayPkgbuild
     , displayPkgDeps ) where
 
 import System.Directory (removeDirectoryRecursive, createDirectory)
 import Text.Regex.PCRE  ((=~))
+import Data.Maybe       (catMaybes)
 
 import qualified Aura.Install as I
 
@@ -99,6 +101,10 @@ install pacOpts pkgs = buildABSDeps `fmap` ask >>= \manual -> do
   I.install b c (handle pacOpts) pacOpts pkgs
     where b = package  :: String -> Aura ABSPkg
           c = conflict :: Settings -> RepoPkg -> Maybe ErrMsg
+
+-- | Sync given packages to the local ABS Tree.
+addToTree :: [String] -> Aura ()
+addToTree ps = catMaybes `fmap` mapM nameAndRepo ps >>= mapM_ singleSync
 
 -- | Get info about the specified package (-i)
 absInfo :: [String] -> Aura ()

@@ -239,7 +239,8 @@ Delete the local ABS Tree.
 .P
 \fB\-d\fR, \-\-deps <package(s)>
 .RS 4
-The ABS equivalent of \fI\-Ad\fR.
+The ABS equivalent of \fI\-Ad\fR. Will silently fail if the
+package is not present in the local tree.
 .RE
 .P
 \fB\-i\fR, \-\-info <package(s)>
@@ -255,13 +256,19 @@ The ABS equivalent of \fI\-Ak\fR.
 .P
 \fB\-p\fR, \-\-pkgbuild <package(s)>
 .RS 4
-The ABS equivalent of \fI\-Ap\fR. Only shows a PKGBUILD if it is available
-in the local ABS Tree.
+The ABS equivalent of \fI\-Ap\fR. Will silently fail if the
+package is not present in the local tree.
 .RE
 .P
-\fB\-s\fR, \-\-search <word(s)>
+\fB\-s\fR, \-\-search <regex>
 .RS 4
 Search the local ABS Tree via a regex.
+.RE
+.P
+\fB\-t\fR, \-\-treesync <package(s)>
+.RS 4
+Given package names, syncs them to the local ABS Tree. \fI\-Mt\fR is thus a
+more specialised version of \fI\-My\fR.
 .RE
 .P
 \fB\-x\fR, \-\-unsuppress
@@ -271,8 +278,9 @@ The ABS equivalent of \fI\-Ax\fR.
 .P
 \fB\-y\fR, \-\-refresh
 .RS 4
-Sync only the packages present in the local ABS Tree to their latest version.
-This is different from just "sudo abs".
+Sync all packages present in the local ABS Tree to their latest version.
+This is different from just "sudo abs", which pulls down the \fIentire\fR tree as
+available from the repositories.
 .RE
 
 .SH ORPHAN PACKAGE OPTIONS (\fI\-O\fR)
