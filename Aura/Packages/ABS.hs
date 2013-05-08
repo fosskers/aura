@@ -43,7 +43,7 @@ import Control.Monad    (filterM, void)
 import Data.Maybe       (fromJust)
 
 import Aura.Packages.Repository (filterRepoPkgs)
-import Aura.Settings.Base       (absTreeOf)
+import Aura.Settings.Base       (absTreeOf, langOf)
 import Aura.Conflicts           (buildableConflicts)
 import Aura.Pacman              (pacmanOutput)
 import Aura.Utils               (optionalPrompt)
@@ -112,33 +112,36 @@ inTree tree p = case repository' tree p of
 inTree' :: String -> IO Bool
 inTree' p = doesFileExist $ absBasePath </> p
 
--- This is pretty ugly.
 -- | The repository a package _should_ belong to.
 -- Fails if the package is not in any repository.
 repository :: String -> Aura String
 repository p = absTreeOf `fmap` ask >>= \tree ->
   if inTree tree p
      then return . fromJust . repository' tree $ p
-     else do
-       i <- pacmanOutput ["-Si",p]
-       case i of
-         "" -> failure $ p ++ " is not a package in any repository."
-         _  -> do
-           let pat = "Repository[ ]+: "
-               (_,_,repo) = (head $ lines i) =~ pat :: (String,String,String)
-               fullName   = repo </> p
-           present <- liftIO (inTree' fullName)
-           if present
-              then return repo
-              else do
-                singleSync fullName
-                return repo
+     else repository'' p
 
 -- | The repository a package belongs to.
 repository' :: ABSTree -> String -> Maybe String
 repository' [] _ = Nothing
 repository' ((r,ps):rs) p | S.member p ps = Just r
                           | otherwise     = repository' rs p
+
+-- This is pretty ugly.
+repository'' :: String -> Aura String
+repository'' p = do
+  i <- pacmanOutput ["-Si",p]
+  case i of
+    "" -> langOf `fmap` ask >>= failure . repository_1 p
+    _  -> do
+      let pat = "Repository[ ]+: "
+          (_,_,repo) = (head $ lines i) =~ pat :: (String,String,String)
+          fullName   = repo </> p
+      present <- liftIO (inTree' fullName)
+      if present
+         then return repo
+         else do
+           singleSync fullName
+           return repo
 
 -- | All repos with all their packages in the local tree.
 absTree :: IO ABSTree
@@ -168,6 +171,7 @@ absSync = whenM (optionalPrompt absSync_1) $ do
   notify absSync_2
   (flatABSTree . absTreeOf) `fmap` ask >>= A.shellCmd "abs"
 
+-- | Must be in the form `repo/pkgname`
 singleSync :: String -> Aura ()
 singleSync p = notify (singleSync_1 p) >> void (A.quietShellCmd "abs" [p])
 

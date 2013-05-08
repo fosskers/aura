@@ -1214,6 +1214,10 @@ absInfoFields :: Language -> [String]
 absInfoFields _ = [ "Repository","Name","Version","Depends On"
                   , "Make Deps", "Description" ]
 
+repository_1 :: String -> Language -> String
+repository_1 p Japanese = p ++ "はどのリポジトリにもない。"
+repository_1 p _        = p ++ " is not a package in any repository."
+
 pkgBuildKeyMissing :: Language -> String -> String
 pkgBuildKeyMissing _ key = "Unable to parse key " ++ key ++ " from PKGBUILD."
 

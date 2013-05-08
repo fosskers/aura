@@ -5,6 +5,7 @@ Aura Changelog
 - New operator `-M` for building ABS packages. Has its own family of options.
 - Updates to Aura are now prioritized like pacman updates.
 - `-Ai` now shows Maintainer name.
+- Extensive API changes.
 
 1.1.6.2
 -------
