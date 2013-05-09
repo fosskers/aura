@@ -45,7 +45,7 @@ data Settings = Settings { inputOf         :: [String]
                          , buildPathOf     :: FilePath
                          , cachePathOf     :: FilePath
                          , logFilePathOf   :: FilePath
-                         , quiet           :: Bool
+                         , beQuiet         :: Bool
                          , suppressMakepkg :: Bool
                          , delMakeDeps     :: Bool
                          , diffPkgbuilds   :: Bool
