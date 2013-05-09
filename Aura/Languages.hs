@@ -635,9 +635,10 @@ reportPkgsToUpgrade_1 Russian    = "Пакеты AUR, готовые для об
 reportPkgsToUpgrade_1 Italian    = "Pacchetti in AUR da aggiornare:"
 reportPkgsToUpgrade_1 Serbian    = "Пакети из AUR-а за надоградњу:"
 
+-- NEEDS UPDATING
 reportBadDowngradePkgs_1 :: Language -> String
-reportBadDowngradePkgs_1 English    = "The following aren’t installed, and thus can’t be downgraded:"
-reportBadDowngradePkgs_1 Japanese   = "このパッケージは最初からインストールしていないので、格下げはできない。"
+reportBadDowngradePkgs_1 English    = "The following have no versions in the cache, and thus can’t be downgraded:"
+reportBadDowngradePkgs_1 Japanese   = "このパッケージはキャッシュには入っていないので、格下げはできない。"
 reportBadDowngradePkgs_1 Polish     = "Poniższe pakeity nie są zainstalowane, i nie mogą być zainstalowane w starszej wersji:"
 reportBadDowngradePkgs_1 Croatian   = "Sljedeći paketi nisu instalirani te se stoga ne mogu vratiti na stare verzije:"
 reportBadDowngradePkgs_1 Swedish    = "Följande paket är inte installerade, och kan därför inte bli nergraderade:"

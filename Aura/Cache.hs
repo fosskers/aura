@@ -24,6 +24,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Cache
     ( defaultPackageCache
     , cacheContents
+    , cacheMatches
     , alterable
     , getFilename
     , allFilenames
@@ -33,10 +34,12 @@ module Aura.Cache
 
 import qualified Data.Map.Lazy as M
 
+import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Utils (pkgFileNameAndVer)
 
-import Shell (ls)
+import Utilities (searchLines)
+import Shell     (ls)
 
 ---
 
@@ -60,6 +63,10 @@ rawCacheContents c = filter dots `fmap` liftIO (ls c)
 
 cacheContents :: FilePath -> Aura Cache
 cacheContents c = cache `fmap` rawCacheContents c
+
+cacheMatches :: [String] -> Aura [String]
+cacheMatches input = ask >>= cacheContents . cachePathOf >>=
+  return . searchLines (unwords input) . allFilenames
 
 alterable :: Cache -> SimplePkg -> Bool
 alterable c p = M.member p c

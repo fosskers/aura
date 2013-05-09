@@ -42,7 +42,7 @@ import qualified Data.Set as Se
 import System.Directory (doesDirectoryExist, doesFileExist)
 import System.FilePath  ((</>), takeBaseName)
 import Text.Regex.PCRE  ((=~))
-import Control.Monad    (filterM, void, unless)
+import Control.Monad    (filterM, void)
 import Data.Maybe       (fromJust)
 
 import Aura.Packages.Repository (filterRepoPkgs)
@@ -138,8 +138,7 @@ repository'' p = do
   case fullName of
     Nothing -> langOf `fmap` ask >>= failure . repository_1 p
     Just fn -> do
-      present <- liftIO (inTree' fn)
-      unless present $ singleSync fn
+      whenM (not `fmap` liftIO (inTree' fn)) $ singleSync fn
       return . head . split '/' $ fn
 
 nameAndRepo :: String -> Aura (Maybe String)

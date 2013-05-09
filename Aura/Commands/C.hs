@@ -52,14 +52,14 @@ import Utilities
 -- they want to downgrade to.
 downgradePackages :: [String] -> Aura ()
 downgradePackages []   = return ()
-downgradePackages pkgs = do
-  reals <- filterM isInstalled pkgs
+downgradePackages pkgs = cachePathOf `fmap` ask >>= \cachePath -> do
+  reals <- filterM inCache pkgs -- This.
   reportBadDowngradePkgs (pkgs \\ reals)
-  cachePath <- cachePathOf `fmap` ask
   unless (null reals) $ do
     cache   <- cacheContents cachePath
     choices <- mapM (getDowngradeChoice cache) reals
     pacman $ "-U" : map (cachePath </>) choices
+        where inCache p = notNull `fmap` cacheMatches [p]
                
 getDowngradeChoice :: Cache -> String -> Aura String
 getDowngradeChoice cache pkg = do
@@ -74,10 +74,7 @@ getChoicesFromCache cache pkg = sort choices
 
 -- `[]` as input yields the contents of the entire cache.
 searchCache :: [String] -> Aura ()
-searchCache input = do
-  cache <- ask >>= cacheContents . cachePathOf
-  let results = sortPkgs . searchLines (unwords input) . allFilenames $ cache
-  liftIO $ mapM_ putStrLn results
+searchCache r = cacheMatches r >>= liftIO . mapM_ putStrLn . sortPkgs
 
 -- The destination folder must already exist for the back-up to begin.
 backupCache :: [FilePath] -> Aura ()
