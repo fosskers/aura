@@ -121,11 +121,15 @@ aurSearch :: [String] -> Aura ()
 aurSearch []    = return ()
 aurSearch regex = do
     results <- aurSearchLookup regex
-    mapM_ (liftIO . putStrLn . renderSearch (unwords regex)) results
+    ss <- ask
+    mapM_ (liftIO . putStrLn . renderSearch ss (unwords regex)) results
 
-renderSearch :: String -> PkgInfo -> String
-renderSearch r i = repo ++ n ++ " " ++ v ++ " (" ++ l ++ ")\n    " ++ d
-    where c cl cs = case cs =~ ("(?i)" ++ r) of
+renderSearch :: Settings -> String -> PkgInfo -> String
+renderSearch ss r i = searchResult
+    where searchResult = if quiet ss then sparseInfo else verboseInfo
+          sparseInfo = nameOf i
+          verboseInfo = repo ++ n ++ " " ++ v ++ " (" ++ l ++ ")\n    " ++ d
+          c cl cs = case cs =~ ("(?i)" ++ r) of
                       (b,m,a) -> cl b ++ bCyan m ++ cl a
           repo = magenta "aur/"
           n = c bForeground $ nameOf i
@@ -139,8 +143,11 @@ displayPkgDeps []   = return ()
 displayPkgDeps pkgs = do
   aurPkgs <- aurInfoLookup pkgs >>= mapM (package . nameOf)
   allDeps <- mapM (depCheck $ buildHandle []) aurPkgs
+  ss      <- ask
   let (subs,mains,_) = groupPkgs allDeps :: ([RepoPkg],[AURPkg],[String])
-  I.reportPkgsToInstall (buildHandle []) subs mains ([] :: [AURPkg])
+  if quiet ss 
+    then I.reportListOfDeps subs mains
+    else I.reportPkgsToInstall (buildHandle []) subs mains ([] :: [AURPkg])
 
 downloadTarballs :: [String] -> Aura ()
 downloadTarballs pkgs = do
@@ -162,6 +169,7 @@ isntMostRecent (info,v) = trueVer > currVer
 ------------
 -- REPORTING
 ------------
+
 reportPkgsToUpgrade :: [String] -> Aura ()
 reportPkgsToUpgrade pkgs = do
   lang <- langOf `fmap` ask

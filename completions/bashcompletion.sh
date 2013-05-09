@@ -12,13 +12,13 @@ _aura()
 
     case ${prev} in
 	-A|--aursync)
-	    opts="-a --delmakedeps -d --deps -k --diff -i --info \
-                  -p --pkgbuild -s --search -u --sysupgrade      \
-                  -d --downloadonly -x --unsuppress --hotedit    \
+	    opts="-a --delmakedeps -d --deps -k --diff -i --info       \
+                  -p --pkgbuild -q --quiet -s --search -u --sysupgrade \
+                  -d --downloadonly -x --unsuppress --hotedit          \
                   --aurignore="
 	    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
 	    return 0
-	    ;;
+            ;;
 	-B|--save)
 	    opts="-c --clean -r --restore"
 	    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
