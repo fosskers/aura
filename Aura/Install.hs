@@ -24,7 +24,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Install
     ( install
-    , reportPkgsToInstall ) where
+    , reportPkgsToInstall
+    , reportListOfDeps ) where
 
 import Control.Monad (unless)
 import Data.List     (sort, (\\))
@@ -122,6 +123,11 @@ reportPkgsToInstall bh sd md mp = langOf `fmap` ask >>= \lang -> do
   pl (reportPkgsToInstall_3 la lang) (sort $ map pkgNameOf mp)
       where pl = printList green cyan
             la = pkgLabel bh
+
+reportListOfDeps :: (Package p1, Package p2) => [p1] -> [p2] -> Aura ()
+reportListOfDeps sd md = do
+  liftIO $ mapM_ putStrLn (sort $ map pkgNameOf sd)
+  liftIO $ mapM_ putStrLn (sort $ map pkgNameOf md)
 
 reportNonPackages :: [String] -> Aura ()
 reportNonPackages = badReport reportNonPackages_1

@@ -103,6 +103,13 @@ Outputs an AUR package's PKGBUILD. Use this before installing new packages
 to confirm that the build scripts aren't doing anything fishy.
 .RE
 .P
+\fB\-q\fR, \-\-quiet
+.RS 4
+Display less information about certain aursync operations (this is useful 
+when processing Aura's output in a script). In particular, search and view 
+dependencies will only show uncoloured package names. 
+.RE
+.P
 \fB\-s\fR, \-\-search <word(s)>
 .RS 4
 Search the AUR via words only (no regex).
