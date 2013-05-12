@@ -999,6 +999,15 @@ cleanCache_6 Russian    = "Очистка кэша пакета..."
 cleanCache_6 Italian    = "Ripulisco la cache..."
 cleanCache_6 Serbian    = "Чишћење кеша..."
 
+-- NEEDS TRANSLATION
+cleanNotSaved_1 :: Language -> String
+cleanNotSaved_1 Japanese = "不要パッケージファイルを確認・・・"
+cleanNotSaved_1 _        = "Determining unneeded package files..."
+
+cleanNotSaved_2 :: Int -> Language -> String
+cleanNotSaved_2 s Japanese = "「" ++ cyan (show s) ++ "」の不要パッケージファイルあり。削除？"
+cleanNotSaved_2 s _        = cyan (show s) ++ " unneeded package files found. Delete?"
+
 ----------------------------
 -- Aura/Commands/L functions
 ----------------------------

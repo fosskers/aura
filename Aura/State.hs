@@ -24,6 +24,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.State
     ( saveState
     , restoreState
+    , inState
+    , readState
     , stateCache
     , getStateFiles ) where
 
@@ -59,6 +61,11 @@ type StateDiff = ([SimplePkg],[String])
 
 stateCache :: FilePath
 stateCache = "/var/cache/aura/states"
+
+inState :: SimplePkg -> PkgState -> Bool
+inState (n,v) s = case M.lookup n $ pkgsOf s of
+                    Nothing -> False
+                    Just v' -> v == v'
 
 rawCurrentState :: Aura [String]
 rawCurrentState = lines `fmap` pacmanOutput ["-Q"]

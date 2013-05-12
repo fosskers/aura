@@ -25,7 +25,8 @@ module Aura.Commands.C
     ( downgradePackages
     , searchCache
     , backupCache
-    , cleanCache ) where
+    , cleanCache
+    , cleanNotSaved ) where
 
 import System.Posix.Files (fileExist)
 import System.FilePath    ((</>))
@@ -40,6 +41,7 @@ import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Cache
+import Aura.State
 import Aura.Utils
 import Aura.Core
 
@@ -140,6 +142,17 @@ clean toSave = ask >>= \ss -> do
       toRemove  = files \\ concat grouped
       filePaths = map (cachePathOf ss </>) toRemove
   liftIO $ mapM_ rm filePaths
+
+-- | Only package files with a version not in any PkgState will be
+-- removed.
+cleanNotSaved :: Aura ()
+cleanNotSaved = cachePathOf `fmap` ask >>= \path -> do
+  notify cleanNotSaved_1
+  states <- getStateFiles >>= mapM readState
+  cache  <- cacheContents path
+  let duds = cacheFilter (\p _ -> or $ map (inState p) states) cache
+  whenM (optionalPrompt $ cleanNotSaved_2 $ size duds) $
+        liftIO $ mapM_ rm (map (path </>) $ allFilenames duds)
 
 -- Typically takes the contents of the package cache as an argument.
 groupByName :: [String] -> [[String]]

@@ -31,7 +31,7 @@ import qualified Data.Map.Lazy as M
 
 import Control.Monad   (filterM)
 import Data.Maybe      (fromJust, mapMaybe)
-import Data.List       ((\\), nub)
+import Data.List       ((\\))
 
 import Aura.Pacman        (pacmanOutput)
 import Aura.Packages.Repository
@@ -92,6 +92,10 @@ depCheck :: (Package p, Buildable b)
          => BuildHandle -> [b] -> Aura ([p],[b],[String])
 depCheck bh ps = depCheck' bh ps (M.empty, M.empty, M.empty)
 
+-- Recall that using `show` on a Package gives a String in the form:
+-- `name>=version`  where `>=` could really be any of the comparison operators.
+-- Virtual package names taken from PKGBUILDs should already be in this form,
+-- so they need not be `show`n.
 depCheck' :: (Package p, Buildable b)
           => BuildHandle -> [b] -> (DepMap p, DepMap b, DepMap String)
           -> Aura ([p],[b],[String])

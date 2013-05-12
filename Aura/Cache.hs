@@ -24,6 +24,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Cache
     ( defaultPackageCache
     , cacheContents
+    , cacheFilter
     , cacheMatches
     , alterable
     , getFilename
@@ -79,3 +80,6 @@ allFilenames = M.elems
 
 size :: Cache -> Int
 size = M.size
+
+cacheFilter :: (SimplePkg -> FilePath -> Bool) -> Cache -> Cache
+cacheFilter = M.filterWithKey
