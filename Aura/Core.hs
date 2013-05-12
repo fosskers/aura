@@ -55,6 +55,13 @@ data VersionDemand = LessThan String
                    | Anything
                      deriving (Eq)
 
+instance Show VersionDemand where
+    show (LessThan v) = '<' : v
+    show (AtLeast v)  = ">=" ++ v
+    show (MoreThan v) = '>' : v
+    show (MustBe  v)  = '=' : v
+    show Anything     = ""
+
 -- These functions names could use changing.
 data BuildHandle = BH { pkgLabel  :: String
                       , initialPF :: PkgFilter 
@@ -70,13 +77,6 @@ class (Show a, Eq a) => Package a where
     versionOf :: a -> VersionDemand
     conflict  :: Settings -> a -> Maybe ErrMsg
     package   :: String -> Aura a
-
-instance Show VersionDemand where
-    show (LessThan v) = '<' : v
-    show (AtLeast v)  = ">=" ++ v
-    show (MoreThan v) = '>' : v
-    show (MustBe  v)  = '=' : v
-    show Anything     = ""
 
 ------------------
 -- Buildable Class

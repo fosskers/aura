@@ -140,12 +140,11 @@ renderSearch ss r i = searchResult
 displayPkgDeps :: [String] -> Aura ()
 displayPkgDeps []   = return ()
 displayPkgDeps pkgs = beQuiet `fmap` ask >>= \quiet -> do
-  aurPkgs <- aurInfoLookup pkgs >>= mapM (package . nameOf)
-  allDeps <- mapM (depCheck $ buildHandle []) aurPkgs
-  let (subs,mains,_) = groupPkgs allDeps :: ([RepoPkg],[AURPkg],[String])
+  ps <- aurInfoLookup pkgs >>= mapM (package . nameOf)
+  (s,m,_) <- depCheck (buildHandle []) ps :: Aura ([RepoPkg],[AURPkg],[String])
   if quiet
-    then I.reportListOfDeps subs mains
-    else I.reportPkgsToInstall (buildHandle []) subs mains ([] :: [AURPkg])
+     then I.reportListOfDeps s m
+     else I.reportPkgsToInstall (buildHandle []) s m ([] :: [AURPkg])
 
 downloadTarballs :: [String] -> Aura ()
 downloadTarballs pkgs = do

@@ -128,9 +128,9 @@ displayPkgbuild ps = pkgsInTree ps >>= \ps' -> (packages ps' :: Aura [ABSPkg]) >
 displayPkgDeps :: [String] -> Aura ()
 displayPkgDeps []   = return ()
 displayPkgDeps pkgs = do
-  deps <- pkgsInTree pkgs >>= packages >>= mapM (depCheck $ defaultHandle [])
-  let (subs,mains,_) = groupPkgs deps :: ([RepoPkg],[ABSPkg],[String])
-  I.reportPkgsToInstall (defaultHandle []) subs mains ([] :: [ABSPkg])
+  ps <- pkgsInTree pkgs >>= packages
+  (s,m,_) <- depCheck (defaultHandle []) ps :: Aura ([RepoPkg],[ABSPkg],[String])
+  I.reportPkgsToInstall (defaultHandle []) s m ([] :: [ABSPkg])
 
 displayAbsPkgInfo :: ABSPkg -> Aura ()
 displayAbsPkgInfo pkg = ask >>= liftIO . putStrLn . renderPkgInfo pkg

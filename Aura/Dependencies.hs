@@ -27,6 +27,8 @@ module Aura.Dependencies
   , depCheck
   , depsToInstall ) where
 
+import qualified Data.Map.Lazy as M
+
 import Control.Monad   (filterM)
 import Data.Maybe      (fromJust, mapMaybe)
 import Data.List       ((\\), nub)
@@ -54,9 +56,11 @@ These can (or should) freely overlap.
 
 -}
 
+type DepMap a = M.Map String a
+
 -- `PkgFilter` is in the Aura Monad, so this function must be too.
-divideByPkgType ::
-    PkgFilter -> PkgFilter -> [String] -> Aura ([String],[String],[String])
+divideByPkgType :: PkgFilter -> PkgFilter -> [String]
+                -> Aura ([String],[String],[String])
 divideByPkgType subPF' mainPF' pkgs = do
   subPkgNames  <- subPF' namesOnly
   mainPkgNames <- mainPF' $ namesOnly \\ subPkgNames
@@ -67,11 +71,12 @@ divideByPkgType subPF' mainPF' pkgs = do
       where namesOnly = map splitName pkgs
 
 -- | Returns all dependencies to be installed, or fails nicely.
-depsToInstall :: (Package p, Buildable b) => (Settings -> p -> Maybe ErrMsg) ->
-                 BuildHandle -> [b] -> Aura ([p],[b])
+depsToInstall :: (Package p, Buildable b)
+              => (Settings -> p -> Maybe ErrMsg) -> BuildHandle -> [b]
+              -> Aura ([p],[b])
 depsToInstall _ _ [] = ask >>= failure . getDepsToInstall_1 . langOf
 depsToInstall subConflict bh pkgs = ask >>= \ss -> do
-  (subs,mains,virts) <- groupPkgs `fmap` mapM (depCheck bh) pkgs
+  (subs,mains,virts) <- depCheck bh pkgs
   necSubPkgs  <- filterM (mustInstall . show) subs
   necMainPkgs <- filterM (mustInstall . show) mains
   necVirPkgs  <- filterM mustInstall virts >>= packages
@@ -83,16 +88,24 @@ depsToInstall subConflict bh pkgs = ask >>= \ss -> do
        providers' <- packages $ (providers \\ map pkgNameOf necSubPkgs)
        return (providers' ++ necSubPkgs, necMainPkgs)
 
-depCheck :: (Package p, Buildable b) => BuildHandle -> b -> Aura ([p],[b],[String])
-depCheck bh pkg = do
-  let ns   = namespaceOf pkg
-      deps = concatMap (value ns) ["depends","makedepends","checkdepends"]
-  (subNames,mainNames,other) <- divideByPkgType (subPF bh) (mainPF bh) deps
-  mainPkgs      <- packages mainNames
-  subPkgs       <- packages subNames
-  recursiveDeps <- mapM (depCheck bh) mainPkgs
-  let (ss,ms,os) = foldl groupPkgs' (subPkgs,mainPkgs,other) recursiveDeps
-  return (nub ss, nub ms, nub os)
+depCheck :: (Package p, Buildable b)
+         => BuildHandle -> [b] -> Aura ([p],[b],[String])
+depCheck bh ps = depCheck' bh ps (M.empty, M.empty, M.empty)
+
+depCheck' :: (Package p, Buildable b)
+          => BuildHandle -> [b] -> (DepMap p, DepMap b, DepMap String)
+          -> Aura ([p],[b],[String])
+depCheck' _ [] (s,m,v)      = return (M.elems s, M.elems m, M.elems v)
+depCheck' bh (p:ps) (s,m,v) = do
+  let ns    = namespaceOf p
+      df dm = filter (\d -> M.notMember d dm)
+      deps  = concatMap (value ns) ["depends","makedepends","checkdepends"]
+      deps' = df v . df s . df m $ deps
+  (subNames,mainNames,other) <- divideByPkgType (subPF bh) (mainPF bh) deps'
+  mainPkgs <- packages mainNames
+  subPkgs  <- packages subNames
+  depCheck' bh (ps ++ mainPkgs) (i show s subPkgs, i show m mainPkgs, i id v other)
+      where i f = foldl (\acc x -> M.insert (f x) x acc)
 
 -- Moving to a libalpm backend will make this less hacked.
 -- | If a package isn't installed, `pacman -T` will yield a single name.
