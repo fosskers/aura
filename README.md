@@ -76,18 +76,27 @@ Install order is as follows:
 
 Sample Usage
 ============
-#### New with Aura 1.1
-Install and show recent PKGBUILD changes (also works with -u):
+#### New with Aura 1.2
+Build a repository package manually:
 
-    aura -Ak (package)
+    aura -M (package)
 
-Store a record of all installed packages:
+Build a repository package and all its dependencies manually:
 
-    aura -B
+    aura -M (package) --absdeps
 
-Restore a saved record. Rolls back, uninstalls, and reinstalls packages as necessary:
+Sync a single package's data to the local ABS Tree:
 
-    aura -Br
+    aura -Mt (package)
+
+Sync all package data in the local ABS Tree:
+
+    aura -My
+
+Remove only those package files from the cache that aren't present in any
+package record:
+
+    aura -Ccc
 
 #### Installing Packages
 Install an AUR package:
@@ -126,6 +135,19 @@ Install and remove make dependencies afterwards:
 
     aura -Aa (package)
 
+Install and show PKGBUILD differences:
+
+    aura -Ak (package)
+
+#### Working with Package Records
+Store a record of all installed packages:
+
+    aura -B
+
+Restore a saved record. Rolls back, uninstalls, and reinstalls packages as necessary:
+
+    aura -Br
+
 #### Working with the Package Cache
 Downgrade a package (this is interactive):
 
@@ -141,7 +163,7 @@ Backup the package cache:
 
 Reduce the package cache to contain only 'x' of each package file:
 
-    aura -Cc 5
+    aura -Cc x
 
 #### Working with the Pacman Log
 Display install / upgrade history for a package:

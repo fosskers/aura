@@ -58,6 +58,7 @@ executable aura
                        Aura.Utils,
                        Aura.Pacman,
                        Aura.MakePkg,
+                       Aura.Conflicts,
                        Aura.Languages,
                        Aura.Monad.Aura,
                        Aura.Dependencies,

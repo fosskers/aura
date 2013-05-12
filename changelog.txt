@@ -3,7 +3,11 @@ Aura Changelog
 1.2.0.0
 -------
 - New operator `-M` for building ABS packages. Has its own family of options.
+- Pre-built binary package available (x86_64 only)
 - Updates to Aura are now prioritized like pacman updates.
+- Dependency checking is now faster.
+- Use `-Ccc` to clean the cache of only packages not saved in any package
+  record.
 - `-Ai` now shows Maintainer name.
 - Extensive API changes.
 
