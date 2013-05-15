@@ -134,6 +134,7 @@ langFromEnv _           = English
 checkDBLock_1 :: Language -> String
 checkDBLock_1 Japanese = "パッケージデータベースが今閉鎖状態。開放したらキーを押して続行をどうぞ。"
 checkDBLock_1 Croatian = "Baza paketa je zaključana. Kad se otključa, pritisnite enter da biste nastavili."
+checkDBLock_1 German   = "The Paketdatenbank ist gesperrt. Drücken Sie Enter wenn sie entsperrt ist um fortzufahren."
 checkDBLock_1 _        = "The package database is locked. Press enter when it's unlocked to continue."
 
 -- Packages should not be built if the user is logged in as root!
@@ -430,6 +431,7 @@ displayOutputLanguages_1 Serbian    = "Доступни су следећи је
 ----------------------------
 auraCheck_1 :: Language -> String
 auraCheck_1 Japanese = "Auraアップグレードあり。先にAuraだけを？"
+auraCheck_1 German   = "Aura Update verfügbar. Dies zuerst aktualisieren?"
 auraCheck_1 _        = "Aura update available. Update it first?"
 
 install_1 :: Language -> String
@@ -506,6 +508,7 @@ install_5 Serbian    = "Утврђивање зависности..."
 badPkgCheck_1 :: String -> Language -> String
 badPkgCheck_1 p Japanese = bt p ++ "の作成は失敗すると知られている。理由："
 badPkgCheck_1 p Croatian = "Poznato je da se " ++ bt p ++ " neuspješno gradi. Razlog:"
+badPkgCheck_1 p German   = bt p ++ " hat einen bekannten Buildfehler. Grund:"
 badPkgCheck_1 p Serbian  = "Познато је да се " ++ bt p ++ " неуспешно гради. Разлог:"
 badPkgCheck_1 p _        = bt p ++ " is known to fail at building. Reason:"
 
@@ -514,6 +517,7 @@ badPkgCheck_2 :: Language -> String
 badPkgCheck_2 Japanese = "それでもやってみる？"
 badPkgCheck_2 Croatian = "Želite li ipak pokušati?"
 badPkgCheck_2 Serbian  = "Желите ли ипак да пробате?"
+badPkgCheck_2 German   = "Möchten Sie es trotzdem versuchen?"
 badPkgCheck_2 _        = "Will you try anyway?"
 
 -- NEEDS UPDATE TO REFLECT CHANGED ENGLISH
@@ -592,6 +596,7 @@ reportPkgbuildDiffs_1 :: String -> Language -> String
 reportPkgbuildDiffs_1 p Japanese  = bt p ++ "のPKGBUILDはまだ保存されていない。"
 reportPkgbuildDiffs_1 p Polish   = bt p ++ " nie ma jeszcze przechowywanego pliku PKGBUILD."
 reportPkgbuildDiffs_1 p Croatian = bt p ++ " još nema pohranjen PKGBUILD."
+reportPkgbuildDiffs_1 p German   = bt p ++ " hat noch keinen gespeicherten PKGBUILD."
 reportPkgbuildDiffs_1 p Spanish  = bt p ++ " no tiene PKGBUILD todavía."
 reportPkgbuildDiffs_1 p French   = bt p ++ " n'a pas encore de PKGBUILD enrigistré."
 reportPkgbuildDiffs_1 p Russian  = "У " ++ bt p ++ " ещё нет сохраненного PKGBUILD."
@@ -603,6 +608,7 @@ reportPkgbuildDiffs_2 :: String -> Language -> String
 reportPkgbuildDiffs_2 p Japanese  = bt p ++ "のPKGBUILDは最新。"
 reportPkgbuildDiffs_2 p Polish   = "PKGBUILD pakietu " ++ bt p ++ " jest aktualny."
 reportPkgbuildDiffs_2 p Croatian = "PKGBUILD paketa " ++ bt p ++ " je na najnovijoj verziji."
+reportPkgbuildDiffs_2 p German   = "PKGBUILD von " ++ bt p ++ " ist aktuell."
 reportPkgbuildDiffs_2 p Spanish  = "El PKGBUILD de " ++ bt p ++ " está actualizado."
 reportPkgbuildDiffs_2 p Russian  = "PKGBUILD " ++ bt p ++ " является новейшим."
 reportPkgbuildDiffs_2 p French   = "Le PKGBUILD de " ++ bt p ++ " est à jour."
@@ -614,6 +620,7 @@ reportPkgbuildDiffs_3 :: String -> Language -> String
 reportPkgbuildDiffs_3 p Japanese = bt p ++ "のPKGBUILD変更報告："
 reportPkgbuildDiffs_3 p Polish   = "Zmiany w PKGBUILD dla " ++ bt p ++ ":"
 reportPkgbuildDiffs_3 p Croatian = "Promjene u PKGBUILD-u za " ++ bt p ++ ":"
+reportPkgbuildDiffs_3 p German   = "PKGBUILD Änderungen von " ++ bt p ++ ":"
 reportPkgbuildDiffs_3 p Spanish  = "Cambios en el PKGBUILD de " ++ bt p ++ ":"
 reportPkgbuildDiffs_3 p Russian  = "Изменения, вносимые " ++ bt p ++ " PKGBUILD:"
 reportPkgbuildDiffs_3 p French   = "Changements du PKGBUILD de " ++ bt p
@@ -741,6 +748,7 @@ removeMakeDepsAfter_1 Serbian    = "Уклањање непотребних за
 cleanStates_1 :: Language -> String
 cleanStates_1 Japanese = "入力は数字ではない。"
 cleanStates_1 Croatian = "Unos ne predstavlja broj."
+cleanStates_1 German   = "Eingabe ist keine gültige Zahl."
 cleanStates_1 Serbian  = "Улаз није валидан број."
 cleanStates_1 _        = "Input isn't a valid number."
 
@@ -748,6 +756,7 @@ cleanStates_1 _        = "Input isn't a valid number."
 cleanStates_2 :: Int -> Language -> String
 cleanStates_2 n Japanese = bt (show n) ++ "個のパッケージ状態記録だけが残される。その他削除？"
 cleanStates_2 n Croatian = bt (show n) ++ " stanja paketa će biti zadržano. Ukloniti ostatak?"
+cleanStates_2 n German   = bt (show n) ++ " Paketzustände werden behalten. Den Rest entfernen?"
 cleanStates_2 n Serbian  = bt (show n) ++ " стања пакета ће бити сачувано. Уклонити остатак?"
 cleanStates_2 n _        = bt (show n) ++ " package states will be kept. Remove the rest?"
 
@@ -755,6 +764,7 @@ cleanStates_2 n _        = bt (show n) ++ " package states will be kept. Remove 
 cleanStates_3 :: Language -> String
 cleanStates_3 Japanese = "何も削除しないで終了。"
 cleanStates_3 Croatian = "Nijedno stanje paketa nije uklonjeno."
+cleanStates_3 German   = "Keine Paketzustände wurden entfernt."
 cleanStates_3 Serbian  = "Ниједно стање пакета није уклоњено."
 cleanStates_3 _        = "No package states were removed."
 
@@ -935,7 +945,7 @@ cleanCache_2 Japanese   = "パッケージ・キャッシュは完全に削除�
 cleanCache_2 Polish     = "To usunie WSZYSTKIE pakiety z pamięci podręcznej."
 cleanCache_2 Croatian   = "Ovo će izbrisati CIJELO skladište paketa."
 cleanCache_2 Swedish    = "Detta kommer ta bort HELA paket-cachen."
-cleanCache_2 German     = "Das wird den GESAMTEN Paketcache leeren."
+cleanCache_2 German     = "Dies wird den GESAMTEN Paketcache leeren."
 cleanCache_2 Spanish    = "Esto eliminará POR COMPLETO la caché de paquetes."
 cleanCache_2 Portuguese = "Isso eliminara TODOS OS PACOTES do cache."
 cleanCache_2 French     = "Ceci va COMPLÉTEMENT supprimer le cache des paquets."
@@ -1002,10 +1012,12 @@ cleanCache_6 Serbian    = "Чишћење кеша..."
 -- NEEDS TRANSLATION
 cleanNotSaved_1 :: Language -> String
 cleanNotSaved_1 Japanese = "不要パッケージファイルを確認・・・"
+cleanNotSaved_1 German   = "Bestimme nicht benötigte Paketdateien..."
 cleanNotSaved_1 _        = "Determining unneeded package files..."
 
 cleanNotSaved_2 :: Int -> Language -> String
 cleanNotSaved_2 s Japanese = "「" ++ cyan (show s) ++ "」の不要パッケージファイルあり。削除？"
+cleanNotSaved_2 s German   = cyan (show s) ++ " nicht benötigte Paketdateien gefunden. Löschen?"
 cleanNotSaved_2 s _        = cyan (show s) ++ " unneeded package files found. Delete?"
 
 ----------------------------
@@ -1045,10 +1057,12 @@ reportNotInLog_1 Serbian    = "Ови пакети се не спомињу у �
 -- NEEDS TRANSLATION
 cleanABSTree_1 :: Language -> String
 cleanABSTree_1 Japanese = "ABS Treeの中身を削除？"
+cleanABSTree_1 German   = "Den gesamten ABS Baum löschen?"
 cleanABSTree_1 _        = "Delete the entire ABS Tree?"
 
 cleanABSTree_2 :: Language -> String
 cleanABSTree_2 Japanese = "ABS Treeの中身を削除中・・・"
+cleanABSTree_2 German   = "Lösche ABS Baum..."
 cleanABSTree_2 _        = "Clearing out ABS Tree..."
 
 ----------------------
@@ -1097,12 +1111,14 @@ aurSy Italian    = green "Azioni riguardanti [A]UR.\n" ++ "Di default installa d
 aurSy Serbian    = green "Извршава радње везане за [A]UR.\n" ++ "Уобичајена радња инсталира из AUR-а."
 
 absSy :: Language -> String
-absSy _ = magenta "Perform actions involving the ABS tree.\n" ++ "Default action [M]anually builds from ABS."
+absSy German = magenta "Führe Aktionen aus die den ABS Baum betreffen.\n" ++ "Standardaktion baut [M]anuell aus ABS."
+absSy _      = magenta "Perform actions involving the ABS tree.\n" ++ "Default action [M]anually builds from ABS."
 
 -- NEEDS TRANSLATION
 saveS :: Language -> String
 saveS Japanese = yellow "パッケージの設置状態に関する処理\n" ++ "デフォルトでインストール状態を保存する。"
 saveS Croatian = yellow "Upravlja spremanjem i vraćanjem globalnog stanja paketa.\n" ++ "Prešutna (default) radnja je spremanje trenutnog stanja paketa."
+saveS German   = yellow "Verwalte das [S]peichern und Wiederherstellen des globalen Paketzustände.\n" ++ "Standardaktion sichert die Zustände."
 saveS Serbian  = yellow "Управља чувањем и враћањем глобалног стања пакета.\n" ++ "Уобичајена радња чува тренутно стање."
 saveS _        = yellow "Manage the [S]aving and restoring of the global package state.\n" ++ "Default action saves this state."
 
@@ -1155,6 +1171,7 @@ orpha Serbian    = blue "Извршава радње везане за паке�
 getAURPkgInfo_1 :: Language -> String
 getAURPkgInfo_1 Japanese = "AURのAPIに繋げなかった。ネット接続状態を確認して下さい。"
 getAURPkgInfo_1 Croatian = "Pristup AUR-u nije uspio. Provjerite vašu vezu."
+getAURPkgInfo_1 German   = "AUR API Suche fehlgeschlagen. Bitte überprüfen Sie Ihre Verbindung."
 getAURPkgInfo_1 Serbian  = "Приступ AUR-у није успео. Проверите вашу везу."
 getAURPkgInfo_1 _        = "AUR API lookup failed. Please check your connection."
 
@@ -1202,6 +1219,7 @@ outOfDateMsg False Serbian    = green "Ажуран"
 orphanedMsg :: Maybe String -> Language -> String
 orphanedMsg (Just m) _       = bForeground m
 orphanedMsg Nothing Japanese = red "いない"
+orphanedMsg Nothing German   = red "Verwaist!"
 orphanedMsg Nothing _        = red "Orphaned!"
 
 -----------------------
@@ -1210,29 +1228,36 @@ orphanedMsg Nothing _        = red "Orphaned!"
 -- NEEDS TRANSLATION
 absSync_1 :: Language -> String
 absSync_1 Japanese = "ローカルABS Treeを同期？"
+absSync_1 German   = "Lokalen ABS Baum synchronisieren?"
 absSync_1 _        = "Sync the local ABS Tree?"
 
 absSync_2 :: Language -> String
 absSync_2 Japanese = "ローカルABS Treeを同期中・・・"
+absSync_2 German   = "Synchronisiere lokalen ABS Baum..."
 absSync_2 _        = "Syncing local ABS Tree..."
 
 singleSync_1 :: String -> Language -> String
 singleSync_1 p Japanese = bt p ++ "をABS Treeに同期・・・"
+singleSync_1 p German   = "Synchronisiere " ++ bt p ++ " in den lokalen ABS Baum..."
 singleSync_1 p _        = "Syncing " ++ bt p ++ " to the local ABS Tree..."
 
 absInfoFields :: Language -> [String]
-absInfoFields _ = [ "Repository","Name","Version","Depends On"
+absInfoFields German = [ "Quelle","Name","Version","Hängt ab von","Make Abh.","Beschreibung"]
+absInfoFields _      = [ "Repository","Name","Version","Depends On"
                   , "Make Deps", "Description" ]
 
 repository_1 :: String -> Language -> String
 repository_1 p Japanese = p ++ "はどのリポジトリにもない。"
+repository_1 p German   = p ++ " ist kein Paket in irgendeiner Quelle."
 repository_1 p _        = p ++ " is not a package in any repository."
 
 pkgBuildKeyMissing :: Language -> String -> String
-pkgBuildKeyMissing _ key = "Unable to parse key " ++ key ++ " from PKGBUILD."
+pkgBuildKeyMissing German key = "Kann Schlüssel " ++ key ++ " nicht aus PKGBUILD parsen."
+pkgBuildKeyMissing _      key = "Unable to parse key " ++ key ++ " from PKGBUILD."
 
 missingDescription :: Language -> String
-missingDescription _ = "No description."
+missingDescription German = "Keine Beschreibung."
+missingDescription _      = "No description."
 
 -----------------------
 -- Aura/State functions
@@ -1241,6 +1266,7 @@ missingDescription _ = "No description."
 saveState_1 :: Language -> String
 saveState_1 Japanese = "現在パッケージ状態保存完了。"
 saveState_1 Croatian = "Stanje paketa spremljeno."
+saveState_1 German   = "Paketzustände gesichert."
 saveState_1 Serbian  = "Сачувано стање пакета."
 saveState_1 _        = "Saved package state."
 
@@ -1248,6 +1274,7 @@ saveState_1 _        = "Saved package state."
 restoreState_1 :: Language -> String
 restoreState_1 Japanese = "対象バージョンがないパッケージ："
 restoreState_1 Croatian = "Tražene stare verzije nisu dostupne za:"
+restoreState_1 German   = "Gewünschte Downgradeversionen nicht Verfügbar für:"
 restoreState_1 Serbian  = "Захтеване старе верзије нису доступне за:"
 restoreState_1 _        = "Requested downgrade versions not available for:"
 
@@ -1255,6 +1282,7 @@ restoreState_1 _        = "Requested downgrade versions not available for:"
 reinstallAndRemove_1 :: Language -> String
 reinstallAndRemove_1 Japanese = "パッケージを変更する必要ない。"
 reinstallAndRemove_1 Croatian = "Nema paketa kojima su potrebne izmjene."
+reinstallAndRemove_1 German   = "Keine Pakete brauchen Änderungen."
 reinstallAndRemove_1 Serbian  = "Ниједан пакет не захтева измене."
 reinstallAndRemove_1 _        = "No packages need changing."
 
@@ -1265,6 +1293,7 @@ reinstallAndRemove_1 _        = "No packages need changing."
 circDep_1 :: String -> Language -> String
 circDep_1 p Japanese = bt p ++ "と互いに従属している。"
 circDep_1 p Croatian = "Ima kružnu zavisnost sa " ++ bt p ++ "."
+circDep_1 p German   = "Hat eine zirkuläre Abhängigkeit mit " ++ bt p ++ "."
 circDep_1 p Serbian  = "Има кружну зависност са " ++ bt p ++ "."
 circDep_1 p _        = "Has a circular dependency with " ++ bt p ++ "."
 
@@ -1272,6 +1301,7 @@ circDep_1 p _        = "Has a circular dependency with " ++ bt p ++ "."
 bashisms_1 :: Language -> String
 bashisms_1 Japanese = "PKGBUILDのBashコードが複雑すぎる。"
 bashisms_1 Croatian = "Previše „bash-izama“ u PKGBUILD-u."
+bashisms_1 German   = "Zu viele „bashismen“ im PKGBUILD."
 bashisms_1 Serbian  = "Превише „bash-изама“ у PKGBUILD-у."
 bashisms_1 _        = "Too many bashisms in PKGBUILD."
 
@@ -1282,6 +1312,7 @@ bashisms_1 _        = "Too many bashisms in PKGBUILD."
 pacmanFailure_1 :: Language -> String
 pacmanFailure_1 Japanese = "入力を確認して下さい。"
 pacmanFailure_1 Croatian = "Provjerite vaš unos."
+pacmanFailure_1 German   = "Bitte überprüfen Sie Ihre Eingabe."
 pacmanFailure_1 Serbian  = "Молим Вас, проверите ваш унос."
 pacmanFailure_1 _        = "Please check your input."
 
@@ -1305,4 +1336,5 @@ hotEdit_1 p Serbian    = "Желите ли да измените PKGBUILD за 
 customizepkg_1 :: Language -> String
 customizepkg_1 Japanese = bt "customizepkg" ++ "はインストールされていない。"
 customizepkg_1 Croatian = bt "customizepkg" ++ "nije instaliran."
+customizepkg_1 German   = bt "customizepkg" ++ "ist nicht installiert."
 customizepkg_1 _        = bt "customizepkg" ++ "isn't installed."
