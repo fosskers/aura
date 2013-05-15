@@ -34,6 +34,7 @@ module Aura.Monad.Aura
 
 import Control.Monad.Reader
 import Control.Monad.Error
+import Control.Applicative
 
 import Aura.Settings.Base (Settings)
 
@@ -50,7 +51,8 @@ ask     : Obtain run-time settings.
 runAura : Unwraps an Aura action. Must be passed `Settings` as well.
 -}
 newtype Aura a = A { runA :: ErrorT AuraError (ReaderT Settings IO) a }
-  deriving (Monad, MonadError AuraError, MonadReader Settings, MonadIO, Functor)
+  deriving ( Monad, MonadError AuraError, MonadReader Settings, MonadIO
+           , Functor, Applicative)
 
 -- This needs to be expanded.
 data AuraError = M String deriving (Eq,Show)

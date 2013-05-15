@@ -123,7 +123,7 @@ extrapolated stops = do
 
 bracePair :: Parser [String]
 bracePair = between (char '{') (char '}') innards <?> "valid {...} string"
-    where innards = fmap concat (extrapolated ",}" `sepBy` char ',')
+    where innards = concat `fmap` (extrapolated ",}" `sepBy` char ',')
 
 ------------------
 -- `IF` STATEMENTS
