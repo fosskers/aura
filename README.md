@@ -189,9 +189,9 @@ Uninstall all orphan packages:
 
 More information is available in aura's manpage.
 
-Localisation
+Localization
 ============
 As mentioned in the Philosophy above, adding new languages to Aura is
 quite easy. If you speak a language other than those available and
-would like it added to Aura, please consult the Localisation Guide
+would like it added to Aura, please consult the Localization Guide
 provided.
