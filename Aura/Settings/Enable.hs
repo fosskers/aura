@@ -35,7 +35,7 @@ import Aura.Flags
 
 import Aura.Packages.ABS (absTree)
 
-import Utilities (ifM2,nothing)
+import Utilities (ifM2,nothing,readFileUTF8)
 import Shell
 
 ---
@@ -45,7 +45,7 @@ getSettings lang (auraFlags,input,pacOpts) = do
   confFile    <- getPacmanConf
   environment <- getEnvironment
   pmanCommand <- getPacmanCmd environment $ noPowerPillStatus auraFlags
-  makepkgConf <- readFile makepkgConfFile
+  makepkgConf <- readFileUTF8 makepkgConfFile
   buildPath'  <- checkBuildPath (buildPath auraFlags) (getCachePath confFile)
   tree        <- absTree
   let language = checkLang lang environment

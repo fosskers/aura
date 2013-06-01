@@ -29,6 +29,7 @@ import Aura.Pkgbuild.Base
 import Aura.Monad.Aura
 import Aura.Core (Buildable, pkgNameOf, pkgbuildOf)
 
+import Utilities (readFileUTF8)
 import ColourDiff
 
 ---
@@ -43,7 +44,7 @@ storePkgbuilds :: Buildable a => [a] -> Aura ()
 storePkgbuilds = mapM_ (\p -> writePkgbuild (pkgNameOf p) (pkgbuildOf p))
 
 readPkgbuild :: String -> Aura String
-readPkgbuild = liftIO . readFile . pkgbuildPath
+readPkgbuild = liftIO . readFileUTF8 . pkgbuildPath
 
 writePkgbuild :: String -> String -> Aura ()
 writePkgbuild name p = liftIO $ writeFile (pkgbuildPath name) p

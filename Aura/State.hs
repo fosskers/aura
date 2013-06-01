@@ -47,7 +47,7 @@ import Aura.Languages
 import Aura.Cache
 import Aura.Time
 
-import Utilities (getSelection)
+import Utilities (getSelection, readFileUTF8)
 import Shell     (ls')
 
 ---
@@ -117,7 +117,7 @@ restoreState = ask >>= \ss -> do
   reinstallAndRemove (mapMaybe (getFilename cache) okay) remo
 
 readState :: FilePath -> Aura PkgState
-readState name = liftIO (read `fmap` readFile (stateCache </> name))
+readState name = liftIO (read `fmap` readFileUTF8 (stateCache </> name))
 
 -- How does pacman do simultaneous removals and upgrades?
 -- I've seen it happen plenty of times.

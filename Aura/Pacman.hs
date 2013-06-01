@@ -69,7 +69,7 @@ getPacmanCmd env nopp =
            | otherwise -> return defaultCmd
 
 getPacmanConf :: IO String
-getPacmanConf = readFile pacmanConfFile
+getPacmanConf = readFileUTF8 pacmanConfFile
 
 getConfFileField :: String -> String -> [String]
 getConfFileField confFile field = words $ takeWhile (/= '\n') entry

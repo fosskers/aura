@@ -36,7 +36,7 @@ import Aura.Languages
 import Aura.Utils
 import Aura.Core
 
-import Utilities (openEditor, ifFile, ifM, nothing)
+import Utilities (openEditor, ifFile, ifM, nothing, readFileUTF8)
 import Shell     (getEditor, quietShellCmd)
 
 ---
@@ -46,7 +46,7 @@ edit f p = do
   newPB <- liftIO $ do
              writeFile filename $ pkgbuildOf p
              f filename
-             readFile filename
+             readFileUTF8 filename
   rewrap p `fmap` namespace (pkgNameOf p) newPB  -- Reparse PKGBUILD.
       where filename = "PKGBUILD"
 

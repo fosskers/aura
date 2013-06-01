@@ -37,7 +37,7 @@ import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages
 
-import Utilities (searchLines)
+import Utilities (searchLines,readFileUTF8)
 
 ---
 
@@ -47,7 +47,7 @@ viewLogFile logFilePath = shellCmd "less" [logFilePath]
 -- Very similar to `searchCache`. But is this worth generalizing?
 searchLogFile :: [String] -> Aura ()
 searchLogFile input = ask >>= \ss -> liftIO $ do
-  logFile <- lines `fmap` readFile (logFilePathOf ss)
+  logFile <- lines `fmap` readFileUTF8 (logFilePathOf ss)
   mapM_ putStrLn $ searchLines (unwords input) logFile
 
 logInfoOnPkg :: [String] -> Aura ()

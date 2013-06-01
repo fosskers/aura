@@ -41,7 +41,6 @@ module Bash.Simplify
 
 import Control.Monad.Trans.State.Lazy
 import Text.Regex.PCRE ((=~))
-import Control.Monad   (liftM)
 import Data.Maybe      (fromMaybe)
 
 import Bash.Base
@@ -61,12 +60,12 @@ simpNamespace ns = snd . simplify ns
 
 replace :: [Field] -> State Namespace [Field]
 replace []     = return []
-replace (IfBlock i : rs) = replaceIf i >>= \fs -> (fs ++) `liftM` replace rs
-replace (f:fs) = replace' f >>= \f' -> (f' :) `liftM` replace fs
+replace (IfBlock i : rs) = replaceIf i >>= \fs -> (fs ++) `fmap` replace rs
+replace (f:fs) = replace' f >>= \f' -> (f' :) `fmap` replace fs
 
 replace' :: Field -> State Namespace Field
-replace' (Function n fs) = Function n `liftM` replace fs
-replace' (Command  n bs) = Command  n `liftM` mapM replaceStr bs
+replace' (Function n fs) = Function n `fmap` replace fs
+replace' (Command  n bs) = Command  n `fmap` mapM replaceStr bs
 replace' (Variable n bs) = do
   bs' <- mapM replaceStr bs
   get >>= put . insert n bs'  -- Update the Namespace.
@@ -75,24 +74,24 @@ replace' somethingElse = return somethingElse
 
 replaceStr :: BashString -> State Namespace BashString
 replaceStr s@(SingleQ _) = return s
-replaceStr (DoubleQ s)   = DoubleQ `liftM` replaceStr' s
-replaceStr (NoQuote s)   = NoQuote `liftM` replaceStr' s
-replaceStr (Backtic f)   = Backtic `liftM` replace' f
+replaceStr (DoubleQ s)   = DoubleQ `fmap` replaceStr' s
+replaceStr (NoQuote s)   = NoQuote `fmap` replaceStr' s
+replaceStr (Backtic f)   = Backtic `fmap` replace' f
 
 -- | Doesn't yet support ${foo[...]}
 replaceStr' :: String -> State Namespace String
 replaceStr' s = get >>= \ns ->
    case s =~ "\\${?[\\w]+}?" :: (String,String,String) of
      (_,"",_) -> return s
-     (b,m,a)  -> ((b ++ replaced) ++) `liftM` replaceStr' a
-         where replaced = fromMaybe m (head `liftM` getVar ns m')
+     (b,m,a)  -> ((b ++ replaced) ++) `fmap` replaceStr' a
+         where replaced = fromMaybe m (head `fmap` getVar ns m')
                m'       = filter (`notElem` "${}") m
 
 -- | An `if` statement can have an [el]if or [el]se, but it might not.
 replaceIf :: BashIf -> State Namespace [Field]
 replaceIf i@(If (Comp l r) fs el) = do
-  left  <- fromBashString `liftM` replaceStr l
-  right <- fromBashString `liftM` replaceStr r
+  left  <- fromBashString `fmap` replaceStr l
+  right <- fromBashString `fmap` replaceStr r
   if left == right  -- Only checks for equality at the moment.
      then replace fs
      else case el of

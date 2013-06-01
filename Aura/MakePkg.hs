@@ -40,13 +40,17 @@ import Shell (pwd, ls)
 makepkgConfFile :: FilePath
 makepkgConfFile = "/etc/makepkg.conf"
 
+makepkgCmd :: FilePath
+makepkgCmd = "/usr/bin/makepkg"
+
+-- TODO: Clean this up.
 -- | Make a source package.
 makepkgSource :: String -- ^ User
-              -> Bool -- ^ Include downloaded sources (--allsource)
+              -> Bool   -- ^ Include downloaded sources (--allsource)
               -> Aura [FilePath]
 makepkgSource user allsource =
   let allsourceOpt = if allsource then "--allsource" else "-S"
-      (cmd, opts) = determineRunStyle user [allsourceOpt]
+      (cmd, opts)  = determineRunStyle user [allsourceOpt]
   in quietShellCmd cmd opts >> filter (=~ ".src.tar") `fmap` liftIO (pwd >>= ls)
 
 -- Builds a package with `makepkg`.
@@ -57,8 +61,8 @@ makepkgGen f user =
       where (cmd,opts) = determineRunStyle user []
 
 determineRunStyle :: String -> [String] -> (String,[String])
-determineRunStyle "root" opts = ("makepkg",["--asroot"] ++ opts)
-determineRunStyle user opts = ("su",[user,"-c","makepkg " ++ intercalate " " opts])
+determineRunStyle "root" opts = (makepkgCmd,["--asroot"] ++ opts)
+determineRunStyle user opts = ("su",[user,"-c",makepkgCmd ++ intercalate " " opts])
 
 makepkgQuiet :: String -> Aura [FilePath]
 makepkgQuiet user = makepkgGen quiet user

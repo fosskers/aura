@@ -43,6 +43,8 @@ import Aura.Utils
 import Aura.Bash
 import Aura.Core
 
+import Aura.Colour.Text
+
 import Utilities (notNull)
 
 ---
