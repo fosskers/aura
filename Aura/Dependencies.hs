@@ -104,10 +104,7 @@ depCheck bh ps = depCheck' bh ps (graph [], [], [])
 depCheck' :: (Package p, Buildable b)
           => BuildHandle -> [b] -> (DepGraph b, DepMap p, DepMap String)
           -> Aura ([b],[p],[String])
-depCheck' _ [] (g,s,v)              = do
-  liftIO $ print $ raw g
-  liftIO $ print $ allNodes g
-  return (allNodes g, map snd s, map snd v)
+depCheck' _ [] (g,s,v)              = return (allNodes g, map snd s, map snd v)
 depCheck' bh (p:ps) (a@(_,_,k),s,v) = do  -- `p` will never be in the Graph.
   let ns    = namespaceOf p
       df dm = filter (\d -> alNotElem d dm)
