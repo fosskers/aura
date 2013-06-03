@@ -80,7 +80,7 @@ install' custom subConflict bh pacOpts pkgs = ask >>= \ss -> do
   if not continue
      then scoldAndFail install_4
      else do
-       let f = map (\p -> if pkgNameOf p `elem` okay then (p,"") else (p,"--deps"))
+       let f = map (\p -> if pkgNameOf p `elem` okay then (p,"") else (p,"--asdeps"))
        unless (null subDeps) $ subBuild bh subDeps
        storePkgbuilds mainPkgs'
        mapM_ (buildAndInstall pacOpts) $ f mainPkgs'

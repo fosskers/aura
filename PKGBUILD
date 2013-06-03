@@ -2,7 +2,7 @@
 _hkgname=aura
 pkgname=aura
 pkgver=1.2.0.1
-pkgrel=1
+pkgrel=2
 pkgdesc="A secure package manager for Arch Linux and the AUR written in Haskell."
 url="https://github.com/fosskers/aura"
 license=('GPL-3')
@@ -17,7 +17,7 @@ provides=('aura')
 conflicts=('aura-git' 'aura-bin')
 options=('strip')
 source=(https://bitbucket.org/fosskers/aura/downloads/${_hkgname}-${pkgver}.tar.gz)
-md5sums=('570bfc80e6adc24836a75266061b5967')
+md5sums=('9d2b181afb77a72ca29144c63bf9b8af')
 
 build() {
     cd ${srcdir}/${_hkgname}-${pkgver}
