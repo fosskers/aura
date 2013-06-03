@@ -1,6 +1,6 @@
 name:                aura
 
-version:             1.2.0.0
+version:             1.2.0.1
 
 synopsis:            A secure package manager for Arch Linux and the AUR, written in Haskell.
 
@@ -52,6 +52,7 @@ executable aura
                        Aura.Build,
                        Aura.Cache,
                        Aura.Flags,
+                       Aura.Graph,
                        Aura.Install,
                        Aura.Shell,
                        Aura.State,

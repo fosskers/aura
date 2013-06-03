@@ -1,5 +1,9 @@
 Aura Changelog
 ==============
+1.2.0.1
+-------
+- Fixes dependency build order bug.
+
 1.2.0.0
 -------
 - New operator `-M` for building ABS packages. Has its own family of options.
