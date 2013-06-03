@@ -27,8 +27,6 @@ module Aura.Dependencies
   , depCheck
   , depsToInstall ) where
 
-import qualified Data.Map.Lazy as M
-
 import Control.Monad   (filterM)
 import Data.Maybe      (fromJust, mapMaybe)
 import Data.List       ((\\))
@@ -39,13 +37,12 @@ import Aura.Packages.Virtual
 import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages
+import Aura.Graph
 import Aura.Utils
 import Aura.Bash
 import Aura.Core
 
-import Aura.Colour.Text
-
-import Utilities (notNull)
+import Utilities (notNull, alNotElem)
 
 ---
 
@@ -58,7 +55,9 @@ These can (or should) freely overlap.
 
 -}
 
-type DepMap a = M.Map String a
+data PkgStatus = Main | Dep deriving (Eq,Show)
+
+type DepMap a = [(String,a)]
 
 -- `PkgFilter` is in the Aura Monad, so this function must be too.
 divideByPkgType :: PkgFilter -> PkgFilter -> [String]
@@ -75,43 +74,54 @@ divideByPkgType subPF' mainPF' pkgs = do
 -- | Returns all dependencies to be installed, or fails nicely.
 depsToInstall :: (Package p, Buildable b)
               => (Settings -> p -> Maybe ErrMsg) -> BuildHandle -> [b]
-              -> Aura ([p],[b])
+              -> Aura ([b],[p])
 depsToInstall _ _ [] = ask >>= failure . getDepsToInstall_1 . langOf
 depsToInstall subConflict bh pkgs = ask >>= \ss -> do
-  (subs,mains,virts) <- depCheck bh pkgs
-  necSubPkgs  <- filterM (mustInstall . show) subs
-  necMainPkgs <- filterM (mustInstall . show) mains
-  necVirPkgs  <- filterM mustInstall virts >>= packages
-  let flicts = conflicts subConflict ss (necSubPkgs,necMainPkgs,necVirPkgs)
+  (mains,subs,virts) <- depCheck bh pkgs
+  subPkgs  <- filterM (mustInstall . show) subs
+  mainPkgs <- filterM (depFilter pkgs) mains
+  virPkgs  <- filterM mustInstall virts >>= packages
+  let flicts = conflicts subConflict ss (subPkgs,mainPkgs,virPkgs)
   if notNull flicts
      then failure $ unlines flicts
      else do
-       let providers = map (pkgNameOf . fromJust . providerPkgOf) necVirPkgs
-       providers' <- packages $ (providers \\ map pkgNameOf necSubPkgs)
-       return (providers' ++ necSubPkgs, necMainPkgs)
+       let providers = map (pkgNameOf . fromJust . providerPkgOf) virPkgs
+       providers' <- packages $ (providers \\ map pkgNameOf subPkgs)
+       return (mainPkgs, providers' ++ subPkgs)
+
+-- | The packages originally asked to install for should always pass.
+depFilter :: Buildable b => [b] -> b -> Aura Bool
+depFilter ps b = if b `elem` ps then return True else mustInstall $ show b
 
 depCheck :: (Package p, Buildable b)
-         => BuildHandle -> [b] -> Aura ([p],[b],[String])
-depCheck bh ps = depCheck' bh ps (M.empty, M.empty, M.empty)
+         => BuildHandle -> [b] -> Aura ([b],[p],[String])
+depCheck bh ps = depCheck' bh ps (graph [], [], [])
 
 -- Recall that using `show` on a Package gives a String in the form:
 -- `name>=version`  where `>=` could really be any of the comparison operators.
 -- Virtual package names taken from PKGBUILDs should already be in this form,
 -- so they need not be `show`n.
 depCheck' :: (Package p, Buildable b)
-          => BuildHandle -> [b] -> (DepMap p, DepMap b, DepMap String)
-          -> Aura ([p],[b],[String])
-depCheck' _ [] (s,m,v)      = return (M.elems s, M.elems m, M.elems v)
-depCheck' bh (p:ps) (s,m,v) = do
+          => BuildHandle -> [b] -> (DepGraph b, DepMap p, DepMap String)
+          -> Aura ([b],[p],[String])
+depCheck' _ [] (g,s,v)              = do
+  liftIO $ print $ raw g
+  liftIO $ print $ allNodes g
+  return (allNodes g, map snd s, map snd v)
+depCheck' bh (p:ps) (a@(_,_,k),s,v) = do  -- `p` will never be in the Graph.
   let ns    = namespaceOf p
-      df dm = filter (\d -> M.notMember d dm)
+      df dm = filter (\d -> alNotElem d dm)
       deps  = concatMap (value ns) ["depends","makedepends","checkdepends"]
-      deps' = df v . df s . df m $ deps
+      deps' = filter (not . k . fst . pnvd) . df v . df s $ deps
   (subNames,mainNames,other) <- divideByPkgType (subPF bh) (mainPF bh) deps'
-  mainPkgs <- packages mainNames
+  let mainNames' = filter (`notElem` map show ps) mainNames
+  mainPkgs <- packages mainNames'
   subPkgs  <- packages subNames
-  depCheck' bh (ps ++ mainPkgs) (i show s subPkgs, i show m mainPkgs, i id v other)
-      where i f = foldl (\acc x -> M.insert (f x) x acc)
+  depCheck' bh (ps ++ mainPkgs) ( graphAdd (p,pkgNameOf p,map (fst . pnvd) deps) a
+                                , i show s subPkgs
+                                , i id v other )
+      where i f  = foldr (\x acc -> ((f x),x) : acc)
+            pnvd = parseNameAndVersionDemand
 
 -- Moving to a libalpm backend will make this less hacked.
 -- | If a package isn't installed, `pacman -T` will yield a single name.

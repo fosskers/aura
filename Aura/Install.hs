@@ -74,16 +74,16 @@ install' custom subConflict bh pacOpts pkgs = ask >>= \ss -> do
   handler <- pbHandler
   toBuild <- mapM custom okay >>= pkgbuildDiffs >>= handler
   notify install_5
-  (subDeps,mainDeps) <- catch (depsToInstall subConflict bh toBuild) depCheckFailure
-  reportPkgsToInstall bh subDeps mainDeps toBuild
+  (mainPkgs',subDeps) <- catch (depsToInstall subConflict bh toBuild) depCheckFailure
+  reportPkgsToInstall bh subDeps mainPkgs'
   continue <- optionalPrompt install_3
   if not continue
      then scoldAndFail install_4
      else do
+       let f = map (\p -> if pkgNameOf p `elem` okay then (p,"") else (p,"--deps"))
        unless (null subDeps) $ subBuild bh subDeps
-       storePkgbuilds $ toBuild ++ mainDeps
-       mapM_ (buildAndInstallDep pacOpts) mainDeps
-       buildPackages toBuild >>= installPkgFiles pacOpts
+       storePkgbuilds mainPkgs'
+       mapM_ (buildAndInstall pacOpts) $ f mainPkgs'
 
 -- | The user can handle PKGBUILDs in multiple ways.
 -- `--hotedit` takes the highest priority.
@@ -107,20 +107,19 @@ badPkgCheck (p:ps) = ask >>= \ss ->
 depCheckFailure :: String -> Aura a
 depCheckFailure m = scold install_1 >> failure m
 
-buildAndInstallDep :: Buildable b => [String] -> b -> Aura ()
-buildAndInstallDep pacOpts pkg =
+buildAndInstall :: Buildable b => [String] -> (b,String) -> Aura ()
+buildAndInstall pacOpts (pkg,flag) =
   pbHandler >>= \h -> h [pkg] >>= buildPackages >>=
-  installPkgFiles ("--asdeps" : pacOpts)
+  installPkgFiles (flag : pacOpts)
 
 ------------
 -- REPORTING
 ------------
-reportPkgsToInstall :: (Package p1, Package p2, Package p3) =>
-                       BuildHandle -> [p1] -> [p2] -> [p3] -> Aura ()
-reportPkgsToInstall bh sd md mp = langOf `fmap` ask >>= \lang -> do
+reportPkgsToInstall :: (Package p1, Package p2) =>
+                       BuildHandle -> [p1] -> [p2] -> Aura ()
+reportPkgsToInstall bh sd mp = langOf `fmap` ask >>= \lang -> do
   pl (reportPkgsToInstall_1    lang) (sort $ map pkgNameOf sd)
-  pl (reportPkgsToInstall_2 la lang) (sort $ map pkgNameOf md)
-  pl (reportPkgsToInstall_3 la lang) (sort $ map pkgNameOf mp)
+  pl (reportPkgsToInstall_2 la lang) (sort $ map pkgNameOf mp)
       where pl = printList green cyan
             la = pkgLabel bh
 

@@ -180,3 +180,14 @@ ifFile a1 a2 file x = ifM (liftIO $ doesFileExist file) a1 a2 x
 
 nothing :: Monad m => m ()
 nothing = return ()
+
+--------------------
+-- Association Lists
+--------------------
+alElem :: Eq k => k -> [(k,a)] -> Bool
+alElem k al = case lookup k al of
+                Nothing -> False
+                Just _  -> True
+
+alNotElem :: Eq k => k -> [(k,a)] -> Bool
+alNotElem k = not . alElem k

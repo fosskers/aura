@@ -48,8 +48,10 @@ putStrLnA colour s = putStrA colour $ s ++ "\n"
 putStrLnA' :: Colouror -> String -> String
 putStrLnA' colour s = putStrA' colour s ++ "\n"
 
+-- Added `hFlush` here because some output appears to lag sometimes.
 putStrA :: Colouror -> String -> Aura ()
 putStrA colour = liftIO . putStr . putStrA' colour
+--putStrA colour s = liftIO (putStr (putStrA' colour s) >> hFlush stdout)
 
 putStrA' :: Colouror -> String -> String
 putStrA' colour s = "aura >>= " ++ colour s

@@ -41,3 +41,11 @@ trueVersion :: Namespace -> String
 trueVersion ns = pkgver ++ "-" ++ pkgrel
     where pkgver = head $ value ns "pkgver"
           pkgrel = head $ value ns "pkgrel"
+{-}
+    where foo s = case value ns s of
+                    [] -> error "error in trueVersion!!!"
+                    vn -> head vn
+          pkgver = foo "pkgver"
+          pkgrel = foo "pkgrel"
+-}                  
+

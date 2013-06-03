@@ -563,6 +563,12 @@ reportPkgsToInstall_1 Russian    = "Зависимости из репозито
 reportPkgsToInstall_1 Italian    = "Dipendenze nei repository:"
 reportPkgsToInstall_1 Serbian    = "Зависности из ризница:"
 
+-- NEEDS AN UPDATE
+reportPkgsToInstall_2 :: String -> Language -> String
+reportPkgsToInstall_2 l Japanese = l ++ "のパッケージ:"
+reportPkgsToInstall_2 l _        = l ++ " Packages:"
+
+{-} 
 reportPkgsToInstall_2 :: String -> Language -> String
 reportPkgsToInstall_2 l English    = l ++ " dependencies:"
 reportPkgsToInstall_2 l Japanese   = l ++ "の従属パッケージ："
@@ -590,6 +596,7 @@ reportPkgsToInstall_3 l French     = "Principaux paquets " ++ l ++ " :"
 reportPkgsToInstall_3 l Russian    = "Главные пакеты из " ++ l ++ ":"
 reportPkgsToInstall_3 l Italian    = "Pacchetto principale di " ++ l ++ ":"
 reportPkgsToInstall_3 l Serbian    = "Главни пакети из " ++ l ++ "-а:"
+-}
 
 -- Needs translations.
 reportPkgbuildDiffs_1 :: String -> Language -> String

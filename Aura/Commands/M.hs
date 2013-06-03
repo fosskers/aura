@@ -129,8 +129,8 @@ displayPkgDeps :: [String] -> Aura ()
 displayPkgDeps []   = return ()
 displayPkgDeps pkgs = do
   ps <- pkgsInTree pkgs >>= packages
-  (s,m,_) <- depCheck (defaultHandle []) ps :: Aura ([RepoPkg],[ABSPkg],[String])
-  I.reportPkgsToInstall (defaultHandle []) s m ([] :: [ABSPkg])
+  (m,s,_) <- depCheck (defaultHandle []) ps :: Aura ([ABSPkg],[RepoPkg],[String])
+  I.reportPkgsToInstall (defaultHandle []) s m
 
 displayAbsPkgInfo :: ABSPkg -> Aura ()
 displayAbsPkgInfo pkg = ask >>= liftIO . putStrLn . renderPkgInfo pkg
