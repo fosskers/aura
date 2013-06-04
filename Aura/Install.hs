@@ -80,7 +80,7 @@ install' custom subConflict bh pacOpts pkgs = ask >>= \ss -> do
   if not continue
      then scoldAndFail install_4
      else do
-       let f = map (\p -> if pkgNameOf p `elem` okay then (p,"") else (p,"--asdeps"))
+       let f = map (\p -> if pkgNameOf p `elem` okay then (p,Nothing) else (p,Just "--asdeps"))
        unless (null subDeps) $ subBuild bh subDeps
        storePkgbuilds mainPkgs'
        mapM_ (buildAndInstall pacOpts) $ f mainPkgs'
@@ -107,10 +107,12 @@ badPkgCheck (p:ps) = ask >>= \ss ->
 depCheckFailure :: String -> Aura a
 depCheckFailure m = scold install_1 >> failure m
 
-buildAndInstall :: Buildable b => [String] -> (b,String) -> Aura ()
+buildAndInstall :: Buildable b => [String] -> (b,Maybe String) -> Aura ()
 buildAndInstall pacOpts (pkg,flag) =
   pbHandler >>= \h -> h [pkg] >>= buildPackages >>=
-  installPkgFiles (flag : pacOpts)
+  installPkgFiles (pacOpts' flag)
+      where pacOpts' Nothing   = pacOpts
+            pacOpts' (Just po) = po : pacOpts
 
 ------------
 -- REPORTING
