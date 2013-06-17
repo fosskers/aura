@@ -566,6 +566,7 @@ reportPkgsToInstall_1 Serbian    = "Зависности из ризница:"
 -- NEEDS AN UPDATE
 reportPkgsToInstall_2 :: String -> Language -> String
 reportPkgsToInstall_2 l Japanese = l ++ "のパッケージ:"
+reportPkgsToInstall_2 l German   = l ++ " Pakete:"
 reportPkgsToInstall_2 l _        = l ++ " Packages:"
 
 {-} 
