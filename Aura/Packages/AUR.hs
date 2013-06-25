@@ -33,7 +33,7 @@ module Aura.Packages.AUR
 
 import Control.Applicative ((<$>), (<*>), pure)
 import System.FilePath     ((</>))
-import Data.List           (intercalate)
+import Data.List           (intercalate, sortBy)
 import Text.JSON
 
 import Aura.Conflicts (buildableConflicts)
@@ -127,7 +127,8 @@ getAURPkgInfo items t = do
   infoJSON <- liftIO . urlContents . rpcUrl t $ items
   case resultToEither $ parseInfoJSON infoJSON of
     Left _     -> scoldAndFail getAURPkgInfo_1
-    Right info -> return info
+    Right info -> return info'
+      where info' = sortBy (\x -> \y -> compare (nameOf x) (nameOf y)) info
 
 parseInfoJSON :: String -> Result [PkgInfo]
 parseInfoJSON json = decode json >>= apiFailCheck >>= forgePkgInfo
