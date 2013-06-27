@@ -62,7 +62,7 @@ makepkgGen f user =
 
 determineRunStyle :: String -> [String] -> (String,[String])
 determineRunStyle "root" opts = (makepkgCmd,["--asroot"] ++ opts)
-determineRunStyle user opts = ("su",[user,"-c",makepkgCmd ++ intercalate " " opts])
+determineRunStyle user opts = ("su",[user,"-c",makepkgCmd ++ " " ++ intercalate " " opts])
 
 makepkgQuiet :: String -> Aura [FilePath]
 makepkgQuiet user = makepkgGen quiet user
