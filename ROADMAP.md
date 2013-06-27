@@ -18,6 +18,6 @@ Aura Development Roadmap
 2.0.0.0
 -------
 - Full release from `pacman`.
-- Aura will accend to the status of full package manager and
+- Aura will ascend to the status of full package manager and
   be completely based on libalpm. It will be a full replacement
   for pacman.
