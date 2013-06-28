@@ -135,4 +135,4 @@ moveToSourcePath []     = return []
 moveToSourcePath (p:ps) = do
   let newName = srcPkgStore </> p
   liftIO $ mv p newName
-  (newName :) `fmap` moveToBuildPath ps
+  (newName :) `fmap` moveToSourcePath ps
