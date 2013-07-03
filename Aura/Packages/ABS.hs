@@ -66,6 +66,7 @@ import qualified Shell      as Sh (quietShellCmd)
 ---------------
 -- ABS Packages
 ---------------
+-- | ABSPkg name repository version pkgbuild parsed_pkgbuild
 data ABSPkg = ABSPkg String String VersionDemand Pkgbuild Namespace
 
 instance Package ABSPkg where

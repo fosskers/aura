@@ -61,6 +61,22 @@ filterRepoPkgs pkgs = do
           specs (c:cs) | c `elem` "+" = ['[',c,']'] ++ specs cs
                        | otherwise    = c : specs cs
 
+{- Get only those packages that are not already installed
+  This is, sadly, a bit of a hack. The reason we do this is that
+  otherwise ABS installs using --absdeps tend to fail when they reach
+  a split/virtual package and cannot sync it. By filtering already
+  installed packages the user can circumvemt this problem.
+-}
+filterInstalledPkgs :: PkgFilter
+filterInstalledPkgs pkgs = do
+  repoPkgs <- lines `fmap` pacmanOutput ["-Qsq",pkgs']
+  return $ filter (`notElem` repoPkgs) pkgs
+    where pkgs' = "^(" ++ prep pkgs ++ ")$"
+          prep  = specs . intercalate "|"
+          specs []     = []
+          specs (c:cs) | c `elem` "+" = ['[',c,']'] ++ specs cs
+                       | otherwise    = c : specs cs
+
 ignoreRepos :: PkgFilter
 ignoreRepos _ = return []
 
