@@ -55,6 +55,7 @@ module Aura.Commands.M
 
 import System.Directory (removeDirectoryRecursive, createDirectory)
 import Text.Regex.PCRE  ((=~))
+import Control.Monad ((>=>))
 import Data.Maybe       (catMaybes)
 
 import qualified Aura.Install as I
@@ -89,7 +90,7 @@ defaultHandle pacOpts =
 manualHandle :: [String] -> BuildHandle
 manualHandle _ = BH { pkgLabel = "ABS"
                     , initialPF = filterABSPkgs
-                    , mainPF    = filterABSPkgs
+                    , mainPF    = filterABSPkgs >=> filterInstalledPkgs
                     , subPF     = \_  -> return []
                     , subBuild  = \_  -> return () }
 
