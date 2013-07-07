@@ -33,19 +33,19 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Shell where
 
 -- System Libraries
-import System.FilePath ((</>))
-import System.Process  (readProcess, readProcessWithExitCode, rawSystem)
-import Control.Monad   (void)
 import Control.Exception (catchJust)
-import System.Exit     (ExitCode(..))
-import Data.Maybe      (fromMaybe, fromJust)
-import Data.List       (intercalate)
-import System.Directory ( getDirectoryContents
-                        , setCurrentDirectory
-                        , getCurrentDirectory
-                        , removeFile
-                        , renameFile
-                        , copyFile )
+import System.FilePath   ((</>))
+import System.Process    (readProcess, readProcessWithExitCode, rawSystem)
+import Control.Monad     (void)
+import Data.Maybe        (fromMaybe, fromJust)
+import Data.List         (intercalate)
+import System.Directory  ( getDirectoryContents
+                         , setCurrentDirectory
+                         , getCurrentDirectory
+                         , removeFile
+                         , renameFile
+                         , copyFile )
+
 import GHC.IO.Exception
 
 ---
@@ -74,10 +74,8 @@ ls'' p = map (p </>) `fmap` ls' p
 
 mv :: FilePath -> FilePath -> IO ()
 mv f f' = catchJust unsupported (renameFile f f') (\_ -> cp f f' >> rm f)
-  where
-    unsupported x = case x of
-      IOError _ UnsupportedOperation _ _ _ _ -> Just x
-      _ -> Nothing 
+  where unsupported x@(IOError _ UnsupportedOperation _ _ _ _) = Just x
+        unsupported _ = Nothing
 
 cd :: FilePath -> IO ()
 cd = setCurrentDirectory
