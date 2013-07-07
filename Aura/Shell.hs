@@ -50,7 +50,7 @@ quietShellCmd' cmd args = liftIO $ S.quietShellCmd' cmd args
 
 -- Should it report _what_ call failed?
 checkExitCode :: ExitCode -> Aura ()
-checkExitCode = checkExitCode' "Raw shell command call failed."
+checkExitCode = checkExitCode' ""
 
 checkExitCode' :: String -> ExitCode -> Aura ()
 checkExitCode' s ec | S.didProcessSucceed ec = return ()
