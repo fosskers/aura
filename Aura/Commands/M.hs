@@ -154,4 +154,4 @@ renderSearch pat pkg = repo ++ "/" ++ n ++ " " ++ v ++ " \n    " ++ d
           ns   = namespaceOf pkg
           n    = c bForeground $ pkgNameOf pkg
           v    = green $ trueVersion ns
-          d    = head $ value ns "pkgdesc"
+          d    = concat $ value ns "pkgdesc"
