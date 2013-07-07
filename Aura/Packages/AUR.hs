@@ -128,7 +128,7 @@ getAURPkgInfo items t = do
   case resultToEither $ parseInfoJSON infoJSON of
     Left _     -> scoldAndFail getAURPkgInfo_1
     Right info -> return info'
-      where info' = sortBy (\x -> \y -> compare (nameOf x) (nameOf y)) info
+      where info' = sortBy (\x y -> compare (nameOf x) (nameOf y)) info
 
 parseInfoJSON :: String -> Result [PkgInfo]
 parseInfoJSON json = decode json >>= apiFailCheck >>= forgePkgInfo
