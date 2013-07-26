@@ -73,8 +73,8 @@ build built ps@(p:_) = do
 build' :: Buildable a => [a] -> Aura ([FilePath],[a])
 build' []     = failure "build' : You should never see this."
 build' (p:ps) = ask >>= \ss -> do
-  let user       = getTrueUser $ environmentOf ss
-      makepkg'   = if suppressMakepkg ss then makepkgQuiet else makepkgVerbose
+  let user     = buildUserOf ss
+      makepkg' = if suppressMakepkg ss then makepkgQuiet else makepkgVerbose
   curr <- liftIO pwd
   getSourceCode p user curr
   overwritePkgbuild p

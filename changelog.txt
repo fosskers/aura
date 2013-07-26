@@ -1,5 +1,9 @@
 Aura Changelog
 ==============
+1.2.1.0
+-------
+- New `builduser` option
+
 1.2.0.2
 -------
 - Bug fixes and spelling corrections.

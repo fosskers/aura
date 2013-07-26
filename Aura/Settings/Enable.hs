@@ -25,6 +25,7 @@ module Aura.Settings.Enable
 
 import System.Environment (getEnvironment)
 import System.Directory   (doesDirectoryExist)
+import Data.Maybe         (fromMaybe)
 
 import Aura.Languages (Language,langFromEnv)
 import Aura.MakePkg   (makepkgConfFile)
@@ -48,11 +49,13 @@ getSettings lang (auraFlags,input,pacOpts) = do
   makepkgConf <- readFileUTF8 makepkgConfFile
   buildPath'  <- checkBuildPath (buildPath auraFlags) (getCachePath confFile)
   tree        <- absTree
-  let language = checkLang lang environment
+  let language   = checkLang lang environment
+      buildUser' = fromMaybe (getTrueUser environment) (buildUser auraFlags)
   return Settings { inputOf         = input
                   , pacOptsOf       = pacOpts
                   , otherOptsOf     = map show auraFlags
                   , environmentOf   = environment
+                  , buildUserOf     = buildUser'
                   , langOf          = language
                   , pacmanCmdOf     = pmanCommand
                   , editorOf        = getEditor environment
@@ -83,6 +86,7 @@ debugOutput ss = do
       env  = environmentOf ss
   mapM_ putStrLn [ "User              => " ++ getUser' env
                  , "True User         => " ++ getTrueUser env
+                 , "Build User        => " ++ buildUserOf ss
                  , "Using Sudo?       => " ++ yn (varExists "SUDO_USER" env)
                  , "Pacman Flags      => " ++ unwords (pacOptsOf ss)
                  , "Other Flags       => " ++ unwords (otherOptsOf ss)

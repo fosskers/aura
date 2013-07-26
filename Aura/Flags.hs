@@ -34,9 +34,10 @@ module Aura.Flags
     , pbDiffStatus
     , rebuildDevelStatus
     , customizepkgStatus
-    , filterSettingsFlags
+    , isSettingsFlag
     , ignoredAuraPkgs
     , buildPath
+    , buildUser
     , auraOperMsg
     , noPowerPillStatus
     , keepSourceStatus
@@ -76,6 +77,7 @@ data Flag = ABSInstall
           | Quiet
           | Ignore String
           | BuildPath FilePath
+          | BuildUser String
           | DiffPkgbuilds
           | Devel
           | Customizepkg
@@ -125,6 +127,7 @@ auraOperations lang =
 auraOptions :: [OptDescr Flag]
 auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
               Option [] ["build"]     (ReqArg BuildPath "" ) "" :
+              Option [] ["builduser"] (ReqArg BuildUser "" ) "" :
               map simpleMakeOption
               [ ( ['a'], ["delmakedeps"],  DelMDeps      )
               , ( ['b'], ["backup"],       CacheBackup   )
@@ -209,12 +212,13 @@ settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
                 , DelMDeps,Customizepkg,Quiet,NoPowerPill,KeepSource,BuildABSDeps ]
 
-filterSettingsFlags :: [Flag] -> [Flag]
-filterSettingsFlags []                 = []
-filterSettingsFlags (Ignore _ : fs)    = filterSettingsFlags fs
-filterSettingsFlags (BuildPath _ : fs) = filterSettingsFlags fs
-filterSettingsFlags (f:fs) | f `elem` settingsFlags = filterSettingsFlags fs
-                           | otherwise = f : filterSettingsFlags fs
+-- Flags like `Ignore` and `BuildPath` have args, and thus can't be included
+-- in the `settingsFlags` list.
+isSettingsFlag :: Flag -> Bool
+isSettingsFlag (Ignore _)    = False
+isSettingsFlag (BuildPath _) = False
+isSettingsFlag (BuildUser _) = False
+isSettingsFlag f             = f `elem` settingsFlags
 
 auraOperMsg :: Language -> String
 auraOperMsg lang = usageInfo (yellow $ auraOperTitle lang) $ auraOperations lang
@@ -243,6 +247,11 @@ buildPath :: [Flag] -> FilePath
 buildPath [] = ""
 buildPath (BuildPath p : _) = p
 buildPath (_:fs) = buildPath fs
+
+buildUser :: [Flag] -> Maybe String
+buildUser [] = Nothing
+buildUser (BuildUser u : _) = Just u
+buildUser (_:fs) = buildUser fs
 
 suppressionStatus  = fishOutFlag [(Unsuppress,False)] True
 delMakeDepsStatus  = fishOutFlag [(DelMDeps,True)] False

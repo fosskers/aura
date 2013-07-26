@@ -35,6 +35,7 @@ data Settings = Settings { inputOf         :: [String]
                          , pacOptsOf       :: [String]
                          , otherOptsOf     :: [String]
                          , environmentOf   :: Environment
+                         , buildUserOf     :: String
                          , langOf          :: Language
                          , pacmanCmdOf     :: String
                          , editorOf        :: String
