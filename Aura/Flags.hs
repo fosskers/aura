@@ -34,7 +34,7 @@ module Aura.Flags
     , pbDiffStatus
     , rebuildDevelStatus
     , customizepkgStatus
-    , isSettingsFlag
+    , notSettingsFlag
     , ignoredAuraPkgs
     , buildPath
     , buildUser
@@ -214,11 +214,11 @@ settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
 
 -- Flags like `Ignore` and `BuildPath` have args, and thus can't be included
 -- in the `settingsFlags` list.
-isSettingsFlag :: Flag -> Bool
-isSettingsFlag (Ignore _)    = False
-isSettingsFlag (BuildPath _) = False
-isSettingsFlag (BuildUser _) = False
-isSettingsFlag f             = f `elem` settingsFlags
+notSettingsFlag :: Flag -> Bool
+notSettingsFlag (Ignore _)    = False
+notSettingsFlag (BuildPath _) = False
+notSettingsFlag (BuildUser _) = False
+notSettingsFlag f             = f `notElem` settingsFlags
 
 auraOperMsg :: Language -> String
 auraOperMsg lang = usageInfo (yellow $ auraOperTitle lang) $ auraOperations lang

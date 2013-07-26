@@ -81,7 +81,7 @@ prepSettings (ui,lang) = (ui,) `fmap` getSettings lang ui
 -- | Hand user input to the Aura Monad and run it.
 execute :: (UserInput,Settings) -> IO (Either AuraError ())
 execute ((flags,input,pacOpts),ss) = do
-  let flags' = filter isSettingsFlag flags
+  let flags' = filter notSettingsFlag flags
   when (Debug `elem` flags) $ debugOutput ss
   runAura (executeOpts (flags',input,pacOpts)) ss
 
