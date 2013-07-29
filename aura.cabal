@@ -37,6 +37,8 @@ source-repository head
   location: git://github.com/fosskers/aura.git
 
 executable aura
+  ghc-options:         -Wall -O2
+
   main-is:             aura.hs
 
   other-modules:       Shell,
