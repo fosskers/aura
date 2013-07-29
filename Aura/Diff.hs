@@ -20,7 +20,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 -- | Coloured diff output, similar to @diff -u@ or @git diff@.
-module ColourDiff
+module Aura.Diff
     ( unidiff
     ) where
 
