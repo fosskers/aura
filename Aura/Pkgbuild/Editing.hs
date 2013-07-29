@@ -41,31 +41,32 @@ import Shell     (getEditor, quietShellCmd)
 
 ---
 
-edit :: Buildable a => (FilePath -> IO ()) -> a -> Aura a
+edit :: (FilePath -> IO ()) -> Buildable -> Aura Buildable
 edit f p = do
   newPB <- liftIO $ do
              writeFile filename $ pkgbuildOf p
              f filename
              readFileUTF8 filename
-  rewrap p `fmap` namespace (pkgNameOf p) newPB  -- Reparse PKGBUILD.
+  ns <- namespace (buildName p) newPB  -- Reparse PKGBUILD.
+  return p { pkgbuildOf = newPB, namespaceOf = ns }
       where filename = "PKGBUILD"
 
 -- | Allow the user to edit the PKGBUILD if they asked to do so.
-hotEdit :: Buildable a => [a] -> Aura [a]
+hotEdit :: [Buildable] -> Aura [Buildable]
 hotEdit pkgs = ask >>= \ss -> withTempDir "hotedit" . forM pkgs $ \p -> do
-  let cond = optionalPrompt (hotEdit_1 $ pkgNameOf p)
+  let cond = optionalPrompt (hotEdit_1 $ buildName p)
       act  = edit (openEditor (getEditor $ environmentOf ss))
   ifM cond act nothing p
 
 -- | Runs `customizepkg` on whatever PKGBUILD it can.
 -- To work, a package needs an entry in `/etc/customizepkg.d/`
-customizepkg :: Buildable a => [a] -> Aura [a]
+customizepkg :: [Buildable] -> Aura [Buildable]
 customizepkg = ifFile customizepkg' (scold customizepkg_1) bin
     where bin = "/usr/bin/customizepkg"
 
-customizepkg' :: Buildable a => [a] -> Aura [a]
+customizepkg' :: [Buildable] -> Aura [Buildable]
 customizepkg' pkgs = withTempDir "customizepkg" . forM pkgs $ \p -> do
-  let conf = customizepkgPath </> pkgNameOf p
+  let conf = customizepkgPath </> buildName p
   ifFile (edit customize) nothing conf p
 
 customize :: FilePath -> IO ()

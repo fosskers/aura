@@ -27,7 +27,7 @@ import System.Directory (doesFileExist)
 
 import Aura.Pkgbuild.Base
 import Aura.Monad.Aura
-import Aura.Core (Buildable, pkgNameOf, pkgbuildOf)
+import Aura.Core (Buildable, buildName, pkgbuildOf)
 
 import Utilities (readFileUTF8)
 import ColourDiff
@@ -40,8 +40,8 @@ comparePkgbuilds old new = diff (lines old) (lines new)
 hasPkgbuildStored :: String -> Aura Bool
 hasPkgbuildStored = liftIO . doesFileExist . pkgbuildPath 
 
-storePkgbuilds :: Buildable a => [a] -> Aura ()
-storePkgbuilds = mapM_ (\p -> writePkgbuild (pkgNameOf p) (pkgbuildOf p))
+storePkgbuilds :: [Buildable] -> Aura ()
+storePkgbuilds = mapM_ (\p -> writePkgbuild (buildName p) (pkgbuildOf p))
 
 readPkgbuild :: String -> Aura String
 readPkgbuild = liftIO . readFileUTF8 . pkgbuildPath
