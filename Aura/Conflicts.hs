@@ -23,8 +23,8 @@ module Aura.Conflicts where
 
 import Text.Regex.PCRE ((=~))
 
-import Aura.Pkgbuild.Base (trueVersion)
 import Aura.Settings.Base
+import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Utils
 import Aura.Core
@@ -36,24 +36,26 @@ import Aura.Core
 -- 2. Is the version requested different from the one provided by
 --    the most recent version?
 
--- | Common for all Packages that are Buildable.
-buildableConflicts :: Buildable b => Settings -> b -> Maybe ErrMsg
-buildableConflicts = realPkgConflicts (trueVersion . namespaceOf)
+checkConflicts :: Package -> Dep -> Aura ()
+checkConflicts pkg dep = ask >>= \ss ->
+    case realPkgConflicts ss pkg dep of
+        Nothing  -> return ()
+        Just msg -> failure msg
 
 -- | Must be called with a (f)unction that yields the version number
 -- of the most up-to-date form of the package.
-realPkgConflicts :: Package p => (p -> String) -> Settings -> p -> Maybe ErrMsg
-realPkgConflicts f ss pkg
-    | isIgnored (pkgNameOf pkg) toIgnore       = Just failMsg1
-    | isVersionConflict (versionOf pkg) curVer = Just failMsg2
+realPkgConflicts :: Settings -> Package -> Dep -> Maybe ErrMsg
+realPkgConflicts ss pkg dep
+    | isIgnored name toIgnore         = Just failMsg1
+    | isVersionConflict reqVer curVer = Just failMsg2
     | otherwise = Nothing
-    where curVer   = f pkg
-          name     = pkgNameOf pkg
-          reqVer   = show $ versionOf pkg
+    where name     = pkgName pkg
+          curVer   = pkgVersion pkg
+          reqVer   = depVersionDemand dep
           lang     = langOf ss
           toIgnore = ignoredPkgsOf ss
           failMsg1 = getRealPkgConflicts_2 name lang
-          failMsg2 = getRealPkgConflicts_1 name curVer reqVer lang
+          failMsg2 = getRealPkgConflicts_1 name curVer (show reqVer) lang
 
 -- Compares a (r)equested version number with a (c)urrent up-to-date one.
 -- The `MustBe` case uses regexes. A dependency demanding version 7.4
