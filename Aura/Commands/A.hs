@@ -30,14 +30,15 @@ module Aura.Commands.A
     , downloadTarballs
     , displayPkgbuild ) where
 
+import Control.Monad
+import Data.Monoid
 import Text.Regex.PCRE ((=~))
 
+import           Aura.Install (InstallOptions(..))
 import qualified Aura.Install as I
 
-import Aura.Pacman (pacman)
 import Aura.Packages.Repository
 import Aura.Settings.Base
-import Aura.Dependencies
 import Aura.Packages.AUR
 import Aura.Colour.Text
 import Aura.Monad.Aura
@@ -46,22 +47,19 @@ import Aura.Utils
 import Aura.Core
 
 import Shell
+import Utilities (whenM)
 
 ---
 
--- For now.
-buildHandle :: [String] -> BuildHandle
-buildHandle pacOpts =
-    BH { pkgLabel = "AUR"
-       , initialPF = filterAURPkgs
-       , mainPF    = filterAURPkgs
-       , subPF     = filterRepoPkgs
-       , subBuild  = \ps -> pacman (["-S","--asdeps"] ++ pacOpts ++ map pkgNameOf ps) }
+installOptions :: I.InstallOptions
+installOptions = I.InstallOptions
+    { label         = "AUR"
+    , installLookup = aurLookup
+    , repository    = pacmanRepo `mappend` aurRepo
+    }
 
 install :: [String] -> [String] -> Aura ()
-install pacOpts pkgs = I.install b c (buildHandle pacOpts) pacOpts pkgs
-    where b = package  :: String -> Aura AURPkg
-          c = conflict :: Settings -> AURPkg -> Maybe ErrMsg
+install = I.install installOptions
 
 upgradeAURPkgs :: [String] -> [String] -> Aura ()
 upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
@@ -138,25 +136,19 @@ renderSearch ss r i = searchResult
             | otherwise     = green $ latestVerOf i
 
 displayPkgDeps :: [String] -> Aura ()
-displayPkgDeps []   = return ()
-displayPkgDeps pkgs = beQuiet `fmap` ask >>= \quiet -> do
-  ps <- aurInfoLookup pkgs >>= mapM (package . nameOf)
-  (m,s,_) <- depCheck (buildHandle []) ps :: Aura ([AURPkg],[RepoPkg],[String])
-  if quiet
-     then I.reportListOfDeps s m
-     else I.reportPkgsToInstall (buildHandle []) s m
+displayPkgDeps = I.displayPkgDeps installOptions
 
 downloadTarballs :: [String] -> Aura ()
 downloadTarballs pkgs = do
   currDir <- liftIO pwd
-  filterAURPkgs pkgs >>= mapM_ (downloadTBall currDir)
-    where downloadTBall path pkg = do
+  mapM_ (downloadTBall currDir) pkgs
+    where downloadTBall path pkg = whenM (isAurPackage pkg) $ do
               notify $ downloadTarballs_1 pkg
-              liftIO $ sourceTarball path pkg
+              void . liftIO $ sourceTarball path pkg
 
 displayPkgbuild :: [String] -> Aura ()
-displayPkgbuild pkgs = filterAURPkgs pkgs >>= mapM_ dnload
-      where dnload p = downloadPkgbuild p >>= liftIO . putStrLn
+displayPkgbuild = mapM_ $ \p ->
+    downloadPkgbuild p >>= maybe (return ()) (liftIO . putStrLn)
 
 isntMostRecent :: (PkgInfo,String) -> Bool
 isntMostRecent (info,v) = trueVer > currVer
