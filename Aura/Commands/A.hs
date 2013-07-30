@@ -55,7 +55,7 @@ installOptions :: I.InstallOptions
 installOptions = I.InstallOptions
     { label         = "AUR"
     , installLookup = aurLookup
-    , repository    = pacmanRepo `mappend` aurRepo
+    , repository    = pacmanRepo <> aurRepo
     }
 
 install :: [String] -> [String] -> Aura ()
