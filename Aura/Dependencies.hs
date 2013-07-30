@@ -40,11 +40,9 @@ import           Utilities           (whenM, tripleFst)
 
 resolveDeps :: Repository -> [Package] -> Aura [Package]
 resolveDeps repo ps =
-    sortInstall . Map.elems <$> execStateT (mapM_ addInstall ps) Map.empty
+    sortInstall . Map.elems <$> execStateT (mapM_ addPkg ps) Map.empty
   where
-    addInstall pkg = whenM (isNothing <$> getPkg (pkgName pkg)) $ addPkg pkg
-
-    addPkg pkg = do
+    addPkg pkg = whenM (isNothing <$> getPkg (pkgName pkg)) $ do
         mapM_ addDep (pkgDeps pkg)
         modify $ Map.insert (pkgName pkg) pkg
 

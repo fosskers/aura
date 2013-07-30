@@ -23,6 +23,7 @@ module Aura.Packages.Repository
     ( pacmanRepo
     ) where
 
+import Data.Maybe
 import Text.Regex.PCRE ((=~))
 
 import Aura.Core
@@ -36,8 +37,9 @@ import Utilities       (tripleThrd)
 -- | Repository package source.
 pacmanRepo :: Repository
 pacmanRepo = Repository $ \name -> do
-    v <- mostRecentVersion name
-    return $ packageRepo name <$> v
+    real <- resolveName name
+    v    <- mostRecentVersion real
+    return $ packageRepo real <$> v
 
 packageRepo :: String -> String -> Package
 packageRepo name version = Package
@@ -46,6 +48,11 @@ packageRepo name version = Package
     , pkgDeps        = []  -- Let pacman handle dependencies.
     , pkgInstallType = Pacman name
     }
+
+-- | If given a virtual package, try to find a real package to install.
+resolveName :: String -> Aura String
+resolveName name =
+    fromMaybe name . listToMaybe . lines <$> pacmanOutput ["-Ssq", name]
 
 -- | The most recent version of a package, if it exists in the respositories.
 mostRecentVersion :: String -> Aura (Maybe String)
