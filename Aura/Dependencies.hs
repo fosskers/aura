@@ -59,16 +59,14 @@ resolveDeps repo ps =
     findPkg name = do
         mpkg <- lift $ lookupPkg repo name
         case mpkg of
-            Nothing  -> lift $ failNoPkg name
+            Nothing  -> lift $ missingPkg name
             Just pkg -> addPkg pkg
 
     getPkg p = gets $ Map.lookup p
 
--- XXX need better error message
--- e.g. "package `pkg` could not be located
-failNoPkg :: String -> Aura a
-failNoPkg name = ask >>= \ss ->
-    failure $ getVirtualConflicts_1 name (langOf ss)
+missingPkg :: String -> Aura a
+missingPkg name = ask >>= \ss ->
+    failure $ missingPkg_1 name (langOf ss)
 
 sortInstall :: [Package] -> [Package]
 sortInstall ps = reverse . map (tripleFst . n) . topSort $ g
