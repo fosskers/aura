@@ -92,7 +92,7 @@ data Buildable = Buildable
     }
 
 -- | A 'Repository' is a place where packages may be fetched from. Multiple
--- repositories can be combined into a larger on with the 'Data.Monoid'
+-- repositories can be combined into a larger one with the 'Data.Monoid'
 -- instance.
 newtype Repository = Repository
     { lookupPkg :: String -> Aura (Maybe Package) }

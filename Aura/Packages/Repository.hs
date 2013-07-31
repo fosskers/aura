@@ -51,8 +51,8 @@ packageRepo name version = Package
 
 -- | If given a virtual package, try to find a real package to install.
 resolveName :: String -> Aura String
-resolveName name =
-    fromMaybe name . listToMaybe . lines <$> pacmanOutput ["-Ssq", name]
+resolveName name = fromMaybe name . listToMaybe . lines <$>
+    pacmanOutput ["-Ssq", "^" ++ name ++ "$"]
 
 -- | The most recent version of a package, if it exists in the respositories.
 mostRecentVersion :: String -> Aura (Maybe String)

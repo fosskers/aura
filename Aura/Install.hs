@@ -106,11 +106,7 @@ lookupPkgs f pkgs = do
     reportNonPackages nons
     return okay
   where
-    lookupBuild pkg = do
-        mpkg <- f pkg
-        return $ case mpkg of
-            Nothing -> Left pkg
-            Just b  -> Right b
+    lookupBuild pkg = maybe (Left pkg) Right <$> f pkg
 
 -- | The user can handle PKGBUILDs in multiple ways.
 -- `--hotedit` takes the highest priority.
