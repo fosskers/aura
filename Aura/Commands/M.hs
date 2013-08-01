@@ -94,7 +94,7 @@ install pacOpts ps = do
 
 -- | Sync given packages to the local ABS Tree.
 addToTree :: [String] -> Aura ()
-addToTree = mapM_ $ \p -> do
+addToTree = mapM_ $ \p ->
     syncRepo p >>= maybe (return ()) (\repo -> singleSync repo p)
 
 -- | Get info about the specified package (-i)

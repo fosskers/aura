@@ -38,8 +38,7 @@ import Utilities       (tripleThrd)
 pacmanRepo :: Repository
 pacmanRepo = Repository $ \name -> do
     real <- resolveName name
-    v    <- mostRecentVersion real
-    return $ packageRepo real <$> v
+    fmap (packageRepo real) <$> mostRecentVersion real
 
 packageRepo :: String -> String -> Package
 packageRepo name version = Package

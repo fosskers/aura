@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
-
 -- Handles all ABS related functions.
 
 {-
@@ -41,7 +39,7 @@ module Aura.Packages.ABS
     , absSearchLookup
     ) where
 
-import           Control.Monad      (filterM)
+import           Control.Monad
 import           Data.List          (find)
 import           Data.Set           (Set)
 import qualified Data.Set           as Set
@@ -86,7 +84,7 @@ makeBuildable repo name = do
 
 copyTo :: String -> String -> FilePath -> IO FilePath
 copyTo repo name fp = do
-    Sh.quietShellCmd "cp" ["-R",loc,fp]
+    void $ Sh.quietShellCmd "cp" ["-R",loc,fp]
     return $ fp </> name
   where
     loc = absBasePath </> repo </> name
@@ -150,8 +148,7 @@ absSync = whenM (optionalPrompt absSync_1) $ do
 singleSync :: String -> String -> Aura ()
 singleSync repo name = do
     notify $ singleSync_1 p
-    A.quietShellCmd "abs" [p]
-    return ()
+    void $ A.quietShellCmd "abs" [p]
   where
     p = repo </> name
 

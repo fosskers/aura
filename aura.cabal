@@ -99,4 +99,4 @@ executable aura
                        bytestring,
                        regex-pcre,
                        transformers,
-                       base >= 4.5 && < 5
+                       base >= 4.6 && < 5
