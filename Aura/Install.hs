@@ -23,71 +23,94 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -- Backend for `Aura.Commands.A` and `Aura.Commands.M`
 
 module Aura.Install
-    ( install
-    , reportPkgsToInstall
-    , reportListOfDeps ) where
+    ( InstallOptions(..)
+    , install
+    , displayPkgDeps
+    ) where
 
-import Control.Monad (unless)
+import Control.Monad (unless, filterM)
+import Data.Either   (partitionEithers)
 import Data.List     (sort, (\\))
+import Data.Maybe    (catMaybes)
 
-import Aura.Pkgbuild.Records
+import Aura.Pkgbuild.Base
 import Aura.Pkgbuild.Editing
+import Aura.Pkgbuild.Records
 import Aura.Settings.Base
 import Aura.Dependencies
 import Aura.Colour.Text
 import Aura.Monad.Aura
 import Aura.Languages
+import Aura.Pacman
 import Aura.Build
 import Aura.Utils
 import Aura.Core
 
 ---
 
+-- | Installation options.
+data InstallOptions = InstallOptions
+    { label         :: String
+    , installLookup :: String -> Aura (Maybe Buildable)
+    , repository    :: Repository
+    }
+
 -- | High level 'install' command. Handles installing
 -- dependencies.
-install, install' :: (Package p, Buildable b) =>
-                     (String -> Aura b)  -- ^ Constructor for Buildable data
-                  -> (Settings -> p -> Maybe ErrMsg)
-                  -> BuildHandle  -- ^ For filtering packages and building deps.
-                  -> [String]     -- ^ Pacman flags.
-                  -> [String]     -- ^ Package names.
-                  -> Aura ()
-install _ _ _ _ [] = return ()
-install custom subConflict bh pacOpts pkgs = ask >>= \ss ->
+install :: InstallOptions  -- ^ Options.
+        -> [String]        -- ^ Pacman flags.
+        -> [String]        -- ^ Package names.
+        -> Aura ()
+install _ _ [] = return ()
+install opts pacOpts pkgs = ask >>= \ss ->
   if not $ delMakeDeps ss
-     then install' custom subConflict bh pacOpts pkgs
+     then install'
      else do  -- `-a` was used.
        orphansBefore <- getOrphans
-       install' custom subConflict bh pacOpts pkgs
+       install'
        orphansAfter <- getOrphans
        let makeDeps = orphansAfter \\ orphansBefore
-       unless (null makeDeps) $ notify removeMakeDepsAfter_1
-       removePkgs makeDeps pacOpts
+       unless (null makeDeps) $ do
+         notify removeMakeDepsAfter_1
+         removePkgs makeDeps pacOpts
+  where
+    install' = ask >>= \ss -> do
+        let toInstall = pkgs \\ ignoredPkgsOf ss
+            ignored   = pkgs \\ toInstall
+        reportIgnoredPackages ignored
+        handler <- pbHandler
+        toBuild <- badPkgCheck toInstall >>=
+                   lookupPkgs (installLookup opts) >>=
+                   pkgbuildDiffs >>=
+                   handler
+        notify install_5
+        allPkgs <- catch (depsToInstall (repository opts) toBuild)
+                   depCheckFailure
+        let (repoPkgs,buildPkgs) = partitionPkgs allPkgs
+        reportPkgsToInstall (label opts) repoPkgs buildPkgs
+        continue <- optionalPrompt install_3
+        if not continue
+            then scoldAndFail install_4
+            else do
+                repoInstall pacOpts repoPkgs
+                storePkgbuilds buildPkgs
+                mapM_ (buildAndInstall pacOpts) buildPkgs
 
-install' custom subConflict bh pacOpts pkgs = ask >>= \ss -> do
-  let toInstall = pkgs \\ ignoredPkgsOf ss
-      ignored   = pkgs \\ toInstall
-      mainPkgs  = initialPF bh
-  reportIgnoredPackages ignored
-  (_,okay,nons) <- badPkgCheck toInstall >>= divideByPkgType ignoreRepos mainPkgs
-  reportNonPackages nons
-  handler <- pbHandler
-  toBuild <- mapM custom okay >>= pkgbuildDiffs >>= handler
-  notify install_5
-  (mainPkgs',subDeps) <- catch (depsToInstall subConflict bh toBuild) depCheckFailure
-  reportPkgsToInstall bh subDeps mainPkgs'
-  continue <- optionalPrompt install_3
-  if not continue
-     then scoldAndFail install_4
-     else do
-       let f = map (\p -> if pkgNameOf p `elem` okay then (p,Nothing) else (p,Just "--asdeps"))
-       unless (null subDeps) $ subBuild bh subDeps
-       storePkgbuilds mainPkgs'
-       mapM_ (buildAndInstall pacOpts) $ f mainPkgs'
+-- | Check a list of a package names are buildable, and mark them as explicit.
+lookupPkgs
+    :: (String -> Aura (Maybe Buildable))
+    -> [String]
+    -> Aura [Buildable]
+lookupPkgs f pkgs = do
+    (nons,okay) <- partitionEithers <$> mapM lookupBuild pkgs
+    reportNonPackages nons
+    return okay
+  where
+    lookupBuild pkg = maybe (Left pkg) Right <$> f pkg
 
 -- | The user can handle PKGBUILDs in multiple ways.
 -- `--hotedit` takes the highest priority.
-pbHandler :: Buildable b => Aura ([b] -> Aura [b])
+pbHandler :: Aura ([Buildable] -> Aura [Buildable])
 pbHandler = ask >>= check
     where check ss | mayHotEdit ss      = return hotEdit
                    | useCustomizepkg ss = return customizepkg
@@ -104,31 +127,64 @@ badPkgCheck (p:ps) = ask >>= \ss ->
       okay <- optionalPrompt badPkgCheck_2
       if okay then (p :) `fmap` badPkgCheck ps else badPkgCheck ps
 
+depsToInstall :: Repository -> [Buildable] -> Aura [Package]
+depsToInstall repo bs = do
+    allDeps <- resolveDeps repo $ map (packageBuildable . markExplicit) bs
+    filterM mustInstall allDeps
+  where
+    markExplicit b = b { explicit = True }
+
+mustInstall :: Package -> Aura Bool
+mustInstall pkg
+    | isExplicit = return True
+    | otherwise  = depTest constraint
+  where
+    isExplicit = case pkgInstallType pkg of
+        Pacman _ -> False
+        Build  b -> explicit b
+
+    constraint = pkgName pkg ++ "=" ++ pkgVersion pkg
+
 depCheckFailure :: String -> Aura a
 depCheckFailure m = scold install_1 >> failure m
 
-buildAndInstall :: Buildable b => [String] -> (b,Maybe String) -> Aura ()
-buildAndInstall pacOpts (pkg,flag) =
+repoInstall :: [String] -> [String] -> Aura ()
+repoInstall _       [] = return ()
+repoInstall pacOpts ps = pacman $ ["-S","--asdeps"] ++ pacOpts ++ ps
+
+buildAndInstall :: [String] -> Buildable -> Aura ()
+buildAndInstall pacOpts pkg =
   pbHandler >>= \h -> h [pkg] >>= buildPackages >>=
-  installPkgFiles (pacOpts' flag)
-      where pacOpts' Nothing   = pacOpts
-            pacOpts' (Just po) = po : pacOpts
+  installPkgFiles pacOpts'
+      where pacOpts' = if explicit pkg
+                       then pacOpts
+                       else "--asdeps" : pacOpts
 
 ------------
 -- REPORTING
 ------------
-reportPkgsToInstall :: (Package p1, Package p2) =>
-                       BuildHandle -> [p1] -> [p2] -> Aura ()
-reportPkgsToInstall bh sd mp = langOf `fmap` ask >>= \lang -> do
-  pl (reportPkgsToInstall_1    lang) (sort $ map pkgNameOf sd)
-  pl (reportPkgsToInstall_2 la lang) (sort $ map pkgNameOf mp)
-      where pl = printList green cyan
-            la = pkgLabel bh
 
-reportListOfDeps :: (Package p1, Package p2) => [p1] -> [p2] -> Aura ()
-reportListOfDeps sd md = do
-  liftIO $ mapM_ putStrLn (sort $ map pkgNameOf sd)
-  liftIO $ mapM_ putStrLn (sort $ map pkgNameOf md)
+-- | Display dependencies.
+displayPkgDeps :: InstallOptions -> [String] -> Aura ()
+displayPkgDeps _ [] = return ()
+displayPkgDeps opts ps = asks beQuiet >>= \quiet -> do
+    bs   <- map packageBuildable . catMaybes <$> mapM (installLookup opts) ps
+    pkgs <- partitionPkgs <$> resolveDeps (repository opts) bs
+    reportDeps quiet pkgs
+  where
+    reportDeps True  = uncurry reportListOfDeps
+    reportDeps False = uncurry (reportPkgsToInstall $ label opts)
+
+reportPkgsToInstall :: String -> [String] -> [Buildable] -> Aura ()
+reportPkgsToInstall la rps bps = langOf `fmap` ask >>= \lang -> do
+  pl (reportPkgsToInstall_1    lang) (sort rps)
+  pl (reportPkgsToInstall_2 la lang) (sort $ map buildName bps)
+      where pl = printList green cyan
+
+reportListOfDeps :: [String] -> [Buildable] -> Aura ()
+reportListOfDeps rps bps = do
+  liftIO $ mapM_ putStrLn (sort rps)
+  liftIO $ mapM_ putStrLn (sort $ map buildName bps)
 
 reportNonPackages :: [String] -> Aura ()
 reportNonPackages = badReport reportNonPackages_1
@@ -137,13 +193,13 @@ reportIgnoredPackages :: [String] -> Aura ()
 reportIgnoredPackages pkgs = langOf `fmap` ask >>= \lang ->
   printList yellow cyan (reportIgnoredPackages_1 lang) pkgs
 
-pkgbuildDiffs :: Buildable b => [b] -> Aura [b]
+pkgbuildDiffs :: [Buildable] -> Aura [Buildable]
 pkgbuildDiffs [] = return []
 pkgbuildDiffs ps = ask >>= check
     where check ss | not $ diffPkgbuilds ss = return ps
                    | otherwise = mapM_ displayDiff ps >> return ps
           displayDiff p = do
-            let name = pkgNameOf p
+            let name = buildName p
             isStored <- hasPkgbuildStored name
             if not isStored
                then warn $ reportPkgbuildDiffs_1 name

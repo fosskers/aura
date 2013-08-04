@@ -22,6 +22,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Pkgbuild.Base where
 
 import Aura.Bash
+import Aura.Core
+import Aura.Monad.Aura
 
 ---
 
@@ -41,11 +43,19 @@ trueVersion :: Namespace -> String
 trueVersion ns = pkgver ++ "-" ++ pkgrel
     where pkgver = head $ value ns "pkgver"
           pkgrel = head $ value ns "pkgrel"
-{-}
-    where foo s = case value ns s of
-                    [] -> error "error in trueVersion!!!"
-                    vn -> head vn
-          pkgver = foo "pkgver"
-          pkgrel = foo "pkgrel"
--}                  
 
+-- XXX these functions need a new home
+packageBuildable :: Buildable -> Package
+packageBuildable b = Package
+    { pkgName        = buildName b
+    , pkgVersion     = trueVersion ns
+    , pkgDeps        = concatMap (map parseDep . value ns)
+                       ["depends", "makedepends", "checkdepends"]
+    , pkgInstallType = Build b
+    }
+  where
+    ns = namespaceOf b
+
+buildableRepository :: (String -> Aura (Maybe Buildable)) -> Repository
+buildableRepository f = Repository $ \name ->
+    fmap packageBuildable <$> f name
