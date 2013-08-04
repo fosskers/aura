@@ -23,56 +23,86 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.Packages.AUR
-    ( filterAURPkgs
-    , aurInfoLookup
-    , aurSearchLookup
+    ( aurLookup
+    , aurRepo
+    , isAurPackage
     , downloadPkgbuild
     , sourceTarball
     , PkgInfo(..)
-    , AURPkg(..) ) where
+    , aurInfoLookup
+    , aurSearchLookup
+    ) where
 
-import Control.Applicative ((<$>), (<*>), pure)
-import System.FilePath     ((</>))
-import Data.List           (intercalate, sortBy)
-import Text.JSON
+import           Control.Applicative
+import           System.FilePath     ((</>))
+import           Data.Maybe
+import           Data.List           (intercalate, sortBy)
+import qualified Data.Traversable    as Traversable (mapM)
+import           Text.JSON
 
-import Aura.Conflicts (buildableConflicts)
-import Aura.Utils     (scoldAndFail)
-import Aura.Bash      (namespace, Namespace)
-import Aura.Monad.Aura
-import Aura.Languages
-import Aura.Core
+import           Aura.Utils          (scoldAndFail)
+import           Aura.Bash           (namespace)
+import           Aura.Monad.Aura
+import           Aura.Languages
+import           Aura.Pkgbuild.Base
+import           Aura.Core
 
-import Utilities (decompress)
-import Internet
+import           Utilities           (decompress)
+import           Internet
 
 ---
 
-data AURPkg = AURPkg String VersionDemand Pkgbuild Namespace 
+aurLookup :: String -> Aura (Maybe Buildable)
+aurLookup name = do
+    pkgbuild <- downloadPkgbuild name
+    Traversable.mapM (makeBuildable name) pkgbuild
 
-instance Package AURPkg where
-  pkgNameOf (AURPkg n _ _ _) = n
-  versionOf (AURPkg _ v _ _) = v
-  conflict = buildableConflicts
-  package pkg = do
-      pkgbuild <- downloadPkgbuild name
-      AURPkg name ver pkgbuild `fmap` namespace name pkgbuild
-          where (name,ver) = parseNameAndVersionDemand pkg
+aurRepo :: Repository
+aurRepo = buildableRepository aurLookup
 
-instance Buildable AURPkg where
-  pkgbuildOf  (AURPkg _ _ p _)  = p
-  namespaceOf (AURPkg _ _ _ ns) = ns
-  source p fp = sourceTarball fp (pkgNameOf p) >>= decompress
-  rewrap (AURPkg n v p _) ns = AURPkg n v p ns
+makeBuildable :: String -> Pkgbuild -> Aura Buildable
+makeBuildable name pkgbuild = do
+    ns <- namespace name pkgbuild
+    return Buildable
+        { buildName   = name
+        , pkgbuildOf  = pkgbuild
+        , namespaceOf = ns
+        , explicit    = False
+        , source      = \fp -> sourceTarball fp name >>= decompress
+        }
 
-instance Show AURPkg where
-    show = pkgNameWithVersionDemand
+isAurPackage :: String -> Aura Bool
+isAurPackage name = isJust <$> downloadPkgbuild name
 
-instance Eq AURPkg where
-    a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
+----------------
+-- AUR PKGBUILDS
+----------------
+aurLink :: String
+aurLink = "https://aur.archlinux.org/packages/"
 
-filterAURPkgs :: PkgFilter
-filterAURPkgs pkgs = map nameOf `fmap` aurInfoLookup pkgs
+pkgBaseUrl :: String -> String
+pkgBaseUrl pkg = aurLink </> take 2 pkg </> pkg
+
+pkgbuildUrl :: String -> String
+pkgbuildUrl pkg = pkgBaseUrl pkg </> "PKGBUILD"
+
+downloadPkgbuild :: String -> Aura (Maybe Pkgbuild)
+downloadPkgbuild name = do
+    out <- liftIO . urlContents $ pkgbuildUrl name
+    return $ case out of
+        "" -> Nothing
+        _  -> Just out
+
+------------------
+-- SOURCE TARBALLS
+------------------
+tarballUrl :: String -> String
+tarballUrl pkg = pkgBaseUrl pkg </> pkg ++ ".tar.gz"
+
+sourceTarball :: FilePath    -- ^ Where to save the tarball.
+              -> String      -- ^ Package name.
+              -> IO FilePath -- ^ Saved tarball location.
+sourceTarball path = saveUrlContents path . tarballUrl
 
 -----------------------
 -- AUR API URL CREATION
@@ -163,29 +193,3 @@ fromJSRat _                = error "JSValue given was not a JSRational!"
 resultToMaybe :: Result a -> Maybe a
 resultToMaybe (Ok a) = Just a
 resultToMaybe _      = Nothing
-
-----------------
--- AUR PKGBUILDS
-----------------
-aurLink :: String
-aurLink = "https://aur.archlinux.org/packages/"
-
-pkgBaseUrl :: String -> String
-pkgBaseUrl pkg = aurLink </> take 2 pkg </> pkg
-
-pkgbuildUrl :: String -> String
-pkgbuildUrl pkg = pkgBaseUrl pkg </> "PKGBUILD"
-
-downloadPkgbuild :: String -> Aura Pkgbuild
-downloadPkgbuild = liftIO . urlContents . pkgbuildUrl
-
-------------------
--- SOURCE TARBALLS
-------------------
-tarballUrl :: String -> String
-tarballUrl pkg = pkgBaseUrl pkg </> pkg ++ ".tar.gz"
-
-sourceTarball :: FilePath    -- ^ Where to save the tarball.
-              -> String      -- ^ Package name.
-              -> IO FilePath -- ^ Saved tarball location.
-sourceTarball path = saveUrlContents path . tarballUrl

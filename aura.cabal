@@ -37,6 +37,8 @@ source-repository head
   location: git://github.com/fosskers/aura.git
 
 executable aura
+  ghc-options:         -Wall -O2
+
   main-is:             aura.hs
 
   other-modules:       Shell,
@@ -52,7 +54,6 @@ executable aura
                        Aura.Build,
                        Aura.Cache,
                        Aura.Flags,
-                       Aura.Graph,
                        Aura.Install,
                        Aura.Shell,
                        Aura.State,
@@ -67,8 +68,6 @@ executable aura
                        Aura.Packages.ABS,
                        Aura.Packages.AUR,
                        Aura.Packages.Repository,
-                       Aura.Packages.Types,
-                       Aura.Packages.Virtual,
                        Aura.Commands.A,
                        Aura.Commands.B,
                        Aura.Commands.C,
@@ -100,4 +99,4 @@ executable aura
                        bytestring,
                        regex-pcre,
                        transformers,
-                       base >= 4 && < 5
+                       base >= 4.6 && < 5

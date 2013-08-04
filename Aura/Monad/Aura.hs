@@ -30,7 +30,10 @@ module Aura.Monad.Aura
     , wrap
     , getErrorMsg
     , liftIO
-    , ask ) where
+    , ask
+    , asks
+    , (<$>)
+    ) where
 
 import Control.Monad.Reader
 import Control.Monad.Error

@@ -328,58 +328,9 @@ getRealPkgConflicts_2 p Russian    = "Пакет " ++ bt p ++ " игнориру
 getRealPkgConflicts_2 p Italian    = bt p ++ " è un pacchetto ignorato, controllare `pacman.conf`."
 getRealPkgConflicts_2 p Serbian    = "Пакет " ++ bt p ++ " је игнорисан! Видите ваш фајл „pacman.conf“."
 
-getVirtualConflicts_1 :: String -> Language -> String
-getVirtualConflicts_1 p English    = bt p ++ " exists in NO WAY as a package or as one provided by another!"
-getVirtualConflicts_1 p Japanese   = bt p ++ "はパッケージでもないし、他のパッケージにも提供されていない！"
-getVirtualConflicts_1 p Polish     = bt p ++ " nie istnieje jako pakiet lub jako pakiet dostarczany przez inny!"
-getVirtualConflicts_1 p Croatian   = bt p ++ " ne postoji kao paket niti ga bilo koji paket pruža!"
-getVirtualConflicts_1 p Swedish    = bt p ++ " existerar varken som ett paket eller som ett tillhandahållet av ett annat!"
-getVirtualConflicts_1 p German     = bt p ++ " existiert nicht als Paket oder als Bereitstellung eines anderen!"
-getVirtualConflicts_1 p Spanish    = "¡" ++ bt p ++ " no existe como paquete ni es provisto por ninguno!"
-getVirtualConflicts_1 p Portuguese = bt p ++ " não existe como um pacote e não é provido por nenhum!"
-getVirtualConflicts_1 p French     = bt p ++ " n'est ni un paquet existant, ni un paquet fourni par un autre !"
-getVirtualConflicts_1 p Russian    = bt p ++ " никоим образом не существует в виде пакета или пакета, " ++ " предоставленного другим пакетом!"
-getVirtualConflicts_1 p Italian    = bt p ++ " non esiste e non è distribuito da nessun'altro."
-getVirtualConflicts_1 p Serbian    = bt p ++ " не постоји као пакет нити га други пакет пружа!"
-
-getVirtualConflicts_2 :: String -> String -> Language -> String
-getVirtualConflicts_2 p pro English    = bt pro ++ " provides " ++ bt p ++ ", but " ++ bt pro ++ " is an ignored package."
-getVirtualConflicts_2 p pro Japanese   = bt p ++ "は" ++ bt pro ++ "に提供されているが、" ++ bt pro ++ "は無視されるパッケージ。"
-getVirtualConflicts_2 p pro Polish     = bt pro ++ " dostarcza " ++ bt p ++ ", ale " ++ bt pro ++ " jest ignorowany."
-getVirtualConflicts_2 p pro Croatian   = bt pro ++ " pruža  " ++ bt p ++ ", ali " ++ bt pro ++ " je ignoriran paket."
-getVirtualConflicts_2 p pro Swedish    = bt pro ++ " tillhandahåller " ++ bt p ++ ", men " ++ bt pro ++ " är ett ignorerat paket."
-getVirtualConflicts_2 p pro German     = bt pro ++ " stellt " ++ bt p ++ " bereit, aber " ++ bt pro ++ " ist ein ignoriertes Paket."
-getVirtualConflicts_2 p pro Spanish    = bt pro ++ " provee " ++ bt p ++ ", pero " ++ bt pro ++ " es un paquete ignorado."
-getVirtualConflicts_2 p pro Portuguese = bt pro ++ " provê " ++ bt p ++ ", mas " ++ bt pro ++ "é um pacote ignorado."
-getVirtualConflicts_2 p pro French     = bt pro ++ " fourni " ++ bt p ++ ", mais " ++ bt pro ++ " est un paquet ignoré."
-getVirtualConflicts_2 p pro Russian    = bt pro ++ " предоставляет " ++ bt p ++ ", но " ++ bt pro ++ " является игнорируемым пакетом."
-getVirtualConflicts_2 p pro Italian    = bt pro ++ " distribuisce " ++ bt p ++ " ma " ++ bt pro ++ " è un pacchetto ignorato."
-getVirtualConflicts_2 p pro Serbian    = bt pro ++ " пружа " ++ bt p ++ ", али је " ++ bt pro ++ " игнорисан пакет."
-
-getVirtualConflicts_3 :: String -> String -> String -> String -> Language -> String
-getVirtualConflicts_3 d dv p pv English    = "The dependency " ++ bt d ++ " demands version " ++ bt dv ++ " but its providing package " ++
-                                             bt p ++ " gives version " ++ bt pv
-getVirtualConflicts_3 d dv p pv Japanese   = "仮のパッケージ" ++ bt d ++ "はバージョン" ++ bt dv ++ "を要するが、" ++ "それを提供する" ++
-                                             bt p ++ "はバージョン" ++ bt pv ++ "しか提供しない"
-getVirtualConflicts_3 d dv p pv Polish     = "Zależność " ++ bt d ++ " powinna być w wersji " ++ bt dv ++ ", ale pakiet dostarczający (" ++
-                                             bt p ++ ") jest w wersji " ++ bt pv
-getVirtualConflicts_3 d dv p pv Croatian   = "Zavisnost " ++ bt d ++ " zahtjeva verziju " ++ bt dv ++ ", ali paket " ++ bt p ++ " pruža verziju " ++ bt pv
-getVirtualConflicts_3 d dv p pv Swedish    = "Beroendepaket " ++ bt d ++ " kräver version " ++ bt dv ++ " men dens tillhandahållande paket " ++
-                                             bt p ++ " ger version " ++ bt pv
-getVirtualConflicts_3 d dv p pv German     = "Die Abhängigkeit " ++ bt d ++ " verlangt Version " ++ bt dv ++ " aber dessen bereitstellendes Paket " ++
-                                             bt p ++ " gibt Version " ++ bt pv
-getVirtualConflicts_3 d dv p pv Spanish    = "La dependencia " ++ bt d ++ " requiere la versión " ++ bt dv ++ " pero el paquete " ++
-                                             bt p ++ ", que la provee, da la versión " ++ bt pv
-getVirtualConflicts_3 d dv p pv Portuguese = "A dependência " ++ bt d ++ " requer a versão " ++ bt dv ++ " entretanto, o pacote " ++
-                                             bt p ++ ", que o provê, possui a versão " ++ bt pv
-getVirtualConflicts_3 d dv p pv French     = "La dépendance " ++ bt d ++ " nécessite la version " ++ bt dv ++ ", mais le paquet qui la fournie (" ++
-                                             bt p ++ ") ne le fait qu'en version " ++ bt pv ++ "."
-getVirtualConflicts_3 d dv p pv Russian    = "Зависимость " ++ bt d ++ " должна быть версии " ++ bt dv ++ ", но предоставленный для неё пакет " ++
-                                             bt p ++ " имеет версию " ++ bt pv
-getVirtualConflicts_3 d dv p pv Italian    = "La dipendenza " ++ bt d ++ " richiede la versione " ++ bt dv ++ " ma il pacchetto " ++
-                                             bt p ++ " distribuisce la versione " ++ bt pv
-getVirtualConflicts_3 d dv p pv Serbian    = "Зависност " ++ bt d ++ " захтева верзију " ++ bt dv ++ ", али пакет " ++ bt p ++
-                                             " пружа верзију " ++ bt pv
+-- NEEDS TRANSLATION
+missingPkg_1 :: String -> Language -> String
+missingPkg_1 p _ = "The dependency " ++ bt p ++ "could not be found. You may need to search for a package to satisfy it."
 
 -----------------
 -- aura functions
