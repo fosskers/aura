@@ -65,7 +65,7 @@ upgradeAURPkgs :: [String] -> [String] -> Aura ()
 upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
   let notIgnored p = splitName p `notElem` ignoredPkgsOf ss
   notify upgradeAURPkgs_1
-  foreignPkgs <- filter (\(n,_) -> notIgnored n) `fmap` getForeignPackages
+  foreignPkgs <- filter (\(n,_) -> notIgnored n) <$> getForeignPackages
   pkgInfo     <- aurInfoLookup $ map fst foreignPkgs
   let aurPkgs   = filter (\(n,_) -> n `elem` map nameOf pkgInfo) foreignPkgs
       toUpgrade = filter isntMostRecent $ zip pkgInfo (map snd aurPkgs)
@@ -160,6 +160,5 @@ isntMostRecent (info,v) = trueVer > currVer
 ------------
 
 reportPkgsToUpgrade :: [String] -> Aura ()
-reportPkgsToUpgrade pkgs = do
-  lang <- langOf `fmap` ask
+reportPkgsToUpgrade pkgs = asks langOf >>= \lang ->
   printList green cyan (reportPkgsToUpgrade_1 lang) pkgs

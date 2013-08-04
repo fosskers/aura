@@ -166,7 +166,7 @@ parseInfoJSON json = decode json >>= apiFailCheck >>= forgePkgInfo
 
 apiFailCheck :: JSObject JSValue -> Result (JSObject JSValue)
 apiFailCheck json = do
-  isError <- (== "error") `fmap` valFromObj "type" json
+  isError <- (== "error") <$> valFromObj "type" json
   if isError then Error "AUR API lookup failed." else Ok json
 
 -- For some reason, if I forego the `maintainer` variable with:

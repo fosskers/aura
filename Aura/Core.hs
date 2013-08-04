@@ -62,23 +62,17 @@ instance Show VersionDemand where
     show Anything     = ""
 
 -- | A dependency on another package.
-data Dep = Dep
-    { depName          :: String
-    , depVersionDemand :: VersionDemand
-    }
+data Dep = Dep { depName          :: String
+               , depVersionDemand :: VersionDemand }
 
 -- | A package to be installed.
-data Package = Package
-    { pkgName        :: String
-    , pkgVersion     :: String
-    , pkgDeps        :: [Dep]
-    , pkgInstallType :: InstallType
-    }
+data Package = Package { pkgName        :: String
+                       , pkgVersion     :: String
+                       , pkgDeps        :: [Dep]
+                       , pkgInstallType :: InstallType }
 
 -- | The installation method.
-data InstallType
-    = Pacman String
-    | Build Buildable
+data InstallType = Pacman String | Build Buildable
 
 -- | A package installed by building.
 data Buildable = Buildable
@@ -112,9 +106,8 @@ instance Monoid Repository where
 -- | Partition a list of packages into pacman and buildable groups.
 partitionPkgs :: [Package] -> ([String],[Buildable])
 partitionPkgs = partitionEithers . map (toEither . pkgInstallType)
-  where
-    toEither (Pacman s) = Left  s
-    toEither (Build  b) = Right b
+  where toEither (Pacman s) = Left  s
+        toEither (Build  b) = Right b
 
 parseDep :: String -> Dep
 parseDep s = Dep name (getVersionDemand comp ver)
@@ -131,7 +124,7 @@ parseDep s = Dep name (getVersionDemand comp ver)
 -- | Action won't be allowed unless user is root, or using sudo.
 sudo :: Aura () -> Aura ()
 sudo action = do
-  hasPerms <- (hasRootPriv . environmentOf) `fmap` ask
+  hasPerms <- asks (hasRootPriv . environmentOf)
   if hasPerms then action else scoldAndFail mustBeRoot_1
 
 -- | Prompt if the user is the true Root. Building as it can be dangerous.
@@ -143,14 +136,14 @@ trueRoot action = ask >>= \ss ->
 
 -- `-Qm` yields a list of sorted values.
 getForeignPackages :: Aura [(String,String)]
-getForeignPackages = (map fixName . lines) `fmap` pacmanOutput ["-Qm"]
+getForeignPackages = (map fixName . lines) <$> pacmanOutput ["-Qm"]
     where fixName = hardBreak (== ' ')
 
 getOrphans :: Aura [String]
-getOrphans = lines `fmap` pacmanOutput ["-Qqdt"]
+getOrphans = lines <$> pacmanOutput ["-Qqdt"]
 
 getDevelPkgs :: Aura [String]
-getDevelPkgs = (filter isDevelPkg . map fst) `fmap` getForeignPackages
+getDevelPkgs = (filter isDevelPkg . map fst) <$> getForeignPackages
 
 isDevelPkg :: String -> Bool
 isDevelPkg p = any (`isSuffixOf` p) suffixes
@@ -185,7 +178,7 @@ colouredMessage :: Colouror -> (Language -> String) -> Aura ()
 colouredMessage c msg = ask >>= putStrLnA c . msg . langOf
 
 renderColour :: Colouror -> (Language -> String) -> Aura String
-renderColour c msg = (c . msg . langOf) `fmap` ask
+renderColour c msg = asks (c . msg . langOf)
 
 say :: (Language -> String) -> Aura ()
 say = colouredMessage noColour

@@ -51,7 +51,8 @@ installPkgFiles :: [String] -> [FilePath] -> Aura ()
 installPkgFiles _ []          = return ()
 installPkgFiles pacOpts files = checkDBLock >> pacman (["-U"] ++ pacOpts ++ files)
 
--- All building occurs within temp directories in the package cache.
+-- All building occurs within temp directories in the package cache,
+-- or in a location specified by the user with flags.
 buildPackages :: [Buildable] -> Aura [FilePath]
 buildPackages []   = return []
 buildPackages pkgs = ask >>= \ss -> do
@@ -93,7 +94,7 @@ getSourceCode pkg user currDir = liftIO $ do
   cd sourceDir
 
 overwritePkgbuild :: Buildable -> Aura ()
-overwritePkgbuild p = (mayHotEdit `fmap` ask) >>= check
+overwritePkgbuild p = asks mayHotEdit >>= check
     where check True  = liftIO . writeFile "PKGBUILD" . pkgbuildOf $ p
           check False = return ()
 
@@ -101,8 +102,7 @@ overwritePkgbuild p = (mayHotEdit `fmap` ask) >>= check
 -- continue installing previous packages that built successfully.
 buildFail :: [FilePath] -> [Buildable] -> String -> Aura ([FilePath],[Buildable])
 buildFail _ [] _ = failure "buildFail : You should never see this message."
-buildFail built (p:ps) errors = ask >>= \ss -> do
-  let lang = langOf ss
+buildFail built (p:ps) errors = asks langOf >>= \lang -> do
   scold $ buildFail_1 (buildName p)
   displayBuildErrors errors
   printList red cyan (buildFail_2 lang) (map buildName ps)
@@ -126,9 +126,9 @@ displayBuildErrors errors = ask >>= \ss -> when (suppressMakepkg ss) $ do
 moveToBuildPath :: [FilePath] -> Aura [FilePath]
 moveToBuildPath []     = return []
 moveToBuildPath (p:ps) = do
-  newName <- ((</> p) . buildPathOf) `fmap` ask
+  newName <- ((</> p) . buildPathOf) <$> ask
   liftIO $ mv p newName
-  (newName :) `fmap` moveToBuildPath ps
+  (newName :) <$> moveToBuildPath ps
 
 -- Moves a file to the aura src package cache and returns its location.
 moveToSourcePath :: [FilePath] -> Aura [FilePath]
@@ -136,4 +136,4 @@ moveToSourcePath []     = return []
 moveToSourcePath (p:ps) = do
   let newName = srcPkgStore </> p
   liftIO $ mv p newName
-  (newName :) `fmap` moveToSourcePath ps
+  (newName :) <$> moveToSourcePath ps

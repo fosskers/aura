@@ -97,53 +97,47 @@ install opts pacOpts pkgs = ask >>= \ss ->
                 mapM_ (buildAndInstall pacOpts) buildPkgs
 
 -- | Check a list of a package names are buildable, and mark them as explicit.
-lookupPkgs
-    :: (String -> Aura (Maybe Buildable))
-    -> [String]
-    -> Aura [Buildable]
+lookupPkgs :: (String -> Aura (Maybe Buildable))
+           -> [String]
+           -> Aura [Buildable]
 lookupPkgs f pkgs = do
     (nons,okay) <- partitionEithers <$> mapM lookupBuild pkgs
     reportNonPackages nons
     return okay
-  where
-    lookupBuild pkg = maybe (Left pkg) Right <$> f pkg
+  where lookupBuild pkg = maybe (Left pkg) Right <$> f pkg
 
 -- | The user can handle PKGBUILDs in multiple ways.
 -- `--hotedit` takes the highest priority.
 pbHandler :: Aura ([Buildable] -> Aura [Buildable])
-pbHandler = ask >>= check
-    where check ss | mayHotEdit ss      = return hotEdit
-                   | useCustomizepkg ss = return customizepkg
-                   | otherwise          = return return
+pbHandler = asks check
+    where check ss | mayHotEdit ss      = hotEdit
+                   | useCustomizepkg ss = customizepkg
+                   | otherwise          = return
 
 badPkgCheck :: [String] -> Aura [String]
 badPkgCheck []     = return []
 badPkgCheck (p:ps) = ask >>= \ss ->
   case p `lookup` wontBuildOf ss of
-    Nothing -> (p :) `fmap` badPkgCheck ps
+    Nothing -> (p :) <$> badPkgCheck ps
     Just r  -> do
       scold $ badPkgCheck_1 p
       putStrLnA yellow r
       okay <- optionalPrompt badPkgCheck_2
-      if okay then (p :) `fmap` badPkgCheck ps else badPkgCheck ps
+      if okay then (p :) <$> badPkgCheck ps else badPkgCheck ps
 
 depsToInstall :: Repository -> [Buildable] -> Aura [Package]
 depsToInstall repo bs = do
     allDeps <- resolveDeps repo $ map (packageBuildable . markExplicit) bs
     filterM mustInstall allDeps
-  where
-    markExplicit b = b { explicit = True }
+  where markExplicit b = b { explicit = True }
 
 mustInstall :: Package -> Aura Bool
-mustInstall pkg
-    | isExplicit = return True
-    | otherwise  = depTest constraint
-  where
-    isExplicit = case pkgInstallType pkg of
-        Pacman _ -> False
-        Build  b -> explicit b
-
-    constraint = pkgName pkg ++ "=" ++ pkgVersion pkg
+mustInstall pkg | isExplicit = return True
+                | otherwise  = depTest constraint
+  where isExplicit = case pkgInstallType pkg of
+                       Pacman _ -> False
+                       Build  b -> explicit b
+        constraint = pkgName pkg ++ "=" ++ pkgVersion pkg
 
 depCheckFailure :: String -> Aura a
 depCheckFailure m = scold install_1 >> failure m
@@ -163,7 +157,6 @@ buildAndInstall pacOpts pkg =
 ------------
 -- REPORTING
 ------------
-
 -- | Display dependencies.
 displayPkgDeps :: InstallOptions -> [String] -> Aura ()
 displayPkgDeps _ [] = return ()
@@ -171,12 +164,11 @@ displayPkgDeps opts ps = asks beQuiet >>= \quiet -> do
     bs   <- map packageBuildable . catMaybes <$> mapM (installLookup opts) ps
     pkgs <- partitionPkgs <$> resolveDeps (repository opts) bs
     reportDeps quiet pkgs
-  where
-    reportDeps True  = uncurry reportListOfDeps
-    reportDeps False = uncurry (reportPkgsToInstall $ label opts)
+  where reportDeps True  = uncurry reportListOfDeps
+        reportDeps False = uncurry (reportPkgsToInstall $ label opts)
 
 reportPkgsToInstall :: String -> [String] -> [Buildable] -> Aura ()
-reportPkgsToInstall la rps bps = langOf `fmap` ask >>= \lang -> do
+reportPkgsToInstall la rps bps = asks langOf >>= \lang -> do
   pl (reportPkgsToInstall_1    lang) (sort rps)
   pl (reportPkgsToInstall_2 la lang) (sort $ map buildName bps)
       where pl = printList green cyan
@@ -190,7 +182,7 @@ reportNonPackages :: [String] -> Aura ()
 reportNonPackages = badReport reportNonPackages_1
 
 reportIgnoredPackages :: [String] -> Aura ()
-reportIgnoredPackages pkgs = langOf `fmap` ask >>= \lang ->
+reportIgnoredPackages pkgs = asks langOf >>= \lang ->
   printList yellow cyan (reportIgnoredPackages_1 lang) pkgs
 
 pkgbuildDiffs :: [Buildable] -> Aura [Buildable]

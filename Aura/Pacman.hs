@@ -97,14 +97,12 @@ getLogFilePath confFile = singleEntry confFile "LogFile" defaultLogFile
 -- ACTIONS
 ----------
 pacman :: [ShellArg] -> Aura ()
-pacman args = do
-  cmd <- pacmanCmdOf `fmap` ask
-  liftIO (hFlush stdout)
-  shellCmd cmd args
+pacman args = asks pacmanCmdOf >>= \cmd -> flush >> shellCmd cmd args
+    where flush = liftIO (hFlush stdout)
 
 -- Did a pacman process succeed?
 pacmanSuccess :: [ShellArg] -> Aura Bool
-pacmanSuccess args = success `fmap` quietShellCmd' "pacman" args
+pacmanSuccess args = success <$> quietShellCmd' "pacman" args
     where success = didProcessSucceed . tripleFst
 
 -- Handler for pacman call failures.
@@ -119,11 +117,11 @@ syncDatabase :: [ShellArg] -> Aura ()
 syncDatabase pacOpts = pacman $ ["-Sy"] ++ pacOpts
 
 getPacmanHelpMsg :: Aura [String]
-getPacmanHelpMsg = lines `fmap` pacmanOutput ["-h"]
+getPacmanHelpMsg = lines <$> pacmanOutput ["-h"]
 
 -- Yields the lines given by `pacman -V` with the pacman image stripped.
 getVersionInfo :: Aura [String]
-getVersionInfo = (map (drop verMsgPad) . lines) `fmap` pacmanOutput ["-V"]
+getVersionInfo = (map (drop verMsgPad) . lines) <$> pacmanOutput ["-V"]
 
 -- The amount of whitespace before text in the lines given by `pacman -V`
 verMsgPad :: Int

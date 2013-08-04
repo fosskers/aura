@@ -21,22 +21,22 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Dependencies
-    ( resolveDeps
-    ) where
+module Aura.Dependencies ( resolveDeps ) where
 
 import           Control.Monad.State
 import           Data.Graph
 import           Data.Maybe
-import qualified Data.Map            as Map
+import qualified Data.Map as Map
 
-import           Aura.Conflicts
 import           Aura.Core
+import           Aura.Conflicts
 import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Settings.Base
 
 import           Utilities           (whenM, tripleFst)
+
+---
 
 resolveDeps :: Repository -> [Package] -> Aura [Package]
 resolveDeps repo ps =
@@ -63,11 +63,10 @@ resolveDeps repo ps =
     getPkg p = gets $ Map.lookup p
 
 missingPkg :: String -> Aura a
-missingPkg name = ask >>= \ss ->
-    failure $ missingPkg_1 name (langOf ss)
+missingPkg name = asks langOf >>= failure . missingPkg_1 name
 
 sortInstall :: [Package] -> [Package]
 sortInstall ps = reverse . map (tripleFst . n) . topSort $ g
-  where
-    (g,n,_)    = graphFromEdges $ map toEdge ps
-    toEdge pkg = (pkg, pkgName pkg, map depName $ pkgDeps pkg)
+  where (g,n,_)    = graphFromEdges $ map toEdge ps
+        toEdge pkg = (pkg, pkgName pkg, map depName $ pkgDeps pkg)
+

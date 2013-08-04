@@ -54,14 +54,14 @@ import Utilities
 -- they want to downgrade to.
 downgradePackages :: [String] -> Aura ()
 downgradePackages []   = return ()
-downgradePackages pkgs = cachePathOf `fmap` ask >>= \cachePath -> do
+downgradePackages pkgs = asks cachePathOf >>= \cachePath -> do
   reals <- filterM inCache pkgs -- This.
   reportBadDowngradePkgs (pkgs \\ reals)
   unless (null reals) $ do
     cache   <- cacheContents cachePath
     choices <- mapM (getDowngradeChoice cache) reals
     pacman $ "-U" : map (cachePath </>) choices
-        where inCache p = notNull `fmap` cacheMatches [p]
+        where inCache p = notNull <$> cacheMatches [p]
                
 getDowngradeChoice :: Cache -> String -> Aura String
 getDowngradeChoice cache pkg = do
@@ -106,8 +106,7 @@ backup dir cache = do
 -- Manages the file copying and display of the real-time progress notifier.
 copyAndNotify :: FilePath -> [String] -> Int -> Aura ()
 copyAndNotify _ [] _       = return ()
-copyAndNotify dir (p:ps) n = do
-  cachePath <- cachePathOf `fmap` ask
+copyAndNotify dir (p:ps) n = asks cachePathOf >>= \cachePath -> do
   liftIO $ raiseCursorBy 1
   warn $ copyAndNotify_1 n
   liftIO $ cp (cachePath </> p) (dir </> p)
@@ -146,7 +145,7 @@ clean toSave = ask >>= \ss -> do
 -- | Only package files with a version not in any PkgState will be
 -- removed.
 cleanNotSaved :: Aura ()
-cleanNotSaved = cachePathOf `fmap` ask >>= \path -> do
+cleanNotSaved = asks cachePathOf >>= \path -> do
   notify cleanNotSaved_1
   states <- getStateFiles >>= mapM readState
   cache  <- cacheContents path
