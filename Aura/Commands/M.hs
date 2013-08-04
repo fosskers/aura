@@ -120,11 +120,11 @@ cleanABSTree = whenM (optionalPrompt cleanABSTree_1) $ do
   liftIO $ createDirectory absBasePath
 
 displayPkgbuild :: [String] -> Aura ()
-displayPkgbuild ps = do
+displayPkgbuild ps = flip I.displayPkgbuild ps $ \ps' -> do
     tree <- absTree
-    forM_ ps $ \p -> case pkgRepo tree p of
-        Nothing   -> return ()
-        Just repo -> liftIO . putStrLn =<< absPkgbuild repo p
+    forM ps' $ \p -> case pkgRepo tree p of
+                       Nothing   -> return Nothing
+                       Just repo -> Just <$> absPkgbuild repo p
 
 displayPkgDeps :: [String] -> Aura ()
 displayPkgDeps ps = do

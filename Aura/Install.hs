@@ -26,11 +26,12 @@ module Aura.Install
     ( InstallOptions(..)
     , install
     , displayPkgDeps
+    , displayPkgbuild
     ) where
 
 import Control.Monad (unless, filterM)
 import Data.Either   (partitionEithers)
-import Data.List     (sort, (\\))
+import Data.List     (sort, (\\), intersperse)
 import Data.Maybe    (catMaybes)
 
 import Aura.Pkgbuild.Base
@@ -203,3 +204,9 @@ pkgbuildDiffs ps = ask >>= check
                    d  -> do
                       warn $ reportPkgbuildDiffs_3 name
                       liftIO $ putStrLn $ d ++ "\n"
+
+displayPkgbuild :: ([String] -> Aura [Maybe String]) -> [String] -> Aura ()
+displayPkgbuild getPBs ps = do
+  let line = "\n#========== NEXT PKGBUILD ==========#\n"
+  pbs <- intersperse line . catMaybes <$> getPBs ps
+  mapM_ (liftIO . putStrLn) pbs

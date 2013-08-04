@@ -3,6 +3,7 @@ Aura Changelog
 1.2.1.0
 -------
 - New `builduser` option
+- `Prelude.head` bug fixed
 
 1.2.0.2
 -------

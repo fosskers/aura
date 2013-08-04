@@ -30,9 +30,9 @@ module Aura.Commands.A
     , downloadTarballs
     , displayPkgbuild ) where
 
+import Text.Regex.PCRE ((=~))
 import Control.Monad
 import Data.Monoid
-import Text.Regex.PCRE ((=~))
 
 import           Aura.Install (InstallOptions(..))
 import qualified Aura.Install as I
@@ -147,8 +147,7 @@ downloadTarballs pkgs = do
               void . liftIO $ sourceTarball path pkg
 
 displayPkgbuild :: [String] -> Aura ()
-displayPkgbuild = mapM_ $ \p ->
-    downloadPkgbuild p >>= maybe (return ()) (liftIO . putStrLn)
+displayPkgbuild = I.displayPkgbuild (mapM downloadPkgbuild)
 
 isntMostRecent :: (PkgInfo,String) -> Bool
 isntMostRecent (info,v) = trueVer > currVer
@@ -158,7 +157,6 @@ isntMostRecent (info,v) = trueVer > currVer
 ------------
 -- REPORTING
 ------------
-
 reportPkgsToUpgrade :: [String] -> Aura ()
 reportPkgsToUpgrade pkgs = asks langOf >>= \lang ->
   printList green cyan (reportPkgsToUpgrade_1 lang) pkgs
