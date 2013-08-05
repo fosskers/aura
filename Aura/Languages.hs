@@ -330,7 +330,7 @@ getRealPkgConflicts_2 p Serbian    = "Пакет " ++ bt p ++ " је игнор�
 
 -- NEEDS TRANSLATION
 missingPkg_1 :: String -> Language -> String
-missingPkg_1 p _ = "The dependency " ++ bt p ++ "could not be found. You may need to search for a package to satisfy it."
+missingPkg_1 p _ = "The dependency " ++ bt p ++ " could not be found. You may need to search for a package to satisfy it."
 
 -----------------
 -- aura functions

@@ -23,7 +23,6 @@ module Aura.Pkgbuild.Base where
 
 import Aura.Bash
 import Aura.Core
-import Aura.Monad.Aura
 
 ---
 
@@ -55,7 +54,3 @@ packageBuildable b = Package
     }
   where
     ns = namespaceOf b
-
-buildableRepository :: (String -> Aura (Maybe Buildable)) -> Repository
-buildableRepository f = Repository $ \name ->
-    fmap packageBuildable <$> f name
