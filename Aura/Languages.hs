@@ -268,6 +268,10 @@ buildFail_5 Russian    = "Сборка не удалась."
 buildFail_5 Italian    = "Compilazione fallita."
 buildFail_5 Serbian    = "Изградња пакета није успела."
 
+-- NEEDS TRANSLATION
+buildFail_6 :: Language -> String
+buildFail_6 _ = "Would you like to continue anyway?"
+
 displayBuildErrors_1 :: Language -> String
 displayBuildErrors_1 English    = "Dumping makepkg output in "
 displayBuildErrors_1 Japanese   = "抑えていたmakepkgの出力を受け取る用意・・・"
