@@ -1,7 +1,7 @@
 .\" Man page for `aura`
 .\" Written by Colin Woodbury <colingw@gmail.com>
 
-.TH aura 8 "May 2013" "Aura" "Aura Manual"
+.TH aura 8 "August 2013" "Aura" "Aura Manual"
 
 .\" Disable hyphenation.
 .nh
@@ -155,6 +155,12 @@ of a pre-existing directory can be used. Example:
 .RE
 .RE
 .P
+\fB\-\-builduser\fR=username
+.RS 4
+Specify the user to build packages as. This can be useful when logged in
+as root and a build user is available.
+.RE
+.P
 \fB\-\-devel\fR
 .RS 4
 When ran with \fI\-Au\fR, adds all development packages to the queue
@@ -291,6 +297,12 @@ Sync all packages present in the local ABS Tree to their latest version.
 This is different from just "sudo abs", which pulls down the \fIentire\fR tree as
 available from the repositories.
 .RE
+.P
+\fB\-\-absdeps\fR
+.RS 4
+All repository (pacman) dependencies not yet installed will also be manually built.
+Also usable with \fI\-A\fR.
+.RE
 
 .SH ORPHAN PACKAGE OPTIONS (\fI\-O\fR)
 .P
@@ -405,6 +417,8 @@ previous installations could be overwritten.
 Colin Woodbury <colingw@gmail.com>
 
 .SH CONTRIBUTORS
+.P
+Kyle Raftogianis
 .P
 Nicholas Clarke <nicholas.clarke@sanger.ac.uk>
 .P

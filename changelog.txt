@@ -4,6 +4,7 @@ Aura Changelog
 -------
 - New `builduser` option
 - `Prelude.head` bug fixed
+- Other bug fixes
 
 1.2.0.2
 -------
