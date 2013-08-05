@@ -76,15 +76,12 @@ import Utilities (whenM)
 ---
 
 installOptions :: Aura InstallOptions
-installOptions = asks buildABSDeps >>= \manual -> do
-    tree <- absTree
-    let repo = if manual
-               then absRepo tree <> pacmanRepo
-               else pacmanRepo
+installOptions = do
+    depsRepo <- absDepsRepo
     return InstallOptions
         { label         = "ABS"
-        , installLookup = absLookup tree
-        , repository    = repo
+        , installLookup = absLookup
+        , repository    = depsRepo <> pacmanRepo
         }
 
 install :: [String] -> [String] -> Aura ()

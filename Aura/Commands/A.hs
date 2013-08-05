@@ -39,6 +39,7 @@ import qualified Aura.Install as I
 
 import Aura.Packages.Repository
 import Aura.Settings.Base
+import Aura.Packages.ABS (absDepsRepo)
 import Aura.Packages.AUR
 import Aura.Colour.Text
 import Aura.Monad.Aura
@@ -51,15 +52,19 @@ import Utilities (whenM)
 
 ---
 
-installOptions :: I.InstallOptions
-installOptions = I.InstallOptions
-    { label         = "AUR"
-    , installLookup = aurLookup
-    , repository    = pacmanRepo <> aurRepo
-    }
+installOptions :: Aura I.InstallOptions
+installOptions = do
+    depsRepo <- absDepsRepo
+    return I.InstallOptions
+        { label         = "AUR"
+        , installLookup = aurLookup
+        , repository    = depsRepo <> pacmanRepo <> aurRepo
+        }
 
 install :: [String] -> [String] -> Aura ()
-install = I.install installOptions
+install pacOpts ps = do
+    opts <- installOptions
+    I.install opts pacOpts ps
 
 upgradeAURPkgs :: [String] -> [String] -> Aura ()
 upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
@@ -136,7 +141,9 @@ renderSearch ss r i = searchResult
             | otherwise     = green $ latestVerOf i
 
 displayPkgDeps :: [String] -> Aura ()
-displayPkgDeps = I.displayPkgDeps installOptions
+displayPkgDeps ps = do
+    opts <- installOptions
+    I.displayPkgDeps opts ps
 
 downloadTarballs :: [String] -> Aura ()
 downloadTarballs pkgs = do
