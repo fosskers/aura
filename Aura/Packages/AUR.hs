@@ -58,7 +58,7 @@ aurLookup name = do
     Traversable.mapM (makeBuildable name) pkgbuild
 
 aurRepo :: Repository
-aurRepo = buildableRepository aurLookup
+aurRepo = Repository $ \name -> fmap packageBuildable <$> aurLookup name
 
 makeBuildable :: String -> Pkgbuild -> Aura Buildable
 makeBuildable name pkgbuild = do

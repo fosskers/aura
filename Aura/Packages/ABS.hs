@@ -26,6 +26,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Packages.ABS
     ( absLookup
     , absRepo
+    , absDepsRepo
     , ABSTree
     , absBasePath
     , absTree
@@ -41,10 +42,11 @@ module Aura.Packages.ABS
 
 import           Control.Monad
 import           Data.List          (find)
+import           Data.Monoid
 import           Data.Set           (Set)
 import qualified Data.Set           as Set
 import qualified Data.Traversable   as Traversable
-import           System.Directory   (doesDirectoryExist)
+import           System.Directory   (doesFileExist, doesDirectoryExist)
 import           System.FilePath    ((</>), takeBaseName)
 import           Text.Regex.PCRE    ((=~))
 
@@ -54,6 +56,7 @@ import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Pacman        (pacmanOutput)
 import           Aura.Pkgbuild.Base
+import           Aura.Settings.Base
 import qualified Aura.Shell         as A (quietShellCmd, shellCmd)
 import           Aura.Utils         (optionalPrompt)
 
@@ -63,12 +66,26 @@ import qualified Shell              as Sh (quietShellCmd)
 
 ---
 
-absLookup :: ABSTree -> String -> Aura (Maybe Buildable)
-absLookup tree name =
-    Traversable.mapM (\repo -> makeBuildable repo name) $ pkgRepo tree name
+absLookup :: String -> Aura (Maybe Buildable)
+absLookup name = syncRepo name >>= maybe (return Nothing) makeSynced
+  where makeSynced repo = do
+            whenM (not <$> synced repo name) $ singleSync repo name
+            found <- synced repo name
+            if found
+                then Just <$> makeBuildable repo name
+                else return Nothing  -- split package, probably
 
-absRepo :: ABSTree -> Repository
-absRepo tree = buildableRepository (absLookup tree)
+-- Already installed packages are not built.
+absRepo :: Repository
+absRepo = Repository $ \name -> do
+    installed <- isInstalled name
+    if installed
+        then return Nothing
+        else fmap packageBuildable <$> absLookup name
+
+absDepsRepo :: Aura Repository
+absDepsRepo = asks (getRepo . buildABSDeps)
+  where getRepo manual = if manual then absRepo else mempty
 
 makeBuildable :: String -> String -> Aura Buildable
 makeBuildable repo name = do
@@ -133,6 +150,9 @@ syncRepo p = do
       let pat = "Repository[ ]+: "
           (_,_,repo) = (head $ lines i) =~ pat :: (String,String,String)
       return $ Just repo
+
+synced :: String -> String -> Aura Bool
+synced repo pkg = liftIO . doesFileExist $ absPkgbuildPath repo pkg
 
 -- Make this react to `-x` as well? Wouldn't be hard.
 -- It would just be a matter of switching between `shellCmd`
