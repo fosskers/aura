@@ -24,18 +24,22 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Pkgbuild.Records where
 
 import System.Directory (doesFileExist)
+import System.FilePath  ((</>))
 
 import Aura.Pkgbuild.Base
 import Aura.Monad.Aura
 import Aura.Core (Buildable, buildName, pkgbuildOf)
+import Aura.Diff (unidiff)
 
 import Utilities (readFileUTF8)
-import ColourDiff
 
 ---
 
-comparePkgbuilds :: String -> String -> String
-comparePkgbuilds old new = diff (lines old) (lines new)
+comparePkgbuilds :: String -> String -> String -> String
+comparePkgbuilds name old new =
+    unlines $ unidiff 3 ("a" </> h) ("b" </> h) (lines old) (lines new)
+  where
+    h = name </> "PKGBUILD"
 
 hasPkgbuildStored :: String -> Aura Bool
 hasPkgbuildStored = liftIO . doesFileExist . pkgbuildPath 
