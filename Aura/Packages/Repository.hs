@@ -49,9 +49,24 @@ packageRepo name version = Package
     }
 
 -- | If given a virtual package, try to find a real package to install.
+-- Functions like this are why we need libalpm.
 resolveName :: String -> Aura String
-resolveName name = fromMaybe name . listToMaybe . lines <$>
-    pacmanOutput ["-Ssq", "^" ++ name ++ "$"]
+resolveName name = do
+    pkgs <- lines <$> pacmanOutput ["-Ssq", "^" ++ name ++ "$"]
+    chooseProvider name pkgs
+
+-- | Choose a providing package, favoring installed packages.
+chooseProvider :: String -> [String] -> Aura String
+chooseProvider name []  = return name
+chooseProvider _    [p] = return p
+chooseProvider _    ps  = fromMaybe (head ps) <$> findM isInstalled ps
+
+-- | Monadic 'find'. We can't use 'filterM' because monads like 'IO' can
+-- be strict.
+findM :: Monad m => (a -> m Bool) -> [a] -> m (Maybe a)
+findM _ []     = return Nothing
+findM p (x:xs) = do found <- p x
+                    if found then return (Just x) else findM p xs
 
 -- | The most recent version of a package, if it exists in the respositories.
 mostRecentVersion :: String -> Aura (Maybe String)
