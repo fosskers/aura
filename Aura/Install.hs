@@ -199,11 +199,11 @@ pkgbuildDiffs ps = ask >>= check
                else do
                  let new = pkgbuildOf p
                  old <- readPkgbuild name
-                 case comparePkgbuilds old new of
+                 case comparePkgbuilds name old new of
                    "" -> notify $ reportPkgbuildDiffs_2 name
                    d  -> do
                       warn $ reportPkgbuildDiffs_3 name
-                      liftIO $ putStrLn $ d ++ "\n"
+                      liftIO $ putStrLn d
 
 displayPkgbuild :: ([String] -> Aura [Maybe String]) -> [String] -> Aura ()
 displayPkgbuild getPBs ps = do
