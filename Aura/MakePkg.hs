@@ -28,7 +28,6 @@ module Aura.MakePkg
     , makepkgConfFile ) where
 
 import Text.Regex.PCRE ((=~))
-import Data.List (intercalate)
 
 import Aura.Monad.Aura
 import Aura.Shell (shellCmd, quietShellCmd, quietShellCmd', checkExitCode')

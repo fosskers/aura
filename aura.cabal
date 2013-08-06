@@ -1,6 +1,6 @@
 name:                aura
 
-version:             1.2.0.2
+version:             1.2.1.0
 
 synopsis:            A secure package manager for Arch Linux and the AUR, written in Haskell.
 
@@ -37,7 +37,7 @@ source-repository head
   location: git://github.com/fosskers/aura.git
 
 executable aura
-  ghc-options:         -Wall -O2
+  ghc-options:         -Wall
 
   main-is:             aura.hs
 

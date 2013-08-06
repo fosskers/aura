@@ -4,6 +4,9 @@ Aura Changelog
 -------
 - New `builduser` option
 - `Prelude.head` bug fixed
+- Dependency checking is faster
+- New `-k` output
+- `--absdeps` works properly now
 - Other bug fixes
 
 1.2.0.2
