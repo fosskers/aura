@@ -29,7 +29,6 @@ import System.FilePath     ((</>))
 import Control.Monad       (forM, void)
 
 import Aura.Settings.Base (environmentOf)
-import Aura.Bash          (namespace)
 import Aura.Pkgbuild.Base
 import Aura.Monad.Aura
 import Aura.Languages
@@ -44,17 +43,16 @@ import Shell     (getEditor, quietShellCmd)
 edit :: (FilePath -> IO ()) -> Buildable -> Aura Buildable
 edit f p = do
   newPB <- liftIO $ do
-             writeFile filename $ pkgbuildOf p
+             writeFile filename $ pkgbuild p
              f filename
              readFileUTF8 filename
-  ns <- namespace (buildName p) newPB  -- Reparse PKGBUILD.
-  return p { pkgbuildOf = newPB, namespaceOf = ns }
+  return p { pkgbuild = newPB }
       where filename = "PKGBUILD"
 
 -- | Allow the user to edit the PKGBUILD if they asked to do so.
 hotEdit :: [Buildable] -> Aura [Buildable]
 hotEdit pkgs = ask >>= \ss -> withTempDir "hotedit" . forM pkgs $ \p -> do
-  let cond = optionalPrompt (hotEdit_1 $ buildName p)
+  let cond = optionalPrompt (hotEdit_1 $ pkgBase p)
       act  = edit (openEditor (getEditor $ environmentOf ss))
   ifM cond act nothing p
 
@@ -66,7 +64,7 @@ customizepkg = ifFile customizepkg' (scold customizepkg_1) bin
 
 customizepkg' :: [Buildable] -> Aura [Buildable]
 customizepkg' pkgs = withTempDir "customizepkg" . forM pkgs $ \p -> do
-  let conf = customizepkgPath </> buildName p
+  let conf = customizepkgPath </> pkgBase p
   ifFile (edit customize) nothing conf p
 
 customize :: FilePath -> IO ()

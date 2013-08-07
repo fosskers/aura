@@ -23,6 +23,7 @@ module Aura.Pkgbuild.Base where
 
 import Aura.Bash
 import Aura.Core
+import Aura.Monad.Aura
 
 ---
 
@@ -43,14 +44,13 @@ trueVersion ns = pkgver ++ "-" ++ pkgrel
     where pkgver = head $ value ns "pkgver"
           pkgrel = head $ value ns "pkgrel"
 
--- XXX these functions need a new home
-packageBuildable :: Buildable -> Package
-packageBuildable b = Package
-    { pkgName        = buildName b
-    , pkgVersion     = trueVersion ns
-    , pkgDeps        = concatMap (map parseDep . value ns)
-                       ["depends", "makedepends", "checkdepends"]
-    , pkgInstallType = Build b
-    }
-  where
-    ns = namespaceOf b
+packageBuildable :: Buildable -> Aura Package
+packageBuildable b = do
+    ns <- namespace (pkgBase b) (pkgbuild b)
+    return Package
+        { pkgName        = pkgBase b
+        , pkgVersion     = trueVersion ns
+        , pkgDeps        = concatMap (map parseDep . value ns)
+                           ["depends", "makedepends", "checkdepends"]
+        , pkgInstallType = Build b
+        }

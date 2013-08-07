@@ -41,7 +41,6 @@ import qualified Data.Traversable    as Traversable (mapM)
 import           Text.JSON
 
 import           Aura.Utils          (scoldAndFail)
-import           Aura.Bash           (namespace)
 import           Aura.Monad.Aura
 import           Aura.Languages
 import           Aura.Pkgbuild.Base
@@ -53,23 +52,19 @@ import           Internet
 ---
 
 aurLookup :: String -> Aura (Maybe Buildable)
-aurLookup name = do
-    pkgbuild <- downloadPkgbuild name
-    Traversable.mapM (makeBuildable name) pkgbuild
+aurLookup name = fmap (makeBuildable name) <$> downloadPkgbuild name
 
 aurRepo :: Repository
-aurRepo = Repository $ \name -> fmap packageBuildable <$> aurLookup name
+aurRepo = Repository $ \name ->
+    aurLookup name >>= Traversable.mapM packageBuildable
 
-makeBuildable :: String -> Pkgbuild -> Aura Buildable
-makeBuildable name pkgbuild = do
-    ns <- namespace name pkgbuild
-    return Buildable
-        { buildName   = name
-        , pkgbuildOf  = pkgbuild
-        , namespaceOf = ns
-        , explicit    = False
-        , source      = \fp -> sourceTarball fp name >>= decompress
-        }
+makeBuildable :: String -> Pkgbuild -> Buildable
+makeBuildable name pb = Buildable
+    { pkgBase  = name
+    , pkgbuild = pb
+    , explicit = False
+    , source   = \fp -> sourceTarball fp name >>= decompress
+    }
 
 isAurPackage :: String -> Aura Bool
 isAurPackage name = isJust <$> downloadPkgbuild name

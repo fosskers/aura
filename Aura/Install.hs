@@ -29,7 +29,7 @@ module Aura.Install
     , displayPkgbuild
     ) where
 
-import Control.Monad (unless)
+import Control.Monad (unless, (>=>))
 import Data.Either   (partitionEithers)
 import Data.List     (sort, (\\), intersperse)
 import Data.Maybe    (catMaybes)
@@ -128,7 +128,7 @@ badPkgCheck (p:ps) = ask >>= \ss ->
       if okay then (p :) <$> badPkgCheck ps else badPkgCheck ps
 
 depsToInstall :: Repository -> [Buildable] -> Aura [Package]
-depsToInstall repo = resolveDeps repo . map packageBuildable
+depsToInstall repo = mapM packageBuildable >=> resolveDeps repo
 
 depCheckFailure :: String -> Aura a
 depCheckFailure m = scold install_1 >> failure m
@@ -152,22 +152,22 @@ buildAndInstall pacOpts pkg =
 displayPkgDeps :: InstallOptions -> [String] -> Aura ()
 displayPkgDeps _ [] = return ()
 displayPkgDeps opts ps = asks beQuiet >>= \quiet -> do
-    bs   <- map packageBuildable . catMaybes <$> mapM (installLookup opts) ps
-    pkgs <- partitionPkgs <$> resolveDeps (repository opts) bs
-    reportDeps quiet pkgs
+    bs   <- catMaybes <$> mapM (installLookup opts) ps
+    pkgs <- depsToInstall (repository opts) bs
+    reportDeps quiet (partitionPkgs pkgs)
   where reportDeps True  = uncurry reportListOfDeps
         reportDeps False = uncurry (reportPkgsToInstall $ label opts)
 
 reportPkgsToInstall :: String -> [String] -> [Buildable] -> Aura ()
 reportPkgsToInstall la rps bps = asks langOf >>= \lang -> do
   pl (reportPkgsToInstall_1    lang) (sort rps)
-  pl (reportPkgsToInstall_2 la lang) (sort $ map buildName bps)
+  pl (reportPkgsToInstall_2 la lang) (sort $ map pkgBase bps)
       where pl = printList green cyan
 
 reportListOfDeps :: [String] -> [Buildable] -> Aura ()
 reportListOfDeps rps bps = do
   liftIO $ mapM_ putStrLn (sort rps)
-  liftIO $ mapM_ putStrLn (sort $ map buildName bps)
+  liftIO $ mapM_ putStrLn (sort $ map pkgBase bps)
 
 reportNonPackages :: [String] -> Aura ()
 reportNonPackages = badReport reportNonPackages_1
@@ -182,12 +182,12 @@ pkgbuildDiffs ps = ask >>= check
     where check ss | not $ diffPkgbuilds ss = return ps
                    | otherwise = mapM_ displayDiff ps >> return ps
           displayDiff p = do
-            let name = buildName p
+            let name = pkgBase p
             isStored <- hasPkgbuildStored name
             if not isStored
                then warn $ reportPkgbuildDiffs_1 name
                else do
-                 let new = pkgbuildOf p
+                 let new = pkgbuild p
                  old <- readPkgbuild name
                  case comparePkgbuilds name old new of
                    "" -> notify $ reportPkgbuildDiffs_2 name
