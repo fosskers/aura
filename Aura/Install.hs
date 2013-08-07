@@ -79,11 +79,9 @@ install opts pacOpts pkgs = ask >>= \ss ->
         let toInstall = pkgs \\ ignoredPkgsOf ss
             ignored   = pkgs \\ toInstall
         reportIgnoredPackages ignored
-        handler <- pbHandler
         toBuild <- badPkgCheck toInstall >>=
                    lookupPkgs (installLookup opts) >>=
-                   pkgbuildDiffs >>=
-                   handler
+                   pkgbuildDiffs
         notify install_5
         allPkgs <- catch (depsToInstall (repository opts) toBuild)
                    depCheckFailure
@@ -108,14 +106,6 @@ lookupPkgs f pkgs = do
   where lookupBuild pkg = maybe (Left pkg) Right <$> f pkg
         markExplicit b  = b { explicit = True }
 
--- | The user can handle PKGBUILDs in multiple ways.
--- `--hotedit` takes the highest priority.
-pbHandler :: Aura ([Buildable] -> Aura [Buildable])
-pbHandler = asks check
-    where check ss | mayHotEdit ss      = hotEdit
-                   | useCustomizepkg ss = customizepkg
-                   | otherwise          = return
-
 badPkgCheck :: [String] -> Aura [String]
 badPkgCheck []     = return []
 badPkgCheck (p:ps) = ask >>= \ss ->
@@ -138,12 +128,8 @@ repoInstall _       [] = return ()
 repoInstall pacOpts ps = pacman $ ["-S","--asdeps"] ++ pacOpts ++ ps
 
 buildAndInstall :: [String] -> Buildable -> Aura ()
-buildAndInstall pacOpts pkg =
-  pbHandler >>= \h -> h [pkg] >>= buildPackages >>=
-  installPkgFiles pacOpts'
-      where pacOpts' = if explicit pkg
-                       then pacOpts
-                       else "--asdeps" : pacOpts
+buildAndInstall pacOpts pkg = buildPackages [pkg] >>= installPkgFiles pacOpts'
+  where pacOpts' = if explicit pkg then pacOpts else "--asdeps" : pacOpts
 
 ------------
 -- REPORTING

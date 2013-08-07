@@ -24,14 +24,13 @@ module Aura.Pkgbuild.Base where
 import Aura.Bash
 import Aura.Core
 import Aura.Monad.Aura
+import Aura.Pkgbuild.Editing
+import Aura.Settings.Base
 
 ---
 
 pkgbuildCache :: FilePath
 pkgbuildCache = "/var/cache/aura/pkgbuilds/"
-
-customizepkgPath :: FilePath
-customizepkgPath = "/etc/customizepkg.d/"
 
 toFilename :: String -> FilePath
 toFilename = (++ ".pb")
@@ -44,13 +43,21 @@ trueVersion ns = pkgver ++ "-" ++ pkgrel
     where pkgver = head $ value ns "pkgver"
           pkgrel = head $ value ns "pkgrel"
 
+pbHandler :: Buildable -> Aura Buildable
+pbHandler b = ask >>= \ss -> check ss b
+  where check ss | mayHotEdit ss      = hotEdit
+                 | useCustomizepkg ss = customizepkg
+                 | otherwise          = return
+
+-- Package a Buildable, running the customization handler first.
 packageBuildable :: Buildable -> Aura Package
 packageBuildable b = do
-    ns <- namespace (pkgBase b) (pkgbuild b)
+    b' <- pbHandler b
+    ns <- namespace (pkgBase b') (pkgbuild b')
     return Package
-        { pkgName        = pkgBase b
+        { pkgName        = pkgBase b'
         , pkgVersion     = trueVersion ns
         , pkgDeps        = concatMap (map parseDep . value ns)
                            ["depends", "makedepends", "checkdepends"]
-        , pkgInstallType = Build b
+        , pkgInstallType = Build b'
         }
