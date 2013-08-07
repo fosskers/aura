@@ -169,9 +169,13 @@ ifM2 cond a1 a2 x1 x2 = do
 
 -- | Like `when`, but with a Monadic condition.
 whenM :: Monad m => m Bool -> m () -> m ()
-whenM cond a = do
-  success <- cond
-  if success then a else nothing
+whenM cond a = cond >>= \success -> if success then a else nothing
+
+-- | Monadic 'find'. We can't use 'filterM' because monads like 'IO' can
+-- be strict.
+findM :: Monad m => (a -> m Bool) -> [a] -> m (Maybe a)
+findM _ []     = return Nothing
+findM p (x:xs) = p x >>= \found -> if found then return (Just x) else findM p xs
 
 -- | If a file exists, it performs action `a`.
 -- If the file doesn't exist, it performs `b` and returns the argument.
