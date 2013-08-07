@@ -160,10 +160,9 @@ removePkgs [] _         = return ()
 removePkgs pkgs pacOpts = pacman  $ ["-Rsu"] ++ pkgs ++ pacOpts
 
 -- Moving to a libalpm backend will make this less hacked.
--- | Returns if a package needs to be installed. If a package isn't installed,
--- `pacman -T` will yield a single name.
-depTest :: String -> Aura Bool
-depTest s = notNull <$> pacmanOutput ["-T", s]
+-- | Returns if a dependency is satisfied by an installed package.
+depTest :: Dep -> Aura Bool
+depTest (Dep name ver) = null <$> pacmanOutput ["-T", name ++ show ver]
 
 -- | Block further action until the database is free.
 checkDBLock :: Aura ()
