@@ -28,7 +28,7 @@ import System.FilePath  ((</>))
 
 import Aura.Pkgbuild.Base
 import Aura.Monad.Aura
-import Aura.Core (Buildable, buildName, pkgbuildOf)
+import Aura.Core (Buildable, pkgBase, pkgbuild)
 import Aura.Diff (unidiff)
 
 import Utilities (readFileUTF8)
@@ -45,7 +45,7 @@ hasPkgbuildStored :: String -> Aura Bool
 hasPkgbuildStored = liftIO . doesFileExist . pkgbuildPath 
 
 storePkgbuilds :: [Buildable] -> Aura ()
-storePkgbuilds = mapM_ (\p -> writePkgbuild (buildName p) (pkgbuildOf p))
+storePkgbuilds = mapM_ (\p -> writePkgbuild (pkgBase p) (pkgbuild p))
 
 readPkgbuild :: String -> Aura String
 readPkgbuild = liftIO . readFileUTF8 . pkgbuildPath

@@ -76,7 +76,8 @@ absLookup name = syncRepo name >>= maybe (return Nothing) makeSynced
                 else return Nothing  -- split package, probably
 
 absRepo :: Repository
-absRepo = Repository $ \name -> fmap packageBuildable <$> absLookup name
+absRepo = Repository $ \name ->
+    absLookup name >>= Traversable.mapM packageBuildable
 
 absDepsRepo :: Aura Repository
 absDepsRepo = asks (getRepo . buildABSDeps)
@@ -84,14 +85,12 @@ absDepsRepo = asks (getRepo . buildABSDeps)
 
 makeBuildable :: String -> String -> Aura Buildable
 makeBuildable repo name = do
-    pkgbuild <- absPkgbuild repo name
-    ns       <- namespace name pkgbuild
+    pb <- absPkgbuild repo name
     return Buildable
-        { buildName   = name
-        , pkgbuildOf  = pkgbuild
-        , namespaceOf = ns
-        , explicit    = True  -- Reinstall if up-to-date.
-        , source      = copyTo repo name
+        { pkgBase  = name
+        , pkgbuild = pb
+        , explicit = False
+        , source   = copyTo repo name
         }
 
 copyTo :: String -> String -> FilePath -> IO FilePath
@@ -178,8 +177,8 @@ data PkgInfo = PkgInfo
 
 pkgInfo :: String -> String -> Aura PkgInfo
 pkgInfo repo name = do
-    pkgbuild <- absPkgbuild repo name
-    ns <- namespace name pkgbuild
+    pb <- absPkgbuild repo name
+    ns <- namespace name pb
     return PkgInfo
         { nameOf        = name
         , repoOf        = repo
