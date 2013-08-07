@@ -47,18 +47,17 @@ resolveDeps repo ps =
         modify $ Map.insert (pkgName pkg) pkg
 
     addDep dep = do
-        mpkg <- getPkg name
+        mpkg <- getPkg $ depName dep
         case mpkg of
-            Nothing  -> findPkg name
+            Nothing  -> findPkg dep
             Just pkg -> lift $ checkConflicts pkg dep
-      where
-        name = depName dep
 
-    findPkg name = do
+    findPkg dep = whenM (not <$> lift (depTest dep)) $ do
         mpkg <- lift $ lookupPkg repo name
         case mpkg of
             Nothing  -> lift $ missingPkg name
-            Just pkg -> addPkg pkg
+            Just pkg -> lift (checkConflicts pkg dep) >> addPkg pkg
+      where name = depName dep
 
     getPkg p = gets $ Map.lookup p
 

@@ -57,14 +57,12 @@ import System.Directory (removeDirectoryRecursive, createDirectory)
 import Text.Regex.PCRE  ((=~))
 import Control.Monad
 import Data.Maybe       (catMaybes)
-import Data.Monoid
 
 import           Aura.Install (InstallOptions(..))
 import qualified Aura.Install as I
 
 import Aura.Settings.Base
 import Aura.Packages.ABS
-import Aura.Packages.Repository
 import Aura.Colour.Text
 import Aura.Monad.Aura
 import Aura.Languages
@@ -81,7 +79,7 @@ installOptions = do
     return InstallOptions
         { label         = "ABS"
         , installLookup = absLookup
-        , repository    = depsRepo <> pacmanRepo
+        , repository    = depsRepo
         }
 
 install :: [String] -> [String] -> Aura ()

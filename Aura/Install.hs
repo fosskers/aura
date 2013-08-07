@@ -29,7 +29,7 @@ module Aura.Install
     , displayPkgbuild
     ) where
 
-import Control.Monad (unless, filterM)
+import Control.Monad (unless)
 import Data.Either   (partitionEithers)
 import Data.List     (sort, (\\), intersperse)
 import Data.Maybe    (catMaybes)
@@ -104,8 +104,9 @@ lookupPkgs :: (String -> Aura (Maybe Buildable))
 lookupPkgs f pkgs = do
     (nons,okay) <- partitionEithers <$> mapM lookupBuild pkgs
     reportNonPackages nons
-    return okay
+    return $ map markExplicit okay
   where lookupBuild pkg = maybe (Left pkg) Right <$> f pkg
+        markExplicit b  = b { explicit = True }
 
 -- | The user can handle PKGBUILDs in multiple ways.
 -- `--hotedit` takes the highest priority.
@@ -127,18 +128,7 @@ badPkgCheck (p:ps) = ask >>= \ss ->
       if okay then (p :) <$> badPkgCheck ps else badPkgCheck ps
 
 depsToInstall :: Repository -> [Buildable] -> Aura [Package]
-depsToInstall repo bs = do
-    allDeps <- resolveDeps repo $ map (packageBuildable . markExplicit) bs
-    filterM mustInstall allDeps
-  where markExplicit b = b { explicit = True }
-
-mustInstall :: Package -> Aura Bool
-mustInstall pkg | isExplicit = return True
-                | otherwise  = depTest constraint
-  where isExplicit = case pkgInstallType pkg of
-                       Pacman _ -> False
-                       Build  b -> explicit b
-        constraint = pkgName pkg ++ "=" ++ pkgVersion pkg
+depsToInstall repo = resolveDeps repo . map packageBuildable
 
 depCheckFailure :: String -> Aura a
 depCheckFailure m = scold install_1 >> failure m
