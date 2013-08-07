@@ -37,7 +37,6 @@ import Data.Monoid
 import           Aura.Install (InstallOptions(..))
 import qualified Aura.Install as I
 
-import Aura.Packages.Repository
 import Aura.Settings.Base
 import Aura.Packages.ABS (absDepsRepo)
 import Aura.Packages.AUR
@@ -58,7 +57,7 @@ installOptions = do
     return I.InstallOptions
         { label         = "AUR"
         , installLookup = aurLookup
-        , repository    = depsRepo <> pacmanRepo <> aurRepo
+        , repository    = depsRepo <> aurRepo
         }
 
 install :: [String] -> [String] -> Aura ()

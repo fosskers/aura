@@ -42,7 +42,6 @@ module Aura.Packages.ABS
 
 import           Control.Monad
 import           Data.List          (find)
-import           Data.Monoid
 import           Data.Set           (Set)
 import qualified Data.Set           as Set
 import qualified Data.Traversable   as Traversable
@@ -54,6 +53,7 @@ import           Aura.Bash
 import           Aura.Core
 import           Aura.Languages
 import           Aura.Monad.Aura
+import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pacman        (pacmanOutput)
 import           Aura.Pkgbuild.Base
 import           Aura.Settings.Base
@@ -75,17 +75,12 @@ absLookup name = syncRepo name >>= maybe (return Nothing) makeSynced
                 then Just <$> makeBuildable repo name
                 else return Nothing  -- split package, probably
 
--- Already installed packages are not built.
 absRepo :: Repository
-absRepo = Repository $ \name -> do
-    installed <- isInstalled name
-    if installed
-        then return Nothing
-        else fmap packageBuildable <$> absLookup name
+absRepo = Repository $ \name -> fmap packageBuildable <$> absLookup name
 
 absDepsRepo :: Aura Repository
 absDepsRepo = asks (getRepo . buildABSDeps)
-  where getRepo manual = if manual then absRepo else mempty
+  where getRepo manual = if manual then absRepo else pacmanRepo
 
 makeBuildable :: String -> String -> Aura Buildable
 makeBuildable repo name = do
