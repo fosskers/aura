@@ -28,7 +28,6 @@ import Data.Either      (partitionEithers)
 import Data.List        (isSuffixOf)
 import Data.Monoid      (Monoid(..))
 
-import Aura.Bash (Namespace)
 import Aura.Settings.Base
 import Aura.Colour.Text
 import Aura.Monad.Aura
@@ -76,13 +75,12 @@ data InstallType = Pacman String | Build Buildable
 
 -- | A package installed by building.
 data Buildable = Buildable
-    { buildName   :: String
-    , pkgbuildOf  :: Pkgbuild
-    , namespaceOf :: Namespace
-    , explicit    :: Bool
+    { pkgBase  :: String
+    , pkgbuild :: Pkgbuild
+    , explicit :: Bool
        -- | Fetch and extract the source code corresponding to the given package.
-    , source      :: FilePath     -- ^ Directory in which to extract the package.
-                  -> IO FilePath  -- ^ Path to the extracted source.
+    , source   :: FilePath     -- ^ Directory in which to extract the package.
+               -> IO FilePath  -- ^ Path to the extracted source.
     }
 
 -- | A 'Repository' is a place where packages may be fetched from. Multiple

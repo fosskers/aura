@@ -23,14 +23,14 @@ module Aura.Pkgbuild.Base where
 
 import Aura.Bash
 import Aura.Core
+import Aura.Monad.Aura
+import Aura.Pkgbuild.Editing
+import Aura.Settings.Base
 
 ---
 
 pkgbuildCache :: FilePath
 pkgbuildCache = "/var/cache/aura/pkgbuilds/"
-
-customizepkgPath :: FilePath
-customizepkgPath = "/etc/customizepkg.d/"
 
 toFilename :: String -> FilePath
 toFilename = (++ ".pb")
@@ -43,14 +43,21 @@ trueVersion ns = pkgver ++ "-" ++ pkgrel
     where pkgver = head $ value ns "pkgver"
           pkgrel = head $ value ns "pkgrel"
 
--- XXX these functions need a new home
-packageBuildable :: Buildable -> Package
-packageBuildable b = Package
-    { pkgName        = buildName b
-    , pkgVersion     = trueVersion ns
-    , pkgDeps        = concatMap (map parseDep . value ns)
-                       ["depends", "makedepends", "checkdepends"]
-    , pkgInstallType = Build b
-    }
-  where
-    ns = namespaceOf b
+pbHandler :: Buildable -> Aura Buildable
+pbHandler b = ask >>= \ss -> check ss b
+  where check ss | mayHotEdit ss      = hotEdit
+                 | useCustomizepkg ss = customizepkg
+                 | otherwise          = return
+
+-- Package a Buildable, running the customization handler first.
+packageBuildable :: Buildable -> Aura Package
+packageBuildable b = do
+    b' <- pbHandler b
+    ns <- namespace (pkgBase b') (pkgbuild b')
+    return Package
+        { pkgName        = pkgBase b'
+        , pkgVersion     = trueVersion ns
+        , pkgDeps        = concatMap (map parseDep . value ns)
+                           ["depends", "makedepends", "checkdepends"]
+        , pkgInstallType = Build b'
+        }
