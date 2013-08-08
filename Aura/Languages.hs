@@ -83,7 +83,7 @@ languageNames Portuguese = [ "Polonês","Croata","Sueco","Alemão","Espanhol","P
 languageNames French     = [ "Polonais","Croate","Suedois","Alemand","Espagnol","Portugais", "Français", "Russe", "", "", "" ]
 languageNames Russian    = [ "Польский","Хорватский","Шведский","Немецкий","Испанский","Португальский", "Русский", "", "", "" ]
 languageNames Italian    = [ "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "", "" ]
-languageNames Serbian    = [ "Пољски","Хрватски","Шведски","Немачки","Шпански","Португалски","Француски","Руски","Италијански","Српски" "" ]
+languageNames Serbian    = [ "Пољски","Хрватски","Шведски","Немачки","Шпански","Португалски","Француски","Руски","Италијански","Српски", "" ]
 languageNames Norwegian  = [ "Polsk","Kroatisk","Svensk","Tysk","Spansk","Portugisisk","Fransk","Russisk","Italiensk","Serbisk","Norsk" ]
 
 translatorMsgTitle :: Language -> String
@@ -288,11 +288,6 @@ buildFail_5 Norwegian  = "Bygging feilet."
 buildFail_6 :: Language -> String
 buildFail_6 Norwegian = "Vil du fortsette likevel?"
 buildFail_6 _         = "Would you like to continue anyway?"
-
-
--- NEEDS TRANSLATION
-buildFail_6 :: Language -> String
-buildFail_6 _ = "Would you like to continue anyway?"
 
 displayBuildErrors_1 :: Language -> String
 displayBuildErrors_1 English    = "Dumping makepkg output in "
@@ -565,38 +560,6 @@ reportPkgsToInstall_2 l Japanese  = l ++ "のパッケージ:"
 reportPkgsToInstall_2 l German    = l ++ " Pakete:"
 reportPkgsToInstall_2 l Norwegian = l ++ " Pakker:"
 reportPkgsToInstall_2 l _         = l ++ " Packages:"
-
-{-} 
-reportPkgsToInstall_2 :: String -> Language -> String
-reportPkgsToInstall_2 l English    = l ++ " dependencies:"
-reportPkgsToInstall_2 l Japanese   = l ++ "の従属パッケージ："
-reportPkgsToInstall_2 l Polish     = "Zależności z " ++ l ++ ":"
-reportPkgsToInstall_2 l Croatian   = "Zavisnosti iz " ++ l ++ "-a:"
-reportPkgsToInstall_2 l Swedish    = "Beroenden ifrån " ++ l ++ ":"
-reportPkgsToInstall_2 l German     = "Abhängigkeiten im " ++ l ++ ":"
-reportPkgsToInstall_2 l Spanish    = "Dependencias en " ++ l ++ ":"
-reportPkgsToInstall_2 l Portuguese = "Dependências no " ++ l ++ ":"
-reportPkgsToInstall_2 l French     = "Dépendances " ++ l ++ "\xa0:"
-reportPkgsToInstall_2 l Russian    = "Зависимости из " ++ l ++ ":"
-reportPkgsToInstall_2 l Italian    = "Dipendenze in " ++ l ++ ":"
-reportPkgsToInstall_2 l Serbian    = "Зависности из " ++ l ++ "-а:"
-reportPkgsToInstall_2 l Norwegian  = "Avhengigheter fra " ++ l ++ ":"
-
-reportPkgsToInstall_3 :: String -> Language -> String
-reportPkgsToInstall_3 l English    = "Main " ++ l ++ " packages:"
-reportPkgsToInstall_3 l Japanese   = "主な" ++ l ++ "パッケージ："
-reportPkgsToInstall_3 l Polish     = "Główne pakiety z " ++ l ++ ":"
-reportPkgsToInstall_3 l Croatian   = "Glavni " ++ l ++ " paketi:"
-reportPkgsToInstall_3 l Swedish    = "Huvudpaket ifrån " ++ l ++ ":"
-reportPkgsToInstall_3 l German     = "Hauptpaket aus dem " ++ l ++ ":"
-reportPkgsToInstall_3 l Spanish    = "Paquetes principales de " ++ l ++ ":"
-reportPkgsToInstall_3 l Portuguese = "Pacotes principais do " ++ l ++ ":"
-reportPkgsToInstall_3 l French     = "Principaux paquets " ++ l ++ "\xa0:"
-reportPkgsToInstall_3 l Russian    = "Главные пакеты из " ++ l ++ ":"
-reportPkgsToInstall_3 l Italian    = "Pacchetto principale di " ++ l ++ ":"
-reportPkgsToInstall_3 l Serbian    = "Главни пакети из " ++ l ++ "-а:"
-reportPkgsToInstall_3 l Norwegian  = "Hovedpakker fra " ++ l ++ ":"
--}
 
 -- Needs translations.
 reportPkgbuildDiffs_1 :: String -> Language -> String
