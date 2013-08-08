@@ -34,8 +34,6 @@ import Aura.Settings.Base
 import Aura.Pacman
 import Aura.Flags
 
-import Aura.Packages.ABS (absTree)
-
 import Utilities (ifM2,nothing,readFileUTF8)
 import Shell
 
@@ -48,7 +46,6 @@ getSettings lang (auraFlags,input,pacOpts) = do
   pmanCommand <- getPacmanCmd environment $ noPowerPillStatus auraFlags
   makepkgConf <- readFileUTF8 makepkgConfFile
   buildPath'  <- checkBuildPath (buildPath auraFlags) (getCachePath confFile)
-  tree        <- absTree
   let language   = checkLang lang environment
       buildUser' = fromMaybe (getTrueUser environment) (buildUser auraFlags)
   return Settings { inputOf         = input
@@ -64,7 +61,6 @@ getSettings lang (auraFlags,input,pacOpts) = do
                   , ignoredPkgsOf   = getIgnoredPkgs confFile ++
                                       ignoredAuraPkgs auraFlags
                   , wontBuildOf     = getBadPackages language
-                  , absTreeOf       = tree
                   , buildPathOf     = buildPath'
                   , cachePathOf     = getCachePath confFile
                   , logFilePathOf   = getLogFilePath confFile

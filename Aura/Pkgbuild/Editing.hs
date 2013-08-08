@@ -26,11 +26,9 @@ module Aura.Pkgbuild.Editing
     , customizepkg ) where
 
 import System.FilePath     ((</>))
-import Control.Monad       (forM, void)
+import Control.Monad       (void)
 
 import Aura.Settings.Base (environmentOf)
-import Aura.Bash          (namespace)
-import Aura.Pkgbuild.Base
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Utils
@@ -41,31 +39,34 @@ import Shell     (getEditor, quietShellCmd)
 
 ---
 
-edit :: Buildable a => (FilePath -> IO ()) -> a -> Aura a
+customizepkgPath :: FilePath
+customizepkgPath = "/etc/customizepkg.d/"
+
+edit :: (FilePath -> IO ()) -> Buildable -> Aura Buildable
 edit f p = do
   newPB <- liftIO $ do
-             writeFile filename $ pkgbuildOf p
+             writeFile filename $ pkgbuild p
              f filename
              readFileUTF8 filename
-  rewrap p `fmap` namespace (pkgNameOf p) newPB  -- Reparse PKGBUILD.
+  return p { pkgbuild = newPB }
       where filename = "PKGBUILD"
 
 -- | Allow the user to edit the PKGBUILD if they asked to do so.
-hotEdit :: Buildable a => [a] -> Aura [a]
-hotEdit pkgs = ask >>= \ss -> withTempDir "hotedit" . forM pkgs $ \p -> do
-  let cond = optionalPrompt (hotEdit_1 $ pkgNameOf p)
+hotEdit :: Buildable -> Aura Buildable
+hotEdit p = ask >>= \ss -> withTempDir "hotedit" $ do
+  let cond = optionalPrompt (hotEdit_1 $ pkgBase p)
       act  = edit (openEditor (getEditor $ environmentOf ss))
   ifM cond act nothing p
 
 -- | Runs `customizepkg` on whatever PKGBUILD it can.
 -- To work, a package needs an entry in `/etc/customizepkg.d/`
-customizepkg :: Buildable a => [a] -> Aura [a]
+customizepkg :: Buildable -> Aura Buildable
 customizepkg = ifFile customizepkg' (scold customizepkg_1) bin
     where bin = "/usr/bin/customizepkg"
 
-customizepkg' :: Buildable a => [a] -> Aura [a]
-customizepkg' pkgs = withTempDir "customizepkg" . forM pkgs $ \p -> do
-  let conf = customizepkgPath </> pkgNameOf p
+customizepkg' :: Buildable -> Aura Buildable
+customizepkg' p = withTempDir "customizepkg" $ do
+  let conf = customizepkgPath </> pkgBase p
   ifFile (edit customize) nothing conf p
 
 customize :: FilePath -> IO ()

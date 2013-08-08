@@ -1,5 +1,3 @@
-{-# LANGUAGE Rank2Types #-}  -- Not sure if this is correct.
-
 {-
 
 Copyright 2012, 2013 Colin Woodbury <colingw@gmail.com>
@@ -26,9 +24,10 @@ module Aura.Core where
 import System.Directory (doesFileExist)
 import Text.Regex.PCRE  ((=~))
 import Control.Monad    (when)
+import Data.Either      (partitionEithers)
 import Data.List        (isSuffixOf)
+import Data.Monoid      (Monoid(..))
 
-import Aura.Bash (Namespace)
 import Aura.Settings.Base
 import Aura.Colour.Text
 import Aura.Monad.Aura
@@ -44,9 +43,8 @@ import Shell
 --------
 -- TYPES
 --------
-type ErrMsg    = String
-type Pkgbuild  = String
-type PkgFilter = [String] -> Aura [String]
+type ErrMsg   = String
+type Pkgbuild = String
 
 data VersionDemand = LessThan String
                    | AtLeast String
@@ -62,44 +60,56 @@ instance Show VersionDemand where
     show (MustBe  v)  = '=' : v
     show Anything     = ""
 
--- These functions names could use changing.
-data BuildHandle = BH { pkgLabel  :: String
-                      , initialPF :: PkgFilter 
-                      , mainPF    :: PkgFilter
-                      , subPF     :: PkgFilter
-                      , subBuild  :: Package p => [p] -> Aura () }
+-- | A dependency on another package.
+data Dep = Dep { depName          :: String
+               , depVersionDemand :: VersionDemand }
 
-----------------
--- Package Class
-----------------
-class (Show a, Eq a) => Package a where
-    pkgNameOf :: a -> String
-    versionOf :: a -> VersionDemand
-    conflict  :: Settings -> a -> Maybe ErrMsg
-    package   :: String -> Aura a
+-- | A package to be installed.
+data Package = Package { pkgName        :: String
+                       , pkgVersion     :: String
+                       , pkgDeps        :: [Dep]
+                       , pkgInstallType :: InstallType }
 
-------------------
--- Buildable Class
-------------------
-class Package a => Buildable a where
-  pkgbuildOf  :: a -> Pkgbuild
-  namespaceOf :: a -> Namespace
-  -- | Fetch and extract the source code corresponding to the given package.
-  source :: a           -- ^ Package (currently AUR or ABS)
-         -> FilePath    -- ^ Directory in which to extract the package.
-         -> IO FilePath -- ^ Path to the extracted source.
-  rewrap :: a -> Namespace -> a  -- ^ Assign a new Namespace.
+-- | The installation method.
+data InstallType = Pacman String | Build Buildable
+
+-- | A package installed by building.
+data Buildable = Buildable
+    { pkgBase  :: String
+    , pkgbuild :: Pkgbuild
+    , explicit :: Bool
+       -- | Fetch and extract the source code corresponding to the given package.
+    , source   :: FilePath     -- ^ Directory in which to extract the package.
+               -> IO FilePath  -- ^ Path to the extracted source.
+    }
+
+-- | A 'Repository' is a place where packages may be fetched from. Multiple
+-- repositories can be combined into a larger one with the 'Data.Monoid'
+-- instance.
+newtype Repository = Repository
+    { lookupPkg :: String -> Aura (Maybe Package) }
+
+instance Monoid Repository where
+    mempty = Repository $ \_ -> return Nothing
+
+    a `mappend` b = Repository $ \s -> do
+        mpkg <- lookupPkg a s
+        case mpkg of
+            Nothing -> lookupPkg b s
+            _       -> return mpkg
 
 ---------------------------------
 -- Functions common to `Package`s
 ---------------------------------
-pkgNameWithVersionDemand :: Package a => a -> String
-pkgNameWithVersionDemand pkg = pkgNameOf pkg ++ signAndVersion
-    where signAndVersion = show $ versionOf pkg
+-- | Partition a list of packages into pacman and buildable groups.
+partitionPkgs :: [Package] -> ([String],[Buildable])
+partitionPkgs = partitionEithers . map (toEither . pkgInstallType)
+  where toEither (Pacman s) = Left  s
+        toEither (Build  b) = Right b
 
-parseNameAndVersionDemand :: String -> (String,VersionDemand)
-parseNameAndVersionDemand pkg = (name, getVersionDemand comp ver)
-    where (name,comp,ver) = pkg =~ "(<|>=|>|=)" :: (String,String,String)
+parseDep :: String -> Dep
+parseDep s = Dep name (getVersionDemand comp ver)
+    where (name,comp,ver) = s =~ "(<|>=|>|=)" :: (String,String,String)
           getVersionDemand c v | c == "<"  = LessThan v
                                | c == ">=" = AtLeast v
                                | c == ">"  = MoreThan v
@@ -112,7 +122,7 @@ parseNameAndVersionDemand pkg = (name, getVersionDemand comp ver)
 -- | Action won't be allowed unless user is root, or using sudo.
 sudo :: Aura () -> Aura ()
 sudo action = do
-  hasPerms <- (hasRootPriv . environmentOf) `fmap` ask
+  hasPerms <- asks (hasRootPriv . environmentOf)
   if hasPerms then action else scoldAndFail mustBeRoot_1
 
 -- | Prompt if the user is the true Root. Building as it can be dangerous.
@@ -122,19 +132,16 @@ trueRoot action = ask >>= \ss ->
        okay <- optionalPrompt trueRoot_1
        if okay then action else notify trueRoot_2
 
-packages :: Package a => [String] -> Aura [a]
-packages = mapM package
-
 -- `-Qm` yields a list of sorted values.
 getForeignPackages :: Aura [(String,String)]
-getForeignPackages = (map fixName . lines) `fmap` pacmanOutput ["-Qm"]
+getForeignPackages = (map fixName . lines) <$> pacmanOutput ["-Qm"]
     where fixName = hardBreak (== ' ')
 
 getOrphans :: Aura [String]
-getOrphans = lines `fmap` pacmanOutput ["-Qqdt"]
+getOrphans = lines <$> pacmanOutput ["-Qqdt"]
 
 getDevelPkgs :: Aura [String]
-getDevelPkgs = (filter isDevelPkg . map fst) `fmap` getForeignPackages
+getDevelPkgs = (filter isDevelPkg . map fst) <$> getForeignPackages
 
 isDevelPkg :: String -> Bool
 isDevelPkg p = any (`isSuffixOf` p) suffixes
@@ -150,6 +157,11 @@ removePkgs :: [String] -> [String] -> Aura ()
 removePkgs [] _         = return ()
 removePkgs pkgs pacOpts = pacman  $ ["-Rsu"] ++ pkgs ++ pacOpts
 
+-- Moving to a libalpm backend will make this less hacked.
+-- | Returns if a dependency is satisfied by an installed package.
+depTest :: Dep -> Aura Bool
+depTest (Dep name ver) = null <$> pacmanOutput ["-T", name ++ show ver]
+
 -- | Block further action until the database is free.
 checkDBLock :: Aura ()
 checkDBLock = do
@@ -163,7 +175,7 @@ colouredMessage :: Colouror -> (Language -> String) -> Aura ()
 colouredMessage c msg = ask >>= putStrLnA c . msg . langOf
 
 renderColour :: Colouror -> (Language -> String) -> Aura String
-renderColour c msg = (c . msg . langOf) `fmap` ask
+renderColour c msg = asks (c . msg . langOf)
 
 say :: (Language -> String) -> Aura ()
 say = colouredMessage noColour

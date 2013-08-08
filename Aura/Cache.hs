@@ -59,11 +59,11 @@ cache = M.fromList . map pair
 
 -- This takes the filepath of the package cache as an argument.
 rawCacheContents :: FilePath -> Aura [String]
-rawCacheContents c = filter dots `fmap` liftIO (ls c)
+rawCacheContents c = filter dots <$> liftIO (ls c)
     where dots p = p `notElem` [".",".."]
 
 cacheContents :: FilePath -> Aura Cache
-cacheContents c = cache `fmap` rawCacheContents c
+cacheContents c = cache <$> rawCacheContents c
 
 cacheMatches :: [String] -> Aura [String]
 cacheMatches input = ask >>= cacheContents . cachePathOf >>=

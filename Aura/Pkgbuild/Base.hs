@@ -22,14 +22,15 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Pkgbuild.Base where
 
 import Aura.Bash
+import Aura.Core
+import Aura.Monad.Aura
+import Aura.Pkgbuild.Editing
+import Aura.Settings.Base
 
 ---
 
 pkgbuildCache :: FilePath
 pkgbuildCache = "/var/cache/aura/pkgbuilds/"
-
-customizepkgPath :: FilePath
-customizepkgPath = "/etc/customizepkg.d/"
 
 toFilename :: String -> FilePath
 toFilename = (++ ".pb")
@@ -41,11 +42,22 @@ trueVersion :: Namespace -> String
 trueVersion ns = pkgver ++ "-" ++ pkgrel
     where pkgver = head $ value ns "pkgver"
           pkgrel = head $ value ns "pkgrel"
-{-}
-    where foo s = case value ns s of
-                    [] -> error "error in trueVersion!!!"
-                    vn -> head vn
-          pkgver = foo "pkgver"
-          pkgrel = foo "pkgrel"
--}                  
 
+pbHandler :: Buildable -> Aura Buildable
+pbHandler b = ask >>= \ss -> check ss b
+  where check ss | mayHotEdit ss      = hotEdit
+                 | useCustomizepkg ss = customizepkg
+                 | otherwise          = return
+
+-- Package a Buildable, running the customization handler first.
+packageBuildable :: Buildable -> Aura Package
+packageBuildable b = do
+    b' <- pbHandler b
+    ns <- namespace (pkgBase b') (pkgbuild b')
+    return Package
+        { pkgName        = pkgBase b'
+        , pkgVersion     = trueVersion ns
+        , pkgDeps        = concatMap (map parseDep . value ns)
+                           ["depends", "makedepends", "checkdepends"]
+        , pkgInstallType = Build b'
+        }

@@ -68,7 +68,7 @@ translators = [ " Chris \"Kwpolska\" Warrick"
               , " Kyrylo Silin" 
               , " Bob Valantin"
               , " Filip Brcic"
-              		  , " \"chinatsun\"" ]
+              , " \"chinatsun\"" ]
 
 -- These need updating! Or removing...
 languageNames :: Language -> [String]
@@ -83,7 +83,7 @@ languageNames Portuguese = [ "Polonês","Croata","Sueco","Alemão","Espanhol","P
 languageNames French     = [ "Polonais","Croate","Suedois","Alemand","Espagnol","Portugais", "Français", "Russe", "", "", "" ]
 languageNames Russian    = [ "Польский","Хорватский","Шведский","Немецкий","Испанский","Португальский", "Русский", "", "", "" ]
 languageNames Italian    = [ "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "", "" ]
-languageNames Serbian    = [ "Пољски","Хрватски","Шведски","Немачки","Шпански","Португалски","Француски","Руски","Италијански","Српски" ]
+languageNames Serbian    = [ "Пољски","Хрватски","Шведски","Немачки","Шпански","Португалски","Француски","Руски","Италијански","Српски" "" ]
 languageNames Norwegian  = [ "Polsk","Kroatisk","Svensk","Tysk","Spansk","Portugisisk","Fransk","Russisk","Italiensk","Serbisk","Norsk" ]
 
 translatorMsgTitle :: Language -> String
@@ -290,6 +290,10 @@ buildFail_6 Norwegian = "Vil du fortsette likevel?"
 buildFail_6 _         = "Would you like to continue anyway?"
 
 
+-- NEEDS TRANSLATION
+buildFail_6 :: Language -> String
+buildFail_6 _ = "Would you like to continue anyway?"
+
 displayBuildErrors_1 :: Language -> String
 displayBuildErrors_1 English    = "Dumping makepkg output in "
 displayBuildErrors_1 Japanese   = "抑えていたmakepkgの出力を受け取る用意・・・"
@@ -358,7 +362,6 @@ getRealPkgConflicts_2 p Norwegian  = bt p ++ " er en ignorert pakke! Sjekk din `
 missingPkg_1 :: String -> Language -> String
 missingPkg_1 p Norwegian = "Avhengigheten " ++ bt p ++ " ble ikke funnet. Du kan søke etter en pakke som tilfredsstiller avhengigheten."
 missingPkg_1 p _         = "The dependency " ++ bt p ++ " could not be found. You may need to search for a package to satisfy it."
-
 
 -----------------
 -- aura functions

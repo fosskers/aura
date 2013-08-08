@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
-
 -- Handles all ABS related functions.
 
 {-
@@ -26,149 +24,129 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.Packages.ABS
-    ( ABSPkg
-    , absSync
-    , absTree
+    ( absLookup
+    , absRepo
+    , absDepsRepo
+    , ABSTree
     , absBasePath
-    , filterABSPkgs
-    , nameAndRepo
-    , pkgsInTree
-    , repoOf
+    , absTree
+    , pkgRepo
+    , absPkgbuild
+    , syncRepo
+    , absSync
     , singleSync
-    , treeSearch ) where
+    , PkgInfo(..)
+    , absInfoLookup
+    , absSearchLookup
+    ) where
 
-import qualified Data.Set as Se
+import           Control.Monad
+import           Data.List          (find)
+import           Data.Set           (Set)
+import qualified Data.Set           as Set
+import qualified Data.Traversable   as Traversable
+import           System.Directory   (doesFileExist, doesDirectoryExist)
+import           System.FilePath    ((</>), takeBaseName)
+import           Text.Regex.PCRE    ((=~))
 
-import System.Directory (doesDirectoryExist, doesFileExist)
-import System.FilePath  ((</>), takeBaseName)
-import Text.Regex.PCRE  ((=~))
-import Control.Monad    (filterM, void)
-import Data.Maybe       (fromJust)
+import           Aura.Bash
+import           Aura.Core
+import           Aura.Languages
+import           Aura.Monad.Aura
+import           Aura.Packages.Repository (pacmanRepo)
+import           Aura.Pacman        (pacmanOutput)
+import           Aura.Pkgbuild.Base
+import           Aura.Settings.Base
+import qualified Aura.Shell         as A (quietShellCmd, shellCmd)
+import           Aura.Utils         (optionalPrompt)
 
-import Aura.Packages.Repository (filterRepoPkgs)
-import Aura.Settings.Base       (absTreeOf, langOf)
-import Aura.Conflicts           (buildableConflicts)
-import Aura.Pacman              (pacmanOutput)
-import Aura.Utils               (optionalPrompt)
-import Aura.Monad.Aura
-import Aura.Languages
-import Aura.Bash
-import Aura.Core
-
-import Utilities (readFileUTF8, whenM, split)
-import Shell     (ls', ls'')
-
-import qualified Aura.Shell as A  (quietShellCmd, shellCmd)
-import qualified Shell      as Sh (quietShellCmd)
+import           Utilities          (readFileUTF8, whenM)
+import           Shell              (ls', ls'')
+import qualified Shell              as Sh (quietShellCmd)
 
 ---
 
----------------
--- ABS Packages
----------------
--- | ABSPkg name repository version pkgbuild parsed_pkgbuild
-data ABSPkg = ABSPkg String String VersionDemand Pkgbuild Namespace
+absLookup :: String -> Aura (Maybe Buildable)
+absLookup name = syncRepo name >>= maybe (return Nothing) makeSynced
+  where makeSynced repo = do
+            whenM (not <$> synced repo name) $ singleSync repo name
+            found <- synced repo name
+            if found
+                then Just <$> makeBuildable repo name
+                else return Nothing  -- split package, probably
 
-instance Package ABSPkg where
-  pkgNameOf (ABSPkg n _ _ _ _) = n
-  versionOf (ABSPkg _ _ v _ _) = v
-  conflict = buildableConflicts
-  package pkg = do
-      repo     <- repository name
-      pkgbuild <- liftIO $ readFileUTF8 (pkgbuildPath repo name)
-      ABSPkg name repo ver pkgbuild `fmap` namespace name pkgbuild
-      where (name,ver) = parseNameAndVersionDemand pkg
+absRepo :: Repository
+absRepo = Repository $ \name ->
+    absLookup name >>= Traversable.mapM packageBuildable
 
-instance Buildable ABSPkg where
-  pkgbuildOf  (ABSPkg _ _ _ p _)  = p
-  namespaceOf (ABSPkg _ _ _ _ ns) = ns
-  source p fp = do
-      let loc = absBasePath </> repoOf p </> pkgNameOf p
-      Sh.quietShellCmd "cp" ["-R",loc,fp]
-      return $ fp </> pkgNameOf p
-  rewrap (ABSPkg n r v p _) ns = ABSPkg n r v p ns
+absDepsRepo :: Aura Repository
+absDepsRepo = asks (getRepo . buildABSDeps)
+  where getRepo manual = if manual then absRepo else pacmanRepo
 
-instance Show ABSPkg where
-    show = pkgNameWithVersionDemand
+makeBuildable :: String -> String -> Aura Buildable
+makeBuildable repo name = do
+    pb <- absPkgbuild repo name
+    return Buildable
+        { pkgBase  = name
+        , pkgbuild = pb
+        , explicit = False
+        , source   = copyTo repo name
+        }
 
-instance Eq ABSPkg where
-  a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
-
-repoOf :: ABSPkg -> String
-repoOf (ABSPkg _ r _ _ _) = r
+copyTo :: String -> String -> FilePath -> IO FilePath
+copyTo repo name fp = do
+    void $ Sh.quietShellCmd "cp" ["-R",loc,fp]
+    return $ fp </> name
+  where
+    loc = absBasePath </> repo </> name
 
 -------
 -- WORK
 -------
-type ABSTree = [(String,Se.Set String)]
+newtype ABSTree = ABSTree [(String,Set String)]
 
 absBasePath :: FilePath
 absBasePath = "/var/abs"
 
-pkgbuildPath :: String -> String -> FilePath
-pkgbuildPath repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
+-- | All repos with all their packages in the local tree.
+absTree :: Aura ABSTree
+absTree = liftIO $ do
+    repos <- ls'' absBasePath >>= filterM doesDirectoryExist
+    ABSTree <$> mapM populate repos
+  where
+    populate repo = do
+        ps <- ls' repo
+        return (takeBaseName repo, Set.fromList ps)
 
-pkgsInTree :: [String] -> Aura [String]
-pkgsInTree pkgs = absTreeOf `fmap` ask >>= \t -> return (filter (inTree t) pkgs)
+pkgRepo :: ABSTree -> String -> Maybe String
+pkgRepo (ABSTree repos) p = fst <$> find containsPkg repos
+  where
+    containsPkg (_, ps) = Set.member p ps
 
-inTree :: ABSTree -> String -> Bool
-inTree tree p = case repository' tree p of
-                  Nothing -> False
-                  Just _  -> True
+-- | All packages in the local ABS tree in the form: "repo/package"
+flatABSTree :: ABSTree -> [String]
+flatABSTree (ABSTree repos) = concatMap flat repos
+  where
+    flat (r, ps) = map (r </>) $ Set.toList ps
 
-inTree' :: String -> IO Bool
-inTree' p = doesFileExist $ absBasePath </> p
+absPkgbuildPath :: String -> String -> FilePath
+absPkgbuildPath repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
 
--- | The repository a package _should_ belong to.
--- Fails if the package is not in any repository.
-repository :: String -> Aura String
-repository p = absTreeOf `fmap` ask >>= \tree ->
-  if inTree tree p
-     then return . fromJust . repository' tree $ p
-     else repository'' p
+absPkgbuild :: String -> String -> Aura Pkgbuild
+absPkgbuild repo pkg = liftIO $ readFileUTF8 (absPkgbuildPath repo pkg)
 
--- | The repository a package belongs to.
-repository' :: ABSTree -> String -> Maybe String
-repository' [] _ = Nothing
-repository' ((r,ps):rs) p | Se.member p ps = Just r
-                          | otherwise     = repository' rs p
-
-repository'' :: String -> Aura String
-repository'' p = do
-  fullName <- nameAndRepo p
-  case fullName of
-    Nothing -> langOf `fmap` ask >>= failure . repository_1 p
-    Just fn -> do
-      whenM (not `fmap` liftIO (inTree' fn)) $ singleSync fn
-      return . head . split '/' $ fn
-
-nameAndRepo :: String -> Aura (Maybe String)
-nameAndRepo p = do
+syncRepo :: String -> Aura (Maybe String)
+syncRepo p = do
   i <- pacmanOutput ["-Si",p]
   case i of
     "" -> return Nothing
     _  -> do
       let pat = "Repository[ ]+: "
           (_,_,repo) = (head $ lines i) =~ pat :: (String,String,String)
-      return . Just $ repo </> p
+      return $ Just repo
 
--- | All repos with all their packages in the local tree.
-absTree :: IO ABSTree
-absTree = do
-  repos <- ls'' absBasePath >>= filterM doesDirectoryExist
-  mapM (\r -> ls' r >>= \ps -> return (takeBaseName r, Se.fromList ps)) repos
-
--- | All packages in the local ABS tree in the form: "repo/package"
-flatABSTree :: ABSTree -> [String]
-flatABSTree = concatMap fold
-    where fold (r,ps) = Se.foldr (\p acc -> (r </> p) : acc) [] ps
-
--- | All packages in the local ABS tree which match a given pattern.
-treeSearch :: String -> Aura [ABSPkg]
-treeSearch pattern = absTreeOf `fmap` ask >>= \tree -> do
-  let matches = concatMap (fold . snd) tree
-      fold    = Se.foldr (\p acc -> if p =~ pattern then p : acc else acc) []
-  mapM package matches
+synced :: String -> String -> Aura Bool
+synced repo pkg = liftIO . doesFileExist $ absPkgbuildPath repo pkg
 
 -- Make this react to `-x` as well? Wouldn't be hard.
 -- It would just be a matter of switching between `shellCmd`
@@ -177,12 +155,46 @@ treeSearch pattern = absTreeOf `fmap` ask >>= \tree -> do
 -- | Sync only the parts of the ABS tree which already exists on the system.
 absSync :: Aura ()
 absSync = whenM (optionalPrompt absSync_1) $ do
-  notify absSync_2
-  (flatABSTree . absTreeOf) `fmap` ask >>= A.shellCmd "abs"
+    notify absSync_2
+    ps <- flatABSTree <$> absTree
+    A.shellCmd "abs" ps
 
--- | Must be in the form `repo/pkgname`
-singleSync :: String -> Aura ()
-singleSync p = notify (singleSync_1 p) >> void (A.quietShellCmd "abs" [p])
+singleSync :: String -> String -> Aura ()
+singleSync repo name = do
+    notify $ singleSync_1 p
+    void $ A.quietShellCmd "abs" [p]
+  where
+    p = repo </> name
 
-filterABSPkgs :: PkgFilter
-filterABSPkgs = filterRepoPkgs
+data PkgInfo = PkgInfo
+    { nameOf        :: String
+    , repoOf        :: String
+    , trueVersionOf :: String
+    , dependsOf     :: [String]
+    , makeDependsOf :: [String]
+    , descriptionOf :: String
+    }
+
+pkgInfo :: String -> String -> Aura PkgInfo
+pkgInfo repo name = do
+    pb <- absPkgbuild repo name
+    ns <- namespace name pb
+    return PkgInfo
+        { nameOf        = name
+        , repoOf        = repo
+        , trueVersionOf = trueVersion ns
+        , dependsOf     = value ns "depends"
+        , makeDependsOf = value ns "makedepends"
+        , descriptionOf = concat $ value ns "pkgdesc"
+        }
+
+absInfoLookup :: ABSTree -> String -> Aura (Maybe PkgInfo)
+absInfoLookup tree name =
+    Traversable.mapM (\repo -> pkgInfo repo name) $ pkgRepo tree name
+
+-- | All packages in the local ABS tree which match a given pattern.
+absSearchLookup :: ABSTree -> String -> Aura [PkgInfo]
+absSearchLookup (ABSTree tree) pattern = mapM (uncurry pkgInfo) matches
+  where
+    matches       = concatMap match tree
+    match (r, ps) = map (\p -> (r, p)) . filter (=~ pattern) $ Set.toList ps

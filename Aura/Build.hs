@@ -51,8 +51,9 @@ installPkgFiles :: [String] -> [FilePath] -> Aura ()
 installPkgFiles _ []          = return ()
 installPkgFiles pacOpts files = checkDBLock >> pacman (["-U"] ++ pacOpts ++ files)
 
--- All building occurs within temp directories in the package cache.
-buildPackages :: Buildable a => [a] -> Aura [FilePath]
+-- All building occurs within temp directories in the package cache,
+-- or in a location specified by the user with flags.
+buildPackages :: [Buildable] -> Aura [FilePath]
 buildPackages []   = return []
 buildPackages pkgs = ask >>= \ss -> do
   let buildPath = buildPathOf ss
@@ -61,17 +62,17 @@ buildPackages pkgs = ask >>= \ss -> do
 
 -- Handles the building of Packages. Fails nicely.
 -- Assumed: All dependencies are already installed.
-build :: Buildable a => [FilePath] -> [a] -> Aura [FilePath]
+build :: [FilePath] -> [Buildable] -> Aura [FilePath]
 build built []       = return $ filter notNull built
 build built ps@(p:_) = do
   notify $ buildPackages_1 pn
   (paths,rest) <- catch (withTempDir pn (build' ps)) (buildFail built ps)
   build (paths ++ built) rest
-      where pn = pkgNameOf p
+      where pn = pkgBase p
         
 -- Perform the actual build.
 -- TODO: Clean this up.
-build' :: Buildable a => [a] -> Aura ([FilePath],[a])
+build' :: [Buildable] -> Aura ([FilePath],[Buildable])
 build' []     = failure "build' : You should never see this."
 build' (p:ps) = ask >>= \ss -> do
   let user     = buildUserOf ss
@@ -85,35 +86,31 @@ build' (p:ps) = ask >>= \ss -> do
   liftIO $ cd curr
   return (paths,ps)
 
-getSourceCode :: Buildable a => a -> String -> FilePath -> Aura ()
+getSourceCode :: Buildable -> String -> FilePath -> Aura ()
 getSourceCode pkg user currDir = liftIO $ do
   chown user currDir []
   sourceDir <- source pkg currDir
   chown user sourceDir ["-R"]
   cd sourceDir
 
-overwritePkgbuild :: Buildable a => a -> Aura ()
-overwritePkgbuild p = (mayHotEdit `fmap` ask) >>= check
-    where check True  = liftIO . writeFile "PKGBUILD" . pkgbuildOf $ p
+overwritePkgbuild :: Buildable -> Aura ()
+overwritePkgbuild p = asks mayHotEdit >>= check
+    where check True  = liftIO . writeFile "PKGBUILD" . pkgbuild $ p
           check False = return ()
 
 -- Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
-buildFail :: Buildable a => [FilePath] -> [a] -> String -> Aura ([FilePath],[a])
+buildFail :: [FilePath] -> [Buildable] -> String -> Aura ([FilePath],[Buildable])
 buildFail _ [] _ = failure "buildFail : You should never see this message."
-buildFail built (p:ps) errors = ask >>= \ss -> do
-  let lang = langOf ss
-  scold (buildFail_1 (show p))
+buildFail built (p:ps) errors = asks langOf >>= \lang -> do
+  scold $ buildFail_1 (pkgBase p)
   displayBuildErrors errors
-  printList red cyan (buildFail_2 lang) (map pkgNameOf ps)
-  printList yellow cyan (buildFail_3 lang) $ map takeFileName built
-  if null built
+--  printList red cyan (buildFail_2 lang) (map pkgBase ps)
+--  printList yellow cyan (buildFail_3 lang) $ map takeFileName built
+  response <- optionalPrompt buildFail_6
+  if response
      then return ([],[])
-     else do
-       response <- optionalPrompt buildFail_4
-       if response
-          then return ([],[])
-          else scoldAndFail buildFail_5
+     else scoldAndFail buildFail_5
 
 -- If the user wasn't running Aura with `-x`, then this will
 -- show them the suppressed makepkg output. 
@@ -126,9 +123,9 @@ displayBuildErrors errors = ask >>= \ss -> when (suppressMakepkg ss) $ do
 moveToBuildPath :: [FilePath] -> Aura [FilePath]
 moveToBuildPath []     = return []
 moveToBuildPath (p:ps) = do
-  newName <- ((</> p) . buildPathOf) `fmap` ask
+  newName <- ((</> p) . buildPathOf) <$> ask
   liftIO $ mv p newName
-  (newName :) `fmap` moveToBuildPath ps
+  (newName :) <$> moveToBuildPath ps
 
 -- Moves a file to the aura src package cache and returns its location.
 moveToSourcePath :: [FilePath] -> Aura [FilePath]
@@ -136,4 +133,4 @@ moveToSourcePath []     = return []
 moveToSourcePath (p:ps) = do
   let newName = srcPkgStore </> p
   liftIO $ mv p newName
-  (newName :) `fmap` moveToSourcePath ps
+  (newName :) <$> moveToSourcePath ps

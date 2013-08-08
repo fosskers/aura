@@ -31,13 +31,14 @@ module Aura.Commands.A
     , displayPkgbuild ) where
 
 import Text.Regex.PCRE ((=~))
+import Control.Monad
+import Data.Monoid
 
+import           Aura.Install (InstallOptions(..))
 import qualified Aura.Install as I
 
-import Aura.Pacman (pacman)
-import Aura.Packages.Repository
 import Aura.Settings.Base
-import Aura.Dependencies
+import Aura.Packages.ABS (absDepsRepo)
 import Aura.Packages.AUR
 import Aura.Colour.Text
 import Aura.Monad.Aura
@@ -46,28 +47,29 @@ import Aura.Utils
 import Aura.Core
 
 import Shell
+import Utilities (whenM)
 
 ---
 
--- For now.
-buildHandle :: [String] -> BuildHandle
-buildHandle pacOpts =
-    BH { pkgLabel = "AUR"
-       , initialPF = filterAURPkgs
-       , mainPF    = filterAURPkgs
-       , subPF     = filterRepoPkgs
-       , subBuild  = \ps -> pacman (["-S","--asdeps"] ++ pacOpts ++ map pkgNameOf ps) }
+installOptions :: Aura I.InstallOptions
+installOptions = do
+    depsRepo <- absDepsRepo
+    return I.InstallOptions
+        { label         = "AUR"
+        , installLookup = aurLookup
+        , repository    = depsRepo <> aurRepo
+        }
 
 install :: [String] -> [String] -> Aura ()
-install pacOpts pkgs = I.install b c (buildHandle pacOpts) pacOpts pkgs
-    where b = package  :: String -> Aura AURPkg
-          c = conflict :: Settings -> AURPkg -> Maybe ErrMsg
+install pacOpts ps = do
+    opts <- installOptions
+    I.install opts pacOpts ps
 
 upgradeAURPkgs :: [String] -> [String] -> Aura ()
 upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
   let notIgnored p = splitName p `notElem` ignoredPkgsOf ss
   notify upgradeAURPkgs_1
-  foreignPkgs <- filter (\(n,_) -> notIgnored n) `fmap` getForeignPackages
+  foreignPkgs <- filter (\(n,_) -> notIgnored n) <$> getForeignPackages
   pkgInfo     <- aurInfoLookup $ map fst foreignPkgs
   let aurPkgs   = filter (\(n,_) -> n `elem` map nameOf pkgInfo) foreignPkgs
       toUpgrade = filter isntMostRecent $ zip pkgInfo (map snd aurPkgs)
@@ -138,25 +140,20 @@ renderSearch ss r i = searchResult
             | otherwise     = green $ latestVerOf i
 
 displayPkgDeps :: [String] -> Aura ()
-displayPkgDeps []   = return ()
-displayPkgDeps pkgs = beQuiet `fmap` ask >>= \quiet -> do
-  ps <- aurInfoLookup pkgs >>= mapM (package . nameOf)
-  (m,s,_) <- depCheck (buildHandle []) ps :: Aura ([AURPkg],[RepoPkg],[String])
-  if quiet
-     then I.reportListOfDeps s m
-     else I.reportPkgsToInstall (buildHandle []) s m
+displayPkgDeps ps = do
+    opts <- installOptions
+    I.displayPkgDeps opts ps
 
 downloadTarballs :: [String] -> Aura ()
 downloadTarballs pkgs = do
   currDir <- liftIO pwd
-  filterAURPkgs pkgs >>= mapM_ (downloadTBall currDir)
-    where downloadTBall path pkg = do
+  mapM_ (downloadTBall currDir) pkgs
+    where downloadTBall path pkg = whenM (isAurPackage pkg) $ do
               notify $ downloadTarballs_1 pkg
-              liftIO $ sourceTarball path pkg
+              void . liftIO $ sourceTarball path pkg
 
 displayPkgbuild :: [String] -> Aura ()
-displayPkgbuild pkgs = filterAURPkgs pkgs >>= mapM_ dnload
-      where dnload p = downloadPkgbuild p >>= liftIO . putStrLn
+displayPkgbuild = I.displayPkgbuild (mapM downloadPkgbuild)
 
 isntMostRecent :: (PkgInfo,String) -> Bool
 isntMostRecent (info,v) = trueVer > currVer
@@ -166,8 +163,6 @@ isntMostRecent (info,v) = trueVer > currVer
 ------------
 -- REPORTING
 ------------
-
 reportPkgsToUpgrade :: [String] -> Aura ()
-reportPkgsToUpgrade pkgs = do
-  lang <- langOf `fmap` ask
+reportPkgsToUpgrade pkgs = asks langOf >>= \lang ->
   printList green cyan (reportPkgsToUpgrade_1 lang) pkgs

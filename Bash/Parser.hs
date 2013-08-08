@@ -27,6 +27,7 @@ module Bash.Parser ( parseBash ) where
 
 import Text.ParserCombinators.Parsec
 import Control.Applicative ((<*),(*>),(<*>),(<$>),(<$))
+import Data.Either         (rights)
 
 import Bash.Base
 
@@ -78,8 +79,9 @@ variable = Variable <$> name <*> (array <|> single) <?> "valid var definition"
     where name = spaces *> many1 (alphaNum <|> char '_') <* char '='
 
 array :: Parser [BashString]
-array = concat <$> array' <?> "valid array"
-    where array' = char '(' *> spaces *> manyTill single (char ')')
+array = concat . rights <$> array' <?> "valid array"
+    where array'  = char '(' *> spaces *> manyTill single' (char ')')
+          single' = (Left <$> comment <* spaces) <|> (Right <$> single)
 
 -- | Strings can be surrounded by single quotes, double quotes, backticks,
 -- or nothing.
@@ -113,7 +115,6 @@ unQuoted = map NoQuote <$> extrapolated []
 -- Example: sandwiches-are-{beautiful,fine}
 -- Note that strings like: empty-{}  or  lamp-{shade}
 -- will not be expanded and will retain their braces.
--- BUG: The statement immediately above this is a lie.
 extrapolated :: [Char] -> Parser [String]
 extrapolated stops = do
   xs <- plain <|> bracePair
@@ -123,7 +124,10 @@ extrapolated stops = do
 
 bracePair :: Parser [String]
 bracePair = between (char '{') (char '}') innards <?> "valid {...} string"
-    where innards = concat `fmap` (extrapolated ",}" `sepBy` char ',')
+    where innards = concatInnards <$> (extrapolated ",}" `sepBy` char ',')
+          concatInnards []   = ["{}"]
+          concatInnards [xs] = map (\s -> "{" ++ s ++ "}") xs
+          concatInnards xss  = concat xss
 
 ------------------
 -- `IF` STATEMENTS

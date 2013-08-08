@@ -19,70 +19,52 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Packages.Repository where
+module Aura.Packages.Repository ( pacmanRepo ) where
 
+import Data.Maybe
 import Text.Regex.PCRE ((=~))
-import Data.List     (intercalate)
 
-import Aura.Pacman (pacmanOutput)
-import Aura.Conflicts
 import Aura.Core
+import Aura.Monad.Aura
+import Aura.Pacman     (pacmanOutput)
 
-import Utilities (tripleThrd)
+import Utilities       (tripleThrd, findM)
 
 ---
 
-data RepoPkg = RepoPkg String VersionDemand String
+-- | Repository package source.
+pacmanRepo :: Repository
+pacmanRepo = Repository $ \name -> do
+    real <- resolveName name
+    fmap (packageRepo real) <$> mostRecentVersion real
 
-instance Package RepoPkg where
-    pkgNameOf (RepoPkg n _ _) = n
-    versionOf (RepoPkg _ v _) = v
-    conflict = realPkgConflicts (mostRecentVerNum . pkgInfoOf)
-    package pkg = RepoPkg name ver `fmap` pacmanOutput ["-Si",name]
-        where (name,ver) = parseNameAndVersionDemand pkg
+packageRepo :: String -> String -> Package
+packageRepo name version = Package
+    { pkgName        = name
+    , pkgVersion     = version
+    , pkgDeps        = []  -- Let pacman handle dependencies.
+    , pkgInstallType = Pacman name }
 
-instance Show RepoPkg where
-    show = pkgNameWithVersionDemand
+-- | If given a virtual package, try to find a real package to install.
+-- Functions like this are why we need libalpm.
+resolveName :: String -> Aura String
+resolveName name =
+  lines <$> pacmanOutput ["-Ssq", "^" ++ name ++ "$"] >>= chooseProvider name
 
-instance Eq RepoPkg where
-    a == b = pkgNameWithVersionDemand a == pkgNameWithVersionDemand b
+-- | Choose a providing package, favoring installed packages.
+chooseProvider :: String -> [String] -> Aura String
+chooseProvider name []  = return name
+chooseProvider _    [p] = return p
+chooseProvider _    ps  = fromMaybe (head ps) <$> findM isInstalled ps
 
-pkgInfoOf :: RepoPkg -> String
-pkgInfoOf (RepoPkg _ _ i) = i
-
--- | Get only those packages that are accessible by pacman.
-filterRepoPkgs :: PkgFilter
-filterRepoPkgs pkgs = do
-  repoPkgs <- lines `fmap` pacmanOutput ["-Ssq",pkgs']
-  return $ filter (`elem` repoPkgs) pkgs
-    where pkgs' = "^(" ++ prep pkgs ++ ")$"
-          prep  = specs . intercalate "|"
-          specs []     = []
-          specs (c:cs) | c `elem` "+" = ['[',c,']'] ++ specs cs
-                       | otherwise    = c : specs cs
-
-{- Get only those packages that are not already installed
-  This is, sadly, a bit of a hack. The reason we do this is that
-  otherwise ABS installs using --absdeps tend to fail when they reach
-  a split/virtual package and cannot sync it. By filtering already
-  installed packages the user can circumvemt this problem.
--}
-filterInstalledPkgs :: PkgFilter
-filterInstalledPkgs pkgs = do
-  repoPkgs <- lines `fmap` pacmanOutput ["-Qsq",pkgs']
-  return $ filter (`notElem` repoPkgs) pkgs
-    where pkgs' = "^(" ++ prep pkgs ++ ")$"
-          prep  = specs . intercalate "|"
-          specs []     = []
-          specs (c:cs) | c `elem` "+" = ['[',c,']'] ++ specs cs
-                       | otherwise    = c : specs cs
-
-ignoreRepos :: PkgFilter
-ignoreRepos _ = return []
+-- | The most recent version of a package, if it exists in the respositories.
+mostRecentVersion :: String -> Aura (Maybe String)
+mostRecentVersion s = extractVersion <$> pacmanOutput ["-Si", s]
 
 -- | Takes `pacman -Si` output as input.
-mostRecentVerNum :: String -> String
-mostRecentVerNum info = tripleThrd match
+extractVersion :: String -> Maybe String
+extractVersion ""   = Nothing
+extractVersion info = Just $ tripleThrd match
     where match     = thirdLine =~ ": " :: (String,String,String)
           thirdLine = allLines !! 2  -- Version num is always the third line.
           allLines  = lines info

@@ -28,7 +28,6 @@ module Aura.MakePkg
     , makepkgConfFile ) where
 
 import Text.Regex.PCRE ((=~))
-import Data.List (intercalate)
 
 import Aura.Monad.Aura
 import Aura.Shell (shellCmd, quietShellCmd, quietShellCmd', checkExitCode')
@@ -51,18 +50,18 @@ makepkgSource :: String -- ^ User
 makepkgSource user allsource =
   let allsourceOpt = if allsource then "--allsource" else "-S"
       (cmd, opts)  = determineRunStyle user [allsourceOpt]
-  in quietShellCmd cmd opts >> filter (=~ ".src.tar") `fmap` liftIO (pwd >>= ls)
+  in quietShellCmd cmd opts >> filter (=~ ".src.tar") <$> liftIO (pwd >>= ls)
 
 -- Builds a package with `makepkg`.
 -- Some packages create multiple .pkg.tar files. These are all returned.
 makepkgGen :: (String -> [String] -> Aura a) -> String -> Aura [FilePath]
 makepkgGen f user =
-    f cmd opts >> filter (=~ ".pkg.tar") `fmap` liftIO (pwd >>= ls)
+    f cmd opts >> filter (=~ ".pkg.tar") <$> liftIO (pwd >>= ls)
       where (cmd,opts) = determineRunStyle user []
 
 determineRunStyle :: String -> [String] -> (String,[String])
-determineRunStyle "root" opts = (makepkgCmd,["--asroot"] ++ opts)
-determineRunStyle user opts = ("su",[user,"-c",makepkgCmd ++ " " ++ intercalate " " opts])
+determineRunStyle "root" opts = (makepkgCmd, "--asroot" : opts)
+determineRunStyle user opts = ("su",[user,"-c",makepkgCmd ++ " " ++ unwords opts])
 
 makepkgQuiet :: String -> Aura [FilePath]
 makepkgQuiet user = makepkgGen quiet user

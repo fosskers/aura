@@ -65,17 +65,14 @@ printList' tc ic m is = putStrLnA' tc m ++ colouredItems
     where colouredItems = is >>= \i -> ic i ++ "\n"
 
 scoldAndFail :: (Language -> String) -> Aura a
-scoldAndFail msg = do
-  lang <- langOf `fmap` ask
-  failure . putStrA' red . msg $ lang
+scoldAndFail msg = asks langOf >>= failure . putStrA' red . msg
 
 ----------
 -- PROMPTS
 ----------
 -- Takes a prompt message and a regex of valid answer patterns.
 yesNoPrompt :: (Language -> String) -> Aura Bool
-yesNoPrompt msg = do
-  lang <- langOf `fmap` ask
+yesNoPrompt msg = asks langOf >>= \lang -> do
   putStrA yellow $ msg lang ++ " [Y/n] "
   liftIO $ hFlush stdout
   response <- liftIO getLine
