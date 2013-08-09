@@ -27,7 +27,7 @@ type Reason = String
 
 -- These packages fail to build for various reasons.
 getBadPackages :: Language -> [(String,Reason)]
-getBadPackages lang = [ ( "insync", bashisms lang ) ]
+getBadPackages _ = []
 
 circDep :: String -> Language -> Reason
 circDep = circDep_1
