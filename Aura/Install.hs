@@ -35,7 +35,6 @@ import Data.List     (sort, (\\), intersperse)
 import Data.Maybe    (catMaybes)
 
 import Aura.Pkgbuild.Base
-import Aura.Pkgbuild.Editing
 import Aura.Pkgbuild.Records
 import Aura.Settings.Base
 import Aura.Dependencies
