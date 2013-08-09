@@ -78,9 +78,7 @@ install opts pacOpts pkgs = ask >>= \ss ->
         let toInstall = pkgs \\ ignoredPkgsOf ss
             ignored   = pkgs \\ toInstall
         reportIgnoredPackages ignored
-        toBuild <- badPkgCheck toInstall >>=
-                   lookupPkgs (installLookup opts) >>=
-                   pkgbuildDiffs
+        toBuild <- lookupPkgs (installLookup opts) toInstall >>= pkgbuildDiffs
         notify install_5
         allPkgs <- catch (depsToInstall (repository opts) toBuild)
                    depCheckFailure
@@ -104,17 +102,6 @@ lookupPkgs f pkgs = do
     return $ map markExplicit okay
   where lookupBuild pkg = maybe (Left pkg) Right <$> f pkg
         markExplicit b  = b { explicit = True }
-
-badPkgCheck :: [String] -> Aura [String]
-badPkgCheck []     = return []
-badPkgCheck (p:ps) = ask >>= \ss ->
-  case p `lookup` wontBuildOf ss of
-    Nothing -> (p :) <$> badPkgCheck ps
-    Just r  -> do
-      scold $ badPkgCheck_1 p
-      putStrLnA yellow r
-      okay <- optionalPrompt badPkgCheck_2
-      if okay then (p :) <$> badPkgCheck ps else badPkgCheck ps
 
 depsToInstall :: Repository -> [Buildable] -> Aura [Package]
 depsToInstall repo = mapM packageBuildable >=> resolveDeps repo

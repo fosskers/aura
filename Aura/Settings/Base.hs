@@ -21,8 +21,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Settings.Base ( Settings(..) ) where
 
-import Aura.Settings.BadPackages (Reason)
-import Aura.Languages            (Language)
+import Aura.Languages (Language)
 
 import Shell (Environment)
 
@@ -39,7 +38,6 @@ data Settings = Settings { inputOf         :: [String]
                          , editorOf        :: String
                          , carchOf         :: String
                          , ignoredPkgsOf   :: [String]
-                         , wontBuildOf     :: [(String,Reason)]
                          , buildPathOf     :: FilePath
                          , cachePathOf     :: FilePath
                          , logFilePathOf   :: FilePath

@@ -29,7 +29,6 @@ import Data.Maybe         (fromMaybe)
 
 import Aura.Languages (Language,langFromEnv)
 import Aura.MakePkg   (makepkgConfFile)
-import Aura.Settings.BadPackages
 import Aura.Settings.Base
 import Aura.Pacman
 import Aura.Flags
@@ -60,7 +59,6 @@ getSettings lang (auraFlags,input,pacOpts) = do
                                       "COULDN'T READ $CARCH"
                   , ignoredPkgsOf   = getIgnoredPkgs confFile ++
                                       ignoredAuraPkgs auraFlags
-                  , wontBuildOf     = getBadPackages language
                   , buildPathOf     = buildPath'
                   , cachePathOf     = getCachePath confFile
                   , logFilePathOf   = getLogFilePath confFile
