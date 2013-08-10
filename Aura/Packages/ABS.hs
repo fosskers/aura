@@ -87,7 +87,7 @@ makeBuildable :: String -> String -> Aura Buildable
 makeBuildable repo name = do
     pb <- absPkgbuild repo name
     return Buildable
-        { pkgBaseOf  = name
+        { baseNameOf = name
         , pkgbuildOf = pb
         , isExplicit = False
         , source     = copyTo repo name }

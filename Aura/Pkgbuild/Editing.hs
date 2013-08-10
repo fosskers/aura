@@ -54,7 +54,7 @@ edit f p = do
 -- | Allow the user to edit the PKGBUILD if they asked to do so.
 hotEdit :: Buildable -> Aura Buildable
 hotEdit p = ask >>= \ss -> withTempDir "hotedit" $ do
-  let cond = optionalPrompt (hotEdit_1 $ pkgBaseOf p)
+  let cond = optionalPrompt (hotEdit_1 $ baseNameOf p)
       act  = edit (openEditor (getEditor $ environmentOf ss))
   ifM cond act nothing p
 
@@ -66,7 +66,7 @@ customizepkg = ifFile customizepkg' (scold customizepkg_1) bin
 
 customizepkg' :: Buildable -> Aura Buildable
 customizepkg' p = withTempDir "customizepkg" $ do
-  let conf = customizepkgPath </> pkgBaseOf p
+  let conf = customizepkgPath </> baseNameOf p
   ifFile (edit customize) nothing conf p
 
 customize :: FilePath -> IO ()

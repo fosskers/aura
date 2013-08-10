@@ -133,13 +133,13 @@ displayPkgDeps opts ps = asks beQuiet >>= \quiet -> do
 reportPkgsToInstall :: String -> [String] -> [Buildable] -> Aura ()
 reportPkgsToInstall la rps bps = asks langOf >>= \lang -> do
   pl (reportPkgsToInstall_1    lang) (sort rps)
-  pl (reportPkgsToInstall_2 la lang) (sort $ map pkgBaseOf bps)
+  pl (reportPkgsToInstall_2 la lang) (sort $ map baseNameOf bps)
       where pl = printList green cyan
 
 reportListOfDeps :: [String] -> [Buildable] -> Aura ()
 reportListOfDeps rps bps = do
   liftIO $ mapM_ putStrLn (sort rps)
-  liftIO $ mapM_ putStrLn (sort $ map pkgBaseOf bps)
+  liftIO $ mapM_ putStrLn (sort $ map baseNameOf bps)
 
 reportNonPackages :: [String] -> Aura ()
 reportNonPackages = badReport reportNonPackages_1
@@ -154,7 +154,7 @@ pkgbuildDiffs ps = ask >>= check
     where check ss | not $ diffPkgbuilds ss = return ps
                    | otherwise = mapM_ displayDiff ps >> return ps
           displayDiff p = do
-            let name = pkgBaseOf p
+            let name = baseNameOf p
             isStored <- hasPkgbuildStored name
             if not isStored
                then warn $ reportPkgbuildDiffs_1 name

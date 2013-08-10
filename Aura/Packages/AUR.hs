@@ -60,7 +60,7 @@ aurRepo = Repository $ \name ->
 
 makeBuildable :: String -> Pkgbuild -> Buildable
 makeBuildable name pb = Buildable
-    { pkgBaseOf  = name
+    { baseNameOf = name
     , pkgbuildOf = pb
     , isExplicit = False
     , source     = \fp -> sourceTarball fp name >>= decompress }

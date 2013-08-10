@@ -68,7 +68,7 @@ build built ps@(p:_) = do
   notify $ buildPackages_1 pn
   (paths,rest) <- catch (withTempDir pn (build' ps)) (buildFail built ps)
   build (paths ++ built) rest
-      where pn = pkgBaseOf p
+      where pn = baseNameOf p
         
 -- Perform the actual build.
 -- TODO: Clean this up.
@@ -103,7 +103,7 @@ overwritePkgbuild p = asks mayHotEdit >>= check
 buildFail :: [FilePath] -> [Buildable] -> String -> Aura ([FilePath],[Buildable])
 buildFail _ [] _ = failure "buildFail : You should never see this message."
 buildFail built (p:ps) errors = asks langOf >>= \lang -> do
-  scold $ buildFail_1 (pkgBaseOf p)
+  scold $ buildFail_1 (baseNameOf p)
   displayBuildErrors errors
 --  printList red cyan (buildFail_2 lang) (map pkgBase ps)
 --  printList yellow cyan (buildFail_3 lang) $ map takeFileName built
