@@ -44,14 +44,14 @@ checkConflicts pkg dep = ask >>= \ss ->
 
 -- | Must be called with a (f)unction that yields the version number
 -- of the most up-to-date form of the package.
-realPkgConflicts :: Settings -> Package -> Dep -> Maybe ErrMsg
+realPkgConflicts :: Settings -> Package -> Dep -> Maybe Error
 realPkgConflicts ss pkg dep
     | isIgnored name toIgnore         = Just failMsg1
     | isVersionConflict reqVer curVer = Just failMsg2
     | otherwise = Nothing
-    where name     = pkgName pkg
-          curVer   = pkgVersion pkg
-          reqVer   = depVersionDemand dep
+    where name     = pkgNameOf pkg
+          curVer   = pkgVersionOf pkg
+          reqVer   = depVerDemandOf dep
           lang     = langOf ss
           toIgnore = ignoredPkgsOf ss
           failMsg1 = getRealPkgConflicts_2 name lang

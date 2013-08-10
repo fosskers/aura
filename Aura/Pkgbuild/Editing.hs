@@ -45,16 +45,16 @@ customizepkgPath = "/etc/customizepkg.d/"
 edit :: (FilePath -> IO ()) -> Buildable -> Aura Buildable
 edit f p = do
   newPB <- liftIO $ do
-             writeFile filename $ pkgbuild p
+             writeFile filename $ pkgbuildOf p
              f filename
              readFileUTF8 filename
-  return p { pkgbuild = newPB }
+  return p { pkgbuildOf = newPB }
       where filename = "PKGBUILD"
 
 -- | Allow the user to edit the PKGBUILD if they asked to do so.
 hotEdit :: Buildable -> Aura Buildable
 hotEdit p = ask >>= \ss -> withTempDir "hotedit" $ do
-  let cond = optionalPrompt (hotEdit_1 $ pkgBase p)
+  let cond = optionalPrompt (hotEdit_1 $ pkgBaseOf p)
       act  = edit (openEditor (getEditor $ environmentOf ss))
   ifM cond act nothing p
 
@@ -66,7 +66,7 @@ customizepkg = ifFile customizepkg' (scold customizepkg_1) bin
 
 customizepkg' :: Buildable -> Aura Buildable
 customizepkg' p = withTempDir "customizepkg" $ do
-  let conf = customizepkgPath </> pkgBase p
+  let conf = customizepkgPath </> pkgBaseOf p
   ifFile (edit customize) nothing conf p
 
 customize :: FilePath -> IO ()

@@ -40,10 +40,10 @@ pacmanRepo = Repository $ \name -> do
 
 packageRepo :: String -> String -> Package
 packageRepo name version = Package
-    { pkgName        = name
-    , pkgVersion     = version
-    , pkgDeps        = []  -- Let pacman handle dependencies.
-    , pkgInstallType = Pacman name }
+    { pkgNameOf        = name
+    , pkgVersionOf     = version
+    , pkgDepsOf        = []  -- Let pacman handle dependencies.
+    , pkgInstallTypeOf = Pacman name }
 
 -- | If given a virtual package, try to find a real package to install.
 -- Functions like this are why we need libalpm.

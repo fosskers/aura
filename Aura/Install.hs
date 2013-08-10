@@ -101,7 +101,7 @@ lookupPkgs f pkgs = do
     reportNonPackages nons
     return $ map markExplicit okay
   where lookupBuild pkg = maybe (Left pkg) Right <$> f pkg
-        markExplicit b  = b { explicit = True }
+        markExplicit b  = b { isExplicit = True }
 
 depsToInstall :: Repository -> [Buildable] -> Aura [Package]
 depsToInstall repo = mapM packageBuildable >=> resolveDeps repo
@@ -115,7 +115,7 @@ repoInstall pacOpts ps = pacman $ ["-S","--asdeps"] ++ pacOpts ++ ps
 
 buildAndInstall :: [String] -> Buildable -> Aura ()
 buildAndInstall pacOpts pkg = buildPackages [pkg] >>= installPkgFiles pacOpts'
-  where pacOpts' = if explicit pkg then pacOpts else "--asdeps" : pacOpts
+  where pacOpts' = if isExplicit pkg then pacOpts else "--asdeps" : pacOpts
 
 ------------
 -- REPORTING
@@ -133,13 +133,13 @@ displayPkgDeps opts ps = asks beQuiet >>= \quiet -> do
 reportPkgsToInstall :: String -> [String] -> [Buildable] -> Aura ()
 reportPkgsToInstall la rps bps = asks langOf >>= \lang -> do
   pl (reportPkgsToInstall_1    lang) (sort rps)
-  pl (reportPkgsToInstall_2 la lang) (sort $ map pkgBase bps)
+  pl (reportPkgsToInstall_2 la lang) (sort $ map pkgBaseOf bps)
       where pl = printList green cyan
 
 reportListOfDeps :: [String] -> [Buildable] -> Aura ()
 reportListOfDeps rps bps = do
   liftIO $ mapM_ putStrLn (sort rps)
-  liftIO $ mapM_ putStrLn (sort $ map pkgBase bps)
+  liftIO $ mapM_ putStrLn (sort $ map pkgBaseOf bps)
 
 reportNonPackages :: [String] -> Aura ()
 reportNonPackages = badReport reportNonPackages_1
@@ -154,12 +154,12 @@ pkgbuildDiffs ps = ask >>= check
     where check ss | not $ diffPkgbuilds ss = return ps
                    | otherwise = mapM_ displayDiff ps >> return ps
           displayDiff p = do
-            let name = pkgBase p
+            let name = pkgBaseOf p
             isStored <- hasPkgbuildStored name
             if not isStored
                then warn $ reportPkgbuildDiffs_1 name
                else do
-                 let new = pkgbuild p
+                 let new = pkgbuildOf p
                  old <- readPkgbuild name
                  case comparePkgbuilds name old new of
                    "" -> notify $ reportPkgbuildDiffs_2 name

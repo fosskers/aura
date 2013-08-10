@@ -25,8 +25,8 @@ import System.Directory (doesFileExist)
 import Text.Regex.PCRE  ((=~))
 import Control.Monad    (when)
 import Data.Either      (partitionEithers)
-import Data.List        (isSuffixOf)
 import Data.Monoid      (Monoid(..))
+import Data.List        (isSuffixOf)
 
 import Aura.Settings.Base
 import Aura.Colour.Text
@@ -43,7 +43,7 @@ import Shell
 --------
 -- TYPES
 --------
-type ErrMsg   = String
+type Error    = String
 type Pkgbuild = String
 
 data VersionDemand = LessThan String
@@ -60,42 +60,42 @@ instance Show VersionDemand where
     show (MustBe  v)  = '=' : v
     show Anything     = ""
 
--- | A dependency on another package.
-data Dep = Dep { depName          :: String
-               , depVersionDemand :: VersionDemand }
-
 -- | A package to be installed.
-data Package = Package { pkgName        :: String
-                       , pkgVersion     :: String
-                       , pkgDeps        :: [Dep]
-                       , pkgInstallType :: InstallType }
+data Package = Package { pkgNameOf        :: String
+                       , pkgVersionOf     :: String
+                       , pkgDepsOf        :: [Dep]
+                       , pkgInstallTypeOf :: InstallType }
+
+-- | A dependency on another package.
+data Dep = Dep { depNameOf      :: String
+               , depVerDemandOf :: VersionDemand }
 
 -- | The installation method.
 data InstallType = Pacman String | Build Buildable
 
--- | A package installed by building.
+-- | A package to be built manually before installing.
 data Buildable = Buildable
-    { pkgBase  :: String
-    , pkgbuild :: Pkgbuild
-    , explicit :: Bool
-       -- | Fetch and extract the source code corresponding to the given package.
-    , source   :: FilePath     -- ^ Directory in which to extract the package.
-               -> IO FilePath  -- ^ Path to the extracted source.
+    { pkgBaseOf  :: String  -- What is this?
+    , pkgbuildOf :: Pkgbuild
+    -- | Did the user select this package, or is it being built as a dep?
+    , isExplicit :: Bool
+    -- | Fetch and extract the source code corresponding to the given package.
+    , source     :: FilePath     -- ^ Directory in which to extract the package.
+                 -> IO FilePath  -- ^ Path to the extracted source.
     }
 
 -- | A 'Repository' is a place where packages may be fetched from. Multiple
--- repositories can be combined into a larger one with the 'Data.Monoid'
--- instance.
+-- repositories can be combined with the 'Data.Monoid' instance.
 newtype Repository = Repository
-    { lookupPkg :: String -> Aura (Maybe Package) }
+    { repoLookup :: String -> Aura (Maybe Package) }
 
 instance Monoid Repository where
     mempty = Repository $ \_ -> return Nothing
 
     a `mappend` b = Repository $ \s -> do
-        mpkg <- lookupPkg a s
+        mpkg <- repoLookup a s
         case mpkg of
-            Nothing -> lookupPkg b s
+            Nothing -> repoLookup b s
             _       -> return mpkg
 
 ---------------------------------
@@ -103,7 +103,7 @@ instance Monoid Repository where
 ---------------------------------
 -- | Partition a list of packages into pacman and buildable groups.
 partitionPkgs :: [Package] -> ([String],[Buildable])
-partitionPkgs = partitionEithers . map (toEither . pkgInstallType)
+partitionPkgs = partitionEithers . map (toEither . pkgInstallTypeOf)
   where toEither (Pacman s) = Left  s
         toEither (Build  b) = Right b
 
@@ -147,6 +147,9 @@ isDevelPkg :: String -> Bool
 isDevelPkg p = any (`isSuffixOf` p) suffixes
     where suffixes = ["-git","-hg","-svn","-darcs","-cvs","-bzr"]
 
+-- This could be:
+-- isIgnored :: String -> Aura Bool
+-- isIgnored pkg = asks (elem pkg . ignoredPkgsOf)
 isIgnored :: String -> [String] -> Bool
 isIgnored pkg toIgnore = pkg `elem` toIgnore
 
@@ -158,9 +161,9 @@ removePkgs [] _         = return ()
 removePkgs pkgs pacOpts = pacman  $ ["-Rsu"] ++ pkgs ++ pacOpts
 
 -- Moving to a libalpm backend will make this less hacked.
--- | Returns if a dependency is satisfied by an installed package.
-depTest :: Dep -> Aura Bool
-depTest (Dep name ver) = null <$> pacmanOutput ["-T", name ++ show ver]
+-- | True if a dependency is satisfied by an installed package.
+isSatisfied :: Dep -> Aura Bool
+isSatisfied (Dep name ver) = null <$> pacmanOutput ["-T", name ++ show ver]
 
 -- | Block further action until the database is free.
 checkDBLock :: Aura ()

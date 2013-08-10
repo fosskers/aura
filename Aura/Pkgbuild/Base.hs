@@ -53,11 +53,11 @@ pbHandler b = ask >>= \ss -> check ss b
 packageBuildable :: Buildable -> Aura Package
 packageBuildable b = do
     b' <- pbHandler b
-    ns <- namespace (pkgBase b') (pkgbuild b')
+    ns <- namespace (pkgBaseOf b') (pkgbuildOf b')
     return Package
-        { pkgName        = pkgBase b'
-        , pkgVersion     = trueVersion ns
-        , pkgDeps        = concatMap (map parseDep . value ns)
+        { pkgNameOf        = pkgBaseOf b'
+        , pkgVersionOf     = trueVersion ns
+        , pkgDepsOf        = concatMap (map parseDep . value ns)
                            ["depends", "makedepends", "checkdepends"]
-        , pkgInstallType = Build b'
+        , pkgInstallTypeOf = Build b'
         }

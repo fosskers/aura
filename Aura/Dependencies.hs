@@ -42,22 +42,22 @@ resolveDeps :: Repository -> [Package] -> Aura [Package]
 resolveDeps repo ps =
     sortInstall . Map.elems <$> execStateT (mapM_ addPkg ps) Map.empty
   where
-    addPkg pkg = whenM (isNothing <$> getPkg (pkgName pkg)) $ do
-        mapM_ addDep (pkgDeps pkg)
-        modify $ Map.insert (pkgName pkg) pkg
+    addPkg pkg = whenM (isNothing <$> getPkg (pkgNameOf pkg)) $ do
+        mapM_ addDep (pkgDepsOf pkg)
+        modify $ Map.insert (pkgNameOf pkg) pkg
 
     addDep dep = do
-        mpkg <- getPkg $ depName dep
+        mpkg <- getPkg $ depNameOf dep
         case mpkg of
             Nothing  -> findPkg dep
             Just pkg -> lift $ checkConflicts pkg dep
 
-    findPkg dep = whenM (not <$> lift (depTest dep)) $ do
-        mpkg <- lift $ lookupPkg repo name
+    findPkg dep = whenM (not <$> lift (isSatisfied dep)) $ do
+        mpkg <- lift $ repoLookup repo name
         case mpkg of
             Nothing  -> lift $ missingPkg name
             Just pkg -> lift (checkConflicts pkg dep) >> addPkg pkg
-      where name = depName dep
+      where name = depNameOf dep
 
     getPkg p = gets $ Map.lookup p
 
@@ -67,5 +67,5 @@ missingPkg name = asks langOf >>= failure . missingPkg_1 name
 sortInstall :: [Package] -> [Package]
 sortInstall ps = reverse . map (tripleFst . n) . topSort $ g
   where (g,n,_)    = graphFromEdges $ map toEdge ps
-        toEdge pkg = (pkg, pkgName pkg, map depName $ pkgDeps pkg)
+        toEdge pkg = (pkg, pkgNameOf pkg, map depNameOf $ pkgDepsOf pkg)
 

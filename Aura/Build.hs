@@ -68,7 +68,7 @@ build built ps@(p:_) = do
   notify $ buildPackages_1 pn
   (paths,rest) <- catch (withTempDir pn (build' ps)) (buildFail built ps)
   build (paths ++ built) rest
-      where pn = pkgBase p
+      where pn = pkgBaseOf p
         
 -- Perform the actual build.
 -- TODO: Clean this up.
@@ -95,7 +95,7 @@ getSourceCode pkg user currDir = liftIO $ do
 
 overwritePkgbuild :: Buildable -> Aura ()
 overwritePkgbuild p = asks mayHotEdit >>= check
-    where check True  = liftIO . writeFile "PKGBUILD" . pkgbuild $ p
+    where check True  = liftIO . writeFile "PKGBUILD" . pkgbuildOf $ p
           check False = return ()
 
 -- Inform the user that building failed. Ask them if they want to
@@ -103,7 +103,7 @@ overwritePkgbuild p = asks mayHotEdit >>= check
 buildFail :: [FilePath] -> [Buildable] -> String -> Aura ([FilePath],[Buildable])
 buildFail _ [] _ = failure "buildFail : You should never see this message."
 buildFail built (p:ps) errors = asks langOf >>= \lang -> do
-  scold $ buildFail_1 (pkgBase p)
+  scold $ buildFail_1 (pkgBaseOf p)
   displayBuildErrors errors
 --  printList red cyan (buildFail_2 lang) (map pkgBase ps)
 --  printList yellow cyan (buildFail_3 lang) $ map takeFileName built
@@ -114,7 +114,7 @@ buildFail built (p:ps) errors = asks langOf >>= \lang -> do
 
 -- If the user wasn't running Aura with `-x`, then this will
 -- show them the suppressed makepkg output. 
-displayBuildErrors :: ErrMsg -> Aura ()
+displayBuildErrors :: Error -> Aura ()
 displayBuildErrors errors = ask >>= \ss -> when (suppressMakepkg ss) $ do
   putStrA red (displayBuildErrors_1 $ langOf ss)
   liftIO (timedMessage 1000000 ["3.. ","2.. ","1..\n"] >> putStrLn errors)
