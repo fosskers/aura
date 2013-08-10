@@ -79,7 +79,6 @@ executable aura
                        Aura.Pkgbuild.Editing,
                        Aura.Settings.Base,
                        Aura.Settings.Enable,
-                       Aura.Settings.BadPackages,
                        Bash.Base,
                        Bash.Parser,
                        Bash.Simplify
