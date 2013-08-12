@@ -73,11 +73,13 @@ To extract it's inner value, we use the helper function `runAura`.
 
 #### Why the Aura Monad?
 The Aura Monad is convenient for two reasons:
+
 1. The local runtime settings are referenced heavily throughout
    the Aura code. Passing a `Settings` parameter around explicitely makes for long
    function signatures. Furthmore, being accessed from an internal Reader Monad
    also means its access is _read-only_. This way, the run-time settings
    could never be altered unknowingly.
+
 2. Being an `ErrorT`, it can fail. These failures can also be caught elegantly,
    demanding no need for try/catch blocks a la imperitive languages. Example:
 
@@ -105,12 +107,13 @@ foo w = ask >>= \ss -> do
   ...  -- Rest of the function.
 ```
 
-If you only need one function out of `Settings`, you can do:
+If you only need one function out of `Settings`, you can use `asks`,
+which directly applies a function to the result of `ask`:
 
 ```haskell
 -- For example, if I only need the cache path from Settings...
 foo :: Whatever -> Aura Whatever
-foo w = cachePathOf `fmap` ask >>= \path -> do
+foo w = asks cachePathOf >>= \path -> do
   ...  -- Rest of the function.
 ```
 
@@ -123,8 +126,11 @@ No Strings meant for user-viewed output are hardcoded. All current translations
 of all Strings are kept in `Aura/Languages.hs`. Messages are fetched by
 helper functions after being passed the current runtime `Language` stored in
 `Settings`. This leads to:
+
 1. More advanced String manipulation, regardless of spoken language.
+
 2. More convenient translation work.
+
 3. (Unfortunately) larger executable size.
 
 See the Localisation Guide for more information.
