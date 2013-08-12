@@ -27,7 +27,7 @@ module Bash.Parser ( parseBash ) where
 
 import Text.ParserCombinators.Parsec
 import Control.Applicative ((<*),(*>),(<*>),(<$>),(<$))
-import Data.Either         (rights)
+import Data.Maybe          (catMaybes)
 
 import Bash.Base
 
@@ -79,9 +79,9 @@ variable = Variable <$> name <*> (array <|> single) <?> "valid var definition"
     where name = spaces *> many1 (alphaNum <|> char '_') <* char '='
 
 array :: Parser [BashString]
-array = concat . rights <$> array' <?> "valid array"
+array = concat . catMaybes <$> array' <?> "valid array"
     where array'  = char '(' *> spaces *> manyTill single' (char ')')
-          single' = (Left <$> comment <* spaces) <|> (Right <$> single)
+          single' = (Nothing <$ comment <* spaces) <|> (Just <$> single)
 
 -- | Strings can be surrounded by single quotes, double quotes, backticks,
 -- or nothing.

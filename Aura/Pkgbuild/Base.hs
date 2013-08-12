@@ -21,6 +21,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Pkgbuild.Base where
 
+import Control.Monad (foldM)
+
 import Aura.Bash
 import Aura.Core
 import Aura.Monad.Aura
@@ -43,16 +45,13 @@ trueVersion ns = pkgver ++ "-" ++ pkgrel
     where pkgver = head $ value ns "pkgver"
           pkgrel = head $ value ns "pkgrel"
 
-pbHandler :: Buildable -> Aura Buildable
-pbHandler b = ask >>= \ss -> check ss b
-  where check ss | mayHotEdit ss      = hotEdit
-                 | useCustomizepkg ss = customizepkg
-                 | otherwise          = return
+pbCustomization :: Buildable -> Aura Buildable
+pbCustomization b = foldM (flip ($)) b [hotEdit,customizepkg]
 
--- Package a Buildable, running the customization handler first.
+-- | Package a Buildable, running the customization handler first.
 packageBuildable :: Buildable -> Aura Package
 packageBuildable b = do
-    b' <- pbHandler b
+    b' <- pbCustomization b
     ns <- namespace (baseNameOf b') (pkgbuildOf b')
     return Package
         { pkgNameOf        = baseNameOf b'

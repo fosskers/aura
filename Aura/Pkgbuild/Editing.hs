@@ -28,7 +28,7 @@ module Aura.Pkgbuild.Editing
 import System.FilePath     ((</>))
 import Control.Monad       (void)
 
-import Aura.Settings.Base (environmentOf)
+import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Utils
@@ -53,16 +53,22 @@ edit f p = do
 
 -- | Allow the user to edit the PKGBUILD if they asked to do so.
 hotEdit :: Buildable -> Aura Buildable
-hotEdit p = ask >>= \ss -> withTempDir "hotedit" $ do
-  let cond = optionalPrompt (hotEdit_1 $ baseNameOf p)
-      act  = edit (openEditor (getEditor $ environmentOf ss))
-  ifM cond act nothing p
+hotEdit b = ask >>= \ss ->
+  if not $ mayHotEdit ss
+     then return b
+     else withTempDir "hotedit" $ do
+            let cond = optionalPrompt (hotEdit_1 $ baseNameOf b)
+                act  = edit (openEditor (getEditor $ environmentOf ss))
+            ifM cond act nothing b
 
 -- | Runs `customizepkg` on whatever PKGBUILD it can.
 -- To work, a package needs an entry in `/etc/customizepkg.d/`
 customizepkg :: Buildable -> Aura Buildable
-customizepkg = ifFile customizepkg' (scold customizepkg_1) bin
-    where bin = "/usr/bin/customizepkg"
+customizepkg b = asks useCustomizepkg >>= \use ->
+  if not use
+     then return b
+     else ifFile customizepkg' (scold customizepkg_1) bin b
+         where bin = "/usr/bin/customizepkg"
 
 customizepkg' :: Buildable -> Aura Buildable
 customizepkg' p = withTempDir "customizepkg" $ do
