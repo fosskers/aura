@@ -4,6 +4,7 @@ Aura Changelog
 -------
 - Norwegian translation added!
 - Dependency checks slightly faster
+- `--hotedit` and `--custom` can now be used together
 - Bug fixes
 
 1.2.1.0
