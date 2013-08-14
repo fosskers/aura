@@ -62,10 +62,12 @@ comment = Comment <$> comment' <?> "valid comment"
 command :: Parser Field
 command = spaces *> (Command <$> many1 commandChar <*> option [] (try args))
     where commandChar = alphaNum <|> oneOf "./"
-          args = char ' ' >> many (noneOf "`\n") >>= \line ->
-                 case parse (many1 single) "(command)" line of
-                   Left _   -> fail "Failed parsing strings in a command"
-                   Right bs -> return $ concat bs
+          args = char ' ' >> unwords <$> line >>= \ls ->
+                   case parse (many1 single) "(command)" ls of
+                     Left _   -> fail "Failed parsing strings in a command"
+                     Right bs -> return $ concat bs
+          line = (:) <$> many (noneOf "\n\\") <*> next
+          next = ([] <$ char '\n') <|> (char '\\' *> spaces *> line)
 
 -- | A function looks like: name() { ... \n} and is filled with fields.
 function :: Parser Field
