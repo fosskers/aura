@@ -27,7 +27,6 @@ import Aura.Bash
 import Aura.Core
 import Aura.Monad.Aura
 import Aura.Pkgbuild.Editing
-import Aura.Settings.Base
 
 ---
 
