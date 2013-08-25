@@ -79,6 +79,7 @@ data Buildable = Buildable
     , pkgbuildOf :: Pkgbuild
     -- | Did the user select this package, or is it being built as a dep?
     , isExplicit :: Bool
+    , isEdited   :: Bool
     -- | Fetch and extract the source code corresponding to the given package.
     , source     :: FilePath     -- ^ Directory in which to extract the package.
                  -> IO FilePath  -- ^ Path to the extracted source.

@@ -90,6 +90,7 @@ makeBuildable repo name = do
         { baseNameOf = name
         , pkgbuildOf = pb
         , isExplicit = False
+        , isEdited   = False
         , source     = copyTo repo name }
 
 copyTo :: String -> String -> FilePath -> IO FilePath

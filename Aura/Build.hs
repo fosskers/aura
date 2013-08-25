@@ -94,9 +94,8 @@ getSourceCode pkg user currDir = liftIO $ do
   cd sourceDir
 
 overwritePkgbuild :: Buildable -> Aura ()
-overwritePkgbuild p = asks mayHotEdit >>= check
-    where check True  = liftIO . writeFile "PKGBUILD" . pkgbuildOf $ p
-          check False = return ()
+overwritePkgbuild p = when (isEdited p) $
+    liftIO . writeFile "PKGBUILD" . pkgbuildOf $ p
 
 -- Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.

@@ -48,7 +48,7 @@ edit f p = do
              writeFile filename $ pkgbuildOf p
              f filename
              readFileUTF8 filename
-  return p { pkgbuildOf = newPB }
+  return p { pkgbuildOf = newPB, isEdited = True }
       where filename = "PKGBUILD"
 
 -- | Allow the user to edit the PKGBUILD if they asked to do so.
