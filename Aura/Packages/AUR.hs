@@ -63,6 +63,7 @@ makeBuildable name pb = Buildable
     { baseNameOf = name
     , pkgbuildOf = pb
     , isExplicit = False
+    , isEdited   = False
     , source     = \fp -> sourceTarball fp name >>= decompress }
 
 isAurPackage :: String -> Aura Bool
