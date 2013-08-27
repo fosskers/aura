@@ -31,7 +31,7 @@ module Aura.Commands.C
 import System.Posix.Files (fileExist)
 import System.FilePath    ((</>))
 import Text.Regex.PCRE    ((=~))
-import Control.Monad      (filterM, unless)
+import Control.Monad      (unless)
 import Data.List          ((\\), sort, groupBy)
 import Data.Char          (isDigit)
 
@@ -55,13 +55,12 @@ import Utilities
 downgradePackages :: [String] -> Aura ()
 downgradePackages []   = return ()
 downgradePackages pkgs = asks cachePathOf >>= \cachePath -> do
-  reals <- filterM inCache pkgs -- This.
+  reals <- pkgsInCache pkgs
   reportBadDowngradePkgs (pkgs \\ reals)
   unless (null reals) $ do
     cache   <- cacheContents cachePath
     choices <- mapM (getDowngradeChoice cache) reals
     pacman $ "-U" : map (cachePath </>) choices
-        where inCache p = notNull <$> cacheMatches [p]
                
 getDowngradeChoice :: Cache -> String -> Aura String
 getDowngradeChoice cache pkg = do

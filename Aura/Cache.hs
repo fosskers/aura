@@ -26,6 +26,7 @@ module Aura.Cache
     , cacheContents
     , cacheFilter
     , cacheMatches
+    , pkgsInCache
     , alterable
     , getFilename
     , allFilenames
@@ -65,15 +66,22 @@ rawCacheContents c = filter dots <$> liftIO (ls c)
 cacheContents :: FilePath -> Aura Cache
 cacheContents c = cache <$> rawCacheContents c
 
+pkgsInCache :: [String] -> Aura [String]
+pkgsInCache ps =
+    filter (`elem` ps) . allNames <$> (asks cachePathOf >>= cacheContents)
+
 cacheMatches :: [String] -> Aura [String]
-cacheMatches input = ask >>= cacheContents . cachePathOf >>=
-  return . searchLines (unwords input) . allFilenames
+cacheMatches input = asks cachePathOf >>= cacheContents >>=
+                     return . searchLines (unwords input) . allFilenames
 
 alterable :: Cache -> SimplePkg -> Bool
 alterable c p = M.member p c
 
 getFilename :: Cache -> SimplePkg -> Maybe FilePath
 getFilename c p = M.lookup p c
+
+allNames :: Cache -> [String]
+allNames = map fst . M.keys
 
 allFilenames :: Cache -> [FilePath]
 allFilenames = M.elems
