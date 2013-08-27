@@ -26,7 +26,8 @@ module Aura.Build
     , buildPackages ) where
 
 import System.FilePath ((</>), takeFileName)
-import Control.Monad   (when, void)
+import Control.Monad   (when, void, join)
+import Control.Applicative ((<*>), pure)
 
 import Aura.Pacman (pacman)
 import Aura.Settings.Base
@@ -70,17 +71,16 @@ build built ps@(p:_) = do
   build (paths ++ built) rest
       where pn = baseNameOf p
         
--- Perform the actual build.
--- TODO: Clean this up.
+-- | Perform the actual build.
 build' :: [Buildable] -> Aura ([FilePath],[Buildable])
 build' []     = failure "build' : You should never see this."
 build' (p:ps) = ask >>= \ss -> do
-  let user     = buildUserOf ss
-      makepkg' = if suppressMakepkg ss then makepkgQuiet else makepkgVerbose
-  curr <- liftIO pwd
+  let user = buildUserOf ss
+  curr     <- liftIO pwd
   getSourceCode p user curr
   overwritePkgbuild p
-  pNames <- makepkg' user
+  pNames <- join (makepkg <*> pure user)
+--  pNames <- makepkg >>= \f -> f user  -- Which is better?
   paths  <- moveToBuildPath pNames
   when (keepSource ss) $ makepkgSource user True >>= void . moveToSourcePath
   liftIO $ cd curr
@@ -94,9 +94,9 @@ getSourceCode pkg user currDir = liftIO $ do
   cd sourceDir
 
 overwritePkgbuild :: Buildable -> Aura ()
-overwritePkgbuild p = asks mayHotEdit >>= check
-    where check True  = liftIO . writeFile "PKGBUILD" . pkgbuildOf $ p
-          check False = return ()
+overwritePkgbuild p = asks (\ss -> any ($ ss) checks) >>=
+                      flip when (liftIO . writeFile "PKGBUILD" . pkgbuildOf $ p)
+    where checks = [mayHotEdit,useCustomizepkg]
 
 -- Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.

@@ -25,8 +25,8 @@ module Aura.Pkgbuild.Editing
     ( hotEdit
     , customizepkg ) where
 
-import System.FilePath     ((</>))
-import Control.Monad       (void)
+import System.FilePath ((</>))
+import Control.Monad   (void)
 
 import Aura.Settings.Base
 import Aura.Monad.Aura

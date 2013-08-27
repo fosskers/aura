@@ -22,14 +22,14 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.MakePkg
-    ( makepkgQuiet
-    , makepkgVerbose
+    ( makepkg
     , makepkgSource
     , makepkgConfFile ) where
 
 import Text.Regex.PCRE ((=~))
 
 import Aura.Monad.Aura
+import Aura.Settings.Base (suppressMakepkg)
 import Aura.Shell (shellCmd, quietShellCmd, quietShellCmd', checkExitCode')
 
 import Shell (pwd, ls)
@@ -41,6 +41,10 @@ makepkgConfFile = "/etc/makepkg.conf"
 
 makepkgCmd :: FilePath
 makepkgCmd = "/usr/bin/makepkg"
+
+makepkg :: Aura (String -> Aura [FilePath])
+makepkg = asks suppressMakepkg >>= \quiet ->
+          if quiet then return makepkgQuiet else return makepkgVerbose
 
 -- TODO: Clean this up.
 -- | Make a source package.
