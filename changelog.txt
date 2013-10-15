@@ -1,5 +1,10 @@
 Aura Changelog
 ==============
+1.2.2.2
+-------
+- Happy Canadian Thanksgiving
+- Bug fixes
+
 1.2.1.1
 -------
 - Norwegian translation added!
