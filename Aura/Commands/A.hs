@@ -33,6 +33,7 @@ module Aura.Commands.A
 import Text.Regex.PCRE ((=~))
 import Control.Monad
 import Data.Monoid
+import qualified Data.Set as Set (member, fromList)
 
 import           Aura.Install (InstallOptions(..))
 import qualified Aura.Install as I
@@ -122,8 +123,8 @@ renderAurPkgInfo ss info = entrify ss fields entries
 aurSearch :: [String] -> Aura ()
 aurSearch []    = return ()
 aurSearch regex = ask >>= \ss -> do
-    db       <- getForeignPackages >>= return . map fst
-    results  <- aurSearchLookup regex >>= return . map (\x -> let n = nameOf x in (x, n `elem` db))
+    db       <- getForeignPackages >>= return . Set.fromList . map fst
+    results  <- aurSearchLookup regex >>= return . map (\x -> let n = nameOf x in (x, n `Set.member` db))
     mapM_ (renderSearch ss (unwords regex)) results
 
 renderSearch :: Settings -> String -> (PkgInfo, Bool) -> Aura ()
