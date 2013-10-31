@@ -63,9 +63,9 @@ translators = [ " Chris \"Kwpolska\" Warrick"
               , " Fredrik Haikarainen"
               , " Lukas Niederbremer"
               , " Alejandro Gómez"
-              , " Henry \"Ingvij\" Kupty" 
+              , " Henry \"Ingvij\" Kupty"
               , " Ma Jiehong"
-              , " Kyrylo Silin" 
+              , " Kyrylo Silin"
               , " Bob Valantin"
               , " Filip Brcic"
               , " \"chinatsun\"" ]
@@ -80,7 +80,7 @@ languageNames Swedish    = [ "polska","kroatiska","svenska","tyska","spanska","p
 languageNames German     = [ "Polnisch","Kroatisch","Schwedisch","Deutsch","Spanisch","Portugiesisch", "", "", "" ]
 languageNames Spanish    = [ "Polaco","Croata","Sueco","Alemán","Español","Portugués", "", "", "" ]
 languageNames Portuguese = [ "Polonês","Croata","Sueco","Alemão","Espanhol","Português", "", "", "" ]
-languageNames French     = [ "Polonais","Croate","Suedois","Alemand","Espagnol","Portugais", "Français", "Russe", "", "", "" ]
+languageNames French     = [ "Polonais","Croate","Suédois","Allemand","Espagnol","Portugais", "Français", "Russe", "Italien", "Serbe", "Norvégien" ]
 languageNames Russian    = [ "Польский","Хорватский","Шведский","Немецкий","Испанский","Португальский", "Русский", "", "", "" ]
 languageNames Italian    = [ "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "", "" ]
 languageNames Serbian    = [ "Пољски","Хрватски","Шведски","Немачки","Шпански","Португалски","Француски","Руски","Италијански","Српски", "" ]
@@ -95,7 +95,7 @@ translatorMsgTitle Swedish    = "Aura Översättare:"
 translatorMsgTitle German     = "Aura Übersetzer:"
 translatorMsgTitle Spanish    = "Traductores de Aura:"
 translatorMsgTitle Portuguese = "Tradutores de Aura:"
-translatorMsgTitle French     = "Traduction d'Aura\xa0:"
+translatorMsgTitle French     = "Traducteurs d'Aura:"
 translatorMsgTitle Russian    = "Переводчики Aura:"
 translatorMsgTitle Italian    = "Traduttori di Aura:"
 translatorMsgTitle Serbian    = "Преводиоци Аура:"
@@ -142,6 +142,7 @@ checkDBLock_1 Japanese  = "パッケージデータベースが今閉鎖状態�
 checkDBLock_1 Croatian  = "Baza paketa je zaključana. Kad se otključa, pritisnite enter da biste nastavili."
 checkDBLock_1 German    = "The Paketdatenbank ist gesperrt. Drücken Sie Enter wenn sie entsperrt ist um fortzufahren."
 checkDBLock_1 Norwegian = "Pakkedatabasen er låst. Trykk enter når den er åpnet for å fortsette."
+checkDBLock_1 French    = "La base de données des paquets est bloquée. Appuyez sur enter pour continuer."
 checkDBLock_1 _         = "The package database is locked. Press enter when it's unlocked to continue."
 
 -- Packages should not be built if the user is logged in as root!
@@ -154,7 +155,7 @@ trueRoot_1 Swedish    = "Det är starkt rekommenderat att INTE vara inloggad som
 trueRoot_1 German     = "Sie sollten niemals Pakete als der echte root Nutzer bauen. Sind sie sicher, dass Sie dies tun wollen?"
 trueRoot_1 Spanish    = "Nunca deberías construir paquetes como root real. ¿Estás de acuerdo con esto?"
 trueRoot_1 Portuguese = "Não deveria compilar pacotes como o root de fato. Ainda assim, deseja prosseguir?"
-trueRoot_1 French     = "Il n'est pas sage de construire des paquets avec le compte root. Voulez-vous continuer\xa0?"
+trueRoot_1 French     = "Il n'est pas recommandé de construire des paquets avec le compte root. Voulez-vous continuer?"
 trueRoot_1 Russian    = "Вам никогда не следует собирать пакеты под настоящим рутом. Договорились?"
 trueRoot_1 Italian    = "Non si dovrebbero compilare pacchetti come root. Volete Continuare?"
 trueRoot_1 Serbian    = "Не би требало градити пакете са правим root овлашћењима. Желите ли наставити?"
@@ -203,7 +204,7 @@ buildPackages_1 p Swedish    = "Bygger paket " ++ bt p ++ "..."
 buildPackages_1 p German     = "Baue Paket " ++ bt p ++ "..."
 buildPackages_1 p Spanish    = "Construyendo " ++ bt p ++ "..."
 buildPackages_1 p Portuguese = "Compilando " ++ bt p ++ "..."
-buildPackages_1 p French     = "Construction de " ++ bt p ++ "…"
+buildPackages_1 p French     = "Compilation de " ++ bt p ++ "..."
 buildPackages_1 p Russian    = "Сборка " ++ bt p ++ "..."
 buildPackages_1 p Italian    = "Compilazione di " ++ bt p ++ "..."
 buildPackages_1 p Serbian    = "Градим " ++ bt p ++ "..."
@@ -218,7 +219,7 @@ buildFail_1 p Swedish    = "Det gick inte att bygga paketet " ++ bt p ++ "."
 buildFail_1 p German     = "Bauen von " ++ bt p ++ " ist fehlgeschlagen."
 buildFail_1 p Spanish    = "La construcción de " ++ bt p ++ " ha fallado."
 buildFail_1 p Portuguese = "Falha na compilação do pacote " ++ bt p ++ "."
-buildFail_1 p French     = "Bon, la construction de " ++ bt p ++ " a échouée."
+buildFail_1 p French     = "Bon, la compilation de " ++ bt p ++ " a échoué."
 buildFail_1 p Russian    = "Что ж, сборка " ++ bt p ++ " не удалась."
 buildFail_1 p Italian    = "La compilazione di " ++ bt p ++ "è fallita."
 buildFail_1 p Serbian    = "Изградња пакета " ++ bt p ++ " није успела."
@@ -233,7 +234,7 @@ buildFail_2 Swedish    = "Det gick heller inte att bygga följande paket:"
 buildFail_2 German     = "Die folgenden Pakete wurden zusätzlich nicht gebaut:"
 buildFail_2 Spanish    = "Los siguientes paquetes no se han construido:"
 buildFail_2 Portuguese = "Os pacotes a seguir não foram compilados:"
-buildFail_2 French     = "En outre, les paquets suivants n'ont pu être construits\xa0:"
+buildFail_2 French     = "En outre, les paquets suivants n'ont pu être compilés:"
 buildFail_2 Russian    = "К тому же следующие пакеты не были собраны:"
 buildFail_2 Italian    = "Inoltre non è stato possibile cotruire i seguenti pacchetti:"
 buildFail_2 Serbian    = "Такође, ни следећи пакети нису изграђени::"
@@ -248,7 +249,7 @@ buildFail_3 Swedish    = "Vissa paket kanske har byggts ordentligt (Osäker)."
 buildFail_3 German     = "Diese Pakete wurden wiederrum erfolgreich gebaut:"
 buildFail_3 Spanish    = "Sin embargo, los siguientes paquetes se han construido:"
 buildFail_3 Portuguese = "Entretanto, os seguintes pacotes compilaram com sucesso:"
-buildFail_3 French     = "Cependant, les paquets suivants ont été construits avec succès\xa0:"
+buildFail_3 French     = "Cependant, les paquets suivants ont été compilés avec succès:"
 buildFail_3 Russian    = "Однако эти пакеты были успешно собраны:"
 buildFail_3 Italian    = "Comunque questi pacchetti sono stato compilati con successo:"
 buildFail_3 Serbian    = "Међутим, ови пакети су успешно изграђени:"
@@ -263,7 +264,7 @@ buildFail_4 Swedish    = "Vill du installera dem?"
 buildFail_4 German     = "Möchten sie diese installieren?"
 buildFail_4 Spanish    = "¿Te gustaría instalarlos?"
 buildFail_4 Portuguese = "Gostaria de instalá-los?"
-buildFail_4 French     = "Voulez-vous les installer\xa0?"
+buildFail_4 French     = "Voulez-vous les installer?"
 buildFail_4 Russian    = "Желаете ли вы их установить?"
 buildFail_4 Italian    = "Volete installarli?"
 buildFail_4 Serbian    = "Желите ли их инсталирати?"
@@ -278,7 +279,7 @@ buildFail_5 Swedish    = "Gick inte att bygga paket."
 buildFail_5 German     = "Bauen fehlgeschlagen."
 buildFail_5 Spanish    = "La construcción falló."
 buildFail_5 Portuguese = "Falha na compilação."
-buildFail_5 French     = "Construction ratée."
+buildFail_5 French     = "Compilation échouée."
 buildFail_5 Russian    = "Сборка не удалась."
 buildFail_5 Italian    = "Compilazione fallita."
 buildFail_5 Serbian    = "Изградња пакета није успела."
@@ -287,6 +288,7 @@ buildFail_5 Norwegian  = "Bygging feilet."
 -- NEEDS TRANSLATION
 buildFail_6 :: Language -> String
 buildFail_6 Norwegian = "Vil du fortsette likevel?"
+buildFail_6 French    = "Voulez-vous tout de même continuer?"
 buildFail_6 _         = "Would you like to continue anyway?"
 
 displayBuildErrors_1 :: Language -> String
@@ -339,7 +341,7 @@ getRealPkgConflicts_1 p r d Serbian    = "Зависност " ++ bt p ++ " за
 getRealPkgConflicts_1 p r d Norwegian  = "Avhengigheten " ++ bt p ++ " krever versjon " ++ bt d ++", men den nyeste versjonen er " ++ bt r ++ "."
 
 getRealPkgConflicts_2 :: String -> Language -> String
-getRealPkgConflicts_2 p English    = bt p ++ " is an ignored package! See your `pacman.conf` file."    
+getRealPkgConflicts_2 p English    = bt p ++ " is an ignored package! See your `pacman.conf` file."
 getRealPkgConflicts_2 p Japanese   = bt p ++ "は無視されるパッケージ！`pacman.conf`を参考に。"
 getRealPkgConflicts_2 p Polish     = bt p ++ " jest ignorowany! Sprawdź plik `pacman.conf`."
 getRealPkgConflicts_2 p Croatian   = bt p ++ " je ignoriran paket! Pogledajte svoj `pacman.conf`."
@@ -356,6 +358,7 @@ getRealPkgConflicts_2 p Norwegian  = bt p ++ " er en ignorert pakke! Sjekk din `
 -- NEEDS TRANSLATION
 missingPkg_1 :: String -> Language -> String
 missingPkg_1 p Norwegian = "Avhengigheten " ++ bt p ++ " ble ikke funnet. Du kan søke etter en pakke som tilfredsstiller avhengigheten."
+missingPkg_1 p French    = "La dépendance " ++ bt p ++ " n'a pas pu être trouvée. Il vous faut trouver un paquet pour la satisfaire."
 missingPkg_1 p _         = "The dependency " ++ bt p ++ " could not be found. You may need to search for a package to satisfy it."
 
 -----------------
@@ -370,7 +373,7 @@ executeOpts_1 Swedish    = "Givna flaggor är i konflikt!"
 executeOpts_1 German     = "Gegebene Kommandozeilenflags sind widersprüchlich!"
 executeOpts_1 Spanish    = "¡Flags contradictorios!"
 executeOpts_1 Portuguese = "Flags conflitantes!"
-executeOpts_1 French     = "Arguments contradictoires\xa0!"
+executeOpts_1 French     = "Arguments contradictoires!"
 executeOpts_1 Russian    = "Даны конфликтующие флаги!"
 executeOpts_1 Italian    = "Argomenti in conflitto!"
 executeOpts_1 Serbian    = "Захтеване опције су контрадикторне!"
@@ -400,7 +403,7 @@ displayOutputLanguages_1 Swedish    = "Följande språk är tillängliga:"
 displayOutputLanguages_1 German     = "Die folgenden Sprachen sind verfügbar:"
 displayOutputLanguages_1 Spanish    = "Los siguientes idiomas están disponibles:"
 displayOutputLanguages_1 Portuguese = "Os seguintes idiomas estão disponíveis:"
-displayOutputLanguages_1 French     = "Les langues suivantes sont disponibles\xa0:"
+displayOutputLanguages_1 French     = "Les langues suivantes sont disponibles:"
 displayOutputLanguages_1 Russian    = "Доступны следующие языки:"
 displayOutputLanguages_1 Italian    = "Sono disponibili le seguenti lingue:"
 displayOutputLanguages_1 Serbian    = "Доступни су следећи језици:"
@@ -413,6 +416,7 @@ auraCheck_1 :: Language -> String
 auraCheck_1 Japanese  = "Auraアップグレードあり。先にAuraだけを？"
 auraCheck_1 German    = "Aura Update verfügbar. Dies zuerst aktualisieren?"
 auraCheck_1 Norwegian = "En Aura-oppdatering er tilgjengelig. Oppdater den først?"
+auraCheck_1 French    = "Une mise à jour d'Aura est disponible. Voulez-vous la mettre à jour en premier?"
 auraCheck_1 _         = "Aura update available. Update it first?"
 
 install_1 :: Language -> String
@@ -424,7 +428,7 @@ install_1 Swedish    = "Beroende-kollen misslyckades pga följande skäl:"
 install_1 German     = "Abhängigkeitsüberprüfung schlug Fehl aus folgenden Gründen:"
 install_1 Spanish    = "La comprobación de dependencias falló por los siguientes motivos:"
 install_1 Portuguese = "Não foi possível checar as dependências pelas seguintes razões:"
-install_1 French     = "La vérification des dépendances a faillie pour les raisons suivantes\xa0:"
+install_1 French     = "La vérification des dépendances a failli pour les raisons suivantes:"
 install_1 Russian    = "Проверка зависимостей не удалась из-за:"
 install_1 Italian    = "Il controllo delle dipendenze è fallito per i seguenti motivi:"
 install_1 Serbian    = "Провера зависности није успела из следећих разлога:"
@@ -439,7 +443,7 @@ install_2 Swedish    = "Inga giltiga paket valda."
 install_2 German     = "Keine gültigen Pakete angegeben."
 install_2 Spanish    = "No se ha especificado ningún paquete válido."
 install_2 Portuguese = "Nenhum pacote válido foi especificado."
-install_2 French     = "Aucun paquet valide spécifié."
+install_2 French     = "Aucun paquet valide n'a été spécifié."
 install_2 Russian    = "Валидные пакеты не указаны."
 install_2 Italian    = "Nessun pacchetto valido specificato."
 install_2 Serbian    = "Ниједан исправан пакет није специфициран."
@@ -454,7 +458,7 @@ install_3 Swedish    = "Fortsätta?"
 install_3 German     = "Fortsetzen?"
 install_3 Spanish    = "¿Continuar?"
 install_3 Portuguese = "Continuar?"
-install_3 French     = "Continuer\xa0?"
+install_3 French     = "Continuer?"
 install_3 Russian    = "Продолжить?"
 install_3 Italian    = "Continuare?"
 install_3 Serbian    = "Наставити?"
@@ -484,7 +488,7 @@ install_5 Swedish    = "Avgör beroenden..."
 install_5 German     = "Bestimme Abhängigkeiten..."
 install_5 Spanish    = "Determinando dependencias..."
 install_5 Portuguese = "Determinando as dependências..."
-install_5 French     = "Détermination des dépendances en cours…"
+install_5 French     = "Détermination des dépendances en cours..."
 install_5 Russian    = "Определение зависимостей..."
 install_5 Italian    = "Determinazione dipendenze..."
 install_5 Serbian    = "Утврђивање зависности..."
@@ -515,7 +519,7 @@ reportIgnoredPackages_1 Swedish    = "Följande paket kommer att ignoreras: "
 reportIgnoredPackages_1 German     = "Die folgenden Pakete werden ignoriert:"
 reportIgnoredPackages_1 Spanish    = "Los siguientes paquetes serán ignorados:"
 reportIgnoredPackages_1 Portuguese = "Os seguintes pacotes serão ignorados:"
-reportIgnoredPackages_1 French     = "Les paquets suivants seront ignorés\xa0:"
+reportIgnoredPackages_1 French     = "Les paquets suivants seront ignorés:"
 reportIgnoredPackages_1 Russian    = "Следующие пакеты будут проигнорированы:"
 reportIgnoredPackages_1 Italian    = "I seguenti pacchetti verranno ignorati:"
 reportIgnoredPackages_1 Serbian    = "Следећи пакети ће бити игнорисани:"
@@ -541,9 +545,10 @@ reportPkgsToInstall_2 :: String -> Language -> String
 reportPkgsToInstall_2 l Japanese  = l ++ "のパッケージ:"
 reportPkgsToInstall_2 l German    = l ++ " Pakete:"
 reportPkgsToInstall_2 l Norwegian = l ++ " Pakker:"
+reportPkgsToInstall_2 l French    = l ++ " Paquets:"
 reportPkgsToInstall_2 l _         = l ++ " Packages:"
 
-{-} 
+{-}
 reportPkgsToInstall_2 :: String -> Language -> String
 reportPkgsToInstall_2 l English    = l ++ " dependencies:"
 reportPkgsToInstall_2 l Japanese   = l ++ "の従属パッケージ："
@@ -582,7 +587,7 @@ reportPkgbuildDiffs_1 p Polish    = bt p ++ " nie ma jeszcze przechowywanego pli
 reportPkgbuildDiffs_1 p Croatian  = bt p ++ " još nema pohranjen PKGBUILD."
 reportPkgbuildDiffs_1 p German    = bt p ++ " hat noch keinen gespeicherten PKGBUILD."
 reportPkgbuildDiffs_1 p Spanish   = bt p ++ " no tiene PKGBUILD todavía."
-reportPkgbuildDiffs_1 p French    = bt p ++ " n'a pas encore de PKGBUILD enrigistré."
+reportPkgbuildDiffs_1 p French    = bt p ++ " n'a pas encore de PKGBUILD enregistré."
 reportPkgbuildDiffs_1 p Russian   = "У " ++ bt p ++ " ещё нет сохраненного PKGBUILD."
 reportPkgbuildDiffs_1 p Italian   = bt p ++ " non ci sono PKGBUILD salvati"
 reportPkgbuildDiffs_1 p Serbian   = bt p ++ " још нема похрањен PKGBUILD."
@@ -624,7 +629,7 @@ reportPkgsToUpgrade_1 Swedish    = "AUR-paket att uppgradera:"
 reportPkgsToUpgrade_1 German     = "Zu aktualisierendes AUR Paket:"
 reportPkgsToUpgrade_1 Spanish    = "Paquetes de AUR a actualizar:"
 reportPkgsToUpgrade_1 Portuguese = "Pacotes do AUR para atualizar:"
-reportPkgsToUpgrade_1 French     = "Paquets AUR à mettre à jour\xa0:"
+reportPkgsToUpgrade_1 French     = "Paquets AUR à mettre à jour:"
 reportPkgsToUpgrade_1 Russian    = "Пакеты AUR, готовые для обновления:"
 reportPkgsToUpgrade_1 Italian    = "Pacchetti in AUR da aggiornare:"
 reportPkgsToUpgrade_1 Serbian    = "Пакети из AUR-а за надоградњу:"
@@ -640,7 +645,7 @@ reportBadDowngradePkgs_1 Swedish    = "Följande paket är inte installerade, oc
 reportBadDowngradePkgs_1 German     = "Folgende Pakete sind nicht installiert und können daher nicht downgraded werden:"
 reportBadDowngradePkgs_1 Spanish    = "Los siguientes paquetes no están instalados, por lo que no se pueden retornar a versiones antiguas:"
 reportBadDowngradePkgs_1 Portuguese = "Os seguintes pacotes não estão instalados, logo não podem retornar a uma versão anterior:"
-reportBadDowngradePkgs_1 French     = "Les paquets suivants ne sont pas installés\xa0; ils ne peuvent être rétrogradés\xa0:"
+reportBadDowngradePkgs_1 French     = "Les paquets suivants ne sont pas installés; ils ne peuvent pas être rétrogradés:"
 reportBadDowngradePkgs_1 Russian    = "Следующие пакеты не установлены, а следовательно, не могут быть откачены к старой версии:"
 reportBadDowngradePkgs_1 Italian    = "I seguenti pacchetti non sono stati installati e non posso essere retrocessi:"
 reportBadDowngradePkgs_1 Serbian    = "Следећи пакети нису ни инсталирани, те се не могу вратити на старију верзију:"
@@ -655,7 +660,7 @@ upgradeAURPkgs_1 Swedish    = "Hämtar paketinformation..."
 upgradeAURPkgs_1 German     = "Rufe Paketinformationen ab..."
 upgradeAURPkgs_1 Spanish    = "Obteniendo información de paquetes..."
 upgradeAURPkgs_1 Portuguese = "Obtendo informação dos pacotes..."
-upgradeAURPkgs_1 French     = "Obtention des informations des paquets en cours…"
+upgradeAURPkgs_1 French     = "Obtention des informations des paquets en cours..."
 upgradeAURPkgs_1 Russian    = "Сборка информации о пакетах..."
 upgradeAURPkgs_1 Italian    = "Ottengo le informazioni del pacchetto..."
 upgradeAURPkgs_1 Serbian    = "Преузимање информација о пакетима..."
@@ -670,7 +675,7 @@ upgradeAURPkgs_2 Swedish    = "Jämför paket-versioner..."
 upgradeAURPkgs_2 German     = "Vergleiche Paketversionen..."
 upgradeAURPkgs_2 Spanish    = "Comparando versiones de paquetes..."
 upgradeAURPkgs_2 Portuguese = "Comparando versões dos pacotes..."
-upgradeAURPkgs_2 French     = "Comparaison des versions des paquets en cours…"
+upgradeAURPkgs_2 French     = "Comparaison des versions des paquets en cours..."
 upgradeAURPkgs_2 Russian    = "Сравнение версий пакетов..."
 upgradeAURPkgs_2 Italian    = "Confronto le ersioni del pacchetto..."
 upgradeAURPkgs_2 Serbian    = "Упоређивање верзија пакета..."
@@ -685,7 +690,7 @@ upgradeAURPkgs_3 Swedish    = "Inga AUR-paketsuppgraderingar behövs."
 upgradeAURPkgs_3 German     = "Keine AUR Paketaktualisierungen notwendig."
 upgradeAURPkgs_3 Spanish    = "No ha sido necesario actualizar paquetes de AUR."
 upgradeAURPkgs_3 Portuguese = "Nenhum pacote do AUR precisa de atualização."
-upgradeAURPkgs_3 French     = "Aucune mise à jour de paquets AUR n'est nécessaire."
+upgradeAURPkgs_3 French     = "Aucune mise à jour de paquet AUR n'est nécessaire."
 upgradeAURPkgs_3 Russian    = "Обновление пакетов из AUR не требуется."
 upgradeAURPkgs_3 Italian    = "Non è necessario aggiornare pacchetti di AUR."
 upgradeAURPkgs_3 Serbian    = "Ажурирање пакета из AUR-а није потребно."
@@ -700,7 +705,7 @@ downloadTarballs_1 p Swedish    = "Laddar ner " ++ bt p ++ " källkodspaket (tar
 downloadTarballs_1 p German     = "Lade Quelltext von " ++ bt p ++ " (tarball)..."
 downloadTarballs_1 p Spanish    = "Descargando los fuentes comprimidos (tarball) de " ++ bt p ++ " ..."
 downloadTarballs_1 p Portuguese = "Baixando os fontes (tarball) de " ++ bt p ++ " ..."
-downloadTarballs_1 p French     = "Téléchargement de l'archive de " ++ bt p ++ " en cours…"
+downloadTarballs_1 p French     = "Téléchargement de l'archive de " ++ bt p ++ " en cours..."
 downloadTarballs_1 p Russian    = "Загрузка исходного архива " ++ bt p ++ "..."
 downloadTarballs_1 p Italian    = "Downlaod del tarball di " ++ bt p ++ " in corso..."
 downloadTarballs_1 p Serbian    = "Преузимање архиве изворног кода за " ++ bt p ++ "..."
@@ -715,7 +720,7 @@ displayPkgbuild_1 p Swedish    = bt p ++ " finns inte."
 displayPkgbuild_1 p German     = bt p ++ " existiert nicht."
 displayPkgbuild_1 p Spanish    = bt p ++ " no existe."
 displayPkgbuild_1 p Portuguese = bt p ++ " não existe."
-displayPkgbuild_1 p French     = bt p ++ "n'existe pas."
+displayPkgbuild_1 p French     = bt p ++ " n'existe pas."
 displayPkgbuild_1 p Russian    = bt p ++ " не существует."
 displayPkgbuild_1 p Italian    = bt p ++ " inesistente."
 displayPkgbuild_1 p Serbian    = bt p ++ " не постоји."
@@ -730,7 +735,7 @@ removeMakeDepsAfter_1 Swedish    = "Tar bort obehövda beroenden för `make`..."
 removeMakeDepsAfter_1 German     = "Entferne nicht mehr benötigte make Abhängigkeiten..."
 removeMakeDepsAfter_1 Spanish    = "Removiendo dependencias make innecesarias..."
 removeMakeDepsAfter_1 Portuguese = "Removendo dependências `make` desnecessárias..."
-removeMakeDepsAfter_1 French     = "Suppression des dépendances inutiles…"
+removeMakeDepsAfter_1 French     = "Suppression des dépendances inutiles..."
 removeMakeDepsAfter_1 Russian    = "Удаление ненужных зависимостей make..."
 removeMakeDepsAfter_1 Italian    = "Rimuovo le dipendenze di compilazione..."
 removeMakeDepsAfter_1 Serbian    = "Уклањање непотребних зависности за изградњу..."
@@ -746,6 +751,7 @@ cleanStates_1 Croatian  = "Unos ne predstavlja broj."
 cleanStates_1 German    = "Eingabe ist keine gültige Zahl."
 cleanStates_1 Serbian   = "Улаз није валидан број."
 cleanStates_1 Norwegian = "Oppføringen er ikke et gyldig nummer."
+cleanStates_1 French    = "La valeur entrée n'est pas un nombre."
 cleanStates_1 _         = "Input isn't a valid number."
 
 -- NEEDS TRANSLATION
@@ -755,6 +761,7 @@ cleanStates_2 n Croatian  = bt (show n) ++ " stanja paketa će biti zadržano. U
 cleanStates_2 n German    = bt (show n) ++ " Paketzustände werden behalten. Den Rest entfernen?"
 cleanStates_2 n Serbian   = bt (show n) ++ " стања пакета ће бити сачувано. Уклонити остатак?"
 cleanStates_2 n Norwegian = bt (show n) ++ " pakketilstander vil bli beholdt. Vil du fjerne resten?"
+cleanStates_2 n French    = bt (show n) ++ " états des paquets vont être gardés. Supprimer le reste?"
 cleanStates_2 n _         = bt (show n) ++ " package states will be kept. Remove the rest?"
 
 -- NEEDS TRANSLATION
@@ -764,6 +771,7 @@ cleanStates_3 Croatian  = "Nijedno stanje paketa nije uklonjeno."
 cleanStates_3 German    = "Keine Paketzustände wurden entfernt."
 cleanStates_3 Serbian   = "Ниједно стање пакета није уклоњено."
 cleanStates_3 Norwegian = "Ingen pakketilstander ble fjernet."
+cleanStates_3 French    = "Aucun état des paquets n'a été supprimé."
 cleanStates_3 _         = "No package states were removed."
 
 ----------------------------
@@ -778,7 +786,7 @@ getDowngradeChoice_1 p Swedish    = "Vilken version av " ++ bt p ++ " vill du ha
 getDowngradeChoice_1 p German     = "Welche Version von " ++ bt p ++ " möchten Sie haben?"
 getDowngradeChoice_1 p Spanish    = "¿Qué versión de " ++ bt p ++ " quieres?"
 getDowngradeChoice_1 p Portuguese = "Qual versão de " ++ bt p ++ " deseja?"
-getDowngradeChoice_1 p French     = "Quelle version de " ++ bt p ++ " voulez-vous\xa0?"
+getDowngradeChoice_1 p French     = "Quelle version de " ++ bt p ++ " voulez-vous?"
 getDowngradeChoice_1 p Russian    = "Какую версию " ++ bt p ++ " вы хотите?"
 getDowngradeChoice_1 p Italian    = "Quale versione di " ++ bt p ++ " preferisci?"
 getDowngradeChoice_1 p Serbian    = "Коју верзију " ++ bt p ++ "-а желите?"
@@ -793,7 +801,7 @@ backupCache_1 Swedish    = "Ingen backup-plats specifierad."
 backupCache_1 German     = "Kein Sicherungsort angegeben."
 backupCache_1 Spanish    = "No se ha especificado localización para la copia de seguridad."
 backupCache_1 Portuguese = "Ainda não disse onde quer guardar o backup..."
-backupCache_1 French     = "Aucun lieu pour les copies de sauvegardes n'est spécifié."
+backupCache_1 French     = "Aucun lieu pour les copies de sauvegarde n'est spécifié."
 backupCache_1 Russian    = "Не указан путь к бэкапу."
 backupCache_1 Italian    = "Path per il salvataggio non specificato."
 backupCache_1 Serbian    = "Није дата путања ка бекапу."
@@ -853,7 +861,7 @@ backupCache_5 n Swedish    = "Paket-filer att ta backup på: " ++ bt (show n)
 backupCache_5 n German     = "Zu sichernde Paketdateien: " ++ bt (show n)
 backupCache_5 n Spanish    = "Ficheros de paquetes de los que se hará copia de seguridad: " ++ bt (show n)
 backupCache_5 n Portuguese = "Arquivos de pacotes para backup: " ++ bt (show n)
-backupCache_5 n French     = "Copie de sauvegarde des fichiers de paquets suivants\xa0: " ++ bt (show n)
+backupCache_5 n French     = "Copie de sauvegarde des fichiers de paquets suivants: " ++ bt (show n)
 backupCache_5 n Russian    = "Упакуйте файлы для бэкапа: " ++ bt (show n)
 backupCache_5 n Italian    = "File del pacchetto da salvare: " ++ bt (show n)
 backupCache_5 n Serbian    = "Датотеке за бекап: " ++ bt (show n)
@@ -868,7 +876,7 @@ backupCache_6 Swedish    = "Fortsätt med backup?"
 backupCache_6 German     = "Sicherung fortsetzen?"
 backupCache_6 Spanish    = "¿Proceder con la copia de seguridad?"
 backupCache_6 Portuguese = "Proceder com o backup?"
-backupCache_6 French     = "Procéder à la copie de sauvegarde\xa0?"
+backupCache_6 French     = "Procéder à la copie de sauvegarde?"
 backupCache_6 Russian    = "Продолжить создание бэкапа?"
 backupCache_6 Italian    = "Procedere con il salvataggio?"
 backupCache_6 Serbian    = "Наставити бекаповање?"
@@ -898,7 +906,7 @@ backupCache_8 Swedish    = "Tar backup. Det här kan ta ett tag..."
 backupCache_8 German     = "Sichere. Dies kann ein paar Minuten dauern..."
 backupCache_8 Spanish    = "Haciendo copia de seguridad. Esto puede tardar unos minutos..."
 backupCache_8 Portuguese = "Efetuando backup. Isso pode levar alguns minutos..."
-backupCache_8 French     = "Copie de sauvegarde en cours. Ceci peut prendre quelques minutes…"
+backupCache_8 French     = "Copie de sauvegarde en cours. Ceci peut prendre quelques minutes..."
 backupCache_8 Russian    = "Создается бэкап. Это может занять пару минут..."
 backupCache_8 Italian    = "Salvataggio. Questo potrebbe richiedere qualche minuto..."
 backupCache_8 Serbian    = "Бекапујем. Ово може да потраје пар минута..."
@@ -958,7 +966,7 @@ cleanCache_2 Swedish    = "Detta kommer ta bort HELA paket-cachen."
 cleanCache_2 German     = "Dies wird den GESAMTEN Paketcache leeren."
 cleanCache_2 Spanish    = "Esto eliminará POR COMPLETO la caché de paquetes."
 cleanCache_2 Portuguese = "Isso eliminara TODOS OS PACOTES do cache."
-cleanCache_2 French     = "Ceci va COMPLÉTEMENT supprimer le cache des paquets."
+cleanCache_2 French     = "Ceci va COMPLÈTEMENT supprimer le cache des paquets."
 cleanCache_2 Russian    = "Это действие ВСЕЦЕЛО уничтожит кэш пакетов."
 cleanCache_2 Italian    = "Questo cancellera l'INTERA cache dei pacchetti."
 cleanCache_2 Serbian    = "Ово ће избрисати ЦЕО кеш пакета."
@@ -988,7 +996,7 @@ cleanCache_4 Swedish    = "Resten kommer att tas bort. Är det OK?"
 cleanCache_4 German     = "Der Rest wird gelöscht. Ist das OK?"
 cleanCache_4 Spanish    = "El resto se eliminará. ¿OK?"
 cleanCache_4 Portuguese = "O resto será deletado. OK?"
-cleanCache_4 French     = "Le reste sera supprimé. Êtes-vous d'accord\xa0?"
+cleanCache_4 French     = "Le reste sera supprimé. Êtes-vous d'accord?"
 cleanCache_4 Russian    = "Всё остальное будет удалено. Годится?"
 cleanCache_4 Italian    = "Il resto verrà mantenuto. Continuare?"
 cleanCache_4 Serbian    = "Остатак ће бити избрисан. Да ли је то у реду?"
@@ -1018,7 +1026,7 @@ cleanCache_6 Swedish    = "Rensar paket-cache..."
 cleanCache_6 German     = "Säubere Paketcache..."
 cleanCache_6 Spanish    = "Limpiando la caché de paquetes..."
 cleanCache_6 Portuguese = "Limpando cache de pacotes..."
-cleanCache_6 French     = "Nettoyage du cache des paquets…"
+cleanCache_6 French     = "Nettoyage du cache des paquets..."
 cleanCache_6 Russian    = "Очистка кэша пакета..."
 cleanCache_6 Italian    = "Ripulisco la cache..."
 cleanCache_6 Serbian    = "Чишћење кеша..."
@@ -1029,12 +1037,14 @@ cleanNotSaved_1 :: Language -> String
 cleanNotSaved_1 Japanese  = "不要パッケージファイルを確認・・・"
 cleanNotSaved_1 German    = "Bestimme nicht benötigte Paketdateien..."
 cleanNotSaved_1 Norwegian = "Finner unødige pakkefiler..."
+cleanNotSaved_1 French    = "Détermination des fichiers de paquet non-nécessaires..."
 cleanNotSaved_1 _         = "Determining unneeded package files..."
 
 cleanNotSaved_2 :: Int -> Language -> String
 cleanNotSaved_2 s Japanese  = "「" ++ cyan (show s) ++ "」の不要パッケージファイルあり。削除？"
 cleanNotSaved_2 s German    = cyan (show s) ++ " nicht benötigte Paketdateien gefunden. Löschen?"
 cleanNotSaved_2 s Norwegian = cyan (show s) ++ " unødige pakkefiler funnet. Vil du slette?"
+cleanNotSaved_2 s French    = cyan (show s) ++ " paquets non-nécessaires trouvés? Supprimer?"
 cleanNotSaved_2 s _         = cyan (show s) ++ " unneeded package files found. Delete?"
 
 ----------------------------
@@ -1049,7 +1059,7 @@ logLookUpFields Swedish    = [ "Paket","Första installation","Uppgraderingar","
 logLookUpFields German     = [ "Paket","Erste Installation","Aktualisierungen","Letzte Aktionen" ]
 logLookUpFields Spanish    = [ "Paquete","Primera instalación","Actualizaciones","Acciones Recientes" ]
 logLookUpFields Portuguese = [ "Pacote","Primeira instalação","Atualizações","Ações Recentes" ]
-logLookUpFields French     = [ "Paquet","Première installation","Mises à jours\xa0","Actions récentes" ]
+logLookUpFields French     = [ "Paquet","Première installation","Mises à jours","Actions récentes" ]
 logLookUpFields Russian    = [ "Пакет","Первая установка","Обновления","Недавние действия" ]
 logLookUpFields Italian    = [ "Package","Prima installazione","Upgrades","Azioni recenti" ]
 logLookUpFields Serbian    = [ "Пакет","Прва инсталација","Ажурирања","Недавне радње" ]
@@ -1064,7 +1074,7 @@ reportNotInLog_1 Swedish    = "Dessa har inte framkommit i loggfiler:"
 reportNotInLog_1 German     = "Diese sind nicht in der Logdatei aufgetaucht:"
 reportNotInLog_1 Spanish    = "Estos no aparecen en el fichero log:"
 reportNotInLog_1 Portuguese = "Os seguintes não apareceram no log de arquivo:"
-reportNotInLog_1 French     = "Ceci n'apparaît pas des les journaux (log)\xa0:"
+reportNotInLog_1 French     = "Ceci n'apparaît pas des les journaux (log):"
 reportNotInLog_1 Russian    = "Следующих пакетов нет в лог-файле:"
 reportNotInLog_1 Italian    = "Questo non apparirà nei file di log;"
 reportNotInLog_1 Serbian    = "Ови пакети се не спомињу у дневнику:"
@@ -1078,12 +1088,14 @@ cleanABSTree_1 :: Language -> String
 cleanABSTree_1 Japanese  = "ABS Treeの中身を削除？"
 cleanABSTree_1 German    = "Den gesamten ABS Baum löschen?"
 cleanABSTree_1 Norwegian = "Slett hele ABS-treet?"
+cleanABSTree_1 French    = "Supprimer l'entier de l'arbre ABS?"
 cleanABSTree_1 _         = "Delete the entire ABS Tree?"
 
 cleanABSTree_2 :: Language -> String
 cleanABSTree_2 Japanese  = "ABS Treeの中身を削除中・・・"
 cleanABSTree_2 German    = "Lösche ABS Baum..."
 cleanABSTree_2 Norwegian = "Renser ABS-treet..."
+cleanABSTree_2 French    = "Suppression de l'arbre ABS..."
 cleanABSTree_2 _         = "Clearing out ABS Tree..."
 
 ----------------------
@@ -1113,7 +1125,7 @@ auraOperTitle Swedish    = "Aura-specifika operationer:"
 auraOperTitle German     = "Aura-spezifische Operationen:"
 auraOperTitle Spanish    = "Operaciones Exclusivas de Aura:"
 auraOperTitle Portuguese = "Operações exclusivas do Aura:"
-auraOperTitle French     = "Opérations propres à Aura\xa0:"
+auraOperTitle French     = "Opérations propres à Aura:"
 auraOperTitle Russian    = "Специфичные для aura действия:"
 auraOperTitle Italian    = "Operazioni esclusive di Aura:"
 auraOperTitle Serbian    = "Аура-специфичне операције:"
@@ -1128,7 +1140,7 @@ aurSy Swedish    = green "Utför åtgärder involverandes [A]UR.\n" ++ "Standard
 aurSy German     = green "Führe Aktionen aus die das [A]UR betreffen.\n" ++ "Standardaktion installiert aus dem AUR."
 aurSy Spanish    = green "Realizar acciones relacionadas con el [A]UR.\n" ++ "La acción por defecto es instalar desde AUR."
 aurSy Portuguese = green "Realizar ações envolvendo o [A]UR.\n" ++ "Ação padrão instala do AUR."
-aurSy French     = green "Actions impliquant [A]UR.\n" ++ "Par default, installe depuis AUR."
+aurSy French     = green "Actions impliquant [A]UR.\n" ++ "Par défaut, installe depuis AUR."
 aurSy Russian    = green "Совершить действия с участием [A]UR.\n" ++ "Действие по умолчанию устанавливает из AUR."
 aurSy Italian    = green "Azioni riguardanti [A]UR.\n" ++ "Di default installa da AUR."
 aurSy Serbian    = green "Извршава радње везане за [A]UR.\n" ++ "Уобичајена радња инсталира из AUR-а."
@@ -1137,6 +1149,7 @@ aurSy Norwegian  = green "Utfør handlinger som innebærer [A]UR.\n" ++ "Standar
 absSy :: Language -> String
 absSy German    = magenta "Führe Aktionen aus die den ABS Baum betreffen.\n" ++ "Standardaktion baut [M]anuell aus ABS."
 absSy Norwegian = magenta "Utfør handlinger som involverer ABS-treet.\n" ++ "Standard-handling bygger [M]anuelt fra ABS."
+absSy French    = magenta "Effectue une action impliquant l'arbre ABS.\n" ++ "Par défaut, installe [M]anuellement depuis ABS."
 absSy _         = magenta "Perform actions involving the ABS tree.\n" ++ "Default action [M]anually builds from ABS."
 
 -- NEEDS TRANSLATION
@@ -1146,6 +1159,7 @@ saveS Croatian  = yellow "Upravlja spremanjem i vraćanjem globalnog stanja pake
 saveS German    = yellow "Verwalte das [S]peichern und Wiederherstellen des globalen Paketzustände.\n" ++ "Standardaktion sichert die Zustände."
 saveS Serbian   = yellow "Управља чувањем и враћањем глобалног стања пакета.\n" ++ "Уобичајена радња чува тренутно стање."
 saveS Norwegian = yellow "Administer lagring og gjenoppretting av den globale pakketilstanden.\n" ++ "Standard-handling lagrer denne tilstanden."
+saveS French    = yellow "Gestion de la [S]auvegarde et restauration de l'état global des paquets.\n" ++ "Par défaut, sauvegarde l'état actuel."
 saveS _         = yellow "Manage the [S]aving and restoring of the global package state.\n" ++ "Default action saves this state."
 
 downG :: Language -> String
@@ -1157,7 +1171,7 @@ downG Swedish    = red "Utför åtgärder involverandes paket-[C]ache.\n" ++ "St
 downG German     = red "Führe Aktionen aus die den Paket[C]ache betreffen.\n" ++ "Standardaktion downgradet gegebene Pakete."
 downG Spanish    = red "Realizar acciones relacionadas con la [C]aché.\n" ++ "La acción por defecto es retornar a versiones antiguas de los paquetes especificados."
 downG Portuguese = red "Realiza ações relacionadas ao [C]ache.\n" ++ "Ação padrão retorna os pacotes informados às suas versões anteriores."
-downG French     = red "Actions impliquant le [C]ache des paquets.\n" ++ "Par default, rétrograde les paquets spécifiés."
+downG French     = red "Actions impliquant le [C]ache des paquets.\n" ++ "Par défaut, rétrograde les paquets spécifiés."
 downG Russian    = red "Совершить действия с участием кэша пакета ([C]ache).\n" ++ "Действие по умолчанию откатывает данные пакеты к старым версиям."
 downG Italian    = red "Azioni riguardanti la [C]ache dei pacchetti.\n" ++ "Di default retrocede il pacchetti."
 downG Serbian    = red "Извршава радње везане за кеш пакета.\n" ++ "Уобичајена радња враћа претходну верзију датих пакета."
@@ -1172,7 +1186,7 @@ viewL Swedish    = cyan "Utför åtgärder involverandes pacmans [L]ogfil.\n" ++
 viewL German     = cyan "Führe Aktionen aus die die Pacman [L]ogdatei betreffen.\n" ++ "Standardaktion öffnet den Log (nur Lesen)"
 viewL Spanish    = cyan "Realizar acciones relacionadas con el fichero [L]og de pacman.\n" ++ "La acción por defecto es abrir el log en modo sólo lectura."
 viewL Portuguese = cyan "Realiza ações relacionadas ao [L]ogfile do Pacman.\n" ++ "Ação padrão abre o arquivo de log apenas para leitura."
-viewL French     = cyan "Actions impliquant le [L]ogfile (journal) de Pacman.\n" ++ "Par default, ouvre le journal en lecture seule."
+viewL French     = cyan "Actions impliquant le [L]ogfile (journal) de Pacman.\n" ++ "Par défaut, ouvre le journal en lecture seule."
 viewL Russian    = cyan "Совершить действия с участием [L]og-файлов pacman.\n" ++ "Действие по умолчанию открывает лог для просмотра в режиме для чтения."
 viewL Italian    = cyan "Azioni riguardanti i [L]ogfile di pacman.\n" ++ "Di default visualizza il log in sola lettura."
 viewL Serbian    = cyan "Извршава радње везане за pacman-ов дневник.\n" ++ "Уобичајена радња даје преглед дневника."
@@ -1187,7 +1201,7 @@ orpha Swedish    = blue "Utför åtgärder involverandes [O]rphan-paket.\n" ++ "
 orpha German     = blue "Führe Aktionen aus die verwaiste ([O]rphans) Pakete betreffen.\n" ++ "Standardaktion listet alle verwaisten Pakete auf."
 orpha Spanish    = blue "Realizar acciones relacionadas con paquetes huérfanos ([O]rphan).\n" ++ "La acción por defecto es listar todos los paquetes huérfanos."
 orpha Portuguese = blue "Realiza ações com pacotes [O]rfãos.\n" ++ "Ação padrão lista todos os pactes orfãos."
-orpha French     = blue "Actions impliquant les paquets [O]rphelins.\n" ++ "Par default, liste l'ensemble des paquets orphelins."
+orpha French     = blue "Actions impliquant les paquets [O]rphelins.\n" ++ "Par défaut, liste l'ensemble des paquets orphelins."
 orpha Russian    = blue "Совершить действия с участием [O]сиротевших пакетов.\n" ++ "Действие по умолчанию берёт в расчёт все осиротевшие пакеты."
 orpha Italian    = blue "Azioni riguardanti i pacchetti [O]rfani.\n" ++ "Di default elenca i pacchetti orfani."
 orpha Serbian    = blue "Извршава радње везане за пакете без родитеља.\n" ++ "Уобичајена радња листа пакете без родитеља."
@@ -1203,6 +1217,7 @@ getAURPkgInfo_1 Croatian  = "Pristup AUR-u nije uspio. Provjerite vašu vezu."
 getAURPkgInfo_1 German    = "AUR API Suche fehlgeschlagen. Bitte überprüfen Sie Ihre Verbindung."
 getAURPkgInfo_1 Serbian   = "Приступ AUR-у није успео. Проверите вашу везу."
 getAURPkgInfo_1 Norwegian = "AUR API-oppslag feilet. Vennligst sjekk tilkoblingen din."
+getAURPkgInfo_1 French    = "La recherche dans l'API AUR a échoué. Vérifiez votre connexion."
 getAURPkgInfo_1 _         = "AUR API lookup failed. Please check your connection."
 
 -- `Maintainer` value NEEDS UPDATING!
@@ -1215,7 +1230,7 @@ infoFields Swedish    = [ "Repository","Namn","Version","AUR Status","Maintainer
 infoFields German     = [ "Repository","Name","Version","AUR Status","Maintainer","Projekt URL","AUR URL","Lizenz","Stimmen","Beschreibung" ]
 infoFields Spanish    = [ "Repository","Nombre","Versión","Estado en AUR","Maintainer","URL del proyecto","URL en AUR","Licencia", "Votos","Descripción" ]
 infoFields Portuguese = [ "Repositório","Nome","Versão","Estado no AUR","Maintainer","URL do projeto","URL no AUR","Licença", "Votos","Descrição" ]
-infoFields French     = [ "Dépôt","Nom","Version","AUR Statut","Maintainer","URL du projet","URL AUR","License", "Votes","Description" ]
+infoFields French     = [ "Dépôt","Nom","Version","Statut de AUR","Mainteneur","URL du projet","URL AUR","Licence", "Votes","Description" ]
 infoFields Russian    = [ "Репозиторий","Название","Версия","Статус в AUR","Maintainer","URL проекта","URL в AUR","Лицензия", "Рейтинг","Описание" ]
 infoFields Italian    = [ "Repository","Nome","Versione","Stato in AUR","Maintainer","URL","URL AUR","Licenza","Voti","Descrizione" ]
 infoFields Serbian    = [ "Ризница","Име","Верзија","Статус у AUR-у","Maintainer","Страница пројекта","Страница у AUR-у","Лиценца","Гласови","Опис" ]
@@ -1238,7 +1253,7 @@ outOfDateMsg True  Spanish    = red "¡Desactualizado!"
 outOfDateMsg False Spanish    = green "Actualizado"
 outOfDateMsg True  Portuguese = red "Desatualizado!"
 outOfDateMsg False Portuguese = green "Atualizado"
-outOfDateMsg True  French     = red "Périmé\xa0!"
+outOfDateMsg True  French     = red "Périmé!"
 outOfDateMsg False French     = green "À jour"
 outOfDateMsg True  Russian    = red "Устарел!"
 outOfDateMsg False Russian    = green "Новейший"
@@ -1254,6 +1269,7 @@ orphanedMsg (Just m) _        = bForeground m
 orphanedMsg Nothing Japanese  = red "いない"
 orphanedMsg Nothing German    = red "Verwaist!"
 orphanedMsg Nothing Norwegian = red "Foreldreløs!"
+orphanedMsg Nothing French    = red "Orphelin!"
 orphanedMsg Nothing _         = red "Orphaned!"
 
 -----------------------
@@ -1264,39 +1280,46 @@ absSync_1 :: Language -> String
 absSync_1 Japanese  = "ローカルABS Treeを同期？"
 absSync_1 German    = "Lokalen ABS Baum synchronisieren?"
 absSync_1 Norwegian = "Synkroniser det lokale ABS-treet?"
+absSync_1 French    = "Synchroniser l'arbre ABS local?"
 absSync_1 _         = "Sync the local ABS Tree?"
 
 absSync_2 :: Language -> String
 absSync_2 Japanese  = "ローカルABS Treeを同期中・・・"
 absSync_2 German    = "Synchronisiere lokalen ABS Baum..."
 absSync_2 Norwegian = "Synkroniserer det lokale ABS-treet..."
+absSync_2 French    = "Synchronisation de l'arbre ABS local..."
 absSync_2 _         = "Syncing local ABS Tree..."
 
 singleSync_1 :: String -> Language -> String
 singleSync_1 p Japanese  = bt p ++ "をABS Treeに同期・・・"
 singleSync_1 p German    = "Synchronisiere " ++ bt p ++ " in den lokalen ABS Baum..."
 singleSync_1 p Norwegian = "Synkroniserer " ++ bt p ++ " til det lokale ABS-treet..."
+singleSync_1 p French    = "Synchronisation de " ++ bt p ++ " dans l'arbre ABS local..."
 singleSync_1 p _         = "Syncing " ++ bt p ++ " to the local ABS Tree..."
 
 absInfoFields :: Language -> [String]
 absInfoFields German    = [ "Quelle","Name","Version","Hängt ab von","Make Abh.","Beschreibung"]
 absInfoFields Norwegian = [ "Depot","Navn","Versjon","Er avhengig av","Make Deps","Beskrivelse"]
+absInfoFields French    = [ "Dépôt","Nom","Version","Dépendances","Dépendances de compilation","Description" ]
 absInfoFields _         = [ "Repository","Name","Version","Depends On","Make Deps","Description" ]
 
 repository_1 :: String -> Language -> String
 repository_1 p Japanese  = p ++ "はどのリポジトリにもない。"
 repository_1 p German    = p ++ " ist kein Paket in irgendeiner Quelle."
 repository_1 p Norwegian = p ++ " er ikke en pakke i noe depot."
+repository_1 p French    = p ++ " n'est un paquet dans aucun des dépôts."
 repository_1 p _         = p ++ " is not a package in any repository."
 
 pkgBuildKeyMissing :: Language -> String -> String
 pkgBuildKeyMissing German    key = "Kann Schlüssel " ++ key ++ " nicht aus PKGBUILD parsen."
 pkgBuildKeyMissing Norwegian key = "Forstår ikke " ++ key ++ " fra PKGBUILD."
+pkgBuildKeyMissing French    key = "Impossible de parser la clef " ++ key ++ " depuis le PKGBUILD."
 pkgBuildKeyMissing _         key = "Unable to parse key " ++ key ++ " from PKGBUILD."
 
 missingDescription :: Language -> String
 missingDescription German    = "Keine Beschreibung."
 missingDescription Norwegian = "Ingen beskrivelse."
+missingDescription French    = "Aucune description."
 missingDescription _         = "No description."
 
 -----------------------
@@ -1309,6 +1332,7 @@ saveState_1 Croatian  = "Stanje paketa spremljeno."
 saveState_1 German    = "Paketzustände gesichert."
 saveState_1 Serbian   = "Сачувано стање пакета."
 saveState_1 Norwegian = "Lagret pakketilstand."
+saveState_1 French    = "État des paquets sauvegardé."
 saveState_1 _         = "Saved package state."
 
 -- NEEDS TRANSLATION
@@ -1318,6 +1342,7 @@ restoreState_1 Croatian  = "Tražene stare verzije nisu dostupne za:"
 restoreState_1 German    = "Gewünschte Downgradeversionen nicht Verfügbar für:"
 restoreState_1 Serbian   = "Захтеване старе верзије нису доступне за:"
 restoreState_1 Norwegian = "De spesifiserte nedgraderingsversjonene er ikke tilgjengelig for:"
+restoreState_1 French    = "Version de rétrogradation requise non disponible pour:"
 restoreState_1 _         = "Requested downgrade versions not available for:"
 
 -- NEEDS TRANSLATION
@@ -1327,6 +1352,7 @@ reinstallAndRemove_1 Croatian  = "Nema paketa kojima su potrebne izmjene."
 reinstallAndRemove_1 German    = "Keine Pakete brauchen Änderungen."
 reinstallAndRemove_1 Serbian   = "Ниједан пакет не захтева измене."
 reinstallAndRemove_1 Norwegian = "Ingen pakker trenger forandring."
+reinstallAndRemove_1 French    = "Aucun paquet n'a besoin de changement."
 reinstallAndRemove_1 _         = "No packages need changing."
 
 --------------------------------------
@@ -1339,6 +1365,7 @@ circDep_1 p Croatian  = "Ima kružnu zavisnost sa " ++ bt p ++ "."
 circDep_1 p German    = "Hat eine zirkuläre Abhängigkeit mit " ++ bt p ++ "."
 circDep_1 p Serbian   = "Има кружну зависност са " ++ bt p ++ "."
 circDep_1 p Norwegian = "Har en sirkulær avhengighet med " ++ bt p ++ "."
+circDep_1 p French    = "A une dépendance circulaire avec " ++ bt p ++ "."
 circDep_1 p _         = "Has a circular dependency with " ++ bt p ++ "."
 
 -- NEEDS TRANSLATION
@@ -1348,6 +1375,7 @@ bashisms_1 Croatian  = "Previše „bash-izama“ u PKGBUILD-u."
 bashisms_1 German    = "Zu viele „bashismen“ im PKGBUILD."
 bashisms_1 Serbian   = "Превише „bash-изама“ у PKGBUILD-у."
 bashisms_1 Norwegian = "For mange „bashismer“ i PKGBUILD."
+bashisms_1 French    = "Trop de \"bashisms\" dans le PKGBUILD."
 bashisms_1 _         = "Too many bashisms in PKGBUILD."
 
 ------------------------
@@ -1360,6 +1388,7 @@ pacmanFailure_1 Croatian  = "Provjerite vaš unos."
 pacmanFailure_1 German    = "Bitte überprüfen Sie Ihre Eingabe."
 pacmanFailure_1 Serbian   = "Молим Вас, проверите ваш унос."
 pacmanFailure_1 Norwegian = "Vennligst sjekk din oppføring."
+pacmanFailure_1 French    = "Merci de vérifier les donnés entrées."
 pacmanFailure_1 _         = "Please check your input."
 
 ----------------------------------
@@ -1374,7 +1403,7 @@ hotEdit_1 p Swedish    = "Vill du ändra PKGBUILD-filen ifrån " ++ bt p ++ "?"
 hotEdit_1 p German     = "Möchten Sie die PKGBUILD-Datei für " ++ bt p ++ " bearbeiten?"
 hotEdit_1 p Spanish    = "¿Te gustaría editar el PKGBUILD de " ++ bt p ++ "?"
 hotEdit_1 p Portuguese = "Desejaria editar o PKGBUILD de " ++ bt p ++ "?"
-hotEdit_1 p French     = "Voulez-vous éditer le PKGBUILD de " ++ bt p ++ "\xa0?"
+hotEdit_1 p French     = "Voulez-vous éditer le PKGBUILD de " ++ bt p ++ "?"
 hotEdit_1 p Russian    = "Отредактировать PKGBUILD пакета " ++ bt p ++ "?"
 hotEdit_1 p Italian    = "Volete modificare il PKGBUILD di " ++ bt p ++ "?"
 hotEdit_1 p Serbian    = "Желите ли да измените PKGBUILD за " ++ bt p ++ "?"
@@ -1385,4 +1414,5 @@ customizepkg_1 Japanese  = bt "customizepkg" ++ "はインストールされて�
 customizepkg_1 Croatian  = bt "customizepkg" ++ "nije instaliran."
 customizepkg_1 German    = bt "customizepkg" ++ "ist nicht installiert."
 customizepkg_1 Norwegian = bt "customizepkg" ++ "er ikke installert."
+customizepkg_1 French    = bt "customizepkg" ++ "n'est pas installé."
 customizepkg_1 _         = bt "customizepkg" ++ "isn't installed."
