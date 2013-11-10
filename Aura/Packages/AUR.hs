@@ -44,6 +44,7 @@ import           Aura.Utils          (scoldAndFail)
 import           Aura.Monad.Aura
 import           Aura.Languages
 import           Aura.Pkgbuild.Base
+import           Aura.Settings.Base
 import           Aura.Core
 
 import           Utilities           (decompress)
@@ -151,8 +152,12 @@ getAURPkgInfo items t = do
   infoJSON <- liftIO . urlContents . rpcUrl t $ items
   case resultToEither $ parseInfoJSON infoJSON of
     Left _     -> scoldAndFail getAURPkgInfo_1
-    Right info -> return info'
-      where info' = sortBy (\x y -> compare (votesOf y) (votesOf x)) info
+    Right info -> do
+      scheme <- asks sortSchemeOf
+      let compare' = case scheme of
+                       ByVote         -> \x y -> compare (votesOf y) (votesOf x)
+                       Alphabetically -> \x y -> compare (nameOf x) (nameOf y)
+      return $ sortBy compare' info
 
 parseInfoJSON :: String -> Result [PkgInfo]
 parseInfoJSON json = decode json >>= apiFailCheck >>= forgePkgInfo

@@ -1,6 +1,13 @@
 Aura Changelog
 ==============
-1.2.2.2
+1.2.1.3
+-------
+- Have a good Remembrance Day.
+- `-As` results now sort by vote. Use `--abc` to sort alphabetically.
+- Updated Italian translation
+- Fixed Bash parsing bug
+
+1.2.1.2
 -------
 - Happy Canadian Thanksgiving
 - Bug fixes

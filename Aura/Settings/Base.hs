@@ -19,13 +19,15 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Settings.Base ( Settings(..) ) where
+module Aura.Settings.Base ( Settings(..), SortScheme(..) ) where
 
 import Aura.Languages (Language)
 
 import Shell (Environment)
 
 ---
+
+data SortScheme = ByVote | Alphabetically deriving (Eq,Show)
 
 -- The global settings as set by the user with command-line flags.
 data Settings = Settings { inputOf         :: [String]
@@ -41,6 +43,7 @@ data Settings = Settings { inputOf         :: [String]
                          , buildPathOf     :: FilePath
                          , cachePathOf     :: FilePath
                          , logFilePathOf   :: FilePath
+                         , sortSchemeOf    :: SortScheme
                          , beQuiet         :: Bool
                          , suppressMakepkg :: Bool
                          , delMakeDeps     :: Bool

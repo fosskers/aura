@@ -42,12 +42,14 @@ module Aura.Flags
     , noPowerPillStatus
     , keepSourceStatus
     , buildABSDepsStatus
+    , sortSchemeStatus
     , Flag(..) ) where
 
 import System.Console.GetOpt
 import Data.Maybe (fromMaybe)
 
 import Aura.Colour.Text (yellow)
+import Aura.Settings.Base
 import Aura.Languages
 
 import Utilities (notNull, split)
@@ -78,6 +80,7 @@ data Flag = ABSInstall
           | Ignore String
           | BuildPath FilePath
           | BuildUser String
+          | ABCSort
           | DiffPkgbuilds
           | Devel
           | Customizepkg
@@ -145,6 +148,7 @@ auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
               , ( ['u'], ["sysupgrade"],   Upgrade       )
               , ( ['w'], ["downloadonly"], Download      )
               , ( ['x'], ["unsuppress"],   Unsuppress    )
+              , ( [],    ["abc"],          ABCSort       )
               , ( [],    ["absdeps"],      BuildABSDeps  )
               , ( [],    ["allsource"],    KeepSource    )
               , ( [],    ["auradebug"],    Debug         )
@@ -212,7 +216,8 @@ reconvertFlag flagMap f = fromMaybe "" $ f `lookup` flagMap
 
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
-                , DelMDeps,Customizepkg,Quiet,NoPowerPill,KeepSource,BuildABSDeps ]
+                , DelMDeps,Customizepkg,Quiet,NoPowerPill,KeepSource,BuildABSDeps
+                , ABCSort ]
 
 -- Flags like `Ignore` and `BuildPath` have args, and thus can't be included
 -- in the `settingsFlags` list.
@@ -255,6 +260,7 @@ buildUser [] = Nothing
 buildUser (BuildUser u : _) = Just u
 buildUser (_:fs) = buildUser fs
 
+sortSchemeStatus   = fishOutFlag [(ABCSort,Alphabetically)] ByVote
 suppressionStatus  = fishOutFlag [(Unsuppress,False)] True
 delMakeDepsStatus  = fishOutFlag [(DelMDeps,True)] False
 confirmationStatus = fishOutFlag [(NoConfirm,False)] True
