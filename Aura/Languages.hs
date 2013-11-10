@@ -286,9 +286,10 @@ buildFail_5 Norwegian  = "Bygging feilet."
 
 -- NEEDS TRANSLATION
 buildFail_6 :: Language -> String
+buildFail_6 Japanese  = "それでも続行？"
 buildFail_6 Norwegian = "Vil du fortsette likevel?"
-buildFail_6 _         = "Would you like to continue anyway?"
 buildFail_6 Italian   = "Vuoi continuare comunque?"
+buildFail_6 _         = "Would you like to continue anyway?"
 
 displayBuildErrors_1 :: Language -> String
 displayBuildErrors_1 English    = "Dumping makepkg output in "
@@ -357,8 +358,8 @@ getRealPkgConflicts_2 p Norwegian  = bt p ++ " er en ignorert pakke! Sjekk din `
 -- NEEDS TRANSLATION
 missingPkg_1 :: String -> Language -> String
 missingPkg_1 p Norwegian = "Avhengigheten " ++ bt p ++ " ble ikke funnet. Du kan søke etter en pakke som tilfredsstiller avhengigheten."
-missingPkg_1 p _         = "The dependency " ++ bt p ++ " could not be found. You may need to search for a package to satisfy it."
 missingPkg_1 p Italian   = "La dipendenza " ++ bt p ++ " non è stata trovata. Potrebbe essere necessario cercare un pacchetto che possa soddisfarla?"
+missingPkg_1 p _         = "The dependency " ++ bt p ++ " could not be found. You may need to search for a package to satisfy it."
 
 -----------------
 -- aura functions
@@ -543,8 +544,8 @@ reportPkgsToInstall_2 :: String -> Language -> String
 reportPkgsToInstall_2 l Japanese  = l ++ "のパッケージ:"
 reportPkgsToInstall_2 l German    = l ++ " Pakete:"
 reportPkgsToInstall_2 l Norwegian = l ++ " Pakker:"
-reportPkgsToInstall_2 l _         = l ++ " Packages:"
 reportPkgsToInstall_2 l Italian   = l ++ " Pacchetti:"
+reportPkgsToInstall_2 l _         = l ++ " Packages:"
 
 {-} 
 reportPkgsToInstall_2 :: String -> Language -> String
@@ -749,8 +750,8 @@ cleanStates_1 Croatian  = "Unos ne predstavlja broj."
 cleanStates_1 German    = "Eingabe ist keine gültige Zahl."
 cleanStates_1 Serbian   = "Улаз није валидан број."
 cleanStates_1 Norwegian = "Oppføringen er ikke et gyldig nummer."
-cleanStates_1 _         = "Input isn't a valid number."
 cleanStates_1 Italian   = "Non è un numero valido."
+cleanStates_1 _         = "Input isn't a valid number."
 
 -- NEEDS TRANSLATION
 cleanStates_2 :: Int -> Language -> String
@@ -759,8 +760,8 @@ cleanStates_2 n Croatian  = bt (show n) ++ " stanja paketa će biti zadržano. U
 cleanStates_2 n German    = bt (show n) ++ " Paketzustände werden behalten. Den Rest entfernen?"
 cleanStates_2 n Serbian   = bt (show n) ++ " стања пакета ће бити сачувано. Уклонити остатак?"
 cleanStates_2 n Norwegian = bt (show n) ++ " pakketilstander vil bli beholdt. Vil du fjerne resten?"
-cleanStates_2 n _         = bt (show n) ++ " package states will be kept. Remove the rest?"
 cleanStates_2 n Italian   = bt (show n) ++ " lo stato dei pacchetti sarà mantenuto. Rimuovere i rimanenti?"
+cleanStates_2 n _         = bt (show n) ++ " package states will be kept. Remove the rest?"
 
 -- NEEDS TRANSLATION
 cleanStates_3 :: Language -> String
@@ -769,8 +770,8 @@ cleanStates_3 Croatian  = "Nijedno stanje paketa nije uklonjeno."
 cleanStates_3 German    = "Keine Paketzustände wurden entfernt."
 cleanStates_3 Serbian   = "Ниједно стање пакета није уклоњено."
 cleanStates_3 Norwegian = "Ingen pakketilstander ble fjernet."
-cleanStates_3 _         = "No package states were removed."
 cleanStates_3 Italian   = "Nessuno stato di pacchetto verrà rimosso."
+cleanStates_3 _         = "No package states were removed."
 
 ----------------------------
 -- Aura/Commands/C functions
@@ -1035,15 +1036,15 @@ cleanNotSaved_1 :: Language -> String
 cleanNotSaved_1 Japanese  = "不要パッケージファイルを確認・・・"
 cleanNotSaved_1 German    = "Bestimme nicht benötigte Paketdateien..."
 cleanNotSaved_1 Norwegian = "Finner unødige pakkefiler..."
-cleanNotSaved_1 _         = "Determining unneeded package files..."
 cleanNotSaved_1 Italian   = "Determino i pacchetti non più necessari..."
+cleanNotSaved_1 _         = "Determining unneeded package files..."
 
 cleanNotSaved_2 :: Int -> Language -> String
 cleanNotSaved_2 s Japanese  = "「" ++ cyan (show s) ++ "」の不要パッケージファイルあり。削除？"
 cleanNotSaved_2 s German    = cyan (show s) ++ " nicht benötigte Paketdateien gefunden. Löschen?"
 cleanNotSaved_2 s Norwegian = cyan (show s) ++ " unødige pakkefiler funnet. Vil du slette?"
-cleanNotSaved_2 s _         = cyan (show s) ++ " unneeded package files found. Delete?"
 cleanNotSaved_2 s Italian   = cyan (show s) ++ " pacchetti non necessari trovati. Cancellarli?"
+cleanNotSaved_2 s _         = cyan (show s) ++ " unneeded package files found. Delete?"
 
 ----------------------------
 -- Aura/Commands/L functions
@@ -1086,15 +1087,15 @@ cleanABSTree_1 :: Language -> String
 cleanABSTree_1 Japanese  = "ABS Treeの中身を削除？"
 cleanABSTree_1 German    = "Den gesamten ABS Baum löschen?"
 cleanABSTree_1 Norwegian = "Slett hele ABS-treet?"
-cleanABSTree_1 _         = "Delete the entire ABS Tree?"
 cleanABSTree_1 Italian   = "Cancellare l'intero albero ABS?"
+cleanABSTree_1 _         = "Delete the entire ABS Tree?"
 
 cleanABSTree_2 :: Language -> String
 cleanABSTree_2 Japanese  = "ABS Treeの中身を削除中・・・"
 cleanABSTree_2 German    = "Lösche ABS Baum..."
 cleanABSTree_2 Norwegian = "Renser ABS-treet..."
-cleanABSTree_2 _         = "Clearing out ABS Tree..."
 cleanABSTree_2 Italian   = "Ripulisco l'abero ABS..."
+cleanABSTree_2 _         = "Clearing out ABS Tree..."
 
 ----------------------
 -- Aura/Flags functions
@@ -1156,8 +1157,8 @@ saveS Croatian  = yellow "Upravlja spremanjem i vraćanjem globalnog stanja pake
 saveS German    = yellow "Verwalte das [S]peichern und Wiederherstellen des globalen Paketzustände.\n" ++ "Standardaktion sichert die Zustände."
 saveS Serbian   = yellow "Управља чувањем и враћањем глобалног стања пакета.\n" ++ "Уобичајена радња чува тренутно стање."
 saveS Norwegian = yellow "Administer lagring og gjenoppretting av den globale pakketilstanden.\n" ++ "Standard-handling lagrer denne tilstanden."
-saveS _         = yellow "Manage the [S]aving and restoring of the global package state.\n" ++ "Default action saves this state."
 saveS Italian   = yellow "Gestisco il [S]alvataggio e ripristino dello stato globale dei pacchetti.\n" ++ "Salva lo stato in maniera predefinita."
+saveS _         = yellow "Manage the [S]aving and restoring of the global package state.\n" ++ "Default action saves this state."
 
 downG :: Language -> String
 downG English    = red "Perform actions involving the package [C]ache.\n" ++ "Default action downgrades given packages."
@@ -1214,8 +1215,8 @@ getAURPkgInfo_1 Croatian  = "Pristup AUR-u nije uspio. Provjerite vašu vezu."
 getAURPkgInfo_1 German    = "AUR API Suche fehlgeschlagen. Bitte überprüfen Sie Ihre Verbindung."
 getAURPkgInfo_1 Serbian   = "Приступ AUR-у није успео. Проверите вашу везу."
 getAURPkgInfo_1 Norwegian = "AUR API-oppslag feilet. Vennligst sjekk tilkoblingen din."
-getAURPkgInfo_1 _         = "AUR API lookup failed. Please check your connection."
 getAURPkgInfo_1 Italian   = "connessione ad AUR API fallita. Controllare la propria connessione."
+getAURPkgInfo_1 _         = "AUR API lookup failed. Please check your connection."
 
 -- `Maintainer` value NEEDS UPDATING!
 infoFields :: Language -> [String]
@@ -1276,47 +1277,47 @@ absSync_1 :: Language -> String
 absSync_1 Japanese  = "ローカルABS Treeを同期？"
 absSync_1 German    = "Lokalen ABS Baum synchronisieren?"
 absSync_1 Norwegian = "Synkroniser det lokale ABS-treet?"
-absSync_1 _         = "Sync the local ABS Tree?"
 absSync_1 Italian   = "Sincronizzare l'albero ABS locale?"
+absSync_1 _         = "Sync the local ABS Tree?"
 
 absSync_2 :: Language -> String
 absSync_2 Japanese  = "ローカルABS Treeを同期中・・・"
 absSync_2 German    = "Synchronisiere lokalen ABS Baum..."
 absSync_2 Norwegian = "Synkroniserer det lokale ABS-treet..."
-absSync_2 _         = "Syncing local ABS Tree..."
 absSync_2 Italian   = "Sincronizzo l'albero ABS locale..."
+absSync_2 _         = "Syncing local ABS Tree..."
 
 singleSync_1 :: String -> Language -> String
 singleSync_1 p Japanese  = bt p ++ "をABS Treeに同期・・・"
 singleSync_1 p German    = "Synchronisiere " ++ bt p ++ " in den lokalen ABS Baum..."
 singleSync_1 p Norwegian = "Synkroniserer " ++ bt p ++ " til det lokale ABS-treet..."
-singleSync_1 p _         = "Syncing " ++ bt p ++ " to the local ABS Tree..."
 singleSync_1 p Italian   = "Sincronizzo " ++ bt p ++ " nell'albero ABS locale..."
+singleSync_1 p _         = "Syncing " ++ bt p ++ " to the local ABS Tree..."
 
 absInfoFields :: Language -> [String]
 absInfoFields German    = [ "Quelle","Name","Version","Hängt ab von","Make Abh.","Beschreibung"]
 absInfoFields Norwegian = [ "Depot","Navn","Versjon","Er avhengig av","Make Deps","Beskrivelse"]
+absInfoFields Italian   = [ "Repository","Nome","Versione","Dipende da","Make Deps","Descrizione" ]
 absInfoFields _         = [ "Repository","Name","Version","Depends On","Make Deps","Description" ]
-absInfoFields ITalian   = [ "Repository","Nome","Versione","Dipende da","Make Deps","Descrizione" ]
 
 repository_1 :: String -> Language -> String
 repository_1 p Japanese  = p ++ "はどのリポジトリにもない。"
 repository_1 p German    = p ++ " ist kein Paket in irgendeiner Quelle."
 repository_1 p Norwegian = p ++ " er ikke en pakke i noe depot."
-repository_1 p _         = p ++ " is not a package in any repository."
 repository_1 p Italian   = p ++ " non è un pacchetto di nessun repository."
+repository_1 p _         = p ++ " is not a package in any repository."
 
 pkgBuildKeyMissing :: Language -> String -> String
 pkgBuildKeyMissing German    key = "Kann Schlüssel " ++ key ++ " nicht aus PKGBUILD parsen."
 pkgBuildKeyMissing Norwegian key = "Forstår ikke " ++ key ++ " fra PKGBUILD."
-pkgBuildKeyMissing _         key = "Unable to parse key " ++ key ++ " from PKGBUILD."
 pkgBuildKeyMissing Italian   key = "Inpossibile elaborare la chiave " ++ key ++ " dal PKGBUILD."
+pkgBuildKeyMissing _         key = "Unable to parse key " ++ key ++ " from PKGBUILD."
 
 missingDescription :: Language -> String
 missingDescription German    = "Keine Beschreibung."
 missingDescription Norwegian = "Ingen beskrivelse."
-missingDescription _         = "No description."
 missingDescription Italian   = "Nessuna Descrizione."
+missingDescription _         = "No description."
 
 -----------------------
 -- Aura/State functions
@@ -1328,8 +1329,8 @@ saveState_1 Croatian  = "Stanje paketa spremljeno."
 saveState_1 German    = "Paketzustände gesichert."
 saveState_1 Serbian   = "Сачувано стање пакета."
 saveState_1 Norwegian = "Lagret pakketilstand."
-saveState_1 _         = "Saved package state."
 saveState_1 Italian   = "Stato del pacchetto salvato."
+saveState_1 _         = "Saved package state."
 
 -- NEEDS TRANSLATION
 restoreState_1 :: Language -> String
@@ -1338,8 +1339,8 @@ restoreState_1 Croatian  = "Tražene stare verzije nisu dostupne za:"
 restoreState_1 German    = "Gewünschte Downgradeversionen nicht Verfügbar für:"
 restoreState_1 Serbian   = "Захтеване старе верзије нису доступне за:"
 restoreState_1 Norwegian = "De spesifiserte nedgraderingsversjonene er ikke tilgjengelig for:"
-restoreState_1 _         = "Requested downgrade versions not available for:"
 restoreState_1 Italian   = "Richiesta di retrocessione di versione non disponibile per:"
+restoreState_1 _         = "Requested downgrade versions not available for:"
 
 -- NEEDS TRANSLATION
 reinstallAndRemove_1 :: Language -> String
@@ -1348,8 +1349,8 @@ reinstallAndRemove_1 Croatian  = "Nema paketa kojima su potrebne izmjene."
 reinstallAndRemove_1 German    = "Keine Pakete brauchen Änderungen."
 reinstallAndRemove_1 Serbian   = "Ниједан пакет не захтева измене."
 reinstallAndRemove_1 Norwegian = "Ingen pakker trenger forandring."
-reinstallAndRemove_1 _         = "No packages need changing."
 reinstallAndRemove_1 Italian   = "Nessun pacchetto necessita cambiamenti."
+reinstallAndRemove_1 _         = "No packages need changing."
 
 --------------------------------------
 -- Aura/Settings/BadPackages functions
@@ -1361,8 +1362,8 @@ circDep_1 p Croatian  = "Ima kružnu zavisnost sa " ++ bt p ++ "."
 circDep_1 p German    = "Hat eine zirkuläre Abhängigkeit mit " ++ bt p ++ "."
 circDep_1 p Serbian   = "Има кружну зависност са " ++ bt p ++ "."
 circDep_1 p Norwegian = "Har en sirkulær avhengighet med " ++ bt p ++ "."
+circDep_1 p Italian   = "E' una dipendenza circolare di " ++ bt p ++ "."
 circDep_1 p _         = "Has a circular dependency with " ++ bt p ++ "."
-circDep_1 Italian     = "E' una dipendenza circolare di " ++ bt p ++ "."
 
 -- NEEDS TRANSLATION
 bashisms_1 :: Language -> String
@@ -1371,8 +1372,8 @@ bashisms_1 Croatian  = "Previše „bash-izama“ u PKGBUILD-u."
 bashisms_1 German    = "Zu viele „bashismen“ im PKGBUILD."
 bashisms_1 Serbian   = "Превише „bash-изама“ у PKGBUILD-у."
 bashisms_1 Norwegian = "For mange „bashismer“ i PKGBUILD."
-bashisms_1 _         = "Too many bashisms in PKGBUILD."
 bashisms_1 Italian   = "Troppo 'bashisms' nel PKGBUILD."
+bashisms_1 _         = "Too many bashisms in PKGBUILD."
 
 ------------------------
 -- Aura/Pacman functions
@@ -1384,8 +1385,8 @@ pacmanFailure_1 Croatian  = "Provjerite vaš unos."
 pacmanFailure_1 German    = "Bitte überprüfen Sie Ihre Eingabe."
 pacmanFailure_1 Serbian   = "Молим Вас, проверите ваш унос."
 pacmanFailure_1 Norwegian = "Vennligst sjekk din oppføring."
-pacmanFailure_1 _         = "Please check your input."
 pacmanFailure_1 Italian   = "Controllare il proprio input."
+pacmanFailure_1 _         = "Please check your input."
 
 ----------------------------------
 -- Aura/Pkgbuild/Editing functions
@@ -1410,5 +1411,5 @@ customizepkg_1 Japanese  = bt "customizepkg" ++ "はインストールされて�
 customizepkg_1 Croatian  = bt "customizepkg" ++ "nije instaliran."
 customizepkg_1 German    = bt "customizepkg" ++ "ist nicht installiert."
 customizepkg_1 Norwegian = bt "customizepkg" ++ "er ikke installert."
-customizepkg_1 _         = bt "customizepkg" ++ "isn't installed."
 customizepkg_1 Italian   = bt "customizepkg" ++ "non è installato."
+customizepkg_1 _         = bt "customizepkg" ++ "isn't installed."
