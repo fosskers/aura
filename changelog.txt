@@ -4,8 +4,9 @@ Aura Changelog
 -------
 - Have a good Remembrance Day.
 - `-As` results now sort by vote. Use `--abc` to sort alphabetically.
+- "[installed]" will now be shown in `-As` results if you have it.
 - Updated Italian translation
-- Fixed Bash parsing bug
+- Fixed Bash parsing bug involving `\` in arrays
 
 1.2.1.2
 -------
