@@ -33,6 +33,7 @@ module Aura.Commands.A
 import Text.Regex.PCRE ((=~))
 import Control.Monad
 import Data.Monoid
+import qualified Data.Set as Set (member, fromList)
 
 import           Aura.Install (InstallOptions(..))
 import qualified Aura.Install as I
@@ -122,14 +123,21 @@ renderAurPkgInfo ss info = entrify ss fields entries
 aurSearch :: [String] -> Aura ()
 aurSearch []    = return ()
 aurSearch regex = ask >>= \ss -> do
-    results <- aurSearchLookup regex
-    mapM_ (liftIO . putStrLn . renderSearch ss (unwords regex)) results
+    db       <- getForeignPackages >>= return . Set.fromList . map fst
+    results  <- aurSearchLookup regex >>= return . map (\x -> let n = nameOf x in (x, n `Set.member` db))
+    mapM_ (renderSearch ss (unwords regex)) results
 
-renderSearch :: Settings -> String -> PkgInfo -> String
-renderSearch ss r i = searchResult
+renderSearch :: Settings -> String -> (PkgInfo, Bool) -> Aura ()
+renderSearch ss r (i, e) = searchResult
     where searchResult = if beQuiet ss then sparseInfo else verboseInfo
-          sparseInfo  = nameOf i
-          verboseInfo = repo ++ n ++ " " ++ v ++ " (" ++ l ++ ")\n    " ++ d
+          sparseInfo  = do
+              case e of True -> liftIO $ putStrLn $ nameOf i ++ m
+                        _    -> liftIO $ putStrLn $ nameOf i
+                        
+          verboseInfo = do
+              case e of True -> liftIO $ putStrLn $ repo ++ n ++ " " ++ v ++ " (" ++ l ++ ")" ++ m ++ "\n    " ++ d
+                        _    -> liftIO $ putStrLn $ repo ++ n ++ " " ++ v ++ " (" ++ l ++ ")\n    " ++ d
+                        
           c cl cs = case cs =~ ("(?i)" ++ r) of
                       (b,m,a) -> cl b ++ bCyan m ++ cl a
           repo = magenta "aur/"
@@ -138,7 +146,8 @@ renderSearch ss r i = searchResult
           l = yellow . show . votesOf $ i  -- `l` for likes?
           v | isOutOfDate i = red $ latestVerOf i
             | otherwise     = green $ latestVerOf i
-
+          m = c bForeground $ " [installed]"
+                              
 displayPkgDeps :: [String] -> Aura ()
 displayPkgDeps ps = do
     opts <- installOptions
