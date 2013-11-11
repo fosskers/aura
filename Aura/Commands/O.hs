@@ -25,14 +25,14 @@ module Aura.Commands.O
     ( displayOrphans
     , adoptPkg ) where
 
-import Aura.Core   (getOrphans, sudo)
+import Aura.Core   (orphans, sudo)
 import Aura.Pacman (pacman)
 import Aura.Monad.Aura
 
 ---
 
 displayOrphans :: [String] -> Aura ()
-displayOrphans []   = getOrphans >>= liftIO . mapM_ putStrLn
+displayOrphans []   = orphans >>= liftIO . mapM_ putStrLn
 displayOrphans pkgs = adoptPkg pkgs
 
 adoptPkg :: [String] -> Aura ()

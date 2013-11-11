@@ -133,15 +133,15 @@ trueRoot action = ask >>= \ss ->
        if okay then action else notify trueRoot_2
 
 -- `-Qm` yields a list of sorted values.
-getForeignPackages :: Aura [(String,String)]
-getForeignPackages = (map fixName . lines) <$> pacmanOutput ["-Qm"]
+foreignPackages :: Aura [(String,String)]
+foreignPackages = (map fixName . lines) <$> pacmanOutput ["-Qm"]
     where fixName = hardBreak (== ' ')
 
-getOrphans :: Aura [String]
-getOrphans = lines <$> pacmanOutput ["-Qqdt"]
+orphans :: Aura [String]
+orphans = lines <$> pacmanOutput ["-Qqdt"]
 
-getDevelPkgs :: Aura [String]
-getDevelPkgs = (filter isDevelPkg . map fst) <$> getForeignPackages
+develPkgs :: Aura [String]
+develPkgs = (filter isDevelPkg . map fst) <$> foreignPackages
 
 isDevelPkg :: String -> Bool
 isDevelPkg p = any (`isSuffixOf` p) suffixes

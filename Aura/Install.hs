@@ -66,9 +66,9 @@ install opts pacOpts pkgs = ask >>= \ss ->
   if not $ delMakeDeps ss
      then install'
      else do  -- `-a` was used.
-       orphansBefore <- getOrphans
+       orphansBefore <- orphans
        install'
-       orphansAfter <- getOrphans
+       orphansAfter <- orphans
        let makeDeps = orphansAfter \\ orphansBefore
        unless (null makeDeps) $ do
          notify removeMakeDepsAfter_1

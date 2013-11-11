@@ -143,7 +143,7 @@ executeOpts (flags,input,pacOpts) =
     (Orphans:fs) ->
         case fs of
           []        -> O.displayOrphans input
-          [Abandon] -> sudo $ getOrphans >>= flip removePkgs pacOpts
+          [Abandon] -> sudo $ orphans >>= flip removePkgs pacOpts
           badFlags  -> scoldAndFail executeOpts_1
     [ViewConf]  -> viewConfFile
     [Languages] -> displayOutputLanguages
