@@ -71,7 +71,7 @@ upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
   let notIgnored p = splitName p `notElem` ignoredPkgsOf ss
   notify upgradeAURPkgs_1
   foreignPkgs <- filter (\(n,_) -> notIgnored n) <$> foreignPackages
-  pkgInfo     <- aurInfoLookup $ map fst foreignPkgs
+  pkgInfo     <- aurInfoLookup (map fst foreignPkgs) True
   let aurPkgs   = filter (\(n,_) -> n `elem` map nameOf pkgInfo) foreignPkgs
       toUpgrade = filter isntMostRecent $ zip pkgInfo (map snd aurPkgs)
   auraFirst <- auraCheck $ map (nameOf . fst) toUpgrade
@@ -100,7 +100,7 @@ develPkgCheck = ask >>= \ss ->
   if rebuildDevel ss then develPkgs else return []
 
 aurPkgInfo :: [String] -> Aura ()
-aurPkgInfo pkgs = aurInfoLookup pkgs >>= mapM_ displayAurPkgInfo
+aurPkgInfo pkgs = aurInfoLookup pkgs False >>= mapM_ displayAurPkgInfo
 
 displayAurPkgInfo :: PkgInfo -> Aura ()
 displayAurPkgInfo info = ask >>= \ss ->
@@ -124,7 +124,7 @@ aurSearch :: [String] -> Aura ()
 aurSearch []    = return ()
 aurSearch regex = ask >>= \ss -> do
     db      <- S.fromList . map fst <$> foreignPackages
-    results <- map (\x -> (x, nameOf x `S.member` db)) <$> aurSearchLookup regex
+    results <- map (\x -> (x, nameOf x `S.member` db)) <$> aurSearchLookup regex False
     mapM_ (liftIO . putStrLn . renderSearch ss (unwords regex)) results
 
 renderSearch :: Settings -> String -> (PkgInfo, Bool) -> String
