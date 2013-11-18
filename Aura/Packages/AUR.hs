@@ -151,7 +151,7 @@ aurSearchLookup regex = asks sortSchemeOf >>= \scheme ->
                         sortPkgInfo scheme <$> getAURPkgInfo regex PkgSearch
 
 aurInfoLookup :: [String] -> Aura [PkgInfo]
-aurInfoLookup pkgs = getAURPkgInfo pkgs MultiInfo
+aurInfoLookup pkgs = sortPkgInfo Alphabetically <$> getAURPkgInfo pkgs MultiInfo
 
 getAURPkgInfo :: [String] -> RPCType -> Aura [PkgInfo]
 getAURPkgInfo [] _    = return []
@@ -159,7 +159,7 @@ getAURPkgInfo items t = do
   infoJSON <- liftIO . urlContents . rpcUrl t $ items
   case resultToEither $ parseInfoJSON infoJSON of
     Left _     -> scoldAndFail getAURPkgInfo_1
-    Right info -> return $ sortPkgInfo Alphabetically info
+    Right info -> return info
 
 parseInfoJSON :: String -> Result [PkgInfo]
 parseInfoJSON json = decode json >>= apiFailCheck >>= forgePkgInfo
