@@ -2,11 +2,11 @@ Aura Changelog
 ==============
 1.2.1.3
 -------
-- Have a good Remembrance Day.
 - `-As` results now sort by vote. Use `--abc` to sort alphabetically.
 - "[installed]" will now be shown in `-As` results if you have it.
-- Updated Italian translation
 - Fixed Bash parsing bug involving `\` in arrays
+- Updated Italian translation
+- Updated French translation
 
 1.2.1.2
 -------

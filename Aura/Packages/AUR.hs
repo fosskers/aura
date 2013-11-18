@@ -140,8 +140,15 @@ data PkgInfo = PkgInfo { nameOf        :: String
                        , isOutOfDate   :: Bool
                        , votesOf       :: Int } deriving (Eq,Show)
 
+sortPkgInfo :: SortScheme -> [PkgInfo] -> [PkgInfo]
+sortPkgInfo scheme is = sortBy compare' is
+    where compare' = case scheme of
+                       ByVote         -> \x y -> compare (votesOf y) (votesOf x)
+                       Alphabetically -> \x y -> compare (nameOf x) (nameOf y)
+
 aurSearchLookup :: [String] -> Aura [PkgInfo]
-aurSearchLookup regex = getAURPkgInfo regex PkgSearch
+aurSearchLookup regex = asks sortSchemeOf >>= \scheme ->
+                        sortPkgInfo scheme <$> getAURPkgInfo regex PkgSearch
 
 aurInfoLookup :: [String] -> Aura [PkgInfo]
 aurInfoLookup pkgs = getAURPkgInfo pkgs MultiInfo
@@ -152,12 +159,7 @@ getAURPkgInfo items t = do
   infoJSON <- liftIO . urlContents . rpcUrl t $ items
   case resultToEither $ parseInfoJSON infoJSON of
     Left _     -> scoldAndFail getAURPkgInfo_1
-    Right info -> do
-      scheme <- asks sortSchemeOf
-      let compare' = case scheme of
-                       ByVote         -> \x y -> compare (votesOf y) (votesOf x)
-                       Alphabetically -> \x y -> compare (nameOf x) (nameOf y)
-      return $ sortBy compare' info
+    Right info -> return $ sortPkgInfo Alphabetically info
 
 parseInfoJSON :: String -> Result [PkgInfo]
 parseInfoJSON json = decode json >>= apiFailCheck >>= forgePkgInfo
