@@ -5,6 +5,7 @@ Aura Changelog
 - `-As` results now sort by vote. Use `--abc` to sort alphabetically.
 - "[installed]" will now be shown in `-As` results if you have it.
 - Fixed Bash parsing bug involving `\` in arrays
+- Fixed broken `-C`
 - Updated Italian translation
 - Updated French translation
 
