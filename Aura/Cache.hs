@@ -35,6 +35,7 @@ module Aura.Cache
     , SimplePkg ) where
 
 import qualified Data.Map.Lazy as M
+import Data.List (nub)
 
 import Aura.Settings.Base
 import Aura.Monad.Aura
@@ -68,7 +69,7 @@ cacheContents c = cache <$> rawCacheContents c
 
 pkgsInCache :: [String] -> Aura [String]
 pkgsInCache ps =
-    filter (`elem` ps) . allNames <$> (asks cachePathOf >>= cacheContents)
+    nub . filter (`elem` ps) . allNames <$> (asks cachePathOf >>= cacheContents)
 
 cacheMatches :: [String] -> Aura [String]
 cacheMatches input = asks cachePathOf >>= cacheContents >>=
