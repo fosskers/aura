@@ -9,6 +9,7 @@ Lukas Niederbremer       | German
 Alejandro Gómez          | Spanish
 Henry "Ingvij" Kupty     | Portuguese
 Ma Jiehong               | French
+Fabien Dubosson          | French
 Kyrylo Silin             | Russian
 Bob Valantin             | Italian
 Filip Brcic              | Serbian
@@ -64,7 +65,7 @@ translators = [ " Chris \"Kwpolska\" Warrick"
               , " Lukas Niederbremer"
               , " Alejandro Gómez"
               , " Henry \"Ingvij\" Kupty"
-              , " Ma Jiehong"
+              , " Ma Jiehong / Fabien Dubosson"
               , " Kyrylo Silin"
               , " Bob Valantin"
               , " Filip Brcic"
