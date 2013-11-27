@@ -139,12 +139,13 @@ langFromEnv _           = English
 ----------------------
 -- NEEDS TRANSLATION
 checkDBLock_1 :: Language -> String
-checkDBLock_1 Japanese  = "パッケージデータベースが今閉鎖状態。開放したらキーを押して続行をどうぞ。"
-checkDBLock_1 Croatian  = "Baza paketa je zaključana. Kad se otključa, pritisnite enter da biste nastavili."
-checkDBLock_1 German    = "The Paketdatenbank ist gesperrt. Drücken Sie Enter wenn sie entsperrt ist um fortzufahren."
-checkDBLock_1 Norwegian = "Pakkedatabasen er låst. Trykk enter når den er åpnet for å fortsette."
-checkDBLock_1 French    = "La base de données des paquets est bloquée. Appuyez sur enter pour continuer."
-checkDBLock_1 _         = "The package database is locked. Press enter when it's unlocked to continue."
+checkDBLock_1 Japanese   = "パッケージデータベースが今閉鎖状態。開放したらキーを押して続行をどうぞ。"
+checkDBLock_1 Croatian   = "Baza paketa je zaključana. Kad se otključa, pritisnite enter da biste nastavili."
+checkDBLock_1 German     = "The Paketdatenbank ist gesperrt. Drücken Sie Enter wenn sie entsperrt ist um fortzufahren."
+checkDBLock_1 Norwegian  = "Pakkedatabasen er låst. Trykk enter når den er åpnet for å fortsette."
+checkDBLock_1 French     = "La base de données des paquets est bloquée. Appuyez sur enter pour continuer."
+checkDBLock_1 Portuguese = "Banco de dados de pacote travado. Aperte 'enter' quando estivier detravado para poder continuar."
+checkDBLock_1 _          = "The package database is locked. Press enter when it's unlocked to continue."
 
 -- Packages should not be built if the user is logged in as root!
 trueRoot_1 :: Language -> String
