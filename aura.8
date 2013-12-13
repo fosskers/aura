@@ -112,8 +112,15 @@ dependencies will only show uncoloured package names.
 .P
 \fB\-s\fR, \-\-search <word(s)>
 .RS 4
-Search the AUR via words only (no regex). Results are sorted by vote. Add the
-flag \fI\-\-abc\fR to sort results alphabetically.
+Search the AUR via words only (no regex). Results are sorted by vote. 
+Suboptions:
+.RS 4
+\fI\-\-abc\fR  : Sorts results alphabetically.
+.P
+\fI\-\-head\fR : Only show the first 10 results.
+.P
+\fI\-\-tail\fR : Only show the last 10 results.
+.RE
 .RE
 .P
 \fB\-u\fR, \-\-sysupgrade
