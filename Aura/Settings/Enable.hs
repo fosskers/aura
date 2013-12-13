@@ -63,6 +63,7 @@ getSettings lang (auraFlags,input,pacOpts) = do
                   , cachePathOf     = getCachePath confFile
                   , logFilePathOf   = getLogFilePath confFile
                   , sortSchemeOf    = sortSchemeStatus auraFlags
+                  , truncationOf    = truncationStatus auraFlags
                   , beQuiet         = quietStatus auraFlags
                   , suppressMakepkg = suppressionStatus auraFlags
                   , delMakeDeps     = delMakeDepsStatus auraFlags

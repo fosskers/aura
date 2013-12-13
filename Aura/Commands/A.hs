@@ -124,7 +124,11 @@ aurSearch :: [String] -> Aura ()
 aurSearch []    = return ()
 aurSearch regex = ask >>= \ss -> do
     db      <- S.fromList . map fst <$> foreignPackages
-    results <- map (\x -> (x, nameOf x `S.member` db)) <$> aurSearchLookup regex
+    let t = case truncationOf ss of  -- Can't this go anywhere else?
+              None -> id
+              Head -> take 10
+              Tail -> reverse . take 10 . reverse
+    results <- map (\x -> (x, nameOf x `S.member` db)) . t <$> aurSearchLookup regex
     mapM_ (liftIO . putStrLn . renderSearch ss (unwords regex)) results
 
 renderSearch :: Settings -> String -> (PkgInfo, Bool) -> String

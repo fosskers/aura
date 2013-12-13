@@ -43,6 +43,7 @@ module Aura.Flags
     , keepSourceStatus
     , buildABSDepsStatus
     , sortSchemeStatus
+    , truncationStatus
     , Flag(..) ) where
 
 import System.Console.GetOpt
@@ -81,6 +82,8 @@ data Flag = ABSInstall
           | BuildPath FilePath
           | BuildUser String
           | ABCSort
+          | TruncHead
+          | TruncTail
           | DiffPkgbuilds
           | Devel
           | Customizepkg
@@ -154,9 +157,11 @@ auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
               , ( [],    ["auradebug"],    Debug         )
               , ( [],    ["custom"],       Customizepkg  )
               , ( [],    ["devel"],        Devel         )
+              , ( [],    ["head"],         TruncHead     )
               , ( [],    ["hotedit"],      HotEdit       )
               , ( [],    ["languages"],    Languages     )
               , ( [],    ["no-pp"],        NoPowerPill   )
+              , ( [],    ["tail"],         TruncTail     )
               , ( [],    ["viewconf"],     ViewConf      ) ]
 
 -- These are intercepted Pacman flags. Their functionality is different.
@@ -217,7 +222,7 @@ reconvertFlag flagMap f = fromMaybe "" $ f `lookup` flagMap
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
                 , DelMDeps,Customizepkg,Quiet,NoPowerPill,KeepSource,BuildABSDeps
-                , ABCSort ]
+                , ABCSort, TruncHead, TruncTail ]
 
 -- Flags like `Ignore` and `BuildPath` have args, and thus can't be included
 -- in the `settingsFlags` list.
@@ -260,6 +265,7 @@ buildUser [] = Nothing
 buildUser (BuildUser u : _) = Just u
 buildUser (_:fs) = buildUser fs
 
+truncationStatus   = fishOutFlag [(TruncHead,Head),(TruncTail,Tail)] None
 sortSchemeStatus   = fishOutFlag [(ABCSort,Alphabetically)] ByVote
 suppressionStatus  = fishOutFlag [(Unsuppress,False)] True
 delMakeDepsStatus  = fishOutFlag [(DelMDeps,True)] False
