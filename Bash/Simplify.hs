@@ -89,12 +89,18 @@ replaceStr' s = get >>= \ns ->
 
 -- | An `if` statement can have an [el]if or [el]se, but it might not.
 replaceIf :: BashIf -> State Namespace [Field]
-replaceIf i@(If (Comp l r) fs el) = do
+replaceIf i@(If comp fs el) = do
+  let (op, l, r) = deComp comp
   left  <- fromBashString `fmap` replaceStr l
   right <- fromBashString `fmap` replaceStr r
-  if left == right  -- Only checks for equality at the moment.
+  if left `op` right
      then replace fs
      else case el of
             Nothing  -> return [IfBlock i]
             Just el' -> replaceIf el'
 replaceIf (Else fs) = replace fs
+
+-- | Pull out operation, and both sides to a comparison.
+deComp :: Eq a => Comparison -> ((a -> a -> Bool), BashString, BashString)
+deComp (CompEq l r) = ((==), l, r)
+deComp (CompNe l r) = ((/=), l, r)

@@ -37,7 +37,9 @@ data BashIf = If Comparison [Field] (Maybe BashIf)
             | Else [Field]
               deriving (Eq,Show)
 
-data Comparison = Comp BashString BashString deriving (Eq,Show)
+data Comparison = CompEq BashString BashString
+                | CompNe BashString BashString
+                  deriving (Eq,Show)
 
 data BashFor = Incr  -- for (x;y;z); do ... done  -- Incomplete!
              | Iter String BashString [Field]  -- for x in y; do ... done
