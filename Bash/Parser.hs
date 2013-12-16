@@ -183,5 +183,5 @@ comparison = do
 
 comparisonOp :: Parser (BashString -> BashString -> Comparison)
 comparisonOp = choice [eq, neq]
-  where eq  = CompEq <$ (string "= " <|> string "== " <|> string "-eq ")
+  where eq  = CompEq <$ (try (string "= ") <|> string "== " <|> string "-eq ")
         neq = CompNe <$ (string "!= " <|> string "-ne ")
