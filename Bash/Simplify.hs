@@ -101,6 +101,10 @@ replaceIf i@(If comp fs el) = do
 replaceIf (Else fs) = replace fs
 
 -- | Pull out operation, and both sides to a comparison.
-deComp :: Eq a => Comparison -> ((a -> a -> Bool), BashString, BashString)
+deComp :: (Eq a, Ord a) => Comparison -> ((a -> a -> Bool), BashString, BashString)
 deComp (CompEq l r) = ((==), l, r)
 deComp (CompNe l r) = ((/=), l, r)
+deComp (CompGt l r) = ((>) , l, r)
+deComp (CompGe l r) = ((>=), l, r)
+deComp (CompLt l r) = ((<) , l, r)
+deComp (CompLe l r) = ((<=), l, r)

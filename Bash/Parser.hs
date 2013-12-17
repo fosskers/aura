@@ -182,6 +182,10 @@ comparison = do
             rightBs = skipMany1 $ char ']'
 
 comparisonOp :: Parser (BashString -> BashString -> Comparison)
-comparisonOp = choice [eq, neq]
-  where eq  = CompEq <$ (try (string "= ") <|> string "== " <|> string "-eq ")
-        neq = CompNe <$ (string "!= " <|> string "-ne ")
+comparisonOp = choice [eq, ne, gt, ge, lt, le]
+  where eq = CompEq <$ (try (string "= ") <|> string "== " <|> string "-eq ")
+        ne = CompNe <$ (string "!= " <|> string "-ne ")
+        gt = CompGt <$ (string "> "  <|> string "-gt ")
+        ge = CompGe <$  string "-ge "
+        lt = CompLt <$ (string "< "  <|> string "-lt ")
+        le = CompLe <$  string "-le "
