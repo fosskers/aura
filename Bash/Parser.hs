@@ -174,9 +174,14 @@ comparison :: Parser Comparison
 comparison = do
   spaces >> leftBs >> spaces
   left <- head `fmap` single
-  try (string "= ") <|> string "== " <|> string "-eq "
+  compOp <- comparisonOp
   right <- head `fmap` single
   rightBs
-  return (Comp left right) <?> "valid comparison"
+  return (compOp left right) <?> "valid comparison"
       where leftBs  = skipMany1 $ char '['
             rightBs = skipMany1 $ char ']'
+
+comparisonOp :: Parser (BashString -> BashString -> Comparison)
+comparisonOp = choice [eq, neq]
+  where eq  = CompEq <$ (try (string "= ") <|> string "== " <|> string "-eq ")
+        neq = CompNe <$ (string "!= " <|> string "-ne ")
