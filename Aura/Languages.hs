@@ -363,7 +363,7 @@ getRealPkgConflicts_2 p Norwegian  = bt p ++ " er en ignorert pakke! Sjekk din `
 
 -- NEEDS TRANSLATION
 missingPkg_1 :: String -> Language -> String
-missingPkg_1 p Croatian  = "Zavisnost  " ++ bt p ++ " nije pronađena. Možete izvršiti pretragu da je pronađete."
+missingPkg_1 p Croatian  = "Zavisnost  " ++ bt p ++ " nije pronađena. Pokušajte pronaći paket koji zadovoljava ovu zavisnost."
 missingPkg_1 p Norwegian = "Avhengigheten " ++ bt p ++ " ble ikke funnet. Du kan søke etter en pakke som tilfredsstiller avhengigheten."
 missingPkg_1 p Italian   = "La dipendenza " ++ bt p ++ " non è stata trovata. Potrebbe essere necessario cercare un pacchetto che possa soddisfarla?"
 missingPkg_1 p French    = "La dépendance " ++ bt p ++ " n'a pas pu être trouvée. Il vous faut trouver un paquet pour la satisfaire."
