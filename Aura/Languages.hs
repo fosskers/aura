@@ -1113,7 +1113,7 @@ cleanABSTree_1 _         = "Delete the entire ABS Tree?"
 
 cleanABSTree_2 :: Language -> String
 cleanABSTree_2 Japanese  = "ABS Treeの中身を削除中・・・"
-cleanABSTree_2 Japanese  = "Brišem ABS stablo..."
+cleanABSTree_2 Croatian  = "Brišem ABS stablo..."
 cleanABSTree_2 German    = "Lösche ABS Baum..."
 cleanABSTree_2 Norwegian = "Renser ABS-treet..."
 cleanABSTree_2 Italian   = "Ripulisco l'abero ABS..."
