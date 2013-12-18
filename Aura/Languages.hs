@@ -153,7 +153,7 @@ trueRoot_1 :: Language -> String
 trueRoot_1 English    = "You should never build packages as the true root. Are you okay with this?"
 trueRoot_1 Japanese   = "本当のrootユーザーとしてパッケージを作成するのが危険。続行？"
 trueRoot_1 Polish     = "Nigdy nie powinieneś budować pakietów jako root. Na pewno kontynuować?"
-trueRoot_1 Croatian   = "Pakete ne bi trebalo graditi kao root. Nastaviti?"
+trueRoot_1 Croatian   = "Pakete ne bi trebalo graditi sa root korisničkim računom. Nastaviti?"
 trueRoot_1 Swedish    = "Det är starkt rekommenderat att INTE vara inloggad som root när man bygger paket. Vill du fortsätta ändå?"
 trueRoot_1 German     = "Sie sollten niemals Pakete als der echte root Nutzer bauen. Sind sie sicher, dass Sie dies tun wollen?"
 trueRoot_1 Spanish    = "Nunca deberías construir paquetes como root real. ¿Estás de acuerdo con esto?"
@@ -376,7 +376,7 @@ executeOpts_1 :: Language -> String
 executeOpts_1 English    = "Conflicting flags given!"
 executeOpts_1 Japanese   = "矛盾しているオプションあり。"
 executeOpts_1 Polish     = "Niektóre flagi są w konflikcie ze sobą!"
-executeOpts_1 Croatian   = "Neke od danih opcija nije moguće kombinirati!"
+executeOpts_1 Croatian   = "Neke od danih zastavica nije moguće kombinirati!"
 executeOpts_1 Swedish    = "Givna flaggor är i konflikt!"
 executeOpts_1 German     = "Gegebene Kommandozeilenflags sind widersprüchlich!"
 executeOpts_1 Spanish    = "¡Flags contradictorios!"
@@ -1157,7 +1157,7 @@ aurSy :: Language -> String
 aurSy English    = green "Perform actions involving the [A]UR.\n" ++ "Default action installs from the AUR."
 aurSy Japanese   = green "[A]URに関連する処理\n" ++ "デフォルトでAURからインストール"
 aurSy Polish     = green "Wykonuje akcje związane z [A]UR.\n" ++ "Domyślnie instaluje pakiety z AUR."
-aurSy Croatian   = green "Izvršava radnje vezane uz [A]UR.\n" ++ "Uobičajena (default) radnja je instaliranje paketa iz AUR-a."
+aurSy Croatian   = green "Izvršava radnje s [A]UR-om.\n" ++ "Uobičajena (default) radnja je instaliranje paketa iz AUR-a."
 aurSy Swedish    = green "Utför åtgärder involverandes [A]UR.\n" ++ "Standard-åtgärd installerar ifrån AUR."
 aurSy German     = green "Führe Aktionen aus die das [A]UR betreffen.\n" ++ "Standardaktion installiert aus dem AUR."
 aurSy Spanish    = green "Realizar acciones relacionadas con el [A]UR.\n" ++ "La acción por defecto es instalar desde AUR."
@@ -1220,7 +1220,7 @@ orpha :: Language -> String
 orpha English    = blue "Perform actions involving [O]rphan packages.\n" ++ "Default action lists all orphan packages."
 orpha Japanese   = blue "必要とされていない従属パッケージに関する処理\n" ++ "デフォルトでその従属パッケージの名前を出力"
 orpha Polish     = blue "Wykonuje akcje związane z [O]sieroconymi pakietami.\n" ++ "Domyślnie wyświetla wszystkie osierocone pakiety."
-orpha Croatian   = blue "Izvršava radnje vezane uz pakete bez roditelja ([O]rphan).\n" ++ "Uobičajena (default) radnja je izlistavanje paketa bez roditelja."
+orpha Croatian   = blue "Izvršava radnje s paketima bez roditelja ([O]rphan).\n" ++ "Uobičajena (default) radnja je izlistavanje paketa bez roditelja."
 orpha Swedish    = blue "Utför åtgärder involverandes [O]rphan-paket.\n" ++ "Standard-åtgärd listar alla orphan-paket."
 orpha German     = blue "Führe Aktionen aus die verwaiste ([O]rphans) Pakete betreffen.\n" ++ "Standardaktion listet alle verwaisten Pakete auf."
 orpha Spanish    = blue "Realizar acciones relacionadas con paquetes huérfanos ([O]rphan).\n" ++ "La acción por defecto es listar todos los paquetes huérfanos."
@@ -1250,7 +1250,7 @@ infoFields :: Language -> [String]
 infoFields English    = [ "Repository","Name","Version","AUR Status","Maintainer","Project URL","AUR URL","License", "Votes","Description" ]
 infoFields Japanese   = [ "リポジトリ","名前","バージョン","パッケージ状態","管理者","プロジェクト","パッケージページ","ライセンス","投票数","概要" ]
 infoFields Polish     = [ "Repository","Nazwa","Wersja","Status w AUR","Maintainer","URL Projektu","URL w AUR","Licencja","Głosy","Opis" ]
-infoFields Croatian   = [ "Repository","Ime","Verzija","AUR Stanje","Maintainer","URL Projekta","AUR URL","Licenca","Glasovi","Opis" ]
+infoFields Croatian   = [ "Repozitorij","Ime","Verzija","AUR Stanje","Maintainer","URL Projekta","AUR URL","Licenca","Glasovi","Opis" ]
 infoFields Swedish    = [ "Repository","Namn","Version","AUR Status","Maintainer","Projekt URL","AUR URL","Licens","Röster","Beskrivning" ]
 infoFields German     = [ "Repository","Name","Version","AUR Status","Maintainer","Projekt URL","AUR URL","Lizenz","Stimmen","Beschreibung" ]
 infoFields Spanish    = [ "Repository","Nombre","Versión","Estado en AUR","Maintainer","URL del proyecto","URL en AUR","Licencia", "Votos","Descripción" ]
@@ -1292,7 +1292,7 @@ outOfDateMsg False Norwegian  = green "Oppdatert"
 orphanedMsg :: Maybe String -> Language -> String
 orphanedMsg (Just m) _        = bForeground m
 orphanedMsg Nothing Japanese  = red "いない"
-orphanedMsg Nothing Japanese  = red "Nema roditelja!"
+orphanedMsg Nothing Croatian  = red "Nema roditelja!"
 orphanedMsg Nothing German    = red "Verwaist!"
 orphanedMsg Nothing Norwegian = red "Foreldreløs!"
 orphanedMsg Nothing French    = red "Orphelin!"
@@ -1330,7 +1330,7 @@ singleSync_1 p French    = "Synchronisation de " ++ bt p ++ " dans l'arbre ABS l
 singleSync_1 p _         = "Syncing " ++ bt p ++ " to the local ABS Tree..."
 
 absInfoFields :: Language -> [String]
-absInfoFields Croatian  = [ "Repository","Ime","Verzija","Zavisnosti","Make Zavisnosti","Opis" ]
+absInfoFields Croatian  = [ "Repozitorij","Ime","Verzija","Zavisnosti","Make Zavisnosti","Opis" ]
 absInfoFields German    = [ "Quelle","Name","Version","Hängt ab von","Make Abh.","Beschreibung"]
 absInfoFields Norwegian = [ "Depot","Navn","Versjon","Er avhengig av","Make Deps","Beskrivelse"]
 absInfoFields Italian   = [ "Repository","Nome","Versione","Dipende da","Make Deps","Descrizione" ]
@@ -1339,7 +1339,7 @@ absInfoFields _         = [ "Repository","Name","Version","Depends On","Make Dep
 
 repository_1 :: String -> Language -> String
 repository_1 p Japanese  = p ++ "はどのリポジトリにもない。"
-repository_1 p Japanese  = p ++ "nije paket u repository-ju"
+repository_1 p Croatian  = p ++ "nije paket u repozitoriju."
 repository_1 p German    = p ++ " ist kein Paket in irgendeiner Quelle."
 repository_1 p Norwegian = p ++ " er ikke en pakke i noe depot."
 repository_1 p Italian   = p ++ " non è un pacchetto di nessun repository."
@@ -1347,7 +1347,7 @@ repository_1 p French    = p ++ " n'est un paquet dans aucun des dépôts."
 repository_1 p _         = p ++ " is not a package in any repository."
 
 pkgBuildKeyMissing :: Language -> String -> String
-pkgBuildKeyMissing German    key = "Nemoguće izvući vrijednost za " ++ key ++ " iz PKGBUILD-a."
+pkgBuildKeyMissing Croatian  key = "Nemoguće izvući vrijednost za " ++ key ++ " iz PKGBUILD-a."
 pkgBuildKeyMissing German    key = "Kann Schlüssel " ++ key ++ " nicht aus PKGBUILD parsen."
 pkgBuildKeyMissing Norwegian key = "Forstår ikke " ++ key ++ " fra PKGBUILD."
 pkgBuildKeyMissing Italian   key = "Inpossibile elaborare la chiave " ++ key ++ " dal PKGBUILD."
