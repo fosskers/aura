@@ -4,6 +4,7 @@
 {- AURA TRANSLATORS - Thank you all
 Chris "Kwpolska" Warrick | Polish
 Denis Kasak              | Croatian
+"stranac"                | Croatian
 Fredrik Haikarainen      | Swedish
 Lukas Niederbremer       | German
 Alejandro Gómez          | Spanish
@@ -60,7 +61,7 @@ data Language = English
 
 translators :: [String]
 translators = [ " Chris \"Kwpolska\" Warrick"
-              , " Denis Kasak"
+              , " Denis Kasak / \"stranac\""
               , " Fredrik Haikarainen"
               , " Lukas Niederbremer"
               , " Alejandro Gómez"
@@ -76,7 +77,7 @@ languageNames :: Language -> [String]
 languageNames English    = [ "Polish","Croatian","Swedish","German","Spanish","Portuguese","French","Russian", "Italian", "Serbian", "Norwegian" ]
 languageNames Japanese   = [ "ポーランド語","クロアチア語","スウェーデン語","ドイツ語","スペイン語","ポルトガル語","フランス語","ロシア語", "", "", "" ]
 languageNames Polish     = [ "polski","chorwacki","szwedzki","niemiecki","hiszpański","portugalski","francuski","rosyjski", "", "", "" ]
-languageNames Croatian   = [ "poljski","hrvatski","švedski","njemački","španjolski","portugalski","francuski","ruski", "", "", "" ]
+languageNames Croatian   = [ "poljski","hrvatski","švedski","njemački","španjolski","portugalski","francuski","ruski", "talijanski", "srpski", "norveški" ]
 languageNames Swedish    = [ "polska","kroatiska","svenska","tyska","spanska","portugisiska", "", "", "" ]
 languageNames German     = [ "Polnisch","Kroatisch","Schwedisch","Deutsch","Spanisch","Portugiesisch", "", "", "" ]
 languageNames Spanish    = [ "Polaco","Croata","Sueco","Alemán","Español","Portugués", "", "", "" ]
@@ -152,7 +153,7 @@ trueRoot_1 :: Language -> String
 trueRoot_1 English    = "You should never build packages as the true root. Are you okay with this?"
 trueRoot_1 Japanese   = "本当のrootユーザーとしてパッケージを作成するのが危険。続行？"
 trueRoot_1 Polish     = "Nigdy nie powinieneś budować pakietów jako root. Na pewno kontynuować?"
-trueRoot_1 Croatian   = "Pakete ne bi trebalo graditi s pravim root ovlastima. Nastavi?"
+trueRoot_1 Croatian   = "Pakete ne bi trebalo graditi sa root korisničkim računom. Nastaviti?"
 trueRoot_1 Swedish    = "Det är starkt rekommenderat att INTE vara inloggad som root när man bygger paket. Vill du fortsätta ändå?"
 trueRoot_1 German     = "Sie sollten niemals Pakete als der echte root Nutzer bauen. Sind sie sicher, dass Sie dies tun wollen?"
 trueRoot_1 Spanish    = "Nunca deberías construir paquetes como root real. ¿Estás de acuerdo con esto?"
@@ -168,7 +169,7 @@ trueRoot_2 :: Language -> String
 trueRoot_2 English    = "You’ve done the right thing."
 trueRoot_2 Japanese   = "よしよし。"
 trueRoot_2 Polish     = "Postąpiłeś słusznie."
-trueRoot_2 Croatian   = "Učinili ste Ispravnu Stvar."
+trueRoot_2 Croatian   = "Ispravno ste postupili."
 trueRoot_2 Swedish    = "Phew."
 trueRoot_2 German     = "Eine weise Entscheidung."
 trueRoot_2 Spanish    = "Has tomado la decision correcta."
@@ -231,7 +232,7 @@ buildFail_2 :: Language -> String
 buildFail_2 English    = "Also, the following weren’t built:"
 buildFail_2 Japanese   = "ちなみに下記のパッケージも作成されなかった："
 buildFail_2 Polish     = "Dodatkowo, następujące pakiety nie zostały zbudowane:"
-buildFail_2 Croatian   = "Dodatno, ni sljedeće nije izgrađeno:"
+buildFail_2 Croatian   = "Osim toga, ni sljedeće nije izgrađeno:"
 buildFail_2 Swedish    = "Det gick heller inte att bygga följande paket:"
 buildFail_2 German     = "Die folgenden Pakete wurden zusätzlich nicht gebaut:"
 buildFail_2 Spanish    = "Los siguientes paquetes no se han construido:"
@@ -246,7 +247,7 @@ buildFail_3 :: Language -> String
 buildFail_3 English    = "However, these packages were successfully built:"
 buildFail_3 Japanese   = "しかし、以下のパッケージファイルは無事作成された："
 buildFail_3 Polish     = "Następujące pakiety zostały zbudowane pomyślnie:"
-buildFail_3 Croatian   = "Neki paketi su možda izgrađeni uspješno."
+buildFail_3 Croatian   = "Neki paketi su ipak uspješno izgrađeni:"
 buildFail_3 Swedish    = "Vissa paket kanske har byggts ordentligt (Osäker)."
 buildFail_3 German     = "Diese Pakete wurden wiederrum erfolgreich gebaut:"
 buildFail_3 Spanish    = "Sin embargo, los siguientes paquetes se han construido:"
@@ -290,6 +291,7 @@ buildFail_5 Norwegian  = "Bygging feilet."
 -- NEEDS TRANSLATION
 buildFail_6 :: Language -> String
 buildFail_6 Japanese  = "それでも続行？"
+buildFail_6 Croatian  = "Želite li svejedno nastaviti?"
 buildFail_6 Norwegian = "Vil du fortsette likevel?"
 buildFail_6 Italian   = "Vuoi continuare comunque?"
 buildFail_6 French    = "Voulez-vous tout de même continuer?"
@@ -348,7 +350,7 @@ getRealPkgConflicts_2 :: String -> Language -> String
 getRealPkgConflicts_2 p English    = bt p ++ " is an ignored package! See your `pacman.conf` file."
 getRealPkgConflicts_2 p Japanese   = bt p ++ "は無視されるパッケージ！`pacman.conf`を参考に。"
 getRealPkgConflicts_2 p Polish     = bt p ++ " jest ignorowany! Sprawdź plik `pacman.conf`."
-getRealPkgConflicts_2 p Croatian   = bt p ++ " je ignoriran paket! Pogledajte svoj `pacman.conf`."
+getRealPkgConflicts_2 p Croatian   = bt p ++ " je ignoriran paket! Provjerite svoj `pacman.conf`."
 getRealPkgConflicts_2 p Swedish    = bt p ++ " är ett ignorerat paket! Kolla din `pacman.conf`-fil."
 getRealPkgConflicts_2 p German     = bt p ++ " ist ein ignoriertes Paket! Siehe /etc/pacman.conf."
 getRealPkgConflicts_2 p Spanish    = "¡" ++ bt p ++ " es un paquete ignorado! Revisa tu fichero `pacman.conf`."
@@ -361,6 +363,7 @@ getRealPkgConflicts_2 p Norwegian  = bt p ++ " er en ignorert pakke! Sjekk din `
 
 -- NEEDS TRANSLATION
 missingPkg_1 :: String -> Language -> String
+missingPkg_1 p Croatian  = "Zavisnost  " ++ bt p ++ " nije pronađena. Pokušajte pronaći paket koji zadovoljava ovu zavisnost."
 missingPkg_1 p Norwegian = "Avhengigheten " ++ bt p ++ " ble ikke funnet. Du kan søke etter en pakke som tilfredsstiller avhengigheten."
 missingPkg_1 p Italian   = "La dipendenza " ++ bt p ++ " non è stata trovata. Potrebbe essere necessario cercare un pacchetto che possa soddisfarla?"
 missingPkg_1 p French    = "La dépendance " ++ bt p ++ " n'a pas pu être trouvée. Il vous faut trouver un paquet pour la satisfaire."
@@ -373,7 +376,7 @@ executeOpts_1 :: Language -> String
 executeOpts_1 English    = "Conflicting flags given!"
 executeOpts_1 Japanese   = "矛盾しているオプションあり。"
 executeOpts_1 Polish     = "Niektóre flagi są w konflikcie ze sobą!"
-executeOpts_1 Croatian   = "Predane zastavice su konfliktne!"
+executeOpts_1 Croatian   = "Neke od danih zastavica nije moguće kombinirati!"
 executeOpts_1 Swedish    = "Givna flaggor är i konflikt!"
 executeOpts_1 German     = "Gegebene Kommandozeilenflags sind widersprüchlich!"
 executeOpts_1 Spanish    = "¡Flags contradictorios!"
@@ -388,7 +391,7 @@ manpageMsg :: Language -> String
 manpageMsg English    = "See the aura man page for aura option details."
 manpageMsg Japanese   = "選択肢の詳しいことは、auraのman pageまで。"
 manpageMsg Polish     = "W podręczniku man dla aura znajduje się\xa0więcej informacji o opcjach."
-manpageMsg Croatian   = "Pogledajte Aura man stranicu za detalje o opcijama."
+manpageMsg Croatian   = "Za detalje o opcijama, pogledajte Aura man stranicu."
 manpageMsg Swedish    = "Hänvisa till auras `man`-sida för detaljerade alternativ."
 manpageMsg German     = "Lesen Sie die aura man-Seite für Details zu aura Optionen."
 manpageMsg Spanish    = "Lee la página de manual de aura para detalles sobre las opciones."
@@ -419,6 +422,7 @@ displayOutputLanguages_1 Norwegian  = "Følgende språk er tilgjengelig:"
 ----------------------------
 auraCheck_1 :: Language -> String
 auraCheck_1 Japanese  = "Auraアップグレードあり。先にAuraだけを？"
+auraCheck_1 Croatian  = "Dostupna je nova verzija Aura. Želite li prvo ažurirati?"
 auraCheck_1 German    = "Aura Update verfügbar. Dies zuerst aktualisieren?"
 auraCheck_1 Norwegian = "En Aura-oppdatering er tilgjengelig. Oppdater den først?"
 auraCheck_1 French    = "Une mise à jour d'Aura est disponible. Voulez-vous la mettre à jour en premier?"
@@ -458,7 +462,7 @@ install_3 :: Language -> String
 install_3 English    = "Continue?"
 install_3 Japanese   = "続行？"
 install_3 Polish     = "Kontynuować?"
-install_3 Croatian   = "Nastavi?"
+install_3 Croatian   = "Nastaviti?"
 install_3 Swedish    = "Fortsätta?"
 install_3 German     = "Fortsetzen?"
 install_3 Spanish    = "¿Continuar?"
@@ -548,6 +552,7 @@ reportPkgsToInstall_1 Norwegian  = "Avhengigheter fra depotet:"
 -- NEEDS AN UPDATE
 reportPkgsToInstall_2 :: String -> Language -> String
 reportPkgsToInstall_2 l Japanese  = l ++ "のパッケージ:"
+reportPkgsToInstall_2 l Croatian  = l ++ " Paketi:"
 reportPkgsToInstall_2 l German    = l ++ " Pakete:"
 reportPkgsToInstall_2 l Norwegian = l ++ " Pakker:"
 reportPkgsToInstall_2 l Italian   = l ++ " Pacchetti:"
@@ -630,7 +635,7 @@ reportPkgsToUpgrade_1 :: Language -> String
 reportPkgsToUpgrade_1 English    = "AUR Packages to upgrade:"
 reportPkgsToUpgrade_1 Japanese   = "アップグレードするAURパッケージ："
 reportPkgsToUpgrade_1 Polish     = "Pakiety z AUR do zaktualizowania:"
-reportPkgsToUpgrade_1 Croatian   = "AUR paketi za nadograditi:"
+reportPkgsToUpgrade_1 Croatian   = "AUR paketi za nadogradnju:"
 reportPkgsToUpgrade_1 Swedish    = "AUR-paket att uppgradera:"
 reportPkgsToUpgrade_1 German     = "Zu aktualisierendes AUR Paket:"
 reportPkgsToUpgrade_1 Spanish    = "Paquetes de AUR a actualizar:"
@@ -820,7 +825,7 @@ backupCache_2 :: Language -> String
 backupCache_2 English    = "You must be root to backup the cache."
 backupCache_2 Japanese   = "rootじゃないとバックアップはできない。"
 backupCache_2 Polish     = "Musisz być rootem, by zrobić kopię\xa0zapasową pamięci podręcznej."
-backupCache_2 Croatian   = "Za stvaranje sigurnosne kopije skladišta potrebne su root ovlasti."
+backupCache_2 Croatian   = "Za stvaranje sigurnosne kopije cache-a potrebne su root ovlasti."
 backupCache_2 Swedish    = "Du måste vara root för att ta backup på cache-filer."
 backupCache_2 German     = "Sie müssen root sein um den Cache zu sichern."
 backupCache_2 Spanish    = "Debes ser root para hacer una copia de seguridad de la caché."
@@ -955,7 +960,7 @@ cleanCache_1 :: Language -> String
 cleanCache_1 English    = "Invalid number given."
 cleanCache_1 Japanese   = "入力の数字は適切ではない。"
 cleanCache_1 Polish     = "Nieprawidłowa liczba."
-cleanCache_1 Croatian   = "Pogrešan broj."
+cleanCache_1 Croatian   = "Broj nije ispravan."
 cleanCache_1 Swedish    = "Ogiltigt nummer specifierat."
 cleanCache_1 German     = "Ungültige Nummer gegeben."
 cleanCache_1 Spanish    = "Número inválido."
@@ -970,7 +975,7 @@ cleanCache_2 :: Language -> String
 cleanCache_2 English    = "This will delete the ENTIRE package cache."
 cleanCache_2 Japanese   = "パッケージ・キャッシュは完全に削除される。"
 cleanCache_2 Polish     = "To usunie WSZYSTKIE pakiety z pamięci podręcznej."
-cleanCache_2 Croatian   = "Ovo će izbrisati CIJELO skladište paketa."
+cleanCache_2 Croatian   = "Ovo će izbrisati CIJELI cache paketa."
 cleanCache_2 Swedish    = "Detta kommer ta bort HELA paket-cachen."
 cleanCache_2 German     = "Dies wird den GESAMTEN Paketcache leeren."
 cleanCache_2 Spanish    = "Esto eliminará POR COMPLETO la caché de paquetes."
@@ -1000,7 +1005,7 @@ cleanCache_4 :: Language -> String
 cleanCache_4 English    = "The rest will be deleted. Okay?"
 cleanCache_4 Japanese   = "残りは全部削除される。承知する？"
 cleanCache_4 Polish     = "Wszystko inne zostanie usunięte. Na pewno?"
-cleanCache_4 Croatian   =  "Ostali paketi će biti izbrisani iz skladišta. Jeste li sigurni?"
+cleanCache_4 Croatian   = "Ostali paketi će biti izbrisani. Jeste li sigurni?"
 cleanCache_4 Swedish    = "Resten kommer att tas bort. Är det OK?"
 cleanCache_4 German     = "Der Rest wird gelöscht. Ist das OK?"
 cleanCache_4 Spanish    = "El resto se eliminará. ¿OK?"
@@ -1015,7 +1020,7 @@ cleanCache_5 :: Language -> String
 cleanCache_5 English    = "Cache cleaning manually aborted."
 cleanCache_5 Japanese   = "削除の続行は意図的に阻止された。"
 cleanCache_5 Polish     = "Czyszczenie pamięci podręcznej zostało przerwane przez użytkownika."
-cleanCache_5 Croatian   = "Čišćenje skladišta paketa prekinuto od strane korisnika."
+cleanCache_5 Croatian   = "Čišćenje cache-a paketa prekinuto od strane korisnika."
 cleanCache_5 Swedish    = "Cache-rensning avbröts manuellt."
 cleanCache_5 German     = "Säubern des Caches durch Benutzer abgebrochen."
 cleanCache_5 Spanish    = "Limpieza de la caché abortada manualmente."
@@ -1030,7 +1035,7 @@ cleanCache_6 :: Language -> String
 cleanCache_6 English    = "Cleaning package cache..."
 cleanCache_6 Japanese   = "パッケージ・キャッシュを掃除中・・・"
 cleanCache_6 Polish     = "Czyszczenie pamięci podręcznej..."
-cleanCache_6 Croatian   = "Čišćenje skladišta paketa..."
+cleanCache_6 Croatian   = "Čišćenje cache-a paketa..."
 cleanCache_6 Swedish    = "Rensar paket-cache..."
 cleanCache_6 German     = "Säubere Paketcache..."
 cleanCache_6 Spanish    = "Limpiando la caché de paquetes..."
@@ -1044,6 +1049,7 @@ cleanCache_6 Norwegian  = "Renser pakke-cache..."
 -- NEEDS TRANSLATION
 cleanNotSaved_1 :: Language -> String
 cleanNotSaved_1 Japanese  = "不要パッケージファイルを確認・・・"
+cleanNotSaved_1 Croatian  = "Pronalazim nepotrebne datoteke paketa..."
 cleanNotSaved_1 German    = "Bestimme nicht benötigte Paketdateien..."
 cleanNotSaved_1 Norwegian = "Finner unødige pakkefiler..."
 cleanNotSaved_1 Italian   = "Determino i pacchetti non più necessari..."
@@ -1052,6 +1058,7 @@ cleanNotSaved_1 _         = "Determining unneeded package files..."
 
 cleanNotSaved_2 :: Int -> Language -> String
 cleanNotSaved_2 s Japanese  = "「" ++ cyan (show s) ++ "」の不要パッケージファイルあり。削除？"
+cleanNotSaved_2 s Croatian  = cyan (show s) ++ " nepotrebnih datoteka pronađeno. Obrisati?"
 cleanNotSaved_2 s German    = cyan (show s) ++ " nicht benötigte Paketdateien gefunden. Löschen?"
 cleanNotSaved_2 s Norwegian = cyan (show s) ++ " unødige pakkefiler funnet. Vil du slette?"
 cleanNotSaved_2 s Italian   = cyan (show s) ++ " pacchetti non necessari trovati. Cancellarli?"
@@ -1097,6 +1104,7 @@ reportNotInLog_1 Norwegian  = "Følgende har ikke vist seg i loggen:"
 -- NEEDS TRANSLATION
 cleanABSTree_1 :: Language -> String
 cleanABSTree_1 Japanese  = "ABS Treeの中身を削除？"
+cleanABSTree_1 Croatian  = "Obrisati cijelo ABS stablo?"
 cleanABSTree_1 German    = "Den gesamten ABS Baum löschen?"
 cleanABSTree_1 Norwegian = "Slett hele ABS-treet?"
 cleanABSTree_1 Italian   = "Cancellare l'intero albero ABS?"
@@ -1105,6 +1113,7 @@ cleanABSTree_1 _         = "Delete the entire ABS Tree?"
 
 cleanABSTree_2 :: Language -> String
 cleanABSTree_2 Japanese  = "ABS Treeの中身を削除中・・・"
+cleanABSTree_2 Croatian  = "Brišem ABS stablo..."
 cleanABSTree_2 German    = "Lösche ABS Baum..."
 cleanABSTree_2 Norwegian = "Renser ABS-treet..."
 cleanABSTree_2 Italian   = "Ripulisco l'abero ABS..."
@@ -1148,7 +1157,7 @@ aurSy :: Language -> String
 aurSy English    = green "Perform actions involving the [A]UR.\n" ++ "Default action installs from the AUR."
 aurSy Japanese   = green "[A]URに関連する処理\n" ++ "デフォルトでAURからインストール"
 aurSy Polish     = green "Wykonuje akcje związane z [A]UR.\n" ++ "Domyślnie instaluje pakiety z AUR."
-aurSy Croatian   = green "Izvršava radnje vezane uz [A]UR.\n" ++ "Prešutna (default) radnja je instaliranje paketa iz AUR-a."
+aurSy Croatian   = green "Izvršava radnje s [A]UR-om.\n" ++ "Uobičajena (default) radnja je instaliranje paketa iz AUR-a."
 aurSy Swedish    = green "Utför åtgärder involverandes [A]UR.\n" ++ "Standard-åtgärd installerar ifrån AUR."
 aurSy German     = green "Führe Aktionen aus die das [A]UR betreffen.\n" ++ "Standardaktion installiert aus dem AUR."
 aurSy Spanish    = green "Realizar acciones relacionadas con el [A]UR.\n" ++ "La acción por defecto es instalar desde AUR."
@@ -1160,6 +1169,7 @@ aurSy Serbian    = green "Извршава радње везане за [A]UR.\n
 aurSy Norwegian  = green "Utfør handlinger som innebærer [A]UR.\n" ++ "Standard-handling installerer fra AUR."
 
 absSy :: Language -> String
+absSy Croatian  = magenta "Izvršava operacije sa ABS stablom.\n" ++ "Uobičajena (default) radnja je ručna izgradnja iz ABS stabla ([M]anual)."
 absSy German    = magenta "Führe Aktionen aus die den ABS Baum betreffen.\n" ++ "Standardaktion baut [M]anuell aus ABS."
 absSy Norwegian = magenta "Utfør handlinger som involverer ABS-treet.\n" ++ "Standard-handling bygger [M]anuelt fra ABS."
 absSy French    = magenta "Effectue une action impliquant l'arbre ABS.\n" ++ "Par défaut, installe [M]anuellement depuis ABS."
@@ -1168,7 +1178,7 @@ absSy _         = magenta "Perform actions involving the ABS tree.\n" ++ "Defaul
 -- NEEDS TRANSLATION
 saveS :: Language -> String
 saveS Japanese  = yellow "パッケージの設置状態に関する処理\n" ++ "デフォルトでインストール状態を保存する。"
-saveS Croatian  = yellow "Upravlja spremanjem i vraćanjem globalnog stanja paketa.\n" ++ "Prešutna (default) radnja je spremanje trenutnog stanja paketa."
+saveS Croatian  = yellow "Upravlja spremanjem i vraćanjem globalnog stanja paketa.\n" ++ "Uobičajena (default) radnja je spremanje trenutnog stanja paketa."
 saveS German    = yellow "Verwalte das [S]peichern und Wiederherstellen des globalen Paketzustände.\n" ++ "Standardaktion sichert die Zustände."
 saveS Serbian   = yellow "Управља чувањем и враћањем глобалног стања пакета.\n" ++ "Уобичајена радња чува тренутно стање."
 saveS Norwegian = yellow "Administer lagring og gjenoppretting av den globale pakketilstanden.\n" ++ "Standard-handling lagrer denne tilstanden."
@@ -1180,7 +1190,7 @@ downG :: Language -> String
 downG English    = red "Perform actions involving the package [C]ache.\n" ++ "Default action downgrades given packages."
 downG Japanese   = red "キャッシュに関連する処理\n" ++ "デフォルトでパッケージをダウングレード"
 downG Polish     = red "Wykonuje akcje związane z pamięcią podręczną ([C]ache) pakietów.\n" ++ "Domyślnie instaluje starsze wersje podanych pakietów."
-downG Croatian   = red "Izvršava radnje vezane uz skladište ([C]ache) paketa.\n" ++ "Prešutna (default) radnja je vraćanje paketa na prijašnju verziju."
+downG Croatian   = red "Izvršava radnje sa [C]ache-om paketa.\n" ++ "Uobičajena (default) radnja je vraćanje paketa na prijašnju verziju."
 downG Swedish    = red "Utför åtgärder involverandes paket-[C]ache.\n" ++ "Standard-åtgärd nergraderar valda paket."
 downG German     = red "Führe Aktionen aus die den Paket[C]ache betreffen.\n" ++ "Standardaktion downgradet gegebene Pakete."
 downG Spanish    = red "Realizar acciones relacionadas con la [C]aché.\n" ++ "La acción por defecto es retornar a versiones antiguas de los paquetes especificados."
@@ -1195,7 +1205,7 @@ viewL :: Language -> String
 viewL English    = cyan "Perform actions involving the pacman [L]ogfile.\n" ++ "Default action opens the log for read-only viewing."
 viewL Japanese   = cyan "[L]ogfileに関連する処理\n" ++ "デフォルトでlogfileを閲覧用に開く"
 viewL Polish     = cyan "Wykonuje akcje związane z dziennikiem ([L]ogiem) pacmana.\n" ++ "Domyślnie otwiera log w trybie tylko do odczytu."
-viewL Croatian   = cyan "Izvršavanje radnje vezane uz pacman dnevnik ([L]ogfile).\n" ++ "Prešutna (default) radnja je ispis dnevnika."
+viewL Croatian   = cyan "Izvršavanje radnje sa pacman dnevnikom ([L]ogfile).\n" ++ "Uobičajena (default) radnja je ispis dnevnika."
 viewL Swedish    = cyan "Utför åtgärder involverandes pacmans [L]ogfil.\n" ++ "Standard-åtgärd öppnar loggen med read-only-attribut."
 viewL German     = cyan "Führe Aktionen aus die die Pacman [L]ogdatei betreffen.\n" ++ "Standardaktion öffnet den Log (nur Lesen)"
 viewL Spanish    = cyan "Realizar acciones relacionadas con el fichero [L]og de pacman.\n" ++ "La acción por defecto es abrir el log en modo sólo lectura."
@@ -1210,7 +1220,7 @@ orpha :: Language -> String
 orpha English    = blue "Perform actions involving [O]rphan packages.\n" ++ "Default action lists all orphan packages."
 orpha Japanese   = blue "必要とされていない従属パッケージに関する処理\n" ++ "デフォルトでその従属パッケージの名前を出力"
 orpha Polish     = blue "Wykonuje akcje związane z [O]sieroconymi pakietami.\n" ++ "Domyślnie wyświetla wszystkie osierocone pakiety."
-orpha Croatian   = blue "Izvršava radnje vezane uz pakete bez roditelja ([O]rphan).\n" ++ "Prešutna (default) radnja je izlistavanje paketa bez roditelja."
+orpha Croatian   = blue "Izvršava radnje s paketima bez roditelja ([O]rphan).\n" ++ "Uobičajena (default) radnja je izlistavanje paketa bez roditelja."
 orpha Swedish    = blue "Utför åtgärder involverandes [O]rphan-paket.\n" ++ "Standard-åtgärd listar alla orphan-paket."
 orpha German     = blue "Führe Aktionen aus die verwaiste ([O]rphans) Pakete betreffen.\n" ++ "Standardaktion listet alle verwaisten Pakete auf."
 orpha Spanish    = blue "Realizar acciones relacionadas con paquetes huérfanos ([O]rphan).\n" ++ "La acción por defecto es listar todos los paquetes huérfanos."
@@ -1227,7 +1237,7 @@ orpha Norwegian  = blue "Utfør handlinger som involverer foreldreløse pakker (
 -- NEEDS TRANSLATION
 getAURPkgInfo_1 :: Language -> String
 getAURPkgInfo_1 Japanese  = "AURのAPIに繋げなかった。ネット接続状態を確認して下さい。"
-getAURPkgInfo_1 Croatian  = "Pristup AUR-u nije uspio. Provjerite vašu vezu."
+getAURPkgInfo_1 Croatian  = "Pristup AUR-u nije uspio. Provjerite svoju vezu."
 getAURPkgInfo_1 German    = "AUR API Suche fehlgeschlagen. Bitte überprüfen Sie Ihre Verbindung."
 getAURPkgInfo_1 Serbian   = "Приступ AUR-у није успео. Проверите вашу везу."
 getAURPkgInfo_1 Norwegian = "AUR API-oppslag feilet. Vennligst sjekk tilkoblingen din."
@@ -1240,7 +1250,7 @@ infoFields :: Language -> [String]
 infoFields English    = [ "Repository","Name","Version","AUR Status","Maintainer","Project URL","AUR URL","License", "Votes","Description" ]
 infoFields Japanese   = [ "リポジトリ","名前","バージョン","パッケージ状態","管理者","プロジェクト","パッケージページ","ライセンス","投票数","概要" ]
 infoFields Polish     = [ "Repository","Nazwa","Wersja","Status w AUR","Maintainer","URL Projektu","URL w AUR","Licencja","Głosy","Opis" ]
-infoFields Croatian   = [ "Repository","Ime","Verzija","AUR Stanje","Maintainer","URL Projekta","AUR URL","Licenca","Glasovi","Opis" ]
+infoFields Croatian   = [ "Repozitorij","Ime","Verzija","AUR Stanje","Maintainer","URL Projekta","AUR URL","Licenca","Glasovi","Opis" ]
 infoFields Swedish    = [ "Repository","Namn","Version","AUR Status","Maintainer","Projekt URL","AUR URL","Licens","Röster","Beskrivning" ]
 infoFields German     = [ "Repository","Name","Version","AUR Status","Maintainer","Projekt URL","AUR URL","Lizenz","Stimmen","Beschreibung" ]
 infoFields Spanish    = [ "Repository","Nombre","Versión","Estado en AUR","Maintainer","URL del proyecto","URL en AUR","Licencia", "Votos","Descripción" ]
@@ -1282,6 +1292,7 @@ outOfDateMsg False Norwegian  = green "Oppdatert"
 orphanedMsg :: Maybe String -> Language -> String
 orphanedMsg (Just m) _        = bForeground m
 orphanedMsg Nothing Japanese  = red "いない"
+orphanedMsg Nothing Croatian  = red "Nema roditelja!"
 orphanedMsg Nothing German    = red "Verwaist!"
 orphanedMsg Nothing Norwegian = red "Foreldreløs!"
 orphanedMsg Nothing French    = red "Orphelin!"
@@ -1293,6 +1304,7 @@ orphanedMsg Nothing _         = red "Orphaned!"
 -- NEEDS TRANSLATION
 absSync_1 :: Language -> String
 absSync_1 Japanese  = "ローカルABS Treeを同期？"
+absSync_1 Croatian  = "Sinkronizirati lokalno ABS stablo?"
 absSync_1 German    = "Lokalen ABS Baum synchronisieren?"
 absSync_1 Norwegian = "Synkroniser det lokale ABS-treet?"
 absSync_1 Italian   = "Sincronizzare l'albero ABS locale?"
@@ -1301,14 +1313,16 @@ absSync_1 _         = "Sync the local ABS Tree?"
 
 absSync_2 :: Language -> String
 absSync_2 Japanese  = "ローカルABS Treeを同期中・・・"
+absSync_2 Croatian  = "Sinkroniziram lokalno ABS stablo..."
 absSync_2 German    = "Synchronisiere lokalen ABS Baum..."
 absSync_2 Norwegian = "Synkroniserer det lokale ABS-treet..."
 absSync_2 Italian   = "Sincronizzo l'albero ABS locale..."
-absSync_2 French    = "Synchronisation de l'arbre ABS local..."
+absSync_2 French    = "Synchronisation de l'arbre ABS local..."
 absSync_2 _         = "Syncing local ABS Tree..."
 
 singleSync_1 :: String -> Language -> String
 singleSync_1 p Japanese  = bt p ++ "をABS Treeに同期・・・"
+singleSync_1 p Croatian  = "Sinkroniziram " ++ bt p ++ " u lokalnom stablu..."
 singleSync_1 p German    = "Synchronisiere " ++ bt p ++ " in den lokalen ABS Baum..."
 singleSync_1 p Norwegian = "Synkroniserer " ++ bt p ++ " til det lokale ABS-treet..."
 singleSync_1 p Italian   = "Sincronizzo " ++ bt p ++ " nell'albero ABS locale..."
@@ -1316,6 +1330,7 @@ singleSync_1 p French    = "Synchronisation de " ++ bt p ++ " dans l'arbre ABS l
 singleSync_1 p _         = "Syncing " ++ bt p ++ " to the local ABS Tree..."
 
 absInfoFields :: Language -> [String]
+absInfoFields Croatian  = [ "Repozitorij","Ime","Verzija","Zavisnosti","Make Zavisnosti","Opis" ]
 absInfoFields German    = [ "Quelle","Name","Version","Hängt ab von","Make Abh.","Beschreibung"]
 absInfoFields Norwegian = [ "Depot","Navn","Versjon","Er avhengig av","Make Deps","Beskrivelse"]
 absInfoFields Italian   = [ "Repository","Nome","Versione","Dipende da","Make Deps","Descrizione" ]
@@ -1324,6 +1339,7 @@ absInfoFields _         = [ "Repository","Name","Version","Depends On","Make Dep
 
 repository_1 :: String -> Language -> String
 repository_1 p Japanese  = p ++ "はどのリポジトリにもない。"
+repository_1 p Croatian  = p ++ "nije paket u repozitoriju."
 repository_1 p German    = p ++ " ist kein Paket in irgendeiner Quelle."
 repository_1 p Norwegian = p ++ " er ikke en pakke i noe depot."
 repository_1 p Italian   = p ++ " non è un pacchetto di nessun repository."
@@ -1331,6 +1347,7 @@ repository_1 p French    = p ++ " n'est un paquet dans aucun des dépôts."
 repository_1 p _         = p ++ " is not a package in any repository."
 
 pkgBuildKeyMissing :: Language -> String -> String
+pkgBuildKeyMissing Croatian  key = "Nemoguće izvući vrijednost za " ++ key ++ " iz PKGBUILD-a."
 pkgBuildKeyMissing German    key = "Kann Schlüssel " ++ key ++ " nicht aus PKGBUILD parsen."
 pkgBuildKeyMissing Norwegian key = "Forstår ikke " ++ key ++ " fra PKGBUILD."
 pkgBuildKeyMissing Italian   key = "Inpossibile elaborare la chiave " ++ key ++ " dal PKGBUILD."
@@ -1338,6 +1355,7 @@ pkgBuildKeyMissing French    key = "Impossible de parser la clef " ++ key ++ " d
 pkgBuildKeyMissing _         key = "Unable to parse key " ++ key ++ " from PKGBUILD."
 
 missingDescription :: Language -> String
+missingDescription Croatian  = "Nema opisa."
 missingDescription German    = "Keine Beschreibung."
 missingDescription Norwegian = "Ingen beskrivelse."
 missingDescription Italian   = "Nessuna Descrizione."
@@ -1411,7 +1429,7 @@ bashisms_1 _         = "Too many bashisms in PKGBUILD."
 -- NEEDS TRANSLATION
 pacmanFailure_1 :: Language -> String
 pacmanFailure_1 Japanese  = "入力を確認して下さい。"
-pacmanFailure_1 Croatian  = "Provjerite vaš unos."
+pacmanFailure_1 Croatian  = "Molim vas, provjerite svoj unos."
 pacmanFailure_1 German    = "Bitte überprüfen Sie Ihre Eingabe."
 pacmanFailure_1 Serbian   = "Молим Вас, проверите ваш унос."
 pacmanFailure_1 Norwegian = "Vennligst sjekk din oppføring."
