@@ -83,7 +83,9 @@ variable = Variable <$> name <*> (array <|> single) <?> "valid var definition"
 array :: Parser [BashString]
 array = concat . catMaybes <$> array' <?> "valid array"
     where array'  = char '(' *> spaces *> manyTill single' (char ')')
-          single' = (Nothing <$ comment <* spaces) <|> (Just <$> single <* many (space <|> char '\\'))
+          single' =   Nothing <$ comment <* spaces
+                  <|> Nothing <$ many1 (space <|> char '\\')
+                  <|> Just <$> single <* many (space <|> char '\\')
 
 -- | Strings can be surrounded by single quotes, double quotes, backticks,
 -- or nothing.
