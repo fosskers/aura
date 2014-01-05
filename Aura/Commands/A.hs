@@ -134,7 +134,7 @@ aurSearch regex = ask >>= \ss -> do
 renderSearch :: Settings -> String -> (PkgInfo, Bool) -> String
 renderSearch ss r (i, e) = searchResult
     where searchResult = if beQuiet ss then sparseInfo else verboseInfo
-          sparseInfo   = nameOf i ++ if e then s else ""
+          sparseInfo   = nameOf i
           verboseInfo  = repo ++ n ++ " " ++ v ++ " (" ++ l ++ ")" ++
                          (if e then s else "") ++ "\n    " ++ d
           c cl cs = case cs =~ ("(?i)" ++ r) of
