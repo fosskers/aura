@@ -52,7 +52,7 @@ import Shell     (ls')
 
 ---
 
-data PkgState = PkgState { timeOf :: SimpleTime
+data PkgState = PkgState { timeOf :: Time
                          , pkgsOf :: M.Map String [Int] }
                 deriving (Eq,Show,Read)
 
@@ -73,7 +73,7 @@ rawCurrentState = lines <$> pacmanOutput ["-Q"]
 currentState :: Aura PkgState
 currentState = do
   pkgs <- rawCurrentState
-  time <- (toSimpleTime . toUTCTime) <$> liftIO getClockTime
+  time <- liftIO localTime
   let namesVers = map (pair . words) pkgs
       pair      = \(x:y:_) -> (x, comparableVer y)
   return . PkgState time . M.fromAscList $ namesVers

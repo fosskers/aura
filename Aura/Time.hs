@@ -22,7 +22,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.Time
-    ( localTime
+    ( dotFormat
+    , localTime
     , Time ) where
 
 import Control.Applicative ((<$>))
@@ -47,13 +48,13 @@ localTime :: IO Time
 localTime = toTime . zonedTimeToLocalTime <$> getZonedTime
 
 toTime :: LocalTime -> Time
-toTime c = Time { yearOf   = ye
+toTime t = Time { yearOf   = ye
                 , monthOf  = mo
                 , dayOf    = da
                 , hourOf   = ho
                 , minuteOf = mi }
-    where (ye,mo,da) = toGregorian $ localDay c
-          (ho,mi)    = (todHour $ localTimeOfDay c, todMin $ localTimeOfDay c)
+    where (ye,mo,da) = toGregorian $ localDay t
+          (ho,mi)    = (todHour $ localTimeOfDay t, todMin $ localTimeOfDay t)
 
 dotFormat :: Time -> String
 dotFormat t = intercalate "." items
