@@ -1,8 +1,8 @@
--- An interface to System.Time
+-- An interface to Data.Time
 
 {-
 
-Copyright 2012 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -22,41 +22,43 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.Time
-    ( getClockTime
-    , toUTCTime
-    , toSimpleTime
-    , dotFormat 
-    , SimpleTime ) where
+    ( localTime
+    , Time ) where
 
-import System.Time (getClockTime, toUTCTime, CalendarTime(..), Month(..))
-import Text.Printf (printf)
-import Data.Maybe  (fromJust)
-import Data.List   (intercalate,elemIndex)
+import Control.Applicative ((<$>))
+import Text.Printf         (printf)
+import Data.List           (intercalate)
+import Data.Time
 
 ---
 
-data SimpleTime = SimpleTime { yearOf   :: Int
-                             , monthOf  :: Month
-                             , dayOf    :: Int
-                             , hourOf   :: Int
-                             , minuteOf :: Int }
-                  deriving (Eq,Show,Read)
+data Time = Time { yearOf   :: Integer
+                 , monthOf  :: Int
+                 , dayOf    :: Int
+                 , hourOf   :: Int
+                 , minuteOf :: Int }
+            deriving (Eq,Show,Read)
 
-toSimpleTime :: CalendarTime -> SimpleTime
-toSimpleTime c = SimpleTime { yearOf   = ctYear c
-                            , monthOf  = ctMonth c
-                            , dayOf    = ctDay c
-                            , hourOf   = ctHour c
-                            , minuteOf = ctMin c }
+months :: [String]
+months = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"
+         , "Oct", "Nov", "Dec" ]
 
-dotFormat :: SimpleTime -> String
+localTime :: IO Time
+localTime = toTime . zonedTimeToLocalTime <$> getZonedTime
+
+toTime :: LocalTime -> Time
+toTime c = Time { yearOf   = ye
+                , monthOf  = mo
+                , dayOf    = da
+                , hourOf   = ho
+                , minuteOf = mi }
+    where (ye,mo,da) = toGregorian $ localDay c
+          (ho,mi)    = (todHour $ localTimeOfDay c, todMin $ localTimeOfDay c)
+
+dotFormat :: Time -> String
 dotFormat t = intercalate "." items
     where items = [ show $ yearOf t
-                  , printf "%02d(%s)" (monthNum $ monthOf t)
-                    (take 3 . show . monthOf $ t)
+                  , printf "%02d(%s)" (monthOf t) (months !! (monthOf t - 1))
                   , printf "%02d" (dayOf t)
                   , printf "%02d" (hourOf t)
                   , printf "%02d" (minuteOf t) ]
-
-monthNum :: Month -> Int
-monthNum m = 1 + fromJust (elemIndex m [January ..])
