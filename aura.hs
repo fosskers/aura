@@ -128,7 +128,7 @@ executeOpts (flags,input,pacOpts) =
           badFlags       -> scoldAndFail executeOpts_1
     (Cache:fs) ->
         case fs of
-          []             -> sudo $ C.downgradePackages input
+          []             -> sudo $ C.downgradePackages pacOpts input
           [Clean]        -> sudo $ C.cleanCache input
           [Clean,Clean]  -> sudo C.cleanNotSaved
           [Search]       -> C.searchCache input

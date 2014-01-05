@@ -52,15 +52,15 @@ import Utilities
 
 -- | Interactive. Gives the user a choice as to exactly what versions
 -- they want to downgrade to.
-downgradePackages :: [String] -> Aura ()
-downgradePackages []   = return ()
-downgradePackages pkgs = asks cachePathOf >>= \cachePath -> do
+downgradePackages :: [String] -> [String] -> Aura ()
+downgradePackages _ []         = return ()
+downgradePackages pacOpts pkgs = asks cachePathOf >>= \cachePath -> do
   reals <- pkgsInCache pkgs
   reportBadDowngradePkgs (pkgs \\ reals)
   unless (null reals) $ do
     cache   <- cacheContents cachePath
     choices <- mapM (getDowngradeChoice cache) reals
-    pacman $ "-U" : map (cachePath </>) choices
+    pacman $ "-U" : pacOpts ++ map (cachePath </>) choices
                
 getDowngradeChoice :: Cache -> String -> Aura String
 getDowngradeChoice cache pkg = do
