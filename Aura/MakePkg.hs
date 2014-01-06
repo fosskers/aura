@@ -46,26 +46,27 @@ makepkg :: Aura (String -> Aura [FilePath])
 makepkg = asks suppressMakepkg >>= \quiet ->
           if quiet then return makepkgQuiet else return makepkgVerbose
 
--- TODO: Clean this up.
+-- TODO: Clean this up. Incompatible with `-x` and `--ignorearch`?
 -- | Make a source package.
 makepkgSource :: String -- ^ User
               -> Bool   -- ^ Include downloaded sources (--allsource)
               -> Aura [FilePath]
 makepkgSource user allsource =
-  let allsourceOpt = if allsource then "--allsource" else "-S"
-      (cmd, opts)  = determineRunStyle user [allsourceOpt]
-  in quietShellCmd cmd opts >> filter (=~ ".src.tar") <$> liftIO (pwd >>= ls)
+    quietShellCmd cmd opts >> filter (=~ ".src.tar") <$> liftIO (pwd >>= ls)
+        where
+          allsourceOpt = if allsource then "--allsource" else "-S"
+          (cmd,opts)   = runStyle user [allsourceOpt]
 
 -- Builds a package with `makepkg`.
 -- Some packages create multiple .pkg.tar files. These are all returned.
 makepkgGen :: (String -> [String] -> Aura a) -> String -> Aura [FilePath]
-makepkgGen f user =
-    f cmd opts >> filter (=~ ".pkg.tar") <$> liftIO (pwd >>= ls)
-      where (cmd,opts) = determineRunStyle user []
+makepkgGen make user = asks makepkgFlagsOf >>= \clfs -> do
+    let (cmd,opts) = runStyle user clfs
+    make cmd (opts ++ clfs) >> filter (=~ ".pkg.tar") <$> liftIO (pwd >>= ls)
 
-determineRunStyle :: String -> [String] -> (String,[String])
-determineRunStyle "root" opts = (makepkgCmd, "--asroot" : opts)
-determineRunStyle user opts = ("su",[user,"-c",makepkgCmd ++ " " ++ unwords opts])
+runStyle :: String -> [String] -> (String,[String])
+runStyle "root" opts = (makepkgCmd, "--asroot" : opts)
+runStyle user opts   = ("sudo",["-u", user, makepkgCmd] ++ opts)
 
 makepkgQuiet :: String -> Aura [FilePath]
 makepkgQuiet user = makepkgGen quiet user
