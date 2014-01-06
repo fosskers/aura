@@ -44,6 +44,7 @@ data Settings = Settings { inputOf         :: [String]
                          , editorOf        :: String
                          , carchOf         :: String
                          , ignoredPkgsOf   :: [String]
+                         , makepkgFlagsOf  :: [String]
                          , buildPathOf     :: FilePath
                          , cachePathOf     :: FilePath
                          , logFilePathOf   :: FilePath

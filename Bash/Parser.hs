@@ -173,7 +173,6 @@ andStatement = do
   body <- field
   return $ If cond [body] Nothing
 
--- Only tries to parse equality checks at the moment.
 comparison :: Parser Comparison
 comparison = do
   spaces >> leftBs >> spaces

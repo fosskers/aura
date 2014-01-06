@@ -75,7 +75,7 @@ data InstallType = Pacman String | Build Buildable
 
 -- | A package to be built manually before installing.
 data Buildable = Buildable
-    { baseNameOf :: String  -- What is this?
+    { baseNameOf :: String
     , pkgbuildOf :: Pkgbuild
     -- | Did the user select this package, or is it being built as a dep?
     , isExplicit :: Bool

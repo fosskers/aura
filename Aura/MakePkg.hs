@@ -29,7 +29,7 @@ module Aura.MakePkg
 import Text.Regex.PCRE ((=~))
 
 import Aura.Monad.Aura
-import Aura.Settings.Base (suppressMakepkg)
+import Aura.Settings.Base (suppressMakepkg,makepkgFlagsOf)
 import Aura.Shell (shellCmd, quietShellCmd, quietShellCmd', checkExitCode')
 
 import Shell (pwd, ls)

@@ -59,6 +59,7 @@ getSettings lang (auraFlags,input,pacOpts) = do
                                       "COULDN'T READ $CARCH"
                   , ignoredPkgsOf   = getIgnoredPkgs confFile ++
                                       ignoredAuraPkgs auraFlags
+                  , makepkgFlagsOf  = makepkgFlags auraFlags
                   , buildPathOf     = buildPath'
                   , cachePathOf     = getCachePath confFile
                   , logFilePathOf   = getLogFilePath confFile
@@ -86,7 +87,7 @@ debugOutput ss = do
                  , "Using Sudo?       => " ++ yn (varExists "SUDO_USER" env)
                  , "Pacman Flags      => " ++ unwords (pacOptsOf ss)
                  , "Other Flags       => " ++ unwords (otherOptsOf ss)
-                 , "Other input       => " ++ unwords (inputOf ss)
+                 , "Other Input       => " ++ unwords (inputOf ss)
                  , "Language          => " ++ show (langOf ss)
                  , "Pacman Command    => " ++ pacmanCmdOf ss
                  , "Editor            => " ++ editorOf ss

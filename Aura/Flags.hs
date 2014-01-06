@@ -36,6 +36,7 @@ module Aura.Flags
     , customizepkgStatus
     , notSettingsFlag
     , ignoredAuraPkgs
+    , makepkgFlags
     , buildPath
     , buildUser
     , auraOperMsg
@@ -96,6 +97,7 @@ data Flag = ABSInstall
           | ViewConf
           | RestoreState
           | NoPowerPill
+          | IgnoreArch
           | Languages
           | Version
           | Help
@@ -119,8 +121,8 @@ allFlags lang = concat [ auraOperations lang
                        , pacmanOptions
                        , dualOptions ]
 
-simpleMakeOption :: ([Char],[String],Flag) -> OptDescr Flag
-simpleMakeOption (c,s,f) = Option c s (NoArg f) ""
+simpleOption :: ([Char],[String],Flag) -> OptDescr Flag
+simpleOption (c,s,f) = Option c s (NoArg f) ""
 
 auraOperations :: Language -> [OptDescr Flag]
 auraOperations lang =
@@ -135,7 +137,7 @@ auraOptions :: [OptDescr Flag]
 auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
               Option [] ["build"]     (ReqArg BuildPath "" ) "" :
               Option [] ["builduser"] (ReqArg BuildUser "" ) "" :
-              map simpleMakeOption
+              map simpleOption
               [ ( ['a'], ["delmakedeps"],  DelMDeps      )
               , ( ['b'], ["backup"],       CacheBackup   )
               , ( ['c'], ["clean"],        Clean         )
@@ -159,6 +161,7 @@ auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
               , ( [],    ["devel"],        Devel         )
               , ( [],    ["head"],         TruncHead     )
               , ( [],    ["hotedit"],      HotEdit       )
+              , ( [],    ["ignorearch"],   IgnoreArch    )
               , ( [],    ["languages"],    Languages     )
               , ( [],    ["no-pp"],        NoPowerPill   )
               , ( [],    ["tail"],         TruncTail     )
@@ -166,18 +169,18 @@ auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
 
 -- These are intercepted Pacman flags. Their functionality is different.
 pacmanOptions :: [OptDescr Flag]
-pacmanOptions = map simpleMakeOption
+pacmanOptions = map simpleOption
                 [ ( ['y'], ["refresh"], Refresh )
                 , ( ['V'], ["version"], Version )
                 , ( ['h'], ["help"],    Help    ) ]
 
 -- Options that have functionality stretching across both Aura and Pacman.
 dualOptions :: [OptDescr Flag]
-dualOptions = map simpleMakeOption
+dualOptions = map simpleOption
               [ ( [], ["noconfirm"], NoConfirm ) ]
 
 languageOptions :: [OptDescr Flag]
-languageOptions = map simpleMakeOption
+languageOptions = map simpleOption
                   [ ( [], ["japanese","日本語"],      JapOut      )
                   , ( [], ["polish","polski"],        PolishOut   )
                   , ( [], ["croatian","hrvatski"],    CroatianOut )
@@ -222,7 +225,7 @@ reconvertFlag flagMap f = fromMaybe "" $ f `lookup` flagMap
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
                 , DelMDeps,Customizepkg,Quiet,NoPowerPill,KeepSource,BuildABSDeps
-                , ABCSort, TruncHead, TruncTail ]
+                , ABCSort, TruncHead, TruncTail, IgnoreArch ]
 
 -- Flags like `Ignore` and `BuildPath` have args, and thus can't be included
 -- in the `settingsFlags` list.
@@ -236,7 +239,7 @@ auraOperMsg :: Language -> String
 auraOperMsg lang = usageInfo (yellow $ auraOperTitle lang) $ auraOperations lang
 
 -- Extracts desirable results from given Flags.
--- Callers must supply an alternate value for when there are no matches.
+-- Callers must supply an [alt]ernate value for when there are no matches.
 fishOutFlag :: [(Flag,a)] -> a -> [Flag] -> a
 fishOutFlag [] alt _             = alt
 fishOutFlag ((f,r):fs) alt flags | f `elem` flags = r
@@ -278,6 +281,9 @@ customizepkgStatus = fishOutFlag [(Customizepkg,True)] False
 noPowerPillStatus  = fishOutFlag [(NoPowerPill,True)] False
 keepSourceStatus   = fishOutFlag [(KeepSource,True)] False
 buildABSDepsStatus = fishOutFlag [(BuildABSDeps,True)] False
+
+makepkgFlags :: [Flag] -> [String]
+makepkgFlags = fishOutFlag [(IgnoreArch,["--ignorearch"])] []
 
 parseLanguageFlag :: [String] -> (Maybe Language,[String])
 parseLanguageFlag args =
