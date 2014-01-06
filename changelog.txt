@@ -3,6 +3,9 @@ Aura Changelog
 1.2.2.0
 -------
 - Happy New Year!
+- makepkg's `--ignorearch` flag is now visible to Aura.
+  This allows users to build AUR packages on ARM devices
+  without worrying about architecture restrictions in PKGBUILDs.
 - Use `--head` and `--tail` to truncate `-As` results.
 - `-B` now uses local time.
 - Bug fixes
