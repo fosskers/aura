@@ -75,10 +75,12 @@ function = Function <$> name <*> body <?> "valid function definition"
     where name = spaces *> many1 (noneOf " =(}\n")
           body = string "() {" *> spaces *> manyTill field (char '}')
 
--- | A variable looks like: name=string or name=(string string string)
+-- | A variable looks like: `name=string`, `name=(string string string)`
+-- or even `name=`
 variable :: Parser Field
-variable = Variable <$> name <*> (array <|> single) <?> "valid var definition"
-    where name = spaces *> many1 (alphaNum <|> char '_') <* char '='
+variable = Variable <$> name <*> (blank <|> array <|> single) <?> "valid var definition"
+    where name  = spaces *> many1 (alphaNum <|> char '_') <* char '='
+          blank = [] <$ space
 
 array :: Parser [BashString]
 array = concat . catMaybes <$> array' <?> "valid array"
