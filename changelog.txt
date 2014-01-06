@@ -8,7 +8,7 @@ Aura Changelog
   without worrying about architecture restrictions in PKGBUILDs.
 - Use `--head` and `--tail` to truncate `-As` results.
 - `-B` now uses local time.
-- Bug fixes
+- Bug fixes and translation updates
 
 1.2.1.3
 -------
