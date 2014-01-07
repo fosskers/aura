@@ -1247,19 +1247,19 @@ getAURPkgInfo_1 _         = "AUR API lookup failed. Please check your connection
 
 -- `Maintainer` value NEEDS UPDATING!
 infoFields :: Language -> [String]
-infoFields English    = [ "Repository","Name","Version","AUR Status","Maintainer","Project URL","AUR URL","License", "Votes","Description" ]
-infoFields Japanese   = [ "リポジトリ","名前","バージョン","パッケージ状態","管理者","プロジェクト","パッケージページ","ライセンス","投票数","概要" ]
-infoFields Polish     = [ "Repository","Nazwa","Wersja","Status w AUR","Maintainer","URL Projektu","URL w AUR","Licencja","Głosy","Opis" ]
-infoFields Croatian   = [ "Repozitorij","Ime","Verzija","AUR Stanje","Maintainer","URL Projekta","AUR URL","Licenca","Glasovi","Opis" ]
-infoFields Swedish    = [ "Repository","Namn","Version","AUR Status","Maintainer","Projekt URL","AUR URL","Licens","Röster","Beskrivning" ]
-infoFields German     = [ "Repository","Name","Version","AUR Status","Maintainer","Projekt URL","AUR URL","Lizenz","Stimmen","Beschreibung" ]
-infoFields Spanish    = [ "Repository","Nombre","Versión","Estado en AUR","Maintainer","URL del proyecto","URL en AUR","Licencia", "Votos","Descripción" ]
-infoFields Portuguese = [ "Repositório","Nome","Versão","Estado no AUR","Maintainer","URL do projeto","URL no AUR","Licença", "Votos","Descrição" ]
-infoFields French     = [ "Dépôt","Nom","Version","Statut de AUR","Mainteneur","URL du projet","URL AUR","Licence", "Votes","Description" ]
-infoFields Russian    = [ "Репозиторий","Название","Версия","Статус в AUR","Maintainer","URL проекта","URL в AUR","Лицензия", "Рейтинг","Описание" ]
-infoFields Italian    = [ "Repository","Nome","Versione","Stato in AUR","Maintainer","URL del progetto","URL AUR","Licenza","Voti","Descrizione" ]
-infoFields Serbian    = [ "Ризница","Име","Верзија","Статус у AUR-у","Maintainer","Страница пројекта","Страница у AUR-у","Лиценца","Гласови","Опис" ]
-infoFields Norwegian  = [ "Depot","Navn","Versjon","AUR Status","Vedlikeholder","Prosjekt-URL","AUR URL","Lisens", "Stemmer","Beskrivelse" ]
+infoFields English    = [ "Repository","Name","Version","AUR Status","Maintainer","Project URL","AUR URL","License","Depends On","Build Deps","Votes","Description" ]
+infoFields Japanese   = [ "リポジトリ","名前","バージョン","パッケージ状態","管理者","プロジェクト","パッケージページ","ライセンス","従属パッケージ","作成時従属パ","投票数","概要" ]
+infoFields Polish     = [ "Repository","Nazwa","Wersja","Status w AUR","Maintainer","URL Projektu","URL w AUR","Licencja","Depends On","Build Deps","Głosy","Opis" ]
+infoFields Croatian   = [ "Repozitorij","Ime","Verzija","AUR Stanje","Maintainer","URL Projekta","AUR URL","Licenca","Depends On","Build Deps","Glasovi","Opis" ]
+infoFields Swedish    = [ "Repository","Namn","Version","AUR Status","Maintainer","Projekt URL","AUR URL","Licens","Depends On","Build Deps","Röster","Beskrivning" ]
+infoFields German     = [ "Repository","Name","Version","AUR Status","Maintainer","Projekt URL","AUR URL","Lizenz","Depends On","Build Deps","Stimmen","Beschreibung" ]
+infoFields Spanish    = [ "Repository","Nombre","Versión","Estado en AUR","Maintainer","URL del proyecto","URL en AUR","Licencia","Depends On","Build Deps","Votos","Descripción" ]
+infoFields Portuguese = [ "Repositório","Nome","Versão","Estado no AUR","Maintainer","URL do projeto","URL no AUR","Licença","Depends On","Build Deps","Votos","Descrição" ]
+infoFields French     = [ "Dépôt","Nom","Version","Statut de AUR","Mainteneur","URL du projet","URL AUR","Licence","Depends On","Build Deps","Votes","Description" ]
+infoFields Russian    = [ "Репозиторий","Название","Версия","Статус в AUR","Maintainer","URL проекта","URL в AUR","Лицензия","Depends On","Build Deps","Рейтинг","Описание" ]
+infoFields Italian    = [ "Repository","Nome","Versione","Stato in AUR","Maintainer","URL del progetto","URL AUR","Licenza","Depends On","Build Deps","Voti","Descrizione" ]
+infoFields Serbian    = [ "Ризница","Име","Верзија","Статус у AUR-у","Maintainer","Страница пројекта","Страница у AUR-у","Лиценца","Depends On","Build Deps","Гласови","Опис" ]
+infoFields Norwegian  = [ "Depot","Navn","Versjon","AUR Status","Vedlikeholder","Prosjekt-URL","AUR URL","Lisens","Depends On","Build Deps","Stemmer","Beskrivelse" ]
 
 outOfDateMsg :: Bool -> Language -> String
 outOfDateMsg True  English    = red "Out of Date!"

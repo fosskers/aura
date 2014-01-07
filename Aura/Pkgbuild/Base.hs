@@ -44,6 +44,16 @@ trueVersion ns = pkgver ++ "-" ++ pkgrel
     where pkgver = head $ value ns "pkgver"
           pkgrel = head $ value ns "pkgrel"
 
+-- | Yields the value of the `depends` field.
+depends :: Namespace -> [String]
+depends = flip value "depends"
+
+makedepends :: Namespace -> [String]
+makedepends = flip value "makedepends"
+
+checkdepends :: Namespace -> [String]
+checkdepends = flip value "checkdepends"
+
 -- One of my favourite functions in this code base.
 pbCustomization :: Buildable -> Aura Buildable
 pbCustomization = foldl (>=>) return [customizepkg,hotEdit]
@@ -56,6 +66,6 @@ packageBuildable b = do
     return Package
         { pkgNameOf        = baseNameOf b'
         , pkgVersionOf     = trueVersion ns
-        , pkgDepsOf        = concatMap (map parseDep . value ns)
-                             ["depends", "makedepends", "checkdepends"]
+        , pkgDepsOf        = map parseDep $ concatMap ($ ns)
+                             [depends,makedepends,checkdepends]
         , pkgInstallTypeOf = Build b' }

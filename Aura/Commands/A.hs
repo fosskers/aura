@@ -31,6 +31,7 @@ module Aura.Commands.A
     , displayPkgbuild ) where
 
 import Text.Regex.PCRE ((=~))
+import Data.Maybe      (fromJust)
 import Control.Monad
 import Data.Monoid
 import qualified Data.Set as S (member, fromList)
@@ -38,6 +39,7 @@ import qualified Data.Set as S (member, fromList)
 import           Aura.Install (InstallOptions(..))
 import qualified Aura.Install as I
 
+import Aura.Pkgbuild.Base
 import Aura.Settings.Base
 import Aura.Packages.ABS (absDepsRepo)
 import Aura.Packages.AUR
@@ -45,6 +47,7 @@ import Aura.Colour.Text
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Utils
+import Aura.Bash (namespace, Namespace)
 import Aura.Core
 
 import Shell
@@ -102,13 +105,18 @@ develPkgCheck = ask >>= \ss ->
 aurPkgInfo :: [String] -> Aura ()
 aurPkgInfo pkgs = aurInfoLookup pkgs >>= mapM_ displayAurPkgInfo
 
+-- By this point, the Package definitely exists, so we can assume its
+-- PKGBUILD exists on the AUR servers as well.
 displayAurPkgInfo :: PkgInfo -> Aura ()
-displayAurPkgInfo info = ask >>= \ss ->
-    liftIO $ putStrLn $ renderAurPkgInfo ss info ++ "\n"
+displayAurPkgInfo info = ask >>= \ss -> do
+    let name = nameOf info
+    ns <- fromJust <$> downloadPkgbuild name >>= namespace name
+    liftIO $ putStrLn $ renderAurPkgInfo ss info ns ++ "\n"
 
-renderAurPkgInfo :: Settings -> PkgInfo -> String
-renderAurPkgInfo ss info = entrify ss fields entries
-    where fields  = map bForeground . infoFields . langOf $ ss
+renderAurPkgInfo :: Settings -> PkgInfo -> Namespace -> String
+renderAurPkgInfo ss info ns = entrify ss fields entries
+    where fields   = map bForeground . infoFields . langOf $ ss
+          empty x  = case x of [] -> "None"; _ -> x
           entries = [ magenta "aur"
                     , bForeground $ nameOf info
                     , latestVerOf info
@@ -117,6 +125,8 @@ renderAurPkgInfo ss info = entrify ss fields entries
                     , cyan $ projectURLOf info
                     , aurURLOf info
                     , licenseOf info
+                    , empty . unwords . depends $ ns
+                    , empty . unwords . makedepends $ ns
                     , yellow . show . votesOf $ info
                     , descriptionOf info ]
 
