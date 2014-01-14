@@ -76,8 +76,8 @@ build' :: [Buildable] -> Aura ([FilePath],[Buildable])
 build' []     = failure "build' : You should never see this."
 build' (p:ps) = ask >>= \ss -> do
   let user = buildUserOf ss
-  curr     <- liftIO pwd
-  getSourceCode p user curr
+  curr   <- liftIO pwd
+  getBuildScripts p user curr
   overwritePkgbuild p
   pNames <- join (makepkg <*> pure user)
 --  pNames <- makepkg >>= \f -> f user  -- Which is better?
@@ -86,12 +86,12 @@ build' (p:ps) = ask >>= \ss -> do
   liftIO $ cd curr
   return (paths,ps)
 
-getSourceCode :: Buildable -> String -> FilePath -> Aura ()
-getSourceCode pkg user currDir = liftIO $ do
+getBuildScripts :: Buildable -> String -> FilePath -> Aura ()
+getBuildScripts pkg user currDir = liftIO $ do
   chown user currDir []
-  sourceDir <- source pkg currDir
-  chown user sourceDir ["-R"]
-  cd sourceDir
+  scriptsDir <- buildScripts pkg currDir
+  chown user scriptsDir ["-R"]
+  cd scriptsDir
 
 overwritePkgbuild :: Buildable -> Aura ()
 overwritePkgbuild p = asks (\ss -> any ($ ss) checks) >>=

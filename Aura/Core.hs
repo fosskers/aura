@@ -75,13 +75,13 @@ data InstallType = Pacman String | Build Buildable
 
 -- | A package to be built manually before installing.
 data Buildable = Buildable
-    { baseNameOf :: String
-    , pkgbuildOf :: Pkgbuild
+    { baseNameOf   :: String
+    , pkgbuildOf   :: Pkgbuild
     -- | Did the user select this package, or is it being built as a dep?
-    , isExplicit :: Bool
+    , isExplicit   :: Bool
     -- | Fetch and extract the source code corresponding to the given package.
-    , source     :: FilePath     -- ^ Directory in which to extract the package.
-                 -> IO FilePath  -- ^ Path to the extracted source.
+    , buildScripts :: FilePath     -- ^ Directory in which to place the scripts.
+                   -> IO FilePath  -- ^ Path to the extracted scripts.
     }
 
 -- | A 'Repository' is a place where packages may be fetched from. Multiple

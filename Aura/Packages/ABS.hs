@@ -85,19 +85,17 @@ absDepsRepo = asks (getRepo . buildABSDeps)
 
 makeBuildable :: String -> String -> Aura Buildable
 makeBuildable repo name = do
-    pb <- absPkgbuild repo name
-    return Buildable
-        { baseNameOf = name
-        , pkgbuildOf = pb
-        , isExplicit = False
-        , source     = copyTo repo name }
+  pb <- absPkgbuild repo name
+  return Buildable { baseNameOf   = name
+                   , pkgbuildOf   = pb
+                   , isExplicit   = False
+                   , buildScripts = copyTo repo name }
 
 copyTo :: String -> String -> FilePath -> IO FilePath
 copyTo repo name fp = do
     void $ Sh.quietShellCmd "cp" ["-R",loc,fp]
     return $ fp </> name
-  where
-    loc = absBasePath </> repo </> name
+        where loc = absBasePath </> repo </> name
 
 -------
 -- WORK

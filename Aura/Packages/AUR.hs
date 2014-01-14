@@ -61,10 +61,10 @@ aurRepo = Repository $ \name ->
 
 makeBuildable :: String -> Pkgbuild -> Buildable
 makeBuildable name pb = Buildable
-    { baseNameOf = name
-    , pkgbuildOf = pb
-    , isExplicit = False
-    , source     = \fp -> sourceTarball fp name >>= decompress }
+    { baseNameOf   = name
+    , pkgbuildOf   = pb
+    , isExplicit   = False
+    , buildScripts = \fp -> sourceTarball fp name >>= decompress }
 
 isAurPackage :: String -> Aura Bool
 isAurPackage name = isJust <$> downloadPkgbuild name
