@@ -1,5 +1,9 @@
 Aura Changelog
 ==============
+1.2.2.1
+-------
+- `-Ai` now shows dependencies.
+
 1.2.2.0
 -------
 - Happy New Year!
