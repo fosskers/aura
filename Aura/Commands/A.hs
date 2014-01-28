@@ -88,6 +88,7 @@ upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
           else reportPkgsToUpgrade $ map prettify toUpgrade ++ devel
        install pacOpts $ map (nameOf . fst) toUpgrade ++ pkgs ++ devel
            where prettify (p,v) = nameOf p ++ " : " ++ v ++ " => " ++ latestVerOf p
+-- TODO: Use `printf` with `prettify` to line up the colons.
 
 auraCheck :: [String] -> Aura Bool
 auraCheck toUpgrade = do

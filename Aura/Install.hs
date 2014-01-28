@@ -169,6 +169,6 @@ pkgbuildDiffs ps = ask >>= check
 
 displayPkgbuild :: ([String] -> Aura [Maybe String]) -> [String] -> Aura ()
 displayPkgbuild getPBs ps = do
-  let line = "\n#========== NEXT PKGBUILD ==========#\n"
+  let line = yellow "\n#========== NEXT PKGBUILD ==========#\n"
   pbs <- intersperse line . catMaybes <$> getPBs ps
   mapM_ (liftIO . putStrLn) pbs
