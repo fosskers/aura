@@ -44,9 +44,9 @@ urlContents url = do
   responseBody `fmap` withManager (httpLbs req2)
 
 saveUrlContents :: FilePath -> String -> IO FilePath
-saveUrlContents path url = do
+saveUrlContents fpath url = do
   handle  <- openFile filePath WriteMode
   content <- urlContents url
   L.hPutStr handle content >> hClose handle >> return filePath
-    where filePath = path </> file
+    where filePath = fpath </> file
           (_,file) = splitFileName url
