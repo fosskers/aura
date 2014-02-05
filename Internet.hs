@@ -22,26 +22,31 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Internet
-    ( urlContents
+    ( unpack
+    , urlContents
     , urlEncodeVars
     , saveUrlContents ) where
 
-import qualified Data.ByteString as B (hPutStr)
+import qualified Data.ByteString.Lazy as L
 
-import System.FilePath (splitFileName, (</>))
-import Network.Curl    (curlGetString_, CurlBuffer)
-import Network.HTTP    (urlEncodeVars)
-import System.IO       (hClose, openFile, IOMode(WriteMode))
+import Data.ByteString.Lazy.Char8 (unpack)
+import System.FilePath      (splitFileName, (</>))
+import Network.HTTP         (urlEncodeVars)
+import System.IO            (hClose, openFile, IOMode(WriteMode))
+import Network.HTTP.Conduit
 
 ---
 
-urlContents :: CurlBuffer ty => String -> IO ty
-urlContents url = snd `fmap` curlGetString_ url []
+urlContents :: String -> IO L.ByteString
+urlContents url = do
+  req <- parseUrl url
+  let req2 = req { responseTimeout = Nothing}
+  responseBody `fmap` withManager (httpLbs req2)
 
 saveUrlContents :: FilePath -> String -> IO FilePath
 saveUrlContents path url = do
   handle  <- openFile filePath WriteMode
   content <- urlContents url
-  B.hPutStr handle content >> hClose handle >> return filePath
+  L.hPutStr handle content >> hClose handle >> return filePath
     where filePath = path </> file
           (_,file) = splitFileName url

@@ -1,6 +1,6 @@
 name:                aura
 
-version:             1.2.2.1
+version:             1.2.3.0
 
 synopsis:            A secure package manager for Arch Linux and the AUR, written in Haskell.
 
@@ -84,7 +84,6 @@ executable aura
                        Bash.Simplify
 
   build-depends:       mtl,
-                       curl,
                        json,
                        time,
                        unix,
@@ -98,4 +97,5 @@ executable aura
                        bytestring,
                        regex-pcre,
                        transformers,
+                       http-conduit,
                        base >= 4.6 && < 5

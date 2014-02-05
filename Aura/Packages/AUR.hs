@@ -83,7 +83,7 @@ pkgbuildUrl pkg = pkgBaseUrl pkg </> "PKGBUILD"
 
 downloadPkgbuild :: String -> Aura (Maybe Pkgbuild)
 downloadPkgbuild name = do
-    out <- liftIO . urlContents $ pkgbuildUrl name
+    out <- unpack <$> (liftIO . urlContents $ pkgbuildUrl name)
     return $ case out of
         "" -> Nothing
         _  -> Just out
@@ -156,7 +156,7 @@ aurInfoLookup pkgs = sortPkgInfo Alphabetically <$> getAURPkgInfo pkgs MultiInfo
 getAURPkgInfo :: [String] -> RPCType -> Aura [PkgInfo]
 getAURPkgInfo [] _    = return []
 getAURPkgInfo items t = do
-  infoJSON <- liftIO . urlContents . rpcUrl t $ items
+  infoJSON <- unpack <$> (liftIO . urlContents . rpcUrl t $ items)
   case resultToEither $ parseInfoJSON infoJSON of
     Left _     -> scoldAndFail getAURPkgInfo_1
     Right info -> return info
