@@ -29,7 +29,8 @@ module Internet
 
 import qualified Data.ByteString.Lazy as L
 
-import Data.ByteString.Lazy.Char8 (unpack)
+import Data.ByteString.Lazy.Char8 (pack, unpack)
+import Control.Exception    (catch)
 import System.FilePath      (splitFileName, (</>))
 import Network.HTTP         (urlEncodeVars)
 import System.IO            (hClose, openFile, IOMode(WriteMode))
@@ -41,7 +42,10 @@ urlContents :: String -> IO L.ByteString
 urlContents url = do
   req <- parseUrl url
   let req2 = req { responseTimeout = Nothing}
-  responseBody `fmap` withManager (httpLbs req2)
+  catch (fmap responseBody . withManager . httpLbs $ req2) handleException
+
+handleException :: HttpException -> IO L.ByteString
+handleException _ = return (pack "")
 
 saveUrlContents :: FilePath -> String -> IO FilePath
 saveUrlContents fpath url = do
