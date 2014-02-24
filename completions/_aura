@@ -257,6 +257,7 @@ _aura() {
         '-b[Backup the cache to a given directory.]'
         '-c[Given n, save n versions of each package file. Delete rest.]'
         '-s[Search the cache via a regex.]'
+        '*:installed package:_aura_completions_installed_packages'
     )
 
     # options for passing to _arguments: options for --viewlog commands
