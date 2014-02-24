@@ -68,4 +68,3 @@ sortInstall :: [Package] -> [Package]
 sortInstall ps = reverse . map (tripleFst . n) . topSort $ g
   where (g,n,_)    = graphFromEdges $ map toEdge ps
         toEdge pkg = (pkg, pkgNameOf pkg, map depNameOf $ pkgDepsOf pkg)
-

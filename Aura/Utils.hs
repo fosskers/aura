@@ -129,6 +129,8 @@ pkgFileNameAndVer p = (name,verNum')
 
 -- Also discards any non-number version info, like `rc`, etc.
 -- Example: "3.2rc6-1" becomes [3,2,6,1]
+-- TODO: `5.1` should expand to [5,1,0,0,0]
+-- `5-1` should expand to [5,0,0,0,1]
 comparableVer :: String -> [Int]
 comparableVer [] = []
 comparableVer n  =

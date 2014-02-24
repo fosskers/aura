@@ -1,5 +1,11 @@
 Aura Changelog
 ==============
+1.2.3.0
+-------
+- Moved to `Network.HTTP.Conduit` from `Network.Curl`
+  This fixes the AUR connection issues.
+  Binary size has increased by quite a bit.
+
 1.2.2.1
 -------
 - `-Ai` now shows dependencies.
