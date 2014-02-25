@@ -73,7 +73,7 @@ customizepkg b = asks useCustomizepkg >>= \use ->
 customizepkg' :: Buildable -> Aura Buildable
 customizepkg' p = withTempDir "customizepkg" $ do
   let conf = customizepkgPath </> baseNameOf p
-  ifFile (edit customize) nothing conf p
+  ifFile (edit $ const customize) nothing conf p
 
-customize :: FilePath -> IO ()
-customize pb = void $ quietShellCmd "customizepkg" ["--modify",pb]
+customize :: IO ()
+customize = void $ quietShellCmd "customizepkg" ["--modify"]
