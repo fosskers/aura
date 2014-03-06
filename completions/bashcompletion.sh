@@ -114,18 +114,18 @@ _aura_pacman() {
         [[ $cur = -* ]] && _arch_ptr2comp ${o#* } common ||
         case ${o% *} in
             D|R)
-                _aura-pacman_pkg Qq;;
+                _aura_pacman_pkg Qq;;
             Q)
-                { _arch_incomp 'g groups' && _aura-pacman_pkg Qg sort; }    ||
-                { _arch_incomp 'p file'   && _aura-pacman_file; }           ||
+                { _arch_incomp 'g groups' && _aura_pacman_pkg Qg sort; }    ||
+                { _arch_incomp 'p file'   && _aura_pacman_file; }           ||
                 _arch_incomp 'o owns'   || _arch_incomp 'u upgrades' ||
-                _aura-pacman_pkg Qq;;
+                _aura_pacman_pkg Qq;;
             S)
-                { _arch_incomp 'g groups' && _aura-pacman_pkg Sg; }      ||
-                { _arch_incomp 'l list'   && _aura-pacman_pkg Sl sort; } ||
-                _aura-pacman_pkg Slq;;
+                { _arch_incomp 'g groups' && _aura_pacman_pkg Sg; }      ||
+                { _arch_incomp 'l list'   && _aura_pacman_pkg Sl sort; } ||
+                _aura_pacman_pkg Slq;;
             U)
-                _aura-pacman_file;;
+                _aura_pacman_file;;
         esac
     fi
     true
@@ -136,4 +136,4 @@ _aura_pacman_file() {
 }
  
 complete -F _aura aura
-complete -F _aura-pacman -o default aura
+complete -F _aura_pacman -o default aura
