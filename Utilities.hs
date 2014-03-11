@@ -31,6 +31,7 @@ import Text.Regex.PCRE     ((=~))
 import Control.Monad       (void)
 import Text.Printf         (printf)
 import Data.List           (dropWhileEnd)
+import Data.Char           (digitToInt)
 import System.IO
 
 import Shell
@@ -43,6 +44,9 @@ type Regex = String
 
 ---
 
+---------
+-- STRING
+---------
 -- | A traditional `split` function.
 split :: Eq a => a -> [a] -> [[a]]
 split _ [] = []
@@ -62,9 +66,23 @@ lStrip, rStrip :: String -> String
 lStrip = dropWhile (`elem` whitespaces)
 rStrip = dropWhileEnd (`elem` whitespaces)
 
+-- The Int argument is the final length of the padded String,
+-- not the length of the pad. Is that stupid?
+postPad :: [a] -> a -> Int -> [a]
+postPad xs x len = take len $ xs ++ repeat x
+
+prePad :: [a] -> a -> Int -> [a]
+prePad xs x len = replicate (len - length xs) x ++ xs
+
 whitespaces :: [Char]
 whitespaces = [' ','\t']
 
+crunchInt :: String -> Int
+crunchInt = foldl (\acc i -> acc * 10 + digitToInt i) 0
+
+---------
+-- TUPLES
+---------
 -- I'm surprised the following three functions don't already exist.
 tripleFst :: (a,b,c) -> a
 tripleFst (a,_,_) = a
@@ -75,6 +93,21 @@ tripleSnd (_,b,_) = b
 tripleThrd :: (a,b,c) -> c
 tripleThrd (_,_,c) = c
 
+---------
+-- EITHER
+---------
+-- | Surprised this doesn't exist already either.
+fromRight :: Either a b -> b
+fromRight (Right x) = x
+fromRight (Left _)  = error "Value given was a Left."
+
+eitherToMaybe :: Either a b -> Maybe b
+eitherToMaybe (Left _)  = Nothing
+eitherToMaybe (Right x) = Just x
+
+--------
+-- REGEX
+--------
 -- | Replaces a (p)attern with a (t)arget in a line if possible.
 replaceByPatt :: [Pattern] -> String -> String
 replaceByPatt [] line = line
@@ -82,6 +115,23 @@ replaceByPatt ((p,t):ps) line | p == m    = replaceByPatt ps (b ++ t ++ a)
                               | otherwise = replaceByPatt ps line
                          where (b,m,a) = line =~ p :: (String,String,String)
 
+searchLines :: Regex -> [String] -> [String]
+searchLines pat = filter (=~ pat)
+
+--------------------
+-- Association Lists
+--------------------
+alElem :: Eq k => k -> [(k,a)] -> Bool
+alElem k al = case lookup k al of
+                Nothing -> False
+                Just _  -> True
+
+alNotElem :: Eq k => k -> [(k,a)] -> Bool
+alNotElem k = not . alElem k
+
+-----
+-- IO
+-----
 -- | Given a number of selections, allows the user to choose one.
 getSelection :: [String] -> IO String
 getSelection [] = return ""
@@ -103,9 +153,6 @@ timedMessage :: Int -> [String] -> IO ()
 timedMessage delay = mapM_ printMessage
     where printMessage msg = putStr msg >> hFlush stdout >> threadDelay delay
 
-searchLines :: Regex -> [String] -> [String]
-searchLines pat = filter (=~ pat)
-
 notNull :: [a] -> Bool
 notNull = not . null
 
@@ -119,19 +166,6 @@ decompress :: FilePath -> IO FilePath
 decompress file = do
   _ <- quietShellCmd' "bsdtar" ["-zxvf",file]
   return . dropExtension . dropExtension $ file
-
--- | Surprised this doesn't exist already either.
-fromRight :: Either a b -> b
-fromRight (Right x) = x
-fromRight (Left _)  = error "Value given was a Left."
-
--- The Int argument is the final length of the padded String,
--- not the length of the pad. Is that stupid?
-postPad :: [a] -> a -> Int -> [a]
-postPad xs x len = take len $ xs ++ repeat x
-
-prePad :: [a] -> a -> Int -> [a]
-prePad xs x len = replicate (len - length xs) x ++ xs
 
 -- | Perform an action within a given directory.
 inDir :: FilePath -> IO a -> IO a
@@ -184,14 +218,3 @@ ifFile a1 a2 file x = ifM (liftIO $ doesFileExist file) a1 a2 x
 
 nothing :: Monad m => m ()
 nothing = return ()
-
---------------------
--- Association Lists
---------------------
-alElem :: Eq k => k -> [(k,a)] -> Bool
-alElem k al = case lookup k al of
-                Nothing -> False
-                Just _  -> True
-
-alNotElem :: Eq k => k -> [(k,a)] -> Bool
-alNotElem k = not . alElem k

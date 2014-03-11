@@ -21,22 +21,26 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Utils.Numbers where
+module Aura.Utils.Numbers
+    ( Version(..)
+    , parseVersion ) where
 
 import Text.ParserCombinators.Parsec
 import Control.Applicative (pure, (<*),(*>),(<*>),(<$>),(<$))
-import Data.Char           (digitToInt)
+
+import Utilities (eitherToMaybe, crunchInt)
 
 ---
 
+-- TODO: Move this to a unified `Types` file?
 data Version = Version { unitsOf    :: [Unit]
                        , revisionOf :: Maybe Int }  -- The number after `-`.
                deriving (Eq,Show,Ord)
 
 data Unit = IUnit Int | SUnit String deriving (Eq,Show,Ord)
 
-parseVersion :: String -> Either ParseError Version
-parseVersion = parse version ""
+parseVersion :: String -> Maybe Version
+parseVersion = eitherToMaybe . parse version ""
 
 version :: Parser Version
 version = Version <$> units <*> optionMaybe revision
@@ -52,6 +56,3 @@ sunit = SUnit <$> many1 letter
 
 revision :: Parser Int
 revision = char '-' *> pure crunchInt <*> many1 digit
-
-crunchInt :: String -> Int
-crunchInt = foldl (\acc i -> acc * 10 + digitToInt i) 0
