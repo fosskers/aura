@@ -32,4 +32,5 @@ sampleSettings = Settings { environmentOf = undefined
                           , useCustomizepkg = False
                           , noPowerPill   = False
                           , keepSource    = False
-                          , buildABSDeps  = False }
+                          , buildABSDeps  = False 
+                          , dryRun	  = False }
