@@ -79,7 +79,7 @@ data Flag = ABSInstall
           | TreeSync
           | HotEdit
           | NoConfirm
-	  | DryRun 
+          | DryRun
           | Quiet
           | Ignore String
           | BuildPath FilePath
@@ -167,7 +167,7 @@ auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
               , ( [],    ["languages"],    Languages     )
               , ( [],    ["no-pp"],        NoPowerPill   )
               , ( [],    ["tail"],         TruncTail     )
-              , ( [],    ["dry-run"],      DryRun	 )
+              , ( [],    ["dryrun"],      DryRun	 )
               , ( [],    ["viewconf"],     ViewConf      ) ]
 
 -- These are intercepted Pacman flags. Their functionality is different.
@@ -284,7 +284,7 @@ customizepkgStatus = fishOutFlag [(Customizepkg,True)] False
 noPowerPillStatus  = fishOutFlag [(NoPowerPill,True)] False
 keepSourceStatus   = fishOutFlag [(KeepSource,True)] False
 buildABSDepsStatus = fishOutFlag [(BuildABSDeps,True)] False
-dryRunStatus	   = fishOutFlag [(DryRun,True)] False
+dryRunStatus       = fishOutFlag [(DryRun,True)] False
 
 makepkgFlags :: [Flag] -> [String]
 makepkgFlags = fishOutFlag [(IgnoreArch,["--ignorearch"])] []

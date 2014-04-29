@@ -84,10 +84,9 @@ install opts pacOpts pkgs = ask >>= \ss ->
                    depCheckFailure
         let (repoPkgs,buildPkgs) = partitionPkgs allPkgs
         reportPkgsToInstall (label opts) repoPkgs buildPkgs
-	if dryrun ss
-	    then scoldAndFail install_4 -- Maybe this should have its own failure message instead of the "manually aborted" one?
-            else continue <- optionalPrompt install_3
-            if not continue
+	unless (dryRun ss) $ do
+             continue <- optionalPrompt install_3
+             if not continue
                 then scoldAndFail install_4
                 else do
                     repoInstall pacOpts repoPkgs

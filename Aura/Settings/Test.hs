@@ -33,4 +33,4 @@ sampleSettings = Settings { environmentOf = undefined
                           , noPowerPill   = False
                           , keepSource    = False
                           , buildABSDeps  = False 
-                          , dryRun	  = False }
+                          , dryRun        = False }
