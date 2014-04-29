@@ -60,4 +60,5 @@ data Settings = Settings { inputOf         :: [String]
                          , useCustomizepkg :: Bool
                          , noPowerPill     :: Bool
                          , keepSource      :: Bool
-                         , buildABSDeps    :: Bool }
+                         , buildABSDeps    :: Bool 
+                         , dryRun	   :: Bool }
