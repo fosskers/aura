@@ -45,6 +45,7 @@ module Aura.Flags
     , buildABSDepsStatus
     , sortSchemeStatus
     , truncationStatus
+    , dryRunStatus
     , Flag(..) ) where
 
 import System.Console.GetOpt
@@ -78,6 +79,7 @@ data Flag = ABSInstall
           | TreeSync
           | HotEdit
           | NoConfirm
+	  | DryRun 
           | Quiet
           | Ignore String
           | BuildPath FilePath
@@ -165,6 +167,7 @@ auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
               , ( [],    ["languages"],    Languages     )
               , ( [],    ["no-pp"],        NoPowerPill   )
               , ( [],    ["tail"],         TruncTail     )
+              , ( [],    ["dry-run"],      DryRun	 )
               , ( [],    ["viewconf"],     ViewConf      ) ]
 
 -- These are intercepted Pacman flags. Their functionality is different.
@@ -281,6 +284,7 @@ customizepkgStatus = fishOutFlag [(Customizepkg,True)] False
 noPowerPillStatus  = fishOutFlag [(NoPowerPill,True)] False
 keepSourceStatus   = fishOutFlag [(KeepSource,True)] False
 buildABSDepsStatus = fishOutFlag [(BuildABSDeps,True)] False
+dryRunStatus	   = fishOutFlag [(DryRun,True)] False
 
 makepkgFlags :: [Flag] -> [String]
 makepkgFlags = fishOutFlag [(IgnoreArch,["--ignorearch"])] []
