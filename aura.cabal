@@ -1,6 +1,6 @@
 name:                aura
 
-version:             1.2.3.1
+version:             1.2.3.2
 
 synopsis:            A secure package manager for Arch Linux and the AUR, written in Haskell.
 
@@ -95,7 +95,7 @@ executable aura
                        temporary,
                        containers,
                        bytestring,
-                       regex-pcre,
                        transformers,
                        http-conduit,
+                       regex-pcre-builtin,
                        base >= 4.6 && < 5

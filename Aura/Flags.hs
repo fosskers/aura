@@ -228,7 +228,7 @@ reconvertFlag flagMap f = fromMaybe "" $ f `lookup` flagMap
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
                 , DelMDeps,Customizepkg,Quiet,NoPowerPill,KeepSource,BuildABSDeps
-                , ABCSort, TruncHead, TruncTail, IgnoreArch ]
+                , ABCSort, TruncHead, TruncTail, IgnoreArch, DryRun ]
 
 -- Flags like `Ignore` and `BuildPath` have args, and thus can't be included
 -- in the `settingsFlags` list.
