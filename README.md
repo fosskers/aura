@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/fosskers/aura.svg?branch=master)](https://travis-ci.org/fosskers/aura)
+
 What is Aura?
 =============
 Aura is a package manager for Arch Linux. It's main purpose is as an
