@@ -131,7 +131,7 @@ _aura()
                         --pkgbuild -q --quiet -s --search -u --sysupgrade -w \
                         --downloadonly -x --unsuppress -y --refresh \
                         --aurignore= --build= --builduser= -custom --devel \
-                        --hotedit --ignorearch --absdeps"
+                        --hotedit --ignorearch --absdeps --dryrun"
                     # include suboptions when searching
                     local a search_opts="--abc --head --tail"
                     for a in '-As' '-s' '--search'; do

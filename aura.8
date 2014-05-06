@@ -1,7 +1,7 @@
 .\" Man page for `aura`
 .\" Written by Colin Woodbury <colingw@gmail.com>
 
-.TH aura 8 "January 2014" "Aura" "Aura Manual"
+.TH aura 8 "May 2014" "Aura" "Aura Manual"
 
 .\" Disable hyphenation.
 .nh
@@ -180,6 +180,13 @@ customizepkg installed and set up correctly for this to work.
 When ran with \fI\-Au\fR, adds all development packages to the queue
 of packages to upgrade. Devel packages are those pulled directly
 from online repositories, via git / mercurial / etc.
+.RE
+.P
+\fB\-\-dryrun\fR
+.RS 4
+When ran with \fI\-A\fR or \fI\-Au\fR, update checks, PKGBUILD diffs, and
+dependency checks will be performed, but nothing will be built. Also usable
+with \fI\-M\fR.
 .RE
 .P
 \fB\-\-hotedit\fR
@@ -421,6 +428,9 @@ Fish => function search
           aura -As $argv
         end
 .RE
+.P
+5. Using \fIsudo \-E\fR when building will ensure that your local user's
+$EDITOR variable will be used, not root's.
 
 .SH SEE ALSO
 .P
