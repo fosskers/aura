@@ -83,7 +83,7 @@ languageNames German     = [ "Polnisch","Kroatisch","Schwedisch","Deutsch","Span
 languageNames Spanish    = [ "Polaco","Croata","Sueco","Alemán","Español","Portugués", "", "", "" ]
 languageNames Portuguese = [ "Polonês","Croata","Sueco","Alemão","Espanhol","Português", "", "", "" ]
 languageNames French     = [ "Polonais","Croate","Suédois","Allemand","Espagnol","Portugais", "Français", "Russe", "Italien", "Serbe", "Norvégien" ]
-languageNames Russian    = [ "Польский","Хорватский","Шведский","Немецкий","Испанский","Португальский", "Русский", "", "", "" ]
+languageNames Russian    = [ "Польский","Хорватский","Шведский","Немецкий","Испанский","Португальский", "Русский", "Итальянский", "Сербский", "Норвежский" ]
 languageNames Italian    = [ "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "", "" ]
 languageNames Serbian    = [ "Пољски","Хрватски","Шведски","Немачки","Шпански","Португалски","Француски","Руски","Италијански","Српски", "" ]
 languageNames Norwegian  = [ "Polsk","Kroatisk","Svensk","Tysk","Spansk","Portugisisk","Fransk","Russisk","Italiensk","Serbisk","Norsk" ]
@@ -146,6 +146,7 @@ checkDBLock_1 German     = "The Paketdatenbank ist gesperrt. Drücken Sie Enter 
 checkDBLock_1 Norwegian  = "Pakkedatabasen er låst. Trykk enter når den er åpnet for å fortsette."
 checkDBLock_1 French     = "La base de données des paquets est bloquée. Appuyez sur enter pour continuer."
 checkDBLock_1 Portuguese = "Banco de dados de pacote travado. Aperte 'enter' quando estivier detravado para poder continuar."
+checkDBLock_1 Russian    = "База данных пакетов заблокирована. Нажмите \"Ввод\", когда она разблокируется, чтобы продолжить."
 checkDBLock_1 _          = "The package database is locked. Press enter when it's unlocked to continue."
 
 -- Packages should not be built if the user is logged in as root!
@@ -295,6 +296,7 @@ buildFail_6 Croatian  = "Želite li svejedno nastaviti?"
 buildFail_6 Norwegian = "Vil du fortsette likevel?"
 buildFail_6 Italian   = "Vuoi continuare comunque?"
 buildFail_6 French    = "Voulez-vous tout de même continuer ?"
+buildFail_6 Russian   = "Продолжить не смотря ни на что?"
 buildFail_6 _         = "Would you like to continue anyway?"
 
 displayBuildErrors_1 :: Language -> String
@@ -367,6 +369,7 @@ missingPkg_1 p Croatian  = "Zavisnost  " ++ bt p ++ " nije pronađena. Pokušajt
 missingPkg_1 p Norwegian = "Avhengigheten " ++ bt p ++ " ble ikke funnet. Du kan søke etter en pakke som tilfredsstiller avhengigheten."
 missingPkg_1 p Italian   = "La dipendenza " ++ bt p ++ " non è stata trovata. Potrebbe essere necessario cercare un pacchetto che possa soddisfarla?"
 missingPkg_1 p French    = "La dépendance " ++ bt p ++ " n'a pas pu être trouvée. Il vous faut trouver un paquet pour la satisfaire."
+missingPkg_1 p Russian   = "Зависимость " ++ bt p ++ " не найдена. Возможно, вам нужно поискать пакет, чтобы удовлетворить её."
 missingPkg_1 p _         = "The dependency " ++ bt p ++ " could not be found. You may need to search for a package to satisfy it."
 
 -----------------
@@ -514,7 +517,7 @@ reportNonPackages_1 German     = "Folgende sind keine Pakete:"
 reportNonPackages_1 Spanish    = "Los siguientes no son paquetes:"
 reportNonPackages_1 Portuguese = "Os seguintes não são pacotes:"
 reportNonPackages_1 French     = "Les éléments suivants ne sont pas des paquets AUR :"
-reportNonPackages_1 Russian    = "Ниже указано то, что не является пакетами:"
+reportNonPackages_1 Russian    = "Ниже указано то, что не является пакетами AUR:"
 reportNonPackages_1 Italian    = "I seguenti pacchetti non sono presenti in AUR:"
 reportNonPackages_1 Serbian    = "Ово нису пакети:"
 reportNonPackages_1 Norwegian  = "Det følgende er ikke AUR-pakker:"
@@ -557,6 +560,7 @@ reportPkgsToInstall_2 l German    = l ++ " Pakete:"
 reportPkgsToInstall_2 l Norwegian = l ++ " Pakker:"
 reportPkgsToInstall_2 l Italian   = l ++ " Pacchetti:"
 reportPkgsToInstall_2 l French    = l ++ " Paquets :"
+reportPkgsToInstall_2 l Russian   = l ++ " Пакеты:"
 reportPkgsToInstall_2 l _         = l ++ " Packages:"
 
 {-}
@@ -657,7 +661,7 @@ reportBadDowngradePkgs_1 German     = "Folgende Pakete sind nicht installiert un
 reportBadDowngradePkgs_1 Spanish    = "Los siguientes paquetes no están instalados, por lo que no se pueden retornar a versiones antiguas:"
 reportBadDowngradePkgs_1 Portuguese = "Os seguintes pacotes não estão instalados, logo não podem retornar a uma versão anterior:"
 reportBadDowngradePkgs_1 French     = "Aucune version des paquets suivants n'est présente dans le cache ; ils ne peuvent pas être mis à niveau à une version antérieure :"
-reportBadDowngradePkgs_1 Russian    = "Следующие пакеты не установлены, а следовательно, не могут быть откачены к старой версии:"
+reportBadDowngradePkgs_1 Russian    = "Следующих пакетов нет в кэше. Следовательно, они не могут быть откачены к старой версии:"
 reportBadDowngradePkgs_1 Italian    = "I seguenti pacchetti non hanno versioni in cache e non posso essere retrocessi:"
 reportBadDowngradePkgs_1 Serbian    = "Следећи пакети нису ни инсталирани, те се не могу вратити на старију верзију:"
 reportBadDowngradePkgs_1 Norwegian  = "Følgende pakker har ingen versjoner i cache, og kan derfor ikke bli nedgradert:"
@@ -764,6 +768,7 @@ cleanStates_1 Serbian   = "Улаз није валидан број."
 cleanStates_1 Norwegian = "Oppføringen er ikke et gyldig nummer."
 cleanStates_1 Italian   = "Non è un numero valido."
 cleanStates_1 French    = "La valeur entrée n'est pas un nombre valide."
+cleanStates_1 Russian   = "Введенные данные -- не валидное число."
 cleanStates_1 _         = "Input isn't a valid number."
 
 -- NEEDS TRANSLATION
@@ -775,6 +780,7 @@ cleanStates_2 n Serbian   = bt (show n) ++ " стања пакета ће бит
 cleanStates_2 n Norwegian = bt (show n) ++ " pakketilstander vil bli beholdt. Vil du fjerne resten?"
 cleanStates_2 n Italian   = bt (show n) ++ " lo stato dei pacchetti sarà mantenuto. Rimuovere i rimanenti?"
 cleanStates_2 n French    = bt (show n) ++ " états des paquets vont être conservés. Supprimer le reste ?"
+cleanStates_2 n Russian   = bt (show n) ++ " -- столько состояний пакетов будут оставлены. Удалить оставшиеся?"
 cleanStates_2 n _         = bt (show n) ++ " package states will be kept. Remove the rest?"
 
 -- NEEDS TRANSLATION
@@ -786,6 +792,7 @@ cleanStates_3 Serbian   = "Ниједно стање пакета није ук�
 cleanStates_3 Norwegian = "Ingen pakketilstander ble fjernet."
 cleanStates_3 Italian   = "Nessuno stato di pacchetto verrà rimosso."
 cleanStates_3 French    = "Aucun état des paquets n'a été supprimé."
+cleanStates_3 Russian   = "Состояния пакетов отались нетронутыми."
 cleanStates_3 _         = "No package states were removed."
 
 ----------------------------
@@ -1054,6 +1061,7 @@ cleanNotSaved_1 German    = "Bestimme nicht benötigte Paketdateien..."
 cleanNotSaved_1 Norwegian = "Finner unødige pakkefiler..."
 cleanNotSaved_1 Italian   = "Determino i pacchetti non più necessari..."
 cleanNotSaved_1 French    = "Détermination des fichiers de paquet inutiles…"
+cleanNotSaved_1 Russian   = "Вычисляются ненужные файлы пакетов..."
 cleanNotSaved_1 _         = "Determining unneeded package files..."
 
 cleanNotSaved_2 :: Int -> Language -> String
@@ -1063,6 +1071,7 @@ cleanNotSaved_2 s German    = cyan (show s) ++ " nicht benötigte Paketdateien g
 cleanNotSaved_2 s Norwegian = cyan (show s) ++ " unødige pakkefiler funnet. Vil du slette?"
 cleanNotSaved_2 s Italian   = cyan (show s) ++ " pacchetti non necessari trovati. Cancellarli?"
 cleanNotSaved_2 s French    = cyan (show s) ++ " paquets inutiles trouvés. Les supprimer ?"
+cleanNotSaved_2 s Russian   = cyan (show s) ++ " -- столько ненужных пакетных файлов обнаружено. Удалить?"
 cleanNotSaved_2 s _         = cyan (show s) ++ " unneeded package files found. Delete?"
 
 ----------------------------
@@ -1109,6 +1118,7 @@ cleanABSTree_1 German    = "Den gesamten ABS Baum löschen?"
 cleanABSTree_1 Norwegian = "Slett hele ABS-treet?"
 cleanABSTree_1 Italian   = "Cancellare l'intero albero ABS?"
 cleanABSTree_1 French    = "Supprimer la totalité de l'arbre ABS ?"
+cleanABSTree_1 Russian   = "Удалить дерево ABS полностью?"
 cleanABSTree_1 _         = "Delete the entire ABS Tree?"
 
 cleanABSTree_2 :: Language -> String
@@ -1118,6 +1128,7 @@ cleanABSTree_2 German    = "Lösche ABS Baum..."
 cleanABSTree_2 Norwegian = "Renser ABS-treet..."
 cleanABSTree_2 Italian   = "Ripulisco l'abero ABS..."
 cleanABSTree_2 French    = "Suppression de l'arbre ABS…"
+cleanABSTree_2 Russian   = "Удаляю дерево ABS..."
 cleanABSTree_2 _         = "Clearing out ABS Tree..."
 
 ----------------------
@@ -1184,6 +1195,7 @@ saveS Serbian   = yellow "Управља чувањем и враћањем гл
 saveS Norwegian = yellow "Administer lagring og gjenoppretting av den globale pakketilstanden.\n" ++ "Standard-handling lagrer denne tilstanden."
 saveS Italian   = yellow "Gestisco il [S]alvataggio e ripristino dello stato globale dei pacchetti.\n" ++ "Salva lo stato in maniera predefinita."
 saveS French    = yellow "Gestion de la [S]auvegarde et de la restauration de l'état global des paquets.\n" ++ "Par défaut, sauvegarde l'état actuel."
+saveS Russian   = yellow "Настроить [S]охранение и восстановление глобального состояние пакетов.\n" ++ "Действие по умолчанию сохраняет это состояние."
 saveS _         = yellow "Manage the [S]aving and restoring of the global package state.\n" ++ "Default action saves this state."
 
 downG :: Language -> String
@@ -1243,6 +1255,7 @@ getAURPkgInfo_1 Serbian   = "Приступ AUR-у није успео. Пров
 getAURPkgInfo_1 Norwegian = "AUR API-oppslag feilet. Vennligst sjekk tilkoblingen din."
 getAURPkgInfo_1 Italian   = "connessione ad AUR API fallita. Controllare la propria connessione."
 getAURPkgInfo_1 French    = "La recherche dans l'API AUR a échouée. Veuillez vérifiez votre connexion."
+getAURPkgInfo_1 Russian   = "Запрос к AUR API не удался. Пожалуйста, проверьте ваше соединение."
 getAURPkgInfo_1 _         = "AUR API lookup failed. Please check your connection."
 
 -- `Maintainer` value NEEDS UPDATING!
@@ -1256,7 +1269,7 @@ infoFields German     = [ "Repository","Name","Version","AUR Status","Maintainer
 infoFields Spanish    = [ "Repository","Nombre","Versión","Estado en AUR","Maintainer","URL del proyecto","URL en AUR","Licencia","Depends On","Build Deps","Votos","Descripción" ]
 infoFields Portuguese = [ "Repositório","Nome","Versão","Estado no AUR","Maintainer","URL do projeto","URL no AUR","Licença","Depends On","Build Deps","Votos","Descrição" ]
 infoFields French     = [ "Dépôt","Nom","Version","Statut de AUR","Mainteneur","URL du projet","URL AUR","Licence","Dépends de","Dépendances de compilation","Votes","Description" ]
-infoFields Russian    = [ "Репозиторий","Название","Версия","Статус в AUR","Maintainer","URL проекта","URL в AUR","Лицензия","Depends On","Build Deps","Рейтинг","Описание" ]
+infoFields Russian    = [ "Репозиторий","Название","Версия","Статус в AUR","Ответственный","URL проекта","URL в AUR","Лицензия","Depends On","Build Deps","Рейтинг","Описание" ]
 infoFields Italian    = [ "Repository","Nome","Versione","Stato in AUR","Maintainer","URL del progetto","URL AUR","Licenza","Depends On","Build Deps","Voti","Descrizione" ]
 infoFields Serbian    = [ "Ризница","Име","Верзија","Статус у AUR-у","Maintainer","Страница пројекта","Страница у AUR-у","Лиценца","Depends On","Build Deps","Гласови","Опис" ]
 infoFields Norwegian  = [ "Depot","Navn","Versjon","AUR Status","Vedlikeholder","Prosjekt-URL","AUR URL","Lisens","Depends On","Build Deps","Stemmer","Beskrivelse" ]
@@ -1309,6 +1322,7 @@ absSync_1 German    = "Lokalen ABS Baum synchronisieren?"
 absSync_1 Norwegian = "Synkroniser det lokale ABS-treet?"
 absSync_1 Italian   = "Sincronizzare l'albero ABS locale?"
 absSync_1 French    = "Synchroniser l'arbre ABS local ?"
+absSync_1 Russian   = "Синхронизировать локальное дерево ABS?"
 absSync_1 _         = "Sync the local ABS Tree?"
 
 absSync_2 :: Language -> String
@@ -1318,6 +1332,7 @@ absSync_2 German    = "Synchronisiere lokalen ABS Baum..."
 absSync_2 Norwegian = "Synkroniserer det lokale ABS-treet..."
 absSync_2 Italian   = "Sincronizzo l'albero ABS locale..."
 absSync_2 French    = "Synchronisation de l'arbre ABS local…"
+absSync_2 Russian   = "Синхронизируется локальное дерево ABS..."
 absSync_2 _         = "Syncing local ABS Tree..."
 
 singleSync_1 :: String -> Language -> String
@@ -1327,6 +1342,7 @@ singleSync_1 p German    = "Synchronisiere " ++ bt p ++ " in den lokalen ABS Bau
 singleSync_1 p Norwegian = "Synkroniserer " ++ bt p ++ " til det lokale ABS-treet..."
 singleSync_1 p Italian   = "Sincronizzo " ++ bt p ++ " nell'albero ABS locale..."
 singleSync_1 p French    = "Synchronisation de " ++ bt p ++ " dans l'arbre ABS local…"
+singleSync_1 p Russian   = bt p ++ " синхронизируется с локальным дерево ABS..."
 singleSync_1 p _         = "Syncing " ++ bt p ++ " to the local ABS Tree..."
 
 absInfoFields :: Language -> [String]
@@ -1335,6 +1351,7 @@ absInfoFields German    = [ "Quelle","Name","Version","Hängt ab von","Make Abh.
 absInfoFields Norwegian = [ "Depot","Navn","Versjon","Er avhengig av","Make Deps","Beskrivelse"]
 absInfoFields Italian   = [ "Repository","Nome","Versione","Dipende da","Make Deps","Descrizione" ]
 absInfoFields French    = [ "Dépôt","Nom","Version","Dépendances","Dépendances de compilation","Description" ]
+absInfoFields Russian   = [ "Репозиторий","Название","Версия","Зависит от","Зависимости Make","Описание" ]
 absInfoFields _         = [ "Repository","Name","Version","Depends On","Make Deps","Description" ]
 
 repository_1 :: String -> Language -> String
@@ -1344,6 +1361,7 @@ repository_1 p German    = p ++ " ist kein Paket in irgendeiner Quelle."
 repository_1 p Norwegian = p ++ " er ikke en pakke i noe depot."
 repository_1 p Italian   = p ++ " non è un pacchetto di nessun repository."
 repository_1 p French    = p ++ " n'est pas un paquet dans aucun des dépôts."
+repository_1 p Russian   = "Пакет " ++ p ++ " не найден ни в одном репозитории."
 repository_1 p _         = p ++ " is not a package in any repository."
 
 pkgBuildKeyMissing :: Language -> String -> String
@@ -1352,6 +1370,7 @@ pkgBuildKeyMissing German    key = "Kann Schlüssel " ++ key ++ " nicht aus PKGB
 pkgBuildKeyMissing Norwegian key = "Forstår ikke " ++ key ++ " fra PKGBUILD."
 pkgBuildKeyMissing Italian   key = "Inpossibile elaborare la chiave " ++ key ++ " dal PKGBUILD."
 pkgBuildKeyMissing French    key = "Impossible d'analyser la clef " ++ key ++ " depuis le PKGBUILD."
+pkgBuildKeyMissing Russian         key = "Не получилось разобрать ключ " ++ key ++ " из PKGBUILD."
 pkgBuildKeyMissing _         key = "Unable to parse key " ++ key ++ " from PKGBUILD."
 
 missingDescription :: Language -> String
@@ -1360,6 +1379,7 @@ missingDescription German    = "Keine Beschreibung."
 missingDescription Norwegian = "Ingen beskrivelse."
 missingDescription Italian   = "Nessuna Descrizione."
 missingDescription French    = "Aucune description."
+missingDescription Russian   = "Без описания."
 missingDescription _         = "No description."
 
 -----------------------
@@ -1374,6 +1394,7 @@ saveState_1 Serbian   = "Сачувано стање пакета."
 saveState_1 Norwegian = "Lagret pakketilstand."
 saveState_1 Italian   = "Stato del pacchetto salvato."
 saveState_1 French    = "État des paquets sauvegardé."
+saveState_1 Russian   = "Состояние пакетов сохранено."
 saveState_1 _         = "Saved package state."
 
 -- NEEDS TRANSLATION
@@ -1385,6 +1406,7 @@ restoreState_1 Serbian   = "Захтеване старе верзије нис�
 restoreState_1 Norwegian = "De spesifiserte nedgraderingsversjonene er ikke tilgjengelig for:"
 restoreState_1 Italian   = "Richiesta di retrocessione di versione non disponibile per:"
 restoreState_1 French    = "Version antérieure requise non disponible pour :"
+restoreState_1 Russian   = "Запрошенные версии для отката не доступны для:"
 restoreState_1 _         = "Requested downgrade versions not available for:"
 
 -- NEEDS TRANSLATION
@@ -1396,6 +1418,7 @@ reinstallAndRemove_1 Serbian   = "Ниједан пакет не захтева 
 reinstallAndRemove_1 Norwegian = "Ingen pakker trenger forandring."
 reinstallAndRemove_1 Italian   = "Nessun pacchetto necessita cambiamenti."
 reinstallAndRemove_1 French    = "Aucun paquet n'a besoin de changement."
+reinstallAndRemove_1 Russian   = "Пакеты не нуждаются в изменениях."
 reinstallAndRemove_1 _         = "No packages need changing."
 
 --------------------------------------
@@ -1410,6 +1433,7 @@ circDep_1 p Serbian   = "Има кружну зависност са " ++ bt p +
 circDep_1 p Norwegian = "Har en sirkulær avhengighet med " ++ bt p ++ "."
 circDep_1 p Italian   = "E' una dipendenza circolare di " ++ bt p ++ "."
 circDep_1 p French    = "A une dépendance circulaire avec " ++ bt p ++ "."
+circDep_1 p Russian   = "Имеет круговую зависимость с " ++ bt p ++ "."
 circDep_1 p _         = "Has a circular dependency with " ++ bt p ++ "."
 
 -- NEEDS TRANSLATION
@@ -1421,6 +1445,7 @@ bashisms_1 Serbian   = "Превише „bash-изама“ у PKGBUILD-у."
 bashisms_1 Norwegian = "For mange „bashismer“ i PKGBUILD."
 bashisms_1 Italian   = "Troppo 'bashisms' nel PKGBUILD."
 bashisms_1 French    = "Trop de « bashisms » dans le PKGBUILD."
+bashisms_1 Russian   = "В PKGBUILD слишком много башизмов."
 bashisms_1 _         = "Too many bashisms in PKGBUILD."
 
 ------------------------
@@ -1435,6 +1460,7 @@ pacmanFailure_1 Serbian   = "Молим Вас, проверите ваш уно
 pacmanFailure_1 Norwegian = "Vennligst sjekk din oppføring."
 pacmanFailure_1 Italian   = "Controllare il proprio input."
 pacmanFailure_1 French    = "Merci de vérifier les donnés entrées."
+pacmanFailure_1 Russian   = "Пожалуйста, проверьте ваши введенные данные."
 pacmanFailure_1 _         = "Please check your input."
 
 ----------------------------------
@@ -1462,4 +1488,5 @@ customizepkg_1 German    = bt "customizepkg" ++ "ist nicht installiert."
 customizepkg_1 Norwegian = bt "customizepkg" ++ "er ikke installert."
 customizepkg_1 Italian   = bt "customizepkg" ++ "non è installato."
 customizepkg_1 French    = bt "customizepkg" ++ "n'est pas installé."
+customizepkg_1 Russian   = bt "customizepkg" ++ "не установлен."
 customizepkg_1 _         = bt "customizepkg" ++ "isn't installed."
