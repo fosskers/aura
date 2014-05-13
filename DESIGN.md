@@ -26,6 +26,8 @@ as a reference for Aura's behaviour post-release.
 #### Dependency Information Output
 - Information for all immediate dependencies for any given package can be output
   in human-readable format by default with `-{A,M}d`.
+- Adding `--recursive` will yield all dependencies and _their_ dependencies
+  as well.
 - Adding `--json` will output this information in JSON for use by other
   softare that may sit on top of Aura.
 
@@ -48,6 +50,10 @@ automatically.
 #### JSON Data
 - All JSON input and output is handled through `aeson` and
   `aeson-pretty`.
+
+#### Other Libraries
+Information on other Hackage libraries used in Aura can be found
+[here](https://github.com/fosskers/aura/issues/223).
 
 ### Package Requirements
 Aura must be available in the following forms:
