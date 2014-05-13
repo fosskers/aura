@@ -1,7 +1,7 @@
 # Aura 2 Design
 
 ## Contents
-Links to sections here.
+Links to sections here. Is this possible in Markdown?
 
 ## Preface
 This is a design document for version 2 of
@@ -12,14 +12,27 @@ as a reference for Aura's behaviour post-release.
 
 ## Requirements
 ### Functional Requirements
-#### Package Building/Installation
+
+#### ABS Package Building/Installation
+- Installs prebuilt binaries available from Arch servers by default.
+  If the user specifies `--build`, the package will be built manually via
+  the ABS.
+
+#### AUR Package Building/Installation
+- Builds manually by default, as there is no prebuilt alternative for the AUR.
+
 #### Dependency Resolution
+
 #### Dependency Information Output
 - Information for all immediate dependencies for any given package can be output
   in human-readable format by default with `-{A,M}d`.
 - Adding `--json` will output this information in JSON for use by other
   softare that may sit on top of Aura.
-#### PKGBUILD Editing
+
+#### PKGBUILD/.install File Editing
+- If the user specifies `--edit` when building, they will be prompted to edit
+  PKGBUILDs and .install files (if they are present after download) in the
+  editor specifid by their local user's (non-sudo) $EDITOR variable.
 
 ### Haskell Requirements
 #### Strings
