@@ -16,7 +16,9 @@ as a reference for Aura's behaviour post-release.
 #### ABS Package Building/Installation
 - Installs prebuilt binaries available from Arch servers by default.
   If the user specifies `--build`, the package will be built manually via
-  the ABS.
+  the ABS. If the user specifies `--customizepkg` and there is an executable
+  file with the same name as the package in `/etc/customizepkg.d/`, the pacakage
+  will be built manually via ABS.
 
 #### AUR Package Building/Installation
 - Builds manually by default, as there is no prebuilt alternative for the AUR.
@@ -31,10 +33,17 @@ as a reference for Aura's behaviour post-release.
 - Adding `--json` will output this information in JSON for use by other
   softare that may sit on top of Aura.
 
-#### PKGBUILD/.install File Editing
+#### PKGBUILD/Additionaly Build File Editing
+- If the user specifies `--customizepkg` and there is a file with the same name
+  as the package in `/etc/customizepkg.d`, then `customizepkg -m` is run in the
+  directory downloaded from the ABS/AUR.
 - If the user specifies `--edit` when building, they will be prompted to edit
-  PKGBUILDs and .install files (if they are present after download) in the
-  editor specifid by their local user's (non-sudo) $EDITOR variable.
+  each of the files present after download in the editor specifid by their local
+  user's (non-sudo) $EDITOR variable.
+- If the user specifies `--namcap` and either of the above steps took place,
+  `namcap` is run on the modified PKGBUILD.
+- All of the above take place before dependency resolution, to give the user the
+  chance to edit dependencies.
 
 ### Haskell Requirements
 #### Strings
