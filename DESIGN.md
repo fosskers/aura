@@ -14,36 +14,40 @@ as a reference for Aura's behaviour post-release.
 ### Functional Requirements
 
 #### ABS Package Building/Installation
+- There is no longer a `-M` option. All ABS package interaction is done through
+  `-S`.
 - Installs prebuilt binaries available from Arch servers by default.
-  If the user specifies `--build`, the package will be built manually via
-  the ABS. If the user specifies `--customizepkg` and there is an executable
-  file with the same name as the package in `/etc/customizepkg.d/`, the pacakage
-  will be built manually via ABS.
+- Build options:
+..* If the user specifies `--build`, the package will be built manually via
+    the ABS.
+..* If the user specifies `--customizepkg`, the `customizepkg` program is
+    installed, and there is a specification file with the same name as the
+    package being built in `/etc/customizepkg.d/`, it will be built **manually**
+    via ABS.
 
 #### AUR Package Building/Installation
-- Builds manually by default, as there is no prebuilt alternative for the AUR.
+- Builds manually by default, as there is no prebuilt alternative for the AUR
+  (by design).
 
 #### Dependency Resolution
 
 #### Dependency Information Output
 - Information for all immediate dependencies for any given package can be output
-  in human-readable format by default with `-{A,M}d`.
+  in human-readable format by default with `-{A,S}d`.
 - Adding `--recursive` will yield all dependencies and _their_ dependencies
   as well.
 - Adding `--json` will output this information in JSON for use by other
-  softare that may sit on top of Aura.
+  software that may sit on top of Aura.
 
-#### PKGBUILD/Additionaly Build File Editing
-- If the user specifies `--customizepkg` and there is a file with the same name
-  as the package in `/etc/customizepkg.d`, then `customizepkg -m` is run in the
-  directory downloaded from the ABS/AUR.
-- If the user specifies `--edit` when building, they will be prompted to edit
-  each of the files present after download in the editor specifid by their local
-  user's (non-sudo) $EDITOR variable.
-- If the user specifies `--namcap` and either of the above steps took place,
-  `namcap` is run on the modified PKGBUILD.
-- All of the above take place before dependency resolution, to give the user the
-  chance to edit dependencies.
+#### PKGBUILD/Additional Build-file Editing
+- Support for `customizepkg` is dropped, as AUR 3.0 provides dependency
+  information via its API.
+- Support for `--hotedit` dropped. As dependency checking is done through
+  the API and not the PKGBUILDs, editing PKGBUILDs could cause a
+  discrepancy between `aura` and `makepkg`. If you need fine-grained control
+  over how the package is being built, building it manually with `makepkg` is
+  recommended. If you're trying to fix a broken package, please contact the
+  maintainer.
 
 ### Haskell Requirements
 #### Strings
