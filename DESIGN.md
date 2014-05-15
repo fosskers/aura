@@ -20,10 +20,6 @@ as a reference for Aura's behaviour post-release.
 - Build options:
   - If the user specifies `--build`, the package will be built manually via
     the ABS.
-  - If the user specifies `--customizepkg`, the `customizepkg` program is
-    installed, and there is a specification file with the same name as the
-    package being built in `/etc/customizepkg.d/`, it will be built **manually**
-    via ABS.
 
 #### AUR Package Building/Installation
 - Builds manually by default, as there is no prebuilt alternative for the AUR
