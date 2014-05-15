@@ -18,9 +18,9 @@ as a reference for Aura's behaviour post-release.
   `-S`.
 - Installs prebuilt binaries available from Arch servers by default.
 - Build options:
-..* If the user specifies `--build`, the package will be built manually via
+  - If the user specifies `--build`, the package will be built manually via
     the ABS.
-..* If the user specifies `--customizepkg`, the `customizepkg` program is
+  - If the user specifies `--customizepkg`, the `customizepkg` program is
     installed, and there is a specification file with the same name as the
     package being built in `/etc/customizepkg.d/`, it will be built **manually**
     via ABS.
@@ -46,10 +46,10 @@ as a reference for Aura's behaviour post-release.
   with `--edit`. This is done after dependency checks have been made via the
   data from the AUR API. Users are urged _not_ to edit dependencies at this
   point, as only `makepkg`, not Aura, will know about the changes.
-..* If you do want to build a package with different dependencies, consider
+  - If you do want to build a package with different dependencies, consider
     whether there is value in creating your own forked package for the AUR
     (named `foo-legacy`, etc.). Others may benefit from your effort.
-..* If you are trying to fix a broken package, rather than circumventing the
+  - If you are trying to fix a broken package, rather than circumventing the
     problem by building manually with `makepkg`, please contact the maintainer.
 
 ### Haskell Requirements
