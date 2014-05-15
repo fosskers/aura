@@ -42,12 +42,15 @@ as a reference for Aura's behaviour post-release.
 #### PKGBUILD/Additional Build-file Editing
 - Support for `customizepkg` is dropped, as AUR 3.0 provides dependency
   information via its API.
-- Support for `--hotedit` dropped. As dependency checking is done through
-  the API and not the PKGBUILDs, editing PKGBUILDs could cause a
-  discrepancy between `aura` and `makepkg`. If you need fine-grained control
-  over how the package is being built, building it manually with `makepkg` is
-  recommended. If you're trying to fix a broken package, please contact the
-  maintainer.
+- Users can edit included `.install` files and the **behaviour** of PKGBUILDs
+  with `--edit`. This is done after dependency checks have been made via the
+  data from the AUR API. Users are urged _not_ to edit dependencies at this
+  point, as only `makepkg`, not Aura, will know about the changes.
+..* If you do want to build a package with different dependencies, consider
+    whether there is value in creating your own forked package for the AUR
+    (named `foo-legacy`, etc.). Others may benefit from your effort.
+..* If you are trying to fix a broken package, rather than circumventing the
+    problem by building manually with `makepkg`, please contact the maintainer.
 
 ### Haskell Requirements
 #### Strings
@@ -63,6 +66,14 @@ automatically.
 #### JSON Data
 - All JSON input and output is handled through `aeson` and
   `aeson-pretty`.
+
+#### AUR Interaction
+- AUR API calls are moved out of Aura and into a new Hackage package
+  `archlinux-aur` (exposing the `Linux.Arch.Aur` module).
+- It provides conversions to and from JSON data and Haskell data.
+- This is preparation for future versions of Aura that allow use in
+  other Linux distributions by swapping out sections of their back-end
+  (with modules like `Linux.Debian.Repo` etc.)
 
 #### Other Libraries
 Information on other Hackage libraries used in Aura can be found
