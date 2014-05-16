@@ -26,6 +26,25 @@ as a reference for Aura's behaviour post-release.
   (by design).
 
 #### Dependency Resolution
+- AUR dependencies are no longer resolved through PKGBUILD bash parsing.
+  The AUR 3.0 API includes the necessary dependency information.
+- **Resolution Successful**: A List of packages in the order they should be
+  built in is yielded.
+- **Version Conflicts**:
+  - Dependency resolution fails and the build does not continue.
+  - The user is shown the chart below so it is clear what dependencies from
+    what packages are causing issues.
+  - All packages that had dependency issues are shown.
+  - Supplying the `--json` flag will output this data as JSON for capture
+    by other programs.
+
+| Dep Name | Parent | Version |
+| -------- | ------ | ------- |
+| foo      | Local  | 1.2.3   |
+| foo      | bar    | < 1.2.3 |
+| foo      | baz    | > 1.2.3 |
+
+**INCLUDE JSON EXAMPLE HERE**
 
 #### Dependency Information Output
 - Information for all immediate dependencies for any given package can be output
