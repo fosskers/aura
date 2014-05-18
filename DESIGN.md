@@ -1,7 +1,7 @@
 # Aura 2 Design
 
 ## Contents
-Links to sections here. Is this possible in Markdown?
+- [ABS Package Building/Installation](/DESIGN.md#abs-package-buildinginstallation)
 
 ## Preface
 This is a design document for version 2 of
