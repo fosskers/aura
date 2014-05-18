@@ -95,6 +95,24 @@ As JSON:
 - All output to terminal (save JSON data) is output in colour where appropriate.
   The user can disable this with `--no-colo{ur,r}`
 
+### Plugins
+This is very early stage planning.<BR>
+Suggestions:
+1. Like XMonad, behaviour is built around hooks/plugins that are themselves
+   written in Haskell. There could be hooks like `buildHook`, `apiHook`,
+   `installHook` etc., that can be overridden or added to. Aura comes
+   bundled with default behaviour, and a `AuraConf.hs` is written somewhere
+   for the users to edit if they wish. Some command `aura --recompile` could
+   rebuild it with the new Haskell-based changes added in. `AuraConf.hs`
+   could potentially be `.pacnew`d if need be.
+2. An interface via JSON. Build `stages` could be defined (Dep Check, Build,
+   Install, etc.) and the plugin would indicate which stage it was for.
+   Bash lines could be included to be called in a child process during
+   that stage. Either that, or some child process actor system where
+   Haskell data could be passed between actors to ensure type safety.
+   Those plugins could be packaged as `aura-plugin-foo` and installed
+   to some specific location where Aura would call for them.
+
 ### Haskell Requirements
 #### Strings
 - All Strings are represented as `Text` from `Data.Text`. This is available
