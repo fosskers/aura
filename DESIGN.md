@@ -166,8 +166,8 @@ Suggestions:
 3. JSON Data via stdin/stdout:
   - This is how [neovim](https://github.com/neovim/neovim) plans to implement
     their plugin system. A child program written in **any language** is fed
-    JSON data from Aura, and expects JSON back after processing.
-  - The child process could be located somewhere central in folders indicating
+    JSON data from Aura, and will return JSON after processing.
+  - The child process could be located somewhere central, in folders indicating
     what stage they're for, then called by Aura and passed data.
   - These plugins could packaged as `aura-plugin-foo` and installed to said
     central location.
