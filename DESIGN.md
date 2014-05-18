@@ -136,6 +136,17 @@ Suggestions:
   - Some command `aura --recompile` could rebuild it with the new Haskell-based
     changes added in.
   - `AuraConf.hs` could potentially be `.pacnew`d if need be.
+  - **PROS**
+    - Finally there would be a configuration file for Aura.
+    - The ability to "turn off" plugins. Installed ones, if not added to
+      `AuraConf.hs` wouldn't run.
+  - **CONS**
+    - `aura --recompile` wouldn't work without all the Haskell dependencies.
+      Users of the pre-built version wouldn't be able to do any configuration.
+      A possible work-around of this would be to offer `bundles`, that is,
+      pre-built versions that would have all the hooks built-in already so
+      the end user wouldn't have to think twice about it.
+    - Hooks can only be written in Haskell.
 2. Haskell Data via Haskell Actors:
   - Build `stages` could be defined (Dep Check, Build, Install, etc.) and
     the plugin would indicate which stage it was for.
@@ -147,6 +158,11 @@ Suggestions:
     be given a list of packages to look up, then do so by any means it wishes,
     then return data in the form `[[Package]]` as explained in the Dependency
     Resolution section above.
+  - **PROS**
+    - Type safety.
+    - No Haskell deps necessary.
+  - **CONS**
+    - Plugins can only be written in Haskell.
 3. JSON Data via stdin/stdout:
   - This is how [neovim](https://github.com/neovim/neovim) plans to implement
     their plugin system. A child program written in **any language** is fed
@@ -155,6 +171,12 @@ Suggestions:
     what stage they're for, then called by Aura and passed data.
   - These plugins could packaged as `aura-plugin-foo` and installed to said
     central location.
+  - **PROS**
+    - Plugins can be written in any language.
+    - JSON is universal.
+  - **CONS**
+    - Potential for lots of dependencies if plugins are written in a
+      multitude of languages (especially non-compiled ones).
 
 ### Haskell Requirements
 #### Strings
