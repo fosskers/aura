@@ -28,8 +28,9 @@ as a reference for Aura's behaviour post-release.
 #### Dependency Resolution
 - AUR dependencies are no longer resolved through PKGBUILD bash parsing.
   The AUR 3.0 API includes the necessary dependency information.
-- **Resolution Successful**: A List of packages in the order they should be
-  built in is yielded.
+- **Resolution Successful**: Data in the form `[[Package]]` is yielded. These
+  are groups of packages that may be built and installed simultaneously. That
+  is, they are not interdependent in any way.
 - **Version Conflicts**:
   - Dependency resolution fails and the build does not continue.
   - The user is shown the chart below so it is clear what dependencies from
@@ -38,13 +39,36 @@ as a reference for Aura's behaviour post-release.
   - Supplying the `--json` flag will output this data as JSON for capture
     by other programs.
 
-| Dep Name | Parent | Version |
-| -------- | ------ | ------- |
-| foo      | Local  | 1.2.3   |
-| foo      | bar    | < 1.2.3 |
-| foo      | baz    | > 1.2.3 |
+```
+| Dep Name | Parent | Status   | Version |
+| -------- | ------ | -------- | ------- |
+| foo      | None   | Local    | 1.2.3   |
+| foo      | bar    | Incoming | < 1.2.3 |
+| foo      | baz    | Incoming | > 1.2.3 |
+| -------- | ------ | -------- | ------- |
+| curl     | git    | Local    | 7.36.0  |
+| curl     | pacman | Incoming | 7.37.0  |
 
-**INCLUDE JSON EXAMPLE HERE**
+As JSON:
+{ [ { "Name": "foo"
+    , "Local": { "Parent": "None"
+               , "Version": "1.2.3" }
+    , "Incoming": [ { "Parent": "bar"
+                    , "Version": "< 1.2.3" }
+                  , { "Parent": "baz"
+                    , "Version": "> 1.2.3" }
+                  ]
+    }
+  , { "Name": "curl"
+    , "Local": { "Parent": "git"
+               , "Version": "7.36.0" }
+    , "Incoming": [ { "Parent": "pacman"
+                    , "Version": "7.37.0" }
+                  ]
+    }
+  ]
+}
+```
 
 #### Dependency Information Output
 - Information for all immediate dependencies for any given package can be output
@@ -66,6 +90,10 @@ as a reference for Aura's behaviour post-release.
     (named `foo-legacy`, etc.). Others may benefit from your effort.
   - If you are trying to fix a broken package, rather than circumventing the
     problem by building manually with `makepkg`, please contact the maintainer.
+
+#### Colour Output
+- All output to terminal (save JSON data) is output in colour where appropriate.
+  The user can disable this with `--no-colo{ur,r}`
 
 ### Haskell Requirements
 #### Strings
