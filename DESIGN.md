@@ -48,8 +48,13 @@ as a reference for Aura's behaviour post-release.
 | -------- | ------ | -------- | ------- |
 | curl     | git    | Local    | 7.36.0  |
 | curl     | pacman | Incoming | 7.37.0  |
+| -------- | ------ | -------- | ------- |
+| lua      | vlc    | Incoming | 5.2.3   |
+| lua      | conky  | Incoming | 5.2.2   |
+```
 
-As JSON:
+```javascript
+// As JSON:
 { [ { "Name": "foo"
     , "Local": { "Parent": "None"
                , "Version": "1.2.3" }
@@ -64,6 +69,14 @@ As JSON:
                , "Version": "7.36.0" }
     , "Incoming": [ { "Parent": "pacman"
                     , "Version": "7.37.0" }
+                  ]
+    }
+  , { "Name": "lua"
+    , "Local": "None"
+    , "Incoming": [ { "Parent": "vlc"
+                    , "Version": "5.2.3" }
+                  , { "Parent": "conky"
+                    , "Version": "5.2.2" }
                   ]
     }
   ]
