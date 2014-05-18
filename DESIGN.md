@@ -113,19 +113,33 @@ This is very early stage planning.<BR>
 Suggestions:
 
 1. Like XMonad, behaviour is built around hooks/plugins that are themselves
-   written in Haskell. There could be hooks like `buildHook`, `apiHook`,
-   `installHook` etc., that can be overridden or added to. Aura comes
-   bundled with default behaviour, and a `AuraConf.hs` is written somewhere
-   for the users to edit if they wish. Some command `aura --recompile` could
-   rebuild it with the new Haskell-based changes added in. `AuraConf.hs`
-   could potentially be `.pacnew`d if need be.
-2. An interface via JSON. Build `stages` could be defined (Dep Check, Build,
-   Install, etc.) and the plugin would indicate which stage it was for.
-   Bash lines could be included to be called in a child process during
-   that stage. Either that, or some child process actor system where
-   Haskell data could be passed between actors to ensure type safety.
-   Those plugins could be packaged as `aura-plugin-foo` and installed
-   to some specific location where Aura would call for them.
+   written in Haskell.
+  - Hooks like `buildHook`, `apiHook`, `installHook` etc., that can be
+    overridden or added to.
+  - Aura comes bundled with default behaviour, and a `AuraConf.hs` is written
+    somewhere for the users to edit if they wish.
+  - Some command `aura --recompile` could rebuild it with the new Haskell-based
+    changes added in.
+  - `AuraConf.hs` could potentially be `.pacnew`d if need be.
+2. Haskell Data via Haskell Actors:
+  - Build `stages` could be defined (Dep Check, Build, Install, etc.) and
+    the plugin would indicate which stage it was for.
+  - Haskell data could be passed between actors to ensure type safety.
+    Those plugins could be packaged as `aura-plugin-foo` and installed
+    to some specific location where Aura would call for them.
+  - The actors can do essentially anything so long as they return what
+    they've promised. That is, a process for the `Dep Check` stage could
+    be given a list of packages to look up, then do so by any means it wishes,
+    then return data in the form `[[Package]]` as explained in the Dependency
+    Resolution section above.
+3. JSON Data via stdin/stdout:
+  - This is how [neovim](https://github.com/neovim/neovim) plans to implement
+    their plugin system. A child program written in **any language** is fed
+    JSON data from Aura, and expects JSON back after processing.
+  - The child process could be located somewhere central in folders indicating
+    what stage they're for, then called by Aura and passed data.
+  - These plugins could packaged as `aura-plugin-foo` and installed to said
+    central location.
 
 ### Haskell Requirements
 #### Strings
