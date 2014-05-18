@@ -98,6 +98,7 @@ As JSON:
 ### Plugins
 This is very early stage planning.<BR>
 Suggestions:
+
 1. Like XMonad, behaviour is built around hooks/plugins that are themselves
    written in Haskell. There could be hooks like `buildHook`, `apiHook`,
    `installHook` etc., that can be overridden or added to. Aura comes
