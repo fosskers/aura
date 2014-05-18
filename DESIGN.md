@@ -1,7 +1,22 @@
 # Aura 2 Design
 
 ## Contents
-- [ABS Package Building/Installation](/DESIGN.md#abs-package-buildinginstallation)
+- Preface
+- Requirements
+  - [Functional Requirements](/DESIGN.md#functional-requirements)
+    - [ABS Package Building/Installation](/DESIGN.md#abs-package-buildinginstallation)
+    - [AUR Package Building/Installation](/DESIGN.md#aur-package-buildinginstallation)
+    - [Dependency Resolution](/DESIGN.md#dependency-resolution)
+    - [Dependency Information Output](/DESIGN.md#dependency-information-output)
+    - [PKGBUILD/Additional Build-file Editing](/DESIGN.md#pkgbuildadditional-build-file-editing)
+    - [Colour Output](/DESIGN.md#colour-output)
+    - [Plugins](/DESIGN.md#plugins)
+  - [Haskell Requirements](/DESIGN.md#haskell-requirements)
+    - [Strings](/DESIGN.md#strings)
+    - [JSON Data](/DESIGN.md#json-data)
+    - [AUR Interaction](/DESIGN.md#aur-interaction)
+    - [Other Libraries](/DESIGN.md#other-libraries)
+  - [Package Requirements](/DESIGN.md#package-requirements)
 
 ## Preface
 This is a design document for version 2 of
@@ -108,7 +123,7 @@ as a reference for Aura's behaviour post-release.
 - All output to terminal (save JSON data) is output in colour where appropriate.
   The user can disable this with `--no-colo{ur,r}`
 
-### Plugins
+#### Plugins
 This is very early stage planning.<BR>
 Suggestions:
 
