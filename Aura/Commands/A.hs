@@ -137,8 +137,8 @@ aurSearch regex = ask >>= \ss -> do
     db      <- S.fromList . map fst <$> foreignPackages
     let t = case truncationOf ss of  -- Can't this go anywhere else?
               None -> id
-              Head -> take 10
-              Tail -> reverse . take 10 . reverse
+              Head n -> take n
+              Tail n -> reverse . take n . reverse
     results <- map (\x -> (x, nameOf x `S.member` db)) . t <$> aurSearchLookup regex
     mapM_ (liftIO . putStrLn . renderSearch ss (unwords regex)) results
 
