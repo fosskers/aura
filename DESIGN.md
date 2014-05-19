@@ -140,6 +140,8 @@ Suggestions:
     - Finally there would be a configuration file for Aura.
     - The ability to "turn off" plugins. Installed ones, if not added to
       `AuraConf.hs` wouldn't run.
+    - Operations would be guaranteed to run through the Aura Monad
+      (where appropriate).
   - **CONS**
     - `aura --recompile` wouldn't work without all the Haskell dependencies.
       Users of the pre-built version wouldn't be able to do any configuration.
@@ -161,6 +163,8 @@ Suggestions:
   - **PROS**
     - Type safety.
     - No Haskell deps necessary.
+    - Operations would be guaranteed to run through the Aura Monad
+      (where appropriate).
   - **CONS**
     - Plugins can only be written in Haskell.
 3. JSON Data via stdin/stdout:
@@ -177,6 +181,8 @@ Suggestions:
   - **CONS**
     - Potential for lots of dependencies if plugins are written in a
       multitude of languages (especially non-compiled ones).
+    - Handling errors/failures might be difficult, since the processes
+      are separate and not handled through the Aura Monad.
 
 ### Haskell Requirements
 #### Strings
