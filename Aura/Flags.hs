@@ -50,6 +50,7 @@ module Aura.Flags
 
 import System.Console.GetOpt
 import Data.Maybe (fromMaybe)
+import Text.Read (readMaybe)
 
 import Aura.Colour.Text (yellow)
 import Aura.Settings.Base
@@ -85,8 +86,8 @@ data Flag = ABSInstall
           | BuildPath FilePath
           | BuildUser String
           | ABCSort
-          | TruncHead
-          | TruncTail
+          | TruncHead Int
+          | TruncTail Int
           | DiffPkgbuilds
           | Devel
           | Customizepkg
@@ -139,6 +140,8 @@ auraOptions :: [OptDescr Flag]
 auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
               Option [] ["build"]     (ReqArg BuildPath "" ) "" :
               Option [] ["builduser"] (ReqArg BuildUser "" ) "" :
+              Option [] ["head"] (OptArg (TruncHead . truncHandler) "") "" :
+              Option [] ["tail"] (OptArg (TruncTail . truncHandler) "") "" :
               map simpleOption
               [ ( ['a'], ["delmakedeps"],  DelMDeps      )
               , ( ['b'], ["backup"],       CacheBackup   )
@@ -161,14 +164,14 @@ auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
               , ( [],    ["auradebug"],    Debug         )
               , ( [],    ["custom"],       Customizepkg  )
               , ( [],    ["devel"],        Devel         )
-              , ( [],    ["head"],         TruncHead     )
               , ( [],    ["hotedit"],      HotEdit       )
               , ( [],    ["ignorearch"],   IgnoreArch    )
               , ( [],    ["languages"],    Languages     )
               , ( [],    ["no-pp"],        NoPowerPill   )
-              , ( [],    ["tail"],         TruncTail     )
               , ( [],    ["dryrun"],      DryRun	 )
               , ( [],    ["viewconf"],     ViewConf      ) ]
+    where truncHandler :: Maybe String -> Int
+          truncHandler x = fromMaybe 10 (x >>= readMaybe)
 
 -- These are intercepted Pacman flags. Their functionality is different.
 pacmanOptions :: [OptDescr Flag]
@@ -228,7 +231,7 @@ reconvertFlag flagMap f = fromMaybe "" $ f `lookup` flagMap
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
                 , DelMDeps,Customizepkg,Quiet,NoPowerPill,KeepSource,BuildABSDeps
-                , ABCSort, TruncHead, TruncTail, IgnoreArch, DryRun ]
+                , ABCSort, IgnoreArch, DryRun ]
 
 -- Flags like `Ignore` and `BuildPath` have args, and thus can't be included
 -- in the `settingsFlags` list.
@@ -236,6 +239,8 @@ notSettingsFlag :: Flag -> Bool
 notSettingsFlag (Ignore _)    = False
 notSettingsFlag (BuildPath _) = False
 notSettingsFlag (BuildUser _) = False
+notSettingsFlag (TruncHead _) = False
+notSettingsFlag (TruncTail _) = False
 notSettingsFlag f             = f `notElem` settingsFlags
 
 auraOperMsg :: Language -> String
@@ -271,7 +276,12 @@ buildUser [] = Nothing
 buildUser (BuildUser u : _) = Just u
 buildUser (_:fs) = buildUser fs
 
-truncationStatus   = fishOutFlag [(TruncHead,Head),(TruncTail,Tail)] None
+truncationStatus :: [Flag] -> Truncation
+truncationStatus [] = None
+truncationStatus (TruncHead n : _) = Head n
+truncationStatus (TruncTail n : _) = Tail n
+truncationStatus (_:fs) = truncationStatus fs
+
 sortSchemeStatus   = fishOutFlag [(ABCSort,Alphabetically)] ByVote
 suppressionStatus  = fishOutFlag [(Unsuppress,False)] True
 delMakeDepsStatus  = fishOutFlag [(DelMDeps,True)] False

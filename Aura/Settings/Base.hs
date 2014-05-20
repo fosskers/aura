@@ -31,7 +31,7 @@ import Shell (Environment)
 
 data SortScheme = ByVote | Alphabetically deriving (Eq,Show)
 
-data Truncation = None | Head | Tail deriving (Eq,Show)
+data Truncation = None | Head Int | Tail Int deriving (Eq,Show)
 
 -- The global settings as set by the user with command-line flags.
 data Settings = Settings { inputOf         :: [String]
