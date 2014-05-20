@@ -9,8 +9,12 @@
     - [Dependency Resolution](/DESIGN.md#dependency-resolution)
     - [Dependency Information Output](/DESIGN.md#dependency-information-output)
     - [PKGBUILD/Additional Build-file Editing](/DESIGN.md#pkgbuildadditional-build-file-editing)
+    - [Concurrent Package Building](/DESIGN.md#concurrent-package-building)
+    - [Abnormal Termination](/DESIGN.md#abnormal-termination)
     - [Colour Output](/DESIGN.md#colour-output)
     - [Plugins](/DESIGN.md#plugins)
+  - [Aesthetic Requirements](/DESIGN.md#aesthetic-requirements)
+    - [Version Information when Upgrading](/DESIGN.md#version-information-when-upgrading)
   - [Haskell Requirements](/DESIGN.md#haskell-requirements)
     - [Strings](/DESIGN.md#strings)
     - [JSON Data](/DESIGN.md#json-data)
@@ -119,6 +123,16 @@ as a reference for Aura's behaviour post-release.
   - If you are trying to fix a broken package, rather than circumventing the
     problem by building manually with `makepkg`, please contact the maintainer.
 
+#### Concurrent Package Building
+- Package data is returned from dependency checking in the form `[[Package]]`
+  (see [Dependency Resolution](/DESIGN.md#dependency-resolution)). Each sublist
+  of packages have no interdependencies, so they are built concurrent to each
+  other and then installed as a block.
+
+#### Abnormal Termination
+- Users can halt Aura with `Ctrl-d`. The message `Stopping Aura...` is shown.
+  All temporary files in use are cleared here.
+
 #### Colour Output
 - All output to terminal (save JSON data) is output in colour where appropriate.
   The user can disable this with `--no-colo{ur,r}`
@@ -176,13 +190,18 @@ Suggestions:
   - These plugins could packaged as `aura-plugin-foo` and installed to said
     central location.
   - **PROS**
-    - Plugins can be written in any language.
+    - Plugins can be written in any language, opening the doors for lots of
+      community contribution.
     - JSON is universal.
   - **CONS**
     - Potential for lots of dependencies if plugins are written in a
       multitude of languages (especially non-compiled ones).
     - Handling errors/failures might be difficult, since the processes
       are separate and not handled through the Aura Monad.
+
+### Aesthetic Requirements
+#### Version Information when Upgrading
+- Need a nice chart.
 
 ### Haskell Requirements
 #### Strings
