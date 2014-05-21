@@ -15,6 +15,7 @@
     - [Plugins](/DESIGN.md#plugins)
   - [Aesthetic Requirements](/DESIGN.md#aesthetic-requirements)
     - [Version Information when Upgrading](/DESIGN.md#version-information-when-upgrading)
+    - [Aura Versioning](/DESIGN.md#aura-versioning)
   - [Haskell Requirements](/DESIGN.md#haskell-requirements)
     - [Strings](/DESIGN.md#strings)
     - [JSON Data](/DESIGN.md#json-data)
@@ -128,6 +129,22 @@ as a reference for Aura's behaviour post-release.
   (see [Dependency Resolution](/DESIGN.md#dependency-resolution)). Each sublist
   of packages have no interdependencies, so they are built concurrent to each
   other and then installed as a block.
+
+#### Package State Backups
+- `aura -B` stores a snapshot of all currently installed packages and their
+  versions in `/var/cache/aura/states`.
+- Filenames are of the form: `YYYY.MM(MonthName).DD.HH.MM`
+- The data itself is stored as JSON to ease use by other tools:
+
+```javascript
+{ "date": "2014-04-09"
+, "time": "20:00"
+, "packages": [ { "pkgname": "alsa-lib"
+                , "version": "1.0.27.2-1" }
+                // more packages here
+              ]
+}
+```
 
 #### Abnormal Termination
 - Users can halt Aura with `Ctrl-d`. The message `Stopping Aura...` is shown.
