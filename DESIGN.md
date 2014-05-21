@@ -203,6 +203,10 @@ Suggestions:
 #### Version Information when Upgrading
 - Need a nice chart.
 
+#### Aura Versioning
+- Aura uses [Semantic Versioning](http://semver.org/), meaning it's version
+  numbers are of the form `MAJOR.MINOR.PATCH`.
+
 ### Haskell Requirements
 #### Strings
 - All Strings are represented as `Text` from `Data.Text`. This is available

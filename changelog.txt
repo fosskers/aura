@@ -1,5 +1,11 @@
 Aura Changelog
 ==============
+1.2.3.3
+-------
+- `-As --{head,tail}` can now be passed numbers to truncate the results
+  to any number you want. The default is 10.
+- Updated Russian translation.
+
 1.2.3.2
 -------
 - Expanded Bash completions:
