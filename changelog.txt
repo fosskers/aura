@@ -1,5 +1,10 @@
 Aura Changelog
 ==============
+1.2.3.4
+-------
+- zsh completions completely redone (thanks to Sauyon Lee!)
+  Having `aur-git` installed will let you auto-complete on AUR packages.
+
 1.2.3.3
 -------
 - `-As --{head,tail}` can now be passed numbers to truncate the results
