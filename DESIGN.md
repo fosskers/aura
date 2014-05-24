@@ -2,6 +2,7 @@
 
 ## Contents
 - Preface
+- [Mission Statement](/DESIGN.md#mission-statement)
 - Requirements
   - [Functional Requirements](/DESIGN.md#functional-requirements)
     - [ABS Package Building/Installation](/DESIGN.md#abs-package-buildinginstallation)
@@ -29,6 +30,25 @@ This is a design document for version 2 of
 in present tense, as in, "Aura does this" even if at the time of writing those
 features aren't implemented yet. This is to ensure that the document can act
 as a reference for Aura's behaviour post-release.
+
+## Mission Statement
+Aura is a cross-distribution package manager for GNU/Linux systems.<BR>
+It is based around a distribution-specific Hook system for custom
+build/install behaviour, while maintaining a custom interface across
+all distros. Aura itself provides:
+
+- Dependency management.
+- Package downloading.
+- Package-state backups/restoration.
+
+Aura's authors recognize that [attemping to create universal standards
+can be problematic](http://www.xkcd.com/927/), but that is precisely
+why Aura exists. By having a unified interface over multiple packaging
+standards, users can transition between distributions more easily, and
+distribution developers can avoid reinventing the wheel by writing their
+own package management software.
+
+## MOST OF WHAT IS BELOW IS ARCH SPECIFIC. NEEDS TO BE REWORKED.
 
 ## Requirements
 ### Functional Requirements
