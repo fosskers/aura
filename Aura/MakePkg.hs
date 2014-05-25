@@ -52,7 +52,7 @@ makepkgSource :: String -- ^ User
               -> Bool   -- ^ Include downloaded sources (--allsource)
               -> Aura [FilePath]
 makepkgSource user allsource =
-    quietShellCmd cmd opts >> filter (=~ ".src.tar") <$> liftIO (pwd >>= ls)
+    quietShellCmd cmd opts >> filter (=~ "[.]src[.]tar") <$> liftIO (pwd >>= ls)
         where
           allsourceOpt = if allsource then "--allsource" else "-S"
           (cmd,opts)   = runStyle user [allsourceOpt]
@@ -62,7 +62,7 @@ makepkgSource user allsource =
 makepkgGen :: (String -> [String] -> Aura a) -> String -> Aura [FilePath]
 makepkgGen make user = asks makepkgFlagsOf >>= \clfs -> do
     let (cmd,opts) = runStyle user clfs
-    make cmd (opts ++ clfs) >> filter (=~ ".pkg.tar") <$> liftIO (pwd >>= ls)
+    make cmd (opts ++ clfs) >> filter (=~ "[.]pkg[.]tar") <$> liftIO (pwd >>= ls)
 
 runStyle :: String -> [String] -> (String,[String])
 runStyle "root" opts = (makepkgCmd, "--asroot" : opts)
