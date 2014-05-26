@@ -4,25 +4,26 @@
 - Preface
 - [Mission Statement](/DESIGN.md#mission-statement)
 - Requirements
-  - [Functional Requirements](/DESIGN.md#functional-requirements)
-    - [ABS Package Building/Installation](/DESIGN.md#abs-package-buildinginstallation)
-    - [AUR Package Building/Installation](/DESIGN.md#aur-package-buildinginstallation)
+  - [General Functionality](/DESIGN.md#general-functionality)
     - [Dependency Resolution](/DESIGN.md#dependency-resolution)
     - [Dependency Information Output](/DESIGN.md#dependency-information-output)
-    - [PKGBUILD/Additional Build-file Editing](/DESIGN.md#pkgbuildadditional-build-file-editing)
     - [Concurrent Package Building](/DESIGN.md#concurrent-package-building)
     - [Abnormal Termination](/DESIGN.md#abnormal-termination)
     - [Colour Output](/DESIGN.md#colour-output)
-    - [Plugins](/DESIGN.md#plugins)
-  - [Aesthetic Requirements](/DESIGN.md#aesthetic-requirements)
+  - [Plugins](/DESIGN.md#plugins)
+  - [Aesthetics](/DESIGN.md#aesthetics)
     - [Version Information when Upgrading](/DESIGN.md#version-information-when-upgrading)
     - [Aura Versioning](/DESIGN.md#aura-versioning)
   - [Haskell Requirements](/DESIGN.md#haskell-requirements)
     - [Strings](/DESIGN.md#strings)
     - [JSON Data](/DESIGN.md#json-data)
-    - [AUR Interaction](/DESIGN.md#aur-interaction)
     - [Other Libraries](/DESIGN.md#other-libraries)
   - [Package Requirements](/DESIGN.md#package-requirements)
+- [Arch Linux Specifics](/DESIGN.md#arch-linux-specifics)
+  - [ABS Package Building/Installation](/DESIGN.md#abs-package-buildinginstallation)
+  - [AUR Package Building/Installation](/DESIGN.md#aur-package-buildinginstallation)
+  - [PKGBUILD/Additional Build-file Editing](/DESIGN.md#pkgbuildadditional-build-file-editing)
+  - [AUR Interaction](/DESIGN.md#aur-interaction)
 
 ## Preface
 This is a design document for version 2 of
@@ -48,22 +49,8 @@ standards, users can transition between distributions more easily, and
 distribution developers can avoid reinventing the wheel by writing their
 own package management software.
 
-## MOST OF WHAT IS BELOW IS ARCH SPECIFIC. NEEDS TO BE REWORKED.
-
 ## Requirements
-### Functional Requirements
-
-#### ABS Package Building/Installation
-- There is no longer a `-M` option. All ABS package interaction is done through
-  `-S`.
-- Installs prebuilt binaries available from Arch servers by default.
-- Build options:
-  - If the user specifies `--build`, the package will be built manually via
-    the ABS.
-
-#### AUR Package Building/Installation
-- Builds manually by default, as there is no prebuilt alternative for the AUR
-  (by design).
+### General Functionality
 
 #### Dependency Resolution
 - AUR dependencies are no longer resolved through PKGBUILD bash parsing.
@@ -131,19 +118,6 @@ own package management software.
 - Adding `--json` will output this information in JSON for use by other
   software that may sit on top of Aura.
 
-#### PKGBUILD/Additional Build-file Editing
-- Support for `customizepkg` is dropped, as AUR 3.0 provides dependency
-  information via its API.
-- Users can edit included `.install` files and the **behaviour** of PKGBUILDs
-  with `--edit`. This is done after dependency checks have been made via the
-  data from the AUR API. Users are urged _not_ to edit dependencies at this
-  point, as only `makepkg`, not Aura, will know about the changes.
-  - If you do want to build a package with different dependencies, consider
-    whether there is value in creating your own forked package for the AUR
-    (named `foo-legacy`, etc.). Others may benefit from your effort.
-  - If you are trying to fix a broken package, rather than circumventing the
-    problem by building manually with `makepkg`, please contact the maintainer.
-
 #### Concurrent Package Building
 - Package data is returned from dependency checking in the form `[[Package]]`
   (see [Dependency Resolution](/DESIGN.md#dependency-resolution)). Each sublist
@@ -174,7 +148,7 @@ own package management software.
 - All output to terminal (save JSON data) is output in colour where appropriate.
   The user can disable this with `--no-colo{ur,r}`
 
-#### Plugins
+### Plugins
 This is very early stage planning.<BR>
 Suggestions:
 
@@ -236,7 +210,7 @@ Suggestions:
     - Handling errors/failures might be difficult, since the processes
       are separate and not handled through the Aura Monad.
 
-### Aesthetic Requirements
+### Aesthetics
 #### Version Information when Upgrading
 - Need a nice chart.
 
@@ -259,14 +233,6 @@ automatically.
 - All JSON input and output is handled through `aeson` and
   `aeson-pretty`.
 
-#### AUR Interaction
-- AUR API calls are moved out of Aura and into a new Hackage package
-  `archlinux-aur` (exposing the `Linux.Arch.Aur` module).
-- It provides conversions to and from JSON data and Haskell data.
-- This is preparation for future versions of Aura that allow use in
-  other Linux distributions by swapping out sections of their back-end
-  (with modules like `Linux.Debian.Repo` etc.)
-
 #### Other Libraries
 Information on other Hackage libraries used in Aura can be found
 [here](https://github.com/fosskers/aura/issues/223).
@@ -281,3 +247,38 @@ Aura must be available in the following forms:
   the release of Aura 2.
 - `aura-git` the same as is currently available. Should man page install
   instructions, etc., be in `Setup.hs` the same as `haskell-aura`?
+
+## Arch Linux Specifics
+
+#### ABS Package Building/Installation
+- There is no longer a `-M` option. All ABS package interaction is done through
+  `-S`.
+- Installs prebuilt binaries available from Arch servers by default.
+- Build options:
+  - If the user specifies `--build`, the package will be built manually via
+    the ABS.
+
+#### AUR Package Building/Installation
+- Builds manually by default, as there is no prebuilt alternative for the AUR
+  (by design).
+
+#### PKGBUILD/Additional Build-file Editing
+- Support for `customizepkg` is dropped, as AUR 3.0 provides dependency
+  information via its API.
+- Users can edit included `.install` files and the **behaviour** of PKGBUILDs
+  with `--edit`. This is done after dependency checks have been made via the
+  data from the AUR API. Users are urged _not_ to edit dependencies at this
+  point, as only `makepkg`, not Aura, will know about the changes.
+  - If you do want to build a package with different dependencies, consider
+    whether there is value in creating your own forked package for the AUR
+    (named `foo-legacy`, etc.). Others may benefit from your effort.
+  - If you are trying to fix a broken package, rather than circumventing the
+    problem by building manually with `makepkg`, please contact the maintainer.
+
+#### AUR Interaction
+- AUR API calls are moved out of Aura and into a new Hackage package
+  `archlinux-aur` (exposing the `Linux.Arch.Aur` module).
+- It provides conversions to and from JSON data and Haskell data.
+- This is preparation for future versions of Aura that allow use in
+  other Linux distributions by swapping out sections of their back-end
+  (with modules like `Linux.Debian.Repo` etc.)
