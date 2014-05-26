@@ -24,6 +24,8 @@
   - [AUR Package Building/Installation](/DESIGN.md#aur-package-buildinginstallation)
   - [PKGBUILD/Additional Build-file Editing](/DESIGN.md#pkgbuildadditional-build-file-editing)
   - [AUR Interaction](/DESIGN.md#aur-interaction)
+- [Coding Standards](/DESIGN.md#coding-standards)
+  - [Record Syntax](/DESIGN.md#record-syntax)
 
 ## Preface
 This is a design document for version 2 of
@@ -282,3 +284,15 @@ Aura must be available in the following forms:
 - This is preparation for future versions of Aura that allow use in
   other Linux distributions by swapping out sections of their back-end
   (with modules like `Linux.Debian.Repo` etc.)
+
+## Coding Standards
+### Record Syntax
+When using record syntax for ADTs, function names should be suffixed with "Of"
+to reflect their noun-like nature:
+
+```haskell
+data Package = Package { nameOf    :: String
+                       , versionOf :: Version
+                       , depsOf    :: [Package] }
+                       deriving (Eq, Show)
+```
