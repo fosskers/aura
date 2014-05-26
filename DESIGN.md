@@ -5,6 +5,7 @@
 - [Mission Statement](/DESIGN.md#mission-statement)
 - Requirements
   - [General Functionality](/DESIGN.md#general-functionality)
+    - [Program Flow](/DESIGN.md#program-flow)
     - [Dependency Resolution](/DESIGN.md#dependency-resolution)
     - [Dependency Information Output](/DESIGN.md#dependency-information-output)
     - [Concurrent Package Building](/DESIGN.md#concurrent-package-building)
@@ -53,6 +54,27 @@ own package management software.
 
 ## Requirements
 ### General Functionality
+
+#### Program Flow
+Execution in Aura takes the following order:
+
+1. Parse command-line options.
+2. Collect local `Setting`s.
+3. Branch according to capital letter operator (`-{S,A,Q,...}`):
+  - `-S <packages>`:
+    - Via a **Hook**, split `<packages>` into `([String],[String])`,
+      a division between packages that do and don't exist. Report
+      those that don't exist.
+    - Map the existing `[String]` to `[Package]` via a **Hook** that
+      provides `String -> Package`.
+    - Resolve dependencies by Aura's internal algorithm to receive:
+      `Either PkgGraph [[Package]]`.
+    - On `Left`, analyse the given `PkgGraph`, yield output as described
+      in [Dependency Resolution](/DESIGN.md#dependency-resolution), and quit.
+    - On `Right` display a chart as described
+      [here](/DESIGN.md#version-information-when-upgrading).
+    - Download each package via Aura's internal algorithm.
+    - Install each package via a **Hook**.
 
 #### Dependency Resolution
 - AUR dependencies are no longer resolved through PKGBUILD bash parsing.
