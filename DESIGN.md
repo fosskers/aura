@@ -10,6 +10,7 @@
     - [Dependency Information Output](/DESIGN.md#dependency-information-output)
     - [Concurrent Package Building](/DESIGN.md#concurrent-package-building)
     - [Abnormal Termination](/DESIGN.md#abnormal-termination)
+    - [PkgInfo](/DESIGN.md#pkginfo)
     - [Colour Output](/DESIGN.md#colour-output)
   - [Plugins](/DESIGN.md#plugins)
   - [Aesthetics](/DESIGN.md#aesthetics)
@@ -62,11 +63,13 @@ Execution in Aura takes the following order:
 2. Collect local `Setting`s.
 3. Branch according to capital letter operator (`-{S,A,Q,...}`):
   - `-S <packages>`:
-    - Via a **Hook**, split `<packages>` into `([String],[String])`,
+    - A **Hook** provides a function `Monad m => String -> m Bool` to tell if
+      a certain package exists. `<packages>` are then split into
+      `([String],[String])`
       a division between packages that do and don't exist. Report
       those that don't exist.
     - Map the existing `[String]` to `[Package]` via a **Hook** that
-      provides `String -> Package`.
+      provides `Monad m => String -> m Package`.
     - Resolve dependencies by Aura's internal algorithm to receive:
       `Either PkgGraph [[Package]]`.
     - On `Left`, analyse the given `PkgGraph`, yield output as described
@@ -75,6 +78,10 @@ Execution in Aura takes the following order:
       [here](/DESIGN.md#version-information-when-upgrading).
     - Download each package via Aura's internal algorithm.
     - Install each package via a **Hook**.
+  - `-{S,A,Q}i <packages>`:
+    - Call a **Hook** that provides `Monad m => String -> m PkgInfo`.
+      The contents of the `PkgInfo` ADT are descriped [here](/DESIGN.md#pkginfo)
+    - Aura gives output according to the `PkgInfo`.
 
 #### Dependency Resolution
 - AUR dependencies are no longer resolved through PKGBUILD bash parsing.
@@ -163,6 +170,26 @@ Execution in Aura takes the following order:
               ]
 }
 ```
+
+#### PkgInfo
+- `-{S,A,Q}i` yields `PkgInfo` data. It holds:
+  - Repository name
+  - Package name
+  - Version
+  - Description
+  - Architecture
+  - URL
+  - Licenses
+  - "Provides"
+  - Dependencies
+  - "Conflicts With"
+  - Maintainer
+  - Optional fields (provided as `[(String,String)]`):
+    - Download/Install sizes
+    - Group
+    - Votes
+    - GPG information
+    - etc.
 
 #### Abnormal Termination
 - Users can halt Aura with `Ctrl-d`. The message `Stopping Aura...` is shown.
