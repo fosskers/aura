@@ -56,4 +56,4 @@ alterPKGBUILD = do
   mv "PKGBUILD.new" "PKGBUILD"
 
 makeTarball :: IO ()
-makeTarball = void (quietShellCmd' "makepkg" ["--source"])
+makeTarball = void (quietShellCmd' "mkaurball" [])
