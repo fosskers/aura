@@ -63,13 +63,13 @@ Execution in Aura takes the following order:
 2. Collect local `Setting`s.
 3. Branch according to capital letter operator (`-{S,A,Q,...}`):
   - `-S <packages>`:
-    - A **Hook** provides a function `Monad m => String -> m Bool` to tell if
+    - A **Hook** provides a function `Monad m => Text -> m Bool` to tell if
       a certain package exists. `<packages>` are then split into
-      `([String],[String])`
+      `([Text],[Text])`
       a division between packages that do and don't exist. Report
       those that don't exist.
-    - Map the existing `[String]` to `[Package]` via a **Hook** that
-      provides `Monad m => String -> m Package`.
+    - Map the existing `[Text]` to `[Package]` via a **Hook** that
+      provides `Monad m => Text -> m Package`.
     - Resolve dependencies by Aura's internal algorithm to receive:
       `Either PkgGraph [[Package]]`.
     - On `Left`, analyse the given `PkgGraph`, yield output as described
@@ -79,8 +79,8 @@ Execution in Aura takes the following order:
     - Download each package via Aura's internal algorithm.
     - Install each package via a **Hook**.
   - `-{S,A,Q}i <packages>`:
-    - Call a **Hook** that provides `Monad m => String -> m PkgInfo`.
-      The contents of the `PkgInfo` ADT are descriped [here](/DESIGN.md#pkginfo)
+    - Call a **Hook** that provides `Monad m => Text -> m PkgInfo`.
+      The contents of the `PkgInfo` ADT are described [here](/DESIGN.md#pkginfo).
     - Aura gives output according to the `PkgInfo`.
 
 #### Dependency Resolution
@@ -184,7 +184,7 @@ Execution in Aura takes the following order:
   - Dependencies
   - "Conflicts With"
   - Maintainer
-  - Optional fields (provided as `[(String,String)]`):
+  - Optional fields (provided as `[(Text,Text)]`):
     - Download/Install sizes
     - Group
     - Votes
