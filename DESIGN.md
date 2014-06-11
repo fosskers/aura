@@ -63,13 +63,12 @@ Execution in Aura takes the following order:
 2. Collect local `Setting`s.
 3. Branch according to capital letter operator (`-{S,A,Q,...}`):
   - `-S <packages>`:
-    - A **Hook** provides a function `Monad m => Text -> m Bool` to tell if
-      a certain package exists. `<packages>` are then split into
-      `([Text],[Text])`
-      a division between packages that do and don't exist. Report
-      those that don't exist.
-    - Map the existing `[Text]` to `[Package]` via a **Hook** that
-      provides `Monad m => Text -> m Package`.
+    - A **Hook** provides functions:
+      - `Monad m => [Text] -> m ([Text],[Package])`
+      - `Monad m => Text -> m (Either Text Package)`
+      The former can be defined in the terms of the latter, but doesn't
+      have to be if that method executes faster.<BR>
+      The `[Text]` are packages that don't exist. They are reported.
     - Resolve dependencies by Aura's internal algorithm to receive:
       `Either PkgGraph [[Package]]`.
     - On `Left`, analyse the given `PkgGraph`, yield output as described
@@ -77,7 +76,8 @@ Execution in Aura takes the following order:
     - On `Right` display a chart as described
       [here](/DESIGN.md#version-information-when-upgrading).
     - Download each package via Aura's internal algorithm.
-    - Install each package via a **Hook**.
+    - A **Hook** provides an install function `MonadError m => [[Package]] ->
+      m ()` 
   - `-{S,A,Q}i <packages>`:
     - Call a **Hook** that provides `Monad m => Text -> m PkgInfo`.
       The contents of the `PkgInfo` ADT are described [here](/DESIGN.md#pkginfo).
@@ -97,7 +97,6 @@ Execution in Aura takes the following order:
   - Supplying the `--json` flag will output this data as JSON for capture
     by other programs.
 
-```
 | Dep Name | Parent | Status   | Version |
 | -------- | ------ | -------- | ------- |
 | foo      | None   | Local    | 1.2.3   |
@@ -109,7 +108,6 @@ Execution in Aura takes the following order:
 | -------- | ------ | -------- | ------- |
 | lua      | vlc    | Incoming | 5.2.3   |
 | lua      | conky  | Incoming | 5.2.2   |
-```
 
 ```javascript
 // As JSON:
