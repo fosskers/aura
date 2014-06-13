@@ -13,6 +13,8 @@
     - [PkgInfo](/DESIGN.md#pkginfo)
     - [Colour Output](/DESIGN.md#colour-output)
   - [Plugins](/DESIGN.md#plugins)
+    - [Aura Conf](/DESIGN.md#auraconf)
+    - [Hook List](/DESIGN.md#hook-list)
   - [Aesthetics](/DESIGN.md#aesthetics)
     - [Version Information when Upgrading](/DESIGN.md#version-information-when-upgrading)
     - [Aura Versioning](/DESIGN.md#aura-versioning)
@@ -69,9 +71,10 @@ Execution in Aura takes the following order:
 
       The former can be defined in the terms of the latter, but doesn't
       have to be if that method executes faster.<BR>
-      The `[Text]` are packages that don't exist. They are reported.
-    - Resolve dependencies by Aura's internal algorithm to receive:
-      `Either PkgGraph [[Package]]`.
+      The first function is given the names of all packages to be
+      installed. The `[Text]` are packages that don't exist. They are reported.
+    - With the output of the last function, resolve dependencies by Aura's
+      internal algorithm to receive: `Either PkgGraph [[Package]]`.
     - On `Left`, analyse the given `PkgGraph`, yield output as described
       in [Dependency Resolution](/DESIGN.md#dependency-resolution), and quit.
     - On `Right` display a chart as described
@@ -98,6 +101,7 @@ Execution in Aura takes the following order:
   - Supplying the `--json` flag will output this data as JSON for capture
     by other programs.
 
+```
 | Dep Name | Parent | Status   | Version |
 | -------- | ------ | -------- | ------- |
 | foo      | None   | Local    | 1.2.3   |
@@ -109,6 +113,7 @@ Execution in Aura takes the following order:
 | -------- | ------ | -------- | ------- |
 | lua      | vlc    | Incoming | 5.2.3   |
 | lua      | conky  | Incoming | 5.2.2   |
+```
 
 ```javascript
 // As JSON:
@@ -199,66 +204,26 @@ Execution in Aura takes the following order:
   The user can disable this with `--no-colo{ur,r}`
 
 ### Plugins
-This is very early stage planning.<BR>
-Suggestions:
+Like XMonad, behaviour is built around hooks/plugins that are themselves
+written in Haskell. Each Linux distribution writes and provides to
+`AuraConf.hs` functions that fill certain type/behaviour requirements
+as explained below.
 
-1. Like XMonad, behaviour is built around hooks/plugins that are themselves
-   written in Haskell.
-  - Hooks like `buildHook`, `apiHook`, `installHook` etc., that can be
-    overridden or added to.
-  - Aura comes bundled with default behaviour, and a `AuraConf.hs` is written
-    somewhere for the users to edit if they wish.
-  - Some command `aura --recompile` could rebuild it with the new Haskell-based
-    changes added in.
-  - `AuraConf.hs` could potentially be `.pacnew`d if need be.
-  - **PROS**
-    - Finally there would be a configuration file for Aura.
-    - The ability to "turn off" plugins. Installed ones, if not added to
-      `AuraConf.hs` wouldn't run.
-    - Operations would be guaranteed to run through the Aura Monad
-      (where appropriate).
-  - **CONS**
-    - `aura --recompile` wouldn't work without all the Haskell dependencies.
-      Users of the pre-built version wouldn't be able to do any configuration.
-      A possible work-around of this would be to offer `bundles`, that is,
-      pre-built versions that would have all the hooks built-in already so
-      the end user wouldn't have to think twice about it.
-    - Hooks can only be written in Haskell.
-2. Haskell Data via Haskell Actors:
-  - Build `stages` could be defined (Dep Check, Build, Install, etc.) and
-    the plugin would indicate which stage it was for.
-  - Haskell data could be passed between actors to ensure type safety.
-    Those plugins could be packaged as `aura-plugin-foo` and installed
-    to some specific location where Aura would call for them.
-  - The actors can do essentially anything so long as they return what
-    they've promised. That is, a process for the `Dep Check` stage could
-    be given a list of packages to look up, then do so by any means it wishes,
-    then return data in the form `[[Package]]` as explained in the Dependency
-    Resolution section above.
-  - **PROS**
-    - Type safety.
-    - No Haskell deps necessary.
-    - Operations would be guaranteed to run through the Aura Monad
-      (where appropriate).
-  - **CONS**
-    - Plugins can only be written in Haskell.
-3. JSON Data via stdin/stdout:
-  - This is how [neovim](https://github.com/neovim/neovim) plans to implement
-    their plugin system. A child program written in **any language** is fed
-    JSON data from Aura, and will return JSON after processing.
-  - The child process could be located somewhere central, in folders indicating
-    what stage they're for, then called by Aura and passed data.
-  - These plugins could packaged as `aura-plugin-foo` and installed to said
-    central location.
-  - **PROS**
-    - Plugins can be written in any language, opening the doors for lots of
-      community contribution.
-    - JSON is universal.
-  - **CONS**
-    - Potential for lots of dependencies if plugins are written in a
-      multitude of languages (especially non-compiled ones).
-    - Handling errors/failures might be difficult, since the processes
-      are separate and not handled through the Aura Monad.
+#### AuraConf
+`AuraConf.hs` is Aura's configuration file. It is typically located
+in `TODO: LOCATION HERE`. Here, distributions and users can add
+Hooks to define custom behaviour for their native packaging system.
+The command `aura --recompile` rebuilds Aura with new Hooks.
+Also, the following paths can be defined in this file:
+
+- Package cache.
+- Aura log file.
+- Default build directory.
+- Mirror URLs for binary downloads.
+- TODO: What else?
+
+#### Hook List
+Pending.
 
 ### Aesthetics
 #### Version Information when Upgrading
@@ -327,7 +292,7 @@ Aura must be available in the following forms:
 
 #### AUR Interaction
 - AUR API calls are moved out of Aura and into a new Hackage package
-  `archlinux-aur` (exposing the `Linux.Arch.Aur` module).
+  `aur` (exposing the `Linux.Arch.Aur.*` modules).
 - It provides conversions to and from JSON data and Haskell data.
 - This is preparation for future versions of Aura that allow use in
   other Linux distributions by swapping out sections of their back-end
