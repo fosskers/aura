@@ -1,4 +1,4 @@
-Status: [![Build Status](https://travis-ci.org/fosskers/aura.svg?branch=master)](https://travis-ci.org/fosskers/aura)
+Status: [![Build Status](https://travis-ci.org/aurapm/aura.svg?branch=master)](https://travis-ci.org/aurapm/aura)
 
 What is Aura?
 =============

@@ -66,6 +66,7 @@ Execution in Aura takes the following order:
     - A **Hook** provides functions:
       - `Monad m => [Text] -> m ([Text],[Package])`
       - `Monad m => Text -> m (Either Text Package)`
+
       The former can be defined in the terms of the latter, but doesn't
       have to be if that method executes faster.<BR>
       The `[Text]` are packages that don't exist. They are reported.
