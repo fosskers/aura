@@ -59,6 +59,8 @@ own package management software.
 ### General Functionality
 
 #### Program Flow
+**This section needs reorganising**
+
 Execution in Aura takes the following order:
 
 1. Parse command-line options.
@@ -86,6 +88,10 @@ Execution in Aura takes the following order:
     - Call a **Hook** that provides `Monad m => Text -> m PkgInfo`.
       The contents of the `PkgInfo` ADT are described [here](/DESIGN.md#pkginfo).
     - Aura gives output according to the `PkgInfo`.
+  - `-{S,A,Q}s <pattern>`:
+    - Call a **Hook** that provides `Monad m => Text -> m [PkgInfo]`.
+      Where the `Text` is a pattern to be searched for.
+    - Aura gives output according to the `[PkgInfo]`.
 
 #### Dependency Resolution
 - AUR dependencies are no longer resolved through PKGBUILD bash parsing.
