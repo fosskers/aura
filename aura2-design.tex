@@ -1,0 +1,616 @@
+\documentclass{article}
+% GENERAL
+\usepackage{setspace,graphicx,fancyhdr,hyperref,amsmath,tikz,epigraph}
+\usepackage[utf8]{inputenc}
+
+% FONT
+\usepackage{arev}
+\usepackage[T1]{fontenc}
+
+% MARGINS
+\usepackage[left=1in,top=1in,right=1in,bottom=1in]{geometry}
+\onehalfspacing
+
+% CUSTOM FOOTERS
+\pagestyle{fancy}
+\fancyhead{}                        % clear all header fields
+\renewcommand{\headrulewidth}{0pt}  % no line in header area
+\fancyfoot{}                        % clear all footer fields
+\fancyfoot[LE,RO]{\thepage}         % for page #s
+%\fancyfoot[RE,LO]{\includegraphics[scale=0.03]{adenda-logo}}
+
+% Setting the depth for Table of Contents
+\setcounter{tocdepth}{3}
+
+\begin{document}
+
+% --- TABLE OF CONTENTS ---
+\tableofcontents
+\clearpage
+% -------------------------
+
+\section{Aura 2 Design}\label{aura-2-design}
+
+\subsection{Contents}\label{contents}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Preface
+\item
+  \href{/DESIGN.md\#mission-statement}{Mission Statement}
+\item
+  Requirements
+\item
+  \href{/DESIGN.md\#general-functionality}{General Functionality}
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    \href{/DESIGN.md\#program-flow}{Program Flow}
+  \item
+    \href{/DESIGN.md\#dependency-resolution}{Dependency Resolution}
+  \item
+    \href{/DESIGN.md\#dependency-information-output}{Dependency
+    Information Output}
+  \item
+    \href{/DESIGN.md\#concurrent-package-building}{Concurrent Package
+    Building}
+  \item
+    \href{/DESIGN.md\#abnormal-termination}{Abnormal Termination}
+  \item
+    \href{/DESIGN.md\#pkginfo}{PkgInfo}
+  \item
+    \href{/DESIGN.md\#colour-output}{Colour Output}
+  \end{itemize}
+\item
+  \href{/DESIGN.md\#plugins}{Plugins}
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    \href{/DESIGN.md\#auraconf}{Aura Conf}
+  \item
+    \href{/DESIGN.md\#hook-list}{Hook List}
+  \end{itemize}
+\item
+  \href{/DESIGN.md\#aesthetics}{Aesthetics}
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    \href{/DESIGN.md\#version-information-when-upgrading}{Version
+    Information when Upgrading}
+  \item
+    \href{/DESIGN.md\#aura-versioning}{Aura Versioning}
+  \end{itemize}
+\item
+  \href{/DESIGN.md\#haskell-requirements}{Haskell Requirements}
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    \href{/DESIGN.md\#strings}{Strings}
+  \item
+    \href{/DESIGN.md\#json-data}{JSON Data}
+  \item
+    \href{/DESIGN.md\#other-libraries}{Other Libraries}
+  \end{itemize}
+\item
+  \href{/DESIGN.md\#package-requirements}{Package Requirements}
+\item
+  \href{/DESIGN.md\#arch-linux-specifics}{Arch Linux Specifics}
+\item
+  \href{/DESIGN.md\#abs-package-buildinginstallation}{ABS Package
+  Building/Installation}
+\item
+  \href{/DESIGN.md\#aur-package-buildinginstallation}{AUR Package
+  Building/Installation}
+\item
+  \href{/DESIGN.md\#pkgbuildadditional-build-file-editing}{PKGBUILD/Additional
+  Build-file Editing}
+\item
+  \href{/DESIGN.md\#aur-interaction}{AUR Interaction}
+\item
+  \href{/DESIGN.md\#coding-standards}{Coding Standards}
+\item
+  \href{/DESIGN.md\#record-syntax}{Record Syntax}
+\end{itemize}
+
+\subsection{Preface}\label{preface}
+
+This is a design document for version 2 of
+\href{https://github.com/fosskers/aura}{Aura}. Note that specifications
+are written in present tense, as in, ``Aura does this'' even if at the
+time of writing those features aren't implemented yet. This is to ensure
+that the document can act as a reference for Aura's behaviour
+post-release.
+
+\subsection{Mission Statement}\label{mission-statement}
+
+Aura is a cross-distribution package manager for GNU/Linux systems. It
+is based around a distribution-specific Hook system for custom
+build/install behaviour, while maintaining a custom interface across all
+distros. Aura itself provides:
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Dependency management.
+\item
+  Package downloading.
+\item
+  Package-state backups/restoration.
+\end{itemize}
+
+Aura's authors recognize that \href{http://www.xkcd.com/927/}{attemping
+to create universal standards can be problematic}, but that is precisely
+why Aura exists. By having a unified interface over multiple packaging
+standards, users can transition between distributions more easily, and
+distribution developers can avoid reinventing the wheel by writing their
+own package management software.
+
+\subsection{Requirements}\label{requirements}
+
+\subsubsection{General Functionality}\label{general-functionality}
+
+\paragraph{Program Flow}\label{program-flow}
+
+\textbf{This section needs reorganising}
+
+Execution in Aura takes the following order:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Parse command-line options.
+\item
+  Collect local \texttt{Setting}s.
+\item
+  Branch according to capital letter operator (\texttt{-\{S,A,Q,...\}}):
+\end{enumerate}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  \texttt{-S \textless{}packages\textgreater{}}:
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    A \textbf{Hook} provides functions:
+  \item
+    \texttt{Monad m =\textgreater{} {[}Text{]} -\textgreater{} m ({[}Text{]},{[}Package{]})}
+  \item
+    \texttt{Monad m =\textgreater{} Text -\textgreater{} m (Either Text Package)}
+  \end{itemize}
+
+  The former can be defined in the terms of the latter, but doesn't have
+  to be if that method executes faster. The first function is given the
+  names of all packages to be installed. The \texttt{{[}Text{]}} are
+  packages that don't exist. They are reported.
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    With the output of the last function, resolve dependencies by Aura's
+    internal algorithm to receive:
+    \texttt{Either PkgGraph {[}{[}Package{]}{]}}.
+  \item
+    On \texttt{Left}, analyse the given \texttt{PkgGraph}, yield output
+    as described in \href{/DESIGN.md\#dependency-resolution}{Dependency
+    Resolution}, and quit.
+  \item
+    On \texttt{Right} display a chart as described
+    \href{/DESIGN.md\#version-information-when-upgrading}{here}.
+  \item
+    Download each package via Aura's internal algorithm.
+  \item
+    A \textbf{Hook} provides an install function
+    \texttt{MonadError m =\textgreater{} {[}{[}Package{]}{]} -\textgreater{}   m ()}
+  \end{itemize}
+\item
+  \texttt{-\{S,A,Q\}i \textless{}packages\textgreater{}}:
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    Call a \textbf{Hook} that provides
+    \texttt{Monad m =\textgreater{} Text -\textgreater{} m PkgInfo}. The
+    contents of the \texttt{PkgInfo} ADT are described
+    \href{/DESIGN.md\#pkginfo}{here}.
+  \item
+    Aura gives output according to the \texttt{PkgInfo}.
+  \end{itemize}
+\item
+  \texttt{-\{S,A,Q\}s \textless{}pattern\textgreater{}}:
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    Call a \textbf{Hook} that provides
+    \texttt{Monad m =\textgreater{} Text -\textgreater{} m {[}PkgInfo{]}}.
+    Where the \texttt{Text} is a pattern to be searched for.
+  \item
+    Aura gives output according to the \texttt{{[}PkgInfo{]}}.
+  \end{itemize}
+\end{itemize}
+
+\paragraph{Dependency Resolution}\label{dependency-resolution}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  AUR dependencies are no longer resolved through PKGBUILD bash parsing.
+  The AUR 3.0 API includes the necessary dependency information.
+\item
+  \textbf{Resolution Successful}: Data in the form
+  \texttt{{[}{[}Package{]}{]}} is yielded. These are groups of packages
+  that may be built and installed simultaneously. That is, they are not
+  interdependent in any way.
+\item
+  \textbf{Version Conflicts}:
+\item
+  Dependency resolution fails and the build does not continue.
+\item
+  The user is shown the chart below so it is clear what dependencies
+  from what packages are causing issues.
+\item
+  All packages that had dependency issues are shown.
+\item
+  Supplying the \texttt{-\/-json} flag will output this data as JSON for
+  capture by other programs.
+\end{itemize}
+
+\begin{verbatim}
+| Dep Name | Parent | Status   | Version |
+| -------- | ------ | -------- | ------- |
+| foo      | None   | Local    | 1.2.3   |
+| foo      | bar    | Incoming | < 1.2.3 |
+| foo      | baz    | Incoming | > 1.2.3 |
+| -------- | ------ | -------- | ------- |
+| curl     | git    | Local    | 7.36.0  |
+| curl     | pacman | Incoming | 7.37.0  |
+| -------- | ------ | -------- | ------- |
+| lua      | vlc    | Incoming | 5.2.3   |
+| lua      | conky  | Incoming | 5.2.2   |
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{// As JSON:}
+\NormalTok{\{ [ \{ }\StringTok{"Name"}\NormalTok{: }\StringTok{"foo"}
+    \NormalTok{, }\StringTok{"Local"}\NormalTok{: \{ }\StringTok{"Parent"}\NormalTok{: }\StringTok{"None"}
+               \NormalTok{, }\StringTok{"Version"}\NormalTok{: }\StringTok{"1.2.3"} \NormalTok{\}}
+    \NormalTok{, }\StringTok{"Incoming"}\NormalTok{: [ \{ }\StringTok{"Parent"}\NormalTok{: }\StringTok{"bar"}
+                    \NormalTok{, }\StringTok{"Version"}\NormalTok{: }\StringTok{"< 1.2.3"} \NormalTok{\}}
+                  \NormalTok{, \{ }\StringTok{"Parent"}\NormalTok{: }\StringTok{"baz"}
+                    \NormalTok{, }\StringTok{"Version"}\NormalTok{: }\StringTok{"> 1.2.3"} \NormalTok{\}}
+                  \NormalTok{]}
+    \NormalTok{\}}
+  \NormalTok{, \{ }\StringTok{"Name"}\NormalTok{: }\StringTok{"curl"}
+    \NormalTok{, }\StringTok{"Local"}\NormalTok{: \{ }\StringTok{"Parent"}\NormalTok{: }\StringTok{"git"}
+               \NormalTok{, }\StringTok{"Version"}\NormalTok{: }\StringTok{"7.36.0"} \NormalTok{\}}
+    \NormalTok{, }\StringTok{"Incoming"}\NormalTok{: [ \{ }\StringTok{"Parent"}\NormalTok{: }\StringTok{"pacman"}
+                    \NormalTok{, }\StringTok{"Version"}\NormalTok{: }\StringTok{"7.37.0"} \NormalTok{\}}
+                  \NormalTok{]}
+    \NormalTok{\}}
+  \NormalTok{, \{ }\StringTok{"Name"}\NormalTok{: }\StringTok{"lua"}
+    \NormalTok{, }\StringTok{"Local"}\NormalTok{: }\StringTok{"None"}
+    \NormalTok{, }\StringTok{"Incoming"}\NormalTok{: [ \{ }\StringTok{"Parent"}\NormalTok{: }\StringTok{"vlc"}
+                    \NormalTok{, }\StringTok{"Version"}\NormalTok{: }\StringTok{"5.2.3"} \NormalTok{\}}
+                  \NormalTok{, \{ }\StringTok{"Parent"}\NormalTok{: }\StringTok{"conky"}
+                    \NormalTok{, }\StringTok{"Version"}\NormalTok{: }\StringTok{"5.2.2"} \NormalTok{\}}
+                  \NormalTok{]}
+    \NormalTok{\}}
+  \NormalTok{]}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\paragraph{Dependency Information
+Output}\label{dependency-information-output}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Information for all immediate dependencies for any given package can
+  be output in human-readable format by default with \texttt{-\{A,S\}d}.
+\item
+  Adding \texttt{-\/-recursive} will yield all dependencies and
+  \emph{their} dependencies as well.
+\item
+  Adding \texttt{-\/-json} will output this information in JSON for use
+  by other software that may sit on top of Aura.
+\end{itemize}
+
+\paragraph{Concurrent Package
+Building}\label{concurrent-package-building}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Package data is returned from dependency checking in the form
+  \texttt{{[}{[}Package{]}{]}} (see
+  \href{/DESIGN.md\#dependency-resolution}{Dependency Resolution}). Each
+  sublist of packages have no interdependencies, so they are built
+  concurrent to each other and then installed as a block.
+\end{itemize}
+
+\paragraph{Package State Backups}\label{package-state-backups}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  \texttt{aura -B} stores a snapshot of all currently installed packages
+  and their versions in \texttt{/var/cache/aura/states}.
+\item
+  Filenames are of the form: \texttt{YYYY.MM(MonthName).DD.HH.MM}
+\item
+  The data itself is stored as JSON to ease use by other tools:
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{\{ }\StringTok{"date"}\NormalTok{: }\StringTok{"2014-04-09"}
+\NormalTok{, }\StringTok{"time"}\NormalTok{: }\StringTok{"20:00"}
+\NormalTok{, }\StringTok{"packages"}\NormalTok{: [ \{ }\StringTok{"pkgname"}\NormalTok{: }\StringTok{"alsa-lib"}
+                \NormalTok{, }\StringTok{"version"}\NormalTok{: }\StringTok{"1.0.27.2-1"} \NormalTok{\}}
+                \CommentTok{// more packages here}
+              \NormalTok{]}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\paragraph{PkgInfo}\label{pkginfo}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  \texttt{-\{S,A,Q\}i} yields \texttt{PkgInfo} data. It holds:
+\item
+  Repository name
+\item
+  Package name
+\item
+  Version
+\item
+  Description
+\item
+  Architecture
+\item
+  URL
+\item
+  Licenses
+\item
+  ``Provides''
+\item
+  Dependencies
+\item
+  ``Conflicts With''
+\item
+  Maintainer
+\item
+  Optional fields (provided as \texttt{{[}(Text,Text){]}}):
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    Download/Install sizes
+  \item
+    Group
+  \item
+    Votes
+  \item
+    GPG information
+  \item
+    etc.
+  \end{itemize}
+\end{itemize}
+
+\paragraph{Abnormal Termination}\label{abnormal-termination}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Users can halt Aura with \texttt{Ctrl-d}. The message
+  \texttt{Stopping Aura...} is shown. All temporary files in use are
+  cleared here.
+\end{itemize}
+
+\paragraph{Colour Output}\label{colour-output}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  All output to terminal (save JSON data) is output in colour where
+  appropriate. The user can disable this with
+  \texttt{-\/-no-colo\{ur,r\}}
+\end{itemize}
+
+\subsubsection{Plugins}\label{plugins}
+
+Like XMonad, behaviour is built around hooks/plugins that are themselves
+written in Haskell. Each Linux distribution writes and provides to
+\texttt{AuraConf.hs} functions that fill certain type/behaviour
+requirements as explained below.
+
+\paragraph{AuraConf}\label{auraconf}
+
+\texttt{AuraConf.hs} is Aura's configuration file. It is typically
+located in \texttt{TODO: LOCATION HERE}. Here, distributions and users
+can add Hooks to define custom behaviour for their native packaging
+system. The command \texttt{aura -\/-recompile} rebuilds Aura with new
+Hooks. Also, the following paths can be defined in this file:
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Package cache.
+\item
+  Aura log file.
+\item
+  Default build directory.
+\item
+  Mirror URLs for binary downloads.
+\item
+  TODO: What else?
+\end{itemize}
+
+\paragraph{Hook List}\label{hook-list}
+
+Pending.
+
+\subsubsection{Aesthetics}\label{aesthetics}
+
+\paragraph{Version Information when
+Upgrading}\label{version-information-when-upgrading}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Need a nice chart.
+\end{itemize}
+
+\paragraph{Aura Versioning}\label{aura-versioning}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Aura uses \href{http://semver.org/}{Semantic Versioning}, meaning it's
+  version numbers are of the form \texttt{MAJOR.MINOR.PATCH}.
+\end{itemize}
+
+\subsubsection{Haskell Requirements}\label{haskell-requirements}
+
+\paragraph{Strings}\label{strings}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  All Strings are represented as \texttt{Text} from \texttt{Data.Text}.
+  This is available in the \texttt{text} package from Hackage.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\OtherTok{\{-# LANGUAGE OverloadedStrings #-\}}
+\end{Highlighting}
+\end{Shaded}
+
+should be used where appropriate for String literals being converted to
+Text automatically.
+
+\paragraph{JSON Data}\label{json-data}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  All JSON input and output is handled through \texttt{aeson} and
+  \texttt{aeson-pretty}.
+\end{itemize}
+
+\paragraph{Other Libraries}\label{other-libraries}
+
+Information on other Hackage libraries used in Aura can be found
+\href{https://github.com/fosskers/aura/issues/223}{here}.
+
+\subsubsection{Package Requirements}\label{package-requirements}
+
+Aura must be available in the following forms: - \texttt{haskell-aura}
+An AUR package pulled from Hackage, with all special install
+instructions contained in \texttt{Setup.hs}. - \texttt{aura} What was
+\texttt{aura-bin} in Aura 1. A pre-built binary for those with no
+interest in Haskell. The old \texttt{aura-bin} package will be noted as
+depreciated, left as Aura 1, and removed from the AUR \textbf{two}
+months after the release of Aura 2. - \texttt{aura-git} the same as is
+currently available. Should man page install instructions, etc., be in
+\texttt{Setup.hs} the same as \texttt{haskell-aura}?
+
+\subsection{Arch Linux Specifics}\label{arch-linux-specifics}
+
+\paragraph{ABS Package
+Building/Installation}\label{abs-package-buildinginstallation}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  There is no longer a \texttt{-M} option. All ABS package interaction
+  is done through \texttt{-S}.
+\item
+  Installs prebuilt binaries available from Arch servers by default.
+\item
+  Build options:
+\item
+  If the user specifies \texttt{-\/-build}, the package will be built
+  manually via the ABS.
+\end{itemize}
+
+\paragraph{AUR Package
+Building/Installation}\label{aur-package-buildinginstallation}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Builds manually by default, as there is no prebuilt alternative for
+  the AUR (by design).
+\end{itemize}
+
+\paragraph{PKGBUILD/Additional Build-file
+Editing}\label{pkgbuildadditional-build-file-editing}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Support for \texttt{customizepkg} is dropped, as AUR 3.0 provides
+  dependency information via its API.
+\item
+  Users can edit included \texttt{.install} files and the
+  \textbf{behaviour} of PKGBUILDs with \texttt{-\/-edit}. This is done
+  after dependency checks have been made via the data from the AUR API.
+  Users are urged \emph{not} to edit dependencies at this point, as only
+  \texttt{makepkg}, not Aura, will know about the changes.
+\item
+  If you do want to build a package with different dependencies,
+  consider whether there is value in creating your own forked package
+  for the AUR (named \texttt{foo-legacy}, etc.). Others may benefit from
+  your effort.
+\item
+  If you are trying to fix a broken package, rather than circumventing
+  the problem by building manually with \texttt{makepkg}, please contact
+  the maintainer.
+\end{itemize}
+
+\paragraph{AUR Interaction}\label{aur-interaction}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  AUR API calls are moved out of Aura and into a new Hackage package
+  \texttt{aur} (exposing the \texttt{Linux.Arch.Aur.*} modules).
+\item
+  It provides conversions to and from JSON data and Haskell data.
+\item
+  This is preparation for future versions of Aura that allow use in
+  other Linux distributions by swapping out sections of their back-end
+  (with modules like \texttt{Linux.Debian.Repo} etc.)
+\end{itemize}
+
+\subsection{Coding Standards}\label{coding-standards}
+
+\subsubsection{Record Syntax}\label{record-syntax}
+
+When using record syntax for ADTs, function names should be suffixed
+with ``Of'' to reflect their noun-like nature:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{data} \DataTypeTok{Package} \FunctionTok{=} \DataTypeTok{Package} \NormalTok{\{}\OtherTok{ nameOf    ::} \DataTypeTok{String}
+                       \NormalTok{,}\OtherTok{ versionOf ::} \DataTypeTok{Version}
+                       \NormalTok{,}\OtherTok{ depsOf    ::} \NormalTok{[}\DataTypeTok{Package}\NormalTok{] \}}
+                       \KeywordTok{deriving} \NormalTok{(}\DataTypeTok{Eq}\NormalTok{, }\DataTypeTok{Show}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\end{document}
