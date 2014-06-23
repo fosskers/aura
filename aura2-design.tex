@@ -1,7 +1,29 @@
 \documentclass{article}
 % GENERAL
 \usepackage{setspace,graphicx,fancyhdr,hyperref,amsmath,tikz,epigraph}
+\usepackage{framed,listings}
 \usepackage[utf8]{inputenc}
+
+\lstset{
+  frame=none,
+  xleftmargin=2pt,
+  stepnumber=1,
+  belowcaptionskip=\bigskipamount,
+  captionpos=b,
+  escapeinside={*'}{'*},
+  language=haskell,
+  keepspaces=true,
+  tabsize=2,
+  emphstyle={\bf},
+  commentstyle=\it\color{orange},
+  stringstyle=\mdseries\rmfamily\color{red},
+  showspaces=false,
+  keywordstyle=\bfseries\rmfamily\color{blue},
+  flexiblecolumns=false,
+  basicstyle=\small\sffamily,
+  showstringspaces=true,
+  morecomment=[l]\%
+}
 
 % FONT
 \usepackage{arev}
@@ -23,101 +45,16 @@
 \setcounter{tocdepth}{3}
 
 \begin{document}
+\definecolor{shadecolor}{gray}{0.9}
 
 % --- TABLE OF CONTENTS ---
 \tableofcontents
 \clearpage
 % -------------------------
 
-\section{Aura 2 Design}\label{aura-2-design}
+Aura 2 Design
 
-\subsection{Contents}\label{contents}
-
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  Preface
-\item
-  \href{/DESIGN.md\#mission-statement}{Mission Statement}
-\item
-  Requirements
-\item
-  \href{/DESIGN.md\#general-functionality}{General Functionality}
-
-  \begin{itemize}
-  \itemsep1pt\parskip0pt\parsep0pt
-  \item
-    \href{/DESIGN.md\#program-flow}{Program Flow}
-  \item
-    \href{/DESIGN.md\#dependency-resolution}{Dependency Resolution}
-  \item
-    \href{/DESIGN.md\#dependency-information-output}{Dependency
-    Information Output}
-  \item
-    \href{/DESIGN.md\#concurrent-package-building}{Concurrent Package
-    Building}
-  \item
-    \href{/DESIGN.md\#abnormal-termination}{Abnormal Termination}
-  \item
-    \href{/DESIGN.md\#pkginfo}{PkgInfo}
-  \item
-    \href{/DESIGN.md\#colour-output}{Colour Output}
-  \end{itemize}
-\item
-  \href{/DESIGN.md\#plugins}{Plugins}
-
-  \begin{itemize}
-  \itemsep1pt\parskip0pt\parsep0pt
-  \item
-    \href{/DESIGN.md\#auraconf}{Aura Conf}
-  \item
-    \href{/DESIGN.md\#hook-list}{Hook List}
-  \end{itemize}
-\item
-  \href{/DESIGN.md\#aesthetics}{Aesthetics}
-
-  \begin{itemize}
-  \itemsep1pt\parskip0pt\parsep0pt
-  \item
-    \href{/DESIGN.md\#version-information-when-upgrading}{Version
-    Information when Upgrading}
-  \item
-    \href{/DESIGN.md\#aura-versioning}{Aura Versioning}
-  \end{itemize}
-\item
-  \href{/DESIGN.md\#haskell-requirements}{Haskell Requirements}
-
-  \begin{itemize}
-  \itemsep1pt\parskip0pt\parsep0pt
-  \item
-    \href{/DESIGN.md\#strings}{Strings}
-  \item
-    \href{/DESIGN.md\#json-data}{JSON Data}
-  \item
-    \href{/DESIGN.md\#other-libraries}{Other Libraries}
-  \end{itemize}
-\item
-  \href{/DESIGN.md\#package-requirements}{Package Requirements}
-\item
-  \href{/DESIGN.md\#arch-linux-specifics}{Arch Linux Specifics}
-\item
-  \href{/DESIGN.md\#abs-package-buildinginstallation}{ABS Package
-  Building/Installation}
-\item
-  \href{/DESIGN.md\#aur-package-buildinginstallation}{AUR Package
-  Building/Installation}
-\item
-  \href{/DESIGN.md\#pkgbuildadditional-build-file-editing}{PKGBUILD/Additional
-  Build-file Editing}
-\item
-  \href{/DESIGN.md\#aur-interaction}{AUR Interaction}
-\item
-  \href{/DESIGN.md\#coding-standards}{Coding Standards}
-\item
-  \href{/DESIGN.md\#record-syntax}{Record Syntax}
-\end{itemize}
-
-\subsection{Preface}\label{preface}
+\section{Preface}\label{preface}
 
 This is a design document for version 2 of
 \href{https://github.com/fosskers/aura}{Aura}. Note that specifications
@@ -126,7 +63,7 @@ time of writing those features aren't implemented yet. This is to ensure
 that the document can act as a reference for Aura's behaviour
 post-release.
 
-\subsection{Mission Statement}\label{mission-statement}
+\section{Mission Statement}\label{mission-statement}
 
 Aura is a cross-distribution package manager for GNU/Linux systems. It
 is based around a distribution-specific Hook system for custom
@@ -150,11 +87,11 @@ standards, users can transition between distributions more easily, and
 distribution developers can avoid reinventing the wheel by writing their
 own package management software.
 
-\subsection{Requirements}\label{requirements}
+\section{Requirements}\label{requirements}
 
-\subsubsection{General Functionality}\label{general-functionality}
+\subsection{General Functionality}\label{general-functionality}
 
-\paragraph{Program Flow}\label{program-flow}
+\subsubsection{Program Flow}\label{program-flow}
 
 \textbf{This section needs reorganising}
 
@@ -237,7 +174,7 @@ Execution in Aura takes the following order:
   \end{itemize}
 \end{itemize}
 
-\paragraph{Dependency Resolution}\label{dependency-resolution}
+\subsubsection{Dependency Resolution}\label{dependency-resolution}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -277,40 +214,39 @@ Execution in Aura takes the following order:
 | lua      | conky  | Incoming | 5.2.2   |
 \end{verbatim}
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\CommentTok{// As JSON:}
-\NormalTok{\{ [ \{ }\StringTok{"Name"}\NormalTok{: }\StringTok{"foo"}
-    \NormalTok{, }\StringTok{"Local"}\NormalTok{: \{ }\StringTok{"Parent"}\NormalTok{: }\StringTok{"None"}
-               \NormalTok{, }\StringTok{"Version"}\NormalTok{: }\StringTok{"1.2.3"} \NormalTok{\}}
-    \NormalTok{, }\StringTok{"Incoming"}\NormalTok{: [ \{ }\StringTok{"Parent"}\NormalTok{: }\StringTok{"bar"}
-                    \NormalTok{, }\StringTok{"Version"}\NormalTok{: }\StringTok{"< 1.2.3"} \NormalTok{\}}
-                  \NormalTok{, \{ }\StringTok{"Parent"}\NormalTok{: }\StringTok{"baz"}
-                    \NormalTok{, }\StringTok{"Version"}\NormalTok{: }\StringTok{"> 1.2.3"} \NormalTok{\}}
-                  \NormalTok{]}
-    \NormalTok{\}}
-  \NormalTok{, \{ }\StringTok{"Name"}\NormalTok{: }\StringTok{"curl"}
-    \NormalTok{, }\StringTok{"Local"}\NormalTok{: \{ }\StringTok{"Parent"}\NormalTok{: }\StringTok{"git"}
-               \NormalTok{, }\StringTok{"Version"}\NormalTok{: }\StringTok{"7.36.0"} \NormalTok{\}}
-    \NormalTok{, }\StringTok{"Incoming"}\NormalTok{: [ \{ }\StringTok{"Parent"}\NormalTok{: }\StringTok{"pacman"}
-                    \NormalTok{, }\StringTok{"Version"}\NormalTok{: }\StringTok{"7.37.0"} \NormalTok{\}}
-                  \NormalTok{]}
-    \NormalTok{\}}
-  \NormalTok{, \{ }\StringTok{"Name"}\NormalTok{: }\StringTok{"lua"}
-    \NormalTok{, }\StringTok{"Local"}\NormalTok{: }\StringTok{"None"}
-    \NormalTok{, }\StringTok{"Incoming"}\NormalTok{: [ \{ }\StringTok{"Parent"}\NormalTok{: }\StringTok{"vlc"}
-                    \NormalTok{, }\StringTok{"Version"}\NormalTok{: }\StringTok{"5.2.3"} \NormalTok{\}}
-                  \NormalTok{, \{ }\StringTok{"Parent"}\NormalTok{: }\StringTok{"conky"}
-                    \NormalTok{, }\StringTok{"Version"}\NormalTok{: }\StringTok{"5.2.2"} \NormalTok{\}}
-                  \NormalTok{]}
-    \NormalTok{\}}
-  \NormalTok{]}
-\NormalTok{\}}
-\end{Highlighting}
-\end{Shaded}
+\begin{shaded}
+\begin{lstlisting}[language=haskell]
+// As JSON:
+{ [ { ``Name'': ``foo''
+    , ``Local'': { ``Parent'': ``None''
+               , ``Version'': ``1.2.3'' }
+    , ``Incoming'': [ { ``Parent'': ``bar''
+                    , ``Version'': ``< 1.2.3'' }
+                  , { ``Parent'': ``baz''
+                    , ``Version'': ``> 1.2.3'' }
+                  ]
+    }
+  , { ``Name'': ``curl''
+    , ``Local'': { ``Parent'': ``git''
+               , ``Version'': ``7.36.0'' }
+    , ``Incoming'': [ { ``Parent'': ``pacman''
+                    , ``Version'': ``7.37.0'' }
+                  ]
+    }
+  , { ``Name'': ``lua''
+    , ``Local'': ``None''
+    , ``Incoming'': [ { ``Parent'': ``vlc''
+                    , ``Version'': ``5.2.3'' }
+                  , { ``Parent'': ``conky''
+                    , ``Version'': ``5.2.2'' }
+                  ]
+    }
+  ]
+}
+\end{lstlisting}
+\end{shaded}
 
-\paragraph{Dependency Information
-Output}\label{dependency-information-output}
+\subsubsection{Dependency Information Output}\label{dependency-information-output}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -325,7 +261,7 @@ Output}\label{dependency-information-output}
   by other software that may sit on top of Aura.
 \end{itemize}
 
-\paragraph{Concurrent Package
+\subsubsection{Concurrent Package
 Building}\label{concurrent-package-building}
 
 \begin{itemize}
@@ -338,7 +274,7 @@ Building}\label{concurrent-package-building}
   concurrent to each other and then installed as a block.
 \end{itemize}
 
-\paragraph{Package State Backups}\label{package-state-backups}
+\subsubsection{Package State Backups}\label{package-state-backups}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -351,19 +287,19 @@ Building}\label{concurrent-package-building}
   The data itself is stored as JSON to ease use by other tools:
 \end{itemize}
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{\{ }\StringTok{"date"}\NormalTok{: }\StringTok{"2014-04-09"}
-\NormalTok{, }\StringTok{"time"}\NormalTok{: }\StringTok{"20:00"}
-\NormalTok{, }\StringTok{"packages"}\NormalTok{: [ \{ }\StringTok{"pkgname"}\NormalTok{: }\StringTok{"alsa-lib"}
-                \NormalTok{, }\StringTok{"version"}\NormalTok{: }\StringTok{"1.0.27.2-1"} \NormalTok{\}}
-                \CommentTok{// more packages here}
-              \NormalTok{]}
-\NormalTok{\}}
-\end{Highlighting}
-\end{Shaded}
+\begin{shaded}
+\begin{lstlisting}[language=haskell]
+{ ``date'': ``2014-04-09''
+, ``time'': ``20:00''
+, ``packages'': [ { ``pkgname'': ``alsa-lib''
+                , ``version'': ``1.0.27.2-1'' }
+                // more packages here
+                ]
+}
+\end{lstlisting}
+\end{shaded}
 
-\paragraph{PkgInfo}\label{pkginfo}
+\subsubsection{PkgInfo}\label{pkginfo}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -409,7 +345,7 @@ Building}\label{concurrent-package-building}
   \end{itemize}
 \end{itemize}
 
-\paragraph{Abnormal Termination}\label{abnormal-termination}
+\subsubsection{Abnormal Termination}\label{abnormal-termination}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -419,7 +355,7 @@ Building}\label{concurrent-package-building}
   cleared here.
 \end{itemize}
 
-\paragraph{Colour Output}\label{colour-output}
+\subsubsection{Colour Output}\label{colour-output}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -429,14 +365,14 @@ Building}\label{concurrent-package-building}
   \texttt{-\/-no-colo\{ur,r\}}
 \end{itemize}
 
-\subsubsection{Plugins}\label{plugins}
+\subsection{Plugins}\label{plugins}
 
 Like XMonad, behaviour is built around hooks/plugins that are themselves
 written in Haskell. Each Linux distribution writes and provides to
 \texttt{AuraConf.hs} functions that fill certain type/behaviour
 requirements as explained below.
 
-\paragraph{AuraConf}\label{auraconf}
+\subsubsection{AuraConf}\label{auraconf}
 
 \texttt{AuraConf.hs} is Aura's configuration file. It is typically
 located in \texttt{TODO: LOCATION HERE}. Here, distributions and users
@@ -458,13 +394,13 @@ Hooks. Also, the following paths can be defined in this file:
   TODO: What else?
 \end{itemize}
 
-\paragraph{Hook List}\label{hook-list}
+\subsubsection{Hook List}\label{hook-list}
 
 Pending.
 
-\subsubsection{Aesthetics}\label{aesthetics}
+\subsection{Aesthetics}\label{aesthetics}
 
-\paragraph{Version Information when
+\subsubsection{Version Information when
 Upgrading}\label{version-information-when-upgrading}
 
 \begin{itemize}
@@ -473,7 +409,7 @@ Upgrading}\label{version-information-when-upgrading}
   Need a nice chart.
 \end{itemize}
 
-\paragraph{Aura Versioning}\label{aura-versioning}
+\subsubsection{Aura Versioning}\label{aura-versioning}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -482,9 +418,9 @@ Upgrading}\label{version-information-when-upgrading}
   version numbers are of the form \texttt{MAJOR.MINOR.PATCH}.
 \end{itemize}
 
-\subsubsection{Haskell Requirements}\label{haskell-requirements}
+\subsection{Haskell Requirements}\label{haskell-requirements}
 
-\paragraph{Strings}\label{strings}
+\subsubsection{Strings}\label{strings}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -493,16 +429,16 @@ Upgrading}\label{version-information-when-upgrading}
   This is available in the \texttt{text} package from Hackage.
 \end{itemize}
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\OtherTok{\{-# LANGUAGE OverloadedStrings #-\}}
-\end{Highlighting}
-\end{Shaded}
+\begin{shaded}
+\begin{lstlisting}[language=haskell]
+{-# LANGUAGE OverloadedStrings #-}
+\end{lstlisting}
+\end{shaded}
 
 should be used where appropriate for String literals being converted to
 Text automatically.
 
-\paragraph{JSON Data}\label{json-data}
+\subsubsection{JSON Data}\label{json-data}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -511,12 +447,12 @@ Text automatically.
   \texttt{aeson-pretty}.
 \end{itemize}
 
-\paragraph{Other Libraries}\label{other-libraries}
+\subsubsection{Other Libraries}\label{other-libraries}
 
 Information on other Hackage libraries used in Aura can be found
 \href{https://github.com/fosskers/aura/issues/223}{here}.
 
-\subsubsection{Package Requirements}\label{package-requirements}
+\subsection{Package Requirements}\label{package-requirements}
 
 Aura must be available in the following forms: - \texttt{haskell-aura}
 An AUR package pulled from Hackage, with all special install
@@ -528,9 +464,9 @@ months after the release of Aura 2. - \texttt{aura-git} the same as is
 currently available. Should man page install instructions, etc., be in
 \texttt{Setup.hs} the same as \texttt{haskell-aura}?
 
-\subsection{Arch Linux Specifics}\label{arch-linux-specifics}
+\section{Arch Linux Specifics}\label{arch-linux-specifics}
 
-\paragraph{ABS Package
+\subsubsection{ABS Package
 Building/Installation}\label{abs-package-buildinginstallation}
 
 \begin{itemize}
@@ -547,7 +483,7 @@ Building/Installation}\label{abs-package-buildinginstallation}
   manually via the ABS.
 \end{itemize}
 
-\paragraph{AUR Package
+\subsubsection{AUR Package
 Building/Installation}\label{aur-package-buildinginstallation}
 
 \begin{itemize}
@@ -557,7 +493,7 @@ Building/Installation}\label{aur-package-buildinginstallation}
   the AUR (by design).
 \end{itemize}
 
-\paragraph{PKGBUILD/Additional Build-file
+\subsubsection{PKGBUILD/Additional Build-file
 Editing}\label{pkgbuildadditional-build-file-editing}
 
 \begin{itemize}
@@ -582,7 +518,7 @@ Editing}\label{pkgbuildadditional-build-file-editing}
   the maintainer.
 \end{itemize}
 
-\paragraph{AUR Interaction}\label{aur-interaction}
+\subsubsection{AUR Interaction}\label{aur-interaction}
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -597,20 +533,20 @@ Editing}\label{pkgbuildadditional-build-file-editing}
   (with modules like \texttt{Linux.Debian.Repo} etc.)
 \end{itemize}
 
-\subsection{Coding Standards}\label{coding-standards}
+\section{Coding Standards}\label{coding-standards}
 
-\subsubsection{Record Syntax}\label{record-syntax}
+\subsection{Record Syntax}\label{record-syntax}
 
 When using record syntax for ADTs, function names should be suffixed
 with ``Of'' to reflect their noun-like nature:
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{data} \DataTypeTok{Package} \FunctionTok{=} \DataTypeTok{Package} \NormalTok{\{}\OtherTok{ nameOf    ::} \DataTypeTok{String}
-                       \NormalTok{,}\OtherTok{ versionOf ::} \DataTypeTok{Version}
-                       \NormalTok{,}\OtherTok{ depsOf    ::} \NormalTok{[}\DataTypeTok{Package}\NormalTok{] \}}
-                       \KeywordTok{deriving} \NormalTok{(}\DataTypeTok{Eq}\NormalTok{, }\DataTypeTok{Show}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
+\begin{shaded}
+\begin{lstlisting}[language=haskell]
+data Package = Package { nameOf    :: String
+                       , versionOf :: Version
+                       , depsOf    :: [Package] }
+                       deriving (Eq, Show)
+\end{lstlisting}
+\end{shaded}
 
 \end{document}
