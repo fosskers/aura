@@ -88,15 +88,29 @@ standards, users can transition between distributions more easily, and
 distribution developers can avoid reinventing the wheel by writing their
 own package management software.
 
-\section{Requirements}\label{requirements}
+\section{Functionality}
 \colorbox{GreenYellow}{Paths are GreenYellow.}\\
 \colorbox{SkyBlue}{Haskell function signatures are SkyBlue.}\\
-\colorbox{Apricot}{CLI flags are Apricot.}
+\colorbox{Apricot}{CLI flags/commands are Apricot.}
 
-\subsection{General Requirements}
+\subsection{General}
 \subsubsection{Repository Package Installation}
+Aura allows installation of prebuilt binaries from mirrors
+defined in \hyperref[auraconf]{AuraConf}.\\
+Usage: \colorbox{Apricot}{\texttt{aura -S <packages>}}\\
 \subsubsection{Foreign Package Installation}
+Aura allows installation of ``foreign'' packages, prebuilt or to be
+compiled, from locations defined by Hooks in \hyperref[auraconf]{AuraConf}.\\
+Not all distributions may support this type of installation.\\
+Usage: \colorbox{Apricot}{\texttt{aura -A <packages>}}
 \subsubsection{Local Package Removal}
+Installed packages may be removed singularly, or in groups.\\
+Usage:
+\begin{itemize}
+  \item Just the packages named: \colorbox{Apricot}{\texttt{aura -R <packages>}}
+  \item Packages named and all deps (recursive):
+    \colorbox{Apricot}{\texttt{aura -Rr <packages>}}
+\end{itemize}
 \subsubsection{Package Search}
 \subsubsection{Package Information}
 
@@ -105,7 +119,7 @@ own package management software.
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
 \item
-  \texttt{aura -B} stores a snapshot of all currently installed packages
+  \colorbox{Apricot}{\texttt{aura -B}} stores a snapshot of all currently installed packages
   and their versions in\\ \colorbox{GreenYellow}{/var/cache/aura/states}.
 \item
   Filenames are of the form: \texttt{YYYY.MM(MonthName).DD.HH.MM}
@@ -126,7 +140,7 @@ own package management software.
 \end{shaded}
 % --- %
 
-\subsection{Other Requirements}
+\subsection{Other}
 \begin{comment}
 \subsubsection{Program Flow}\label{program-flow}
 
