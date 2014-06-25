@@ -1,7 +1,8 @@
 \documentclass{article}
 % GENERAL
+\usepackage[usenames,dvipsnames]{color}
 \usepackage{setspace,graphicx,fancyhdr,hyperref,amsmath,tikz,epigraph}
-\usepackage{framed,listings}
+\usepackage{framed,listings,comment}
 \usepackage[utf8]{inputenc}
 
 \lstset{
@@ -88,9 +89,45 @@ distribution developers can avoid reinventing the wheel by writing their
 own package management software.
 
 \section{Requirements}\label{requirements}
+\colorbox{GreenYellow}{Paths are GreenYellow.}\\
+\colorbox{SkyBlue}{Haskell function signatures are SkyBlue.}\\
+\colorbox{Apricot}{CLI flags are Apricot.}
 
-\subsection{General Functionality}\label{general-functionality}
+\subsection{General Requirements}
+\subsubsection{Repository Package Installation}
+\subsubsection{Foreign Package Installation}
+\subsubsection{Local Package Removal}
+\subsubsection{Package Search}
+\subsubsection{Package Information}
 
+% --- %
+\subsubsection{Local Package Backups}
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  \texttt{aura -B} stores a snapshot of all currently installed packages
+  and their versions in\\ \colorbox{GreenYellow}{/var/cache/aura/states}.
+\item
+  Filenames are of the form: \texttt{YYYY.MM(MonthName).DD.HH.MM}
+\item
+  The data itself is stored as JSON to ease use by other tools:
+\end{itemize}
+
+\begin{shaded}
+\begin{lstlisting}[language=haskell]
+{ ``date'': ``2014-04-09'',
+  ``time'': ``20:00'',
+  ``packages'': [ { ``pkgname'': ``alsa-lib'',
+                    ``version'': ``1.0.27.2-1'' },
+                // more packages here
+                ]
+}
+\end{lstlisting}
+\end{shaded}
+% --- %
+
+\subsection{Other Requirements}
+\begin{comment}
 \subsubsection{Program Flow}\label{program-flow}
 
 \textbf{This section needs reorganising}
@@ -173,6 +210,7 @@ Execution in Aura takes the following order:
     Aura gives output according to the \texttt{{[}PkgInfo{]}}.
   \end{itemize}
 \end{itemize}
+\end{comment}
 
 \subsubsection{Dependency Resolution}\label{dependency-resolution}
 
@@ -180,10 +218,10 @@ Execution in Aura takes the following order:
 \itemsep1pt\parskip0pt\parsep0pt
 \item
   AUR dependencies are no longer resolved through PKGBUILD bash parsing.
-  The AUR 3.0 API includes the necessary dependency information.
+  The AUR 3.x API includes the necessary dependency information.
 \item
   \textbf{Resolution Successful}: Data in the form
-  \texttt{{[}{[}Package{]}{]}} is yielded. These are groups of packages
+  \colorbox{SkyBlue}{\texttt{{[}{[}Package{]}{]}}} is yielded. These are groups of packages
   that may be built and installed simultaneously. That is, they are not
   interdependent in any way.
 \item
@@ -217,29 +255,29 @@ Execution in Aura takes the following order:
 \begin{shaded}
 \begin{lstlisting}[language=haskell]
 // As JSON:
-{ [ { ``Name'': ``foo''
-    , ``Local'': { ``Parent'': ``None''
-               , ``Version'': ``1.2.3'' }
-    , ``Incoming'': [ { ``Parent'': ``bar''
-                    , ``Version'': ``< 1.2.3'' }
-                  , { ``Parent'': ``baz''
-                    , ``Version'': ``> 1.2.3'' }
-                  ]
-    }
-  , { ``Name'': ``curl''
-    , ``Local'': { ``Parent'': ``git''
-               , ``Version'': ``7.36.0'' }
-    , ``Incoming'': [ { ``Parent'': ``pacman''
-                    , ``Version'': ``7.37.0'' }
-                  ]
-    }
-  , { ``Name'': ``lua''
-    , ``Local'': ``None''
-    , ``Incoming'': [ { ``Parent'': ``vlc''
-                    , ``Version'': ``5.2.3'' }
-                  , { ``Parent'': ``conky''
-                    , ``Version'': ``5.2.2'' }
-                  ]
+{ [ { ``Name'': ``foo'',
+      ``Local'': { ``Parent'': ``None'',
+                   ``Version'': ``1.2.3'' },
+      ``Incoming'': [ { ``Parent'': ``bar'',
+                        ``Version'': ``< 1.2.3'' },
+                      { ``Parent'': ``baz'',
+                        ``Version'': ``> 1.2.3'' }
+                    ]
+    },
+    { ``Name'': ``curl'',
+      ``Local'': { ``Parent'': ``git''
+                 , ``Version'': ``7.36.0'' },
+      ``Incoming'': [ { ``Parent'': ``pacman'',
+                        ``Version'': ``7.37.0'' }
+                    ]
+    },
+    { ``Name'': ``lua'',
+      ``Local'': ``None'',
+      ``Incoming'': [ { ``Parent'': ``vlc'',
+                        ``Version'': ``5.2.3'' },
+                      { ``Parent'': ``conky'',
+                        ``Version'': ``5.2.2'' }
+                    ]
     }
   ]
 }
@@ -273,31 +311,6 @@ Building}\label{concurrent-package-building}
   sublist of packages have no interdependencies, so they are built
   concurrent to each other and then installed as a block.
 \end{itemize}
-
-\subsubsection{Package State Backups}\label{package-state-backups}
-
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  \texttt{aura -B} stores a snapshot of all currently installed packages
-  and their versions in \texttt{/var/cache/aura/states}.
-\item
-  Filenames are of the form: \texttt{YYYY.MM(MonthName).DD.HH.MM}
-\item
-  The data itself is stored as JSON to ease use by other tools:
-\end{itemize}
-
-\begin{shaded}
-\begin{lstlisting}[language=haskell]
-{ ``date'': ``2014-04-09''
-, ``time'': ``20:00''
-, ``packages'': [ { ``pkgname'': ``alsa-lib''
-                , ``version'': ``1.0.27.2-1'' }
-                // more packages here
-                ]
-}
-\end{lstlisting}
-\end{shaded}
 
 \subsubsection{PkgInfo}\label{pkginfo}
 
@@ -499,7 +512,7 @@ Editing}\label{pkgbuildadditional-build-file-editing}
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
 \item
-  Support for \texttt{customizepkg} is dropped, as AUR 3.0 provides
+  Support for \texttt{customizepkg} is dropped, as AUR 3.x provides
   dependency information via its API.
 \item
   Users can edit included \texttt{.install} files and the
