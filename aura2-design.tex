@@ -94,15 +94,38 @@ own package management software.
 \colorbox{Apricot}{CLI flags/commands are Apricot.}
 
 \subsection{General}
+Aura handles three types of packages:
+\begin{itemize}
+  \item Repository Packages: Prebuilt binaries available
+    straight from the user's Distribution.
+  \item Foreign Packages: Packages that generally need to be compiled
+    by the user. Their versioning/source locations may be managed
+    by the Distribution is some way.
+  \item Local Packages: Packages installed on the user's system.
+    Records of them and the files belonging to them are stored in a
+    database, and package files themselves are stored in a cache
+    (in \colorbox{GreenYellow}{/var/cache/} or elsewhere).
+\end{itemize}
+A number of operations can be performed on these package types,
+as explained below.
+
+% --- %
+
 \subsubsection{Repository Package Installation}
 Aura allows installation of prebuilt binaries from mirrors
 defined in \hyperref[auraconf]{AuraConf}.\\
 Usage: \colorbox{Apricot}{\texttt{aura -S <packages>}}\\
+
+% --- %
+
 \subsubsection{Foreign Package Installation}
-Aura allows installation of ``foreign'' packages, prebuilt or to be
+Aura allows installation of foreign packages, prebuilt or to be
 compiled, from locations defined by Hooks in \hyperref[auraconf]{AuraConf}.\\
 Not all distributions may support this type of installation.\\
 Usage: \colorbox{Apricot}{\texttt{aura -A <packages>}}
+
+% --- %
+
 \subsubsection{Local Package Removal}
 Installed packages may be removed singularly, or in groups.\\
 Usage:
@@ -111,20 +134,54 @@ Usage:
   \item Packages named and all deps (recursive):
     \colorbox{Apricot}{\texttt{aura -Rr <packages>}}
 \end{itemize}
-\subsubsection{Package Search}
-\subsubsection{Package Information}
 
 % --- %
+
+\subsubsection{Package Search}
+Searches on all three package types can be performed. A regular
+expression is given to search on.
+Usage:
+\begin{itemize}
+  \item Search repository packages: \colorbox{Apricot}{aura -Ss <pattern>}
+  \item Search foreign packages: \colorbox{Apricot}{aura -As <pattern>}
+  \item Search local packages: \colorbox{Apricot}{aura -Qs <pattern>}
+\end{itemize}
+Aura will fail silently when no pattern is given.\\
+Output sample:
+\begin{shaded}
+\begin{verbatim}
+extra/nvidia 337.25-3 [installed]
+    NVIDIA drivers for linux
+extra/nvidia-304xx 304.121-5
+    NVIDIA drivers for linux, 304xx legacy branch
+extra/nvidia-304xx-libgl 304.121-2
+    NVIDIA drivers libraries symlinks, 304xx legacy branch
+\end{verbatim}
+\end{shaded}
+
+% --- %
+
+\subsubsection{Package Information}
+
+
+% --- %
+
 \subsubsection{Local Package Backups}
+The state of locally installed packages may be recorded and restored
+at a later date.\\
+Usage:
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
-\item
-  \colorbox{Apricot}{\texttt{aura -B}} stores a snapshot of all currently installed packages
-  and their versions in\\ \colorbox{GreenYellow}{/var/cache/aura/states}.
-\item
-  Filenames are of the form: \texttt{YYYY.MM(MonthName).DD.HH.MM}
-\item
-  The data itself is stored as JSON to ease use by other tools:
+\item Store a snapshot of all installed packages:
+  \colorbox{Apricot}{\texttt{aura -B}}
+  \begin{itemize}
+    \item This record is stored in
+      \colorbox{GreenYellow}{/var/cache/aura/states}.
+    \item Filenames are of the form: \texttt{YYYY.MM(MonthName).DD.HH.MM}
+    \item The data itself is stored as JSON to ease use by other tools
+      (seen below).    
+  \end{itemize}
+\item Restore a snapshot: \colorbox{Apricot}{\texttt{aura -Br}}
 \end{itemize}
 
 \begin{shaded}
@@ -138,6 +195,7 @@ Usage:
 }
 \end{lstlisting}
 \end{shaded}
+
 % --- %
 
 \subsection{Other}
