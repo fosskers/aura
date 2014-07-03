@@ -8,19 +8,20 @@ setopt extendedglob
 
 # options for passing to _arguments: main aura commands
 _aura_opts_commands=(
-	{-A,--aursync}'[Install and manage AUR packages]'
-	{-B,--save}'[Manage the global package state]'
-	{-C,--downgrade}'[Manage the package cache]'
-	{-L,--viewlog}'[Analyse the pacman log file]'
-	{-O,--orphans}'[Manage orphan packages]'
-	{-Q,--query}'[Query the package database]'
-	{-R,--remove}'[Remove a packags]'
-	{-S,--sync}'[Synchronize repo packages]'
-	{-U,--upgrade}'[Upgrade packages]'
-	{-V,--version}'[Display version information]'
-	'--viewconf[View the pacman config file read-only]'
-	'--languages[Display available output languages]'
-	'(-h --help)'{-h,--help}'[Help message]'
+        {-A,--aursync}'[Install and manage AUR packages]'
+        {-B,--save}'[Manage the global package state]'
+        {-C,--downgrade}'[Manage the package cache]'
+        {-L,--viewlog}'[Analyse the pacman log file]'
+        {-M,--abssync}'[Build and install from the ABS tree]'
+        {-O,--orphans}'[Manage orphan packages]'
+        {-Q,--query}'[Query the package database]'
+        {-R,--remove}'[Remove a packags]'
+        {-S,--sync}'[Synchronize repo packages]'
+        {-U,--upgrade}'[Upgrade packages]'
+        {-V,--version}'[Display version information]'
+        '--viewconf[View the pacman config file read-only]'
+        '--languages[Display available output languages]'
+        '(-h --help)'{-h,--help}'[Help message]'
 )
 
 # options for passing to _arguments: options common to all commands
@@ -504,6 +505,11 @@ _aura_comp() {
 				'(-L --viewlog)'{-L,--viewlog} \
 				"$_aura_opts_common[@]" \
 				"$_aura_opts_viewlog[@]"
+			;;
+		M*)
+			_arguments -s : \
+				'(-M --abssync)'{-M,--abssync} \
+				"$_aura_opts_common[@]"
 			;;
 		O*)
 			_arguments -s : \
