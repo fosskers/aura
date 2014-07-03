@@ -97,7 +97,7 @@ own package management software.
 Aura handles three types of packages:
 \begin{itemize}
   \item Repository Packages: Prebuilt binaries available
-    straight from the user's Distribution.
+    direct from the user's Distribution.
   \item Foreign Packages: Packages that generally need to be compiled
     by the user. Their versioning/source locations may be managed
     by the Distribution is some way.
@@ -139,7 +139,7 @@ Usage:
 
 \subsubsection{Package Search}
 Searches on all three package types can be performed. A regular
-expression is given to search on.
+expression is given to search on.\\
 Usage:
 \begin{itemize}
   \item Search repository packages: \colorbox{Apricot}{aura -Ss <pattern>}
@@ -162,7 +162,14 @@ extra/nvidia-304xx-libgl 304.121-2
 % --- %
 
 \subsubsection{Package Information}
-
+Queries for specific package information can be performed on all
+three package types. The exact names of existing packages must be given.\\
+Usage:
+\begin{itemize}
+  \item Query repository packages: \colorbox{Apricot}{aura -Si <packages>}
+  \item Query foreign packages: \colorbox{Apricot}{aura -Ai <packages>}
+  \item Query local packages: \colorbox{Apricot}{aura -Qi <packages>}
+\end{itemize}
 
 % --- %
 
