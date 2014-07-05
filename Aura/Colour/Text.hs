@@ -21,7 +21,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Colour.Text where
 
-import Text.Regex.PCRE ((=~))
+import Data.List.Split (splitOn)
 
 import Shell (csi)
 
@@ -155,7 +155,7 @@ colourize colour msg =
       Nothing   -> msg  -- `NoColour` will yield this.
       Just code -> insertCodes code msg
         where insertCodes code' msg' =
-                  case msg' =~ resetCodeRegex :: (String,String,String) of
-                    (_,"","") -> code' ++ msg' ++ resetCode
-                    (_,_,"")  -> msg'  -- We're done recursing.
-                    (b,_,a)   -> insertCodes code' (b ++ code' ++ a)
+                  case splitOn resetCode msg' of
+                    [_] -> code' ++ msg' ++ resetCode
+                    [_, ""] -> msg' -- We're done recursing.
+                    (b:as) -> insertCodes code' (b ++ code' ++ unwords as)
