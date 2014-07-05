@@ -426,12 +426,13 @@ displayOutputLanguages_1 Norwegian  = "Følgende språk er tilgjengelig:"
 -- Aura/Commands/A functions
 ----------------------------
 auraCheck_1 :: Language -> String
-auraCheck_1 Japanese  = "Auraアップグレードあり。先にAuraだけを？"
-auraCheck_1 Croatian  = "Dostupna je nova verzija Aura. Želite li prvo ažurirati?"
-auraCheck_1 German    = "Aura Update verfügbar. Dies zuerst aktualisieren?"
-auraCheck_1 Norwegian = "En Aura-oppdatering er tilgjengelig. Oppdater den først?"
-auraCheck_1 French    = "Une mise à jour d'Aura est disponible. Voulez-vous la mettre à jour en premier ?"
-auraCheck_1 _         = "Aura update available. Update it first?"
+auraCheck_1 Japanese   = "Auraアップグレードあり。先にAuraだけを？"
+auraCheck_1 Croatian   = "Dostupna je nova verzija Aura. Želite li prvo ažurirati?"
+auraCheck_1 German     = "Aura Update verfügbar. Dies zuerst aktualisieren?"
+auraCheck_1 Norwegian  = "En Aura-oppdatering er tilgjengelig. Oppdater den først?"
+auraCheck_1 Portuguese = "Uma atualização para Aura está disponível. Deseja atualizar antes?"
+auraCheck_1 French     = "Une mise à jour d'Aura est disponible. Voulez-vous la mettre à jour en premier ?"
+auraCheck_1 _          = "Aura update available. Update it first?"
 
 install_1 :: Language -> String
 install_1 English    = "Dependency checking failed for these reasons:"
@@ -600,43 +601,46 @@ reportPkgsToInstall_3 l Norwegian  = "Hovedpakker fra " ++ l ++ ":"
 
 -- Needs translations.
 reportPkgbuildDiffs_1 :: String -> Language -> String
-reportPkgbuildDiffs_1 p Japanese  = bt p ++ "のPKGBUILDはまだ保存されていない。"
-reportPkgbuildDiffs_1 p Polish    = bt p ++ " nie ma jeszcze przechowywanego pliku PKGBUILD."
-reportPkgbuildDiffs_1 p Croatian  = bt p ++ " još nema pohranjen PKGBUILD."
-reportPkgbuildDiffs_1 p German    = bt p ++ " hat noch keinen gespeicherten PKGBUILD."
-reportPkgbuildDiffs_1 p Spanish   = bt p ++ " no tiene PKGBUILD todavía."
-reportPkgbuildDiffs_1 p French    = bt p ++ " n'a pas encore de PKGBUILD enregistré."
-reportPkgbuildDiffs_1 p Russian   = "У " ++ bt p ++ " ещё нет сохраненного PKGBUILD."
-reportPkgbuildDiffs_1 p Italian   = bt p ++ " non ci sono PKGBUILD salvati"
-reportPkgbuildDiffs_1 p Serbian   = bt p ++ " још нема похрањен PKGBUILD."
-reportPkgbuildDiffs_1 p Norwegian = bt p ++ " har ingen PKGBUILD ennå."
-reportPkgbuildDiffs_1 p _         = bt p ++ " has no stored PKGBUILD yet."
+reportPkgbuildDiffs_1 p Japanese   = bt p ++ "のPKGBUILDはまだ保存されていない。"
+reportPkgbuildDiffs_1 p Polish     = bt p ++ " nie ma jeszcze przechowywanego pliku PKGBUILD."
+reportPkgbuildDiffs_1 p Croatian   = bt p ++ " još nema pohranjen PKGBUILD."
+reportPkgbuildDiffs_1 p German     = bt p ++ " hat noch keinen gespeicherten PKGBUILD."
+reportPkgbuildDiffs_1 p Spanish    = bt p ++ " no tiene PKGBUILD todavía."
+reportPkgbuildDiffs_1 p Portuguese = bt p ++ " não tem PKGBUILD."
+reportPkgbuildDiffs_1 p French     = bt p ++ " n'a pas encore de PKGBUILD enregistré."
+reportPkgbuildDiffs_1 p Russian    = "У " ++ bt p ++ " ещё нет сохраненного PKGBUILD."
+reportPkgbuildDiffs_1 p Italian    = bt p ++ " non ci sono PKGBUILD salvati"
+reportPkgbuildDiffs_1 p Serbian    = bt p ++ " још нема похрањен PKGBUILD."
+reportPkgbuildDiffs_1 p Norwegian  = bt p ++ " har ingen PKGBUILD ennå."
+reportPkgbuildDiffs_1 p _          = bt p ++ " has no stored PKGBUILD yet."
 
 reportPkgbuildDiffs_2 :: String -> Language -> String
-reportPkgbuildDiffs_2 p Japanese  = bt p ++ "のPKGBUILDは最新。"
-reportPkgbuildDiffs_2 p Polish    = "PKGBUILD pakietu " ++ bt p ++ " jest aktualny."
-reportPkgbuildDiffs_2 p Croatian  = "PKGBUILD paketa " ++ bt p ++ " je na najnovijoj verziji."
-reportPkgbuildDiffs_2 p German    = "PKGBUILD von " ++ bt p ++ " ist aktuell."
-reportPkgbuildDiffs_2 p Spanish   = "El PKGBUILD de " ++ bt p ++ " está actualizado."
-reportPkgbuildDiffs_2 p Russian   = "PKGBUILD " ++ bt p ++ " является новейшим."
-reportPkgbuildDiffs_2 p French    = "Le PKGBUILD de " ++ bt p ++ " est à jour."
-reportPkgbuildDiffs_2 p Italian   = "Il PKGBUILD di " ++ bt p ++ " è aggiornato."
-reportPkgbuildDiffs_2 p Serbian   = "PKGBUILD пакета " ++ bt p ++ " је ажуран."
-reportPkgbuildDiffs_2 p Norwegian = bt p ++ "'s PKGBUILD er oppdatert."
-reportPkgbuildDiffs_2 p _         = bt p ++ " PKGBUILD is up to date."
+reportPkgbuildDiffs_2 p Japanese   = bt p ++ "のPKGBUILDは最新。"
+reportPkgbuildDiffs_2 p Polish     = "PKGBUILD pakietu " ++ bt p ++ " jest aktualny."
+reportPkgbuildDiffs_2 p Croatian   = "PKGBUILD paketa " ++ bt p ++ " je na najnovijoj verziji."
+reportPkgbuildDiffs_2 p German     = "PKGBUILD von " ++ bt p ++ " ist aktuell."
+reportPkgbuildDiffs_2 p Spanish    = "El PKGBUILD de " ++ bt p ++ " está actualizado."
+reportPkgbuildDiffs_2 p Russian    = "PKGBUILD " ++ bt p ++ " является новейшим."
+reportPkgbuildDiffs_2 p Portuguese = "O PKGBUILD de" ++ bt p ++ "está atualizado."
+reportPkgbuildDiffs_2 p French     = "Le PKGBUILD de " ++ bt p ++ " est à jour."
+reportPkgbuildDiffs_2 p Italian    = "Il PKGBUILD di " ++ bt p ++ " è aggiornato."
+reportPkgbuildDiffs_2 p Serbian    = "PKGBUILD пакета " ++ bt p ++ " је ажуран."
+reportPkgbuildDiffs_2 p Norwegian  = bt p ++ "'s PKGBUILD er oppdatert."
+reportPkgbuildDiffs_2 p _          = bt p ++ " PKGBUILD is up to date."
 
 reportPkgbuildDiffs_3 :: String -> Language -> String
-reportPkgbuildDiffs_3 p Japanese  = bt p ++ "のPKGBUILD変更報告："
-reportPkgbuildDiffs_3 p Polish    = "Zmiany w PKGBUILD dla " ++ bt p ++ ":"
-reportPkgbuildDiffs_3 p Croatian  = "Promjene u PKGBUILD-u za " ++ bt p ++ ":"
-reportPkgbuildDiffs_3 p German    = "PKGBUILD Änderungen von " ++ bt p ++ ":"
-reportPkgbuildDiffs_3 p Spanish   = "Cambios en el PKGBUILD de " ++ bt p ++ ":"
-reportPkgbuildDiffs_3 p Russian   = "Изменения, вносимые " ++ bt p ++ " PKGBUILD:"
-reportPkgbuildDiffs_3 p French    = "Changements du PKGBUILD de " ++ bt p ++ " :"
-reportPkgbuildDiffs_3 p Italian   = "Cambiamenti nel PKGBUILD di " ++ bt p ++":"
-reportPkgbuildDiffs_3 p Serbian   = "Промене PKGBUILD-a за " ++ bt p ++ ":"
-reportPkgbuildDiffs_3 p Norwegian = bt p ++ "'s endringer i PKGBUILD:"
-reportPkgbuildDiffs_3 p _         = bt p ++ " PKGBUILD changes:"
+reportPkgbuildDiffs_3 p Japanese   = bt p ++ "のPKGBUILD変更報告："
+reportPkgbuildDiffs_3 p Polish     = "Zmiany w PKGBUILD dla " ++ bt p ++ ":"
+reportPkgbuildDiffs_3 p Croatian   = "Promjene u PKGBUILD-u za " ++ bt p ++ ":"
+reportPkgbuildDiffs_3 p German     = "PKGBUILD Änderungen von " ++ bt p ++ ":"
+reportPkgbuildDiffs_3 p Spanish    = "Cambios en el PKGBUILD de " ++ bt p ++ ":"
+reportPkgbuildDiffs_3 p Russian    = "Изменения, вносимые " ++ bt p ++ " PKGBUILD:"
+reportPkgbuildDiffs_3 p Portuguese = "Mudanças no PKGBUILD de " ++ bt p ++ " :"
+reportPkgbuildDiffs_3 p French     = "Changements du PKGBUILD de " ++ bt p ++ " :"
+reportPkgbuildDiffs_3 p Italian    = "Cambiamenti nel PKGBUILD di " ++ bt p ++":"
+reportPkgbuildDiffs_3 p Serbian    = "Промене PKGBUILD-a за " ++ bt p ++ ":"
+reportPkgbuildDiffs_3 p Norwegian  = bt p ++ "'s endringer i PKGBUILD:"
+reportPkgbuildDiffs_3 p _          = bt p ++ " PKGBUILD changes:"
 
 reportPkgsToUpgrade_1 :: Language -> String
 reportPkgsToUpgrade_1 English    = "AUR Packages to upgrade:"
@@ -1340,61 +1344,67 @@ absSync_1 Russian    = "Синхронизировать локальное де
 absSync_1 _          = "Sync the local ABS Tree?"
 
 absSync_2 :: Language -> String
-absSync_2 Japanese  = "ローカルABS Treeを同期中・・・"
-absSync_2 Croatian  = "Sinkroniziram lokalno ABS stablo..."
-absSync_2 German    = "Synchronisiere lokalen ABS Baum..."
-absSync_2 Norwegian = "Synkroniserer det lokale ABS-treet..."
-absSync_2 Italian   = "Sincronizzo l'albero ABS locale..."
-absSync_2 French    = "Synchronisation de l'arbre ABS local…"
-absSync_2 Russian   = "Синхронизируется локальное дерево ABS..."
-absSync_2 _         = "Syncing local ABS Tree..."
+absSync_2 Japanese   = "ローカルABS Treeを同期中・・・"
+absSync_2 Croatian   = "Sinkroniziram lokalno ABS stablo..."
+absSync_2 German     = "Synchronisiere lokalen ABS Baum..."
+absSync_2 Norwegian  = "Synkroniserer det lokale ABS-treet..."
+absSync_2 Italian    = "Sincronizzo l'albero ABS locale..."
+absSync_2 Portuguese = "Sincronizano a árvore ABS local..."
+absSync_2 French     = "Synchronisation de l'arbre ABS local…"
+absSync_2 Russian    = "Синхронизируется локальное дерево ABS..."
+absSync_2 _          = "Syncing local ABS Tree..."
 
 singleSync_1 :: String -> Language -> String
-singleSync_1 p Japanese  = bt p ++ "をABS Treeに同期・・・"
-singleSync_1 p Croatian  = "Sinkroniziram " ++ bt p ++ " u lokalnom stablu..."
-singleSync_1 p German    = "Synchronisiere " ++ bt p ++ " in den lokalen ABS Baum..."
-singleSync_1 p Norwegian = "Synkroniserer " ++ bt p ++ " til det lokale ABS-treet..."
-singleSync_1 p Italian   = "Sincronizzo " ++ bt p ++ " nell'albero ABS locale..."
-singleSync_1 p French    = "Synchronisation de " ++ bt p ++ " dans l'arbre ABS local…"
-singleSync_1 p Russian   = bt p ++ " синхронизируется с локальным дерево ABS..."
-singleSync_1 p _         = "Syncing " ++ bt p ++ " to the local ABS Tree..."
+singleSync_1 p Japanese   = bt p ++ "をABS Treeに同期・・・"
+singleSync_1 p Croatian   = "Sinkroniziram " ++ bt p ++ " u lokalnom stablu..."
+singleSync_1 p German     = "Synchronisiere " ++ bt p ++ " in den lokalen ABS Baum..."
+singleSync_1 p Norwegian  = "Synkroniserer " ++ bt p ++ " til det lokale ABS-treet..."
+singleSync_1 p Italian    = "Sincronizzo " ++ bt p ++ " nell'albero ABS locale..."
+singleSync_1 p Portuguese = "Sincronizando " ++ bt p ++ " para a árvore ABS local..."
+singleSync_1 p French     = "Synchronisation de " ++ bt p ++ " dans l'arbre ABS local…"
+singleSync_1 p Russian    = bt p ++ " синхронизируется с локальным дерево ABS..."
+singleSync_1 p _          = "Syncing " ++ bt p ++ " to the local ABS Tree..."
 
 absInfoFields :: Language -> [String]
-absInfoFields Croatian  = [ "Repozitorij","Ime","Verzija","Zavisnosti","Make Zavisnosti","Opis" ]
-absInfoFields German    = [ "Quelle","Name","Version","Hängt ab von","Make Abh.","Beschreibung"]
-absInfoFields Norwegian = [ "Depot","Navn","Versjon","Er avhengig av","Make Deps","Beskrivelse"]
-absInfoFields Italian   = [ "Repository","Nome","Versione","Dipende da","Make Deps","Descrizione" ]
-absInfoFields French    = [ "Dépôt","Nom","Version","Dépendances","Dépendances de compilation","Description" ]
-absInfoFields Russian   = [ "Репозиторий","Название","Версия","Зависит от","Зависимости Make","Описание" ]
-absInfoFields _         = [ "Repository","Name","Version","Depends On","Make Deps","Description" ]
+absInfoFields Croatian   = [ "Repozitorij","Ime","Verzija","Zavisnosti","Make Zavisnosti","Opis" ]
+absInfoFields German     = [ "Quelle","Name","Version","Hängt ab von","Make Abh.","Beschreibung"]
+absInfoFields Norwegian  = [ "Depot","Navn","Versjon","Er avhengig av","Make Deps","Beskrivelse"]
+absInfoFields Italian    = [ "Repository","Nome","Versione","Dipende da","Make Deps","Descrizione" ]
+absInfoFields Portuguese = [ "Repositório","Nome","Versão","Dependências","Depenências de compilação","Descrição" ]
+absInfoFields French     = [ "Dépôt","Nom","Version","Dépendances","Dépendances de compilation","Description" ]
+absInfoFields Russian    = [ "Репозиторий","Название","Версия","Зависит от","Зависимости Make","Описание" ]
+absInfoFields _          = [ "Repository","Name","Version","Depends On","Make Deps","Description" ]
 
 repository_1 :: String -> Language -> String
-repository_1 p Japanese  = p ++ "はどのリポジトリにもない。"
-repository_1 p Croatian  = p ++ "nije paket u repozitoriju."
-repository_1 p German    = p ++ " ist kein Paket in irgendeiner Quelle."
-repository_1 p Norwegian = p ++ " er ikke en pakke i noe depot."
-repository_1 p Italian   = p ++ " non è un pacchetto di nessun repository."
-repository_1 p French    = p ++ " n'est pas un paquet dans aucun des dépôts."
-repository_1 p Russian   = "Пакет " ++ p ++ " не найден ни в одном репозитории."
-repository_1 p _         = p ++ " is not a package in any repository."
+repository_1 p Japanese   = p ++ "はどのリポジトリにもない。"
+repository_1 p Croatian   = p ++ "nije paket u repozitoriju."
+repository_1 p German     = p ++ " ist kein Paket in irgendeiner Quelle."
+repository_1 p Norwegian  = p ++ " er ikke en pakke i noe depot."
+repository_1 p Italian    = p ++ " non è un pacchetto di nessun repository."
+repository_1 p Portuguese = p ++ " não é um pacote em nenhum do repositório."
+repository_1 p French     = p ++ " n'est pas un paquet dans aucun des dépôts."
+repository_1 p Russian    = "Пакет " ++ p ++ " не найден ни в одном репозитории."
+repository_1 p _          = p ++ " is not a package in any repository."
 
 pkgBuildKeyMissing :: Language -> String -> String
-pkgBuildKeyMissing Croatian  key = "Nemoguće izvući vrijednost za " ++ key ++ " iz PKGBUILD-a."
-pkgBuildKeyMissing German    key = "Kann Schlüssel " ++ key ++ " nicht aus PKGBUILD parsen."
-pkgBuildKeyMissing Norwegian key = "Forstår ikke " ++ key ++ " fra PKGBUILD."
-pkgBuildKeyMissing Italian   key = "Inpossibile elaborare la chiave " ++ key ++ " dal PKGBUILD."
-pkgBuildKeyMissing French    key = "Impossible d'analyser la clef " ++ key ++ " depuis le PKGBUILD."
-pkgBuildKeyMissing Russian         key = "Не получилось разобрать ключ " ++ key ++ " из PKGBUILD."
-pkgBuildKeyMissing _         key = "Unable to parse key " ++ key ++ " from PKGBUILD."
+pkgBuildKeyMissing Croatian   key = "Nemoguće izvući vrijednost za " ++ key ++ " iz PKGBUILD-a."
+pkgBuildKeyMissing German     key = "Kann Schlüssel " ++ key ++ " nicht aus PKGBUILD parsen."
+pkgBuildKeyMissing Norwegian  key = "Forstår ikke " ++ key ++ " fra PKGBUILD."
+pkgBuildKeyMissing Italian    key = "Inpossibile elaborare la chiave " ++ key ++ " dal PKGBUILD."
+pkgBuildKeyMissing Portuguese key = "Impossível parsear " ++ key ++ " no PKGBUILD."
+pkgBuildKeyMissing French     key = "Impossible d'analyser la clef " ++ key ++ " depuis le PKGBUILD."
+pkgBuildKeyMissing Russian    key = "Не получилось разобрать ключ " ++ key ++ " из PKGBUILD."
+pkgBuildKeyMissing _          key = "Unable to parse key " ++ key ++ " from PKGBUILD."
 
 missingDescription :: Language -> String
-missingDescription Croatian  = "Nema opisa."
-missingDescription German    = "Keine Beschreibung."
-missingDescription Norwegian = "Ingen beskrivelse."
-missingDescription Italian   = "Nessuna Descrizione."
-missingDescription French    = "Aucune description."
-missingDescription Russian   = "Без описания."
-missingDescription _         = "No description."
+missingDescription Croatian   = "Nema opisa."
+missingDescription German     = "Keine Beschreibung."
+missingDescription Norwegian  = "Ingen beskrivelse."
+missingDescription Italian    = "Nessuna Descrizione."
+missingDescription Portuguese = "Descrição faltante."
+missingDescription French     = "Aucune description."
+missingDescription Russian    = "Без описания."
+missingDescription _          = "No description."
 
 -----------------------
 -- Aura/State functions
@@ -1502,11 +1512,12 @@ hotEdit_1 p Serbian    = "Желите ли да измените PKGBUILD за 
 hotEdit_1 p Norwegian  = "Vil du endre PKGBUILD for " ++ bt p ++ "?"
 
 customizepkg_1 :: Language -> String
-customizepkg_1 Japanese  = bt "customizepkg" ++ "はインストールされていない。"
-customizepkg_1 Croatian  = bt "customizepkg" ++ "nije instaliran."
-customizepkg_1 German    = bt "customizepkg" ++ "ist nicht installiert."
-customizepkg_1 Norwegian = bt "customizepkg" ++ "er ikke installert."
-customizepkg_1 Italian   = bt "customizepkg" ++ "non è installato."
-customizepkg_1 French    = bt "customizepkg" ++ "n'est pas installé."
-customizepkg_1 Russian   = bt "customizepkg" ++ "не установлен."
-customizepkg_1 _         = bt "customizepkg" ++ "isn't installed."
+customizepkg_1 Japanese   = bt "customizepkg" ++ "はインストールされていない。"
+customizepkg_1 Croatian   = bt "customizepkg" ++ "nije instaliran."
+customizepkg_1 German     = bt "customizepkg" ++ "ist nicht installiert."
+customizepkg_1 Norwegian  = bt "customizepkg" ++ "er ikke installert."
+customizepkg_1 Italian    = bt "customizepkg" ++ "non è installato."
+customizepkg_1 Portuguese = bt "customizepkg" ++ "não está instalado."
+customizepkg_1 French     = bt "customizepkg" ++ "n'est pas installé."
+customizepkg_1 Russian    = bt "customizepkg" ++ "не установлен."
+customizepkg_1 _          = bt "customizepkg" ++ "isn't installed."
