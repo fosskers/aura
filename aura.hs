@@ -1,5 +1,3 @@
-{-# LANGUAGE TupleSections #-}
-
 {-
 
 Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
@@ -76,7 +74,8 @@ processFlags args = ((flags,nub input,pacOpts'),language)
 
 -- | Set the local environment.
 prepSettings :: (UserInput,Maybe Language) -> IO (UserInput,Settings)
-prepSettings (ui,lang) = (ui,) `fmap` getSettings lang ui
+--prepSettings (ui,lang) = (ui,) `fmap` getSettings lang ui
+prepSettings (ui,lang) = (,) ui `fmap` getSettings lang ui
 
 -- | Hand user input to the Aura Monad and run it.
 execute :: (UserInput,Settings) -> IO (Either AuraError ())
@@ -108,7 +107,7 @@ executeOpts (flags,input,pacOpts) =
           [Download]     -> A.downloadTarballs input
           [GetPkgbuild]  -> A.displayPkgbuild input
           (Refresh:fs')  -> sudo $ syncAndContinue (fs',input,pacOpts)
-          badFlags       -> scoldAndFail executeOpts_1
+          _              -> scoldAndFail executeOpts_1
     (ABSInstall:fs) ->
         case fs of
           []             -> trueRoot (sudo $ M.install pacOpts input)
@@ -119,13 +118,13 @@ executeOpts (flags,input,pacOpts) =
           [ViewDeps]     -> M.displayPkgDeps input
           [GetPkgbuild]  -> M.displayPkgbuild input
           (Refresh:fs')  -> sudo $ syncABSAndContinue (fs',input,pacOpts)
-          badFlags       -> scoldAndFail executeOpts_1
+          _       -> scoldAndFail executeOpts_1
     (SaveState:fs) ->
         case fs of
           []             -> sudo B.saveState
           [Clean]        -> sudo $ B.cleanStates input
           [RestoreState] -> sudo B.restoreState
-          badFlags       -> scoldAndFail executeOpts_1
+          _       -> scoldAndFail executeOpts_1
     (Cache:fs) ->
         case fs of
           []             -> sudo $ C.downgradePackages pacOpts input
@@ -133,23 +132,23 @@ executeOpts (flags,input,pacOpts) =
           [Clean,Clean]  -> sudo C.cleanNotSaved
           [Search]       -> C.searchCache input
           [CacheBackup]  -> sudo $ C.backupCache input
-          badFlags       -> scoldAndFail executeOpts_1
+          _       -> scoldAndFail executeOpts_1
     (LogFile:fs) ->
         case fs of
           []       -> ask >>= L.viewLogFile . logFilePathOf
           [Search] -> L.searchLogFile input
           [Info]   -> L.logInfoOnPkg input
-          badFlags -> scoldAndFail executeOpts_1
+          _ -> scoldAndFail executeOpts_1
     (Orphans:fs) ->
         case fs of
           []        -> O.displayOrphans input
           [Abandon] -> sudo $ orphans >>= flip removePkgs pacOpts
-          badFlags  -> scoldAndFail executeOpts_1
+          _  -> scoldAndFail executeOpts_1
     [ViewConf]  -> viewConfFile
     [Languages] -> displayOutputLanguages
     [Help]      -> printHelpMsg pacOpts
     [Version]   -> getVersionInfo >>= animateVersionMsg
-    pacmanFlags -> catch (pacman $ pacOpts ++ hijackedFlags ++ input)
+    _           -> catch (pacman $ pacOpts ++ hijackedFlags ++ input)
                       pacmanFailure
     where hijackedFlags = reconvertFlags flags hijackedFlagMap
 
