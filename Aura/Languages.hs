@@ -1,3 +1,5 @@
+{-# LANGUAGE LambdaCase #-}
+
 -- Library for Aura output in different languages.
 -- All normal restrictions on line length do not apply for this file, and this file only.
 
@@ -74,8 +76,7 @@ translators = [ " Chris \"Kwpolska\" Warrick"
 
 -- These need updating! Or removing...
 languageNames :: Language -> [String]
-languageNames lang = 
-  case lang of
+languageNames = \case 
     English    -> [ "Polish","Croatian","Swedish","German","Spanish","Portuguese","French","Russian", "Italian", "Serbian", "Norwegian" ]
     Japanese   -> [ "ポーランド語","クロアチア語","スウェーデン語","ドイツ語","スペイン語","ポルトガル語","フランス語","ロシア語", "", "", "" ]
     Polish     -> [ "polski","chorwacki","szwedzki","niemiecki","hiszpański","portugalski","francuski","rosyjski", "", "", "" ]
@@ -91,8 +92,7 @@ languageNames lang =
     Norwegian  -> [ "Polsk","Kroatisk","Svensk","Tysk","Spansk","Portugisisk","Fransk","Russisk","Italiensk","Serbisk","Norsk" ]
 
 translatorMsgTitle :: Language -> String
-translatorMsgTitle lang =
-  case lang of
+translatorMsgTitle = \case
     English    -> "Aura Translators:"
     Japanese   -> "Auraの翻訳者："
     Polish     -> "Tłumacze Aury:"
@@ -125,8 +125,7 @@ whitespace Japanese = '　'  -- \12288
 whitespace _ = ' '          -- \32
 
 langFromEnv :: String -> Language
-langFromEnv lang =
-  case lang of
+langFromEnv = \case
     "ja" -> Japanese
     "pl" -> Polish
     "hr" -> Croatian
@@ -146,8 +145,7 @@ langFromEnv lang =
 ----------------------
 -- NEEDS TRANSLATION
 checkDBLock_1 :: Language -> String
-checkDBLock_1 lang =
-  case lang of 
+checkDBLock_1 = \case
     Japanese   -> "パッケージデータベースが今閉鎖状態。開放したらキーを押して続行をどうぞ。"
     Croatian   -> "Baza paketa je zaključana. Kad se otključa, pritisnite enter da biste nastavili."
     German     -> "The Paketdatenbank ist gesperrt. Drücken Sie Enter wenn sie entsperrt ist um fortzufahren."
@@ -159,8 +157,7 @@ checkDBLock_1 lang =
 
 -- Packages should not be built if the user is logged in as root!
 trueRoot_1 :: Language -> String
-trueRoot_1 lang =
-  case lang of 
+trueRoot_1 = \case
     English    -> "You should never build packages as the true root. Are you okay with this?"
     Japanese   -> "本当のrootユーザーとしてパッケージを作成するのが危険。続行？"
     Polish     -> "Nigdy nie powinieneś budować pakietów jako root. Na pewno kontynuować?"
@@ -177,8 +174,7 @@ trueRoot_1 lang =
 
 -- This is for when the user decides to refrain from building afterall.
 trueRoot_2 :: Language -> String
-trueRoot_2 lang =
-  case lang of 
+trueRoot_2 = \case
     English    -> "You’ve done the right thing."
     Japanese   -> "よしよし。"
     Polish     -> "Postąpiłeś słusznie."
@@ -194,8 +190,7 @@ trueRoot_2 lang =
     Norwegian  -> "Du gjør det rette."
 
 mustBeRoot_1 :: Language -> String
-mustBeRoot_1 lang = 
-  let sudo = bt "sudo" in case lang of
+mustBeRoot_1 = let sudo = bt "sudo" in \case 
     English    -> "You have to use " ++ sudo ++ " for that."
     Japanese   -> sudo ++ "を使わないとそれができない！"
     Polish     -> "Musisz użyć " ++ sudo ++ ", żeby to zrobić."
@@ -214,8 +209,7 @@ mustBeRoot_1 lang =
 -- Aura/Build functions
 -----------------------
 buildPackages_1 :: String -> Language -> String
-buildPackages_1 p' lang =
-  let p = bt p' in case lang of
+buildPackages_1 p' = let p = bt p' in \case
     English    -> "Building " ++ p ++ "..."
     Japanese   -> p ++ "を作成中・・・"
     Polish     -> "Budowanie " ++ p ++ "..."
@@ -231,8 +225,7 @@ buildPackages_1 p' lang =
     Norwegian  -> "Bygger " ++ p ++ "..."
 
 buildFail_1 :: String -> Language -> String
-buildFail_1 p' lang =
-  let p = bt p' in case lang of
+buildFail_1 p' = let p = bt p' in \case
     English    -> "Well, building " ++ p ++ " failed."
     Japanese   -> p ++ "の作成は失敗したようだ。"
     Polish     -> "Budowanie " ++ p ++ " zakończyło się niepowodzeniem."
@@ -248,8 +241,7 @@ buildFail_1 p' lang =
     Norwegian  -> "Bygging av " ++ p ++ " feilet."
 
 buildFail_2 :: Language -> String
-buildFail_2 lang = 
-  case lang of
+buildFail_2 = \case 
     English    -> "Also, the following weren’t built:"
     Japanese   -> "ちなみに下記のパッケージも作成されなかった："
     Polish     -> "Dodatkowo, następujące pakiety nie zostały zbudowane:"
@@ -265,8 +257,7 @@ buildFail_2 lang =
     Norwegian  -> "Det gikk heller ikke an å bygge følgende:"
 
 buildFail_3 :: Language -> String
-buildFail_3 lang =
-  case lang of
+buildFail_3 = \case
     English    -> "However, these packages were successfully built:"
     Japanese   -> "しかし、以下のパッケージファイルは無事作成された："
     Polish     -> "Następujące pakiety zostały zbudowane pomyślnie:"
@@ -282,8 +273,7 @@ buildFail_3 lang =
     Norwegian  -> "Heldigvis ble de følgende pakkene bygd:"
 
 buildFail_4 :: Language -> String
-buildFail_4 lang =
-  case lang of 
+buildFail_4 = \case
     English    -> "Would you like to install them?"
     Japanese   -> "できたやつのインストールを続行する？"
     Polish     -> "Czy chcesz je zainstalować?"
@@ -299,8 +289,7 @@ buildFail_4 lang =
     Norwegian  -> "Vil du installere dem?"
 
 buildFail_5 :: Language -> String
-buildFail_5 lang =
-  case lang of 
+buildFail_5 = \case
     English    -> "Building failed."
     Japanese   -> "パッケージ作成は失敗した。"
     Polish     -> "Budowanie nie powiodło się."
@@ -317,8 +306,7 @@ buildFail_5 lang =
 
 -- NEEDS TRANSLATION
 buildFail_6 :: Language -> String
-buildFail_6 lang = 
-  case lang of
+buildFail_6 = \case
     Japanese  -> "それでも続行？"
     Croatian  -> "Želite li svejedno nastaviti?"
     Norwegian -> "Vil du fortsette likevel?"
@@ -328,8 +316,7 @@ buildFail_6 lang =
     _         -> "Would you like to continue anyway?"
 
 displayBuildErrors_1 :: Language -> String
-displayBuildErrors_1 lang =
-  case lang of
+displayBuildErrors_1 = \case
     English    -> "Dumping makepkg output in "
     Japanese   -> "抑えていたmakepkgの出力を受け取る用意・・・"
     Polish     -> "Wyjście makepkg zostanie wypisane za "
@@ -349,8 +336,7 @@ displayBuildErrors_1 lang =
 ------------------------------
 -- Is this still used?
 getDepsToInstall_1 :: Language -> String
-getDepsToInstall_1 lang =
-  case lang of
+getDepsToInstall_1 = \case
     English    -> "No AUR packages specified for install."
     Japanese   -> "パッケージは一つも指摘されていない。"
     Polish     -> "Nie podano pakietów z AUR do zainstalowania."
@@ -366,8 +352,7 @@ getDepsToInstall_1 lang =
     Norwegian  -> "Ingen pakker fra AUR er valgt for installasjon."
 
 getRealPkgConflicts_1 :: String -> String -> String -> Language -> String
-getRealPkgConflicts_1 p' r' d' lang =
-  let p = bt p'; r = bt r'; d = bt d' in case lang of
+getRealPkgConflicts_1 p' r' d' = let p = bt p'; r = bt r'; d = bt d' in \case
     English    -> "The dependency " ++ p ++ " demands version " ++ d ++ "but the most recent version is " ++ r ++ "."
     Japanese   -> "パッケージ" ++ p ++ "はバージョン" ++ d ++ "を要するが" ++ "一番最新のバージョンは" ++ r ++ "。"
     Polish     -> "Zależność " ++ p ++ " powinna być w wersji " ++ d ++ ", ale najnowsza wersja to " ++ r ++ "."
@@ -383,8 +368,7 @@ getRealPkgConflicts_1 p' r' d' lang =
     Norwegian  -> "Avhengigheten " ++ p ++ " krever versjon " ++ d ++", men den nyeste versjonen er " ++ r ++ "."
 
 getRealPkgConflicts_2 :: String -> Language -> String
-getRealPkgConflicts_2 p' lang =
-  let p = bt p' in case lang of
+getRealPkgConflicts_2 p' = let p = bt p' in \case
     English    -> p ++ " is an ignored package! See your `pacman.conf` file."
     Japanese   -> p ++ "は無視されるパッケージ！`pacman.conf`を参考に。"
     Polish     -> p ++ " jest ignorowany! Sprawdź plik `pacman.conf`."
@@ -401,8 +385,7 @@ getRealPkgConflicts_2 p' lang =
 
 -- NEEDS TRANSLATION
 missingPkg_1 :: String -> Language -> String
-missingPkg_1 p' lang =
-  let p = bt p' in case lang of
+missingPkg_1 p' = let p = bt p' in \case
     Croatian  -> "Zavisnost  " ++ p ++ " nije pronađena. Pokušajte pronaći paket koji zadovoljava ovu zavisnost."
     Norwegian -> "Avhengigheten " ++ p ++ " ble ikke funnet. Du kan søke etter en pakke som tilfredsstiller avhengigheten."
     Italian   -> "La dipendenza " ++ p ++ " non è stata trovata. Potrebbe essere necessario cercare un pacchetto che possa soddisfarla?"
@@ -414,8 +397,7 @@ missingPkg_1 p' lang =
 -- aura functions
 -----------------
 executeOpts_1 :: Language -> String
-executeOpts_1 lang = 
-  case lang of 
+executeOpts_1 = \case
     English    -> "Conflicting flags given!"
     Japanese   -> "矛盾しているオプションあり。"
     Polish     -> "Niektóre flagi są w konflikcie ze sobą!"
@@ -431,8 +413,7 @@ executeOpts_1 lang =
     Norwegian  -> "Motstridene flagg er spesifisert!"
 
 manpageMsg :: Language -> String
-manpageMsg lang =
-  case lang of
+manpageMsg = \case
     English    -> "See the aura man page for aura option details."
     Japanese   -> "選択肢の詳しいことは、auraのman pageまで。"
     Polish     -> "W podręczniku man dla aura znajduje się\xa0więcej informacji o opcjach."
@@ -448,8 +429,7 @@ manpageMsg lang =
     Norwegian  -> "Referer til Aura's `man`-side for instillingsdetaljer."
 
 displayOutputLanguages_1 :: Language -> String
-displayOutputLanguages_1 lang =
-  case lang of
+displayOutputLanguages_1 = \case
     English    -> "The following languages are available:"
     Japanese   -> "auraは下記の言語に対応している："
     Polish     -> "Następujące języki są dostępne:"
@@ -468,8 +448,7 @@ displayOutputLanguages_1 lang =
 -- Aura/Commands/A functions
 ----------------------------
 auraCheck_1 :: Language -> String
-auraCheck_1 lang =
-  case lang of 
+auraCheck_1 = \case
     Japanese  -> "Auraアップグレードあり。先にAuraだけを？"
     Croatian  -> "Dostupna je nova verzija Aura. Želite li prvo ažurirati?"
     German    -> "Aura Update verfügbar. Dies zuerst aktualisieren?"
@@ -478,8 +457,7 @@ auraCheck_1 lang =
     _         -> "Aura update available. Update it first?"
 
 install_1 :: Language -> String
-install_1 lang =
-  case lang of
+install_1 = \case
     English    -> "Dependency checking failed for these reasons:"
     Japanese   -> "従属パッケージの確認は以下の理由で失敗した："
     Polish     -> "Sprawdzanie zależności nie powiodło się z następujących powodów:"
@@ -495,8 +473,7 @@ install_1 lang =
     Norwegian  -> "Avhengighets-sjekken mislyktes på grunn av følgende:"
 
 install_2 :: Language -> String
-install_2 lang =
-  case lang of
+install_2 = \case
     English    -> "No valid packages specified."
     Japanese   -> "適当なパッケージを入力してください。"
     Polish     -> "Nie podano prawidłowych pakietów."
@@ -512,8 +489,7 @@ install_2 lang =
     Norwegian  -> "Ingen gyldige pakker er valgte."
 
 install_3 :: Language -> String
-install_3 lang =
-  case lang of
+install_3 = \case
     English    -> "Continue?"
     Japanese   -> "続行？"
     Polish     -> "Kontynuować?"
@@ -529,8 +505,7 @@ install_3 lang =
     Norwegian  -> "Fortsett?"
 
 install_4 :: Language -> String
-install_4 lang =
-  case lang of
+install_4 = \case
     English    -> "Installation manually aborted."
     Japanese   -> "続行は意図的に阻止された。"
     Polish     -> "Instalacja została przerwana przez użytkownika."
@@ -546,8 +521,7 @@ install_4 lang =
     Norwegian  -> "Installasjonen ble avbrutt manuelt."
 
 install_5 :: Language -> String
-install_5 lang =
-  case lang of
+install_5 = \case
     English    -> "Determining dependencies..."
     Japanese   -> "従属パッケージを確認中・・・"
     Polish     -> "Ustalanie zależności..."
@@ -564,8 +538,7 @@ install_5 lang =
 
 -- NEEDS UPDATE TO REFLECT CHANGED ENGLISH
 reportNonPackages_1 :: Language -> String
-reportNonPackages_1 lang =
-  case lang of
+reportNonPackages_1 = \case
     English    -> "The following are not AUR packages:"
     Japanese   -> "下記はAURパッケージではない："
     Polish     -> "To nie są pakiety:"
@@ -581,8 +554,7 @@ reportNonPackages_1 lang =
     Norwegian  -> "Det følgende er ikke AUR-pakker:"
 
 reportIgnoredPackages_1 :: Language -> String
-reportIgnoredPackages_1 lang =
-  case lang of 
+reportIgnoredPackages_1 = \case
     English    -> "The following packages will be ignored:"
     Japanese   -> "下記のパッケージは無視される："
     Polish     -> "Poniższe pakiety zostaną zignorowane:"
@@ -598,8 +570,7 @@ reportIgnoredPackages_1 lang =
     Norwegian  -> "De følgende pakker vil bli ignorert:"
 
 reportPkgsToInstall_1 :: Language -> String
-reportPkgsToInstall_1 lang =
-  case lang of 
+reportPkgsToInstall_1 = \case
     English    -> "Repository dependencies:"
     Japanese   -> "Pacmanの従属パッケージ："
     Polish     -> "Zależności z repozytoriów:"
@@ -616,8 +587,7 @@ reportPkgsToInstall_1 lang =
 
 -- NEEDS AN UPDATE
 reportPkgsToInstall_2 :: String -> Language -> String
-reportPkgsToInstall_2 l lang =
-  case lang of
+reportPkgsToInstall_2 l = \case
     Japanese  -> l ++ "のパッケージ:"
     Croatian  -> l ++ " Paketi:"
     German    -> l ++ " Pakete:"
@@ -629,8 +599,7 @@ reportPkgsToInstall_2 l lang =
 
 {-}
 reportPkgsToInstall_2 :: String -> Language -> String
-reportPkgsToInstall_2 l lang =
-  case lang of
+reportPkgsToInstall_2 l = \case
     English    -> l ++ " dependencies:"
     Japanese   -> l ++ "の従属パッケージ："
     Polish     -> "Zależności z " ++ l ++ ":"
@@ -646,8 +615,7 @@ reportPkgsToInstall_2 l lang =
     Norwegian  -> "Avhengigheter fra " ++ l ++ ":"
 
 reportPkgsToInstall_3 :: String -> Language -> String
-reportPkgsToInstall_3 l lang =
-  case lang of
+reportPkgsToInstall_3 l = \case
     English    -> "Main " ++ l ++ " packages:"
     Japanese   -> "主な" ++ l ++ "パッケージ："
     Polish     -> "Główne pakiety z " ++ l ++ ":"
@@ -665,8 +633,7 @@ reportPkgsToInstall_3 l lang =
 
 -- Needs translations.
 reportPkgbuildDiffs_1 :: String -> Language -> String
-reportPkgbuildDiffs_1 p' lang =
-  let p = bt p' in case lang of
+reportPkgbuildDiffs_1 p' = let p = bt p' in \case
     Japanese  -> p ++ "のPKGBUILDはまだ保存されていない。"
     Polish    -> p ++ " nie ma jeszcze przechowywanego pliku PKGBUILD."
     Croatian  -> p ++ " još nema pohranjen PKGBUILD."
@@ -680,8 +647,7 @@ reportPkgbuildDiffs_1 p' lang =
     _         -> p ++ " has no stored PKGBUILD yet."
 
 reportPkgbuildDiffs_2 :: String -> Language -> String
-reportPkgbuildDiffs_2 p' lang =
-  let p = bt p' in case lang of
+reportPkgbuildDiffs_2 p' = let p = bt p' in \case
     Japanese  -> p ++ "のPKGBUILDは最新。"
     Polish    -> "PKGBUILD pakietu " ++ p ++ " jest aktualny."
     Croatian  -> "PKGBUILD paketa " ++ p ++ " je na najnovijoj verziji."
@@ -695,8 +661,7 @@ reportPkgbuildDiffs_2 p' lang =
     _         -> p ++ " PKGBUILD is up to date."
 
 reportPkgbuildDiffs_3 :: String -> Language -> String
-reportPkgbuildDiffs_3 p' lang =
-  let p = bt p' in case lang of
+reportPkgbuildDiffs_3 p' = let p = bt p' in \case
     Japanese  -> p ++ "のPKGBUILD変更報告："
     Polish    -> "Zmiany w PKGBUILD dla " ++ p ++ ":"
     Croatian  -> "Promjene u PKGBUILD-u za " ++ p ++ ":"
@@ -710,8 +675,7 @@ reportPkgbuildDiffs_3 p' lang =
     _         -> p ++ " PKGBUILD changes:"
 
 reportPkgsToUpgrade_1 :: Language -> String
-reportPkgsToUpgrade_1 lang =
-  case lang of
+reportPkgsToUpgrade_1 = \case
     English    -> "AUR Packages to upgrade:"
     Japanese   -> "アップグレードするAURパッケージ："
     Polish     -> "Pakiety z AUR do zaktualizowania:"
@@ -728,8 +692,7 @@ reportPkgsToUpgrade_1 lang =
 
 -- NEEDS UPDATING
 reportBadDowngradePkgs_1 :: Language -> String
-reportBadDowngradePkgs_1 lang =
-  case lang of 
+reportBadDowngradePkgs_1 = \case
     English    -> "The following have no versions in the cache, and thus can’t be downgraded:"
     Japanese   -> "このパッケージはキャッシュには入っていないので、格下げはできない。"
     Polish     -> "Poniższe pakeity nie są zainstalowane, i nie mogą być zainstalowane w starszej wersji:"
@@ -745,8 +708,7 @@ reportBadDowngradePkgs_1 lang =
     Norwegian  -> "Følgende pakker har ingen versjoner i cache, og kan derfor ikke bli nedgradert:"
 
 upgradeAURPkgs_1 :: Language -> String
-upgradeAURPkgs_1 lang =
-  case lang of 
+upgradeAURPkgs_1 = \case
     English    -> "Fetching package information..."
     Japanese   -> "パッケージ情報をダウンロード中・・・"
     Polish     -> "Pobieranie informacji o pakietach..."
@@ -762,8 +724,7 @@ upgradeAURPkgs_1 lang =
     Norwegian  -> "Henter pakkeinformasjon..."
 
 upgradeAURPkgs_2 :: Language -> String
-upgradeAURPkgs_2 lang =
-  case lang of
+upgradeAURPkgs_2 = \case
     English    -> "Comparing package versions..."
     Japanese   -> "バージョンを比較中・・・"
     Polish     -> "Porównywanie wersji pakietów..."
@@ -779,8 +740,7 @@ upgradeAURPkgs_2 lang =
     Norwegian  -> "Sammenligner pakkeversjoner..."
 
 upgradeAURPkgs_3 :: Language -> String
-upgradeAURPkgs_3 lang =
-  case lang of
+upgradeAURPkgs_3 = \case
     English    -> "No AUR package upgrades necessary."
     Japanese   -> "アップグレードは必要ない。"
     Polish     -> "Nie jest wymagana aktualizacja pakietów z AUR."
@@ -796,8 +756,7 @@ upgradeAURPkgs_3 lang =
     Norwegian  -> "Ingen pakkeoppgradering fra AUR nødvendig."
 
 downloadTarballs_1 :: String -> Language -> String
-downloadTarballs_1 p' lang =
-  let p = bt p' in case lang of
+downloadTarballs_1 p' = let p = bt p' in \case
     English    -> "Downloading " ++ p ++ " source tarball..."
     Japanese   -> p ++ "のソースコードのターボールをダウンロード中・・・"
     Polish     -> "Pobieranie paczki źródłowej " ++ p ++ "..."
@@ -813,8 +772,7 @@ downloadTarballs_1 p' lang =
     Norwegian  -> "Laster ned " ++ p ++ " kildekodepakken (tarball)..."
 
 displayPkgbuild_1 :: String -> Language -> String
-displayPkgbuild_1 p' lang =
-  let p = bt p' in case lang of
+displayPkgbuild_1 p' = let p = bt p' in \case
     English    -> p ++ " does not exist."
     Japanese   -> p ++ "は存在しない。"
     Polish     -> p ++ " nie istnieje."
@@ -830,8 +788,7 @@ displayPkgbuild_1 p' lang =
     Norwegian  -> p ++ " finnes ikke."
 
 removeMakeDepsAfter_1 :: Language -> String
-removeMakeDepsAfter_1 lang =
-  case lang of
+removeMakeDepsAfter_1 = \case
     English    -> "Removing unneeded make dependencies..."
     Japanese   -> "あと片付け。必要ないパッケージを削除："
     Polish     -> "Usuwanie niepotrzebnych zależności potrzebnych do budowy..."
@@ -851,8 +808,7 @@ removeMakeDepsAfter_1 lang =
 ----------------------------
 -- NEEDS TRANSLATION
 cleanStates_1 :: Language -> String
-cleanStates_1 lang =
-  case lang of
+cleanStates_1 = \case
     Japanese  -> "入力は数字ではない。"
     Croatian  -> "Unos ne predstavlja broj."
     German    -> "Eingabe ist keine gültige Zahl."
@@ -865,8 +821,7 @@ cleanStates_1 lang =
 
 -- NEEDS TRANSLATION
 cleanStates_2 :: Int -> Language -> String
-cleanStates_2 n' lang =
-  let n = bt (show n') in case lang of
+cleanStates_2 n' = let n = bt (show n') in \case
     Japanese  -> n ++ "個のパッケージ状態記録だけが残される。その他削除？"
     Croatian  -> n ++ " stanja paketa će biti zadržano. Ukloniti ostatak?"
     German    -> n ++ " Paketzustände werden behalten. Den Rest entfernen?"
@@ -879,8 +834,7 @@ cleanStates_2 n' lang =
 
 -- NEEDS TRANSLATION
 cleanStates_3 :: Language -> String
-cleanStates_3 lang =
-  case lang of 
+cleanStates_3 = \case
     Japanese  -> "何も削除しないで終了。"
     Croatian  -> "Nijedno stanje paketa nije uklonjeno."
     German    -> "Keine Paketzustände wurden entfernt."
@@ -895,8 +849,7 @@ cleanStates_3 lang =
 -- Aura/Commands/C functions
 ----------------------------
 getDowngradeChoice_1 :: String -> Language -> String
-getDowngradeChoice_1 p' lang =
-  let p = bt p' in case lang of
+getDowngradeChoice_1 p' = let p = bt p' in \case
     English    -> "What version of " ++ p ++ " do you want?"
     Japanese   -> p ++ "はどのバージョンにする？"
     Polish     -> "Którą wersję pakietu " ++ p ++ " zainstalować?"
@@ -912,8 +865,7 @@ getDowngradeChoice_1 p' lang =
     Norwegian  -> "Hvilken versjon av " ++ p ++ " vil du ha?"
 
 backupCache_1 :: Language -> String
-backupCache_1 lang =
-  case lang of 
+backupCache_1 = \case
     English    -> "No backup location given."
     Japanese   -> "バックアップ先を入力してください。"
     Polish     -> "Nie podano lokalizacji kopii zapasowych."
@@ -929,8 +881,7 @@ backupCache_1 lang =
     Norwegian  -> "Ingen backup-plass spesifisert."
 
 backupCache_2 :: Language -> String
-backupCache_2 lang =
-  case lang of
+backupCache_2 = \case
     English    -> "You must be root to backup the cache."
     Japanese   -> "rootじゃないとバックアップはできない。"
     Polish     -> "Musisz być rootem, by zrobić kopię\xa0zapasową pamięci podręcznej."
@@ -946,8 +897,7 @@ backupCache_2 lang =
     Norwegian  -> "Du må være root for å ta backup på cache."
 
 backupCache_3 :: Language -> String
-backupCache_3 lang =
-  case lang of 
+backupCache_3 = \case
     English    -> "The backup location does not exist."
     Japanese   -> "バックアップ先は存在しない。"
     Polish     -> "Lokalizacja kopii zapasowych nie istnieje."
@@ -963,8 +913,7 @@ backupCache_3 lang =
     Norwegian  -> "Spesifisert backup-plass finnes ikke."
 
 backupCache_4 :: FilePath -> Language -> String
-backupCache_4 dir' lang =
-  let dir = bt dir' in case lang of
+backupCache_4 dir' = let dir = bt dir' in \case
     English    -> "Backing up cache to " ++ dir
     Japanese   -> "キャッシュのバックアップ先：" ++ dir
     Polish     -> "Tworzenie kopii zapasowej pamięci podręcznej w " ++ dir
@@ -980,8 +929,7 @@ backupCache_4 dir' lang =
     Norwegian  -> "Tar backup på cache til " ++ dir
 
 backupCache_5 :: Int -> Language -> String
-backupCache_5 n' lang =
-  let n = bt (show n') in case lang of
+backupCache_5 n' = let n = bt (show n') in \case
     English    -> "Package files to backup: " ++ n
     Japanese   -> "パッケージのファイル数：" ++ n
     Polish     -> "Pliki będące częścią\xa0kopii zapasowej: " ++ n
@@ -997,8 +945,7 @@ backupCache_5 n' lang =
     Norwegian  -> "Pakker som blir tatt backup på: " ++ n
 
 backupCache_6 :: Language -> String
-backupCache_6 lang =
-  case lang of 
+backupCache_6 = \case
     English    -> "Proceed with backup?"
     Japanese   -> "バックアップを実行する？"
     Polish     -> "Kontynuować tworzenie kopii zapasowej?"
@@ -1014,8 +961,7 @@ backupCache_6 lang =
     Norwegian  -> "Fortsett med backup?"
 
 backupCache_7 :: Language -> String
-backupCache_7 lang =
-  case lang of
+backupCache_7 = \case
     English    -> "Backup manually aborted."
     Japanese   -> "バックアップは意図的に阻止された。"
     Polish     -> "Tworzenie kopii zapasowej zostało przerwane przez użytkownika."
@@ -1031,8 +977,7 @@ backupCache_7 lang =
     Norwegian  -> "Backup ble avbrutt manuelt."
 
 backupCache_8 :: Language -> String
-backupCache_8 lang =
-  case lang of
+backupCache_8 = \case
     English    -> "Backing up. This may take a few minutes..."
     Japanese   -> "バックアップ中。数分かかるかもしれない。"
     Polish     -> "Tworzenie kopii zapasowej. To może potrwać kilka minut..."
@@ -1048,8 +993,7 @@ backupCache_8 lang =
     Norwegian  -> "Tar backup. Dette kan ta en stund..."
 
 copyAndNotify_1 :: Int -> Language -> String
-copyAndNotify_1 n' lang =
-  let n = cyan (show n') in case lang of
+copyAndNotify_1 n' = let n = cyan (show n') in \case
     English    -> "Copying #[" ++ n ++ "]"
     Japanese   -> "#[" ++ n ++"]をコピー中・・・"
     Polish     -> "Kopiowanie #[" ++ n ++ "]"
@@ -1065,8 +1009,7 @@ copyAndNotify_1 n' lang =
     Norwegian  -> "Kopierer #[" ++ n ++ "]"
 
 preCleanCache_1 :: String -> Language -> String
-preCleanCache_1 n' lang =
-  let n = n' in case lang of
+preCleanCache_1 n' = let n = n' in \case
     English    -> n ++ " is not a number."
     Japanese   -> n ++ "は数字はない。"
     Polish     -> n ++ " nie jest liczbą."
@@ -1082,8 +1025,7 @@ preCleanCache_1 n' lang =
     Norwegian  -> n ++ " er ikke et nummer."
 
 cleanCache_1 :: Language -> String
-cleanCache_1 lang = 
-  case lang of
+cleanCache_1 = \case
     English    -> "Invalid number given."
     Japanese   -> "入力の数字は適切ではない。"
     Polish     -> "Nieprawidłowa liczba."
@@ -1099,8 +1041,7 @@ cleanCache_1 lang =
     Norwegian  -> "Ugyldig number spesifisert."
 
 cleanCache_2 :: Language -> String
-cleanCache_2 lang =
-  case lang of
+cleanCache_2 = \case
     English    -> "This will delete the ENTIRE package cache."
     Japanese   -> "パッケージ・キャッシュは完全に削除される。"
     Polish     -> "To usunie WSZYSTKIE pakiety z pamięci podręcznej."
@@ -1116,8 +1057,7 @@ cleanCache_2 lang =
     Norwegian  -> "Dette vil slette HELE pakke-cachen."
 
 cleanCache_3 :: Int -> Language -> String
-cleanCache_3 n' lang =
-  let n = bt (show n') in case lang of
+cleanCache_3 n' = let n = bt (show n') in \case
     English    -> n ++ " of each package file will be kept."
     Japanese   -> "パッケージ・ファイルは" ++ n ++ "個保存される。"
     Polish     -> n ++ " wersji każdego pakietu zostanie zachowane."
@@ -1133,8 +1073,7 @@ cleanCache_3 n' lang =
     Norwegian  -> n ++ " av hver pakkefil blir beholdt."
 
 cleanCache_4 :: Language -> String
-cleanCache_4 lang =
-  case lang of
+cleanCache_4 = \case
     English    -> "The rest will be deleted. Okay?"
     Japanese   -> "残りは全部削除される。承知する？"
     Polish     -> "Wszystko inne zostanie usunięte. Na pewno?"
@@ -1150,8 +1089,7 @@ cleanCache_4 lang =
     Norwegian  -> "Resten vil bli slettet. Er det OK?"
 
 cleanCache_5 :: Language -> String
-cleanCache_5 lang =
-  case lang of
+cleanCache_5 = \case
     English    -> "Cache cleaning manually aborted."
     Japanese   -> "削除の続行は意図的に阻止された。"
     Polish     -> "Czyszczenie pamięci podręcznej zostało przerwane przez użytkownika."
@@ -1167,8 +1105,7 @@ cleanCache_5 lang =
     Norwegian  -> "Cache-rensing ble avbrutt manuelt."
 
 cleanCache_6 :: Language -> String
-cleanCache_6 lang =
-  case lang of
+cleanCache_6 = \case
     English    -> "Cleaning package cache..."
     Japanese   -> "パッケージ・キャッシュを掃除中・・・"
     Polish     -> "Czyszczenie pamięci podręcznej..."
@@ -1185,8 +1122,7 @@ cleanCache_6 lang =
 
 -- NEEDS TRANSLATION
 cleanNotSaved_1 :: Language -> String
-cleanNotSaved_1 lang =
-  case lang of
+cleanNotSaved_1 = \case
     Japanese  -> "不要パッケージファイルを確認・・・"
     Croatian  -> "Pronalazim nepotrebne datoteke paketa..."
     German    -> "Bestimme nicht benötigte Paketdateien..."
@@ -1197,8 +1133,7 @@ cleanNotSaved_1 lang =
     _         -> "Determining unneeded package files..."
 
 cleanNotSaved_2 :: Int -> Language -> String
-cleanNotSaved_2 s' lang =
-  let s = cyan (show s') in case lang of
+cleanNotSaved_2 s' = let s = cyan (show s') in \case
     Japanese  -> "「" ++ s ++ "」の不要パッケージファイルあり。削除？"
     Croatian  -> s ++ " nepotrebnih datoteka pronađeno. Obrisati?"
     German    -> s ++ " nicht benötigte Paketdateien gefunden. Löschen?"
@@ -1212,8 +1147,7 @@ cleanNotSaved_2 s' lang =
 -- Aura/Commands/L functions
 ----------------------------
 logLookUpFields :: Language -> [String]
-logLookUpFields lang =
-  case lang of
+logLookUpFields = \case
     English    -> [ "Package","First Install","Upgrades","Recent Actions" ]
     Japanese   -> [ "パッケージ","初インストール","アップグレード回数","近況" ]
     Polish     -> [ "Pakiet","Pierwsza instalacja","Aktualizacje","Ostatnie akcje" ]
@@ -1229,8 +1163,7 @@ logLookUpFields lang =
     Norwegian  -> [ "Pakke","Første installasjon","Oppgraderinger","Nylige hendelser" ]
 
 reportNotInLog_1 :: Language -> String
-reportNotInLog_1 lang =
-  case lang of
+reportNotInLog_1 = \case
     English    -> "These have not appeared in the log file:"
     Japanese   -> "logファイルには出ていない："
     Polish     -> "Tych pakietów nie ma w dzienniku:"
@@ -1250,8 +1183,7 @@ reportNotInLog_1 lang =
 ----------------------------
 -- NEEDS TRANSLATION
 cleanABSTree_1 :: Language -> String
-cleanABSTree_1 lang =
-  case lang of
+cleanABSTree_1 = \case
     Japanese  -> "ABS Treeの中身を削除？"
     Croatian  -> "Obrisati cijelo ABS stablo?"
     German    -> "Den gesamten ABS Baum löschen?"
@@ -1262,8 +1194,7 @@ cleanABSTree_1 lang =
     _         -> "Delete the entire ABS Tree?"
 
 cleanABSTree_2 :: Language -> String
-cleanABSTree_2 lang =
-  case lang of
+cleanABSTree_2 = \case
     Japanese  -> "ABS Treeの中身を削除中・・・"
     Croatian  -> "Brišem ABS stablo..."
     German    -> "Lösche ABS Baum..."
@@ -1277,8 +1208,7 @@ cleanABSTree_2 lang =
 -- Aura/Flags functions
 ----------------------
 inheritedOperTitle :: Language -> String
-inheritedOperTitle lang = 
-  case lang of
+inheritedOperTitle = \case 
     English     -> "Inherited Pacman Operations"
     Japanese    -> "Pacmanからの引継選択肢"
     Polish      -> "Operacje z Pacmana"
@@ -1294,8 +1224,7 @@ inheritedOperTitle lang =
     Norwegian   -> "Arvede `pacman`-operasjoner"
 
 auraOperTitle :: Language -> String
-auraOperTitle lang =
-  case lang of
+auraOperTitle = \case
     English    -> "Aura Only Operations:"
     Japanese   -> "Auraだけの選択肢："
     Polish     -> "Operacje Aury:"
@@ -1311,8 +1240,7 @@ auraOperTitle lang =
     Norwegian  -> "Aura-spesifikke operasjoner:"
 
 aurSy :: Language -> String
-aurSy lang = green $
-  case lang of
+aurSy lang = green $ case lang of
     English    -> "Perform actions involving the [A]UR.\n" ++ "Default action installs from the AUR."
     Japanese   -> "[A]URに関連する処理\n" ++ "デフォルトでAURからインストール"
     Polish     -> "Wykonuje akcje związane z [A]UR.\n" ++ "Domyślnie instaluje pakiety z AUR."
@@ -1328,8 +1256,7 @@ aurSy lang = green $
     Norwegian  -> "Utfør handlinger som innebærer [A]UR.\n" ++ "Standard-handling installerer fra AUR."
 
 absSy :: Language -> String
-absSy lang = magenta $
-  case lang of 
+absSy lang = magenta $ case lang of
     Croatian  -> "Izvršava operacije sa ABS stablom.\n" ++ "Uobičajena (default) radnja je ručna izgradnja iz ABS stabla ([M]anual)."
     German    -> "Führe Aktionen aus die den ABS Baum betreffen.\n" ++ "Standardaktion baut [M]anuell aus ABS."
     Norwegian -> "Utfør handlinger som involverer ABS-treet.\n" ++ "Standard-handling bygger [M]anuelt fra ABS."
@@ -1338,8 +1265,7 @@ absSy lang = magenta $
 
 -- NEEDS TRANSLATION
 saveS :: Language -> String
-saveS lang = yellow $
-  case lang of
+saveS lang = yellow $ case lang of
     Japanese  -> "パッケージの設置状態に関する処理\n" ++ "デフォルトでインストール状態を保存する。"
     Croatian  -> "Upravlja spremanjem i vraćanjem globalnog stanja paketa.\n" ++ "Uobičajena (default) radnja je spremanje trenutnog stanja paketa."
     German    -> "Verwalte das [S]peichern und Wiederherstellen des globalen Paketzustände.\n" ++ "Standardaktion sichert die Zustände."
@@ -1351,8 +1277,7 @@ saveS lang = yellow $
     _         -> "Manage the [S]aving and restoring of the global package state.\n" ++ "Default action saves this state."
 
 downG :: Language -> String
-downG lang = red $
-  case lang of 
+downG lang = red $ case lang of
     English    -> "Perform actions involving the package [C]ache.\n" ++ "Default action downgrades given packages."
     Japanese   -> "キャッシュに関連する処理\n" ++ "デフォルトでパッケージをダウングレード"
     Polish     -> "Wykonuje akcje związane z pamięcią podręczną ([C]ache) pakietów.\n" ++ "Domyślnie instaluje starsze wersje podanych pakietów."
@@ -1368,8 +1293,7 @@ downG lang = red $
     Norwegian  -> "Utfør handlinger som involverer pakke-[C]achen.\n" ++ "Standard-handling nedgraderer den valgte pakken."
 
 viewL :: Language -> String
-viewL lang = cyan $
-  case lang of
+viewL lang = cyan $ case lang of
     English    -> "Perform actions involving the pacman [L]ogfile.\n" ++ "Default action opens the log for read-only viewing."
     Japanese   -> "[L]ogfileに関連する処理\n" ++ "デフォルトでlogfileを閲覧用に開く"
     Polish     -> "Wykonuje akcje związane z dziennikiem ([L]ogiem) pacmana.\n" ++ "Domyślnie otwiera log w trybie tylko do odczytu."
@@ -1385,8 +1309,7 @@ viewL lang = cyan $
     Norwegian  -> "Utfør handlinger som involverer `pacman`'s [L]oggfil.\n" ++ "Standard-handling åpner loggen for skrivebeskyttet lesing."
 
 orpha :: Language -> String
-orpha lang = blue $
-  case lang of
+orpha lang = blue $ case lang of
     English    -> "Perform actions involving [O]rphan packages.\n" ++ "Default action lists all orphan packages."
     Japanese   -> "必要とされていない従属パッケージに関する処理\n" ++ "デフォルトでその従属パッケージの名前を出力"
     Polish     -> "Wykonuje akcje związane z [O]sieroconymi pakietami.\n" ++ "Domyślnie wyświetla wszystkie osierocone pakiety."
@@ -1406,8 +1329,7 @@ orpha lang = blue $
 -------------------------------
 -- NEEDS TRANSLATION
 getAURPkgInfo_1 :: Language -> String
-getAURPkgInfo_1 lang =
-  case lang of
+getAURPkgInfo_1 = \case
     Japanese  -> "AURのAPIに繋げなかった。ネット接続状態を確認して下さい。"
     Croatian  -> "Pristup AUR-u nije uspio. Provjerite svoju vezu."
     German    -> "AUR API Suche fehlgeschlagen. Bitte überprüfen Sie Ihre Verbindung."
@@ -1420,8 +1342,7 @@ getAURPkgInfo_1 lang =
 
 -- `Maintainer` value NEEDS UPDATING!
 infoFields :: Language -> [String]
-infoFields lang =
-  case lang of
+infoFields = \case
     English    -> [ "Repository","Name","Version","AUR Status","Maintainer","Project URL","AUR URL","License","Depends On","Build Deps","Votes","Description" ]
     Japanese   -> [ "リポジトリ","名前","バージョン","パッケージ状態","管理者","プロジェクト","パッケージページ","ライセンス","従属パッケージ","作成時従属パ","投票数","概要" ]
     Polish     -> [ "Repository","Nazwa","Wersja","Status w AUR","Maintainer","URL Projektu","URL w AUR","Licencja","Depends On","Build Deps","Głosy","Opis" ]
@@ -1437,8 +1358,7 @@ infoFields lang =
     Norwegian  -> [ "Depot","Navn","Versjon","AUR Status","Vedlikeholder","Prosjekt-URL","AUR URL","Lisens","Depends On","Build Deps","Stemmer","Beskrivelse" ]
 
 outOfDateMsg :: Bool -> Language -> String
-outOfDateMsg True lang = red $
-  case lang of
+outOfDateMsg True lang = red $ case lang of
     English    -> "Out of Date!"
     Japanese   -> "AURで要更新！"
     Polish     -> "Nieaktualny!"
@@ -1452,8 +1372,7 @@ outOfDateMsg True lang = red $
     Italian    -> "Out of Date!"
     Serbian    -> "Застарео!"
     Norwegian  -> "Utdatert!"
-outOfDateMsg False lang = green $
-  case lang of
+outOfDateMsg False lang = green $ case lang of
     English    -> "Up to Date"
     Japanese   -> "最新"
     Polish     -> "Aktualny"
@@ -1470,8 +1389,7 @@ outOfDateMsg False lang = green $
 
 orphanedMsg :: Maybe String -> Language -> String
 orphanedMsg (Just m) _   = bForeground m
-orphanedMsg Nothing lang = red $
-  case lang of
+orphanedMsg Nothing lang = red $ case lang of
     Japanese  -> "いない"
     Croatian  -> "Nema roditelja!"
     German    -> "Verwaist!"
@@ -1484,8 +1402,7 @@ orphanedMsg Nothing lang = red $
 -----------------------
 -- NEEDS TRANSLATION
 absSync_1 :: Language -> String
-absSync_1 lang = 
-  case lang of
+absSync_1 = \case
     Japanese  -> "ローカルABS Treeを同期？"
     Croatian  -> "Sinkronizirati lokalno ABS stablo?"
     German    -> "Lokalen ABS Baum synchronisieren?"
@@ -1496,8 +1413,7 @@ absSync_1 lang =
     _         -> "Sync the local ABS Tree?"
 
 absSync_2 :: Language -> String
-absSync_2 lang =
-  case lang of
+absSync_2 = \case
     Japanese  -> "ローカルABS Treeを同期中・・・"
     Croatian  -> "Sinkroniziram lokalno ABS stablo..."
     German    -> "Synchronisiere lokalen ABS Baum..."
@@ -1508,8 +1424,7 @@ absSync_2 lang =
     _         -> "Syncing local ABS Tree..."
 
 singleSync_1 :: String -> Language -> String
-singleSync_1 p' lang =
-  let p = bt p' in case lang of
+singleSync_1 p' = let p = bt p' in \case
     Japanese  -> p ++ "をABS Treeに同期・・・"
     Croatian  -> "Sinkroniziram " ++ p ++ " u lokalnom stablu..."
     German    -> "Synchronisiere " ++ p ++ " in den lokalen ABS Baum..."
