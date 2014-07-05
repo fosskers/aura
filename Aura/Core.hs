@@ -128,9 +128,10 @@ sudo action = do
 -- | Prompt if the user is the true Root. Building as it can be dangerous.
 trueRoot :: Aura () -> Aura ()
 trueRoot action = ask >>= \ss ->
-  if isntTrueRoot $ environmentOf ss then action else do
-       okay <- optionalPrompt trueRoot_1
-       if okay then action else notify trueRoot_2
+  if isntTrueRoot (environmentOf ss) || buildUserOf ss /= "root"
+    then action else do
+      okay <- optionalPrompt trueRoot_1
+      if okay then action else notify trueRoot_2
 
 -- `-Qm` yields a list of sorted values.
 foreignPackages :: Aura [(String,String)]
