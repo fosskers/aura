@@ -74,7 +74,6 @@ processFlags args = ((flags,nub input,pacOpts'),language)
 
 -- | Set the local environment.
 prepSettings :: (UserInput,Maybe Language) -> IO (UserInput,Settings)
---prepSettings (ui,lang) = (ui,) `fmap` getSettings lang ui
 prepSettings (ui,lang) = (,) ui `fmap` getSettings lang ui
 
 -- | Hand user input to the Aura Monad and run it.
