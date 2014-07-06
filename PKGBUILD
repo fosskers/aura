@@ -10,7 +10,7 @@ arch=('i686' 'x86_64')
 depends=('gmp' 'pacman' 'pcre' 'abs')
 makedepends=('ghc' 'haskell-regex-base' 'haskell-regex-pcre-builtin' 'haskell-json'
              'haskell-mtl' 'haskell-parsec' 'haskell-transformers'
-             'haskell-temporary' 'haskell-http-conduit')
+             'haskell-temporary' 'haskell-http-conduit' 'haskell-split')
 optdepends=('powerpill:    For faster repository downloads.'
             'customizepkg: For auto-editing of PKGBUILDs.'
             'aur-git:      AUR package completions for zsh.')

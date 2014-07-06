@@ -87,6 +87,7 @@ executable aura
                        json,
                        time,
                        unix,
+                       split,
                        array,
                        parsec,
                        process,
