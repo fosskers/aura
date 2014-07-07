@@ -438,38 +438,37 @@ Building}\label{concurrent-package-building}
 \end{itemize}
 
 \subsubsection{Abnormal Termination}\label{abnormal-termination}
-
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  Users can halt Aura with \texttt{Ctrl-d}. The message
-  \texttt{Stopping Aura...} is shown. All temporary files in use are
-  cleared here.
-\end{itemize}
+Users can halt Aura with \texttt{Ctrl-d}. The message
+\texttt{Stopping Aura...} is shown. All temporary files in use are
+cleared here.
 
 \subsubsection{Colour Output}\label{colour-output}
+All output to terminal (save JSON data) is output in colour where
+appropriate. The user can disable this with
+\colorbox{Apricot}{\texttt{-\/-no-colo\{ur,r\}}}
 
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  All output to terminal (save JSON data) is output in colour where
-  appropriate. The user can disable this with
-  \texttt{-\/-no-colo\{ur,r\}}
-\end{itemize}
+\subsubsection{Usage Tips}
+The user is shown usage tips when waiting for dependencies to resolve, etc.
+A number of tips are Aura-centric, but distro-specific ones can be defined
+in \hyperref[auraconf]{AuraConf}.\\
+\colorbox{Red}{TODO: Decide frequency and what command(s) cause these
+tips to appear.}
+
+% === %
 
 \subsection{Plugins}\label{plugins}
-
 Like XMonad, behaviour is built around hooks/plugins that are themselves
 written in Haskell. Each Linux distribution writes and provides to
 \texttt{AuraConf.hs} functions that fill certain type/behaviour
 requirements as explained below.
 
 \subsubsection{AuraConf}\label{auraconf}
-
 \texttt{AuraConf.hs} is Aura's configuration file. It is typically
-located in \texttt{TODO: LOCATION HERE}. Here, distributions and users
+located in \colorbox{Red}{\texttt{TODO: LOCATION HERE}.} Here, distributions
+and users
 can add Hooks to define custom behaviour for their native packaging
-system. The command \texttt{aura -\/-recompile} rebuilds Aura with new
+system. The command \colorbox{Apricot}{\texttt{aura -\/-recompile}}
+rebuilds Aura with new
 Hooks. Also, the following paths can be defined in this file:
 
 \begin{itemize}
@@ -492,6 +491,21 @@ Pending.
 
 \subsection{Aesthetics}\label{aesthetics}
 
+\subsubsection{Localisation}
+Aura is available for use in multiple languages. Language can be set
+via environment variables \colorbox{Red}{(Which ones?)} or by using
+Aura flags that correspond to that language. Note that use of a flag
+will override whatever environment variable is set. Each language has an
+English name and its native equivalent (accents and other non-ascii characters
+are compatible). For example:
+\begin{itemize}
+  \item \colorbox{Apricot}{\texttt{-\/-croatian}} and
+    \colorbox{Apricot}{\texttt{-\/-hrvatski}}
+  \item \colorbox{Apricot}{\texttt{-\/-french}}and
+    \colorbox{Apricot}{\texttt{-\/-français}}
+% TODO:  \item \colorbox{Apricot}{--japanese} and \colorbox{Apricot}{--日本語}
+\end{itemize}
+
 \subsubsection{Version Information when
 Upgrading}\label{version-information-when-upgrading}
 
@@ -513,13 +527,11 @@ Upgrading}\label{version-information-when-upgrading}
 \subsection{Haskell Requirements}\label{haskell-requirements}
 
 \subsubsection{Strings}\label{strings}
-
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  All Strings are represented as \texttt{Text} from \texttt{Data.Text}.
-  This is available in the \texttt{text} package from Hackage.
-\end{itemize}
+All Strings are represented as \colorbox{SkyBlue}{\texttt{Text}} from
+\texttt{Data.Text}.
+This is available in the \texttt{text} package from Hackage. The following
+language pragma should be used where appropriate for String literals being
+converted to \colorbox{SkyBlue}{\texttt{Text}} automatically:
 
 \begin{shaded}
 \begin{lstlisting}[language=haskell]
@@ -527,34 +539,32 @@ Upgrading}\label{version-information-when-upgrading}
 \end{lstlisting}
 \end{shaded}
 
-should be used where appropriate for String literals being converted to
-Text automatically.
 
 \subsubsection{JSON Data}\label{json-data}
-
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  All JSON input and output is handled through \texttt{aeson} and
-  \texttt{aeson-pretty}.
-\end{itemize}
+All JSON input and output is handled through the \texttt{aeson} and
+\texttt{aeson-pretty} packages.
 
 \subsubsection{Other Libraries}\label{other-libraries}
-
 Information on other Hackage libraries used in Aura can be found
 \href{https://github.com/fosskers/aura/issues/223}{here}.
 
 \subsection{Package Requirements}\label{package-requirements}
+Aura must be available in the following forms:
+\begin{itemize}
+  \item \texttt{haskell-aura}\\
+    An AUR package pulled from Hackage, contains only the Aura ``shell'' layer.
+    The user must install another package to get the Arch Linux Hooks, and
+    then build the executable themselves.
+  \item \texttt{aura}\\ Official Arch-flavoured Aura, built and configured
+    in a cabal sandbox. \emph{cabal-install} is the only Haskell related
+    dependency.
+  \item \texttt{haskell-aura-git}\\ Most recent version of Aura, as found
+    on its source repository.
+  \item \texttt{aura-legacy}\\
+    A static copy of Aura 1. Has Haskell dependencies.
+\end{itemize}
 
-Aura must be available in the following forms: - \texttt{haskell-aura}
-An AUR package pulled from Hackage, with all special install
-instructions contained in \texttt{Setup.hs}. - \texttt{aura} What was
-\texttt{aura-bin} in Aura 1. A pre-built binary for those with no
-interest in Haskell. The old \texttt{aura-bin} package will be noted as
-depreciated, left as Aura 1, and removed from the AUR \textbf{two}
-months after the release of Aura 2. - \texttt{aura-git} the same as is
-currently available. Should man page install instructions, etc., be in
-\texttt{Setup.hs} the same as \texttt{haskell-aura}?
+% === %
 
 \section{Arch Linux Specifics}\label{arch-linux-specifics}
 
