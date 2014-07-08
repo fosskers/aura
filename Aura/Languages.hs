@@ -43,6 +43,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Languages where
 
 import Aura.Colour.Text (cyan, green, red, blue, yellow, magenta, bForeground)
+import qualified Data.Map.Lazy as Map (Map, fromList, (!))
 
 ---
 
@@ -59,36 +60,38 @@ data Language = English
               | Italian
               | Serbian
               | Norwegian
-                deriving (Eq,Enum,Read,Show)
+                deriving (Eq,Enum,Ord,Read,Show)
 
-translators :: [String]
-translators = [ " Chris \"Kwpolska\" Warrick"
-              , " Denis Kasak / \"stranac\""
-              , " Fredrik Haikarainen"
-              , " Lukas Niederbremer"
-              , " Alejandro Gómez"
-              , " Henry \"Ingvij\" Kupty"
-              , " Ma Jiehong / Fabien Dubosson"
-              , " Kyrylo Silin"
-              , " Bob Valantin"
-              , " Filip Brcic"
-              , " \"chinatsun\"" ]
+translators :: Map Language String
+translators = Map.fromList
+    [ (Polish,     "Chris \"Kwpolska\" Warrick")
+    , (Croatian,   "Denis Kasak / \"stranac\"")
+    , (Swedish,    "Fredrik Haikarainen")
+    , (German,     "Lukas Niederbremer")
+    , (Spanish,    "Alejandro Gómez")
+    , (Portuguese, "Henry \"Ingvij\" Kupty")
+    , (French,     "Ma Jiehong / Fabien Dubosson")
+    , (Russian,    "Kyrylo Silin")
+    , (Italian,    "Bob Valantin")
+    , (Serbian,    "Filip Brcic")
+    , (Norwegian,  "\"chinatsun\"")
+    ]
 
 -- These need updating! Or removing...
-languageNames :: Language -> [String]
-languageNames = \case 
-    Japanese   -> [ "ポーランド語","クロアチア語","スウェーデン語","ドイツ語","スペイン語","ポルトガル語","フランス語","ロシア語", "", "", "" ]
-    Polish     -> [ "polski","chorwacki","szwedzki","niemiecki","hiszpański","portugalski","francuski","rosyjski", "", "", "" ]
-    Croatian   -> [ "poljski","hrvatski","švedski","njemački","španjolski","portugalski","francuski","ruski", "talijanski", "srpski", "norveški" ]
-    Swedish    -> [ "polska","kroatiska","svenska","tyska","spanska","portugisiska", "", "", "" ]
-    German     -> [ "Polnisch","Kroatisch","Schwedisch","Deutsch","Spanisch","Portugiesisch", "", "", "" ]
-    Spanish    -> [ "Polaco","Croata","Sueco","Alemán","Español","Portugués", "", "", "" ]
-    Portuguese -> [ "Polonês","Croata","Sueco","Alemão","Espanhol","Português", "", "", "" ]
-    French     -> [ "Polonais","Croate","Suédois","Allemand","Espagnol","Portugais", "Français", "Russe", "Italien", "Serbe", "Norvégien" ]
-    Russian    -> [ "Польский","Хорватский","Шведский","Немецкий","Испанский","Португальский", "Русский", "Итальянский", "Сербский", "Норвежский" ]
+languageNames :: Language -> Map Language String
+languageNames = Map.fromList . zip [ Polish, Croatian, Swedish, German, Spanish, Portuguese, French, Russian, Italian, Serbian, Norwegian ] . \case 
+    Japanese   -> [ "ポーランド語", "クロアチア語", "スウェーデン語", "ドイツ語", "スペイン語", "ポルトガル語", "フランス語", "ロシア語", "", "", "" ]
+    Polish     -> [ "polski", "chorwacki", "szwedzki", "niemiecki", "hiszpański", "portugalski", "francuski", "rosyjski", "", "", "" ]
+    Croatian   -> [ "poljski", "hrvatski", "švedski", "njemački", "španjolski", "portugalski", "francuski", "ruski", "talijanski", "srpski", "norveški" ]
+    Swedish    -> [ "polska", "kroatiska", "svenska", "tyska", "spanska", "portugisiska", "", "", "" ]
+    German     -> [ "Polnisch", "Kroatisch", "Schwedisch", "Deutsch", "Spanisch", "Portugiesisch", "", "", "" ]
+    Spanish    -> [ "Polaco", "Croata", "Sueco", "Alemán", "Español", "Portugués", "", "", "" ]
+    Portuguese -> [ "Polonês", "Croata", "Sueco", "Alemão", "Espanhol", "Português", "", "", "" ]
+    French     -> [ "Polonais", "Croate", "Suédois", "Allemand", "Espagnol", "Portugais", "Français", "Russe", "Italien", "Serbe", "Norvégien" ]
+    Russian    -> [ "Польский", "Хорватский", "Шведский", "Немецкий", "Испанский", "Португальский", "Русский", "Итальянский", "Сербский", "Норвежский" ]
     Italian    -> [ "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "", "" ]
-    Serbian    -> [ "Пољски","Хрватски","Шведски","Немачки","Шпански","Португалски","Француски","Руски","Италијански","Српски", "" ]
-    Norwegian  -> [ "Polsk","Kroatisk","Svensk","Tysk","Spansk","Portugisisk","Fransk","Russisk","Italiensk","Serbisk","Norsk" ]
+    Serbian    -> [ "Пољски", "Хрватски", "Шведски", "Немачки", "Шпански", "Португалски", "Француски", "Руски", "Италијански", "Српски", "" ]
+    Norwegian  -> [ "Polsk", "Kroatisk", "Svensk", "Tysk", "Spansk", "Portugisisk", "Fransk", "Russisk", "Italiensk", "Serbisk", "Norsk" ]
     _          -> [ "Polish","Croatian","Swedish","German","Spanish","Portuguese","French","Russian", "Italian", "Serbian", "Norwegian" ]
 
 translatorMsgTitle :: Language -> String
@@ -110,8 +113,9 @@ translatorMsgTitle = \case
 translatorMsg :: Language -> [String]
 translatorMsg lang = title : names
   where title = translatorMsgTitle lang
-        names = zipWith appendLang translators $ languageNames lang
-        appendLang n l = n ++ " (" ++ l ++ ")"
+        names = toList $ Map.mapWithKey (formatLang . assocLang) translators
+        assocLang lang' translator = (translator, Map.(!) (langaugeNames lang) lang')
+        formatLang (translator,lang') = " " ++ translator ++ " (" ++ lang' ++ ")"
 
 allLanguages :: [Language]
 allLanguages = [English ..]
