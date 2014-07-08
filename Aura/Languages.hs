@@ -1240,7 +1240,7 @@ auraOperTitle = \case
     Norwegian  -> "Aura-spesifikke operasjoner:"
 
 aurSy :: Language -> String
-aurSy lang = green $ case lang of
+aurSy = green . \case
     English    -> "Perform actions involving the [A]UR.\n" ++ "Default action installs from the AUR."
     Japanese   -> "[A]URに関連する処理\n" ++ "デフォルトでAURからインストール"
     Polish     -> "Wykonuje akcje związane z [A]UR.\n" ++ "Domyślnie instaluje pakiety z AUR."
@@ -1256,7 +1256,7 @@ aurSy lang = green $ case lang of
     Norwegian  -> "Utfør handlinger som innebærer [A]UR.\n" ++ "Standard-handling installerer fra AUR."
 
 absSy :: Language -> String
-absSy lang = magenta $ case lang of
+absSy = magenta . \case
     Croatian  -> "Izvršava operacije sa ABS stablom.\n" ++ "Uobičajena (default) radnja je ručna izgradnja iz ABS stabla ([M]anual)."
     German    -> "Führe Aktionen aus die den ABS Baum betreffen.\n" ++ "Standardaktion baut [M]anuell aus ABS."
     Norwegian -> "Utfør handlinger som involverer ABS-treet.\n" ++ "Standard-handling bygger [M]anuelt fra ABS."
@@ -1265,7 +1265,7 @@ absSy lang = magenta $ case lang of
 
 -- NEEDS TRANSLATION
 saveS :: Language -> String
-saveS lang = yellow $ case lang of
+saveS = yellow . \case
     Japanese  -> "パッケージの設置状態に関する処理\n" ++ "デフォルトでインストール状態を保存する。"
     Croatian  -> "Upravlja spremanjem i vraćanjem globalnog stanja paketa.\n" ++ "Uobičajena (default) radnja je spremanje trenutnog stanja paketa."
     German    -> "Verwalte das [S]peichern und Wiederherstellen des globalen Paketzustände.\n" ++ "Standardaktion sichert die Zustände."
@@ -1277,7 +1277,7 @@ saveS lang = yellow $ case lang of
     _         -> "Manage the [S]aving and restoring of the global package state.\n" ++ "Default action saves this state."
 
 downG :: Language -> String
-downG lang = red $ case lang of
+downG = red . \case
     English    -> "Perform actions involving the package [C]ache.\n" ++ "Default action downgrades given packages."
     Japanese   -> "キャッシュに関連する処理\n" ++ "デフォルトでパッケージをダウングレード"
     Polish     -> "Wykonuje akcje związane z pamięcią podręczną ([C]ache) pakietów.\n" ++ "Domyślnie instaluje starsze wersje podanych pakietów."
@@ -1293,7 +1293,7 @@ downG lang = red $ case lang of
     Norwegian  -> "Utfør handlinger som involverer pakke-[C]achen.\n" ++ "Standard-handling nedgraderer den valgte pakken."
 
 viewL :: Language -> String
-viewL lang = cyan $ case lang of
+viewL = cyan . \case
     English    -> "Perform actions involving the pacman [L]ogfile.\n" ++ "Default action opens the log for read-only viewing."
     Japanese   -> "[L]ogfileに関連する処理\n" ++ "デフォルトでlogfileを閲覧用に開く"
     Polish     -> "Wykonuje akcje związane z dziennikiem ([L]ogiem) pacmana.\n" ++ "Domyślnie otwiera log w trybie tylko do odczytu."
@@ -1309,7 +1309,7 @@ viewL lang = cyan $ case lang of
     Norwegian  -> "Utfør handlinger som involverer `pacman`'s [L]oggfil.\n" ++ "Standard-handling åpner loggen for skrivebeskyttet lesing."
 
 orpha :: Language -> String
-orpha lang = blue $ case lang of
+orpha = blue . \case
     English    -> "Perform actions involving [O]rphan packages.\n" ++ "Default action lists all orphan packages."
     Japanese   -> "必要とされていない従属パッケージに関する処理\n" ++ "デフォルトでその従属パッケージの名前を出力"
     Polish     -> "Wykonuje akcje związane z [O]sieroconymi pakietami.\n" ++ "Domyślnie wyświetla wszystkie osierocone pakiety."
@@ -1358,7 +1358,7 @@ infoFields = \case
     Norwegian  -> [ "Depot","Navn","Versjon","AUR Status","Vedlikeholder","Prosjekt-URL","AUR URL","Lisens","Depends On","Build Deps","Stemmer","Beskrivelse" ]
 
 outOfDateMsg :: Bool -> Language -> String
-outOfDateMsg True lang = red $ case lang of
+outOfDateMsg True = red . \case
     English    -> "Out of Date!"
     Japanese   -> "AURで要更新！"
     Polish     -> "Nieaktualny!"
@@ -1372,7 +1372,7 @@ outOfDateMsg True lang = red $ case lang of
     Italian    -> "Out of Date!"
     Serbian    -> "Застарео!"
     Norwegian  -> "Utdatert!"
-outOfDateMsg False lang = green $ case lang of
+outOfDateMsg False = green . \case
     English    -> "Up to Date"
     Japanese   -> "最新"
     Polish     -> "Aktualny"
@@ -1389,7 +1389,7 @@ outOfDateMsg False lang = green $ case lang of
 
 orphanedMsg :: Maybe String -> Language -> String
 orphanedMsg (Just m) _   = bForeground m
-orphanedMsg Nothing lang = red $ case lang of
+orphanedMsg Nothing = red . \case
     Japanese  -> "いない"
     Croatian  -> "Nema roditelja!"
     German    -> "Verwaist!"
@@ -1435,8 +1435,7 @@ singleSync_1 p' = let p = bt p' in \case
     _         -> "Syncing " ++ p ++ " to the local ABS Tree..."
 
 absInfoFields :: Language -> [String]
-absInfoFields lang =
-  case lang of
+absInfoFields = \case
     Croatian  -> [ "Repozitorij","Ime","Verzija","Zavisnosti","Make Zavisnosti","Opis" ]
     German    -> [ "Quelle","Name","Version","Hängt ab von","Make Abh.","Beschreibung"]
     Norwegian -> [ "Depot","Navn","Versjon","Er avhengig av","Make Deps","Beskrivelse"]
@@ -1446,8 +1445,7 @@ absInfoFields lang =
     _         -> [ "Repository","Name","Version","Depends On","Make Deps","Description" ]
 
 repository_1 :: String -> Language -> String
-repository_1 p lang =
-  case lang of
+repository_1 p = \case
     Japanese  -> p ++ "はどのリポジトリにもない。"
     Croatian  -> p ++ "nije paket u repozitoriju."
     German    -> p ++ " ist kein Paket in irgendeiner Quelle."
@@ -1458,8 +1456,7 @@ repository_1 p lang =
     _         -> p ++ " is not a package in any repository."
 
 pkgbuildKeyMissing :: String -> Language -> String
-pkgbuildKeyMissing key lang =
-  case lang of
+pkgbuildKeyMissing key = \case
     Croatian  -> "Nemoguće izvući vrijednost za " ++ key ++ " iz PKGBUILD-a."
     German    -> "Kann Schlüssel " ++ key ++ " nicht aus PKGBUILD parsen."
     Norwegian -> "Forstår ikke " ++ key ++ " fra PKGBUILD."
@@ -1469,8 +1466,7 @@ pkgbuildKeyMissing key lang =
     _         -> "Unable to parse key " ++ key ++ " from PKGBUILD."
 
 missingDescription :: Language -> String
-missingDescription lang = 
-  case lang of 
+missingDescription = \case
     Croatian  -> "Nema opisa."
     German    -> "Keine Beschreibung."
     Norwegian -> "Ingen beskrivelse."
@@ -1484,8 +1480,7 @@ missingDescription lang =
 -----------------------
 -- NEEDS TRANSLATION
 saveState_1 :: Language -> String
-saveState_1 lang =
-  case lang of
+saveState_1 = \case
     Japanese  -> "現在パッケージ状態保存完了。"
     Croatian  -> "Stanje paketa spremljeno."
     German    -> "Paketzustände gesichert."
@@ -1498,8 +1493,7 @@ saveState_1 lang =
 
 -- NEEDS TRANSLATION
 restoreState_1 :: Language -> String
-restoreState_1 lang =
-  case lang of
+restoreState_1 = \case
     Japanese  -> "対象バージョンがないパッケージ："
     Croatian  -> "Tražene stare verzije nisu dostupne za:"
     German    -> "Gewünschte Downgradeversionen nicht Verfügbar für:"
@@ -1512,8 +1506,7 @@ restoreState_1 lang =
 
 -- NEEDS TRANSLATION
 reinstallAndRemove_1 :: Language -> String
-reinstallAndRemove_1 lang =
-  case lang of
+reinstallAndRemove_1 = \case
     Japanese  -> "パッケージを変更する必要ない。"
     Croatian  -> "Nema paketa kojima su potrebne izmjene."
     German    -> "Keine Pakete brauchen Änderungen."
@@ -1529,8 +1522,7 @@ reinstallAndRemove_1 lang =
 --------------------------------------
 -- NEEDS TRANSLATION
 circDep_1 :: String -> Language -> String
-circDep_1 p' lang =
-  let p = bt p' in case lang of
+circDep_1 p' = let p = bt p' in \case
     Japanese  -> p ++ "と互いに従属している。"
     Croatian  -> "Ima kružnu zavisnost sa " ++ p ++ "."
     German    -> "Hat eine zirkuläre Abhängigkeit mit " ++ p ++ "."
@@ -1543,8 +1535,7 @@ circDep_1 p' lang =
 
 -- NEEDS TRANSLATION
 bashisms_1 :: Language -> String
-bashisms_1 lang = 
-  case lang of
+bashisms_1 = \case
     Japanese  -> "PKGBUILDのBashコードが複雑すぎる。"
     Croatian  -> "Previše „bash-izama“ u PKGBUILD-u."
     German    -> "Zu viele „bashismen“ im PKGBUILD."
@@ -1560,8 +1551,7 @@ bashisms_1 lang =
 ------------------------
 -- NEEDS TRANSLATION
 pacmanFailure_1 :: Language -> String
-pacmanFailure_1 lang =
-  case lang of
+pacmanFailure_1 = \case
     Japanese  -> "入力を確認して下さい。"
     Croatian  -> "Molim vas, provjerite svoj unos."
     German    -> "Bitte überprüfen Sie Ihre Eingabe."
@@ -1576,8 +1566,7 @@ pacmanFailure_1 lang =
 -- Aura/Pkgbuild/Editing functions
 ----------------------------------
 hotEdit_1 :: String -> Language -> String
-hotEdit_1 p' lang =
-  let p = bt p' in case lang of
+hotEdit_1 p' = let p = bt p' in \case
     English    -> "Would you like to edit the PKGBUILD of " ++ p ++ "?"
     Japanese   -> p ++ "のPKGBUILDを編成？"
     Polish     -> "Czy chcesz edytować PKGBUILD " ++ p ++ "?"
@@ -1593,8 +1582,7 @@ hotEdit_1 p' lang =
     Norwegian  -> "Vil du endre PKGBUILD for " ++ p ++ "?"
 
 customizepkg_1 :: Language -> String
-customizepkg_1 lang = 
-  let customizepkg = bt "customizepkg" in case lang of
+customizepkg_1 = let customizepkg = bt "customizepkg" in \case
     Japanese  -> customizepkg ++ "はインストールされていない。"
     Croatian  -> customizepkg ++ "nije instaliran."
     German    -> customizepkg ++ "ist nicht installiert."
