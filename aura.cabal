@@ -41,7 +41,7 @@ executable aura
 
   main-is:             aura.hs
 
-  hs-source-dirs:        src
+  hs-source-dirs:      src
   other-modules:       Shell,
                        Internet,
                        Utilities,
