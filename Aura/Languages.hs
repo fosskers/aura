@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase ViewPatterns #-}
+{-# LANGUAGE LambdaCase, ViewPatterns #-}
 
 -- Library for Aura output in different languages.
 -- All normal restrictions on line length do not apply for this file, and this file only.
@@ -43,7 +43,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Languages where
 
 import Aura.Colour.Text (cyan, green, red, blue, yellow, magenta, bForeground)
-import qualified Data.Map.Lazy as Map (Map, fromList, (!))
+import qualified Data.Map.Lazy as Map (Map, (!), fromList, toList, mapWithKey)
 
 ---
 
@@ -62,7 +62,7 @@ data Language = English
               | Norwegian
                 deriving (Eq,Enum,Ord,Read,Show)
 
-translators :: Map Language String
+translators :: Map.Map Language String
 translators = Map.fromList
     [ (Polish,     "Chris \"Kwpolska\" Warrick")
     , (Croatian,   "Denis Kasak / \"stranac\"")
@@ -78,7 +78,7 @@ translators = Map.fromList
     ]
 
 -- These need updating! Or removing...
-languageNames :: Language -> Map Language String
+languageNames :: Language -> Map.Map Language String
 languageNames = Map.fromList . zip [ Polish, Croatian, Swedish, German, Spanish, Portuguese, French, Russian, Italian, Serbian, Norwegian ] . \case 
     Japanese   -> [ "ポーランド語", "クロアチア語", "スウェーデン語", "ドイツ語", "スペイン語", "ポルトガル語", "フランス語", "ロシア語", "", "", "" ]
     Polish     -> [ "polski", "chorwacki", "szwedzki", "niemiecki", "hiszpański", "portugalski", "francuski", "rosyjski", "", "", "" ]
@@ -108,13 +108,13 @@ translatorMsgTitle = \case
     Italian    -> "Traduttori di Aura:"
     Serbian    -> "Преводиоци Аура:"
     Norwegian  -> "Aura Oversettere:"
-    .          -> "Aura Translators:"
+    _          -> "Aura Translators:"
 
 translatorMsg :: Language -> [String]
 translatorMsg lang = title : names
   where title = translatorMsgTitle lang
-        names = toList $ Map.mapWithKey (formatLang . assocLang) translators
-        assocLang lang' translator = (translator, Map.(!) (langaugeNames lang) lang')
+        names = fmap snd $ Map.toList $ Map.mapWithKey (((.) . (.)) formatLang assocLang) translators
+        assocLang lang' translator = (translator, (languageNames lang) Map.! lang')
         formatLang (translator,lang') = " " ++ translator ++ " (" ++ lang' ++ ")"
 
 allLanguages :: [Language]
@@ -1400,7 +1400,7 @@ outOfDateMsg False = green . \case
 
 -- NEEDS TRANSLATION
 orphanedMsg :: Maybe String -> Language -> String
-orphanedMsg (Just m) _   = bForeground m
+orphanedMsg (Just m) = const $ bForeground m
 orphanedMsg Nothing = red . \case
     Japanese  -> "いない"
     Croatian  -> "Nema roditelja!"
