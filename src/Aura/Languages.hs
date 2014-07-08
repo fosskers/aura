@@ -307,13 +307,14 @@ buildFail_5 = \case
 -- NEEDS TRANSLATION
 buildFail_6 :: Language -> String
 buildFail_6 = \case
-    Japanese  -> "それでも続行？"
-    Croatian  -> "Želite li svejedno nastaviti?"
-    Norwegian -> "Vil du fortsette likevel?"
-    Italian   -> "Vuoi continuare comunque?"
-    French    -> "Voulez-vous tout de même continuer ?"
-    Russian   -> "Продолжить не смотря ни на что?"
-    _         -> "Would you like to continue anyway?"
+    Japanese   -> "それでも続行？"
+    Croatian   -> "Želite li svejedno nastaviti?"
+    Norwegian  -> "Vil du fortsette likevel?"
+    Italian    -> "Vuoi continuare comunque?"
+    Portuguese -> "Gostaria de continuar mesmo assim?"
+    French     -> "Voulez-vous tout de même continuer ?"
+    Russian    -> "Продолжить не смотря ни на что?"
+    _          -> "Would you like to continue anyway?"
 
 displayBuildErrors_1 :: Language -> String
 displayBuildErrors_1 = \case
@@ -386,12 +387,13 @@ getRealPkgConflicts_2 p' = let p = bt p' in \case
 -- NEEDS TRANSLATION
 missingPkg_1 :: String -> Language -> String
 missingPkg_1 p' = let p = bt p' in \case
-    Croatian  -> "Zavisnost  " ++ p ++ " nije pronađena. Pokušajte pronaći paket koji zadovoljava ovu zavisnost."
-    Norwegian -> "Avhengigheten " ++ p ++ " ble ikke funnet. Du kan søke etter en pakke som tilfredsstiller avhengigheten."
-    Italian   -> "La dipendenza " ++ p ++ " non è stata trovata. Potrebbe essere necessario cercare un pacchetto che possa soddisfarla?"
-    French    -> "La dépendance " ++ p ++ " n'a pas pu être trouvée. Il vous faut trouver un paquet pour la satisfaire."
-    Russian   -> "Зависимость " ++ p ++ " не найдена. Возможно, вам нужно поискать пакет, чтобы удовлетворить её."
-    _         -> "The dependency " ++ p ++ " could not be found. You may need to search for a package to satisfy it."
+    Croatian   -> "Zavisnost  " ++ p ++ " nije pronađena. Pokušajte pronaći paket koji zadovoljava ovu zavisnost."
+    Norwegian  -> "Avhengigheten " ++ p ++ " ble ikke funnet. Du kan søke etter en pakke som tilfredsstiller avhengigheten."
+    Italian    -> "La dipendenza " ++ p ++ " non è stata trovata. Potrebbe essere necessario cercare un pacchetto che possa soddisfarla?"
+    Portuguese -> "A dependência" ++ p ++ " não foi achada. Talvez tenha que buscar um pacote que a satisfaça."
+    French     -> "La dépendance " ++ p ++ " n'a pas pu être trouvée. Il vous faut trouver un paquet pour la satisfaire."
+    Russian    -> "Зависимость " ++ p ++ " не найдена. Возможно, вам нужно поискать пакет, чтобы удовлетворить её."
+    _          -> "The dependency " ++ p ++ " could not be found. You may need to search for a package to satisfy it."
 
 -----------------
 -- aura functions
@@ -449,12 +451,13 @@ displayOutputLanguages_1 = \case
 ----------------------------
 auraCheck_1 :: Language -> String
 auraCheck_1 = \case
-    Japanese  -> "Auraアップグレードあり。先にAuraだけを？"
-    Croatian  -> "Dostupna je nova verzija Aura. Želite li prvo ažurirati?"
-    German    -> "Aura Update verfügbar. Dies zuerst aktualisieren?"
-    Norwegian -> "En Aura-oppdatering er tilgjengelig. Oppdater den først?"
-    French    -> "Une mise à jour d'Aura est disponible. Voulez-vous la mettre à jour en premier ?"
-    _         -> "Aura update available. Update it first?"
+    Japanese   -> "Auraアップグレードあり。先にAuraだけを？"
+    Croatian   -> "Dostupna je nova verzija Aura. Želite li prvo ažurirati?"
+    German     -> "Aura Update verfügbar. Dies zuerst aktualisieren?"
+    Norwegian  -> "En Aura-oppdatering er tilgjengelig. Oppdater den først?"
+    Portuguese -> "Uma atualização para Aura está disponível. Deseja atualizar antes?"
+    French     -> "Une mise à jour d'Aura est disponible. Voulez-vous la mettre à jour en premier ?"
+    _          -> "Aura update available. Update it first?"
 
 install_1 :: Language -> String
 install_1 = \case
@@ -546,7 +549,7 @@ reportNonPackages_1 = \case
     Swedish    -> "Följande är inte paket:"
     German     -> "Folgende sind keine Pakete:"
     Spanish    -> "Los siguientes no son paquetes:"
-    Portuguese -> "Os seguintes não são pacotes:"
+    Portuguese -> "Os seguintes não são pacotes AUR:"
     French     -> "Les éléments suivants ne sont pas des paquets AUR :"
     Russian    -> "Ниже указано то, что не является пакетами AUR:"
     Italian    -> "I seguenti pacchetti non sono presenti in AUR:"
@@ -588,14 +591,15 @@ reportPkgsToInstall_1 = \case
 -- NEEDS AN UPDATE
 reportPkgsToInstall_2 :: String -> Language -> String
 reportPkgsToInstall_2 l = \case
-    Japanese  -> l ++ "のパッケージ:"
-    Croatian  -> l ++ " Paketi:"
-    German    -> l ++ " Pakete:"
-    Norwegian -> l ++ " Pakker:"
-    Italian   -> l ++ " Pacchetti:"
-    French    -> l ++ " Paquets :"
-    Russian   -> l ++ " Пакеты:"
-    _         -> l ++ " Packages:"
+    Japanese   -> l ++ "のパッケージ:"
+    Croatian   -> l ++ " Paketi:"
+    German     -> l ++ " Pakete:"
+    Norwegian  -> l ++ " Pakker:"
+    Italian    -> l ++ " Pacchetti:"
+    Portuguese -> l ++ " Pacotes :"
+    French     -> l ++ " Paquets :"
+    Russian    -> l ++ " Пакеты:"
+    _          -> l ++ " Packages:"
 
 {-}
 reportPkgsToInstall_2 :: String -> Language -> String
@@ -634,45 +638,48 @@ reportPkgsToInstall_3 l = \case
 -- Needs translations.
 reportPkgbuildDiffs_1 :: String -> Language -> String
 reportPkgbuildDiffs_1 p' = let p = bt p' in \case
-    Japanese  -> p ++ "のPKGBUILDはまだ保存されていない。"
-    Polish    -> p ++ " nie ma jeszcze przechowywanego pliku PKGBUILD."
-    Croatian  -> p ++ " još nema pohranjen PKGBUILD."
-    German    -> p ++ " hat noch keinen gespeicherten PKGBUILD."
-    Spanish   -> p ++ " no tiene PKGBUILD todavía."
-    French    -> p ++ " n'a pas encore de PKGBUILD enregistré."
-    Russian   -> "У " ++ p ++ " ещё нет сохраненного PKGBUILD."
-    Italian   -> p ++ " non ci sono PKGBUILD salvati"
-    Serbian   -> p ++ " још нема похрањен PKGBUILD."
-    Norwegian -> p ++ " har ingen PKGBUILD ennå."
-    _         -> p ++ " has no stored PKGBUILD yet."
+    Japanese   -> p ++ "のPKGBUILDはまだ保存されていない。"
+    Polish     -> p ++ " nie ma jeszcze przechowywanego pliku PKGBUILD."
+    Croatian   -> p ++ " još nema pohranjen PKGBUILD."
+    German     -> p ++ " hat noch keinen gespeicherten PKGBUILD."
+    Spanish    -> p ++ " no tiene PKGBUILD todavía."
+    Portuguese -> p ++ " não tem PKGBUILD."
+    French     -> p ++ " n'a pas encore de PKGBUILD enregistré."
+    Russian    -> "У " ++ p ++ " ещё нет сохраненного PKGBUILD."
+    Italian    -> p ++ " non ci sono PKGBUILD salvati"
+    Serbian    -> p ++ " још нема похрањен PKGBUILD."
+    Norwegian  -> p ++ " har ingen PKGBUILD ennå."
+    _          -> p ++ " has no stored PKGBUILD yet."
 
 reportPkgbuildDiffs_2 :: String -> Language -> String
 reportPkgbuildDiffs_2 p' = let p = bt p' in \case
-    Japanese  -> p ++ "のPKGBUILDは最新。"
-    Polish    -> "PKGBUILD pakietu " ++ p ++ " jest aktualny."
-    Croatian  -> "PKGBUILD paketa " ++ p ++ " je na najnovijoj verziji."
-    German    -> "PKGBUILD von " ++ p ++ " ist aktuell."
-    Spanish   -> "El PKGBUILD de " ++ p ++ " está actualizado."
-    Russian   -> "PKGBUILD " ++ p ++ " является новейшим."
-    French    -> "Le PKGBUILD de " ++ p ++ " est à jour."
-    Italian   -> "Il PKGBUILD di " ++ p ++ " è aggiornato."
-    Serbian   -> "PKGBUILD пакета " ++ p ++ " је ажуран."
-    Norwegian -> p ++ "'s PKGBUILD er oppdatert."
-    _         -> p ++ " PKGBUILD is up to date."
+    Japanese   -> p ++ "のPKGBUILDは最新。"
+    Polish     -> "PKGBUILD pakietu " ++ p ++ " jest aktualny."
+    Croatian   -> "PKGBUILD paketa " ++ p ++ " je na najnovijoj verziji."
+    German     -> "PKGBUILD von " ++ p ++ " ist aktuell."
+    Spanish    -> "El PKGBUILD de " ++ p ++ " está actualizado."
+    Russian    -> "PKGBUILD " ++ p ++ " является новейшим."
+    Portuguese -> "O PKGBUILD de" ++ p ++ "está atualizado."
+    French     -> "Le PKGBUILD de " ++ p ++ " est à jour."
+    Italian    -> "Il PKGBUILD di " ++ p ++ " è aggiornato."
+    Serbian    -> "PKGBUILD пакета " ++ p ++ " је ажуран."
+    Norwegian  -> p ++ "'s PKGBUILD er oppdatert."
+    _          -> p ++ " PKGBUILD is up to date."
 
 reportPkgbuildDiffs_3 :: String -> Language -> String
 reportPkgbuildDiffs_3 p' = let p = bt p' in \case
-    Japanese  -> p ++ "のPKGBUILD変更報告："
-    Polish    -> "Zmiany w PKGBUILD dla " ++ p ++ ":"
-    Croatian  -> "Promjene u PKGBUILD-u za " ++ p ++ ":"
-    German    -> "PKGBUILD Änderungen von " ++ p ++ ":"
-    Spanish   -> "Cambios en el PKGBUILD de " ++ p ++ ":"
-    Russian   -> "Изменения, вносимые " ++ p ++ " PKGBUILD:"
-    French    -> "Changements du PKGBUILD de " ++ p ++ " :"
-    Italian   -> "Cambiamenti nel PKGBUILD di " ++ p ++":"
-    Serbian   -> "Промене PKGBUILD-a за " ++ p ++ ":"
-    Norwegian -> p ++ "'s endringer i PKGBUILD:"
-    _         -> p ++ " PKGBUILD changes:"
+    Japanese   -> p ++ "のPKGBUILD変更報告："
+    Polish     -> "Zmiany w PKGBUILD dla " ++ p ++ ":"
+    Croatian   -> "Promjene u PKGBUILD-u za " ++ p ++ ":"
+    German     -> "PKGBUILD Änderungen von " ++ p ++ ":"
+    Spanish    -> "Cambios en el PKGBUILD de " ++ p ++ ":"
+    Portuguese -> p ++ " não tem PKGBUILD."
+    Russian    -> "Изменения, вносимые " ++ p ++ " PKGBUILD:"
+    French     -> "Changements du PKGBUILD de " ++ p ++ " :"
+    Italian    -> "Cambiamenti nel PKGBUILD di " ++ p ++":"
+    Serbian    -> "Промене PKGBUILD-a за " ++ p ++ ":"
+    Norwegian  -> p ++ "'s endringer i PKGBUILD:"
+    _          -> p ++ " PKGBUILD changes:"
 
 reportPkgsToUpgrade_1 :: Language -> String
 reportPkgsToUpgrade_1 = \case
@@ -809,41 +816,44 @@ removeMakeDepsAfter_1 = \case
 -- NEEDS TRANSLATION
 cleanStates_1 :: Language -> String
 cleanStates_1 = \case
-    Japanese  -> "入力は数字ではない。"
-    Croatian  -> "Unos ne predstavlja broj."
-    German    -> "Eingabe ist keine gültige Zahl."
-    Serbian   -> "Улаз није валидан број."
-    Norwegian -> "Oppføringen er ikke et gyldig nummer."
-    Italian   -> "Non è un numero valido."
-    French    -> "La valeur entrée n'est pas un nombre valide."
-    Russian   -> "Введенные данные -- не валидное число."
-    _         -> "Input isn't a valid number."
+    Japanese   -> "入力は数字ではない。"
+    Croatian   -> "Unos ne predstavlja broj."
+    German     -> "Eingabe ist keine gültige Zahl."
+    Serbian    -> "Улаз није валидан број."
+    Norwegian  -> "Oppføringen er ikke et gyldig nummer."
+    Italian    -> "Non è un numero valido."
+    Portuguese -> "Valor entrado não é um número válido."
+    French     -> "La valeur entrée n'est pas un nombre valide."
+    Russian    -> "Введенные данные -- не валидное число."
+    _          -> "Input isn't a valid number."
 
 -- NEEDS TRANSLATION
 cleanStates_2 :: Int -> Language -> String
 cleanStates_2 n' = let n = bt (show n') in \case
-    Japanese  -> n ++ "個のパッケージ状態記録だけが残される。その他削除？"
-    Croatian  -> n ++ " stanja paketa će biti zadržano. Ukloniti ostatak?"
-    German    -> n ++ " Paketzustände werden behalten. Den Rest entfernen?"
-    Serbian   -> n ++ " стања пакета ће бити сачувано. Уклонити остатак?"
-    Norwegian -> n ++ " pakketilstander vil bli beholdt. Vil du fjerne resten?"
-    Italian   -> n ++ " lo stato dei pacchetti sarà mantenuto. Rimuovere i rimanenti?"
-    French    -> n ++ " états des paquets vont être conservés. Supprimer le reste ?"
-    Russian   -> n ++ " -- столько состояний пакетов будут оставлены. Удалить оставшиеся?"
-    _         -> n ++ " package states will be kept. Remove the rest?"
+    Japanese   -> n ++ "個のパッケージ状態記録だけが残される。その他削除？"
+    Croatian   -> n ++ " stanja paketa će biti zadržano. Ukloniti ostatak?"
+    German     -> n ++ " Paketzustände werden behalten. Den Rest entfernen?"
+    Serbian    -> n ++ " стања пакета ће бити сачувано. Уклонити остатак?"
+    Norwegian  -> n ++ " pakketilstander vil bli beholdt. Vil du fjerne resten?"
+    Italian    -> n ++ " lo stato dei pacchetti sarà mantenuto. Rimuovere i rimanenti?"
+    Portuguese -> n ++ " estados de pacotes serão mantidos. Remover o resto?"
+    French     -> n ++ " états des paquets vont être conservés. Supprimer le reste ?"
+    Russian    -> n ++ " -- столько состояний пакетов будут оставлены. Удалить оставшиеся?"
+    _          -> n ++ " package states will be kept. Remove the rest?"
 
 -- NEEDS TRANSLATION
 cleanStates_3 :: Language -> String
 cleanStates_3 = \case
-    Japanese  -> "何も削除しないで終了。"
-    Croatian  -> "Nijedno stanje paketa nije uklonjeno."
-    German    -> "Keine Paketzustände wurden entfernt."
-    Serbian   -> "Ниједно стање пакета није уклоњено."
-    Norwegian -> "Ingen pakketilstander ble fjernet."
-    Italian   -> "Nessuno stato di pacchetto verrà rimosso."
-    French    -> "Aucun état des paquets n'a été supprimé."
-    Russian   -> "Состояния пакетов отались нетронутыми."
-    _         -> "No package states were removed."
+    Japanese   -> "何も削除しないで終了。"
+    Croatian   -> "Nijedno stanje paketa nije uklonjeno."
+    German     -> "Keine Paketzustände wurden entfernt."
+    Serbian    -> "Ниједно стање пакета није уклоњено."
+    Norwegian  -> "Ingen pakketilstander ble fjernet."
+    Italian    -> "Nessuno stato di pacchetto verrà rimosso."
+    Portuguese -> "Nenhum estado de pacote será removido."
+    French     -> "Aucun état des paquets n'a été supprimé."
+    Russian    -> "Состояния пакетов отались нетронутыми."
+    _          -> "No package states were removed."
 
 ----------------------------
 -- Aura/Commands/C functions
@@ -1123,25 +1133,27 @@ cleanCache_6 = \case
 -- NEEDS TRANSLATION
 cleanNotSaved_1 :: Language -> String
 cleanNotSaved_1 = \case
-    Japanese  -> "不要パッケージファイルを確認・・・"
-    Croatian  -> "Pronalazim nepotrebne datoteke paketa..."
-    German    -> "Bestimme nicht benötigte Paketdateien..."
-    Norwegian -> "Finner unødige pakkefiler..."
-    Italian   -> "Determino i pacchetti non più necessari..."
-    French    -> "Détermination des fichiers de paquet inutiles…"
-    Russian   -> "Вычисляются ненужные файлы пакетов..."
-    _         -> "Determining unneeded package files..."
+    Japanese   -> "不要パッケージファイルを確認・・・"
+    Croatian   -> "Pronalazim nepotrebne datoteke paketa..."
+    German     -> "Bestimme nicht benötigte Paketdateien..."
+    Norwegian  -> "Finner unødige pakkefiler..."
+    Italian    -> "Determino i pacchetti non più necessari..."
+    Portuguese -> "Determinando arquivos inúteis nos pacotes ..."
+    French     -> "Détermination des fichiers de paquet inutiles…"
+    Russian    -> "Вычисляются ненужные файлы пакетов..."
+    _          -> "Determining unneeded package files..."
 
 cleanNotSaved_2 :: Int -> Language -> String
 cleanNotSaved_2 s' = let s = cyan (show s') in \case
-    Japanese  -> "「" ++ s ++ "」の不要パッケージファイルあり。削除？"
-    Croatian  -> s ++ " nepotrebnih datoteka pronađeno. Obrisati?"
-    German    -> s ++ " nicht benötigte Paketdateien gefunden. Löschen?"
-    Norwegian -> s ++ " unødige pakkefiler funnet. Vil du slette?"
-    Italian   -> s ++ " pacchetti non necessari trovati. Cancellarli?"
-    French    -> s ++ " paquets inutiles trouvés. Les supprimer ?"
-    Russian   -> s ++ " -- столько ненужных пакетных файлов обнаружено. Удалить?"
-    _         -> s ++ " unneeded package files found. Delete?"
+    Japanese   -> "「" ++ s ++ "」の不要パッケージファイルあり。削除？"
+    Croatian   -> s ++ " nepotrebnih datoteka pronađeno. Obrisati?"
+    German     -> s ++ " nicht benötigte Paketdateien gefunden. Löschen?"
+    Norwegian  -> s ++ " unødige pakkefiler funnet. Vil du slette?"
+    Italian    -> s ++ " pacchetti non necessari trovati. Cancellarli?"
+    Portuguese -> s ++ " pacotes inúteis encontrados. Remover?"
+    French     -> s ++ " paquets inutiles trouvés. Les supprimer ?"
+    Russian    -> s ++ " -- столько ненужных пакетных файлов обнаружено. Удалить?"
+    _          -> s ++ " unneeded package files found. Delete?"
 
 ----------------------------
 -- Aura/Commands/L functions
@@ -1184,25 +1196,27 @@ reportNotInLog_1 = \case
 -- NEEDS TRANSLATION
 cleanABSTree_1 :: Language -> String
 cleanABSTree_1 = \case
-    Japanese  -> "ABS Treeの中身を削除？"
-    Croatian  -> "Obrisati cijelo ABS stablo?"
-    German    -> "Den gesamten ABS Baum löschen?"
-    Norwegian -> "Slett hele ABS-treet?"
-    Italian   -> "Cancellare l'intero albero ABS?"
-    French    -> "Supprimer la totalité de l'arbre ABS ?"
-    Russian   -> "Удалить дерево ABS полностью?"
-    _         -> "Delete the entire ABS Tree?"
+    Japanese   -> "ABS Treeの中身を削除？"
+    Croatian   -> "Obrisati cijelo ABS stablo?"
+    German     -> "Den gesamten ABS Baum löschen?"
+    Norwegian  -> "Slett hele ABS-treet?"
+    Italian    -> "Cancellare l'intero albero ABS?"
+    Portuguese -> "Remover a árvore ABS inteira?"
+    French     -> "Supprimer la totalité de l'arbre ABS ?"
+    Russian    -> "Удалить дерево ABS полностью?"
+    _          -> "Delete the entire ABS Tree?"
 
 cleanABSTree_2 :: Language -> String
 cleanABSTree_2 = \case
-    Japanese  -> "ABS Treeの中身を削除中・・・"
-    Croatian  -> "Brišem ABS stablo..."
-    German    -> "Lösche ABS Baum..."
-    Norwegian -> "Renser ABS-treet..."
-    Italian   -> "Ripulisco l'abero ABS..."
-    French    -> "Suppression de l'arbre ABS…"
-    Russian   -> "Удаляю дерево ABS..."
-    _         -> "Clearing out ABS Tree..."
+    Japanese   -> "ABS Treeの中身を削除中・・・"
+    Croatian   -> "Brišem ABS stablo..."
+    German     -> "Lösche ABS Baum..."
+    Norwegian  -> "Renser ABS-treet..."
+    Italian    -> "Ripulisco l'abero ABS..."
+    Portuguese -> "Removendo a árvore ABS..."
+    French     -> "Suppression de l'arbre ABS…"
+    Russian    -> "Удаляю дерево ABS..."
+    _          -> "Clearing out ABS Tree..."
 
 ----------------------
 -- Aura/Flags functions
@@ -1257,24 +1271,26 @@ aurSy lang = green $ case lang of
 
 absSy :: Language -> String
 absSy lang = magenta $ case lang of
-    Croatian  -> "Izvršava operacije sa ABS stablom.\n" ++ "Uobičajena (default) radnja je ručna izgradnja iz ABS stabla ([M]anual)."
-    German    -> "Führe Aktionen aus die den ABS Baum betreffen.\n" ++ "Standardaktion baut [M]anuell aus ABS."
-    Norwegian -> "Utfør handlinger som involverer ABS-treet.\n" ++ "Standard-handling bygger [M]anuelt fra ABS."
-    French    -> "Effectue une action impliquant l'arbre ABS.\n" ++ "Par défaut, installe [M]anuellement depuis ABS."
-    _         -> "Perform actions involving the ABS tree.\n" ++ "Default action [M]anually builds from ABS."
+    Croatian   -> "Izvršava operacije sa ABS stablom.\n" ++ "Uobičajena (default) radnja je ručna izgradnja iz ABS stabla ([M]anual)."
+    German     -> "Führe Aktionen aus die den ABS Baum betreffen.\n" ++ "Standardaktion baut [M]anuell aus ABS."
+    Norwegian  -> "Utfør handlinger som involverer ABS-treet.\n" ++ "Standard-handling bygger [M]anuelt fra ABS."
+    Portuguese -> "Performa alçies envolvendo a árvore ABS.\n" ++ "Ação padrão [M]anualmente compila da ABS."
+    French     -> "Effectue une action impliquant l'arbre ABS.\n" ++ "Par défaut, installe [M]anuellement depuis ABS."
+    _          -> "Perform actions involving the ABS tree.\n" ++ "Default action [M]anually builds from ABS."
 
 -- NEEDS TRANSLATION
 saveS :: Language -> String
 saveS lang = yellow $ case lang of
-    Japanese  -> "パッケージの設置状態に関する処理\n" ++ "デフォルトでインストール状態を保存する。"
-    Croatian  -> "Upravlja spremanjem i vraćanjem globalnog stanja paketa.\n" ++ "Uobičajena (default) radnja je spremanje trenutnog stanja paketa."
-    German    -> "Verwalte das [S]peichern und Wiederherstellen des globalen Paketzustände.\n" ++ "Standardaktion sichert die Zustände."
-    Serbian   -> "Управља чувањем и враћањем глобалног стања пакета.\n" ++ "Уобичајена радња чува тренутно стање."
-    Norwegian -> "Administer lagring og gjenoppretting av den globale pakketilstanden.\n" ++ "Standard-handling lagrer denne tilstanden."
-    Italian   -> "Gestisco il [S]alvataggio e ripristino dello stato globale dei pacchetti.\n" ++ "Salva lo stato in maniera predefinita."
-    French    -> "Gestion de la [S]auvegarde et de la restauration de l'état global des paquets.\n" ++ "Par défaut, sauvegarde l'état actuel."
-    Russian   -> "Настроить [S]охранение и восстановление глобального состояние пакетов.\n" ++ "Действие по умолчанию сохраняет это состояние."
-    _         -> "Manage the [S]aving and restoring of the global package state.\n" ++ "Default action saves this state."
+    Japanese   -> "パッケージの設置状態に関する処理\n" ++ "デフォルトでインストール状態を保存する。"
+    Croatian   -> "Upravlja spremanjem i vraćanjem globalnog stanja paketa.\n" ++ "Uobičajena (default) radnja je spremanje trenutnog stanja paketa."
+    German     -> "Verwalte das [S]peichern und Wiederherstellen des globalen Paketzustände.\n" ++ "Standardaktion sichert die Zustände."
+    Serbian    -> "Управља чувањем и враћањем глобалног стања пакета.\n" ++ "Уобичајена радња чува тренутно стање."
+    Norwegian  -> "Administer lagring og gjenoppretting av den globale pakketilstanden.\n" ++ "Standard-handling lagrer denne tilstanden."
+    Italian    -> "Gestisco il [S]alvataggio e ripristino dello stato globale dei pacchetti.\n" ++ "Salva lo stato in maniera predefinita."
+    Portuguese -> "Genrencia o [S]alvamento e restauração do estado global de pacotes" ++ "Por padrão salva o estado atual."
+    French     -> "Gestion de la [S]auvegarde et de la restauration de l'état global des paquets.\n" ++ "Par défaut, sauvegarde l'état actuel."
+    Russian    -> "Настроить [S]охранение и восстановление глобального состояние пакетов.\n" ++ "Действие по умолчанию сохраняет это состояние."
+    _          -> "Manage the [S]aving and restoring of the global package state.\n" ++ "Default action saves this state."
 
 downG :: Language -> String
 downG lang = red $ case lang of
@@ -1330,15 +1346,16 @@ orpha lang = blue $ case lang of
 -- NEEDS TRANSLATION
 getAURPkgInfo_1 :: Language -> String
 getAURPkgInfo_1 = \case
-    Japanese  -> "AURのAPIに繋げなかった。ネット接続状態を確認して下さい。"
-    Croatian  -> "Pristup AUR-u nije uspio. Provjerite svoju vezu."
-    German    -> "AUR API Suche fehlgeschlagen. Bitte überprüfen Sie Ihre Verbindung."
-    Serbian   -> "Приступ AUR-у није успео. Проверите вашу везу."
-    Norwegian -> "AUR API-oppslag feilet. Vennligst sjekk tilkoblingen din."
-    Italian   -> "connessione ad AUR API fallita. Controllare la propria connessione."
-    French    -> "La recherche dans l'API AUR a échouée. Veuillez vérifiez votre connexion."
-    Russian   -> "Запрос к AUR API не удался. Пожалуйста, проверьте ваше соединение."
-    _         -> "AUR API lookup failed. Please check your connection."
+    Japanese   -> "AURのAPIに繋げなかった。ネット接続状態を確認して下さい。"
+    Croatian   -> "Pristup AUR-u nije uspio. Provjerite svoju vezu."
+    German     -> "AUR API Suche fehlgeschlagen. Bitte überprüfen Sie Ihre Verbindung."
+    Serbian    -> "Приступ AUR-у није успео. Проверите вашу везу."
+    Norwegian  -> "AUR API-oppslag feilet. Vennligst sjekk tilkoblingen din."
+    Italian    -> "connessione ad AUR API fallita. Controllare la propria connessione."
+    Portuguese -> "Falha buscando na API AUR. Por favor, verifique a conexão."
+    French     -> "La recherche dans l'API AUR a échouée. Veuillez vérifiez votre connexion."
+    Russian    -> "Запрос к AUR API не удался. Пожалуйста, проверьте ваше соединение."
+    _          -> "AUR API lookup failed. Please check your connection."
 
 -- `Maintainer` value NEEDS UPDATING!
 infoFields :: Language -> [String]
@@ -1403,81 +1420,90 @@ orphanedMsg Nothing lang = red $ case lang of
 -- NEEDS TRANSLATION
 absSync_1 :: Language -> String
 absSync_1 = \case
-    Japanese  -> "ローカルABS Treeを同期？"
-    Croatian  -> "Sinkronizirati lokalno ABS stablo?"
-    German    -> "Lokalen ABS Baum synchronisieren?"
-    Norwegian -> "Synkroniser det lokale ABS-treet?"
-    Italian   -> "Sincronizzare l'albero ABS locale?"
-    French    -> "Synchroniser l'arbre ABS local ?"
-    Russian   -> "Синхронизировать локальное дерево ABS?"
-    _         -> "Sync the local ABS Tree?"
+    Japanese   -> "ローカルABS Treeを同期？"
+    Croatian   -> "Sinkronizirati lokalno ABS stablo?"
+    German     -> "Lokalen ABS Baum synchronisieren?"
+    Norwegian  -> "Synkroniser det lokale ABS-treet?"
+    Italian    -> "Sincronizzare l'albero ABS locale?"
+    Portuguese -> "Sincronizar a árvore ABS local ?"
+    French     -> "Synchroniser l'arbre ABS local ?"
+    Russian    -> "Синхронизировать локальное дерево ABS?"
+    _          -> "Sync the local ABS Tree?"
 
 absSync_2 :: Language -> String
 absSync_2 = \case
-    Japanese  -> "ローカルABS Treeを同期中・・・"
-    Croatian  -> "Sinkroniziram lokalno ABS stablo..."
-    German    -> "Synchronisiere lokalen ABS Baum..."
-    Norwegian -> "Synkroniserer det lokale ABS-treet..."
-    Italian   -> "Sincronizzo l'albero ABS locale..."
-    French    -> "Synchronisation de l'arbre ABS local…"
-    Russian   -> "Синхронизируется локальное дерево ABS..."
-    _         -> "Syncing local ABS Tree..."
+    Japanese   -> "ローカルABS Treeを同期中・・・"
+    Croatian   -> "Sinkroniziram lokalno ABS stablo..."
+    German     -> "Synchronisiere lokalen ABS Baum..."
+    Norwegian  -> "Synkroniserer det lokale ABS-treet..."
+    Italian    -> "Sincronizzo l'albero ABS locale..."
+    Portuguese -> "Sincronizano a árvore ABS local..."
+    French     -> "Synchronisation de l'arbre ABS local…"
+    Russian    -> "Синхронизируется локальное дерево ABS..."
+    _          -> "Syncing local ABS Tree..."
 
 singleSync_1 :: String -> Language -> String
 singleSync_1 p' = let p = bt p' in \case
-    Japanese  -> p ++ "をABS Treeに同期・・・"
-    Croatian  -> "Sinkroniziram " ++ p ++ " u lokalnom stablu..."
-    German    -> "Synchronisiere " ++ p ++ " in den lokalen ABS Baum..."
-    Norwegian -> "Synkroniserer " ++ p ++ " til det lokale ABS-treet..."
-    Italian   -> "Sincronizzo " ++ p ++ " nell'albero ABS locale..."
-    French    -> "Synchronisation de " ++ p ++ " dans l'arbre ABS local…"
-    Russian   -> p ++ " синхронизируется с локальным дерево ABS..."
-    _         -> "Syncing " ++ p ++ " to the local ABS Tree..."
+    Japanese   -> p ++ "をABS Treeに同期・・・"
+    Croatian   -> "Sinkroniziram " ++ p ++ " u lokalnom stablu..."
+    German     -> "Synchronisiere " ++ p ++ " in den lokalen ABS Baum..."
+    Norwegian  -> "Synkroniserer " ++ p ++ " til det lokale ABS-treet..."
+    Italian    -> "Sincronizzo " ++ p ++ " nell'albero ABS locale..."
+    Portuguese -> "Sincronizando " ++ p ++ " para a árvore ABS local..."
+    French     -> "Synchronisation de " ++ p ++ " dans l'arbre ABS local…"
+    Russian    -> p ++ " синхронизируется с локальным дерево ABS..."
+    _          -> "Syncing " ++ p ++ " to the local ABS Tree..."
 
 absInfoFields :: Language -> [String]
 absInfoFields lang =
   case lang of
-    Croatian  -> [ "Repozitorij","Ime","Verzija","Zavisnosti","Make Zavisnosti","Opis" ]
-    German    -> [ "Quelle","Name","Version","Hängt ab von","Make Abh.","Beschreibung"]
-    Norwegian -> [ "Depot","Navn","Versjon","Er avhengig av","Make Deps","Beskrivelse"]
-    Italian   -> [ "Repository","Nome","Versione","Dipende da","Make Deps","Descrizione" ]
-    French    -> [ "Dépôt","Nom","Version","Dépendances","Dépendances de compilation","Description" ]
-    Russian   -> [ "Репозиторий","Название","Версия","Зависит от","Зависимости Make","Описание" ]
-    _         -> [ "Repository","Name","Version","Depends On","Make Deps","Description" ]
+    Croatian   -> [ "Repozitorij","Ime","Verzija","Zavisnosti","Make Zavisnosti","Opis" ]
+    German     -> [ "Quelle","Name","Version","Hängt ab von","Make Abh.","Beschreibung"]
+    Norwegian  -> [ "Depot","Navn","Versjon","Er avhengig av","Make Deps","Beskrivelse"]
+    Italian    -> [ "Repository","Nome","Versione","Dipende da","Make Deps","Descrizione" ]
+    Portuguese -> [ "Repositório","Nome","Versão","Dependências","Depenências de compilação","Descrição" ]
+    French     -> [ "Dépôt","Nom","Version","Dépendances","Dépendances de compilation","Description" ]
+    Russian    -> [ "Репозиторий","Название","Версия","Зависит от","Зависимости Make","Описание" ]
+    _          -> [ "Repository","Name","Version","Depends On","Make Deps","Description" ]
 
 repository_1 :: String -> Language -> String
 repository_1 p lang =
   case lang of
-    Japanese  -> p ++ "はどのリポジトリにもない。"
-    Croatian  -> p ++ "nije paket u repozitoriju."
-    German    -> p ++ " ist kein Paket in irgendeiner Quelle."
-    Norwegian -> p ++ " er ikke en pakke i noe depot."
-    Italian   -> p ++ " non è un pacchetto di nessun repository."
-    French    -> p ++ " n'est pas un paquet dans aucun des dépôts."
-    Russian   -> "Пакет " ++ p ++ " не найден ни в одном репозитории."
-    _         -> p ++ " is not a package in any repository."
+    Japanese   -> p ++ "はどのリポジトリにもない。"
+    Croatian   -> p ++ "nije paket u repozitoriju."
+    German     -> p ++ " ist kein Paket in irgendeiner Quelle."
+    Norwegian  -> p ++ " er ikke en pakke i noe depot."
+    Italian    -> p ++ " non è un pacchetto di nessun repository."
+    Portuguese -> p ++ " não é um pacote em nenhum do repositório."
+    French     -> p ++ " n'est pas un paquet dans aucun des dépôts."
+    Russian    -> "Пакет " ++ p ++ " не найден ни в одном репозитории."
+    _          -> p ++ " is not a package in any repository."
 
 pkgbuildKeyMissing :: String -> Language -> String
 pkgbuildKeyMissing key lang =
   case lang of
-    Croatian  -> "Nemoguće izvući vrijednost za " ++ key ++ " iz PKGBUILD-a."
-    German    -> "Kann Schlüssel " ++ key ++ " nicht aus PKGBUILD parsen."
-    Norwegian -> "Forstår ikke " ++ key ++ " fra PKGBUILD."
-    Italian   -> "Inpossibile elaborare la chiave " ++ key ++ " dal PKGBUILD."
-    French    -> "Impossible d'analyser la clef " ++ key ++ " depuis le PKGBUILD."
-    Russian   -> "Не получилось разобрать ключ " ++ key ++ " из PKGBUILD."
-    _         -> "Unable to parse key " ++ key ++ " from PKGBUILD."
+    Croatian   -> "Nemoguće izvući vrijednost za " ++ key ++ " iz PKGBUILD-a."
+    German     -> "Kann Schlüssel " ++ key ++ " nicht aus PKGBUILD parsen."
+    Norwegian  -> "Forstår ikke " ++ key ++ " fra PKGBUILD."
+    Italian    -> "Inpossibile elaborare la chiave " ++ key ++ " dal PKGBUILD."
+    Portuguese -> "Impossível parsear " ++ key ++ " no PKGBUILD."
+    French     -> "Impossible d'analyser la clef " ++ key ++ " depuis le PKGBUILD."
+    Russian    -> "Не получилось разобрать ключ " ++ key ++ " из PKGBUILD."
+    _          -> "Unable to parse key " ++ key ++ " from PKGBUILD."
 
 missingDescription :: Language -> String
 missingDescription lang = 
   case lang of 
-    Croatian  -> "Nema opisa."
-    German    -> "Keine Beschreibung."
-    Norwegian -> "Ingen beskrivelse."
-    Italian   -> "Nessuna Descrizione."
-    French    -> "Aucune description."
-    Russian   -> "Без описания."
-    _         -> "No description."
+    Croatian   -> "Nema opisa."
+    German     -> "Keine Beschreibung."
+    Norwegian  -> "Ingen beskrivelse."
+    Italian    -> "Nessuna Descrizione."
+    Portuguese -> "Descrição faltante."
+    French     -> "Aucune description."
+    Russian    -> "Без описания."
+    _          -> "No description."
+
+
 
 -----------------------
 -- Aura/State functions
@@ -1486,43 +1512,46 @@ missingDescription lang =
 saveState_1 :: Language -> String
 saveState_1 lang =
   case lang of
-    Japanese  -> "現在パッケージ状態保存完了。"
-    Croatian  -> "Stanje paketa spremljeno."
-    German    -> "Paketzustände gesichert."
-    Serbian   -> "Сачувано стање пакета."
-    Norwegian -> "Lagret pakketilstand."
-    Italian   -> "Stato del pacchetto salvato."
-    French    -> "État des paquets sauvegardé."
-    Russian   -> "Состояние пакетов сохранено."
-    _         -> "Saved package state."
+    Japanese   -> "現在パッケージ状態保存完了。"
+    Croatian   -> "Stanje paketa spremljeno."
+    German     -> "Paketzustände gesichert."
+    Serbian    -> "Сачувано стање пакета."
+    Norwegian  -> "Lagret pakketilstand."
+    Italian    -> "Stato del pacchetto salvato."
+    Portuguese -> "Estados de pacote salvos."
+    French     -> "État des paquets sauvegardé."
+    Russian    -> "Состояние пакетов сохранено."
+    _          -> "Saved package state."
 
 -- NEEDS TRANSLATION
 restoreState_1 :: Language -> String
 restoreState_1 lang =
   case lang of
-    Japanese  -> "対象バージョンがないパッケージ："
-    Croatian  -> "Tražene stare verzije nisu dostupne za:"
-    German    -> "Gewünschte Downgradeversionen nicht Verfügbar für:"
-    Serbian   -> "Захтеване старе верзије нису доступне за:"
-    Norwegian -> "De spesifiserte nedgraderingsversjonene er ikke tilgjengelig for:"
-    Italian   -> "Richiesta di retrocessione di versione non disponibile per:"
-    French    -> "Version antérieure requise non disponible pour :"
-    Russian   -> "Запрошенные версии для отката не доступны для:"
-    _         -> "Requested downgrade versions not available for:"
+    Japanese   -> "対象バージョンがないパッケージ："
+    Croatian   -> "Tražene stare verzije nisu dostupne za:"
+    German     -> "Gewünschte Downgradeversionen nicht Verfügbar für:"
+    Serbian    -> "Захтеване старе верзије нису доступне за:"
+    Norwegian  -> "De spesifiserte nedgraderingsversjonene er ikke tilgjengelig for:"
+    Italian    -> "Richiesta di retrocessione di versione non disponibile per:"
+    Portuguese -> "Versões anteriores requisitadas não disponívels para:"
+    French     -> "Version antérieure requise non disponible pour :"
+    Russian    -> "Запрошенные версии для отката не доступны для:"
+    _          -> "Requested downgrade versions not available for:"
 
 -- NEEDS TRANSLATION
 reinstallAndRemove_1 :: Language -> String
 reinstallAndRemove_1 lang =
   case lang of
-    Japanese  -> "パッケージを変更する必要ない。"
-    Croatian  -> "Nema paketa kojima su potrebne izmjene."
-    German    -> "Keine Pakete brauchen Änderungen."
-    Serbian   -> "Ниједан пакет не захтева измене."
-    Norwegian -> "Ingen pakker trenger forandring."
-    Italian   -> "Nessun pacchetto necessita cambiamenti."
-    French    -> "Aucun paquet n'a besoin de changement."
-    Russian   -> "Пакеты не нуждаются в изменениях."
-    _         -> "No packages need changing."
+    Japanese   -> "パッケージを変更する必要ない。"
+    Croatian   -> "Nema paketa kojima su potrebne izmjene."
+    German     -> "Keine Pakete brauchen Änderungen."
+    Serbian    -> "Ниједан пакет не захтева измене."
+    Norwegian  -> "Ingen pakker trenger forandring."
+    Italian    -> "Nessun pacchetto necessita cambiamenti."
+    Portuguese -> "Nenhum pacote requer alteração."
+    French     -> "Aucun paquet n'a besoin de changement."
+    Russian    -> "Пакеты не нуждаются в изменениях."
+    _          -> "No packages need changing."
 
 --------------------------------------
 -- Aura/Settings/BadPackages functions
@@ -1531,29 +1560,31 @@ reinstallAndRemove_1 lang =
 circDep_1 :: String -> Language -> String
 circDep_1 p' lang =
   let p = bt p' in case lang of
-    Japanese  -> p ++ "と互いに従属している。"
-    Croatian  -> "Ima kružnu zavisnost sa " ++ p ++ "."
-    German    -> "Hat eine zirkuläre Abhängigkeit mit " ++ p ++ "."
-    Serbian   -> "Има кружну зависност са " ++ p ++ "."
-    Norwegian -> "Har en sirkulær avhengighet med " ++ p ++ "."
-    Italian   -> "E' una dipendenza circolare di " ++ p ++ "."
-    French    -> "A une dépendance circulaire avec " ++ p ++ "."
-    Russian   -> "Имеет круговую зависимость с " ++ p ++ "."
-    _         -> "Has a circular dependency with " ++ p ++ "."
+    Japanese   -> p ++ "と互いに従属している。"
+    Croatian   -> "Ima kružnu zavisnost sa " ++ p ++ "."
+    German     -> "Hat eine zirkuläre Abhängigkeit mit " ++ p ++ "."
+    Serbian    -> "Има кружну зависност са " ++ p ++ "."
+    Norwegian  -> "Har en sirkulær avhengighet med " ++ p ++ "."
+    Italian    -> "E' una dipendenza circolare di " ++ p ++ "."
+    Portuguese -> "Há uma dependência circular em " ++ p ++ "."
+    French     -> "A une dépendance circulaire avec " ++ p ++ "."
+    Russian    -> "Имеет круговую зависимость с " ++ p ++ "."
+    _          -> "Has a circular dependency with " ++ p ++ "."
 
 -- NEEDS TRANSLATION
 bashisms_1 :: Language -> String
 bashisms_1 lang = 
   case lang of
-    Japanese  -> "PKGBUILDのBashコードが複雑すぎる。"
-    Croatian  -> "Previše „bash-izama“ u PKGBUILD-u."
-    German    -> "Zu viele „bashismen“ im PKGBUILD."
-    Serbian   -> "Превише „bash-изама“ у PKGBUILD-у."
-    Norwegian -> "For mange „bashismer“ i PKGBUILD."
-    Italian   -> "Troppo 'bashisms' nel PKGBUILD."
-    French    -> "Trop de « bashisms » dans le PKGBUILD."
-    Russian   -> "В PKGBUILD слишком много башизмов."
-    _         -> "Too many bashisms in PKGBUILD."
+    Japanese   -> "PKGBUILDのBashコードが複雑すぎる。"
+    Croatian   -> "Previše „bash-izama“ u PKGBUILD-u."
+    German     -> "Zu viele „bashismen“ im PKGBUILD."
+    Serbian    -> "Превише „bash-изама“ у PKGBUILD-у."
+    Norwegian  -> "For mange „bashismer“ i PKGBUILD."
+    Italian    -> "Troppo 'bashisms' nel PKGBUILD."
+    Portuguese -> "Excesso de `bashismo` no PKGBUILD."
+    French     -> "Trop de « bashisms » dans le PKGBUILD."
+    Russian    -> "В PKGBUILD слишком много башизмов."
+    _          -> "Too many bashisms in PKGBUILD."
 
 ------------------------
 -- Aura/Pacman functions
@@ -1562,15 +1593,16 @@ bashisms_1 lang =
 pacmanFailure_1 :: Language -> String
 pacmanFailure_1 lang =
   case lang of
-    Japanese  -> "入力を確認して下さい。"
-    Croatian  -> "Molim vas, provjerite svoj unos."
-    German    -> "Bitte überprüfen Sie Ihre Eingabe."
-    Serbian   -> "Молим Вас, проверите ваш унос."
-    Norwegian -> "Vennligst sjekk din oppføring."
-    Italian   -> "Controllare il proprio input."
-    French    -> "Merci de vérifier les donnés entrées."
-    Russian   -> "Пожалуйста, проверьте ваши введенные данные."
-    _         -> "Please check your input."
+    Japanese   -> "入力を確認して下さい。"
+    Croatian   -> "Molim vas, provjerite svoj unos."
+    German     -> "Bitte überprüfen Sie Ihre Eingabe."
+    Serbian    -> "Молим Вас, проверите ваш унос."
+    Norwegian  -> "Vennligst sjekk din oppføring."
+    Italian    -> "Controllare il proprio input."
+    Portuguese -> "Por favor, verifique os dados entrados."
+    French     -> "Merci de vérifier les donnés entrées."
+    Russian    -> "Пожалуйста, проверьте ваши введенные данные."
+    _          -> "Please check your input."
 
 ----------------------------------
 -- Aura/Pkgbuild/Editing functions
@@ -1595,11 +1627,12 @@ hotEdit_1 p' lang =
 customizepkg_1 :: Language -> String
 customizepkg_1 lang = 
   let customizepkg = bt "customizepkg" in case lang of
-    Japanese  -> customizepkg ++ "はインストールされていない。"
-    Croatian  -> customizepkg ++ "nije instaliran."
-    German    -> customizepkg ++ "ist nicht installiert."
-    Norwegian -> customizepkg ++ "er ikke installert."
-    Italian   -> customizepkg ++ "non è installato."
-    French    -> customizepkg ++ "n'est pas installé."
-    Russian   -> customizepkg ++ "не установлен."
-    _         -> customizepkg ++ "isn't installed."
+    Japanese   -> customizepkg ++ "はインストールされていない。"
+    Croatian   -> customizepkg ++ "nije instaliran."
+    German     -> customizepkg ++ "ist nicht installiert."
+    Norwegian  -> customizepkg ++ "er ikke installert."
+    Italian    -> customizepkg ++ "non è installato."
+    Portuguese -> customizepkg ++ "não está instalado."
+    French     -> customizepkg ++ "n'est pas installé."
+    Russian    -> customizepkg ++ "не установлен."
+    _          -> customizepkg ++ "isn't installed."
