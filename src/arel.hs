@@ -14,7 +14,7 @@ import Shell
 ---
 
 sourceDir :: String
-sourceDir = "/home/colin/code/haskell/aura/"
+sourceDir = "/home/colin/code/haskell/aura/src"
 
 main :: IO ()
 main = do
