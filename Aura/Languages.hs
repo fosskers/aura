@@ -1423,7 +1423,7 @@ orphanedMsg Nothing = red . \case
     Croatian  -> "Nema roditelja!"
     German    -> "Verwaist!"
     Norwegian -> "Foreldreløs!"
-    Portuguese -> "Orfão"
+    Portuguese -> "Orfão!"
     French    -> "Abandonné !"
     _         -> "Orphaned!"
 
