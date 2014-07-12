@@ -86,8 +86,10 @@ executable aura
 
   build-depends:       mtl,
                        json,
+                       lens,
                        time,
                        unix,
+                       wreq,
                        split,
                        array,
                        parsec,
@@ -98,6 +100,5 @@ executable aura
                        containers,
                        bytestring,
                        transformers,
-                       http-conduit,
                        regex-pcre-builtin,
                        base >= 4.6 && < 5
