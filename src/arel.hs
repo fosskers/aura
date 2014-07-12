@@ -13,12 +13,12 @@ import Shell
 
 ---
 
-sourceDir :: String
-sourceDir = "/home/colin/code/haskell/aura/src"
+projectDir :: String
+projectDir = "/home/colin/code/haskell/aura/"
 
 main :: IO ()
 main = do
-  cd sourceDir
+  cd projectDir
   result <- shellCmd "cabal" ["check"]
   case result of
     ExitFailure _ -> putStrLn "arel: cabal check failed"
@@ -30,7 +30,7 @@ main = do
       putStrLn "Done."
 
 removeOldFiles :: IO ()
-removeOldFiles = filter isPkgFile `liftM` ls sourceDir >>= mapM_ rm
+removeOldFiles = filter isPkgFile `liftM` ls projectDir >>= mapM_ rm
 
 isPkgFile :: String -> Bool
 isPkgFile f = f =~ "^aura-"
@@ -39,13 +39,13 @@ makeNewPkgFile :: IO ()
 makeNewPkgFile = shellCmd "cabal" ["sdist"] >> inDir "dist/" (do
     pkgs <- ls "."
     let latest = last . sortPkgFiles . filter isPkgFile $ pkgs
-    cp latest $ sourceDir </> latest)
+    cp latest $ projectDir </> latest)
 
 sortPkgFiles :: [String] -> [String]
 sortPkgFiles [] = []
 sortPkgFiles fs = sortBy verNums fs
     where verNums a b = compare (ver a) (ver b)
-          ver f = comparableVer (f =~ "-[0-9.]+.tar" :: String)
+          ver f = comparableVer (f =~ "-[0-9.]+tar" :: String)
 
 alterPKGBUILD :: IO ()
 alterPKGBUILD = do
