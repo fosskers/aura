@@ -62,11 +62,7 @@ makeBuildable name pb = Buildable
     , pkgbuildOf   = pb
     , isExplicit   = False
     , buildScripts = f }
-    where f fp = do  -- This is ugly.
-            tball <- sourceTarball fp name
-            case tball of
-              Nothing -> return Nothing
-              Just tb -> Just <$> decompress tb
+    where f fp = sourceTarball fp name >>= Traversable.mapM decompress
 
 isAurPackage :: String -> Aura Bool
 isAurPackage name = isJust <$> pkgbuild name
