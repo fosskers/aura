@@ -84,9 +84,10 @@ executable aura
                        Bash.Parser,
                        Bash.Simplify
 
-  build-depends:       mtl,
-                       json,
+  build-depends:       aur,
+                       mtl,
                        lens,
+                       text,
                        time,
                        unix,
                        wreq,

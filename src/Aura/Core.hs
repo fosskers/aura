@@ -81,7 +81,7 @@ data Buildable = Buildable
     , isExplicit   :: Bool
     -- | Fetch and extract the source code corresponding to the given package.
     , buildScripts :: FilePath     -- ^ Directory in which to place the scripts.
-                   -> IO FilePath  -- ^ Path to the extracted scripts.
+                   -> IO (Maybe FilePath)  -- ^ Path to the extracted scripts.
     }
 
 -- | A 'Repository' is a place where packages may be fetched from. Multiple
