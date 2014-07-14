@@ -29,6 +29,7 @@ module Aura.Packages.AUR
     , sourceTarball
     , aurInfo
     , aurSearch
+    , pkgUrl
     ) where
 
 import           Control.Applicative
@@ -74,14 +75,14 @@ isAurPackage name = isJust <$> pkgbuild name
 aurLink :: String
 aurLink = "https://aur.archlinux.org/packages/"
 
-pkgBaseUrl :: String -> String
-pkgBaseUrl pkg = aurLink </> take 2 pkg </> pkg
+pkgUrl :: String -> String
+pkgUrl pkg = aurLink </> take 2 pkg </> pkg
 
 ------------------
 -- SOURCE TARBALLS
 ------------------
 tarballUrl :: String -> String
-tarballUrl pkg = pkgBaseUrl pkg </> pkg ++ ".tar.gz"
+tarballUrl pkg = pkgUrl pkg </> pkg ++ ".tar.gz"
 
 sourceTarball :: FilePath            -- ^ Where to save the tarball.
               -> String              -- ^ Package name.
