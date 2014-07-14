@@ -583,6 +583,12 @@ reportIgnoredPackages_1 = \case
     Norwegian  -> "De følgende pakker vil bli ignorert:"
     _          -> "The following packages will be ignored:"
 
+-- NEEDS TRANSLATION
+reportUnneededPackages_1 :: Language -> String
+reportUnneededPackages_1 = \case
+    Japanese   -> "下記のパッケージは既にインストールされている："
+    _          -> "The following packages are already installed:"
+
 reportPkgsToInstall_1 :: Language -> String
 reportPkgsToInstall_1 = \case
     Japanese   -> "Pacmanの従属パッケージ："
