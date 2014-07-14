@@ -23,14 +23,12 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Internet
     ( urlContents
-    , urlEncodeVars
     , saveUrlContents ) where
 
 import qualified Data.ByteString.Lazy as L
 
 import Control.Applicative        ((<$>))
 import Control.Lens
-import Network.HTTP               (urlEncodeVars)
 import Network.Wreq
 import System.FilePath            (splitFileName, (</>))
 import System.IO                  (hClose, openFile, IOMode(WriteMode))

@@ -46,7 +46,6 @@ executable aura
                        Internet,
                        Utilities,
                        Data.Algorithm.Diff,
-                       Network.HTTP,
                        Aura.Bash,
                        Aura.Core,
                        Aura.Diff,
