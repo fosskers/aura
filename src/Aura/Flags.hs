@@ -26,26 +26,27 @@ module Aura.Flags
     , reconvertFlags
     , dualFlagMap
     , hijackedFlagMap
-    , suppressionStatus
-    , delMakeDepsStatus
+    , buildABSDepsStatus
     , confirmationStatus
-    , quietStatus
-    , hotEditStatus
-    , pbDiffStatus
-    , rebuildDevelStatus
     , customizepkgStatus
+    , delMakeDepsStatus
+    , hotEditStatus
+    , keepSourceStatus
+    , neededStatus
+    , noPowerPillStatus
+    , pbDiffStatus
+    , quietStatus
+    , rebuildDevelStatus
+    , sortSchemeStatus
+    , suppressionStatus
+    , truncationStatus
+    , dryRunStatus
     , notSettingsFlag
     , ignoredAuraPkgs
     , makepkgFlags
     , buildPath
     , buildUser
     , auraOperMsg
-    , noPowerPillStatus
-    , keepSourceStatus
-    , buildABSDepsStatus
-    , sortSchemeStatus
-    , truncationStatus
-    , dryRunStatus
     , Flag(..) ) where
 
 import System.Console.GetOpt
@@ -101,6 +102,7 @@ data Flag = ABSInstall
           | RestoreState
           | NoPowerPill
           | IgnoreArch
+          | Needed
           | Languages
           | Version
           | Help
@@ -183,7 +185,8 @@ pacmanOptions = map simpleOption
 -- Options that have functionality stretching across both Aura and Pacman.
 dualOptions :: [OptDescr Flag]
 dualOptions = map simpleOption
-              [ ( [], ["noconfirm"], NoConfirm ) ]
+              [ ( [], ["noconfirm"], NoConfirm )
+              , ( [], ["needed"], Needed ) ]
 
 languageOptions :: [OptDescr Flag]
 languageOptions = map simpleOption
@@ -218,7 +221,8 @@ hijackedFlagMap = [ (CacheBackup,"-b")
 -- These are flags which do the same thing in Aura or Pacman.
 dualFlagMap :: FlagMap
 dualFlagMap = [ (Quiet,"-q")
-              , (NoConfirm,"--noconfirm") ]
+              , (NoConfirm,"--noconfirm")
+              , (Needed,"--needed") ]
  
 -- Does the whole lot and filters out the garbage.
 reconvertFlags :: [Flag] -> FlagMap -> [String]
@@ -230,8 +234,8 @@ reconvertFlag flagMap f = fromMaybe "" $ f `lookup` flagMap
 
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
-                , DelMDeps,Customizepkg,Quiet,NoPowerPill,KeepSource,BuildABSDeps
-                , ABCSort, IgnoreArch, DryRun ]
+                , DelMDeps,Customizepkg,Quiet,NoPowerPill,KeepSource
+                , BuildABSDeps, ABCSort, IgnoreArch, DryRun, Needed ]
 
 -- Flags like `Ignore` and `BuildPath` have args, and thus can't be included
 -- in the `settingsFlags` list.
@@ -293,6 +297,9 @@ delMakeDepsStatus = fishOutFlag [(DelMDeps,True)] False
 
 confirmationStatus :: [Flag] -> Bool
 confirmationStatus = fishOutFlag [(NoConfirm,False)] True
+
+neededStatus :: [Flag] -> Bool
+neededStatus = fishOutFlag [(Needed,True)] False
 
 hotEditStatus :: [Flag] -> Bool
 hotEditStatus = fishOutFlag [(HotEdit,True)] False
