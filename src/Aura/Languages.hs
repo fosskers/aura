@@ -320,6 +320,12 @@ buildFail_6 = \case
     Russian    -> "Продолжить не смотря ни на что?"
     _          -> "Would you like to continue anyway?"
 
+-- NEEDS TRANSLATION
+buildFail_7 :: String -> Language -> String
+buildFail_7 (bt -> p) = \case
+    Japanese -> p ++ "の作成スクリプトを収得できなかった。"
+    _        -> "Failed to obtain build scripts for " ++ p ++ "."
+
 displayBuildErrors_1 :: Language -> String
 displayBuildErrors_1 = \case
     Japanese   -> "抑えていたmakepkgの出力を受け取る用意・・・"

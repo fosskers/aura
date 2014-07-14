@@ -101,7 +101,7 @@ executeOpts (flags,input,pacOpts) =
           []             -> trueRoot (sudo $ A.install pacOpts input)
           [Upgrade]      -> trueRoot (sudo $ A.upgradeAURPkgs pacOpts input)
           [Info]         -> A.aurPkgInfo input
-          [Search]       -> A.aurSearch input
+          [Search]       -> A.aurPkgSearch input
           [ViewDeps]     -> A.displayPkgDeps input
           [Download]     -> A.downloadTarballs input
           [GetPkgbuild]  -> A.displayPkgbuild input

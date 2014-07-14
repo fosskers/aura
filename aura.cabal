@@ -46,7 +46,6 @@ executable aura
                        Internet,
                        Utilities,
                        Data.Algorithm.Diff,
-                       Network.HTTP,
                        Aura.Bash,
                        Aura.Core,
                        Aura.Diff,
@@ -84,10 +83,13 @@ executable aura
                        Bash.Parser,
                        Bash.Simplify
 
-  build-depends:       mtl,
-                       json,
+  build-depends:       aur,
+                       mtl,
+                       lens,
+                       text,
                        time,
                        unix,
+                       wreq,
                        split,
                        array,
                        parsec,
@@ -98,6 +100,5 @@ executable aura
                        containers,
                        bytestring,
                        transformers,
-                       http-conduit,
                        regex-pcre-builtin,
                        base >= 4.6 && < 5

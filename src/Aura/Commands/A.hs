@@ -1,3 +1,6 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ViewPatterns #-}
+
 -- Handles all `-A` operations
 
 {-
@@ -25,33 +28,35 @@ module Aura.Commands.A
     ( install
     , upgradeAURPkgs
     , aurPkgInfo
-    , aurSearch
+    , aurPkgSearch
     , displayPkgDeps
     , downloadTarballs
     , displayPkgbuild ) where
 
-import Text.Regex.PCRE ((=~))
-import Data.Maybe      (fromJust)
-import Control.Monad
-import Data.Monoid
+import           Control.Monad
+import           Data.Maybe      (fromJust)
+import           Data.Monoid
 import qualified Data.Set as S (member, fromList)
+import qualified Data.Text as T
+import           Linux.Arch.Aur
+import           Text.Regex.PCRE ((=~))
 
 import           Aura.Install (InstallOptions(..))
 import qualified Aura.Install as I
 
-import Aura.Pkgbuild.Base
-import Aura.Settings.Base
-import Aura.Packages.ABS (absDepsRepo)
-import Aura.Packages.AUR
-import Aura.Colour.Text
-import Aura.Monad.Aura
-import Aura.Languages
-import Aura.Utils
-import Aura.Bash (namespace, Namespace)
-import Aura.Core
+import           Aura.Pkgbuild.Base
+import           Aura.Settings.Base
+import           Aura.Packages.ABS (absDepsRepo)
+import           Aura.Packages.AUR
+import           Aura.Colour.Text
+import           Aura.Monad.Aura
+import           Aura.Languages
+import           Aura.Utils
+import           Aura.Bash (namespace, Namespace)
+import           Aura.Core
 
-import Shell
-import Utilities (whenM)
+import           Shell
+import           Utilities (whenM)
 
 ---
 
@@ -74,23 +79,23 @@ upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
   let notIgnored p = splitName p `notElem` ignoredPkgsOf ss
   notify upgradeAURPkgs_1
   foreignPkgs <- filter (\(n,_) -> notIgnored n) <$> foreignPackages
-  pkgInfo     <- aurInfoLookup $ map fst foreignPkgs
-  let aurPkgs   = filter (\(n,_) -> n `elem` map nameOf pkgInfo) foreignPkgs
-      toUpgrade = filter isntMostRecent $ zip pkgInfo (map snd aurPkgs)
-  auraFirst <- auraCheck $ map (nameOf . fst) toUpgrade
+  aurInfos    <- aurInfo $ map (T.pack . fst) foreignPkgs
+  let aurPkgs   = filter (\(n,_) -> T.pack n `elem` map aurNameOf aurInfos) foreignPkgs
+      toUpgrade = filter isntMostRecent $ zip aurInfos (map snd aurPkgs)
+  auraFirst <- auraCheck $ map (aurNameOf . fst) toUpgrade
   if auraFirst
      then auraUpgrade pacOpts
      else do
-       devel <- develPkgCheck
+       devel <- develPkgCheck  -- [String]
        notify upgradeAURPkgs_2
        if null toUpgrade && null devel
           then warn upgradeAURPkgs_3
-          else reportPkgsToUpgrade $ map prettify toUpgrade ++ devel
-       install pacOpts $ map (nameOf . fst) toUpgrade ++ pkgs ++ devel
-           where prettify (p,v) = nameOf p ++ " : " ++ v ++ " => " ++ latestVerOf p
+          else reportPkgsToUpgrade $ map (T.unpack . prettify) toUpgrade <> devel
+       install pacOpts $ map (T.unpack . aurNameOf . fst) toUpgrade <> pkgs <> devel
+           where prettify (p,v) = aurNameOf p <> " : " <> T.pack v <> " => " <> aurVersionOf p
 -- TODO: Use `printf` with `prettify` to line up the colons.
 
-auraCheck :: [String] -> Aura Bool
+auraCheck :: [T.Text] -> Aura Bool
 auraCheck toUpgrade = do
   if "aura" `elem` toUpgrade
      then optionalPrompt auraCheck_1
@@ -104,59 +109,59 @@ develPkgCheck = ask >>= \ss ->
   if rebuildDevel ss then develPkgs else return []
 
 aurPkgInfo :: [String] -> Aura ()
-aurPkgInfo pkgs = aurInfoLookup pkgs >>= mapM_ displayAurPkgInfo
+aurPkgInfo (map T.pack -> pkgs) = aurInfo pkgs >>= mapM_ displayAurPkgInfo
 
 -- By this point, the Package definitely exists, so we can assume its
 -- PKGBUILD exists on the AUR servers as well.
-displayAurPkgInfo :: PkgInfo -> Aura ()
-displayAurPkgInfo info = ask >>= \ss -> do
-    let name = nameOf info
-    ns <- fromJust <$> downloadPkgbuild name >>= namespace name
-    liftIO $ putStrLn $ renderAurPkgInfo ss info ns ++ "\n"
+displayAurPkgInfo :: AurInfo -> Aura ()
+displayAurPkgInfo ai = ask >>= \ss -> do
+    let name = T.unpack $ aurNameOf ai
+    ns <- fromJust <$> pkgbuild name >>= namespace name . T.unpack
+    liftIO $ putStrLn $ renderAurPkgInfo ss ai ns ++ "\n"
 
-renderAurPkgInfo :: Settings -> PkgInfo -> Namespace -> String
-renderAurPkgInfo ss info ns = entrify ss fields entries
+renderAurPkgInfo :: Settings -> AurInfo -> Namespace -> String
+renderAurPkgInfo ss ai ns = entrify ss fields entries
     where fields   = map bForeground . infoFields . langOf $ ss
           empty x  = case x of [] -> "None"; _ -> x
           entries = [ magenta "aur"
-                    , bForeground $ nameOf info
-                    , latestVerOf info
-                    , outOfDateMsg (isOutOfDate info) $ langOf ss
-                    , orphanedMsg (maintainerOf info) $ langOf ss
-                    , cyan $ projectURLOf info
-                    , aurURLOf info
-                    , licenseOf info
+                    , bForeground $ T.unpack $ aurNameOf ai
+                    , T.unpack $ aurVersionOf ai
+                    , outOfDateMsg (isOutOfDate ai) $ langOf ss
+                    , orphanedMsg (T.unpack <$> aurMaintainerOf ai) $ langOf ss
+                    , cyan $ T.unpack $ urlOf ai
+                    , pkgUrl $ T.unpack $ aurNameOf ai
+                    , T.unpack . T.unwords .  licenseOf $ ai
                     , empty . unwords . depends $ ns
                     , empty . unwords . makedepends $ ns
-                    , yellow . show . votesOf $ info
-                    , descriptionOf info ]
+                    , yellow . show . aurVotesOf $ ai
+                    , T.unpack $ aurDescriptionOf ai ]
 
-aurSearch :: [String] -> Aura ()
-aurSearch []    = return ()
-aurSearch regex = ask >>= \ss -> do
-    db      <- S.fromList . map fst <$> foreignPackages
+aurPkgSearch :: [String] -> Aura ()
+aurPkgSearch [] = return ()
+aurPkgSearch (concat -> regex) = ask >>= \ss -> do
+    db <- S.fromList . map fst <$> foreignPackages
     let t = case truncationOf ss of  -- Can't this go anywhere else?
               None -> id
               Head n -> take n
               Tail n -> reverse . take n . reverse
-    results <- map (\x -> (x, nameOf x `S.member` db)) . t <$> aurSearchLookup regex
-    mapM_ (liftIO . putStrLn . renderSearch ss (unwords regex)) results
+    results <- map (\x -> (x, T.unpack (aurNameOf x) `S.member` db)) . t <$> aurSearch (T.pack regex)
+    mapM_ (liftIO . putStrLn . renderSearch ss regex) results
 
-renderSearch :: Settings -> String -> (PkgInfo, Bool) -> String
+renderSearch :: Settings -> String -> (AurInfo, Bool) -> String
 renderSearch ss r (i, e) = searchResult
     where searchResult = if beQuiet ss then sparseInfo else verboseInfo
-          sparseInfo   = nameOf i
+          sparseInfo   = T.unpack $ aurNameOf i
           verboseInfo  = repo ++ n ++ " " ++ v ++ " (" ++ l ++ ")" ++
                          (if e then s else "") ++ "\n    " ++ d
           c cl cs = case cs =~ ("(?i)" ++ r) of
                       (b,m,a) -> cl b ++ bCyan m ++ cl a
           repo = magenta "aur/"
-          n = c bForeground $ nameOf i
-          d = c noColour $ descriptionOf i
-          l = yellow . show . votesOf $ i  -- `l` for likes?
-          v | isOutOfDate i = red $ latestVerOf i
-            | otherwise     = green $ latestVerOf i
-          s = c bForeground $ " [installed]"
+          n = c bForeground $ T.unpack $ aurNameOf i
+          d = c noColour $ T.unpack $ aurDescriptionOf i
+          l = yellow . show . aurVotesOf $ i  -- `l` for likes?
+          v | isOutOfDate i = red $ T.unpack $ aurVersionOf i
+            | otherwise     = green $ T.unpack $ aurVersionOf i
+          s = c bForeground $ (" [installed]" :: String)
                               
 displayPkgDeps :: [String] -> Aura ()
 displayPkgDeps ps = do
@@ -172,11 +177,11 @@ downloadTarballs pkgs = do
               void . liftIO $ sourceTarball path pkg
 
 displayPkgbuild :: [String] -> Aura ()
-displayPkgbuild = I.displayPkgbuild (mapM downloadPkgbuild)
+displayPkgbuild = I.displayPkgbuild (mapM (fmap (fmap T.unpack) . pkgbuild))
 
-isntMostRecent :: (PkgInfo,String) -> Bool
-isntMostRecent (info,v) = trueVer > currVer
-  where trueVer = comparableVer $ latestVerOf info
+isntMostRecent :: (AurInfo,String) -> Bool
+isntMostRecent (ai,v) = trueVer > currVer
+  where trueVer = comparableVer $ T.unpack $ aurVersionOf ai
         currVer = comparableVer v
 
 ------------

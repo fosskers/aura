@@ -89,7 +89,7 @@ makeBuildable repo name = do
   return Buildable { baseNameOf   = name
                    , pkgbuildOf   = pb
                    , isExplicit   = False
-                   , buildScripts = copyTo repo name }
+                   , buildScripts = \fp -> Just <$> copyTo repo name fp }
 
 copyTo :: String -> String -> FilePath -> IO FilePath
 copyTo repo name fp = do
