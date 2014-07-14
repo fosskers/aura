@@ -282,19 +282,44 @@ truncationStatus (TruncHead n : _) = Head n
 truncationStatus (TruncTail n : _) = Tail n
 truncationStatus (_:fs) = truncationStatus fs
 
-sortSchemeStatus   = fishOutFlag [(ABCSort,Alphabetically)] ByVote
-suppressionStatus  = fishOutFlag [(Unsuppress,False)] True
-delMakeDepsStatus  = fishOutFlag [(DelMDeps,True)] False
+sortSchemeStatus :: [Flag] -> SortScheme
+sortSchemeStatus = fishOutFlag [(ABCSort,Alphabetically)] ByVote
+
+suppressionStatus :: [Flag] -> Bool
+suppressionStatus = fishOutFlag [(Unsuppress,False)] True
+
+delMakeDepsStatus :: [Flag] -> Bool
+delMakeDepsStatus = fishOutFlag [(DelMDeps,True)] False
+
+confirmationStatus :: [Flag] -> Bool
 confirmationStatus = fishOutFlag [(NoConfirm,False)] True
-hotEditStatus      = fishOutFlag [(HotEdit,True)] False
-pbDiffStatus       = fishOutFlag [(DiffPkgbuilds,True)] False
-quietStatus        = fishOutFlag [(Quiet,True)] False
+
+hotEditStatus :: [Flag] -> Bool
+hotEditStatus = fishOutFlag [(HotEdit,True)] False
+
+pbDiffStatus :: [Flag] -> Bool
+pbDiffStatus = fishOutFlag [(DiffPkgbuilds,True)] False
+
+quietStatus :: [Flag] -> Bool
+quietStatus = fishOutFlag [(Quiet,True)] False
+
+rebuildDevelStatus :: [Flag] -> Bool
 rebuildDevelStatus = fishOutFlag [(Devel,True)] False
+
+customizepkgStatus :: [Flag] -> Bool
 customizepkgStatus = fishOutFlag [(Customizepkg,True)] False
-noPowerPillStatus  = fishOutFlag [(NoPowerPill,True)] False
-keepSourceStatus   = fishOutFlag [(KeepSource,True)] False
+
+noPowerPillStatus :: [Flag] -> Bool
+noPowerPillStatus = fishOutFlag [(NoPowerPill,True)] False
+
+keepSourceStatus :: [Flag] -> Bool
+keepSourceStatus = fishOutFlag [(KeepSource,True)] False
+
+buildABSDepsStatus :: [Flag] -> Bool
 buildABSDepsStatus = fishOutFlag [(BuildABSDeps,True)] False
-dryRunStatus       = fishOutFlag [(DryRun,True)] False
+
+dryRunStatus :: [Flag] -> Bool
+dryRunStatus = fishOutFlag [(DryRun,True)] False
 
 makepkgFlags :: [Flag] -> [String]
 makepkgFlags = fishOutFlag [(IgnoreArch,["--ignorearch"])] []
