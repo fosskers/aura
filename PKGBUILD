@@ -8,7 +8,7 @@ url="https://github.com/fosskers/aura"
 license=('GPL-3')
 arch=('i686' 'x86_64')
 depends=('gmp' 'pacman' 'pcre' 'abs')
-makedepends=('ghc' 'haskell-regex-base' 'haskell-regex-pcre-builtin' 'haskell-json'
+makedepends=('ghc' 'haskell-regex-base' 'haskell-regex-pcre-builtin'
              'haskell-mtl' 'haskell-parsec' 'haskell-transformers'
              'haskell-temporary' 'haskell-http-conduit' 'haskell-split')
 optdepends=('powerpill:    For faster repository downloads.'

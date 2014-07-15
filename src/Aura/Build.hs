@@ -25,7 +25,7 @@ module Aura.Build
     ( installPkgFiles
     , buildPackages ) where
 
-import System.FilePath ((</>), takeFileName)
+import System.FilePath ((</>))
 import Control.Monad   (when, void, join)
 import Control.Applicative ((<*>), pure)
 
@@ -87,11 +87,20 @@ build' (p:ps) = ask >>= \ss -> do
   return (paths,ps)
 
 getBuildScripts :: Buildable -> String -> FilePath -> Aura ()
+getBuildScripts pkg user currDir = do
+  scriptsDir <- liftIO $ chown user currDir [] >> buildScripts pkg currDir
+  case scriptsDir of
+    Nothing -> scoldAndFail (buildFail_7 $ baseNameOf pkg)
+    Just sd -> liftIO $ do
+                 chown user sd ["-R"]
+                 cd sd
+{-}
 getBuildScripts pkg user currDir = liftIO $ do
   chown user currDir []
   scriptsDir <- buildScripts pkg currDir
   chown user scriptsDir ["-R"]
   cd scriptsDir
+-}
 
 overwritePkgbuild :: Buildable -> Aura ()
 overwritePkgbuild p = asks (\ss -> any ($ ss) checks) >>=
@@ -102,7 +111,7 @@ overwritePkgbuild p = asks (\ss -> any ($ ss) checks) >>=
 -- continue installing previous packages that built successfully.
 buildFail :: [FilePath] -> [Buildable] -> String -> Aura ([FilePath],[Buildable])
 buildFail _ [] _ = failure "buildFail : You should never see this message."
-buildFail built (p:ps) errors = asks langOf >>= \lang -> do
+buildFail _ (p:_) errors = do  -- asks langOf >>= \lang -> do
   scold $ buildFail_1 (baseNameOf p)
   displayBuildErrors errors
 --  printList red cyan (buildFail_2 lang) (map pkgBase ps)

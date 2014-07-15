@@ -1,4 +1,4 @@
--- A library that serves as an abstraction for dealing with the internet.
+-- A library that serves as an abstraction for making HTTP requests.
 
 {-
 
@@ -22,35 +22,29 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Internet
-    ( unpack
-    , urlContents
-    , urlEncodeVars
+    ( urlContents
     , saveUrlContents ) where
 
 import qualified Data.ByteString.Lazy as L
 
-import Data.ByteString.Lazy.Char8 (pack, unpack)
-import Control.Exception    (catch)
-import System.FilePath      (splitFileName, (</>))
-import Network.HTTP         (urlEncodeVars)
-import System.IO            (hClose, openFile, IOMode(WriteMode))
-import Network.HTTP.Conduit
+import Control.Applicative        ((<$>))
+import Control.Lens
+import Network.Wreq
+import System.FilePath            (splitFileName, (</>))
+import System.IO                  (hClose, openFile, IOMode(WriteMode))
 
 ---
 
-urlContents :: String -> IO L.ByteString
-urlContents url = do
-  req <- parseUrl url
-  let req2 = req { responseTimeout = Nothing}
-  catch (fmap responseBody . withManager . httpLbs $ req2) handleException
+urlContents :: String -> IO (Maybe L.ByteString)
+urlContents url = (^? responseBody) <$> get url
 
-handleException :: HttpException -> IO L.ByteString
-handleException _ = return (pack "")
-
-saveUrlContents :: FilePath -> String -> IO FilePath
+saveUrlContents :: FilePath -> String -> IO (Maybe FilePath)
 saveUrlContents fpath url = do
-  handle  <- openFile filePath WriteMode
-  content <- urlContents url
-  L.hPutStr handle content >> hClose handle >> return filePath
-    where filePath = fpath </> file
-          (_,file) = splitFileName url
+  contents <- urlContents url
+  case contents of
+    Nothing -> return Nothing
+    Just c  -> do
+      handle <- openFile filePath WriteMode
+      L.hPutStr handle c >> hClose handle >> return (Just filePath)
+          where filePath = fpath </> file
+                (_,file) = splitFileName url

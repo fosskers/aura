@@ -21,12 +21,12 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Core where
 
-import System.Directory (doesFileExist)
-import Text.Regex.PCRE  ((=~))
 import Control.Monad    (when)
 import Data.Either      (partitionEithers)
-import Data.Monoid      (Monoid(..))
 import Data.List        (isSuffixOf)
+import Data.Monoid      (Monoid(..))
+import System.Directory (doesFileExist)
+import Text.Regex.PCRE  ((=~))
 
 import Aura.Settings.Base
 import Aura.Colour.Text
@@ -81,7 +81,7 @@ data Buildable = Buildable
     , isExplicit   :: Bool
     -- | Fetch and extract the source code corresponding to the given package.
     , buildScripts :: FilePath     -- ^ Directory in which to place the scripts.
-                   -> IO FilePath  -- ^ Path to the extracted scripts.
+                   -> IO (Maybe FilePath)  -- ^ Path to the extracted scripts.
     }
 
 -- | A 'Repository' is a place where packages may be fetched from. Multiple
@@ -109,7 +109,8 @@ partitionPkgs = partitionEithers . map (toEither . pkgInstallTypeOf)
 
 parseDep :: String -> Dep
 parseDep s = Dep name (getVersionDemand comp ver)
-    where (name,comp,ver) = s =~ "(<|>=|>|=)" :: (String,String,String)
+    where patt = "(<|>=|>|=)" :: String
+          (name,comp,ver) = s =~ patt :: (String,String,String)
           getVersionDemand c v | c == "<"  = LessThan v
                                | c == ">=" = AtLeast v
                                | c == ">"  = MoreThan v
@@ -134,6 +135,7 @@ trueRoot action = ask >>= \ss ->
       if okay then action else notify trueRoot_2
 
 -- `-Qm` yields a list of sorted values.
+-- | A list of non-prebuilt packages installed on the system.
 foreignPackages :: Aura [(String,String)]
 foreignPackages = (map fixName . lines) <$> pacmanOutput ["-Qm"]
     where fixName = hardBreak (== ' ')
