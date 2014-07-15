@@ -92,6 +92,7 @@ own package management software.
 \colorbox{GreenYellow}{Paths are GreenYellow.}\\
 \colorbox{SkyBlue}{Haskell function signatures are SkyBlue.}\\
 \colorbox{Apricot}{CLI flags/commands are Apricot.}
+\colorbox{Red}{TODOs / Decisions to make.}
 
 \subsection{General}
 Aura handles three types of packages:
@@ -539,10 +540,14 @@ converted to \colorbox{SkyBlue}{\texttt{Text}} automatically:
 \end{lstlisting}
 \end{shaded}
 
-
 \subsubsection{JSON Data}\label{json-data}
 All JSON input and output is handled through the \texttt{aeson} and
 \texttt{aeson-pretty} packages.
+
+\subsubsection{Parsing}
+All parsing is done with Parsec. Regular Expressions are no longer used
+anywhere in Aura.\\
+\colorbox{Red}{Parsec or Attoparsec?}
 
 \subsubsection{Other Libraries}\label{other-libraries}
 Information on other Hackage libraries used in Aura can be found
