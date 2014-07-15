@@ -66,7 +66,7 @@ makepkgGen make user = asks makepkgFlagsOf >>= \clfs -> do
 
 runStyle :: String -> [String] -> (String,[String])
 runStyle "root" opts = (makepkgCmd, "--asroot" : opts)
-runStyle user opts   = ("sudo",["-u", user, makepkgCmd] ++ opts)
+runStyle user   opts = ("sudo",["-u", user, makepkgCmd] ++ opts)
 
 makepkgQuiet :: String -> Aura [FilePath]
 makepkgQuiet user = makepkgGen quiet user
