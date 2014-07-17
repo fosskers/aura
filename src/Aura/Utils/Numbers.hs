@@ -23,12 +23,12 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Utils.Numbers
     ( Version(..)
-    , parseVersion ) where
+    , version ) where
 
 import Text.ParserCombinators.Parsec
-import Control.Applicative (pure, (<*),(*>),(<*>),(<$>),(<$))
+import Control.Applicative (pure, (*>),(<*>),(<$>))
 
-import Utilities (eitherToMaybe, crunchInt)
+import Utilities (eitherToMaybe, asInt)
 
 ---
 
@@ -39,20 +39,20 @@ data Version = Version { unitsOf    :: [Unit]
 
 data Unit = IUnit Int | SUnit String deriving (Eq,Show,Ord)
 
-parseVersion :: String -> Maybe Version
-parseVersion = eitherToMaybe . parse version ""
+version :: String -> Maybe Version
+version = eitherToMaybe . parse versionNumber ""
 
-version :: Parser Version
-version = Version <$> units <*> optionMaybe revision
+versionNumber :: Parser Version
+versionNumber = Version <$> units <*> optionMaybe revision
 
 units :: Parser [Unit]
-units = concat <$> (many1 (iunit <|> sunit) `sepBy` char '.')
+units = concat <$> (many1 (iunit <|> sunit) `sepBy` oneOf ":.")
 
 iunit :: Parser Unit
-iunit = IUnit . crunchInt <$> many1 digit
+iunit = IUnit . asInt <$> many1 digit
 
 sunit :: Parser Unit
 sunit = SUnit <$> many1 letter
 
 revision :: Parser Int
-revision = char '-' *> pure crunchInt <*> many1 digit
+revision = char '-' *> pure asInt <*> many1 digit
