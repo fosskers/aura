@@ -46,7 +46,7 @@ versionNumber :: Parser Version
 versionNumber = Version <$> units <*> optionMaybe revision
 
 units :: Parser [Unit]
-units = concat <$> (many1 (iunit <|> sunit) `sepBy` oneOf ":.")
+units = concat <$> (many1 (iunit <|> sunit) `sepBy` oneOf ".:_+")
 
 iunit :: Parser Unit
 iunit = IUnit . asInt <$> many1 digit
