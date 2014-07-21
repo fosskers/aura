@@ -35,18 +35,19 @@ module Aura.Cache
     , SimplePkg ) where
 
 import qualified Data.Map.Lazy as M
-import Data.List (nub)
+import           Data.List (nub)
 
-import Aura.Settings.Base
-import Aura.Monad.Aura
-import Aura.Utils (pkgFileNameAndVer)
+import           Aura.Monad.Aura
+import           Aura.Settings.Base
+import           Aura.Utils (pkgFileNameAndVer)
+import           Aura.Utils.Numbers (Version)
 
-import Utilities (searchLines)
-import Shell     (ls)
+import           Utilities (searchLines)
+import           Shell     (ls)
 
 ---
 
-type SimplePkg = (String,[Int])
+type SimplePkg = (String, Maybe Version)
 type Cache     = M.Map SimplePkg FilePath
 
 defaultPackageCache :: FilePath

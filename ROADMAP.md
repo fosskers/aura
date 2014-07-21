@@ -10,14 +10,15 @@ Aura Development Roadmap
 
 1.3.0.0
 -------
-- libalpm introduction
-- Functions in Aura will be converted where applicable
-  to run on libalpm. Should make certain things more elegant
-  and programmatic.
+- Milestone for "legacy" Aura. Last stable version as a pacman-reliant
+  AUR helper.
 
 2.0.0.0
 -------
-- Full release from `pacman`.
-- Aura will ascend to the status of full package manager and
-  be completely based on libalpm. It will be a full replacement
-  for pacman.
+- Aura becomes a core for multi-distro package management.
+- It exposes a Hook interface for writing distro-specific install
+  behaviour.
+- These Hooks may or may not bolt directly to a preexisting package
+  manager, as Aura 1 did.
+- The preferred method is to write Haskell bindings to the libraries
+  those managers use, for more direct control.
