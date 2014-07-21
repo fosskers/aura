@@ -367,16 +367,16 @@ getRealPkgConflicts_1 (bt -> p) (bt -> r) (bt -> d) = \case
     Japanese   -> "パッケージ" ++ p ++ "はバージョン" ++ d ++ "を要するが" ++ "一番最新のバージョンは" ++ r ++ "。"
     Polish     -> "Zależność " ++ p ++ " powinna być w wersji " ++ d ++ ", ale najnowsza wersja to " ++ r ++ "."
     Croatian   -> "Zavisnost " ++ p ++ " zahtjeva verziju " ++ d ++ ", a najnovija dostupna verzija je " ++ r ++ "."
-    Swedish    -> "Beroendepaketet " ++ p ++ " kräver version " ++ d ++ "men den senaste versionen är " ++ r ++ "."
-    German     -> "Die Abhängigkeit " ++ p ++ " verlangt Version " ++ d ++ "aber die neuste Version ist " ++ r ++ "."
-    Spanish    -> "La dependencia " ++ p ++ " duiere la versión " ++ d ++ "pero la versión más reciente es " ++ r ++ "."
-    Portuguese -> "A dependência " ++ p ++ " exige a versão " ++ d ++ "mas a versão mais recente é " ++ r ++ "."
+    Swedish    -> "Beroendepaketet " ++ p ++ " kräver version " ++ d ++ " men den senaste versionen är " ++ r ++ "."
+    German     -> "Die Abhängigkeit " ++ p ++ " verlangt Version " ++ d ++ " aber die neuste Version ist " ++ r ++ "."
+    Spanish    -> "La dependencia " ++ p ++ " duiere la versión " ++ d ++ " pero la versión más reciente es " ++ r ++ "."
+    Portuguese -> "A dependência " ++ p ++ " exige a versão " ++ d ++ " mas a versão mais recente é " ++ r ++ "."
     French     -> p ++ " est une dépendance nécessitant la version " ++ d ++ ", mais la plus récente est la version " ++ r ++ "."
     Russian    -> "Зависимость " ++ p ++ " требует версию " ++ d ++ ", однако самой последней версией является " ++ r ++ "."
-    Italian    -> "La dipendenza " ++ p ++ " richiede la versione " ++ d ++ "ma la versione disponibile è " ++ r ++ "."
+    Italian    -> "La dipendenza " ++ p ++ " richiede la versione " ++ d ++ " ma la versione disponibile è " ++ r ++ "."
     Serbian    -> "Зависност " ++ p ++ " захтева верзију " ++ d ++ ", али најновија верзија је " ++ r ++ "."
     Norwegian  -> "Avhengigheten " ++ p ++ " krever versjon " ++ d ++", men den nyeste versjonen er " ++ r ++ "."
-    _          -> "The dependency " ++ p ++ " demands version " ++ d ++ "but the most recent version is " ++ r ++ "."
+    _          -> "The dependency " ++ p ++ " demands version " ++ d ++ ", but the most recent version is " ++ r ++ "."
 
 getRealPkgConflicts_2 :: String -> Language -> String
 getRealPkgConflicts_2 (bt -> p) = \case
