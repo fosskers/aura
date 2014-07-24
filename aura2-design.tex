@@ -187,7 +187,7 @@ Usage:
       \colorbox{GreenYellow}{/var/cache/aura/states}.
     \item Filenames are of the form: \texttt{YYYY.MM(MonthName).DD.HH.MM}
     \item The data itself is stored as JSON to ease use by other tools
-      (seen below).    
+      (seen below).
   \end{itemize}
 \item Restore a snapshot: \colorbox{Apricot}{\texttt{aura -Br}}
 \end{itemize}
@@ -202,6 +202,62 @@ Usage:
                 ]
 }
 \end{lstlisting}
+\end{shaded}
+
+% --- %
+
+\subsection{Packages Update information}
+
+Whenever Aura needs to update packages, it should display the upcoming updates
+in a clear and easy to read format. Those information will be displayed for
+either \colorbox{Apricot}{aura -Syu} or \colorbox{Apricot}{aura -Ayu}.
+
+When multiple packages versions have to be displayed, lines should be aligned
+on the “\texttt{-\/->}” symbol.
+
+\subsubsection{New package dependency needed}
+
+If a new package has to be installed because it is a new dependency of an
+already installed package, aura should display the following information:
+
+\begin{shaded}
+\begin{verbatim}
+== New package needed:
+community/pyzy        1.0-1            (required by ibus-pinyin)
+\end{verbatim}
+\end{shaded}
+
+% --- %
+
+\subsubsection{New package release}
+
+This information is displayed whenever a package release has been updated. In
+other words, when the number after the last dash has increased.
+
+Note that the number changed is coloured such as: (I have used an xml's syntax
+to indicate where the colour should be)
+
+\begin{shaded}
+\begin{verbatim}
+== New package release:
+community/pyzy        1.0-1    -->    1.0-<green>2</green>
+\end{verbatim}
+\end{shaded}
+
+% --- %
+
+\subsubsection{New package version}
+
+This information is displayed whenever a package's version has been updated.
+
+Nothe that the number changed is coloured such as: (I have used an xml's syntax
+to indicate where the colour should be)
+
+\begin{shaded}
+\begin{verbatim}
+== New package version:
+community/pyzy        1.0-1    -->    1.<green>2-1</green>
+\end{verbatim}
 \end{shaded}
 
 % --- %
