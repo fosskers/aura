@@ -156,6 +156,7 @@ colourize colour msg =
       Just code -> insertCodes code msg
         where insertCodes code' msg' =
                   case splitOn resetCode msg' of
-                    [_] -> code' ++ msg' ++ resetCode
+                    []      -> ""  -- Shouldn't happen?
+                    [_]     -> code' ++ msg' ++ resetCode
                     [_, ""] -> msg' -- We're done recursing.
-                    (b:as) -> insertCodes code' (b ++ code' ++ unwords as)
+                    (b:as)  -> insertCodes code' (b ++ code' ++ unwords as)

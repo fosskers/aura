@@ -57,6 +57,7 @@ data Settings = Settings { inputOf         :: [String]
                          , rebuildDevel    :: Bool
                          , mayHotEdit      :: Bool
                          , mustConfirm     :: Bool
+                         , neededOnly      :: Bool
                          , useCustomizepkg :: Bool
                          , noPowerPill     :: Bool
                          , keepSource      :: Bool

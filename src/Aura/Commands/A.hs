@@ -54,6 +54,7 @@ import           Aura.Languages
 import           Aura.Utils
 import           Aura.Bash (namespace, Namespace)
 import           Aura.Core
+import           Aura.Utils.Numbers
 
 import           Shell
 import           Utilities (whenM)
@@ -181,8 +182,8 @@ displayPkgbuild = I.displayPkgbuild (mapM (fmap (fmap T.unpack) . pkgbuild))
 
 isntMostRecent :: (AurInfo,String) -> Bool
 isntMostRecent (ai,v) = trueVer > currVer
-  where trueVer = comparableVer $ T.unpack $ aurVersionOf ai
-        currVer = comparableVer v
+  where trueVer = version $ T.unpack $ aurVersionOf ai
+        currVer = version v
 
 ------------
 -- REPORTING

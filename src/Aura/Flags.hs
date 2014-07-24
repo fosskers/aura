@@ -26,26 +26,27 @@ module Aura.Flags
     , reconvertFlags
     , dualFlagMap
     , hijackedFlagMap
-    , suppressionStatus
-    , delMakeDepsStatus
+    , buildABSDepsStatus
     , confirmationStatus
-    , quietStatus
-    , hotEditStatus
-    , pbDiffStatus
-    , rebuildDevelStatus
     , customizepkgStatus
+    , delMakeDepsStatus
+    , hotEditStatus
+    , keepSourceStatus
+    , neededStatus
+    , noPowerPillStatus
+    , pbDiffStatus
+    , quietStatus
+    , rebuildDevelStatus
+    , sortSchemeStatus
+    , suppressionStatus
+    , truncationStatus
+    , dryRunStatus
     , notSettingsFlag
     , ignoredAuraPkgs
     , makepkgFlags
     , buildPath
     , buildUser
     , auraOperMsg
-    , noPowerPillStatus
-    , keepSourceStatus
-    , buildABSDepsStatus
-    , sortSchemeStatus
-    , truncationStatus
-    , dryRunStatus
     , Flag(..) ) where
 
 import System.Console.GetOpt
@@ -101,6 +102,7 @@ data Flag = ABSInstall
           | RestoreState
           | NoPowerPill
           | IgnoreArch
+          | Needed
           | Languages
           | Version
           | Help
@@ -183,7 +185,8 @@ pacmanOptions = map simpleOption
 -- Options that have functionality stretching across both Aura and Pacman.
 dualOptions :: [OptDescr Flag]
 dualOptions = map simpleOption
-              [ ( [], ["noconfirm"], NoConfirm ) ]
+              [ ( [], ["noconfirm"], NoConfirm )
+              , ( [], ["needed"], Needed ) ]
 
 languageOptions :: [OptDescr Flag]
 languageOptions = map simpleOption
@@ -218,7 +221,8 @@ hijackedFlagMap = [ (CacheBackup,"-b")
 -- These are flags which do the same thing in Aura or Pacman.
 dualFlagMap :: FlagMap
 dualFlagMap = [ (Quiet,"-q")
-              , (NoConfirm,"--noconfirm") ]
+              , (NoConfirm,"--noconfirm")
+              , (Needed,"--needed") ]
  
 -- Does the whole lot and filters out the garbage.
 reconvertFlags :: [Flag] -> FlagMap -> [String]
@@ -230,8 +234,8 @@ reconvertFlag flagMap f = fromMaybe "" $ f `lookup` flagMap
 
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
-                , DelMDeps,Customizepkg,Quiet,NoPowerPill,KeepSource,BuildABSDeps
-                , ABCSort, IgnoreArch, DryRun ]
+                , DelMDeps,Customizepkg,Quiet,NoPowerPill,KeepSource
+                , BuildABSDeps, ABCSort, IgnoreArch, DryRun, Needed ]
 
 -- Flags like `Ignore` and `BuildPath` have args, and thus can't be included
 -- in the `settingsFlags` list.
@@ -282,19 +286,47 @@ truncationStatus (TruncHead n : _) = Head n
 truncationStatus (TruncTail n : _) = Tail n
 truncationStatus (_:fs) = truncationStatus fs
 
-sortSchemeStatus   = fishOutFlag [(ABCSort,Alphabetically)] ByVote
-suppressionStatus  = fishOutFlag [(Unsuppress,False)] True
-delMakeDepsStatus  = fishOutFlag [(DelMDeps,True)] False
+sortSchemeStatus :: [Flag] -> SortScheme
+sortSchemeStatus = fishOutFlag [(ABCSort,Alphabetically)] ByVote
+
+suppressionStatus :: [Flag] -> Bool
+suppressionStatus = fishOutFlag [(Unsuppress,False)] True
+
+delMakeDepsStatus :: [Flag] -> Bool
+delMakeDepsStatus = fishOutFlag [(DelMDeps,True)] False
+
+confirmationStatus :: [Flag] -> Bool
 confirmationStatus = fishOutFlag [(NoConfirm,False)] True
-hotEditStatus      = fishOutFlag [(HotEdit,True)] False
-pbDiffStatus       = fishOutFlag [(DiffPkgbuilds,True)] False
-quietStatus        = fishOutFlag [(Quiet,True)] False
+
+neededStatus :: [Flag] -> Bool
+neededStatus = fishOutFlag [(Needed,True)] False
+
+hotEditStatus :: [Flag] -> Bool
+hotEditStatus = fishOutFlag [(HotEdit,True)] False
+
+pbDiffStatus :: [Flag] -> Bool
+pbDiffStatus = fishOutFlag [(DiffPkgbuilds,True)] False
+
+quietStatus :: [Flag] -> Bool
+quietStatus = fishOutFlag [(Quiet,True)] False
+
+rebuildDevelStatus :: [Flag] -> Bool
 rebuildDevelStatus = fishOutFlag [(Devel,True)] False
+
+customizepkgStatus :: [Flag] -> Bool
 customizepkgStatus = fishOutFlag [(Customizepkg,True)] False
-noPowerPillStatus  = fishOutFlag [(NoPowerPill,True)] False
-keepSourceStatus   = fishOutFlag [(KeepSource,True)] False
+
+noPowerPillStatus :: [Flag] -> Bool
+noPowerPillStatus = fishOutFlag [(NoPowerPill,True)] False
+
+keepSourceStatus :: [Flag] -> Bool
+keepSourceStatus = fishOutFlag [(KeepSource,True)] False
+
+buildABSDepsStatus :: [Flag] -> Bool
 buildABSDepsStatus = fishOutFlag [(BuildABSDeps,True)] False
-dryRunStatus       = fishOutFlag [(DryRun,True)] False
+
+dryRunStatus :: [Flag] -> Bool
+dryRunStatus = fishOutFlag [(DryRun,True)] False
 
 makepkgFlags :: [Flag] -> [String]
 makepkgFlags = fishOutFlag [(IgnoreArch,["--ignorearch"])] []

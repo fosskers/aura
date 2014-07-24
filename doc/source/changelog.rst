@@ -1,5 +1,25 @@
 Aura Changelog
 ==============
+1.3.0.0
+-------
+- Last major version of Aura 1! We have entered the design phase for Aura 2,
+  the implementation of which will transform Aura into a multi-distro
+  package management platform.
+- Aura 1 itself has entered "legacy" mode. The only releases to be made
+  on Aura 1 after this will be of `1.3.0.x`. You'll likely never see
+  `1.3.1.x`.
+- Befitting a major release, we have:
+  - New AUR interaction layer via the `aur` package. This fixes nasty
+    "AUR lookup failed" errors.
+  - `http-conduit` dropped for `wreq`, which is much easier to use.
+  - Better version number parsing/comparison on installation/upgrading.
+  - Package state backups have had their format changed. This BREAKS _all_
+    previously saved states. Please delete your old ones!
+  - Implemented extended `--needed` functionality for the AUR side of Aura.
+    AUR packages won't build if they're already installed.
+  - Indonesian translations!
+  - Other updated translations.
+
 1.2.3.4
 -------
 - zsh completions completely redone (thanks to Sauyon Lee!)
