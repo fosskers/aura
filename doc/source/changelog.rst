@@ -9,6 +9,7 @@ Aura Changelog
   on Aura 1 after this will be of `1.3.0.x`. You'll likely never see
   `1.3.1.x`.
 - Befitting a major release, we have:
+
   - New AUR interaction layer via the `aur` package. This fixes nasty
     "AUR lookup failed" errors.
   - `http-conduit` dropped for `wreq`, which is much easier to use.
