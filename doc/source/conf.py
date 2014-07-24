@@ -189,6 +189,11 @@ htmlhelp_basename = 'auradoc'
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
+    "inputenc": "",
+    "utf8extra": "",
+    "taleofcontents": "\\tableofcontents",
+
+
 # The paper size ('letterpaper' or 'a4paper').
 #'papersize': 'letterpaper',
 
