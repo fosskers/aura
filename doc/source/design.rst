@@ -5,11 +5,11 @@ Aura 2 Design
 Preface
 =======
 
-This is a design document for version 2 of `Aura
-<https://github.com/fosskers/aura>`__. Note that specifications are written in
-present tense, as in, "Aura does this" even if at the time of writing those
-features aren't implemented yet. This is to ensure that the document can act as
-a reference for Aura's behaviour post-release.
+This is a design document for version 2 of `Aura`_. Note that
+specifications are written in present tense, as in, “Aura does this”
+even if at the time of writing those features aren’t implemented yet.
+This is to ensure that the document can act as a reference for Aura’s
+behaviour post-release.
 
 Mission Statement
 =================
@@ -20,124 +20,316 @@ build/install behaviour, while maintaining a custom interface across all
 distros. Aura itself provides:
 
 -  Dependency management.
+
 -  Package downloading.
+
 -  Package-state backups/restoration.
 
-Aura's authors recognize that `attemping to create universal standards can be
-problematic <http://www.xkcd.com/927/>`__, but that is precisely why Aura
-exists. By having a unified interface over multiple packaging standards, users
-can transition between distributions more easily, and distribution developers
-can avoid reinventing the wheel by writing their own package management
-software.
+Aura’s authors recognize that `attemping to create universal standards
+can be problematic`_, but that is precisely why Aura exists. By having a
+unified interface over multiple packaging standards, users can
+transition between distributions more easily, and distribution
+developers can avoid reinventing the wheel by writing their own package
+management software.
 
-Requirements
-============
+Functionality
+=============
 
-General Functionality
----------------------
+.. raw:: latex
 
-Program Flow
-~~~~~~~~~~~~
+   \colorbox{GreenYellow}{Paths are GreenYellow.}\\
+   \colorbox{SkyBlue}{Haskell function signatures are SkyBlue.}\\
+   \colorbox{Apricot}{CLI flags/commands are Apricot.}
+   \colorbox{Red}{TODOs / Decisions to make.}
 
-Execution in Aura takes the following order:
+General
+-------
 
-1. Parse command-line options.
-2. Collect local ``Setting``\ s.
-3. Branch according to capital letter operator (``-{S,A,Q,...}``):
+Aura handles three types of packages:
 
--  ``-S <packages>``:
+-  Repository Packages: Prebuilt binaries available direct from the
+   user’s Distribution.
 
-   -  A **Hook** provides a function ``Monad m => String -> m Bool`` to
-      tell if a certain package exists. ``<packages>`` are then split
-      into ``([String],[String])`` a division between packages that do
-      and don't exist. Report those that don't exist.
-   -  Map the existing ``[String]`` to ``[Package]`` via a **Hook** that
-      provides ``Monad m => String -> m Package``.
-   -  Resolve dependencies by Aura's internal algorithm to receive:
-      ``Either PkgGraph [[Package]]``.
-   -  On ``Left``, analyse the given ``PkgGraph``, yield output as
-      described in `Dependency Resolution <#dependency-resolution>`__,
-      and quit.
-   -  On ``Right`` display a chart as described
-      `here <#version-information-when-upgrading>`__.
-   -  Download each package via Aura's internal algorithm.
-   -  Install each package via a **Hook**.
+-  Foreign Packages: Packages that generally need to be compiled by the
+   user. Their versioning/source locations may be managed by the
+   Distribution is some way.
 
--  ``-{S,A,Q}i <packages>``:
+-  Local Packages: Packages installed on the user’s system. Records of
+   them and the files belonging to them are stored in a database, and
+   package files themselves are stored in a cache (in or elsewhere).
 
-   -  Call a **Hook** that provides ``Monad m => String -> m PkgInfo``.
-      The contents of the ``PkgInfo`` ADT are descriped
-      `here <#pkginfo>`__
-   -  Aura gives output according to the ``PkgInfo``.
+A number of operations can be performed on these package types, as
+explained below.
+
+Repository Package Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+| Aura allows installation of prebuilt binaries from mirrors defined in
+  :ref:`auraconf`.
+| Usage:
+
+Foreign Package Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+| Aura allows installation of foreign packages, prebuilt or to be
+  compiled, from locations defined by Hooks in :ref:`auraconf`.
+| Not all distributions may support this type of installation.
+| Usage:
+
+Local Package Removal
+~~~~~~~~~~~~~~~~~~~~~
+
+| Installed packages may be removed singularly, or in groups.
+| Usage:
+
+-  Just the packages named:
+
+-  Packages named and all deps (recursive):
+
+Package Search
+~~~~~~~~~~~~~~
+
+| Searches on all three package types can be performed. A regular
+  expression is given to search on.
+| Usage:
+
+-  Search repository packages:
+
+-  Search foreign packages:
+
+-  Search local packages:
+
+| Aura will fail silently when no pattern is given.
+| Output sample:
+
+.. raw:: latex
+
+   \begin{shaded}
+   \begin{verbatim}
+   extra/nvidia 337.25-3 [installed]
+       NVIDIA drivers for linux
+   extra/nvidia-304xx 304.121-5
+       NVIDIA drivers for linux, 304xx legacy branch
+   extra/nvidia-304xx-libgl 304.121-2
+       NVIDIA drivers libraries symlinks, 304xx legacy branch
+   \end{verbatim}
+   \end{shaded}
+
+Package Information
+~~~~~~~~~~~~~~~~~~~
+
+| Queries for specific package information can be performed on all three
+  package types. The exact names of existing packages must be given.
+| Usage:
+
+-  Query repository packages:
+
+-  Query foreign packages:
+
+-  Query local packages:
+
+Local Package Backups
+~~~~~~~~~~~~~~~~~~~~~
+
+| The state of locally installed packages may be recorded and restored
+  at a later date.
+| Usage:
+
+-  Store a snapshot of all installed packages:
+
+   -  This record is stored in .
+
+   -  Filenames are of the form: ``YYYY.MM(MonthName).DD.HH.MM``
+
+   -  The data itself is stored as JSON to ease use by other tools (seen
+      below).
+
+-  Restore a snapshot:
+
+.. raw:: latex
+
+   \begin{shaded}
+   \begin{lstlisting}[language=haskell]
+   { ``date'': ``2014-04-09'',
+     ``time'': ``20:00'',
+     ``packages'': [ { ``pkgname'': ``alsa-lib'',
+                       ``version'': ``1.0.27.2-1'' },
+                   // more packages here
+                   ]
+   }
+   \end{lstlisting}
+   \end{shaded}
+
+Other
+-----
+
+.. raw:: latex
+
+   \begin{comment}
+   \subsubsection{Program Flow}\label{program-flow}
+
+   \textbf{This section needs reorganising}
+
+   Execution in Aura takes the following order:
+
+   \begin{enumerate}
+   \def\labelenumi{\arabic{enumi}.}
+   \itemsep1pt\parskip0pt\parsep0pt
+   \item
+     Parse command-line options.
+   \item
+     Collect local \texttt{Setting}s.
+   \item
+     Branch according to capital letter operator (\texttt{-\{S,A,Q,...\}}):
+   \end{enumerate}
+
+   \begin{itemize}
+   \itemsep1pt\parskip0pt\parsep0pt
+   \item
+     \texttt{-S \textless{}packages\textgreater{}}:
+
+     \begin{itemize}
+     \itemsep1pt\parskip0pt\parsep0pt
+     \item
+       A \textbf{Hook} provides functions:
+     \item
+       \texttt{Monad m =\textgreater{} {[}Text{]} -\textgreater{} m ({[}Text{]},{[}Package{]})}
+     \item
+       \texttt{Monad m =\textgreater{} Text -\textgreater{} m (Either Text Package)}
+     \end{itemize}
+
+     The former can be defined in the terms of the latter, but doesn't have
+     to be if that method executes faster. The first function is given the
+     names of all packages to be installed. The \texttt{{[}Text{]}} are
+     packages that don't exist. They are reported.
+
+     \begin{itemize}
+     \itemsep1pt\parskip0pt\parsep0pt
+     \item
+       With the output of the last function, resolve dependencies by Aura's
+       internal algorithm to receive:
+       \texttt{Either PkgGraph {[}{[}Package{]}{]}}.
+     \item
+       On \texttt{Left}, analyse the given \texttt{PkgGraph}, yield output
+       as described in \href{/DESIGN.md\#dependency-resolution}{Dependency
+       Resolution}, and quit.
+     \item
+       On \texttt{Right} display a chart as described
+       \href{/DESIGN.md\#version-information-when-upgrading}{here}.
+     \item
+       Download each package via Aura's internal algorithm.
+     \item
+       A \textbf{Hook} provides an install function
+       \texttt{MonadError m =\textgreater{} {[}{[}Package{]}{]} -\textgreater{}   m ()}
+     \end{itemize}
+   \item
+     \texttt{-\{S,A,Q\}i \textless{}packages\textgreater{}}:
+
+     \begin{itemize}
+     \itemsep1pt\parskip0pt\parsep0pt
+     \item
+       Call a \textbf{Hook} that provides
+       \texttt{Monad m =\textgreater{} Text -\textgreater{} m PkgInfo}. The
+       contents of the \texttt{PkgInfo} ADT are described
+       \href{/DESIGN.md\#pkginfo}{here}.
+     \item
+       Aura gives output according to the \texttt{PkgInfo}.
+     \end{itemize}
+   \item
+     \texttt{-\{S,A,Q\}s \textless{}pattern\textgreater{}}:
+
+     \begin{itemize}
+     \itemsep1pt\parskip0pt\parsep0pt
+     \item
+       Call a \textbf{Hook} that provides
+       \texttt{Monad m =\textgreater{} Text -\textgreater{} m {[}PkgInfo{]}}.
+       Where the \texttt{Text} is a pattern to be searched for.
+     \item
+       Aura gives output according to the \texttt{{[}PkgInfo{]}}.
+     \end{itemize}
+   \end{itemize}
+   \end{comment}
 
 Dependency Resolution
 ~~~~~~~~~~~~~~~~~~~~~
 
 -  AUR dependencies are no longer resolved through PKGBUILD bash
-   parsing. The AUR 3.0 API includes the necessary dependency
+   parsing. The AUR 3.x API includes the necessary dependency
    information.
--  **Resolution Successful**: Data in the form ``[[Package]]`` is
-   yielded. These are groups of packages that may be built and installed
-   simultaneously. That is, they are not interdependent in any way.
+
+-  **Resolution Successful**: Data in the form is yielded. These are
+   groups of packages that may be built and installed simultaneously.
+   That is, they are not interdependent in any way.
+
 -  **Version Conflicts**:
--   resolution fails and the build does not continue.
+
+-  Dependency resolution fails and the build does not continue.
+
 -  The user is shown the chart below so it is clear what dependencies
    from what packages are causing issues.
+
 -  All packages that had dependency issues are shown.
+
 -  Supplying the ``--json`` flag will output this data as JSON for
    capture by other programs.
 
-+----------+--------+----------+---------+
-| Dep Name | Parent | Status   | Version |
-+==========+========+==========+=========+
-| foo      | None   | Local    | 1.2.3   |
-| foo      | bar    | Incoming | < 1.2.3 |
-| foo      | baz    | Incoming | > 1.2.3 |
-+----------+--------+----------+---------+
-| curl     | git    | Local    | 7.36.0  |
-| curl     | pacman | Incoming | 7.37.0  |
-+----------+--------+----------+---------+
-| lua      | vlc    | Incoming | 5.2.3   |
-| lua      | conky  | Incoming | 5.2.2   |
-+----------+--------+----------+---------+
+::
 
-.. code-block:: javascript
+    | Dep Name | Parent | Status   | Version |
+    | -------- | ------ | -------- | ------- |
+    | foo      | None   | Local    | 1.2.3   |
+    | foo      | bar    | Incoming | < 1.2.3 |
+    | foo      | baz    | Incoming | > 1.2.3 |
+    | -------- | ------ | -------- | ------- |
+    | curl     | git    | Local    | 7.36.0  |
+    | curl     | pacman | Incoming | 7.37.0  |
+    | -------- | ------ | -------- | ------- |
+    | lua      | vlc    | Incoming | 5.2.3   |
+    | lua      | conky  | Incoming | 5.2.2   |
 
-    // As JSON:
-    { [ { "Name": "foo"
-        , "Local": { "Parent": "None"
-                   , "Version": "1.2.3" }
-        , "Incoming": [ { "Parent": "bar"
-                        , "Version": "< 1.2.3" }
-                      , { "Parent": "baz"
-                        , "Version": "> 1.2.3" }
-                      ]
-        }
-      , { "Name": "curl"
-        , "Local": { "Parent": "git"
-                   , "Version": "7.36.0" }
-        , "Incoming": [ { "Parent": "pacman"
-                        , "Version": "7.37.0" }
-                      ]
-        }
-      , { "Name": "lua"
-        , "Local": "None"
-        , "Incoming": [ { "Parent": "vlc"
-                        , "Version": "5.2.3" }
-                      , { "Parent": "conky"
-                        , "Version": "5.2.2" }
-                      ]
-        }
-      ]
-    }
+.. raw:: latex
+
+   \begin{shaded}
+   \begin{lstlisting}[language=haskell]
+   // As JSON:
+   { [ { ``Name'': ``foo'',
+         ``Local'': { ``Parent'': ``None'',
+                      ``Version'': ``1.2.3'' },
+         ``Incoming'': [ { ``Parent'': ``bar'',
+                           ``Version'': ``< 1.2.3'' },
+                         { ``Parent'': ``baz'',
+                           ``Version'': ``> 1.2.3'' }
+                       ]
+       },
+       { ``Name'': ``curl'',
+         ``Local'': { ``Parent'': ``git''
+                    , ``Version'': ``7.36.0'' },
+         ``Incoming'': [ { ``Parent'': ``pacman'',
+                           ``Version'': ``7.37.0'' }
+                       ]
+       },
+       { ``Name'': ``lua'',
+         ``Local'': ``None'',
+         ``Incoming'': [ { ``Parent'': ``vlc'',
+                           ``Version'': ``5.2.3'' },
+                         { ``Parent'': ``conky'',
+                           ``Version'': ``5.2.2'' }
+                       ]
+       }
+     ]
+   }
+   \end{lstlisting}
+   \end{shaded}
 
 Dependency Information Output
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  Information for all immediate dependencies for any given package can
    be output in human-readable format by default with ``-{A,S}d``.
+
 -  Adding ``--recursive`` will yield all dependencies and *their*
    dependencies as well.
+
 -  Adding ``--json`` will output this information in JSON for use by
    other software that may sit on top of Aura.
 
@@ -145,146 +337,118 @@ Concurrent Package Building
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  Package data is returned from dependency checking in the form
-   ``[[Package]]`` (see `Dependency
-   Resolution <#dependency-resolution>`__). Each sublist of packages
-   have no interdependencies, so they are built concurrent to each other
-   and then installed as a block.
-
-Package State Backups
-^^^^^^^^^^^^^^^^^^^^^
-
--  ``aura -B`` stores a snapshot of all currently installed packages and
-   their versions in ``/var/cache/aura/states``.
--  Filenames are of the form: ``YYYY.MM(MonthName).DD.HH.MM``
--  The data itself is stored as JSON to ease use by other tools:
-
-.. code-block:: javascript
-
-    { "date": "2014-04-09"
-    , "time": "20:00"
-    , "packages": [ { "pkgname": "alsa-lib"
-                    , "version": "1.0.27.2-1" }
-                    // more packages here
-                  ]
-    }
+   ``[[Package]]`` (see `Dependency Resolution`_). Each sublist of
+   packages have no interdependencies, so they are built concurrent to
+   each other and then installed as a block.
 
 PkgInfo
 ~~~~~~~
 
 -  ``-{S,A,Q}i`` yields ``PkgInfo`` data. It holds:
+
 -  Repository name
+
 -  Package name
+
 -  Version
+
 -  Description
+
 -  Architecture
+
 -  URL
+
 -  Licenses
--  "Provides"
+
+-  “Provides”
+
 -  Dependencies
--  "Conflicts With"
+
+-  “Conflicts With”
+
 -  Maintainer
--  Optional fields (provided as ``[(String,String)]``):
+
+-  Optional fields (provided as ``[(Text,Text)]``):
 
    -  Download/Install sizes
+
    -  Group
+
    -  Votes
+
    -  GPG information
+
    -  etc.
 
 Abnormal Termination
 ~~~~~~~~~~~~~~~~~~~~
 
--  Users can halt Aura with ``Ctrl-d``. The message ``Stopping Aura...``
-   is shown. All temporary files in use are cleared here.
+Users can halt Aura with ``Ctrl-d``. The message ``Stopping Aura...`` is
+shown. All temporary files in use are cleared here.
 
 Colour Output
 ~~~~~~~~~~~~~
 
--  All output to terminal (save JSON data) is output in colour where
-   appropriate. The user can disable this with ``--no-colo{ur,r}``
+All output to terminal (save JSON data) is output in colour where
+appropriate. The user can disable this with
+
+Usage Tips
+~~~~~~~~~~
+
+| The user is shown usage tips when waiting for dependencies to resolve,
+  etc. A number of tips are Aura-centric, but distro-specific ones can be
+  defined in .
+| 
 
 Plugins
 -------
 
-This is very early stage planning. Suggestions:
+Like XMonad, behaviour is built around hooks/plugins that are themselves
+written in Haskell. Each Linux distribution writes and provides to
+:ref:`auraconf` functions that fill certain type/behaviour requirements
+as explained below.
 
-1. Like XMonad, behaviour is built around hooks/plugins that are
-   themselves written in Haskell.
+.. _auraconf:
 
--  Hooks like ``buildHook``, ``apiHook``, ``installHook`` etc., that can
-   be overridden or added to.
--  Aura comes bundled with default behaviour, and a ``AuraConf.hs`` is
-   written somewhere for the users to edit if they wish.
--  Some command ``aura --recompile`` could rebuild it with the new
-   Haskell-based changes added in.
--  ``AuraConf.hs`` could potentially be ``.pacnew``\ d if need be.
--  **PROS**
+AuraConf
+~~~~~~~~
 
-   -  Finally there would be a configuration file for Aura.
-   -  The ability to "turn off" plugins. Installed ones, if not added to
-      ``AuraConf.hs`` wouldn't run.
-   -  Operations would be guaranteed to run through the Aura Monad
-      (where appropriate).
+:ref:`auraconf` is Aura’s configuration file. It is typically located in
+Here, distributions and users can add Hooks to define custom behaviour
+for their native packaging system. The command rebuilds Aura with new
+Hooks. Also, the following paths can be defined in this file:
 
--  **CONS**
+-  Package cache.
 
-   -  ``aura --recompile`` wouldn't work without all the Haskell
-      dependencies. Users of the pre-built version wouldn't be able to
-      do any configuration. A possible work-around of this would be to
-      offer ``bundles``, that is, pre-built versions that would have all
-      the hooks built-in already so the end user wouldn't have to think
-      twice about it.
-   -  Hooks can only be written in Haskell.
+-  Aura log file.
 
-2. Haskell Data via Haskell Actors:
+-  Default build directory.
 
--  Build ``stages`` could be defined (Dep Check, Build, Install, etc.)
-   and the plugin would indicate which stage it was for.
--  Haskell data could be passed between actors to ensure type safety.
-   Those plugins could be packaged as ``aura-plugin-foo`` and installed
-   to some specific location where Aura would call for them.
--  The actors can do essentially anything so long as they return what
-   they've promised. That is, a process for the ``Dep Check`` stage
-   could be given a list of packages to look up, then do so by any means
-   it wishes, then return data in the form ``[[Package]]`` as explained
-   in the Dependency Resolution section above.
--  **PROS**
+-  Mirror URLs for binary downloads.
 
-   -  Type safety.
-   -  No Haskell deps necessary.
-   -  Operations would be guaranteed to run through the Aura Monad
-      (where appropriate).
+-  TODO: What else?
 
--  **CONS**
+Hook List
+~~~~~~~~~
 
-   -  Plugins can only be written in Haskell.
-
-3. JSON Data via stdin/stdout:
-
--  This is how `neovim <https://github.com/neovim/neovim>`__ plans to
-   implement their plugin system. A child program written in **any
-   language** is fed JSON data from Aura, and will return JSON after
-   processing.
--  The child process could be located somewhere central, in folders
-   indicating what stage they're for, then called by Aura and passed
-   data.
--  These plugins could packaged as ``aura-plugin-foo`` and installed to
-   said central location.
--  **PROS**
-
-   -  Plugins can be written in any language, opening the doors for lots
-      of community contribution.
-   -  JSON is universal.
-
--  **CONS**
-
-   -  Potential for lots of dependencies if plugins are written in a
-      multitude of languages (especially non-compiled ones).
-   -  Handling errors/failures might be difficult, since the processes
-      are separate and not handled through the Aura Monad.
+Pending.
 
 Aesthetics
 ----------
+
+Localisation
+~~~~~~~~~~~~
+
+Aura is available for use in multiple languages. Language can be set via
+environment variables or by using Aura flags that correspond to that
+language. Note that use of a flag will override whatever environment
+variable is set. Each language has an English name and its native
+equivalent (accents and other non-ascii characters are compatible). For
+example:
+
+-   and
+
+-  and
 
 Version Information when Upgrading
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -294,8 +458,8 @@ Version Information when Upgrading
 Aura Versioning
 ~~~~~~~~~~~~~~~
 
--  Aura uses `Semantic Versioning <http://semver.org/>`__, meaning it's
-   version numbers are of the form ``MAJOR.MINOR.PATCH``.
+-  Aura uses `Semantic Versioning`_, meaning it’s version numbers are of
+   the form ``MAJOR.MINOR.PATCH``.
 
 Haskell Requirements
 --------------------
@@ -303,39 +467,57 @@ Haskell Requirements
 Strings
 ~~~~~~~
 
--  All Strings are represented as ``Text`` from ``Data.Text``. This is
-   available in the ``text`` package from Hackage.
+All Strings are represented as from ``Data.Text``. This is available in
+the ``text`` package from Hackage. The following language pragma should
+be used where appropriate for String literals being converted to
+automatically:
 
-.. code-block:: haskell
+.. raw:: latex
 
-    {-# LANGUAGE OverloadedStrings #-}
-
-should be used where appropriate for String literals being converted to
-Text automatically.
+   \begin{shaded}
+   \begin{lstlisting}[language=haskell]
+   {-# LANGUAGE OverloadedStrings #-}
+   \end{lstlisting}
+   \end{shaded}
 
 JSON Data
 ~~~~~~~~~
 
--  All JSON input and output is handled through ``aeson`` and
-   ``aeson-pretty``.
+All JSON input and output is handled through the ``aeson`` and
+``aeson-pretty`` packages.
+
+Parsing
+~~~~~~~
+
+| All parsing is done with Parsec. Regular Expressions are no longer
+  used anywhere in Aura.
+| 
 
 Other Libraries
 ~~~~~~~~~~~~~~~
 
 Information on other Hackage libraries used in Aura can be found
-`here <https://github.com/fosskers/aura/issues/223>`__.
+`here`_.
 
 Package Requirements
 --------------------
 
-Aura must be available in the following forms: - ``haskell-aura`` An AUR
-package pulled from Hackage, with all special install instructions
-contained in ``Setup.hs``. - ``aura`` What was ``aura-bin`` in Aura 1. A
-pre-built binary for those with no interest in Haskell. The old
-``aura-bin`` package will be noted as depreciated, left as Aura 1, and
-removed from the AUR **two** months after the release of Aura 2. -
-``aura-git`` the same as is currently available. Should man page install
-instructions, etc., be in ``Setup.hs`` the same as ``haskell-aura``?
+Aura must be available in the following forms:
+
+-  | ``haskell-aura``
+   | An AUR package pulled from Hackage, contains only the Aura “shell”
+     layer. The user must install another package to get the Arch Linux
+     Hooks, and then build the executable themselves.
+
+-  | ``aura``
+   | Official Arch-flavoured Aura, built and configured in a cabal
+     sandbox. *cabal-install* is the only Haskell related dependency.
+
+-  | ``haskell-aura-git``
+   | Most recent version of Aura, as found on its source repository.
+
+-  | ``aura-legacy``
+   | A static copy of Aura 1. Has Haskell dependencies.
 
 Arch Linux Specifics
 ====================
@@ -345,8 +527,11 @@ ABS Package Building/Installation
 
 -  There is no longer a ``-M`` option. All ABS package interaction is
    done through ``-S``.
+
 -  Installs prebuilt binaries available from Arch servers by default.
+
 -  Build options:
+
 -  If the user specifies ``--build``, the package will be built manually
    via the ABS.
 
@@ -359,17 +544,20 @@ AUR Package Building/Installation
 PKGBUILD/Additional Build-file Editing
 --------------------------------------
 
--  Support for ``customizepkg`` is dropped, as AUR 3.0 provides
+-  Support for ``customizepkg`` is dropped, as AUR 3.x provides
    dependency information via its API.
+
 -  Users can edit included ``.install`` files and the **behaviour** of
    PKGBUILDs with ``--edit``. This is done after dependency checks have
    been made via the data from the AUR API. Users are urged *not* to
    edit dependencies at this point, as only ``makepkg``, not Aura, will
    know about the changes.
+
 -  If you do want to build a package with different dependencies,
    consider whether there is value in creating your own forked package
    for the AUR (named ``foo-legacy``, etc.). Others may benefit from
    your effort.
+
 -  If you are trying to fix a broken package, rather than circumventing
    the problem by building manually with ``makepkg``, please contact the
    maintainer.
@@ -378,8 +566,10 @@ AUR Interaction
 ---------------
 
 -  AUR API calls are moved out of Aura and into a new Hackage package
-   ``archlinux-aur`` (exposing the ``Linux.Arch.Aur`` module).
+   ``aur`` (exposing the ``Linux.Arch.Aur.*`` modules).
+
 -  It provides conversions to and from JSON data and Haskell data.
+
 -  This is preparation for future versions of Aura that allow use in
    other Linux distributions by swapping out sections of their back-end
    (with modules like ``Linux.Debian.Repo`` etc.)
@@ -391,12 +581,21 @@ Record Syntax
 -------------
 
 When using record syntax for ADTs, function names should be suffixed
-with "Of" to reflect their noun-like nature:
+with “Of” to reflect their noun-like nature:
 
-.. code-block:: haskell
+.. raw:: latex
 
-    data Package = Package { nameOf    :: String
-                           , versionOf :: Version
-                           , depsOf    :: [Package] }
-                           deriving (Eq, Show)
+   \begin{shaded}
+   \begin{lstlisting}[language=haskell]
+   data Package = Package { nameOf    :: String
+                          , versionOf :: Version
+                          , depsOf    :: [Package] }
+                          deriving (Eq, Show)
+   \end{lstlisting}
+   \end{shaded}
 
+.. _Aura: https://github.com/fosskers/aura
+.. _attemping to create universal standards can be problematic: http://www.xkcd.com/927/
+.. _Dependency Resolution: /DESIGN.md#dependency-resolution
+.. _Semantic Versioning: http://semver.org/
+.. _here: https://github.com/fosskers/aura/issues/223
