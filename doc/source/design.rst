@@ -40,19 +40,20 @@ General
 
 Aura handles three types of packages:
 
--  Repository Packages: Prebuilt binaries available direct from the
-   user’s Distribution.
+Repository Packages
+   Prebuilt binaries available direct from the user’s Distribution.
 
--  Foreign Packages: Packages that generally need to be compiled by the
-   user. Their versioning/source locations may be managed by the
-   Distribution is some way.
+Foreign Packages
+   Packages that generally need to be compiled by the user. Their
+   versioning/source locations may be managed by the Distribution is some way.
 
--  Local Packages: Packages installed on the user’s system. Records of them and
-   the files belonging to them are stored in a database, and package files
-   themselves are stored in a cache (in :file:`/var/cache/` or elsewhere).
+Local Packages
+   Packages installed on the user’s system. Records of them and the files
+   belonging to them are stored in a database, and package files themselves are
+   stored in a cache (in :file:`/var/cache/` or elsewhere).
 
-A number of operations can be performed on these package types, as
-explained below.
+A number of operations can be performed on these package types, as explained
+below.
 
 Repository Package Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -496,20 +497,20 @@ Package Requirements
 
 Aura must be available in the following forms:
 
--  | ``haskell-aura``
-   | An AUR package pulled from Hackage, contains only the Aura “shell”
-     layer. The user must install another package to get the Arch Linux
-     Hooks, and then build the executable themselves.
+``haskell-aura``
+   An AUR package pulled from Hackage, contains only the Aura “shell” layer.
+   The user must install another package to get the Arch Linux Hooks, and then
+   build the executable themselves.
 
--  | ``aura``
-   | Official Arch-flavoured Aura, built and configured in a cabal
-     sandbox. *cabal-install* is the only Haskell related dependency.
+``aura``
+   Official Arch-flavoured Aura, built and configured in a cabal sandbox.
+   ``cabal-install`` is the only Haskell related dependency.
 
--  | ``haskell-aura-git``
-   | Most recent version of Aura, as found on its source repository.
+``haskell-aura-git``
+   Most recent version of Aura, as found on its source repository.
 
--  | ``aura-legacy``
-   | A static copy of Aura 1. Has Haskell dependencies.
+``aura-legacy``
+   A static copy of Aura 1. Has Haskell dependencies.
 
 Arch Linux Specifics
 ====================
