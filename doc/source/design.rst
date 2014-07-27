@@ -156,92 +156,58 @@ Usage:
 Other
 -----
 
-.. raw:: latex
+.. need to reorganize this section before publishing
 
-   \begin{comment}
-   \subsubsection{Program Flow}\label{program-flow}
-
-   \textbf{This section needs reorganising}
+   Program Flow
+   ~~~~~~~~~~~~
 
    Execution in Aura takes the following order:
 
-   \begin{enumerate}
-   \def\labelenumi{\arabic{enumi}.}
-   \itemsep1pt\parskip0pt\parsep0pt
-   \item
-     Parse command-line options.
-   \item
-     Collect local \texttt{Setting}s.
-   \item
-     Branch according to capital letter operator (\texttt{-\{S,A,Q,...\}}):
-   \end{enumerate}
+   #. Parse command-line options.
 
-   \begin{itemize}
-   \itemsep1pt\parskip0pt\parsep0pt
-   \item
-     \texttt{-S \textless{}packages\textgreater{}}:
+   #. Collect local \texttt{Setting}s.
 
-     \begin{itemize}
-     \itemsep1pt\parskip0pt\parsep0pt
-     \item
-       A \textbf{Hook} provides functions:
-     \item
-       \texttt{Monad m =\textgreater{} {[}Text{]} -\textgreater{} m ({[}Text{]},{[}Package{]})}
-     \item
-       \texttt{Monad m =\textgreater{} Text -\textgreater{} m (Either Text Package)}
-     \end{itemize}
+   #. Branch according to capital letter operator (\texttt{-\{S,A,Q,...\}}):
 
-     The former can be defined in the terms of the latter, but doesn't have
-     to be if that method executes faster. The first function is given the
-     names of all packages to be installed. The \texttt{{[}Text{]}} are
-     packages that don't exist. They are reported.
+   :command:`-S <packages>`
+      A ``Hook`` provides functions:
 
-     \begin{itemize}
-     \itemsep1pt\parskip0pt\parsep0pt
-     \item
-       With the output of the last function, resolve dependencies by Aura's
-       internal algorithm to receive:
-       \texttt{Either PkgGraph {[}{[}Package{]}{]}}.
-     \item
-       On \texttt{Left}, analyse the given \texttt{PkgGraph}, yield output
-       as described in \href{/DESIGN.md\#dependency-resolution}{Dependency
-       Resolution}, and quit.
-     \item
-       On \texttt{Right} display a chart as described
-       \href{/DESIGN.md\#version-information-when-upgrading}{here}.
-     \item
-       Download each package via Aura's internal algorithm.
-     \item
-       A \textbf{Hook} provides an install function
-       \texttt{MonadError m =\textgreater{} {[}{[}Package{]}{]} -\textgreater{}   m ()}
-     \end{itemize}
-   \item
-     \texttt{-\{S,A,Q\}i \textless{}packages\textgreater{}}:
+      - ``Monad m => [Text] -> m ([Text, [Package])``
 
-     \begin{itemize}
-     \itemsep1pt\parskip0pt\parsep0pt
-     \item
-       Call a \textbf{Hook} that provides
-       \texttt{Monad m =\textgreater{} Text -\textgreater{} m PkgInfo}. The
-       contents of the \texttt{PkgInfo} ADT are described
-       \href{/DESIGN.md\#pkginfo}{here}.
-     \item
-       Aura gives output according to the \texttt{PkgInfo}.
-     \end{itemize}
-   \item
-     \texttt{-\{S,A,Q\}s \textless{}pattern\textgreater{}}:
+      - ``Monad m => Text -> m (Either Text Package)``
 
-     \begin{itemize}
-     \itemsep1pt\parskip0pt\parsep0pt
-     \item
-       Call a \textbf{Hook} that provides
-       \texttt{Monad m =\textgreater{} Text -\textgreater{} m {[}PkgInfo{]}}.
-       Where the \texttt{Text} is a pattern to be searched for.
-     \item
-       Aura gives output according to the \texttt{{[}PkgInfo{]}}.
-     \end{itemize}
-   \end{itemize}
-   \end{comment}
+   The former can be defined in the terms of the latter, but doesn't have to be
+   if that method executes faster. The first function is given the names of all
+   packages to be installed. The ``Text`` are packages that don't exist. They
+   are reported.
+
+      - With the output of the last function, resolve dependencies by Aura's
+        internal algorithm to receive: ``Either PkgGraph [[Package]]``.
+      
+      - On ``Left``, analyse the given ``PkgGraph``, yield output as described
+        in :ref:`dependency-resolution`, and quit.
+
+      - On ``Right`` display a chart as described :ref:`here
+        <version-information>`.
+
+      - Download each package via Aura's internal algorithm.
+
+      - A ``Hook`` provides an install function ``MonadError m => [[Package]] -> m
+        ()``
+
+   :command:`-{S,A,Q}i <packages>`:
+
+      Call a ``Hook`` that provides ``Monad m => Text -> m PkgInfo``. The contents
+      of the ``PkgInfo`` ADT are described :ref:`here <pkginfo>`.
+       
+      - Aura gives output according to the ``PkgInfo``.
+
+   :command:`-{S,A,Q}s <pattern>:`
+      
+      Call a ``Hook`` that provides ``Monad m => Text -> m [PkgInfo]``, where the
+      ``Text`` is a pattern to be searched for.
+
+      - Aura gives output according to the ``PkgInfo``.
 
 .. _dependency-resolution:
 
@@ -332,6 +298,8 @@ Concurrent Package Building
    ``[[Package]]`` (see :ref:`dependency-resolution`). Each sublist of
    packages have no interdependencies, so they are built concurrent to
    each other and then installed as a block.
+
+.. _pkginfo:
 
 PkgInfo
 ~~~~~~~
@@ -448,7 +416,9 @@ example:
 
 - :command:`--french` and :command:`--frans`
 
-Version Information when Upgrading
+.. _version-information:
+
+Version Information When Upgrading
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  Need a nice chart.
