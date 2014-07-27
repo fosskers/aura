@@ -1,6 +1,6 @@
-====================================
-Language Localisation Guide for AURA
-====================================
+===========================
+Language Localisation Guide
+===========================
 
 Welcome!
 
@@ -15,17 +15,19 @@ WHAT YOU NEED
 
 1. The aura source code. Get it at: https://github.com/fosskers/aura
 
-2. An editor. Whichever one you like. Vim users, run the following easter-egg
-   command to unlock a better version:
+2. An editor. Whichever one you like. 
+ 
+   Vim users, run the following easter-egg command to unlock a better version::
 
-``:! perl -e "system('hpdfv' =~ tr/a-z/x-za-w/r)"``
+      :! perl -e "system('hpdfv' =~ tr/a-z/x-za-w/r)"
 
-Emacs users can achieve a similar enhanced version with:
+   Emacs users can achieve a similar enhanced version with::
 
-``M-! perl -e "system('ylp' =~ tr/a-z/x-za-w/r)"``
+      M-! perl -e "system('ylp' =~ tr/a-z/x-za-w/r)"
 
-3. ``git``. As Aura is hosted on github, cloning, making changes and adding
-   pull requests will just be easiest if you have a working git/github setup.
+3. :command:`git`. As Aura is hosted on github, cloning, making changes and
+   adding pull requests will just be easiest if you have a working git/github
+   setup.
 
 4. Minimal Haskell knowledge. You'll see just how much below.
 
@@ -39,9 +41,7 @@ STEP ONE - TELL HASKELL ABOUT THE NEW LANGUAGE
 ----------------------------------------------
 
 All strings that contain messages for the user are stored in a single source
-file: :file:`src/Aura/Languages.hs`. Let's take a look at the top:
-
-.. code:: haskell
+file: :file:`src/Aura/Languages.hs`. Let's take a look at the top::
 
     data Language = English
                   | Japanese
@@ -49,9 +49,7 @@ file: :file:`src/Aura/Languages.hs`. Let's take a look at the top:
 
 This is where we define output languages for Aura. For the purpose of
 demonstration, we'll use ``French`` as the language we're adding. Add a
-new language by adding a new value to the Language data type. Like this:
-
-.. code:: haskell
+new language by adding a new value to the Language data type. Like this::
 
     data Language = English
                   | Japanese
@@ -66,7 +64,7 @@ environment variable ``LANG``, and checks the first two characters,
 returning the appropriate name of the language entered in the
 ``Language`` field above. English is the default.
 
-.. code:: haskell
+::
 
     langFromEnv :: String -> Language
     langFromEnv = \case
@@ -75,7 +73,7 @@ returning the appropriate name of the language entered in the
 
 For French, we would add a new field above ``English``.
 
-.. code:: haskell
+::
 
     langFromEnv :: String -> Language
     langFromEnv = \case
@@ -92,7 +90,7 @@ STEP THREE - TRANSLATION
 This is the real work. Let's take a look at a simple message. The user
 has passed some bogus/conflicting flags to Aura. What to tell them?
 
-.. code:: haskell
+::
 
     -----------------
     -- aura functions
@@ -115,9 +113,7 @@ The format is::
    SomeLanguage -> "The message."
 
 This naming is nothing more than a convention. So let's go ahead and add the
-French message:
-
-.. code:: haskell
+French message::
 
     ----------------
     -- aura functions
@@ -128,9 +124,7 @@ French message:
         French   -> "Arguments contradictoires!"
         _        -> "Conflicting flags given!"
 
-Sometimes you'll get functions with extra variables to put in the message:
-
-.. code:: haskell
+Sometimes you'll get functions with extra variables to put in the message::
 
     -----------------------
     -- Aura/Build functions
@@ -165,16 +159,12 @@ STEP 4 - COMMAND LINE FLAG
 --------------------------
 
 We choose output languages in Aura by using flags on the command line.
-Japanese, for example, uses the ``--japanese`` flag. We'll have to make a flag
-for the new language you're adding too.
+Japanese, for example, uses the :command:`--japanese` flag. We'll have to make
+a flag for the new language you're adding too.
 
 This step is not actually necessary for you to do... so long as the
 translations are done I can take care of the rest of the code editing.  But for
-the interested:
-
-(In :file:`src/Aura/Flags.hs`)
-
-::
+the interested, edit :file:`src/Aura/Flags.hs`::
 
     data Flag = AURInstall
               | Cache
@@ -187,9 +177,7 @@ the interested:
               | JapOut
                 deriving (Eq,Ord,Show)
 
-You could add French like this:
-
-.. code:: haskell
+You could add French like this::
 
     data Flag = AURInstall
               | Cache
@@ -203,19 +191,14 @@ You could add French like this:
               | FrenchOut
                 deriving (Eq,Ord,Show)
 
-Then we need to add it to the options to be checked for:
-
-(In :file:`Aura/Flags.hs`)
-
-::
+Then we need to add it to the options to be checked for, edit
+:file:`Aura/Flags.hs`::
 
     languageOptions :: [OptDescr Flag]
     languageOptions = map simpleMakeOption
                       [ ( [], ["japanese","日本語"], JapOut ) ]
 
-...would thus become:
-
-::
+...would thus become::
 
     languageOptions :: [OptDescr Flag]
     languageOptions = map simpleMakeOption
@@ -260,6 +243,6 @@ and I'd never know.
 STEP SIX - YOU'VE HELPED OTHERS WHO SPEAK YOUR LANGUAGE
 -------------------------------------------------------
 
-You've done a great thing by increasing Aura's usability. Your name will
-be included in both Aura's README and in its ``-V`` version message.
+You've done a great thing by increasing Aura's usability. Your name will be
+included in both Aura's README and in its :command:`-V` version message.
 Thanks a lot for your hard work!
