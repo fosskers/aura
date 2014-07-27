@@ -191,7 +191,7 @@ htmlhelp_basename = 'auradoc'
 latex_elements = {
     "inputenc": "",
     "utf8extra": "",
-    "taleofcontents": "\\tableofcontents",
+    "tableofcontents": "\\tableofcontents",
 
 
 # The paper size ('letterpaper' or 'a4paper').

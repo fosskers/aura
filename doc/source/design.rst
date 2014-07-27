@@ -35,13 +35,6 @@ management software.
 Functionality
 =============
 
-.. raw:: latex
-
-   \colorbox{GreenYellow}{Paths are GreenYellow.}\\
-   \colorbox{SkyBlue}{Haskell function signatures are SkyBlue.}\\
-   \colorbox{Apricot}{CLI flags/commands are Apricot.}
-   \colorbox{Red}{TODOs / Decisions to make.}
-
 General
 -------
 
@@ -54,9 +47,9 @@ Aura handles three types of packages:
    user. Their versioning/source locations may be managed by the
    Distribution is some way.
 
--  Local Packages: Packages installed on the user’s system. Records of
-   them and the files belonging to them are stored in a database, and
-   package files themselves are stored in a cache (in or elsewhere).
+-  Local Packages: Packages installed on the user’s system. Records of them and
+   the files belonging to them are stored in a database, and package files
+   themselves are stored in a cache (in :file:`/var/cache/` or elsewhere).
 
 A number of operations can be performed on these package types, as
 explained below.
@@ -64,101 +57,100 @@ explained below.
 Repository Package Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-| Aura allows installation of prebuilt binaries from mirrors defined in
-  :ref:`auraconf`.
-| Usage:
+Aura allows installation of prebuilt binaries from mirrors defined in
+:ref:`auraconf`.
+
+Usage: :command:`aura -S <packages>`
 
 Foreign Package Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-| Aura allows installation of foreign packages, prebuilt or to be
-  compiled, from locations defined by Hooks in :ref:`auraconf`.
-| Not all distributions may support this type of installation.
-| Usage:
+Aura allows installation of foreign packages, prebuilt or to be compiled, from
+locations defined by Hooks in :ref:`auraconf`.  Not all distributions may
+support this type of installation.
+
+Usage: :command:`aura -A <packages>`
 
 Local Package Removal
 ~~~~~~~~~~~~~~~~~~~~~
 
-| Installed packages may be removed singularly, or in groups.
-| Usage:
+Installed packages may be removed singularly, or in groups.
 
--  Just the packages named:
+Usage:
 
--  Packages named and all deps (recursive):
+-  Just the packages named: :command:`aura -R <packages>`
+
+-  Packages named and all deps (recursive): :command:`aura -Rr <packages>`
 
 Package Search
 ~~~~~~~~~~~~~~
 
-| Searches on all three package types can be performed. A regular
-  expression is given to search on.
-| Usage:
+Searches on all three package types can be performed. A regular
+expression is given to search on.
 
--  Search repository packages:
+Usage:
 
--  Search foreign packages:
+-  Search repository packages: :command:`aura -Ss <pattern>`
 
--  Search local packages:
+-  Search foreign packages: :command:`aura -As <pattern>`
 
-| Aura will fail silently when no pattern is given.
-| Output sample:
+-  Search local packages: :command:`aura -Qs <pattern>`
 
-.. raw:: latex
+Aura will fail silently when no pattern is given.
 
-   \begin{shaded}
-   \begin{verbatim}
+Output sample::
+
    extra/nvidia 337.25-3 [installed]
        NVIDIA drivers for linux
    extra/nvidia-304xx 304.121-5
        NVIDIA drivers for linux, 304xx legacy branch
    extra/nvidia-304xx-libgl 304.121-2
        NVIDIA drivers libraries symlinks, 304xx legacy branch
-   \end{verbatim}
-   \end{shaded}
 
 Package Information
 ~~~~~~~~~~~~~~~~~~~
 
-| Queries for specific package information can be performed on all three
-  package types. The exact names of existing packages must be given.
-| Usage:
+Queries for specific package information can be performed on all three
+package types. The exact names of existing packages must be given.
 
--  Query repository packages:
+Usage:
 
--  Query foreign packages:
+-  Query repository packages: :command:`aura -Si <packages>`
 
--  Query local packages:
+-  Query foreign packages: :command:`aura -Ai <packages>`
+
+-  Query local packages: :command:`aura -Qi <packages>`
 
 Local Package Backups
 ~~~~~~~~~~~~~~~~~~~~~
 
-| The state of locally installed packages may be recorded and restored
-  at a later date.
-| Usage:
+The state of locally installed packages may be recorded and restored
+at a later date.
 
--  Store a snapshot of all installed packages:
+Usage:
 
-   -  This record is stored in .
+-  Store a snapshot of all installed packages: :command:`aura -B`
 
-   -  Filenames are of the form: ``YYYY.MM(MonthName).DD.HH.MM``
+   -  This record is stored in :file:`/var/cache/aura/states`.
 
-   -  The data itself is stored as JSON to ease use by other tools (seen
-      below).
+   -  Filenames are of the form: ``YYYY.MM(MonthName).DD.HH.MM``.
 
--  Restore a snapshot:
+   -  The data itself is stored as JSON to ease use by :ref:`other <other>`
+      tools.
 
-.. raw:: latex
+-  Restore a snapshot: :command:`aura -Br`
 
-   \begin{shaded}
-   \begin{lstlisting}[language=haskell]
-   { ``date'': ``2014-04-09'',
-     ``time'': ``20:00'',
-     ``packages'': [ { ``pkgname'': ``alsa-lib'',
-                       ``version'': ``1.0.27.2-1'' },
+.. code-block:: javascript
+
+   { "date": "2014-04-09",
+     "time": "20:00",
+     "packages": [ { "pkgname": "alsa-lib",
+                       "version": "1.0.27.2-1" },
                    // more packages here
                    ]
    }
-   \end{lstlisting}
-   \end{shaded}
+
+.. _other:
 
 Other
 -----
