@@ -191,18 +191,19 @@ htmlhelp_basename = 'auradoc'
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
-    "inputenc": "",
-    "utf8extra": "",
-    "tableofcontents": "\\tableofcontents",
-
-
+'inputenc': '',
+'utf8extra': '',
+'preamble': '''
+\usepackage{xeCJK}
+\setmainfont{DejaVu Sans}
+\setCJKmainfont{WenQuanYi Micro Hei}
+'''
 # The paper size ('letterpaper' or 'a4paper').
 #'papersize': 'letterpaper',
 
 # The font size ('10pt', '11pt' or '12pt').
 #'pointsize': '10pt',
 
-# Additional stuff for the LaTeX preamble.
 #'preamble': '',
 }
 
