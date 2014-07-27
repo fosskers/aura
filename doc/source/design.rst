@@ -242,6 +242,8 @@ Other
    \end{itemize}
    \end{comment}
 
+.. _dependency-resolution:
+
 Dependency Resolution
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -265,53 +267,50 @@ Dependency Resolution
 -  Supplying the ``--json`` flag will output this data as JSON for
    capture by other programs.
 
-::
 
-    | Dep Name | Parent | Status   | Version |
-    | -------- | ------ | -------- | ------- |
-    | foo      | None   | Local    | 1.2.3   |
-    | foo      | bar    | Incoming | < 1.2.3 |
-    | foo      | baz    | Incoming | > 1.2.3 |
-    | -------- | ------ | -------- | ------- |
-    | curl     | git    | Local    | 7.36.0  |
-    | curl     | pacman | Incoming | 7.37.0  |
-    | -------- | ------ | -------- | ------- |
-    | lua      | vlc    | Incoming | 5.2.3   |
-    | lua      | conky  | Incoming | 5.2.2   |
++----------+--------+----------+---------+
+| Dep Name | Parent | Status   | Version |
++==========+========+==========+=========+
+| foo      | None   | Local    | 1.2.3   |
+| foo      | bar    | Incoming | < 1.2.3 |
+| foo      | baz    | Incoming | > 1.2.3 |
++----------+--------+----------+---------+
+| curl     | git    | Local    | 7.36.0  |
+| curl     | pacman | Incoming | 7.37.0  |
++----------+--------+----------+---------+
+| lua      | vlc    | Incoming | 5.2.3   |
+| lua      | conky  | Incoming | 5.2.2   |
++----------+--------+----------+---------+
 
-.. raw:: latex
+.. code-block:: javascript
 
-   \begin{shaded}
-   \begin{lstlisting}[language=haskell]
    // As JSON:
-   { [ { ``Name'': ``foo'',
-         ``Local'': { ``Parent'': ``None'',
-                      ``Version'': ``1.2.3'' },
-         ``Incoming'': [ { ``Parent'': ``bar'',
-                           ``Version'': ``< 1.2.3'' },
-                         { ``Parent'': ``baz'',
-                           ``Version'': ``> 1.2.3'' }
-                       ]
+   { [ { "Name": "foo",
+         "Local": { "Parent": "None",
+                    "Version": "1.2.3" },
+         "Incoming": [ { "Parent": "bar",
+                         "Version": "< 1.2.3" },
+                       { "Parent": "baz",
+                         "Version": "> 1.2.3" }
+                     ]
        },
-       { ``Name'': ``curl'',
-         ``Local'': { ``Parent'': ``git''
-                    , ``Version'': ``7.36.0'' },
-         ``Incoming'': [ { ``Parent'': ``pacman'',
-                           ``Version'': ``7.37.0'' }
-                       ]
+       { "Name": "curl",
+         "Local": { "Parent": "git"
+                    "Version": "7.36.0" },
+         "Incoming": [ { "Parent": "pacman",
+                         "Version": "7.37.0" }
+                     ]
        },
-       { ``Name'': ``lua'',
-         ``Local'': ``None'',
-         ``Incoming'': [ { ``Parent'': ``vlc'',
-                           ``Version'': ``5.2.3'' },
-                         { ``Parent'': ``conky'',
-                           ``Version'': ``5.2.2'' }
-                       ]
+       { "Name": "lua",
+         "Local": "None",
+         "Incoming": [ { "Parent": "vlc",
+                         "Version": "5.2.3" },
+                         { "Parent": "conky",
+                           "Version": "5.2.2" }
+                     ]
        }
      ]
    }
-   \end{lstlisting}
-   \end{shaded}
 
 Dependency Information Output
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -329,7 +328,7 @@ Concurrent Package Building
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  Package data is returned from dependency checking in the form
-   ``[[Package]]`` (see `Dependency Resolution`_). Each sublist of
+   ``[[Package]]`` (see :ref:`dependency-resolution`). Each sublist of
    packages have no interdependencies, so they are built concurrent to
    each other and then installed as a block.
 
@@ -382,15 +381,16 @@ Colour Output
 ~~~~~~~~~~~~~
 
 All output to terminal (save JSON data) is output in colour where
-appropriate. The user can disable this with
+appropriate. The user can disable this with :command:`--no-color{ur,r}`.
 
 Usage Tips
 ~~~~~~~~~~
 
-| The user is shown usage tips when waiting for dependencies to resolve,
-  etc. A number of tips are Aura-centric, but distro-specific ones can be
-  defined in .
-| 
+The user is shown usage tips when waiting for dependencies to resolve,
+etc. A number of tips are Aura-centric, but distro-specific ones can be
+defined in :ref:`auraconf`.
+
+.. todo:: Decide frequenc and what command(s) cause these tips to appear.
 
 Plugins
 -------
@@ -405,10 +405,12 @@ as explained below.
 AuraConf
 ~~~~~~~~
 
-:ref:`auraconf` is Aura’s configuration file. It is typically located in
-Here, distributions and users can add Hooks to define custom behaviour
-for their native packaging system. The command rebuilds Aura with new
-Hooks. Also, the following paths can be defined in this file:
+.. todo:: document location of Aura's configuration file.
+
+AuraConf is Aura’s configuration file.  Here, distributions and users can add
+Hooks to define custom behaviour for their native packaging system. The command
+:command:`aura --recompile` rebuilds Aura with new Hooks. Also, the following
+paths can be defined in this file:
 
 -  Package cache.
 
@@ -431,6 +433,9 @@ Aesthetics
 Localisation
 ~~~~~~~~~~~~
 
+.. todo:: 
+   Document exactly which environment variables are relevant. Perhaps $LANG?
+
 Aura is available for use in multiple languages. Language can be set via
 environment variables or by using Aura flags that correspond to that
 language. Note that use of a flag will override whatever environment
@@ -438,9 +443,9 @@ variable is set. Each language has an English name and its native
 equivalent (accents and other non-ascii characters are compatible). For
 example:
 
--   and
+- :command:`--croatian` and :command:`--hrvatski`
 
--  and
+- :command:`--french` and :command:`--frans`
 
 Version Information when Upgrading
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -462,15 +467,9 @@ Strings
 All Strings are represented as from ``Data.Text``. This is available in
 the ``text`` package from Hackage. The following language pragma should
 be used where appropriate for String literals being converted to
-automatically:
+automatically::
 
-.. raw:: latex
-
-   \begin{shaded}
-   \begin{lstlisting}[language=haskell]
    {-# LANGUAGE OverloadedStrings #-}
-   \end{lstlisting}
-   \end{shaded}
 
 JSON Data
 ~~~~~~~~~
@@ -481,9 +480,10 @@ All JSON input and output is handled through the ``aeson`` and
 Parsing
 ~~~~~~~
 
-| All parsing is done with Parsec. Regular Expressions are no longer
-  used anywhere in Aura.
-| 
+.. todo:: Decide between Parsec and Attoparsec
+
+All parsing is done with Parsec. Regular Expressions are no longer
+used anywhere in Aura.
 
 Other Libraries
 ~~~~~~~~~~~~~~~
@@ -573,21 +573,14 @@ Record Syntax
 -------------
 
 When using record syntax for ADTs, function names should be suffixed
-with “Of” to reflect their noun-like nature:
+with “Of” to reflect their noun-like nature::
 
-.. raw:: latex
-
-   \begin{shaded}
-   \begin{lstlisting}[language=haskell]
    data Package = Package { nameOf    :: String
                           , versionOf :: Version
                           , depsOf    :: [Package] }
                           deriving (Eq, Show)
-   \end{lstlisting}
-   \end{shaded}
 
 .. _Aura: https://github.com/fosskers/aura
 .. _attemping to create universal standards can be problematic: http://www.xkcd.com/927/
-.. _Dependency Resolution: /DESIGN.md#dependency-resolution
 .. _Semantic Versioning: http://semver.org/
 .. _here: https://github.com/fosskers/aura/issues/223
