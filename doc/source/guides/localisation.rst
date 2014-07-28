@@ -145,7 +145,7 @@ you know what's going on, go ahead and add the translation::
     buildPackages_1 :: String -> Language -> String
     buildPackages_1 (bt -> p) = \case
         Japanese   -> p ++ "を作成中・・・"
-        French     -> "Construction de " ++ bt p ++ "…"
+        French     -> "Construction de " ++ p ++ "…"
         _          -> "Building " ++ p ++ "..."
 
 Obviously the syntax among languages is different, and so where you insert the
