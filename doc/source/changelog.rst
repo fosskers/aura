@@ -9,6 +9,7 @@ Aura Changelog
   on Aura 1 after this will be of `1.3.0.x`. You'll likely never see
   `1.3.1.x`.
 - Befitting a major release, we have:
+
   - New AUR interaction layer via the `aur` package. This fixes nasty
     "AUR lookup failed" errors.
   - `http-conduit` dropped for `wreq`, which is much easier to use.
@@ -75,7 +76,7 @@ Aura Changelog
 -------
 - `-As` results now sort by vote. Use `--abc` to sort alphabetically.
 - "[installed]" will now be shown in `-As` results if you have it.
-- Fixed Bash parsing bug involving `\` in arrays
+- Fixed Bash parsing bug involving `\\` in arrays
 - Fixed broken `-C`
 - Updated Italian translation
 - Updated French translation
@@ -314,7 +315,8 @@ Aura Changelog
 --------
 - Internet access moved to Network.Curl library.
 - `Bash.hs` library created to help with PKGBUILD parsing.
-  Can currently handle string expansions a la:
+  Can currently handle string expansions a la::
+
     "this-is-{awesome,neat}" => ["this-is-awesome","this-is-neat"]
 
 0.9.2.3
@@ -351,7 +353,7 @@ Aura Changelog
 -------
 - Help message now supports multiple languages.
 - Broke "no overlapping options" convention. 
-`-Cz` is now `-Cb`.
+- `-Cz` is now `-Cb`.
 - New option `-Ad`. Lists _all_ dependencies of an AUR package.
   This is to aid pre-building research.
   This option shows information you can't get from looking at PKGBUILDS!
