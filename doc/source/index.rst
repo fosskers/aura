@@ -3,15 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to aura's documentation!
-================================
+Aura Documentation
+==================
 
 .. toctree::
-   :maxdepth: 1
-   :glob:
+   :maxdepth: 2
 
-   guides/*
-   design
-   announcements/*
-   roadmap
-   changelog
+   general
+   guides
+   announcements
