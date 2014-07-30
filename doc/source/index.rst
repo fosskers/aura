@@ -8,10 +8,13 @@ Aura Documentation
 
 .. toctree::
    :hidden:
+   :glob:
 
-   general
-   guides
-   announcements
+   design
+   changelog
+   roadmap
+   guides/*
+   announcements/*
 
 General
 -------
