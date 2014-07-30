@@ -10,10 +10,10 @@ If you're reading this then it's likely that you want to help localise Aura
 into another language. Arch users everywhere can benefit from your
 contribution, and its a great opportunity to contribute to Open Source.
 
-WHAT YOU NEED
+What You Need
 =============
 
-1. The aura source code. Get it at: https://github.com/fosskers/aura
+1. The aura source code. Get it at: https://github.com/aurapm/aura
 
 2. An editor. Whichever one you like. 
  
@@ -26,18 +26,19 @@ WHAT YOU NEED
       M-! perl -e "system('ylp' =~ tr/a-z/x-za-w/r)"
 
 3. :command:`git`. As Aura is hosted on github, cloning, making changes and
-   adding pull requests will just be easiest if you have a working git/github
+   adding pull requests will be easiest if you have a working git/github
    setup.
 
 4. Minimal Haskell knowledge. You'll see just how much below.
 
-5. A brain (hopefully yours) with a language in it. I don't sprechen Deutsch,
-   говорить России, nor do I يتكلم العربية, so that's where you come in.
+5. A brain (hopefully yours) with a language in it. As for me,
+   no hablo español, Я не могу говорить по-русски, nor do I يتكلم العربية,
+   so that's where you come in.
 
-GETTING STARTED
+Getting Started
 ===============
 
-STEP ONE - TELL HASKELL ABOUT THE NEW LANGUAGE
+Step One - Tell Haskell About the New Language
 ----------------------------------------------
 
 All strings that contain messages for the user are stored in a single source
@@ -56,7 +57,7 @@ new language by adding a new value to the Language data type. Like this::
                   | French  -- Added a pipe character and the Language name.
                     deriving (Eq,Enum,Show)
 
-STEP TWO - ADDING YOUR LANGUAGE'S LOCALE CODE
+Step Two - Adding your Language's Locale Code
 ---------------------------------------------
 
 See the function ``langFromEnv``. It is given the contents of the
@@ -84,7 +85,7 @@ For French, we would add a new field above ``English``.
 Don't know your locale code? You can find them all in
 :file:`/usr/share/i18n/locales`.
 
-STEP THREE - TRANSLATION
+Step Three - Translation
 ------------------------
 
 This is the real work. Let's take a look at a simple message. The user
@@ -155,8 +156,8 @@ Also, I enjoy backticks. As a convention I wrap up all package names in these
 messages in backticks, using the ``bt`` function as seen in the examples. This
 also colours them cyan.
 
-STEP 4 - COMMAND LINE FLAG
---------------------------
+Step Four - Command-line Flag
+-----------------------------
 
 We choose output languages in Aura by using flags on the command line.
 Japanese, for example, uses the :command:`--japanese` flag. We'll have to make
@@ -188,7 +189,7 @@ You could add French like this::
               | Version
               | Help
               | JapOut
-              | FrenchOut
+              | FrenchOut  -- Here.
                 deriving (Eq,Ord,Show)
 
 Then we need to add it to the options to be checked for, edit
@@ -229,20 +230,19 @@ options. Let's add French.
 
 Where ``FrenchOut`` is the value you added to ``Flags`` above.
 
-STEP FIVE - PULL REQUEST
+Step Five - Pull Request
 ------------------------
 
-With the translations complete, you'll need to tell me about it on
-github. Once I check over your changes I'll release a new version of
-Aura with your language included as soon as possible. Provided you
-followed the above instructions, this shouldn't take long. Furthermore,
-I won't be able to proofread the translation itself, as I don't speak
-your language. You could hide your doomsday take-over plans in my code
-and I'd never know.
+With the translations complete, you'll need to tell us about it on github.
+Once your changes are looked over, we'll release a new version of Aura with
+your language included as soon as possible. Provided you followed the above
+instructions, this shouldn't take long. Furthermore, chances are we won't be
+able to proofread the translation itself, as we probably don't speak your
+language. You could hide your doomsday take-over plans in the code and no
+one would know.
 
-STEP SIX - YOU'VE HELPED OTHERS WHO SPEAK YOUR LANGUAGE
+Step Six - You've Helped Others who Speak your Language
 -------------------------------------------------------
-
 You've done a great thing by increasing Aura's usability. Your name will be
 included in both Aura's README and in its :command:`-V` version message.
 Thanks a lot for your hard work!
