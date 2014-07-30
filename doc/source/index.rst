@@ -7,8 +7,24 @@ Aura Documentation
 ==================
 
 .. toctree::
-   :maxdepth: 2
+   :hidden:
 
    general
    guides
    announcements
+
+General
+-------
+- :doc:`design`
+- :doc:`changelog`
+- :doc:`roadmap`
+
+Guides
+------
+- :doc:`guides/localisation`
+- :doc:`guides/hacking`
+- :doc:`guides/backups-with-cron`
+
+Announcements
+-------------
+- :doc:`announcements/1.1-release`
