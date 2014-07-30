@@ -197,6 +197,7 @@ latex_elements = {
 \usepackage{xeCJK}
 \setmainfont{DejaVu Sans}
 \setCJKmainfont{WenQuanYi Micro Hei}
+\setcounter{tocdepth}{3}
 '''
 # The paper size ('letterpaper' or 'a4paper').
 #'papersize': 'letterpaper',

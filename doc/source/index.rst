@@ -11,10 +11,10 @@ Aura Documentation
    :glob:
 
    design
-   changelog
    roadmap
    guides/*
    announcements/*
+   changelog
 
 General
 -------
