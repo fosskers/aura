@@ -16,6 +16,10 @@ Aura Documentation
    announcements/*
    changelog
 
+Aura is a package manager for Arch Linux. It's main purpose is as an
+"AUR helper", in that it automates the process of installating packages
+from the Arch User Repositories. It is, however, capable of much more.
+
 General
 -------
 - :doc:`design`
