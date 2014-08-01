@@ -13,7 +13,7 @@ from the Arch User Repositories. It is, however, capable of much more.
 General
 -------
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    design
 
@@ -27,7 +27,7 @@ Guides
 ------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    guides/localisation
    guides/hacking
@@ -36,6 +36,7 @@ Guides
 Announcements
 -------------
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
+   :glob:
 
-   announcements/1.1-release
+   announcements/*
