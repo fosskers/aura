@@ -6,32 +6,35 @@
 Aura Documentation
 ==================
 
-.. toctree::
-   :hidden:
-   :glob:
-
-   design
-   roadmap
-   guides/*
-   announcements/*
-   changelog
-
 Aura is a package manager for Arch Linux. It's main purpose is as an
 "AUR helper", in that it automates the process of installating packages
 from the Arch User Repositories. It is, however, capable of much more.
 
 General
 -------
-- :doc:`design`
-- :doc:`changelog`
-- :doc:`roadmap`
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   design
+   changelog
+   roadmap
 
 Guides
 ------
-- :doc:`guides/localisation`
-- :doc:`guides/hacking`
-- :doc:`guides/backups-with-cron`
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   guides/localisation
+   guides/hacking
+   guides/backups-with-cron
 
 Announcements
 -------------
-- :doc:`announcements/1.1-release`
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   announcements/1.1-release
