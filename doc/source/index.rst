@@ -16,6 +16,10 @@ General
    :maxdepth: 2
 
    design
+
+.. toctree::
+   :maxdepth: 1
+
    changelog
    roadmap
 
