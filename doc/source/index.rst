@@ -14,7 +14,7 @@ General
 -------
 .. toctree::
    :titlesonly:
-   :maxdepth: 1
+   :maxdepth: 2
 
    design
    changelog
@@ -25,7 +25,7 @@ Guides
 
 .. toctree::
    :titlesonly:
-   :maxdepth: 1
+   :maxdepth: 2
 
    guides/localisation
    guides/hacking
@@ -35,6 +35,6 @@ Announcements
 -------------
 .. toctree::
    :titlesonly:
-   :maxdepth: 1
+   :maxdepth: 2
 
    announcements/1.1-release
