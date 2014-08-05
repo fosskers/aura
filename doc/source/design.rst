@@ -55,6 +55,10 @@ Local Packages
 A number of operations can be performed on these package types, as explained
 below.
 
+Program Flow
+~~~~~~~~~~~~
+.. image:: programFlow.*
+
 Repository Package Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
