@@ -17,10 +17,10 @@
     <node id="n0">
       <data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="67.0" width="365.0" x="17.394642857142912" y="1.18359375"/>
+          <y:Geometry height="67.0" width="365.0" x="39.627697172619186" y="1.18359375"/>
           <y:Fill color="#FFCC00" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="69.3671875" modelName="custom" textColor="#000000" visible="true" width="354.619140625" x="5.1904296875" y="-1.18359375">Pure functions are light pink.
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="69.3671875" modelName="custom" textColor="#000000" visible="true" width="354.619140625" x="5.190429687499993" y="-1.18359375">Pure functions are light pink.
 Reader is blue.
 IO is light gray.
 Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
@@ -40,7 +40,7 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <y:ProxyAutoBoundsNode>
           <y:Realizers active="0">
             <y:GroupNode>
-              <y:Geometry height="417.9611205158151" width="211.8595238095238" x="3.535119047619105" y="94.3671875"/>
+              <y:Geometry height="417.9611205158151" width="211.8595238095238" x="25.76817336309538" y="94.3671875"/>
               <y:Fill color="#F5F5F5" transparent="false"/>
               <y:BorderStyle color="#000000" type="dashed" width="1.0"/>
               <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="211.8595238095238" x="0.0" y="0.0">Entrance</y:NodeLabel>
@@ -66,10 +66,10 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n1::n0">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="130.5" x="39.785119047619105" y="133.79443359375"/>
+              <y:Geometry height="30.0" width="130.5" x="62.01817336309538" y="133.79443359375"/>
               <y:Fill color="#C0C0C0" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="119.125" x="5.6875" y="4.8291015625">getArgs :: IO [String]<y:LabelModel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="119.125" x="5.687499999999993" y="4.8291015625">getArgs :: IO [String]<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -82,10 +82,10 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n1::n1">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="171.0" x="19.535119047619105" y="188.79443359375"/>
+              <y:Geometry height="30.0" width="171.0" x="41.76817336309538" y="188.79443359375"/>
               <y:Fill color="#FF99CC" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="163.97265625" x="3.513671875" y="4.8291015625">parseArgs :: [String] -&gt; [Flag]<y:LabelModel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="163.97265625" x="3.513671874999993" y="4.8291015625">parseArgs :: [String] -&gt; [Flag]<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -98,7 +98,7 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n1::n2">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="76.0" x="59.96488095238101" y="265.8646716889881"/>
+              <y:Geometry height="30.0" width="76.0" x="82.19793526785728" y="265.8646716889881"/>
               <y:Fill color="#FF99CC" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="63.619140625" x="6.1904296875" y="4.8291015625">checkValid<y:LabelModel>
@@ -114,10 +114,10 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n1::n3">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="164.85937500000023" x="34.535193452380895" y="364.14894293645"/>
+              <y:Geometry height="30.0" width="164.85937500000023" x="56.76824776785717" y="364.14894293645"/>
               <y:Fill color="#FF99CC" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="155.435546875" x="4.711914062500114" y="4.8291015625">settings :: [Flag] -&gt; Settings<y:LabelModel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="155.435546875" x="4.711914062500107" y="4.8291015625">settings :: [Flag] -&gt; Settings<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -130,7 +130,7 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n1::n4">
           <data key="d6">
             <y:ShapeNode>
-              <y:Geometry height="30.0" width="98.50000000000006" x="100.89424603174606" y="467.3283080158151"/>
+              <y:Geometry height="30.0" width="98.50000000000006" x="123.12730034722233" y="467.3283080158151"/>
               <y:Fill color="#FFCC00" transparent="false"/>
               <y:BorderStyle color="#000000" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="93.00390625" x="2.7480468750000284" y="4.8291015625">Branch by Flags<y:LabelModel>
@@ -149,7 +149,7 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
     <node id="n2">
       <data key="d6">
         <y:GenericNode configuration="ShinyPlateNode3">
-          <y:Geometry height="30.0" width="207.42375692963765" x="804.5208596304193" y="888.6587161106572"/>
+          <y:Geometry height="30.0" width="207.42375692963765" x="826.7539139458955" y="888.6587161106572"/>
           <y:Fill color="#FF99CC" transparent="false"/>
           <y:BorderStyle hasColor="false" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="201.9296875" x="2.747034714818824" y="4.8291015625">renderPkg :: Package p =&gt; p -&gt; Text<y:LabelModel>
@@ -165,7 +165,7 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
     <node id="n3">
       <data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="30.0" width="40.0" x="940.0886904761905" y="1026.2769215171843"/>
+          <y:Geometry height="30.0" width="40.0" x="962.3217447916668" y="1026.2769215171843"/>
           <y:Fill color="#FFCC00" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="31.05859375" x="4.470703125" y="4.8291015625">Print<y:LabelModel>
@@ -185,7 +185,7 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <y:ProxyAutoBoundsNode>
           <y:Realizers active="0">
             <y:GroupNode>
-              <y:Geometry height="196.23669147056512" width="250.93015873015872" x="949.4950396825396" y="624.1377533926302"/>
+              <y:Geometry height="196.23669147056512" width="250.93015873015872" x="971.7280939980159" y="624.1377533926302"/>
               <y:Fill color="#F5F5F5" transparent="false"/>
               <y:BorderStyle color="#000000" type="dashed" width="1.0"/>
               <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="250.93015873015872" x="0.0" y="0.0">Searching</y:NodeLabel>
@@ -211,7 +211,7 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n4::n0">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="177.52142857142871" x="986.1994047619047" y="663.5649994863802"/>
+              <y:Geometry height="30.0" width="177.52142857142871" x="1008.4324590773809" y="663.5649994863802"/>
               <y:Fill color="#C0C0C0" color2="#FFFFFF" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="168.09765625" x="4.711886160714471" y="4.8291015625">searchDispatch :: Text -&gt; IO ()<y:LabelModel>
@@ -235,7 +235,7 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n4::n1">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="218.9297619047619" x="965.495238095238" y="775.3744448631953"/>
+              <y:Geometry height="30.0" width="218.9297619047619" x="987.7282924107143" y="775.3744448631953"/>
               <y:Fill color="#C0C0C0" color2="#FF0000" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="204.4609375" x="7.234412202380895" y="4.8291015625">search :: Package p =&gt; Text -&gt; IO [p]<y:LabelModel>
@@ -256,7 +256,7 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <y:ProxyAutoBoundsNode>
           <y:Realizers active="0">
             <y:GroupNode>
-              <y:Geometry height="196.23669147056512" width="239.4238095238095" x="685.0712301587303" y="624.1377533926302"/>
+              <y:Geometry height="196.23669147056512" width="239.4238095238095" x="707.3042844742065" y="624.1377533926302"/>
               <y:Fill color="#F5F5F5" transparent="false"/>
               <y:BorderStyle color="#000000" type="dashed" width="1.0"/>
               <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="239.4238095238095" x="0.0" y="0.0">Info Lookups</y:NodeLabel>
@@ -282,7 +282,7 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n5::n0">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="175.26335509950263" x="717.1514573708837" y="663.5649994863802"/>
+              <y:Geometry height="30.0" width="175.26335509950263" x="739.3845116863599" y="663.5649994863802"/>
               <y:Fill color="#C0C0C0" color2="#FFFFFF" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="152.6171875" x="11.323083799751316" y="4.8291015625">infoDispatch :: Text -&gt; IO ()<y:LabelModel>
@@ -306,7 +306,7 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n5::n1">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="207.42375692963753" x="701.0712564558163" y="775.3744448631953"/>
+              <y:Geometry height="30.0" width="207.42375692963753" x="723.3043107712925" y="775.3744448631953"/>
               <y:Fill color="#C0C0C0" color2="#FF0000" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="188.98046875" x="9.221644089818824" y="4.8291015625">info :: Package p =&gt; Text -&gt; IO [p]<y:LabelModel>
@@ -327,14 +327,14 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <y:ProxyAutoBoundsNode>
           <y:Realizers active="0">
             <y:GroupNode>
-              <y:Geometry height="779.9444020900428" width="620.5361111111113" x="34.535119047619105" y="610.612579263277"/>
+              <y:Geometry height="779.9444020900428" width="620.536111111111" x="56.76817336309538" y="610.612579263277"/>
               <y:Fill color="#F5F5F5" transparent="false"/>
               <y:BorderStyle color="#000000" type="dashed" width="1.0"/>
-              <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="620.5361111111113" x="0.0" y="0.0">Package Building</y:NodeLabel>
+              <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="620.536111111111" x="0.0" y="0.0">Package Building</y:NodeLabel>
               <y:Shape type="roundrectangle"/>
               <y:State closed="false" closedHeight="50.0" closedWidth="50.0" innerGraphDisplayEnabled="false"/>
               <y:Insets bottom="15" bottomF="15.0" left="15" leftF="15.0" right="15" rightF="15.0" top="15" topF="15.0"/>
-              <y:BorderInsets bottom="0" bottomF="0.0" left="1" leftF="1.0003193204365175" right="1" rightF="1.0002805170574902" top="0" topF="0.0"/>
+              <y:BorderInsets bottom="0" bottomF="0.0" left="1" leftF="1.0003193204365104" right="1" rightF="1.0002805170574902" top="0" topF="0.0"/>
             </y:GroupNode>
             <y:GroupNode>
               <y:Geometry height="50.0" width="50.0" x="0.0" y="60.0"/>
@@ -353,7 +353,7 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n6::n0">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="57.050348258706435" width="320.41985633736067" x="318.6509845297324" y="650.039825357027"/>
+              <y:Geometry height="57.050348258706435" width="320.41985633736067" x="340.8840388452087" y="650.039825357027"/>
               <y:Fill color="#C0C0C0" color2="#FF0000" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="53.025390625" modelName="custom" textColor="#000000" visible="true" width="296.904296875" x="11.757779731180335" y="2.0124788168532177">-- Default implementation. Can be overwritten.
@@ -371,10 +371,10 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
         <node id="n6::n1">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="175.26335509950263" x="229.59828276770907" y="775.3744448631953"/>
+              <y:Geometry height="30.0" width="175.26335509950263" x="251.83133708318533" y="775.3744448631953"/>
               <y:Fill color="#C0C0C0" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="162.923828125" x="6.169763487251316" y="4.8291015625">reportInvalid :: [Text] -&gt; IO ()<y:LabelModel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="162.923828125" x="6.169763487251288" y="4.8291015625">reportInvalid :: [Text] -&gt; IO ()<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -387,10 +387,10 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
         <node id="n6::n2">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="250.74132524875654" x="191.8592976930821" y="888.6587161106572"/>
+              <y:Geometry height="30.0" width="250.74132524875654" x="214.09235200855838" y="888.6587161106572"/>
               <y:Fill color="#C0C0C0" color2="#FF0000" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="241.29296875" x="4.724178249378269" y="4.8291015625">prebuildHooks :: Package p =&gt; [p] -&gt; IO [p]<y:LabelModel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="241.29296875" x="4.724178249378241" y="4.8291015625">prebuildHooks :: Package p =&gt; [p] -&gt; IO [p]<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -403,7 +403,7 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
         <node id="n6::n3">
           <data key="d6">
             <y:ShapeNode>
-              <y:Geometry height="20.341796875" width="243.115234375" x="50.53543836805562" y="668.3941010488802"/>
+              <y:Geometry height="20.341796875" width="243.115234375" x="72.76849268353189" y="668.3941010488802"/>
               <y:Fill hasColor="false" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="4.0" x="119.5576171875" y="8.1708984375"/>
@@ -414,10 +414,10 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
         <node id="n6::n4">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="419.51163349108106" x="107.47414357191985" y="1026.2769215171843"/>
+              <y:Geometry height="30.0" width="419.51163349108106" x="129.70719788739612" y="1026.2769215171843"/>
               <y:Fill color="#C0C0C0" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="406.498046875" x="6.506793308040528" y="4.8291015625">resolveDeps :: (Package p, Traversable t) =&gt; [p] -&gt; IO ([Conflict],Bush t p)<y:LabelModel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="406.498046875" x="6.5067933080405" y="4.8291015625">resolveDeps :: (Package p, Traversable t) =&gt; [p] -&gt; IO ([Conflict],Bush t p)<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -430,7 +430,7 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
         <node id="n6::n5">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="98.5" x="298.77797619047624" y="1222.845464012108"/>
+              <y:Geometry height="30.0" width="98.5" x="321.01103050595253" y="1222.845464012108"/>
               <y:Fill color="#C0C0C0" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="84.255859375" x="7.1220703125" y="4.8291015625">confirm :: IO ()<y:LabelModel>
@@ -446,10 +446,10 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
         <node id="n6::n6">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="194.58753420398023" x="444.4834154376925" y="1124.5611927646464"/>
+              <y:Geometry height="30.0" width="194.58753420398023" x="466.7164697531688" y="1124.5611927646464"/>
               <y:Fill color="#C0C0C0" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="186.26171875" x="4.162907726990113" y="4.8291015625">reportConflict :: [Conflict] -&gt; IO ()<y:LabelModel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="186.26171875" x="4.162907726990056" y="4.8291015625">reportConflict :: [Conflict] -&gt; IO ()<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -462,10 +462,10 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
         <node id="n6::n7">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="351.9323171956132" x="172.06181759266963" y="1345.5569813533198"/>
-              <y:Fill color="#C0C0C0" transparent="false"/>
+              <y:Geometry height="30.0" width="351.9323171956132" x="194.2948719081459" y="1345.5569813533198"/>
+              <y:Fill color="#C0C0C0" color2="#FF0000" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="339.373046875" x="6.279635160306611" y="4.8291015625">buildInstall :: (Package p, Traversable t) =&gt; Bush t p -&gt; IO ???
+              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="339.373046875" x="6.279635160306583" y="4.8291015625">buildInstall :: (Package p, Traversable t) =&gt; Bush t p -&gt; IO ???
 <y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
@@ -477,10 +477,9 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
           </data>
         </node>
         <node id="n6::n8">
-          <data key="d5"/>
           <data key="d6">
             <y:ShapeNode>
-              <y:Geometry height="30.0" width="43.491685707758734" x="146.18887936834292" y="1124.5611927646464"/>
+              <y:Geometry height="30.0" width="43.491685707758734" x="168.4219336838192" y="1124.5611927646464"/>
               <y:Fill color="#FFCC00" transparent="false"/>
               <y:BorderStyle color="#000000" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="44.083984375" x="-0.2961493336206331" y="4.8291015625">Branch<y:LabelModel>
@@ -497,10 +496,10 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
         <node id="n6::n9">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="204.5064780487803" x="214.97672129307023" y="1124.5611927646464"/>
+              <y:Geometry height="30.0" width="204.5064780487803" x="237.2097756085465" y="1124.5611927646464"/>
               <y:Fill color="#C0C0C0" color2="#FF0000" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="196.46875" x="4.0188640243901546" y="4.8291015625">Hook functions needed internally?<y:LabelModel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="196.46875" x="4.018864024390126" y="4.8291015625">Hook functions needed internally?<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -518,7 +517,7 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
         <y:ProxyAutoBoundsNode>
           <y:Realizers active="0">
             <y:GroupNode>
-              <y:Geometry height="252.71151734121167" width="214.8515873015873" x="730.2371031746032" y="1306.1297352595698"/>
+              <y:Geometry height="252.71151734121167" width="214.8515873015873" x="752.4701574900795" y="1306.1297352595698"/>
               <y:Fill color="#F5F5F5" transparent="false"/>
               <y:BorderStyle color="#000000" type="dashed" width="1.0"/>
               <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="214.8515873015873" x="0.0" y="0.0">Package Installation</y:NodeLabel>
@@ -544,7 +543,7 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
         <node id="n7::n0">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="156.62585896262703" x="759.3499673440833" y="1513.8412526007814"/>
+              <y:Geometry height="30.0" width="156.62585896262703" x="781.5830216595596" y="1513.8412526007814"/>
               <y:Fill color="#C0C0C0" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="127.73828125" x="14.443788856313517" y="4.8291015625">install :: [Built] -&gt; IO ??<y:LabelModel>
@@ -560,7 +559,7 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
         <node id="n7::n1">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="182.85111203062047" x="746.2373408100866" y="1458.8412526007814"/>
+              <y:Geometry height="30.0" width="182.85111203062047" x="768.4703951255628" y="1458.8412526007814"/>
               <y:Fill color="#C0C0C0" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="152.39453125" x="15.228290390310235" y="4.8291015625">reportBuilt :: [Built] -&gt; IO ()<y:LabelModel>
@@ -576,7 +575,7 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
         <node id="n7::n2">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="182.85111203062047" x="746.2373408100866" y="1345.5569813533198"/>
+              <y:Geometry height="30.0" width="182.85111203062047" x="768.4703951255628" y="1345.5569813533198"/>
               <y:Fill color="#C0C0C0" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="146.025390625" x="18.412860702810235" y="4.8291015625">fromFile :: [Text] -&gt; [Built]<y:LabelModel>
@@ -597,14 +596,14 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
         <y:ProxyAutoBoundsNode>
           <y:Realizers active="0">
             <y:GroupNode>
-              <y:Geometry height="84.42724609375" width="323.4972222222222" x="17.417261904761972" y="1642.1255238482431"/>
+              <y:Geometry height="84.42724609375" width="395.7734126984127" x="32.257855902777926" y="1642.1255238482431"/>
               <y:Fill color="#F5F5F5" transparent="false"/>
               <y:BorderStyle color="#000000" type="dashed" width="1.0"/>
-              <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="323.4972222222222" x="0.0" y="0.0">Exit</y:NodeLabel>
+              <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="395.7734126984127" x="0.0" y="0.0">Exit</y:NodeLabel>
               <y:Shape type="roundrectangle"/>
               <y:State closed="false" closedHeight="50.0" closedWidth="50.0" innerGraphDisplayEnabled="false"/>
               <y:Insets bottom="15" bottomF="15.0" left="15" leftF="15.0" right="15" rightF="15.0" top="15" topF="15.0"/>
-              <y:BorderInsets bottom="0" bottomF="0.0" left="1" leftF="1.0000744047617758" right="1" rightF="1.0003929548684596" top="0" topF="0.0"/>
+              <y:BorderInsets bottom="0" bottomF="0.0" left="1" leftF="1.0003555215662345" right="1" rightF="1.0003215094446887" top="0" topF="0.0"/>
             </y:GroupNode>
             <y:GroupNode>
               <y:Geometry height="50.0" width="50.0" x="0.0" y="60.0"/>
@@ -623,10 +622,10 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
         <node id="n8::n0">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="164.85937500000023" x="33.41733630952375" y="1681.5527699419931"/>
+              <y:Geometry height="30.0" width="174.71516197274053" x="48.25821142434416" y="1681.5527699419931"/>
               <y:Fill color="#C0C0C0" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="98.078125" x="33.390625000000114" y="4.8291015625">fail :: Text -&gt; IO a<y:LabelModel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="163.662109375" x="5.526526298870259" y="4.8291015625">fail :: Text -&gt; IO (Maybe Text)<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -639,10 +638,10 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
         <node id="n8::n1">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="101.63730932835844" x="223.2767818437573" y="1681.5527699419931"/>
+              <y:Geometry height="30.0" width="164.0572934890471" x="247.97365360269882" y="1681.5527699419931"/>
               <y:Fill color="#C0C0C0" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="85.556640625" x="8.040334351679235" y="4.8291015625">succeed :: IO a<y:LabelModel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="151.140625" x="6.45833424452357" y="4.8291015625">succeed :: IO (Maybe Text)<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -657,10 +656,10 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
     <node id="n9">
       <data key="d6">
         <y:GenericNode configuration="ShinyPlateNode3">
-          <y:Geometry height="57.050348258706435" width="230.01745005028806" x="680.0712352923164" y="1012.7517473878311"/>
+          <y:Geometry height="72.81960741509079" width="230.01745005028806" x="702.3042896077926" y="1012.7517473878312"/>
           <y:Fill color="#C0C0C0" color2="#FF0000" transparent="false"/>
           <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-          <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="69.3671875" modelName="custom" textColor="#000000" visible="true" width="208.984375" x="10.516537525144031" y="-6.158419620646782">class Package p where
+          <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="69.3671875" modelName="custom" textColor="#000000" visible="true" width="208.984375" x="10.516537525144031" y="1.7262099575455068">class Package p where
   package  :: Text -&gt; IO (Either Text p)
   renderPkg :: p -&gt; Text
   -- more definitions here<y:LabelModel>
@@ -687,8 +686,8 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="15.0" tx="0.0" ty="-15.0">
-            <y:Point x="105.0351190476191" y="233.79443359375"/>
-            <y:Point x="97.96488095238101" y="240.8646716889881"/>
+            <y:Point x="127.26817336309537" y="233.79443359375"/>
+            <y:Point x="120.19793526785728" y="240.8646716889881"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -699,19 +698,19 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
     <edge id="e0" source="n1::n2" target="n8::n0">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="-19.0" sy="15.0" tx="-41.21484375000006" ty="-15.0">
-            <y:Point x="78.96488095238101" y="310.8646716889881"/>
-            <y:Point x="64.82274532865006" y="325.00680731271905"/>
-            <y:Point x="33.67725467135005" y="325.00680731271905"/>
-            <y:Point x="19.5351190476191" y="339.14894293645"/>
-            <y:Point x="19.5351190476191" y="1543.8412526007814"/>
-            <y:Point x="33.67725467134994" y="1557.9833882245123"/>
-            <y:Point x="60.49004443579285" y="1557.9833882245123"/>
-            <y:Point x="74.6321800595238" y="1572.1255238482431"/>
+          <y:Path sx="-19.0" sy="15.0" tx="-43.67879049318513" ty="-15.0">
+            <y:Point x="101.19793526785728" y="310.8646716889881"/>
+            <y:Point x="87.05579964412632" y="325.00680731271905"/>
+            <y:Point x="55.91030898682632" y="325.00680731271905"/>
+            <y:Point x="41.76817336309537" y="339.14894293645"/>
+            <y:Point x="41.76817336309537" y="1543.8412526007814"/>
+            <y:Point x="55.91030898682621" y="1557.9833882245123"/>
+            <y:Point x="77.79486629379835" y="1557.9833882245123"/>
+            <y:Point x="91.9370019175293" y="1572.1255238482431"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="96.865234375" x="-101.19793621244892" y="1293.4467518755869">Conflicting Flags<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="96.865234375" x="-106.12616946918963" y="1293.4467518755869">Conflicting Flags<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
@@ -723,7 +722,7 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
           <y:Path sx="19.0" sy="15.0" tx="0.0" ty="-15.0"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="62.822265625" x="-62.82226656959163" y="23.971223816625297">Flags okay<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="62.822265625" x="-62.82226736886146" y="23.971223816625297">Flags okay<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
@@ -735,7 +734,7 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
           <y:Path sx="0.0" sy="15.0" tx="0.0" ty="-15.0"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="53.58203125" x="-53.581995210193554" y="30.7338212958814">Contains<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="53.58203125" x="-53.581973121279816" y="30.7338212958814">Contains<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
@@ -745,10 +744,10 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="15.0" tx="51.85593923240941" ty="-15.0">
-            <y:Point x="1074.9601190476192" y="835.3744448631952"/>
-            <y:Point x="1060.817983423888" y="849.5165804869263"/>
-            <y:Point x="974.2308129513785" y="849.5165804869263"/>
-            <y:Point x="960.0886773276476" y="863.6587161106572"/>
+            <y:Point x="1097.1931733630954" y="835.3744448631952"/>
+            <y:Point x="1083.0510377393643" y="849.5165804869263"/>
+            <y:Point x="996.4638672668548" y="849.5165804869263"/>
+            <y:Point x="982.3217316431238" y="863.6587161106572"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -770,8 +769,8 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="15.0" tx="0.0" ty="-15.0">
-            <y:Point x="116.96488095238101" y="409.14894293645"/>
-            <y:Point x="150.1442460317461" y="442.3283080158151"/>
+            <y:Point x="139.19793526785728" y="409.14894293645"/>
+            <y:Point x="172.37730034722236" y="442.3283080158151"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -783,10 +782,10 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="36.93750000000003" sy="15.0" tx="-112.4650793650793" ty="-98.11834573528256">
-            <y:Point x="187.08174603174612" y="527.3283080158151"/>
-            <y:Point x="201.22388165547707" y="541.470443639546"/>
-            <y:Point x="948.3529040588088" y="541.470443639546"/>
-            <y:Point x="962.4950396825398" y="555.612579263277"/>
+            <y:Point x="209.3148003472224" y="527.3283080158151"/>
+            <y:Point x="223.45693597095334" y="541.470443639546"/>
+            <y:Point x="970.585958374285" y="541.470443639546"/>
+            <y:Point x="984.728093998016" y="555.612579263277"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -797,11 +796,11 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
     <edge id="e4" source="n3" target="n8::n1">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="15.0" tx="25.409327332089617" ty="-15.0">
-            <y:Point x="960.0886904761905" y="1598.8412526007814"/>
-            <y:Point x="945.9465548524596" y="1612.9833882245123"/>
-            <y:Point x="313.646899463757" y="1612.9833882245123"/>
-            <y:Point x="299.50476384002616" y="1627.1255238482431"/>
+          <y:Path sx="0.0" sy="15.0" tx="41.0143233722618" ty="-15.0">
+            <y:Point x="982.3217447916668" y="1598.8412526007814"/>
+            <y:Point x="968.1796091679358" y="1612.9833882245123"/>
+            <y:Point x="385.158759343215" y="1612.9833882245123"/>
+            <y:Point x="371.0166237194842" y="1627.1255238482431"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -815,7 +814,7 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
           <y:Path sx="0.0" sy="15.0" tx="0.0" ty="-15.0"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="53.58203125" x="-53.58203841920874" y="30.733821295881512">Contains<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="53.58203125" x="-53.582016330295005" y="30.733821295881512">Contains<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
@@ -825,10 +824,10 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="12.3125" sy="15.0" tx="-106.71190476190475" ty="-98.11834573528256">
-            <y:Point x="162.4567460317461" y="566.470443639546"/>
-            <y:Point x="176.59888165547704" y="580.612579263277"/>
-            <y:Point x="669.546056029377" y="580.612579263277"/>
-            <y:Point x="698.0712301587303" y="609.1377533926302"/>
+            <y:Point x="184.68980034722236" y="566.470443639546"/>
+            <y:Point x="198.8319359709533" y="580.612579263277"/>
+            <y:Point x="691.7791103448533" y="580.612579263277"/>
+            <y:Point x="720.3042844742065" y="609.1377533926302"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -840,10 +839,10 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="15.0" tx="-51.85593923240941" ty="-15.0">
-            <y:Point x="804.783134920635" y="835.3744448631953"/>
-            <y:Point x="818.925270544366" y="849.5165804869263"/>
-            <y:Point x="842.2346632390977" y="849.5165804869263"/>
-            <y:Point x="856.3767988628287" y="863.6587161106572"/>
+            <y:Point x="827.0161892361112" y="835.3744448631953"/>
+            <y:Point x="841.1583248598422" y="849.5165804869263"/>
+            <y:Point x="864.4677175545739" y="849.5165804869263"/>
+            <y:Point x="878.6098531783049" y="863.6587161106572"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -855,10 +854,10 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="-80.10496408434017" sy="28.525174129353218" tx="0.0" ty="-15.0">
-            <y:Point x="398.75594861407257" y="722.0901736157334"/>
-            <y:Point x="384.6138129903416" y="736.2323092394644"/>
-            <y:Point x="331.37209594119133" y="736.2323092394644"/>
-            <y:Point x="317.2299603174604" y="750.3744448631953"/>
+            <y:Point x="420.98900292954886" y="722.0901736157334"/>
+            <y:Point x="406.8468673058179" y="736.2323092394644"/>
+            <y:Point x="353.6051502566676" y="736.2323092394644"/>
+            <y:Point x="339.4630146329367" y="750.3744448631953"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -900,14 +899,14 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="139.83721116369367" sy="15.0" tx="0.0" ty="-15.0">
-            <y:Point x="457.06717148115405" y="1071.2769215171843"/>
-            <y:Point x="471.2093071048849" y="1085.4190571409151"/>
-            <y:Point x="527.6350469159516" y="1085.4190571409151"/>
-            <y:Point x="541.7771825396826" y="1099.561192764646"/>
+            <y:Point x="479.30022579663034" y="1071.2769215171843"/>
+            <y:Point x="493.4423614203612" y="1085.4190571409151"/>
+            <y:Point x="549.8681012314279" y="1085.4190571409151"/>
+            <y:Point x="564.0102368551588" y="1099.561192764646"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="53.58203125" x="28.831438976181403" y="40.98767210153528">Contains<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="53.58203125" x="28.831430547517016" y="40.98767210153528">Contains<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
@@ -917,10 +916,10 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="10.872921426939683" sy="15.0" tx="0.0" ty="-15.0">
-            <y:Point x="178.80764364916197" y="1169.5611927646464"/>
-            <y:Point x="192.9497792728928" y="1183.7033283883773"/>
-            <y:Point x="333.8858405667453" y="1183.7033283883773"/>
-            <y:Point x="348.02797619047624" y="1197.845464012108"/>
+            <y:Point x="201.04069796463824" y="1169.5611927646464"/>
+            <y:Point x="215.18283358836908" y="1183.7033283883773"/>
+            <y:Point x="356.1188948822216" y="1183.7033283883773"/>
+            <y:Point x="370.26103050595253" y="1197.845464012108"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -941,10 +940,10 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
     <edge id="e8" source="n6::n8" target="n8::n0">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="-10.872921426939683" sy="15.0" tx="41.21484375000007" ty="-15.0"/>
+          <y:Path sx="-10.872921426939683" sy="15.0" tx="43.67879049318512" ty="-15.0"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="122.8984375" x="-122.89842774343427" y="55.70309203271654">No Packages to Build<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="122.8984375" x="-122.8984598245932" y="11.78708774261736">No Packages to Build<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
@@ -971,30 +970,28 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
       </data>
     </edge>
     <edge id="e10" source="n6::n0" target="n9">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="80.10496408434011" sy="28.525174129353218" tx="-57.504362512572015" ty="-28.525174129353218">
-            <y:Point x="558.9660714285715" y="918.6587161106572"/>
-            <y:Point x="607.7585474613677" y="967.4511921434535"/>
-            <y:Point x="723.4334621811574" y="967.4511921434535"/>
-            <y:Point x="737.5755978048884" y="981.5933277671844"/>
+          <y:Path sx="80.10496408434011" sy="28.525174129353218" tx="-57.504362512572015" ty="-36.4098037075454">
+            <y:Point x="581.1991257440477" y="918.6587161106572"/>
+            <y:Point x="629.9916017768439" y="967.4511921434535"/>
+            <y:Point x="745.6665164966337" y="967.4511921434535"/>
+            <y:Point x="759.8086521203646" y="981.5933277671844"/>
           </y:Path>
           <y:LineStyle color="#000000" type="dashed" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="153.642578125" x="-153.64251905501555" y="69.167400364645">Optionally calls `package`<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="153.642578125" x="-153.6425456275565" y="16.275264740914167">Optionally calls `package`<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
     <edge id="n6::e6" source="n6::n4" target="n6::n8">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="-139.83721116369367" sy="15.0" tx="0.0" ty="-15.0">
-            <y:Point x="177.39274915376672" y="1071.2769215171843"/>
-            <y:Point x="167.9347222222223" y="1080.7349484487286"/>
+            <y:Point x="199.62580346924298" y="1071.2769215171843"/>
+            <y:Point x="190.16777653769856" y="1080.7349484487286"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -1003,27 +1000,25 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
       </data>
     </edge>
     <edge id="n6::e7" source="n6::n4" target="n6::n9">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="15.0" tx="0.0" ty="-15.0"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="53.58203125" x="1.0366288506702404E-5" y="6.900113352487324">Contains<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="53.58203125" x="1.9376241198187927E-6" y="6.900113352487324">Contains<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
     <edge id="e11" source="n7::n0" target="n8::n1">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="15.0" tx="-25.40932733208961" ty="-15.0">
-            <y:Point x="837.6628968253968" y="1583.8412526007814"/>
-            <y:Point x="823.5207612016659" y="1597.9833882245123"/>
-            <y:Point x="277.82824479957776" y="1597.9833882245123"/>
-            <y:Point x="248.68610917584692" y="1627.1255238482431"/>
+          <y:Path sx="0.0" sy="15.0" tx="-41.01432337226178" ty="-15.0">
+            <y:Point x="859.8959511408731" y="1583.8412526007814"/>
+            <y:Point x="845.7538155171421" y="1597.9833882245123"/>
+            <y:Point x="318.1301125986914" y="1597.9833882245123"/>
+            <y:Point x="288.9879769749606" y="1627.1255238482431"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -1032,40 +1027,38 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
       </data>
     </edge>
     <edge id="e12" source="n6::n7" target="n7::n1">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="15.0" tx="-45.71277800765512" ty="-15.0">
-            <y:Point x="348.02797619047624" y="1405.5569813533198"/>
-            <y:Point x="362.1701118142071" y="1419.6991169770506"/>
-            <y:Point x="777.8079831940108" y="1419.6991169770506"/>
-            <y:Point x="791.9501188177418" y="1433.8412526007814"/>
+            <y:Point x="370.26103050595253" y="1405.5569813533198"/>
+            <y:Point x="384.40316612968337" y="1419.6991169770506"/>
+            <y:Point x="800.0410375094871" y="1419.6991169770506"/>
+            <y:Point x="814.183173133218" y="1433.8412526007814"/>
           </y:Path>
           <y:LineStyle color="#000000" type="dashed" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="89.435546875" x="-8.428664386883611E-6" y="4.82907607988227">Optionally calls<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="89.435546875" x="1.3660249408076197E-5" y="4.82907607988227">Optionally calls<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
     <edge id="e13" source="n1::n4" target="n7::n2">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="-12.3125" sy="15.0" tx="0.0" ty="-15.0">
-            <y:Point x="137.8317460317461" y="581.470443639546"/>
-            <y:Point x="151.97388165547704" y="595.612579263277"/>
-            <y:Point x="654.0712301587303" y="595.612579263277"/>
-            <y:Point x="670.0712301587303" y="611.612579263277"/>
-            <y:Point x="670.0712301587303" y="918.6587161106572"/>
-            <y:Point x="703.8637061915265" y="952.4511921434535"/>
-            <y:Point x="910.9465548524596" y="952.4511921434535"/>
-            <y:Point x="925.0886904761905" y="966.5933277671844"/>
-            <y:Point x="925.0886904761905" y="1252.845464012108"/>
-            <y:Point x="910.9465548524597" y="1266.987599635839"/>
-            <y:Point x="851.8050324491278" y="1266.987599635839"/>
-            <y:Point x="837.6628968253968" y="1281.1297352595698"/>
+            <y:Point x="160.06480034722236" y="581.470443639546"/>
+            <y:Point x="174.2069359709533" y="595.612579263277"/>
+            <y:Point x="676.3042844742065" y="595.612579263277"/>
+            <y:Point x="692.3042844742065" y="611.612579263277"/>
+            <y:Point x="692.3042844742065" y="918.6587161106572"/>
+            <y:Point x="726.0967605070027" y="952.4511921434535"/>
+            <y:Point x="933.1796091679358" y="952.4511921434535"/>
+            <y:Point x="947.3217447916668" y="966.5933277671844"/>
+            <y:Point x="947.3217447916668" y="1252.845464012108"/>
+            <y:Point x="933.179609167936" y="1266.987599635839"/>
+            <y:Point x="874.038086764604" y="1266.987599635839"/>
+            <y:Point x="859.8959511408731" y="1281.1297352595698"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -1074,14 +1067,13 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
       </data>
     </edge>
     <edge id="n7::e1" source="n7::n2" target="n7::n1">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="15.0" tx="45.71277800765512" ty="-15.0">
-            <y:Point x="837.6628968253968" y="1390.5569813533198"/>
-            <y:Point x="851.8050324491277" y="1404.6991169770506"/>
-            <y:Point x="869.233539209321" y="1404.6991169770506"/>
-            <y:Point x="883.3756748330519" y="1418.8412526007814"/>
+            <y:Point x="859.8959511408731" y="1390.5569813533198"/>
+            <y:Point x="874.0380867646039" y="1404.6991169770506"/>
+            <y:Point x="891.4665935247972" y="1404.6991169770506"/>
+            <y:Point x="905.6087291485281" y="1418.8412526007814"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -1090,16 +1082,15 @@ foreignPkgs = map partitionEithers . mapM package<y:LabelModel>
       </data>
     </edge>
     <edge id="e14" source="n2" target="n9">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="-51.85593923240941" sy="15.0" tx="57.504362512572015" ty="-28.525174129353218">
-            <y:Point x="856.3767988628287" y="933.6587161106572"/>
-            <y:Point x="852.5843228300324" y="937.4511921434535"/>
+          <y:Path sx="-51.85593923240941" sy="15.0" tx="57.504362512572015" ty="-36.4098037075454">
+            <y:Point x="878.6098531783049" y="933.6587161106572"/>
+            <y:Point x="874.8173771455087" y="937.4511921434535"/>
           </y:Path>
           <y:LineStyle color="#000000" type="dashed" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="33.666015625" x="-3.79244718949883" y="46.271879921892264">From<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="33.666015625" x="-3.792486135741342" y="46.271879921892264">From<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
