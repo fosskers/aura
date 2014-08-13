@@ -175,7 +175,7 @@ downloadTarballs pkgs = do
   mapM_ (downloadTBall currDir) pkgs
     where downloadTBall path pkg = whenM (isAurPackage pkg) $ do
               notify $ downloadTarballs_1 pkg
-              void . liftIO $ sourceTarball path pkg
+              void . liftIO $ sourceTarball path $ T.pack pkg
 
 displayPkgbuild :: [String] -> Aura ()
 displayPkgbuild = I.displayPkgbuild (mapM (fmap (fmap T.unpack) . pkgbuild))
