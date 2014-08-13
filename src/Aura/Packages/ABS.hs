@@ -76,8 +76,7 @@ absLookup name = syncRepo name >>= maybe (return Nothing) makeSynced
                 else return Nothing  -- split package, probably
 
 absRepo :: Repository
-absRepo = Repository $ \name ->
-    absLookup name >>= Traversable.mapM packageBuildable
+absRepo = Repository $ absLookup >=> Traversable.mapM packageBuildable
 
 absDepsRepo :: Aura Repository
 absDepsRepo = asks (getRepo . buildABSDeps)
@@ -139,7 +138,7 @@ syncRepo p = do
     "" -> return Nothing
     _  -> do
       let pat = "Repository[ ]+: "
-          (_,_,repo) = (head $ lines i) =~ pat :: (String,String,String)
+          (_,_,repo) = head (lines i) =~ pat :: (String,String,String)
       return $ Just repo
 
 synced :: String -> String -> Aura Bool

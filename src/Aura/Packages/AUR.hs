@@ -34,6 +34,7 @@ module Aura.Packages.AUR
 
 import           Control.Applicative
 import           Control.Monad        ((>=>),join)
+import           Data.Function        (on)
 import           Data.List            (sortBy)
 import           Data.Maybe
 import qualified Data.Text            as T
@@ -55,8 +56,7 @@ aurLookup :: String -> Aura (Maybe Buildable)
 aurLookup name = fmap (makeBuildable name . T.unpack) <$> pkgbuild name
 
 aurRepo :: Repository
-aurRepo = Repository $ \name ->
-    aurLookup name >>= Traversable.mapM packageBuildable
+aurRepo = Repository $ aurLookup >=> Traversable.mapM packageBuildable
 
 makeBuildable :: String -> Pkgbuild -> Buildable
 makeBuildable name pb = Buildable
@@ -94,7 +94,7 @@ sortAurInfo :: SortScheme -> [AurInfo] -> [AurInfo]
 sortAurInfo scheme ai = sortBy compare' ai
   where compare' = case scheme of
                      ByVote         -> \x y -> compare (aurVotesOf y) (aurVotesOf x)
-                     Alphabetically -> \x y -> compare (aurNameOf x) (aurNameOf y)
+                     Alphabetically -> compare `on` aurNameOf
 
 aurSearch :: T.Text -> Aura [AurInfo]
 aurSearch regex = asks sortSchemeOf >>= \scheme ->
