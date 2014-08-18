@@ -1,12 +1,13 @@
 -- arel - Helps create aura releases.
 
+import Control.Lens
 import System.FilePath ((</>))
 import Text.Regex.PCRE ((=~))
 import Control.Monad   (liftM, void)
 import System.Exit     (ExitCode(..))
 import Data.List       (sortBy)
 
-import Aura.Utils (comparableVer)
+import Aura.Utils.Numbers (Version, version)
 
 import Utilities (tripleSnd, inDir)
 import Shell
@@ -45,7 +46,11 @@ sortPkgFiles :: [String] -> [String]
 sortPkgFiles [] = []
 sortPkgFiles fs = sortBy verNums fs
     where verNums a b = compare (ver a) (ver b)
-          ver f = comparableVer (f =~ "-[0-9.]+tar" :: String)
+
+-- Aren't Lenses fun?
+ver :: String -> Maybe Version
+ver f = (f =~ patt :: (String,String,String)) ^. _2 . to version
+    where patt = "[0-9.:_+]+-[0-9]+"
 
 alterPKGBUILD :: IO ()
 alterPKGBUILD = do
