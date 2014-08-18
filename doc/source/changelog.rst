@@ -1,5 +1,9 @@
 Aura Changelog
 ==============
+1.3.0.1
+-------
+- (Bug fix) Tarballs are now downloaded from a URL provided by the RPC.
+
 1.3.0.0
 -------
 - Last major version of Aura 1! We have entered the design phase for Aura 2,

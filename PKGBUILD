@@ -1,8 +1,8 @@
 # Maintainer: Colin Woodbury <colingw@gmail.com>
 _hkgname=aura
 pkgname=aura
-pkgver=1.3.0.0
-pkgrel=2
+pkgver=1.3.0.1
+pkgrel=1
 pkgdesc="A secure package manager for Arch Linux and the AUR written in Haskell."
 url="https://github.com/fosskers/aura"
 license=('GPL-3')
@@ -19,7 +19,7 @@ provides=('aura')
 conflicts=('aura-git' 'aura-bin')
 options=('strip')
 source=(https://bitbucket.org/fosskers/aura/downloads/${_hkgname}-${pkgver}.tar.gz)
-md5sums=('3cd3c612c78c61dd43bc7472d998c582')
+md5sums=('7ec10451845a24a1873f997ac9e16fc2')
 
 build() {
     cd ${srcdir}/${_hkgname}-${pkgver}
@@ -33,15 +33,15 @@ package() {
 
     # Installing man page
     mkdir -p "$pkgdir/usr/share/man/man8/"
-    install -m 644 aura.8 "$pkgdir/usr/share/man/man8/aura.8"
+    install -m 644 doc/aura.8 "$pkgdir/usr/share/man/man8/aura.8"
 
     # Installing bash completions
     mkdir -p "$pkgdir/usr/share/bash-completion/completions/"
-    install -m 644 completions/bashcompletion.sh "$pkgdir/usr/share/bash-completion/completions/aura"
+    install -m 644 doc/completions/bashcompletion.sh "$pkgdir/usr/share/bash-completion/completions/aura"
 
     # Installing zsh completions
     mkdir -p "$pkgdir/usr/share/zsh/site-functions/"
-    install -m 644 completions/_aura "$pkgdir/usr/share/zsh/site-functions/_aura"
+    install -m 644 doc/completions/_aura "$pkgdir/usr/share/zsh/site-functions/_aura"
 
     # Directory for storing PKGBUILDs
     mkdir -p "$pkgdir/var/cache/aura/pkgbuilds"
