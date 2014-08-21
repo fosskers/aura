@@ -38,16 +38,16 @@ Functionality
 General
 -------
 
-Aura handles three types of packages:
+By default, Aura handles three types of packages:
 
-Repository Packages
+**Repository Packages**
    Prebuilt binaries available direct from the user’s Distribution.
 
-Foreign Packages
+**Foreign Packages**
    Packages that generally need to be compiled by the user. Their
    versioning/source locations may be managed by the Distribution is some way.
 
-Local Packages
+**Local Packages**
    Packages installed on the user’s system. Records of them and the files
    belonging to them are stored in a database, and package files themselves are
    stored in a cache (in :file:`/var/cache/` or elsewhere).
@@ -70,16 +70,15 @@ Usage: :command:`aura -S <packages>`
 Foreign Package Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Aura allows installation of foreign packages, prebuilt or to be compiled, from
-locations defined by Hooks in :ref:`auraconf`.  Not all distributions may
-support this type of installation.
+Aura allows installation of foreign packages, prebuilt or to be compiled.
+Not all distributions may support this type of installation.
 
-Usage: :command:`aura -A <packages>`
+Usage: :command:`aura -F <packages>`
 
 Local Package Removal
 ~~~~~~~~~~~~~~~~~~~~~
 
-Installed packages may be removed singularly, or in groups.
+Local packages may be removed singularly, or in groups.
 
 Usage:
 
@@ -97,9 +96,9 @@ Usage:
 
 -  Search repository packages: :command:`aura -Ss <pattern>`
 
--  Search foreign packages: :command:`aura -As <pattern>`
+-  Search foreign packages: :command:`aura -Fs <pattern>`
 
--  Search local packages: :command:`aura -Qs <pattern>`
+-  Search local packages: :command:`aura -Ls <pattern>`
 
 Aura will fail silently when no pattern is given.
 
@@ -122,9 +121,9 @@ Usage:
 
 -  Query repository packages: :command:`aura -Si <packages>`
 
--  Query foreign packages: :command:`aura -Ai <packages>`
+-  Query foreign packages: :command:`aura -Fi <packages>`
 
--  Query local packages: :command:`aura -Qi <packages>`
+-  Query local packages: :command:`aura -Li <packages>`
 
 Local Package Backups
 ~~~~~~~~~~~~~~~~~~~~~
@@ -159,59 +158,6 @@ Usage:
 
 Other
 -----
-
-.. need to reorganize this section before publishing
-
-   Program Flow
-   ~~~~~~~~~~~~
-
-   Execution in Aura takes the following order:
-
-   #. Parse command-line options.
-
-   #. Collect local \texttt{Setting}s.
-
-   #. Branch according to capital letter operator (\texttt{-\{S,A,Q,...\}}):
-
-   :command:`-S <packages>`
-      A ``Hook`` provides functions:
-
-      - ``Monad m => [Text] -> m ([Text, [Package])``
-
-      - ``Monad m => Text -> m (Either Text Package)``
-
-   The former can be defined in the terms of the latter, but doesn't have to be
-   if that method executes faster. The first function is given the names of all
-   packages to be installed. The ``Text`` are packages that don't exist. They
-   are reported.
-
-      - With the output of the last function, resolve dependencies by Aura's
-        internal algorithm to receive: ``Either PkgGraph [[Package]]``.
-      
-      - On ``Left``, analyse the given ``PkgGraph``, yield output as described
-        in :ref:`dependency-resolution`, and quit.
-
-      - On ``Right`` display a chart as described :ref:`here
-        <version-information>`.
-
-      - Download each package via Aura's internal algorithm.
-
-      - A ``Hook`` provides an install function ``MonadError m => [[Package]] -> m
-        ()``
-
-   :command:`-{S,A,Q}i <packages>`:
-
-      Call a ``Hook`` that provides ``Monad m => Text -> m PkgInfo``. The contents
-      of the ``PkgInfo`` ADT are described :ref:`here <pkginfo>`.
-       
-      - Aura gives output according to the ``PkgInfo``.
-
-   :command:`-{S,A,Q}s <pattern>:`
-      
-      Call a ``Hook`` that provides ``Monad m => Text -> m [PkgInfo]``, where the
-      ``Text`` is a pattern to be searched for.
-
-      - Aura gives output according to the ``PkgInfo``.
 
 .. _dependency-resolution:
 
@@ -308,7 +254,7 @@ Concurrent Package Building
 PkgInfo
 ~~~~~~~
 
--  ``-{S,A,Q}i`` yields ``PkgInfo`` data. It holds:
+-  ``-{S,F,L}i`` yields ``PkgInfo`` data. It holds:
 
 -  Repository name
 
