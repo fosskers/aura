@@ -292,24 +292,45 @@ AuraConf
 .. todo:: document location of Aura's configuration file.
 
 AuraConf is Aura’s configuration file.  Here, distributions and users can add
-Hooks to define custom behaviour for their native packaging system. The command
-:command:`aura --recompile` rebuilds Aura with new Hooks. Also, the following
-paths can be defined in this file:
+Hooks to define custom behaviour for their native packaging system.
+The command ``aura --recompile`` rebuilds Aura with new Hooks.
+Also, the following paths can be defined in this file:
 
--  Package cache.
+- Package cache.
+- Aura log file.
+- Default build directory.
+- Mirror URLs for binary downloads.
+- TODO: What else?
 
--  Aura log file.
+Package Typeclass Instances
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Each Hook family (as described below) operates with one type of package.
+Any package type has to implement the `Package` typeclass. It takes
+the following shape:
 
--  Default build directory.
+.. code-block:: haskell
 
--  Mirror URLs for binary downloads.
+   class Package p where
+     -- Converts a package name to its ADT form. Upon failure,
+     -- yields its name wrapped in a `Left`.
+     package :: Text -> IO (Either Text p)
 
--  TODO: What else?
+     -- All Packages must be able to present their prime information
+     -- in a standard way for Aura output functions.
+     render :: p -> PkgInfo
 
-Hook List
+Hooks ADT
 ~~~~~~~~~
+Hooks are passed through Aura as an ADT of functions.
 
-Pending.
+.. code-block:: haskell
+
+   {-# LANGUAGE RankNTypes #-}
+
+   data Hooks p = Hooks { info   :: Package p => Text -> IO [p]
+                        , search :: Package p => Text -> IO [p]
+                        , -- more to come
+                        }
 
 Aesthetics
 ----------
