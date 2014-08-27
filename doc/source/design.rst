@@ -64,8 +64,8 @@ Common Behaviour
 As can be gleamed from the program flow chart, the "capital letter"
 operators pertaining to packages share the same functionality metaphors.
 
-- Installation: :command:`aura -{S,F,L} <packages>`
-- Searching: :command:`aura -{S,F,L} <regex-like>`
+- Installation: ``aura -{S,F,L} <packages>``
+- Searching: ``aura -{S,F,L} <regex-like>``
 
 Output sample::
 
@@ -79,7 +79,7 @@ Output sample::
 
 Aura will fail silently when no pattern is given.
 
-- Info Lookups: :command:`aura -{S,F,L} <packages>`
+- Info Lookups: ``aura -{S,F,L} <packages>``
 
 To the question, "What does it mean to install a local package?" consider
 the following the use cases::
@@ -100,8 +100,8 @@ Local packages may be removed singularly, or in groups.
 
 Usage:
 
-- Just the packages named: :command:`aura -R <packages>`
-- Packages named and all deps (recursive): :command:`aura -Rr <packages>`
+- Just the packages named: ``aura -R <packages>``
+- Packages named and all deps (recursive): ``aura -Rr <packages>``
 
 
 Local Package Backups
@@ -112,21 +112,21 @@ at a later date.
 
 Usage:
 
-- Store a snapshot of all installed packages: :command:`aura -B`
+- Store a snapshot of all installed packages: ``aura -B``
 
    - This record is stored in :file:`/var/cache/aura/states`.
    - Filenames are of the form: ``YYYY.MM(MonthName).DD.HH.MM``.
    - The data itself is stored as JSON to ease use by :ref:`other <other>`
      tools.
 
-- Restore a snapshot: :command:`aura -Br`
+- Restore a snapshot: ``aura -Br``
 
 .. code-block:: javascript
 
    { "date": "2014-04-09",
      "time": "20:00",
      "packages": [ { "pkgname": "alsa-lib",
-                       "version": "1.0.27.2-1" },
+                     "version": "1.0.27.2-1" },
                    // more packages here
                    ]
    }
@@ -162,19 +162,21 @@ Dependency Resolution
    capture by other programs.
 
 
-+----------+--------+----------+---------+
-| Dep Name | Parent | Status   | Version |
-+==========+========+==========+=========+
-| foo      | None   | Local    | 1.2.3   |
-| foo      | bar    | Incoming | < 1.2.3 |
-| foo      | baz    | Incoming | > 1.2.3 |
-+----------+--------+----------+---------+
-| curl     | git    | Local    | 7.36.0  |
-| curl     | pacman | Incoming | 7.37.0  |
-+----------+--------+----------+---------+
-| lua      | vlc    | Incoming | 5.2.3   |
-| lua      | conky  | Incoming | 5.2.2   |
-+----------+--------+----------+---------+
+.. code-block:: bash
+
+   +----------+--------+----------+---------+
+   | Dep Name | Parent | Status   | Version |
+   +==========+========+==========+=========+
+   | foo      | None   | Local    | 1.2.3   |
+   | foo      | bar    | Incoming | < 1.2.3 |
+   | foo      | baz    | Incoming | > 1.2.3 |
+   +----------+--------+----------+---------+
+   | curl     | git    | Local    | 7.36.0  |
+   | curl     | pacman | Incoming | 7.37.0  |
+   +----------+--------+----------+---------+
+   | lua      | vlc    | Incoming | 5.2.3   |
+   | lua      | conky  | Incoming | 5.2.2   |
+   +----------+--------+----------+---------+
 
 .. code-block:: javascript
 
@@ -231,41 +233,27 @@ Concurrent Package Building
 PkgInfo
 ~~~~~~~
 
--  ``-{S,F,L}i`` yields ``PkgInfo`` data. It holds:
+Package searching and Info lookup algorithms work with ``PkgInfo`` data.
+It holds:
 
--  Repository name
+- Repository name
+- Package name
+- Version
+- Description
+- Architecture
+- URL
+- Licenses
+- “Provides”
+- Dependencies
+- “Conflicts With”
+- Maintainer
+- Optional fields (provided as ``[(Text,Text)]``):
 
--  Package name
-
--  Version
-
--  Description
-
--  Architecture
-
--  URL
-
--  Licenses
-
--  “Provides”
-
--  Dependencies
-
--  “Conflicts With”
-
--  Maintainer
-
--  Optional fields (provided as ``[(Text,Text)]``):
-
-   -  Download/Install sizes
-
-   -  Group
-
-   -  Votes
-
-   -  GPG information
-
-   -  etc.
+   - Download/Install sizes
+   - Group
+   - Votes
+   - GPG information
+   - etc.
 
 Abnormal Termination
 ~~~~~~~~~~~~~~~~~~~~
@@ -277,7 +265,7 @@ Colour Output
 ~~~~~~~~~~~~~
 
 All output to terminal (save JSON data) is output in colour where
-appropriate. The user can disable this with :command:`--no-color{ur,r}`.
+appropriate. The user can disable this with ``--no-color{ur,r}``.
 
 Usage Tips
 ~~~~~~~~~~
@@ -339,9 +327,9 @@ variable is set. Each language has an English name and its native
 equivalent (accents and other non-ascii characters are compatible). For
 example:
 
-- :command:`--croatian` and :command:`--hrvatski`
+- ``--croatian`` and ``--hrvatski``
 
-- :command:`--french` and :command:`--frans`
+- ``--french`` and ``--frans``
 
 .. _version-information:
 
