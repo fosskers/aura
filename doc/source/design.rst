@@ -350,7 +350,7 @@ example:
 
 - ``--croatian`` and ``--hrvatski``
 
-- ``--french`` and ``--frans``
+- ``--french`` and ``--français``
 
 .. _version-information:
 
