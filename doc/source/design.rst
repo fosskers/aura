@@ -59,21 +59,39 @@ Program Flow
 ~~~~~~~~~~~~
 .. image:: programFlow.*
 
-Repository Package Installation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Common Behaviour
+~~~~~~~~~~~~~~~~
+As can be gleamed from the program flow chart, the "capital letter"
+operators pertaining to packages share the same functionality metaphors.
 
-Aura allows installation of prebuilt binaries from mirrors defined in
-:ref:`auraconf`.
+- Installation: :command:`aura -{S,F,L} <packages>`
+- Searching: :command:`aura -{S,F,L} <regex-like>`
 
-Usage: :command:`aura -S <packages>`
+Output sample::
 
-Foreign Package Installation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   $> aura -Ss nvidia
+   extra/nvidia 337.25-3 [installed]
+       NVIDIA drivers for linux
+   extra/nvidia-304xx 304.121-5
+       NVIDIA drivers for linux, 304xx legacy branch
+   extra/nvidia-304xx-libgl 304.121-2
+       NVIDIA drivers libraries symlinks, 304xx legacy branch
 
-Aura allows installation of foreign packages, prebuilt or to be compiled.
-Not all distributions may support this type of installation.
+Aura will fail silently when no pattern is given.
 
-Usage: :command:`aura -F <packages>`
+- Info Lookups: :command:`aura -{S,F,L} <packages>`
+
+To the question, "What does it mean to install a local package?" consider
+the following the use cases::
+
+   $> aura -L foo-1.2-1.pkg.tar.gz  -- Installing a prebuilt package tarball.
+
+   $> aura -L bar
+   aura >=> Which version of `bar` do you want?
+   1. bar-1.1.1-1
+   2. bar-1.2.1-1
+   3. bar-1.2.3-1
+   >>  -- You choose which to install from your _local_ cache.
 
 Local Package Removal
 ~~~~~~~~~~~~~~~~~~~~~
@@ -82,48 +100,9 @@ Local packages may be removed singularly, or in groups.
 
 Usage:
 
--  Just the packages named: :command:`aura -R <packages>`
+- Just the packages named: :command:`aura -R <packages>`
+- Packages named and all deps (recursive): :command:`aura -Rr <packages>`
 
--  Packages named and all deps (recursive): :command:`aura -Rr <packages>`
-
-Package Search
-~~~~~~~~~~~~~~
-
-Searches on all three package types can be performed. A regular
-expression is given to search on.
-
-Usage:
-
--  Search repository packages: :command:`aura -Ss <pattern>`
-
--  Search foreign packages: :command:`aura -Fs <pattern>`
-
--  Search local packages: :command:`aura -Ls <pattern>`
-
-Aura will fail silently when no pattern is given.
-
-Output sample::
-
-   extra/nvidia 337.25-3 [installed]
-       NVIDIA drivers for linux
-   extra/nvidia-304xx 304.121-5
-       NVIDIA drivers for linux, 304xx legacy branch
-   extra/nvidia-304xx-libgl 304.121-2
-       NVIDIA drivers libraries symlinks, 304xx legacy branch
-
-Package Information
-~~~~~~~~~~~~~~~~~~~
-
-Queries for specific package information can be performed on all three
-package types. The exact names of existing packages must be given.
-
-Usage:
-
--  Query repository packages: :command:`aura -Si <packages>`
-
--  Query foreign packages: :command:`aura -Fi <packages>`
-
--  Query local packages: :command:`aura -Li <packages>`
 
 Local Package Backups
 ~~~~~~~~~~~~~~~~~~~~~
@@ -133,16 +112,14 @@ at a later date.
 
 Usage:
 
--  Store a snapshot of all installed packages: :command:`aura -B`
+- Store a snapshot of all installed packages: :command:`aura -B`
 
-   -  This record is stored in :file:`/var/cache/aura/states`.
+   - This record is stored in :file:`/var/cache/aura/states`.
+   - Filenames are of the form: ``YYYY.MM(MonthName).DD.HH.MM``.
+   - The data itself is stored as JSON to ease use by :ref:`other <other>`
+     tools.
 
-   -  Filenames are of the form: ``YYYY.MM(MonthName).DD.HH.MM``.
-
-   -  The data itself is stored as JSON to ease use by :ref:`other <other>`
-      tools.
-
--  Restore a snapshot: :command:`aura -Br`
+- Restore a snapshot: :command:`aura -Br`
 
 .. code-block:: javascript
 
