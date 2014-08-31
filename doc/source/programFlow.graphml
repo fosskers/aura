@@ -17,10 +17,10 @@
     <node id="n0">
       <data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="67.0" width="365.0" x="15.0" y="1.18359375"/>
+          <y:Geometry height="67.0" width="365.0" x="145.36101443261796" y="1.18359375"/>
           <y:Fill color="#FFCC00" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="69.3671875" modelName="custom" textColor="#000000" visible="true" width="354.619140625" x="5.1904296875" y="-1.18359375">Pure functions are light pink.
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="69.3671875" modelName="custom" textColor="#000000" visible="true" width="354.619140625" x="5.190429687499972" y="-1.18359375">Pure functions are light pink.
 Reader is blue.
 IO is light gray.
 Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
@@ -40,10 +40,10 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <y:ProxyAutoBoundsNode>
           <y:Realizers active="0">
             <y:GroupNode>
-              <y:Geometry height="395.890882420577" width="218.9297619047619" x="0.0" y="94.3671875"/>
+              <y:Geometry height="431.9794307597175" width="211.85952380952378" x="131.50149062309416" y="94.3671875"/>
               <y:Fill color="#F5F5F5" transparent="false"/>
               <y:BorderStyle color="#000000" type="dashed" width="1.0"/>
-              <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="218.9297619047619" x="0.0" y="0.0">Entrance</y:NodeLabel>
+              <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="211.85952380952378" x="0.0" y="0.0">Entrance</y:NodeLabel>
               <y:Shape type="roundrectangle"/>
               <y:State closed="false" closedHeight="50.0" closedWidth="50.0" innerGraphDisplayEnabled="false"/>
               <y:Insets bottom="15" bottomF="15.0" left="15" leftF="15.0" right="15" rightF="15.0" top="15" topF="15.0"/>
@@ -66,7 +66,7 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n1::n0">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="130.5" x="36.25" y="133.79443359375"/>
+              <y:Geometry height="30.0" width="130.5" x="167.75149062309416" y="133.79443359375"/>
               <y:Fill color="#C0C0C0" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="119.125" x="5.6875" y="4.8291015625">getArgs :: IO [String]<y:LabelModel>
@@ -82,7 +82,7 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n1::n1">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="171.0" x="16.0" y="188.79443359375"/>
+              <y:Geometry height="30.0" width="171.0" x="147.50149062309416" y="188.79443359375"/>
               <y:Fill color="#FF99CC" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="163.97265625" x="3.513671875" y="4.8291015625">parseArgs :: [String] -&gt; [Flag]<y:LabelModel>
@@ -98,7 +98,7 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n1::n2">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="76.0" x="63.5" y="243.79443359375"/>
+              <y:Geometry height="30.0" width="76.0" x="187.93125252785606" y="265.8646716889881"/>
               <y:Fill color="#FF99CC" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="63.619140625" x="6.1904296875" y="4.8291015625">checkValid<y:LabelModel>
@@ -114,10 +114,11 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n1::n3">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="164.85937500000023" x="38.070312499999886" y="342.0787048412119"/>
+              <y:Geometry height="44.01831024390242" width="164.85937500000023" x="162.50156502785595" y="364.14894293645"/>
               <y:Fill color="#FF99CC" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="155.435546875" x="4.711914062500114" y="4.8291015625">settings :: [Flag] -&gt; Settings<y:LabelModel>
+              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="36.68359375" modelName="custom" textColor="#000000" visible="true" width="155.435546875" x="4.711914062500114" y="3.66735824695121">-- Choose Hook family.
+settings :: [Flag] -&gt; Settings<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -130,10 +131,10 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n1::n4">
           <data key="d6">
             <y:ShapeNode>
-              <y:Geometry height="30.0" width="98.50000000000006" x="104.42936507936506" y="445.258069920577"/>
+              <y:Geometry height="30.0" width="98.50000000000006" x="228.86061760722112" y="481.3466182597175"/>
               <y:Fill color="#FFCC00" transparent="false"/>
               <y:BorderStyle color="#000000" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="93.00390625" x="2.7480468750000284" y="4.8291015625">Branch by Flags<y:LabelModel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="93.00390625" x="2.748046875" y="4.8291015625">Branch by Flags<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -152,14 +153,14 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <y:ProxyAutoBoundsNode>
           <y:Realizers active="0">
             <y:GroupNode>
-              <y:Geometry height="188.52315999264238" width="250.93015873015884" x="922.7249999999999" y="602.067515297392"/>
+              <y:Geometry height="196.23669147056512" width="250.93015873015884" x="1407.7391890357926" y="652.2981992602636"/>
               <y:Fill color="#F5F5F5" transparent="false"/>
               <y:BorderStyle color="#000000" type="dashed" width="1.0"/>
               <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="250.93015873015884" x="0.0" y="0.0">Searching</y:NodeLabel>
               <y:Shape type="roundrectangle"/>
               <y:State closed="false" closedHeight="50.0" closedWidth="50.0" innerGraphDisplayEnabled="false"/>
               <y:Insets bottom="15" bottomF="15.0" left="15" leftF="15.0" right="15" rightF="15.0" top="15" topF="15.0"/>
-              <y:BorderInsets bottom="0" bottomF="0.0" left="1" leftF="1.0001984126984098" right="1" rightF="1.0001984126984098" top="0" topF="1.1368683772161603E-13"/>
+              <y:BorderInsets bottom="0" bottomF="0.0" left="1" leftF="1.0001984126984098" right="1" rightF="1.0001984126984098" top="0" topF="0.0"/>
             </y:GroupNode>
             <y:GroupNode>
               <y:Geometry height="50.0" width="50.0" x="0.0" y="60.0"/>
@@ -178,7 +179,7 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n2::n0">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="177.52142857142871" x="959.429365079365" y="641.4947613911421"/>
+              <y:Geometry height="30.0" width="177.52142857142871" x="1444.4435541151577" y="691.7254453540136"/>
               <y:Fill color="#C0C0C0" color2="#FFFFFF" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="168.09765625" x="4.711886160714357" y="4.8291015625">searchDispatch :: Text -&gt; IO ()<y:LabelModel>
@@ -202,7 +203,7 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n2::n1">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="218.9297619047619" x="938.7251984126983" y="745.5906752900344"/>
+              <y:Geometry height="30.0" width="218.9297619047619" x="1423.739387448491" y="803.5348907308287"/>
               <y:Fill color="#C0C0C0" color2="#FF0000" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="204.4609375" x="7.234412202381009" y="4.8291015625">search :: Package p =&gt; Text -&gt; IO [p]<y:LabelModel>
@@ -223,14 +224,14 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <y:ProxyAutoBoundsNode>
           <y:Realizers active="0">
             <y:GroupNode>
-              <y:Geometry height="188.52315999264238" width="239.4238095238095" x="658.3011904761905" y="602.067515297392"/>
+              <y:Geometry height="196.23669147056512" width="239.4238095238095" x="1143.3153795119829" y="652.2981992602636"/>
               <y:Fill color="#F5F5F5" transparent="false"/>
               <y:BorderStyle color="#000000" type="dashed" width="1.0"/>
               <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="239.4238095238095" x="0.0" y="0.0">Info Lookups</y:NodeLabel>
               <y:Shape type="roundrectangle"/>
               <y:State closed="false" closedHeight="50.0" closedWidth="50.0" innerGraphDisplayEnabled="false"/>
               <y:Insets bottom="15" bottomF="15.0" left="15" leftF="15.0" right="15" rightF="15.0" top="15" topF="15.0"/>
-              <y:BorderInsets bottom="0" bottomF="0.0" left="1" leftF="1.0000262970860376" right="1" rightF="1.000026297085924" top="0" topF="1.1368683772161603E-13"/>
+              <y:BorderInsets bottom="0" bottomF="0.0" left="1" leftF="1.0000262970863787" right="1" rightF="1.0000262970854692" top="0" topF="0.0"/>
             </y:GroupNode>
             <y:GroupNode>
               <y:Geometry height="50.0" width="50.0" x="0.0" y="60.0"/>
@@ -249,17 +250,17 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n3::n0">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="175.26335509950263" x="690.381417688344" y="641.4947613911421"/>
+              <y:Geometry height="30.0" width="175.26335509950263" x="1175.3956067241365" y="691.7254453540136"/>
               <y:Fill color="#C0C0C0" color2="#FFFFFF" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="152.6171875" x="11.323083799751316" y="4.8291015625">infoDispatch :: Text -&gt; IO ()<y:LabelModel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="152.6171875" x="11.323083799751203" y="4.8291015625">infoDispatch :: Text -&gt; IO ()<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
                   <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>
                 </y:ModelParameter>
               </y:NodeLabel>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" modelName="custom" textColor="#000000" visible="true" width="4.0" x="85.63167754975132" y="13.0">
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" modelName="custom" textColor="#000000" visible="true" width="4.0" x="85.6316775497512" y="13.0">
                 <y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
@@ -273,7 +274,7 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n3::n1">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="207.42375692963753" x="674.3012167732766" y="745.5906752900344"/>
+              <y:Geometry height="30.0" width="207.42375692963753" x="1159.3154058090693" y="803.5348907308287"/>
               <y:Fill color="#C0C0C0" color2="#FF0000" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="188.98046875" x="9.22164408981871" y="4.8291015625">info :: Package p =&gt; Text -&gt; IO [p]<y:LabelModel>
@@ -294,14 +295,14 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <y:ProxyAutoBoundsNode>
           <y:Realizers active="0">
             <y:GroupNode>
-              <y:Geometry height="808.7339862543499" width="597.3011904761905" x="31.0" y="588.5423411680388"/>
+              <y:Geometry height="748.736000391061" width="597.3011904761904" x="521.0141890357925" y="638.7730251309104"/>
               <y:Fill color="#F5F5F5" transparent="false"/>
               <y:BorderStyle color="#000000" type="dashed" width="1.0"/>
-              <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="597.3011904761905" x="0.0" y="0.0">Package Building</y:NodeLabel>
+              <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="597.3011904761904" x="0.0" y="0.0">Package Building</y:NodeLabel>
               <y:Shape type="roundrectangle"/>
               <y:State closed="false" closedHeight="50.0" closedWidth="50.0" innerGraphDisplayEnabled="false"/>
               <y:Insets bottom="15" bottomF="15.0" left="15" leftF="15.0" right="15" rightF="15.0" top="15" topF="15.0"/>
-              <y:BorderInsets bottom="0" bottomF="0.0" left="1" leftF="1.0002805170575186" right="1" rightF="1.000111243463266" top="0" topF="1.1368683772161603E-13"/>
+              <y:BorderInsets bottom="0" bottomF="0.0" left="1" leftF="1.0000154132612806" right="1" rightF="1.000209697808259" top="0" topF="0.0"/>
             </y:GroupNode>
             <y:GroupNode>
               <y:Geometry height="50.0" width="50.0" x="0.0" y="60.0"/>
@@ -320,7 +321,7 @@ Nodes with red in the corner are functions provided by Hooks.<y:LabelModel>
         <node id="n4::n0">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="57.050348258706435" width="297.1852948900978" x="315.1156858882844" y="627.9695872617889"/>
+              <y:Geometry height="57.050348258706435" width="297.1852948900978" x="805.129874924077" y="678.2002712246604"/>
               <y:Fill color="#C0C0C0" color2="#FF0000" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="53.025390625" modelName="custom" textColor="#000000" visible="true" width="282.009765625" x="7.587764632548897" y="2.0124788168532177">-- Default implementation. Can be overwritten.
@@ -338,7 +339,7 @@ packages = map partitionEithers . mapM package<y:LabelModel>
         <node id="n4::n1">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="175.26335509950263" x="281.2095922915185" y="745.5906752900344"/>
+              <y:Geometry height="30.0" width="175.26335509950263" x="605.3019559304856" y="803.5348907308287"/>
               <y:Fill color="#C0C0C0" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="162.923828125" x="6.169763487251316" y="4.8291015625">reportInvalid :: [Text] -&gt; IO ()<y:LabelModel>
@@ -354,7 +355,7 @@ packages = map partitionEithers . mapM package<y:LabelModel>
         <node id="n4::n2">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="250.74132524875654" x="243.47060721689155" y="898.3021926312463"/>
+              <y:Geometry height="30.0" width="250.74132524875654" x="645.6455105383984" y="956.2464080720404"/>
               <y:Fill color="#C0C0C0" color2="#FF0000" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="241.29296875" x="4.724178249378269" y="4.8291015625">prebuildHooks :: Package p =&gt; [p] -&gt; IO [p]<y:LabelModel>
@@ -370,7 +371,7 @@ packages = map partitionEithers . mapM package<y:LabelModel>
         <node id="n4::n3">
           <data key="d6">
             <y:ShapeNode>
-              <y:Geometry height="20.341796875" width="243.115234375" x="47.00031932043652" y="646.3238629536421"/>
+              <y:Geometry height="20.341796875" width="243.115234375" x="537.014508356229" y="696.5545469165136"/>
               <y:Fill hasColor="false" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="4.0" x="119.5576171875" y="8.1708984375"/>
@@ -381,7 +382,7 @@ packages = map partitionEithers . mapM package<y:LabelModel>
         <node id="n4::n4">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="419.51163349108106" x="159.0854530957293" y="1017.9962675862535"/>
+              <y:Geometry height="30.0" width="419.51163349108106" x="561.2603564172362" y="1075.9404830270478"/>
               <y:Fill color="#C0C0C0" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="406.498046875" x="6.506793308040528" y="4.8291015625">resolveDeps :: (Package p, Traversable t) =&gt; [p] -&gt; IO ([Conflict],Bush t p)<y:LabelModel>
@@ -397,7 +398,7 @@ packages = map partitionEithers . mapM package<y:LabelModel>
         <node id="n4::n5">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="98.5" x="387.08492063492065" y="1229.5648100811768"/>
+              <y:Geometry height="30.0" width="98.5" x="672.117760464364" y="1287.5090255219714"/>
               <y:Fill color="#C0C0C0" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="84.255859375" x="7.1220703125" y="4.8291015625">confirm :: IO ()<y:LabelModel>
@@ -413,10 +414,10 @@ packages = map partitionEithers . mapM package<y:LabelModel>
         <node id="n4::n6">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="194.58753420398023" x="47.00028051705752" y="1116.2805388337151"/>
+              <y:Geometry height="30.0" width="194.58753420398023" x="907.7275647909454" y="1174.2247542745095"/>
               <y:Fill color="#C0C0C0" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="186.26171875" x="4.162907726990113" y="4.8291015625">reportConflict :: [Conflict] -&gt; IO ()<y:LabelModel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="186.26171875" x="4.162907726990056" y="4.8291015625">reportConflict :: [Conflict] -&gt; IO ()<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -429,10 +430,10 @@ packages = map partitionEithers . mapM package<y:LabelModel>
         <node id="n4::n7">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="351.9323171956132" x="260.36876203711404" y="1352.2763274223887"/>
+              <y:Geometry height="30.0" width="368.7071120306204" x="537.0142044490538" y="1342.5090255219714"/>
               <y:Fill color="#C0C0C0" color2="#FF0000" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="339.373046875" x="6.279635160306611" y="4.8291015625">buildInstall :: (Package p, Traversable t) =&gt; Bush t p -&gt; IO ???
+              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="357.37890625" x="5.664102890310232" y="4.8291015625">buildInstall :: (Package p, Traversable t) =&gt; Bush t p -&gt; IO [Built]
 <y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
@@ -446,7 +447,7 @@ packages = map partitionEithers . mapM package<y:LabelModel>
         <node id="n4::n8">
           <data key="d6">
             <y:ShapeNode>
-              <y:Geometry height="30.0" width="43.491685707758734" x="496.3906650826285" y="1116.2805388337151"/>
+              <y:Geometry height="30.0" width="43.491685707758734" x="609.4330287215957" y="1174.2247542745095"/>
               <y:Fill color="#FFCC00" transparent="false"/>
               <y:BorderStyle color="#000000" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="44.083984375" x="-0.2961493336206331" y="4.8291015625">Branch<y:LabelModel>
@@ -463,10 +464,26 @@ packages = map partitionEithers . mapM package<y:LabelModel>
         <node id="n4::n9">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="204.5064780487803" x="266.58803081687967" y="1116.2805388337151"/>
+              <y:Geometry height="30.0" width="204.5064780487803" x="678.220870646323" y="1174.2247542745095"/>
               <y:Fill color="#C0C0C0" color2="#FF0000" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="196.46875" x="4.0188640243901546" y="4.8291015625">Hook functions needed internally?<y:LabelModel>
+                  <y:SmartNodeLabelModel distance="4.0"/>
+                </y:LabelModel>
+                <y:ModelParameter>
+                  <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>
+                </y:ModelParameter>
+              </y:NodeLabel>
+            </y:GenericNode>
+          </data>
+        </node>
+        <node id="n4::n10">
+          <data key="d6">
+            <y:GenericNode configuration="ShinyPlateNode3">
+              <y:Geometry height="30.0" width="296.7494045769647" x="805.5656772235006" y="803.5348907308287"/>
+              <y:Fill color="#C0C0C0" transparent="false"/>
+              <y:BorderStyle hasColor="false" type="line" width="1.0"/>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="280.251953125" x="8.248725725982354" y="4.8291015625">package  :: Package p =&gt; Text -&gt; IO (Either Text p)<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -484,14 +501,14 @@ packages = map partitionEithers . mapM package<y:LabelModel>
         <y:ProxyAutoBoundsNode>
           <y:Realizers active="0">
             <y:GroupNode>
-              <y:Geometry height="252.71151734121213" width="214.8515873015873" x="653.3011904761906" y="1312.8490813286385"/>
+              <y:Geometry height="237.71151734121213" width="214.85158730158727" x="162.50149062309416" y="1425.7932967694328"/>
               <y:Fill color="#F5F5F5" transparent="false"/>
               <y:BorderStyle color="#000000" type="dashed" width="1.0"/>
-              <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="214.8515873015873" x="0.0" y="0.0">Package Installation</y:NodeLabel>
+              <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="214.85158730158727" x="0.0" y="0.0">Package Installation</y:NodeLabel>
               <y:Shape type="roundrectangle"/>
               <y:State closed="false" closedHeight="50.0" closedWidth="50.0" innerGraphDisplayEnabled="false"/>
               <y:Insets bottom="15" bottomF="15.0" left="15" leftF="15.0" right="15" rightF="15.0" top="15" topF="15.0"/>
-              <y:BorderInsets bottom="0" bottomF="0.0" left="1" leftF="1.000237635483245" right="1" rightF="1.000237635483586" top="0" topF="2.2737367544323206E-13"/>
+              <y:BorderInsets bottom="0" bottomF="0.0" left="1" leftF="1.0002376354834155" right="1" rightF="1.0002376354833586" top="0" topF="2.2737367544323206E-13"/>
             </y:GroupNode>
             <y:GroupNode>
               <y:Geometry height="50.0" width="50.0" x="0.0" y="60.0"/>
@@ -510,10 +527,10 @@ packages = map partitionEithers . mapM package<y:LabelModel>
         <node id="n5::n0">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="156.62585896262703" x="682.4140546456706" y="1520.5605986698506"/>
-              <y:Fill color="#C0C0C0" transparent="false"/>
+              <y:Geometry height="30.0" width="156.62585896262703" x="191.6143547925743" y="1618.504814110645"/>
+              <y:Fill color="#C0C0C0" color2="#FF0000" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="127.73828125" x="14.443788856313517" y="4.8291015625">install :: [Built] -&gt; IO ??<y:LabelModel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="132.947265625" x="11.839296668813546" y="4.8291015625">install :: [Built] -&gt; IO ???<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -526,10 +543,10 @@ packages = map partitionEithers . mapM package<y:LabelModel>
         <node id="n5::n1">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="182.85111203062047" x="669.3014281116739" y="1465.5605986698506"/>
+              <y:Geometry height="30.0" width="182.85111203062047" x="178.50172825857757" y="1563.5048141106447"/>
               <y:Fill color="#C0C0C0" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="152.39453125" x="15.228290390310235" y="4.8291015625">reportBuilt :: [Built] -&gt; IO ()<y:LabelModel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="152.39453125" x="15.228290390310264" y="4.8291015625">reportBuilt :: [Built] -&gt; IO ()<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -542,10 +559,10 @@ packages = map partitionEithers . mapM package<y:LabelModel>
         <node id="n5::n2">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="182.85111203062047" x="669.3014281116739" y="1352.2763274223887"/>
+              <y:Geometry height="30.0" width="182.85111203062047" x="178.50172825857757" y="1465.220542863183"/>
               <y:Fill color="#C0C0C0" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="146.025390625" x="18.412860702810235" y="4.8291015625">fromFile :: [Text] -&gt; [Built]<y:LabelModel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="146.025390625" x="18.412860702810264" y="4.8291015625">fromFile :: [Text] -&gt; [Built]<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -563,14 +580,14 @@ packages = map partitionEithers . mapM package<y:LabelModel>
         <y:ProxyAutoBoundsNode>
           <y:Realizers active="0">
             <y:GroupNode>
-              <y:Geometry height="84.42724609375" width="395.7734126984127" x="98.33174603174604" y="1648.8448699173123"/>
+              <y:Geometry height="84.42724609375" width="395.7734126984127" x="773.6844271310305" y="1845.0733566055683"/>
               <y:Fill color="#F5F5F5" transparent="false"/>
               <y:BorderStyle color="#000000" type="dashed" width="1.0"/>
               <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="395.7734126984127" x="0.0" y="0.0">Exit</y:NodeLabel>
               <y:Shape type="roundrectangle"/>
               <y:State closed="false" closedHeight="50.0" closedWidth="50.0" innerGraphDisplayEnabled="false"/>
               <y:Insets bottom="15" bottomF="15.0" left="15" leftF="15.0" right="15" rightF="15.0" top="15" topF="15.0"/>
-              <y:BorderInsets bottom="0" bottomF="0.0" left="1" leftF="1.0003555215662345" right="1" rightF="1.0003215094447455" top="0" topF="0.0"/>
+              <y:BorderInsets bottom="0" bottomF="0.0" left="1" leftF="1.0003555215663482" right="1" rightF="1.000321509444575" top="0" topF="0.0"/>
             </y:GroupNode>
             <y:GroupNode>
               <y:Geometry height="50.0" width="50.0" x="0.0" y="60.0"/>
@@ -589,10 +606,10 @@ packages = map partitionEithers . mapM package<y:LabelModel>
         <node id="n6::n0">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="174.71516197274053" x="114.33210155331227" y="1688.2721160110623"/>
+              <y:Geometry height="30.0" width="174.71516197274053" x="789.6847826525968" y="1884.5006026993183"/>
               <y:Fill color="#C0C0C0" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="163.662109375" x="5.526526298870266" y="4.8291015625">fail :: Text -&gt; IO (Maybe Text)<y:LabelModel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="163.662109375" x="5.526526298870294" y="4.8291015625">fail :: Text -&gt; IO (Maybe Text)<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -605,10 +622,10 @@ packages = map partitionEithers . mapM package<y:LabelModel>
         <node id="n6::n1">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="164.0572934890471" x="314.0475437316669" y="1688.2721160110623"/>
+              <y:Geometry height="30.0" width="164.0572934890471" x="989.4002248309515" y="1884.5006026993183"/>
               <y:Fill color="#C0C0C0" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="151.140625" x="6.458334244523542" y="4.8291015625">succeed :: IO (Maybe Text)<y:LabelModel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="151.140625" x="6.4583342445235985" y="4.8291015625">succeed :: IO (Maybe Text)<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -623,10 +640,10 @@ packages = map partitionEithers . mapM package<y:LabelModel>
     <node id="n7">
       <data key="d6">
         <y:GenericNode configuration="ShinyPlateNode3">
-          <y:Geometry height="72.81960741509079" width="230.01745005028806" x="658.3011956097766" y="996.5864638787081"/>
+          <y:Geometry height="72.81960741509079" width="230.01745005028806" x="1143.3153846455693" y="1054.5306793195023"/>
           <y:Fill color="#C0C0C0" color2="#FF0000" transparent="false"/>
           <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-          <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="69.3671875" modelName="custom" textColor="#000000" visible="true" width="208.984375" x="10.516537525144031" y="1.726209957545393">class Package p where
+          <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="69.3671875" modelName="custom" textColor="#000000" visible="true" width="208.984375" x="10.516537525144031" y="1.7262099575455068">class Package p where
   package  :: Text -&gt; IO (Either Text p)
   render :: p -&gt; PkgInfo
   -- more definitions here<y:LabelModel>
@@ -642,7 +659,7 @@ packages = map partitionEithers . mapM package<y:LabelModel>
     <node id="n8">
       <data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="30.0" width="40.0" x="906.3186507936508" y="1520.5605986698506"/>
+          <y:Geometry height="30.0" width="40.0" x="1391.3328398294434" y="1731.7890853581066"/>
           <y:Fill color="#FFCC00" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="31.05859375" x="4.470703125" y="4.8291015625">Print<y:LabelModel>
@@ -662,7 +679,7 @@ packages = map partitionEithers . mapM package<y:LabelModel>
         <y:ProxyAutoBoundsNode>
           <y:Realizers active="0">
             <y:GroupNode>
-              <y:Geometry height="302.40559229621886" width="329.1857142857143" x="913.3186507936507" y="858.8749465374963"/>
+              <y:Geometry height="302.4055922962191" width="329.1857142857143" x="1398.3328398294434" y="916.8191619782904"/>
               <y:Fill color="#F5F5F5" transparent="false"/>
               <y:BorderStyle color="#000000" type="dashed" width="1.0"/>
               <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="329.1857142857143" x="0.0" y="0.0">Rendering</y:NodeLabel>
@@ -688,7 +705,7 @@ packages = map partitionEithers . mapM package<y:LabelModel>
         <node id="n9::n0">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="230.01745005028806" x="929.3186559272369" y="898.3021926312463"/>
+              <y:Geometry height="30.0" width="230.01745005028806" x="1414.3328449630296" y="956.2464080720404"/>
               <y:Fill color="#FF99CC" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="200.6875" x="14.664975025144031" y="4.8291015625">render :: Package p =&gt; p -&gt; PkgInfo<y:LabelModel>
@@ -704,10 +721,10 @@ packages = map partitionEithers . mapM package<y:LabelModel>
         <node id="n9::n1">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="39.28211190817797" width="297.1852948900978" x="929.318860491459" y="1013.3552116321645"/>
+              <y:Geometry height="39.28211190817797" width="297.1852948900978" x="1414.3330495272517" y="1071.2994270729587"/>
               <y:Fill color="#FF99CC" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="36.68359375" modelName="custom" textColor="#000000" visible="true" width="280.43359375" x="8.375850570048897" y="1.2992590790889835">-- Given a ToJSON instance for PkgInfo
+              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="36.68359375" modelName="custom" textColor="#000000" visible="true" width="280.43359375" x="8.375850570048897" y="1.2992590790890972">-- Given a ToJSON instance for PkgInfo
 Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
@@ -721,10 +738,189 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
         <node id="n9::n2">
           <data key="d6">
             <y:GenericNode configuration="ShinyPlateNode3">
-              <y:Geometry height="30.0" width="140.16888801565779" x="1007.827063928679" y="1116.2805388337151"/>
+              <y:Geometry height="30.0" width="140.16888801565779" x="1492.8412529644716" y="1174.2247542745095"/>
               <y:Fill color="#FF99CC" transparent="false"/>
               <y:BorderStyle hasColor="false" type="line" width="1.0"/>
-              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="132.150390625" x="4.009248695328893" y="4.8291015625">??? :: ByteString -&gt; Text<y:LabelModel>
+              <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="132.150390625" x="4.009248695329006" y="4.8291015625">??? :: ByteString -&gt; Text<y:LabelModel>
+                  <y:SmartNodeLabelModel distance="4.0"/>
+                </y:LabelModel>
+                <y:ModelParameter>
+                  <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>
+                </y:ModelParameter>
+              </y:NodeLabel>
+            </y:GenericNode>
+          </data>
+        </node>
+      </graph>
+    </node>
+    <node id="n10">
+      <data key="d6">
+        <y:GenericNode configuration="ShinyPlateNode3">
+          <y:Geometry height="30.0" width="156.62585896262703" x="614.7714976497172" y="1731.7890853581066"/>
+          <y:Fill color="#C0C0C0" transparent="false"/>
+          <y:BorderStyle hasColor="false" type="line" width="1.0"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="141.548828125" x="7.5385154188135175" y="4.8291015625">savePackageState :: IO ()<y:LabelModel>
+              <y:SmartNodeLabelModel distance="4.0"/>
+            </y:LabelModel>
+            <y:ModelParameter>
+              <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>
+            </y:ModelParameter>
+          </y:NodeLabel>
+        </y:GenericNode>
+      </data>
+    </node>
+    <node id="n11">
+      <data key="d6">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="43.491685707758734" x="699.6219176104846" y="1465.220542863183"/>
+          <y:Fill color="#FFCC00" transparent="false"/>
+          <y:BorderStyle color="#000000" type="line" width="1.0"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="44.083984375" x="-0.2961493336206331" y="4.8291015625">Branch<y:LabelModel>
+              <y:SmartNodeLabelModel distance="4.0"/>
+            </y:LabelModel>
+            <y:ModelParameter>
+              <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>
+            </y:ModelParameter>
+          </y:NodeLabel>
+          <y:Shape type="rectangle"/>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="n12" yfiles.foldertype="group">
+      <data key="d4"/>
+      <data key="d5"/>
+      <data key="d6">
+        <y:ProxyAutoBoundsNode>
+          <y:Realizers active="0">
+            <y:GroupNode>
+              <y:Geometry height="468.6422837667842" width="308.51269841269846" x="187.50149062309416" y="652.2981992602636"/>
+              <y:Fill color="#F5F5F5" transparent="false"/>
+              <y:BorderStyle color="#000000" type="dashed" width="1.0"/>
+              <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="308.51269841269846" x="0.0" y="0.0">Package State Restoration (-L --restore)</y:NodeLabel>
+              <y:Shape type="roundrectangle"/>
+              <y:State closed="false" closedHeight="50.0" closedWidth="50.0" innerGraphDisplayEnabled="false"/>
+              <y:Insets bottom="15" bottomF="15.0" left="15" leftF="15.0" right="15" rightF="15.0" top="15" topF="15.0"/>
+              <y:BorderInsets bottom="0" bottomF="0.0" left="1" leftF="1.0" right="1" rightF="1.000068481994731" top="0" topF="0.0"/>
+            </y:GroupNode>
+            <y:GroupNode>
+              <y:Geometry height="50.0" width="50.0" x="0.0" y="60.0"/>
+              <y:Fill color="#F5F5F5" transparent="false"/>
+              <y:BorderStyle color="#000000" type="dashed" width="1.0"/>
+              <y:NodeLabel alignment="right" autoSizePolicy="node_width" backgroundColor="#EBEBEB" borderDistance="0.0" fontFamily="Dialog" fontSize="15" fontStyle="plain" hasLineColor="false" height="24.42724609375" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="61.0849609375" x="-5.54248046875" y="0.0">Folder 8</y:NodeLabel>
+              <y:Shape type="roundrectangle"/>
+              <y:State closed="true" closedHeight="50.0" closedWidth="50.0" innerGraphDisplayEnabled="false"/>
+              <y:Insets bottom="5" bottomF="5.0" left="5" leftF="5.0" right="5" rightF="5.0" top="5" topF="5.0"/>
+              <y:BorderInsets bottom="0" bottomF="0.0" left="0" leftF="0.0" right="0" rightF="0.0" top="0" topF="0.0"/>
+            </y:GroupNode>
+          </y:Realizers>
+        </y:ProxyAutoBoundsNode>
+      </data>
+      <graph edgedefault="directed" id="n12:">
+        <node id="n12::n0">
+          <data key="d6">
+            <y:GenericNode configuration="ShinyPlateNode3">
+              <y:Geometry height="30.0" width="130.5" x="203.50149062309416" y="803.5348907308287"/>
+              <y:Fill color="#C0C0C0" color2="#FF0000" transparent="false"/>
+              <y:BorderStyle hasColor="false" type="line" width="1.0"/>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="117.02734375" x="6.736328124999972" y="4.8291015625">pkgCache :: FilePath<y:LabelModel>
+                  <y:SmartNodeLabelModel distance="4.0"/>
+                </y:LabelModel>
+                <y:ModelParameter>
+                  <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>
+                </y:ModelParameter>
+              </y:NodeLabel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" modelName="custom" textColor="#000000" visible="true" width="4.0" x="63.24999999999997" y="13.0">
+                <y:LabelModel>
+                  <y:SmartNodeLabelModel distance="4.0"/>
+                </y:LabelModel>
+                <y:ModelParameter>
+                  <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>
+                </y:ModelParameter>
+              </y:NodeLabel>
+            </y:GenericNode>
+          </data>
+        </node>
+        <node id="n12::n1">
+          <data key="d6">
+            <y:GenericNode configuration="ShinyPlateNode3">
+              <y:Geometry height="30.0" width="175.26335509950263" x="224.93568608921586" y="691.7254453540136"/>
+              <y:Fill color="#C0C0C0" color2="#FFFFFF" transparent="false"/>
+              <y:BorderStyle hasColor="false" type="line" width="1.0"/>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="156.37890625" x="9.442224424751345" y="4.8291015625">savedStates ::  IO [FilePath]<y:LabelModel>
+                  <y:SmartNodeLabelModel distance="4.0"/>
+                </y:LabelModel>
+                <y:ModelParameter>
+                  <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>
+                </y:ModelParameter>
+              </y:NodeLabel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" modelName="custom" textColor="#000000" visible="true" width="4.0" x="85.63167754975134" y="13.0">
+                <y:LabelModel>
+                  <y:SmartNodeLabelModel distance="4.0"/>
+                </y:LabelModel>
+                <y:ModelParameter>
+                  <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>
+                </y:ModelParameter>
+              </y:NodeLabel>
+            </y:GenericNode>
+          </data>
+        </node>
+        <node id="n12::n2">
+          <data key="d5"/>
+          <data key="d6">
+            <y:ShapeNode>
+              <y:Geometry height="30.0" width="121.01229727403165" x="359.00169119242753" y="803.5348907308287"/>
+              <y:Fill color="#FFCC00" transparent="false"/>
+              <y:BorderStyle color="#000000" type="line" width="1.0"/>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="111.185546875" x="4.913375199515826" y="4.8291015625">User chooses State<y:LabelModel>
+                  <y:SmartNodeLabelModel distance="4.0"/>
+                </y:LabelModel>
+                <y:ModelParameter>
+                  <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>
+                </y:ModelParameter>
+              </y:NodeLabel>
+              <y:Shape type="rectangle"/>
+            </y:ShapeNode>
+          </data>
+        </node>
+        <node id="n12::n3">
+          <data key="d6">
+            <y:GenericNode configuration="ShinyPlateNode3">
+              <y:Geometry height="30.0" width="175.26335509950263" x="304.7507654542952" y="956.2464080720404"/>
+              <y:Fill color="#C0C0C0" color2="#FFFFFF" transparent="false"/>
+              <y:BorderStyle hasColor="false" type="line" width="1.0"/>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="153.373046875" x="10.945154112251316" y="4.8291015625">currentState :: IO PkgState<y:LabelModel>
+                  <y:SmartNodeLabelModel distance="4.0"/>
+                </y:LabelModel>
+                <y:ModelParameter>
+                  <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>
+                </y:ModelParameter>
+              </y:NodeLabel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" modelName="custom" textColor="#000000" visible="true" width="4.0" x="85.63167754975132" y="13.0">
+                <y:LabelModel>
+                  <y:SmartNodeLabelModel distance="4.0"/>
+                </y:LabelModel>
+                <y:ModelParameter>
+                  <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>
+                </y:ModelParameter>
+              </y:NodeLabel>
+            </y:GenericNode>
+          </data>
+        </node>
+        <node id="n12::n4">
+          <data key="d6">
+            <y:GenericNode configuration="ShinyPlateNode3">
+              <y:Geometry height="30.0" width="175.26335509950263" x="304.7507654542952" y="1075.9404830270478"/>
+              <y:Fill color="#C0C0C0" color2="#FFFFFF" transparent="false"/>
+              <y:BorderStyle hasColor="false" type="line" width="1.0"/>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="custom" textColor="#000000" visible="true" width="38.171875" x="68.54574004975132" y="4.8291015625">TODO<y:LabelModel>
+                  <y:SmartNodeLabelModel distance="4.0"/>
+                </y:LabelModel>
+                <y:ModelParameter>
+                  <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>
+                </y:ModelParameter>
+              </y:NodeLabel>
+              <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" modelName="custom" textColor="#000000" visible="true" width="4.0" x="85.63167754975132" y="13.0">
+                <y:LabelModel>
                   <y:SmartNodeLabelModel distance="4.0"/>
                 </y:LabelModel>
                 <y:ModelParameter>
@@ -749,7 +945,10 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
     <edge id="n1::e1" source="n1::n1" target="n1::n2">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="15.0" tx="0.0" ty="-15.0"/>
+          <y:Path sx="0.0" sy="15.0" tx="0.0" ty="-15.0">
+            <y:Point x="233.00149062309416" y="233.79443359375"/>
+            <y:Point x="225.93125252785606" y="240.8646716889881"/>
+          </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
           <y:BendStyle smoothed="false"/>
@@ -759,19 +958,19 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
     <edge id="e0" source="n1::n2" target="n6::n0">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="-19.0" sy="15.0" tx="-43.67879049318512" ty="-15.0">
-            <y:Point x="82.5" y="288.79443359375"/>
-            <y:Point x="68.35786437626905" y="302.93656921748095"/>
-            <y:Point x="30.14213562373095" y="302.93656921748095"/>
-            <y:Point x="16.0" y="317.0787048412119"/>
-            <y:Point x="16.0" y="1550.5605986698506"/>
-            <y:Point x="30.142135623730837" y="1564.7027342935814"/>
-            <y:Point x="143.86875642276647" y="1564.7027342935814"/>
-            <y:Point x="158.01089204649742" y="1578.8448699173123"/>
+          <y:Path sx="-19.0" sy="15.0" tx="-43.67879049318515" ty="-15.0">
+            <y:Point x="206.93125252785606" y="310.8646716889881"/>
+            <y:Point x="192.7891169041251" y="325.00680731271905"/>
+            <y:Point x="161.6436262468251" y="325.00680731271905"/>
+            <y:Point x="147.50149062309416" y="339.14894293645"/>
+            <y:Point x="147.50149062309416" y="1761.7890853581066"/>
+            <y:Point x="191.643626246825" y="1805.9312209818374"/>
+            <y:Point x="819.221437522051" y="1805.9312209818374"/>
+            <y:Point x="833.363573145782" y="1820.0733566055683"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="96.865234375" x="-21.354342328502483" y="1322.2363494094998">Conflicting Flags<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="96.865234375" x="406.963108360471" y="1510.066535923244">Conflicting Flags<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
@@ -780,10 +979,10 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
     <edge id="n1::e2" source="n1::n2" target="n1::n3">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="19.0" sy="15.0" tx="0.0" ty="-15.0"/>
+          <y:Path sx="19.0" sy="15.0" tx="0.0" ty="-22.00915512195121"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="62.822265625" x="-62.822265624999986" y="23.97123718623095">Flags okay<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="62.822265625" x="-62.82227225241735" y="23.971223816625297">Flags okay<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
@@ -795,7 +994,7 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
           <y:Path sx="0.0" sy="15.0" tx="0.0" ty="-15.0"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="53.58203125" x="-53.58201536148317" y="26.87706892652568">Contains<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="53.58203125" x="-53.581986481940476" y="10.28144439352991">Contains<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
@@ -804,9 +1003,9 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
     <edge id="n1::e3" source="n1::n3" target="n1::n4">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="15.0" tx="0.0" ty="-15.0">
-            <y:Point x="120.5" y="387.0787048412119"/>
-            <y:Point x="153.67936507936508" y="420.258069920577"/>
+          <y:Path sx="0.0" sy="22.00915512195121" tx="0.0" ty="-15.0">
+            <y:Point x="244.93125252785606" y="423.1672531803524"/>
+            <y:Point x="278.1106176072211" y="456.3466182597175"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -817,11 +1016,11 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
     <edge id="e1" source="n1::n4" target="n2">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="36.93750000000003" sy="15.0" tx="-112.4650793650793" ty="-94.26157999632107">
-            <y:Point x="190.6168650793651" y="505.258069920577"/>
-            <y:Point x="204.75900070309606" y="519.4002055443079"/>
-            <y:Point x="921.5828643762691" y="519.4002055443079"/>
-            <y:Point x="935.725" y="533.5423411680389"/>
+          <y:Path sx="39.400000000000034" sy="15.0" tx="-112.46507936507942" ty="-98.11834573528256">
+            <y:Point x="317.5106176072212" y="541.3466182597175"/>
+            <y:Point x="331.65275323095216" y="555.4887538834485"/>
+            <y:Point x="1406.5970534120618" y="555.4887538834485"/>
+            <y:Point x="1420.7391890357926" y="569.6308895071793"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -833,10 +1032,10 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="15.0" tx="41.014323372261785" ty="-15.0">
-            <y:Point x="926.3186507936508" y="1605.5605986698506"/>
-            <y:Point x="912.1765151699199" y="1619.7027342935814"/>
-            <y:Point x="451.2326494721831" y="1619.7027342935814"/>
-            <y:Point x="437.09051384845225" y="1633.8448699173123"/>
+            <y:Point x="1411.3328398294434" y="1776.7890853581066"/>
+            <y:Point x="1397.1907042057126" y="1790.9312209818374"/>
+            <y:Point x="1126.585330571468" y="1790.9312209818374"/>
+            <y:Point x="1112.4431949477369" y="1805.0733566055683"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -850,7 +1049,7 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
           <y:Path sx="0.0" sy="15.0" tx="0.0" ty="-15.0"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="53.58203125" x="-53.582058570498475" y="26.87706892652568">Contains<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="53.58203125" x="-53.582090726112256" y="10.281444393530023">Contains<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
@@ -859,11 +1058,11 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
     <edge id="e3" source="n1::n4" target="n3">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="12.3125" sy="15.0" tx="-106.71190476190475" ty="-94.26157999632107">
-            <y:Point x="165.99186507936508" y="544.4002055443079"/>
-            <y:Point x="180.13400070309604" y="558.5423411680389"/>
-            <y:Point x="642.7760163468373" y="558.5423411680389"/>
-            <y:Point x="671.3011904761905" y="587.0675152973921"/>
+          <y:Path sx="19.700000000000017" sy="15.0" tx="-106.71190476190463" ty="-98.11834573528256">
+            <y:Point x="297.81061760722116" y="580.4887538834485"/>
+            <y:Point x="311.9527532309521" y="594.6308895071794"/>
+            <y:Point x="1113.6480697588988" y="594.6308895071794"/>
+            <y:Point x="1156.315379511983" y="637.2981992602636"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -875,8 +1074,10 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="-74.29632372252445" sy="28.525174129353218" tx="0.0" ty="-15.0">
-            <y:Point x="389.41200961080887" y="700.0199355204952"/>
-            <y:Point x="368.8412698412698" y="720.5906752900344"/>
+            <y:Point x="879.4261986466014" y="750.2506194833668"/>
+            <y:Point x="865.2840630228704" y="764.3927551070977"/>
+            <y:Point x="707.0757691039679" y="764.3927551070977"/>
+            <y:Point x="692.933633480237" y="778.5348907308287"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -887,7 +1088,12 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
     <edge id="n4::e1" source="n4::n1" target="n4::n2">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="15.0" tx="0.0" ty="-15.0"/>
+          <y:Path sx="0.0" sy="15.0" tx="0.0" ty="-15.0">
+            <y:Point x="692.933633480237" y="848.5348907308287"/>
+            <y:Point x="707.0757691039679" y="862.6770263545596"/>
+            <y:Point x="756.8740375390457" y="862.6770263545596"/>
+            <y:Point x="771.0161731627767" y="876.8191619782906"/>
+          </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
           <y:BendStyle smoothed="false"/>
@@ -897,7 +1103,12 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
     <edge id="e4" source="n1::n4" target="n4">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="-36.93750000000003" sy="15.0" tx="-212.9089285714286" ty="-404.36699312717485"/>
+          <y:Path sx="0.0" sy="15.0" tx="-285.65059523809515" ty="-374.3680001955305">
+            <y:Point x="278.1106176072211" y="595.4887538834485"/>
+            <y:Point x="292.25275323095207" y="609.6308895071794"/>
+            <y:Point x="519.8720534120616" y="609.6308895071794"/>
+            <y:Point x="534.0141890357926" y="623.7730251309104"/>
+          </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
           <y:BendStyle smoothed="false"/>
@@ -917,15 +1128,15 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
     <edge id="n4::e3" source="n4::n4" target="n4::n6">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="-139.83721116369367" sy="15.0" tx="0.0" ty="-15.0">
-            <y:Point x="229.00405867757615" y="1062.9962675862535"/>
-            <y:Point x="214.86192305384532" y="1077.1384032099843"/>
-            <y:Point x="158.43618324277858" y="1077.1384032099843"/>
-            <y:Point x="144.29404761904763" y="1091.2805388337151"/>
+          <y:Path sx="139.83721116369367" sy="15.0" tx="0.0" ty="-15.0">
+            <y:Point x="910.8533843264703" y="1120.9404830270478"/>
+            <y:Point x="924.9955199502011" y="1135.0826186507786"/>
+            <y:Point x="990.8791962692046" y="1135.0826186507786"/>
+            <y:Point x="1005.0213318929356" y="1149.2247542745095"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="53.58203125" x="-82.41346809479487" y="40.98777988935444">Contains<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="53.58203125" x="94.16793833824818" y="39.36342614950945">Contains<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
@@ -934,11 +1145,11 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
     <edge id="n4::e4" source="n4::n8" target="n4::n5">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="10.872921426939683" sy="15.0" tx="0.0" ty="-15.0">
-            <y:Point x="529.0094293634476" y="1161.2805388337151"/>
-            <y:Point x="499.86729373971673" y="1190.422674457446"/>
-            <y:Point x="450.4770562586516" y="1190.422674457446"/>
-            <y:Point x="436.33492063492065" y="1204.5648100811768"/>
+          <y:Path sx="-10.872921426939683" sy="15.0" tx="0.0" ty="-15.0">
+            <y:Point x="620.3059501485354" y="1219.2247542745095"/>
+            <y:Point x="649.4480857722662" y="1248.3668898982403"/>
+            <y:Point x="707.225624840633" y="1248.3668898982403"/>
+            <y:Point x="721.367760464364" y="1262.5090255219711"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -959,15 +1170,15 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
     <edge id="e5" source="n4::n8" target="n6::n0">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="-10.872921426939683" sy="15.0" tx="43.67879049318512" ty="-15.0">
-            <y:Point x="507.2635865095682" y="1161.2805388337151"/>
-            <y:Point x="493.12145088583736" y="1175.422674457446"/>
-            <y:Point x="259.5107864173817" y="1175.422674457446"/>
-            <y:Point x="245.3686507936508" y="1189.5648100811768"/>
+          <y:Path sx="10.872921426939683" sy="15.0" tx="43.67879049318515" ty="-15.0">
+            <y:Point x="642.0517930024148" y="1219.2247542745095"/>
+            <y:Point x="656.1939286261455" y="1233.3668898982403"/>
+            <y:Point x="906.5791962692044" y="1233.3668898982403"/>
+            <y:Point x="920.7213318929354" y="1247.5090255219711"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="122.8984375" x="-162.89843131269743" y="4.829122818090127">No Packages to Build<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="right" ratio="0.5" textColor="#000000" visible="true" width="122.8984375" x="155.77092457297692" y="563.93969280541">No Packages to Build<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" placement="anywhere" side="right" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
@@ -986,99 +1197,84 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
     <edge id="e6" source="n0" target="n1">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="33.5" tx="88.03511904761905" ty="-197.9454412102885"/>
+          <y:Path sx="0.0" sy="33.5" tx="90.4297619047619" ty="-215.98971537985875"/>
           <y:LineStyle color="#000000" type="dotted" width="1.0"/>
           <y:Arrows source="none" target="none"/>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="e7" source="n4::n0" target="n7">
+    <edge id="n4::e6" source="n4::n0" target="n4::n10">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="74.29632372252439" sy="28.525174129353218" tx="-57.504362512572015" ty="-36.40980370754539">
-            <y:Point x="538.004761904762" y="928.3021926312463"/>
-            <y:Point x="553.004761904762" y="943.3021926312463"/>
-            <y:Point x="701.6634224986177" y="943.3021926312463"/>
-            <y:Point x="715.8055581223487" y="957.4443282549772"/>
+          <y:Path sx="74.29632372252445" sy="28.525174129353218" tx="0.0" ty="-15.0">
+            <y:Point x="1028.0188460916504" y="750.2506194833668"/>
+            <y:Point x="1013.8767104679193" y="764.3927551070977"/>
+            <y:Point x="968.082515135714" y="764.3927551070977"/>
+            <y:Point x="953.940379511983" y="778.5348907308287"/>
           </y:Path>
           <y:LineStyle color="#000000" type="dashed" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="153.642578125" x="-153.6425510183069" y="20.239393833907684">Optionally calls `package`<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="89.435546875" x="-74.07841931614212" y="45.61338194176619">Optionally calls<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="n4::e6" source="n4::n4" target="n4::n8">
+    <edge id="n4::e7" source="n4::n4" target="n4::n8">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="139.83721116369367" sy="15.0" tx="0.0" ty="-15.0">
-            <y:Point x="508.6784810049635" y="1062.9962675862535"/>
-            <y:Point x="518.1365079365079" y="1072.4542945177977"/>
-          </y:Path>
+          <y:Path sx="-139.83721116369367" sy="15.0" tx="0.0" ty="-15.0"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="n4::e7" source="n4::n4" target="n4::n9">
+    <edge id="n4::e8" source="n4::n4" target="n4::n9">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="15.0" tx="0.0" ty="-15.0"/>
+          <y:Path sx="0.0" sy="15.0" tx="0.0" ty="-15.0">
+            <y:Point x="771.0161731627767" y="1120.9404830270478"/>
+            <y:Point x="780.4741096707131" y="1130.398419534984"/>
+          </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="53.58203125" x="-8.234902054482518E-6" y="6.900221140306257">Contains<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="53.58203125" x="9.45793535430687" y="25.243675094865466">Contains<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="e8" source="n5::n0" target="n6::n1">
+    <edge id="e7" source="n11" target="n5::n1">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="15.0" tx="-41.01432337226178" ty="-15.0">
-            <y:Point x="760.7269841269841" y="1590.5605986698506"/>
-            <y:Point x="746.5848485032532" y="1604.7027342935814"/>
-            <y:Point x="384.2040027276595" y="1604.7027342935814"/>
-            <y:Point x="355.06186710392865" y="1633.8448699173123"/>
-          </y:Path>
-          <y:LineStyle color="#000000" type="line" width="1.0"/>
-          <y:Arrows source="none" target="standard"/>
-          <y:BendStyle smoothed="false"/>
-        </y:PolyLineEdge>
-      </data>
-    </edge>
-    <edge id="e9" source="n4::n7" target="n5::n1">
-      <data key="d10">
-        <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="15.0" tx="-45.71277800765512" ty="-15.0">
-            <y:Point x="436.33492063492065" y="1412.2763274223887"/>
-            <y:Point x="450.4770562586515" y="1426.4184630461195"/>
-            <y:Point x="700.872070495598" y="1426.4184630461195"/>
-            <y:Point x="715.014206119329" y="1440.5605986698506"/>
+          <y:Path sx="-10.872921426939683" sy="15.0" tx="45.71277800765512" ty="-15.0">
+            <y:Point x="710.4948390374243" y="1510.220542863183"/>
+            <y:Point x="696.3527034136935" y="1524.3626784869139"/>
+            <y:Point x="329.78219790527385" y="1524.3626784869139"/>
+            <y:Point x="315.6400622815429" y="1538.504814110645"/>
           </y:Path>
           <y:LineStyle color="#000000" type="dashed" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="89.435546875" x="278.6792756994072" y="60.61333304485038">Optionally calls<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="89.435546875" x="-394.85474973017585" y="45.61333461845743">Optionally calls<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="e10" source="n1::n4" target="n5::n2">
+    <edge id="e8" source="n1::n4" target="n5::n2">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="-12.3125" sy="15.0" tx="0.0" ty="-15.0">
-            <y:Point x="141.36686507936508" y="559.4002055443079"/>
-            <y:Point x="155.50900070309604" y="573.5423411680389"/>
-            <y:Point x="627.3011904761905" y="573.5423411680389"/>
-            <y:Point x="643.3011904761905" y="589.5423411680389"/>
-            <y:Point x="643.3011904761905" y="1259.5648100811768"/>
-            <y:Point x="657.4433260999214" y="1273.7069457049076"/>
-            <y:Point x="746.5848485032532" y="1273.7069457049076"/>
-            <y:Point x="760.7269841269841" y="1287.8490813286385"/>
+          <y:Path sx="-39.400000000000034" sy="15.0" tx="0.0" ty="-15.0">
+            <y:Point x="238.7106176072211" y="541.3466182597175"/>
+            <y:Point x="224.56848198349016" y="555.4887538834485"/>
+            <y:Point x="186.6436262468251" y="555.4887538834485"/>
+            <y:Point x="172.50149062309416" y="569.6308895071794"/>
+            <y:Point x="172.50149062309416" y="1372.5090255219714"/>
+            <y:Point x="186.643626246825" y="1386.6511611457022"/>
+            <y:Point x="255.78514865015686" y="1386.6511611457022"/>
+            <y:Point x="269.92728427388784" y="1400.7932967694333"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -1089,11 +1285,11 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
     <edge id="n5::e1" source="n5::n2" target="n5::n1">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="15.0" tx="45.71277800765512" ty="-15.0">
-            <y:Point x="760.7269841269841" y="1397.2763274223887"/>
-            <y:Point x="774.869119750715" y="1411.4184630461195"/>
-            <y:Point x="792.2976265109083" y="1411.4184630461195"/>
-            <y:Point x="806.4397621346393" y="1425.5605986698506"/>
+          <y:Path sx="0.0" sy="15.0" tx="-45.71277800765512" ty="-15.0">
+            <y:Point x="269.92728427388784" y="1510.220542863183"/>
+            <y:Point x="255.78514865015697" y="1524.3626784869139"/>
+            <y:Point x="238.35664188996364" y="1524.3626784869139"/>
+            <y:Point x="224.2145062662327" y="1538.504814110645"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -1101,18 +1297,18 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="e11" source="n9::n0" target="n7">
+    <edge id="e9" source="n9::n0" target="n7">
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="-57.504362512572015" sy="15.0" tx="57.504362512572015" ty="-36.40980370754539">
-            <y:Point x="986.823018439809" y="943.3021926312463"/>
-            <y:Point x="972.680882816078" y="957.4443282549772"/>
-            <y:Point x="844.9564187712236" y="957.4443282549772"/>
-            <y:Point x="830.8142831474927" y="971.5864638787082"/>
+            <y:Point x="1471.8372074756016" y="1001.2464080720403"/>
+            <y:Point x="1457.6950718518706" y="1015.3885436957713"/>
+            <y:Point x="1329.9706078070162" y="1015.3885436957713"/>
+            <y:Point x="1315.8284721832854" y="1029.5306793195023"/>
           </y:Path>
-          <y:LineStyle color="#000000" type="dashed" width="1.0"/>
+          <y:LineStyle color="#000000" type="dashed" width="2.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="33.666015625" x="-13.937636012364237" y="28.937663977950706">From<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="33.666015625" x="-13.93760713282154" y="28.937665551557302">From<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
@@ -1122,25 +1318,25 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="57.504362512572015" sy="15.0" tx="0.0" ty="-19.641055954088984">
-            <y:Point x="1101.831743464953" y="943.3021926312463"/>
-            <y:Point x="1077.9115079365079" y="967.2224281596914"/>
+            <y:Point x="1586.8459325007457" y="1001.2464080720404"/>
+            <y:Point x="1562.9256969723006" y="1025.1666436004855"/>
           </y:Path>
           <y:LineStyle color="#000000" type="dashed" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="58.908203125" x="-21.60176297114458" y="36.601726899375194">Might call<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="58.908203125" x="-21.601734091601884" y="36.60172847298168">Might call<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
           </y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="e12" source="n3::n1" target="n9">
+    <edge id="e10" source="n3::n1" target="n9">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="15.0" tx="-151.59285714285704" ty="-151.20279614810943">
-            <y:Point x="778.0130952380953" y="805.5906752900344"/>
-            <y:Point x="792.1552308618262" y="819.7328109137653"/>
-            <y:Point x="912.1765151699199" y="819.7328109137653"/>
-            <y:Point x="926.3186507936508" y="833.8749465374963"/>
+          <y:Path sx="0.0" sy="15.0" tx="-151.59285714285716" ty="-151.20279614810966">
+            <y:Point x="1263.027284273888" y="863.5348907308288"/>
+            <y:Point x="1277.1694198976188" y="877.6770263545596"/>
+            <y:Point x="1397.1907042057126" y="877.6770263545596"/>
+            <y:Point x="1411.3328398294434" y="891.8191619782905"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
@@ -1148,20 +1344,20 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="e13" source="n2::n1" target="n9">
+    <edge id="e11" source="n2::n1" target="n9">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="15.0" tx="-29.721428571428532" ty="-151.20279614810943"/>
+          <y:Path sx="0.0" sy="15.0" tx="-29.721428571428532" ty="-151.20279614810966"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="e14" source="n9" target="n8">
+    <edge id="e12" source="n9" target="n8">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="-151.59285714285704" sy="151.20279614810943" tx="0.0" ty="-15.0"/>
+          <y:Path sx="-151.59285714285716" sy="151.20279614810943" tx="0.0" ty="-15.0"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
           <y:BendStyle smoothed="false"/>
@@ -1169,10 +1365,146 @@ Data.Aeson.encode :: ToJSON a =&gt; a -&gt; ByteString<y:LabelModel>
       </data>
     </edge>
     <edge id="n9::e1" source="n9::n1" target="n9::n2">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="19.641055954088984" tx="0.0" ty="-15.0"/>
+          <y:LineStyle color="#000000" type="line" width="1.0"/>
+          <y:Arrows source="none" target="standard"/>
+          <y:BendStyle smoothed="false"/>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+    <edge id="e13" source="n5::n0" target="n10">
+      <data key="d9"/>
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="0.0" sy="15.0" tx="-39.15646474065676" ty="-15.0">
+            <y:Point x="269.92728427388784" y="1678.504814110645"/>
+            <y:Point x="284.0694198976187" y="1692.6469497343758"/>
+            <y:Point x="639.7858267666429" y="1692.6469497343758"/>
+            <y:Point x="653.9279623903739" y="1706.7890853581066"/>
+          </y:Path>
+          <y:LineStyle color="#000000" type="line" width="1.0"/>
+          <y:Arrows source="none" target="standard"/>
+          <y:BendStyle smoothed="false"/>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+    <edge id="e14" source="n10" target="n6::n1">
+      <data key="d9"/>
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="0.0" sy="15.0" tx="-41.01432337226178" ty="-15.0">
+            <y:Point x="693.0844271310307" y="1776.7890853581066"/>
+            <y:Point x="707.2265627547615" y="1790.9312209818374"/>
+            <y:Point x="1016.2724125794824" y="1790.9312209818374"/>
+            <y:Point x="1030.4145482032134" y="1805.0733566055683"/>
+          </y:Path>
+          <y:LineStyle color="#000000" type="line" width="1.0"/>
+          <y:Arrows source="none" target="standard"/>
+          <y:BendStyle smoothed="false"/>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+    <edge id="e15" source="n4::n7" target="n11">
+      <data key="d9"/>
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="0.0" sy="15.0" tx="0.0" ty="-15.0"/>
+          <y:LineStyle color="#000000" type="line" width="1.0"/>
+          <y:Arrows source="none" target="standard"/>
+          <y:BendStyle smoothed="false"/>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+    <edge id="e16" source="n11" target="n10">
+      <data key="d9"/>
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="10.872921426939683" sy="15.0" tx="39.156464740656816" ty="-15.0"/>
+          <y:LineStyle color="#000000" type="line" width="1.0"/>
+          <y:Arrows source="none" target="standard"/>
+          <y:BendStyle smoothed="false"/>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+    <edge id="e17" source="n4::n10" target="n7">
+      <data key="d9"/>
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="0.0" sy="15.0" tx="-57.504362512572015" ty="-36.40980370754551">
+            <y:Point x="953.940379511983" y="986.2464080720404"/>
+            <y:Point x="968.940379511983" y="1001.2464080720404"/>
+            <y:Point x="1186.6776115344105" y="1001.2464080720404"/>
+            <y:Point x="1200.8197471581414" y="1015.3885436957712"/>
+          </y:Path>
+          <y:LineStyle color="#000000" type="dashed" width="2.0"/>
+          <y:Arrows source="none" target="standard"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="33.666015625" x="161.46992706395986" y="147.36969908766525">From<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
+          </y:EdgeLabel>
+          <y:BendStyle smoothed="false"/>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+    <edge id="n12::e0" source="n12::n1" target="n12::n0">
+      <data key="d9"/>
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="-43.81583877487566" sy="15.0" tx="0.0" ty="-15.0"/>
+          <y:LineStyle color="#000000" type="line" width="1.0"/>
+          <y:Arrows source="none" target="standard"/>
+          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="20.341796875" modelName="free" modelPosition="anywhere" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="66.548828125" x="-2.529199849732322E-5" y="58.00363479020575">References<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/>
+          </y:EdgeLabel>
+          <y:BendStyle smoothed="false"/>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+    <edge id="n12::e1" source="n12::n1" target="n12::n2">
+      <data key="d9"/>
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="43.81583877487566" sy="15.0" tx="0.0" ty="-15.0">
+            <y:Point x="356.3832024138428" y="736.7254453540136"/>
+            <y:Point x="370.52533803757376" y="750.8675809777445"/>
+            <y:Point x="405.3657042057124" y="750.8675809777445"/>
+            <y:Point x="419.50783982944336" y="765.0097166014755"/>
+          </y:Path>
+          <y:LineStyle color="#000000" type="line" width="1.0"/>
+          <y:Arrows source="none" target="standard"/>
+          <y:BendStyle smoothed="false"/>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+    <edge id="n12::e2" source="n12::n2" target="n12::n3">
+      <data key="d9"/>
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="0.0" sy="15.0" tx="0.0" ty="-15.0">
+            <y:Point x="419.50783982944336" y="848.5348907308287"/>
+            <y:Point x="392.38244300404654" y="875.6602875562255"/>
+          </y:Path>
+          <y:LineStyle color="#000000" type="line" width="1.0"/>
+          <y:Arrows source="none" target="standard"/>
+          <y:BendStyle smoothed="false"/>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+    <edge id="n12::e3" source="n12::n3" target="n12::n4">
+      <data key="d9"/>
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="0.0" sy="15.0" tx="0.0" ty="-15.0"/>
+          <y:LineStyle color="#000000" type="line" width="1.0"/>
+          <y:Arrows source="none" target="standard"/>
+          <y:BendStyle smoothed="false"/>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+    <edge id="e18" source="n1::n4" target="n12">
+      <data key="d9"/>
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="-19.700000000000017" sy="15.0" tx="-83.34722222222223" ty="-234.3211418833921"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
           <y:BendStyle smoothed="false"/>
