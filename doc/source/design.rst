@@ -65,7 +65,7 @@ As can be gleamed from the program flow chart, the "capital letter"
 operators pertaining to packages share the same functionality metaphors.
 
 - Installation: ``aura -{S,F,L} <packages>``
-- Searching: ``aura -{S,F,L} <regex-like>``
+- Searching: ``aura -{S,F,L}s <regex-like-pattern>``
 
 Output sample::
 
@@ -79,7 +79,7 @@ Output sample::
 
 Aura will fail silently when no pattern is given.
 
-- Info Lookups: ``aura -{S,F,L} <packages>``
+- Info Lookups: ``aura -{S,F,L}i <packages>``
 
 To the question, "What does it mean to install a local package?" consider
 the following the use cases::
@@ -115,8 +115,8 @@ Usage:
 - Store a snapshot of all installed packages: ``aura -B``
 
    - This record is stored in :file:`/var/cache/aura/states`.
-   - Filenames are of the form: ``YYYY.MM(MonthName).DD.HH.MM``.
-   - The data itself is stored as JSON to ease use by :ref:`other <other>`
+   - Filenames are of the form: ``YYYY.MM.MonthName.DD.HH.MM``.
+   - The data itself is stored as JSON to ease use by other
      tools.
 
 - Restore a snapshot: ``aura -Br``
@@ -128,7 +128,7 @@ Usage:
      "packages": [ { "pkgname": "alsa-lib",
                      "version": "1.0.27.2-1" },
                    // more packages here
-                   ]
+                 ]
    }
 
 .. _other:
