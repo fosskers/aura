@@ -1372,7 +1372,7 @@ absSy = magenta . \case
     Croatian   -> "Izvršava operacije sa ABS stablom.\n" ++ "Uobičajena (default) radnja je ručna izgradnja iz ABS stabla ([M]anual)."
     German     -> "Führe Aktionen aus die den ABS Baum betreffen.\n" ++ "Standardaktion baut [M]anuell aus ABS."
     Norwegian  -> "Utfør handlinger som involverer ABS-treet.\n" ++ "Standard-handling bygger [M]anuelt fra ABS."
-    Portuguese -> "Performa alçies envolvendo a árvore ABS.\n" ++ "Ação padrão [M]anualmente compila da ABS."
+    Portuguese -> "Performa ações envolvendo a árvore ABS.\n" ++ "Ação padrão [M]anualmente compila da ABS."
     French     -> "Effectue une action impliquant l'arbre ABS.\n" ++ "Par défaut, installe [M]anuellement depuis ABS."
     Indonesia  -> "Melakukan perbuatan yang berhubungan dengan pohon ABS.\n" ++ "Bawaannya adalah membangun [M]anual dari ABS"
     _          -> "Perform actions involving the ABS tree.\n" ++ "Default action [M]anually builds from ABS."
