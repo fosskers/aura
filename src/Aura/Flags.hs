@@ -126,17 +126,17 @@ allFlags lang = concat [ auraOperations lang
                        , pacmanOptions
                        , dualOptions ]
 
-simpleOption :: ([Char],[String],Flag) -> OptDescr Flag
+simpleOption :: (String,[String],Flag) -> OptDescr Flag
 simpleOption (c,s,f) = Option c s (NoArg f) ""
 
 auraOperations :: Language -> [OptDescr Flag]
 auraOperations lang =
-    [ Option ['A'] ["aursync"]   (NoArg AURInstall) (aurSy lang)
-    , Option ['B'] ["save"]      (NoArg SaveState)  (saveS lang)
-    , Option ['C'] ["downgrade"] (NoArg Cache)      (downG lang)
-    , Option ['L'] ["viewlog"]   (NoArg LogFile)    (viewL lang)
-    , Option ['M'] ["abssync"]   (NoArg ABSInstall) (absSy lang)
-    , Option ['O'] ["orphans"]   (NoArg Orphans)    (orpha lang) ]
+    [ Option "A" ["aursync"]   (NoArg AURInstall) (aurSy lang)
+    , Option "B" ["save"]      (NoArg SaveState)  (saveS lang)
+    , Option "C" ["downgrade"] (NoArg Cache)      (downG lang)
+    , Option "L" ["viewlog"]   (NoArg LogFile)    (viewL lang)
+    , Option "M" ["abssync"]   (NoArg ABSInstall) (absSy lang)
+    , Option "O" ["orphans"]   (NoArg Orphans)    (orpha lang) ]
 
 auraOptions :: [OptDescr Flag]
 auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
@@ -145,48 +145,48 @@ auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
               Option [] ["head"] (OptArg (TruncHead . truncHandler) "") "" :
               Option [] ["tail"] (OptArg (TruncTail . truncHandler) "") "" :
               map simpleOption
-              [ ( ['a'], ["delmakedeps"],  DelMDeps      )
-              , ( ['b'], ["backup"],       CacheBackup   )
-              , ( ['c'], ["clean"],        Clean         )
-              , ( ['d'], ["deps"],         ViewDeps      )
-              , ( ['j'], ["abandon"],      Abandon       )
-              , ( ['k'], ["diff"],         DiffPkgbuilds )
-              , ( ['i'], ["info"],         Info          )
-              , ( ['p'], ["pkgbuild"],     GetPkgbuild   )
-              , ( ['q'], ["quiet"],        Quiet         )
-              , ( ['r'], ["restore"],      RestoreState  )
-              , ( ['s'], ["search"],       Search        )
-              , ( ['t'], ["treesync"],     TreeSync      )
-              , ( ['u'], ["sysupgrade"],   Upgrade       )
-              , ( ['w'], ["downloadonly"], Download      )
-              , ( ['x'], ["unsuppress"],   Unsuppress    )
-              , ( [],    ["abc"],          ABCSort       )
-              , ( [],    ["absdeps"],      BuildABSDeps  )
-              , ( [],    ["allsource"],    KeepSource    )
-              , ( [],    ["auradebug"],    Debug         )
-              , ( [],    ["custom"],       Customizepkg  )
-              , ( [],    ["devel"],        Devel         )
-              , ( [],    ["hotedit"],      HotEdit       )
-              , ( [],    ["ignorearch"],   IgnoreArch    )
-              , ( [],    ["languages"],    Languages     )
-              , ( [],    ["no-pp"],        NoPowerPill   )
-              , ( [],    ["dryrun"],      DryRun	 )
-              , ( [],    ["viewconf"],     ViewConf      ) ]
+              [ ( "a", ["delmakedeps"],  DelMDeps      )
+              , ( "b", ["backup"],       CacheBackup   )
+              , ( "c", ["clean"],        Clean         )
+              , ( "d", ["deps"],         ViewDeps      )
+              , ( "j", ["abandon"],      Abandon       )
+              , ( "k", ["diff"],         DiffPkgbuilds )
+              , ( "i", ["info"],         Info          )
+              , ( "p", ["pkgbuild"],     GetPkgbuild   )
+              , ( "q", ["quiet"],        Quiet         )
+              , ( "r", ["restore"],      RestoreState  )
+              , ( "s", ["search"],       Search        )
+              , ( "t", ["treesync"],     TreeSync      )
+              , ( "u", ["sysupgrade"],   Upgrade       )
+              , ( "w", ["downloadonly"], Download      )
+              , ( "x", ["unsuppress"],   Unsuppress    )
+              , ( [],  ["abc"],          ABCSort       )
+              , ( [],  ["absdeps"],      BuildABSDeps  )
+              , ( [],  ["allsource"],    KeepSource    )
+              , ( [],  ["auradebug"],    Debug         )
+              , ( [],  ["custom"],       Customizepkg  )
+              , ( [],  ["devel"],        Devel         )
+              , ( [],  ["hotedit"],      HotEdit       )
+              , ( [],  ["ignorearch"],   IgnoreArch    )
+              , ( [],  ["languages"],    Languages     )
+              , ( [],  ["no-pp"],        NoPowerPill   )
+              , ( [],  ["dryrun"],       DryRun        )
+              , ( [],  ["viewconf"],     ViewConf      ) ]
     where truncHandler :: Maybe String -> Int
           truncHandler x = fromMaybe 10 (x >>= readMaybe)
 
 -- These are intercepted Pacman flags. Their functionality is different.
 pacmanOptions :: [OptDescr Flag]
 pacmanOptions = map simpleOption
-                [ ( ['y'], ["refresh"], Refresh )
-                , ( ['V'], ["version"], Version )
-                , ( ['h'], ["help"],    Help    ) ]
+                [ ( "y", ["refresh"], Refresh )
+                , ( "V", ["version"], Version )
+                , ( "h", ["help"],    Help    ) ]
 
 -- Options that have functionality stretching across both Aura and Pacman.
 dualOptions :: [OptDescr Flag]
 dualOptions = map simpleOption
               [ ( [], ["noconfirm"], NoConfirm )
-              , ( [], ["needed"], Needed ) ]
+              , ( [], ["needed"],    Needed    ) ]
 
 languageOptions :: [OptDescr Flag]
 languageOptions = map simpleOption
@@ -206,23 +206,23 @@ languageOptions = map simpleOption
 -- `Hijacked` flags. They have original pacman functionality, but
 -- that is masked and made unique in an Aura context.
 hijackedFlagMap :: FlagMap
-hijackedFlagMap = [ (CacheBackup,"-b")
-                  , (Clean,"-c")
-                  , (ViewDeps,"-d")
-                  , (Info,"-i")
-                  , (DiffPkgbuilds,"-k")
-                  , (RestoreState,"-r")
-                  , (Search,"-s")
-                  , (TreeSync,"-t")
-                  , (Upgrade,"-u")
-                  , (Download,"-w")
-                  , (Refresh,"-y") ]
+hijackedFlagMap = [ (CacheBackup,  "-b" )
+                  , (Clean,        "-c" )
+                  , (ViewDeps,     "-d" )
+                  , (Info,         "-i" )
+                  , (DiffPkgbuilds,"-k" )
+                  , (RestoreState, "-r" )
+                  , (Search,       "-s" )
+                  , (TreeSync,     "-t" )
+                  , (Upgrade,      "-u" )
+                  , (Download,     "-w" )
+                  , (Refresh,      "-y" ) ]
 
 -- These are flags which do the same thing in Aura or Pacman.
 dualFlagMap :: FlagMap
-dualFlagMap = [ (Quiet,"-q")
-              , (NoConfirm,"--noconfirm")
-              , (Needed,"--needed") ]
+dualFlagMap = [ (Quiet,    "-q"          )
+              , (NoConfirm,"--noconfirm" )
+              , (Needed,   "--needed"    ) ]
  
 -- Does the whole lot and filters out the garbage.
 reconvertFlags :: [Flag] -> FlagMap -> [String]

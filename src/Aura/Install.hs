@@ -64,39 +64,40 @@ install :: InstallOptions  -- ^ Options.
 install _ _ [] = return ()
 install opts pacOpts pkgs = ask >>= \ss ->
   if not $ delMakeDeps ss
-     then install'
+     then install' opts pacOpts pkgs
      else do  -- `-a` was used.
        orphansBefore <- orphans
-       install'
+       install' opts pacOpts pkgs
        orphansAfter <- orphans
        let makeDeps = orphansAfter \\ orphansBefore
        unless (null makeDeps) $ do
          notify removeMakeDepsAfter_1
          removePkgs makeDeps pacOpts
-  where
-    install' = ask >>= \ss -> do
-      unneeded <- if neededOnly ss then filterM isInstalled pkgs else return []
-      let notIgnored = pkgs \\ ignoredPkgsOf ss
-          ignored    = pkgs \\ notIgnored
-          toInstall  = notIgnored \\ (unneeded \\ ignored)
-      reportIgnoredPackages ignored
-      reportUnneededPackages unneeded
-      toBuild <- lookupPkgs (installLookup opts) toInstall >>= pkgbuildDiffs
-      if null toBuild
-         then scoldAndFail install_2
+
+install' :: InstallOptions -> [String] -> [String] -> Aura ()
+install' opts pacOpts pkgs = ask >>= \ss -> do
+  unneeded <- if neededOnly ss then filterM isInstalled pkgs else return []
+  let notIgnored = pkgs \\ ignoredPkgsOf ss
+      ignored    = pkgs \\ notIgnored
+      toInstall  = notIgnored \\ (unneeded \\ ignored)
+  reportIgnoredPackages ignored
+  reportUnneededPackages unneeded
+  toBuild <- lookupPkgs (installLookup opts) toInstall >>= pkgbuildDiffs
+  if null toBuild
+     then scoldAndFail install_2
+     else do
+    notify install_5
+    allPkgs <- catch (depsToInstall (repository opts) toBuild) depCheckFailure
+    let (repoPkgs,buildPkgs) = partitionPkgs allPkgs
+    reportPkgsToInstall (label opts) repoPkgs buildPkgs
+    unless (dryRun ss) $ do
+      continue <- optionalPrompt install_3
+      if not continue
+         then scoldAndFail install_4
          else do
-           notify install_5
-           allPkgs <- catch (depsToInstall (repository opts) toBuild) depCheckFailure
-           let (repoPkgs,buildPkgs) = partitionPkgs allPkgs
-           reportPkgsToInstall (label opts) repoPkgs buildPkgs
-           unless (dryRun ss) $ do
-             continue <- optionalPrompt install_3
-             if not continue
-                then scoldAndFail install_4
-                else do
-                  repoInstall pacOpts repoPkgs
-                  storePkgbuilds buildPkgs
-                  mapM_ (buildAndInstall pacOpts) buildPkgs
+        repoInstall pacOpts repoPkgs
+        storePkgbuilds buildPkgs
+        mapM_ (buildAndInstall pacOpts) buildPkgs
 
 -- | Check a list of a package names are buildable, and mark them as explicit.
 lookupPkgs :: (String -> Aura (Maybe Buildable))
