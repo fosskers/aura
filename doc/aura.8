@@ -198,6 +198,10 @@ Research into packages (and by extension, their PKGBUILDs) should be done
 before any building occurs. Please use \fI\-Ap\fR and \fI\-Ad\fR for this,
 as they will be much faster at presenting information than searching the
 AUR website manually.
+Note that, since aura is run through sudo, your local value of $EDITOR may not
+be preserved. Run as "sudo \fI\-E\fR aura -A --hotedit ..." to preserve your
+environment. To always allow environment variables to be passed, have a look at
+the \fIenv_reset\fR and \fIenv_keep\fR options in \fBsudoers\fR(5).
 .RE
 .P
 \fB\-\-ignorearch\fR
