@@ -31,7 +31,7 @@ module Aura.Install
 
 import Control.Monad (filterM, unless, (>=>))
 import Data.Either   (partitionEithers)
-import Data.List     (sort, (\\), intersperse)
+import Data.List     (sort, (\\), intersperse, partition)
 import Data.Maybe    (catMaybes)
 
 import Aura.Pkgbuild.Base
@@ -77,10 +77,10 @@ install opts pacOpts pkgs = ask >>= \ss ->
 install' :: InstallOptions -> [String] -> [String] -> Aura ()
 install' opts pacOpts pkgs = ask >>= \ss -> do
   unneeded <- if neededOnly ss then filterM isInstalled pkgs else return []
-  let notIgnored = pkgs \\ ignoredPkgsOf ss
-      ignored    = pkgs \\ notIgnored
-      toInstall  = notIgnored \\ (unneeded \\ ignored)
-  reportIgnoredPackages ignored
+  let (ignored,notIgnored) = partition (`elem` ignoredPkgsOf ss) pkgs
+  installAnyway <- confirmIgnored ignored
+  let toInstall  = (notIgnored ++ installAnyway) \\ unneeded
+  -- reportIgnoredPackages ignored  -- 2014 December  7 @ 14:52
   reportUnneededPackages unneeded
   toBuild <- lookupPkgs (installLookup opts) toInstall >>= pkgbuildDiffs
   if null toBuild
@@ -98,6 +98,9 @@ install' opts pacOpts pkgs = ask >>= \ss -> do
         repoInstall pacOpts repoPkgs
         storePkgbuilds buildPkgs
         mapM_ (buildAndInstall pacOpts) buildPkgs
+
+confirmIgnored :: [String] -> Aura [String]
+confirmIgnored = filterM (\p -> optionalPrompt $ confirmIgnored_1 p)
 
 -- | Check a list of a package names are buildable, and mark them as explicit.
 lookupPkgs :: (String -> Aura (Maybe Buildable))

@@ -581,6 +581,12 @@ install_5 = \case
     Indonesia  -> "Menentukan dependensi..."
     _          -> "Determining dependencies..."
 
+-- 2014 December  7 @ 14:45 - NEEDS TRANSLATIONS
+confirmIgnored_1 :: String -> Language -> String
+confirmIgnored_1 (bt -> p) = \case
+    Japanese   -> p ++ "は無視されるはずのパッケージ。それでも続行？"
+    _          -> p ++ " is marked as Ignored. Install anyway?"
+
 -- NEEDS UPDATE TO REFLECT CHANGED ENGLISH
 reportNonPackages_1 :: Language -> String
 reportNonPackages_1 = \case

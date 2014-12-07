@@ -78,6 +78,7 @@ yesNoPrompt msg = asks langOf >>= \lang -> do
   response <- liftIO getLine
   return $ response =~ "y|Y|\\B"
 
+-- | Doesn't prompt when `--noconfirm` is used.
 optionalPrompt :: (Language -> String) -> Aura Bool
 optionalPrompt msg = ask >>= check
     where check ss | mustConfirm ss = yesNoPrompt msg
