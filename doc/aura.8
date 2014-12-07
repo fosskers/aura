@@ -19,18 +19,17 @@ Haskell.
 It connects to both the official Arch repositories and to the Arch User
 Repositories (AUR), allowing easy control of all packages on an Arch system.
 Aura can also be used to build Arch Build System (ABS) packages from source.
-Aura allows \fIall\fR pacman operations and provides \fInew\fR custom ones
-for dealing with AUR and ABS packages.
+Aura allows \fIall\fR pacman operations and provides \fInew\fR custom ones for
+dealing with AUR and ABS packages.
 
 .SH OPERATIONS
 .P
 \fB\-A\fR, \-\-aursync [package(s)]
 .RS 4
-Perform actions involving the [A]UR. Default action installs packages
-from the AUR. During building, makepkg output is \fInot\fR shown
-by default. After building, the built \fI.pkg.tar.xz\fR file is moved
-to the package cache and installed from there. This allows for easy
-AUR package downgrading.
+Perform actions involving the [A]UR. Default action installs packages from the
+AUR. During building, makepkg output is \fInot\fR shown by default. After
+building, the built \fI.pkg.tar.xz\fR file is moved to the package cache and
+installed from there. This allows for easy AUR package downgrading.
 .RE
 .P
 \fB\-B\fR, \-\-save
@@ -63,8 +62,8 @@ Allows you to [M]anually build repository packages.
 Perform actions involving [O]rphan packages. Orphan packages are packages
 installed as dependencies, but are no longer required by any other package.
 \fI\-O\fR's default action can do one of two things.
-If no extra argument is given, the current orphan packages installed
-are displayed. If a package name is given, it is `adopted`.
+If no extra argument is given, the current orphan packages installed are
+displayed. If a package name is given, it is `adopted`.
 This changes the package's install reason to `As Explicit`.
 This is a shortcut for `-D --asexplicit`.
 .RE
@@ -73,17 +72,17 @@ This is a shortcut for `-D --asexplicit`.
 .P
 \fB\-a\fR, \-\-delmakedeps
 .RS 4
-Uninstalls build dependencies that are no longer required after installing
-the main package. This prevents the creation of orphan packages. Also note
-that while the package itself will be uninstalled, its package file will
-remain in the cache.
+Uninstalls build dependencies that are no longer required after installing the
+main package. This prevents the creation of orphan packages. Also note that
+while the package itself will be uninstalled, its package file will remain in
+the cache.
 .RE
 .P
 \fB\-d\fR, \-\-deps <package(s)>
 .RS 4
-View all the dependencies of a package. This process is recursive for
-AUR packages, so all dependencies of dependencies (and so on) will also
-be shown. This can aid the pre-install package research process.
+View all the dependencies of a package. This process is recursive for AUR
+packages, so all dependencies of dependencies (and so on) will also be shown.
+This can aid the pre-install package research process.
 .RE
 .P
 \fB\-i\fR, \-\-info <package(s)>
@@ -93,20 +92,20 @@ View information about a package in the AUR.
 .P
 \fB\-k\fR, \-\-diff
 .RS 4
-Shows PKGBUILD diffs. When upgrading, using this option will compare
-the most and second-most recent PKGBUILDs and output changes in colour.
+Shows PKGBUILD diffs. When upgrading, using this option will compare the most
+and second-most recent PKGBUILDs and output changes in colour.
 .RE
 .P
 \fB\-p\fR, \-\-pkgbuild <package(s)>
 .RS 4
-Outputs an AUR package's PKGBUILD. Use this before installing new packages
-to confirm that the build scripts aren't doing anything fishy.
+Outputs an AUR package's PKGBUILD. Use this before installing new packages to
+confirm that the build scripts aren't doing anything fishy.
 .RE
 .P
 \fB\-q\fR, \-\-quiet
 .RS 4
-Display less information about certain aursync operations (this is useful
-when processing Aura's output in a script). In particular, search and view
+Display less information about certain aursync operations (this is useful when
+processing Aura's output in a script). In particular, search and view
 dependencies will only show uncoloured package names.
 .RE
 .P
@@ -125,24 +124,21 @@ Suboptions:
 .P
 \fB\-u\fR, \-\-sysupgrade
 .RS 4
-Upgrade all installed AUR packages. \fI\-Au\fR is \fI\-Su\fR for AUR
-packages.
+Upgrade all installed AUR packages. \fI\-Au\fR is \fI\-Su\fR for AUR packages.
 .RE
 .P
 \fB\-w\fR, \-\-downloadonly <package(s)>
 .RS 4
-Download the source tarball. This doesn't contain source code, but instead
-the PKGBUILD and .install file for the requested package. Running
-\fImakepkg\fR in a directory with these files in it would build the package
-manually.
+Download the source tarball. This doesn't contain source code, but instead the
+PKGBUILD and .install file for the requested package. Running \fImakepkg\fR in
+a directory with these files in it would build the package manually.
 .RE
 .P
 \fB\-x\fR, \-\-unsuppress
 .RS 4
-Unsuppress \fImakepkg\fR output during building. By default this output
-is suppressed for a more silent install. Note that when this option
-isn't used, \fImakepkg\fR output is actually collected and printed
-if any errors occur.
+Unsuppress \fImakepkg\fR output during building. By default this output is
+suppressed for a more silent install. Note that when this option isn't used,
+\fImakepkg\fR output is actually collected and printed if any errors occur.
 .RE
 .P
 \fB\-\-aurignore\fR=<package>(,<package>,...)
@@ -156,8 +152,8 @@ like:
 .P
 \fB\-\-build\fR=/path/
 .RS 4
-Specify build path when building AUR packages. Only the \fIfull\fR path
-of a pre-existing directory can be used. Example:
+Specify build path when building AUR packages. Only the \fIfull\fR path of a
+pre-existing directory can be used. Example:
 .RS 6
 "aura -A foo --build=/full/path/to/build/location/"
 .RE
@@ -165,8 +161,8 @@ of a pre-existing directory can be used. Example:
 .P
 \fB\-\-builduser\fR=username
 .RS 4
-Specify the user to build packages as. This can be useful when logged in
-as root and a build user is available.
+Specify the user to build packages as. This can be useful when logged in as
+root and a build user is available.
 .RE
 .P
 \fB\-\-custom\fR
@@ -177,9 +173,9 @@ customizepkg installed and set up correctly for this to work.
 .P
 \fB\-\-devel\fR
 .RS 4
-When ran with \fI\-Au\fR, adds all development packages to the queue
-of packages to upgrade. Devel packages are those pulled directly
-from online repositories, via git / mercurial / etc.
+When ran with \fI\-Au\fR, adds all development packages to the queue of
+packages to upgrade. Devel packages are those pulled directly from online
+repositories, via git / mercurial / etc.
 .RE
 .P
 \fB\-\-dryrun\fR
@@ -191,13 +187,13 @@ with \fI\-M\fR.
 .P
 \fB\-\-hotedit\fR
 .RS 4
-Prompt the user immediately before dependency checks to ask if they
-wish to view/edit the PKGBUILD.
+Prompt the user immediately before dependency checks to ask if they wish to
+view/edit the PKGBUILD.
 This is not default behavior and thus does not have a single\-letter option.
 Research into packages (and by extension, their PKGBUILDs) should be done
-before any building occurs. Please use \fI\-Ap\fR and \fI\-Ad\fR for this,
-as they will be much faster at presenting information than searching the
-AUR website manually.
+before any building occurs. Please use \fI\-Ap\fR and \fI\-Ad\fR for this, as
+they will be much faster at presenting information than searching the AUR
+website manually.
 Note that, since aura is run through sudo, your local value of $EDITOR may not
 be preserved. Run as "sudo \fI\-E\fR aura -A --hotedit ..." to preserve your
 environment. To always allow environment variables to be passed, have a look at
@@ -214,39 +210,38 @@ when building packages.
 .P
 \fB\-c\fR, \-\-clean <states-to-retain>
 .RS 4
-Saves a given number of the most recently saved package states and removes
-the rest.
+Saves a given number of the most recently saved package states and removes the
+rest.
 .RE
 .P
 \fB\-r\fR, \-\-restore
 .RS 4
-Restores a record kept with \fI\-B\fR. Attempts to downgrade any
-packages that were upgraded since the chosen save. Will remove any
-that weren't installed at the time.
+Restores a record kept with \fI\-B\fR. Attempts to downgrade any packages that
+were upgraded since the chosen save. Will remove any that weren't installed at
+the time.
 .RE
 
 .SH DOWNGRADE OPTIONS (\fI\-C\fR)
 .P
 \fB\-b\fR, \-\-backup <path>
 .RS 4
-Backup the package cache to a given directory. The given directory must
-already exist. During copying, progress will be shown. If the copy takes too
-long, you may want to reduce the number of older versions of each package by
-using \fI\-Cc\fR.
+Backup the package cache to a given directory. The given directory must already
+exist. During copying, progress will be shown. If the copy takes too long, you
+may want to reduce the number of older versions of each package by using
+\fI\-Cc\fR.
 .RE
 .P
 \fB\-c\fR, \-\-clean <versions-to-retain>
 .RS 4
-Saves a given number of package versions for each package and deletes
-the rest from the package cache. Count is made from the most recent version,
-so using:
+Saves a given number of package versions for each package and deletes the rest
+from the package cache. Count is made from the most recent version, so using:
 .RS 4
 aura -Cc 3
 .RE
 would save the three most recent versions of each package file.
 Giving the number 0 as an argument is identical to \fI\-Scc\fR.
-Pass \fIc\fR twice to remove only those package files which are not saved
-in a package record (a la \fI\-B\fR).
+Pass \fIc\fR twice to remove only those package files which are not saved in a
+package record (a la \fI\-B\fR).
 .RE
 .P
 \fB\-s\fR, \-\-search <regex>
@@ -285,14 +280,14 @@ Delete the local ABS Tree.
 .P
 \fB\-d\fR, \-\-deps <package(s)>
 .RS 4
-The ABS equivalent of \fI\-Ad\fR. Will silently fail if the
-package is not present in the local tree.
+The ABS equivalent of \fI\-Ad\fR. Will silently fail if the package is not
+present in the local tree.
 .RE
 .P
 \fB\-i\fR, \-\-info <package(s)>
 .RS 4
-Search the local ABS Tree for package info. Will silently fail if the
-package is not present in the local tree.
+Search the local ABS Tree for package info. Will silently fail if the package
+is not present in the local tree.
 .RE
 .P
 \fB\-k\fR, \-\-diff
@@ -302,8 +297,8 @@ The ABS equivalent of \fI\-Ak\fR.
 .P
 \fB\-p\fR, \-\-pkgbuild <package(s)>
 .RS 4
-The ABS equivalent of \fI\-Ap\fR. Will silently fail if the
-package is not present in the local tree.
+The ABS equivalent of \fI\-Ap\fR. Will silently fail if the package is not
+present in the local tree.
 .RE
 .P
 \fB\-s\fR, \-\-search <regex>
@@ -325,14 +320,14 @@ The ABS equivalent of \fI\-Ax\fR.
 \fB\-y\fR, \-\-refresh
 .RS 4
 Sync all packages present in the local ABS Tree to their latest version.
-This is different from just "sudo abs", which pulls down the \fIentire\fR tree as
-available from the repositories.
+This is different from just "sudo abs", which pulls down the \fIentire\fR tree
+as available from the repositories.
 .RE
 .P
 \fB\-\-absdeps\fR
 .RS 4
-All repository (pacman) dependencies not yet installed will also be manually built.
-Also usable with \fI\-A\fR.
+All repository (pacman) dependencies not yet installed will also be manually
+built. Also usable with \fI\-A\fR.
 .RE
 \fB\-\-dryrun\fR
 .RS 4
@@ -387,9 +382,9 @@ View the pacman configuration file in read-only mode.
 
 .SH LANGUAGE OPTIONS
 .P
-Aura is available in multiple languages. As options, they can be used
-with either their English names or their real names written in their
-native characters. The available languages are, in option form:
+Aura is available in multiple languages. As options, they can be used with
+either their English names or their real names written in their native
+characters. The available languages are, in option form:
 .P
 \-\-english (default)
 .P
@@ -419,18 +414,17 @@ native characters. The available languages are, in option form:
 
 .SH PRO TIPS
 .P
-1. If you build a package and then choose not to install it, the built
-package file will still be moved to the cache. You can then install it
-whenever you want with \fI\-C\fR.
+1. If you build a package and then choose not to install it, the built package
+file will still be moved to the cache. You can then install it whenever you
+want with \fI\-C\fR.
 .P
 2. Research packages using \fI\-Ad\fR, \fI\-Ai\fR, and \fI\-Ap\fR!
 .P
-3. When upgrading, use \fI\-Akua\fR instead of just \fI\-Au\fR.
-This will remove make deps, as well as show PKGBUILD diffs before
-building.
+3. When upgrading, use \fI\-Akua\fR instead of just \fI\-Au\fR.  This will
+remove make deps, as well as show PKGBUILD diffs before building.
 .P
-4. If you want to search both the Repos and the AUR at the same time,
-you can use the following shell functions:
+4. If you want to search both the Repos and the AUR at the same time, you can
+use the following shell functions:
 .RS 4
 Bash => function search() {
           aura -Ss $1 && aura -As $1
@@ -448,11 +442,11 @@ Fish => function search
 
 .SH BUGS
 .P
-It is not recommended to install non-ABS, non-AUR packages with pacman or
-aura. Aura will assume they are AUR packages during a `-Au` and attempt
-to upgrade them. If a name collision occurs (that is, if there is
-a legitimate AUR package with the same name as the one you installed)
-previous installations could be overwritten.
+It is not recommended to install non-ABS, non-AUR packages with pacman or aura.
+Aura will assume they are AUR packages during a `-Au` and attempt to upgrade
+them. If a name collision occurs (that is, if there is a legitimate AUR package
+with the same name as the one you installed) previous installations could be
+overwritten.
 
 .SH AUTHOR
 .P
