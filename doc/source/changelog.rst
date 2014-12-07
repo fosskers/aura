@@ -1,5 +1,12 @@
 Aura Changelog
 ==============
+1.3.0.2
+-------
+- (Bug fix) If a user tries to install a package in `IgnorePkg`, they
+  will now be prompted.
+- Man page updated.
+- Dependencies updated.
+
 1.3.0.1
 -------
 - (Bug fix) Tarballs are now downloaded from a URL provided by the RPC.
