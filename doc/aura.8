@@ -1,7 +1,7 @@
 .\" Man page for `aura`
 .\" Written by Colin Woodbury <colingw@gmail.com>
 
-.TH aura 8 "May 2014" "Aura" "Aura Manual"
+.TH aura 8 "December 2014" "Aura" "Aura Manual"
 
 .\" Disable hyphenation.
 .nh
@@ -199,12 +199,6 @@ be preserved. Run as "sudo \fI\-E\fR aura -A --hotedit ..." to preserve your
 environment. To always allow environment variables to be passed, have a look at
 the \fIenv_reset\fR and \fIenv_keep\fR options in \fBsudoers\fR(5).
 .RE
-.P
-\fB\-\-ignorearch\fR
-.RS 4
-A \fImakepkg\fR flag visible at the Aura level. Ignores processor architecture
-when building packages.
-.RE
 
 .SH GLOBAL PACKAGE STATE OPTIONS (\fI\-B\fR)
 .P
@@ -350,9 +344,27 @@ Uninstall all orphan packages.
 .P
 \-\-noconfirm
 .RS 4
-Never ask for any Aura or Pacman confirmation. Any time a prompt would appear,
-say before building or installation, it is assumed the user answered in
-whatever way would progress the program.
+Never ask for any Aura or Pacman confirmation. Any time a prompt would
+appear, say before building or installation, it is assumed the user
+answered in whatever way would progress the program.
+.RE
+.P
+\-\-needed
+.RS 4
+Don't rebuild/reinstall packages that are already up to date.
+.RE
+
+.SH EXPOSED MAKEPKG OPTIONS
+.P
+\-\-ignorearch
+.RS 4
+Ignores processor architecture when building packages.
+.RE
+.P
+\-\-allsource
+.RS 4
+Creates a \fI.src\fR file containing all the downloaded sources (code, etc)
+and stores it at \fI/var/cache/aura/src/\fR.
 .RE
 
 .SH MISC. OPTIONS

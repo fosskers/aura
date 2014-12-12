@@ -82,7 +82,7 @@ build' (p:ps) = ask >>= \ss -> do
   pNames <- join (makepkg <*> pure user)
 --  pNames <- makepkg >>= \f -> f user  -- Which is better?
   paths  <- moveToCachePath pNames
-  when (keepSource ss) $ makepkgSource user True >>= void . moveToSourcePath
+  when (keepSource ss) $ makepkgSource user >>= void . moveToSourcePath
   liftIO $ cd curr
   return (paths,ps)
 
