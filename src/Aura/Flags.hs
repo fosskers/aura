@@ -235,8 +235,8 @@ simpleFlagMap fm = fromMaybe "" . flip lookup fm
 
 -- Converts the intercepted Pacman flags back into their raw string forms
 -- and filters out the garbage.
-reconvertFlags :: [Flag] -> FlagMap -> [String]
-reconvertFlags flags fm = filter notNull $ map fm flags
+reconvertFlags :: FlagMap -> [Flag] -> [String]
+reconvertFlags fm = filter notNull . map fm
 
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
