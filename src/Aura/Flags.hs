@@ -84,6 +84,8 @@ data Flag = ABSInstall
           | DryRun
           | Quiet
           | AURIgnore String
+          | Ignore String
+          | IgnoreGroup String
           | BuildPath FilePath
           | BuildUser String
           | ABCSort
@@ -184,7 +186,9 @@ pacmanOptions = map simpleOption
 
 -- Options that have functionality stretching across both Aura and Pacman.
 dualOptions :: [OptDescr Flag]
-dualOptions = map simpleOption
+dualOptions = Option [] ["ignore"]      (ReqArg Ignore      "" ) "" :
+              Option [] ["ignoregroup"] (ReqArg IgnoreGroup "" ) "" :
+              map simpleOption
               [ ( [], ["noconfirm"], NoConfirm )
               , ( [], ["needed"],    Needed    ) ]
 
@@ -220,9 +224,11 @@ hijackedFlagMap = simpleFlagMap [ (CacheBackup,  "-b" )
 
 -- These are flags which do the same thing in Aura or Pacman.
 dualFlagMap :: FlagMap
-dualFlagMap = simpleFlagMap [ (Quiet,     "-q"          )
-                            , (NoConfirm, "--noconfirm" )
-                            , (Needed,    "--needed"    ) ]
+dualFlagMap (Ignore      a) = "--ignore="      ++ a
+dualFlagMap (IgnoreGroup a) = "--ignoregroup=" ++ a
+dualFlagMap f = flip simpleFlagMap f [ (Quiet,     "-q"          )
+                                     , (NoConfirm, "--noconfirm" )
+                                     , (Needed,    "--needed"    ) ]
 
 simpleFlagMap :: [(Flag, String)] -> Flag -> String
 simpleFlagMap fm = fromMaybe "" . flip lookup fm
