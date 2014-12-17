@@ -61,7 +61,7 @@ import Utilities (notNull, split)
 
 ---
 
-type FlagMap = [(Flag,String)]
+type FlagMap = Flag -> String
 
 data Flag = ABSInstall
           | AURInstall
@@ -206,31 +206,31 @@ languageOptions = map simpleOption
 -- `Hijacked` flags. They have original pacman functionality, but
 -- that is masked and made unique in an Aura context.
 hijackedFlagMap :: FlagMap
-hijackedFlagMap = [ (CacheBackup,  "-b" )
-                  , (Clean,        "-c" )
-                  , (ViewDeps,     "-d" )
-                  , (Info,         "-i" )
-                  , (DiffPkgbuilds,"-k" )
-                  , (RestoreState, "-r" )
-                  , (Search,       "-s" )
-                  , (TreeSync,     "-t" )
-                  , (Upgrade,      "-u" )
-                  , (Download,     "-w" )
-                  , (Refresh,      "-y" ) ]
+hijackedFlagMap = simpleFlagMap [ (CacheBackup,  "-b" )
+                                , (Clean,        "-c" )
+                                , (ViewDeps,     "-d" )
+                                , (Info,         "-i" )
+                                , (DiffPkgbuilds,"-k" )
+                                , (RestoreState, "-r" )
+                                , (Search,       "-s" )
+                                , (TreeSync,     "-t" )
+                                , (Upgrade,      "-u" )
+                                , (Download,     "-w" )
+                                , (Refresh,      "-y" ) ]
 
 -- These are flags which do the same thing in Aura or Pacman.
 dualFlagMap :: FlagMap
-dualFlagMap = [ (Quiet,    "-q"          )
-              , (NoConfirm,"--noconfirm" )
-              , (Needed,   "--needed"    ) ]
- 
--- Does the whole lot and filters out the garbage.
-reconvertFlags :: [Flag] -> FlagMap -> [String]
-reconvertFlags flags fm = filter notNull $ map (reconvertFlag fm) flags
+dualFlagMap = simpleFlagMap [ (Quiet,     "-q"          )
+                            , (NoConfirm, "--noconfirm" )
+                            , (Needed,    "--needed"    ) ]
 
--- Converts an intercepted Pacman flag back into its raw string form.
-reconvertFlag :: FlagMap -> Flag -> String
-reconvertFlag flagMap f = fromMaybe "" $ f `lookup` flagMap
+simpleFlagMap :: [(Flag, String)] -> Flag -> String
+simpleFlagMap fm = fromMaybe "" . flip lookup fm
+
+-- Converts the intercepted Pacman flags back into their raw string forms
+-- and filters out the garbage.
+reconvertFlags :: [Flag] -> FlagMap -> [String]
+reconvertFlags flags fm = filter notNull $ map fm flags
 
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
