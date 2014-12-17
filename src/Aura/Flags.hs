@@ -21,7 +21,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Flags
     ( parseLanguageFlag
-    , parseFlags 
+    , parseFlags
     , settingsFlags
     , reconvertFlags
     , dualFlagMap
@@ -204,7 +204,7 @@ languageOptions = map simpleOption
                   , ( [], ["french","français"],      FrenchOut   )
                   , ( [], ["russian","русский"],      RussianOut  )
                   , ( [], ["italian","italiano"],     ItalianOut  )
-                  , ( [], ["serbian","српски"],       SerbianOut  ) 
+                  , ( [], ["serbian","српски"],       SerbianOut  )
                   , ( [], ["norwegian","norsk"],      NorwegiOut  ) ]
 
 -- `Hijacked` flags. They have original pacman functionality, but
@@ -350,4 +350,4 @@ parseFlags Nothing     args = parseFlags' English args
 -- Errors are dealt with manually in `aura.hs`.
 parseFlags' :: Language -> [String] -> ([Flag],[String],[String])
 parseFlags' lang args = case getOpt' Permute (allFlags lang) args of
-                         (opts,nonOpts,pacOpts,_) -> (opts,nonOpts,pacOpts) 
+                         (opts,nonOpts,pacOpts,_) -> (opts,nonOpts,pacOpts)
