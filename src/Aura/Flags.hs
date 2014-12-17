@@ -83,7 +83,7 @@ data Flag = ABSInstall
           | NoConfirm
           | DryRun
           | Quiet
-          | Ignore String
+          | AURIgnore String
           | BuildPath FilePath
           | BuildUser String
           | ABCSort
@@ -139,7 +139,7 @@ auraOperations lang =
     , Option "O" ["orphans"]   (NoArg Orphans)    (orpha lang) ]
 
 auraOptions :: [OptDescr Flag]
-auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
+auraOptions = Option [] ["aurignore"] (ReqArg AURIgnore "" ) "" :
               Option [] ["build"]     (ReqArg BuildPath "" ) "" :
               Option [] ["builduser"] (ReqArg BuildUser "" ) "" :
               Option [] ["head"] (OptArg (TruncHead . truncHandler) "") "" :
@@ -237,10 +237,10 @@ settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
                 , DelMDeps,Customizepkg,Quiet,NoPowerPill,KeepSource
                 , BuildABSDeps, ABCSort, IgnoreArch, DryRun, Needed ]
 
--- Flags like `Ignore` and `BuildPath` have args, and thus can't be included
+-- Flags like `AURIgnore` and `BuildPath` have args, and thus can't be included
 -- in the `settingsFlags` list.
 notSettingsFlag :: Flag -> Bool
-notSettingsFlag (Ignore _)    = False
+notSettingsFlag (AURIgnore _) = False
 notSettingsFlag (BuildPath _) = False
 notSettingsFlag (BuildUser _) = False
 notSettingsFlag (TruncHead _) = False
@@ -267,7 +267,7 @@ getLanguage = fishOutFlag flagsAndResults Nothing
 
 ignoredAuraPkgs :: [Flag] -> [String]
 ignoredAuraPkgs [] = []
-ignoredAuraPkgs (Ignore ps : _) = split ',' ps
+ignoredAuraPkgs (AURIgnore ps : _) = split ',' ps
 ignoredAuraPkgs (_:fs) = ignoredAuraPkgs fs
 
 buildPath :: [Flag] -> FilePath
