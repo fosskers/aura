@@ -21,7 +21,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Flags
     ( parseLanguageFlag
-    , parseFlags 
+    , parseFlags
     , settingsFlags
     , reconvertFlags
     , dualFlagMap
@@ -61,7 +61,7 @@ import Utilities (notNull, split)
 
 ---
 
-type FlagMap = [(Flag,String)]
+type FlagMap = Flag -> String
 
 data Flag = ABSInstall
           | AURInstall
@@ -83,7 +83,9 @@ data Flag = ABSInstall
           | NoConfirm
           | DryRun
           | Quiet
+          | AURIgnore String
           | Ignore String
+          | IgnoreGroup String
           | BuildPath FilePath
           | BuildUser String
           | ABCSort
@@ -139,7 +141,7 @@ auraOperations lang =
     , Option "O" ["orphans"]   (NoArg Orphans)    (orpha lang) ]
 
 auraOptions :: [OptDescr Flag]
-auraOptions = Option [] ["aurignore"] (ReqArg Ignore ""    ) "" :
+auraOptions = Option [] ["aurignore"] (ReqArg AURIgnore "" ) "" :
               Option [] ["build"]     (ReqArg BuildPath "" ) "" :
               Option [] ["builduser"] (ReqArg BuildUser "" ) "" :
               Option [] ["head"] (OptArg (TruncHead . truncHandler) "") "" :
@@ -184,7 +186,9 @@ pacmanOptions = map simpleOption
 
 -- Options that have functionality stretching across both Aura and Pacman.
 dualOptions :: [OptDescr Flag]
-dualOptions = map simpleOption
+dualOptions = Option [] ["ignore"]      (ReqArg Ignore      "" ) "" :
+              Option [] ["ignoregroup"] (ReqArg IgnoreGroup "" ) "" :
+              map simpleOption
               [ ( [], ["noconfirm"], NoConfirm )
               , ( [], ["needed"],    Needed    ) ]
 
@@ -200,47 +204,49 @@ languageOptions = map simpleOption
                   , ( [], ["french","français"],      FrenchOut   )
                   , ( [], ["russian","русский"],      RussianOut  )
                   , ( [], ["italian","italiano"],     ItalianOut  )
-                  , ( [], ["serbian","српски"],       SerbianOut  ) 
+                  , ( [], ["serbian","српски"],       SerbianOut  )
                   , ( [], ["norwegian","norsk"],      NorwegiOut  ) ]
 
 -- `Hijacked` flags. They have original pacman functionality, but
 -- that is masked and made unique in an Aura context.
 hijackedFlagMap :: FlagMap
-hijackedFlagMap = [ (CacheBackup,  "-b" )
-                  , (Clean,        "-c" )
-                  , (ViewDeps,     "-d" )
-                  , (Info,         "-i" )
-                  , (DiffPkgbuilds,"-k" )
-                  , (RestoreState, "-r" )
-                  , (Search,       "-s" )
-                  , (TreeSync,     "-t" )
-                  , (Upgrade,      "-u" )
-                  , (Download,     "-w" )
-                  , (Refresh,      "-y" ) ]
+hijackedFlagMap = simpleFlagMap [ (CacheBackup,  "-b" )
+                                , (Clean,        "-c" )
+                                , (ViewDeps,     "-d" )
+                                , (Info,         "-i" )
+                                , (DiffPkgbuilds,"-k" )
+                                , (RestoreState, "-r" )
+                                , (Search,       "-s" )
+                                , (TreeSync,     "-t" )
+                                , (Upgrade,      "-u" )
+                                , (Download,     "-w" )
+                                , (Refresh,      "-y" ) ]
 
 -- These are flags which do the same thing in Aura or Pacman.
 dualFlagMap :: FlagMap
-dualFlagMap = [ (Quiet,    "-q"          )
-              , (NoConfirm,"--noconfirm" )
-              , (Needed,   "--needed"    ) ]
- 
--- Does the whole lot and filters out the garbage.
-reconvertFlags :: [Flag] -> FlagMap -> [String]
-reconvertFlags flags fm = filter notNull $ map (reconvertFlag fm) flags
+dualFlagMap (Ignore      a) = "--ignore="      ++ a
+dualFlagMap (IgnoreGroup a) = "--ignoregroup=" ++ a
+dualFlagMap f = flip simpleFlagMap f [ (Quiet,     "-q"          )
+                                     , (NoConfirm, "--noconfirm" )
+                                     , (Needed,    "--needed"    ) ]
 
--- Converts an intercepted Pacman flag back into its raw string form.
-reconvertFlag :: FlagMap -> Flag -> String
-reconvertFlag flagMap f = fromMaybe "" $ f `lookup` flagMap
+simpleFlagMap :: [(Flag, String)] -> Flag -> String
+simpleFlagMap fm = fromMaybe "" . flip lookup fm
+
+-- Converts the intercepted Pacman flags back into their raw string forms
+-- and filters out the garbage.
+reconvertFlags :: FlagMap -> [Flag] -> [String]
+reconvertFlags fm = filter notNull . map fm
 
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
                 , DelMDeps,Customizepkg,Quiet,NoPowerPill,KeepSource
                 , BuildABSDeps, ABCSort, IgnoreArch, DryRun, Needed ]
 
--- Flags like `Ignore` and `BuildPath` have args, and thus can't be included
+-- Flags like `AURIgnore` and `BuildPath` have args, and thus can't be included
 -- in the `settingsFlags` list.
 notSettingsFlag :: Flag -> Bool
-notSettingsFlag (Ignore _)    = False
+notSettingsFlag (AURIgnore _) = False
 notSettingsFlag (BuildPath _) = False
 notSettingsFlag (BuildUser _) = False
 notSettingsFlag (TruncHead _) = False
@@ -267,7 +273,7 @@ getLanguage = fishOutFlag flagsAndResults Nothing
 
 ignoredAuraPkgs :: [Flag] -> [String]
 ignoredAuraPkgs [] = []
-ignoredAuraPkgs (Ignore ps : _) = split ',' ps
+ignoredAuraPkgs (AURIgnore ps : _) = split ',' ps
 ignoredAuraPkgs (_:fs) = ignoredAuraPkgs fs
 
 buildPath :: [Flag] -> FilePath
@@ -344,4 +350,4 @@ parseFlags Nothing     args = parseFlags' English args
 -- Errors are dealt with manually in `aura.hs`.
 parseFlags' :: Language -> [String] -> ([Flag],[String],[String])
 parseFlags' lang args = case getOpt' Permute (allFlags lang) args of
-                         (opts,nonOpts,pacOpts,_) -> (opts,nonOpts,pacOpts) 
+                         (opts,nonOpts,pacOpts,_) -> (opts,nonOpts,pacOpts)
