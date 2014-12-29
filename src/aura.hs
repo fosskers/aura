@@ -70,7 +70,7 @@ processFlags :: [String] -> (UserInput,Maybe Language)
 processFlags args = ((flags,nub input,pacOpts'),language)
     where (language,rest) = parseLanguageFlag args
           (flags,input,pacOpts) = parseFlags language rest
-          pacOpts' = nub $ pacOpts ++ reconvertFlags flags dualFlagMap
+          pacOpts' = nub $ pacOpts ++ reconvertFlags dualFlagMap flags
 
 -- | Set the local environment.
 prepSettings :: (UserInput,Maybe Language) -> IO (UserInput,Settings)
@@ -149,7 +149,7 @@ executeOpts (flags,input,pacOpts) =
     [Version]   -> getVersionInfo >>= animateVersionMsg
     _           -> catch (pacman $ pacOpts ++ hijackedFlags ++ input)
                       pacmanFailure
-    where hijackedFlags = reconvertFlags flags hijackedFlagMap
+    where hijackedFlags = reconvertFlags hijackedFlagMap flags
 
 -- | `-y` was included with `-A`. Sync database before continuing.
 syncAndContinue :: UserInput -> Aura ()
