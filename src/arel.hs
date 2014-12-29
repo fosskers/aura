@@ -1,11 +1,11 @@
 -- arel - Helps create aura releases.
 
 import Control.Lens
+import Control.Monad   (liftM, void)
+import Data.List       (sortBy)
+import System.Exit     (ExitCode(..))
 import System.FilePath ((</>))
 import Text.Regex.PCRE ((=~))
-import Control.Monad   (liftM, void)
-import System.Exit     (ExitCode(..))
-import Data.List       (sortBy)
 
 import Aura.Utils.Numbers (Version, version)
 
@@ -61,4 +61,4 @@ alterPKGBUILD = do
   mv "PKGBUILD.new" "PKGBUILD"
 
 makeTarball :: IO ()
-makeTarball = void (quietShellCmd' "mkaurball" [])
+makeTarball = void (quietShellCmd' "makepkg" ["--source"])
