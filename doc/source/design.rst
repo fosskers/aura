@@ -335,10 +335,21 @@ Hooks are passed through Aura as an ADT of functions.
 Aesthetics
 ----------
 
+Size Information
+~~~~~~~~~~~~~~~~
+If ``--verbose-size`` is passed to Aura, the following information are
+displayed before instalation from the official repositories (may not be
+possible for AUR)
+
+.. code-block::
+
+   Total download size: xx MiB
+   Net upgrade size   : xx MiB
+
 Localisation
 ~~~~~~~~~~~~
 
-.. todo:: 
+.. todo::
    Document exactly which environment variables are relevant. Perhaps $LANG?
 
 Aura is available for use in multiple languages. Language can be set via
@@ -357,7 +368,36 @@ example:
 Version Information When Upgrading
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
--  Need a nice chart.
+Whenever a package needs an upgrade, if a ``--verbose-update`` is passed to
+Aura, then a detailed chart is produced, as described below.
+
+The coloured part is denoted with a ``<colour></colour>`` syntax.
+
+``--verbose-update`` implies ``--verbose-size``.
+
+New Package Dependency Needed
+*****************************
+
+.. code-block::
+
+   == New package needed:
+   repository/package        1.0-1            (required by xxx) (Net change: ±xx MiB)
+
+New Package Release
+*******************
+
+.. code-block::
+
+   == New package release:
+   repository/package        1.0-1    -->    1.0-<green>2</green> (Net change: ±xx MiB)
+
+New Package Version
+*******************
+
+.. code-block::
+
+   == New package version:
+   repository/package        1.0-1    -->    1.<green>2-1</green> (Net change: ±xx MiB)
 
 Aura Versioning
 ~~~~~~~~~~~~~~~
