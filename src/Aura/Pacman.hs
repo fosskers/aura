@@ -27,15 +27,15 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Pacman where
 
 import System.Directory (doesFileExist)
-import Text.Regex.PCRE  ((=~))
 import System.IO        (hFlush, stdout)
+import Text.Regex.PCRE  ((=~))
 
-import Aura.Settings.Base (pacmanCmdOf)
+import Aura.Cache
 import Aura.Languages     (pacmanFailure_1)
+import Aura.Monad.Aura
+import Aura.Settings.Base (pacmanCmdOf)
 import Aura.Shell         (shellCmd, quietShellCmd, quietShellCmd')
 import Aura.Utils         (scoldAndFail)
-import Aura.Monad.Aura
-import Aura.Cache
 
 import Shell (Environment, getEnvVar, didProcessSucceed)
 import Utilities 
@@ -72,8 +72,9 @@ getPacmanConf :: IO String
 getPacmanConf = readFileUTF8 pacmanConfFile
 
 getConfFileField :: String -> String -> [String]
-getConfFileField confFile field = words $ takeWhile (/= '\n') entry
+getConfFileField confFile field = words $ takeWhile p entry
     where (_,_,entry) = confFile =~ field :: (String,String,String)
+          p c = c /= '\n' && c /= '#'
 
 getIgnoredPkgs :: String -> [String]
 getIgnoredPkgs confFile = getConfFileField confFile "^IgnorePkg[ ]+=[ ]+"

@@ -81,8 +81,8 @@ build' (p:ps) = ask >>= \ss -> do
   overwritePkgbuild p
   pNames <- join (makepkg <*> pure user)
 --  pNames <- makepkg >>= \f -> f user  -- Which is better?
-  paths  <- moveToBuildPath pNames
-  when (keepSource ss) $ makepkgSource user True >>= void . moveToSourcePath
+  paths  <- moveToCachePath pNames
+  when (keepSource ss) $ makepkgSource user >>= void . moveToSourcePath
   liftIO $ cd curr
   return (paths,ps)
 
@@ -129,12 +129,12 @@ displayBuildErrors errors = ask >>= \ss -> when (suppressMakepkg ss) $ do
   liftIO (timedMessage 1000000 ["3.. ","2.. ","1..\n"] >> putStrLn errors)
 
 -- Moves a file to the pacman package cache and returns its location.
-moveToBuildPath :: [FilePath] -> Aura [FilePath]
-moveToBuildPath []     = return []
-moveToBuildPath (p:ps) = do
-  newName <- ((</> p) . buildPathOf) <$> ask
+moveToCachePath :: [FilePath] -> Aura [FilePath]
+moveToCachePath []     = return []
+moveToCachePath (p:ps) = do
+  newName <- ((</> p) . cachePathOf) <$> ask
   liftIO $ mv p newName
-  (newName :) <$> moveToBuildPath ps
+  (newName :) <$> moveToCachePath ps
 
 -- Moves a file to the aura src package cache and returns its location.
 moveToSourcePath :: [FilePath] -> Aura [FilePath]

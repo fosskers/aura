@@ -77,8 +77,8 @@ prePad xs x len = replicate (len - length xs) x ++ xs
 whitespaces :: [Char]
 whitespaces = [' ','\t']
 
-crunchInt :: String -> Int
-crunchInt = foldl (\acc i -> acc * 10 + digitToInt i) 0
+asInt :: String -> Int
+asInt = foldl (\acc i -> acc * 10 + digitToInt i) 0
 
 ---------
 -- TUPLES

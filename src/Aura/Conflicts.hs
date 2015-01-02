@@ -23,11 +23,11 @@ module Aura.Conflicts where
 
 import Text.Regex.PCRE ((=~))
 
-import Aura.Settings.Base
-import Aura.Monad.Aura
-import Aura.Languages
-import Aura.Utils
 import Aura.Core
+import Aura.Languages
+import Aura.Monad.Aura
+import Aura.Settings.Base
+import Aura.Utils.Numbers (version)
 
 ---
 
@@ -62,9 +62,9 @@ realPkgConflicts ss pkg dep
 -- SHOULD match as `okay` against version 7.4, 7.4.0.1, or even 7.4.0.1-2.
 isVersionConflict :: VersionDemand -> String -> Bool
 isVersionConflict Anything _     = False
-isVersionConflict (LessThan r) c = comparableVer c >= comparableVer r
-isVersionConflict (MoreThan r) c = comparableVer c <= comparableVer r
+isVersionConflict (LessThan r) c = version c >= version r
+isVersionConflict (MoreThan r) c = version c <= version r
 isVersionConflict (MustBe   r) c = not $ c =~ ('^' : r)
-isVersionConflict (AtLeast  r) c | comparableVer c > comparableVer r = False
+isVersionConflict (AtLeast  r) c | version c > version r = False
                                  | isVersionConflict (MustBe r) c = True
                                  | otherwise = False

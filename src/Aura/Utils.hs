@@ -26,13 +26,13 @@ module Aura.Utils where
 import System.IO.Temp            (withTempDirectory)
 import Text.Regex.PCRE           ((=~))
 import System.IO                 (stdout, hFlush)
-import Data.Char                 (isDigit)
 import Data.List                 (sortBy,intercalate)
 
-import Aura.Languages (Language,whitespace)
-import Aura.Settings.Base
 import Aura.Colour.Text
+import Aura.Languages (Language,whitespace)
 import Aura.Monad.Aura
+import Aura.Settings.Base
+import Aura.Utils.Numbers
 
 import Utilities (inDir,postPad)
 import Shell     (pwd)
@@ -78,6 +78,7 @@ yesNoPrompt msg = asks langOf >>= \lang -> do
   response <- liftIO getLine
   return $ response =~ "y|Y|\\B"
 
+-- | Doesn't prompt when `--noconfirm` is used.
 optionalPrompt :: (Language -> String) -> Aura Bool
 optionalPrompt msg = ask >>= check
     where check ss | mustConfirm ss = yesNoPrompt msg
@@ -116,28 +117,17 @@ sortPkgs = sortBy verNums
           name = fst . pkgFileNameAndVer
           ver  = snd . pkgFileNameAndVer
 
--- linux-3.2.14-1-x86_64.pkg.tar.xz    -> ("linux",[3,2,14,1])
--- wine-1.4rc6-1-x86_64.pkg.tar.xz     -> ("wine",[1,4,6,1])
--- ruby-1.9.3_p125-4-x86_64.pkg.tar.xz -> ("ruby",[1,9,3,125,4])
+-- Test on:
+-- linux-3.2.14-1-x86_64.pkg.tar.xz
+-- wine-1.4rc6-1-x86_64.pkg.tar.xz
+-- ruby-1.9.3_p125-4-x86_64.pkg.tar.xz
 -- NOTE: regex stuff is a little sloppy here.
-pkgFileNameAndVer :: String -> (String,[Int])
+pkgFileNameAndVer :: String -> (String, Maybe Version)
 pkgFileNameAndVer p = (name,verNum')
     where (name,_,_) = p =~ "-[0-9]+" :: (String,String,String)
           verNum     = p =~ ("[0-9][-0-9a-z._]+-" ++ archs) :: String
           archs      = "(a|x|i)"  -- Representing "(any|x86_64|i686)"
-          verNum'    = comparableVer verNum
-
--- Also discards any non-number version info, like `rc`, etc.
--- Example: "3.2rc6-1" becomes [3,2,6,1]
--- TODO: `5.1` should expand to [5,1,0,0,0]
--- `5-1` should expand to [5,0,0,0,1]
-comparableVer :: String -> [Int]
-comparableVer [] = []
-comparableVer n  =
-    case dropWhile (not . isDigit) n of
-      []   -> []  -- Version ended in non-digits.
-      rest -> read digits : comparableVer (drop (length digits) rest)
-        where digits = takeWhile isDigit rest
+          verNum'    = version verNum
 
 -- Format two lists into two nice rows a la `-Qi` or `-Si`.
 entrify :: Settings -> [String] -> [String] -> String

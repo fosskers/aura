@@ -71,7 +71,8 @@ getDowngradeChoice cache pkg = do
 getChoicesFromCache :: Cache -> String -> [String]
 getChoicesFromCache cache pkg = sort choices
     where choices = filter match (allFilenames cache)
-          match p = p =~ ("^" ++ pkg ++ "-[0-9]")
+          patt    = "-[0-9:.]+-[1-9]+-(x86_64|i686|any)[.]pkg[.]tar[.]xz$"
+          match p = p =~ ("^" ++ pkg ++ patt)
 
 -- `[]` as input yields the contents of the entire cache.
 searchCache :: [String] -> Aura ()

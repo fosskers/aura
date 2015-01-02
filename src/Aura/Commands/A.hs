@@ -54,6 +54,7 @@ import           Aura.Languages
 import           Aura.Utils
 import           Aura.Bash (namespace, Namespace)
 import           Aura.Core
+import           Aura.Utils.Numbers
 
 import           Shell
 import           Utilities (whenM)
@@ -174,15 +175,15 @@ downloadTarballs pkgs = do
   mapM_ (downloadTBall currDir) pkgs
     where downloadTBall path pkg = whenM (isAurPackage pkg) $ do
               notify $ downloadTarballs_1 pkg
-              void . liftIO $ sourceTarball path pkg
+              void . liftIO $ sourceTarball path $ T.pack pkg
 
 displayPkgbuild :: [String] -> Aura ()
 displayPkgbuild = I.displayPkgbuild (mapM (fmap (fmap T.unpack) . pkgbuild))
 
 isntMostRecent :: (AurInfo,String) -> Bool
 isntMostRecent (ai,v) = trueVer > currVer
-  where trueVer = comparableVer $ T.unpack $ aurVersionOf ai
-        currVer = comparableVer v
+  where trueVer = version $ T.unpack $ aurVersionOf ai
+        currVer = version v
 
 ------------
 -- REPORTING

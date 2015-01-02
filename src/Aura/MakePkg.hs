@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
+
 -- Interface to `makepkg`.
 
 {-
@@ -36,6 +38,8 @@ import Shell (pwd, ls)
 
 ---
 
+type User = String
+
 makepkgConfFile :: FilePath
 makepkgConfFile = "/etc/makepkg.conf"
 
@@ -48,32 +52,29 @@ makepkg = asks suppressMakepkg >>= \quiet ->
 
 -- TODO: Clean this up. Incompatible with `-x` and `--ignorearch`?
 -- | Make a source package.
-makepkgSource :: String -- ^ User
-              -> Bool   -- ^ Include downloaded sources (--allsource)
-              -> Aura [FilePath]
-makepkgSource user allsource =
-    quietShellCmd cmd opts >> filter (=~ "[.]src[.]tar") <$> liftIO (pwd >>= ls)
-        where
-          allsourceOpt = if allsource then "--allsource" else "-S"
-          (cmd,opts)   = runStyle user [allsourceOpt]
+makepkgSource :: User -> Aura [FilePath]
+makepkgSource user = do
+  quietShellCmd cmd opts
+  filter (=~ "[.]src[.]tar") <$> liftIO (pwd >>= ls)
+    where (cmd,opts) = runStyle user ["--allsource"]
 
 -- Builds a package with `makepkg`.
 -- Some packages create multiple .pkg.tar files. These are all returned.
-makepkgGen :: (String -> [String] -> Aura a) -> String -> Aura [FilePath]
+makepkgGen :: (String -> [String] -> Aura a) -> User -> Aura [FilePath]
 makepkgGen make user = asks makepkgFlagsOf >>= \clfs -> do
     let (cmd,opts) = runStyle user clfs
     make cmd (opts ++ clfs) >> filter (=~ "[.]pkg[.]tar") <$> liftIO (pwd >>= ls)
 
-runStyle :: String -> [String] -> (String,[String])
+runStyle :: User -> [String] -> (String,[String])
 runStyle "root" opts = (makepkgCmd, "--asroot" : opts)
-runStyle user opts   = ("sudo",["-u", user, makepkgCmd] ++ opts)
+runStyle user   opts = ("sudo",["-u", user, makepkgCmd] ++ opts)
 
-makepkgQuiet :: String -> Aura [FilePath]
-makepkgQuiet user = makepkgGen quiet user
+makepkgQuiet :: User -> Aura [FilePath]
+makepkgQuiet = makepkgGen quiet
     where quiet cmd opts = do
             (status,out,err) <- quietShellCmd' cmd opts
             let output = err ++ "\n" ++ out
             checkExitCode' output status
 
-makepkgVerbose :: String -> Aura [FilePath]
-makepkgVerbose user = makepkgGen shellCmd user
+makepkgVerbose :: User -> Aura [FilePath]
+makepkgVerbose = makepkgGen shellCmd

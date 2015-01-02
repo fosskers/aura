@@ -33,6 +33,8 @@ module Aura.Packages.AUR
     ) where
 
 import           Control.Applicative
+import           Control.Monad        ((>=>),join)
+import           Data.Function        (on)
 import           Data.List            (sortBy)
 import           Data.Maybe
 import qualified Data.Text            as T
@@ -54,8 +56,7 @@ aurLookup :: String -> Aura (Maybe Buildable)
 aurLookup name = fmap (makeBuildable name . T.unpack) <$> pkgbuild name
 
 aurRepo :: Repository
-aurRepo = Repository $ \name ->
-    aurLookup name >>= Traversable.mapM packageBuildable
+aurRepo = Repository $ aurLookup >=> Traversable.mapM packageBuildable
 
 makeBuildable :: String -> Pkgbuild -> Buildable
 makeBuildable name pb = Buildable
@@ -63,7 +64,7 @@ makeBuildable name pb = Buildable
     , pkgbuildOf   = pb
     , isExplicit   = False
     , buildScripts = f }
-    where f fp = sourceTarball fp name >>= Traversable.mapM decompress
+    where f fp = sourceTarball fp (T.pack name) >>= Traversable.mapM decompress
 
 isAurPackage :: String -> Aura Bool
 isAurPackage name = isJust <$> pkgbuild name
@@ -71,9 +72,8 @@ isAurPackage name = isJust <$> pkgbuild name
 ----------------
 -- AUR PKGBUILDS
 ----------------
--- These are redundant!
 aurLink :: String
-aurLink = "https://aur.archlinux.org/packages/"
+aurLink = "https://aur.archlinux.org"
 
 pkgUrl :: String -> String
 pkgUrl pkg = aurLink </> take 2 pkg </> pkg
@@ -81,13 +81,11 @@ pkgUrl pkg = aurLink </> take 2 pkg </> pkg
 ------------------
 -- SOURCE TARBALLS
 ------------------
-tarballUrl :: String -> String
-tarballUrl pkg = pkgUrl pkg </> pkg ++ ".tar.gz"
-
 sourceTarball :: FilePath            -- ^ Where to save the tarball.
-              -> String              -- ^ Package name.
+              -> T.Text              -- ^ Package name.
               -> IO (Maybe FilePath) -- ^ Saved tarball location.
-sourceTarball path = saveUrlContents path . tarballUrl
+sourceTarball path = fmap join . (info >=> Traversable.mapM f)
+    where f = saveUrlContents path . (++) aurLink . T.unpack . aurTarballUrlOf
 
 ------------
 -- RPC CALLS
@@ -96,7 +94,7 @@ sortAurInfo :: SortScheme -> [AurInfo] -> [AurInfo]
 sortAurInfo scheme ai = sortBy compare' ai
   where compare' = case scheme of
                      ByVote         -> \x y -> compare (aurVotesOf y) (aurVotesOf x)
-                     Alphabetically -> \x y -> compare (aurNameOf x) (aurNameOf y)
+                     Alphabetically -> compare `on` aurNameOf
 
 aurSearch :: T.Text -> Aura [AurInfo]
 aurSearch regex = asks sortSchemeOf >>= \scheme ->

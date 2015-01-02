@@ -29,9 +29,9 @@ module Aura.Install
     , displayPkgbuild
     ) where
 
-import Control.Monad (unless, (>=>))
+import Control.Monad (filterM, unless, (>=>))
 import Data.Either   (partitionEithers)
-import Data.List     (sort, (\\), intersperse)
+import Data.List     (sort, (\\), intersperse, partition)
 import Data.Maybe    (catMaybes)
 
 import Aura.Pkgbuild.Base
@@ -64,34 +64,43 @@ install :: InstallOptions  -- ^ Options.
 install _ _ [] = return ()
 install opts pacOpts pkgs = ask >>= \ss ->
   if not $ delMakeDeps ss
-     then install'
+     then install' opts pacOpts pkgs
      else do  -- `-a` was used.
        orphansBefore <- orphans
-       install'
+       install' opts pacOpts pkgs
        orphansAfter <- orphans
        let makeDeps = orphansAfter \\ orphansBefore
        unless (null makeDeps) $ do
          notify removeMakeDepsAfter_1
          removePkgs makeDeps pacOpts
-  where
-    install' = ask >>= \ss -> do
-        let toInstall = pkgs \\ ignoredPkgsOf ss
-            ignored   = pkgs \\ toInstall
-        reportIgnoredPackages ignored
-        toBuild <- lookupPkgs (installLookup opts) toInstall >>= pkgbuildDiffs
-        notify install_5
-        allPkgs <- catch (depsToInstall (repository opts) toBuild)
-                   depCheckFailure
-        let (repoPkgs,buildPkgs) = partitionPkgs allPkgs
-        reportPkgsToInstall (label opts) repoPkgs buildPkgs
-	unless (dryRun ss) $ do
-             continue <- optionalPrompt install_3
-             if not continue
-                then scoldAndFail install_4
-                else do
-                    repoInstall pacOpts repoPkgs
-                    storePkgbuilds buildPkgs
-                    mapM_ (buildAndInstall pacOpts) buildPkgs
+
+install' :: InstallOptions -> [String] -> [String] -> Aura ()
+install' opts pacOpts pkgs = ask >>= \ss -> do
+  unneeded <- if neededOnly ss then filterM isInstalled pkgs else return []
+  let (ignored,notIgnored) = partition (`elem` ignoredPkgsOf ss) pkgs
+  installAnyway <- confirmIgnored ignored
+  let toInstall  = (notIgnored ++ installAnyway) \\ unneeded
+  -- reportIgnoredPackages ignored  -- 2014 December  7 @ 14:52
+  reportUnneededPackages unneeded
+  toBuild <- lookupPkgs (installLookup opts) toInstall >>= pkgbuildDiffs
+  if null toBuild
+     then scoldAndFail install_2
+     else do
+    notify install_5
+    allPkgs <- catch (depsToInstall (repository opts) toBuild) depCheckFailure
+    let (repoPkgs,buildPkgs) = partitionPkgs allPkgs
+    reportPkgsToInstall (label opts) repoPkgs buildPkgs
+    unless (dryRun ss) $ do
+      continue <- optionalPrompt install_3
+      if not continue
+         then scoldAndFail install_4
+         else do
+        repoInstall pacOpts repoPkgs
+        storePkgbuilds buildPkgs
+        mapM_ (buildAndInstall pacOpts) buildPkgs
+
+confirmIgnored :: [String] -> Aura [String]
+confirmIgnored = filterM (\p -> optionalPrompt $ confirmIgnored_1 p)
 
 -- | Check a list of a package names are buildable, and mark them as explicit.
 lookupPkgs :: (String -> Aura (Maybe Buildable))
@@ -148,6 +157,10 @@ reportNonPackages = badReport reportNonPackages_1
 reportIgnoredPackages :: [String] -> Aura ()
 reportIgnoredPackages pkgs = asks langOf >>= \lang ->
   printList yellow cyan (reportIgnoredPackages_1 lang) pkgs
+
+reportUnneededPackages :: [String] -> Aura ()
+reportUnneededPackages pkgs = asks langOf >>= \lang ->
+  printList yellow cyan (reportUnneededPackages_1 lang) pkgs
 
 pkgbuildDiffs :: [Buildable] -> Aura [Buildable]
 pkgbuildDiffs [] = return []

@@ -37,15 +37,16 @@ import Control.Arrow   (first)
 import Data.Maybe      (mapMaybe)
 import Data.List       (partition,sort)
 
-import Aura.Colour.Text (cyan, red)
-import Aura.Pacman      (pacmanOutput, pacman)
-import Aura.Utils       (comparableVer,printList)
-import Aura.Core        (warn,notify)
-import Aura.Settings.Base
-import Aura.Monad.Aura
-import Aura.Languages
 import Aura.Cache
+import Aura.Colour.Text   (cyan, red)
+import Aura.Core          (warn,notify)
+import Aura.Languages
+import Aura.Monad.Aura
+import Aura.Pacman        (pacmanOutput, pacman)
+import Aura.Settings.Base
 import Aura.Time
+import Aura.Utils         (printList)
+import Aura.Utils.Numbers
 
 import Utilities (getSelection, readFileUTF8)
 import Shell     (ls')
@@ -53,7 +54,7 @@ import Shell     (ls')
 ---
 
 data PkgState = PkgState { timeOf :: Time
-                         , pkgsOf :: M.Map String [Int] }
+                         , pkgsOf :: M.Map String (Maybe Version) }
                 deriving (Eq,Show,Read)
 
 -- ([toAlter],[toRemove])
@@ -75,7 +76,7 @@ currentState = do
   pkgs <- rawCurrentState
   time <- liftIO localTime
   let namesVers = map (pair . words) pkgs
-      pair      = \(x:y:_) -> (x, comparableVer y)
+      pair      = \(x:y:_) -> (x, version y)
   return . PkgState time . M.fromAscList $ namesVers
 
 compareStates :: PkgState -> PkgState -> StateDiff
