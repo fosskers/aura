@@ -337,8 +337,8 @@ Aesthetics
 
 Size Information
 ~~~~~~~~~~~~~~~~
-If ``--verbose-size`` is passed to Aura, the following information are
-displayed before instalation from the official repositories (may not be
+If ``--verbose-size`` is passed to Aura, the following information is
+displayed before installation from the official repositories (may not be
 possible for AUR)
 
 .. code-block::
@@ -368,10 +368,11 @@ example:
 Version Information When Upgrading
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Whenever a package needs an upgrade, if a ``--verbose-update`` is passed to
+Whenever a package needs an upgrade, and ``--verbose-update`` is passed to
 Aura, then a detailed chart is produced, as described below.
 
-The coloured part is denoted with a ``<colour></colour>`` syntax.
+The coloured part is denoted with ``<colour></colour>`` tags, enclosing the
+text to colourise such as <colour>text to colourise</colour>.
 
 ``--verbose-update`` implies ``--verbose-size``.
 
