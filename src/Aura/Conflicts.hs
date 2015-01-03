@@ -21,6 +21,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Conflicts where
 
+import Data.Foldable (mapM_)
+import Prelude hiding (mapM_)
 import Text.Regex.PCRE ((=~))
 
 import Aura.Core
@@ -37,10 +39,7 @@ import Aura.Utils.Numbers (version)
 --    the most recent version?
 
 checkConflicts :: Package -> Dep -> Aura ()
-checkConflicts pkg dep = ask >>= \ss ->
-    case realPkgConflicts ss pkg dep of
-        Nothing  -> return ()
-        Just msg -> failure msg
+checkConflicts p d = ask >>= \ss -> mapM_ failure (realPkgConflicts ss p d)
 
 -- | Must be called with a (f)unction that yields the version number
 -- of the most up-to-date form of the package.

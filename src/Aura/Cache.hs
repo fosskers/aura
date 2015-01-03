@@ -73,8 +73,8 @@ pkgsInCache ps =
     nub . filter (`elem` ps) . allNames <$> (asks cachePathOf >>= cacheContents)
 
 cacheMatches :: [String] -> Aura [String]
-cacheMatches input = asks cachePathOf >>= cacheContents >>=
-                     return . searchLines (unwords input) . allFilenames
+cacheMatches input = searchLines (unwords input) . allFilenames <$> f
+    where f = asks cachePathOf >>= cacheContents
 
 alterable :: Cache -> SimplePkg -> Bool
 alterable c p = M.member p c

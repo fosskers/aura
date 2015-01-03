@@ -112,10 +112,10 @@ pacmanFailure _ = scoldAndFail pacmanFailure_1
 
 -- Performs a pacmanQuiet and returns only the stdout.
 pacmanOutput :: [ShellArg] -> Aura String
-pacmanOutput args = quietShellCmd "pacman" args
+pacmanOutput = quietShellCmd "pacman"
 
 syncDatabase :: [ShellArg] -> Aura ()
-syncDatabase pacOpts = pacman $ ["-Sy"] ++ pacOpts
+syncDatabase pacOpts = pacman $ "-Sy" : pacOpts
 
 getPacmanHelpMsg :: Aura [String]
 getPacmanHelpMsg = lines <$> pacmanOutput ["-h"]

@@ -100,7 +100,7 @@ install' opts pacOpts pkgs = ask >>= \ss -> do
         mapM_ (buildAndInstall pacOpts) buildPkgs
 
 confirmIgnored :: [String] -> Aura [String]
-confirmIgnored = filterM (\p -> optionalPrompt $ confirmIgnored_1 p)
+confirmIgnored = filterM (optionalPrompt . confirmIgnored_1)
 
 -- | Check a list of a package names are buildable, and mark them as explicit.
 lookupPkgs :: (String -> Aura (Maybe Buildable))
