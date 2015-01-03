@@ -84,7 +84,7 @@ install' opts pacOpts pkgs = ask >>= \ss -> do
   reportUnneededPackages unneeded
   toBuild <- lookupPkgs (installLookup opts) toInstall >>= pkgbuildDiffs
   if null toBuild
-     then scoldAndFail install_2
+     then maybeScoldAndFail install_2 (neededOnly ss)
      else do
     notify install_5
     allPkgs <- catch (depsToInstall (repository opts) toBuild) depCheckFailure
