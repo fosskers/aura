@@ -61,7 +61,7 @@ install :: InstallOptions  -- ^ Options.
         -> [String]        -- ^ Pacman flags.
         -> [String]        -- ^ Package names.
         -> Aura ()
-install _ _ [] = return ()
+install _ _ [] = scoldAndFail install_2
 install opts pacOpts pkgs = ask >>= \ss ->
   if not $ delMakeDeps ss
      then install' opts pacOpts pkgs
