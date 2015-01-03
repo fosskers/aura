@@ -117,13 +117,13 @@ executeOpts (flags,input,pacOpts) =
           [ViewDeps]     -> M.displayPkgDeps input
           [GetPkgbuild]  -> M.displayPkgbuild input
           (Refresh:fs')  -> sudo $ syncABSAndContinue (fs',input,pacOpts)
-          _       -> scoldAndFail executeOpts_1
+          _              -> scoldAndFail executeOpts_1
     (SaveState:fs) ->
         case fs of
           []             -> sudo B.saveState
           [Clean]        -> sudo $ B.cleanStates input
           [RestoreState] -> sudo B.restoreState
-          _       -> scoldAndFail executeOpts_1
+          _              -> scoldAndFail executeOpts_1
     (Cache:fs) ->
         case fs of
           []             -> sudo $ C.downgradePackages pacOpts input
@@ -131,24 +131,23 @@ executeOpts (flags,input,pacOpts) =
           [Clean,Clean]  -> sudo C.cleanNotSaved
           [Search]       -> C.searchCache input
           [CacheBackup]  -> sudo $ C.backupCache input
-          _       -> scoldAndFail executeOpts_1
+          _              -> scoldAndFail executeOpts_1
     (LogFile:fs) ->
         case fs of
           []       -> ask >>= L.viewLogFile . logFilePathOf
           [Search] -> L.searchLogFile input
           [Info]   -> L.logInfoOnPkg input
-          _ -> scoldAndFail executeOpts_1
+          _        -> scoldAndFail executeOpts_1
     (Orphans:fs) ->
         case fs of
           []        -> O.displayOrphans input
           [Abandon] -> sudo $ orphans >>= flip removePkgs pacOpts
-          _  -> scoldAndFail executeOpts_1
+          _         -> scoldAndFail executeOpts_1
     [ViewConf]  -> viewConfFile
     [Languages] -> displayOutputLanguages
     [Help]      -> printHelpMsg pacOpts
     [Version]   -> getVersionInfo >>= animateVersionMsg
-    _           -> catch (pacman $ pacOpts ++ hijackedFlags ++ input)
-                      pacmanFailure
+    _ -> catch (pacman $ pacOpts ++ hijackedFlags ++ input) pacmanFailure
     where hijackedFlags = reconvertFlags hijackedFlagMap flags
 
 -- | `-y` was included with `-A`. Sync database before continuing.

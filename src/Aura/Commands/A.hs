@@ -64,11 +64,10 @@ import           Utilities (whenM)
 installOptions :: Aura I.InstallOptions
 installOptions = do
     depsRepo <- absDepsRepo
-    return I.InstallOptions
-        { label         = "AUR"
-        , installLookup = aurLookup
-        , repository    = depsRepo <> aurRepo
-        }
+    return I.InstallOptions { label         = "AUR"
+                            , installLookup = aurLookup
+                            , repository    = depsRepo <> aurRepo
+                            }
 
 install :: [String] -> [String] -> Aura ()
 install pacOpts ps = do
@@ -97,10 +96,9 @@ upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
 -- TODO: Use `printf` with `prettify` to line up the colons.
 
 auraCheck :: [T.Text] -> Aura Bool
-auraCheck toUpgrade = do
-  if "aura" `elem` toUpgrade
-     then optionalPrompt auraCheck_1
-     else return False
+auraCheck toUpgrade = if "aura" `elem` toUpgrade
+                         then optionalPrompt auraCheck_1
+                         else return False
 
 auraUpgrade :: [String] -> Aura ()
 auraUpgrade pacOpts = install pacOpts ["aura"]
@@ -162,7 +160,7 @@ renderSearch ss r (i, e) = searchResult
           l = yellow . show . aurVotesOf $ i  -- `l` for likes?
           v | isOutOfDate i = red $ T.unpack $ aurVersionOf i
             | otherwise     = green $ T.unpack $ aurVersionOf i
-          s = c bForeground $ (" [installed]" :: String)
+          s = c bForeground (" [installed]" :: String)
                               
 displayPkgDeps :: [String] -> Aura ()
 displayPkgDeps ps = do
