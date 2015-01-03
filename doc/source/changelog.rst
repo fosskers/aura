@@ -1,5 +1,10 @@
 Aura Changelog
 ==============
+1.3.0.3
+-------
+- Pacman flags `--ignore` and `--ignoregroup` now work.
+- Bug fixes.
+
 1.3.0.2
 -------
 - (Bug fix) If a user tries to install a package in `IgnorePkg`, they
