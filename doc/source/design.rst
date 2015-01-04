@@ -338,8 +338,7 @@ Aesthetics
 Size Information
 ~~~~~~~~~~~~~~~~
 If ``--verbose-size`` is passed to Aura, the following information is
-displayed before installation from the official repositories (may not be
-possible for AUR)
+displayed before installation from the official repositories.
 
 .. code-block::
 
