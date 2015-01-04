@@ -67,13 +67,6 @@ printList' tc ic m is = putStrLnA' tc m ++ colouredItems
 scoldAndFail :: (Language -> String) -> Aura a
 scoldAndFail msg = asks langOf >>= failure . putStrA' red . msg
 
-{-| Aura will still quit, but this gives the potential to succeed in
-the error code.
--}
-maybeScoldAndFail :: (Language -> String) -> Bool -> Aura a
-maybeScoldAndFail _   True  = return undefined
-maybeScoldAndFail msg False = scoldAndFail msg
-
 ----------
 -- PROMPTS
 ----------
