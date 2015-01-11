@@ -71,7 +71,7 @@ translators = Map.fromList
     , (Swedish,    "Fredrik Haikarainen")
     , (German,     "Lukas Niederbremer")
     , (Spanish,    "Alejandro Gómez")
-    , (Portuguese, "Henry \"Ingvij\" Kupty, Thiago \"thiagowfx\" Perrotta")
+    , (Portuguese, "Henry \"Ingvij\" Kupty / Thiago \"thiagowfx\" Perrotta")
     , (French,     "Ma Jiehong / Fabien Dubosson")
     , (Russian,    "Kyrylo Silin")
     , (Italian,    "Bob Valantin")
