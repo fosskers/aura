@@ -1,5 +1,11 @@
 Aura Changelog
 ==============
+1.3.0.4
+-------
+- Must use `--builduser` when building as root.
+- Bug fix regarding `--needed`.
+- Updated Portuguese translation.
+
 1.3.0.3
 -------
 - Pacman flags `--ignore` and `--ignoregroup` now work.
