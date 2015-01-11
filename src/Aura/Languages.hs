@@ -4,20 +4,20 @@
 -- All normal restrictions on line length do not apply for this file, and this file only.
 
 {- AURA TRANSLATORS - Thank you all
-Chris "Kwpolska" Warrick | Polish
-Denis Kasak              | Croatian
-"stranac"                | Croatian
-Fredrik Haikarainen      | Swedish
-Lukas Niederbremer       | German
-Alejandro Gómez          | Spanish
-Henry "Ingvij" Kupty     | Portuguese
-Ma Jiehong               | French
-Fabien Dubosson          | French
-Kyrylo Silin             | Russian
-Bob Valantin             | Italian
-Filip Brcic              | Serbian
-"chinatsun"              | Norwegian
-"pak tua Greg"           | Indonesia
+Chris "Kwpolska" Warrick                          | Polish
+Denis Kasak                                       | Croatian
+"stranac"                                         | Croatian
+Fredrik Haikarainen                               | Swedish
+Lukas Niederbremer                                | German
+Alejandro Gómez                                   | Spanish
+Henry "Ingvij" Kupty, Thiago "thiagowfx" Perrotta | Portuguese
+Ma Jiehong                                        | French
+Fabien Dubosson                                   | French
+Kyrylo Silin                                      | Russian
+Bob Valantin                                      | Italian
+Filip Brcic                                       | Serbian
+"chinatsun"                                       | Norwegian
+"pak tua Greg"                                    | Indonesia
 -}
 
 {-
@@ -71,7 +71,7 @@ translators = Map.fromList
     , (Swedish,    "Fredrik Haikarainen")
     , (German,     "Lukas Niederbremer")
     , (Spanish,    "Alejandro Gómez")
-    , (Portuguese, "Henry \"Ingvij\" Kupty")
+    , (Portuguese, "Henry \"Ingvij\" Kupty, Thiago \"thiagowfx\" Perrotta")
     , (French,     "Ma Jiehong / Fabien Dubosson")
     , (Russian,    "Kyrylo Silin")
     , (Italian,    "Bob Valantin")
@@ -89,7 +89,7 @@ languageNames = Map.fromList . zip [ Polish, Croatian, Swedish, German, Spanish,
     Swedish    -> [ "polska", "kroatiska", "svenska", "tyska", "spanska", "portugisiska", "", "", "", "Indonesia" ]
     German     -> [ "Polnisch", "Kroatisch", "Schwedisch", "Deutsch", "Spanisch", "Portugiesisch", "", "", "", "Indonesia" ]
     Spanish    -> [ "Polaco", "Croata", "Sueco", "Alemán", "Español", "Portugués", "", "", "", "Indonesia" ]
-    Portuguese -> [ "Polonês", "Croata", "Sueco", "Alemão", "Espanhol", "Português", "", "", "", "Indonesia" ]
+    Portuguese -> [ "Polonês", "Croata", "Sueco", "Alemão", "Espanhol", "Português", "Francês", "Russo", "Italiano", "Sérvio", "Norueguês", "Indonesia" ]
     French     -> [ "Polonais", "Croate", "Suédois", "Allemand", "Espagnol", "Portugais", "Français", "Russe", "Italien", "Serbe", "Norvégien", "Indonesia" ]
     Russian    -> [ "Польский", "Хорватский", "Шведский", "Немецкий", "Испанский", "Португальский", "Русский", "Итальянский", "Сербский", "Норвежский", "Indonesia" ]
     Italian    -> [ "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "", "", "Indonesia" ]
@@ -161,7 +161,7 @@ checkDBLock_1 = \case
     German     -> "The Paketdatenbank ist gesperrt. Drücken Sie Enter wenn sie entsperrt ist um fortzufahren."
     Norwegian  -> "Pakkedatabasen er låst. Trykk enter når den er åpnet for å fortsette."
     French     -> "La base de données des paquets est bloquée. Appuyez sur enter pour continuer."
-    Portuguese -> "Banco de dados de pacote travado. Aperte 'enter' quando estivier detravado para poder continuar."
+    Portuguese -> "Banco de dados de pacote travado. Aperte 'enter' quando estiver destravado para poder continuar."
     Russian    -> "База данных пакетов заблокирована. Нажмите \"Ввод\", когда она разблокируется, чтобы продолжить."
     _          -> "The package database is locked. Press enter when it's unlocked to continue."
 
@@ -174,7 +174,7 @@ trueRoot_1 = \case
     Swedish    -> "Det är starkt rekommenderat att INTE vara inloggad som root när man bygger paket. Vill du fortsätta ändå?"
     German     -> "Sie sollten niemals Pakete als der echte root Nutzer bauen. Sind sie sicher, dass Sie dies tun wollen?"
     Spanish    -> "Nunca deberías construir paquetes como root real. ¿Estás de acuerdo con esto?"
-    Portuguese -> "Não deveria compilar pacotes como o root de fato. Ainda assim, deseja prosseguir?"
+    Portuguese -> "Você nunca deveria compilar pacotes como usuário root. Deseja prosseguir mesmo assim?"
     French     -> "Il n'est pas recommandé de construire des paquets avec le compte root. Voulez-vous continuer ?"
     Russian    -> "Вам никогда не следует собирать пакеты под настоящим рутом. Договорились?"
     Italian    -> "Non si dovrebbero compilare pacchetti come root. Volete Continuare?"
@@ -209,7 +209,7 @@ mustBeRoot_1 = let sudo = bt "sudo" in \case
     Swedish    -> "Du måste använda " ++ sudo ++ " för det."
     German     -> "Sie müssen dafür " ++ sudo ++ " benutzen."
     Spanish    -> "Tienes que utilizar " ++ sudo ++ " para eso."
-    Portuguese -> "Utilize " ++ sudo ++ "para isso."
+    Portuguese -> "Utilize " ++ sudo ++ " para isso."
     French     -> "Vous devez utiliser " ++ sudo ++ " pour ça."
     Russian    -> "Необходимо использовать " ++ sudo ++ " для этого."
     Italian    -> "È necessario utilizzare " ++ sudo ++ " per questo."
@@ -340,6 +340,7 @@ buildFail_6 = \case
 buildFail_7 :: String -> Language -> String
 buildFail_7 (bt -> p) = \case
     Japanese -> p ++ "の作成スクリプトを収得できなかった。"
+    Portuguese -> "Falhou para obter scripts de compilação para " ++ p ++ "." 
     Indonesia-> "Gagal mendapatkan skrip untuk " ++ p ++ "."
     _        -> "Failed to obtain build scripts for " ++ p ++ "."
 
@@ -372,7 +373,7 @@ getDepsToInstall_1 = \case
     Swedish    -> "Inga AUR-paket är valda för installation."
     German     -> "Keine AUR Pakete zur Installation vermerkt."
     Spanish    -> "No se han especificado paquetes de AUR para instalar."
-    Portuguese -> "Nenhum pacote AUR foi especificado para instalação."
+    Portuguese -> "Nenhum pacote do AUR foi especificado para instalação."
     French     -> "Aucun paquet AUR à installer n'a été spécifié."
     Russian    -> "Пакеты AUR для установки не указаны."
     Italian    -> "Nessun pacchetto di AUR specificato per l'installazione."
@@ -455,7 +456,7 @@ manpageMsg = \case
     Swedish    -> "Hänvisa till auras `man`-sida för detaljerade alternativ."
     German     -> "Lesen Sie die aura man-Seite für Details zu aura Optionen."
     Spanish    -> "Lee la página de manual de aura para detalles sobre las opciones."
-    Portuguese -> "Leia a man page do aura para mais detalhes sobre as opções"
+    Portuguese -> "Leia a man page do aura para obter mais detalhes sobre as opções"
     French     -> "Lisez le manuel d'Aura (`man aura`) pour le détail des options."
     Russian    -> "Чтобы узнать подробное описание опций aura, см. мануал."
     Italian    -> "Guardare la man page di Aura per maggiori dettagli sulle opzioni."
@@ -585,6 +586,7 @@ install_5 = \case
 confirmIgnored_1 :: String -> Language -> String
 confirmIgnored_1 (bt -> p) = \case
     Japanese   -> p ++ "は無視されるはずのパッケージ。それでも続行？"
+    Portuguese -> p ++ " está marcado como Ignored. Instalá-lo mesmo assim?"
     _          -> p ++ " is marked as Ignored. Install anyway?"
 
 -- NEEDS UPDATE TO REFLECT CHANGED ENGLISH
@@ -626,6 +628,7 @@ reportIgnoredPackages_1 = \case
 reportUnneededPackages_1 :: Language -> String
 reportUnneededPackages_1 = \case
     Japanese   -> "下記のパッケージは既にインストールされている："
+    Portuguese -> "Os seguintes pacotes já estão instalados:"
     _          -> "The following packages are already installed:"
 
 reportPkgsToInstall_1 :: Language -> String
@@ -701,7 +704,7 @@ reportPkgbuildDiffs_1 (bt -> p) = \case
     Croatian   -> p ++ " još nema pohranjen PKGBUILD."
     German     -> p ++ " hat noch keinen gespeicherten PKGBUILD."
     Spanish    -> p ++ " no tiene PKGBUILD todavía."
-    Portuguese -> p ++ " não tem PKGBUILD."
+    Portuguese -> p ++ " não possui PKGBUILD."
     French     -> p ++ " n'a pas encore de PKGBUILD enregistré."
     Russian    -> "У " ++ p ++ " ещё нет сохраненного PKGBUILD."
     Italian    -> p ++ " non ci sono PKGBUILD salvati"
@@ -718,7 +721,7 @@ reportPkgbuildDiffs_2 (bt -> p) = \case
     Croatian   -> "PKGBUILD paketa " ++ p ++ " je na najnovijoj verziji."
     German     -> "PKGBUILD von " ++ p ++ " ist aktuell."
     Spanish    -> "El PKGBUILD de " ++ p ++ " está actualizado."
-    Portuguese -> "O PKGBUILD de" ++ p ++ "está atualizado."
+    Portuguese -> "O PKGBUILD de " ++ p ++ "está atualizado."
     Russian    -> "PKGBUILD " ++ p ++ " является новейшим."
     French     -> "Le PKGBUILD de " ++ p ++ " est à jour."
     Italian    -> "Il PKGBUILD di " ++ p ++ " è aggiornato."
@@ -1230,7 +1233,7 @@ cleanNotSaved_1 = \case
     German     -> "Bestimme nicht benötigte Paketdateien..."
     Norwegian  -> "Finner unødige pakkefiler..."
     Italian    -> "Determino i pacchetti non più necessari..."
-    Portuguese -> "Determinando arquivos inúteis nos pacotes ..."
+    Portuguese -> "Determinando arquivos não necessários nos pacotes ..."
     French     -> "Détermination des fichiers de paquet inutiles…"
     Russian    -> "Вычисляются ненужные файлы пакетов..."
     Indonesia  -> "Menentukan berkas paket yang tidak dibutuhkan..."
@@ -1244,7 +1247,7 @@ cleanNotSaved_2 (cyan . show -> s) = \case
     German     -> s ++ " nicht benötigte Paketdateien gefunden. Löschen?"
     Norwegian  -> s ++ " unødige pakkefiler funnet. Vil du slette?"
     Italian    -> s ++ " pacchetti non necessari trovati. Cancellarli?"
-    Portuguese -> s ++ " pacotes inúteis encontrados. Remover?"
+    Portuguese -> s ++ " pacotes não necessários encontrados. Removê-los?"
     French     -> s ++ " paquets inutiles trouvés. Les supprimer ?"
     Russian    -> s ++ " -- столько ненужных пакетных файлов обнаружено. Удалить?"
     Indonesia  -> s ++ " berkas paket yang tidak dibutuhkan ditemukan. Hapus?"
