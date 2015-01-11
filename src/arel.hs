@@ -50,7 +50,7 @@ sortPkgFiles fs = sortBy verNums fs
 -- Aren't Lenses fun?
 ver :: String -> Maybe Version
 ver f = (f =~ patt :: (String,String,String)) ^. _2 . to version
-    where patt = "[0-9.:_+]+-[0-9]+"
+    where patt = "[0-9.]+[0-9]"
 
 alterPKGBUILD :: IO ()
 alterPKGBUILD = do
