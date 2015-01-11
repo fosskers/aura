@@ -201,6 +201,11 @@ trueRoot_2 = \case
     Indonesia  -> "Bagus! Papa bangga sama kamu!"
     _          -> "You’ve done the right thing."
 
+trueRoot_3 :: Language -> String
+trueRoot_3 = \case
+  Japanese -> "「root」としてパッケージを作成するのは「makepkg v4.2」で不可能になった。"
+  _        -> "As of makepkg v4.2, building as root is no longer possible."
+
 mustBeRoot_1 :: Language -> String
 mustBeRoot_1 = let sudo = bt "sudo" in \case 
     Japanese   -> sudo ++ "を使わないとそれができない！"

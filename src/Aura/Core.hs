@@ -126,13 +126,12 @@ sudo action = do
   hasPerms <- asks (hasRootPriv . environmentOf)
   if hasPerms then action else scoldAndFail mustBeRoot_1
 
--- | Prompt if the user is the true Root. Building as it can be dangerous.
+-- | Stop the user if they are the true Root. Building as isn't allowed
+-- as of makepkg v4.2.
 trueRoot :: Aura () -> Aura ()
 trueRoot action = ask >>= \ss ->
   if isntTrueRoot (environmentOf ss) || buildUserOf ss /= "root"
-    then action else do
-      okay <- optionalPrompt trueRoot_1
-      if okay then action else notify trueRoot_2
+    then action else scoldAndFail trueRoot_3
 
 -- `-Qm` yields a list of sorted values.
 -- | A list of non-prebuilt packages installed on the system.

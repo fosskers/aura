@@ -65,9 +65,9 @@ makepkgGen make user = asks makepkgFlagsOf >>= \clfs -> do
     let (cmd,opts) = runStyle user clfs
     make cmd (opts ++ clfs) >> filter (=~ "[.]pkg[.]tar") <$> liftIO (pwd >>= ls)
 
+-- As of makepkg v4.2, building with `--asroot` is no longer allowed.
 runStyle :: User -> [String] -> (String,[String])
-runStyle "root" opts = (makepkgCmd, "--asroot" : opts)
-runStyle user   opts = ("sudo",["-u", user, makepkgCmd] ++ opts)
+runStyle user opts = ("sudo",["-u", user, makepkgCmd] ++ opts)
 
 makepkgQuiet :: User -> Aura [FilePath]
 makepkgQuiet = makepkgGen quiet
