@@ -337,13 +337,15 @@ Aesthetics
 
 Size Information
 ~~~~~~~~~~~~~~~~
-If ``--verbose-size`` is passed to Aura, the following information is
+Unless ``-q`` is passed to Aura, the following information is
 displayed before installation from the official repositories.
 
 .. code-block::
 
-   Total download size: xx MiB
-   Net upgrade size   : xx MiB
+   Total download size : xx MiB
+   Net upgrade size    : xx MiB
+
+The units are displayed with binary prefixes, such as: B, KiB, MiB, GiB and TiB.
 
 Localisation
 ~~~~~~~~~~~~
@@ -367,20 +369,18 @@ example:
 Version Information When Upgrading
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Whenever a package needs an upgrade, and ``--verbose-update`` is passed to
+Whenever a package needs an upgrade, unless ``-q`` is passed to
 Aura, then a detailed chart is produced, as described below.
 
 The coloured part is denoted with ``<colour></colour>`` tags, enclosing the
 text to colourise such as <colour>text to colourise</colour>.
-
-``--verbose-update`` implies ``--verbose-size``.
 
 New Package Dependency Needed
 *****************************
 
 .. code-block::
 
-   == New package needed:
+   ⇒ New package needed:
    repository/package        1.0-1            (required by xxx) (Net change: ±xx MiB)
 
 New Package Release
@@ -388,7 +388,7 @@ New Package Release
 
 .. code-block::
 
-   == New package release:
+   ⇒ New package release:
    repository/package        1.0-1    -->    1.0-<green>2</green> (Net change: ±xx MiB)
 
 New Package Version
@@ -396,7 +396,7 @@ New Package Version
 
 .. code-block::
 
-   == New package version:
+   ⇒ New package version:
    repository/package        1.0-1    -->    1.<green>2-1</green> (Net change: ±xx MiB)
 
 Aura Versioning
