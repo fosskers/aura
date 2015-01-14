@@ -25,7 +25,7 @@ distros. Aura itself provides:
 
 -  Package-state backups/restoration.
 
-Aura’s authors recognize that `attemping to create universal standards
+Aura’s authors recognize that `attempting to create universal standards
 can be problematic`_, but that is precisely why Aura exists. By having a
 unified interface over multiple packaging standards, users can
 transition between distributions more easily, and distribution
@@ -65,7 +65,7 @@ As can be gleamed from the program flow chart, the "capital letter"
 operators pertaining to packages share the same functionality metaphors.
 
 - Installation: ``aura -{S,F,L} <packages>``
-- Searching: ``aura -{S,F,L}s <regex-like-pattern>``
+- Searching: ``aura -{S,F,L}s <regexp-like-pattern>``
 
 Output sample::
 
@@ -274,7 +274,7 @@ The user is shown usage tips when waiting for dependencies to resolve,
 etc. A number of tips are Aura-centric, but distro-specific ones can be
 defined in :ref:`auraconf`.
 
-.. todo:: Decide frequenc and what command(s) cause these tips to appear.
+.. todo:: Decide frequency and what command(s) cause these tips to appear.
 
 Plugins
 -------
