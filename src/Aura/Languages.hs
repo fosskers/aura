@@ -91,7 +91,7 @@ languageNames = Map.fromList . zip [ Polish, Croatian, Swedish, German, Spanish,
     Spanish    -> [ "Polaco", "Croata", "Sueco", "Alemán", "Español", "Portugués", "", "", "", "Indonesia" ]
     Portuguese -> [ "Polonês", "Croata", "Sueco", "Alemão", "Espanhol", "Português", "", "", "", "Indonesia" ]
     French     -> [ "Polonais", "Croate", "Suédois", "Allemand", "Espagnol", "Portugais", "Français", "Russe", "Italien", "Serbe", "Norvégien", "Indonesia" ]
-    Russian    -> [ "Польский", "Хорватский", "Шведский", "Немецкий", "Испанский", "Португальский", "Русский", "Итальянский", "Сербский", "Норвежский", "Indonesia" ]
+    Russian    -> [ "Польский", "Хорватский", "Шведский", "Немецкий", "Испанский", "Португальский", "Русский", "Итальянский", "Сербский", "Норвежский", "Индонезийский" ]
     Italian    -> [ "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "", "", "Indonesia" ]
     Serbian    -> [ "Пољски", "Хрватски", "Шведски", "Немачки", "Шпански", "Португалски", "Француски", "Руски", "Италијански", "Српски", "", "Indonesia" ]
     Norwegian  -> [ "Polsk", "Kroatisk", "Svensk", "Tysk", "Spansk", "Portugisisk", "Fransk", "Russisk", "Italiensk", "Serbisk", "Norsk", "Indonesia" ]
@@ -265,7 +265,7 @@ buildFail_2 = \case
     Spanish    -> "Los siguientes paquetes no se han construido:"
     Portuguese -> "Os pacotes a seguir não foram compilados:"
     French     -> "En outre, les paquets suivants n'ont pu être compilés :"
-    Russian    -> "К тому же следующие пакеты не были собраны:"
+    Russian    -> "К тому же, следующие пакеты не были собраны:"
     Italian    -> "Inoltre non è stato possibile cotruire i seguenti pacchetti:"
     Serbian    -> "Такође, ни следећи пакети нису изграђени::"
     Norwegian  -> "Det gikk heller ikke an å bygge følgende:"
@@ -282,7 +282,7 @@ buildFail_3 = \case
     Spanish    -> "Sin embargo, los siguientes paquetes se han construido:"
     Portuguese -> "Entretanto, os seguintes pacotes compilaram com sucesso:"
     French     -> "Cependant, les paquets suivants ont été compilés avec succès :"
-    Russian    -> "Однако эти пакеты были успешно собраны:"
+    Russian    -> "Однако, эти пакеты были успешно собраны:"
     Italian    -> "Comunque questi pacchetti sono stato compilati con successo:"
     Serbian    -> "Међутим, ови пакети су успешно изграђени:"
     Norwegian  -> "Heldigvis ble de følgende pakkene bygd:"
@@ -332,7 +332,7 @@ buildFail_6 = \case
     Italian    -> "Vuoi continuare comunque?"
     Portuguese -> "Gostaria de continuar mesmo assim?"
     French     -> "Voulez-vous tout de même continuer ?"
-    Russian    -> "Продолжить не смотря ни на что?"
+    Russian    -> "Продолжить, несмотря ни на что?"
     Indonesia  -> "Apakah anda tetap ingin melanjutkan?"
     _          -> "Would you like to continue anyway?"
 
@@ -341,6 +341,7 @@ buildFail_7 :: String -> Language -> String
 buildFail_7 (bt -> p) = \case
     Japanese -> p ++ "の作成スクリプトを収得できなかった。"
     Indonesia-> "Gagal mendapatkan skrip untuk " ++ p ++ "."
+    Russian  -> "Не удалось получить сценарии сборки для " ++ p ++ "."
     _        -> "Failed to obtain build scripts for " ++ p ++ "."
 
 displayBuildErrors_1 :: Language -> String
@@ -493,6 +494,7 @@ auraCheck_1 = \case
     Norwegian  -> "En Aura-oppdatering er tilgjengelig. Oppdater den først?"
     Portuguese -> "Uma atualização para Aura está disponível. Deseja atualizar antes?"
     French     -> "Une mise à jour d'Aura est disponible. Voulez-vous la mettre à jour en premier ?"
+    Russian    -> "Доступно обновление Aura. Обновить сперва её?"
     Indonesia  -> "Pemutakhiran aura tersedia. Mutakhirkan aura dulu?"
     _          -> "Aura update available. Update it first?"
 
@@ -585,6 +587,7 @@ install_5 = \case
 confirmIgnored_1 :: String -> Language -> String
 confirmIgnored_1 (bt -> p) = \case
     Japanese   -> p ++ "は無視されるはずのパッケージ。それでも続行？"
+    Russian    -> p ++ " отмечен как игнорируемый. Всё равно установить?"
     _          -> p ++ " is marked as Ignored. Install anyway?"
 
 -- NEEDS UPDATE TO REFLECT CHANGED ENGLISH
@@ -626,6 +629,7 @@ reportIgnoredPackages_1 = \case
 reportUnneededPackages_1 :: Language -> String
 reportUnneededPackages_1 = \case
     Japanese   -> "下記のパッケージは既にインストールされている："
+    Russian    -> "Следующие пакеты уже установлены:"
     _          -> "The following packages are already installed:"
 
 reportPkgsToInstall_1 :: Language -> String
@@ -1028,7 +1032,7 @@ backupCache_5 (bt . show -> n) = \case
     Spanish    -> "Ficheros de paquetes de los que se hará copia de seguridad: " ++ n
     Portuguese -> "Arquivos de pacotes para backup: " ++ n
     French     -> "Copie de sauvegarde des fichiers de paquets suivants : " ++ n
-    Russian    -> "Упакуйте файлы для бэкапа: " ++ n
+    Russian    -> "Файлы пакета для бэкапа: " ++ n
     Italian    -> "File del pacchetto da salvare: " ++ n
     Serbian    -> "Датотеке за бекап: " ++ n
     Norwegian  -> "Pakker som blir tatt backup på: " ++ n
@@ -1380,6 +1384,7 @@ absSy = magenta . \case
     Norwegian  -> "Utfør handlinger som involverer ABS-treet.\n" ++ "Standard-handling bygger [M]anuelt fra ABS."
     Portuguese -> "Performa ações envolvendo a árvore ABS.\n" ++ "Ação padrão [M]anualmente compila da ABS."
     French     -> "Effectue une action impliquant l'arbre ABS.\n" ++ "Par défaut, installe [M]anuellement depuis ABS."
+    Russian    -> "Совершить действия с участием дерева ABS.\n" ++ "Действие по умолчанию выполняет сборку из ABS вручную."
     Indonesia  -> "Melakukan perbuatan yang berhubungan dengan pohon ABS.\n" ++ "Bawaannya adalah membangun [M]anual dari ABS"
     _          -> "Perform actions involving the ABS tree.\n" ++ "Default action [M]anually builds from ABS."
 
@@ -1442,7 +1447,7 @@ orpha = blue . \case
     Spanish    -> "Realizar acciones relacionadas con paquetes huérfanos ([O]rphan).\n" ++ "La acción por defecto es listar todos los paquetes huérfanos."
     Portuguese -> "Realiza ações com pacotes [O]rfãos.\n" ++ "Ação padrão lista todos os pactes orfãos."
     French     -> "Actions impliquant les paquets [O]rphelins.\n" ++ "Par défaut, liste l'ensemble des paquets orphelins."
-    Russian    -> "Совершить действия с участием [O]сиротевших пакетов.\n" ++ "Действие по умолчанию берёт в расчёт все осиротевшие пакеты."
+    Russian    -> "Совершить действия с участием [O]сиротевших пакетов.\n" ++ "Действие по умолчанию перечисляет все осиротевшие пакеты."
     Italian    -> "Azioni riguardanti i pacchetti [O]rfani.\n" ++ "Di default elenca i pacchetti orfani."
     Serbian    -> "Извршава радње везане за пакете без родитеља.\n" ++ "Уобичајена радња листа пакете без родитеља."
     Norwegian  -> "Utfør handlinger som involverer foreldreløse pakker ([O]rphans).\n" ++ "Standard-handling åpner alle foreldreløse pakker."
@@ -1478,7 +1483,7 @@ infoFields = \case
     Spanish    -> [ "Repository","Nombre","Versión","Estado en AUR","Maintainer","URL del proyecto","URL en AUR","Licencia","Depends On","Build Deps","Votos","Descripción" ]
     Portuguese -> [ "Repositório","Nome","Versão","Estado no AUR","Maintainer","URL do projeto","URL no AUR","Licença","Depends On","Build Deps","Votos","Descrição" ]
     French     -> [ "Dépôt","Nom","Version","Statut de AUR","Mainteneur","URL du projet","URL AUR","Licence","Dépends de","Dépendances de compilation","Votes","Description" ]
-    Russian    -> [ "Репозиторий","Название","Версия","Статус в AUR","Ответственный","URL проекта","URL в AUR","Лицензия","Depends On","Build Deps","Рейтинг","Описание" ]
+    Russian    -> [ "Репозиторий","Название","Версия","Статус в AUR","Ответственный","URL проекта","URL в AUR","Лицензия","Зависит от","Зависимости сборки","Голоса","Описание" ]
     Italian    -> [ "Repository","Nome","Versione","Stato in AUR","Maintainer","URL del progetto","URL AUR","Licenza","Depends On","Build Deps","Voti","Descrizione" ]
     Serbian    -> [ "Ризница","Име","Верзија","Статус у AUR-у","Maintainer","Страница пројекта","Страница у AUR-у","Лиценца","Depends On","Build Deps","Гласови","Опис" ]
     Norwegian  -> [ "Depot","Navn","Versjon","AUR Status","Vedlikeholder","Prosjekt-URL","AUR URL","Lisens","Depends On","Build Deps","Stemmer","Beskrivelse" ]
@@ -1527,6 +1532,7 @@ orphanedMsg Nothing = red . \case
     Norwegian -> "Foreldreløs!"
     Portuguese -> "Orfão!"
     French    -> "Abandonné !"
+    Russian   -> "Осиротевший!"
     Indonesia -> "Tak dipelihara!"
     _         -> "Orphaned!"
 
@@ -1569,7 +1575,7 @@ singleSync_1 (bt -> p) = \case
     Italian    -> "Sincronizzo " ++ p ++ " nell'albero ABS locale..."
     Portuguese -> "Sincronizando " ++ p ++ " para a árvore ABS local..."
     French     -> "Synchronisation de " ++ p ++ " dans l'arbre ABS local…"
-    Russian    -> p ++ " синхронизируется с локальным дерево ABS..."
+    Russian    -> p ++ " синхронизируется с локальным деревом ABS..."
     Indonesia  -> "Menyinkronkan paket " ++ p ++ " dengan pohon ABS lokal..."
     _          -> "Syncing " ++ p ++ " to the local ABS Tree..."
 
