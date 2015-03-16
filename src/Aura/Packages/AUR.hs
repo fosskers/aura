@@ -73,10 +73,10 @@ isAurPackage name = isJust <$> pkgbuild name
 -- AUR PKGBUILDS
 ----------------
 aurLink :: String
-aurLink = "https://aur.archlinux.org"
+aurLink = "https://aur.archlinux.org/"
 
 pkgUrl :: String -> String
-pkgUrl pkg = aurLink </> take 2 pkg </> pkg
+pkgUrl pkg = aurLink </> "packages" </> pkg
 
 ------------------
 -- SOURCE TARBALLS
