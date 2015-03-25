@@ -7,10 +7,10 @@ synopsis:            A secure package manager for Arch Linux and the AUR, writte
 description:         `aura` is a package manager for Arch Linux written
                      in Haskell. It connects to both the official Arch
                      repostitories and to the AUR, allowing easy control
-		     of all packages on an Arch system.
-		     It allows _all_ pacman operations and provides _new_
-		     custom ones for dealing with AUR packages.
-		     This differs from some other AUR package managers.
+                     of all packages on an Arch system.
+                     It allows _all_ pacman operations and provides _new_
+                     custom ones for dealing with AUR packages.
+                     This differs from some other AUR package managers.
 
 homepage:            https://github.com/fosskers/aura
 
