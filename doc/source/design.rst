@@ -25,7 +25,7 @@ distros. Aura itself provides:
 
 -  Package-state backups/restoration.
 
-Aura’s authors recognize that `attemping to create universal standards
+Aura’s authors recognize that `attempting to create universal standards
 can be problematic`_, but that is precisely why Aura exists. By having a
 unified interface over multiple packaging standards, users can
 transition between distributions more easily, and distribution
@@ -65,7 +65,7 @@ As can be gleamed from the program flow chart, the "capital letter"
 operators pertaining to packages share the same functionality metaphors.
 
 - Installation: ``aura -{S,F,L} <packages>``
-- Searching: ``aura -{S,F,L}s <regex-like-pattern>``
+- Searching: ``aura -{S,F,L}s <regexp-like-pattern>``
 
 Output sample::
 
@@ -274,7 +274,7 @@ The user is shown usage tips when waiting for dependencies to resolve,
 etc. A number of tips are Aura-centric, but distro-specific ones can be
 defined in :ref:`auraconf`.
 
-.. todo:: Decide frequenc and what command(s) cause these tips to appear.
+.. todo:: Decide frequency and what command(s) cause these tips to appear.
 
 Plugins
 -------
@@ -335,10 +335,22 @@ Hooks are passed through Aura as an ADT of functions.
 Aesthetics
 ----------
 
+Size Information
+~~~~~~~~~~~~~~~~
+Unless ``-q`` is passed to Aura, the following information is
+displayed before installation from the official repositories.
+
+.. code-block::
+
+   Total download size : xx MiB
+   Net upgrade size    : xx MiB
+
+The units are displayed with binary prefixes, such as: B, KiB, MiB, GiB and TiB.
+
 Localisation
 ~~~~~~~~~~~~
 
-.. todo:: 
+.. todo::
    Document exactly which environment variables are relevant. Perhaps $LANG?
 
 Aura is available for use in multiple languages. Language can be set via
@@ -357,7 +369,35 @@ example:
 Version Information When Upgrading
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
--  Need a nice chart.
+Whenever a package needs an upgrade, unless ``-q`` is passed to
+Aura, then a detailed chart is produced, as described below.
+
+The coloured part is denoted with ``<colour></colour>`` tags, enclosing the
+text to colourise such as <colour>text to colourise</colour>.
+
+New Package Dependency Needed
+*****************************
+
+.. code-block::
+
+   ⇒ New package needed:
+   repository/package        1.0-1            (required by xxx) (Net change: ±xx MiB)
+
+New Package Release
+*******************
+
+.. code-block::
+
+   ⇒ New package release:
+   repository/package        1.0-1    -->    1.0-<green>2</green> (Net change: ±xx MiB)
+
+New Package Version
+*******************
+
+.. code-block::
+
+   ⇒ New package version:
+   repository/package        1.0-1    -->    1.<green>2-1</green> (Net change: ±xx MiB)
 
 Aura Versioning
 ~~~~~~~~~~~~~~~
