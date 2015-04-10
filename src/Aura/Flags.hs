@@ -199,13 +199,15 @@ dualOptions = Option [] ["ignore"]      (ReqArg Ignore      "" ) "" :
 -- These Pacman options are ignored,
 -- but parser needs to know that they require an argument
 longPacmanOptions :: [OptDescr Flag]
-longPacmanOptions = map pacArg
+longPacmanOptions = map pacArg $ zip
                     [ "dbpath", "root", "arch", "cachedir", "color"
                     , "config", "gpgdir" , "logfile", "assume-installed"
                     , "print-format" ]
+                    ( "b" : "r" : repeat [] )
                     -- "owns" is apparently okay as is?
                     -- TODO: check all others
-    where pacArg option = Option [] [option] (ReqArg (PacmanArg option) "") ""
+    where pacArg (option, letter) = Option letter [option]
+                                    (ReqArg (PacmanArg option) "") ""
 
 pacmanFlagMap :: FlagMap
 pacmanFlagMap (PacmanArg option arg) = "--" ++ option ++ "=" ++ arg
