@@ -2,6 +2,8 @@ Status: [![Build Status](https://travis-ci.org/aurapm/aura.svg?branch=master)](h
 
 What is Aura?
 =============
+
+[![Join the chat at https://gitter.im/aurapm/aura](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/aurapm/aura?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 Aura is a package manager for Arch Linux. It's main purpose is as an
 "AUR helper", in that it automates the process of installating packages
 from the Arch User Repositories. It is, however, capable of much more.
