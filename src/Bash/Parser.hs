@@ -26,7 +26,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Bash.Parser ( parseBash ) where
 
 import Text.ParserCombinators.Parsec
-import Control.Applicative ((<*),(*>),(<*>),(<$>),(<$))
+
 import Data.Maybe          (catMaybes)
 
 import Bash.Base

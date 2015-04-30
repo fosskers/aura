@@ -1,6 +1,6 @@
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013, 2014, 2015 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -61,7 +61,7 @@ import Aura.Commands.O as O
 type UserInput = ([Flag],[String],[String])
 
 auraVersion :: String
-auraVersion = "1.3.0.5"
+auraVersion = "1.3.1.0"
 
 main :: IO a
 main = getArgs >>= prepSettings . processFlags >>= execute >>= exit
@@ -77,14 +77,14 @@ prepSettings :: (UserInput,Maybe Language) -> IO (UserInput,Settings)
 prepSettings (ui,lang) = (,) ui `fmap` getSettings lang ui
 
 -- | Hand user input to the Aura Monad and run it.
-execute :: (UserInput,Settings) -> IO (Either AuraError ())
+execute :: (UserInput,Settings) -> IO (Either String ())
 execute ((flags,input,pacOpts),ss) = do
   let flags' = filter notSettingsFlag flags
   when (Debug `elem` flags) $ debugOutput ss
   runAura (executeOpts (flags',input,pacOpts)) ss
 
-exit :: Either AuraError () -> IO a
-exit (Left e)  = putStrLn (getErrorMsg e) >> exitFailure
+exit :: Either String () -> IO a
+exit (Left e)  = putStrLn e >> exitFailure
 exit (Right _) = exitSuccess
 
 -- | After determining what Flag was given, dispatches a function.

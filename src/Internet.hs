@@ -25,13 +25,11 @@ module Internet
     ( urlContents
     , saveUrlContents ) where
 
+import           Control.Lens
 import qualified Data.ByteString.Lazy as L
-
-import Control.Applicative        ((<$>))
-import Control.Lens
-import Network.Wreq
-import System.FilePath            (splitFileName, (</>))
-import System.IO                  (hClose, openFile, IOMode(WriteMode))
+import           Network.Wreq
+import           System.FilePath (splitFileName, (</>))
+import           System.IO (hClose, openFile, IOMode(WriteMode))
 
 ---
 

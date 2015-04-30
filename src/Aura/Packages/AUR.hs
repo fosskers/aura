@@ -32,7 +32,6 @@ module Aura.Packages.AUR
     , pkgUrl
     ) where
 
-import           Control.Applicative
 import           Control.Monad        ((>=>),join)
 import           Data.Function        (on)
 import           Data.List            (sortBy)

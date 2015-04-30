@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013, 2014, 2015 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -26,10 +26,9 @@ module Aura.Time
     , localTime
     , Time ) where
 
-import Control.Applicative ((<$>))
-import Text.Printf         (printf)
-import Data.List           (intercalate)
-import Data.Time
+import Data.List (intercalate)
+import Data.Time hiding (months)
+import Text.Printf (printf)
 
 ---
 

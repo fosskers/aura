@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 -- Library for handling package dependencies and version conflicts.
 
 {-

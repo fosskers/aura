@@ -23,21 +23,17 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Monad.Aura
     ( Aura
-    , AuraError
     , runAura
     , failure
     , catch
     , wrap
-    , getErrorMsg
     , liftIO
     , ask
     , asks
-    , (<$>)
     ) where
 
+import Control.Monad.Except
 import Control.Monad.Reader
-import Control.Monad.Error
-import Control.Applicative
 
 import Aura.Settings.Base (Settings)
 
@@ -53,29 +49,19 @@ liftIO  : Perform intermittent IO using `liftIO`.
 ask     : Obtain run-time settings.
 runAura : Unwraps an Aura action. Must be passed `Settings` as well.
 -}
-newtype Aura a = A { runA :: ErrorT AuraError (ReaderT Settings IO) a }
-  deriving ( Monad, MonadError AuraError, MonadReader Settings, MonadIO
-           , Functor, Applicative)
+newtype Aura a = A { runA :: ExceptT String (ReaderT Settings IO) a }
+  deriving ( Monad, MonadError String, MonadReader Settings, MonadIO,
+             Functor, Applicative)
 
--- This needs to be expanded.
-data AuraError = M String deriving (Eq,Show)
-
-instance Error AuraError where
-    noMsg  = strMsg "No error message given."
-    strMsg = M
-
-runAura :: Aura a -> Settings -> IO (Either AuraError a)
-runAura a = runReaderT $ runErrorT (runA a)
+runAura :: Aura a -> Settings -> IO (Either String a)
+runAura = runReaderT . runExceptT . runA
 
 failure :: String -> Aura a
-failure = throwError . strMsg
+failure = throwError
 
 catch :: Aura a -> (String -> Aura a) -> Aura a
-catch a h = catchError a (\(M m) -> h m)
+catch a h = catchError a h
 
-wrap :: Either AuraError a -> Aura a
-wrap (Left (M m)) = failure m
-wrap (Right a)    = return a
-
-getErrorMsg :: AuraError -> String
-getErrorMsg (M s) = s
+wrap :: Either String a -> Aura a
+wrap (Left m)  = failure m
+wrap (Right a) = return a

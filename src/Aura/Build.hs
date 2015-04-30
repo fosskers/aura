@@ -26,17 +26,16 @@ module Aura.Build
     , buildPackages ) where
 
 import System.FilePath ((</>))
-import Control.Monad   (when, void, join)
-import Control.Applicative ((<*>), pure)
+import Control.Monad (when, void, join)
 
-import Aura.Pacman (pacman)
-import Aura.Settings.Base
 import Aura.Colour.Text
-import Aura.Monad.Aura
+import Aura.Core
 import Aura.Languages
 import Aura.MakePkg
+import Aura.Monad.Aura
+import Aura.Pacman (pacman)
+import Aura.Settings.Base
 import Aura.Utils
-import Aura.Core
 
 import Utilities
 import Shell

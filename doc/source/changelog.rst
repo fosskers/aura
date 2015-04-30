@@ -1,5 +1,9 @@
 Aura Changelog
 ==============
+1.3.0.6
+-------
+- Updated German and Russian translations.
+
 1.3.0.4
 -------
 - Must use `--builduser` when building as root.

@@ -26,7 +26,6 @@ module Aura.Utils.Numbers
     , version ) where
 
 import Text.ParserCombinators.Parsec
-import Control.Applicative (pure, (*>),(<*>),(<$>))
 
 import Utilities (eitherToMaybe, asInt)
 
