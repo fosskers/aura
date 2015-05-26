@@ -29,7 +29,7 @@ module Aura.Time
 import Control.Applicative ((<$>))
 import Text.Printf         (printf)
 import Data.List           (intercalate)
-import Data.Time
+import Data.Time hiding (months)
 
 ---
 

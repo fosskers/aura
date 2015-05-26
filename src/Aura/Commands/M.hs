@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {- Handles all `-M` operations for building from the ABS.
 
 * On `-M` suboptions in general *
