@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 -- Handles all ABS related functions.
 
 {-
