@@ -1,4 +1,5 @@
 Status: [![Build Status](https://travis-ci.org/aurapm/aura.svg?branch=master)](https://travis-ci.org/aurapm/aura)
+[![Join the chat at https://gitter.im/aurapm/aura](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/aurapm/aura?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 What is Aura?
 =============
@@ -194,5 +195,5 @@ Localisation
 ============
 As mentioned in the Philosophy above, adding new languages to Aura is
 quite easy. If you speak a language other than those available and
-would like it added to Aura, please consult the [Localisation Guide](https://github.com/aurapm/aura/blob/master/doc/guides/localisation.md)
+would like it added to Aura, please consult the [Localisation Guide](https://github.com/aurapm/aura/blob/master/doc/source/guides/localisation.rst)
 provided.
