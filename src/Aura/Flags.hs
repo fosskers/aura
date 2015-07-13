@@ -26,6 +26,7 @@ module Aura.Flags
     , reconvertFlags
     , dualFlagMap
     , hijackedFlagMap
+    , pacmanFlagMap
     , buildABSDepsStatus
     , confirmationStatus
     , customizepkgStatus
@@ -120,13 +121,16 @@ data Flag = ABSInstall
           | ItalianOut
           | SerbianOut
           | NorwegiOut
+          | PacmanArg String String
             deriving (Eq,Ord,Show)
 
 allFlags :: Language -> [OptDescr Flag]
 allFlags lang = concat [ auraOperations lang
                        , auraOptions
                        , pacmanOptions
-                       , dualOptions ]
+                       , dualOptions
+                       , languageOptions
+                       , longPacmanOptions ]
 
 simpleOption :: (String,[String],Flag) -> OptDescr Flag
 simpleOption (c,s,f) = Option c s (NoArg f) ""
@@ -192,6 +196,23 @@ dualOptions = Option [] ["ignore"]      (ReqArg Ignore      "" ) "" :
               [ ( [], ["noconfirm"], NoConfirm )
               , ( [], ["needed"],    Needed    ) ]
 
+-- These Pacman options are ignored,
+-- but parser needs to know that they require an argument
+longPacmanOptions :: [OptDescr Flag]
+longPacmanOptions = map pacArg $ zip
+                    [ "dbpath", "root", "arch", "cachedir", "color"
+                    , "config", "gpgdir" , "logfile", "assume-installed"
+                    , "print-format" ]
+                    ( "b" : "r" : repeat [] )
+                    -- "owns" is apparently okay as is?
+                    -- TODO: check all others
+    where pacArg (option, letter) = Option letter [option]
+                                    (ReqArg (PacmanArg option) "") ""
+
+pacmanFlagMap :: FlagMap
+pacmanFlagMap (PacmanArg option arg) = "--" ++ option ++ "=" ++ arg
+pacmanFlagMap _                      = ""
+
 languageOptions :: [OptDescr Flag]
 languageOptions = map simpleOption
                   [ ( [], ["japanese","日本語"],      JapOut      )
@@ -246,12 +267,13 @@ settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
 -- Flags like `AURIgnore` and `BuildPath` have args, and thus can't be included
 -- in the `settingsFlags` list.
 notSettingsFlag :: Flag -> Bool
-notSettingsFlag (AURIgnore _) = False
-notSettingsFlag (BuildPath _) = False
-notSettingsFlag (BuildUser _) = False
-notSettingsFlag (TruncHead _) = False
-notSettingsFlag (TruncTail _) = False
-notSettingsFlag f             = f `notElem` settingsFlags
+notSettingsFlag (AURIgnore _)   = False
+notSettingsFlag (BuildPath _)   = False
+notSettingsFlag (BuildUser _)   = False
+notSettingsFlag (TruncHead _)   = False
+notSettingsFlag (TruncTail _)   = False
+notSettingsFlag (PacmanArg _ _) = False
+notSettingsFlag f               = f `notElem` settingsFlags
 
 auraOperMsg :: Language -> String
 auraOperMsg lang = usageInfo (yellow $ auraOperTitle lang) $ auraOperations lang
@@ -339,8 +361,8 @@ makepkgFlags = fishOutFlag [(IgnoreArch,["--ignorearch"])] []
 
 parseLanguageFlag :: [String] -> (Maybe Language,[String])
 parseLanguageFlag args =
-    case getOpt' Permute languageOptions args of
-      (langs,nonOpts,otherOpts,_) -> (getLanguage langs, nonOpts ++ otherOpts)
+    case getOpt Permute languageOptions args of
+      (langs,nonOpts,_) -> (getLanguage langs, nonOpts)
 
 -- I don't like this.
 parseFlags :: Maybe Language -> [String] -> ([Flag],[String],[String])
