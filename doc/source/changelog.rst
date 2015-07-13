@@ -1,7 +1,8 @@
 Aura Changelog
 ==============
-1.3.0.6
+1.3.1.0
 -------
+- Aura builds against GHC 7.10.
 - Updated German and Russian translations.
 
 1.3.0.4

@@ -25,12 +25,11 @@ distros. Aura itself provides:
 
 -  Package-state backups/restoration.
 
-Aura’s authors recognize that `attempting to create universal standards
-can be problematic`_, but that is precisely why Aura exists. By having a
-unified interface over multiple packaging standards, users can
-transition between distributions more easily, and distribution
-developers can avoid reinventing the wheel by writing their own package
-management software.
+Aura's authors recognize that attempting to create universal standards can
+be `problematic`_, but that is precisely why Aura exists. By having a unified
+interface over multiple packaging standards, users can transition between
+distributions more easily, and distribution developers can avoid reinventing
+the wheel by writing their own package management software.
 
 Functionality
 =============
@@ -340,7 +339,7 @@ Size Information
 Unless ``-q`` is passed to Aura, the following information is
 displayed before installation from the official repositories.
 
-.. code-block::
+.. code-block:: bash
 
    Total download size : xx MiB
    Net upgrade size    : xx MiB
@@ -378,7 +377,7 @@ text to colourise such as <colour>text to colourise</colour>.
 New Package Dependency Needed
 *****************************
 
-.. code-block::
+.. code-block:: bash
 
    ⇒ New package needed:
    repository/package        1.0-1            (required by xxx) (Net change: ±xx MiB)
@@ -386,7 +385,7 @@ New Package Dependency Needed
 New Package Release
 *******************
 
-.. code-block::
+.. code-block:: bash
 
    ⇒ New package release:
    repository/package        1.0-1    -->    1.0-<green>2</green> (Net change: ±xx MiB)
@@ -394,7 +393,7 @@ New Package Release
 New Package Version
 *******************
 
-.. code-block::
+.. code-block:: bash
 
    ⇒ New package version:
    repository/package        1.0-1    -->    1.<green>2-1</green> (Net change: ±xx MiB)
@@ -528,6 +527,6 @@ with “Of” to reflect their noun-like nature::
                           deriving (Eq, Show)
 
 .. _Aura: https://github.com/fosskers/aura
-.. _attemping to create universal standards can be problematic: http://www.xkcd.com/927/
+.. _problematic: http://www.xkcd.com/927/
 .. _Semantic Versioning: http://semver.org/
 .. _here: https://github.com/fosskers/aura/issues/223
