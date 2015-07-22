@@ -1,6 +1,6 @@
 name:                aura
 
-version:             1.3.1.0
+version:             1.3.2.0
 
 synopsis:            A secure package manager for Arch Linux and the AUR, written in Haskell.
 
@@ -84,13 +84,13 @@ executable aura
                        Bash.Parser,
                        Bash.Simplify
 
-  build-depends:       aur,
+  build-depends:       aur>=3.0.0,
                        mtl,
                        lens,
                        text,
                        time,
                        unix,
-                       wreq-sb,
+                       wreq,
                        split,
                        array,
                        parsec,
