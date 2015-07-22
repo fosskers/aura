@@ -27,7 +27,9 @@ provides=('aura')
 conflicts=('aura-git' 'aura-bin')
 options=('strip')
 source=(https://bitbucket.org/fosskers/aura/downloads/${_hkgname}-${pkgver}.tar.gz)
-md5sums=('eddedac8a9c144ee916fa4ada64485b6')
+md5sums=('3ff075d8e620197ea9cd12df72d95184')
+
+
 
 build() {
     cd ${srcdir}/${_hkgname}-${pkgver}
