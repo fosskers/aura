@@ -3,7 +3,7 @@
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013, 2014, 2015 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -72,7 +72,7 @@ isAurPackage name = isJust <$> pkgbuild name
 -- AUR PKGBUILDS
 ----------------
 aurLink :: String
-aurLink = "https://aur.archlinux.org/"
+aurLink = "https://aur4.archlinux.org"
 
 pkgUrl :: String -> String
 pkgUrl pkg = aurLink </> "packages" </> pkg
@@ -84,7 +84,7 @@ sourceTarball :: FilePath            -- ^ Where to save the tarball.
               -> T.Text              -- ^ Package name.
               -> IO (Maybe FilePath) -- ^ Saved tarball location.
 sourceTarball path = fmap join . (info >=> Traversable.mapM f)
-    where f = saveUrlContents path . (++) aurLink . T.unpack . aurTarballUrlOf
+    where f = saveUrlContents path . (++) aurLink . T.unpack . urlPathOf
 
 ------------
 -- RPC CALLS
