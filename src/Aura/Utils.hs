@@ -29,7 +29,7 @@ import System.IO                 (stdout, hFlush)
 import Data.List                 (sortBy,intercalate)
 
 import Aura.Colour.Text
-import Aura.Languages (Language,whitespace)
+import Aura.Languages (Language,whitespace, yesNoMessage, yesRegex)
 import Aura.Monad.Aura
 import Aura.Settings.Base
 import Aura.Utils.Numbers
@@ -73,10 +73,10 @@ scoldAndFail msg = asks langOf >>= failure . putStrA' red . msg
 -- Takes a prompt message and a regex of valid answer patterns.
 yesNoPrompt :: (Language -> String) -> Aura Bool
 yesNoPrompt msg = asks langOf >>= \lang -> do
-  putStrA yellow $ msg lang ++ " [Y/n] "
+  putStrA yellow $ msg lang ++ " " ++ yesNoMessage lang ++ " "
   liftIO $ hFlush stdout
   response <- liftIO getLine
-  return $ response =~ "y|Y|\\B"
+  return $ response =~ yesRegex lang
 
 -- | Doesn't prompt when `--noconfirm` is used.
 optionalPrompt :: (Language -> String) -> Aura Bool
