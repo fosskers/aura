@@ -360,9 +360,8 @@ makepkgFlags :: [Flag] -> [String]
 makepkgFlags = fishOutFlag [(IgnoreArch,["--ignorearch"])] []
 
 parseLanguageFlag :: [String] -> (Maybe Language,[String])
-parseLanguageFlag args =
-    case getOpt Permute languageOptions args of
-      (langs,nonOpts,_) -> (getLanguage langs, nonOpts)
+parseLanguageFlag args = case getOpt' Permute languageOptions args of
+    (langs,nonOpts,nolangOpts,_) -> (getLanguage langs, nonOpts ++ nolangOpts)
 
 -- I don't like this.
 parseFlags :: Maybe Language -> [String] -> ([Flag],[String],[String])

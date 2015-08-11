@@ -68,8 +68,8 @@ main = getArgs >>= prepSettings . processFlags >>= execute >>= exit
 
 processFlags :: [String] -> (UserInput,Maybe Language)
 processFlags args = ((flags,nub input,pacOpts'),language)
-    where (language,_) = parseLanguageFlag args
-          (flags,input,pacOpts) = parseFlags language args
+    where (language,args') = parseLanguageFlag args
+          (flags,input,pacOpts) = parseFlags language args'
           pacOpts' = nub $ pacOpts ++ reconvertFlags dualFlagMap flags
                    ++ reconvertFlags pacmanFlagMap flags
 
