@@ -49,7 +49,7 @@ srcPkgStore = "/var/cache/aura/src"
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
 installPkgFiles :: [String] -> [FilePath] -> Aura ()
 installPkgFiles _ []          = return ()
-installPkgFiles pacOpts files = checkDBLock >> pacman (["-U"] ++ pacOpts ++ files)
+installPkgFiles pacOpts files = checkDBLock >> pacman (["-U", "--noconfirm"] ++ pacOpts ++ files)
 
 -- All building occurs within temp directories in the package cache,
 -- or in a location specified by the user with flags.
@@ -69,7 +69,7 @@ build built ps@(p:_) = do
   (paths,rest) <- catch (withTempDir pn (build' ps)) (buildFail built ps)
   build (paths ++ built) rest
       where pn = baseNameOf p
-        
+
 -- | Perform the actual build.
 build' :: [Buildable] -> Aura ([FilePath],[Buildable])
 build' []     = failure "build' : You should never see this."
@@ -121,7 +121,7 @@ buildFail _ (p:_) errors = do  -- asks langOf >>= \lang -> do
      else scoldAndFail buildFail_5
 
 -- If the user wasn't running Aura with `-x`, then this will
--- show them the suppressed makepkg output. 
+-- show them the suppressed makepkg output.
 displayBuildErrors :: Error -> Aura ()
 displayBuildErrors errors = ask >>= \ss -> when (suppressMakepkg ss) $ do
   putStrA red (displayBuildErrors_1 $ langOf ss)
