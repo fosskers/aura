@@ -202,6 +202,7 @@ trueRoot_2 = \case
 trueRoot_3 :: Language -> String
 trueRoot_3 = \case
   Japanese -> "「root」としてパッケージを作成するのは「makepkg v4.2」で不可能になった。"
+  German   -> "Seit makepkg v4.2 ist es nicht mehr möglich als root zu bauen."
   _        -> "As of makepkg v4.2, building as root is no longer possible."
 
 mustBeRoot_1 :: Language -> String
@@ -640,6 +641,7 @@ reportUnneededPackages_1 = \case
     Japanese   -> "下記のパッケージは既にインストールされている："
     Portuguese -> "Os seguintes pacotes já estão instalados:"
     Russian    -> "Следующие пакеты уже установлены:"
+    German     -> "Die folgenden Pakete sind bereits installiert:"
     _          -> "The following packages are already installed:"
 
 reportPkgsToInstall_1 :: Language -> String
