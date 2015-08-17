@@ -3,4 +3,4 @@ packages:
 - '.'
 extra-deps:
 - aur-3.0.0
-resolver: nightly-2015-08-07
+resolver: lts-3.1
