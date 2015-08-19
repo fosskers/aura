@@ -1785,7 +1785,7 @@ yesNoMessage = \case
     _          -> "[Y/n]"
 
 yesRegex :: Language -> String
-yesRegex = \case
+yesRegex = (++"|^$") . \case
     Croatian   -> "[dD][aA]?"
     German     -> "[jJ][aA]?"
     Norwegian  -> "[jJ][aA]?"
