@@ -1771,3 +1771,27 @@ customizepkg_1 = let customizepkg = bt "customizepkg" in \case
     Russian    -> customizepkg ++ "не установлен."
     Indonesia  -> customizepkg ++ "tidak terinstal."
     _          -> customizepkg ++ "isn't installed."
+    
+-----------------------
+-- Aura/Utils functions
+-----------------------
+
+yesNoMessage :: Language -> String
+yesNoMessage = \case
+    Croatian   -> "[D/n]"
+    German     -> "[J/n]"
+    Norwegian  -> "[J/n]"
+    Italian    -> "[S/n]"
+    Portuguese -> "[S/n]"
+    French     -> "[O/n]"
+    _          -> "[Y/n]"
+
+yesRegex :: Language -> String
+yesRegex = (++"|^$") . \case
+    Croatian   -> "[dD][aA]?"
+    German     -> "[jJ][aA]?"
+    Norwegian  -> "[jJ][aA]?"
+    Italian    -> "[sS][iI]?"
+    Portuguese -> "[sS]([iI][mM])?"
+    French     -> "[oO]([uU][iI])?"
+    _          -> "[yY]([eE][sS])?"
