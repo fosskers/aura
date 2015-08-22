@@ -68,6 +68,7 @@ getSettings lang (auraFlags,input,pacOpts) = do
                   , beQuiet         = quietStatus auraFlags
                   , suppressMakepkg = suppressionStatus auraFlags
                   , delMakeDeps     = delMakeDepsStatus auraFlags
+                  , useGit          = useGitStatus auraFlags
                   , mustConfirm     = confirmationStatus auraFlags
                   , neededOnly      = neededStatus auraFlags
                   , mayHotEdit      = hotEditStatus auraFlags

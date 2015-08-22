@@ -53,6 +53,7 @@ data Settings = Settings { inputOf         :: [String]
                          , beQuiet         :: Bool
                          , suppressMakepkg :: Bool
                          , delMakeDeps     :: Bool
+                         , useGit          :: Bool
                          , diffPkgbuilds   :: Bool
                          , rebuildDevel    :: Bool
                          , mayHotEdit      :: Bool
