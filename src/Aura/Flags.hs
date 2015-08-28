@@ -31,7 +31,6 @@ module Aura.Flags
     , confirmationStatus
     , customizepkgStatus
     , delMakeDepsStatus
-    , useGitStatus
     , hotEditStatus
     , keepSourceStatus
     , neededStatus
@@ -80,7 +79,6 @@ data Flag = ABSInstall
           | Upgrade
           | Download
           | Unsuppress
-          | UseGit
           | TreeSync
           | HotEdit
           | NoConfirm
@@ -157,7 +155,6 @@ auraOptions = Option [] ["aurignore"] (ReqArg AURIgnore "" ) "" :
               , ( "b", ["backup"],       CacheBackup   )
               , ( "c", ["clean"],        Clean         )
               , ( "d", ["deps"],         ViewDeps      )
-              , ( "g", ["use-git"],      UseGit        )
               , ( "j", ["abandon"],      Abandon       )
               , ( "k", ["diff"],         DiffPkgbuilds )
               , ( "i", ["info"],         Info          )
@@ -264,7 +261,7 @@ reconvertFlags fm = filter notNull . map fm
 
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
-                , DelMDeps,Customizepkg,Quiet,NoPowerPill,KeepSource,UseGit
+                , DelMDeps,Customizepkg,Quiet,NoPowerPill,KeepSource
                 , BuildABSDeps, ABCSort, IgnoreArch, DryRun, Needed ]
 
 -- Flags like `AURIgnore` and `BuildPath` have args, and thus can't be included
@@ -325,9 +322,6 @@ suppressionStatus = fishOutFlag [(Unsuppress,False)] True
 
 delMakeDepsStatus :: [Flag] -> Bool
 delMakeDepsStatus = fishOutFlag [(DelMDeps,True)] False
-
-useGitStatus :: [Flag] -> Bool
-useGitStatus = fishOutFlag [(UseGit,True)] False
 
 confirmationStatus :: [Flag] -> Bool
 confirmationStatus = fishOutFlag [(NoConfirm,False)] True

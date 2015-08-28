@@ -46,29 +46,23 @@ import           Aura.Pkgbuild.Base
 import           Aura.Settings.Base
 import           Aura.Core
 
-import           Utilities            (decompress)
 import           Internet
 
 ---
 
 aurLookup :: String -> Aura (Maybe Buildable)
-aurLookup name = pkgbuild name >>=
-    maybe (return Nothing) ((fmap Just) . makeBuildable name . T.unpack)
+aurLookup name = fmap (makeBuildable name . T.unpack) <$> pkgbuild name
 
 aurRepo :: Repository
 aurRepo = Repository $ aurLookup >=> Traversable.mapM packageBuildable
 
-makeBuildable :: String -> Pkgbuild -> Aura Buildable
-makeBuildable name pb = do
-    git <- asks useGit
-    return Buildable
-        { baseNameOf   = name
-        , pkgbuildOf   = pb
-        , isExplicit   = False
-        , buildScripts = f git }
-  where f git fp = if git
-            then gitClone fp $ "https://aur.archlinux.org/" ++ name ++ ".git"
-            else sourceTarball fp (T.pack name) >>= Traversable.mapM decompress
+makeBuildable :: String -> Pkgbuild -> Buildable
+makeBuildable name pb = Buildable
+    { baseNameOf   = name
+    , pkgbuildOf   = pb
+    , isExplicit   = False
+    , buildScripts = f }
+  where f fp = gitClone fp $ "https://aur.archlinux.org/" ++ name ++ ".git"
 
 isAurPackage :: String -> Aura Bool
 isAurPackage name = isJust <$> pkgbuild name
