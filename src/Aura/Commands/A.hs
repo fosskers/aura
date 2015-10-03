@@ -35,11 +35,12 @@ module Aura.Commands.A
     , displayPkgbuild ) where
 
 import           Control.Monad
-import           Data.Maybe      (fromJust)
+import           Data.Maybe (fromJust)
 import           Data.Monoid
 import qualified Data.Set as S (member, fromList)
 import qualified Data.Text as T
 import           Linux.Arch.Aur
+import           Text.Printf (printf)
 import           Text.Regex.PCRE ((=~))
 
 import           Aura.Install (InstallOptions(..))
@@ -130,10 +131,11 @@ renderAurPkgInfo ss ai ns = entrify ss fields entries
                     , orphanedMsg (T.unpack <$> aurMaintainerOf ai) $ langOf ss
                     , cyan $ T.unpack $ urlOf ai
                     , pkgUrl $ T.unpack $ aurNameOf ai
-                    , T.unpack . T.unwords .  licenseOf $ ai
-                    , empty . unwords . depends $ ns
-                    , empty . unwords . makedepends $ ns
-                    , yellow . show . aurVotesOf $ ai
+                    , T.unpack . T.unwords $ licenseOf ai
+                    , empty . unwords $ depends ns
+                    , empty . unwords $ makedepends ns
+                    , yellow . show $ aurVotesOf ai
+                    , yellow $ printf "%0.2f" (popularityOf ai)
                     , T.unpack $ aurDescriptionOf ai ]
 
 aurPkgSearch :: [String] -> Aura ()
@@ -151,14 +153,15 @@ renderSearch :: Settings -> String -> (AurInfo, Bool) -> String
 renderSearch ss r (i, e) = searchResult
     where searchResult = if beQuiet ss then sparseInfo else verboseInfo
           sparseInfo   = T.unpack $ aurNameOf i
-          verboseInfo  = repo ++ n ++ " " ++ v ++ " (" ++ l ++ ")" ++
-                         (if e then s else "") ++ "\n    " ++ d
+          verboseInfo  = repo ++ n ++ " " ++ v ++ " (" ++ l ++ " / " ++ p ++
+                         ")" ++ (if e then s else "") ++ "\n    " ++ d
           c cl cs = case cs =~ ("(?i)" ++ r) of
                       (b,m,a) -> cl b ++ bCyan m ++ cl a
           repo = magenta "aur/"
           n = c bForeground $ T.unpack $ aurNameOf i
           d = c noColour $ T.unpack $ aurDescriptionOf i
-          l = yellow . show . aurVotesOf $ i  -- `l` for likes?
+          l = yellow . show $ aurVotesOf i  -- `l` for likes?
+          p = yellow $ printf "%0.2f" (popularityOf i)
           v = case dateObsoleteOf i of
             Just _  -> red $ T.unpack $ aurVersionOf i
             Nothing -> green $ T.unpack $ aurVersionOf i

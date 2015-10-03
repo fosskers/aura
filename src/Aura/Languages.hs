@@ -1487,20 +1487,20 @@ getAURPkgInfo_1 = \case
 -- `Maintainer` value NEEDS UPDATING!
 infoFields :: Language -> [String]
 infoFields = \case
-    Japanese   -> [ "リポジトリ","名前","バージョン","パッケージ状態","管理者","プロジェクト","パッケージページ","ライセンス","従属パッケージ","作成時従属パ","投票数","概要" ]
-    Polish     -> [ "Repository","Nazwa","Wersja","Status w AUR","Maintainer","URL Projektu","URL w AUR","Licencja","Depends On","Build Deps","Głosy","Opis" ]
-    Croatian   -> [ "Repozitorij","Ime","Verzija","AUR Stanje","Maintainer","URL Projekta","AUR URL","Licenca","Depends On","Build Deps","Glasovi","Opis" ]
-    Swedish    -> [ "Repository","Namn","Version","AUR Status","Maintainer","Projekt URL","AUR URL","Licens","Depends On","Build Deps","Röster","Beskrivning" ]
-    German     -> [ "Repository","Name","Version","AUR-Status","Maintainer","Projekt-URL","AUR-URL","Lizenz","Hängt ab von","Build-Abhängigkeiten","Stimmen","Beschreibung" ]
+    Japanese   -> [ "リポジトリ","名前","バージョン","パッケージ状態","管理者","プロジェクト","パッケージページ","ライセンス","従属パッケージ","作成時従属パ","投票数","人気","概要" ]
+    Polish     -> [ "Repository","Nazwa","Wersja","Status w AUR","Maintainer","URL Projektu","URL w AUR","Licencja","Depends On","Build Deps","Głosy","Popularity","Opis" ]
+    Croatian   -> [ "Repozitorij","Ime","Verzija","AUR Stanje","Maintainer","URL Projekta","AUR URL","Licenca","Depends On","Build Deps","Glasovi","Popularity","Opis" ]
+    Swedish    -> [ "Repository","Namn","Version","AUR Status","Maintainer","Projekt URL","AUR URL","Licens","Depends On","Build Deps","Röster","Popularity","Beskrivning" ]
+    German     -> [ "Repository","Name","Version","AUR-Status","Maintainer","Projekt-URL","AUR-URL","Lizenz","Hängt ab von","Build-Abhängigkeiten","Stimmen","Popularity","Beschreibung" ]
     Spanish    -> [ "Repository","Nombre","Versión","Estado en AUR","Maintainer","URL del proyecto","URL en AUR","Licencia","Depends On","Build Deps","Votos","Descripción" ]
-    Portuguese -> [ "Repositório","Nome","Versão","Estado no AUR","Maintainer","URL do projeto","URL no AUR","Licença","Depends On","Build Deps","Votos","Descrição" ]
-    French     -> [ "Dépôt","Nom","Version","Statut de AUR","Mainteneur","URL du projet","URL AUR","Licence","Dépends de","Dépendances de compilation","Votes","Description" ]
-    Russian    -> [ "Репозиторий","Название","Версия","Статус в AUR","Ответственный","URL проекта","URL в AUR","Лицензия","Зависит от","Зависимости сборки","Голоса","Описание" ]
-    Italian    -> [ "Repository","Nome","Versione","Stato in AUR","Maintainer","URL del progetto","URL AUR","Licenza","Depends On","Build Deps","Voti","Descrizione" ]
-    Serbian    -> [ "Ризница","Име","Верзија","Статус у AUR-у","Maintainer","Страница пројекта","Страница у AUR-у","Лиценца","Depends On","Build Deps","Гласови","Опис" ]
-    Norwegian  -> [ "Depot","Navn","Versjon","AUR Status","Vedlikeholder","Prosjekt-URL","AUR URL","Lisens","Depends On","Build Deps","Stemmer","Beskrivelse" ]
-    Indonesia  -> [ "Lumbung", "Nama", "Versi", "Status AUR", "Pemelihara", "URL Proyek", "URL AUR", "Lisensi", "Bergantung pada", "Dependensi bangun", "Suara", "Deskripsi" ]
-    _          -> [ "Repository","Name","Version","AUR Status","Maintainer","Project URL","AUR URL","License","Depends On","Build Deps","Votes","Description" ]
+    Portuguese -> [ "Repositório","Nome","Versão","Estado no AUR","Maintainer","URL do projeto","URL no AUR","Licença","Depends On","Build Deps","Votos","Popularity","Descrição" ]
+    French     -> [ "Dépôt","Nom","Version","Statut de AUR","Mainteneur","URL du projet","URL AUR","Licence","Dépends de","Dépendances de compilation","Votes","Popularity","Description" ]
+    Russian    -> [ "Репозиторий","Название","Версия","Статус в AUR","Ответственный","URL проекта","URL в AUR","Лицензия","Зависит от","Зависимости сборки","Голоса","Popularity","Описание" ]
+    Italian    -> [ "Repository","Nome","Versione","Stato in AUR","Maintainer","URL del progetto","URL AUR","Licenza","Depends On","Build Deps","Voti","Popularity","Descrizione" ]
+    Serbian    -> [ "Ризница","Име","Верзија","Статус у AUR-у","Maintainer","Страница пројекта","Страница у AUR-у","Лиценца","Depends On","Build Deps","Гласови","Popularity","Опис" ]
+    Norwegian  -> [ "Depot","Navn","Versjon","AUR Status","Vedlikeholder","Prosjekt-URL","AUR URL","Lisens","Depends On","Build Deps","Stemmer","Popularity","Beskrivelse" ]
+    Indonesia  -> [ "Lumbung", "Nama", "Versi", "Status AUR", "Pemelihara", "URL Proyek", "URL AUR", "Lisensi", "Bergantung pada", "Dependensi bangun", "Suara", "Popularity","Deskripsi" ]
+    _          -> [ "Repository","Name","Version","AUR Status","Maintainer","Project URL","AUR URL","License","Depends On","Build Deps","Votes","Popularity","Description" ]
 
 outOfDateMsg :: Maybe Int -> Language -> String
 outOfDateMsg (Just _) = red . \case
