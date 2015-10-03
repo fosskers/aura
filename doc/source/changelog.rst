@@ -1,5 +1,13 @@
 Aura Changelog
 ==============
+1.3.2.1
+-------
+- `-Ai` and `-As` show popularity values.
+- `aur4` is no longer referenced.
+- `Yes/No` prompts are now localized.
+- Aura can be built with `stack`.
+- Updated German translation.
+
 1.3.1.0
 -------
 - Aura builds against GHC 7.10.
