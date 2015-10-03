@@ -1502,8 +1502,8 @@ infoFields = \case
     Indonesia  -> [ "Lumbung", "Nama", "Versi", "Status AUR", "Pemelihara", "URL Proyek", "URL AUR", "Lisensi", "Bergantung pada", "Dependensi bangun", "Suara", "Deskripsi" ]
     _          -> [ "Repository","Name","Version","AUR Status","Maintainer","Project URL","AUR URL","License","Depends On","Build Deps","Votes","Description" ]
 
-outOfDateMsg :: Bool -> Language -> String
-outOfDateMsg True = red . \case
+outOfDateMsg :: Maybe Int -> Language -> String
+outOfDateMsg (Just _) = red . \case
     Japanese   -> "AURで要更新！"
     Polish     -> "Nieaktualny!"
     Croatian   -> "Zastarjelo!"
@@ -1518,7 +1518,7 @@ outOfDateMsg True = red . \case
     Norwegian  -> "Utdatert!"
     Indonesia  -> "Ketinggalan Zaman!"
     _          -> "Out of Date!"
-outOfDateMsg False = green . \case
+outOfDateMsg Nothing = green . \case
     Japanese   -> "最新"
     Polish     -> "Aktualny"
     Croatian   -> "Ažurirano"

@@ -126,7 +126,7 @@ renderAurPkgInfo ss ai ns = entrify ss fields entries
           entries = [ magenta "aur"
                     , bForeground $ T.unpack $ aurNameOf ai
                     , T.unpack $ aurVersionOf ai
-                    , outOfDateMsg (isOutOfDate ai) $ langOf ss
+                    , outOfDateMsg (dateObsoleteOf ai) $ langOf ss
                     , orphanedMsg (T.unpack <$> aurMaintainerOf ai) $ langOf ss
                     , cyan $ T.unpack $ urlOf ai
                     , pkgUrl $ T.unpack $ aurNameOf ai
@@ -159,8 +159,9 @@ renderSearch ss r (i, e) = searchResult
           n = c bForeground $ T.unpack $ aurNameOf i
           d = c noColour $ T.unpack $ aurDescriptionOf i
           l = yellow . show . aurVotesOf $ i  -- `l` for likes?
-          v | isOutOfDate i = red $ T.unpack $ aurVersionOf i
-            | otherwise     = green $ T.unpack $ aurVersionOf i
+          v = case dateObsoleteOf i of
+            Just _  -> red $ T.unpack $ aurVersionOf i
+            Nothing -> green $ T.unpack $ aurVersionOf i
           s = c bForeground (" [installed]" :: String)
                               
 displayPkgDeps :: [String] -> Aura ()
