@@ -40,7 +40,7 @@ import Bash.Base
 
 namespace :: String -> String -> Aura Namespace
 namespace pn pb = do
-  carch <- ((: []) . NoQuote . carchOf) <$> ask
+  carch <- ((: []) . SingleQ . carchOf) <$> ask
   case namespace' carch pn pb of
     Left e   -> liftIO (print e) >> failure "PKGBUILD parse failed."
     Right ns -> return ns
