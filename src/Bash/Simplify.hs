@@ -103,7 +103,7 @@ getIndexedString' bstrs "" = do
   return $ fromBashString singlestr
 getIndexedString' bstrs "*" = do
   strings <- mapM replaceStr bstrs
-  return $ foldr (++) [] $ map fromBashString strings
+  return $ foldMap fromBashString strings
 getIndexedString' bstrs "@" = getIndexedString' bstrs "*"
 getIndexedString' bstrs num = do
   singlestr <- replaceStr $ bstrs !! read num

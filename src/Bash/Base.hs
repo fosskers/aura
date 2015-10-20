@@ -22,6 +22,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Bash.Base where
 
 import qualified Data.Map.Lazy as M
+import Data.Either
 
 ---
 
@@ -78,23 +79,14 @@ toNamespace (_:fs) = toNamespace fs
 getVar :: Namespace -> String -> Maybe [String]
 getVar ns s = case M.lookup s ns of
   Nothing -> Nothing
-  Just bs -> Just $ foldr (++) [] $ map fromBashString bs
+  Just bs -> Just $ foldMap fromBashString bs
 
 fromBashString :: BashString -> [String]
 fromBashString (SingleQ s) = [s]
-fromBashString (DoubleQ l) = fromBashStringList l
-fromBashString (NoQuote l) = fromBashStringList l
+fromBashString (DoubleQ l) = rights l
+fromBashString (NoQuote l) = rights l
 fromBashString (Backtic c) = ['`' : unwords (fromCommand c) ++ "`"]
 
-fromBashStringList :: [Either BashExpansion String] -> [String]
-fromBashStringList l = map (\e -> case e of
-                                    Left _ -> error "I thought I filtered this out"
-                                    Right s -> s
-                                    )
-                       $ filter (\e -> case e of
-                                   Left _ -> False
-                                   Right _ -> True) l
-
 fromCommand :: Field -> [String]
-fromCommand (Command c as) =  [c] ++ foldr (++) [] (map fromBashString as)
+fromCommand (Command c as) =  c : foldMap fromBashString as
 fromCommand _ = error "Argument given was not a Command."
