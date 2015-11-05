@@ -104,7 +104,9 @@ singleQuoted = between (char '\'') (char '\'')
 -- | Replaces ${...}. No string extrapolation.
 doubleQuoted :: Parser [BashString]
 doubleQuoted = between (char '"') (char '"')
-               ((\s -> [DoubleQ s]) <$> many1 (noneOf ['\n','"']))
+               ((\s -> [DoubleQ s]) <$> many1 (choice [ try (Left <$> expansion)
+                                                      , Right <$> many1 (noneOf ['\n','"','$'])
+                                                      ]))
                <?> "double quoted string"
 
 -- | Contains commands.
@@ -112,9 +114,21 @@ backticked :: Parser [BashString]
 backticked = between (char '`') (char '`') ((\c -> [Backtic c]) <$> command)
              <?> "backticked string"
 
+-- | Replaces $... , ${...} or ${...[...]} Strings are not extrapolated
+expansion :: Parser BashExpansion
+expansion = char '$' *> choice [ BashExpansion <$> base <*> indexer <* char '}'
+                               , flip BashExpansion [SingleQ ""] <$> var
+                               ]
+            <?> "expansion string"
+  where var = many1 (alphaNum <|> char '_')
+        base = char '{' *> var
+        indexer =  between (char '[') (char ']') (try single) <|> return ([SingleQ ""])
+
 -- | Replaces ${...}. Strings can be extrapolated!
 unQuoted :: Parser [BashString]
-unQuoted = map NoQuote <$> extrapolated []
+unQuoted = fmap NoQuote <$> many1 ( choice [ try $ (: []) . Left <$> expansion
+                                           , fmap Right <$> extrapolated []
+                                           ])
 
 -- | Bash strings are extrapolated when they contain a brace pair
 -- with two or more substrings separated by commas within them.
@@ -123,10 +137,10 @@ unQuoted = map NoQuote <$> extrapolated []
 -- will not be expanded and will retain their braces.
 extrapolated :: [Char] -> Parser [String]
 extrapolated stops = do
-  xs <- plain <|> bracePair
+  xs <- plain <|>  bracePair
   ys <- option [""] $ try (extrapolated stops)
   return [ x ++ y | x <- xs, y <- ys ]
-      where plain = (: []) `fmap` many1 (noneOf $ " \n{}()" ++ stops)
+      where plain = (: []) <$> many1 (noneOf $ " $\n{}[]()" ++ stops)
 
 bracePair :: Parser [String]
 bracePair = between (char '{') (char '}') innards <?> "valid {...} string"
