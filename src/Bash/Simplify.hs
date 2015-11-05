@@ -41,8 +41,8 @@ module Bash.Simplify
 
 import Control.Monad.Trans.State.Lazy
 import Data.Foldable
-import Text.Regex.PCRE ((=~))
-import Data.Maybe      (fromMaybe)
+--import Text.Regex.PCRE ((=~))
+import qualified Data.Map.Lazy as M
 import Data.Monoid
 
 import Bash.Base
@@ -75,27 +75,47 @@ replace' (Variable n bs) = do
 replace' somethingElse = pure somethingElse
 
 replaceStr :: BashString -> State Namespace BashString
-replaceStr s@(SingleQ _) = pure s
-replaceStr (DoubleQ s)   = DoubleQ <$> replaceStr' s
-replaceStr (NoQuote s)   = NoQuote <$> replaceStr' s
+replaceStr s@(SingleQ _) = return s
+replaceStr (DoubleQ s)   = DoubleQ . fmap Right <$> expandStr s
+replaceStr (NoQuote s)   = DoubleQ . fmap Right <$> expandStr s
 replaceStr (Backtic f)   = Backtic <$> replace' f
 
--- | Doesn't yet support ${foo[...]}
-replaceStr' :: String -> State Namespace String
-replaceStr' s = get >>= \ns ->
-   case s =~ "\\${?[\\w]+}?" :: (String, String, String) of
-     (_, "", _) -> pure s
-     (b, m, a)  -> ((b <> replaced) <>) <$> replaceStr' a
-         where replaced = fromMaybe m (head <$> getVar ns m')
-               m'       = filter (`notElem` "${}") m
+expandStr :: [Either BashExpansion String] -> State Namespace [String]
+expandStr [] = pure []
+expandStr (x:xs) = do
+  lhs <- expandStr' x
+  rhs <- expandStr xs
+  pure $ lhs <> rhs
+
+expandStr' :: Either BashExpansion String -> State Namespace [String]
+expandStr' (Right s) = pure [s]
+expandStr' (Left (BashExpansion var sub)) = traverse expandWrapper sub >>= (getIndexedString var . fold)
+
+getIndexedString :: String -> String -> State Namespace [String]
+getIndexedString var idx  = get >>= \ns -> case  M.lookup var ns  of
+  Nothing -> pure []
+  Just bstrs -> getIndexedString' bstrs idx
+
+getIndexedString' :: [BashString] -> String -> State Namespace [String]
+getIndexedString' (b:_) ""  = fromBashString <$> replaceStr b
+getIndexedString' bstrs "*" = foldMap fromBashString <$> traverse replaceStr bstrs
+getIndexedString' bstrs "@" = foldMap fromBashString <$> traverse replaceStr bstrs
+getIndexedString' bstrs num = fromBashString <$> replaceStr (bstrs !! read num)
+
+expandWrapper :: BashString -> State Namespace String
+expandWrapper (SingleQ s) = pure s
+expandWrapper (DoubleQ s) = fold <$> expandStr s
+expandWrapper (NoQuote s) = fold <$> expandStr s
+expandWrapper (Backtic f) = unwords . fromCommand <$> replace' f
 
 -- | An `if` statement can have an [el]if or [el]se, but it might not.
 replaceIf :: BashIf -> State Namespace [Field]
 replaceIf i@(If comp fs el) = do
   let (op, l, r) = deComp comp
+
   left  <- fromBashString <$> replaceStr l
   right <- fromBashString <$> replaceStr r
-  if left `op` right
+  if unwords left `op` unwords right
      then replace fs
      else case el of
             Nothing  -> pure [IfBlock i]

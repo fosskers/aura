@@ -23,6 +23,7 @@ module Bash.Base where
 
 import Data.Monoid
 import qualified Data.Map.Lazy as M
+import Data.Either
 
 ---
 
@@ -53,10 +54,13 @@ data BashFor = Incr  -- for (x;y;z); do ... done  -- Incomplete!
 -- | While `String` is the main data type in Bash, there are four
 -- subtypes each with different behaviour.
 data BashString = SingleQ String
-                | DoubleQ String
-                | NoQuote String
+                | DoubleQ [Either BashExpansion String]
+                | NoQuote [Either BashExpansion String]
                 | Backtic Field   -- Contains a Command.
                   deriving (Eq, Show)
+
+data BashExpansion = BashExpansion String [BashString]
+                     deriving (Eq, Show)
 
 type Namespace = M.Map String [BashString]
 type Script    = [Field]  -- A parsed Bash script.
@@ -78,12 +82,12 @@ getVar ns s = case M.lookup s ns of
                 Nothing -> Nothing
                 Just bs -> Just $ foldMap fromBashString bs
 
-fromBashString :: BashString -> String
-fromBashString (SingleQ s) = s
-fromBashString (DoubleQ s) = s
-fromBashString (NoQuote s) = s
-fromBashString (Backtic c) = '`' : fromCommand c <> "`"
+fromBashString :: BashString -> [String]
+fromBashString (SingleQ s) = [s]
+fromBashString (DoubleQ l) = rights l
+fromBashString (NoQuote l) = rights l
+fromBashString (Backtic c) = ["`" <> unwords (fromCommand c) <> "`"]
 
-fromCommand :: Field -> String
-fromCommand (Command c as) = unwords $ c : fromBashString <$> as
+fromCommand :: Field -> [String]
+fromCommand (Command c as) =  c : foldMap fromBashString as
 fromCommand _ = error "Argument given was not a Command."
