@@ -57,13 +57,13 @@ simplePkg :: FilePath -> SimplePkg
 simplePkg = pkgFileNameAndVer
 
 cache :: [FilePath] -> Cache
-cache = M.fromList . map pair
+cache = M.fromList . fmap pair
     where pair p = (simplePkg p, p)
 
 -- This takes the filepath of the package cache as an argument.
 rawCacheContents :: FilePath -> Aura [String]
 rawCacheContents c = filter dots <$> liftIO (ls c)
-    where dots p = p `notElem` [".",".."]
+    where dots p = p `notElem` [".", ".."]
 
 cacheContents :: FilePath -> Aura Cache
 cacheContents c = cache <$> rawCacheContents c
@@ -83,7 +83,7 @@ getFilename :: Cache -> SimplePkg -> Maybe FilePath
 getFilename c p = M.lookup p c
 
 allNames :: Cache -> [String]
-allNames = map fst . M.keys
+allNames = fmap fst . M.keys
 
 allFilenames :: Cache -> [FilePath]
 allFilenames = M.elems

@@ -26,15 +26,16 @@ module Aura.Utils where
 import System.IO.Temp            (withTempDirectory)
 import Text.Regex.PCRE           ((=~))
 import System.IO                 (stdout, hFlush)
-import Data.List                 (sortBy,intercalate)
+import Data.List                 (sortBy, intercalate)
+import Data.Monoid
 
 import Aura.Colour.Text
-import Aura.Languages (Language,whitespace, yesNoMessage, yesRegex)
+import Aura.Languages (Language, whitespace, yesNoMessage, yesRegex)
 import Aura.Monad.Aura
 import Aura.Settings.Base
 import Aura.Utils.Numbers
 
-import Utilities (inDir,postPad)
+import Utilities (inDir, postPad)
 import Shell     (pwd)
 
 ---
@@ -43,26 +44,26 @@ import Shell     (pwd)
 -- CUSTOM OUTPUT
 ----------------
 putStrLnA :: Colouror -> String -> Aura ()
-putStrLnA colour s = putStrA colour $ s ++ "\n"
+putStrLnA colour s = putStrA colour $ s <> "\n"
 
 putStrLnA' :: Colouror -> String -> String
-putStrLnA' colour s = putStrA' colour s ++ "\n"
+putStrLnA' colour s = putStrA' colour s <> "\n"
 
 -- Added `hFlush` here because some output appears to lag sometimes.
 putStrA :: Colouror -> String -> Aura ()
 putStrA colour = liftIO . putStr . putStrA' colour
---putStrA colour s = liftIO (putStr (putStrA' colour s) >> hFlush stdout)
+--putStrA colour s = liftIO (putStr (putStrA' colour s) *> hFlush stdout)
 
 putStrA' :: Colouror -> String -> String
-putStrA' colour s = "aura >>= " ++ colour s
+putStrA' colour s = "aura >>= " <> colour s
 
 printList :: Colouror -> Colouror -> String -> [String] -> Aura ()
-printList _ _ _ []        = return ()
+printList _ _ _ []        = pure ()
 printList tc ic msg items = liftIO . putStrLn . printList' tc ic msg $ items
 
 printList' :: Colouror -> Colouror -> String -> [String] -> String
-printList' tc ic m is = putStrLnA' tc m ++ colouredItems
-    where colouredItems = is >>= \i -> ic i ++ "\n"
+printList' tc ic m is = putStrLnA' tc m <> colouredItems
+    where colouredItems = is >>= \i -> ic i <> "\n"
 
 scoldAndFail :: (Language -> String) -> Aura a
 scoldAndFail msg = asks langOf >>= failure . putStrA' red . msg
@@ -73,16 +74,16 @@ scoldAndFail msg = asks langOf >>= failure . putStrA' red . msg
 -- Takes a prompt message and a regex of valid answer patterns.
 yesNoPrompt :: (Language -> String) -> Aura Bool
 yesNoPrompt msg = asks langOf >>= \lang -> do
-  putStrA yellow $ msg lang ++ " " ++ yesNoMessage lang ++ " "
+  putStrA yellow $ msg lang <> " " <> yesNoMessage lang <> " "
   liftIO $ hFlush stdout
   response <- liftIO getLine
-  return $ response =~ yesRegex lang
+  pure $ response =~ yesRegex lang
 
 -- | Doesn't prompt when `--noconfirm` is used.
 optionalPrompt :: (Language -> String) -> Aura Bool
 optionalPrompt msg = ask >>= check
     where check ss | mustConfirm ss = yesNoPrompt msg
-                   | otherwise      = return True
+                   | otherwise      = pure True
 
 -------
 -- MISC
@@ -94,9 +95,9 @@ withTempDir name action = ask >>= \ss -> do
   result <- liftIO $ inTemp (\dir -> inDir dir (runAura action ss))
   wrap result
 
-splitNameAndVer :: String -> (String,String)
-splitNameAndVer pkg = (before,after)
-    where (before,_,after) = pkg =~ "[<>=]+" :: (String,String,String)
+splitNameAndVer :: String -> (String, String)
+splitNameAndVer pkg = (before, after)
+    where (before, _, after) = pkg =~ "[<>=]+" :: (String, String, String)
 
 splitName :: String -> String
 splitName = fst . splitNameAndVer
@@ -104,11 +105,11 @@ splitName = fst . splitNameAndVer
 splitVer :: String -> String
 splitVer = snd . splitNameAndVer
 
-groupPkgs :: [([a],[b],[c])] -> ([a],[b],[c])
-groupPkgs = foldl groupPkgs' ([],[],[])
+groupPkgs :: [([a], [b], [c])] -> ([a], [b], [c])
+groupPkgs = foldl groupPkgs' ([], [], [])
 
-groupPkgs' :: ([a],[b],[c]) -> ([a],[b],[c]) -> ([a],[b],[c])
-groupPkgs' (ps,as,os) (p,a,o) = (p ++ ps, a ++ as, o ++ os)
+groupPkgs' :: ([a], [b], [c]) -> ([a], [b], [c]) -> ([a], [b], [c])
+groupPkgs' (ps, as, os) (p, a, o) = (p <> ps, a <> as, o <> os)
 
 sortPkgs :: [String] -> [String]
 sortPkgs = sortBy verNums
@@ -123,9 +124,9 @@ sortPkgs = sortBy verNums
 -- ruby-1.9.3_p125-4-x86_64.pkg.tar.xz
 -- NOTE: regex stuff is a little sloppy here.
 pkgFileNameAndVer :: String -> (String, Maybe Version)
-pkgFileNameAndVer p = (name,verNum')
-    where (name,_,_) = p =~ "-[0-9]+" :: (String,String,String)
-          verNum     = p =~ ("[0-9][-0-9a-z._]+-" ++ archs) :: String
+pkgFileNameAndVer p = (name, verNum')
+    where (name, _, _) = p =~ "-[0-9]+" :: (String, String, String)
+          verNum     = p =~ ("[0-9][-0-9a-z._]+-" <> archs) :: String
           archs      = "(a|x|i)"  -- Representing "(any|x86_64|i686)"
           verNum'    = version verNum
 
@@ -134,10 +135,10 @@ entrify :: Settings -> [String] -> [String] -> String
 entrify ss fs es = intercalate "\n" fsEs
     where fsEs = zipWith combine fs' es
           fs'  = padding ss fs
-          combine f e = f ++ " : " ++ e
+          combine f e = f <> " : " <> e
 
 -- Right-pads strings according to the longest string in the group.
 padding :: Settings -> [String] -> [String]
-padding ss fs = map (\x -> postPad x ws longest) fs
+padding ss fs = (\x -> postPad x ws longest) <$> fs
     where ws      = whitespace $ langOf ss
-          longest = maximum $ map length fs
+          longest = maximum (length <$> fs)

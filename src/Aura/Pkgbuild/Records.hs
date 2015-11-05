@@ -25,6 +25,7 @@ module Aura.Pkgbuild.Records where
 
 import System.Directory (doesFileExist)
 import System.FilePath  ((</>))
+import Data.Foldable    (traverse_)
 
 import Aura.Pkgbuild.Base
 import Aura.Monad.Aura
@@ -45,7 +46,7 @@ hasPkgbuildStored :: String -> Aura Bool
 hasPkgbuildStored = liftIO . doesFileExist . pkgbuildPath 
 
 storePkgbuilds :: [Buildable] -> Aura ()
-storePkgbuilds = mapM_ (\p -> writePkgbuild (baseNameOf p) (pkgbuildOf p))
+storePkgbuilds = traverse_ (\p -> writePkgbuild (baseNameOf p) (pkgbuildOf p))
 
 readPkgbuild :: String -> Aura String
 readPkgbuild = liftIO . readFileUTF8 . pkgbuildPath

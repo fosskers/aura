@@ -26,6 +26,7 @@ module Data.Algorithm.Diff
 
 import Prelude hiding (pi)
 
+import Data.Foldable
 import Data.Array
 
 data DI = F | S | B deriving (Show, Eq)
@@ -46,8 +47,8 @@ instance Ord DL
 canDiag :: (a -> a -> Bool) -> [a] -> [a] -> Int -> Int -> Int -> Int -> Bool
 canDiag eq as bs lena lenb = \ i j ->
    if i < lena && j < lenb then (arAs ! i) `eq` (arBs ! j) else False
-    where arAs = listArray (0,lena - 1) as
-          arBs = listArray (0,lenb - 1) bs
+    where arAs = listArray (0, lena - 1) as
+          arBs = listArray (0, lenb - 1) bs
 
 dstep :: (Int -> Int -> Bool) -> [DL] -> [DL]
 dstep cd dls = hd:pairMaxes rst
@@ -70,8 +71,8 @@ addsnake cd dl
 
 lcs :: (a -> a -> Bool) -> [a] -> [a] -> [DI]
 lcs eq as bs = path . head . dropWhile (\dl -> poi dl /= lena || poj dl /= lenb) .
-            concat . iterate (dstep cd) . (:[]) . addsnake cd $
-            DL {poi=0,poj=0,path=[]}
+            fold . iterate (dstep cd) . (:[]) . addsnake cd $
+                DL {poi=0, poj=0, path=[]}
             where cd = canDiag eq as bs lena lenb
                   lena = length as; lenb = length bs
 
@@ -104,10 +105,10 @@ getGroupedDiffBy eq a b = go $ getDiffBy eq a b
           go [] = []
 
           goFirsts  (First x  : xs) = let (fs, rest) = goFirsts  xs in (x:fs, rest)
-          goFirsts  xs = ([],xs)
+          goFirsts  xs = ([], xs)
 
           goSeconds (Second x : xs) = let (fs, rest) = goSeconds xs in (x:fs, rest)
-          goSeconds xs = ([],xs)
+          goSeconds xs = ([], xs)
 
-          goBoth    (Both x y : xs) = let (fs, rest) = goBoth xs    in ((x,y):fs, rest)
-          goBoth    xs = ([],xs)
+          goBoth    (Both x y : xs) = let (fs, rest) = goBoth xs    in ((x, y):fs, rest)
+          goBoth    xs = ([], xs)

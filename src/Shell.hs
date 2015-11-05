@@ -38,6 +38,7 @@ import System.FilePath   ((</>))
 import System.Process    (readProcess, readProcessWithExitCode, rawSystem)
 import Control.Monad     (void)
 import Data.Maybe        (fromMaybe, fromJust)
+import Data.Monoid
 import Data.List         (intercalate)
 import System.Directory  ( getDirectoryContents
                          , setCurrentDirectory
@@ -63,17 +64,17 @@ ls :: FilePath -> IO [FilePath]
 ls = getDirectoryContents
 
 -- Would this work?
--- drop 2 `fmap` getDirectoryContents
+-- drop 2 <$> getDirectoryContents
 ls' :: FilePath -> IO [FilePath]
-ls' p = noDots `fmap` ls p
-    where noDots = filter (`notElem` [".",".."])
+ls' p = noDots <$> ls p
+    where noDots = filter (`notElem` [".", ".."])
 
 -- | Returns every file's full file path.
 ls'' :: FilePath -> IO [FilePath]
-ls'' p = map (p </>) `fmap` ls' p
+ls'' p = fmap (p </>) <$> ls' p
 
 mv :: FilePath -> FilePath -> IO ()
-mv f f' = catchJust unsupported (renameFile f f') (\_ -> cp f f' >> rm f)
+mv f f' = catchJust unsupported (renameFile f f') (\_ -> cp f f' *> rm f)
   where unsupported x@(IOError _ UnsupportedOperation _ _ _ _) = Just x
         unsupported _ = Nothing
 
@@ -84,14 +85,14 @@ cp :: FilePath -> FilePath -> IO ()
 cp = copyFile
 
 chown :: String -> FilePath -> [String] -> IO ()
-chown user path args = void $ quietShellCmd "chown" (args ++ [user,path])
+chown user path args = void $ quietShellCmd "chown" (args <> [user, path])
 
 ---------------
 -- ESCAPE CODES
 ---------------
 -- Code borrowed from `ansi-terminal` library by Max Bolingbroke.
 csi :: [Int] -> String -> String
-csi args code = "\ESC[" ++ intercalate ";" (map show args) ++ code
+csi args code = "\ESC[" <> intercalate ";" (show <$> args) <> code
 
 cursorUpLineCode :: Int -> String
 cursorUpLineCode n = csi [n] "F"
@@ -120,7 +121,7 @@ quietShellCmd :: String -> [String] -> IO String
 quietShellCmd cmd args = readProcess cmd args ""
 
 -- Return type is slightly more verbose than `quietShellCmd`.
-quietShellCmd' :: String -> [String] -> IO (ExitCode,String,String)
+quietShellCmd' :: String -> [String] -> IO (ExitCode, String, String)
 quietShellCmd' cmd args = readProcessWithExitCode cmd args ""
 
 -------------
@@ -136,7 +137,7 @@ didProcessFail = not . didProcessSucceed
 ------------------------
 -- ENVIRONMENT VARIABLES
 ------------------------
-type Environment = [(String,String)]
+type Environment = [(String, String)]
 
 getEnvVar :: String -> Environment -> Maybe String
 getEnvVar = lookup

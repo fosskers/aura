@@ -26,20 +26,22 @@ module Aura.Settings.Enable
 import System.Environment (getEnvironment)
 import System.Directory   (doesDirectoryExist)
 import Data.Maybe         (fromMaybe)
+import Data.Monoid
+import Data.Foldable
 
-import Aura.Languages (Language,langFromEnv)
+import Aura.Languages (Language, langFromEnv)
 import Aura.MakePkg   (makepkgConfFile)
 import Aura.Settings.Base
 import Aura.Pacman
 import Aura.Flags
 
-import Utilities (ifM2,nothing,readFileUTF8)
+import Utilities (ifte_, readFileUTF8)
 import Shell
 
 ---
 
-getSettings :: Maybe Language -> ([Flag],[String],[String]) -> IO Settings
-getSettings lang (auraFlags,input,pacOpts) = do
+getSettings :: Maybe Language -> ([Flag], [String], [String]) -> IO Settings
+getSettings lang (auraFlags, input, pacOpts) = do
   confFile    <- getPacmanConf
   environment <- getEnvironment
   pmanCommand <- getPacmanCmd environment $ noPowerPillStatus auraFlags
@@ -47,67 +49,67 @@ getSettings lang (auraFlags,input,pacOpts) = do
   buildPath'  <- checkBuildPath (buildPath auraFlags) (getCachePath confFile)
   let language   = checkLang lang environment
       buildUser' = fromMaybe (getTrueUser environment) (buildUser auraFlags)
-  return Settings { inputOf         = input
-                  , pacOptsOf       = pacOpts
-                  , otherOptsOf     = map show auraFlags
-                  , environmentOf   = environment
-                  , buildUserOf     = buildUser'
-                  , langOf          = language
-                  , pacmanCmdOf     = pmanCommand
-                  , editorOf        = getEditor environment
-                  , carchOf         = singleEntry makepkgConf "CARCH"
-                                      "COULDN'T READ $CARCH"
-                  , ignoredPkgsOf   = getIgnoredPkgs confFile ++
-                                      ignoredAuraPkgs auraFlags
-                  , makepkgFlagsOf  = makepkgFlags auraFlags
-                  , buildPathOf     = buildPath'
-                  , cachePathOf     = getCachePath confFile
-                  , logFilePathOf   = getLogFilePath confFile
-                  , sortSchemeOf    = sortSchemeStatus auraFlags
-                  , truncationOf    = truncationStatus auraFlags
-                  , beQuiet         = quietStatus auraFlags
-                  , suppressMakepkg = suppressionStatus auraFlags
-                  , delMakeDeps     = delMakeDepsStatus auraFlags
-                  , mustConfirm     = confirmationStatus auraFlags
-                  , neededOnly      = neededStatus auraFlags
-                  , mayHotEdit      = hotEditStatus auraFlags
-                  , diffPkgbuilds   = pbDiffStatus auraFlags
-                  , rebuildDevel    = rebuildDevelStatus auraFlags
-                  , useCustomizepkg = customizepkgStatus auraFlags
-                  , noPowerPill     = noPowerPillStatus auraFlags
-                  , keepSource      = keepSourceStatus auraFlags
-                  , buildABSDeps    = buildABSDepsStatus auraFlags
-                  , dryRun          = dryRunStatus auraFlags }
+  pure Settings { inputOf         = input
+                , pacOptsOf       = pacOpts
+                , otherOptsOf     = show <$> auraFlags
+                , environmentOf   = environment
+                , buildUserOf     = buildUser'
+                , langOf          = language
+                , pacmanCmdOf     = pmanCommand
+                , editorOf        = getEditor environment
+                , carchOf         = singleEntry makepkgConf "CARCH"
+                                    "COULDN'T READ $CARCH"
+                , ignoredPkgsOf   = getIgnoredPkgs confFile <>
+                                    ignoredAuraPkgs auraFlags
+                , makepkgFlagsOf  = makepkgFlags auraFlags
+                , buildPathOf     = buildPath'
+                , cachePathOf     = getCachePath confFile
+                , logFilePathOf   = getLogFilePath confFile
+                , sortSchemeOf    = sortSchemeStatus auraFlags
+                , truncationOf    = truncationStatus auraFlags
+                , beQuiet         = quietStatus auraFlags
+                , suppressMakepkg = suppressionStatus auraFlags
+                , delMakeDeps     = delMakeDepsStatus auraFlags
+                , mustConfirm     = confirmationStatus auraFlags
+                , neededOnly      = neededStatus auraFlags
+                , mayHotEdit      = hotEditStatus auraFlags
+                , diffPkgbuilds   = pbDiffStatus auraFlags
+                , rebuildDevel    = rebuildDevelStatus auraFlags
+                , useCustomizepkg = customizepkgStatus auraFlags
+                , noPowerPill     = noPowerPillStatus auraFlags
+                , keepSource      = keepSourceStatus auraFlags
+                , buildABSDeps    = buildABSDepsStatus auraFlags
+                , dryRun          = dryRunStatus auraFlags }
 
 debugOutput :: Settings -> IO ()
 debugOutput ss = do
   let yn a = if a then "Yes!" else "No."
       env  = environmentOf ss
-  mapM_ putStrLn [ "User              => " ++ getUser' env
-                 , "True User         => " ++ getTrueUser env
-                 , "Build User        => " ++ buildUserOf ss
-                 , "Using Sudo?       => " ++ yn (varExists "SUDO_USER" env)
-                 , "Pacman Flags      => " ++ unwords (pacOptsOf ss)
-                 , "Other Flags       => " ++ unwords (otherOptsOf ss)
-                 , "Other Input       => " ++ unwords (inputOf ss)
-                 , "Language          => " ++ show (langOf ss)
-                 , "Pacman Command    => " ++ pacmanCmdOf ss
-                 , "Editor            => " ++ editorOf ss
-                 , "$CARCH            => " ++ carchOf ss
-                 , "Ignored Pkgs      => " ++ unwords (ignoredPkgsOf ss)
-                 , "Build Path        => " ++ buildPathOf ss
-                 , "Pkg Cache Path    => " ++ cachePathOf ss
-                 , "Log File Path     => " ++ logFilePathOf ss
-                 , "Quiet?            => " ++ yn (beQuiet ss)
-                 , "Silent Building?  => " ++ yn (suppressMakepkg ss)
-                 , "Must Confirm?     => " ++ yn (mustConfirm ss)
-                 , "Needed only?      => " ++ yn (neededOnly ss)
-                 , "PKGBUILD editing? => " ++ yn (mayHotEdit ss) 
-                 , "Diff PKGBUILDs?   => " ++ yn (diffPkgbuilds ss)
-                 , "Rebuild Devel?    => " ++ yn (rebuildDevel ss)
-                 , "Use Customizepkg? => " ++ yn (useCustomizepkg ss)
-                 , "Forego PowerPill? => " ++ yn (noPowerPill ss)
-                 , "Keep source?      => " ++ yn (keepSource ss) ]
+  traverse_ putStrLn [ "User              => " <> getUser' env
+                     , "True User         => " <> getTrueUser env
+                     , "Build User        => " <> buildUserOf ss
+                     , "Using Sudo?       => " <> yn (varExists "SUDO_USER" env)
+                     , "Pacman Flags      => " <> unwords (pacOptsOf ss)
+                     , "Other Flags       => " <> unwords (otherOptsOf ss)
+                     , "Other Input       => " <> unwords (inputOf ss)
+                     , "Language          => " <> show (langOf ss)
+                     , "Pacman Command    => " <> pacmanCmdOf ss
+                     , "Editor            => " <> editorOf ss
+                     , "$CARCH            => " <> carchOf ss
+                     , "Ignored Pkgs      => " <> unwords (ignoredPkgsOf ss)
+                     , "Build Path        => " <> buildPathOf ss
+                     , "Pkg Cache Path    => " <> cachePathOf ss
+                     , "Log File Path     => " <> logFilePathOf ss
+                     , "Quiet?            => " <> yn (beQuiet ss)
+                     , "Silent Building?  => " <> yn (suppressMakepkg ss)
+                     , "Must Confirm?     => " <> yn (mustConfirm ss)
+                     , "Needed only?      => " <> yn (neededOnly ss)
+                     , "PKGBUILD editing? => " <> yn (mayHotEdit ss)
+                     , "Diff PKGBUILDs?   => " <> yn (diffPkgbuilds ss)
+                     , "Rebuild Devel?    => " <> yn (rebuildDevel ss)
+                     , "Use Customizepkg? => " <> yn (useCustomizepkg ss)
+                     , "Forego PowerPill? => " <> yn (noPowerPill ss)
+                     , "Keep source?      => " <> yn (keepSource ss) ]
 
 checkLang :: Maybe Language -> Environment -> Language
 checkLang Nothing env   = langFromEnv $ getLangVar env
@@ -115,4 +117,4 @@ checkLang (Just lang) _ = lang
 
 -- | Defaults to the cache path if no (legal) build path was given.
 checkBuildPath :: FilePath -> FilePath -> IO FilePath
-checkBuildPath bp = ifM2 (doesDirectoryExist bp) return nothing bp
+checkBuildPath bp bp' = ifte_ bp bp' <$> doesDirectoryExist bp

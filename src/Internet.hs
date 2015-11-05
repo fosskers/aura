@@ -40,9 +40,9 @@ saveUrlContents :: FilePath -> String -> IO (Maybe FilePath)
 saveUrlContents fpath url = do
   contents <- urlContents url
   case contents of
-    Nothing -> return Nothing
+    Nothing -> pure Nothing
     Just c  -> do
       handle <- openFile filePath WriteMode
-      L.hPutStr handle c >> hClose handle >> return (Just filePath)
+      L.hPutStr handle c *> hClose handle *> pure (Just filePath)
           where filePath = fpath </> file
-                (_,file) = splitFileName url
+                (_, file) = splitFileName url

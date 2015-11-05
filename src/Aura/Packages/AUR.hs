@@ -32,12 +32,13 @@ module Aura.Packages.AUR
     , pkgUrl
     ) where
 
-import           Control.Monad        ((>=>),join)
+import           Control.Monad        ((>=>), join)
 import           Data.Function        (on)
 import           Data.List            (sortBy)
+import           Data.Monoid          ((<>))
 import           Data.Maybe
 import qualified Data.Text            as T
-import qualified Data.Traversable     as Traversable (mapM)
+import           Data.Traversable     (traverse)
 import           Linux.Arch.Aur
 import           System.FilePath      ((</>))
 
@@ -55,7 +56,7 @@ aurLookup :: String -> Aura (Maybe Buildable)
 aurLookup name = fmap (makeBuildable name . T.unpack) <$> pkgbuild name
 
 aurRepo :: Repository
-aurRepo = Repository $ aurLookup >=> Traversable.mapM packageBuildable
+aurRepo = Repository $ aurLookup >=> traverse packageBuildable
 
 makeBuildable :: String -> Pkgbuild -> Buildable
 makeBuildable name pb = Buildable
@@ -63,7 +64,7 @@ makeBuildable name pb = Buildable
     , pkgbuildOf   = pb
     , isExplicit   = False
     , buildScripts = f }
-    where f fp = sourceTarball fp (T.pack name) >>= Traversable.mapM decompress
+    where f fp = sourceTarball fp (T.pack name) >>= traverse decompress
 
 isAurPackage :: String -> Aura Bool
 isAurPackage name = isJust <$> pkgbuild name
@@ -83,8 +84,8 @@ pkgUrl pkg = aurLink </> "packages" </> pkg
 sourceTarball :: FilePath            -- ^ Where to save the tarball.
               -> T.Text              -- ^ Package name.
               -> IO (Maybe FilePath) -- ^ Saved tarball location.
-sourceTarball path = fmap join . (info >=> Traversable.mapM f)
-    where f = saveUrlContents path . (++) aurLink . T.unpack . urlPathOf
+sourceTarball path = fmap join . (info >=> traverse f)
+    where f = saveUrlContents path . (aurLink <>) . T.unpack . urlPathOf
 
 ------------
 -- RPC CALLS

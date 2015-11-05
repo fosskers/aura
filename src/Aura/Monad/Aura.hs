@@ -40,7 +40,7 @@ import Aura.Settings.Base (Settings)
 ---
 
 {- The Aura Monad. Functions of note:
-return  : yields a successful value.
+pure    : yields a successful value.
 failure : yields an error and bypasses all other operations.
 catch   : catches an error.
 wrap    : If given an Either, rewraps it into an Aura Monad.
@@ -64,4 +64,4 @@ catch a h = catchError a h
 
 wrap :: Either String a -> Aura a
 wrap (Left m)  = failure m
-wrap (Right a) = return a
+wrap (Right a) = pure a

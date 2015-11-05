@@ -45,7 +45,7 @@ quietShellCmd :: String -> [String] -> Aura String
 quietShellCmd cmd args = tripleSnd <$> liftIO (S.quietShellCmd' cmd args)
 
 -- More verbose return type.
-quietShellCmd' :: String -> [String] -> Aura (ExitCode,String,String)
+quietShellCmd' :: String -> [String] -> Aura (ExitCode, String, String)
 quietShellCmd' cmd args = liftIO $ S.quietShellCmd' cmd args
 
 -- Should it report _what_ call failed?
@@ -53,5 +53,5 @@ checkExitCode :: ExitCode -> Aura ()
 checkExitCode = checkExitCode' ""
 
 checkExitCode' :: String -> ExitCode -> Aura ()
-checkExitCode' s ec | S.didProcessSucceed ec = return ()
+checkExitCode' s ec | S.didProcessSucceed ec = pure ()
                     | otherwise              = failure s

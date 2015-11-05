@@ -22,6 +22,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Packages.Repository ( pacmanRepo ) where
 
 import Data.Maybe
+import Data.Monoid
 import Text.Regex.PCRE ((=~))
 
 import Aura.Core
@@ -49,13 +50,13 @@ packageRepo name version = Package
 -- Functions like this are why we need libalpm.
 resolveName :: String -> Aura String
 resolveName name =
-  lines <$> pacmanOutput ["-Ssq", "^" ++ name ++ "$"] >>= chooseProvider name
+  lines <$> pacmanOutput ["-Ssq", "^" <> name <> "$"] >>= chooseProvider name
 
 -- | Choose a providing package, favoring installed packages.
 chooseProvider :: String -> [String] -> Aura String
-chooseProvider name []  = return name
-chooseProvider _    [p] = return p
-chooseProvider _    ps  = fromMaybe (head ps) <$> findM isInstalled ps
+chooseProvider name []        = pure name
+chooseProvider _    [p]       = pure p
+chooseProvider _    ps@(p:_)  = fromMaybe p <$> findM isInstalled ps
 
 -- | The most recent version of a package, if it exists in the respositories.
 mostRecentVersion :: String -> Aura (Maybe String)
@@ -65,6 +66,6 @@ mostRecentVersion s = extractVersion <$> pacmanOutput ["-Si", s]
 extractVersion :: String -> Maybe String
 extractVersion ""   = Nothing
 extractVersion info = Just $ tripleThrd match
-    where match     = thirdLine =~ ": " :: (String,String,String)
+    where match     = thirdLine =~ ": " :: (String, String, String)
           thirdLine = allLines !! 2  -- Version num is always the third line.
           allLines  = lines info

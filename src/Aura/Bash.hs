@@ -42,8 +42,8 @@ namespace :: String -> String -> Aura Namespace
 namespace pn pb = do
   carch <- ((: []) . NoQuote . carchOf) <$> ask
   case namespace' carch pn pb of
-    Left e   -> liftIO (print e) >> failure "PKGBUILD parse failed."
-    Right ns -> return ns
+    Left e   -> liftIO (print e) *> failure "PKGBUILD parse failed."
+    Right ns -> pure ns
 
 namespace' :: [BashString] -> String -> String -> Either ParseError Namespace
 namespace' ca pn pb =

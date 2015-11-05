@@ -59,6 +59,8 @@ import System.Directory (removeDirectoryRecursive, createDirectory)
 import Text.Regex.PCRE  ((=~))
 import Control.Monad
 import Data.Maybe       (catMaybes)
+import Data.Monoid      ((<>))
+import Data.Foldable    (traverse_)
 
 import           Aura.Install (InstallOptions(..))
 import qualified Aura.Install as I
@@ -78,7 +80,7 @@ import Utilities (whenM)
 installOptions :: Aura InstallOptions
 installOptions = do
     depsRepo <- absDepsRepo
-    return InstallOptions
+    pure InstallOptions
         { label         = "ABS"
         , installLookup = absLookup
         , repository    = depsRepo
@@ -91,22 +93,22 @@ install pacOpts ps = do
 
 -- | Sync given packages to the local ABS Tree.
 addToTree :: [String] -> Aura ()
-addToTree = mapM_ $ \p ->
-    syncRepo p >>= maybe (return ()) (\repo -> singleSync repo p)
+addToTree = traverse_ $ \p ->
+    syncRepo p >>= maybe (pure ()) (\repo -> singleSync repo p)
 
 -- | Get info about the specified package (-i)
 absInfo :: [String] -> Aura ()
 absInfo ps = do
     tree <- absTree
-    infos <- catMaybes <$> mapM (absInfoLookup tree) ps
-    mapM_ displayAbsPkgInfo infos
+    infos <- catMaybes <$> traverse (absInfoLookup tree) ps
+    traverse_ displayAbsPkgInfo infos
 
 -- | Search ABS for any packages matching the given patterns (-s)
 absSearch :: [String] -> Aura ()
 absSearch pat = do
     tree <- absTree
     infos <- absSearchLookup tree pat'
-    mapM_ (liftIO . putStrLn . renderSearch pat') infos
+    traverse_ (liftIO . putStrLn . renderSearch pat') infos
   where
     pat' = unwords pat
 
@@ -120,7 +122,7 @@ displayPkgbuild :: [String] -> Aura ()
 displayPkgbuild ps = flip I.displayPkgbuild ps $ \ps' -> do
     tree <- absTree
     forM ps' $ \p -> case pkgRepo tree p of
-                       Nothing   -> return Nothing
+                       Nothing   -> pure Nothing
                        Just repo -> Just <$> absPkgbuild repo p
 
 displayPkgDeps :: [String] -> Aura ()
@@ -132,8 +134,8 @@ displayAbsPkgInfo :: PkgInfo -> Aura ()
 displayAbsPkgInfo pkg = ask >>= liftIO . putStrLn . renderPkgInfo pkg
 
 renderPkgInfo :: PkgInfo -> Settings -> String
-renderPkgInfo pkg ss = entrify ss fields (map ($ pkg) entries)
-  where fields  = map bForeground . absInfoFields . langOf $ ss
+renderPkgInfo pkg ss = entrify ss fields (($ pkg) <$> entries)
+  where fields  = fmap bForeground . absInfoFields . langOf $ ss
         entries = [ magenta . repoOf
                   , bForeground . nameOf
                   , trueVersionOf
@@ -143,9 +145,9 @@ renderPkgInfo pkg ss = entrify ss fields (map ($ pkg) entries)
                   ]
 
 renderSearch :: String -> PkgInfo -> String
-renderSearch pat pkg = repo ++ "/" ++ n ++ " " ++ v ++ " \n    " ++ d
-    where c cl cs = case cs =~ ("(?i)" ++ pat) of
-                      (b,m,a) -> cl b ++ bCyan m ++ cl a
+renderSearch pat pkg = repo <> "/" <> n <> " " <> v <> " \n    " <> d
+    where c cl cs = case cs =~ ("(?i)" <> pat) of
+                      (b, m, a) -> cl b <> bCyan m <> cl a
           repo = magenta $ repoOf pkg
           n    = c bForeground $ nameOf pkg
           v    = trueVersionOf pkg

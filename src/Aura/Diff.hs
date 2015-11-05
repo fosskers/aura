@@ -22,7 +22,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -- | Coloured diff output, similar to @diff -u@ or @git diff@.
 module Aura.Diff ( unidiff ) where
 
-import Data.List           (mapAccumL)
+import Data.Traversable    (mapAccumL)
+import Data.Monoid         ((<>))
 
 import Data.Algorithm.Diff
 
@@ -123,13 +124,13 @@ hunk n bs              = go id . trimLast . trimHead $ bs
 
 showUnified :: String -> String -> [Hunk] -> [String]
 showUnified _    _  [] = []
-showUnified from to hs = header ++ concatMap showHunk hs
-  where header = map bForeground ["--- " ++ from, "+++ " ++ to]
+showUnified from to hs = header <> foldMap showHunk hs
+  where header = bForeground <$> ["--- " <> from, "+++ " <> to]
 
 showHunk :: Hunk -> [String]
-showHunk h = header : concatMap showBlock h
+showHunk h = header : foldMap showBlock h
   where (a, b) = hunkRanges h
-        header = cyan $ "@@ -" ++ showRange a ++ " +" ++ showRange b ++ " @@"
+        header = cyan $ "@@ -" <> showRange a <> " +" <> showRange b <> " @@"
 
 hunkRanges :: Hunk -> (LineRange, LineRange)
 hunkRanges [] = error "hunkRanges: empty hunk"
@@ -139,10 +140,10 @@ hunkRanges xs = (LineRange a a', LineRange b b')
         mapRanges f c = (f $ firstRange c, f $ secondRange c)
 
 showRange :: LineRange -> String
-showRange r = show (start r) ++ "," ++ show (rangeLength r)
+showRange r = show (start r) <> "," <> show (rangeLength r)
 
 showBlock :: Block -> [String]
-showBlock b = map (f . (c :)) $ content b
+showBlock b = f . (c :) <$> content b
   where (f, c) = case tag b of
                    F -> (red  , '-')
                    S -> (green, '+')

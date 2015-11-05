@@ -25,6 +25,8 @@ module Aura.Logo where
 
 import Control.Concurrent (threadDelay)
 import System.IO          (stdout, hFlush)
+import Data.Monoid        ((<>))
+import Data.Foldable      (traverse_, fold)
 
 import Aura.Colour.Text (yellow)
 
@@ -37,19 +39,19 @@ data MouthState = Open | Closed deriving (Eq)
 
 -- Taken from: figlet -f small "aura"
 auraLogo :: String
-auraLogo = " __ _ _  _ _ _ __ _ \n" ++ 
-           "/ _` | || | '_/ _` |\n" ++
+auraLogo = " __ _ _  _ _ _ __ _ \n" <>
+           "/ _` | || | '_/ _` |\n" <>
            "\\__,_|\\_,_|_| \\__,_|"
 
 openMouth :: [String]
-openMouth = map yellow
+openMouth = yellow <$>
             [ " .--."
             , "/ _.-'"
             , "\\  '-."
             , " '--'" ]
 
 closedMouth :: [String]
-closedMouth = map yellow
+closedMouth = yellow <$>
               [ " .--."
               , "/ _..\\"
               , "\\  ''/"
@@ -62,15 +64,15 @@ pill = [ ""
        , "" ]
 
 takeABite :: Int -> IO ()
-takeABite pad = drawMouth Closed >> drawMouth Open
+takeABite pad = drawMouth Closed *> drawMouth Open
     where drawMouth mouth = do
-            mapM_ putStrLn $ renderPacmanHead pad mouth
+            traverse_ putStrLn $ renderPacmanHead pad mouth
             raiseCursorBy 4
             hFlush stdout
             threadDelay 125000
 
 drawPills :: Int -> IO ()
-drawPills numOfPills = mapM_ putStrLn pills
+drawPills numOfPills = traverse_ putStrLn pills
     where pills = renderPills numOfPills
 
 raiseCursorBy :: Int -> IO ()
@@ -80,20 +82,20 @@ raiseCursorBy' :: Int -> String
 raiseCursorBy' = cursorUpLineCode
 
 clearGrid :: IO ()
-clearGrid = putStr blankLines >> raiseCursorBy 4
-    where blankLines = concat . replicate 4 . padString 23 $ "\n"
+clearGrid = putStr blankLines *> raiseCursorBy 4
+    where blankLines = fold . replicate 4 . padString 23 $ "\n"
 
 renderPill :: Int -> [String]
-renderPill pad = map (padString pad) pill
+renderPill pad = padString pad <$> pill
 
 renderPills :: Int -> [String]
 renderPills numOfPills = take numOfPills pillPostitions >>= render
-    where pillPostitions = [17,12,7]
-          render pos = renderPill pos ++ [raiseCursorBy' 5]
+    where pillPostitions = [17, 12, 7]
+          render pos = renderPill pos <> [raiseCursorBy' 5]
 
 renderPacmanHead :: Int -> MouthState -> [String]
-renderPacmanHead pad Open   = map (padString pad) openMouth
-renderPacmanHead pad Closed = map (padString pad) closedMouth
+renderPacmanHead pad Open   = padString pad <$> openMouth
+renderPacmanHead pad Closed = padString pad <$> closedMouth
 
 padString :: Int -> String -> String
 padString pad cs = prePad cs ' ' (pad + length cs)

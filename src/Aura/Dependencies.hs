@@ -29,6 +29,7 @@ import           Control.Monad.State
 import           Data.Graph
 import           Data.Maybe
 import qualified Data.Map as Map
+import           Data.Foldable
 
 import           Aura.Core
 import           Aura.Conflicts
@@ -42,10 +43,10 @@ import           Utilities           (whenM, tripleFst)
 
 resolveDeps :: Repository -> [Package] -> Aura [Package]
 resolveDeps repo ps =
-    sortInstall . Map.elems <$> execStateT (mapM_ addPkg ps) Map.empty
+    sortInstall . Map.elems <$> execStateT (traverse_ addPkg ps) Map.empty
   where
     addPkg pkg = whenM (isNothing <$> getPkg (pkgNameOf pkg)) $ do
-        mapM_ addDep (pkgDepsOf pkg)
+        traverse_ addDep (pkgDepsOf pkg)
         modify $ Map.insert (pkgNameOf pkg) pkg
 
     addDep dep = do
@@ -58,7 +59,7 @@ resolveDeps repo ps =
         mpkg <- lift $ repoLookup repo name
         case mpkg of
             Nothing  -> lift $ missingPkg name
-            Just pkg -> lift (checkConflicts pkg dep) >> addPkg pkg
+            Just pkg -> lift (checkConflicts pkg dep) *> addPkg pkg
       where name = depNameOf dep
 
     getPkg p = gets $ Map.lookup p
@@ -67,6 +68,6 @@ missingPkg :: String -> Aura a
 missingPkg name = asks langOf >>= failure . missingPkg_1 name
 
 sortInstall :: [Package] -> [Package]
-sortInstall ps = reverse . map (tripleFst . n) . topSort $ g
-  where (g,n,_)    = graphFromEdges $ map toEdge ps
-        toEdge pkg = (pkg, pkgNameOf pkg, map depNameOf $ pkgDepsOf pkg)
+sortInstall ps = reverse . fmap (tripleFst . n) . topSort $ g
+  where (g, n, _)    = graphFromEdges $ toEdge <$> ps
+        toEdge pkg = (pkg, pkgNameOf pkg, depNameOf <$> pkgDepsOf pkg)

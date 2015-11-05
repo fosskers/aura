@@ -26,8 +26,9 @@ module Aura.Commands.B
 
 import System.FilePath ((</>))
 import Data.Char       (isDigit)
+import Data.Foldable   (traverse_)
 
-import Aura.Utils (scoldAndFail,optionalPrompt)
+import Aura.Utils (scoldAndFail, optionalPrompt)
 import Aura.Core  (warn)
 import Aura.Monad.Aura
 import Aura.Languages
@@ -50,4 +51,4 @@ cleanStates' n = do
      then warn cleanStates_3
      else do
        states <- getStateFiles
-       liftIO . mapM_ rm . map (stateCache </>) . drop n . reverse $ states
+       liftIO . traverse_ rm . fmap (stateCache </>) . drop n . reverse $ states

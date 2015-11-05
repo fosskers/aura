@@ -32,7 +32,9 @@ module Aura.Install
 import Control.Monad (filterM, unless, (>=>))
 import Data.Either   (partitionEithers)
 import Data.List     (sort, (\\), intersperse, partition)
+import Data.Foldable (traverse_)
 import Data.Maybe    (catMaybes)
+import Data.Monoid   ((<>))
 
 import Aura.Pkgbuild.Base
 import Aura.Pkgbuild.Records
@@ -76,10 +78,10 @@ install opts pacOpts pkgs = ask >>= \ss ->
 
 install' :: InstallOptions -> [String] -> [String] -> Aura ()
 install' opts pacOpts pkgs = ask >>= \ss -> do
-  unneeded <- if neededOnly ss then filterM isInstalled pkgs else return []
-  let (ignored,notIgnored) = partition (`elem` ignoredPkgsOf ss) pkgs
+  unneeded <- if neededOnly ss then filterM isInstalled pkgs else pure []
+  let (ignored, notIgnored) = partition (`elem` ignoredPkgsOf ss) pkgs
   installAnyway <- confirmIgnored ignored
-  let toInstall  = (notIgnored ++ installAnyway) \\ unneeded
+  let toInstall  = (notIgnored <> installAnyway) \\ unneeded
   -- reportIgnoredPackages ignored  -- 2014 December  7 @ 14:52
   reportUnneededPackages unneeded
   toBuild <- lookupPkgs (installLookup opts) toInstall >>= pkgbuildDiffs
@@ -90,7 +92,7 @@ install' opts pacOpts pkgs = ask >>= \ss -> do
      else do
     notify install_5
     allPkgs <- catch (depsToInstall (repository opts) toBuild) depCheckFailure
-    let (repoPkgs,buildPkgs) = partitionPkgs allPkgs
+    let (repoPkgs, buildPkgs) = partitionPkgs allPkgs
     reportPkgsToInstall (label opts) repoPkgs buildPkgs
     unless (dryRun ss) $ do
       continue <- optionalPrompt install_3
@@ -99,7 +101,7 @@ install' opts pacOpts pkgs = ask >>= \ss -> do
          else do
         repoInstall pacOpts repoPkgs
         storePkgbuilds buildPkgs
-        mapM_ (buildAndInstall pacOpts) buildPkgs
+        traverse_ (buildAndInstall pacOpts) buildPkgs
 
 confirmIgnored :: [String] -> Aura [String]
 confirmIgnored = filterM (optionalPrompt . confirmIgnored_1)
@@ -109,21 +111,21 @@ lookupPkgs :: (String -> Aura (Maybe Buildable))
            -> [String]
            -> Aura [Buildable]
 lookupPkgs f pkgs = do
-    (nons,okay) <- partitionEithers <$> mapM lookupBuild pkgs
+    (nons, okay) <- partitionEithers <$> traverse lookupBuild pkgs
     reportNonPackages nons
-    return $ map markExplicit okay
+    pure $ markExplicit <$> okay
   where lookupBuild pkg = maybe (Left pkg) Right <$> f pkg
         markExplicit b  = b { isExplicit = True }
 
 depsToInstall :: Repository -> [Buildable] -> Aura [Package]
-depsToInstall repo = mapM packageBuildable >=> resolveDeps repo
+depsToInstall repo = traverse packageBuildable >=> resolveDeps repo
 
 depCheckFailure :: String -> Aura a
-depCheckFailure m = scold install_1 >> failure m
+depCheckFailure m = scold install_1 *> failure m
 
 repoInstall :: [String] -> [String] -> Aura ()
-repoInstall _       [] = return ()
-repoInstall pacOpts ps = pacman $ ["-S","--asdeps"] ++ pacOpts ++ ps
+repoInstall _       [] = pure ()
+repoInstall pacOpts ps = pacman $ ["-S", "--asdeps"] <> pacOpts <> ps
 
 buildAndInstall :: [String] -> Buildable -> Aura ()
 buildAndInstall pacOpts pkg = buildPackages [pkg] >>= installPkgFiles pacOpts'
@@ -134,9 +136,9 @@ buildAndInstall pacOpts pkg = buildPackages [pkg] >>= installPkgFiles pacOpts'
 ------------
 -- | Display dependencies.
 displayPkgDeps :: InstallOptions -> [String] -> Aura ()
-displayPkgDeps _ [] = return ()
+displayPkgDeps _ [] = pure ()
 displayPkgDeps opts ps = asks beQuiet >>= \quiet -> do
-    bs   <- catMaybes <$> mapM (installLookup opts) ps
+    bs   <- catMaybes <$> traverse (installLookup opts) ps
     pkgs <- depsToInstall (repository opts) bs
     reportDeps quiet (partitionPkgs pkgs)
   where reportDeps True  = uncurry reportListOfDeps
@@ -145,13 +147,13 @@ displayPkgDeps opts ps = asks beQuiet >>= \quiet -> do
 reportPkgsToInstall :: String -> [String] -> [Buildable] -> Aura ()
 reportPkgsToInstall la rps bps = asks langOf >>= \lang -> do
   pl (reportPkgsToInstall_1    lang) (sort rps)
-  pl (reportPkgsToInstall_2 la lang) (sort $ map baseNameOf bps)
+  pl (reportPkgsToInstall_2 la lang) (sort $ baseNameOf <$> bps)
       where pl = printList green cyan
 
 reportListOfDeps :: [String] -> [Buildable] -> Aura ()
 reportListOfDeps rps bps = do
-  liftIO $ mapM_ putStrLn (sort rps)
-  liftIO $ mapM_ putStrLn (sort $ map baseNameOf bps)
+  liftIO $ traverse_ putStrLn (sort rps)
+  liftIO $ traverse_ putStrLn (sort (baseNameOf <$> bps))
 
 reportNonPackages :: [String] -> Aura ()
 reportNonPackages = badReport reportNonPackages_1
@@ -165,10 +167,10 @@ reportUnneededPackages pkgs = asks langOf >>= \lang ->
   printList yellow cyan (reportUnneededPackages_1 lang) pkgs
 
 pkgbuildDiffs :: [Buildable] -> Aura [Buildable]
-pkgbuildDiffs [] = return []
+pkgbuildDiffs [] = pure []
 pkgbuildDiffs ps = ask >>= check
-    where check ss | not $ diffPkgbuilds ss = return ps
-                   | otherwise = mapM_ displayDiff ps >> return ps
+    where check ss | not $ diffPkgbuilds ss = pure ps
+                   | otherwise = traverse_ displayDiff ps *> pure ps
           displayDiff p = do
             let name = baseNameOf p
             isStored <- hasPkgbuildStored name
@@ -187,4 +189,4 @@ displayPkgbuild :: ([String] -> Aura [Maybe String]) -> [String] -> Aura ()
 displayPkgbuild getPBs ps = do
   let line = yellow "\n#========== NEXT PKGBUILD ==========#\n"
   pbs <- intersperse line . catMaybes <$> getPBs ps
-  mapM_ (liftIO . putStrLn) pbs
+  traverse_ (liftIO . putStrLn) pbs

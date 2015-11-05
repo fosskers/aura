@@ -40,8 +40,10 @@ module Bash.Simplify
     , simpNamespace ) where
 
 import Control.Monad.Trans.State.Lazy
+import Data.Foldable
 import Text.Regex.PCRE ((=~))
 import Data.Maybe      (fromMaybe)
+import Data.Monoid
 
 import Bash.Base
 
@@ -49,7 +51,7 @@ import Bash.Base
 
 -- | Simplify a parsed Bash script.
 -- The Namespace _can_ be altered partway through.
-simplify :: Namespace -> Script -> (Script,Namespace)
+simplify :: Namespace -> Script -> (Script, Namespace)
 simplify ns sc = runState (replace sc) ns
 
 simpScript :: Namespace -> Script -> Script
@@ -59,44 +61,44 @@ simpNamespace :: Namespace -> Script -> Namespace
 simpNamespace ns = snd . simplify ns
 
 replace :: [Field] -> State Namespace [Field]
-replace []     = return []
-replace (IfBlock i : rs) = replaceIf i >>= \fs -> (fs ++) `fmap` replace rs
-replace (f:fs) = replace' f >>= \f' -> (f' :) `fmap` replace fs
+replace []     = pure []
+replace (IfBlock i : rs) = replaceIf i >>= \fs -> (fs <>) <$> replace rs
+replace (f:fs) = replace' f >>= \f' -> (f' :) <$> replace fs
 
 replace' :: Field -> State Namespace Field
-replace' (Function n fs) = Function n `fmap` replace fs
-replace' (Command  n bs) = Command  n `fmap` mapM replaceStr bs
+replace' (Function n fs) = Function n <$> replace fs
+replace' (Command  n bs) = Command  n <$> traverse replaceStr bs
 replace' (Variable n bs) = do
-  bs' <- mapM replaceStr bs
+  bs' <- traverse replaceStr bs
   get >>= put . insert n bs'  -- Update the Namespace.
-  return $ Variable n bs'
-replace' somethingElse = return somethingElse
+  pure $ Variable n bs'
+replace' somethingElse = pure somethingElse
 
 replaceStr :: BashString -> State Namespace BashString
-replaceStr s@(SingleQ _) = return s
-replaceStr (DoubleQ s)   = DoubleQ `fmap` replaceStr' s
-replaceStr (NoQuote s)   = NoQuote `fmap` replaceStr' s
-replaceStr (Backtic f)   = Backtic `fmap` replace' f
+replaceStr s@(SingleQ _) = pure s
+replaceStr (DoubleQ s)   = DoubleQ <$> replaceStr' s
+replaceStr (NoQuote s)   = NoQuote <$> replaceStr' s
+replaceStr (Backtic f)   = Backtic <$> replace' f
 
 -- | Doesn't yet support ${foo[...]}
 replaceStr' :: String -> State Namespace String
 replaceStr' s = get >>= \ns ->
-   case s =~ "\\${?[\\w]+}?" :: (String,String,String) of
-     (_,"",_) -> return s
-     (b,m,a)  -> ((b ++ replaced) ++) `fmap` replaceStr' a
-         where replaced = fromMaybe m (head `fmap` getVar ns m')
+   case s =~ "\\${?[\\w]+}?" :: (String, String, String) of
+     (_, "", _) -> pure s
+     (b, m, a)  -> ((b <> replaced) <>) <$> replaceStr' a
+         where replaced = fromMaybe m (head <$> getVar ns m')
                m'       = filter (`notElem` "${}") m
 
 -- | An `if` statement can have an [el]if or [el]se, but it might not.
 replaceIf :: BashIf -> State Namespace [Field]
 replaceIf i@(If comp fs el) = do
   let (op, l, r) = deComp comp
-  left  <- fromBashString `fmap` replaceStr l
-  right <- fromBashString `fmap` replaceStr r
+  left  <- fromBashString <$> replaceStr l
+  right <- fromBashString <$> replaceStr r
   if left `op` right
      then replace fs
      else case el of
-            Nothing  -> return [IfBlock i]
+            Nothing  -> pure [IfBlock i]
             Just el' -> replaceIf el'
 replaceIf (Else fs) = replace fs
 
