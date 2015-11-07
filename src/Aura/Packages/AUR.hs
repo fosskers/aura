@@ -46,7 +46,6 @@ import           Aura.Pkgbuild.Base
 import           Aura.Settings.Base
 import           Aura.Core
 
-import           Utilities            (decompress)
 import           Internet
 
 ---
@@ -63,7 +62,7 @@ makeBuildable name pb = Buildable
     , pkgbuildOf   = pb
     , isExplicit   = False
     , buildScripts = f }
-    where f fp = sourceTarball fp (T.pack name) >>= Traversable.mapM decompress
+  where f fp = gitClone fp $ "https://aur.archlinux.org/" ++ name ++ ".git"
 
 isAurPackage :: String -> Aura Bool
 isAurPackage name = isJust <$> pkgbuild name

@@ -96,6 +96,7 @@ executable aura
                        parsec,
                        process,
                        filepath,
+                       hlibgit2,
                        directory,
                        temporary,
                        containers,
