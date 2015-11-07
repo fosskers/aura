@@ -23,6 +23,7 @@ module Bash.Base where
 
 import qualified Data.Map.Lazy as M
 import Data.Either
+import Data.Foldable
 
 ---
 
@@ -83,7 +84,7 @@ getVar ns s = case M.lookup s ns of
 
 fromBashString :: BashString -> [String]
 fromBashString (SingleQ s) = [s]
-fromBashString (DoubleQ l) = rights l
+fromBashString (DoubleQ l) = [fold $ rights l]
 fromBashString (NoQuote l) = rights l
 fromBashString (Backtic c) = ['`' : unwords (fromCommand c) ++ "`"]
 
