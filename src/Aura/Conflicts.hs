@@ -21,6 +21,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Conflicts where
 
+import Data.Monoid ((<>))
 import Data.Foldable (traverse_)
 import Text.Regex.PCRE ((=~))
 
@@ -62,7 +63,7 @@ isVersionConflict :: VersionDemand -> String -> Bool
 isVersionConflict Anything _     = False
 isVersionConflict (LessThan r) c = version c >= version r
 isVersionConflict (MoreThan r) c = version c <= version r
-isVersionConflict (MustBe   r) c = not $ c =~ ('^' : r)
+isVersionConflict (MustBe   r) c = not $ c =~ ("^" <> r)
 isVersionConflict (AtLeast  r) c | version c > version r = False
                                  | isVersionConflict (MustBe r) c = True
                                  | otherwise = False

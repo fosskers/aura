@@ -129,9 +129,9 @@ allLanguages = [English ..]
 bt :: String -> String
 bt cs = "`" <> cyan cs <> "`"
 
-whitespace :: Language -> Char
-whitespace Japanese = '　'  -- \12288
-whitespace _ = ' '          -- \32
+whitespace :: Language -> String
+whitespace Japanese = "　"  -- \12288
+whitespace _ = " "          -- \32
 
 langFromEnv :: String -> Language
 langFromEnv = \case

@@ -105,10 +105,12 @@ splitName = fst . splitNameAndVer
 splitVer :: String -> String
 splitVer = snd . splitNameAndVer
 
-groupPkgs :: [([a], [b], [c])] -> ([a], [b], [c])
-groupPkgs = foldl groupPkgs' ([], [], [])
+groupPkgs :: (Foldable t, Monoid a, Monoid b, Monoid c) =>
+             t (a, b, c) -> (a, b, c)
+groupPkgs = foldl groupPkgs' (mempty, mempty, mempty)
 
-groupPkgs' :: ([a], [b], [c]) -> ([a], [b], [c]) -> ([a], [b], [c])
+groupPkgs' :: (Monoid a, Monoid b, Monoid c) =>
+              (a, b, c) -> (a, b, c) -> (a, b, c)
 groupPkgs' (ps, as, os) (p, a, o) = (p <> ps, a <> as, o <> os)
 
 sortPkgs :: [String] -> [String]

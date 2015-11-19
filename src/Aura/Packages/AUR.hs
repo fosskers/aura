@@ -38,7 +38,6 @@ import           Data.List            (sortBy)
 import           Data.Monoid          ((<>))
 import           Data.Maybe
 import qualified Data.Text            as T
-import           Data.Traversable     (traverse)
 import           Linux.Arch.Aur
 import           System.FilePath      ((</>))
 

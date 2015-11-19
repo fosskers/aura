@@ -82,10 +82,7 @@ replaceStr (Backtic f)   = Backtic <$> replace' f
 
 expandStr :: [Either BashExpansion String] -> State Namespace [String]
 expandStr [] = pure []
-expandStr (x:xs) = do
-  lhs <- expandStr' x
-  rhs <- expandStr xs
-  pure $ lhs <> rhs
+expandStr (x:xs) = (<>) <$> expandStr' x <*> expandStr xs
 
 expandStr' :: Either BashExpansion String -> State Namespace [String]
 expandStr' (Right s) = pure [s]

@@ -55,10 +55,10 @@ data VersionDemand = LessThan String
                      deriving (Eq)
 
 instance Show VersionDemand where
-    show (LessThan v) = '<' : v
+    show (LessThan v) = "<" <> v
     show (AtLeast v)  = ">=" <> v
-    show (MoreThan v) = '>' : v
-    show (MustBe  v)  = '=' : v
+    show (MoreThan v) = ">" <> v
+    show (MustBe  v)  = "=" <> v
     show Anything     = ""
 
 -- | A package to be installed.
@@ -138,7 +138,7 @@ trueRoot action = ask >>= \ss ->
 -- | A list of non-prebuilt packages installed on the system.
 foreignPackages :: Aura [(String, String)]
 foreignPackages = (fmap fixName . lines) <$> pacmanOutput ["-Qm"]
-    where fixName = hardBreak (== ' ')
+    where fixName = hardBreak (' ' ==)
 
 orphans :: Aura [String]
 orphans = lines <$> pacmanOutput ["-Qqdt"]

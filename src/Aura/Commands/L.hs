@@ -69,7 +69,7 @@ renderLogLookUp ss logFile pkg = entrify ss fields entries <> "\n" <> recent
           matches     = searchLines (" " <> pkg <> " \\(") $ lines logFile
           installDate = head matches =~ "\\[[-:0-9 ]+\\]"
           upgrades    = length $ searchLines " upgraded " matches
-          recent      = unlines . fmap (' ':) . takeLast 5 $ matches
+          recent      = unlines . fmap (" " <>) . takeLast 5 $ matches
           takeLast n  = reverse . take n . reverse
           entries     = [ pkg
                         , installDate

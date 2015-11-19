@@ -143,8 +143,8 @@ showRange :: LineRange -> String
 showRange r = show (start r) <> "," <> show (rangeLength r)
 
 showBlock :: Block -> [String]
-showBlock b = f . (c :) <$> content b
+showBlock b = f . (c <>) <$> content b
   where (f, c) = case tag b of
-                   F -> (red  , '-')
-                   S -> (green, '+')
-                   B -> (id   , ' ')
+                   F -> (red  , "-")
+                   S -> (green, "+")
+                   B -> (id   , " ")
