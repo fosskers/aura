@@ -155,7 +155,7 @@ renderSearch :: Settings -> String -> (AurInfo, Bool) -> String
 renderSearch ss r (i, e) = searchResult
     where searchResult = if beQuiet ss then sparseInfo else verboseInfo
           sparseInfo   = T.unpack $ aurNameOf i
-          verboseInfo  = repo <> n <> " " <> v <> " (" <> l <> " / " <> p <>
+          verboseInfo  = repo <> n <> " " <> v <> " (" <> l <> " | " <> p <>
                          ")" <> (if e then s else "") <> "\n    " <> d
           c cl cs = case cs =~ ("(?i)" <> r) of
                       (b, m, a) -> cl b <> bCyan m <> cl a
