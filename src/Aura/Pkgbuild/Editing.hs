@@ -26,7 +26,6 @@ module Aura.Pkgbuild.Editing
     , customizepkg ) where
 
 import System.FilePath ((</>))
-import Control.Monad   (void)
 
 import Aura.Settings.Base
 import Aura.Monad.Aura
@@ -34,7 +33,7 @@ import Aura.Languages
 import Aura.Utils
 import Aura.Core
 
-import Utilities (openEditor, ifFile, ifM, nothing, readFileUTF8)
+import Utilities (openEditor, ifte_, ifFile, nothing, readFileUTF8)
 import Shell     (getEditor, quietShellCmd)
 
 ---
@@ -42,31 +41,31 @@ import Shell     (getEditor, quietShellCmd)
 customizepkgPath :: FilePath
 customizepkgPath = "/etc/customizepkg.d/"
 
-edit :: (FilePath -> IO ()) -> Buildable -> Aura Buildable
+edit :: (FilePath -> IO a) -> Buildable -> Aura Buildable
 edit f p = do
   newPB <- liftIO $ do
              writeFile filename $ pkgbuildOf p
-             f filename
+             _ <- f filename
              readFileUTF8 filename
-  return p { pkgbuildOf = newPB }
+  pure p { pkgbuildOf = newPB }
       where filename = "PKGBUILD"
 
 -- | Allow the user to edit the PKGBUILD if they asked to do so.
 hotEdit :: Buildable -> Aura Buildable
 hotEdit b = ask >>= \ss ->
   if not $ mayHotEdit ss
-     then return b
+     then pure b
      else withTempDir "hotedit" $ do
             let cond = optionalPrompt (hotEdit_1 $ baseNameOf b)
                 act  = edit (openEditor (getEditor $ environmentOf ss))
-            ifM cond act nothing b
+            cond >>= ifte_ (act b) (pure b)
 
 -- | Runs `customizepkg` on whatever PKGBUILD it can.
 -- To work, a package needs an entry in `/etc/customizepkg.d/`
 customizepkg :: Buildable -> Aura Buildable
 customizepkg b = asks useCustomizepkg >>= \use ->
   if not use
-     then return b
+     then pure b
      else ifFile customizepkg' (scold customizepkg_1) bin b
          where bin = "/usr/bin/customizepkg"
 
@@ -75,5 +74,5 @@ customizepkg' p = withTempDir "customizepkg" $ do
   let conf = customizepkgPath </> baseNameOf p
   ifFile (edit $ const customize) nothing conf p
 
-customize :: IO ()
-customize = void $ quietShellCmd "customizepkg" ["--modify"]
+customize :: IO String
+customize = quietShellCmd "customizepkg" ["--modify"]

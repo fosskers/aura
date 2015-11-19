@@ -37,7 +37,7 @@ data Time = Time { yearOf   :: Integer
                  , dayOf    :: Int
                  , hourOf   :: Int
                  , minuteOf :: Int }
-            deriving (Eq,Show,Read)
+            deriving (Eq, Show, Read)
 
 months :: [String]
 months = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"
@@ -52,8 +52,8 @@ toTime t = Time { yearOf   = ye
                 , dayOf    = da
                 , hourOf   = ho
                 , minuteOf = mi }
-    where (ye,mo,da) = toGregorian $ localDay t
-          (ho,mi)    = (todHour $ localTimeOfDay t, todMin $ localTimeOfDay t)
+    where (ye, mo, da) = toGregorian $ localDay t
+          (ho, mi)    = (todHour $ localTimeOfDay t, todMin $ localTimeOfDay t)
 
 dotFormat :: Time -> String
 dotFormat t = intercalate "." items

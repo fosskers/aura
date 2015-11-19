@@ -35,11 +35,12 @@ import System.FilePath ((</>))
 import Control.Monad   (unless)
 import Control.Arrow   (first)
 import Data.Maybe      (mapMaybe)
-import Data.List       (partition,sort)
+import Data.List       (partition, sort)
+import Data.Monoid     ((<>))
 
 import Aura.Cache
 import Aura.Colour.Text   (cyan, red)
-import Aura.Core          (warn,notify)
+import Aura.Core          (warn, notify)
 import Aura.Languages
 import Aura.Monad.Aura
 import Aura.Pacman        (pacmanOutput, pacman)
@@ -55,16 +56,16 @@ import Shell     (ls')
 
 data PkgState = PkgState { timeOf :: Time
                          , pkgsOf :: M.Map String (Maybe Version) }
-                deriving (Eq,Show,Read)
+                deriving (Eq, Show, Read)
 
--- ([toAlter],[toRemove])
-type StateDiff = ([SimplePkg],[String])
+-- ([toAlter], [toRemove])
+type StateDiff = ([SimplePkg], [String])
 
 stateCache :: FilePath
 stateCache = "/var/cache/aura/states"
 
 inState :: SimplePkg -> PkgState -> Bool
-inState (n,v) s = case M.lookup n $ pkgsOf s of
+inState (n, v) s = case M.lookup n $ pkgsOf s of
                     Nothing -> False
                     Just v' -> v == v'
 
@@ -75,21 +76,21 @@ currentState :: Aura PkgState
 currentState = do
   pkgs <- rawCurrentState
   time <- liftIO localTime
-  let namesVers = map (pair . words) pkgs
+  let namesVers = pair . words <$> pkgs
       pair      = \(x:y:_) -> (x, version y)
-  return . PkgState time . M.fromAscList $ namesVers
+  pure . PkgState time . M.fromAscList $ namesVers
 
 compareStates :: PkgState -> PkgState -> StateDiff
-compareStates old curr = first (olds old curr ++) $ toChangeAndRemove old curr
+compareStates old curr = first (olds old curr <>) $ toChangeAndRemove old curr
 
 -- | All packages that were changed and newly installed.
 toChangeAndRemove :: PkgState -> PkgState -> StateDiff
-toChangeAndRemove old curr = M.foldrWithKey status ([],[]) $ pkgsOf curr
-    where status k v (d,r) = case M.lookup k (pkgsOf old) of
+toChangeAndRemove old curr = M.foldrWithKey status ([], []) $ pkgsOf curr
+    where status k v (d, r) = case M.lookup k (pkgsOf old) of
                                Nothing -> (d, k : r)
                                Just v' -> if v == v'
-                                          then (d,r)
-                                          else ((k,v') : d, r)
+                                          then (d, r)
+                                          else ((k, v') : d, r)
 
 -- | Packages that were uninstalled since the last record.
 olds :: PkgState -> PkgState -> [SimplePkg]
@@ -111,11 +112,11 @@ restoreState = ask >>= \ss -> do
   curr  <- currentState
   past  <- getStateFiles >>= liftIO . getSelection >>= readState
   cache <- cacheContents $ cachePathOf ss
-  let (rein,remo) = compareStates past curr
-      (okay,nope) = partition (alterable cache) rein
+  let (rein, remo) = compareStates past curr
+      (okay, nope) = partition (alterable cache) rein
       message     = restoreState_1 $ langOf ss
-  unless (null nope) $ printList red cyan message (map fst nope)
-  reinstallAndRemove (mapMaybe (getFilename cache) okay) remo
+  unless (null nope) $ printList red cyan message (fst <$> nope)
+  reinstallAndRemove (getFilename cache `mapMaybe` okay) remo
 
 readState :: FilePath -> Aura PkgState
 readState name = liftIO (read <$> readFileUTF8 (stateCache </> name))
@@ -128,7 +129,7 @@ reinstallAndRemove [] [] = warn reinstallAndRemove_1
 reinstallAndRemove down remo
     | null remo = reinstall
     | null down = remove
-    | otherwise = reinstall >> remove
+    | otherwise = reinstall *> remove
     where remove    = pacman $ "-R" : remo
           reinstall = ask >>= \ss ->
-                      pacman $ "-U" : map (cachePathOf ss </>) down
+                      pacman $ "-U" : ((cachePathOf ss </>) <$> down)

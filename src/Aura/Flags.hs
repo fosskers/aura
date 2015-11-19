@@ -51,6 +51,8 @@ module Aura.Flags
     , Flag(..) ) where
 
 import System.Console.GetOpt
+import Data.Monoid
+import Data.Foldable
 import Data.Maybe (fromMaybe)
 import Text.Read (readMaybe)
 
@@ -122,18 +124,18 @@ data Flag = ABSInstall
           | SerbianOut
           | NorwegiOut
           | PacmanArg String String
-            deriving (Eq,Ord,Show)
+            deriving (Eq, Ord, Show)
 
 allFlags :: Language -> [OptDescr Flag]
-allFlags lang = concat [ auraOperations lang
-                       , auraOptions
-                       , pacmanOptions
-                       , dualOptions
-                       , languageOptions
-                       , longPacmanOptions ]
+allFlags lang = fold [ auraOperations lang
+                     , auraOptions
+                     , pacmanOptions
+                     , dualOptions
+                     , languageOptions
+                     , longPacmanOptions ]
 
-simpleOption :: (String,[String],Flag) -> OptDescr Flag
-simpleOption (c,s,f) = Option c s (NoArg f) ""
+simpleOption :: (String, [String], Flag) -> OptDescr Flag
+simpleOption (c, s, f) = Option c s (NoArg f) ""
 
 auraOperations :: Language -> [OptDescr Flag]
 auraOperations lang =
@@ -150,7 +152,7 @@ auraOptions = Option [] ["aurignore"] (ReqArg AURIgnore "" ) "" :
               Option [] ["builduser"] (ReqArg BuildUser "" ) "" :
               Option [] ["head"] (OptArg (TruncHead . truncHandler) "") "" :
               Option [] ["tail"] (OptArg (TruncTail . truncHandler) "") "" :
-              map simpleOption
+              fmap simpleOption
               [ ( "a", ["delmakedeps"],  DelMDeps      )
               , ( "b", ["backup"],       CacheBackup   )
               , ( "c", ["clean"],        Clean         )
@@ -183,7 +185,7 @@ auraOptions = Option [] ["aurignore"] (ReqArg AURIgnore "" ) "" :
 
 -- These are intercepted Pacman flags. Their functionality is different.
 pacmanOptions :: [OptDescr Flag]
-pacmanOptions = map simpleOption
+pacmanOptions = fmap simpleOption
                 [ ( "y", ["refresh"], Refresh )
                 , ( "V", ["version"], Version )
                 , ( "h", ["help"],    Help    ) ]
@@ -192,14 +194,14 @@ pacmanOptions = map simpleOption
 dualOptions :: [OptDescr Flag]
 dualOptions = Option [] ["ignore"]      (ReqArg Ignore      "" ) "" :
               Option [] ["ignoregroup"] (ReqArg IgnoreGroup "" ) "" :
-              map simpleOption
+              fmap simpleOption
               [ ( [], ["noconfirm"], NoConfirm )
               , ( [], ["needed"],    Needed    ) ]
 
 -- These Pacman options are ignored,
 -- but parser needs to know that they require an argument
 longPacmanOptions :: [OptDescr Flag]
-longPacmanOptions = map pacArg $ zip
+longPacmanOptions = pacArg <$> zip
                     [ "dbpath", "root", "arch", "cachedir", "color"
                     , "config", "gpgdir" , "logfile", "assume-installed"
                     , "print-format" ]
@@ -210,43 +212,43 @@ longPacmanOptions = map pacArg $ zip
                                     (ReqArg (PacmanArg option) "") ""
 
 pacmanFlagMap :: FlagMap
-pacmanFlagMap (PacmanArg option arg) = "--" ++ option ++ "=" ++ arg
+pacmanFlagMap (PacmanArg option arg) = "--" <> option <> "=" <> arg
 pacmanFlagMap _                      = ""
 
 languageOptions :: [OptDescr Flag]
-languageOptions = map simpleOption
-                  [ ( [], ["japanese","日本語"],      JapOut      )
-                  , ( [], ["polish","polski"],        PolishOut   )
-                  , ( [], ["croatian","hrvatski"],    CroatianOut )
-                  , ( [], ["swedish","svenska"],      SwedishOut  )
-                  , ( [], ["german","deutsch"],       GermanOut   )
-                  , ( [], ["spanish","español"],      SpanishOut  )
-                  , ( [], ["portuguese","português"], PortuOut    )
-                  , ( [], ["french","français"],      FrenchOut   )
-                  , ( [], ["russian","русский"],      RussianOut  )
-                  , ( [], ["italian","italiano"],     ItalianOut  )
-                  , ( [], ["serbian","српски"],       SerbianOut  )
-                  , ( [], ["norwegian","norsk"],      NorwegiOut  ) ]
+languageOptions = fmap simpleOption
+                  [ ( [], ["japanese", "日本語"],      JapOut      )
+                  , ( [], ["polish", "polski"],        PolishOut   )
+                  , ( [], ["croatian", "hrvatski"],    CroatianOut )
+                  , ( [], ["swedish", "svenska"],      SwedishOut  )
+                  , ( [], ["german", "deutsch"],       GermanOut   )
+                  , ( [], ["spanish", "español"],      SpanishOut  )
+                  , ( [], ["portuguese", "português"], PortuOut    )
+                  , ( [], ["french", "français"],      FrenchOut   )
+                  , ( [], ["russian", "русский"],      RussianOut  )
+                  , ( [], ["italian", "italiano"],     ItalianOut  )
+                  , ( [], ["serbian", "српски"],       SerbianOut  )
+                  , ( [], ["norwegian", "norsk"],      NorwegiOut  ) ]
 
 -- `Hijacked` flags. They have original pacman functionality, but
 -- that is masked and made unique in an Aura context.
 hijackedFlagMap :: FlagMap
-hijackedFlagMap = simpleFlagMap [ (CacheBackup,  "-b" )
-                                , (Clean,        "-c" )
-                                , (ViewDeps,     "-d" )
-                                , (Info,         "-i" )
-                                , (DiffPkgbuilds,"-k" )
-                                , (RestoreState, "-r" )
-                                , (Search,       "-s" )
-                                , (TreeSync,     "-t" )
-                                , (Upgrade,      "-u" )
-                                , (Download,     "-w" )
-                                , (Refresh,      "-y" ) ]
+hijackedFlagMap = simpleFlagMap [ (CacheBackup,   "-b" )
+                                , (Clean,         "-c" )
+                                , (ViewDeps,      "-d" )
+                                , (Info,          "-i" )
+                                , (DiffPkgbuilds, "-k" )
+                                , (RestoreState,  "-r" )
+                                , (Search,        "-s" )
+                                , (TreeSync,      "-t" )
+                                , (Upgrade,       "-u" )
+                                , (Download,      "-w" )
+                                , (Refresh,       "-y" ) ]
 
 -- These are flags which do the same thing in Aura or Pacman.
 dualFlagMap :: FlagMap
-dualFlagMap (Ignore      a) = "--ignore="      ++ a
-dualFlagMap (IgnoreGroup a) = "--ignoregroup=" ++ a
+dualFlagMap (Ignore      a) = "--ignore="      <> a
+dualFlagMap (IgnoreGroup a) = "--ignoregroup=" <> a
 dualFlagMap f = flip simpleFlagMap f [ (Quiet,     "-q"          )
                                      , (NoConfirm, "--noconfirm" )
                                      , (Needed,    "--needed"    ) ]
@@ -257,11 +259,11 @@ simpleFlagMap fm = fromMaybe "" . flip lookup fm
 -- Converts the intercepted Pacman flags back into their raw string forms
 -- and filters out the garbage.
 reconvertFlags :: FlagMap -> [Flag] -> [String]
-reconvertFlags fm = filter notNull . map fm
+reconvertFlags fm = filter notNull . fmap fm
 
 settingsFlags :: [Flag]
-settingsFlags = [ Unsuppress,NoConfirm,HotEdit,DiffPkgbuilds,Debug,Devel
-                , DelMDeps,Customizepkg,Quiet,NoPowerPill,KeepSource
+settingsFlags = [ Unsuppress, NoConfirm, HotEdit, DiffPkgbuilds, Debug, Devel
+                , DelMDeps, Customizepkg, Quiet, NoPowerPill, KeepSource
                 , BuildABSDeps, ABCSort, IgnoreArch, DryRun, Needed ]
 
 -- Flags like `AURIgnore` and `BuildPath` have args, and thus can't be included
@@ -280,18 +282,18 @@ auraOperMsg lang = usageInfo (yellow $ auraOperTitle lang) $ auraOperations lang
 
 -- Extracts desirable results from given Flags.
 -- Callers must supply an [alt]ernate value for when there are no matches.
-fishOutFlag :: [(Flag,a)] -> a -> [Flag] -> a
+fishOutFlag :: [(Flag, a)] -> a -> [Flag] -> a
 fishOutFlag [] alt _             = alt
-fishOutFlag ((f,r):fs) alt flags | f `elem` flags = r
+fishOutFlag ((f, r):fs) alt flags | f `elem` flags = r
                                  | otherwise      = fishOutFlag fs alt flags
 
 getLanguage :: [Flag] -> Maybe Language
 getLanguage = fishOutFlag flagsAndResults Nothing
     where flagsAndResults = zip langFlags langFuns
-          langFlags       = [ JapOut,PolishOut,CroatianOut,SwedishOut
-                            , GermanOut,SpanishOut,PortuOut,FrenchOut
-                            , RussianOut,ItalianOut,SerbianOut,NorwegiOut ]
-          langFuns        = map Just [Japanese ..]
+          langFlags       = [ JapOut, PolishOut, CroatianOut, SwedishOut
+                            , GermanOut, SpanishOut, PortuOut, FrenchOut
+                            , RussianOut, ItalianOut, SerbianOut, NorwegiOut ]
+          langFuns        = Just <$> [Japanese ..]
 
 ignoredAuraPkgs :: [Flag] -> [String]
 ignoredAuraPkgs [] = []
@@ -315,61 +317,61 @@ truncationStatus (TruncTail n : _) = Tail n
 truncationStatus (_:fs) = truncationStatus fs
 
 sortSchemeStatus :: [Flag] -> SortScheme
-sortSchemeStatus = fishOutFlag [(ABCSort,Alphabetically)] ByVote
+sortSchemeStatus = fishOutFlag [(ABCSort, Alphabetically)] ByVote
 
 suppressionStatus :: [Flag] -> Bool
-suppressionStatus = fishOutFlag [(Unsuppress,False)] True
+suppressionStatus = fishOutFlag [(Unsuppress, False)] True
 
 delMakeDepsStatus :: [Flag] -> Bool
-delMakeDepsStatus = fishOutFlag [(DelMDeps,True)] False
+delMakeDepsStatus = fishOutFlag [(DelMDeps, True)] False
 
 confirmationStatus :: [Flag] -> Bool
-confirmationStatus = fishOutFlag [(NoConfirm,False)] True
+confirmationStatus = fishOutFlag [(NoConfirm, False)] True
 
 neededStatus :: [Flag] -> Bool
-neededStatus = fishOutFlag [(Needed,True)] False
+neededStatus = fishOutFlag [(Needed, True)] False
 
 hotEditStatus :: [Flag] -> Bool
-hotEditStatus = fishOutFlag [(HotEdit,True)] False
+hotEditStatus = fishOutFlag [(HotEdit, True)] False
 
 pbDiffStatus :: [Flag] -> Bool
-pbDiffStatus = fishOutFlag [(DiffPkgbuilds,True)] False
+pbDiffStatus = fishOutFlag [(DiffPkgbuilds, True)] False
 
 quietStatus :: [Flag] -> Bool
-quietStatus = fishOutFlag [(Quiet,True)] False
+quietStatus = fishOutFlag [(Quiet, True)] False
 
 rebuildDevelStatus :: [Flag] -> Bool
-rebuildDevelStatus = fishOutFlag [(Devel,True)] False
+rebuildDevelStatus = fishOutFlag [(Devel, True)] False
 
 customizepkgStatus :: [Flag] -> Bool
-customizepkgStatus = fishOutFlag [(Customizepkg,True)] False
+customizepkgStatus = fishOutFlag [(Customizepkg, True)] False
 
 noPowerPillStatus :: [Flag] -> Bool
-noPowerPillStatus = fishOutFlag [(NoPowerPill,True)] False
+noPowerPillStatus = fishOutFlag [(NoPowerPill, True)] False
 
 keepSourceStatus :: [Flag] -> Bool
-keepSourceStatus = fishOutFlag [(KeepSource,True)] False
+keepSourceStatus = fishOutFlag [(KeepSource, True)] False
 
 buildABSDepsStatus :: [Flag] -> Bool
-buildABSDepsStatus = fishOutFlag [(BuildABSDeps,True)] False
+buildABSDepsStatus = fishOutFlag [(BuildABSDeps, True)] False
 
 dryRunStatus :: [Flag] -> Bool
-dryRunStatus = fishOutFlag [(DryRun,True)] False
+dryRunStatus = fishOutFlag [(DryRun, True)] False
 
 makepkgFlags :: [Flag] -> [String]
-makepkgFlags = fishOutFlag [(IgnoreArch,["--ignorearch"])] []
+makepkgFlags = fishOutFlag [(IgnoreArch, ["--ignorearch"])] []
 
-parseLanguageFlag :: [String] -> (Maybe Language,[String])
+parseLanguageFlag :: [String] -> (Maybe Language, [String])
 parseLanguageFlag args =
     case getOpt Permute languageOptions args of
-      (langs,nonOpts,_) -> (getLanguage langs, nonOpts)
+      (langs, nonOpts, _) -> (getLanguage langs, nonOpts)
 
 -- I don't like this.
-parseFlags :: Maybe Language -> [String] -> ([Flag],[String],[String])
+parseFlags :: Maybe Language -> [String] -> ([Flag], [String], [String])
 parseFlags (Just lang) args = parseFlags' lang args
 parseFlags Nothing     args = parseFlags' English args
 
 -- Errors are dealt with manually in `aura.hs`.
-parseFlags' :: Language -> [String] -> ([Flag],[String],[String])
+parseFlags' :: Language -> [String] -> ([Flag], [String], [String])
 parseFlags' lang args = case getOpt' Permute (allFlags lang) args of
-                         (opts,nonOpts,pacOpts,_) -> (opts,nonOpts,pacOpts)
+                         (opts, nonOpts, pacOpts, _) -> (opts, nonOpts, pacOpts)

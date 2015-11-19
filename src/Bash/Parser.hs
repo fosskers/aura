@@ -28,6 +28,8 @@ module Bash.Parser ( parseBash ) where
 import Text.ParserCombinators.Parsec
 
 import Data.Maybe          (catMaybes)
+import Data.Monoid
+import Data.Foldable
 
 import Bash.Base
 
@@ -35,7 +37,7 @@ import Bash.Base
 
 parseBash :: String -> String -> Either ParseError [Field]
 parseBash p input = parse bashFile filename input
-    where filename = "(" ++ p ++ ")"
+    where filename = "(" <> p <> ")"
 
 -- | A Bash file could have many fields, or none.
 bashFile :: Parser [Field]
@@ -62,10 +64,10 @@ comment = Comment <$> comment' <?> "valid comment"
 command :: Parser Field
 command = spaces *> (Command <$> many1 commandChar <*> option [] (try args))
     where commandChar = alphaNum <|> oneOf "./"
-          args = char ' ' >> unwords <$> line >>= \ls ->
+          args = char ' ' *> (unwords <$> line >>= \ls ->
                    case parse (many1 single) "(command)" ls of
                      Left _   -> fail "Failed parsing strings in a command"
-                     Right bs -> return $ concat bs
+                     Right bs -> pure $ fold bs)
           line = (:) <$> many (noneOf "\n\\") <*> next
           next = ([] <$ char '\n') <|> (char '\\' *> spaces *> line)
 
@@ -83,7 +85,7 @@ variable = Variable <$> name <*> (blank <|> array <|> single) <?> "valid var def
           blank = [] <$ space
 
 array :: Parser [BashString]
-array = concat . catMaybes <$> array' <?> "valid array"
+array = fold . catMaybes <$> array' <?> "valid array"
     where array'  = char '(' *> spaces *> manyTill single' (char ')')
           single' = choice [ Nothing <$ comment <* spaces
                            , Nothing <$ many1 (space <|> char '\\')
@@ -98,7 +100,7 @@ single = (singleQuoted <|> doubleQuoted <|> backticked <|> try unQuoted)
 -- | Literal string. ${...} comes out as-is. No string extrapolation.
 singleQuoted :: Parser [BashString]
 singleQuoted = between (char '\'') (char '\'')
-               ((\s -> [SingleQ s]) <$> many1 (noneOf ['\n','\'']))
+               ((\s -> [SingleQ s]) <$> many1 (noneOf ['\n', '\'']))
                <?> "single quoted string"
 
 -- | Replaces ${...}. No string extrapolation.
@@ -139,15 +141,15 @@ extrapolated :: [Char] -> Parser [String]
 extrapolated stops = do
   xs <- plain <|>  bracePair
   ys <- option [""] $ try (extrapolated stops)
-  return [ x ++ y | x <- xs, y <- ys ]
+  return [ x <> y | x <- xs, y <- ys ]
       where plain = (: []) <$> many1 (noneOf $ " $\n{}[]()" ++ stops)
 
 bracePair :: Parser [String]
 bracePair = between (char '{') (char '}') innards <?> "valid {...} string"
-    where innards = concatInnards <$> (extrapolated ",}" `sepBy` char ',')
-          concatInnards []   = ["{}"]
-          concatInnards [xs] = map (\s -> "{" ++ s ++ "}") xs
-          concatInnards xss  = concat xss
+    where innards = foldInnards <$> (extrapolated ",}" `sepBy` char ',')
+          foldInnards []   = ["{}"]
+          foldInnards [xs] = (\s -> "{" <> s <> "}") <$> xs
+          foldInnards xss  = fold xss
 
 ------------------
 -- `IF` STATEMENTS
@@ -165,12 +167,12 @@ realIfBlock' word sep =
 
 -- Inefficient?
 fiElifElse :: Parser (Maybe BashIf)
-fiElifElse = choice $ map (try . lookAhead) [fi, elif, elys]
+fiElifElse = choice (try . lookAhead <$> [fi, elif, elys])
 
 fi, elif, elys :: Parser (Maybe BashIf)
 fi   = Nothing <$  (string "fi" <* space)
 elif = Just    <$> realIfBlock' "elif " fiElifElse
-elys = Just    <$> (string "else" >> space >> Else `fmap` ifBody fi)
+elys = Just    <$> (string "else" *> space *> (Else <$> ifBody fi))
 
 ifCond :: Parser Comparison
 ifCond = comparison <* string "; then"
@@ -185,16 +187,16 @@ andStatement = do
   spaces
   cond <- comparison <* string " && "
   body <- field
-  return $ If cond [body] Nothing
+  pure $ If cond [body] Nothing
 
 comparison :: Parser Comparison
 comparison = do
-  spaces >> leftBs >> spaces
-  left <- head `fmap` single
+  spaces *> leftBs *> spaces
+  left <- head <$> single
   compOp <- comparisonOp
-  right <- head `fmap` single
+  right <- head <$> single
   rightBs
-  return (compOp left right) <?> "valid comparison"
+  pure (compOp left right) <?> "valid comparison"
       where leftBs  = skipMany1 $ char '['
             rightBs = skipMany1 $ char ']'
 

@@ -26,6 +26,7 @@ module Aura.Utils.Numbers
     , version ) where
 
 import Text.ParserCombinators.Parsec
+import Data.Foldable
 
 import Utilities (eitherToMaybe, asInt)
 
@@ -34,9 +35,9 @@ import Utilities (eitherToMaybe, asInt)
 -- TODO: Move this to a unified `Types` file?
 data Version = Version { unitsOf    :: [Unit]
                        , revisionOf :: Maybe Int }  -- The number after `-`.
-               deriving (Eq,Show,Read,Ord)
+               deriving (Eq, Show, Read, Ord)
 
-data Unit = IUnit Int | SUnit String deriving (Eq,Show,Read,Ord)
+data Unit = IUnit Int | SUnit String deriving (Eq, Show, Read, Ord)
 
 version :: String -> Maybe Version
 version = eitherToMaybe . parse versionNumber ""
@@ -45,7 +46,7 @@ versionNumber :: Parser Version
 versionNumber = Version <$> units <*> optionMaybe revision
 
 units :: Parser [Unit]
-units = concat <$> (many1 (iunit <|> sunit) `sepBy` oneOf ".:_+")
+units = fold <$> (many1 (iunit <|> sunit) `sepBy` oneOf ".:_+")
 
 iunit :: Parser Unit
 iunit = IUnit . asInt <$> many1 digit

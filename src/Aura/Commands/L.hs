@@ -30,6 +30,8 @@ module Aura.Commands.L
 
 import Text.Regex.PCRE ((=~))
 import Data.List       ((\\))
+import Data.Monoid     ((<>))
+import Data.Foldable   (traverse_)
 
 import Aura.Colour.Text (yellow)
 import Aura.Core        (badReport)
@@ -39,7 +41,7 @@ import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages
 
-import Utilities (searchLines,readFileUTF8)
+import Utilities (searchLines, readFileUTF8)
 
 ---
 
@@ -50,24 +52,24 @@ viewLogFile logFilePath = shellCmd "less" [logFilePath]
 searchLogFile :: [String] -> Aura ()
 searchLogFile input = ask >>= \ss -> liftIO $ do
   logFile <- lines <$> readFileUTF8 (logFilePathOf ss)
-  mapM_ putStrLn $ searchLines (unwords input) logFile
+  traverse_ putStrLn $ searchLines (unwords input) logFile
 
 logInfoOnPkg :: [String] -> Aura ()
-logInfoOnPkg []   = return ()
+logInfoOnPkg []   = pure ()
 logInfoOnPkg pkgs = ask >>= \ss -> do
   logFile <- liftIO $ readFile (logFilePathOf ss)
-  let inLog p = logFile =~ (" " ++ p ++ " ")
+  let inLog p = logFile =~ (" " <> p <> " ")
       reals   = filter inLog pkgs
   reportNotInLog (pkgs \\ reals)
-  liftIO $ mapM_ (putStrLn . renderLogLookUp ss logFile) reals
+  liftIO $ traverse_ (putStrLn . renderLogLookUp ss logFile) reals
 
 renderLogLookUp :: Settings -> String -> String -> String
-renderLogLookUp ss logFile pkg = entrify ss fields entries ++ "\n" ++ recent
-    where fields      = map yellow . logLookUpFields . langOf $ ss
-          matches     = searchLines (" " ++ pkg ++ " \\(") $ lines logFile
+renderLogLookUp ss logFile pkg = entrify ss fields entries <> "\n" <> recent
+    where fields      = fmap yellow . logLookUpFields . langOf $ ss
+          matches     = searchLines (" " <> pkg <> " \\(") $ lines logFile
           installDate = head matches =~ "\\[[-:0-9 ]+\\]"
           upgrades    = length $ searchLines " upgraded " matches
-          recent      = unlines . map ((:) ' ') . takeLast 5 $ matches
+          recent      = unlines . fmap (" " <>) . takeLast 5 $ matches
           takeLast n  = reverse . take n . reverse
           entries     = [ pkg
                         , installDate

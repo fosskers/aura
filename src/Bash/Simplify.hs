@@ -43,6 +43,7 @@ import Control.Monad.Trans.State.Lazy
 import Data.Foldable
 --import Text.Regex.PCRE ((=~))
 import qualified Data.Map.Lazy as M
+import Data.Monoid
 
 import Bash.Base
 
@@ -50,7 +51,7 @@ import Bash.Base
 
 -- | Simplify a parsed Bash script.
 -- The Namespace _can_ be altered partway through.
-simplify :: Namespace -> Script -> (Script,Namespace)
+simplify :: Namespace -> Script -> (Script, Namespace)
 simplify ns sc = runState (replace sc) ns
 
 simpScript :: Namespace -> Script -> Script
@@ -60,31 +61,28 @@ simpNamespace :: Namespace -> Script -> Namespace
 simpNamespace ns = snd . simplify ns
 
 replace :: [Field] -> State Namespace [Field]
-replace []     = return []
-replace (IfBlock i : rs) = replaceIf i >>= \fs -> (fs ++) `fmap` replace rs
-replace (f:fs) = replace' f >>= \f' -> (f' :) `fmap` replace fs
+replace []     = pure []
+replace (IfBlock i : rs) = replaceIf i >>= \fs -> (fs <>) <$> replace rs
+replace (f:fs) = replace' f >>= \f' -> (f' :) <$> replace fs
 
 replace' :: Field -> State Namespace Field
-replace' (Function n fs) = Function n `fmap` replace fs
-replace' (Command  n bs) = Command  n `fmap` mapM replaceStr bs
+replace' (Function n fs) = Function n <$> replace fs
+replace' (Command  n bs) = Command  n <$> traverse replaceStr bs
 replace' (Variable n bs) = do
-  bs' <- mapM replaceStr bs
+  bs' <- traverse replaceStr bs
   get >>= put . insert n bs'  -- Update the Namespace.
-  return $ Variable n bs'
-replace' somethingElse = return somethingElse
+  pure $ Variable n bs'
+replace' somethingElse = pure somethingElse
 
 replaceStr :: BashString -> State Namespace BashString
 replaceStr s@(SingleQ _) = return s
 replaceStr (DoubleQ s)   = DoubleQ . fmap Right <$> expandStr s
 replaceStr (NoQuote s)   = DoubleQ . fmap Right <$> expandStr s
-replaceStr (Backtic f)   = Backtic `fmap` replace' f
+replaceStr (Backtic f)   = Backtic <$> replace' f
 
 expandStr :: [Either BashExpansion String] -> State Namespace [String]
 expandStr [] = pure []
-expandStr (x:xs) = do
-  lhs <- expandStr' x
-  rhs <- expandStr xs
-  pure $ lhs ++ rhs
+expandStr (x:xs) = (<>) <$> expandStr' x <*> expandStr xs
 
 expandStr' :: Either BashExpansion String -> State Namespace [String]
 expandStr' (Right s) = pure [s]
@@ -96,7 +94,7 @@ getIndexedString var idx  = get >>= \ns -> case  M.lookup var ns  of
   Just bstrs -> getIndexedString' bstrs idx
 
 getIndexedString' :: [BashString] -> String -> State Namespace [String]
-getIndexedString' bstrs ""  = fromBashString <$> replaceStr (head bstrs)
+getIndexedString' (b:_) ""  = fromBashString <$> replaceStr b
 getIndexedString' bstrs "*" = foldMap fromBashString <$> traverse replaceStr bstrs
 getIndexedString' bstrs "@" = foldMap fromBashString <$> traverse replaceStr bstrs
 getIndexedString' bstrs num = fromBashString <$> replaceStr (bstrs !! read num)
@@ -111,12 +109,13 @@ expandWrapper (Backtic f) = unwords . fromCommand <$> replace' f
 replaceIf :: BashIf -> State Namespace [Field]
 replaceIf i@(If comp fs el) = do
   let (op, l, r) = deComp comp
-  left  <- fromBashString `fmap` replaceStr l
-  right <- fromBashString `fmap` replaceStr r
+
+  left  <- fromBashString <$> replaceStr l
+  right <- fromBashString <$> replaceStr r
   if unwords left `op` unwords right
      then replace fs
      else case el of
-            Nothing  -> return [IfBlock i]
+            Nothing  -> pure [IfBlock i]
             Just el' -> replaceIf el'
 replaceIf (Else fs) = replace fs
 

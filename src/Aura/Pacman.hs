@@ -29,6 +29,7 @@ module Aura.Pacman where
 import System.Directory (doesFileExist)
 import System.IO        (hFlush, stdout)
 import Text.Regex.PCRE  ((=~))
+import Data.Monoid
 
 import Aura.Cache
 import Aura.Languages     (pacmanFailure_1)
@@ -62,18 +63,18 @@ lockFile = "/var/lib/pacman/db.lck"
 getPacmanCmd :: Environment -> Bool -> IO String
 getPacmanCmd env nopp =
     case getEnvVar "PACMAN" env of
-      Just cmd -> return cmd
+      Just cmd -> pure cmd
       Nothing  -> do  -- Left space for more options later.
         powerPill <- doesFileExist powerPillCmd
-        if | powerPill && not nopp -> return powerPillCmd
-           | otherwise -> return defaultCmd
+        if | powerPill && not nopp -> pure powerPillCmd
+           | otherwise -> pure defaultCmd
 
 getPacmanConf :: IO String
 getPacmanConf = readFileUTF8 pacmanConfFile
 
 getConfFileField :: String -> String -> [String]
 getConfFileField confFile field = words $ takeWhile p entry
-    where (_,_,entry) = confFile =~ field :: (String,String,String)
+    where (_, _, entry) = confFile =~ field :: (String, String, String)
           p c = c /= '\n' && c /= '#'
 
 getIgnoredPkgs :: String -> [String]
@@ -85,7 +86,7 @@ singleEntry :: String -> String -> String -> String
 singleEntry confFile field alt = case getConfFileField confFile regex of
                                       []    -> alt
                                       entry -> noQs $ head entry
-    where regex = "^" ++ field ++ "[ ]*=[ ]*"
+    where regex = "^" <> field <> "[ ]*=[ ]*"
           noQs  = filter (`notElem` "\"")
 
 getCachePath :: String -> FilePath
@@ -98,7 +99,7 @@ getLogFilePath confFile = singleEntry confFile "LogFile" defaultLogFile
 -- ACTIONS
 ----------
 pacman :: [ShellArg] -> Aura ()
-pacman args = asks pacmanCmdOf >>= \cmd -> flush >> shellCmd cmd args
+pacman args = asks pacmanCmdOf >>= \cmd -> flush *> shellCmd cmd args
     where flush = liftIO (hFlush stdout)
 
 -- Did a pacman process succeed?
@@ -122,7 +123,7 @@ getPacmanHelpMsg = lines <$> pacmanOutput ["-h"]
 
 -- Yields the lines given by `pacman -V` with the pacman image stripped.
 getVersionInfo :: Aura [String]
-getVersionInfo = (map (drop verMsgPad) . lines) <$> pacmanOutput ["-V"]
+getVersionInfo = (fmap (drop verMsgPad) . lines) <$> pacmanOutput ["-V"]
 
 -- The amount of whitespace before text in the lines given by `pacman -V`
 verMsgPad :: Int

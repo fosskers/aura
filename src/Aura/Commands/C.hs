@@ -35,7 +35,9 @@ import System.FilePath    ((</>))
 import Text.Regex.PCRE    ((=~))
 import Control.Monad      (unless)
 import Data.List          ((\\), sort, groupBy)
+import Data.Foldable      (traverse_, fold)
 import Data.Char          (isDigit)
+import Data.Monoid        ((<>))
 
 import Aura.Logo   (raiseCursorBy)
 import Aura.Pacman (pacman)
@@ -55,14 +57,14 @@ import Utilities
 -- | Interactive. Gives the user a choice as to exactly what versions
 -- they want to downgrade to.
 downgradePackages :: [String] -> [String] -> Aura ()
-downgradePackages _ []         = return ()
+downgradePackages _ []         = pure ()
 downgradePackages pacOpts pkgs = asks cachePathOf >>= \cachePath -> do
   reals <- pkgsInCache pkgs
   reportBadDowngradePkgs (pkgs \\ reals)
   unless (null reals) $ do
     cache   <- cacheContents cachePath
-    choices <- mapM (getDowngradeChoice cache) reals
-    pacman $ "-U" : pacOpts ++ map (cachePath </>) choices
+    choices <- traverse (getDowngradeChoice cache) reals
+    pacman $ "-U" : pacOpts <> ((cachePath </>) <$> choices)
                
 getDowngradeChoice :: Cache -> String -> Aura String
 getDowngradeChoice cache pkg = do
@@ -74,11 +76,11 @@ getChoicesFromCache :: Cache -> String -> [String]
 getChoicesFromCache cache pkg = sort choices
     where choices = filter match (allFilenames cache)
           patt    = "-[0-9:.]+-[1-9]+-(x86_64|i686|any)[.]pkg[.]tar[.]xz$"
-          match p = p =~ ("^" ++ pkg ++ patt)
+          match p = p =~ ("^" <> pkg <> patt)
 
 -- `[]` as input yields the contents of the entire cache.
 searchCache :: [String] -> Aura ()
-searchCache r = cacheMatches r >>= liftIO . mapM_ putStrLn . sortPkgs
+searchCache r = cacheMatches r >>= liftIO . traverse_ putStrLn . sortPkgs
 
 -- The destination folder must already exist for the back-up to begin.
 backupCache :: [FilePath] -> Aura ()
@@ -97,7 +99,7 @@ confirmBackup dir = do
   okay <- optionalPrompt backupCache_6
   if not okay
      then scoldAndFail backupCache_7
-     else return cache
+     else pure cache
 
 backup :: FilePath -> Cache -> Aura ()
 backup dir cache = do
@@ -107,7 +109,7 @@ backup dir cache = do
 
 -- Manages the file copying and display of the real-time progress notifier.
 copyAndNotify :: FilePath -> [String] -> Int -> Aura ()
-copyAndNotify _ [] _       = return ()
+copyAndNotify _ [] _       = pure ()
 copyAndNotify dir (p:ps) n = asks cachePathOf >>= \cachePath -> do
   liftIO $ raiseCursorBy 1
   warn $ copyAndNotify_1 n
@@ -126,7 +128,7 @@ cleanCache (input:_)  -- Ignores all but first input element.
 cleanCache' :: Int -> Aura ()
 cleanCache' toSave
     | toSave < 0  = scoldAndFail cleanCache_1
-    | toSave == 0 = warn cleanCache_2 >> pacman ["-Scc"]  -- Needed?
+    | toSave == 0 = warn cleanCache_2 *> pacman ["-Scc"]  -- Needed?
     | otherwise   = do
         warn $ cleanCache_3 toSave
         okay <- optionalPrompt cleanCache_4
@@ -139,27 +141,27 @@ clean toSave = ask >>= \ss -> do
   notify cleanCache_6
   cache <- cacheContents $ cachePathOf ss
   let files     = allFilenames cache
-      grouped   = map (take toSave . reverse) $ groupByName files
-      toRemove  = files \\ concat grouped
-      filePaths = map (cachePathOf ss </>) toRemove
-  liftIO $ mapM_ rm filePaths
+      grouped   = take toSave . reverse <$> groupByName files
+      toRemove  = files \\ fold grouped
+      filePaths = (cachePathOf ss </>) <$> toRemove
+  liftIO $ traverse_ rm filePaths
 
 -- | Only package files with a version not in any PkgState will be
 -- removed.
 cleanNotSaved :: Aura ()
 cleanNotSaved = asks cachePathOf >>= \path -> do
   notify cleanNotSaved_1
-  states <- getStateFiles >>= mapM readState
+  states <- getStateFiles >>= traverse readState
   cache  <- cacheContents path
-  let duds = cacheFilter (\p _ -> or $ map (inState p) states) cache
+  let duds = cacheFilter (\p _ -> or (inState p <$> states)) cache
   whenM (optionalPrompt $ cleanNotSaved_2 $ size duds) $
-        liftIO $ mapM_ rm (map (path </>) $ allFilenames duds)
+        liftIO $ traverse_ rm ((path </>) <$> allFilenames duds)
 
 -- Typically takes the contents of the package cache as an argument.
 groupByName :: [String] -> [[String]]
 groupByName pkgs = groupBy sameBaseName $ sortPkgs pkgs
     where sameBaseName a b = baseName a == baseName b
-          baseName p = tripleFst (p =~ "-[0-9]+" :: (String,String,String))
+          baseName p = tripleFst (p =~ "-[0-9]+" :: (String, String, String))
 
 ------------
 -- REPORTING

@@ -22,6 +22,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Colour.Text where
 
 import Data.List.Split (splitOn)
+import Data.Monoid
 
 import Shell (csi)
 
@@ -32,7 +33,7 @@ data Colour = NoColour
             | Black | Red | Green | Yellow | Blue | Magenta | Cyan | White
             | BRed | BGreen | BYellow | BBlue | BMagenta | BCyan | BWhite
             | BForeground
-            deriving (Eq,Enum,Show)
+            deriving (Eq, Enum, Show)
 
 type Colouror = String -> String
 
@@ -40,7 +41,7 @@ noColour :: Colouror
 noColour = colourize NoColour
 
 -- Normal colours
-black,red,green,yellow,blue,magenta,cyan,white :: Colouror
+black, red, green, yellow, blue, magenta, cyan, white :: Colouror
 black   = colourize Black
 red     = colourize Red
 green   = colourize Green
@@ -51,7 +52,7 @@ cyan    = colourize Cyan
 white   = colourize White
 
 -- Bold/intense colours
-bRed,bGreen,bYellow,bBlue,bMagenta,bCyan,bWhite,bForeground :: Colouror
+bRed, bGreen, bYellow, bBlue, bMagenta, bCyan, bWhite, bForeground :: Colouror
 bRed        = colourize BRed
 bGreen      = colourize BGreen
 bYellow     = colourize BYellow
@@ -127,13 +128,13 @@ where `x` is a colour code and `y` is an "attribute". See below.
 
 -}
 escapeCodes :: [String]
-escapeCodes = normalCodes ++ boldCodes ++ bForegroundCode
+escapeCodes = normalCodes <> boldCodes <> bForegroundCode
 
 normalCodes :: [String]
-normalCodes = map (\n -> csi [0,n] "m") [30..37]
+normalCodes = (\n -> csi [0, n] "m") <$> [30..37]
 
 boldCodes :: [String]
-boldCodes = map (\n -> csi [1,n] "m") [31..37]
+boldCodes = (\n -> csi [1, n] "m") <$> [31..37]
 
 bForegroundCode :: [String]
 bForegroundCode = ["\ESC[m\ESC[1m"]
@@ -145,7 +146,7 @@ resetCode = "\ESC[0m"
 resetCodeRegex :: String
 resetCodeRegex = "\ESC\\[0m"
 
-coloursWithCodes :: [(Colour,String)]
+coloursWithCodes :: [(Colour, String)]
 coloursWithCodes = zip colours escapeCodes
 
 colourize :: Colour -> String -> String
@@ -157,6 +158,6 @@ colourize colour msg =
         where insertCodes code' msg' =
                   case splitOn resetCode msg' of
                     []      -> ""  -- Shouldn't happen?
-                    [_]     -> code' ++ msg' ++ resetCode
+                    [_]     -> code' <> msg' <> resetCode
                     [_, ""] -> msg' -- We're done recursing.
-                    (b:as)  -> insertCodes code' (b ++ code' ++ unwords as)
+                    (b:as)  -> insertCodes code' (b <> code' <> unwords as)

@@ -24,6 +24,7 @@ module Aura.Core where
 import Control.Monad    (when)
 import Data.Either      (partitionEithers)
 import Data.List        (isSuffixOf)
+import Data.Monoid
 
 import System.Directory (doesFileExist)
 import Text.Regex.PCRE  ((=~))
@@ -54,10 +55,10 @@ data VersionDemand = LessThan String
                      deriving (Eq)
 
 instance Show VersionDemand where
-    show (LessThan v) = '<' : v
-    show (AtLeast v)  = ">=" ++ v
-    show (MoreThan v) = '>' : v
-    show (MustBe  v)  = '=' : v
+    show (LessThan v) = "<" <> v
+    show (AtLeast v)  = ">=" <> v
+    show (MoreThan v) = ">" <> v
+    show (MustBe  v)  = "=" <> v
     show Anything     = ""
 
 -- | A package to be installed.
@@ -90,27 +91,27 @@ newtype Repository = Repository
     { repoLookup :: String -> Aura (Maybe Package) }
 
 instance Monoid Repository where
-    mempty = Repository $ \_ -> return Nothing
+    mempty = Repository $ const (pure Nothing)
 
     a `mappend` b = Repository $ \s -> do
         mpkg <- repoLookup a s
         case mpkg of
             Nothing -> repoLookup b s
-            _       -> return mpkg
+            _       -> pure mpkg
 
 ---------------------------------
 -- Functions common to `Package`s
 ---------------------------------
 -- | Partition a list of packages into pacman and buildable groups.
-partitionPkgs :: [Package] -> ([String],[Buildable])
-partitionPkgs = partitionEithers . map (toEither . pkgInstallTypeOf)
+partitionPkgs :: [Package] -> ([String], [Buildable])
+partitionPkgs = partitionEithers . fmap (toEither . pkgInstallTypeOf)
   where toEither (Pacman s) = Left  s
         toEither (Build  b) = Right b
 
 parseDep :: String -> Dep
 parseDep s = Dep name (getVersionDemand comp ver)
     where patt = "(<|>=|>|=)" :: String
-          (name,comp,ver) = s =~ patt :: (String,String,String)
+          (name, comp, ver) = s =~ patt :: (String, String, String)
           getVersionDemand c v | c == "<"  = LessThan v
                                | c == ">=" = AtLeast v
                                | c == ">"  = MoreThan v
@@ -135,19 +136,19 @@ trueRoot action = ask >>= \ss ->
 
 -- `-Qm` yields a list of sorted values.
 -- | A list of non-prebuilt packages installed on the system.
-foreignPackages :: Aura [(String,String)]
-foreignPackages = (map fixName . lines) <$> pacmanOutput ["-Qm"]
-    where fixName = hardBreak (== ' ')
+foreignPackages :: Aura [(String, String)]
+foreignPackages = (fmap fixName . lines) <$> pacmanOutput ["-Qm"]
+    where fixName = hardBreak (' ' ==)
 
 orphans :: Aura [String]
 orphans = lines <$> pacmanOutput ["-Qqdt"]
 
 develPkgs :: Aura [String]
-develPkgs = (filter isDevelPkg . map fst) <$> foreignPackages
+develPkgs = (filter isDevelPkg . fmap fst) <$> foreignPackages
 
 isDevelPkg :: String -> Bool
 isDevelPkg p = any (`isSuffixOf` p) suffixes
-    where suffixes = ["-git","-hg","-svn","-darcs","-cvs","-bzr"]
+    where suffixes = ["-git", "-hg", "-svn", "-darcs", "-cvs", "-bzr"]
 
 -- This could be:
 -- isIgnored :: String -> Aura Bool
@@ -156,22 +157,22 @@ isIgnored :: String -> [String] -> Bool
 isIgnored pkg toIgnore = pkg `elem` toIgnore
 
 isInstalled :: String -> Aura Bool
-isInstalled pkg = pacmanSuccess ["-Qq",pkg]
+isInstalled pkg = pacmanSuccess ["-Qq", pkg]
 
 removePkgs :: [String] -> [String] -> Aura ()
-removePkgs [] _         = return ()
-removePkgs pkgs pacOpts = pacman  $ ["-Rsu"] ++ pkgs ++ pacOpts
+removePkgs [] _         = pure ()
+removePkgs pkgs pacOpts = pacman  $ ["-Rsu"] <> pkgs <> pacOpts
 
 -- Moving to a libalpm backend will make this less hacked.
 -- | True if a dependency is satisfied by an installed package.
 isSatisfied :: Dep -> Aura Bool
-isSatisfied (Dep name ver) = null <$> pacmanOutput ["-T", name ++ show ver]
+isSatisfied (Dep name ver) = null <$> pacmanOutput ["-T", name <> show ver]
 
 -- | Block further action until the database is free.
 checkDBLock :: Aura ()
 checkDBLock = do
   locked <- liftIO $ doesFileExist lockFile
-  when locked $ warn checkDBLock_1 >> liftIO getLine >> checkDBLock
+  when locked $ warn checkDBLock_1 *> liftIO getLine *> checkDBLock
 
 -------
 -- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`
@@ -195,5 +196,5 @@ scold :: (Language -> String) -> Aura ()
 scold = colouredMessage red
 
 badReport :: (Language -> String) -> [String] -> Aura ()
-badReport _ []     = return ()
+badReport _ []     = pure ()
 badReport msg pkgs = ask >>= \ss -> printList red cyan (msg $ langOf ss) pkgs

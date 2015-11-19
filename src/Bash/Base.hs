@@ -21,6 +21,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Bash.Base where
 
+import Data.Monoid
 import qualified Data.Map.Lazy as M
 import Data.Either
 import Data.Foldable
@@ -33,11 +34,11 @@ data Field = Comment  String
            | IfBlock  BashIf
            | Variable String [BashString]
            | Command  String [BashString]
-             deriving (Eq,Show)
+             deriving (Eq, Show)
 
 data BashIf = If Comparison [Field] (Maybe BashIf)
             | Else [Field]
-              deriving (Eq,Show)
+              deriving (Eq, Show)
 
 data Comparison = CompEq BashString BashString
                 | CompNe BashString BashString
@@ -45,11 +46,11 @@ data Comparison = CompEq BashString BashString
                 | CompLe BashString BashString
                 | CompGt BashString BashString
                 | CompGe BashString BashString
-                  deriving (Eq,Show)
+                  deriving (Eq, Show)
 
 data BashFor = Incr  -- for (x;y;z); do ... done  -- Incomplete!
              | Iter String BashString [Field]  -- for x in y; do ... done
-               deriving (Eq,Show)
+               deriving (Eq, Show)
 
 -- | While `String` is the main data type in Bash, there are four
 -- subtypes each with different behaviour.
@@ -57,10 +58,10 @@ data BashString = SingleQ String
                 | DoubleQ [Either BashExpansion String]
                 | NoQuote [Either BashExpansion String]
                 | Backtic Field   -- Contains a Command.
-                  deriving (Eq,Show)
+                  deriving (Eq, Show)
 
 data BashExpansion = BashExpansion String [BashString]
-                     deriving (Eq,Show)
+                     deriving (Eq, Show)
 
 type Namespace = M.Map String [BashString]
 type Script    = [Field]  -- A parsed Bash script.
@@ -79,14 +80,14 @@ toNamespace (_:fs) = toNamespace fs
 -- | Never call this directly. Use `value` in `Aura/Bash`.
 getVar :: Namespace -> String -> Maybe [String]
 getVar ns s = case M.lookup s ns of
-  Nothing -> Nothing
-  Just bs -> Just $ foldMap fromBashString bs
+                Nothing -> Nothing
+                Just bs -> Just $ foldMap fromBashString bs
 
 fromBashString :: BashString -> [String]
 fromBashString (SingleQ s) = [s]
 fromBashString (DoubleQ l) = [fold $ rights l]
 fromBashString (NoQuote l) = rights l
-fromBashString (Backtic c) = ['`' : unwords (fromCommand c) ++ "`"]
+fromBashString (Backtic c) = ["`" <> unwords (fromCommand c) <> "`"]
 
 fromCommand :: Field -> [String]
 fromCommand (Command c as) =  c : foldMap fromBashString as

@@ -33,6 +33,8 @@ import System.Environment (getArgs)
 import Control.Monad      (when)
 import System.Exit        (exitSuccess, exitFailure)
 import Data.List          (nub, sort, intercalate)
+import Data.Foldable      (traverse_)
+import Data.Monoid        ((<>))
 
 import Aura.Colour.Text (yellow)
 import Aura.Shell       (shellCmd)
@@ -58,7 +60,7 @@ import Aura.Commands.O as O
 
 ---
 
-type UserInput = ([Flag],[String],[String])
+type UserInput = ([Flag], [String], [String])
 
 auraVersion :: String
 auraVersion = "1.3.4"
@@ -66,26 +68,26 @@ auraVersion = "1.3.4"
 main :: IO a
 main = getArgs >>= prepSettings . processFlags >>= execute >>= exit
 
-processFlags :: [String] -> (UserInput,Maybe Language)
-processFlags args = ((flags,nub input,pacOpts'),language)
-    where (language,_) = parseLanguageFlag args
-          (flags,input,pacOpts) = parseFlags language args
-          pacOpts' = nub $ pacOpts ++ reconvertFlags dualFlagMap flags
-                   ++ reconvertFlags pacmanFlagMap flags
+processFlags :: [String] -> (UserInput, Maybe Language)
+processFlags args = ((flags, nub input, pacOpts'), language)
+    where (language, _) = parseLanguageFlag args
+          (flags, input, pacOpts) = parseFlags language args
+          pacOpts' = nub $ pacOpts <> reconvertFlags dualFlagMap flags
+                   <> reconvertFlags pacmanFlagMap flags
 
 -- | Set the local environment.
-prepSettings :: (UserInput,Maybe Language) -> IO (UserInput,Settings)
-prepSettings (ui,lang) = (,) ui `fmap` getSettings lang ui
+prepSettings :: (UserInput, Maybe Language) -> IO (UserInput, Settings)
+prepSettings (ui, lang) = (,) ui <$> getSettings lang ui
 
 -- | Hand user input to the Aura Monad and run it.
-execute :: (UserInput,Settings) -> IO (Either String ())
-execute ((flags,input,pacOpts),ss) = do
+execute :: (UserInput, Settings) -> IO (Either String ())
+execute ((flags, input, pacOpts), ss) = do
   let flags' = filter notSettingsFlag flags
   when (Debug `elem` flags) $ debugOutput ss
-  runAura (executeOpts (flags',input,pacOpts)) ss
+  runAura (executeOpts (flags', input, pacOpts)) ss
 
 exit :: Either String () -> IO a
-exit (Left e)  = putStrLn e >> exitFailure
+exit (Left e)  = putStrLn e *> exitFailure
 exit (Right _) = exitSuccess
 
 -- | After determining what Flag was given, dispatches a function.
@@ -94,8 +96,8 @@ exit (Right _) = exitSuccess
 -- If no matches on Aura flags are found, the flags are assumed to be
 -- pacman's.
 executeOpts :: UserInput -> Aura ()
-executeOpts ([],_,[]) = executeOpts ([Help],[],[])
-executeOpts (flags,input,pacOpts) =
+executeOpts ([], _, []) = executeOpts ([Help], [], [])
+executeOpts (flags, input, pacOpts) =
   case sort flags of
     (AURInstall:fs) ->
         case fs of
@@ -106,7 +108,7 @@ executeOpts (flags,input,pacOpts) =
           [ViewDeps]     -> A.displayPkgDeps input
           [Download]     -> A.downloadTarballs input
           [GetPkgbuild]  -> A.displayPkgbuild input
-          (Refresh:fs')  -> sudo $ syncAndContinue (fs',input,pacOpts)
+          (Refresh:fs')  -> sudo $ syncAndContinue (fs', input, pacOpts)
           _              -> scoldAndFail executeOpts_1
     (ABSInstall:fs) ->
         case fs of
@@ -117,7 +119,7 @@ executeOpts (flags,input,pacOpts) =
           [Clean]        -> sudo M.cleanABSTree
           [ViewDeps]     -> M.displayPkgDeps input
           [GetPkgbuild]  -> M.displayPkgbuild input
-          (Refresh:fs')  -> sudo $ syncABSAndContinue (fs',input,pacOpts)
+          (Refresh:fs')  -> sudo $ syncABSAndContinue (fs', input, pacOpts)
           _              -> scoldAndFail executeOpts_1
     (SaveState:fs) ->
         case fs of
@@ -129,7 +131,7 @@ executeOpts (flags,input,pacOpts) =
         case fs of
           []             -> sudo $ C.downgradePackages pacOpts input
           [Clean]        -> sudo $ C.cleanCache input
-          [Clean,Clean]  -> sudo C.cleanNotSaved
+          [Clean, Clean]  -> sudo C.cleanNotSaved
           [Search]       -> C.searchCache input
           [CacheBackup]  -> sudo $ C.backupCache input
           _              -> scoldAndFail executeOpts_1
@@ -148,18 +150,18 @@ executeOpts (flags,input,pacOpts) =
     [Languages] -> displayOutputLanguages
     [Help]      -> printHelpMsg pacOpts
     [Version]   -> getVersionInfo >>= animateVersionMsg
-    _ -> catch (pacman $ pacOpts ++ hijackedFlags ++ input) pacmanFailure
+    _ -> catch (pacman $ pacOpts <> hijackedFlags <> input) pacmanFailure
     where hijackedFlags = reconvertFlags hijackedFlagMap flags
 
 -- | `-y` was included with `-A`. Sync database before continuing.
 syncAndContinue :: UserInput -> Aura ()
-syncAndContinue (flags,input,pacOpts) =
-  syncDatabase pacOpts >> executeOpts (AURInstall:flags,input,pacOpts)
+syncAndContinue (flags, input, pacOpts) =
+  syncDatabase pacOpts *> executeOpts (AURInstall:flags, input, pacOpts)
 
 -- | `-y` was included with `-M`. Sync local ABS tree before continuing.
 syncABSAndContinue :: UserInput -> Aura ()
-syncABSAndContinue (flags,input,pacOpts) =
-  M.absSync >> executeOpts (ABSInstall:flags,input,pacOpts)
+syncABSAndContinue (flags, input, pacOpts) =
+  M.absSync *> executeOpts (ABSInstall:flags, input, pacOpts)
 
 ----------
 -- GENERAL
@@ -170,42 +172,42 @@ viewConfFile = shellCmd "less" [pacmanConfFile]
 displayOutputLanguages :: Aura ()
 displayOutputLanguages = do
   notify displayOutputLanguages_1
-  liftIO $ mapM_ print allLanguages
+  liftIO $ traverse_ print allLanguages
 
 printHelpMsg :: [String] -> Aura ()
 printHelpMsg [] = ask >>= \ss -> do
   pacmanHelp <- getPacmanHelpMsg
   liftIO . putStrLn . getHelpMsg ss $ pacmanHelp
-printHelpMsg pacOpts = pacman $ pacOpts ++ ["-h"]
+printHelpMsg pacOpts = pacman $ pacOpts <> ["-h"]
 
 getHelpMsg :: Settings -> [String] -> String
 getHelpMsg settings pacmanHelpMsg = intercalate "\n" allMessages
     where lang = langOf settings
           allMessages   = [replacedLines, auraOperMsg lang, manpageMsg lang]
-          replacedLines = unlines $ map (replaceByPatt patterns) pacmanHelpMsg
+          replacedLines = unlines (replaceByPatt patterns <$> pacmanHelpMsg)
           colouredMsg   = yellow $ inheritedOperTitle lang
-          patterns      = [("pacman","aura"), ("operations",colouredMsg)]
+          patterns      = [("pacman", "aura"), ("operations", colouredMsg)]
 
 -- | Animated version message.
 animateVersionMsg :: [String] -> Aura ()
 animateVersionMsg verMsg = ask >>= \ss -> liftIO $ do
   hideCursor
-  mapM_ (putStrLn . padString verMsgPad) verMsg  -- Version message
+  traverse_ (putStrLn . padString verMsgPad) verMsg  -- Version message
   raiseCursorBy 7  -- Initial reraising of the cursor.
   drawPills 3
-  mapM_ putStrLn $ renderPacmanHead 0 Open  -- Initial rendering of head.
+  traverse_ putStrLn $ renderPacmanHead 0 Open  -- Initial rendering of head.
   raiseCursorBy 4
   takeABite 0  -- Initial bite animation.
-  mapM_ pillEating pillsAndWidths
+  traverse_ pillEating pillsAndWidths
   clearGrid
   version ss
   showCursor
-    where pillEating (p,w) = clearGrid >> drawPills p >> takeABite w
-          pillsAndWidths   = [(2,5),(1,10),(0,15)]
+    where pillEating (p, w) = clearGrid *> drawPills p *> takeABite w
+          pillsAndWidths   = [(2, 5), (1, 10), (0, 15)]
 
 version :: Settings -> IO ()
 version ss = do
   putStrLn auraLogo
-  putStrLn $ "AURA Version " ++ auraVersion
+  putStrLn $ "AURA Version " <> auraVersion
   putStrLn " by Colin Woodbury\n"
-  mapM_ putStrLn . translatorMsg . langOf $ ss
+  traverse_ putStrLn . translatorMsg . langOf $ ss

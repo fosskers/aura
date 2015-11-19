@@ -7,7 +7,7 @@ import Aura.Core
 test_getDevelPkgs = runAura getDevelPkgs sampleSettings
 
 -- Should produce `Right []`
-test01 = runAura ((map fst `fmap` getForeignPackages) >>= filterRepoPkgs)
+test01 = runAura ((fmap fst <$> getForeignPackages) >>= filterRepoPkgs)
          sampleSettings
 
-test02 = runAura (namespaceOf `fmap` aurPkg "dwarffortress-ironhand") sampleSettings
+test02 = runAura (namespaceOf <$> aurPkg "dwarffortress-ironhand") sampleSettings

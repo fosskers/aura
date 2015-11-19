@@ -22,6 +22,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Pkgbuild.Base where
 
 import Control.Monad ((>=>))
+import Data.Monoid
 
 import Aura.Bash
 import Aura.Core
@@ -34,13 +35,13 @@ pkgbuildCache :: FilePath
 pkgbuildCache = "/var/cache/aura/pkgbuilds/"
 
 toFilename :: String -> FilePath
-toFilename = (++ ".pb")
+toFilename = (<> ".pb")
 
 pkgbuildPath :: String -> FilePath
-pkgbuildPath p = pkgbuildCache ++ toFilename p
+pkgbuildPath p = pkgbuildCache <> toFilename p
 
 trueVersion :: Namespace -> String
-trueVersion ns = pkgver ++ "-" ++ pkgrel
+trueVersion ns = pkgver <> "-" <> pkgrel
     where pkgver = head $ value ns "pkgver"
           pkgrel = head $ value ns "pkgrel"
 
@@ -56,16 +57,16 @@ checkdepends = flip value "checkdepends"
 
 -- One of my favourite functions in this code base.
 pbCustomization :: Buildable -> Aura Buildable
-pbCustomization = foldl (>=>) return [customizepkg,hotEdit]
+pbCustomization = foldl (>=>) pure [customizepkg, hotEdit]
 
 -- | Package a Buildable, running the customization handler first.
 packageBuildable :: Buildable -> Aura Package
 packageBuildable b = do
     b' <- pbCustomization b
     ns <- namespace (baseNameOf b') (pkgbuildOf b')
-    return Package
+    pure Package
         { pkgNameOf        = baseNameOf b'
         , pkgVersionOf     = trueVersion ns
-        , pkgDepsOf        = map parseDep $ concatMap ($ ns)
-                             [depends,makedepends,checkdepends]
+        , pkgDepsOf        = parseDep <$> foldMap ($ ns)
+                             [depends, makedepends, checkdepends]
         , pkgInstallTypeOf = Build b' }

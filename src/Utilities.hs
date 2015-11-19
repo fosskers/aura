@@ -28,9 +28,11 @@ import Control.Concurrent  (threadDelay)
 import System.Directory    (doesFileExist)
 import System.FilePath     (dropExtension)
 import Text.Regex.PCRE     ((=~))
-import Control.Monad       (void)
+import Data.Functor
+import Data.Monoid
 import Text.Printf         (printf)
 import Data.List           (dropWhileEnd)
+import Data.Foldable
 import Data.Char           (digitToInt)
 import System.IO
 
@@ -38,7 +40,7 @@ import Shell
 
 ---
 
-type Pattern = (String,String)
+type Pattern = (String, String)
 
 type Regex = String
 
@@ -54,8 +56,8 @@ split x xs = fst xs' : split x (snd xs')
     where xs' = hardBreak (== x) xs
 
 -- | Like break, but kills the element that triggered the break.
-hardBreak :: (a -> Bool) -> [a] -> ([a],[a])
-hardBreak _ [] = ([],[])
+hardBreak :: (a -> Bool) -> [a] -> ([a], [a])
+hardBreak _ [] = ([], [])
 hardBreak p xs = (firstHalf, secondHalf')
     where firstHalf   = takeWhile (not . p) xs
           secondHalf  = dropWhile (not . p) xs
@@ -68,14 +70,14 @@ rStrip = dropWhileEnd (`elem` whitespaces)
 
 -- The Int argument is the final length of the padded String,
 -- not the length of the pad. Is that stupid?
-postPad :: [a] -> a -> Int -> [a]
-postPad xs x len = take len $ xs ++ repeat x
+postPad :: String -> String -> Int -> String
+postPad str pad len = str <> fold (take (len - length str) $ repeat pad)
 
 prePad :: [a] -> a -> Int -> [a]
-prePad xs x len = replicate (len - length xs) x ++ xs
+prePad xs x len = replicate (len - length xs) x <> xs
 
 whitespaces :: [Char]
-whitespaces = [' ','\t']
+whitespaces = [' ', '\t']
 
 asInt :: String -> Int
 asInt = foldl (\acc i -> acc * 10 + digitToInt i) 0
@@ -84,14 +86,14 @@ asInt = foldl (\acc i -> acc * 10 + digitToInt i) 0
 -- TUPLES
 ---------
 -- I'm surprised the following three functions don't already exist.
-tripleFst :: (a,b,c) -> a
-tripleFst (a,_,_) = a
+tripleFst :: (a, b, c) -> a
+tripleFst (a, _, _) = a
 
-tripleSnd :: (a,b,c) -> b
-tripleSnd (_,b,_) = b
+tripleSnd :: (a, b, c) -> b
+tripleSnd (_, b, _) = b
 
-tripleThrd :: (a,b,c) -> c
-tripleThrd (_,_,c) = c
+tripleThrd :: (a, b, c) -> c
+tripleThrd (_, _, c) = c
 
 ---------
 -- EITHER
@@ -111,9 +113,9 @@ eitherToMaybe (Right x) = Just x
 -- | Replaces a (p)attern with a (t)arget in a line if possible.
 replaceByPatt :: [Pattern] -> String -> String
 replaceByPatt [] line = line
-replaceByPatt ((p,t):ps) line | p == m    = replaceByPatt ps (b ++ t ++ a)
+replaceByPatt ((p, t):ps) line | p == m    = replaceByPatt ps (b <> t <> a)
                               | otherwise = replaceByPatt ps line
-                         where (b,m,a) = line =~ p :: (String,String,String)
+                         where (b, m, a) = line =~ p :: (String, String, String)
 
 searchLines :: Regex -> [String] -> [String]
 searchLines pat = filter (=~ pat)
@@ -121,12 +123,12 @@ searchLines pat = filter (=~ pat)
 --------------------
 -- Association Lists
 --------------------
-alElem :: Eq k => k -> [(k,a)] -> Bool
+alElem :: Eq k => k -> [(k, a)] -> Bool
 alElem k al = case lookup k al of
                 Nothing -> False
                 Just _  -> True
 
-alNotElem :: Eq k => k -> [(k,a)] -> Bool
+alNotElem :: Eq k => k -> [(k, a)] -> Bool
 alNotElem k = not . alElem k
 
 -----
@@ -134,24 +136,24 @@ alNotElem k = not . alElem k
 -----
 -- | Given a number of selections, allows the user to choose one.
 getSelection :: [String] -> IO String
-getSelection [] = return ""
+getSelection [] = pure ""
 getSelection choiceLabels = do
   let quantity = length choiceLabels
-      valids   = map show [1..quantity]
+      valids   = show <$> [1..quantity]
       padding  = show . length . show $ quantity
       choices  = zip valids choiceLabels
-  mapM_ (uncurry (printf ("%" ++ padding ++ "s. %s\n"))) choices
+  traverse_ (uncurry (printf ("%" <> padding <> "s. %s\n"))) choices
   putStr ">> "
   hFlush stdout
   userChoice <- getLine
   case userChoice `lookup` choices of
-    Just valid -> return valid
+    Just valid -> pure valid
     Nothing    -> getSelection choiceLabels  -- Ask again.
 
 -- | Print a list of Strings with a given interval in between.
 timedMessage :: Int -> [String] -> IO ()
-timedMessage delay = mapM_ printMessage
-    where printMessage msg = putStr msg >> hFlush stdout >> threadDelay delay
+timedMessage delay = traverse_ printMessage
+    where printMessage msg = putStr msg *> hFlush stdout *> threadDelay delay
 
 notNull :: [a] -> Bool
 notNull = not . null
@@ -164,15 +166,15 @@ openEditor editor file = void $ shellCmd editor [file]
 -- Thus calling dropExtension twice should remove that section.
 decompress :: FilePath -> IO FilePath
 decompress file = do
-  _ <- quietShellCmd' "bsdtar" ["-zxvf",file]
-  return . dropExtension . dropExtension $ file
+  _ <- quietShellCmd' "bsdtar" ["-zxvf", file]
+  pure . dropExtension . dropExtension $ file
 
 -- | Perform an action within a given directory.
 inDir :: FilePath -> IO a -> IO a
-inDir dir io = pwd >>= \cur -> cd dir >> io >>= \res -> cd cur >> return res
+inDir dir io = pwd >>= \cur -> cd dir *> io >>= \res -> cd cur *> pure res
 
 noDots :: [String] -> [String]
-noDots = filter (`notElem` [".",".."])
+noDots = filter (`notElem` [".", ".."])
 
 -- | Read a file with the given encoding.
 readFileEncoding :: TextEncoding -> FilePath -> IO String
@@ -189,32 +191,29 @@ readFileUTF8 = readFileEncoding utf8
 -- MONADS
 ---------
 -- These functions need to be organized better!
--- | Simple control flow for Monads.
-ifM :: Monad m => m Bool -> (x -> m x) -> m () -> x -> m x
-ifM cond a1 a2 x = do
-  success <- cond
-  if success then a1 x else a2 >> return x
 
--- | When `False`, returns the second `x` argument instead.
-ifM2 :: Monad m => m Bool -> (x -> m x) -> m () -> x -> x -> m x
-ifM2 cond a1 a2 x1 x2 = do
-  success <- cond
-  if success then a1 x1 else a2 >> return x2
+-- | `if then else` in a function.
+ifte :: Bool -> a -> a -> a
+ifte cond t f = if cond then t else f
+
+-- | `ifte` with the condition at the end.
+ifte_ :: a -> a -> Bool -> a
+ifte_ t f cond = ifte cond t f
 
 -- | Like `when`, but with a Monadic condition.
-whenM :: Monad m => m Bool -> m () -> m ()
-whenM cond a = cond >>= \success -> if success then a else nothing
+whenM :: Monad m => m Bool -> m a -> m ()
+whenM cond' a = cond' >>= ifte_ (void a) nothing
 
 -- | Monadic 'find'. We can't use 'filterM' because monads like 'IO' can
 -- be strict.
 findM :: Monad m => (a -> m Bool) -> [a] -> m (Maybe a)
-findM _ []     = return Nothing
-findM p (x:xs) = p x >>= \found -> if found then return (Just x) else findM p xs
+findM _ []     = pure Nothing
+findM p (x:xs) = p x >>= ifte_ (pure $ Just x) (findM p xs)
 
--- | If a file exists, it performs action `a`.
--- If the file doesn't exist, it performs `b` and returns the argument.
-ifFile :: MonadIO m => (x -> m x) -> m () -> FilePath -> x -> m x
-ifFile a1 a2 file x = ifM (liftIO $ doesFileExist file) a1 a2 x
+-- | If a file exists, it performs action `t` on the argument.
+-- | If the file doesn't exist, it performs `f` and returns the argument.
+ifFile :: MonadIO m => (a -> m a) -> m b -> FilePath -> a -> m a
+ifFile t f file x = (liftIO $ doesFileExist file) >>= ifte_ (t $ x) (f $> x)
 
-nothing :: Monad m => m ()
-nothing = return ()
+nothing :: Applicative f => f ()
+nothing = pure ()

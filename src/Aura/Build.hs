@@ -27,6 +27,7 @@ module Aura.Build
 
 import System.FilePath ((</>))
 import Control.Monad (when, void, join)
+import Data.Monoid ((<>))
 
 import Aura.Colour.Text
 import Aura.Core
@@ -48,13 +49,13 @@ srcPkgStore = "/var/cache/aura/src"
 
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
 installPkgFiles :: [String] -> [FilePath] -> Aura ()
-installPkgFiles _ []          = return ()
-installPkgFiles pacOpts files = checkDBLock >> pacman (["-U"] ++ pacOpts ++ files)
+installPkgFiles _ []          = pure ()
+installPkgFiles pacOpts files = checkDBLock *> pacman (["-U"] <> pacOpts <> files)
 
 -- All building occurs within temp directories in the package cache,
 -- or in a location specified by the user with flags.
 buildPackages :: [Buildable] -> Aura [FilePath]
-buildPackages []   = return []
+buildPackages []   = pure []
 buildPackages pkgs = ask >>= \ss -> do
   let buildPath = buildPathOf ss
   result <- liftIO $ inDir buildPath (runAura (build [] pkgs) ss)
@@ -63,15 +64,15 @@ buildPackages pkgs = ask >>= \ss -> do
 -- Handles the building of Packages. Fails nicely.
 -- Assumed: All dependencies are already installed.
 build :: [FilePath] -> [Buildable] -> Aura [FilePath]
-build built []       = return $ filter notNull built
+build built []       = pure $ filter notNull built
 build built ps@(p:_) = do
   notify $ buildPackages_1 pn
-  (paths,rest) <- catch (withTempDir pn (build' ps)) (buildFail built ps)
-  build (paths ++ built) rest
+  (paths, rest) <- catch (withTempDir pn (build' ps)) (buildFail built ps)
+  build (paths <> built) rest
       where pn = baseNameOf p
         
 -- | Perform the actual build.
-build' :: [Buildable] -> Aura ([FilePath],[Buildable])
+build' :: [Buildable] -> Aura ([FilePath], [Buildable])
 build' []     = failure "build' : You should never see this."
 build' (p:ps) = ask >>= \ss -> do
   let user = buildUserOf ss
@@ -83,11 +84,11 @@ build' (p:ps) = ask >>= \ss -> do
   paths  <- moveToCachePath pNames
   when (keepSource ss) $ makepkgSource user >>= void . moveToSourcePath
   liftIO $ cd curr
-  return (paths,ps)
+  pure (paths, ps)
 
 getBuildScripts :: Buildable -> String -> FilePath -> Aura ()
 getBuildScripts pkg user currDir = do
-  scriptsDir <- liftIO $ chown user currDir [] >> buildScripts pkg currDir
+  scriptsDir <- liftIO $ chown user currDir [] *> buildScripts pkg currDir
   case scriptsDir of
     Nothing -> scoldAndFail (buildFail_7 $ baseNameOf pkg)
     Just sd -> liftIO $ do
@@ -104,20 +105,20 @@ getBuildScripts pkg user currDir = liftIO $ do
 overwritePkgbuild :: Buildable -> Aura ()
 overwritePkgbuild p = asks (\ss -> any ($ ss) checks) >>=
                       flip when (liftIO . writeFile "PKGBUILD" . pkgbuildOf $ p)
-    where checks = [mayHotEdit,useCustomizepkg]
+    where checks = [mayHotEdit, useCustomizepkg]
 
 -- Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
-buildFail :: [FilePath] -> [Buildable] -> String -> Aura ([FilePath],[Buildable])
+buildFail :: [FilePath] -> [Buildable] -> String -> Aura ([FilePath], [Buildable])
 buildFail _ [] _ = failure "buildFail : You should never see this message."
 buildFail _ (p:_) errors = do  -- asks langOf >>= \lang -> do
   scold $ buildFail_1 (baseNameOf p)
   displayBuildErrors errors
---  printList red cyan (buildFail_2 lang) (map pkgBase ps)
---  printList yellow cyan (buildFail_3 lang) $ map takeFileName built
+--  printList red cyan (buildFail_2 lang) (pkgBase <$> ps)
+--  printList yellow cyan (buildFail_3 lang) (takeFileName <$> built)
   response <- optionalPrompt buildFail_6
   if response
-     then return ([],[])
+     then pure ([], [])
      else scoldAndFail buildFail_5
 
 -- If the user wasn't running Aura with `-x`, then this will
@@ -125,11 +126,11 @@ buildFail _ (p:_) errors = do  -- asks langOf >>= \lang -> do
 displayBuildErrors :: Error -> Aura ()
 displayBuildErrors errors = ask >>= \ss -> when (suppressMakepkg ss) $ do
   putStrA red (displayBuildErrors_1 $ langOf ss)
-  liftIO (timedMessage 1000000 ["3.. ","2.. ","1..\n"] >> putStrLn errors)
+  liftIO (timedMessage 1000000 ["3.. ", "2.. ", "1..\n"] *> putStrLn errors)
 
 -- Moves a file to the pacman package cache and returns its location.
 moveToCachePath :: [FilePath] -> Aura [FilePath]
-moveToCachePath []     = return []
+moveToCachePath []     = pure []
 moveToCachePath (p:ps) = do
   newName <- ((</> p) . cachePathOf) <$> ask
   liftIO $ mv p newName
@@ -137,7 +138,7 @@ moveToCachePath (p:ps) = do
 
 -- Moves a file to the aura src package cache and returns its location.
 moveToSourcePath :: [FilePath] -> Aura [FilePath]
-moveToSourcePath []     = return []
+moveToSourcePath []     = pure []
 moveToSourcePath (p:ps) = do
   let newName = srcPkgStore </> p
   liftIO $ mv p newName
