@@ -1,5 +1,15 @@
 Aura Changelog
 ==============
+1.3.4
+-----
+- Bash parser bug fix. Fixes some packages.
+
+1.3.3
+-----
+- Bash parser extended to be able to handle bash array expansions.
+  This enables packages with more (Bash-wise) complex PKGBUILDs to build
+  properly.
+
 1.3.2.1
 -------
 - `-Ai` and `-As` show popularity values.
