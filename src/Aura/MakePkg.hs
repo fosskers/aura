@@ -84,7 +84,8 @@ makepkgQuiet :: User -> [Text] -> Sh (Either Text [FilePath])
 makepkgQuiet = makepkgGen quiet
   where quiet com opts = do
           output <- run com opts
-          ifte_ (Right ()) (Left output) <$> wasSuccessful -- TODO: stderr?
+          stderr <- lastStderr
+          ifte_ (Right ()) (Left $ stderr <> "\n" <> output) <$> wasSuccessful
 
 makepkgVerbose :: User -> [Text] -> Sh (Either Text [FilePath])
 makepkgVerbose = makepkgGen verbose
