@@ -90,6 +90,7 @@ executable aura
                        bytestring,
                        containers,
                        directory,
+                       extensible-effects,
                        filepath,
                        lens,
                        mtl,

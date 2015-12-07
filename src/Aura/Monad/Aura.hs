@@ -1,4 +1,4 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, TypeOperators #-}
 
 {-
 
@@ -32,8 +32,11 @@ module Aura.Monad.Aura
     , asks
     ) where
 
-import Control.Monad.Except
-import Control.Monad.Reader
+import Data.Void
+import Control.Eff
+import Control.Eff.Exception
+import Control.Eff.Lift
+import Control.Eff.Reader.Strict
 
 import Aura.Settings.Base (Settings)
 
@@ -49,19 +52,22 @@ liftIO  : Perform intermittent IO using `liftIO`.
 ask     : Obtain run-time settings.
 runAura : Unwraps an Aura action. Must be passed `Settings` as well.
 -}
-newtype Aura a = A { runA :: ExceptT String (ReaderT Settings IO) a }
-  deriving ( Monad, MonadError String, MonadReader Settings, MonadIO,
-             Functor, Applicative)
+type Aura a = Eff (Exc String :> Reader Settings :> Lift IO :> Void) a
 
 runAura :: Aura a -> Settings -> IO (Either String a)
-runAura = runReaderT . runExceptT . runA
+runAura a s = runLift $ flip runReader s $ runExc a
 
 failure :: String -> Aura a
-failure = throwError
+failure = throwExc
 
 catch :: Aura a -> (String -> Aura a) -> Aura a
-catch a h = catchError a h
+catch = catchExc
 
 wrap :: Either String a -> Aura a
-wrap (Left m)  = failure m
-wrap (Right a) = pure a
+wrap = liftEither
+
+liftIO :: IO a -> Aura a
+liftIO = lift
+
+asks :: (Settings -> a) -> Aura a
+asks = flip fmap ask
