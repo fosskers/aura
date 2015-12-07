@@ -25,7 +25,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Dependencies ( resolveDeps ) where
 
-import           Control.Monad.State
+import           Control.Eff.State.Strict
 import           Data.Graph
 import           Data.Maybe
 import qualified Data.Map as Map
@@ -43,7 +43,7 @@ import           Utilities           (whenM, tripleFst)
 
 resolveDeps :: Repository -> [Package] -> Aura [Package]
 resolveDeps repo ps =
-    sortInstall . Map.elems <$> execStateT (traverse_ addPkg ps) Map.empty
+    sortInstall . Map.elems <$> runState (traverse_ addPkg ps) Map.empty
   where
     addPkg pkg = whenM (isNothing <$> getPkg (pkgNameOf pkg)) $ do
         traverse_ addDep (pkgDepsOf pkg)

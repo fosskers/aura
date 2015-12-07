@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeOperators #-}
 -- Utility functions too general even for Aura.Utils
 
 {-
@@ -23,7 +24,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Utilities where
 
-import Control.Monad.Trans (liftIO, MonadIO)
+import Control.Eff         (Eff,(:>))
+import Control.Eff.Lift    (Lift,lift)
 import Control.Concurrent  (threadDelay)
 import System.Directory    (doesFileExist)
 import System.FilePath     (dropExtension)
@@ -212,8 +214,8 @@ findM p (x:xs) = p x >>= ifte_ (pure $ Just x) (findM p xs)
 
 -- | If a file exists, it performs action `t` on the argument.
 -- | If the file doesn't exist, it performs `f` and returns the argument.
-ifFile :: MonadIO m => (a -> m a) -> m b -> FilePath -> a -> m a
-ifFile t f file x = (liftIO $ doesFileExist file) >>= ifte_ (t $ x) (f $> x)
+ifFile :: (a -> IO a) -> Eff (Lift IO :> r) b -> FilePath -> a -> Eff (Lift IO :> r) a
+ifFile t f file x = (lift $ doesFileExist file) >>= ifte_ (lift $ t $ x) (f $> x)
 
 nothing :: Applicative f => f ()
 nothing = pure ()
