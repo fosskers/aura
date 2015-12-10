@@ -157,6 +157,7 @@ langFromEnv = \case
 checkDBLock_1 :: Language -> String
 checkDBLock_1 = \case
     Japanese   -> "パッケージデータベースが今閉鎖状態。開放したらキーを押して続行をどうぞ。"
+    Polish     -> "Baza pakietów jest zablokowana. Kiedy zostanie odblokowana naciśnij enter aby kontynuować"
     Croatian   -> "Baza paketa je zaključana. Kad se otključa, pritisnite enter da biste nastavili."
     German     -> "Die Paketdatenbank ist gesperrt. Drücken Sie Enter wenn sie entsperrt ist um fortzufahren."
     Norwegian  -> "Pakkedatabasen er låst. Trykk enter når den er åpnet for å fortsette."
@@ -333,6 +334,7 @@ buildFail_5 = \case
 buildFail_6 :: Language -> String
 buildFail_6 = \case
     Japanese   -> "それでも続行？"
+    Polish     -> "Czy mimo to chcesz kontynuować?"
     Croatian   -> "Želite li svejedno nastaviti?"
     German     -> "Möchten Sie trotzdem fortfahren?"
     Norwegian  -> "Vil du fortsette likevel?"
@@ -347,6 +349,7 @@ buildFail_6 = \case
 buildFail_7 :: String -> Language -> String
 buildFail_7 (bt -> p) = \case
     Japanese   -> p <> "の作成スクリプトを収得できなかった。"
+    Polish     -> "Nie udało się pozyskać skryptów budowania dla " <> p <> "."
     German     -> "Herunterladen der Build-Skripte für " <> p <> " fehlgeschlagen."
     Portuguese -> "Falhou para obter scripts de compilação para " <> p <> "."
     Indonesia  -> "Gagal mendapatkan skrip untuk " <> p <> "."
@@ -428,6 +431,7 @@ getRealPkgConflicts_2 (bt -> p) = \case
 -- NEEDS TRANSLATION
 missingPkg_1 :: String -> Language -> String
 missingPkg_1 (bt -> p) = \case
+    Polish     -> "Zależność " <> p <> "nie została znaleziona. Musisz wyszukać pakiet, żeby spełnić zależność "
     Croatian   -> "Zavisnost  " <> p <> " nije pronađena. Pokušajte pronaći paket koji zadovoljava ovu zavisnost."
     German     -> "Die Abhängigkeit " <> p <> " wurde nicht gefunden." -- Second sentence not translated because I'm confused how it should
                                                                        -- help anyone, and can't think of a translation for 'may need to'
@@ -500,6 +504,7 @@ displayOutputLanguages_1 = \case
 auraCheck_1 :: Language -> String
 auraCheck_1 = \case
     Japanese   -> "Auraアップグレードあり。先にAuraだけを？"
+    Polish     -> "Dostępna jest nowa wersja Aura. Czy chcesz ją najpierw aktualizować?"
     Croatian   -> "Dostupna je nova verzija Aura. Želite li prvo ažurirati?"
     German     -> "Ein Update für aura ist verfügbar. Dies zuerst aktualisieren?"
     Norwegian  -> "En Aura-oppdatering er tilgjengelig. Oppdater den først?"
@@ -598,6 +603,7 @@ install_5 = \case
 confirmIgnored_1 :: String -> Language -> String
 confirmIgnored_1 (bt -> p) = \case
     Japanese   -> p <> "は無視されるはずのパッケージ。それでも続行？"
+    Polish     -> p <> " jest oznaczony jako ignorowany. Zainstalować mimo tego?"
     Portuguese -> p <> " está marcado como Ignored. Instalá-lo mesmo assim?"
     Russian    -> p <> " отмечен как игнорируемый. Всё равно установить?"
     _          -> p <> " is marked as Ignored. Install anyway?"
@@ -641,6 +647,7 @@ reportIgnoredPackages_1 = \case
 reportUnneededPackages_1 :: Language -> String
 reportUnneededPackages_1 = \case
     Japanese   -> "下記のパッケージは既にインストールされている："
+    Polish     -> "Następujące pakiety zostały już zainstalowane:"
     Portuguese -> "Os seguintes pacotes já estão instalados:"
     Russian    -> "Следующие пакеты уже установлены:"
     German     -> "Die folgenden Pakete sind bereits installiert:"
@@ -667,6 +674,7 @@ reportPkgsToInstall_1 = \case
 reportPkgsToInstall_2 :: String -> Language -> String
 reportPkgsToInstall_2 l = \case
     Japanese   -> l <> "のパッケージ:"
+    Polish     -> l <> " Pakiety:"
     Croatian   -> l <> " Paketi:"
     German     -> l <> " Pakete:"
     Norwegian  -> l <> " Pakker:"
@@ -907,6 +915,7 @@ removeMakeDepsAfter_1 = \case
 cleanStates_1 :: Language -> String
 cleanStates_1 = \case
     Japanese   -> "入力は数字ではない。"
+    Polish     -> "Dane wejściowe nie są poprawną liczbą"
     Croatian   -> "Unos ne predstavlja broj."
     German     -> "Eingabe ist keine gültige Zahl."
     Serbian    -> "Улаз није валидан број."
@@ -922,6 +931,7 @@ cleanStates_1 = \case
 cleanStates_2 :: Int -> Language -> String
 cleanStates_2 (bt . show -> n) = \case
     Japanese   -> n <> "個のパッケージ状態記録だけが残される。その他削除？"
+    Polish     -> n <> " stan pakietów zostanie zachowany. Usunąć resztę?"
     Croatian   -> n <> " stanja paketa će biti zadržano. Ukloniti ostatak?"
     German     -> n <> " Paketzustände werden behalten. Den Rest entfernen?"
     Serbian    -> n <> " стања пакета ће бити сачувано. Уклонити остатак?"
@@ -937,6 +947,7 @@ cleanStates_2 (bt . show -> n) = \case
 cleanStates_3 :: Language -> String
 cleanStates_3 = \case
     Japanese   -> "何も削除しないで終了。"
+    Polish     -> "Żaden stan pakietu nie został usunięty."
     Croatian   -> "Nijedno stanje paketa nije uklonjeno."
     German     -> "Keine Paketzustände wurden entfernt."
     Serbian    -> "Ниједно стање пакета није уклоњено."
@@ -1244,6 +1255,7 @@ cleanCache_6 = \case
 cleanNotSaved_1 :: Language -> String
 cleanNotSaved_1 = \case
     Japanese   -> "不要パッケージファイルを確認・・・"
+    Polish     -> "Określanie niepotrzebnych plków pakietów"
     Croatian   -> "Pronalazim nepotrebne datoteke paketa..."
     German     -> "Bestimme nicht benötigte Paketdateien..."
     Norwegian  -> "Finner unødige pakkefiler..."
@@ -1258,6 +1270,7 @@ cleanNotSaved_1 = \case
 cleanNotSaved_2 :: Int -> Language -> String
 cleanNotSaved_2 (cyan . show -> s) = \case
     Japanese   -> "「" <> s <> "」の不要パッケージファイルあり。削除？"
+    Polish     -> s <> " niepotrzebnych plików zostało znalezionych. Usunąć?"
     Croatian   -> s <> " nepotrebnih datoteka pronađeno. Obrisati?"
     German     -> s <> " nicht benötigte Paketdateien gefunden. Löschen?"
     Norwegian  -> s <> " unødige pakkefiler funnet. Vil du slette?"
@@ -1312,6 +1325,7 @@ reportNotInLog_1 = \case
 cleanABSTree_1 :: Language -> String
 cleanABSTree_1 = \case
     Japanese   -> "ABS Treeの中身を削除？"
+    Polish     -> "Skasować całe drzewo ABS?"
     Croatian   -> "Obrisati cijelo ABS stablo?"
     German     -> "Den gesamten ABS-Baum löschen?"
     Norwegian  -> "Slett hele ABS-treet?"
@@ -1326,6 +1340,7 @@ cleanABSTree_1 = \case
 cleanABSTree_2 :: Language -> String
 cleanABSTree_2 = \case
     Japanese   -> "ABS Treeの中身を削除中・・・"
+    Polish     -> "Usuwanie drzewa ABS..."
     Croatian   -> "Brišem ABS stablo..."
     German     -> "Lösche ABS-Baum..."
     Norwegian  -> "Renser ABS-treet..."
@@ -1393,6 +1408,7 @@ aurSy = green . \case
 -- NEEDS TRANSLATION
 absSy :: Language -> String
 absSy = magenta . \case
+    Polish     -> "Wykonuje akcje związane z drzewem ABS" <> "Domyślna akcja to [M]anualne budowanie z drzewa ABS"
     Croatian   -> "Izvršava operacije sa ABS stablom.\n" <> "Uobičajena (default) radnja je ručna izgradnja iz ABS stabla ([M]anual)."
     German     -> "Führe Aktionen aus, die den ABS-Baum betreffen.\n" <> "Standardaktion baut [M]anuell aus dem ABS."
     Norwegian  -> "Utfør handlinger som involverer ABS-treet.\n" <> "Standard-handling bygger [M]anuelt fra ABS."
@@ -1406,6 +1422,7 @@ absSy = magenta . \case
 saveS :: Language -> String
 saveS = yellow . \case
     Japanese   -> "パッケージの設置状態に関する処理\n" <> "デフォルトでインストール状態を保存する。"
+    Polish     -> "Zarządza zachowywaniem oraz odtwarzaniem globalnego stanu pakietów.\n" <> "Domyślnie zachowuje stan" 
     Croatian   -> "Upravlja spremanjem i vraćanjem globalnog stanja paketa.\n" <> "Uobičajena (default) radnja je spremanje trenutnog stanja paketa."
     German     -> "Verwalte das [S]peichern und Wiederherstellen der globalen Paketzustände.\n" <> "Standardaktion sichert die Zustände."
     Serbian    -> "Управља чувањем и враћањем глобалног стања пакета.\n" <> "Уобичајена радња чува тренутно стање."
@@ -1475,6 +1492,7 @@ orpha = blue . \case
 getAURPkgInfo_1 :: Language -> String
 getAURPkgInfo_1 = \case
     Japanese   -> "AURのAPIに繋げなかった。ネット接続状態を確認して下さい。"
+    Polish     -> "AUR API wyszukiwanie nie powiodło się. Sprawdź swoje połączenie"
     Croatian   -> "Pristup AUR-u nije uspio. Provjerite svoju vezu."
     German     -> "AUR-API-Suche fehlgeschlagen. Bitte überprüfen Sie Ihre Internet-Verbindung."
     Serbian    -> "Приступ AUR-у није успео. Проверите вашу везу."
@@ -1490,7 +1508,7 @@ getAURPkgInfo_1 = \case
 infoFields :: Language -> [String]
 infoFields = \case
     Japanese   -> [ "リポジトリ", "名前", "バージョン", "パッケージ状態", "管理者", "プロジェクト", "パッケージページ", "ライセンス", "従属パッケージ", "作成時従属パ", "投票数", "人気", "概要" ]
-    Polish     -> [ "Repository", "Nazwa", "Wersja", "Status w AUR", "Maintainer", "URL Projektu", "URL w AUR", "Licencja", "Depends On", "Build Deps", "Głosy", "Popularity", "Opis" ]
+    Polish     -> [ "Repozytorium", "Nazwa", "Wersja", "Status w AUR", "Maintainer", "URL Projektu", "URL w AUR", "Licencja", "Depends On", "Build Deps", "Głosy", "Popularity", "Opis" ]
     Croatian   -> [ "Repozitorij", "Ime", "Verzija", "AUR Stanje", "Maintainer", "URL Projekta", "AUR URL", "Licenca", "Depends On", "Build Deps", "Glasovi", "Popularity", "Opis" ]
     Swedish    -> [ "Repository", "Namn", "Version", "AUR Status", "Maintainer", "Projekt URL", "AUR URL", "Licens", "Depends On", "Build Deps", "Röster", "Popularity", "Beskrivning" ]
     German     -> [ "Repository", "Name", "Version", "AUR-Status", "Maintainer", "Projekt-URL", "AUR-URL", "Lizenz", "Hängt ab von", "Build-Abhängigkeiten", "Stimmen", "Popularity", "Beschreibung" ]
@@ -1541,6 +1559,7 @@ orphanedMsg :: Maybe String -> Language -> String
 orphanedMsg (Just m) = const $ bForeground m
 orphanedMsg Nothing = red . \case
     Japanese   -> "いない"
+    Polish     -> "Osierocony!"
     Croatian   -> "Nema roditelja!"
     German     -> "Verwaist!"
     Norwegian  -> "Foreldreløs!"
@@ -1557,6 +1576,7 @@ orphanedMsg Nothing = red . \case
 absSync_1 :: Language -> String
 absSync_1 = \case
     Japanese   -> "ローカルABS Treeを同期？"
+    Polish     -> "Synchronizować lokalne drzewo ABS?"
     Croatian   -> "Sinkronizirati lokalno ABS stablo?"
     German     -> "Lokalen ABS-Baum synchronisieren?"
     Norwegian  -> "Synkroniser det lokale ABS-treet?"
@@ -1570,6 +1590,7 @@ absSync_1 = \case
 absSync_2 :: Language -> String
 absSync_2 = \case
     Japanese   -> "ローカルABS Treeを同期中・・・"
+    Polish     -> "Synchronizacja lokalnego drzewa ABS..."
     Croatian   -> "Sinkroniziram lokalno ABS stablo..."
     German     -> "Synchronisiere lokalen ABS-Baum..."
     Norwegian  -> "Synkroniserer det lokale ABS-treet..."
@@ -1583,6 +1604,7 @@ absSync_2 = \case
 singleSync_1 :: String -> Language -> String
 singleSync_1 (bt -> p) = \case
     Japanese   -> p <> "をABS Treeに同期・・・"
+    Polish     -> "Synchronizowanie " <> p <> " do lokalnego drzewa ABS"
     Croatian   -> "Sinkroniziram " <> p <> " u lokalnom stablu..."
     German     -> "Synchronisiere " <> p <> " in den lokalen ABS-Baum..."
     Norwegian  -> "Synkroniserer " <> p <> " til det lokale ABS-treet..."
@@ -1595,6 +1617,7 @@ singleSync_1 (bt -> p) = \case
 
 absInfoFields :: Language -> [String]
 absInfoFields = \case
+    Polish     -> [ "Repozytorium", "Nazwa", "Wersja", "Zależności", "Zależności Make", "Opis"]
     Croatian   -> [ "Repozitorij", "Ime", "Verzija", "Zavisnosti", "Make Zavisnosti", "Opis" ]
     German     -> [ "Repository", "Name", "Version", "Hängt ab von", "Make-Abhängigkeiten", "Beschreibung"]
     Norwegian  -> [ "Depot", "Navn", "Versjon", "Er avhengig av", "Make Deps", "Beskrivelse"]
@@ -1608,6 +1631,7 @@ absInfoFields = \case
 repository_1 :: String -> Language -> String
 repository_1 p = \case
     Japanese   -> p <> "はどのリポジトリにもない。"
+    Polish     -> p <> " nie jest pakietem w żadnym repozytorium"
     Croatian   -> p <> "nije paket u repozitoriju."
     German     -> p <> " ist kein Paket in irgendeinem Repository."
     Norwegian  -> p <> " er ikke en pakke i noe depot."
@@ -1620,6 +1644,7 @@ repository_1 p = \case
 
 pkgbuildKeyMissing :: String -> Language -> String
 pkgbuildKeyMissing key = \case
+    Polish     -> "Nie można sprawdzić klucza " <> key <> "z PKGBUILD"
     Croatian   -> "Nemoguće izvući vrijednost za " <> key <> " iz PKGBUILD-a."
     German     -> "Kann Schlüssel " <> key <> " nicht aus PKGBUILD parsen."
     Norwegian  -> "Forstår ikke " <> key <> " fra PKGBUILD."
@@ -1632,6 +1657,7 @@ pkgbuildKeyMissing key = \case
 
 missingDescription :: Language -> String
 missingDescription = \case
+    Polish     -> "Brak opisu"
     Croatian   -> "Nema opisa."
     German     -> "Keine Beschreibung."
     Norwegian  -> "Ingen beskrivelse."
@@ -1649,6 +1675,7 @@ missingDescription = \case
 saveState_1 :: Language -> String
 saveState_1 = \case
     Japanese   -> "現在パッケージ状態保存完了。"
+    Polish     -> "Zachowano stan pakietów"
     Croatian   -> "Stanje paketa spremljeno."
     German     -> "Paketzustand gesichert."
     Serbian    -> "Сачувано стање пакета."
@@ -1664,6 +1691,7 @@ saveState_1 = \case
 restoreState_1 :: Language -> String
 restoreState_1 = \case
     Japanese   -> "対象バージョンがないパッケージ："
+    Polish     -> "Starsze wersje nie są dostępne dla:"
     Croatian   -> "Tražene stare verzije nisu dostupne za:"
     German     -> "Gewünschte Downgrade-Versionen nicht verfügbar für:"
     Serbian    -> "Захтеване старе верзије нису доступне за:"
@@ -1679,6 +1707,7 @@ restoreState_1 = \case
 reinstallAndRemove_1 :: Language -> String
 reinstallAndRemove_1 = \case
     Japanese   -> "パッケージを変更する必要ない。"
+    Polish     -> "Żaden pakiet nie wymaga zmian"
     Croatian   -> "Nema paketa kojima su potrebne izmjene."
     German     -> "Keine Pakete brauchen Änderungen."
     Serbian    -> "Ниједан пакет не захтева измене."
@@ -1697,6 +1726,7 @@ reinstallAndRemove_1 = \case
 circDep_1 :: String -> Language -> String
 circDep_1 (bt  -> p) = \case
     Japanese   -> p <> "と互いに従属している。"
+    Polish     -> "Posiada cykliczną zależność z" <> p <> "."
     Croatian   -> "Ima kružnu zavisnost sa " <> p <> "."
     German     -> "Hat eine zirkuläre Abhängigkeit mit " <> p <> "."
     Serbian    -> "Има кружну зависност са " <> p <> "."
@@ -1712,6 +1742,7 @@ circDep_1 (bt  -> p) = \case
 bashisms_1 :: Language -> String
 bashisms_1 = \case
     Japanese   -> "PKGBUILDのBashコードが複雑すぎる。"
+    Polish     -> "Za dużo Bash-ismu w PKGBUILD"
     Croatian   -> "Previše „bash-izama“ u PKGBUILD-u."
     German     -> "Zu viele „bashismen“ im PKGBUILD."
     Serbian    -> "Превише „bash-изама“ у PKGBUILD-у."
@@ -1730,6 +1761,7 @@ bashisms_1 = \case
 pacmanFailure_1 :: Language -> String
 pacmanFailure_1 = \case
     Japanese   -> "入力を確認して下さい。"
+    Polish     -> "Sprawdź swoje dane wejściowe"
     Croatian   -> "Molim vas, provjerite svoj unos."
     German     -> "Bitte überprüfen Sie Ihre Eingabe."
     Serbian    -> "Молим Вас, проверите ваш унос."
@@ -1764,6 +1796,7 @@ hotEdit_1 (bt -> p) = \case
 customizepkg_1 :: Language -> String
 customizepkg_1 = let customizepkg = bt "customizepkg" in \case
     Japanese   -> customizepkg <> "はインストールされていない。"
+    Polish     -> customizepkg <> "nie zainstalowany."
     Croatian   -> customizepkg <> "nije instaliran."
     German     -> customizepkg <> "ist nicht installiert."
     Norwegian  -> customizepkg <> "er ikke installert."
@@ -1780,6 +1813,7 @@ customizepkg_1 = let customizepkg = bt "customizepkg" in \case
 
 yesNoMessage :: Language -> String
 yesNoMessage = \case
+    Polish     -> "[T/n]"
     Croatian   -> "[D/n]"
     German     -> "[J/n]"
     Norwegian  -> "[J/n]"
@@ -1790,6 +1824,7 @@ yesNoMessage = \case
 
 yesRegex :: Language -> String
 yesRegex = (<> "|^$") . \case
+    Polish     -> "[tT][aA][kK]?"
     Croatian   -> "[dD][aA]?"
     German     -> "[jJ][aA]?"
     Norwegian  -> "[jJ][aA]?"
