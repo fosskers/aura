@@ -1,4 +1,4 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, TypeOperators #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, TypeOperators, FlexibleContexts, Rank2Types #-}
 
 {-
 
@@ -23,20 +23,25 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Monad.Aura
     ( Aura
+    , AuraEff
     , runAura
     , failure
     , catch
     , wrap
     , liftIO
+    , liftShelly
     , ask
     , asks
     ) where
 
-import Data.Void
 import Control.Eff
 import Control.Eff.Exception
 import Control.Eff.Lift
 import Control.Eff.Reader.Strict
+
+import qualified Data.Text as T
+
+import qualified Shelly as S
 
 import Aura.Settings.Base (Settings)
 
@@ -52,22 +57,26 @@ liftIO  : Perform intermittent IO using `liftIO`.
 ask     : Obtain run-time settings.
 runAura : Unwraps an Aura action. Must be passed `Settings` as well.
 -}
-type Aura a = Eff (Exc String :> Reader Settings :> Lift IO :> Void) a
+type AuraEff r a = (Member (Exc T.Text) r, Member (Reader Settings) r, SetMember Lift (Lift S.Sh) r) => Eff r a
+type Aura a = forall r . AuraEff r a
 
-runAura :: Aura a -> Settings -> IO (Either String a)
-runAura a s = runLift $ flip runReader s $ runExc a
+runAura :: Aura a -> Settings -> IO (Either T.Text a)
+runAura a s = S.shelly $ runLift $ flip runReader s $ runExc a
 
-failure :: String -> Aura a
+failure :: T.Text -> Aura a
 failure = throwExc
 
-catch :: Aura a -> (String -> Aura a) -> Aura a
+catch :: Aura a -> (T.Text -> Aura a) -> Aura a
 catch = catchExc
 
-wrap :: Either String a -> Aura a
+wrap :: Either T.Text a -> Aura a
 wrap = liftEither
 
 liftIO :: IO a -> Aura a
-liftIO = lift
+liftIO = lift . S.liftIO
+
+liftShelly :: S.Sh a -> Aura a
+liftShelly = lift
 
 asks :: (Settings -> a) -> Aura a
 asks = flip fmap ask

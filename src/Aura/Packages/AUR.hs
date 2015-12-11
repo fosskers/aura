@@ -39,7 +39,7 @@ import           Data.Monoid          ((<>))
 import           Data.Maybe
 import qualified Data.Text            as T
 import           Linux.Arch.Aur
-import           System.FilePath      ((</>))
+import           Filesystem.Path.CurrentOS      (FilePath,(</>),fromText)
 
 import           Aura.Monad.Aura
 import           Aura.Pkgbuild.Base
@@ -48,34 +48,36 @@ import           Aura.Core
 
 import           Utilities            (decompress)
 import           Internet
+import           Prelude hiding (FilePath)
 
 ---
 
-aurLookup :: String -> Aura (Maybe Buildable)
-aurLookup name = fmap (makeBuildable name . T.unpack) <$> pkgbuild name
+aurLookup :: T.Text -> Aura (Maybe Buildable)
+aurLookup name = fmap (makeBuildable name) <$> pkgbuild' name
 
 aurRepo :: Repository
 aurRepo = Repository $ aurLookup >=> traverse packageBuildable
 
-makeBuildable :: String -> Pkgbuild -> Buildable
+makeBuildable :: T.Text -> Pkgbuild -> Buildable
 makeBuildable name pb = Buildable
     { baseNameOf   = name
     , pkgbuildOf   = pb
     , isExplicit   = False
     , buildScripts = f }
-    where f fp = sourceTarball fp (T.pack name) >>= traverse decompress
+    where f :: FilePath -> Aura (Maybe FilePath)
+          f fp = liftIO ( sourceTarball fp name ) >>= traverse (liftShelly . decompress)
 
-isAurPackage :: String -> Aura Bool
-isAurPackage name = isJust <$> pkgbuild name
+isAurPackage :: T.Text -> Aura Bool
+isAurPackage name = isJust <$> pkgbuild' name
 
 ----------------
 -- AUR PKGBUILDS
 ----------------
-aurLink :: String
+aurLink :: T.Text
 aurLink = "https://aur.archlinux.org"
 
-pkgUrl :: String -> String
-pkgUrl pkg = aurLink </> "packages" </> pkg
+pkgUrl :: T.Text -> FilePath
+pkgUrl pkg = fromText aurLink </> "packages" </> fromText pkg
 
 ------------------
 -- SOURCE TARBALLS
@@ -84,7 +86,7 @@ sourceTarball :: FilePath            -- ^ Where to save the tarball.
               -> T.Text              -- ^ Package name.
               -> IO (Maybe FilePath) -- ^ Saved tarball location.
 sourceTarball path = fmap join . (info >=> traverse f)
-    where f = saveUrlContents path . (aurLink <>) . T.unpack . urlPathOf
+    where f = saveUrlContents path . (aurLink <>) . urlPathOf
 
 ------------
 -- RPC CALLS

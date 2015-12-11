@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 -- Library for printing an animated AURA version message.
 
 {-
@@ -30,34 +31,35 @@ import Data.Foldable      (traverse_, fold)
 
 import Aura.Colour.Text (yellow)
 
-import Utilities        (prePad)
-import Shell            (cursorUpLineCode)
+import Aura.Shell            (cursorUpLineCode)
+import qualified Data.Text as T
+import qualified Data.Text.IO as IO
 
 ---
 
 data MouthState = Open | Closed deriving (Eq)
 
 -- Taken from: figlet -f small "aura"
-auraLogo :: String
+auraLogo :: T.Text
 auraLogo = " __ _ _  _ _ _ __ _ \n" <>
            "/ _` | || | '_/ _` |\n" <>
            "\\__,_|\\_,_|_| \\__,_|"
 
-openMouth :: [String]
+openMouth :: [T.Text]
 openMouth = yellow <$>
             [ " .--."
             , "/ _.-'"
             , "\\  '-."
             , " '--'" ]
 
-closedMouth :: [String]
+closedMouth :: [T.Text]
 closedMouth = yellow <$>
               [ " .--."
               , "/ _..\\"
               , "\\  ''/"
               , " '--'" ]
 
-pill :: [String]
+pill :: [T.Text]
 pill = [ ""
        , ".-."
        , "'-'"
@@ -66,36 +68,36 @@ pill = [ ""
 takeABite :: Int -> IO ()
 takeABite pad = drawMouth Closed *> drawMouth Open
     where drawMouth mouth = do
-            traverse_ putStrLn $ renderPacmanHead pad mouth
+            traverse_ IO.putStrLn $ renderPacmanHead pad mouth
             raiseCursorBy 4
             hFlush stdout
             threadDelay 125000
 
 drawPills :: Int -> IO ()
-drawPills numOfPills = traverse_ putStrLn pills
+drawPills numOfPills = traverse_ IO.putStrLn pills
     where pills = renderPills numOfPills
 
 raiseCursorBy :: Int -> IO ()
-raiseCursorBy = putStr . raiseCursorBy'
+raiseCursorBy = IO.putStr . raiseCursorBy'
 
-raiseCursorBy' :: Int -> String
+raiseCursorBy' :: Int -> T.Text
 raiseCursorBy' = cursorUpLineCode
 
 clearGrid :: IO ()
-clearGrid = putStr blankLines *> raiseCursorBy 4
+clearGrid = IO.putStr blankLines *> raiseCursorBy 4
     where blankLines = fold . replicate 4 . padString 23 $ "\n"
 
-renderPill :: Int -> [String]
+renderPill :: Int -> [T.Text]
 renderPill pad = padString pad <$> pill
 
-renderPills :: Int -> [String]
+renderPills :: Int -> [T.Text]
 renderPills numOfPills = take numOfPills pillPostitions >>= render
     where pillPostitions = [17, 12, 7]
           render pos = renderPill pos <> [raiseCursorBy' 5]
 
-renderPacmanHead :: Int -> MouthState -> [String]
+renderPacmanHead :: Int -> MouthState -> [T.Text]
 renderPacmanHead pad Open   = padString pad <$> openMouth
 renderPacmanHead pad Closed = padString pad <$> closedMouth
 
-padString :: Int -> String -> String
-padString pad cs = prePad cs ' ' (pad + length cs)
+padString :: Int -> T.Text -> T.Text
+padString pad cs = T.justifyRight (pad + T.length cs) ' ' cs

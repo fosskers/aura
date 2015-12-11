@@ -1,5 +1,3 @@
-{-# LANGUAGE FlexibleContexts #-}
-
 -- Handles all `-L` operations
 
 {-
@@ -28,9 +26,9 @@ module Aura.Commands.L
     , searchLogFile
     , logInfoOnPkg ) where
 
-import Text.Regex.PCRE ((=~))
 import Data.List       ((\\))
 import Data.Monoid     ((<>))
+import Data.Maybe      (fromMaybe,isJust)
 import Data.Foldable   (traverse_)
 
 import Aura.Colour.Text (yellow)
@@ -40,44 +38,47 @@ import Aura.Utils       (entrify)
 import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages
+import qualified Data.Text as T
+import qualified Data.Text.IO as IO
+import qualified Data.Text.ICU as Re
 
 import Utilities (searchLines, readFileUTF8)
 
 ---
 
-viewLogFile :: FilePath -> Aura ()
+viewLogFile :: T.Text -> Aura ()
 viewLogFile logFilePath = shellCmd "less" [logFilePath]
 
 -- Very similar to `searchCache`. But is this worth generalizing?
-searchLogFile :: [String] -> Aura ()
+searchLogFile :: [T.Text] -> Aura ()
 searchLogFile input = ask >>= \ss -> liftIO $ do
-  logFile <- lines <$> readFileUTF8 (logFilePathOf ss)
-  traverse_ putStrLn $ searchLines (unwords input) logFile
+  logFile <- T.lines <$> readFileUTF8 (logFilePathOf ss)
+  traverse_ IO.putStrLn $ searchLines (T.unwords input) logFile
 
-logInfoOnPkg :: [String] -> Aura ()
+logInfoOnPkg :: [T.Text] -> Aura ()
 logInfoOnPkg []   = pure ()
 logInfoOnPkg pkgs = ask >>= \ss -> do
-  logFile <- liftIO $ readFile (logFilePathOf ss)
-  let inLog p = logFile =~ (" " <> p <> " ")
+  logFile <- liftIO $ readFileUTF8 (logFilePathOf ss)
+  let inLog p = isJust $ Re.find (Re.regex [] p) logFile
       reals   = filter inLog pkgs
   reportNotInLog (pkgs \\ reals)
-  liftIO $ traverse_ (putStrLn . renderLogLookUp ss logFile) reals
+  liftIO $ traverse_ (IO.putStrLn . renderLogLookUp ss logFile) reals
 
-renderLogLookUp :: Settings -> String -> String -> String
+renderLogLookUp :: Settings -> T.Text -> T.Text -> T.Text
 renderLogLookUp ss logFile pkg = entrify ss fields entries <> "\n" <> recent
     where fields      = fmap yellow . logLookUpFields . langOf $ ss
-          matches     = searchLines (" " <> pkg <> " \\(") $ lines logFile
-          installDate = head matches =~ "\\[[-:0-9 ]+\\]"
+          matches     = searchLines (" " <> pkg <> " \\(") $ T.lines logFile
+          installDate =  Re.find (Re.regex [] "\\[[-:0-9 ]+\\]") (head matches) >>= Re.group 0
           upgrades    = length $ searchLines " upgraded " matches
-          recent      = unlines . fmap (" " <>) . takeLast 5 $ matches
+          recent      = T.unlines . fmap (" " <>) . takeLast 5 $ matches
           takeLast n  = reverse . take n . reverse
           entries     = [ pkg
-                        , installDate
-                        , show upgrades
+                        , fromMaybe "" installDate
+                        , T.pack $ show upgrades
                         , "" ]
 
 ------------
 -- REPORTING
 ------------
-reportNotInLog :: [String] -> Aura ()
+reportNotInLog :: [T.Text] -> Aura ()
 reportNotInLog = badReport reportNotInLog_1

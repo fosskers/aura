@@ -26,6 +26,9 @@ module Aura.Settings.Base ( Settings(..)
 import Aura.Languages (Language)
 
 import Shell (Environment)
+import Prelude hiding (FilePath)
+import Shelly (FilePath)
+import qualified Data.Text as T
 
 ---
 
@@ -38,12 +41,12 @@ data Settings = Settings { inputOf         :: [String]
                          , pacOptsOf       :: [String]
                          , otherOptsOf     :: [String]
                          , environmentOf   :: Environment
-                         , buildUserOf     :: String
+                         , buildUserOf     :: T.Text
                          , langOf          :: Language
-                         , pacmanCmdOf     :: String
+                         , pacmanCmdOf     :: FilePath
                          , editorOf        :: String
-                         , carchOf         :: String
-                         , ignoredPkgsOf   :: [String]
+                         , carchOf         :: T.Text
+                         , ignoredPkgsOf   :: [T.Text]
                          , makepkgFlagsOf  :: [String]
                          , buildPathOf     :: FilePath
                          , cachePathOf     :: FilePath

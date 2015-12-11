@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 -- Handles all `-O` operations
 
 {-
@@ -27,6 +28,7 @@ module Aura.Commands.O
 
 import Data.Monoid
 import Data.Foldable
+import qualified Data.Text as T
 
 import Aura.Core   (orphans, sudo)
 import Aura.Pacman (pacman)
@@ -34,9 +36,9 @@ import Aura.Monad.Aura
 
 ---
 
-displayOrphans :: [String] -> Aura ()
-displayOrphans []   = orphans >>= liftIO . traverse_ putStrLn
+displayOrphans :: [T.Text] -> Aura ()
+displayOrphans []   = orphans >>= liftIO . traverse_ (putStrLn . show)
 displayOrphans pkgs = adoptPkg pkgs
 
-adoptPkg :: [String] -> Aura ()
+adoptPkg :: [T.Text] -> Aura ()
 adoptPkg pkgs = sudo (pacman $ ["-D", "--asexplicit"] <> pkgs)

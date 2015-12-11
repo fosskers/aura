@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE MultiWayIf, OverloadedStrings #-}
 
 -- An interface to `pacman`.
 -- Takes any pacman arguments and applies it to pacman through the shell.
@@ -26,74 +26,91 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Pacman where
 
-import System.Directory (doesFileExist)
 import System.IO        (hFlush, stdout)
-import Text.Regex.PCRE  ((=~))
-import Data.Monoid
+import Control.Applicative (many)
+import Data.Attoparsec.Text
+import qualified Data.HashMap.Strict as M
+import Data.Ini
+import Data.Maybe (fromMaybe)
+import qualified Data.Text as T
 
 import Aura.Cache
 import Aura.Languages     (pacmanFailure_1)
-import Aura.Monad.Aura
+import Aura.Monad.Aura hiding (liftIO)
 import Aura.Settings.Base (pacmanCmdOf)
 import Aura.Shell         (shellCmd, quietShellCmd, quietShellCmd')
 import Aura.Utils         (scoldAndFail)
+import Shelly hiding (cmd)
+import Prelude hiding (FilePath)
 
-import Shell (Environment, getEnvVar, didProcessSucceed)
-import Utilities 
+import Shell (Environment)
+import Utilities
 
 ---
 
-type ShellArg = String
+type ShellArg = T.Text
 
-defaultCmd :: String
+defaultCmd :: T.Text
 defaultCmd = "pacman"
 
-powerPillCmd :: String
+powerPillCmd :: FilePath
 powerPillCmd = "/usr/bin/powerpill"
 
 pacmanConfFile :: FilePath
 pacmanConfFile = "/etc/pacman.conf"
 
-defaultLogFile :: FilePath
+defaultLogFile :: T.Text
 defaultLogFile = "/var/log/pacman.log"
 
 lockFile :: FilePath
 lockFile = "/var/lib/pacman/db.lck"
 
-getPacmanCmd :: Environment -> Bool -> IO String
-getPacmanCmd env nopp =
-    case getEnvVar "PACMAN" env of
-      Just cmd -> pure cmd
-      Nothing  -> do  -- Left space for more options later.
-        powerPill <- doesFileExist powerPillCmd
-        if | powerPill && not nopp -> pure powerPillCmd
-           | otherwise -> pure defaultCmd
+getPacmanCmd :: Environment -> Bool -> Sh T.Text
+getPacmanCmd _ nopp =
+  do pacman <- get_env "PACMAN"
+     case pacman of
+       Just cmd -> pure cmd
+       Nothing  -> do             -- Left space for more options later.
+         powerPill <- test_e powerPillCmd
+         if | powerPill && not nopp -> pure $ toTextIgnore powerPillCmd
+            | otherwise -> pure defaultCmd
 
-getPacmanConf :: IO String
-getPacmanConf = readFileUTF8 pacmanConfFile
+-----------------------
+-- pacman.conf handling
+-----------------------
 
-getConfFileField :: String -> String -> [String]
-getConfFileField confFile field = words $ takeWhile p entry
-    where (_, _, entry) = confFile =~ field :: (String, String, String)
-          p c = c /= '\n' && c /= '#'
+type PacmanConf = (M.HashMap T.Text T.Text, Ini)
 
-getIgnoredPkgs :: String -> [String]
-getIgnoredPkgs confFile = getConfFileField confFile "^IgnorePkg[ ]+=[ ]+"
+getPacmanConf :: Sh (Either String PacmanConf)
+getPacmanConf =  parseConf <$> readfile pacmanConfFile
+
+getConf :: FilePath -> Sh (Either String PacmanConf)
+getConf file =  parseConf <$> readfile file
+
+parseConf :: T.Text -> Either String PacmanConf
+parseConf = parseOnly ( (,) <$> M.fromList <$> many keyValueParser <*> iniParser )
+
+getConfFileField :: Either String PacmanConf -> Maybe T.Text -> T.Text -> Maybe T.Text
+getConfFileField (Right (_,confFile)) (Just section) key =
+  case lookupValue section key confFile of
+       Left _ -> Nothing
+       Right a -> Just a
+getConfFileField (Right (header,_)) (Nothing) key = M.lookup key header
+getConfFileField (Left _) _ _ = Nothing
+
+getIgnoredPkgs :: Either String PacmanConf -> [T.Text]
+getIgnoredPkgs confFile = fromMaybe [] $ T.words <$> getConfFileField confFile Nothing "IgnorePkg"
 
 -- For config file fields that only have one value.
 -- Caller must supply an alternative if the given field isn't found.
-singleEntry :: String -> String -> String -> String
-singleEntry confFile field alt = case getConfFileField confFile regex of
-                                      []    -> alt
-                                      entry -> noQs $ head entry
-    where regex = "^" <> field <> "[ ]*=[ ]*"
-          noQs  = filter (`notElem` "\"")
+singleEntry :: Either String PacmanConf -> T.Text -> T.Text -> T.Text
+singleEntry confFile field alt = fromMaybe alt $ getConfFileField confFile Nothing field
 
-getCachePath :: String -> FilePath
-getCachePath confFile = singleEntry confFile "CacheDir" defaultPackageCache
+getCachePath :: Either String PacmanConf -> FilePath
+getCachePath confFile = fromText $ singleEntry confFile "CacheDir" defaultPackageCache
 
-getLogFilePath :: String -> FilePath
-getLogFilePath confFile = singleEntry confFile "LogFile" defaultLogFile
+getLogFilePath :: Either String PacmanConf -> FilePath
+getLogFilePath confFile = fromText $ singleEntry confFile "LogFile" defaultLogFile
 
 ----------
 -- ACTIONS
@@ -105,25 +122,25 @@ pacman args = asks pacmanCmdOf >>= \cmd -> flush *> shellCmd cmd args
 -- Did a pacman process succeed?
 pacmanSuccess :: [ShellArg] -> Aura Bool
 pacmanSuccess args = success <$> quietShellCmd' "pacman" args
-    where success = didProcessSucceed . tripleFst
+    where success = (== 0) . tripleFst
 
 -- Handler for pacman call failures.
-pacmanFailure :: String -> Aura a
+pacmanFailure :: T.Text -> Aura a
 pacmanFailure _ = scoldAndFail pacmanFailure_1
 
 -- Performs a pacmanQuiet and returns only the stdout.
-pacmanOutput :: [ShellArg] -> Aura String
+pacmanOutput :: [ShellArg] -> Aura T.Text
 pacmanOutput = quietShellCmd "pacman"
 
 syncDatabase :: [ShellArg] -> Aura ()
 syncDatabase pacOpts = pacman $ "-Sy" : pacOpts
 
-getPacmanHelpMsg :: Aura [String]
-getPacmanHelpMsg = lines <$> pacmanOutput ["-h"]
+getPacmanHelpMsg :: Aura [T.Text]
+getPacmanHelpMsg = T.lines <$> pacmanOutput ["-h"]
 
 -- Yields the lines given by `pacman -V` with the pacman image stripped.
-getVersionInfo :: Aura [String]
-getVersionInfo = (fmap (drop verMsgPad) . lines) <$> pacmanOutput ["-V"]
+getVersionInfo :: Aura [T.Text]
+getVersionInfo = (fmap (T.drop verMsgPad) . T.lines) <$> pacmanOutput ["-V"]
 
 -- The amount of whitespace before text in the lines given by `pacman -V`
 verMsgPad :: Int

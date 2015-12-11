@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-
 
 Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
@@ -23,13 +24,13 @@ module Aura.Packages.Repository ( pacmanRepo ) where
 
 import Data.Maybe
 import Data.Monoid
-import Text.Regex.PCRE ((=~))
+import qualified Data.Text as T
 
 import Aura.Core
 import Aura.Monad.Aura
 import Aura.Pacman     (pacmanOutput)
 
-import Utilities       (tripleThrd, findM)
+import Utilities       (findM)
 
 ---
 
@@ -39,7 +40,7 @@ pacmanRepo = Repository $ \name -> do
     real <- resolveName name
     fmap (packageRepo real) <$> mostRecentVersion real
 
-packageRepo :: String -> String -> Package
+packageRepo :: T.Text -> T.Text -> Package
 packageRepo name version = Package
     { pkgNameOf        = name
     , pkgVersionOf     = version
@@ -48,24 +49,24 @@ packageRepo name version = Package
 
 -- | If given a virtual package, try to find a real package to install.
 -- Functions like this are why we need libalpm.
-resolveName :: String -> Aura String
+resolveName :: T.Text -> Aura T.Text
 resolveName name =
-  lines <$> pacmanOutput ["-Ssq", "^" <> name <> "$"] >>= chooseProvider name
+  T.lines <$> pacmanOutput ["-Ssq", "^" <> name <> "$"] >>= chooseProvider name
 
 -- | Choose a providing package, favoring installed packages.
-chooseProvider :: String -> [String] -> Aura String
+chooseProvider :: T.Text -> [T.Text] -> Aura T.Text
 chooseProvider name []        = pure name
 chooseProvider _    [p]       = pure p
 chooseProvider _    ps@(p:_)  = fromMaybe p <$> findM isInstalled ps
 
 -- | The most recent version of a package, if it exists in the respositories.
-mostRecentVersion :: String -> Aura (Maybe String)
+mostRecentVersion :: T.Text -> Aura (Maybe T.Text)
 mostRecentVersion s = extractVersion <$> pacmanOutput ["-Si", s]
 
 -- | Takes `pacman -Si` output as input.
-extractVersion :: String -> Maybe String
+extractVersion :: T.Text -> Maybe T.Text
 extractVersion ""   = Nothing
-extractVersion info = Just $ tripleThrd match
-    where match     = thirdLine =~ ": " :: (String, String, String)
+extractVersion info = match
+    where match     = T.stripPrefix ": " $ snd $ T.breakOn ": " thirdLine
           thirdLine = allLines !! 2  -- Version num is always the third line.
-          allLines  = lines info
+          allLines  = T.lines info

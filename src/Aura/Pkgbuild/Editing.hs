@@ -25,28 +25,32 @@ module Aura.Pkgbuild.Editing
     ( hotEdit
     , customizepkg ) where
 
-import System.FilePath ((</>))
-
 import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Utils
 import Aura.Core
 
+import qualified Data.Text.Encoding as E
+
+import Control.Monad (void)
 import Utilities (openEditor, ifte_, ifFile, nothing, readFileUTF8)
-import Shell     (getEditor, quietShellCmd)
+import Aura.Shell     (quietShellCmd, editor)
+import qualified Data.Text as T
+import Filesystem
+import Filesystem.Path.CurrentOS
+import Prelude hiding (FilePath, readFile, writeFile)
 
 ---
 
 customizepkgPath :: FilePath
 customizepkgPath = "/etc/customizepkg.d/"
 
-edit :: (FilePath -> IO a) -> Buildable -> Aura Buildable
+edit :: (T.Text -> Aura ()) -> Buildable -> Aura Buildable
 edit f p = do
-  newPB <- liftIO $ do
-             writeFile filename $ pkgbuildOf p
-             _ <- f filename
-             readFileUTF8 filename
+  newPB <-  do liftIO $ writeFile (fromText filename) $ E.encodeUtf8 $ pkgbuildOf p
+               _ <- f filename
+               liftIO $ readFileUTF8 $ fromText filename
   pure p { pkgbuildOf = newPB }
       where filename = "PKGBUILD"
 
@@ -56,8 +60,10 @@ hotEdit b = ask >>= \ss ->
   if not $ mayHotEdit ss
      then pure b
      else withTempDir "hotedit" $ do
-            let cond = optionalPrompt (hotEdit_1 $ baseNameOf b)
-                act  = edit (openEditor (getEditor $ environmentOf ss))
+            let cond :: Aura Bool
+                cond = optionalPrompt (hotEdit_1 $ baseNameOf b)
+                act :: Buildable -> Aura Buildable
+                act f = (liftShelly $ editor) >>= (\e -> edit (liftShelly . openEditor (fromText e)) f)
             cond >>= ifte_ (act b) (pure b)
 
 -- | Runs `customizepkg` on whatever PKGBUILD it can.
@@ -71,8 +77,8 @@ customizepkg b = asks useCustomizepkg >>= \use ->
 
 customizepkg' :: Buildable -> Aura Buildable
 customizepkg' p = withTempDir "customizepkg" $ do
-  let conf = customizepkgPath </> baseNameOf p
-  ifFile (edit $ const customize) nothing conf p
+  let conf = customizepkgPath </> fromText (baseNameOf p)
+  ifFile (edit $ void . const customize) nothing conf p
 
-customize :: IO String
+customize :: Aura T.Text
 customize = quietShellCmd "customizepkg" ["--modify"]

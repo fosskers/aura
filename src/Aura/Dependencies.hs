@@ -1,4 +1,3 @@
-{-# LANGUAGE FlexibleContexts #-}
 
 -- Library for handling package dependencies and version conflicts.
 
@@ -26,10 +25,13 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Dependencies ( resolveDeps ) where
 
 import           Control.Eff.State.Strict
+import           Control.Eff
 import           Data.Graph
 import           Data.Maybe
 import qualified Data.Map as Map
 import           Data.Foldable
+import           Data.Typeable
+import qualified Data.Text as T
 
 import           Aura.Core
 import           Aura.Conflicts
@@ -43,28 +45,32 @@ import           Utilities           (whenM, tripleFst)
 
 resolveDeps :: Repository -> [Package] -> Aura [Package]
 resolveDeps repo ps =
-    sortInstall . Map.elems <$> runState (traverse_ addPkg ps) Map.empty
+  sortInstall . Map.elems <$> execState (Map.empty :: Map.Map T.Text Package) (traverse_ addPkg ps)
   where
+    addPkg :: Member (State (Map.Map T.Text Package)) r => Package -> AuraEff r ()
     addPkg pkg = whenM (isNothing <$> getPkg (pkgNameOf pkg)) $ do
         traverse_ addDep (pkgDepsOf pkg)
         modify $ Map.insert (pkgNameOf pkg) pkg
 
+    addDep :: (Member (State (Map.Map T.Text Package)) r) => Dep -> AuraEff r ()
     addDep dep = do
         mpkg <- getPkg $ depNameOf dep
         case mpkg of
             Nothing  -> findPkg dep
-            Just pkg -> lift $ checkConflicts pkg dep
+            Just pkg -> checkConflicts pkg dep
 
-    findPkg dep = whenM (not <$> lift (isSatisfied dep)) $ do
-        mpkg <- lift $ repoLookup repo name
+    findPkg :: (Member (State (Map.Map T.Text Package)) r) => Dep -> AuraEff r ()
+    findPkg dep = whenM (not <$> isSatisfied dep) $ do
+        mpkg <- repoLookup repo name
         case mpkg of
-            Nothing  -> lift $ missingPkg name
-            Just pkg -> lift (checkConflicts pkg dep) *> addPkg pkg
+            Nothing  -> missingPkg name
+            Just pkg -> checkConflicts pkg dep *> addPkg pkg
       where name = depNameOf dep
 
-    getPkg p = gets $ Map.lookup p
+    getPkg :: Member (State (Map.Map T.Text Package)) r => T.Text -> AuraEff r (Maybe Package)
+    getPkg p =  Map.lookup p <$> get
 
-missingPkg :: String -> Aura a
+missingPkg ::  T.Text -> Aura ()
 missingPkg name = asks langOf >>= failure . missingPkg_1 name
 
 sortInstall :: [Package] -> [Package]

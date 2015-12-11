@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeOperators, OverloadedStrings, FlexibleContexts #-}
 -- Utility functions too general even for Aura.Utils
 
 {-
@@ -24,27 +24,30 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Utilities where
 
-import Control.Eff         (Eff,(:>))
+import Control.Eff         (SetMember,Eff)
 import Control.Eff.Lift    (Lift,lift)
 import Control.Concurrent  (threadDelay)
-import System.Directory    (doesFileExist)
-import System.FilePath     (dropExtension)
-import Text.Regex.PCRE     ((=~))
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as E
+import qualified Data.Text.IO as IO
+import Data.Text.ICU       (regex ,find)
 import Data.Functor
 import Data.Monoid
+import Data.Maybe          (isJust)
 import Text.Printf         (printf)
 import Data.List           (dropWhileEnd)
-import Data.Foldable
+import Data.Foldable hiding (find)
 import Data.Char           (digitToInt)
-import System.IO
+import System.IO hiding    (FilePath,openFile,readFile)
 
-import Shell
+import Filesystem.Path.CurrentOS hiding (null)
+import Filesystem
+import Shelly  hiding      (find)
+import Prelude hiding      (FilePath, readFile)
 
 ---
 
-type Pattern = (String, String)
-
-type Regex = String
+type Pattern = (T.Text, T.Text)
 
 ---
 
@@ -113,14 +116,15 @@ eitherToMaybe (Right x) = Just x
 -- REGEX
 --------
 -- | Replaces a (p)attern with a (t)arget in a line if possible.
-replaceByPatt :: [Pattern] -> String -> String
+replaceByPatt :: [Pattern] -> T.Text -> T.Text
 replaceByPatt [] line = line
-replaceByPatt ((p, t):ps) line | p == m    = replaceByPatt ps (b <> t <> a)
-                              | otherwise = replaceByPatt ps line
-                         where (b, m, a) = line =~ p :: (String, String, String)
+replaceByPatt ((p, t):ps) line = replaceByPatt ps $ T.replace p t line
 
-searchLines :: Regex -> [String] -> [String]
-searchLines pat = filter (=~ pat)
+searchLinesF :: T.Text -> [FilePath] -> [FilePath]
+searchLinesF pat = filter (isJust . find (regex [] pat) . toTextIgnore)
+
+searchLines :: T.Text -> [T.Text] -> [T.Text]
+searchLines pat = filter (isJust . find (regex [] pat))
 
 --------------------
 -- Association Lists
@@ -137,17 +141,17 @@ alNotElem k = not . alElem k
 -- IO
 -----
 -- | Given a number of selections, allows the user to choose one.
-getSelection :: [String] -> IO String
+getSelection :: [T.Text] -> IO T.Text
 getSelection [] = pure ""
 getSelection choiceLabels = do
   let quantity = length choiceLabels
-      valids   = show <$> [1..quantity]
-      padding  = show . length . show $ quantity
+      valids   = (T.pack . show) <$> [1..quantity]
+      padding  = length . show $ quantity
       choices  = zip valids choiceLabels
-  traverse_ (uncurry (printf ("%" <> padding <> "s. %s\n"))) choices
+  traverse_ (\ (t,n) -> IO.putStrLn ((T.justifyLeft padding ' ' t) <> ". " <> n)) choices
   putStr ">> "
   hFlush stdout
-  userChoice <- getLine
+  userChoice <- IO.getLine
   case userChoice `lookup` choices of
     Just valid -> pure valid
     Nothing    -> getSelection choiceLabels  -- Ask again.
@@ -161,19 +165,19 @@ notNull :: [a] -> Bool
 notNull = not . null
 
 -- | Opens the editor of the user's choice.
-openEditor :: String -> String -> IO ()
-openEditor editor file = void $ shellCmd editor [file]
+openEditor :: FilePath -> T.Text -> Sh ()
+openEditor editor file = void $ run_ editor [file]
 
 -- All tarballs should be of the format `.tar.gz`
 -- Thus calling dropExtension twice should remove that section.
-decompress :: FilePath -> IO FilePath
+decompress :: FilePath -> Sh FilePath
 decompress file = do
-  _ <- quietShellCmd' "bsdtar" ["-zxvf", file]
+  _ <- run "bsdtar" ["-zxvf", toTextIgnore file]
   pure . dropExtension . dropExtension $ file
 
 -- | Perform an action within a given directory.
-inDir :: FilePath -> IO a -> IO a
-inDir dir io = pwd >>= \cur -> cd dir *> io >>= \res -> cd cur *> pure res
+inDir :: FilePath -> IO a -> Sh a
+inDir dir io = pwd >>= \cur -> cd dir *> liftIO io >>= \res -> cd cur *> pure res
 
 noDots :: [String] -> [String]
 noDots = filter (`notElem` [".", ".."])
@@ -186,8 +190,8 @@ readFileEncoding enc name = do
   hGetContents handle
 
 -- | Read a file with UTF-8 encoding
-readFileUTF8 :: FilePath -> IO String
-readFileUTF8 = readFileEncoding utf8
+readFileUTF8 :: FilePath -> IO T.Text
+readFileUTF8 =  fmap E.decodeUtf8 . readFile
 
 ---------
 -- MONADS
@@ -214,8 +218,8 @@ findM p (x:xs) = p x >>= ifte_ (pure $ Just x) (findM p xs)
 
 -- | If a file exists, it performs action `t` on the argument.
 -- | If the file doesn't exist, it performs `f` and returns the argument.
-ifFile :: (a -> IO a) -> Eff (Lift IO :> r) b -> FilePath -> a -> Eff (Lift IO :> r) a
-ifFile t f file x = (lift $ doesFileExist file) >>= ifte_ (lift $ t $ x) (f $> x)
+ifFile :: SetMember Lift (Lift Sh) r => (a -> Eff r a) -> Eff r b -> FilePath -> a -> Eff r a
+ifFile t f file x = (lift $ test_e file) >>= ifte_ (t $ x) (f $> x)
 
 nothing :: Applicative f => f ()
 nothing = pure ()

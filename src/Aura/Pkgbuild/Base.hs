@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-
 
 Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
@@ -23,36 +24,39 @@ module Aura.Pkgbuild.Base where
 
 import Control.Monad ((>=>))
 import Data.Monoid
+import qualified Data.Text as T
 
 import Aura.Bash
 import Aura.Core
 import Aura.Monad.Aura
 import Aura.Pkgbuild.Editing
+import Filesystem.Path.CurrentOS
+import Prelude hiding (FilePath)
 
 ---
 
 pkgbuildCache :: FilePath
-pkgbuildCache = "/var/cache/aura/pkgbuilds/"
+pkgbuildCache = "/var/cache/aura/pkgbuilds"
 
-toFilename :: String -> FilePath
-toFilename = (<> ".pb")
+toFilename :: T.Text -> FilePath
+toFilename = (<.> "pb") . fromText
 
-pkgbuildPath :: String -> FilePath
-pkgbuildPath p = pkgbuildCache <> toFilename p
+pkgbuildPath :: T.Text -> FilePath
+pkgbuildPath p = pkgbuildCache </> toFilename p
 
-trueVersion :: Namespace -> String
+trueVersion :: Namespace -> T.Text
 trueVersion ns = pkgver <> "-" <> pkgrel
     where pkgver = head $ value ns "pkgver"
           pkgrel = head $ value ns "pkgrel"
 
 -- | Yields the value of the `depends` field.
-depends :: Namespace -> [String]
+depends :: Namespace -> [T.Text]
 depends = flip value "depends"
 
-makedepends :: Namespace -> [String]
+makedepends :: Namespace -> [T.Text]
 makedepends = flip value "makedepends"
 
-checkdepends :: Namespace -> [String]
+checkdepends :: Namespace -> [T.Text]
 checkdepends = flip value "checkdepends"
 
 -- One of my favourite functions in this code base.

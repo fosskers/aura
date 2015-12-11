@@ -35,6 +35,7 @@ module Aura.Cache
     , SimplePkg ) where
 
 import qualified Data.Map.Lazy as M
+import qualified Data.Text as T
 import           Data.List (nub)
 
 import           Aura.Monad.Aura
@@ -42,15 +43,16 @@ import           Aura.Settings.Base
 import           Aura.Utils (pkgFileNameAndVer)
 import           Aura.Utils.Numbers (Version)
 
-import           Utilities (searchLines)
-import           Shell     (ls)
+import           Utilities (searchLinesF)
+import           Shelly    (FilePath, ls)
+import           Prelude hiding (FilePath)
 
 ---
 
-type SimplePkg = (String, Maybe Version)
+type SimplePkg = (T.Text, Maybe Version)
 type Cache     = M.Map SimplePkg FilePath
 
-defaultPackageCache :: FilePath
+defaultPackageCache :: T.Text
 defaultPackageCache = "/var/cache/pacman/pkg/"
 
 simplePkg :: FilePath -> SimplePkg
@@ -61,20 +63,21 @@ cache = M.fromList . fmap pair
     where pair p = (simplePkg p, p)
 
 -- This takes the filepath of the package cache as an argument.
-rawCacheContents :: FilePath -> Aura [String]
-rawCacheContents c = filter dots <$> liftIO (ls c)
+rawCacheContents :: FilePath -> Aura [FilePath]
+rawCacheContents c = filter dots <$> liftShelly (ls c)
     where dots p = p `notElem` [".", ".."]
 
 cacheContents :: FilePath -> Aura Cache
 cacheContents c = cache <$> rawCacheContents c
 
-pkgsInCache :: [String] -> Aura [String]
+pkgsInCache :: [T.Text] -> Aura [T.Text]
 pkgsInCache ps =
     nub . filter (`elem` ps) . allNames <$> (asks cachePathOf >>= cacheContents)
 
-cacheMatches :: [String] -> Aura [String]
-cacheMatches input = searchLines (unwords input) . allFilenames <$> f
-    where f = asks cachePathOf >>= cacheContents
+cacheMatches :: [T.Text] -> Aura [FilePath]
+cacheMatches input =  searchLinesF (T.unwords input) . allFilenames <$> f
+    where f :: Aura Cache
+          f = asks cachePathOf >>= cacheContents
 
 alterable :: Cache -> SimplePkg -> Bool
 alterable c p = M.member p c
@@ -82,7 +85,7 @@ alterable c p = M.member p c
 getFilename :: Cache -> SimplePkg -> Maybe FilePath
 getFilename c p = M.lookup p c
 
-allNames :: Cache -> [String]
+allNames :: Cache -> [T.Text]
 allNames = fmap fst . M.keys
 
 allFilenames :: Cache -> [FilePath]

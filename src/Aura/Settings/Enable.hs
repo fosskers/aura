@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-
 
 Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
@@ -24,10 +25,10 @@ module Aura.Settings.Enable
     , debugOutput ) where
 
 import System.Environment (getEnvironment)
-import System.Directory   (doesDirectoryExist)
 import Data.Maybe         (fromMaybe)
 import Data.Monoid
 import Data.Foldable
+import qualified Data.Text as T
 
 import Aura.Languages (Language, langFromEnv)
 import Aura.MakePkg   (makepkgConfFile)
@@ -35,27 +36,29 @@ import Aura.Settings.Base
 import Aura.Pacman
 import Aura.Flags
 
-import Utilities (ifte_, readFileUTF8)
+import Utilities (ifte_)
 import Shell
+import Shelly
+import Prelude hiding (FilePath)
 
 ---
 
-getSettings :: Maybe Language -> ([Flag], [String], [String]) -> IO Settings
+getSettings :: Maybe Language -> ([Flag], [String], [String]) -> Sh Settings
 getSettings lang (auraFlags, input, pacOpts) = do
   confFile    <- getPacmanConf
-  environment <- getEnvironment
+  environment <- liftIO getEnvironment
   pmanCommand <- getPacmanCmd environment $ noPowerPillStatus auraFlags
-  makepkgConf <- readFileUTF8 makepkgConfFile
+  makepkgConf <- getConf $ fromText makepkgConfFile
   buildPath'  <- checkBuildPath (buildPath auraFlags) (getCachePath confFile)
   let language   = checkLang lang environment
-      buildUser' = fromMaybe (getTrueUser environment) (buildUser auraFlags)
+      buildUser' = fromMaybe (T.pack $ getTrueUser environment) (buildUser auraFlags)
   pure Settings { inputOf         = input
                 , pacOptsOf       = pacOpts
                 , otherOptsOf     = show <$> auraFlags
                 , environmentOf   = environment
                 , buildUserOf     = buildUser'
                 , langOf          = language
-                , pacmanCmdOf     = pmanCommand
+                , pacmanCmdOf     = fromText pmanCommand
                 , editorOf        = getEditor environment
                 , carchOf         = singleEntry makepkgConf "CARCH"
                                     "COULDN'T READ $CARCH"
@@ -87,19 +90,19 @@ debugOutput ss = do
       env  = environmentOf ss
   traverse_ putStrLn [ "User              => " <> getUser' env
                      , "True User         => " <> getTrueUser env
-                     , "Build User        => " <> buildUserOf ss
+                     , "Build User        => " <> show (buildUserOf ss)
                      , "Using Sudo?       => " <> yn (varExists "SUDO_USER" env)
                      , "Pacman Flags      => " <> unwords (pacOptsOf ss)
                      , "Other Flags       => " <> unwords (otherOptsOf ss)
                      , "Other Input       => " <> unwords (inputOf ss)
                      , "Language          => " <> show (langOf ss)
-                     , "Pacman Command    => " <> pacmanCmdOf ss
+                     , "Pacman Command    => " <> show (pacmanCmdOf ss)
                      , "Editor            => " <> editorOf ss
-                     , "$CARCH            => " <> carchOf ss
-                     , "Ignored Pkgs      => " <> unwords (ignoredPkgsOf ss)
-                     , "Build Path        => " <> buildPathOf ss
-                     , "Pkg Cache Path    => " <> cachePathOf ss
-                     , "Log File Path     => " <> logFilePathOf ss
+                     , "$CARCH            => " <> show (carchOf ss)
+                     , "Ignored Pkgs      => " <> show (T.unwords (ignoredPkgsOf ss))
+                     , "Build Path        => " <> show (buildPathOf ss)
+                     , "Pkg Cache Path    => " <> show (cachePathOf ss)
+                     , "Log File Path     => " <> show (logFilePathOf ss)
                      , "Quiet?            => " <> yn (beQuiet ss)
                      , "Silent Building?  => " <> yn (suppressMakepkg ss)
                      , "Must Confirm?     => " <> yn (mustConfirm ss)
@@ -112,9 +115,9 @@ debugOutput ss = do
                      , "Keep source?      => " <> yn (keepSource ss) ]
 
 checkLang :: Maybe Language -> Environment -> Language
-checkLang Nothing env   = langFromEnv $ getLangVar env
+checkLang Nothing env   = langFromEnv $ T.pack $ getLangVar env
 checkLang (Just lang) _ = lang
 
 -- | Defaults to the cache path if no (legal) build path was given.
-checkBuildPath :: FilePath -> FilePath -> IO FilePath
-checkBuildPath bp bp' = ifte_ bp bp' <$> doesDirectoryExist bp
+checkBuildPath :: FilePath -> FilePath -> Sh FilePath
+checkBuildPath bp bp' = ifte_ bp bp' <$> test_e bp

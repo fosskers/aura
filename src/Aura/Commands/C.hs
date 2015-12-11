@@ -30,8 +30,7 @@ module Aura.Commands.C
     , cleanCache
     , cleanNotSaved ) where
 
-import System.Posix.Files (fileExist)
-import System.FilePath    ((</>))
+import Shelly    (FilePath, (</>), test_e, rm, cp, fromText, toTextIgnore)
 import Text.Regex.PCRE    ((=~))
 import Control.Monad      (unless)
 import Data.List          ((\\), sort, groupBy)
@@ -49,14 +48,16 @@ import Aura.State
 import Aura.Utils
 import Aura.Core
 
-import Shell (rm, cp)
 import Utilities
+
+import qualified Data.Text as T
+import Prelude hiding (FilePath)
 
 ---
 
 -- | Interactive. Gives the user a choice as to exactly what versions
 -- they want to downgrade to.
-downgradePackages :: [String] -> [String] -> Aura ()
+downgradePackages :: [T.Text] -> [T.Text] -> Aura ()
 downgradePackages _ []         = pure ()
 downgradePackages pacOpts pkgs = asks cachePathOf >>= \cachePath -> do
   reals <- pkgsInCache pkgs
@@ -64,29 +65,29 @@ downgradePackages pacOpts pkgs = asks cachePathOf >>= \cachePath -> do
   unless (null reals) $ do
     cache   <- cacheContents cachePath
     choices <- traverse (getDowngradeChoice cache) reals
-    pacman $ "-U" : pacOpts <> ((cachePath </>) <$> choices)
-               
-getDowngradeChoice :: Cache -> String -> Aura String
+    pacman $ "-U" : pacOpts <> ((toTextIgnore . (cachePath </>) . fromText) <$> choices)
+
+getDowngradeChoice :: Cache -> T.Text -> Aura T.Text
 getDowngradeChoice cache pkg = do
   let choices = getChoicesFromCache cache pkg
   notify $ getDowngradeChoice_1 pkg
   liftIO $ getSelection choices
 
-getChoicesFromCache :: Cache -> String -> [String]
+getChoicesFromCache :: Cache -> T.Text -> [T.Text]
 getChoicesFromCache cache pkg = sort choices
     where choices = filter match (allFilenames cache)
           patt    = "-[0-9:.]+-[1-9]+-(x86_64|i686|any)[.]pkg[.]tar[.]xz$"
           match p = p =~ ("^" <> pkg <> patt)
 
 -- `[]` as input yields the contents of the entire cache.
-searchCache :: [String] -> Aura ()
+searchCache :: [T.Text] -> Aura ()
 searchCache r = cacheMatches r >>= liftIO . traverse_ putStrLn . sortPkgs
 
 -- The destination folder must already exist for the back-up to begin.
 backupCache :: [FilePath] -> Aura ()
 backupCache []      = scoldAndFail backupCache_1
 backupCache (dir:_) = do
-  exists <- liftIO $ fileExist dir
+  exists <- liftShelly $ test_e dir
   if not exists
      then scoldAndFail backupCache_3
      else confirmBackup dir >>= backup dir
@@ -108,7 +109,7 @@ backup dir cache = do
   copyAndNotify dir (allFilenames cache) 1
 
 -- Manages the file copying and display of the real-time progress notifier.
-copyAndNotify :: FilePath -> [String] -> Int -> Aura ()
+copyAndNotify :: FilePath -> [T.Text] -> Int -> Aura ()
 copyAndNotify _ [] _       = pure ()
 copyAndNotify dir (p:ps) n = asks cachePathOf >>= \cachePath -> do
   liftIO $ raiseCursorBy 1
@@ -117,7 +118,7 @@ copyAndNotify dir (p:ps) n = asks cachePathOf >>= \cachePath -> do
   copyAndNotify dir ps $ n + 1
 
 -- Acts as a filter for the input to `cleanCache`.
-cleanCache :: [String] -> Aura ()
+cleanCache :: [T.Text] -> Aura ()
 cleanCache [] = cleanCache' 0
 cleanCache (input:_)  -- Ignores all but first input element.
   | all isDigit input = cleanCache' $ read input
@@ -158,7 +159,7 @@ cleanNotSaved = asks cachePathOf >>= \path -> do
         liftIO $ traverse_ rm ((path </>) <$> allFilenames duds)
 
 -- Typically takes the contents of the package cache as an argument.
-groupByName :: [String] -> [[String]]
+groupByName :: [T.Text] -> [[T.Text]]
 groupByName pkgs = groupBy sameBaseName $ sortPkgs pkgs
     where sameBaseName a b = baseName a == baseName b
           baseName p = tripleFst (p =~ "-[0-9]+" :: (String, String, String))
@@ -166,5 +167,5 @@ groupByName pkgs = groupBy sameBaseName $ sortPkgs pkgs
 ------------
 -- REPORTING
 ------------
-reportBadDowngradePkgs :: [String] -> Aura ()
+reportBadDowngradePkgs :: [T.Text] -> Aura ()
 reportBadDowngradePkgs = badReport reportBadDowngradePkgs_1
