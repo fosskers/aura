@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, ViewPatterns #-}
 
 -- Handles all `-C` operations.
 
@@ -31,12 +31,15 @@ module Aura.Commands.C
     , cleanNotSaved ) where
 
 import Shelly    (FilePath, (</>), test_e, rm, cp, fromText, toTextIgnore)
-import Text.Regex.PCRE    ((=~))
+import qualified Data.Text.ICU as Re
+import qualified Data.Text.IO as IO
+import Data.Text.Read
 import Control.Monad      (unless)
 import Data.List          ((\\), sort, groupBy)
 import Data.Foldable      (traverse_, fold)
 import Data.Char          (isDigit)
 import Data.Monoid        ((<>))
+import Data.Maybe         (isJust,fromMaybe)
 
 import Aura.Logo   (raiseCursorBy)
 import Aura.Pacman (pacman)
@@ -75,13 +78,13 @@ getDowngradeChoice cache pkg = do
 
 getChoicesFromCache :: Cache -> T.Text -> [T.Text]
 getChoicesFromCache cache pkg = sort choices
-    where choices = filter match (allFilenames cache)
-          patt    = "-[0-9:.]+-[1-9]+-(x86_64|i686|any)[.]pkg[.]tar[.]xz$"
-          match p = p =~ ("^" <> pkg <> patt)
+    where choices = filter match $ map toTextIgnore $ allFilenames cache
+          patt    = Re.regex [] $ "^" <> pkg <> "-[0-9:.]+-[1-9]+-(x86_64|i686|any)[.]pkg[.]tar[.]xz$"
+          match   = isJust . Re.find patt
 
 -- `[]` as input yields the contents of the entire cache.
 searchCache :: [T.Text] -> Aura ()
-searchCache r = cacheMatches r >>= liftIO . traverse_ putStrLn . sortPkgs
+searchCache r = cacheMatches r >>= liftIO . traverse_ (IO.putStrLn . toTextIgnore) . sortPkgs
 
 -- The destination folder must already exist for the back-up to begin.
 backupCache :: [FilePath] -> Aura ()
@@ -109,19 +112,19 @@ backup dir cache = do
   copyAndNotify dir (allFilenames cache) 1
 
 -- Manages the file copying and display of the real-time progress notifier.
-copyAndNotify :: FilePath -> [T.Text] -> Int -> Aura ()
+copyAndNotify :: FilePath -> [FilePath] -> Int -> Aura ()
 copyAndNotify _ [] _       = pure ()
 copyAndNotify dir (p:ps) n = asks cachePathOf >>= \cachePath -> do
   liftIO $ raiseCursorBy 1
   warn $ copyAndNotify_1 n
-  liftIO $ cp (cachePath </> p) (dir </> p)
+  liftShelly $ cp (cachePath </> p) (dir </> p)
   copyAndNotify dir ps $ n + 1
 
 -- Acts as a filter for the input to `cleanCache`.
 cleanCache :: [T.Text] -> Aura ()
 cleanCache [] = cleanCache' 0
 cleanCache (input:_)  -- Ignores all but first input element.
-  | all isDigit input = cleanCache' $ read input
+  | T.all isDigit input = wrapString (decimal input) >>= (cleanCache' . fst)
   | otherwise         = scoldAndFail $ preCleanCache_1 input
 
 -- Keeps a certain number of package files in the cache according to
@@ -145,24 +148,24 @@ clean toSave = ask >>= \ss -> do
       grouped   = take toSave . reverse <$> groupByName files
       toRemove  = files \\ fold grouped
       filePaths = (cachePathOf ss </>) <$> toRemove
-  liftIO $ traverse_ rm filePaths
+  liftShelly $ traverse_ rm filePaths
 
 -- | Only package files with a version not in any PkgState will be
 -- removed.
 cleanNotSaved :: Aura ()
 cleanNotSaved = asks cachePathOf >>= \path -> do
   notify cleanNotSaved_1
-  states <- getStateFiles >>= traverse readState
+  states <- getStateFiles >>= traverse readState . map fromText
   cache  <- cacheContents path
   let duds = cacheFilter (\p _ -> or (inState p <$> states)) cache
   whenM (optionalPrompt $ cleanNotSaved_2 $ size duds) $
-        liftIO $ traverse_ rm ((path </>) <$> allFilenames duds)
+        liftShelly $ traverse_ rm ((path </>) <$> allFilenames duds)
 
 -- Typically takes the contents of the package cache as an argument.
-groupByName :: [T.Text] -> [[T.Text]]
+groupByName :: [FilePath] -> [[FilePath]]
 groupByName pkgs = groupBy sameBaseName $ sortPkgs pkgs
     where sameBaseName a b = baseName a == baseName b
-          baseName p = tripleFst (p =~ "-[0-9]+" :: (String, String, String))
+          baseName (toTextIgnore -> p) = fromMaybe p (Re.span <$> Re.find (Re.regex [] "-[0-9]+") p)
 
 ------------
 -- REPORTING

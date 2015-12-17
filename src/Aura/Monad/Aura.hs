@@ -28,6 +28,7 @@ module Aura.Monad.Aura
     , failure
     , catch
     , wrap
+    , wrapString
     , liftIO
     , liftShelly
     , ask
@@ -71,6 +72,9 @@ catch = catchExc
 
 wrap :: Either T.Text a -> Aura a
 wrap = liftEither
+
+wrapString :: Either String a -> Aura a
+wrapString = either (failure . T.pack) pure
 
 liftIO :: IO a -> Aura a
 liftIO = lift . S.liftIO
