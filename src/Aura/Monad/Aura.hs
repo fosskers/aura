@@ -35,6 +35,7 @@ module Aura.Monad.Aura
     , asks
     ) where
 
+import Data.OpenUnion.Imports
 import Control.Eff
 import Control.Eff.Exception
 import Control.Eff.Lift
@@ -58,7 +59,7 @@ liftIO  : Perform intermittent IO using `liftIO`.
 ask     : Obtain run-time settings.
 runAura : Unwraps an Aura action. Must be passed `Settings` as well.
 -}
-type AuraEff r a = (Member (Exc T.Text) r, Member (Reader Settings) r, SetMember Lift (Lift S.Sh) r) => Eff r a
+type AuraEff r a = (Member (Exc T.Text) r, Member (Reader Settings) r, MemberU Lift (Lift S.Sh) r, SetMember Lift (Lift S.Sh) r) => Eff r a
 type Aura a = forall r . AuraEff r a
 
 runAura :: Aura a -> Settings -> IO (Either T.Text a)
