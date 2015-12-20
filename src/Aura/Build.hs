@@ -25,7 +25,7 @@ module Aura.Build
     ( installPkgFiles
     , buildPackages ) where
 
-import Control.Monad (when, void, join)
+import Control.Monad (when, void)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 
@@ -80,10 +80,11 @@ build' :: [Buildable] -> Aura ([FilePath], [Buildable])
 build' []     = failure "build' : You should never see this."
 build' (p:ps) = ask >>= \ss -> do
   let user = buildUserOf ss
+      quiet = suppressMakepkg ss
   curr   <- liftShelly pwd
   getBuildScripts p user curr
   overwritePkgbuild p
-  pNames <- join (makepkg <*> pure user)
+  pNames <- liftShelly (makepkg quiet user []) >>= wrap
 --  pNames <- makepkg >>= \f -> f user  -- Which is better?
   paths  <- moveToCachePath pNames
   when (keepSource ss) $ liftShelly (makepkgSource user) >>= void . moveToSourcePath
