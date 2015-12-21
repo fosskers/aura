@@ -37,14 +37,14 @@ data SortScheme = ByVote | Alphabetically deriving (Eq, Show)
 data Truncation = None | Head Int | Tail Int deriving (Eq, Show)
 
 -- The global settings as set by the user with command-line flags.
-data Settings = Settings { inputOf         :: [String]
-                         , pacOptsOf       :: [String]
-                         , otherOptsOf     :: [String]
+data Settings = Settings { inputOf         :: [T.Text]
+                         , pacOptsOf       :: [T.Text]
+                         , otherOptsOf     :: [T.Text]
                          , environmentOf   :: Environment
                          , buildUserOf     :: T.Text
                          , langOf          :: Language
                          , pacmanCmdOf     :: FilePath
-                         , editorOf        :: String
+                         , editorOf        :: T.Text
                          , carchOf         :: T.Text
                          , ignoredPkgsOf   :: [T.Text]
                          , makepkgFlagsOf  :: [String]

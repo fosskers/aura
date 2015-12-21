@@ -97,6 +97,7 @@ executable aura
                        directory,
                        extensible-effects,
                        filepath,
+                       formatting,
                        lens,
                        megaparsec,
                        process,

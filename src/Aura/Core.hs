@@ -34,9 +34,10 @@ import Aura.Languages
 import Aura.Pacman
 import Aura.Utils
 
-import Shell
+import Aura.Shell
 import Shelly hiding (find, liftIO)
 import Prelude hiding (FilePath, span)
+import Utilities (exists)
 
 ---
 
@@ -122,14 +123,15 @@ parseDep s = Dep name (getVersionDemand comp ver)
 -- | Action won't be allowed unless user is root, or using sudo.
 sudo :: Aura () -> Aura ()
 sudo action = do
-  hasPerms <- asks (hasRootPriv . environmentOf)
+  hasPerms <- liftShelly hasRootPriv
   if hasPerms then action else scoldAndFail mustBeRoot_1
 
 -- | Stop the user if they are the true Root. Building as isn't allowed
 -- as of makepkg v4.2.
 trueRoot :: Aura () -> Aura ()
-trueRoot action = ask >>= \ss ->
-  if isntTrueRoot (environmentOf ss) || buildUserOf ss /= "root"
+trueRoot action = ask >>= \ss -> do
+  rootp <- liftShelly isntTrueRoot
+  if rootp || buildUserOf ss /= "root"
     then action else scoldAndFail trueRoot_3
 
 -- `-Qm` yields a list of sorted values.
@@ -169,7 +171,7 @@ isSatisfied (Dep name ver) = T.null <$> pacmanOutput ["-T", name <> T.pack (show
 -- | Block further action until the database is free.
 checkDBLock :: Aura ()
 checkDBLock = do
-  locked <- liftShelly $ test_e lockFile
+  locked <- liftShelly $ exists lockFile
   when locked $ warn checkDBLock_1 *> liftIO IO.getLine *> checkDBLock
 
 -------

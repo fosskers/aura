@@ -3,7 +3,7 @@
 module Aura.Shell where
 
 import Control.Applicative ((<|>))
-import Data.Maybe (fromMaybe, isJust)
+import Data.Maybe (fromMaybe, isJust, fromJust)
 import Data.Monoid ((<>))
 import Data.Text
 import qualified Data.Text.IO as IO
@@ -12,6 +12,7 @@ import Shelly
 import Aura.Monad.Aura (Aura,liftShelly)
 import Prelude hiding (FilePath,putStr)
 import Aura.Colour.Text (csi)
+import Utilities (exists)
 
 ---
 
@@ -71,9 +72,15 @@ isTrueRoot :: Sh Bool
 isTrueRoot = (&&) <$> (not <$> varExists "SUDO_USER") <*> u
   where u = (== Just "root") <$> get_env "USER"
 
+isntTrueRoot :: Sh Bool
+isntTrueRoot = not <$> isntTrueRoot
+
 -- | This will get the true user name regardless of sudo-ing.
 getTrueUser :: Sh (Maybe Text)
 getTrueUser = (<|>) <$> get_env "SUDO_USER" <*> get_env "USER"
+
+getUser' :: Sh (Text)
+getUser' = fromJust <$> getEnvVar "USER"
 
 editor :: Sh Text
 editor = fromMaybe "vi" <$> get_env "EDITOR"

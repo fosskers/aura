@@ -48,6 +48,7 @@ import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Cache
 import Aura.State
+import Aura.Shell
 import Aura.Utils
 import Aura.Core
 
@@ -90,7 +91,7 @@ searchCache r = cacheMatches r >>= liftIO . traverse_ (IO.putStrLn . toTextIgnor
 backupCache :: [FilePath] -> Aura ()
 backupCache []      = scoldAndFail backupCache_1
 backupCache (dir:_) = do
-  exists <- liftShelly $ test_e dir
+  exists <- liftShelly $ exists dir
   if not exists
      then scoldAndFail backupCache_3
      else confirmBackup dir >>= backup dir

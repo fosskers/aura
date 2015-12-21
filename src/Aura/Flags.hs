@@ -370,11 +370,11 @@ parseLanguageFlag args =
       (langs, nonOpts, _) -> (getLanguage langs, nonOpts)
 
 -- I don't like this.
-parseFlags :: Maybe Language -> [String] -> ([Flag], [String], [String])
+parseFlags :: Maybe Language -> [String] -> ([Flag], [T.Text], [T.Text])
 parseFlags (Just lang) args = parseFlags' lang args
 parseFlags Nothing     args = parseFlags' English args
 
 -- Errors are dealt with manually in `aura.hs`.
-parseFlags' :: Language -> [String] -> ([Flag], [String], [String])
+parseFlags' :: Language -> [String] -> ([Flag], [T.Text], [T.Text])
 parseFlags' lang args = case getOpt' Permute (allFlags lang) args of
-                         (opts, nonOpts, pacOpts, _) -> (opts, nonOpts, pacOpts)
+                         (opts, nonOpts, pacOpts, _) -> (opts, map T.pack nonOpts, map T.pack pacOpts)

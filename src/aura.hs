@@ -35,6 +35,9 @@ import System.Exit        (exitSuccess, exitFailure)
 import Data.List          (nub, sort, intercalate)
 import Data.Foldable      (traverse_)
 import Data.Monoid        ((<>))
+import qualified Data.Text as T
+import qualified Data.Text.IO as IO
+import qualified Shelly as S
 
 import Aura.Colour.Text (yellow)
 import Aura.Shell       (shellCmd)
@@ -49,7 +52,7 @@ import Aura.Core
 import Aura.Logo
 
 import Utilities (replaceByPatt)
-import Shell     (showCursor, hideCursor)
+import Aura.Shell     (showCursor, hideCursor)
 
 import Aura.Commands.A as A
 import Aura.Commands.B as B
@@ -60,9 +63,9 @@ import Aura.Commands.O as O
 
 ---
 
-type UserInput = ([Flag], [String], [String])
+type UserInput = ([Flag], [T.Text], [T.Text])
 
-auraVersion :: String
+auraVersion :: T.Text
 auraVersion = "1.4.0"
 
 main :: IO a
@@ -77,17 +80,17 @@ processFlags args = ((flags, nub input, pacOpts'), language)
 
 -- | Set the local environment.
 prepSettings :: (UserInput, Maybe Language) -> IO (UserInput, Settings)
-prepSettings (ui, lang) = (,) ui <$> getSettings lang ui
+prepSettings (ui, lang) =  (,) ui <$> S.shelly (getSettings lang ui)
 
 -- | Hand user input to the Aura Monad and run it.
-execute :: (UserInput, Settings) -> IO (Either String ())
+execute :: (UserInput, Settings) -> IO (Either T.Text ())
 execute ((flags, input, pacOpts), ss) = do
   let flags' = filter notSettingsFlag flags
   when (Debug `elem` flags) $ debugOutput ss
   runAura (executeOpts (flags', input, pacOpts)) ss
 
-exit :: Either String () -> IO a
-exit (Left e)  = putStrLn e *> exitFailure
+exit :: Either T.Text () -> IO a
+exit (Left e)  = IO.putStrLn e *> exitFailure
 exit (Right _) = exitSuccess
 
 -- | After determining what Flag was given, dispatches a function.
@@ -133,11 +136,11 @@ executeOpts (flags, input, pacOpts) =
           [Clean]        -> sudo $ C.cleanCache input
           [Clean, Clean]  -> sudo C.cleanNotSaved
           [Search]       -> C.searchCache input
-          [CacheBackup]  -> sudo $ C.backupCache input
+          [CacheBackup]  -> sudo $ C.backupCache $ map S.fromText input
           _              -> scoldAndFail executeOpts_1
     (LogFile:fs) ->
         case fs of
-          []       -> ask >>= L.viewLogFile . logFilePathOf
+          []       -> ask >>= L.viewLogFile . S.toTextIgnore . logFilePathOf
           [Search] -> L.searchLogFile input
           [Info]   -> L.logInfoOnPkg input
           _        -> scoldAndFail executeOpts_1
@@ -167,35 +170,35 @@ syncABSAndContinue (flags, input, pacOpts) =
 -- GENERAL
 ----------
 viewConfFile :: Aura ()
-viewConfFile = shellCmd "less" [pacmanConfFile]
+viewConfFile = shellCmd "less" [S.toTextIgnore pacmanConfFile]
 
 displayOutputLanguages :: Aura ()
 displayOutputLanguages = do
   notify displayOutputLanguages_1
   liftIO $ traverse_ print allLanguages
 
-printHelpMsg :: [String] -> Aura ()
+printHelpMsg :: [T.Text] -> Aura ()
 printHelpMsg [] = ask >>= \ss -> do
   pacmanHelp <- getPacmanHelpMsg
-  liftIO . putStrLn . getHelpMsg ss $ pacmanHelp
+  liftIO . IO.putStrLn . getHelpMsg ss $ pacmanHelp
 printHelpMsg pacOpts = pacman $ pacOpts <> ["-h"]
 
-getHelpMsg :: Settings -> [String] -> String
-getHelpMsg settings pacmanHelpMsg = intercalate "\n" allMessages
+getHelpMsg :: Settings -> [T.Text] -> T.Text
+getHelpMsg settings pacmanHelpMsg = T.intercalate "\n" allMessages
     where lang = langOf settings
           allMessages   = [replacedLines, auraOperMsg lang, manpageMsg lang]
-          replacedLines = unlines (replaceByPatt patterns <$> pacmanHelpMsg)
+          replacedLines = T.unlines (replaceByPatt patterns <$> pacmanHelpMsg)
           colouredMsg   = yellow $ inheritedOperTitle lang
           patterns      = [("pacman", "aura"), ("operations", colouredMsg)]
 
 -- | Animated version message.
-animateVersionMsg :: [String] -> Aura ()
+animateVersionMsg :: [T.Text] -> Aura ()
 animateVersionMsg verMsg = ask >>= \ss -> liftIO $ do
   hideCursor
-  traverse_ (putStrLn . padString verMsgPad) verMsg  -- Version message
+  traverse_ (IO.putStrLn . padString verMsgPad) verMsg  -- Version message
   raiseCursorBy 7  -- Initial reraising of the cursor.
   drawPills 3
-  traverse_ putStrLn $ renderPacmanHead 0 Open  -- Initial rendering of head.
+  traverse_ IO.putStrLn $ renderPacmanHead 0 Open  -- Initial rendering of head.
   raiseCursorBy 4
   takeABite 0  -- Initial bite animation.
   traverse_ pillEating pillsAndWidths
@@ -207,7 +210,7 @@ animateVersionMsg verMsg = ask >>= \ss -> liftIO $ do
 
 version :: Settings -> IO ()
 version ss = do
-  putStrLn auraLogo
-  putStrLn $ "AURA Version " <> auraVersion
-  putStrLn " by Colin Woodbury\n"
-  traverse_ putStrLn . translatorMsg . langOf $ ss
+  IO.putStrLn auraLogo
+  IO.putStrLn $ "AURA Version " <> auraVersion
+  IO.putStrLn " by Colin Woodbury\n"
+  traverse_ IO.putStrLn . translatorMsg . langOf $ ss

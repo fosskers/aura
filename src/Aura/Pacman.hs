@@ -71,7 +71,7 @@ getPacmanCmd _ nopp =
      case pacman of
        Just cmd -> pure cmd
        Nothing  -> do             -- Left space for more options later.
-         powerPill <- test_e powerPillCmd
+         powerPill <- exists powerPillCmd
          if | powerPill && not nopp -> pure $ toTextIgnore powerPillCmd
             | otherwise -> pure defaultCmd
 

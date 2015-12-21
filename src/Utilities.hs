@@ -34,13 +34,13 @@ import Data.Text.ICU       (regex ,find)
 import Data.Functor
 import Data.Monoid
 import Data.Maybe          (isJust)
-import Text.Printf         (printf)
 import Data.List           (dropWhileEnd)
 import Data.Foldable hiding (find)
 import Data.Char           (digitToInt)
 import System.IO hiding    (FilePath,openFile,readFile)
 
 import Filesystem.Path.CurrentOS hiding (null)
+import qualified Filesystem.Path.CurrentOS as F
 import Filesystem
 import Shelly  hiding      (find)
 import Prelude hiding      (FilePath, readFile)
@@ -153,7 +153,7 @@ getSelection choiceLabels = do
   hFlush stdout
   userChoice <- IO.getLine
   case userChoice `lookup` choices of
-    Just valid -> pure valid
+    Just v     -> pure v
     Nothing    -> getSelection choiceLabels  -- Ask again.
 
 -- | Print a list of Strings with a given interval in between.
@@ -219,7 +219,10 @@ findM p (x:xs) = p x >>= ifte_ (pure $ Just x) (findM p xs)
 -- | If a file exists, it performs action `t` on the argument.
 -- | If the file doesn't exist, it performs `f` and returns the argument.
 ifFile :: SetMember Lift (Lift Sh) r => (a -> Eff r a) -> Eff r b -> FilePath -> a -> Eff r a
-ifFile t f file x = (lift $ test_e file) >>= ifte_ (t $ x) (f $> x)
+ifFile t f file x = (lift $ exists file) >>= ifte_ (t $ x) (f $> x)
 
 nothing :: Applicative f => f ()
 nothing = pure ()
+
+exists :: FilePath -> Sh Bool
+exists fp = if F.null fp then pure False else test_e fp

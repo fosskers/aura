@@ -33,7 +33,7 @@ import Aura.Diff (unidiff)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as E
 
-import Utilities (readFileUTF8)
+import Utilities (readFileUTF8, exists)
 import Prelude hiding (FilePath,writeFile)
 import Filesystem
 
@@ -48,7 +48,7 @@ comparePkgbuilds name old new =
     h = fromText name </> ("PKGBUILD" :: FilePath)
 
 hasPkgbuildStored :: T.Text -> Aura Bool
-hasPkgbuildStored = liftShelly . test_e . pkgbuildPath
+hasPkgbuildStored = liftShelly . exists . pkgbuildPath
 
 storePkgbuilds :: [Buildable] -> Aura ()
 storePkgbuilds = traverse_ (\p -> writePkgbuild (baseNameOf p) (pkgbuildOf p))

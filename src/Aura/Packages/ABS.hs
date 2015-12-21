@@ -64,7 +64,7 @@ import           Aura.Settings.Base
 import qualified Aura.Shell         as A (quietShellCmd, shellCmd)
 import           Aura.Utils         (optionalPrompt)
 
-import           Utilities          (readFileUTF8)
+import           Utilities          (readFileUTF8, exists)
 import           Aura.Shell         (lsT', ls'')
 import           Prelude  hiding    (FilePath)
 
@@ -147,7 +147,7 @@ syncRepo p = do
       pure (Re.suffix 0 =<< match)
 
 synced :: T.Text -> T.Text -> Aura Bool
-synced repo pkg = liftShelly . test_e $ absPkgbuildPath repo pkg
+synced repo pkg = liftShelly . exists $ absPkgbuildPath repo pkg
 
 -- Make this react to `-x` as well? Wouldn't be hard.
 -- It would just be a matter of switching between `shellCmd`
