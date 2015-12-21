@@ -73,7 +73,7 @@ isTrueRoot = (&&) <$> (not <$> varExists "SUDO_USER") <*> u
   where u = (== Just "root") <$> get_env "USER"
 
 isntTrueRoot :: Sh Bool
-isntTrueRoot = not <$> isntTrueRoot
+isntTrueRoot = not <$> isTrueRoot
 
 -- | This will get the true user name regardless of sudo-ing.
 getTrueUser :: Sh (Maybe Text)
