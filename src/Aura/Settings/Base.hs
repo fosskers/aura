@@ -25,7 +25,6 @@ module Aura.Settings.Base ( Settings(..)
 
 import Aura.Languages (Language)
 
-import Shell (Environment)
 import Prelude hiding (FilePath)
 import Shelly (FilePath)
 import qualified Data.Text as T
@@ -40,7 +39,6 @@ data Truncation = None | Head Int | Tail Int deriving (Eq, Show)
 data Settings = Settings { inputOf         :: [T.Text]
                          , pacOptsOf       :: [T.Text]
                          , otherOptsOf     :: [T.Text]
-                         , environmentOf   :: Environment
                          , buildUserOf     :: T.Text
                          , langOf          :: Language
                          , pacmanCmdOf     :: FilePath

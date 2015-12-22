@@ -43,7 +43,6 @@ import Aura.Utils         (scoldAndFail)
 import Shelly hiding (cmd)
 import Prelude hiding (FilePath)
 
-import Shell (Environment)
 import Utilities
 
 ---
@@ -65,8 +64,8 @@ defaultLogFile = "/var/log/pacman.log"
 lockFile :: FilePath
 lockFile = "/var/lib/pacman/db.lck"
 
-getPacmanCmd :: Environment -> Bool -> Sh T.Text
-getPacmanCmd _ nopp =
+getPacmanCmd :: Bool -> Sh T.Text
+getPacmanCmd nopp =
   do pacman <- get_env "PACMAN"
      case pacman of
        Just cmd -> pure cmd

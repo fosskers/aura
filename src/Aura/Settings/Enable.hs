@@ -47,8 +47,7 @@ import Prelude hiding (FilePath)
 getSettings :: Maybe Language -> ([Flag], [T.Text], [T.Text]) -> Sh Settings
 getSettings lang' (auraFlags, input, pacOpts) = do
   confFile    <- getPacmanConf
-  environment <- liftIO getEnvironment
-  pmanCommand <- getPacmanCmd environment $ noPowerPillStatus auraFlags
+  pmanCommand <- getPacmanCmd $ noPowerPillStatus auraFlags
   makepkgConf <- getConf $ fromText makepkgConfFile
   buildPath'  <- checkBuildPath (buildPath auraFlags) (getCachePath confFile)
   editor'     <- editor
@@ -57,7 +56,6 @@ getSettings lang' (auraFlags, input, pacOpts) = do
   pure Settings { inputOf         = input
                 , pacOptsOf       = pacOpts
                 , otherOptsOf     = T.pack . show <$> auraFlags
-                , environmentOf   = environment
                 , buildUserOf     = buildUser'
                 , langOf          = language
                 , pacmanCmdOf     = fromText pmanCommand
