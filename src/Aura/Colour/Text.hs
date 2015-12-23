@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-
 
 Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
@@ -21,10 +22,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Colour.Text where
 
-import Data.List.Split (splitOn)
 import Data.Monoid
-
-import Shell (csi)
+import qualified Data.Text as T
 
 ---
 
@@ -35,7 +34,11 @@ data Colour = NoColour
             | BForeground
             deriving (Eq, Enum, Show)
 
-type Colouror = String -> String
+type Colouror = T.Text -> T.Text
+
+-- Code borrowed from `ansi-terminal` library by Max Bolingbroke.
+csi :: [Int] -> T.Text -> T.Text
+csi args code = "\ESC[" <> T.intercalate ";" (T.pack . show <$> args) <> code
 
 noColour :: Colouror
 noColour = colourize NoColour
@@ -127,37 +130,37 @@ where `x` is a colour code and `y` is an "attribute". See below.
 *******************************************
 
 -}
-escapeCodes :: [String]
+escapeCodes :: [T.Text]
 escapeCodes = normalCodes <> boldCodes <> bForegroundCode
 
-normalCodes :: [String]
+normalCodes :: [T.Text]
 normalCodes = (\n -> csi [0, n] "m") <$> [30..37]
 
-boldCodes :: [String]
+boldCodes :: [T.Text]
 boldCodes = (\n -> csi [1, n] "m") <$> [31..37]
 
-bForegroundCode :: [String]
+bForegroundCode :: [T.Text]
 bForegroundCode = ["\ESC[m\ESC[1m"]
 
 -- This needs to come after a section of coloured text or bad things happen.
-resetCode :: String
+resetCode :: T.Text
 resetCode = "\ESC[0m"
 
-resetCodeRegex :: String
+resetCodeRegex :: T.Text
 resetCodeRegex = "\ESC\\[0m"
 
-coloursWithCodes :: [(Colour, String)]
+coloursWithCodes :: [(Colour, T.Text)]
 coloursWithCodes = zip colours escapeCodes
 
-colourize :: Colour -> String -> String
+colourize :: Colour -> T.Text -> T.Text
 colourize _ ""       = ""
 colourize colour msg =
     case colour `lookup` coloursWithCodes of
       Nothing   -> msg  -- `NoColour` will yield this.
       Just code -> insertCodes code msg
         where insertCodes code' msg' =
-                  case splitOn resetCode msg' of
+                  case T.splitOn resetCode msg' of
                     []      -> ""  -- Shouldn't happen?
                     [_]     -> code' <> msg' <> resetCode
                     [_, ""] -> msg' -- We're done recursing.
-                    (b:as)  -> insertCodes code' (b <> code' <> unwords as)
+                    (b:as)  -> insertCodes code' (b <> code' <> T.unwords as)

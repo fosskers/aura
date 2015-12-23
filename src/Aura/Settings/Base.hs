@@ -25,7 +25,9 @@ module Aura.Settings.Base ( Settings(..)
 
 import Aura.Languages (Language)
 
-import Shell (Environment)
+import Prelude hiding (FilePath)
+import Shelly (FilePath)
+import qualified Data.Text as T
 
 ---
 
@@ -34,16 +36,15 @@ data SortScheme = ByVote | Alphabetically deriving (Eq, Show)
 data Truncation = None | Head Int | Tail Int deriving (Eq, Show)
 
 -- The global settings as set by the user with command-line flags.
-data Settings = Settings { inputOf         :: [String]
-                         , pacOptsOf       :: [String]
-                         , otherOptsOf     :: [String]
-                         , environmentOf   :: Environment
-                         , buildUserOf     :: String
+data Settings = Settings { inputOf         :: [T.Text]
+                         , pacOptsOf       :: [T.Text]
+                         , otherOptsOf     :: [T.Text]
+                         , buildUserOf     :: T.Text
                          , langOf          :: Language
-                         , pacmanCmdOf     :: String
-                         , editorOf        :: String
-                         , carchOf         :: String
-                         , ignoredPkgsOf   :: [String]
+                         , pacmanCmdOf     :: FilePath
+                         , editorOf        :: T.Text
+                         , carchOf         :: T.Text
+                         , ignoredPkgsOf   :: [T.Text]
                          , makepkgFlagsOf  :: [String]
                          , buildPathOf     :: FilePath
                          , cachePathOf     :: FilePath

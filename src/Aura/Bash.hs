@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 -- Interface to the Bash library.
 
 {-
@@ -26,7 +27,7 @@ module Aura.Bash
     , value 
     , Namespace ) where
 
-import Text.Parsec.Error (ParseError)
+import Text.Megaparsec.Error (ParseError)
 import Data.Maybe    (fromMaybe)
 
 import Aura.Settings.Base
@@ -35,22 +36,23 @@ import Aura.Monad.Aura
 import Bash.Simplify
 import Bash.Parser
 import Bash.Base
+import qualified Data.Text as T
 
 ---
 
-namespace :: String -> String -> Aura Namespace
+namespace :: T.Text -> T.Text -> Aura Namespace
 namespace pn pb = do
   carch <- ((: []) . SingleQ . carchOf) <$> ask
   case namespace' carch pn pb of
     Left e   -> liftIO (print e) *> failure "PKGBUILD parse failed."
     Right ns -> pure ns
 
-namespace' :: [BashString] -> String -> String -> Either ParseError Namespace
+namespace' :: [BashString] -> T.Text -> T.Text -> Either ParseError Namespace
 namespace' ca pn pb =
     case parseBash pn pb of
       Left  e -> Left e
       Right s -> Right $ simpNamespace ns s
           where ns = insert "CARCH" ca (toNamespace s)
 
-value :: Namespace -> String -> [String]
+value :: Namespace -> T.Text -> [T.Text]
 value ns v = fromMaybe [] $ getVar ns v

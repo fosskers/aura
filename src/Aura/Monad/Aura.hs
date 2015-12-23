@@ -1,4 +1,4 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, TypeOperators, FlexibleContexts, Rank2Types #-}
 
 {-
 
@@ -23,17 +23,27 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Monad.Aura
     ( Aura
+    , AuraEff
     , runAura
     , failure
     , catch
     , wrap
+    , wrapString
     , liftIO
+    , liftShelly
     , ask
     , asks
     ) where
 
-import Control.Monad.Except
-import Control.Monad.Reader
+import Data.OpenUnion.Imports
+import Control.Eff
+import Control.Eff.Exception
+import Control.Eff.Lift
+import Control.Eff.Reader.Strict
+
+import qualified Data.Text as T
+
+import qualified Shelly as S
 
 import Aura.Settings.Base (Settings)
 
@@ -49,19 +59,29 @@ liftIO  : Perform intermittent IO using `liftIO`.
 ask     : Obtain run-time settings.
 runAura : Unwraps an Aura action. Must be passed `Settings` as well.
 -}
-newtype Aura a = A { runA :: ExceptT String (ReaderT Settings IO) a }
-  deriving ( Monad, MonadError String, MonadReader Settings, MonadIO,
-             Functor, Applicative)
+type AuraEff r a = (Member (Exc T.Text) r, Member (Reader Settings) r, MemberU Lift (Lift S.Sh) r, SetMember Lift (Lift S.Sh) r) => Eff r a
+type Aura a = forall r . AuraEff r a
 
-runAura :: Aura a -> Settings -> IO (Either String a)
-runAura = runReaderT . runExceptT . runA
+runAura :: Aura a -> Settings -> IO (Either T.Text a)
+runAura a s = S.shelly $ runLift $ flip runReader s $ runExc a
 
-failure :: String -> Aura a
-failure = throwError
+failure :: T.Text -> Aura a
+failure = throwExc
 
-catch :: Aura a -> (String -> Aura a) -> Aura a
-catch a h = catchError a h
+catch :: Aura a -> (T.Text -> Aura a) -> Aura a
+catch = catchExc
 
-wrap :: Either String a -> Aura a
-wrap (Left m)  = failure m
-wrap (Right a) = pure a
+wrap :: Either T.Text a -> Aura a
+wrap = liftEither
+
+wrapString :: Either String a -> Aura a
+wrapString = either (failure . T.pack) pure
+
+liftIO :: IO a -> Aura a
+liftIO = lift . S.liftIO
+
+liftShelly :: S.Sh a -> Aura a
+liftShelly = lift
+
+asks :: (Settings -> a) -> Aura a
+asks = flip fmap ask

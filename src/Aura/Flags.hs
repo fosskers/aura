@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-
 
 Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
@@ -55,16 +56,18 @@ import Data.Monoid
 import Data.Foldable
 import Data.Maybe (fromMaybe)
 import Text.Read (readMaybe)
+import qualified Data.Text as T
 
 import Aura.Colour.Text (yellow)
 import Aura.Settings.Base
 import Aura.Languages
 
-import Utilities (notNull, split)
+import Shelly (FilePath, fromText)
+import Prelude hiding (FilePath)
 
 ---
 
-type FlagMap = Flag -> String
+type FlagMap = Flag -> T.Text
 
 data Flag = ABSInstall
           | AURInstall
@@ -86,11 +89,11 @@ data Flag = ABSInstall
           | NoConfirm
           | DryRun
           | Quiet
-          | AURIgnore String
-          | Ignore String
-          | IgnoreGroup String
+          | AURIgnore T.Text
+          | Ignore T.Text
+          | IgnoreGroup T.Text
           | BuildPath FilePath
-          | BuildUser String
+          | BuildUser T.Text
           | ABCSort
           | TruncHead Int
           | TruncTail Int
@@ -123,7 +126,7 @@ data Flag = ABSInstall
           | ItalianOut
           | SerbianOut
           | NorwegiOut
-          | PacmanArg String String
+          | PacmanArg T.Text T.Text
             deriving (Eq, Ord, Show)
 
 allFlags :: Language -> [OptDescr Flag]
@@ -139,17 +142,17 @@ simpleOption (c, s, f) = Option c s (NoArg f) ""
 
 auraOperations :: Language -> [OptDescr Flag]
 auraOperations lang =
-    [ Option "A" ["aursync"]   (NoArg AURInstall) (aurSy lang)
-    , Option "B" ["save"]      (NoArg SaveState)  (saveS lang)
-    , Option "C" ["downgrade"] (NoArg Cache)      (downG lang)
-    , Option "L" ["viewlog"]   (NoArg LogFile)    (viewL lang)
-    , Option "M" ["abssync"]   (NoArg ABSInstall) (absSy lang)
-    , Option "O" ["orphans"]   (NoArg Orphans)    (orpha lang) ]
+    [ Option "A" ["aursync"]   (NoArg AURInstall) (T.unpack $ aurSy lang)
+    , Option "B" ["save"]      (NoArg SaveState)  (T.unpack $ saveS lang)
+    , Option "C" ["downgrade"] (NoArg Cache)      (T.unpack $ downG lang)
+    , Option "L" ["viewlog"]   (NoArg LogFile)    (T.unpack $ viewL lang)
+    , Option "M" ["abssync"]   (NoArg ABSInstall) (T.unpack $ absSy lang)
+    , Option "O" ["orphans"]   (NoArg Orphans)    (T.unpack $ orpha lang) ]
 
 auraOptions :: [OptDescr Flag]
-auraOptions = Option [] ["aurignore"] (ReqArg AURIgnore "" ) "" :
-              Option [] ["build"]     (ReqArg BuildPath "" ) "" :
-              Option [] ["builduser"] (ReqArg BuildUser "" ) "" :
+auraOptions = Option [] ["aurignore"] (ReqArg (AURIgnore . T.pack) "" ) "" :
+              Option [] ["build"]     (ReqArg (BuildPath . fromText . T.pack)"" ) "" :
+              Option [] ["builduser"] (ReqArg (BuildUser . T.pack)"" ) "" :
               Option [] ["head"] (OptArg (TruncHead . truncHandler) "") "" :
               Option [] ["tail"] (OptArg (TruncTail . truncHandler) "") "" :
               fmap simpleOption
@@ -192,8 +195,8 @@ pacmanOptions = fmap simpleOption
 
 -- Options that have functionality stretching across both Aura and Pacman.
 dualOptions :: [OptDescr Flag]
-dualOptions = Option [] ["ignore"]      (ReqArg Ignore      "" ) "" :
-              Option [] ["ignoregroup"] (ReqArg IgnoreGroup "" ) "" :
+dualOptions = Option [] ["ignore"]      (ReqArg (Ignore . T.pack)      "" ) "" :
+              Option [] ["ignoregroup"] (ReqArg (IgnoreGroup . T.pack) "" ) "" :
               fmap simpleOption
               [ ( [], ["noconfirm"], NoConfirm )
               , ( [], ["needed"],    Needed    ) ]
@@ -209,7 +212,7 @@ longPacmanOptions = pacArg <$> zip
                     -- "owns" is apparently okay as is?
                     -- TODO: check all others
     where pacArg (option, letter) = Option letter [option]
-                                    (ReqArg (PacmanArg option) "") ""
+                                    (ReqArg (PacmanArg (T.pack option). T.pack) "") ""
 
 pacmanFlagMap :: FlagMap
 pacmanFlagMap (PacmanArg option arg) = "--" <> option <> "=" <> arg
@@ -253,13 +256,13 @@ dualFlagMap f = flip simpleFlagMap f [ (Quiet,     "-q"          )
                                      , (NoConfirm, "--noconfirm" )
                                      , (Needed,    "--needed"    ) ]
 
-simpleFlagMap :: [(Flag, String)] -> Flag -> String
+simpleFlagMap :: [(Flag, T.Text)] -> Flag -> T.Text
 simpleFlagMap fm = fromMaybe "" . flip lookup fm
 
 -- Converts the intercepted Pacman flags back into their raw string forms
 -- and filters out the garbage.
-reconvertFlags :: FlagMap -> [Flag] -> [String]
-reconvertFlags fm = filter notNull . fmap fm
+reconvertFlags :: FlagMap -> [Flag] -> [T.Text]
+reconvertFlags fm = filter (not . T.null) . fmap fm
 
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress, NoConfirm, HotEdit, DiffPkgbuilds, Debug, Devel
@@ -277,8 +280,8 @@ notSettingsFlag (TruncTail _)   = False
 notSettingsFlag (PacmanArg _ _) = False
 notSettingsFlag f               = f `notElem` settingsFlags
 
-auraOperMsg :: Language -> String
-auraOperMsg lang = usageInfo (yellow $ auraOperTitle lang) $ auraOperations lang
+auraOperMsg :: Language -> T.Text
+auraOperMsg lang = T.pack $ usageInfo (T.unpack $ yellow $ auraOperTitle lang) $  auraOperations lang
 
 -- Extracts desirable results from given Flags.
 -- Callers must supply an [alt]ernate value for when there are no matches.
@@ -295,9 +298,9 @@ getLanguage = fishOutFlag flagsAndResults Nothing
                             , RussianOut, ItalianOut, SerbianOut, NorwegiOut ]
           langFuns        = Just <$> [Japanese ..]
 
-ignoredAuraPkgs :: [Flag] -> [String]
+ignoredAuraPkgs :: [Flag] -> [T.Text]
 ignoredAuraPkgs [] = []
-ignoredAuraPkgs (AURIgnore ps : _) = split ',' ps
+ignoredAuraPkgs (AURIgnore ps : _) = T.splitOn "," ps
 ignoredAuraPkgs (_:fs) = ignoredAuraPkgs fs
 
 buildPath :: [Flag] -> FilePath
@@ -305,7 +308,7 @@ buildPath [] = ""
 buildPath (BuildPath p : _) = p
 buildPath (_:fs) = buildPath fs
 
-buildUser :: [Flag] -> Maybe String
+buildUser :: [Flag] -> Maybe T.Text
 buildUser [] = Nothing
 buildUser (BuildUser u : _) = Just u
 buildUser (_:fs) = buildUser fs
@@ -367,11 +370,11 @@ parseLanguageFlag args =
       (langs, nonOpts, _) -> (getLanguage langs, nonOpts)
 
 -- I don't like this.
-parseFlags :: Maybe Language -> [String] -> ([Flag], [String], [String])
+parseFlags :: Maybe Language -> [String] -> ([Flag], [T.Text], [T.Text])
 parseFlags (Just lang) args = parseFlags' lang args
 parseFlags Nothing     args = parseFlags' English args
 
 -- Errors are dealt with manually in `aura.hs`.
-parseFlags' :: Language -> [String] -> ([Flag], [String], [String])
+parseFlags' :: Language -> [String] -> ([Flag], [T.Text], [T.Text])
 parseFlags' lang args = case getOpt' Permute (allFlags lang) args of
-                         (opts, nonOpts, pacOpts, _) -> (opts, nonOpts, pacOpts)
+                         (opts, nonOpts, pacOpts, _) -> (opts, map T.pack nonOpts, map T.pack pacOpts)

@@ -23,33 +23,38 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Pkgbuild.Records where
 
-import System.Directory (doesFileExist)
-import System.FilePath  ((</>))
+import Shelly hiding (liftIO)
 import Data.Foldable    (traverse_)
 
 import Aura.Pkgbuild.Base
 import Aura.Monad.Aura
 import Aura.Core (Buildable, baseNameOf, pkgbuildOf)
 import Aura.Diff (unidiff)
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as E
 
-import Utilities (readFileUTF8)
+import Utilities (readFileUTF8, exists)
+import Prelude hiding (FilePath,writeFile)
+import Filesystem
 
 ---
 
-comparePkgbuilds :: String -> String -> String -> String
+comparePkgbuilds :: T.Text -> T.Text -> T.Text -> T.Text
 comparePkgbuilds name old new =
-    unlines $ unidiff 3 ("a" </> h) ("b" </> h) (lines old) (lines new)
+  T.unlines $ unidiff 3 a b (T.lines old) (T.lines new)
   where
-    h = name </> "PKGBUILD"
+    a = toTextIgnore (("a" :: FilePath) </> h)
+    b = toTextIgnore (("b" :: FilePath) </> h)
+    h = fromText name </> ("PKGBUILD" :: FilePath)
 
-hasPkgbuildStored :: String -> Aura Bool
-hasPkgbuildStored = liftIO . doesFileExist . pkgbuildPath 
+hasPkgbuildStored :: T.Text -> Aura Bool
+hasPkgbuildStored = liftShelly . exists . pkgbuildPath
 
 storePkgbuilds :: [Buildable] -> Aura ()
 storePkgbuilds = traverse_ (\p -> writePkgbuild (baseNameOf p) (pkgbuildOf p))
 
-readPkgbuild :: String -> Aura String
+readPkgbuild :: T.Text -> Aura T.Text
 readPkgbuild = liftIO . readFileUTF8 . pkgbuildPath
 
-writePkgbuild :: String -> String -> Aura ()
-writePkgbuild name p = liftIO $ writeFile (pkgbuildPath name) p
+writePkgbuild :: T.Text -> T.Text -> Aura ()
+writePkgbuild name = liftIO . writeFile (pkgbuildPath name) . E.encodeUtf8

@@ -26,11 +26,12 @@ category:            System
 
 build-type:          Simple
 
-cabal-version:       >=1.8
+cabal-version:       >=1.10
 
 extra-source-files:  doc/aura.8,
                      doc/completions/bashcompletion.sh,
                      doc/completions/_aura
+
 
 source-repository head
   type:     git
@@ -40,6 +41,11 @@ executable aura
   ghc-options:         -Wall
 
   main-is:             aura.hs
+  default-extensions:  Rank2Types
+                       FlexibleContexts
+                       OverloadedStrings
+
+  default-language:    Haskell2010
 
   hs-source-dirs:      src
   other-modules:       Shell,
@@ -86,21 +92,28 @@ executable aura
 
   build-depends:       aur>=4.0.2,
                        array,
+                       attoparsec,
                        base >= 4.8 && < 5,
                        bytestring,
                        containers,
                        directory,
+                       extensible-effects,
                        filepath,
+                       formatting,
                        lens,
-                       mtl,
-                       parsec,
+                       megaparsec,
                        process,
                        regex-pcre-builtin,
                        shelly,
                        split,
+                       system-filepath,
+                       system-fileio,
                        temporary,
                        text,
+                       text-icu,
+                       ini,
                        time,
                        transformers,
                        unix,
+                       unordered-containers,
                        wreq

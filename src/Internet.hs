@@ -26,17 +26,20 @@ module Internet
     , saveUrlContents ) where
 
 import           Control.Lens
+import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as L
 import           Network.Wreq
-import           System.FilePath (splitFileName, (</>))
-import           System.IO (hClose, openFile, IOMode(WriteMode))
+import           Filesystem.Path.CurrentOS (FilePath, filename, (</>), fromText)
+import           Filesystem (openFile, IOMode(WriteMode))
+import           System.IO (hClose)
+import           Prelude hiding (FilePath)
 
 ---
 
-urlContents :: String -> IO (Maybe L.ByteString)
-urlContents url = (^? responseBody) <$> get url
+urlContents :: T.Text -> IO (Maybe L.ByteString)
+urlContents url = (^? responseBody) <$> get (T.unpack url)
 
-saveUrlContents :: FilePath -> String -> IO (Maybe FilePath)
+saveUrlContents :: FilePath -> T.Text -> IO (Maybe FilePath)
 saveUrlContents fpath url = do
   contents <- urlContents url
   case contents of
@@ -45,4 +48,4 @@ saveUrlContents fpath url = do
       handle <- openFile filePath WriteMode
       L.hPutStr handle c *> hClose handle *> pure (Just filePath)
           where filePath = fpath </> file
-                (_, file) = splitFileName url
+                file = filename $ fromText url
