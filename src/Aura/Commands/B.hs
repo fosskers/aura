@@ -28,6 +28,7 @@ import Shelly ((</>),rm)
 import Data.Char       (isDigit)
 import Data.Foldable   (traverse_)
 import qualified Data.Text as T
+import Data.Text.Read
 
 import Aura.Utils (scoldAndFail, optionalPrompt)
 import Aura.Core  (warn)
@@ -40,7 +41,7 @@ import Aura.State
 -- Pretty similar to `-Cc`...
 cleanStates :: [T.Text] -> Aura ()
 cleanStates []        = cleanStates' 0
-cleanStates (input:_) | T.all isDigit input = cleanStates' $ read $ T.unpack input
+cleanStates (input:_) | T.all isDigit input = wrapString (decimal input) >>= (cleanStates' . fst)
                       | otherwise = scoldAndFail cleanStates_1
 
 cleanStates' :: Int -> Aura ()

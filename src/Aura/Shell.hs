@@ -12,7 +12,6 @@ import Shelly
 import Aura.Monad.Aura (Aura,liftShelly)
 import Prelude hiding (FilePath,putStr)
 import Aura.Colour.Text (csi)
-import Utilities (exists)
 
 ---
 

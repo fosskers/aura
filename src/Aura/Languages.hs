@@ -45,6 +45,7 @@ import Aura.Colour.Text (cyan, green, red, blue, yellow, magenta, bForeground)
 import qualified Data.Map.Lazy as Map (Map, (!), fromList, toList, mapWithKey)
 import Data.Monoid
 import qualified Data.Text as T
+import Formatting
 import Prelude hiding (FilePath)
 import Shelly (FilePath,toTextIgnore)
 
@@ -1040,7 +1041,7 @@ backupCache_4 (bt . toTextIgnore -> dir) = \case
     _          -> "Backing up cache to " <> dir
 
 backupCache_5 :: Int -> Language -> T.Text
-backupCache_5 (bt . T.pack . show -> n) = \case
+backupCache_5 (bt . sformat int -> n) = \case
     Japanese   -> "パッケージのファイル数：" <> n
     Polish     -> "Pliki będące częścią\xa0kopii zapasowej: " <> n
     Croatian   -> "Datoteke koje su dio sigurnosne kopije: " <> n
@@ -1108,7 +1109,7 @@ backupCache_8 = \case
     _          -> "Backing up. This may take a few minutes..."
 
 copyAndNotify_1 :: Int -> Language -> T.Text
-copyAndNotify_1 (cyan . T.pack . show -> n) = \case
+copyAndNotify_1 (cyan . sformat int -> n) = \case
     Japanese   -> "#[" <> n <>"]をコピー中・・・"
     Polish     -> "Kopiowanie #[" <> n <> "]"
     Croatian   -> "Kopiranje #[" <> n <> "]"
@@ -1176,7 +1177,7 @@ cleanCache_2 = \case
     _          -> "This will delete the ENTIRE package cache."
 
 cleanCache_3 :: Int -> Language -> T.Text
-cleanCache_3 (bt . T.pack . show -> n) = \case
+cleanCache_3 (bt . sformat int -> n) = \case
     Japanese   -> "パッケージ・ファイルは" <> n <> "個保存される。"
     Polish     -> n <> " wersji każdego pakietu zostanie zachowane."
     Croatian   -> n <> " zadnjih verzija svakog paketa će biti zadržano."

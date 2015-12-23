@@ -29,6 +29,7 @@ module Aura.Commands.O
 import Data.Monoid
 import Data.Foldable
 import qualified Data.Text as T
+import qualified Data.Text.IO as IO
 
 import Aura.Core   (orphans, sudo)
 import Aura.Pacman (pacman)
@@ -37,7 +38,7 @@ import Aura.Monad.Aura
 ---
 
 displayOrphans :: [T.Text] -> Aura ()
-displayOrphans []   = orphans >>= liftIO . traverse_ (putStrLn . show)
+displayOrphans []   = orphans >>= liftIO . traverse_ IO.putStrLn
 displayOrphans pkgs = adoptPkg pkgs
 
 adoptPkg :: [T.Text] -> Aura ()

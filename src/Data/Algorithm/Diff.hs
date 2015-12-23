@@ -28,7 +28,6 @@ import Prelude hiding (pi)
 
 import Data.Foldable
 import Data.Array
-import qualified Data.Text as T
 
 data DI = F | S | B deriving (Show, Eq)
 

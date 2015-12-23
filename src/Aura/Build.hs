@@ -25,7 +25,7 @@ module Aura.Build
     ( installPkgFiles
     , buildPackages ) where
 
-import Control.Monad (when, void)
+import Control.Monad (void)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 

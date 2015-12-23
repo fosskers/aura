@@ -30,7 +30,7 @@ module Aura.Commands.C
     , cleanCache
     , cleanNotSaved ) where
 
-import Shelly    (FilePath, (</>), test_e, rm, cp, fromText, toTextIgnore)
+import Shelly    (FilePath, (</>), rm, cp, fromText, toTextIgnore)
 import qualified Data.Text.ICU as Re
 import qualified Data.Text.IO as IO
 import Data.Text.Read
@@ -48,7 +48,6 @@ import Aura.Monad.Aura
 import Aura.Languages
 import Aura.Cache
 import Aura.State
-import Aura.Shell
 import Aura.Utils
 import Aura.Core
 
@@ -91,8 +90,8 @@ searchCache r = cacheMatches r >>= liftIO . traverse_ (IO.putStrLn . toTextIgnor
 backupCache :: [FilePath] -> Aura ()
 backupCache []      = scoldAndFail backupCache_1
 backupCache (dir:_) = do
-  exists <- liftShelly $ exists dir
-  if not exists
+  exists' <- liftShelly $ exists dir
+  if not exists'
      then scoldAndFail backupCache_3
      else confirmBackup dir >>= backup dir
 

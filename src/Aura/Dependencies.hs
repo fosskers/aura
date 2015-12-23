@@ -30,7 +30,6 @@ import           Data.Graph
 import           Data.Maybe
 import qualified Data.Map as Map
 import           Data.Foldable
-import           Data.Typeable
 import qualified Data.Text as T
 
 import           Aura.Core

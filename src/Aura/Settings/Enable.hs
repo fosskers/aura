@@ -24,7 +24,6 @@ module Aura.Settings.Enable
     ( getSettings
     , debugOutput ) where
 
-import System.Environment (getEnvironment)
 import Data.Maybe         (fromJust)
 import Data.Monoid
 import Data.Foldable

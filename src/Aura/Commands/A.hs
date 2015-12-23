@@ -168,7 +168,7 @@ renderSearch ss r (i, e) = searchResult
           repo = magenta "aur/"
           n = c bForeground $ aurNameOf i
           d = c noColour $ aurDescriptionOf i
-          l = yellow . T.pack . show $ aurVotesOf i  -- `l` for likes?
+          l = yellow . sformat int $ aurVotesOf i  -- `l` for likes?
           p = yellow $ sformat (fixed 2) (popularityOf i)
           v = case dateObsoleteOf i of
             Just _  -> red $ aurVersionOf i
@@ -185,9 +185,9 @@ downloadTarballs pkgs = do
   currDir <- liftShelly pwd
   traverse_ (downloadTBall currDir) pkgs
     where downloadTBall :: FilePath -> T.Text -> Aura ()
-          downloadTBall path pkg = whenM (isAurPackage pkg) $ do
+          downloadTBall path' pkg = whenM (isAurPackage pkg) $ do
               notify $ downloadTarballs_1 pkg
-              void . liftIO $ sourceTarball path $ pkg
+              void . liftIO $ sourceTarball path' $ pkg
 
 displayPkgbuild :: [T.Text] -> Aura ()
 displayPkgbuild = I.displayPkgbuild $ traverse pkgbuild'
