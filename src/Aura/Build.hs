@@ -25,8 +25,8 @@ module Aura.Build
     ( installPkgFiles
     , buildPackages ) where
 
-import Control.Monad (void)
-import Data.Monoid ((<>))
+import BasicPrelude hiding (FilePath, catch, liftIO, (</>))
+
 import qualified Data.Text as T
 
 import Aura.Colour.Text
@@ -43,7 +43,6 @@ import Aura.Shell
 import Shelly hiding (liftIO)
 import qualified Filesystem.Path.CurrentOS as F
 import qualified Data.Text.IO as IO
-import Prelude hiding (FilePath)
 
 ---
 

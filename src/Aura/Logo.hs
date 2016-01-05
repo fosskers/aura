@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 -- Library for printing an animated AURA version message.
 
 {-
@@ -24,16 +23,16 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Logo where
 
+import BasicPrelude
+
 import Control.Concurrent (threadDelay)
 import System.IO          (stdout, hFlush)
-import Data.Monoid        ((<>))
 import Data.Foldable      (traverse_, fold)
 
 import Aura.Colour.Text (yellow)
 
 import Aura.Shell            (cursorUpLineCode)
 import qualified Data.Text as T
-import qualified Data.Text.IO as IO
 
 ---
 
@@ -68,23 +67,23 @@ pill = [ ""
 takeABite :: Int -> IO ()
 takeABite pad = drawMouth Closed *> drawMouth Open
     where drawMouth mouth = do
-            traverse_ IO.putStrLn $ renderPacmanHead pad mouth
+            traverse_ putStrLn $ renderPacmanHead pad mouth
             raiseCursorBy 4
             hFlush stdout
             threadDelay 125000
 
 drawPills :: Int -> IO ()
-drawPills numOfPills = traverse_ IO.putStrLn pills
+drawPills numOfPills = traverse_ putStrLn pills
     where pills = renderPills numOfPills
 
 raiseCursorBy :: Int -> IO ()
-raiseCursorBy = IO.putStr . raiseCursorBy'
+raiseCursorBy = putStr . raiseCursorBy'
 
 raiseCursorBy' :: Int -> T.Text
 raiseCursorBy' = cursorUpLineCode
 
 clearGrid :: IO ()
-clearGrid = IO.putStr blankLines *> raiseCursorBy 4
+clearGrid = putStr blankLines *> raiseCursorBy 4
     where blankLines = fold . replicate 4 . padString 23 $ "\n"
 
 renderPill :: Int -> [T.Text]

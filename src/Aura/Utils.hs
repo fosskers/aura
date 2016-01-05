@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 -- Utility functions specific to Aura
 
 {-
@@ -24,11 +23,10 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Utils where
 
+import BasicPrelude hiding (FilePath, span, liftIO, find, group)
+
 import Data.Text.ICU (regex, suffix, find, group, span)
 import System.IO                 (stdout, hFlush)
-import Data.List                 (sortBy)
-import Data.Monoid
-import Data.Maybe (fromMaybe, isJust)
 
 import Aura.Colour.Text
 import Aura.Languages (Language, whitespace, yesNoMessage, yesRegex)
@@ -36,11 +34,9 @@ import Aura.Monad.Aura
 import Aura.Settings.Base
 import Aura.Utils.Numbers
 
-import Prelude hiding (FilePath, span)
 import Shelly hiding (liftIO, find)
 import qualified Shelly
 import qualified Data.Text as T
-import qualified Data.Text.IO as IO
 
 ---
 
@@ -55,7 +51,7 @@ putStrLnA' colour s = putStrA' colour s <> "\n"
 
 -- Added `hFlush` here because some output appears to lag sometimes.
 putStrA :: Colouror -> T.Text -> Aura ()
-putStrA colour = liftIO . IO.putStr . putStrA' colour
+putStrA colour = liftIO . putStr . putStrA' colour
 --putStrA colour s = liftIO (putStr (putStrA' colour s) *> hFlush stdout)
 
 putStrA' :: Colouror -> T.Text -> T.Text
@@ -63,7 +59,7 @@ putStrA' colour s = "aura >>= " <> colour s
 
 printList :: Colouror -> Colouror -> T.Text -> [T.Text] -> Aura ()
 printList _ _ _ []        = pure ()
-printList tc ic msg items = liftIO . IO.putStrLn . printList' tc ic msg $ items
+printList tc ic msg items = liftIO . putStrLn . printList' tc ic msg $ items
 
 printList' :: Colouror -> Colouror -> T.Text -> [T.Text] -> T.Text
 printList' tc ic m is = putStrLnA' tc m `T.append` colouredItems
@@ -80,7 +76,7 @@ yesNoPrompt :: (Language -> T.Text) -> Aura Bool
 yesNoPrompt msg = asks langOf >>= \lang -> do
   putStrA yellow $ msg lang <> " " <> yesNoMessage lang <> " "
   liftIO $ hFlush stdout
-  response <- liftIO IO.getLine
+  response <- liftIO getLine
   pure $ isJust $ find (regex [] $ yesRegex lang) response
 
 -- | Doesn't prompt when `--noconfirm` is used.

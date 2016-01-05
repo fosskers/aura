@@ -29,12 +29,9 @@ module Aura.Install
     , displayPkgbuild
     ) where
 
-import Control.Monad (filterM, (>=>))
-import Data.Either   (partitionEithers)
-import Data.List     (sort, (\\), intersperse, partition)
+import BasicPrelude hiding (FilePath, catch, liftIO)
+
 import Data.Foldable (traverse_)
-import Data.Maybe    (catMaybes)
-import Data.Monoid   ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.IO as IO
 
@@ -50,7 +47,6 @@ import Aura.Build
 import Aura.Utils
 import Aura.Core
 import Shelly hiding (liftIO)
-import Prelude hiding (FilePath)
 
 ---
 

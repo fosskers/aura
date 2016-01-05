@@ -26,9 +26,8 @@ module Aura.Commands.L
     , searchLogFile
     , logInfoOnPkg ) where
 
-import Data.List       ((\\))
-import Data.Monoid     ((<>))
-import Data.Maybe      (fromMaybe,isJust)
+import BasicPrelude hiding (liftIO)
+
 import Data.Foldable   (traverse_)
 
 import Aura.Colour.Text (yellow)
@@ -39,7 +38,6 @@ import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages
 import qualified Data.Text as T
-import qualified Data.Text.IO as IO
 import qualified Data.Text.ICU as Re
 
 import Utilities (searchLines, readFileUTF8)
@@ -52,8 +50,8 @@ viewLogFile logFilePath = shellCmd "less" [logFilePath]
 -- Very similar to `searchCache`. But is this worth generalizing?
 searchLogFile :: [T.Text] -> Aura ()
 searchLogFile input = ask >>= \ss -> liftIO $ do
-  logFile <- T.lines <$> readFileUTF8 (logFilePathOf ss)
-  traverse_ IO.putStrLn $ searchLines (T.unwords input) logFile
+  logFile <- lines <$> readFileUTF8 (logFilePathOf ss)
+  traverse_ putStrLn $ searchLines (unwords input) logFile
 
 logInfoOnPkg :: [T.Text] -> Aura ()
 logInfoOnPkg []   = pure ()
@@ -62,7 +60,7 @@ logInfoOnPkg pkgs = ask >>= \ss -> do
   let inLog p = isJust $ Re.find (Re.regex [] p) logFile
       reals   = filter inLog pkgs
   reportNotInLog (pkgs \\ reals)
-  liftIO $ traverse_ (IO.putStrLn . renderLogLookUp ss logFile) reals
+  liftIO $ traverse_ (putStrLn . renderLogLookUp ss logFile) reals
 
 renderLogLookUp :: Settings -> T.Text -> T.Text -> T.Text
 renderLogLookUp ss logFile pkg = entrify ss fields entries <> "\n" <> recent
@@ -74,7 +72,7 @@ renderLogLookUp ss logFile pkg = entrify ss fields entries <> "\n" <> recent
           takeLast n  = reverse . take n . reverse
           entries     = [ pkg
                         , fromMaybe "" installDate
-                        , T.pack $ show upgrades
+                        , show upgrades
                         , "" ]
 
 ------------

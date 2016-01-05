@@ -24,26 +24,24 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Utilities where
 
-import Control.Eff         (SetMember,Eff)
-import Control.Eff.Lift    (Lift,lift)
-import Control.Concurrent  (threadDelay)
+import BasicPrelude hiding  (FilePath, readFile, find, lift)
+
+import Control.Eff          (SetMember,Eff)
+import Control.Eff.Lift     (Lift,lift)
+import Control.Concurrent   (threadDelay)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as E
 import qualified Data.Text.IO as IO
-import Data.Text.ICU       (regex ,find)
+import Data.Text.ICU        (regex ,find)
 import Data.Functor
-import Data.Monoid
-import Data.Maybe          (isJust)
-import Data.List           (dropWhileEnd)
 import Data.Foldable hiding (find)
-import Data.Char           (digitToInt)
-import System.IO hiding    (FilePath,openFile,readFile)
+import Data.Char            (digitToInt)
+import System.IO            (hFlush, stdout, hSetEncoding, hGetContents, TextEncoding)
 
 import Filesystem.Path.CurrentOS hiding (null)
 import qualified Filesystem.Path.CurrentOS as F
 import Filesystem
-import Shelly  hiding      (find)
-import Prelude hiding      (FilePath, readFile)
+import Shelly  hiding       (find)
 
 ---
 
@@ -145,8 +143,8 @@ getSelection :: [T.Text] -> IO T.Text
 getSelection [] = pure ""
 getSelection choiceLabels = do
   let quantity = length choiceLabels
-      valids   = (T.pack . show) <$> [1..quantity]
-      padding  = length . show $ quantity
+      valids   = show <$> [1..quantity]
+      padding  = T.length . show $ quantity
       choices  = zip valids choiceLabels
   traverse_ (\ (t,n) -> IO.putStrLn ((T.justifyLeft padding ' ' t) <> ". " <> n)) choices
   putStr ">> "
@@ -157,7 +155,7 @@ getSelection choiceLabels = do
     Nothing    -> getSelection choiceLabels  -- Ask again.
 
 -- | Print a list of Strings with a given interval in between.
-timedMessage :: Int -> [String] -> IO ()
+timedMessage :: Int -> [Text] -> IO ()
 timedMessage delay = traverse_ printMessage
     where printMessage msg = putStr msg *> hFlush stdout *> threadDelay delay
 

@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings#-}
 {-
 
   Simplify a parsed Bash script by replacing ${...} fields
@@ -43,9 +42,9 @@ module Bash.Simplify
 import Control.Monad.Trans.State.Lazy
 import Data.Foldable
 import qualified Data.Text as T
---import Text.Regex.PCRE ((=~))
 import qualified Data.Map.Lazy as M
 import Data.Monoid
+import BasicPrelude hiding (insert)
 
 import Bash.Base
 
@@ -99,7 +98,7 @@ getIndexedString' :: [BashString] -> T.Text -> State Namespace [T.Text]
 getIndexedString' (b:_) ""  = fromBashString <$> replaceStr b
 getIndexedString' bstrs "*" = foldMap fromBashString <$> traverse replaceStr bstrs
 getIndexedString' bstrs "@" = foldMap fromBashString <$> traverse replaceStr bstrs
-getIndexedString' bstrs num = fromBashString <$> replaceStr (bstrs !! read (T.unpack num))
+getIndexedString' bstrs num = fromBashString <$> replaceStr (bstrs !! read num)
 
 expandWrapper :: BashString -> State Namespace T.Text
 expandWrapper (SingleQ s) = pure s

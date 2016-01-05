@@ -34,14 +34,13 @@ module Aura.Commands.A
     , downloadTarballs
     , displayPkgbuild ) where
 
-import           Control.Monad
-import           Data.Maybe (fromJust,fromMaybe)
-import           Data.Monoid ((<>))
+import           BasicPrelude hiding (FilePath, liftIO)
+
+import           Data.Maybe (fromJust)
 import qualified Data.Set as S (member, fromList)
 import qualified Data.Text as T
-import qualified Data.Text.IO as IO
 import qualified Data.Text.ICU as Re
-import           Formatting
+import           Text.Printf.TH (st)
 import           Data.Foldable (traverse_, fold)
 import           Linux.Arch.Aur
 
@@ -62,8 +61,6 @@ import           Aura.Utils.Numbers
 
 import           Shelly hiding (liftIO,whenM)
 import           Utilities (whenM)
-import           Prelude hiding (FilePath)
-
 ---
 
 installOptions :: Aura I.InstallOptions
@@ -121,12 +118,12 @@ displayAurPkgInfo :: AurInfo -> Aura ()
 displayAurPkgInfo ai = ask >>= \ss -> do
     let name = aurNameOf ai
     ns <- fromJust <$> pkgbuild' name >>= namespace name
-    liftIO $ IO.putStrLn $ renderAurPkgInfo ss ai ns <> "\n"
+    liftIO $ putStrLn $ renderAurPkgInfo ss ai ns <> "\n"
 
 renderAurPkgInfo :: Settings -> AurInfo -> Namespace -> T.Text
 renderAurPkgInfo ss ai ns = entrify ss fields entries
     where fields   = fmap bForeground . infoFields . langOf $ ss
-          empty x  = if (T.null x) then "None" else x
+          showEmpty x  = if (T.null x) then "None" else x
           entries = [ magenta "aur"
                     , bForeground $ aurNameOf ai
                     , aurVersionOf ai
@@ -134,11 +131,11 @@ renderAurPkgInfo ss ai ns = entrify ss fields entries
                     , orphanedMsg (aurMaintainerOf ai) $ langOf ss
                     , cyan  $ urlOf ai
                     , toTextIgnore $ pkgUrl $ aurNameOf ai
-                    , T.unwords $ licenseOf ai
-                    , empty . T.unwords $ depends ns
-                    , empty . T.unwords $ makedepends ns
-                    , yellow . sformat int $ aurVotesOf ai
-                    , yellow . sformat (fixed 2) $ popularityOf ai
+                    , unwords $ licenseOf ai
+                    , showEmpty . unwords $ depends ns
+                    , showEmpty . unwords $ makedepends ns
+                    , yellow . show $ aurVotesOf ai
+                    , yellow . [st|%.02f|] $ popularityOf ai
                     , aurDescriptionOf ai ]
 
 aurPkgSearch :: [T.Text] -> Aura ()
@@ -151,7 +148,7 @@ aurPkgSearch (fold -> regex) = ask >>= \ss -> do
               Tail n -> reverse . take n . reverse
     results <- fmap (\x -> (x, aurNameOf x `S.member` db)) . t
                  <$> aurSearch (regex)
-    traverse_ (liftIO . IO.putStrLn . renderSearch ss regex) results
+    traverse_ (liftIO . putStrLn . renderSearch ss regex) results
 
 renderSearch :: Settings -> T.Text -> (AurInfo, Bool) -> T.Text
 renderSearch ss r (i, e) = searchResult
@@ -168,8 +165,8 @@ renderSearch ss r (i, e) = searchResult
           repo = magenta "aur/"
           n = c bForeground $ aurNameOf i
           d = c noColour $ aurDescriptionOf i
-          l = yellow . sformat int $ aurVotesOf i  -- `l` for likes?
-          p = yellow $ sformat (fixed 2) (popularityOf i)
+          l = yellow . show $ aurVotesOf i  -- `l` for likes?
+          p = yellow $ [st|%0.02f|] (popularityOf i)
           v = case dateObsoleteOf i of
             Just _  -> red $ aurVersionOf i
             Nothing -> green $ aurVersionOf i

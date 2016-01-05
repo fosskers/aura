@@ -1,16 +1,11 @@
-{-# LANGUAGE OverloadedStrings, Rank2Types, FlexibleContexts #-}
-
 module Aura.Shell where
 
-import Control.Applicative ((<|>))
-import Data.Maybe (fromMaybe, isJust, fromJust)
-import Data.Monoid ((<>))
-import Data.Text
+import BasicPrelude hiding (FilePath, (</>), putStr)
+
+import Data.Maybe (fromJust)
 import qualified Data.Text.IO as IO
-import Prelude hiding (FilePath)
 import Shelly
 import Aura.Monad.Aura (Aura,liftShelly)
-import Prelude hiding (FilePath,putStr)
 import Aura.Colour.Text (csi)
 
 ---

@@ -25,6 +25,8 @@ module Aura.Pkgbuild.Editing
     ( hotEdit
     , customizepkg ) where
 
+import BasicPrelude hiding (FilePath, readFile, writeFile, liftIO, (</>))
+
 import Aura.Settings.Base
 import Aura.Monad.Aura
 import Aura.Languages
@@ -33,13 +35,11 @@ import Aura.Core
 
 import qualified Data.Text.Encoding as E
 
-import Control.Monad (void)
 import Utilities (openEditor, ifte_, ifFile, nothing, readFileUTF8)
 import Aura.Shell     (quietShellCmd, editor)
 import qualified Data.Text as T
 import Filesystem
 import Filesystem.Path.CurrentOS
-import Prelude hiding (FilePath, readFile, writeFile)
 
 ---
 

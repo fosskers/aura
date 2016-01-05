@@ -42,13 +42,11 @@ module Aura.Packages.ABS
     , absSearchLookup
     ) where
 
-import           Control.Monad
-import           Data.List          (find)
+import           BasicPrelude  hiding    (FilePath, liftIO, (</>))
+
 import           Data.Foldable      (fold)
-import           Data.Set           (Set)
 import qualified Data.Set           as Set
 import qualified Data.Text          as T
-import           Data.Maybe         (isJust)
 import           Shelly   hiding    ((</>),find,liftIO)
 import           Filesystem.Path.CurrentOS
 import qualified Data.Text.ICU      as Re
@@ -66,7 +64,6 @@ import           Aura.Utils         (optionalPrompt)
 
 import           Utilities          (readFileUTF8, exists)
 import           Aura.Shell         (lsT', ls'')
-import           Prelude  hiding    (FilePath)
 
 ---
 

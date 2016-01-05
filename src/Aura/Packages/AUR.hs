@@ -32,11 +32,8 @@ module Aura.Packages.AUR
     , pkgUrl
     ) where
 
-import           Control.Monad        ((>=>), join)
-import           Data.Function        (on)
-import           Data.List            (sortBy)
-import           Data.Monoid          ((<>))
-import           Data.Maybe
+import           BasicPrelude hiding (FilePath, liftIO, (</>))
+
 import qualified Data.Text            as T
 import           Linux.Arch.Aur
 import           Filesystem.Path.CurrentOS      (FilePath,(</>),fromText)
@@ -48,7 +45,6 @@ import           Aura.Core
 
 import           Utilities            (decompress)
 import           Internet
-import           Prelude hiding (FilePath)
 
 ---
 

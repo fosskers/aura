@@ -24,6 +24,8 @@ module Aura.Commands.B
     , restoreState
     , cleanStates ) where
 
+import BasicPrelude hiding ((</>))
+
 import Shelly ((</>),rm)
 import Data.Char       (isDigit)
 import Data.Foldable   (traverse_)

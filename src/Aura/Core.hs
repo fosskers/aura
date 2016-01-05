@@ -22,10 +22,9 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Core where
 
-import Data.Either      (partitionEithers)
-import Data.Monoid
+import BasicPrelude hiding (FilePath, span, liftIO)
+
 import qualified Data.Text as T
-import qualified Data.Text.IO as IO
 
 import Aura.Settings.Base
 import Aura.Colour.Text
@@ -36,8 +35,8 @@ import Aura.Utils
 
 import Aura.Shell
 import Shelly hiding (find, liftIO)
-import Prelude hiding (FilePath, span)
 import Utilities (exists)
+import qualified Prelude (Show, show)
 
 ---
 
@@ -54,11 +53,11 @@ data VersionDemand = LessThan T.Text
                    | Anything
                      deriving (Eq)
 
-instance Show VersionDemand where
-    show (LessThan v) = show ("<" <> v)
-    show (AtLeast v)  = show (">=" <> v)
-    show (MoreThan v) = show (">" <> v)
-    show (MustBe  v)  = show ("=" <> v)
+instance Prelude.Show VersionDemand where
+    show (LessThan v) = "<" <> T.unpack v
+    show (AtLeast v)  = ">=" <> T.unpack v
+    show (MoreThan v) = ">" <> T.unpack v
+    show (MustBe  v)  = "=" <> T.unpack v
     show Anything     = ""
 
 -- | A package to be installed.
@@ -166,13 +165,13 @@ removePkgs pkgs pacOpts = pacman  $ ["-Rsu"] <> pkgs <> pacOpts
 -- Moving to a libalpm backend will make this less hacked.
 -- | True if a dependency is satisfied by an installed package.
 isSatisfied :: Dep -> Aura Bool
-isSatisfied (Dep name ver) = T.null <$> pacmanOutput ["-T", name <> T.pack (show ver)]
+isSatisfied (Dep name ver) = T.null <$> pacmanOutput ["-T", name <> show ver]
 
 -- | Block further action until the database is free.
 checkDBLock :: Aura ()
 checkDBLock = do
   locked <- liftShelly $ exists lockFile
-  when locked $ warn checkDBLock_1 *> liftIO IO.getLine *> checkDBLock
+  when locked $ warn checkDBLock_1 *> liftIO getLine *> checkDBLock
 
 -------
 -- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`

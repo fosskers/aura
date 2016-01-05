@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-
 
 Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
@@ -23,9 +22,9 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -- | Coloured diff output, similar to @diff -u@ or @git diff@.
 module Aura.Diff ( unidiff ) where
 
-import Data.Traversable    (mapAccumL)
+import BasicPrelude
+
 import qualified Data.Text as T
-import Data.Monoid         ((<>))
 
 import Data.Algorithm.Diff
 
@@ -142,7 +141,7 @@ hunkRanges xs = (LineRange a a', LineRange b b')
         mapRanges f c = (f $ firstRange c, f $ secondRange c)
 
 showRange :: LineRange -> T.Text
-showRange r = T.pack (show (start r)) <> "," <> T.pack (show (rangeLength r))
+showRange r = show (start r) <> "," <> show (rangeLength r)
 
 showBlock :: Block -> [T.Text]
 showBlock b = f . (c <>) <$> content b

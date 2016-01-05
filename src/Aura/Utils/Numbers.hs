@@ -25,6 +25,8 @@ module Aura.Utils.Numbers
     ( Version(..)
     , version ) where
 
+import BasicPrelude
+
 import Text.Megaparsec
 import Text.Megaparsec.Text
 import Data.Foldable

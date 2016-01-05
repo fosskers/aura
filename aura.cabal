@@ -44,6 +44,8 @@ executable aura
   default-extensions:  Rank2Types
                        FlexibleContexts
                        OverloadedStrings
+                       NoImplicitPrelude
+                       QuasiQuotes
 
   default-language:    Haskell2010
 
@@ -94,12 +96,12 @@ executable aura
                        array,
                        attoparsec,
                        base >= 4.8 && < 5,
+                       basic-prelude,
                        bytestring,
                        containers,
                        directory,
                        extensible-effects,
                        filepath,
-                       formatting,
                        lens,
                        megaparsec,
                        process,
@@ -111,6 +113,7 @@ executable aura
                        temporary,
                        text,
                        text-icu,
+                       th-printf,
                        ini,
                        time,
                        transformers,

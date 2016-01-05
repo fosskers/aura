@@ -51,10 +51,10 @@ module Aura.Flags
     , auraOperMsg
     , Flag(..) ) where
 
+import BasicPrelude hiding (FilePath)
+
 import System.Console.GetOpt
-import Data.Monoid
 import Data.Foldable
-import Data.Maybe (fromMaybe)
 import Text.Read (readMaybe)
 import qualified Data.Text as T
 
@@ -63,7 +63,6 @@ import Aura.Settings.Base
 import Aura.Languages
 
 import Shelly (FilePath, fromText)
-import Prelude hiding (FilePath)
 
 ---
 

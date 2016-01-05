@@ -29,10 +29,9 @@ module Aura.MakePkg
     , makepkgSource
     , makepkgConfFile ) where
 
-import           Data.Monoid
-import           Data.Text (Text)
+import           BasicPrelude hiding (FilePath)
+
 import qualified Data.Text as T
-import           Prelude hiding (FilePath)
 import           Shelly
 import           Text.Regex.PCRE ((=~))
 

@@ -34,9 +34,10 @@ module Aura.Cache
     , Cache
     , SimplePkg ) where
 
+import           BasicPrelude hiding (FilePath)
+
 import qualified Data.Map.Lazy as M
 import qualified Data.Text as T
-import           Data.List (nub)
 
 import           Aura.Monad.Aura
 import           Aura.Settings.Base
@@ -45,8 +46,6 @@ import           Aura.Utils.Numbers (Version)
 
 import           Utilities (searchLinesF)
 import           Shelly    (FilePath, ls)
-import           Prelude hiding (FilePath)
-
 ---
 
 type SimplePkg = (T.Text, Maybe Version)
