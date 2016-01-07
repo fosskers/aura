@@ -9,3 +9,4 @@ extra-deps:
   - aur-4.0.2
   - extensible-effects-1.11.0.0
   - type-aligned-0.9.6
+  - th-printf-0.3.1
