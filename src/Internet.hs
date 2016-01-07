@@ -27,7 +27,7 @@ module Internet
 
 import           BasicPrelude hiding (FilePath,(</>))
 
-import           Control.Lens
+import           Lens.Micro ((^?))
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as L
 import           Network.Wreq
