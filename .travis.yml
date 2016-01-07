@@ -1,37 +1,34 @@
-# From https://github.com/hvr/multi-ghc-travis (thank you)
-
-language: c
-
+# Use new container infrastructure to enable caching
 sudo: false
 
-matrix:
-  include:
-    - env: CABALVER=1.22 GHCVER=7.10.1
-      addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.1],sources: [hvr-ghc]}}
-    - env: CABALVER=head GHCVER=head
-      addons: {apt: {packages: [cabal-install-head,ghc-head],  sources: [hvr-ghc]}}
+# Choose a lightweight base image; we provide our own build tools.
+language: c
 
-  allow_failures:
-    - env: CABALVER=head GHCVER=head
+# GHC depends on GMP. You can add other dependencies here as well.
+addons:
+  apt:
+    packages:
+    - libgmp-dev
+
+# The different configurations we want to test. You could also do things like
+# change flags or use --stack-yaml to point to a different file.
+env:
+- ARGS="--resolver lts-4.0"
+- ARGS="--resolver nightly-2016-01-01"
+- ARGS="--resolver nightly"
 
 before_install:
-  - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
+# Download and unpack the stack executable
+- mkdir -p ~/.local/bin
+- export PATH=$HOME/.local/bin:$PATH
+- travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 
-install:
-  - cabal --version
-  - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
-  - travis_retry cabal update
-  - cabal install --only-dependencies --enable-tests --enable-benchmarks
+# This line does all of the work: installs GHC if necessary, build the library,
+# executables, and test suites, and runs the test suites. --no-terminal works
+# around some quirks in Travis's terminal implementation.
+script: stack $ARGS --no-terminal --install-ghc test
 
-script:
-  - if [ -f configure.ac ]; then autoreconf -i; fi
-  # -v2 provides useful information for debugging
-  - cabal configure --enable-tests --enable-benchmarks -v2
-  - cabal build
-  - cabal test
-  - cabal check
-  - cabal sdist
-
-  # check that the generated source-distribution can be built & installed
-  - SRC_TGZ=$(cabal info . | awk '{print $2;exit}').tar.gz &&
-    (cd dist && cabal install --force-reinstalls "$SRC_TGZ")
+# Caching so the next build will be fast too.
+cache:
+  directories:
+  - $HOME/.stack
