@@ -1,6 +1,11 @@
+resolver: lts-4.0
+
 flags: {}
+
 packages:
-- '.'
+  - '.'
+
 extra-deps:
-- aur-4.0.2
-resolver: nightly-2015-12-01
+  - aur-4.0.2
+  - extensible-effects-1.11.0.0
+  - type-aligned-0.9.6
