@@ -24,8 +24,9 @@ module Aura.Settings.Enable
     ( getSettings
     , debugOutput ) where
 
+import BasicPrelude hiding (FilePath)
+
 import Data.Maybe         (fromJust)
-import Data.Monoid
 import Data.Foldable
 import qualified Data.Text as T
 import qualified Data.Text.IO as IO
@@ -39,7 +40,6 @@ import Aura.Flags
 import Utilities (ifte_, exists)
 import Aura.Shell
 import Shelly
-import Prelude hiding (FilePath)
 
 ---
 
@@ -54,7 +54,7 @@ getSettings lang' (auraFlags, input, pacOpts) = do
   language    <- checkLang lang'
   pure Settings { inputOf         = input
                 , pacOptsOf       = pacOpts
-                , otherOptsOf     = T.pack . show <$> auraFlags
+                , otherOptsOf     = show <$> auraFlags
                 , buildUserOf     = buildUser'
                 , langOf          = language
                 , pacmanCmdOf     = fromText pmanCommand
@@ -93,14 +93,14 @@ debugOutput ss = do
                         , "True User         => " <> trueuser
                         , "Build User        => " <> buildUserOf ss
                         , "Using Sudo?       => " <> yn sudop
-                        , "Pacman Flags      => " <> T.unwords (pacOptsOf ss)
-                        , "Other Flags       => " <> T.unwords (otherOptsOf ss)
-                        , "Other Input       => " <> T.unwords (inputOf ss)
-                        , "Language          => " <> T.pack (show (langOf ss))
+                        , "Pacman Flags      => " <> unwords (pacOptsOf ss)
+                        , "Other Flags       => " <> unwords (otherOptsOf ss)
+                        , "Other Input       => " <> unwords (inputOf ss)
+                        , "Language          => " <> show (langOf ss)
                         , "Pacman Command    => " <> toTextIgnore (pacmanCmdOf ss)
                         , "Editor            => " <> editorOf ss
                         , "$CARCH            => " <> carchOf ss
-                        , "Ignored Pkgs      => " <> T.unwords (ignoredPkgsOf ss)
+                        , "Ignored Pkgs      => " <> unwords (ignoredPkgsOf ss)
                         , "Build Path        => " <> toTextIgnore (buildPathOf ss)
                         , "Pkg Cache Path    => " <> toTextIgnore (cachePathOf ss)
                         , "Log File Path     => " <> toTextIgnore (logFilePathOf ss)

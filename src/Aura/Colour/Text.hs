@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-
 
 Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
@@ -22,9 +21,9 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Colour.Text where
 
-import Data.Monoid
-import qualified Data.Text as T
+import BasicPrelude
 
+import qualified Data.Text as T
 ---
 
 -- ANSI codes referenced from: www.bluesock.org/~willg/dev/ansi.html
@@ -38,7 +37,7 @@ type Colouror = T.Text -> T.Text
 
 -- Code borrowed from `ansi-terminal` library by Max Bolingbroke.
 csi :: [Int] -> T.Text -> T.Text
-csi args code = "\ESC[" <> T.intercalate ";" (T.pack . show <$> args) <> code
+csi args code = "\ESC[" <> T.intercalate ";" (show <$> args) <> code
 
 noColour :: Colouror
 noColour = colourize NoColour

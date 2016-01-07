@@ -29,12 +29,10 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-import System.Environment (getArgs)
-import Control.Monad      (when)
+import BasicPrelude hiding (catch, liftIO)
+
 import System.Exit        (exitSuccess, exitFailure)
-import Data.List          (nub, sort, intercalate)
 import Data.Foldable      (traverse_)
-import Data.Monoid        ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.IO as IO
 import qualified Shelly as S
@@ -71,9 +69,10 @@ auraVersion = "1.4.0"
 main :: IO a
 main = getArgs >>= prepSettings . processFlags >>= execute >>= exit
 
-processFlags :: [String] -> (UserInput, Maybe Language)
-processFlags args = ((flags, nub input, pacOpts'), language)
-    where (language, _) = parseLanguageFlag args
+processFlags :: [Text] -> (UserInput, Maybe Language)
+processFlags args' = ((flags, nub input, pacOpts'), language)
+    where args = map T.unpack args'
+          (language, _) = parseLanguageFlag args
           (flags, input, pacOpts) = parseFlags language args
           pacOpts' = nub $ pacOpts <> reconvertFlags dualFlagMap flags
                    <> reconvertFlags pacmanFlagMap flags

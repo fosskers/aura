@@ -22,8 +22,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Conflicts where
 
-import Data.Maybe (isNothing)
-import Data.Monoid ((<>))
+import BasicPrelude
+
 import Data.Foldable (traverse_)
 import qualified Data.Text as T
 import qualified Data.Text.ICU as Re
@@ -57,7 +57,7 @@ realPkgConflicts ss pkg dep
           lang     = langOf ss
           toIgnore = ignoredPkgsOf ss
           failMsg1 = getRealPkgConflicts_2 name lang
-          failMsg2 = getRealPkgConflicts_1 name curVer (T.pack $ show reqVer) lang
+          failMsg2 = getRealPkgConflicts_1 name curVer (show reqVer) lang
 
 -- Compares a (r)equested version number with a (c)urrent up-to-date one.
 -- The `MustBe` case uses regexes. A dependency demanding version 7.4

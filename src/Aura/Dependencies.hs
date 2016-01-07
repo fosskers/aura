@@ -24,10 +24,11 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Dependencies ( resolveDeps ) where
 
+import           BasicPrelude hiding (liftIO)
+
 import           Control.Eff.State.Strict
 import           Control.Eff
 import           Data.Graph
-import           Data.Maybe
 import qualified Data.Map as Map
 import           Data.Foldable
 import qualified Data.Text as T

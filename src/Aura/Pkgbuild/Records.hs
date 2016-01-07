@@ -23,6 +23,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Pkgbuild.Records where
 
+import BasicPrelude hiding (FilePath, writeFile, liftIO, (</>))
+
 import Shelly hiding (liftIO)
 import Data.Foldable    (traverse_)
 
@@ -34,7 +36,6 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as E
 
 import Utilities (readFileUTF8, exists)
-import Prelude hiding (FilePath,writeFile)
 import Filesystem
 
 ---

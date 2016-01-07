@@ -55,9 +55,9 @@ module Aura.Commands.M
     , displayPkgbuild
     , displayPkgDeps ) where
 
+import BasicPrelude hiding (liftIO)
+
 import Control.Monad
-import Data.Maybe       (catMaybes, fromMaybe)
-import Data.Monoid      ((<>))
 import Data.Foldable    (traverse_)
 import qualified Data.Text as T
 import qualified Data.Text.IO as IO

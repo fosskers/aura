@@ -27,6 +27,7 @@ import qualified Data.Map.Lazy as M
 import Data.Either
 import Data.Foldable
 import qualified Data.Text as T
+import BasicPrelude
 
 ---
 
@@ -76,7 +77,7 @@ insert = M.insert
 -- but this one will only contain global variable names.
 toNamespace :: [Field] -> Namespace
 toNamespace [] = M.empty
-toNamespace (Variable n bs : fs) = insert n bs $ toNamespace fs
+toNamespace (Variable n bs : fs) = M.insert n bs $ toNamespace fs
 toNamespace (_:fs) = toNamespace fs
 
 -- | Never call this directly. Use `value` in `Aura/Bash`.

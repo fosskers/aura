@@ -29,17 +29,14 @@ module Aura.State
     , stateCache
     , getStateFiles ) where
 
-import qualified Data.Map.Lazy as M
+import BasicPrelude hiding (FilePath, writeFile, liftIO, (</>))
+
 
 import Shelly (FilePath, (</>), fromText, toTextIgnore)
 import Filesystem
-import Control.Monad   (unless)
-import Control.Arrow   (first)
-import Data.Maybe      (mapMaybe)
-import Data.List       (partition, sort)
-import Data.Monoid     ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as E
+import qualified Data.Map.Lazy as M
 
 import Aura.Cache
 import Aura.Colour.Text   (cyan, red)
@@ -54,7 +51,6 @@ import Aura.Utils.Numbers
 
 import Utilities (getSelection, readFileUTF8)
 import Aura.Shell     (lsT')
-import Prelude hiding (FilePath, writeFile)
 
 ---
 
@@ -106,8 +102,8 @@ getStateFiles = sort <$> liftShelly (lsT' stateCache)
 saveState :: Aura ()
 saveState = do
   state <- currentState
-  let filename = stateCache </> fromText (T.pack (dotFormat (timeOf state)))
-  liftIO $ writeFile filename $ E.encodeUtf8 $ T.pack (show state)
+  let filename = stateCache </> fromText (dotFormat (timeOf state))
+  liftIO $ writeFile filename $ E.encodeUtf8 $ show state
   notify saveState_1
 
 -- | Does its best to restore a state chosen by the user.
@@ -123,7 +119,7 @@ restoreState = ask >>= \ss -> do
   reinstallAndRemove (getFilename cache `mapMaybe` okay) remo
 
 readState :: FilePath -> Aura PkgState
-readState name = liftIO ((read . T.unpack) <$> readFileUTF8 (stateCache </> name))
+readState name = liftIO (read <$> readFileUTF8 (stateCache </> name))
 
 -- How does pacman do simultaneous removals and upgrades?
 -- I've seen it happen plenty of times.

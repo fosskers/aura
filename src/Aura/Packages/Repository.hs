@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-
 
 Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
@@ -22,8 +21,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Packages.Repository ( pacmanRepo ) where
 
-import Data.Maybe
-import Data.Monoid
+import BasicPrelude
+
 import qualified Data.Text as T
 
 import Aura.Core

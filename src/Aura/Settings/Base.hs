@@ -23,9 +23,10 @@ module Aura.Settings.Base ( Settings(..)
                           , SortScheme(..)
                           , Truncation(..) ) where
 
+import BasicPrelude hiding (FilePath)
+
 import Aura.Languages (Language)
 
-import Prelude hiding (FilePath)
 import Shelly (FilePath)
 import qualified Data.Text as T
 

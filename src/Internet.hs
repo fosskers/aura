@@ -25,6 +25,8 @@ module Internet
     ( urlContents
     , saveUrlContents ) where
 
+import           BasicPrelude hiding (FilePath,(</>))
+
 import           Control.Lens
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as L
@@ -32,7 +34,6 @@ import           Network.Wreq
 import           Filesystem.Path.CurrentOS (FilePath, filename, (</>), fromText)
 import           Filesystem (openFile, IOMode(WriteMode))
 import           System.IO (hClose)
-import           Prelude hiding (FilePath)
 
 ---
 

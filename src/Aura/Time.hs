@@ -26,9 +26,10 @@ module Aura.Time
     , localTime
     , Time ) where
 
-import Data.List (intercalate)
+import BasicPrelude
+
 import Data.Time hiding (months)
-import Text.Printf (printf)
+import Text.Printf.TH (st)
 
 ---
 
@@ -39,7 +40,7 @@ data Time = Time { yearOf   :: Integer
                  , minuteOf :: Int }
             deriving (Eq, Show, Read)
 
-months :: [String]
+months :: [Text]
 months = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"
          , "Oct", "Nov", "Dec" ]
 
@@ -55,10 +56,10 @@ toTime t = Time { yearOf   = ye
     where (ye, mo, da) = toGregorian $ localDay t
           (ho, mi)    = (todHour $ localTimeOfDay t, todMin $ localTimeOfDay t)
 
-dotFormat :: Time -> String
+dotFormat :: Time -> Text
 dotFormat t = intercalate "." items
     where items = [ show $ yearOf t
-                  , printf "%02d(%s)" (monthOf t) (months !! (monthOf t - 1))
-                  , printf "%02d" (dayOf t)
-                  , printf "%02d" (hourOf t)
-                  , printf "%02d" (minuteOf t) ]
+                  , [st|%02d(%s)|] (monthOf t) (months !! (monthOf t - 1))
+                  , [st|%02d|] (dayOf t)
+                  , [st|%02d|] (hourOf t)
+                  , [st|%02d|] (minuteOf t) ]

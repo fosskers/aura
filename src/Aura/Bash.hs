@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 -- Interface to the Bash library.
 
 {-
@@ -24,11 +23,12 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Bash
     ( namespace
-    , value 
+    , value
     , Namespace ) where
 
+import BasicPrelude hiding (liftIO, insert)
+
 import Text.Megaparsec.Error (ParseError)
-import Data.Maybe    (fromMaybe)
 
 import Aura.Settings.Base
 import Aura.Monad.Aura

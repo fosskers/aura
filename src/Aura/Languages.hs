@@ -41,12 +41,11 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Languages where
 
+import BasicPrelude hiding (FilePath)
+
 import Aura.Colour.Text (cyan, green, red, blue, yellow, magenta, bForeground)
 import qualified Data.Map.Lazy as Map (Map, (!), fromList, toList, mapWithKey)
-import Data.Monoid
 import qualified Data.Text as T
-import Formatting
-import Prelude hiding (FilePath)
 import Shelly (FilePath,toTextIgnore)
 
 ---
@@ -924,7 +923,7 @@ cleanStates_1 = \case
 
 -- NEEDS TRANSLATION
 cleanStates_2 :: Int -> Language -> T.Text
-cleanStates_2 (bt . T.pack . show -> n) = \case
+cleanStates_2 (bt . show -> n) = \case
     Japanese   -> n <> "個のパッケージ状態記録だけが残される。その他削除？"
     Croatian   -> n <> " stanja paketa će biti zadržano. Ukloniti ostatak?"
     German     -> n <> " Paketzustände werden behalten. Den Rest entfernen?"
@@ -1041,7 +1040,7 @@ backupCache_4 (bt . toTextIgnore -> dir) = \case
     _          -> "Backing up cache to " <> dir
 
 backupCache_5 :: Int -> Language -> T.Text
-backupCache_5 (bt . sformat int -> n) = \case
+backupCache_5 (bt . show -> n) = \case
     Japanese   -> "パッケージのファイル数：" <> n
     Polish     -> "Pliki będące częścią\xa0kopii zapasowej: " <> n
     Croatian   -> "Datoteke koje su dio sigurnosne kopije: " <> n
@@ -1109,7 +1108,7 @@ backupCache_8 = \case
     _          -> "Backing up. This may take a few minutes..."
 
 copyAndNotify_1 :: Int -> Language -> T.Text
-copyAndNotify_1 (cyan . sformat int -> n) = \case
+copyAndNotify_1 (cyan . show -> n) = \case
     Japanese   -> "#[" <> n <>"]をコピー中・・・"
     Polish     -> "Kopiowanie #[" <> n <> "]"
     Croatian   -> "Kopiranje #[" <> n <> "]"
@@ -1177,7 +1176,7 @@ cleanCache_2 = \case
     _          -> "This will delete the ENTIRE package cache."
 
 cleanCache_3 :: Int -> Language -> T.Text
-cleanCache_3 (bt . sformat int -> n) = \case
+cleanCache_3 (bt . show -> n) = \case
     Japanese   -> "パッケージ・ファイルは" <> n <> "個保存される。"
     Polish     -> n <> " wersji każdego pakietu zostanie zachowane."
     Croatian   -> n <> " zadnjih verzija svakog paketa će biti zadržano."
@@ -1260,7 +1259,7 @@ cleanNotSaved_1 = \case
 
 -- NEEDS TRANSLATION
 cleanNotSaved_2 :: Int -> Language -> T.Text
-cleanNotSaved_2 (cyan . T.pack . show -> s) = \case
+cleanNotSaved_2 (cyan . show -> s) = \case
     Japanese   -> "「" <> s <> "」の不要パッケージファイルあり。削除？"
     Croatian   -> s <> " nepotrebnih datoteka pronađeno. Obrisati?"
     German     -> s <> " nicht benötigte Paketdateien gefunden. Löschen?"

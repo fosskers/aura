@@ -29,11 +29,10 @@ module Bash.Parser ( parseBash ) where
 import Text.Megaparsec
 import Text.Megaparsec.Text
 
-import Control.Monad (void)
-import Data.Maybe          (catMaybes)
 import Data.Monoid
 import Data.Foldable
 import qualified Data.Text as T
+import BasicPrelude hiding (try)
 
 import Bash.Base
 
@@ -68,8 +67,8 @@ comment = Comment . T.pack <$> comment' <?> "valid comment"
 command :: Parser Field
 command = space *> (Command . T.pack <$> some commandChar <*> option [] (try args))
     where commandChar = alphaNumChar <|> oneOf "./"
-          args = char ' ' *> (unwords <$> line >>= \ls ->
-                   case parse (some single) "(command)" $ T.pack ls of
+          args = char ' ' *> (unwords . map T.pack <$> line >>= \ls ->
+                   case parse (some single) "(command)" $ ls of
                      Left _   -> fail "Failed parsing strings in a command"
                      Right bs -> pure $ fold bs)
           line = (:) <$> many (noneOf "\n\\") <*> next

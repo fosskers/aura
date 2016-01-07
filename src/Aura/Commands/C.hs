@@ -30,16 +30,14 @@ module Aura.Commands.C
     , cleanCache
     , cleanNotSaved ) where
 
+import BasicPrelude hiding (FilePath, liftIO, (</>))
+
 import Shelly    (FilePath, (</>), rm, cp, fromText, toTextIgnore)
 import qualified Data.Text.ICU as Re
 import qualified Data.Text.IO as IO
 import Data.Text.Read
-import Control.Monad      (unless)
-import Data.List          ((\\), sort, groupBy)
 import Data.Foldable      (traverse_, fold)
 import Data.Char          (isDigit)
-import Data.Monoid        ((<>))
-import Data.Maybe         (isJust,fromMaybe)
 
 import Aura.Logo   (raiseCursorBy)
 import Aura.Pacman (pacman)
@@ -54,8 +52,6 @@ import Aura.Core
 import Utilities
 
 import qualified Data.Text as T
-import Prelude hiding (FilePath)
-
 ---
 
 -- | Interactive. Gives the user a choice as to exactly what versions

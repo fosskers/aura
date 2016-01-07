@@ -35,6 +35,8 @@ module Aura.Monad.Aura
     , asks
     ) where
 
+import BasicPrelude hiding (lift,catch,liftIO)
+
 import Data.OpenUnion.Imports
 import Control.Eff
 import Control.Eff.Exception
