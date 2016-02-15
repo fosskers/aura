@@ -102,7 +102,7 @@ executable aura
                        directory,
                        extensible-effects,
                        filepath,
-                       lens,
+                       microlens >= 0.3.5.0,
                        megaparsec,
                        process,
                        shelly,

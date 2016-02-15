@@ -55,27 +55,25 @@ module Aura.Commands.M
     , displayPkgbuild
     , displayPkgDeps ) where
 
-import BasicPrelude hiding (liftIO)
+import           BasicPrelude hiding (liftIO)
 
-import Control.Monad
-import Data.Foldable    (traverse_)
+import           Data.Foldable (traverse_)
 import qualified Data.Text as T
 import qualified Data.Text.IO as IO
 import qualified Data.Text.ICU as Re
 
+import           Aura.Colour.Text
+import           Aura.Core
 import           Aura.Install (InstallOptions(..))
 import qualified Aura.Install as I
+import           Aura.Languages
+import           Aura.Monad.Aura
+import           Aura.Packages.ABS
+import           Aura.Settings.Base
+import           Aura.Utils
 
-import Aura.Settings.Base
-import Aura.Packages.ABS
-import Aura.Colour.Text
-import Aura.Monad.Aura
-import Aura.Languages
-import Aura.Utils
-import Aura.Core
-
-import Shelly hiding (whenM,liftIO)
-import Utilities (whenM)
+import           Shelly hiding (whenM,liftIO)
+import           Utilities (whenM)
 
 ---
 
