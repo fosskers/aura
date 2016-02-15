@@ -31,26 +31,25 @@ module Aura.MakePkg
 
 import           BasicPrelude hiding (FilePath)
 
-import qualified Data.Text as T
 import           Shelly
-import           Text.Regex.PCRE ((=~))
-
-import           Aura.Shell
+import           Filesystem.Path.CurrentOS
 
 import           Utilities
+import           Aura.Shell
 
 ---
 
 type User = Text
+
+findPkgFile :: FilePath -> Sh [FilePath]
+findPkgFile = findDirFilterWhen (pure . const False) (pure . matches)
+  where matches fp = ["xz", "tar", "pkg"] `isPrefixOf` reverse (extensions fp)
 
 makepkgConfFile :: Text
 makepkgConfFile = "/etc/makepkg.conf"
 
 makepkgCmd :: Text
 makepkgCmd = "/usr/bin/makepkg"
-
-pkgPatt :: String
-pkgPatt = "[.]src[.]tar"
 
 makepkg :: Bool -> User -> [Text] -> Sh (Either Text [FilePath])
 makepkg True  = makepkgQuiet
@@ -62,7 +61,7 @@ makepkg False = makepkgVerbose
 makepkgSource :: User -> Sh [FilePath]
 makepkgSource user = do
   run_ com opts
-  filter (\t -> T.unpack (toTextIgnore t) =~ pkgPatt) <$> (pwd >>= ls)
+  (pwd >>= findPkgFile)
     where (com, opts) = runStyle user ["--allsource"]
 
 -- | Builds a package with `makepkg`.
@@ -73,7 +72,7 @@ makepkgGen make user clfs = do
     r <- make com (opts <> clfs)
     case r of
       Left err -> pure $ Left err
-      Right _  -> Right . filter (\t -> T.unpack (toTextIgnore t) =~ pkgPatt) <$> (pwd >>= ls)
+      Right _  -> Right <$> (pwd >>= findPkgFile)
 
 -- As of makepkg v4.2, building with `--asroot` is no longer allowed.
 runStyle :: User -> [Text] -> (FilePath, [Text])

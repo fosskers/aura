@@ -105,7 +105,6 @@ executable aura
                        lens,
                        megaparsec,
                        process,
-                       regex-pcre-builtin,
                        shelly,
                        split,
                        system-filepath,
