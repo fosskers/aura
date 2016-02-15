@@ -43,7 +43,7 @@ type User = Text
 
 findPkgFile :: FilePath -> Sh [FilePath]
 findPkgFile = findDirFilterWhen (pure . const False) (pure . matches)
-  where matches fp = ["xz", "tar", "pkg"] `isPrefixOf` reverse (extensions fp)
+  where matches fp = ["src", "tar"] `isInfixOf` extensions fp
 
 makepkgConfFile :: Text
 makepkgConfFile = "/etc/makepkg.conf"
@@ -59,9 +59,7 @@ makepkg False = makepkgVerbose
 -- `run_` failing here isn't caught yet. Do properly with EEs.
 -- | Make a source package.
 makepkgSource :: User -> Sh [FilePath]
-makepkgSource user = do
-  run_ com opts
-  (pwd >>= findPkgFile)
+makepkgSource user = run_ com opts >> pwd >>= findPkgFile
     where (com, opts) = runStyle user ["--allsource"]
 
 -- | Builds a package with `makepkg`.
