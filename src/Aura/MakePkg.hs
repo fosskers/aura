@@ -41,9 +41,9 @@ import           Aura.Shell
 
 type User = Text
 
-findPkgFile :: FilePath -> Sh [FilePath]
-findPkgFile dir = findDirFilterWhen (pure . isDir) (pure . matches) dir
-  where matches fp = ["pkg", "tar"] `isInfixOf` extensions fp
+findPkgFile :: [Text] -> FilePath -> Sh [FilePath]
+findPkgFile exts dir = findDirFilterWhen (pure . isDir) (pure . matches) dir
+  where matches fp = exts `isInfixOf` extensions fp
         isDir = (dir ==)
 
 makepkgConfFile :: Text
@@ -60,7 +60,7 @@ makepkg False = makepkgVerbose
 -- `run_` failing here isn't caught yet. Do properly with EEs.
 -- | Make a source package.
 makepkgSource :: User -> Sh [FilePath]
-makepkgSource user = run_ com opts >> pwd >>= findPkgFile
+makepkgSource user = run_ com opts >> pwd >>= findPkgFile ["src","tar"]
     where (com, opts) = runStyle user ["--allsource"]
 
 -- | Builds a package with `makepkg`.
@@ -71,7 +71,7 @@ makepkgGen make user clfs = do
     r <- make com (opts <> clfs)
     case r of
       Left err -> pure $ Left err
-      Right _  -> Right <$> (pwd >>= findPkgFile)
+      Right _  -> Right <$> (pwd >>= findPkgFile ["pkg", "tar"])
 
 -- As of makepkg v4.2, building with `--asroot` is no longer allowed.
 runStyle :: User -> [Text] -> (FilePath, [Text])
