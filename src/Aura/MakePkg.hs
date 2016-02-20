@@ -42,8 +42,9 @@ import           Aura.Shell
 type User = Text
 
 findPkgFile :: FilePath -> Sh [FilePath]
-findPkgFile = findDirFilterWhen (pure . const False) (pure . matches)
-  where matches fp = ["src", "tar"] `isInfixOf` extensions fp
+findPkgFile dir = findDirFilterWhen (pure . isDir) (pure . matches) dir
+  where matches fp = ["pkg", "tar"] `isInfixOf` extensions fp
+        isDir = (dir ==)
 
 makepkgConfFile :: Text
 makepkgConfFile = "/etc/makepkg.conf"
