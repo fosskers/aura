@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-
 
 Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
@@ -51,11 +50,14 @@ module Aura.Flags
     , auraOperMsg
     , Flag(..) ) where
 
-import BasicPrelude hiding (FilePath)
+import BasicPrelude hiding (FilePath, empty)
 
-import System.Console.GetOpt
-import Data.Foldable
-import Text.Read (readMaybe)
+import Options.Applicative
+import Options.Applicative.Internal
+import Options.Applicative.Types
+import qualified Options.Applicative.Help.Core as H
+import qualified Options.Applicative.Help.Chunk as H
+import qualified Options.Applicative.Help.Types as H
 import qualified Data.Text as T
 
 import Aura.Colour.Text (yellow)
@@ -128,109 +130,132 @@ data Flag = ABSInstall
           | PacmanArg T.Text T.Text
             deriving (Eq, Ord, Show)
 
-allFlags :: Language -> [OptDescr Flag]
-allFlags lang = fold [ auraOperations lang
-                     , auraOptions
-                     , pacmanOptions
-                     , dualOptions
-                     , languageOptions
-                     , longPacmanOptions ]
+allFlags :: Language -> Parser ([Flag], [String])
+allFlags lang = (,) <$> (join <$> sequenceA [ auraOperations lang
+                                            , languageOptions
+                                            , many $ choose $ auraOptions
+                                              <> pacmanOptions
+                                              <> dualOptions
+                                              <> longPacmanOptions ])
+  <*> many (argument str (help ""))
 
-simpleOption :: (String, [String], Flag) -> OptDescr Flag
-simpleOption (c, s, f) = Option c s (NoArg f) ""
+simpleOption :: String -> [String] -> Flag -> String -> Parser Flag
+simpleOption c s f h = flag' f (help h <> foldl appendLong mempty s <> foldl appendShort mempty c)
+  where appendLong a l = a <> long l
+        appendShort a sh = a <> short sh
 
-auraOperations :: Language -> [OptDescr Flag]
-auraOperations lang =
-    [ Option "A" ["aursync"]   (NoArg AURInstall) (T.unpack $ aurSy lang)
-    , Option "B" ["save"]      (NoArg SaveState)  (T.unpack $ saveS lang)
-    , Option "C" ["downgrade"] (NoArg Cache)      (T.unpack $ downG lang)
-    , Option "L" ["viewlog"]   (NoArg LogFile)    (T.unpack $ viewL lang)
-    , Option "M" ["abssync"]   (NoArg ABSInstall) (T.unpack $ absSy lang)
-    , Option "O" ["orphans"]   (NoArg Orphans)    (T.unpack $ orpha lang) ]
+simpleOptionWarg :: String -> [String] -> (String -> Flag) -> String -> Parser Flag
+simpleOptionWarg c s f h = f <$> strOption (help h <> foldl appendLong mempty s <> foldl appendShort mempty c)
+  where appendLong a l = a <> long l
+        appendShort a sh = a <> short sh
 
-auraOptions :: [OptDescr Flag]
-auraOptions = Option [] ["aurignore"] (ReqArg (AURIgnore . T.pack) "" ) "" :
-              Option [] ["build"]     (ReqArg (BuildPath . fromText . T.pack)"" ) "" :
-              Option [] ["builduser"] (ReqArg (BuildUser . T.pack)"" ) "" :
-              Option [] ["head"] (OptArg (TruncHead . truncHandler) "") "" :
-              Option [] ["tail"] (OptArg (TruncTail . truncHandler) "") "" :
-              fmap simpleOption
-              [ ( "a", ["delmakedeps"],  DelMDeps      )
-              , ( "b", ["backup"],       CacheBackup   )
-              , ( "c", ["clean"],        Clean         )
-              , ( "d", ["deps"],         ViewDeps      )
-              , ( "j", ["abandon"],      Abandon       )
-              , ( "k", ["diff"],         DiffPkgbuilds )
-              , ( "i", ["info"],         Info          )
-              , ( "p", ["pkgbuild"],     GetPkgbuild   )
-              , ( "q", ["quiet"],        Quiet         )
-              , ( "r", ["restore"],      RestoreState  )
-              , ( "s", ["search"],       Search        )
-              , ( "t", ["treesync"],     TreeSync      )
-              , ( "u", ["sysupgrade"],   Upgrade       )
-              , ( "w", ["downloadonly"], Download      )
-              , ( "x", ["unsuppress"],   Unsuppress    )
-              , ( [],  ["abc"],          ABCSort       )
-              , ( [],  ["absdeps"],      BuildABSDeps  )
-              , ( [],  ["allsource"],    KeepSource    )
-              , ( [],  ["auradebug"],    Debug         )
-              , ( [],  ["custom"],       Customizepkg  )
-              , ( [],  ["devel"],        Devel         )
-              , ( [],  ["hotedit"],      HotEdit       )
-              , ( [],  ["ignorearch"],   IgnoreArch    )
-              , ( [],  ["languages"],    Languages     )
-              , ( [],  ["no-pp"],        NoPowerPill   )
-              , ( [],  ["dryrun"],       DryRun        )
-              , ( [],  ["viewconf"],     ViewConf      ) ]
-    where truncHandler :: Maybe String -> Int
-          truncHandler x = fromMaybe 10 (x >>= readMaybe)
+choose :: Alternative f => [f a] -> f a
+choose = foldl (<|>) empty
+
+auraOperations :: Language -> Parser [Flag]
+auraOperations lang = choose
+    [ subcommand "A" ["aursync"]   AURInstall (T.unpack $ aurSy lang)
+      <*> many (choose [ simpleOption "u" ["sysupgrade"]   Upgrade       "upgrade AUR packages"
+                       , simpleOption "i" ["info"]         Info          "get package info"
+                       , simpleOption "s" ["search"]       Search        "Search the AUR using a Regexp"
+                       , simpleOption "p" ["pkgbuild"]     GetPkgbuild   "Display an AUR Package's PKGBUILD"
+                       , simpleOption "d" ["deps"]         ViewDeps      "Display an AUR package's dependencies"
+                       , simpleOption "x" ["unsuppress"]   Unsuppress    "Don't supress makepkg's output"
+                       , simpleOption "a" ["delmakedeps"]  DelMDeps      "Remove make depends after installing"
+                       , simpleOption "k" ["diff"]         DiffPkgbuilds "Show PKGBUILD differences"
+                       ])
+    , subcommand "B" ["save"]      SaveState  (T.unpack $ saveS lang)
+      <*> many (choose [ simpleOption  "r" ["restore"] RestoreState "Restore a saved record. Rolls back, uninstalls, and reinstalls packages as necessary"])
+    , subcommand "C" ["downgrade"] Cache      (T.unpack $ downG lang)
+      <*> many (choose [ simpleOption "s" ["search"] Search      "Search the package cache for package files via a regex"
+                       , simpleOption "b" ["backup"] CacheBackup "Backup the package cache"
+                       , simpleOption "c" ["clean"]  Clean       "Reduce the package cache to contain only 'x' of each package file"
+                       ])
+    , subcommand "L" ["viewlog"]   LogFile    (T.unpack $ viewL lang)
+      <*> some (choose [ simpleOption "i" ["info"]   Info   "Display install / upgrade history for a package"
+                       , simpleOption "s" ["search"] Search "Search the pacman logfile via a regex"
+                       ])
+    , subcommand "M" ["abssync"]   ABSInstall (T.unpack $ absSy lang)
+      <*> many (choose [ simpleOption []  ["absdeps"]  BuildABSDeps "Build a repository package and all its dependencies manually"
+                       , simpleOption "t" ["treesync"] TreeSync     "Sync a single package's data to the local ABS Tree"
+                       , simpleOption "y" ["refresh"]  Refresh      "Sync all package data in the local ABS Tree"
+                       ])
+    , subcommand "O" ["orphans"]   Orphans    (T.unpack $ orpha lang)
+      <*> many (choose [simpleOption "j" ["abandon"] Abandon "Uninstall all orphan packages"
+                       ])
+    ]
+  where subcommand a b c d = (\a b -> [a] <> b) <$> simpleOption a b c d
+
+auraOptions :: [Parser Flag]
+auraOptions =
+  [ simpleOptionWarg []  ["aurignore"] (AURIgnore . T.pack) ""
+  , simpleOptionWarg []  ["build"]     (BuildPath . fromText . T.pack) ""
+  , simpleOptionWarg []  ["builduser"] (BuildUser . T.pack) ""
+  , simpleOptionWarg []  ["head"]      (TruncHead . read . T.pack) ""
+  , simpleOptionWarg []  ["tail"]      (TruncTail . read . T.pack) ""
+  , simpleOption "w" ["downloadonly"] Download     ""
+  , simpleOption "u" ["sysupgrade"]   Upgrade      ""
+  , simpleOption "q" ["quiet"]        Quiet        ""
+  , simpleOption []  ["abc"]          ABCSort      ""
+  , simpleOption []  ["allsource"]    KeepSource   ""
+  , simpleOption []  ["auradebug"]    Debug        ""
+  , simpleOption []  ["custom"]       Customizepkg ""
+  , simpleOption []  ["devel"]        Devel        ""
+  , simpleOption []  ["hotedit"]      HotEdit      ""
+  , simpleOption []  ["ignorearch"]   IgnoreArch   ""
+  , simpleOption []  ["languages"]    Languages    ""
+  , simpleOption []  ["no-pp"]        NoPowerPill  ""
+  , simpleOption []  ["dryrun"]       DryRun       ""
+  , simpleOption []  ["viewconf"]     ViewConf     "" ]
 
 -- These are intercepted Pacman flags. Their functionality is different.
-pacmanOptions :: [OptDescr Flag]
-pacmanOptions = fmap simpleOption
-                [ ( "y", ["refresh"], Refresh )
-                , ( "V", ["version"], Version )
-                , ( "h", ["help"],    Help    ) ]
+pacmanOptions :: [Parser Flag]
+pacmanOptions =
+  [ simpleOption "y" ["refresh"] Refresh "Sync all package data in the local ABS Tree"
+  , simpleOption "V" ["version"] Version "display version information"
+  , simpleOption "h" ["help"]    Help    "display help"
+  ]
 
 -- Options that have functionality stretching across both Aura and Pacman.
-dualOptions :: [OptDescr Flag]
-dualOptions = Option [] ["ignore"]      (ReqArg (Ignore . T.pack)      "" ) "" :
-              Option [] ["ignoregroup"] (ReqArg (IgnoreGroup . T.pack) "" ) "" :
-              fmap simpleOption
-              [ ( [], ["noconfirm"], NoConfirm )
-              , ( [], ["needed"],    Needed    ) ]
+dualOptions :: [Parser Flag]
+dualOptions =
+  [ simpleOptionWarg [] ["ignore"]      (Ignore . T.pack)  ""
+  , simpleOptionWarg [] ["ignoregroup"] (IgnoreGroup . T.pack) ""
+  , simpleOption     [] ["noconfirm"] NoConfirm ""
+  , simpleOption     [] ["needed"]    Needed   ""
+  ]
 
 -- These Pacman options are ignored,
 -- but parser needs to know that they require an argument
-longPacmanOptions :: [OptDescr Flag]
-longPacmanOptions = pacArg <$> zip
-                    [ "dbpath", "root", "arch", "cachedir", "color"
-                    , "config", "gpgdir" , "logfile", "assume-installed"
-                    , "print-format" ]
-                    ( "b" : "r" : repeat [] )
-                    -- "owns" is apparently okay as is?
-                    -- TODO: check all others
-    where pacArg (option, letter) = Option letter [option]
-                                    (ReqArg (PacmanArg (T.pack option). T.pack) "") ""
+longPacmanOptions :: [Parser Flag]
+longPacmanOptions =  fmap pacArg $ zip
+  [ "dbpath", "root", "arch", "cachedir", "color"
+  , "config", "gpgdir" , "logfile", "assume-installed"
+  , "print-format" ]
+  ( "b" : "r" : repeat [] )
+  -- "owns" is apparently okay as is?
+  -- TODO: check all others
+  where pacArg (opt, letter) = (PacmanArg (T.pack opt) . T.pack) <$> strOption (long opt <> foldl appendShort mempty letter)
+        appendShort a s = a <> short s
 
 pacmanFlagMap :: FlagMap
 pacmanFlagMap (PacmanArg option arg) = "--" <> option <> "=" <> arg
 pacmanFlagMap _                      = ""
 
-languageOptions :: [OptDescr Flag]
-languageOptions = fmap simpleOption
-                  [ ( [], ["japanese", "日本語"],      JapOut      )
-                  , ( [], ["polish", "polski"],        PolishOut   )
-                  , ( [], ["croatian", "hrvatski"],    CroatianOut )
-                  , ( [], ["swedish", "svenska"],      SwedishOut  )
-                  , ( [], ["german", "deutsch"],       GermanOut   )
-                  , ( [], ["spanish", "español"],      SpanishOut  )
-                  , ( [], ["portuguese", "português"], PortuOut    )
-                  , ( [], ["french", "français"],      FrenchOut   )
-                  , ( [], ["russian", "русский"],      RussianOut  )
-                  , ( [], ["italian", "italiano"],     ItalianOut  )
-                  , ( [], ["serbian", "српски"],       SerbianOut  )
-                  , ( [], ["norwegian", "norsk"],      NorwegiOut  ) ]
+languageOptions :: Parser [Flag]
+languageOptions = fmap maybeToList $ optional $ choose $ fmap (\(a,b,c,d) -> simpleOption a b c d)
+                  [ ( [], ["japanese", "日本語"],      JapOut      , "")
+                  , ( [], ["polish", "polski"],        PolishOut   , "")
+                  , ( [], ["croatian", "hrvatski"],    CroatianOut , "")
+                  , ( [], ["swedish", "svenska"],      SwedishOut  , "")
+                  , ( [], ["german", "deutsch"],       GermanOut   , "")
+                  , ( [], ["spanish", "español"],      SpanishOut  , "")
+                  , ( [], ["portuguese", "português"], PortuOut    , "")
+                  , ( [], ["french", "français"],      FrenchOut   , "")
+                  , ( [], ["russian", "русский"],      RussianOut  , "")
+                  , ( [], ["italian", "italiano"],     ItalianOut  , "")
+                  , ( [], ["serbian", "српски"],       SerbianOut  , "")
+                  , ( [], ["norwegian", "norsk"],      NorwegiOut  , "") ]
 
 -- `Hijacked` flags. They have original pacman functionality, but
 -- that is masked and made unique in an Aura context.
@@ -280,7 +305,9 @@ notSettingsFlag (PacmanArg _ _) = False
 notSettingsFlag f               = f `notElem` settingsFlags
 
 auraOperMsg :: Language -> T.Text
-auraOperMsg lang = T.pack $ usageInfo (T.unpack $ yellow $ auraOperTitle lang) $  auraOperations lang
+auraOperMsg lang = T.pack $ H.renderHelp 100
+  $  H.usageHelp (H.cmdDesc (auraOperations lang))
+  <> H.headerHelp (H.stringChunk $ T.unpack $ yellow $ auraOperTitle lang)
 
 -- Extracts desirable results from given Flags.
 -- Callers must supply an [alt]ernate value for when there are no matches.
@@ -363,17 +390,24 @@ dryRunStatus = fishOutFlag [(DryRun, True)] False
 makepkgFlags :: [Flag] -> [String]
 makepkgFlags = fishOutFlag [(IgnoreArch, ["--ignorearch"])] []
 
-parseLanguageFlag :: [String] -> (Maybe Language, [String])
-parseLanguageFlag args =
-    case getOpt Permute languageOptions args of
-      (langs, nonOpts, _) -> (getLanguage langs, nonOpts)
+parseLanguageFlag :: [String] -> Maybe Language
+parseLanguageFlag args = getParseResult (execParserPure defaultPrefs opts args) >>= getLanguage
+  where opts = info (languageOptions) (fullDesc)
 
--- I don't like this.
-parseFlags :: Maybe Language -> [String] -> ([Flag], [T.Text], [T.Text])
-parseFlags (Just lang) args = parseFlags' lang args
-parseFlags Nothing     args = parseFlags' English args
+parseFlags :: Maybe Language -> [String] -> IO ([Flag], [T.Text], [T.Text])
+parseFlags lang args = parseFlags' args $ maybe English id lang
+
+partialParserPure :: Parser a -> [String] -> ParserResult (a, [String])
+partialParserPure pinfo args =
+  case runP p pprefs of
+    (Right  r, _) -> Success r
+    (Left err, ctx) -> Failure $ parserFailure pprefs (info pinfo (briefDesc)) err ctx
+  where
+    pprefs = defaultPrefs
+    p = runParser SkipOpts pinfo args
 
 -- Errors are dealt with manually in `aura.hs`.
-parseFlags' :: Language -> [String] -> ([Flag], [T.Text], [T.Text])
-parseFlags' lang args = case getOpt' Permute (allFlags lang) args of
-                         (opts, nonOpts, pacOpts, _) -> (opts, map T.pack nonOpts, map T.pack pacOpts)
+parseFlags' :: [String] -> Language -> IO ([Flag], [T.Text], [T.Text])
+parseFlags' args lang = flatten <$> handleParseResult (partialParserPure opts args)
+  where flatten ((opts, nonOpts), pacOpts) = (opts, map T.pack nonOpts, map T.pack pacOpts)
+        opts = helper <*> allFlags lang
