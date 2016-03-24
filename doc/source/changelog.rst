@@ -1,5 +1,10 @@
 Aura Changelog
 ==============
+1.3.5
+-----
+- Aura now uses version 5 of the `aur` package, to fix a critial bug
+- Updated Spanish and Polish
+
 1.3.4
 -----
 - Bash parser bug fix. Fixes some packages.
