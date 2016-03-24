@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ViewPatterns #-}
 
--- Handles all `-A` operations
+-- | Handles all `-A` operations
 
 {-
 
@@ -47,16 +47,17 @@ import           Text.Regex.PCRE ((=~))
 import           Aura.Install (InstallOptions(..))
 import qualified Aura.Install as I
 
-import           Aura.Pkgbuild.Base
-import           Aura.Settings.Base
+import           Aura.Bash (namespace, Namespace)
+import           Aura.Colour.Text
+import           Aura.Core
+import           Aura.Languages
+import           Aura.Monad.Aura
 import           Aura.Packages.ABS (absDepsRepo)
 import           Aura.Packages.AUR
-import           Aura.Colour.Text
-import           Aura.Monad.Aura
-import           Aura.Languages
+import           Aura.Pkgbuild.Base
+import           Aura.Pkgbuild.Fetch
+import           Aura.Settings.Base
 import           Aura.Utils
-import           Aura.Bash (namespace, Namespace)
-import           Aura.Core
 import           Aura.Utils.Numbers
 
 import           Shell

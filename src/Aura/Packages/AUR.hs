@@ -1,9 +1,9 @@
--- Module for connecting to the AUR servers,
+-- | Module for connecting to the AUR servers,
 -- downloading PKGBUILDs and source tarballs, and handling them.
 
 {-
 
-Copyright 2012, 2013, 2014, 2015 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013, 2014, 2015, 2016 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -32,21 +32,22 @@ module Aura.Packages.AUR
     , pkgUrl
     ) where
 
-import           Control.Monad        ((>=>), join)
-import           Data.Function        (on)
-import           Data.List            (sortBy)
-import           Data.Monoid          ((<>))
+import           Control.Monad ((>=>))
+import           Data.Function (on)
+import           Data.List (sortBy)
+import           Data.Monoid ((<>))
 import           Data.Maybe
-import qualified Data.Text            as T
+import qualified Data.Text as T
 import           Linux.Arch.Aur
-import           System.FilePath      ((</>))
+import           System.FilePath ((</>))
 
+import           Aura.Core
 import           Aura.Monad.Aura
 import           Aura.Pkgbuild.Base
+import           Aura.Pkgbuild.Fetch
 import           Aura.Settings.Base
-import           Aura.Core
 
-import           Utilities            (decompress)
+import           Utilities (decompress)
 import           Internet
 
 ---
@@ -83,8 +84,11 @@ pkgUrl pkg = aurLink </> "packages" </> pkg
 sourceTarball :: FilePath            -- ^ Where to save the tarball.
               -> T.Text              -- ^ Package name.
               -> IO (Maybe FilePath) -- ^ Saved tarball location.
-sourceTarball path = fmap join . (info >=> traverse f)
-    where f = saveUrlContents path . (aurLink <>) . T.unpack . urlPathOf
+sourceTarball path pkg = do
+  i <- info [pkg]
+  case i of
+    [] -> pure Nothing
+    (i':_) -> saveUrlContents path . (aurLink <>) . T.unpack $ urlPathOf i'
 
 ------------
 -- RPC CALLS
@@ -92,7 +96,7 @@ sourceTarball path = fmap join . (info >=> traverse f)
 sortAurInfo :: SortScheme -> [AurInfo] -> [AurInfo]
 sortAurInfo scheme ai = sortBy compare' ai
   where compare' = case scheme of
-                     ByVote         -> \x y -> compare (aurVotesOf y) (aurVotesOf x)
+                     ByVote -> \x y -> compare (aurVotesOf y) (aurVotesOf x)
                      Alphabetically -> compare `on` aurNameOf
 
 aurSearch :: T.Text -> Aura [AurInfo]
@@ -100,4 +104,4 @@ aurSearch regex = asks sortSchemeOf >>= \scheme ->
                   sortAurInfo scheme <$> search regex
 
 aurInfo :: [T.Text] -> Aura [AurInfo]
-aurInfo pkgs = sortAurInfo Alphabetically <$> multiinfo pkgs
+aurInfo pkgs = sortAurInfo Alphabetically <$> info pkgs

@@ -1,6 +1,6 @@
 name:                aura
 
-version:             1.3.4
+version:             1.3.5
 
 synopsis:            A secure package manager for Arch Linux and the AUR, written in Haskell.
 
@@ -37,69 +37,70 @@ source-repository head
   location: git://github.com/fosskers/aura.git
 
 executable aura
-  ghc-options:         -Wall
+  ghc-options:         -Wall -O2
 
   main-is:             aura.hs
 
   hs-source-dirs:      src
-  other-modules:       Shell,
-                       Internet,
-                       Utilities,
-                       Data.Algorithm.Diff,
-                       Aura.Bash,
-                       Aura.Build,
-                       Aura.Cache,
-                       Aura.Colour.Text,
-                       Aura.Commands.A,
-                       Aura.Commands.B,
-                       Aura.Commands.C,
-                       Aura.Commands.L,
-                       Aura.Commands.M,
-                       Aura.Commands.O,
-                       Aura.Conflicts,
-                       Aura.Core,
-                       Aura.Dependencies,
-                       Aura.Diff,
-                       Aura.Flags,
-                       Aura.Install,
-                       Aura.Languages,
-                       Aura.Logo,
-                       Aura.MakePkg,
-                       Aura.Monad.Aura,
-                       Aura.Packages.ABS,
-                       Aura.Packages.AUR,
-                       Aura.Packages.Repository,
-                       Aura.Pacman,
-                       Aura.Pkgbuild.Base,
-                       Aura.Pkgbuild.Editing,
-                       Aura.Pkgbuild.Records,
-                       Aura.Settings.Base,
-                       Aura.Settings.Enable,
-                       Aura.Shell,
-                       Aura.State,
-                       Aura.Time,
-                       Aura.Utils,
-                       Aura.Utils.Numbers,
-                       Bash.Base,
-                       Bash.Parser,
-                       Bash.Simplify
 
-  build-depends:       aur>=4.0.2,
-                       mtl,
-                       lens,
-                       text,
-                       time,
-                       unix,
-                       wreq,
-                       split,
-                       array,
-                       parsec,
-                       process,
-                       filepath,
-                       directory,
-                       temporary,
-                       containers,
-                       bytestring,
-                       transformers,
-                       regex-pcre-builtin,
-                       base >= 4.8 && < 5
+  other-modules:       Shell
+                     , Internet
+                     , Utilities
+                     , Data.Algorithm.Diff
+                     , Aura.Bash
+                     , Aura.Build
+                     , Aura.Cache
+                     , Aura.Colour.Text
+                     , Aura.Commands.A
+                     , Aura.Commands.B
+                     , Aura.Commands.C
+                     , Aura.Commands.L
+                     , Aura.Commands.M
+                     , Aura.Commands.O
+                     , Aura.Conflicts
+                     , Aura.Core
+                     , Aura.Dependencies
+                     , Aura.Diff
+                     , Aura.Flags
+                     , Aura.Install
+                     , Aura.Languages
+                     , Aura.Logo
+                     , Aura.MakePkg
+                     , Aura.Monad.Aura
+                     , Aura.Packages.ABS
+                     , Aura.Packages.AUR
+                     , Aura.Packages.Repository
+                     , Aura.Pacman
+                     , Aura.Pkgbuild.Base
+                     , Aura.Pkgbuild.Editing
+                     , Aura.Pkgbuild.Records
+                     , Aura.Settings.Base
+                     , Aura.Settings.Enable
+                     , Aura.Shell
+                     , Aura.State
+                     , Aura.Time
+                     , Aura.Utils
+                     , Aura.Utils.Numbers
+                     , Bash.Base
+                     , Bash.Parser
+                     , Bash.Simplify
+
+  build-depends:       aur >= 5
+                     , mtl
+                     , lens
+                     , text
+                     , time
+                     , unix
+                     , wreq
+                     , split
+                     , array
+                     , parsec
+                     , process
+                     , filepath
+                     , directory
+                     , temporary
+                     , containers
+                     , bytestring
+                     , transformers
+                     , regex-pcre-builtin
+                     , base >= 4.8 && < 5

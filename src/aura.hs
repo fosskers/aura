@@ -1,6 +1,6 @@
 {-
 
-Copyright 2012, 2013, 2014, 2015 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013, 2014, 2015, 2016 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -63,7 +63,7 @@ import Aura.Commands.O as O
 type UserInput = ([Flag], [String], [String])
 
 auraVersion :: String
-auraVersion = "1.3.4"
+auraVersion = "1.3.5"
 
 main :: IO a
 main = getArgs >>= prepSettings . processFlags >>= execute >>= exit
