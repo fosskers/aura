@@ -439,7 +439,7 @@ remove make deps, as well as show PKGBUILD diffs before building.
 use the following shell functions:
 .RS 4
 Bash => function search() {
-          aura -Ss $1 && aura -As $1
+          aura -Ss $1 || true && aura -As $1
         }
 
 Fish => function search
