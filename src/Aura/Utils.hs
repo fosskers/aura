@@ -35,7 +35,6 @@ import Aura.Settings.Base
 import Aura.Utils.Numbers
 
 import Shelly hiding (liftIO, find)
-import qualified Shelly
 import qualified Data.Text as T
 
 ---
@@ -91,7 +90,7 @@ optionalPrompt msg = ask >>= check
 -------
 withTempDir :: FilePath -> Aura a -> Aura a
 withTempDir _ action = ask >>= \ss -> do
-  liftShelly (withTmpDir (\dir -> chdir dir (Shelly.liftIO $ runAura action ss))) >>= wrap
+  liftShelly (withTmpDir (\dir -> chdir dir (runAura' action ss))) >>= wrap
 
 splitNameAndVer :: T.Text -> (T.Text, Maybe T.Text, T.Text)
 splitNameAndVer pkg = (name, comp, ver)

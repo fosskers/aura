@@ -50,7 +50,10 @@ makepkgCmd :: Text
 makepkgCmd = "/usr/bin/makepkg"
 
 pkgPatt :: String
-pkgPatt = "[.]src[.]tar"
+pkgPatt = "[.]pkg[.]tar"
+
+srcPatt :: String
+srcPatt = "[.]src[.]tar"
 
 makepkg :: Bool -> User -> [Text] -> Sh (Either Text [FilePath])
 makepkg True  = makepkgQuiet
@@ -62,7 +65,7 @@ makepkg False = makepkgVerbose
 makepkgSource :: User -> Sh [FilePath]
 makepkgSource user = do
   run_ com opts
-  filter (\t -> T.unpack (toTextIgnore t) =~ pkgPatt) <$> (pwd >>= ls)
+  filter (\t -> T.unpack (toTextIgnore t) =~ srcPatt) <$> (pwd >>= ls)
     where (com, opts) = runStyle user ["--allsource"]
 
 -- | Builds a package with `makepkg`.

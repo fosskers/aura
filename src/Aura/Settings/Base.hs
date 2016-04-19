@@ -46,7 +46,7 @@ data Settings = Settings { inputOf         :: [T.Text]
                          , editorOf        :: T.Text
                          , carchOf         :: T.Text
                          , ignoredPkgsOf   :: [T.Text]
-                         , makepkgFlagsOf  :: [String]
+                         , makepkgFlagsOf  :: [T.Text]
                          , buildPathOf     :: FilePath
                          , cachePathOf     :: FilePath
                          , logFilePathOf   :: FilePath

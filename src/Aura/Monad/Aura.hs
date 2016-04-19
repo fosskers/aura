@@ -25,6 +25,7 @@ module Aura.Monad.Aura
     ( Aura
     , AuraEff
     , runAura
+    , runAura'
     , failure
     , catch
     , wrap
@@ -65,7 +66,10 @@ type AuraEff r a = (Member (Exc T.Text) r, Member (Reader Settings) r, MemberU L
 type Aura a = forall r . AuraEff r a
 
 runAura :: Aura a -> Settings -> IO (Either T.Text a)
-runAura a s = S.shelly $ runLift $ flip runReader s $ runExc a
+runAura a s = S.shelly $ runAura' a s
+
+runAura' :: Aura a -> Settings -> S.Sh (Either T.Text a)
+runAura' a s = S.errExit False $ runLift $ flip runReader s $ runExc a
 
 failure :: T.Text -> Aura a
 failure = throwExc

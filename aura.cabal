@@ -38,7 +38,7 @@ source-repository head
   location: git://github.com/fosskers/aura.git
 
 executable aura
-  ghc-options:         -Wall
+  ghc-options:         -Wall -O2
 
   main-is:             aura.hs
   default-extensions:  Rank2Types
@@ -50,73 +50,74 @@ executable aura
   default-language:    Haskell2010
 
   hs-source-dirs:      src
-  other-modules:       Shell,
-                       Internet,
-                       Utilities,
-                       Data.Algorithm.Diff,
-                       Aura.Bash,
-                       Aura.Build,
-                       Aura.Cache,
-                       Aura.Colour.Text,
-                       Aura.Commands.A,
-                       Aura.Commands.B,
-                       Aura.Commands.C,
-                       Aura.Commands.L,
-                       Aura.Commands.M,
-                       Aura.Commands.O,
-                       Aura.Conflicts,
-                       Aura.Core,
-                       Aura.Dependencies,
-                       Aura.Diff,
-                       Aura.Flags,
-                       Aura.Install,
-                       Aura.Languages,
-                       Aura.Logo,
-                       Aura.MakePkg,
-                       Aura.Monad.Aura,
-                       Aura.Packages.ABS,
-                       Aura.Packages.AUR,
-                       Aura.Packages.Repository,
-                       Aura.Pacman,
-                       Aura.Pkgbuild.Base,
-                       Aura.Pkgbuild.Editing,
-                       Aura.Pkgbuild.Records,
-                       Aura.Settings.Base,
-                       Aura.Settings.Enable,
-                       Aura.Shell,
-                       Aura.State,
-                       Aura.Time,
-                       Aura.Utils,
-                       Aura.Utils.Numbers,
-                       Bash.Base,
-                       Bash.Parser,
-                       Bash.Simplify
 
-  build-depends:       aur>=4.0.2,
-                       array,
-                       attoparsec,
-                       base >= 4.8 && < 5,
-                       basic-prelude,
-                       bytestring,
-                       containers,
-                       directory,
-                       extensible-effects,
-                       filepath,
-                       microlens >= 0.3.5.0,
-                       megaparsec,
-                       process,
-                       regex-pcre-builtin,
-                       shelly,
-                       split,
-                       system-filepath,
-                       system-fileio,
-                       temporary,
-                       text,
-                       text-icu,
-                       th-printf,
-                       ini,
-                       time,
-                       transformers,
-                       unix,
-                       unordered-containers,
-                       wreq
+  other-modules:       Shell
+                     , Internet
+                     , Utilities
+                     , Data.Algorithm.Diff
+                     , Aura.Bash
+                     , Aura.Build
+                     , Aura.Cache
+                     , Aura.Colour.Text
+                     , Aura.Commands.A
+                     , Aura.Commands.B
+                     , Aura.Commands.C
+                     , Aura.Commands.L
+                     , Aura.Commands.M
+                     , Aura.Commands.O
+                     , Aura.Conflicts
+                     , Aura.Core
+                     , Aura.Dependencies
+                     , Aura.Diff
+                     , Aura.Flags
+                     , Aura.Install
+                     , Aura.Languages
+                     , Aura.Logo
+                     , Aura.MakePkg
+                     , Aura.Monad.Aura
+                     , Aura.Packages.ABS
+                     , Aura.Packages.AUR
+                     , Aura.Packages.Repository
+                     , Aura.Pacman
+                     , Aura.Pkgbuild.Base
+                     , Aura.Pkgbuild.Editing
+                     , Aura.Pkgbuild.Records
+                     , Aura.Settings.Base
+                     , Aura.Settings.Enable
+                     , Aura.Shell
+                     , Aura.State
+                     , Aura.Time
+                     , Aura.Utils
+                     , Aura.Utils.Numbers
+                     , Bash.Base
+                     , Bash.Parser
+                     , Bash.Simplify
+
+  build-depends:       aur>=5
+                     , array
+                     , attoparsec
+                     , base >= 4.8 && < 5
+                     , basic-prelude
+                     , bytestring
+                     , containers
+                     , directory
+                     , extensible-effects
+                     , filepath
+                     , microlens >= 0.3.5.0
+                     , megaparsec
+                     , process
+                     , regex-pcre-builtin
+                     , shelly
+                     , split
+                     , system-filepath
+                     , system-fileio
+                     , temporary
+                     , text
+                     , text-icu
+                     , th-printf
+                     , ini
+                     , time
+                     , transformers
+                     , unix
+                     , unordered-containers
+                     , wreq

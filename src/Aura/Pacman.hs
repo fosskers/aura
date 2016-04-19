@@ -114,8 +114,12 @@ getLogFilePath confFile = fromText $ singleEntry confFile "LogFile" defaultLogFi
 -- ACTIONS
 ----------
 pacman :: [ShellArg] -> Aura ()
-pacman args = asks pacmanCmdOf >>= \cmd -> flush *> shellCmd cmd args
+pacman args = asks pacmanCmdOf >>= \cmd ->
+  flush *> liftShelly (runHandles cmd args [ InHandle Inherit
+                                           , OutHandle Inherit
+                                           , ErrorHandle Inherit] n)
     where flush = liftIO (hFlush stdout)
+          n _ _ _ = pure ()
 
 -- Did a pacman process succeed?
 pacmanSuccess :: [ShellArg] -> Aura Bool

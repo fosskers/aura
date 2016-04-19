@@ -80,10 +80,11 @@ build' []     = failure "build' : You should never see this."
 build' (p:ps) = ask >>= \ss -> do
   let user = buildUserOf ss
       quiet = suppressMakepkg ss
+      makeflags = makepkgFlagsOf ss
   curr   <- liftShelly pwd
   getBuildScripts p user curr
   overwritePkgbuild p
-  pNames <- liftShelly (makepkg quiet user []) >>= wrap
+  pNames <- liftShelly (makepkg quiet user makeflags) >>= wrap
 --  pNames <- makepkg >>= \f -> f user  -- Which is better?
   paths  <- moveToCachePath pNames
   when (keepSource ss) $ liftShelly (makepkgSource user) >>= void . moveToSourcePath
@@ -136,8 +137,8 @@ displayBuildErrors errors = ask >>= \ss -> when (suppressMakepkg ss) $ do
 moveToCachePath :: [FilePath] -> Aura [FilePath]
 moveToCachePath []     = pure []
 moveToCachePath (p:ps) = do
-  newName <- ((</> p) . cachePathOf) <$> ask
-  liftShelly $ mv p newName
+  newName <- (</> F.filename p) <$> asks cachePathOf
+  liftShelly $ cp p newName
   (newName :) <$> moveToCachePath ps
 
 -- Moves a file to the aura src package cache and returns its location.

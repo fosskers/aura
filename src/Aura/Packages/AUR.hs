@@ -1,9 +1,9 @@
--- Module for connecting to the AUR servers,
+-- | Module for connecting to the AUR servers,
 -- downloading PKGBUILDs and source tarballs, and handling them.
 
 {-
 
-Copyright 2012, 2013, 2014, 2015 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013, 2014, 2015, 2016 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -34,16 +34,17 @@ module Aura.Packages.AUR
 
 import           BasicPrelude hiding (FilePath, liftIO, (</>))
 
-import qualified Data.Text            as T
 import           Linux.Arch.Aur
 import           Filesystem.Path.CurrentOS      (FilePath,(</>),fromText)
+import qualified Data.Text as T
 
+import           Aura.Core
 import           Aura.Monad.Aura
 import           Aura.Pkgbuild.Base
+import           Aura.Pkgbuild.Fetch
 import           Aura.Settings.Base
-import           Aura.Core
 
-import           Utilities            (decompress)
+import           Utilities (decompress)
 import           Internet
 
 ---
@@ -61,7 +62,7 @@ makeBuildable name pb = Buildable
     , isExplicit   = False
     , buildScripts = f }
     where f :: FilePath -> Aura (Maybe FilePath)
-          f fp = liftIO ( sourceTarball fp name ) >>= traverse (liftShelly . decompress)
+          f fp = sourceTarball fp name >>= traverse (liftShelly . decompress)
 
 isAurPackage :: T.Text -> Aura Bool
 isAurPackage name = isJust <$> pkgbuild' name
@@ -80,9 +81,12 @@ pkgUrl pkg = fromText aurLink </> "packages" </> fromText pkg
 ------------------
 sourceTarball :: FilePath            -- ^ Where to save the tarball.
               -> T.Text              -- ^ Package name.
-              -> IO (Maybe FilePath) -- ^ Saved tarball location.
-sourceTarball path = fmap join . (info >=> traverse f)
-    where f = saveUrlContents path . (aurLink <>) . urlPathOf
+              -> Aura (Maybe FilePath) -- ^ Saved tarball location.
+sourceTarball path pkg = do
+  i <- info [pkg]
+  case i of
+    [] -> pure Nothing
+    (i':_) -> liftIO . saveUrlContents path . (aurLink <>) $ urlPathOf i'
 
 ------------
 -- RPC CALLS
@@ -90,7 +94,7 @@ sourceTarball path = fmap join . (info >=> traverse f)
 sortAurInfo :: SortScheme -> [AurInfo] -> [AurInfo]
 sortAurInfo scheme ai = sortBy compare' ai
   where compare' = case scheme of
-                     ByVote         -> \x y -> compare (aurVotesOf y) (aurVotesOf x)
+                     ByVote -> \x y -> compare (aurVotesOf y) (aurVotesOf x)
                      Alphabetically -> compare `on` aurNameOf
 
 aurSearch :: T.Text -> Aura [AurInfo]
@@ -98,4 +102,4 @@ aurSearch regex = asks sortSchemeOf >>= \scheme ->
                   sortAurInfo scheme <$> search regex
 
 aurInfo :: [T.Text] -> Aura [AurInfo]
-aurInfo pkgs = sortAurInfo Alphabetically <$> multiinfo pkgs
+aurInfo pkgs = sortAurInfo Alphabetically <$> info pkgs

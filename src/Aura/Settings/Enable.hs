@@ -63,7 +63,7 @@ getSettings lang' (auraFlags, input, pacOpts) = do
                                     "COULDN'T READ $CARCH"
                 , ignoredPkgsOf   = getIgnoredPkgs confFile <>
                                     ignoredAuraPkgs auraFlags
-                , makepkgFlagsOf  = makepkgFlags auraFlags
+                , makepkgFlagsOf  = T.pack <$> makepkgFlags auraFlags
                 , buildPathOf     = buildPath'
                 , cachePathOf     = getCachePath confFile
                 , logFilePathOf   = getLogFilePath confFile

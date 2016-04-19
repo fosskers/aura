@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ViewPatterns #-}
 
--- Handles all `-A` operations
+-- | Handles all `-A` operations
 
 {-
 
@@ -47,16 +47,17 @@ import           Linux.Arch.Aur
 import           Aura.Install (InstallOptions(..))
 import qualified Aura.Install as I
 
+import           Aura.Bash (namespace, Namespace)
 import           Aura.Pkgbuild.Base
+import           Aura.Pkgbuild.Fetch
 import           Aura.Settings.Base
 import           Aura.Packages.ABS (absDepsRepo)
 import           Aura.Packages.AUR
 import           Aura.Colour.Text
-import           Aura.Monad.Aura
-import           Aura.Languages
-import           Aura.Utils
-import           Aura.Bash (namespace, Namespace)
 import           Aura.Core
+import           Aura.Languages
+import           Aura.Monad.Aura
+import           Aura.Utils
 import           Aura.Utils.Numbers
 
 import           Shelly hiding (liftIO,whenM)
@@ -184,7 +185,7 @@ downloadTarballs pkgs = do
     where downloadTBall :: FilePath -> T.Text -> Aura ()
           downloadTBall path' pkg = whenM (isAurPackage pkg) $ do
               notify $ downloadTarballs_1 pkg
-              void . liftIO $ sourceTarball path' $ pkg
+              void $ sourceTarball path' $ pkg
 
 displayPkgbuild :: [T.Text] -> Aura ()
 displayPkgbuild = I.displayPkgbuild $ traverse pkgbuild'
