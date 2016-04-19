@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ViewPatterns #-}
 
--- Handles all `-A` operations
+-- | Handles all `-A` operations
 
 {-
 
@@ -47,16 +47,17 @@ import           Text.Regex.PCRE ((=~))
 import           Aura.Install (InstallOptions(..))
 import qualified Aura.Install as I
 
-import           Aura.Pkgbuild.Base
-import           Aura.Settings.Base
+import           Aura.Bash (namespace, Namespace)
+import           Aura.Colour.Text
+import           Aura.Core
+import           Aura.Languages
+import           Aura.Monad.Aura
 import           Aura.Packages.ABS (absDepsRepo)
 import           Aura.Packages.AUR
-import           Aura.Colour.Text
-import           Aura.Monad.Aura
-import           Aura.Languages
+import           Aura.Pkgbuild.Base
+import           Aura.Pkgbuild.Fetch
+import           Aura.Settings.Base
 import           Aura.Utils
-import           Aura.Bash (namespace, Namespace)
-import           Aura.Core
 import           Aura.Utils.Numbers
 
 import           Shell
@@ -155,7 +156,7 @@ renderSearch :: Settings -> String -> (AurInfo, Bool) -> String
 renderSearch ss r (i, e) = searchResult
     where searchResult = if beQuiet ss then sparseInfo else verboseInfo
           sparseInfo   = T.unpack $ aurNameOf i
-          verboseInfo  = repo <> n <> " " <> v <> " (" <> l <> " / " <> p <>
+          verboseInfo  = repo <> n <> " " <> v <> " (" <> l <> " | " <> p <>
                          ")" <> (if e then s else "") <> "\n    " <> d
           c cl cs = case cs =~ ("(?i)" <> r) of
                       (b, m, a) -> cl b <> bCyan m <> cl a
