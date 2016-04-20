@@ -1,11 +1,12 @@
-resolver: lts-5.9
+resolver: lts-5.13
 
 packages:
-  - '.'
+  - aura/
+  - aur/
 
 extra-deps:
-  - aur-5.0.0
-  - servant-0.5
-  - servant-client-0.5
+  - aur-5.0.1
+  - servant-0.7
+  - servant-client-0.7
   
 flags: {}

@@ -1,0 +1,55 @@
+name:                aur
+
+version:             5.0.1
+
+synopsis:            Access metadata from the Arch Linux User Repository.
+
+homepage:            https://github.com/fosskers/haskell-aur
+
+license:             GPL-3
+
+license-file:        LICENSE
+
+author:              Colin Woodbury
+
+maintainer:          colingw@gmail.com
+
+category:            Linux
+
+build-type:          Simple
+
+cabal-version:       >=1.10
+
+description:         Access package information from Arch Linux's AUR via its
+                     RPC interface. The main exposed functions reflect
+                     those of the RPC:
+                     .
+                     * info:      Get metadata for one package.
+                     .
+                     * search:    Get limited metadata for packages that
+                                  match a given regex.
+                     .
+                     By default this library supports version 5 of the RPC,
+                     and hence version 4.2+ of the AUR.
+
+source-repository head
+  type:     git
+  location: git://github.com/aurapm/haskell-aur.git
+
+library
+  exposed-modules:     Linux.Arch.Aur,
+                       Linux.Arch.Aur.Rpc,
+                       Linux.Arch.Aur.Types
+  
+  build-depends:
+                       base >=4.8 && <4.9
+                     , aeson >= 0.9.0.1
+                     , http-client >= 0.4.27
+                     , http-client-tls >= 0.2.2
+                     , mtl >= 2.2.1
+                     , servant >= 0.7 && < 0.8
+                     , servant-client >= 0.7 && < 0.8
+                     , text >=1.1 && <1.3
+                     , transformers >= 0.4.2.0
+
+  default-language:    Haskell2010
