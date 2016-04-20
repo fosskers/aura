@@ -3,6 +3,7 @@ resolver: lts-5.13
 packages:
   - aura/
   - aur/
+  - arel/
 
 extra-deps:
   - aur-5.0.1
