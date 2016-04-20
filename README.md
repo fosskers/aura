@@ -11,12 +11,13 @@ Aura
 [![Join the chat at https://gitter.im/aurapm/aura](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/aurapm/aura?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Aura is a package manager for Arch Linux and its AUR.
-See [[/aura/README.md][its README]] for more information.
+See [its README](/aura/README.md) for more information.
 
 The `aur` Haskell Library
 -------------------------
 
-A library for accessing the AUR, powered by [[http://haskell-servant.readthedocs.org/en/stable/][Servant]].
+A library for accessing the AUR, powered by
+[Servant](http://haskell-servant.readthedocs.org/en/stable/).
 
 The `arel` Tool
 ---------------
