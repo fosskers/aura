@@ -1,8 +1,9 @@
-* The Aura Package Manager
+The Aura Package Manager
+========================
 
 Welcome to the main repository for all things Aura.
 
-*** Aura
+### Aura
 
 [![Stories in Ready](https://badge.waffle.io/aurapm/aura.png?label=ready&title=Ready)](https://waffle.io/aurapm/aura)
 [![Build Status](https://travis-ci.org/aurapm/aura.svg?branch=master)](https://travis-ci.org/aurapm/aura)
@@ -11,10 +12,10 @@ Welcome to the main repository for all things Aura.
 Aura is a package manager for Arch Linux and its AUR.
 See [[/aura/README.md][its README]] for more information.
 
-*** The ~aur~ Haskell Library
+### The ~aur~ Haskell Library
 
 A library for accessing the AUR, powered by [[http://haskell-servant.readthedocs.org/en/stable/][Servant]].
 
-*** The ~arel~ Tool
+### The ~arel~ Tool
 
 A release tool for publishing Aura releases.
