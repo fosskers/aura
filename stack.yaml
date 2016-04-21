@@ -1,14 +1,16 @@
-resolver: lts-5.9
+resolver: lts-5.13
 
 packages:
-  - '.'
+  - aura/
+  - aur/
+  - arel/
 
 extra-deps:
   - extensible-effects-1.11.0.0
   - type-aligned-0.9.6
   - th-printf-0.3.1
-  - aur-5.0.0
-  - servant-0.5
-  - servant-client-0.5
+  - aur-5.0.1
+  - servant-0.7
+  - servant-client-0.7
   
 flags: {}

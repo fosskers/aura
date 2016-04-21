@@ -81,6 +81,7 @@ executable aura
                      , Aura.Pacman
                      , Aura.Pkgbuild.Base
                      , Aura.Pkgbuild.Editing
+                     , Aura.Pkgbuild.Fetch
                      , Aura.Pkgbuild.Records
                      , Aura.Settings.Base
                      , Aura.Settings.Enable
