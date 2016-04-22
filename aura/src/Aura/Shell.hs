@@ -4,9 +4,11 @@ import BasicPrelude hiding (FilePath, (</>), putStr)
 
 import Data.Maybe (fromJust)
 import qualified Data.Text.IO as IO
-import Shelly
+import Shelly as Sh
 import Aura.Monad.Aura (Aura,liftShelly)
 import Aura.Colour.Text (csi)
+
+import Utilities
 
 ---
 
@@ -90,14 +92,16 @@ shellCmd :: FilePath -> [Text] -> Aura ()
 shellCmd fp = liftShelly . run_ fp
 
 quietShellCmd :: FilePath -> [Text] -> Aura Text
-quietShellCmd fp = liftShelly . run fp
+quietShellCmd fp args = liftShelly $ runHandles fp args allPipes dealWithIt
+  where dealWithIt _ out _ = Sh.liftIO $ IO.hGetContents out
 
 quietShellCmd' :: FilePath -> [Text] -> Aura (Int, Text, Text)
 quietShellCmd' fp args = liftShelly $ do
-  stdout <- run fp args
-  stderr <- lastStderr
+  (stdout, stderr) <- runHandles fp args allPipes dealWithIt
   exitCode <- lastExitCode
   pure (exitCode, stdout, stderr)
+  where dealWithIt _ stdout stderr = Sh.liftIO $ (,) <$>
+          IO.hGetContents stdout <*> IO.hGetContents stderr
 
 ls' :: FilePath -> Sh [FilePath]
 ls' = ls

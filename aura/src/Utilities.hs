@@ -166,11 +166,17 @@ notNull = not . null
 openEditor :: FilePath -> T.Text -> Sh ()
 openEditor editor file = void $ run_ editor [file]
 
+allPipes :: [StdHandle]
+allPipes = [InHandle CreatePipe , OutHandle CreatePipe , ErrorHandle CreatePipe]
+
+runQuiet :: FilePath -> [T.Text] -> Sh ()
+runQuiet c a = runHandles c a allPipes $ \ _ _ _ -> pure ()
+
 -- All tarballs should be of the format `.tar.gz`
 -- Thus calling dropExtension twice should remove that section.
 decompress :: FilePath -> Sh FilePath
 decompress file = do
-  _ <- run "bsdtar" ["-zxvf", toTextIgnore file]
+  _ <- runQuiet "bsdtar" ["-zxf", toTextIgnore file]
   pure . dropExtension . dropExtension $ file
 
 -- | Perform an action within a given directory.
