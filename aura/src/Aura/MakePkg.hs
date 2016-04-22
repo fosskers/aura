@@ -32,7 +32,8 @@ module Aura.MakePkg
 import           BasicPrelude hiding (FilePath)
 
 import qualified Data.Text as T
-import           Shelly
+import           Data.Text.IO
+import           Shelly as Sh
 import           Text.Regex.PCRE ((=~))
 
 import           Aura.Shell
@@ -85,9 +86,9 @@ runStyle user opts = ("sudo", ["-u", user, makepkgCmd] <> opts)
 makepkgQuiet :: User -> [Text] -> Sh (Either Text [FilePath])
 makepkgQuiet = makepkgGen quiet
   where quiet com opts = do
-          output <- run com opts
-          stderr <- lastStderr
+          (output, stderr) <- runHandles com opts [OutHandle CreatePipe, ErrorHandle CreatePipe] fromHandels
           ifte_ (Right ()) (Left $ stderr <> "\n" <> output) <$> wasSuccessful
+        fromHandels _ out err = Sh.liftIO $ (,) <$> hGetContents out <*> hGetContents err
 
 makepkgVerbose :: User -> [Text] -> Sh (Either Text [FilePath])
 makepkgVerbose = makepkgGen verbose
