@@ -93,5 +93,6 @@ makepkgQuiet = makepkgGen quiet
 makepkgVerbose :: User -> [Text] -> Sh (Either Text [FilePath])
 makepkgVerbose = makepkgGen verbose
   where verbose com opts = do
-          run_ com opts
+          runHandles com opts [OutHandle Inherit, ErrorHandle Inherit]
+            $ const $ const $ const $ pure ()
           ifte_ (Right ()) (Left "") <$> wasSuccessful -- TODO: stderr?
