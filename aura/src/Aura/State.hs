@@ -29,14 +29,14 @@ module Aura.State
     , stateCache
     , getStateFiles ) where
 
-import qualified Data.Map.Lazy as M
+import BasicPrelude hiding (FilePath, writeFile, liftIO, (</>))
 
-import System.FilePath ((</>))
-import Control.Monad   (unless)
-import Control.Arrow   (first)
-import Data.Maybe      (mapMaybe)
-import Data.List       (partition, sort)
-import Data.Monoid     ((<>))
+
+import Shelly (FilePath, (</>), fromText, toTextIgnore)
+import Filesystem
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as E
+import qualified Data.Map.Lazy as M
 
 import Aura.Cache
 import Aura.Colour.Text   (cyan, red)
@@ -50,16 +50,16 @@ import Aura.Utils         (printList)
 import Aura.Utils.Numbers
 
 import Utilities (getSelection, readFileUTF8)
-import Shell     (ls')
+import Aura.Shell     (lsT')
 
 ---
 
 data PkgState = PkgState { timeOf :: Time
-                         , pkgsOf :: M.Map String (Maybe Version) }
+                         , pkgsOf :: M.Map T.Text (Maybe Version) }
                 deriving (Eq, Show, Read)
 
 -- ([toAlter], [toRemove])
-type StateDiff = ([SimplePkg], [String])
+type StateDiff = ([SimplePkg], [T.Text])
 
 stateCache :: FilePath
 stateCache = "/var/cache/aura/states"
@@ -69,14 +69,14 @@ inState (n, v) s = case M.lookup n $ pkgsOf s of
                     Nothing -> False
                     Just v' -> v == v'
 
-rawCurrentState :: Aura [String]
-rawCurrentState = lines <$> pacmanOutput ["-Q"]
+rawCurrentState :: Aura [T.Text]
+rawCurrentState = T.lines <$> pacmanOutput ["-Q"]
 
 currentState :: Aura PkgState
 currentState = do
   pkgs <- rawCurrentState
   time <- liftIO localTime
-  let namesVers = pair . words <$> pkgs
+  let namesVers = pair . T.words <$> pkgs
       pair      = \(x:y:_) -> (x, version y)
   pure . PkgState time . M.fromAscList $ namesVers
 
@@ -96,21 +96,21 @@ toChangeAndRemove old curr = M.foldrWithKey status ([], []) $ pkgsOf curr
 olds :: PkgState -> PkgState -> [SimplePkg]
 olds old curr = M.assocs $ M.difference (pkgsOf old) (pkgsOf curr)
 
-getStateFiles :: Aura [FilePath]
-getStateFiles = sort <$> liftIO (ls' stateCache)
+getStateFiles :: Aura [T.Text]
+getStateFiles = sort <$> liftShelly (lsT' stateCache)
 
 saveState :: Aura ()
 saveState = do
   state <- currentState
-  let filename = stateCache </> dotFormat (timeOf state)
-  liftIO $ writeFile filename (show state)
+  let filename = stateCache </> fromText (dotFormat (timeOf state))
+  liftIO $ writeFile filename $ E.encodeUtf8 $ show state
   notify saveState_1
 
 -- | Does its best to restore a state chosen by the user.
 restoreState :: Aura ()
 restoreState = ask >>= \ss -> do
   curr  <- currentState
-  past  <- getStateFiles >>= liftIO . getSelection >>= readState
+  past  <- getStateFiles >>= liftIO . getSelection >>= readState . fromText
   cache <- cacheContents $ cachePathOf ss
   let (rein, remo) = compareStates past curr
       (okay, nope) = partition (alterable cache) rein
@@ -124,12 +124,14 @@ readState name = liftIO (read <$> readFileUTF8 (stateCache </> name))
 -- How does pacman do simultaneous removals and upgrades?
 -- I've seen it happen plenty of times.
 -- | `reinstalling` can mean true reinstalling, or just altering.
-reinstallAndRemove :: [FilePath] -> [String] -> Aura ()
+reinstallAndRemove :: [FilePath] -> [T.Text] -> Aura ()
 reinstallAndRemove [] [] = warn reinstallAndRemove_1
 reinstallAndRemove down remo
     | null remo = reinstall
     | null down = remove
     | otherwise = reinstall *> remove
-    where remove    = pacman $ "-R" : remo
+    where remove :: Aura ()
+          remove    = pacman $ "-R" : remo
+          reinstall :: Aura ()
           reinstall = ask >>= \ss ->
-                      pacman $ "-U" : ((cachePathOf ss </>) <$> down)
+                      pacman $ "-U" : ((toTextIgnore . (cachePathOf ss </>)) <$> down)

@@ -25,8 +25,10 @@ module Aura.Commands.O
     ( displayOrphans
     , adoptPkg ) where
 
-import Data.Monoid
+import BasicPrelude hiding (liftIO)
+
 import Data.Foldable
+import qualified Data.Text as T
 
 import Aura.Core   (orphans, sudo)
 import Aura.Pacman (pacman)
@@ -34,9 +36,9 @@ import Aura.Monad.Aura
 
 ---
 
-displayOrphans :: [String] -> Aura ()
+displayOrphans :: [T.Text] -> Aura ()
 displayOrphans []   = orphans >>= liftIO . traverse_ putStrLn
 displayOrphans pkgs = adoptPkg pkgs
 
-adoptPkg :: [String] -> Aura ()
+adoptPkg :: [T.Text] -> Aura ()
 adoptPkg pkgs = sudo (pacman $ ["-D", "--asexplicit"] <> pkgs)

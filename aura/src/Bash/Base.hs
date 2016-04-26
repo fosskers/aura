@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-
 
 Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
@@ -25,15 +26,17 @@ import Data.Monoid
 import qualified Data.Map.Lazy as M
 import Data.Either
 import Data.Foldable
+import qualified Data.Text as T
+import BasicPrelude
 
 ---
 
-data Field = Comment  String
-           | Function String [Field]
+data Field = Comment  T.Text
+           | Function T.Text [Field]
            | ForBlock BashFor
            | IfBlock  BashIf
-           | Variable String [BashString]
-           | Command  String [BashString]
+           | Variable T.Text [BashString]
+           | Command  T.Text [BashString]
              deriving (Eq, Show)
 
 data BashIf = If Comparison [Field] (Maybe BashIf)
@@ -54,19 +57,19 @@ data BashFor = Incr  -- for (x;y;z); do ... done  -- Incomplete!
 
 -- | While `String` is the main data type in Bash, there are four
 -- subtypes each with different behaviour.
-data BashString = SingleQ String
-                | DoubleQ [Either BashExpansion String]
-                | NoQuote [Either BashExpansion String]
+data BashString = SingleQ T.Text
+                | DoubleQ [Either BashExpansion T.Text]
+                | NoQuote [Either BashExpansion T.Text]
                 | Backtic Field   -- Contains a Command.
                   deriving (Eq, Show)
 
-data BashExpansion = BashExpansion String [BashString]
+data BashExpansion = BashExpansion T.Text [BashString]
                      deriving (Eq, Show)
 
-type Namespace = M.Map String [BashString]
+type Namespace = M.Map T.Text [BashString]
 type Script    = [Field]  -- A parsed Bash script.
 
-insert :: String -> [BashString] -> Namespace -> Namespace
+insert :: T.Text -> [BashString] -> Namespace -> Namespace
 insert = M.insert
 
 -- | Convert a list of Fields into a Namespace.
@@ -74,21 +77,21 @@ insert = M.insert
 -- but this one will only contain global variable names.
 toNamespace :: [Field] -> Namespace
 toNamespace [] = M.empty
-toNamespace (Variable n bs : fs) = insert n bs $ toNamespace fs
+toNamespace (Variable n bs : fs) = M.insert n bs $ toNamespace fs
 toNamespace (_:fs) = toNamespace fs
 
 -- | Never call this directly. Use `value` in `Aura/Bash`.
-getVar :: Namespace -> String -> Maybe [String]
+getVar :: Namespace -> T.Text -> Maybe [T.Text]
 getVar ns s = case M.lookup s ns of
                 Nothing -> Nothing
                 Just bs -> Just $ foldMap fromBashString bs
 
-fromBashString :: BashString -> [String]
+fromBashString :: BashString -> [T.Text]
 fromBashString (SingleQ s) = [s]
 fromBashString (DoubleQ l) = [fold $ rights l]
 fromBashString (NoQuote l) = rights l
-fromBashString (Backtic c) = ["`" <> unwords (fromCommand c) <> "`"]
+fromBashString (Backtic c) = ["`" <> T.unwords (fromCommand c) <> "`"]
 
-fromCommand :: Field -> [String]
+fromCommand :: Field -> [T.Text]
 fromCommand (Command c as) =  c : foldMap fromBashString as
 fromCommand _ = error "Argument given was not a Command."

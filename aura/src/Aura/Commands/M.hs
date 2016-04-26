@@ -55,25 +55,25 @@ module Aura.Commands.M
     , displayPkgbuild
     , displayPkgDeps ) where
 
-import System.Directory (removeDirectoryRecursive, createDirectory)
-import Text.Regex.PCRE  ((=~))
-import Control.Monad
-import Data.Maybe       (catMaybes)
-import Data.Monoid      ((<>))
-import Data.Foldable    (traverse_)
+import           BasicPrelude hiding (liftIO)
 
+import           Data.Foldable (traverse_)
+import qualified Data.Text as T
+import qualified Data.Text.IO as IO
+import qualified Data.Text.ICU as Re
+
+import           Aura.Colour.Text
+import           Aura.Core
 import           Aura.Install (InstallOptions(..))
 import qualified Aura.Install as I
+import           Aura.Languages
+import           Aura.Monad.Aura
+import           Aura.Packages.ABS
+import           Aura.Settings.Base
+import           Aura.Utils
 
-import Aura.Settings.Base
-import Aura.Packages.ABS
-import Aura.Colour.Text
-import Aura.Monad.Aura
-import Aura.Languages
-import Aura.Utils
-import Aura.Core
-
-import Utilities (whenM)
+import           Shelly hiding (whenM,liftIO)
+import           Utilities (whenM)
 
 ---
 
@@ -86,68 +86,74 @@ installOptions = do
         , repository    = depsRepo
         }
 
-install :: [String] -> [String] -> Aura ()
+install :: [T.Text] -> [T.Text] -> Aura ()
 install pacOpts ps = do
     opts <- installOptions
     I.install opts pacOpts ps
 
 -- | Sync given packages to the local ABS Tree.
-addToTree :: [String] -> Aura ()
+addToTree :: [T.Text] -> Aura ()
 addToTree = traverse_ $ \p ->
     syncRepo p >>= maybe (pure ()) (\repo -> singleSync repo p)
 
 -- | Get info about the specified package (-i)
-absInfo :: [String] -> Aura ()
+absInfo :: [T.Text] -> Aura ()
 absInfo ps = do
     tree <- absTree
     infos <- catMaybes <$> traverse (absInfoLookup tree) ps
     traverse_ displayAbsPkgInfo infos
 
 -- | Search ABS for any packages matching the given patterns (-s)
-absSearch :: [String] -> Aura ()
+absSearch :: [T.Text] -> Aura ()
 absSearch pat = do
     tree <- absTree
     infos <- absSearchLookup tree pat'
-    traverse_ (liftIO . putStrLn . renderSearch pat') infos
+    traverse_ (liftIO . IO.putStrLn . renderSearch pat') infos
   where
-    pat' = unwords pat
+    pat' = T.unwords pat
 
 cleanABSTree :: Aura ()
 cleanABSTree = whenM (optionalPrompt cleanABSTree_1) $ do
   warn cleanABSTree_2
-  liftIO $ removeDirectoryRecursive absBasePath
-  liftIO $ createDirectory absBasePath
+  liftShelly $ rm_rf absBasePath
+  liftShelly $ mkdir absBasePath
 
-displayPkgbuild :: [String] -> Aura ()
-displayPkgbuild ps = flip I.displayPkgbuild ps $ \ps' -> do
-    tree <- absTree
-    forM ps' $ \p -> case pkgRepo tree p of
-                       Nothing   -> pure Nothing
-                       Just repo -> Just <$> absPkgbuild repo p
+displayPkgbuild :: [T.Text] -> Aura ()
+displayPkgbuild ps = I.displayPkgbuild displayPkgbuild' ps
+  where displayPkgbuild' :: [T.Text] -> Aura [Maybe Pkgbuild]
+        displayPkgbuild' ps' = do
+          tree <- absTree
+          forM ps' $ \p -> case pkgRepo tree p of
+            Nothing   -> pure Nothing
+            Just repo -> Just <$> absPkgbuild repo p
 
-displayPkgDeps :: [String] -> Aura ()
+displayPkgDeps :: [T.Text] -> Aura ()
 displayPkgDeps ps = do
     opts <- installOptions
     I.displayPkgDeps opts ps
 
 displayAbsPkgInfo :: PkgInfo -> Aura ()
-displayAbsPkgInfo pkg = ask >>= liftIO . putStrLn . renderPkgInfo pkg
+displayAbsPkgInfo pkg = ask >>= liftIO . IO.putStrLn . renderPkgInfo pkg
 
-renderPkgInfo :: PkgInfo -> Settings -> String
+renderPkgInfo :: PkgInfo -> Settings -> T.Text
 renderPkgInfo pkg ss = entrify ss fields (($ pkg) <$> entries)
   where fields  = fmap bForeground . absInfoFields . langOf $ ss
         entries = [ magenta . repoOf
                   , bForeground . nameOf
                   , trueVersionOf
-                  , unwords . dependsOf
-                  , unwords . makeDependsOf
+                  , T.unwords . dependsOf
+                  , T.unwords . makeDependsOf
                   , descriptionOf
                   ]
 
-renderSearch :: String -> PkgInfo -> String
+renderSearch :: T.Text -> PkgInfo -> T.Text
 renderSearch pat pkg = repo <> "/" <> n <> " " <> v <> " \n    " <> d
-    where c cl cs = case cs =~ ("(?i)" <> pat) of
-                      (b, m, a) -> cl b <> bCyan m <> cl a
+    where c cl cs = fromMaybe cs ((\match -> cl (Re.span match)
+                                            <> bCyan (fromMaybe ""
+                                                      (Re.group 0 match))
+                                            <> cl (fromMaybe ""
+                                                   (Re.suffix 0 match)))
+                    <$> Re.find (Re.regex [] ("(?i)"<> pat)) cs)
           repo = magenta $ repoOf pkg
           n    = c bForeground $ nameOf pkg
           v    = trueVersionOf pkg

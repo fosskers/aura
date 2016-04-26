@@ -1,10 +1,11 @@
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 -- Interface to `makepkg`.
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013, 2014, 2015 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -28,54 +29,67 @@ module Aura.MakePkg
     , makepkgSource
     , makepkgConfFile ) where
 
-import Data.Monoid
-import Text.Regex.PCRE ((=~))
+import           BasicPrelude hiding (FilePath)
 
-import Aura.Monad.Aura
-import Aura.Settings.Base (suppressMakepkg, makepkgFlagsOf)
-import Aura.Shell (shellCmd, quietShellCmd, quietShellCmd', checkExitCode')
+import           Shelly
+import           Filesystem.Path.CurrentOS
+import           Data.Text.IO
+import           Shelly as Sh
 
-import Shell (pwd, ls)
+import           Aura.Shell
+
+import           Utilities
 
 ---
 
-type User = String
+type User = Text
 
-makepkgConfFile :: FilePath
+findPkgFile :: [Text] -> FilePath -> Sh [FilePath]
+findPkgFile exts dir = findDirFilterWhen (pure . isDir) (pure . matches) dir
+  where matches fp = exts `isInfixOf` extensions fp
+        isDir = (dir ==)
+
+makepkgConfFile :: Text
 makepkgConfFile = "/etc/makepkg.conf"
 
-makepkgCmd :: FilePath
+makepkgCmd :: Text
 makepkgCmd = "/usr/bin/makepkg"
 
-makepkg :: Aura (String -> Aura [FilePath])
-makepkg = (\quiet -> if quiet then makepkgQuiet else makepkgVerbose) <$>
-              asks suppressMakepkg
+makepkg :: Bool -> User -> [Text] -> Sh (Either Text [FilePath])
+makepkg True  = makepkgQuiet
+makepkg False = makepkgVerbose
 
 -- TODO: Clean this up. Incompatible with `-x` and `--ignorearch`?
+-- `run_` failing here isn't caught yet. Do properly with EEs.
 -- | Make a source package.
-makepkgSource :: User -> Aura [FilePath]
-makepkgSource user = do
-  quietShellCmd cmd opts
-  filter (=~ "[.]src[.]tar") <$> liftIO (pwd >>= ls)
-    where (cmd, opts) = runStyle user ["--allsource"]
+makepkgSource :: User -> Sh [FilePath]
+makepkgSource user = run_ com opts >> pwd >>= findPkgFile ["src","tar"]
+    where (com, opts) = runStyle user ["--allsource"]
 
--- Builds a package with `makepkg`.
+-- | Builds a package with `makepkg`.
 -- Some packages create multiple .pkg.tar files. These are all returned.
-makepkgGen :: (String -> [String] -> Aura a) -> User -> Aura [FilePath]
-makepkgGen make user = asks makepkgFlagsOf >>= \clfs -> do
-    let (cmd, opts) = runStyle user clfs
-    make cmd (opts <> clfs) *> (filter (=~ "[.]pkg[.]tar") <$> liftIO (pwd >>= ls))
+makepkgGen :: (FilePath -> [Text] -> Sh (Either Text ())) -> User -> [Text] -> Sh (Either Text [FilePath])
+makepkgGen make user clfs = do
+    let (com, opts) = runStyle user clfs
+    r <- make com (opts <> clfs)
+    case r of
+      Left err -> pure $ Left err
+      Right _  -> Right <$> (pwd >>= findPkgFile ["pkg", "tar"])
 
 -- As of makepkg v4.2, building with `--asroot` is no longer allowed.
-runStyle :: User -> [String] -> (String, [String])
+runStyle :: User -> [Text] -> (FilePath, [Text])
 runStyle user opts = ("sudo", ["-u", user, makepkgCmd] <> opts)
 
-makepkgQuiet :: User -> Aura [FilePath]
+makepkgQuiet :: User -> [Text] -> Sh (Either Text [FilePath])
 makepkgQuiet = makepkgGen quiet
-    where quiet cmd opts = do
-            (status, out, err) <- quietShellCmd' cmd opts
-            let output = err <> "\n" <> out
-            checkExitCode' output status
+  where quiet com opts = do
+          (output, stderr) <- runHandles com opts [OutHandle CreatePipe, ErrorHandle CreatePipe] fromHandels
+          ifte_ (Right ()) (Left $ stderr <> "\n" <> output) <$> wasSuccessful
+        fromHandels _ out err = Sh.liftIO $ (,) <$> hGetContents out <*> hGetContents err
 
-makepkgVerbose :: User -> Aura [FilePath]
-makepkgVerbose = makepkgGen shellCmd
+makepkgVerbose :: User -> [Text] -> Sh (Either Text [FilePath])
+makepkgVerbose = makepkgGen verbose
+  where verbose com opts = do
+          runHandles com opts [OutHandle Inherit, ErrorHandle Inherit]
+            $ const $ const $ const $ pure ()
+          ifte_ (Right ()) (Left "") <$> wasSuccessful -- TODO: stderr?

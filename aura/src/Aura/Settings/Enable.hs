@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-
 
 Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
@@ -23,11 +24,12 @@ module Aura.Settings.Enable
     ( getSettings
     , debugOutput ) where
 
-import System.Environment (getEnvironment)
-import System.Directory   (doesDirectoryExist)
-import Data.Maybe         (fromMaybe)
-import Data.Monoid
+import BasicPrelude hiding (FilePath)
+
+import Data.Maybe         (fromJust)
 import Data.Foldable
+import qualified Data.Text as T
+import qualified Data.Text.IO as IO
 
 import Aura.Languages (Language, langFromEnv)
 import Aura.MakePkg   (makepkgConfFile)
@@ -35,33 +37,33 @@ import Aura.Settings.Base
 import Aura.Pacman
 import Aura.Flags
 
-import Utilities (ifte_, readFileUTF8)
-import Shell
+import Utilities (ifte_, exists)
+import Aura.Shell
+import Shelly
 
 ---
 
-getSettings :: Maybe Language -> ([Flag], [String], [String]) -> IO Settings
-getSettings lang (auraFlags, input, pacOpts) = do
+getSettings :: Maybe Language -> ([Flag], [T.Text], [T.Text]) -> Sh Settings
+getSettings lang' (auraFlags, input, pacOpts) = do
   confFile    <- getPacmanConf
-  environment <- getEnvironment
-  pmanCommand <- getPacmanCmd environment $ noPowerPillStatus auraFlags
-  makepkgConf <- readFileUTF8 makepkgConfFile
+  pmanCommand <- getPacmanCmd $ noPowerPillStatus auraFlags
+  makepkgConf <- getConf $ fromText makepkgConfFile
   buildPath'  <- checkBuildPath (buildPath auraFlags) (getCachePath confFile)
-  let language   = checkLang lang environment
-      buildUser' = fromMaybe (getTrueUser environment) (buildUser auraFlags)
+  editor'     <- editor
+  buildUser'  <- getUser auraFlags
+  language    <- checkLang lang'
   pure Settings { inputOf         = input
                 , pacOptsOf       = pacOpts
                 , otherOptsOf     = show <$> auraFlags
-                , environmentOf   = environment
                 , buildUserOf     = buildUser'
                 , langOf          = language
-                , pacmanCmdOf     = pmanCommand
-                , editorOf        = getEditor environment
+                , pacmanCmdOf     = fromText pmanCommand
+                , editorOf        = editor'
                 , carchOf         = singleEntry makepkgConf "CARCH"
                                     "COULDN'T READ $CARCH"
                 , ignoredPkgsOf   = getIgnoredPkgs confFile <>
                                     ignoredAuraPkgs auraFlags
-                , makepkgFlagsOf  = makepkgFlags auraFlags
+                , makepkgFlagsOf  = T.pack <$> makepkgFlags auraFlags
                 , buildPathOf     = buildPath'
                 , cachePathOf     = getCachePath confFile
                 , logFilePathOf   = getLogFilePath confFile
@@ -84,37 +86,49 @@ getSettings lang (auraFlags, input, pacOpts) = do
 debugOutput :: Settings -> IO ()
 debugOutput ss = do
   let yn a = if a then "Yes!" else "No."
-      env  = environmentOf ss
-  traverse_ putStrLn [ "User              => " <> getUser' env
-                     , "True User         => " <> getTrueUser env
-                     , "Build User        => " <> buildUserOf ss
-                     , "Using Sudo?       => " <> yn (varExists "SUDO_USER" env)
-                     , "Pacman Flags      => " <> unwords (pacOptsOf ss)
-                     , "Other Flags       => " <> unwords (otherOptsOf ss)
-                     , "Other Input       => " <> unwords (inputOf ss)
-                     , "Language          => " <> show (langOf ss)
-                     , "Pacman Command    => " <> pacmanCmdOf ss
-                     , "Editor            => " <> editorOf ss
-                     , "$CARCH            => " <> carchOf ss
-                     , "Ignored Pkgs      => " <> unwords (ignoredPkgsOf ss)
-                     , "Build Path        => " <> buildPathOf ss
-                     , "Pkg Cache Path    => " <> cachePathOf ss
-                     , "Log File Path     => " <> logFilePathOf ss
-                     , "Quiet?            => " <> yn (beQuiet ss)
-                     , "Silent Building?  => " <> yn (suppressMakepkg ss)
-                     , "Must Confirm?     => " <> yn (mustConfirm ss)
-                     , "Needed only?      => " <> yn (neededOnly ss)
-                     , "PKGBUILD editing? => " <> yn (mayHotEdit ss)
-                     , "Diff PKGBUILDs?   => " <> yn (diffPkgbuilds ss)
-                     , "Rebuild Devel?    => " <> yn (rebuildDevel ss)
-                     , "Use Customizepkg? => " <> yn (useCustomizepkg ss)
-                     , "Forego PowerPill? => " <> yn (noPowerPill ss)
-                     , "Keep source?      => " <> yn (keepSource ss) ]
+  user <- shelly getUser'
+  trueuser <- fromJust <$> shelly getTrueUser
+  sudop <- shelly $ varExists "SUDO_USER"
+  traverse_ IO.putStrLn [ "User              => " <> user
+                        , "True User         => " <> trueuser
+                        , "Build User        => " <> buildUserOf ss
+                        , "Using Sudo?       => " <> yn sudop
+                        , "Pacman Flags      => " <> unwords (pacOptsOf ss)
+                        , "Other Flags       => " <> unwords (otherOptsOf ss)
+                        , "Other Input       => " <> unwords (inputOf ss)
+                        , "Language          => " <> show (langOf ss)
+                        , "Pacman Command    => " <> toTextIgnore (pacmanCmdOf ss)
+                        , "Editor            => " <> editorOf ss
+                        , "$CARCH            => " <> carchOf ss
+                        , "Ignored Pkgs      => " <> unwords (ignoredPkgsOf ss)
+                        , "Build Path        => " <> toTextIgnore (buildPathOf ss)
+                        , "Pkg Cache Path    => " <> toTextIgnore (cachePathOf ss)
+                        , "Log File Path     => " <> toTextIgnore (logFilePathOf ss)
+                        , "Quiet?            => " <> yn (beQuiet ss)
+                        , "Silent Building?  => " <> yn (suppressMakepkg ss)
+                        , "Must Confirm?     => " <> yn (mustConfirm ss)
+                        , "Needed only?      => " <> yn (neededOnly ss)
+                        , "PKGBUILD editing? => " <> yn (mayHotEdit ss)
+                        , "Diff PKGBUILDs?   => " <> yn (diffPkgbuilds ss)
+                        , "Rebuild Devel?    => " <> yn (rebuildDevel ss)
+                        , "Use Customizepkg? => " <> yn (useCustomizepkg ss)
+                        , "Forego PowerPill? => " <> yn (noPowerPill ss)
+                        , "Keep source?      => " <> yn (keepSource ss) ]
 
-checkLang :: Maybe Language -> Environment -> Language
-checkLang Nothing env   = langFromEnv $ getLangVar env
-checkLang (Just lang) _ = lang
+checkLang :: Maybe Language -> Sh Language
+checkLang Nothing = langFromEnv <$> lang
+checkLang (Just lang') = pure lang'
+
+getUser :: [Flag] -> Sh T.Text
+getUser flags = do
+  case buildUser flags of
+    Just a -> pure a
+    Nothing -> do
+      user <- getTrueUser
+      case user of
+        Just a -> pure a
+        Nothing -> pure "" -- should not happen, old code used fromJust
 
 -- | Defaults to the cache path if no (legal) build path was given.
-checkBuildPath :: FilePath -> FilePath -> IO FilePath
-checkBuildPath bp bp' = ifte_ bp bp' <$> doesDirectoryExist bp
+checkBuildPath :: FilePath -> FilePath -> Sh FilePath
+checkBuildPath bp bp' = ifte_ bp bp' <$> exists bp

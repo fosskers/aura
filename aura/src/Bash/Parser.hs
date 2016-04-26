@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 -- Improved Bash parser for Aura, built with Parsec.
 
@@ -25,34 +26,36 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Bash.Parser ( parseBash ) where
 
-import Text.ParserCombinators.Parsec
+import Text.Megaparsec
+import Text.Megaparsec.Text
 
-import Data.Maybe          (catMaybes)
 import Data.Monoid
 import Data.Foldable
+import qualified Data.Text as T
+import BasicPrelude hiding (try)
 
 import Bash.Base
 
 ---
 
-parseBash :: String -> String -> Either ParseError [Field]
+parseBash :: T.Text -> T.Text -> Either ParseError [Field]
 parseBash p input = parse bashFile filename input
-    where filename = "(" <> p <> ")"
+    where filename = T.unpack ("(" <>  p <> ")")
 
 -- | A Bash file could have many fields, or none.
 bashFile :: Parser [Field]
-bashFile = spaces *> many field <* spaces
+bashFile = space *> many field <* space
 
 -- | There are many kinds of fields. Commands need to be parsed last.
 field :: Parser Field
 field = choice [ try comment, try variable, try function
                , try ifBlock, try command ]
-        <* spaces <?> "valid field"
+        <* space <?> "valid field"
 
 -- | A comment looks like: # blah blah blah
 comment :: Parser Field
-comment = Comment <$> comment' <?> "valid comment"
-    where comment' = spaces *> char '#' *> many (noneOf "\n")
+comment = Comment . T.pack <$> comment' <?> "valid comment"
+    where comment' = space *> char '#' *> many (noneOf "\n")
 
 -- | A command looks like: name -flags target
 -- Arguments are optional.
@@ -62,52 +65,52 @@ comment = Comment <$> comment' <?> "valid comment"
 -- even when its actually parsing a function or a variable.
 -- Note: `args` is a bit of a hack.
 command :: Parser Field
-command = spaces *> (Command <$> many1 commandChar <*> option [] (try args))
-    where commandChar = alphaNum <|> oneOf "./"
-          args = char ' ' *> (unwords <$> line >>= \ls ->
-                   case parse (many1 single) "(command)" ls of
+command = space *> (Command . T.pack <$> some commandChar <*> option [] (try args))
+    where commandChar = alphaNumChar <|> oneOf "./"
+          args = char ' ' *> (unwords . map T.pack <$> line >>= \ls ->
+                   case parse (some single) "(command)" $ ls of
                      Left _   -> fail "Failed parsing strings in a command"
                      Right bs -> pure $ fold bs)
           line = (:) <$> many (noneOf "\n\\") <*> next
-          next = ([] <$ char '\n') <|> (char '\\' *> spaces *> line)
+          next = ([] <$ char '\n') <|> (char '\\' *> space *> line)
 
 -- | A function looks like: name() { ... \n} and is filled with fields.
 function :: Parser Field
-function = Function <$> name <*> body <?> "valid function definition"
-    where name = spaces *> many1 (noneOf " =(}\n")
-          body = string "() {" *> spaces *> manyTill field (char '}')
+function = Function . T.pack <$> name <*> body <?> "valid function definition"
+    where name = space *> some (noneOf " =(}\n")
+          body = string "() {" *> space *> manyTill field (char '}')
 
 -- | A variable looks like: `name=string`, `name=(string string string)`
 -- or even `name=`
 variable :: Parser Field
-variable = Variable <$> name <*> (blank <|> array <|> single) <?> "valid var definition"
-    where name  = spaces *> many1 (alphaNum <|> char '_') <* char '='
+variable = Variable . T.pack <$> name <*> (blank <|> array <|> single) <?> "valid var definition"
+    where name  = space *> some (alphaNumChar <|> char '_') <* char '='
           blank = [] <$ space
 
 array :: Parser [BashString]
 array = fold . catMaybes <$> array' <?> "valid array"
-    where array'  = char '(' *> spaces *> manyTill single' (char ')')
-          single' = choice [ Nothing <$ comment <* spaces
-                           , Nothing <$ many1 (space <|> char '\\')
-                           , Just <$> single <* many (space <|> char '\\') ]
+    where array'  = char '(' *> space *> manyTill single' (char ')')
+          single' = choice [ Nothing <$ comment <* space
+                           , Nothing <$ some (space <|> void (char '\\'))
+                           , Just <$> single <* many (space <|> void (char '\\'))]
 
 -- | Strings can be surrounded by single quotes, double quotes, backticks,
 -- or nothing.
 single :: Parser [BashString]
 single = (singleQuoted <|> doubleQuoted <|> backticked <|> try unQuoted)
-         <* spaces <?> "valid Bash string"
+         <* space <?> "valid Bash string"
 
 -- | Literal string. ${...} comes out as-is. No string extrapolation.
 singleQuoted :: Parser [BashString]
 singleQuoted = between (char '\'') (char '\'')
-               ((\s -> [SingleQ s]) <$> many1 (noneOf ['\n', '\'']))
+               ((\s -> [SingleQ $ T.pack s]) <$> some (noneOf ['\n', '\'']))
                <?> "single quoted string"
 
 -- | Replaces ${...}. No string extrapolation.
 doubleQuoted :: Parser [BashString]
 doubleQuoted = between (char '"') (char '"')
-               ((\s -> [DoubleQ s]) <$> many1 (choice [ try (Left <$> expansion)
-                                                      , Right <$> many1 (noneOf ['\n','"','$'])
+               ((\s -> [DoubleQ s]) <$> some (choice [ try (Left <$> expansion)
+                                                      , Right . T.pack <$> some (noneOf ['\n','"','$'])
                                                       ]))
                <?> "double quoted string"
 
@@ -118,18 +121,18 @@ backticked = between (char '`') (char '`') ((\c -> [Backtic c]) <$> command)
 
 -- | Replaces $... , ${...} or ${...[...]} Strings are not extrapolated
 expansion :: Parser BashExpansion
-expansion = char '$' *> choice [ BashExpansion <$> base <*> indexer <* char '}'
-                               , flip BashExpansion [SingleQ ""] <$> var
+expansion = char '$' *> choice [ BashExpansion . T.pack <$> base <*> indexer <* char '}'
+                               , flip BashExpansion [SingleQ ""] . T.pack <$> var
                                ]
             <?> "expansion string"
-  where var = many1 (alphaNum <|> char '_')
+  where var = some (alphaNumChar <|> char '_')
         base = char '{' *> var
         indexer =  between (char '[') (char ']') (try single) <|> return ([SingleQ ""])
 
 -- | Replaces ${...}. Strings can be extrapolated!
 unQuoted :: Parser [BashString]
-unQuoted = fmap NoQuote <$> many1 ( choice [ try $ (: []) . Left <$> expansion
-                                           , fmap Right <$> extrapolated []
+unQuoted = fmap NoQuote <$> some ( choice [ try $ (: []) . Left <$> expansion
+                                           , fmap (Right . T.pack) <$> extrapolated []
                                            ])
 
 -- | Bash strings are extrapolated when they contain a brace pair
@@ -142,7 +145,7 @@ extrapolated stops = do
   xs <- plain <|>  bracePair
   ys <- option [""] $ try (extrapolated stops)
   return [ x <> y | x <- xs, y <- ys ]
-      where plain = (: []) <$> many1 (noneOf $ " $\n{}[]()" ++ stops)
+      where plain = (: []) <$> some (noneOf $ " $\n{}[]()" ++ stops)
 
 bracePair :: Parser [String]
 bracePair = between (char '{') (char '}') innards <?> "valid {...} string"
@@ -162,7 +165,7 @@ realIfBlock = realIfBlock' "if " fiElifElse
 
 realIfBlock' :: String -> Parser sep -> Parser BashIf
 realIfBlock' word sep =
-    spaces *> string word *> (If <$> ifCond <*> ifBody sep <*> rest)
+    space *> string word *> (If <$> ifCond <*> ifBody sep <*> rest)
     where rest = fi <|> try elif <|> elys
 
 -- Inefficient?
@@ -184,21 +187,21 @@ ifBody sep = manyTill field sep
 --    [ some comparison ] && normal bash code
 andStatement :: Parser BashIf
 andStatement = do
-  spaces
+  space
   cond <- comparison <* string " && "
   body <- field
   pure $ If cond [body] Nothing
 
 comparison :: Parser Comparison
 comparison = do
-  spaces *> leftBs *> spaces
+  space *> leftBs *> space
   left <- head <$> single
   compOp <- comparisonOp
   right <- head <$> single
   rightBs
   pure (compOp left right) <?> "valid comparison"
-      where leftBs  = skipMany1 $ char '['
-            rightBs = skipMany1 $ char ']'
+      where leftBs  = skipSome $ char '['
+            rightBs = skipSome $ char ']'
 
 comparisonOp :: Parser (BashString -> BashString -> Comparison)
 comparisonOp = choice [eq, ne, gt, ge, lt, le]

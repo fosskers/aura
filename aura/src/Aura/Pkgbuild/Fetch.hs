@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE GADTs #-}
 
 {-
 
@@ -28,15 +29,16 @@ module Aura.Pkgbuild.Fetch
        , pkgbuild'
        , pkgbuildUrl ) where
 
-import           Control.Exception (SomeException, catch)
-import           Control.Lens ((^?))
-import           Control.Monad ((>=>))
-import           Control.Monad.Trans (MonadIO, liftIO)
+import           BasicPrelude hiding (catch, liftIO, decodeUtf8, (</>))
+
+import           Control.Exception (catch)
+import           Lens.Micro ((^?))
 import           Data.Text hiding (take)
 import qualified Data.Text.Lazy as TL
 import           Data.Text.Lazy.Encoding
 import           Network.Wreq
 import           System.FilePath ((</>))
+import           Aura.Monad.Aura hiding (catch)
 
 ---
 
@@ -50,12 +52,12 @@ pkgbuildUrl :: String -> String
 pkgbuildUrl p = baseUrl </> "cgit/aur.git/plain/PKGBUILD?h=" ++ p
 
 -- | The PKGBUILD of a given package, retrieved from the AUR servers.
-pkgbuild :: MonadIO m => String -> m (Maybe Text)
+pkgbuild :: String -> Aura (Maybe Text)
 pkgbuild p = e $ (rb >=> txt) <$> get (pkgbuildUrl p)
     where rb  = (^? responseBody)
           txt = Just . TL.toStrict . decodeUtf8
           e f = liftIO $ f `catch` (\(_ :: E) -> return Nothing)
 
 -- | Callable with Text as well, if that's easier.
-pkgbuild' :: MonadIO m => Text -> m (Maybe Text)
+pkgbuild' :: Text -> Aura (Maybe Text)
 pkgbuild' (unpack -> p) = pkgbuild p

@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, OverloadedStrings #-}
 
 -- Handles all ABS related functions.
 
@@ -42,14 +42,14 @@ module Aura.Packages.ABS
     , absSearchLookup
     ) where
 
-import           Control.Monad
-import           Data.List          (find)
+import           BasicPrelude  hiding    (FilePath, liftIO, (</>))
+
 import           Data.Foldable      (fold)
-import           Data.Set           (Set)
 import qualified Data.Set           as Set
-import           System.Directory   (doesFileExist, doesDirectoryExist)
-import           System.FilePath    ((</>), takeBaseName)
-import           Text.Regex.PCRE    ((=~))
+import qualified Data.Text          as T
+import           Shelly   hiding    ((</>),find,liftIO)
+import           Filesystem.Path.CurrentOS
+import qualified Data.Text.ICU      as Re
 
 import           Aura.Bash
 import           Aura.Core
@@ -62,15 +62,15 @@ import           Aura.Settings.Base
 import qualified Aura.Shell         as A (quietShellCmd, shellCmd)
 import           Aura.Utils         (optionalPrompt)
 
-import           Utilities          (readFileUTF8, whenM)
-import           Shell              (ls', ls'')
-import qualified Shell              as Sh (quietShellCmd)
+import           Utilities          (readFileUTF8, exists)
+import           Aura.Shell         (lsT', ls'')
 
 ---
 
-absLookup :: String -> Aura (Maybe Buildable)
+absLookup :: T.Text -> Aura (Maybe Buildable)
 absLookup name = syncRepo name >>= maybe (pure Nothing) makeSynced
-  where makeSynced repo = do
+  where makeSynced :: T.Text -> Aura (Maybe Buildable)
+        makeSynced repo = do
             whenM (not <$> synced repo name) $ singleSync repo name
             found <- synced repo name
             if found
@@ -84,7 +84,7 @@ absDepsRepo :: Aura Repository
 absDepsRepo = asks (getRepo . buildABSDeps)
   where getRepo manual = if manual then absRepo else pacmanRepo
 
-makeBuildable :: String -> String -> Aura Buildable
+makeBuildable :: T.Text -> T.Text -> Aura Buildable
 makeBuildable repo name = do
   pb <- absPkgbuild repo name
   pure Buildable { baseNameOf   = name
@@ -92,59 +92,59 @@ makeBuildable repo name = do
                  , isExplicit   = False
                  , buildScripts = \fp -> Just <$> copyTo repo name fp }
 
-copyTo :: String -> String -> FilePath -> IO FilePath
+copyTo :: T.Text -> T.Text -> FilePath -> Aura FilePath
 copyTo repo name fp = do
-    void $ Sh.quietShellCmd "cp" ["-R", loc, fp]
-    pure $ fp </> name
-        where loc = absBasePath </> repo </> name
+    _ <- A.quietShellCmd "cp" ["-R",toTextIgnore loc, toTextIgnore fp]
+    pure $ fp </> fromText name
+        where loc = absBasePath </> fromText repo </> fromText name
 
 -------
 -- WORK
 -------
-newtype ABSTree = ABSTree [(String, Set String)]
+newtype ABSTree = ABSTree [(T.Text, Set T.Text)]
 
 absBasePath :: FilePath
 absBasePath = "/var/abs"
 
 -- | All repos with all their packages in the local tree.
 absTree :: Aura ABSTree
-absTree = liftIO $ do
-    repos <- ls'' absBasePath >>= filterM doesDirectoryExist
+absTree = liftShelly $ do
+    repos <- ls'' absBasePath >>= filterM test_d
     ABSTree <$> traverse populate repos
   where
     populate repo = do
-        ps <- ls' repo
-        pure (takeBaseName repo, Set.fromList ps)
+        ps <- lsT' repo
+        pure (toTextIgnore $ basename repo, Set.fromList ps)
 
-pkgRepo :: ABSTree -> String -> Maybe String
+pkgRepo :: ABSTree -> T.Text -> Maybe T.Text
 pkgRepo (ABSTree repos) p = fst <$> find containsPkg repos
   where
     containsPkg (_, ps) = Set.member p ps
 
 -- | All packages in the local ABS tree in the form: "repo/package"
-flatABSTree :: ABSTree -> [String]
+flatABSTree :: ABSTree -> [T.Text]
 flatABSTree (ABSTree repos) = foldMap flat repos
   where
-    flat (r, ps) = (r </>) <$> Set.toList ps
+    flat (r, ps) = (\b -> toTextIgnore (fromText r </> fromText b)) <$> Set.toList ps
 
-absPkgbuildPath :: String -> String -> FilePath
-absPkgbuildPath repo pkg = absBasePath </> repo </> pkg </> "PKGBUILD"
+absPkgbuildPath :: T.Text -> T.Text -> FilePath
+absPkgbuildPath repo pkg = absBasePath </> fromText repo </> fromText pkg </> "PKGBUILD"
 
-absPkgbuild :: String -> String -> Aura Pkgbuild
+absPkgbuild :: T.Text -> T.Text -> Aura Pkgbuild
 absPkgbuild repo pkg = liftIO $ readFileUTF8 (absPkgbuildPath repo pkg)
 
-syncRepo :: String -> Aura (Maybe String)
+syncRepo :: T.Text -> Aura (Maybe T.Text)
 syncRepo p = do
   i <- pacmanOutput ["-Si", p]
   case i of
     "" -> pure Nothing
     _  -> do
       let pat = "Repository[ ]+: "
-          (_, _, repo) = head (lines i) =~ pat :: (String, String, String)
-      pure $ Just repo
+          match = Re.find (Re.regex [] pat) $ head (T.lines i)
+      pure (Re.suffix 0 =<< match)
 
-synced :: String -> String -> Aura Bool
-synced repo pkg = liftIO . doesFileExist $ absPkgbuildPath repo pkg
+synced :: T.Text -> T.Text -> Aura Bool
+synced repo pkg = liftShelly . exists $ absPkgbuildPath repo pkg
 
 -- Make this react to `-x` as well? Wouldn't be hard.
 -- It would just be a matter of switching between `shellCmd`
@@ -157,23 +157,23 @@ absSync = whenM (optionalPrompt absSync_1) $ do
     ps <- flatABSTree <$> absTree
     A.shellCmd "abs" ps
 
-singleSync :: String -> String -> Aura ()
+singleSync :: T.Text -> T.Text -> Aura ()
 singleSync repo name = do
     notify $ singleSync_1 p
     void $ A.quietShellCmd "abs" [p]
   where
-    p = repo </> name
+    p = toTextIgnore (fromText repo </> fromText name)
 
 data PkgInfo = PkgInfo
-    { nameOf        :: String
-    , repoOf        :: String
-    , trueVersionOf :: String
-    , dependsOf     :: [String]
-    , makeDependsOf :: [String]
-    , descriptionOf :: String
+    { nameOf        :: T.Text
+    , repoOf        :: T.Text
+    , trueVersionOf :: T.Text
+    , dependsOf     :: [T.Text]
+    , makeDependsOf :: [T.Text]
+    , descriptionOf :: T.Text
     }
 
-pkgInfo :: String -> String -> Aura PkgInfo
+pkgInfo :: T.Text -> T.Text -> Aura PkgInfo
 pkgInfo repo name = do
     pb <- absPkgbuild repo name
     ns <- namespace name pb
@@ -186,13 +186,13 @@ pkgInfo repo name = do
         , descriptionOf = fold $ value ns "pkgdesc"
         }
 
-absInfoLookup :: ABSTree -> String -> Aura (Maybe PkgInfo)
+absInfoLookup :: ABSTree -> T.Text -> Aura (Maybe PkgInfo)
 absInfoLookup tree name =
     traverse (\repo -> pkgInfo repo name) $ pkgRepo tree name
 
 -- | All packages in the local ABS tree which match a given pattern.
-absSearchLookup :: ABSTree -> String -> Aura [PkgInfo]
+absSearchLookup :: ABSTree -> T.Text -> Aura [PkgInfo]
 absSearchLookup (ABSTree tree) pattern = traverse (uncurry pkgInfo) matches
   where
     matches       = foldMap match tree
-    match (r, ps) = fmap (\p -> (r, p)) . filter (=~ pattern) $ Set.toList ps
+    match (r, ps) = fmap (\p -> (r, p)) . filter (isJust . Re.find (Re.regex [] pattern))  $ Set.toList ps

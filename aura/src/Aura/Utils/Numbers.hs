@@ -25,8 +25,12 @@ module Aura.Utils.Numbers
     ( Version(..)
     , version ) where
 
-import Text.ParserCombinators.Parsec
+import BasicPrelude
+
+import Text.Megaparsec
+import Text.Megaparsec.Text
 import Data.Foldable
+import qualified Data.Text as T
 
 import Utilities (eitherToMaybe, asInt)
 
@@ -39,20 +43,20 @@ data Version = Version { unitsOf    :: [Unit]
 
 data Unit = IUnit Int | SUnit String deriving (Eq, Show, Read, Ord)
 
-version :: String -> Maybe Version
+version :: T.Text -> Maybe Version
 version = eitherToMaybe . parse versionNumber ""
 
 versionNumber :: Parser Version
-versionNumber = Version <$> units <*> optionMaybe revision
+versionNumber = Version <$> units <*> optional revision
 
 units :: Parser [Unit]
-units = fold <$> (many1 (iunit <|> sunit) `sepBy` oneOf ".:_+")
+units = fold <$> (some (iunit <|> sunit) `sepBy` oneOf ".:_+")
 
 iunit :: Parser Unit
-iunit = IUnit . asInt <$> many1 digit
+iunit = IUnit . asInt <$> some digitChar
 
 sunit :: Parser Unit
-sunit = SUnit <$> many1 letter
+sunit = SUnit <$> some letterChar
 
 revision :: Parser Int
-revision = char '-' *> pure asInt <*> many1 digit
+revision = char '-' *> pure asInt <*> some digitChar

@@ -23,41 +23,42 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Logo where
 
+import BasicPrelude
+
 import Control.Concurrent (threadDelay)
 import System.IO          (stdout, hFlush)
-import Data.Monoid        ((<>))
 import Data.Foldable      (traverse_, fold)
 
 import Aura.Colour.Text (yellow)
 
-import Utilities        (prePad)
-import Shell            (cursorUpLineCode)
+import Aura.Shell            (cursorUpLineCode)
+import qualified Data.Text as T
 
 ---
 
 data MouthState = Open | Closed deriving (Eq)
 
 -- Taken from: figlet -f small "aura"
-auraLogo :: String
+auraLogo :: T.Text
 auraLogo = " __ _ _  _ _ _ __ _ \n" <>
            "/ _` | || | '_/ _` |\n" <>
            "\\__,_|\\_,_|_| \\__,_|"
 
-openMouth :: [String]
+openMouth :: [T.Text]
 openMouth = yellow <$>
             [ " .--."
             , "/ _.-'"
             , "\\  '-."
             , " '--'" ]
 
-closedMouth :: [String]
+closedMouth :: [T.Text]
 closedMouth = yellow <$>
               [ " .--."
               , "/ _..\\"
               , "\\  ''/"
               , " '--'" ]
 
-pill :: [String]
+pill :: [T.Text]
 pill = [ ""
        , ".-."
        , "'-'"
@@ -78,24 +79,24 @@ drawPills numOfPills = traverse_ putStrLn pills
 raiseCursorBy :: Int -> IO ()
 raiseCursorBy = putStr . raiseCursorBy'
 
-raiseCursorBy' :: Int -> String
+raiseCursorBy' :: Int -> T.Text
 raiseCursorBy' = cursorUpLineCode
 
 clearGrid :: IO ()
 clearGrid = putStr blankLines *> raiseCursorBy 4
     where blankLines = fold . replicate 4 . padString 23 $ "\n"
 
-renderPill :: Int -> [String]
+renderPill :: Int -> [T.Text]
 renderPill pad = padString pad <$> pill
 
-renderPills :: Int -> [String]
+renderPills :: Int -> [T.Text]
 renderPills numOfPills = take numOfPills pillPostitions >>= render
     where pillPostitions = [17, 12, 7]
           render pos = renderPill pos <> [raiseCursorBy' 5]
 
-renderPacmanHead :: Int -> MouthState -> [String]
+renderPacmanHead :: Int -> MouthState -> [T.Text]
 renderPacmanHead pad Open   = padString pad <$> openMouth
 renderPacmanHead pad Closed = padString pad <$> closedMouth
 
-padString :: Int -> String -> String
-padString pad cs = prePad cs ' ' (pad + length cs)
+padString :: Int -> T.Text -> T.Text
+padString pad cs = T.justifyRight (pad + T.length cs) ' ' cs

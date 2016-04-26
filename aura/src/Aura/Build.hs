@@ -25,9 +25,9 @@ module Aura.Build
     ( installPkgFiles
     , buildPackages ) where
 
-import System.FilePath ((</>))
-import Control.Monad (when, void, join)
-import Data.Monoid ((<>))
+import BasicPrelude hiding (FilePath, catch, liftIO, (</>))
+
+import qualified Data.Text as T
 
 import Aura.Colour.Text
 import Aura.Core
@@ -39,7 +39,10 @@ import Aura.Settings.Base
 import Aura.Utils
 
 import Utilities
-import Shell
+import Aura.Shell
+import Shelly hiding (liftIO)
+import qualified Filesystem.Path.CurrentOS as F
+import qualified Data.Text.IO as IO
 
 ---
 
@@ -48,7 +51,7 @@ srcPkgStore :: FilePath
 srcPkgStore = "/var/cache/aura/src"
 
 -- Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
-installPkgFiles :: [String] -> [FilePath] -> Aura ()
+installPkgFiles :: [T.Text] -> [T.Text] -> Aura ()
 installPkgFiles _ []          = pure ()
 installPkgFiles pacOpts files = checkDBLock *> pacman (["-U"] <> pacOpts <> files)
 
@@ -58,16 +61,16 @@ buildPackages :: [Buildable] -> Aura [FilePath]
 buildPackages []   = pure []
 buildPackages pkgs = ask >>= \ss -> do
   let buildPath = buildPathOf ss
-  result <- liftIO $ inDir buildPath (runAura (build [] pkgs) ss)
+  result <- liftShelly $ inDir buildPath (runAura (build [] pkgs) ss)
   wrap result
 
 -- Handles the building of Packages. Fails nicely.
 -- Assumed: All dependencies are already installed.
 build :: [FilePath] -> [Buildable] -> Aura [FilePath]
-build built []       = pure $ filter notNull built
+build built []       = pure $ filter (not . F.null)  built
 build built ps@(p:_) = do
   notify $ buildPackages_1 pn
-  (paths, rest) <- catch (withTempDir pn (build' ps)) (buildFail built ps)
+  (paths, rest) <- catch (withTempDir (F.fromText pn) (build' ps)) (buildFail built ps)
   build (paths <> built) rest
       where pn = baseNameOf p
         
@@ -76,23 +79,25 @@ build' :: [Buildable] -> Aura ([FilePath], [Buildable])
 build' []     = failure "build' : You should never see this."
 build' (p:ps) = ask >>= \ss -> do
   let user = buildUserOf ss
-  curr   <- liftIO pwd
+      quiet = suppressMakepkg ss
+      makeflags = makepkgFlagsOf ss
+  curr   <- liftShelly pwd
   getBuildScripts p user curr
   overwritePkgbuild p
-  pNames <- join (makepkg <*> pure user)
+  pNames <- liftShelly (makepkg quiet user makeflags) >>= wrap
 --  pNames <- makepkg >>= \f -> f user  -- Which is better?
   paths  <- moveToCachePath pNames
-  when (keepSource ss) $ makepkgSource user >>= void . moveToSourcePath
-  liftIO $ cd curr
+  when (keepSource ss) $ liftShelly (makepkgSource user) >>= void . moveToSourcePath
+  liftShelly $ cd curr
   pure (paths, ps)
 
-getBuildScripts :: Buildable -> String -> FilePath -> Aura ()
+getBuildScripts :: Buildable -> T.Text -> FilePath -> Aura ()
 getBuildScripts pkg user currDir = do
-  scriptsDir <- liftIO $ chown user currDir [] *> buildScripts pkg currDir
+  scriptsDir <- liftShelly (chown user (toTextIgnore currDir) []) *> buildScripts pkg currDir
   case scriptsDir of
     Nothing -> scoldAndFail (buildFail_7 $ baseNameOf pkg)
-    Just sd -> liftIO $ do
-                 chown user sd ["-R"]
+    Just sd -> liftShelly $ do
+                 chown user (toTextIgnore sd) ["-R"]
                  cd sd
 {-}
 getBuildScripts pkg user currDir = liftIO $ do
@@ -104,12 +109,12 @@ getBuildScripts pkg user currDir = liftIO $ do
 
 overwritePkgbuild :: Buildable -> Aura ()
 overwritePkgbuild p = asks (\ss -> any ($ ss) checks) >>=
-                      flip when (liftIO . writeFile "PKGBUILD" . pkgbuildOf $ p)
+                      flip when (liftIO . IO.writeFile "PKGBUILD" . pkgbuildOf $ p)
     where checks = [mayHotEdit, useCustomizepkg]
 
 -- Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
-buildFail :: [FilePath] -> [Buildable] -> String -> Aura ([FilePath], [Buildable])
+buildFail :: [FilePath] -> [Buildable] -> T.Text -> Aura ([FilePath], [Buildable])
 buildFail _ [] _ = failure "buildFail : You should never see this message."
 buildFail _ (p:_) errors = do  -- asks langOf >>= \lang -> do
   scold $ buildFail_1 (baseNameOf p)
@@ -126,14 +131,14 @@ buildFail _ (p:_) errors = do  -- asks langOf >>= \lang -> do
 displayBuildErrors :: Error -> Aura ()
 displayBuildErrors errors = ask >>= \ss -> when (suppressMakepkg ss) $ do
   putStrA red (displayBuildErrors_1 $ langOf ss)
-  liftIO (timedMessage 1000000 ["3.. ", "2.. ", "1..\n"] *> putStrLn errors)
+  liftIO (timedMessage 1000000 ["3.. ", "2.. ", "1..\n"] *> IO.putStrLn errors)
 
 -- Moves a file to the pacman package cache and returns its location.
 moveToCachePath :: [FilePath] -> Aura [FilePath]
 moveToCachePath []     = pure []
 moveToCachePath (p:ps) = do
-  newName <- ((</> p) . cachePathOf) <$> ask
-  liftIO $ mv p newName
+  newName <- (</> F.filename p) <$> asks cachePathOf
+  liftShelly $ cp p newName
   (newName :) <$> moveToCachePath ps
 
 -- Moves a file to the aura src package cache and returns its location.
@@ -141,5 +146,5 @@ moveToSourcePath :: [FilePath] -> Aura [FilePath]
 moveToSourcePath []     = pure []
 moveToSourcePath (p:ps) = do
   let newName = srcPkgStore </> p
-  liftIO $ mv p newName
+  liftShelly $ mv p newName
   (newName :) <$> moveToSourcePath ps

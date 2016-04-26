@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings, FlexibleContexts #-}
 {-
 
 Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
@@ -21,9 +22,11 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Conflicts where
 
-import Data.Monoid ((<>))
+import BasicPrelude
+
 import Data.Foldable (traverse_)
-import Text.Regex.PCRE ((=~))
+import qualified Data.Text as T
+import qualified Data.Text.ICU as Re
 
 import Aura.Core
 import Aura.Languages
@@ -59,11 +62,11 @@ realPkgConflicts ss pkg dep
 -- Compares a (r)equested version number with a (c)urrent up-to-date one.
 -- The `MustBe` case uses regexes. A dependency demanding version 7.4
 -- SHOULD match as `okay` against version 7.4, 7.4.0.1, or even 7.4.0.1-2.
-isVersionConflict :: VersionDemand -> String -> Bool
+isVersionConflict :: VersionDemand -> T.Text -> Bool
 isVersionConflict Anything _     = False
 isVersionConflict (LessThan r) c = version c >= version r
 isVersionConflict (MoreThan r) c = version c <= version r
-isVersionConflict (MustBe   r) c = not $ c =~ ("^" <> r)
+isVersionConflict (MustBe   r) c = isNothing $ Re.find (Re.regex [] ("^" <> r)) c
 isVersionConflict (AtLeast  r) c | version c > version r = False
                                  | isVersionConflict (MustBe r) c = True
                                  | otherwise = False

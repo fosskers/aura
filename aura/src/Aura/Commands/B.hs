@@ -24,9 +24,13 @@ module Aura.Commands.B
     , restoreState
     , cleanStates ) where
 
-import System.FilePath ((</>))
+import BasicPrelude hiding ((</>))
+
+import Shelly ((</>),rm)
 import Data.Char       (isDigit)
 import Data.Foldable   (traverse_)
+import qualified Data.Text as T
+import Data.Text.Read
 
 import Aura.Utils (scoldAndFail, optionalPrompt)
 import Aura.Core  (warn)
@@ -34,14 +38,12 @@ import Aura.Monad.Aura
 import Aura.Languages
 import Aura.State
 
-import Shell (rm)
-
 ---
 
 -- Pretty similar to `-Cc`...
-cleanStates :: [String] -> Aura ()
+cleanStates :: [T.Text] -> Aura ()
 cleanStates []        = cleanStates' 0
-cleanStates (input:_) | all isDigit input = cleanStates' $ read input
+cleanStates (input:_) | T.all isDigit input = wrapString (decimal input) >>= (cleanStates' . fst)
                       | otherwise = scoldAndFail cleanStates_1
 
 cleanStates' :: Int -> Aura ()
@@ -51,4 +53,4 @@ cleanStates' n = do
      then warn cleanStates_3
      else do
        states <- getStateFiles
-       liftIO . traverse_ rm . fmap (stateCache </>) . drop n . reverse $ states
+       liftShelly . traverse_ rm . fmap (stateCache </>) . drop n . reverse $ states

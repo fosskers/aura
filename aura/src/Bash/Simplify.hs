@@ -41,9 +41,10 @@ module Bash.Simplify
 
 import Control.Monad.Trans.State.Lazy
 import Data.Foldable
---import Text.Regex.PCRE ((=~))
+import qualified Data.Text as T
 import qualified Data.Map.Lazy as M
 import Data.Monoid
+import BasicPrelude hiding (insert)
 
 import Bash.Base
 
@@ -80,30 +81,30 @@ replaceStr (DoubleQ s)   = DoubleQ . fmap Right <$> expandStr s
 replaceStr (NoQuote s)   = DoubleQ . fmap Right <$> expandStr s
 replaceStr (Backtic f)   = Backtic <$> replace' f
 
-expandStr :: [Either BashExpansion String] -> State Namespace [String]
+expandStr :: [Either BashExpansion T.Text] -> State Namespace [T.Text]
 expandStr [] = pure []
 expandStr (x:xs) = (<>) <$> expandStr' x <*> expandStr xs
 
-expandStr' :: Either BashExpansion String -> State Namespace [String]
+expandStr' :: Either BashExpansion T.Text -> State Namespace [T.Text]
 expandStr' (Right s) = pure [s]
 expandStr' (Left (BashExpansion var sub)) = traverse expandWrapper sub >>= (getIndexedString var . fold)
 
-getIndexedString :: String -> String -> State Namespace [String]
+getIndexedString :: T.Text -> T.Text -> State Namespace [T.Text]
 getIndexedString var idx  = get >>= \ns -> case  M.lookup var ns  of
   Nothing -> pure []
   Just bstrs -> getIndexedString' bstrs idx
 
-getIndexedString' :: [BashString] -> String -> State Namespace [String]
+getIndexedString' :: [BashString] -> T.Text -> State Namespace [T.Text]
 getIndexedString' (b:_) ""  = fromBashString <$> replaceStr b
 getIndexedString' bstrs "*" = foldMap fromBashString <$> traverse replaceStr bstrs
 getIndexedString' bstrs "@" = foldMap fromBashString <$> traverse replaceStr bstrs
 getIndexedString' bstrs num = fromBashString <$> replaceStr (bstrs !! read num)
 
-expandWrapper :: BashString -> State Namespace String
+expandWrapper :: BashString -> State Namespace T.Text
 expandWrapper (SingleQ s) = pure s
 expandWrapper (DoubleQ s) = fold <$> expandStr s
 expandWrapper (NoQuote s) = fold <$> expandStr s
-expandWrapper (Backtic f) = unwords . fromCommand <$> replace' f
+expandWrapper (Backtic f) = T.unwords . fromCommand <$> replace' f
 
 -- | An `if` statement can have an [el]if or [el]se, but it might not.
 replaceIf :: BashIf -> State Namespace [Field]
@@ -112,7 +113,7 @@ replaceIf i@(If comp fs el) = do
 
   left  <- fromBashString <$> replaceStr l
   right <- fromBashString <$> replaceStr r
-  if unwords left `op` unwords right
+  if T.unwords left `op` T.unwords right
      then replace fs
      else case el of
             Nothing  -> pure [IfBlock i]
@@ -120,7 +121,7 @@ replaceIf i@(If comp fs el) = do
 replaceIf (Else fs) = replace fs
 
 -- | Pull out operation, and both sides to a comparison.
-deComp :: Comparison -> (String -> String -> Bool, BashString, BashString)
+deComp :: Comparison -> (T.Text -> T.Text -> Bool, BashString, BashString)
 deComp (CompEq l r) = ((==), l, r)
 deComp (CompNe l r) = ((/=), l, r)
 deComp (CompGt l r) = ((>) , l, r)

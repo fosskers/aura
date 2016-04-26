@@ -14,6 +14,7 @@ addons:
 # change flags or use --stack-yaml to point to a different file.
 env:
 - ARGS="--resolver lts-5.13"
+- ARGS="--resolver nightly"
 
 before_install:
 # Download and unpack the stack executable

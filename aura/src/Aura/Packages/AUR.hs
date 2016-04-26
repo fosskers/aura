@@ -32,14 +32,11 @@ module Aura.Packages.AUR
     , pkgUrl
     ) where
 
-import           Control.Monad ((>=>))
-import           Data.Function (on)
-import           Data.List (sortBy)
-import           Data.Monoid ((<>))
-import           Data.Maybe
-import qualified Data.Text as T
+import           BasicPrelude hiding (FilePath, liftIO, (</>))
+
 import           Linux.Arch.Aur
-import           System.FilePath ((</>))
+import           Filesystem.Path.CurrentOS      (FilePath,(</>),fromText)
+import qualified Data.Text as T
 
 import           Aura.Core
 import           Aura.Monad.Aura
@@ -52,43 +49,44 @@ import           Internet
 
 ---
 
-aurLookup :: String -> Aura (Maybe Buildable)
-aurLookup name = fmap (makeBuildable name . T.unpack) <$> pkgbuild name
+aurLookup :: T.Text -> Aura (Maybe Buildable)
+aurLookup name = fmap (makeBuildable name) <$> pkgbuild' name
 
 aurRepo :: Repository
 aurRepo = Repository $ aurLookup >=> traverse packageBuildable
 
-makeBuildable :: String -> Pkgbuild -> Buildable
+makeBuildable :: T.Text -> Pkgbuild -> Buildable
 makeBuildable name pb = Buildable
     { baseNameOf   = name
     , pkgbuildOf   = pb
     , isExplicit   = False
     , buildScripts = f }
-    where f fp = sourceTarball fp (T.pack name) >>= traverse decompress
+    where f :: FilePath -> Aura (Maybe FilePath)
+          f fp = sourceTarball fp name >>= traverse (liftShelly . decompress)
 
-isAurPackage :: String -> Aura Bool
-isAurPackage name = isJust <$> pkgbuild name
+isAurPackage :: T.Text -> Aura Bool
+isAurPackage name = isJust <$> pkgbuild' name
 
 ----------------
 -- AUR PKGBUILDS
 ----------------
-aurLink :: String
+aurLink :: T.Text
 aurLink = "https://aur.archlinux.org"
 
-pkgUrl :: String -> String
-pkgUrl pkg = aurLink </> "packages" </> pkg
+pkgUrl :: T.Text -> FilePath
+pkgUrl pkg = fromText aurLink </> "packages" </> fromText pkg
 
 ------------------
 -- SOURCE TARBALLS
 ------------------
 sourceTarball :: FilePath            -- ^ Where to save the tarball.
               -> T.Text              -- ^ Package name.
-              -> IO (Maybe FilePath) -- ^ Saved tarball location.
+              -> Aura (Maybe FilePath) -- ^ Saved tarball location.
 sourceTarball path pkg = do
   i <- info [pkg]
   case i of
     [] -> pure Nothing
-    (i':_) -> saveUrlContents path . (aurLink <>) . T.unpack $ urlPathOf i'
+    (i':_) -> liftIO . saveUrlContents path . (aurLink <>) $ urlPathOf i'
 
 ------------
 -- RPC CALLS

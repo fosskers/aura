@@ -22,8 +22,9 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -- | Coloured diff output, similar to @diff -u@ or @git diff@.
 module Aura.Diff ( unidiff ) where
 
-import Data.Traversable    (mapAccumL)
-import Data.Monoid         ((<>))
+import BasicPrelude
+
+import qualified Data.Text as T
 
 import Data.Algorithm.Diff
 
@@ -62,7 +63,7 @@ takeLastRange n (LineRange a b) = LineRange (max a (b - n)) b
 data Block = Block { tag         :: !BlockType
                    , firstRange  :: !LineRange
                    , secondRange :: !LineRange
-                   , content     :: [String] }
+                   , content     :: [T.Text] }
 
 blockLength :: Block -> Int
 blockLength (Block t f s _) =
@@ -80,25 +81,25 @@ takeLastBlock n (Block t f s c) =
 
 -- | Coloured, unified diff format.
 unidiff :: Int       -- ^ Number of context lines (typically 3)
-        -> String    -- ^ First header
-        -> String    -- ^ Second header
-        -> [String]  -- ^ First file lines
-        -> [String]  -- ^ Second file lines
-        -> [String]  -- ^ Output lines
+        -> T.Text    -- ^ First header
+        -> T.Text    -- ^ Second header
+        -> [T.Text]  -- ^ First file lines
+        -> [T.Text]  -- ^ Second file lines
+        -> [T.Text]  -- ^ Output lines
 unidiff n from to a b =
-    showUnified from to . hunk n . block $ getGroupedDiff a b
+    showUnified from to . hunk n . block $ getGroupedDiff (map T.unpack a) $ map T.unpack b
 
 block :: [Diff [String]] -> [Block]
 block = snd . mapAccumL go (1, 1)
   where
     go (a, b) (First  xs) = let a' = a + length xs in
-        ((a', b), Block F (LineRange a a') (LineRange b b) xs)
+        ((a', b), Block F (LineRange a a') (LineRange b b) $ map T.pack xs)
 
     go (a, b) (Second xs) = let b' = b + length xs in
-        ((a, b'), Block S (LineRange a a) (LineRange b b') xs)
+        ((a, b'), Block S (LineRange a a) (LineRange b b') $ map T.pack xs)
 
     go (a, b) (Both xs _) = let a' = a + length xs; b' = b + length xs in
-        ((a', b'), Block B (LineRange a a') (LineRange b b') xs)
+        ((a', b'), Block B (LineRange a a') (LineRange b b') $ map T.pack xs)
 
 hunk :: Int -> [Block] -> [Hunk]
 hunk _ []              = []
@@ -122,12 +123,12 @@ hunk n bs              = go id . trimLast . trimHead $ bs
                     -> front [takeBlock n x] : go (takeLastBlock n x :) xs
                 _   -> go (front . (x:)) xs
 
-showUnified :: String -> String -> [Hunk] -> [String]
+showUnified :: T.Text -> T.Text -> [Hunk] -> [T.Text]
 showUnified _    _  [] = []
 showUnified from to hs = header <> foldMap showHunk hs
   where header = bForeground <$> ["--- " <> from, "+++ " <> to]
 
-showHunk :: Hunk -> [String]
+showHunk :: Hunk -> [T.Text]
 showHunk h = header : foldMap showBlock h
   where (a, b) = hunkRanges h
         header = cyan $ "@@ -" <> showRange a <> " +" <> showRange b <> " @@"
@@ -139,10 +140,10 @@ hunkRanges xs = (LineRange a a', LineRange b b')
         (a', b') = mapRanges end   $ last xs
         mapRanges f c = (f $ firstRange c, f $ secondRange c)
 
-showRange :: LineRange -> String
+showRange :: LineRange -> T.Text
 showRange r = show (start r) <> "," <> show (rangeLength r)
 
-showBlock :: Block -> [String]
+showBlock :: Block -> [T.Text]
 showBlock b = f . (c <>) <$> content b
   where (f, c) = case tag b of
                    F -> (red  , "-")
