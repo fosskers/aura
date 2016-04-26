@@ -31,10 +31,10 @@ module Aura.MakePkg
 
 import           BasicPrelude hiding (FilePath)
 
-import qualified Data.Text as T
+import           Shelly
+import           Filesystem.Path.CurrentOS
 import           Data.Text.IO
 import           Shelly as Sh
-import           Text.Regex.PCRE ((=~))
 
 import           Aura.Shell
 
@@ -44,17 +44,16 @@ import           Utilities
 
 type User = Text
 
+findPkgFile :: [Text] -> FilePath -> Sh [FilePath]
+findPkgFile exts dir = findDirFilterWhen (pure . isDir) (pure . matches) dir
+  where matches fp = exts `isInfixOf` extensions fp
+        isDir = (dir ==)
+
 makepkgConfFile :: Text
 makepkgConfFile = "/etc/makepkg.conf"
 
 makepkgCmd :: Text
 makepkgCmd = "/usr/bin/makepkg"
-
-pkgPatt :: String
-pkgPatt = "[.]pkg[.]tar"
-
-srcPatt :: String
-srcPatt = "[.]src[.]tar"
 
 makepkg :: Bool -> User -> [Text] -> Sh (Either Text [FilePath])
 makepkg True  = makepkgQuiet
@@ -64,9 +63,7 @@ makepkg False = makepkgVerbose
 -- `run_` failing here isn't caught yet. Do properly with EEs.
 -- | Make a source package.
 makepkgSource :: User -> Sh [FilePath]
-makepkgSource user = do
-  run_ com opts
-  filter (\t -> T.unpack (toTextIgnore t) =~ srcPatt) <$> (pwd >>= ls)
+makepkgSource user = run_ com opts >> pwd >>= findPkgFile ["src","tar"]
     where (com, opts) = runStyle user ["--allsource"]
 
 -- | Builds a package with `makepkg`.
@@ -77,7 +74,7 @@ makepkgGen make user clfs = do
     r <- make com (opts <> clfs)
     case r of
       Left err -> pure $ Left err
-      Right _  -> Right . filter (\t -> T.unpack (toTextIgnore t) =~ pkgPatt) <$> (pwd >>= ls)
+      Right _  -> Right <$> (pwd >>= findPkgFile ["pkg", "tar"])
 
 -- As of makepkg v4.2, building with `--asroot` is no longer allowed.
 runStyle :: User -> [Text] -> (FilePath, [Text])

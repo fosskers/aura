@@ -107,7 +107,6 @@ executable aura
                      , microlens >= 0.3.5.0
                      , megaparsec
                      , process
-                     , regex-pcre-builtin
                      , shelly
                      , split
                      , system-filepath
