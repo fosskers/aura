@@ -1,0 +1,124 @@
+name:                aura
+
+version:             1.4.0
+
+synopsis:            A secure package manager for Arch Linux and the AUR, written in Haskell.
+
+description:         `aura` is a package manager for Arch Linux written
+                     in Haskell. It connects to both the official Arch
+                     repostitories and to the AUR, allowing easy control
+                     of all packages on an Arch system.
+                     It allows _all_ pacman operations and provides _new_
+                     custom ones for dealing with AUR packages.
+                     This differs from some other AUR package managers.
+
+homepage:            https://github.com/fosskers/aura
+
+license:             GPL-3
+
+license-file:        LICENSE
+
+author:              Colin Woodbury
+
+maintainer:          colingw@gmail.com
+
+category:            System
+
+build-type:          Simple
+
+cabal-version:       >=1.10
+
+extra-source-files:  doc/aura.8,
+                     doc/completions/bashcompletion.sh,
+                     doc/completions/_aura
+
+
+source-repository head
+  type:     git
+  location: git://github.com/fosskers/aura.git
+
+executable aura
+  ghc-options:         -Wall -O2
+
+  main-is:             aura.hs
+  default-extensions:  Rank2Types
+                       FlexibleContexts
+                       OverloadedStrings
+                       NoImplicitPrelude
+                       QuasiQuotes
+
+  default-language:    Haskell2010
+
+  hs-source-dirs:      src
+
+  other-modules:       Shell
+                     , Internet
+                     , Utilities
+                     , Data.Algorithm.Diff
+                     , Aura.Bash
+                     , Aura.Build
+                     , Aura.Cache
+                     , Aura.Colour.Text
+                     , Aura.Commands.A
+                     , Aura.Commands.B
+                     , Aura.Commands.C
+                     , Aura.Commands.L
+                     , Aura.Commands.M
+                     , Aura.Commands.O
+                     , Aura.Conflicts
+                     , Aura.Core
+                     , Aura.Dependencies
+                     , Aura.Diff
+                     , Aura.Flags
+                     , Aura.Install
+                     , Aura.Languages
+                     , Aura.Logo
+                     , Aura.MakePkg
+                     , Aura.Monad.Aura
+                     , Aura.Packages.ABS
+                     , Aura.Packages.AUR
+                     , Aura.Packages.Repository
+                     , Aura.Pacman
+                     , Aura.Pkgbuild.Base
+                     , Aura.Pkgbuild.Editing
+                     , Aura.Pkgbuild.Fetch
+                     , Aura.Pkgbuild.Records
+                     , Aura.Settings.Base
+                     , Aura.Settings.Enable
+                     , Aura.Shell
+                     , Aura.State
+                     , Aura.Time
+                     , Aura.Utils
+                     , Aura.Utils.Numbers
+                     , Bash.Base
+                     , Bash.Parser
+                     , Bash.Simplify
+
+  build-depends:       aur>=5
+                     , array
+                     , attoparsec
+                     , base >= 4.8 && < 5
+                     , basic-prelude
+                     , bytestring
+                     , containers
+                     , directory
+                     , extensible-effects
+                     , filepath
+                     , microlens >= 0.3.5.0
+                     , megaparsec
+                     , optparse-applicative >= 0.12
+                     , process
+                     , shelly
+                     , split
+                     , system-filepath
+                     , system-fileio
+                     , temporary
+                     , text
+                     , text-icu
+                     , th-printf
+                     , ini
+                     , time
+                     , transformers
+                     , unix
+                     , unordered-containers
+                     , wreq
