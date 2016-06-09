@@ -408,6 +408,9 @@ partialParserPure pinfo args =
 
 -- Errors are dealt with manually in `aura.hs`.
 parseFlags' :: [String] -> Language -> IO ([Flag], [T.Text], [T.Text])
-parseFlags' args lang = flatten <$> handleParseResult (partialParserPure opts args)
+parseFlags' args lang = tryPacman (partialParserPure opts args)
   where flatten ((opts, nonOpts), pacOpts) = (opts, map T.pack nonOpts, map T.pack pacOpts)
         opts = helper <*> allFlags lang
+        tryPacman p = case getParseResult p of
+          Nothing -> (\a -> ([], [], a)) <$> getArgs
+          Just r -> pure $ flatten r
