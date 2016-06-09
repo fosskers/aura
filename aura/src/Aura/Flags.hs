@@ -183,6 +183,8 @@ auraOperations lang = choose
     , subcommand "O" ["orphans"]   Orphans    (T.unpack $ orpha lang)
       <*> many (choose [simpleOption "j" ["abandon"] Abandon "Uninstall all orphan packages"
                        ])
+    , subcommand "V" ["version"] Version ""
+      <*> pure []
     ]
   where subcommand a b c d = (\a b -> [a] <> b) <$> simpleOption a b c d
 
