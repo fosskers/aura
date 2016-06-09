@@ -67,15 +67,16 @@ auraVersion :: T.Text
 auraVersion = "1.4.0"
 
 main :: IO a
-main = getArgs >>= prepSettings . processFlags >>= execute >>= exit
+main = getArgs >>= processFlags >>= prepSettings >>= execute >>= exit
 
-processFlags :: [Text] -> (UserInput, Maybe Language)
-processFlags args' = ((flags, nub input, pacOpts'), language)
-    where args = map T.unpack args'
-          (language, _) = parseLanguageFlag args
-          (flags, input, pacOpts) = parseFlags language args
-          pacOpts' = nub $ pacOpts <> reconvertFlags dualFlagMap flags
-                   <> reconvertFlags pacmanFlagMap flags
+processFlags :: [Text] -> IO (UserInput, Maybe Language)
+processFlags args' = do
+  let args = map T.unpack args'
+      language = parseLanguageFlag args
+  (flags, input, pacOpts) <- parseFlags language args
+  let pacOpts' = nub $ pacOpts <> reconvertFlags dualFlagMap flags
+        <> reconvertFlags pacmanFlagMap flags
+  return ((flags, nub input, pacOpts'), language)
 
 -- | Set the local environment.
 prepSettings :: (UserInput, Maybe Language) -> IO (UserInput, Settings)
