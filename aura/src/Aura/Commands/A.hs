@@ -131,14 +131,14 @@ renderAurPkgInfo ss ai ns = entrify ss fields entries
                     , T.unpack $ aurVersionOf ai
                     , outOfDateMsg (dateObsoleteOf ai) $ langOf ss
                     , orphanedMsg (T.unpack <$> aurMaintainerOf ai) $ langOf ss
-                    , cyan $ T.unpack $ urlOf ai
+                    , cyan $ maybe "(null)" T.unpack (urlOf ai)
                     , pkgUrl $ T.unpack $ aurNameOf ai
                     , T.unpack . T.unwords $ licenseOf ai
                     , empty . unwords $ depends ns
                     , empty . unwords $ makedepends ns
                     , yellow . show $ aurVotesOf ai
                     , yellow $ printf "%0.2f" (popularityOf ai)
-                    , T.unpack $ aurDescriptionOf ai ]
+                    , maybe "(null)" T.unpack (aurDescriptionOf ai) ]
 
 aurPkgSearch :: [String] -> Aura ()
 aurPkgSearch [] = pure ()
@@ -162,7 +162,7 @@ renderSearch ss r (i, e) = searchResult
                       (b, m, a) -> cl b <> bCyan m <> cl a
           repo = magenta "aur/"
           n = c bForeground $ T.unpack $ aurNameOf i
-          d = c noColour $ T.unpack $ aurDescriptionOf i
+          d = c noColour $ maybe "(null)" T.unpack (aurDescriptionOf i)
           l = yellow . show $ aurVotesOf i  -- `l` for likes?
           p = yellow $ printf "%0.2f" (popularityOf i)
           v = case dateObsoleteOf i of
