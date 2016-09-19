@@ -88,7 +88,9 @@ sourceTarball path pkg = do
   i <- info [pkg]
   case i of
     [] -> pure Nothing
-    (i':_) -> saveUrlContents path . (aurLink <>) . T.unpack $ urlPathOf i'
+    (i':_) -> case urlPathOf i' of
+      Nothing -> pure Nothing
+      Just p  -> saveUrlContents path . (aurLink <>) . T.unpack $ p
 
 ------------
 -- RPC CALLS

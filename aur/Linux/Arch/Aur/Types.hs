@@ -37,15 +37,15 @@ data AurInfo = AurInfo { aurIdOf          :: Int
                        , pkgBaseIdOf      :: Int
                        , pkgBaseOf        :: Text
                        , aurVersionOf     :: Text
-                       , aurDescriptionOf :: Text
-                       , urlOf            :: Text
+                       , aurDescriptionOf :: Maybe Text
+                       , urlOf            :: Maybe Text
                        , aurVotesOf       :: Int
                        , popularityOf     :: Float
                        , dateObsoleteOf   :: Maybe Int
                        , aurMaintainerOf  :: Maybe Text
                        , submissionDateOf :: Int
                        , modifiedDateOf   :: Int
-                       , urlPathOf        :: Text
+                       , urlPathOf        :: Maybe Text
                        , dependsOf        :: [Text]
                        , makeDepsOf       :: [Text]
                        , optDepsOf        :: [Text]
@@ -61,15 +61,15 @@ instance FromJSON AurInfo where
                            v .:  "PackageBaseID"      <*>
                            v .:  "PackageBase"        <*>
                            v .:  "Version"            <*>
-                           v .:  "Description"        <*>
-                           v .:  "URL"                <*>
+                           v .:? "Description"        <*>
+                           v .:? "URL"                <*>
                            v .:  "NumVotes"           <*>
                            v .:  "Popularity"         <*>
                            (v .: "OutOfDate"  <|> pure Nothing) <*>
                            (v .: "Maintainer" <|> pure Nothing) <*>
                            v .:  "FirstSubmitted"     <*>
                            v .:  "LastModified"       <*>
-                           v .:  "URLPath"            <*>
+                           v .:? "URLPath"            <*>
                            v .:? "Depends"     .!= [] <*>
                            v .:? "MakeDepends" .!= [] <*>
                            v .:? "OptDepends"  .!= [] <*>
