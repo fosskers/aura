@@ -70,7 +70,7 @@ Install order is as follows:
 
 ### Haskell
   Aura is written in Haskell, which means easy developing and pretty code.
-  Please feel free to use it as a [simple Haskell reference](https://github.com/aurapm/aura/blob/master/doc/source/guides/hacking.rst#for-haskell-study).
+  Please feel free to use it as a [simple Haskell reference](https://github.com/aurapm/aura/blob/master/aura/doc/source/guides/hacking.rst#for-haskell-study).
   Aura code demonstrates:
   * Regexes
   * CLI flag handling
