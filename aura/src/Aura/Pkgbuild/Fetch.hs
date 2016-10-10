@@ -36,6 +36,7 @@ import           Data.Text hiding (take)
 import qualified Data.Text.Lazy as TL
 import           Data.Text.Lazy.Encoding
 import           Network.Wreq
+import           Network.URI (escapeURIString, isUnescapedInURIComponent)
 import           System.FilePath ((</>))
 
 ---
@@ -47,7 +48,8 @@ baseUrl = "https://aur.archlinux.org/"
 
 -- | The location of a given package's PKGBUILD on the AUR servers.
 pkgbuildUrl :: String -> String
-pkgbuildUrl p = baseUrl </> "cgit/aur.git/plain/PKGBUILD?h=" ++ p
+pkgbuildUrl p = baseUrl </> "cgit/aur.git/plain/PKGBUILD?h="
+  ++ escapeURIString isUnescapedInURIComponent p
 
 -- | The PKGBUILD of a given package, retrieved from the AUR servers.
 pkgbuild :: MonadIO m => String -> m (Maybe Text)
