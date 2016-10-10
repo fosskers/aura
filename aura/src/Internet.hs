@@ -28,6 +28,7 @@ module Internet
 import           Control.Lens
 import qualified Data.ByteString.Lazy as L
 import           Network.Wreq
+import           Network.URI (unEscapeString)
 import           System.FilePath (splitFileName, (</>))
 import           System.IO (hClose, openFile, IOMode(WriteMode))
 
@@ -45,4 +46,4 @@ saveUrlContents fpath url = do
       handle <- openFile filePath WriteMode
       L.hPutStr handle c *> hClose handle *> pure (Just filePath)
           where filePath = fpath </> file
-                (_, file) = splitFileName url
+                (_, file) = splitFileName $ unEscapeString url

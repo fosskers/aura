@@ -104,4 +104,5 @@ executable aura
                      , bytestring
                      , transformers
                      , regex-pcre-builtin
+                     , network-uri
                      , base >= 4.8 && < 5
