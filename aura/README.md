@@ -196,5 +196,5 @@ Localisation
 ============
 As mentioned in the Philosophy above, adding new languages to Aura is
 quite easy. If you speak a language other than those available and
-would like it added to Aura, please consult the [Localisation Guide](https://github.com/aurapm/aura/blob/master/doc/source/guides/localisation.rst)
+would like it added to Aura, please consult the [Localisation Guide](https://github.com/aurapm/aura/blob/master/aura/doc/source/guides/localisation.rst)
 provided.
