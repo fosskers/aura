@@ -1,13 +1,10 @@
-resolver: lts-5.13
+resolver: nightly-2016-10-01
 
 packages:
   - aura/
   - aur/
   - arel/
 
-extra-deps:
-  - aur-5.0.1
-  - servant-0.7
-  - servant-client-0.7
-  
+extra-deps: []
+
 flags: {}
