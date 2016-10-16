@@ -6,7 +6,7 @@
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2016 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -35,21 +35,20 @@ module Aura.Commands.A
     , displayPkgbuild ) where
 
 import           Control.Monad
+import           Data.Foldable (traverse_, fold)
 import           Data.Maybe (fromJust)
 import           Data.Monoid ((<>))
 import qualified Data.Set as S (member, fromList)
 import qualified Data.Text as T
-import           Data.Foldable (traverse_, fold)
 import           Linux.Arch.Aur
 import           Text.Printf (printf)
 import           Text.Regex.PCRE ((=~))
 
-import           Aura.Install (InstallOptions(..))
-import qualified Aura.Install as I
-
 import           Aura.Bash (namespace, Namespace)
 import           Aura.Colour.Text
 import           Aura.Core
+import           Aura.Install (InstallOptions(..))
+import qualified Aura.Install as I
 import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Packages.ABS (absDepsRepo)
@@ -119,7 +118,7 @@ aurPkgInfo (fmap T.pack -> pkgs) = aurInfo pkgs >>= traverse_ displayAurPkgInfo
 displayAurPkgInfo :: AurInfo -> Aura ()
 displayAurPkgInfo ai = ask >>= \ss -> do
     let name = T.unpack $ aurNameOf ai
-    ns <- fromJust <$> pkgbuild name >>= namespace name . T.unpack
+    ns <- fromJust <$> pkgbuild (managerOf ss) name >>= namespace name . T.unpack
     liftIO $ putStrLn $ renderAurPkgInfo ss ai ns <> "\n"
 
 renderAurPkgInfo :: Settings -> AurInfo -> Namespace -> String
@@ -169,7 +168,7 @@ renderSearch ss r (i, e) = searchResult
             Just _  -> red $ T.unpack $ aurVersionOf i
             Nothing -> green $ T.unpack $ aurVersionOf i
           s = c bForeground (" [installed]" :: String)
-                              
+
 displayPkgDeps :: [String] -> Aura ()
 displayPkgDeps ps = do
     opts <- installOptions
@@ -180,11 +179,14 @@ downloadTarballs pkgs = do
   currDir <- liftIO pwd
   traverse_ (downloadTBall currDir) pkgs
     where downloadTBall path pkg = whenM (isAurPackage pkg) $ do
+              manager <- asks managerOf
               notify $ downloadTarballs_1 pkg
-              void . liftIO $ sourceTarball path $ T.pack pkg
+              void . liftIO $ sourceTarball manager path $ T.pack pkg
 
 displayPkgbuild :: [String] -> Aura ()
-displayPkgbuild = I.displayPkgbuild (traverse (fmap (fmap T.unpack) . pkgbuild))
+displayPkgbuild ps = do
+  m <- asks managerOf
+  I.displayPkgbuild (traverse (fmap (fmap T.unpack) . pkgbuild m)) ps
 
 isntMostRecent :: (AurInfo, String) -> Bool
 isntMostRecent (ai, v) = trueVer > currVer

@@ -1,6 +1,6 @@
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2016 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -23,6 +23,8 @@ module Aura.Settings.Base ( Settings(..)
                           , SortScheme(..)
                           , Truncation(..) ) where
 
+import Network.HTTP.Client (Manager)
+
 import Aura.Languages (Language)
 
 import Shell (Environment)
@@ -33,10 +35,11 @@ data SortScheme = ByVote | Alphabetically deriving (Eq, Show)
 
 data Truncation = None | Head Int | Tail Int deriving (Eq, Show)
 
--- The global settings as set by the user with command-line flags.
+-- | The global settings as set by the user with command-line flags.
 data Settings = Settings { inputOf         :: [String]
                          , pacOptsOf       :: [String]
                          , otherOptsOf     :: [String]
+                         , managerOf       :: Manager
                          , environmentOf   :: Environment
                          , buildUserOf     :: String
                          , langOf          :: Language

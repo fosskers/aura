@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2016 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -25,21 +25,25 @@ module Internet
     ( urlContents
     , saveUrlContents ) where
 
-import           Control.Lens
 import qualified Data.ByteString.Lazy as L
-import           Network.Wreq
+import           Network.HTTP.Client
+import           Network.HTTP.Types.Status (statusCode)
 import           Network.URI (unEscapeString)
 import           System.FilePath (splitFileName, (</>))
 import           System.IO (hClose, openFile, IOMode(WriteMode))
 
 ---
 
-urlContents :: String -> IO (Maybe L.ByteString)
-urlContents url = (^? responseBody) <$> get url
+-- | Assumes the given URL is correctly formatted.
+urlContents :: Manager -> String -> IO (Maybe L.ByteString)
+urlContents m url = fmap f $ httpLbs (parseRequest_ url) m
+  where f res | statusCode (responseStatus res) == 200 = Just $ responseBody res
+              | otherwise = Nothing
 
-saveUrlContents :: FilePath -> String -> IO (Maybe FilePath)
-saveUrlContents fpath url = do
-  contents <- urlContents url
+-- | Fetch data from some URL, and save it to the filesystem.
+saveUrlContents :: Manager -> FilePath -> String -> IO (Maybe FilePath)
+saveUrlContents m fpath url = do
+  contents <- urlContents m url
   case contents of
     Nothing -> pure Nothing
     Just c  -> do

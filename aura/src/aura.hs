@@ -1,6 +1,6 @@
 {-
 
-Copyright 2012, 2013, 2014, 2015, 2016 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2016 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -29,27 +29,27 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
+import Control.Monad (when)
+import Data.Foldable (traverse_)
+import Data.List (nub, sort, intercalate)
+import Data.Monoid ((<>))
 import System.Environment (getArgs)
-import Control.Monad      (when)
-import System.Exit        (exitSuccess, exitFailure)
-import Data.List          (nub, sort, intercalate)
-import Data.Foldable      (traverse_)
-import Data.Monoid        ((<>))
+import System.Exit (exitSuccess, exitFailure)
 
 import Aura.Colour.Text (yellow)
-import Aura.Shell       (shellCmd)
-import Aura.Settings.Enable
-import Aura.Settings.Base
-import Aura.Monad.Aura
-import Aura.Languages
-import Aura.Pacman
-import Aura.Flags
-import Aura.Utils
 import Aura.Core
+import Aura.Flags
+import Aura.Languages
 import Aura.Logo
+import Aura.Monad.Aura
+import Aura.Pacman
+import Aura.Settings.Base
+import Aura.Settings.Enable
+import Aura.Shell (shellCmd)
+import Aura.Utils
 
+import Shell (showCursor, hideCursor)
 import Utilities (replaceByPatt)
-import Shell     (showCursor, hideCursor)
 
 import Aura.Commands.A as A
 import Aura.Commands.B as B

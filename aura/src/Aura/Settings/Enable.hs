@@ -23,20 +23,22 @@ module Aura.Settings.Enable
     ( getSettings
     , debugOutput ) where
 
-import System.Environment (getEnvironment)
-import System.Directory   (doesDirectoryExist)
-import Data.Maybe         (fromMaybe)
-import Data.Monoid
 import Data.Foldable
+import Data.Maybe (fromMaybe)
+import Data.Monoid
+import Network.HTTP.Client (newManager)
+import Network.HTTP.Client.TLS (tlsManagerSettings)
+import System.Directory (doesDirectoryExist)
+import System.Environment (getEnvironment)
 
-import Aura.Languages (Language, langFromEnv)
-import Aura.MakePkg   (makepkgConfFile)
-import Aura.Settings.Base
-import Aura.Pacman
 import Aura.Flags
+import Aura.Languages (Language, langFromEnv)
+import Aura.MakePkg (makepkgConfFile)
+import Aura.Pacman
+import Aura.Settings.Base
 
-import Utilities (ifte_, readFileUTF8)
 import Shell
+import Utilities (ifte_, readFileUTF8)
 
 ---
 
@@ -47,11 +49,13 @@ getSettings lang (auraFlags, input, pacOpts) = do
   pmanCommand <- getPacmanCmd environment $ noPowerPillStatus auraFlags
   makepkgConf <- readFileUTF8 makepkgConfFile
   buildPath'  <- checkBuildPath (buildPath auraFlags) (getCachePath confFile)
+  manager     <- newManager tlsManagerSettings
   let language   = checkLang lang environment
       buildUser' = fromMaybe (getTrueUser environment) (buildUser auraFlags)
   pure Settings { inputOf         = input
                 , pacOptsOf       = pacOpts
                 , otherOptsOf     = show <$> auraFlags
+                , managerOf       = manager
                 , environmentOf   = environment
                 , buildUserOf     = buildUser'
                 , langOf          = language

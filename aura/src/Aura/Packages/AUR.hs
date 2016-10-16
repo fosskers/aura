@@ -35,10 +35,11 @@ module Aura.Packages.AUR
 import           Control.Monad ((>=>))
 import           Data.Function (on)
 import           Data.List (sortBy)
-import           Data.Monoid ((<>))
 import           Data.Maybe
+import           Data.Monoid ((<>))
 import qualified Data.Text as T
 import           Linux.Arch.Aur
+import           Network.HTTP.Client (Manager)
 import           System.FilePath ((</>))
 
 import           Aura.Core
@@ -47,27 +48,27 @@ import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings.Base
 
-import           Utilities (decompress)
 import           Internet
+import           Utilities (decompress)
 
 ---
 
 aurLookup :: String -> Aura (Maybe Buildable)
-aurLookup name = fmap (makeBuildable name . T.unpack) <$> pkgbuild name
+aurLookup name = asks managerOf >>= \m -> fmap (makeBuildable m name . T.unpack) <$> pkgbuild m name
 
 aurRepo :: Repository
 aurRepo = Repository $ aurLookup >=> traverse packageBuildable
 
-makeBuildable :: String -> Pkgbuild -> Buildable
-makeBuildable name pb = Buildable
+makeBuildable :: Manager -> String -> Pkgbuild -> Buildable
+makeBuildable m name pb = Buildable
     { baseNameOf   = name
     , pkgbuildOf   = pb
     , isExplicit   = False
     , buildScripts = f }
-    where f fp = sourceTarball fp (T.pack name) >>= traverse decompress
+    where f fp = sourceTarball m fp (T.pack name) >>= traverse decompress
 
 isAurPackage :: String -> Aura Bool
-isAurPackage name = isJust <$> pkgbuild name
+isAurPackage name = asks managerOf >>= \m -> isJust <$> pkgbuild m name
 
 ----------------
 -- AUR PKGBUILDS
@@ -81,16 +82,17 @@ pkgUrl pkg = aurLink </> "packages" </> pkg
 ------------------
 -- SOURCE TARBALLS
 ------------------
-sourceTarball :: FilePath            -- ^ Where to save the tarball.
+sourceTarball :: Manager             -- ^ The request connection Manager.
+              -> FilePath            -- ^ Where to save the tarball.
               -> T.Text              -- ^ Package name.
               -> IO (Maybe FilePath) -- ^ Saved tarball location.
-sourceTarball path pkg = do
-  i <- info [pkg]
+sourceTarball m path pkg = do
+  i <- info m [pkg]
   case i of
     [] -> pure Nothing
     (i':_) -> case urlPathOf i' of
       Nothing -> pure Nothing
-      Just p  -> saveUrlContents path . (aurLink <>) . T.unpack $ p
+      Just p  -> saveUrlContents m path . (aurLink <>) . T.unpack $ p
 
 ------------
 -- RPC CALLS
@@ -102,8 +104,8 @@ sortAurInfo scheme ai = sortBy compare' ai
                      Alphabetically -> compare `on` aurNameOf
 
 aurSearch :: T.Text -> Aura [AurInfo]
-aurSearch regex = asks sortSchemeOf >>= \scheme ->
-                  sortAurInfo scheme <$> search regex
+aurSearch regex = ask >>= \s -> do
+  sortAurInfo (sortSchemeOf s) <$> search (managerOf s) regex
 
 aurInfo :: [T.Text] -> Aura [AurInfo]
-aurInfo pkgs = sortAurInfo Alphabetically <$> info pkgs
+aurInfo pkgs = asks managerOf >>= \m -> sortAurInfo Alphabetically <$> info m pkgs
