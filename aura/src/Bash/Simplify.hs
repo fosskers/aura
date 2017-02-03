@@ -77,7 +77,7 @@ replace' somethingElse = pure somethingElse
 replaceStr :: BashString -> State Namespace BashString
 replaceStr s@(SingleQ _) = return s
 replaceStr (DoubleQ s)   = DoubleQ . fmap Right <$> expandStr s
-replaceStr (NoQuote s)   = DoubleQ . fmap Right <$> expandStr s
+replaceStr (NoQuote s)   = NoQuote . fmap Right <$> expandStr s
 replaceStr (Backtic f)   = Backtic <$> replace' f
 
 expandStr :: [Either BashExpansion String] -> State Namespace [String]

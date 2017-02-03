@@ -128,9 +128,10 @@ expansion = char '$' *> choice [ BashExpansion <$> base <*> indexer <* char '}'
 
 -- | Replaces ${...}. Strings can be extrapolated!
 unQuoted :: Parser [BashString]
-unQuoted = fmap NoQuote <$> many1 ( choice [ try $ (: []) . Left <$> expansion
-                                           , fmap Right <$> extrapolated []
-                                           ])
+unQuoted = fold <$> many1 ( choice [ try $ (: []) . singleton . Left <$> expansion
+                                   , fmap (singleton . Right) <$> extrapolated []
+                                   ])
+  where singleton = NoQuote . (: [])
 
 -- | Bash strings are extrapolated when they contain a brace pair
 -- with two or more substrings separated by commas within them.

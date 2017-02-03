@@ -86,7 +86,7 @@ getVar ns s = case M.lookup s ns of
 fromBashString :: BashString -> [String]
 fromBashString (SingleQ s) = [s]
 fromBashString (DoubleQ l) = [fold $ rights l]
-fromBashString (NoQuote l) = rights l
+fromBashString (NoQuote l) = [fold $ rights l]
 fromBashString (Backtic c) = ["`" <> unwords (fromCommand c) <> "`"]
 
 fromCommand :: Field -> [String]
