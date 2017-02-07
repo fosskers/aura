@@ -152,6 +152,279 @@ langFromEnv = \case
     _    -> English
 
 ----------------------
+-- Field labels
+----------------------
+
+package :: Language -> String
+package = \case
+    Japanese   -> "パッケージ"
+    Polish     -> "Pakiet"
+    Croatian   -> "Paket"
+    Swedish    -> "Paket"
+    German     -> "Paket"
+    Spanish    -> "Paquete"
+    Portuguese -> "Pacote"
+    French     -> "Paquet"
+    Russian    -> "Пакет"
+    Italian    -> "Package"
+    Serbian    -> "Пакет"
+    Norwegian  -> "Pakke"
+    Indonesia  -> "Paket"
+    _          -> "Package"
+
+firstInstall :: Language -> String
+firstInstall = \case
+    Japanese   -> "初インストール"
+    Polish     -> "Pierwsza instalacja"
+    Croatian   -> "Prva instalacija"
+    Swedish    -> "Första installation"
+    German     -> "Erste Installation"
+    Spanish    -> "Primera instalación"
+    Portuguese -> "Primeira instalação"
+    French     -> "Première installation"
+    Russian    -> "Первая установка"
+    Italian    -> "Prima installazione"
+    Serbian    -> "Прва инсталација"
+    Norwegian  -> "Første installasjon"
+    Indonesia  -> "Versi sistem"
+    _          -> "First Install"
+
+upgrades :: Language -> String
+upgrades = \case
+    Japanese   -> "アップグレード回数"
+    Polish     -> "Aktualizacje"
+    Croatian   -> "Nadogradnje"
+    Swedish    -> "Uppgraderingar"
+    German     -> "Aktualisierungen"
+    Spanish    -> "Actualizaciones"
+    Portuguese -> "Atualizações"
+    French     -> "Mises à jours"
+    Russian    -> "Обновления"
+    Italian    -> "Upgrades"
+    Serbian    -> "Ажурирања"
+    Norwegian  -> "Oppgraderinger"
+    Indonesia  -> "Tingkatkan"
+    _          -> "Upgrades"
+
+recentActions :: Language -> String
+recentActions = \case
+    Japanese   -> "近況"
+    Polish     -> "Ostatnie akcje"
+    Croatian   -> "Nedavne radnje"
+    Swedish    -> "Nyliga händelser"
+    German     -> "Letzte Aktionen"
+    Spanish    -> "Acciones Recientes"
+    Portuguese -> "Ações Recentes"
+    French     -> "Actions récentes"
+    Russian    -> "Недавние действия"
+    Italian    -> "Azioni recenti"
+    Serbian    -> "Недавне радње"
+    Norwegian  -> "Nylige hendelser"
+    Indonesia  -> "Aksi sekarang"
+    _          -> "Recent Actions"
+
+repository :: Language -> String
+repository = \case
+    Japanese   -> "リポジトリ"
+    Polish     -> "Repozytorium"
+    Croatian   -> "Repozitorij"
+    Swedish    -> "Repository"
+    German     -> "Repository"
+    Spanish    -> "Repositorio"
+    Portuguese -> "Repositório"
+    French     -> "Dépôt"
+    Russian    -> "Репозиторий"
+    Italian    -> "Repository"
+    Serbian    -> "Ризница"
+    Norwegian  -> "Depot"
+    Indonesia  -> "Lumbung"
+    _          -> "Repository"
+
+name :: Language -> String
+name = \case
+    Japanese   -> "名前"
+    Polish     -> "Nazwa"
+    Croatian   -> "Ime"
+    Swedish    -> "Namn"
+    German     -> "Name"
+    Spanish    -> "Nombre"
+    Portuguese -> "Nome"
+    French     -> "Nom"
+    Russian    -> "Название"
+    Italian    -> "Nome"
+    Serbian    -> "Име"
+    Norwegian  -> "Navn"
+    Indonesia  -> "Nama"
+    _          -> "Name"
+
+version :: Language -> String
+version = \case
+    Japanese   -> "バージョン"
+    Polish     -> "Wersja"
+    Croatian   -> "Verzija"
+    Swedish    -> "Version"
+    German     -> "Version"
+    Spanish    -> "Versión"
+    Portuguese -> "Versão"
+    French     -> "Version"
+    Russian    -> "Версия"
+    Italian    -> "Versione"
+    Serbian    -> "Верзија"
+    Norwegian  -> "Versjon"
+    Indonesia  -> "Versi"
+    _          -> "Version"
+
+aurStatus :: Language -> String
+aurStatus = \case
+    Japanese   -> "パッケージ状態"
+    Polish     -> "Status w AUR"
+    Croatian   -> "AUR Stanje"
+    German     -> "AUR-Status"
+    Spanish    -> "Estado en AUR"
+    Portuguese -> "Estado no AUR"
+    French     -> "Statut de AUR"
+    Russian    -> "Статус в AUR"
+    Italian    -> "Stato in AUR"
+    Serbian    -> "Статус у AUR-у"
+    Indonesia  -> "Status AUR"
+    _          -> "AUR Status"
+
+-- NEEDS TRANSLATION
+maintainer :: Language -> String
+maintainer = \case
+    Japanese   -> "管理者"
+    Spanish    -> "Mantenedor"
+    French     -> "Mainteneur"
+    Russian    -> "Ответственный"
+    Norwegian  -> "Vedlikeholder"
+    Indonesia  -> "Pemelihara"
+    _          -> "Maintainer"
+
+projectUrl :: Language -> String
+projectUrl = \case
+    Japanese   -> "プロジェクト"
+    Polish     -> "URL Projektu"
+    Croatian   -> "URL Projekta"
+    Swedish    -> "Projekt URL"
+    German     -> "Projekt-URL"
+    Spanish    -> "URL del proyecto"
+    Portuguese -> "URL do projeto"
+    French     -> "URL du projet"
+    Russian    -> "URL проекта"
+    Italian    -> "URL del progetto"
+    Serbian    -> "Страница пројекта"
+    Norwegian  -> "Prosjekt-URL"
+    Indonesia  -> "URL Proyek"
+    _          -> "Project URL"
+
+aurUrl :: Language -> String
+aurUrl = \case
+    Japanese   -> "パッケージページ"
+    Polish     -> "URL w AUR"
+    German     -> "AUR-URL"
+    Spanish    -> "URL de AUR"
+    Portuguese -> "URL no AUR"
+    French     -> "URL AUR"
+    Russian    -> "URL в AUR"
+    Italian    -> "URL AUR"
+    Serbian    -> "Страница у AUR-у"
+    Indonesia  -> "URL AUR"
+    _          -> "AUR URL"
+
+license :: Language -> String
+license = \case
+    Japanese   -> "ライセンス"
+    Polish     -> "Licencja"
+    Croatian   -> "Licenca"
+    Swedish    -> "Licens"
+    German     -> "Lizenz"
+    Spanish    -> "Licencia"
+    Portuguese -> "Licença"
+    French     -> "Licence"
+    Russian    -> "Лицензия"
+    Italian    -> "Licenza"
+    Serbian    -> "Лиценца"
+    Norwegian  -> "Lisens"
+    Indonesia  -> "Lisensi"
+    _          -> "License"
+
+dependsOn :: Language -> String
+dependsOn = \case
+    Japanese   -> "従属パッケージ"
+    Polish     -> "Zależności"
+    Croatian   -> "Zavisnosti"
+    German     -> "Hängt ab von"
+    Spanish    -> "Dependencias"
+    Portuguese -> "Dependências"
+    French     -> "Dépends de"
+    Russian    -> "Зависит от"
+    Italian    -> "Dipende da"
+    Norwegian  -> "Er avhengig av"
+    Indonesia  -> "Bergantung pada"
+    _          -> "Depends On"
+
+buildDeps :: Language -> String
+buildDeps = \case
+    Japanese   -> "作成時従属パ"
+    German     -> "Build-Abhängigkeiten"
+    Spanish    -> "Dependencias de compilación"
+    French     -> "Dépendances de compilation"
+    Russian    -> "Зависимости сборки"
+    Indonesia  -> "Dependensi bangun"
+    _          -> "Build Deps"
+
+votes :: Language -> String
+votes = \case
+    Japanese   -> "投票数"
+    Polish     -> "Głosy"
+    Croatian   -> "Glasovi"
+    Swedish    -> "Röster"
+    German     -> "Stimmen"
+    Spanish    -> "Votos"
+    Portuguese -> "Votos"
+    French     -> "Votes"
+    Russian    -> "Голоса"
+    Italian    -> "Voti"
+    Serbian    -> "Гласови"
+    Norwegian  -> "Stemmer"
+    Indonesia  -> "Suara"
+    _          -> "Votes"
+
+popularity :: Language -> String
+popularity = \case
+    Japanese   -> "人気"
+    _          -> "Popularity"
+
+description :: Language -> String
+description = \case
+    Japanese   -> "概要"
+    Polish     -> "Opis"
+    Croatian   -> "Opis"
+    Swedish    -> "Beskrivning"
+    German     -> "Beschreibung"
+    Spanish    -> "Descripción"
+    Portuguese -> "Descrição"
+    French     -> "Description"
+    Russian    -> "Описание"
+    Italian    -> "Descrizione"
+    Serbian    -> "Опис"
+    Norwegian  -> "Beskrivelse"
+    Indonesia  -> "Deskripsi"
+    _          -> "Description"
+
+makeDeps :: Language -> String
+makeDeps = \case
+    Polish     -> "Zależności Make"
+    Croatian   -> "Make Zavisnosti"
+    German     -> "Make-Abhängigkeiten"
+    Spanish    -> "Dependencias de compilación"
+    Portuguese -> "Depenências de compilação"
+    French     -> "Dépendances de compilation"
+    Russian    -> "Зависимости Make"
+    Indonesia  -> "Dependensi bangun"
+    _          -> "Make Deps"
+
+----------------------
 -- Aura/Core functions
 ----------------------
 -- NEEDS TRANSLATION
@@ -1299,21 +1572,11 @@ cleanNotSaved_2 (cyan . show -> s) = \case
 -- Aura/Commands/L functions
 ----------------------------
 logLookUpFields :: Language -> [String]
-logLookUpFields = \case
-    Japanese   -> [ "パッケージ", "初インストール", "アップグレード回数", "近況" ]
-    Polish     -> [ "Pakiet", "Pierwsza instalacja", "Aktualizacje", "Ostatnie akcje" ]
-    Croatian   -> [ "Paket", "Prva instalacija", "Nadogradnje", "Nedavne radnje" ]
-    Swedish    -> [ "Paket", "Första installation", "Uppgraderingar", "Nyliga händelser" ]
-    German     -> [ "Paket", "Erste Installation", "Aktualisierungen", "Letzte Aktionen" ]
-    Spanish    -> [ "Paquete", "Primera instalación", "Actualizaciones", "Acciones Recientes" ]
-    Portuguese -> [ "Pacote", "Primeira instalação", "Atualizações", "Ações Recentes" ]
-    French     -> [ "Paquet", "Première installation", "Mises à jours", "Actions récentes" ]
-    Russian    -> [ "Пакет", "Первая установка", "Обновления", "Недавние действия" ]
-    Italian    -> [ "Package", "Prima installazione", "Upgrades", "Azioni recenti" ]
-    Serbian    -> [ "Пакет", "Прва инсталација", "Ажурирања", "Недавне радње" ]
-    Norwegian  -> [ "Pakke", "Første installasjon", "Oppgraderinger", "Nylige hendelser" ]
-    Indonesia  -> [ "Paket", "Versi sistem", "Tingkatkan", "Aksi sekarang" ]
-    _          -> [ "Package", "First Install", "Upgrades", "Recent Actions" ]
+logLookUpFields = sequence [ package
+                           , firstInstall
+                           , upgrades
+                           , recentActions
+                           ]
 
 reportNotInLog_1 :: Language -> String
 reportNotInLog_1 = \case
@@ -1523,23 +1786,21 @@ getAURPkgInfo_1 = \case
     Indonesia  -> "Pemeriksaan API AUR gagal. Sila periksa sambungan anda."
     _          -> "AUR API lookup failed. Please check your connection."
 
--- `Maintainer` value NEEDS UPDATING!
 infoFields :: Language -> [String]
-infoFields = \case
-    Japanese   -> [ "リポジトリ", "名前", "バージョン", "パッケージ状態", "管理者", "プロジェクト", "パッケージページ", "ライセンス", "従属パッケージ", "作成時従属パ", "投票数", "人気", "概要" ]
-    Polish     -> [ "Repozytorium", "Nazwa", "Wersja", "Status w AUR", "Maintainer", "URL Projektu", "URL w AUR", "Licencja", "Depends On", "Build Deps", "Głosy", "Popularity", "Opis" ]
-    Croatian   -> [ "Repozitorij", "Ime", "Verzija", "AUR Stanje", "Maintainer", "URL Projekta", "AUR URL", "Licenca", "Depends On", "Build Deps", "Glasovi", "Popularity", "Opis" ]
-    Swedish    -> [ "Repository", "Namn", "Version", "AUR Status", "Maintainer", "Projekt URL", "AUR URL", "Licens", "Depends On", "Build Deps", "Röster", "Popularity", "Beskrivning" ]
-    German     -> [ "Repository", "Name", "Version", "AUR-Status", "Maintainer", "Projekt-URL", "AUR-URL", "Lizenz", "Hängt ab von", "Build-Abhängigkeiten", "Stimmen", "Popularity", "Beschreibung" ]
-    Spanish    -> [ "Repositorio", "Nombre", "Versión", "Estado en AUR", "Mantenedor", "URL del proyecto", "URL de AUR", "Licencia", "Dependencias", "Dependencias de compilación", "Votos", "Descripción" ]
-    Portuguese -> [ "Repositório", "Nome", "Versão", "Estado no AUR", "Maintainer", "URL do projeto", "URL no AUR", "Licença", "Depends On", "Build Deps", "Votos", "Popularity", "Descrição" ]
-    French     -> [ "Dépôt", "Nom", "Version", "Statut de AUR", "Mainteneur", "URL du projet", "URL AUR", "Licence", "Dépends de", "Dépendances de compilation", "Votes", "Popularity", "Description" ]
-    Russian    -> [ "Репозиторий", "Название", "Версия", "Статус в AUR", "Ответственный", "URL проекта", "URL в AUR", "Лицензия", "Зависит от", "Зависимости сборки", "Голоса", "Popularity", "Описание" ]
-    Italian    -> [ "Repository", "Nome", "Versione", "Stato in AUR", "Maintainer", "URL del progetto", "URL AUR", "Licenza", "Depends On", "Build Deps", "Voti", "Popularity", "Descrizione" ]
-    Serbian    -> [ "Ризница", "Име", "Верзија", "Статус у AUR-у", "Maintainer", "Страница пројекта", "Страница у AUR-у", "Лиценца", "Depends On", "Build Deps", "Гласови", "Popularity", "Опис" ]
-    Norwegian  -> [ "Depot", "Navn", "Versjon", "AUR Status", "Vedlikeholder", "Prosjekt-URL", "AUR URL", "Lisens", "Depends On", "Build Deps", "Stemmer", "Popularity", "Beskrivelse" ]
-    Indonesia  -> [ "Lumbung", "Nama", "Versi", "Status AUR", "Pemelihara", "URL Proyek", "URL AUR", "Lisensi", "Bergantung pada", "Dependensi bangun", "Suara", "Popularity", "Deskripsi" ]
-    _          -> [ "Repository", "Name", "Version", "AUR Status", "Maintainer", "Project URL", "AUR URL", "License", "Depends On", "Build Deps", "Votes", "Popularity", "Description" ]
+infoFields = sequence [ repository
+                      , name
+                      , version
+                      , aurStatus
+                      , maintainer
+                      , projectUrl
+                      , aurUrl
+                      , license
+                      , dependsOn
+                      , buildDeps
+                      , votes
+                      , popularity
+                      , description
+                      ]
 
 outOfDateMsg :: Maybe Int -> Language -> String
 outOfDateMsg (Just _) = red . \case
@@ -1639,18 +1900,13 @@ singleSync_1 (bt -> p) = \case
     _          -> "Syncing " <> p <> " to the local ABS Tree..."
 
 absInfoFields :: Language -> [String]
-absInfoFields = \case
-    Polish     -> [ "Repozytorium", "Nazwa", "Wersja", "Zależności", "Zależności Make", "Opis"]
-    Croatian   -> [ "Repozitorij", "Ime", "Verzija", "Zavisnosti", "Make Zavisnosti", "Opis" ]
-    German     -> [ "Repository", "Name", "Version", "Hängt ab von", "Make-Abhängigkeiten", "Beschreibung"]
-    Spanish    -> [ "Repositorio", "Nombre", "Versión", "Dependencias", "Dependencias de compilación", "Descripción" ]
-    Norwegian  -> [ "Depot", "Navn", "Versjon", "Er avhengig av", "Make Deps", "Beskrivelse"]
-    Italian    -> [ "Repository", "Nome", "Versione", "Dipende da", "Make Deps", "Descrizione" ]
-    Portuguese -> [ "Repositório", "Nome", "Versão", "Dependências", "Depenências de compilação", "Descrição" ]
-    French     -> [ "Dépôt", "Nom", "Version", "Dépendances", "Dépendances de compilation", "Description" ]
-    Russian    -> [ "Репозиторий", "Название", "Версия", "Зависит от", "Зависимости Make", "Описание" ]
-    Indonesia  -> [ "Lumbung", "Nama", "Versi", "Bergantung pada", "Dependensi bangun", "Deskripsi" ]
-    _          -> [ "Repository", "Name", "Version", "Depends On", "Make Deps", "Description" ]
+absInfoFields = sequence [ repository
+                         , name
+                         , version
+                         , dependsOn
+                         , makeDeps
+                         , description
+                         ]
 
 repository_1 :: String -> Language -> String
 repository_1 p = \case
