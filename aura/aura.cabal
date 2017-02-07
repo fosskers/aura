@@ -64,6 +64,8 @@ executable aura
                      , Aura.Flags
                      , Aura.Install
                      , Aura.Languages
+                     , Aura.Languages.Base
+                     , Aura.Languages.Fields
                      , Aura.Logo
                      , Aura.MakePkg
                      , Aura.Monad.Aura
