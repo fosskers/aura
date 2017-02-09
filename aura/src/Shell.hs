@@ -37,6 +37,7 @@ import Control.Exception (catchJust)
 import System.FilePath   ((</>))
 import System.Process    (readProcess, readProcessWithExitCode, rawSystem)
 import Control.Monad     (void)
+import Data.Foldable
 import Data.Maybe        (fromMaybe, fromJust)
 import Data.Monoid
 import Data.List         (intercalate)
@@ -183,6 +184,7 @@ getTrueUser env | isTrueRoot env  = "root"
 getEditor :: Environment -> String
 getEditor env = fromMaybe "vi" $ getEnvVar "EDITOR" env
 
--- This will get the LANG variable from the environment
-getLangVar :: Environment -> String
-getLangVar env = fromMaybe "C" $ getEnvVar "LANG" env
+-- This will get the locale variable for translations from the environment
+getLocale :: Environment -> String
+getLocale env = fromMaybe "C" . asum . fmap (`getEnvVar` env)
+    $ ["LC_ALL", "LC_MESSAGES", "LANG"]

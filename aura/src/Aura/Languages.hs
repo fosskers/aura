@@ -41,6 +41,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Languages where
 
+import           Control.Arrow
 import qualified Data.Map.Lazy as Map (Map, (!), fromList, toList, mapWithKey)
 import           Data.Monoid
 
@@ -134,8 +135,8 @@ whitespace :: Language -> String
 whitespace Japanese = "　"  -- \12288
 whitespace _ = " "          -- \32
 
-langFromEnv :: String -> Language
-langFromEnv = \case
+langFromLocale :: String -> Language
+langFromLocale = take 2 >>> \case
     "ja" -> Japanese
     "pl" -> Polish
     "hr" -> Croatian
