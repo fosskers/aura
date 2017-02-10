@@ -1,4 +1,4 @@
-resolver: lts-5.13
+resolver: nightly-2016-10-01
 
 packages:
   - aura/
@@ -6,11 +6,7 @@ packages:
   - arel/
 
 extra-deps:
-  - extensible-effects-1.11.0.0
-  - type-aligned-0.9.6
-  - th-printf-0.3.1
-  - aur-5.0.1
-  - servant-0.7
-  - servant-client-0.7
+  - basic-prelude-0.5.1
+  - megaparsec-4.3.0
   
 flags: {}

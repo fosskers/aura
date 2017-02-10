@@ -1,6 +1,6 @@
 {-
 
-Copyright 2012, 2013, 2014, 2015, 2016 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2016 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -31,26 +31,24 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 import BasicPrelude hiding (catch, liftIO)
 
-import System.Exit        (exitSuccess, exitFailure)
-import Data.Foldable      (traverse_)
+import Data.Foldable (traverse_)
 import qualified Data.Text as T
 import qualified Data.Text.IO as IO
+import System.Exit (exitSuccess, exitFailure)
 import qualified Shelly as S
 
 import Aura.Colour.Text (yellow)
-import Aura.Shell       (shellCmd)
-import Aura.Settings.Enable
-import Aura.Settings.Base
-import Aura.Monad.Aura
-import Aura.Languages
-import Aura.Pacman
-import Aura.Flags
-import Aura.Utils
 import Aura.Core
+import Aura.Flags
+import Aura.Languages
 import Aura.Logo
-
+import Aura.Monad.Aura
+import Aura.Pacman
+import Aura.Settings.Base
+import Aura.Settings.Enable
+import Aura.Shell (shellCmd, showCursor, hideCursor)
+import Aura.Utils
 import Utilities (replaceByPatt)
-import Aura.Shell     (showCursor, hideCursor)
 
 import Aura.Commands.A as A
 import Aura.Commands.B as B

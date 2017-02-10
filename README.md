@@ -6,7 +6,6 @@ Welcome to the main repository for all things Aura.
 Aura
 ----
 
-[![Stories in Ready](https://badge.waffle.io/aurapm/aura.png?label=ready&title=Ready)](https://waffle.io/aurapm/aura)
 [![Build Status](https://travis-ci.org/aurapm/aura.svg?branch=master)](https://travis-ci.org/aurapm/aura)
 [![Join the chat at https://gitter.im/aurapm/aura](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/aurapm/aura?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 

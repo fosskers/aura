@@ -26,20 +26,23 @@ module Aura.Settings.Enable
 
 import BasicPrelude hiding (FilePath)
 
-import Data.Maybe         (fromJust)
 import Data.Foldable
+import Data.Maybe (fromJust)
+import Data.Monoid
 import qualified Data.Text as T
 import qualified Data.Text.IO as IO
+import Network.HTTP.Client (newManager)
+import Network.HTTP.Client.TLS (tlsManagerSettings)
 
-import Aura.Languages (Language, langFromEnv)
-import Aura.MakePkg   (makepkgConfFile)
-import Aura.Settings.Base
-import Aura.Pacman
 import Aura.Flags
+import Aura.Languages (Language, langFromEnv)
+import Aura.MakePkg (makepkgConfFile)
+import Aura.Pacman
+import Aura.Settings.Base
 
-import Utilities (ifte_, exists)
 import Aura.Shell
 import Shelly
+import Utilities (ifte_, exists)
 
 ---
 
@@ -49,12 +52,14 @@ getSettings lang' (auraFlags, input, pacOpts) = do
   pmanCommand <- getPacmanCmd $ noPowerPillStatus auraFlags
   makepkgConf <- getConf $ fromText makepkgConfFile
   buildPath'  <- checkBuildPath (buildPath auraFlags) (getCachePath confFile)
+  manager     <- liftIO $ newManager tlsManagerSettings
   editor'     <- editor
   buildUser'  <- getUser auraFlags
   language    <- checkLang lang'
   pure Settings { inputOf         = input
                 , pacOptsOf       = pacOpts
                 , otherOptsOf     = show <$> auraFlags
+                , managerOf       = manager
                 , buildUserOf     = buildUser'
                 , langOf          = language
                 , pacmanCmdOf     = fromText pmanCommand

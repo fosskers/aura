@@ -39,7 +39,7 @@ import Aura.Cache
 import Aura.Languages     (pacmanFailure_1)
 import Aura.Monad.Aura hiding (liftIO)
 import Aura.Settings.Base (pacmanCmdOf)
-import Aura.Shell         (shellCmd, quietShellCmd, quietShellCmd')
+import Aura.Shell         (quietShellCmd, quietShellCmd')
 import Aura.Utils         (scoldAndFail)
 import Shelly hiding (cmd)
 import Utilities

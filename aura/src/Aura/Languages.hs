@@ -20,7 +20,7 @@ Filip Brcic                       | Serbian
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2016 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -43,10 +43,11 @@ module Aura.Languages where
 
 import BasicPrelude hiding (FilePath)
 
-import Aura.Colour.Text (cyan, green, red, blue, yellow, magenta, bForeground)
 import qualified Data.Map.Lazy as Map (Map, (!), fromList, toList, mapWithKey)
 import qualified Data.Text as T
-import Shelly (FilePath,toTextIgnore)
+import           Shelly (FilePath, toTextIgnore)
+
+import           Aura.Colour.Text (cyan, green, red, blue, yellow, magenta, bForeground)
 
 ---
 
@@ -228,7 +229,7 @@ mustBeRoot_1 = let sudo = bt "sudo" in \case
     Serbian    -> "Морате да користите " <> sudo <> " за ову радњу."
     Norwegian  -> "Du må bruke " <> sudo <> " for det."
     Indonesia  -> "Anda harus menggunakan " <> sudo <> " untuk melakukannya."
-    _          -> "You have to use " <> sudo <> " for that."
+    _          -> "You cannot perform this operation unless you are root."
 
 -----------------------
 -- Aura/Build functions
