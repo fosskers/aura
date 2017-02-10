@@ -13,13 +13,11 @@
 module Linux.Arch.Aur.Rpc
        ( info, search ) where
 
-import Control.Monad.Trans (MonadIO, liftIO)
-import Control.Monad.Trans.Except
+import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Proxy
 import Data.Text (Text)
 import Linux.Arch.Aur.Types
-import Network.HTTP.Client (newManager)
-import Network.HTTP.Client.TLS
+import Network.HTTP.Client (Manager)
 import Servant.API
 import Servant.Client
 
@@ -47,16 +45,12 @@ url = BaseUrl Https "aur.archlinux.org" 443 ""
 rpcI :<|> rpcS = client api
 
 -- | Perform an @info@ call on one or more package names.
-info :: MonadIO m => [Text] -> m [AurInfo]
-info ps = do
-  manager <- liftIO $ newManager tlsManagerSettings
-  unwrap $ rpcI (Just "5") (Just "info") ps manager url
+info :: MonadIO m => Manager -> [Text] -> m [AurInfo]
+info m ps = unwrap m $ rpcI (Just "5") (Just "info") ps
 
 -- | Perform a @search@ call on a package name or description text.
-search :: MonadIO m => Text -> m [AurInfo]
-search p = do
-  manager <- liftIO $ newManager tlsManagerSettings
-  unwrap $ rpcS (Just "5") (Just "search") (Just p) manager url
+search :: MonadIO m => Manager -> Text -> m [AurInfo]
+search m p = unwrap m $ rpcS (Just "5") (Just "search") (Just p)
 
-unwrap :: MonadIO m => ExceptT ServantError IO RPCResp -> m [AurInfo]
-unwrap = liftIO . fmap (either (const []) _results) . runExceptT
+unwrap :: MonadIO m => Manager -> ClientM RPCResp -> m [AurInfo]
+unwrap m r = liftIO . fmap (either (const []) _results) $ runClientM r (ClientEnv m url)

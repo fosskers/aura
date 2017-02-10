@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2016 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -27,22 +27,26 @@ module Internet
 
 import           BasicPrelude hiding (FilePath,(</>))
 
-import           Lens.Micro ((^?))
-import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as L
-import           Network.Wreq
-import           Filesystem.Path.CurrentOS (FilePath, filename, (</>), fromText)
+import qualified Data.Text as T
 import           Filesystem (openFile, IOMode(WriteMode))
+import           Filesystem.Path.CurrentOS (FilePath, filename, (</>), fromText)
+import           Network.HTTP.Client
+import           Network.HTTP.Types.Status (statusCode)
 import           System.IO (hClose)
 
 ---
 
-urlContents :: T.Text -> IO (Maybe L.ByteString)
-urlContents url = (^? responseBody) <$> get (T.unpack url)
+-- | Assumes the given URL is correctly formatted.
+urlContents :: Manager -> T.Text -> IO (Maybe L.ByteString)
+urlContents m url = fmap f $ httpLbs (parseRequest_ (T.unpack url)) m
+  where f res | statusCode (responseStatus res) == 200 = Just $ responseBody res
+              | otherwise = Nothing
 
-saveUrlContents :: FilePath -> T.Text -> IO (Maybe FilePath)
-saveUrlContents fpath url = do
-  contents <- urlContents url
+-- | Fetch data from some URL, and save it to the filesystem.
+saveUrlContents :: Manager -> FilePath -> T.Text -> IO (Maybe FilePath)
+saveUrlContents m fpath url = do
+  contents <- urlContents m url
   case contents of
     Nothing -> pure Nothing
     Just c  -> do

@@ -1,6 +1,6 @@
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2016 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -25,10 +25,11 @@ module Aura.Settings.Base ( Settings(..)
 
 import BasicPrelude hiding (FilePath)
 
-import Aura.Languages (Language)
-
-import Shelly (FilePath)
 import qualified Data.Text as T
+import Network.HTTP.Client (Manager)
+import Shelly (FilePath)
+
+import Aura.Languages (Language)
 
 ---
 
@@ -36,10 +37,11 @@ data SortScheme = ByVote | Alphabetically deriving (Eq, Show)
 
 data Truncation = None | Head Int | Tail Int deriving (Eq, Show)
 
--- The global settings as set by the user with command-line flags.
+-- | The global settings as set by the user with command-line flags.
 data Settings = Settings { inputOf         :: [T.Text]
                          , pacOptsOf       :: [T.Text]
                          , otherOptsOf     :: [T.Text]
+                         , managerOf       :: Manager
                          , buildUserOf     :: T.Text
                          , langOf          :: Language
                          , pacmanCmdOf     :: FilePath

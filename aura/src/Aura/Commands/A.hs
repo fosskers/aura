@@ -6,7 +6,7 @@
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2016 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -36,27 +36,27 @@ module Aura.Commands.A
 
 import           BasicPrelude hiding (FilePath, liftIO)
 
+import           Control.Monad
+import           Data.Foldable (traverse_, fold)
 import           Data.Maybe (fromJust)
 import qualified Data.Set as S (member, fromList)
 import qualified Data.Text as T
 import qualified Data.Text.ICU as Re
 import           Text.Printf.TH (st)
-import           Data.Foldable (traverse_, fold)
 import           Linux.Arch.Aur
 
+import           Aura.Bash (namespace, Namespace)
+import           Aura.Colour.Text
+import           Aura.Core
 import           Aura.Install (InstallOptions(..))
 import qualified Aura.Install as I
-
-import           Aura.Bash (namespace, Namespace)
+import           Aura.Languages
+import           Aura.Monad.Aura
+import           Aura.Packages.ABS (absDepsRepo)
+import           Aura.Packages.AUR
 import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings.Base
-import           Aura.Packages.ABS (absDepsRepo)
-import           Aura.Packages.AUR
-import           Aura.Colour.Text
-import           Aura.Core
-import           Aura.Languages
-import           Aura.Monad.Aura
 import           Aura.Utils
 import           Aura.Utils.Numbers
 
@@ -118,7 +118,7 @@ aurPkgInfo pkgs = aurInfo pkgs >>= traverse_ displayAurPkgInfo
 displayAurPkgInfo :: AurInfo -> Aura ()
 displayAurPkgInfo ai = ask >>= \ss -> do
     let name = aurNameOf ai
-    ns <- fromJust <$> pkgbuild' name >>= namespace name
+    ns <- fromJust <$> pkgbuild' (managerOf ss) name >>= namespace name
     liftIO $ putStrLn $ renderAurPkgInfo ss ai ns <> "\n"
 
 renderAurPkgInfo :: Settings -> AurInfo -> Namespace -> T.Text
@@ -130,14 +130,14 @@ renderAurPkgInfo ss ai ns = entrify ss fields entries
                     , aurVersionOf ai
                     , outOfDateMsg (dateObsoleteOf ai) $ langOf ss
                     , orphanedMsg (aurMaintainerOf ai) $ langOf ss
-                    , cyan  $ urlOf ai
+                    , cyan $ fromMaybe "(null)" (urlOf ai)
                     , toTextIgnore $ pkgUrl $ aurNameOf ai
                     , unwords $ licenseOf ai
                     , showEmpty . unwords $ depends ns
                     , showEmpty . unwords $ makedepends ns
                     , yellow . show $ aurVotesOf ai
                     , yellow . [st|%.02f|] $ popularityOf ai
-                    , aurDescriptionOf ai ]
+                    , fromMaybe "(null)" (aurDescriptionOf ai) ]
 
 aurPkgSearch :: [T.Text] -> Aura ()
 aurPkgSearch [] = pure ()
@@ -165,14 +165,14 @@ renderSearch ss r (i, e) = searchResult
                     <$> Re.find (Re.regex [] ("(?i)"<> r)) cs)
           repo = magenta "aur/"
           n = c bForeground $ aurNameOf i
-          d = c noColour $ aurDescriptionOf i
+          d = c noColour $ fromMaybe "(null)" (aurDescriptionOf i)
           l = yellow . show $ aurVotesOf i  -- `l` for likes?
           p = yellow $ [st|%0.02f|] (popularityOf i)
           v = case dateObsoleteOf i of
             Just _  -> red $ aurVersionOf i
             Nothing -> green $ aurVersionOf i
           s = c bForeground (" [installed]" :: T.Text)
-                              
+
 displayPkgDeps :: [T.Text] -> Aura ()
 displayPkgDeps ps = do
     opts <- installOptions
@@ -184,11 +184,14 @@ downloadTarballs pkgs = do
   traverse_ (downloadTBall currDir) pkgs
     where downloadTBall :: FilePath -> T.Text -> Aura ()
           downloadTBall path' pkg = whenM (isAurPackage pkg) $ do
+              manager <- asks managerOf
               notify $ downloadTarballs_1 pkg
-              void $ sourceTarball path' $ pkg
+              void $ sourceTarball manager path' $ pkg
 
 displayPkgbuild :: [T.Text] -> Aura ()
-displayPkgbuild = I.displayPkgbuild $ traverse pkgbuild'
+displayPkgbuild ps = do
+  m <- asks managerOf
+  I.displayPkgbuild (traverse (pkgbuild' m)) ps
 
 isntMostRecent :: (AurInfo, T.Text) -> Bool
 isntMostRecent (ai, v) = trueVer > currVer
