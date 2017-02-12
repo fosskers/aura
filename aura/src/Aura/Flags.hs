@@ -266,6 +266,11 @@ settingsFlags = [ Unsuppress, NoConfirm, HotEdit, DiffPkgbuilds, Debug, Devel
                 , DelMDeps, Customizepkg, Quiet, NoPowerPill, KeepSource
                 , BuildABSDeps, ABCSort, IgnoreArch, DryRun, Needed ]
 
+languageFlags :: [Flag]
+languageFlags = [ JapOut, PolishOut, CroatianOut, SwedishOut, GermanOut
+                , SpanishOut, PortuOut, FrenchOut, RussianOut, ItalianOut
+                , SerbianOut, NorwegiOut ]
+
 -- Flags like `AURIgnore` and `BuildPath` have args, and thus can't be included
 -- in the `settingsFlags` list.
 notSettingsFlag :: Flag -> Bool
@@ -275,7 +280,7 @@ notSettingsFlag (BuildUser _)   = False
 notSettingsFlag (TruncHead _)   = False
 notSettingsFlag (TruncTail _)   = False
 notSettingsFlag (PacmanArg _ _) = False
-notSettingsFlag f               = f `notElem` settingsFlags
+notSettingsFlag f               = f `notElem` (settingsFlags ++ languageFlags)
 
 auraOperMsg :: Language -> String
 auraOperMsg lang = usageInfo (yellow $ auraOperTitle lang) $ auraOperations lang
@@ -289,10 +294,7 @@ fishOutFlag ((f, r):fs) alt flags | f `elem` flags = r
 
 getLanguage :: [Flag] -> Maybe Language
 getLanguage = fishOutFlag flagsAndResults Nothing
-    where flagsAndResults = zip langFlags langFuns
-          langFlags       = [ JapOut, PolishOut, CroatianOut, SwedishOut
-                            , GermanOut, SpanishOut, PortuOut, FrenchOut
-                            , RussianOut, ItalianOut, SerbianOut, NorwegiOut ]
+    where flagsAndResults = zip languageFlags langFuns
           langFuns        = Just <$> [Japanese ..]
 
 ignoredAuraPkgs :: [Flag] -> [String]
