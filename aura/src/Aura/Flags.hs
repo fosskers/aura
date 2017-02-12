@@ -1,6 +1,6 @@
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2017 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -123,6 +123,7 @@ data Flag = ABSInstall
           | ItalianOut
           | SerbianOut
           | NorwegiOut
+          | IndoOut
           | PacmanArg String String
             deriving (Eq, Ord, Show)
 
@@ -228,7 +229,9 @@ languageOptions = fmap simpleOption
                   , ( [], ["russian", "русский"],      RussianOut  )
                   , ( [], ["italian", "italiano"],     ItalianOut  )
                   , ( [], ["serbian", "српски"],       SerbianOut  )
-                  , ( [], ["norwegian", "norsk"],      NorwegiOut  ) ]
+                  , ( [], ["norwegian", "norsk"],      NorwegiOut  )
+                  , ( [], ["indonesian"],              IndoOut     )
+                  ]
 
 -- `Hijacked` flags. They have original pacman functionality, but
 -- that is masked and made unique in an Aura context.
@@ -269,7 +272,7 @@ settingsFlags = [ Unsuppress, NoConfirm, HotEdit, DiffPkgbuilds, Debug, Devel
 languageFlags :: [Flag]
 languageFlags = [ JapOut, PolishOut, CroatianOut, SwedishOut, GermanOut
                 , SpanishOut, PortuOut, FrenchOut, RussianOut, ItalianOut
-                , SerbianOut, NorwegiOut ]
+                , SerbianOut, NorwegiOut, IndoOut ]
 
 -- Flags like `AURIgnore` and `BuildPath` have args, and thus can't be included
 -- in the `settingsFlags` list.
