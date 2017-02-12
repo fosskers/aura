@@ -32,7 +32,7 @@ import System.Directory (doesDirectoryExist)
 import System.Environment (getEnvironment)
 
 import Aura.Flags
-import Aura.Languages (Language, langFromEnv)
+import Aura.Languages (Language, langFromLocale)
 import Aura.MakePkg (makepkgConfFile)
 import Aura.Pacman
 import Aura.Settings.Base
@@ -116,7 +116,7 @@ debugOutput ss = do
                      , "Keep source?      => " <> yn (keepSource ss) ]
 
 checkLang :: Maybe Language -> Environment -> Language
-checkLang Nothing env   = langFromEnv $ getLangVar env
+checkLang Nothing env   = langFromLocale $ getLocale env
 checkLang (Just lang) _ = lang
 
 -- | Defaults to the cache path if no (legal) build path was given.
