@@ -23,8 +23,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Pkgbuild.Records where
 
-import System.Directory (doesFileExist)
-import System.FilePath  ((</>))
+import System.Directory (doesFileExist, createDirectoryIfMissing)
+import System.FilePath  ((</>), dropFileName)
 import Data.Foldable    (traverse_)
 
 import Aura.Pkgbuild.Base
@@ -52,4 +52,6 @@ readPkgbuild :: String -> Aura String
 readPkgbuild = liftIO . readFileUTF8 . pkgbuildPath
 
 writePkgbuild :: String -> String -> Aura ()
-writePkgbuild name p = liftIO $ writeFile (pkgbuildPath name) p
+writePkgbuild name p = liftIO $ do
+  createDirectoryIfMissing True $ dropFileName $ pkgbuildPath name
+  writeFile (pkgbuildPath name) p
