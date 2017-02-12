@@ -1,4 +1,6 @@
-resolver: nightly-2016-10-01
+# Last nightly before ghc-8.0.2
+# (Feb 12) `shelly` doesn't yet build with ghc-8.0.2
+resolver: nightly-2017-01-17
 
 packages:
   - aura/
