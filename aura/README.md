@@ -23,7 +23,7 @@ The Aura Philosophy
 
 ### All together
 Dependencies and packages are not built and installed one at a time.
-Install order is as follows: 
+Install order is as follows:
 1. All pacman (ABS) dependencies (all at once).
 2. All AUR dependencies (one at a time).
 3. All AUR packages (all at once).
@@ -47,7 +47,7 @@ Install order is as follows:
   However, for functionality's sake, the option `--hotedit` used with `-A`
   will prompt the user for PKGBUILD editing. Regardless, as a responsible
   user you must know what you are building.
-  
+
 ### Downgradibility
   Built AUR package files are moved to the package cache.
   This allows for them to be easily downgraded when problems arise.
@@ -59,7 +59,7 @@ Install order is as follows:
   installed on your system. Sometimes AUR package "makedepends"
   aren't required at all after install. Packages like this just
   sit there, receiving upgrades for no reason.
-  Aura helps keep track of and remove packages like this. 
+  Aura helps keep track of and remove packages like this.
 
 ### Arch Linux for Everyone
   English is well established as the world's Lingua Franca, and is also
@@ -149,7 +149,7 @@ Store a record of all installed packages:
 
 Restore a saved record. Rolls back, uninstalls, and reinstalls packages as necessary:
 
-    aura -Br
+    aura -B --restore
 
 #### Working with the Package Cache
 Downgrade a package (this is interactive):
