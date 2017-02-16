@@ -31,26 +31,27 @@ module Aura.State
 
 import qualified Data.Map.Lazy as M
 
-import System.FilePath ((</>))
-import Control.Monad   (unless)
-import Control.Arrow   (first)
-import Data.Maybe      (mapMaybe)
-import Data.List       (partition, sort)
-import Data.Monoid     ((<>))
+import           Control.Arrow (first)
+import           Control.Monad (unless)
+import           Data.List (partition, sort)
+import           Data.Maybe (mapMaybe)
+import           Data.Monoid ((<>))
+import           System.Directory (createDirectoryIfMissing)
+import           System.FilePath ((</>))
 
-import Aura.Cache
-import Aura.Colour.Text   (cyan, red)
-import Aura.Core          (warn, notify)
-import Aura.Languages
-import Aura.Monad.Aura
-import Aura.Pacman        (pacmanOutput, pacman)
-import Aura.Settings.Base
-import Aura.Time
-import Aura.Utils         (printList)
-import Aura.Utils.Numbers
+import           Aura.Cache
+import           Aura.Colour.Text (cyan, red)
+import           Aura.Core (warn, notify)
+import           Aura.Languages
+import           Aura.Monad.Aura
+import           Aura.Pacman (pacmanOutput, pacman)
+import           Aura.Settings.Base
+import           Aura.Time
+import           Aura.Utils (printList, scoldAndFail)
+import           Aura.Utils.Numbers
 
-import Utilities (getSelection, readFileUTF8)
-import Shell     (ls')
+import           Utilities (getSelection, readFileUTF8)
+import           Shell (ls')
 
 ---
 
@@ -88,17 +89,27 @@ toChangeAndRemove :: PkgState -> PkgState -> StateDiff
 toChangeAndRemove old curr = M.foldrWithKey status ([], []) $ pkgsOf curr
     where status k v (d, r) = case M.lookup k (pkgsOf old) of
                                Nothing -> (d, k : r)
-                               Just v' -> if v == v'
-                                          then (d, r)
-                                          else ((k, v') : d, r)
+                               Just v' | v == v' -> (d, r)
+                                       | otherwise -> ((k, v') : d, r)
 
 -- | Packages that were uninstalled since the last record.
 olds :: PkgState -> PkgState -> [SimplePkg]
 olds old curr = M.assocs $ M.difference (pkgsOf old) (pkgsOf curr)
 
 getStateFiles :: Aura [FilePath]
-getStateFiles = sort <$> liftIO (ls' stateCache)
+getStateFiles = do
+  files <- liftIO getStateFiles'
+  case files of
+    [] -> scoldAndFail restoreState_2
+    fs -> pure fs
 
+getStateFiles' :: IO [FilePath]
+getStateFiles' = do
+  createDirectoryIfMissing True stateCache
+  sort <$> ls' stateCache
+
+-- | In writing the first state file, the `states` directory is created
+-- automatically.
 saveState :: Aura ()
 saveState = do
   state <- currentState

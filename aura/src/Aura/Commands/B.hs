@@ -1,6 +1,6 @@
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2017 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -24,15 +24,15 @@ module Aura.Commands.B
     , restoreState
     , cleanStates ) where
 
+import Data.Char (isDigit)
+import Data.Foldable (traverse_)
 import System.FilePath ((</>))
-import Data.Char       (isDigit)
-import Data.Foldable   (traverse_)
 
-import Aura.Utils (scoldAndFail, optionalPrompt)
-import Aura.Core  (warn)
-import Aura.Monad.Aura
+import Aura.Core (warn)
 import Aura.Languages
+import Aura.Monad.Aura
 import Aura.State
+import Aura.Utils (scoldAndFail, optionalPrompt)
 
 import Shell (rm)
 

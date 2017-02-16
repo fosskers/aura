@@ -36,7 +36,8 @@ data Time = Time { yearOf   :: Integer
                  , monthOf  :: Int
                  , dayOf    :: Int
                  , hourOf   :: Int
-                 , minuteOf :: Int }
+                 , minuteOf :: Int
+                 , secondOf :: Int }
             deriving (Eq, Show, Read)
 
 months :: [String]
@@ -50,10 +51,10 @@ toTime :: LocalTime -> Time
 toTime t = Time { yearOf   = ye
                 , monthOf  = mo
                 , dayOf    = da
-                , hourOf   = ho
-                , minuteOf = mi }
+                , hourOf   = todHour $ localTimeOfDay t
+                , minuteOf = todMin $ localTimeOfDay t
+                , secondOf = round . todSec $ localTimeOfDay t }
     where (ye, mo, da) = toGregorian $ localDay t
-          (ho, mi)    = (todHour $ localTimeOfDay t, todMin $ localTimeOfDay t)
 
 dotFormat :: Time -> String
 dotFormat t = intercalate "." items
@@ -61,4 +62,5 @@ dotFormat t = intercalate "." items
                   , printf "%02d(%s)" (monthOf t) (months !! (monthOf t - 1))
                   , printf "%02d" (dayOf t)
                   , printf "%02d" (hourOf t)
-                  , printf "%02d" (minuteOf t) ]
+                  , printf "%02d" (minuteOf t)
+                  , printf "%02d" (secondOf t) ]

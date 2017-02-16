@@ -155,7 +155,7 @@ auraOptions = Option [] ["aurignore"] (ReqArg AURIgnore "" ) "" :
               Option [] ["tail"] (OptArg (TruncTail . truncHandler) "") "" :
               fmap simpleOption
               [ ( "a", ["delmakedeps"],  DelMDeps      )
-              , ( "b", ["backup"],       CacheBackup   )
+              , ( [],  ["backup"],       CacheBackup   )
               , ( "c", ["clean"],        Clean         )
               , ( "d", ["deps"],         ViewDeps      )
               , ( "j", ["abandon"],      Abandon       )
@@ -163,7 +163,7 @@ auraOptions = Option [] ["aurignore"] (ReqArg AURIgnore "" ) "" :
               , ( "i", ["info"],         Info          )
               , ( "p", ["pkgbuild"],     GetPkgbuild   )
               , ( "q", ["quiet"],        Quiet         )
-              , ( "r", ["restore"],      RestoreState  )
+              , ( [],  ["restore"],      RestoreState  )
               , ( "s", ["search"],       Search        )
               , ( "t", ["treesync"],     TreeSync      )
               , ( "u", ["sysupgrade"],   Upgrade       )
