@@ -15,9 +15,6 @@ cabal-version:       >=1.10
 executable arel
   main-is:             arel.hs
 
-  other-modules:       Arel.Util
-                     , Arel.Versions
-
   -- other-extensions:
   build-depends:       base >=4.8 && < 4.10
                      , optparse-generic >= 1.1 && < 1.2
