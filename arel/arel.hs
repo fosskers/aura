@@ -1,63 +1,50 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 
--- arel - Helps create aura releases.
+module Main where
 
-import           Data.List (sortBy)
+import           Data.Monoid ((<>))
 import qualified Data.Text as T
+import           Options.Generic
 import           Prelude hiding (FilePath)
 import           Shelly
-import           Text.Regex.PCRE ((=~))
-
-import           Arel.Util
-import           Arel.Versions
 
 ---
 
+data Env = Env { release :: T.Text } deriving (Generic, ParseRecord)
+
 projectDir :: FilePath
-projectDir = "/home/colin/code/haskell/aura/aura/"
+projectDir = "/home/colin/code/haskell/aura/"
 
 aurDir :: FilePath
-aurDir = "/home/colin/code/aur/aura/"
+aurDir = "/home/colin/code/haskell/aura/aur-pkgs/aura/"
 
 main :: IO ()
-main = shelly $ errExit False $ do
-  cd projectDir
-  removeOldFiles
-  makeNewPkgFile
-  alterPKGBUILD
-  makeSrcInfo
-  copyOver
-  echo "Done."
+main = do
+  env <- getRecord "AREL - Create an Aura release"
+  shelly $ errExit False $ do
+    cd projectDir
+    makeNewPkgFile env
+    alterPKGBUILD
+    makeSrcInfo
+    echo "Done."
 
-removeOldFiles :: Sh ()
-removeOldFiles = (filter isPkgFile <$> ls projectDir) >>= mapM_ rm
+makeNewPkgFile :: Env -> Sh ()
+makeNewPkgFile (Env v) = do
+  run_ "stack" ["build", "aura"]
+  run_ "stack" ["sdist", "aura"]
+  cp (tarballPath v) aurDir
 
-isPkgFile :: FilePath -> Bool
-isPkgFile (toTextIgnore -> f) = T.isPrefixOf "./aura-" f
-
-makeNewPkgFile :: Sh ()
-makeNewPkgFile = do
-  run_ "cabal" ["configure"]
-  run_ "cabal" ["sdist"]
-  cd "dist/"
-  pkgs <- ls "."
-  let latest = last . sortPkgFiles . filter isPkgFile $ pkgs
-  cp latest projectDir
-  cd projectDir
-
-sortPkgFiles :: [FilePath] -> [FilePath]
-sortPkgFiles [] = []
-sortPkgFiles fs = sortBy verNums fs
-  where verNums a b = compare (ver a) (ver b)
-
-ver :: FilePath -> Maybe Version
-ver (fptos -> f) = case f =~ patt :: (String,String,String) of
-                    (_,m,_) -> version $ T.pack m
-  where patt = "[0-9.]+[0-9]" :: String
+-- | The location of a built release tarball, the output of `stack sdist`.
+-- Beware: the `cabal` version is not static.
+tarballPath :: Text -> FilePath
+tarballPath v = fromText $ "aura/.stack-work/dist/x86_64-linux/Cabal-1.24.0.0/aura-" <> v <> ".tar.gz"
 
 alterPKGBUILD :: Sh ()
 alterPKGBUILD = do
+  cd aurDir
   md5 <- run "makepkg" ["-g"]
   pb  <- T.lines <$> readfile "PKGBUILD"
   let news = map (\l -> if T.isPrefixOf "md5sums=" l then md5 else l) pb
@@ -65,6 +52,3 @@ alterPKGBUILD = do
 
 makeSrcInfo :: Sh ()
 makeSrcInfo = run_ "mksrcinfo" []
-
-copyOver :: Sh ()
-copyOver = cp "PKGBUILD" aurDir >> cp ".SRCINFO" aurDir
