@@ -1705,6 +1705,11 @@ restoreState_1 = \case
     Indonesia  -> "Versi yang diturunkan tidak tersedia untuk: "
     _          -> "Requested downgrade versions not available for:"
 
+restoreState_2 :: Language -> String
+restoreState_2 = \case
+  Japanese -> "保存されたパッケージ状態がない。作るには「-B」を。"
+  _        -> "No saved states to be restored. (Use -B to save the current state)"
+
 -- NEEDS TRANSLATION
 reinstallAndRemove_1 :: Language -> String
 reinstallAndRemove_1 = \case

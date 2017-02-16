@@ -1,6 +1,6 @@
 {-
 
-Copyright 2012 - 2016 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2017 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
