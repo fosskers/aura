@@ -1,5 +1,11 @@
 Aura Changelog
 ==============
+1.3.8
+-----
+- Fixed behaviour of `-B` flags. For restoring of saved states, use the long
+  form: `aura -B --restore`. Cache backups also need to take their long form: `aura -C --backup`.
+- Fixed handling of language flags. Thanks to Doug Patti!
+
 1.3.5
 -----
 - Aura now uses version 5 of the `aur` package, to fix a critial bug
@@ -402,7 +408,7 @@ Aura Changelog
 0.8.0.0
 -------
 - Help message now supports multiple languages.
-- Broke "no overlapping options" convention. 
+- Broke "no overlapping options" convention.
 - `-Cz` is now `-Cb`.
 - New option `-Ad`. Lists _all_ dependencies of an AUR package.
   This is to aid pre-building research.
