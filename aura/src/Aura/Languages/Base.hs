@@ -14,4 +14,5 @@ data Language = English
               | Serbian
               | Norwegian
               | Indonesia
+              | Chinese
                 deriving (Eq, Enum, Ord, Read, Show)

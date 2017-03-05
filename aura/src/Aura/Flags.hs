@@ -124,6 +124,7 @@ data Flag = ABSInstall
           | SerbianOut
           | NorwegiOut
           | IndoOut
+          | ChineseOut
           | PacmanArg String String
             deriving (Eq, Ord, Show)
 
@@ -231,6 +232,7 @@ languageOptions = fmap simpleOption
                   , ( [], ["serbian", "српски"],       SerbianOut  )
                   , ( [], ["norwegian", "norsk"],      NorwegiOut  )
                   , ( [], ["indonesian"],              IndoOut     )
+                  , ( [], ["chinese", "中文"],         ChineseOut  )
                   ]
 
 -- `Hijacked` flags. They have original pacman functionality, but
@@ -272,7 +274,7 @@ settingsFlags = [ Unsuppress, NoConfirm, HotEdit, DiffPkgbuilds, Debug, Devel
 languageFlags :: [Flag]
 languageFlags = [ JapOut, PolishOut, CroatianOut, SwedishOut, GermanOut
                 , SpanishOut, PortuOut, FrenchOut, RussianOut, ItalianOut
-                , SerbianOut, NorwegiOut, IndoOut ]
+                , SerbianOut, NorwegiOut, IndoOut, ChineseOut ]
 
 -- Flags like `AURIgnore` and `BuildPath` have args, and thus can't be included
 -- in the `settingsFlags` list.

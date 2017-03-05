@@ -85,6 +85,7 @@ languageNames = Map.fromList . zip [ Polish, Croatian, Swedish, German, Spanish,
     Serbian    -> [ "Пољски", "Хрватски", "Шведски", "Немачки", "Шпански", "Португалски", "Француски", "Руски", "Италијански", "Српски", "", "Indonesia" ]
     Norwegian  -> [ "Polsk", "Kroatisk", "Svensk", "Tysk", "Spansk", "Portugisisk", "Fransk", "Russisk", "Italiensk", "Serbisk", "Norsk", "Indonesia" ]
     Indonesia  -> [ "Polandia", "Kroasia", "Swedia", "Jerman", "Spanyol", "Portugis", "Prancis", "Rusia", "Italia", "Serbia", "Norwegia", "Indonesia" ]
+    Chinese    -> [ "波兰语", "克罗地亚语", "瑞典语", "德语", "西班牙语", "葡萄牙语", "法语", "俄语", "意大利语", "塞尔维亚语", "挪威语", "印度尼西亚语" ]
     _          -> [ "Polish", "Croatian", "Swedish", "German", "Spanish", "Portuguese", "French", "Russian", "Italian", "Serbian", "Norwegian", "Indonesia" ]
 
 translatorMsgTitle :: Language -> String
@@ -102,6 +103,7 @@ translatorMsgTitle = \case
     Serbian    -> "Преводиоци Аура:"
     Norwegian  -> "Aura Oversettere:"
     Indonesia  -> "Penerjemah Aura:"
+    Chinese    -> "Aura 的翻译者："
     _          -> "Aura Translators:"
 
 translatorMsg :: Language -> [String]
@@ -138,6 +140,7 @@ langFromLocale = take 2 >>> \case
     "sr" -> Serbian
     "nb" -> Norwegian
     "id" -> Indonesia
+    "zh" -> Chinese
     _    -> English
 
 
@@ -156,6 +159,7 @@ checkDBLock_1 = \case
     French     -> "La base de données des paquets est bloquée. Appuyez sur enter pour continuer."
     Portuguese -> "Banco de dados de pacote travado. Aperte 'enter' quando estiver destravado para poder continuar."
     Russian    -> "База данных пакетов заблокирована. Нажмите \"Ввод\", когда она разблокируется, чтобы продолжить."
+    Chinese    -> "包数据库已锁定。请在解锁后按下回车以继续。"
     _          -> "The package database is locked. Press enter when it's unlocked to continue."
 
 -- Packages should not be built if the user is logged in as root!
@@ -174,6 +178,7 @@ trueRoot_1 = \case
     Serbian    -> "Не би требало градити пакете са правим root овлашћењима. Желите ли наставити?"
     Norwegian  -> "Du bør aldri bygge pakker som root. Er du helt sikker på at du vil gjøre dette?"
     Indonesia  -> "Paket tidak boleh dibangun oleh root. Apakah anda setuju dengan hal ini?"
+    Chinese    -> "请不要以根用户构建包。以普通用户构建？"
     _          -> "You should never build packages as the true root. Are you okay with this?"
 
 -- This is for when the user decides to refrain from building afterall.
@@ -192,6 +197,7 @@ trueRoot_2 = \case
     Serbian    -> "Исправно сте поступили."
     Norwegian  -> "Du gjør det rette."
     Indonesia  -> "Bagus! Papa bangga sama kamu!"
+    Chinese    -> "你做了正确的事情。"
     _          -> "You’ve done the right thing."
 
 trueRoot_3 :: Language -> String
@@ -199,6 +205,7 @@ trueRoot_3 = \case
   Japanese -> "「root」としてパッケージを作成するのは「makepkg v4.2」で不可能になった。"
   German   -> "Seit makepkg v4.2 ist es nicht mehr möglich als root zu bauen."
   Spanish  -> "Desde makepkg v4.2 no es posible compilar paquetes como root."
+  Chinese  -> "自从 makepkg v4.2 以后，就不能以根用户身份构建软件了。"
   _        -> "As of makepkg v4.2, building as root is no longer possible."
 
 mustBeRoot_1 :: Language -> String
@@ -216,6 +223,7 @@ mustBeRoot_1 = let sudo = bt "sudo" in \case
     Serbian    -> "Морате да користите " <> sudo <> " за ову радњу."
     Norwegian  -> "Du må bruke " <> sudo <> " for det."
     Indonesia  -> "Anda harus menggunakan " <> sudo <> " untuk melakukannya."
+    Chinese    -> "除非是根用户，否则不能执行此操作。"
     _          -> "You cannot perform this operation unless you are root."
 
 -----------------------
@@ -236,6 +244,7 @@ buildPackages_1 (bt -> p) = \case
     Serbian    -> "Градим " <> p <> "..."
     Norwegian  -> "Bygger " <> p <> "..."
     Indonesia  -> "Membangun " <> p <> "..."
+    Chinese    -> p <> " 正在构建中..."
     _          -> "Building " <> p <> "..."
 
 buildFail_1 :: String -> Language -> String
@@ -253,6 +262,7 @@ buildFail_1 (bt -> p) = \case
     Serbian    -> "Изградња пакета " <> p <> " није успела."
     Norwegian  -> "Bygging av " <> p <> " feilet."
     Indonesia  -> "Gagal membangun " <> p
+    Chinese    -> p <> " 构建失败。"
     _          -> "Well, building " <> p <> " failed."
 
 buildFail_2 :: Language -> String
@@ -270,6 +280,7 @@ buildFail_2 = \case
     Serbian    -> "Такође, ни следећи пакети нису изграђени::"
     Norwegian  -> "Det gikk heller ikke an å bygge følgende:"
     Indonesia  -> "Dan paket berikut juga tidak terbangun:"
+    Chinese    -> "而且，以下包也不会被构建："
     _          -> "Also, the following weren’t built:"
 
 buildFail_3 :: Language -> String
@@ -287,6 +298,7 @@ buildFail_3 = \case
     Serbian    -> "Међутим, ови пакети су успешно изграђени:"
     Norwegian  -> "Heldigvis ble de følgende pakkene bygd:"
     Indonesia  -> "Namun, paket berikut berhasil dibangun:"
+    Chinese    -> "但是，这些包已经成功构建："
     _          -> "However, these packages were successfully built:"
 
 buildFail_4 :: Language -> String
@@ -304,6 +316,7 @@ buildFail_4 = \case
     Serbian    -> "Желите ли их инсталирати?"
     Norwegian  -> "Vil du installere dem?"
     Indonesia  -> "Apakah anda ingin menginstal disini?"
+    Chinese    -> "你希望安装这些包吗？"
     _          -> "Would you like to install them?"
 
 buildFail_5 :: Language -> String
@@ -321,6 +334,7 @@ buildFail_5 = \case
     Serbian    -> "Изградња пакета није успела."
     Norwegian  -> "Bygging feilet."
     Indonesia  -> "Proses gagal."
+    Chinese    -> "构建失败。"
     _          -> "Building failed."
 
 -- NEEDS TRANSLATION
@@ -337,6 +351,7 @@ buildFail_6 = \case
     French     -> "Voulez-vous tout de même continuer ?"
     Russian    -> "Продолжить, несмотря ни на что?"
     Indonesia  -> "Apakah anda tetap ingin melanjutkan?"
+    Chinese    -> "你仍然希望继续吗？"
     _          -> "Would you like to continue anyway?"
 
 -- NEEDS TRANSLATION
@@ -349,6 +364,7 @@ buildFail_7 (bt -> p) = \case
     Portuguese -> "Falhou para obter scripts de compilação para " <> p <> "."
     Indonesia  -> "Gagal mendapatkan skrip untuk " <> p <> "."
     Russian    -> "Не удалось получить сценарии сборки для " <> p <> "."
+    Chinese    -> "无法获得 " <> p <> " 的构建脚本。"
     _          -> "Failed to obtain build scripts for " <> p <> "."
 
 displayBuildErrors_1 :: Language -> String
@@ -366,6 +382,7 @@ displayBuildErrors_1 = \case
     Serbian    -> "Уписујем излаз makepkg-а у "
     Norwegian  -> "Dumper makepkg's utskrift i "
     Indonesia  -> "Melimpahkan keluaran makepkg di "
+    Chinese    -> "正在清理 makepkg 的输出... "
     _          -> "Dumping makepkg output in "
 
 ------------------------------
@@ -387,6 +404,7 @@ getDepsToInstall_1 = \case
     Serbian    -> "Ниједан AUR пакет није специфициран за инсталацију."
     Norwegian  -> "Ingen pakker fra AUR er valgt for installasjon."
     Indonesia  -> "Tidak ada paket dari AUR yang ditentukan untuk diinstasl."
+    Chinese    -> "没有指定要安装的 AUR 软件包。"
     _          -> "No AUR packages specified for install."
 
 getRealPkgConflicts_1 :: String -> String -> String -> Language -> String
@@ -404,6 +422,7 @@ getRealPkgConflicts_1 (bt -> p) (bt -> r) (bt -> d) = \case
     Serbian    -> "Зависност " <> p <> " захтева верзију " <> d <> ", али најновија верзија је " <> r <> "."
     Norwegian  -> "Avhengigheten " <> p <> " krever versjon " <> d <>", men den nyeste versjonen er " <> r <> "."
     Indonesia  -> "Dependensi " <> p <> " meminta versi " <> d <> " namun versi paling baru adalah " <> r <> "."
+    Chinese    -> "依赖 " <> p <> " 需要版本 " <> d <> "，但是最新的版本是 " <> r <> "。"
     _          -> "The dependency " <> p <> " demands version " <> d <> ", but the most recent version is " <> r <> "."
 
 getRealPkgConflicts_2 :: String -> Language -> String
@@ -421,6 +440,7 @@ getRealPkgConflicts_2 (bt -> p) = \case
     Serbian    -> "Пакет " <> p <> " је игнорисан! Видите ваш фајл „pacman.conf“."
     Norwegian  -> p <> " er en ignorert pakke! Sjekk din `pacman.conf`-fil."
     Indonesia  -> p <> " merupakan paket yang diabaikan! Lihat `pacman.conf` anda."
+    Chinese    -> p <> " 是一个被忽略的包！请查看你的 `pacman.conf` 文件。"
     _          -> p <> " is an ignored package! See your `pacman.conf` file."
 
 -- NEEDS TRANSLATION
@@ -436,6 +456,7 @@ missingPkg_1 (bt -> p) = \case
     French     -> "La dépendance " <> p <> " n'a pas pu être trouvée. Il vous faut trouver un paquet pour la satisfaire."
     Russian    -> "Зависимость " <> p <> " не найдена. Возможно, вам нужно поискать пакет, чтобы удовлетворить её."
     Indonesia  -> "Dependensi " <> p <> " tidak dapat ditemukan. Anda mungkin harus menemukan paket tersebut untuk mencukupi kebutuhan."
+    Chinese    -> "无法找到依赖 " <> p <> "。你或许需要搜索一个包来满足这个依赖。"
     _          -> "The dependency " <> p <> " could not be found. You may need to search for a package to satisfy it."
 
 -----------------
@@ -456,6 +477,7 @@ executeOpts_1 = \case
     Serbian    -> "Захтеване опције су контрадикторне!"
     Norwegian  -> "Motstridene flagg er spesifisert!"
     Indonesia  -> "Ditemukan flags yang bertabrakan!"
+    Chinese    -> "指定了冲突的选项。"
     _          -> "Conflicting flags given!"
 
 manpageMsg :: Language -> String
@@ -473,6 +495,7 @@ manpageMsg = \case
     Serbian    -> "За детаље о опцијама, погледајте man страницу Аура."
     Norwegian  -> "Referer til Aura's `man`-side for instillingsdetaljer."
     Indonesia  -> "Lihat laman manual aura untuk opsi detail dari aura."
+    Chinese    -> "请查看 aura 手册了解 aura 选项细节。"
     _          -> "See the aura man page for aura option details."
 
 displayOutputLanguages_1 :: Language -> String
@@ -490,6 +513,7 @@ displayOutputLanguages_1 = \case
     Serbian    -> "Доступни су следећи језици:"
     Norwegian  -> "Følgende språk er tilgjengelig:"
     Indonesia  -> "Berikut ini adalah bahasa yang tersedia:"
+    Chinese    -> "以下语言是可用的："
     _          -> "The following languages are available:"
 
 ----------------------------
@@ -508,6 +532,7 @@ auraCheck_1 = \case
     French     -> "Une mise à jour d'Aura est disponible. Voulez-vous la mettre à jour en premier ?"
     Russian    -> "Доступно обновление Aura. Обновить сперва её?"
     Indonesia  -> "Pemutakhiran aura tersedia. Mutakhirkan aura dulu?"
+    Chinese    -> "Aura 可以升级。先升级 aura？"
     _          -> "Aura update available. Update it first?"
 
 install_1 :: Language -> String
@@ -525,6 +550,7 @@ install_1 = \case
     Serbian    -> "Провера зависности није успела из следећих разлога:"
     Norwegian  -> "Avhengighets-sjekken mislyktes på grunn av følgende:"
     Indonesia  -> "Pemeriksaan dependensi gagal dengan alasan sebagai berikut:"
+    Chinese    -> "依赖检查失败，因为："
     _          -> "Dependency checking failed for these reasons:"
 
 install_2 :: Language -> String
@@ -542,6 +568,7 @@ install_2 = \case
     Serbian    -> "Ниједан исправан пакет није специфициран."
     Norwegian  -> "Ingen gyldige pakker er valgte."
     Indonesia  -> "Tidak ada paket valid yang dispesifikkan."
+    Chinese    -> "没有指定有效的包。"
     _          -> "No valid packages specified."
 
 install_3 :: Language -> String
@@ -559,6 +586,7 @@ install_3 = \case
     Serbian    -> "Наставити?"
     Norwegian  -> "Fortsett?"
     Indonesia  -> "Lanjut?"
+    Chinese    -> "继续？"
     _          -> "Continue?"
 
 install_4 :: Language -> String
@@ -576,6 +604,7 @@ install_4 = \case
     Serbian    -> "Инсталација је ручно прекинута."
     Norwegian  -> "Installasjonen ble avbrutt manuelt."
     Indonesia  -> "Instalasi dibatalkan secara paksa."
+    Chinese    -> "手动安装已中止。"
     _          -> "Installation manually aborted."
 
 install_5 :: Language -> String
@@ -593,6 +622,7 @@ install_5 = \case
     Serbian    -> "Утврђивање зависности..."
     Norwegian  -> "Bestemmer avhengigheter..."
     Indonesia  -> "Menentukan dependensi..."
+    Chinese    -> "确定依赖中..."
     _          -> "Determining dependencies..."
 
 -- 2014 December  7 @ 14:45 - NEEDS TRANSLATIONS
@@ -603,6 +633,7 @@ confirmIgnored_1 (bt -> p) = \case
     Spanish    -> p <> " está marcado como ignorado. ¿Deseas instalarlo de todas formas?"
     Portuguese -> p <> " está marcado como Ignored. Instalá-lo mesmo assim?"
     Russian    -> p <> " отмечен как игнорируемый. Всё равно установить?"
+    Chinese    -> p <> " 已被标记为忽略。仍然安装？"
     _          -> p <> " is marked as Ignored. Install anyway?"
 
 -- NEEDS UPDATE TO REFLECT CHANGED ENGLISH
@@ -621,6 +652,7 @@ reportNonPackages_1 = \case
     Serbian    -> "Ово нису пакети:"
     Norwegian  -> "Det følgende er ikke AUR-pakker:"
     Indonesia  -> "Paket berikut ini bukan merupakan paket AUR:"
+    Chinese    -> "以下软件不是 AUR 包："
     _          -> "The following are not AUR packages:"
 
 reportIgnoredPackages_1 :: Language -> String
@@ -638,6 +670,7 @@ reportIgnoredPackages_1 = \case
     Serbian    -> "Следећи пакети ће бити игнорисани:"
     Norwegian  -> "De følgende pakker vil bli ignorert:"
     Indonesia  -> "Paket berikut ini akan diabaikan:"
+    Chinese    -> "以下包将会被忽略："
     _          -> "The following packages will be ignored:"
 
 -- NEEDS TRANSLATION
@@ -649,6 +682,7 @@ reportUnneededPackages_1 = \case
     Russian    -> "Следующие пакеты уже установлены:"
     German     -> "Die folgenden Pakete sind bereits installiert:"
     Spanish    -> "Los siguientes paquetes ya están instalados:"
+    Chinese    -> "以下包已被安装："
     _          -> "The following packages are already installed:"
 
 reportPkgsToInstall_1 :: Language -> String
@@ -666,6 +700,7 @@ reportPkgsToInstall_1 = \case
     Serbian    -> "Зависности из ризница:"
     Norwegian  -> "Avhengigheter fra depotet:"
     Indonesia  -> "Dependensi dari repositori:"
+    Chinese    -> "仓库依赖："
     _          -> "Repository dependencies:"
 
 -- NEEDS AN UPDATE
@@ -682,6 +717,7 @@ reportPkgsToInstall_2 l = \case
     French     -> l <> " Paquets :"
     Russian    -> l <> " Пакеты:"
     Indonesia  -> l <> " Paket:"
+    Chinese    -> l <> " 包："
     _          -> l <> " Packages:"
 
 {-}
@@ -733,6 +769,7 @@ reportPkgbuildDiffs_1 (bt -> p) = \case
     Serbian    -> p <> " још нема похрањен PKGBUILD."
     Norwegian  -> p <> " har ingen PKGBUILD ennå."
     Indonesia  -> p <> " tidak mempunyai PKGBUILD yang tersimpan untuk saat ini."
+    Chinese    -> p <> " 还没有保存的 PKGBUILD。"
     _          -> p <> " has no stored PKGBUILD yet."
 
 -- NEEDS TRANSLATION
@@ -750,6 +787,7 @@ reportPkgbuildDiffs_2 (bt -> p) = \case
     Serbian    -> "PKGBUILD пакета " <> p <> " је ажуран."
     Norwegian  -> p <> "'s PKGBUILD er oppdatert."
     Indonesia  -> "PKGBUILD dari paket " <> p <> " sudah mutakhir."
+    Chinese    -> p <> " 的 PKGBUILD 已经最新。"
     _          -> p <> " PKGBUILD is up to date."
 
 -- NEEDS TRANSLATION
@@ -767,6 +805,7 @@ reportPkgbuildDiffs_3 (bt -> p) = \case
     Serbian    -> "Промене PKGBUILD-a за " <> p <> ":"
     Norwegian  -> p <> "'s endringer i PKGBUILD:"
     Indonesia  -> "Perubahan PKGBUILD " <> p <> ":"
+    Chinese    -> p <> " 的 PKGBUILD 变化："
     _          -> p <> " PKGBUILD changes:"
 
 -- NEEDS TRANSLATION
@@ -785,6 +824,7 @@ reportPkgsToUpgrade_1 = \case
     Serbian    -> "Пакети из AUR-а за надоградњу:"
     Norwegian  -> "AUR-pakker å oppgradere:"
     Indonesia  -> "Paket AUR yang akan ditingkatkan:"
+    Chinese    -> "要升级的 AUR 包："
     _          -> "AUR Packages to upgrade:"
 
 -- NEEDS UPDATING
@@ -803,6 +843,7 @@ reportBadDowngradePkgs_1 = \case
     Serbian    -> "Следећи пакети нису ни инсталирани, те се не могу вратити на старију верзију:"
     Norwegian  -> "Følgende pakker har ingen versjoner i cache, og kan derfor ikke bli nedgradert:"
     Indonesia  -> "Berikut ini tidak mempunyai versi pada cache, sehingga tidak akan diturunkan:"
+    Chinese    -> "以下包在缓存中没有版本，所以无法被降级："
     _          -> "The following have no versions in the cache, and thus can’t be downgraded:"
 
 upgradeAURPkgs_1 :: Language -> String
@@ -820,6 +861,7 @@ upgradeAURPkgs_1 = \case
     Serbian    -> "Преузимање информација о пакетима..."
     Norwegian  -> "Henter pakkeinformasjon..."
     Indonesia  -> "Mengambil informasi paket..."
+    Chinese    -> "正在获取包信息..."
     _          -> "Fetching package information..."
 
 upgradeAURPkgs_2 :: Language -> String
@@ -837,6 +879,7 @@ upgradeAURPkgs_2 = \case
     Serbian    -> "Упоређивање верзија пакета..."
     Norwegian  -> "Sammenligner pakkeversjoner..."
     Indonesia  -> "Membandingkan versi paket..."
+    Chinese    -> "正在比较包的版本..."
     _          -> "Comparing package versions..."
 
 upgradeAURPkgs_3 :: Language -> String
@@ -854,6 +897,7 @@ upgradeAURPkgs_3 = \case
     Serbian    -> "Ажурирање пакета из AUR-а није потребно."
     Norwegian  -> "Ingen pakkeoppgradering fra AUR nødvendig."
     Indonesia  -> "Tidak ada peningkatan AUR yang dibutuhkan."
+    Chinese    -> "没有需要升级的 AUR 包。"
     _          -> "No AUR package upgrades necessary."
 
 downloadTarballs_1 :: String -> Language -> String
@@ -871,6 +915,7 @@ downloadTarballs_1 (bt -> p) = \case
     Serbian    -> "Преузимање архиве изворног кода за " <> p <> "..."
     Norwegian  -> "Laster ned " <> p <> " kildekodepakken (tarball)..."
     Indonesia  -> "Mengunduh tarbal untuk paket " <> p <> "..."
+    Chinese    -> "正在下载 " <> p <> " 的源文件..."
     _          -> "Downloading " <> p <> " source tarball..."
 
 displayPkgbuild_1 :: String -> Language -> String
@@ -888,6 +933,7 @@ displayPkgbuild_1 (bt -> p) = \case
     Serbian    -> p <> " не постоји."
     Norwegian  -> p <> " finnes ikke."
     Indonesia  -> p <> " tidak ada."
+    Chinese    -> p <> " 不存在。"
     _          -> p <> " does not exist."
 
 removeMakeDepsAfter_1 :: Language -> String
@@ -905,6 +951,7 @@ removeMakeDepsAfter_1 = \case
     Serbian    -> "Уклањање непотребних зависности за изградњу..."
     Norwegian  -> "Fjerner unødvendige make-avhengigheter..."
     Indonesia  -> "Menghapus dependensi `make` yang tidak dibutuhkan..."
+    Chinese    -> "移除不需要的 make 依赖..."
     _          -> "Removing unneeded make dependencies..."
 
 ----------------------------
@@ -925,6 +972,7 @@ cleanStates_1 = \case
     French     -> "La valeur entrée n'est pas un nombre valide."
     Russian    -> "Введенные данные -- не валидное число."
     Indonesia  -> "Masukan bukan angka valid."
+    Chinese    -> "输入不是一个有效的数字。"
     _          -> "Input isn't a valid number."
 
 -- NEEDS TRANSLATION
@@ -942,6 +990,7 @@ cleanStates_2 (bt . show -> n) = \case
     French     -> n <> " états des paquets vont être conservés. Supprimer le reste ?"
     Russian    -> n <> " -- столько состояний пакетов будут оставлены. Удалить оставшиеся?"
     Indonesia  -> n <> " paket akan tetap sama. Hapus yang lainnya?"
+    Chinese    -> n <> " 个包的状态将会保留。删除其它的？"
     _          -> n <> " package states will be kept. Remove the rest?"
 
 -- NEEDS TRANSLATION
@@ -959,6 +1008,7 @@ cleanStates_3 = \case
     French     -> "Aucun état des paquets n'a été supprimé."
     Russian    -> "Состояния пакетов отались нетронутыми."
     Indonesia  -> "Tidak ada paket yang dihapus."
+    Chinese    -> "没有删除任何包。"
     _          -> "No package states were removed."
 
 ----------------------------
@@ -979,6 +1029,7 @@ getDowngradeChoice_1 (bt -> p) = \case
     Serbian    -> "Коју верзију " <> p <> "-а желите?"
     Norwegian  -> "Hvilken versjon av " <> p <> " vil du ha?"
     Indonesia  -> "Versi dari paket " <> p <> " mana yang anda inginkan?"
+    Chinese    -> "你希望安装 " <> p <> " 的哪个版本？"
     _          -> "What version of " <> p <> " do you want?"
 
 backupCache_1 :: Language -> String
@@ -996,6 +1047,7 @@ backupCache_1 = \case
     Serbian    -> "Није дата путања ка бекапу."
     Norwegian  -> "Ingen backup-plass spesifisert."
     Indonesia  -> "Tidak ada lokasi backup yang diberikan."
+    Chinese    -> "没有指定备份位置。"
     _          -> "No backup location given."
 
 backupCache_2 :: Language -> String
@@ -1013,6 +1065,7 @@ backupCache_2 = \case
     Serbian    -> "Морате бити root да бисте бекаповали кеш."
     Norwegian  -> "Du må være root for å ta backup på cache."
     Indonesia  -> "Anda harus menjadi root untuk mem-`backup` cache."
+    Chinese    -> "只有根用户才能备份缓存。"
     _          -> "You must be root to backup the cache."
 
 backupCache_3 :: Language -> String
@@ -1030,6 +1083,7 @@ backupCache_3 = \case
     Serbian    -> "Путања ка бекапу не постоји."
     Norwegian  -> "Spesifisert backup-plass finnes ikke."
     Indonesia  -> "Lokasi `backup` tidak ada."
+    Chinese    -> "备份位置不存在。"
     _          -> "The backup location does not exist."
 
 backupCache_4 :: FilePath -> Language -> String
@@ -1047,6 +1101,7 @@ backupCache_4 (bt -> dir) = \case
     Serbian    -> "Бекапујем кеш у " <> dir
     Norwegian  -> "Tar backup på cache til " <> dir
     Indonesia  -> "Melakukan `backup` pada direktori " <> dir
+    Chinese    -> "正在将缓存备份到 " <> dir
     _          -> "Backing up cache to " <> dir
 
 backupCache_5 :: Int -> Language -> String
@@ -1064,6 +1119,7 @@ backupCache_5 (bt . show -> n) = \case
     Serbian    -> "Датотеке за бекап: " <> n
     Norwegian  -> "Pakker som blir tatt backup på: " <> n
     Indonesia  -> "Jumlah paket yang di-`backup`: " <> n
+    Chinese    -> "将要备份的包文件：" <> n
     _          -> "Package files to backup: " <> n
 
 backupCache_6 :: Language -> String
@@ -1081,6 +1137,7 @@ backupCache_6 = \case
     Serbian    -> "Наставити бекаповање?"
     Norwegian  -> "Fortsett med backup?"
     Indonesia  -> "Lanjutkan dengan `backup`?"
+    Chinese    -> "开始备份？"
     _          -> "Proceed with backup?"
 
 backupCache_7 :: Language -> String
@@ -1098,6 +1155,7 @@ backupCache_7 = \case
     Serbian    -> "Бекаповање је ручно прекинуто."
     Norwegian  -> "Backup ble avbrutt manuelt."
     Indonesia  -> "Proses `backup` dibatalkan secara paksa."
+    Chinese    -> "手动备份已中止。"
     _          -> "Backup manually aborted."
 
 backupCache_8 :: Language -> String
@@ -1115,6 +1173,7 @@ backupCache_8 = \case
     Serbian    -> "Бекапујем. Ово може да потраје пар минута..."
     Norwegian  -> "Tar backup. Dette kan ta en stund..."
     Indonesia  -> "Melakukan `backup`. Proses ini akan berjalan untuk beberapa menit..."
+    Chinese    -> "正在备份中。可能需要几分钟的时间..."
     _          -> "Backing up. This may take a few minutes..."
 
 copyAndNotify_1 :: Int -> Language -> String
@@ -1132,6 +1191,7 @@ copyAndNotify_1 (cyan . show -> n) = \case
     Serbian    -> "Копирам #[" <> n <> "]"
     Norwegian  -> "Kopierer #[" <> n <> "]"
     Indonesia  -> "Menyalin #[" <> n <> "]"
+    Chinese    -> "正在复制 #[" <> n <> "]"
     _          -> "Copying #[" <> n <> "]"
 
 preCleanCache_1 :: String -> Language -> String
@@ -1149,6 +1209,7 @@ preCleanCache_1 n = \case
     Serbian    -> n <> " није број."
     Norwegian  -> n <> " er ikke et nummer."
     Indonesia  -> n <> " bukan angka, coy!"
+    Chinese    -> n <> " 不是一个数字。"
     _          -> n <> " is not a number."
 
 cleanCache_1 :: Language -> String
@@ -1166,6 +1227,7 @@ cleanCache_1 = \case
     Serbian    -> "Број није валидан."
     Norwegian  -> "Ugyldig number spesifisert."
     Indonesia  -> "Angka yang diberikan tidak valid."
+    Chinese    -> "指定了无效的数字。"
     _          -> "Invalid number given."
 
 cleanCache_2 :: Language -> String
@@ -1183,6 +1245,7 @@ cleanCache_2 = \case
     Serbian    -> "Ово ће избрисати ЦЕО кеш пакета."
     Norwegian  -> "Dette vil slette HELE pakke-cachen."
     Indonesia  -> "Akan menghapus SEMUA `cache` paket"
+    Chinese    -> "这将会删除全部的包缓存。"
     _          -> "This will delete the ENTIRE package cache."
 
 cleanCache_3 :: Int -> Language -> String
@@ -1200,6 +1263,7 @@ cleanCache_3 (bt . show -> n) = \case
     Serbian    -> n <> " верзије сваког од пакета ће бити сачуване."
     Norwegian  -> n <> " av hver pakkefil blir beholdt."
     Indonesia  -> n <> " berkas dari tiap paket akan disimpan."
+    Chinese    -> "每个包文件将会保存 " <> n <> " 个版本。"
     _          -> n <> " of each package file will be kept."
 
 cleanCache_4 :: Language -> String
@@ -1217,6 +1281,7 @@ cleanCache_4 = \case
     Serbian    -> "Остатак ће бити избрисан. Да ли је то у реду?"
     Norwegian  -> "Resten vil bli slettet. Er det OK?"
     Indonesia  -> "Selainnya akan dihapus. Ikhlas kan?"
+    Chinese    -> "其余的将会被删除。确定？"
     _          -> "The rest will be deleted. Okay?"
 
 cleanCache_5 :: Language -> String
@@ -1234,6 +1299,7 @@ cleanCache_5 = \case
     Serbian    -> "Чишћење кеша је ручно прекинуто."
     Norwegian  -> "Cache-rensing ble avbrutt manuelt."
     Indonesia  -> "Pembersihan `cache` dibatalkan secara paksa."
+    Chinese    -> "手动清理缓存已中止。"
     _          -> "Cache cleaning manually aborted."
 
 cleanCache_6 :: Language -> String
@@ -1251,6 +1317,7 @@ cleanCache_6 = \case
     Serbian    -> "Чишћење кеша..."
     Norwegian  -> "Renser pakke-cache..."
     Indonesia  -> "Membersihkan `cache` paket..."
+    Chinese    -> "正在清理包缓存..."
     _          -> "Cleaning package cache..."
 
 -- NEEDS TRANSLATION
@@ -1267,6 +1334,7 @@ cleanNotSaved_1 = \case
     French     -> "Détermination des fichiers de paquet inutiles…"
     Russian    -> "Вычисляются ненужные файлы пакетов..."
     Indonesia  -> "Menentukan berkas paket yang tidak dibutuhkan..."
+    Chinese    -> "正在确定不需要的包文件..."
     _          -> "Determining unneeded package files..."
 
 -- NEEDS TRANSLATION
@@ -1283,6 +1351,7 @@ cleanNotSaved_2 (cyan . show -> s) = \case
     French     -> s <> " paquets inutiles trouvés. Les supprimer ?"
     Russian    -> s <> " -- столько ненужных пакетных файлов обнаружено. Удалить?"
     Indonesia  -> s <> " berkas paket yang tidak dibutuhkan ditemukan. Hapus?"
+    Chinese    -> "发现了 " <> s <> " 个不需要的包文件。是否删除？"
     _          -> s <> " unneeded package files found. Delete?"
 
 ----------------------------
@@ -1310,6 +1379,7 @@ reportNotInLog_1 = \case
     Serbian    -> "Ови пакети се не спомињу у дневнику:"
     Norwegian  -> "Følgende har ikke vist seg i loggen:"
     Indonesia  -> "Tidak terlihat pada berkas log:"
+    Chinese    -> "这些没有在日志文件中出现："
     _          -> "These have not appeared in the log file:"
 
 ----------------------------
@@ -1329,6 +1399,7 @@ cleanABSTree_1 = \case
     French     -> "Supprimer la totalité de l'arbre ABS ?"
     Russian    -> "Удалить дерево ABS полностью?"
     Indonesia  -> "Menghapus seluruh pohon ABS?"
+    Chinese    -> "删除整个 ABS 树？"
     _          -> "Delete the entire ABS Tree?"
 
 -- NEEDS TRANSLATION
@@ -1345,6 +1416,7 @@ cleanABSTree_2 = \case
     French     -> "Suppression de l'arbre ABS…"
     Russian    -> "Удаляю дерево ABS..."
     Indonesia  -> "Membersihkan pohon ABS..."
+    Chinese    -> "正在清除 ABS 树..."
     _          -> "Clearing out ABS Tree..."
 
 ----------------------
@@ -1365,6 +1437,7 @@ inheritedOperTitle = \case
     Serbian     -> "Наслеђене pacman-ове операције"
     Norwegian   -> "Arvede `pacman`-operasjoner"
     Indonesia   -> "Operasi pacman yang diwarisi"
+    Chinese     -> "继承自 Pacman 的操作"
     _           -> "Inherited Pacman Operations"
 
 auraOperTitle :: Language -> String
@@ -1382,6 +1455,7 @@ auraOperTitle = \case
     Serbian    -> "Аура-специфичне операције:"
     Norwegian  -> "Aura-spesifikke operasjoner:"
     Indonesia  -> "Operasi Aura:"
+    Chinese    -> "Aura 特有的操作："
     _          -> "Aura Only Operations:"
 
 aurSy :: Language -> String
@@ -1399,6 +1473,7 @@ aurSy = green . \case
     Serbian    -> "Извршава радње везане за [A]UR.\n" <> "Уобичајена радња инсталира из AUR-а."
     Norwegian  -> "Utfør handlinger som innebærer [A]UR.\n" <> "Standard-handling installerer fra AUR."
     Indonesia  -> "Melakukan perbuatan yang berhubungan dengan [A]UR.\n" <> "Instalasi bawaan dari AUR."
+    Chinese    -> "执行涉及到 [A]UR 的指令。\n" <> "默认从 AUR 安装。"
     _          -> "Perform actions involving the [A]UR.\n" <> "Default action installs from the AUR."
 
 -- NEEDS TRANSLATION
@@ -1413,6 +1488,7 @@ absSy = magenta . \case
     French     -> "Effectue une action impliquant l'arbre ABS.\n" <> "Par défaut, installe [M]anuellement depuis ABS."
     Russian    -> "Совершить действия с участием дерева ABS.\n" <> "Действие по умолчанию выполняет сборку из ABS вручную."
     Indonesia  -> "Melakukan perbuatan yang berhubungan dengan pohon ABS.\n" <> "Bawaannya adalah membangun [M]anual dari ABS"
+    Chinese    -> "执行涉及到 ABS 树的指令。\n" <> "默认从 ABS 树手动（[M]anually）构建。"
     _          -> "Perform actions involving the ABS tree.\n" <> "Default action [M]anually builds from ABS."
 
 -- NEEDS TRANSLATION
@@ -1430,6 +1506,7 @@ saveS = yellow . \case
     French     -> "Gestion de la [S]auvegarde et de la restauration de l'état global des paquets.\n" <> "Par défaut, sauvegarde l'état actuel."
     Russian    -> "Настроить [S]охранение и восстановление глобального состояние пакетов.\n" <> "Действие по умолчанию сохраняет это состояние."
     Indonesia  -> "Mengatur [S]impan dan pengembalian keadaan paket global.\n" <> "Perilaku bawaan adalah menyimpan keadaan berikut."
+    Chinese    -> "管理对全局包状态的保存（[S]aving）和恢复。\n" <> "默认保存当前状态。"
     _          -> "Manage the [S]aving and restoring of the global package state.\n" <> "Default action saves this state."
 
 downG :: Language -> String
@@ -1447,6 +1524,7 @@ downG = red . \case
     Serbian    -> "Извршава радње везане за кеш пакета.\n" <> "Уобичајена радња враћа претходну верзију датих пакета."
     Norwegian  -> "Utfør handlinger som involverer pakke-[C]achen.\n" <> "Standard-handling nedgraderer den valgte pakken."
     Indonesia  -> "Melakukan hal yang berhubugnan dengan [C]ache paket.\n" <> "Perilaku bawaan adalah menurunkan versi dari paket yang diberikan."
+    Chinese    -> "执行涉及到缓存（[C]ache）的指令。\n" <> "默认降级指定包。"
     _          -> "Perform actions involving the package [C]ache.\n" <> "Default action downgrades given packages."
 
 viewL :: Language -> String
@@ -1464,6 +1542,7 @@ viewL = cyan . \case
     Serbian    -> "Извршава радње везане за pacman-ов дневник.\n" <> "Уобичајена радња даје преглед дневника."
     Norwegian  -> "Utfør handlinger som involverer `pacman`'s [L]oggfil.\n" <> "Standard-handling åpner loggen for skrivebeskyttet lesing."
     Indonesia  -> "Melakukan hal yang berhubungan dengan berkas [L]og pacman.\n"<>"Aksi bawaan adalah membuka log dengan aturan `baca-saja`."
+    Chinese    -> "执行涉及到 pacman 的日志文件（[L]ogfile）的指令。\n" <> "默认以只读模式打开日志。"
     _          -> "Perform actions involving the pacman [L]ogfile.\n" <> "Default action opens the log for read-only viewing."
 
 orpha :: Language -> String
@@ -1481,6 +1560,7 @@ orpha = blue . \case
     Serbian    -> "Извршава радње везане за пакете без родитеља.\n" <> "Уобичајена радња листа пакете без родитеља."
     Norwegian  -> "Utfør handlinger som involverer foreldreløse pakker ([O]rphans).\n" <> "Standard-handling åpner alle foreldreløse pakker."
     Indonesia  -> "Melakukan hal yang berhubungan dengan paket [O]rphan.\n" <> "Perilaku bawaan adalah mencetak daftar semua paket orphan."
+    Chinese    -> "执行涉及到孤包（[O]rphan packages）的指令。\n" <> "默认列出全部的孤包。"
     _          -> "Perform actions involving [O]rphan packages.\n" <> "Default action lists all orphan packages."
 
 -------------------------------
@@ -1501,6 +1581,7 @@ getAURPkgInfo_1 = \case
     French     -> "La recherche dans l'API AUR a échouée. Veuillez vérifiez votre connexion."
     Russian    -> "Запрос к AUR API не удался. Пожалуйста, проверьте ваше соединение."
     Indonesia  -> "Pemeriksaan API AUR gagal. Sila periksa sambungan anda."
+    Chinese    -> "查找 AUR API 失败。请检查网络连接。"
     _          -> "AUR API lookup failed. Please check your connection."
 
 infoFields :: Language -> [String]
@@ -1534,6 +1615,7 @@ outOfDateMsg (Just _) = red . \case
     Serbian    -> "Застарео!"
     Norwegian  -> "Utdatert!"
     Indonesia  -> "Ketinggalan Zaman!"
+    Chinese    -> "过期！"
     _          -> "Out of Date!"
 outOfDateMsg Nothing = green . \case
     Japanese   -> "最新"
@@ -1549,6 +1631,7 @@ outOfDateMsg Nothing = green . \case
     Serbian    -> "Ажуран"
     Norwegian  -> "Oppdatert"
     Indonesia  -> "Mutakhir"
+    Chinese    -> "最新"
     _          -> "Up to Date"
 
 -- NEEDS TRANSLATION
@@ -1565,6 +1648,7 @@ orphanedMsg Nothing = red . \case
     French     -> "Abandonné !"
     Russian    -> "Осиротевший!"
     Indonesia  -> "Tak dipelihara!"
+    Chinese    -> "孤包！"
     _          -> "Orphaned!"
 
 -----------------------
@@ -1584,6 +1668,7 @@ absSync_1 = \case
     French     -> "Synchroniser l'arbre ABS local ?"
     Russian    -> "Синхронизировать локальное дерево ABS?"
     Indonesia  -> "Sinkronisasi pohon ABS lokal?"
+    Chinese    -> "同步本地的 ABS 树？"
     _          -> "Sync the local ABS Tree?"
 
 absSync_2 :: Language -> String
@@ -1599,6 +1684,7 @@ absSync_2 = \case
     French     -> "Synchronisation de l'arbre ABS local…"
     Russian    -> "Синхронизируется локальное дерево ABS..."
     Indonesia  -> "Menyinkronkan pohon ABS lokal..."
+    Chinese    -> "正在同步本地的 ABS 树..."
     _          -> "Syncing local ABS Tree..."
 
 singleSync_1 :: String -> Language -> String
@@ -1614,6 +1700,7 @@ singleSync_1 (bt -> p) = \case
     French     -> "Synchronisation de " <> p <> " dans l'arbre ABS local…"
     Russian    -> p <> " синхронизируется с локальным деревом ABS..."
     Indonesia  -> "Menyinkronkan paket " <> p <> " dengan pohon ABS lokal..."
+    Chinese    -> "正在将 " <> p <> " 同步到本地的 ABS 树..."
     _          -> "Syncing " <> p <> " to the local ABS Tree..."
 
 absInfoFields :: Language -> [String]
@@ -1638,6 +1725,7 @@ repository_1 p = \case
     French     -> p <> " n'est pas un paquet dans aucun des dépôts."
     Russian    -> "Пакет " <> p <> " не найден ни в одном репозитории."
     Indonesia  -> p <> " bukan merupakan paket pada repositori manapun."
+    Chinese    -> "所有仓库均不包含 " <> p <> "。"
     _          -> p <> " is not a package in any repository."
 
 pkgbuildKeyMissing :: String -> Language -> String
@@ -1652,6 +1740,7 @@ pkgbuildKeyMissing key = \case
     French     -> "Impossible d'analyser la clef " <> key <> " depuis le PKGBUILD."
     Russian    -> "Не получилось разобрать ключ " <> key <> " из PKGBUILD."
     Indonesia  -> "Tidak dapat menerjemahkan kunci " <> key <> " dari PKGBUILD."
+    Chinese    -> "无法解析 PKGBUILD 的秘钥 " <> key <> "。"
     _          -> "Unable to parse key " <> key <> " from PKGBUILD."
 
 missingDescription :: Language -> String
@@ -1666,6 +1755,7 @@ missingDescription = \case
     French     -> "Aucune description."
     Russian    -> "Без описания."
     Indonesia  -> "Tidak ada deskripsi."
+    Chinese    -> "没有任何描述。"
     _          -> "No description."
 
 -----------------------
@@ -1686,6 +1776,7 @@ saveState_1 = \case
     French     -> "État des paquets sauvegardé."
     Russian    -> "Состояние пакетов сохранено."
     Indonesia  -> "Kondisi paket tersimpan."
+    Chinese    -> "已保存包状态。"
     _          -> "Saved package state."
 
 -- NEEDS TRANSLATION
@@ -1703,11 +1794,13 @@ restoreState_1 = \case
     French     -> "Version antérieure requise non disponible pour :"
     Russian    -> "Запрошенные версии для отката не доступны для:"
     Indonesia  -> "Versi yang diturunkan tidak tersedia untuk: "
+    Chinese    -> "请求的降级版本对以下包不可用："
     _          -> "Requested downgrade versions not available for:"
 
 restoreState_2 :: Language -> String
 restoreState_2 = \case
   Japanese -> "保存されたパッケージ状態がない。作るには「-B」を。"
+  Chinese  -> "没有要恢复的已保存状态。（使用 -B 保存当前状态）"
   _        -> "No saved states to be restored. (Use -B to save the current state)"
 
 -- NEEDS TRANSLATION
@@ -1725,6 +1818,7 @@ reinstallAndRemove_1 = \case
     French     -> "Aucun paquet n'a besoin de changement."
     Russian    -> "Пакеты не нуждаются в изменениях."
     Indonesia  -> "Tidak ada paket yang diubah."
+    Chinese    -> "没有包需要改变。"
     _          -> "No packages need changing."
 
 --------------------------------------
@@ -1745,6 +1839,7 @@ circDep_1 (bt  -> p) = \case
     French     -> "A une dépendance circulaire avec " <> p <> "."
     Russian    -> "Имеет круговую зависимость с " <> p <> "."
     Indonesia  -> "Mempunyai dependensi sirkular dengan " <> p <> "."
+    Chinese    -> "有对 " <> p <> " 的循环依赖。"
     _          -> "Has a circular dependency with " <> p <> "."
 
 -- NEEDS TRANSLATION
@@ -1762,6 +1857,7 @@ bashisms_1 = \case
     French     -> "Trop de « bashisms » dans le PKGBUILD."
     Russian    -> "В PKGBUILD слишком много башизмов."
     Indonesia  -> "Terlalu banyak bashism pada PKGBUILD."
+    Chinese    -> "PKGBUILD 里包含了太多的 bash 扩展特性。"
     _          -> "Too many bashisms in PKGBUILD."
 
 ------------------------
@@ -1782,6 +1878,7 @@ pacmanFailure_1 = \case
     French     -> "Merci de vérifier les donnés entrées."
     Russian    -> "Пожалуйста, проверьте ваши введенные данные."
     Indonesia  -> "Mohon periksa masukan anda."
+    Chinese    -> "请检查你的输入。"
     _          -> "Please check your input."
 
 ----------------------------------
@@ -1802,6 +1899,7 @@ hotEdit_1 (bt -> p) = \case
     Serbian    -> "Желите ли да измените PKGBUILD за " <> p <> "?"
     Norwegian  -> "Vil du endre PKGBUILD for " <> p <> "?"
     Indonesia  -> "Apakah anda ingin menyunting PKGBUILD untuk paket " <> p <> "?"
+    Chinese    -> "你希望编辑 " <> p <> " 的 PKGBUILD 文件吗？"
     _          -> "Would you like to edit the PKGBUILD of " <> p <> "?"
 
 customizepkg_1 :: Language -> String
@@ -1817,6 +1915,7 @@ customizepkg_1 = let customizepkg = bt "customizepkg" in \case
     French     -> customizepkg <> "n'est pas installé."
     Russian    -> customizepkg <> "не установлен."
     Indonesia  -> customizepkg <> "tidak terinstal."
+    Chinese    -> customizepkg <> " 没有被安装。"
     _          -> customizepkg <> "isn't installed."
 
 -----------------------
