@@ -94,6 +94,7 @@ executable aura
                      , Bash.Parser
                      , Bash.Simplify
                      , SrcInfoParser
+                     , SrcInfoType
 
   build-depends:       aur>=5
                      , array
@@ -139,3 +140,4 @@ test-suite tests
   default-language:  Haskell2010
   other-modules:     SrcInfoParser
                      , SrcInfoParserTest
+                     , SrcInfoType
