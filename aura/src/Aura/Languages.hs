@@ -1638,7 +1638,7 @@ singleSync_1 (bt -> p) = \case
     French     -> "Synchronisation de " <> p <> " dans l'arbre ABS local…"
     Russian    -> p <> " синхронизируется с локальным деревом ABS..."
     Indonesia  -> "Menyinkronkan paket " <> p <> " dengan pohon ABS lokal..."
-    Swedish    -> "Synkroniserare " <> p <> " till det lokala ABS-trädet..."
+    Swedish    -> "Synkroniserar " <> p <> " till det lokala ABS-trädet..."
     _          -> "Syncing " <> p <> " to the local ABS Tree..."
 
 absInfoFields :: Language -> [String]
