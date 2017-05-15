@@ -4,6 +4,7 @@ packages:
   - aura/
   - aur/
   - arel/
+  - alpm/
 
 extra-deps: []
 
