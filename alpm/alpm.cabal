@@ -22,6 +22,7 @@ library
     , text
   exposed-modules:
       Alpm
+      Alpm.Error
       Alpm.List
       List
   default-language: Haskell2010

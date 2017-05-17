@@ -2,6 +2,7 @@
 
 module Alpm where
 
+import           Alpm.Error
 import           Alpm.List
 import qualified Data.Text as T
 import           Foreign
@@ -53,5 +54,31 @@ instance Storable File where
 foreign import ccall unsafe "alpm.h alpm_version"
   alpm_version :: CString
 
-alpmVersion :: T.Text
-alpmVersion = T.pack . unsafePerformIO $ peekCString alpm_version
+-- | The current ALPM version residing on your system.
+version :: T.Text
+version = T.pack . unsafePerformIO $ peekCString alpm_version
+
+-- | A message corresponding to some error code.
+errorMsg :: Error -> T.Text
+errorMsg = T.pack . unsafePerformIO . peekCString . alpm_strerror
+
+-- TODO: Is this thread-safe? Can multiple test suites call this at the same time?
+-- Or maybe we just open one Handle at the beginning, and go willy-nilly.
+-- | Most other functions can't be used until this is called.
+foreign import ccall unsafe "alpm.h alpm_initialize"
+  alpm_init :: CString -> CString -> Ptr Error -> IO (Ptr Handle)
+
+-- | Create a `Handle` to underlying ALPM machinery.
+initialize :: T.Text -> T.Text -> IO (Either T.Text (Ptr Handle))
+initialize root dbpath = do
+  root'   <- newCString $ T.unpack root
+  dbpath' <- newCString $ T.unpack dbpath
+  alloca $ \errPtr -> do
+    h <- alpm_init root' dbpath' errPtr
+    if h == nullPtr
+      then Left . errorMsg <$> peek errPtr
+      else pure $ Right h
+
+-- | Release internal ALPM memory. The library (mostly) can't be used after this is called.
+foreign import ccall unsafe "alpm.h alpm_release"
+  alpm_release :: Ptr Handle -> IO CInt
