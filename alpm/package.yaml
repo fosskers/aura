@@ -10,9 +10,21 @@ ghc-options:
 
 dependencies:
   - base >=4.9 && <4.10
-#  - bindings-DSL >= 1.0 && < 1.1
+  - bindings-DSL >= 1.0 && < 1.1
+  - text
 
 library:
   source-dirs: .
   extra-libraries:
     - alpm
+
+tests:
+  alpm-test:
+    main: Test.hs
+    source-dirs: test
+    ghc-options:
+      - -threaded
+    dependencies:
+      - alpm
+      - tasty >=0.11 && <0.12
+      - tasty-hunit >=0.9 && <0.10
