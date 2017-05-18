@@ -2,10 +2,10 @@
 
 module Main where
 
-import Test.Tasty
-import Test.Tasty.HUnit
 import Alpm
 import Data.Text (Text, unpack)
+import Test.Tasty
+import Test.Tasty.HUnit
 
 ---
 
@@ -28,5 +28,9 @@ initT :: Assertion
 initT = do
   handle <- initialize "/" "/var/lib/pacman/"
   case handle of
-    Right h -> alpm_release h >>= \res -> res @?= 0
+    Right h -> do
+      rootPath h @?= "/"
+      dbPath h @?= "/var/lib/pacman/"
+      lockfile h @?= "/var/lib/pacman/db.lck"
+      release h >>= \res -> res @?= 0
     Left e  -> assertFailure $ unpack e

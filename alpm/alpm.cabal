@@ -24,7 +24,6 @@ library
       Alpm
       Alpm.Error
       Alpm.List
-      List
   default-language: Haskell2010
 
 test-suite alpm-test
