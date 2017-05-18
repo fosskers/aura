@@ -609,7 +609,7 @@ confirmIgnored_1 (bt -> p) = \case
     Spanish    -> p <> " está marcado como ignorado. ¿Deseas instalarlo de todas formas?"
     Portuguese -> p <> " está marcado como Ignored. Instalá-lo mesmo assim?"
     Russian    -> p <> " отмечен как игнорируемый. Всё равно установить?"
-    Swedish    -> p >< " är markerad som ignorerad. Vill du installera ändå?"
+    Swedish    -> p <> " är markerad som ignorerad. Vill du installera ändå?"
     _          -> p <> " is marked as Ignored. Install anyway?"
 
 -- NEEDS UPDATE TO REFLECT CHANGED ENGLISH
