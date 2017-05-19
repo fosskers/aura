@@ -3,22 +3,29 @@
 module Alpm
   ( -- * Handlers
     Handle
-  , initialize, release
+  , initialize, close
   , rootPath, dbPath, lockfile
   -- * Packages
   , Package
+  , validmd5
+  , required, optionals
+  , shouldIgnore
   , PkgGroup(..)
   -- * Databases
   , Database
   -- * Transactions
   , Transaction
+  -- * Errors
+  , Error(..)
+  , currentError, errorMsg
   -- * Misc.
   , File(..)
   , version
-  , errorMsg
   ) where
 
-import           Alpm.Error
+import           Alpm.Internal.Error
+import           Alpm.Internal.Handle
+import           Alpm.Internal.Package
 import           Alpm.List
 import qualified Data.Text as T
 import           Foreign
@@ -27,16 +34,13 @@ import           System.IO.Unsafe
 
 ---
 
--- | A connection to underlying ALPM machinery. Must be constructed via
--- `initialize` and released via `releaseHandle` when finished.
-type Handle = Ptr RawHandle
-
-data RawHandle
-
-data Package
+-- | Wraps the type @alpm_db_t@.
 data Database
+
+-- | Wraps the type @alpm_trans_t@.
 data Transaction
 
+-- | Wraps the type @alpm_group_t@.
 data PkgGroup = PkgGroup { group_name :: CString
                          , group_pkgs :: Ptr (List Package) }
 
@@ -72,23 +76,6 @@ instance Storable File where
     pokeByteOff ptr 8 s
     pokeByteOff ptr 16 m
 
-foreign import ccall unsafe "alpm.h alpm_version"
-  alpm_version :: CString
-
--- | The current version of /alpm.h/ residing on your system.
-version :: T.Text
-version = T.pack . unsafePerformIO $ peekCString alpm_version
-
--- | A message corresponding to some error code.
-errorMsg :: Error -> T.Text
-errorMsg = T.pack . unsafePerformIO . peekCString . alpm_strerror
-
--- TODO: Is this thread-safe? Can multiple test suites call this at the same time?
--- Or maybe we just open one Handle at the beginning, and go willy-nilly.
--- | Most other functions can't be used until this is called.
-foreign import ccall unsafe "alpm.h alpm_initialize"
-  alpm_init :: CString -> CString -> Ptr Error -> IO (Ptr RawHandle)
-
 -- | Create a `Handle` to underlying ALPM machinery. Expects two FilePaths,
 -- the OS's root directory and the location of the ALPM database. These are
 -- usually @/@ and @\/var\/lib\/pacman\/@ by default.
@@ -102,29 +89,17 @@ initialize root dbpath = do
       then Left . errorMsg <$> peek errPtr
       else pure $ Right h
 
--- | Releases internal ALPM memory, disconnects from the database, and
--- removes the lock file (if present). The library (mostly) can't be used after
--- this is called. Returns @0@ if successful.
-foreign import ccall unsafe "alpm.h alpm_release"
-  release :: Handle -> IO CInt
+foreign import ccall unsafe "alpm.h alpm_version"
+  alpm_version :: CString
 
-foreign import ccall unsafe "alpm.h alpm_option_get_root"
-  alpm_option_get_root :: Handle -> CString
+-- | The current version of /alpm.h/ residing on your system.
+version :: T.Text
+version = T.pack . unsafePerformIO $ peekCString alpm_version
 
--- | The root of the OS, set by `initialize`.
-rootPath :: Handle -> T.Text
-rootPath = T.pack . unsafePerformIO . peekCString . alpm_option_get_root
+-- | A message corresponding to some error code.
+errorMsg :: Error -> T.Text
+errorMsg = T.pack . unsafePerformIO . peekCString . alpm_strerror
 
-foreign import ccall unsafe "alpm.h alpm_option_get_dbpath"
-  alpm_option_get_dbpath :: Handle -> CString
-
--- | The path to the database directory, set by `initialize`.
-dbPath :: Handle -> T.Text
-dbPath = T.pack . unsafePerformIO . peekCString . alpm_option_get_dbpath
-
-foreign import ccall unsafe "alpm.h alpm_option_get_lockfile"
-  alpm_option_get_lockfile :: Handle -> CString
-
--- | The location of the database lockfile.
-lockfile :: Handle -> T.Text
-lockfile = T.pack . unsafePerformIO . peekCString . alpm_option_get_lockfile
+-- | The current error code. Can change over time, hence `IO`.
+foreign import ccall unsafe "alpm.h alpm_errno"
+  currentError :: Handle -> IO Error

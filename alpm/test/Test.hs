@@ -32,5 +32,5 @@ initT = do
       rootPath h @?= "/"
       dbPath h @?= "/var/lib/pacman/"
       lockfile h @?= "/var/lib/pacman/db.lck"
-      release h >>= \res -> res @?= 0
+      close h >>= \res -> res @?= 0
     Left e  -> assertFailure $ unpack e

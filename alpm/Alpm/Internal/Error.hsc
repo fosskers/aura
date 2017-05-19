@@ -1,6 +1,6 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module Alpm.Error where
+module Alpm.Internal.Error where
 
 import Foreign
 import Foreign.C.String
