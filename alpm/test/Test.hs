@@ -4,6 +4,7 @@ module Main where
 
 import Alpm
 import Data.Text (Text, unpack)
+import Data.Versions
 import Test.Tasty
 import Test.Tasty.HUnit
 
@@ -15,7 +16,7 @@ main = defaultMain suite
 suite :: TestTree
 suite = testGroup "ALPM Bindings"
   [ testGroup "Misc."
-    [ testCase "ALPM Version" $ version @?= "10.0.1"
+    [ testCase "ALPM Version" $ alpmVersion @?= SemVer 10 0 1 [] []
     , testCase "Initialize Handler" initT
     ]
   ]

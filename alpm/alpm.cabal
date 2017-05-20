@@ -3,7 +3,7 @@
 -- see: https://github.com/sol/hpack
 
 name:           alpm
-version:        0.1.0.0
+version:        1.0.0
 author:         Colin Woodbury
 maintainer:     colingw@gmail.com
 license:        BSD3
@@ -17,11 +17,13 @@ library
   extra-libraries:
       alpm
   build-depends:
-      base >=4.9 && <4.10
+      base >= 4.8 && < 4.10
     , bindings-DSL >= 1.0 && < 1.1
     , text
+    , versions >= 3.0.1.1 && < 3.1
   exposed-modules:
       Alpm
+      Alpm.Internal.Enums
       Alpm.Internal.Error
       Alpm.Internal.Handle
       Alpm.Internal.Package
@@ -35,9 +37,10 @@ test-suite alpm-test
       test
   ghc-options: -fwarn-unused-imports -fwarn-unused-binds -threaded
   build-depends:
-      base >=4.9 && <4.10
+      base >= 4.8 && < 4.10
     , bindings-DSL >= 1.0 && < 1.1
     , text
+    , versions >= 3.0.1.1 && < 3.1
     , alpm
     , tasty >=0.11 && <0.12
     , tasty-hunit >=0.9 && <0.10

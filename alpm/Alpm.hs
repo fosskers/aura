@@ -7,6 +7,12 @@ module Alpm
   , rootPath, dbPath, lockfile
   -- * Packages
   , Package
+  -- ** Fields
+  -- | These are valid pure functions so long as the `Package` hasn't been freed.
+  , name, version, description, url, filename, base, packager, md5sum, sha256sum, arch
+  , buildDate, installDate, origin, size, installedSize, licenses, groups, signature
+  , provides
+  -- ** Other
   , validmd5
   , required, optionals
   , shouldIgnore
@@ -20,14 +26,16 @@ module Alpm
   , currentError, errorMsg
   -- * Misc.
   , File(..)
-  , version
+  , alpmVersion
   ) where
 
 import           Alpm.Internal.Error
 import           Alpm.Internal.Handle
 import           Alpm.Internal.Package
 import           Alpm.List
+import           Data.Foldable (fold)
 import qualified Data.Text as T
+import qualified Data.Versions as V
 import           Foreign
 import           Foreign.C
 import           System.IO.Unsafe
@@ -93,8 +101,8 @@ foreign import ccall unsafe "alpm.h alpm_version"
   alpm_version :: CString
 
 -- | The current version of /alpm.h/ residing on your system.
-version :: T.Text
-version = T.pack . unsafePerformIO $ peekCString alpm_version
+alpmVersion :: V.SemVer
+alpmVersion = fold . V.semver . T.pack . unsafePerformIO $ peekCString alpm_version
 
 -- | A message corresponding to some error code.
 errorMsg :: Error -> T.Text

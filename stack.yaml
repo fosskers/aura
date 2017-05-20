@@ -6,6 +6,7 @@ packages:
   - arel/
   - alpm/
 
-extra-deps: []
+extra-deps:
+  - versions-3.0.1.1
 
 flags: {}
