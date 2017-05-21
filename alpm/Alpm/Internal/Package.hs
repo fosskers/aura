@@ -2,8 +2,10 @@
 
 module Alpm.Internal.Package where
 
-import           Alpm.Internal.Handle
+import           Alpm.Internal.Database
+import           Alpm.Internal.Dependency
 import           Alpm.Internal.Enums
+import           Alpm.Internal.Handle
 import           Alpm.List
 import qualified Data.Text as T
 import           Data.Versions
@@ -182,14 +184,65 @@ licenses = map T.pack . unsafePerformIO . mapM peekCString . toList . alpm_pkg_g
 foreign import ccall unsafe "alpm.h alpm_pkg_get_groups"
   alpm_pkg_get_groups :: Package -> Ptr (List CString)
 
+-- | Any groups that this `Package` might belong to.
 groups :: Package -> [T.Text]
 groups = map T.pack . unsafePerformIO . mapM peekCString . toList . alpm_pkg_get_groups
 
-foreign import ccall unsafe "alpm.h alpm_pkg_get_provides"
-  alpm_pkg_get_provides :: Package -> Ptr (List CString)
+foreign import ccall unsafe "alpm.h alpm_pkg_get_depends"
+  alpm_pkg_get_depends :: Package -> Ptr (List Dependency)
 
-provides :: Package -> [T.Text]
-provides = map T.pack . unsafePerformIO . mapM peekCString . toList . alpm_pkg_get_provides
+-- | Dependencies which this `Package` requires.
+depends :: Package -> [Dependency]
+depends = toList . alpm_pkg_get_depends
+
+foreign import ccall unsafe "alpm.h alpm_pkg_get_optdepends"
+  alpm_pkg_get_optdepends :: Package -> Ptr (List Dependency)
+
+-- | Optional dependencies which can add extra functionality. Not required
+-- for installation or building the package.
+optdepends :: Package -> [Dependency]
+optdepends = toList . alpm_pkg_get_optdepends
+
+foreign import ccall unsafe "alpm.h alpm_pkg_get_conflicts"
+  alpm_pkg_get_conflicts :: Package -> Ptr (List Dependency)
+
+-- | A list of `Package`s that cannot exist on the system at the same time
+-- as this one. For example, a package @linux-lts@ would at the same time mark
+-- @linux@ as a /provided/ package (as in `provides`) and list it as a
+-- conflict. This would ensure a user couldn't install two kernels on their
+-- machine at the same time.
+conflicts :: Package -> [Dependency]
+conflicts = toList . alpm_pkg_get_conflicts
+
+foreign import ccall unsafe "alpm.h alpm_pkg_get_provides"
+  alpm_pkg_get_provides :: Package -> Ptr (List Dependency)
+
+-- | A list of `Package` "identities" provided by this package. For example,
+-- a package named @linux-lts@ could /provide/ @linux@, and any other package
+-- requiring @linux@ as a dependency would count it as satisfied by @linux-lts@.
+provides :: Package -> [Dependency]
+provides = toList . alpm_pkg_get_provides
+
+foreign import ccall unsafe "alpm.h alpm_pkg_get_deltas"
+  alpm_pkg_get_deltas :: Package -> Ptr (List CString)
+
+deltas :: Package -> [T.Text]
+deltas = map T.pack . unsafePerformIO . mapM peekCString . toList . alpm_pkg_get_deltas
+
+foreign import ccall unsafe "alpm.h alpm_pkg_get_replaces"
+  alpm_pkg_get_replaces :: Package -> Ptr (List Dependency)
+
+replaces :: Package -> [Dependency]
+replaces = toList . alpm_pkg_get_replaces
+
+foreign import ccall unsafe "alpm.h alpm_pkg_get_db"
+  alpm_pkg_get_db :: Package -> Database
+
+-- | The `Database` that this `Package` came from, unless it was loaded from
+-- a file.
+database :: Package -> Maybe Database
+database p | origin p == po_file = Nothing
+           | otherwise = Just $ alpm_pkg_get_db p
 
 foreign import ccall unsafe "alpm.h alpm_pkg_get_base64_sig"
   alpm_pkg_get_base64_sig :: Package -> CString
@@ -197,3 +250,10 @@ foreign import ccall unsafe "alpm.h alpm_pkg_get_base64_sig"
 -- | The base 64 encoded package signature.
 signature :: Package -> T.Text
 signature = T.pack . unsafePerformIO . peekCString . alpm_pkg_get_base64_sig
+
+foreign import ccall unsafe "alpm.h alpm_pkg_get_validation"
+  alpm_pkg_get_validation :: Package -> Validation
+
+-- | The methods by which to validate this `Package`.
+validation :: Package -> [Validation]
+validation = validations . alpm_pkg_get_validation

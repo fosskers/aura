@@ -2,6 +2,7 @@
 
 module Alpm.Internal.Enums where
 
+import Data.Bits
 import Foreign
 import Foreign.C.Types
 
@@ -42,3 +43,24 @@ instance Storable ComparisonMode where
    cm_gt = ALPM_DEP_MOD_GT,
    cm_lt = ALPM_DEP_MOD_LT
  }
+
+-- | The method used to validate a package. These values can be bitwise
+-- composed within ALPM to represent the desire for multiple validation
+-- methods. Use `validations` to split these back up.
+newtype Validation = Validation CInt deriving (Eq)
+
+#{enum Validation, Validation,
+  vm_unknown = ALPM_PKG_VALIDATION_UNKNOWN,
+  vm_none = ALPM_PKG_VALIDATION_NONE,
+  vm_md5 = ALPM_PKG_VALIDATION_MD5SUM,
+  vm_sha256 = ALPM_PKG_VALIDATION_SHA256SUM,
+  vm_sig = ALPM_PKG_VALIDATION_SIGNATURE
+ }
+
+-- | Potentially splits up a `Validation` value that might have been bitwise
+-- composed by ALPM to represent multiple validation methods in a single value.
+validations :: Validation -> [Validation]
+validations v@(Validation 0) = [v]  -- UNKNOWN
+validations (Validation v) = foldr f [] [0..3]
+  where f n acc | testBit v n = Validation (2 ^ n) : acc
+                | otherwise = acc

@@ -11,7 +11,7 @@ module Alpm
   -- | These are valid pure functions so long as the `Package` hasn't been freed.
   , name, version, description, url, filename, base, packager, md5sum, sha256sum, arch
   , buildDate, installDate, origin, size, installedSize, licenses, groups, signature
-  , provides
+  , depends, optdepends, conflicts, provides, deltas, replaces, database, validation
   -- ** Other
   , validmd5
   , required, optionals
@@ -29,6 +29,7 @@ module Alpm
   , alpmVersion
   ) where
 
+import           Alpm.Internal.Database
 import           Alpm.Internal.Error
 import           Alpm.Internal.Handle
 import           Alpm.Internal.Package
@@ -41,9 +42,6 @@ import           Foreign.C
 import           System.IO.Unsafe
 
 ---
-
--- | Wraps the type @alpm_db_t@.
-data Database
 
 -- | Wraps the type @alpm_trans_t@.
 data Transaction
