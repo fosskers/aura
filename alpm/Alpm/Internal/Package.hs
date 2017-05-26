@@ -25,13 +25,17 @@ data RawPackage
 foreign import ccall unsafe "alpm.h alpm_pkg_load"
   alpm_pkg_load :: Handle -> CString -> CInt -> CInt -> IO (Ptr (Ptr RawPackage))
 
+-- TODO: Necessary?
 -- | Find a `Package` in a `List` by name.
 foreign import ccall unsafe "alpm.h alpm_pkg_find"
-  alpm_pkg_find :: Ptr (List RawPackage) -> CString -> Package
+  find :: Ptr (List RawPackage) -> CString -> Package
 
 -- | Free a `Package`'s memory. Returns @0@ on success, @-1@ on error.
 foreign import ccall unsafe "alpm.h alpm_pkg_free"
   alpm_pkg_free :: Package -> IO CInt
+
+foreign import ccall unsafe "alpm.h alpm_pkg_vercmp"
+  alpm_pkg_vercmp :: CString -> CString -> CInt
 
 -- | Check a `Package`'s validity. @0@ when valid, @-1@ otherwise.
 foreign import ccall unsafe "alpm.h alpm_pkg_checkmd5sum"
