@@ -47,35 +47,28 @@ import           System.IO.Unsafe
 data Transaction
 
 -- | Wraps the type @alpm_group_t@.
-data PkgGroup = PkgGroup { group_name :: CString
-                         , group_pkgs :: Ptr (List Package) }
+data PkgGroup = PkgGroup { groupName :: CString
+                         , groupPkgs :: Ptr (List Package) }
 
 instance Storable PkgGroup where
   sizeOf _ = 16
   alignment _ = 8
 
-  peek ptr = do
-    name <- peekByteOff ptr 0
-    pkgs <- peekByteOff ptr 8
-    pure $ PkgGroup name pkgs
+  peek ptr = PkgGroup <$> peekByteOff ptr 0 <*> peekByteOff ptr 8
 
   poke ptr (PkgGroup n ps) = do
     pokeByteOff ptr 0 n
     pokeByteOff ptr 8 ps
 
-data File = File { file_name :: CString
-                 , file_size :: CULong
-                 , file_mode :: CULong }
+data File = File { fileName :: CString
+                 , fileSize :: CULong
+                 , fileMode :: CULong }
 
 instance Storable File where
   sizeOf _ = 24
   alignment _ = alignment (undefined :: CULong)
 
-  peek ptr = do
-    name <- peekByteOff ptr 0
-    size <- peekByteOff ptr 8
-    mode <- peekByteOff ptr 16
-    pure $ File name size mode
+  peek ptr = File <$> peekByteOff ptr 0 <*> peekByteOff ptr 8 <*> peekByteOff ptr 16
 
   poke ptr (File n s m) = do
     pokeByteOff ptr 0 n

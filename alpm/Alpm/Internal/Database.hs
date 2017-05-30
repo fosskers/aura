@@ -1,5 +1,3 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
-
 module Alpm.Internal.Database where
 
 import Foreign

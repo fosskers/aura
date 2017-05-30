@@ -29,7 +29,7 @@ suite = testGroup "ALPM Bindings"
     ]
   ]
   where successive = concatMap comparisons [ slnp, ml, wpr, wprml, mpri, ftmp ]
-        pairs = map (uncurry vercmpT) $ concat [ anv ]
+        pairs = map (uncurry vercmpT) $ concat [ anv, adv ]
 
 
 assertRight :: Either Text a -> Assertion
@@ -117,6 +117,13 @@ anv = [ ("1.5b-1", "1.5-1")
 -- | From the manpage (apparently).
 ftmp :: [Text]
 ftmp = [ "1.0a", "1.0alpha", "1.0b", "1.0beta", "1.0rc", "1.0" ]
+
+-- | Alpha-dotted versions
+adv :: [(Text, Text)]
+adv = [ ("1.5", "1.5.a")
+      , ("1.5.a", "1.5.b")
+      , ("1.5.b", "1.5.1")
+      ]
 
 fromRight :: Either t t1 -> t1
 fromRight (Right a) = a

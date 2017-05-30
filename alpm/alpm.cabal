@@ -13,14 +13,14 @@ cabal-version:  >= 1.10
 library
   hs-source-dirs:
       ./.
-  ghc-options: -fwarn-unused-imports -fwarn-unused-binds
+  ghc-options: -fwarn-unused-imports -fwarn-unused-binds -fwarn-name-shadowing -fwarn-unused-matches
   extra-libraries:
       alpm
   build-depends:
       base >= 4.8 && < 4.10
     , bindings-DSL >= 1.0 && < 1.1
     , text
-    , versions >= 3.0.1.1 && < 3.1
+    , versions >= 3.0.2.1 && < 3.1
   exposed-modules:
       Alpm
       Alpm.Internal.Database
@@ -37,12 +37,12 @@ test-suite alpm-test
   main-is: Test.hs
   hs-source-dirs:
       test
-  ghc-options: -fwarn-unused-imports -fwarn-unused-binds -threaded
+  ghc-options: -fwarn-unused-imports -fwarn-unused-binds -fwarn-name-shadowing -fwarn-unused-matches -threaded
   build-depends:
       base >= 4.8 && < 4.10
     , bindings-DSL >= 1.0 && < 1.1
     , text
-    , versions >= 3.0.1.1 && < 3.1
+    , versions >= 3.0.2.1 && < 3.1
     , alpm
     , tasty >=0.11 && <0.12
     , tasty-hunit >=0.9 && <0.10
