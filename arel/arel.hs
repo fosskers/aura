@@ -40,7 +40,7 @@ makeNewPkgFile (Env v) = do
 -- | The location of a built release tarball, the output of `stack sdist`.
 -- Beware: the `cabal` version is not static.
 tarballPath :: Text -> FilePath
-tarballPath v = fromText $ "aura/.stack-work/dist/x86_64-linux/Cabal-1.24.0.0/aura-" <> v <> ".tar.gz"
+tarballPath v = fromText $ "aura/.stack-work/dist/x86_64-linux/Cabal-1.24.2.0/aura-" <> v <> ".tar.gz"
 
 alterPKGBUILD :: Sh ()
 alterPKGBUILD = do
@@ -51,4 +51,4 @@ alterPKGBUILD = do
   writefile "PKGBUILD" $ T.unlines news
 
 makeSrcInfo :: Sh ()
-makeSrcInfo = run_ "mksrcinfo" []
+makeSrcInfo = run "makepkg" ["--printsrcinfo"] >>= writefile ".SRCINFO"
