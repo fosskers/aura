@@ -1,5 +1,10 @@
 Aura Changelog
 ==============
+1.3.9
+-----
+- Updated Swedish translations
+- Disabled `-M` operator due to the `abs` tool being deprecated by Arch Linux
+
 1.3.8
 -----
 - Fixed behaviour of `-B` flags. For restoring of saved states, use the long
