@@ -110,17 +110,6 @@ executeOpts (flags, input, pacOpts) =
           [GetPkgbuild]  -> A.displayPkgbuild input
           (Refresh:fs')  -> sudo $ syncAndContinue (fs', input, pacOpts)
           _              -> scoldAndFail executeOpts_1
-    (ABSInstall:fs) ->
-        case fs of
-          []             -> trueRoot (sudo $ M.install pacOpts input)
-          [TreeSync]     -> sudo $ M.addToTree input
-          [Search]       -> M.absSearch input
-          [Info]         -> M.absInfo input
-          [Clean]        -> sudo M.cleanABSTree
-          [ViewDeps]     -> M.displayPkgDeps input
-          [GetPkgbuild]  -> M.displayPkgbuild input
-          (Refresh:fs')  -> sudo $ syncABSAndContinue (fs', input, pacOpts)
-          _              -> scoldAndFail executeOpts_1
     (SaveState:fs) ->
         case fs of
           []             -> sudo B.saveState
