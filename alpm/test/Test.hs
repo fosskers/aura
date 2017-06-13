@@ -28,8 +28,8 @@ suite = testGroup "ALPM Bindings"
     , testCase "Initialize Handler" initT
     ]
   ]
-  where successive = concatMap comparisons [ slnp, ml, wpr, wprml, mpri, ftmp ]
-        pairs = map (uncurry vercmpT) $ concat [ anv, adv ]
+  where successive = concatMap comparisons [ slnp, ml, wpr, wprml, mpri, ftmp, adad ]
+        pairs = map (uncurry vercmpT) $ concat [ anv, adv, epochs, eoo, espp ]
 
 
 assertRight :: Either Text a -> Assertion
@@ -65,24 +65,6 @@ vercmpT v0 v1 = testCase (unpack $ v0 <> " < " <> v1) $ do
     then pure ()
     else assertFailure $ show l ++ "\n" ++ show r
   free v0' >> free v1'  -- Release allocated memory.
-
--- Borrowed from `Data.Versions` tests.
-
-semverOrd :: [Text]
-semverOrd = [ "1.0.0-alpha", "1.0.0-alpha.1", "1.0.0-alpha.beta"
-            , "1.0.0-beta", "1.0.0-beta.2", "1.0.0-beta.11", "1.0.0-rc.1"
-            , "1.0.0"
-            ]
-
-cabalOrd :: [Text]
-cabalOrd = [ "0.2", "0.2.0", "0.2.0.0" ]
-
-versionOrd :: [Text]
-versionOrd = [ "0.9.9.9", "1.0.0.0", "1.0.0.1", "2" ]
-
-messOrd :: [Text]
-messOrd = [ "10.2+0.93+1-1", "10.2+0.93+1-2", "10.2+0.93+2-1"
-          , "10.2+0.94+1-1", "10.3+0.93+1-1", "11.2+0.93+1-1", "12" ]
 
 -- Borrowed from https://git.archlinux.org/pacman.git/tree/test/util/vercmptest.sh
 
@@ -123,6 +105,31 @@ adv :: [(Text, Text)]
 adv = [ ("1.5", "1.5.a")
       , ("1.5.a", "1.5.b")
       , ("1.5.b", "1.5.1")
+      , ("2.0a", "2.0.a")
+      ]
+
+-- | Alpha dots and dashes
+adad :: [Text]
+adad = [ "1.5-1", "1.5.b" ]
+
+epochs :: [(Text, Text)]
+epochs = [ ("0:1.0", "0:1.1")
+         , ("1:1.0", "2:1.1")
+         ]
+
+-- | Epoch + sometimes present pkgrel
+espp :: [(Text, Text)]
+espp = [ ("0:1.0-1", "1:1.0")
+       , ("0:1.1-1", "1:1.0-1")
+       ]
+
+-- | Epoch included on one version.
+eoo :: [(Text, Text)]
+eoo = [ ("0:1.0", "1.1")
+      , ("1.0", "0:1.1")
+      , ("1.0", "1:1.0")
+      , ("1.1", "1:1.0")
+      , ("1.1", "1:1.1")
       ]
 
 fromRight :: Either t t1 -> t1

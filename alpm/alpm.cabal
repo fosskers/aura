@@ -20,7 +20,7 @@ library
       base >= 4.8 && < 4.10
     , bindings-DSL >= 1.0 && < 1.1
     , text
-    , versions >= 3.0.2.1 && < 3.1
+    , versions >= 3.1.0.1 && < 3.2
   exposed-modules:
       Alpm
       Alpm.Internal.Database
@@ -42,7 +42,7 @@ test-suite alpm-test
       base >= 4.8 && < 4.10
     , bindings-DSL >= 1.0 && < 1.1
     , text
-    , versions >= 3.0.2.1 && < 3.1
+    , versions >= 3.1.0.1 && < 3.2
     , alpm
     , tasty >=0.11 && <0.12
     , tasty-hunit >=0.9 && <0.10
