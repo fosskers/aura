@@ -22,8 +22,8 @@ type Package = Ptr RawPackage
 -- | Wraps the type @alpm_pkg_t@.
 data RawPackage
 
-foreign import ccall unsafe "alpm.h alpm_pkg_load"
-  alpm_pkg_load :: Handle -> CString -> CInt -> CInt -> IO (Ptr (Ptr RawPackage))
+--foreign import ccall unsafe "alpm.h alpm_pkg_load"
+--  alpm_pkg_load :: Handle -> CString -> CInt -> CInt -> IO (Ptr (Ptr RawPackage))
 
 -- TODO: Necessary?
 -- | Find a `Package` in a `List` by name.

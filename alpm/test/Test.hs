@@ -4,6 +4,7 @@ module Main where
 
 import Alpm
 import Alpm.Internal.Package (alpm_pkg_vercmp)
+import Alpm.Internal.Enums
 import Data.Monoid
 import Data.Text (Text, unpack)
 import Data.Versions
@@ -21,10 +22,12 @@ suite :: TestTree
 suite = testGroup "ALPM Bindings"
   [ testGroup "Packages"
     [ testGroup "Version Comparisons (alpm_pkg_vercmp)" $ successive ++ pairs
-
+    ]
+  , testGroup "Enums"
+    [ testCase "validations" validationsT
     ]
   , testGroup "Misc."
-    [ testCase "ALPM Version" $ alpmVersion @?= SemVer 10 0 1 [] []
+    [ testCase "ALPM Version" $ alpmVersion @?= SemVer 10 0 2 [] []
     , testCase "Initialize Handler" initT
     ]
   ]
@@ -47,11 +50,12 @@ initT = do
       close h >>= \res -> res @?= 0
     Left e  -> assertFailure $ unpack e
 
+validationsT :: Assertion
+validationsT = validations (mconcat xs) @?= xs
+  where xs = [vm_none, vm_md5, vm_sha256, vm_sig ]
+
 comparisons :: [Text] -> [TestTree]
 comparisons vs = zipWith vercmpT vs $ tail vs
-
--- TODO: Get alpm's unit tests for `alpm_pkg_ver` and use its samples. So far, it seems
--- pretty brittle since it expects a certain package version layout.
 
 vercmpT :: Text -> Text -> TestTree
 vercmpT v0 v1 = testCase (unpack $ v0 <> " < " <> v1) $ do
