@@ -25,6 +25,7 @@ suite = testGroup "ALPM Bindings"
     ]
   , testGroup "Enums"
     [ testCase "validations" validationsT
+    , testCase "siglevels" siglevelsT
     ]
   , testGroup "Misc."
     [ testCase "ALPM Version" $ alpmVersion @?= SemVer 10 0 2 [] []
@@ -53,6 +54,11 @@ initT = do
 validationsT :: Assertion
 validationsT = validations (mconcat xs) @?= xs
   where xs = [vm_none, vm_md5, vm_sha256, vm_sig ]
+
+siglevelsT :: Assertion
+siglevelsT = siglevels (mconcat xs) @?= xs
+  where xs = [ sl_package, sl_pkg_optional, sl_pkg_marginal, sl_pkg_unknown
+             , sl_database, sl_db_optional , sl_db_marginal, sl_db_unknown, sl_default ]
 
 comparisons :: [Text] -> [TestTree]
 comparisons vs = zipWith vercmpT vs $ tail vs

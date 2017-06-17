@@ -9,6 +9,7 @@ module Alpm.Internal.Enums
   , ComparisonMode(..)
   , cm_any, cm_eq, cm_ge, cm_le, cm_gt, cm_lt
   , SigLevel(..)
+  , siglevels
   , sl_package, sl_pkg_optional, sl_pkg_marginal, sl_pkg_unknown, sl_database, sl_db_optional
   , sl_db_marginal, sl_db_unknown, sl_default
   , Validation(..)
@@ -39,15 +40,19 @@ instance Storable ComparisonMode where
   poke ptr (ComparisonMode e) = pokeByteOff ptr 0 e
 
 -- | Wraps the enum @alpm_siglevel_t@.
-newtype SigLevel = SigLevel CInt deriving (Eq)
+newtype SigLevel = SigLevel CInt deriving (Eq, Show)
 
 instance Monoid SigLevel where
   mempty = SigLevel 0
 
   SigLevel a `mappend` SigLevel b = SigLevel $ a .|. b
 
--- siglevels :: SigLevel -> [SigLevel]
--- siglevels =
+-- | Potentially splits up a `SigLevel` value that might have been bitwise
+-- composed by ALPM to represent multiple signature verification options.
+siglevels :: SigLevel -> [SigLevel]
+siglevels (SigLevel s) = foldr f [] [0,1,2,3,10,11,12,13,30]
+  where f n acc | testBit s n = SigLevel (2 ^ n) : acc
+                | otherwise = acc
 
 -- | The method used to validate a package. These values can be bitwise
 -- composed within ALPM to represent the desire for multiple validation

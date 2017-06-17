@@ -22,10 +22,11 @@ type Package = Ptr RawPackage
 -- | Wraps the type @alpm_pkg_t@.
 data RawPackage
 
---foreign import ccall unsafe "alpm.h alpm_pkg_load"
---  alpm_pkg_load :: Handle -> CString -> CInt -> CInt -> IO (Ptr (Ptr RawPackage))
+foreign import ccall unsafe "alpm.h alpm_pkg_load"
+  alpm_pkg_load :: Handle -> CString -> CInt -> SigLevel -> (Ptr (Ptr RawPackage)) -> IO CInt
 
 -- TODO: Necessary?
+-- 2017 June 16 @ 20:49 Why wouldn't it be?
 -- | Find a `Package` in a `List` by name.
 foreign import ccall unsafe "alpm.h alpm_pkg_find"
   find :: Ptr (List RawPackage) -> CString -> Package
@@ -34,9 +35,6 @@ foreign import ccall unsafe "alpm.h alpm_pkg_find"
 foreign import ccall unsafe "alpm.h alpm_pkg_free"
   alpm_pkg_free :: Package -> IO CInt
 
-foreign import ccall unsafe "alpm.h alpm_pkg_vercmp"
-  alpm_pkg_vercmp :: CString -> CString -> CInt
-
 -- | Check a `Package`'s validity. @0@ when valid, @-1@ otherwise.
 foreign import ccall unsafe "alpm.h alpm_pkg_checkmd5sum"
   alpm_pkg_checkmd5 :: Package -> IO CInt
@@ -44,6 +42,9 @@ foreign import ccall unsafe "alpm.h alpm_pkg_checkmd5sum"
 -- | Does a `Package` have a valid MD5 checksum?
 validmd5 :: Package -> Bool
 validmd5 p = 0 == unsafePerformIO (alpm_pkg_checkmd5 p)
+
+foreign import ccall unsafe "alpm.h alpm_pkg_vercmp"
+  alpm_pkg_vercmp :: CString -> CString -> CInt
 
 -- | A list of packages who require the given `Package`. The `List` is newly
 -- allocated and must be freed by us when we're done with it.
@@ -104,6 +105,10 @@ foreign import ccall unsafe "alpm.h alpm_pkg_get_version"
 version :: Package -> Either ParsingError Versioning
 version = parseV . T.pack . unsafePerformIO . peekCString . alpm_pkg_get_version
 
+-- | Where did this `Package` come from?
+foreign import ccall unsafe "alpm.h alpm_pkg_get_origin"
+  origin :: Package -> PkgOrigin
+
 foreign import ccall unsafe "alpm.h alpm_pkg_get_desc"
   alpm_pkg_get_desc :: Package -> CString
 
@@ -115,6 +120,22 @@ foreign import ccall unsafe "alpm.h alpm_pkg_get_url"
 
 url :: Package -> T.Text
 url = T.pack . unsafePerformIO . peekCString . alpm_pkg_get_url
+
+foreign import ccall unsafe "alpm.h alpm_pkg_get_builddate"
+  alpm_pkg_get_builddate :: Package -> CLong
+
+-- TODO: Convert this to an actual time type!
+-- | The timestamp of when the `Package` was built.
+buildDate :: Package -> Int64
+buildDate = fromIntegral . alpm_pkg_get_builddate
+
+foreign import ccall unsafe "alpm.h alpm_pkg_get_installdate"
+  alpm_pkg_get_installdate :: Package -> CLong
+
+-- TODO: Convert this to an actual time type!
+-- | The timestamp of when the `Package` was installed.
+installDate :: Package -> Int64
+installDate = fromIntegral . alpm_pkg_get_installdate
 
 foreign import ccall unsafe "alpm.h alpm_pkg_get_packager"
   alpm_pkg_get_packager :: Package -> CString
@@ -139,26 +160,6 @@ foreign import ccall unsafe "alpm.h alpm_pkg_get_arch"
 
 arch :: Package -> T.Text
 arch = T.pack . unsafePerformIO . peekCString . alpm_pkg_get_arch
-
-foreign import ccall unsafe "alpm.h alpm_pkg_get_builddate"
-  alpm_pkg_get_builddate :: Package -> CLong
-
--- TODO: Convert this to an actual time type!
--- | The timestamp of when the `Package` was built.
-buildDate :: Package -> Int64
-buildDate = fromIntegral . alpm_pkg_get_builddate
-
-foreign import ccall unsafe "alpm.h alpm_pkg_get_installdate"
-  alpm_pkg_get_installdate :: Package -> CLong
-
--- TODO: Convert this to an actual time type!
--- | The timestamp of when the `Package` was installed.
-installDate :: Package -> Int64
-installDate = fromIntegral . alpm_pkg_get_installdate
-
--- | Where did this `Package` come from?
-foreign import ccall unsafe "alpm.h alpm_pkg_get_origin"
-  origin :: Package -> PkgOrigin
 
 foreign import ccall unsafe "alpm.h alpm_pkg_get_size"
   alpm_pkg_get_size :: Package -> CLong
@@ -239,6 +240,9 @@ foreign import ccall unsafe "alpm.h alpm_pkg_get_replaces"
 replaces :: Package -> [Dependency]
 replaces = toList . alpm_pkg_get_replaces
 
+-- alpm_pkg_get_files
+-- alpm_pkg_get_backup
+
 foreign import ccall unsafe "alpm.h alpm_pkg_get_db"
   alpm_pkg_get_db :: Package -> Database
 
@@ -261,3 +265,21 @@ foreign import ccall unsafe "alpm.h alpm_pkg_get_validation"
 -- | The methods by which to validate this `Package`.
 validation :: Package -> [Validation]
 validation = validations . alpm_pkg_get_validation
+
+-- alpm_pkg_changelog_open
+-- alpm_pkg_changelog_read
+-- alpm_pkg_changelog_close
+
+-- alpm_pkg_mtree_open
+-- alpm_pkg_mtree_next
+-- alpm_pkg_mtree_close
+
+foreign import ccall unsafe "alpm.h alpm_pkg_has_scriptlet"
+  alpm_pkg_has_scriptlet :: Package -> CInt
+
+hasScriptlet :: Package -> Bool
+hasScriptlet p = alpm_pkg_has_scriptlet p /= 0
+
+-- alpm_pkg_download_size
+-- alpm_pkg_unused_deltas
+-- alpm_pkg_set_reason
