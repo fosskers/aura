@@ -1,14 +1,91 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module Alpm.Internal.Package where
+module Alpm.Internal.Package
+  ( -- * Types
+    Package
+  , RawPackage
+  -- * Wrapped Functions
+  -- | Nicer wrappings around the raw C imports. Since `Package` is an
+  -- opaque datatype, these functions here should be considered its pure field
+  -- accessors.
+  , validmd5
+  , required
+  , optionals
+  , shouldIgnore
+  , filename
+  , base
+  , name
+  , version
+  , origin
+  , description
+  , url
+  , buildDate
+  , installDate
+  , packager
+  , md5sum
+  , sha256sum
+  , arch
+  , size
+  , installedSize
+  , installedAs
+  , licenses
+  , groups
+  , depends
+  , optdepends
+  , conflicts
+  , provides
+  , deltas
+  , replaces
+  , database
+  , signature
+  , validation
+  , hasScriptlet
+  -- * Foreign Imports
+  -- | You shouldn't ever need to use these directly, but they are visible
+  -- here for documentation's sake.
+  , alpm_pkg_load
+  , alpm_pkg_find
+  , alpm_pkg_free
+  , alpm_pkg_vercmp
+  , alpm_pkg_requiredby
+  , alpm_pkg_optionals
+  , alpm_pkg_should_ignore
+  , alpm_pkg_get_filename
+  , alpm_pkg_get_base
+  , alpm_pkg_get_name
+  , alpm_pkg_get_version
+  , alpm_pkg_get_desc
+  , alpm_pkg_get_url
+  , alpm_pkg_get_builddate
+  , alpm_pkg_get_installdate
+  , alpm_pkg_get_packager
+  , alpm_pkg_get_md5sum
+  , alpm_pkg_get_sha256sum
+  , alpm_pkg_get_arch
+  , alpm_pkg_get_size
+  , alpm_pkg_get_isize
+  , alpm_pkg_get_licenses
+  , alpm_pkg_get_groups
+  , alpm_pkg_get_depends
+  , alpm_pkg_get_optdepends
+  , alpm_pkg_get_conflicts
+  , alpm_pkg_get_provides
+  , alpm_pkg_get_deltas
+  , alpm_pkg_get_replaces
+  , alpm_pkg_get_db
+  , alpm_pkg_get_base64_sig
+  , alpm_pkg_get_validation
+  , alpm_pkg_has_scriptlet
+  , alpm_pkg_download_size
+  ) where
 
 import           Alpm.Internal.Database
-import           Alpm.Internal.Dependency
+import           Alpm.Internal.Dependency (Dependency)
 import           Alpm.Internal.Enums
 import           Alpm.Internal.Handle
 import           Alpm.List
 import qualified Data.Text as T
-import           Data.Versions
+import qualified Data.Versions as V
 import           Foreign
 import           Foreign.C.String
 import           Foreign.C.Types
@@ -29,7 +106,7 @@ foreign import ccall unsafe "alpm.h alpm_pkg_load"
 -- 2017 June 16 @ 20:49 Why wouldn't it be?
 -- | Find a `Package` in a `List` by name.
 foreign import ccall unsafe "alpm.h alpm_pkg_find"
-  find :: Ptr (List RawPackage) -> CString -> Package
+  alpm_pkg_find :: Ptr (List RawPackage) -> CString -> Package
 
 -- | Free a `Package`'s memory. Returns @0@ on success, @-1@ on error.
 foreign import ccall unsafe "alpm.h alpm_pkg_free"
@@ -84,12 +161,14 @@ shouldIgnore h p = alpm_pkg_should_ignore h p == 1
 foreign import ccall unsafe "alpm.h alpm_pkg_get_filename"
   alpm_pkg_get_filename :: Package -> CString
 
+-- | The name of the file from which this `Package` was loaded.
 filename :: Package -> T.Text
 filename = T.pack . unsafePerformIO . peekCString . alpm_pkg_get_filename
 
 foreign import ccall unsafe "alpm.h alpm_pkg_get_base"
   alpm_pkg_get_base :: Package -> CString
 
+-- | The "base name" of this `Package`.
 base :: Package -> T.Text
 base = T.pack . unsafePerformIO . peekCString . alpm_pkg_get_base
 
@@ -102,8 +181,8 @@ name = T.pack . unsafePerformIO . peekCString . alpm_pkg_get_name
 foreign import ccall unsafe "alpm.h alpm_pkg_get_version"
   alpm_pkg_get_version :: Package -> CString
 
-version :: Package -> Either ParsingError Versioning
-version = parseV . T.pack . unsafePerformIO . peekCString . alpm_pkg_get_version
+version :: Package -> Either V.ParsingError V.Versioning
+version = V.parseV . T.pack . unsafePerformIO . peekCString . alpm_pkg_get_version
 
 -- | Where did this `Package` come from?
 foreign import ccall unsafe "alpm.h alpm_pkg_get_origin"
@@ -118,6 +197,7 @@ description = T.pack . unsafePerformIO . peekCString . alpm_pkg_get_desc
 foreign import ccall unsafe "alpm.h alpm_pkg_get_url"
   alpm_pkg_get_url :: Package -> CString
 
+-- | The project URL associated with the software of this `Package`.
 url :: Package -> T.Text
 url = T.pack . unsafePerformIO . peekCString . alpm_pkg_get_url
 
@@ -140,6 +220,7 @@ installDate = fromIntegral . alpm_pkg_get_installdate
 foreign import ccall unsafe "alpm.h alpm_pkg_get_packager"
   alpm_pkg_get_packager :: Package -> CString
 
+-- | Who created this package?
 packager :: Package -> T.Text
 packager = T.pack . unsafePerformIO . peekCString . alpm_pkg_get_packager
 
@@ -158,6 +239,9 @@ sha256sum = T.pack . unsafePerformIO . peekCString . alpm_pkg_get_sha256sum
 foreign import ccall unsafe "alpm.h alpm_pkg_get_arch"
   alpm_pkg_get_arch :: Package -> CString
 
+
+-- | The system architecture that this `Package` is meant for. Should always
+-- be @x86_64@ by now.
 arch :: Package -> T.Text
 arch = T.pack . unsafePerformIO . peekCString . alpm_pkg_get_arch
 
@@ -173,6 +257,7 @@ size p | origin p == po_localdb = Nothing
 foreign import ccall unsafe "alpm.h alpm_pkg_get_isize"
   alpm_pkg_get_isize :: Package -> CLong
 
+-- | The size of all files installed with this `Package`.
 installedSize :: Package -> Int64
 installedSize = fromIntegral . alpm_pkg_get_isize
 
@@ -183,6 +268,7 @@ foreign import ccall unsafe "alpm.h alpm_pkg_get_reason"
 foreign import ccall unsafe "alpm.h alpm_pkg_get_licenses"
   alpm_pkg_get_licenses :: Package -> Ptr (List CString)
 
+-- | Any software licenses associated with this `Package`.
 licenses :: Package -> [T.Text]
 licenses = map T.pack . unsafePerformIO . mapM peekCString . toList . alpm_pkg_get_licenses
 
@@ -237,6 +323,8 @@ deltas = map T.pack . unsafePerformIO . mapM peekCString . toList . alpm_pkg_get
 foreign import ccall unsafe "alpm.h alpm_pkg_get_replaces"
   alpm_pkg_get_replaces :: Package -> Ptr (List Dependency)
 
+-- | What other `Package`s would this one replace? If this package is
+-- installed, anything it replaces should be removed accordingly.
 replaces :: Package -> [Dependency]
 replaces = toList . alpm_pkg_get_replaces
 
@@ -277,9 +365,12 @@ validation = validations . alpm_pkg_get_validation
 foreign import ccall unsafe "alpm.h alpm_pkg_has_scriptlet"
   alpm_pkg_has_scriptlet :: Package -> CInt
 
+-- | Does this `Package` have an extra @.install@ scriptlet?
 hasScriptlet :: Package -> Bool
 hasScriptlet p = alpm_pkg_has_scriptlet p /= 0
 
--- alpm_pkg_download_size
+foreign import ccall unsafe "alpm.h alpm_pkg_download_size"
+  alpm_pkg_download_size :: Package -> CLong
+
 -- alpm_pkg_unused_deltas
 -- alpm_pkg_set_reason
