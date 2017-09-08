@@ -63,15 +63,15 @@ aurRepo = Repository $ aurLookup >=> traverse packageBuildable
 
 makeBuildable :: Manager -> String -> Pkgbuild -> Aura Buildable
 makeBuildable m name pb = do
-  ai <- head <$> info m [T.pack name]
-  return Buildable
-    { baseNameOf   = name
-    , pkgbuildOf   = pb
-    , bldDepsOf    = parseDep . T.unpack <$> dependsOf ai ++ makeDepsOf ai
-    , bldVersionOf = T.unpack $ aurVersionOf ai
-    , isExplicit   = False
-    , buildScripts = f }
-    where f fp = sourceTarball m fp (T.pack name) >>= traverse decompress
+   ai <- head <$> info m [T.pack name]
+   return Buildable
+     { baseNameOf   = name
+     , pkgbuildOf   = pb
+     , bldDepsOf    = parseDep . T.unpack <$> dependsOf ai ++ makeDepsOf ai
+     , bldVersionOf = T.unpack $ aurVersionOf ai
+     , isExplicit   = False
+     , buildScripts = f }
+     where f fp = sourceTarball m fp (T.pack name) >>= traverse decompress
 
 isAurPackage :: String -> Aura Bool
 isAurPackage name = asks managerOf >>= \m -> isJust <$> pkgbuild m name
