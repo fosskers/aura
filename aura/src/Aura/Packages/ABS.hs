@@ -43,6 +43,7 @@ module Aura.Packages.ABS
     ) where
 
 import           Control.Monad
+import           Data.Monoid ((<>))
 import           Data.List          (find)
 import           Data.Foldable      (fold)
 import           Data.Set           (Set)
@@ -84,11 +85,30 @@ absDepsRepo :: Aura Repository
 absDepsRepo = asks (getRepo . buildABSDeps)
   where getRepo manual = if manual then absRepo else pacmanRepo
 
+-- | Yields the value of the `depends` field.
+depends :: Namespace -> [String]
+depends = flip value "depends"
+
+makedepends :: Namespace -> [String]
+makedepends = flip value "makedepends"
+
+checkdepends :: Namespace -> [String]
+checkdepends = flip value "checkdepends"
+
+trueVersion :: Namespace -> String
+trueVersion ns = pkgver <> "-" <> pkgrel
+    where pkgver = head $ value ns "pkgver"
+          pkgrel = head $ value ns "pkgrel"
+
 makeBuildable :: String -> String -> Aura Buildable
 makeBuildable repo name = do
   pb <- absPkgbuild repo name
+  ns <- namespace name pb
   pure Buildable { baseNameOf   = name
                  , pkgbuildOf   = pb
+                 , bldDepsOf    = parseDep <$> foldMap ($ ns)
+                                  [depends, makedepends, checkdepends]
+                 , bldVersionOf = trueVersion ns
                  , isExplicit   = False
                  , buildScripts = \fp -> Just <$> copyTo repo name fp }
 

@@ -40,21 +40,6 @@ toFilename = (<> ".pb")
 pkgbuildPath :: String -> FilePath
 pkgbuildPath p = pkgbuildCache <> toFilename p
 
-trueVersion :: Namespace -> String
-trueVersion ns = pkgver <> "-" <> pkgrel
-    where pkgver = head $ value ns "pkgver"
-          pkgrel = head $ value ns "pkgrel"
-
--- | Yields the value of the `depends` field.
-depends :: Namespace -> [String]
-depends = flip value "depends"
-
-makedepends :: Namespace -> [String]
-makedepends = flip value "makedepends"
-
-checkdepends :: Namespace -> [String]
-checkdepends = flip value "checkdepends"
-
 -- One of my favourite functions in this code base.
 pbCustomization :: Buildable -> Aura Buildable
 pbCustomization = foldl (>=>) pure [customizepkg, hotEdit]
@@ -63,10 +48,8 @@ pbCustomization = foldl (>=>) pure [customizepkg, hotEdit]
 packageBuildable :: Buildable -> Aura Package
 packageBuildable b = do
     b' <- pbCustomization b
-    ns <- namespace (baseNameOf b') (pkgbuildOf b')
     pure Package
         { pkgNameOf        = baseNameOf b'
-        , pkgVersionOf     = trueVersion ns
-        , pkgDepsOf        = parseDep <$> foldMap ($ ns)
-                             [depends, makedepends, checkdepends]
+        , pkgDepsOf        = bldDepsOf b'
+        , pkgVersionOf     = bldVersionOf b'
         , pkgInstallTypeOf = Build b' }

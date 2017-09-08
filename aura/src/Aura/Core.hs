@@ -78,6 +78,8 @@ data InstallType = Pacman String | Build Buildable
 data Buildable = Buildable
     { baseNameOf   :: String
     , pkgbuildOf   :: Pkgbuild
+    , bldDepsOf    :: [Dep]
+    , bldVersionOf :: String
     -- | Did the user select this package, or is it being built as a dep?
     , isExplicit   :: Bool
     -- | Fetch and extract the source code corresponding to the given package.

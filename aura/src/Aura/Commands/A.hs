@@ -44,7 +44,6 @@ import           Linux.Arch.Aur
 import           Text.Printf (printf)
 import           Text.Regex.PCRE ((=~))
 
-import           Aura.Bash (namespace, Namespace)
 import           Aura.Colour.Text
 import           Aura.Core
 import           Aura.Install (InstallOptions(..))
@@ -118,11 +117,10 @@ aurPkgInfo (fmap T.pack -> pkgs) = aurInfo pkgs >>= traverse_ displayAurPkgInfo
 displayAurPkgInfo :: AurInfo -> Aura ()
 displayAurPkgInfo ai = ask >>= \ss -> do
     let name = T.unpack $ aurNameOf ai
-    ns <- fromJust <$> pkgbuild (managerOf ss) name >>= namespace name . T.unpack
-    liftIO $ putStrLn $ renderAurPkgInfo ss ai ns <> "\n"
+    liftIO $ putStrLn $ renderAurPkgInfo ss ai <> "\n"
 
-renderAurPkgInfo :: Settings -> AurInfo -> Namespace -> String
-renderAurPkgInfo ss ai ns = entrify ss fields entries
+renderAurPkgInfo :: Settings -> AurInfo -> String
+renderAurPkgInfo ss ai = entrify ss fields entries
     where fields   = fmap bForeground . infoFields . langOf $ ss
           empty x  = case x of [] -> "None"; _ -> x
           entries = [ magenta "aur"
@@ -133,8 +131,8 @@ renderAurPkgInfo ss ai ns = entrify ss fields entries
                     , cyan $ maybe "(null)" T.unpack (urlOf ai)
                     , pkgUrl $ T.unpack $ aurNameOf ai
                     , T.unpack . T.unwords $ licenseOf ai
-                    , empty . unwords $ depends ns
-                    , empty . unwords $ makedepends ns
+                    , T.unpack . T.unwords $ dependsOf ai
+                    , T.unpack . T.unwords $ makeDepsOf ai
                     , yellow . show $ aurVotesOf ai
                     , yellow $ printf "%0.2f" (popularityOf ai)
                     , maybe "(null)" T.unpack (aurDescriptionOf ai) ]
