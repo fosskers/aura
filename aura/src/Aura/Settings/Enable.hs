@@ -82,7 +82,7 @@ getSettings lang (auraFlags, input, pacOpts) = do
                 , useCustomizepkg = customizepkgStatus auraFlags
                 , noPowerPill     = noPowerPillStatus auraFlags
                 , keepSource      = keepSourceStatus auraFlags
-                , buildABSDeps    = buildABSDepsStatus auraFlags
+                , buildABSDeps    = False
                 , dryRun          = dryRunStatus auraFlags }
 
 debugOutput :: Settings -> IO ()

@@ -55,7 +55,6 @@ import Aura.Commands.A as A
 import Aura.Commands.B as B
 import Aura.Commands.C as C
 import Aura.Commands.L as L
-import Aura.Commands.M as M
 import Aura.Commands.O as O
 
 ---
@@ -63,7 +62,7 @@ import Aura.Commands.O as O
 type UserInput = ([Flag], [String], [String])
 
 auraVersion :: String
-auraVersion = "1.3.8"
+auraVersion = "1.3.9"
 
 main :: IO a
 main = getArgs >>= prepSettings . processFlags >>= execute >>= exit
@@ -110,17 +109,6 @@ executeOpts (flags, input, pacOpts) =
           [GetPkgbuild]  -> A.displayPkgbuild input
           (Refresh:fs')  -> sudo $ syncAndContinue (fs', input, pacOpts)
           _              -> scoldAndFail executeOpts_1
-    (ABSInstall:fs) ->
-        case fs of
-          []             -> trueRoot (sudo $ M.install pacOpts input)
-          [TreeSync]     -> sudo $ M.addToTree input
-          [Search]       -> M.absSearch input
-          [Info]         -> M.absInfo input
-          [Clean]        -> sudo M.cleanABSTree
-          [ViewDeps]     -> M.displayPkgDeps input
-          [GetPkgbuild]  -> M.displayPkgbuild input
-          (Refresh:fs')  -> sudo $ syncABSAndContinue (fs', input, pacOpts)
-          _              -> scoldAndFail executeOpts_1
     (SaveState:fs) ->
         case fs of
           []             -> sudo B.saveState
@@ -157,11 +145,6 @@ executeOpts (flags, input, pacOpts) =
 syncAndContinue :: UserInput -> Aura ()
 syncAndContinue (flags, input, pacOpts) =
   syncDatabase pacOpts *> executeOpts (AURInstall:flags, input, pacOpts)
-
--- | `-y` was included with `-M`. Sync local ABS tree before continuing.
-syncABSAndContinue :: UserInput -> Aura ()
-syncABSAndContinue (flags, input, pacOpts) =
-  M.absSync *> executeOpts (ABSInstall:flags, input, pacOpts)
 
 ----------
 -- GENERAL

@@ -32,23 +32,17 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Shell where
 
--- System Libraries
-import Control.Exception (catchJust)
-import System.FilePath   ((</>))
-import System.Process    (readProcess, readProcessWithExitCode, rawSystem)
-import Control.Monad     (void)
-import Data.Foldable
-import Data.Maybe        (fromMaybe, fromJust)
-import Data.Monoid
-import Data.List         (intercalate)
-import System.Directory  ( getDirectoryContents
-                         , setCurrentDirectory
-                         , getCurrentDirectory
-                         , removeFile
-                         , renameFile
-                         , copyFile )
-
-import GHC.IO.Exception
+import           Control.Exception (catchJust)
+import           Control.Monad (void)
+import qualified Data.ByteString.Char8 as BS
+import           Data.Foldable
+import           Data.List (intercalate)
+import           Data.Maybe (fromMaybe, fromJust)
+import           Data.Monoid
+import           GHC.IO.Exception
+import           System.Directory
+import           System.FilePath ((</>))
+import           System.Process hiding (env)
 
 ---
 
@@ -119,11 +113,25 @@ shellCmd = rawSystem
 
 -- Suppresses output, but returns it on completion.
 quietShellCmd :: String -> [String] -> IO String
-quietShellCmd cmd args = readProcess cmd args ""
+quietShellCmd cmd args = do
+  (_, outp, _, pid) <- createProcess (proc cmd args){ std_out = CreatePipe
+                                                    , std_err = CreatePipe
+                                                    , std_in = NoStream}
+  _ <- waitForProcess pid
+  out <- BS.unpack <$> BS.hGetContents (fromJust outp)
+  return out
 
 -- Return type is slightly more verbose than `quietShellCmd`.
 quietShellCmd' :: String -> [String] -> IO (ExitCode, String, String)
-quietShellCmd' cmd args = readProcessWithExitCode cmd args ""
+quietShellCmd' cmd args = do
+  (_, outp, errp, pid) <- createProcess (proc cmd args){ std_out = CreatePipe
+                                                       , std_err = CreatePipe
+                                                       , std_in = NoStream}
+  code <- waitForProcess pid
+  out <- BS.unpack <$> BS.hGetContents (fromJust outp)
+  err <- BS.unpack <$> BS.hGetContents (fromJust errp)
+  return (code, out, err)
+
 
 -------------
 -- EXIT CODES

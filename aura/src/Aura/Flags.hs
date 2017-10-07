@@ -27,7 +27,6 @@ module Aura.Flags
     , dualFlagMap
     , hijackedFlagMap
     , pacmanFlagMap
-    , buildABSDepsStatus
     , confirmationStatus
     , customizepkgStatus
     , delMakeDepsStatus
@@ -98,7 +97,6 @@ data Flag = ABSInstall
           | Devel
           | Customizepkg
           | KeepSource
-          | BuildABSDeps
           | Debug
           | CacheBackup
           | Clean
@@ -145,7 +143,6 @@ auraOperations lang =
     , Option "B" ["save"]      (NoArg SaveState)  (saveS lang)
     , Option "C" ["downgrade"] (NoArg Cache)      (downG lang)
     , Option "L" ["viewlog"]   (NoArg LogFile)    (viewL lang)
-    , Option "M" ["abssync"]   (NoArg ABSInstall) (absSy lang)
     , Option "O" ["orphans"]   (NoArg Orphans)    (orpha lang) ]
 
 auraOptions :: [OptDescr Flag]
@@ -171,7 +168,6 @@ auraOptions = Option [] ["aurignore"] (ReqArg AURIgnore "" ) "" :
               , ( "w", ["downloadonly"], Download      )
               , ( "x", ["unsuppress"],   Unsuppress    )
               , ( [],  ["abc"],          ABCSort       )
-              , ( [],  ["absdeps"],      BuildABSDeps  )
               , ( [],  ["allsource"],    KeepSource    )
               , ( [],  ["auradebug"],    Debug         )
               , ( [],  ["custom"],       Customizepkg  )
@@ -269,7 +265,7 @@ reconvertFlags fm = filter notNull . fmap fm
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress, NoConfirm, HotEdit, DiffPkgbuilds, Debug, Devel
                 , DelMDeps, Customizepkg, Quiet, NoPowerPill, KeepSource
-                , BuildABSDeps, ABCSort, IgnoreArch, DryRun, Needed ]
+                , ABCSort, IgnoreArch, DryRun, Needed ]
 
 languageFlags :: [Flag]
 languageFlags = [ JapOut, PolishOut, CroatianOut, SwedishOut, GermanOut
@@ -358,9 +354,6 @@ noPowerPillStatus = fishOutFlag [(NoPowerPill, True)] False
 
 keepSourceStatus :: [Flag] -> Bool
 keepSourceStatus = fishOutFlag [(KeepSource, True)] False
-
-buildABSDepsStatus :: [Flag] -> Bool
-buildABSDepsStatus = fishOutFlag [(BuildABSDeps, True)] False
 
 dryRunStatus :: [Flag] -> Bool
 dryRunStatus = fishOutFlag [(DryRun, True)] False

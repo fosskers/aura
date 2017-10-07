@@ -6,7 +6,7 @@
 
 {-
 
-Copyright 2012 - 2016 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2017 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -36,7 +36,6 @@ module Aura.Commands.A
 
 import           Control.Monad
 import           Data.Foldable (traverse_, fold)
-import           Data.Maybe (fromJust)
 import           Data.Monoid ((<>))
 import qualified Data.Set as S (member, fromList)
 import qualified Data.Text as T
@@ -44,16 +43,14 @@ import           Linux.Arch.Aur
 import           Text.Printf (printf)
 import           Text.Regex.PCRE ((=~))
 
-import           Aura.Bash (namespace, Namespace)
 import           Aura.Colour.Text
 import           Aura.Core
 import           Aura.Install (InstallOptions(..))
 import qualified Aura.Install as I
 import           Aura.Languages
 import           Aura.Monad.Aura
-import           Aura.Packages.ABS (absDepsRepo)
 import           Aura.Packages.AUR
-import           Aura.Pkgbuild.Base
+import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings.Base
 import           Aura.Utils
@@ -64,18 +61,13 @@ import           Utilities (whenM)
 
 ---
 
-installOptions :: Aura I.InstallOptions
-installOptions = do
-    depsRepo <- absDepsRepo
-    pure I.InstallOptions { label         = "AUR"
-                          , installLookup = aurLookup
-                          , repository    = depsRepo <> aurRepo
-                          }
+installOptions :: I.InstallOptions
+installOptions = I.InstallOptions { label         = "AUR"
+                                  , installLookup = aurLookup
+                                  , repository    = pacmanRepo <> aurRepo }
 
 install :: [String] -> [String] -> Aura ()
-install pacOpts ps = do
-    opts <- installOptions
-    I.install opts pacOpts ps
+install pacOpts ps = I.install installOptions pacOpts ps
 
 upgradeAURPkgs :: [String] -> [String] -> Aura ()
 upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
@@ -117,14 +109,11 @@ aurPkgInfo (fmap T.pack -> pkgs) = aurInfo pkgs >>= traverse_ displayAurPkgInfo
 -- PKGBUILD exists on the AUR servers as well.
 displayAurPkgInfo :: AurInfo -> Aura ()
 displayAurPkgInfo ai = ask >>= \ss -> do
-    let name = T.unpack $ aurNameOf ai
-    ns <- fromJust <$> pkgbuild (managerOf ss) name >>= namespace name . T.unpack
-    liftIO $ putStrLn $ renderAurPkgInfo ss ai ns <> "\n"
+  liftIO $ putStrLn $ renderAurPkgInfo ss ai <> "\n"
 
-renderAurPkgInfo :: Settings -> AurInfo -> Namespace -> String
-renderAurPkgInfo ss ai ns = entrify ss fields entries
+renderAurPkgInfo :: Settings -> AurInfo -> String
+renderAurPkgInfo ss ai = entrify ss fields entries
     where fields   = fmap bForeground . infoFields . langOf $ ss
-          empty x  = case x of [] -> "None"; _ -> x
           entries = [ magenta "aur"
                     , bForeground $ T.unpack $ aurNameOf ai
                     , T.unpack $ aurVersionOf ai
@@ -133,8 +122,8 @@ renderAurPkgInfo ss ai ns = entrify ss fields entries
                     , cyan $ maybe "(null)" T.unpack (urlOf ai)
                     , pkgUrl $ T.unpack $ aurNameOf ai
                     , T.unpack . T.unwords $ licenseOf ai
-                    , empty . unwords $ depends ns
-                    , empty . unwords $ makedepends ns
+                    , T.unpack . T.unwords $ dependsOf ai
+                    , T.unpack . T.unwords $ makeDepsOf ai
                     , yellow . show $ aurVotesOf ai
                     , yellow $ printf "%0.2f" (popularityOf ai)
                     , maybe "(null)" T.unpack (aurDescriptionOf ai) ]
@@ -170,9 +159,7 @@ renderSearch ss r (i, e) = searchResult
           s = c bForeground (" [installed]" :: String)
 
 displayPkgDeps :: [String] -> Aura ()
-displayPkgDeps ps = do
-    opts <- installOptions
-    I.displayPkgDeps opts ps
+displayPkgDeps ps = I.displayPkgDeps installOptions ps
 
 downloadTarballs :: [String] -> Aura ()
 downloadTarballs pkgs = do
