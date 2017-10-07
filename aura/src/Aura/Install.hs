@@ -158,9 +158,9 @@ reportListOfDeps rps bps = do
 reportNonPackages :: [String] -> Aura ()
 reportNonPackages = badReport reportNonPackages_1
 
-reportIgnoredPackages :: [String] -> Aura ()
-reportIgnoredPackages pkgs = asks langOf >>= \lang ->
-  printList yellow cyan (reportIgnoredPackages_1 lang) pkgs
+-- reportIgnoredPackages :: [String] -> Aura ()
+-- reportIgnoredPackages pkgs = asks langOf >>= \lang ->
+--   printList yellow cyan (reportIgnoredPackages_1 lang) pkgs
 
 reportUnneededPackages :: [String] -> Aura ()
 reportUnneededPackages pkgs = asks langOf >>= \lang ->

@@ -55,7 +55,6 @@ import Aura.Commands.A as A
 import Aura.Commands.B as B
 import Aura.Commands.C as C
 import Aura.Commands.L as L
-import Aura.Commands.M as M
 import Aura.Commands.O as O
 
 ---
@@ -146,11 +145,6 @@ executeOpts (flags, input, pacOpts) =
 syncAndContinue :: UserInput -> Aura ()
 syncAndContinue (flags, input, pacOpts) =
   syncDatabase pacOpts *> executeOpts (AURInstall:flags, input, pacOpts)
-
--- | `-y` was included with `-M`. Sync local ABS tree before continuing.
-syncABSAndContinue :: UserInput -> Aura ()
-syncABSAndContinue (flags, input, pacOpts) =
-  M.absSync *> executeOpts (ABSInstall:flags, input, pacOpts)
 
 ----------
 -- GENERAL

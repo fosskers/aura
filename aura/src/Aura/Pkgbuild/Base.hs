@@ -1,6 +1,6 @@
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2017 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -24,7 +24,6 @@ module Aura.Pkgbuild.Base where
 import Control.Monad ((>=>))
 import Data.Monoid
 
-import Aura.Bash
 import Aura.Core
 import Aura.Monad.Aura
 import Aura.Pkgbuild.Editing

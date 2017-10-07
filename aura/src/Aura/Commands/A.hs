@@ -6,7 +6,7 @@
 
 {-
 
-Copyright 2012 - 2016 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2017 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -36,7 +36,6 @@ module Aura.Commands.A
 
 import           Control.Monad
 import           Data.Foldable (traverse_, fold)
-import           Data.Maybe (fromJust)
 import           Data.Monoid ((<>))
 import qualified Data.Set as S (member, fromList)
 import qualified Data.Text as T
@@ -52,7 +51,6 @@ import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Packages.ABS (absDepsRepo)
 import           Aura.Packages.AUR
-import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings.Base
 import           Aura.Utils
@@ -116,13 +114,11 @@ aurPkgInfo (fmap T.pack -> pkgs) = aurInfo pkgs >>= traverse_ displayAurPkgInfo
 -- PKGBUILD exists on the AUR servers as well.
 displayAurPkgInfo :: AurInfo -> Aura ()
 displayAurPkgInfo ai = ask >>= \ss -> do
-    let name = T.unpack $ aurNameOf ai
-    liftIO $ putStrLn $ renderAurPkgInfo ss ai <> "\n"
+  liftIO $ putStrLn $ renderAurPkgInfo ss ai <> "\n"
 
 renderAurPkgInfo :: Settings -> AurInfo -> String
 renderAurPkgInfo ss ai = entrify ss fields entries
     where fields   = fmap bForeground . infoFields . langOf $ ss
-          empty x  = case x of [] -> "None"; _ -> x
           entries = [ magenta "aur"
                     , bForeground $ T.unpack $ aurNameOf ai
                     , T.unpack $ aurVersionOf ai

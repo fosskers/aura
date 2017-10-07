@@ -32,27 +32,17 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Shell where
 
--- System Libraries
-import Control.Exception (catchJust)
-import System.FilePath   ((</>))
-import System.Process    ( readProcess, readProcessWithExitCode, rawSystem
-                         , proc, createProcess, StdStream(CreatePipe, NoStream)
-                         , CreateProcess(std_in, std_out, std_err)
-                         , waitForProcess)
-import Control.Monad     (void)
-import Data.Foldable
-import Data.Maybe        (fromMaybe, fromJust)
-import Data.Monoid
-import Data.List         (intercalate)
+import           Control.Exception (catchJust)
+import           Control.Monad (void)
 import qualified Data.ByteString.Char8 as BS
-import System.Directory  ( getDirectoryContents
-                         , setCurrentDirectory
-                         , getCurrentDirectory
-                         , removeFile
-                         , renameFile
-                         , copyFile )
-
-import GHC.IO.Exception
+import           Data.Foldable
+import           Data.List (intercalate)
+import           Data.Maybe (fromMaybe, fromJust)
+import           Data.Monoid
+import           GHC.IO.Exception
+import           System.Directory
+import           System.FilePath ((</>))
+import           System.Process hiding (env)
 
 ---
 

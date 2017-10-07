@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2017 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -23,21 +23,21 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Utilities where
 
-import Control.Monad.Trans (liftIO, MonadIO)
-import Control.Concurrent  (threadDelay)
-import System.Directory    (doesFileExist)
-import System.FilePath     (dropExtension)
-import Text.Regex.PCRE     ((=~))
-import Data.Functor
-import Data.Monoid
-import Text.Printf         (printf)
-import Data.List           (dropWhileEnd)
-import Data.Foldable
-import Data.Char           (digitToInt)
-import System.IO
+import           Control.Concurrent (threadDelay)
+import           Control.Monad.Trans (liftIO, MonadIO)
 import qualified Data.ByteString.Char8 as BS
+import           Data.Char (digitToInt)
+import           Data.Foldable
+import           Data.Functor
+import           Data.List (dropWhileEnd)
+import           Data.Monoid
+import           System.Directory (doesFileExist)
+import           System.FilePath (dropExtension)
+import           System.IO
+import           Text.Printf (printf)
+import           Text.Regex.PCRE ((=~))
 
-import Shell
+import           Shell
 
 ---
 
@@ -177,15 +177,11 @@ inDir dir io = pwd >>= \cur -> cd dir *> io >>= \res -> cd cur *> pure res
 noDots :: [String] -> [String]
 noDots = filter (`notElem` [".", ".."])
 
--- | Read a file with the given encoding.
-readFileEncoding :: TextEncoding -> FilePath -> IO String
-readFileEncoding enc name = do
+-- | Read a file. This used to enforce UTF8, but no longer does.
+readFileUTF8 :: FilePath -> IO String
+readFileUTF8 name = do
   handle <- openFile name ReadMode
   BS.unpack <$> BS.hGetContents handle
-
--- | Read a file with UTF-8 encoding
-readFileUTF8 :: FilePath -> IO String
-readFileUTF8 = readFileEncoding utf8
 
 ---------
 -- MONADS
