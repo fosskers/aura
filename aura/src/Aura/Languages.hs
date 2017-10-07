@@ -4,23 +4,24 @@
 -- All normal restrictions on line length do not apply for this file, and this file only.
 
 {- AURA TRANSLATORS - Thank you all
-Chris "Kwpolska" Warrick          | Polish
-Denis Kasak / "stranac"           | Croatian
-Fredrik Haikarainen               | Swedish
-Lukas Niederbremer / Jonas Platte | German
-Alejandro Gómez / Sergio Conde    | Spanish
-Henry Kupty / Thiago Perrotta     | Portuguese
-Ma Jiehong / Fabien Dubosson      | French
-Kyrylo Silin                      | Russian
-Bob Valantin                      | Italian
-Filip Brcic                       | Serbian
-"chinatsun"                       | Norwegian
-"pak tua Greg"                    | Indonesia
+Chris "Kwpolska" Warrick             | Polish
+Denis Kasak / "stranac"              | Croatian
+Fredrik Haikarainen / Daniel Beecham | Swedish
+Lukas Niederbremer / Jonas Platte    | German
+Alejandro Gómez / Sergio Conde       | Spanish
+Henry Kupty / Thiago Perrotta        | Portuguese
+Ma Jiehong / Fabien Dubosson         | French
+Kyrylo Silin                         | Russian
+Bob Valantin                         | Italian
+Filip Brcic                          | Serbian
+"chinatsun"                          | Norwegian
+"pak tua Greg"                       | Indonesia
+Kai Zhang                            | Chinese
 -}
 
 {-
 
-Copyright 2012 - 2016 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2017 Colin Woodbury <colingw@gmail.com>
 
 This file is part of Aura.
 
@@ -57,7 +58,7 @@ translators :: Map.Map Language String
 translators = Map.fromList
     [ (Polish,     "Chris \"Kwpolska\" Warrick")
     , (Croatian,   "Denis Kasak / \"stranac\"")
-    , (Swedish,    "Fredrik Haikarainen")
+    , (Swedish,    "Fredrik Haikarainen / Daniel Beecham")
     , (German,     "Lukas Niederbremer / Jonas Platte")
     , (Spanish,    "Alejandro Gómez / Sergio Conde")
     , (Portuguese, "Henry \"Ingvij\" Kupty / Thiago \"thiagowfx\" Perrotta")
@@ -67,26 +68,27 @@ translators = Map.fromList
     , (Serbian,    "Filip Brcic")
     , (Norwegian,  "\"chinatsun\"")
     , (Indonesia,  "\"pak tua Greg\"")
+    , (Chinese,    "Kai Zhang")
     ]
 
 -- These need updating! Or removing...
 languageNames :: Language -> Map.Map Language String
-languageNames = Map.fromList . zip [ Polish, Croatian, Swedish, German, Spanish, Portuguese, French, Russian, Italian, Serbian, Norwegian, Indonesia ] . \case
-    Japanese   -> [ "ポーランド語", "クロアチア語", "スウェーデン語", "ドイツ語", "スペイン語", "ポルトガル語", "フランス語", "ロシア語", "", "", "", "Indonesia" ]
-    Polish     -> [ "polski", "chorwacki", "szwedzki", "niemiecki", "hiszpański", "portugalski", "francuski", "rosyjski", "", "", "", "Indonesia" ]
-    Croatian   -> [ "poljski", "hrvatski", "švedski", "njemački", "španjolski", "portugalski", "francuski", "ruski", "talijanski", "srpski", "norveški", "Indonesia" ]
-    Swedish    -> [ "Polska", "Kroatiska", "Svenska", "Tyska", "Spanska", "Portugisiska", "Franska", "Ryska", "Italienska", "Serbiska", "Norska", "Indonesia" ]
-    German     -> [ "Polnisch", "Kroatisch", "Schwedisch", "Deutsch", "Spanisch", "Portugiesisch", "Französisch", "Russisch", "Italienisch", "Serbisch", "Norwegisch", "Indonesisch" ]
-    Spanish    -> [ "Polaco", "Croata", "Sueco", "Alemán", "Español", "Portugués", "Francés", "Ruso", "Italiano", "Serbio", "Noruego", "Indonesio" ]
-    Portuguese -> [ "Polonês", "Croata", "Sueco", "Alemão", "Espanhol", "Português", "Francês", "Russo", "Italiano", "Sérvio", "Norueguês", "Indonesia" ]
-    French     -> [ "Polonais", "Croate", "Suédois", "Allemand", "Espagnol", "Portugais", "Français", "Russe", "Italien", "Serbe", "Norvégien", "Indonesia" ]
-    Russian    -> [ "Польский", "Хорватский", "Шведский", "Немецкий", "Испанский", "Португальский", "Русский", "Итальянский", "Сербский", "Норвежский", "Индонезийский" ]
-    Italian    -> [ "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "", "", "Indonesia" ]
-    Serbian    -> [ "Пољски", "Хрватски", "Шведски", "Немачки", "Шпански", "Португалски", "Француски", "Руски", "Италијански", "Српски", "", "Indonesia" ]
-    Norwegian  -> [ "Polsk", "Kroatisk", "Svensk", "Tysk", "Spansk", "Portugisisk", "Fransk", "Russisk", "Italiensk", "Serbisk", "Norsk", "Indonesia" ]
-    Indonesia  -> [ "Polandia", "Kroasia", "Swedia", "Jerman", "Spanyol", "Portugis", "Prancis", "Rusia", "Italia", "Serbia", "Norwegia", "Indonesia" ]
-    Chinese    -> [ "波兰语", "克罗地亚语", "瑞典语", "德语", "西班牙语", "葡萄牙语", "法语", "俄语", "意大利语", "塞尔维亚语", "挪威语", "印度尼西亚语" ]
-    _          -> [ "Polish", "Croatian", "Swedish", "German", "Spanish", "Portuguese", "French", "Russian", "Italian", "Serbian", "Norwegian", "Indonesia" ]
+languageNames = Map.fromList . zip [ Polish, Croatian, Swedish, German, Spanish, Portuguese, French, Russian, Italian, Serbian, Norwegian, Indonesia, Chinese ] . \case
+    Japanese   -> [ "ポーランド語", "クロアチア語", "スウェーデン語", "ドイツ語", "スペイン語", "ポルトガル語", "フランス語", "ロシア語", "イタリア語", "セルビア語", "ノルウェー語", "Indonesia", "中国語" ]
+    Polish     -> [ "polski", "chorwacki", "szwedzki", "niemiecki", "hiszpański", "portugalski", "francuski", "rosyjski", "", "", "", "Indonesian", "Chinese" ]
+    Croatian   -> [ "poljski", "hrvatski", "švedski", "njemački", "španjolski", "portugalski", "francuski", "ruski", "talijanski", "srpski", "norveški", "Indonesian", "Chinese" ]
+    Swedish    -> [ "Polska", "Kroatiska", "Svenska", "Tyska", "Spanska", "Portugisiska", "Franska", "Ryska", "Italienska", "Serbiska", "Norska", "Indonesian", "Chinese" ]
+    German     -> [ "Polnisch", "Kroatisch", "Schwedisch", "Deutsch", "Spanisch", "Portugiesisch", "Französisch", "Russisch", "Italienisch", "Serbisch", "Norwegisch", "Indonesisch", "Chinese" ]
+    Spanish    -> [ "Polaco", "Croata", "Sueco", "Alemán", "Español", "Portugués", "Francés", "Ruso", "Italiano", "Serbio", "Noruego", "Indonesio", "Chinese" ]
+    Portuguese -> [ "Polonês", "Croata", "Sueco", "Alemão", "Espanhol", "Português", "Francês", "Russo", "Italiano", "Sérvio", "Norueguês", "Indonesian", "Chinese" ]
+    French     -> [ "Polonais", "Croate", "Suédois", "Allemand", "Espagnol", "Portugais", "Français", "Russe", "Italien", "Serbe", "Norvégien", "Indonesian", "Chinese" ]
+    Russian    -> [ "Польский", "Хорватский", "Шведский", "Немецкий", "Испанский", "Португальский", "Русский", "Итальянский", "Сербский", "Норвежский", "Индонезийский", "Chinese" ]
+    Italian    -> [ "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "", "", "Indonesian", "Chinese" ]
+    Serbian    -> [ "Пољски", "Хрватски", "Шведски", "Немачки", "Шпански", "Португалски", "Француски", "Руски", "Италијански", "Српски", "", "Indonesian", "Chinese" ]
+    Norwegian  -> [ "Polsk", "Kroatisk", "Svensk", "Tysk", "Spansk", "Portugisisk", "Fransk", "Russisk", "Italiensk", "Serbisk", "Norsk", "Indonesian", "Chinese" ]
+    Indonesia  -> [ "Polandia", "Kroasia", "Swedia", "Jerman", "Spanyol", "Portugis", "Prancis", "Rusia", "Italia", "Serbia", "Norwegia", "Indonesian", "Chinese" ]
+    Chinese    -> [ "波兰语", "克罗地亚语", "瑞典语", "德语", "西班牙语", "葡萄牙语", "法语", "俄语", "意大利语", "塞尔维亚语", "挪威语", "印度尼西亚语", "中文" ]
+    _          -> [ "Polish", "Croatian", "Swedish", "German", "Spanish", "Portuguese", "French", "Russian", "Italian", "Serbian", "Norwegian", "Indonesian", "Chinese" ]
 
 translatorMsgTitle :: Language -> String
 translatorMsgTitle = \case
