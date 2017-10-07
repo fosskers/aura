@@ -48,7 +48,7 @@ import           Control.Arrow
 import qualified Data.Map.Lazy as Map (Map, (!), fromList, toList, mapWithKey)
 import           Data.Monoid
 
-import           Aura.Colour.Text (cyan, green, red, blue, yellow, magenta, bForeground)
+import           Aura.Colour.Text (cyan, green, red, blue, yellow, bForeground)
 import           Aura.Languages.Base
 import qualified Aura.Languages.Fields as Fields
 
@@ -1401,45 +1401,6 @@ reportNotInLog_1 = \case
     Chinese    -> "这些没有在日志文件中出现："
     _          -> "These have not appeared in the log file:"
 
-----------------------------
--- Aura/Commands/M functions
-----------------------------
--- NEEDS TRANSLATION
-cleanABSTree_1 :: Language -> String
-cleanABSTree_1 = \case
-    Japanese   -> "ABS Treeの中身を削除？"
-    Polish     -> "Skasować całe drzewo ABS?"
-    Croatian   -> "Obrisati cijelo ABS stablo?"
-    German     -> "Den gesamten ABS-Baum löschen?"
-    Spanish    -> "¿Deseas eliminar el árbol ABS entero?"
-    Norwegian  -> "Slett hele ABS-treet?"
-    Italian    -> "Cancellare l'intero albero ABS?"
-    Portuguese -> "Remover a árvore ABS inteira?"
-    French     -> "Supprimer la totalité de l'arbre ABS ?"
-    Russian    -> "Удалить дерево ABS полностью?"
-    Indonesia  -> "Menghapus seluruh pohon ABS?"
-    Chinese    -> "删除整个 ABS 树？"
-    Swedish    -> "Ta bort hela ABS-trädet?"
-    _          -> "Delete the entire ABS Tree?"
-
--- NEEDS TRANSLATION
-cleanABSTree_2 :: Language -> String
-cleanABSTree_2 = \case
-    Japanese   -> "ABS Treeの中身を削除中・・・"
-    Polish     -> "Usuwanie drzewa ABS..."
-    Croatian   -> "Brišem ABS stablo..."
-    German     -> "Lösche ABS-Baum..."
-    Spanish    -> "Eliminando el árbol ABS..."
-    Norwegian  -> "Renser ABS-treet..."
-    Italian    -> "Ripulisco l'abero ABS..."
-    Portuguese -> "Removendo a árvore ABS..."
-    French     -> "Suppression de l'arbre ABS…"
-    Russian    -> "Удаляю дерево ABS..."
-    Indonesia  -> "Membersihkan pohon ABS..."
-    Chinese    -> "正在清除 ABS 树..."
-    Swedish    -> "Tar bort ABS-trädet..."
-    _          -> "Clearing out ABS Tree..."
-
 ----------------------
 -- Aura/Flags functions
 ----------------------
@@ -1496,22 +1457,6 @@ aurSy = green . \case
     Indonesia  -> "Melakukan perbuatan yang berhubungan dengan [A]UR.\n" <> "Instalasi bawaan dari AUR."
     Chinese    -> "执行涉及到 [A]UR 的指令。\n" <> "默认从 AUR 安装。"
     _          -> "Perform actions involving the [A]UR.\n" <> "Default action installs from the AUR."
-
--- NEEDS TRANSLATION
-absSy :: Language -> String
-absSy = magenta . \case
-    Polish     -> "Wykonuje akcje związane z drzewem ABS" <> "Domyślna akcja to [M]anualne budowanie z drzewa ABS"
-    Croatian   -> "Izvršava operacije sa ABS stablom.\n" <> "Uobičajena (default) radnja je ručna izgradnja iz ABS stabla ([M]anual)."
-    German     -> "Führe Aktionen aus, die den ABS-Baum betreffen.\n" <> "Standardaktion baut [M]anuell aus dem ABS."
-    Spanish    -> "Realizar acciones sobre el árbol ABS.\n" <> "La acción por omisión es compilar [M]anualmente de ABS."
-    Norwegian  -> "Utfør handlinger som involverer ABS-treet.\n" <> "Standard-handling bygger [M]anuelt fra ABS."
-    Portuguese -> "Performa ações envolvendo a árvore ABS.\n" <> "Ação padrão [M]anualmente compila da ABS."
-    French     -> "Effectue une action impliquant l'arbre ABS.\n" <> "Par défaut, installe [M]anuellement depuis ABS."
-    Russian    -> "Совершить действия с участием дерева ABS.\n" <> "Действие по умолчанию выполняет сборку из ABS вручную."
-    Indonesia  -> "Melakukan perbuatan yang berhubungan dengan pohon ABS.\n" <> "Bawaannya adalah membangun [M]anual dari ABS"
-    Chinese    -> "执行涉及到 ABS 树的指令。\n" <> "默认从 ABS 树手动（[M]anually）构建。"
-    Swedish    -> "Genomför handlingar som involverar ABS-trädet.\n" <> "Bygger [M]anuellt från ABS som standard."
-    _          -> "Perform actions involving the ABS tree.\n" <> "Default action [M]anually builds from ABS."
 
 -- NEEDS TRANSLATION
 saveS :: Language -> String
@@ -1674,70 +1619,6 @@ orphanedMsg Nothing = red . \case
     Chinese    -> "孤包！"
     Swedish    -> "Föräldralös!"
     _          -> "Orphaned!"
-
------------------------
--- Aura/ABS functions
------------------------
--- NEEDS TRANSLATION
-absSync_1 :: Language -> String
-absSync_1 = \case
-    Japanese   -> "ローカルABS Treeを同期？"
-    Polish     -> "Synchronizować lokalne drzewo ABS?"
-    Croatian   -> "Sinkronizirati lokalno ABS stablo?"
-    German     -> "Lokalen ABS-Baum synchronisieren?"
-    Spanish    -> "¿Deseas sincronizar el árbol ABS local?"
-    Norwegian  -> "Synkroniser det lokale ABS-treet?"
-    Italian    -> "Sincronizzare l'albero ABS locale?"
-    Portuguese -> "Sincronizar a árvore ABS local ?"
-    French     -> "Synchroniser l'arbre ABS local ?"
-    Russian    -> "Синхронизировать локальное дерево ABS?"
-    Indonesia  -> "Sinkronisasi pohon ABS lokal?"
-    Chinese    -> "同步本地的 ABS 树？"
-    Swedish    -> "Synkronisera det lokala ABS-trädet?"
-    _          -> "Sync the local ABS Tree?"
-
-absSync_2 :: Language -> String
-absSync_2 = \case
-    Japanese   -> "ローカルABS Treeを同期中・・・"
-    Polish     -> "Synchronizacja lokalnego drzewa ABS..."
-    Croatian   -> "Sinkroniziram lokalno ABS stablo..."
-    German     -> "Synchronisiere lokalen ABS-Baum..."
-    Spanish    -> "Sincronizando el árbol ABS local..."
-    Norwegian  -> "Synkroniserer det lokale ABS-treet..."
-    Italian    -> "Sincronizzo l'albero ABS locale..."
-    Portuguese -> "Sincronizano a árvore ABS local..."
-    French     -> "Synchronisation de l'arbre ABS local…"
-    Russian    -> "Синхронизируется локальное дерево ABS..."
-    Indonesia  -> "Menyinkronkan pohon ABS lokal..."
-    Chinese    -> "正在同步本地的 ABS 树..."
-    Swedish    -> "Synkroniserar det lokala ABS-trädet..."
-    _          -> "Syncing local ABS Tree..."
-
-singleSync_1 :: String -> Language -> String
-singleSync_1 (bt -> p) = \case
-    Japanese   -> p <> "をABS Treeに同期・・・"
-    Polish     -> "Synchronizowanie " <> p <> " do lokalnego drzewa ABS"
-    Croatian   -> "Sinkroniziram " <> p <> " u lokalnom stablu..."
-    German     -> "Synchronisiere " <> p <> " in den lokalen ABS-Baum..."
-    Spanish    -> "Sincronizando " <> p <> " al árbol ABS local..."
-    Norwegian  -> "Synkroniserer " <> p <> " til det lokale ABS-treet..."
-    Italian    -> "Sincronizzo " <> p <> " nell'albero ABS locale..."
-    Portuguese -> "Sincronizando " <> p <> " para a árvore ABS local..."
-    French     -> "Synchronisation de " <> p <> " dans l'arbre ABS local…"
-    Russian    -> p <> " синхронизируется с локальным деревом ABS..."
-    Indonesia  -> "Menyinkronkan paket " <> p <> " dengan pohon ABS lokal..."
-    Chinese    -> "正在将 " <> p <> " 同步到本地的 ABS 树..."
-    Swedish    -> "Synkroniserar " <> p <> " till det lokala ABS-trädet..."
-    _          -> "Syncing " <> p <> " to the local ABS Tree..."
-
-absInfoFields :: Language -> [String]
-absInfoFields = sequence [ Fields.repository
-                         , Fields.name
-                         , Fields.version
-                         , Fields.dependsOn
-                         , Fields.makeDeps
-                         , Fields.description
-                         ]
 
 repository_1 :: String -> Language -> String
 repository_1 p = \case
