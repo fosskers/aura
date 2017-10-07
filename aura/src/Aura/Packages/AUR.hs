@@ -54,18 +54,24 @@ import           Utilities (decompress)
 ---
 
 aurLookup :: String -> Aura (Maybe Buildable)
-aurLookup name = asks managerOf >>= \m -> fmap (makeBuildable m name . T.unpack) <$> pkgbuild m name
+aurLookup name = asks managerOf >>= \m -> do
+   junk <- fmap (makeBuildable m name . T.unpack)<$> pkgbuild m name
+   sequence junk
 
 aurRepo :: Repository
 aurRepo = Repository $ aurLookup >=> traverse packageBuildable
 
-makeBuildable :: Manager -> String -> Pkgbuild -> Buildable
-makeBuildable m name pb = Buildable
-    { baseNameOf   = name
-    , pkgbuildOf   = pb
-    , isExplicit   = False
-    , buildScripts = f }
-    where f fp = sourceTarball m fp (T.pack name) >>= traverse decompress
+makeBuildable :: Manager -> String -> Pkgbuild -> Aura Buildable
+makeBuildable m name pb = do
+   ai <- head <$> info m [T.pack name]
+   return Buildable
+     { baseNameOf   = name
+     , pkgbuildOf   = pb
+     , bldDepsOf    = parseDep . T.unpack <$> dependsOf ai ++ makeDepsOf ai
+     , bldVersionOf = T.unpack $ aurVersionOf ai
+     , isExplicit   = False
+     , buildScripts = f }
+     where f fp = sourceTarball m fp (T.pack name) >>= traverse decompress
 
 isAurPackage :: String -> Aura Bool
 isAurPackage name = asks managerOf >>= \m -> isJust <$> pkgbuild m name

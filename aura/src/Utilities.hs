@@ -35,6 +35,7 @@ import Data.List           (dropWhileEnd)
 import Data.Foldable
 import Data.Char           (digitToInt)
 import System.IO
+import qualified Data.ByteString.Char8 as BS
 
 import Shell
 
@@ -180,8 +181,7 @@ noDots = filter (`notElem` [".", ".."])
 readFileEncoding :: TextEncoding -> FilePath -> IO String
 readFileEncoding enc name = do
   handle <- openFile name ReadMode
-  hSetEncoding handle enc
-  hGetContents handle
+  BS.unpack <$> BS.hGetContents handle
 
 -- | Read a file with UTF-8 encoding
 readFileUTF8 :: FilePath -> IO String

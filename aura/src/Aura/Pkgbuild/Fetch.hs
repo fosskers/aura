@@ -33,6 +33,7 @@ import           Control.Monad.Trans (MonadIO, liftIO)
 import           Data.Text hiding (take)
 import qualified Data.Text.Lazy as TL
 import           Data.Text.Lazy.Encoding
+import           Data.Text.Encoding.Error
 import           Internet
 import           Network.HTTP.Client (Manager)
 import           Network.URI (escapeURIString, isUnescapedInURIComponent)
@@ -54,7 +55,7 @@ pkgbuildUrl p = baseUrl </> "cgit/aur.git/plain/PKGBUILD?h="
 pkgbuild :: MonadIO m => Manager -> String -> m (Maybe Text)
 pkgbuild m p = e $ do
   t <- urlContents m $ pkgbuildUrl p
-  pure $ fmap (TL.toStrict . decodeUtf8) t
+  pure $ fmap (TL.toStrict . decodeUtf8With lenientDecode) t
   where e f = liftIO $ f `catch` (\(_ :: E) -> return Nothing)
 
 -- | Callable with Text as well, if that's easier.
