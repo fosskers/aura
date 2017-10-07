@@ -1,10 +1,12 @@
-resolver: lts-8.13
+resolver: lts-8.18
 
 packages:
   - aura/
   - aur/
   - arel/
+  - alpm/
 
-extra-deps: []
+extra-deps:
+  - versions-3.1.1
 
 flags: {}
