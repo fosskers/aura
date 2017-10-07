@@ -1,5 +1,13 @@
 Aura Changelog
 ==============
+
+1.4.0
+-----
+- *Dependency resolution vastly improved.* We removed the Bash parser that used
+  to poorly handle the bulk of this.
+- Chinese translations thanks to Kai Zhang.
+- `-M` operator and associated code fully removed.
+
 1.3.9
 -----
 - Updated Swedish translations
