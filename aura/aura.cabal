@@ -37,7 +37,7 @@ source-repository head
   location: git://github.com/fosskers/aura.git
 
 executable aura
-  ghc-options:         -Wall -O2
+  ghc-options:         -fwarn-unused-imports -fwarn-unused-binds -fwarn-name-shadowing -fwarn-unused-matches -fwarn-incomplete-patterns -Wincomplete-uni-patterns -O2
 
   main-is:             aura.hs
 
