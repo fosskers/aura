@@ -51,12 +51,6 @@ Perform actions involving the pacman [L]ogfile.
 Default action opens the log for read-only viewing.
 .RE
 .P
-\fB\-M\fR, \-\-abssync
-.RS 4
-Perform actions involving the ABS Tree.
-Allows you to [M]anually build repository packages.
-.RE
-.P
 \fB\-O\fR, \-\-orphans [package(s)]
 .RS 4
 Perform actions involving [O]rphan packages. Orphan packages are packages
@@ -258,79 +252,6 @@ be printed.
 .RS 4
 Search the pacman log file via a regex. Useful for singling out any and all
 actions performed on a package.
-.RE
-
-.SH ABS TREE OPTIONS (\fI\-M\fR)
-.P
-\fB\-a\fR, \-\-delmakedeps
-.RS 4
-The ABS equivalent of \fI\-Aa\fR.
-.RE
-.P
-\fB\-c\fR, \-\-clean
-.RS 4
-Delete the local ABS Tree.
-.RE
-.P
-\fB\-d\fR, \-\-deps <package(s)>
-.RS 4
-The ABS equivalent of \fI\-Ad\fR. Will silently fail if the package is not
-present in the local tree.
-.RE
-.P
-\fB\-i\fR, \-\-info <package(s)>
-.RS 4
-Search the local ABS Tree for package info. Will silently fail if the package
-is not present in the local tree.
-.RE
-.P
-\fB\-k\fR, \-\-diff
-.RS 4
-The ABS equivalent of \fI\-Ak\fR.
-.RE
-.P
-\fB\-p\fR, \-\-pkgbuild <package(s)>
-.RS 4
-The ABS equivalent of \fI\-Ap\fR. Will silently fail if the package is not
-present in the local tree.
-.RE
-.P
-\fB\-s\fR, \-\-search <regex>
-.RS 4
-Search the local ABS Tree via a regex.
-.RE
-.P
-\fB\-t\fR, \-\-treesync <package(s)>
-.RS 4
-Given package names, syncs them to the local ABS Tree. \fI\-Mt\fR is thus a
-more specialised version of \fI\-My\fR.
-.RE
-.P
-\fB\-x\fR, \-\-unsuppress
-.RS 4
-The ABS equivalent of \fI\-Ax\fR.
-.RE
-.P
-\fB\-y\fR, \-\-refresh
-.RS 4
-Sync all packages present in the local ABS Tree to their latest version.
-This is different from just "sudo abs", which pulls down the \fIentire\fR tree
-as available from the repositories.
-.RE
-.P
-\fB\-\-absdeps\fR
-.RS 4
-All repository (pacman) dependencies not yet installed will also be manually
-built. Also usable with \fI\-A\fR.
-.RE
-\fB\-\-dryrun\fR
-.RS 4
-Same as with \fI\-A\fR. No building/installation will be performed.
-.RE
-.P
-\fB\-\-hotedit\fR
-.RS 4
-Same as with \fI\-A\fR. Edit PKGBUILDs before building.
 .RE
 
 .SH ORPHAN PACKAGE OPTIONS (\fI\-O\fR)

@@ -49,8 +49,8 @@ import           Aura.Install (InstallOptions(..))
 import qualified Aura.Install as I
 import           Aura.Languages
 import           Aura.Monad.Aura
-import           Aura.Packages.ABS (absDepsRepo)
 import           Aura.Packages.AUR
+import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings.Base
 import           Aura.Utils
@@ -61,18 +61,13 @@ import           Utilities (whenM)
 
 ---
 
-installOptions :: Aura I.InstallOptions
-installOptions = do
-    depsRepo <- absDepsRepo
-    pure I.InstallOptions { label         = "AUR"
-                          , installLookup = aurLookup
-                          , repository    = depsRepo <> aurRepo
-                          }
+installOptions :: I.InstallOptions
+installOptions = I.InstallOptions { label         = "AUR"
+                                  , installLookup = aurLookup
+                                  , repository    = pacmanRepo <> aurRepo }
 
 install :: [String] -> [String] -> Aura ()
-install pacOpts ps = do
-    opts <- installOptions
-    I.install opts pacOpts ps
+install pacOpts ps = I.install installOptions pacOpts ps
 
 upgradeAURPkgs :: [String] -> [String] -> Aura ()
 upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
@@ -164,9 +159,7 @@ renderSearch ss r (i, e) = searchResult
           s = c bForeground (" [installed]" :: String)
 
 displayPkgDeps :: [String] -> Aura ()
-displayPkgDeps ps = do
-    opts <- installOptions
-    I.displayPkgDeps opts ps
+displayPkgDeps ps = I.displayPkgDeps installOptions ps
 
 downloadTarballs :: [String] -> Aura ()
 downloadTarballs pkgs = do

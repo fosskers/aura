@@ -79,27 +79,6 @@ Install order is as follows:
 
 Sample Usage
 ============
-#### New with Aura 1.2
-Build a repository package manually:
-
-    aura -M (package)
-
-Build a repository package and all its dependencies manually:
-
-    aura -M (package) --absdeps
-
-Sync a single package's data to the local ABS Tree:
-
-    aura -Mt (package)
-
-Sync all package data in the local ABS Tree:
-
-    aura -My
-
-Remove only those package files from the cache that aren't present in any
-package record:
-
-    aura -Ccc
 
 #### Installing Packages
 Install an AUR package:
