@@ -60,6 +60,7 @@ Install order is as follows:
   aren't required at all after install. Packages like this just
   sit there, receiving upgrades for no reason.
   Aura helps keep track of and remove packages like this.
+  Learn more [here](#working-with-orphan-packages).
 
 ### Arch Linux for Everyone
   English is well established as the world's Lingua Franca, and is also
