@@ -4,7 +4,7 @@
 
 -- |
 -- Module    : Linux.Arch.Aur.Rpc
--- Copyright : (c) Colin Woodbury, 2014, 2015, 2016
+-- Copyright : (c) Colin Woodbury, 2014 - 2018
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colingw@gmail.com>
 --
@@ -53,4 +53,4 @@ search :: MonadIO m => Manager -> Text -> m [AurInfo]
 search m p = unwrap m $ rpcS (Just "5") (Just "search") (Just p)
 
 unwrap :: MonadIO m => Manager -> ClientM RPCResp -> m [AurInfo]
-unwrap m r = liftIO . fmap (either (const []) _results) $ runClientM r (ClientEnv m url)
+unwrap m r = liftIO . fmap (either (const []) _results) $ runClientM r (ClientEnv m url Nothing)

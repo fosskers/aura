@@ -1,6 +1,6 @@
 name:                aur
 
-version:             6.0.0.1
+version:             6.0.0.2
 
 synopsis:            Access metadata from the Arch Linux User Repository.
 
@@ -42,11 +42,11 @@ library
                        Linux.Arch.Aur.Types
 
   build-depends:
-                       base >= 4.8 && < 4.10
-                     , aeson >= 0.9 && < 1.2
+                       base >= 4.8 && < 4.11
+                     , aeson >= 0.9 && < 1.3
                      , http-client >= 0.5 && < 0.6
-                     , servant >= 0.9 && < 0.12
-                     , servant-client >= 0.9 && < 0.12
+                     , servant >= 0.9 && < 0.14
+                     , servant-client >= 0.13 && < 0.14
                      , text >= 1.2 && < 1.3
 
   default-language:    Haskell2010
@@ -57,9 +57,9 @@ test-suite aur-test
   type:                exitcode-stdio-1.0
 
   build-depends:       aur
-                     , base >= 4.8 && < 4.10
-                     , tasty >= 0.11 && < 0.12
-                     , tasty-hunit >= 0.9 && < 0.10
+                     , base >= 4.8 && < 4.11
+                     , tasty >= 0.11 && < 1.1
+                     , tasty-hunit >= 0.9 && < 0.11
                      , http-client >= 0.5 && < 0.6
                      , http-client-tls >= 0.3 && < 0.4
 

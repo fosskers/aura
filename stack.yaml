@@ -1,4 +1,5 @@
-resolver: lts-9.6
+# resolver: lts-9.14
+resolver: lts-11.10
 
 packages:
   - aura/
