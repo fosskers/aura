@@ -1,0 +1,58 @@
+name:        aura
+version:     '1.4.0'
+synopsis:    A secure package manager for Arch Linux and the AUR, written in Haskell.
+description: aura is a package manager for Arch Linux written
+             in Haskell. It connects to both the official Arch
+             repostitories and to the AUR, allowing easy control
+             of all packages on an Arch system.
+             It allows /all/ pacman operations and provides /new/
+             custom ones for dealing with AUR packages.
+             This differs from some other AUR package managers.
+
+category:    System
+author:      Colin Woodbury
+maintainer:  colin@fosskers.ca
+homepage:    https://github.com/aurapm/aura
+license:     GPL-3
+
+extra-source-files:
+  doc/aura.8
+  doc/completions/bashcompletion.sh
+  doc/completions/_aura
+
+ghc-options:
+  - -fwarn-unused-imports
+  - -fwarn-unused-binds
+  - -fwarn-name-shadowing
+  - -fwarn-unused-matches
+  - -fwarn-incomplete-patterns
+  - -fwarn-incomplete-uni-patterns
+  - -fwarn-redundant-constraints
+
+dependencies:
+  - base >= 4.8 && < 4.11
+  - array >= 0.5 && < 0.6
+  - aur >= 6 && < 7
+  - bytestring
+  - containers
+  - directory
+  - filepath
+  - http-client >= 0.5 && < 0.6
+  - http-client-tls >= 0.3 && < 0.4
+  - http-types >= 0.9 && < 0.13
+  - mtl >= 2.2 && < 2.3
+  - network-uri >= 2.6 && < 2.7
+  - parsec >= 3.1 && < 3.2
+  - process
+  - regex-pcre >= 0.94 && < 0.95
+  - split >= 0.2 && < 0.3
+  - temporary
+  - text >= 1.2 && < 1.3
+  - time
+  - transformers >= 0.5 && < 0.6
+  - unix
+
+executables:
+  aura:
+    source-dirs: src
+    main: aura.hs
