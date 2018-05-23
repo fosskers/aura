@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveAnyClass #-}
 
@@ -13,7 +12,7 @@ import           Shelly
 
 ---
 
-data Env = Env { release :: T.Text } deriving (Generic, ParseRecord)
+newtype Env = Env { release :: T.Text } deriving (Generic, ParseRecord)
 
 projectDir :: FilePath
 projectDir = "/home/colin/code/haskell/aura/"
@@ -39,8 +38,9 @@ makeNewPkgFile (Env v) = do
 
 -- | The location of a built release tarball, the output of `stack sdist`.
 -- Beware: the `cabal` version is not static.
+-- See: https://github.com/commercialhaskell/stack/issues/3568
 tarballPath :: Text -> FilePath
-tarballPath v = fromText $ "aura/.stack-work/dist/x86_64-linux-nopie/Cabal-1.24.2.0/aura-" <> v <> ".tar.gz"
+tarballPath v = fromText $ "aura/.stack-work/dist/x86_64-linux-tinfo6/Cabal-2.0.1.0/aura-" <> v <> ".tar.gz"
 
 alterPKGBUILD :: Sh ()
 alterPKGBUILD = do
