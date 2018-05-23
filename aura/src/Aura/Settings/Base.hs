@@ -23,10 +23,9 @@ module Aura.Settings.Base ( Settings(..)
                           , SortScheme(..)
                           , Truncation(..) ) where
 
-import Network.HTTP.Client (Manager)
-
 import Aura.Languages (Language)
-
+import BasePrelude
+import Network.HTTP.Client (Manager)
 import Shell (Environment)
 
 ---

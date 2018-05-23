@@ -24,10 +24,10 @@ module Data.Algorithm.Diff
     , getGroupedDiffBy
     ) where
 
-import Prelude hiding (pi)
-
-import Data.Foldable
+import BasePrelude hiding (First, pi)
 import Data.Array
+
+---
 
 data DI = F | S | B deriving (Show, Eq)
 
@@ -37,12 +37,10 @@ data DI = F | S | B deriving (Show, Eq)
 -- newtype to only perform equality on side of a tuple).
 data Diff a = First a | Second a | Both a a deriving (Show, Eq)
 
-data DL = DL {poi :: !Int, poj :: !Int, path::[DI]} deriving (Show, Eq)
+data DL = DL { poi :: !Int, poj :: !Int, path ::[DI] } deriving (Show, Eq)
 
-instance Ord DL
-        where x <= y = if poi x == poi y
-                then  poj x > poj y
-                else poi x <= poi y
+instance Ord DL where
+  x <= y = if poi x == poi y then  poj x > poj y else poi x <= poi y
 
 canDiag :: (a -> a -> Bool) -> [a] -> [a] -> Int -> Int -> Int -> Int -> Bool
 canDiag eq as bs lena lenb = \ i j ->

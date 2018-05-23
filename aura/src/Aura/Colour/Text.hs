@@ -21,9 +21,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Colour.Text where
 
+import BasePrelude
 import Data.List.Split (splitOn)
-import Data.Monoid
-
 import Shell (csi)
 
 ---

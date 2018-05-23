@@ -28,19 +28,15 @@ module Aura.Commands.L
     , searchLogFile
     , logInfoOnPkg ) where
 
-import Text.Regex.PCRE ((=~))
-import Data.List       ((\\))
-import Data.Monoid     ((<>))
-import Data.Foldable   (traverse_)
-
 import Aura.Colour.Text (yellow)
-import Aura.Core        (badReport)
-import Aura.Shell       (shellCmd)
-import Aura.Utils       (entrify)
-import Aura.Settings.Base
-import Aura.Monad.Aura
+import Aura.Core (badReport)
 import Aura.Languages
-
+import Aura.Monad.Aura
+import Aura.Settings.Base
+import Aura.Shell (shellCmd)
+import Aura.Utils (entrify)
+import BasePrelude
+import Text.Regex.PCRE ((=~))
 import Utilities (searchLines, readFileUTF8)
 
 ---

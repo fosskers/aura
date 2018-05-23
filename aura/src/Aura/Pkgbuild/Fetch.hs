@@ -28,12 +28,13 @@ module Aura.Pkgbuild.Fetch
        , pkgbuild'
        , pkgbuildUrl ) where
 
+import           BasePrelude
 import           Control.Exception (SomeException, catch)
 import           Control.Monad.Trans (MonadIO, liftIO)
 import           Data.Text hiding (take)
+import           Data.Text.Encoding.Error
 import qualified Data.Text.Lazy as TL
 import           Data.Text.Lazy.Encoding
-import           Data.Text.Encoding.Error
 import           Internet
 import           Network.HTTP.Client (Manager)
 import           Network.URI (escapeURIString, isUnescapedInURIComponent)

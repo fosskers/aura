@@ -21,23 +21,17 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Core where
 
-import Control.Monad    (when)
-import Data.Either      (partitionEithers)
-import Data.List        (isSuffixOf)
-import Data.Monoid
-
-import System.Directory (doesFileExist)
-import Text.Regex.PCRE  ((=~))
-
-import Aura.Settings.Base
 import Aura.Colour.Text
-import Aura.Monad.Aura
 import Aura.Languages
+import Aura.Monad.Aura
 import Aura.Pacman
+import Aura.Settings.Base
 import Aura.Utils
-
-import Utilities
+import BasePrelude
 import Shell
+import System.Directory (doesFileExist)
+import Text.Regex.PCRE ((=~))
+import Utilities
 
 ---
 

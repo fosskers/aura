@@ -32,23 +32,22 @@ module Aura.Monad.Aura
     , asks
     ) where
 
+import Aura.Settings.Base (Settings)
+import BasePrelude hiding (catch)
 import Control.Monad.Except
 import Control.Monad.Reader
 
-import Aura.Settings.Base (Settings)
-
 ---
 
-{- The Aura Monad. Functions of note:
-pure    : yields a successful value.
-failure : yields an error and bypasses all other operations.
-catch   : catches an error.
-wrap    : If given an Either, rewraps it into an Aura Monad.
-(>>=)   : fails on the first error.
-liftIO  : Perform intermittent IO using `liftIO`.
-ask     : Obtain run-time settings.
-runAura : Unwraps an Aura action. Must be passed `Settings` as well.
--}
+-- | The Aura Monad. Functions of note:
+-- pure    : yields a successful value.
+-- failure : yields an error and bypasses all other operations.
+-- catch   : catches an error.
+-- wrap    : If given an Either, rewraps it into an Aura Monad.
+-- (>>=)   : fails on the first error.
+-- liftIO  : Perform intermittent IO using `liftIO`.
+-- ask     : Obtain run-time settings.
+-- runAura : Unwraps an Aura action. Must be passed `Settings` as well.
 newtype Aura a = A { runA :: ExceptT String (ReaderT Settings IO) a }
   deriving ( Monad, MonadError String, MonadReader Settings, MonadIO,
              Functor, Applicative)

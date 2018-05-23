@@ -29,16 +29,6 @@ module Aura.State
     , stateCache
     , getStateFiles ) where
 
-import qualified Data.Map.Lazy as M
-
-import           Control.Arrow (first)
-import           Control.Monad (unless)
-import           Data.List (partition, sort)
-import           Data.Maybe (mapMaybe)
-import           Data.Monoid ((<>))
-import           System.Directory (createDirectoryIfMissing)
-import           System.FilePath ((</>))
-
 import           Aura.Cache
 import           Aura.Colour.Text (cyan, red)
 import           Aura.Core (warn, notify)
@@ -49,9 +39,12 @@ import           Aura.Settings.Base
 import           Aura.Time
 import           Aura.Utils (printList, scoldAndFail)
 import           Aura.Utils.Numbers
-
-import           Utilities (getSelection, readFileUTF8)
+import           BasePrelude hiding (Version)
+import qualified Data.Map.Lazy as M
 import           Shell (ls')
+import           System.Directory (createDirectoryIfMissing)
+import           System.FilePath ((</>))
+import           Utilities (getSelection, readFileUTF8)
 
 ---
 

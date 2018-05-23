@@ -22,12 +22,9 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -- | Coloured diff output, similar to @diff -u@ or @git diff@.
 module Aura.Diff ( unidiff ) where
 
-import Data.Traversable    (mapAccumL)
-import Data.Monoid         ((<>))
-
-import Data.Algorithm.Diff
-
 import Aura.Colour.Text
+import BasePrelude hiding (First)
+import Data.Algorithm.Diff
 
 ---
 

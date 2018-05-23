@@ -32,14 +32,12 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Shell where
 
+import           BasePrelude
 import           Control.Exception (catchJust)
 import           Control.Monad (void)
 import qualified Data.ByteString.Char8 as BS
-import           Data.Foldable
 import           Data.List (intercalate)
 import           Data.Maybe (fromMaybe, fromJust)
-import           Data.Monoid
-import           GHC.IO.Exception
 import           System.Directory
 import           System.FilePath ((</>))
 import           System.Process hiding (env)

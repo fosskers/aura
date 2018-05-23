@@ -1,5 +1,7 @@
 module Aura.Languages.Base where
 
+import BasePrelude
+
 data Language = English
               | Japanese
               | Polish

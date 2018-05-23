@@ -25,6 +25,7 @@ module Internet
     ( urlContents
     , saveUrlContents ) where
 
+import           BasePrelude hiding (handle)
 import qualified Data.ByteString.Lazy as L
 import           Network.HTTP.Client
 import           Network.HTTP.Types.Status (statusCode)

@@ -25,16 +25,15 @@ module Aura.Pkgbuild.Editing
     ( hotEdit
     , customizepkg ) where
 
-import System.FilePath ((</>))
-
-import Aura.Settings.Base
-import Aura.Monad.Aura
-import Aura.Languages
-import Aura.Utils
 import Aura.Core
-
+import Aura.Languages
+import Aura.Monad.Aura
+import Aura.Settings.Base
+import Aura.Utils
+import BasePrelude
+import Shell (getEditor, quietShellCmd)
+import System.FilePath ((</>))
 import Utilities (openEditor, ifte_, ifFile, nothing, readFileUTF8)
-import Shell     (getEditor, quietShellCmd)
 
 ---
 

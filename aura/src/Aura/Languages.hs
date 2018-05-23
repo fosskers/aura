@@ -44,13 +44,11 @@ module Aura.Languages
     ( module Aura.Languages
     , Language(..) ) where
 
-import           Control.Arrow
-import qualified Data.Map.Lazy as Map (Map, (!), fromList, toList, mapWithKey)
-import           Data.Monoid
-
 import           Aura.Colour.Text (cyan, green, red, blue, yellow, bForeground)
 import           Aura.Languages.Base
 import qualified Aura.Languages.Fields as Fields
+import           BasePrelude
+import qualified Data.Map.Lazy as Map (Map, (!), fromList, toList, mapWithKey)
 
 ---
 

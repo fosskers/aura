@@ -30,26 +30,20 @@ module Aura.Commands.C
     , cleanCache
     , cleanNotSaved ) where
 
-import System.Posix.Files (fileExist)
-import System.FilePath    ((</>))
-import Text.Regex.PCRE    ((=~))
-import Control.Monad      (unless)
-import Data.List          ((\\), sort, groupBy)
-import Data.Foldable      (traverse_, fold)
-import Data.Char          (isDigit)
-import Data.Monoid        ((<>))
-
-import Aura.Logo   (raiseCursorBy)
+import Aura.Cache
+import Aura.Core
+import Aura.Languages
+import Aura.Logo (raiseCursorBy)
+import Aura.Monad.Aura
 import Aura.Pacman (pacman)
 import Aura.Settings.Base
-import Aura.Monad.Aura
-import Aura.Languages
-import Aura.Cache
 import Aura.State
 import Aura.Utils
-import Aura.Core
-
+import BasePrelude
 import Shell (rm, cp)
+import System.FilePath ((</>))
+import System.Posix.Files (fileExist)
+import Text.Regex.PCRE ((=~))
 import Utilities
 
 ---
@@ -65,7 +59,7 @@ downgradePackages pacOpts pkgs = asks cachePathOf >>= \cachePath -> do
     cache   <- cacheContents cachePath
     choices <- traverse (getDowngradeChoice cache) reals
     pacman $ "-U" : pacOpts <> ((cachePath </>) <$> choices)
-               
+
 getDowngradeChoice :: Cache -> String -> Aura String
 getDowngradeChoice cache pkg = do
   let choices = getChoicesFromCache cache pkg

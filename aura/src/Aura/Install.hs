@@ -29,24 +29,18 @@ module Aura.Install
     , displayPkgbuild
     ) where
 
-import Control.Monad (filterM, unless, (>=>))
-import Data.Either   (partitionEithers)
-import Data.List     (sort, (\\), intersperse, partition)
-import Data.Foldable (traverse_)
-import Data.Maybe    (catMaybes)
-import Data.Monoid   ((<>))
-
+import Aura.Build
+import Aura.Colour.Text
+import Aura.Core
+import Aura.Dependencies
+import Aura.Languages
+import Aura.Monad.Aura
+import Aura.Pacman
 import Aura.Pkgbuild.Base
 import Aura.Pkgbuild.Records
 import Aura.Settings.Base
-import Aura.Dependencies
-import Aura.Colour.Text
-import Aura.Monad.Aura
-import Aura.Languages
-import Aura.Pacman
-import Aura.Build
 import Aura.Utils
-import Aura.Core
+import BasePrelude hiding (catch)
 
 ---
 

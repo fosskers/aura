@@ -25,9 +25,8 @@ module Aura.Utils.Numbers
     ( Version(..)
     , version ) where
 
+import BasePrelude hiding (Version, (<|>))
 import Text.ParserCombinators.Parsec
-import Data.Foldable
-
 import Utilities (eitherToMaybe, asInt)
 
 ---

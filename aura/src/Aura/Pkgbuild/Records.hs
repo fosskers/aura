@@ -23,15 +23,13 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Pkgbuild.Records where
 
-import System.Directory (doesFileExist, createDirectoryIfMissing)
-import System.FilePath  ((</>), dropFileName)
-import Data.Foldable    (traverse_)
-
-import Aura.Pkgbuild.Base
-import Aura.Monad.Aura
 import Aura.Core (Buildable, baseNameOf, pkgbuildOf)
 import Aura.Diff (unidiff)
-
+import Aura.Monad.Aura
+import Aura.Pkgbuild.Base
+import BasePrelude
+import System.Directory (doesFileExist, createDirectoryIfMissing)
+import System.FilePath ((</>), dropFileName)
 import Utilities (readFileUTF8)
 
 ---
@@ -43,7 +41,7 @@ comparePkgbuilds name old new =
     h = name </> "PKGBUILD"
 
 hasPkgbuildStored :: String -> Aura Bool
-hasPkgbuildStored = liftIO . doesFileExist . pkgbuildPath 
+hasPkgbuildStored = liftIO . doesFileExist . pkgbuildPath
 
 storePkgbuilds :: [Buildable] -> Aura ()
 storePkgbuilds = traverse_ (\p -> writePkgbuild (baseNameOf p) (pkgbuildOf p))

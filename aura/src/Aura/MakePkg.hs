@@ -28,14 +28,12 @@ module Aura.MakePkg
     , makepkgSource
     , makepkgConfFile ) where
 
-import Data.Monoid
-import Text.Regex.PCRE ((=~))
-
 import Aura.Monad.Aura
 import Aura.Settings.Base (suppressMakepkg, makepkgFlagsOf)
 import Aura.Shell (shellCmd, quietShellCmd, quietShellCmd', checkExitCode')
-
+import BasePrelude
 import Shell (pwd, ls)
+import Text.Regex.PCRE ((=~))
 
 ---
 

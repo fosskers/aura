@@ -23,21 +23,14 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Utilities where
 
-import           Control.Concurrent (threadDelay)
+import           BasePrelude hiding (handle)
 import           Control.Monad.Trans (liftIO, MonadIO)
 import qualified Data.ByteString.Char8 as BS
-import           Data.Char (digitToInt)
-import           Data.Foldable
-import           Data.Functor
-import           Data.List (dropWhileEnd)
-import           Data.Monoid
+import           Shell
 import           System.Directory (doesFileExist)
 import           System.FilePath (dropExtension)
 import           System.IO
-import           Text.Printf (printf)
 import           Text.Regex.PCRE ((=~))
-
-import           Shell
 
 ---
 

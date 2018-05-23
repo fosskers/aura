@@ -32,23 +32,17 @@ module Aura.Packages.AUR
     , pkgUrl
     ) where
 
-import           Control.Monad ((>=>))
-import           Data.Function (on)
-import           Data.List (sortBy)
-import           Data.Maybe
-import           Data.Monoid ((<>))
-import qualified Data.Text as T
-import           Linux.Arch.Aur
-import           Network.HTTP.Client (Manager)
-import           System.FilePath ((</>))
-
 import           Aura.Core
 import           Aura.Monad.Aura
 import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings.Base
-
+import           BasePrelude
+import qualified Data.Text as T
 import           Internet
+import           Linux.Arch.Aur
+import           Network.HTTP.Client (Manager)
+import           System.FilePath ((</>))
 import           Utilities (decompress)
 
 ---

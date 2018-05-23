@@ -25,19 +25,16 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Dependencies ( resolveDeps ) where
 
-import           Control.Monad.State
-import           Data.Graph
-import           Data.Maybe
-import qualified Data.Map as Map
-import           Data.Foldable
-
-import           Aura.Core
 import           Aura.Conflicts
+import           Aura.Core
 import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Settings.Base
-
-import           Utilities           (whenM, tripleFst)
+import           BasePrelude
+import           Control.Monad.State
+import           Data.Graph
+import qualified Data.Map as Map
+import           Utilities (whenM, tripleFst)
 
 ---
 

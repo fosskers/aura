@@ -34,16 +34,14 @@ module Aura.Cache
     , Cache
     , SimplePkg ) where
 
-import qualified Data.Map.Lazy as M
-import           Data.List (nub)
-
 import           Aura.Monad.Aura
 import           Aura.Settings.Base
 import           Aura.Utils (pkgFileNameAndVer)
 import           Aura.Utils.Numbers (Version)
-
+import           BasePrelude hiding (Version)
+import qualified Data.Map.Lazy as M
+import           Shell (ls)
 import           Utilities (searchLines)
-import           Shell     (ls)
 
 ---
 

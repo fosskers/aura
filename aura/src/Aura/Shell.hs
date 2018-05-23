@@ -28,13 +28,11 @@ module Aura.Shell
     , checkExitCode
     , checkExitCode' ) where
 
-import System.Exit (ExitCode)
-
-import Aura.Monad.Aura
-
-import Utilities (tripleSnd)
-
+import           Aura.Monad.Aura
+import           BasePrelude
 import qualified Shell as S
+import           System.Exit (ExitCode)
+import           Utilities (tripleSnd)
 
 ---
 

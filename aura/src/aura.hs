@@ -29,14 +29,12 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-import Control.Monad (when)
-import Data.Foldable (traverse_)
-import Data.List (nub, sort, intercalate)
-import Data.Monoid ((<>))
-import System.Environment (getArgs)
-import System.Exit (exitSuccess, exitFailure)
-
 import Aura.Colour.Text (yellow)
+import Aura.Commands.A as A
+import Aura.Commands.B as B
+import Aura.Commands.C as C
+import Aura.Commands.L as L
+import Aura.Commands.O as O
 import Aura.Core
 import Aura.Flags
 import Aura.Languages
@@ -47,15 +45,9 @@ import Aura.Settings.Base
 import Aura.Settings.Enable
 import Aura.Shell (shellCmd)
 import Aura.Utils
-
+import BasePrelude hiding (Version, catch)
 import Shell (showCursor, hideCursor)
 import Utilities (replaceByPatt)
-
-import Aura.Commands.A as A
-import Aura.Commands.B as B
-import Aura.Commands.C as C
-import Aura.Commands.L as L
-import Aura.Commands.O as O
 
 ---
 

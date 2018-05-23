@@ -21,15 +21,12 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Packages.Repository ( pacmanRepo ) where
 
-import Data.Maybe
-import Data.Monoid
-import Text.Regex.PCRE ((=~))
-
 import Aura.Core
 import Aura.Monad.Aura
-import Aura.Pacman     (pacmanOutput)
-
-import Utilities       (tripleThrd, findM)
+import Aura.Pacman (pacmanOutput)
+import BasePrelude
+import Text.Regex.PCRE ((=~))
+import Utilities (tripleThrd, findM)
 
 ---
 

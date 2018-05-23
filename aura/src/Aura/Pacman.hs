@@ -26,20 +26,18 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Pacman where
 
-import System.Directory (doesFileExist)
-import System.IO        (hFlush, stdout)
-import Text.Regex.PCRE  ((=~))
-import Data.Monoid
-
 import Aura.Cache
-import Aura.Languages     (pacmanFailure_1)
+import Aura.Languages (pacmanFailure_1)
 import Aura.Monad.Aura
 import Aura.Settings.Base (pacmanCmdOf)
-import Aura.Shell         (shellCmd, quietShellCmd, quietShellCmd')
-import Aura.Utils         (scoldAndFail)
-
+import Aura.Shell (shellCmd, quietShellCmd, quietShellCmd')
+import Aura.Utils (scoldAndFail)
+import BasePrelude
 import Shell (Environment, getEnvVar, didProcessSucceed)
-import Utilities 
+import System.Directory (doesFileExist)
+import System.IO (hFlush, stdout)
+import Text.Regex.PCRE ((=~))
+import Utilities
 
 ---
 

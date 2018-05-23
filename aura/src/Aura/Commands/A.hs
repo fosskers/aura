@@ -34,15 +34,6 @@ module Aura.Commands.A
     , downloadTarballs
     , displayPkgbuild ) where
 
-import           Control.Monad
-import           Data.Foldable (traverse_, fold)
-import           Data.Monoid ((<>))
-import qualified Data.Set as S (member, fromList)
-import qualified Data.Text as T
-import           Linux.Arch.Aur
-import           Text.Printf (printf)
-import           Text.Regex.PCRE ((=~))
-
 import           Aura.Colour.Text
 import           Aura.Core
 import           Aura.Install (InstallOptions(..))
@@ -55,8 +46,12 @@ import           Aura.Pkgbuild.Fetch
 import           Aura.Settings.Base
 import           Aura.Utils
 import           Aura.Utils.Numbers
-
+import           BasePrelude
+import qualified Data.Set as S (member, fromList)
+import qualified Data.Text as T
+import           Linux.Arch.Aur
 import           Shell
+import           Text.Regex.PCRE ((=~))
 import           Utilities (whenM)
 
 ---

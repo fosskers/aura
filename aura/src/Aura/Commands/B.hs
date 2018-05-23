@@ -24,17 +24,14 @@ module Aura.Commands.B
     , restoreState
     , cleanStates ) where
 
-import Data.Char (isDigit)
-import Data.Foldable (traverse_)
-import System.FilePath ((</>))
-
 import Aura.Core (warn)
 import Aura.Languages
 import Aura.Monad.Aura
 import Aura.State
 import Aura.Utils (scoldAndFail, optionalPrompt)
-
+import BasePrelude
 import Shell (rm)
+import System.FilePath ((</>))
 
 ---
 

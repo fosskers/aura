@@ -23,11 +23,10 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Utils where
 
-import System.IO.Temp            (withTempDirectory)
-import Text.Regex.PCRE           ((=~))
-import System.IO                 (stdout, hFlush)
-import Data.List                 (sortBy, intercalate)
-import Data.Monoid
+import BasePrelude hiding (Version)
+import System.IO (stdout, hFlush)
+import System.IO.Temp (withTempDirectory)
+import Text.Regex.PCRE ((=~))
 
 import Aura.Colour.Text
 import Aura.Languages (Language, whitespace, yesNoMessage, yesRegex)
@@ -36,7 +35,7 @@ import Aura.Settings.Base
 import Aura.Utils.Numbers
 
 import Utilities (inDir, postPad)
-import Shell     (pwd)
+import Shell (pwd)
 
 ---
 

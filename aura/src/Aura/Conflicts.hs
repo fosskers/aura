@@ -21,15 +21,13 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Conflicts where
 
-import Data.Monoid ((<>))
-import Data.Foldable (traverse_)
-import Text.Regex.PCRE ((=~))
-
 import Aura.Core
 import Aura.Languages
 import Aura.Monad.Aura
 import Aura.Settings.Base
 import Aura.Utils.Numbers (version)
+import BasePrelude
+import Text.Regex.PCRE ((=~))
 
 ---
 

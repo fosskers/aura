@@ -23,21 +23,17 @@ module Aura.Settings.Enable
     ( getSettings
     , debugOutput ) where
 
-import Data.Foldable
-import Data.Maybe (fromMaybe)
-import Data.Monoid
-import Network.HTTP.Client (newManager)
-import Network.HTTP.Client.TLS (tlsManagerSettings)
-import System.Directory (doesDirectoryExist)
-import System.Environment (getEnvironment)
-
 import Aura.Flags
 import Aura.Languages (Language, langFromLocale)
 import Aura.MakePkg (makepkgConfFile)
 import Aura.Pacman
 import Aura.Settings.Base
-
+import BasePrelude
+import Network.HTTP.Client (newManager)
+import Network.HTTP.Client.TLS (tlsManagerSettings)
 import Shell
+import System.Directory (doesDirectoryExist)
+import System.Environment (getEnvironment)
 import Utilities (ifte_, readFileUTF8)
 
 ---

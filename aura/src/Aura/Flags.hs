@@ -49,16 +49,11 @@ module Aura.Flags
     , auraOperMsg
     , Flag(..) ) where
 
-import System.Console.GetOpt
-import Data.Monoid
-import Data.Foldable
-import Data.Maybe (fromMaybe)
-import Text.Read (readMaybe)
-
 import Aura.Colour.Text (yellow)
-import Aura.Settings.Base
 import Aura.Languages
-
+import Aura.Settings.Base
+import BasePrelude hiding (Option, Version, option)
+import System.Console.GetOpt
 import Utilities (notNull, split)
 
 ---

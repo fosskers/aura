@@ -26,9 +26,8 @@ module Aura.Time
     , localTime
     , Time ) where
 
-import Data.List (intercalate)
+import BasePrelude
 import Data.Time hiding (months)
-import Text.Printf (printf)
 
 ---
 
@@ -37,8 +36,7 @@ data Time = Time { yearOf   :: Integer
                  , dayOf    :: Int
                  , hourOf   :: Int
                  , minuteOf :: Int
-                 , secondOf :: Int }
-            deriving (Eq, Show, Read)
+                 , secondOf :: Int } deriving (Eq, Show, Read)
 
 months :: [String]
 months = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"

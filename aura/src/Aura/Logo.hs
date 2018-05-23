@@ -23,15 +23,11 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Logo where
 
-import Control.Concurrent (threadDelay)
-import System.IO          (stdout, hFlush)
-import Data.Monoid        ((<>))
-import Data.Foldable      (traverse_, fold)
-
 import Aura.Colour.Text (yellow)
-
-import Utilities        (prePad)
-import Shell            (cursorUpLineCode)
+import BasePrelude
+import Shell (cursorUpLineCode)
+import System.IO (stdout, hFlush)
+import Utilities (prePad)
 
 ---
 

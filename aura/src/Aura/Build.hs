@@ -25,10 +25,6 @@ module Aura.Build
     ( installPkgFiles
     , buildPackages ) where
 
-import System.FilePath ((</>))
-import Control.Monad (when, void, join)
-import Data.Monoid ((<>))
-
 import Aura.Colour.Text
 import Aura.Core
 import Aura.Languages
@@ -37,9 +33,10 @@ import Aura.Monad.Aura
 import Aura.Pacman (pacman)
 import Aura.Settings.Base
 import Aura.Utils
-
-import Utilities
+import BasePrelude hiding (catch)
 import Shell
+import System.FilePath ((</>))
+import Utilities
 
 ---
 
@@ -70,7 +67,7 @@ build built ps@(p:_) = do
   (paths, rest) <- catch (withTempDir pn (build' ps)) (buildFail built ps)
   build (paths <> built) rest
       where pn = baseNameOf p
-        
+
 -- | Perform the actual build.
 build' :: [Buildable] -> Aura ([FilePath], [Buildable])
 build' []     = failure "build' : You should never see this."
@@ -122,7 +119,7 @@ buildFail _ (p:_) errors = do  -- asks langOf >>= \lang -> do
      else scoldAndFail buildFail_5
 
 -- If the user wasn't running Aura with `-x`, then this will
--- show them the suppressed makepkg output. 
+-- show them the suppressed makepkg output.
 displayBuildErrors :: Error -> Aura ()
 displayBuildErrors errors = ask >>= \ss -> when (suppressMakepkg ss) $ do
   putStrA red (displayBuildErrors_1 $ langOf ss)
