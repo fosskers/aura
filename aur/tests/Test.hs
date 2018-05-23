@@ -18,13 +18,13 @@ suite m = testGroup "RPC Calls"
   ]
 
 infoTest :: Manager -> Assertion
-infoTest m = info m ["aura"] >>= assert . not . null
+infoTest m = info m ["aura"] >>= assertBool "Good package" . not . null
 
 infoTest' :: Manager -> Assertion
-infoTest' m = info m ["aura1234567"] >>= assert . null
+infoTest' m = info m ["aura1234567"] >>= assertBool "Bad package" . null
 
 searchTest :: Manager -> Assertion
-searchTest m = search m "aura" >>= assert . not . null
+searchTest m = search m "aura" >>= assertBool "Good search" . not . null
 
 main :: IO ()
 main = do
