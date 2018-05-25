@@ -110,9 +110,9 @@ pacmanSuccess args = fmap success . shelly . quietSh $ run_ "pacman" args
 pacmanFailure :: String -> Aura a
 pacmanFailure _ = scoldAndFail pacmanFailure_1
 
--- | Performs a pacmanQuiet and returns only the stdout.
+-- | Runs pacman silently and returns only the stdout.
 pacmanOutput :: MonadIO m => [T.Text] -> m T.Text
-pacmanOutput = shelly . run "pacman"
+pacmanOutput = fmap snd . shelly . quietSh . run "pacman"
 
 syncDatabase :: [T.Text] -> Aura ()
 syncDatabase pacOpts = pacman $ "-Sy" : pacOpts

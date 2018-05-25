@@ -133,7 +133,7 @@ aurPkgSearch (fold -> regex) = do
             None   -> id
             Head n -> take n
             Tail n -> reverse . take n . reverse
-  results <- fmap (\x -> (x, (aurNameOf x) `S.member` db)) . t
+  results <- fmap (\x -> (x, aurNameOf x `S.member` db)) . t
             <$> aurSearch regex
   traverse_ (liftIO . putStrLn . renderSearch ss (T.unpack regex)) results
 
