@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013, 2014 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -21,35 +21,25 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Shell
-    ( shellCmd
-    , quietShellCmd
-    , quietShellCmd'
-    , checkExitCode
-    , checkExitCode' ) where
+module Aura.Shell where
 
-import           Aura.Monad.Aura
-import           BasePrelude
-import qualified Shell as S
-import           System.Exit (ExitCode)
-import           Utilities (tripleSnd)
 
 ---
 
-shellCmd :: String -> [String] -> Aura ()
-shellCmd cmd args = liftIO (S.shellCmd cmd args) >>= checkExitCode
+-- shellCmd :: String -> [String] -> Aura ()
+-- shellCmd cmd args = liftIO (S.shellCmd cmd args) >>= checkExitCode
 
-quietShellCmd :: String -> [String] -> Aura String
-quietShellCmd cmd args = tripleSnd <$> liftIO (S.quietShellCmd' cmd args)
+-- quietShellCmd :: String -> [String] -> Aura String
+-- quietShellCmd cmd args = tripleSnd <$> liftIO (S.quietShellCmd' cmd args)
 
 -- More verbose return type.
-quietShellCmd' :: String -> [String] -> Aura (ExitCode, String, String)
-quietShellCmd' cmd args = liftIO $ S.quietShellCmd' cmd args
+-- quietShellCmd' :: String -> [String] -> Aura (ExitCode, String, String)
+-- quietShellCmd' cmd args = liftIO $ S.quietShellCmd' cmd args
 
 -- Should it report _what_ call failed?
-checkExitCode :: ExitCode -> Aura ()
-checkExitCode = checkExitCode' ""
+-- checkExitCode :: ExitCode -> Aura ()
+-- checkExitCode = checkExitCode' ""
 
-checkExitCode' :: String -> ExitCode -> Aura ()
-checkExitCode' s ec | S.didProcessSucceed ec = pure ()
-                    | otherwise              = failure s
+-- checkExitCode' :: String -> ExitCode -> Aura ()
+-- checkExitCode' s ec | S.didProcessSucceed ec = pure ()
+--                     | otherwise              = failure s

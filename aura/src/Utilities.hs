@@ -1,8 +1,10 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 -- Utility functions too general even for Aura.Utils
 
 {-
 
-Copyright 2012 - 2017 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2017 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -26,9 +28,10 @@ module Utilities where
 import           BasePrelude hiding (handle)
 import           Control.Monad.Trans (liftIO, MonadIO)
 import qualified Data.ByteString.Char8 as BS
-import           Shell
+import qualified Data.Map.Strict as M
+import qualified Data.Text as T
+import           Shelly hiding (FilePath)
 import           System.Directory (doesFileExist)
-import           System.FilePath (dropExtension)
 import           System.IO
 import           Text.Regex.PCRE ((=~))
 
@@ -149,23 +152,20 @@ timedMessage :: Int -> [String] -> IO ()
 timedMessage delay = traverse_ printMessage
     where printMessage msg = putStr msg *> hFlush stdout *> threadDelay delay
 
-notNull :: [a] -> Bool
-notNull = not . null
-
 -- | Opens the editor of the user's choice.
-openEditor :: String -> String -> IO ()
-openEditor editor file = void $ shellCmd editor [file]
+openEditor :: MonadIO m => T.Text -> T.Text -> m ()
+openEditor editor file = shelly $ run_ (fromText editor) [file]
 
--- All tarballs should be of the format `.tar.gz`
--- Thus calling dropExtension twice should remove that section.
-decompress :: FilePath -> IO FilePath
+-- All tarballs should be of the format `.tar.gz`, so dropping 7 chars
+-- should remove the extension.
+decompress :: MonadIO m => T.Text -> m T.Text
 decompress file = do
-  _ <- quietShellCmd' "bsdtar" ["-zxvf", file]
-  pure . dropExtension . dropExtension $ file
+  shelly $ run_ "bsdtar" ["-zxvf", file]
+  pure . T.dropEnd 7 $ file
 
 -- | Perform an action within a given directory.
-inDir :: FilePath -> IO a -> IO a
-inDir dir io = pwd >>= \cur -> cd dir *> io >>= \res -> cd cur *> pure res
+inDir :: MonadIO m => T.Text -> IO a -> m a
+inDir dir io = shelly $ pwd >>= \cur -> cd (fromText dir) *> liftIO io >>= \res -> cd cur *> pure res
 
 noDots :: [String] -> [String]
 noDots = filter (`notElem` [".", ".."])
@@ -176,33 +176,94 @@ readFileUTF8 name = do
   handle <- openFile name ReadMode
   BS.unpack <$> BS.hGetContents handle
 
+--------
+-- SHELL
+--------
+
+-- | Shell environment variables.
+type Environment = M.Map T.Text T.Text
+
+-- | The name of a user account on a Linux system.
+newtype User = User { _user :: T.Text } deriving (Eq)
+
+-- | Code borrowed from `ansi-terminal` library by Max Bolingbroke.
+csi :: [Int] -> String -> String
+csi args code = "\ESC[" <> intercalate ";" (show <$> args) <> code
+
+cursorUpLineCode :: Int -> String
+cursorUpLineCode n = csi [n] "F"
+
+-- | Perform a `Sh` action quietly while guarding against exceptions,
+-- and return the associated `ExitCode`.
+quietSh :: Sh a -> Sh (ExitCode, a)
+quietSh sh = do
+  a  <- errExit False . print_stdout False $ print_stderr False sh
+  ec <- exitCode <$> lastExitCode
+  pure (ec, a)
+
+-- | Perform a `Sh` action verbosely while guarding against exceptions,
+-- and return the associated `ExitCode`.
+loudSh :: Sh a -> Sh (ExitCode, a)
+loudSh sh = do
+  a  <- errExit False . print_stdout True $ print_stderr True sh
+  ec <- exitCode <$> lastExitCode
+  pure (ec, a)
+
+-- | Shelly's `lastExitCode` gives an `Int`, so this function here
+-- gives us a more usable form of the exit status.
+exitCode :: Int -> ExitCode
+exitCode 0 = ExitSuccess
+exitCode n = ExitFailure n
+
+-- | This will get the true user name regardless of sudo-ing.
+getTrueUser :: Environment -> Maybe T.Text
+getTrueUser env | isTrueRoot env  = Just "root"
+                | hasRootPriv env = M.lookup "SUDO_USER" env
+                | otherwise       = M.lookup "USER" env
+
+isTrueRoot :: Environment -> Bool
+isTrueRoot env = M.lookup "USER" env == Just "root" && not (M.member "SUDO_USER" env)
+
+-- | Is the user root, or using sudo?
+hasRootPriv :: Environment -> Bool
+hasRootPriv env = M.member "SUDO_USER" env || isTrueRoot env
+
+-- | `vi` is a sensible default, it should be installed by
+-- on any Arch system.
+getEditor :: Environment -> T.Text
+getEditor = fromMaybe "vi" . M.lookup "EDITOR"
+
+-- | This will get the locale variable for translations from the environment
+getLocale :: Environment -> T.Text
+getLocale env = fromMaybe "C" . asum $ map (`M.lookup` env) ["LC_ALL", "LC_MESSAGES", "LANG"]
+
+-- | Strangely missing from `Shelly`.
+chown :: User -> T.Text -> [T.Text] -> Sh ()
+chown (User user) pth args = void . quietSh $ run_ "chown" (args <> [user, pth])
+
+hideCursor :: IO ()
+hideCursor = putStr hideCursorCode
+
+showCursor :: IO ()
+showCursor = putStr showCursorCode
+
+hideCursorCode :: String
+hideCursorCode = csi [] "?25l"
+
+showCursorCode :: String
+showCursorCode = csi [] "?25h"
+
 ---------
 -- MONADS
 ---------
--- These functions need to be organized better!
-
--- | `if then else` in a function.
-ifte :: Bool -> a -> a -> a
-ifte cond t f = if cond then t else f
-
--- | `ifte` with the condition at the end.
-ifte_ :: a -> a -> Bool -> a
-ifte_ t f cond = ifte cond t f
-
--- | Like `when`, but with a Monadic condition.
-whenM :: Monad m => m Bool -> m a -> m ()
-whenM cond' a = cond' >>= ifte_ (void a) nothing
 
 -- | Monadic 'find'. We can't use 'filterM' because monads like 'IO' can
 -- be strict.
 findM :: Monad m => (a -> m Bool) -> [a] -> m (Maybe a)
 findM _ []     = pure Nothing
-findM p (x:xs) = p x >>= ifte_ (pure $ Just x) (findM p xs)
+findM p (x:xs) = p x >>= bool (findM p xs) (pure $ Just x)
 
 -- | If a file exists, it performs action `t` on the argument.
 -- | If the file doesn't exist, it performs `f` and returns the argument.
 ifFile :: MonadIO m => (a -> m a) -> m b -> FilePath -> a -> m a
-ifFile t f file x = (liftIO $ doesFileExist file) >>= ifte_ (t $ x) (f $> x)
-
-nothing :: Applicative f => f ()
-nothing = pure ()
+ifFile t f file x = (liftIO $ doesFileExist file) >>= bool (f $> x) (t $ x)
