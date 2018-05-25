@@ -6,7 +6,7 @@
 
 {-
 
-Copyright 2012 - 2017 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -26,13 +26,14 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.Commands.A
-    ( install
-    , upgradeAURPkgs
-    , aurPkgInfo
-    , aurPkgSearch
-    , displayPkgDeps
-    , downloadTarballs
-    , displayPkgbuild ) where
+  ( install
+  , upgradeAURPkgs
+  , aurPkgInfo
+  , aurPkgSearch
+  , displayPkgDeps
+  , downloadTarballs
+  , displayPkgbuild
+  ) where
 
 import           Aura.Colour.Text
 import           Aura.Core
@@ -50,9 +51,8 @@ import           BasePrelude
 import qualified Data.Set as S (member, fromList)
 import qualified Data.Text as T
 import           Linux.Arch.Aur
-import           Shell
+import           Shelly (whenM, pwd, shelly, toTextIgnore)
 import           Text.Regex.PCRE ((=~))
-import           Utilities (whenM)
 
 ---
 
@@ -61,16 +61,17 @@ installOptions = I.InstallOptions { label         = "AUR"
                                   , installLookup = aurLookup
                                   , repository    = pacmanRepo <> aurRepo }
 
-install :: [String] -> [String] -> Aura ()
+install :: [T.Text] -> [T.Text] -> Aura ()
 install pacOpts ps = I.install installOptions pacOpts ps
 
-upgradeAURPkgs :: [String] -> [String] -> Aura ()
-upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
-  let notIgnored p = splitName p `notElem` ignoredPkgsOf ss
+upgradeAURPkgs :: [T.Text] -> [T.Text] -> Aura ()
+upgradeAURPkgs pacOpts pkgs = do
+  ss <- ask
+  let notIgnored p = T.pack (splitName $ T.unpack p) `notElem` ignoredPkgsOf ss
   notify upgradeAURPkgs_1
   foreignPkgs <- filter (\(n, _) -> notIgnored n) <$> foreignPackages
-  aurInfos    <- aurInfo (T.pack . fst <$> foreignPkgs)
-  let aurPkgs   = filter (\(n, _) -> T.pack n `elem` (aurNameOf <$> aurInfos)) foreignPkgs
+  aurInfos    <- aurInfo (fst <$> foreignPkgs)
+  let aurPkgs   = filter (\(n, _) -> n `elem` (aurNameOf <$> aurInfos)) foreignPkgs
       toUpgrade = filter isntMostRecent $ zip aurInfos (snd <$> aurPkgs)
   auraFirst <- auraCheck (aurNameOf . fst <$> toUpgrade)
   if auraFirst
@@ -80,9 +81,9 @@ upgradeAURPkgs pacOpts pkgs = ask >>= \ss -> do
        notify upgradeAURPkgs_2
        if null toUpgrade && null devel
           then warn upgradeAURPkgs_3
-          else reportPkgsToUpgrade $ (T.unpack . prettify <$> toUpgrade) <> devel
-       install pacOpts $ (T.unpack . aurNameOf . fst <$> toUpgrade) <> pkgs <> devel
-           where prettify (p, v) = aurNameOf p <> " : " <> T.pack v <> " => " <> aurVersionOf p
+          else reportPkgsToUpgrade . map T.unpack $ map prettify toUpgrade <> devel
+       install pacOpts $ (aurNameOf . fst <$> toUpgrade) <> pkgs <> devel
+           where prettify (p, v) = aurNameOf p <> " : " <> v <> " => " <> aurVersionOf p
 -- TODO: Use `printf` with `prettify` to line up the colons.
 
 auraCheck :: [T.Text] -> Aura Bool
@@ -90,10 +91,10 @@ auraCheck toUpgrade = if "aura" `elem` toUpgrade
                          then optionalPrompt auraCheck_1
                          else pure False
 
-auraUpgrade :: [String] -> Aura ()
+auraUpgrade :: [T.Text] -> Aura ()
 auraUpgrade pacOpts = install pacOpts ["aura"]
 
-develPkgCheck :: Aura [String]
+develPkgCheck :: Aura [T.Text]
 develPkgCheck = ask >>= \ss ->
   if rebuildDevel ss then develPkgs else pure []
 
@@ -123,17 +124,18 @@ renderAurPkgInfo ss ai = entrify ss fields entries
                     , yellow $ printf "%0.2f" (popularityOf ai)
                     , maybe "(null)" T.unpack (aurDescriptionOf ai) ]
 
-aurPkgSearch :: [String] -> Aura ()
+aurPkgSearch :: [T.Text] -> Aura ()
 aurPkgSearch [] = pure ()
-aurPkgSearch (fold -> regex) = ask >>= \ss -> do
-    db <- S.fromList . fmap fst <$> foreignPackages
-    let t = case truncationOf ss of  -- Can't this go anywhere else?
-              None -> id
-              Head n -> take n
-              Tail n -> reverse . take n . reverse
-    results <- fmap (\x -> (x, T.unpack (aurNameOf x) `S.member` db)) . t
-                 <$> aurSearch (T.pack regex)
-    traverse_ (liftIO . putStrLn . renderSearch ss regex) results
+aurPkgSearch (fold -> regex) = do
+  ss <- ask
+  db <- S.fromList . fmap fst <$> foreignPackages
+  let t = case truncationOf ss of  -- Can't this go anywhere else?
+            None   -> id
+            Head n -> take n
+            Tail n -> reverse . take n . reverse
+  results <- fmap (\x -> (x, (aurNameOf x) `S.member` db)) . t
+            <$> aurSearch regex
+  traverse_ (liftIO . putStrLn . renderSearch ss (T.unpack regex)) results
 
 renderSearch :: Settings -> String -> (AurInfo, Bool) -> String
 renderSearch ss r (i, e) = searchResult
@@ -153,27 +155,27 @@ renderSearch ss r (i, e) = searchResult
             Nothing -> green $ T.unpack $ aurVersionOf i
           s = c bForeground (" [installed]" :: String)
 
-displayPkgDeps :: [String] -> Aura ()
+displayPkgDeps :: [T.Text] -> Aura ()
 displayPkgDeps ps = I.displayPkgDeps installOptions ps
 
-downloadTarballs :: [String] -> Aura ()
+downloadTarballs :: [T.Text] -> Aura ()
 downloadTarballs pkgs = do
-  currDir <- liftIO pwd
+  currDir <- T.unpack . toTextIgnore <$> shelly pwd
   traverse_ (downloadTBall currDir) pkgs
     where downloadTBall path pkg = whenM (isAurPackage pkg) $ do
               manager <- asks managerOf
-              notify $ downloadTarballs_1 pkg
-              void . liftIO $ sourceTarball manager path $ T.pack pkg
+              notify $ downloadTarballs_1 (T.unpack pkg)
+              void . liftIO $ sourceTarball manager path pkg
 
 displayPkgbuild :: [String] -> Aura ()
 displayPkgbuild ps = do
   m <- asks managerOf
   I.displayPkgbuild (traverse (fmap (fmap T.unpack) . pkgbuild m)) ps
 
-isntMostRecent :: (AurInfo, String) -> Bool
+isntMostRecent :: (AurInfo, T.Text) -> Bool
 isntMostRecent (ai, v) = trueVer > currVer
   where trueVer = version $ T.unpack $ aurVersionOf ai
-        currVer = version v
+        currVer = version $ T.unpack v
 
 ------------
 -- REPORTING

@@ -1,6 +1,6 @@
 {-
 
-Copyright 2012 - 2017 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -22,7 +22,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Commands.B
     ( saveState
     , restoreState
-    , cleanStates ) where
+    , cleanStates
+    ) where
 
 import Aura.Core (warn)
 import Aura.Languages
@@ -30,8 +31,7 @@ import Aura.Monad.Aura
 import Aura.State
 import Aura.Utils (scoldAndFail, optionalPrompt)
 import BasePrelude
-import Shell (rm)
-import System.FilePath ((</>))
+import Shelly
 
 ---
 
@@ -48,4 +48,4 @@ cleanStates' n = do
      then warn cleanStates_3
      else do
        states <- getStateFiles
-       liftIO . traverse_ rm . fmap (stateCache </>) . drop n . reverse $ states
+       shelly . traverse_ rm . map (stateCache </>) . drop n . reverse $ states

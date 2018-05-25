@@ -1,8 +1,10 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 -- Handles all `-O` operations
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -23,16 +25,18 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Commands.O where
 
-import Aura.Core (orphans, sudo)
-import Aura.Monad.Aura
-import Aura.Pacman (pacman)
-import BasePrelude
+import           Aura.Core (orphans, sudo)
+import           Aura.Monad.Aura
+import           Aura.Pacman (pacman)
+import           BasePrelude
+import qualified Data.Text as T
+import qualified Data.Text.IO as T
 
 ---
 
-displayOrphans :: [String] -> Aura ()
-displayOrphans []   = orphans >>= liftIO . traverse_ putStrLn
+displayOrphans :: [T.Text] -> Aura ()
+displayOrphans []   = orphans >>= liftIO . traverse_ T.putStrLn
 displayOrphans pkgs = adoptPkg pkgs
 
-adoptPkg :: [String] -> Aura ()
+adoptPkg :: [T.Text] -> Aura ()
 adoptPkg pkgs = sudo (pacman $ ["-D", "--asexplicit"] <> pkgs)

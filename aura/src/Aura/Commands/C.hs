@@ -1,10 +1,11 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 -- Handles all `-C` operations.
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -24,41 +25,44 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.Commands.C
-    ( downgradePackages
-    , searchCache
-    , backupCache
-    , cleanCache
-    , cleanNotSaved ) where
+  ( downgradePackages
+  , searchCache
+  , backupCache
+  , cleanCache
+  , cleanNotSaved
+  ) where
 
-import Aura.Cache
-import Aura.Core
-import Aura.Languages
-import Aura.Logo (raiseCursorBy)
-import Aura.Monad.Aura
-import Aura.Pacman (pacman)
-import Aura.Settings.Base
-import Aura.State
-import Aura.Utils
-import BasePrelude
-import Shell (rm, cp)
-import System.FilePath ((</>))
-import System.Posix.Files (fileExist)
-import Text.Regex.PCRE ((=~))
-import Utilities
+import           Aura.Cache
+import           Aura.Core
+import           Aura.Languages
+import           Aura.Logo (raiseCursorBy)
+import           Aura.Monad.Aura
+import           Aura.Pacman (pacman)
+import           Aura.Settings.Base
+import           Aura.State
+import           Aura.Utils
+import           BasePrelude hiding (FilePath)
+import qualified Data.Map.Strict as M
+import qualified Data.Text as T
+import           Shelly hiding (path)
+import           Text.Regex.PCRE ((=~))
+import           Utilities
 
 ---
 
 -- | Interactive. Gives the user a choice as to exactly what versions
 -- they want to downgrade to.
-downgradePackages :: [String] -> [String] -> Aura ()
+downgradePackages :: [T.Text] -> [T.Text] -> Aura ()
 downgradePackages _ []         = pure ()
-downgradePackages pacOpts pkgs = asks cachePathOf >>= \cachePath -> do
-  reals <- pkgsInCache pkgs
-  reportBadDowngradePkgs (pkgs \\ reals)
+downgradePackages pacOpts pkgs = do
+  ss        <- ask
+  let cachePath = cachePathOf ss
+  reals     <- shelly $ pkgsInCache ss pkgs
+  reportBadDowngradePkgs . map T.unpack $ pkgs \\ reals
   unless (null reals) $ do
-    cache   <- cacheContents cachePath
-    choices <- traverse (getDowngradeChoice cache) reals
-    pacman $ "-U" : pacOpts <> ((cachePath </>) <$> choices)
+    cache   <- shelly $ cacheContents cachePath
+    choices <- traverse (fmap T.pack . getDowngradeChoice cache) $ map T.unpack reals
+    pacman $ "-U" : pacOpts <> (map (toTextIgnore . (cachePath </>)) choices)
 
 getDowngradeChoice :: Cache -> String -> Aura String
 getDowngradeChoice cache pkg = do
@@ -66,30 +70,34 @@ getDowngradeChoice cache pkg = do
   notify $ getDowngradeChoice_1 pkg
   liftIO $ getSelection choices
 
+-- TODO Could use a real parser for this, and keep `Text`.
 getChoicesFromCache :: Cache -> String -> [String]
 getChoicesFromCache cache pkg = sort choices
-    where choices = filter match (allFilenames cache)
+    where choices = filter match (map T.unpack $ M.elems cache)
           patt    = "-[0-9:.]+-[1-9]+-(x86_64|i686|any)[.]pkg[.]tar[.]xz$"
           match p = p =~ ("^" <> pkg <> patt)
 
 -- `[]` as input yields the contents of the entire cache.
-searchCache :: [String] -> Aura ()
-searchCache r = cacheMatches r >>= liftIO . traverse_ putStrLn . sortPkgs
+searchCache :: [T.Text] -> Aura ()
+searchCache ps = do
+  ss <- ask
+  matches <- shelly $ cacheMatches ss ps
+  liftIO . traverse_ putStrLn . sortPkgs $ map T.unpack matches
 
 -- The destination folder must already exist for the back-up to begin.
 backupCache :: [FilePath] -> Aura ()
 backupCache []      = scoldAndFail backupCache_1
 backupCache (dir:_) = do
-  exists <- liftIO $ fileExist dir
+  exists <- shelly $ test_d dir
   if not exists
      then scoldAndFail backupCache_3
      else confirmBackup dir >>= backup dir
 
 confirmBackup :: FilePath -> Aura Cache
 confirmBackup dir = do
-  cache <- ask >>= cacheContents . cachePathOf
-  notify $ backupCache_4 dir
-  notify . backupCache_5 . size $ cache
+  cache <- ask >>= shelly . cacheContents . cachePathOf
+  notify $ backupCache_4 . T.unpack $ toTextIgnore dir
+  notify . backupCache_5 . M.size $ cache
   okay <- optionalPrompt backupCache_6
   if not okay
      then scoldAndFail backupCache_7
@@ -99,15 +107,15 @@ backup :: FilePath -> Cache -> Aura ()
 backup dir cache = do
   notify backupCache_8
   liftIO $ putStrLn ""  -- So that the cursor can rise at first.
-  copyAndNotify dir (allFilenames cache) 1
+  copyAndNotify dir (M.elems cache) 1
 
 -- Manages the file copying and display of the real-time progress notifier.
-copyAndNotify :: FilePath -> [String] -> Int -> Aura ()
+copyAndNotify :: FilePath -> [T.Text] -> Int -> Aura ()
 copyAndNotify _ [] _       = pure ()
 copyAndNotify dir (p:ps) n = asks cachePathOf >>= \cachePath -> do
   liftIO $ raiseCursorBy 1
   warn $ copyAndNotify_1 n
-  liftIO $ cp (cachePath </> p) (dir </> p)
+  shelly $ cp (cachePath </> p) (dir </> p)
   copyAndNotify dir ps $ n + 1
 
 -- Acts as a filter for the input to `cleanCache`.
@@ -133,29 +141,29 @@ cleanCache' toSave
 clean :: Int -> Aura ()
 clean toSave = ask >>= \ss -> do
   notify cleanCache_6
-  cache <- cacheContents $ cachePathOf ss
-  let files     = allFilenames cache
+  cache <- shelly . cacheContents $ cachePathOf ss
+  let files     = map T.unpack $ M.elems cache
       grouped   = take toSave . reverse <$> groupByName files
       toRemove  = files \\ fold grouped
       filePaths = (cachePathOf ss </>) <$> toRemove
-  liftIO $ traverse_ rm filePaths
+  shelly $ traverse_ rm filePaths
 
 -- | Only package files with a version not in any PkgState will be
 -- removed.
 cleanNotSaved :: Aura ()
 cleanNotSaved = asks cachePathOf >>= \path -> do
   notify cleanNotSaved_1
-  states <- getStateFiles >>= traverse readState
-  cache  <- cacheContents path
-  let duds = cacheFilter (\p _ -> or (inState p <$> states)) cache
-  whenM (optionalPrompt $ cleanNotSaved_2 $ size duds) $
-        liftIO $ traverse_ rm ((path </>) <$> allFilenames duds)
+  states <- getStateFiles >>= liftIO . traverse readState
+  cache  <- shelly $ cacheContents path
+  let duds = M.filterWithKey (\p _ -> or (map (inState p) states)) cache
+  whenM (optionalPrompt $ cleanNotSaved_2 $ M.size duds) $
+        shelly $ traverse_ rm (map (path </>) $ M.elems duds)
 
 -- Typically takes the contents of the package cache as an argument.
 groupByName :: [String] -> [[String]]
 groupByName pkgs = groupBy sameBaseName $ sortPkgs pkgs
     where sameBaseName a b = baseName a == baseName b
-          baseName p = tripleFst (p =~ "-[0-9]+" :: (String, String, String))
+          baseName p = tripleFst (p =~ ("-[0-9]+" :: String) :: (String, String, String))
 
 ------------
 -- REPORTING
