@@ -1,6 +1,9 @@
+{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE OverloadedStrings #-}
+
 {-
 
-Copyright 2012 - 2017 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -29,25 +32,25 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-import Aura.Colour.Text (yellow)
-import Aura.Commands.A as A
-import Aura.Commands.B as B
-import Aura.Commands.C as C
-import Aura.Commands.L as L
-import Aura.Commands.O as O
-import Aura.Core
-import Aura.Flags
-import Aura.Languages
-import Aura.Logo
-import Aura.Monad.Aura
-import Aura.Pacman
-import Aura.Settings.Base
-import Aura.Settings.Enable
-import Aura.Shell (shellCmd)
-import Aura.Utils
-import BasePrelude hiding (Version, catch)
-import Shell (showCursor, hideCursor)
-import Utilities (replaceByPatt)
+import           Aura.Colour.Text (yellow)
+import           Aura.Commands.A as A
+import           Aura.Commands.B as B
+import           Aura.Commands.C as C
+import           Aura.Commands.L as L
+import           Aura.Commands.O as O
+import           Aura.Core
+import           Aura.Flags
+import           Aura.Languages
+import           Aura.Logo
+import           Aura.Monad.Aura
+import           Aura.Pacman
+import           Aura.Settings.Base
+import           Aura.Settings.Enable
+import           Aura.Utils
+import           BasePrelude hiding (Version, catch)
+import qualified Data.Text as T
+import           Shelly (fromText, shelly, run_)
+import           Utilities
 
 ---
 
@@ -56,8 +59,12 @@ type UserInput = ([Flag], [String], [String])
 auraVersion :: String
 auraVersion = "1.4.0"
 
-main :: IO a
-main = getArgs >>= prepSettings . processFlags >>= execute >>= exit
+main :: IO ()
+main = do
+  mus  <- getArgs >>= prepSettings . processFlags
+  case mus of
+    Nothing   -> putStrLn "There was a problem initializing the runtime environment."
+    Just args -> execute args >>= exit
 
 processFlags :: [String] -> (UserInput, Maybe Language)
 processFlags args = ((flags, nub input, pacOpts'), language)
@@ -67,8 +74,8 @@ processFlags args = ((flags, nub input, pacOpts'), language)
                    <> reconvertFlags pacmanFlagMap flags
 
 -- | Set the local environment.
-prepSettings :: (UserInput, Maybe Language) -> IO (UserInput, Settings)
-prepSettings (ui, lang) = (,) ui <$> getSettings lang ui
+prepSettings :: (UserInput, Maybe Language) -> IO (Maybe (UserInput, Settings))
+prepSettings (ui, lang) = fmap (ui,) <$> getSettings lang ui
 
 -- | Hand user input to the Aura Monad and run it.
 execute :: (UserInput, Settings) -> IO (Either String ())
@@ -92,12 +99,12 @@ executeOpts (flags, input, pacOpts) =
   case sort flags of
     (AURInstall:fs) ->
         case fs of
-          []             -> trueRoot (sudo $ A.install pacOpts input)
-          [Upgrade]      -> trueRoot (sudo $ A.upgradeAURPkgs pacOpts input)
+          []             -> trueRoot (sudo $ A.install (map T.pack pacOpts) (map T.pack input))
+          [Upgrade]      -> trueRoot (sudo $ A.upgradeAURPkgs (map T.pack pacOpts) (map T.pack input))
           [Info]         -> A.aurPkgInfo input
-          [Search]       -> A.aurPkgSearch input
-          [ViewDeps]     -> A.displayPkgDeps input
-          [Download]     -> A.downloadTarballs input
+          [Search]       -> A.aurPkgSearch (map T.pack input)
+          [ViewDeps]     -> A.displayPkgDeps (map T.pack input)
+          [Download]     -> A.downloadTarballs (map T.pack input)
           [GetPkgbuild]  -> A.displayPkgbuild input
           (Refresh:fs')  -> sudo $ syncAndContinue (fs', input, pacOpts)
           _              -> scoldAndFail executeOpts_1
@@ -109,50 +116,51 @@ executeOpts (flags, input, pacOpts) =
           _              -> scoldAndFail executeOpts_1
     (Cache:fs) ->
         case fs of
-          []             -> sudo $ C.downgradePackages pacOpts input
+          []             -> sudo $ C.downgradePackages (map T.pack pacOpts) (map T.pack input)
           [Clean]        -> sudo $ C.cleanCache input
           [Clean, Clean]  -> sudo C.cleanNotSaved
-          [Search]       -> C.searchCache input
-          [CacheBackup]  -> sudo $ C.backupCache input
+          [Search]       -> C.searchCache (map T.pack input)
+          [CacheBackup]  -> sudo $ C.backupCache (map (fromText . T.pack) input)
           _              -> scoldAndFail executeOpts_1
     (LogFile:fs) ->
         case fs of
           []       -> ask >>= L.viewLogFile . logFilePathOf
-          [Search] -> L.searchLogFile input
+          [Search] -> ask >>= liftIO . flip L.searchLogFile input
           [Info]   -> L.logInfoOnPkg input
           _        -> scoldAndFail executeOpts_1
     (Orphans:fs) ->
         case fs of
-          []        -> O.displayOrphans input
-          [Abandon] -> sudo $ orphans >>= flip removePkgs pacOpts
+          []        -> O.displayOrphans (map T.pack input)
+          [Abandon] -> sudo $ orphans >>= flip removePkgs (map T.pack pacOpts)
           _         -> scoldAndFail executeOpts_1
     [ViewConf]  -> viewConfFile
     [Languages] -> displayOutputLanguages
-    [Help]      -> printHelpMsg pacOpts
-    [Version]   -> getVersionInfo >>= animateVersionMsg
-    _ -> catch (pacman $ pacOpts <> hijackedFlags <> input) pacmanFailure
+    [Help]      -> printHelpMsg (map T.pack pacOpts)
+    [Version]   -> getVersionInfo >>= animateVersionMsg . map T.unpack
+    _ -> catch (pacman $ (map T.pack pacOpts) <> (map T.pack hijackedFlags) <> (map T.pack input)) pacmanFailure
     where hijackedFlags = reconvertFlags hijackedFlagMap flags
 
 -- | `-y` was included with `-A`. Sync database before continuing.
 syncAndContinue :: UserInput -> Aura ()
 syncAndContinue (flags, input, pacOpts) =
-  syncDatabase pacOpts *> executeOpts (AURInstall:flags, input, pacOpts)
+  syncDatabase (map T.pack pacOpts) *> executeOpts (AURInstall:flags, input, pacOpts)
 
 ----------
 -- GENERAL
 ----------
 viewConfFile :: Aura ()
-viewConfFile = shellCmd "less" [pacmanConfFile]
+viewConfFile = shelly $ run_ "less" [pacmanConfFile]
 
 displayOutputLanguages :: Aura ()
 displayOutputLanguages = do
   notify displayOutputLanguages_1
   liftIO $ traverse_ print allLanguages
 
-printHelpMsg :: [String] -> Aura ()
-printHelpMsg [] = ask >>= \ss -> do
+printHelpMsg :: [T.Text] -> Aura ()
+printHelpMsg [] = do
+  ss <- ask
   pacmanHelp <- getPacmanHelpMsg
-  liftIO . putStrLn . getHelpMsg ss $ pacmanHelp
+  liftIO . putStrLn . getHelpMsg ss . map T.unpack $ pacmanHelp
 printHelpMsg pacOpts = pacman $ pacOpts <> ["-h"]
 
 getHelpMsg :: Settings -> [String] -> String
