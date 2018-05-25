@@ -6,7 +6,7 @@
 -- Module    : Linux.Arch.Aur.Rpc
 -- Copyright : (c) Colin Woodbury, 2014 - 2018
 -- License   : GPL3
--- Maintainer: Colin Woodbury <colingw@gmail.com>
+-- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
 -- See https://aur.archlinux.org/rpc for details.
 

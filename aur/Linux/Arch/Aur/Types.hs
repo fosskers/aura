@@ -4,7 +4,7 @@
 -- Module    : Linux.Arch.Aur.Types
 -- Copyright : (c) Colin Woodbury, 2014, 2015, 2016
 -- License   : GPL3
--- Maintainer: Colin Woodbury <colingw@gmail.com>
+-- Maintainer: Colin Woodbury <colin@fosskers.ca>
 
 module Linux.Arch.Aur.Types
     ( RPCResp(..)
