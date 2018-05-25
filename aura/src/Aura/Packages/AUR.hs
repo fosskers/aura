@@ -3,7 +3,7 @@
 
 {-
 
-Copyright 2012, 2013, 2014, 2015, 2016 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -23,14 +23,14 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.Packages.AUR
-    ( aurLookup
-    , aurRepo
-    , isAurPackage
-    , sourceTarball
-    , aurInfo
-    , aurSearch
-    , pkgUrl
-    ) where
+  ( aurLookup
+  , aurRepo
+  , isAurPackage
+  , sourceTarball
+  , aurInfo
+  , aurSearch
+  , pkgUrl
+  ) where
 
 import           Aura.Core
 import           Aura.Monad.Aura
@@ -47,9 +47,9 @@ import           Utilities (decompress)
 
 ---
 
-aurLookup :: String -> Aura (Maybe Buildable)
+aurLookup :: T.Text -> Aura (Maybe Buildable)
 aurLookup name = asks managerOf >>= \m -> do
-   junk <- fmap (makeBuildable m name . T.unpack)<$> pkgbuild m name
+   junk <- fmap (makeBuildable m (T.unpack name) . T.unpack) <$> pkgbuild' m name
    sequence junk
 
 aurRepo :: Repository
@@ -65,10 +65,10 @@ makeBuildable m name pb = do
      , bldVersionOf = T.unpack $ aurVersionOf ai
      , isExplicit   = False
      , buildScripts = f }
-     where f fp = sourceTarball m fp (T.pack name) >>= traverse decompress
+     where f fp = sourceTarball m fp (T.pack name) >>= traverse (fmap T.unpack . decompress . T.pack)
 
-isAurPackage :: String -> Aura Bool
-isAurPackage name = asks managerOf >>= \m -> isJust <$> pkgbuild m name
+isAurPackage :: T.Text -> Aura Bool
+isAurPackage name = asks managerOf >>= \m -> isJust <$> pkgbuild' m name
 
 ----------------
 -- AUR PKGBUILDS

@@ -1,11 +1,12 @@
 {-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 -- An interface to `pacman`.
 -- Takes any pacman arguments and applies it to pacman through the shell.
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013, 2014 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -26,30 +27,29 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Pacman where
 
-import Aura.Cache
-import Aura.Languages (pacmanFailure_1)
-import Aura.Monad.Aura
-import Aura.Settings.Base (pacmanCmdOf)
-import Aura.Shell (shellCmd, quietShellCmd, quietShellCmd')
-import Aura.Utils (scoldAndFail)
-import BasePrelude
-import Shell (Environment, getEnvVar, didProcessSucceed)
-import System.Directory (doesFileExist)
-import System.IO (hFlush, stdout)
-import Text.Regex.PCRE ((=~))
-import Utilities
+import           Aura.Cache
+import           Aura.Languages (pacmanFailure_1)
+import           Aura.Monad.Aura
+import           Aura.Settings.Base (pacmanCmdOf)
+import           Aura.Utils (scoldAndFail)
+import           BasePrelude
+import qualified Data.Map.Strict as M
+import qualified Data.Text as T
+import           Shelly hiding (FilePath, cmd)
+import           System.Directory (doesFileExist)
+import           System.IO (hFlush, stdout)
+import           Text.Regex.PCRE ((=~))
+import           Utilities
 
 ---
 
-type ShellArg = String
-
-defaultCmd :: String
+defaultCmd :: T.Text
 defaultCmd = "pacman"
 
-powerPillCmd :: String
+powerPillCmd :: T.Text
 powerPillCmd = "/usr/bin/powerpill"
 
-pacmanConfFile :: FilePath
+pacmanConfFile :: T.Text
 pacmanConfFile = "/etc/pacman.conf"
 
 defaultLogFile :: FilePath
@@ -58,17 +58,17 @@ defaultLogFile = "/var/log/pacman.log"
 lockFile :: FilePath
 lockFile = "/var/lib/pacman/db.lck"
 
-getPacmanCmd :: Environment -> Bool -> IO String
+getPacmanCmd :: Environment -> Bool -> IO T.Text
 getPacmanCmd env nopp =
-    case getEnvVar "PACMAN" env of
-      Just cmd -> pure cmd
-      Nothing  -> do  -- Left space for more options later.
-        powerPill <- doesFileExist powerPillCmd
-        if | powerPill && not nopp -> pure powerPillCmd
-           | otherwise -> pure defaultCmd
+  case M.lookup "PACMAN" env of
+    Just cmd -> pure cmd
+    Nothing  -> do  -- Left space for more options later.
+      powerPill <- doesFileExist $ T.unpack powerPillCmd
+      if | powerPill && not nopp -> pure powerPillCmd
+         | otherwise -> pure defaultCmd
 
 getPacmanConf :: IO String
-getPacmanConf = readFileUTF8 pacmanConfFile
+getPacmanConf = readFileUTF8 (T.unpack pacmanConfFile)
 
 getConfFileField :: String -> String -> [String]
 getConfFileField confFile field = words $ takeWhile p entry
@@ -85,10 +85,10 @@ singleEntry confFile field alt = case getConfFileField confFile regex of
                                       []    -> alt
                                       entry -> noQs $ head entry
     where regex = "^" <> field <> "[ ]*=[ ]*"
-          noQs  = filter (`notElem` "\"")
+          noQs  = filter (`notElem` ("\"" :: String))
 
 getCachePath :: String -> FilePath
-getCachePath confFile = singleEntry confFile "CacheDir" defaultPackageCache
+getCachePath confFile = singleEntry confFile "CacheDir" (T.unpack defaultPackageCache)
 
 getLogFilePath :: String -> FilePath
 getLogFilePath confFile = singleEntry confFile "LogFile" defaultLogFile
@@ -96,33 +96,34 @@ getLogFilePath confFile = singleEntry confFile "LogFile" defaultLogFile
 ----------
 -- ACTIONS
 ----------
-pacman :: [ShellArg] -> Aura ()
-pacman args = asks pacmanCmdOf >>= \cmd -> flush *> shellCmd cmd args
+pacman :: [T.Text] -> Aura ()
+pacman args = asks pacmanCmdOf >>= \cmd -> flush *> shelly (run_ (fromText cmd) args)
     where flush = liftIO (hFlush stdout)
 
--- Did a pacman process succeed?
-pacmanSuccess :: [ShellArg] -> Aura Bool
-pacmanSuccess args = success <$> quietShellCmd' "pacman" args
-    where success = didProcessSucceed . tripleFst
+-- | Run some `pacman` process, but only care about whether it succeeded.
+pacmanSuccess :: [T.Text] -> Aura Bool
+pacmanSuccess args = fmap success . shelly . quietSh $ run_ "pacman" args
+    where success (ExitSuccess, _) = True
+          success _ = False
 
--- Handler for pacman call failures.
+-- | Handler for pacman call failures.
 pacmanFailure :: String -> Aura a
 pacmanFailure _ = scoldAndFail pacmanFailure_1
 
--- Performs a pacmanQuiet and returns only the stdout.
-pacmanOutput :: [ShellArg] -> Aura String
-pacmanOutput = quietShellCmd "pacman"
+-- | Performs a pacmanQuiet and returns only the stdout.
+pacmanOutput :: MonadIO m => [T.Text] -> m T.Text
+pacmanOutput = shelly . run "pacman"
 
-syncDatabase :: [ShellArg] -> Aura ()
+syncDatabase :: [T.Text] -> Aura ()
 syncDatabase pacOpts = pacman $ "-Sy" : pacOpts
 
-getPacmanHelpMsg :: Aura [String]
-getPacmanHelpMsg = lines <$> pacmanOutput ["-h"]
+getPacmanHelpMsg :: Aura [T.Text]
+getPacmanHelpMsg = T.lines <$> pacmanOutput ["-h"]
 
--- Yields the lines given by `pacman -V` with the pacman image stripped.
-getVersionInfo :: Aura [String]
-getVersionInfo = (fmap (drop verMsgPad) . lines) <$> pacmanOutput ["-V"]
+-- | Yields the lines given by `pacman -V` with the pacman image stripped.
+getVersionInfo :: Aura [T.Text]
+getVersionInfo = (fmap (T.drop verMsgPad) . T.lines) <$> pacmanOutput ["-V"]
 
--- The amount of whitespace before text in the lines given by `pacman -V`
+-- | The amount of whitespace before text in the lines given by `pacman -V`
 verMsgPad :: Int
 verMsgPad = 23

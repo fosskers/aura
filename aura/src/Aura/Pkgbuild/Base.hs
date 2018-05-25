@@ -1,6 +1,6 @@
 {-
 
-Copyright 2012 - 2017 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -21,10 +21,11 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Pkgbuild.Base where
 
-import Aura.Core
-import Aura.Monad.Aura
-import Aura.Pkgbuild.Editing
-import BasePrelude
+import           Aura.Core
+import           Aura.Monad.Aura
+import           Aura.Pkgbuild.Editing
+import           BasePrelude
+import qualified Data.Text as T
 
 ---
 
@@ -46,7 +47,7 @@ packageBuildable :: Buildable -> Aura Package
 packageBuildable b = do
     b' <- pbCustomization b
     pure Package
-        { pkgNameOf        = baseNameOf b'
-        , pkgDepsOf        = bldDepsOf b'
-        , pkgVersionOf     = bldVersionOf b'
-        , pkgInstallTypeOf = Build b' }
+      { pkgNameOf        = T.pack $ baseNameOf b'
+      , pkgVersionOf     = T.pack $ bldVersionOf b'
+      , pkgDepsOf        = bldDepsOf b'
+      , pkgInstallTypeOf = Build b' }

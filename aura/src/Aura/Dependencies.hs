@@ -4,7 +4,7 @@
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013, 2014 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -33,18 +33,20 @@ import           Aura.Settings.Base
 import           BasePrelude
 import           Control.Monad.State
 import           Data.Graph
-import qualified Data.Map as Map
-import           Utilities (whenM, tripleFst)
+import qualified Data.Map.Strict as M
+import qualified Data.Text as T
+import           Shelly (whenM)
+import           Utilities (tripleFst)
 
 ---
 
 resolveDeps :: Repository -> [Package] -> Aura [Package]
 resolveDeps repo ps =
-    sortInstall . Map.elems <$> execStateT (traverse_ addPkg ps) Map.empty
+    sortInstall . M.elems <$> execStateT (traverse_ addPkg ps) M.empty
   where
     addPkg pkg = whenM (isNothing <$> getPkg (pkgNameOf pkg)) $ do
         traverse_ addDep (pkgDepsOf pkg)
-        modify $ Map.insert (pkgNameOf pkg) pkg
+        modify $ M.insert (pkgNameOf pkg) pkg
 
     addDep dep = do
         mpkg <- getPkg $ depNameOf dep
@@ -55,11 +57,11 @@ resolveDeps repo ps =
     findPkg dep = whenM (not <$> lift (isSatisfied dep)) $ do
         mpkg <- lift $ repoLookup repo name
         case mpkg of
-            Nothing  -> lift $ missingPkg name
-            Just pkg -> lift (checkConflicts pkg dep) *> addPkg pkg
+          Nothing  -> lift $ missingPkg (T.unpack name)
+          Just pkg -> lift (checkConflicts pkg dep) *> addPkg pkg
       where name = depNameOf dep
 
-    getPkg p = gets $ Map.lookup p
+    getPkg p = gets $ M.lookup p
 
 missingPkg :: String -> Aura a
 missingPkg name = asks langOf >>= failure . missingPkg_1 name

@@ -1,6 +1,8 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -21,48 +23,51 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Packages.Repository ( pacmanRepo ) where
 
-import Aura.Core
-import Aura.Monad.Aura
-import Aura.Pacman (pacmanOutput)
-import BasePrelude
-import Text.Regex.PCRE ((=~))
-import Utilities (tripleThrd, findM)
+import           Aura.Core
+import           Aura.Monad.Aura
+import           Aura.Pacman (pacmanOutput)
+import           BasePrelude
+import qualified Data.Text as T
+import           Text.Regex.PCRE ((=~))
+import           Utilities (tripleThrd, findM)
 
 ---
 
 -- | Repository package source.
 pacmanRepo :: Repository
 pacmanRepo = Repository $ \name -> do
-    real <- resolveName name
-    fmap (packageRepo real) <$> mostRecentVersion real
+  real <- resolveName name
+  fmap (packageRepo real) <$> mostRecentVersion real
 
-packageRepo :: String -> String -> Package
+packageRepo :: T.Text -> T.Text -> Package
 packageRepo name version = Package
-    { pkgNameOf        = name
-    , pkgVersionOf     = version
-    , pkgDepsOf        = []  -- Let pacman handle dependencies.
-    , pkgInstallTypeOf = Pacman name }
+  { pkgNameOf        = name
+  , pkgVersionOf     = version
+  , pkgDepsOf        = []  -- Let pacman handle dependencies.
+  , pkgInstallTypeOf = Pacman name }
 
 -- | If given a virtual package, try to find a real package to install.
 -- Functions like this are why we need libalpm.
-resolveName :: String -> Aura String
-resolveName name =
-  lines <$> pacmanOutput ["-Ssq", "^" <> name <> "$"] >>= chooseProvider name
+resolveName :: T.Text -> Aura T.Text
+resolveName name = do
+  provs <- T.lines <$> pacmanOutput ["-Ssq", "^" <> name <> "$"]
+  chooseProvider name provs
 
 -- | Choose a providing package, favoring installed packages.
-chooseProvider :: String -> [String] -> Aura String
+chooseProvider :: T.Text -> [T.Text] -> Aura T.Text
 chooseProvider name []        = pure name
 chooseProvider _    [p]       = pure p
 chooseProvider _    ps@(p:_)  = fromMaybe p <$> findM isInstalled ps
 
 -- | The most recent version of a package, if it exists in the respositories.
-mostRecentVersion :: String -> Aura (Maybe String)
-mostRecentVersion s = extractVersion <$> pacmanOutput ["-Si", s]
+mostRecentVersion :: T.Text -> Aura (Maybe T.Text)
+mostRecentVersion s = fmap T.pack . extractVersion . T.unpack <$> pacmanOutput ["-Si", s]
 
+-- TODO Use a real parser, so that we can use `Text` throughout.
 -- | Takes `pacman -Si` output as input.
 extractVersion :: String -> Maybe String
 extractVersion ""   = Nothing
 extractVersion info = Just $ tripleThrd match
-    where match     = thirdLine =~ ": " :: (String, String, String)
+    where match     = thirdLine =~ (": " :: String) :: (String, String, String)
           thirdLine = allLines !! 2  -- Version num is always the third line.
           allLines  = lines info

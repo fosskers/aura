@@ -1,6 +1,6 @@
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013, 2014 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -21,13 +21,14 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Conflicts where
 
-import Aura.Core
-import Aura.Languages
-import Aura.Monad.Aura
-import Aura.Settings.Base
-import Aura.Utils.Numbers (version)
-import BasePrelude
-import Text.Regex.PCRE ((=~))
+import           Aura.Core
+import           Aura.Languages
+import           Aura.Monad.Aura
+import           Aura.Settings.Base
+import           Aura.Utils.Numbers (version)
+import           BasePrelude
+import qualified Data.Text as T
+import           Text.Regex.PCRE ((=~))
 
 ---
 
@@ -43,16 +44,16 @@ checkConflicts p d = ask >>= \ss -> traverse_ failure (realPkgConflicts ss p d)
 -- of the most up-to-date form of the package.
 realPkgConflicts :: Settings -> Package -> Dep -> Maybe Error
 realPkgConflicts ss pkg dep
-    | isIgnored name toIgnore         = Just failMsg1
-    | isVersionConflict reqVer curVer = Just failMsg2
-    | otherwise = Nothing
+    | name `elem` toIgnore                       = Just failMsg1
+    | isVersionConflict reqVer (T.unpack curVer) = Just failMsg2
+    | otherwise                                  = Nothing
     where name     = pkgNameOf pkg
           curVer   = pkgVersionOf pkg
           reqVer   = depVerDemandOf dep
           lang     = langOf ss
           toIgnore = ignoredPkgsOf ss
-          failMsg1 = getRealPkgConflicts_2 name lang
-          failMsg2 = getRealPkgConflicts_1 name curVer (show reqVer) lang
+          failMsg1 = getRealPkgConflicts_2 (T.unpack name) lang
+          failMsg2 = getRealPkgConflicts_1 (T.unpack name) (T.unpack curVer) (show reqVer) lang
 
 -- Compares a (r)equested version number with a (c)urrent up-to-date one.
 -- The `MustBe` case uses regexes. A dependency demanding version 7.4

@@ -1,8 +1,10 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 -- For handling the editing of PKGBUILDs.
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -22,18 +24,19 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.Pkgbuild.Editing
-    ( hotEdit
-    , customizepkg ) where
+  ( hotEdit
+  , customizepkg
+  ) where
 
-import Aura.Core
-import Aura.Languages
-import Aura.Monad.Aura
-import Aura.Settings.Base
-import Aura.Utils
-import BasePrelude
-import Shell (getEditor, quietShellCmd)
-import System.FilePath ((</>))
-import Utilities (openEditor, ifte_, ifFile, nothing, readFileUTF8)
+import           Aura.Core
+import           Aura.Languages
+import           Aura.Monad.Aura
+import           Aura.Settings.Base
+import           Aura.Utils
+import           BasePrelude hiding (FilePath)
+import qualified Data.Text as T
+import           Shelly
+import           Utilities
 
 ---
 
@@ -43,9 +46,9 @@ customizepkgPath = "/etc/customizepkg.d/"
 edit :: (FilePath -> IO a) -> Buildable -> Aura Buildable
 edit f p = do
   newPB <- liftIO $ do
-             writeFile filename $ pkgbuildOf p
-             _ <- f filename
-             readFileUTF8 filename
+             shelly . writefile filename . T.pack $ pkgbuildOf p
+             void $ f filename
+             readFileUTF8 "PKGBUILD"
   pure p { pkgbuildOf = newPB }
       where filename = "PKGBUILD"
 
@@ -56,8 +59,8 @@ hotEdit b = ask >>= \ss ->
      then pure b
      else withTempDir "hotedit" $ do
             let cond = optionalPrompt (hotEdit_1 $ baseNameOf b)
-                act  = edit (openEditor (getEditor $ environmentOf ss))
-            cond >>= ifte_ (act b) (pure b)
+                act  = edit (openEditor (getEditor $ environmentOf ss) . toTextIgnore)
+            cond >>= bool (pure b) (act b)
 
 -- | Runs `customizepkg` on whatever PKGBUILD it can.
 -- To work, a package needs an entry in `/etc/customizepkg.d/`
@@ -71,7 +74,7 @@ customizepkg b = asks useCustomizepkg >>= \use ->
 customizepkg' :: Buildable -> Aura Buildable
 customizepkg' p = withTempDir "customizepkg" $ do
   let conf = customizepkgPath </> baseNameOf p
-  ifFile (edit $ const customize) nothing conf p
+  ifFile (edit $ const customize) (pure ()) (T.unpack $ toTextIgnore conf) p
 
-customize :: IO String
-customize = quietShellCmd "customizepkg" ["--modify"]
+customize :: MonadIO m => m T.Text
+customize = fmap snd . shelly . quietSh $ run "customizepkg" ["--modify"]
