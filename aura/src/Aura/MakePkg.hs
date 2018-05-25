@@ -1,10 +1,10 @@
-{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 -- Interface to `makepkg`.
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -24,56 +24,55 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.MakePkg
-    ( makepkg
-    , makepkgSource
-    , makepkgConfFile ) where
+  ( makepkg
+  , makepkgSource
+  , makepkgConfFile
+  ) where
 
-import Aura.Monad.Aura
-import Aura.Settings.Base (suppressMakepkg, makepkgFlagsOf)
-import Aura.Shell (shellCmd, quietShellCmd, quietShellCmd', checkExitCode')
-import BasePrelude
-import Shell (pwd, ls)
-import Text.Regex.PCRE ((=~))
+import           Aura.Languages
+import           Aura.Settings.Base (Settings(..), Suppression(..), suppressMakepkg, makepkgFlagsOf)
+import           BasePrelude hiding (FilePath)
+import qualified Data.Text as T
+import           Shelly hiding (cmd)
+import           Utilities (User(..), exitCode)
 
 ---
-
-type User = String
 
 makepkgConfFile :: FilePath
 makepkgConfFile = "/etc/makepkg.conf"
 
-makepkgCmd :: FilePath
+makepkgCmd :: T.Text
 makepkgCmd = "/usr/bin/makepkg"
 
-makepkg :: Aura (String -> Aura [FilePath])
-makepkg = (\quiet -> if quiet then makepkgQuiet else makepkgVerbose) <$>
-              asks suppressMakepkg
+-- | Given the current user name, build the package of whatever
+-- directory we're in.
+makepkg :: Settings -> User -> Sh (Either (Language -> String) [FilePath])
+makepkg ss user = fmap g . f $ make cmd opts
+  where (cmd, opts) = runStyle user $ makepkgFlagsOf ss
+        f = case suppressMakepkg ss of
+              BeQuiet   -> print_stdout False . print_stderr False
+              BeVerbose -> id
+        g (ExitSuccess, fs) = Right fs
+        g _ = Left buildFail_8
+
+-- | Actually build the package, guarding on exceptions.
+-- Yields the filepaths of the built package tarballs.
+make :: FilePath -> [T.Text] -> Sh (ExitCode, [FilePath])
+make cmd opts = errExit False $ do
+  run_ cmd opts
+  fs <- filter (T.isSuffixOf ".pkg.tar.xz" . toTextIgnore) <$> (pwd >>= ls)
+  ec <- exitCode <$> lastExitCode
+  pure (ec, fs)
 
 -- TODO: Clean this up. Incompatible with `-x` and `--ignorearch`?
--- | Make a source package.
-makepkgSource :: User -> Aura [FilePath]
+-- | Make a source package. See `man makepkg` and grep for
+-- `--allsource`.
+makepkgSource :: User -> Sh [FilePath]
 makepkgSource user = do
-  quietShellCmd cmd opts
-  filter (=~ "[.]src[.]tar") <$> liftIO (pwd >>= ls)
+  run_ cmd opts
+  filter (T.isSuffixOf ".src.tar.gz" . toTextIgnore) <$> (pwd >>= ls)
     where (cmd, opts) = runStyle user ["--allsource"]
 
--- Builds a package with `makepkg`.
--- Some packages create multiple .pkg.tar files. These are all returned.
-makepkgGen :: (String -> [String] -> Aura a) -> User -> Aura [FilePath]
-makepkgGen make user = asks makepkgFlagsOf >>= \clfs -> do
-    let (cmd, opts) = runStyle user clfs
-    make cmd (opts <> clfs) *> (filter (=~ "[.]pkg[.]tar") <$> liftIO (pwd >>= ls))
-
 -- As of makepkg v4.2, building with `--asroot` is no longer allowed.
-runStyle :: User -> [String] -> (String, [String])
-runStyle user opts = ("sudo", ["-u", user, makepkgCmd] <> opts)
-
-makepkgQuiet :: User -> Aura [FilePath]
-makepkgQuiet = makepkgGen quiet
-    where quiet cmd opts = do
-            (status, out, err) <- quietShellCmd' cmd opts
-            let output = err <> "\n" <> out
-            checkExitCode' output status
-
-makepkgVerbose :: User -> Aura [FilePath]
-makepkgVerbose = makepkgGen shellCmd
+runStyle :: User -> [T.Text] -> (FilePath, [T.Text])
+runStyle (User user) opts = ("sudo", ["-u", user, makepkgCmd] <> opts)
