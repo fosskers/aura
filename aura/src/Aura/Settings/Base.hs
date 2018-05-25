@@ -1,6 +1,6 @@
 {-
 
-Copyright 2012 - 2016 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2016 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -19,14 +19,13 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Settings.Base ( Settings(..)
-                          , SortScheme(..)
-                          , Truncation(..) ) where
+module Aura.Settings.Base where
 
 import Aura.Languages (Language)
 import BasePrelude
+import Data.Text (Text)
 import Network.HTTP.Client (Manager)
-import Shell (Environment)
+import Utilities (Environment, User)
 
 ---
 
@@ -34,26 +33,28 @@ data SortScheme = ByVote | Alphabetically deriving (Eq, Show)
 
 data Truncation = None | Head Int | Tail Int deriving (Eq, Show)
 
+data Suppression = BeQuiet | BeVerbose deriving (Eq, Show)
+
 -- | The global settings as set by the user with command-line flags.
-data Settings = Settings { inputOf         :: [String]
-                         , pacOptsOf       :: [String]
-                         , otherOptsOf     :: [String]
+data Settings = Settings { inputOf         :: [Text]
+                         , pacOptsOf       :: [Text]
+                         , otherOptsOf     :: [Text]
                          , managerOf       :: Manager
                          , environmentOf   :: Environment
-                         , buildUserOf     :: String
+                         , buildUserOf     :: User
                          , langOf          :: Language
-                         , pacmanCmdOf     :: String
-                         , editorOf        :: String
-                         , carchOf         :: String
-                         , ignoredPkgsOf   :: [String]
-                         , makepkgFlagsOf  :: [String]
-                         , buildPathOf     :: FilePath
-                         , cachePathOf     :: FilePath
-                         , logFilePathOf   :: FilePath
+                         , pacmanCmdOf     :: Text
+                         , editorOf        :: Text
+                         , carchOf         :: Text
+                         , ignoredPkgsOf   :: [Text]
+                         , makepkgFlagsOf  :: [Text]
+                         , buildPathOf     :: Text
+                         , cachePathOf     :: Text
+                         , logFilePathOf   :: Text
                          , sortSchemeOf    :: SortScheme  -- For `-As`
                          , truncationOf    :: Truncation  -- For `-As`
                          , beQuiet         :: Bool
-                         , suppressMakepkg :: Bool
+                         , suppressMakepkg :: Suppression
                          , delMakeDeps     :: Bool
                          , diffPkgbuilds   :: Bool
                          , rebuildDevel    :: Bool
