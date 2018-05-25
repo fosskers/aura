@@ -1,6 +1,6 @@
 {-
 
-Copyright 2012 - 2017 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2017 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -54,7 +54,7 @@ import Aura.Languages
 import Aura.Settings.Base
 import BasePrelude hiding (Option, Version, option)
 import System.Console.GetOpt
-import Utilities (notNull, split)
+import Utilities (split)
 
 ---
 
@@ -255,7 +255,7 @@ simpleFlagMap fm = fromMaybe "" . flip lookup fm
 -- Converts the intercepted Pacman flags back into their raw string forms
 -- and filters out the garbage.
 reconvertFlags :: FlagMap -> [Flag] -> [String]
-reconvertFlags fm = filter notNull . fmap fm
+reconvertFlags fm = filter (not . null) . fmap fm
 
 settingsFlags :: [Flag]
 settingsFlags = [ Unsuppress, NoConfirm, HotEdit, DiffPkgbuilds, Debug, Devel
@@ -281,12 +281,12 @@ notSettingsFlag f               = f `notElem` (settingsFlags ++ languageFlags)
 auraOperMsg :: Language -> String
 auraOperMsg lang = usageInfo (yellow $ auraOperTitle lang) $ auraOperations lang
 
--- Extracts desirable results from given Flags.
+-- | Extracts desirable results from given Flags.
 -- Callers must supply an [alt]ernate value for when there are no matches.
 fishOutFlag :: [(Flag, a)] -> a -> [Flag] -> a
-fishOutFlag [] alt _             = alt
+fishOutFlag [] alt _ = alt
 fishOutFlag ((f, r):fs) alt flags | f `elem` flags = r
-                                 | otherwise      = fishOutFlag fs alt flags
+                                  | otherwise      = fishOutFlag fs alt flags
 
 getLanguage :: [Flag] -> Maybe Language
 getLanguage = fishOutFlag flagsAndResults Nothing
@@ -317,8 +317,8 @@ truncationStatus (_:fs) = truncationStatus fs
 sortSchemeStatus :: [Flag] -> SortScheme
 sortSchemeStatus = fishOutFlag [(ABCSort, Alphabetically)] ByVote
 
-suppressionStatus :: [Flag] -> Bool
-suppressionStatus = fishOutFlag [(Unsuppress, False)] True
+suppressionStatus :: [Flag] -> Suppression
+suppressionStatus = fishOutFlag [(Unsuppress, BeVerbose)] BeQuiet
 
 delMakeDepsStatus :: [Flag] -> Bool
 delMakeDepsStatus = fishOutFlag [(DelMDeps, True)] False

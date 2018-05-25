@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013, 2014 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -23,6 +23,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Monad.Aura
     ( Aura
+    , MonadIO
+    , MonadReader
     , runAura
     , failure
     , catch

@@ -1,8 +1,10 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 -- A library for saving and restoring the state of installed packages.
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -39,39 +41,38 @@ import           Aura.Settings.Base
 import           Aura.Time
 import           Aura.Utils (printList, scoldAndFail)
 import           Aura.Utils.Numbers
-import           BasePrelude hiding (Version)
-import qualified Data.Map.Lazy as M
-import           Shell (ls')
-import           System.Directory (createDirectoryIfMissing)
-import           System.FilePath ((</>))
+import           BasePrelude hiding (Version, FilePath)
+import qualified Data.Map.Strict as M
+import qualified Data.Text as T
+import           Shelly hiding (time)
 import           Utilities (getSelection, readFileUTF8)
 
 ---
 
 data PkgState = PkgState { timeOf :: Time
-                         , pkgsOf :: M.Map String (Maybe Version) }
+                         , pkgsOf :: M.Map T.Text (Maybe Version) }
                 deriving (Eq, Show, Read)
 
 -- ([toAlter], [toRemove])
-type StateDiff = ([SimplePkg], [String])
+type StateDiff = ([SimplePkg], [T.Text])
 
 stateCache :: FilePath
 stateCache = "/var/cache/aura/states"
 
 inState :: SimplePkg -> PkgState -> Bool
-inState (n, v) s = case M.lookup n $ pkgsOf s of
-                    Nothing -> False
-                    Just v' -> v == v'
+inState (SimplePkg n v) s = case M.lookup n $ pkgsOf s of
+                              Nothing -> False
+                              Just v' -> v == v'
 
-rawCurrentState :: Aura [String]
-rawCurrentState = lines <$> pacmanOutput ["-Q"]
+rawCurrentState :: MonadIO m => m [T.Text]
+rawCurrentState = T.lines <$> pacmanOutput ["-Q"]
 
-currentState :: Aura PkgState
+currentState :: MonadIO m => m PkgState
 currentState = do
   pkgs <- rawCurrentState
   time <- liftIO localTime
-  let namesVers = pair . words <$> pkgs
-      pair      = \(x:y:_) -> (x, version y)
+  let namesVers = map (pair . T.words) pkgs
+      pair      = \(x:y:_) -> (x, version $ T.unpack y)
   pure . PkgState time . M.fromAscList $ namesVers
 
 compareStates :: PkgState -> PkgState -> StateDiff
@@ -83,23 +84,23 @@ toChangeAndRemove old curr = M.foldrWithKey status ([], []) $ pkgsOf curr
     where status k v (d, r) = case M.lookup k (pkgsOf old) of
                                Nothing -> (d, k : r)
                                Just v' | v == v' -> (d, r)
-                                       | otherwise -> ((k, v') : d, r)
+                                       | otherwise -> (SimplePkg k v' : d, r)
 
 -- | Packages that were uninstalled since the last record.
 olds :: PkgState -> PkgState -> [SimplePkg]
-olds old curr = M.assocs $ M.difference (pkgsOf old) (pkgsOf curr)
+olds old curr = map (uncurry SimplePkg) . M.assocs $ M.difference (pkgsOf old) (pkgsOf curr)
 
 getStateFiles :: Aura [FilePath]
 getStateFiles = do
-  files <- liftIO getStateFiles'
+  files <- shelly getStateFiles'
   case files of
     [] -> scoldAndFail restoreState_2
     fs -> pure fs
 
-getStateFiles' :: IO [FilePath]
+getStateFiles' :: Sh [FilePath]
 getStateFiles' = do
-  createDirectoryIfMissing True stateCache
-  sort <$> ls' stateCache
+  mkdir_p stateCache
+  sort <$> ls stateCache
 
 -- | In writing the first state file, the `states` directory is created
 -- automatically.
@@ -107,28 +108,34 @@ saveState :: Aura ()
 saveState = do
   state <- currentState
   let filename = stateCache </> dotFormat (timeOf state)
-  liftIO $ writeFile filename (show state)
+  shelly $ writefile filename (T.pack $ show state)  -- TODO Using `show` is dumb.
   notify saveState_1
 
 -- | Does its best to restore a state chosen by the user.
 restoreState :: Aura ()
-restoreState = ask >>= \ss -> do
+restoreState = do
+  ss    <- ask
   curr  <- currentState
-  past  <- getStateFiles >>= liftIO . getSelection >>= readState
-  cache <- cacheContents $ cachePathOf ss
+  past  <- getStateFiles >>= liftIO . (selectState >=> readState)
+  cache <- shelly . cacheContents $ cachePathOf ss
   let (rein, remo) = compareStates past curr
-      (okay, nope) = partition (alterable cache) rein
-      message     = restoreState_1 $ langOf ss
-  unless (null nope) $ printList red cyan message (fst <$> nope)
-  reinstallAndRemove (getFilename cache `mapMaybe` okay) remo
+      (okay, nope) = partition (`M.member` cache) rein
+      message      = restoreState_1 $ langOf ss
+  unless (null nope) $ printList red cyan message (map (T.unpack . _spName) nope)
+  reinstallAndRemove (mapMaybe (`M.lookup` cache) okay) remo
 
-readState :: FilePath -> Aura PkgState
-readState name = liftIO (read <$> readFileUTF8 (stateCache </> name))
+-- TODO Bad bad string conversion
+selectState :: [FilePath] -> IO FilePath
+selectState = fmap (fromText . T.pack) . getSelection . map (T.unpack . toTextIgnore)
+
+-- TODO Using `read` here is terrible.
+readState :: FilePath -> IO PkgState
+readState name = read <$> readFileUTF8 (T.unpack . toTextIgnore $ stateCache </> name)
 
 -- How does pacman do simultaneous removals and upgrades?
 -- I've seen it happen plenty of times.
 -- | `reinstalling` can mean true reinstalling, or just altering.
-reinstallAndRemove :: [FilePath] -> [String] -> Aura ()
+reinstallAndRemove :: [T.Text] -> [T.Text] -> Aura ()
 reinstallAndRemove [] [] = warn reinstallAndRemove_1
 reinstallAndRemove down remo
     | null remo = reinstall
@@ -136,4 +143,4 @@ reinstallAndRemove down remo
     | otherwise = reinstall *> remove
     where remove    = pacman $ "-R" : remo
           reinstall = ask >>= \ss ->
-                      pacman $ "-U" : ((cachePathOf ss </>) <$> down)
+                      pacman $ "-U" : (map (toTextIgnore . (cachePathOf ss </>)) down)

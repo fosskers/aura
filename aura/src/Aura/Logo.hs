@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013, 2014 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -25,9 +25,8 @@ module Aura.Logo where
 
 import Aura.Colour.Text (yellow)
 import BasePrelude
-import Shell (cursorUpLineCode)
 import System.IO (stdout, hFlush)
-import Utilities (prePad)
+import Utilities (prePad, cursorUpLineCode)
 
 ---
 

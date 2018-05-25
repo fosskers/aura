@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase, ViewPatterns #-}
+{-# LANGUAGE LambdaCase, ViewPatterns, OverloadedStrings #-}
 
 -- Library for Aura output in different languages.
 -- All normal restrictions on line length do not apply for this file, and this file only.
@@ -21,7 +21,7 @@ Kai Zhang                            | Chinese
 
 {-
 
-Copyright 2012 - 2017 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2017 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -49,6 +49,7 @@ import           Aura.Languages.Base
 import qualified Aura.Languages.Fields as Fields
 import           BasePrelude
 import qualified Data.Map.Lazy as Map (Map, (!), fromList, toList, mapWithKey)
+import qualified Data.Text as T
 
 ---
 
@@ -125,8 +126,8 @@ whitespace :: Language -> String
 whitespace Japanese = "　"  -- \12288
 whitespace _ = " "          -- \32
 
-langFromLocale :: String -> Language
-langFromLocale = take 2 >>> \case
+langFromLocale :: T.Text -> Language
+langFromLocale = T.take 2 >>> \case
     "ja" -> Japanese
     "pl" -> Polish
     "hr" -> Croatian
@@ -370,6 +371,11 @@ buildFail_7 (bt -> p) = \case
     Chinese    -> "无法获得 " <> p <> " 的构建脚本。"
     Swedish    -> "Kunde inte hämta byggskript för " <> p <> "."
     _          -> "Failed to obtain build scripts for " <> p <> "."
+
+buildFail_8 :: Language -> String
+buildFail_8 = \case
+  Japanese  -> "makepkgは失敗しました。"
+  _         -> "There was a makepkg failure."
 
 displayBuildErrors_1 :: Language -> String
 displayBuildErrors_1 = \case

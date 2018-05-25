@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012, 2013, 2014 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -23,19 +23,18 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Utils where
 
-import BasePrelude hiding (Version)
-import System.IO (stdout, hFlush)
-import System.IO.Temp (withTempDirectory)
-import Text.Regex.PCRE ((=~))
-
-import Aura.Colour.Text
-import Aura.Languages (Language, whitespace, yesNoMessage, yesRegex)
-import Aura.Monad.Aura
-import Aura.Settings.Base
-import Aura.Utils.Numbers
-
-import Utilities (inDir, postPad)
-import Shell (pwd)
+import           Aura.Colour.Text
+import           Aura.Languages (Language, whitespace, yesNoMessage, yesRegex)
+import           Aura.Monad.Aura
+import           Aura.Settings.Base
+import           Aura.Utils.Numbers
+import           BasePrelude hiding (Version)
+import qualified Data.Text as T
+import           Shelly hiding (FilePath)
+import           System.IO (stdout, hFlush)
+import           System.IO.Temp (withTempDirectory)
+import           Text.Regex.PCRE ((=~))
+import           Utilities (inDir, postPad)
 
 ---
 
@@ -89,9 +88,9 @@ optionalPrompt msg = ask >>= check
 -------
 withTempDir :: FilePath -> Aura a -> Aura a
 withTempDir name action = ask >>= \ss -> do
-  curr <- liftIO pwd
-  let inTemp = withTempDirectory curr name
-  result <- liftIO $ inTemp (\dir -> inDir dir (runAura action ss))
+  curr <- shelly pwd
+  let inTemp = withTempDirectory (T.unpack $ toTextIgnore curr) name
+  result <- liftIO $ inTemp (\dir -> inDir (T.pack dir) (runAura action ss))
   wrap result
 
 splitNameAndVer :: String -> (String, String)

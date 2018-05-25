@@ -1,8 +1,11 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ViewPatterns #-}
+
 -- A library for working with the package cache.
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colingw@gmail.com>
+Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -22,72 +25,61 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.Cache
-    ( defaultPackageCache
-    , cacheContents
-    , cacheFilter
-    , cacheMatches
-    , pkgsInCache
-    , alterable
-    , getFilename
-    , allFilenames
-    , size
-    , Cache
-    , SimplePkg ) where
+  ( defaultPackageCache
+  , cacheContents
+  , cacheMatches
+  , pkgsInCache
+  , Cache
+  , SimplePkg(..)
+  ) where
 
-import           Aura.Monad.Aura
 import           Aura.Settings.Base
 import           Aura.Utils (pkgFileNameAndVer)
 import           Aura.Utils.Numbers (Version)
 import           BasePrelude hiding (Version)
 import qualified Data.Map.Lazy as M
-import           Shell (ls)
-import           Utilities (searchLines)
+import qualified Data.Text as T
+import           Shelly hiding (FilePath)
 
 ---
 
-type SimplePkg = (String, Maybe Version)
-type Cache     = M.Map SimplePkg FilePath
+data SimplePkg = SimplePkg { _spName :: T.Text, _spVersion :: Maybe Version } deriving (Eq, Ord)
+type Cache     = M.Map SimplePkg T.Text
 
-defaultPackageCache :: FilePath
+defaultPackageCache :: T.Text
 defaultPackageCache = "/var/cache/pacman/pkg/"
 
-simplePkg :: FilePath -> SimplePkg
-simplePkg = pkgFileNameAndVer
+simplePkg :: T.Text -> SimplePkg
+simplePkg = uncurry SimplePkg . first T.pack . pkgFileNameAndVer . T.unpack
 
-cache :: [FilePath] -> Cache
-cache = M.fromList . fmap pair
-    where pair p = (simplePkg p, p)
+cache :: [T.Text] -> Cache
+cache = M.fromList . map (simplePkg &&& id)
 
--- This takes the filepath of the package cache as an argument.
-rawCacheContents :: FilePath -> Aura [String]
-rawCacheContents c = filter dots <$> liftIO (ls c)
-    where dots p = p `notElem` [".", ".."]
+cacheContents :: T.Text -> Sh Cache
+cacheContents = fmap cache . lsT . fromText
 
-cacheContents :: FilePath -> Aura Cache
-cacheContents c = cache <$> rawCacheContents c
+pkgsInCache :: Settings -> [T.Text] -> Sh [T.Text]
+pkgsInCache ss ps =
+  nub . filter (`elem` ps) . map _spName . M.keys <$> cacheContents (cachePathOf ss)
 
-pkgsInCache :: [String] -> Aura [String]
-pkgsInCache ps =
-    nub . filter (`elem` ps) . allNames <$> (asks cachePathOf >>= cacheContents)
+cacheMatches :: Settings -> [T.Text] -> Sh [T.Text]
+cacheMatches ss (T.unwords -> input) =
+  filter (T.isInfixOf input) . M.elems <$> cacheContents (cachePathOf ss)
 
-cacheMatches :: [String] -> Aura [String]
-cacheMatches input = searchLines (unwords input) . allFilenames <$> f
-    where f = asks cachePathOf >>= cacheContents
+-- alterable :: Cache -> SimplePkg -> Bool
+-- alterable c p = M.member p c
 
-alterable :: Cache -> SimplePkg -> Bool
-alterable c p = M.member p c
+-- getFilename :: Cache -> SimplePkg -> Maybe T.Text
+-- getFilename c p = M.lookup p c
 
-getFilename :: Cache -> SimplePkg -> Maybe FilePath
-getFilename c p = M.lookup p c
+-- allNames :: Cache -> [T.Text]
+-- allNames = fmap _spName . M.keys
 
-allNames :: Cache -> [String]
-allNames = fmap fst . M.keys
+-- allFilenames :: Cache -> [T.Text]
+-- allFilenames = M.elems
 
-allFilenames :: Cache -> [FilePath]
-allFilenames = M.elems
+-- size :: Cache -> Int
+-- size = M.size
 
-size :: Cache -> Int
-size = M.size
-
-cacheFilter :: (SimplePkg -> FilePath -> Bool) -> Cache -> Cache
-cacheFilter = M.filterWithKey
+-- cacheFilter :: (SimplePkg -> T.Text -> Bool) -> Cache -> Cache
+-- cacheFilter = M.filterWithKey
