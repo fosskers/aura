@@ -156,11 +156,11 @@ timedMessage delay = traverse_ printMessage
 openEditor :: MonadIO m => T.Text -> T.Text -> m ()
 openEditor editor file = shelly $ run_ (fromText editor) [file]
 
--- All tarballs should be of the format `.tar.gz`, so dropping 7 chars
+-- | All tarballs should be of the format `.tar.gz`, so dropping 7 chars
 -- should remove the extension.
-decompress :: MonadIO m => T.Text -> m T.Text
-decompress file = do
-  shelly $ run_ "bsdtar" ["-zxvf", file]
+decompress :: MonadIO m => T.Text -> T.Text -> m T.Text
+decompress fp file = do
+  shelly $ run_ "bsdtar" ["-zxvf", file, "-C", fp]
   pure . T.dropEnd 7 $ file
 
 -- | Perform an action within a given directory.

@@ -65,7 +65,7 @@ makeBuildable m name pb = do
      , bldVersionOf = T.unpack $ aurVersionOf ai
      , isExplicit   = False
      , buildScripts = f }
-     where f fp = sourceTarball m fp (T.pack name) >>= traverse (fmap T.unpack . decompress . T.pack)
+     where f fp = sourceTarball m fp (T.pack name) >>= traverse (fmap T.unpack . decompress (T.pack fp) . T.pack)
 
 isAurPackage :: T.Text -> Aura Bool
 isAurPackage name = asks managerOf >>= \m -> isJust <$> pkgbuild' m name
