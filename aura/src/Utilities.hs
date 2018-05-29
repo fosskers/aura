@@ -163,13 +163,6 @@ decompress fp file = do
   shelly $ run_ "bsdtar" ["-zxvf", file, "-C", fp]
   pure . T.dropEnd 7 $ file
 
--- | Perform an action within a given directory.
-inDir :: MonadIO m => T.Text -> IO a -> m a
-inDir dir io = shelly $ pwd >>= \cur -> cd (fromText dir) *> liftIO io >>= \res -> cd cur *> pure res
-
-noDots :: [String] -> [String]
-noDots = filter (`notElem` [".", ".."])
-
 -- | Read a file. This used to enforce UTF8, but no longer does.
 readFileUTF8 :: FilePath -> IO String
 readFileUTF8 name = do

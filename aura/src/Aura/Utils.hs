@@ -29,12 +29,9 @@ import           Aura.Monad.Aura
 import           Aura.Settings.Base
 import           Aura.Utils.Numbers
 import           BasePrelude hiding (Version)
-import qualified Data.Text as T
-import           Shelly hiding (FilePath)
 import           System.IO (stdout, hFlush)
-import           System.IO.Temp (withTempDirectory)
 import           Text.Regex.PCRE ((=~))
-import           Utilities (inDir, postPad)
+import           Utilities (postPad)
 
 ---
 
@@ -86,12 +83,6 @@ optionalPrompt ss msg | mustConfirm ss = yesNoPrompt (langOf ss) (msg $ langOf s
 -------
 -- MISC
 -------
-withTempDir :: FilePath -> Aura a -> Aura a
-withTempDir name action = ask >>= \ss -> do
-  curr <- shelly pwd
-  let inTemp = withTempDirectory (T.unpack $ toTextIgnore curr) name
-  result <- liftIO $ inTemp (\dir -> inDir (T.pack dir) (runAura action ss))
-  wrap result
 
 splitNameAndVer :: String -> (String, String)
 splitNameAndVer pkg = (before, after)
