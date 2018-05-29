@@ -35,6 +35,7 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)
+import           Shelly (fromText, toTextIgnore)
 import           System.Directory (doesDirectoryExist)
 import           System.Environment (getEnvironment)
 import           Utilities
@@ -63,9 +64,9 @@ getSettings lang (auraFlags, input, pacOpts) = do
                   , editorOf        = getEditor environment
                   , ignoredPkgsOf   = map T.pack $ getIgnoredPkgs confFile <> ignoredAuraPkgs auraFlags
                   , makepkgFlagsOf  = map T.pack $ makepkgFlags auraFlags
-                  , buildPathOf     = T.pack buildPath'
-                  , cachePathOf     = T.pack $ getCachePath confFile
-                  , logFilePathOf   = T.pack $ getLogFilePath confFile
+                  , buildPathOf     = fromText $ T.pack buildPath'
+                  , cachePathOf     = fromText . T.pack $ getCachePath confFile
+                  , logFilePathOf   = fromText . T.pack $ getLogFilePath confFile
                   , sortSchemeOf    = sortSchemeStatus auraFlags
                   , truncationOf    = truncationStatus auraFlags
                   , beQuiet         = quietStatus auraFlags
@@ -97,9 +98,9 @@ debugOutput ss = do
                        , "Pacman Command    => " <> pacmanCmdOf ss
                        , "Editor            => " <> editorOf ss
                        , "Ignored Pkgs      => " <> T.unwords (ignoredPkgsOf ss)
-                       , "Build Path        => " <> buildPathOf ss
-                       , "Pkg Cache Path    => " <> cachePathOf ss
-                       , "Log File Path     => " <> logFilePathOf ss
+                       , "Build Path        => " <> toTextIgnore (buildPathOf ss)
+                       , "Pkg Cache Path    => " <> toTextIgnore (cachePathOf ss)
+                       , "Log File Path     => " <> toTextIgnore (logFilePathOf ss)
                        , "Quiet?            => " <> yn (beQuiet ss)
                        , "Suppress Makepkg? => " <> T.pack (show $ suppressMakepkg ss)
                        , "Must Confirm?     => " <> yn (mustConfirm ss)

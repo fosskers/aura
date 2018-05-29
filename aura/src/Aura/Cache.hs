@@ -36,7 +36,7 @@ module Aura.Cache
 import           Aura.Settings.Base
 import           Aura.Utils (pkgFileNameAndVer)
 import           Aura.Utils.Numbers (Version)
-import           BasePrelude hiding (Version)
+import           BasePrelude hiding (Version, FilePath)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import           Shelly
@@ -55,8 +55,8 @@ simplePkg = uncurry SimplePkg . first T.pack . pkgFileNameAndVer . T.unpack
 cache :: [T.Text] -> Cache
 cache = M.fromList . map (simplePkg &&& id)
 
-cacheContents :: T.Text -> Sh Cache
-cacheContents = fmap cache . lsT . fromText
+cacheContents :: FilePath -> Sh Cache
+cacheContents = fmap cache . lsT
 
 pkgsInCache :: Settings -> [T.Text] -> Sh [T.Text]
 pkgsInCache ss ps =

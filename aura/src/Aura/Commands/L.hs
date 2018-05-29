@@ -36,17 +36,17 @@ import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Settings.Base
 import           Aura.Utils (entrify)
-import           BasePrelude
+import           BasePrelude hiding (FilePath)
 import qualified Data.Text as T
-import           Shelly hiding (FilePath)
+import           Shelly
 import           Text.Regex.PCRE ((=~))
-import           Utilities (searchLines, readFileUTF8, loudSh)
+import           Utilities (searchLines, loudSh)
 
 ---
 
-viewLogFile :: T.Text -> Aura ()
+viewLogFile :: FilePath -> Aura ()
 viewLogFile logFilePath = do
-  (ec, _) <- shelly . loudSh $ run_ "less" [logFilePath]
+  (ec, _) <- shelly . loudSh $ run_ "less" [toTextIgnore logFilePath]
   case ec of
     ExitSuccess -> pure ()
     _ -> failure ""
@@ -54,13 +54,13 @@ viewLogFile logFilePath = do
 -- Very similar to `searchCache`. But is this worth generalizing?
 searchLogFile :: Settings -> [String] -> IO ()
 searchLogFile ss input = do
-  logFile <- lines <$> readFileUTF8 (T.unpack $ logFilePathOf ss)
+  logFile <- map T.unpack . T.lines <$> shelly (readfile $ logFilePathOf ss)
   traverse_ putStrLn $ searchLines (unwords input) logFile
 
 logInfoOnPkg :: [String] -> Aura ()
 logInfoOnPkg []   = pure ()
 logInfoOnPkg pkgs = ask >>= \ss -> do
-  logFile <- liftIO $ readFile (T.unpack $ logFilePathOf ss)
+  logFile <- fmap T.unpack . shelly . readfile $ logFilePathOf ss
   let inLog p = logFile =~ (" " <> p <> " ")
       reals   = filter inLog pkgs
   reportNotInLog (pkgs \\ reals)

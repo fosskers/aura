@@ -72,7 +72,7 @@ build p = do
 -- will come back via the @Language -> String@ function.
 build' :: Settings -> Buildable -> Sh (Either (Language -> String) [FilePath])
 build' ss p = do
-  cd . fromText $ buildPathOf ss
+  cd $ buildPathOf ss
   withTmpDir $ \curr -> do
     cd curr
     getBuildScripts p user >>= either (pure . Left) f

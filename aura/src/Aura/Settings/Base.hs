@@ -25,6 +25,7 @@ import Aura.Languages (Language)
 import BasePrelude hiding (FilePath)
 import Data.Text (Text)
 import Network.HTTP.Client (Manager)
+import Shelly (FilePath)
 import Utilities (Environment, User)
 
 ---
@@ -47,9 +48,9 @@ data Settings = Settings { inputOf         :: [Text]
                          , editorOf        :: Text
                          , ignoredPkgsOf   :: [Text]
                          , makepkgFlagsOf  :: [Text]
-                         , buildPathOf     :: Text
-                         , cachePathOf     :: Text
-                         , logFilePathOf   :: Text
+                         , buildPathOf     :: FilePath
+                         , cachePathOf     :: FilePath
+                         , logFilePathOf   :: FilePath
                          , sortSchemeOf    :: SortScheme  -- For `-As`
                          , truncationOf    :: Truncation  -- For `-As`
                          , beQuiet         :: Bool
