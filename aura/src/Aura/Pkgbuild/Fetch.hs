@@ -4,7 +4,7 @@
 
 {-
 
-Copyright 2012, 2013, 2014, 2016 Colin Woodbury <colin@fosskers.ca>
+Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -24,9 +24,9 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.Pkgbuild.Fetch
-       ( pkgbuild
-       , pkgbuild'
-       , pkgbuildUrl ) where
+  ( pkgbuild
+  , pkgbuild'
+  , pkgbuildUrl ) where
 
 import           BasePrelude
 import           Control.Exception (SomeException, catch)

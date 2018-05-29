@@ -37,9 +37,9 @@ import           Aura.Settings.Base
 import           Aura.Utils (pkgFileNameAndVer)
 import           Aura.Utils.Numbers (Version)
 import           BasePrelude hiding (Version)
-import qualified Data.Map.Lazy as M
+import qualified Data.Map.Strict as M
 import qualified Data.Text as T
-import           Shelly hiding (FilePath)
+import           Shelly
 
 ---
 
@@ -65,21 +65,3 @@ pkgsInCache ss ps =
 cacheMatches :: Settings -> [T.Text] -> Sh [T.Text]
 cacheMatches ss (T.unwords -> input) =
   filter (T.isInfixOf input) . M.elems <$> cacheContents (cachePathOf ss)
-
--- alterable :: Cache -> SimplePkg -> Bool
--- alterable c p = M.member p c
-
--- getFilename :: Cache -> SimplePkg -> Maybe T.Text
--- getFilename c p = M.lookup p c
-
--- allNames :: Cache -> [T.Text]
--- allNames = fmap _spName . M.keys
-
--- allFilenames :: Cache -> [T.Text]
--- allFilenames = M.elems
-
--- size :: Cache -> Int
--- size = M.size
-
--- cacheFilter :: (SimplePkg -> T.Text -> Bool) -> Cache -> Cache
--- cacheFilter = M.filterWithKey

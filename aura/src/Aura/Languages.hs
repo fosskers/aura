@@ -48,7 +48,7 @@ import           Aura.Colour.Text (cyan, green, red, blue, yellow, bForeground)
 import           Aura.Languages.Base
 import qualified Aura.Languages.Fields as Fields
 import           BasePrelude
-import qualified Data.Map.Lazy as Map (Map, (!), fromList, toList, mapWithKey)
+import qualified Data.Map.Strict as Map (Map, (!), fromList, toList, mapWithKey)
 import qualified Data.Text as T
 
 ---

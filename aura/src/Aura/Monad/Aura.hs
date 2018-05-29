@@ -28,7 +28,6 @@ module Aura.Monad.Aura
     , runAura
     , failure
     , catch
-    , wrap
     , liftIO
     , ask
     , asks
@@ -45,14 +44,12 @@ import Control.Monad.Reader
 -- pure    : yields a successful value.
 -- failure : yields an error and bypasses all other operations.
 -- catch   : catches an error.
--- wrap    : If given an Either, rewraps it into an Aura Monad.
 -- (>>=)   : fails on the first error.
 -- liftIO  : Perform intermittent IO using `liftIO`.
 -- ask     : Obtain run-time settings.
 -- runAura : Unwraps an Aura action. Must be passed `Settings` as well.
 newtype Aura a = A { runA :: ExceptT String (ReaderT Settings IO) a }
-  deriving ( Monad, MonadError String, MonadReader Settings, MonadIO,
-             Functor, Applicative)
+  deriving ( Functor, Applicative, Monad, MonadError String, MonadReader Settings, MonadIO )
 
 runAura :: Aura a -> Settings -> IO (Either String a)
 runAura = runReaderT . runExceptT . runA
@@ -62,7 +59,3 @@ failure = throwError
 
 catch :: Aura a -> (String -> Aura a) -> Aura a
 catch a h = catchError a h
-
-wrap :: Either String a -> Aura a
-wrap (Left m)  = failure m
-wrap (Right a) = pure a

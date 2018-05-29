@@ -120,11 +120,11 @@ pacman args = asks pacmanCmdOf >>= \cmd ->
   flush *> shelly (runHandles (fromText cmd) args [ InHandle Inherit
                                                   , OutHandle Inherit
                                                   , ErrorHandle Inherit ] n)
-     where flush = liftIO (hFlush stdout)
+     where flush   = liftIO $ hFlush stdout
            n _ _ _ = pure ()
 
 -- | Run some `pacman` process, but only care about whether it succeeded.
-pacmanSuccess :: [T.Text] -> Aura Bool
+pacmanSuccess :: MonadIO m => [T.Text] -> m Bool
 pacmanSuccess args = fmap success . shelly . quietSh $ run_ "pacman" args
     where success (ExitSuccess, _) = True
           success _ = False
@@ -140,11 +140,11 @@ pacmanOutput = fmap snd . shelly . quietSh . run "pacman"
 syncDatabase :: [T.Text] -> Aura ()
 syncDatabase pacOpts = pacman $ "-Sy" : pacOpts
 
-getPacmanHelpMsg :: Aura [T.Text]
+getPacmanHelpMsg :: MonadIO m => m [T.Text]
 getPacmanHelpMsg = T.lines <$> pacmanOutput ["-h"]
 
 -- | Yields the lines given by `pacman -V` with the pacman image stripped.
-getVersionInfo :: Aura [T.Text]
+getVersionInfo :: MonadIO m => m [T.Text]
 getVersionInfo = fmap (T.drop verMsgPad) . T.lines <$> pacmanOutput ["-V"]
 
 -- | The amount of whitespace before text in the lines given by `pacman -V`

@@ -52,7 +52,7 @@ putStrA colour = liftIO . putStr . putStrA' colour
 putStrA' :: Colouror -> String -> String
 putStrA' colour s = "aura >>= " <> colour s
 
-printList :: Colouror -> Colouror -> String -> [String] -> Aura ()
+printList :: MonadIO m => Colouror -> Colouror -> String -> [String] -> m ()
 printList _ _ _ []        = pure ()
 printList tc ic msg items = liftIO . putStrLn . printList' tc ic msg $ items
 
