@@ -143,7 +143,7 @@ openEditor editor file = run_ (fromText editor) [file]
 -- should remove the extension.
 decompress :: MonadIO m => T.Text -> T.Text -> m T.Text
 decompress fp file = do
-  shelly $ run_ "bsdtar" ["-zxvf", file, "-C", fp]
+  shelly $ run_ "bsdtar" ["-zxf", file, "-C", fp]
   pure . T.dropEnd 7 $ file
 
 -- | Read a file. This used to enforce UTF8, but no longer does.

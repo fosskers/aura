@@ -6,7 +6,7 @@
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colin@fosskers.ca>
+Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -25,7 +25,26 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Pacman where
+module Aura.Pacman
+  ( -- * Calling Pacman
+    pacman
+  , pacmanOutput, pacmanSuccess, pacmanFailure
+  , getPacmanCmd
+  , syncDatabase
+    -- * Paths
+  , lockFile
+  , pacmanConfFile
+  , getCachePath
+  , getLogFilePath
+  , singleEntry
+    -- * Pacman Config
+  , getPacmanConf
+  , getIgnoredPkgs
+    -- * Misc.
+  , getVersionInfo
+  , verMsgPad
+  , getPacmanHelpMsg
+  ) where
 
 import           Aura.Cache
 import           Aura.Languages (pacmanFailure_1)
