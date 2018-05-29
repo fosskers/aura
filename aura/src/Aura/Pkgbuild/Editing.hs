@@ -47,10 +47,10 @@ customizepkgPath = "/etc/customizepkg.d/"
 -- package building.
 edit :: (FilePath -> Sh a) -> Buildable -> Sh Buildable
 edit f p = do
-  writefile filename . T.pack $ pkgbuildOf p
+  writefile filename $ pkgbuildOf p
   void $ f filename
   newPB <- readfile "PKGBUILD"
-  pure p { pkgbuildOf = T.unpack newPB }
+  pure p { pkgbuildOf = newPB }
     where filename = "PKGBUILD"
 
 -- | Allow the user to edit the PKGBUILD if they asked to do so.
@@ -58,7 +58,7 @@ hotEdit :: Settings -> Buildable -> Sh Buildable
 hotEdit ss b
   | not $ mayHotEdit ss = pure b
   | otherwise = do
-      ans <- optionalPrompt ss (hotEdit_1 $ baseNameOf b)
+      ans <- optionalPrompt ss (hotEdit_1 . T.unpack $ baseNameOf b)
       bool (pure b) f ans
         where f = withTmpDir $ \tmp -> do
                 cd tmp

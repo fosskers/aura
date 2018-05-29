@@ -44,6 +44,7 @@ import           Aura.Settings.Base
 import           Aura.Utils
 import           BasePrelude hiding (catch)
 import qualified Data.Text as T
+import qualified Data.Text.IO as T
 import           Shelly (toTextIgnore)
 
 ---
@@ -145,13 +146,13 @@ displayPkgDeps opts ps = do
 reportPkgsToInstall :: String -> [String] -> [Buildable] -> Aura ()
 reportPkgsToInstall la rps bps = asks langOf >>= \lang -> do
   pl (reportPkgsToInstall_1    lang) (sort rps)
-  pl (reportPkgsToInstall_2 la lang) (sort $ baseNameOf <$> bps)
+  pl (reportPkgsToInstall_2 la lang) (sort $ map (T.unpack . baseNameOf) bps)
       where pl = printList green cyan
 
 reportListOfDeps :: MonadIO m => [String] -> [Buildable] -> m ()
 reportListOfDeps rps bps = liftIO $ do
-  traverse_ putStrLn (sort rps)
-  traverse_ putStrLn (sort (baseNameOf <$> bps))
+  traverse_ putStrLn $ sort rps
+  traverse_ T.putStrLn . sort $ map baseNameOf bps
 
 reportNonPackages :: [String] -> Aura ()
 reportNonPackages = badReport reportNonPackages_1
@@ -169,19 +170,20 @@ pkgbuildDiffs [] = pure []
 pkgbuildDiffs ps = ask >>= check
     where check ss | not $ diffPkgbuilds ss = pure ps
                    | otherwise = traverse_ displayDiff ps $> ps
+          displayDiff :: Buildable -> Aura ()
           displayDiff p = do
             let name = baseNameOf p
             lang     <- asks langOf
             isStored <- hasPkgbuildStored name
             if not isStored
-               then warn $ reportPkgbuildDiffs_1 name lang
+               then warn $ reportPkgbuildDiffs_1 (T.unpack name) lang
                else do
                  let new = pkgbuildOf p
                  old <- readPkgbuild name
-                 case comparePkgbuilds name old new of
-                   "" -> notify $ reportPkgbuildDiffs_2 name lang
+                 case comparePkgbuilds (T.unpack name) (T.unpack old) (T.unpack new) of
+                   "" -> notify $ reportPkgbuildDiffs_2 (T.unpack name) lang
                    d  -> do
-                      warn $ reportPkgbuildDiffs_3 name lang
+                      warn $ reportPkgbuildDiffs_3 (T.unpack name) lang
                       liftIO $ putStrLn d
 
 displayPkgbuild :: ([String] -> Aura [Maybe String]) -> [String] -> Aura ()

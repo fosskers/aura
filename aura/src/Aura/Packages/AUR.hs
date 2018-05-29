@@ -50,23 +50,23 @@ import           Utilities (decompress)
 aurLookup :: T.Text -> Aura (Maybe Buildable)
 aurLookup name = do
   m    <- asks managerOf
-  junk <- fmap (makeBuildable m (T.unpack name) . T.unpack) <$> pkgbuild' m name
+  junk <- fmap (makeBuildable m name) <$> pkgbuild' m name
   sequence junk
 
 aurRepo :: Repository
 aurRepo = Repository $ aurLookup >=> traverse packageBuildable
 
-makeBuildable :: MonadIO m => Manager -> String -> Pkgbuild -> m Buildable
+makeBuildable :: MonadIO m => Manager -> T.Text -> Pkgbuild -> m Buildable
 makeBuildable m name pb = do
-  ai <- head <$> info m [T.pack name]
+  ai <- head <$> info m [name]
   pure Buildable
     { baseNameOf   = name
     , pkgbuildOf   = pb
     , bldDepsOf    = parseDep . T.unpack <$> dependsOf ai ++ makeDepsOf ai
-    , bldVersionOf = T.unpack $ aurVersionOf ai
+    , bldVersionOf = aurVersionOf ai
     , isExplicit   = False
     , buildScripts = f }
-    where f fp = sourceTarball m fp (T.pack name) >>= traverse (fmap T.unpack . decompress (T.pack fp) . T.pack)
+    where f fp = sourceTarball m fp name >>= traverse (fmap T.unpack . decompress (T.pack fp) . T.pack)
 
 isAurPackage :: T.Text -> Aura Bool
 isAurPackage name = asks managerOf >>= \m -> isJust <$> pkgbuild' m name

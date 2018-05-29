@@ -41,7 +41,7 @@ import           Utilities
 -- TYPES
 --------
 type Error    = String
-type Pkgbuild = String
+type Pkgbuild = T.Text
 
 data VersionDemand = LessThan String
                    | AtLeast String
@@ -72,10 +72,10 @@ data InstallType = Pacman T.Text | Build Buildable
 
 -- | A package to be built manually before installing.
 data Buildable = Buildable
-    { baseNameOf   :: String
+    { baseNameOf   :: T.Text
     , pkgbuildOf   :: Pkgbuild
     , bldDepsOf    :: [Dep]
-    , bldVersionOf :: String
+    , bldVersionOf :: T.Text
     -- | Did the user select this package, or is it being built as a dep?
     , isExplicit   :: Bool
     -- | Fetch and extract the source code corresponding to the given package.

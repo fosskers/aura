@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colin@fosskers.ca>
+Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -21,35 +21,39 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Pkgbuild.Records where
+module Aura.Pkgbuild.Records
+  ( storePkgbuilds
+  , hasPkgbuildStored
+  , readPkgbuild
+  , comparePkgbuilds
+  ) where
 
-import Aura.Core (Buildable, baseNameOf, pkgbuildOf)
-import Aura.Diff (unidiff)
-import Aura.Monad.Aura
-import Aura.Pkgbuild.Base
-import BasePrelude
-import System.Directory (doesFileExist, createDirectoryIfMissing)
-import System.FilePath ((</>), dropFileName)
-import Utilities (readFileUTF8)
+import           Aura.Core (Buildable, baseNameOf, pkgbuildOf)
+import           Aura.Diff (unidiff)
+import           Aura.Monad.Aura
+import           Aura.Pkgbuild.Base
+import           BasePrelude
+import qualified Data.Text as T
+import           Shelly (Sh, writefile, test_f, shelly, readfile, mkdir_p)
+import           System.FilePath ((</>))
 
 ---
 
 comparePkgbuilds :: String -> String -> String -> String
 comparePkgbuilds name old new =
-    unlines $ unidiff 3 ("a" </> h) ("b" </> h) (lines old) (lines new)
-  where
-    h = name </> "PKGBUILD"
+  unlines $ unidiff 3 ("a" </> h) ("b" </> h) (lines old) (lines new)
+  where h = name </> "PKGBUILD"
 
-hasPkgbuildStored :: String -> Aura Bool
-hasPkgbuildStored = liftIO . doesFileExist . pkgbuildPath
+hasPkgbuildStored :: MonadIO m => T.Text -> m Bool
+hasPkgbuildStored = shelly . test_f . pkgbuildPath
 
-storePkgbuilds :: [Buildable] -> Aura ()
-storePkgbuilds = traverse_ (\p -> writePkgbuild (baseNameOf p) (pkgbuildOf p))
+storePkgbuilds :: MonadIO m => [Buildable] -> m ()
+storePkgbuilds = shelly . traverse_ (\p -> writePkgbuild (baseNameOf p) (pkgbuildOf p))
 
-readPkgbuild :: String -> Aura String
-readPkgbuild = liftIO . readFileUTF8 . pkgbuildPath
+readPkgbuild :: MonadIO m => T.Text -> m T.Text
+readPkgbuild = shelly . readfile . pkgbuildPath
 
-writePkgbuild :: String -> String -> Aura ()
-writePkgbuild name p = liftIO $ do
-  createDirectoryIfMissing True $ dropFileName $ pkgbuildPath name
-  writeFile (pkgbuildPath name) p
+writePkgbuild :: T.Text -> T.Text -> Sh ()
+writePkgbuild name pkgb = do
+  mkdir_p pkgbuildCache
+  writefile (pkgbuildPath name) pkgb

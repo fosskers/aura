@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 {-
 
 Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
@@ -25,20 +27,17 @@ import           Aura.Core
 import           Aura.Monad.Aura
 import           Aura.Pkgbuild.Editing
 import           Aura.Settings.Base
-import           BasePrelude
+import           BasePrelude hiding (FilePath)
 import qualified Data.Text as T
-import           Shelly (Sh, shelly)
+import           Shelly
 
 ---
 
 pkgbuildCache :: FilePath
 pkgbuildCache = "/var/cache/aura/pkgbuilds/"
 
-toFilename :: String -> FilePath
-toFilename = (<> ".pb")
-
-pkgbuildPath :: String -> FilePath
-pkgbuildPath p = pkgbuildCache <> toFilename p
+pkgbuildPath :: T.Text -> FilePath
+pkgbuildPath p = pkgbuildCache </> p <.> "pb"
 
 -- One of my favourite functions in this code base.
 pbCustomization :: Settings -> Buildable -> Sh Buildable
@@ -50,7 +49,7 @@ packageBuildable b = do
   ss <- ask
   b' <- shelly $ pbCustomization ss b
   pure Package
-    { pkgNameOf        = T.pack $ baseNameOf b'
-    , pkgVersionOf     = T.pack $ bldVersionOf b'
+    { pkgNameOf        = baseNameOf b'
+    , pkgVersionOf     = bldVersionOf b'
     , pkgDepsOf        = bldDepsOf b'
     , pkgInstallTypeOf = Build b' }
