@@ -69,7 +69,7 @@ install opts pacOpts pkgs = ask >>= \ss ->
        orphansAfter <- orphans
        let makeDeps = orphansAfter \\ orphansBefore
        unless (null makeDeps) $ do
-         notify removeMakeDepsAfter_1
+         notify . removeMakeDepsAfter_1 $ langOf ss
          removePkgs makeDeps pacOpts
 
 install' :: InstallOptions -> [T.Text] -> [T.Text] -> Aura ()
@@ -84,15 +84,15 @@ install' opts pacOpts pkgs = ask >>= \ss -> do
   toBuild <- lookupPkgs (installLookup opts) toInstall >>= pkgbuildDiffs
   if null toBuild
      then if neededOnly ss && unneeded == pkgs
-             then notify install_2
+             then notify . install_2 $ langOf ss
              else scoldAndFail install_2
      else do
-    notify install_5
+    notify . install_5 $ langOf ss
     allPkgs <- catch (depsToInstall (repository opts) toBuild) depCheckFailure
     let (repoPkgs, buildPkgs) = partitionPkgs allPkgs
     reportPkgsToInstall (T.unpack $ label opts) (map T.unpack repoPkgs) buildPkgs
     unless (dryRun ss) $ do
-      continue <- optionalPrompt install_3
+      continue <- optionalPrompt ss install_3
       if not continue
          then scoldAndFail install_4
          else do
@@ -101,7 +101,9 @@ install' opts pacOpts pkgs = ask >>= \ss -> do
         traverse_ (buildAndInstall pacOpts) buildPkgs
 
 confirmIgnored :: [String] -> Aura [String]
-confirmIgnored = filterM (optionalPrompt . confirmIgnored_1)
+confirmIgnored ps = do
+  ss <- ask
+  filterM (optionalPrompt ss . confirmIgnored_1) ps
 
 -- | Check a list of a package names are buildable, and mark them as explicit.
 lookupPkgs :: (T.Text -> Aura (Maybe Buildable)) -> [T.Text] -> Aura [Buildable]
@@ -116,7 +118,7 @@ depsToInstall :: Repository -> [Buildable] -> Aura [Package]
 depsToInstall repo = traverse packageBuildable >=> resolveDeps repo
 
 depCheckFailure :: String -> Aura a
-depCheckFailure m = scold install_1 *> failure m
+depCheckFailure m = asks langOf >>= scold . install_1 >> failure m
 
 repoInstall :: [T.Text] -> [T.Text] -> Aura ()
 repoInstall _       [] = pure ()
@@ -169,16 +171,17 @@ pkgbuildDiffs ps = ask >>= check
                    | otherwise = traverse_ displayDiff ps *> pure ps
           displayDiff p = do
             let name = baseNameOf p
+            lang     <- asks langOf
             isStored <- hasPkgbuildStored name
             if not isStored
-               then warn $ reportPkgbuildDiffs_1 name
+               then warn $ reportPkgbuildDiffs_1 name lang
                else do
                  let new = pkgbuildOf p
                  old <- readPkgbuild name
                  case comparePkgbuilds name old new of
-                   "" -> notify $ reportPkgbuildDiffs_2 name
+                   "" -> notify $ reportPkgbuildDiffs_2 name lang
                    d  -> do
-                      warn $ reportPkgbuildDiffs_3 name
+                      warn $ reportPkgbuildDiffs_3 name lang
                       liftIO $ putStrLn d
 
 displayPkgbuild :: ([String] -> Aura [Maybe String]) -> [String] -> Aura ()

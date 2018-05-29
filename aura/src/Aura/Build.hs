@@ -61,8 +61,8 @@ buildPackages = fmap concat . traverse build
 -- Assumed: All dependencies are already installed.
 build :: Buildable -> Aura [FilePath]
 build p = do
-  notify . buildPackages_1 $ baseNameOf p
   ss     <- ask
+  notify $ buildPackages_1 (baseNameOf p) (langOf ss)
   result <- shelly $ build' ss p
   case result of
     Left err -> buildFail p err
@@ -108,9 +108,10 @@ overwritePkgbuild ss p = when (mayHotEdit ss || useCustomizepkg ss) $ do
 -- continue installing previous packages that built successfully.
 buildFail :: Buildable -> (Language -> String) -> Aura [a]
 buildFail p err = do
-  scold . buildFail_1 $ baseNameOf p
-  scold err
-  response <- optionalPrompt buildFail_6
+  ss <- ask
+  scold $ buildFail_1 (baseNameOf p) (langOf ss)
+  scold . err $ langOf ss
+  response <- optionalPrompt ss buildFail_6
   if response
      then pure []
      else scoldAndFail buildFail_5

@@ -41,14 +41,14 @@ import           Utilities (inDir, postPad)
 ----------------
 -- CUSTOM OUTPUT
 ----------------
-putStrLnA :: Colouror -> String -> Aura ()
+putStrLnA :: MonadIO m => Colouror -> String -> m ()
 putStrLnA colour s = putStrA colour $ s <> "\n"
 
 putStrLnA' :: Colouror -> String -> String
 putStrLnA' colour s = putStrA' colour s <> "\n"
 
 -- Added `hFlush` here because some output appears to lag sometimes.
-putStrA :: Colouror -> String -> Aura ()
+putStrA :: MonadIO m => Colouror -> String -> m ()
 putStrA colour = liftIO . putStr . putStrA' colour
 --putStrA colour s = liftIO (putStr (putStrA' colour s) *> hFlush stdout)
 
@@ -69,19 +69,19 @@ scoldAndFail msg = asks langOf >>= failure . putStrA' red . msg
 ----------
 -- PROMPTS
 ----------
--- Takes a prompt message and a regex of valid answer patterns.
-yesNoPrompt :: (Language -> String) -> Aura Bool
-yesNoPrompt msg = asks langOf >>= \lang -> do
-  putStrA yellow $ msg lang <> " " <> yesNoMessage lang <> " "
+
+-- | Takes a prompt message and a regex of valid answer patterns.
+yesNoPrompt :: MonadIO m => Language -> String -> m Bool
+yesNoPrompt lang msg = do
+  putStrA yellow $ msg <> " " <> yesNoMessage lang <> " "
   liftIO $ hFlush stdout
   response <- liftIO getLine
   pure $ response =~ yesRegex lang
 
 -- | Doesn't prompt when `--noconfirm` is used.
-optionalPrompt :: (Language -> String) -> Aura Bool
-optionalPrompt msg = ask >>= check
-    where check ss | mustConfirm ss = yesNoPrompt msg
-                   | otherwise      = pure True
+optionalPrompt :: MonadIO m => Settings -> (Language -> String) -> m Bool
+optionalPrompt ss msg | mustConfirm ss = yesNoPrompt (langOf ss) (msg $ langOf ss)
+                      | otherwise      = pure True
 
 -------
 -- MISC

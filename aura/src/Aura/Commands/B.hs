@@ -28,6 +28,7 @@ module Aura.Commands.B
 import Aura.Core (warn)
 import Aura.Languages
 import Aura.Monad.Aura
+import Aura.Settings.Base
 import Aura.State
 import Aura.Utils (scoldAndFail, optionalPrompt)
 import BasePrelude
@@ -43,9 +44,10 @@ cleanStates (input:_) | all isDigit input = cleanStates' $ read input
 
 cleanStates' :: Int -> Aura ()
 cleanStates' n = do
-  okay <- optionalPrompt $ cleanStates_2 n
+  ss   <- ask
+  okay <- optionalPrompt ss $ cleanStates_2 n
   if not okay
-     then warn cleanStates_3
+     then warn . cleanStates_3 $ langOf ss
      else do
        states <- getStateFiles
        shelly . traverse_ rm . map (stateCache </>) . drop n . reverse $ states

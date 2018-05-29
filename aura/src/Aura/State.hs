@@ -109,7 +109,7 @@ saveState = do
   state <- currentState
   let filename = stateCache </> dotFormat (timeOf state)
   shelly $ writefile filename (T.pack $ show state)  -- TODO Using `show` is dumb.
-  notify saveState_1
+  asks langOf >>= notify . saveState_1
 
 -- | Does its best to restore a state chosen by the user.
 restoreState :: Aura ()
@@ -136,7 +136,7 @@ readState name = read <$> readFileUTF8 (T.unpack . toTextIgnore $ stateCache </>
 -- I've seen it happen plenty of times.
 -- | `reinstalling` can mean true reinstalling, or just altering.
 reinstallAndRemove :: [T.Text] -> [T.Text] -> Aura ()
-reinstallAndRemove [] [] = warn reinstallAndRemove_1
+reinstallAndRemove [] [] = asks langOf >>= warn . reinstallAndRemove_1
 reinstallAndRemove down remo
     | null remo = reinstall
     | null down = remove

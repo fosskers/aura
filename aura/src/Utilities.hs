@@ -153,8 +153,8 @@ timedMessage delay = traverse_ printMessage
     where printMessage msg = putStr msg *> hFlush stdout *> threadDelay delay
 
 -- | Opens the editor of the user's choice.
-openEditor :: MonadIO m => T.Text -> T.Text -> m ()
-openEditor editor file = shelly $ run_ (fromText editor) [file]
+openEditor :: T.Text -> T.Text -> Sh ()
+openEditor editor file = run_ (fromText editor) [file]
 
 -- | All tarballs should be of the format `.tar.gz`, so dropping 7 chars
 -- should remove the extension.

@@ -169,28 +169,26 @@ isSatisfied (Dep name ver) = T.null <$> pacmanOutput ["-T", name <> T.pack (show
 checkDBLock :: Aura ()
 checkDBLock = do
   locked <- liftIO $ doesFileExist lockFile
-  when locked $ warn checkDBLock_1 *> liftIO getLine *> checkDBLock
+  when locked $ (asks langOf >>= warn . checkDBLock_1) *> liftIO getLine *> checkDBLock
 
 -------
 -- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`
 -------
-colouredMessage :: Colouror -> (Language -> String) -> Aura ()
-colouredMessage c msg = ask >>= putStrLnA c . msg . langOf
 
 renderColour :: Colouror -> (Language -> String) -> Aura String
 renderColour c msg = asks (c . msg . langOf)
 
-say :: (Language -> String) -> Aura ()
-say = colouredMessage noColour
+say :: MonadIO m => String -> m ()
+say = putStrLnA noColour
 
-notify :: (Language -> String) -> Aura ()
-notify = colouredMessage green
+notify :: MonadIO m => String -> m ()
+notify = putStrLnA green
 
-warn :: (Language -> String) -> Aura ()
-warn = colouredMessage yellow
+warn :: MonadIO m => String -> m ()
+warn = putStrLnA yellow
 
-scold :: (Language -> String) -> Aura ()
-scold = colouredMessage red
+scold :: MonadIO m => String -> m ()
+scold = putStrLnA red
 
 badReport :: (Language -> String) -> [String] -> Aura ()
 badReport _ []     = pure ()

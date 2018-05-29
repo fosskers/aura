@@ -30,7 +30,6 @@ module Aura.Pkgbuild.Editing
 
 import           Aura.Core
 import           Aura.Languages
-import           Aura.Monad.Aura
 import           Aura.Settings.Base
 import           Aura.Utils
 import           BasePrelude hiding (FilePath)
@@ -43,38 +42,41 @@ import           Utilities
 customizepkgPath :: FilePath
 customizepkgPath = "/etc/customizepkg.d/"
 
-edit :: (FilePath -> IO a) -> Buildable -> Aura Buildable
+-- | Write a PKGBUILD to the filesystem temporarily, run some effectful
+-- function over it, then read it back in before proceeding with
+-- package building.
+edit :: (FilePath -> Sh a) -> Buildable -> Sh Buildable
 edit f p = do
-  newPB <- liftIO $ do
-             shelly . writefile filename . T.pack $ pkgbuildOf p
-             void $ f filename
-             readFileUTF8 "PKGBUILD"
-  pure p { pkgbuildOf = newPB }
-      where filename = "PKGBUILD"
+  writefile filename . T.pack $ pkgbuildOf p
+  void $ f filename
+  newPB <- readfile "PKGBUILD"
+  pure p { pkgbuildOf = T.unpack newPB }
+    where filename = "PKGBUILD"
 
 -- | Allow the user to edit the PKGBUILD if they asked to do so.
-hotEdit :: Buildable -> Aura Buildable
-hotEdit b = ask >>= \ss ->
-  if not $ mayHotEdit ss
-     then pure b
-     else withTempDir "hotedit" $ do
-            let cond = optionalPrompt (hotEdit_1 $ baseNameOf b)
-                act  = edit (openEditor (getEditor $ environmentOf ss) . toTextIgnore)
-            cond >>= bool (pure b) (act b)
+hotEdit :: Settings -> Buildable -> Sh Buildable
+hotEdit ss b
+  | not $ mayHotEdit ss = pure b
+  | otherwise = do
+      ans <- optionalPrompt ss (hotEdit_1 $ baseNameOf b)
+      bool (pure b) f ans
+        where f = withTmpDir $ \tmp -> do
+                cd tmp
+                edit (openEditor (getEditor $ environmentOf ss) . toTextIgnore) b
 
 -- | Runs `customizepkg` on whatever PKGBUILD it can.
 -- To work, a package needs an entry in `/etc/customizepkg.d/`
-customizepkg :: Buildable -> Aura Buildable
-customizepkg b = asks useCustomizepkg >>= \use ->
-  if not use
-     then pure b
-     else ifFile customizepkg' (scold customizepkg_1) bin b
-         where bin = "/usr/bin/customizepkg"
+customizepkg :: Settings -> Buildable -> Sh Buildable
+customizepkg ss b
+  | not $ useCustomizepkg ss = pure b
+  | otherwise = ifFile customizepkg' (scold . customizepkg_1 $ langOf ss) bin b
+  where bin = "/usr/bin/customizepkg"
 
-customizepkg' :: Buildable -> Aura Buildable
-customizepkg' p = withTempDir "customizepkg" $ do
-  let conf = customizepkgPath </> baseNameOf p
+customizepkg' :: Buildable -> Sh Buildable
+customizepkg' p = withTmpDir $ \tmp -> do
+  cd tmp
   ifFile (edit $ const customize) (pure ()) (T.unpack $ toTextIgnore conf) p
+  where conf = customizepkgPath </> baseNameOf p
 
-customize :: MonadIO m => m T.Text
-customize = fmap snd . shelly . quietSh $ run "customizepkg" ["--modify"]
+customize :: Sh T.Text
+customize = fmap snd . quietSh $ run "customizepkg" ["--modify"]

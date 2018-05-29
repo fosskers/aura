@@ -68,7 +68,8 @@ upgradeAURPkgs :: [T.Text] -> [T.Text] -> Aura ()
 upgradeAURPkgs pacOpts pkgs = do
   ss <- ask
   let notIgnored p = T.pack (splitName $ T.unpack p) `notElem` ignoredPkgsOf ss
-  notify upgradeAURPkgs_1
+      lang = langOf ss
+  notify $ upgradeAURPkgs_1 lang
   foreignPkgs <- filter (\(n, _) -> notIgnored n) <$> foreignPackages
   aurInfos    <- aurInfo (fst <$> foreignPkgs)
   let aurPkgs   = filter (\(n, _) -> n `elem` (aurNameOf <$> aurInfos)) foreignPkgs
@@ -78,9 +79,9 @@ upgradeAURPkgs pacOpts pkgs = do
      then auraUpgrade pacOpts
      else do
        devel <- develPkgCheck  -- [String]
-       notify upgradeAURPkgs_2
+       notify $ upgradeAURPkgs_2 lang
        if null toUpgrade && null devel
-          then warn upgradeAURPkgs_3
+          then warn $ upgradeAURPkgs_3 lang
           else reportPkgsToUpgrade . map T.unpack $ map prettify toUpgrade <> devel
        install pacOpts $ (aurNameOf . fst <$> toUpgrade) <> pkgs <> devel
            where prettify (p, v) = aurNameOf p <> " : " <> v <> " => " <> aurVersionOf p
@@ -88,7 +89,7 @@ upgradeAURPkgs pacOpts pkgs = do
 
 auraCheck :: [T.Text] -> Aura Bool
 auraCheck toUpgrade = if "aura" `elem` toUpgrade
-                         then optionalPrompt auraCheck_1
+                         then ask >>= \ss -> optionalPrompt ss auraCheck_1
                          else pure False
 
 auraUpgrade :: [T.Text] -> Aura ()
@@ -164,7 +165,8 @@ downloadTarballs pkgs = do
   traverse_ (downloadTBall currDir) pkgs
     where downloadTBall path pkg = whenM (isAurPackage pkg) $ do
               manager <- asks managerOf
-              notify $ downloadTarballs_1 (T.unpack pkg)
+              lang    <- asks langOf
+              notify $ downloadTarballs_1 (T.unpack pkg) lang
               void . liftIO $ sourceTarball manager path pkg
 
 displayPkgbuild :: [String] -> Aura ()

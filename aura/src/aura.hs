@@ -153,7 +153,7 @@ viewConfFile = shelly $ run_ "less" [pacmanConfFile]
 
 displayOutputLanguages :: Aura ()
 displayOutputLanguages = do
-  notify displayOutputLanguages_1
+  asks langOf >>= notify . displayOutputLanguages_1
   liftIO $ traverse_ print allLanguages
 
 printHelpMsg :: [T.Text] -> Aura ()

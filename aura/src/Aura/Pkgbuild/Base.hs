@@ -24,8 +24,10 @@ module Aura.Pkgbuild.Base where
 import           Aura.Core
 import           Aura.Monad.Aura
 import           Aura.Pkgbuild.Editing
+import           Aura.Settings.Base
 import           BasePrelude
 import qualified Data.Text as T
+import           Shelly (Sh, shelly)
 
 ---
 
@@ -39,15 +41,16 @@ pkgbuildPath :: String -> FilePath
 pkgbuildPath p = pkgbuildCache <> toFilename p
 
 -- One of my favourite functions in this code base.
-pbCustomization :: Buildable -> Aura Buildable
-pbCustomization = foldl (>=>) pure [customizepkg, hotEdit]
+pbCustomization :: Settings -> Buildable -> Sh Buildable
+pbCustomization ss = foldl (>=>) pure [customizepkg ss, hotEdit ss]
 
 -- | Package a Buildable, running the customization handler first.
 packageBuildable :: Buildable -> Aura Package
 packageBuildable b = do
-    b' <- pbCustomization b
-    pure Package
-      { pkgNameOf        = T.pack $ baseNameOf b'
-      , pkgVersionOf     = T.pack $ bldVersionOf b'
-      , pkgDepsOf        = bldDepsOf b'
-      , pkgInstallTypeOf = Build b' }
+  ss <- ask
+  b' <- shelly $ pbCustomization ss b
+  pure Package
+    { pkgNameOf        = T.pack $ baseNameOf b'
+    , pkgVersionOf     = T.pack $ bldVersionOf b'
+    , pkgDepsOf        = bldDepsOf b'
+    , pkgInstallTypeOf = Build b' }

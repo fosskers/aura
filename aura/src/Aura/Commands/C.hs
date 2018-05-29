@@ -67,7 +67,7 @@ downgradePackages pacOpts pkgs = do
 getDowngradeChoice :: Cache -> String -> Aura String
 getDowngradeChoice cache pkg = do
   let choices = getChoicesFromCache cache pkg
-  notify $ getDowngradeChoice_1 pkg
+  asks langOf >>= notify . getDowngradeChoice_1 pkg
   liftIO $ getSelection choices
 
 -- TODO Could use a real parser for this, and keep `Text`.
@@ -95,17 +95,18 @@ backupCache (dir:_) = do
 
 confirmBackup :: FilePath -> Aura Cache
 confirmBackup dir = do
-  cache <- ask >>= shelly . cacheContents . cachePathOf
-  notify $ backupCache_4 . T.unpack $ toTextIgnore dir
-  notify . backupCache_5 . M.size $ cache
-  okay <- optionalPrompt backupCache_6
+  ss    <- ask
+  cache <- shelly . cacheContents $ cachePathOf ss
+  notify $ backupCache_4 (T.unpack $ toTextIgnore dir) (langOf ss)
+  notify $ backupCache_5 (M.size cache) (langOf ss)
+  okay  <- optionalPrompt ss backupCache_6
   if not okay
      then scoldAndFail backupCache_7
      else pure cache
 
 backup :: FilePath -> Cache -> Aura ()
 backup dir cache = do
-  notify backupCache_8
+  asks langOf >>= notify . backupCache_8
   liftIO $ putStrLn ""  -- So that the cursor can rise at first.
   copyAndNotify dir (M.elems cache) 1
 
@@ -114,7 +115,7 @@ copyAndNotify :: FilePath -> [T.Text] -> Int -> Aura ()
 copyAndNotify _ [] _       = pure ()
 copyAndNotify dir (p:ps) n = asks cachePathOf >>= \cachePath -> do
   liftIO $ raiseCursorBy 1
-  warn $ copyAndNotify_1 n
+  asks langOf >>= warn . copyAndNotify_1 n
   shelly $ cp (cachePath </> p) (dir </> p)
   copyAndNotify dir ps $ n + 1
 
@@ -130,17 +131,18 @@ cleanCache (input:_)  -- Ignores all but first input element.
 cleanCache' :: Int -> Aura ()
 cleanCache' toSave
     | toSave < 0  = scoldAndFail cleanCache_1
-    | toSave == 0 = warn cleanCache_2 *> pacman ["-Scc"]  -- Needed?
+    | toSave == 0 = asks langOf >>= warn . cleanCache_2 >> pacman ["-Scc"]  -- Needed?
     | otherwise   = do
-        warn $ cleanCache_3 toSave
-        okay <- optionalPrompt cleanCache_4
+        ss <- ask
+        warn . cleanCache_3 toSave $ langOf ss
+        okay <- optionalPrompt ss cleanCache_4
         if not okay
            then scoldAndFail cleanCache_5
            else clean toSave
 
 clean :: Int -> Aura ()
 clean toSave = ask >>= \ss -> do
-  notify cleanCache_6
+  notify . cleanCache_6 $ langOf ss
   cache <- shelly . cacheContents $ cachePathOf ss
   let files     = map T.unpack $ M.elems cache
       grouped   = take toSave . reverse <$> groupByName files
@@ -151,12 +153,14 @@ clean toSave = ask >>= \ss -> do
 -- | Only package files with a version not in any PkgState will be
 -- removed.
 cleanNotSaved :: Aura ()
-cleanNotSaved = asks cachePathOf >>= \path -> do
-  notify cleanNotSaved_1
+cleanNotSaved = do
+  ss     <- ask
+  notify . cleanNotSaved_1 $ langOf ss
   states <- getStateFiles >>= liftIO . traverse readState
+  let path = cachePathOf ss
   cache  <- shelly $ cacheContents path
   let duds = M.filterWithKey (\p _ -> or (map (inState p) states)) cache
-  whenM (optionalPrompt $ cleanNotSaved_2 $ M.size duds) $
+  whenM (optionalPrompt ss $ cleanNotSaved_2 $ M.size duds) $
         shelly $ traverse_ rm (map (path </>) $ M.elems duds)
 
 -- Typically takes the contents of the package cache as an argument.
