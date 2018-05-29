@@ -95,14 +95,8 @@ tripleThrd (_, _, c) = c
 ---------
 -- EITHER
 ---------
--- | Surprised this doesn't exist already either.
-fromRight :: Either a b -> b
-fromRight (Right x) = x
-fromRight (Left _)  = error "Value given was a Left."
-
 eitherToMaybe :: Either a b -> Maybe b
-eitherToMaybe (Left _)  = Nothing
-eitherToMaybe (Right x) = Just x
+eitherToMaybe = either (const Nothing) Just
 
 --------
 -- REGEX
@@ -116,17 +110,6 @@ replaceByPatt ((p, t):ps) line | p == m    = replaceByPatt ps (b <> t <> a)
 
 searchLines :: Regex -> [String] -> [String]
 searchLines pat = filter (=~ pat)
-
---------------------
--- Association Lists
---------------------
-alElem :: Eq k => k -> [(k, a)] -> Bool
-alElem k al = case lookup k al of
-                Nothing -> False
-                Just _  -> True
-
-alNotElem :: Eq k => k -> [(k, a)] -> Bool
-alNotElem k = not . alElem k
 
 -----
 -- IO
