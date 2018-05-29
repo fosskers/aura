@@ -27,7 +27,6 @@ module Aura.Settings.Enable
 
 import           Aura.Flags
 import           Aura.Languages (Language, langFromLocale)
-import           Aura.MakePkg (makepkgConfFile)
 import           Aura.Pacman
 import           Aura.Settings.Base
 import           BasePrelude
@@ -36,7 +35,6 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)
-import           Shelly (toTextIgnore)
 import           System.Directory (doesDirectoryExist)
 import           System.Environment (getEnvironment)
 import           Utilities
@@ -48,7 +46,6 @@ getSettings lang (auraFlags, input, pacOpts) = do
   confFile    <- getPacmanConf
   environment <- M.fromList . map (bimap T.pack T.pack) <$> getEnvironment
   pmanCommand <- getPacmanCmd environment $ noPowerPillStatus auraFlags
-  makepkgConf <- readFileUTF8 (T.unpack $ toTextIgnore makepkgConfFile)
   buildPath'  <- checkBuildPath (buildPath auraFlags) (getCachePath confFile)
   manager     <- newManager tlsManagerSettings
   let language   = checkLang lang environment
@@ -64,7 +61,6 @@ getSettings lang (auraFlags, input, pacOpts) = do
                   , langOf          = language
                   , pacmanCmdOf     = pmanCommand
                   , editorOf        = getEditor environment
-                  , carchOf         = T.pack $ singleEntry makepkgConf "CARCH" "COULDN'T READ $CARCH"
                   , ignoredPkgsOf   = map T.pack $ getIgnoredPkgs confFile <> ignoredAuraPkgs auraFlags
                   , makepkgFlagsOf  = map T.pack $ makepkgFlags auraFlags
                   , buildPathOf     = T.pack buildPath'
@@ -100,7 +96,6 @@ debugOutput ss = do
                        , "Language          => " <> T.pack (show $ langOf ss)
                        , "Pacman Command    => " <> pacmanCmdOf ss
                        , "Editor            => " <> editorOf ss
-                       , "$CARCH            => " <> carchOf ss
                        , "Ignored Pkgs      => " <> T.unwords (ignoredPkgsOf ss)
                        , "Build Path        => " <> buildPathOf ss
                        , "Pkg Cache Path    => " <> cachePathOf ss

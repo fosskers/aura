@@ -22,7 +22,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Settings.Base where
 
 import Aura.Languages (Language)
-import BasePrelude
+import BasePrelude hiding (FilePath)
 import Data.Text (Text)
 import Network.HTTP.Client (Manager)
 import Utilities (Environment, User)
@@ -45,7 +45,6 @@ data Settings = Settings { inputOf         :: [Text]
                          , langOf          :: Language
                          , pacmanCmdOf     :: Text
                          , editorOf        :: Text
-                         , carchOf         :: Text
                          , ignoredPkgsOf   :: [Text]
                          , makepkgFlagsOf  :: [Text]
                          , buildPathOf     :: Text
