@@ -62,7 +62,7 @@ downgradePackages pacOpts pkgs = do
   unless (null reals) $ do
     cache   <- shelly $ cacheContents cachePath
     choices <- traverse (fmap T.pack . getDowngradeChoice cache) $ map T.unpack reals
-    pacman $ "-U" : pacOpts <> (map (toTextIgnore . (cachePath </>)) choices)
+    pacman $ "-U" : pacOpts <> map (toTextIgnore . (cachePath </>)) choices
 
 getDowngradeChoice :: Cache -> String -> Aura String
 getDowngradeChoice cache pkg = do
@@ -159,7 +159,7 @@ cleanNotSaved = do
   states <- getStateFiles >>= liftIO . traverse readState
   let path = cachePathOf ss
   cache  <- shelly $ cacheContents path
-  let duds = M.filterWithKey (\p _ -> or (map (inState p) states)) cache
+  let duds = M.filterWithKey (\p _ -> any (inState p) states) cache
   whenM (optionalPrompt ss $ cleanNotSaved_2 $ M.size duds) $
         shelly $ traverse_ rm (map (path </>) $ M.elems duds)
 

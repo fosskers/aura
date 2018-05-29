@@ -62,7 +62,7 @@ installOptions = I.InstallOptions { label         = "AUR"
                                   , repository    = pacmanRepo <> aurRepo }
 
 install :: [T.Text] -> [T.Text] -> Aura ()
-install pacOpts ps = I.install installOptions pacOpts ps
+install = I.install installOptions
 
 upgradeAURPkgs :: [T.Text] -> [T.Text] -> Aura ()
 upgradeAURPkgs pacOpts pkgs = do
@@ -105,8 +105,7 @@ aurPkgInfo (fmap T.pack -> pkgs) = aurInfo pkgs >>= traverse_ displayAurPkgInfo
 -- By this point, the Package definitely exists, so we can assume its
 -- PKGBUILD exists on the AUR servers as well.
 displayAurPkgInfo :: AurInfo -> Aura ()
-displayAurPkgInfo ai = ask >>= \ss -> do
-  liftIO $ putStrLn $ renderAurPkgInfo ss ai <> "\n"
+displayAurPkgInfo ai = ask >>= \ss -> liftIO . putStrLn $ renderAurPkgInfo ss ai <> "\n"
 
 renderAurPkgInfo :: Settings -> AurInfo -> String
 renderAurPkgInfo ss ai = entrify ss fields entries
@@ -157,7 +156,7 @@ renderSearch ss r (i, e) = searchResult
           s = c bForeground (" [installed]" :: String)
 
 displayPkgDeps :: [T.Text] -> Aura ()
-displayPkgDeps ps = I.displayPkgDeps installOptions ps
+displayPkgDeps = I.displayPkgDeps installOptions
 
 downloadTarballs :: [T.Text] -> Aura ()
 downloadTarballs pkgs = do

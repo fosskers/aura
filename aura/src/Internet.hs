@@ -37,7 +37,7 @@ import           System.IO (hClose, openFile, IOMode(WriteMode))
 
 -- | Assumes the given URL is correctly formatted.
 urlContents :: Manager -> String -> IO (Maybe L.ByteString)
-urlContents m url = fmap f $ httpLbs (parseRequest_ url) m
+urlContents m url = f <$> httpLbs (parseRequest_ url) m
   where f res | statusCode (responseStatus res) == 200 = Just $ responseBody res
               | otherwise = Nothing
 
@@ -49,6 +49,6 @@ saveUrlContents m fpath url = do
     Nothing -> pure Nothing
     Just c  -> do
       handle <- openFile filePath WriteMode
-      L.hPutStr handle c *> hClose handle *> pure (Just filePath)
+      L.hPutStr handle c *> hClose handle $> Just filePath
           where filePath = fpath </> file
                 (_, file) = splitFileName $ unEscapeString url

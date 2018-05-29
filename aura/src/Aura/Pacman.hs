@@ -126,7 +126,7 @@ getPacmanHelpMsg = T.lines <$> pacmanOutput ["-h"]
 
 -- | Yields the lines given by `pacman -V` with the pacman image stripped.
 getVersionInfo :: Aura [T.Text]
-getVersionInfo = (fmap (T.drop verMsgPad) . T.lines) <$> pacmanOutput ["-V"]
+getVersionInfo = fmap (T.drop verMsgPad) . T.lines <$> pacmanOutput ["-V"]
 
 -- | The amount of whitespace before text in the lines given by `pacman -V`
 verMsgPad :: Int

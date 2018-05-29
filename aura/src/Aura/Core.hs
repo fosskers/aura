@@ -141,10 +141,10 @@ orphans :: Aura [T.Text]
 orphans = T.lines <$> pacmanOutput ["-Qqdt"]
 
 develPkgs :: Aura [T.Text]
-develPkgs = (filter isDevelPkg . map fst) <$> foreignPackages
+develPkgs = filter isDevelPkg . map fst <$> foreignPackages
 
 isDevelPkg :: T.Text -> Bool
-isDevelPkg pkg = any (\s -> T.isSuffixOf s pkg) suffixes
+isDevelPkg pkg = any (`T.isSuffixOf` pkg) suffixes
   where suffixes = ["-git", "-hg", "-svn", "-darcs", "-cvs", "-bzr"]
 
 -- This could be:

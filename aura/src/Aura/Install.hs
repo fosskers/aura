@@ -168,7 +168,7 @@ pkgbuildDiffs :: [Buildable] -> Aura [Buildable]
 pkgbuildDiffs [] = pure []
 pkgbuildDiffs ps = ask >>= check
     where check ss | not $ diffPkgbuilds ss = pure ps
-                   | otherwise = traverse_ displayDiff ps *> pure ps
+                   | otherwise = traverse_ displayDiff ps $> ps
           displayDiff p = do
             let name = baseNameOf p
             lang     <- asks langOf

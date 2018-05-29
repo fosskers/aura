@@ -104,8 +104,7 @@ sortAurInfo scheme ai = sortBy compare' ai
                      Alphabetically -> compare `on` aurNameOf
 
 aurSearch :: T.Text -> Aura [AurInfo]
-aurSearch regex = ask >>= \s -> do
-  sortAurInfo (sortSchemeOf s) <$> search (managerOf s) regex
+aurSearch regex = ask >>= \s -> sortAurInfo (sortSchemeOf s) <$> search (managerOf s) regex
 
 aurInfo :: [T.Text] -> Aura [AurInfo]
 aurInfo pkgs = asks managerOf >>= \m -> sortAurInfo Alphabetically <$> info m pkgs

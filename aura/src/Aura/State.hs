@@ -71,8 +71,8 @@ currentState :: MonadIO m => m PkgState
 currentState = do
   pkgs <- rawCurrentState
   time <- liftIO localTime
-  let namesVers = map (pair . T.words) pkgs
-      pair      = \(x:y:_) -> (x, version $ T.unpack y)
+  let namesVers    = map (pair . T.words) pkgs
+      pair (x:y:_) = (x, version $ T.unpack y)
   pure . PkgState time . M.fromAscList $ namesVers
 
 compareStates :: PkgState -> PkgState -> StateDiff
@@ -143,4 +143,4 @@ reinstallAndRemove down remo
     | otherwise = reinstall *> remove
     where remove    = pacman $ "-R" : remo
           reinstall = ask >>= \ss ->
-                      pacman $ "-U" : (map (toTextIgnore . (cachePathOf ss </>)) down)
+                      pacman $ "-U" : map (toTextIgnore . (cachePathOf ss </>)) down

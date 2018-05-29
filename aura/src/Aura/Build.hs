@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TupleSections #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 {-
 
@@ -35,7 +35,7 @@ import           Aura.Monad.Aura
 import           Aura.Pacman (pacman)
 import           Aura.Settings.Base
 import           Aura.Utils
-import           BasePrelude hiding (catch, FilePath)
+import           BasePrelude hiding (FilePath)
 import           Data.Bitraversable (bitraverse)
 import qualified Data.Text as T
 import           Filesystem.Path (filename)
@@ -84,7 +84,7 @@ build' ss p = do
           bitraverse pure g pNames
         g pns = do
           paths <- traverse (moveToCachePath ss) pns
-          when (keepSource ss) $ (makepkgSource user) >>= traverse_ moveToSourcePath
+          when (keepSource ss) $ makepkgSource user >>= traverse_ moveToSourcePath
           pure paths
 
 getBuildScripts :: Buildable -> User -> Sh (Either (Language -> String) FilePath)
@@ -101,7 +101,7 @@ getBuildScripts pkg user = do
 -- | The user may have edited the original PKGBUILD. If they have, we need to
 -- overwrite what's been downloaded before calling `makepkg`.
 overwritePkgbuild :: Settings -> Buildable -> Sh ()
-overwritePkgbuild ss p = when (mayHotEdit ss || useCustomizepkg ss) $ do
+overwritePkgbuild ss p = when (mayHotEdit ss || useCustomizepkg ss) $
   writefile "PKGBUILD" . T.pack $ pkgbuildOf p
 
 -- | Inform the user that building failed. Ask them if they want to

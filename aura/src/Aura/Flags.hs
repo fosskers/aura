@@ -245,9 +245,9 @@ hijackedFlagMap = simpleFlagMap [ (CacheBackup,   "-b" )
 dualFlagMap :: FlagMap
 dualFlagMap (Ignore      a) = "--ignore="      <> a
 dualFlagMap (IgnoreGroup a) = "--ignoregroup=" <> a
-dualFlagMap f = flip simpleFlagMap f [ (Quiet,     "-q"          )
-                                     , (NoConfirm, "--noconfirm" )
-                                     , (Needed,    "--needed"    ) ]
+dualFlagMap f = simpleFlagMap [ (Quiet,     "-q"          )
+                              , (NoConfirm, "--noconfirm" )
+                              , (Needed,    "--needed"    ) ] f
 
 simpleFlagMap :: [(Flag, String)] -> Flag -> String
 simpleFlagMap fm = fromMaybe "" . flip lookup fm

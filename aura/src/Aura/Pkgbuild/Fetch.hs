@@ -31,7 +31,7 @@ module Aura.Pkgbuild.Fetch
 import           BasePrelude
 import           Control.Exception (SomeException, catch)
 import           Control.Monad.Trans (MonadIO, liftIO)
-import           Data.Text hiding (take)
+import           Data.Text
 import           Data.Text.Encoding.Error
 import qualified Data.Text.Lazy as TL
 import           Data.Text.Lazy.Encoding

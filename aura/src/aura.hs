@@ -137,7 +137,7 @@ executeOpts (flags, input, pacOpts) =
     [Languages] -> displayOutputLanguages
     [Help]      -> printHelpMsg (map T.pack pacOpts)
     [Version]   -> getVersionInfo >>= animateVersionMsg . map T.unpack
-    _ -> catch (pacman $ (map T.pack pacOpts) <> (map T.pack hijackedFlags) <> (map T.pack input)) pacmanFailure
+    _ -> catch (pacman $ map T.pack pacOpts <> map T.pack hijackedFlags <> map T.pack input) pacmanFailure
     where hijackedFlags = reconvertFlags hijackedFlagMap flags
 
 -- | `-y` was included with `-A`. Sync database before continuing.

@@ -68,7 +68,7 @@ rStrip = dropWhileEnd (`elem` whitespaces)
 -- The Int argument is the final length of the padded String,
 -- not the length of the pad. Is that stupid?
 postPad :: String -> String -> Int -> String
-postPad str pad len = str <> fold (take (len - length str) $ repeat pad)
+postPad str pad len = str <> fold (replicate (len - length str) pad)
 
 prePad :: [a] -> a -> Int -> [a]
 prePad xs x len = replicate (len - length xs) x <> xs
@@ -242,4 +242,4 @@ findM p (x:xs) = p x >>= bool (findM p xs) (pure $ Just x)
 -- | If a file exists, it performs action `t` on the argument.
 -- | If the file doesn't exist, it performs `f` and returns the argument.
 ifFile :: MonadIO m => (a -> m a) -> m b -> FilePath -> a -> m a
-ifFile t f file x = (liftIO $ doesFileExist file) >>= bool (f $> x) (t $ x)
+ifFile t f file x = liftIO (doesFileExist file) >>= bool (f $> x) (t x)
