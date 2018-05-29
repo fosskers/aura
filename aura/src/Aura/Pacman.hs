@@ -97,8 +97,12 @@ getLogFilePath confFile = singleEntry confFile "LogFile" defaultLogFile
 -- ACTIONS
 ----------
 pacman :: [T.Text] -> Aura ()
-pacman args = asks pacmanCmdOf >>= \cmd -> flush *> shelly (run_ (fromText cmd) args)
-    where flush = liftIO (hFlush stdout)
+pacman args = asks pacmanCmdOf >>= \cmd ->
+  flush *> shelly (runHandles (fromText cmd) args [ InHandle Inherit
+                                                  , OutHandle Inherit
+                                                  , ErrorHandle Inherit ] n)
+     where flush = liftIO (hFlush stdout)
+           n _ _ _ = pure ()
 
 -- | Run some `pacman` process, but only care about whether it succeeded.
 pacmanSuccess :: [T.Text] -> Aura Bool
