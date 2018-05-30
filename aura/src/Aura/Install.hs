@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE Rank2Types #-}
 
 {-
 
@@ -43,6 +44,7 @@ import           Aura.Pkgbuild.Records
 import           Aura.Settings.Base
 import           Aura.Utils
 import           BasePrelude hiding (catch)
+import           Control.Concurrent.Async
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Shelly (toTextIgnore)
@@ -50,9 +52,10 @@ import           Shelly (toTextIgnore)
 ---
 
 -- | Installation options.
-data InstallOptions = InstallOptions { label         :: T.Text
-                                     , installLookup :: T.Text -> Aura (Maybe Buildable)
-                                     , repository    :: Repository }
+data InstallOptions = InstallOptions
+                      { label         :: T.Text
+                      , installLookup :: forall m. MonadIO m => Settings -> T.Text -> m (Maybe Buildable)
+                      , repository    :: Repository }
 
 -- | High level 'install' command. Handles installing
 -- dependencies.
@@ -82,7 +85,7 @@ install' opts pacOpts pkgs = ask >>= \ss -> do
   let toInstall = (notIgnored <> installAnyway) \\ unneeded
   -- reportIgnoredPackages ignored  -- 2014 December  7 @ 14:52
   reportUnneededPackages $ map T.unpack unneeded
-  toBuild <- lookupPkgs (installLookup opts) toInstall >>= pkgbuildDiffs
+  toBuild <- lookupPkgs (installLookup opts ss) toInstall >>= pkgbuildDiffs
   if null toBuild
      then if neededOnly ss && unneeded == pkgs
              then notify . install_2 $ langOf ss
@@ -107,11 +110,11 @@ confirmIgnored ps = do
   filterM (optionalPrompt ss . confirmIgnored_1) ps
 
 -- | Check a list of a package names are buildable, and mark them as explicit.
-lookupPkgs :: (T.Text -> Aura (Maybe Buildable)) -> [T.Text] -> Aura [Buildable]
+lookupPkgs :: (T.Text -> IO (Maybe Buildable)) -> [T.Text] -> Aura [Buildable]
 lookupPkgs f pkgs = do
-  (nons, okay) <- partitionEithers <$> traverse lookupBuild pkgs
+  (nons, okay) <- partitionEithers <$> liftIO (mapConcurrently lookupBuild pkgs)
   reportNonPackages (map T.unpack nons)
-  pure $ markExplicit <$> okay
+  pure $ map markExplicit okay
   where lookupBuild pkg = maybe (Left pkg) Right <$> f pkg
         markExplicit b  = b { isExplicit = True }
 
@@ -136,8 +139,9 @@ buildAndInstall pacOpts pkg = buildPackages [pkg] >>= installPkgFiles pacOpts' .
 displayPkgDeps :: InstallOptions -> [T.Text] -> Aura ()
 displayPkgDeps _ [] = pure ()
 displayPkgDeps opts ps = do
+  ss    <- ask
   quiet <- asks beQuiet
-  bs    <- catMaybes <$> traverse (installLookup opts) ps
+  bs    <- catMaybes <$> traverse (installLookup opts ss) ps  -- TODO Make concurrent
   pkgs  <- depsToInstall (repository opts) bs
   reportDeps quiet . first (map T.unpack) $ partitionPkgs pkgs
   where reportDeps True  = uncurry reportListOfDeps

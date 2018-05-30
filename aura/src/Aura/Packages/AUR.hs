@@ -47,14 +47,14 @@ import           Utilities (decompress)
 
 ---
 
-aurLookup :: T.Text -> Aura (Maybe Buildable)
-aurLookup name = do
-  m    <- asks managerOf
+aurLookup :: MonadIO m => Settings -> T.Text -> m (Maybe Buildable)
+aurLookup ss name = do
   junk <- fmap (makeBuildable m name) <$> pkgbuild' m name
   sequence junk
+  where m = managerOf ss
 
 aurRepo :: Repository
-aurRepo = Repository $ aurLookup >=> traverse packageBuildable
+aurRepo = Repository $ \p -> ask >>= flip aurLookup p >>= traverse packageBuildable
 
 makeBuildable :: MonadIO m => Manager -> T.Text -> Pkgbuild -> m Buildable
 makeBuildable m name pb = do
