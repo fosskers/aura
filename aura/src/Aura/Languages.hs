@@ -45,6 +45,7 @@ module Aura.Languages
     , Language(..) ) where
 
 import           Aura.Colour.Text (cyan, green, red, blue, yellow, bForeground)
+import           Aura.Errors
 import           Aura.Languages.Base
 import qualified Aura.Languages.Fields as Fields
 import           BasePrelude
@@ -470,9 +471,14 @@ missingPkg_1 (bt -> p) = \case
     Swedish    -> "Beroendet " <> p <> " kunde inte hittas. Du kan behöva leta efter ett paket som tillfredställer det."
     _          -> "The dependency " <> p <> " could not be found. You may need to search for a package to satisfy it."
 
-missingPkg_2 :: [String] -> Language -> String
-missingPkg_2 ps = \case
-  _ -> "The following dependencies couldn't be found:\n" <> intercalate "\n" ps
+missingPkg_2 :: [DepError] -> Language -> String
+missingPkg_2 ps l = intercalate "\n" $ map (depError l) ps
+
+depError :: Language -> DepError -> String
+depError _ (VerConflict s) = s
+depError _ (Ignored s)     = s
+depError l (NonExistant s) = case l of
+  _ -> "The dependency " <> bt s <> " couldn't be found."
 
 -----------------
 -- aura functions

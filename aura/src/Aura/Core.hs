@@ -41,7 +41,7 @@ import           Utilities
 --------
 -- TYPES
 --------
-type Error    = String
+
 type Pkgbuild = T.Text
 
 data VersionDemand = LessThan String

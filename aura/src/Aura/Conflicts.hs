@@ -22,8 +22,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Conflicts where
 
 import           Aura.Core
+import           Aura.Errors
 import           Aura.Languages
-import           Aura.Monad.Aura
 import           Aura.Settings.Base
 import           Aura.Utils.Numbers (version)
 import           BasePrelude
@@ -37,15 +37,10 @@ import           Text.Regex.PCRE ((=~))
 -- 2. Is the version requested different from the one provided by
 --    the most recent version?
 
-checkConflicts :: Package -> Dep -> Aura ()
-checkConflicts p d = ask >>= \ss -> traverse_ failure (realPkgConflicts ss p d)
-
--- | Must be called with a (f)unction that yields the version number
--- of the most up-to-date form of the package.
-realPkgConflicts :: Settings -> Package -> Dep -> Maybe Error
+realPkgConflicts :: Settings -> Package -> Dep -> Maybe DepError
 realPkgConflicts ss pkg dep
-    | name `elem` toIgnore                       = Just failMsg1
-    | isVersionConflict reqVer (T.unpack curVer) = Just failMsg2
+    | name `elem` toIgnore                       = Just $ Ignored failMsg1
+    | isVersionConflict reqVer (T.unpack curVer) = Just $ VerConflict failMsg2
     | otherwise                                  = Nothing
     where name     = pkgNameOf pkg
           curVer   = pkgVersionOf pkg
