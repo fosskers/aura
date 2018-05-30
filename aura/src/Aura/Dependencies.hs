@@ -30,7 +30,10 @@ import           Aura.Core
 import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Settings.Base
+import           Aura.Utils (scoldAndFail)
 import           BasePrelude
+import           Control.Concurrent.Async
+import           Control.Concurrent.STM.TVar
 import           Control.Monad.State
 import           Data.Graph
 import qualified Data.Map.Strict as M
@@ -40,8 +43,8 @@ import           Utilities (tripleFst)
 
 ---
 
-resolveDeps :: Repository -> [Package] -> Aura [Package]
-resolveDeps repo ps = sortInstall . M.elems <$> execStateT (traverse_ addPkg ps) M.empty
+resolveDepsOrig :: Repository -> [Package] -> Aura [Package]
+resolveDepsOrig repo ps = sortInstall . M.elems <$> execStateT (traverse_ addPkg ps) M.empty
   where
     addPkg :: Package -> StateT (M.Map T.Text Package) Aura ()
     addPkg pkg = whenM (isNothing <$> getPkg (pkgNameOf pkg)) $ do
@@ -66,6 +69,33 @@ resolveDeps repo ps = sortInstall . M.elems <$> execStateT (traverse_ addPkg ps)
 
     getPkg :: T.Text -> StateT (M.Map T.Text Package) Aura (Maybe Package)
     getPkg p = gets $ M.lookup p
+
+resolveDeps :: Repository -> [Package] -> Aura [Package]
+resolveDeps repo ps = do
+  ss  <- ask
+  tv  <- liftIO $ newTVarIO M.empty
+  etp <- liftIO $ resolveDeps' ss tv repo ps
+  m   <- liftIO $ readTVarIO tv
+  case etp of
+    []   -> pure . sortInstall $ M.elems m
+    bads -> scoldAndFail . missingPkg_2 $ map T.unpack bads
+
+resolveDeps' :: Settings -> TVar (M.Map T.Text Package) -> Repository -> [Package] -> IO [T.Text]
+resolveDeps' ss tv repo ps = concat <$> mapConcurrently f ps
+  where
+    -- | `atomically` ensures that only one instance of a `Package` can
+    -- ever be written to the TVar.
+    f :: Package -> IO [T.Text]
+    f p = join . atomically $ do
+      m <- readTVar tv
+      case M.lookup (pkgNameOf p) m of
+        Just _  -> pure $ pure []  -- Bail early, we've checked this package already. Do conflicts here?
+        Nothing -> modifyTVar' tv (M.insert (pkgNameOf p) p) $> do
+          deps <- fmap catMaybes . mapConcurrently (\d -> bool (Just d) Nothing <$> isSatisfied d) $ pkgDepsOf p
+          (bads, goods) <- partitionEithers <$> mapConcurrently (\d -> maybe (Left $ depNameOf d) Right <$> repoLookup repo ss (depNameOf d)) deps
+          case bads of
+            [] -> resolveDeps' ss tv repo goods
+            _  -> pure bads
 
 missingPkg :: String -> Aura a
 missingPkg name = asks langOf >>= failure . missingPkg_1 name

@@ -53,6 +53,7 @@ dependencies:
   - regex-pcre >= 0.94 && < 0.95
   - shelly >= 1.7 && < 1.9
   - split >= 0.2 && < 0.3
+  - stm
   - system-filepath
   - temporary
   - text >= 1.2 && < 1.3

@@ -470,6 +470,10 @@ missingPkg_1 (bt -> p) = \case
     Swedish    -> "Beroendet " <> p <> " kunde inte hittas. Du kan behöva leta efter ett paket som tillfredställer det."
     _          -> "The dependency " <> p <> " could not be found. You may need to search for a package to satisfy it."
 
+missingPkg_2 :: [String] -> Language -> String
+missingPkg_2 ps = \case
+  _ -> "The following dependencies couldn't be found:\n" <> intercalate "\n" ps
+
 -----------------
 -- aura functions
 -----------------
