@@ -31,7 +31,7 @@ import           Aura.Settings.Base
 import           Aura.Utils
 import           BasePrelude
 import qualified Data.Text as T
-import           System.Directory (doesFileExist)
+import           Shelly (Sh, test_f)
 import           Text.Regex.PCRE ((=~))
 import           Utilities
 
@@ -153,23 +153,26 @@ isDevelPkg pkg = any (`T.isSuffixOf` pkg) suffixes
 -- isIgnored :: String -> [String] -> Bool
 -- isIgnored pkg toIgnore = pkg `elem` toIgnore
 
-isInstalled :: T.Text -> Aura Bool
-isInstalled pkg = pacmanSuccess ["-Qq", pkg]
+-- | Returns what it was given if the package is already installed.
+-- Reasoning: Using raw bools can be less expressive.
+isInstalled :: MonadIO m => T.Text -> m (Maybe T.Text)
+isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", pkg]
 
 removePkgs :: [T.Text] -> [T.Text] -> Aura ()
 removePkgs [] _         = pure ()
 removePkgs pkgs pacOpts = pacman $ ["-Rsu"] <> pkgs <> pacOpts
 
+-- TODO Make whatever calls this concurrent?
 -- Moving to a libalpm backend will make this less hacked.
 -- | True if a dependency is satisfied by an installed package.
-isSatisfied :: Dep -> Aura Bool
+isSatisfied :: MonadIO m => Dep -> m Bool
 isSatisfied (Dep name ver) = T.null <$> pacmanOutput ["-T", name <> T.pack (show ver)]
 
 -- | Block further action until the database is free.
-checkDBLock :: Aura ()
-checkDBLock = do
-  locked <- liftIO $ doesFileExist lockFile
-  when locked $ (asks langOf >>= warn . checkDBLock_1) *> liftIO getLine *> checkDBLock
+checkDBLock :: Settings -> Sh ()
+checkDBLock ss = do
+  locked <- test_f lockFile
+  when locked $ (warn . checkDBLock_1 $ langOf ss) *> liftIO getLine *> checkDBLock ss
 
 -------
 -- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`

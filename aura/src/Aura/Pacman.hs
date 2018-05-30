@@ -54,6 +54,7 @@ import           Aura.Utils (scoldAndFail)
 import           BasePrelude
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
+import qualified Shelly as Sh
 import           Shelly hiding (FilePath, cmd)
 import           System.Directory (doesFileExist)
 import           System.IO (hFlush, stdout)
@@ -74,7 +75,7 @@ pacmanConfFile = "/etc/pacman.conf"
 defaultLogFile :: FilePath
 defaultLogFile = "/var/log/pacman.log"
 
-lockFile :: FilePath
+lockFile :: Sh.FilePath
 lockFile = "/var/lib/pacman/db.lck"
 
 getPacmanCmd :: Environment -> Bool -> IO T.Text

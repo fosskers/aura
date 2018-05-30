@@ -27,9 +27,10 @@ import           Aura.Core
 import           Aura.Monad.Aura
 import           Aura.Pacman (pacmanOutput)
 import           BasePrelude
+import           Control.Concurrent.Async
 import qualified Data.Text as T
 import           Text.Regex.PCRE ((=~))
-import           Utilities (tripleThrd, findM)
+import           Utilities (tripleThrd)
 
 ---
 
@@ -48,19 +49,19 @@ packageRepo name version = Package
 
 -- | If given a virtual package, try to find a real package to install.
 -- Functions like this are why we need libalpm.
-resolveName :: T.Text -> Aura T.Text
+resolveName :: MonadIO m => T.Text -> m T.Text
 resolveName name = do
   provs <- T.lines <$> pacmanOutput ["-Ssq", "^" <> name <> "$"]
   chooseProvider name provs
 
 -- | Choose a providing package, favoring installed packages.
-chooseProvider :: T.Text -> [T.Text] -> Aura T.Text
+chooseProvider :: MonadIO m => T.Text -> [T.Text] -> m T.Text
 chooseProvider name []        = pure name
 chooseProvider _    [p]       = pure p
-chooseProvider _    ps@(p:_)  = fromMaybe p <$> findM isInstalled ps
+chooseProvider _    ps@(p:_)  = fromMaybe p . listToMaybe . catMaybes <$> liftIO (mapConcurrently isInstalled ps)
 
 -- | The most recent version of a package, if it exists in the respositories.
-mostRecentVersion :: T.Text -> Aura (Maybe T.Text)
+mostRecentVersion :: MonadIO m => T.Text -> m (Maybe T.Text)
 mostRecentVersion s = fmap T.pack . extractVersion . T.unpack <$> pacmanOutput ["-Si", s]
 
 -- TODO Use a real parser, so that we can use `Text` throughout.

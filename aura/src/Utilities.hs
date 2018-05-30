@@ -233,12 +233,6 @@ showCursorCode = csi [] "?25h"
 -- MONADS
 ---------
 
--- | Monadic 'find'. We can't use 'filterM' because monads like 'IO' can
--- be strict.
-findM :: Monad m => (a -> m Bool) -> [a] -> m (Maybe a)
-findM _ []     = pure Nothing
-findM p (x:xs) = p x >>= bool (findM p xs) (pure $ Just x)
-
 -- | If a file exists, it performs action `t` on the argument.
 -- | If the file doesn't exist, it performs `f` and returns the argument.
 ifFile :: MonadIO m => (a -> m a) -> m b -> FilePath -> a -> m a

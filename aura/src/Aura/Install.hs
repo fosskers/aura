@@ -1,5 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE OverloadedStrings, Rank2Types, TupleSections #-}
 
 {-
 
@@ -78,8 +77,7 @@ install opts pacOpts pkgs = ask >>= \ss ->
 
 install' :: InstallOptions -> [T.Text] -> [T.Text] -> Aura ()
 install' opts pacOpts pkgs = ask >>= \ss -> do
-  -- TODO Make the `filterM` call concurrent
-  unneeded <- if neededOnly ss then filterM isInstalled pkgs else pure []
+  unneeded <- if neededOnly ss then catMaybes <$> liftIO (mapConcurrently isInstalled pkgs) else pure []
   let (ignored, notIgnored) = partition (`elem` ignoredPkgsOf ss) pkgs
   installAnyway <- map T.pack <$> confirmIgnored (map T.unpack ignored)
   let toInstall = (notIgnored <> installAnyway) \\ unneeded
@@ -141,7 +139,7 @@ displayPkgDeps _ [] = pure ()
 displayPkgDeps opts ps = do
   ss    <- ask
   quiet <- asks beQuiet
-  bs    <- catMaybes <$> traverse (installLookup opts ss) ps  -- TODO Make concurrent
+  bs    <- catMaybes <$> liftIO (mapConcurrently (installLookup opts ss) ps)
   pkgs  <- depsToInstall (repository opts) bs
   reportDeps quiet . first (map T.unpack) $ partitionPkgs pkgs
   where reportDeps True  = uncurry reportListOfDeps
