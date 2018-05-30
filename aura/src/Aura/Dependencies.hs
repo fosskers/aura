@@ -57,11 +57,12 @@ resolveDeps repo ps = sortInstall . M.elems <$> execStateT (traverse_ addPkg ps)
 
     findPkg :: Dep -> StateT (M.Map T.Text Package) Aura ()
     findPkg dep = whenM (not <$> lift (isSatisfied dep)) $ do
-        mpkg <- lift $ repoLookup repo name
-        case mpkg of
-          Nothing  -> lift . missingPkg $ T.unpack name
-          Just pkg -> lift (checkConflicts pkg dep) *> addPkg pkg
-      where name = depNameOf dep
+      ss   <- ask
+      mpkg <- lift $ repoLookup repo ss name
+      case mpkg of
+        Nothing  -> lift . missingPkg $ T.unpack name
+        Just pkg -> lift (checkConflicts pkg dep) *> addPkg pkg
+        where name = depNameOf dep
 
     getPkg :: T.Text -> StateT (M.Map T.Text Package) Aura (Maybe Package)
     getPkg p = gets $ M.lookup p

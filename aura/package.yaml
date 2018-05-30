@@ -28,6 +28,7 @@ ghc-options:
   - -fwarn-incomplete-patterns
   - -fwarn-incomplete-uni-patterns
   - -fwarn-redundant-constraints
+  - -threaded
 
 default-extensions:
   - NoImplicitPrelude

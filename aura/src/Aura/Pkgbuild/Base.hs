@@ -44,12 +44,14 @@ pbCustomization :: Settings -> Buildable -> Sh Buildable
 pbCustomization ss = foldl (>=>) pure [customizepkg ss, hotEdit ss]
 
 -- | Package a Buildable, running the customization handler first.
-packageBuildable :: Buildable -> Aura Package
-packageBuildable b = do
-  ss <- ask
+--
+-- REMINDER: This shouldn't be called concurrently. It could seriously mess
+-- up user interaction, and there probably aren't enough packages in the list to
+-- make the concurrent scheduling worth it.
+packageBuildable :: MonadIO m => Settings -> Buildable -> m Package
+packageBuildable ss b = do
   b' <- shelly $ pbCustomization ss b
-  pure Package
-    { pkgNameOf        = baseNameOf b'
-    , pkgVersionOf     = bldVersionOf b'
-    , pkgDepsOf        = bldDepsOf b'
-    , pkgInstallTypeOf = Build b' }
+  pure Package { pkgNameOf        = baseNameOf b'
+               , pkgVersionOf     = bldVersionOf b'
+               , pkgDepsOf        = bldDepsOf b'
+               , pkgInstallTypeOf = Build b' }

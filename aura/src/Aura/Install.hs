@@ -117,7 +117,9 @@ lookupPkgs f pkgs = do
         markExplicit b  = b { isExplicit = True }
 
 depsToInstall :: Repository -> [Buildable] -> Aura [Package]
-depsToInstall repo = traverse packageBuildable >=> resolveDeps repo
+depsToInstall repo bs = do
+  ss <- ask
+  traverse (packageBuildable ss) bs >>= resolveDeps repo
 
 depCheckFailure :: String -> Aura a
 depCheckFailure m = asks langOf >>= scold . install_1 >> failure m

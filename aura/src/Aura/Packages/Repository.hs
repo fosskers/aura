@@ -36,7 +36,7 @@ import           Utilities (tripleThrd)
 
 -- | Repository package source.
 pacmanRepo :: Repository
-pacmanRepo = Repository $ \name -> do
+pacmanRepo = Repository $ \_ name -> do
   real <- resolveName name
   fmap (packageRepo real) <$> mostRecentVersion real
 

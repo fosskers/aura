@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, Rank2Types #-}
 
 {-
 
@@ -29,7 +29,8 @@ import           Aura.Monad.Aura
 import           Aura.Pacman
 import           Aura.Settings.Base
 import           Aura.Utils
-import           BasePrelude
+import           BasePrelude hiding ((<>))
+import           Data.Semigroup
 import qualified Data.Text as T
 import           Shelly (Sh, test_f)
 import           Text.Regex.PCRE ((=~))
@@ -85,15 +86,13 @@ data Buildable = Buildable
 
 -- | A 'Repository' is a place where packages may be fetched from. Multiple
 -- repositories can be combined with the 'Data.Monoid' instance.
-newtype Repository = Repository { repoLookup :: T.Text -> Aura (Maybe Package) }
+newtype Repository = Repository { repoLookup :: forall m. MonadIO m => Settings -> T.Text -> m (Maybe Package) }
 
-instance Monoid Repository where
-  mempty = Repository $ const (pure Nothing)
-
-  a `mappend` b = Repository $ \s -> do
-    mpkg <- repoLookup a s
+instance Semigroup Repository where
+  a <> b = Repository $ \ss p -> do
+    mpkg <- repoLookup a ss p
     case mpkg of
-      Nothing -> repoLookup b s
+      Nothing -> repoLookup b ss p
       _       -> pure mpkg
 
 ---------------------------------

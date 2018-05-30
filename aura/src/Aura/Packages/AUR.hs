@@ -54,7 +54,7 @@ aurLookup ss name = do
   where m = managerOf ss
 
 aurRepo :: Repository
-aurRepo = Repository $ \p -> ask >>= flip aurLookup p >>= traverse packageBuildable
+aurRepo = Repository $ \ss p -> aurLookup ss p >>= traverse (packageBuildable ss)
 
 makeBuildable :: MonadIO m => Manager -> T.Text -> Pkgbuild -> m Buildable
 makeBuildable m name pb = do

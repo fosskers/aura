@@ -47,7 +47,8 @@ import           Aura.Pkgbuild.Fetch
 import           Aura.Settings.Base
 import           Aura.Utils
 import           Aura.Utils.Numbers
-import           BasePrelude
+import           BasePrelude hiding ((<>))
+import           Data.Semigroup ((<>))
 import qualified Data.Set as S (member, fromList)
 import qualified Data.Text as T
 import           Linux.Arch.Aur
