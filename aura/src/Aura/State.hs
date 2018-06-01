@@ -47,7 +47,7 @@ import           Data.Bitraversable
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import           Shelly hiding (time)
-import           Utilities (list, getSelection, readFileUTF8)
+import           Utilities (list, getSelection)
 
 ---
 
@@ -124,8 +124,8 @@ selectState :: [FilePath] -> IO FilePath
 selectState = fmap (fromText . T.pack) . getSelection . map (T.unpack . toTextIgnore)
 
 -- TODO Using `read` here is terrible.
-readState :: FilePath -> IO PkgState
-readState name = read <$> readFileUTF8 (T.unpack . toTextIgnore $ stateCache </> name)
+readState :: MonadIO m => FilePath -> m PkgState
+readState name = read . T.unpack <$> shelly (readfile $ stateCache </> name)
 
 -- How does pacman do simultaneous removals and upgrades?
 -- I've seen it happen plenty of times.

@@ -4,7 +4,7 @@
 
 {-
 
-Copyright 2012 - 2017 Colin Woodbury <colin@fosskers.ca>
+Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -27,7 +27,6 @@ module Utilities where
 
 import           BasePrelude hiding (FilePath, handle)
 import           Control.Monad.Trans (MonadIO)
-import qualified Data.ByteString.Char8 as BS
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import           Shelly
@@ -146,12 +145,6 @@ decompress :: MonadIO m => T.Text -> T.Text -> m T.Text
 decompress fp file = do
   shelly $ run_ "bsdtar" ["-zxf", file, "-C", fp]
   pure . T.dropEnd 7 $ file
-
--- | Read a file. This used to enforce UTF8, but no longer does.
-readFileUTF8 :: String -> IO String
-readFileUTF8 name = do
-  handle <- openFile name ReadMode
-  BS.unpack <$> BS.hGetContents handle
 
 --------
 -- SHELL

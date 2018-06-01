@@ -69,7 +69,7 @@ defaultCmd = "pacman"
 powerPillCmd :: T.Text
 powerPillCmd = "/usr/bin/powerpill"
 
-pacmanConfFile :: T.Text
+pacmanConfFile :: Sh.FilePath
 pacmanConfFile = "/etc/pacman.conf"
 
 defaultLogFile :: FilePath
@@ -87,8 +87,8 @@ getPacmanCmd env nopp =
       if | powerPill && not nopp -> pure powerPillCmd
          | otherwise -> pure defaultCmd
 
-getPacmanConf :: IO String
-getPacmanConf = readFileUTF8 (T.unpack pacmanConfFile)
+getPacmanConf :: MonadIO m => m T.Text
+getPacmanConf = shelly $ readfile pacmanConfFile
 
 getConfFileField :: String -> String -> [String]
 getConfFileField confFile field = words $ takeWhile p entry

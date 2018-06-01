@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colin@fosskers.ca>
+Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -44,7 +44,7 @@ import           Utilities
 
 getSettings :: Maybe Language -> ([Flag], [String], [String]) -> IO (Maybe Settings)
 getSettings lang (auraFlags, input, pacOpts) = do
-  confFile    <- getPacmanConf
+  confFile    <- T.unpack <$> getPacmanConf
   environment <- M.fromList . map (bimap T.pack T.pack) <$> getEnvironment
   pmanCommand <- getPacmanCmd environment $ noPowerPillStatus auraFlags
   buildPath'  <- checkBuildPath (buildPath auraFlags) (getCachePath confFile)

@@ -49,7 +49,7 @@ import           Aura.Settings.Base
 import           Aura.Settings.Enable
 import           BasePrelude hiding (Version)
 import qualified Data.Text as T
-import           Shelly (fromText, shelly, run_)
+import           Shelly (toTextIgnore, fromText, shelly, run_)
 import           Utilities
 
 ---
@@ -150,7 +150,7 @@ syncAndContinue (flags, input, pacOpts) = do
 -- GENERAL
 ----------
 viewConfFile :: Aura ()
-viewConfFile = shelly $ run_ "less" [pacmanConfFile]
+viewConfFile = shelly $ run_ "less" [toTextIgnore pacmanConfFile]
 
 displayOutputLanguages :: Aura ()
 displayOutputLanguages = do
