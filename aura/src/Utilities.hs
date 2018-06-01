@@ -98,11 +98,6 @@ tripleThrd (_, _, c) = c
 eitherToMaybe :: Either a b -> Maybe b
 eitherToMaybe = either (const Nothing) Just
 
--- | `either` with different argument order.
-either' :: Either a b -> (a -> c) -> (b -> c) -> c
-either' (Left l) le _  = le l
-either' (Right r) _ ri = ri r
-
 -------
 -- LIST
 -------

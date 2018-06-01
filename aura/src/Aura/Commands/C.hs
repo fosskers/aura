@@ -44,6 +44,7 @@ import           Aura.Settings.Base
 import           Aura.State
 import           Aura.Utils
 import           BasePrelude hiding (FilePath)
+import           Data.Bitraversable
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import           Shelly hiding (path)
@@ -92,11 +93,8 @@ backupCache :: [FilePath] -> Aura (Either Failure ())
 backupCache []      = pure $ failure backupCache_1
 backupCache (dir:_) = do
   exists <- shelly $ test_d dir
-  if not exists
-     then pure $ failure backupCache_3
-     else do
-     ecache <- confirmBackup dir
-     either' ecache (pure . Left) $ fmap Right . backup dir
+  if | not exists -> pure $ failure backupCache_3
+     | otherwise  -> confirmBackup dir >>= bitraverse pure (backup dir)
 
 confirmBackup :: FilePath -> Aura (Either Failure Cache)
 confirmBackup dir = do
@@ -158,14 +156,14 @@ cleanNotSaved :: Aura (Either Failure ())
 cleanNotSaved = do
   ss <- ask
   notify . cleanNotSaved_1 $ langOf ss
-  esfs <- getStateFiles
-  either' esfs (pure . Left) $ \sfs -> do
-    states <- liftIO $ traverse readState sfs
-    let path = cachePathOf ss
-    cache  <- shelly $ cacheContents path
-    let duds = M.filterWithKey (\p _ -> any (inState p) states) cache
-    fmap Right . whenM (optionalPrompt ss $ cleanNotSaved_2 $ M.size duds) $
-      shelly $ traverse_ rm (map (path </>) $ M.elems duds)
+  getStateFiles >>= bitraverse pure (f ss)
+  where f ss sfs = do
+          states <- liftIO $ traverse readState sfs
+          let path = cachePathOf ss
+          cache  <- shelly $ cacheContents path
+          let duds = M.filterWithKey (\p _ -> any (inState p) states) cache
+          whenM (optionalPrompt ss $ cleanNotSaved_2 $ M.size duds) $
+            shelly $ traverse_ rm (map (path </>) $ M.elems duds)
 
 -- Typically takes the contents of the package cache as an argument.
 groupByName :: [String] -> [[String]]

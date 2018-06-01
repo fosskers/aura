@@ -45,10 +45,10 @@ import           Aura.Settings.Base
 import           Aura.Utils
 import           BasePrelude
 import           Control.Concurrent.Async
+import           Data.Bitraversable
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Shelly (toTextIgnore)
-import           Utilities (either')
 
 ---
 
@@ -79,8 +79,9 @@ install opts pacOpts pkgs = ask >>= f
                     removePkgs makeDeps pacOpts
 
 install' :: InstallOptions -> [T.Text] -> [T.Text] -> Aura (Either Failure ())
-install' opts pacOpts pkgs = ask >>= \ss -> do
-  unneeded <- if neededOnly ss then catMaybes <$> liftIO (mapConcurrently isInstalled pkgs) else pure []
+install' opts pacOpts pkgs = do
+  ss       <- ask
+  unneeded <- bool (pure []) (catMaybes <$> liftIO (mapConcurrently isInstalled pkgs)) $ neededOnly ss
   let (ignored, notIgnored) = partition (`elem` ignoredPkgsOf ss) pkgs
   installAnyway <- map T.pack <$> confirmIgnored (map T.unpack ignored)
   let toInstall = (notIgnored <> installAnyway) \\ unneeded
@@ -92,18 +93,18 @@ install' opts pacOpts pkgs = ask >>= \ss -> do
      | null toBuild -> pure $ failure install_2
      | otherwise -> do
          notify . install_5 $ langOf ss
-         eallPkgs <- depsToInstall (repository opts) toBuild
-         either' eallPkgs (pure . Left) $ \allPkgs -> do
-           let (repoPkgs, buildPkgs) = partitionPkgs allPkgs
-           reportPkgsToInstall (T.unpack $ label opts) (map T.unpack repoPkgs) buildPkgs
-           if | dryRun ss -> pure $ Right ()
-              | otherwise -> do
-                  continue <- optionalPrompt ss install_3
-                  if | not continue -> pure $ failure install_4
-                     | otherwise    -> do
-                         repoInstall pacOpts repoPkgs
-                         storePkgbuilds buildPkgs
-                         buildAndInstall pacOpts buildPkgs
+         depsToInstall (repository opts) toBuild >>= fmap join . bitraverse pure (f ss)
+  where f ss allPkgs = do
+          let (repoPkgs, buildPkgs) = partitionPkgs allPkgs
+          reportPkgsToInstall (T.unpack $ label opts) (map T.unpack repoPkgs) buildPkgs
+          if | dryRun ss -> pure $ Right ()
+             | otherwise -> do
+                 continue <- optionalPrompt ss install_3
+                 if | not continue -> pure $ failure install_4
+                    | otherwise    -> do
+                        repoInstall pacOpts repoPkgs
+                        storePkgbuilds buildPkgs
+                        buildAndInstall pacOpts buildPkgs
 
 confirmIgnored :: [String] -> Aura [String]
 confirmIgnored ps = do
@@ -144,13 +145,10 @@ buildAndInstall pacOpts (b:bs) = do
 displayPkgDeps :: InstallOptions -> [T.Text] -> Aura (Either Failure ())
 displayPkgDeps _ [] = pure $ Right ()
 displayPkgDeps opts ps = do
-  ss    <- ask
-  quiet <- asks beQuiet
-  bs    <- catMaybes <$> liftIO (mapConcurrently (installLookup opts ss) ps)
-  pkgs  <- depsToInstall (repository opts) bs
-  case pkgs of
-    Left err    -> pure $ Left err
-    Right pkgs' -> fmap Right . reportDeps quiet . first (map T.unpack) $ partitionPkgs pkgs'
+  ss   <- ask
+  bs   <- catMaybes <$> liftIO (mapConcurrently (installLookup opts ss) ps)
+  pkgs <- depsToInstall (repository opts) bs
+  bitraverse pure (reportDeps (beQuiet ss) . first (map T.unpack) . partitionPkgs) pkgs
   where reportDeps True  = uncurry reportListOfDeps
         reportDeps False = uncurry (reportPkgsToInstall . T.unpack $ label opts)
 
@@ -167,10 +165,6 @@ reportListOfDeps rps bps = liftIO $ do
 
 reportNonPackages :: [String] -> Aura ()
 reportNonPackages = badReport reportNonPackages_1
-
--- reportIgnoredPackages :: [String] -> Aura ()
--- reportIgnoredPackages pkgs = asks langOf >>= \lang ->
---   printList yellow cyan (reportIgnoredPackages_1 lang) pkgs
 
 reportUnneededPackages :: [String] -> Aura ()
 reportUnneededPackages pkgs = asks langOf >>= \lang ->

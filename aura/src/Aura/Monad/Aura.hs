@@ -37,12 +37,10 @@ import Control.Monad.Reader
 
 ---
 
--- | The Aura Monad. Functions of note:
--- pure    : yields a successful value.
--- (>>=)   : fails on the first error.
--- liftIO  : Perform intermittent IO using `liftIO`.
--- ask     : Obtain run-time settings.
--- runAura : Unwraps an Aura action. Must be passed `Settings` as well.
+-- | The Aura Monad, the main effect type for this program.
+-- This used to contain an `ExceptT` but no longer does, meaning
+-- that a function that yields some `Aura a` will almost certainly
+-- succeed. Functions that can fail will return `Aura (Either Failure a)`.
 newtype Aura a = Aura { runA :: ReaderT Settings IO a }
   deriving ( Functor, Applicative, Monad, MonadReader Settings, MonadIO )
 

@@ -1,3 +1,5 @@
+{-# LANGUAGE MultiWayIf #-}
+
 {-
 
 Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
@@ -33,8 +35,8 @@ import Aura.Settings.Base
 import Aura.State
 import Aura.Utils (optionalPrompt)
 import BasePrelude
+import Data.Bitraversable
 import Shelly
-import Utilities (either')
 
 ---
 
@@ -50,9 +52,5 @@ cleanStates' :: Int -> Aura (Either Failure ())
 cleanStates' n = do
   ss   <- ask
   okay <- optionalPrompt ss $ cleanStates_2 n
-  if not okay
-     then fmap Right . warn . cleanStates_3 $ langOf ss
-     else do
-       estates <- getStateFiles
-       either' estates (pure . Left) $ \states ->
-         fmap Right . shelly . traverse_ rm . drop n . reverse $ states
+  if | not okay  -> fmap Right . warn . cleanStates_3 $ langOf ss
+     | otherwise -> getStateFiles >>= bitraverse pure (shelly . traverse_ rm . drop n . reverse)

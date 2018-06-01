@@ -43,10 +43,11 @@ import           Aura.Time
 import           Aura.Utils (printList)
 import           Aura.Utils.Numbers
 import           BasePrelude hiding (Version, FilePath)
+import           Data.Bitraversable
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import           Shelly hiding (time)
-import           Utilities (list, either', getSelection, readFileUTF8)
+import           Utilities (list, getSelection, readFileUTF8)
 
 ---
 
@@ -106,18 +107,17 @@ saveState = do
 
 -- | Does its best to restore a state chosen by the user.
 restoreState :: Aura (Either Failure ())
-restoreState = do
-  ss    <- ask
-  curr  <- currentState
-  esfs  <- getStateFiles
-  fmap join . either' esfs (pure . Left) $ \sfs -> do
-    past  <- liftIO $ selectState sfs >>= readState
-    cache <- shelly . cacheContents $ cachePathOf ss
-    let (rein, remo) = compareStates past curr
-        (okay, nope) = partition (`M.member` cache) rein
-        message      = restoreState_1 $ langOf ss
-    unless (null nope) $ printList red cyan message (map (T.unpack . _spName) nope)
-    Right <$> reinstallAndRemove (mapMaybe (`M.lookup` cache) okay) remo
+restoreState = getStateFiles >>= fmap join . bitraverse pure f
+  where f sfs = do
+          ss    <- ask
+          past  <- liftIO $ selectState sfs >>= readState
+          curr  <- currentState
+          cache <- shelly . cacheContents $ cachePathOf ss
+          let (rein, remo) = compareStates past curr
+              (okay, nope) = partition (`M.member` cache) rein
+              message      = restoreState_1 $ langOf ss
+          unless (null nope) $ printList red cyan message (map (T.unpack . _spName) nope)
+          reinstallAndRemove (mapMaybe (`M.lookup` cache) okay) remo
 
 -- TODO Bad bad string conversion
 selectState :: [FilePath] -> IO FilePath

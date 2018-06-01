@@ -65,9 +65,7 @@ build p = do
   ss     <- ask
   notify $ buildPackages_1 (T.unpack $ baseNameOf p) (langOf ss)
   result <- shelly $ build' ss p
-  case result of
-    Left err -> buildFail p err
-    Right fs -> pure $ Right fs
+  either (buildFail p) (pure . Right) result
 
 -- | Should never throw a Shelly Exception. In theory all errors
 -- will come back via the @Language -> String@ function.
@@ -76,7 +74,7 @@ build' ss p = do
   cd $ buildPathOf ss
   withTmpDir $ \curr -> do
     cd curr
-    getBuildScripts p user >>= either (pure . Left) f
+    getBuildScripts p user >>= fmap join . bitraverse pure f
   where user = buildUserOf ss
         f bs = do
           cd bs
