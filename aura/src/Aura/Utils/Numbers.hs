@@ -27,7 +27,7 @@ module Aura.Utils.Numbers
 
 import BasePrelude hiding (Version, (<|>))
 import Text.ParserCombinators.Parsec
-import Utilities (eitherToMaybe, asInt)
+import Utilities (asInt)
 
 ---
 
@@ -39,7 +39,7 @@ data Version = Version { unitsOf    :: [Unit]
 data Unit = IUnit Int | SUnit String deriving (Eq, Show, Read, Ord)
 
 version :: String -> Maybe Version
-version = eitherToMaybe . parse versionNumber ""
+version = either (const Nothing) Just . parse versionNumber ""
 
 versionNumber :: Parser Version
 versionNumber = Version <$> units <*> optionMaybe revision

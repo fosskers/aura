@@ -25,14 +25,13 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Utilities where
 
-import           BasePrelude hiding (handle)
-import           Control.Monad.Trans (liftIO, MonadIO)
+import           BasePrelude hiding (FilePath, handle)
+import           Control.Monad.Trans (MonadIO)
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
-import           Shelly hiding (FilePath)
-import           System.Directory (doesFileExist)
-import           System.IO
+import           Shelly
+import           System.IO hiding (FilePath)
 import           Text.Regex.PCRE ((=~))
 
 ---
@@ -92,12 +91,6 @@ tripleSnd (_, b, _) = b
 tripleThrd :: (a, b, c) -> c
 tripleThrd (_, _, c) = c
 
----------
--- EITHER
----------
-eitherToMaybe :: Either a b -> Maybe b
-eitherToMaybe = either (const Nothing) Just
-
 -------
 -- LIST
 -------
@@ -155,7 +148,7 @@ decompress fp file = do
   pure . T.dropEnd 7 $ file
 
 -- | Read a file. This used to enforce UTF8, but no longer does.
-readFileUTF8 :: FilePath -> IO String
+readFileUTF8 :: String -> IO String
 readFileUTF8 name = do
   handle <- openFile name ReadMode
   BS.unpack <$> BS.hGetContents handle
@@ -244,4 +237,4 @@ showCursorCode = csi [] "?25h"
 -- | If a file exists, it performs action `t` on the argument.
 -- | If the file doesn't exist, it performs `f` and returns the argument.
 ifFile :: MonadIO m => (a -> m a) -> m b -> FilePath -> a -> m a
-ifFile t f file x = liftIO (doesFileExist file) >>= bool (f $> x) (t x)
+ifFile t f file x = shelly (test_f file) >>= bool (f $> x) (t x)

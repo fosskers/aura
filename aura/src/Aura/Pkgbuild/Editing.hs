@@ -75,7 +75,7 @@ customizepkg ss b
 customizepkg' :: Buildable -> Sh Buildable
 customizepkg' p = withTmpDir $ \tmp -> do
   cd tmp
-  ifFile (edit $ const customize) (pure ()) (T.unpack $ toTextIgnore conf) p
+  ifFile (edit $ const customize) (pure ()) conf p
   where conf = customizepkgPath </> baseNameOf p
 
 customize :: Sh T.Text
