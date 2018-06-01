@@ -28,7 +28,7 @@ module Aura.Pkgbuild.Records
   , comparePkgbuilds
   ) where
 
-import           Aura.Core (Buildable, baseNameOf, pkgbuildOf)
+import           Aura.Core (Buildable, baseNameOf, pkgbuildOf, _pkgbuild)
 import           Aura.Diff (unidiff)
 import           Aura.Monad.Aura
 import           Aura.Pkgbuild.Base
@@ -48,7 +48,7 @@ hasPkgbuildStored :: MonadIO m => T.Text -> m Bool
 hasPkgbuildStored = shelly . test_f . pkgbuildPath
 
 storePkgbuilds :: MonadIO m => [Buildable] -> m ()
-storePkgbuilds = shelly . traverse_ (\p -> writePkgbuild (baseNameOf p) (pkgbuildOf p))
+storePkgbuilds = shelly . traverse_ (\p -> writePkgbuild (baseNameOf p) (_pkgbuild $ pkgbuildOf p))
 
 readPkgbuild :: MonadIO m => T.Text -> m T.Text
 readPkgbuild = shelly . readfile . pkgbuildPath

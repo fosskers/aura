@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, Rank2Types, TupleSections #-}
+{-# LANGUAGE OverloadedStrings, Rank2Types, MultiWayIf #-}
 
 {-
 
@@ -35,6 +35,7 @@ import           Aura.Build
 import           Aura.Colour.Text
 import           Aura.Core
 import           Aura.Dependencies
+import           Aura.Errors
 import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Pacman
@@ -42,11 +43,12 @@ import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Records
 import           Aura.Settings.Base
 import           Aura.Utils
-import           BasePrelude hiding (catch)
+import           BasePrelude
 import           Control.Concurrent.Async
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Shelly (toTextIgnore)
+import           Utilities (either')
 
 ---
 
@@ -61,21 +63,22 @@ data InstallOptions = InstallOptions
 install :: InstallOptions  -- ^ Options.
         -> [T.Text]        -- ^ Pacman flags.
         -> [T.Text]        -- ^ Package names.
-        -> Aura ()
-install _ _ [] = scoldAndFail install_2
-install opts pacOpts pkgs = ask >>= \ss ->
-  if not $ delMakeDeps ss
-     then install' opts pacOpts pkgs
-     else do  -- `-a` was used.
-       orphansBefore <- orphans
-       install' opts pacOpts pkgs
-       orphansAfter <- orphans
-       let makeDeps = orphansAfter \\ orphansBefore
-       unless (null makeDeps) $ do
-         notify . removeMakeDepsAfter_1 $ langOf ss
-         removePkgs makeDeps pacOpts
+        -> Aura (Either Failure ())
+install _ _ [] = pure $ failure install_2
+install opts pacOpts pkgs = ask >>= f
+  where
+    f ss | not $ delMakeDeps ss = install' opts pacOpts pkgs
+         | otherwise = do -- `-a` was used.
+             orphansBefore <- orphans
+             install' opts pacOpts pkgs
+             orphansAfter <- orphans
+             let makeDeps = orphansAfter \\ orphansBefore
+             if | null makeDeps -> pure $ Right ()
+                | otherwise -> do
+                    notify . removeMakeDepsAfter_1 $ langOf ss
+                    removePkgs makeDeps pacOpts
 
-install' :: InstallOptions -> [T.Text] -> [T.Text] -> Aura ()
+install' :: InstallOptions -> [T.Text] -> [T.Text] -> Aura (Either Failure ())
 install' opts pacOpts pkgs = ask >>= \ss -> do
   unneeded <- if neededOnly ss then catMaybes <$> liftIO (mapConcurrently isInstalled pkgs) else pure []
   let (ignored, notIgnored) = partition (`elem` ignoredPkgsOf ss) pkgs
@@ -84,23 +87,23 @@ install' opts pacOpts pkgs = ask >>= \ss -> do
   -- reportIgnoredPackages ignored  -- 2014 December  7 @ 14:52
   reportUnneededPackages $ map T.unpack unneeded
   toBuild <- lookupPkgs (installLookup opts ss) toInstall >>= pkgbuildDiffs
-  if null toBuild
-     then if neededOnly ss && unneeded == pkgs
-             then notify . install_2 $ langOf ss
-             else scoldAndFail install_2
-     else do
-    notify . install_5 $ langOf ss
-    allPkgs <- catch (depsToInstall (repository opts) toBuild) depCheckFailure
-    let (repoPkgs, buildPkgs) = partitionPkgs allPkgs
-    reportPkgsToInstall (T.unpack $ label opts) (map T.unpack repoPkgs) buildPkgs
-    unless (dryRun ss) $ do
-      continue <- optionalPrompt ss install_3
-      if not continue
-         then scoldAndFail install_4
-         else do
-        repoInstall pacOpts repoPkgs
-        storePkgbuilds buildPkgs
-        traverse_ (buildAndInstall pacOpts) buildPkgs
+  -- TODO Should this (==) check be on Sets?
+  if | null toBuild && neededOnly ss && unneeded == pkgs -> fmap Right . notify . install_2 $ langOf ss
+     | null toBuild -> pure $ failure install_2
+     | otherwise -> do
+         notify . install_5 $ langOf ss
+         eallPkgs <- depsToInstall (repository opts) toBuild
+         either' eallPkgs (pure . Left) $ \allPkgs -> do
+           let (repoPkgs, buildPkgs) = partitionPkgs allPkgs
+           reportPkgsToInstall (T.unpack $ label opts) (map T.unpack repoPkgs) buildPkgs
+           if | dryRun ss -> pure $ Right ()
+              | otherwise -> do
+                  continue <- optionalPrompt ss install_3
+                  if | not continue -> pure $ failure install_4
+                     | otherwise    -> do
+                         repoInstall pacOpts repoPkgs
+                         storePkgbuilds buildPkgs
+                         buildAndInstall pacOpts buildPkgs
 
 confirmIgnored :: [String] -> Aura [String]
 confirmIgnored ps = do
@@ -116,34 +119,38 @@ lookupPkgs f pkgs = do
   where lookupBuild pkg = maybe (Left pkg) Right <$> f pkg
         markExplicit b  = b { isExplicit = True }
 
-depsToInstall :: Repository -> [Buildable] -> Aura [Package]
+depsToInstall :: Repository -> [Buildable] -> Aura (Either Failure [Package])
 depsToInstall repo bs = do
   ss <- ask
   traverse (packageBuildable ss) bs >>= resolveDeps repo
 
-depCheckFailure :: String -> Aura a
-depCheckFailure m = asks langOf >>= scold . install_1 >> failure m
-
-repoInstall :: [T.Text] -> [T.Text] -> Aura ()
-repoInstall _       [] = pure ()
+repoInstall :: [T.Text] -> [T.Text] -> Aura (Either Failure ())
+repoInstall _       [] = pure $ Right ()
 repoInstall pacOpts ps = pacman $ ["-S", "--asdeps"] <> pacOpts <> ps
 
-buildAndInstall :: [T.Text] -> Buildable -> Aura ()
-buildAndInstall pacOpts pkg = buildPackages [pkg] >>= installPkgFiles pacOpts' . map toTextIgnore
-  where pacOpts' = if isExplicit pkg then pacOpts else "--asdeps" : pacOpts
+buildAndInstall :: [T.Text] -> [Buildable] -> Aura (Either Failure ())
+buildAndInstall _ []           = pure $ Right ()
+buildAndInstall pacOpts (b:bs) = do
+  eps <- buildPackages [b]
+  fmap join . for eps $ \ps -> do
+    installPkgFiles pacOpts' $ map toTextIgnore ps
+    buildAndInstall pacOpts bs
+  where pacOpts' = if isExplicit b then pacOpts else "--asdeps" : pacOpts
 
 ------------
 -- REPORTING
 ------------
 -- | Display dependencies.
-displayPkgDeps :: InstallOptions -> [T.Text] -> Aura ()
-displayPkgDeps _ [] = pure ()
+displayPkgDeps :: InstallOptions -> [T.Text] -> Aura (Either Failure ())
+displayPkgDeps _ [] = pure $ Right ()
 displayPkgDeps opts ps = do
   ss    <- ask
   quiet <- asks beQuiet
   bs    <- catMaybes <$> liftIO (mapConcurrently (installLookup opts ss) ps)
   pkgs  <- depsToInstall (repository opts) bs
-  reportDeps quiet . first (map T.unpack) $ partitionPkgs pkgs
+  case pkgs of
+    Left err    -> pure $ Left err
+    Right pkgs' -> fmap Right . reportDeps quiet . first (map T.unpack) $ partitionPkgs pkgs'
   where reportDeps True  = uncurry reportListOfDeps
         reportDeps False = uncurry (reportPkgsToInstall . T.unpack $ label opts)
 
@@ -182,7 +189,7 @@ pkgbuildDiffs ps = ask >>= check
             if not isStored
                then warn $ reportPkgbuildDiffs_1 (T.unpack name) lang
                else do
-                 let new = pkgbuildOf p
+                 let new = _pkgbuild $ pkgbuildOf p
                  old <- readPkgbuild name
                  case comparePkgbuilds (T.unpack name) (T.unpack old) (T.unpack new) of
                    "" -> notify $ reportPkgbuildDiffs_2 (T.unpack name) lang

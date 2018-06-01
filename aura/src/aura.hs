@@ -39,6 +39,7 @@ import           Aura.Commands.C as C
 import           Aura.Commands.L as L
 import           Aura.Commands.O as O
 import           Aura.Core
+import           Aura.Errors
 import           Aura.Flags
 import           Aura.Languages
 import           Aura.Logo
@@ -46,8 +47,7 @@ import           Aura.Monad.Aura
 import           Aura.Pacman
 import           Aura.Settings.Base
 import           Aura.Settings.Enable
-import           Aura.Utils
-import           BasePrelude hiding (Version, catch)
+import           BasePrelude hiding (Version)
 import qualified Data.Text as T
 import           Shelly (fromText, shelly, run_)
 import           Utilities
@@ -82,10 +82,10 @@ execute :: (UserInput, Settings) -> IO (Either String ())
 execute ((flags, input, pacOpts), ss) = do
   let flags' = filter notSettingsFlag flags
   when (Debug `elem` flags) $ debugOutput ss
-  runAura (executeOpts (flags', input, pacOpts)) ss
+  first (($ langOf ss) . _failure) <$> runAura (executeOpts (flags', input, pacOpts)) ss
 
 exit :: Either String () -> IO a
-exit (Left e)  = putStrLn e *> exitFailure
+exit (Left e)  = scold e *> exitFailure
 exit (Right _) = exitSuccess
 
 -- | After determining what Flag was given, dispatches a function.
@@ -93,57 +93,58 @@ exit (Right _) = exitSuccess
 -- below will work properly.
 -- If no matches on Aura flags are found, the flags are assumed to be
 -- pacman's.
-executeOpts :: UserInput -> Aura ()
+executeOpts :: UserInput -> Aura (Either Failure ())
 executeOpts ([], _, []) = executeOpts ([Help], [], [])
 executeOpts (flags, input, pacOpts) =
   case sort flags of
     (AURInstall:fs) ->
         case fs of
-          []             -> trueRoot (sudo $ A.install (map T.pack pacOpts) (map T.pack input))
-          [Upgrade]      -> trueRoot (sudo $ A.upgradeAURPkgs (map T.pack pacOpts) (map T.pack input))
-          [Info]         -> A.aurPkgInfo input
-          [Search]       -> A.aurPkgSearch (map T.pack input)
+          []             -> fmap (join . join) . trueRoot . sudo $ A.install (map T.pack pacOpts) (map T.pack input)
+          [Upgrade]      -> fmap (join . join) . trueRoot . sudo $ A.upgradeAURPkgs (map T.pack pacOpts) (map T.pack input)
+          [Info]         -> Right <$> A.aurPkgInfo input
+          [Search]       -> Right <$> A.aurPkgSearch (map T.pack input)
           [ViewDeps]     -> A.displayPkgDeps (map T.pack input)
-          [Download]     -> A.downloadTarballs (map T.pack input)
-          [GetPkgbuild]  -> A.displayPkgbuild input
-          (Refresh:fs')  -> sudo $ syncAndContinue (fs', input, pacOpts)
-          _              -> scoldAndFail executeOpts_1
+          [Download]     -> Right <$> A.downloadTarballs (map T.pack input)
+          [GetPkgbuild]  -> Right <$> A.displayPkgbuild input
+          (Refresh:fs')  -> fmap join . sudo $ syncAndContinue (fs', input, pacOpts)
+          _              -> pure $ failure executeOpts_1
     (SaveState:fs) ->
         case fs of
           []             -> sudo B.saveState
-          [Clean]        -> sudo $ B.cleanStates input
-          [RestoreState] -> sudo B.restoreState
-          _              -> scoldAndFail executeOpts_1
+          [Clean]        -> fmap join . sudo $ B.cleanStates input
+          [RestoreState] -> join <$> sudo B.restoreState
+          _              -> pure $ failure executeOpts_1
     (Cache:fs) ->
         case fs of
-          []             -> sudo $ C.downgradePackages (map T.pack pacOpts) (map T.pack input)
-          [Clean]        -> sudo $ C.cleanCache input
-          [Clean, Clean]  -> sudo C.cleanNotSaved
-          [Search]       -> C.searchCache (map T.pack input)
-          [CacheBackup]  -> sudo $ C.backupCache (map (fromText . T.pack) input)
-          _              -> scoldAndFail executeOpts_1
+          []             -> fmap join . sudo $ C.downgradePackages (map T.pack pacOpts) (map T.pack input)
+          [Clean]        -> fmap join . sudo $ C.cleanCache input
+          [Clean, Clean] -> join <$> sudo C.cleanNotSaved
+          [Search]       -> fmap Right . C.searchCache $ map T.pack input
+          [CacheBackup]  -> fmap join . sudo $ C.backupCache (map (fromText . T.pack) input)
+          _              -> pure $ failure executeOpts_1
     (LogFile:fs) ->
         case fs of
-          []       -> ask >>= L.viewLogFile . logFilePathOf
-          [Search] -> ask >>= liftIO . flip L.searchLogFile input
-          [Info]   -> L.logInfoOnPkg input
-          _        -> scoldAndFail executeOpts_1
+          []       -> ask >>= fmap Right . L.viewLogFile . logFilePathOf
+          [Search] -> ask >>= fmap Right . liftIO . flip L.searchLogFile input
+          [Info]   -> Right <$> L.logInfoOnPkg input
+          _        -> pure $ failure executeOpts_1
     (Orphans:fs) ->
         case fs of
           []        -> O.displayOrphans (map T.pack input)
-          [Abandon] -> sudo $ orphans >>= flip removePkgs (map T.pack pacOpts)
-          _         -> scoldAndFail executeOpts_1
-    [ViewConf]  -> viewConfFile
-    [Languages] -> displayOutputLanguages
-    [Help]      -> printHelpMsg (map T.pack pacOpts)
-    [Version]   -> getVersionInfo >>= animateVersionMsg . map T.unpack
-    _ -> catch (pacman $ map T.pack pacOpts <> map T.pack hijackedFlags <> map T.pack input) pacmanFailure
+          [Abandon] -> fmap join . sudo $ orphans >>= flip removePkgs (map T.pack pacOpts)
+          _         -> pure $ failure executeOpts_1
+    [ViewConf]  -> Right <$> viewConfFile
+    [Languages] -> Right <$> displayOutputLanguages
+    [Help]      -> printHelpMsg $ map T.pack pacOpts
+    [Version]   -> getVersionInfo >>= fmap Right . animateVersionMsg . map T.unpack
+    _ -> pacman $ map T.pack pacOpts <> map T.pack hijackedFlags <> map T.pack input
     where hijackedFlags = reconvertFlags hijackedFlagMap flags
 
 -- | `-y` was included with `-A`. Sync database before continuing.
-syncAndContinue :: UserInput -> Aura ()
-syncAndContinue (flags, input, pacOpts) =
-  syncDatabase (map T.pack pacOpts) *> executeOpts (AURInstall:flags, input, pacOpts)
+syncAndContinue :: UserInput -> Aura (Either Failure ())
+syncAndContinue (flags, input, pacOpts) = do
+  syncDatabase (map T.pack pacOpts)
+  executeOpts (AURInstall:flags, input, pacOpts)
 
 ----------
 -- GENERAL
@@ -156,11 +157,11 @@ displayOutputLanguages = do
   asks langOf >>= notify . displayOutputLanguages_1
   liftIO $ traverse_ print allLanguages
 
-printHelpMsg :: [T.Text] -> Aura ()
+printHelpMsg :: [T.Text] -> Aura (Either Failure ())
 printHelpMsg [] = do
   ss <- ask
   pacmanHelp <- getPacmanHelpMsg
-  liftIO . putStrLn . getHelpMsg ss . map T.unpack $ pacmanHelp
+  fmap Right . liftIO . putStrLn . getHelpMsg ss . map T.unpack $ pacmanHelp
 printHelpMsg pacOpts = pacman $ pacOpts <> ["-h"]
 
 getHelpMsg :: Settings -> [String] -> String

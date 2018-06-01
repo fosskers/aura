@@ -23,15 +23,15 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Utils where
 
-import           Aura.Colour.Text
-import           Aura.Languages (Language, whitespace, yesNoMessage, yesRegex)
-import           Aura.Monad.Aura
-import           Aura.Settings.Base
-import           Aura.Utils.Numbers
-import           BasePrelude hiding (Version)
-import           System.IO (stdout, hFlush)
-import           Text.Regex.PCRE ((=~))
-import           Utilities (postPad)
+import Aura.Colour.Text
+import Aura.Languages (Language, whitespace, yesNoMessage, yesRegex)
+import Aura.Monad.Aura
+import Aura.Settings.Base
+import Aura.Utils.Numbers
+import BasePrelude hiding (Version)
+import System.IO (stdout, hFlush)
+import Text.Regex.PCRE ((=~))
+import Utilities (postPad)
 
 ---
 
@@ -60,13 +60,9 @@ printList' :: Colouror -> Colouror -> String -> [String] -> String
 printList' tc ic m is = putStrLnA' tc m <> colouredItems
     where colouredItems = is >>= \i -> ic i <> "\n"
 
-scoldAndFail :: (Language -> String) -> Aura a
-scoldAndFail msg = asks langOf >>= failure . putStrA' red . msg
-
 ----------
 -- PROMPTS
 ----------
-
 -- | Takes a prompt message and a regex of valid answer patterns.
 yesNoPrompt :: MonadIO m => Language -> String -> m Bool
 yesNoPrompt lang msg = do

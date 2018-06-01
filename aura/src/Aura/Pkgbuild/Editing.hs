@@ -47,10 +47,10 @@ customizepkgPath = "/etc/customizepkg.d/"
 -- package building.
 edit :: (FilePath -> Sh a) -> Buildable -> Sh Buildable
 edit f p = do
-  writefile filename $ pkgbuildOf p
+  writefile filename . _pkgbuild $ pkgbuildOf p
   void $ f filename
   newPB <- readfile "PKGBUILD"
-  pure p { pkgbuildOf = newPB }
+  pure p { pkgbuildOf = Pkgbuild newPB }
     where filename = "PKGBUILD"
 
 -- | Allow the user to edit the PKGBUILD if they asked to do so.

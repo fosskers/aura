@@ -26,6 +26,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Commands.O where
 
 import           Aura.Core (orphans, sudo)
+import           Aura.Errors
 import           Aura.Monad.Aura
 import           Aura.Pacman (pacman)
 import           BasePrelude
@@ -34,9 +35,9 @@ import qualified Data.Text.IO as T
 
 ---
 
-displayOrphans :: [T.Text] -> Aura ()
-displayOrphans []   = orphans >>= liftIO . traverse_ T.putStrLn
+displayOrphans :: [T.Text] -> Aura (Either Failure ())
+displayOrphans []   = orphans >>= fmap Right . liftIO . traverse_ T.putStrLn
 displayOrphans pkgs = adoptPkg pkgs
 
-adoptPkg :: [T.Text] -> Aura ()
-adoptPkg pkgs = sudo (pacman $ ["-D", "--asexplicit"] <> pkgs)
+adoptPkg :: [T.Text] -> Aura (Either Failure ())
+adoptPkg pkgs = fmap join . sudo . pacman $ ["-D", "--asexplicit"] <> pkgs

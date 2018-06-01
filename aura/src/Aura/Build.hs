@@ -29,6 +29,7 @@ module Aura.Build
   ) where
 
 import           Aura.Core
+import           Aura.Errors
 import           Aura.Languages
 import           Aura.MakePkg
 import           Aura.Monad.Aura
@@ -48,29 +49,29 @@ srcPkgStore :: FilePath
 srcPkgStore = "/var/cache/aura/src"
 
 -- | Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
-installPkgFiles :: [T.Text] -> [T.Text] -> Aura ()
-installPkgFiles _ []          = pure ()
+installPkgFiles :: [T.Text] -> [T.Text] -> Aura (Either Failure ())
+installPkgFiles _ []          = pure $ Right ()
 installPkgFiles pacOpts files = ask >>= shelly . checkDBLock >> pacman (["-U"] <> pacOpts <> files)
 
 -- | All building occurs within temp directories in the package cache,
 -- or in a location specified by the user with flags.
-buildPackages :: [Buildable] -> Aura [FilePath]
-buildPackages = fmap concat . traverse build
+buildPackages :: [Buildable] -> Aura (Either Failure [FilePath])
+buildPackages = fmap (fmap concat . sequenceA) . traverse build
 
 -- | Handles the building of Packages. Fails nicely.
 -- Assumed: All dependencies are already installed.
-build :: Buildable -> Aura [FilePath]
+build :: Buildable -> Aura (Either Failure [FilePath])
 build p = do
   ss     <- ask
   notify $ buildPackages_1 (T.unpack $ baseNameOf p) (langOf ss)
   result <- shelly $ build' ss p
   case result of
     Left err -> buildFail p err
-    Right fs -> pure fs
+    Right fs -> pure $ Right fs
 
 -- | Should never throw a Shelly Exception. In theory all errors
 -- will come back via the @Language -> String@ function.
-build' :: Settings -> Buildable -> Sh (Either (Language -> String) [FilePath])
+build' :: Settings -> Buildable -> Sh (Either Failure [FilePath])
 build' ss p = do
   cd $ buildPathOf ss
   withTmpDir $ \curr -> do
@@ -87,12 +88,12 @@ build' ss p = do
           when (keepSource ss) $ makepkgSource user >>= traverse_ moveToSourcePath
           pure paths
 
-getBuildScripts :: Buildable -> User -> Sh (Either (Language -> String) FilePath)
+getBuildScripts :: Buildable -> User -> Sh (Either Failure FilePath)
 getBuildScripts pkg user = do
   currDir <- toTextIgnore <$> pwd
   scriptsDir <- chown user currDir [] *> liftIO (buildScripts pkg (T.unpack currDir))
   case scriptsDir of
-    Nothing -> pure . Left . buildFail_7 . T.unpack $ baseNameOf pkg
+    Nothing -> pure . failure . buildFail_7 . T.unpack $ baseNameOf pkg
     Just sd -> do
       let sd' = T.pack sd
       chown user sd' ["-R"]
@@ -102,19 +103,17 @@ getBuildScripts pkg user = do
 -- overwrite what's been downloaded before calling `makepkg`.
 overwritePkgbuild :: Settings -> Buildable -> Sh ()
 overwritePkgbuild ss p = when (mayHotEdit ss || useCustomizepkg ss) $
-  writefile "PKGBUILD" $ pkgbuildOf p
+  writefile "PKGBUILD" . _pkgbuild $ pkgbuildOf p
 
 -- | Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
-buildFail :: Buildable -> (Language -> String) -> Aura [a]
-buildFail p err = do
+buildFail :: Buildable -> Failure -> Aura (Either Failure [a])
+buildFail p (Failure err) = do
   ss <- ask
   scold $ buildFail_1 (T.unpack $ baseNameOf p) (langOf ss)
   scold . err $ langOf ss
   response <- optionalPrompt ss buildFail_6
-  if response
-     then pure []
-     else scoldAndFail buildFail_5
+  pure $ bool (failure buildFail_5) (Right []) response
 
 -- | If the user wasn't running Aura with `-x`, then this will
 -- show them the suppressed makepkg output.

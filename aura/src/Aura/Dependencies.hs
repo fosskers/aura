@@ -31,7 +31,6 @@ import           Aura.Errors
 import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Settings.Base
-import           Aura.Utils (scoldAndFail)
 import           BasePrelude
 import           Control.Concurrent.Async
 import           Control.Concurrent.STM.TVar
@@ -42,15 +41,13 @@ import           Utilities (tripleFst)
 
 ---
 
-resolveDeps :: Repository -> [Package] -> Aura [Package]
+resolveDeps :: Repository -> [Package] -> Aura (Either Failure [Package])
 resolveDeps repo ps = do
-  ss  <- ask
-  tv  <- liftIO $ newTVarIO M.empty
-  etp <- liftIO $ resolveDeps' ss tv repo ps
-  m   <- liftIO $ readTVarIO tv
-  case etp of
-    []   -> pure . sortInstall $ M.elems m
-    bads -> scoldAndFail $ missingPkg_2 bads
+  ss <- ask
+  tv <- liftIO $ newTVarIO M.empty
+  de <- liftIO $ resolveDeps' ss tv repo ps
+  m  <- liftIO $ readTVarIO tv
+  pure . bool (failure $ missingPkg_2 de) (Right . sortInstall $ M.elems m) $ null de
 
 resolveDeps' :: Settings -> TVar (M.Map T.Text Package) -> Repository -> [Package] -> IO [DepError]
 resolveDeps' ss tv repo ps = concat <$> mapConcurrently f ps

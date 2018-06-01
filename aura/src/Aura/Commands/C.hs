@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE MultiWayIf #-}
 
 -- Handles all `-C` operations.
 
@@ -34,6 +35,7 @@ module Aura.Commands.C
 
 import           Aura.Cache
 import           Aura.Core
+import           Aura.Errors
 import           Aura.Languages
 import           Aura.Logo (raiseCursorBy)
 import           Aura.Monad.Aura
@@ -52,17 +54,18 @@ import           Utilities
 
 -- | Interactive. Gives the user a choice as to exactly what versions
 -- they want to downgrade to.
-downgradePackages :: [T.Text] -> [T.Text] -> Aura ()
-downgradePackages _ []         = pure ()
+downgradePackages :: [T.Text] -> [T.Text] -> Aura (Either Failure ())
+downgradePackages _ []         = pure $ Right ()
 downgradePackages pacOpts pkgs = do
-  ss        <- ask
+  ss    <- ask
   let cachePath = cachePathOf ss
-  reals     <- shelly $ pkgsInCache ss pkgs
+  reals <- shelly $ pkgsInCache ss pkgs
   reportBadDowngradePkgs . map T.unpack $ pkgs \\ reals
-  unless (null reals) $ do
-    cache   <- shelly $ cacheContents cachePath
-    choices <- traverse (fmap T.pack . getDowngradeChoice cache) $ map T.unpack reals
-    pacman $ "-U" : pacOpts <> map (toTextIgnore . (cachePath </>)) choices
+  if | null reals -> pure $ Right ()
+     | otherwise -> do
+         cache   <- shelly $ cacheContents cachePath
+         choices <- traverse (fmap T.pack . getDowngradeChoice cache) $ map T.unpack reals
+         pacman $ "-U" : pacOpts <> map (toTextIgnore . (cachePath </>)) choices
 
 getDowngradeChoice :: Cache -> String -> Aura String
 getDowngradeChoice cache pkg = do
@@ -85,24 +88,24 @@ searchCache ps = do
   liftIO . traverse_ putStrLn . sortPkgs $ map T.unpack matches
 
 -- The destination folder must already exist for the back-up to begin.
-backupCache :: [FilePath] -> Aura ()
-backupCache []      = scoldAndFail backupCache_1
+backupCache :: [FilePath] -> Aura (Either Failure ())
+backupCache []      = pure $ failure backupCache_1
 backupCache (dir:_) = do
   exists <- shelly $ test_d dir
   if not exists
-     then scoldAndFail backupCache_3
-     else confirmBackup dir >>= backup dir
+     then pure $ failure backupCache_3
+     else do
+     ecache <- confirmBackup dir
+     either' ecache (pure . Left) $ fmap Right . backup dir
 
-confirmBackup :: FilePath -> Aura Cache
+confirmBackup :: FilePath -> Aura (Either Failure Cache)
 confirmBackup dir = do
   ss    <- ask
   cache <- shelly . cacheContents $ cachePathOf ss
   notify $ backupCache_4 (T.unpack $ toTextIgnore dir) (langOf ss)
   notify $ backupCache_5 (M.size cache) (langOf ss)
   okay  <- optionalPrompt ss backupCache_6
-  if not okay
-     then scoldAndFail backupCache_7
-     else pure cache
+  pure $ bool (failure backupCache_7) (Right cache) okay
 
 backup :: FilePath -> Cache -> Aura ()
 backup dir cache = do
@@ -120,28 +123,27 @@ copyAndNotify dir (p:ps) n = asks cachePathOf >>= \cachePath -> do
   copyAndNotify dir ps $ n + 1
 
 -- Acts as a filter for the input to `cleanCache`.
-cleanCache :: [String] -> Aura ()
+cleanCache :: [String] -> Aura (Either Failure ())
 cleanCache [] = cleanCache' 0
 cleanCache (input:_)  -- Ignores all but first input element.
   | all isDigit input = cleanCache' $ read input
-  | otherwise         = scoldAndFail $ preCleanCache_1 input
+  | otherwise         = pure . failure $ preCleanCache_1 input
 
 -- Keeps a certain number of package files in the cache according to
 -- a number provided by the user. The rest are deleted.
-cleanCache' :: Int -> Aura ()
+cleanCache' :: Int -> Aura (Either Failure ())
 cleanCache' toSave
-    | toSave < 0  = scoldAndFail cleanCache_1
-    | toSave == 0 = asks langOf >>= warn . cleanCache_2 >> pacman ["-Scc"]  -- Needed?
-    | otherwise   = do
-        ss <- ask
-        warn . cleanCache_3 toSave $ langOf ss
-        okay <- optionalPrompt ss cleanCache_4
-        if not okay
-           then scoldAndFail cleanCache_5
-           else clean toSave
+  | toSave < 0  = pure $ failure cleanCache_1
+  | toSave == 0 = asks langOf >>= warn . cleanCache_2 >> pacman ["-Scc"]  -- Needed?
+  | otherwise   = do
+      ss <- ask
+      warn . cleanCache_3 toSave $ langOf ss
+      okay <- optionalPrompt ss cleanCache_4
+      bool (pure $ failure cleanCache_5) (Right <$> clean toSave) okay
 
 clean :: Int -> Aura ()
-clean toSave = ask >>= \ss -> do
+clean toSave = do
+  ss <- ask
   notify . cleanCache_6 $ langOf ss
   cache <- shelly . cacheContents $ cachePathOf ss
   let files     = map T.unpack $ M.elems cache
@@ -152,16 +154,18 @@ clean toSave = ask >>= \ss -> do
 
 -- | Only package files with a version not in any PkgState will be
 -- removed.
-cleanNotSaved :: Aura ()
+cleanNotSaved :: Aura (Either Failure ())
 cleanNotSaved = do
-  ss     <- ask
+  ss <- ask
   notify . cleanNotSaved_1 $ langOf ss
-  states <- getStateFiles >>= liftIO . traverse readState
-  let path = cachePathOf ss
-  cache  <- shelly $ cacheContents path
-  let duds = M.filterWithKey (\p _ -> any (inState p) states) cache
-  whenM (optionalPrompt ss $ cleanNotSaved_2 $ M.size duds) $
-        shelly $ traverse_ rm (map (path </>) $ M.elems duds)
+  esfs <- getStateFiles
+  either' esfs (pure . Left) $ \sfs -> do
+    states <- liftIO $ traverse readState sfs
+    let path = cachePathOf ss
+    cache  <- shelly $ cacheContents path
+    let duds = M.filterWithKey (\p _ -> any (inState p) states) cache
+    fmap Right . whenM (optionalPrompt ss $ cleanNotSaved_2 $ M.size duds) $
+      shelly $ traverse_ rm (map (path </>) $ M.elems duds)
 
 -- Typically takes the contents of the package cache as an argument.
 groupByName :: [String] -> [[String]]

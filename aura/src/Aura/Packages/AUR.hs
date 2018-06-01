@@ -49,7 +49,7 @@ import           Utilities (decompress)
 
 aurLookup :: MonadIO m => Settings -> T.Text -> m (Maybe Buildable)
 aurLookup ss name = do
-  junk <- fmap (makeBuildable m name) <$> pkgbuild' m name
+  junk <- fmap (makeBuildable m name . Pkgbuild) <$> pkgbuild' m name
   sequence junk
   where m = managerOf ss
 

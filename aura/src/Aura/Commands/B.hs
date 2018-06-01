@@ -26,28 +26,33 @@ module Aura.Commands.B
     ) where
 
 import Aura.Core (warn)
+import Aura.Errors
 import Aura.Languages
 import Aura.Monad.Aura
 import Aura.Settings.Base
 import Aura.State
-import Aura.Utils (scoldAndFail, optionalPrompt)
+import Aura.Utils (optionalPrompt)
 import BasePrelude
 import Shelly
+import Utilities (either')
 
 ---
 
 -- Pretty similar to `-Cc`...
-cleanStates :: [String] -> Aura ()
+-- TODO: `optparse-applicative` will remove the need here to manually verify
+-- the input.
+cleanStates :: [String] -> Aura (Either Failure ())
 cleanStates []        = cleanStates' 0
 cleanStates (input:_) | all isDigit input = cleanStates' $ read input
-                      | otherwise = scoldAndFail cleanStates_1
+                      | otherwise = pure $ failure cleanStates_1
 
-cleanStates' :: Int -> Aura ()
+cleanStates' :: Int -> Aura (Either Failure ())
 cleanStates' n = do
   ss   <- ask
   okay <- optionalPrompt ss $ cleanStates_2 n
   if not okay
-     then warn . cleanStates_3 $ langOf ss
+     then fmap Right . warn . cleanStates_3 $ langOf ss
      else do
-       states <- getStateFiles
-       shelly . traverse_ rm . map (stateCache </>) . drop n . reverse $ states
+       estates <- getStateFiles
+       either' estates (pure . Left) $ \states ->
+         fmap Right . shelly . traverse_ rm . drop n . reverse $ states

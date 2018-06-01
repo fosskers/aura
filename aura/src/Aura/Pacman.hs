@@ -28,7 +28,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Pacman
   ( -- * Calling Pacman
     pacman
-  , pacmanOutput, pacmanSuccess, pacmanFailure
+  , pacmanOutput, pacmanSuccess
   , getPacmanCmd
   , syncDatabase
     -- * Paths
@@ -47,10 +47,10 @@ module Aura.Pacman
   ) where
 
 import           Aura.Cache
+import           Aura.Errors
 import           Aura.Languages (pacmanFailure_1)
 import           Aura.Monad.Aura
 import           Aura.Settings.Base (pacmanCmdOf)
-import           Aura.Utils (scoldAndFail)
 import           BasePrelude
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
@@ -116,13 +116,18 @@ getLogFilePath confFile = singleEntry confFile "LogFile" defaultLogFile
 ----------
 -- ACTIONS
 ----------
-pacman :: [T.Text] -> Aura ()
-pacman args = asks pacmanCmdOf >>= \cmd ->
-  flush *> shelly (runHandles (fromText cmd) args [ InHandle Inherit
-                                                  , OutHandle Inherit
-                                                  , ErrorHandle Inherit ] n)
-     where flush   = liftIO $ hFlush stdout
-           n _ _ _ = pure ()
+pacman :: [T.Text] -> Aura (Either Failure ())
+pacman args = do
+  cmd <- asks pacmanCmdOf
+  flush
+  shelly . errExit False $ do
+    runHandles (fromText cmd) args [ InHandle Inherit
+                                   , OutHandle Inherit
+                                   , ErrorHandle Inherit ] n
+    code <- lastExitCode
+    pure . bool (failure pacmanFailure_1) (Right ()) $ code == 0
+    where flush   = liftIO $ hFlush stdout
+          n _ _ _ = pure ()
 
 -- | Run some `pacman` process, but only care about whether it succeeded.
 pacmanSuccess :: MonadIO m => [T.Text] -> m Bool
@@ -130,15 +135,11 @@ pacmanSuccess args = fmap success . shelly . quietSh $ run_ "pacman" args
     where success (ExitSuccess, _) = True
           success _ = False
 
--- | Handler for pacman call failures.
-pacmanFailure :: String -> Aura a
-pacmanFailure _ = scoldAndFail pacmanFailure_1
-
 -- | Runs pacman silently and returns only the stdout.
 pacmanOutput :: MonadIO m => [T.Text] -> m T.Text
 pacmanOutput = fmap snd . shelly . quietSh . run "pacman"
 
-syncDatabase :: [T.Text] -> Aura ()
+syncDatabase :: [T.Text] -> Aura (Either Failure ())
 syncDatabase pacOpts = pacman $ "-Sy" : pacOpts
 
 getPacmanHelpMsg :: MonadIO m => m [T.Text]

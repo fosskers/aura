@@ -29,6 +29,7 @@ module Aura.MakePkg
   , makepkgConfFile
   ) where
 
+import           Aura.Errors
 import           Aura.Languages
 import           Aura.Settings.Base (Settings(..), Suppression(..), suppressMakepkg, makepkgFlagsOf)
 import           BasePrelude hiding (FilePath)
@@ -46,14 +47,14 @@ makepkgCmd = "/usr/bin/makepkg"
 
 -- | Given the current user name, build the package of whatever
 -- directory we're in.
-makepkg :: Settings -> User -> Sh (Either (Language -> String) [FilePath])
+makepkg :: Settings -> User -> Sh (Either Failure [FilePath])
 makepkg ss user = fmap g . f $ make cmd opts
   where (cmd, opts) = runStyle user $ makepkgFlagsOf ss
         f = case suppressMakepkg ss of
               BeQuiet   -> print_stdout False . print_stderr False
               BeVerbose -> id
         g (ExitSuccess, fs) = Right fs
-        g _ = Left buildFail_8
+        g _ = failure buildFail_8
 
 -- | Actually build the package, guarding on exceptions.
 -- Yields the filepaths of the built package tarballs.

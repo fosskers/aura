@@ -45,11 +45,7 @@ import           Utilities (searchLines, loudSh)
 ---
 
 viewLogFile :: FilePath -> Aura ()
-viewLogFile logFilePath = do
-  (ec, _) <- shelly . loudSh $ run_ "less" [toTextIgnore logFilePath]
-  case ec of
-    ExitSuccess -> pure ()
-    _ -> failure ""
+viewLogFile logFilePath = void . shelly . loudSh $ run_ "less" [toTextIgnore logFilePath]
 
 -- Very similar to `searchCache`. But is this worth generalizing?
 searchLogFile :: Settings -> [String] -> IO ()

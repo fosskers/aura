@@ -34,18 +34,19 @@ module Aura.State
 import           Aura.Cache
 import           Aura.Colour.Text (cyan, red)
 import           Aura.Core (warn, notify)
+import           Aura.Errors
 import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Pacman (pacmanOutput, pacman)
 import           Aura.Settings.Base
 import           Aura.Time
-import           Aura.Utils (printList, scoldAndFail)
+import           Aura.Utils (printList)
 import           Aura.Utils.Numbers
 import           BasePrelude hiding (Version, FilePath)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import           Shelly hiding (time)
-import           Utilities (getSelection, readFileUTF8)
+import           Utilities (list, either', getSelection, readFileUTF8)
 
 ---
 
@@ -90,17 +91,9 @@ toChangeAndRemove old curr = M.foldrWithKey status ([], []) $ pkgsOf curr
 olds :: PkgState -> PkgState -> [SimplePkg]
 olds old curr = map (uncurry SimplePkg) . M.assocs $ M.difference (pkgsOf old) (pkgsOf curr)
 
-getStateFiles :: Aura [FilePath]
-getStateFiles = do
-  files <- shelly getStateFiles'
-  case files of
-    [] -> scoldAndFail restoreState_2
-    fs -> pure fs
-
-getStateFiles' :: Sh [FilePath]
-getStateFiles' = do
-  mkdir_p stateCache
-  sort <$> ls stateCache
+getStateFiles :: MonadIO m => m (Either Failure [FilePath])
+getStateFiles = list (failure restoreState_2) Right <$> shelly f
+  where f = mkdir_p stateCache >> fmap sort (ls stateCache)
 
 -- | In writing the first state file, the `states` directory is created
 -- automatically.
@@ -112,17 +105,19 @@ saveState = do
   asks langOf >>= notify . saveState_1
 
 -- | Does its best to restore a state chosen by the user.
-restoreState :: Aura ()
+restoreState :: Aura (Either Failure ())
 restoreState = do
   ss    <- ask
   curr  <- currentState
-  past  <- getStateFiles >>= liftIO . (selectState >=> readState)
-  cache <- shelly . cacheContents $ cachePathOf ss
-  let (rein, remo) = compareStates past curr
-      (okay, nope) = partition (`M.member` cache) rein
-      message      = restoreState_1 $ langOf ss
-  unless (null nope) $ printList red cyan message (map (T.unpack . _spName) nope)
-  reinstallAndRemove (mapMaybe (`M.lookup` cache) okay) remo
+  esfs  <- getStateFiles
+  fmap join . either' esfs (pure . Left) $ \sfs -> do
+    past  <- liftIO $ selectState sfs >>= readState
+    cache <- shelly . cacheContents $ cachePathOf ss
+    let (rein, remo) = compareStates past curr
+        (okay, nope) = partition (`M.member` cache) rein
+        message      = restoreState_1 $ langOf ss
+    unless (null nope) $ printList red cyan message (map (T.unpack . _spName) nope)
+    Right <$> reinstallAndRemove (mapMaybe (`M.lookup` cache) okay) remo
 
 -- TODO Bad bad string conversion
 selectState :: [FilePath] -> IO FilePath
@@ -135,8 +130,8 @@ readState name = read <$> readFileUTF8 (T.unpack . toTextIgnore $ stateCache </>
 -- How does pacman do simultaneous removals and upgrades?
 -- I've seen it happen plenty of times.
 -- | `reinstalling` can mean true reinstalling, or just altering.
-reinstallAndRemove :: [T.Text] -> [T.Text] -> Aura ()
-reinstallAndRemove [] [] = asks langOf >>= warn . reinstallAndRemove_1
+reinstallAndRemove :: [T.Text] -> [T.Text] -> Aura (Either Failure ())
+reinstallAndRemove [] [] = asks langOf >>= fmap Right . warn . reinstallAndRemove_1
 reinstallAndRemove down remo
     | null remo = reinstall
     | null down = remove

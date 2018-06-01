@@ -21,8 +21,17 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Errors where
 
-import BasePrelude (String)
+import Aura.Languages.Base (Language)
+import BasePrelude
 
 ---
 
 data DepError = NonExistant String | VerConflict String | Ignored String
+
+-- | Some failure message that when given the current runtime `Language`
+-- will produce a human-friendly error.
+newtype Failure = Failure { _failure :: Language -> String }
+
+-- | A short-hand for expressing failure.
+failure :: (Language -> String) -> Either Failure b
+failure = Left . Failure

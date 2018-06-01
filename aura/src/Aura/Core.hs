@@ -24,6 +24,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Core where
 
 import           Aura.Colour.Text
+import           Aura.Errors
 import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Pacman
@@ -42,7 +43,7 @@ import           Utilities
 -- TYPES
 --------
 
-type Pkgbuild = T.Text
+newtype Pkgbuild = Pkgbuild { _pkgbuild :: T.Text }
 
 data VersionDemand = LessThan String
                    | AtLeast String
@@ -118,17 +119,17 @@ parseDep s = Dep (T.pack name) (getVersionDemand comp ver)
 -- THE WORK
 -----------
 -- | Action won't be allowed unless user is root, or using sudo.
-sudo :: Aura () -> Aura ()
+sudo :: Aura a -> Aura (Either Failure a)
 sudo action = do
   hasPerms <- asks (hasRootPriv . environmentOf)
-  if hasPerms then action else scoldAndFail mustBeRoot_1
+  if hasPerms then Right <$> action else pure $ failure mustBeRoot_1
 
 -- | Stop the user if they are the true Root. Building as isn't allowed
 -- as of makepkg v4.2.
-trueRoot :: Aura () -> Aura ()
+trueRoot :: Aura a -> Aura (Either Failure a)
 trueRoot action = ask >>= \ss ->
   if not (isTrueRoot $ environmentOf ss) || buildUserOf ss /= User "root"
-    then action else scoldAndFail trueRoot_3
+    then Right <$> action else pure $ failure trueRoot_3
 
 -- `-Qm` yields a list of sorted values.
 -- | A list of non-prebuilt packages installed on the system.
@@ -146,19 +147,13 @@ isDevelPkg :: T.Text -> Bool
 isDevelPkg pkg = any (`T.isSuffixOf` pkg) suffixes
   where suffixes = ["-git", "-hg", "-svn", "-darcs", "-cvs", "-bzr"]
 
--- This could be:
--- isIgnored :: String -> Aura Bool
--- isIgnored pkg = asks (elem pkg . ignoredPkgsOf)
--- isIgnored :: String -> [String] -> Bool
--- isIgnored pkg toIgnore = pkg `elem` toIgnore
-
 -- | Returns what it was given if the package is already installed.
 -- Reasoning: Using raw bools can be less expressive.
 isInstalled :: MonadIO m => T.Text -> m (Maybe T.Text)
 isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", pkg]
 
-removePkgs :: [T.Text] -> [T.Text] -> Aura ()
-removePkgs [] _         = pure ()
+removePkgs :: [T.Text] -> [T.Text] -> Aura (Either Failure ())
+removePkgs [] _         = pure $ Right ()
 removePkgs pkgs pacOpts = pacman $ ["-Rsu"] <> pkgs <> pacOpts
 
 -- TODO Make whatever calls this concurrent?

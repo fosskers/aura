@@ -37,7 +37,7 @@ module Aura.Commands.A
 
 import           Aura.Colour.Text
 import           Aura.Core
-import           Aura.Install (InstallOptions(..))
+import           Aura.Errors
 import qualified Aura.Install as I
 import           Aura.Languages
 import           Aura.Monad.Aura
@@ -58,14 +58,14 @@ import           Text.Regex.PCRE ((=~))
 ---
 
 installOptions :: I.InstallOptions
-installOptions = I.InstallOptions { label         = "AUR"
-                                  , installLookup = aurLookup
-                                  , repository    = pacmanRepo <> aurRepo }
+installOptions = I.InstallOptions { I.label         = "AUR"
+                                  , I.installLookup = aurLookup
+                                  , I.repository    = pacmanRepo <> aurRepo }
 
-install :: [T.Text] -> [T.Text] -> Aura ()
+install :: [T.Text] -> [T.Text] -> Aura (Either Failure ())
 install = I.install installOptions
 
-upgradeAURPkgs :: [T.Text] -> [T.Text] -> Aura ()
+upgradeAURPkgs :: [T.Text] -> [T.Text] -> Aura (Either Failure ())
 upgradeAURPkgs pacOpts pkgs = do
   ss <- ask
   let notIgnored p = T.pack (splitName $ T.unpack p) `notElem` ignoredPkgsOf ss
@@ -93,7 +93,7 @@ auraCheck toUpgrade = if "aura" `elem` toUpgrade
                          then ask >>= \ss -> optionalPrompt ss auraCheck_1
                          else pure False
 
-auraUpgrade :: [T.Text] -> Aura ()
+auraUpgrade :: [T.Text] -> Aura (Either Failure ())
 auraUpgrade pacOpts = install pacOpts ["aura"]
 
 develPkgCheck :: Aura [T.Text]
@@ -156,7 +156,7 @@ renderSearch ss r (i, e) = searchResult
             Nothing -> green $ T.unpack $ aurVersionOf i
           s = c bForeground (" [installed]" :: String)
 
-displayPkgDeps :: [T.Text] -> Aura ()
+displayPkgDeps :: [T.Text] -> Aura (Either Failure ())
 displayPkgDeps = I.displayPkgDeps installOptions
 
 downloadTarballs :: [T.Text] -> Aura ()

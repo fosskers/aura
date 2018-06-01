@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colin@fosskers.ca>
+Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -22,40 +22,29 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.Monad.Aura
-    ( Aura
-    , MonadIO
-    , MonadReader
-    , runAura
-    , failure
-    , catch
-    , liftIO
-    , ask
-    , asks
-    ) where
+  ( Aura
+  , MonadIO
+  , MonadReader
+  , runAura
+  , liftIO
+  , ask
+  , asks
+  ) where
 
 import Aura.Settings.Base (Settings)
-import BasePrelude hiding (catch)
-import Control.Monad.Except
+import BasePrelude
 import Control.Monad.Reader
 
 ---
 
 -- | The Aura Monad. Functions of note:
 -- pure    : yields a successful value.
--- failure : yields an error and bypasses all other operations.
--- catch   : catches an error.
 -- (>>=)   : fails on the first error.
 -- liftIO  : Perform intermittent IO using `liftIO`.
 -- ask     : Obtain run-time settings.
 -- runAura : Unwraps an Aura action. Must be passed `Settings` as well.
-newtype Aura a = A { runA :: ExceptT String (ReaderT Settings IO) a }
-  deriving ( Functor, Applicative, Monad, MonadError String, MonadReader Settings, MonadIO )
+newtype Aura a = Aura { runA :: ReaderT Settings IO a }
+  deriving ( Functor, Applicative, Monad, MonadReader Settings, MonadIO )
 
-runAura :: Aura a -> Settings -> IO (Either String a)
-runAura = runReaderT . runExceptT . runA
-
-failure :: String -> Aura a
-failure = throwError
-
-catch :: Aura a -> (String -> Aura a) -> Aura a
-catch a h = catchError a h
+runAura :: Aura a -> Settings -> IO a
+runAura = runReaderT . runA
