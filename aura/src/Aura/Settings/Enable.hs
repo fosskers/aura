@@ -35,8 +35,7 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)
-import           Shelly (fromText, toTextIgnore)
-import           System.Directory (doesDirectoryExist)
+import           Shelly (shelly, test_d, fromText, toTextIgnore)
 import           System.Environment (getEnvironment)
 import           Utilities
 
@@ -117,5 +116,5 @@ checkLang Nothing env   = langFromLocale $ getLocale env
 checkLang (Just lang) _ = lang
 
 -- | Defaults to the cache path if no (legal) build path was given.
-checkBuildPath :: FilePath -> FilePath -> IO FilePath
-checkBuildPath bp bp' = bool bp' bp <$> doesDirectoryExist bp
+checkBuildPath :: MonadIO m => FilePath -> FilePath -> m FilePath
+checkBuildPath bp bp' = bool bp' bp <$> shelly (test_d . fromText $ T.pack bp)

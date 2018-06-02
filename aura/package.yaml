@@ -41,7 +41,6 @@ dependencies:
   - aur >= 6 && < 7
   - bytestring
   - containers
-  - directory
   - filepath
   - http-client >= 0.5 && < 0.6
   - http-client-tls >= 0.3 && < 0.4
@@ -49,17 +48,14 @@ dependencies:
   - mtl >= 2.2 && < 2.3
   - network-uri >= 2.6 && < 2.7
   - parsec >= 3.1 && < 3.2
-  - process
   - regex-pcre >= 0.94 && < 0.95
   - shelly >= 1.7 && < 1.9
   - split >= 0.2 && < 0.3
   - stm
   - system-filepath
-  - temporary
   - text >= 1.2 && < 1.3
   - time
-  - transformers >= 0.5 && < 0.6
-  - unix
+  - versions >= 3.3 && < 3.4
 
 executables:
   aura:

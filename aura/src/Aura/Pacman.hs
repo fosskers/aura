@@ -56,7 +56,6 @@ import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import qualified Shelly as Sh
 import           Shelly hiding (FilePath, cmd)
-import           System.Directory (doesFileExist)
 import           System.IO (hFlush, stdout)
 import           Text.Regex.PCRE ((=~))
 import           Utilities
@@ -66,7 +65,7 @@ import           Utilities
 defaultCmd :: T.Text
 defaultCmd = "pacman"
 
-powerPillCmd :: T.Text
+powerPillCmd :: Sh.FilePath
 powerPillCmd = "/usr/bin/powerpill"
 
 pacmanConfFile :: Sh.FilePath
@@ -78,13 +77,13 @@ defaultLogFile = "/var/log/pacman.log"
 lockFile :: Sh.FilePath
 lockFile = "/var/lib/pacman/db.lck"
 
-getPacmanCmd :: Environment -> Bool -> IO T.Text
+getPacmanCmd :: MonadIO m => Environment -> Bool -> m T.Text
 getPacmanCmd env nopp =
   case M.lookup "PACMAN" env of
     Just cmd -> pure cmd
     Nothing  -> do  -- Left space for more options later.
-      powerPill <- doesFileExist $ T.unpack powerPillCmd
-      if | powerPill && not nopp -> pure powerPillCmd
+      powerPill <- shelly $ test_f powerPillCmd
+      if | powerPill && not nopp -> pure $ toTextIgnore powerPillCmd
          | otherwise -> pure defaultCmd
 
 getPacmanConf :: MonadIO m => m T.Text
