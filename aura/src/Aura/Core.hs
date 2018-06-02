@@ -122,7 +122,7 @@ parseDep s = Dep (T.pack name) (getVersionDemand comp ver)
 sudo :: Aura a -> Aura (Either Failure a)
 sudo action = do
   hasPerms <- asks (hasRootPriv . environmentOf)
-  if hasPerms then Right <$> action else pure $ failure mustBeRoot_1
+  bool (pure $ failure mustBeRoot_1) (Right <$> action) $ hasPerms
 
 -- | Stop the user if they are the true Root. Building as isn't allowed
 -- as of makepkg v4.2.
@@ -156,8 +156,6 @@ removePkgs :: [T.Text] -> [T.Text] -> Aura (Either Failure ())
 removePkgs [] _         = pure $ Right ()
 removePkgs pkgs pacOpts = pacman $ ["-Rsu"] <> pkgs <> pacOpts
 
--- TODO Make whatever calls this concurrent?
--- Moving to a libalpm backend will make this less hacked.
 -- | True if a dependency is satisfied by an installed package.
 isSatisfied :: MonadIO m => Dep -> m Bool
 isSatisfied (Dep name ver) = T.null <$> pacmanOutput ["-T", name <> T.pack (show ver)]
@@ -174,9 +172,6 @@ checkDBLock ss = do
 
 renderColour :: Colouror -> (Language -> String) -> Aura String
 renderColour c msg = asks (c . msg . langOf)
-
-say :: MonadIO m => String -> m ()
-say = putStrLnA noColour
 
 notify :: MonadIO m => String -> m ()
 notify = putStrLnA green
