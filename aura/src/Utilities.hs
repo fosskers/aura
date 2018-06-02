@@ -58,11 +58,6 @@ hardBreak p xs = (firstHalf, secondHalf')
           secondHalf  = dropWhile (not . p) xs
           secondHalf' = if null secondHalf then [] else tail secondHalf
 
--- | Traditional whitespace stripping.
-lStrip, rStrip :: String -> String
-lStrip = dropWhile (`elem` whitespaces)
-rStrip = dropWhileEnd (`elem` whitespaces)
-
 -- The Int argument is the final length of the padded String,
 -- not the length of the pad. Is that stupid?
 postPad :: String -> String -> Int -> String
@@ -105,7 +100,7 @@ list _ f xs   = f xs
 replaceByPatt :: [Pattern] -> String -> String
 replaceByPatt [] line = line
 replaceByPatt ((p, t):ps) line | p == m    = replaceByPatt ps (b <> t <> a)
-                              | otherwise = replaceByPatt ps line
+                               | otherwise = replaceByPatt ps line
                          where (b, m, a) = line =~ p :: (String, String, String)
 
 searchLines :: Regex -> [String] -> [String]
@@ -129,11 +124,6 @@ getSelection choiceLabels = do
   case userChoice `lookup` choices of
     Just valid -> pure valid
     Nothing    -> getSelection choiceLabels  -- Ask again.
-
--- | Print a list of Strings with a given interval in between.
-timedMessage :: Int -> [String] -> IO ()
-timedMessage delay = traverse_ printMessage
-    where printMessage msg = putStr msg *> hFlush stdout *> threadDelay delay
 
 -- | Opens the editor of the user's choice.
 openEditor :: T.Text -> T.Text -> Sh ()

@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012, 2013, 2014 Colin Woodbury <colin@fosskers.ca>
+Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -25,7 +25,6 @@ module Aura.Utils where
 
 import Aura.Colour.Text
 import Aura.Languages (Language, whitespace, yesNoMessage, yesRegex)
-import Aura.Monad.Aura
 import Aura.Settings.Base
 import Aura.Utils.Numbers
 import BasePrelude hiding (Version)
@@ -89,14 +88,6 @@ splitName = fst . splitNameAndVer
 
 splitVer :: String -> String
 splitVer = snd . splitNameAndVer
-
-groupPkgs :: (Foldable t, Monoid a, Monoid b, Monoid c) =>
-             t (a, b, c) -> (a, b, c)
-groupPkgs = foldl groupPkgs' (mempty, mempty, mempty)
-
-groupPkgs' :: (Monoid a, Monoid b, Monoid c) =>
-              (a, b, c) -> (a, b, c) -> (a, b, c)
-groupPkgs' (ps, as, os) (p, a, o) = (p <> ps, a <> as, o <> os)
 
 sortPkgs :: [String] -> [String]
 sortPkgs = sortBy verNums

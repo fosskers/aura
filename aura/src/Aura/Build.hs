@@ -113,14 +113,6 @@ buildFail p (Failure err) = do
   response <- optionalPrompt ss buildFail_6
   pure $ bool (failure buildFail_5) (Right []) response
 
--- | If the user wasn't running Aura with `-x`, then this will
--- show them the suppressed makepkg output.
-
--- displayBuildErrors :: Error -> Aura ()
--- displayBuildErrors errors = ask >>= \ss -> when (suppressMakepkg ss == BeQuiet) $ do
---   putStrA red (displayBuildErrors_1 $ langOf ss)
---   liftIO (timedMessage 1000000 ["3.. ", "2.. ", "1..\n"] *> putStrLn errors)
-
 -- | Moves a file to the pacman package cache and returns its location.
 moveToCachePath :: Settings -> FilePath -> Sh FilePath
 moveToCachePath ss p = cp p newName $> newName
