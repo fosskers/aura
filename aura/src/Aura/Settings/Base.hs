@@ -41,7 +41,7 @@ data Settings = Settings { inputOf         :: [Text]
                          , pacOptsOf       :: [Text]
                          , otherOptsOf     :: [Text]
                          , managerOf       :: Manager
-                         , environmentOf   :: Environment
+                         , envOf           :: Environment
                          , buildUserOf     :: User
                          , langOf          :: Language
                          , pacmanCmdOf     :: Text

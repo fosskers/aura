@@ -58,6 +58,7 @@ data InstallOptions = InstallOptions
                       , installLookup :: forall m. MonadIO m => Settings -> T.Text -> m (Maybe Buildable)
                       , repository    :: Repository }
 
+-- TODO These lists should be Sets, to guarantee that their contents are unique.
 -- | High level 'install' command. Handles installing
 -- dependencies.
 install :: InstallOptions  -- ^ Options.
@@ -88,7 +89,6 @@ install' opts pacOpts pkgs = do
   -- reportIgnoredPackages ignored  -- 2014 December  7 @ 14:52
   reportUnneededPackages $ map T.unpack unneeded
   toBuild <- lookupPkgs (installLookup opts ss) toInstall >>= pkgbuildDiffs
-  -- TODO Should this (==) check be on Sets?
   if | null toBuild && neededOnly ss && unneeded == pkgs -> fmap Right . notify . install_2 $ langOf ss
      | null toBuild -> pure $ failure install_2
      | otherwise -> do

@@ -25,7 +25,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Utilities where
 
-import           BasePrelude hiding (FilePath, handle)
+import           BasePrelude hiding (FilePath)
 import           Control.Monad.Trans (MonadIO)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T

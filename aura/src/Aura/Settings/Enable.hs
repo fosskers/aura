@@ -57,7 +57,7 @@ getSettings lang (auraFlags, input, pacOpts) = do
                   , pacOptsOf       = map T.pack pacOpts
                   , otherOptsOf     = map (T.pack . show) auraFlags
                   , managerOf       = manager
-                  , environmentOf   = environment
+                  , envOf           = environment
                   , buildUserOf     = User bu
                   , langOf          = language
                   , pacmanCmdOf     = pmanCommand
@@ -86,7 +86,7 @@ getSettings lang (auraFlags, input, pacOpts) = do
 debugOutput :: Settings -> IO ()
 debugOutput ss = do
   let yn a = if a then "Yes!" else "No."
-      env  = environmentOf ss
+      env  = envOf ss
   traverse_ T.putStrLn [ "User              => " <> fromMaybe "Unknown!" (M.lookup "USER" env)
                        , "True User         => " <> fromMaybe "Unknown!" (getTrueUser env)
                        , "Build User        => " <> _user (buildUserOf ss)

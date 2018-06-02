@@ -120,15 +120,14 @@ parseDep s = Dep (T.pack name) (getVersionDemand comp ver)
 -----------
 -- | Action won't be allowed unless user is root, or using sudo.
 sudo :: Aura a -> Aura (Either Failure a)
-sudo action = do
-  hasPerms <- asks (hasRootPriv . environmentOf)
-  bool (pure $ failure mustBeRoot_1) (Right <$> action) $ hasPerms
+sudo action =
+  asks (hasRootPriv . envOf) >>= bool (pure $ failure mustBeRoot_1) (Right <$> action)
 
 -- | Stop the user if they are the true Root. Building as isn't allowed
 -- as of makepkg v4.2.
 trueRoot :: Aura a -> Aura (Either Failure a)
 trueRoot action = ask >>= \ss ->
-  if not (isTrueRoot $ environmentOf ss) || buildUserOf ss /= User "root"
+  if not (isTrueRoot $ envOf ss) || buildUserOf ss /= User "root"
     then Right <$> action else pure $ failure trueRoot_3
 
 -- `-Qm` yields a list of sorted values.
