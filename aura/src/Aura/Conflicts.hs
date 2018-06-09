@@ -25,12 +25,15 @@ import           Aura.Core
 import           Aura.Errors
 import           Aura.Languages
 import           Aura.Settings.Base
-import           Aura.Utils.Numbers (version)
 import           BasePrelude
 import qualified Data.Text as T
 import           Text.Regex.PCRE ((=~))
 
 ---
+
+-- TODO Get rid of this
+version :: String -> Int
+version = undefined
 
 -- Questions to be answered in conflict checks:
 -- 1. Is the package ignored in `pacman.conf`?

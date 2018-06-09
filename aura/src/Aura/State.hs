@@ -40,23 +40,23 @@ import           Aura.Monad.Aura
 import           Aura.Pacman (pacmanOutput, pacman)
 import           Aura.Settings.Base
 import           Aura.Time
+import           Aura.Types
 import           Aura.Utils (printList)
-import           Aura.Utils.Numbers
 import           BasePrelude hiding (Version, FilePath)
 import           Data.Bitraversable
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
+import           Data.Versions
 import           Shelly hiding (time)
 import           Utilities (list, getSelection)
 
 ---
 
 data PkgState = PkgState { timeOf :: Time
-                         , pkgsOf :: M.Map T.Text (Maybe Version) }
-                deriving (Eq, Show, Read)
+                         , pkgsOf :: M.Map T.Text Versioning }
+                deriving (Eq, Show)
 
--- ([toAlter], [toRemove])
-type StateDiff = ([SimplePkg], [T.Text])
+data StateDiff = StateDiff { _toAlter :: [SimplePkg], _toRemove :: [T.Text] }
 
 stateCache :: FilePath
 stateCache = "/var/cache/aura/states"
@@ -66,23 +66,22 @@ inState (SimplePkg n v) s = case M.lookup n $ pkgsOf s of
                               Nothing -> False
                               Just v' -> v == v'
 
-rawCurrentState :: MonadIO m => m [T.Text]
-rawCurrentState = T.lines <$> pacmanOutput ["-Q"]
+rawCurrentState :: MonadIO m => m [SimplePkg]
+rawCurrentState = mapMaybe simplepkg' . T.lines <$> pacmanOutput ["-Q"]
 
 currentState :: MonadIO m => m PkgState
 currentState = do
   pkgs <- rawCurrentState
   time <- liftIO localTime
-  let namesVers    = map (pair . T.words) pkgs
-      pair (x:y:_) = (x, version $ T.unpack y)
-  pure . PkgState time . M.fromAscList $ namesVers
+  pure . PkgState time . M.fromAscList $ map (\(SimplePkg n v) -> (n, v)) pkgs
 
 compareStates :: PkgState -> PkgState -> StateDiff
-compareStates old curr = first (olds old curr <>) $ toChangeAndRemove old curr
+compareStates old curr = tcar { _toAlter = olds old curr <> _toAlter tcar }
+  where tcar = toChangeAndRemove old curr
 
 -- | All packages that were changed and newly installed.
 toChangeAndRemove :: PkgState -> PkgState -> StateDiff
-toChangeAndRemove old curr = M.foldrWithKey status ([], []) $ pkgsOf curr
+toChangeAndRemove old curr = uncurry StateDiff . M.foldrWithKey status ([], []) $ pkgsOf curr
     where status k v (d, r) = case M.lookup k (pkgsOf old) of
                                Nothing -> (d, k : r)
                                Just v' | v == v' -> (d, r)
@@ -112,8 +111,8 @@ restoreState = getStateFiles >>= fmap join . bitraverse pure f
           ss    <- ask
           past  <- liftIO $ selectState sfs >>= readState
           curr  <- currentState
-          cache <- shelly . cacheContents $ cachePathOf ss
-          let (rein, remo) = compareStates past curr
+          Cache cache <- shelly . cacheContents $ cachePathOf ss
+          let StateDiff rein remo = compareStates past curr
               (okay, nope) = partition (`M.member` cache) rein
               message      = restoreState_1 $ langOf ss
           unless (null nope) $ printList red cyan message (map (T.unpack . _spName) nope)
@@ -123,14 +122,14 @@ restoreState = getStateFiles >>= fmap join . bitraverse pure f
 selectState :: [FilePath] -> IO FilePath
 selectState = fmap (fromText . T.pack) . getSelection . map (T.unpack . toTextIgnore)
 
--- TODO Using `read` here is terrible.
+-- TODO Using `read` here is terrible. Make it JSON.
 readState :: MonadIO m => FilePath -> m PkgState
-readState name = read . T.unpack <$> shelly (readfile $ stateCache </> name)
+readState name = undefined -- read . T.unpack <$> shelly (readfile $ stateCache </> name)
 
 -- How does pacman do simultaneous removals and upgrades?
 -- I've seen it happen plenty of times.
 -- | `reinstalling` can mean true reinstalling, or just altering.
-reinstallAndRemove :: [T.Text] -> [T.Text] -> Aura (Either Failure ())
+reinstallAndRemove :: [PackagePath] -> [T.Text] -> Aura (Either Failure ())
 reinstallAndRemove [] [] = asks langOf >>= fmap Right . warn . reinstallAndRemove_1
 reinstallAndRemove down remo
     | null remo = reinstall
@@ -138,4 +137,4 @@ reinstallAndRemove down remo
     | otherwise = reinstall *> remove
     where remove    = pacman $ "-R" : remo
           reinstall = ask >>= \ss ->
-                      pacman $ "-U" : map (toTextIgnore . (cachePathOf ss </>)) down
+                      pacman $ "-U" : map (toTextIgnore . (\pp -> cachePathOf ss </> _pkgpath pp)) down

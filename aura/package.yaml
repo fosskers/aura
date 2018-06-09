@@ -16,9 +16,9 @@ homepage:    https://github.com/aurapm/aura
 license:     GPL-3
 
 extra-source-files:
-  doc/aura.8
-  doc/completions/bashcompletion.sh
-  doc/completions/_aura
+  - doc/aura.8
+  - doc/completions/bashcompletion.sh
+  - doc/completions/_aura
 
 ghc-options:
   - -fwarn-unused-imports
@@ -45,9 +45,9 @@ dependencies:
   - http-client >= 0.5 && < 0.6
   - http-client-tls >= 0.3 && < 0.4
   - http-types >= 0.9 && < 0.13
+  - megaparsec >= 6.4 && < 6.6
   - mtl >= 2.2 && < 2.3
   - network-uri >= 2.6 && < 2.7
-  - parsec >= 3.1 && < 3.2
   - regex-pcre >= 0.94 && < 0.95
   - shelly >= 1.7 && < 1.9
   - split >= 0.2 && < 0.3

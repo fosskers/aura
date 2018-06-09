@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 -- Utility functions specific to Aura
 
 {-
@@ -21,16 +23,27 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Utils where
+module Aura.Utils
+  ( -- * Output
+    putStrLnA
+  , printList
+    -- * User Input
+  , optionalPrompt
+    -- * Fancy String Rendering
+  , entrify
+    -- * Misc. Package Handling
+  , splitNameAndVer
+  ) where
 
-import Aura.Colour.Text
-import Aura.Languages (Language, whitespace, yesNoMessage, yesRegex)
-import Aura.Settings.Base
-import Aura.Utils.Numbers
-import BasePrelude hiding (Version)
-import System.IO (stdout, hFlush)
-import Text.Regex.PCRE ((=~))
-import Utilities (postPad)
+import           Aura.Colour.Text
+import           Aura.Languages (Language, whitespace, yesNoMessage, yesRegex)
+import           Aura.Settings.Base
+import           BasePrelude hiding (Version, try)
+import qualified Data.Text as T
+import           System.IO (stdout, hFlush)
+import           Text.Megaparsec
+import           Text.Regex.PCRE ((=~))
+import           Utilities (postPad)
 
 ---
 
@@ -79,34 +92,15 @@ optionalPrompt ss msg | mustConfirm ss = yesNoPrompt (langOf ss) (msg $ langOf s
 -- MISC
 -------
 
-splitNameAndVer :: String -> (String, String)
-splitNameAndVer pkg = (before, after)
-    where (before, _, after) = pkg =~ "[<>=]+" :: (String, String, String)
-
-splitName :: String -> String
-splitName = fst . splitNameAndVer
-
-splitVer :: String -> String
-splitVer = snd . splitNameAndVer
-
-sortPkgs :: [String] -> [String]
-sortPkgs = sortBy verNums
-    where verNums a b | name a /= name b = compare a b  -- Different pkgs
-                      | otherwise        = compare (ver a) (ver b)
-          name = fst . pkgFileNameAndVer
-          ver  = snd . pkgFileNameAndVer
-
--- Test on:
--- linux-3.2.14-1-x86_64.pkg.tar.xz
--- wine-1.4rc6-1-x86_64.pkg.tar.xz
--- ruby-1.9.3_p125-4-x86_64.pkg.tar.xz
--- NOTE: regex stuff is a little sloppy here.
-pkgFileNameAndVer :: String -> (String, Maybe Version)
-pkgFileNameAndVer p = (name, verNum')
-    where (name, _, _) = p =~ "-[0-9]+" :: (String, String, String)
-          verNum     = p =~ ("[0-9][-0-9a-z._]+-" <> archs) :: String
-          archs      = "(a|x|i)"  -- Representing "(any|x86_64|i686)"
-          verNum'    = version verNum
+-- TODO `Versioning` here?
+splitNameAndVer :: T.Text -> Maybe (T.Text, T.Text)
+splitNameAndVer = either (const Nothing) Just . parse parser "splitNameAndVer"
+  where parser :: Parsec Void T.Text (T.Text, T.Text)
+        parser = do
+          name <- takeWhile1P Nothing (\c -> not $ c == '<' || c == '>' || c == '=')  -- DeMorgan's.
+          takeWhile1P Nothing (\c -> c == '<' || c == '>' || c == '=')
+          ver  <- takeRest
+          pure (name, ver)
 
 -- Format two lists into two nice rows a la `-Qi` or `-Si`.
 entrify :: Settings -> [String] -> [String] -> String

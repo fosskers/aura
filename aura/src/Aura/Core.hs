@@ -43,6 +43,8 @@ import           Utilities
 -- TYPES
 --------
 
+-- TODO Move all these types to the `Types` module
+
 newtype Pkgbuild = Pkgbuild { _pkgbuild :: T.Text }
 
 data VersionDemand = LessThan String
@@ -96,6 +98,10 @@ instance Semigroup Repository where
       Nothing -> repoLookup b ss p
       _       -> pure mpkg
 
+-- TODO Make the version field a proper `Versioning`
+-- | A package installed from the AUR.
+data ForeignPkg = ForeignPkg { _fNameOf :: !T.Text, _fVerOf :: !T.Text }
+
 ---------------------------------
 -- Functions common to `Package`s
 ---------------------------------
@@ -130,21 +136,19 @@ trueRoot action = ask >>= \ss ->
   if not (isTrueRoot $ envOf ss) || buildUserOf ss /= User "root"
     then Right <$> action else pure $ failure trueRoot_3
 
--- `-Qm` yields a list of sorted values.
 -- | A list of non-prebuilt packages installed on the system.
-foreignPackages :: Aura [(T.Text, T.Text)]
-foreignPackages = map fixName . T.lines <$> pacmanOutput ["-Qm"]
+-- `-Qm` yields a list of sorted values.
+foreignPackages :: Aura [ForeignPkg]
+foreignPackages = map (uncurry ForeignPkg . fixName) . T.lines <$> pacmanOutput ["-Qm"]
   where fixName = second T.tail . T.span (/= ' ')
 
 orphans :: Aura [T.Text]
 orphans = T.lines <$> pacmanOutput ["-Qqdt"]
 
 develPkgs :: Aura [T.Text]
-develPkgs = filter isDevelPkg . map fst <$> foreignPackages
-
-isDevelPkg :: T.Text -> Bool
-isDevelPkg pkg = any (`T.isSuffixOf` pkg) suffixes
-  where suffixes = ["-git", "-hg", "-svn", "-darcs", "-cvs", "-bzr"]
+develPkgs = filter isDevelPkg . map _fNameOf <$> foreignPackages
+  where isDevelPkg pkg = any (`T.isSuffixOf` pkg) suffixes
+        suffixes = ["-git", "-hg", "-svn", "-darcs", "-cvs", "-bzr"]
 
 -- | Returns what it was given if the package is already installed.
 -- Reasoning: Using raw bools can be less expressive.

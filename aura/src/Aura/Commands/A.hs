@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE ViewPatterns, MultiWayIf #-}
 
 -- | Handles all `-A` operations
 
@@ -46,11 +46,11 @@ import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings.Base
 import           Aura.Utils
-import           Aura.Utils.Numbers
 import           BasePrelude hiding ((<>))
 import           Data.Semigroup ((<>))
 import qualified Data.Set as S (member, fromList)
 import qualified Data.Text as T
+import           Data.Versions (parseV)
 import           Linux.Arch.Aur
 import           Shelly (whenM, pwd, shelly, toTextIgnore)
 import           Text.Regex.PCRE ((=~))
@@ -68,25 +68,29 @@ install = I.install installOptions
 upgradeAURPkgs :: [T.Text] -> [T.Text] -> Aura (Either Failure ())
 upgradeAURPkgs pacOpts pkgs = do
   ss <- ask
-  let notIgnored p = T.pack (splitName $ T.unpack p) `notElem` ignoredPkgsOf ss
-      lang = langOf ss
+  let !ignores     = map Just $ ignoredPkgsOf ss
+      notIgnored p = fmap fst (splitNameAndVer p) `notElem` ignores
+      lang         = langOf ss
   notify $ upgradeAURPkgs_1 lang
-  foreignPkgs <- filter (\(n, _) -> notIgnored n) <$> foreignPackages
-  aurInfos    <- aurInfo (fst <$> foreignPkgs)
-  let aurPkgs   = filter (\(n, _) -> n `elem` (aurNameOf <$> aurInfos)) foreignPkgs
-      toUpgrade = filter isntMostRecent $ zip aurInfos (snd <$> aurPkgs)
-  auraFirst <- auraCheck (aurNameOf . fst <$> toUpgrade)
-  if auraFirst
-     then auraUpgrade pacOpts
-     else do
-       devel <- develPkgCheck  -- [String]
-       notify $ upgradeAURPkgs_2 lang
-       if null toUpgrade && null devel
-          then warn $ upgradeAURPkgs_3 lang
-          else reportPkgsToUpgrade . map T.unpack $ map prettify toUpgrade <> devel
-       install pacOpts $ (aurNameOf . fst <$> toUpgrade) <> pkgs <> devel
+  foreignPkgs <- filter (notIgnored . _fNameOf) <$> foreignPackages
+  toUpgrade   <- possibleUpdates foreignPkgs
+  auraFirst   <- auraCheck $ map (aurNameOf . fst) toUpgrade
+  if | auraFirst -> auraUpgrade pacOpts
+     | otherwise -> do
+         devel <- develPkgCheck
+         notify $ upgradeAURPkgs_2 lang
+         if | null toUpgrade && null devel -> warn $ upgradeAURPkgs_3 lang
+            | otherwise -> reportPkgsToUpgrade . map T.unpack $ map prettify toUpgrade <> devel
+         install pacOpts $ (aurNameOf . fst <$> toUpgrade) <> pkgs <> devel
            where prettify (p, v) = aurNameOf p <> " : " <> v <> " => " <> aurVersionOf p
 -- TODO: Use `printf` with `prettify` to line up the colons.
+
+possibleUpdates :: [ForeignPkg] -> Aura [(AurInfo, T.Text)]
+possibleUpdates pkgs = do
+  aurInfos <- aurInfo $ map _fNameOf pkgs
+  let !names  = map aurNameOf aurInfos
+      aurPkgs = filter (\(ForeignPkg n _) -> n `elem` names) pkgs
+  pure . filter isntMostRecent . zip aurInfos $ map _fVerOf aurPkgs
 
 auraCheck :: [T.Text] -> Aura Bool
 auraCheck toUpgrade = if "aura" `elem` toUpgrade
@@ -129,7 +133,7 @@ aurPkgSearch :: [T.Text] -> Aura ()
 aurPkgSearch [] = pure ()
 aurPkgSearch (fold -> regex) = do
   ss <- ask
-  db <- S.fromList . fmap fst <$> foreignPackages
+  db <- S.fromList . map _fNameOf <$> foreignPackages
   let t = case truncationOf ss of  -- Can't this go anywhere else?
             None   -> id
             Head n -> take n
@@ -176,8 +180,8 @@ displayPkgbuild ps = do
 
 isntMostRecent :: (AurInfo, T.Text) -> Bool
 isntMostRecent (ai, v) = trueVer > currVer
-  where trueVer = version $ T.unpack $ aurVersionOf ai
-        currVer = version $ T.unpack v
+  where trueVer = either (const Nothing) Just . parseV $ aurVersionOf ai
+        currVer = either (const Nothing) Just . parseV $ v
 
 ------------
 -- REPORTING

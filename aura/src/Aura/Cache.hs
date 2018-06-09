@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE ViewPatterns, TupleSections #-}
 
 -- A library for working with the package cache.
 
@@ -29,39 +29,35 @@ module Aura.Cache
   , cacheContents
   , cacheMatches
   , pkgsInCache
-  , Cache
+  , Cache(..)
   , SimplePkg(..)
   ) where
 
 import           Aura.Settings.Base
-import           Aura.Utils (pkgFileNameAndVer)
-import           Aura.Utils.Numbers (Version)
-import           BasePrelude hiding (Version, FilePath)
+import           Aura.Types
+import           BasePrelude hiding (FilePath)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import           Shelly
 
 ---
 
-data SimplePkg = SimplePkg { _spName :: T.Text, _spVersion :: Maybe Version } deriving (Eq, Ord)
-type Cache     = M.Map SimplePkg T.Text
+newtype Cache = Cache { _cache :: M.Map SimplePkg PackagePath }
 
 defaultPackageCache :: T.Text
 defaultPackageCache = "/var/cache/pacman/pkg/"
 
-simplePkg :: T.Text -> SimplePkg
-simplePkg = uncurry SimplePkg . first T.pack . pkgFileNameAndVer . T.unpack
-
-cache :: [T.Text] -> Cache
-cache = M.fromList . map (simplePkg &&& id)
+-- TODO SILENT DROPS PATHS THAT DON'T PARSE
+cache :: [PackagePath] -> Cache
+cache = Cache . M.fromList . mapMaybe (\p -> (,p) <$> simplepkg p)
 
 cacheContents :: FilePath -> Sh Cache
-cacheContents = fmap cache . lsT
+cacheContents = fmap (cache . map PackagePath) . lsT
 
 pkgsInCache :: Settings -> [T.Text] -> Sh [T.Text]
 pkgsInCache ss ps =
-  nub . filter (`elem` ps) . map _spName . M.keys <$> cacheContents (cachePathOf ss)
+  nub . filter (`elem` ps) . map _spName . M.keys . _cache <$> cacheContents (cachePathOf ss)
 
-cacheMatches :: Settings -> [T.Text] -> Sh [T.Text]
+cacheMatches :: Settings -> [T.Text] -> Sh [PackagePath]
 cacheMatches ss (T.unwords -> input) =
-  filter (T.isInfixOf input) . M.elems <$> cacheContents (cachePathOf ss)
+  filter (T.isInfixOf input . _pkgpath) . M.elems . _cache <$> cacheContents (cachePathOf ss)
