@@ -27,13 +27,9 @@ import           Aura.Languages
 import           Aura.Settings.Base
 import           BasePrelude
 import qualified Data.Text as T
-import           Text.Regex.PCRE ((=~))
+import           Data.Versions (versioning)
 
 ---
-
--- TODO Get rid of this
-version :: String -> Int
-version = undefined
 
 -- Questions to be answered in conflict checks:
 -- 1. Is the package ignored in `pacman.conf`?
@@ -43,7 +39,7 @@ version = undefined
 realPkgConflicts :: Settings -> Package -> Dep -> Maybe DepError
 realPkgConflicts ss pkg dep
     | name `elem` toIgnore                       = Just $ Ignored failMsg1
-    | isVersionConflict reqVer (T.unpack curVer) = Just $ VerConflict failMsg2
+    | isVersionConflict reqVer curVer = Just $ VerConflict failMsg2
     | otherwise                                  = Nothing
     where name     = pkgNameOf pkg
           curVer   = pkgVersionOf pkg
@@ -56,11 +52,11 @@ realPkgConflicts ss pkg dep
 -- Compares a (r)equested version number with a (c)urrent up-to-date one.
 -- The `MustBe` case uses regexes. A dependency demanding version 7.4
 -- SHOULD match as `okay` against version 7.4, 7.4.0.1, or even 7.4.0.1-2.
-isVersionConflict :: VersionDemand -> String -> Bool
+isVersionConflict :: VersionDemand -> T.Text -> Bool
 isVersionConflict Anything _     = False
-isVersionConflict (LessThan r) c = version c >= version r
-isVersionConflict (MoreThan r) c = version c <= version r
-isVersionConflict (MustBe   r) c = not $ c =~ ("^" <> r)
-isVersionConflict (AtLeast  r) c | version c > version r = False
+isVersionConflict (LessThan r) c = first (const ()) (versioning c) >= Right r
+isVersionConflict (MoreThan r) c = first (const ()) (versioning c) <= Right r
+isVersionConflict (MustBe   r) c = first (const ()) (versioning c) /= Right r
+isVersionConflict (AtLeast  r) c | first (const ()) (versioning c) > Right r = False
                                  | isVersionConflict (MustBe r) c = True
                                  | otherwise = False

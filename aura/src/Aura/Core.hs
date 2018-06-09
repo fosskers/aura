@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings, Rank2Types #-}
+{-# LANGUAGE MultiWayIf #-}
 
 {-
 
@@ -33,8 +34,10 @@ import           Aura.Utils
 import           BasePrelude hiding ((<>))
 import           Data.Semigroup
 import qualified Data.Text as T
+import           Data.Versions
 import           Shelly (Sh, test_f)
-import           Text.Regex.PCRE ((=~))
+import           Text.Megaparsec hiding (failure)
+import           Text.Megaparsec.Char
 import           Utilities
 
 ---
@@ -47,18 +50,18 @@ import           Utilities
 
 newtype Pkgbuild = Pkgbuild { _pkgbuild :: T.Text }
 
-data VersionDemand = LessThan String
-                   | AtLeast String
-                   | MoreThan String
-                   | MustBe String
+data VersionDemand = LessThan Versioning
+                   | AtLeast  Versioning
+                   | MoreThan Versioning
+                   | MustBe   Versioning
                    | Anything
-                     deriving (Eq)
+                   deriving (Eq)
 
 instance Show VersionDemand where
-    show (LessThan v) = "<" <> v
-    show (AtLeast v)  = ">=" <> v
-    show (MoreThan v) = ">" <> v
-    show (MustBe  v)  = "=" <> v
+    show (LessThan v) = T.unpack $ "<"  <> prettyV v
+    show (AtLeast  v) = T.unpack $ ">=" <> prettyV v
+    show (MoreThan v) = T.unpack $ ">"  <> prettyV v
+    show (MustBe   v) = T.unpack $ "="  <> prettyV v
     show Anything     = ""
 
 -- | A package to be installed.
@@ -111,6 +114,7 @@ partitionPkgs = partitionEithers . fmap (toEither . pkgInstallTypeOf)
   where toEither (Pacman s) = Left  s
         toEither (Build  b) = Right b
 
+{-
 parseDep :: String -> Dep
 parseDep s = Dep (T.pack name) (getVersionDemand comp ver)
     where patt = "(<|>=|>|=)" :: String
@@ -120,6 +124,23 @@ parseDep s = Dep (T.pack name) (getVersionDemand comp ver)
                                | c == ">"  = MoreThan v
                                | c == "="  = MustBe v
                                | otherwise = Anything
+-}
+
+-- | Return an Either if it failed to parse?
+parseDep :: T.Text -> Maybe Dep
+parseDep = either (const Nothing) Just . parse dep "dep"
+  where dep :: Parsec Void T.Text Dep
+        dep = Dep <$> takeWhile1P Nothing (\c -> c /= '<' && c /= '>' && c /= '=') <*> ver
+
+        ver :: Parsec Void T.Text VersionDemand
+        ver = do
+          end <- atEnd
+          if | end       -> pure Anything
+             | otherwise -> choice [ char '<'    *> fmap LessThan versioning'
+                                   , string ">=" *> fmap AtLeast  versioning'
+                                   , char '>'    *> fmap MoreThan versioning'
+                                   , char '='    *> fmap MustBe   versioning'
+                                   , pure Anything ]
 
 -----------
 -- THE WORK

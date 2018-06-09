@@ -60,8 +60,7 @@ simplepkg (PackagePath t) = uncurry SimplePkg <$> bitraverse f f (parse n "name"
 --     xchat 2.8.8-19
 simplepkg' :: T.Text -> Maybe SimplePkg
 simplepkg' = either (const Nothing) Just . parse parser "name-and-version"
-  where parser = SimplePkg <$> takeWhile1P Nothing (/= ' ') <*> (space *> v)
-        v      = try (fmap Ideal semver' <* eof) <|> try (fmap General version' <* eof) <|> fmap Complex mess'
+  where parser = SimplePkg <$> takeWhile1P Nothing (/= ' ') <*> (space *> versioning')
 
 -- | Filepaths like:
 --   * linux-3.2.14-1-x86_64.pkg.tar.xz

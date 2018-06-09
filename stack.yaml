@@ -4,3 +4,7 @@ packages:
   - aura/
   - aur/
   - arel/
+
+extra-deps:
+  - git: git@gitlab.com:fosskers/versions.git
+    commit: 36cefe931d199556b31f904a50c715d5e49fcf01

@@ -62,7 +62,7 @@ makeBuildable m name pb = do
   pure Buildable
     { baseNameOf   = name
     , pkgbuildOf   = pb
-    , bldDepsOf    = parseDep . T.unpack <$> dependsOf ai ++ makeDepsOf ai
+    , bldDepsOf    = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai  -- TODO bad mapMaybe?
     , bldVersionOf = aurVersionOf ai
     , isExplicit   = False
     , buildScripts = f }

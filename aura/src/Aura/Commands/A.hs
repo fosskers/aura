@@ -50,7 +50,7 @@ import           BasePrelude hiding ((<>))
 import           Data.Semigroup ((<>))
 import qualified Data.Set as S (member, fromList)
 import qualified Data.Text as T
-import           Data.Versions (parseV)
+import           Data.Versions (versioning)
 import           Linux.Arch.Aur
 import           Shelly (whenM, pwd, shelly, toTextIgnore)
 import           Text.Regex.PCRE ((=~))
@@ -180,8 +180,8 @@ displayPkgbuild ps = do
 
 isntMostRecent :: (AurInfo, T.Text) -> Bool
 isntMostRecent (ai, v) = trueVer > currVer
-  where trueVer = either (const Nothing) Just . parseV $ aurVersionOf ai
-        currVer = either (const Nothing) Just . parseV $ v
+  where trueVer = either (const Nothing) Just . versioning $ aurVersionOf ai
+        currVer = either (const Nothing) Just . versioning $ v
 
 ------------
 -- REPORTING

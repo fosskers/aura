@@ -55,7 +55,7 @@ dependencies:
   - system-filepath
   - text >= 1.2 && < 1.3
   - time
-  - versions >= 3.3 && < 3.4
+  - versions >= 3.4 && < 3.5
 
 executables:
   aura:
