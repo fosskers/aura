@@ -35,13 +35,13 @@ import           Aura.Build
 import           Aura.Colour.Text
 import           Aura.Core
 import           Aura.Dependencies
-import           Aura.Errors
 import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Pacman
 import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Records
 import           Aura.Settings.Base
+import           Aura.Types
 import           Aura.Utils
 import           BasePrelude
 import           Control.Concurrent.Async

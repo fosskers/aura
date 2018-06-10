@@ -26,9 +26,9 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Commands.O where
 
 import           Aura.Core (orphans, sudo)
-import           Aura.Errors
 import           Aura.Monad.Aura
 import           Aura.Pacman (pacman)
+import           Aura.Types
 import           BasePrelude
 import qualified Data.Text as T
 import qualified Data.Text.IO as T

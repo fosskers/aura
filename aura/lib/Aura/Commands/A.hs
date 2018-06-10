@@ -37,7 +37,6 @@ module Aura.Commands.A
 
 import           Aura.Colour.Text
 import           Aura.Core
-import           Aura.Errors
 import qualified Aura.Install as I
 import           Aura.Languages
 import           Aura.Monad.Aura
@@ -52,7 +51,6 @@ import           Data.Semigroup ((<>))
 import qualified Data.Set as S (member, fromList)
 import qualified Data.Text as T
 import           Data.Versions
-import           Data.Versions (versioning)
 import           Linux.Arch.Aur
 import           Shelly (whenM, pwd, shelly, toTextIgnore)
 import           Text.Regex.PCRE ((=~))

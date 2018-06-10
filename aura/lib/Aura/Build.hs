@@ -29,12 +29,12 @@ module Aura.Build
   ) where
 
 import           Aura.Core
-import           Aura.Errors
 import           Aura.Languages
 import           Aura.MakePkg
 import           Aura.Monad.Aura
 import           Aura.Pacman (pacman)
 import           Aura.Settings.Base
+import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding (FilePath)
 import           Data.Bitraversable (bitraverse)

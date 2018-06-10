@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, MultiWayIf #-}
 
 {-
 
@@ -23,19 +23,75 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Types
   ( -- * Package Types
-    SimplePkg(..), simplepkg, simplepkg'
+    Package(..)
+  , SimplePkg(..), simplepkg, simplepkg'
+  , Dep(..), parseDep
+  , Buildable(..)
+    -- * Package Building
+  , VersionDemand(..)
+  , InstallType(..)
+    -- * Errors
+  , DepError(..)
+  , Failure(..), failure
+    -- * Language
+  , Language(..)
     -- * Other Wrappers
   , PackagePath(..), sortPkgs
+  , Pkgbuild(..)
   ) where
 
 import           BasePrelude hiding (try)
 import           Data.Bitraversable
 import qualified Data.Text as T
 import           Data.Versions
-import           Text.Megaparsec
+import           Text.Megaparsec hiding (failure)
 import           Text.Megaparsec.Char
 
 ---
+
+-- | A package to be installed.
+data Package = Package { pkgNameOf        :: T.Text
+                       , pkgVersionOf     :: T.Text
+                       , pkgDepsOf        :: [Dep]
+                       , pkgInstallTypeOf :: InstallType }
+
+-- | A dependency on another package.
+data Dep = Dep { depNameOf      :: T.Text
+               , depVerDemandOf :: VersionDemand } deriving (Eq, Show)
+
+-- TODO Return an Either if it failed to parse?
+parseDep :: T.Text -> Maybe Dep
+parseDep = either (const Nothing) Just . parse dep "dep"
+  where dep :: Parsec Void T.Text Dep
+        dep = Dep <$> takeWhile1P Nothing (\c -> c /= '<' && c /= '>' && c /= '=') <*> ver
+
+        ver :: Parsec Void T.Text VersionDemand
+        ver = do
+          end <- atEnd
+          if | end       -> pure Anything
+             | otherwise -> choice [ char '<'    *> fmap LessThan versioning'
+                                   , string ">=" *> fmap AtLeast  versioning'
+                                   , char '>'    *> fmap MoreThan versioning'
+                                   , char '='    *> fmap MustBe   versioning'
+                                   , pure Anything ]
+
+-- | The versioning requirement of some package's dependency.
+data VersionDemand = LessThan Versioning
+                   | AtLeast  Versioning
+                   | MoreThan Versioning
+                   | MustBe   Versioning
+                   | Anything
+                   deriving (Eq)
+
+instance Show VersionDemand where
+    show (LessThan v) = T.unpack $ "<"  <> prettyV v
+    show (AtLeast  v) = T.unpack $ ">=" <> prettyV v
+    show (MoreThan v) = T.unpack $ ">"  <> prettyV v
+    show (MustBe   v) = T.unpack $ "="  <> prettyV v
+    show Anything     = ""
+
+-- | The installation method.
+data InstallType = Pacman T.Text | Build Buildable
 
 -- | A package name with its version number.
 data SimplePkg = SimplePkg { _spName :: T.Text, _spVersion :: Versioning } deriving (Eq, Ord, Show)
@@ -74,3 +130,47 @@ sortPkgs = sortBy verNums
                       | otherwise        = compare (ver a) (ver b)
           name = fmap _spName . simplepkg
           ver  = fmap _spVersion . simplepkg
+
+-- | The contents of a PKGBUILD file.
+newtype Pkgbuild = Pkgbuild { _pkgbuild :: T.Text }
+
+-- | A package to be built manually before installing.
+data Buildable = Buildable
+    { baseNameOf   :: T.Text
+    , pkgbuildOf   :: Pkgbuild
+    , bldDepsOf    :: [Dep]
+    , bldVersionOf :: T.Text
+    -- | Did the user select this package, or is it being built as a dep?
+    , isExplicit   :: Bool
+    -- | Fetch and extract the source code corresponding to the given package.
+    -- Expects a directory in which to place the scripts, and yields the path
+    -- they were successfully extracted to.
+    , buildScripts :: FilePath -> IO (Maybe FilePath)
+    }
+
+data Language = English
+              | Japanese
+              | Polish
+              | Croatian
+              | Swedish
+              | German
+              | Spanish
+              | Portuguese
+              | French
+              | Russian
+              | Italian
+              | Serbian
+              | Norwegian
+              | Indonesia
+              | Chinese
+                deriving (Eq, Enum, Ord, Read, Show)
+
+data DepError = NonExistant String | VerConflict String | Ignored String
+
+-- | Some failure message that when given the current runtime `Language`
+-- will produce a human-friendly error.
+newtype Failure = Failure { _failure :: Language -> String }
+
+-- | A short-hand for expressing failure.
+failure :: (Language -> String) -> Either Failure b
+failure = Left . Failure

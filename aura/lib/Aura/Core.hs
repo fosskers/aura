@@ -25,7 +25,6 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Core where
 
 import           Aura.Colour.Text
-import           Aura.Errors
 import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Pacman
@@ -35,10 +34,7 @@ import           Aura.Utils
 import           BasePrelude hiding ((<>))
 import           Data.Semigroup
 import qualified Data.Text as T
-import           Data.Versions
 import           Shelly (Sh, test_f)
-import           Text.Megaparsec hiding (failure)
-import           Text.Megaparsec.Char
 import           Utilities
 
 ---
@@ -46,50 +42,6 @@ import           Utilities
 --------
 -- TYPES
 --------
-
--- TODO Move all these types to the `Types` module
-
-newtype Pkgbuild = Pkgbuild { _pkgbuild :: T.Text }
-
-data VersionDemand = LessThan Versioning
-                   | AtLeast  Versioning
-                   | MoreThan Versioning
-                   | MustBe   Versioning
-                   | Anything
-                   deriving (Eq)
-
-instance Show VersionDemand where
-    show (LessThan v) = T.unpack $ "<"  <> prettyV v
-    show (AtLeast  v) = T.unpack $ ">=" <> prettyV v
-    show (MoreThan v) = T.unpack $ ">"  <> prettyV v
-    show (MustBe   v) = T.unpack $ "="  <> prettyV v
-    show Anything     = ""
-
--- | A package to be installed.
-data Package = Package { pkgNameOf        :: T.Text
-                       , pkgVersionOf     :: T.Text
-                       , pkgDepsOf        :: [Dep]
-                       , pkgInstallTypeOf :: InstallType }
-
--- | A dependency on another package.
-data Dep = Dep { depNameOf      :: T.Text
-               , depVerDemandOf :: VersionDemand } deriving (Eq, Show)
-
--- | The installation method.
-data InstallType = Pacman T.Text | Build Buildable
-
--- | A package to be built manually before installing.
-data Buildable = Buildable
-    { baseNameOf   :: T.Text
-    , pkgbuildOf   :: Pkgbuild
-    , bldDepsOf    :: [Dep]
-    , bldVersionOf :: T.Text
-    -- | Did the user select this package, or is it being built as a dep?
-    , isExplicit   :: Bool
-    -- | Fetch and extract the source code corresponding to the given package.
-    , buildScripts :: FilePath             -- ^ Directory in which to place the scripts.
-                   -> IO (Maybe FilePath)  -- ^ Path to the extracted scripts.
-    }
 
 -- | A 'Repository' is a place where packages may be fetched from. Multiple
 -- repositories can be combined with the 'Data.Monoid' instance.
@@ -110,22 +62,6 @@ partitionPkgs :: [Package] -> ([T.Text], [Buildable])
 partitionPkgs = partitionEithers . fmap (toEither . pkgInstallTypeOf)
   where toEither (Pacman s) = Left  s
         toEither (Build  b) = Right b
-
--- | Return an Either if it failed to parse?
-parseDep :: T.Text -> Maybe Dep
-parseDep = either (const Nothing) Just . parse dep "dep"
-  where dep :: Parsec Void T.Text Dep
-        dep = Dep <$> takeWhile1P Nothing (\c -> c /= '<' && c /= '>' && c /= '=') <*> ver
-
-        ver :: Parsec Void T.Text VersionDemand
-        ver = do
-          end <- atEnd
-          if | end       -> pure Anything
-             | otherwise -> choice [ char '<'    *> fmap LessThan versioning'
-                                   , string ">=" *> fmap AtLeast  versioning'
-                                   , char '>'    *> fmap MoreThan versioning'
-                                   , char '='    *> fmap MustBe   versioning'
-                                   , pure Anything ]
 
 -----------
 -- THE WORK

@@ -27,10 +27,10 @@ module Aura.Dependencies ( resolveDeps ) where
 
 import           Aura.Conflicts
 import           Aura.Core
-import           Aura.Errors
 import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Settings.Base
+import           Aura.Types
 import           BasePrelude
 import           Control.Concurrent.Async
 import           Control.Concurrent.STM.TVar

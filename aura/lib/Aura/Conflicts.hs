@@ -21,10 +21,9 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Conflicts where
 
-import           Aura.Core
-import           Aura.Errors
 import           Aura.Languages
 import           Aura.Settings.Base
+import           Aura.Types
 import           BasePrelude
 import qualified Data.Text as T
 import           Data.Versions (versioning)

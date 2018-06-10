@@ -28,11 +28,11 @@ module Aura.Commands.B
     ) where
 
 import Aura.Core (warn)
-import Aura.Errors
 import Aura.Languages
 import Aura.Monad.Aura
 import Aura.Settings.Base
 import Aura.State
+import Aura.Types
 import Aura.Utils (optionalPrompt)
 import BasePrelude
 import Data.Bitraversable

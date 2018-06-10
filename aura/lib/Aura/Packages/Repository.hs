@@ -26,6 +26,7 @@ module Aura.Packages.Repository ( pacmanRepo ) where
 import           Aura.Core
 import           Aura.Monad.Aura
 import           Aura.Pacman (pacmanOutput)
+import           Aura.Types
 import           BasePrelude
 import           Control.Concurrent.Async
 import qualified Data.Text as T

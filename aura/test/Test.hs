@@ -2,7 +2,6 @@
 
 module Main ( main ) where
 
-import Aura.Core
 import Aura.Types
 import BasePrelude
 import Data.Versions

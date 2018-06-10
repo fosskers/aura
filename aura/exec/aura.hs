@@ -41,7 +41,6 @@ import           Aura.Commands.C as C
 import           Aura.Commands.L as L
 import           Aura.Commands.O as O
 import           Aura.Core
-import           Aura.Errors
 import           Aura.Flags
 import           Aura.Languages
 import           Aura.Logo
@@ -49,6 +48,7 @@ import           Aura.Monad.Aura
 import           Aura.Pacman
 import           Aura.Settings.Base
 import           Aura.Settings.Enable
+import           Aura.Types
 import           BasePrelude hiding (Version)
 import qualified Data.Text as T
 import           Shelly (toTextIgnore, fromText, shelly, run_)

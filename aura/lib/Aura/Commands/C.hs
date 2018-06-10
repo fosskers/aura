@@ -35,7 +35,6 @@ module Aura.Commands.C
 
 import           Aura.Cache
 import           Aura.Core
-import           Aura.Errors
 import           Aura.Languages
 import           Aura.Logo (raiseCursorBy)
 import           Aura.Monad.Aura

@@ -46,9 +46,8 @@ module Aura.Languages
     , Language(..) ) where
 
 import           Aura.Colour.Text (cyan, green, red, blue, yellow, bForeground)
-import           Aura.Errors
-import           Aura.Languages.Base
 import qualified Aura.Languages.Fields as Fields
+import           Aura.Types
 import           BasePrelude
 import qualified Data.Map.Strict as Map (Map, (!), fromList, toList, mapWithKey)
 import qualified Data.Text as T

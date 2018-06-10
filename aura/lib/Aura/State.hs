@@ -34,7 +34,6 @@ module Aura.State
 import           Aura.Cache
 import           Aura.Colour.Text (cyan, red)
 import           Aura.Core (warn, notify)
-import           Aura.Errors
 import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Pacman (pacmanOutput, pacman)

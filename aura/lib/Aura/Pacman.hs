@@ -47,10 +47,10 @@ module Aura.Pacman
   ) where
 
 import           Aura.Cache
-import           Aura.Errors
 import           Aura.Languages (pacmanFailure_1)
 import           Aura.Monad.Aura
 import           Aura.Settings.Base (pacmanCmdOf)
+import           Aura.Types
 import           BasePrelude
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T

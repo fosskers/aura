@@ -2,7 +2,7 @@
 
 module Aura.Languages.Fields where
 
-import Aura.Languages.Base
+import Aura.Types (Language(..))
 import BasePrelude
 
 ---

@@ -23,10 +23,10 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Pkgbuild.Base where
 
-import           Aura.Core
 import           Aura.Monad.Aura
 import           Aura.Pkgbuild.Editing
 import           Aura.Settings.Base
+import           Aura.Types
 import           BasePrelude hiding (FilePath)
 import qualified Data.Text as T
 import           Shelly

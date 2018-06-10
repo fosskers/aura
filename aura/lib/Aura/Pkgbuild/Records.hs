@@ -28,10 +28,10 @@ module Aura.Pkgbuild.Records
   , comparePkgbuilds
   ) where
 
-import           Aura.Core (Buildable, baseNameOf, pkgbuildOf, _pkgbuild)
 import           Aura.Diff (unidiff)
 import           Aura.Monad.Aura
 import           Aura.Pkgbuild.Base
+import           Aura.Types
 import           BasePrelude
 import qualified Data.Text as T
 import           Shelly (Sh, writefile, test_f, shelly, readfile, mkdir_p)

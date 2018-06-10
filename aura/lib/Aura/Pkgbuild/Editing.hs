@@ -31,6 +31,7 @@ module Aura.Pkgbuild.Editing
 import           Aura.Core
 import           Aura.Languages
 import           Aura.Settings.Base
+import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding (FilePath)
 import qualified Data.Text as T
