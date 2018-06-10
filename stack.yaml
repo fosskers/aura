@@ -6,4 +6,4 @@ packages:
   - arel/
 
 extra-deps:
-  - versions-3.4.0
+  - versions-3.4.0.1

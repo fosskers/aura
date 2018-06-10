@@ -51,7 +51,7 @@ import           Text.Megaparsec.Char
 
 -- | A package to be installed.
 data Package = Package { pkgNameOf        :: T.Text
-                       , pkgVersionOf     :: T.Text
+                       , pkgVersionOf     :: Maybe Versioning
                        , pkgDepsOf        :: [Dep]
                        , pkgInstallTypeOf :: InstallType }
 
@@ -139,7 +139,7 @@ data Buildable = Buildable
     { baseNameOf   :: T.Text
     , pkgbuildOf   :: Pkgbuild
     , bldDepsOf    :: [Dep]
-    , bldVersionOf :: T.Text
+    , bldVersionOf :: Maybe Versioning
     -- | Did the user select this package, or is it being built as a dep?
     , isExplicit   :: Bool
     -- | Fetch and extract the source code corresponding to the given package.
@@ -165,7 +165,7 @@ data Language = English
               | Chinese
                 deriving (Eq, Enum, Ord, Read, Show)
 
-data DepError = NonExistant String | VerConflict String | Ignored String
+data DepError = NonExistant String | VerConflict String | Ignored String | UnparsableVersion String
 
 -- | Some failure message that when given the current runtime `Language`
 -- will produce a human-friendly error.

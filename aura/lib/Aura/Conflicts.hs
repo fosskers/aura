@@ -19,43 +19,44 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Conflicts where
+module Aura.Conflicts ( realPkgConflicts ) where
 
 import           Aura.Languages
 import           Aura.Settings.Base
 import           Aura.Types
 import           BasePrelude
 import qualified Data.Text as T
-import           Data.Versions (versioning)
+import           Data.Versions (Versioning, prettyV)
 
 ---
 
--- Questions to be answered in conflict checks:
+-- | Questions to be answered in conflict checks:
 -- 1. Is the package ignored in `pacman.conf`?
 -- 2. Is the version requested different from the one provided by
 --    the most recent version?
-
 realPkgConflicts :: Settings -> Package -> Dep -> Maybe DepError
 realPkgConflicts ss pkg dep
-    | name `elem` toIgnore                       = Just $ Ignored failMsg1
+    | name `elem` toIgnore            = Just $ Ignored failMsg1
+    | isNothing curVer                = Just . UnparsableVersion $ T.unpack name
     | isVersionConflict reqVer curVer = Just $ VerConflict failMsg2
-    | otherwise                                  = Nothing
+    | otherwise                       = Nothing
     where name     = pkgNameOf pkg
           curVer   = pkgVersionOf pkg
           reqVer   = depVerDemandOf dep
           lang     = langOf ss
           toIgnore = ignoredPkgsOf ss
           failMsg1 = getRealPkgConflicts_2 (T.unpack name) lang
-          failMsg2 = getRealPkgConflicts_1 (T.unpack name) (T.unpack curVer) (show reqVer) lang
+          failMsg2 = getRealPkgConflicts_1 (T.unpack name) (T.unpack . prettyV $ fromJust curVer) (show reqVer) lang
 
--- Compares a (r)equested version number with a (c)urrent up-to-date one.
+-- | Compares a (r)equested version number with a (c)urrent up-to-date one.
 -- The `MustBe` case uses regexes. A dependency demanding version 7.4
 -- SHOULD match as `okay` against version 7.4, 7.4.0.1, or even 7.4.0.1-2.
-isVersionConflict :: VersionDemand -> T.Text -> Bool
-isVersionConflict Anything _     = False
-isVersionConflict (LessThan r) c = first (const ()) (versioning c) >= Right r
-isVersionConflict (MoreThan r) c = first (const ()) (versioning c) <= Right r
-isVersionConflict (MustBe   r) c = first (const ()) (versioning c) /= Right r
-isVersionConflict (AtLeast  r) c | first (const ()) (versioning c) > Right r = False
-                                 | isVersionConflict (MustBe r) c = True
-                                 | otherwise = False
+isVersionConflict :: VersionDemand -> Maybe Versioning -> Bool
+isVersionConflict Anything _            = False
+isVersionConflict (LessThan r) (Just c) = c >= r
+isVersionConflict (MoreThan r) (Just c) = c <= r
+isVersionConflict (MustBe   r) (Just c) = c /= r
+isVersionConflict (AtLeast  r) (Just c) | c > r = False
+                                        | isVersionConflict (MustBe r) (Just c) = True
+                                        | otherwise = False
+isVersionConflict _ _ = True  -- We expect this branch to never occur, due to the `isNothing` check above.

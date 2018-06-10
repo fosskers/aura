@@ -21,17 +21,21 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Packages.Repository ( pacmanRepo ) where
+module Aura.Packages.Repository
+  ( pacmanRepo
+  , extractVersion
+  ) where
 
 import           Aura.Core
 import           Aura.Monad.Aura
 import           Aura.Pacman (pacmanOutput)
 import           Aura.Types
-import           BasePrelude
+import           BasePrelude hiding (try)
 import           Control.Concurrent.Async
 import qualified Data.Text as T
-import           Text.Regex.PCRE ((=~))
-import           Utilities (tripleThrd)
+import           Data.Versions
+import           Text.Megaparsec
+import           Text.Megaparsec.Char
 
 ---
 
@@ -39,12 +43,12 @@ import           Utilities (tripleThrd)
 pacmanRepo :: Repository
 pacmanRepo = Repository $ \_ name -> do
   real <- resolveName name
-  fmap (packageRepo real) <$> mostRecentVersion real
+  Just . packageRepo real <$> mostRecentVersion real
 
-packageRepo :: T.Text -> T.Text -> Package
-packageRepo name version = Package
+packageRepo :: T.Text -> Maybe Versioning -> Package
+packageRepo name ver = Package
   { pkgNameOf        = name
-  , pkgVersionOf     = version
+  , pkgVersionOf     = ver
   , pkgDepsOf        = []  -- Let pacman handle dependencies.
   , pkgInstallTypeOf = Pacman name }
 
@@ -62,14 +66,15 @@ chooseProvider _    [p]       = pure p
 chooseProvider _    ps@(p:_)  = fromMaybe p . listToMaybe . catMaybes <$> liftIO (mapConcurrently isInstalled ps)
 
 -- | The most recent version of a package, if it exists in the respositories.
-mostRecentVersion :: MonadIO m => T.Text -> m (Maybe T.Text)
-mostRecentVersion s = fmap T.pack . extractVersion . T.unpack <$> pacmanOutput ["-Si", s]
+mostRecentVersion :: MonadIO m => T.Text -> m (Maybe Versioning)
+mostRecentVersion s = extractVersion <$> pacmanOutput ["-Si", s]
 
--- TODO Use a real parser, so that we can use `Text` throughout.
--- | Takes `pacman -Si` output as input.
-extractVersion :: String -> Maybe String
-extractVersion ""   = Nothing
-extractVersion info = Just $ tripleThrd match
-    where match     = thirdLine =~ (": " :: String) :: (String, String, String)
-          thirdLine = allLines !! 2  -- Version num is always the third line.
-          allLines  = lines info
+extractVersion :: T.Text -> Maybe Versioning
+extractVersion = either (const Nothing) Just . parse p "extractVersion"
+  where p = do
+          takeWhile1P Nothing (/= '\n') *> newline
+          takeWhile1P Nothing (/= '\n') *> newline
+          string "Version" *> space1 *> char ':' *> space1 *> v
+        v = choice [ try (fmap Ideal semver'    <* string "Description")
+                   , try (fmap General version' <* string "Description")
+                   , fmap Complex mess'         <* string "Description" ]

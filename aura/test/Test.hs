@@ -2,11 +2,13 @@
 
 module Main ( main ) where
 
-import Aura.Types
-import BasePrelude
-import Data.Versions
-import Test.Tasty
-import Test.Tasty.HUnit
+import           Aura.Packages.Repository
+import           Aura.Types
+import           BasePrelude
+import qualified Data.Text as T
+import           Data.Versions
+import           Test.Tasty
+import           Test.Tasty.HUnit
 
 ---
 
@@ -31,4 +33,13 @@ suite = testGroup "Unit Tests"
     , testCase "simplepkg'"
       $ simplepkg' "xchat 2.8.8-19" @?= Just (SimplePkg "xchat" . Ideal $ SemVer 2 8 8 [[Digits 19]] [])
     ]
+  , testGroup "Aura.Packages.Repository"
+    [ testCase "extractVersion" $ extractVersion firefox @?= Just (Ideal $ SemVer 60 0 2 [[Digits 1]] [])
+    ]
   ]
+
+firefox :: T.Text
+firefox = "Repository      : extra\n\
+\Name            : firefox\n\
+\Version         : 60.0.2-1\n\
+\Description     : Standalone web browser from mozilla.org"

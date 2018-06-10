@@ -481,6 +481,8 @@ depError _ (VerConflict s) = s
 depError _ (Ignored s)     = s
 depError l (NonExistant s) = case l of
   _ -> "The dependency " <> bt s <> " couldn't be found."
+depError l (UnparsableVersion s) = case l of
+  _ -> "The version number for " <> bt s <> " couldn't be parsed."
 
 -----------------
 -- aura functions

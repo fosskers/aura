@@ -78,6 +78,7 @@ executables:
   aura:
     source-dirs: exec
     main: aura.hs
+    other-modules: []
     dependencies:
       - aura
     ghc-options:

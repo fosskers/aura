@@ -40,6 +40,7 @@ import           Aura.Settings.Base
 import           Aura.Types
 import           BasePrelude
 import qualified Data.Text as T
+import           Data.Versions (versioning)
 import           Internet
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
@@ -64,7 +65,7 @@ makeBuildable m name pb = do
     { baseNameOf   = name
     , pkgbuildOf   = pb
     , bldDepsOf    = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai  -- TODO bad mapMaybe?
-    , bldVersionOf = aurVersionOf ai
+    , bldVersionOf = either (const Nothing) Just . versioning $ aurVersionOf ai
     , isExplicit   = False
     , buildScripts = f }
     where f fp = sourceTarball m fp name >>= traverse (fmap T.unpack . decompress (T.pack fp) . T.pack)
