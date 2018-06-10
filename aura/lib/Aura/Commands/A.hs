@@ -45,11 +45,13 @@ import           Aura.Packages.AUR
 import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings.Base
+import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding ((<>))
 import           Data.Semigroup ((<>))
 import qualified Data.Set as S (member, fromList)
 import qualified Data.Text as T
+import           Data.Versions
 import           Data.Versions (versioning)
 import           Linux.Arch.Aur
 import           Shelly (whenM, pwd, shelly, toTextIgnore)
@@ -72,7 +74,7 @@ upgradeAURPkgs pacOpts pkgs = do
       notIgnored p = fmap fst (splitNameAndVer p) `notElem` ignores
       lang         = langOf ss
   notify $ upgradeAURPkgs_1 lang
-  foreignPkgs <- filter (notIgnored . _fNameOf) <$> foreignPackages
+  foreignPkgs <- filter (notIgnored . _spName) <$> foreignPackages
   toUpgrade   <- possibleUpdates foreignPkgs
   auraFirst   <- auraCheck $ map (aurNameOf . fst) toUpgrade
   if | auraFirst -> auraUpgrade pacOpts
@@ -82,15 +84,15 @@ upgradeAURPkgs pacOpts pkgs = do
          if | null toUpgrade && null devel -> warn $ upgradeAURPkgs_3 lang
             | otherwise -> reportPkgsToUpgrade . map T.unpack $ map prettify toUpgrade <> devel
          install pacOpts $ (aurNameOf . fst <$> toUpgrade) <> pkgs <> devel
-           where prettify (p, v) = aurNameOf p <> " : " <> v <> " => " <> aurVersionOf p
+           where prettify (p, v) = aurNameOf p <> " : " <> prettyV v <> " => " <> aurVersionOf p
 -- TODO: Use `printf` with `prettify` to line up the colons.
 
-possibleUpdates :: [ForeignPkg] -> Aura [(AurInfo, T.Text)]
+possibleUpdates :: [SimplePkg] -> Aura [(AurInfo, Versioning)]
 possibleUpdates pkgs = do
-  aurInfos <- aurInfo $ map _fNameOf pkgs
+  aurInfos <- aurInfo $ map _spName pkgs
   let !names  = map aurNameOf aurInfos
-      aurPkgs = filter (\(ForeignPkg n _) -> n `elem` names) pkgs
-  pure . filter isntMostRecent . zip aurInfos $ map _fVerOf aurPkgs
+      aurPkgs = filter (\(SimplePkg n _) -> n `elem` names) pkgs
+  pure . filter isntMostRecent . zip aurInfos $ map _spVersion aurPkgs
 
 auraCheck :: [T.Text] -> Aura Bool
 auraCheck toUpgrade = if "aura" `elem` toUpgrade
@@ -133,7 +135,7 @@ aurPkgSearch :: [T.Text] -> Aura ()
 aurPkgSearch [] = pure ()
 aurPkgSearch (fold -> regex) = do
   ss <- ask
-  db <- S.fromList . map _fNameOf <$> foreignPackages
+  db <- S.fromList . map _spName <$> foreignPackages
   let t = case truncationOf ss of  -- Can't this go anywhere else?
             None   -> id
             Head n -> take n
@@ -178,10 +180,9 @@ displayPkgbuild ps = do
   m <- asks managerOf
   I.displayPkgbuild (traverse (fmap (fmap T.unpack) . pkgbuild m)) ps
 
-isntMostRecent :: (AurInfo, T.Text) -> Bool
-isntMostRecent (ai, v) = trueVer > currVer
+isntMostRecent :: (AurInfo, Versioning) -> Bool
+isntMostRecent (ai, v) = trueVer > Just v
   where trueVer = either (const Nothing) Just . versioning $ aurVersionOf ai
-        currVer = either (const Nothing) Just . versioning $ v
 
 ------------
 -- REPORTING

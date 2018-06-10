@@ -30,6 +30,7 @@ import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Pacman
 import           Aura.Settings.Base
+import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding ((<>))
 import           Data.Semigroup
@@ -101,10 +102,6 @@ instance Semigroup Repository where
       Nothing -> repoLookup b ss p
       _       -> pure mpkg
 
--- TODO Make the version field a proper `Versioning`
--- | A package installed from the AUR.
-data ForeignPkg = ForeignPkg { _fNameOf :: !T.Text, _fVerOf :: !T.Text }
-
 ---------------------------------
 -- Functions common to `Package`s
 ---------------------------------
@@ -147,15 +144,14 @@ trueRoot action = ask >>= \ss ->
 
 -- | A list of non-prebuilt packages installed on the system.
 -- `-Qm` yields a list of sorted values.
-foreignPackages :: Aura [ForeignPkg]
-foreignPackages = map (uncurry ForeignPkg . fixName) . T.lines <$> pacmanOutput ["-Qm"]
-  where fixName = second T.tail . T.span (/= ' ')
+foreignPackages :: Aura [SimplePkg]
+foreignPackages = mapMaybe simplepkg' . T.lines <$> pacmanOutput ["-Qm"]
 
 orphans :: Aura [T.Text]
 orphans = T.lines <$> pacmanOutput ["-Qqdt"]
 
 develPkgs :: Aura [T.Text]
-develPkgs = filter isDevelPkg . map _fNameOf <$> foreignPackages
+develPkgs = filter isDevelPkg . map _spName <$> foreignPackages
   where isDevelPkg pkg = any (`T.isSuffixOf` pkg) suffixes
         suffixes = ["-git", "-hg", "-svn", "-darcs", "-cvs", "-bzr"]
 
