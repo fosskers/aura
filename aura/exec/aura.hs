@@ -32,6 +32,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
+module Main where
+
 import           Aura.Colour.Text (yellow)
 import           Aura.Commands.A as A
 import           Aura.Commands.B as B

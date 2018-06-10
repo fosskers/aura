@@ -123,8 +123,8 @@ selectState :: [FilePath] -> IO FilePath
 selectState = fmap (fromText . T.pack) . getSelection . map (T.unpack . toTextIgnore)
 
 -- TODO Using `read` here is terrible. Make it JSON.
-readState :: MonadIO m => FilePath -> m PkgState
-readState name = undefined -- read . T.unpack <$> shelly (readfile $ stateCache </> name)
+-- readState :: MonadIO m => FilePath -> m PkgState
+readState = undefined -- read . T.unpack <$> shelly (readfile $ stateCache </> name)
 
 -- How does pacman do simultaneous removals and upgrades?
 -- I've seen it happen plenty of times.

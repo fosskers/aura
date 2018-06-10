@@ -72,7 +72,7 @@ data Package = Package { pkgNameOf        :: T.Text
 
 -- | A dependency on another package.
 data Dep = Dep { depNameOf      :: T.Text
-               , depVerDemandOf :: VersionDemand }
+               , depVerDemandOf :: VersionDemand } deriving (Eq, Show)
 
 -- | The installation method.
 data InstallType = Pacman T.Text | Build Buildable
@@ -113,18 +113,6 @@ partitionPkgs :: [Package] -> ([T.Text], [Buildable])
 partitionPkgs = partitionEithers . fmap (toEither . pkgInstallTypeOf)
   where toEither (Pacman s) = Left  s
         toEither (Build  b) = Right b
-
-{-
-parseDep :: String -> Dep
-parseDep s = Dep (T.pack name) (getVersionDemand comp ver)
-    where patt = "(<|>=|>|=)" :: String
-          (name, comp, ver) = s =~ patt :: (String, String, String)
-          getVersionDemand c v | c == "<"  = LessThan v
-                               | c == ">=" = AtLeast v
-                               | c == ">"  = MoreThan v
-                               | c == "="  = MustBe v
-                               | otherwise = Anything
--}
 
 -- | Return an Either if it failed to parse?
 parseDep :: T.Text -> Maybe Dep
