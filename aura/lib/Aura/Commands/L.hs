@@ -38,45 +38,52 @@ import           Aura.Settings.Base
 import           Aura.Utils (entrify)
 import           BasePrelude hiding (FilePath)
 import qualified Data.Text as T
+import qualified Data.Text.IO as T
 import           Shelly
-import           Text.Regex.PCRE ((=~))
-import           Utilities (searchLines, loudSh)
+import           Utilities
 
 ---
+
+-- | The contents of the Pacman log file.
+newtype Log = Log [T.Text]
+
+data LogEntry = LogEntry { _pkgName :: T.Text, _firstInstall :: T.Text, _upgrades :: Word, _recent :: [T.Text] }
 
 viewLogFile :: FilePath -> Aura ()
 viewLogFile logFilePath = void . shelly . loudSh $ run_ "less" [toTextIgnore logFilePath]
 
 -- Very similar to `searchCache`. But is this worth generalizing?
-searchLogFile :: Settings -> [String] -> IO ()
+searchLogFile :: Settings -> [T.Text] -> IO ()
 searchLogFile ss input = do
-  logFile <- map T.unpack . T.lines <$> shelly (readfile $ logFilePathOf ss)
-  traverse_ putStrLn $ searchLines (unwords input) logFile
+  logFile <- T.lines <$> shelly (readfile $ logFilePathOf ss)
+  traverse_ T.putStrLn $ searchLines (Regex $ T.unwords input) logFile
 
-logInfoOnPkg :: [String] -> Aura ()
+logInfoOnPkg :: [T.Text] -> Aura ()
 logInfoOnPkg []   = pure ()
-logInfoOnPkg pkgs = ask >>= \ss -> do
-  logFile <- fmap T.unpack . shelly . readfile $ logFilePathOf ss
-  let inLog p = logFile =~ (" " <> p <> " ")
-      reals   = filter inLog pkgs
-  reportNotInLog (pkgs \\ reals)
-  liftIO $ traverse_ (putStrLn . renderLogLookUp ss logFile) reals
+logInfoOnPkg pkgs = do
+  ss <- ask
+  logFile <- fmap (Log . T.lines) . shelly . readfile $ logFilePathOf ss
+  let (bads, goods) = partitionEithers $ map (logLookup logFile) pkgs
+  reportNotInLog bads
+  liftIO . traverse_ T.putStrLn $ map (renderEntry ss) goods
 
-renderLogLookUp :: Settings -> String -> String -> String
-renderLogLookUp ss logFile pkg = entrify ss fields entries <> "\n" <> recent
-    where fields      = fmap yellow . logLookUpFields . langOf $ ss
-          matches     = searchLines (" " <> pkg <> " \\(") $ lines logFile
-          installDate = head matches =~ ("\\[[-:0-9 ]+\\]" :: String)
-          upgrades    = length $ searchLines " upgraded " matches
-          recent      = unlines . fmap (" " <>) . takeLast 5 $ matches
-          takeLast n  = reverse . take n . reverse
-          entries     = [ pkg
-                        , installDate
-                        , show upgrades
-                        , "" ]
+logLookup :: Log -> T.Text -> Either T.Text LogEntry
+logLookup (Log lns) p = case matches of
+  []    -> Left p
+  (h:t) -> Right $ LogEntry p
+                   (T.take 16 $ T.tail h)
+                   (fromIntegral . length $ filter (T.isInfixOf " upgraded ") t)
+                   (reverse . take 5 $ reverse t)
+  where matches = filter (T.isInfixOf (" " <> p <> " (")) lns
+
+renderEntry :: Settings -> LogEntry -> T.Text
+renderEntry ss (LogEntry pn fi us rs) = entrify ss fields entries <> "\n" <> recent
+  where fields  = map yellow . logLookUpFields $ langOf ss
+        entries = [ pn, fi, T.pack (show us), "" ]
+        recent  = T.unlines $ map (" " <>) rs
 
 ------------
 -- REPORTING
 ------------
-reportNotInLog :: [String] -> Aura ()
+reportNotInLog :: [T.Text] -> Aura ()
 reportNotInLog = badReport reportNotInLog_1
