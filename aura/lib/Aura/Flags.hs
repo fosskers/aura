@@ -299,9 +299,9 @@ ignoredAuraPkgs [] = []
 ignoredAuraPkgs (AURIgnore ps : _) = split ',' ps
 ignoredAuraPkgs (_:fs) = ignoredAuraPkgs fs
 
-buildPath :: [Flag] -> FilePath
-buildPath [] = ""
-buildPath (BuildPath p : _) = p
+buildPath :: [Flag] -> Maybe FilePath
+buildPath [] = Nothing
+buildPath (BuildPath p : _) = Just p
 buildPath (_:fs) = buildPath fs
 
 buildUser :: [Flag] -> Maybe String

@@ -115,6 +115,6 @@ checkLang :: Maybe Language -> Environment -> Language
 checkLang Nothing env   = langFromLocale $ getLocale env
 checkLang (Just lang) _ = lang
 
--- | Defaults to the cache path if no (legal) build path was given.
-checkBuildPath :: MonadIO m => FilePath -> FilePath -> m FilePath
-checkBuildPath bp bp' = bool bp' bp <$> shelly (test_d . fromText $ T.pack bp)
+checkBuildPath :: MonadIO m => Maybe FilePath -> FilePath -> m FilePath
+checkBuildPath Nothing def   = pure def
+checkBuildPath (Just bp) def = bool def bp <$> shelly (test_d . fromText $ T.pack bp)
