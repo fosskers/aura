@@ -37,7 +37,7 @@ import           Data.Versions (Versioning, prettyV)
 realPkgConflicts :: Settings -> Package -> Dep -> Maybe DepError
 realPkgConflicts ss pkg dep
     | name `elem` toIgnore            = Just $ Ignored failMsg1
-    | isNothing curVer                = Just . UnparsableVersion $ T.unpack name
+    | isNothing curVer                = Just $ UnparsableVersion name
     | isVersionConflict reqVer curVer = Just $ VerConflict failMsg2
     | otherwise                       = Nothing
     where name     = pkgNameOf pkg
@@ -45,8 +45,8 @@ realPkgConflicts ss pkg dep
           reqVer   = depVerDemandOf dep
           lang     = langOf ss
           toIgnore = ignoredPkgsOf ss
-          failMsg1 = getRealPkgConflicts_2 (T.unpack name) lang
-          failMsg2 = getRealPkgConflicts_1 (T.unpack name) (T.unpack . prettyV $ fromJust curVer) (show reqVer) lang
+          failMsg1 = getRealPkgConflicts_2 name lang
+          failMsg2 = getRealPkgConflicts_1 name (prettyV $ fromJust curVer) (T.pack $ show reqVer) lang
 
 -- | Compares a (r)equested version number with a (c)urrent up-to-date one.
 -- The `MustBe` case uses regexes. A dependency demanding version 7.4

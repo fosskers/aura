@@ -59,7 +59,7 @@ hotEdit :: Settings -> Buildable -> Sh Buildable
 hotEdit ss b
   | not $ mayHotEdit ss = pure b
   | otherwise = do
-      ans <- optionalPrompt ss (hotEdit_1 . T.unpack $ baseNameOf b)
+      ans <- optionalPrompt ss (hotEdit_1 $ baseNameOf b)
       bool (pure b) f ans
         where f = withTmpDir $ \tmp -> do
                 cd tmp

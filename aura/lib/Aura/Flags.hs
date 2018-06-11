@@ -49,12 +49,13 @@ module Aura.Flags
     , auraOperMsg
     , Flag(..) ) where
 
-import Aura.Colour.Text (yellow)
-import Aura.Languages
-import Aura.Settings.Base
-import BasePrelude hiding (Option, Version, option)
-import System.Console.GetOpt
-import Utilities (split)
+import           Aura.Colour.Text (yellow)
+import           Aura.Languages
+import           Aura.Settings.Base
+import           BasePrelude hiding (Option, Version, option)
+import qualified Data.Text as T
+import           System.Console.GetOpt
+import           Utilities (split)
 
 ---
 
@@ -134,11 +135,11 @@ simpleOption (c, s, f) = Option c s (NoArg f) ""
 
 auraOperations :: Language -> [OptDescr Flag]
 auraOperations lang =
-    [ Option "A" ["aursync"]   (NoArg AURInstall) (aurSy lang)
-    , Option "B" ["save"]      (NoArg SaveState)  (saveS lang)
-    , Option "C" ["downgrade"] (NoArg Cache)      (downG lang)
-    , Option "L" ["viewlog"]   (NoArg LogFile)    (viewL lang)
-    , Option "O" ["orphans"]   (NoArg Orphans)    (orpha lang) ]
+    [ Option "A" ["aursync"]   (NoArg AURInstall) (T.unpack $ aurSy lang)
+    , Option "B" ["save"]      (NoArg SaveState)  (T.unpack $ saveS lang)
+    , Option "C" ["downgrade"] (NoArg Cache)      (T.unpack $ downG lang)
+    , Option "L" ["viewlog"]   (NoArg LogFile)    (T.unpack $ viewL lang)
+    , Option "O" ["orphans"]   (NoArg Orphans)    (T.unpack $ orpha lang) ]
 
 auraOptions :: [OptDescr Flag]
 auraOptions = Option [] ["aurignore"] (ReqArg AURIgnore "" ) "" :
@@ -278,8 +279,8 @@ notSettingsFlag (TruncTail _)   = False
 notSettingsFlag (PacmanArg _ _) = False
 notSettingsFlag f               = f `notElem` (settingsFlags ++ languageFlags)
 
-auraOperMsg :: Language -> String
-auraOperMsg lang = usageInfo (yellow $ auraOperTitle lang) $ auraOperations lang
+auraOperMsg :: Language -> T.Text
+auraOperMsg lang = T.pack . usageInfo (T.unpack . yellow $ auraOperTitle lang) $ auraOperations lang
 
 -- | Extracts desirable results from given Flags.
 -- Callers must supply an [alt]ernate value for when there are no matches.

@@ -114,12 +114,11 @@ restoreState = getStateFiles >>= fmap join . bitraverse pure f
           let StateDiff rein remo = compareStates past curr
               (okay, nope) = partition (`M.member` cache) rein
               message      = restoreState_1 $ langOf ss
-          unless (null nope) $ printList red cyan message (map (T.unpack . _spName) nope)
+          unless (null nope) $ printList red cyan message (map _spName nope)
           reinstallAndRemove (mapMaybe (`M.lookup` cache) okay) remo
 
--- TODO Bad bad string conversion
 selectState :: [FilePath] -> IO FilePath
-selectState = fmap (fromText . T.pack) . getSelection . map (T.unpack . toTextIgnore)
+selectState = fmap fromText . getSelection . map toTextIgnore
 
 -- TODO Using `read` here is terrible. Make it JSON.
 -- readState :: MonadIO m => FilePath -> m PkgState

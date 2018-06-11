@@ -165,12 +165,12 @@ data Language = English
               | Chinese
                 deriving (Eq, Enum, Ord, Read, Show)
 
-data DepError = NonExistant String | VerConflict String | Ignored String | UnparsableVersion String
+data DepError = NonExistant T.Text | VerConflict T.Text | Ignored T.Text | UnparsableVersion T.Text
 
 -- | Some failure message that when given the current runtime `Language`
 -- will produce a human-friendly error.
-newtype Failure = Failure { _failure :: Language -> String }
+newtype Failure = Failure { _failure :: Language -> T.Text }
 
 -- | A short-hand for expressing failure.
-failure :: (Language -> String) -> Either Failure b
+failure :: (Language -> T.Text) -> Either Failure b
 failure = Left . Failure

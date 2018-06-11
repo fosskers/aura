@@ -114,18 +114,18 @@ checkDBLock ss = do
 -- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`
 -------
 
-renderColour :: Colouror -> (Language -> String) -> Aura String
+renderColour :: Colouror -> (Language -> T.Text) -> Aura T.Text
 renderColour c msg = asks (c . msg . langOf)
 
-notify :: MonadIO m => String -> m ()
+notify :: MonadIO m => T.Text -> m ()
 notify = putStrLnA green
 
-warn :: MonadIO m => String -> m ()
+warn :: MonadIO m => T.Text -> m ()
 warn = putStrLnA yellow
 
-scold :: MonadIO m => String -> m ()
+scold :: MonadIO m => T.Text -> m ()
 scold = putStrLnA red
 
-badReport :: (Language -> String) -> [String] -> Aura ()
+badReport :: (Language -> T.Text) -> [T.Text] -> Aura ()
 badReport _ []     = pure ()
 badReport msg pkgs = ask >>= \ss -> printList red cyan (msg $ langOf ss) pkgs

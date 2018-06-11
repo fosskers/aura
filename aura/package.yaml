@@ -56,7 +56,6 @@ library:
     - mtl >= 2.2 && < 2.3
     - network-uri >= 2.6 && < 2.7
     - regex-pcre >= 0.94 && < 0.95
-    - split >= 0.2 && < 0.3
     - stm
     - system-filepath
     - time

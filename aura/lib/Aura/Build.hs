@@ -63,7 +63,7 @@ buildPackages = fmap (fmap concat . sequenceA) . traverse build
 build :: Buildable -> Aura (Either Failure [FilePath])
 build p = do
   ss     <- ask
-  notify $ buildPackages_1 (T.unpack $ baseNameOf p) (langOf ss)
+  notify $ buildPackages_1 (baseNameOf p) (langOf ss)
   result <- shelly $ build' ss p
   either (buildFail p) (pure . Right) result
 
@@ -91,7 +91,7 @@ getBuildScripts pkg user = do
   currDir <- toTextIgnore <$> pwd
   scriptsDir <- chown user currDir [] *> liftIO (buildScripts pkg (T.unpack currDir))
   case scriptsDir of
-    Nothing -> pure . failure . buildFail_7 . T.unpack $ baseNameOf pkg
+    Nothing -> pure . failure . buildFail_7 $ baseNameOf pkg
     Just sd -> do
       let sd' = T.pack sd
       chown user sd' ["-R"]
@@ -108,7 +108,7 @@ overwritePkgbuild ss p = when (mayHotEdit ss || useCustomizepkg ss) $
 buildFail :: Buildable -> Failure -> Aura (Either Failure [a])
 buildFail p (Failure err) = do
   ss <- ask
-  scold $ buildFail_1 (T.unpack $ baseNameOf p) (langOf ss)
+  scold $ buildFail_1 (baseNameOf p) (langOf ss)
   scold . err $ langOf ss
   response <- optionalPrompt ss buildFail_6
   pure $ bool (failure buildFail_5) (Right []) response

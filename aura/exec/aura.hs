@@ -51,6 +51,7 @@ import           Aura.Settings.Enable
 import           Aura.Types
 import           BasePrelude hiding (Version)
 import qualified Data.Text as T
+import qualified Data.Text.IO as T
 import           Shelly (toTextIgnore, fromText, shelly, run_)
 import           Utilities
 
@@ -58,8 +59,8 @@ import           Utilities
 
 type UserInput = ([Flag], [String], [String])
 
-auraVersion :: String
-auraVersion = "1.4.0"
+auraVersion :: T.Text
+auraVersion = "1.5.0"
 
 main :: IO ()
 main = do
@@ -80,13 +81,13 @@ prepSettings :: (UserInput, Maybe Language) -> IO (Maybe (UserInput, Settings))
 prepSettings (ui, lang) = fmap (ui,) <$> getSettings lang ui
 
 -- | Hand user input to the Aura Monad and run it.
-execute :: (UserInput, Settings) -> IO (Either String ())
+execute :: (UserInput, Settings) -> IO (Either T.Text ())
 execute ((flags, input, pacOpts), ss) = do
   let flags' = filter notSettingsFlag flags
   when (Debug `elem` flags) $ debugOutput ss
   first (($ langOf ss) . _failure) <$> runAura (executeOpts (flags', input, pacOpts)) ss
 
-exit :: Either String () -> IO a
+exit :: Either T.Text () -> IO a
 exit (Left e)  = scold e *> exitFailure
 exit (Right _) = exitSuccess
 
@@ -103,11 +104,11 @@ executeOpts (flags, input, pacOpts) =
         case fs of
           []             -> fmap (join . join) . trueRoot . sudo $ A.install (map T.pack pacOpts) (map T.pack input)
           [Upgrade]      -> fmap (join . join) . trueRoot . sudo $ A.upgradeAURPkgs (map T.pack pacOpts) (map T.pack input)
-          [Info]         -> Right <$> A.aurPkgInfo input
+          [Info]         -> Right <$> A.aurPkgInfo (map T.pack input)
           [Search]       -> Right <$> A.aurPkgSearch (map T.pack input)
           [ViewDeps]     -> A.displayPkgDeps (map T.pack input)
           [Download]     -> Right <$> A.downloadTarballs (map T.pack input)
-          [GetPkgbuild]  -> Right <$> A.displayPkgbuild input
+          [GetPkgbuild]  -> Right <$> A.displayPkgbuild (map T.pack input)
           (Refresh:fs')  -> fmap join . sudo $ syncAndContinue (fs', input, pacOpts)
           _              -> pure $ failure executeOpts_1
     (SaveState:fs) ->
@@ -119,7 +120,7 @@ executeOpts (flags, input, pacOpts) =
     (Cache:fs) ->
         case fs of
           []             -> fmap join . sudo $ C.downgradePackages (map T.pack pacOpts) (map T.pack input)
-          [Clean]        -> fmap join . sudo $ C.cleanCache input
+          [Clean]        -> fmap join . sudo $ C.cleanCache (map T.pack input)
           [Clean, Clean] -> join <$> sudo C.cleanNotSaved
           [Search]       -> fmap Right . C.searchCache $ map T.pack input
           [CacheBackup]  -> fmap join . sudo $ C.backupCache (map (fromText . T.pack) input)
@@ -127,8 +128,8 @@ executeOpts (flags, input, pacOpts) =
     (LogFile:fs) ->
         case fs of
           []       -> ask >>= fmap Right . L.viewLogFile . logFilePathOf
-          [Search] -> ask >>= fmap Right . liftIO . flip L.searchLogFile input
-          [Info]   -> Right <$> L.logInfoOnPkg input
+          [Search] -> ask >>= fmap Right . liftIO . flip L.searchLogFile (map T.pack input)
+          [Info]   -> Right <$> L.logInfoOnPkg (map T.pack input)
           _        -> pure $ failure executeOpts_1
     (Orphans:fs) ->
         case fs of
@@ -138,7 +139,7 @@ executeOpts (flags, input, pacOpts) =
     [ViewConf]  -> Right <$> viewConfFile
     [Languages] -> Right <$> displayOutputLanguages
     [Help]      -> printHelpMsg $ map T.pack pacOpts
-    [Version]   -> getVersionInfo >>= fmap Right . animateVersionMsg . map T.unpack
+    [Version]   -> getVersionInfo >>= fmap Right . animateVersionMsg
     _ -> pacman $ map T.pack pacOpts <> map T.pack hijackedFlags <> map T.pack input
     where hijackedFlags = reconvertFlags hijackedFlagMap flags
 
@@ -163,25 +164,25 @@ printHelpMsg :: [T.Text] -> Aura (Either Failure ())
 printHelpMsg [] = do
   ss <- ask
   pacmanHelp <- getPacmanHelpMsg
-  fmap Right . liftIO . putStrLn . getHelpMsg ss . map T.unpack $ pacmanHelp
+  fmap Right . liftIO . T.putStrLn $ getHelpMsg ss pacmanHelp
 printHelpMsg pacOpts = pacman $ pacOpts <> ["-h"]
 
-getHelpMsg :: Settings -> [String] -> String
-getHelpMsg settings pacmanHelpMsg = intercalate "\n" allMessages
+getHelpMsg :: Settings -> [T.Text] -> T.Text
+getHelpMsg settings pacmanHelpMsg = T.unlines allMessages
     where lang = langOf settings
           allMessages   = [replacedLines, auraOperMsg lang, manpageMsg lang]
-          replacedLines = unlines (replaceByPatt patterns <$> pacmanHelpMsg)
+          replacedLines = T.unlines (map (replaceByPatt patterns) pacmanHelpMsg)
           colouredMsg   = yellow $ inheritedOperTitle lang
-          patterns      = [("pacman", "aura"), ("operations", colouredMsg)]
+          patterns      = [Pattern "pacman" "aura", Pattern "operations" colouredMsg]
 
 -- | Animated version message.
-animateVersionMsg :: [String] -> Aura ()
+animateVersionMsg :: [T.Text] -> Aura ()
 animateVersionMsg verMsg = ask >>= \ss -> liftIO $ do
   hideCursor
-  traverse_ (putStrLn . padString verMsgPad) verMsg  -- Version message
+  traverse_ (T.putStrLn . padString verMsgPad) verMsg  -- Version message
   raiseCursorBy 7  -- Initial reraising of the cursor.
   drawPills 3
-  traverse_ putStrLn $ renderPacmanHead 0 Open  -- Initial rendering of head.
+  traverse_ T.putStrLn $ renderPacmanHead 0 Open  -- Initial rendering of head.
   raiseCursorBy 4
   takeABite 0  -- Initial bite animation.
   traverse_ pillEating pillsAndWidths
@@ -193,7 +194,7 @@ animateVersionMsg verMsg = ask >>= \ss -> liftIO $ do
 
 version :: Settings -> IO ()
 version ss = do
-  putStrLn auraLogo
-  putStrLn $ "AURA Version " <> auraVersion
-  putStrLn " by Colin Woodbury\n"
-  traverse_ putStrLn . translatorMsg . langOf $ ss
+  T.putStrLn auraLogo
+  T.putStrLn $ "AURA Version " <> auraVersion
+  T.putStrLn " by Colin Woodbury\n"
+  traverse_ T.putStrLn . translatorMsg . langOf $ ss

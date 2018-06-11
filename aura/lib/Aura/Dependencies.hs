@@ -66,7 +66,7 @@ resolveDeps' ss tv repo ps = concat <$> mapConcurrently f ps
 
     -- | Check for version conflicts.
     g :: Dep -> Maybe Package -> Either DepError Package
-    g d Nothing  = Left . NonExistant . T.unpack $ depNameOf d
+    g d Nothing  = Left . NonExistant $ depNameOf d
     g d (Just p) = maybe (Right p) Left $ realPkgConflicts ss p d
 
 sortInstall :: [Package] -> [Package]

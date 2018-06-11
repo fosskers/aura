@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 -- | Module for connecting to the AUR servers,
 -- downloading PKGBUILDs and source tarballs, and handling them.
 
@@ -76,11 +78,11 @@ isAurPackage name = asks managerOf >>= \m -> isJust <$> pkgbuild' m name
 ----------------
 -- AUR PKGBUILDS
 ----------------
-aurLink :: String
+aurLink :: T.Text
 aurLink = "https://aur.archlinux.org"
 
-pkgUrl :: String -> String
-pkgUrl pkg = aurLink </> "packages" </> pkg
+pkgUrl :: T.Text -> T.Text
+pkgUrl pkg = T.pack $ T.unpack aurLink </> "packages" </> T.unpack pkg
 
 ------------------
 -- SOURCE TARBALLS
@@ -95,7 +97,7 @@ sourceTarball m path pkg = do
     [] -> pure Nothing
     (i':_) -> case urlPathOf i' of
       Nothing -> pure Nothing
-      Just p  -> saveUrlContents m path . (aurLink <>) . T.unpack $ p
+      Just p  -> saveUrlContents m path . T.unpack $ aurLink <> p
 
 ------------
 -- RPC CALLS

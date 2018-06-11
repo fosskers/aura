@@ -84,10 +84,10 @@ install' opts pacOpts pkgs = do
   ss       <- ask
   unneeded <- bool (pure []) (catMaybes <$> liftIO (mapConcurrently isInstalled pkgs)) $ neededOnly ss
   let (ignored, notIgnored) = partition (`elem` ignoredPkgsOf ss) pkgs
-  installAnyway <- map T.pack <$> confirmIgnored (map T.unpack ignored)
+  installAnyway <- confirmIgnored ignored
   let toInstall = (notIgnored <> installAnyway) \\ unneeded
   -- reportIgnoredPackages ignored  -- 2014 December  7 @ 14:52
-  reportUnneededPackages $ map T.unpack unneeded
+  reportUnneededPackages unneeded
   toBuild <- lookupPkgs (installLookup opts ss) toInstall >>= pkgbuildDiffs
   if | null toBuild && neededOnly ss && unneeded == pkgs -> fmap Right . notify . install_2 $ langOf ss
      | null toBuild -> pure $ failure install_2
@@ -96,7 +96,7 @@ install' opts pacOpts pkgs = do
          depsToInstall (repository opts) toBuild >>= fmap join . bitraverse pure (f ss)
   where f ss allPkgs = do
           let (repoPkgs, buildPkgs) = partitionPkgs allPkgs
-          reportPkgsToInstall (T.unpack $ label opts) (map T.unpack repoPkgs) buildPkgs
+          reportPkgsToInstall (label opts) repoPkgs buildPkgs
           if | dryRun ss -> pure $ Right ()
              | otherwise -> do
                  continue <- optionalPrompt ss install_3
@@ -106,7 +106,7 @@ install' opts pacOpts pkgs = do
                         storePkgbuilds buildPkgs
                         buildAndInstall pacOpts buildPkgs
 
-confirmIgnored :: [String] -> Aura [String]
+confirmIgnored :: [T.Text] -> Aura [T.Text]
 confirmIgnored ps = do
   ss <- ask
   filterM (optionalPrompt ss . confirmIgnored_1) ps
@@ -115,7 +115,7 @@ confirmIgnored ps = do
 lookupPkgs :: (T.Text -> IO (Maybe Buildable)) -> [T.Text] -> Aura [Buildable]
 lookupPkgs f pkgs = do
   (nons, okay) <- partitionEithers <$> liftIO (mapConcurrently lookupBuild pkgs)
-  reportNonPackages (map T.unpack nons)
+  reportNonPackages nons
   pure $ map markExplicit okay
   where lookupBuild pkg = maybe (Left pkg) Right <$> f pkg
         markExplicit b  = b { isExplicit = True }
@@ -148,25 +148,25 @@ displayPkgDeps opts ps = do
   ss   <- ask
   bs   <- catMaybes <$> liftIO (mapConcurrently (installLookup opts ss) ps)
   pkgs <- depsToInstall (repository opts) bs
-  bitraverse pure (reportDeps (beQuiet ss) . first (map T.unpack) . partitionPkgs) pkgs
+  bitraverse pure (reportDeps (beQuiet ss) . partitionPkgs) pkgs
   where reportDeps True  = uncurry reportListOfDeps
-        reportDeps False = uncurry (reportPkgsToInstall . T.unpack $ label opts)
+        reportDeps False = uncurry (reportPkgsToInstall $ label opts)
 
-reportPkgsToInstall :: String -> [String] -> [Buildable] -> Aura ()
+reportPkgsToInstall :: T.Text -> [T.Text] -> [Buildable] -> Aura ()
 reportPkgsToInstall la rps bps = asks langOf >>= \lang -> do
   pl (reportPkgsToInstall_1    lang) (sort rps)
-  pl (reportPkgsToInstall_2 la lang) (sort $ map (T.unpack . baseNameOf) bps)
+  pl (reportPkgsToInstall_2 la lang) (sort $ map baseNameOf bps)
       where pl = printList green cyan
 
-reportListOfDeps :: MonadIO m => [String] -> [Buildable] -> m ()
+reportListOfDeps :: MonadIO m => [T.Text] -> [Buildable] -> m ()
 reportListOfDeps rps bps = liftIO $ do
-  traverse_ putStrLn $ sort rps
+  traverse_ T.putStrLn $ sort rps
   traverse_ T.putStrLn . sort $ map baseNameOf bps
 
-reportNonPackages :: [String] -> Aura ()
+reportNonPackages :: [T.Text] -> Aura ()
 reportNonPackages = badReport reportNonPackages_1
 
-reportUnneededPackages :: [String] -> Aura ()
+reportUnneededPackages :: [T.Text] -> Aura ()
 reportUnneededPackages pkgs = asks langOf >>= \lang ->
   printList yellow cyan (reportUnneededPackages_1 lang) pkgs
 
@@ -181,18 +181,18 @@ pkgbuildDiffs ps = ask >>= check
             lang     <- asks langOf
             isStored <- hasPkgbuildStored name
             if not isStored
-               then warn $ reportPkgbuildDiffs_1 (T.unpack name) lang
+               then warn $ reportPkgbuildDiffs_1 name lang
                else do
                  let new = _pkgbuild $ pkgbuildOf p
                  old <- readPkgbuild name
-                 case comparePkgbuilds (T.unpack name) (T.unpack old) (T.unpack new) of
-                   "" -> notify $ reportPkgbuildDiffs_2 (T.unpack name) lang
+                 case comparePkgbuilds name old new of
+                   "" -> notify $ reportPkgbuildDiffs_2 name lang
                    d  -> do
-                      warn $ reportPkgbuildDiffs_3 (T.unpack name) lang
-                      liftIO $ putStrLn d
+                      warn $ reportPkgbuildDiffs_3 name lang
+                      liftIO $ T.putStrLn d
 
-displayPkgbuild :: ([String] -> Aura [Maybe String]) -> [String] -> Aura ()
+displayPkgbuild :: ([T.Text] -> Aura [Maybe T.Text]) -> [T.Text] -> Aura ()
 displayPkgbuild getPBs ps = do
   let line = yellow "\n#========== NEXT PKGBUILD ==========#\n"
   pbs <- intersperse line . catMaybes <$> getPBs ps
-  traverse_ (liftIO . putStrLn) pbs
+  traverse_ (liftIO . T.putStrLn) pbs

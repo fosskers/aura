@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 -- Library for handling the storing and diff'ing of PKGBUILDs.
 
 {-
@@ -39,10 +41,10 @@ import           System.FilePath ((</>))
 
 ---
 
-comparePkgbuilds :: String -> String -> String -> String
+comparePkgbuilds :: T.Text -> T.Text -> T.Text -> T.Text
 comparePkgbuilds name old new =
-  unlines $ unidiff 3 ("a" </> h) ("b" </> h) (lines old) (lines new)
-  where h = name </> "PKGBUILD"
+  T.unlines $ unidiff 3 (T.pack $ "a" </> h) (T.pack $ "b" </> h) (T.lines old) (T.lines new)
+  where h = T.unpack name </> "PKGBUILD"
 
 hasPkgbuildStored :: MonadIO m => T.Text -> m Bool
 hasPkgbuildStored = shelly . test_f . pkgbuildPath
