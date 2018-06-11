@@ -36,7 +36,6 @@ module Aura.Pacman
   , pacmanConfFile
   , getCachePath
   , getLogFilePath
-  , singleEntry
     -- * Pacman Config
   , getPacmanConf
   , getIgnoredPkgs
@@ -47,20 +46,41 @@ module Aura.Pacman
   ) where
 
 import           Aura.Cache
-import           Aura.Languages (pacmanFailure_1)
+import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Settings.Base (pacmanCmdOf)
 import           Aura.Types
-import           BasePrelude
+import           BasePrelude hiding (some)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import qualified Shelly as Sh
 import           Shelly hiding (FilePath, cmd)
 import           System.IO (hFlush, stdout)
-import           Text.Regex.PCRE ((=~))
+import           Text.Megaparsec hiding (failure)
+import           Text.Megaparsec.Char
+import qualified Text.Megaparsec.Char.Lexer as L
 import           Utilities
 
 ---
+
+-- | The (meaningful) contents of the Pacman config file.
+newtype Config = Config (M.Map T.Text [T.Text]) deriving (Show)
+
+config :: Parsec Void T.Text Config
+config = Config . M.fromList <$> (garbage *> some line <* eof)
+
+line :: Parsec Void T.Text (T.Text, [T.Text])
+line = L.lexeme garbage $ do
+  name <- takeWhile1P Nothing (/= ' ')
+  space
+  char '='
+  space
+  rest <- T.words <$> takeRest
+  pure (name, rest)
+
+-- | Using `[]` as block comment markers is a trick to skip conf file "section" lines.
+garbage :: Parsec Void T.Text ()
+garbage = L.space space1 (L.skipLineComment "#") (L.skipBlockComment "[" "]")
 
 defaultCmd :: T.Text
 defaultCmd = "pacman"
@@ -71,7 +91,7 @@ powerPillCmd = "/usr/bin/powerpill"
 pacmanConfFile :: Sh.FilePath
 pacmanConfFile = "/etc/pacman.conf"
 
-defaultLogFile :: FilePath
+defaultLogFile :: Sh.FilePath
 defaultLogFile = "/var/log/pacman.log"
 
 lockFile :: Sh.FilePath
@@ -86,31 +106,25 @@ getPacmanCmd env nopp =
       if | powerPill && not nopp -> pure $ toTextIgnore powerPillCmd
          | otherwise -> pure defaultCmd
 
-getPacmanConf :: MonadIO m => m T.Text
-getPacmanConf = shelly $ readfile pacmanConfFile
+getPacmanConf :: MonadIO m => m (Either Failure Config)
+getPacmanConf = shelly $ do
+  file <- readfile pacmanConfFile
+  pure . first (const (Failure confParsing_1)) $ parse config "pacman config" file
 
-getConfFileField :: String -> String -> [String]
-getConfFileField confFile field = words $ takeWhile p entry
-    where (_, _, entry) = confFile =~ field :: (String, String, String)
-          p c = c /= '\n' && c /= '#'
+getIgnoredPkgs :: Config -> [T.Text]
+getIgnoredPkgs (Config c) = maybe [] id $ M.lookup "IgnorePkg" c
 
-getIgnoredPkgs :: String -> [String]
-getIgnoredPkgs confFile = getConfFileField confFile "^IgnorePkg[ ]+=[ ]+"
+getCachePath :: Config -> Sh.FilePath
+getCachePath (Config c) = case M.lookup "CacheDir" c of
+  Nothing     -> defaultPackageCache
+  Just []     -> defaultPackageCache
+  Just (fp:_) -> fromText fp
 
--- For config file fields that only have one value.
--- Caller must supply an alternative if the given field isn't found.
-singleEntry :: String -> String -> String -> String
-singleEntry confFile field alt = case getConfFileField confFile regex of
-                                      []    -> alt
-                                      entry -> noQs $ head entry
-    where regex = "^" <> field <> "[ ]*=[ ]*"
-          noQs  = filter (`notElem` ("\"" :: String))
-
-getCachePath :: String -> FilePath
-getCachePath confFile = singleEntry confFile "CacheDir" (T.unpack defaultPackageCache)
-
-getLogFilePath :: String -> FilePath
-getLogFilePath confFile = singleEntry confFile "LogFile" defaultLogFile
+getLogFilePath :: Config -> Sh.FilePath
+getLogFilePath (Config c) = case M.lookup "LogFile" c of
+  Nothing     -> defaultLogFile
+  Just []     -> defaultLogFile
+  Just (fp:_) -> fromText fp
 
 ----------
 -- ACTIONS

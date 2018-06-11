@@ -44,7 +44,7 @@ import           Shelly
 
 newtype Cache = Cache { _cache :: M.Map SimplePkg PackagePath }
 
-defaultPackageCache :: T.Text
+defaultPackageCache :: FilePath
 defaultPackageCache = "/var/cache/pacman/pkg/"
 
 -- TODO SILENT DROPS PATHS THAT DON'T PARSE

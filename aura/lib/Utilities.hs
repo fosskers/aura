@@ -37,6 +37,8 @@ import           System.IO hiding (FilePath)
 
 data Pattern = Pattern { _pattern :: T.Text, _target :: T.Text }
 
+-- TODO This holding a regex pattern isn't respected anywhere.
+-- The only two places that use it are calling `T.infixOf`.
 newtype Regex = Regex T.Text
 
 ---

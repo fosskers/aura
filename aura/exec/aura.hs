@@ -66,8 +66,8 @@ main :: IO ()
 main = do
   mus  <- getArgs >>= prepSettings . processFlags
   case mus of
-    Nothing   -> putStrLn "There was a problem initializing the runtime environment."
-    Just args -> execute args >>= exit
+    Left (Failure err) -> T.putStrLn $ err English
+    Right args         -> execute args >>= exit
 
 processFlags :: [String] -> (UserInput, Maybe Language)
 processFlags args = ((flags, nub input, pacOpts'), language)
@@ -77,7 +77,7 @@ processFlags args = ((flags, nub input, pacOpts'), language)
                    <> reconvertFlags pacmanFlagMap flags
 
 -- | Set the local environment.
-prepSettings :: (UserInput, Maybe Language) -> IO (Maybe (UserInput, Settings))
+prepSettings :: (UserInput, Maybe Language) -> IO (Either Failure (UserInput, Settings))
 prepSettings (ui, lang) = fmap (ui,) <$> getSettings lang ui
 
 -- | Hand user input to the Aura Monad and run it.

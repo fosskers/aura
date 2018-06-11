@@ -26,61 +26,65 @@ module Aura.Settings.Enable
     , debugOutput ) where
 
 import           Aura.Flags
-import           Aura.Languages (Language, langFromLocale)
+import           Aura.Languages
 import           Aura.Pacman
 import           Aura.Settings.Base
-import           BasePrelude
+import           Aura.Types
+import           BasePrelude hiding (FilePath)
+import           Data.Bitraversable
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)
-import           Shelly (shelly, test_d, fromText, toTextIgnore)
+import           Shelly
 import           System.Environment (getEnvironment)
 import           Utilities
 
 ---
 
-getSettings :: Maybe Language -> ([Flag], [String], [String]) -> IO (Maybe Settings)
+getSettings :: Maybe Language -> ([Flag], [String], [String]) -> IO (Either Failure Settings)
 getSettings lang (auraFlags, input, pacOpts) = do
-  confFile    <- T.unpack <$> getPacmanConf
-  environment <- M.fromList . map (bimap T.pack T.pack) <$> getEnvironment
-  pmanCommand <- getPacmanCmd environment $ noPowerPillStatus auraFlags
-  buildPath'  <- checkBuildPath (buildPath auraFlags) (getCachePath confFile)
-  manager     <- newManager tlsManagerSettings
-  let language   = checkLang lang environment
-      buildUser' = fmap T.pack (buildUser auraFlags) <|> getTrueUser environment
-  pure $ do
-    bu <- buildUser'
-    Just Settings { inputOf         = map T.pack input
-                  , pacOptsOf       = map T.pack pacOpts
-                  , otherOptsOf     = map (T.pack . show) auraFlags
-                  , managerOf       = manager
-                  , envOf           = environment
-                  , buildUserOf     = User bu
-                  , langOf          = language
-                  , pacmanCmdOf     = pmanCommand
-                  , editorOf        = getEditor environment
-                  , ignoredPkgsOf   = map T.pack $ getIgnoredPkgs confFile <> ignoredAuraPkgs auraFlags
-                  , makepkgFlagsOf  = map T.pack $ makepkgFlags auraFlags
-                  , buildPathOf     = fromText $ T.pack buildPath'
-                  , cachePathOf     = fromText . T.pack $ getCachePath confFile
-                  , logFilePathOf   = fromText . T.pack $ getLogFilePath confFile
-                  , sortSchemeOf    = sortSchemeStatus auraFlags
-                  , truncationOf    = truncationStatus auraFlags
-                  , beQuiet         = quietStatus auraFlags
-                  , suppressMakepkg = suppressionStatus auraFlags
-                  , delMakeDeps     = delMakeDepsStatus auraFlags
-                  , mustConfirm     = confirmationStatus auraFlags
-                  , neededOnly      = neededStatus auraFlags
-                  , mayHotEdit      = hotEditStatus auraFlags
-                  , diffPkgbuilds   = pbDiffStatus auraFlags
-                  , rebuildDevel    = rebuildDevelStatus auraFlags
-                  , useCustomizepkg = customizepkgStatus auraFlags
-                  , noPowerPill     = noPowerPillStatus auraFlags
-                  , keepSource      = keepSourceStatus auraFlags
-                  , buildABSDeps    = False
-                  , dryRun          = dryRunStatus auraFlags }
+  confFile <- getPacmanConf
+  join <$> bitraverse pure f confFile
+  where f confFile = do
+          environment <- M.fromList . map (bimap T.pack T.pack) <$> getEnvironment
+          pmanCommand <- getPacmanCmd environment $ noPowerPillStatus auraFlags
+          buildPath'  <- checkBuildPath (fmap (fromText . T.pack) $ buildPath auraFlags) (getCachePath confFile)
+          manager     <- newManager tlsManagerSettings
+          let language   = checkLang lang environment
+              buildUser' = fmap T.pack (buildUser auraFlags) <|> getTrueUser environment
+          pure $ do
+            bu <- maybe (failure whoIsBuildUser_1) Right buildUser'
+            Right Settings { inputOf         = map T.pack input
+                           , pacOptsOf       = map T.pack pacOpts
+                           , otherOptsOf     = map (T.pack . show) auraFlags
+                           , managerOf       = manager
+                           , envOf           = environment
+                           , buildUserOf     = User bu
+                           , langOf          = language
+                           , pacmanCmdOf     = pmanCommand
+                           , editorOf        = getEditor environment
+                           , ignoredPkgsOf   = getIgnoredPkgs confFile <> map T.pack (ignoredAuraPkgs auraFlags)
+                           , makepkgFlagsOf  = map T.pack $ makepkgFlags auraFlags
+                           , buildPathOf     = buildPath'
+                           , cachePathOf     = getCachePath confFile
+                           , logFilePathOf   = getLogFilePath confFile
+                           , sortSchemeOf    = sortSchemeStatus auraFlags
+                           , truncationOf    = truncationStatus auraFlags
+                           , beQuiet         = quietStatus auraFlags
+                           , suppressMakepkg = suppressionStatus auraFlags
+                           , delMakeDeps     = delMakeDepsStatus auraFlags
+                           , mustConfirm     = confirmationStatus auraFlags
+                           , neededOnly      = neededStatus auraFlags
+                           , mayHotEdit      = hotEditStatus auraFlags
+                           , diffPkgbuilds   = pbDiffStatus auraFlags
+                           , rebuildDevel    = rebuildDevelStatus auraFlags
+                           , useCustomizepkg = customizepkgStatus auraFlags
+                           , noPowerPill     = noPowerPillStatus auraFlags
+                           , keepSource      = keepSourceStatus auraFlags
+                           , buildABSDeps    = False
+                           , dryRun          = dryRunStatus auraFlags }
 
 debugOutput :: Settings -> IO ()
 debugOutput ss = do
@@ -117,4 +121,4 @@ checkLang (Just lang) _ = lang
 
 checkBuildPath :: MonadIO m => Maybe FilePath -> FilePath -> m FilePath
 checkBuildPath Nothing def   = pure def
-checkBuildPath (Just bp) def = bool def bp <$> shelly (test_d . fromText $ T.pack bp)
+checkBuildPath (Just bp) def = bool def bp <$> shelly (test_d bp)

@@ -1795,6 +1795,10 @@ bashisms_1 = \case
     Swedish    -> "För många bashisms i PKGBUILD."
     _          -> "Too many bashisms in PKGBUILD."
 
+whoIsBuildUser_1 :: Language -> T.Text
+whoIsBuildUser_1 = \case
+  _ -> "Can't determine which user account to build with."
+
 ------------------------
 -- Aura/Pacman functions
 ------------------------
@@ -1816,6 +1820,12 @@ pacmanFailure_1 = \case
     Chinese    -> "请检查你的输入。"
     Swedish    -> "Var god dubbelkolla indata."
     _          -> "Please check your input."
+
+confParsing_1 :: Language -> T.Text
+confParsing_1 = \case
+  _ -> "Unable to parse your pacman.conf file."
+
+
 
 ----------------------------------
 -- Aura/Pkgbuild/Editing functions
