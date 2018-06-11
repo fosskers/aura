@@ -1,13 +1,13 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings #-}
 
 module Aura.Languages.Fields where
 
-import Aura.Types (Language(..))
-import BasePrelude
+import           Aura.Types (Language(..))
+import qualified Data.Text as T
 
 ---
 
-package :: Language -> String
+package :: Language -> T.Text
 package = \case
     Japanese   -> "パッケージ"
     Polish     -> "Pakiet"
@@ -24,7 +24,7 @@ package = \case
     Indonesia  -> "Paket"
     _          -> "Package"
 
-firstInstall :: Language -> String
+firstInstall :: Language -> T.Text
 firstInstall = \case
     Japanese   -> "初インストール"
     Polish     -> "Pierwsza instalacja"
@@ -41,7 +41,7 @@ firstInstall = \case
     Indonesia  -> "Versi sistem"
     _          -> "First Install"
 
-upgrades :: Language -> String
+upgrades :: Language -> T.Text
 upgrades = \case
     Japanese   -> "アップグレード回数"
     Polish     -> "Aktualizacje"
@@ -58,7 +58,7 @@ upgrades = \case
     Indonesia  -> "Tingkatkan"
     _          -> "Upgrades"
 
-recentActions :: Language -> String
+recentActions :: Language -> T.Text
 recentActions = \case
     Japanese   -> "近況"
     Polish     -> "Ostatnie akcje"
@@ -75,7 +75,7 @@ recentActions = \case
     Indonesia  -> "Aksi sekarang"
     _          -> "Recent Actions"
 
-repository :: Language -> String
+repository :: Language -> T.Text
 repository = \case
     Japanese   -> "リポジトリ"
     Polish     -> "Repozytorium"
@@ -92,7 +92,7 @@ repository = \case
     Indonesia  -> "Lumbung"
     _          -> "Repository"
 
-name :: Language -> String
+name :: Language -> T.Text
 name = \case
     Japanese   -> "名前"
     Polish     -> "Nazwa"
@@ -109,7 +109,7 @@ name = \case
     Indonesia  -> "Nama"
     _          -> "Name"
 
-version :: Language -> String
+version :: Language -> T.Text
 version = \case
     Japanese   -> "バージョン"
     Polish     -> "Wersja"
@@ -126,7 +126,7 @@ version = \case
     Indonesia  -> "Versi"
     _          -> "Version"
 
-aurStatus :: Language -> String
+aurStatus :: Language -> T.Text
 aurStatus = \case
     Japanese   -> "パッケージ状態"
     Polish     -> "Status w AUR"
@@ -142,7 +142,7 @@ aurStatus = \case
     _          -> "AUR Status"
 
 -- NEEDS TRANSLATION
-maintainer :: Language -> String
+maintainer :: Language -> T.Text
 maintainer = \case
     Japanese   -> "管理者"
     Spanish    -> "Mantenedor"
@@ -152,7 +152,7 @@ maintainer = \case
     Indonesia  -> "Pemelihara"
     _          -> "Maintainer"
 
-projectUrl :: Language -> String
+projectUrl :: Language -> T.Text
 projectUrl = \case
     Japanese   -> "プロジェクト"
     Polish     -> "URL Projektu"
@@ -169,7 +169,7 @@ projectUrl = \case
     Indonesia  -> "URL Proyek"
     _          -> "Project URL"
 
-aurUrl :: Language -> String
+aurUrl :: Language -> T.Text
 aurUrl = \case
     Japanese   -> "パッケージページ"
     Polish     -> "URL w AUR"
@@ -183,7 +183,7 @@ aurUrl = \case
     Indonesia  -> "URL AUR"
     _          -> "AUR URL"
 
-license :: Language -> String
+license :: Language -> T.Text
 license = \case
     Japanese   -> "ライセンス"
     Polish     -> "Licencja"
@@ -200,7 +200,7 @@ license = \case
     Indonesia  -> "Lisensi"
     _          -> "License"
 
-dependsOn :: Language -> String
+dependsOn :: Language -> T.Text
 dependsOn = \case
     Japanese   -> "従属パッケージ"
     Polish     -> "Zależności"
@@ -215,7 +215,7 @@ dependsOn = \case
     Indonesia  -> "Bergantung pada"
     _          -> "Depends On"
 
-buildDeps :: Language -> String
+buildDeps :: Language -> T.Text
 buildDeps = \case
     Japanese   -> "作成時従属パ"
     German     -> "Build-Abhängigkeiten"
@@ -225,7 +225,7 @@ buildDeps = \case
     Indonesia  -> "Dependensi bangun"
     _          -> "Build Deps"
 
-votes :: Language -> String
+votes :: Language -> T.Text
 votes = \case
     Japanese   -> "投票数"
     Polish     -> "Głosy"
@@ -242,12 +242,12 @@ votes = \case
     Indonesia  -> "Suara"
     _          -> "Votes"
 
-popularity :: Language -> String
+popularity :: Language -> T.Text
 popularity = \case
     Japanese   -> "人気"
     _          -> "Popularity"
 
-description :: Language -> String
+description :: Language -> T.Text
 description = \case
     Japanese   -> "概要"
     Polish     -> "Opis"
@@ -264,7 +264,7 @@ description = \case
     Indonesia  -> "Deskripsi"
     _          -> "Description"
 
-makeDeps :: Language -> String
+makeDeps :: Language -> T.Text
 makeDeps = \case
     Polish     -> "Zależności Make"
     Croatian   -> "Make Zavisnosti"
