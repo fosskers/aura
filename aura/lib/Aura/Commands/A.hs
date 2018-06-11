@@ -120,14 +120,14 @@ renderAurPkgInfo ss ai = entrify ss fields entries
                     , aurVersionOf ai
                     , outOfDateMsg (dateObsoleteOf ai) $ langOf ss
                     , orphanedMsg (aurMaintainerOf ai) $ langOf ss
-                    , cyan . maybe "(null)" id $ urlOf ai
+                    , cyan . fromMaybe "(null)" $ urlOf ai
                     , pkgUrl $ aurNameOf ai
                     , T.unwords $ licenseOf ai
                     , T.unwords $ dependsOf ai
                     , T.unwords $ makeDepsOf ai
                     , yellow . T.pack . show $ aurVotesOf ai
                     , yellow . T.pack . printf "%0.2f" $ popularityOf ai
-                    , maybe "(null)" id $ aurDescriptionOf ai ]
+                    , fromMaybe "(null)" $ aurDescriptionOf ai ]
 
 aurPkgSearch :: [T.Text] -> Aura ()
 aurPkgSearch [] = pure ()
@@ -151,7 +151,7 @@ renderSearch ss r (i, e) = searchResult
           c cl cs = T.intercalate (bCyan r) . map cl $ T.splitOn r cs
           repo = magenta "aur/"
           n = c bForeground $ aurNameOf i
-          d = c noColour . maybe "(null)" id $ aurDescriptionOf i
+          d = c noColour . fromMaybe "(null)" $ aurDescriptionOf i
           l = yellow . T.pack . show $ aurVotesOf i  -- `l` for likes?
           p = yellow . T.pack . printf "%0.2f" $ popularityOf i
           v = case dateObsoleteOf i of

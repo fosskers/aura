@@ -112,7 +112,7 @@ getPacmanConf = shelly $ do
   pure . first (const (Failure confParsing_1)) $ parse config "pacman config" file
 
 getIgnoredPkgs :: Config -> [T.Text]
-getIgnoredPkgs (Config c) = maybe [] id $ M.lookup "IgnorePkg" c
+getIgnoredPkgs (Config c) = fromMaybe [] $ M.lookup "IgnorePkg" c
 
 getCachePath :: Config -> Sh.FilePath
 getCachePath (Config c) = case M.lookup "CacheDir" c of

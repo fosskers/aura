@@ -38,7 +38,7 @@ module Aura.Utils
 import           Aura.Colour.Text
 import           Aura.Languages (Language, whitespace, yesNoMessage, yesPattern)
 import           Aura.Settings.Base
-import           BasePrelude hiding (Version, try)
+import           BasePrelude hiding (Version)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           System.IO (stdout, hFlush)
@@ -84,7 +84,7 @@ yesNoPrompt lang msg = do
 
 -- | An empty response emplies "yes".
 isAffirmative :: Language -> T.Text -> Bool
-isAffirmative l t = T.null t || any (== t) (yesPattern l)
+isAffirmative l t = T.null t || elem t (yesPattern l)
 
 -- | Doesn't prompt when `--noconfirm` is used.
 optionalPrompt :: MonadIO m => Settings -> (Language -> T.Text) -> m Bool

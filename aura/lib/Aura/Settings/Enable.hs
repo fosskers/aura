@@ -50,7 +50,7 @@ getSettings lang (auraFlags, input, pacOpts) = do
   where f confFile = do
           environment <- M.fromList . map (bimap T.pack T.pack) <$> getEnvironment
           pmanCommand <- getPacmanCmd environment $ noPowerPillStatus auraFlags
-          buildPath'  <- checkBuildPath (fmap (fromText . T.pack) $ buildPath auraFlags) (getCachePath confFile)
+          buildPath'  <- checkBuildPath (fromText . T.pack <$> buildPath auraFlags) (getCachePath confFile)
           manager     <- newManager tlsManagerSettings
           let language   = checkLang lang environment
               buildUser' = fmap T.pack (buildUser auraFlags) <|> getTrueUser environment
