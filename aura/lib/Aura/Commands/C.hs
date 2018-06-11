@@ -49,7 +49,6 @@ import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Shelly hiding (path)
-import           Text.Regex.PCRE ((=~))
 import           Utilities
 
 ---
@@ -62,25 +61,22 @@ downgradePackages pacOpts pkgs = do
   ss    <- ask
   let cachePath = cachePathOf ss
   reals <- shelly $ pkgsInCache ss pkgs
-  reportBadDowngradePkgs . map T.unpack $ pkgs \\ reals
+  reportBadDowngradePkgs $ pkgs \\ reals
   if | null reals -> pure $ Right ()
      | otherwise -> do
          cache   <- shelly $ cacheContents cachePath
-         choices <- traverse (fmap T.pack . getDowngradeChoice cache) $ map T.unpack reals
+         choices <- traverse (getDowngradeChoice cache) reals
          pacman $ "-U" : pacOpts <> map (toTextIgnore . (cachePath </>)) choices
 
-getDowngradeChoice :: Cache -> String -> Aura String
+getDowngradeChoice :: Cache -> T.Text -> Aura T.Text
 getDowngradeChoice cache pkg = do
   let choices = getChoicesFromCache cache pkg
   asks langOf >>= notify . getDowngradeChoice_1 pkg
   liftIO $ getSelection choices
 
--- TODO Could use a real parser for this, and keep `Text`.
-getChoicesFromCache :: Cache -> String -> [String]
-getChoicesFromCache (Cache cache) pkg = sort choices
-    where choices = filter match (map (T.unpack . _pkgpath) $ M.elems cache)
-          patt    = "-[0-9:.]+-[1-9]+-(x86_64|i686|any)[.]pkg[.]tar[.]xz$"
-          match p = p =~ ("^" <> pkg <> patt)
+getChoicesFromCache :: Cache -> T.Text -> [T.Text]
+getChoicesFromCache (Cache cache) pkg = sort . mapMaybe f $ M.toList cache
+  where f (SimplePkg pn _, pth) = bool Nothing (Just $ _pkgpath pth) $ pkg == pn
 
 -- `[]` as input yields the contents of the entire cache.
 searchCache :: [T.Text] -> Aura ()
@@ -123,11 +119,11 @@ copyAndNotify dir (PackagePath p : ps) n = do
   copyAndNotify dir ps $ n + 1
 
 -- Acts as a filter for the input to `cleanCache`.
-cleanCache :: [String] -> Aura (Either Failure ())
+cleanCache :: [T.Text] -> Aura (Either Failure ())
 cleanCache [] = cleanCache' 0
 cleanCache (input:_)  -- Ignores all but first input element.
-  | all isDigit input = cleanCache' $ read input
-  | otherwise         = pure . failure $ preCleanCache_1 input
+  | T.all isDigit input = cleanCache' . read $ T.unpack input
+  | otherwise           = pure . failure $ preCleanCache_1 input
 
 -- Keeps a certain number of package files in the cache according to
 -- a number provided by the user. The rest are deleted.
@@ -176,5 +172,5 @@ groupByName pkgs = groupBy sameBaseName $ sortPkgs pkgs
 ------------
 -- REPORTING
 ------------
-reportBadDowngradePkgs :: [String] -> Aura ()
+reportBadDowngradePkgs :: [T.Text] -> Aura ()
 reportBadDowngradePkgs = badReport reportBadDowngradePkgs_1

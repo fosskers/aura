@@ -29,15 +29,15 @@ import           BasePrelude hiding (FilePath)
 import           Control.Monad.Trans (MonadIO)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
+import qualified Data.Text.IO as T
 import           Shelly
 import           System.IO hiding (FilePath)
-import           Text.Regex.PCRE ((=~))
 
 ---
 
-type Pattern = (String, String)
+data Pattern = Pattern { _pattern :: T.Text, _target :: T.Text }
 
-type Regex = String
+newtype Regex = Regex T.Text
 
 ---
 
@@ -60,14 +60,11 @@ hardBreak p xs = (firstHalf, secondHalf')
 
 -- The Int argument is the final length of the padded String,
 -- not the length of the pad. Is that stupid?
-postPad :: String -> String -> Int -> String
-postPad str pad len = str <> fold (replicate (len - length str) pad)
+postPad :: T.Text -> Char -> Int -> T.Text
+postPad str pad len = str <> T.pack (replicate (len - T.length str) pad)
 
 prePad :: [a] -> a -> Int -> [a]
 prePad xs x len = replicate (len - length xs) x <> xs
-
-whitespaces :: [Char]
-whitespaces = [' ', '\t']
 
 asInt :: String -> Int
 asInt = foldl (\acc i -> acc * 10 + digitToInt i) 0
@@ -75,15 +72,8 @@ asInt = foldl (\acc i -> acc * 10 + digitToInt i) 0
 ---------
 -- TUPLES
 ---------
--- I'm surprised the following three functions don't already exist.
 tripleFst :: (a, b, c) -> a
 tripleFst (a, _, _) = a
-
-tripleSnd :: (a, b, c) -> b
-tripleSnd (_, b, _) = b
-
-tripleThrd :: (a, b, c) -> c
-tripleThrd (_, _, c) = c
 
 -------
 -- LIST
@@ -97,20 +87,23 @@ list _ f xs   = f xs
 -- REGEX
 --------
 -- | Replaces a (p)attern with a (t)arget in a line if possible.
-replaceByPatt :: [Pattern] -> String -> String
+replaceByPatt :: [Pattern] -> T.Text -> T.Text
 replaceByPatt [] line = line
-replaceByPatt ((p, t):ps) line | p == m    = replaceByPatt ps (b <> t <> a)
-                               | otherwise = replaceByPatt ps line
-                         where (b, m, a) = line =~ p :: (String, String, String)
+replaceByPatt (Pattern p t : ps) line = case T.breakOn p line of
+  -- No match.
+  (_, "")    -> replaceByPatt ps line
+  -- Matched. The matched pattern is still present at the head of `rest`,
+  -- so we need to drop it first.
+  (cs, rest) -> replaceByPatt ps (cs <> t <> T.drop (T.length p) rest)
 
-searchLines :: Regex -> [String] -> [String]
-searchLines pat = filter (=~ pat)
+searchLines :: Regex -> [T.Text] -> [T.Text]
+searchLines (Regex pat) = filter (T.isInfixOf pat)
 
 -----
 -- IO
 -----
 -- | Given a number of selections, allows the user to choose one.
-getSelection :: [String] -> IO String
+getSelection :: [T.Text] -> IO T.Text
 getSelection [] = pure ""
 getSelection choiceLabels = do
   let quantity = length choiceLabels
@@ -147,10 +140,10 @@ type Environment = M.Map T.Text T.Text
 newtype User = User { _user :: T.Text } deriving (Eq)
 
 -- | Code borrowed from `ansi-terminal` library by Max Bolingbroke.
-csi :: [Int] -> String -> String
-csi args code = "\ESC[" <> intercalate ";" (show <$> args) <> code
+csi :: [Int] -> T.Text -> T.Text
+csi args code = "\ESC[" <> T.intercalate ";" (map (T.pack . show) args) <> code
 
-cursorUpLineCode :: Int -> String
+cursorUpLineCode :: Int -> T.Text
 cursorUpLineCode n = csi [n] "F"
 
 -- | Perform a `Sh` action quietly while guarding against exceptions,
@@ -202,15 +195,15 @@ chown :: User -> T.Text -> [T.Text] -> Sh ()
 chown (User user) pth args = void . quietSh $ run_ "chown" (args <> [user, pth])
 
 hideCursor :: IO ()
-hideCursor = putStr hideCursorCode
+hideCursor = T.putStr hideCursorCode
 
 showCursor :: IO ()
-showCursor = putStr showCursorCode
+showCursor = T.putStr showCursorCode
 
-hideCursorCode :: String
+hideCursorCode :: T.Text
 hideCursorCode = csi [] "?25l"
 
-showCursorCode :: String
+showCursorCode :: T.Text
 showCursorCode = csi [] "?25h"
 
 ---------

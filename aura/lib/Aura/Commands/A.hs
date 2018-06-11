@@ -50,10 +50,10 @@ import           BasePrelude hiding ((<>))
 import           Data.Semigroup ((<>))
 import qualified Data.Set as S (member, fromList)
 import qualified Data.Text as T
+import qualified Data.Text.IO as T
 import           Data.Versions
 import           Linux.Arch.Aur
 import           Shelly (whenM, pwd, shelly, toTextIgnore)
-import           Text.Regex.PCRE ((=~))
 
 ---
 
@@ -80,7 +80,7 @@ upgradeAURPkgs pacOpts pkgs = do
          devel <- develPkgCheck
          notify $ upgradeAURPkgs_2 lang
          if | null toUpgrade && null devel -> warn $ upgradeAURPkgs_3 lang
-            | otherwise -> reportPkgsToUpgrade . map T.unpack $ map prettify toUpgrade <> devel
+            | otherwise -> reportPkgsToUpgrade $ map prettify toUpgrade <> devel
          install pacOpts $ (aurNameOf . fst <$> toUpgrade) <> pkgs <> devel
            where prettify (p, v) = aurNameOf p <> " : " <> prettyV v <> " => " <> aurVersionOf p
 -- TODO: Use `printf` with `prettify` to line up the colons.
@@ -104,30 +104,30 @@ develPkgCheck :: Aura [T.Text]
 develPkgCheck = ask >>= \ss ->
   if rebuildDevel ss then develPkgs else pure []
 
-aurPkgInfo :: [String] -> Aura ()
-aurPkgInfo (fmap T.pack -> pkgs) = aurInfo pkgs >>= traverse_ displayAurPkgInfo
+aurPkgInfo :: [T.Text] -> Aura ()
+aurPkgInfo pkgs = aurInfo pkgs >>= traverse_ displayAurPkgInfo
 
 -- By this point, the Package definitely exists, so we can assume its
 -- PKGBUILD exists on the AUR servers as well.
 displayAurPkgInfo :: AurInfo -> Aura ()
-displayAurPkgInfo ai = ask >>= \ss -> liftIO . putStrLn $ renderAurPkgInfo ss ai <> "\n"
+displayAurPkgInfo ai = ask >>= \ss -> liftIO . T.putStrLn $ renderAurPkgInfo ss ai <> "\n"
 
-renderAurPkgInfo :: Settings -> AurInfo -> String
+renderAurPkgInfo :: Settings -> AurInfo -> T.Text
 renderAurPkgInfo ss ai = entrify ss fields entries
     where fields   = fmap bForeground . infoFields . langOf $ ss
           entries = [ magenta "aur"
-                    , bForeground $ T.unpack $ aurNameOf ai
-                    , T.unpack $ aurVersionOf ai
+                    , bForeground $ aurNameOf ai
+                    , aurVersionOf ai
                     , outOfDateMsg (dateObsoleteOf ai) $ langOf ss
-                    , orphanedMsg (T.unpack <$> aurMaintainerOf ai) $ langOf ss
-                    , cyan $ maybe "(null)" T.unpack (urlOf ai)
-                    , pkgUrl $ T.unpack $ aurNameOf ai
-                    , T.unpack . T.unwords $ licenseOf ai
-                    , T.unpack . T.unwords $ dependsOf ai
-                    , T.unpack . T.unwords $ makeDepsOf ai
-                    , yellow . show $ aurVotesOf ai
-                    , yellow $ printf "%0.2f" (popularityOf ai)
-                    , maybe "(null)" T.unpack (aurDescriptionOf ai) ]
+                    , orphanedMsg (aurMaintainerOf ai) $ langOf ss
+                    , cyan . maybe "(null)" id $ urlOf ai
+                    , pkgUrl $ aurNameOf ai
+                    , T.unwords $ licenseOf ai
+                    , T.unwords $ dependsOf ai
+                    , T.unwords $ makeDepsOf ai
+                    , yellow . T.pack . show $ aurVotesOf ai
+                    , yellow . T.pack . printf "%0.2f" $ popularityOf ai
+                    , maybe "(null)" id $ aurDescriptionOf ai ]
 
 aurPkgSearch :: [T.Text] -> Aura ()
 aurPkgSearch [] = pure ()
@@ -140,25 +140,23 @@ aurPkgSearch (fold -> regex) = do
             Tail n -> reverse . take n . reverse
   results <- fmap (\x -> (x, aurNameOf x `S.member` db)) . t
             <$> aurSearch regex
-  traverse_ (liftIO . putStrLn . renderSearch ss (T.unpack regex)) results
+  traverse_ (liftIO . T.putStrLn . renderSearch ss regex) results
 
-renderSearch :: Settings -> String -> (AurInfo, Bool) -> String
+renderSearch :: Settings -> T.Text -> (AurInfo, Bool) -> T.Text
 renderSearch ss r (i, e) = searchResult
     where searchResult = if beQuiet ss then sparseInfo else verboseInfo
-          sparseInfo   = T.unpack $ aurNameOf i
+          sparseInfo   = aurNameOf i
           verboseInfo  = repo <> n <> " " <> v <> " (" <> l <> " | " <> p <>
-                         ")" <> (if e then s else "") <> "\n    " <> d
-          c cl cs = case cs =~ ("(?i)" <> r) of
-                      (b, m, a) -> cl b <> bCyan m <> cl a
+                         ")" <> (if e then bForeground " [installed]" else "") <> "\n    " <> d
+          c cl cs = T.intercalate (bCyan r) . map cl $ T.splitOn r cs
           repo = magenta "aur/"
-          n = c bForeground $ T.unpack $ aurNameOf i
-          d = c noColour $ maybe "(null)" T.unpack (aurDescriptionOf i)
-          l = yellow . show $ aurVotesOf i  -- `l` for likes?
-          p = yellow $ printf "%0.2f" (popularityOf i)
+          n = c bForeground $ aurNameOf i
+          d = c noColour . maybe "(null)" id $ aurDescriptionOf i
+          l = yellow . T.pack . show $ aurVotesOf i  -- `l` for likes?
+          p = yellow . T.pack . printf "%0.2f" $ popularityOf i
           v = case dateObsoleteOf i of
-            Just _  -> red $ T.unpack $ aurVersionOf i
-            Nothing -> green $ T.unpack $ aurVersionOf i
-          s = c bForeground (" [installed]" :: String)
+            Just _  -> red   $ aurVersionOf i
+            Nothing -> green $ aurVersionOf i
 
 displayPkgDeps :: [T.Text] -> Aura (Either Failure ())
 displayPkgDeps = I.displayPkgDeps installOptions
@@ -170,13 +168,13 @@ downloadTarballs pkgs = do
     where downloadTBall path pkg = whenM (isAurPackage pkg) $ do
               manager <- asks managerOf
               lang    <- asks langOf
-              notify $ downloadTarballs_1 (T.unpack pkg) lang
+              notify $ downloadTarballs_1 pkg lang
               void . liftIO $ sourceTarball manager path pkg
 
-displayPkgbuild :: [String] -> Aura ()
+displayPkgbuild :: [T.Text] -> Aura ()
 displayPkgbuild ps = do
   m <- asks managerOf
-  I.displayPkgbuild (traverse (fmap (fmap T.unpack) . pkgbuild m)) ps
+  I.displayPkgbuild (traverse (pkgbuild m . T.unpack)) ps
 
 isntMostRecent :: (AurInfo, Versioning) -> Bool
 isntMostRecent (ai, v) = trueVer > Just v
@@ -185,6 +183,6 @@ isntMostRecent (ai, v) = trueVer > Just v
 ------------
 -- REPORTING
 ------------
-reportPkgsToUpgrade :: [String] -> Aura ()
+reportPkgsToUpgrade :: [T.Text] -> Aura ()
 reportPkgsToUpgrade pkgs = asks langOf >>= \lang ->
   printList green cyan (reportPkgsToUpgrade_1 lang) pkgs

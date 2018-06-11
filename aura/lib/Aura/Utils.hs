@@ -36,13 +36,13 @@ module Aura.Utils
   ) where
 
 import           Aura.Colour.Text
-import           Aura.Languages (Language, whitespace, yesNoMessage, yesRegex)
+import           Aura.Languages (Language, whitespace, yesNoMessage, yesPattern)
 import           Aura.Settings.Base
 import           BasePrelude hiding (Version, try)
 import qualified Data.Text as T
+import qualified Data.Text.IO as T
 import           System.IO (stdout, hFlush)
 import           Text.Megaparsec
-import           Text.Regex.PCRE ((=~))
 import           Utilities (postPad)
 
 ---
@@ -50,41 +50,44 @@ import           Utilities (postPad)
 ----------------
 -- CUSTOM OUTPUT
 ----------------
-putStrLnA :: MonadIO m => Colouror -> String -> m ()
+putStrLnA :: MonadIO m => Colouror -> T.Text -> m ()
 putStrLnA colour s = putStrA colour $ s <> "\n"
 
-putStrLnA' :: Colouror -> String -> String
+putStrLnA' :: Colouror -> T.Text -> T.Text
 putStrLnA' colour s = putStrA' colour s <> "\n"
 
 -- Added `hFlush` here because some output appears to lag sometimes.
-putStrA :: MonadIO m => Colouror -> String -> m ()
-putStrA colour = liftIO . putStr . putStrA' colour
+putStrA :: MonadIO m => Colouror -> T.Text -> m ()
+putStrA colour = liftIO . T.putStr . putStrA' colour
 --putStrA colour s = liftIO (putStr (putStrA' colour s) *> hFlush stdout)
 
-putStrA' :: Colouror -> String -> String
+putStrA' :: Colouror -> T.Text -> T.Text
 putStrA' colour s = "aura >>= " <> colour s
 
-printList :: MonadIO m => Colouror -> Colouror -> String -> [String] -> m ()
+printList :: MonadIO m => Colouror -> Colouror -> T.Text -> [T.Text] -> m ()
 printList _ _ _ []        = pure ()
-printList tc ic msg items = liftIO . putStrLn . printList' tc ic msg $ items
+printList tc ic msg items = liftIO . T.putStrLn . printList' tc ic msg $ items
 
-printList' :: Colouror -> Colouror -> String -> [String] -> String
+printList' :: Colouror -> Colouror -> T.Text -> [T.Text] -> T.Text
 printList' tc ic m is = putStrLnA' tc m <> colouredItems
-    where colouredItems = is >>= \i -> ic i <> "\n"
+  where colouredItems = T.unlines $ map ic is
 
 ----------
 -- PROMPTS
 ----------
--- | Takes a prompt message and a regex of valid answer patterns.
-yesNoPrompt :: MonadIO m => Language -> String -> m Bool
+yesNoPrompt :: MonadIO m => Language -> T.Text -> m Bool
 yesNoPrompt lang msg = do
   putStrA yellow $ msg <> " " <> yesNoMessage lang <> " "
   liftIO $ hFlush stdout
-  response <- liftIO getLine
-  pure $ response =~ yesRegex lang
+  response <- liftIO T.getLine
+  pure $ isAffirmative lang response
+
+-- | An empty response emplies "yes".
+isAffirmative :: Language -> T.Text -> Bool
+isAffirmative l t = T.null t || any (== t) (yesPattern l)
 
 -- | Doesn't prompt when `--noconfirm` is used.
-optionalPrompt :: MonadIO m => Settings -> (Language -> String) -> m Bool
+optionalPrompt :: MonadIO m => Settings -> (Language -> T.Text) -> m Bool
 optionalPrompt ss msg | mustConfirm ss = yesNoPrompt (langOf ss) (msg $ langOf ss)
                       | otherwise      = pure True
 
@@ -93,6 +96,7 @@ optionalPrompt ss msg | mustConfirm ss = yesNoPrompt (langOf ss) (msg $ langOf s
 -------
 
 -- TODO `Versioning` here?
+-- This is pretty similar to `parseDep`...
 splitNameAndVer :: T.Text -> Maybe (T.Text, T.Text)
 splitNameAndVer = either (const Nothing) Just . parse parser "splitNameAndVer"
   where parser :: Parsec Void T.Text (T.Text, T.Text)
@@ -102,15 +106,14 @@ splitNameAndVer = either (const Nothing) Just . parse parser "splitNameAndVer"
           ver  <- takeRest
           pure (name, ver)
 
--- Format two lists into two nice rows a la `-Qi` or `-Si`.
-entrify :: Settings -> [String] -> [String] -> String
-entrify ss fs es = intercalate "\n" fsEs
-    where fsEs = zipWith combine fs' es
-          fs'  = padding ss fs
+-- | Format two lists into two nice rows a la `-Qi` or `-Si`.
+entrify :: Settings -> [T.Text] -> [T.Text] -> T.Text
+entrify ss fs es = T.unlines $ zipWith combine fs' es
+    where fs' = padding ss fs
           combine f e = f <> " : " <> e
 
--- Right-pads strings according to the longest string in the group.
-padding :: Settings -> [String] -> [String]
-padding ss fs = (\x -> postPad x ws longest) <$> fs
+-- | Right-pads strings according to the longest string in the group.
+padding :: Settings -> [T.Text] -> [T.Text]
+padding ss fs = map (\x -> postPad x ws longest) fs
     where ws      = whitespace $ langOf ss
-          longest = maximum (length <$> fs)
+          longest = maximum $ map T.length fs
