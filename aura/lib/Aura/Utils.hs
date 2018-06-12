@@ -43,7 +43,6 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           System.IO (stdout, hFlush)
 import           Text.Megaparsec
-import           Utilities (postPad)
 
 ---
 
@@ -114,6 +113,6 @@ entrify ss fs es = T.unlines $ zipWith combine fs' es
 
 -- | Right-pads strings according to the longest string in the group.
 padding :: Settings -> [T.Text] -> [T.Text]
-padding ss fs = map (\x -> postPad x ws longest) fs
+padding ss fs = map (T.justifyLeft longest ws) fs
     where ws      = whitespace $ langOf ss
           longest = maximum $ map T.length fs

@@ -23,7 +23,28 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Utilities where
+module Utilities
+  ( -- * Strings
+    Regex(..), Pattern(..)
+  , replaceByPatt, searchLines
+  , split, hardBreak
+    -- * Tuples
+  , tripleFst
+    -- * Lists
+  , list
+    -- * Shell
+  , Environment(..), User(..)
+  , csi, cursorUpLineCode, hideCursor, showCursor
+  , getTrueUser, getEditor, getLocale
+  , hasRootPriv, isTrueRoot
+  , quietSh, loudSh, exitCode
+  , chown
+    -- * File IO
+  , openEditor
+  , ifFile
+  , getSelection
+  , decompress
+  ) where
 
 import           BasePrelude hiding (FilePath)
 import           Control.Monad.Trans (MonadIO)
@@ -60,16 +81,18 @@ hardBreak p xs = (firstHalf, secondHalf')
           secondHalf  = dropWhile (not . p) xs
           secondHalf' = if null secondHalf then [] else tail secondHalf
 
--- The Int argument is the final length of the padded String,
--- not the length of the pad. Is that stupid?
-postPad :: T.Text -> Char -> Int -> T.Text
-postPad str pad len = str <> T.pack (replicate (len - T.length str) pad)
+-- | Replaces a (p)attern with a (t)arget in a line if possible.
+replaceByPatt :: [Pattern] -> T.Text -> T.Text
+replaceByPatt [] line = line
+replaceByPatt (Pattern p t : ps) line = case T.breakOn p line of
+  -- No match.
+  (_, "")    -> replaceByPatt ps line
+  -- Matched. The matched pattern is still present at the head of `rest`,
+  -- so we need to drop it first.
+  (cs, rest) -> replaceByPatt ps (cs <> t <> T.drop (T.length p) rest)
 
-prePad :: [a] -> a -> Int -> [a]
-prePad xs x len = replicate (len - length xs) x <> xs
-
-asInt :: String -> Int
-asInt = foldl (\acc i -> acc * 10 + digitToInt i) 0
+searchLines :: Regex -> [T.Text] -> [T.Text]
+searchLines (Regex pat) = filter (T.isInfixOf pat)
 
 ---------
 -- TUPLES
@@ -84,22 +107,6 @@ tripleFst (a, _, _) = a
 list :: b -> ([a] -> b) -> [a] -> b
 list def _ [] = def
 list _ f xs   = f xs
-
---------
--- REGEX
---------
--- | Replaces a (p)attern with a (t)arget in a line if possible.
-replaceByPatt :: [Pattern] -> T.Text -> T.Text
-replaceByPatt [] line = line
-replaceByPatt (Pattern p t : ps) line = case T.breakOn p line of
-  -- No match.
-  (_, "")    -> replaceByPatt ps line
-  -- Matched. The matched pattern is still present at the head of `rest`,
-  -- so we need to drop it first.
-  (cs, rest) -> replaceByPatt ps (cs <> t <> T.drop (T.length p) rest)
-
-searchLines :: Regex -> [T.Text] -> [T.Text]
-searchLines (Regex pat) = filter (T.isInfixOf pat)
 
 -----
 -- IO
@@ -130,6 +137,11 @@ decompress :: MonadIO m => T.Text -> T.Text -> m T.Text
 decompress fp file = do
   shelly $ run_ "bsdtar" ["-zxf", file, "-C", fp]
   pure . T.dropEnd 7 $ file
+
+-- | If a file exists, it performs action `t` on the argument.
+-- | If the file doesn't exist, it performs `f` and returns the argument.
+ifFile :: MonadIO m => (a -> m a) -> m b -> FilePath -> a -> m a
+ifFile t f file x = shelly (test_f file) >>= bool (f $> x) (t x)
 
 --------
 -- SHELL
@@ -207,12 +219,3 @@ hideCursorCode = csi [] "?25l"
 
 showCursorCode :: T.Text
 showCursorCode = csi [] "?25h"
-
----------
--- MONADS
----------
-
--- | If a file exists, it performs action `t` on the argument.
--- | If the file doesn't exist, it performs `f` and returns the argument.
-ifFile :: MonadIO m => (a -> m a) -> m b -> FilePath -> a -> m a
-ifFile t f file x = shelly (test_f file) >>= bool (f $> x) (t x)
