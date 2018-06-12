@@ -35,9 +35,8 @@ import qualified Data.Text.IO as T
 
 ---
 
-displayOrphans :: [T.Text] -> Aura (Either Failure ())
-displayOrphans []   = orphans >>= fmap Right . liftIO . traverse_ T.putStrLn
-displayOrphans pkgs = adoptPkg pkgs
+displayOrphans :: Aura (Either Failure ())
+displayOrphans = orphans >>= fmap Right . liftIO . traverse_ T.putStrLn
 
 adoptPkg :: [T.Text] -> Aura (Either Failure ())
 adoptPkg pkgs = fmap join . sudo . pacman $ ["-D", "--asexplicit"] <> pkgs

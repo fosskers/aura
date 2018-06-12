@@ -53,10 +53,10 @@ viewLogFile :: FilePath -> Aura ()
 viewLogFile logFilePath = void . shelly . loudSh $ run_ "less" [toTextIgnore logFilePath]
 
 -- Very similar to `searchCache`. But is this worth generalizing?
-searchLogFile :: Settings -> [T.Text] -> IO ()
+searchLogFile :: Settings -> T.Text -> IO ()
 searchLogFile ss input = do
   logFile <- T.lines <$> shelly (readfile $ logFilePathOf ss)
-  traverse_ T.putStrLn $ searchLines (Regex $ T.unwords input) logFile
+  traverse_ T.putStrLn $ searchLines (Regex input) logFile
 
 logInfoOnPkg :: [T.Text] -> Aura ()
 logInfoOnPkg []   = pure ()

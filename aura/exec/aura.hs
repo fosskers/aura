@@ -90,15 +90,20 @@ executeOpts (Program ops cmn mkp cnf inp lng) = do
     Left _          -> fmap Right . liftIO $ T.putStrLn "LEFT!"
     Right (Log o)   ->
       case o of
-        Nothing            -> fmap Right . liftIO $ T.putStrLn "LogView" -- ask >>= fmap Right . L.viewLogFile . logFilePathOf
-        Just (LogInfo ps)  -> fmap Right . liftIO $ T.putStrLn $ "LogInfo: " <> mconcat ps
-        Just (LogSearch s) -> fmap Right . liftIO $ T.putStrLn $ "LogSearch: " <> s
+        Nothing            -> ask >>= fmap Right . L.viewLogFile . logFilePathOf
+        Just (LogInfo ps)  -> Right <$> L.logInfoOnPkg ps
+        Just (LogSearch s) -> ask >>= fmap Right . liftIO . flip L.searchLogFile s
     Right (Cache o) ->
       case o of
         Right ps               -> fmap Right . liftIO $ traverse_ T.putStrLn ps
         Left (CacheSearch s)   -> fmap Right . liftIO $ T.putStrLn $ "CacheSearch: " <> s
         Left (CacheClean n)    -> fmap Right . liftIO $ T.putStrLn $ "CacheClean: " <> T.pack (show n)
         Left (CacheBackup pth) -> fmap Right . liftIO $ T.putStrLn $ "CacheBackup: " <> toTextIgnore pth
+    Right (Orphans o) ->
+      case o of
+        Nothing               -> O.displayOrphans
+        Just OrphanAbandon    -> undefined -- fmap join . sudo $ orphans >>= flip removePkgs (map T.pack pacOpts)
+        Just (OrphanAdopt ps) -> O.adoptPkg ps
 {-
 processFlags :: [String] -> (UserInput, Maybe Language)
 processFlags args = ((flags, nub input, pacOpts'), language)

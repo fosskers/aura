@@ -46,27 +46,26 @@ data AuraOp = AurSync
             | Backup
             | Cache (Either CacheOp [T.Text])
             | Log (Maybe LogOp)
-            | Orphans
+            | Orphans (Maybe OrphanOp)
             | Version
 
 data CacheOp = CacheBackup FilePath | CacheClean Word | CacheSearch T.Text
 
 data LogOp = LogInfo [T.Text] | LogSearch T.Text
 
+data OrphanOp = OrphanAbandon | OrphanAdopt [T.Text]
+
 opts :: ParserInfo Program
 opts = info (program <**> helper) (fullDesc <> header "Aura - Package manager for Arch Linux and the AUR.")
 
 program :: Parser Program
 program = Program
-  <$> (fmap Right (cache <|> log))
+  <$> (fmap Right (cache <|> log <|> orphans))
   <*> pure S.empty
   <*> pure S.empty
   <*> pure S.empty
   <*> pure S.empty
   <*> optional language
-
--- For accepting an arbitrary number of args
--- some (argument str (metavar "FILES..."))
 
 version :: Parser AuraOp
 version = flag' Version (long "version" <> short 'V' <> help "Display Aura's version.")
@@ -74,10 +73,9 @@ version = flag' Version (long "version" <> short 'V' <> help "Display Aura's ver
 -- aursync :: Parser
 
 cache :: Parser AuraOp
-cache = Cache <$> (bigC *> (fmap Left mods <|> fmap Right args))
+cache = Cache <$> (bigC *> (fmap Left mods <|> fmap Right someArgs))
   where bigC = flag' () (long "downgrade" <> short 'C' <> help "Interact with the package cache.")
         mods = backup <|> clean <|> search
-        args = some (argument str (metavar "PACKAGES"))
         backup = CacheBackup <$>
           strOption (long "backup"
                       <> metavar "PATH"
@@ -104,13 +102,24 @@ log = Log <$> (bigL *> optional mods)
           (flag' () (long "info"
                       <> short 'i'
                       <> help "Display the installation history for given packages."
-                      <> hidden) *> some (argument str (metavar "PACKAGES")))
+                      <> hidden) *> someArgs)
         search = LogSearch <$>
           strOption (long "search"
                       <> short 's'
                       <> metavar "STRING"
                       <> help "Search the Pacman log via a search string."
                       <> hidden)
+
+orphans :: Parser AuraOp
+orphans = Orphans <$> (bigO *> optional mods)
+  where bigO    = flag' () (long "orphans" <> short 'O' <> help "Display all orphan packages.")
+        mods    = abandon <|> adopt
+        abandon = flag' OrphanAbandon (long "abandon" <> short 'j' <> help "Uninstall all orphan packages.")
+        adopt   = OrphanAdopt <$>
+          (flag' () (long "adopt" <> help "Mark some packages' install reason as 'Explicit'.") *> someArgs)
+
+someArgs :: Parser [T.Text]
+someArgs = some (argument str (metavar "PACKAGES"))
 
 language :: Parser Language
 language = pure English
