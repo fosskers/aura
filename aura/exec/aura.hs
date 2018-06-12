@@ -41,34 +41,65 @@ import           Aura.Commands.C as C
 import           Aura.Commands.L as L
 import           Aura.Commands.O as O
 import           Aura.Core
-import           Aura.Flags
 import           Aura.Languages
 import           Aura.Logo
 import           Aura.Monad.Aura
 import           Aura.Pacman
 import           Aura.Settings.Base
-import           Aura.Settings.Enable
 import           Aura.Types
 import           BasePrelude hiding (Version)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import           Flags
+import           Options.Applicative
+import           Settings
 import           Shelly (toTextIgnore, fromText, shelly, run_)
 import           Utilities
 
 ---
 
-type UserInput = ([Flag], [String], [String])
+-- type UserInput = ([Flag], [String], [String])
 
 auraVersion :: T.Text
 auraVersion = "1.5.0"
 
 main :: IO ()
 main = do
+  options   <- execParser opts
+  esettings <- getSettings options
+  case esettings of
+    Left err -> T.putStrLn . ($ English) $ _failure err
+    Right ss -> execute ss options >>= exit
+  {-
   mus  <- getArgs >>= prepSettings . processFlags
   case mus of
     Left (Failure err) -> T.putStrLn $ err English
     Right args         -> execute args >>= exit
+-}
 
+execute :: Settings -> Program -> IO (Either T.Text ())
+execute ss p = first (($ langOf ss) . _failure) <$> runAura (executeOpts p) ss
+
+exit :: Either T.Text () -> IO a
+exit (Left e)  = scold e *> exitFailure
+exit (Right _) = exitSuccess
+
+executeOpts :: Program -> Aura (Either Failure ())
+executeOpts (Program ops cmn mkp cnf inp lng) = do
+  case ops of
+    Left _          -> fmap Right . liftIO $ T.putStrLn "LEFT!"
+    Right (Log o)   ->
+      case o of
+        Nothing            -> fmap Right . liftIO $ T.putStrLn "LogView" -- ask >>= fmap Right . L.viewLogFile . logFilePathOf
+        Just (LogInfo ps)  -> fmap Right . liftIO $ T.putStrLn $ "LogInfo: " <> mconcat ps
+        Just (LogSearch s) -> fmap Right . liftIO $ T.putStrLn $ "LogSearch: " <> s
+    Right (Cache o) ->
+      case o of
+        Right ps               -> fmap Right . liftIO $ traverse_ T.putStrLn ps
+        Left (CacheSearch s)   -> fmap Right . liftIO $ T.putStrLn $ "CacheSearch: " <> s
+        Left (CacheClean n)    -> fmap Right . liftIO $ T.putStrLn $ "CacheClean: " <> T.pack (show n)
+        Left (CacheBackup pth) -> fmap Right . liftIO $ T.putStrLn $ "CacheBackup: " <> toTextIgnore pth
+{-
 processFlags :: [String] -> (UserInput, Maybe Language)
 processFlags args = ((flags, nub input, pacOpts'), language)
     where (language, _) = parseLanguageFlag args
@@ -142,12 +173,13 @@ executeOpts (flags, input, pacOpts) =
     [Version]   -> getVersionInfo >>= fmap Right . animateVersionMsg
     _ -> pacman $ map T.pack pacOpts <> map T.pack hijackedFlags <> map T.pack input
     where hijackedFlags = reconvertFlags hijackedFlagMap flags
+-}
 
 -- | `-y` was included with `-A`. Sync database before continuing.
-syncAndContinue :: UserInput -> Aura (Either Failure ())
-syncAndContinue (flags, input, pacOpts) = do
-  syncDatabase (map T.pack pacOpts)
-  executeOpts (AURInstall:flags, input, pacOpts)
+-- syncAndContinue :: UserInput -> Aura (Either Failure ())
+-- syncAndContinue (flags, input, pacOpts) = do
+--   syncDatabase (map T.pack pacOpts)
+--   executeOpts (AURInstall:flags, input, pacOpts)
 
 ----------
 -- GENERAL
@@ -160,6 +192,7 @@ displayOutputLanguages = do
   asks langOf >>= notify . displayOutputLanguages_1
   liftIO $ traverse_ print allLanguages
 
+{-
 printHelpMsg :: [T.Text] -> Aura (Either Failure ())
 printHelpMsg [] = do
   ss <- ask
@@ -174,6 +207,7 @@ getHelpMsg settings pacmanHelpMsg = T.unlines allMessages
           replacedLines = T.unlines (map (replaceByPatt patterns) pacmanHelpMsg)
           colouredMsg   = yellow $ inheritedOperTitle lang
           patterns      = [Pattern "pacman" "aura", Pattern "operations" colouredMsg]
+-}
 
 -- | Animated version message.
 animateVersionMsg :: [T.Text] -> Aura ()
@@ -187,14 +221,10 @@ animateVersionMsg verMsg = ask >>= \ss -> liftIO $ do
   takeABite 0  -- Initial bite animation.
   traverse_ pillEating pillsAndWidths
   clearGrid
-  version ss
-  showCursor
-    where pillEating (p, w) = clearGrid *> drawPills p *> takeABite w
-          pillsAndWidths   = [(2, 5), (1, 10), (0, 15)]
-
-version :: Settings -> IO ()
-version ss = do
   T.putStrLn auraLogo
   T.putStrLn $ "AURA Version " <> auraVersion
   T.putStrLn " by Colin Woodbury\n"
   traverse_ T.putStrLn . translatorMsg . langOf $ ss
+  showCursor
+    where pillEating (p, w) = clearGrid *> drawPills p *> takeABite w
+          pillsAndWidths   = [(2, 5), (1, 10), (0, 15)]

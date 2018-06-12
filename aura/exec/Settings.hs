@@ -21,7 +21,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Settings.Enable
+module Settings
     ( getSettings
     , debugOutput ) where
 
@@ -35,6 +35,7 @@ import           Data.Bitraversable
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import           Flags (Program(..))
 import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)
 import           Shelly
@@ -43,48 +44,49 @@ import           Utilities
 
 ---
 
-getSettings :: Maybe Language -> ([Flag], [String], [String]) -> IO (Either Failure Settings)
-getSettings lang (auraFlags, input, pacOpts) = do
+getSettings :: Program -> IO (Either Failure Settings)
+getSettings (Program ops cmn mkp cnf inp lng) = do
   confFile <- getPacmanConf
   join <$> bitraverse pure f confFile
   where f confFile = do
           environment <- M.fromList . map (bimap T.pack T.pack) <$> getEnvironment
-          pmanCommand <- getPacmanCmd environment $ noPowerPillStatus auraFlags
-          buildPath'  <- checkBuildPath (fromText . T.pack <$> buildPath auraFlags) (getCachePath confFile)
+          pmanCommand <- pure "pacman"  -- getPacmanCmd environment $ noPowerPillStatus auraFlags
+          -- buildPath'  <- checkBuildPath (fromText . T.pack <$> buildPath auraFlags) (getCachePath confFile)
           manager     <- newManager tlsManagerSettings
-          let language   = checkLang lang environment
-              buildUser' = fmap T.pack (buildUser auraFlags) <|> getTrueUser environment
+          let language   = checkLang lng environment
+              -- buildUser' = fmap T.pack (buildUser auraFlags) <|> getTrueUser environment
           pure $ do
-            bu <- maybe (failure whoIsBuildUser_1) Right buildUser'
-            Right Settings { inputOf         = map T.pack input
-                           , pacOptsOf       = map T.pack pacOpts
-                           , otherOptsOf     = map (T.pack . show) auraFlags
+            -- bu <- maybe (failure whoIsBuildUser_1) Right buildUser'
+            Right Settings { inputOf         = [] -- map T.pack input
+                           , pacOptsOf       = [] -- map T.pack pacOpts
+                           , otherOptsOf     = [] -- map (T.pack . show) auraFlags
                            , managerOf       = manager
                            , envOf           = environment
-                           , buildUserOf     = User bu
+                           , buildUserOf     = User "ME!" -- User bu
                            , langOf          = language
                            , pacmanCmdOf     = pmanCommand
                            , editorOf        = getEditor environment
-                           , ignoredPkgsOf   = getIgnoredPkgs confFile <> map T.pack (ignoredAuraPkgs auraFlags)
-                           , makepkgFlagsOf  = map T.pack $ makepkgFlags auraFlags
-                           , buildPathOf     = buildPath'
+                           , ignoredPkgsOf   = [] -- getIgnoredPkgs confFile <> map T.pack (ignoredAuraPkgs auraFlags)
+                           , makepkgFlagsOf  = [] -- map T.pack $ makepkgFlags auraFlags
+                           , buildPathOf     = getCachePath confFile
                            , cachePathOf     = getCachePath confFile
                            , logFilePathOf   = getLogFilePath confFile
-                           , sortSchemeOf    = sortSchemeStatus auraFlags
-                           , truncationOf    = truncationStatus auraFlags
-                           , beQuiet         = quietStatus auraFlags
-                           , suppressMakepkg = suppressionStatus auraFlags
-                           , delMakeDeps     = delMakeDepsStatus auraFlags
-                           , mustConfirm     = confirmationStatus auraFlags
-                           , neededOnly      = neededStatus auraFlags
-                           , mayHotEdit      = hotEditStatus auraFlags
-                           , diffPkgbuilds   = pbDiffStatus auraFlags
-                           , rebuildDevel    = rebuildDevelStatus auraFlags
-                           , useCustomizepkg = customizepkgStatus auraFlags
-                           , noPowerPill     = noPowerPillStatus auraFlags
-                           , keepSource      = keepSourceStatus auraFlags
+                           , sortSchemeOf    = undefined --sortSchemeStatus auraFlags
+                           , truncationOf    = undefined --truncationStatus auraFlags
+                           , beQuiet         = undefined --quietStatus auraFlags
+                           , suppressMakepkg = undefined --suppressionStatus auraFlags
+                           , delMakeDeps     = undefined --delMakeDepsStatus auraFlags
+                           , mustConfirm     = undefined --confirmationStatus auraFlags
+                           , neededOnly      = undefined --neededStatus auraFlags
+                           , mayHotEdit      = undefined --hotEditStatus auraFlags
+                           , diffPkgbuilds   = undefined --pbDiffStatus auraFlags
+                           , rebuildDevel    = undefined --rebuildDevelStatus auraFlags
+                           , useCustomizepkg = undefined --customizepkgStatus auraFlags
+                           , noPowerPill     = undefined --noPowerPillStatus auraFlags
+                           , keepSource      = undefined --keepSourceStatus auraFlags
                            , buildABSDeps    = False
-                           , dryRun          = dryRunStatus auraFlags }
+                           , dryRun          = undefined --dryRunStatus auraFlags
+                           }
 
 debugOutput :: Settings -> IO ()
 debugOutput ss = do
