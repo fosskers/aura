@@ -76,9 +76,11 @@ executables:
   aura:
     source-dirs: exec
     main: aura.hs
-    other-modules: []
+    other-modules:
+      - Flags
     dependencies:
       - aura
+      - optparse-applicative
     ghc-options:
       - -threaded
       - -O2
