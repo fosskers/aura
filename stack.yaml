@@ -1,4 +1,4 @@
-resolver: lts-11.13
+resolver: nightly-2018-06-13
 
 packages:
   - aura/
@@ -7,3 +7,4 @@ packages:
 
 extra-deps:
   - versions-3.4.0.1
+  - htoml-megaparsec-2.0.0.0

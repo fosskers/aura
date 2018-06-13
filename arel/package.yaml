@@ -16,9 +16,9 @@ ghc-options:
   - -fwarn-incomplete-uni-patterns
 
 dependencies:
-  - base >= 4.8 && < 4.11
+  - base >= 4.8 && < 4.12
   - optparse-generic >= 1.1 && < 1.4
-  - shelly >= 1.6 && < 1.8
+  - shelly >= 1.6 && < 1.9
   - text >= 1.2 && < 1.3
 
 executables:
