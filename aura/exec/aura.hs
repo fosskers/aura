@@ -35,9 +35,9 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Main where
 
 -- import           Aura.Colour.Text (yellow)
--- import           Aura.Commands.A as A
+import           Aura.Commands.A as A
 import           Aura.Commands.B as B
--- import           Aura.Commands.C as C
+import           Aura.Commands.C as C
 import           Aura.Commands.L as L
 import           Aura.Commands.O as O
 import           Aura.Core
@@ -58,8 +58,6 @@ import           Utilities
 
 ---
 
--- type UserInput = ([Flag], [String], [String])
-
 auraVersion :: T.Text
 auraVersion = "1.5.0"
 
@@ -70,12 +68,6 @@ main = do
   case esettings of
     Left err -> T.putStrLn . ($ English) $ _failure err
     Right ss -> execute ss options >>= exit
-  {-
-  mus  <- getArgs >>= prepSettings . processFlags
-  case mus of
-    Left (Failure err) -> T.putStrLn $ err English
-    Right args         -> execute args >>= exit
--}
 
 execute :: Settings -> Program -> IO (Either T.Text ())
 execute ss p = first (($ langOf ss) . _failure) <$> runAura (executeOpts p) ss
@@ -87,7 +79,16 @@ exit (Right _) = exitSuccess
 executeOpts :: Program -> Aura (Either Failure ())
 executeOpts (Program ops _ _ _ _ _) = do
   case ops of
-    Left _          -> fmap Right . liftIO $ T.putStrLn "LEFT!"
+    Left _ -> fmap Right . liftIO $ T.putStrLn "LEFT!"
+    Right (AurSync o) ->
+      case o of
+        Right ps              -> undefined
+        Left (AurDeps ps)     -> A.displayPkgDeps ps
+        Left (AurInfo ps)     -> Right <$> A.aurPkgInfo ps
+        Left (AurPkgbuild ps) -> Right <$> A.displayPkgbuild ps
+        Left (AurSearch s)    -> Right <$> A.aurPkgSearch s
+        Left AurUpgrade       -> undefined
+        Left (AurTarball ps)  -> Right <$> A.downloadTarballs ps
     Right (Backup o) ->
       case o of
         Nothing              -> sudo B.saveState
@@ -96,10 +97,10 @@ executeOpts (Program ops _ _ _ _ _) = do
     Right (Cache o) ->
       case o of
         Right ps               -> fmap Right . liftIO $ traverse_ T.putStrLn ps
-        Left (CacheSearch s)   -> fmap Right . liftIO $ T.putStrLn $ "CacheSearch: " <> s
-        Left (CacheClean n)    -> fmap Right . liftIO $ T.putStrLn $ "CacheClean: " <> T.pack (show n)
-        Left (CacheBackup pth) -> fmap Right . liftIO $ T.putStrLn $ "CacheBackup: " <> toTextIgnore pth
-    Right (Log o)   ->
+        Left (CacheSearch s)   -> Right <$> C.searchCache s
+        Left (CacheClean n)    -> fmap join . sudo $ C.cleanCache n
+        Left (CacheBackup pth) -> fmap join . sudo $ C.backupCache pth
+    Right (Log o) ->
       case o of
         Nothing            -> ask >>= fmap Right . L.viewLogFile . logFilePathOf
         Just (LogInfo ps)  -> Right <$> L.logInfoOnPkg ps
@@ -111,16 +112,6 @@ executeOpts (Program ops _ _ _ _ _) = do
         Just (OrphanAdopt ps) -> O.adoptPkg ps
     Right Version -> getVersionInfo >>= fmap Right . animateVersionMsg
 {-
-processFlags :: [String] -> (UserInput, Maybe Language)
-processFlags args = ((flags, nub input, pacOpts'), language)
-    where (language, _) = parseLanguageFlag args
-          (flags, input, pacOpts) = parseFlags language args
-          pacOpts' = nub $ pacOpts <> reconvertFlags dualFlagMap flags
-                   <> reconvertFlags pacmanFlagMap flags
-
--- | Set the local environment.
-prepSettings :: (UserInput, Maybe Language) -> IO (Either Failure (UserInput, Settings))
-prepSettings (ui, lang) = fmap (ui,) <$> getSettings lang ui
 
 -- | Hand user input to the Aura Monad and run it.
 execute :: (UserInput, Settings) -> IO (Either T.Text ())
@@ -128,10 +119,6 @@ execute ((flags, input, pacOpts), ss) = do
   let flags' = filter notSettingsFlag flags
   when (Debug `elem` flags) $ debugOutput ss
   first (($ langOf ss) . _failure) <$> runAura (executeOpts (flags', input, pacOpts)) ss
-
-exit :: Either T.Text () -> IO a
-exit (Left e)  = scold e *> exitFailure
-exit (Right _) = exitSuccess
 
 -- | After determining what Flag was given, dispatches a function.
 -- The `flags` must be sorted to guarantee the pattern matching

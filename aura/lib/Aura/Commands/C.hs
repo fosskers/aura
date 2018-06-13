@@ -78,17 +78,15 @@ getChoicesFromCache :: Cache -> T.Text -> [T.Text]
 getChoicesFromCache (Cache cache) pkg = sort . mapMaybe f $ M.toList cache
   where f (SimplePkg pn _, pth) = bool Nothing (Just $ _pkgpath pth) $ pkg == pn
 
--- `[]` as input yields the contents of the entire cache.
-searchCache :: [T.Text] -> Aura ()
+searchCache :: T.Text -> Aura ()
 searchCache ps = do
   ss <- ask
   matches <- shelly $ cacheMatches ss ps
   liftIO . traverse_ (T.putStrLn . _pkgpath) $ sortPkgs matches
 
--- The destination folder must already exist for the back-up to begin.
-backupCache :: [FilePath] -> Aura (Either Failure ())
-backupCache []      = pure $ failure backupCache_1
-backupCache (dir:_) = do
+-- | The destination folder must already exist for the back-up to begin.
+backupCache :: FilePath -> Aura (Either Failure ())
+backupCache dir = do
   exists <- shelly $ test_d dir
   if | not exists -> pure $ failure backupCache_3
      | otherwise  -> confirmBackup dir >>= bitraverse pure (backup dir)
@@ -108,7 +106,7 @@ backup dir (Cache cache) = do
   liftIO $ putStrLn ""  -- So that the cursor can rise at first.
   copyAndNotify dir (M.elems cache) 1
 
--- Manages the file copying and display of the real-time progress notifier.
+-- | Manages the file copying and display of the real-time progress notifier.
 copyAndNotify :: FilePath -> [PackagePath] -> Int -> Aura ()
 copyAndNotify _ [] _ = pure ()
 copyAndNotify dir (PackagePath p : ps) n = do
@@ -118,24 +116,16 @@ copyAndNotify dir (PackagePath p : ps) n = do
   shelly $ cp (cachePath </> p) (dir </> p)
   copyAndNotify dir ps $ n + 1
 
--- Acts as a filter for the input to `cleanCache`.
-cleanCache :: [T.Text] -> Aura (Either Failure ())
-cleanCache [] = cleanCache' 0
-cleanCache (input:_)  -- Ignores all but first input element.
-  | T.all isDigit input = cleanCache' . read $ T.unpack input
-  | otherwise           = pure . failure $ preCleanCache_1 input
-
--- Keeps a certain number of package files in the cache according to
+-- | Keeps a certain number of package files in the cache according to
 -- a number provided by the user. The rest are deleted.
-cleanCache' :: Int -> Aura (Either Failure ())
-cleanCache' toSave
-  | toSave < 0  = pure $ failure cleanCache_1
+cleanCache :: Word -> Aura (Either Failure ())
+cleanCache toSave
   | toSave == 0 = asks langOf >>= warn . cleanCache_2 >> pacman ["-Scc"]  -- Needed?
   | otherwise   = do
       ss <- ask
       warn . cleanCache_3 toSave $ langOf ss
       okay <- optionalPrompt ss cleanCache_4
-      bool (pure $ failure cleanCache_5) (Right <$> clean toSave) okay
+      bool (pure $ failure cleanCache_5) (Right <$> clean (fromIntegral toSave)) okay
 
 clean :: Int -> Aura ()
 clean toSave = do

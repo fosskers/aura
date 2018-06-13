@@ -58,6 +58,6 @@ pkgsInCache :: Settings -> [T.Text] -> Sh [T.Text]
 pkgsInCache ss ps =
   nub . filter (`elem` ps) . map _spName . M.keys . _cache <$> cacheContents (cachePathOf ss)
 
-cacheMatches :: Settings -> [T.Text] -> Sh [PackagePath]
-cacheMatches ss (T.unwords -> input) =
+cacheMatches :: Settings -> T.Text -> Sh [PackagePath]
+cacheMatches ss input =
   filter (T.isInfixOf input . _pkgpath) . M.elems . _cache <$> cacheContents (cachePathOf ss)

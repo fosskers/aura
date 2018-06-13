@@ -1048,24 +1048,6 @@ getDowngradeChoice_1 (bt -> p) = \case
     Chinese    -> "你希望安装 " <> p <> " 的哪个版本？"
     _          -> "What version of " <> p <> " do you want?"
 
-backupCache_1 :: Language -> T.Text
-backupCache_1 = \case
-    Japanese   -> "バックアップ先を入力してください。"
-    Polish     -> "Nie podano lokalizacji kopii zapasowych."
-    Croatian   -> "Lokacija sigurnosne kopije nije specifirana."
-    Swedish    -> "Ingen backup-plats specifierad."
-    German     -> "Kein Sicherungsort angegeben."
-    Spanish    -> "No se ha especificado localización para la copia de seguridad."
-    Portuguese -> "Ainda não disse onde quer guardar o backup..."
-    French     -> "Aucun chemin pour les copies de sauvegarde n'est spécifié."
-    Russian    -> "Не указан путь к бэкапу."
-    Italian    -> "Path per il salvataggio non specificato."
-    Serbian    -> "Није дата путања ка бекапу."
-    Norwegian  -> "Ingen backup-plass spesifisert."
-    Indonesia  -> "Tidak ada lokasi backup yang diberikan."
-    Chinese    -> "没有指定备份位置。"
-    _          -> "No backup location given."
-
 backupCache_2 :: Language -> T.Text
 backupCache_2 = \case
     Japanese   -> "root でないとバックアップはできません。"
@@ -1228,24 +1210,6 @@ preCleanCache_1 n = \case
     Chinese    -> n <> " 不是一个数字。"
     _          -> n <> " is not a number."
 
-cleanCache_1 :: Language -> T.Text
-cleanCache_1 = \case
-    Japanese   -> "入力の数字は適切ではありません。"
-    Polish     -> "Nieprawidłowa liczba."
-    Croatian   -> "Broj nije ispravan."
-    Swedish    -> "Ogiltigt nummer specifierat."
-    German     -> "Ungültige Nummer gegeben."
-    Spanish    -> "Número inválido."
-    Portuguese -> "Número inválido."
-    French     -> "Nombre donné invalide."
-    Russian    -> "Дано невалидное число."
-    Italian    -> "Numero non valido."
-    Serbian    -> "Број није валидан."
-    Norwegian  -> "Ugyldig number spesifisert."
-    Indonesia  -> "Angka yang diberikan tidak valid."
-    Chinese    -> "指定了无效的数字。"
-    _          -> "Invalid number given."
-
 cleanCache_2 :: Language -> T.Text
 cleanCache_2 = \case
     Japanese   -> "パッケージ・キャッシュは完全に削除されます。"
@@ -1264,7 +1228,7 @@ cleanCache_2 = \case
     Chinese    -> "这将会删除全部的包缓存。"
     _          -> "This will delete the ENTIRE package cache."
 
-cleanCache_3 :: Int -> Language -> T.Text
+cleanCache_3 :: Word -> Language -> T.Text
 cleanCache_3 (bt . T.pack . show -> n) = \case
     Japanese   -> "パッケージ・ファイルは" <> n <> "個保存されます。"
     Polish     -> n <> " wersji każdego pakietu zostanie zachowane."

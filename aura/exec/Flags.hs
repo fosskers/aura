@@ -42,12 +42,19 @@ data PacmanOp = Database
               | Upgrade
 
 -- | Operations unique to Aura.
-data AuraOp = AurSync
-            | Backup (Maybe BackupOp)
-            | Cache (Either CacheOp [T.Text])
-            | Log (Maybe LogOp)
-            | Orphans (Maybe OrphanOp)
+data AuraOp = AurSync (Either AurOp [T.Text])
+            | Backup  (Maybe  BackupOp)
+            | Cache   (Either CacheOp [T.Text])
+            | Log     (Maybe  LogOp)
+            | Orphans (Maybe  OrphanOp)
             | Version
+
+data AurOp = AurDeps     [T.Text]
+           | AurInfo     [T.Text]
+           | AurPkgbuild [T.Text]
+           | AurSearch    T.Text
+           | AurUpgrade
+           | AurTarball  [T.Text]
 
 data BackupOp = BackupClean Word | BackupRestore
 
@@ -62,17 +69,30 @@ opts = info (program <**> helper) (fullDesc <> header "Aura - Package manager fo
 
 program :: Parser Program
 program = Program
-  <$> (fmap Right (backups <|> cache <|> log <|> orphans <|> version))
+  <$> (fmap Right aurOps <|> fmap Left pacOps)
   <*> pure S.empty
   <*> pure S.empty
   <*> pure S.empty
   <*> pure S.empty
   <*> optional language
+  where aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version
+        pacOps = pure undefined
 
-version :: Parser AuraOp
-version = flag' Version (long "version" <> short 'V' <> help "Display Aura's version.")
-
--- aursync :: Parser
+aursync :: Parser AuraOp
+aursync = AurSync <$> (bigA *> (fmap Left mods <|> fmap Right someArgs))
+  where bigA = flag' () (long "aursync" <> short 'A' <> help "Install packages from the AUR.")
+        mods = deps <|> ainfo <|> pkgbuild <|> search <|> upgrade <|> tarball
+        deps = AurDeps <$>
+          (flag' () (long "deps" <> short 'd' <> help "View dependencies of an AUR package.") *> someArgs)
+        ainfo = AurInfo <$>
+          (flag' () (long "info" <> short 'i' <> help "View AUR package information.") *> someArgs)
+        pkgbuild = AurPkgbuild <$>
+          (flag' () (long "pkgbuild" <> short 'p' <> help "View an AUR package's PKGBUILD file.") *> someArgs)
+        search = AurSearch <$>
+          strOption (long "search" <> short 's' <> metavar "STRING" <> help "Search the AUR via a search string.")
+        upgrade = flag' AurUpgrade (long "sysupgrade" <> short 'u' <> help "Upgrade all installed AUR packages.")
+        tarball = AurTarball <$>
+          (flag' () (long "downloadonly" <> short 'w' <> help "Download a package's source tarball.") *> someArgs)
 
 backups :: Parser AuraOp
 backups = Backup <$> (bigB *> optional mods)
@@ -127,6 +147,9 @@ orphans = Orphans <$> (bigO *> optional mods)
         abandon = flag' OrphanAbandon (long "abandon" <> short 'j' <> help "Uninstall all orphan packages.")
         adopt   = OrphanAdopt <$>
           (flag' () (long "adopt" <> help "Mark some packages' install reason as 'Explicit'.") *> someArgs)
+
+version :: Parser AuraOp
+version = flag' Version (long "version" <> short 'V' <> help "Display Aura's version.")
 
 someArgs :: Parser [T.Text]
 someArgs = some (argument str (metavar "PACKAGES"))

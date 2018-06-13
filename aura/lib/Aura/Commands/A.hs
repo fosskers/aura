@@ -129,9 +129,8 @@ renderAurPkgInfo ss ai = entrify ss fields entries
                     , yellow . T.pack . printf "%0.2f" $ popularityOf ai
                     , fromMaybe "(null)" $ aurDescriptionOf ai ]
 
-aurPkgSearch :: [T.Text] -> Aura ()
-aurPkgSearch [] = pure ()
-aurPkgSearch (fold -> regex) = do
+aurPkgSearch :: T.Text -> Aura ()
+aurPkgSearch regex = do
   ss <- ask
   db <- S.fromList . map _spName <$> foreignPackages
   let t = case truncationOf ss of  -- Can't this go anywhere else?
