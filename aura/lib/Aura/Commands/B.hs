@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE MultiWayIf, ViewPatterns #-}
 
 {-
 
@@ -40,16 +40,8 @@ import Shelly
 
 ---
 
--- Pretty similar to `-Cc`...
--- TODO: `optparse-applicative` will remove the need here to manually verify
--- the input.
-cleanStates :: [String] -> Aura (Either Failure ())
-cleanStates []        = cleanStates' 0
-cleanStates (input:_) | all isDigit input = cleanStates' $ read input
-                      | otherwise = pure $ failure cleanStates_1
-
-cleanStates' :: Int -> Aura (Either Failure ())
-cleanStates' n = do
+cleanStates :: Word -> Aura (Either Failure ())
+cleanStates (fromIntegral -> n) = do
   ss   <- ask
   okay <- optionalPrompt ss $ cleanStates_2 n
   if | not okay  -> fmap Right . warn . cleanStates_3 $ langOf ss

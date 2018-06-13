@@ -43,11 +43,13 @@ data PacmanOp = Database
 
 -- | Operations unique to Aura.
 data AuraOp = AurSync
-            | Backup
+            | Backup (Maybe BackupOp)
             | Cache (Either CacheOp [T.Text])
             | Log (Maybe LogOp)
             | Orphans (Maybe OrphanOp)
             | Version
+
+data BackupOp = BackupClean Word | BackupRestore
 
 data CacheOp = CacheBackup FilePath | CacheClean Word | CacheSearch T.Text
 
@@ -60,7 +62,7 @@ opts = info (program <**> helper) (fullDesc <> header "Aura - Package manager fo
 
 program :: Parser Program
 program = Program
-  <$> (fmap Right (cache <|> log <|> orphans))
+  <$> (fmap Right (backups <|> cache <|> log <|> orphans <|> version))
   <*> pure S.empty
   <*> pure S.empty
   <*> pure S.empty
@@ -71,6 +73,14 @@ version :: Parser AuraOp
 version = flag' Version (long "version" <> short 'V' <> help "Display Aura's version.")
 
 -- aursync :: Parser
+
+backups :: Parser AuraOp
+backups = Backup <$> (bigB *> optional mods)
+  where bigB = flag' () (long "save" <> short 'B' <> help "Save a package state.")
+        mods = clean <|> restore
+        clean = BackupClean <$>
+          option auto (long "clean" <> short 'c' <> metavar "N" <> help "Keep the most recent N states, delete the rest.")
+        restore = flag' BackupRestore (long "restore" <> help "Restore a previous package state.")
 
 cache :: Parser AuraOp
 cache = Cache <$> (bigC *> (fmap Left mods <|> fmap Right someArgs))

@@ -34,10 +34,10 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Main where
 
-import           Aura.Colour.Text (yellow)
-import           Aura.Commands.A as A
+-- import           Aura.Colour.Text (yellow)
+-- import           Aura.Commands.A as A
 import           Aura.Commands.B as B
-import           Aura.Commands.C as C
+-- import           Aura.Commands.C as C
 import           Aura.Commands.L as L
 import           Aura.Commands.O as O
 import           Aura.Core
@@ -53,7 +53,7 @@ import qualified Data.Text.IO as T
 import           Flags
 import           Options.Applicative
 import           Settings
-import           Shelly (toTextIgnore, fromText, shelly, run_)
+import           Shelly (toTextIgnore, shelly, run_)
 import           Utilities
 
 ---
@@ -85,25 +85,31 @@ exit (Left e)  = scold e *> exitFailure
 exit (Right _) = exitSuccess
 
 executeOpts :: Program -> Aura (Either Failure ())
-executeOpts (Program ops cmn mkp cnf inp lng) = do
+executeOpts (Program ops _ _ _ _ _) = do
   case ops of
     Left _          -> fmap Right . liftIO $ T.putStrLn "LEFT!"
-    Right (Log o)   ->
+    Right (Backup o) ->
       case o of
-        Nothing            -> ask >>= fmap Right . L.viewLogFile . logFilePathOf
-        Just (LogInfo ps)  -> Right <$> L.logInfoOnPkg ps
-        Just (LogSearch s) -> ask >>= fmap Right . liftIO . flip L.searchLogFile s
+        Nothing              -> sudo B.saveState
+        Just (BackupClean n) -> fmap join . sudo $ B.cleanStates n
+        Just BackupRestore   -> join <$> sudo B.restoreState
     Right (Cache o) ->
       case o of
         Right ps               -> fmap Right . liftIO $ traverse_ T.putStrLn ps
         Left (CacheSearch s)   -> fmap Right . liftIO $ T.putStrLn $ "CacheSearch: " <> s
         Left (CacheClean n)    -> fmap Right . liftIO $ T.putStrLn $ "CacheClean: " <> T.pack (show n)
         Left (CacheBackup pth) -> fmap Right . liftIO $ T.putStrLn $ "CacheBackup: " <> toTextIgnore pth
+    Right (Log o)   ->
+      case o of
+        Nothing            -> ask >>= fmap Right . L.viewLogFile . logFilePathOf
+        Just (LogInfo ps)  -> Right <$> L.logInfoOnPkg ps
+        Just (LogSearch s) -> ask >>= fmap Right . liftIO . flip L.searchLogFile s
     Right (Orphans o) ->
       case o of
         Nothing               -> O.displayOrphans
         Just OrphanAbandon    -> undefined -- fmap join . sudo $ orphans >>= flip removePkgs (map T.pack pacOpts)
         Just (OrphanAdopt ps) -> O.adoptPkg ps
+    Right Version -> getVersionInfo >>= fmap Right . animateVersionMsg
 {-
 processFlags :: [String] -> (UserInput, Maybe Language)
 processFlags args = ((flags, nub input, pacOpts'), language)

@@ -25,7 +25,6 @@ module Settings
     ( getSettings
     , debugOutput ) where
 
-import           Aura.Flags
 import           Aura.Languages
 import           Aura.Pacman
 import           Aura.Settings.Base
@@ -45,7 +44,7 @@ import           Utilities
 ---
 
 getSettings :: Program -> IO (Either Failure Settings)
-getSettings (Program ops cmn mkp cnf inp lng) = do
+getSettings (Program _ _ _ _ _ lng) = do
   confFile <- getPacmanConf
   join <$> bitraverse pure f confFile
   where f confFile = do
@@ -121,6 +120,6 @@ checkLang :: Maybe Language -> Environment -> Language
 checkLang Nothing env   = langFromLocale $ getLocale env
 checkLang (Just lang) _ = lang
 
-checkBuildPath :: MonadIO m => Maybe FilePath -> FilePath -> m FilePath
-checkBuildPath Nothing def   = pure def
-checkBuildPath (Just bp) def = bool def bp <$> shelly (test_d bp)
+-- checkBuildPath :: MonadIO m => Maybe FilePath -> FilePath -> m FilePath
+-- checkBuildPath Nothing def   = pure def
+-- checkBuildPath (Just bp) def = bool def bp <$> shelly (test_d bp)

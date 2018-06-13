@@ -990,25 +990,6 @@ removeMakeDepsAfter_1 = \case
 -- Aura/Commands/B functions
 ----------------------------
 -- NEEDS TRANSLATION
-cleanStates_1 :: Language -> T.Text
-cleanStates_1 = \case
-    Japanese   -> "数字は入力できせん。"
-    Polish     -> "Dane wejściowe nie są poprawną liczbą"
-    Croatian   -> "Unos ne predstavlja broj."
-    German     -> "Eingabe ist keine gültige Zahl."
-    Spanish    -> "El valor introducido no es un número válido."
-    Serbian    -> "Улаз није валидан број."
-    Norwegian  -> "Oppføringen er ikke et gyldig nummer."
-    Italian    -> "Non è un numero valido."
-    Portuguese -> "Valor entrado não é um número válido."
-    French     -> "La valeur entrée n'est pas un nombre valide."
-    Russian    -> "Введенные данные -- не валидное число."
-    Indonesia  -> "Masukan bukan angka valid."
-    Chinese    -> "输入不是一个有效的数字。"
-    Swedish    -> "Indata är inte ett tal."
-    _          -> "Input isn't a valid number."
-
--- NEEDS TRANSLATION
 cleanStates_2 :: Int -> Language -> T.Text
 cleanStates_2 (bt . T.pack . show -> n) = \case
     Japanese   -> n <> "個のパッケージ状態記録だけが残される。その他削除？"

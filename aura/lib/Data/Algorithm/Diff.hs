@@ -49,8 +49,9 @@ canDiag eq as bs lena lenb = \ i j ->
           arBs = listArray (0, lenb - 1) bs
 
 dstep :: (Int -> Int -> Bool) -> [DL] -> [DL]
-dstep cd dls = hd:pairMaxes rst
-  where (hd:rst) = nextDLs dls
+dstep _ []   = []
+dstep cd dls = head dls' : pairMaxes (tail dls')
+  where dls' = nextDLs dls
         nextDLs [] = []
         nextDLs (dl:rest) = dl':dl'':nextDLs rest
           where dl'  = addsnake cd $ dl {poi=poi dl + 1, path=(F : pdl)}
