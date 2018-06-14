@@ -44,7 +44,7 @@ import           Utilities
 ---
 
 getSettings :: Program -> IO (Either Failure Settings)
-getSettings (Program _ _ _ bc lng) = do
+getSettings (Program _ co bc lng) = do
   confFile <- getPacmanConf
   join <$> bitraverse pure f confFile
   where f confFile = do
@@ -56,14 +56,13 @@ getSettings (Program _ _ _ bc lng) = do
           pure $ do
             bu <- maybe (failure whoIsBuildUser_1) Right buildUser'
             Right Settings { inputOf         = [] -- map T.pack input
-                           , pacOptsOf       = [] -- map T.pack pacOpts
-                           , otherOptsOf     = [] -- map (T.pack . show) auraFlags
                            , managerOf       = manager
                            , envOf           = environment
                            , langOf          = language
                            , editorOf        = getEditor environment
                            , cachePathOf     = getCachePath confFile
                            , logFilePathOf   = getLogFilePath confFile
+                           , commonOptsOf    = co
                            , buildConfigOf   =
                              bc { buildPathOf   = Just buildPath'
                                 , buildUserOf   = Just bu

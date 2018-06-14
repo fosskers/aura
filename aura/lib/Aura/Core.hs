@@ -97,9 +97,11 @@ develPkgs = filter isDevelPkg . map _spName <$> foreignPackages
 isInstalled :: MonadIO m => T.Text -> m (Maybe T.Text)
 isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", pkg]
 
-removePkgs :: [T.Text] -> [T.Text] -> Aura (Either Failure ())
-removePkgs [] _         = pure $ Right ()
-removePkgs pkgs pacOpts = pacman $ ["-Rsu"] <> pkgs <> pacOpts
+removePkgs :: [T.Text] -> Aura (Either Failure ())
+removePkgs []   = pure $ Right ()
+removePkgs pkgs = do
+  pacOpts <- asks (map asFlag . toList . commonOptsOf)
+  pacman $ ["-Rsu"] <> pkgs <> pacOpts
 
 -- | True if a dependency is satisfied by an installed package.
 isSatisfied :: MonadIO m => Dep -> m Bool

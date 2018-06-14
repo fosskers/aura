@@ -46,6 +46,12 @@ instance Flagable Makepkg where
   asFlag IgnoreArch = "--ignorearch"
   asFlag AllSource  = "--allsource"
 
+data Common = NoConfirm | NeededOnly deriving (Eq, Ord)
+
+instance Flagable Common where
+  asFlag NoConfirm  = "--noconfirm"
+  asFlag NeededOnly = "--needed"
+
 data BuildConfig = BuildConfig { makepkgFlagsOf  :: S.Set Makepkg
                                , ignoredPkgsOf   :: S.Set Text
                                , buildPathOf     :: Maybe FilePath
@@ -63,8 +69,6 @@ data BuildSwitch = LowVerbosity
                  | DiffPkgbuilds
                  | RebuildDevel
                  | HotEdit
-                 | NoConfirm
-                 | NeededOnly
                  | UseCustomizepkg
                  | DryRun
                  | SortAlphabetically  -- For `-As`
@@ -74,14 +78,16 @@ data BuildSwitch = LowVerbosity
 switch :: Settings -> BuildSwitch -> Bool
 switch ss bs = S.member bs . buildSwitchesOf $ buildConfigOf ss
 
+shared :: Settings -> Common -> Bool
+shared ss c = S.member c $ commonOptsOf ss
+
 -- | The global settings as set by the user with command-line flags.
 data Settings = Settings { inputOf       :: [Text]
-                         , pacOptsOf     :: [Text]
-                         , otherOptsOf   :: [Text]
                          , managerOf     :: Manager
                          , envOf         :: Environment
                          , langOf        :: Language
                          , editorOf      :: Text
                          , cachePathOf   :: FilePath
                          , logFilePathOf :: FilePath
+                         , commonOptsOf  :: S.Set Common
                          , buildConfigOf :: BuildConfig }

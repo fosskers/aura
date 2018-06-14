@@ -62,11 +62,11 @@ installOptions = I.InstallOptions { I.label         = "AUR"
                                   , I.installLookup = aurLookup
                                   , I.repository    = pacmanRepo <> aurRepo }
 
-install :: [T.Text] -> [T.Text] -> Aura (Either Failure ())
+install :: [T.Text] -> Aura (Either Failure ())
 install = I.install installOptions
 
-upgradeAURPkgs :: [T.Text] -> [T.Text] -> Aura (Either Failure ())
-upgradeAURPkgs pacOpts pkgs = do
+upgradeAURPkgs :: [T.Text] -> Aura (Either Failure ())
+upgradeAURPkgs pkgs = do
   ss <- ask
   let !ignores     = map Just . toList . ignoredPkgsOf $ buildConfigOf ss
       notIgnored p = fmap fst (splitNameAndVer p) `notElem` ignores
@@ -75,13 +75,13 @@ upgradeAURPkgs pacOpts pkgs = do
   foreignPkgs <- filter (notIgnored . _spName) <$> foreignPackages
   toUpgrade   <- possibleUpdates foreignPkgs
   auraFirst   <- auraCheck $ map (aurNameOf . fst) toUpgrade
-  if | auraFirst -> auraUpgrade pacOpts
+  if | auraFirst -> auraUpgrade
      | otherwise -> do
          devel <- develPkgCheck
          notify $ upgradeAURPkgs_2 lang
          if | null toUpgrade && null devel -> warn $ upgradeAURPkgs_3 lang
             | otherwise -> reportPkgsToUpgrade $ map prettify toUpgrade <> devel
-         install pacOpts $ (aurNameOf . fst <$> toUpgrade) <> pkgs <> devel
+         install $ (aurNameOf . fst <$> toUpgrade) <> pkgs <> devel
            where prettify (p, v) = aurNameOf p <> " : " <> prettyV v <> " => " <> aurVersionOf p
 -- TODO: Use `printf` with `prettify` to line up the colons.
 
@@ -97,8 +97,8 @@ auraCheck toUpgrade = if "aura" `elem` toUpgrade
                          then ask >>= \ss -> optionalPrompt ss auraCheck_1
                          else pure False
 
-auraUpgrade :: [T.Text] -> Aura (Either Failure ())
-auraUpgrade pacOpts = install pacOpts ["aura"]
+auraUpgrade :: Aura (Either Failure ())
+auraUpgrade = install ["aura"]
 
 develPkgCheck :: Aura [T.Text]
 develPkgCheck = ask >>= \ss ->

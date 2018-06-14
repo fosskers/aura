@@ -61,35 +61,32 @@ data InstallOptions = InstallOptions
 -- TODO These lists should be Sets, to guarantee that their contents are unique.
 -- | High level 'install' command. Handles installing
 -- dependencies.
-install :: InstallOptions  -- ^ Options.
-        -> [T.Text]        -- ^ Pacman flags.
-        -> [T.Text]        -- ^ Package names.
-        -> Aura (Either Failure ())
-install _ _ [] = pure $ failure install_2
-install opts pacOpts pkgs = ask >>= f
+install :: InstallOptions -> [T.Text] -> Aura (Either Failure ())
+install _ []      = pure $ failure install_2
+install opts pkgs = ask >>= f
   where
-    f ss | not $ switch ss DeleteMakeDeps = install' opts pacOpts pkgs
+    f ss | not $ switch ss DeleteMakeDeps = install' opts pkgs
          | otherwise = do -- `-a` was used.
              orphansBefore <- orphans
-             install' opts pacOpts pkgs
+             install' opts pkgs
              orphansAfter <- orphans
              let makeDeps = orphansAfter \\ orphansBefore
              if | null makeDeps -> pure $ Right ()
                 | otherwise -> do
                     notify . removeMakeDepsAfter_1 $ langOf ss
-                    removePkgs makeDeps pacOpts
+                    removePkgs makeDeps
 
-install' :: InstallOptions -> [T.Text] -> [T.Text] -> Aura (Either Failure ())
-install' opts pacOpts pkgs = do
+install' :: InstallOptions -> [T.Text] -> Aura (Either Failure ())
+install' opts pkgs = do
   ss       <- ask
-  unneeded <- bool (pure []) (catMaybes <$> liftIO (mapConcurrently isInstalled pkgs)) $ switch ss NeededOnly
+  unneeded <- bool (pure []) (catMaybes <$> liftIO (mapConcurrently isInstalled pkgs)) $ shared ss NeededOnly
   let (ignored, notIgnored) = partition (`elem` ignoredPkgsOf (buildConfigOf ss)) pkgs
   installAnyway <- confirmIgnored ignored
   let toInstall = (notIgnored <> installAnyway) \\ unneeded
   -- reportIgnoredPackages ignored  -- 2014 December  7 @ 14:52
   reportUnneededPackages unneeded
   toBuild <- lookupPkgs (installLookup opts ss) toInstall >>= pkgbuildDiffs
-  if | null toBuild && switch ss NeededOnly && unneeded == pkgs -> fmap Right . notify . install_2 $ langOf ss
+  if | null toBuild && shared ss NeededOnly && unneeded == pkgs -> fmap Right . notify . install_2 $ langOf ss
      | null toBuild -> pure $ failure install_2
      | otherwise -> do
          notify . install_5 $ langOf ss
@@ -102,9 +99,9 @@ install' opts pacOpts pkgs = do
                  continue <- optionalPrompt ss install_3
                  if | not continue -> pure $ failure install_4
                     | otherwise    -> do
-                        repoInstall pacOpts repoPkgs
+                        repoInstall repoPkgs
                         storePkgbuilds buildPkgs
-                        buildAndInstall pacOpts buildPkgs
+                        buildAndInstall buildPkgs
 
 confirmIgnored :: [T.Text] -> Aura [T.Text]
 confirmIgnored ps = do
@@ -125,18 +122,20 @@ depsToInstall repo bs = do
   ss <- ask
   traverse (packageBuildable ss) bs >>= resolveDeps repo
 
-repoInstall :: [T.Text] -> [T.Text] -> Aura (Either Failure ())
-repoInstall _       [] = pure $ Right ()
-repoInstall pacOpts ps = pacman $ ["-S", "--asdeps"] <> pacOpts <> ps
+repoInstall :: [T.Text] -> Aura (Either Failure ())
+repoInstall [] = pure $ Right ()
+repoInstall ps = do
+  pacOpts <- asks (map asFlag . toList . commonOptsOf)
+  pacman $ ["-S", "--asdeps"] <> pacOpts <> ps
 
-buildAndInstall :: [T.Text] -> [Buildable] -> Aura (Either Failure ())
-buildAndInstall _ []           = pure $ Right ()
-buildAndInstall pacOpts (b:bs) = do
+buildAndInstall :: [Buildable] -> Aura (Either Failure ())
+buildAndInstall []     = pure $ Right ()
+buildAndInstall (b:bs) = do
   eps <- buildPackages [b]
   fmap join . for eps $ \ps -> do
-    installPkgFiles pacOpts' $ map toTextIgnore ps
-    buildAndInstall pacOpts bs
-  where pacOpts' = if isExplicit b then pacOpts else "--asdeps" : pacOpts
+    installPkgFiles asDeps $ map toTextIgnore ps
+    buildAndInstall bs
+  where asDeps = if isExplicit b then Nothing else Just "--asdeps"
 
 ------------
 -- REPORTING

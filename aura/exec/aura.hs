@@ -77,17 +77,17 @@ exit (Left e)  = scold e *> exitFailure
 exit (Right _) = exitSuccess
 
 executeOpts :: Program -> Aura (Either Failure ())
-executeOpts (Program ops _ _ _ _) = do
+executeOpts (Program ops _ _ _) = do
   case ops of
     Left _ -> fmap Right . liftIO $ T.putStrLn "LEFT!"
     Right (AurSync o) ->
       case o of
-        Right ps              -> undefined
+        Right ps              -> fmap (join . join) . trueRoot . sudo $ A.install ps
         Left (AurDeps ps)     -> A.displayPkgDeps ps
         Left (AurInfo ps)     -> Right <$> A.aurPkgInfo ps
         Left (AurPkgbuild ps) -> Right <$> A.displayPkgbuild ps
         Left (AurSearch s)    -> Right <$> A.aurPkgSearch s
-        Left AurUpgrade       -> undefined
+        Left (AurUpgrade ps)  -> fmap (join . join) . trueRoot . sudo $ A.upgradeAURPkgs ps
         Left (AurTarball ps)  -> Right <$> A.downloadTarballs ps
     Right (Backup o) ->
       case o of
@@ -108,7 +108,7 @@ executeOpts (Program ops _ _ _ _) = do
     Right (Orphans o) ->
       case o of
         Nothing               -> O.displayOrphans
-        Just OrphanAbandon    -> undefined -- fmap join . sudo $ orphans >>= flip removePkgs (map T.pack pacOpts)
+        Just OrphanAbandon    -> fmap join . sudo $ orphans >>= removePkgs
         Just (OrphanAdopt ps) -> O.adoptPkg ps
     Right Version -> getVersionInfo >>= fmap Right . animateVersionMsg
 {-

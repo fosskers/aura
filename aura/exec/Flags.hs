@@ -1,6 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Flags where
+module Flags
+  ( Program(..), opts
+  , PacmanOp(..)
+  , AuraOp(..), AurOp(..), BackupOp(..), CacheOp(..), LogOp(..), OrphanOp(..)
+  ) where
 
 import           Aura.Settings.Base
 import           Aura.Types (Language(..))
@@ -19,17 +23,10 @@ data Program = Program {
   _operation   :: Either PacmanOp AuraOp
   -- ^ Flags common to both Aura and Pacman.
   , _commons   :: S.Set Common
-  -- ^ Other input, usually package names.
-  , _input     :: S.Set T.Text
   -- ^ Settings specific to building packages.
   , _buildConf :: BuildConfig
   -- ^ The human language of text output.
   , _language  :: Maybe Language }
-
--- data Common = NoConfirm | Needed
-data Common --- TODO hmmm
-
-data Config
 
 -- | Inherited operations that are fed down to Pacman.
 data PacmanOp = Database
@@ -52,7 +49,7 @@ data AurOp = AurDeps     [T.Text]
            | AurInfo     [T.Text]
            | AurPkgbuild [T.Text]
            | AurSearch    T.Text
-           | AurUpgrade
+           | AurUpgrade  [T.Text]
            | AurTarball  [T.Text]
 
 data BackupOp = BackupClean Word | BackupRestore
@@ -69,8 +66,7 @@ opts = info (program <**> helper) (fullDesc <> header "Aura - Package manager fo
 program :: Parser Program
 program = Program
   <$> (fmap Right aurOps <|> fmap Left pacOps)
-  <*> pure S.empty
-  <*> pure S.empty
+  <*> common
   <*> config
   <*> optional language
   where aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version
@@ -88,7 +84,8 @@ aursync = AurSync <$> (bigA *> (fmap Right someArgs <|> fmap Left mods))
           (flag' () (long "pkgbuild" <> short 'p' <> help "View an AUR package's PKGBUILD file.") *> someArgs)
         search = AurSearch <$>
           strOption (long "search" <> short 's' <> metavar "STRING" <> help "Search the AUR via a search string.")
-        upgrade = flag' AurUpgrade (long "sysupgrade" <> short 'u' <> help "Upgrade all installed AUR packages.")
+        upgrade = AurUpgrade <$>
+          (flag' () (long "sysupgrade" <> short 'u' <> help "Upgrade all installed AUR packages.") *> manyArgs)
         tarball = AurTarball <$>
           (flag' () (long "downloadonly" <> short 'w' <> help "Download a package's source tarball.") *> someArgs)
 
@@ -163,21 +160,29 @@ config = BuildConfig <$> makepkg <*> ignored <*> optional buildPath <*> optional
           <|> pure None
 
 switches :: Parser (S.Set BuildSwitch)
-switches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> nc <|> no <|> ucp <|> dr <|> sa)
+switches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> ucp <|> dr <|> sa)
   where lv  = flag' LowVerbosity (long "quiet" <> short 'q' <> help "Display less information.")
         dmd = flag' DeleteMakeDeps (long "delmakedeps" <> short 'a' <> help "Uninstall makedeps after building.")
         dsm = flag' DontSuppressMakepkg (long "unsuppress" <> short 'x' <> help "Unsuppress makepkg output.")
         dpb = flag' DiffPkgbuilds (long "diff" <> short 'k' <> help "Show PKGBUILD diffs.")
         rbd = flag' RebuildDevel (long "devel" <> help "Rebuild all git/hg/svn/darcs-based packages.")
         he  = flag' HotEdit (long "hotedit" <> help "Edit a PKGBUILD before building.")
-        nc  = flag' NoConfirm (long "noconfirm" <> help "Never ask for Aura or Pacman confirmation.")
-        no  = flag' NeededOnly (long "needed" <> help "Don't rebuild/reinstall up-to-date packages.")
         ucp = flag' UseCustomizepkg (long "custom" <> help "Run customizepkg before building.")
         dr  = flag' DryRun (long "dryrun" <> help "Run dependency checks and PKGBUILD diffs, but don't build.")
         sa  = flag' SortAlphabetically (long "abc" <> help "Sort search results alphabetically.")
 
+common :: Parser (S.Set Common)
+common = S.fromList <$> many (nc <|> no)
+  where nc  = flag' NoConfirm (long "noconfirm" <> help "Never ask for Aura or Pacman confirmation.")
+        no  = flag' NeededOnly (long "needed" <> help "Don't rebuild/reinstall up-to-date packages.")
+
+-- | One or more arguments.
 someArgs :: Parser [T.Text]
 someArgs = some (argument str (metavar "PACKAGES"))
+
+-- | Zero or more arguments.
+manyArgs :: Parser [T.Text]
+manyArgs = many (argument str (metavar "PACKAGES"))
 
 language :: Parser Language
 language = pure English
