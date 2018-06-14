@@ -33,7 +33,6 @@ import           BasePrelude hiding (FilePath)
 import           Data.Bitraversable
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import           Flags (Program(..))
 import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)

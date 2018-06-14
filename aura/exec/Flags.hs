@@ -30,25 +30,45 @@ data Program = Program {
 
 -- | Inherited operations that are fed down to Pacman.
 data PacmanOp = Database (Either DatabaseOp [T.Text]) (S.Set MiscOp)
-              | Files
+              | Files (S.Set FilesOp) (S.Set MiscOp)
               | Query
               | Remove
               | Sync
               | TestDeps
               | Upgrade
+              deriving (Show)
 
 instance Flagable PacmanOp where
-  asFlag (Database (Left o) ms) = "-D" : asFlag o ++ concatMap asFlag (toList ms)
+  asFlag (Database (Left o) ms)   = "-D" : asFlag o ++ concatMap asFlag (toList ms)
+  asFlag (Database (Right fs) ms) = "-D" : fs ++ concatMap asFlag (toList ms)
+  asFlag (Files os ms)            = "-F" : concatMap asFlag (toList os) ++ concatMap asFlag (toList ms)
   asFlag _ = []  -- TODO fill this out
 
 data DatabaseOp = DBCheck
                 | DBAsDeps [T.Text]
                 | DBAsExplicit [T.Text]
+                deriving (Show)
 
 instance Flagable DatabaseOp where
   asFlag DBCheck           = ["--check"]
   asFlag (DBAsDeps ps)     = "--asdeps" : ps
   asFlag (DBAsExplicit ps) = "--asexplicit" : ps
+
+data FilesOp = FilesList [T.Text]
+             | FilesOwns T.Text
+             | FilesSearch T.Text
+             | FilesRegex
+             | FilesRefresh
+             | FilesMachineReadable
+             deriving (Eq, Ord, Show)
+
+instance Flagable FilesOp where
+  asFlag (FilesList fs)       = "--list" : fs
+  asFlag (FilesOwns f)        = ["--owns", f]
+  asFlag (FilesSearch f)      = ["--search", f]
+  asFlag FilesRegex           = ["--regex"]
+  asFlag FilesRefresh         = ["--refresh"]
+  asFlag FilesMachineReadable = ["--machinereadable"]
 
 data MiscOp = MiscArch    FilePath
             | MiscDBPath  FilePath
@@ -57,7 +77,8 @@ data MiscOp = MiscArch    FilePath
             | MiscColor   T.Text
             | MiscGpgDir  FilePath
             | MiscHookDir FilePath
-            deriving (Eq, Ord)
+            | MiscConfirm
+            deriving (Eq, Ord, Show)
 
 instance Flagable MiscOp where
   asFlag (MiscArch p)    = ["--arch", toTextIgnore p]
@@ -67,6 +88,7 @@ instance Flagable MiscOp where
   asFlag (MiscColor c)   = ["--color", c]
   asFlag (MiscGpgDir p)  = ["--gpgdir", toTextIgnore p]
   asFlag (MiscHookDir p) = ["--hookdir", toTextIgnore p]
+  asFlag MiscConfirm     = ["--confirm"]
 
 -- | Operations unique to Aura.
 data AuraOp = AurSync (Either AurOp [T.Text])
@@ -75,6 +97,7 @@ data AuraOp = AurSync (Either AurOp [T.Text])
             | Log     (Maybe  LogOp)
             | Orphans (Maybe  OrphanOp)
             | Version
+            deriving (Show)
 
 data AurOp = AurDeps     [T.Text]
            | AurInfo     [T.Text]
@@ -82,14 +105,15 @@ data AurOp = AurDeps     [T.Text]
            | AurSearch    T.Text
            | AurUpgrade  [T.Text]
            | AurTarball  [T.Text]
+           deriving (Show)
 
-data BackupOp = BackupClean Word | BackupRestore
+data BackupOp = BackupClean Word | BackupRestore deriving (Show)
 
-data CacheOp = CacheBackup FilePath | CacheClean Word | CacheSearch T.Text
+data CacheOp = CacheBackup FilePath | CacheClean Word | CacheSearch T.Text deriving (Show)
 
-data LogOp = LogInfo [T.Text] | LogSearch T.Text
+data LogOp = LogInfo [T.Text] | LogSearch T.Text deriving (Show)
 
-data OrphanOp = OrphanAbandon | OrphanAdopt [T.Text]
+data OrphanOp = OrphanAbandon | OrphanAdopt [T.Text] deriving (Show)
 
 opts :: ParserInfo Program
 opts = info (program <**> helper) (fullDesc <> header "Aura - Package manager for Arch Linux and the AUR.")
@@ -101,7 +125,7 @@ program = Program
   <*> buildConfig
   <*> optional language
   where aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version
-        pacOps = database
+        pacOps = database <|> files
 
 aursync :: Parser AuraOp
 aursync = AurSync <$> (bigA *> (fmap Right someArgs <|> fmap Left mods))
@@ -222,8 +246,19 @@ database = Database <$> (bigD *> (fmap Right someArgs <|> fmap Left mods)) <*> m
         asdeps = DBAsDeps <$> (flag' () (long "asdeps" <> help "Mark packages as being dependencies.") *> someArgs)
         asexp  = DBAsExplicit <$> (flag' () (long "asexplicit" <> help "Mark packages as being explicitely installed.") *> someArgs)
 
+files :: Parser PacmanOp
+files = Files <$> (bigF *> fmap S.fromList (many mods)) <*> misc
+  where bigF = flag' () (long "files" <> short 'F' <> help "Interact with the file database.")
+        mods = lst <|> own <|> sch <|> rgx <|> rfr <|> mch
+        lst  = FilesList <$> (flag' () (long "list" <> short 'l' <> help "List the files owned by given packages.") *> someArgs)
+        own  = FilesOwns <$> strOption (long "owns" <> short 'o' <> metavar "FILE" <> help "Query the package that owns FILE.")
+        sch  = FilesSearch <$> strOption (long "search" <> short 's' <> metavar "FILE" <> help "Find package files that match the given FILEname.")
+        rgx  = flag' FilesRegex (long "regex" <> short 'x' <> help "Interpret the input of -Fs as a regex.")
+        rfr  = flag' FilesRefresh (long "refresh" <> short 'y' <> help "Download fresh package databases.")
+        mch  = flag' FilesMachineReadable (long "machinereadable" <> help "Produce machine-readable output.")
+
 misc :: Parser (S.Set MiscOp)
-misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> clr <|> gpg <|> hd)
+misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> clr <|> gpg <|> hd <|> con)
   where ar  = MiscArch    <$> strOption (long "arch" <> metavar "ARCH" <> help "Use an alternate architecture.")
         dbp = MiscDBPath  <$> strOption (long "dbpath" <> short 'b' <> metavar "PATH" <> help "Use an alternate database location.")
         roo = MiscRoot    <$> strOption (long "root" <> short 'r' <> metavar "PATH" <> help "Use an alternate installation root.")
@@ -231,6 +266,7 @@ misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> clr <|> gpg <|> hd)
         clr = MiscColor   <$> strOption (long "color" <> metavar "WHEN" <> help "Colourize the output.")
         gpg = MiscGpgDir  <$> strOption (long "gpgdir" <> metavar "PATH" <> help "Use an alternate GnuGPG directory.")
         hd  = MiscHookDir <$> strOption (long "hookdir" <> metavar "PATH" <> help "Use an alternate hook directory.")
+        con = flag' MiscConfirm (long "confirm" <> help "Always ask for confirmation.")
 
 -- | One or more arguments.
 someArgs :: Parser [T.Text]
