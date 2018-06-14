@@ -37,15 +37,36 @@ data PacmanOp = Database (Either DatabaseOp [T.Text]) (S.Set MiscOp)
               | TestDeps
               | Upgrade
 
-data DatabaseOp = DBCheck FilePath
-                | DBAsDeps
-                | DBAsExplicit
+instance Flagable PacmanOp where
+  asFlag (Database (Left o) ms) = "-D" : asFlag o ++ concatMap asFlag (toList ms)
+  asFlag _ = []  -- TODO fill this out
 
-data MiscOp = MiscArch FilePath
-            | MiscDBPath FilePath
-            | MiscRoot FilePath
+data DatabaseOp = DBCheck
+                | DBAsDeps [T.Text]
+                | DBAsExplicit [T.Text]
+
+instance Flagable DatabaseOp where
+  asFlag DBCheck           = ["--check"]
+  asFlag (DBAsDeps ps)     = "--asdeps" : ps
+  asFlag (DBAsExplicit ps) = "--asexplicit" : ps
+
+data MiscOp = MiscArch    FilePath
+            | MiscDBPath  FilePath
+            | MiscRoot    FilePath
             | MiscVerbose
-            | MiscColor T.Text
+            | MiscColor   T.Text
+            | MiscGpgDir  FilePath
+            | MiscHookDir FilePath
+            deriving (Eq, Ord)
+
+instance Flagable MiscOp where
+  asFlag (MiscArch p)    = ["--arch", toTextIgnore p]
+  asFlag (MiscDBPath p)  = ["--dbpath", toTextIgnore p]
+  asFlag (MiscRoot p)    = ["--root", toTextIgnore p]
+  asFlag MiscVerbose     = ["--verbose"]
+  asFlag (MiscColor c)   = ["--color", c]
+  asFlag (MiscGpgDir p)  = ["--gpgdir", toTextIgnore p]
+  asFlag (MiscHookDir p) = ["--hookdir", toTextIgnore p]
 
 -- | Operations unique to Aura.
 data AuraOp = AurSync (Either AurOp [T.Text])
@@ -76,12 +97,11 @@ opts = info (program <**> helper) (fullDesc <> header "Aura - Package manager fo
 program :: Parser Program
 program = Program
   <$> (fmap Right aurOps <|> fmap Left pacOps)
-
   <*> commonConfig
   <*> buildConfig
   <*> optional language
   where aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version
-        pacOps = pure undefined
+        pacOps = database
 
 aursync :: Parser AuraOp
 aursync = AurSync <$> (bigA *> (fmap Right someArgs <|> fmap Left mods))
@@ -106,7 +126,7 @@ backups = Backup <$> (bigB *> optional mods)
         mods = clean <|> restore
         clean = BackupClean <$>
           option auto (long "clean" <> short 'c' <> metavar "N" <> help "Keep the most recent N states, delete the rest.")
-        restore = flag' BackupRestore (long "restore" <> help "Restore a previous package state.")
+        restore = flag' BackupRestore (long "restore" <> short 'r' <> help "Restore a previous package state.")
 
 cache :: Parser AuraOp
 cache = Cache <$> (bigC *> (fmap Left mods <|> fmap Right someArgs))
@@ -193,6 +213,24 @@ commonSwitches = S.fromList <$> many (nc <|> no <|> dbg)
   where nc  = flag' NoConfirm  (long "noconfirm" <> help "Never ask for Aura or Pacman confirmation.")
         no  = flag' NeededOnly (long "needed"    <> help "Don't rebuild/reinstall up-to-date packages.")
         dbg = flag' Debug      (long "debug"     <> help "Print useful debugging info.")
+
+database :: Parser PacmanOp
+database = Database <$> (bigD *> (fmap Right someArgs <|> fmap Left mods)) <*> misc
+  where bigD   = flag' () (long "database" <> short 'D' <> help "Interact with the package database.")
+        mods   = check <|> asdeps <|> asexp
+        check  = flag' DBCheck (long "check" <> short 'k' <> help "Test local database validity.")
+        asdeps = DBAsDeps <$> (flag' () (long "asdeps" <> help "Mark packages as being dependencies.") *> someArgs)
+        asexp  = DBAsExplicit <$> (flag' () (long "asexplicit" <> help "Mark packages as being explicitely installed.") *> someArgs)
+
+misc :: Parser (S.Set MiscOp)
+misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> clr <|> gpg <|> hd)
+  where ar  = MiscArch    <$> strOption (long "arch" <> metavar "ARCH" <> help "Use an alternate architecture.")
+        dbp = MiscDBPath  <$> strOption (long "dbpath" <> short 'b' <> metavar "PATH" <> help "Use an alternate database location.")
+        roo = MiscRoot    <$> strOption (long "root" <> short 'r' <> metavar "PATH" <> help "Use an alternate installation root.")
+        ver = flag' MiscVerbose (long "verbose" <> short 'v' <> help "Be more verbose.")
+        clr = MiscColor   <$> strOption (long "color" <> metavar "WHEN" <> help "Colourize the output.")
+        gpg = MiscGpgDir  <$> strOption (long "gpgdir" <> metavar "PATH" <> help "Use an alternate GnuGPG directory.")
+        hd  = MiscHookDir <$> strOption (long "hookdir" <> metavar "PATH" <> help "Use an alternate hook directory.")
 
 -- | One or more arguments.
 someArgs :: Parser [T.Text]

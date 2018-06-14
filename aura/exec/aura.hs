@@ -79,7 +79,7 @@ exit (Right _) = exitSuccess
 executeOpts :: Program -> Aura (Either Failure ())
 executeOpts (Program ops _ _ _) = do
   case ops of
-    Left _ -> fmap Right . liftIO $ T.putStrLn "LEFT!"
+    Left o -> pacman $ asFlag o
     Right (AurSync o) ->
       case o of
         Right ps              -> fmap (join . join) . trueRoot . sudo $ A.install ps
