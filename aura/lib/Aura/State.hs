@@ -108,9 +108,10 @@ restoreState :: Aura (Either Failure ())
 restoreState = getStateFiles >>= fmap join . bitraverse pure f
   where f sfs = do
           ss    <- ask
+          let pth = fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
           past  <- liftIO $ selectState sfs >>= readState
           curr  <- currentState
-          Cache cache <- shelly . cacheContents $ cachePathOf ss
+          Cache cache <- shelly $ cacheContents pth
           let StateDiff rein remo = compareStates past curr
               (okay, nope) = partition (`M.member` cache) rein
               message      = restoreState_1 $ langOf ss
@@ -134,5 +135,6 @@ reinstallAndRemove down remo
     | null down = remove
     | otherwise = reinstall *> remove
     where remove    = pacman $ "-R" : remo
-          reinstall = ask >>= \ss ->
-                      pacman $ "-U" : map (toTextIgnore . (\pp -> cachePathOf ss </> _pkgpath pp)) down
+          reinstall = do
+            pth <- asks (fromMaybe defaultPackageCache . cachePathOf . commonConfigOf)
+            pacman $ "-U" : map (toTextIgnore . (\pp -> pth </> _pkgpath pp)) down

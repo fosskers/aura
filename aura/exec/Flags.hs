@@ -21,21 +21,31 @@ import           Utilities (User(..))
 data Program = Program {
   -- ^ Whether Aura handles everything, or the ops and input are just passed down to Pacman.
   _operation   :: Either PacmanOp AuraOp
-  -- ^ Flags common to both Aura and Pacman.
-  , _commons   :: S.Set Common
+  -- ^ Settings common to both Aura and Pacman.
+  , _commons   :: CommonConfig
   -- ^ Settings specific to building packages.
   , _buildConf :: BuildConfig
   -- ^ The human language of text output.
   , _language  :: Maybe Language }
 
 -- | Inherited operations that are fed down to Pacman.
-data PacmanOp = Database
+data PacmanOp = Database (Either DatabaseOp [T.Text]) (S.Set MiscOp)
               | Files
               | Query
               | Remove
               | Sync
               | TestDeps
               | Upgrade
+
+data DatabaseOp = DBCheck FilePath
+                | DBAsDeps
+                | DBAsExplicit
+
+data MiscOp = MiscArch FilePath
+            | MiscDBPath FilePath
+            | MiscRoot FilePath
+            | MiscVerbose
+            | MiscColor T.Text
 
 -- | Operations unique to Aura.
 data AuraOp = AurSync (Either AurOp [T.Text])
@@ -66,8 +76,9 @@ opts = info (program <**> helper) (fullDesc <> header "Aura - Package manager fo
 program :: Parser Program
 program = Program
   <$> (fmap Right aurOps <|> fmap Left pacOps)
-  <*> common
-  <*> config
+
+  <*> commonConfig
+  <*> buildConfig
   <*> optional language
   where aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version
         pacOps = pure undefined
@@ -146,21 +157,21 @@ orphans = Orphans <$> (bigO *> optional mods)
 version :: Parser AuraOp
 version = flag' Version (long "version" <> short 'V' <> help "Display Aura's version.")
 
-config :: Parser BuildConfig
-config = BuildConfig <$> makepkg <*> ignored <*> optional buildPath <*> optional buildUser <*> truncation <*> switches
-  where makepkg    = S.fromList <$> many (ia <|> as)
-        ia         = flag' IgnoreArch (long "ignorearch" <> help "Exposed makepkg flag.")
-        as         = flag' AllSource (long "allsource" <> help "Exposed makepkg flag.")
-        ignored    = maybe S.empty (S.fromList . T.split (== ',')) <$>
-          optional (strOption (long "aurignore" <> metavar "PACKAGE(,PACKAGE,...)" <> help "Ignore given AUR packages."))
-        buildPath  = strOption (long "build" <> metavar "PATH" <> help "Directory in which to build packages.")
-        buildUser  = User <$> strOption (long "builduser" <> metavar "USER" <> help "User account to build as.")
-        truncation = fmap Head (option auto (long "head" <> metavar "N" <> help "Only show top N search results."))
+buildConfig :: Parser BuildConfig
+buildConfig = BuildConfig <$> makepkg <*> ignored <*> optional bp <*> optional bu <*> trunc <*> buildSwitches
+  where makepkg = S.fromList <$> many (ia <|> as)
+        ia      = flag' IgnoreArch (long "ignorearch" <> help "Exposed makepkg flag.")
+        as      = flag' AllSource (long "allsource" <> help "Exposed makepkg flag.")
+        ignored = maybe S.empty (S.fromList . T.split (== ',')) <$>
+          optional (strOption (long "aurignore" <> metavar "PKG(,PKG,...)" <> help "Ignore given AUR packages."))
+        bp      = strOption (long "build" <> metavar "PATH" <> help "Directory in which to build packages.")
+        bu      = User <$> strOption (long "builduser" <> metavar "USER" <> help "User account to build as.")
+        trunc   = fmap Head (option auto (long "head" <> metavar "N" <> help "Only show top N search results."))
           <|> fmap Tail (option auto (long "tail" <> metavar "N" <> help "Only show last N search results."))
           <|> pure None
 
-switches :: Parser (S.Set BuildSwitch)
-switches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> ucp <|> dr <|> sa)
+buildSwitches :: Parser (S.Set BuildSwitch)
+buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> ucp <|> dr <|> sa)
   where lv  = flag' LowVerbosity (long "quiet" <> short 'q' <> help "Display less information.")
         dmd = flag' DeleteMakeDeps (long "delmakedeps" <> short 'a' <> help "Uninstall makedeps after building.")
         dsm = flag' DontSuppressMakepkg (long "unsuppress" <> short 'x' <> help "Unsuppress makepkg output.")
@@ -171,10 +182,17 @@ switches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> uc
         dr  = flag' DryRun (long "dryrun" <> help "Run dependency checks and PKGBUILD diffs, but don't build.")
         sa  = flag' SortAlphabetically (long "abc" <> help "Sort search results alphabetically.")
 
-common :: Parser (S.Set Common)
-common = S.fromList <$> many (nc <|> no)
-  where nc  = flag' NoConfirm (long "noconfirm" <> help "Never ask for Aura or Pacman confirmation.")
-        no  = flag' NeededOnly (long "needed" <> help "Don't rebuild/reinstall up-to-date packages.")
+commonConfig :: Parser CommonConfig
+commonConfig = CommonConfig <$> optional cap <*> optional cop <*> optional lfp <*> commonSwitches
+  where cap = strOption (long "cachedir" <> help "Use an alternate package cache location.")
+        cop = strOption (long "config"   <> help "Use an alternate Pacman config file.")
+        lfp = strOption (long "logfile"  <> help "Use an alternate Pacman log.")
+
+commonSwitches :: Parser (S.Set CommonSwitch)
+commonSwitches = S.fromList <$> many (nc <|> no <|> dbg)
+  where nc  = flag' NoConfirm  (long "noconfirm" <> help "Never ask for Aura or Pacman confirmation.")
+        no  = flag' NeededOnly (long "needed"    <> help "Don't rebuild/reinstall up-to-date packages.")
+        dbg = flag' Debug      (long "debug"     <> help "Print useful debugging info.")
 
 -- | One or more arguments.
 someArgs :: Parser [T.Text]

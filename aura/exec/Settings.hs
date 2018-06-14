@@ -55,15 +55,14 @@ getSettings (Program _ co bc lng) = do
               buildUser' = buildUserOf bc <|> getTrueUser environment
           pure $ do
             bu <- maybe (failure whoIsBuildUser_1) Right buildUser'
-            Right Settings { inputOf         = [] -- map T.pack input
-                           , managerOf       = manager
-                           , envOf           = environment
-                           , langOf          = language
-                           , editorOf        = getEditor environment
-                           , cachePathOf     = getCachePath confFile
-                           , logFilePathOf   = getLogFilePath confFile
-                           , commonOptsOf    = co
-                           , buildConfigOf   =
+            Right Settings { managerOf      = manager
+                           , envOf          = environment
+                           , langOf         = language
+                           , editorOf       = getEditor environment
+                           -- , cachePathOf   = getCachePath confFile
+                           -- , logFilePathOf = getLogFilePath confFile
+                           , commonConfigOf = co
+                           , buildConfigOf  =
                              bc { buildPathOf   = Just buildPath'
                                 , buildUserOf   = Just bu
                                 , ignoredPkgsOf = getIgnoredPkgs confFile <> ignoredPkgsOf bc

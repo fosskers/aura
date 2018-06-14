@@ -46,12 +46,27 @@ instance Flagable Makepkg where
   asFlag IgnoreArch = ["--ignorearch"]
   asFlag AllSource  = ["--allsource"]
 
-data Common = NoConfirm | NeededOnly | CachePath FilePath deriving (Eq, Ord)
+-- | Flags that are common to both Aura and Pacman.
+-- Aura will react to them, but also pass them through to `pacman`
+-- calls if necessary.
+data CommonConfig = CommonConfig { cachePathOf      :: Maybe FilePath
+                                 , configPathOf     :: Maybe FilePath
+                                 , logPathOf        :: Maybe FilePath
+                                 , commonSwitchesOf :: S.Set CommonSwitch }
 
-instance Flagable Common where
-  asFlag NoConfirm     = ["--noconfirm"]
-  asFlag NeededOnly    = ["--needed"]
-  asFlag (CachePath p) = ["--cachedir", toTextIgnore p]
+instance Flagable CommonConfig where
+  asFlag (CommonConfig cap cop lfp cs) =
+    maybe [] (\p -> ["--cachedir", toTextIgnore p]) cap
+    ++ maybe [] (\p -> ["--config", toTextIgnore p]) cop
+    ++ maybe [] (\p -> ["--logfile", toTextIgnore p]) lfp
+    ++ concatMap asFlag (toList cs)
+
+data CommonSwitch = NoConfirm | NeededOnly | Debug deriving (Eq, Ord)
+
+instance Flagable CommonSwitch where
+  asFlag NoConfirm  = ["--noconfirm"]
+  asFlag NeededOnly = ["--needed"]
+  asFlag Debug      = ["--debug"]
 
 data BuildConfig = BuildConfig { makepkgFlagsOf  :: S.Set Makepkg
                                , ignoredPkgsOf   :: S.Set Text
@@ -79,16 +94,13 @@ data BuildSwitch = LowVerbosity
 switch :: Settings -> BuildSwitch -> Bool
 switch ss bs = S.member bs . buildSwitchesOf $ buildConfigOf ss
 
-shared :: Settings -> Common -> Bool
-shared ss c = S.member c $ commonOptsOf ss
+shared :: Settings -> CommonSwitch -> Bool
+shared ss c = S.member c . commonSwitchesOf $ commonConfigOf ss
 
 -- | The global settings as set by the user with command-line flags.
-data Settings = Settings { inputOf       :: [Text]
-                         , managerOf     :: Manager
-                         , envOf         :: Environment
-                         , langOf        :: Language
-                         , editorOf      :: Text
-                         , cachePathOf   :: FilePath
-                         , logFilePathOf :: FilePath
-                         , commonOptsOf  :: S.Set Common
-                         , buildConfigOf :: BuildConfig }
+data Settings = Settings { managerOf      :: Manager
+                         , envOf          :: Environment
+                         , langOf         :: Language
+                         , editorOf       :: Text  -- TODO Add to `BuildConfig`?
+                         , commonConfigOf :: CommonConfig
+                         , buildConfigOf  :: BuildConfig }

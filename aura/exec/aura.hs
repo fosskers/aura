@@ -102,7 +102,7 @@ executeOpts (Program ops _ _ _) = do
         Left (CacheBackup pth) -> fmap join . sudo $ C.backupCache pth
     Right (Log o) ->
       case o of
-        Nothing            -> ask >>= fmap Right . L.viewLogFile . logFilePathOf
+        Nothing            -> Right <$> L.viewLogFile
         Just (LogInfo ps)  -> Right <$> L.logInfoOnPkg ps
         Just (LogSearch s) -> ask >>= fmap Right . liftIO . flip L.searchLogFile s
     Right (Orphans o) ->

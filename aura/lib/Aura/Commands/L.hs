@@ -34,6 +34,7 @@ import           Aura.Colour.Text (yellow)
 import           Aura.Core (badReport)
 import           Aura.Languages
 import           Aura.Monad.Aura
+import           Aura.Pacman (defaultLogFile)
 import           Aura.Settings.Base
 import           Aura.Utils (entrify)
 import           BasePrelude hiding (FilePath)
@@ -49,20 +50,24 @@ newtype Log = Log [T.Text]
 
 data LogEntry = LogEntry { _pkgName :: T.Text, _firstInstall :: T.Text, _upgrades :: Word, _recent :: [T.Text] }
 
-viewLogFile :: FilePath -> Aura ()
-viewLogFile logFilePath = void . shelly . loudSh $ run_ "less" [toTextIgnore logFilePath]
+viewLogFile :: Aura ()
+viewLogFile = do
+  pth <- asks (fromMaybe defaultLogFile . logPathOf . commonConfigOf)
+  void . shelly . loudSh $ run_ "less" [toTextIgnore pth]
 
 -- Very similar to `searchCache`. But is this worth generalizing?
 searchLogFile :: Settings -> T.Text -> IO ()
 searchLogFile ss input = do
-  logFile <- T.lines <$> shelly (readfile $ logFilePathOf ss)
+  let pth = fromMaybe defaultLogFile . logPathOf $ commonConfigOf ss
+  logFile <- T.lines <$> shelly (readfile pth)
   traverse_ T.putStrLn $ searchLines (Regex input) logFile
 
 logInfoOnPkg :: [T.Text] -> Aura ()
 logInfoOnPkg []   = pure ()
 logInfoOnPkg pkgs = do
   ss <- ask
-  logFile <- fmap (Log . T.lines) . shelly . readfile $ logFilePathOf ss
+  let pth = fromMaybe defaultLogFile . logPathOf $ commonConfigOf ss
+  logFile <- fmap (Log . T.lines) . shelly $ readfile pth
   let (bads, goods) = partitionEithers $ map (logLookup logFile) pkgs
   reportNotInLog bads
   liftIO . traverse_ T.putStrLn $ map (renderEntry ss) goods

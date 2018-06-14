@@ -100,7 +100,7 @@ isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", pkg]
 removePkgs :: [T.Text] -> Aura (Either Failure ())
 removePkgs []   = pure $ Right ()
 removePkgs pkgs = do
-  pacOpts <- asks (concatMap asFlag . toList . commonOptsOf)
+  pacOpts <- asks (asFlag . commonConfigOf)
   pacman $ ["-Rsu"] <> pkgs <> pacOpts
 
 -- | True if a dependency is satisfied by an installed package.

@@ -59,7 +59,7 @@ downgradePackages :: [T.Text] -> [T.Text] -> Aura (Either Failure ())
 downgradePackages _ []         = pure $ Right ()
 downgradePackages pacOpts pkgs = do
   ss    <- ask
-  let cachePath = cachePathOf ss
+  let cachePath = fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
   reals <- shelly $ pkgsInCache ss pkgs
   reportBadDowngradePkgs $ pkgs \\ reals
   if | null reals -> pure $ Right ()
@@ -94,7 +94,7 @@ backupCache dir = do
 confirmBackup :: FilePath -> Aura (Either Failure Cache)
 confirmBackup dir = do
   ss    <- ask
-  cache <- shelly . cacheContents $ cachePathOf ss
+  cache <- shelly . cacheContents . fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
   notify $ backupCache_4 (T.unpack $ toTextIgnore dir) (langOf ss)
   notify $ backupCache_5 (M.size $ _cache cache) (langOf ss)
   okay  <- optionalPrompt ss backupCache_6
@@ -110,7 +110,7 @@ backup dir (Cache cache) = do
 copyAndNotify :: FilePath -> [PackagePath] -> Int -> Aura ()
 copyAndNotify _ [] _ = pure ()
 copyAndNotify dir (PackagePath p : ps) n = do
-  cachePath <- asks cachePathOf
+  cachePath <- asks (fromMaybe defaultPackageCache . cachePathOf . commonConfigOf)
   liftIO $ raiseCursorBy 1
   asks langOf >>= warn . copyAndNotify_1 n
   shelly $ cp (cachePath </> p) (dir </> p)
@@ -131,11 +131,12 @@ clean :: Int -> Aura ()
 clean toSave = do
   ss <- ask
   notify . cleanCache_6 $ langOf ss
-  (Cache cache) <- shelly . cacheContents $ cachePathOf ss
+  let cachePath = fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
+  (Cache cache) <- shelly $ cacheContents cachePath
   let !files    = M.elems cache
       grouped   = take toSave . reverse <$> groupByName files
       toRemove  = files \\ fold grouped
-      filePaths = (\(PackagePath p) -> cachePathOf ss </> p) <$> toRemove
+      filePaths = (\(PackagePath p) -> cachePath </> p) <$> toRemove
   shelly $ traverse_ rm filePaths
 
 -- | Only package files with a version not in any PkgState will be
@@ -147,7 +148,7 @@ cleanNotSaved = do
   getStateFiles >>= bitraverse pure (f ss)
   where f ss sfs = do
           states <- liftIO $ traverse readState sfs
-          let path = cachePathOf ss
+          let path = fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
           (Cache cache)  <- shelly $ cacheContents path
           let duds = M.filterWithKey (\p _ -> any (inState p) states) cache
           whenM (optionalPrompt ss $ cleanNotSaved_2 $ M.size duds) $

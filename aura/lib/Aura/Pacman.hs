@@ -34,6 +34,7 @@ module Aura.Pacman
     -- * Paths
   , lockFile
   , pacmanConfFile
+  , defaultLogFile
   , getCachePath
   , getLogFilePath
     -- * Pacman Config

@@ -55,9 +55,11 @@ cacheContents :: FilePath -> Sh Cache
 cacheContents = fmap (cache . map PackagePath) . lsT
 
 pkgsInCache :: Settings -> [T.Text] -> Sh [T.Text]
-pkgsInCache ss ps =
-  nub . filter (`elem` ps) . map _spName . M.keys . _cache <$> cacheContents (cachePathOf ss)
+pkgsInCache ss ps = do
+  c <- cacheContents . fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
+  pure . nub . filter (`elem` ps) . map _spName . M.keys $ _cache c
 
 cacheMatches :: Settings -> T.Text -> Sh [PackagePath]
-cacheMatches ss input =
-  filter (T.isInfixOf input . _pkgpath) . M.elems . _cache <$> cacheContents (cachePathOf ss)
+cacheMatches ss input = do
+  c <- cacheContents . fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
+  pure . filter (T.isInfixOf input . _pkgpath) . M.elems $ _cache c

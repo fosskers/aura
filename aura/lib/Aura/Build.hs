@@ -28,6 +28,7 @@ module Aura.Build
   , buildPackages
   ) where
 
+import           Aura.Cache (defaultPackageCache)
 import           Aura.Core
 import           Aura.Languages
 import           Aura.MakePkg
@@ -74,7 +75,8 @@ build p = do
 -- will come back via the @Language -> String@ function.
 build' :: Settings -> Buildable -> Sh (Either Failure [FilePath])
 build' ss p = do
-  cd . maybe (cachePathOf ss) id . buildPathOf $ buildConfigOf ss
+  let pth = fromMaybe defaultPackageCache $ buildPathOf (buildConfigOf ss) <|> cachePathOf (commonConfigOf ss)
+  cd pth
   withTmpDir $ \curr -> do
     cd curr
     getBuildScripts p user >>= fmap join . bitraverse pure f
@@ -120,7 +122,8 @@ buildFail p (Failure err) = do
 -- | Moves a file to the pacman package cache and returns its location.
 moveToCachePath :: Settings -> FilePath -> Sh FilePath
 moveToCachePath ss p = cp p newName $> newName
-  where newName = cachePathOf ss </> filename p
+  where newName = pth </> filename p
+        pth     = fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
 
 -- | Moves a file to the aura src package cache and returns its location.
 moveToSourcePath :: FilePath -> Sh FilePath
