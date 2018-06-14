@@ -59,9 +59,10 @@ getSettings (Program _ co bc lng) = do
                            , envOf          = environment
                            , langOf         = language
                            , editorOf       = getEditor environment
-                           -- , cachePathOf   = getCachePath confFile
-                           -- , logFilePathOf = getLogFilePath confFile
-                           , commonConfigOf = co
+                           , commonConfigOf =
+                             co { cachePathOf = cachePathOf co <|> Just (getCachePath confFile)
+                                , logPathOf   = logPathOf co   <|> Just (getLogFilePath confFile)
+                                }
                            , buildConfigOf  =
                              bc { buildPathOf   = Just buildPath'
                                 , buildUserOf   = Just bu
