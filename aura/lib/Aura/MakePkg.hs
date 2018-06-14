@@ -49,7 +49,7 @@ makepkgCmd = "/usr/bin/makepkg"
 -- directory we're in.
 makepkg :: Settings -> User -> Sh (Either Failure [FilePath])
 makepkg ss user = fmap g . f $ make cmd opts
-  where (cmd, opts) = runStyle user . map asFlag . toList . makepkgFlagsOf $ buildConfigOf ss
+  where (cmd, opts) = runStyle user . concatMap asFlag . toList . makepkgFlagsOf $ buildConfigOf ss
         f | switch ss DontSuppressMakepkg = id
           | otherwise = print_stdout False . print_stderr False
         g (ExitSuccess, fs) = Right fs

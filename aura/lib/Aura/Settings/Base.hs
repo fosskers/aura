@@ -29,28 +29,29 @@ import qualified Data.Set as S
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Network.HTTP.Client (Manager)
-import           Shelly (FilePath)
+import           Shelly (FilePath, toTextIgnore)
 import           Utilities (Environment, User)
 
 ---
 
 -- | Types whose members can be converted to CLI flags.
 class Flagable a where
-  asFlag :: a -> T.Text
+  asFlag :: a -> [T.Text]
 
 data Truncation = None | Head Int | Tail Int deriving (Eq, Show)
 
 data Makepkg = IgnoreArch | AllSource deriving (Eq, Ord)
 
 instance Flagable Makepkg where
-  asFlag IgnoreArch = "--ignorearch"
-  asFlag AllSource  = "--allsource"
+  asFlag IgnoreArch = ["--ignorearch"]
+  asFlag AllSource  = ["--allsource"]
 
-data Common = NoConfirm | NeededOnly deriving (Eq, Ord)
+data Common = NoConfirm | NeededOnly | CachePath FilePath deriving (Eq, Ord)
 
 instance Flagable Common where
-  asFlag NoConfirm  = "--noconfirm"
-  asFlag NeededOnly = "--needed"
+  asFlag NoConfirm     = ["--noconfirm"]
+  asFlag NeededOnly    = ["--needed"]
+  asFlag (CachePath p) = ["--cachedir", toTextIgnore p]
 
 data BuildConfig = BuildConfig { makepkgFlagsOf  :: S.Set Makepkg
                                , ignoredPkgsOf   :: S.Set Text

@@ -125,7 +125,7 @@ depsToInstall repo bs = do
 repoInstall :: [T.Text] -> Aura (Either Failure ())
 repoInstall [] = pure $ Right ()
 repoInstall ps = do
-  pacOpts <- asks (map asFlag . toList . commonOptsOf)
+  pacOpts <- asks (concatMap asFlag . toList . commonOptsOf)
   pacman $ ["-S", "--asdeps"] <> pacOpts <> ps
 
 buildAndInstall :: [Buildable] -> Aura (Either Failure ())
