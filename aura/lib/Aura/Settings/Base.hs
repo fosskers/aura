@@ -53,6 +53,9 @@ data BuildConfig = BuildConfig { makepkgFlagsOf  :: S.Set Makepkg
                                , truncationOf    :: Truncation  -- For `-As`
                                , buildSwitchesOf :: S.Set BuildSwitch }
 
+defaultConfig :: BuildConfig
+defaultConfig = BuildConfig S.empty S.empty Nothing Nothing None S.empty
+
 -- | Extra options for customizing the build process.
 data BuildSwitch = LowVerbosity
                  | DeleteMakeDeps

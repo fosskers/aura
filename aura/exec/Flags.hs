@@ -71,13 +71,13 @@ program = Program
   <$> (fmap Right aurOps <|> fmap Left pacOps)
   <*> pure S.empty
   <*> pure S.empty
-  <*> undefined  -- BuildConfig
+  <*> pure defaultConfig  -- BuildConfig
   <*> optional language
   where aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version
         pacOps = pure undefined
 
 aursync :: Parser AuraOp
-aursync = AurSync <$> (bigA *> (fmap Left mods <|> fmap Right someArgs))
+aursync = AurSync <$> (bigA *> (fmap Right someArgs <|> fmap Left mods))
   where bigA = flag' () (long "aursync" <> short 'A' <> help "Install packages from the AUR.")
         mods = deps <|> ainfo <|> pkgbuild <|> search <|> upgrade <|> tarball
         deps = AurDeps <$>
