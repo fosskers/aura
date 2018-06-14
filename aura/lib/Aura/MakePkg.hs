@@ -30,7 +30,7 @@ module Aura.MakePkg
   ) where
 
 import           Aura.Languages
-import           Aura.Settings.Base (Settings(..), Suppression(..), suppressMakepkg, makepkgFlagsOf)
+import           Aura.Settings.Base
 import           Aura.Types
 import           BasePrelude hiding (FilePath)
 import qualified Data.Text as T
@@ -49,10 +49,9 @@ makepkgCmd = "/usr/bin/makepkg"
 -- directory we're in.
 makepkg :: Settings -> User -> Sh (Either Failure [FilePath])
 makepkg ss user = fmap g . f $ make cmd opts
-  where (cmd, opts) = runStyle user $ makepkgFlagsOf ss
-        f = case suppressMakepkg ss of
-              BeQuiet   -> print_stdout False . print_stderr False
-              BeVerbose -> id
+  where (cmd, opts) = runStyle user . map asFlag . toList . makepkgFlagsOf $ buildConfigOf ss
+        f | switch ss DontSuppressMakepkg = id
+          | otherwise = print_stdout False . print_stderr False
         g (ExitSuccess, fs) = Right fs
         g _ = failure buildFail_8
 

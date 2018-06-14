@@ -57,7 +57,7 @@ edit f p = do
 -- | Allow the user to edit the PKGBUILD if they asked to do so.
 hotEdit :: Settings -> Buildable -> Sh Buildable
 hotEdit ss b
-  | not $ mayHotEdit ss = pure b
+  | not $ switch ss HotEdit = pure b
   | otherwise = do
       ans <- optionalPrompt ss (hotEdit_1 $ baseNameOf b)
       bool (pure b) f ans
@@ -69,7 +69,7 @@ hotEdit ss b
 -- To work, a package needs an entry in `/etc/customizepkg.d/`
 customizepkg :: Settings -> Buildable -> Sh Buildable
 customizepkg ss b
-  | not $ useCustomizepkg ss = pure b
+  | not $ switch ss UseCustomizepkg = pure b
   | otherwise = ifFile customizepkg' (scold . customizepkg_1 $ langOf ss) bin b
   where bin = "/usr/bin/customizepkg"
 

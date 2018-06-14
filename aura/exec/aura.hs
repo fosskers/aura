@@ -77,7 +77,7 @@ exit (Left e)  = scold e *> exitFailure
 exit (Right _) = exitSuccess
 
 executeOpts :: Program -> Aura (Either Failure ())
-executeOpts (Program ops _ _ _ _ _) = do
+executeOpts (Program ops _ _ _ _) = do
   case ops of
     Left _ -> fmap Right . liftIO $ T.putStrLn "LEFT!"
     Right (AurSync o) ->

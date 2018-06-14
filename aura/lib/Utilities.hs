@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 -- Utility functions too general even for Aura.Utils
 
@@ -56,17 +57,16 @@ import           System.IO hiding (FilePath)
 
 ---
 
+---------
+-- STRING
+---------
+
 data Pattern = Pattern { _pattern :: T.Text, _target :: T.Text }
 
 -- TODO This holding a regex pattern isn't respected anywhere.
 -- The only two places that use it are calling `T.infixOf`.
 newtype Regex = Regex T.Text
 
----
-
----------
--- STRING
----------
 -- | A traditional `split` function.
 split :: Eq a => a -> [a] -> [[a]]
 split _ [] = []

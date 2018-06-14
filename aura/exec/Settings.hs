@@ -22,8 +22,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Settings
-    ( getSettings
-    , debugOutput ) where
+    ( getSettings ) where
+    -- , debugOutput ) where
 
 import           Aura.Languages
 import           Aura.Pacman
@@ -44,12 +44,11 @@ import           Utilities
 ---
 
 getSettings :: Program -> IO (Either Failure Settings)
-getSettings (Program _ _ _ _ _ lng) = do
+getSettings (Program _ _ _ bc lng) = do
   confFile <- getPacmanConf
   join <$> bitraverse pure f confFile
   where f confFile = do
           environment <- M.fromList . map (bimap T.pack T.pack) <$> getEnvironment
-          pmanCommand <- pure "pacman"  -- getPacmanCmd environment $ noPowerPillStatus auraFlags
           -- buildPath'  <- checkBuildPath (fromText . T.pack <$> buildPath auraFlags) (getCachePath confFile)
           manager     <- newManager tlsManagerSettings
           let language   = checkLang lng environment
@@ -63,30 +62,15 @@ getSettings (Program _ _ _ _ _ lng) = do
                            , envOf           = environment
                            , buildUserOf     = User "ME!" -- User bu
                            , langOf          = language
-                           , pacmanCmdOf     = pmanCommand
                            , editorOf        = getEditor environment
-                           , ignoredPkgsOf   = [] -- getIgnoredPkgs confFile <> map T.pack (ignoredAuraPkgs auraFlags)
-                           , makepkgFlagsOf  = [] -- map T.pack $ makepkgFlags auraFlags
-                           , buildPathOf     = getCachePath confFile
                            , cachePathOf     = getCachePath confFile
                            , logFilePathOf   = getLogFilePath confFile
-                           , sortSchemeOf    = undefined --sortSchemeStatus auraFlags
-                           , truncationOf    = undefined --truncationStatus auraFlags
-                           , beQuiet         = undefined --quietStatus auraFlags
-                           , suppressMakepkg = undefined --suppressionStatus auraFlags
-                           , delMakeDeps     = undefined --delMakeDepsStatus auraFlags
-                           , mustConfirm     = undefined --confirmationStatus auraFlags
-                           , neededOnly      = undefined --neededStatus auraFlags
-                           , mayHotEdit      = undefined --hotEditStatus auraFlags
-                           , diffPkgbuilds   = undefined --pbDiffStatus auraFlags
-                           , rebuildDevel    = undefined --rebuildDevelStatus auraFlags
-                           , useCustomizepkg = undefined --customizepkgStatus auraFlags
-                           , noPowerPill     = undefined --noPowerPillStatus auraFlags
-                           , keepSource      = undefined --keepSourceStatus auraFlags
-                           , buildABSDeps    = False
-                           , dryRun          = undefined --dryRunStatus auraFlags
+                           , buildConfigOf   = bc { buildPathOf = bimap (const $ getCachePath confFile) id $ buildPathOf bc
+                                                  , ignoredPkgsOf = getIgnoredPkgs confFile <> ignoredPkgsOf bc
+                                                  }
                            }
 
+{-
 debugOutput :: Settings -> IO ()
 debugOutput ss = do
   let yn a = if a then "Yes!" else "No."
@@ -115,6 +99,7 @@ debugOutput ss = do
                        , "Use Customizepkg? => " <> yn (useCustomizepkg ss)
                        , "Forego PowerPill? => " <> yn (noPowerPill ss)
                        , "Keep source?      => " <> yn (keepSource ss) ]
+-}
 
 checkLang :: Maybe Language -> Environment -> Language
 checkLang Nothing env   = langFromLocale $ getLocale env

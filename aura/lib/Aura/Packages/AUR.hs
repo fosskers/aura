@@ -102,14 +102,17 @@ sourceTarball m path pkg = do
 ------------
 -- RPC CALLS
 ------------
-sortAurInfo :: SortScheme -> [AurInfo] -> [AurInfo]
-sortAurInfo scheme ai = sortBy compare' ai
-  where compare' = case scheme of
-                     ByVote -> \x y -> compare (aurVotesOf y) (aurVotesOf x)
-                     Alphabetically -> compare `on` aurNameOf
+sortAurInfo :: Maybe BuildSwitch -> [AurInfo] -> [AurInfo]
+sortAurInfo bs ai = sortBy compare' ai
+  where compare' = case bs of
+                     Just SortAlphabetically -> compare `on` aurNameOf
+                     _ -> \x y -> compare (aurVotesOf y) (aurVotesOf x)
 
 aurSearch :: T.Text -> Aura [AurInfo]
-aurSearch regex = ask >>= \s -> sortAurInfo (sortSchemeOf s) <$> search (managerOf s) regex
+aurSearch regex = do
+  ss  <- ask
+  res <- search (managerOf ss) regex
+  pure $ sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) res
 
 aurInfo :: [T.Text] -> Aura [AurInfo]
-aurInfo pkgs = asks managerOf >>= \m -> sortAurInfo Alphabetically <$> info m pkgs
+aurInfo pkgs = asks managerOf >>= \m -> sortAurInfo (Just SortAlphabetically) <$> info m pkgs

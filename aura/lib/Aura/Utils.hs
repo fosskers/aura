@@ -87,8 +87,9 @@ isAffirmative l t = T.null t || elem t (yesPattern l)
 
 -- | Doesn't prompt when `--noconfirm` is used.
 optionalPrompt :: MonadIO m => Settings -> (Language -> T.Text) -> m Bool
-optionalPrompt ss msg | mustConfirm ss = yesNoPrompt (langOf ss) (msg $ langOf ss)
-                      | otherwise      = pure True
+optionalPrompt ss msg
+  | not $ switch ss NoConfirm = yesNoPrompt (langOf ss) (msg $ langOf ss)
+  | otherwise                 = pure True
 
 -------
 -- MISC

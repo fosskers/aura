@@ -68,7 +68,7 @@ install = I.install installOptions
 upgradeAURPkgs :: [T.Text] -> [T.Text] -> Aura (Either Failure ())
 upgradeAURPkgs pacOpts pkgs = do
   ss <- ask
-  let !ignores     = map Just $ ignoredPkgsOf ss
+  let !ignores     = map Just . toList . ignoredPkgsOf $ buildConfigOf ss
       notIgnored p = fmap fst (splitNameAndVer p) `notElem` ignores
       lang         = langOf ss
   notify $ upgradeAURPkgs_1 lang
@@ -102,7 +102,7 @@ auraUpgrade pacOpts = install pacOpts ["aura"]
 
 develPkgCheck :: Aura [T.Text]
 develPkgCheck = ask >>= \ss ->
-  if rebuildDevel ss then develPkgs else pure []
+  if switch ss RebuildDevel then develPkgs else pure []
 
 aurPkgInfo :: [T.Text] -> Aura ()
 aurPkgInfo pkgs = aurInfo pkgs >>= traverse_ displayAurPkgInfo
@@ -133,7 +133,7 @@ aurPkgSearch :: T.Text -> Aura ()
 aurPkgSearch regex = do
   ss <- ask
   db <- S.fromList . map _spName <$> foreignPackages
-  let t = case truncationOf ss of  -- Can't this go anywhere else?
+  let t = case truncationOf $ buildConfigOf ss of  -- Can't this go anywhere else?
             None   -> id
             Head n -> take n
             Tail n -> reverse . take n . reverse
@@ -143,7 +143,7 @@ aurPkgSearch regex = do
 
 renderSearch :: Settings -> T.Text -> (AurInfo, Bool) -> T.Text
 renderSearch ss r (i, e) = searchResult
-    where searchResult = if beQuiet ss then sparseInfo else verboseInfo
+    where searchResult = if switch ss LowVerbosity then sparseInfo else verboseInfo
           sparseInfo   = aurNameOf i
           verboseInfo  = repo <> n <> " " <> v <> " (" <> l <> " | " <> p <>
                          ")" <> (if e then bForeground " [installed]" else "") <> "\n    " <> d

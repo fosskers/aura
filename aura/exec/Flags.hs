@@ -3,6 +3,7 @@
 module Flags where
 
 import           Aura.Types (Language(..))
+import Aura.Settings.Base
 import           BasePrelude hiding (Version, FilePath, option, log)
 import qualified Data.Set as S
 import qualified Data.Text as T
@@ -14,17 +15,15 @@ import           Shelly hiding (command)
 -- | A description of a run of Aura to attempt.
 data Program = Program {
   -- ^ Whether Aura handles everything, or the ops and input are just passed down to Pacman.
-  _operation  :: Either PacmanOp AuraOp
+  _operation   :: Either PacmanOp AuraOp
   -- ^ Flags common to both Aura and Pacman.
-  , _commons  :: S.Set Common
-  -- ^ Exposed flags to be passed to makepkg.
-  , _makepkg  :: S.Set Makepkg
-  -- ^ Top-level configuation flags (e.g. build user)
-  , _config   :: S.Set Config
+  , _commons   :: S.Set Common
   -- ^ Other input, usually package names.
-  , _input    :: S.Set T.Text
+  , _input     :: S.Set T.Text
+  -- ^ Settings specific to building packages.
+  , _buildConf :: BuildConfig
   -- ^ The human language of text output.
-  , _language :: Maybe Language }
+  , _language  :: Maybe Language }
 
 data Common = NoConfirm | Needed
 
@@ -72,8 +71,7 @@ program = Program
   <$> (fmap Right aurOps <|> fmap Left pacOps)
   <*> pure S.empty
   <*> pure S.empty
-  <*> pure S.empty
-  <*> pure S.empty
+  <*> undefined  -- BuildConfig
   <*> optional language
   where aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version
         pacOps = pure undefined

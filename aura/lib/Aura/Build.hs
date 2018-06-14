@@ -71,7 +71,7 @@ build p = do
 -- will come back via the @Language -> String@ function.
 build' :: Settings -> Buildable -> Sh (Either Failure [FilePath])
 build' ss p = do
-  cd $ buildPathOf ss
+  cd . either id id . buildPathOf $ buildConfigOf ss
   withTmpDir $ \curr -> do
     cd curr
     getBuildScripts p user >>= fmap join . bitraverse pure f
@@ -83,7 +83,7 @@ build' ss p = do
           bitraverse pure g pNames
         g pns = do
           paths <- traverse (moveToCachePath ss) pns
-          when (keepSource ss) $ makepkgSource user >>= traverse_ moveToSourcePath
+          when (switch ss KeepSource) $ makepkgSource user >>= traverse_ moveToSourcePath
           pure paths
 
 getBuildScripts :: Buildable -> User -> Sh (Either Failure FilePath)
@@ -100,7 +100,7 @@ getBuildScripts pkg user = do
 -- | The user may have edited the original PKGBUILD. If they have, we need to
 -- overwrite what's been downloaded before calling `makepkg`.
 overwritePkgbuild :: Settings -> Buildable -> Sh ()
-overwritePkgbuild ss p = when (mayHotEdit ss || useCustomizepkg ss) $
+overwritePkgbuild ss p = when (switch ss HotEdit || switch ss UseCustomizepkg) $
   writefile "PKGBUILD" . _pkgbuild $ pkgbuildOf p
 
 -- | Inform the user that building failed. Ask them if they want to

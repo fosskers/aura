@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 {-
 
 Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
@@ -21,48 +23,63 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Settings.Base where
 
-import Aura.Languages (Language)
-import BasePrelude hiding (FilePath)
-import Data.Text (Text)
-import Network.HTTP.Client (Manager)
-import Shelly (FilePath)
-import Utilities (Environment, User)
+import           Aura.Languages (Language)
+import           BasePrelude hiding (FilePath)
+import qualified Data.Set as S
+import           Data.Text (Text)
+import qualified Data.Text as T
+import           Network.HTTP.Client (Manager)
+import           Shelly (FilePath)
+import           Utilities (Environment, User)
 
 ---
 
-data SortScheme = ByVote | Alphabetically deriving (Eq, Show)
+-- | Types whose members can be converted to CLI flags.
+class Flagable a where
+  asFlag :: a -> T.Text
 
 data Truncation = None | Head Int | Tail Int deriving (Eq, Show)
 
-data Suppression = BeQuiet | BeVerbose deriving (Eq, Show)
+data Makepkg = IgnoreArch | AllSource
+
+instance Flagable Makepkg where
+  asFlag IgnoreArch = "--ignorearch"
+  asFlag AllSource  = "--allsource"
+
+data BuildConfig = BuildConfig { makepkgFlagsOf  :: S.Set Makepkg
+                               , ignoredPkgsOf   :: S.Set Text
+                               , buildPathOf     :: Either FilePath FilePath
+                               , truncationOf    :: Truncation  -- For `-As`
+                               , buildSwitchesOf :: S.Set BuildSwitch }
+
+-- | Extra options for customizing the build process.
+data BuildSwitch = LowVerbosity
+                 | DeleteMakeDeps
+                 | DontSuppressMakepkg
+                 | DiffPkgbuilds
+                 | RebuildDevel
+                 | HotEdit
+                 | NoConfirm
+                 | NeededOnly
+                 | UseCustomizepkg
+                 | KeepSource
+                 | DryRun
+                 | SortAlphabetically  -- For `-As`
+                 deriving (Eq, Ord)
+
+-- | Convenient short-hand.
+switch :: Settings -> BuildSwitch -> Bool
+switch ss bs = S.member bs . buildSwitchesOf $ buildConfigOf ss
 
 -- | The global settings as set by the user with command-line flags.
-data Settings = Settings { inputOf         :: [Text]
-                         , pacOptsOf       :: [Text]
-                         , otherOptsOf     :: [Text]
-                         , managerOf       :: Manager
-                         , envOf           :: Environment
-                         , buildUserOf     :: User
-                         , langOf          :: Language
-                         , pacmanCmdOf     :: Text
-                         , editorOf        :: Text
-                         , ignoredPkgsOf   :: [Text]
-                         , makepkgFlagsOf  :: [Text]
-                         , buildPathOf     :: FilePath
-                         , cachePathOf     :: FilePath
-                         , logFilePathOf   :: FilePath
-                         , sortSchemeOf    :: SortScheme  -- For `-As`
-                         , truncationOf    :: Truncation  -- For `-As`
-                         , beQuiet         :: Bool
-                         , suppressMakepkg :: Suppression
-                         , delMakeDeps     :: Bool
-                         , diffPkgbuilds   :: Bool
-                         , rebuildDevel    :: Bool
-                         , mayHotEdit      :: Bool
-                         , mustConfirm     :: Bool
-                         , neededOnly      :: Bool
-                         , useCustomizepkg :: Bool
-                         , noPowerPill     :: Bool
-                         , keepSource      :: Bool
-                         , buildABSDeps    :: Bool
-                         , dryRun          :: Bool }
+data Settings = Settings { inputOf       :: [Text]
+                         , pacOptsOf     :: [Text]
+                         , otherOptsOf   :: [Text]
+                         , managerOf     :: Manager
+                         , envOf         :: Environment
+                         , buildUserOf   :: User
+                         , langOf        :: Language
+                         , editorOf      :: Text
+                         , cachePathOf   :: FilePath
+                         , logFilePathOf :: FilePath
+                         , buildConfigOf :: BuildConfig }

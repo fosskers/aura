@@ -48,10 +48,10 @@ module Aura.Pacman
 import           Aura.Cache
 import           Aura.Languages
 import           Aura.Monad.Aura
-import           Aura.Settings.Base (pacmanCmdOf)
 import           Aura.Types
 import           BasePrelude hiding (some)
 import qualified Data.Map.Strict as M
+import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Shelly as Sh
 import           Shelly hiding (FilePath, cmd)
@@ -111,8 +111,8 @@ getPacmanConf = shelly $ do
   file <- readfile pacmanConfFile
   pure . first (const (Failure confParsing_1)) $ parse config "pacman config" file
 
-getIgnoredPkgs :: Config -> [T.Text]
-getIgnoredPkgs (Config c) = fromMaybe [] $ M.lookup "IgnorePkg" c
+getIgnoredPkgs :: Config -> S.Set T.Text
+getIgnoredPkgs (Config c) = maybe S.empty S.fromList $ M.lookup "IgnorePkg" c
 
 getCachePath :: Config -> Sh.FilePath
 getCachePath (Config c) = case M.lookup "CacheDir" c of
@@ -129,14 +129,13 @@ getLogFilePath (Config c) = case M.lookup "LogFile" c of
 ----------
 -- ACTIONS
 ----------
-pacman :: [T.Text] -> Aura (Either Failure ())
+pacman :: MonadIO m => [T.Text] -> m (Either Failure ())
 pacman args = do
-  cmd <- asks pacmanCmdOf
   flush
   shelly . errExit False $ do
-    runHandles (fromText cmd) args [ InHandle Inherit
-                                   , OutHandle Inherit
-                                   , ErrorHandle Inherit ] n
+    runHandles "pacman" args [ InHandle Inherit
+                             , OutHandle Inherit
+                             , ErrorHandle Inherit ] n
     code <- lastExitCode
     pure . bool (failure pacmanFailure_1) (Right ()) $ code == 0
     where flush   = liftIO $ hFlush stdout
@@ -152,7 +151,7 @@ pacmanSuccess args = fmap success . shelly . quietSh $ run_ "pacman" args
 pacmanOutput :: MonadIO m => [T.Text] -> m T.Text
 pacmanOutput = fmap snd . shelly . quietSh . run "pacman"
 
-syncDatabase :: [T.Text] -> Aura (Either Failure ())
+syncDatabase :: MonadIO m => [T.Text] -> m (Either Failure ())
 syncDatabase pacOpts = pacman $ "-Sy" : pacOpts
 
 getPacmanHelpMsg :: MonadIO m => m [T.Text]

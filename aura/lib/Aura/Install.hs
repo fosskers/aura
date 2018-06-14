@@ -68,7 +68,7 @@ install :: InstallOptions  -- ^ Options.
 install _ _ [] = pure $ failure install_2
 install opts pacOpts pkgs = ask >>= f
   where
-    f ss | not $ delMakeDeps ss = install' opts pacOpts pkgs
+    f ss | not $ switch ss DeleteMakeDeps = install' opts pacOpts pkgs
          | otherwise = do -- `-a` was used.
              orphansBefore <- orphans
              install' opts pacOpts pkgs
@@ -82,14 +82,14 @@ install opts pacOpts pkgs = ask >>= f
 install' :: InstallOptions -> [T.Text] -> [T.Text] -> Aura (Either Failure ())
 install' opts pacOpts pkgs = do
   ss       <- ask
-  unneeded <- bool (pure []) (catMaybes <$> liftIO (mapConcurrently isInstalled pkgs)) $ neededOnly ss
-  let (ignored, notIgnored) = partition (`elem` ignoredPkgsOf ss) pkgs
+  unneeded <- bool (pure []) (catMaybes <$> liftIO (mapConcurrently isInstalled pkgs)) $ switch ss NeededOnly
+  let (ignored, notIgnored) = partition (`elem` ignoredPkgsOf (buildConfigOf ss)) pkgs
   installAnyway <- confirmIgnored ignored
   let toInstall = (notIgnored <> installAnyway) \\ unneeded
   -- reportIgnoredPackages ignored  -- 2014 December  7 @ 14:52
   reportUnneededPackages unneeded
   toBuild <- lookupPkgs (installLookup opts ss) toInstall >>= pkgbuildDiffs
-  if | null toBuild && neededOnly ss && unneeded == pkgs -> fmap Right . notify . install_2 $ langOf ss
+  if | null toBuild && switch ss NeededOnly && unneeded == pkgs -> fmap Right . notify . install_2 $ langOf ss
      | null toBuild -> pure $ failure install_2
      | otherwise -> do
          notify . install_5 $ langOf ss
@@ -97,7 +97,7 @@ install' opts pacOpts pkgs = do
   where f ss allPkgs = do
           let (repoPkgs, buildPkgs) = partitionPkgs allPkgs
           reportPkgsToInstall (label opts) repoPkgs buildPkgs
-          if | dryRun ss -> pure $ Right ()
+          if | switch ss DryRun -> pure $ Right ()
              | otherwise -> do
                  continue <- optionalPrompt ss install_3
                  if | not continue -> pure $ failure install_4
@@ -148,7 +148,7 @@ displayPkgDeps opts ps = do
   ss   <- ask
   bs   <- catMaybes <$> liftIO (mapConcurrently (installLookup opts ss) ps)
   pkgs <- depsToInstall (repository opts) bs
-  bitraverse pure (reportDeps (beQuiet ss) . partitionPkgs) pkgs
+  bitraverse pure (reportDeps (switch ss LowVerbosity) . partitionPkgs) pkgs
   where reportDeps True  = uncurry reportListOfDeps
         reportDeps False = uncurry (reportPkgsToInstall $ label opts)
 
@@ -173,7 +173,7 @@ reportUnneededPackages pkgs = asks langOf >>= \lang ->
 pkgbuildDiffs :: [Buildable] -> Aura [Buildable]
 pkgbuildDiffs [] = pure []
 pkgbuildDiffs ps = ask >>= check
-    where check ss | not $ diffPkgbuilds ss = pure ps
+    where check ss | not $ switch ss DiffPkgbuilds = pure ps
                    | otherwise = traverse_ displayDiff ps $> ps
           displayDiff :: Buildable -> Aura ()
           displayDiff p = do
