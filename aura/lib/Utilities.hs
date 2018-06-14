@@ -28,7 +28,6 @@ module Utilities
   ( -- * Strings
     Regex(..), Pattern(..)
   , replaceByPatt, searchLines
-  , split, hardBreak
     -- * Tuples
   , tripleFst
     -- * Lists
@@ -66,20 +65,6 @@ data Pattern = Pattern { _pattern :: T.Text, _target :: T.Text }
 -- TODO This holding a regex pattern isn't respected anywhere.
 -- The only two places that use it are calling `T.infixOf`.
 newtype Regex = Regex T.Text
-
--- | A traditional `split` function.
-split :: Eq a => a -> [a] -> [[a]]
-split _ [] = []
-split x xs = fst xs' : split x (snd xs')
-    where xs' = hardBreak (== x) xs
-
--- | Like break, but kills the element that triggered the break.
-hardBreak :: (a -> Bool) -> [a] -> ([a], [a])
-hardBreak _ [] = ([], [])
-hardBreak p xs = (firstHalf, secondHalf')
-    where firstHalf   = takeWhile (not . p) xs
-          secondHalf  = dropWhile (not . p) xs
-          secondHalf' = if null secondHalf then [] else tail secondHalf
 
 -- | Replaces a (p)attern with a (t)arget in a line if possible.
 replaceByPatt :: [Pattern] -> T.Text -> T.Text
