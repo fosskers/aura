@@ -2,13 +2,14 @@
 
 module Flags where
 
+import           Aura.Settings.Base
 import           Aura.Types (Language(..))
-import Aura.Settings.Base
 import           BasePrelude hiding (Version, FilePath, option, log)
 import qualified Data.Set as S
 import qualified Data.Text as T
 import           Options.Applicative
 import           Shelly hiding (command)
+import           Utilities (User(..))
 
 ---
 
@@ -25,9 +26,8 @@ data Program = Program {
   -- ^ The human language of text output.
   , _language  :: Maybe Language }
 
-data Common = NoConfirm | Needed
-
-data Makepkg = IgnoreArch | AllSource
+-- data Common = NoConfirm | Needed
+data Common --- TODO hmmm
 
 data Config
 
@@ -71,7 +71,7 @@ program = Program
   <$> (fmap Right aurOps <|> fmap Left pacOps)
   <*> pure S.empty
   <*> pure S.empty
-  <*> pure defaultConfig  -- BuildConfig
+  <*> config
   <*> optional language
   where aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version
         pacOps = pure undefined
@@ -148,6 +148,33 @@ orphans = Orphans <$> (bigO *> optional mods)
 
 version :: Parser AuraOp
 version = flag' Version (long "version" <> short 'V' <> help "Display Aura's version.")
+
+config :: Parser BuildConfig
+config = BuildConfig <$> makepkg <*> ignored <*> optional buildPath <*> optional buildUser <*> truncation <*> switches
+  where makepkg    = S.fromList <$> many (ia <|> as)
+        ia         = flag' IgnoreArch (long "ignorearch" <> help "Exposed makepkg flag.")
+        as         = flag' AllSource (long "allsource" <> help "Exposed makepkg flag.")
+        ignored    = maybe S.empty (S.fromList . T.split (== ',')) <$>
+          optional (strOption (long "aurignore" <> metavar "PACKAGE(,PACKAGE,...)" <> help "Ignore given AUR packages."))
+        buildPath  = strOption (long "build" <> metavar "PATH" <> help "Directory in which to build packages.")
+        buildUser  = User <$> strOption (long "builduser" <> metavar "USER" <> help "User account to build as.")
+        truncation = fmap Head (option auto (long "head" <> metavar "N" <> help "Only show top N search results."))
+          <|> fmap Tail (option auto (long "tail" <> metavar "N" <> help "Only show last N search results."))
+          <|> pure None
+
+switches :: Parser (S.Set BuildSwitch)
+switches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> nc <|> no <|> ucp <|> dr <|> sa)
+  where lv  = flag' LowVerbosity (long "quiet" <> short 'q' <> help "Display less information.")
+        dmd = flag' DeleteMakeDeps (long "delmakedeps" <> short 'a' <> help "Uninstall makedeps after building.")
+        dsm = flag' DontSuppressMakepkg (long "unsuppress" <> short 'x' <> help "Unsuppress makepkg output.")
+        dpb = flag' DiffPkgbuilds (long "diff" <> short 'k' <> help "Show PKGBUILD diffs.")
+        rbd = flag' RebuildDevel (long "devel" <> help "Rebuild all git/hg/svn/darcs-based packages.")
+        he  = flag' HotEdit (long "hotedit" <> help "Edit a PKGBUILD before building.")
+        nc  = flag' NoConfirm (long "noconfirm" <> help "Never ask for Aura or Pacman confirmation.")
+        no  = flag' NeededOnly (long "needed" <> help "Don't rebuild/reinstall up-to-date packages.")
+        ucp = flag' UseCustomizepkg (long "custom" <> help "Run customizepkg before building.")
+        dr  = flag' DryRun (long "dryrun" <> help "Run dependency checks and PKGBUILD diffs, but don't build.")
+        sa  = flag' SortAlphabetically (long "abc" <> help "Sort search results alphabetically.")
 
 someArgs :: Parser [T.Text]
 someArgs = some (argument str (metavar "PACKAGES"))

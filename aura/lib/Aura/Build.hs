@@ -38,6 +38,7 @@ import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding (FilePath)
 import           Data.Bitraversable (bitraverse)
+import qualified Data.Set as S
 import qualified Data.Text as T
 import           Filesystem.Path (filename)
 import           Shelly
@@ -83,7 +84,8 @@ build' ss p = do
           bitraverse pure g pNames
         g pns = do
           paths <- traverse (moveToCachePath ss) pns
-          when (switch ss KeepSource) $ makepkgSource user >>= traverse_ moveToSourcePath
+          when (S.member AllSource . makepkgFlagsOf $ buildConfigOf ss) $
+            makepkgSource user >>= traverse_ moveToSourcePath
           pure paths
 
 getBuildScripts :: Buildable -> User -> Sh (Either Failure FilePath)

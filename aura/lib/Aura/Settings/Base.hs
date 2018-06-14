@@ -40,7 +40,7 @@ class Flagable a where
 
 data Truncation = None | Head Int | Tail Int deriving (Eq, Show)
 
-data Makepkg = IgnoreArch | AllSource
+data Makepkg = IgnoreArch | AllSource deriving (Eq, Ord)
 
 instance Flagable Makepkg where
   asFlag IgnoreArch = "--ignorearch"
@@ -66,7 +66,6 @@ data BuildSwitch = LowVerbosity
                  | NoConfirm
                  | NeededOnly
                  | UseCustomizepkg
-                 | KeepSource
                  | DryRun
                  | SortAlphabetically  -- For `-As`
                  deriving (Eq, Ord)
