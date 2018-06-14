@@ -75,7 +75,8 @@ sudo action =
 -- as of makepkg v4.2.
 trueRoot :: Aura a -> Aura (Either Failure a)
 trueRoot action = ask >>= \ss ->
-  if not (isTrueRoot $ envOf ss) || buildUserOf ss /= User "root"
+  -- TODO Should be `(&&)` here? Double-check.
+  if not (isTrueRoot $ envOf ss) || buildUserOf (buildConfigOf ss) /= Just (User "root")
     then Right <$> action else pure $ failure trueRoot_3
 
 -- | A list of non-prebuilt packages installed on the system.

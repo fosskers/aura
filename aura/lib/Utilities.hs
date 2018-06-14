@@ -183,10 +183,10 @@ exitCode 0 = ExitSuccess
 exitCode n = ExitFailure n
 
 -- | This will get the true user name regardless of sudo-ing.
-getTrueUser :: Environment -> Maybe T.Text
-getTrueUser env | isTrueRoot env  = Just "root"
-                | hasRootPriv env = M.lookup "SUDO_USER" env
-                | otherwise       = M.lookup "USER" env
+getTrueUser :: Environment -> Maybe User
+getTrueUser env | isTrueRoot env  = Just $ User "root"
+                | hasRootPriv env = User <$> M.lookup "SUDO_USER" env
+                | otherwise       = User <$> M.lookup "USER" env
 
 isTrueRoot :: Environment -> Bool
 isTrueRoot env = M.lookup "USER" env == Just "root" && not (M.member "SUDO_USER" env)

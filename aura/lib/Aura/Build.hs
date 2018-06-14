@@ -71,11 +71,11 @@ build p = do
 -- will come back via the @Language -> String@ function.
 build' :: Settings -> Buildable -> Sh (Either Failure [FilePath])
 build' ss p = do
-  cd . either id id . buildPathOf $ buildConfigOf ss
+  cd . maybe (cachePathOf ss) id . buildPathOf $ buildConfigOf ss
   withTmpDir $ \curr -> do
     cd curr
     getBuildScripts p user >>= fmap join . bitraverse pure f
-  where user = buildUserOf ss
+  where user = fromMaybe (User "桜木花道") . buildUserOf $ buildConfigOf ss
         f bs = do
           cd bs
           overwritePkgbuild ss p

@@ -48,7 +48,8 @@ instance Flagable Makepkg where
 
 data BuildConfig = BuildConfig { makepkgFlagsOf  :: S.Set Makepkg
                                , ignoredPkgsOf   :: S.Set Text
-                               , buildPathOf     :: Either FilePath FilePath
+                               , buildPathOf     :: Maybe FilePath
+                               , buildUserOf     :: Maybe User
                                , truncationOf    :: Truncation  -- For `-As`
                                , buildSwitchesOf :: S.Set BuildSwitch }
 
@@ -77,7 +78,6 @@ data Settings = Settings { inputOf       :: [Text]
                          , otherOptsOf   :: [Text]
                          , managerOf     :: Manager
                          , envOf         :: Environment
-                         , buildUserOf   :: User
                          , langOf        :: Language
                          , editorOf      :: Text
                          , cachePathOf   :: FilePath

@@ -49,25 +49,26 @@ getSettings (Program _ _ _ bc lng) = do
   join <$> bitraverse pure f confFile
   where f confFile = do
           environment <- M.fromList . map (bimap T.pack T.pack) <$> getEnvironment
-          -- buildPath'  <- checkBuildPath (fromText . T.pack <$> buildPath auraFlags) (getCachePath confFile)
+          buildPath'  <- checkBuildPath (buildPathOf bc) (getCachePath confFile)
           manager     <- newManager tlsManagerSettings
           let language   = checkLang lng environment
-              -- buildUser' = fmap T.pack (buildUser auraFlags) <|> getTrueUser environment
+              buildUser' = buildUserOf bc <|> getTrueUser environment
           pure $ do
-            -- bu <- maybe (failure whoIsBuildUser_1) Right buildUser'
+            bu <- maybe (failure whoIsBuildUser_1) Right buildUser'
             Right Settings { inputOf         = [] -- map T.pack input
                            , pacOptsOf       = [] -- map T.pack pacOpts
                            , otherOptsOf     = [] -- map (T.pack . show) auraFlags
                            , managerOf       = manager
                            , envOf           = environment
-                           , buildUserOf     = User "ME!" -- User bu
                            , langOf          = language
                            , editorOf        = getEditor environment
                            , cachePathOf     = getCachePath confFile
                            , logFilePathOf   = getLogFilePath confFile
-                           , buildConfigOf   = bc { buildPathOf = bimap (const $ getCachePath confFile) id $ buildPathOf bc
-                                                  , ignoredPkgsOf = getIgnoredPkgs confFile <> ignoredPkgsOf bc
-                                                  }
+                           , buildConfigOf   =
+                             bc { buildPathOf   = Just buildPath'
+                                , buildUserOf   = Just bu
+                                , ignoredPkgsOf = getIgnoredPkgs confFile <> ignoredPkgsOf bc
+                                }
                            }
 
 {-
@@ -105,6 +106,6 @@ checkLang :: Maybe Language -> Environment -> Language
 checkLang Nothing env   = langFromLocale $ getLocale env
 checkLang (Just lang) _ = lang
 
--- checkBuildPath :: MonadIO m => Maybe FilePath -> FilePath -> m FilePath
--- checkBuildPath Nothing def   = pure def
--- checkBuildPath (Just bp) def = bool def bp <$> shelly (test_d bp)
+checkBuildPath :: MonadIO m => Maybe FilePath -> FilePath -> m FilePath
+checkBuildPath Nothing def   = pure def
+checkBuildPath (Just bp) def = bool def bp <$> shelly (test_d bp)
