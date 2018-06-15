@@ -32,7 +32,7 @@ data Program = Program {
 data PacmanOp = Database (Either DatabaseOp [T.Text]) (S.Set MiscOp)
               | Files (S.Set FilesOp) (S.Set MiscOp)
               | Query (Either QueryOp (S.Set QueryFilter, [T.Text])) (S.Set MiscOp)
-              | Remove
+              | Remove -- (S.Set RemoveOp) (S.Set MiscOp)
               | Sync
               | TestDeps
               | Upgrade
@@ -107,6 +107,7 @@ instance Flagable QueryFilter where
   asFlag QueryUnrequired = ["--unrequired"]
   asFlag QueryUpgrades   = ["--upgrades"]
 
+-- | Flags common to several Pacman operations.
 data MiscOp = MiscArch    FilePath
             | MiscDBPath  FilePath
             | MiscRoot    FilePath
@@ -115,17 +116,31 @@ data MiscOp = MiscArch    FilePath
             | MiscGpgDir  FilePath
             | MiscHookDir FilePath
             | MiscConfirm
+            | MiscDBOnly
+            | MiscNoProgress
+            | MiscNoScriptlet
+            | MiscPrintFormat T.Text
+            | MiscNoDeps
+            | MiscPrint
+            | MiscAssumeInstalled T.Text
             deriving (Eq, Ord, Show)
 
 instance Flagable MiscOp where
-  asFlag (MiscArch p)    = ["--arch", toTextIgnore p]
-  asFlag (MiscDBPath p)  = ["--dbpath", toTextIgnore p]
-  asFlag (MiscRoot p)    = ["--root", toTextIgnore p]
-  asFlag MiscVerbose     = ["--verbose"]
-  asFlag (MiscColor c)   = ["--color", c]
-  asFlag (MiscGpgDir p)  = ["--gpgdir", toTextIgnore p]
-  asFlag (MiscHookDir p) = ["--hookdir", toTextIgnore p]
-  asFlag MiscConfirm     = ["--confirm"]
+  asFlag (MiscArch p)            = ["--arch", toTextIgnore p]
+  asFlag (MiscDBPath p)          = ["--dbpath", toTextIgnore p]
+  asFlag (MiscRoot p)            = ["--root", toTextIgnore p]
+  asFlag MiscVerbose             = ["--verbose"]
+  asFlag (MiscColor c)           = ["--color", c]
+  asFlag (MiscGpgDir p)          = ["--gpgdir", toTextIgnore p]
+  asFlag (MiscHookDir p)         = ["--hookdir", toTextIgnore p]
+  asFlag MiscConfirm             = ["--confirm"]
+  asFlag MiscDBOnly              = ["--dbonly"]
+  asFlag MiscNoProgress          = ["--noprogressbar"]
+  asFlag MiscNoScriptlet         = ["--noscriptlet"]
+  asFlag (MiscPrintFormat s)     = ["--print-format", s]
+  asFlag MiscNoDeps              = ["--nodeps"]
+  asFlag MiscPrint               = ["--print"]
+  asFlag (MiscAssumeInstalled p) = ["--assume-installed", p]
 
 -- | Operations unique to Aura.
 data AuraOp = AurSync (Either AurOp [T.Text])
@@ -317,7 +332,7 @@ queryFilters = S.fromList <$> many (dps <|> exp <|> frg <|> ntv <|> urq <|> upg)
         upg = flag' QueryUpgrades (long "upgrades" <> short 'u' <> help "[filter] Only list outdated packages.")
 
 misc :: Parser (S.Set MiscOp)
-misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> clr <|> gpg <|> hd <|> con)
+misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> clr <|> gpg <|> hd <|> con <|> dbo <|> nop <|> nos <|> pf <|> nod <|> prt <|> asi)
   where ar  = MiscArch    <$> strOption (long "arch" <> metavar "ARCH" <> help "Use an alternate architecture.")
         dbp = MiscDBPath  <$> strOption (long "dbpath" <> short 'b' <> metavar "PATH" <> help "Use an alternate database location.")
         roo = MiscRoot    <$> strOption (long "root" <> short 'r' <> metavar "PATH" <> help "Use an alternate installation root.")
@@ -326,6 +341,13 @@ misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> clr <|> gpg <|> hd <|
         gpg = MiscGpgDir  <$> strOption (long "gpgdir" <> metavar "PATH" <> help "Use an alternate GnuGPG directory.")
         hd  = MiscHookDir <$> strOption (long "hookdir" <> metavar "PATH" <> help "Use an alternate hook directory.")
         con = flag' MiscConfirm (long "confirm" <> help "Always ask for confirmation.")
+        dbo = flag' MiscDBOnly (long "dbonly" <> help "Only modify database entries, not package files.")
+        nop = flag' MiscNoProgress (long "noprogressbar" <> help "Don't show a progress bar when downloading.")
+        nos = flag' MiscNoScriptlet (long "noscriptlet" <> help "Don't run available install scriptlets.")
+        pf  = MiscPrintFormat <$> strOption (long "print-format" <> metavar "STRING" <> help "Specify how targets should be printed.")
+        nod = flag' MiscNoDeps (long "nodeps" <> short 'd' <> help "Skip dependency version checks.")
+        prt = flag' MiscPrint (long "print" <> short 'p' <> help "Print the targets instead of performing the operation.")
+        asi = MiscAssumeInstalled <$> strOption (long "assume-installed" <> metavar "<package=version>" <> help "Add a virtual package to satisfy dependencies.")
 
 -- | One or more arguments.
 someArgs :: Parser [T.Text]
