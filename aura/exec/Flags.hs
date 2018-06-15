@@ -221,7 +221,7 @@ program = Program
         pacOps = database <|> files <|> queries <|> remove <|> sync <|> testdeps
 
 aursync :: Parser AuraOp
-aursync = AurSync <$> (bigA *> (fmap Right someArgs <|> fmap Left mods))
+aursync = bigA *> (AurSync <$> (fmap Right someArgs <|> fmap Left mods))
   where bigA = flag' () (long "aursync" <> short 'A' <> help "Install packages from the AUR.")
         mods = deps <|> ainfo <|> pkgbuild <|> search <|> upgrade <|> tarball
         deps = AurDeps <$>
@@ -238,7 +238,7 @@ aursync = AurSync <$> (bigA *> (fmap Right someArgs <|> fmap Left mods))
           (flag' () (long "downloadonly" <> short 'w' <> help "Download a package's source tarball.") *> someArgs)
 
 backups :: Parser AuraOp
-backups = Backup <$> (bigB *> optional mods)
+backups = bigB *> (Backup <$> optional mods)
   where bigB = flag' () (long "save" <> short 'B' <> help "Save a package state.")
         mods = clean <|> restore
         clean = BackupClean <$>
@@ -246,7 +246,7 @@ backups = Backup <$> (bigB *> optional mods)
         restore = flag' BackupRestore (long "restore" <> short 'r' <> help "Restore a previous package state.")
 
 cache :: Parser AuraOp
-cache = Cache <$> (bigC *> (fmap Left mods <|> fmap Right someArgs))
+cache = bigC *> (Cache <$> (fmap Left mods <|> fmap Right someArgs))
   where bigC = flag' () (long "downgrade" <> short 'C' <> help "Interact with the package cache.")
         mods = backup <|> clean <|> search
         backup = CacheBackup <$>
@@ -268,7 +268,7 @@ cache = Cache <$> (bigC *> (fmap Left mods <|> fmap Right someArgs))
                       <> hidden)
 
 log :: Parser AuraOp
-log = Log <$> (bigL *> optional mods)
+log = bigL *> (Log <$> optional mods)
   where bigL = flag' () (long "viewlog" <> short 'L' <> help "View the Pacman log.")
         mods = inf <|> search
         inf  = LogInfo <$>
@@ -284,7 +284,7 @@ log = Log <$> (bigL *> optional mods)
                       <> hidden)
 
 orphans :: Parser AuraOp
-orphans = Orphans <$> (bigO *> optional mods)
+orphans = bigO *> (Orphans <$> optional mods)
   where bigO    = flag' () (long "orphans" <> short 'O' <> help "Display all orphan packages.")
         mods    = abandon <|> adopt
         abandon = flag' OrphanAbandon (long "abandon" <> short 'j' <> help "Uninstall all orphan packages.")
@@ -332,7 +332,7 @@ commonSwitches = S.fromList <$> many (nc <|> no <|> dbg)
         dbg = flag' Debug      (long "debug"     <> help "Print useful debugging info.")
 
 database :: Parser PacmanOp
-database = Database <$> (bigD *> (fmap Right someArgs <|> fmap Left mods)) <*> misc
+database = bigD *> (Database <$> (fmap Right someArgs <|> fmap Left mods) <*> misc)
   where bigD   = flag' () (long "database" <> short 'D' <> help "Interact with the package database.")
         mods   = check <|> asdeps <|> asexp
         check  = flag' DBCheck (long "check" <> short 'k' <> help "Test local database validity.")
@@ -340,7 +340,7 @@ database = Database <$> (bigD *> (fmap Right someArgs <|> fmap Left mods)) <*> m
         asexp  = DBAsExplicit <$> (flag' () (long "asexplicit" <> help "Mark packages as being explicitely installed.") *> someArgs)
 
 files :: Parser PacmanOp
-files = Files <$> (bigF *> fmap S.fromList (many mods)) <*> misc
+files = bigF *> (Files <$> fmap S.fromList (many mods) <*> misc)
   where bigF = flag' () (long "files" <> short 'F' <> help "Interact with the file database.")
         mods = lst <|> own <|> sch <|> rgx <|> rfr <|> mch
         lst  = FilesList <$> (flag' () (long "list" <> short 'l' <> help "List the files owned by given packages.") *> someArgs)
@@ -351,7 +351,7 @@ files = Files <$> (bigF *> fmap S.fromList (many mods)) <*> misc
         mch  = flag' FilesMachineReadable (long "machinereadable" <> help "Produce machine-readable output.")
 
 queries :: Parser PacmanOp
-queries = Query <$> (bigQ *> (fmap Right query <|> fmap Left mods)) <*> misc
+queries = bigQ *> (Query <$> (fmap Right query <|> fmap Left mods) <*> misc)
   where bigQ  = flag' () (long "query" <> short 'Q' <> help "Interact with the local package database.")
         query = (,) <$> queryFilters <*> manyArgs
         mods  = chl <|> gps <|> inf <|> lst <|> own <|> fls <|> sch
