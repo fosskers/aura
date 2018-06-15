@@ -12,7 +12,7 @@ import           BasePrelude hiding (Version, FilePath, option, log, exp)
 import qualified Data.Set as S
 import qualified Data.Text as T
 import           Options.Applicative
-import           Shelly hiding (command)
+import           Shelly
 import           Utilities (User(..))
 
 ---
@@ -31,7 +31,7 @@ data Program = Program {
 -- | Inherited operations that are fed down to Pacman.
 data PacmanOp = Database (Either DatabaseOp (S.Set T.Text)) (S.Set MiscOp)
               | Files    (S.Set FilesOp) (S.Set MiscOp)
-              | Query    (Either QueryOp (S.Set QueryFilter, (S.Set T.Text))) (S.Set MiscOp)
+              | Query    (Either QueryOp (S.Set QueryFilter, S.Set T.Text)) (S.Set MiscOp)
               | Remove   (S.Set RemoveOp) (S.Set T.Text) (S.Set MiscOp)
               | Sync     (Either SyncOp (S.Set T.Text)) (S.Set SyncSwitch) (S.Set MiscOp)
               | TestDeps (S.Set T.Text) (S.Set MiscOp)

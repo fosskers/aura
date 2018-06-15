@@ -50,7 +50,6 @@ library:
     - aur >= 6 && < 7
     - bytestring
     - filepath
-    # - htoml-megaparsec >= 2.0 && < 2.1
     - http-types >= 0.9 && < 0.13
     - megaparsec >= 6.4 && < 6.6
     - mtl >= 2.2 && < 2.3

@@ -8,4 +8,3 @@ packages:
 
 extra-deps:
   - versions-3.4.0.1
-  - htoml-megaparsec-2.0.0.0

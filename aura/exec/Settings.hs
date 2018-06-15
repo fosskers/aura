@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 {-
 
 Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
