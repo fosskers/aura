@@ -44,7 +44,7 @@ realPkgConflicts ss pkg dep
           curVer   = pkgVersionOf pkg
           reqVer   = depVerDemandOf dep
           lang     = langOf ss
-          toIgnore = ignoredPkgsOf $ buildConfigOf ss
+          toIgnore = ignoredPkgsOf $ commonConfigOf ss
           failMsg1 = getRealPkgConflicts_2 name lang
           failMsg2 = getRealPkgConflicts_1 name (prettyV $ fromJust curVer) (T.pack $ show reqVer) lang
 

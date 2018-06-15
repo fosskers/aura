@@ -61,11 +61,11 @@ getSettings (Program _ co bc lng) = do
                            , commonConfigOf =
                              co { cachePathOf = cachePathOf co <|> Just (getCachePath confFile)
                                 , logPathOf   = logPathOf co   <|> Just (getLogFilePath confFile)
+                                , ignoredPkgsOf = getIgnoredPkgs confFile <> ignoredPkgsOf co
                                 }
                            , buildConfigOf  =
                              bc { buildPathOf   = Just buildPath'
                                 , buildUserOf   = Just bu
-                                , ignoredPkgsOf = getIgnoredPkgs confFile <> ignoredPkgsOf bc
                                 }
                            }
 

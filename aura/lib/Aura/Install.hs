@@ -80,7 +80,7 @@ install' :: InstallOptions -> [T.Text] -> Aura (Either Failure ())
 install' opts pkgs = do
   ss       <- ask
   unneeded <- bool (pure []) (catMaybes <$> liftIO (mapConcurrently isInstalled pkgs)) $ shared ss NeededOnly
-  let (ignored, notIgnored) = partition (`elem` ignoredPkgsOf (buildConfigOf ss)) pkgs
+  let (ignored, notIgnored) = partition (`elem` ignoredPkgsOf (commonConfigOf ss)) pkgs
   installAnyway <- confirmIgnored ignored
   let toInstall = (notIgnored <> installAnyway) \\ unneeded
   -- reportIgnoredPackages ignored  -- 2014 December  7 @ 14:52

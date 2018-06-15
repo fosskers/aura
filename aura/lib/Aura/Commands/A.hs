@@ -68,7 +68,7 @@ install = I.install installOptions
 upgradeAURPkgs :: [T.Text] -> Aura (Either Failure ())
 upgradeAURPkgs pkgs = do
   ss <- ask
-  let !ignores     = map Just . toList . ignoredPkgsOf $ buildConfigOf ss
+  let !ignores     = map Just . toList . ignoredPkgsOf $ commonConfigOf ss
       notIgnored p = fmap fst (splitNameAndVer p) `notElem` ignores
       lang         = langOf ss
   notify $ upgradeAURPkgs_1 lang

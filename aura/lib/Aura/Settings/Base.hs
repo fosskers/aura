@@ -30,7 +30,7 @@ import           Data.Text (Text)
 import qualified Data.Text as T
 import           Network.HTTP.Client (Manager)
 import           Shelly (FilePath, toTextIgnore)
-import           Utilities (Environment, User)
+import           Utilities (Environment, User, list)
 
 ---
 
@@ -52,13 +52,15 @@ instance Flagable Makepkg where
 data CommonConfig = CommonConfig { cachePathOf      :: Maybe FilePath
                                  , configPathOf     :: Maybe FilePath
                                  , logPathOf        :: Maybe FilePath
+                                 , ignoredPkgsOf    :: S.Set Text
                                  , commonSwitchesOf :: S.Set CommonSwitch }
 
 instance Flagable CommonConfig where
-  asFlag (CommonConfig cap cop lfp cs) =
+  asFlag (CommonConfig cap cop lfp igs cs) =
     maybe [] (\p -> ["--cachedir", toTextIgnore p]) cap
     ++ maybe [] (\p -> ["--config", toTextIgnore p]) cop
     ++ maybe [] (\p -> ["--logfile", toTextIgnore p]) lfp
+    ++ list [] (\xs -> ["--ignore", T.intercalate "," xs]) (toList igs)
     ++ concatMap asFlag (toList cs)
 
 data CommonSwitch = NoConfirm | NeededOnly | Debug deriving (Eq, Ord)
@@ -69,14 +71,13 @@ instance Flagable CommonSwitch where
   asFlag Debug      = ["--debug"]
 
 data BuildConfig = BuildConfig { makepkgFlagsOf  :: S.Set Makepkg
-                               , ignoredPkgsOf   :: S.Set Text
                                , buildPathOf     :: Maybe FilePath
                                , buildUserOf     :: Maybe User
                                , truncationOf    :: Truncation  -- For `-As`
                                , buildSwitchesOf :: S.Set BuildSwitch }
 
 defaultConfig :: BuildConfig
-defaultConfig = BuildConfig S.empty S.empty Nothing Nothing None S.empty
+defaultConfig = BuildConfig S.empty Nothing Nothing None S.empty
 
 -- | Extra options for customizing the build process.
 data BuildSwitch = LowVerbosity

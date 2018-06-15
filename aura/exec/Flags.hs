@@ -267,12 +267,10 @@ version :: Parser AuraOp
 version = flag' Version (long "version" <> short 'V' <> help "Display Aura's version.")
 
 buildConfig :: Parser BuildConfig
-buildConfig = BuildConfig <$> makepkg <*> ignored <*> optional bp <*> optional bu <*> trunc <*> buildSwitches
+buildConfig = BuildConfig <$> makepkg <*> optional bp <*> optional bu <*> trunc <*> buildSwitches
   where makepkg = S.fromList <$> many (ia <|> as)
         ia      = flag' IgnoreArch (long "ignorearch" <> help "Exposed makepkg flag.")
         as      = flag' AllSource (long "allsource" <> help "Exposed makepkg flag.")
-        ignored = maybe S.empty (S.fromList . T.split (== ',')) <$>
-          optional (strOption (long "aurignore" <> metavar "PKG(,PKG,...)" <> help "Ignore given AUR packages."))
         bp      = strOption (long "build" <> metavar "PATH" <> help "Directory in which to build packages.")
         bu      = User <$> strOption (long "builduser" <> metavar "USER" <> help "User account to build as.")
         trunc   = fmap Head (option auto (long "head" <> metavar "N" <> help "Only show top N search results."))
@@ -292,10 +290,12 @@ buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <
         sa  = flag' SortAlphabetically (long "abc" <> help "Sort search results alphabetically.")
 
 commonConfig :: Parser CommonConfig
-commonConfig = CommonConfig <$> optional cap <*> optional cop <*> optional lfp <*> commonSwitches
+commonConfig = CommonConfig <$> optional cap <*> optional cop <*> optional lfp <*> ign <*> commonSwitches
   where cap = strOption (long "cachedir" <> help "Use an alternate package cache location.")
         cop = strOption (long "config"   <> help "Use an alternate Pacman config file.")
         lfp = strOption (long "logfile"  <> help "Use an alternate Pacman log.")
+        ign = maybe S.empty (S.fromList . T.split (== ',')) <$>
+          optional (strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> help "Ignore given packages."))
 
 commonSwitches :: Parser (S.Set CommonSwitch)
 commonSwitches = S.fromList <$> many (nc <|> no <|> dbg)
