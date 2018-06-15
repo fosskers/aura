@@ -40,7 +40,7 @@ class Flagable a where
 
 data Truncation = None | Head Int | Tail Int deriving (Eq, Show)
 
-data Makepkg = IgnoreArch | AllSource deriving (Eq, Ord)
+data Makepkg = IgnoreArch | AllSource deriving (Eq, Ord, Show)
 
 instance Flagable Makepkg where
   asFlag IgnoreArch = ["--ignorearch"]
@@ -53,7 +53,7 @@ data CommonConfig = CommonConfig { cachePathOf      :: Maybe FilePath
                                  , configPathOf     :: Maybe FilePath
                                  , logPathOf        :: Maybe FilePath
                                  , ignoredPkgsOf    :: S.Set Text
-                                 , commonSwitchesOf :: S.Set CommonSwitch }
+                                 , commonSwitchesOf :: S.Set CommonSwitch } deriving (Show)
 
 instance Flagable CommonConfig where
   asFlag (CommonConfig cap cop lfp igs cs) =
@@ -63,7 +63,7 @@ instance Flagable CommonConfig where
     ++ list [] (\xs -> ["--ignore", T.intercalate "," xs]) (toList igs)
     ++ concatMap asFlag (toList cs)
 
-data CommonSwitch = NoConfirm | NeededOnly | Debug deriving (Eq, Ord)
+data CommonSwitch = NoConfirm | NeededOnly | Debug deriving (Eq, Ord, Show)
 
 instance Flagable CommonSwitch where
   asFlag NoConfirm  = ["--noconfirm"]
@@ -74,7 +74,7 @@ data BuildConfig = BuildConfig { makepkgFlagsOf  :: S.Set Makepkg
                                , buildPathOf     :: Maybe FilePath
                                , buildUserOf     :: Maybe User
                                , truncationOf    :: Truncation  -- For `-As`
-                               , buildSwitchesOf :: S.Set BuildSwitch }
+                               , buildSwitchesOf :: S.Set BuildSwitch } deriving (Show)
 
 -- | Extra options for customizing the build process.
 data BuildSwitch = DeleteMakeDeps
@@ -86,7 +86,7 @@ data BuildSwitch = DeleteMakeDeps
                  | RebuildDevel
                  | SortAlphabetically  -- For `-As`
                  | UseCustomizepkg
-                 deriving (Eq, Ord)
+                 deriving (Eq, Ord, Show)
 
 -- | Convenient short-hand.
 switch :: Settings -> BuildSwitch -> Bool

@@ -26,7 +26,7 @@ data Program = Program {
   -- ^ Settings specific to building packages.
   , _buildConf :: BuildConfig
   -- ^ The human language of text output.
-  , _language  :: Maybe Language }
+  , _language  :: Maybe Language } deriving (Show)
 
 -- | Inherited operations that are fed down to Pacman.
 data PacmanOp = Database (Either DatabaseOp (S.Set T.Text)) (S.Set MiscOp)

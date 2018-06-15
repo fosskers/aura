@@ -80,6 +80,7 @@ executables:
       - aura
       - optparse-applicative
       - http-client-tls >= 0.3 && < 0.4
+      - pretty-simple >= 2.1 && < 2.2
     ghc-options:
       - -threaded
       - -O2

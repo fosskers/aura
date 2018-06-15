@@ -136,7 +136,7 @@ ifFile t f file x = shelly (test_f file) >>= bool (f $> x) (t x)
 type Environment = M.Map T.Text T.Text
 
 -- | The name of a user account on a Linux system.
-newtype User = User { _user :: T.Text } deriving (Eq)
+newtype User = User { _user :: T.Text } deriving (Eq, Show)
 
 -- | Code borrowed from `ansi-terminal` library by Max Bolingbroke.
 csi :: [Int] -> T.Text -> T.Text

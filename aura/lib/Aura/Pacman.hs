@@ -30,7 +30,6 @@ module Aura.Pacman
     pacman
   , pacmanOutput, pacmanSuccess
   , getPacmanCmd
-  , syncDatabase
     -- * Paths
   , lockFile
   , pacmanConfFile
@@ -151,9 +150,6 @@ pacmanSuccess args = fmap success . shelly . quietSh $ run_ "pacman" args
 -- | Runs pacman silently and returns only the stdout.
 pacmanOutput :: MonadIO m => [T.Text] -> m T.Text
 pacmanOutput = fmap snd . shelly . quietSh . run "pacman"
-
-syncDatabase :: MonadIO m => [T.Text] -> m (Either Failure ())
-syncDatabase pacOpts = pacman $ "-Sy" : pacOpts
 
 getPacmanHelpMsg :: MonadIO m => m [T.Text]
 getPacmanHelpMsg = T.lines <$> pacmanOutput ["-h"]

@@ -23,7 +23,6 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Settings
     ( getSettings ) where
-    -- , debugOutput ) where
 
 import           Aura.Languages
 import           Aura.Pacman
@@ -68,37 +67,6 @@ getSettings (Program _ co bc lng) = do
                                 , buildUserOf   = Just bu
                                 }
                            }
-
-{-
-debugOutput :: Settings -> IO ()
-debugOutput ss = do
-  let yn a = if a then "Yes!" else "No."
-      env  = envOf ss
-  traverse_ T.putStrLn [ "User              => " <> fromMaybe "Unknown!" (M.lookup "USER" env)
-                       , "True User         => " <> fromMaybe "Unknown!" (getTrueUser env)
-                       , "Build User        => " <> _user (buildUserOf ss)
-                       , "Using Sudo?       => " <> yn (M.member "SUDO_USER" env)
-                       , "Pacman Flags      => " <> T.unwords (pacOptsOf ss)
-                       , "Other Flags       => " <> T.unwords (otherOptsOf ss)
-                       , "Other Input       => " <> T.unwords (inputOf ss)
-                       , "Language          => " <> T.pack (show $ langOf ss)
-                       , "Pacman Command    => " <> pacmanCmdOf ss
-                       , "Editor            => " <> editorOf ss
-                       , "Ignored Pkgs      => " <> T.unwords (ignoredPkgsOf ss)
-                       , "Build Path        => " <> toTextIgnore (buildPathOf ss)
-                       , "Pkg Cache Path    => " <> toTextIgnore (cachePathOf ss)
-                       , "Log File Path     => " <> toTextIgnore (logFilePathOf ss)
-                       , "Quiet?            => " <> yn (beQuiet ss)
-                       , "Suppress Makepkg? => " <> T.pack (show $ suppressMakepkg ss)
-                       , "Must Confirm?     => " <> yn (mustConfirm ss)
-                       , "Needed only?      => " <> yn (neededOnly ss)
-                       , "PKGBUILD editing? => " <> yn (mayHotEdit ss)
-                       , "Diff PKGBUILDs?   => " <> yn (diffPkgbuilds ss)
-                       , "Rebuild Devel?    => " <> yn (rebuildDevel ss)
-                       , "Use Customizepkg? => " <> yn (useCustomizepkg ss)
-                       , "Forego PowerPill? => " <> yn (noPowerPill ss)
-                       , "Keep source?      => " <> yn (keepSource ss) ]
--}
 
 checkLang :: Maybe Language -> Environment -> Language
 checkLang Nothing env   = langFromLocale $ getLocale env

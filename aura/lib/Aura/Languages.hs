@@ -118,9 +118,6 @@ translatorMsg lang = title : names
         formatLang (translator, lang') = " " <> translator <> " (" <> lang' <> ")"
         langNames = languageNames lang
 
-allLanguages :: [Language]
-allLanguages = [English ..]
-
 -- Wrap a String in backticks
 bt :: T.Text -> T.Text
 bt cs = "`" <> cyan cs <> "`"
