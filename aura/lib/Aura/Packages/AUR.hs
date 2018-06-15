@@ -38,7 +38,7 @@ import           Aura.Core
 import           Aura.Monad.Aura
 import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Fetch
-import           Aura.Settings.Base
+import           Aura.Settings
 import           Aura.Types
 import           BasePrelude
 import qualified Data.Text as T

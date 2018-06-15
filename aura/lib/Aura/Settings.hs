@@ -21,7 +21,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Settings.Base where
+module Aura.Settings where
 
 import           Aura.Languages (Language)
 import           BasePrelude hiding (FilePath)

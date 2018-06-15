@@ -34,7 +34,7 @@ import           Aura.Languages
 import           Aura.MakePkg
 import           Aura.Monad.Aura
 import           Aura.Pacman (pacman)
-import           Aura.Settings.Base
+import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding (FilePath)

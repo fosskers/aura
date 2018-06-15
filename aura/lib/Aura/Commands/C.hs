@@ -39,7 +39,7 @@ import           Aura.Languages
 import           Aura.Logo (raiseCursorBy)
 import           Aura.Monad.Aura
 import           Aura.Pacman (pacman)
-import           Aura.Settings.Base
+import           Aura.Settings
 import           Aura.State
 import           Aura.Types
 import           Aura.Utils

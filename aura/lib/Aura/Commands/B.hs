@@ -30,7 +30,7 @@ module Aura.Commands.B
 import Aura.Core (warn)
 import Aura.Languages
 import Aura.Monad.Aura
-import Aura.Settings.Base
+import Aura.Settings
 import Aura.State
 import Aura.Types
 import Aura.Utils (optionalPrompt)

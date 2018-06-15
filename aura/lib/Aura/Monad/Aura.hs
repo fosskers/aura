@@ -31,7 +31,7 @@ module Aura.Monad.Aura
   , asks
   ) where
 
-import Aura.Settings.Base (Settings)
+import Aura.Settings (Settings)
 import BasePrelude
 import Control.Monad.Reader
 

@@ -29,7 +29,7 @@ import           Aura.Conflicts
 import           Aura.Core
 import           Aura.Languages
 import           Aura.Monad.Aura
-import           Aura.Settings.Base
+import           Aura.Settings
 import           Aura.Types
 import           BasePrelude
 import           Control.Concurrent.Async

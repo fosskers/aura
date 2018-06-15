@@ -33,7 +33,7 @@ module Aura.Cache
   , SimplePkg(..)
   ) where
 
-import           Aura.Settings.Base
+import           Aura.Settings
 import           Aura.Types
 import           BasePrelude hiding (FilePath)
 import qualified Data.Map.Strict as M

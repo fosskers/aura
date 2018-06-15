@@ -43,7 +43,7 @@ import           Aura.Languages
 import           Aura.Logo
 import           Aura.Monad.Aura
 import           Aura.Pacman
-import           Aura.Settings.Base
+import           Aura.Settings
 import           Aura.Types
 import           BasePrelude hiding (Version)
 import qualified Data.Text as T

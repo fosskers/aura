@@ -37,7 +37,7 @@ module Aura.Utils
 
 import           Aura.Colour.Text
 import           Aura.Languages (Language, whitespace, yesNoMessage, yesPattern)
-import           Aura.Settings.Base
+import           Aura.Settings
 import           BasePrelude hiding (Version)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T

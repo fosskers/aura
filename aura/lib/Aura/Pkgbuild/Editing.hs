@@ -30,7 +30,7 @@ module Aura.Pkgbuild.Editing
 
 import           Aura.Core
 import           Aura.Languages
-import           Aura.Settings.Base
+import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding (FilePath)

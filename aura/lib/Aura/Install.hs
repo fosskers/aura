@@ -39,7 +39,7 @@ import           Aura.Monad.Aura
 import           Aura.Pacman
 import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Records
-import           Aura.Settings.Base
+import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           BasePrelude

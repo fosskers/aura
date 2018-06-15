@@ -6,7 +6,7 @@ module Flags
   , AuraOp(..), AurOp(..), BackupOp(..), CacheOp(..), LogOp(..), OrphanOp(..)
   ) where
 
-import           Aura.Settings.Base
+import           Aura.Settings
 import           Aura.Types (Language(..))
 import           BasePrelude hiding (Version, FilePath, option, log, exp)
 import qualified Data.Set as S

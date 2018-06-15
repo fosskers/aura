@@ -35,7 +35,7 @@ import           Aura.Core (badReport)
 import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Pacman (defaultLogFile)
-import           Aura.Settings.Base
+import           Aura.Settings
 import           Aura.Utils (entrify)
 import           BasePrelude hiding (FilePath)
 import qualified Data.Set as S

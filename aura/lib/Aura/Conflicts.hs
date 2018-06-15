@@ -22,7 +22,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Conflicts ( realPkgConflicts ) where
 
 import           Aura.Languages
-import           Aura.Settings.Base
+import           Aura.Settings
 import           Aura.Types
 import           BasePrelude
 import qualified Data.Text as T

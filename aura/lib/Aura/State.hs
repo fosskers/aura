@@ -37,7 +37,7 @@ import           Aura.Core (warn, notify)
 import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Pacman (pacmanOutput, pacman)
-import           Aura.Settings.Base
+import           Aura.Settings
 import           Aura.Time
 import           Aura.Types
 import           Aura.Utils (printList)

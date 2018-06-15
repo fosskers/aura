@@ -43,7 +43,7 @@ import           Aura.Monad.Aura
 import           Aura.Packages.AUR
 import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pkgbuild.Fetch
-import           Aura.Settings.Base
+import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding ((<>))

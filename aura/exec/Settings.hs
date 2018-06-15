@@ -19,12 +19,11 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Settings
-    ( getSettings ) where
+module Settings ( getSettings ) where
 
 import           Aura.Languages
 import           Aura.Pacman
-import           Aura.Settings.Base
+import           Aura.Settings
 import           Aura.Types
 import           BasePrelude hiding (FilePath)
 import           Data.Bitraversable

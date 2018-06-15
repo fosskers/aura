@@ -25,7 +25,7 @@ module Aura.Pkgbuild.Base where
 
 import           Aura.Monad.Aura
 import           Aura.Pkgbuild.Editing
-import           Aura.Settings.Base
+import           Aura.Settings
 import           Aura.Types
 import           BasePrelude hiding (FilePath)
 import qualified Data.Text as T

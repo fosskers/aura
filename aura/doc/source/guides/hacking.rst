@@ -8,14 +8,14 @@ because you want to study some Haskell. Great!
 For Haskell Study
 -----------------
 
-Aura code has examples of: 
+Aura code has examples of:
 
 - Monad Transformers => :file:`src/Aura/Monad/Aura.hs`
 
-- Parsec => Bash/Parser.hs - Applicative Functors => :file:`src/Bash/Parser.hs`  
+- Parsec => Bash/Parser.hs - Applicative Functors => :file:`src/Bash/Parser.hs`
 
 - Regular Expressions => :file:`src/Aura/Utils.hs`
-  
+
 - CLI flag handling => :file:`src/Aura/Flags.hs`
 
 - Shell escape codes => :file:`src/Aura/Colour/Text.hs` or :file:`src/Shell.hs`
@@ -24,32 +24,32 @@ For Aura Hacking
 ----------------
 
 The ``main`` function is housed in :file:`src/aura.hs`. All function dispatches
-occur here. General libraries also housed in the root folder: 
+occur here. General libraries also housed in the root folder:
 
-- :file:`src/Bash/` (A custom Bash script parser and simplifier) 
+- :file:`src/Bash/` (A custom Bash script parser and simplifier)
 
-- :file:`src/Data/Algorithm/Diff` (A classic diff algorithm) 
+- :file:`src/Data/Algorithm/Diff` (A classic diff algorithm)
 
-- :file:`src/Network/HTTP` (A copy of key functions from Network.HTTP) 
+- :file:`src/Network/HTTP` (A copy of key functions from Network.HTTP)
 
-- :file:`src/Internet` (For https requests) 
+- :file:`src/Internet` (For https requests)
 
-- :file:`src/Shell` (Shell access in the IO Monad) 
+- :file:`src/Shell` (Shell access in the IO Monad)
 
 - :file:`src/Utilities` (Random helper functions)
 
-Aura specific libraries are housed in :file:`Aura/`. The main areas are: 
+Aura specific libraries are housed in :file:`Aura/`. The main areas are:
 
-- :file:`src/Aura/` (General Aura-specific libraries) 
+- :file:`src/Aura/` (General Aura-specific libraries)
 
 - :file:`src/Aura/Commands/` (Functions that back the main capital letter Aura
-  operations) 
+  operations)
 
-- :file:`src/Aura/Monad/` (Everything to do with the Aura Monad) 
+- :file:`src/Aura/Monad/` (Everything to do with the Aura Monad)
 
-- :file:`src/Aura/Packages/` (Backends for handling various package types) 
+- :file:`src/Aura/Packages/` (Backends for handling various package types)
 
-- :file:`src/Aura/Pkgbuild/` (Functions for handling PKGBUILDs) 
+- :file:`src/Aura/Pkgbuild/` (Functions for handling PKGBUILDs)
 
 - :file:`src/Aura/Settings/` (``Settings`` for the ReaderT portion of the Aura
   Monad)
@@ -68,7 +68,7 @@ Monad.
     import Control.Monad.Reader
     import Control.Monad.Error
 
-    import Aura.Settings.Base (Settings)
+    import Aura.Settings (Settings)
 
     ---
 
