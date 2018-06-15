@@ -440,4 +440,18 @@ manyArgs :: Parser (S.Set T.Text)
 manyArgs = S.fromList <$> many (argument str (metavar "PACKAGES"))
 
 language :: Parser Language
-language = pure English
+language = foldr1 (<|>) $ map (\(f, v) -> flag' v (long f)) langs
+  where langs = [ ( "japanese",   Japanese ),   ( "日本語",     Japanese )
+                , ( "polish",     Polish ),     ( "polski",    Polish )
+                , ( "croatian",   Croatian ),   ( "hrvatski",  Croatian )
+                , ( "swedish",    Swedish ),    ( "svenska",   Swedish )
+                , ( "german",     German ),     ( "deutsch",   German )
+                , ( "spanish",    Spanish ),    ( "español",   Spanish )
+                , ( "portuguese", Portuguese ), ( "português", Portuguese )
+                , ( "french",     French),      ( "français",  French )
+                , ( "russian",    Russian ),    ( "русский",   Russian )
+                , ( "italian",    Italian ),    ( "italiano",  Italian )
+                , ( "serbian",    Serbian ),    ( "српски",    Serbian )
+                , ( "norwegian",  Norwegian ),  ( "norsk",     Norwegian )
+                , ( "indonesian", Indonesia )
+                , ( "chinese",    Chinese ),    ( "中文",       Chinese ) ]

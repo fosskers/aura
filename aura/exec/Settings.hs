@@ -59,8 +59,8 @@ getSettings (Program _ co bc lng) = do
                            , langOf         = language
                            , editorOf       = getEditor environment
                            , commonConfigOf =
-                             co { cachePathOf = cachePathOf co <|> Just (getCachePath confFile)
-                                , logPathOf   = logPathOf co   <|> Just (getLogFilePath confFile)
+                             co { cachePathOf   = cachePathOf co <|> Just (getCachePath confFile)
+                                , logPathOf     = logPathOf co   <|> Just (getLogFilePath confFile)
                                 , ignoredPkgsOf = getIgnoredPkgs confFile <> ignoredPkgsOf co
                                 }
                            , buildConfigOf  =

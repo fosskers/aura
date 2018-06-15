@@ -76,19 +76,16 @@ data BuildConfig = BuildConfig { makepkgFlagsOf  :: S.Set Makepkg
                                , truncationOf    :: Truncation  -- For `-As`
                                , buildSwitchesOf :: S.Set BuildSwitch }
 
-defaultConfig :: BuildConfig
-defaultConfig = BuildConfig S.empty Nothing Nothing None S.empty
-
 -- | Extra options for customizing the build process.
-data BuildSwitch = LowVerbosity
-                 | DeleteMakeDeps
-                 | DontSuppressMakepkg
+data BuildSwitch = DeleteMakeDeps
                  | DiffPkgbuilds
-                 | RebuildDevel
-                 | HotEdit
-                 | UseCustomizepkg
+                 | DontSuppressMakepkg
                  | DryRun
+                 | HotEdit
+                 | LowVerbosity
+                 | RebuildDevel
                  | SortAlphabetically  -- For `-As`
+                 | UseCustomizepkg
                  deriving (Eq, Ord)
 
 -- | Convenient short-hand.
