@@ -30,12 +30,12 @@ data Program = Program {
 
 -- | Inherited operations that are fed down to Pacman.
 data PacmanOp = Database (Either DatabaseOp (S.Set T.Text)) (S.Set MiscOp)
-              | Files (S.Set FilesOp) (S.Set MiscOp)
-              | Query (Either QueryOp (S.Set QueryFilter, (S.Set T.Text))) (S.Set MiscOp)
-              | Remove (S.Set RemoveOp) (S.Set T.Text) (S.Set MiscOp)
-              | Sync (Either SyncOp (S.Set T.Text)) (S.Set SyncSwitch) (S.Set MiscOp)
+              | Files    (S.Set FilesOp) (S.Set MiscOp)
+              | Query    (Either QueryOp (S.Set QueryFilter, (S.Set T.Text))) (S.Set MiscOp)
+              | Remove   (S.Set RemoveOp) (S.Set T.Text) (S.Set MiscOp)
+              | Sync     (Either SyncOp (S.Set T.Text)) (S.Set SyncSwitch) (S.Set MiscOp)
               | TestDeps (S.Set T.Text) (S.Set MiscOp)
-              | Upgrade
+              | Upgrade  (Maybe UpgradeSwitch) (S.Set T.Text) (S.Set MiscOp)
               deriving (Show)
 
 instance Flagable PacmanOp where
@@ -48,6 +48,7 @@ instance Flagable PacmanOp where
   asFlag (Sync (Left o) ss ms)       = "-S" : concatMap asFlag (toList ss) ++ asFlag o ++ concatMap asFlag (toList ms)
   asFlag (Sync (Right ps) ss ms)     = "-S" : concatMap asFlag (toList ss) ++ toList ps ++ concatMap asFlag (toList ms)
   asFlag (TestDeps ps ms)            = "-T" : toList ps ++ concatMap asFlag (toList ms)
+  asFlag (Upgrade s ps ms)           = "-U" : maybe [] asFlag s ++ toList ps ++ concatMap asFlag (toList ms)
 
 data DatabaseOp = DBCheck
                 | DBAsDeps     (S.Set T.Text)
@@ -146,42 +147,48 @@ data SyncSwitch = SyncRefresh deriving (Eq, Ord, Show)
 instance Flagable SyncSwitch where
   asFlag SyncRefresh = ["--refresh"]
 
+data UpgradeSwitch = UpgradeAsDeps | UpgradeAsExplicit deriving (Show)
+
+instance Flagable UpgradeSwitch where
+  asFlag UpgradeAsDeps     = ["--asdeps"]
+  asFlag UpgradeAsExplicit = ["--asexplicit"]
+
 -- | Flags common to several Pacman operations.
 data MiscOp = MiscArch    FilePath
-            | MiscDBPath  FilePath
-            | MiscRoot    FilePath
-            | MiscVerbose
+            | MiscAssumeInstalled T.Text
             | MiscColor   T.Text
-            | MiscGpgDir  FilePath
-            | MiscHookDir FilePath
             | MiscConfirm
             | MiscDBOnly
+            | MiscDBPath  FilePath
+            | MiscGpgDir  FilePath
+            | MiscHookDir FilePath
+            | MiscIgnoreGroup (S.Set T.Text)
+            | MiscNoDeps
             | MiscNoProgress
             | MiscNoScriptlet
-            | MiscPrintFormat T.Text
-            | MiscNoDeps
             | MiscPrint
-            | MiscAssumeInstalled T.Text
-            | MiscIgnoreGroup (S.Set T.Text)
+            | MiscPrintFormat T.Text
+            | MiscRoot    FilePath
+            | MiscVerbose
             deriving (Eq, Ord, Show)
 
 instance Flagable MiscOp where
   asFlag (MiscArch p)            = ["--arch", toTextIgnore p]
-  asFlag (MiscDBPath p)          = ["--dbpath", toTextIgnore p]
-  asFlag (MiscRoot p)            = ["--root", toTextIgnore p]
-  asFlag MiscVerbose             = ["--verbose"]
+  asFlag (MiscAssumeInstalled p) = ["--assume-installed", p]
   asFlag (MiscColor c)           = ["--color", c]
+  asFlag (MiscDBPath p)          = ["--dbpath", toTextIgnore p]
   asFlag (MiscGpgDir p)          = ["--gpgdir", toTextIgnore p]
   asFlag (MiscHookDir p)         = ["--hookdir", toTextIgnore p]
+  asFlag (MiscIgnoreGroup ps)    = "--ignoregroup" : toList ps
+  asFlag (MiscPrintFormat s)     = ["--print-format", s]
+  asFlag (MiscRoot p)            = ["--root", toTextIgnore p]
   asFlag MiscConfirm             = ["--confirm"]
   asFlag MiscDBOnly              = ["--dbonly"]
+  asFlag MiscNoDeps              = ["--nodeps"]
   asFlag MiscNoProgress          = ["--noprogressbar"]
   asFlag MiscNoScriptlet         = ["--noscriptlet"]
-  asFlag (MiscPrintFormat s)     = ["--print-format", s]
-  asFlag MiscNoDeps              = ["--nodeps"]
   asFlag MiscPrint               = ["--print"]
-  asFlag (MiscAssumeInstalled p) = ["--assume-installed", p]
-  asFlag (MiscIgnoreGroup ps)    = "--ignoregroup" : toList ps
+  asFlag MiscVerbose             = ["--verbose"]
 
 -- | Operations unique to Aura.
 data AuraOp = AurSync (Either AurOp (S.Set T.Text))
@@ -218,7 +225,7 @@ program = Program
   <*> buildConfig
   <*> optional language
   where aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version
-        pacOps = database <|> files <|> queries <|> remove <|> sync <|> testdeps
+        pacOps = database <|> files <|> queries <|> remove <|> sync <|> testdeps <|> upgrades
 
 aursync :: Parser AuraOp
 aursync = bigA *> (AurSync <$> (fmap Right someArgs <|> fmap Left mods))
@@ -418,6 +425,11 @@ misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> clr <|> gpg <|> hd <|
 testdeps :: Parser PacmanOp
 testdeps = bigT *> (TestDeps <$> someArgs <*> misc)
   where bigT = flag' () (long "deptest" <> short 'T' <> help "Test dependencies - useful for scripts.")
+
+upgrades :: Parser PacmanOp
+upgrades = bigU *> (Upgrade <$> optional mods <*> someArgs <*> misc)
+  where bigU = flag' () (long "upgrade" <> short 'U' <> help "Install given package files.")
+        mods = flag' UpgradeAsDeps (long "asdeps") <|> flag' UpgradeAsExplicit (long "asexplicit")
 
 -- | One or more arguments.
 someArgs :: Parser (S.Set T.Text)
