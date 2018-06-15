@@ -34,7 +34,7 @@ data PacmanOp = Database (Either DatabaseOp (S.Set T.Text)) (S.Set MiscOp)
               | Query (Either QueryOp (S.Set QueryFilter, (S.Set T.Text))) (S.Set MiscOp)
               | Remove (S.Set RemoveOp) (S.Set T.Text) (S.Set MiscOp)
               | Sync (Either SyncOp (S.Set T.Text)) (S.Set SyncSwitch) (S.Set MiscOp)
-              | TestDeps
+              | TestDeps (S.Set T.Text) (S.Set MiscOp)
               | Upgrade
               deriving (Show)
 
@@ -47,6 +47,7 @@ instance Flagable PacmanOp where
   asFlag (Remove os ps ms)           = "-R" : concatMap asFlag (toList os) ++ toList ps ++ concatMap asFlag (toList ms)
   asFlag (Sync (Left o) ss ms)       = "-S" : concatMap asFlag (toList ss) ++ asFlag o ++ concatMap asFlag (toList ms)
   asFlag (Sync (Right ps) ss ms)     = "-S" : concatMap asFlag (toList ss) ++ toList ps ++ concatMap asFlag (toList ms)
+  asFlag (TestDeps ps ms)            = "-T" : toList ps ++ concatMap asFlag (toList ms)
 
 data DatabaseOp = DBCheck
                 | DBAsDeps     (S.Set T.Text)
@@ -217,7 +218,7 @@ program = Program
   <*> buildConfig
   <*> optional language
   where aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version
-        pacOps = database <|> files <|> queries <|> remove <|> sync
+        pacOps = database <|> files <|> queries <|> remove <|> sync <|> testdeps
 
 aursync :: Parser AuraOp
 aursync = AurSync <$> (bigA *> (fmap Right someArgs <|> fmap Left mods))
@@ -413,6 +414,10 @@ misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> clr <|> gpg <|> hd <|
         asi = MiscAssumeInstalled <$> strOption (long "assume-installed" <> metavar "<package=version>" <> help "Add a virtual package to satisfy dependencies.")
         igg = MiscIgnoreGroup . S.fromList . T.split (== ',') <$>
           strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> help "Ignore given package groups.")
+
+testdeps :: Parser PacmanOp
+testdeps = bigT *> (TestDeps <$> someArgs <*> misc)
+  where bigT = flag' () (long "deptest" <> short 'T' <> help "Test dependencies - useful for scripts.")
 
 -- | One or more arguments.
 someArgs :: Parser (S.Set T.Text)
