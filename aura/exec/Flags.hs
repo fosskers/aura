@@ -32,18 +32,19 @@ data Program = Program {
 data PacmanOp = Database (Either DatabaseOp [T.Text]) (S.Set MiscOp)
               | Files (S.Set FilesOp) (S.Set MiscOp)
               | Query (Either QueryOp (S.Set QueryFilter, [T.Text])) (S.Set MiscOp)
-              | Remove -- (S.Set RemoveOp) (S.Set MiscOp)
+              | Remove (S.Set RemoveOp) [T.Text] (S.Set MiscOp)
               | Sync
               | TestDeps
               | Upgrade
               deriving (Show)
 
 instance Flagable PacmanOp where
-  asFlag (Database (Left o) ms)   = "-D" : asFlag o ++ concatMap asFlag (toList ms)
-  asFlag (Database (Right fs) ms) = "-D" : fs ++ concatMap asFlag (toList ms)
-  asFlag (Files os ms)            = "-F" : concatMap asFlag (toList os) ++ concatMap asFlag (toList ms)
-  asFlag (Query (Left o) ms)      = "-Q" : asFlag o ++ concatMap asFlag (toList ms)
+  asFlag (Database (Left o) ms)      = "-D" : asFlag o ++ concatMap asFlag (toList ms)
+  asFlag (Database (Right fs) ms)    = "-D" : fs ++ concatMap asFlag (toList ms)
+  asFlag (Files os ms)               = "-F" : concatMap asFlag (toList os) ++ concatMap asFlag (toList ms)
+  asFlag (Query (Left o) ms)         = "-Q" : asFlag o ++ concatMap asFlag (toList ms)
   asFlag (Query (Right (fs, ps)) ms) = "-Q" : ps ++ concatMap asFlag (toList fs) ++ concatMap asFlag (toList ms)
+  asFlag (Remove os ps ms)           = "-R" : concatMap asFlag (toList os) ++ ps ++ concatMap asFlag (toList ms)
 
 data DatabaseOp = DBCheck
                 | DBAsDeps     [T.Text]
@@ -106,6 +107,18 @@ instance Flagable QueryFilter where
   asFlag QueryNative     = ["--native"]
   asFlag QueryUnrequired = ["--unrequired"]
   asFlag QueryUpgrades   = ["--upgrades"]
+
+data RemoveOp = RemoveCascade
+              | RemoveNoSave
+              | RemoveRecursive
+              | RemoveUnneeded
+              deriving (Eq, Ord, Show)
+
+instance Flagable RemoveOp where
+  asFlag RemoveCascade   = ["--cascade"]
+  asFlag RemoveNoSave    = ["--nosave"]
+  asFlag RemoveRecursive = ["--recursive"]
+  asFlag RemoveUnneeded  = ["--unneeded"]
 
 -- | Flags common to several Pacman operations.
 data MiscOp = MiscArch    FilePath
@@ -177,7 +190,7 @@ program = Program
   <*> buildConfig
   <*> optional language
   where aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version
-        pacOps = database <|> files <|> queries
+        pacOps = database <|> files <|> queries <|> remove
 
 aursync :: Parser AuraOp
 aursync = AurSync <$> (bigA *> (fmap Right someArgs <|> fmap Left mods))
@@ -330,6 +343,15 @@ queryFilters = S.fromList <$> many (dps <|> exp <|> frg <|> ntv <|> urq <|> upg)
         ntv = flag' QueryNative (long "native" <> short 'n' <> help "[filter] Only list official packages.")
         urq = flag' QueryUnrequired (long "unrequired" <> short 't' <> help "[filter] Only list packages not required as a dependency to any other.")
         upg = flag' QueryUpgrades (long "upgrades" <> short 'u' <> help "[filter] Only list outdated packages.")
+
+remove :: Parser PacmanOp
+remove = bigR *> (Remove <$> mods <*> someArgs <*> misc)
+  where bigR     = flag' () (long "remove" <> short 'R' <> help "Uninstall packages.")
+        mods     = S.fromList <$> many (cascade <|> nosave <|> recurse <|> unneeded)
+        cascade  = flag' RemoveCascade (long "cascade" <> short 'c' <> help "Remove packages and all others that depend on them.")
+        nosave   = flag' RemoveNoSave (long "nosave" <> short 'n' <> help "Remove configuration files as well.")
+        recurse  = flag' RemoveRecursive (long "recursive" <> short 's' <> help "Remove unneeded dependencies.")
+        unneeded = flag' RemoveUnneeded (long "unneeded" <> short 'u' <> help "Remove unneeded packages.")
 
 misc :: Parser (S.Set MiscOp)
 misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> clr <|> gpg <|> hd <|> con <|> dbo <|> nop <|> nos <|> pf <|> nod <|> prt <|> asi)
