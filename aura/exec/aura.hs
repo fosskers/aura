@@ -32,9 +32,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Main where
+module Main ( main ) where
 
--- import           Aura.Colour.Text (yellow)
 import           Aura.Commands.A as A
 import           Aura.Commands.B as B
 import           Aura.Commands.C as C
@@ -111,6 +110,7 @@ executeOpts (Program ops _ _ _) = do
         Just OrphanAbandon    -> fmap join . sudo $ orphans >>= removePkgs
         Just (OrphanAdopt ps) -> O.adoptPkg ps
     Right Version -> getVersionInfo >>= fmap Right . animateVersionMsg
+    Right Languages -> Right <$> displayOutputLanguages
 {-
 
 -- | Hand user input to the Aura Monad and run it.
