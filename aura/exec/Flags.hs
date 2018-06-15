@@ -33,7 +33,7 @@ data PacmanOp = Database (Either DatabaseOp (S.Set T.Text)) (S.Set MiscOp)
               | Files (S.Set FilesOp) (S.Set MiscOp)
               | Query (Either QueryOp (S.Set QueryFilter, (S.Set T.Text))) (S.Set MiscOp)
               | Remove (S.Set RemoveOp) (S.Set T.Text) (S.Set MiscOp)
-              | Sync
+              | Sync (Either SyncOp (S.Set T.Text)) (S.Set SyncSwitch) (S.Set MiscOp)
               | TestDeps
               | Upgrade
               deriving (Show)
@@ -45,6 +45,8 @@ instance Flagable PacmanOp where
   asFlag (Query (Left o) ms)         = "-Q" : asFlag o ++ concatMap asFlag (toList ms)
   asFlag (Query (Right (fs, ps)) ms) = "-Q" : toList ps ++ concatMap asFlag (toList fs) ++ concatMap asFlag (toList ms)
   asFlag (Remove os ps ms)           = "-R" : concatMap asFlag (toList os) ++ toList ps ++ concatMap asFlag (toList ms)
+  asFlag (Sync (Left o) ss ms)       = "-S" : concatMap asFlag (toList ss) ++ asFlag o ++ concatMap asFlag (toList ms)
+  asFlag (Sync (Right ps) ss ms)     = "-S" : concatMap asFlag (toList ss) ++ toList ps ++ concatMap asFlag (toList ms)
 
 data DatabaseOp = DBCheck
                 | DBAsDeps     (S.Set T.Text)
@@ -120,6 +122,29 @@ instance Flagable RemoveOp where
   asFlag RemoveRecursive = ["--recursive"]
   asFlag RemoveUnneeded  = ["--unneeded"]
 
+data SyncOp = SyncClean
+            | SyncGroups   (S.Set T.Text)
+            | SyncInfo     (S.Set T.Text)
+            | SyncList      T.Text
+            | SyncSearch    T.Text
+            | SyncUpgrade  (S.Set T.Text)
+            | SyncDownload (S.Set T.Text)
+            deriving (Show)
+
+instance Flagable SyncOp where
+  asFlag SyncClean         = ["--clean"]
+  asFlag (SyncGroups gs)   = "--groups" : toList gs
+  asFlag (SyncInfo ps)     = "--info" : toList ps
+  asFlag (SyncList r)      = ["--list", r]
+  asFlag (SyncSearch s)    = ["--search", s]
+  asFlag (SyncUpgrade ps)  = "--sysupgrade" : toList ps
+  asFlag (SyncDownload ps) = "--downloadonly" : toList ps
+
+data SyncSwitch = SyncRefresh deriving (Eq, Ord, Show)
+
+instance Flagable SyncSwitch where
+  asFlag SyncRefresh = ["--refresh"]
+
 -- | Flags common to several Pacman operations.
 data MiscOp = MiscArch    FilePath
             | MiscDBPath  FilePath
@@ -192,7 +217,7 @@ program = Program
   <*> buildConfig
   <*> optional language
   where aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version
-        pacOps = database <|> files <|> queries <|> remove
+        pacOps = database <|> files <|> queries <|> remove <|> sync
 
 aursync :: Parser AuraOp
 aursync = AurSync <$> (bigA *> (fmap Right someArgs <|> fmap Left mods))
@@ -355,6 +380,20 @@ remove = bigR *> (Remove <$> mods <*> someArgs <*> misc)
         recurse  = flag' RemoveRecursive (long "recursive" <> short 's' <> help "Remove unneeded dependencies.")
         unneeded = flag' RemoveUnneeded (long "unneeded" <> short 'u' <> help "Remove unneeded packages.")
 
+sync :: Parser PacmanOp
+sync = bigS *> (Sync <$> (fmap Right someArgs <|> fmap Left mods) <*> ref <*> misc)
+  where bigS = flag' () (long "sync" <> short 'S' <> help "Install official packages.")
+        ref  = S.fromList <$> many (flag' SyncRefresh (long "refresh" <> short 'y' <> help "Update the package database."))
+        mods = cln <|> gps <|> inf <|> lst <|> sch <|> upg <|> dnl
+        cln  = flag' SyncClean (long "clean" <> short 'c' <> help "Remove old packages from the cache.")
+        gps  = SyncGroups <$> (flag' () (long "groups" <> short 'g' <> help "View members of a package group.") *> someArgs)
+        inf  = SyncInfo <$> (flag' () (long "info" <> short 'i' <> help "View package information.") *> someArgs)
+        lst  = SyncList <$> strOption (long "list" <> short 'l' <> metavar "REPO" <> help "List the packages in a REPO.")
+        sch  = SyncSearch <$> strOption (long "search" <> short 's' <> metavar "REGEX" <> help "Search the official package repos.")
+        upg  = SyncUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> help "Upgrade installed packages.") *> manyArgs)
+        dnl  = SyncDownload <$> (flag' () (long "downloadonly" <> short 'w' <> help "Download package tarballs.") *> someArgs)
+
+
 misc :: Parser (S.Set MiscOp)
 misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> clr <|> gpg <|> hd <|> con <|> dbo <|> nop <|> nos <|> pf <|> nod <|> prt <|> asi <|> igg)
   where ar  = MiscArch    <$> strOption (long "arch" <> metavar "ARCH" <> help "Use an alternate architecture.")
@@ -372,8 +411,8 @@ misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> clr <|> gpg <|> hd <|
         nod = flag' MiscNoDeps (long "nodeps" <> short 'd' <> help "Skip dependency version checks.")
         prt = flag' MiscPrint (long "print" <> short 'p' <> help "Print the targets instead of performing the operation.")
         asi = MiscAssumeInstalled <$> strOption (long "assume-installed" <> metavar "<package=version>" <> help "Add a virtual package to satisfy dependencies.")
-        igg = MiscIgnoreGroup . maybe S.empty (S.fromList . T.split (== ',')) <$>
-          optional (strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> help "Ignore given package groups."))
+        igg = MiscIgnoreGroup . S.fromList . T.split (== ',') <$>
+          strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> help "Ignore given package groups.")
 
 -- | One or more arguments.
 someArgs :: Parser (S.Set T.Text)
