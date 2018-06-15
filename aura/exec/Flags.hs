@@ -8,7 +8,7 @@ module Flags
 
 import           Aura.Settings.Base
 import           Aura.Types (Language(..))
-import           BasePrelude hiding (Version, FilePath, option, log)
+import           BasePrelude hiding (Version, FilePath, option, log, exp)
 import qualified Data.Set as S
 import qualified Data.Text as T
 import           Options.Applicative
@@ -31,7 +31,7 @@ data Program = Program {
 -- | Inherited operations that are fed down to Pacman.
 data PacmanOp = Database (Either DatabaseOp [T.Text]) (S.Set MiscOp)
               | Files (S.Set FilesOp) (S.Set MiscOp)
-              | Query
+              | Query (Either QueryOp (S.Set QueryFilter, [T.Text])) (S.Set MiscOp)
               | Remove
               | Sync
               | TestDeps
@@ -42,10 +42,11 @@ instance Flagable PacmanOp where
   asFlag (Database (Left o) ms)   = "-D" : asFlag o ++ concatMap asFlag (toList ms)
   asFlag (Database (Right fs) ms) = "-D" : fs ++ concatMap asFlag (toList ms)
   asFlag (Files os ms)            = "-F" : concatMap asFlag (toList os) ++ concatMap asFlag (toList ms)
-  asFlag _ = []  -- TODO fill this out
+  asFlag (Query (Left o) ms)      = "-Q" : asFlag o ++ concatMap asFlag (toList ms)
+  asFlag (Query (Right (fs, ps)) ms) = "-Q" : ps ++ concatMap asFlag (toList fs) ++ concatMap asFlag (toList ms)
 
 data DatabaseOp = DBCheck
-                | DBAsDeps [T.Text]
+                | DBAsDeps     [T.Text]
                 | DBAsExplicit [T.Text]
                 deriving (Show)
 
@@ -54,8 +55,8 @@ instance Flagable DatabaseOp where
   asFlag (DBAsDeps ps)     = "--asdeps" : ps
   asFlag (DBAsExplicit ps) = "--asexplicit" : ps
 
-data FilesOp = FilesList [T.Text]
-             | FilesOwns T.Text
+data FilesOp = FilesList  [T.Text]
+             | FilesOwns   T.Text
              | FilesSearch T.Text
              | FilesRegex
              | FilesRefresh
@@ -69,6 +70,42 @@ instance Flagable FilesOp where
   asFlag FilesRegex           = ["--regex"]
   asFlag FilesRefresh         = ["--refresh"]
   asFlag FilesMachineReadable = ["--machinereadable"]
+
+data QueryOp = QueryChangelog [T.Text]
+             | QueryGroups    [T.Text]
+             | QueryInfo      [T.Text]
+             | QueryCheck     [T.Text]
+             | QueryList      [T.Text]
+             | QueryOwns      [T.Text]
+             | QueryFile      [T.Text]
+             | QuerySearch     T.Text
+             deriving (Show)
+
+instance Flagable QueryOp where
+  asFlag (QueryChangelog ps) = "--changelog" : ps
+  asFlag (QueryGroups ps)    = "--groups" : ps
+  asFlag (QueryInfo ps)      = "--info" : ps
+  asFlag (QueryCheck ps)     = "--check" : ps
+  asFlag (QueryList ps)      = "--list" : ps
+  asFlag (QueryOwns ps)      = "--owns" : ps
+  asFlag (QueryFile ps)      = "--file" : ps
+  asFlag (QuerySearch t)     = ["--search", t]
+
+data QueryFilter = QueryDeps
+                 | QueryExplicit
+                 | QueryForeign
+                 | QueryNative
+                 | QueryUnrequired
+                 | QueryUpgrades
+                 deriving (Eq, Ord, Show)
+
+instance Flagable QueryFilter where
+  asFlag QueryDeps       = ["--deps"]
+  asFlag QueryExplicit   = ["--explicit"]
+  asFlag QueryForeign    = ["--foreign"]
+  asFlag QueryNative     = ["--native"]
+  asFlag QueryUnrequired = ["--unrequired"]
+  asFlag QueryUpgrades   = ["--upgrades"]
 
 data MiscOp = MiscArch    FilePath
             | MiscDBPath  FilePath
@@ -125,7 +162,7 @@ program = Program
   <*> buildConfig
   <*> optional language
   where aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version
-        pacOps = database <|> files
+        pacOps = database <|> files <|> queries
 
 aursync :: Parser AuraOp
 aursync = AurSync <$> (bigA *> (fmap Right someArgs <|> fmap Left mods))
@@ -256,6 +293,28 @@ files = Files <$> (bigF *> fmap S.fromList (many mods)) <*> misc
         rgx  = flag' FilesRegex (long "regex" <> short 'x' <> help "Interpret the input of -Fs as a regex.")
         rfr  = flag' FilesRefresh (long "refresh" <> short 'y' <> help "Download fresh package databases.")
         mch  = flag' FilesMachineReadable (long "machinereadable" <> help "Produce machine-readable output.")
+
+queries :: Parser PacmanOp
+queries = Query <$> (bigQ *> (fmap Right query <|> fmap Left mods)) <*> misc
+  where bigQ  = flag' () (long "query" <> short 'Q' <> help "Interact with the local package database.")
+        query = (,) <$> queryFilters <*> manyArgs
+        mods  = chl <|> gps <|> inf <|> lst <|> own <|> fls <|> sch
+        chl   = QueryChangelog <$> (flag' () (long "changelog" <> short 'c' <> help "View a package's changelog.") *> someArgs)
+        gps   = QueryGroups <$> (flag' () (long "groups" <> short 'g' <> help "View all members of a package group.") *> someArgs)
+        inf   = QueryInfo <$> (flag' () (long "info" <> short 'i' <> help "View package information.") *> someArgs)
+        lst   = QueryList <$> (flag' () (long "list" <> short 'l' <> help "List files owned by a package.") *> someArgs)
+        own   = QueryOwns <$> (flag' () (long "owns" <> short 'o' <> help "Find the package some file belongs to.") *> someArgs)
+        fls   = QueryFile <$> (flag' () (long "file" <> short 'p' <> help "Query a package file.") *> someArgs)
+        sch   = QuerySearch <$> strOption (long "search" <> short 's' <> metavar "REGEX" <> help "Search the local database.")
+
+queryFilters :: Parser (S.Set QueryFilter)
+queryFilters = S.fromList <$> many (dps <|> exp <|> frg <|> ntv <|> urq <|> upg)
+  where dps = flag' QueryDeps (long "deps" <> short 'd' <> help "[filter] Only list packages installed as deps.")
+        exp = flag' QueryExplicit (long "explicit" <> short 'e' <> help "[filter] Only list explicitly installed packages.")
+        frg = flag' QueryForeign (long "foreign" <> short 'm' <> help "[filter] Only list AUR packages.")
+        ntv = flag' QueryNative (long "native" <> short 'n' <> help "[filter] Only list official packages.")
+        urq = flag' QueryUnrequired (long "unrequired" <> short 't' <> help "[filter] Only list packages not required as a dependency to any other.")
+        upg = flag' QueryUpgrades (long "upgrades" <> short 'u' <> help "[filter] Only list outdated packages.")
 
 misc :: Parser (S.Set MiscOp)
 misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> clr <|> gpg <|> hd <|> con)
