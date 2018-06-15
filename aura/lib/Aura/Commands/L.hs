@@ -38,6 +38,7 @@ import           Aura.Pacman (defaultLogFile)
 import           Aura.Settings.Base
 import           Aura.Utils (entrify)
 import           BasePrelude hiding (FilePath)
+import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Shelly
@@ -62,15 +63,16 @@ searchLogFile ss input = do
   logFile <- T.lines <$> shelly (readfile pth)
   traverse_ T.putStrLn $ searchLines (Regex input) logFile
 
-logInfoOnPkg :: [T.Text] -> Aura ()
-logInfoOnPkg []   = pure ()
-logInfoOnPkg pkgs = do
-  ss <- ask
-  let pth = fromMaybe defaultLogFile . logPathOf $ commonConfigOf ss
-  logFile <- fmap (Log . T.lines) . shelly $ readfile pth
-  let (bads, goods) = partitionEithers $ map (logLookup logFile) pkgs
-  reportNotInLog bads
-  liftIO . traverse_ T.putStrLn $ map (renderEntry ss) goods
+logInfoOnPkg :: S.Set T.Text -> Aura ()
+logInfoOnPkg pkgs
+  | null pkgs = pure ()
+  | otherwise = do
+      ss <- ask
+      let pth = fromMaybe defaultLogFile . logPathOf $ commonConfigOf ss
+      logFile <- fmap (Log . T.lines) . shelly $ readfile pth
+      let (bads, goods) = partitionEithers . map (logLookup logFile) $ toList pkgs
+      reportNotInLog bads
+      liftIO . traverse_ T.putStrLn $ map (renderEntry ss) goods
 
 logLookup :: Log -> T.Text -> Either T.Text LogEntry
 logLookup (Log lns) p = case matches of

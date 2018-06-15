@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, Rank2Types, MultiWayIf #-}
+{-# LANGUAGE OverloadedStrings, Rank2Types, MultiWayIf, ViewPatterns #-}
 
 {-
 
@@ -28,7 +28,6 @@ module Aura.Install
   ( InstallOptions(..)
   , install
   , displayPkgDeps
-  , displayPkgbuild
   ) where
 
 import           Aura.Build
@@ -46,6 +45,7 @@ import           Aura.Utils
 import           BasePrelude
 import           Control.Concurrent.Async
 import           Data.Bitraversable
+import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Shelly (toTextIgnore)
@@ -58,12 +58,11 @@ data InstallOptions = InstallOptions
                       , installLookup :: forall m. MonadIO m => Settings -> T.Text -> m (Maybe Buildable)
                       , repository    :: Repository }
 
--- TODO These lists should be Sets, to guarantee that their contents are unique.
 -- | High level 'install' command. Handles installing
 -- dependencies.
-install :: InstallOptions -> [T.Text] -> Aura (Either Failure ())
-install _ []      = pure $ failure install_2
-install opts pkgs = ask >>= f
+install :: InstallOptions -> S.Set T.Text -> Aura (Either Failure ())
+install opts pkgs | null pkgs = pure $ failure install_2
+                  | otherwise = ask >>= f
   where
     f ss | not $ switch ss DeleteMakeDeps = install' opts pkgs
          | otherwise = do -- `-a` was used.
@@ -76,8 +75,8 @@ install opts pkgs = ask >>= f
                     notify . removeMakeDepsAfter_1 $ langOf ss
                     removePkgs makeDeps
 
-install' :: InstallOptions -> [T.Text] -> Aura (Either Failure ())
-install' opts pkgs = do
+install' :: InstallOptions -> S.Set T.Text -> Aura (Either Failure ())
+install' opts (toList -> pkgs) = do
   ss       <- ask
   unneeded <- bool (pure []) (catMaybes <$> liftIO (mapConcurrently isInstalled pkgs)) $ shared ss NeededOnly
   let (ignored, notIgnored) = partition (`elem` ignoredPkgsOf (commonConfigOf ss)) pkgs
@@ -141,13 +140,16 @@ buildAndInstall (b:bs) = do
 -- REPORTING
 ------------
 -- | Display dependencies.
-displayPkgDeps :: InstallOptions -> [T.Text] -> Aura (Either Failure ())
-displayPkgDeps _ [] = pure $ Right ()
-displayPkgDeps opts ps = do
-  ss   <- ask
-  bs   <- catMaybes <$> liftIO (mapConcurrently (installLookup opts ss) ps)
-  pkgs <- depsToInstall (repository opts) bs
-  bitraverse pure (reportDeps (switch ss LowVerbosity) . partitionPkgs) pkgs
+displayPkgDeps :: InstallOptions -> S.Set T.Text -> Aura (Either Failure ())
+-- displayPkgDeps _ [] = pure $ Right ()
+-- displayPkgDeps opts ps = do
+displayPkgDeps opts ps
+  | null ps = pure $ Right ()
+  | otherwise = do
+      ss   <- ask
+      bs   <- catMaybes <$> liftIO (mapConcurrently (installLookup opts ss) $ toList ps)
+      pkgs <- depsToInstall (repository opts) bs
+      bitraverse pure (reportDeps (switch ss LowVerbosity) . partitionPkgs) pkgs
   where reportDeps True  = uncurry reportListOfDeps
         reportDeps False = uncurry (reportPkgsToInstall $ label opts)
 
@@ -189,9 +191,3 @@ pkgbuildDiffs ps = ask >>= check
                    d  -> do
                       warn $ reportPkgbuildDiffs_3 name lang
                       liftIO $ T.putStrLn d
-
-displayPkgbuild :: ([T.Text] -> Aura [Maybe T.Text]) -> [T.Text] -> Aura ()
-displayPkgbuild getPBs ps = do
-  let line = yellow "\n#========== NEXT PKGBUILD ==========#\n"
-  pbs <- intersperse line . catMaybes <$> getPBs ps
-  traverse_ (liftIO . T.putStrLn) pbs

@@ -30,6 +30,7 @@ import           Aura.Monad.Aura
 import           Aura.Pacman (pacman)
 import           Aura.Types
 import           BasePrelude
+import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
@@ -38,5 +39,5 @@ import qualified Data.Text.IO as T
 displayOrphans :: Aura (Either Failure ())
 displayOrphans = orphans >>= fmap Right . liftIO . traverse_ T.putStrLn
 
-adoptPkg :: [T.Text] -> Aura (Either Failure ())
-adoptPkg pkgs = fmap join . sudo . pacman $ ["-D", "--asexplicit"] <> pkgs
+adoptPkg :: S.Set T.Text -> Aura (Either Failure ())
+adoptPkg pkgs = fmap join . sudo . pacman $ ["-D", "--asexplicit"] <> toList pkgs

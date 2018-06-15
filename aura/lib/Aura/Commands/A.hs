@@ -48,7 +48,7 @@ import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding ((<>))
 import           Data.Semigroup ((<>))
-import qualified Data.Set as S (member, fromList)
+import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Versions
@@ -62,17 +62,17 @@ installOptions = I.InstallOptions { I.label         = "AUR"
                                   , I.installLookup = aurLookup
                                   , I.repository    = pacmanRepo <> aurRepo }
 
-install :: [T.Text] -> Aura (Either Failure ())
+install :: S.Set T.Text -> Aura (Either Failure ())
 install = I.install installOptions
 
-upgradeAURPkgs :: [T.Text] -> Aura (Either Failure ())
+upgradeAURPkgs :: S.Set T.Text -> Aura (Either Failure ())
 upgradeAURPkgs pkgs = do
   ss <- ask
   let !ignores     = map Just . toList . ignoredPkgsOf $ commonConfigOf ss
       notIgnored p = fmap fst (splitNameAndVer p) `notElem` ignores
       lang         = langOf ss
   notify $ upgradeAURPkgs_1 lang
-  foreignPkgs <- filter (notIgnored . _spName) <$> foreignPackages
+  foreignPkgs <- S.filter (notIgnored . _spName) <$> foreignPackages
   toUpgrade   <- possibleUpdates foreignPkgs
   auraFirst   <- auraCheck $ map (aurNameOf . fst) toUpgrade
   if | auraFirst -> auraUpgrade
@@ -80,13 +80,13 @@ upgradeAURPkgs pkgs = do
          devel <- develPkgCheck
          notify $ upgradeAURPkgs_2 lang
          if | null toUpgrade && null devel -> warn $ upgradeAURPkgs_3 lang
-            | otherwise -> reportPkgsToUpgrade $ map prettify toUpgrade <> devel
-         install $ (aurNameOf . fst <$> toUpgrade) <> pkgs <> devel
+            | otherwise -> reportPkgsToUpgrade $ map prettify toUpgrade <> toList devel
+         install $ (S.fromList $ map (aurNameOf . fst) toUpgrade) <> pkgs <> devel
            where prettify (p, v) = aurNameOf p <> " : " <> prettyV v <> " => " <> aurVersionOf p
 -- TODO: Use `printf` with `prettify` to line up the colons.
 
-possibleUpdates :: [SimplePkg] -> Aura [(AurInfo, Versioning)]
-possibleUpdates pkgs = do
+possibleUpdates :: S.Set SimplePkg -> Aura [(AurInfo, Versioning)]
+possibleUpdates (toList -> pkgs) = do
   aurInfos <- aurInfo $ map _spName pkgs
   let !names  = map aurNameOf aurInfos
       aurPkgs = filter (\(SimplePkg n _) -> n `elem` names) pkgs
@@ -98,14 +98,14 @@ auraCheck toUpgrade = if "aura" `elem` toUpgrade
                          else pure False
 
 auraUpgrade :: Aura (Either Failure ())
-auraUpgrade = install ["aura"]
+auraUpgrade = install $ S.singleton "aura"
 
-develPkgCheck :: Aura [T.Text]
+develPkgCheck :: Aura (S.Set T.Text)
 develPkgCheck = ask >>= \ss ->
-  if switch ss RebuildDevel then develPkgs else pure []
+  if switch ss RebuildDevel then develPkgs else pure S.empty
 
-aurPkgInfo :: [T.Text] -> Aura ()
-aurPkgInfo pkgs = aurInfo pkgs >>= traverse_ displayAurPkgInfo
+aurPkgInfo :: S.Set T.Text -> Aura ()
+aurPkgInfo = aurInfo . toList >=> traverse_ displayAurPkgInfo
 
 -- By this point, the Package definitely exists, so we can assume its
 -- PKGBUILD exists on the AUR servers as well.
@@ -132,7 +132,7 @@ renderAurPkgInfo ss ai = entrify ss fields entries
 aurPkgSearch :: T.Text -> Aura ()
 aurPkgSearch regex = do
   ss <- ask
-  db <- S.fromList . map _spName <$> foreignPackages
+  db <- S.map _spName <$> foreignPackages
   let t = case truncationOf $ buildConfigOf ss of  -- Can't this go anywhere else?
             None   -> id
             Head n -> take n
@@ -157,10 +157,10 @@ renderSearch ss r (i, e) = searchResult
             Just _  -> red   $ aurVersionOf i
             Nothing -> green $ aurVersionOf i
 
-displayPkgDeps :: [T.Text] -> Aura (Either Failure ())
+displayPkgDeps :: S.Set T.Text -> Aura (Either Failure ())
 displayPkgDeps = I.displayPkgDeps installOptions
 
-downloadTarballs :: [T.Text] -> Aura ()
+downloadTarballs :: S.Set T.Text -> Aura ()
 downloadTarballs pkgs = do
   currDir <- T.unpack . toTextIgnore <$> shelly pwd
   traverse_ (downloadTBall currDir) pkgs
@@ -170,10 +170,12 @@ downloadTarballs pkgs = do
               notify $ downloadTarballs_1 pkg lang
               void . liftIO $ sourceTarball manager path pkg
 
-displayPkgbuild :: [T.Text] -> Aura ()
+displayPkgbuild :: S.Set T.Text -> Aura ()
 displayPkgbuild ps = do
-  m <- asks managerOf
-  I.displayPkgbuild (traverse (pkgbuild m . T.unpack)) ps
+  man <- asks managerOf
+  pbs <- catMaybes <$> traverse (pkgbuild man . T.unpack) (toList ps)
+  traverse_ (liftIO . T.putStrLn) $ intersperse line pbs
+  where line = yellow "\n#========== NEXT PKGBUILD ==========#\n"
 
 isntMostRecent :: (AurInfo, Versioning) -> Bool
 isntMostRecent (ai, v) = trueVer > Just v

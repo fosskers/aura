@@ -29,10 +29,10 @@ data Program = Program {
   , _language  :: Maybe Language }
 
 -- | Inherited operations that are fed down to Pacman.
-data PacmanOp = Database (Either DatabaseOp [T.Text]) (S.Set MiscOp)
+data PacmanOp = Database (Either DatabaseOp (S.Set T.Text)) (S.Set MiscOp)
               | Files (S.Set FilesOp) (S.Set MiscOp)
-              | Query (Either QueryOp (S.Set QueryFilter, [T.Text])) (S.Set MiscOp)
-              | Remove (S.Set RemoveOp) [T.Text] (S.Set MiscOp)
+              | Query (Either QueryOp (S.Set QueryFilter, (S.Set T.Text))) (S.Set MiscOp)
+              | Remove (S.Set RemoveOp) (S.Set T.Text) (S.Set MiscOp)
               | Sync
               | TestDeps
               | Upgrade
@@ -40,23 +40,23 @@ data PacmanOp = Database (Either DatabaseOp [T.Text]) (S.Set MiscOp)
 
 instance Flagable PacmanOp where
   asFlag (Database (Left o) ms)      = "-D" : asFlag o ++ concatMap asFlag (toList ms)
-  asFlag (Database (Right fs) ms)    = "-D" : fs ++ concatMap asFlag (toList ms)
+  asFlag (Database (Right fs) ms)    = "-D" : toList fs ++ concatMap asFlag (toList ms)
   asFlag (Files os ms)               = "-F" : concatMap asFlag (toList os) ++ concatMap asFlag (toList ms)
   asFlag (Query (Left o) ms)         = "-Q" : asFlag o ++ concatMap asFlag (toList ms)
-  asFlag (Query (Right (fs, ps)) ms) = "-Q" : ps ++ concatMap asFlag (toList fs) ++ concatMap asFlag (toList ms)
-  asFlag (Remove os ps ms)           = "-R" : concatMap asFlag (toList os) ++ ps ++ concatMap asFlag (toList ms)
+  asFlag (Query (Right (fs, ps)) ms) = "-Q" : toList ps ++ concatMap asFlag (toList fs) ++ concatMap asFlag (toList ms)
+  asFlag (Remove os ps ms)           = "-R" : concatMap asFlag (toList os) ++ toList ps ++ concatMap asFlag (toList ms)
 
 data DatabaseOp = DBCheck
-                | DBAsDeps     [T.Text]
-                | DBAsExplicit [T.Text]
+                | DBAsDeps     (S.Set T.Text)
+                | DBAsExplicit (S.Set T.Text)
                 deriving (Show)
 
 instance Flagable DatabaseOp where
   asFlag DBCheck           = ["--check"]
-  asFlag (DBAsDeps ps)     = "--asdeps" : ps
-  asFlag (DBAsExplicit ps) = "--asexplicit" : ps
+  asFlag (DBAsDeps ps)     = "--asdeps" : toList ps
+  asFlag (DBAsExplicit ps) = "--asexplicit" : toList ps
 
-data FilesOp = FilesList  [T.Text]
+data FilesOp = FilesList  (S.Set T.Text)
              | FilesOwns   T.Text
              | FilesSearch T.Text
              | FilesRegex
@@ -65,31 +65,31 @@ data FilesOp = FilesList  [T.Text]
              deriving (Eq, Ord, Show)
 
 instance Flagable FilesOp where
-  asFlag (FilesList fs)       = "--list" : fs
+  asFlag (FilesList fs)       = "--list" : toList fs
   asFlag (FilesOwns f)        = ["--owns", f]
   asFlag (FilesSearch f)      = ["--search", f]
   asFlag FilesRegex           = ["--regex"]
   asFlag FilesRefresh         = ["--refresh"]
   asFlag FilesMachineReadable = ["--machinereadable"]
 
-data QueryOp = QueryChangelog [T.Text]
-             | QueryGroups    [T.Text]
-             | QueryInfo      [T.Text]
-             | QueryCheck     [T.Text]
-             | QueryList      [T.Text]
-             | QueryOwns      [T.Text]
-             | QueryFile      [T.Text]
+data QueryOp = QueryChangelog (S.Set T.Text)
+             | QueryGroups    (S.Set T.Text)
+             | QueryInfo      (S.Set T.Text)
+             | QueryCheck     (S.Set T.Text)
+             | QueryList      (S.Set T.Text)
+             | QueryOwns      (S.Set T.Text)
+             | QueryFile      (S.Set T.Text)
              | QuerySearch     T.Text
              deriving (Show)
 
 instance Flagable QueryOp where
-  asFlag (QueryChangelog ps) = "--changelog" : ps
-  asFlag (QueryGroups ps)    = "--groups" : ps
-  asFlag (QueryInfo ps)      = "--info" : ps
-  asFlag (QueryCheck ps)     = "--check" : ps
-  asFlag (QueryList ps)      = "--list" : ps
-  asFlag (QueryOwns ps)      = "--owns" : ps
-  asFlag (QueryFile ps)      = "--file" : ps
+  asFlag (QueryChangelog ps) = "--changelog" : toList ps
+  asFlag (QueryGroups ps)    = "--groups" : toList ps
+  asFlag (QueryInfo ps)      = "--info" : toList ps
+  asFlag (QueryCheck ps)     = "--check" : toList ps
+  asFlag (QueryList ps)      = "--list" : toList ps
+  asFlag (QueryOwns ps)      = "--owns" : toList ps
+  asFlag (QueryFile ps)      = "--file" : toList ps
   asFlag (QuerySearch t)     = ["--search", t]
 
 data QueryFilter = QueryDeps
@@ -136,6 +136,7 @@ data MiscOp = MiscArch    FilePath
             | MiscNoDeps
             | MiscPrint
             | MiscAssumeInstalled T.Text
+            | MiscIgnoreGroup (S.Set T.Text)
             deriving (Eq, Ord, Show)
 
 instance Flagable MiscOp where
@@ -154,31 +155,32 @@ instance Flagable MiscOp where
   asFlag MiscNoDeps              = ["--nodeps"]
   asFlag MiscPrint               = ["--print"]
   asFlag (MiscAssumeInstalled p) = ["--assume-installed", p]
+  asFlag (MiscIgnoreGroup ps)    = "--ignoregroup" : toList ps
 
 -- | Operations unique to Aura.
-data AuraOp = AurSync (Either AurOp [T.Text])
+data AuraOp = AurSync (Either AurOp (S.Set T.Text))
             | Backup  (Maybe  BackupOp)
-            | Cache   (Either CacheOp [T.Text])
+            | Cache   (Either CacheOp (S.Set T.Text))
             | Log     (Maybe  LogOp)
             | Orphans (Maybe  OrphanOp)
             | Version
             deriving (Show)
 
-data AurOp = AurDeps     [T.Text]
-           | AurInfo     [T.Text]
-           | AurPkgbuild [T.Text]
+data AurOp = AurDeps     (S.Set T.Text)
+           | AurInfo     (S.Set T.Text)
+           | AurPkgbuild (S.Set T.Text)
            | AurSearch    T.Text
-           | AurUpgrade  [T.Text]
-           | AurTarball  [T.Text]
+           | AurUpgrade  (S.Set T.Text)
+           | AurTarball  (S.Set T.Text)
            deriving (Show)
 
 data BackupOp = BackupClean Word | BackupRestore deriving (Show)
 
 data CacheOp = CacheBackup FilePath | CacheClean Word | CacheSearch T.Text deriving (Show)
 
-data LogOp = LogInfo [T.Text] | LogSearch T.Text deriving (Show)
+data LogOp = LogInfo (S.Set T.Text) | LogSearch T.Text deriving (Show)
 
-data OrphanOp = OrphanAbandon | OrphanAdopt [T.Text] deriving (Show)
+data OrphanOp = OrphanAbandon | OrphanAdopt (S.Set T.Text) deriving (Show)
 
 opts :: ParserInfo Program
 opts = info (program <**> helper) (fullDesc <> header "Aura - Package manager for Arch Linux and the AUR.")
@@ -354,7 +356,7 @@ remove = bigR *> (Remove <$> mods <*> someArgs <*> misc)
         unneeded = flag' RemoveUnneeded (long "unneeded" <> short 'u' <> help "Remove unneeded packages.")
 
 misc :: Parser (S.Set MiscOp)
-misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> clr <|> gpg <|> hd <|> con <|> dbo <|> nop <|> nos <|> pf <|> nod <|> prt <|> asi)
+misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> clr <|> gpg <|> hd <|> con <|> dbo <|> nop <|> nos <|> pf <|> nod <|> prt <|> asi <|> igg)
   where ar  = MiscArch    <$> strOption (long "arch" <> metavar "ARCH" <> help "Use an alternate architecture.")
         dbp = MiscDBPath  <$> strOption (long "dbpath" <> short 'b' <> metavar "PATH" <> help "Use an alternate database location.")
         roo = MiscRoot    <$> strOption (long "root" <> short 'r' <> metavar "PATH" <> help "Use an alternate installation root.")
@@ -370,14 +372,16 @@ misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> clr <|> gpg <|> hd <|
         nod = flag' MiscNoDeps (long "nodeps" <> short 'd' <> help "Skip dependency version checks.")
         prt = flag' MiscPrint (long "print" <> short 'p' <> help "Print the targets instead of performing the operation.")
         asi = MiscAssumeInstalled <$> strOption (long "assume-installed" <> metavar "<package=version>" <> help "Add a virtual package to satisfy dependencies.")
+        igg = MiscIgnoreGroup . maybe S.empty (S.fromList . T.split (== ',')) <$>
+          optional (strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> help "Ignore given package groups."))
 
 -- | One or more arguments.
-someArgs :: Parser [T.Text]
-someArgs = some (argument str (metavar "PACKAGES"))
+someArgs :: Parser (S.Set T.Text)
+someArgs = S.fromList <$> some (argument str (metavar "PACKAGES"))
 
 -- | Zero or more arguments.
-manyArgs :: Parser [T.Text]
-manyArgs = many (argument str (metavar "PACKAGES"))
+manyArgs :: Parser (S.Set T.Text)
+manyArgs = S.fromList <$> many (argument str (metavar "PACKAGES"))
 
 language :: Parser Language
 language = pure English

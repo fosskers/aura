@@ -33,6 +33,7 @@ import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding ((<>))
 import           Data.Semigroup
+import qualified Data.Set as S
 import qualified Data.Text as T
 import           Shelly (Sh, test_f)
 import           Utilities
@@ -81,14 +82,14 @@ trueRoot action = ask >>= \ss ->
 
 -- | A list of non-prebuilt packages installed on the system.
 -- `-Qm` yields a list of sorted values.
-foreignPackages :: Aura [SimplePkg]
-foreignPackages = mapMaybe simplepkg' . T.lines <$> pacmanOutput ["-Qm"]
+foreignPackages :: Aura (S.Set SimplePkg)
+foreignPackages = S.fromList . mapMaybe simplepkg' . T.lines <$> pacmanOutput ["-Qm"]
 
 orphans :: Aura [T.Text]
 orphans = T.lines <$> pacmanOutput ["-Qqdt"]
 
-develPkgs :: Aura [T.Text]
-develPkgs = filter isDevelPkg . map _spName <$> foreignPackages
+develPkgs :: Aura (S.Set T.Text)
+develPkgs = S.filter isDevelPkg . S.map _spName <$> foreignPackages
   where isDevelPkg pkg = any (`T.isSuffixOf` pkg) suffixes
         suffixes = ["-git", "-hg", "-svn", "-darcs", "-cvs", "-bzr"]
 
