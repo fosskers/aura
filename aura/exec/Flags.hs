@@ -233,71 +233,53 @@ aursync = bigA *> (AurSync <$> (fmap Right someArgs <|> fmap Left mods))
   where bigA = flag' () (long "aursync" <> short 'A' <> help "Install packages from the AUR.")
         mods = deps <|> ainfo <|> pkgbuild <|> search <|> upgrade <|> tarball
         deps = AurDeps <$>
-          (flag' () (long "deps" <> short 'd' <> help "View dependencies of an AUR package.") *> someArgs)
+          (flag' () (long "deps" <> short 'd' <> hidden <> help "View dependencies of an AUR package.") *> someArgs')
         ainfo = AurInfo <$>
-          (flag' () (long "info" <> short 'i' <> help "View AUR package information.") *> someArgs)
+          (flag' () (long "info" <> short 'i' <> hidden <> help "View AUR package information.") *> someArgs')
         pkgbuild = AurPkgbuild <$>
-          (flag' () (long "pkgbuild" <> short 'p' <> help "View an AUR package's PKGBUILD file.") *> someArgs)
+          (flag' () (long "pkgbuild" <> short 'p' <> hidden <> help "View an AUR package's PKGBUILD file.") *> someArgs')
         search = AurSearch <$>
-          strOption (long "search" <> short 's' <> metavar "STRING" <> help "Search the AUR via a search string.")
+          strOption (long "search" <> short 's' <> metavar "STRING" <> hidden <> help "Search the AUR via a search string.")
         upgrade = AurUpgrade <$>
-          (flag' () (long "sysupgrade" <> short 'u' <> help "Upgrade all installed AUR packages.") *> manyArgs)
+          (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade all installed AUR packages.") *> manyArgs')
         tarball = AurTarball <$>
-          (flag' () (long "downloadonly" <> short 'w' <> help "Download a package's source tarball.") *> someArgs)
+          (flag' () (long "downloadonly" <> short 'w' <> hidden <> help "Download a package's source tarball.") *> someArgs')
 
 backups :: Parser AuraOp
 backups = bigB *> (Backup <$> optional mods)
   where bigB = flag' () (long "save" <> short 'B' <> help "Save a package state.")
         mods = clean <|> restore
         clean = BackupClean <$>
-          option auto (long "clean" <> short 'c' <> metavar "N" <> help "Keep the most recent N states, delete the rest.")
-        restore = flag' BackupRestore (long "restore" <> short 'r' <> help "Restore a previous package state.")
+          option auto (long "clean" <> short 'c' <> metavar "N" <> hidden <> help "Keep the most recent N states, delete the rest.")
+        restore = flag' BackupRestore (long "restore" <> short 'r' <> hidden <> help "Restore a previous package state.")
 
 cache :: Parser AuraOp
 cache = bigC *> (Cache <$> (fmap Left mods <|> fmap Right someArgs))
   where bigC = flag' () (long "downgrade" <> short 'C' <> help "Interact with the package cache.")
         mods = backup <|> clean <|> search
         backup = CacheBackup <$>
-          strOption (long "backup"
-                      <> metavar "PATH"
-                      <> help "Backup the package cache to a given directory."
-                      <> hidden)
+          strOption (long "backup" <> metavar "PATH" <> help "Backup the package cache to a given directory." <> hidden)
         clean  = CacheClean <$>
-          option auto (long "clean"
-                        <> short 'c'
-                        <> metavar "N"
-                        <> help "Save the most recent N versions of a package in the cache, deleting the rest."
-                        <> hidden)
+          option auto (long "clean" <> short 'c' <> metavar "N" <> help "Save the most recent N versions of a package in the cache, deleting the rest." <> hidden)
         search = CacheSearch <$>
-          strOption (long "search"
-                      <> short 's'
-                      <> metavar "STRING"
-                      <> help "Search the package cache via a search string."
-                      <> hidden)
+          strOption (long "search" <> short 's' <> metavar "STRING" <> help "Search the package cache via a search string." <> hidden)
 
 log :: Parser AuraOp
 log = bigL *> (Log <$> optional mods)
   where bigL = flag' () (long "viewlog" <> short 'L' <> help "View the Pacman log.")
         mods = inf <|> search
         inf  = LogInfo <$>
-          (flag' () (long "info"
-                      <> short 'i'
-                      <> help "Display the installation history for given packages."
-                      <> hidden) *> someArgs)
+          (flag' () (long "info" <> short 'i' <> help "Display the installation history for given packages." <> hidden) *> someArgs')
         search = LogSearch <$>
-          strOption (long "search"
-                      <> short 's'
-                      <> metavar "STRING"
-                      <> help "Search the Pacman log via a search string."
-                      <> hidden)
+          strOption (long "search" <> short 's' <> metavar "STRING" <> help "Search the Pacman log via a search string." <> hidden)
 
 orphans :: Parser AuraOp
 orphans = bigO *> (Orphans <$> optional mods)
   where bigO    = flag' () (long "orphans" <> short 'O' <> help "Display all orphan packages.")
         mods    = abandon <|> adopt
-        abandon = flag' OrphanAbandon (long "abandon" <> short 'j' <> help "Uninstall all orphan packages.")
+        abandon = flag' OrphanAbandon (long "abandon" <> short 'j' <> hidden <> help "Uninstall all orphan packages.")
         adopt   = OrphanAdopt <$>
-          (flag' () (long "adopt" <> help "Mark some packages' install reason as 'Explicit'.") *> someArgs)
+          (flag' () (long "adopt" <> hidden <> help "Mark some packages' install reason as 'Explicit'.") *> someArgs')
 
 version :: Parser AuraOp
 version = flag' Version (long "version" <> short 'V' <> help "Display Aura's version.")
@@ -308,123 +290,123 @@ languages = flag' Languages (long "languages" <> help "Show all human languages 
 buildConfig :: Parser BuildConfig
 buildConfig = BuildConfig <$> makepkg <*> optional bp <*> optional bu <*> trunc <*> buildSwitches
   where makepkg = S.fromList <$> many (ia <|> as)
-        ia      = flag' IgnoreArch (long "ignorearch" <> help "Exposed makepkg flag.")
-        as      = flag' AllSource (long "allsource" <> help "Exposed makepkg flag.")
-        bp      = strOption (long "build" <> metavar "PATH" <> help "Directory in which to build packages.")
-        bu      = User <$> strOption (long "builduser" <> metavar "USER" <> help "User account to build as.")
-        trunc   = fmap Head (option auto (long "head" <> metavar "N" <> help "Only show top N search results."))
-          <|> fmap Tail (option auto (long "tail" <> metavar "N" <> help "Only show last N search results."))
+        ia      = flag' IgnoreArch (long "ignorearch" <> hidden <> help "Exposed makepkg flag.")
+        as      = flag' AllSource (long "allsource" <> hidden <> help "Exposed makepkg flag.")
+        bp      = strOption (long "build" <> metavar "PATH" <> hidden <> help "Directory in which to build packages.")
+        bu      = User <$> strOption (long "builduser" <> metavar "USER" <> hidden <> help "User account to build as.")
+        trunc   = fmap Head (option auto (long "head" <> metavar "N" <> hidden <> help "Only show top N search results."))
+          <|> fmap Tail (option auto (long "tail" <> metavar "N" <> hidden <> help "Only show last N search results."))
           <|> pure None
 
 buildSwitches :: Parser (S.Set BuildSwitch)
 buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> ucp <|> dr <|> sa)
-  where lv  = flag' LowVerbosity (long "quiet" <> short 'q' <> help "Display less information.")
-        dmd = flag' DeleteMakeDeps (long "delmakedeps" <> short 'a' <> help "Uninstall makedeps after building.")
-        dsm = flag' DontSuppressMakepkg (long "unsuppress" <> short 'x' <> help "Unsuppress makepkg output.")
-        dpb = flag' DiffPkgbuilds (long "diff" <> short 'k' <> help "Show PKGBUILD diffs.")
-        rbd = flag' RebuildDevel (long "devel" <> help "Rebuild all git/hg/svn/darcs-based packages.")
-        he  = flag' HotEdit (long "hotedit" <> help "Edit a PKGBUILD before building.")
-        ucp = flag' UseCustomizepkg (long "custom" <> help "Run customizepkg before building.")
-        dr  = flag' DryRun (long "dryrun" <> help "Run dependency checks and PKGBUILD diffs, but don't build.")
-        sa  = flag' SortAlphabetically (long "abc" <> help "Sort search results alphabetically.")
+  where lv  = flag' LowVerbosity (long "quiet" <> short 'q' <> hidden <> help "Display less information.")
+        dmd = flag' DeleteMakeDeps (long "delmakedeps" <> short 'a' <> hidden <> help "Uninstall makedeps after building.")
+        dsm = flag' DontSuppressMakepkg (long "unsuppress" <> short 'x' <> hidden <> help "Unsuppress makepkg output.")
+        dpb = flag' DiffPkgbuilds (long "diff" <> short 'k' <> hidden <> help "Show PKGBUILD diffs.")
+        rbd = flag' RebuildDevel (long "devel" <> hidden <> help "Rebuild all git/hg/svn/darcs-based packages.")
+        he  = flag' HotEdit (long "hotedit" <> hidden <> help "Edit a PKGBUILD before building.")
+        ucp = flag' UseCustomizepkg (long "custom" <> hidden <> help "Run customizepkg before building.")
+        dr  = flag' DryRun (long "dryrun" <> hidden <> help "Run dependency checks and PKGBUILD diffs, but don't build.")
+        sa  = flag' SortAlphabetically (long "abc" <> hidden <> help "Sort search results alphabetically.")
 
 commonConfig :: Parser CommonConfig
 commonConfig = CommonConfig <$> optional cap <*> optional cop <*> optional lfp <*> ign <*> commonSwitches
-  where cap = strOption (long "cachedir" <> help "Use an alternate package cache location.")
-        cop = strOption (long "config"   <> help "Use an alternate Pacman config file.")
-        lfp = strOption (long "logfile"  <> help "Use an alternate Pacman log.")
+  where cap = strOption (long "cachedir" <> hidden <> help "Use an alternate package cache location.")
+        cop = strOption (long "config"   <> hidden <> help "Use an alternate Pacman config file.")
+        lfp = strOption (long "logfile"  <> hidden <> help "Use an alternate Pacman log.")
         ign = maybe S.empty (S.fromList . T.split (== ',')) <$>
-          optional (strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> help "Ignore given packages."))
+          optional (strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given packages."))
 
 commonSwitches :: Parser (S.Set CommonSwitch)
 commonSwitches = S.fromList <$> many (nc <|> no <|> dbg)
-  where nc  = flag' NoConfirm  (long "noconfirm" <> help "Never ask for Aura or Pacman confirmation.")
-        no  = flag' NeededOnly (long "needed"    <> help "Don't rebuild/reinstall up-to-date packages.")
-        dbg = flag' Debug      (long "debug"     <> help "Print useful debugging info.")
+  where nc  = flag' NoConfirm  (long "noconfirm" <> hidden <> help "Never ask for Aura or Pacman confirmation.")
+        no  = flag' NeededOnly (long "needed"    <> hidden <> help "Don't rebuild/reinstall up-to-date packages.")
+        dbg = flag' Debug      (long "debug"     <> hidden <> help "Print useful debugging info.")
 
 database :: Parser PacmanOp
 database = bigD *> (Database <$> (fmap Right someArgs <|> fmap Left mods) <*> misc)
   where bigD   = flag' () (long "database" <> short 'D' <> help "Interact with the package database.")
         mods   = check <|> asdeps <|> asexp
-        check  = flag' DBCheck (long "check" <> short 'k' <> help "Test local database validity.")
-        asdeps = DBAsDeps <$> (flag' () (long "asdeps" <> help "Mark packages as being dependencies.") *> someArgs)
-        asexp  = DBAsExplicit <$> (flag' () (long "asexplicit" <> help "Mark packages as being explicitely installed.") *> someArgs)
+        check  = flag' DBCheck (long "check" <> short 'k' <> hidden <> help "Test local database validity.")
+        asdeps = DBAsDeps <$> (flag' () (long "asdeps" <> hidden <> help "Mark packages as being dependencies.") *> someArgs')
+        asexp  = DBAsExplicit <$> (flag' () (long "asexplicit" <> hidden <> help "Mark packages as being explicitely installed.") *> someArgs')
 
 files :: Parser PacmanOp
 files = bigF *> (Files <$> fmap S.fromList (many mods) <*> misc)
   where bigF = flag' () (long "files" <> short 'F' <> help "Interact with the file database.")
         mods = lst <|> own <|> sch <|> rgx <|> rfr <|> mch
-        lst  = FilesList <$> (flag' () (long "list" <> short 'l' <> help "List the files owned by given packages.") *> someArgs)
-        own  = FilesOwns <$> strOption (long "owns" <> short 'o' <> metavar "FILE" <> help "Query the package that owns FILE.")
-        sch  = FilesSearch <$> strOption (long "search" <> short 's' <> metavar "FILE" <> help "Find package files that match the given FILEname.")
-        rgx  = flag' FilesRegex (long "regex" <> short 'x' <> help "Interpret the input of -Fs as a regex.")
-        rfr  = flag' FilesRefresh (long "refresh" <> short 'y' <> help "Download fresh package databases.")
-        mch  = flag' FilesMachineReadable (long "machinereadable" <> help "Produce machine-readable output.")
+        lst  = FilesList <$> (flag' () (long "list" <> short 'l' <> hidden <> help "List the files owned by given packages.") *> someArgs')
+        own  = FilesOwns <$> strOption (long "owns" <> short 'o' <> metavar "FILE" <> hidden <> help "Query the package that owns FILE.")
+        sch  = FilesSearch <$> strOption (long "search" <> short 's' <> metavar "FILE" <> hidden <> help "Find package files that match the given FILEname.")
+        rgx  = flag' FilesRegex (long "regex" <> short 'x' <> hidden <> help "Interpret the input of -Fs as a regex.")
+        rfr  = flag' FilesRefresh (long "refresh" <> short 'y' <> hidden <> help "Download fresh package databases.")
+        mch  = flag' FilesMachineReadable (long "machinereadable" <> hidden <> help "Produce machine-readable output.")
 
 queries :: Parser PacmanOp
 queries = bigQ *> (Query <$> (fmap Right query <|> fmap Left mods) <*> misc)
   where bigQ  = flag' () (long "query" <> short 'Q' <> help "Interact with the local package database.")
         query = (,) <$> queryFilters <*> manyArgs
         mods  = chl <|> gps <|> inf <|> lst <|> own <|> fls <|> sch
-        chl   = QueryChangelog <$> (flag' () (long "changelog" <> short 'c' <> help "View a package's changelog.") *> someArgs)
-        gps   = QueryGroups <$> (flag' () (long "groups" <> short 'g' <> help "View all members of a package group.") *> someArgs)
-        inf   = QueryInfo <$> (flag' () (long "info" <> short 'i' <> help "View package information.") *> someArgs)
-        lst   = QueryList <$> (flag' () (long "list" <> short 'l' <> help "List files owned by a package.") *> someArgs)
-        own   = QueryOwns <$> (flag' () (long "owns" <> short 'o' <> help "Find the package some file belongs to.") *> someArgs)
-        fls   = QueryFile <$> (flag' () (long "file" <> short 'p' <> help "Query a package file.") *> someArgs)
-        sch   = QuerySearch <$> strOption (long "search" <> short 's' <> metavar "REGEX" <> help "Search the local database.")
+        chl   = QueryChangelog <$> (flag' () (long "changelog" <> short 'c' <> hidden <> help "View a package's changelog.") *> someArgs')
+        gps   = QueryGroups <$> (flag' () (long "groups" <> short 'g' <> hidden <> help "View all members of a package group.") *> someArgs')
+        inf   = QueryInfo <$> (flag' () (long "info" <> short 'i' <> hidden <> help "View package information.") *> someArgs')
+        lst   = QueryList <$> (flag' () (long "list" <> short 'l' <> hidden <> help "List files owned by a package.") *> someArgs')
+        own   = QueryOwns <$> (flag' () (long "owns" <> short 'o' <> hidden <> help "Find the package some file belongs to.") *> someArgs')
+        fls   = QueryFile <$> (flag' () (long "file" <> short 'p' <> hidden <> help "Query a package file.") *> someArgs')
+        sch   = QuerySearch <$> strOption (long "search" <> short 's' <> metavar "REGEX" <> hidden <> help "Search the local database.")
 
 queryFilters :: Parser (S.Set QueryFilter)
 queryFilters = S.fromList <$> many (dps <|> exp <|> frg <|> ntv <|> urq <|> upg)
-  where dps = flag' QueryDeps (long "deps" <> short 'd' <> help "[filter] Only list packages installed as deps.")
-        exp = flag' QueryExplicit (long "explicit" <> short 'e' <> help "[filter] Only list explicitly installed packages.")
-        frg = flag' QueryForeign (long "foreign" <> short 'm' <> help "[filter] Only list AUR packages.")
-        ntv = flag' QueryNative (long "native" <> short 'n' <> help "[filter] Only list official packages.")
-        urq = flag' QueryUnrequired (long "unrequired" <> short 't' <> help "[filter] Only list packages not required as a dependency to any other.")
-        upg = flag' QueryUpgrades (long "upgrades" <> short 'u' <> help "[filter] Only list outdated packages.")
+  where dps = flag' QueryDeps (long "deps" <> short 'd' <> hidden <> help "[filter] Only list packages installed as deps.")
+        exp = flag' QueryExplicit (long "explicit" <> short 'e' <> hidden <> help "[filter] Only list explicitly installed packages.")
+        frg = flag' QueryForeign (long "foreign" <> short 'm' <> hidden <> help "[filter] Only list AUR packages.")
+        ntv = flag' QueryNative (long "native" <> short 'n' <> hidden <> help "[filter] Only list official packages.")
+        urq = flag' QueryUnrequired (long "unrequired" <> short 't' <> hidden <> help "[filter] Only list packages not required as a dependency to any other.")
+        upg = flag' QueryUpgrades (long "upgrades" <> short 'u' <> hidden <> help "[filter] Only list outdated packages.")
 
 remove :: Parser PacmanOp
 remove = bigR *> (Remove <$> mods <*> someArgs <*> misc)
   where bigR     = flag' () (long "remove" <> short 'R' <> help "Uninstall packages.")
         mods     = S.fromList <$> many (cascade <|> nosave <|> recurse <|> unneeded)
-        cascade  = flag' RemoveCascade (long "cascade" <> short 'c' <> help "Remove packages and all others that depend on them.")
-        nosave   = flag' RemoveNoSave (long "nosave" <> short 'n' <> help "Remove configuration files as well.")
-        recurse  = flag' RemoveRecursive (long "recursive" <> short 's' <> help "Remove unneeded dependencies.")
-        unneeded = flag' RemoveUnneeded (long "unneeded" <> short 'u' <> help "Remove unneeded packages.")
+        cascade  = flag' RemoveCascade (long "cascade" <> short 'c' <> hidden <> help "Remove packages and all others that depend on them.")
+        nosave   = flag' RemoveNoSave (long "nosave" <> short 'n' <> hidden <> help "Remove configuration files as well.")
+        recurse  = flag' RemoveRecursive (long "recursive" <> short 's' <> hidden <> help "Remove unneeded dependencies.")
+        unneeded = flag' RemoveUnneeded (long "unneeded" <> short 'u' <> hidden <> help "Remove unneeded packages.")
 
 sync :: Parser PacmanOp
 sync = bigS *> (Sync <$> (fmap Right someArgs <|> fmap Left mods) <*> ref <*> misc)
   where bigS = flag' () (long "sync" <> short 'S' <> help "Install official packages.")
-        ref  = S.fromList <$> many (flag' SyncRefresh (long "refresh" <> short 'y' <> help "Update the package database."))
+        ref  = S.fromList <$> many (flag' SyncRefresh (long "refresh" <> short 'y' <> hidden <> help "Update the package database."))
         mods = cln <|> gps <|> inf <|> lst <|> sch <|> upg <|> dnl
-        cln  = flag' SyncClean (long "clean" <> short 'c' <> help "Remove old packages from the cache.")
-        gps  = SyncGroups <$> (flag' () (long "groups" <> short 'g' <> help "View members of a package group.") *> someArgs)
-        inf  = SyncInfo <$> (flag' () (long "info" <> short 'i' <> help "View package information.") *> someArgs)
-        lst  = SyncList <$> strOption (long "list" <> short 'l' <> metavar "REPO" <> help "List the packages in a REPO.")
-        sch  = SyncSearch <$> strOption (long "search" <> short 's' <> metavar "REGEX" <> help "Search the official package repos.")
-        upg  = SyncUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> help "Upgrade installed packages.") *> manyArgs)
-        dnl  = SyncDownload <$> (flag' () (long "downloadonly" <> short 'w' <> help "Download package tarballs.") *> someArgs)
+        cln  = flag' SyncClean (long "clean" <> short 'c' <> hidden <> help "Remove old packages from the cache.")
+        gps  = SyncGroups <$> (flag' () (long "groups" <> short 'g' <> hidden <> help "View members of a package group.") *> someArgs')
+        inf  = SyncInfo <$> (flag' () (long "info" <> short 'i' <> hidden <> help "View package information.") *> someArgs')
+        lst  = SyncList <$> strOption (long "list" <> short 'l' <> metavar "REPO" <> hidden <> help "List the packages in a REPO.")
+        sch  = SyncSearch <$> strOption (long "search" <> short 's' <> metavar "REGEX" <> hidden <> help "Search the official package repos.")
+        upg  = SyncUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade installed packages.") *> manyArgs')
+        dnl  = SyncDownload <$> (flag' () (long "downloadonly" <> short 'w' <> hidden <> help "Download package tarballs.") *> someArgs')
 
 
 misc :: Parser (S.Set MiscOp)
 misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> clr <|> gpg <|> hd <|> con <|> dbo <|> nop <|> nos <|> pf <|> nod <|> prt <|> asi <|> igg)
-  where ar  = MiscArch    <$> strOption (long "arch" <> metavar "ARCH" <> help "Use an alternate architecture.")
-        dbp = MiscDBPath  <$> strOption (long "dbpath" <> short 'b' <> metavar "PATH" <> help "Use an alternate database location.")
-        roo = MiscRoot    <$> strOption (long "root" <> short 'r' <> metavar "PATH" <> help "Use an alternate installation root.")
-        ver = flag' MiscVerbose (long "verbose" <> short 'v' <> help "Be more verbose.")
-        clr = MiscColor   <$> strOption (long "color" <> metavar "WHEN" <> help "Colourize the output.")
-        gpg = MiscGpgDir  <$> strOption (long "gpgdir" <> metavar "PATH" <> help "Use an alternate GnuGPG directory.")
-        hd  = MiscHookDir <$> strOption (long "hookdir" <> metavar "PATH" <> help "Use an alternate hook directory.")
-        con = flag' MiscConfirm (long "confirm" <> help "Always ask for confirmation.")
-        dbo = flag' MiscDBOnly (long "dbonly" <> help "Only modify database entries, not package files.")
-        nop = flag' MiscNoProgress (long "noprogressbar" <> help "Don't show a progress bar when downloading.")
-        nos = flag' MiscNoScriptlet (long "noscriptlet" <> help "Don't run available install scriptlets.")
-        pf  = MiscPrintFormat <$> strOption (long "print-format" <> metavar "STRING" <> help "Specify how targets should be printed.")
-        nod = flag' MiscNoDeps (long "nodeps" <> short 'd' <> help "Skip dependency version checks.")
-        prt = flag' MiscPrint (long "print" <> short 'p' <> help "Print the targets instead of performing the operation.")
-        asi = MiscAssumeInstalled <$> strOption (long "assume-installed" <> metavar "<package=version>" <> help "Add a virtual package to satisfy dependencies.")
+  where ar  = MiscArch    <$> strOption (long "arch" <> metavar "ARCH" <> hidden <> help "Use an alternate architecture.")
+        dbp = MiscDBPath  <$> strOption (long "dbpath" <> short 'b' <> metavar "PATH" <> hidden <> help "Use an alternate database location.")
+        roo = MiscRoot    <$> strOption (long "root" <> short 'r' <> metavar "PATH" <> hidden <> help "Use an alternate installation root.")
+        ver = flag' MiscVerbose (long "verbose" <> short 'v' <> hidden <> help "Be more verbose.")
+        clr = MiscColor   <$> strOption (long "color" <> metavar "WHEN" <> hidden <> help "Colourize the output.")
+        gpg = MiscGpgDir  <$> strOption (long "gpgdir" <> metavar "PATH" <> hidden <> help "Use an alternate GnuGPG directory.")
+        hd  = MiscHookDir <$> strOption (long "hookdir" <> metavar "PATH" <> hidden <> help "Use an alternate hook directory.")
+        con = flag' MiscConfirm (long "confirm" <> hidden <> help "Always ask for confirmation.")
+        dbo = flag' MiscDBOnly (long "dbonly" <> hidden <> help "Only modify database entries, not package files.")
+        nop = flag' MiscNoProgress (long "noprogressbar" <> hidden <> help "Don't show a progress bar when downloading.")
+        nos = flag' MiscNoScriptlet (long "noscriptlet" <> hidden <> help "Don't run available install scriptlets.")
+        pf  = MiscPrintFormat <$> strOption (long "print-format" <> metavar "STRING" <> hidden <> help "Specify how targets should be printed.")
+        nod = flag' MiscNoDeps (long "nodeps" <> short 'd' <> hidden <> help "Skip dependency version checks.")
+        prt = flag' MiscPrint (long "print" <> short 'p' <> hidden <> help "Print the targets instead of performing the operation.")
+        asi = MiscAssumeInstalled <$> strOption (long "assume-installed" <> metavar "<package=version>" <> hidden <> help "Add a virtual package to satisfy dependencies.")
         igg = MiscIgnoreGroup . S.fromList . T.split (== ',') <$>
-          strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> help "Ignore given package groups.")
+          strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given package groups.")
 
 testdeps :: Parser PacmanOp
 testdeps = bigT *> (TestDeps <$> someArgs <*> misc)
@@ -433,18 +415,26 @@ testdeps = bigT *> (TestDeps <$> someArgs <*> misc)
 upgrades :: Parser PacmanOp
 upgrades = bigU *> (Upgrade <$> optional mods <*> someArgs <*> misc)
   where bigU = flag' () (long "upgrade" <> short 'U' <> help "Install given package files.")
-        mods = flag' UpgradeAsDeps (long "asdeps") <|> flag' UpgradeAsExplicit (long "asexplicit")
+        mods = flag' UpgradeAsDeps (long "asdeps" <> hidden) <|> flag' UpgradeAsExplicit (long "asexplicit" <> hidden)
 
 -- | One or more arguments.
 someArgs :: Parser (S.Set T.Text)
 someArgs = S.fromList <$> some (argument str (metavar "PACKAGES"))
 
+-- | Same as `someArgs`, but the help message "brief display" won't show PACKAGES.
+someArgs' :: Parser (S.Set T.Text)
+someArgs' = S.fromList <$> some (argument str (metavar "PACKAGES" <> hidden))
+
 -- | Zero or more arguments.
 manyArgs :: Parser (S.Set T.Text)
 manyArgs = S.fromList <$> many (argument str (metavar "PACKAGES"))
 
+-- | Zero or more arguments.
+manyArgs' :: Parser (S.Set T.Text)
+manyArgs' = S.fromList <$> many (argument str (metavar "PACKAGES" <> hidden))
+
 language :: Parser Language
-language = foldr1 (<|>) $ map (\(f, v) -> flag' v (long f)) langs
+language = foldr1 (<|>) $ map (\(f, v) -> flag' v (long f <> hidden)) langs
   where langs = [ ( "japanese",   Japanese ),   ( "日本語",     Japanese )
                 , ( "polish",     Polish ),     ( "polski",    Polish )
                 , ( "croatian",   Croatian ),   ( "hrvatski",  Croatian )
