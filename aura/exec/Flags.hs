@@ -231,55 +231,42 @@ program = Program
 aursync :: Parser AuraOp
 aursync = bigA *> (AurSync <$> (fmap Right someArgs <|> fmap Left mods))
   where bigA = flag' () (long "aursync" <> short 'A' <> help "Install packages from the AUR.")
-        mods = deps <|> ainfo <|> pkgbuild <|> search <|> upgrade <|> tarball
-        deps = AurDeps <$>
-          (flag' () (long "deps" <> short 'd' <> hidden <> help "View dependencies of an AUR package.") *> someArgs')
-        ainfo = AurInfo <$>
-          (flag' () (long "info" <> short 'i' <> hidden <> help "View AUR package information.") *> someArgs')
-        pkgbuild = AurPkgbuild <$>
-          (flag' () (long "pkgbuild" <> short 'p' <> hidden <> help "View an AUR package's PKGBUILD file.") *> someArgs')
-        search = AurSearch <$>
-          strOption (long "search" <> short 's' <> metavar "STRING" <> hidden <> help "Search the AUR via a search string.")
-        upgrade = AurUpgrade <$>
-          (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade all installed AUR packages.") *> manyArgs')
-        tarball = AurTarball <$>
-          (flag' () (long "downloadonly" <> short 'w' <> hidden <> help "Download a package's source tarball.") *> someArgs')
+        mods     = deps <|> ainfo <|> pkgbuild <|> search <|> upgrade <|> tarball
+        deps     = AurDeps <$> (flag' () (long "deps" <> short 'd' <> hidden <> help "View dependencies of an AUR package.") *> someArgs')
+        ainfo    = AurInfo <$> (flag' () (long "info" <> short 'i' <> hidden <> help "View AUR package information.") *> someArgs')
+        pkgbuild = AurPkgbuild <$> (flag' () (long "pkgbuild" <> short 'p' <> hidden <> help "View an AUR package's PKGBUILD file.") *> someArgs')
+        search   = AurSearch <$> strOption (long "search" <> short 's' <> metavar "STRING" <> hidden <> help "Search the AUR via a search string.")
+        upgrade  = AurUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade all installed AUR packages.") *> manyArgs')
+        tarball  = AurTarball <$> (flag' () (long "downloadonly" <> short 'w' <> hidden <> help "Download a package's source tarball.") *> someArgs')
 
 backups :: Parser AuraOp
 backups = bigB *> (Backup <$> optional mods)
   where bigB = flag' () (long "save" <> short 'B' <> help "Save a package state.")
         mods = clean <|> restore
-        clean = BackupClean <$>
-          option auto (long "clean" <> short 'c' <> metavar "N" <> hidden <> help "Keep the most recent N states, delete the rest.")
+        clean = BackupClean <$> option auto (long "clean" <> short 'c' <> metavar "N" <> hidden <> help "Keep the most recent N states, delete the rest.")
         restore = flag' BackupRestore (long "restore" <> short 'r' <> hidden <> help "Restore a previous package state.")
 
 cache :: Parser AuraOp
 cache = bigC *> (Cache <$> (fmap Left mods <|> fmap Right someArgs))
   where bigC = flag' () (long "downgrade" <> short 'C' <> help "Interact with the package cache.")
         mods = backup <|> clean <|> search
-        backup = CacheBackup <$>
-          strOption (long "backup" <> metavar "PATH" <> help "Backup the package cache to a given directory." <> hidden)
-        clean  = CacheClean <$>
-          option auto (long "clean" <> short 'c' <> metavar "N" <> help "Save the most recent N versions of a package in the cache, deleting the rest." <> hidden)
-        search = CacheSearch <$>
-          strOption (long "search" <> short 's' <> metavar "STRING" <> help "Search the package cache via a search string." <> hidden)
+        backup = CacheBackup <$> strOption (long "backup" <> metavar "PATH" <> help "Backup the package cache to a given directory." <> hidden)
+        clean  = CacheClean  <$> option auto (long "clean" <> short 'c' <> metavar "N" <> help "Save the most recent N versions of a package in the cache, deleting the rest." <> hidden)
+        search = CacheSearch <$> strOption (long "search" <> short 's' <> metavar "STRING" <> help "Search the package cache via a search string." <> hidden)
 
 log :: Parser AuraOp
 log = bigL *> (Log <$> optional mods)
   where bigL = flag' () (long "viewlog" <> short 'L' <> help "View the Pacman log.")
-        mods = inf <|> search
-        inf  = LogInfo <$>
-          (flag' () (long "info" <> short 'i' <> help "Display the installation history for given packages." <> hidden) *> someArgs')
-        search = LogSearch <$>
-          strOption (long "search" <> short 's' <> metavar "STRING" <> help "Search the Pacman log via a search string." <> hidden)
+        mods = inf <|> sch
+        inf  = LogInfo <$> (flag' () (long "info" <> short 'i' <> help "Display the installation history for given packages." <> hidden) *> someArgs')
+        sch  = LogSearch <$> strOption (long "search" <> short 's' <> metavar "STRING" <> help "Search the Pacman log via a search string." <> hidden)
 
 orphans :: Parser AuraOp
 orphans = bigO *> (Orphans <$> optional mods)
   where bigO    = flag' () (long "orphans" <> short 'O' <> help "Display all orphan packages.")
         mods    = abandon <|> adopt
         abandon = flag' OrphanAbandon (long "abandon" <> short 'j' <> hidden <> help "Uninstall all orphan packages.")
-        adopt   = OrphanAdopt <$>
-          (flag' () (long "adopt" <> hidden <> help "Mark some packages' install reason as 'Explicit'.") *> someArgs')
+        adopt   = OrphanAdopt <$> (flag' () (long "adopt" <> hidden <> help "Mark some packages' install reason as 'Explicit'.") *> someArgs')
 
 version :: Parser AuraOp
 version = flag' Version (long "version" <> short 'V' <> help "Display Aura's version.")
