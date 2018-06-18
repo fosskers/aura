@@ -6,13 +6,13 @@ import           Aura.Packages.Repository
 import           Aura.Pacman
 import           Aura.Types
 import           BasePrelude
+import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Versions
 import           Test.Tasty
 import           Test.Tasty.HUnit
 import           Text.Megaparsec
-import           Text.Megaparsec.Error (parseErrorPretty)
 
 ---
 
@@ -44,8 +44,9 @@ suite conf = testGroup "Unit Tests"
     ]
   , testGroup "Aura.Pacman"
     [ testCase "Parsing pacman.conf" $ do
-        let r = parse config "pacman.conf" conf
-        print $ bimap parseErrorPretty show r
+        let p = parse config "pacman.conf" conf
+            r = either (const Nothing) (\(Config c) -> Just c) p >>= M.lookup "HoldPkg"
+        r @?= Just ["pacman", "glibc"]
     ]
   ]
 
