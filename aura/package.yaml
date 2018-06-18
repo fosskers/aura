@@ -68,6 +68,7 @@ tests:
       - -with-rtsopts=-N
     dependencies:
       - aura
+      - megaparsec >= 6.4 && < 6.6
       - tasty >= 0.11 && < 2.0
       - tasty-hunit >= 0.9 && < 0.11
 

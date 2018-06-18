@@ -37,6 +37,7 @@ module Aura.Pacman
   , getCachePath
   , getLogFilePath
     -- * Pacman Config
+  , Config(..), config
   , getPacmanConf
   , getIgnoredPkgs
     -- * Misc.
@@ -49,7 +50,7 @@ import           Aura.Cache
 import           Aura.Languages
 import           Aura.Monad.Aura
 import           Aura.Types
-import           BasePrelude hiding (some)
+import           BasePrelude hiding (some, try)
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified Data.Text as T
@@ -67,15 +68,18 @@ import           Utilities
 newtype Config = Config (M.Map T.Text [T.Text]) deriving (Show)
 
 config :: Parsec Void T.Text Config
-config = Config . M.fromList <$> (garbage *> some line <* eof)
+config = Config . M.fromList . rights <$> (garbage *> some (fmap Right (try pair) <|> fmap Left single) <* eof)
 
-line :: Parsec Void T.Text (T.Text, [T.Text])
-line = L.lexeme garbage $ do
+single :: Parsec Void T.Text ()
+single = L.lexeme garbage . void $ manyTill letterChar newline
+
+pair :: Parsec Void T.Text (T.Text, [T.Text])
+pair = L.lexeme garbage $ do
   name <- takeWhile1P Nothing (/= ' ')
   space
   char '='
   space
-  rest <- T.words <$> takeRest
+  rest <- T.words <$> takeWhile1P Nothing (/= '\n')
   pure (name, rest)
 
 -- | Using `[]` as block comment markers is a trick to skip conf file "section" lines.
