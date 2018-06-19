@@ -39,6 +39,7 @@ import           BasePrelude hiding (FilePath)
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified Data.Text as T
+import           Filesystem.Path (filename)
 import           Shelly
 
 ---
@@ -55,7 +56,7 @@ cache :: [PackagePath] -> Cache
 cache = Cache . M.fromList . mapMaybe (\p -> (,p) <$> simplepkg p)
 
 cacheContents :: FilePath -> Sh Cache
-cacheContents = fmap (cache . map PackagePath) . lsT
+cacheContents = fmap (cache . map (PackagePath . toTextIgnore . filename)) . ls
 
 pkgsInCache :: Settings -> S.Set T.Text -> Sh (S.Set T.Text)
 pkgsInCache ss ps = do
