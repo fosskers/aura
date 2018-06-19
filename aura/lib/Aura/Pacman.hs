@@ -54,8 +54,8 @@ import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Shelly as Sh
-import           Shelly hiding (FilePath, cmd, run)
-import           Text.Megaparsec hiding (failure)
+import           Shelly hiding (FilePath, cmd)
+import           Text.Megaparsec
 import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 import           Utilities

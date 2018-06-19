@@ -59,7 +59,7 @@ installPkgFiles :: (Member (Reader Settings) r, Member (Error Failure) r, Member
 installPkgFiles _ []         = pure ()
 installPkgFiles asDeps files = do
   ask >>= send . shelly @IO . checkDBLock
-  rethrow . pacman $ ["-U"] <> maybe [] (:[]) asDeps <> files
+  rethrow . pacman $ ["-U"] <> maybeToList asDeps <> files
 
 -- | All building occurs within temp directories in the package cache,
 -- or in a location specified by the user with flags.

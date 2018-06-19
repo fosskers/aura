@@ -141,13 +141,12 @@ buildAndInstall (b:bs) = do
 -- | Display dependencies.
 displayPkgDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
   InstallOptions -> S.Set T.Text -> Eff r ()
-displayPkgDeps opts ps
-  | null ps = pure ()
-  | otherwise = do
-      ss   <- ask
-      bs   <- catMaybes <$> send (mapConcurrently (installLookup opts ss) $ toList ps)
-      pkgs <- depsToInstall (repository opts) bs
-      reportDeps (switch ss LowVerbosity) $ partitionPkgs pkgs
+displayPkgDeps opts ps =
+  unless (null ps) $ do
+    ss   <- ask
+    bs   <- catMaybes <$> send (mapConcurrently (installLookup opts ss) $ toList ps)
+    pkgs <- depsToInstall (repository opts) bs
+    reportDeps (switch ss LowVerbosity) $ partitionPkgs pkgs
   where reportDeps True  = send . uncurry reportListOfDeps
         reportDeps False = uncurry (reportPkgsToInstall $ label opts)
 

@@ -44,7 +44,7 @@ import           BasePrelude hiding (try)
 import           Data.Bitraversable
 import qualified Data.Text as T
 import           Data.Versions
-import           Text.Megaparsec hiding (failure)
+import           Text.Megaparsec
 import           Text.Megaparsec.Char
 
 ---

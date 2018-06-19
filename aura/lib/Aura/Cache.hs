@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ViewPatterns, TupleSections #-}
+{-# LANGUAGE TupleSections #-}
 
 -- A library for working with the package cache.
 
