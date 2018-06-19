@@ -59,7 +59,7 @@ hotEdit :: Settings -> Buildable -> Sh Buildable
 hotEdit ss b
   | not $ switch ss HotEdit = pure b
   | otherwise = do
-      ans <- optionalPrompt ss (hotEdit_1 $ baseNameOf b)
+      ans <- liftIO $ optionalPrompt ss (hotEdit_1 $ baseNameOf b)
       bool (pure b) f ans
         where f = withTmpDir $ \tmp -> do
                 cd tmp
@@ -70,7 +70,7 @@ hotEdit ss b
 customizepkg :: Settings -> Buildable -> Sh Buildable
 customizepkg ss b
   | not $ switch ss UseCustomizepkg = pure b
-  | otherwise = ifFile customizepkg' (scold . customizepkg_1 $ langOf ss) bin b
+  | otherwise = ifFile customizepkg' (liftIO . scold . customizepkg_1 $ langOf ss) bin b
   where bin = "/usr/bin/customizepkg"
 
 customizepkg' :: Buildable -> Sh Buildable

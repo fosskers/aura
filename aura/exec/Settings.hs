@@ -49,7 +49,7 @@ getSettings (Program _ co bc lng) = do
           let language   = checkLang lng environment
               buildUser' = buildUserOf bc <|> getTrueUser environment
           pure $ do
-            bu <- maybe (failure whoIsBuildUser_1) Right buildUser'
+            bu <- maybe (Left $ Failure whoIsBuildUser_1) Right buildUser'
             Right Settings { managerOf      = manager
                            , envOf          = environment
                            , langOf         = language

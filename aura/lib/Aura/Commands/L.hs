@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- Handles all `-L` operations
@@ -33,11 +33,12 @@ module Aura.Commands.L
 import           Aura.Colour.Text (yellow)
 import           Aura.Core (badReport)
 import           Aura.Languages
-import           Aura.Monad.Aura
 import           Aura.Pacman (defaultLogFile)
 import           Aura.Settings
 import           Aura.Utils (entrify)
 import           BasePrelude hiding (FilePath)
+import           Control.Monad.Freer
+import           Control.Monad.Freer.Reader
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -51,10 +52,10 @@ newtype Log = Log [T.Text]
 
 data LogEntry = LogEntry { _pkgName :: T.Text, _firstInstall :: T.Text, _upgrades :: Word, _recent :: [T.Text] }
 
-viewLogFile :: Aura ()
+viewLogFile :: (Member (Reader Settings) r, Member IO r) => Eff r ()
 viewLogFile = do
   pth <- asks (fromMaybe defaultLogFile . logPathOf . commonConfigOf)
-  void . shelly . loudSh $ run_ "less" [toTextIgnore pth]
+  void . send . shelly @IO . loudSh $ run_ "less" [toTextIgnore pth]
 
 -- Very similar to `searchCache`. But is this worth generalizing?
 searchLogFile :: Settings -> T.Text -> IO ()
@@ -63,16 +64,16 @@ searchLogFile ss input = do
   logFile <- T.lines <$> shelly (readfile pth)
   traverse_ T.putStrLn $ searchLines (Regex input) logFile
 
-logInfoOnPkg :: S.Set T.Text -> Aura ()
+logInfoOnPkg :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r ()
 logInfoOnPkg pkgs
   | null pkgs = pure ()
   | otherwise = do
       ss <- ask
       let pth = fromMaybe defaultLogFile . logPathOf $ commonConfigOf ss
-      logFile <- fmap (Log . T.lines) . shelly $ readfile pth
+      logFile <- fmap (Log . T.lines) . send . shelly @IO $ readfile pth
       let (bads, goods) = partitionEithers . map (logLookup logFile) $ toList pkgs
       reportNotInLog bads
-      liftIO . traverse_ T.putStrLn $ map (renderEntry ss) goods
+      send . traverse_ T.putStrLn $ map (renderEntry ss) goods
 
 logLookup :: Log -> T.Text -> Either T.Text LogEntry
 logLookup (Log lns) p = case matches of
@@ -92,5 +93,5 @@ renderEntry ss (LogEntry pn fi us rs) = entrify ss fields entries <> "\n" <> rec
 ------------
 -- REPORTING
 ------------
-reportNotInLog :: [T.Text] -> Aura ()
+reportNotInLog :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r ()
 reportNotInLog = badReport reportNotInLog_1

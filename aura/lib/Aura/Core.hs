@@ -1,5 +1,5 @@
-{-# LANGUAGE OverloadedStrings, Rank2Types #-}
-{-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE FlexibleContexts, MonoLocalBinds, TypeApplications #-}
+{-# LANGUAGE MultiWayIf, OverloadedStrings #-}
 
 {-
 
@@ -26,12 +26,14 @@ module Aura.Core where
 
 import           Aura.Colour.Text
 import           Aura.Languages
-import           Aura.Monad.Aura
 import           Aura.Pacman
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding ((<>))
+import           Control.Monad.Freer
+import           Control.Monad.Freer.Error
+import           Control.Monad.Freer.Reader
 import           Data.Semigroup
 import qualified Data.Set as S
 import qualified Data.Text as T
@@ -46,7 +48,7 @@ import           Utilities
 
 -- | A 'Repository' is a place where packages may be fetched from. Multiple
 -- repositories can be combined with the 'Data.Monoid' instance.
-newtype Repository = Repository { repoLookup :: forall m. MonadIO m => Settings -> T.Text -> m (Maybe Package) }
+newtype Repository = Repository { repoLookup :: Settings -> T.Text -> IO (Maybe Package) }
 
 instance Semigroup Repository where
   a <> b = Repository $ \ss p -> do
@@ -67,69 +69,72 @@ partitionPkgs = partitionEithers . fmap (toEither . pkgInstallTypeOf)
 -----------
 -- THE WORK
 -----------
+-- TODO Should this go somewhere else?
+rethrow :: (Member (Error a) r, Member IO r) => IO (Either a b) -> Eff r b
+rethrow = send >=> either throwError pure
+
 -- | Action won't be allowed unless user is root, or using sudo.
-sudo :: Aura a -> Aura (Either Failure a)
-sudo action =
-  asks (hasRootPriv . envOf) >>= bool (pure $ failure mustBeRoot_1) (Right <$> action)
+sudo :: (Member (Reader Settings) r, Member (Error Failure) r) => Eff r a -> Eff r a
+sudo action = asks (hasRootPriv . envOf) >>= bool (throwError $ Failure mustBeRoot_1) action
 
 -- | Stop the user if they are the true Root. Building as isn't allowed
 -- as of makepkg v4.2.
-trueRoot :: Aura a -> Aura (Either Failure a)
+trueRoot :: (Member (Reader Settings) r, Member (Error Failure) r) => Eff r a -> Eff r a
 trueRoot action = ask >>= \ss ->
   -- TODO Should be `(&&)` here? Double-check.
   if not (isTrueRoot $ envOf ss) || buildUserOf (buildConfigOf ss) /= Just (User "root")
-    then Right <$> action else pure $ failure trueRoot_3
+    then action else throwError $ Failure trueRoot_3
 
 -- | A list of non-prebuilt packages installed on the system.
 -- `-Qm` yields a list of sorted values.
-foreignPackages :: Aura (S.Set SimplePkg)
+foreignPackages :: IO (S.Set SimplePkg)
 foreignPackages = S.fromList . mapMaybe simplepkg' . T.lines <$> pacmanOutput ["-Qm"]
 
-orphans :: Aura [T.Text]
+orphans :: IO [T.Text]
 orphans = T.lines <$> pacmanOutput ["-Qqdt"]
 
-develPkgs :: Aura (S.Set T.Text)
+develPkgs :: IO (S.Set T.Text)
 develPkgs = S.filter isDevelPkg . S.map _spName <$> foreignPackages
   where isDevelPkg pkg = any (`T.isSuffixOf` pkg) suffixes
         suffixes = ["-git", "-hg", "-svn", "-darcs", "-cvs", "-bzr"]
 
 -- | Returns what it was given if the package is already installed.
 -- Reasoning: Using raw bools can be less expressive.
-isInstalled :: MonadIO m => T.Text -> m (Maybe T.Text)
+isInstalled :: T.Text -> IO (Maybe T.Text)
 isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", pkg]
 
-removePkgs :: [T.Text] -> Aura (Either Failure ())
-removePkgs []   = pure $ Right ()
+removePkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => [T.Text] -> Eff r ()
+removePkgs []   = pure ()
 removePkgs pkgs = do
   pacOpts <- asks (asFlag . commonConfigOf)
-  pacman $ ["-Rsu"] <> pkgs <> pacOpts
+  rethrow . pacman $ ["-Rsu"] <> pkgs <> pacOpts
 
 -- | True if a dependency is satisfied by an installed package.
-isSatisfied :: MonadIO m => Dep -> m Bool
+isSatisfied :: Dep -> IO Bool
 isSatisfied (Dep name ver) = T.null <$> pacmanOutput ["-T", name <> T.pack (show ver)]
 
 -- | Block further action until the database is free.
 checkDBLock :: Settings -> Sh ()
 checkDBLock ss = do
   locked <- test_f lockFile
-  when locked $ (warn . checkDBLock_1 $ langOf ss) *> liftIO getLine *> checkDBLock ss
+  when locked $ (liftIO . warn . checkDBLock_1 $ langOf ss) *> liftIO getLine *> checkDBLock ss
 
 -------
 -- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`
 -------
 
-renderColour :: Colouror -> (Language -> T.Text) -> Aura T.Text
-renderColour c msg = asks (c . msg . langOf)
+renderColour :: Settings -> Colouror -> (Language -> T.Text) -> T.Text
+renderColour ss c msg = c . msg $ langOf ss
 
-notify :: MonadIO m => T.Text -> m ()
+notify :: T.Text -> IO ()
 notify = putStrLnA green
 
-warn :: MonadIO m => T.Text -> m ()
+warn :: T.Text -> IO ()
 warn = putStrLnA yellow
 
-scold :: MonadIO m => T.Text -> m ()
+scold :: T.Text -> IO ()
 scold = putStrLnA red
 
-badReport :: (Language -> T.Text) -> [T.Text] -> Aura ()
+badReport :: (Member (Reader Settings) r, Member IO r) => (Language -> T.Text) -> [T.Text] -> Eff r ()
 badReport _ []     = pure ()
-badReport msg pkgs = ask >>= \ss -> printList red cyan (msg $ langOf ss) pkgs
+badReport msg pkgs = asks langOf >>= \lang -> send (printList @IO red cyan (msg lang) pkgs)

@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, MonoLocalBinds #-}
 
 -- Library for handling package dependencies and version conflicts.
 
@@ -28,12 +28,14 @@ module Aura.Dependencies ( resolveDeps ) where
 import           Aura.Conflicts
 import           Aura.Core
 import           Aura.Languages
-import           Aura.Monad.Aura
 import           Aura.Settings
 import           Aura.Types
 import           BasePrelude
 import           Control.Concurrent.Async
 import           Control.Concurrent.STM.TVar
+import           Control.Monad.Freer
+import           Control.Monad.Freer.Error
+import           Control.Monad.Freer.Reader
 import           Data.Graph
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
@@ -41,13 +43,14 @@ import           Utilities (tripleFst)
 
 ---
 
-resolveDeps :: Repository -> [Package] -> Aura (Either Failure [Package])
+resolveDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+  Repository -> [Package] -> Eff r [Package]
 resolveDeps repo ps = do
   ss <- ask
-  tv <- liftIO $ newTVarIO M.empty
-  de <- liftIO $ resolveDeps' ss tv repo ps
-  m  <- liftIO $ readTVarIO tv
-  pure . bool (failure $ missingPkg_2 de) (Right . sortInstall $ M.elems m) $ null de
+  tv <- send $ newTVarIO M.empty
+  de <- send $ resolveDeps' ss tv repo ps
+  m  <- send $ readTVarIO tv
+  bool (throwError . Failure $ missingPkg_2 de) (pure . sortInstall $ M.elems m) $ null de
 
 resolveDeps' :: Settings -> TVar (M.Map T.Text Package) -> Repository -> [Package] -> IO [DepError]
 resolveDeps' ss tv repo ps = concat <$> mapConcurrently f ps

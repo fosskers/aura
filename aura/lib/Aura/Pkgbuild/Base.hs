@@ -23,7 +23,6 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Pkgbuild.Base where
 
-import           Aura.Monad.Aura
 import           Aura.Pkgbuild.Editing
 import           Aura.Settings
 import           Aura.Types
@@ -48,7 +47,7 @@ pbCustomization ss = foldl (>=>) pure [customizepkg ss, hotEdit ss]
 -- REMINDER: This shouldn't be called concurrently. It could seriously mess
 -- up user interaction, and there probably aren't enough packages in the list to
 -- make the concurrent scheduling worth it.
-packageBuildable :: MonadIO m => Settings -> Buildable -> m Package
+packageBuildable :: Settings -> Buildable -> IO Package
 packageBuildable ss b = do
   b' <- shelly $ pbCustomization ss b
   pure Package { pkgNameOf        = baseNameOf b'

@@ -1,5 +1,5 @@
-{-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE MultiWayIf, OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts, MonoLocalBinds #-}
 
 -- An interface to `pacman`.
 -- Takes any pacman arguments and applies it to pacman through the shell.
@@ -48,15 +48,13 @@ module Aura.Pacman
 
 import           Aura.Cache
 import           Aura.Languages
-import           Aura.Monad.Aura
 import           Aura.Types
 import           BasePrelude hiding (some, try)
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Shelly as Sh
-import           Shelly hiding (FilePath, cmd)
-import           System.IO (hFlush, stdout)
+import           Shelly hiding (FilePath, cmd, run)
 import           Text.Megaparsec hiding (failure)
 import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
@@ -101,7 +99,7 @@ defaultLogFile = "/var/log/pacman.log"
 lockFile :: Sh.FilePath
 lockFile = "/var/lib/pacman/db.lck"
 
-getPacmanCmd :: MonadIO m => Environment -> Bool -> m T.Text
+getPacmanCmd :: Environment -> Bool -> IO T.Text
 getPacmanCmd env nopp =
   case M.lookup "PACMAN" env of
     Just cmd -> pure cmd
@@ -110,7 +108,7 @@ getPacmanCmd env nopp =
       if | powerPill && not nopp -> pure $ toTextIgnore powerPillCmd
          | otherwise -> pure defaultCmd
 
-getPacmanConf :: MonadIO m => m (Either Failure Config)
+getPacmanConf :: IO (Either Failure Config)
 getPacmanConf = shelly $ do
   file <- readfile pacmanConfFile
   pure . first (const (Failure confParsing_1)) $ parse config "pacman config" file
@@ -133,33 +131,29 @@ getLogFilePath (Config c) = case M.lookup "LogFile" c of
 ----------
 -- ACTIONS
 ----------
-pacman :: MonadIO m => [T.Text] -> m (Either Failure ())
+pacman :: [T.Text] -> IO (Either Failure ())
 pacman args = do
-  flush
-  shelly . errExit False $ do
-    runHandles "pacman" args [ InHandle Inherit
-                             , OutHandle Inherit
-                             , ErrorHandle Inherit ] n
-    code <- lastExitCode
-    pure . bool (failure pacmanFailure_1) (Right ()) $ code == 0
-    where flush   = liftIO $ hFlush stdout
-          n _ _ _ = pure ()
+  code <- shelly . errExit False $ do
+    runHandles "pacman" args [ InHandle Inherit, OutHandle Inherit, ErrorHandle Inherit ] n
+    lastExitCode
+  pure . bool (Left $ Failure pacmanFailure_1) (Right ()) $ code == 0
+  where n _ _ _ = pure ()
 
 -- | Run some `pacman` process, but only care about whether it succeeded.
-pacmanSuccess :: MonadIO m => [T.Text] -> m Bool
+pacmanSuccess :: [T.Text] -> IO Bool
 pacmanSuccess args = fmap success . shelly . quietSh $ run_ "pacman" args
     where success (ExitSuccess, _) = True
           success _ = False
 
 -- | Runs pacman silently and returns only the stdout.
-pacmanOutput :: MonadIO m => [T.Text] -> m T.Text
-pacmanOutput = fmap snd . shelly . quietSh . run "pacman"
+pacmanOutput :: [T.Text] -> IO T.Text
+pacmanOutput = fmap snd . shelly . quietSh . Sh.run "pacman"
 
-getPacmanHelpMsg :: MonadIO m => m [T.Text]
+getPacmanHelpMsg :: IO [T.Text]
 getPacmanHelpMsg = T.lines <$> pacmanOutput ["-h"]
 
 -- | Yields the lines given by `pacman -V` with the pacman image stripped.
-getVersionInfo :: MonadIO m => m [T.Text]
+getVersionInfo :: IO [T.Text]
 getVersionInfo = fmap (T.drop verMsgPad) . T.lines <$> pacmanOutput ["-V"]
 
 -- | The amount of whitespace before text in the lines given by `pacman -V`

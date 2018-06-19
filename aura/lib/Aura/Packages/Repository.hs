@@ -27,7 +27,6 @@ module Aura.Packages.Repository
   ) where
 
 import           Aura.Core
-import           Aura.Monad.Aura
 import           Aura.Pacman (pacmanOutput)
 import           Aura.Types
 import           BasePrelude hiding (try)
@@ -54,7 +53,7 @@ packageRepo name ver = Package
 
 -- | If given a virtual package, try to find a real package to install.
 -- Functions like this are why we need libalpm.
-resolveName :: MonadIO m => T.Text -> m T.Text
+resolveName :: T.Text -> IO T.Text
 resolveName name = do
   provs <- T.lines <$> pacmanOutput ["-Ssq", "^" <> name <> "$"]
   chooseProvider name provs
@@ -66,7 +65,7 @@ chooseProvider _    [p]       = pure p
 chooseProvider _    ps@(p:_)  = fromMaybe p . listToMaybe . catMaybes <$> liftIO (mapConcurrently isInstalled ps)
 
 -- | The most recent version of a package, if it exists in the respositories.
-mostRecentVersion :: MonadIO m => T.Text -> m (Maybe Versioning)
+mostRecentVersion :: T.Text -> IO (Maybe Versioning)
 mostRecentVersion s = extractVersion <$> pacmanOutput ["-Si", s]
 
 extractVersion :: T.Text -> Maybe Versioning

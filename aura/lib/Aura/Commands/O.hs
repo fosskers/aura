@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts, MonoLocalBinds #-}
 
 -- Handles all `-O` operations
 
@@ -25,19 +26,22 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Commands.O where
 
-import           Aura.Core (orphans, sudo)
-import           Aura.Monad.Aura
+import           Aura.Core (orphans, sudo, rethrow)
 import           Aura.Pacman (pacman)
+import           Aura.Settings (Settings)
 import           Aura.Types
 import           BasePrelude
+import           Control.Monad.Freer
+import           Control.Monad.Freer.Error
+import           Control.Monad.Freer.Reader
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
 ---
 
-displayOrphans :: Aura (Either Failure ())
-displayOrphans = orphans >>= fmap Right . liftIO . traverse_ T.putStrLn
+displayOrphans :: IO ()
+displayOrphans = orphans >>= traverse_ T.putStrLn
 
-adoptPkg :: S.Set T.Text -> Aura (Either Failure ())
-adoptPkg pkgs = fmap join . sudo . pacman $ ["-D", "--asexplicit"] <> toList pkgs
+adoptPkg :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set T.Text -> Eff r ()
+adoptPkg pkgs = sudo . rethrow . pacman $ ["-D", "--asexplicit"] <> toList pkgs

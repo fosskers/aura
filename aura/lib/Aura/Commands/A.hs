@@ -1,6 +1,5 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ViewPatterns, MultiWayIf #-}
+{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
+{-# LANGUAGE ViewPatterns, MultiWayIf, OverloadedStrings #-}
 
 -- | Handles all `-A` operations
 
@@ -39,7 +38,6 @@ import           Aura.Colour.Text
 import           Aura.Core
 import qualified Aura.Install as I
 import           Aura.Languages
-import           Aura.Monad.Aura
 import           Aura.Packages.AUR
 import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pkgbuild.Fetch
@@ -47,6 +45,9 @@ import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding ((<>))
+import           Control.Monad.Freer
+import           Control.Monad.Freer.Error
+import           Control.Monad.Freer.Reader
 import           Data.Semigroup ((<>))
 import qualified Data.Set as S
 import qualified Data.Text as T
@@ -62,55 +63,55 @@ installOptions = I.InstallOptions { I.label         = "AUR"
                                   , I.installLookup = aurLookup
                                   , I.repository    = pacmanRepo <> aurRepo }
 
-install :: S.Set T.Text -> Aura (Either Failure ())
+install :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set T.Text -> Eff r ()
 install = I.install installOptions
 
-upgradeAURPkgs :: S.Set T.Text -> Aura (Either Failure ())
+upgradeAURPkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set T.Text -> Eff r ()
 upgradeAURPkgs pkgs = do
   ss <- ask
   let !ignores     = map Just . toList . ignoredPkgsOf $ commonConfigOf ss
       notIgnored p = fmap fst (splitNameAndVer p) `notElem` ignores
       lang         = langOf ss
-  notify $ upgradeAURPkgs_1 lang
-  foreignPkgs <- S.filter (notIgnored . _spName) <$> foreignPackages
+  send . notify $ upgradeAURPkgs_1 lang
+  foreignPkgs <- S.filter (notIgnored . _spName) <$> send foreignPackages
   toUpgrade   <- possibleUpdates foreignPkgs
   auraFirst   <- auraCheck $ map (aurNameOf . fst) toUpgrade
   if | auraFirst -> auraUpgrade
      | otherwise -> do
          devel <- develPkgCheck
-         notify $ upgradeAURPkgs_2 lang
-         if | null toUpgrade && null devel -> warn $ upgradeAURPkgs_3 lang
+         send . notify $ upgradeAURPkgs_2 lang
+         if | null toUpgrade && null devel -> send . warn $ upgradeAURPkgs_3 lang
             | otherwise -> reportPkgsToUpgrade $ map prettify toUpgrade <> toList devel
          install $ (S.fromList $ map (aurNameOf . fst) toUpgrade) <> pkgs <> devel
            where prettify (p, v) = aurNameOf p <> " : " <> prettyV v <> " => " <> aurVersionOf p
 -- TODO: Use `printf` with `prettify` to line up the colons.
 
-possibleUpdates :: S.Set SimplePkg -> Aura [(AurInfo, Versioning)]
+possibleUpdates :: (Member (Reader Settings) r, Member IO r) => S.Set SimplePkg -> Eff r [(AurInfo, Versioning)]
 possibleUpdates (toList -> pkgs) = do
   aurInfos <- aurInfo $ map _spName pkgs
   let !names  = map aurNameOf aurInfos
       aurPkgs = filter (\(SimplePkg n _) -> n `elem` names) pkgs
   pure . filter isntMostRecent . zip aurInfos $ map _spVersion aurPkgs
 
-auraCheck :: [T.Text] -> Aura Bool
+auraCheck :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r Bool
 auraCheck toUpgrade = if "aura" `elem` toUpgrade
-                         then ask >>= \ss -> optionalPrompt ss auraCheck_1
+                         then ask >>= \ss -> send (optionalPrompt @IO ss auraCheck_1)
                          else pure False
 
-auraUpgrade :: Aura (Either Failure ())
+auraUpgrade :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Eff r ()
 auraUpgrade = install $ S.singleton "aura"
 
-develPkgCheck :: Aura (S.Set T.Text)
+develPkgCheck :: (Member (Reader Settings) r, Member IO r) => Eff r (S.Set T.Text)
 develPkgCheck = ask >>= \ss ->
-  if switch ss RebuildDevel then develPkgs else pure S.empty
+  if switch ss RebuildDevel then send develPkgs else pure S.empty
 
-aurPkgInfo :: S.Set T.Text -> Aura ()
+aurPkgInfo :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r ()
 aurPkgInfo = aurInfo . toList >=> traverse_ displayAurPkgInfo
 
 -- By this point, the Package definitely exists, so we can assume its
 -- PKGBUILD exists on the AUR servers as well.
-displayAurPkgInfo :: AurInfo -> Aura ()
-displayAurPkgInfo ai = ask >>= \ss -> liftIO . T.putStrLn $ renderAurPkgInfo ss ai <> "\n"
+displayAurPkgInfo :: (Member (Reader Settings) r, Member IO r) => AurInfo -> Eff r ()
+displayAurPkgInfo ai = ask >>= \ss -> send . T.putStrLn $ renderAurPkgInfo ss ai <> "\n"
 
 renderAurPkgInfo :: Settings -> AurInfo -> T.Text
 renderAurPkgInfo ss ai = entrify ss fields entries
@@ -129,17 +130,17 @@ renderAurPkgInfo ss ai = entrify ss fields entries
                     , yellow . T.pack . printf "%0.2f" $ popularityOf ai
                     , fromMaybe "(null)" $ aurDescriptionOf ai ]
 
-aurPkgSearch :: T.Text -> Aura ()
+aurPkgSearch :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r ()
 aurPkgSearch regex = do
   ss <- ask
-  db <- S.map _spName <$> foreignPackages
+  db <- S.map _spName <$> send foreignPackages
   let t = case truncationOf $ buildConfigOf ss of  -- Can't this go anywhere else?
             None   -> id
             Head n -> take n
             Tail n -> reverse . take n . reverse
   results <- fmap (\x -> (x, aurNameOf x `S.member` db)) . t
             <$> aurSearch regex
-  traverse_ (liftIO . T.putStrLn . renderSearch ss regex) results
+  send $ traverse_ (T.putStrLn . renderSearch ss regex) results
 
 renderSearch :: Settings -> T.Text -> (AurInfo, Bool) -> T.Text
 renderSearch ss r (i, e) = searchResult
@@ -157,24 +158,24 @@ renderSearch ss r (i, e) = searchResult
             Just _  -> red   $ aurVersionOf i
             Nothing -> green $ aurVersionOf i
 
-displayPkgDeps :: S.Set T.Text -> Aura (Either Failure ())
+displayPkgDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set T.Text -> Eff r ()
 displayPkgDeps = I.displayPkgDeps installOptions
 
-downloadTarballs :: S.Set T.Text -> Aura ()
+downloadTarballs :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r ()
 downloadTarballs pkgs = do
-  currDir <- T.unpack . toTextIgnore <$> shelly pwd
+  currDir <- T.unpack . toTextIgnore <$> send (shelly @IO pwd)
   traverse_ (downloadTBall currDir) pkgs
     where downloadTBall path pkg = whenM (isAurPackage pkg) $ do
               manager <- asks managerOf
               lang    <- asks langOf
-              notify $ downloadTarballs_1 pkg lang
-              void . liftIO $ sourceTarball manager path pkg
+              send . notify $ downloadTarballs_1 pkg lang
+              void . send $ sourceTarball manager path pkg
 
-displayPkgbuild :: S.Set T.Text -> Aura ()
+displayPkgbuild :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r ()
 displayPkgbuild ps = do
   man <- asks managerOf
-  pbs <- catMaybes <$> traverse (pkgbuild man . T.unpack) (toList ps)
-  traverse_ (liftIO . T.putStrLn) $ intersperse line pbs
+  pbs <- catMaybes <$> traverse (send . pkgbuild @IO man . T.unpack) (toList ps)
+  send . traverse_ T.putStrLn $ intersperse line pbs
   where line = yellow "\n#========== NEXT PKGBUILD ==========#\n"
 
 isntMostRecent :: (AurInfo, Versioning) -> Bool
@@ -184,6 +185,7 @@ isntMostRecent (ai, v) = trueVer > Just v
 ------------
 -- REPORTING
 ------------
-reportPkgsToUpgrade :: [T.Text] -> Aura ()
-reportPkgsToUpgrade pkgs = asks langOf >>= \lang ->
-  printList green cyan (reportPkgsToUpgrade_1 lang) pkgs
+reportPkgsToUpgrade :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r ()
+reportPkgsToUpgrade pkgs = do
+  lang <- asks langOf
+  send $ printList @IO green cyan (reportPkgsToUpgrade_1 lang) pkgs

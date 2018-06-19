@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DataKinds, FlexibleContexts, MonoLocalBinds #-}
 
 {-
 
@@ -41,11 +42,13 @@ import           Aura.Commands.O as O
 import           Aura.Core
 import           Aura.Languages
 import           Aura.Logo
-import           Aura.Monad.Aura
 import           Aura.Pacman
 import           Aura.Settings
 import           Aura.Types
 import           BasePrelude hiding (Version)
+import           Control.Monad.Freer
+import           Control.Monad.Freer.Error
+import           Control.Monad.Freer.Reader
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Flags
@@ -68,13 +71,13 @@ main = do
     Right ss -> execute ss options >>= exit
 
 execute :: Settings -> Program -> IO (Either T.Text ())
-execute ss p = first (($ langOf ss) . _failure) <$> runAura (executeOpts p) ss
+execute ss p = first (($ langOf ss) . _failure) <$> (runM . runReader ss . runError $ executeOpts p)
 
 exit :: Either T.Text () -> IO a
 exit (Left e)  = scold e *> exitFailure
 exit (Right _) = exitSuccess
 
-executeOpts :: Program -> Aura (Either Failure ())
+executeOpts :: Program -> Eff '[Error Failure, Reader Settings, IO] ()
 executeOpts (Program ops _ _ _) = do
   ss <- ask
   when (shared ss Debug) $ do
@@ -82,48 +85,48 @@ executeOpts (Program ops _ _ _) = do
     pPrintNoColor (buildConfigOf ss)
     pPrintNoColor (commonConfigOf ss)
   case ops of
-    Left o -> pacman $ asFlag o ++ asFlag (commonConfigOf ss)
+    Left o -> rethrow . pacman $ asFlag o ++ asFlag (commonConfigOf ss)
     Right (AurSync o) ->
       case o of
-        Right ps              -> fmap (join . join) . trueRoot . sudo $ A.install ps
+        Right ps              -> trueRoot . sudo $ A.install ps
         Left (AurDeps ps)     -> A.displayPkgDeps ps
-        Left (AurInfo ps)     -> Right <$> A.aurPkgInfo ps
-        Left (AurPkgbuild ps) -> Right <$> A.displayPkgbuild ps
-        Left (AurSearch s)    -> Right <$> A.aurPkgSearch s
-        Left (AurUpgrade ps)  -> fmap (join . join) . trueRoot . sudo $ A.upgradeAURPkgs ps
-        Left (AurTarball ps)  -> Right <$> A.downloadTarballs ps
+        Left (AurInfo ps)     -> A.aurPkgInfo ps
+        Left (AurPkgbuild ps) -> A.displayPkgbuild ps
+        Left (AurSearch s)    -> A.aurPkgSearch s
+        Left (AurUpgrade ps)  -> trueRoot . sudo $ A.upgradeAURPkgs ps
+        Left (AurTarball ps)  -> A.downloadTarballs ps
     Right (Backup o) ->
       case o of
         Nothing              -> sudo B.saveState
-        Just (BackupClean n) -> fmap join . sudo $ B.cleanStates n
-        Just BackupRestore   -> join <$> sudo B.restoreState
+        Just (BackupClean n) -> sudo $ B.cleanStates n
+        Just BackupRestore   -> sudo B.restoreState
     Right (Cache o) ->
       case o of
-        Right ps               -> fmap Right . liftIO $ traverse_ T.putStrLn ps
-        Left (CacheSearch s)   -> Right <$> C.searchCache s
-        Left (CacheClean n)    -> fmap join . sudo $ C.cleanCache n
-        Left (CacheBackup pth) -> fmap join . sudo $ C.backupCache pth
+        Right ps               -> send $ traverse_ T.putStrLn ps -- TODO what is this?
+        Left (CacheSearch s)   -> C.searchCache s
+        Left (CacheClean n)    -> sudo $ C.cleanCache n
+        Left (CacheBackup pth) -> sudo $ C.backupCache pth
     Right (Log o) ->
       case o of
-        Nothing            -> Right <$> L.viewLogFile
-        Just (LogInfo ps)  -> Right <$> L.logInfoOnPkg ps
-        Just (LogSearch s) -> ask >>= fmap Right . liftIO . flip L.searchLogFile s
+        Nothing            -> L.viewLogFile
+        Just (LogInfo ps)  -> L.logInfoOnPkg ps
+        Just (LogSearch s) -> ask >>= send . flip L.searchLogFile s
     Right (Orphans o) ->
       case o of
-        Nothing               -> O.displayOrphans
-        Just OrphanAbandon    -> fmap join . sudo $ orphans >>= removePkgs
+        Nothing               -> send O.displayOrphans
+        Just OrphanAbandon    -> sudo $ send orphans >>= removePkgs
         Just (OrphanAdopt ps) -> O.adoptPkg ps
-    Right Version -> getVersionInfo >>= fmap Right . animateVersionMsg
-    Right Languages -> Right <$> displayOutputLanguages
+    Right Version -> send getVersionInfo >>= animateVersionMsg
+    Right Languages -> displayOutputLanguages
 
-displayOutputLanguages :: Aura ()
+displayOutputLanguages :: (Member (Reader Settings) r, Member IO r) => Eff r ()
 displayOutputLanguages = do
-  asks langOf >>= notify . displayOutputLanguages_1
-  liftIO $ traverse_ print [English ..]
+  asks langOf >>= send . notify . displayOutputLanguages_1
+  send $ traverse_ print [English ..]
 
 -- | Animated version message.
-animateVersionMsg :: [T.Text] -> Aura ()
-animateVersionMsg verMsg = ask >>= \ss -> liftIO $ do
+animateVersionMsg :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r ()
+animateVersionMsg verMsg = ask >>= \ss -> send $ do
   hideCursor
   traverse_ (T.putStrLn . padString verMsgPad) verMsg  -- Version message
   raiseCursorBy 7  -- Initial reraising of the cursor.

@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
 
 -- | Module for connecting to the AUR servers,
 -- downloading PKGBUILDs and source tarballs, and handling them.
@@ -35,12 +36,13 @@ module Aura.Packages.AUR
   ) where
 
 import           Aura.Core
-import           Aura.Monad.Aura
 import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings
 import           Aura.Types
 import           BasePrelude
+import           Control.Monad.Freer
+import           Control.Monad.Freer.Reader
 import qualified Data.Text as T
 import           Data.Versions (versioning)
 import           Internet
@@ -72,8 +74,8 @@ makeBuildable m name pb = do
     , buildScripts = f }
     where f fp = sourceTarball m fp name >>= traverse (fmap T.unpack . decompress (T.pack fp) . T.pack)
 
-isAurPackage :: T.Text -> Aura Bool
-isAurPackage name = asks managerOf >>= \m -> isJust <$> pkgbuild' m name
+isAurPackage :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r Bool
+isAurPackage name = asks managerOf >>= \m -> isJust <$> send (pkgbuild' @IO m name)
 
 ----------------
 -- AUR PKGBUILDS
@@ -108,11 +110,11 @@ sortAurInfo bs ai = sortBy compare' ai
                      Just SortAlphabetically -> compare `on` aurNameOf
                      _ -> \x y -> compare (aurVotesOf y) (aurVotesOf x)
 
-aurSearch :: T.Text -> Aura [AurInfo]
+aurSearch :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r [AurInfo]
 aurSearch regex = do
   ss  <- ask
-  res <- search (managerOf ss) regex
+  res <- send $ search @IO (managerOf ss) regex
   pure $ sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) res
 
-aurInfo :: [T.Text] -> Aura [AurInfo]
-aurInfo pkgs = asks managerOf >>= \m -> sortAurInfo (Just SortAlphabetically) <$> info m pkgs
+aurInfo :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r [AurInfo]
+aurInfo pkgs = asks managerOf >>= \m -> sortAurInfo (Just SortAlphabetically) <$> send (info @IO m pkgs)

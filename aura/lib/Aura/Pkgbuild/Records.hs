@@ -31,7 +31,6 @@ module Aura.Pkgbuild.Records
   ) where
 
 import           Aura.Diff (unidiff)
-import           Aura.Monad.Aura
 import           Aura.Pkgbuild.Base
 import           Aura.Types
 import           BasePrelude
@@ -46,13 +45,13 @@ comparePkgbuilds name old new =
   T.unlines $ unidiff 3 (T.pack $ "a" </> h) (T.pack $ "b" </> h) (T.lines old) (T.lines new)
   where h = T.unpack name </> "PKGBUILD"
 
-hasPkgbuildStored :: MonadIO m => T.Text -> m Bool
+hasPkgbuildStored :: T.Text -> IO Bool
 hasPkgbuildStored = shelly . test_f . pkgbuildPath
 
-storePkgbuilds :: MonadIO m => [Buildable] -> m ()
+storePkgbuilds :: [Buildable] -> IO ()
 storePkgbuilds = shelly . traverse_ (\p -> writePkgbuild (baseNameOf p) (_pkgbuild $ pkgbuildOf p))
 
-readPkgbuild :: MonadIO m => T.Text -> m T.Text
+readPkgbuild :: T.Text -> IO T.Text
 readPkgbuild = shelly . readfile . pkgbuildPath
 
 writePkgbuild :: T.Text -> T.Text -> Sh ()

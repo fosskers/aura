@@ -32,7 +32,7 @@ module Aura.Types
   , InstallType(..)
     -- * Errors
   , DepError(..)
-  , Failure(..), failure
+  , Failure(..)
     -- * Language
   , Language(..)
     -- * Other Wrappers
@@ -170,7 +170,3 @@ data DepError = NonExistant T.Text | VerConflict T.Text | Ignored T.Text | Unpar
 -- | Some failure message that when given the current runtime `Language`
 -- will produce a human-friendly error.
 newtype Failure = Failure { _failure :: Language -> T.Text }
-
--- | A short-hand for expressing failure.
-failure :: (Language -> T.Text) -> Either Failure b
-failure = Left . Failure

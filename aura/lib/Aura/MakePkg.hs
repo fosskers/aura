@@ -53,7 +53,7 @@ makepkg ss user = fmap g . f $ make cmd opts
         f | switch ss DontSuppressMakepkg = id
           | otherwise = print_stdout False . print_stderr False
         g (ExitSuccess, fs) = Right fs
-        g _ = failure buildFail_8
+        g _ = Left $ Failure buildFail_8
 
 -- | Actually build the package, guarding on exceptions.
 -- Yields the filepaths of the built package tarballs.

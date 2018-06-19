@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
 
 {-
 
@@ -32,12 +33,14 @@ import           Aura.Cache (defaultPackageCache)
 import           Aura.Core
 import           Aura.Languages
 import           Aura.MakePkg
-import           Aura.Monad.Aura
 import           Aura.Pacman (pacman)
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding (FilePath)
+import           Control.Monad.Freer
+import           Control.Monad.Freer.Error
+import           Control.Monad.Freer.Reader
 import           Data.Bitraversable (bitraverse)
 import qualified Data.Set as S
 import qualified Data.Text as T
@@ -51,25 +54,27 @@ srcPkgStore :: FilePath
 srcPkgStore = "/var/cache/aura/src"
 
 -- | Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
-installPkgFiles :: Maybe T.Text -> [T.Text] -> Aura (Either Failure ())
-installPkgFiles _ []         = pure $ Right ()
+installPkgFiles :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+  Maybe T.Text -> [T.Text] -> Eff r ()
+installPkgFiles _ []         = pure ()
 installPkgFiles asDeps files = do
-  ask >>= shelly . checkDBLock
-  pacman $ ["-U"] <> maybe [] (:[]) asDeps <> files
+  ask >>= send . shelly @IO . checkDBLock
+  rethrow . pacman $ ["-U"] <> maybe [] (:[]) asDeps <> files
 
 -- | All building occurs within temp directories in the package cache,
 -- or in a location specified by the user with flags.
-buildPackages :: [Buildable] -> Aura (Either Failure [FilePath])
-buildPackages = fmap (fmap concat . sequenceA) . traverse build
+buildPackages :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+  [Buildable] -> Eff r [FilePath]
+buildPackages = fmap concat . traverse build
 
 -- | Handles the building of Packages. Fails nicely.
 -- Assumed: All dependencies are already installed.
-build :: Buildable -> Aura (Either Failure [FilePath])
+build :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Buildable -> Eff r [FilePath]
 build p = do
   ss     <- ask
-  notify $ buildPackages_1 (baseNameOf p) (langOf ss)
-  result <- shelly $ build' ss p
-  either (buildFail p) (pure . Right) result
+  send . notify $ buildPackages_1 (baseNameOf p) (langOf ss)
+  result <- send . shelly @IO $ build' ss p
+  either (buildFail p) pure result
 
 -- | Should never throw a Shelly Exception. In theory all errors
 -- will come back via the @Language -> String@ function.
@@ -97,7 +102,7 @@ getBuildScripts pkg user = do
   currDir <- toTextIgnore <$> pwd
   scriptsDir <- chown user currDir [] *> liftIO (buildScripts pkg (T.unpack currDir))
   case scriptsDir of
-    Nothing -> pure . failure . buildFail_7 $ baseNameOf pkg
+    Nothing -> pure . Left . Failure . buildFail_7 $ baseNameOf pkg
     Just sd -> do
       let sd' = T.pack sd
       chown user sd' ["-R"]
@@ -111,13 +116,14 @@ overwritePkgbuild ss p = when (switch ss HotEdit || switch ss UseCustomizepkg) $
 
 -- | Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
-buildFail :: Buildable -> Failure -> Aura (Either Failure [a])
+buildFail :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+  Buildable -> Failure -> Eff r [a]
 buildFail p (Failure err) = do
   ss <- ask
-  scold $ buildFail_1 (baseNameOf p) (langOf ss)
-  scold . err $ langOf ss
-  response <- optionalPrompt ss buildFail_6
-  pure $ bool (failure buildFail_5) (Right []) response
+  send . scold $ buildFail_1 (baseNameOf p) (langOf ss)
+  send . scold . err $ langOf ss
+  response <- send $ optionalPrompt @IO ss buildFail_6
+  bool (throwError $ Failure buildFail_5) (pure []) response
 
 -- | Moves a file to the pacman package cache and returns its location.
 moveToCachePath :: Settings -> FilePath -> Sh FilePath
