@@ -37,6 +37,7 @@ import           Aura.Settings
 import           Aura.Types
 import           BasePrelude hiding (FilePath)
 import qualified Data.Map.Strict as M
+import qualified Data.Set as S
 import qualified Data.Text as T
 import           Shelly
 
@@ -48,16 +49,18 @@ defaultPackageCache :: FilePath
 defaultPackageCache = "/var/cache/pacman/pkg/"
 
 -- TODO SILENT DROPS PATHS THAT DON'T PARSE
+-- Maybe that's okay, since we don't know what non-package garbage files
+-- could be sitting in the cache.
 cache :: [PackagePath] -> Cache
 cache = Cache . M.fromList . mapMaybe (\p -> (,p) <$> simplepkg p)
 
 cacheContents :: FilePath -> Sh Cache
 cacheContents = fmap (cache . map PackagePath) . lsT
 
-pkgsInCache :: Settings -> [T.Text] -> Sh [T.Text]
+pkgsInCache :: Settings -> S.Set T.Text -> Sh (S.Set T.Text)
 pkgsInCache ss ps = do
   c <- cacheContents . fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
-  pure . nub . filter (`elem` ps) . map _spName . M.keys $ _cache c
+  pure . S.filter (`S.member` ps) . S.map _spName . M.keysSet $ _cache c
 
 cacheMatches :: Settings -> T.Text -> Sh [PackagePath]
 cacheMatches ss input = do

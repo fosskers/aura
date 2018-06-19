@@ -46,6 +46,7 @@ import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
 import qualified Data.Map.Strict as M
+import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Shelly hiding (path)
@@ -55,19 +56,19 @@ import           Utilities
 
 -- | Interactive. Gives the user a choice as to exactly what versions
 -- they want to downgrade to.
-downgradePackages :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  [T.Text] -> [T.Text] -> Eff r ()
-downgradePackages _ []         = pure ()
-downgradePackages pacOpts pkgs = do
-  ss    <- ask
-  let cachePath = fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
-  reals <- send . shelly @IO $ pkgsInCache ss pkgs
-  reportBadDowngradePkgs $ pkgs \\ reals
-  if | null reals -> pure ()
-     | otherwise -> do
-         cache   <- send . shelly @IO $ cacheContents cachePath
-         choices <- traverse (getDowngradeChoice cache) reals
-         rethrow . pacman $ "-U" : pacOpts <> map (toTextIgnore . (cachePath </>)) choices
+downgradePackages :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set T.Text -> Eff r ()
+downgradePackages pkgs
+  | null pkgs = pure ()
+  | otherwise = do
+      ss    <- ask
+      let cachePath = fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
+      reals <- send . shelly @IO $ pkgsInCache ss pkgs
+      reportBadDowngradePkgs . toList $ pkgs S.\\ reals
+      if | null reals -> pure ()
+         | otherwise -> do
+             cache   <- send . shelly @IO $ cacheContents cachePath
+             choices <- traverse (getDowngradeChoice cache) $ toList reals
+             rethrow . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (toTextIgnore . (cachePath </>)) choices
 
 getDowngradeChoice :: (Member (Reader Settings) r, Member IO r) => Cache -> T.Text -> Eff r T.Text
 getDowngradeChoice cache pkg = do
