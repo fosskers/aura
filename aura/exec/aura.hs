@@ -71,14 +71,14 @@ main = do
     Right ss -> execute ss options >>= exit
 
 execute :: Settings -> Program -> IO (Either T.Text ())
-execute ss p = first (($ langOf ss) . _failure) <$> (runM . runReader ss . runError $ executeOpts p)
+execute ss p = first (($ langOf ss) . _failure) <$> (runM . runReader ss . runError . executeOpts $ _operation p)
 
 exit :: Either T.Text () -> IO a
 exit (Left e)  = scold e *> exitFailure
 exit (Right _) = exitSuccess
 
-executeOpts :: Program -> Eff '[Error Failure, Reader Settings, IO] ()
-executeOpts (Program ops _ _ _) = do
+executeOpts :: Either PacmanOp AuraOp -> Eff '[Error Failure, Reader Settings, IO] ()
+executeOpts ops = do
   ss <- ask
   when (shared ss Debug) $ do
     pPrintNoColor ops
