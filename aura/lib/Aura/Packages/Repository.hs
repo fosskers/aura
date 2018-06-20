@@ -39,10 +39,13 @@ import           Text.Megaparsec.Char
 ---
 
 -- | Repository package source.
+-- We expect this to fail when the package is actually an AUR package.
 pacmanRepo :: Repository
 pacmanRepo = Repository $ \_ name -> do
   real <- resolveName name
-  Just . packageRepo real <$> mostRecentVersion real
+  case real of
+    Nothing -> pure Nothing
+    Just r  -> Just . packageRepo r <$> mostRecentVersion r
 
 packageRepo :: T.Text -> Maybe Versioning -> Package
 packageRepo name ver = Package
@@ -53,10 +56,12 @@ packageRepo name ver = Package
 
 -- | If given a virtual package, try to find a real package to install.
 -- Functions like this are why we need libalpm.
-resolveName :: T.Text -> IO T.Text
+resolveName :: T.Text -> IO (Maybe T.Text)
 resolveName name = do
   provs <- T.lines <$> pacmanOutput ["-Ssq", "^" <> name <> "$"]
-  chooseProvider name provs
+  case provs of
+    [] -> pure Nothing
+    _  -> Just <$> chooseProvider name provs
 
 -- | Choose a providing package, favoring installed packages.
 chooseProvider :: MonadIO m => T.Text -> [T.Text] -> m T.Text

@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts, MonoLocalBinds #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 -- Library for handling package dependencies and version conflicts.
 

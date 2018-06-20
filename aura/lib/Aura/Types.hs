@@ -81,14 +81,7 @@ data VersionDemand = LessThan Versioning
                    | MoreThan Versioning
                    | MustBe   Versioning
                    | Anything
-                   deriving (Eq)
-
-instance Show VersionDemand where
-    show (LessThan v) = T.unpack $ "<"  <> prettyV v
-    show (AtLeast  v) = T.unpack $ ">=" <> prettyV v
-    show (MoreThan v) = T.unpack $ ">"  <> prettyV v
-    show (MustBe   v) = T.unpack $ "="  <> prettyV v
-    show Anything     = ""
+                   deriving (Eq, Show)
 
 -- | The installation method.
 data InstallType = Pacman T.Text | Build Buildable

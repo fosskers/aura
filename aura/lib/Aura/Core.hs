@@ -37,6 +37,7 @@ import           Control.Monad.Freer.Reader
 import           Data.Semigroup
 import qualified Data.Set as S
 import qualified Data.Text as T
+import           Data.Versions (prettyV)
 import           Shelly (Sh, test_f)
 import           Utilities
 
@@ -50,6 +51,7 @@ import           Utilities
 -- repositories can be combined with the 'Data.Monoid' instance.
 newtype Repository = Repository { repoLookup :: Settings -> T.Text -> IO (Maybe Package) }
 
+-- TODO The case statement can be simplified.
 instance Semigroup Repository where
   a <> b = Repository $ \ss p -> do
     mpkg <- repoLookup a ss p
@@ -110,8 +112,15 @@ removePkgs pkgs = do
   rethrow . pacman $ ["-Rsu"] <> pkgs <> pacOpts
 
 -- | True if a dependency is satisfied by an installed package.
+-- `asT` renders the `VersionDemand` into the specific form that `pacman -T`
+-- understands. See `man pacman` for more info.
 isSatisfied :: Dep -> IO Bool
-isSatisfied (Dep name ver) = T.null <$> pacmanOutput ["-T", name <> T.pack (show ver)]
+isSatisfied (Dep name ver) = T.null <$> pacmanOutput ["-T", name <> asT ver]
+  where asT (LessThan v) = "<"  <> prettyV v
+        asT (AtLeast  v) = ">=" <> prettyV v
+        asT (MoreThan v) = ">"  <> prettyV v
+        asT (MustBe   v) = "="  <> prettyV v
+        asT Anything     = ""
 
 -- | Block further action until the database is free.
 checkDBLock :: Settings -> Sh ()
