@@ -32,6 +32,7 @@ module Aura.Commands.A
   , displayPkgDeps
   , downloadTarballs
   , displayPkgbuild
+  , aurJson
   ) where
 
 import           Aura.Colour.Text
@@ -48,10 +49,13 @@ import           BasePrelude hiding ((<>))
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import           Data.Aeson.Encode.Pretty (encodePrettyToTextBuilder)
 import           Data.Semigroup ((<>))
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import           Data.Text.Lazy (toStrict)
+import           Data.Text.Lazy.Builder (toLazyText)
 import           Data.Versions
 import           Linux.Arch.Aur
 import           Shelly (whenM, pwd, shelly, toTextIgnore)
@@ -181,6 +185,13 @@ displayPkgbuild ps = do
 isntMostRecent :: (AurInfo, Versioning) -> Bool
 isntMostRecent (ai, v) = trueVer > Just v
   where trueVer = either (const Nothing) Just . versioning $ aurVersionOf ai
+
+aurJson :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r ()
+aurJson ps = do
+  m <- asks managerOf
+  infos <- send . info @IO m $ toList ps
+  let json = map (toStrict . toLazyText . encodePrettyToTextBuilder) infos
+  send $ traverse_ T.putStrLn json
 
 ------------
 -- REPORTING

@@ -52,7 +52,7 @@ import           Control.Monad.Freer.Reader
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Flags
-import           Options.Applicative
+import           Options.Applicative (execParser)
 import           Settings
 import           Text.Pretty.Simple (pPrintNoColor)
 import           Utilities
@@ -95,6 +95,7 @@ executeOpts ops = do
         Left (AurSearch s)    -> A.aurPkgSearch s
         Left (AurUpgrade ps)  -> trueRoot . sudo $ A.upgradeAURPkgs ps
         Left (AurTarball ps)  -> A.downloadTarballs ps
+        Left (AurJson ps)     -> A.aurJson ps
     Right (Backup o) ->
       case o of
         Nothing              -> sudo B.saveState

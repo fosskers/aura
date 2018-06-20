@@ -206,6 +206,7 @@ data AurOp = AurDeps     (S.Set T.Text)
            | AurSearch    T.Text
            | AurUpgrade  (S.Set T.Text)
            | AurTarball  (S.Set T.Text)
+           | AurJson     (S.Set T.Text)
            deriving (Show)
 
 data BackupOp = BackupClean Word | BackupRestore deriving (Show)
@@ -231,13 +232,14 @@ program = Program
 aursync :: Parser AuraOp
 aursync = bigA *> (AurSync <$> (fmap Right someArgs <|> fmap Left mods))
   where bigA = flag' () (long "aursync" <> short 'A' <> help "Install packages from the AUR.")
-        mods     = deps <|> ainfo <|> pkgbuild <|> search <|> upgrade <|> tarball
+        mods     = deps <|> ainfo <|> pkgbuild <|> search <|> upgrade <|> tarball <|> aur
         deps     = AurDeps <$> (flag' () (long "deps" <> short 'd' <> hidden <> help "View dependencies of an AUR package.") *> someArgs')
         ainfo    = AurInfo <$> (flag' () (long "info" <> short 'i' <> hidden <> help "View AUR package information.") *> someArgs')
         pkgbuild = AurPkgbuild <$> (flag' () (long "pkgbuild" <> short 'p' <> hidden <> help "View an AUR package's PKGBUILD file.") *> someArgs')
         search   = AurSearch <$> strOption (long "search" <> short 's' <> metavar "STRING" <> hidden <> help "Search the AUR via a search string.")
         upgrade  = AurUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade all installed AUR packages.") *> manyArgs')
         tarball  = AurTarball <$> (flag' () (long "downloadonly" <> short 'w' <> hidden <> help "Download a package's source tarball.") *> someArgs')
+        aur      = AurJson <$> (flag' () (long "aur" <> hidden <> help "Retrieve package JSON straight from the AUR.") *> someArgs')
 
 backups :: Parser AuraOp
 backups = bigB *> (Backup <$> optional mods)
