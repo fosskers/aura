@@ -239,7 +239,7 @@ aursync = bigA *> (AurSync <$> (fmap Right someArgs <|> fmap Left mods))
         search   = AurSearch <$> strOption (long "search" <> short 's' <> metavar "STRING" <> hidden <> help "Search the AUR via a search string.")
         upgrade  = AurUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade all installed AUR packages.") *> manyArgs')
         tarball  = AurTarball <$> (flag' () (long "downloadonly" <> short 'w' <> hidden <> help "Download a package's source tarball.") *> someArgs')
-        aur      = AurJson <$> (flag' () (long "aur" <> hidden <> help "Retrieve package JSON straight from the AUR.") *> someArgs')
+        aur      = AurJson <$> (flag' () (long "json" <> hidden <> help "Retrieve package JSON straight from the AUR.") *> someArgs')
 
 backups :: Parser AuraOp
 backups = bigB *> (Backup <$> optional mods)
