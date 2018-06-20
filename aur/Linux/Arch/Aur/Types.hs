@@ -2,7 +2,7 @@
 
 -- |
 -- Module    : Linux.Arch.Aur.Types
--- Copyright : (c) Colin Woodbury, 2014, 2015, 2016
+-- Copyright : (c) Colin Woodbury, 2014 - 2018
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 
@@ -79,3 +79,27 @@ instance FromJSON AurInfo where
                            v .:? "Keywords"    .!= []
 
     parseJSON _ = mzero
+
+instance ToJSON AurInfo where
+  toJSON ai = object
+    [ "ID" .= aurIdOf ai
+    , "Name" .= aurNameOf ai
+    , "PackageBaseID" .= pkgBaseIdOf ai
+    , "PackageBase" .= pkgBaseOf ai
+    , "Version" .= aurVersionOf ai
+    , "Description" .= aurDescriptionOf ai
+    , "URL" .= urlOf ai
+    , "NumVotes" .= aurVotesOf ai
+    , "Popularity" .= popularityOf ai
+    , "OutOfDate" .= dateObsoleteOf ai
+    , "Maintainer" .= aurMaintainerOf ai
+    , "FirstSubmitted" .= submissionDateOf ai
+    , "LastModified" .= modifiedDateOf ai
+    , "URLPath" .= urlPathOf ai
+    , "Depends" .= dependsOf ai
+    , "MakeDepends" .= makeDepsOf ai
+    , "OptDepends" .= optDepsOf ai
+    , "Conflicts" .= conflictsOf ai
+    , "Provides" .= providesOf ai
+    , "License" .= licenseOf ai
+    , "Keywords" .= keywordsOf ai ]
