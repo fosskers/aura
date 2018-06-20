@@ -28,7 +28,7 @@ module Aura.Types
   , Dep(..), parseDep
   , Buildable(..)
     -- * Package Building
-  , VersionDemand(..)
+  , VersionDemand(..), _VersionDemand
   , InstallType(..)
     -- * Errors
   , DepError(..)
@@ -81,7 +81,21 @@ data VersionDemand = LessThan Versioning
                    | MoreThan Versioning
                    | MustBe   Versioning
                    | Anything
-                   deriving (Eq, Show)
+                   deriving (Eq)
+
+instance Show VersionDemand where
+    show (LessThan v) = T.unpack $ "<"  <> prettyV v
+    show (AtLeast  v) = T.unpack $ ">=" <> prettyV v
+    show (MoreThan v) = T.unpack $ ">"  <> prettyV v
+    show (MustBe   v) = T.unpack $ "="  <> prettyV v
+    show Anything     = "Anything"
+
+_VersionDemand :: Traversal' VersionDemand Versioning
+_VersionDemand f (LessThan v) = LessThan <$> f v
+_VersionDemand f (AtLeast v)  = AtLeast  <$> f v
+_VersionDemand f (MoreThan v) = MoreThan <$> f v
+_VersionDemand f (MustBe v)   = MustBe   <$> f v
+_VersionDemand _ p            = pure p
 
 -- | The installation method.
 data InstallType = Pacman T.Text | Build Buildable

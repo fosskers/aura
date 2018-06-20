@@ -84,7 +84,7 @@ install' opts (toList -> pkgs) = do
   unneeded <- bool (pure []) (catMaybes <$> send (mapConcurrently isInstalled pkgs)) $ shared ss NeededOnly
   let (ignored, notIgnored) = partition (`elem` ignoredPkgsOf (commonConfigOf ss)) pkgs
   installAnyway <- confirmIgnored ignored
-  let toInstall = (notIgnored <> installAnyway) \\ unneeded
+  let toInstall = (notIgnored <> installAnyway) \\ unneeded -- TODO Use sets for this.
   -- reportIgnoredPackages ignored  -- 2014 December  7 @ 14:52
   reportUnneededPackages unneeded
   toBuild <- lookupPkgs (installLookup opts ss) toInstall >>= pkgbuildDiffs

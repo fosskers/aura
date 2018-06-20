@@ -54,6 +54,7 @@ library:
     - filepath
     - http-types >= 0.9 && < 0.13
     - megaparsec >= 6.4 && < 6.6
+    - microlens >= 0.4 && < 0.5
     - mtl >= 2.2 && < 2.3
     - network-uri >= 2.6 && < 2.7
     - stm

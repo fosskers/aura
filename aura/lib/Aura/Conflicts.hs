@@ -26,7 +26,8 @@ import           Aura.Settings
 import           Aura.Types
 import           BasePrelude
 import qualified Data.Text as T
-import           Data.Versions (Versioning, prettyV)
+import           Data.Versions (Versioning, prettyV, release)
+import           Lens.Micro
 
 ---
 
@@ -41,8 +42,8 @@ realPkgConflicts ss pkg dep
     | isVersionConflict reqVer curVer = Just $ VerConflict failMsg2
     | otherwise                       = Nothing
     where name     = pkgNameOf pkg
-          curVer   = pkgVersionOf pkg
-          reqVer   = depVerDemandOf dep
+          curVer   = pkgVersionOf pkg   & _Just . release .~ []
+          reqVer   = depVerDemandOf dep & _VersionDemand . release .~ []
           lang     = langOf ss
           toIgnore = ignoredPkgsOf $ commonConfigOf ss
           failMsg1 = getRealPkgConflicts_2 name lang
@@ -56,7 +57,5 @@ isVersionConflict Anything _            = False
 isVersionConflict (LessThan r) (Just c) = c >= r
 isVersionConflict (MoreThan r) (Just c) = c <= r
 isVersionConflict (MustBe   r) (Just c) = c /= r
-isVersionConflict (AtLeast  r) (Just c) | c > r = False
-                                        | isVersionConflict (MustBe r) (Just c) = True
-                                        | otherwise = False
+isVersionConflict (AtLeast  r) (Just c) = c < r
 isVersionConflict _ _ = True  -- We expect this branch to never occur, due to the `isNothing` check above.
