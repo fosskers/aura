@@ -39,6 +39,7 @@ import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
 import           Data.Graph
 import qualified Data.Map.Strict as M
+import qualified Data.Set as S
 import qualified Data.Text as T
 import           Utilities (tripleFst)
 
@@ -65,13 +66,11 @@ resolveDeps' ss tv repo ps = concat <$> mapConcurrently f ps
         Just _  -> pure $ pure []  -- Bail early, we've checked this package already.
         Nothing -> modifyTVar' tv (M.insert (pkgNameOf p) p) $> do
           deps <- fmap catMaybes . mapConcurrently (\d -> bool (Just d) Nothing <$> isSatisfied d) $ pkgDepsOf p
-          (bads, goods) <- partitionEithers <$> mapConcurrently (\d -> g d <$> repoLookup repo ss (depNameOf d)) deps
-          bool (pure bads) (resolveDeps' ss tv repo goods) $ null bads
-
-    -- | Check for version conflicts.
-    g :: Dep -> Maybe Package -> Either DepError Package
-    g d Nothing  = Left . NonExistant $ depNameOf d
-    g d (Just p) = maybe (Right p) Left $ realPkgConflicts ss p d
+          (bads, goods) <- repoLookup repo ss . S.fromList $ map depNameOf deps
+          let depsMap   = M.fromList $ map (depNameOf &&& id) deps
+              conflicts = mapMaybe (\p' -> realPkgConflicts ss p' $ depsMap M.! (pkgNameOf p')) goods
+              evils     = map NonExistant (toList bads) <> conflicts
+          bool (pure evils) (resolveDeps' ss tv repo goods) $ null evils
 
 sortInstall :: [Package] -> [Package]
 sortInstall ps = reverse . fmap (tripleFst . n) . topSort $ g

@@ -47,17 +47,16 @@ import           Utilities
 -- TYPES
 --------
 
--- | A 'Repository' is a place where packages may be fetched from. Multiple
--- repositories can be combined with the 'Data.Monoid' instance.
-newtype Repository = Repository { repoLookup :: Settings -> T.Text -> IO (Maybe Package) }
+-- | A `Repository` is a place where packages may be fetched from. Multiple
+-- repositories can be combined with the `Semigroup` instance.
+-- Check packages in batches for efficiency.
+newtype Repository = Repository { repoLookup :: Settings -> S.Set T.Text -> IO (S.Set T.Text, [Package]) }
 
--- TODO The case statement can be simplified.
 instance Semigroup Repository where
-  a <> b = Repository $ \ss p -> do
-    mpkg <- repoLookup a ss p
-    case mpkg of
-      Nothing -> repoLookup b ss p
-      _       -> pure mpkg
+  a <> b = Repository $ \ss ps -> do
+    (bads, goods)   <- repoLookup a ss ps
+    (bads', goods') <- repoLookup b ss bads
+    pure (bads', goods <> goods')
 
 ---------------------------------
 -- Functions common to `Package`s

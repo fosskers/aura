@@ -152,8 +152,7 @@ data Buildable = Buildable
     -- | Fetch and extract the source code corresponding to the given package.
     -- Expects a directory in which to place the scripts, and yields the path
     -- they were successfully extracted to.
-    , buildScripts :: FilePath -> IO (Maybe FilePath)
-    }
+    , buildScripts :: FilePath -> IO (Maybe FilePath) }
 
 data Language = English
               | Japanese

@@ -43,6 +43,7 @@ import           Aura.Types
 import           BasePrelude
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Reader
+import qualified Data.Set as S
 import qualified Data.Text as T
 import           Data.Versions (versioning)
 import           Internet
@@ -53,24 +54,34 @@ import           Utilities (decompress)
 
 ---
 
-aurLookup :: MonadIO m => Settings -> T.Text -> m (Maybe Buildable)
-aurLookup ss name = pkgbuild' m name >>= traverse (makeBuildable m name . Pkgbuild)
-  where m = managerOf ss
+aurLookup :: MonadIO m => Settings -> S.Set T.Text -> m (S.Set T.Text, [Buildable])
+aurLookup ss names
+  | null names = pure (S.empty, [])
+  | otherwise  = do
+      (bads, goods) <- info m (toList names) >>= fmap partitionEithers . traverse (buildable m)
+      let goodNames = S.fromList $ map baseNameOf goods
+      pure (S.fromList bads <> names S.\\ goodNames, goods)
+        where m = managerOf ss
 
 aurRepo :: Repository
-aurRepo = Repository $ \ss p -> aurLookup ss p >>= traverse (packageBuildable ss)
+aurRepo = Repository $ \ss ps -> do
+  (bads, goods) <- aurLookup ss ps
+  pkgs <- traverse (packageBuildable ss) goods
+  pure (bads, pkgs)
 
-makeBuildable :: MonadIO m => Manager -> T.Text -> Pkgbuild -> m Buildable
-makeBuildable m name pb = do
-  ai <- head <$> info m [name]
-  pure Buildable
-    { baseNameOf   = name
-    , pkgbuildOf   = pb
-    , bldDepsOf    = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai  -- TODO bad mapMaybe?
-    , bldVersionOf = either (const Nothing) Just . versioning $ aurVersionOf ai
-    , isExplicit   = False
-    , buildScripts = f }
-    where f fp = sourceTarball m fp name >>= traverse (fmap T.unpack . decompress (T.pack fp) . T.pack)
+buildable :: MonadIO m => Manager -> AurInfo -> m (Either T.Text Buildable)
+buildable m ai = do
+  mpb <- pkgbuild' m (pkgBaseOf ai)  -- Using the package base ensures split packages work correctly.
+  case mpb of
+    Nothing -> pure . Left $ aurNameOf ai
+    Just pb -> pure $ Right Buildable
+      { baseNameOf   = aurNameOf ai
+      , pkgbuildOf   = Pkgbuild pb
+      , bldDepsOf    = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai  -- TODO bad mapMaybe?
+      , bldVersionOf = either (const Nothing) Just . versioning $ aurVersionOf ai
+      , isExplicit   = False
+      , buildScripts = f }
+    where f fp = sourceTarball m fp (aurNameOf ai) >>= traverse (fmap T.unpack . decompress (T.pack fp) . T.pack)
 
 isAurPackage :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r Bool
 isAurPackage name = asks managerOf >>= \m -> isJust <$> send (pkgbuild' @IO m name)

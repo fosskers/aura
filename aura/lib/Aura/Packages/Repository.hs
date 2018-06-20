@@ -31,6 +31,8 @@ import           Aura.Pacman (pacmanOutput)
 import           Aura.Types
 import           BasePrelude hiding (try)
 import           Control.Concurrent.Async
+import           Data.Bitraversable (bitraverse)
+import qualified Data.Set as S
 import qualified Data.Text as T
 import           Data.Versions
 import           Text.Megaparsec
@@ -41,11 +43,10 @@ import           Text.Megaparsec.Char
 -- | Repository package source.
 -- We expect this to fail when the package is actually an AUR package.
 pacmanRepo :: Repository
-pacmanRepo = Repository $ \_ name -> do
-  real <- resolveName name
-  case real of
-    Nothing -> pure Nothing
-    Just r  -> Just . packageRepo r <$> mostRecentVersion r
+pacmanRepo = Repository $ \_ names -> do
+  badsgoods <- partitionEithers <$> mapConcurrently resolveName (toList names)
+  bitraverse (pure . S.fromList) (traverse f) badsgoods
+  where f r = packageRepo r <$> mostRecentVersion r
 
 packageRepo :: T.Text -> Maybe Versioning -> Package
 packageRepo name ver = Package
@@ -56,12 +57,12 @@ packageRepo name ver = Package
 
 -- | If given a virtual package, try to find a real package to install.
 -- Functions like this are why we need libalpm.
-resolveName :: T.Text -> IO (Maybe T.Text)
+resolveName :: T.Text -> IO (Either T.Text T.Text)
 resolveName name = do
   provs <- T.lines <$> pacmanOutput ["-Ssq", "^" <> name <> "$"]
   case provs of
-    [] -> pure Nothing
-    _  -> Just <$> chooseProvider name provs
+    [] -> pure $ Left name
+    _  -> Right <$> chooseProvider name provs
 
 -- | Choose a providing package, favoring installed packages.
 chooseProvider :: MonadIO m => T.Text -> [T.Text] -> m T.Text

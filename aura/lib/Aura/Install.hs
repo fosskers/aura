@@ -57,7 +57,7 @@ import           Shelly (toTextIgnore)
 -- | Installation options.
 data InstallOptions = InstallOptions
                       { label         :: T.Text
-                      , installLookup :: Settings -> T.Text -> IO (Maybe Buildable)
+                      , installLookup :: Settings -> S.Set T.Text -> IO (S.Set T.Text, [Buildable])
                       , repository    :: Repository }
 
 -- | High level 'install' command. Handles installing
@@ -79,14 +79,14 @@ install opts pkgs = do
 
 install' :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
   InstallOptions -> S.Set T.Text -> Eff r ()
-install' opts (toList -> pkgs) = do
+install' opts pkgs = do
   ss       <- ask
-  unneeded <- bool (pure []) (catMaybes <$> send (mapConcurrently isInstalled pkgs)) $ shared ss NeededOnly
-  let (ignored, notIgnored) = partition (`elem` ignoredPkgsOf (commonConfigOf ss)) pkgs
+  unneeded <- bool (pure S.empty) (S.fromList . catMaybes <$> send (mapConcurrently isInstalled $ toList pkgs)) $ shared ss NeededOnly
+  let (ignored, notIgnored) = S.partition (`elem` ignoredPkgsOf (commonConfigOf ss)) pkgs
   installAnyway <- confirmIgnored ignored
-  let toInstall = (notIgnored <> installAnyway) \\ unneeded -- TODO Use sets for this.
+  let toInstall = (notIgnored <> installAnyway) S.\\ unneeded -- TODO Use sets for this.
   -- reportIgnoredPackages ignored  -- 2014 December  7 @ 14:52
-  reportUnneededPackages unneeded
+  reportUnneededPackages $ toList unneeded
   toBuild <- lookupPkgs (installLookup opts ss) toInstall >>= pkgbuildDiffs
   if | null toBuild && shared ss NeededOnly && unneeded == pkgs -> send . notify . install_2 $ langOf ss
      | null toBuild -> throwError $ Failure install_2
@@ -103,17 +103,18 @@ install' opts (toList -> pkgs) = do
                   send $ storePkgbuilds buildPkgs
                   buildAndInstall buildPkgs
 
-confirmIgnored :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r [T.Text]
-confirmIgnored ps = ask >>= \ss -> filterM (send . optionalPrompt @IO ss . confirmIgnored_1) ps
+confirmIgnored :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r (S.Set T.Text)
+confirmIgnored (toList -> ps) = do
+  ss <- ask
+  S.fromList <$> filterM (send . optionalPrompt @IO ss . confirmIgnored_1) ps
 
 -- | Check a list of a package names are buildable, and mark them as explicit.
 lookupPkgs :: (Member (Reader Settings) r, Member IO r) =>
-  (T.Text -> IO (Maybe Buildable)) -> [T.Text] -> Eff r [Buildable]
+  (S.Set T.Text -> IO (S.Set T.Text, [Buildable])) -> S.Set T.Text -> Eff r [Buildable]
 lookupPkgs f pkgs = do
-  (nons, okay) <- partitionEithers <$> send (mapConcurrently lookupBuild pkgs)
-  reportNonPackages nons
+  (nons, okay) <- send $ f pkgs
+  reportNonPackages $ toList nons
   pure $ map (\b -> b { isExplicit = True }) okay
-  where lookupBuild pkg = maybe (Left pkg) Right <$> f pkg
 
 depsToInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
   Repository -> [Buildable] -> Eff r [Package]
@@ -144,7 +145,7 @@ displayPkgDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member 
 displayPkgDeps opts ps =
   unless (null ps) $ do
     ss   <- ask
-    bs   <- catMaybes <$> send (mapConcurrently (installLookup opts ss) $ toList ps)
+    bs   <- snd <$> send (installLookup opts ss ps)
     pkgs <- depsToInstall (repository opts) bs
     reportDeps (switch ss LowVerbosity) $ partitionPkgs pkgs
   where reportDeps True  = send . uncurry reportListOfDeps
