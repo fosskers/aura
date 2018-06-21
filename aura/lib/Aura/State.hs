@@ -112,6 +112,7 @@ saveState :: (Member (Reader Settings) r, Member IO r) => Eff r ()
 saveState = do
   state <- send currentState
   let filename = T.unpack . toTextIgnore $ stateCache </> dotFormat (timeOf state)
+  send . shelly @IO $ mkdir_p stateCache
   send . BL.writeFile filename $ encode state
   asks langOf >>= send . notify . saveState_1
 
