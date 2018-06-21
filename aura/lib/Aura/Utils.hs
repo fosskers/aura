@@ -49,19 +49,20 @@ import           Text.Megaparsec
 ----------------
 -- CUSTOM OUTPUT
 ----------------
+
 putStrLnA :: MonadIO m => Colouror -> T.Text -> m ()
-putStrLnA colour s = putStrA colour $ s <> "\n"
+putStrLnA c s = putStrA c $ s <> "\n"
 
 putStrLnA' :: Colouror -> T.Text -> T.Text
-putStrLnA' colour s = putStrA' colour s <> "\n"
+putStrLnA' c s = putStrA' c s <> "\n"
 
 -- Added `hFlush` here because some output appears to lag sometimes.
 putStrA :: MonadIO m => Colouror -> T.Text -> m ()
-putStrA colour = liftIO . T.putStr . putStrA' colour
+putStrA c = liftIO . T.putStr . putStrA' c
 --putStrA colour s = liftIO (putStr (putStrA' colour s) *> hFlush stdout)
 
 putStrA' :: Colouror -> T.Text -> T.Text
-putStrA' colour s = "aura >>= " <> colour s
+putStrA' c s = "aura >>= " <> c s
 
 printList :: MonadIO m => Colouror -> Colouror -> T.Text -> [T.Text] -> m ()
 printList _ _ _ []        = pure ()

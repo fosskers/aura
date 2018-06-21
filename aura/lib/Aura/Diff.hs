@@ -125,7 +125,7 @@ hunk n bs              = go id . trimLast . trimHead $ bs
 showUnified :: T.Text -> T.Text -> [Hunk] -> [T.Text]
 showUnified _    _  [] = []
 showUnified from to hs = header <> foldMap showHunk hs
-  where header = bForeground <$> ["--- " <> from, "+++ " <> to]
+  where header = map bold ["--- " <> from, "+++ " <> to]
 
 showHunk :: Hunk -> [T.Text]
 showHunk h = header : foldMap showBlock h

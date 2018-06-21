@@ -121,9 +121,9 @@ displayAurPkgInfo ai = ask >>= \ss -> send . T.putStrLn $ renderAurPkgInfo ss ai
 
 renderAurPkgInfo :: Settings -> AurInfo -> T.Text
 renderAurPkgInfo ss ai = entrify ss fields entries
-    where fields   = fmap bForeground . infoFields . langOf $ ss
+    where fields   = fmap bold . infoFields . langOf $ ss
           entries = [ magenta "aur"
-                    , bForeground $ aurNameOf ai
+                    , bold $ aurNameOf ai
                     , aurVersionOf ai
                     , outOfDateMsg (dateObsoleteOf ai) $ langOf ss
                     , orphanedMsg (aurMaintainerOf ai) $ langOf ss
@@ -153,11 +153,11 @@ renderSearch ss r (i, e) = searchResult
     where searchResult = if switch ss LowVerbosity then sparseInfo else verboseInfo
           sparseInfo   = aurNameOf i
           verboseInfo  = repo <> n <> " " <> v <> " (" <> l <> " | " <> p <>
-                         ")" <> (if e then bForeground " [installed]" else "") <> "\n    " <> d
+                         ")" <> (if e then bold " [installed]" else "") <> "\n    " <> d
           c cl cs = T.intercalate (bCyan r) . map cl $ T.splitOn r cs
           repo = magenta "aur/"
-          n = c bForeground $ aurNameOf i
-          d = c noColour . fromMaybe "(null)" $ aurDescriptionOf i
+          n = c bold $ aurNameOf i
+          d = fromMaybe "(null)" $ aurDescriptionOf i
           l = yellow . T.pack . show $ aurVotesOf i  -- `l` for likes?
           p = yellow . T.pack . printf "%0.2f" $ popularityOf i
           v = case dateObsoleteOf i of

@@ -45,7 +45,7 @@ module Aura.Languages
     ( module Aura.Languages
     , Language(..) ) where
 
-import           Aura.Colour.Text (cyan, green, red, blue, yellow, bForeground)
+import           Aura.Colour.Text
 import qualified Aura.Languages.Fields as Fields
 import           Aura.Types
 import           BasePrelude
@@ -1365,135 +1365,6 @@ reportNotInLog_1 = \case
     Chinese    -> "这些没有在日志文件中出现："
     _          -> "These have not appeared in the log file:"
 
-----------------------
--- Aura/Flags functions
-----------------------
-inheritedOperTitle :: Language -> T.Text
-inheritedOperTitle = \case
-    Japanese    -> "Pacmanからの引継選択肢"
-    Polish      -> "Operacje z Pacmana"
-    Croatian    -> "Pacman operacije"
-    Swedish     -> "Ärvda pacman-operationer"
-    German      -> "Von Pacman geerbte Operationen"
-    Spanish     -> "Operaciones heredadas de pacman"
-    Portuguese  -> "Operações herdadas do Pacman"
-    French      -> "Opérations héritées de Pacman"
-    Russian     -> "Позаимствованные из pacman действия"
-    Italian     -> "Operazioni riguardanti Pacman"
-    Serbian     -> "Наслеђене pacman-ове операције"
-    Norwegian   -> "Arvede `pacman`-operasjoner"
-    Indonesia   -> "Operasi pacman yang diwarisi"
-    Chinese     -> "继承自 Pacman 的操作"
-    _           -> "Inherited Pacman Operations"
-
-auraOperTitle :: Language -> T.Text
-auraOperTitle = \case
-    Japanese   -> "Auraだけの選択肢："
-    Polish     -> "Operacje Aury:"
-    Croatian   -> "Aura operacije:"
-    Swedish    -> "Aura-specifika operationer:"
-    German     -> "Aura-spezifische Operationen:"
-    Spanish    -> "Operaciones exclusivas de Aura:"
-    Portuguese -> "Operações exclusivas do Aura:"
-    French     -> "Opérations propres à Aura :"
-    Russian    -> "Специфичные для aura действия:"
-    Italian    -> "Operazioni esclusive di Aura:"
-    Serbian    -> "Аура-специфичне операције:"
-    Norwegian  -> "Aura-spesifikke operasjoner:"
-    Indonesia  -> "Operasi Aura:"
-    Chinese    -> "Aura 特有的操作："
-    _          -> "Aura Only Operations:"
-
-aurSy :: Language -> T.Text
-aurSy = green . \case
-    Japanese   -> "[A]URに関連する処理\n" <> "デフォルトでAURからインストール"
-    Polish     -> "Wykonuje akcje związane z [A]UR.\n" <> "Domyślnie instaluje pakiety z AUR."
-    Croatian   -> "Izvršava radnje s [A]UR-om.\n" <> "Uobičajena (default) radnja je instaliranje paketa iz AUR-a."
-    Swedish    -> "Utför åtgärder involverandes [A]UR.\n" <> "Standard-åtgärd installerar ifrån AUR."
-    German     -> "Führe Aktionen aus, die das [A]UR betreffen.\n" <> "Standardaktion installiert aus dem AUR."
-    Spanish    -> "Realizar acciones relacionadas con [A]UR.\n" <> "La acción por omisión es instalar desde AUR."
-    Portuguese -> "Realizar ações envolvendo o [A]UR.\n" <> "Ação padrão instala do AUR."
-    French     -> "Actions impliquant [A]UR.\n" <> "Par défaut, installe depuis AUR."
-    Russian    -> "Совершить действия с участием [A]UR.\n" <> "Действие по умолчанию устанавливает из AUR."
-    Italian    -> "Azioni riguardanti [A]UR.\n" <> "Di default installa da AUR."
-    Serbian    -> "Извршава радње везане за [A]UR.\n" <> "Уобичајена радња инсталира из AUR-а."
-    Norwegian  -> "Utfør handlinger som innebærer [A]UR.\n" <> "Standard-handling installerer fra AUR."
-    Indonesia  -> "Melakukan perbuatan yang berhubungan dengan [A]UR.\n" <> "Instalasi bawaan dari AUR."
-    Chinese    -> "执行涉及到 [A]UR 的指令。\n" <> "默认从 AUR 安装。"
-    _          -> "Perform actions involving the [A]UR.\n" <> "Default action installs from the AUR."
-
--- NEEDS TRANSLATION
-saveS :: Language -> T.Text
-saveS = yellow . \case
-    Japanese   -> "パッケージの設置状態に関する処理\n" <> "デフォルトでインストール状態を保存する。"
-    Polish     -> "Zarządza zachowywaniem oraz odtwarzaniem globalnego stanu pakietów.\n" <> "Domyślnie zachowuje stan"
-    Croatian   -> "Upravlja spremanjem i vraćanjem globalnog stanja paketa.\n" <> "Uobičajena (default) radnja je spremanje trenutnog stanja paketa."
-    German     -> "Verwalte das [S]peichern und Wiederherstellen der globalen Paketzustände.\n" <> "Standardaktion sichert die Zustände."
-    Spanish    -> "Administrar el [S]alvado y restaurado del estado de los paquetes.\n" <> "La acción por omisión es salvar el estado."
-    Serbian    -> "Управља чувањем и враћањем глобалног стања пакета.\n" <> "Уобичајена радња чува тренутно стање."
-    Norwegian  -> "Administer lagring og gjenoppretting av den globale pakketilstanden.\n" <> "Standard-handling lagrer denne tilstanden."
-    Portuguese -> "Genrencia o [S]alvamento e restauração do estado global de pacotes" <> "Por padrão salva o estado atual."
-    Italian    -> "Gestisco il [S]alvataggio e ripristino dello stato globale dei pacchetti.\n" <> "Salva lo stato in maniera predefinita."
-    French     -> "Gestion de la [S]auvegarde et de la restauration de l'état global des paquets.\n" <> "Par défaut, sauvegarde l'état actuel."
-    Russian    -> "Настроить [S]охранение и восстановление глобального состояние пакетов.\n" <> "Действие по умолчанию сохраняет это состояние."
-    Indonesia  -> "Mengatur [S]impan dan pengembalian keadaan paket global.\n" <> "Perilaku bawaan adalah menyimpan keadaan berikut."
-    Chinese    -> "管理对全局包状态的保存（[S]aving）和恢复。\n" <> "默认保存当前状态。"
-    _          -> "Manage the [S]aving and restoring of the global package state.\n" <> "Default action saves this state."
-
-downG :: Language -> T.Text
-downG = red . \case
-    Japanese   -> "キャッシュに関連する処理\n" <> "デフォルトでパッケージをダウングレード"
-    Polish     -> "Wykonuje akcje związane z pamięcią podręczną ([C]ache) pakietów.\n" <> "Domyślnie instaluje starsze wersje podanych pakietów."
-    Croatian   -> "Izvršava radnje sa [C]ache-om paketa.\n" <> "Uobičajena (default) radnja je vraćanje paketa na prijašnju verziju."
-    Swedish    -> "Utför åtgärder involverandes paket-[C]ache.\n" <> "Standard-åtgärd nergraderar valda paket."
-    German     -> "Führe Aktionen aus die den Paket[C]ache betreffen.\n" <> "Standardaktion downgradet gegebene Pakete."
-    Spanish    -> "Realizar acciones relacionadas con la [C]aché.\n" <> "La acción por omisión es volver a versiones antiguas de los paquetes especificados."
-    Portuguese -> "Realiza ações relacionadas ao [C]ache.\n" <> "Ação padrão retorna os pacotes informados às suas versões anteriores."
-    French     -> "Actions impliquant le [C]ache des paquets.\n" <> "Par défaut, mets les paquets spécifiés à niveau vers une version antérieure."
-    Russian    -> "Совершить действия с участием кэша пакета ([C]ache).\n" <> "Действие по умолчанию откатывает данные пакеты к старым версиям."
-    Italian    -> "Azioni riguardanti la [C]ache dei pacchetti.\n" <> "Di default retrocede il pacchetti."
-    Serbian    -> "Извршава радње везане за кеш пакета.\n" <> "Уобичајена радња враћа претходну верзију датих пакета."
-    Norwegian  -> "Utfør handlinger som involverer pakke-[C]achen.\n" <> "Standard-handling nedgraderer den valgte pakken."
-    Indonesia  -> "Melakukan hal yang berhubugnan dengan [C]ache paket.\n" <> "Perilaku bawaan adalah menurunkan versi dari paket yang diberikan."
-    Chinese    -> "执行涉及到缓存（[C]ache）的指令。\n" <> "默认降级指定包。"
-    _          -> "Perform actions involving the package [C]ache.\n" <> "Default action downgrades given packages."
-
-viewL :: Language -> T.Text
-viewL = cyan . \case
-    Japanese   -> "[L]ogfileに関連する処理\n" <> "デフォルトでlogfileを閲覧用に開く"
-    Polish     -> "Wykonuje akcje związane z dziennikiem ([L]ogiem) pacmana.\n" <> "Domyślnie otwiera log w trybie tylko do odczytu."
-    Croatian   -> "Izvršavanje radnje sa pacman dnevnikom ([L]ogfile).\n" <> "Uobičajena (default) radnja je ispis dnevnika."
-    Swedish    -> "Utför åtgärder involverandes pacmans [L]ogfil.\n" <> "Standard-åtgärd öppnar loggen med read-only-attribut."
-    German     -> "Führe Aktionen aus, die die Pacman-[L]ogdatei betreffen.\n" <> "Standardaktion öffnet den Log (nur Lesen)"
-    Spanish    -> "Realizar acciones relacionadas con el fichero [L]og de pacman.\n" <> "La acción por omisión es abrir el log en modo sólo lectura."
-    Portuguese -> "Realiza ações relacionadas ao [L]ogfile do Pacman.\n" <> "Ação padrão abre o arquivo de log apenas para leitura."
-    French     -> "Actions impliquant le fichier de [L]og (journal) de Pacman.\n" <> "Par défaut, ouvre le journal en lecture seule."
-    Russian    -> "Совершить действия с участием [L]og-файлов pacman.\n" <> "Действие по умолчанию открывает лог для просмотра в режиме для чтения."
-    Italian    -> "Azioni riguardanti i [L]ogfile di pacman.\n" <> "Di default visualizza il log in sola lettura."
-    Serbian    -> "Извршава радње везане за pacman-ов дневник.\n" <> "Уобичајена радња даје преглед дневника."
-    Norwegian  -> "Utfør handlinger som involverer `pacman`'s [L]oggfil.\n" <> "Standard-handling åpner loggen for skrivebeskyttet lesing."
-    Indonesia  -> "Melakukan hal yang berhubungan dengan berkas [L]og pacman.\n"<>"Aksi bawaan adalah membuka log dengan aturan `baca-saja`."
-    Chinese    -> "执行涉及到 pacman 的日志文件（[L]ogfile）的指令。\n" <> "默认以只读模式打开日志。"
-    _          -> "Perform actions involving the pacman [L]ogfile.\n" <> "Default action opens the log for read-only viewing."
-
-orpha :: Language -> T.Text
-orpha = blue . \case
-    Japanese   -> "必要とされていない従属パッケージに関する処理\n" <> "デフォルトでその従属パッケージの名前を出力"
-    Polish     -> "Wykonuje akcje związane z [O]sieroconymi pakietami.\n" <> "Domyślnie wyświetla wszystkie osierocone pakiety."
-    Croatian   -> "Izvršava radnje s paketima bez roditelja ([O]rphan).\n" <> "Uobičajena (default) radnja je izlistavanje paketa bez roditelja."
-    Swedish    -> "Utför åtgärder involverandes [O]rphan-paket.\n" <> "Standard-åtgärd listar alla orphan-paket."
-    German     -> "Führe Aktionen aus, die verwaiste Pakete ([O]rphans) betreffen.\n" <> "Standardaktion listet alle verwaisten Pakete auf."
-    Spanish    -> "Realizar acciones relacionadas con paquetes huérfanos ([O]rphan).\n" <> "La acción por omisión es listar todos los paquetes huérfanos."
-    Portuguese -> "Realiza ações com pacotes [O]rfãos.\n" <> "Ação padrão lista todos os pactes orfãos."
-    French     -> "Actions impliquant les paquets [O]rphelins.\n" <> "Par défaut, liste l'ensemble des paquets orphelins."
-    Russian    -> "Совершить действия с участием [O]сиротевших пакетов.\n" <> "Действие по умолчанию перечисляет все осиротевшие пакеты."
-    Italian    -> "Azioni riguardanti i pacchetti [O]rfani.\n" <> "Di default elenca i pacchetti orfani."
-    Serbian    -> "Извршава радње везане за пакете без родитеља.\n" <> "Уобичајена радња листа пакете без родитеља."
-    Norwegian  -> "Utfør handlinger som involverer foreldreløse pakker ([O]rphans).\n" <> "Standard-handling åpner alle foreldreløse pakker."
-    Indonesia  -> "Melakukan hal yang berhubungan dengan paket [O]rphan.\n" <> "Perilaku bawaan adalah mencetak daftar semua paket orphan."
-    Chinese    -> "执行涉及到孤包（[O]rphan packages）的指令。\n" <> "默认列出全部的孤包。"
-    _          -> "Perform actions involving [O]rphan packages.\n" <> "Default action lists all orphan packages."
-
 -------------------------------
 -- Aura/AUR functions
 -------------------------------
@@ -1568,7 +1439,7 @@ outOfDateMsg Nothing = green . \case
 
 -- NEEDS TRANSLATION
 orphanedMsg :: Maybe T.Text -> Language -> T.Text
-orphanedMsg (Just m) = const $ bForeground m
+orphanedMsg (Just m) = const m
 orphanedMsg Nothing = red . \case
     Japanese   -> "孤児です!"
     Polish     -> "Osierocony!"

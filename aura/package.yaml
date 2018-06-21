@@ -48,6 +48,7 @@ library:
   dependencies:
     - aeson >= 1.2 && < 1.5
     - aeson-pretty >= 0.8 && < 0.9
+    - ansi-wl-pprint >= 0.6 && < 0.7
     - array >= 0.5 && < 0.6
     - async >= 2.1 && < 2.3
     - aur >= 6.0.1 && < 7

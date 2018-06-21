@@ -166,7 +166,7 @@ reportPkgsToInstall la rps bps = do
   lang <- asks langOf
   pl (reportPkgsToInstall_1    lang) (sort rps)
   pl (reportPkgsToInstall_2 la lang) (sort $ map bldNameOf bps)
-      where pl m r = send $ printList @IO green cyan m r
+    where pl m r = send $ printList @IO green cyan m r
 
 reportListOfDeps :: [T.Text] -> [Buildable] -> IO ()
 reportListOfDeps rps bps = do

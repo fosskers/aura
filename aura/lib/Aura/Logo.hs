@@ -43,14 +43,14 @@ auraLogo = " __ _ _  _ _ _ __ _ \n" <>
            "\\__,_|\\_,_|_| \\__,_|"
 
 openMouth :: [T.Text]
-openMouth = yellow <$>
+openMouth = map yellow
             [ " .--."
             , "/ _.-'"
             , "\\  '-."
             , " '--'" ]
 
 closedMouth :: [T.Text]
-closedMouth = yellow <$>
+closedMouth = map yellow
               [ " .--."
               , "/ _..\\"
               , "\\  ''/"

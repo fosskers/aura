@@ -131,9 +131,6 @@ checkDBLock ss = do
 -- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`
 -------
 
-renderColour :: Settings -> Colouror -> (Language -> T.Text) -> T.Text
-renderColour ss c msg = c . msg $ langOf ss
-
 notify :: T.Text -> IO ()
 notify = putStrLnA green
 
