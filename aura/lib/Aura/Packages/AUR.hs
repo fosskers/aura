@@ -50,7 +50,7 @@ import           Internet
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
 import           System.FilePath ((</>))
-import           Utilities (decompress)
+import           Utilities (decompress, list)
 
 ---
 
@@ -78,6 +78,7 @@ buildable m ai = do
       { bldNameOf     = aurNameOf ai
       , pkgbuildOf    = Pkgbuild pb
       , bldBaseNameOf = pkgBaseOf ai
+      , bldProvidesOf = list (Provides $ aurNameOf ai) (Provides . head) $ providesOf ai
       , bldDepsOf     = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai  -- TODO bad mapMaybe?
       , bldVersionOf  = either (const Nothing) Just . versioning $ aurVersionOf ai
       , isExplicit    = False

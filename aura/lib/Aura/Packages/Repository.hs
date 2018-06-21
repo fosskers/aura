@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, TupleSections #-}
 
 {-
 
@@ -46,30 +46,32 @@ pacmanRepo :: Repository
 pacmanRepo = Repository $ \_ names -> do
   badsgoods <- partitionEithers <$> mapConcurrently resolveName (toList names)
   bitraverse (pure . S.fromList) (traverse f) badsgoods
-  where f r = packageRepo r <$> mostRecentVersion r
+  where f (r, p) = packageRepo r p <$> mostRecentVersion r
 
-packageRepo :: T.Text -> Maybe Versioning -> Package
-packageRepo name ver = Package
+packageRepo :: T.Text -> Provides -> Maybe Versioning -> Package
+packageRepo name pro ver = Package
   { pkgNameOf        = name
   , pkgVersionOf     = ver
   , pkgBaseNameOf    = name
+  , pkgProvidesOf    = pro
   , pkgDepsOf        = []  -- Let pacman handle dependencies.
   , pkgInstallTypeOf = Pacman name }
 
 -- | If given a virtual package, try to find a real package to install.
 -- Functions like this are why we need libalpm.
-resolveName :: T.Text -> IO (Either T.Text T.Text)
+resolveName :: T.Text -> IO (Either T.Text (T.Text, Provides))
 resolveName name = do
   provs <- T.lines <$> pacmanOutput ["-Ssq", "^" <> name <> "$"]
   case provs of
     [] -> pure $ Left name
-    _  -> Right <$> chooseProvider name provs
+    _  -> Right . (, Provides name) <$> chooseProvider name provs
 
 -- | Choose a providing package, favoring installed packages.
+-- TODO give the user a choice?
 chooseProvider :: MonadIO m => T.Text -> [T.Text] -> m T.Text
-chooseProvider name []        = pure name
-chooseProvider _    [p]       = pure p
-chooseProvider _    ps@(p:_)  = fromMaybe p . listToMaybe . catMaybes <$> liftIO (mapConcurrently isInstalled ps)
+chooseProvider name []       = pure name
+chooseProvider _    [p]      = pure p
+chooseProvider _    ps@(p:_) = fromMaybe p . listToMaybe . catMaybes <$> liftIO (mapConcurrently isInstalled ps)
 
 -- | The most recent version of a package, if it exists in the respositories.
 mostRecentVersion :: T.Text -> IO (Maybe Versioning)

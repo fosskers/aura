@@ -38,6 +38,7 @@ module Aura.Types
     -- * Other Wrappers
   , PackagePath(..), sortPkgs
   , Pkgbuild(..)
+  , Provides(..)
   ) where
 
 import           BasePrelude hiding (try)
@@ -53,6 +54,7 @@ import           Text.Megaparsec.Char
 data Package = Package { pkgNameOf        :: T.Text
                        , pkgVersionOf     :: Maybe Versioning
                        , pkgBaseNameOf    :: T.Text
+                       , pkgProvidesOf    :: Provides
                        , pkgDepsOf        :: [Dep]
                        , pkgInstallTypeOf :: InstallType }
 
@@ -142,10 +144,15 @@ sortPkgs = sortBy verNums
 -- | The contents of a PKGBUILD file.
 newtype Pkgbuild = Pkgbuild { _pkgbuild :: T.Text }
 
+-- | The dependency which some package provides. May not be the same name
+-- as the package itself (e.g. cronie provides cron).
+newtype Provides = Provides { _provides :: T.Text }
+
 -- | A package to be built manually before installing.
 data Buildable = Buildable
     { bldNameOf     :: T.Text
     , bldBaseNameOf :: T.Text
+    , bldProvidesOf :: Provides
     , pkgbuildOf    :: Pkgbuild
     , bldDepsOf     :: [Dep]
     , bldVersionOf  :: Maybe Versioning

@@ -53,5 +53,6 @@ packageBuildable ss b = do
   pure Package { pkgNameOf        = bldNameOf b'
                , pkgVersionOf     = bldVersionOf b'
                , pkgBaseNameOf    = bldBaseNameOf b'
+               , pkgProvidesOf    = bldProvidesOf b'
                , pkgDepsOf        = bldDepsOf b'
                , pkgInstallTypeOf = Build b' }

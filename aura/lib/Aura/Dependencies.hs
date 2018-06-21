@@ -68,7 +68,7 @@ resolveDeps' ss tv repo ps = concat <$> mapConcurrently f ps
           deps <- fmap catMaybes . mapConcurrently (\d -> bool (Just d) Nothing <$> isSatisfied d) $ pkgDepsOf p
           (bads, goods) <- repoLookup repo ss . S.fromList $ map depNameOf deps
           let depsMap   = M.fromList $ map (depNameOf &&& id) deps
-              conflicts = mapMaybe (\p' -> realPkgConflicts ss p' $ depsMap M.! (pkgNameOf p')) goods
+              conflicts = mapMaybe (\p' -> realPkgConflicts ss p' $ depsMap M.! (_provides $ pkgProvidesOf p')) goods
               evils     = map NonExistant (toList bads) <> conflicts
           bool (pure evils) (resolveDeps' ss tv repo goods) $ null evils
 
