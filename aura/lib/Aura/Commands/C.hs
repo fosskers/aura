@@ -146,7 +146,7 @@ cleanNotSaved = do
   ss <- ask
   send . notify . cleanNotSaved_1 $ langOf ss
   sfs <- getStateFiles
-  states <- send $ traverse readState sfs
+  states <- fmap catMaybes . send $ traverse readState sfs
   let path = fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
   (Cache cache)  <- send . shelly @IO $ cacheContents path
   let duds = M.filterWithKey (\p _ -> any (inState p) states) cache

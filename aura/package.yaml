@@ -46,6 +46,7 @@ library:
   source-dirs: lib
   other-modules: []
   dependencies:
+    - aeson >= 1.2 && < 1.5
     - aeson-pretty >= 0.8 && < 0.9
     - array >= 0.5 && < 0.6
     - async >= 2.1 && < 2.3
@@ -60,6 +61,7 @@ library:
     - stm
     - system-filepath
     - time
+    - witherable >= 0.2 && < 0.3
 
 tests:
   aura-test:

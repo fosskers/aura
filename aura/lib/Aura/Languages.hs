@@ -1024,6 +1024,10 @@ cleanStates_3 = \case
     Swedish    -> "Inga paket togs bort."
     _          -> "No package states were removed."
 
+readState_1 :: Language -> T.Text
+readState_1 = \case
+  _ -> "That state file failed to parse. Is it legal JSON?"
+
 ----------------------------
 -- Aura/Commands/C functions
 ----------------------------

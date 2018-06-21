@@ -41,21 +41,33 @@ import           Aura.Settings
 import           Aura.Time
 import           Aura.Types
 import           Aura.Utils (printList)
-import           BasePrelude hiding (Version, FilePath)
+import           BasePrelude hiding (Version, FilePath, mapMaybe)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import           Data.Aeson
+import           Data.Aeson.Types (typeMismatch)
+import qualified Data.ByteString.Lazy as BL
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import           Data.Versions
+import           Data.Witherable (mapMaybe)
 import           Shelly hiding (time)
 import           Utilities (list, getSelection)
 
 ---
 
-data PkgState = PkgState { timeOf :: Time
-                         , pkgsOf :: M.Map T.Text Versioning }
-                deriving (Eq, Show)
+data PkgState = PkgState { timeOf :: Time, pkgsOf :: M.Map T.Text Versioning }
+
+instance ToJSON PkgState where
+  toJSON (PkgState t ps) = object [ "time" .= t, "packages" .= fmap prettyV ps ]
+
+instance FromJSON PkgState where
+  parseJSON (Object v) = PkgState
+    <$> v .: "time"
+    <*> fmap f (v .: "packages")
+    where f = mapMaybe (either (const Nothing) Just . versioning)
+  parseJSON invalid = typeMismatch "PkgState" invalid
 
 data StateDiff = StateDiff { _toAlter :: [SimplePkg], _toRemove :: [T.Text] }
 
@@ -63,9 +75,7 @@ stateCache :: FilePath
 stateCache = "/var/cache/aura/states"
 
 inState :: SimplePkg -> PkgState -> Bool
-inState (SimplePkg n v) s = case M.lookup n $ pkgsOf s of
-                              Nothing -> False
-                              Just v' -> v == v'
+inState (SimplePkg n v) s = maybe False (v ==) . M.lookup n $ pkgsOf s
 
 rawCurrentState :: IO [SimplePkg]
 rawCurrentState = mapMaybe simplepkg' . T.lines <$> pacmanOutput ["-Q"]
@@ -101,8 +111,8 @@ getStateFiles = send f >>= list (throwError $ Failure restoreState_2) pure
 saveState :: (Member (Reader Settings) r, Member IO r) => Eff r ()
 saveState = do
   state <- send currentState
-  let filename = stateCache </> dotFormat (timeOf state)
-  send . shelly @IO $ writefile filename (T.pack $ show state)  -- TODO Using `show` is dumb.
+  let filename = T.unpack . toTextIgnore $ stateCache </> dotFormat (timeOf state)
+  send . BL.writeFile filename $ encode state
   asks langOf >>= send . notify . saveState_1
 
 -- | Does its best to restore a state chosen by the user.
@@ -112,21 +122,23 @@ restoreState = do
   sfs <- getStateFiles
   ss  <- ask
   let pth = fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
-  past  <- send $ selectState sfs >>= readState
-  curr  <- send currentState
-  Cache cache <- send . shelly @IO $ cacheContents pth
-  let StateDiff rein remo = compareStates past curr
-      (okay, nope) = partition (`M.member` cache) rein
-      message      = restoreState_1 $ langOf ss
-  send . unless (null nope) $ printList @IO red cyan message (map _spName nope)
-  reinstallAndRemove (mapMaybe (`M.lookup` cache) okay) remo
+  mpast  <- send $ selectState sfs >>= readState
+  case mpast of
+    Nothing   -> throwError $ Failure readState_1
+    Just past -> do
+      curr <- send currentState
+      Cache cache <- send . shelly @IO $ cacheContents pth
+      let StateDiff rein remo = compareStates past curr
+          (okay, nope) = partition (`M.member` cache) rein
+          message      = restoreState_1 $ langOf ss
+      send . unless (null nope) $ printList @IO red cyan message (map _spName nope)
+      reinstallAndRemove (mapMaybe (`M.lookup` cache) okay) remo
 
 selectState :: [FilePath] -> IO FilePath
 selectState = fmap fromText . getSelection . map toTextIgnore
 
--- TODO Using `read` here is terrible. Make it JSON.
-readState :: FilePath -> IO PkgState
-readState = undefined -- read . T.unpack <$> shelly (readfile $ stateCache </> name)
+readState :: FilePath -> IO (Maybe PkgState)
+readState = fmap decode . BL.readFile . T.unpack . toTextIgnore
 
 -- | `reinstalling` can mean true reinstalling, or just altering.
 reinstallAndRemove :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>

@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
+
 -- An interface to Data.Time
 
 {-
@@ -27,6 +29,7 @@ module Aura.Time
     , Time ) where
 
 import BasePrelude
+import Data.Aeson
 import Data.Time hiding (months)
 
 ---
@@ -36,7 +39,7 @@ data Time = Time { yearOf   :: Integer
                  , dayOf    :: Int
                  , hourOf   :: Int
                  , minuteOf :: Int
-                 , secondOf :: Int } deriving (Eq, Show, Read)
+                 , secondOf :: Int } deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
 months :: [String]
 months = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"
