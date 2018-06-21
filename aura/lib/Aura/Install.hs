@@ -47,6 +47,7 @@ import           Control.Concurrent.Async
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -84,7 +85,7 @@ install' opts pkgs = do
   unneeded <- bool (pure S.empty) (S.fromList . catMaybes <$> send (mapConcurrently isInstalled $ toList pkgs)) $ shared ss NeededOnly
   let (ignored, notIgnored) = S.partition (`elem` ignoredPkgsOf (commonConfigOf ss)) pkgs
   installAnyway <- confirmIgnored ignored
-  let toInstall = (notIgnored <> installAnyway) S.\\ unneeded -- TODO Use sets for this.
+  let toInstall = (notIgnored <> installAnyway) S.\\ unneeded
   -- reportIgnoredPackages ignored  -- 2014 December  7 @ 14:52
   reportUnneededPackages $ toList unneeded
   toBuild <- lookupPkgs (installLookup opts ss) toInstall >>= pkgbuildDiffs
@@ -107,7 +108,10 @@ install' opts pkgs = do
 -- instance of each "Package Base". This will ensure that split packages will
 -- only be built once each.
 uniquePkgBase :: [Buildable] -> [Buildable]
-uniquePkgBase = nubBy (\a b -> bldBaseNameOf a == bldBaseNameOf b)
+uniquePkgBase = M.elems . M.fromListWith f . map (bldBaseNameOf &&& id)
+  where f a b | bldNameOf a == bldBaseNameOf a = a
+              | bldNameOf b == bldBaseNameOf b = b
+              | otherwise = a
 
 confirmIgnored :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r (S.Set T.Text)
 confirmIgnored (toList -> ps) = do
