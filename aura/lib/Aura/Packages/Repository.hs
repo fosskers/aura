@@ -27,6 +27,7 @@ module Aura.Packages.Repository
   ) where
 
 import           Aura.Core
+import           Aura.Languages (provides_1)
 import           Aura.Pacman (pacmanOutput)
 import           Aura.Types
 import           BasePrelude hiding (try)
@@ -37,6 +38,7 @@ import qualified Data.Text as T
 import           Data.Versions
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
+import           Utilities (getSelection)
 
 ---
 
@@ -67,11 +69,13 @@ resolveName name = do
     _  -> Right . (, Provides name) <$> chooseProvider name provs
 
 -- | Choose a providing package, favoring installed packages.
--- TODO give the user a choice?
 chooseProvider :: MonadIO m => T.Text -> [T.Text] -> m T.Text
-chooseProvider name []       = pure name
-chooseProvider _    [p]      = pure p
-chooseProvider _    ps@(p:_) = fromMaybe p . listToMaybe . catMaybes <$> liftIO (mapConcurrently isInstalled ps)
+chooseProvider name []  = pure name
+chooseProvider _    [p] = pure p
+chooseProvider name ps  = do
+  mp <- listToMaybe . catMaybes <$> liftIO (mapConcurrently isInstalled ps)
+  maybe f pure mp
+  where f = liftIO $ warn (provides_1 name) *> getSelection ps
 
 -- | The most recent version of a package, if it exists in the respositories.
 mostRecentVersion :: T.Text -> IO (Maybe Versioning)

@@ -54,6 +54,7 @@ resolveDeps repo ps = do
   m  <- send $ readTVarIO tv
   bool (throwError . Failure $ missingPkg_2 de) (pure . sortInstall $ M.elems m) $ null de
 
+-- | An empty list signals success.
 resolveDeps' :: Settings -> TVar (M.Map T.Text Package) -> Repository -> [Package] -> IO [DepError]
 resolveDeps' ss tv repo ps = concat <$> mapConcurrently f ps
   where

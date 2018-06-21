@@ -1767,7 +1767,9 @@ confParsing_1 :: Language -> T.Text
 confParsing_1 = \case
   _ -> "Unable to parse your pacman.conf file."
 
-
+provides_1 :: T.Text -> T.Text
+provides_1 pro =
+  bt pro <> " is required as a dependency, which is provided by multiple packages. Please select one:"
 
 ----------------------------------
 -- Aura/Pkgbuild/Editing functions
