@@ -59,7 +59,7 @@ aurLookup ss names
   | null names = pure (S.empty, [])
   | otherwise  = do
       (bads, goods) <- info m (toList names) >>= fmap partitionEithers . traverse (buildable m)
-      let goodNames = S.fromList $ map baseNameOf goods
+      let goodNames = S.fromList $ map bldNameOf goods
       pure (S.fromList bads <> names S.\\ goodNames, goods)
         where m = managerOf ss
 
@@ -75,13 +75,14 @@ buildable m ai = do
   case mpb of
     Nothing -> pure . Left $ aurNameOf ai
     Just pb -> pure $ Right Buildable
-      { baseNameOf   = aurNameOf ai
-      , pkgbuildOf   = Pkgbuild pb
-      , bldDepsOf    = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai  -- TODO bad mapMaybe?
-      , bldVersionOf = either (const Nothing) Just . versioning $ aurVersionOf ai
-      , isExplicit   = False
-      , buildScripts = f }
-    where f fp = sourceTarball m fp (aurNameOf ai) >>= traverse (fmap T.unpack . decompress (T.pack fp) . T.pack)
+      { bldNameOf     = aurNameOf ai
+      , pkgbuildOf    = Pkgbuild pb
+      , bldBaseNameOf = pkgBaseOf ai
+      , bldDepsOf     = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai  -- TODO bad mapMaybe?
+      , bldVersionOf  = either (const Nothing) Just . versioning $ aurVersionOf ai
+      , isExplicit    = False
+      , buildScripts  = f }
+    where f fp = sourceTarball m fp (pkgBaseOf ai) >>= traverse (fmap T.unpack . decompress (T.pack fp) . T.pack)
 
 isAurPackage :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r Bool
 isAurPackage name = asks managerOf >>= \m -> isJust <$> send (pkgbuild' @IO m name)

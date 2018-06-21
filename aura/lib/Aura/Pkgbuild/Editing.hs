@@ -59,7 +59,7 @@ hotEdit :: Settings -> Buildable -> Sh Buildable
 hotEdit ss b
   | not $ switch ss HotEdit = pure b
   | otherwise = do
-      ans <- liftIO $ optionalPrompt ss (hotEdit_1 $ baseNameOf b)
+      ans <- liftIO $ optionalPrompt ss (hotEdit_1 $ bldNameOf b)
       bool (pure b) f ans
         where f = withTmpDir $ \tmp -> do
                 cd tmp
@@ -77,7 +77,7 @@ customizepkg' :: Buildable -> Sh Buildable
 customizepkg' p = withTmpDir $ \tmp -> do
   cd tmp
   ifFile (edit $ const customize) (pure ()) conf p
-  where conf = customizepkgPath </> baseNameOf p
+  where conf = customizepkgPath </> bldNameOf p
 
 customize :: Sh T.Text
 customize = fmap snd . quietSh $ run "customizepkg" ["--modify"]

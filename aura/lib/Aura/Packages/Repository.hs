@@ -52,6 +52,7 @@ packageRepo :: T.Text -> Maybe Versioning -> Package
 packageRepo name ver = Package
   { pkgNameOf        = name
   , pkgVersionOf     = ver
+  , pkgBaseNameOf    = name
   , pkgDepsOf        = []  -- Let pacman handle dependencies.
   , pkgInstallTypeOf = Pacman name }
 

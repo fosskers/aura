@@ -72,7 +72,7 @@ buildPackages = fmap concat . traverse build
 build :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Buildable -> Eff r [FilePath]
 build p = do
   ss     <- ask
-  send . notify $ buildPackages_1 (baseNameOf p) (langOf ss)
+  send . notify $ buildPackages_1 (bldNameOf p) (langOf ss)
   result <- send . shelly @IO $ build' ss p
   either (buildFail p) pure result
 
@@ -102,7 +102,7 @@ getBuildScripts pkg user = do
   currDir <- toTextIgnore <$> pwd
   scriptsDir <- chown user currDir [] *> liftIO (buildScripts pkg (T.unpack currDir))
   case scriptsDir of
-    Nothing -> pure . Left . Failure . buildFail_7 $ baseNameOf pkg
+    Nothing -> pure . Left . Failure . buildFail_7 $ bldNameOf pkg
     Just sd -> do
       let sd' = T.pack sd
       chown user sd' ["-R"]
@@ -120,7 +120,7 @@ buildFail :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r)
   Buildable -> Failure -> Eff r [a]
 buildFail p (Failure err) = do
   ss <- ask
-  send . scold $ buildFail_1 (baseNameOf p) (langOf ss)
+  send . scold $ buildFail_1 (bldNameOf p) (langOf ss)
   send . scold . err $ langOf ss
   response <- send $ optionalPrompt @IO ss buildFail_6
   bool (throwError $ Failure buildFail_5) (pure []) response

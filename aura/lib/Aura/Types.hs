@@ -52,6 +52,7 @@ import           Text.Megaparsec.Char
 -- | A package to be installed.
 data Package = Package { pkgNameOf        :: T.Text
                        , pkgVersionOf     :: Maybe Versioning
+                       , pkgBaseNameOf    :: T.Text
                        , pkgDepsOf        :: [Dep]
                        , pkgInstallTypeOf :: InstallType }
 
@@ -143,16 +144,17 @@ newtype Pkgbuild = Pkgbuild { _pkgbuild :: T.Text }
 
 -- | A package to be built manually before installing.
 data Buildable = Buildable
-    { baseNameOf   :: T.Text
-    , pkgbuildOf   :: Pkgbuild
-    , bldDepsOf    :: [Dep]
-    , bldVersionOf :: Maybe Versioning
+    { bldNameOf     :: T.Text
+    , bldBaseNameOf :: T.Text
+    , pkgbuildOf    :: Pkgbuild
+    , bldDepsOf     :: [Dep]
+    , bldVersionOf  :: Maybe Versioning
     -- | Did the user select this package, or is it being built as a dep?
-    , isExplicit   :: Bool
+    , isExplicit    :: Bool
     -- | Fetch and extract the source code corresponding to the given package.
     -- Expects a directory in which to place the scripts, and yields the path
     -- they were successfully extracted to.
-    , buildScripts :: FilePath -> IO (Maybe FilePath) }
+    , buildScripts  :: FilePath -> IO (Maybe FilePath) }
 
 data Language = English
               | Japanese

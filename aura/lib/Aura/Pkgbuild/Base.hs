@@ -50,7 +50,8 @@ pbCustomization ss = foldl (>=>) pure [customizepkg ss, hotEdit ss]
 packageBuildable :: Settings -> Buildable -> IO Package
 packageBuildable ss b = do
   b' <- shelly $ pbCustomization ss b
-  pure Package { pkgNameOf        = baseNameOf b'
+  pure Package { pkgNameOf        = bldNameOf b'
                , pkgVersionOf     = bldVersionOf b'
+               , pkgBaseNameOf    = bldBaseNameOf b'
                , pkgDepsOf        = bldDepsOf b'
                , pkgInstallTypeOf = Build b' }

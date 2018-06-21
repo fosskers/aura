@@ -93,7 +93,7 @@ install' opts pkgs = do
      | otherwise -> do
          send . notify . install_5 $ langOf ss
          allPkgs <- depsToInstall (repository opts) toBuild
-         let (repoPkgs, buildPkgs) = partitionPkgs allPkgs
+         let (repoPkgs, buildPkgs) = second uniquePkgBase $ partitionPkgs allPkgs
          reportPkgsToInstall (label opts) repoPkgs buildPkgs
          unless (switch ss DryRun) $ do
            continue <- send $ optionalPrompt @IO ss install_3
@@ -102,6 +102,12 @@ install' opts pkgs = do
                   repoInstall repoPkgs
                   send $ storePkgbuilds buildPkgs
                   buildAndInstall buildPkgs
+
+-- | Reduce a list of candidate packages to build, such that there is only one
+-- instance of each "Package Base". This will ensure that split packages will
+-- only be built once each.
+uniquePkgBase :: [Buildable] -> [Buildable]
+uniquePkgBase = nubBy (\a b -> bldBaseNameOf a == bldBaseNameOf b)
 
 confirmIgnored :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r (S.Set T.Text)
 confirmIgnored (toList -> ps) = do
@@ -155,13 +161,13 @@ reportPkgsToInstall :: (Member (Reader Settings) r, Member IO r) => T.Text -> [T
 reportPkgsToInstall la rps bps = do
   lang <- asks langOf
   pl (reportPkgsToInstall_1    lang) (sort rps)
-  pl (reportPkgsToInstall_2 la lang) (sort $ map baseNameOf bps)
+  pl (reportPkgsToInstall_2 la lang) (sort $ map bldNameOf bps)
       where pl m r = send $ printList @IO green cyan m r
 
 reportListOfDeps :: [T.Text] -> [Buildable] -> IO ()
 reportListOfDeps rps bps = do
   traverse_ T.putStrLn $ sort rps
-  traverse_ T.putStrLn . sort $ map baseNameOf bps
+  traverse_ T.putStrLn . sort $ map bldNameOf bps
 
 reportNonPackages :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r ()
 reportNonPackages = badReport reportNonPackages_1
@@ -177,7 +183,7 @@ pkgbuildDiffs ps = ask >>= check
                    | otherwise = traverse_ displayDiff ps $> ps
           displayDiff :: (Member (Reader Settings) r, Member IO r) => Buildable -> Eff r ()
           displayDiff p = do
-            let name = baseNameOf p
+            let name = bldNameOf p
             lang     <- asks langOf
             isStored <- send $ hasPkgbuildStored name
             if not isStored
