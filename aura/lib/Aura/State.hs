@@ -33,7 +33,7 @@ module Aura.State
     , getStateFiles ) where
 
 import           Aura.Cache
-import           Aura.Colour.Text
+import           Aura.Colour
 import           Aura.Core (warn, notify, rethrow)
 import           Aura.Languages
 import           Aura.Pacman (pacmanOutput, pacman)

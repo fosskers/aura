@@ -35,7 +35,7 @@ module Aura.Utils
   , splitNameAndVer
   ) where
 
-import           Aura.Colour.Text
+import           Aura.Colour
 import           Aura.Languages (Language, whitespace, yesNoMessage, yesPattern)
 import           Aura.Settings
 import           BasePrelude hiding (Version)

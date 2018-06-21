@@ -32,7 +32,7 @@ module Aura.Install
   ) where
 
 import           Aura.Build
-import           Aura.Colour.Text
+import           Aura.Colour
 import           Aura.Core
 import           Aura.Dependencies
 import           Aura.Languages

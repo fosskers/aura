@@ -45,7 +45,7 @@ module Aura.Languages
     ( module Aura.Languages
     , Language(..) ) where
 
-import           Aura.Colour.Text
+import           Aura.Colour
 import qualified Aura.Languages.Fields as Fields
 import           Aura.Types
 import           BasePrelude

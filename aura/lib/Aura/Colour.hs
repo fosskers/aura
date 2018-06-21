@@ -19,7 +19,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Colour.Text where
+module Aura.Colour where
 
 import           BasePrelude
 import qualified Data.Text as T

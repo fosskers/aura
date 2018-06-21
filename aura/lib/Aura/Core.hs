@@ -24,7 +24,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Core where
 
-import           Aura.Colour.Text
+import           Aura.Colour
 import           Aura.Languages
 import           Aura.Pacman
 import           Aura.Settings

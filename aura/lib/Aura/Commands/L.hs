@@ -30,7 +30,7 @@ module Aura.Commands.L
   , logInfoOnPkg
   ) where
 
-import           Aura.Colour.Text (yellow)
+import           Aura.Colour (yellow)
 import           Aura.Core (badReport)
 import           Aura.Languages
 import           Aura.Pacman (defaultLogFile)

@@ -35,7 +35,7 @@ module Aura.Commands.A
   , aurJson
   ) where
 
-import           Aura.Colour.Text
+import           Aura.Colour
 import           Aura.Core
 import qualified Aura.Install as I
 import           Aura.Languages

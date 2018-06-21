@@ -25,7 +25,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Logo where
 
-import           Aura.Colour.Text (yellow)
+import           Aura.Colour (yellow)
 import           BasePrelude
 import qualified Data.Text as T
 import qualified Data.Text.IO as T

@@ -24,7 +24,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -- | Coloured diff output, similar to @diff -u@ or @git diff@.
 module Aura.Diff ( unidiff ) where
 
-import           Aura.Colour.Text
+import           Aura.Colour
 import           BasePrelude hiding (First)
 import           Data.Algorithm.Diff
 import qualified Data.Text as T
