@@ -43,6 +43,7 @@ import           Aura.Packages.AUR
 import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings
+import           Aura.State (saveState)
 import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding ((<>))
@@ -86,6 +87,7 @@ upgradeAURPkgs pkgs = do
          send . notify $ upgradeAURPkgs_2 lang
          if | null toUpgrade && null devel -> send . warn $ upgradeAURPkgs_3 lang
             | otherwise -> reportPkgsToUpgrade $ map prettify toUpgrade <> toList devel
+         saveState
          install $ S.fromList (map (aurNameOf . fst) toUpgrade) <> pkgs <> devel
            where prettify (p, v) = aurNameOf p <> " : " <> prettyV v <> " => " <> aurVersionOf p
 -- TODO: Use `printf` with `prettify` to line up the colons.
