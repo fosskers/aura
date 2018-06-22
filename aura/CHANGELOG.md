@@ -3,7 +3,7 @@
 ## 2.0.0
 
 This is a large update representing about a month of full-time effort. Aura is now
-*much* faster, solves dependencies more reliably, and presents new features. This
+*much* faster, solves dependencies more reliably, and has a few new features. This
 is all while modernizing the code and seeing a TODO overall decrease in code size.
 
 ### Improvements
@@ -14,9 +14,11 @@ is all while modernizing the code and seeing a TODO overall decrease in code siz
     with that name. `cronie` and `fcron` both "provide" `cron`, and now the user
     can manually make a selection.
 - `-Au` automatically saves a package state before updating (unless you're doing `--dryrun`).
+  This lets you more easily roll back from problematic updates.
 - **Flag:** `-A --json <packages>`. Query the AUR directly for a package's raw JSON data.
   Great for debugging.
 - **Flag:** `-Br` has been restored as short-hand for `-B --restore`.
+- **Flag:** The Pacman flags `--cachedir`, `--config`, and `--logfile` also now affect Aura.
 - Improved Japanese translations thanks to Onoue Takuro.
 - Modernized the Haskell code:
   - Removed custom CLI flag handling in favour of `optparse-applicative`.
@@ -25,6 +27,8 @@ is all while modernizing the code and seeing a TODO overall decrease in code siz
   - Removed the `Aura` Monad in favour of Extensible Effect via `freer-simple`.
   - Removed custom shell interaction code in favour of `shelly`.
   - Used `async` to make AUR and `pacman` calls concurrent.
+  - `megaparsec` parsers used in place of hacky Regexes.
+- `aura` is now a library as well, and can be pulled into other Haskell projects.
 
 ### Breaking Changes
 
@@ -42,6 +46,8 @@ is all while modernizing the code and seeing a TODO overall decrease in code siz
   - `android-sdk`
   - `backintime`
   - `mysql-connector-c++`
+  - `telegram-desktop-dev`
+  - `zoom`
 
 ## 1.4.0
 - *Dependency resolution vastly improved.* We removed the Bash parser that used
