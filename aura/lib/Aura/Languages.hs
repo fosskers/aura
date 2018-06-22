@@ -17,7 +17,7 @@ Filip Brcic                          | Serbian
 "chinatsun"                          | Norwegian
 "pak tua Greg"                       | Indonesia
 Kai Zhang                            | Chinese
-Japanese                             | Onoue Takuro
+Onoue Takuro                         | Japanese
 -}
 
 {-
