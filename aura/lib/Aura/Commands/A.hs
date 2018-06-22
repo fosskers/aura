@@ -87,7 +87,7 @@ upgradeAURPkgs pkgs = do
          send . notify $ upgradeAURPkgs_2 lang
          if | null toUpgrade && null devel -> send . warn $ upgradeAURPkgs_3 lang
             | otherwise -> reportPkgsToUpgrade $ map prettify toUpgrade <> toList devel
-         saveState
+         unless (switch ss DryRun) saveState
          install $ S.fromList (map (aurNameOf . fst) toUpgrade) <> pkgs <> devel
            where prettify (p, v) = aurNameOf p <> " : " <> prettyV v <> " => " <> aurVersionOf p
 -- TODO: Use `printf` with `prettify` to line up the colons.
