@@ -178,7 +178,7 @@ data Language = English
               | Norwegian
               | Indonesia
               | Chinese
-                deriving (Eq, Enum, Ord, Read, Show)
+                deriving (Eq, Enum, Ord, Show)
 
 data DepError = NonExistant T.Text | VerConflict T.Text | Ignored T.Text | UnparsableVersion T.Text
 

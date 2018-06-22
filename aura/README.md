@@ -72,7 +72,7 @@ Install order is as follows:
 
 ### Haskell
   Aura is written in Haskell, which means easy development and pretty code.
-  Please feel free to use it as a simple Haskell reference (see **CONTRIBUTING.md**).
+  Please feel free to use it as a simple Haskell reference.
   Aura code demonstrates:
   * Parser Combinators (`megaparsec`)
   * CLI Flag Handling (`optparse-applicative`)

@@ -16,6 +16,8 @@ homepage:    https://github.com/aurapm/aura
 license:     GPL-3
 
 extra-source-files:
+  - README.md
+  - CHANGELOG.md
   - doc/aura.8
   - doc/completions/bashcompletion.sh
   - doc/completions/_aura

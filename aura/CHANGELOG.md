@@ -40,6 +40,7 @@ is all while modernizing the code and seeing a TODO overall decrease in code siz
 - **Flag:** `-y` no longer works with `-A`. Perform an `-Sy` ahead of time instead.
 - **Flag:** `-O` no longer accepts arguments to adopt packages, it only displays current
   orphans. Use `-O --adopt` instead.
+- Help messages (`-h`) are no longer localised.
 - Support for `powerpill` removed.
 
 ### Bug Fixes

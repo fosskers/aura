@@ -144,7 +144,6 @@ langFromLocale = T.take 2 >>> \case
     "zh" -> Chinese
     _    -> English
 
-
 ----------------------
 -- Aura/Core functions
 ----------------------
