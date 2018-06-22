@@ -18,6 +18,7 @@ is all while modernizing the code and seeing a TODO overall decrease in code siz
 - **Flag:** `-A --json <packages>`. Query the AUR directly for a package's raw JSON data.
   Great for debugging.
 - **Flag:** `-Br` has been restored as short-hand for `-B --restore`.
+- **Flag:** `-Cb` added as a short-hand for `-C --backup`.
 - **Flag:** The Pacman flags `--cachedir`, `--config`, and `--logfile` also now affect Aura.
 - Improved Japanese translations thanks to Onoue Takuro.
 - Modernized the Haskell code:
@@ -36,6 +37,9 @@ is all while modernizing the code and seeing a TODO overall decrease in code siz
   and also improves internal code quality. **All old package state files are no longer readable by Aura.**
 - **Flag:** `--auradebug` is now just `--debug`, matching Pacman.
 - **Flag:** `--aurignore` is now just `--ignore`, matching Pacman.
+- **Flag:** `-y` no longer works with `-A`. Perform an `-Sy` ahead of time instead.
+- **Flag:** `-O` no longer accepts arguments to adopt packages, it only displays current
+  orphans. Use `-O --adopt` instead.
 - Support for `powerpill` removed.
 
 ### Bug Fixes

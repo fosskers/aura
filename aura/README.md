@@ -1,4 +1,3 @@
-[![Stories in Ready](https://badge.waffle.io/aurapm/aura.png?label=ready&title=Ready)](https://waffle.io/aurapm/aura)
 [![Build Status](https://travis-ci.org/aurapm/aura.svg?branch=master)](https://travis-ci.org/aurapm/aura)
 [![Join the chat at https://gitter.im/aurapm/aura](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/aurapm/aura?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -17,14 +16,14 @@ The Aura Philosophy
 
 ### Arch is Arch. AUR is AUR.
   `-S` yields pacman packages and _only_ pacman packages. This agrees with
-  the above. Thus in aura, the `-A` operation is introduced for obtaining
+  the above. Thus in Aura, the `-A` operation is introduced for obtaining
   AUR packages. `-A` comes with sub-options you're used to (`-u`, `-s`,
   `-i`, etc.).
 
 ### All together
 Dependencies and packages are not built and installed one at a time.
 Install order is as follows:
-1. All pacman (ABS) dependencies (all at once).
+1. All pacman dependencies (all at once).
 2. All AUR dependencies (one at a time).
 3. All AUR packages (all at once).
 
@@ -52,7 +51,9 @@ Install order is as follows:
   Built AUR package files are moved to the package cache.
   This allows for them to be easily downgraded when problems arise.
   Other top AUR helper programs do not do this.
-  Options `--save` and `--restore` aid you during system breakage.
+  The option `-B` will save a package state, and `-Br` will restore
+  a state you select. `-Au` also automatically invokes a save,
+  to help you roll back from problematic updates.
 
 ### No Orphans
   Sometimes dependencies lose their *required* status, but remain
@@ -70,13 +71,14 @@ Install order is as follows:
   multiple-language support in mind, making it very easy to add new ones.
 
 ### Haskell
-  Aura is written in Haskell, which means easy developing and pretty code.
-  Please feel free to use it as a [simple Haskell reference](https://github.com/aurapm/aura/blob/master/aura/doc/source/guides/hacking.rst#for-haskell-study).
+  Aura is written in Haskell, which means easy development and pretty code.
+  Please feel free to use it as a simple Haskell reference (see **CONTRIBUTING.md**).
   Aura code demonstrates:
-  * Regexes
-  * CLI flag handling
-  * Monad Transformers
-  * usage of Parsec
+  * Parser Combinators (`megaparsec`)
+  * CLI Flag Handling (`optparse-applicative`)
+  * Extensible Effects (`freer-simple`)
+  * Concurrency (`async`)
+  * Shell Interaction (`shelly`)
 
 Sample Usage
 ============
@@ -88,9 +90,9 @@ Install an AUR package:
 
 Author's favourite (upgrades, removes make deps, shows PKGBUILD diffs):
 
-    aura -Akua
+    aura -Akuax
 
-Just upgrade all installed AUR packages (works with `-y`):
+Just upgrade all installed AUR packages:
 
     aura -Au
 
@@ -129,7 +131,7 @@ Store a record of all installed packages:
 
 Restore a saved record. Rolls back, uninstalls, and reinstalls packages as necessary:
 
-    aura -B --restore
+    aura -Br
 
 #### Working with the Package Cache
 Downgrade a package (this is interactive):
@@ -142,13 +144,17 @@ Search the package cache for package files via a regex:
 
 Backup the package cache:
 
-    aura -C --backup (/path/to/backup/location/)
+    aura -Cb (/path/to/backup/location/)
 
 Reduce the package cache to contain only 'x' of each package file:
 
     aura -Cc x
 
 #### Working with the Pacman Log
+View the Pacman Log:
+
+    aura -L
+
 Display install / upgrade history for a package:
 
     aura -Li (package)
@@ -164,7 +170,7 @@ Display orphan packages:
 
 Adopt an orphan package:
 
-    aura -O (package)
+    aura -O --adopt (package)
 
 Uninstall all orphan packages:
 
@@ -176,5 +182,4 @@ Localisation
 ============
 As mentioned in the Philosophy above, adding new languages to Aura is
 quite easy. If you speak a language other than those available and
-would like it added to Aura, please consult the [Localisation Guide](https://github.com/aurapm/aura/blob/master/aura/doc/source/guides/localisation.rst)
-provided.
+would like it added to Aura, please consult **LOCALISATION.md**.
