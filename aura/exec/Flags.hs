@@ -252,7 +252,7 @@ cache :: Parser AuraOp
 cache = bigC *> (Cache <$> (fmap Left mods <|> fmap Right someArgs))
   where bigC = flag' () (long "downgrade" <> short 'C' <> help "Interact with the package cache.")
         mods = backup <|> clean <|> search
-        backup = CacheBackup <$> strOption (long "backup" <> metavar "PATH" <> help "Backup the package cache to a given directory." <> hidden)
+        backup = CacheBackup <$> strOption (long "backup" <> short 'b' <> metavar "PATH" <> help "Backup the package cache to a given directory." <> hidden)
         clean  = CacheClean  <$> option auto (long "clean" <> short 'c' <> metavar "N" <> help "Save the most recent N versions of a package in the cache, deleting the rest." <> hidden)
         search = CacheSearch <$> strOption (long "search" <> short 's' <> metavar "STRING" <> help "Search the package cache via a search string." <> hidden)
 
