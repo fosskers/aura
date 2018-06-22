@@ -88,12 +88,12 @@ executeOpts ops = do
     Left o -> rethrow . pacman $ asFlag o ++ asFlag (commonConfigOf ss)
     Right (AurSync o) ->
       case o of
-        Right ps              -> trueRoot . sudo $ A.install ps
+        Right ps              -> bool (trueRoot . sudo) id (switch ss DryRun) $ A.install ps
         Left (AurDeps ps)     -> A.displayPkgDeps ps
         Left (AurInfo ps)     -> A.aurPkgInfo ps
         Left (AurPkgbuild ps) -> A.displayPkgbuild ps
         Left (AurSearch s)    -> A.aurPkgSearch s
-        Left (AurUpgrade ps)  -> trueRoot . sudo $ A.upgradeAURPkgs ps
+        Left (AurUpgrade ps)  -> bool (trueRoot . sudo) id (switch ss DryRun) $ A.upgradeAURPkgs ps
         Left (AurTarball ps)  -> A.downloadTarballs ps
         Left (AurJson ps)     -> A.aurJson ps
     Right (Backup o) ->
