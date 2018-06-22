@@ -33,7 +33,7 @@ module Aura.Commands.A
   , downloadTarballs
   , displayPkgbuild
   , aurJson
-  ) where
+ ) where
 
 import           Aura.Colour
 import           Aura.Core
@@ -57,6 +57,8 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Text.Lazy (toStrict)
 import           Data.Text.Lazy.Builder (toLazyText)
+import qualified Data.Text.Prettyprint.Doc as PP
+import qualified Data.Text.Prettyprint.Doc.Render.Terminal as PP
 import           Data.Versions
 import           Linux.Arch.Aur
 import           Shelly (whenM, pwd, shelly, toTextIgnore)
@@ -86,11 +88,9 @@ upgradeAURPkgs pkgs = do
          devel <- develPkgCheck
          send . notify $ upgradeAURPkgs_2 lang
          if | null toUpgrade && null devel -> send . warn $ upgradeAURPkgs_3 lang
-            | otherwise -> reportPkgsToUpgrade $ map prettify toUpgrade <> toList devel
+            | otherwise -> reportPkgsToUpgrade toUpgrade (toList devel)
          unless (switch ss DryRun) saveState
          install $ S.fromList (map (aurNameOf . fst) toUpgrade) <> pkgs <> devel
-           where prettify (p, v) = aurNameOf p <> " : " <> prettyV v <> " => " <> aurVersionOf p
--- TODO: Use `printf` with `prettify` to line up the colons.
 
 possibleUpdates :: (Member (Reader Settings) r, Member IO r) => S.Set SimplePkg -> Eff r [(AurInfo, Versioning)]
 possibleUpdates (toList -> pkgs) = do
@@ -196,7 +196,17 @@ aurJson ps = do
 ------------
 -- REPORTING
 ------------
-reportPkgsToUpgrade :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r ()
-reportPkgsToUpgrade pkgs = do
-  lang <- asks langOf
-  send $ printList @IO green cyan (reportPkgsToUpgrade_1 lang) pkgs
+reportPkgsToUpgrade :: (Member (Reader Settings) r, Member IO r) =>
+  [(AurInfo, Versioning)] -> [T.Text] -> Eff r ()
+reportPkgsToUpgrade ups devels = do
+  asks langOf >>= send . notify . reportPkgsToUpgrade_1
+  send $ PP.putDoc (PP.vcat $ map f ups' <> map g devels) >> T.putStrLn "\n"
+  where ups'     = map (second prettyV) ups
+        nLen     = maximum $ map (T.length . aurNameOf . fst) ups <> map T.length devels
+        vLen     = maximum $ map (T.length . snd) ups'
+        g = PP.annotate (PP.color PP.Cyan) . PP.pretty
+        f (p, v) = PP.hsep [ PP.annotate (PP.color PP.Cyan) . PP.fill nLen . PP.pretty $ aurNameOf p
+                           , "::"
+                           , PP.annotate (PP.color PP.Yellow) . PP.fill vLen $ PP.pretty v
+                           , "->"
+                           , PP.annotate (PP.color PP.Green) . PP.pretty $ aurVersionOf p ]
