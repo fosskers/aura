@@ -1,5 +1,5 @@
 name:        aura
-version:     '1.4.0'
+version:     '2.0.0'
 synopsis:    A secure package manager for Arch Linux and the AUR, written in Haskell.
 description: aura is a package manager for Arch Linux written
              in Haskell. It connects to both the official Arch

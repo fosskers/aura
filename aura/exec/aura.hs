@@ -60,7 +60,7 @@ import           Utilities
 ---
 
 auraVersion :: T.Text
-auraVersion = "1.5.0"
+auraVersion = "2.0.0"
 
 main :: IO ()
 main = do

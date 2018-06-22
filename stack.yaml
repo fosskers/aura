@@ -1,5 +1,4 @@
-# resolver: nightly-2018-06-13
-resolver: lts-11.13
+resolver: lts-11.14
 
 packages:
   - aura/
