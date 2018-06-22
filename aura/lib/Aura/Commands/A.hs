@@ -114,8 +114,6 @@ develPkgCheck = ask >>= \ss ->
 aurPkgInfo :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r ()
 aurPkgInfo = aurInfo . toList >=> traverse_ displayAurPkgInfo
 
--- By this point, the Package definitely exists, so we can assume its
--- PKGBUILD exists on the AUR servers as well.
 displayAurPkgInfo :: (Member (Reader Settings) r, Member IO r) => AurInfo -> Eff r ()
 displayAurPkgInfo ai = ask >>= \ss -> send . T.putStrLn $ renderAurPkgInfo ss ai <> "\n"
 

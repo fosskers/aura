@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, ViewPatterns #-}
 
 -- Interface to `makepkg`.
 
@@ -60,13 +60,12 @@ makepkg ss user = fmap g . f $ make cmd opts
 make :: FilePath -> [T.Text] -> Sh (ExitCode, [FilePath])
 make cmd opts = errExit False $ do
   run_ cmd opts
-  fs <- filter (T.isSuffixOf ".pkg.tar.xz" . toTextIgnore) <$> (pwd >>= ls)
+  fs <- filter p <$> (pwd >>= ls)
   ec <- exitCode <$> lastExitCode
   pure (ec, fs)
+  where p (toTextIgnore -> fp) = T.isSuffixOf "-x86_64.pkg.tar.xz" fp || T.isSuffixOf "-any.pkg.tar.xz" fp
 
--- TODO: Clean this up. Incompatible with `-x` and `--ignorearch`?
--- | Make a source package. See `man makepkg` and grep for
--- `--allsource`.
+-- | Make a source package. See `man makepkg` and grep for `--allsource`.
 makepkgSource :: User -> Sh [FilePath]
 makepkgSource user = do
   run_ cmd opts
