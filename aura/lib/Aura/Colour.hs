@@ -23,32 +23,33 @@ module Aura.Colour where
 
 import           BasePrelude
 import qualified Data.Text as T
-import qualified Text.PrettyPrint.ANSI.Leijen as PP
+import qualified Data.Text.Prettyprint.Doc as PP
+import qualified Data.Text.Prettyprint.Doc.Render.Terminal as PP
 
 ---
 
 type Colouror = T.Text -> T.Text
 
-colour :: Show b => (PP.Doc -> b) -> T.Text -> T.Text
-colour c = T.pack . show . c . PP.text . T.unpack
+colour :: PP.AnsiStyle -> PP.Doc PP.AnsiStyle -> T.Text
+colour c = PP.renderStrict . PP.layoutPretty PP.defaultLayoutOptions . PP.annotate c
 
 cyan :: Colouror
-cyan = colour PP.cyan
+cyan = colour (PP.color PP.Cyan) . PP.pretty
 
 bCyan :: Colouror
-bCyan = T.pack . show . PP.bold . PP.cyan . PP.text . T.unpack
+bCyan = colour (PP.color PP.Cyan <> PP.bold) . PP.pretty
 
 green :: Colouror
-green = colour PP.green
+green = colour (PP.color PP.Green) . PP.pretty
 
 yellow :: Colouror
-yellow = colour PP.yellow
+yellow = colour (PP.color PP.Yellow) . PP.pretty
 
 red :: Colouror
-red = colour PP.red
+red = colour (PP.color PP.Red) . PP.pretty
 
 magenta :: Colouror
-magenta = colour PP.magenta
+magenta = colour (PP.color PP.Magenta) . PP.pretty
 
 bold :: Colouror
-bold = T.pack . show . PP.bold . PP.text . T.unpack
+bold = colour PP.bold . PP.pretty

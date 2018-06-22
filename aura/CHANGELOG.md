@@ -24,7 +24,7 @@ is all while modernizing the code and seeing a TODO overall decrease in code siz
 - Modernized the Haskell code:
   - Removed custom CLI flag handling in favour of `optparse-applicative`.
   - Removed custom package version number parsing in favour of `versions`.
-  - Removed custom text colouring code in favour of `ansi-wl-pprint`.
+  - Removed custom text colouring code in favour of `prettyprinter`.
   - Removed the `Aura` Monad in favour of Extensible Effect via `freer-simple`.
   - Removed custom shell interaction code in favour of `shelly`.
   - Used `async` to make AUR and `pacman` calls concurrent.
