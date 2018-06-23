@@ -195,8 +195,8 @@ pkgbuildDiffs ps = ask >>= check
                else do
                  let new = _pkgbuild $ pkgbuildOf p
                  old <- send $ readPkgbuild name
-                 case comparePkgbuilds name old new of
-                   "" -> send . notify $ reportPkgbuildDiffs_2 name lang
-                   d  -> send $ do
+                 case comparePkgbuilds old new of
+                   Nothing -> send . notify $ reportPkgbuildDiffs_2 name lang
+                   Just d  -> send $ do
                       warn $ reportPkgbuildDiffs_3 name lang
                       T.putStrLn d

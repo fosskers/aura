@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 -- Library for handling the storing and diff'ing of PKGBUILDs.
 
 {-
@@ -30,20 +28,22 @@ module Aura.Pkgbuild.Records
   , comparePkgbuilds
   ) where
 
-import           Aura.Diff (unidiff)
 import           Aura.Pkgbuild.Base
 import           Aura.Types
 import           BasePrelude
+import           Data.Algorithm.Diff (getGroupedDiff)
+import           Data.Algorithm.DiffOutput (ppDiff)
 import qualified Data.Text as T
 import           Shelly (Sh, writefile, test_f, shelly, readfile, mkdir_p)
-import           System.FilePath ((</>))
+import           Utilities (list)
 
 ---
 
-comparePkgbuilds :: T.Text -> T.Text -> T.Text -> T.Text
-comparePkgbuilds name old new =
-  T.unlines $ unidiff 3 (T.pack $ "a" </> h) (T.pack $ "b" </> h) (T.lines old) (T.lines new)
-  where h = T.unpack name </> "PKGBUILD"
+comparePkgbuilds :: T.Text -> T.Text -> Maybe T.Text
+comparePkgbuilds old new = list Nothing (\d -> p . T.strip . T.pack $ ppDiff d) $ getGroupedDiff old' new'
+  where old' = map T.unpack $ T.lines old
+        new' = map T.unpack $ T.lines new
+        p t  = bool (Just t) Nothing $ T.null t
 
 hasPkgbuildStored :: T.Text -> IO Bool
 hasPkgbuildStored = shelly . test_f . pkgbuildPath
