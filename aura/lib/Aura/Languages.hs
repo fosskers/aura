@@ -374,8 +374,9 @@ buildFail_7 (bt -> p) = \case
 
 buildFail_8 :: Language -> T.Text
 buildFail_8 = \case
-  Japanese  -> "makepkgは失敗しました。"
-  _         -> "There was a makepkg failure."
+    Japanese   -> "makepkgは失敗しました。"
+    Portuguese -> "Ocorreu um erro ao executar makepkg"
+    _          -> "There was a makepkg failure."
 
 displayBuildErrors_1 :: Language -> T.Text
 displayBuildErrors_1 = \case
@@ -385,7 +386,7 @@ displayBuildErrors_1 = \case
     Swedish    -> "Dumpar makepkgs utskrift i "
     German     -> "Schreibe makepkg-Ausgabe in "
     Spanish    -> "Volcando la salida de makepkg en "
-    Portuguese -> "Despejando a saída do makepkg em "
+    Portuguese -> "Direcionando a saída do makepkg em "
     French     -> "Redirection de la sortie de makepkg vers "
     Russian    -> "Вывод makepkg записывается в "
     Italian    -> "Salvataggio dell'output di makepkg in "
@@ -477,9 +478,11 @@ depError :: Language -> DepError -> T.Text
 depError _ (VerConflict s) = s
 depError _ (Ignored s)     = s
 depError l (NonExistant s) = case l of
-  _ -> "The dependency " <> bt s <> " couldn't be found."
+  Portuguese -> "A dependência " <> bt s <> " não foi encontrada."
+  _          -> "The dependency " <> bt s <> " couldn't be found."
 depError l (UnparsableVersion s) = case l of
-  _ -> "The version number for " <> bt s <> " couldn't be parsed."
+  Portuguese -> "A versão de " <> bt s <> " não pôde ser interpretada."
+  _          -> "The version number for " <> bt s <> " couldn't be parsed."
 
 -----------------
 -- aura functions
@@ -1026,7 +1029,8 @@ cleanStates_3 = \case
 
 readState_1 :: Language -> T.Text
 readState_1 = \case
-  _ -> "That state file failed to parse. Is it legal JSON?"
+    Portuguese -> "O arquivo de estado não pôde ser interpretado. É um arquivo JSON válido?"
+    _          -> "That state file failed to parse. Is it legal JSON?"
 
 ----------------------------
 -- Aura/Commands/C functions
@@ -1057,7 +1061,7 @@ backupCache_2 = \case
     Swedish    -> "Du måste vara root för att ta backup på cache-filer."
     German     -> "Sie müssen root sein um den Cache zu sichern."
     Spanish    -> "Debes ser root para hacer una copia de seguridad de la caché."
-    Portuguese -> "Precisa ser root para fazer um backup do cache."
+    Portuguese -> "É preciso ser root para fazer um backup do cache."
     French     -> "Vous devez être `root` pour faire une copie de sauvegarde du cache."
     Russian    -> "Чтобы создать бэкап кэша, вы должны быть рутом"
     Italian    -> "Devi essere root per salvare la cache."
@@ -1447,7 +1451,7 @@ orphanedMsg Nothing = red . \case
     German     -> "Verwaist!"
     Spanish    -> "¡Huérfano!"
     Norwegian  -> "Foreldreløs!"
-    Portuguese -> "Orfão!"
+    Portuguese -> "Órfão!"
     French     -> "Abandonné !"
     Russian    -> "Осиротевший!"
     Indonesia  -> "Tak dipelihara!"
@@ -1615,7 +1619,8 @@ bashisms_1 = \case
 
 whoIsBuildUser_1 :: Language -> T.Text
 whoIsBuildUser_1 = \case
-  _ -> "Can't determine which user account to build with."
+    Portuguese -> "Não foi possível determinal o usuário que executará a compilação."
+    _          -> "Can't determine which user account to build with."
 
 ------------------------
 -- Aura/Pacman functions
@@ -1641,7 +1646,8 @@ pacmanFailure_1 = \case
 
 confParsing_1 :: Language -> T.Text
 confParsing_1 = \case
-  _ -> "Unable to parse your pacman.conf file."
+    Portuguese -> "Não foi possível interpretar o arquivo pacman.conf ."
+    _          -> "Unable to parse your pacman.conf file."
 
 provides_1 :: T.Text -> T.Text
 provides_1 pro =
