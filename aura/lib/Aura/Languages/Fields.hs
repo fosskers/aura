@@ -146,6 +146,7 @@ maintainer :: Language -> T.Text
 maintainer = \case
     Japanese   -> "管理者"
     Spanish    -> "Mantenedor"
+    Portuguese -> "Mantenedor"
     French     -> "Mainteneur"
     Russian    -> "Ответственный"
     Norwegian  -> "Vedlikeholder"
@@ -220,6 +221,7 @@ buildDeps = \case
     Japanese   -> "作成時従属パ"
     German     -> "Build-Abhängigkeiten"
     Spanish    -> "Dependencias de compilación"
+    Portuguese -> "Dependências de compilação"
     French     -> "Dépendances de compilation"
     Russian    -> "Зависимости сборки"
     Indonesia  -> "Dependensi bangun"
@@ -245,6 +247,7 @@ votes = \case
 popularity :: Language -> T.Text
 popularity = \case
     Japanese   -> "人気"
+    Portuguese -> "Popularidade"
     _          -> "Popularity"
 
 description :: Language -> T.Text
@@ -270,7 +273,7 @@ makeDeps = \case
     Croatian   -> "Make Zavisnosti"
     German     -> "Make-Abhängigkeiten"
     Spanish    -> "Dependencias de compilación"
-    Portuguese -> "Depenências de compilação"
+    Portuguese -> "Dependências de compilação"
     French     -> "Dépendances de compilation"
     Russian    -> "Зависимости Make"
     Indonesia  -> "Dependensi bangun"

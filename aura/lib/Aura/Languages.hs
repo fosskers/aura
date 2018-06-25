@@ -81,7 +81,7 @@ languageNames = Map.fromList . zip [ Japanese, Polish, Croatian, Swedish, German
     Swedish    -> [ "Japanese", "Polska", "Kroatiska", "Svenska", "Tyska", "Spanska", "Portugisiska", "Franska", "Ryska", "Italienska", "Serbiska", "Norska", "Indonesian", "Chinese" ]
     German     -> [ "Japanisch", "Polnisch", "Kroatisch", "Schwedisch", "Deutsch", "Spanisch", "Portugiesisch", "Französisch", "Russisch", "Italienisch", "Serbisch", "Norwegisch", "Indonesisch", "Chinese" ]
     Spanish    -> [ "Japanese", "Polaco", "Croata", "Sueco", "Alemán", "Español", "Portugués", "Francés", "Ruso", "Italiano", "Serbio", "Noruego", "Indonesio", "Chinese" ]
-    Portuguese -> [ "Japanese", "Polonês", "Croata", "Sueco", "Alemão", "Espanhol", "Português", "Francês", "Russo", "Italiano", "Sérvio", "Norueguês", "Indonesian", "Chinese" ]
+    Portuguese -> [ "Japonês", "Polonês", "Croata", "Sueco", "Alemão", "Espanhol", "Português", "Francês", "Russo", "Italiano", "Sérvio", "Norueguês", "Indonésio", "Chinês" ]
     French     -> [ "Japanese", "Polonais", "Croate", "Suédois", "Allemand", "Espagnol", "Portugais", "Français", "Russe", "Italien", "Serbe", "Norvégien", "Indonesian", "Chinese" ]
     Russian    -> [ "Japanese", "Польский", "Хорватский", "Шведский", "Немецкий", "Испанский", "Португальский", "Русский", "Итальянский", "Сербский", "Норвежский", "Индонезийский", "Chinese" ]
     Italian    -> [ "Giapponese", "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "", "", "Indonesian", "Chinese" ]
@@ -203,12 +203,13 @@ trueRoot_2 = \case
 
 trueRoot_3 :: Language -> T.Text
 trueRoot_3 = \case
-  Japanese -> "「root」としてパッケージを作成するのは「makepkg v4.2」で不可能になりました。"
-  German   -> "Seit makepkg v4.2 ist es nicht mehr möglich als root zu bauen."
-  Spanish  -> "Desde makepkg v4.2 no es posible compilar paquetes como root."
-  Chinese  -> "自从 makepkg v4.2 以后，就不能以根用户身份构建软件了。"
-  Swedish  -> "I makepkg v4.2 och uppåt är det inte tillåtet att bygga som root."
-  _        -> "As of makepkg v4.2, building as root is no longer possible."
+    Japanese   -> "「root」としてパッケージを作成するのは「makepkg v4.2」で不可能になりました。"
+    German     -> "Seit makepkg v4.2 ist es nicht mehr möglich als root zu bauen."
+    Spanish    -> "Desde makepkg v4.2 no es posible compilar paquetes como root."
+    Portuguese -> "A partir da versão v4.2 de makepkg, não é mais possível compilar como root."
+    Chinese    -> "自从 makepkg v4.2 以后，就不能以根用户身份构建软件了。"
+    Swedish    -> "I makepkg v4.2 och uppåt är det inte tillåtet att bygga som root."
+    _          -> "As of makepkg v4.2, building as root is no longer possible."
 
 mustBeRoot_1 :: Language -> T.Text
 mustBeRoot_1 = let sudo = bt "sudo" in \case
@@ -364,7 +365,7 @@ buildFail_7 (bt -> p) = \case
     Polish     -> "Nie udało się pozyskać skryptów budowania dla " <> p <> "."
     German     -> "Herunterladen der Build-Skripte für " <> p <> " fehlgeschlagen."
     Spanish    -> "No se han podido obtener los scripts de compilación de " <> p <> "."
-    Portuguese -> "Falhou para obter scripts de compilação para " <> p <> "."
+    Portuguese -> "Falha ao obter scripts de compilação para " <> p <> "."
     Indonesia  -> "Gagal mendapatkan skrip untuk " <> p <> "."
     Russian    -> "Не удалось получить сценарии сборки для " <> p <> "."
     Chinese    -> "无法获得 " <> p <> " 的构建脚本。"
@@ -373,8 +374,9 @@ buildFail_7 (bt -> p) = \case
 
 buildFail_8 :: Language -> T.Text
 buildFail_8 = \case
-  Japanese  -> "makepkgは失敗しました。"
-  _         -> "There was a makepkg failure."
+    Japanese   -> "makepkgは失敗しました。"
+    Portuguese -> "Ocorreu um erro ao executar makepkg"
+    _          -> "There was a makepkg failure."
 
 displayBuildErrors_1 :: Language -> T.Text
 displayBuildErrors_1 = \case
@@ -384,7 +386,7 @@ displayBuildErrors_1 = \case
     Swedish    -> "Dumpar makepkgs utskrift i "
     German     -> "Schreibe makepkg-Ausgabe in "
     Spanish    -> "Volcando la salida de makepkg en "
-    Portuguese -> "Despejando a saída do makepkg em "
+    Portuguese -> "Direcionando a saída do makepkg em "
     French     -> "Redirection de la sortie de makepkg vers "
     Russian    -> "Вывод makepkg записывается в "
     Italian    -> "Salvataggio dell'output di makepkg in "
@@ -461,7 +463,7 @@ missingPkg_1 (bt -> p) = \case
     Spanish    -> "La dependencia " <> p <> " no ha sido encontrada. Podría ser necesario buscar un paquete para satisfacerla."
     Norwegian  -> "Avhengigheten " <> p <> " ble ikke funnet. Du kan søke etter en pakke som tilfredsstiller avhengigheten."
     Italian    -> "La dipendenza " <> p <> " non è stata trovata. Potrebbe essere necessario cercare un pacchetto che possa soddisfarla?"
-    Portuguese -> "A dependência" <> p <> " não foi achada. Talvez tenha que buscar um pacote que a satisfaça."
+    Portuguese -> "A dependência" <> p <> " não foi encontrada. Talvez tenha que buscar um pacote que a satisfaça."
     French     -> "La dépendance " <> p <> " n'a pas pu être trouvée. Il vous faut trouver un paquet pour la satisfaire."
     Russian    -> "Зависимость " <> p <> " не найдена. Возможно, вам нужно поискать пакет, чтобы удовлетворить её."
     Indonesia  -> "Dependensi " <> p <> " tidak dapat ditemukan. Anda mungkin harus menemukan paket tersebut untuk mencukupi kebutuhan."
@@ -476,9 +478,11 @@ depError :: Language -> DepError -> T.Text
 depError _ (VerConflict s) = s
 depError _ (Ignored s)     = s
 depError l (NonExistant s) = case l of
-  _ -> "The dependency " <> bt s <> " couldn't be found."
+  Portuguese -> "A dependência " <> bt s <> " não foi encontrada."
+  _          -> "The dependency " <> bt s <> " couldn't be found."
 depError l (UnparsableVersion s) = case l of
-  _ -> "The version number for " <> bt s <> " couldn't be parsed."
+  Portuguese -> "A versão de " <> bt s <> " não pôde ser interpretada."
+  _          -> "The version number for " <> bt s <> " couldn't be parsed."
 
 -----------------
 -- aura functions
@@ -509,7 +513,7 @@ manpageMsg = \case
     Swedish    -> "Hänvisa till auras `man`-sida för detaljerade alternativ."
     German     -> "Lesen Sie die aura man-Seite für Details zu aura Optionen."
     Spanish    -> "Lee la página de manual de aura para detalles sobre las opciones."
-    Portuguese -> "Leia a man page do aura para obter mais detalhes sobre as opções"
+    Portuguese -> "Leia a man page do aura para obter mais detalhes sobre as opções."
     French     -> "Lisez le manuel d'Aura (`man aura`) pour le détail des options."
     Russian    -> "Чтобы узнать подробное описание опций aura, см. мануал."
     Italian    -> "Guardare la man page di Aura per maggiori dettagli sulle opzioni."
@@ -619,7 +623,7 @@ install_4 = \case
     Swedish    -> "Installationen avbröts manuellt."
     German     -> "Installation durch Benutzer abgebrochen."
     Spanish    -> "Instalación abortada manualmente."
-    Portuguese -> "Instalação manual abortada."
+    Portuguese -> "Instalação cancelada manualmente."
     French     -> "Installation manuelle annulée."
     Russian    -> "Пользователь прервал установку."
     Italian    -> "Installazione manuale interrotta."
@@ -653,7 +657,7 @@ confirmIgnored_1 (bt -> p) = \case
     Japanese   -> p <> "は無視されるはずのパッケージです。それでも続行しますか？"
     Polish     -> p <> " jest oznaczony jako ignorowany. Zainstalować mimo tego?"
     Spanish    -> p <> " está marcado como ignorado. ¿Deseas instalarlo de todas formas?"
-    Portuguese -> p <> " está marcado como Ignored. Instalá-lo mesmo assim?"
+    Portuguese -> p <> " está marcado como Ignorado. Deseja instalar mesmo assim?"
     Russian    -> p <> " отмечен как игнорируемый. Всё равно установить?"
     Chinese    -> p <> " 已被标记为忽略。仍然安装？"
     Swedish    -> p <> " är markerad som ignorerad. Vill du installera ändå?"
@@ -737,7 +741,7 @@ reportPkgsToInstall_2 l = \case
     Spanish    -> l <> " Paquetes:"
     Norwegian  -> l <> " Pakker:"
     Italian    -> l <> " Pacchetti:"
-    Portuguese -> l <> " Pacotes :"
+    Portuguese -> l <> " Pacotes:"
     French     -> l <> " Paquets :"
     Russian    -> l <> " Пакеты:"
     Indonesia  -> l <> " Paket:"
@@ -825,7 +829,7 @@ reportPkgbuildDiffs_3 (bt -> p) = \case
     Croatian   -> "Promjene u PKGBUILD-u za " <> p <> ":"
     German     -> "PKGBUILD-Änderungen von " <> p <> ":"
     Spanish    -> "Cambios en el PKGBUILD de " <> p <> ":"
-    Portuguese -> p <> " não tem PKGBUILD."
+    Portuguese -> "Mudanças no PKGBUILD de " <> p <> ":"
     Russian    -> "Изменения, вносимые " <> p <> " PKGBUILD:"
     French     -> "Changements du PKGBUILD de " <> p <> " :"
     Italian    -> "Cambiamenti nel PKGBUILD di " <> p <>":"
@@ -864,7 +868,7 @@ reportBadDowngradePkgs_1 = \case
     Swedish    -> "Följande paket är inte installerade, och kan därför inte bli nergraderade:"
     German     -> "Folgende Pakete sind in keiner Version im Cache und können daher nicht gedowngradet werden:"
     Spanish    -> "Los siguientes paquetes no tienen versiones en la caché, por lo que no se pueden bajar a versiones anteriores:"
-    Portuguese -> "Os seguintes pacotes não estão instalados, logo não podem retornar a uma versão anterior:"
+    Portuguese -> "Os seguintes pacotes não possuem versões no cache, logo não podem retornar a uma versão anterior:"
     French     -> "Aucune version des paquets suivants n'est présente dans le cache ; ils ne peuvent pas être mis à niveau à une version antérieure :"
     Russian    -> "Следующих пакетов нет в кэше. Следовательно, они не могут быть откачены к старой версии:"
     Italian    -> "I seguenti pacchetti non hanno versioni in cache e non posso essere retrocessi:"
@@ -1025,7 +1029,8 @@ cleanStates_3 = \case
 
 readState_1 :: Language -> T.Text
 readState_1 = \case
-  _ -> "That state file failed to parse. Is it legal JSON?"
+    Portuguese -> "O arquivo de estado não pôde ser interpretado. É um arquivo JSON válido?"
+    _          -> "That state file failed to parse. Is it legal JSON?"
 
 ----------------------------
 -- Aura/Commands/C functions
@@ -1056,7 +1061,7 @@ backupCache_2 = \case
     Swedish    -> "Du måste vara root för att ta backup på cache-filer."
     German     -> "Sie müssen root sein um den Cache zu sichern."
     Spanish    -> "Debes ser root para hacer una copia de seguridad de la caché."
-    Portuguese -> "Precisa ser root para fazer um backup do cache."
+    Portuguese -> "É preciso ser root para fazer um backup do cache."
     French     -> "Vous devez être `root` pour faire une copie de sauvegarde du cache."
     Russian    -> "Чтобы создать бэкап кэша, вы должны быть рутом"
     Italian    -> "Devi essere root per salvare la cache."
@@ -1074,7 +1079,7 @@ backupCache_3 = \case
     Swedish    -> "Specifierad backup-plats finns inte."
     German     -> "Der Sicherungsort existiert nicht."
     Spanish    -> "La localización para copia de seguridad no existe."
-    Portuguese -> "O caminho indicado para o backup não existe."
+    Portuguese -> "Localização do backup não existe."
     French     -> "Le chemin des copies de sauvegarde spécifié n'existe pas."
     Russian    -> "Путь к бэкапу не существует."
     Italian    -> "L'indirizzo del salvataggio non esiste."
@@ -1146,7 +1151,7 @@ backupCache_7 = \case
     Swedish    -> "Backup avbröts manuellt."
     German     -> "Backup durch Benutzer abgebrochen."
     Spanish    -> "Copia de seguridad abortada manualmente."
-    Portuguese -> "Backup manualmente abortado."
+    Portuguese -> "Backup cancelado manualmente."
     French     -> "Copie de sauvegarde manuelle annulée."
     Russian    -> "Создание бэкапа прервано пользователем."
     Italian    -> "Salvataggio manuale interrotto."
@@ -1218,7 +1223,7 @@ cleanCache_2 = \case
     Swedish    -> "Detta kommer ta bort HELA paket-cachen."
     German     -> "Dies wird den GESAMTEN Paketcache leeren."
     Spanish    -> "Esto eliminará POR COMPLETO la caché de paquetes."
-    Portuguese -> "Isso eliminara TODOS OS PACOTES do cache."
+    Portuguese -> "Isso removerá TODOS OS PACOTES do cache."
     French     -> "Ceci va supprimer la TOTALITÉ du cache des paquets."
     Russian    -> "Это действие ВСЕЦЕЛО уничтожит кэш пакетов."
     Italian    -> "Questo cancellera l'INTERA cache dei pacchetti."
@@ -1254,7 +1259,7 @@ cleanCache_4 = \case
     Swedish    -> "Resten kommer att tas bort. Är det OK?"
     German     -> "Der Rest wird gelöscht. Ist das OK?"
     Spanish    -> "El resto se eliminarán. ¿De acuerdo?"
-    Portuguese -> "O resto será deletado. OK?"
+    Portuguese -> "O resto será removido. OK?"
     French     -> "Le reste sera supprimé. Êtes-vous d'accord ?"
     Russian    -> "Всё остальное будет удалено. Годится?"
     Italian    -> "Il resto verrà mantenuto. Continuare?"
@@ -1272,7 +1277,7 @@ cleanCache_5 = \case
     Swedish    -> "Cache-rensning avbröts manuellt."
     German     -> "Leeren des Caches durch Benutzer abgebrochen."
     Spanish    -> "Limpieza de la caché abortada manualmente."
-    Portuguese -> "Limpeza do cache abortada manualmente."
+    Portuguese -> "Limpeza do cache cancelada manualmente."
     French     -> "Le nettoyage du cache a été arrêté manuellement."
     Russian    -> "Очистка кэша прервана пользователем."
     Italian    -> "Pulitura manuale della cache interrotta."
@@ -1310,7 +1315,7 @@ cleanNotSaved_1 = \case
     Spanish    -> "Determinando ficheros de paquetes innecesarios..."
     Norwegian  -> "Finner unødige pakkefiler..."
     Italian    -> "Determino i pacchetti non più necessari..."
-    Portuguese -> "Determinando arquivos não necessários nos pacotes ..."
+    Portuguese -> "Determinando pacotes não necessários..."
     French     -> "Détermination des fichiers de paquet inutiles…"
     Russian    -> "Вычисляются ненужные файлы пакетов..."
     Indonesia  -> "Menentukan berkas paket yang tidak dibutuhkan..."
@@ -1354,7 +1359,7 @@ reportNotInLog_1 = \case
     Swedish    -> "Dessa har inte framkommit i loggfiler:"
     German     -> "Diese sind nicht in der Logdatei aufgetaucht:"
     Spanish    -> "Estos no aparecen en el fichero log:"
-    Portuguese -> "Os seguintes não apareceram no log de arquivo:"
+    Portuguese -> "Os seguintes não apareceram no arquivo de log:"
     French     -> "Ceci n'apparaît pas des les journaux (log) :"
     Russian    -> "Следующих пакетов нет в лог-файле:"
     Italian    -> "Questo non apparirà nei file di log;"
@@ -1446,7 +1451,7 @@ orphanedMsg Nothing = red . \case
     German     -> "Verwaist!"
     Spanish    -> "¡Huérfano!"
     Norwegian  -> "Foreldreløs!"
-    Portuguese -> "Orfão!"
+    Portuguese -> "Órfão!"
     French     -> "Abandonné !"
     Russian    -> "Осиротевший!"
     Indonesia  -> "Tak dipelihara!"
@@ -1463,7 +1468,7 @@ repository_1 p = \case
     Spanish    -> p <> " no es un paquete en ningún repositorio."
     Norwegian  -> p <> " er ikke en pakke i noe depot."
     Italian    -> p <> " non è un pacchetto di nessun repository."
-    Portuguese -> p <> " não é um pacote em nenhum do repositório."
+    Portuguese -> p <> " não é um pacote em nenhum repositório."
     French     -> p <> " n'est pas un paquet dans aucun des dépôts."
     Russian    -> "Пакет " <> p <> " не найден ни в одном репозитории."
     Indonesia  -> p <> " bukan merupakan paket pada repositori manapun."
@@ -1479,7 +1484,7 @@ pkgbuildKeyMissing key = \case
     Spanish    -> "Imposible leer la clave " <> key <> " del PKGBUILD."
     Norwegian  -> "Forstår ikke " <> key <> " fra PKGBUILD."
     Italian    -> "Inpossibile elaborare la chiave " <> key <> " dal PKGBUILD."
-    Portuguese -> "Impossível parsear " <> key <> " no PKGBUILD."
+    Portuguese -> "Impossível parsear " <> key <> " do PKGBUILD."
     French     -> "Impossible d'analyser la clef " <> key <> " depuis le PKGBUILD."
     Russian    -> "Не получилось разобрать ключ " <> key <> " из PKGBUILD."
     Indonesia  -> "Tidak dapat menerjemahkan kunci " <> key <> " dari PKGBUILD."
@@ -1495,7 +1500,7 @@ missingDescription = \case
     Spanish    -> "Sin descripción."
     Norwegian  -> "Ingen beskrivelse."
     Italian    -> "Nessuna Descrizione."
-    Portuguese -> "Descrição faltante."
+    Portuguese -> "Nenhuma descrição."
     French     -> "Aucune description."
     Russian    -> "Без описания."
     Indonesia  -> "Tidak ada deskripsi."
@@ -1517,7 +1522,7 @@ saveState_1 = \case
     Serbian    -> "Сачувано стање пакета."
     Norwegian  -> "Lagret pakketilstand."
     Italian    -> "Stato del pacchetto salvato."
-    Portuguese -> "Estados de pacote salvos."
+    Portuguese -> "Estado de pacote salvo."
     French     -> "État des paquets sauvegardé."
     Russian    -> "Состояние пакетов сохранено."
     Indonesia  -> "Kondisi paket tersimpan."
@@ -1546,10 +1551,11 @@ restoreState_1 = \case
 
 restoreState_2 :: Language -> T.Text
 restoreState_2 = \case
-  Japanese -> "保存されたパッケージ状態がない。作るには「-B」を。"
-  Chinese  -> "没有要恢复的已保存状态。（使用 -B 保存当前状态）"
-  Swedish  -> "Inga sparade tillstånd att återhämta. (Använd -B för att spara det nuvarande tillståndet)"
-  _        -> "No saved states to be restored. (Use -B to save the current state)"
+    Japanese   -> "保存されたパッケージ状態がない。作るには「-B」を。"
+    Portuguese -> "Nenhum estado disponível para ser recuperado. (Utilize -B para salvar o estado atual)"
+    Chinese    -> "没有要恢复的已保存状态。（使用 -B 保存当前状态）"
+    Swedish    -> "Inga sparade tillstånd att återhämta. (Använd -B för att spara det nuvarande tillståndet)"
+    _          -> "No saved states to be restored. (Use -B to save the current state)"
 
 -- NEEDS TRANSLATION
 reinstallAndRemove_1 :: Language -> T.Text
@@ -1584,7 +1590,7 @@ circDep_1 (bt  -> p) = \case
     Serbian    -> "Има кружну зависност са " <> p <> "."
     Norwegian  -> "Har en sirkulær avhengighet med " <> p <> "."
     Italian    -> "E' una dipendenza circolare di " <> p <> "."
-    Portuguese -> "Há uma dependência circular em " <> p <> "."
+    Portuguese -> "Há uma dependência circular com " <> p <> "."
     French     -> "A une dépendance circulaire avec " <> p <> "."
     Russian    -> "Имеет круговую зависимость с " <> p <> "."
     Indonesia  -> "Mempunyai dependensi sirkular dengan " <> p <> "."
@@ -1613,7 +1619,8 @@ bashisms_1 = \case
 
 whoIsBuildUser_1 :: Language -> T.Text
 whoIsBuildUser_1 = \case
-  _ -> "Can't determine which user account to build with."
+    Portuguese -> "Não foi possível determinal o usuário que executará a compilação."
+    _          -> "Can't determine which user account to build with."
 
 ------------------------
 -- Aura/Pacman functions
@@ -1629,7 +1636,7 @@ pacmanFailure_1 = \case
     Serbian    -> "Молим Вас, проверите ваш унос."
     Norwegian  -> "Vennligst sjekk din oppføring."
     Italian    -> "Controllare il proprio input."
-    Portuguese -> "Por favor, verifique os dados entrados."
+    Portuguese -> "Por favor, verifique os dados informados."
     French     -> "Merci de vérifier les donnés entrées."
     Russian    -> "Пожалуйста, проверьте ваши введенные данные."
     Indonesia  -> "Mohon periksa masukan anda."
@@ -1639,7 +1646,8 @@ pacmanFailure_1 = \case
 
 confParsing_1 :: Language -> T.Text
 confParsing_1 = \case
-  _ -> "Unable to parse your pacman.conf file."
+    Portuguese -> "Não foi possível interpretar o arquivo pacman.conf ."
+    _          -> "Unable to parse your pacman.conf file."
 
 provides_1 :: T.Text -> T.Text
 provides_1 pro =
@@ -1656,7 +1664,7 @@ hotEdit_1 (bt -> p) = \case
     Swedish    -> "Vill du ändra PKGBUILD-filen ifrån " <> p <> "?"
     German     -> "Möchten Sie die PKGBUILD-Datei für " <> p <> " bearbeiten?"
     Spanish    -> "¿Deseas editar el PKGBUILD de " <> p <> "?"
-    Portuguese -> "Desejaria editar o PKGBUILD de " <> p <> "?"
+    Portuguese -> "Deseja editar o PKGBUILD de " <> p <> "?"
     French     -> "Voulez-vous éditer le PKGBUILD de " <> p <> " ?"
     Russian    -> "Отредактировать PKGBUILD пакета " <> p <> "?"
     Italian    -> "Volete modificare il PKGBUILD di " <> p <> "?"
@@ -1701,12 +1709,12 @@ yesNoMessage = \case
 
 yesPattern :: Language -> [T.Text]
 yesPattern = \case
-  Polish     -> ["t", "tak"]
-  Croatian   -> ["d", "da"]
-  German     -> ["j", "ja"]
-  Spanish    -> ["s", "si"]
-  Norwegian  -> ["j", "ja"]
-  Italian    -> ["s", "si"]
-  Portuguese -> ["s", "sim"]
-  French     -> ["o", "oui"]
-  _          -> ["y", "yes"]
+    Polish     -> ["t", "tak"]
+    Croatian   -> ["d", "da"]
+    German     -> ["j", "ja"]
+    Spanish    -> ["s", "si"]
+    Norwegian  -> ["j", "ja"]
+    Italian    -> ["s", "si"]
+    Portuguese -> ["s", "sim"]
+    French     -> ["o", "oui"]
+    _          -> ["y", "yes"]
