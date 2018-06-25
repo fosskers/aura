@@ -115,7 +115,7 @@ translatorMsg lang = title : names
         names = fmap snd . Map.toList $
             Map.mapWithKey (\l t -> formatLang (assocLang l t)) translators
         assocLang lang' translator = (translator, langNames Map.! lang')
-        formatLang (translator, lang') = " " <> translator <> " (" <> lang' <> ")"
+        formatLang (translator, lang') = " (" <> lang' <> ") " <> translator
         langNames = languageNames lang
 
 -- Wrap a String in backticks
