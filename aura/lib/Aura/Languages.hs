@@ -120,7 +120,7 @@ translatorMsg lang = title : names
 
 -- Wrap a String in backticks
 bt :: T.Text -> T.Text
-bt cs = "`" <> cyan cs <> "`"
+bt cs = "`" <> cs <> "`"
 
 whitespace :: Language -> Char
 whitespace Japanese = '　'  -- \12288

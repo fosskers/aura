@@ -150,8 +150,7 @@ Obviously the syntax among languages is different, and so where you insert the
 variables you've been given into the sentence depends on your language.
 
 Also, I enjoy backticks. As a convention I wrap up all package names in these
-messages in backticks, using the `bt` function as seen in the examples. This
-also colours them cyan.
+messages in backticks, using the `bt` function as seen in the examples.
 
 ### Step Four - Command-line Flag
 
