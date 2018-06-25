@@ -35,8 +35,8 @@ import           Lens.Micro
 -- 1. Is the package ignored in `pacman.conf`?
 -- 2. Is the version requested different from the one provided by
 --    the most recent version?
-realPkgConflicts :: Settings -> Package -> Dep -> Maybe DepError
-realPkgConflicts ss pkg dep
+realPkgConflicts :: Settings -> T.Text -> Package -> Dep -> Maybe DepError
+realPkgConflicts ss parent pkg dep
     | name `elem` toIgnore            = Just $ Ignored failMsg1
     | isNothing curVer                = Just $ UnparsableVersion name
     | isVersionConflict reqVer curVer = Just $ VerConflict failMsg2
@@ -47,7 +47,7 @@ realPkgConflicts ss pkg dep
           lang     = langOf ss
           toIgnore = ignoredPkgsOf $ commonConfigOf ss
           failMsg1 = getRealPkgConflicts_2 name lang
-          failMsg2 = getRealPkgConflicts_1 name (prettyV $ fromJust curVer) (T.pack $ show reqVer) lang
+          failMsg2 = getRealPkgConflicts_1 parent name (prettyV $ fromJust curVer) (T.pack $ show reqVer) lang
 
 -- | Compares a (r)equested version number with a (c)urrent up-to-date one.
 -- The `MustBe` case uses regexes. A dependency demanding version 7.4

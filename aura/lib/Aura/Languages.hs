@@ -289,8 +289,9 @@ buildFail_8 = \case
 ------------------------------
 -- Aura/Dependencies functions
 ------------------------------
-getRealPkgConflicts_1 :: T.Text -> T.Text -> T.Text -> Language -> T.Text
-getRealPkgConflicts_1 (bt -> p) (bt -> r) (bt -> d) = \case
+-- NEEDS UPDATE TO MATCH NEW ENGLISH
+getRealPkgConflicts_1 :: T.Text -> T.Text -> T.Text -> T.Text -> Language -> T.Text
+getRealPkgConflicts_1 (bt -> prnt) (bt -> p) (bt -> r) (bt -> d) = \case
     Japanese   -> "パッケージ" <> p <> "はバージョン" <> d <> "を要するが" <> "一番最新のバージョンは" <> r <> "。"
     Polish     -> "Zależność " <> p <> " powinna być w wersji " <> d <> ", ale najnowsza wersja to " <> r <> "."
     Croatian   -> "Zavisnost " <> p <> " zahtjeva verziju " <> d <> ", a najnovija dostupna verzija je " <> r <> "."
@@ -305,7 +306,7 @@ getRealPkgConflicts_1 (bt -> p) (bt -> r) (bt -> d) = \case
     Norwegian  -> "Avhengigheten " <> p <> " krever versjon " <> d <>", men den nyeste versjonen er " <> r <> "."
     Indonesia  -> "Dependensi " <> p <> " meminta versi " <> d <> " namun versi paling baru adalah " <> r <> "."
     Chinese    -> "依赖 " <> p <> " 需要版本 " <> d <> "，但是最新的版本是 " <> r <> "。"
-    _          -> "The dependency " <> p <> " demands version " <> d <> ", but the most recent version is " <> r <> "."
+    _          -> "The package " <> prnt <> " depends on version " <> d <> " of " <> p <> ", but the most recent version is " <> r <> "."
 
 getRealPkgConflicts_2 :: T.Text -> Language -> T.Text
 getRealPkgConflicts_2 (bt -> p) = \case
@@ -337,6 +338,7 @@ depError l (NonExistant s) = case l of
 depError l (UnparsableVersion s) = case l of
   Portuguese -> "A versão de " <> bt s <> " não pôde ser interpretada."
   _          -> "The version number for " <> bt s <> " couldn't be parsed."
+depError _ (BrokenProvides pkg pro name) = "The package " <> pkg <> " needs " <> name <> ", which provides " <> pro <> "."
 
 -----------------
 -- aura functions

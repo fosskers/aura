@@ -68,9 +68,19 @@ resolveDeps' ss tv repo ps = concat <$> mapConcurrently f ps
         Nothing -> modifyTVar' tv (M.insert (pkgNameOf p) p) $> do
           deps <- fmap catMaybes . mapConcurrently (\d -> bool (Just d) Nothing <$> isSatisfied d) $ pkgDepsOf p
           (bads, goods) <- repoLookup repo ss . S.fromList $ map depNameOf deps
-          let depsMap   = M.fromList $ map (depNameOf &&& id) deps
-              conflicts = mapMaybe (\p' -> realPkgConflicts ss p' $ depsMap M.! (_provides $ pkgProvidesOf p')) goods
-              evils     = map NonExistant (toList bads) <> conflicts
+
+          let depsMap     = M.fromList $ map (depNameOf &&& id) deps
+              (brk, cnfs) = second catMaybes . partitionEithers $ map conflicting goods
+              evils       = map NonExistant (toList bads) <> cnfs <> brk
+
+              conflicting :: Package -> Either DepError (Maybe DepError)
+              conflicting p' = broken p' >>= Right . realPkgConflicts ss (pkgNameOf p) p'
+
+              broken :: Package -> Either DepError Dep
+              broken p' = maybe (Left $ BrokenProvides (pkgNameOf p) (_provides $ pkgProvidesOf p') (pkgNameOf p'))
+                          Right $
+                          M.lookup (_provides $ pkgProvidesOf p') depsMap <|> M.lookup (pkgNameOf p') depsMap
+
           bool (pure evils) (resolveDeps' ss tv repo goods) $ null evils
 
 sortInstall :: [Package] -> [Package]

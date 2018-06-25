@@ -180,7 +180,11 @@ data Language = English
               | Chinese
                 deriving (Eq, Enum, Ord, Show)
 
-data DepError = NonExistant T.Text | VerConflict T.Text | Ignored T.Text | UnparsableVersion T.Text
+data DepError = NonExistant T.Text
+              | VerConflict T.Text
+              | Ignored T.Text
+              | UnparsableVersion T.Text
+              | BrokenProvides T.Text T.Text T.Text
 
 -- | Some failure message that when given the current runtime `Language`
 -- will produce a human-friendly error.
