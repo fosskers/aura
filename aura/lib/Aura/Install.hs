@@ -52,6 +52,7 @@ import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Shelly (toTextIgnore)
+import           System.IO (hFlush, stdout)
 
 ---
 
@@ -91,7 +92,7 @@ install' opts pkgs = do
   if | null toBuild && shared ss NeededOnly && unneeded == pkgs -> send . notify . install_2 $ langOf ss
      | null toBuild -> throwError $ Failure install_2
      | otherwise -> do
-         send . notify . install_5 $ langOf ss
+         send $ notify (install_5 $ langOf ss) *> hFlush stdout
          allPkgs <- depsToInstall (repository opts) toBuild
          let (repoPkgs, buildPkgs) = second uniquePkgBase $ partitionPkgs allPkgs
          reportPkgsToInstall (label opts) repoPkgs buildPkgs
