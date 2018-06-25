@@ -186,19 +186,19 @@ would like it added to Aura, please consult **LOCALISATION.md**.
 
 Aura is currently translated by these generous people:
 
-| Language   | Translators                            |
-|------------|----------------------------------------|
-| Chinese    | Kai Zhang                              |
-| Croatian   | Denis Kasak and "stranac"              |
-| French     | Ma Jiehong and Fabien Dubosson         |
-| German     | Lukas Niederbremer and Jonas Platte    |
-| Indonesian | "pak tua Greg"                         |
-| Italian    | Bob Valantin                           |
-| Japanese   | Colin Woodbury and Onoue Takuro        |
-| Norwegian  | "chinatsun"                            |
-| Polish     | Chris Warrick                          |
-| Portuguese | Henry Kupty and Thiago Perrotta        |
-| Russian    | Kyrylo Silin                           |
-| Serbian    | Filip Brcic                            |
-| Spanish    | Alejandro Gómez and Sergio Conde       |
-| Swedish    | Fredrik Haikarainen and Daniel Beecham |
+| Language   | Translators                                     |
+|------------|-------------------------------------------------|
+| Chinese    | Kai Zhang                                       |
+| Croatian   | Denis Kasak and "stranac"                       |
+| French     | Ma Jiehong and Fabien Dubosson                  |
+| German     | Lukas Niederbremer and Jonas Platte             |
+| Indonesian | "pak tua Greg"                                  |
+| Italian    | Bob Valantin                                    |
+| Japanese   | Colin Woodbury and Onoue Takuro                 |
+| Norwegian  | "chinatsun"                                     |
+| Polish     | Chris Warrick                                   |
+| Portuguese | Henry Kupty, Thiago Perrotta, and Wagner Amaral |
+| Russian    | Kyrylo Silin                                    |
+| Serbian    | Filip Brcic                                     |
+| Spanish    | Alejandro Gómez and Sergio Conde                |
+| Swedish    | Fredrik Haikarainen and Daniel Beecham          |

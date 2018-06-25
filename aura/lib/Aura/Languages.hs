@@ -4,20 +4,20 @@
 -- All normal restrictions on line length do not apply for this file, and this file only.
 
 {- AURA TRANSLATORS - Thank you all
-Chris "Kwpolska" Warrick             | Polish
-Denis Kasak / "stranac"              | Croatian
-Fredrik Haikarainen / Daniel Beecham | Swedish
-Lukas Niederbremer / Jonas Platte    | German
-Alejandro Gómez / Sergio Conde       | Spanish
-Henry Kupty / Thiago Perrotta        | Portuguese
-Ma Jiehong / Fabien Dubosson         | French
-Kyrylo Silin                         | Russian
-Bob Valantin                         | Italian
-Filip Brcic                          | Serbian
-"chinatsun"                          | Norwegian
-"pak tua Greg"                       | Indonesia
-Kai Zhang                            | Chinese
-Onoue Takuro                         | Japanese
+Chris "Kwpolska" Warrick                      | Polish
+Denis Kasak / "stranac"                       | Croatian
+Fredrik Haikarainen / Daniel Beecham          | Swedish
+Lukas Niederbremer / Jonas Platte             | German
+Alejandro Gómez / Sergio Conde                | Spanish
+Henry Kupty / Thiago Perrotta / Wagner Amaral | Portuguese
+Ma Jiehong / Fabien Dubosson                  | French
+Kyrylo Silin                                  | Russian
+Bob Valantin                                  | Italian
+Filip Brcic                                   | Serbian
+"chinatsun"                                   | Norwegian
+"pak tua Greg"                                | Indonesia
+Kai Zhang                                     | Chinese
+Onoue Takuro                                  | Japanese
 -}
 
 {-
@@ -56,12 +56,12 @@ import qualified Data.Text as T
 
 translators :: Map.Map Language T.Text
 translators = Map.fromList
-    [ (Polish,     "Chris \"Kwpolska\" Warrick")
+    [ (Polish,     "Chris Warrick")
     , (Croatian,   "Denis Kasak / \"stranac\"")
     , (Swedish,    "Fredrik Haikarainen / Daniel Beecham")
     , (German,     "Lukas Niederbremer / Jonas Platte")
     , (Spanish,    "Alejandro Gómez / Sergio Conde")
-    , (Portuguese, "Henry \"Ingvij\" Kupty / Thiago \"thiagowfx\" Perrotta")
+    , (Portuguese, "Henry Kupty / Thiago Perrotta / Wagner Amaral")
     , (French,     "Ma Jiehong / Fabien Dubosson")
     , (Russian,    "Kyrylo Silin")
     , (Italian,    "Bob Valantin")

@@ -21,7 +21,8 @@ is all while modernizing the code and seeing a TODO overall decrease in code siz
 - **Flag:** `-Cb` added as a short-hand for `-C --backup`.
 - **Flag:** The Pacman flags `--cachedir`, `--config`, and `--logfile` also now affect Aura.
 - **Flag:** `--dryrun` no longer requires sudo.
-- Improved Japanese translations thanks to Onoue Takuro.
+- Improved Japanese translations thanks to **Onoue Takuro**.
+- Improved Portuguese translations thanks to **Wagner Amaral**.
 - Modernized the Haskell code:
   - Removed custom CLI flag handling in favour of `optparse-applicative`.
   - Removed custom package version number parsing in favour of `versions`.
