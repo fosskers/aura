@@ -38,7 +38,6 @@ import           Aura.Core (warn, notify, rethrow)
 import           Aura.Languages
 import           Aura.Pacman (pacmanOutput, pacman)
 import           Aura.Settings
-import           Aura.Time
 import           Aura.Types
 import           Aura.Utils (printList)
 import           BasePrelude hiding (Version, FilePath, mapMaybe)
@@ -50,6 +49,7 @@ import           Data.Aeson.Types (typeMismatch)
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
+import           Data.Time
 import           Data.Versions
 import           Data.Witherable (mapMaybe)
 import           Shelly hiding (time)
@@ -57,7 +57,7 @@ import           Utilities (list, getSelection)
 
 ---
 
-data PkgState = PkgState { timeOf :: Time, pkgsOf :: M.Map T.Text Versioning }
+data PkgState = PkgState { timeOf :: ZonedTime, pkgsOf :: M.Map T.Text Versioning }
 
 instance ToJSON PkgState where
   toJSON (PkgState t ps) = object [ "time" .= t, "packages" .= fmap prettyV ps ]
@@ -83,7 +83,7 @@ rawCurrentState = mapMaybe simplepkg' . T.lines <$> pacmanOutput ["-Q"]
 currentState :: IO PkgState
 currentState = do
   pkgs <- rawCurrentState
-  time <- localTime
+  time <- getZonedTime
   pure . PkgState time . M.fromAscList $ map (\(SimplePkg n v) -> (n, v)) pkgs
 
 compareStates :: PkgState -> PkgState -> StateDiff
@@ -111,10 +111,22 @@ getStateFiles = send f >>= list (throwError $ Failure restoreState_2) pure
 saveState :: (Member (Reader Settings) r, Member IO r) => Eff r ()
 saveState = do
   state <- send currentState
-  let filename = T.unpack . toTextIgnore $ stateCache </> dotFormat (timeOf state)
+  let filename = T.unpack . toTextIgnore $ stateCache </> dotFormat (timeOf state) <.> "json"
   send . shelly @IO $ mkdir_p stateCache
   send . BL.writeFile filename $ encode state
   asks langOf >>= send . notify . saveState_1
+
+dotFormat :: ZonedTime -> String
+dotFormat (ZonedTime t _) = intercalate "." items
+    where items = [ show ye
+                  , printf "%02d(%s)" mo (mnths !! (mo - 1))
+                  , printf "%02d" da
+                  , printf "%02d" (todHour $ localTimeOfDay t)
+                  , printf "%02d" (todMin $ localTimeOfDay t)
+                  , printf "%02d" ((round . todSec $ localTimeOfDay t) :: Int) ]
+          (ye, mo, da) = toGregorian $ localDay t
+          mnths :: [String]
+          mnths = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ]
 
 -- | Does its best to restore a state chosen by the user.
 -- restoreState :: Aura (Either Failure ())

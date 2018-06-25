@@ -37,6 +37,7 @@ is all while modernizing the code and seeing a TODO overall decrease in code siz
 
 - `-B` now saves package states as JSON. This makes them readable by other tools,
   and also improves internal code quality. **All old package state files are no longer readable by Aura.**
+  - The `"time"` field in these files is now a Haskell `ZonedTime`.
 - **Flag:** `--auradebug` is now just `--debug`, matching Pacman.
 - **Flag:** `--aurignore` is now just `--ignore`, matching Pacman.
 - **Flag:** `-y` no longer works with `-A`. Perform an `-Sy` ahead of time instead.
