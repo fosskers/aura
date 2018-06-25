@@ -86,7 +86,6 @@ install' opts pkgs = do
   let (ignored, notIgnored) = S.partition (`elem` ignoredPkgsOf (commonConfigOf ss)) pkgs
   installAnyway <- confirmIgnored ignored
   let toInstall = (notIgnored <> installAnyway) S.\\ unneeded
-  -- reportIgnoredPackages ignored  -- 2014 December  7 @ 14:52
   reportUnneededPackages $ toList unneeded
   toBuild <- lookupPkgs (installLookup opts ss) toInstall >>= pkgbuildDiffs
   if | null toBuild && shared ss NeededOnly && unneeded == pkgs -> send . notify . install_2 $ langOf ss

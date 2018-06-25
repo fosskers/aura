@@ -163,44 +163,6 @@ checkDBLock_1 = \case
     Swedish    -> "Paketdatabasen är låst. Klicka på enter när den är upplåst."
     _          -> "The package database is locked. Press enter when it's unlocked to continue."
 
--- Packages should not be built if the user is logged in as root!
-trueRoot_1 :: Language -> T.Text
-trueRoot_1 = \case
-    Japanese   -> "rootユーザーとしてパッケージを作成するのは危険です。続行しますか？"
-    Polish     -> "Nigdy nie powinieneś budować pakietów jako root. Na pewno kontynuować?"
-    Croatian   -> "Pakete ne bi trebalo graditi sa root korisničkim računom. Nastaviti?"
-    Swedish    -> "Det är starkt rekommenderat att INTE vara inloggad som root när man bygger paket. Vill du fortsätta ändå?"
-    German     -> "Sie sollten niemals Pakete als der echte root-Nutzer bauen. Sind sie sicher, dass Sie dies tun wollen?"
-    Spanish    -> "No deberías compilar paquetes como root nunca. ¿Deseas continuar?"
-    Portuguese -> "Você nunca deveria compilar pacotes como usuário root. Deseja prosseguir mesmo assim?"
-    French     -> "Il n'est pas recommandé de construire des paquets avec le compte root. Voulez-vous continuer ?"
-    Russian    -> "Вам никогда не следует собирать пакеты под настоящим рутом. Договорились?"
-    Italian    -> "Non si dovrebbero compilare pacchetti come root. Volete Continuare?"
-    Serbian    -> "Не би требало градити пакете са правим root овлашћењима. Желите ли наставити?"
-    Norwegian  -> "Du bør aldri bygge pakker som root. Er du helt sikker på at du vil gjøre dette?"
-    Indonesia  -> "Paket tidak boleh dibangun oleh root. Apakah anda setuju dengan hal ini?"
-    Chinese    -> "请不要以根用户构建包。以普通用户构建？"
-    _          -> "You should never build packages as the true root. Are you okay with this?"
-
--- This is for when the user decides to refrain from building afterall.
-trueRoot_2 :: Language -> T.Text
-trueRoot_2 = \case
-    Japanese   -> "よしよし。"
-    Polish     -> "Postąpiłeś słusznie."
-    Croatian   -> "Ispravno ste postupili."
-    Swedish    -> "Phew."
-    German     -> "Eine weise Entscheidung."
-    Spanish    -> "Has tomado la decision correcta."
-    Portuguese -> "Ainda bem que tem juízo!"
-    French     -> "C'est la bonne décision."
-    Russian    -> "Вы выбрали православный путь."
-    Italian    -> "Hai fatto la cosa giusta."
-    Serbian    -> "Исправно сте поступили."
-    Norwegian  -> "Du gjør det rette."
-    Indonesia  -> "Bagus! Papa bangga sama kamu!"
-    Chinese    -> "你做了正确的事情。"
-    _          -> "You’ve done the right thing."
-
 trueRoot_3 :: Language -> T.Text
 trueRoot_3 = \case
     Japanese   -> "「root」としてパッケージを作成するのは「makepkg v4.2」で不可能になりました。"
@@ -268,60 +230,6 @@ buildFail_1 (bt -> p) = \case
     Chinese    -> p <> " 构建失败。"
     _          -> "Well, building " <> p <> " failed."
 
-buildFail_2 :: Language -> T.Text
-buildFail_2 = \case
-    Japanese   -> "ちなみに下記のパッケージも作成されませんでした："
-    Polish     -> "Dodatkowo, następujące pakiety nie zostały zbudowane:"
-    Croatian   -> "Osim toga, ni sljedeće nije izgrađeno:"
-    Swedish    -> "Det gick heller inte att bygga följande paket:"
-    German     -> "Außerdem wurden die folgenden Pakete nicht gebaut:"
-    Spanish    -> "Los siguientes paquetes no se han compilado:"
-    Portuguese -> "Os pacotes a seguir não foram compilados:"
-    French     -> "En outre, les paquets suivants n'ont pu être compilés :"
-    Russian    -> "К тому же, следующие пакеты не были собраны:"
-    Italian    -> "Inoltre non è stato possibile cotruire i seguenti pacchetti:"
-    Serbian    -> "Такође, ни следећи пакети нису изграђени::"
-    Norwegian  -> "Det gikk heller ikke an å bygge følgende:"
-    Indonesia  -> "Dan paket berikut juga tidak terbangun:"
-    Chinese    -> "而且，以下包也不会被构建："
-    _          -> "Also, the following weren’t built:"
-
-buildFail_3 :: Language -> T.Text
-buildFail_3 = \case
-    Japanese   -> "しかし、以下のパッケージファイルは無事作成されました："
-    Polish     -> "Następujące pakiety zostały zbudowane pomyślnie:"
-    Croatian   -> "Neki paketi su ipak uspješno izgrađeni:"
-    Swedish    -> "Vissa paket kanske har byggts ordentligt (Osäker)."
-    German     -> "Diese Pakete wurden wiederum erfolgreich gebaut:"
-    Spanish    -> "Sin embargo, los siguientes paquetes se han compilado:"
-    Portuguese -> "Entretanto, os seguintes pacotes compilaram com sucesso:"
-    French     -> "Cependant, les paquets suivants ont été compilés avec succès :"
-    Russian    -> "Однако, эти пакеты были успешно собраны:"
-    Italian    -> "Comunque questi pacchetti sono stato compilati con successo:"
-    Serbian    -> "Међутим, ови пакети су успешно изграђени:"
-    Norwegian  -> "Heldigvis ble de følgende pakkene bygd:"
-    Indonesia  -> "Namun, paket berikut berhasil dibangun:"
-    Chinese    -> "但是，这些包已经成功构建："
-    _          -> "However, these packages were successfully built:"
-
-buildFail_4 :: Language -> T.Text
-buildFail_4 = \case
-    Japanese   -> "それらをインストールしますか？"
-    Polish     -> "Czy chcesz je zainstalować?"
-    Croatian   -> "Želite li ih instalirati?"
-    Swedish    -> "Vill du installera dem?"
-    German     -> "Möchten Sie diese installieren?"
-    Spanish    -> "¿Te gustaría instalarlos?"
-    Portuguese -> "Gostaria de instalá-los?"
-    French     -> "Voulez-vous les installer ?"
-    Russian    -> "Желаете ли вы их установить?"
-    Italian    -> "Volete installarli?"
-    Serbian    -> "Желите ли их инсталирати?"
-    Norwegian  -> "Vil du installere dem?"
-    Indonesia  -> "Apakah anda ingin menginstal disini?"
-    Chinese    -> "你希望安装这些包吗？"
-    _          -> "Would you like to install them?"
-
 buildFail_5 :: Language -> T.Text
 buildFail_5 = \case
     Japanese   -> "パッケージ作成に失敗しました。"
@@ -378,46 +286,9 @@ buildFail_8 = \case
     Portuguese -> "Ocorreu um erro ao executar makepkg"
     _          -> "There was a makepkg failure."
 
-displayBuildErrors_1 :: Language -> T.Text
-displayBuildErrors_1 = \case
-    Japanese   -> "makepkgの出力をダンプ・・・"
-    Polish     -> "Wyjście makepkg zostanie wypisane za "
-    Croatian   -> "Zapisujem makepkg ispis u "
-    Swedish    -> "Dumpar makepkgs utskrift i "
-    German     -> "Schreibe makepkg-Ausgabe in "
-    Spanish    -> "Volcando la salida de makepkg en "
-    Portuguese -> "Direcionando a saída do makepkg em "
-    French     -> "Redirection de la sortie de makepkg vers "
-    Russian    -> "Вывод makepkg записывается в "
-    Italian    -> "Salvataggio dell'output di makepkg in "
-    Serbian    -> "Уписујем излаз makepkg-а у "
-    Norwegian  -> "Dumper makepkg's utskrift i "
-    Indonesia  -> "Melimpahkan keluaran makepkg di "
-    Chinese    -> "正在清理 makepkg 的输出... "
-    _          -> "Dumping makepkg output in "
-
 ------------------------------
 -- Aura/Dependencies functions
 ------------------------------
--- Is this still used?
-getDepsToInstall_1 :: Language -> T.Text
-getDepsToInstall_1 = \case
-    Japanese   -> "パッケージは一つも指摘されていない。"
-    Polish     -> "Nie podano pakietów z AUR do zainstalowania."
-    Croatian   -> "Nijedan AUR paket nije specificiran za instalaciju."
-    Swedish    -> "Inga AUR-paket är valda för installation."
-    German     -> "Keine AUR-Pakete zur Installation vermerkt."
-    Spanish    -> "No se han especificado paquetes de AUR para instalar."
-    Portuguese -> "Nenhum pacote do AUR foi especificado para instalação."
-    French     -> "Aucun paquet AUR à installer n'a été spécifié."
-    Russian    -> "Пакеты AUR для установки не указаны."
-    Italian    -> "Nessun pacchetto di AUR specificato per l'installazione."
-    Serbian    -> "Ниједан AUR пакет није специфициран за инсталацију."
-    Norwegian  -> "Ingen pakker fra AUR er valgt for installasjon."
-    Indonesia  -> "Tidak ada paket dari AUR yang ditentukan untuk diinstasl."
-    Chinese    -> "没有指定要安装的 AUR 软件包。"
-    _          -> "No AUR packages specified for install."
-
 getRealPkgConflicts_1 :: T.Text -> T.Text -> T.Text -> Language -> T.Text
 getRealPkgConflicts_1 (bt -> p) (bt -> r) (bt -> d) = \case
     Japanese   -> "パッケージ" <> p <> "はバージョン" <> d <> "を要するが" <> "一番最新のバージョンは" <> r <> "。"
@@ -454,23 +325,6 @@ getRealPkgConflicts_2 (bt -> p) = \case
     Chinese    -> p <> " 是一个被忽略的包！请查看你的 `pacman.conf` 文件。"
     _          -> p <> " is an ignored package! See your `pacman.conf` file."
 
--- NEEDS TRANSLATION
-missingPkg_1 :: T.Text -> Language -> T.Text
-missingPkg_1 (bt -> p) = \case
-    Polish     -> "Zależność " <> p <> "nie została znaleziona. Musisz wyszukać pakiet, żeby spełnić zależność "
-    Croatian   -> "Zavisnost  " <> p <> " nije pronađena. Pokušajte pronaći paket koji zadovoljava ovu zavisnost."
-    German     -> "Die Abhängigkeit " <> p <> " wurde nicht gefunden." -- Second sentence not translated because I'm confused how it should
-    Spanish    -> "La dependencia " <> p <> " no ha sido encontrada. Podría ser necesario buscar un paquete para satisfacerla."
-    Norwegian  -> "Avhengigheten " <> p <> " ble ikke funnet. Du kan søke etter en pakke som tilfredsstiller avhengigheten."
-    Italian    -> "La dipendenza " <> p <> " non è stata trovata. Potrebbe essere necessario cercare un pacchetto che possa soddisfarla?"
-    Portuguese -> "A dependência" <> p <> " não foi encontrada. Talvez tenha que buscar um pacote que a satisfaça."
-    French     -> "La dépendance " <> p <> " n'a pas pu être trouvée. Il vous faut trouver un paquet pour la satisfaire."
-    Russian    -> "Зависимость " <> p <> " не найдена. Возможно, вам нужно поискать пакет, чтобы удовлетворить её."
-    Indonesia  -> "Dependensi " <> p <> " tidak dapat ditemukan. Anda mungkin harus menemukan paket tersebut untuk mencukupi kebutuhan."
-    Chinese    -> "无法找到依赖 " <> p <> "。你或许需要搜索一个包来满足这个依赖。"
-    Swedish    -> "Beroendet " <> p <> " kunde inte hittas. Du kan behöva leta efter ett paket som tillfredställer det."
-    _          -> "The dependency " <> p <> " could not be found. You may need to search for a package to satisfy it."
-
 missingPkg_2 :: [DepError] -> Language -> T.Text
 missingPkg_2 ps l = T.unlines $ map (depError l) ps
 
@@ -487,42 +341,6 @@ depError l (UnparsableVersion s) = case l of
 -----------------
 -- aura functions
 -----------------
-executeOpts_1 :: Language -> T.Text
-executeOpts_1 = \case
-    Japanese   -> "矛盾しているオプションがあります。"
-    Polish     -> "Niektóre flagi są w konflikcie ze sobą!"
-    Croatian   -> "Neke od danih zastavica nije moguće kombinirati!"
-    Swedish    -> "Givna flaggor är i konflikt!"
-    German     -> "Angegebene Kommandozeilen-Flags sind widersprüchlich!"
-    Spanish    -> "¡Flags contradictorios!"
-    Portuguese -> "Flags conflitantes!"
-    French     -> "Arguments contradictoires !"
-    Russian    -> "Даны конфликтующие флаги!"
-    Italian    -> "Argomenti in conflitto!"
-    Serbian    -> "Захтеване опције су контрадикторне!"
-    Norwegian  -> "Motstridene flagg er spesifisert!"
-    Indonesia  -> "Ditemukan flags yang bertabrakan!"
-    Chinese    -> "指定了冲突的选项。"
-    _          -> "Conflicting flags given!"
-
-manpageMsg :: Language -> T.Text
-manpageMsg = \case
-    Japanese   -> "選択肢の詳細は、auraのman pageまで。"
-    Polish     -> "W podręczniku man dla aura znajduje się\xa0więcej informacji o opcjach."
-    Croatian   -> "Za detalje o opcijama, pogledajte Aura man stranicu."
-    Swedish    -> "Hänvisa till auras `man`-sida för detaljerade alternativ."
-    German     -> "Lesen Sie die aura man-Seite für Details zu aura Optionen."
-    Spanish    -> "Lee la página de manual de aura para detalles sobre las opciones."
-    Portuguese -> "Leia a man page do aura para obter mais detalhes sobre as opções."
-    French     -> "Lisez le manuel d'Aura (`man aura`) pour le détail des options."
-    Russian    -> "Чтобы узнать подробное описание опций aura, см. мануал."
-    Italian    -> "Guardare la man page di Aura per maggiori dettagli sulle opzioni."
-    Serbian    -> "За детаље о опцијама, погледајте man страницу Аура."
-    Norwegian  -> "Referer til Aura's `man`-side for instillingsdetaljer."
-    Indonesia  -> "Lihat laman manual aura untuk opsi detail dari aura."
-    Chinese    -> "请查看 aura 手册了解 aura 选项细节。"
-    _          -> "See the aura man page for aura option details."
-
 displayOutputLanguages_1 :: Language -> T.Text
 displayOutputLanguages_1 = \case
     Japanese   -> "aura は下記の言語に対応しています："
@@ -560,24 +378,6 @@ auraCheck_1 = \case
     Chinese    -> "Aura 可以升级。先升级 aura？"
     Swedish    -> "Det finns en uppdatering tillgänglig till Aura. Vill du uppdatera Aura först?"
     _          -> "Aura update available. Update it first?"
-
-install_1 :: Language -> T.Text
-install_1 = \case
-    Japanese   -> "従属パッケージの確認は以下の理由で失敗しました："
-    Polish     -> "Sprawdzanie zależności nie powiodło się z następujących powodów:"
-    Croatian   -> "Provjera zavisnosti nije uspjela iz sljedećih razloga:"
-    Swedish    -> "Beroende-kollen misslyckades pga följande skäl:"
-    German     -> "Abhängigkeitsüberprüfung schlug aus folgenden Gründen fehl:"
-    Spanish    -> "La comprobación de dependencias falló por los siguientes motivos:"
-    Portuguese -> "Não foi possível checar as dependências pelas seguintes razões:"
-    French     -> "La vérification des dépendances a failli pour les raisons suivantes :"
-    Russian    -> "Проверка зависимостей не удалась из-за:"
-    Italian    -> "Il controllo delle dipendenze è fallito per i seguenti motivi:"
-    Serbian    -> "Провера зависности није успела из следећих разлога:"
-    Norwegian  -> "Avhengighets-sjekken mislyktes på grunn av følgende:"
-    Indonesia  -> "Pemeriksaan dependensi gagal dengan alasan sebagai berikut:"
-    Chinese    -> "依赖检查失败，因为："
-    _          -> "Dependency checking failed for these reasons:"
 
 install_2 :: Language -> T.Text
 install_2 = \case
@@ -682,24 +482,6 @@ reportNonPackages_1 = \case
     Chinese    -> "以下软件不是 AUR 包："
     _          -> "The following are not AUR packages:"
 
-reportIgnoredPackages_1 :: Language -> T.Text
-reportIgnoredPackages_1 = \case
-    Japanese   -> "下記のパッケージは無視されます："
-    Polish     -> "Poniższe pakiety zostaną zignorowane:"
-    Croatian   -> "Sljedeći paketi će biti ignorirani:"
-    Swedish    -> "Följande paket kommer att ignoreras: "
-    German     -> "Die folgenden Pakete werden ignoriert:"
-    Spanish    -> "Los siguientes paquetes serán ignorados:"
-    Portuguese -> "Os seguintes pacotes serão ignorados:"
-    French     -> "Les paquets suivants seront ignorés :"
-    Russian    -> "Следующие пакеты будут проигнорированы:"
-    Italian    -> "I seguenti pacchetti verranno ignorati:"
-    Serbian    -> "Следећи пакети ће бити игнорисани:"
-    Norwegian  -> "De følgende pakker vil bli ignorert:"
-    Indonesia  -> "Paket berikut ini akan diabaikan:"
-    Chinese    -> "以下包将会被忽略："
-    _          -> "The following packages will be ignored:"
-
 -- NEEDS TRANSLATION
 reportUnneededPackages_1 :: Language -> T.Text
 reportUnneededPackages_1 = \case
@@ -748,40 +530,6 @@ reportPkgsToInstall_2 l = \case
     Chinese    -> l <> " 包："
     Swedish    -> l <> " Paket:"
     _          -> l <> " Packages:"
-
-{-}
-reportPkgsToInstall_2 :: T.Text -> Language -> T.Text
-reportPkgsToInstall_2 l = \case
-    Japanese   -> l <> "の従属パッケージ："
-    Polish     -> "Zależności z " <> l <> ":"
-    Croatian   -> "Zavisnosti iz " <> l <> "-a:"
-    Swedish    -> "Beroenden ifrån " <> l <> ":"
-    German     -> "Abhängigkeiten im " <> l <> ":"
-    Spanish    -> "Dependencias en " <> l <> ":"
-    Portuguese -> "Dependências no " <> l <> ":"
-    French     -> "Dépendances " <> l <> "\xa0:"
-    Russian    -> "Зависимости из " <> l <> ":"
-    Italian    -> "Dipendenze in " <> l <> ":"
-    Serbian    -> "Зависности из " <> l <> "-а:"
-    Norwegian  -> "Avhengigheter fra " <> l <> ":"
-    _          -> l <> " dependencies:"
-
-reportPkgsToInstall_3 :: T.Text -> Language -> T.Text
-reportPkgsToInstall_3 l = \case
-    Japanese   -> "主な" <> l <> "パッケージ："
-    Polish     -> "Główne pakiety z " <> l <> ":"
-    Croatian   -> "Glavni " <> l <> " paketi:"
-    Swedish    -> "Huvudpaket ifrån " <> l <> ":"
-    German     -> "Hauptpaket aus dem " <> l <> ":"
-    Spanish    -> "Paquetes principales de " <> l <> ":"
-    Portuguese -> "Pacotes principais do " <> l <> ":"
-    French     -> "Principaux paquets " <> l <> "\xa0:"
-    Russian    -> "Главные пакеты из " <> l <> ":"
-    Italian    -> "Pacchetto principale di " <> l <> ":"
-    Serbian    -> "Главни пакети из " <> l <> "-а:"
-    Norwegian  -> "Hovedpakker fra " <> l <> ":"
-    _          -> "Main " <> l <> " packages:"
--}
 
 -- NEEDS TRANSLATION
 reportPkgbuildDiffs_1 :: T.Text -> Language -> T.Text
@@ -950,24 +698,6 @@ downloadTarballs_1 (bt -> p) = \case
     Chinese    -> "正在下载 " <> p <> " 的源文件..."
     _          -> "Downloading " <> p <> " source tarball..."
 
-displayPkgbuild_1 :: T.Text -> Language -> T.Text
-displayPkgbuild_1 (bt -> p) = \case
-    Japanese   -> p <> "は存在しません。"
-    Polish     -> p <> " nie istnieje."
-    Croatian   -> p <> " ne postoji."
-    Swedish    -> p <> " finns inte."
-    German     -> p <> " existiert nicht."
-    Spanish    -> p <> " no existe."
-    Portuguese -> p <> " não existe."
-    French     -> p <> " n'existe pas."
-    Russian    -> p <> " не существует."
-    Italian    -> p <> " inesistente."
-    Serbian    -> p <> " не постоји."
-    Norwegian  -> p <> " finnes ikke."
-    Indonesia  -> p <> " tidak ada."
-    Chinese    -> p <> " 不存在。"
-    _          -> p <> " does not exist."
-
 removeMakeDepsAfter_1 :: Language -> T.Text
 removeMakeDepsAfter_1 = \case
     Japanese   -> "あと片付け。必要ないパッケージを削除："
@@ -1052,24 +782,6 @@ getDowngradeChoice_1 (bt -> p) = \case
     Indonesia  -> "Versi dari paket " <> p <> " mana yang anda inginkan?"
     Chinese    -> "你希望安装 " <> p <> " 的哪个版本？"
     _          -> "What version of " <> p <> " do you want?"
-
-backupCache_2 :: Language -> T.Text
-backupCache_2 = \case
-    Japanese   -> "root でないとバックアップはできません。"
-    Polish     -> "Musisz być rootem, by zrobić kopię\xa0zapasową pamięci podręcznej."
-    Croatian   -> "Za stvaranje sigurnosne kopije cache-a potrebne su root ovlasti."
-    Swedish    -> "Du måste vara root för att ta backup på cache-filer."
-    German     -> "Sie müssen root sein um den Cache zu sichern."
-    Spanish    -> "Debes ser root para hacer una copia de seguridad de la caché."
-    Portuguese -> "É preciso ser root para fazer um backup do cache."
-    French     -> "Vous devez être `root` pour faire une copie de sauvegarde du cache."
-    Russian    -> "Чтобы создать бэкап кэша, вы должны быть рутом"
-    Italian    -> "Devi essere root per salvare la cache."
-    Serbian    -> "Морате бити root да бисте бекаповали кеш."
-    Norwegian  -> "Du må være root for å ta backup på cache."
-    Indonesia  -> "Anda harus menjadi root untuk mem-`backup` cache."
-    Chinese    -> "只有根用户才能备份缓存。"
-    _          -> "You must be root to backup the cache."
 
 backupCache_3 :: Language -> T.Text
 backupCache_3 = \case
@@ -1196,24 +908,6 @@ copyAndNotify_1 (cyan . T.pack . show -> n) = \case
     Indonesia  -> "Menyalin #[" <> n <> "]"
     Chinese    -> "正在复制 #[" <> n <> "]"
     _          -> "Copying #[" <> n <> "]"
-
-preCleanCache_1 :: T.Text -> Language -> T.Text
-preCleanCache_1 n = \case
-    Japanese   -> n <> "は数字ではありません。"
-    Polish     -> n <> " nie jest liczbą."
-    Croatian   -> n <> " nije broj. "
-    Swedish    -> n <> " är inte ett nummer."
-    German     -> n <> " ist keine Nummer."
-    Spanish    -> n <> " no es un número."
-    Portuguese -> n <> " não é um número."
-    French     -> n <> " n'est pas un nombre."
-    Russian    -> n <> " не является числом."
-    Italian    -> n <> " non è un numero."
-    Serbian    -> n <> " није број."
-    Norwegian  -> n <> " er ikke et nummer."
-    Indonesia  -> n <> " bukan angka, coy!"
-    Chinese    -> n <> " 不是一个数字。"
-    _          -> n <> " is not a number."
 
 cleanCache_2 :: Language -> T.Text
 cleanCache_2 = \case
@@ -1348,8 +1042,7 @@ logLookUpFields :: Language -> [T.Text]
 logLookUpFields = sequence [ Fields.package
                            , Fields.firstInstall
                            , Fields.upgrades
-                           , Fields.recentActions
-                           ]
+                           , Fields.recentActions ]
 
 reportNotInLog_1 :: Language -> T.Text
 reportNotInLog_1 = \case
@@ -1372,25 +1065,6 @@ reportNotInLog_1 = \case
 -------------------------------
 -- Aura/AUR functions
 -------------------------------
--- NEEDS TRANSLATION
-getAURPkgInfo_1 :: Language -> T.Text
-getAURPkgInfo_1 = \case
-    Japanese   -> "AURのAPIに接続できませんでした。ネット接続状態を確認して下さい。"
-    Polish     -> "AUR API wyszukiwanie nie powiodło się. Sprawdź swoje połączenie"
-    Croatian   -> "Pristup AUR-u nije uspio. Provjerite svoju vezu."
-    German     -> "AUR-API-Suche fehlgeschlagen. Bitte überprüfen Sie Ihre Internet-Verbindung."
-    Spanish    -> "Fallo en la consulta a la API de AUR. Comprueba tu conexión a Internet."
-    Serbian    -> "Приступ AUR-у није успео. Проверите вашу везу."
-    Norwegian  -> "AUR API-oppslag feilet. Vennligst sjekk tilkoblingen din."
-    Italian    -> "connessione ad AUR API fallita. Controllare la propria connessione."
-    Portuguese -> "Falha buscando na API AUR. Por favor, verifique a conexão."
-    French     -> "La recherche dans l'API AUR a échouée. Veuillez vérifiez votre connexion."
-    Russian    -> "Запрос к AUR API не удался. Пожалуйста, проверьте ваше соединение."
-    Indonesia  -> "Pemeriksaan API AUR gagal. Sila periksa sambungan anda."
-    Chinese    -> "查找 AUR API 失败。请检查网络连接。"
-    Swedish    -> "Misslyckades med AUR API-anrop. Är du ansluten till internet?"
-    _          -> "AUR API lookup failed. Please check your connection."
-
 infoFields :: Language -> [T.Text]
 infoFields = sequence [ Fields.repository
                       , Fields.name
@@ -1458,55 +1132,6 @@ orphanedMsg Nothing = red . \case
     Chinese    -> "孤包！"
     Swedish    -> "Föräldralös!"
     _          -> "Orphaned!"
-
-repository_1 :: T.Text -> Language -> T.Text
-repository_1 p = \case
-    Japanese   -> p <> "はどのリポジトリにも存在しない。"
-    Polish     -> p <> " nie jest pakietem w żadnym repozytorium"
-    Croatian   -> p <> "nije paket u repozitoriju."
-    German     -> p <> " ist kein Paket in irgendeinem Repository."
-    Spanish    -> p <> " no es un paquete en ningún repositorio."
-    Norwegian  -> p <> " er ikke en pakke i noe depot."
-    Italian    -> p <> " non è un pacchetto di nessun repository."
-    Portuguese -> p <> " não é um pacote em nenhum repositório."
-    French     -> p <> " n'est pas un paquet dans aucun des dépôts."
-    Russian    -> "Пакет " <> p <> " не найден ни в одном репозитории."
-    Indonesia  -> p <> " bukan merupakan paket pada repositori manapun."
-    Chinese    -> "所有仓库均不包含 " <> p <> "。"
-    Swedish    -> p <> " är inte ett paket-repo."
-    _          -> p <> " is not a package in any repository."
-
-pkgbuildKeyMissing :: T.Text -> Language -> T.Text
-pkgbuildKeyMissing key = \case
-    Polish     -> "Nie można sprawdzić klucza " <> key <> "z PKGBUILD"
-    Croatian   -> "Nemoguće izvući vrijednost za " <> key <> " iz PKGBUILD-a."
-    German     -> "Kann Schlüssel " <> key <> " nicht aus PKGBUILD parsen."
-    Spanish    -> "Imposible leer la clave " <> key <> " del PKGBUILD."
-    Norwegian  -> "Forstår ikke " <> key <> " fra PKGBUILD."
-    Italian    -> "Inpossibile elaborare la chiave " <> key <> " dal PKGBUILD."
-    Portuguese -> "Impossível parsear " <> key <> " do PKGBUILD."
-    French     -> "Impossible d'analyser la clef " <> key <> " depuis le PKGBUILD."
-    Russian    -> "Не получилось разобрать ключ " <> key <> " из PKGBUILD."
-    Indonesia  -> "Tidak dapat menerjemahkan kunci " <> key <> " dari PKGBUILD."
-    Chinese    -> "无法解析 PKGBUILD 的秘钥 " <> key <> "。"
-    Swedish    -> "Kan inte läsa nyckel " <> key <> " från PKGBUILD."
-    _          -> "Unable to parse key " <> key <> " from PKGBUILD."
-
-missingDescription :: Language -> T.Text
-missingDescription = \case
-    Polish     -> "Brak opisu"
-    Croatian   -> "Nema opisa."
-    German     -> "Keine Beschreibung."
-    Spanish    -> "Sin descripción."
-    Norwegian  -> "Ingen beskrivelse."
-    Italian    -> "Nessuna Descrizione."
-    Portuguese -> "Nenhuma descrição."
-    French     -> "Aucune description."
-    Russian    -> "Без описания."
-    Indonesia  -> "Tidak ada deskripsi."
-    Chinese    -> "没有任何描述。"
-    Swedish    -> "Ingen beskrivning."
-    _          -> "No description."
 
 -----------------------
 -- Aura/State functions
@@ -1579,44 +1204,6 @@ reinstallAndRemove_1 = \case
 --------------------------------------
 -- Aura/Settings/BadPackages functions
 --------------------------------------
--- NEEDS TRANSLATION
-circDep_1 :: T.Text -> Language -> T.Text
-circDep_1 (bt  -> p) = \case
-    Japanese   -> p <> "と互いに従属している。"
-    Polish     -> "Posiada cykliczną zależność z" <> p <> "."
-    Croatian   -> "Ima kružnu zavisnost sa " <> p <> "."
-    German     -> "Hat eine zirkuläre Abhängigkeit mit " <> p <> "."
-    Spanish    -> "Tiene una dependencia circular con " <> p <> "."
-    Serbian    -> "Има кружну зависност са " <> p <> "."
-    Norwegian  -> "Har en sirkulær avhengighet med " <> p <> "."
-    Italian    -> "E' una dipendenza circolare di " <> p <> "."
-    Portuguese -> "Há uma dependência circular com " <> p <> "."
-    French     -> "A une dépendance circulaire avec " <> p <> "."
-    Russian    -> "Имеет круговую зависимость с " <> p <> "."
-    Indonesia  -> "Mempunyai dependensi sirkular dengan " <> p <> "."
-    Chinese    -> "有对 " <> p <> " 的循环依赖。"
-    Swedish    -> "Har ett cirkulärt beroende med " <> p <> "."
-    _          -> "Has a circular dependency with " <> p <> "."
-
--- NEEDS TRANSLATION
-bashisms_1 :: Language -> T.Text
-bashisms_1 = \case
-    Japanese   -> "PKGBUILDのBashコードが複雑すぎます。"
-    Polish     -> "Za dużo Bash-ismu w PKGBUILD"
-    Croatian   -> "Previše „bash-izama“ u PKGBUILD-u."
-    German     -> "Zu viele „bashismen“ im PKGBUILD."
-    Spanish    -> "Demasiados \"bashismos\" en el PKGBUILD"
-    Serbian    -> "Превише „bash-изама“ у PKGBUILD-у."
-    Norwegian  -> "For mange „bashismer“ i PKGBUILD."
-    Italian    -> "Troppo 'bashisms' nel PKGBUILD."
-    Portuguese -> "Excesso de `bashismo` no PKGBUILD."
-    French     -> "Trop de « bashisms » dans le PKGBUILD."
-    Russian    -> "В PKGBUILD слишком много башизмов."
-    Indonesia  -> "Terlalu banyak bashism pada PKGBUILD."
-    Chinese    -> "PKGBUILD 里包含了太多的 bash 扩展特性。"
-    Swedish    -> "För många bashisms i PKGBUILD."
-    _          -> "Too many bashisms in PKGBUILD."
-
 whoIsBuildUser_1 :: Language -> T.Text
 whoIsBuildUser_1 = \case
     Portuguese -> "Não foi possível determinal o usuário que executará a compilação."
@@ -1694,7 +1281,6 @@ customizepkg_1 = let customizepkg = bt "customizepkg" in \case
 -----------------------
 -- Aura/Utils functions
 -----------------------
-
 yesNoMessage :: Language -> T.Text
 yesNoMessage = \case
     Polish     -> "[T/n]"
