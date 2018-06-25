@@ -46,6 +46,7 @@ import qualified Data.Set as S
 import qualified Data.Text as T
 import           Filesystem.Path (filename)
 import           Shelly
+import           System.IO (hFlush, stdout)
 import           Utilities
 
 ---
@@ -72,7 +73,7 @@ buildPackages = fmap concat . traverse build
 build :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Buildable -> Eff r [FilePath]
 build p = do
   ss     <- ask
-  send . notify $ buildPackages_1 (bldNameOf p) (langOf ss)
+  send $ notify (buildPackages_1 (bldNameOf p) (langOf ss)) *> hFlush stdout
   result <- send . shelly @IO $ build' ss p
   either (buildFail p) pure result
 
