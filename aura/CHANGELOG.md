@@ -8,7 +8,7 @@ is all while modernizing the code and seeing a TODO overall decrease in code siz
 
 ### Improvements
 
-- Dependency resolution is now ~4 times faster and **handles split packages correctly**.
+- Dependency resolution is now much faster and **handles split packages correctly**.
 - Dependency provider selection for AUR packages.
   - Example: `cron` is a legal dependency to specify, but there exists no package
     with that name. `cronie` and `fcron` both "provide" `cron`, and now the user
