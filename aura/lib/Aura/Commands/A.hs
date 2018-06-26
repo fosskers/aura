@@ -117,7 +117,7 @@ displayAurPkgInfo :: (Member (Reader Settings) r, Member IO r) => AurInfo -> Eff
 displayAurPkgInfo ai = ask >>= \ss -> send . T.putStrLn $ renderAurPkgInfo ss ai <> "\n"
 
 renderAurPkgInfo :: Settings -> AurInfo -> T.Text
-renderAurPkgInfo ss ai = dtot $ entrify ss fields entries
+renderAurPkgInfo ss ai = dtot . colourCheck ss $ entrify ss fields entries
     where fields   = infoFields . langOf $ ss
           entries = [ magenta "aur"
                     , annotate bold . pretty $ aurNameOf ai
@@ -147,7 +147,7 @@ aurPkgSearch regex = do
 
 renderSearch :: Settings -> T.Text -> (AurInfo, Bool) -> T.Text
 renderSearch ss r (i, e) = searchResult
-    where searchResult = if switch ss LowVerbosity then sparseInfo else dtot verboseInfo
+    where searchResult = if switch ss LowVerbosity then sparseInfo else dtot $ colourCheck ss verboseInfo
           sparseInfo   = aurNameOf i
           verboseInfo  = repo <> n <+> v <+> "(" <> l <+> "|" <+> p <>
                          ")" <> (if e then annotate bold " [installed]" else "") <> "\n    " <> d
@@ -200,7 +200,7 @@ reportPkgsToUpgrade :: (Member (Reader Settings) r, Member IO r) =>
 reportPkgsToUpgrade ups devels = do
   ss <- ask
   send . notify ss . reportPkgsToUpgrade_1 $ langOf ss
-  send $ putDoc (vcat $ map f ups' <> map g devels) >> T.putStrLn "\n"
+  send $ putDoc (colourCheck ss . vcat $ map f ups' <> map g devels) >> T.putStrLn "\n"
   where ups'     = map (second prettyV) ups
         nLen     = maximum $ map (T.length . aurNameOf . fst) ups <> map T.length devels
         vLen     = maximum $ map (T.length . snd) ups'

@@ -151,4 +151,4 @@ report _ _ []     = pure ()
 report c msg pkgs = do
   ss <- ask
   send . putStrLnA ss . c . msg $ langOf ss
-  send . T.putStrLn . dtot . vsep $ map (cyan . pretty) pkgs
+  send . T.putStrLn . dtot . colourCheck ss . vsep $ map (cyan . pretty) pkgs

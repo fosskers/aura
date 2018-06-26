@@ -35,7 +35,7 @@ import           Aura.Core (report)
 import           Aura.Languages
 import           Aura.Pacman (defaultLogFile)
 import           Aura.Settings
-import           Aura.Utils (entrify)
+import           Aura.Utils (entrify, colourCheck)
 import           BasePrelude hiding (FilePath)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Reader
@@ -86,7 +86,7 @@ logLookup (Log lns) p = case matches of
 
 renderEntry :: Settings -> LogEntry -> T.Text
 renderEntry ss (LogEntry pn fi us rs) =
-  dtot $ entrify ss fields entries <> hardline <> recent
+  dtot . colourCheck ss $ entrify ss fields entries <> hardline <> recent <> hardline
   where fields  = logLookUpFields $ langOf ss
         entries = map pretty [ pn, fi, T.pack (show us), "" ]
         recent  = vsep $ map pretty rs

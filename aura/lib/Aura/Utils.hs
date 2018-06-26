@@ -26,10 +26,10 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Utils
   ( -- * Output
     putStrLnA
+  , colourCheck
+  , entrify
     -- * User Input
   , optionalPrompt
-    -- * Fancy String Rendering
-  , entrify
     -- * Misc. Package Handling
   , splitNameAndVer
   ) where
@@ -54,14 +54,13 @@ import           Text.Megaparsec
 putStrLnA :: Settings -> Doc AnsiStyle -> IO ()
 putStrLnA ss d = putStrA ss $ d <> hardline
 
-putStrA :: Settings -> Doc AnsiStyle -> IO ()
-putStrA ss d = T.putStr . dtot $ putStrA' ss d
-
 -- | Will remove all colour annotations if the user specified `--color=never`.
-putStrA' :: Settings -> Doc ann -> Doc ann
-putStrA' ss d = "aura >>=" <+> f d
-  where f | shared ss (Colour Never) = unAnnotate
-          | otherwise = id
+putStrA :: Settings -> Doc AnsiStyle -> IO ()
+putStrA ss d = T.putStr . dtot $ "aura >>=" <+> colourCheck ss d
+
+colourCheck :: Settings -> Doc ann -> Doc ann
+colourCheck ss | shared ss (Colour Never) = unAnnotate
+               | otherwise = id
 
 ----------
 -- PROMPTS
