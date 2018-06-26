@@ -6,4 +6,5 @@ packages:
   - arel/
 
 extra-deps:
+  - base-prelude-1.3
   - versions-3.4.0.1

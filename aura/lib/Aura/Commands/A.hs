@@ -46,19 +46,18 @@ import           Aura.Settings
 import           Aura.State (saveState)
 import           Aura.Types
 import           Aura.Utils
-import           BasePrelude hiding ((<>))
+import           BasePrelude hiding ((<+>))
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
 import           Data.Aeson.Encode.Pretty (encodePrettyToTextBuilder)
-import           Data.Semigroup ((<>))
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Text.Lazy (toStrict)
 import           Data.Text.Lazy.Builder (toLazyText)
-import qualified Data.Text.Prettyprint.Doc as PP
-import qualified Data.Text.Prettyprint.Doc.Render.Terminal as PP
+import           Data.Text.Prettyprint.Doc
+import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions
 import           Linux.Arch.Aur
 import           Shelly (whenM, pwd, shelly, toTextIgnore)
@@ -79,15 +78,15 @@ upgradeAURPkgs pkgs = do
   let !ignores     = map Just . toList . ignoredPkgsOf $ commonConfigOf ss
       notIgnored p = fmap fst (splitNameAndVer p) `notElem` ignores
       lang         = langOf ss
-  send . notify $ upgradeAURPkgs_1 lang
+  send . notify ss $ upgradeAURPkgs_1 lang
   foreignPkgs <- S.filter (notIgnored . _spName) <$> send foreignPackages
   toUpgrade   <- possibleUpdates foreignPkgs
   auraFirst   <- auraCheck $ map (aurNameOf . fst) toUpgrade
   if | auraFirst -> auraUpgrade
      | otherwise -> do
          devel <- develPkgCheck
-         send . notify $ upgradeAURPkgs_2 lang
-         if | null toUpgrade && null devel -> send . warn $ upgradeAURPkgs_3 lang
+         send . notify ss $ upgradeAURPkgs_2 lang
+         if | null toUpgrade && null devel -> send . warn ss $ upgradeAURPkgs_3 lang
             | otherwise -> reportPkgsToUpgrade toUpgrade (toList devel)
          unless (switch ss DryRun) saveState
          install $ S.fromList (map (aurNameOf . fst) toUpgrade) <> pkgs <> devel
@@ -101,7 +100,7 @@ possibleUpdates (toList -> pkgs) = do
 
 auraCheck :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r Bool
 auraCheck toUpgrade = if "aura" `elem` toUpgrade
-                         then ask >>= \ss -> send (optionalPrompt @IO ss auraCheck_1)
+                         then ask >>= \ss -> send (optionalPrompt ss auraCheck_1)
                          else pure False
 
 auraUpgrade :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Eff r ()
@@ -118,21 +117,21 @@ displayAurPkgInfo :: (Member (Reader Settings) r, Member IO r) => AurInfo -> Eff
 displayAurPkgInfo ai = ask >>= \ss -> send . T.putStrLn $ renderAurPkgInfo ss ai <> "\n"
 
 renderAurPkgInfo :: Settings -> AurInfo -> T.Text
-renderAurPkgInfo ss ai = entrify ss fields entries
-    where fields   = fmap bold . infoFields . langOf $ ss
+renderAurPkgInfo ss ai = dtot $ entrify ss fields entries
+    where fields   = infoFields . langOf $ ss
           entries = [ magenta "aur"
-                    , bold $ aurNameOf ai
-                    , aurVersionOf ai
+                    , annotate bold . pretty $ aurNameOf ai
+                    , pretty $ aurVersionOf ai
                     , outOfDateMsg (dateObsoleteOf ai) $ langOf ss
                     , orphanedMsg (aurMaintainerOf ai) $ langOf ss
-                    , cyan . fromMaybe "(null)" $ urlOf ai
-                    , pkgUrl $ aurNameOf ai
-                    , T.unwords $ licenseOf ai
-                    , T.unwords $ dependsOf ai
-                    , T.unwords $ makeDepsOf ai
-                    , yellow . T.pack . show $ aurVotesOf ai
-                    , yellow . T.pack . printf "%0.2f" $ popularityOf ai
-                    , fromMaybe "(null)" $ aurDescriptionOf ai ]
+                    , cyan . maybe "(null)" pretty $ urlOf ai
+                    , pretty . pkgUrl $ aurNameOf ai
+                    , pretty . T.unwords $ licenseOf ai
+                    , pretty . T.unwords $ dependsOf ai
+                    , pretty . T.unwords $ makeDepsOf ai
+                    , yellow . pretty $ aurVotesOf ai
+                    , yellow . pretty . T.pack . printf "%0.2f" $ popularityOf ai
+                    , maybe "(null)" pretty $ aurDescriptionOf ai ]
 
 aurPkgSearch :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r ()
 aurPkgSearch regex = do
@@ -148,19 +147,18 @@ aurPkgSearch regex = do
 
 renderSearch :: Settings -> T.Text -> (AurInfo, Bool) -> T.Text
 renderSearch ss r (i, e) = searchResult
-    where searchResult = if switch ss LowVerbosity then sparseInfo else verboseInfo
+    where searchResult = if switch ss LowVerbosity then sparseInfo else dtot verboseInfo
           sparseInfo   = aurNameOf i
-          verboseInfo  = repo <> n <> " " <> v <> " (" <> l <> " | " <> p <>
-                         ")" <> (if e then bold " [installed]" else "") <> "\n    " <> d
-          c cl cs = T.intercalate (bCyan r) . map cl $ T.splitOn r cs
+          verboseInfo  = repo <> n <+> v <+> "(" <> l <+> "|" <+> p <>
+                         ")" <> (if e then annotate bold " [installed]" else "") <> "\n    " <> d
           repo = magenta "aur/"
-          n = c bold $ aurNameOf i
-          d = fromMaybe "(null)" $ aurDescriptionOf i
-          l = yellow . T.pack . show $ aurVotesOf i  -- `l` for likes?
-          p = yellow . T.pack . printf "%0.2f" $ popularityOf i
+          n = mconcat . intersperse (bCyan $ pretty r) . map (annotate bold . pretty) . T.splitOn r $ aurNameOf i
+          d = maybe "(null)" pretty $ aurDescriptionOf i
+          l = yellow . pretty $ aurVotesOf i  -- `l` for likes?
+          p = yellow . pretty . T.pack . printf "%0.2f" $ popularityOf i
           v = case dateObsoleteOf i of
-            Just _  -> red   $ aurVersionOf i
-            Nothing -> green $ aurVersionOf i
+            Just _  -> red . pretty $ aurVersionOf i
+            Nothing -> green . pretty $ aurVersionOf i
 
 displayPkgDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set T.Text -> Eff r ()
 displayPkgDeps = I.displayPkgDeps installOptions
@@ -170,17 +168,18 @@ downloadTarballs pkgs = do
   currDir <- T.unpack . toTextIgnore <$> send (shelly @IO pwd)
   traverse_ (downloadTBall currDir) pkgs
     where downloadTBall path pkg = whenM (isAurPackage pkg) $ do
-              manager <- asks managerOf
-              lang    <- asks langOf
-              send . notify $ downloadTarballs_1 pkg lang
-              void . send $ sourceTarball manager path pkg
+            ss <- ask
+            let manager = managerOf ss
+                lang    = langOf ss
+            send . notify ss $ downloadTarballs_1 pkg lang
+            void . send $ sourceTarball manager path pkg
 
 displayPkgbuild :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r ()
 displayPkgbuild ps = do
   man <- asks managerOf
   pbs <- catMaybes <$> traverse (send . pkgbuild @IO man . T.unpack) (toList ps)
-  send . traverse_ T.putStrLn $ intersperse line pbs
-  where line = yellow "\n#========== NEXT PKGBUILD ==========#\n"
+  send . traverse_ T.putStrLn $ intersperse border pbs
+  where border = "\n#========== NEXT PKGBUILD ==========#\n"
 
 isntMostRecent :: (AurInfo, Versioning) -> Bool
 isntMostRecent (ai, v) = trueVer > Just v
@@ -199,14 +198,15 @@ aurJson ps = do
 reportPkgsToUpgrade :: (Member (Reader Settings) r, Member IO r) =>
   [(AurInfo, Versioning)] -> [T.Text] -> Eff r ()
 reportPkgsToUpgrade ups devels = do
-  asks langOf >>= send . notify . reportPkgsToUpgrade_1
-  send $ PP.putDoc (PP.vcat $ map f ups' <> map g devels) >> T.putStrLn "\n"
+  ss <- ask
+  send . notify ss . reportPkgsToUpgrade_1 $ langOf ss
+  send $ putDoc (vcat $ map f ups' <> map g devels) >> T.putStrLn "\n"
   where ups'     = map (second prettyV) ups
         nLen     = maximum $ map (T.length . aurNameOf . fst) ups <> map T.length devels
         vLen     = maximum $ map (T.length . snd) ups'
-        g = PP.annotate (PP.color PP.Cyan) . PP.pretty
-        f (p, v) = PP.hsep [ PP.annotate (PP.color PP.Cyan) . PP.fill nLen . PP.pretty $ aurNameOf p
-                           , "::"
-                           , PP.annotate (PP.color PP.Yellow) . PP.fill vLen $ PP.pretty v
-                           , "->"
-                           , PP.annotate (PP.color PP.Green) . PP.pretty $ aurVersionOf p ]
+        g = annotate (color Cyan) . pretty
+        f (p, v) = hsep [ cyan . fill nLen . pretty $ aurNameOf p
+                        , "::"
+                        , yellow . fill vLen $ pretty v
+                        , "->"
+                        , green . pretty $ aurVersionOf p ]

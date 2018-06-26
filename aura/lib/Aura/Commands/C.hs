@@ -33,6 +33,7 @@ module Aura.Commands.C
   ) where
 
 import           Aura.Cache
+import           Aura.Colour (red)
 import           Aura.Core
 import           Aura.Languages
 import           Aura.Logo (raiseCursorBy)
@@ -62,7 +63,7 @@ downgradePackages pkgs =
     ss    <- ask
     let cachePath = fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
     reals <- send . shelly @IO $ pkgsInCache ss pkgs
-    reportBadDowngradePkgs . toList $ pkgs S.\\ reals
+    report red reportBadDowngradePkgs_1 . toList $ pkgs S.\\ reals
     unless (null reals) $ do
       cache   <- send . shelly @IO $ cacheContents cachePath
       choices <- traverse (getDowngradeChoice cache) $ toList reals
@@ -71,7 +72,8 @@ downgradePackages pkgs =
 getDowngradeChoice :: (Member (Reader Settings) r, Member IO r) => Cache -> T.Text -> Eff r T.Text
 getDowngradeChoice cache pkg = do
   let choices = getChoicesFromCache cache pkg
-  asks langOf >>= send . notify . getDowngradeChoice_1 pkg
+  ss <- ask
+  send . notify ss . getDowngradeChoice_1 pkg $ langOf ss
   send $ getSelection choices
 
 getChoicesFromCache :: Cache -> T.Text -> [T.Text]
@@ -95,14 +97,15 @@ confirmBackup :: (Member (Reader Settings) r, Member (Error Failure) r, Member I
 confirmBackup dir = do
   ss    <- ask
   cache <- send . shelly @IO . cacheContents . fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
-  send . notify $ backupCache_4 (T.unpack $ toTextIgnore dir) (langOf ss)
-  send . notify $ backupCache_5 (M.size $ _cache cache) (langOf ss)
-  okay  <- send $ optionalPrompt @IO ss backupCache_6
+  send . notify ss $ backupCache_4 (T.unpack $ toTextIgnore dir) (langOf ss)
+  send . notify ss $ backupCache_5 (M.size $ _cache cache) (langOf ss)
+  okay  <- send $ optionalPrompt ss backupCache_6
   bool (throwError $ Failure backupCache_7) (pure cache) okay
 
 backup :: (Member (Reader Settings) r, Member IO r) => FilePath -> Cache -> Eff r ()
 backup dir (Cache cache) = do
-  asks langOf >>= send . notify . backupCache_8
+  ss <- ask
+  send . notify ss . backupCache_8 $ langOf ss
   send $ putStrLn ""  -- So that the cursor can rise at first.
   copyAndNotify dir (M.elems cache) 1
 
@@ -110,9 +113,10 @@ backup dir (Cache cache) = do
 copyAndNotify :: (Member (Reader Settings) r, Member IO r) => FilePath -> [PackagePath] -> Int -> Eff r ()
 copyAndNotify _ [] _ = pure ()
 copyAndNotify dir (PackagePath p : ps) n = do
+  ss <- ask
   cachePath <- asks (fromMaybe defaultPackageCache . cachePathOf . commonConfigOf)
   send $ raiseCursorBy 1
-  asks langOf >>= send . warn . copyAndNotify_1 n
+  send . warn ss . copyAndNotify_1 n $ langOf ss
   send . shelly @IO $ cp (cachePath </> p) (dir </> p)
   copyAndNotify dir ps $ n + 1
 
@@ -120,17 +124,17 @@ copyAndNotify dir (PackagePath p : ps) n = do
 -- a number provided by the user. The rest are deleted.
 cleanCache :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Word -> Eff r ()
 cleanCache toSave
-  | toSave == 0 = asks langOf >>= send . warn . cleanCache_2 >> rethrow (pacman ["-Scc"])  -- TODO Needed?
+  | toSave == 0 = ask >>= \ss -> send (warn ss . cleanCache_2 $ langOf ss) >> rethrow (pacman ["-Scc"])
   | otherwise   = do
       ss <- ask
-      send . warn . cleanCache_3 toSave $ langOf ss
-      okay <- send $ optionalPrompt @IO ss cleanCache_4
+      send . warn ss . cleanCache_3 toSave $ langOf ss
+      okay <- send $ optionalPrompt ss cleanCache_4
       bool (throwError $ Failure cleanCache_5) (clean (fromIntegral toSave)) okay
 
 clean :: (Member (Reader Settings) r, Member IO r) => Int -> Eff r ()
 clean toSave = do
   ss <- ask
-  send . notify . cleanCache_6 $ langOf ss
+  send . notify ss . cleanCache_6 $ langOf ss
   let cachePath = fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
   (Cache cache) <- send . shelly @IO $ cacheContents cachePath
   let !files    = M.elems cache
@@ -144,13 +148,13 @@ clean toSave = do
 cleanNotSaved :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Eff r ()
 cleanNotSaved = do
   ss <- ask
-  send . notify . cleanNotSaved_1 $ langOf ss
+  send . notify ss . cleanNotSaved_1 $ langOf ss
   sfs <- getStateFiles
   states <- fmap catMaybes . send $ traverse readState sfs
   let path = fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
   (Cache cache)  <- send . shelly @IO $ cacheContents path
   let duds = M.filterWithKey (\p _ -> any (inState p) states) cache
-  whenM (send . optionalPrompt @IO ss $ cleanNotSaved_2 $ M.size duds) $
+  whenM (send . optionalPrompt ss $ cleanNotSaved_2 $ M.size duds) $
     send $ shelly @IO $ traverse_ rm (map (\(PackagePath p) -> path </> p) $ M.elems duds)
 
 -- | Typically takes the contents of the package cache as an argument.
@@ -158,9 +162,3 @@ groupByName :: [PackagePath] -> [[PackagePath]]
 groupByName pkgs = groupBy sameBaseName $ sortPkgs pkgs
     where sameBaseName a b = baseName a == baseName b
           baseName p = _spName <$> simplepkg p
-
-------------
--- REPORTING
-------------
-reportBadDowngradePkgs :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r ()
-reportBadDowngradePkgs = badReport reportBadDowngradePkgs_1

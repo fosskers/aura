@@ -33,13 +33,12 @@ module Aura.State
     , getStateFiles ) where
 
 import           Aura.Cache
-import           Aura.Colour
-import           Aura.Core (warn, notify, rethrow)
+import           Aura.Colour (red)
+import           Aura.Core (warn, notify, rethrow, report)
 import           Aura.Languages
 import           Aura.Pacman (pacmanOutput, pacman)
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils (printList)
 import           BasePrelude hiding (Version, FilePath, mapMaybe)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
@@ -110,11 +109,12 @@ getStateFiles = send f >>= list (throwError $ Failure restoreState_2) pure
 -- automatically.
 saveState :: (Member (Reader Settings) r, Member IO r) => Eff r ()
 saveState = do
+  ss    <- ask
   state <- send currentState
   let filename = T.unpack . toTextIgnore $ stateCache </> dotFormat (timeOf state) <.> "json"
   send . shelly @IO $ mkdir_p stateCache
   send . BL.writeFile filename $ encode state
-  asks langOf >>= send . notify . saveState_1
+  asks langOf >>= send . notify ss . saveState_1
 
 dotFormat :: ZonedTime -> String
 dotFormat (ZonedTime t _) = intercalate "." items
@@ -142,9 +142,8 @@ restoreState = do
       curr <- send currentState
       Cache cache <- send . shelly @IO $ cacheContents pth
       let StateDiff rein remo = compareStates past curr
-          (okay, nope) = partition (`M.member` cache) rein
-          message      = restoreState_1 $ langOf ss
-      send . unless (null nope) $ printList @IO red cyan message (map _spName nope)
+          (okay, nope)        = partition (`M.member` cache) rein
+      unless (null nope) . report red restoreState_1 $ map _spName nope
       reinstallAndRemove (mapMaybe (`M.lookup` cache) okay) remo
 
 selectState :: [FilePath] -> IO FilePath
@@ -156,7 +155,7 @@ readState = fmap decode . BL.readFile . T.unpack . toTextIgnore
 -- | `reinstalling` can mean true reinstalling, or just altering.
 reinstallAndRemove :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
   [PackagePath] -> [T.Text] -> Eff r ()
-reinstallAndRemove [] [] = asks langOf >>= send . warn . reinstallAndRemove_1
+reinstallAndRemove [] [] = ask >>= \ss -> send (warn ss . reinstallAndRemove_1 $ langOf ss)
 reinstallAndRemove down remo
   | null remo = reinstall
   | null down = remove

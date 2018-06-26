@@ -73,7 +73,7 @@ buildPackages = fmap concat . traverse build
 build :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Buildable -> Eff r [FilePath]
 build p = do
   ss     <- ask
-  send $ notify (buildPackages_1 (bldNameOf p) (langOf ss)) *> hFlush stdout
+  send $ notify ss (buildPackages_1 (bldNameOf p) (langOf ss)) *> hFlush stdout
   result <- send . shelly @IO $ build' ss p
   either (buildFail p) pure result
 
@@ -121,9 +121,9 @@ buildFail :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r)
   Buildable -> Failure -> Eff r [a]
 buildFail p (Failure err) = do
   ss <- ask
-  send . scold $ buildFail_1 (bldNameOf p) (langOf ss)
-  send . scold . err $ langOf ss
-  response <- send $ optionalPrompt @IO ss buildFail_6
+  send . scold ss $ buildFail_1 (bldNameOf p) (langOf ss)
+  send . scold ss . err $ langOf ss
+  response <- send $ optionalPrompt ss buildFail_6
   bool (throwError $ Failure buildFail_5) (pure []) response
 
 -- | Moves a file to the pacman package cache and returns its location.

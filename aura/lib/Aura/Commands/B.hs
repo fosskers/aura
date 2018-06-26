@@ -45,6 +45,6 @@ import Shelly
 cleanStates :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Word -> Eff r ()
 cleanStates (fromIntegral -> n) = do
   ss   <- ask
-  okay <- send . optionalPrompt @IO ss $ cleanStates_2 n
-  if | not okay  -> send . warn . cleanStates_3 $ langOf ss
+  okay <- send . optionalPrompt ss $ cleanStates_2 n
+  if | not okay  -> send . warn ss . cleanStates_3 $ langOf ss
      | otherwise -> getStateFiles >>= send . shelly @IO . traverse_ rm . drop n . reverse

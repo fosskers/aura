@@ -30,8 +30,8 @@ module Aura.Commands.L
   , logInfoOnPkg
   ) where
 
-import           Aura.Colour (yellow)
-import           Aura.Core (badReport)
+import           Aura.Colour (red, dtot)
+import           Aura.Core (report)
 import           Aura.Languages
 import           Aura.Pacman (defaultLogFile)
 import           Aura.Settings
@@ -42,6 +42,7 @@ import           Control.Monad.Freer.Reader
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import           Data.Text.Prettyprint.Doc
 import           Shelly
 import           Utilities
 
@@ -71,7 +72,7 @@ logInfoOnPkg pkgs =
     let pth = fromMaybe defaultLogFile . logPathOf $ commonConfigOf ss
     logFile <- fmap (Log . T.lines) . send . shelly @IO $ readfile pth
     let (bads, goods) = partitionEithers . map (logLookup logFile) $ toList pkgs
-    reportNotInLog bads
+    report red reportNotInLog_1 bads
     send . traverse_ T.putStrLn $ map (renderEntry ss) goods
 
 logLookup :: Log -> T.Text -> Either T.Text LogEntry
@@ -84,13 +85,8 @@ logLookup (Log lns) p = case matches of
   where matches = filter (T.isInfixOf (" " <> p <> " (")) lns
 
 renderEntry :: Settings -> LogEntry -> T.Text
-renderEntry ss (LogEntry pn fi us rs) = entrify ss fields entries <> "\n" <> recent
-  where fields  = map yellow . logLookUpFields $ langOf ss
-        entries = [ pn, fi, T.pack (show us), "" ]
-        recent  = T.unlines $ map (" " <>) rs
-
-------------
--- REPORTING
-------------
-reportNotInLog :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r ()
-reportNotInLog = badReport reportNotInLog_1
+renderEntry ss (LogEntry pn fi us rs) =
+  dtot $ entrify ss fields entries <> hardline <> recent
+  where fields  = logLookUpFields $ langOf ss
+        entries = map pretty [ pn, fi, T.pack (show us), "" ]
+        recent  = vsep $ map pretty rs

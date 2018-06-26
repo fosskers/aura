@@ -70,7 +70,7 @@ hotEdit ss b
 customizepkg :: Settings -> Buildable -> Sh Buildable
 customizepkg ss b
   | not $ switch ss UseCustomizepkg = pure b
-  | otherwise = ifFile customizepkg' (liftIO . scold . customizepkg_1 $ langOf ss) bin b
+  | otherwise = ifFile customizepkg' (liftIO . scold ss . customizepkg_1 $ langOf ss) bin b
   where bin = "/usr/bin/customizepkg"
 
 customizepkg' :: Buildable -> Sh Buildable

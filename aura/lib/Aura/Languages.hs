@@ -51,6 +51,8 @@ import           Aura.Types
 import           BasePrelude
 import qualified Data.Map.Strict as Map (Map, (!), fromList, toList, mapWithKey)
 import qualified Data.Text as T
+import           Data.Text.Prettyprint.Doc
+import           Data.Text.Prettyprint.Doc.Render.Terminal
 
 ---
 
@@ -119,8 +121,8 @@ translatorMsg lang = title : names
         langNames = languageNames lang
 
 -- Wrap a String in backticks
-bt :: T.Text -> T.Text
-bt cs = "`" <> cs <> "`"
+bt :: T.Text -> Doc AnsiStyle
+bt cs = "`" <> pretty cs <> "`"
 
 whitespace :: Language -> Char
 whitespace Japanese = '　'  -- \12288
@@ -148,7 +150,7 @@ langFromLocale = T.take 2 >>> \case
 -- Aura/Core functions
 ----------------------
 -- NEEDS TRANSLATION
-checkDBLock_1 :: Language -> T.Text
+checkDBLock_1 :: Language -> Doc AnsiStyle
 checkDBLock_1 = \case
     Japanese   -> "パッケージデータベースが閉鎖されている状態です。開放したらキーを押して続行してください。"
     Polish     -> "Baza pakietów jest zablokowana. Kiedy zostanie odblokowana naciśnij enter aby kontynuować"
@@ -163,7 +165,7 @@ checkDBLock_1 = \case
     Swedish    -> "Paketdatabasen är låst. Klicka på enter när den är upplåst."
     _          -> "The package database is locked. Press enter when it's unlocked to continue."
 
-trueRoot_3 :: Language -> T.Text
+trueRoot_3 :: Language -> Doc AnsiStyle
 trueRoot_3 = \case
     Japanese   -> "「root」としてパッケージを作成するのは「makepkg v4.2」で不可能になりました。"
     German     -> "Seit makepkg v4.2 ist es nicht mehr möglich als root zu bauen."
@@ -173,7 +175,7 @@ trueRoot_3 = \case
     Swedish    -> "I makepkg v4.2 och uppåt är det inte tillåtet att bygga som root."
     _          -> "As of makepkg v4.2, building as root is no longer possible."
 
-mustBeRoot_1 :: Language -> T.Text
+mustBeRoot_1 :: Language -> Doc AnsiStyle
 mustBeRoot_1 = let sudo = bt "sudo" in \case
     Japanese   -> sudo <> "を使わないとそれができない！"
     Polish     -> "Musisz użyć " <> sudo <> ", żeby to zrobić."
@@ -194,7 +196,7 @@ mustBeRoot_1 = let sudo = bt "sudo" in \case
 -----------------------
 -- Aura/Build functions
 -----------------------
-buildPackages_1 :: T.Text -> Language -> T.Text
+buildPackages_1 :: T.Text -> Language -> Doc AnsiStyle
 buildPackages_1 (bt -> p) = \case
     Japanese   -> p <> "を作成中・・・"
     Polish     -> "Budowanie " <> p <> "..."
@@ -212,7 +214,7 @@ buildPackages_1 (bt -> p) = \case
     Chinese    -> p <> " 正在构建中..."
     _          -> "Building " <> p <> "..."
 
-buildFail_1 :: T.Text -> Language -> T.Text
+buildFail_1 :: T.Text -> Language -> Doc AnsiStyle
 buildFail_1 (bt -> p) = \case
     Japanese   -> p <> "の作成は失敗しました。"
     Polish     -> "Budowanie " <> p <> " zakończyło się niepowodzeniem."
@@ -230,7 +232,7 @@ buildFail_1 (bt -> p) = \case
     Chinese    -> p <> " 构建失败。"
     _          -> "Well, building " <> p <> " failed."
 
-buildFail_5 :: Language -> T.Text
+buildFail_5 :: Language -> Doc AnsiStyle
 buildFail_5 = \case
     Japanese   -> "パッケージ作成に失敗しました。"
     Polish     -> "Budowanie nie powiodło się."
@@ -249,7 +251,7 @@ buildFail_5 = \case
     _          -> "Building failed."
 
 -- NEEDS TRANSLATION
-buildFail_6 :: Language -> T.Text
+buildFail_6 :: Language -> Doc AnsiStyle
 buildFail_6 = \case
     Japanese   -> "それでも続行しますか？"
     Polish     -> "Czy mimo to chcesz kontynuować?"
@@ -267,7 +269,7 @@ buildFail_6 = \case
     _          -> "Would you like to continue anyway?"
 
 -- NEEDS TRANSLATION
-buildFail_7 :: T.Text -> Language -> T.Text
+buildFail_7 :: T.Text -> Language -> Doc AnsiStyle
 buildFail_7 (bt -> p) = \case
     Japanese   -> p <> "のビルドスクリプトを収得できませんでした。"
     Polish     -> "Nie udało się pozyskać skryptów budowania dla " <> p <> "."
@@ -280,7 +282,7 @@ buildFail_7 (bt -> p) = \case
     Swedish    -> "Kunde inte hämta byggskript för " <> p <> "."
     _          -> "Failed to obtain build scripts for " <> p <> "."
 
-buildFail_8 :: Language -> T.Text
+buildFail_8 :: Language -> Doc AnsiStyle
 buildFail_8 = \case
     Japanese   -> "makepkgは失敗しました。"
     Portuguese -> "Ocorreu um erro ao executar makepkg"
@@ -290,7 +292,7 @@ buildFail_8 = \case
 -- Aura/Dependencies functions
 ------------------------------
 -- NEEDS UPDATE TO MATCH NEW ENGLISH
-getRealPkgConflicts_1 :: T.Text -> T.Text -> T.Text -> T.Text -> Language -> T.Text
+getRealPkgConflicts_1 :: T.Text -> T.Text -> T.Text -> T.Text -> Language -> Doc AnsiStyle
 getRealPkgConflicts_1 (bt -> prnt) (bt -> p) (bt -> r) (bt -> d) = \case
     Japanese   -> "パッケージ" <> p <> "はバージョン" <> d <> "を要するが" <> "一番最新のバージョンは" <> r <> "。"
     Polish     -> "Zależność " <> p <> " powinna być w wersji " <> d <> ", ale najnowsza wersja to " <> r <> "."
@@ -308,7 +310,7 @@ getRealPkgConflicts_1 (bt -> prnt) (bt -> p) (bt -> r) (bt -> d) = \case
     Chinese    -> "依赖 " <> p <> " 需要版本 " <> d <> "，但是最新的版本是 " <> r <> "。"
     _          -> "The package " <> prnt <> " depends on version " <> d <> " of " <> p <> ", but the most recent version is " <> r <> "."
 
-getRealPkgConflicts_2 :: T.Text -> Language -> T.Text
+getRealPkgConflicts_2 :: T.Text -> Language -> Doc AnsiStyle
 getRealPkgConflicts_2 (bt -> p) = \case
     Japanese   -> p <> "は無視されるパッケージ！`pacman.conf`を参考に。"
     Polish     -> p <> " jest ignorowany! Sprawdź plik `pacman.conf`."
@@ -326,10 +328,10 @@ getRealPkgConflicts_2 (bt -> p) = \case
     Chinese    -> p <> " 是一个被忽略的包！请查看你的 `pacman.conf` 文件。"
     _          -> p <> " is an ignored package! See your `pacman.conf` file."
 
-missingPkg_2 :: [DepError] -> Language -> T.Text
-missingPkg_2 ps l = T.unlines $ map (depError l) ps
+missingPkg_2 :: [DepError] -> Language -> Doc AnsiStyle
+missingPkg_2 ps l = vsep $ map (depError l) ps
 
-depError :: Language -> DepError -> T.Text
+depError :: Language -> DepError -> Doc AnsiStyle
 depError _ (VerConflict s) = s
 depError _ (Ignored s)     = s
 depError l (NonExistant s) = case l of
@@ -338,12 +340,12 @@ depError l (NonExistant s) = case l of
 depError l (UnparsableVersion s) = case l of
   Portuguese -> "A versão de " <> bt s <> " não pôde ser interpretada."
   _          -> "The version number for " <> bt s <> " couldn't be parsed."
-depError _ (BrokenProvides pkg pro name) = "The package " <> pkg <> " needs " <> name <> ", which provides " <> pro <> "."
+depError _ (BrokenProvides pkg pro name) = "The package " <> bt pkg <> " needs " <> bt name <> ", which provides " <> bt pro <> "."
 
 -----------------
 -- aura functions
 -----------------
-displayOutputLanguages_1 :: Language -> T.Text
+displayOutputLanguages_1 :: Language -> Doc AnsiStyle
 displayOutputLanguages_1 = \case
     Japanese   -> "aura は下記の言語に対応しています："
     Polish     -> "Następujące języki są dostępne:"
@@ -365,7 +367,7 @@ displayOutputLanguages_1 = \case
 -- Aura/Commands/A functions
 ----------------------------
 -- NEEDS TRANSLATION
-auraCheck_1 :: Language -> T.Text
+auraCheck_1 :: Language -> Doc AnsiStyle
 auraCheck_1 = \case
     Japanese   -> "Aura が更新されています。Auraだけ先に更新しますか？"
     Polish     -> "Dostępna jest nowa wersja Aura. Czy chcesz ją najpierw aktualizować?"
@@ -381,7 +383,7 @@ auraCheck_1 = \case
     Swedish    -> "Det finns en uppdatering tillgänglig till Aura. Vill du uppdatera Aura först?"
     _          -> "Aura update available. Update it first?"
 
-install_2 :: Language -> T.Text
+install_2 :: Language -> Doc AnsiStyle
 install_2 = \case
     Japanese   -> "適切なパッケージを入力してください。"
     Polish     -> "Nie podano prawidłowych pakietów."
@@ -399,7 +401,7 @@ install_2 = \case
     Chinese    -> "没有指定有效的包。"
     _          -> "No valid packages specified."
 
-install_3 :: Language -> T.Text
+install_3 :: Language -> Doc AnsiStyle
 install_3 = \case
     Japanese   -> "続行しますか？"
     Polish     -> "Kontynuować?"
@@ -417,7 +419,7 @@ install_3 = \case
     Chinese    -> "继续？"
     _          -> "Continue?"
 
-install_4 :: Language -> T.Text
+install_4 :: Language -> Doc AnsiStyle
 install_4 = \case
     Japanese   -> "続行は意図的に阻止されました。"
     Polish     -> "Instalacja została przerwana przez użytkownika."
@@ -435,7 +437,7 @@ install_4 = \case
     Chinese    -> "手动安装已中止。"
     _          -> "Installation manually aborted."
 
-install_5 :: Language -> T.Text
+install_5 :: Language -> Doc AnsiStyle
 install_5 = \case
     Japanese   -> "従属パッケージを確認中・・・"
     Polish     -> "Ustalanie zależności..."
@@ -454,7 +456,7 @@ install_5 = \case
     _          -> "Determining dependencies..."
 
 -- 2014 December  7 @ 14:45 - NEEDS TRANSLATIONS
-confirmIgnored_1 :: T.Text -> Language -> T.Text
+confirmIgnored_1 :: T.Text -> Language -> Doc AnsiStyle
 confirmIgnored_1 (bt -> p) = \case
     Japanese   -> p <> "は無視されるはずのパッケージです。それでも続行しますか？"
     Polish     -> p <> " jest oznaczony jako ignorowany. Zainstalować mimo tego?"
@@ -466,7 +468,7 @@ confirmIgnored_1 (bt -> p) = \case
     _          -> p <> " is marked as Ignored. Install anyway?"
 
 -- NEEDS UPDATE TO REFLECT CHANGED ENGLISH
-reportNonPackages_1 :: Language -> T.Text
+reportNonPackages_1 :: Language -> Doc AnsiStyle
 reportNonPackages_1 = \case
     Japanese   -> "下記はAURパッケージではありません："
     Polish     -> "To nie są pakiety:"
@@ -485,7 +487,7 @@ reportNonPackages_1 = \case
     _          -> "The following are not AUR packages:"
 
 -- NEEDS TRANSLATION
-reportUnneededPackages_1 :: Language -> T.Text
+reportUnneededPackages_1 :: Language -> Doc AnsiStyle
 reportUnneededPackages_1 = \case
     Japanese   -> "下記のパッケージは既にインストールされています："
     Polish     -> "Następujące pakiety zostały już zainstalowane:"
@@ -497,7 +499,7 @@ reportUnneededPackages_1 = \case
     Swedish    -> "Följande paket är redan installerade:"
     _          -> "The following packages are already installed:"
 
-reportPkgsToInstall_1 :: Language -> T.Text
+reportPkgsToInstall_1 :: Language -> Doc AnsiStyle
 reportPkgsToInstall_1 = \case
     Japanese   -> "Pacmanの従属パッケージ："
     Polish     -> "Zależności z repozytoriów:"
@@ -516,8 +518,8 @@ reportPkgsToInstall_1 = \case
     _          -> "Repository dependencies:"
 
 -- NEEDS AN UPDATE
-reportPkgsToInstall_2 :: T.Text -> Language -> T.Text
-reportPkgsToInstall_2 l = \case
+reportPkgsToInstall_2 :: T.Text -> Language -> Doc AnsiStyle
+reportPkgsToInstall_2 (pretty -> l) = \case
     Japanese   -> l <> "のパッケージ:"
     Polish     -> l <> " Pakiety:"
     Croatian   -> l <> " Paketi:"
@@ -534,7 +536,7 @@ reportPkgsToInstall_2 l = \case
     _          -> l <> " Packages:"
 
 -- NEEDS TRANSLATION
-reportPkgbuildDiffs_1 :: T.Text -> Language -> T.Text
+reportPkgbuildDiffs_1 :: T.Text -> Language -> Doc AnsiStyle
 reportPkgbuildDiffs_1 (bt -> p) = \case
     Japanese   -> p <> "のPKGBUILDはまだ保存されていません。"
     Polish     -> p <> " nie ma jeszcze przechowywanego pliku PKGBUILD."
@@ -553,7 +555,7 @@ reportPkgbuildDiffs_1 (bt -> p) = \case
     _          -> p <> " has no stored PKGBUILD yet."
 
 -- NEEDS TRANSLATION
-reportPkgbuildDiffs_2 :: T.Text -> Language -> T.Text
+reportPkgbuildDiffs_2 :: T.Text -> Language -> Doc AnsiStyle
 reportPkgbuildDiffs_2 (bt -> p) = \case
     Japanese   -> p <> "のPKGBUILDは最新です。"
     Polish     -> "PKGBUILD pakietu " <> p <> " jest aktualny."
@@ -572,7 +574,7 @@ reportPkgbuildDiffs_2 (bt -> p) = \case
     _          -> p <> " PKGBUILD is up to date."
 
 -- NEEDS TRANSLATION
-reportPkgbuildDiffs_3 :: T.Text -> Language -> T.Text
+reportPkgbuildDiffs_3 :: T.Text -> Language -> Doc AnsiStyle
 reportPkgbuildDiffs_3 (bt -> p) = \case
     Japanese   -> p <> "のPKGBUILD変更報告："
     Polish     -> "Zmiany w PKGBUILD dla " <> p <> ":"
@@ -591,7 +593,7 @@ reportPkgbuildDiffs_3 (bt -> p) = \case
     _          -> p <> " PKGBUILD changes:"
 
 -- NEEDS TRANSLATION
-reportPkgsToUpgrade_1 :: Language -> T.Text
+reportPkgsToUpgrade_1 :: Language -> Doc AnsiStyle
 reportPkgsToUpgrade_1 = \case
     Japanese   -> "アップグレードするAURパッケージ："
     Polish     -> "Pakiety z AUR do zaktualizowania:"
@@ -610,7 +612,7 @@ reportPkgsToUpgrade_1 = \case
     _          -> "AUR Packages to upgrade:"
 
 -- NEEDS UPDATING
-reportBadDowngradePkgs_1 :: Language -> T.Text
+reportBadDowngradePkgs_1 :: Language -> Doc AnsiStyle
 reportBadDowngradePkgs_1 = \case
     Japanese   -> "このパッケージはキャッシュには入っていないので、ダウングレードできません。"
     Polish     -> "Poniższe pakeity nie są zainstalowane, i nie mogą być zainstalowane w starszej wersji:"
@@ -628,7 +630,7 @@ reportBadDowngradePkgs_1 = \case
     Chinese    -> "以下包在缓存中没有版本，所以无法被降级："
     _          -> "The following have no versions in the cache, and thus can’t be downgraded:"
 
-upgradeAURPkgs_1 :: Language -> T.Text
+upgradeAURPkgs_1 :: Language -> Doc AnsiStyle
 upgradeAURPkgs_1 = \case
     Japanese   -> "パッケージ情報をダウンロード中・・・"
     Polish     -> "Pobieranie informacji o pakietach..."
@@ -646,7 +648,7 @@ upgradeAURPkgs_1 = \case
     Chinese    -> "正在获取包信息..."
     _          -> "Fetching package information..."
 
-upgradeAURPkgs_2 :: Language -> T.Text
+upgradeAURPkgs_2 :: Language -> Doc AnsiStyle
 upgradeAURPkgs_2 = \case
     Japanese   -> "バージョンを比較中・・・"
     Polish     -> "Porównywanie wersji pakietów..."
@@ -664,7 +666,7 @@ upgradeAURPkgs_2 = \case
     Chinese    -> "正在比较包的版本..."
     _          -> "Comparing package versions..."
 
-upgradeAURPkgs_3 :: Language -> T.Text
+upgradeAURPkgs_3 :: Language -> Doc AnsiStyle
 upgradeAURPkgs_3 = \case
     Japanese   -> "アップグレードは必要ありません。"
     Polish     -> "Nie jest wymagana aktualizacja pakietów z AUR."
@@ -682,7 +684,7 @@ upgradeAURPkgs_3 = \case
     Chinese    -> "没有需要升级的 AUR 包。"
     _          -> "No AUR package upgrades necessary."
 
-downloadTarballs_1 :: T.Text -> Language -> T.Text
+downloadTarballs_1 :: T.Text -> Language -> Doc AnsiStyle
 downloadTarballs_1 (bt -> p) = \case
     Japanese   -> p <> "のソースコードの tarball をダウンロード中・・・"
     Polish     -> "Pobieranie paczki źródłowej " <> p <> "..."
@@ -700,7 +702,7 @@ downloadTarballs_1 (bt -> p) = \case
     Chinese    -> "正在下载 " <> p <> " 的源文件..."
     _          -> "Downloading " <> p <> " source tarball..."
 
-removeMakeDepsAfter_1 :: Language -> T.Text
+removeMakeDepsAfter_1 :: Language -> Doc AnsiStyle
 removeMakeDepsAfter_1 = \case
     Japanese   -> "あと片付け。必要ないパッケージを削除："
     Polish     -> "Usuwanie niepotrzebnych zależności potrzebnych do budowy..."
@@ -722,7 +724,7 @@ removeMakeDepsAfter_1 = \case
 -- Aura/Commands/B functions
 ----------------------------
 -- NEEDS TRANSLATION
-cleanStates_2 :: Int -> Language -> T.Text
+cleanStates_2 :: Int -> Language -> Doc AnsiStyle
 cleanStates_2 (bt . T.pack . show -> n) = \case
     Japanese   -> n <> "個のパッケージ状態記録だけが残される。その他削除？"
     Polish     -> n <> " stan pakietów zostanie zachowany. Usunąć resztę?"
@@ -741,7 +743,7 @@ cleanStates_2 (bt . T.pack . show -> n) = \case
     _          -> n <> " package states will be kept. Remove the rest?"
 
 -- NEEDS TRANSLATION
-cleanStates_3 :: Language -> T.Text
+cleanStates_3 :: Language -> Doc AnsiStyle
 cleanStates_3 = \case
     Japanese   -> "何も削除しないで終了します。"
     Polish     -> "Żaden stan pakietu nie został usunięty."
@@ -759,7 +761,7 @@ cleanStates_3 = \case
     Swedish    -> "Inga paket togs bort."
     _          -> "No package states were removed."
 
-readState_1 :: Language -> T.Text
+readState_1 :: Language -> Doc AnsiStyle
 readState_1 = \case
     Portuguese -> "O arquivo de estado não pôde ser interpretado. É um arquivo JSON válido?"
     _          -> "That state file failed to parse. Is it legal JSON?"
@@ -767,7 +769,7 @@ readState_1 = \case
 ----------------------------
 -- Aura/Commands/C functions
 ----------------------------
-getDowngradeChoice_1 :: T.Text -> Language -> T.Text
+getDowngradeChoice_1 :: T.Text -> Language -> Doc AnsiStyle
 getDowngradeChoice_1 (bt -> p) = \case
     Japanese   -> p <> "はどのバージョンにしますか？"
     Polish     -> "Którą wersję pakietu " <> p <> " zainstalować?"
@@ -785,7 +787,7 @@ getDowngradeChoice_1 (bt -> p) = \case
     Chinese    -> "你希望安装 " <> p <> " 的哪个版本？"
     _          -> "What version of " <> p <> " do you want?"
 
-backupCache_3 :: Language -> T.Text
+backupCache_3 :: Language -> Doc AnsiStyle
 backupCache_3 = \case
     Japanese   -> "バックアップ先は存在しません。"
     Polish     -> "Lokalizacja kopii zapasowych nie istnieje."
@@ -803,7 +805,7 @@ backupCache_3 = \case
     Chinese    -> "备份位置不存在。"
     _          -> "The backup location does not exist."
 
-backupCache_4 :: FilePath -> Language -> T.Text
+backupCache_4 :: FilePath -> Language -> Doc AnsiStyle
 backupCache_4 (bt . T.pack -> dir) = \case
     Japanese   -> "キャッシュのバックアップ先：" <> dir
     Polish     -> "Tworzenie kopii zapasowej pamięci podręcznej w " <> dir
@@ -821,7 +823,7 @@ backupCache_4 (bt . T.pack -> dir) = \case
     Chinese    -> "正在将缓存备份到 " <> dir
     _          -> "Backing up cache to " <> dir
 
-backupCache_5 :: Int -> Language -> T.Text
+backupCache_5 :: Int -> Language -> Doc AnsiStyle
 backupCache_5 (bt . T.pack . show -> n) = \case
     Japanese   -> "パッケージのファイル数：" <> n
     Polish     -> "Pliki będące częścią\xa0kopii zapasowej: " <> n
@@ -839,7 +841,7 @@ backupCache_5 (bt . T.pack . show -> n) = \case
     Chinese    -> "将要备份的包文件：" <> n
     _          -> "Package files to backup: " <> n
 
-backupCache_6 :: Language -> T.Text
+backupCache_6 :: Language -> Doc AnsiStyle
 backupCache_6 = \case
     Japanese   -> "バックアップを実行しますか？"
     Polish     -> "Kontynuować tworzenie kopii zapasowej?"
@@ -857,7 +859,7 @@ backupCache_6 = \case
     Chinese    -> "开始备份？"
     _          -> "Proceed with backup?"
 
-backupCache_7 :: Language -> T.Text
+backupCache_7 :: Language -> Doc AnsiStyle
 backupCache_7 = \case
     Japanese   -> "バックアップは意図的に阻止されました。"
     Polish     -> "Tworzenie kopii zapasowej zostało przerwane przez użytkownika."
@@ -875,7 +877,7 @@ backupCache_7 = \case
     Chinese    -> "手动备份已中止。"
     _          -> "Backup manually aborted."
 
-backupCache_8 :: Language -> T.Text
+backupCache_8 :: Language -> Doc AnsiStyle
 backupCache_8 = \case
     Japanese   -> "バックアップ中。数分かかるかもしれません。"
     Polish     -> "Tworzenie kopii zapasowej. To może potrwać kilka minut..."
@@ -893,9 +895,9 @@ backupCache_8 = \case
     Chinese    -> "正在备份中。可能需要几分钟的时间..."
     _          -> "Backing up. This may take a few minutes..."
 
-copyAndNotify_1 :: Int -> Language -> T.Text
-copyAndNotify_1 (cyan . T.pack . show -> n) = \case
-    Japanese   -> "#[" <> n <>"]をコピー中・・・"
+copyAndNotify_1 :: Int -> Language -> Doc AnsiStyle
+copyAndNotify_1 (cyan . pretty -> n) = \case
+    Japanese   -> "#[" <> n <> "]をコピー中・・・"
     Polish     -> "Kopiowanie #[" <> n <> "]"
     Croatian   -> "Kopiranje #[" <> n <> "]"
     Swedish    -> "Kopierar #[" <> n <> "]"
@@ -911,7 +913,7 @@ copyAndNotify_1 (cyan . T.pack . show -> n) = \case
     Chinese    -> "正在复制 #[" <> n <> "]"
     _          -> "Copying #[" <> n <> "]"
 
-cleanCache_2 :: Language -> T.Text
+cleanCache_2 :: Language -> Doc AnsiStyle
 cleanCache_2 = \case
     Japanese   -> "パッケージ・キャッシュは完全に削除されます。"
     Polish     -> "To usunie WSZYSTKIE pakiety z pamięci podręcznej."
@@ -929,7 +931,7 @@ cleanCache_2 = \case
     Chinese    -> "这将会删除全部的包缓存。"
     _          -> "This will delete the ENTIRE package cache."
 
-cleanCache_3 :: Word -> Language -> T.Text
+cleanCache_3 :: Word -> Language -> Doc AnsiStyle
 cleanCache_3 (bt . T.pack . show -> n) = \case
     Japanese   -> "パッケージ・ファイルは" <> n <> "個保存されます。"
     Polish     -> n <> " wersji każdego pakietu zostanie zachowane."
@@ -947,7 +949,7 @@ cleanCache_3 (bt . T.pack . show -> n) = \case
     Chinese    -> "每个包文件将会保存 " <> n <> " 个版本。"
     _          -> n <> " of each package file will be kept."
 
-cleanCache_4 :: Language -> T.Text
+cleanCache_4 :: Language -> Doc AnsiStyle
 cleanCache_4 = \case
     Japanese   -> "残りは全部削除されます。承知していますか？"
     Polish     -> "Wszystko inne zostanie usunięte. Na pewno?"
@@ -965,7 +967,7 @@ cleanCache_4 = \case
     Chinese    -> "其余的将会被删除。确定？"
     _          -> "The rest will be deleted. Okay?"
 
-cleanCache_5 :: Language -> T.Text
+cleanCache_5 :: Language -> Doc AnsiStyle
 cleanCache_5 = \case
     Japanese   -> "削除の続行は意図的に阻止されました。"
     Polish     -> "Czyszczenie pamięci podręcznej zostało przerwane przez użytkownika."
@@ -983,7 +985,7 @@ cleanCache_5 = \case
     Chinese    -> "手动清理缓存已中止。"
     _          -> "Cache cleaning manually aborted."
 
-cleanCache_6 :: Language -> T.Text
+cleanCache_6 :: Language -> Doc AnsiStyle
 cleanCache_6 = \case
     Japanese   -> "パッケージ・キャッシュを掃除中・・・"
     Polish     -> "Czyszczenie pamięci podręcznej..."
@@ -1002,7 +1004,7 @@ cleanCache_6 = \case
     _          -> "Cleaning package cache..."
 
 -- NEEDS TRANSLATION
-cleanNotSaved_1 :: Language -> T.Text
+cleanNotSaved_1 :: Language -> Doc AnsiStyle
 cleanNotSaved_1 = \case
     Japanese   -> "不要パッケージファイルを確認・・・"
     Polish     -> "Określanie niepotrzebnych plków pakietów"
@@ -1020,8 +1022,8 @@ cleanNotSaved_1 = \case
     _          -> "Determining unneeded package files..."
 
 -- NEEDS TRANSLATION
-cleanNotSaved_2 :: Int -> Language -> T.Text
-cleanNotSaved_2 (cyan . T.pack . show -> s) = \case
+cleanNotSaved_2 :: Int -> Language -> Doc AnsiStyle
+cleanNotSaved_2 (cyan . pretty -> s) = \case
     Japanese   -> "「" <> s <> "」の不要パッケージファイルがあります。削除しますか？"
     Polish     -> s <> " niepotrzebnych plików zostało znalezionych. Usunąć?"
     Croatian   -> s <> " nepotrebnih datoteka pronađeno. Obrisati?"
@@ -1046,7 +1048,7 @@ logLookUpFields = sequence [ Fields.package
                            , Fields.upgrades
                            , Fields.recentActions ]
 
-reportNotInLog_1 :: Language -> T.Text
+reportNotInLog_1 :: Language -> Doc AnsiStyle
 reportNotInLog_1 = \case
     Japanese   -> "logファイルには出ていない："
     Polish     -> "Tych pakietów nie ma w dzienniku:"
@@ -1083,7 +1085,7 @@ infoFields = sequence [ Fields.repository
                       , Fields.description
                       ]
 
-outOfDateMsg :: Maybe Int -> Language -> T.Text
+outOfDateMsg :: Maybe Int -> Language -> Doc AnsiStyle
 outOfDateMsg (Just _) = red . \case
     Japanese   -> "AURで要更新！"
     Polish     -> "Nieaktualny!"
@@ -1118,8 +1120,8 @@ outOfDateMsg Nothing = green . \case
     _          -> "Up to Date"
 
 -- NEEDS TRANSLATION
-orphanedMsg :: Maybe T.Text -> Language -> T.Text
-orphanedMsg (Just m) = const m
+orphanedMsg :: Maybe T.Text -> Language -> Doc AnsiStyle
+orphanedMsg (Just m) = const (pretty m)
 orphanedMsg Nothing = red . \case
     Japanese   -> "孤児です!"
     Polish     -> "Osierocony!"
@@ -1139,7 +1141,7 @@ orphanedMsg Nothing = red . \case
 -- Aura/State functions
 -----------------------
 -- NEEDS TRANSLATION
-saveState_1 :: Language -> T.Text
+saveState_1 :: Language -> Doc AnsiStyle
 saveState_1 = \case
     Japanese   -> "パッケージ状態の保存完了。"
     Polish     -> "Zachowano stan pakietów"
@@ -1158,7 +1160,7 @@ saveState_1 = \case
     _          -> "Saved package state."
 
 -- NEEDS TRANSLATION
-restoreState_1 :: Language -> T.Text
+restoreState_1 :: Language -> Doc AnsiStyle
 restoreState_1 = \case
     Japanese   -> "対象バージョンがないパッケージ："
     Polish     -> "Starsze wersje nie są dostępne dla:"
@@ -1176,7 +1178,7 @@ restoreState_1 = \case
     Swedish    -> "Den begärda nedgraderingen finns inte tillgänglig för:"
     _          -> "Requested downgrade versions not available for:"
 
-restoreState_2 :: Language -> T.Text
+restoreState_2 :: Language -> Doc AnsiStyle
 restoreState_2 = \case
     Japanese   -> "保存されたパッケージ状態がない。作るには「-B」を。"
     Portuguese -> "Nenhum estado disponível para ser recuperado. (Utilize -B para salvar o estado atual)"
@@ -1185,7 +1187,7 @@ restoreState_2 = \case
     _          -> "No saved states to be restored. (Use -B to save the current state)"
 
 -- NEEDS TRANSLATION
-reinstallAndRemove_1 :: Language -> T.Text
+reinstallAndRemove_1 :: Language -> Doc AnsiStyle
 reinstallAndRemove_1 = \case
     Japanese   -> "パッケージを変更する必要はありません。"
     Polish     -> "Żaden pakiet nie wymaga zmian"
@@ -1206,7 +1208,7 @@ reinstallAndRemove_1 = \case
 --------------------------------------
 -- Aura/Settings/BadPackages functions
 --------------------------------------
-whoIsBuildUser_1 :: Language -> T.Text
+whoIsBuildUser_1 :: Language -> Doc AnsiStyle
 whoIsBuildUser_1 = \case
     Portuguese -> "Não foi possível determinal o usuário que executará a compilação."
     _          -> "Can't determine which user account to build with."
@@ -1215,7 +1217,7 @@ whoIsBuildUser_1 = \case
 -- Aura/Pacman functions
 ------------------------
 -- NEEDS TRANSLATION
-pacmanFailure_1 :: Language -> T.Text
+pacmanFailure_1 :: Language -> Doc AnsiStyle
 pacmanFailure_1 = \case
     Japanese   -> "入力を確認して下さい。"
     Polish     -> "Sprawdź swoje dane wejściowe"
@@ -1233,19 +1235,19 @@ pacmanFailure_1 = \case
     Swedish    -> "Var god dubbelkolla indata."
     _          -> "Please check your input."
 
-confParsing_1 :: Language -> T.Text
+confParsing_1 :: Language -> Doc AnsiStyle
 confParsing_1 = \case
     Portuguese -> "Não foi possível interpretar o arquivo pacman.conf ."
     _          -> "Unable to parse your pacman.conf file."
 
-provides_1 :: T.Text -> T.Text
+provides_1 :: T.Text -> Doc AnsiStyle
 provides_1 pro =
   bt pro <> " is required as a dependency, which is provided by multiple packages. Please select one:"
 
 ----------------------------------
 -- Aura/Pkgbuild/Editing functions
 ----------------------------------
-hotEdit_1 :: T.Text -> Language -> T.Text
+hotEdit_1 :: T.Text -> Language -> Doc AnsiStyle
 hotEdit_1 (bt -> p) = \case
     Japanese   -> p <> "のPKGBUILDを編成しますか？"
     Polish     -> "Czy chcesz edytować PKGBUILD " <> p <> "?"
@@ -1263,7 +1265,7 @@ hotEdit_1 (bt -> p) = \case
     Chinese    -> "你希望编辑 " <> p <> " 的 PKGBUILD 文件吗？"
     _          -> "Would you like to edit the PKGBUILD of " <> p <> "?"
 
-customizepkg_1 :: Language -> T.Text
+customizepkg_1 :: Language -> Doc AnsiStyle
 customizepkg_1 = let customizepkg = bt "customizepkg" in \case
     Japanese   -> customizepkg <> "はインストールされていません。"
     Polish     -> customizepkg <> "nie zainstalowany."
@@ -1283,7 +1285,7 @@ customizepkg_1 = let customizepkg = bt "customizepkg" in \case
 -----------------------
 -- Aura/Utils functions
 -----------------------
-yesNoMessage :: Language -> T.Text
+yesNoMessage :: Language -> Doc ann
 yesNoMessage = \case
     Polish     -> "[T/n]"
     Croatian   -> "[D/n]"

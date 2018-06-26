@@ -44,6 +44,8 @@ module Aura.Types
 import           BasePrelude hiding (try)
 import           Data.Bitraversable
 import qualified Data.Text as T
+import           Data.Text.Prettyprint.Doc hiding (space)
+import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
@@ -181,11 +183,11 @@ data Language = English
                 deriving (Eq, Enum, Ord, Show)
 
 data DepError = NonExistant T.Text
-              | VerConflict T.Text
-              | Ignored T.Text
+              | VerConflict (Doc AnsiStyle)
+              | Ignored (Doc AnsiStyle)
               | UnparsableVersion T.Text
               | BrokenProvides T.Text T.Text T.Text
 
 -- | Some failure message that when given the current runtime `Language`
 -- will produce a human-friendly error.
-newtype Failure = Failure { _failure :: Language -> T.Text }
+newtype Failure = Failure { _failure :: Language -> Doc AnsiStyle }

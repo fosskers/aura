@@ -29,6 +29,7 @@ module Aura.Packages.Repository
 import           Aura.Core
 import           Aura.Languages (provides_1)
 import           Aura.Pacman (pacmanOutput)
+import           Aura.Settings (Settings)
 import           Aura.Types
 import           BasePrelude hiding (try)
 import           Control.Concurrent.Async
@@ -45,8 +46,8 @@ import           Utilities (getSelection)
 -- | Repository package source.
 -- We expect this to fail when the package is actually an AUR package.
 pacmanRepo :: Repository
-pacmanRepo = Repository $ \_ names -> do
-  badsgoods <- partitionEithers <$> mapConcurrently resolveName (toList names)
+pacmanRepo = Repository $ \ss names -> do
+  badsgoods <- partitionEithers <$> mapConcurrently (resolveName ss) (toList names)
   bitraverse (pure . S.fromList) (traverse f) badsgoods
   where f (r, p) = packageRepo r p <$> mostRecentVersion r
 
@@ -61,21 +62,21 @@ packageRepo name pro ver = Package
 
 -- | If given a virtual package, try to find a real package to install.
 -- Functions like this are why we need libalpm.
-resolveName :: T.Text -> IO (Either T.Text (T.Text, Provides))
-resolveName name = do
+resolveName :: Settings -> T.Text -> IO (Either T.Text (T.Text, Provides))
+resolveName ss name = do
   provs <- T.lines <$> pacmanOutput ["-Ssq", "^" <> name <> "$"]
   case provs of
     [] -> pure $ Left name
-    _  -> Right . (, Provides name) <$> chooseProvider name provs
+    _  -> Right . (, Provides name) <$> chooseProvider ss name provs
 
 -- | Choose a providing package, favoring installed packages.
-chooseProvider :: MonadIO m => T.Text -> [T.Text] -> m T.Text
-chooseProvider name []  = pure name
-chooseProvider _    [p] = pure p
-chooseProvider name ps  = do
-  mp <- listToMaybe . catMaybes <$> liftIO (mapConcurrently isInstalled ps)
+chooseProvider :: Settings -> T.Text -> [T.Text] -> IO T.Text
+chooseProvider _ name []   = pure name
+chooseProvider _ _    [p]  = pure p
+chooseProvider ss name ps  = do
+  mp <- listToMaybe . catMaybes <$> mapConcurrently isInstalled ps
   maybe f pure mp
-  where f = liftIO $ warn (provides_1 name) *> getSelection ps
+  where f = warn ss (provides_1 name) *> getSelection ps
 
 -- | The most recent version of a package, if it exists in the respositories.
 mostRecentVersion :: T.Text -> IO (Maybe Versioning)

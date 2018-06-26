@@ -37,6 +37,9 @@ import           Control.Monad.Freer.Reader
 import           Data.Semigroup
 import qualified Data.Set as S
 import qualified Data.Text as T
+import qualified Data.Text.IO as T
+import           Data.Text.Prettyprint.Doc
+import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions (prettyV)
 import           Shelly (Sh, test_f)
 import           Utilities
@@ -125,21 +128,27 @@ isSatisfied (Dep name ver) = T.null <$> pacmanOutput ["-T", name <> asT ver]
 checkDBLock :: Settings -> Sh ()
 checkDBLock ss = do
   locked <- test_f lockFile
-  when locked $ (liftIO . warn . checkDBLock_1 $ langOf ss) *> liftIO getLine *> checkDBLock ss
+  when locked $ (liftIO . warn ss . checkDBLock_1 $ langOf ss) *> liftIO getLine *> checkDBLock ss
 
 -------
 -- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`
 -------
 
-notify :: T.Text -> IO ()
-notify = putStrLnA green
+notify :: Settings -> Doc AnsiStyle -> IO ()
+notify ss = putStrLnA ss . green
 
-warn :: T.Text -> IO ()
-warn = putStrLnA yellow
+warn :: Settings -> Doc AnsiStyle -> IO ()
+warn ss = putStrLnA ss . yellow
 
-scold :: T.Text -> IO ()
-scold = putStrLnA red
+scold :: Settings -> Doc AnsiStyle -> IO ()
+scold ss = putStrLnA ss . red
 
-badReport :: (Member (Reader Settings) r, Member IO r) => (Language -> T.Text) -> [T.Text] -> Eff r ()
-badReport _ []     = pure ()
-badReport msg pkgs = asks langOf >>= \lang -> send (printList @IO red cyan (msg lang) pkgs)
+-- | Report a message with multiple associated items. Usually a list of
+-- naughty packages.
+report :: (Member (Reader Settings) r, Member IO r) =>
+  (Doc AnsiStyle -> Doc AnsiStyle) -> (Language -> Doc AnsiStyle) -> [T.Text] -> Eff r ()
+report _ _ []     = pure ()
+report c msg pkgs = do
+  ss <- ask
+  send . putStrLnA ss . c . msg $ langOf ss
+  send . T.putStrLn . dtot . vsep $ map (cyan . pretty) pkgs

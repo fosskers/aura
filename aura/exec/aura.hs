@@ -34,6 +34,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Main ( main ) where
 
+import           Aura.Colour (dtot)
 import           Aura.Commands.A as A
 import           Aura.Commands.B as B
 import           Aura.Commands.C as C
@@ -51,6 +52,8 @@ import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import           Data.Text.Prettyprint.Doc
+import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Flags
 import           Options.Applicative (execParser)
 import           Settings
@@ -67,15 +70,15 @@ main = do
   options   <- execParser opts
   esettings <- getSettings options
   case esettings of
-    Left err -> T.putStrLn . ($ English) $ _failure err
-    Right ss -> execute ss options >>= exit
+    Left err -> T.putStrLn . dtot . ($ English) $ _failure err
+    Right ss -> execute ss options >>= exit ss
 
-execute :: Settings -> Program -> IO (Either T.Text ())
+execute :: Settings -> Program -> IO (Either (Doc AnsiStyle) ())
 execute ss p = first (($ langOf ss) . _failure) <$> (runM . runReader ss . runError . executeOpts $ _operation p)
 
-exit :: Either T.Text () -> IO a
-exit (Left e)  = scold e *> exitFailure
-exit (Right _) = exitSuccess
+exit :: Settings -> Either (Doc AnsiStyle) () -> IO a
+exit ss (Left e)  = scold ss e *> exitFailure
+exit _  (Right _) = exitSuccess
 
 executeOpts :: Either PacmanOp AuraOp -> Eff '[Error Failure, Reader Settings, IO] ()
 executeOpts ops = do
@@ -122,7 +125,8 @@ executeOpts ops = do
 
 displayOutputLanguages :: (Member (Reader Settings) r, Member IO r) => Eff r ()
 displayOutputLanguages = do
-  asks langOf >>= send . notify . displayOutputLanguages_1
+  ss <- ask
+  send . notify ss . displayOutputLanguages_1 $ langOf ss
   send $ traverse_ print [English ..]
 
 -- | Animated version message.
@@ -132,15 +136,15 @@ animateVersionMsg verMsg = ask >>= \ss -> send $ do
   traverse_ (T.putStrLn . padString verMsgPad) verMsg  -- Version message
   raiseCursorBy 7  -- Initial reraising of the cursor.
   drawPills 3
-  traverse_ T.putStrLn $ renderPacmanHead 0 Open  -- Initial rendering of head.
+  traverse_ T.putStrLn $ renderPacmanHead ss 0 Open  -- Initial rendering of head.
   raiseCursorBy 4
-  takeABite 0  -- Initial bite animation.
-  traverse_ pillEating pillsAndWidths
+  takeABite ss 0  -- Initial bite animation.
+  traverse_ (pillEating ss) pillsAndWidths
   clearGrid
   T.putStrLn auraLogo
   T.putStrLn $ "AURA Version " <> auraVersion
   T.putStrLn " by Colin Woodbury\n"
   traverse_ T.putStrLn . translatorMsg . langOf $ ss
   showCursor
-    where pillEating (p, w) = clearGrid *> drawPills p *> takeABite w
-          pillsAndWidths   = [(2, 5), (1, 10), (0, 15)]
+    where pillEating ss (p, w) = clearGrid *> drawPills p *> takeABite ss w
+          pillsAndWidths       = [(2, 5), (1, 10), (0, 15)]

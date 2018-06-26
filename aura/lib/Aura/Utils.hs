@@ -26,7 +26,6 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 module Aura.Utils
   ( -- * Output
     putStrLnA
-  , printList
     -- * User Input
   , optionalPrompt
     -- * Fancy String Rendering
@@ -38,9 +37,11 @@ module Aura.Utils
 import           Aura.Colour
 import           Aura.Languages (Language, whitespace, yesNoMessage, yesPattern)
 import           Aura.Settings
-import           BasePrelude hiding (Version)
+import           BasePrelude hiding (Version, (<+>))
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import           Data.Text.Prettyprint.Doc
+import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           System.IO (stdout, hFlush)
 import           Text.Megaparsec
 
@@ -50,46 +51,36 @@ import           Text.Megaparsec
 -- CUSTOM OUTPUT
 ----------------
 
-putStrLnA :: MonadIO m => Colouror -> T.Text -> m ()
-putStrLnA c s = putStrA c $ s <> "\n"
+putStrLnA :: Settings -> Doc AnsiStyle -> IO ()
+putStrLnA ss d = putStrA ss $ d <> hardline
 
-putStrLnA' :: Colouror -> T.Text -> T.Text
-putStrLnA' c s = putStrA' c s <> "\n"
+putStrA :: Settings -> Doc AnsiStyle -> IO ()
+putStrA ss d = T.putStr . dtot $ putStrA' ss d
 
--- Added `hFlush` here because some output appears to lag sometimes.
-putStrA :: MonadIO m => Colouror -> T.Text -> m ()
-putStrA c = liftIO . T.putStr . putStrA' c
---putStrA colour s = liftIO (putStr (putStrA' colour s) *> hFlush stdout)
-
-putStrA' :: Colouror -> T.Text -> T.Text
-putStrA' c s = "aura >>= " <> c s
-
-printList :: MonadIO m => Colouror -> Colouror -> T.Text -> [T.Text] -> m ()
-printList _ _ _ []        = pure ()
-printList tc ic msg items = liftIO . T.putStrLn . printList' tc ic msg $ items
-
-printList' :: Colouror -> Colouror -> T.Text -> [T.Text] -> T.Text
-printList' tc ic m is = putStrLnA' tc m <> colouredItems
-  where colouredItems = T.unlines $ map ic is
+-- | Will remove all colour annotations if the user specified `--color=never`.
+putStrA' :: Settings -> Doc ann -> Doc ann
+putStrA' ss d = "aura >>=" <+> f d
+  where f | shared ss (Colour Never) = unAnnotate
+          | otherwise = id
 
 ----------
 -- PROMPTS
 ----------
-yesNoPrompt :: MonadIO m => Language -> T.Text -> m Bool
-yesNoPrompt lang msg = do
-  putStrA yellow $ msg <> " " <> yesNoMessage lang <> " "
-  liftIO $ hFlush stdout
-  response <- liftIO T.getLine
-  pure $ isAffirmative lang response
+yesNoPrompt :: Settings -> Doc AnsiStyle -> IO Bool
+yesNoPrompt ss msg = do
+  putStrA ss . yellow $ msg <+> yesNoMessage (langOf ss) <+> " "
+  hFlush stdout
+  response <- T.getLine
+  pure $ isAffirmative (langOf ss) response
 
 -- | An empty response emplies "yes".
 isAffirmative :: Language -> T.Text -> Bool
 isAffirmative l t = T.null t || elem t (yesPattern l)
 
 -- | Doesn't prompt when `--noconfirm` is used.
-optionalPrompt :: MonadIO m => Settings -> (Language -> T.Text) -> m Bool
+optionalPrompt :: Settings -> (Language -> Doc AnsiStyle) -> IO Bool
 optionalPrompt ss msg | shared ss NoConfirm = pure True
-                      | otherwise           = yesNoPrompt (langOf ss) (msg $ langOf ss)
+                      | otherwise           = yesNoPrompt ss (msg $ langOf ss)
 
 -------
 -- MISC
@@ -107,10 +98,10 @@ splitNameAndVer = either (const Nothing) Just . parse parser "splitNameAndVer"
           pure (name, ver)
 
 -- | Format two lists into two nice rows a la `-Qi` or `-Si`.
-entrify :: Settings -> [T.Text] -> [T.Text] -> T.Text
-entrify ss fs es = T.unlines $ zipWith combine fs' es
+entrify :: Settings -> [T.Text] -> [Doc AnsiStyle] -> Doc AnsiStyle
+entrify ss fs es = vsep $ zipWith combine fs' es
     where fs' = padding ss fs
-          combine f e = f <> " : " <> e
+          combine f e = annotate bold (pretty f) <+> ":" <+> e
 
 -- | Right-pads strings according to the longest string in the group.
 padding :: Settings -> [T.Text] -> [T.Text]

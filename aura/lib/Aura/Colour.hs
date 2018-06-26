@@ -21,35 +21,30 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Colour where
 
-import           BasePrelude
-import qualified Data.Text as T
-import qualified Data.Text.Prettyprint.Doc as PP
-import qualified Data.Text.Prettyprint.Doc.Render.Terminal as PP
+import BasePrelude
+import Data.Text (Text)
+import Data.Text.Prettyprint.Doc
+import Data.Text.Prettyprint.Doc.Render.Terminal
 
 ---
 
-type Colouror = T.Text -> T.Text
+dtot :: Doc AnsiStyle -> Text
+dtot = renderStrict . layoutPretty defaultLayoutOptions
 
-colour :: PP.AnsiStyle -> PP.Doc PP.AnsiStyle -> T.Text
-colour c = PP.renderStrict . PP.layoutPretty PP.defaultLayoutOptions . PP.annotate c
+cyan :: Doc AnsiStyle -> Doc AnsiStyle
+cyan = annotate (color Cyan)
 
-cyan :: Colouror
-cyan = colour (PP.color PP.Cyan) . PP.pretty
+bCyan :: Doc AnsiStyle -> Doc AnsiStyle
+bCyan = annotate (color Cyan <> bold)
 
-bCyan :: Colouror
-bCyan = colour (PP.color PP.Cyan <> PP.bold) . PP.pretty
+green :: Doc AnsiStyle -> Doc AnsiStyle
+green = annotate (color Green)
 
-green :: Colouror
-green = colour (PP.color PP.Green) . PP.pretty
+yellow :: Doc AnsiStyle -> Doc AnsiStyle
+yellow = annotate (color Yellow)
 
-yellow :: Colouror
-yellow = colour (PP.color PP.Yellow) . PP.pretty
+red :: Doc AnsiStyle -> Doc AnsiStyle
+red = annotate (color Red)
 
-red :: Colouror
-red = colour (PP.color PP.Red) . PP.pretty
-
-magenta :: Colouror
-magenta = colour (PP.color PP.Magenta) . PP.pretty
-
-bold :: Colouror
-bold = colour PP.bold . PP.pretty
+magenta :: Doc AnsiStyle -> Doc AnsiStyle
+magenta = annotate (color Magenta)

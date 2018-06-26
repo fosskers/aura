@@ -76,7 +76,7 @@ install opts pkgs = do
          orphansAfter <- send orphans
          let makeDeps = orphansAfter \\ orphansBefore
          unless (null makeDeps) $ do
-           send . notify . removeMakeDepsAfter_1 $ langOf ss
+           send . notify ss . removeMakeDepsAfter_1 $ langOf ss
            removePkgs makeDeps
 
 install' :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
@@ -87,17 +87,17 @@ install' opts pkgs = do
   let (ignored, notIgnored) = S.partition (`elem` ignoredPkgsOf (commonConfigOf ss)) pkgs
   installAnyway <- confirmIgnored ignored
   let toInstall = (notIgnored <> installAnyway) S.\\ unneeded
-  reportUnneededPackages $ toList unneeded
+  report yellow reportUnneededPackages_1 $ toList unneeded
   toBuild <- lookupPkgs (installLookup opts ss) toInstall >>= pkgbuildDiffs
-  if | null toBuild && shared ss NeededOnly && unneeded == pkgs -> send . notify . install_2 $ langOf ss
+  if | null toBuild && shared ss NeededOnly && unneeded == pkgs -> send . notify ss . install_2 $ langOf ss
      | null toBuild -> throwError $ Failure install_2
      | otherwise -> do
-         send $ notify (install_5 $ langOf ss) *> hFlush stdout
+         send $ notify ss (install_5 $ langOf ss) *> hFlush stdout
          allPkgs <- depsToInstall (repository opts) toBuild
          let (repoPkgs, buildPkgs) = second uniquePkgBase $ partitionPkgs allPkgs
          reportPkgsToInstall (label opts) repoPkgs buildPkgs
          unless (switch ss DryRun) $ do
-           continue <- send $ optionalPrompt @IO ss install_3
+           continue <- send $ optionalPrompt ss install_3
            if | not continue -> throwError $ Failure install_4
               | otherwise    -> do
                   repoInstall repoPkgs
@@ -116,14 +116,14 @@ uniquePkgBase = M.elems . M.fromListWith f . map (bldBaseNameOf &&& id)
 confirmIgnored :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r (S.Set T.Text)
 confirmIgnored (toList -> ps) = do
   ss <- ask
-  S.fromList <$> filterM (send . optionalPrompt @IO ss . confirmIgnored_1) ps
+  S.fromList <$> filterM (send . optionalPrompt ss . confirmIgnored_1) ps
 
 -- | Check a list of a package names are buildable, and mark them as explicit.
 lookupPkgs :: (Member (Reader Settings) r, Member IO r) =>
   (S.Set T.Text -> IO (S.Set T.Text, [Buildable])) -> S.Set T.Text -> Eff r [Buildable]
 lookupPkgs f pkgs = do
   (nons, okay) <- send $ f pkgs
-  reportNonPackages $ toList nons
+  report red reportNonPackages_1 $ toList nons
   pure $ map (\b -> b { isExplicit = True }) okay
 
 depsToInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
@@ -163,22 +163,13 @@ displayPkgDeps opts ps =
 
 reportPkgsToInstall :: (Member (Reader Settings) r, Member IO r) => T.Text -> [T.Text] -> [Buildable] -> Eff r ()
 reportPkgsToInstall la rps bps = do
-  lang <- asks langOf
-  pl (reportPkgsToInstall_1    lang) (sort rps)
-  pl (reportPkgsToInstall_2 la lang) (sort $ map bldNameOf bps)
-    where pl m r = send $ printList @IO green cyan m r
+  report green reportPkgsToInstall_1 (sort rps)
+  report green (reportPkgsToInstall_2 la) (sort $ map bldNameOf bps)
 
 reportListOfDeps :: [T.Text] -> [Buildable] -> IO ()
 reportListOfDeps rps bps = do
   traverse_ T.putStrLn $ sort rps
   traverse_ T.putStrLn . sort $ map bldNameOf bps
-
-reportNonPackages :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r ()
-reportNonPackages = badReport reportNonPackages_1
-
-reportUnneededPackages :: (Member (Reader Settings) r, Member IO r) =>  [T.Text] -> Eff r ()
-reportUnneededPackages pkgs = asks langOf >>= \lang ->
-  send (printList @IO yellow cyan (reportUnneededPackages_1 lang) pkgs)
 
 pkgbuildDiffs :: (Member (Reader Settings) r, Member IO r) => [Buildable] -> Eff r [Buildable]
 pkgbuildDiffs [] = pure []
@@ -187,16 +178,17 @@ pkgbuildDiffs ps = ask >>= check
                    | otherwise = traverse_ displayDiff ps $> ps
           displayDiff :: (Member (Reader Settings) r, Member IO r) => Buildable -> Eff r ()
           displayDiff p = do
+            ss <- ask
             let name = bldNameOf p
-            lang     <- asks langOf
+                lang = langOf ss
             isStored <- send $ hasPkgbuildStored name
             if not isStored
-               then send . warn $ reportPkgbuildDiffs_1 name lang
+               then send . warn ss $ reportPkgbuildDiffs_1 name lang
                else do
                  let new = _pkgbuild $ pkgbuildOf p
                  old <- send $ readPkgbuild name
                  case comparePkgbuilds old new of
-                   Nothing -> send . notify $ reportPkgbuildDiffs_2 name lang
+                   Nothing -> send . notify ss $ reportPkgbuildDiffs_2 name lang
                    Just d  -> send $ do
-                      warn $ reportPkgbuildDiffs_3 name lang
+                      warn ss $ reportPkgbuildDiffs_3 name lang
                       T.putStrLn d

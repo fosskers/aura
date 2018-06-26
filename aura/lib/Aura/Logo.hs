@@ -25,10 +25,12 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Logo where
 
-import           Aura.Colour (yellow)
+import           Aura.Colour (yellow, dtot)
+import           Aura.Settings
 import           BasePrelude
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import           Data.Text.Prettyprint.Doc
 import           System.IO (stdout, hFlush)
 import           Utilities (cursorUpLineCode)
 
@@ -42,19 +44,23 @@ auraLogo = " __ _ _  _ _ _ __ _ \n" <>
            "/ _` | || | '_/ _` |\n" <>
            "\\__,_|\\_,_|_| \\__,_|"
 
-openMouth :: [T.Text]
-openMouth = map yellow
+openMouth :: Settings -> [T.Text]
+openMouth ss = map f
             [ " .--."
             , "/ _.-'"
             , "\\  '-."
             , " '--'" ]
+  where f | shared ss (Colour Never) = id
+          | otherwise = dtot . yellow . pretty
 
-closedMouth :: [T.Text]
-closedMouth = map yellow
+closedMouth :: Settings -> [T.Text]
+closedMouth ss = map f
               [ " .--."
               , "/ _..\\"
               , "\\  ''/"
               , " '--'" ]
+  where f | shared ss (Colour Never) = id
+          | otherwise = dtot . yellow . pretty
 
 pill :: [T.Text]
 pill = [ ""
@@ -62,10 +68,10 @@ pill = [ ""
        , "'-'"
        , "" ]
 
-takeABite :: Int -> IO ()
-takeABite pad = drawMouth Closed *> drawMouth Open
+takeABite :: Settings -> Int -> IO ()
+takeABite ss pad = drawMouth Closed *> drawMouth Open
     where drawMouth mouth = do
-            traverse_ T.putStrLn $ renderPacmanHead pad mouth
+            traverse_ T.putStrLn $ renderPacmanHead ss pad mouth
             raiseCursorBy 4
             hFlush stdout
             threadDelay 125000
@@ -92,9 +98,9 @@ renderPills numOfPills = take numOfPills pillPostitions >>= render
     where pillPostitions = [17, 12, 7]
           render pos = renderPill pos <> [raiseCursorBy' 5]
 
-renderPacmanHead :: Int -> MouthState -> [T.Text]
-renderPacmanHead pad Open   = map (padString pad) openMouth
-renderPacmanHead pad Closed = map (padString pad) closedMouth
+renderPacmanHead :: Settings -> Int -> MouthState -> [T.Text]
+renderPacmanHead ss pad Open   = map (padString pad) $ openMouth ss
+renderPacmanHead ss pad Closed = map (padString pad) $ closedMouth ss
 
 padString :: Int -> T.Text -> T.Text
 padString pad cs = T.justifyRight (pad + T.length cs) ' ' cs
