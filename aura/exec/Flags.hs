@@ -308,10 +308,14 @@ commonConfig = CommonConfig <$> optional cap <*> optional cop <*> optional lfp <
           optional (strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given packages."))
 
 commonSwitches :: Parser (S.Set CommonSwitch)
-commonSwitches = S.fromList <$> many (nc <|> no <|> dbg)
+commonSwitches = S.fromList <$> many (nc <|> no <|> dbg <|> clr)
   where nc  = flag' NoConfirm  (long "noconfirm" <> hidden <> help "Never ask for Aura or Pacman confirmation.")
         no  = flag' NeededOnly (long "needed"    <> hidden <> help "Don't rebuild/reinstall up-to-date packages.")
         dbg = flag' Debug      (long "debug"     <> hidden <> help "Print useful debugging info.")
+        clr = Colour . f <$> strOption (long "color" <> metavar "WHEN" <> hidden <> help "Colourize the output.")
+        f "never"  = Never
+        f "always" = Always
+        f _        = Auto
 
 database :: Parser PacmanOp
 database = bigD *> (Database <$> (fmap Right someArgs <|> fmap Left mods) <*> misc)
@@ -378,12 +382,11 @@ sync = bigS *> (Sync <$> (fmap Right someArgs <|> fmap Left mods) <*> ref <*> mi
 
 
 misc :: Parser (S.Set MiscOp)
-misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> clr <|> gpg <|> hd <|> con <|> dbo <|> nop <|> nos <|> pf <|> nod <|> prt <|> asi <|> igg)
+misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> gpg <|> hd <|> con <|> dbo <|> nop <|> nos <|> pf <|> nod <|> prt <|> asi <|> igg)
   where ar  = MiscArch    <$> strOption (long "arch" <> metavar "ARCH" <> hidden <> help "Use an alternate architecture.")
         dbp = MiscDBPath  <$> strOption (long "dbpath" <> short 'b' <> metavar "PATH" <> hidden <> help "Use an alternate database location.")
         roo = MiscRoot    <$> strOption (long "root" <> short 'r' <> metavar "PATH" <> hidden <> help "Use an alternate installation root.")
         ver = flag' MiscVerbose (long "verbose" <> short 'v' <> hidden <> help "Be more verbose.")
-        clr = MiscColor   <$> strOption (long "color" <> metavar "WHEN" <> hidden <> help "Colourize the output.")
         gpg = MiscGpgDir  <$> strOption (long "gpgdir" <> metavar "PATH" <> hidden <> help "Use an alternate GnuGPG directory.")
         hd  = MiscHookDir <$> strOption (long "hookdir" <> metavar "PATH" <> hidden <> help "Use an alternate hook directory.")
         con = flag' MiscConfirm (long "confirm" <> hidden <> help "Always ask for confirmation.")
