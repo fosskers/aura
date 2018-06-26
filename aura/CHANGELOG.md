@@ -4,7 +4,7 @@
 
 This is a large update representing about a month of full-time effort. Aura is now
 *much* faster, solves dependencies more reliably, and has a few new features. This
-is all while modernizing the code and seeing a TODO overall decrease in code size.
+is all while modernizing the code and seeing a ~17% decrease in overall code size.
 
 ### Improvements
 
@@ -15,6 +15,9 @@ is all while modernizing the code and seeing a TODO overall decrease in code siz
     can manually make a selection.
 - `-Au` automatically saves a package state before updating (unless you're doing `--dryrun`).
   This lets you more easily roll back from problematic updates.
+- Output text colour can be turned off with `--color never`. By default, Aura will only automatically
+  colour text when it detects that the output device is a terminal (and not a Unix pipe, say).
+  These behaviours match Pacman.
 - **Flag:** `-A --json <packages>`. Query the AUR directly for a package's raw JSON data.
   Great for debugging.
 - **Flag:** `-Br` has been restored as short-hand for `-B --restore`.
