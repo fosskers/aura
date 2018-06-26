@@ -34,6 +34,7 @@ import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)
 import           Shelly
 import           System.Environment (getEnvironment)
+import           System.IO (hIsTerminalDevice, stdout)
 import           Utilities
 
 ---
@@ -46,6 +47,7 @@ getSettings (Program _ co bc lng) = do
           environment <- M.fromList . map (bimap T.pack T.pack) <$> getEnvironment
           buildPath'  <- checkBuildPath (buildPathOf bc) (getCachePath confFile)
           manager     <- newManager tlsManagerSettings
+          isTerm      <- hIsTerminalDevice stdout
           let language   = checkLang lng environment
               buildUser' = buildUserOf bc <|> getTrueUser environment
           pure $ do
@@ -54,6 +56,7 @@ getSettings (Program _ co bc lng) = do
                            , envOf          = environment
                            , langOf         = language
                            , editorOf       = getEditor environment
+                           , isTerminal     = isTerm
                            , commonConfigOf =
                              co { cachePathOf   = cachePathOf co <|> Just (getCachePath confFile)
                                 , logPathOf     = logPathOf co   <|> Just (getLogFilePath confFile)

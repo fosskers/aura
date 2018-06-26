@@ -108,5 +108,6 @@ data Settings = Settings { managerOf      :: Manager
                          , envOf          :: Environment
                          , langOf         :: Language
                          , editorOf       :: Text  -- TODO Add to `BuildConfig`?
+                         , isTerminal     :: Bool
                          , commonConfigOf :: CommonConfig
                          , buildConfigOf  :: BuildConfig }

@@ -59,8 +59,10 @@ putStrA :: Settings -> Doc AnsiStyle -> IO ()
 putStrA ss d = T.putStr . dtot $ "aura >>=" <+> colourCheck ss d
 
 colourCheck :: Settings -> Doc ann -> Doc ann
-colourCheck ss | shared ss (Colour Never) = unAnnotate
-               | otherwise = id
+colourCheck ss | shared ss (Colour Never)  = unAnnotate
+               | shared ss (Colour Always) = id
+               | isTerminal ss = id
+               | otherwise = unAnnotate
 
 ----------
 -- PROMPTS
