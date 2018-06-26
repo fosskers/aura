@@ -1,7 +1,7 @@
 .\" Man page for `aura`
-.\" Written by Colin Woodbury <colingw@gmail.com>
+.\" Written by Colin Woodbury <colin@fosskers.ca>
 
-.TH aura 8 "April 2015" "Aura" "Aura Manual"
+.TH aura 8 "June 2018" "Aura" "Aura Manual"
 
 .\" Disable hyphenation.
 .nh
@@ -55,11 +55,7 @@ Default action opens the log for read-only viewing.
 .RS 4
 Perform actions involving [O]rphan packages. Orphan packages are packages
 installed as dependencies, but are no longer required by any other package.
-\fI\-O\fR's default action can do one of two things.
-If no extra argument is given, the current orphan packages installed are
-displayed. If a package name is given, it is `adopted`.
-This changes the package's install reason to `As Explicit`.
-This is a shortcut for `-D --asexplicit`.
+Default action is to list the current orphans.
 .RE
 
 .SH AUR SYNC OPTIONS (\fI\-A\fR)
@@ -135,13 +131,9 @@ suppressed for a more silent install. Note that when this option isn't used,
 \fImakepkg\fR output is actually collected and printed if any errors occur.
 .RE
 .P
-\fB\-\-aurignore\fR=<package>(,<package>,...)
+\fB\-\-json <package(s)>
 .RS 4
-Ignore the given packages when installing and upgrading. \fIMust\fR be run
-like:
-.RS 6
-"aura -A foo --aurignore=bar" or "aura -A foo --aurignore=bar,baz,biff"
-.RE
+Query the AUR RPC for package info as raw JSON. Good for debugging.
 .RE
 .P
 \fB\-\-build\fR=/path/
@@ -202,7 +194,7 @@ Saves a given number of the most recently saved package states and removes the
 rest.
 .RE
 .P
-\fB\-\-restore\fR
+\fB\-r\fR, \-\-restore\fR
 .RS 4
 Restores a record kept with \fI\-B\fR. Attempts to downgrade any packages that
 were upgraded since the chosen save. Will remove any that weren't installed at
@@ -211,7 +203,7 @@ the time.
 
 .SH DOWNGRADE OPTIONS (\fI\-C\fR)
 .P
-\fB\-\-backup\fR <path>
+\fB\-b\fR, \-\-backup\fR <path>
 .RS 4
 Backup the package cache to a given directory. The given directory must already
 exist. During copying, progress will be shown. If the copy takes too long, you
@@ -256,6 +248,11 @@ actions performed on a package.
 
 .SH ORPHAN PACKAGE OPTIONS (\fI\-O\fR)
 .P
+\fB\-\-adopt <package(s)>
+.RS 4
+Mark a package as being explicitly installed (i.e. it's not a dependency).
+.RE
+.P
 \fB\-j\fR, \-\-abandon
 .RS 4
 Uninstall all orphan packages.
@@ -274,6 +271,11 @@ answered in whatever way would progress the program.
 .RS 4
 Don't rebuild/reinstall packages that are already up to date.
 .RE
+.P
+\-\-debug
+.RS 4
+View some handy debugging information.
+.RE
 
 .SH EXPOSED MAKEPKG OPTIONS
 .P
@@ -287,31 +289,6 @@ Ignores processor architecture when building packages.
 Creates a \fI.src\fR file containing all the downloaded sources (code, etc)
 and stores it at \fI/var/cache/aura/src/\fR.
 .RE
-
-.SH MISC. OPTIONS
-.P
-These options do not require a superordinate flag, such as \fI\-A\fR.
-.P
-\-\-auradebug
-.RS 4
-Display settings information when running aura.
-.RE
-.P
-\-\-languages
-.RS 4
-Display the available output languages.
-.RE
-.P
-\-\-no-pp
-.RS 4
-Don't use powerpill, even if you have it installed.
-.RE
-.P
-\-\-viewconf
-.RS 4
-View the pacman configuration file in read-only mode.
-.RE
-.P
 
 .SH LANGUAGE OPTIONS
 .P
@@ -383,17 +360,23 @@ overwritten.
 
 .SH AUTHOR
 .P
-Colin Woodbury <colingw@gmail.com>
+Colin Woodbury <colin@fosskers.ca>
 
 .SH CONTRIBUTORS
 .P
-Kyle Raftogianis
+Chris Warrick
 .P
-Nicholas Clarke <nicholas.clarke@sanger.ac.uk>
+Brayden Banks
 .P
-Denis Kasak <dkasak@termina.org.uk>
+Denis Kasak
+.P
+Edwin Marshall
 .P
 Jimmy Brisson
+.P
+Kyle Raftogianis
+.P
+Nicholas Clarke
 
 .SH TRANSLATORS
 .P
@@ -415,6 +398,8 @@ Jimmy Brisson
 .P
 ( Portuguese ) Thiago "thiagowfx" Perrotta
 .P
+( Portuguese ) Wagner Amaral
+.P
 (   French   ) Ma Jiehong
 .P
 (   French   ) Fabien Dubosson
@@ -430,3 +415,5 @@ Jimmy Brisson
 ( Indonesian ) "pak tua Greg"
 .P
 ( Chinese    ) Kai Zhang
+.P
+( Japanese   ) Onoue Takuro
