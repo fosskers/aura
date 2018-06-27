@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, MultiWayIf, ViewPatterns #-}
-{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, MonoLocalBinds #-}
 
 {-
 

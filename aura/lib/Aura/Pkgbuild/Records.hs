@@ -40,7 +40,7 @@ import           Utilities (list)
 ---
 
 comparePkgbuilds :: T.Text -> T.Text -> Maybe T.Text
-comparePkgbuilds old new = list Nothing (\d -> p . T.strip . T.pack $ ppDiff d) $ getGroupedDiff old' new'
+comparePkgbuilds old new = list Nothing (p . T.strip . T.pack . ppDiff) $ getGroupedDiff old' new'
   where old' = map T.unpack $ T.lines old
         new' = map T.unpack $ T.lines new
         p t  = bool (Just t) Nothing $ T.null t

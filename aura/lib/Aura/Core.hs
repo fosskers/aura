@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, MonoLocalBinds, TypeApplications #-}
+{-# LANGUAGE FlexibleContexts, MonoLocalBinds #-}
 {-# LANGUAGE MultiWayIf, OverloadedStrings #-}
 
 {-
