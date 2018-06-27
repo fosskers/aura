@@ -48,12 +48,16 @@ makepkgCmd = "/usr/bin/makepkg"
 -- | Given the current user name, build the package of whatever
 -- directory we're in.
 makepkg :: Settings -> User -> Sh (Either Failure [FilePath])
-makepkg ss user = fmap g . f $ make cmd opts
+makepkg ss user = fmap g . f $ make cmd (opts <> colour)
   where (cmd, opts) = runStyle user . concatMap asFlag . toList . makepkgFlagsOf $ buildConfigOf ss
         f | switch ss DontSuppressMakepkg = id
           | otherwise = print_stdout False . print_stderr False
         g (ExitSuccess, fs) = Right fs
         g _ = Left $ Failure buildFail_8
+        colour | shared ss (Colour Never)  = ["--nocolor"]
+               | shared ss (Colour Always) = []
+               | isTerminal ss = []
+               | otherwise = ["--nocolor"]
 
 -- | Actually build the package, guarding on exceptions.
 -- Yields the filepaths of the built package tarballs.
