@@ -159,7 +159,7 @@ displayPkgDeps opts ps =
     ss   <- ask
     bs   <- snd <$> send (installLookup opts ss ps)
     pkgs <- depsToInstall (repository opts) bs
-    reportDeps (shared ss LowVerbosity) $ partitionPkgs pkgs
+    reportDeps (switch ss LowVerbosity) $ partitionPkgs pkgs
   where reportDeps True  = send . uncurry reportListOfDeps
         reportDeps False = uncurry (reportPkgsToInstall $ label opts)
 

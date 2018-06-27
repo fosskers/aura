@@ -64,14 +64,13 @@ instance Flagable CommonConfig where
     ++ list [] (\xs -> ["--ignore", T.intercalate "," xs]) (toList igs)
     ++ concatMap asFlag (toList cs)
 
-data CommonSwitch = NoConfirm | NeededOnly | Debug | Colour ColourMode | LowVerbosity deriving (Eq, Ord, Show)
+data CommonSwitch = NoConfirm | NeededOnly | Debug | Colour ColourMode deriving (Eq, Ord, Show)
 
 instance Flagable CommonSwitch where
   asFlag NoConfirm    = ["--noconfirm"]
   asFlag NeededOnly   = ["--needed"]
   asFlag Debug        = ["--debug"]
   asFlag (Colour m)   = "--color" : asFlag m
-  asFlag LowVerbosity = ["--quiet"]
 
 data ColourMode = Never | Always | Auto deriving (Eq, Ord, Show)
 
@@ -92,6 +91,7 @@ data BuildSwitch = DeleteMakeDeps
                  | DontSuppressMakepkg
                  | DryRun
                  | HotEdit
+                 | LowVerbosity
                  | RebuildDevel
                  | SortAlphabetically  -- For `-As`
                  | UseCustomizepkg

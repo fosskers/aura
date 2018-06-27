@@ -147,7 +147,7 @@ aurPkgSearch regex = do
 
 renderSearch :: Settings -> T.Text -> (AurInfo, Bool) -> T.Text
 renderSearch ss r (i, e) = searchResult
-    where searchResult = if shared ss LowVerbosity then sparseInfo else dtot $ colourCheck ss verboseInfo
+    where searchResult = if switch ss LowVerbosity then sparseInfo else dtot $ colourCheck ss verboseInfo
           sparseInfo   = aurNameOf i
           verboseInfo  = repo <> n <+> v <+> "(" <> l <+> "|" <+> p <>
                          ")" <> (if e then annotate bold " [installed]" else "") <> "\n    " <> d

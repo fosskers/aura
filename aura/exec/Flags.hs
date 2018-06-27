@@ -289,7 +289,7 @@ buildConfig = BuildConfig <$> makepkg <*> optional bp <*> optional bu <*> trunc 
           <|> pure None
 
 buildSwitches :: Parser (S.Set BuildSwitch)
-buildSwitches = S.fromList <$> many (dmd <|> dsm <|> dpb <|> rbd <|> he <|> ucp <|> dr <|> sa)
+buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> ucp <|> dr <|> sa)
   where dmd = flag' DeleteMakeDeps (long "delmakedeps" <> short 'a' <> hidden <> help "Uninstall makedeps after building.")
         dsm = flag' DontSuppressMakepkg (long "unsuppress" <> short 'x' <> hidden <> help "Unsuppress makepkg output.")
         dpb = flag' DiffPkgbuilds (long "diff" <> short 'k' <> hidden <> help "Show PKGBUILD diffs.")
@@ -298,6 +298,7 @@ buildSwitches = S.fromList <$> many (dmd <|> dsm <|> dpb <|> rbd <|> he <|> ucp 
         ucp = flag' UseCustomizepkg (long "custom" <> hidden <> help "Run customizepkg before building.")
         dr  = flag' DryRun (long "dryrun" <> hidden <> help "Run dependency checks and PKGBUILD diffs, but don't build.")
         sa  = flag' SortAlphabetically (long "abc" <> hidden <> help "Sort search results alphabetically.")
+        lv  = flag' LowVerbosity (long "quiet" <> short 'q' <> hidden <> help "Display less information.")
 
 commonConfig :: Parser CommonConfig
 commonConfig = CommonConfig <$> optional cap <*> optional cop <*> optional lfp <*> ign <*> commonSwitches
@@ -308,12 +309,11 @@ commonConfig = CommonConfig <$> optional cap <*> optional cop <*> optional lfp <
           optional (strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given packages."))
 
 commonSwitches :: Parser (S.Set CommonSwitch)
-commonSwitches = S.fromList <$> many (nc <|> no <|> dbg <|> clr <|> lv)
+commonSwitches = S.fromList <$> many (nc <|> no <|> dbg <|> clr)
   where nc  = flag' NoConfirm  (long "noconfirm" <> hidden <> help "Never ask for Aura or Pacman confirmation.")
         no  = flag' NeededOnly (long "needed"    <> hidden <> help "Don't rebuild/reinstall up-to-date packages.")
         dbg = flag' Debug      (long "debug"     <> hidden <> help "Print useful debugging info.")
         clr = Colour . f <$> strOption (long "color" <> metavar "WHEN" <> hidden <> help "Colourize the output.")
-        lv  = flag' LowVerbosity (long "quiet" <> short 'q' <> hidden <> help "Display less information.")
         f "never"  = Never
         f "always" = Always
         f _        = Auto
