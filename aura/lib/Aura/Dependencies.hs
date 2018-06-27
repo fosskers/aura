@@ -85,5 +85,5 @@ resolveDeps' ss tv repo ps = concat <$> mapConcurrently f ps
 
 sortInstall :: [Package] -> [Package]
 sortInstall ps = reverse . fmap (tripleFst . n) . topSort $ g
-  where (g, n, _)  = graphFromEdges $ toEdge <$> ps
-        toEdge pkg = (pkg, pkgNameOf pkg, depNameOf <$> pkgDepsOf pkg)
+  where (g, n, _)  = graphFromEdges $ map toEdge ps
+        toEdge pkg = (pkg, pkgNameOf pkg, map depNameOf (pkgDepsOf pkg))

@@ -106,12 +106,14 @@ install' opts pkgs = do
 
 -- | Reduce a list of candidate packages to build, such that there is only one
 -- instance of each "Package Base". This will ensure that split packages will
--- only be built once each.
+-- only be built once each. Precedence is given to packages that actually
+-- match the base name (e.g. llvm50 vs llvm50-libs).
 uniquePkgBase :: [Buildable] -> [Buildable]
-uniquePkgBase = M.elems . M.fromListWith f . map (bldBaseNameOf &&& id)
+uniquePkgBase bs = filter (\b -> bldNameOf b `S.member` goods) bs
   where f a b | bldNameOf a == bldBaseNameOf a = a
               | bldNameOf b == bldBaseNameOf b = b
               | otherwise = a
+        goods = S.fromList . map bldNameOf . M.elems . M.fromListWith f $ map (bldBaseNameOf &&& id) bs
 
 confirmIgnored :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r (S.Set T.Text)
 confirmIgnored (toList -> ps) = do
