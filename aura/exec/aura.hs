@@ -132,19 +132,20 @@ displayOutputLanguages = do
 -- | Animated version message.
 animateVersionMsg :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r ()
 animateVersionMsg verMsg = ask >>= \ss -> send $ do
-  hideCursor
-  traverse_ (T.putStrLn . padString verMsgPad) verMsg  -- Version message
-  raiseCursorBy 7  -- Initial reraising of the cursor.
-  drawPills 3
-  traverse_ T.putStrLn $ renderPacmanHead ss 0 Open  -- Initial rendering of head.
-  raiseCursorBy 4
-  takeABite ss 0  -- Initial bite animation.
-  traverse_ (pillEating ss) pillsAndWidths
-  clearGrid
+  when (isTerminal ss) $ do
+    hideCursor
+    traverse_ (T.putStrLn . padString verMsgPad) verMsg  -- Version message
+    raiseCursorBy 7  -- Initial reraising of the cursor.
+    drawPills 3
+    traverse_ T.putStrLn $ renderPacmanHead ss 0 Open  -- Initial rendering of head.
+    raiseCursorBy 4
+    takeABite ss 0  -- Initial bite animation.
+    traverse_ (pillEating ss) pillsAndWidths
+    clearGrid
   T.putStrLn auraLogo
   T.putStrLn $ "AURA Version " <> auraVersion
   T.putStrLn " by Colin Woodbury\n"
   traverse_ T.putStrLn . translatorMsg . langOf $ ss
-  showCursor
+  when (isTerminal ss) showCursor
     where pillEating ss (p, w) = clearGrid *> drawPills p *> takeABite ss w
           pillsAndWidths       = [(2, 5), (1, 10), (0, 15)]
