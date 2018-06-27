@@ -59,8 +59,9 @@ installPkgFiles :: (Member (Reader Settings) r, Member (Error Failure) r, Member
   Maybe T.Text -> [T.Text] -> Eff r ()
 installPkgFiles _ []         = pure ()
 installPkgFiles asDeps files = do
-  ask >>= send . shelly @IO . checkDBLock
-  rethrow . pacman $ ["-U"] <> maybeToList asDeps <> files
+  ss <- ask
+  send . shelly @IO $ checkDBLock ss
+  rethrow . pacman $ ["-U"] <> maybeToList asDeps <> files <> asFlag (commonConfigOf ss)
 
 -- | All building occurs within temp directories in the package cache,
 -- or in a location specified by the user with flags.
