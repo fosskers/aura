@@ -40,11 +40,12 @@ class Flagable a where
 
 data Truncation = None | Head Int | Tail Int deriving (Eq, Show)
 
-data Makepkg = IgnoreArch | AllSource deriving (Eq, Ord, Show)
+data Makepkg = IgnoreArch | AllSource | SkipInteg deriving (Eq, Ord, Show)
 
 instance Flagable Makepkg where
   asFlag IgnoreArch = ["--ignorearch"]
   asFlag AllSource  = ["--allsource"]
+  asFlag SkipInteg  = ["--skipinteg"]
 
 -- | Flags that are common to both Aura and Pacman.
 -- Aura will react to them, but also pass them through to `pacman`

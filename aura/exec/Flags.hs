@@ -278,9 +278,10 @@ languages = flag' Languages (long "languages" <> help "Show all human languages 
 
 buildConfig :: Parser BuildConfig
 buildConfig = BuildConfig <$> makepkg <*> optional bp <*> optional bu <*> trunc <*> buildSwitches
-  where makepkg = S.fromList <$> many (ia <|> as)
+  where makepkg = S.fromList <$> many (ia <|> as <|> si)
         ia      = flag' IgnoreArch (long "ignorearch" <> hidden <> help "Exposed makepkg flag.")
         as      = flag' AllSource (long "allsource" <> hidden <> help "Exposed makepkg flag.")
+        si      = flag' SkipInteg (long "skipinteg" <> hidden <> help "Skip all makepkg integrity checks.")
         bp      = strOption (long "build" <> metavar "PATH" <> hidden <> help "Directory in which to build packages.")
         bu      = User <$> strOption (long "builduser" <> metavar "USER" <> hidden <> help "User account to build as.")
         trunc   = fmap Head (option auto (long "head" <> metavar "N" <> hidden <> help "Only show top N search results."))
