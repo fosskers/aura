@@ -220,8 +220,11 @@ aura -Cc 3
 .RE
 would save the three most recent versions of each package file.
 Giving the number 0 as an argument is identical to \fI\-Scc\fR.
-Pass \fIc\fR twice to remove only those package files which are not saved in a
-package record (a la \fI\-B\fR).
+.RE
+.P
+\fB\-\-notsaved
+.RS 4
+Remove only those package files which are not saved in a package record (a la \fI\-B\fR).
 .RE
 .P
 \fB\-s\fR, \-\-search <regex>

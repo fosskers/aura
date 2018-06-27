@@ -46,6 +46,7 @@ is all while modernizing the code and seeing a ~17% decrease in overall code siz
 - **Flag:** `-y` no longer works with `-A`. Perform an `-Sy` ahead of time instead.
 - **Flag:** `-O` no longer accepts arguments to adopt packages, it only displays current
   orphans. Use `-O --adopt` instead.
+- **Flag:** `-Ccc` is now `-C --notsaved`.
 - Help messages (`-h`) are no longer localised.
 - Support for `powerpill` removed.
 
