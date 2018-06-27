@@ -211,7 +211,7 @@ data AurOp = AurDeps     (S.Set T.Text)
 
 data BackupOp = BackupClean Word | BackupRestore deriving (Show)
 
-data CacheOp = CacheBackup FilePath | CacheClean Word | CacheSearch T.Text deriving (Show)
+data CacheOp = CacheBackup FilePath | CacheClean Word | CacheCleanNotSaved | CacheSearch T.Text deriving (Show)
 
 data LogOp = LogInfo (S.Set T.Text) | LogSearch T.Text deriving (Show)
 
@@ -251,9 +251,10 @@ backups = bigB *> (Backup <$> optional mods)
 cache :: Parser AuraOp
 cache = bigC *> (Cache <$> (fmap Left mods <|> fmap Right someArgs))
   where bigC = flag' () (long "downgrade" <> short 'C' <> help "Interact with the package cache.")
-        mods = backup <|> clean <|> search
+        mods = backup <|> clean <|> clean' <|> search
         backup = CacheBackup <$> strOption (long "backup" <> short 'b' <> metavar "PATH" <> help "Backup the package cache to a given directory." <> hidden)
         clean  = CacheClean  <$> option auto (long "clean" <> short 'c' <> metavar "N" <> help "Save the most recent N versions of a package in the cache, deleting the rest." <> hidden)
+        clean' = flag' CacheCleanNotSaved (long "notsaved" <> help "Clean out any cached package files which doesn't appear in any saved state." <> hidden)
         search = CacheSearch <$> strOption (long "search" <> short 's' <> metavar "STRING" <> help "Search the package cache via a search string." <> hidden)
 
 log :: Parser AuraOp

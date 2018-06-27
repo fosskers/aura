@@ -106,10 +106,11 @@ executeOpts ops = do
         Just BackupRestore   -> sudo B.restoreState
     Right (Cache o) ->
       case o of
-        Right ps               -> sudo $ C.downgradePackages ps
-        Left (CacheSearch s)   -> C.searchCache s
-        Left (CacheClean n)    -> sudo $ C.cleanCache n
-        Left (CacheBackup pth) -> sudo $ C.backupCache pth
+        Right ps                -> sudo $ C.downgradePackages ps
+        Left (CacheSearch s)    -> C.searchCache s
+        Left (CacheClean n)     -> sudo $ C.cleanCache n
+        Left CacheCleanNotSaved -> sudo C.cleanNotSaved
+        Left (CacheBackup pth)  -> sudo $ C.backupCache pth
     Right (Log o) ->
       case o of
         Nothing            -> L.viewLogFile
