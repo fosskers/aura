@@ -191,7 +191,7 @@ mustBeRoot_1 = let sudo = bt "sudo" in \case
     Norwegian  -> "Du må bruke " <> sudo <> " for det."
     Indonesia  -> "Anda harus menggunakan " <> sudo <> " untuk melakukannya."
     Chinese    -> "除非是根用户，否则不能执行此操作。"
-    _          -> "You cannot perform this operation unless you are root."
+    _          -> "You cannot perform this operation without using sudo."
 
 -----------------------
 -- Aura/Build functions
