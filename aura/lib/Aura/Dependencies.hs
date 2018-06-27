@@ -39,7 +39,7 @@ import           Data.Graph
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified Data.Text as T
-import           Utilities (tripleFst)
+import           Lens.Micro
 
 ---
 
@@ -82,6 +82,6 @@ resolveDeps' ss tv repo ps = concat <$> mapConcurrently f ps
           bool (pure evils) (resolveDeps' ss tv repo goods) $ null evils
 
 sortInstall :: [Package] -> [Package]
-sortInstall ps = reverse . fmap (tripleFst . n) . topSort $ g
+sortInstall ps = reverse . map ((^. _1) . n) . topSort $ g
   where (g, n, _)  = graphFromEdges $ map toEdge ps
         toEdge pkg = (pkg, pkgNameOf pkg, map depNameOf (pkgDepsOf pkg))

@@ -27,8 +27,6 @@ module Utilities
   ( -- * Strings
     Regex(..), Pattern(..)
   , replaceByPatt, searchLines
-    -- * Tuples
-  , tripleFst
     -- * Lists
   , list
     -- * Shell
@@ -77,12 +75,6 @@ replaceByPatt (Pattern p t : ps) line = case T.breakOn p line of
 
 searchLines :: Regex -> [T.Text] -> [T.Text]
 searchLines (Regex pat) = filter (T.isInfixOf pat)
-
----------
--- TUPLES
----------
-tripleFst :: (a, b, c) -> a
-tripleFst (a, _, _) = a
 
 -------
 -- LIST
