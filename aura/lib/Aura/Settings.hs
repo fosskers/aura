@@ -95,6 +95,7 @@ data BuildSwitch = DeleteMakeDeps
                  | RebuildDevel
                  | SortAlphabetically  -- For `-As`
                  | UseCustomizepkg
+                 | ForceBuilding
                  deriving (Eq, Ord, Show)
 
 -- | Convenient short-hand.

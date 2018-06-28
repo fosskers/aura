@@ -147,9 +147,10 @@ buildAndInstall bs = do
   cache <- send . shelly @IO $ cacheContents pth
   traverse_ (f cache pth) bs
   where f (Cache cache) pth b = do
+          ss <- ask
           ps <- case bldVersionOf b >>= (\v -> SimplePkg (bldNameOf b) v `M.lookup` cache) of
-            Just pp -> pure $ [ pth </> _pkgpath pp ]
-            Nothing -> buildPackages [b]
+            Just pp | not (switch ss ForceBuilding) -> pure $ [ pth </> _pkgpath pp ]
+            _ -> buildPackages [b]
           installPkgFiles asDeps $ map toTextIgnore ps
             where asDeps = if isExplicit b then Nothing else Just "--asdeps"
 

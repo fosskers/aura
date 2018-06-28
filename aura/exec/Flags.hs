@@ -293,7 +293,7 @@ buildConfig = BuildConfig <$> makepkg <*> bp <*> optional bu <*> trunc <*> build
           <|> pure None
 
 buildSwitches :: Parser (S.Set BuildSwitch)
-buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> ucp <|> dr <|> sa)
+buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> ucp <|> dr <|> sa <|> fo)
   where dmd = flag' DeleteMakeDeps (long "delmakedeps" <> short 'a' <> hidden <> help "Uninstall makedeps after building.")
         dsm = flag' DontSuppressMakepkg (long "unsuppress" <> short 'x' <> hidden <> help "Unsuppress makepkg output.")
         dpb = flag' DiffPkgbuilds (long "diff" <> short 'k' <> hidden <> help "Show PKGBUILD diffs.")
@@ -303,6 +303,7 @@ buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <
         dr  = flag' DryRun (long "dryrun" <> hidden <> help "Run dependency checks and PKGBUILD diffs, but don't build.")
         sa  = flag' SortAlphabetically (long "abc" <> hidden <> help "Sort search results alphabetically.")
         lv  = flag' LowVerbosity (long "quiet" <> short 'q' <> hidden <> help "Display less information.")
+        fo  = flag' ForceBuilding (long "force" <> hidden <> help "Always (re)build specified packages.")
 
 commonConfig :: Parser CommonConfig
 commonConfig = CommonConfig <$> cap <*> cop <*> lfp <*> ign <*> commonSwitches
