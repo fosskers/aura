@@ -54,14 +54,16 @@ data CommonConfig = CommonConfig { cachePathOf      :: Either FilePath FilePath
                                  , configPathOf     :: Either FilePath FilePath
                                  , logPathOf        :: Either FilePath FilePath
                                  , ignoredPkgsOf    :: S.Set Text
+                                 , ignoredGroupsOf  :: S.Set Text
                                  , commonSwitchesOf :: S.Set CommonSwitch } deriving (Show)
 
 instance Flagable CommonConfig where
-  asFlag (CommonConfig cap cop lfp igs cs) =
+  asFlag (CommonConfig cap cop lfp igs igg cs) =
     either (const []) (\p -> ["--cachedir", toTextIgnore p]) cap
     ++ either (const []) (\p -> ["--config", toTextIgnore p]) cop
     ++ either (const []) (\p -> ["--logfile", toTextIgnore p]) lfp
     ++ list [] (\xs -> ["--ignore", T.intercalate "," xs]) (toList igs)
+    ++ list [] (\xs -> ["--ignoregroup", T.intercalate "," xs]) (toList igg)
     ++ concatMap asFlag (toList cs)
 
 data CommonSwitch = NoConfirm | NeededOnly | Debug | Colour ColourMode deriving (Eq, Ord, Show)

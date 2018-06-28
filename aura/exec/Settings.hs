@@ -49,7 +49,7 @@ getSettings (Program _ co bc lng) = do
           buildPath'  <- checkBuildPath (buildPathOf bc) defaultPackageCache
           manager     <- newManager tlsManagerSettings
           isTerm      <- hIsTerminalDevice stdout
-          fromGroups  <- groupPackages $ getIgnoredGroups confFile
+          fromGroups  <- groupPackages $ getIgnoredGroups confFile <> ignoredGroupsOf co
           let language   = checkLang lng environment
               buildUser' = buildUserOf bc <|> getTrueUser environment
           pure $ do

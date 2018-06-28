@@ -143,7 +143,7 @@ repoInstall ps = do
 
 buildAndInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => [Buildable] -> Eff r ()
 buildAndInstall bs = do
-  pth   <- asks (either id id . cachePathOf . commonConfigOf) -- f undefined  -- TODO also, use traverse
+  pth   <- asks (either id id . cachePathOf . commonConfigOf)
   cache <- send . shelly @IO $ cacheContents pth
   traverse_ (f cache pth) bs
   where f (Cache cache) pth b = do

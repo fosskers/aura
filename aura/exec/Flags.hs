@@ -164,7 +164,6 @@ data MiscOp = MiscArch    FilePath
             | MiscDBPath  FilePath
             | MiscGpgDir  FilePath
             | MiscHookDir FilePath
-            | MiscIgnoreGroup (S.Set T.Text)
             | MiscNoDeps
             | MiscNoProgress
             | MiscNoScriptlet
@@ -181,7 +180,6 @@ instance Flagable MiscOp where
   asFlag (MiscDBPath p)          = ["--dbpath", toTextIgnore p]
   asFlag (MiscGpgDir p)          = ["--gpgdir", toTextIgnore p]
   asFlag (MiscHookDir p)         = ["--hookdir", toTextIgnore p]
-  asFlag (MiscIgnoreGroup ps)    = "--ignoregroup" : toList ps
   asFlag (MiscPrintFormat s)     = ["--print-format", s]
   asFlag (MiscRoot p)            = ["--root", toTextIgnore p]
   asFlag MiscConfirm             = ["--confirm"]
@@ -306,7 +304,7 @@ buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <
         fo  = flag' ForceBuilding (long "force" <> hidden <> help "Always (re)build specified packages.")
 
 commonConfig :: Parser CommonConfig
-commonConfig = CommonConfig <$> cap <*> cop <*> lfp <*> ign <*> commonSwitches
+commonConfig = CommonConfig <$> cap <*> cop <*> lfp <*> ign <*> igg <*> commonSwitches
   where cap = fmap Right (strOption (long "cachedir" <> hidden <> help "Use an alternate package cache location."))
               <|> pure (Left defaultPackageCache)
         cop = fmap Right (strOption (long "config"   <> hidden <> help "Use an alternate Pacman config file."))
@@ -315,6 +313,8 @@ commonConfig = CommonConfig <$> cap <*> cop <*> lfp <*> ign <*> commonSwitches
               <|> pure (Left defaultLogFile)
         ign = maybe S.empty (S.fromList . T.split (== ',')) <$>
           optional (strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given packages."))
+        igg = maybe S.empty (S.fromList . T.split (== ',')) <$>
+          optional (strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore packages from the given groups."))
 
 commonSwitches :: Parser (S.Set CommonSwitch)
 commonSwitches = S.fromList <$> many (nc <|> no <|> dbg <|> clr)
@@ -391,7 +391,7 @@ sync = bigS *> (Sync <$> (fmap Right someArgs <|> fmap Left mods) <*> ref <*> mi
 
 
 misc :: Parser (S.Set MiscOp)
-misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> gpg <|> hd <|> con <|> dbo <|> nop <|> nos <|> pf <|> nod <|> prt <|> asi <|> igg)
+misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> gpg <|> hd <|> con <|> dbo <|> nop <|> nos <|> pf <|> nod <|> prt <|> asi)
   where ar  = MiscArch    <$> strOption (long "arch" <> metavar "ARCH" <> hidden <> help "Use an alternate architecture.")
         dbp = MiscDBPath  <$> strOption (long "dbpath" <> short 'b' <> metavar "PATH" <> hidden <> help "Use an alternate database location.")
         roo = MiscRoot    <$> strOption (long "root" <> short 'r' <> metavar "PATH" <> hidden <> help "Use an alternate installation root.")
@@ -406,8 +406,6 @@ misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> gpg <|> hd <|> con <|
         nod = flag' MiscNoDeps (long "nodeps" <> short 'd' <> hidden <> help "Skip dependency version checks.")
         prt = flag' MiscPrint (long "print" <> short 'p' <> hidden <> help "Print the targets instead of performing the operation.")
         asi = MiscAssumeInstalled <$> strOption (long "assume-installed" <> metavar "<package=version>" <> hidden <> help "Add a virtual package to satisfy dependencies.")
-        igg = MiscIgnoreGroup . S.fromList . T.split (== ',') <$>
-          strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given package groups.")
 
 testdeps :: Parser PacmanOp
 testdeps = bigT *> (TestDeps <$> someArgs <*> misc)
