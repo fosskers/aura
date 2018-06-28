@@ -1,14 +1,13 @@
 [![Build Status](https://travis-ci.org/aurapm/aura.svg?branch=master)](https://travis-ci.org/aurapm/aura)
 [![Join the chat at https://gitter.im/aurapm/aura](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/aurapm/aura?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-What is Aura?
-=============
+# What is Aura?
 Aura is a package manager for Arch Linux. It's main purpose is as an
 "AUR helper", in that it automates the process of installating packages
 from the Arch User Repositories. It is, however, capable of much more.
 
-The Aura Philosophy
-===================
+# The Aura Philosophy
+
 ### Aura is Pacman
   Aura doesn't just mimic pacman... it _is_ pacman.
   All pacman operations and their sub-options are allowed.
@@ -79,6 +78,33 @@ Install order is as follows:
   * Extensible Effects (`freer-simple`)
   * Concurrency (`async`)
   * Shell Interaction (`shelly`)
+
+# Installation
+
+## Arch Linux
+
+It is recommended to install the prebuilt binary of Aura:
+
+```bash
+git clone https://aur.archlinux.org/aura-bin.git
+cd aura-bin
+makepkg
+sudo pacman -U <the-package-file-that-makepkg-produces>
+```
+
+## Manual
+
+You will need the [stack tool](https://docs.haskellstack.org/en/stable/README/) for Haskell
+to compile Aura yourself. Then:
+
+```bash
+git clone https://github.com/aurapm/aura.git
+cd aura
+stack install -- aura
+```
+
+This may take a while to initially build all of Aura's dependencies. Once complete,
+your `aura` binary will be available in `~/.local/bin/`.
 
 Sample Usage
 ============
@@ -178,8 +204,7 @@ Uninstall all orphan packages:
 
 More information is available in aura's manpage.
 
-Localisation
-============
+# Localisation
 As mentioned in the Philosophy above, adding new languages to Aura is
 quite easy. If you speak a language other than those available and
 would like it added to Aura, please consult **LOCALISATION.md**.
