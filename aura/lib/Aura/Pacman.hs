@@ -39,7 +39,8 @@ module Aura.Pacman
     -- * Pacman Config
   , Config(..), config
   , getPacmanConf
-  , getIgnoredPkgs
+  , getIgnoredPkgs, getIgnoredGroups
+  , groupPackages
     -- * Misc.
   , getVersionInfo
   , verMsgPad
@@ -116,6 +117,15 @@ getPacmanConf fp = shelly $ do
 
 getIgnoredPkgs :: Config -> S.Set T.Text
 getIgnoredPkgs (Config c) = maybe S.empty S.fromList $ M.lookup "IgnorePkg" c
+
+getIgnoredGroups :: Config -> S.Set T.Text
+getIgnoredGroups (Config c) = maybe S.empty S.fromList $ M.lookup "IgnoreGroup" c
+
+-- | Given a `Set` of package groups, yield all the packages they contain.
+groupPackages :: S.Set T.Text -> IO (S.Set T.Text)
+groupPackages igs | null igs  = pure S.empty
+                  | otherwise = fmap f . pacmanOutput $ ["-Qg"] ++ toList igs
+  where f = S.fromList . map ((!! 1) . T.words) . T.lines  -- Naughty
 
 getCachePath :: Config -> Maybe Sh.FilePath
 getCachePath (Config c) = c ^? at "CacheDir" . _Just . _head . to fromText

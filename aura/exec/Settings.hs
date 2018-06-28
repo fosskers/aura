@@ -49,6 +49,7 @@ getSettings (Program _ co bc lng) = do
           buildPath'  <- checkBuildPath (buildPathOf bc) defaultPackageCache
           manager     <- newManager tlsManagerSettings
           isTerm      <- hIsTerminalDevice stdout
+          fromGroups  <- groupPackages $ getIgnoredGroups confFile
           let language   = checkLang lng environment
               buildUser' = buildUserOf bc <|> getTrueUser environment
           pure $ do
@@ -62,7 +63,7 @@ getSettings (Program _ co bc lng) = do
                              -- | These maintain the precedence order: flags, config file entry, default
                              co { cachePathOf   = first (\x -> fromMaybe x $ getCachePath confFile) $ cachePathOf co
                                 , logPathOf     = first (\x -> fromMaybe x $ getLogFilePath confFile) $ logPathOf co
-                                , ignoredPkgsOf = getIgnoredPkgs confFile <> ignoredPkgsOf co
+                                , ignoredPkgsOf = getIgnoredPkgs confFile <> ignoredPkgsOf co <> fromGroups
                                 }
                            , buildConfigOf  =
                              bc { buildPathOf   = buildPath'

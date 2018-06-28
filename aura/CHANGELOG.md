@@ -33,7 +33,7 @@ is all while modernizing the code and seeing a ~17% decrease in overall code siz
   - Removed custom CLI flag handling in favour of `optparse-applicative`.
   - Removed custom package version number parsing in favour of `versions`.
   - Removed custom text colouring code in favour of `prettyprinter`.
-  - Removed the `Aura` Monad in favour of Extensible Effect via `freer-simple`.
+  - Removed the `Aura` Monad in favour of Extensible Effects via `freer-simple`.
   - Removed custom shell interaction code in favour of `shelly`.
   - Used `async` to make AUR and `pacman` calls concurrent.
   - `megaparsec` parsers used in place of hacky Regexes.
