@@ -29,7 +29,6 @@ module Aura.Build
   , buildPackages
   ) where
 
-import           Aura.Cache (defaultPackageCache)
 import           Aura.Core
 import           Aura.Languages
 import           Aura.MakePkg
@@ -82,7 +81,7 @@ build p = do
 -- will come back via the @Language -> String@ function.
 build' :: Settings -> Buildable -> Sh (Either Failure [FilePath])
 build' ss p = do
-  let pth = fromMaybe defaultPackageCache $ buildPathOf (buildConfigOf ss) <|> cachePathOf (commonConfigOf ss)
+  let pth = buildPathOf $ buildConfigOf ss
   cd pth
   withTmpDir $ \curr -> do
     cd curr
@@ -131,7 +130,7 @@ buildFail p (Failure err) = do
 moveToCachePath :: Settings -> FilePath -> Sh FilePath
 moveToCachePath ss p = cp p newName $> newName
   where newName = pth </> filename p
-        pth     = fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
+        pth     = either id id . cachePathOf $ commonConfigOf ss
 
 -- | Moves a file to the aura src package cache and returns its location.
 moveToSourcePath :: FilePath -> Sh FilePath

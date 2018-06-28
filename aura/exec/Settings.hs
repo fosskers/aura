@@ -21,6 +21,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Settings ( getSettings ) where
 
+import           Aura.Cache (defaultPackageCache)
 import           Aura.Languages
 import           Aura.Pacman
 import           Aura.Settings
@@ -41,11 +42,11 @@ import           Utilities
 
 getSettings :: Program -> IO (Either Failure Settings)
 getSettings (Program _ co bc lng) = do
-  confFile <- getPacmanConf
+  confFile <- getPacmanConf . either id id $ configPathOf co
   join <$> bitraverse pure f confFile
   where f confFile = do
           environment <- M.fromList . map (bimap T.pack T.pack) <$> getEnvironment
-          buildPath'  <- checkBuildPath (buildPathOf bc) (getCachePath confFile)
+          buildPath'  <- checkBuildPath (buildPathOf bc) defaultPackageCache
           manager     <- newManager tlsManagerSettings
           isTerm      <- hIsTerminalDevice stdout
           let language   = checkLang lng environment
@@ -58,12 +59,13 @@ getSettings (Program _ co bc lng) = do
                            , editorOf       = getEditor environment
                            , isTerminal     = isTerm
                            , commonConfigOf =
-                             co { cachePathOf   = cachePathOf co <|> Just (getCachePath confFile)
-                                , logPathOf     = logPathOf co   <|> Just (getLogFilePath confFile)
+                             -- | These maintain the precedence order: flags, config file entry, default
+                             co { cachePathOf   = first (\x -> fromMaybe x $ getCachePath confFile) $ cachePathOf co
+                                , logPathOf     = first (\x -> fromMaybe x $ getLogFilePath confFile) $ logPathOf co
                                 , ignoredPkgsOf = getIgnoredPkgs confFile <> ignoredPkgsOf co
                                 }
                            , buildConfigOf  =
-                             bc { buildPathOf   = Just buildPath'
+                             bc { buildPathOf   = buildPath'
                                 , buildUserOf   = Just bu
                                 }
                            }
@@ -72,6 +74,5 @@ checkLang :: Maybe Language -> Environment -> Language
 checkLang Nothing env   = langFromLocale $ getLocale env
 checkLang (Just lang) _ = lang
 
-checkBuildPath :: MonadIO m => Maybe FilePath -> FilePath -> m FilePath
-checkBuildPath Nothing def   = pure def
-checkBuildPath (Just bp) def = bool def bp <$> shelly (test_d bp)
+checkBuildPath :: MonadIO m => FilePath -> FilePath -> m FilePath
+checkBuildPath bp def = bool def bp <$> shelly (test_d bp)

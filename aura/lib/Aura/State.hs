@@ -134,7 +134,7 @@ restoreState :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO
 restoreState = do
   sfs <- getStateFiles
   ss  <- ask
-  let pth = fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
+  let pth = either id id . cachePathOf $ commonConfigOf ss
   mpast  <- send $ selectState sfs >>= readState
   case mpast of
     Nothing   -> throwError $ Failure readState_1
@@ -162,5 +162,5 @@ reinstallAndRemove down remo
   | otherwise = reinstall *> remove
   where remove    = rethrow . pacman $ "-R" : remo
         reinstall = do
-          pth <- asks (fromMaybe defaultPackageCache . cachePathOf . commonConfigOf)
+          pth <- asks (either id id . cachePathOf . commonConfigOf)
           rethrow . pacman $ "-U" : map (toTextIgnore . (\pp -> pth </> _pkgpath pp)) down

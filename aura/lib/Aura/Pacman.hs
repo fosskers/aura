@@ -46,13 +46,14 @@ module Aura.Pacman
   , getPacmanHelpMsg
   ) where
 
-import           Aura.Cache
 import           Aura.Languages
 import           Aura.Types
 import           BasePrelude hiding (some, try)
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified Data.Text as T
+import           Lens.Micro
+import           Lens.Micro.GHC ()
 import qualified Shelly as Sh
 import           Shelly hiding (FilePath, cmd)
 import           Text.Megaparsec
@@ -108,25 +109,19 @@ getPacmanCmd env nopp =
       if | powerPill && not nopp -> pure $ toTextIgnore powerPillCmd
          | otherwise -> pure defaultCmd
 
-getPacmanConf :: IO (Either Failure Config)
-getPacmanConf = shelly $ do
-  file <- readfile pacmanConfFile
+getPacmanConf :: Sh.FilePath -> IO (Either Failure Config)
+getPacmanConf fp = shelly $ do
+  file <- readfile fp
   pure . first (const (Failure confParsing_1)) $ parse config "pacman config" file
 
 getIgnoredPkgs :: Config -> S.Set T.Text
 getIgnoredPkgs (Config c) = maybe S.empty S.fromList $ M.lookup "IgnorePkg" c
 
-getCachePath :: Config -> Sh.FilePath
-getCachePath (Config c) = case M.lookup "CacheDir" c of
-  Nothing     -> defaultPackageCache
-  Just []     -> defaultPackageCache
-  Just (fp:_) -> fromText fp
+getCachePath :: Config -> Maybe Sh.FilePath
+getCachePath (Config c) = c ^? at "CacheDir" . _Just . _head . to fromText
 
-getLogFilePath :: Config -> Sh.FilePath
-getLogFilePath (Config c) = case M.lookup "LogFile" c of
-  Nothing     -> defaultLogFile
-  Just []     -> defaultLogFile
-  Just (fp:_) -> fromText fp
+getLogFilePath :: Config -> Maybe Sh.FilePath
+getLogFilePath (Config c) = c ^? at "LogFile" . _Just . _head . to fromText
 
 ----------
 -- ACTIONS

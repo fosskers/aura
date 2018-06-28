@@ -6,6 +6,8 @@ module Flags
   , AuraOp(..), AurOp(..), BackupOp(..), CacheOp(..), LogOp(..), OrphanOp(..)
   ) where
 
+import           Aura.Cache (defaultPackageCache)
+import           Aura.Pacman (pacmanConfFile, defaultLogFile)
 import           Aura.Settings
 import           Aura.Types (Language(..))
 import           BasePrelude hiding (Version, FilePath, option, log, exp)
@@ -278,12 +280,13 @@ languages :: Parser AuraOp
 languages = flag' Languages (long "languages" <> help "Show all human languages available for output.")
 
 buildConfig :: Parser BuildConfig
-buildConfig = BuildConfig <$> makepkg <*> optional bp <*> optional bu <*> trunc <*> buildSwitches
+buildConfig = BuildConfig <$> makepkg <*> bp <*> optional bu <*> trunc <*> buildSwitches
   where makepkg = S.fromList <$> many (ia <|> as <|> si)
         ia      = flag' IgnoreArch (long "ignorearch" <> hidden <> help "Exposed makepkg flag.")
         as      = flag' AllSource (long "allsource" <> hidden <> help "Exposed makepkg flag.")
         si      = flag' SkipInteg (long "skipinteg" <> hidden <> help "Skip all makepkg integrity checks.")
         bp      = strOption (long "build" <> metavar "PATH" <> hidden <> help "Directory in which to build packages.")
+                  <|> pure defaultPackageCache
         bu      = User <$> strOption (long "builduser" <> metavar "USER" <> hidden <> help "User account to build as.")
         trunc   = fmap Head (option auto (long "head" <> metavar "N" <> hidden <> help "Only show top N search results."))
           <|> fmap Tail (option auto (long "tail" <> metavar "N" <> hidden <> help "Only show last N search results."))
@@ -302,10 +305,13 @@ buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <
         lv  = flag' LowVerbosity (long "quiet" <> short 'q' <> hidden <> help "Display less information.")
 
 commonConfig :: Parser CommonConfig
-commonConfig = CommonConfig <$> optional cap <*> optional cop <*> optional lfp <*> ign <*> commonSwitches
-  where cap = strOption (long "cachedir" <> hidden <> help "Use an alternate package cache location.")
-        cop = strOption (long "config"   <> hidden <> help "Use an alternate Pacman config file.")
-        lfp = strOption (long "logfile"  <> hidden <> help "Use an alternate Pacman log.")
+commonConfig = CommonConfig <$> cap <*> cop <*> lfp <*> ign <*> commonSwitches
+  where cap = fmap Right (strOption (long "cachedir" <> hidden <> help "Use an alternate package cache location."))
+              <|> pure (Left defaultPackageCache)
+        cop = fmap Right (strOption (long "config"   <> hidden <> help "Use an alternate Pacman config file."))
+              <|> pure (Left pacmanConfFile)
+        lfp = fmap Right (strOption (long "logfile"  <> hidden <> help "Use an alternate Pacman log."))
+              <|> pure (Left defaultLogFile)
         ign = maybe S.empty (S.fromList . T.split (== ',')) <$>
           optional (strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given packages."))
 

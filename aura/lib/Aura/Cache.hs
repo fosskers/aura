@@ -60,10 +60,10 @@ cacheContents = fmap (cache . map (PackagePath . toTextIgnore . filename)) . ls
 
 pkgsInCache :: Settings -> S.Set T.Text -> Sh (S.Set T.Text)
 pkgsInCache ss ps = do
-  c <- cacheContents . fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
+  c <- cacheContents . either id id . cachePathOf $ commonConfigOf ss
   pure . S.filter (`S.member` ps) . S.map _spName . M.keysSet $ _cache c
 
 cacheMatches :: Settings -> T.Text -> Sh [PackagePath]
 cacheMatches ss input = do
-  c <- cacheContents . fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
+  c <- cacheContents . either id id . cachePathOf $ commonConfigOf ss
   pure . filter (T.isInfixOf input . _pkgpath) . M.elems $ _cache c

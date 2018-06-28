@@ -61,7 +61,7 @@ downgradePackages :: (Member (Reader Settings) r, Member (Error Failure) r, Memb
 downgradePackages pkgs =
   unless (null pkgs) $ do
     ss    <- ask
-    let cachePath = fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
+    let cachePath = either id id . cachePathOf $ commonConfigOf ss
     reals <- send . shelly @IO $ pkgsInCache ss pkgs
     report red reportBadDowngradePkgs_1 . toList $ pkgs S.\\ reals
     unless (null reals) $ do
@@ -96,7 +96,7 @@ backupCache dir = do
 confirmBackup :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => FilePath -> Eff r Cache
 confirmBackup dir = do
   ss    <- ask
-  cache <- send . shelly @IO . cacheContents . fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
+  cache <- send . shelly @IO . cacheContents . either id id . cachePathOf $ commonConfigOf ss
   send . notify ss $ backupCache_4 (T.unpack $ toTextIgnore dir) (langOf ss)
   send . notify ss $ backupCache_5 (M.size $ _cache cache) (langOf ss)
   okay  <- send $ optionalPrompt ss backupCache_6
@@ -114,7 +114,7 @@ copyAndNotify :: (Member (Reader Settings) r, Member IO r) => FilePath -> [Packa
 copyAndNotify _ [] _ = pure ()
 copyAndNotify dir (PackagePath p : ps) n = do
   ss <- ask
-  cachePath <- asks (fromMaybe defaultPackageCache . cachePathOf . commonConfigOf)
+  cachePath <- asks (either id id . cachePathOf . commonConfigOf)
   send $ raiseCursorBy 1
   send . warn ss . copyAndNotify_1 n $ langOf ss
   send . shelly @IO $ cp (cachePath </> p) (dir </> p)
@@ -135,7 +135,7 @@ clean :: (Member (Reader Settings) r, Member IO r) => Int -> Eff r ()
 clean toSave = do
   ss <- ask
   send . notify ss . cleanCache_6 $ langOf ss
-  let cachePath = fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
+  let cachePath = either id id . cachePathOf $ commonConfigOf ss
   (Cache cache) <- send . shelly @IO $ cacheContents cachePath
   let !files    = M.elems cache
       grouped   = take toSave . reverse <$> groupByName files
@@ -151,7 +151,7 @@ cleanNotSaved = do
   send . notify ss . cleanNotSaved_1 $ langOf ss
   sfs <- getStateFiles
   states <- fmap catMaybes . send $ traverse readState sfs
-  let path = fromMaybe defaultPackageCache . cachePathOf $ commonConfigOf ss
+  let path = either id id . cachePathOf $ commonConfigOf ss
   (Cache cache)  <- send . shelly @IO $ cacheContents path
   let duds = M.filterWithKey (\p _ -> any (inState p) states) cache
   whenM (send . optionalPrompt ss $ cleanNotSaved_2 $ M.size duds) $

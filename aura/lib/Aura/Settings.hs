@@ -50,17 +50,17 @@ instance Flagable Makepkg where
 -- | Flags that are common to both Aura and Pacman.
 -- Aura will react to them, but also pass them through to `pacman`
 -- calls if necessary.
-data CommonConfig = CommonConfig { cachePathOf      :: Maybe FilePath
-                                 , configPathOf     :: Maybe FilePath
-                                 , logPathOf        :: Maybe FilePath
+data CommonConfig = CommonConfig { cachePathOf      :: Either FilePath FilePath
+                                 , configPathOf     :: Either FilePath FilePath
+                                 , logPathOf        :: Either FilePath FilePath
                                  , ignoredPkgsOf    :: S.Set Text
                                  , commonSwitchesOf :: S.Set CommonSwitch } deriving (Show)
 
 instance Flagable CommonConfig where
   asFlag (CommonConfig cap cop lfp igs cs) =
-    maybe [] (\p -> ["--cachedir", toTextIgnore p]) cap
-    ++ maybe [] (\p -> ["--config", toTextIgnore p]) cop
-    ++ maybe [] (\p -> ["--logfile", toTextIgnore p]) lfp
+    either (const []) (\p -> ["--cachedir", toTextIgnore p]) cap
+    ++ either (const []) (\p -> ["--config", toTextIgnore p]) cop
+    ++ either (const []) (\p -> ["--logfile", toTextIgnore p]) lfp
     ++ list [] (\xs -> ["--ignore", T.intercalate "," xs]) (toList igs)
     ++ concatMap asFlag (toList cs)
 
@@ -80,7 +80,7 @@ instance Flagable ColourMode where
   asFlag Auto   = ["auto"]
 
 data BuildConfig = BuildConfig { makepkgFlagsOf  :: S.Set Makepkg
-                               , buildPathOf     :: Maybe FilePath
+                               , buildPathOf     :: FilePath
                                , buildUserOf     :: Maybe User
                                , truncationOf    :: Truncation  -- For `-As`
                                , buildSwitchesOf :: S.Set BuildSwitch } deriving (Show)
