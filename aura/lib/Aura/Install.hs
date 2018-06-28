@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, MultiWayIf, ViewPatterns #-}
-{-# LANGUAGE FlexibleContexts, MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, MonoLocalBinds, TypeApplications #-}
 
 {-
 
@@ -32,6 +32,7 @@ module Aura.Install
   ) where
 
 import           Aura.Build
+import           Aura.Cache (Cache(..), cacheContents)
 import           Aura.Colour
 import           Aura.Core
 import           Aura.Dependencies
@@ -51,7 +52,7 @@ import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
-import           Shelly (toTextIgnore)
+import           Shelly (shelly, toTextIgnore, (</>))
 import           System.IO (hFlush, stdout)
 
 ---
@@ -141,12 +142,16 @@ repoInstall ps = do
   rethrow . pacman $ ["-S", "--asdeps"] <> pacOpts <> ps
 
 buildAndInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => [Buildable] -> Eff r ()
-buildAndInstall []     = pure ()
-buildAndInstall (b:bs) = do
-  ps <- map toTextIgnore <$> buildPackages [b]
-  installPkgFiles asDeps ps
-  buildAndInstall bs
-  where asDeps = if isExplicit b then Nothing else Just "--asdeps"
+buildAndInstall bs = do
+  pth   <- asks (either id id . cachePathOf . commonConfigOf) -- f undefined  -- TODO also, use traverse
+  cache <- send . shelly @IO $ cacheContents pth
+  traverse_ (f cache pth) bs
+  where f (Cache cache) pth b = do
+          ps <- case bldVersionOf b >>= (\v -> SimplePkg (bldNameOf b) v `M.lookup` cache) of
+            Just pp -> pure $ [ pth </> _pkgpath pp ]
+            Nothing -> buildPackages [b]
+          installPkgFiles asDeps $ map toTextIgnore ps
+            where asDeps = if isExplicit b then Nothing else Just "--asdeps"
 
 ------------
 -- REPORTING
