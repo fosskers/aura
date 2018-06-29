@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, MonoLocalBinds, TupleSections #-}
 -- Library for handling package dependencies and version conflicts.
 
 {-
@@ -24,6 +24,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Aura.Dependencies ( resolveDeps ) where
 
+import           Algebra.Graph.AdjacencyMap
 import           Aura.Conflicts
 import           Aura.Core
 import           Aura.Languages
@@ -35,22 +36,20 @@ import           Control.Concurrent.STM.TVar
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
-import           Data.Graph
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified Data.Text as T
-import           Lens.Micro
 
 ---
 
 resolveDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  Repository -> [Package] -> Eff r [Package]
+  Repository -> [Package] -> Eff r [S.Set Package]
 resolveDeps repo ps = do
   ss <- ask
   tv <- send $ newTVarIO M.empty
   de <- send $ resolveDeps' ss tv repo ps
   m  <- send $ readTVarIO tv
-  bool (throwError . Failure $ missingPkg_2 de) (pure . sortInstall $ M.elems m) $ null de
+  bool (throwError . Failure $ missingPkg_2 de) (pure $ sortInstall m) $ null de
 
 -- | An empty list signals success.
 resolveDeps' :: Settings -> TVar (M.Map T.Text Package) -> Repository -> [Package] -> IO [DepError]
@@ -81,7 +80,26 @@ resolveDeps' ss tv repo ps = concat <$> mapConcurrently f ps
 
           bool (pure evils) (resolveDeps' ss tv repo goods) $ null evils
 
-sortInstall :: [Package] -> [Package]
-sortInstall ps = reverse . map ((^. _1) . n) . topSort $ g
-  where (g, n, _)  = graphFromEdges $ map toEdge ps
-        toEdge pkg = (pkg, pkgNameOf pkg, map depNameOf (pkgDepsOf pkg))
+sortInstall :: M.Map T.Text Package -> [S.Set Package]
+sortInstall m = batch $ overlay connected singles
+  where f p = mapMaybe (\d -> fmap (p,) $ depNameOf d `M.lookup` m) $ pkgDepsOf p  -- TODO handle "provides"?
+        elems     = M.elems m
+        connected = edges $ concatMap f elems
+        singles   = overlays $ map vertex elems
+
+-- sortInstall :: [Package] -> [Package]
+-- sortInstall ps = reverse . map ((^. _1) . n) . topSort $ g
+--   where (g, n, _)  = graphFromEdges $ map toEdge ps
+--         toEdge pkg = (pkg, pkgNameOf pkg, map depNameOf (pkgDepsOf pkg))
+
+-- | Find the vertices that have no dependencies.
+-- O(n) complexity.
+leaves :: Ord a => AdjacencyMap a -> S.Set a
+leaves x = S.filter (null . flip postSet x) $ vertexSet x
+
+-- | Split a graph into batches of mutually independent vertices.
+-- Probably O(m * n * log(n)) complexity.
+batch :: Ord a => AdjacencyMap a -> [S.Set a]
+batch g | isEmpty g = []
+        | otherwise = ls : batch (induce (`S.notMember` ls) g)
+  where ls = leaves g

@@ -60,6 +60,19 @@ data Package = Package { pkgNameOf        :: T.Text
                        , pkgDepsOf        :: [Dep]
                        , pkgInstallTypeOf :: InstallType }
 
+-- | Hacky instance to allow `Package` to be used in a `Set`. Beware.
+instance Eq Package where
+  a == b = pkgNameOf a == pkgNameOf b && pkgVersionOf a == pkgVersionOf b
+
+instance Ord Package where
+  compare a b = case compare (pkgNameOf a) (pkgNameOf b) of
+    EQ  -> compare (pkgVersionOf a) (pkgVersionOf b)
+    oth -> oth
+  -- a <= b = pkgNameOf a <= pkgNameOf b && pkgVersionOf a <= pkgVersionOf b
+
+instance Show Package where
+  show p = printf "%s (%s)" (show $ pkgNameOf p) (show . fmap prettyV $ pkgVersionOf p)
+
 -- | A dependency on another package.
 data Dep = Dep { depNameOf      :: T.Text
                , depVerDemandOf :: VersionDemand } deriving (Eq, Show)

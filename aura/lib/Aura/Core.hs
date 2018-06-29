@@ -65,15 +65,14 @@ instance Semigroup Repository where
 -- Functions common to `Package`s
 ---------------------------------
 -- | Partition a list of packages into pacman and buildable groups.
-partitionPkgs :: [Package] -> ([T.Text], [Buildable])
-partitionPkgs = partitionEithers . fmap (toEither . pkgInstallTypeOf)
+partitionPkgs :: [S.Set Package] -> ([T.Text], [[Buildable]])
+partitionPkgs = first concat . unzip . map (partitionEithers . map (toEither . pkgInstallTypeOf) . toList)
   where toEither (Pacman s) = Left  s
         toEither (Build  b) = Right b
 
 -----------
 -- THE WORK
 -----------
--- TODO Should this go somewhere else?
 rethrow :: (Member (Error a) r, Member IO r) => IO (Either a b) -> Eff r b
 rethrow = send >=> either throwError pure
 

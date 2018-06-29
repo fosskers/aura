@@ -52,6 +52,7 @@ library:
   dependencies:
     - aeson >= 1.2 && < 1.5
     - aeson-pretty >= 0.8 && < 0.9
+    - algebraic-graphs >= 0.1 && < 0.2
     - array >= 0.5 && < 0.6
     - async >= 2.1 && < 2.3
     - aur >= 6.0.1 && < 7
