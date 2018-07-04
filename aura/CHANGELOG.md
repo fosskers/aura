@@ -3,8 +3,9 @@
 ## 2.0.0
 
 This is a large update representing about a month of full-time effort. Aura is now
-*much* faster, solves dependencies more reliably, and has a few new features. This
-is all while modernizing the code and seeing a ~17% decrease in overall code size.
+*much* faster, solves dependencies more reliably, has a few new features, and
+many fewer bugs. This is all while modernizing the code and seeing a ~17% decrease
+in overall code size.
 
 ### Improvements
 
@@ -18,15 +19,17 @@ is all while modernizing the code and seeing a ~17% decrease in overall code siz
 - If the exact version of an AUR package is available in the package cache, it
   will be used automatically instead of being rebuilt. You can instead force a
   rebuild with `--force`.
+- Packages that aren't interdependent will be built in succession without prompting
+  the user, only calling down to `pacman` once per group.
 - Output text colour can be turned off with `--color never`. By default, Aura will only automatically
   colour text when it detects that the output device is a terminal (and not a Unix pipe, say).
   These behaviours match Pacman.
-- **Flag:** `-A --json <packages>`. Query the AUR directly for a package's raw JSON data.
-  Great for debugging.
-- **Flag:** `-Br` has been restored as short-hand for `-B --restore`.
-- **Flag:** `-Cb` added as a short-hand for `-C --backup`.
-- **Flag:** The Pacman flags `--ignoregroup`, `--cachedir`, `--config`, and `--logfile` also now affect Aura.
-- **Flag:** `--dryrun` no longer requires sudo.
+- Various CLI flag improvements:
+  - `-A --json <packages>`. Query the AUR directly for a package's raw JSON data. Great for debugging.
+  - `-Br` has been restored as short-hand for `-B --restore`.
+  - `-Cb` added as a short-hand for `-C --backup`.
+  - The Pacman flags `--ignoregroup`, `--cachedir`, `--config`, and `--logfile` also now affect Aura.
+  - `--dryrun` no longer requires sudo.
 - Improved Japanese translations thanks to **Onoue Takuro**.
 - Improved Portuguese translations thanks to **Wagner Amaral**.
 - Modernized the Haskell code:
@@ -44,17 +47,21 @@ is all while modernizing the code and seeing a ~17% decrease in overall code siz
 - `-B` now saves package states as JSON. This makes them readable by other tools,
   and also improves internal code quality. **All old package state files are no longer readable by Aura.**
   - The `"time"` field in these files is now a Haskell `ZonedTime`.
-- **Flag:** `--auradebug` is now just `--debug`, matching Pacman.
-- **Flag:** `--aurignore` is now just `--ignore`, matching Pacman.
-- **Flag:** `-y` no longer works with `-A`. Perform an `-Sy` ahead of time instead.
-- **Flag:** `-O` no longer accepts arguments to adopt packages, it only displays current
-  orphans. Use `-O --adopt` instead.
-- **Flag:** `-Ccc` is now `-C --notsaved`.
+- Various CLI flag changes:
+  - `--auradebug` is now just `--debug`, matching Pacman.
+  - `--aurignore` is now just `--ignore`, matching Pacman.
+  - `-y` no longer works with `-A`. Perform an `-Sy` ahead of time instead.
+  - `-O` no longer accepts arguments to adopt packages, it only displays current
+    orphans. Use `-O --adopt` instead for the old behaviour.
+  - `-Ccc` is now `-C --notsaved`.
 - Help messages (`-h`) are no longer localised.
 - Support for `powerpill` removed.
 
 ### Bug Fixes
 
+- Aura no longer returns an exit code of 1 if no packages are available to upgrade.
+- `-Aq` no longer fails at the package installation step.
+- Ctrl+C at certain moments no longer preserves the Pacman lock file.
 - `makepkg` output is no longer coloured green.
 - Dependency resolution is now more robust, and split packages are handled correctly.
   As such, the following troublesome packages now build correctly:
