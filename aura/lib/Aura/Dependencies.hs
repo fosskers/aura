@@ -87,11 +87,6 @@ sortInstall m = batch $ overlay connected singles
         connected = edges $ concatMap f elems
         singles   = overlays $ map vertex elems
 
--- sortInstall :: [Package] -> [Package]
--- sortInstall ps = reverse . map ((^. _1) . n) . topSort $ g
---   where (g, n, _)  = graphFromEdges $ map toEdge ps
---         toEdge pkg = (pkg, pkgNameOf pkg, map depNameOf (pkgDepsOf pkg))
-
 -- | Find the vertices that have no dependencies.
 -- O(n) complexity.
 leaves :: Ord a => AdjacencyMap a -> S.Set a

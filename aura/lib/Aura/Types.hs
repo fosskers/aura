@@ -52,6 +52,7 @@ import           Text.Megaparsec.Char
 
 ---
 
+-- TODO Make all these fields strict, here and elsewhere.
 -- | A package to be installed.
 data Package = Package { pkgNameOf        :: T.Text
                        , pkgVersionOf     :: Maybe Versioning
