@@ -124,7 +124,7 @@ getIgnoredGroups (Config c) = maybe S.empty S.fromList $ M.lookup "IgnoreGroup" 
 -- | Given a `Set` of package groups, yield all the packages they contain.
 groupPackages :: S.Set T.Text -> IO (S.Set T.Text)
 groupPackages igs | null igs  = pure S.empty
-                  | otherwise = fmap f . pacmanOutput $ ["-Qg"] ++ toList igs
+                  | otherwise = fmap f . pacmanOutput $ "-Qg" : toList igs
   where f = S.fromList . map ((!! 1) . T.words) . T.lines  -- Naughty
 
 getCachePath :: Config -> Maybe Sh.FilePath
