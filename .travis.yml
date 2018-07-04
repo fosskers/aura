@@ -13,7 +13,7 @@ addons:
 # The different configurations we want to test. You could also do things like
 # change flags or use --stack-yaml to point to a different file.
 env:
-- ARGS="--resolver lts-11.10"
+- ARGS="--resolver nightly-2018-07-04"
 
 before_install:
 # Download and unpack the stack executable

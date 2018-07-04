@@ -1,4 +1,4 @@
-resolver: nightly-2018-06-29
+resolver: nightly-2018-07-04
 
 packages:
   - aura/
