@@ -180,8 +180,10 @@ displayPkgDeps opts ps =
 
 reportPkgsToInstall :: (Member (Reader Settings) r, Member IO r) => T.Text -> [T.Text] -> [[Buildable]] -> Eff r ()
 reportPkgsToInstall la rps bps = do
+  let (explicits, deps) = partition isExplicit $ concat bps
   report green reportPkgsToInstall_1 (sort rps)
-  report green (reportPkgsToInstall_2 la) (sort . map bldNameOf $ concat bps)
+  report green reportPkgsToInstall_3 (sort $ map bldNameOf deps)
+  report green (reportPkgsToInstall_2 la) (sort $ map bldNameOf explicits)
 
 reportListOfDeps :: [T.Text] -> [[Buildable]] -> IO ()
 reportListOfDeps rps bps = do
