@@ -25,20 +25,22 @@ module Aura.Commands.B
   ( saveState
   , restoreState
   , cleanStates
+  , listStates
   ) where
 
-import Aura.Core (warn)
-import Aura.Languages
-import Aura.Settings
-import Aura.State
-import Aura.Types
-import Aura.Utils (optionalPrompt)
-import BasePrelude
-import Control.Monad.Freer
-import Control.Monad.Freer.Error
-import Control.Monad.Freer.Reader
-import Filesystem.Path (filename)
-import Shelly
+import           Aura.Core (warn)
+import           Aura.Languages
+import           Aura.Settings
+import           Aura.State
+import           Aura.Types
+import           Aura.Utils (optionalPrompt)
+import           BasePrelude
+import           Control.Monad.Freer
+import           Control.Monad.Freer.Error
+import           Control.Monad.Freer.Reader
+import qualified Data.Text.IO as T
+import           Filesystem.Path (filename)
+import           Shelly
 
 ---
 
@@ -52,3 +54,6 @@ cleanStates (fromIntegral -> n) = do
   okay <- send . optionalPrompt ss $ cleanStates_2 n
   if | not okay  -> send . warn ss . cleanStates_3 $ langOf ss
      | otherwise -> send . shelly @IO . traverse_ rm . drop n $ stfs
+
+listStates :: (Member (Error Failure) r, Member IO r) => Eff r ()
+listStates = getStateFiles >>= send . traverse_ (T.putStrLn . toTextIgnore)

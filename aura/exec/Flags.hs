@@ -209,7 +209,7 @@ data AurOp = AurDeps     (S.Set T.Text)
            | AurJson     (S.Set T.Text)
            deriving (Show)
 
-data BackupOp = BackupClean Word | BackupRestore deriving (Show)
+data BackupOp = BackupClean Word | BackupRestore | BackupList deriving (Show)
 
 data CacheOp = CacheBackup FilePath | CacheClean Word | CacheCleanNotSaved | CacheSearch T.Text deriving (Show)
 
@@ -244,9 +244,10 @@ aursync = bigA *> (AurSync <$> (fmap (Right . S.map T.toLower) someArgs <|> fmap
 backups :: Parser AuraOp
 backups = bigB *> (Backup <$> optional mods)
   where bigB = flag' () (long "save" <> short 'B' <> help "Save a package state.")
-        mods = clean <|> restore
+        mods = clean <|> restore <|> list
         clean = BackupClean <$> option auto (long "clean" <> short 'c' <> metavar "N" <> hidden <> help "Keep the most recent N states, delete the rest.")
         restore = flag' BackupRestore (long "restore" <> short 'r' <> hidden <> help "Restore a previous package state.")
+        list = flag' BackupList (long "list" <> short 'l' <> hidden <> help "Show all saved package state filenames.")
 
 cache :: Parser AuraOp
 cache = bigC *> (Cache <$> (fmap Left mods <|> fmap Right someArgs))

@@ -27,6 +27,7 @@ in overall code size.
 - Various CLI flag improvements:
   - `-A --json <packages>`. Query the AUR directly for a package's raw JSON data. Great for debugging.
   - `-Br` has been restored as short-hand for `-B --restore`.
+  - Added `-Bl` to list all saved package state filenames.
   - `-Cb` added as a short-hand for `-C --backup`.
   - The Pacman flags `--ignoregroup`, `--cachedir`, `--config`, and `--logfile` also now affect Aura.
   - `--dryrun` no longer requires sudo.

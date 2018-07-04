@@ -104,6 +104,7 @@ executeOpts ops = do
         Nothing              -> sudo B.saveState
         Just (BackupClean n) -> sudo $ B.cleanStates n
         Just BackupRestore   -> sudo B.restoreState
+        Just BackupList      -> B.listStates
     Right (Cache o) ->
       case o of
         Right ps                -> sudo $ C.downgradePackages ps
