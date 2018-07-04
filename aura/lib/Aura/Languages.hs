@@ -535,6 +535,22 @@ reportPkgsToInstall_2 (pretty -> l) = \case
     Swedish    -> l <> " Paket:"
     _          -> l <> " Packages:"
 
+reportPkgsToInstall_3 :: Language -> Doc AnsiStyle
+reportPkgsToInstall_3 = \case
+    Japanese   -> "AURの従属パッケージ："
+    Polish     -> "Zależności z AUR:"
+    Croatian   -> "Zavisnosti iz AUR-a:"
+    Swedish    -> "Beroenden ifrån AUR:"
+    German     -> "Abhängigkeiten im AUR:"
+    Spanish    -> "Dependencias en AUR:"
+    Portuguese -> "Dependências no AUR:"
+    French     -> "Dépendances AUR\xa0:"
+    Russian    -> "Зависимости из AUR:"
+    Italian    -> "Dipendenze in AUR:"
+    Serbian    -> "Зависности из AUR-а:"
+    Norwegian  -> "Avhengigheter fra AUR:"
+    _          -> "AUR dependencies:"
+
 -- NEEDS TRANSLATION
 reportPkgbuildDiffs_1 :: T.Text -> Language -> Doc AnsiStyle
 reportPkgbuildDiffs_1 (bt -> p) = \case

@@ -48,8 +48,8 @@ comparePkgbuilds old new = list Nothing (p . T.strip . T.pack . ppDiff) $ getGro
 hasPkgbuildStored :: T.Text -> IO Bool
 hasPkgbuildStored = shelly . test_f . pkgbuildPath
 
-storePkgbuilds :: [Buildable] -> IO ()
-storePkgbuilds = shelly . traverse_ (\p -> writePkgbuild (bldNameOf p) (_pkgbuild $ pkgbuildOf p))
+storePkgbuilds :: [[Buildable]] -> IO ()
+storePkgbuilds = shelly . traverse_ (\p -> writePkgbuild (bldNameOf p) (_pkgbuild $ pkgbuildOf p)) . concat
 
 readPkgbuild :: T.Text -> IO T.Text
 readPkgbuild = shelly . readfile . pkgbuildPath

@@ -43,7 +43,7 @@ import           Aura.Pkgbuild.Records
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
-import           BasePrelude
+import           BasePrelude hiding (FilePath)
 import           Control.Concurrent.Async
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
@@ -105,16 +105,23 @@ install' opts pkgs = do
                   send $ storePkgbuilds buildPkgs
                   buildAndInstall buildPkgs
 
+-- | Give anything that was installed as a dependency the /Install Reason/ of
+-- "Installed as a dependency for another package".
+annotateDeps :: [Buildable] -> IO ()
+annotateDeps [] = pure ()
+annotateDeps bs = void . pacmanSuccess $ ["-D", "--asdeps"] <> map bldNameOf bs'
+  where bs' = filter (not . isExplicit) bs
+
 -- | Reduce a list of candidate packages to build, such that there is only one
 -- instance of each "Package Base". This will ensure that split packages will
 -- only be built once each. Precedence is given to packages that actually
 -- match the base name (e.g. llvm50 vs llvm50-libs).
-uniquePkgBase :: [Buildable] -> [Buildable]
-uniquePkgBase bs = filter (\b -> bldNameOf b `S.member` goods) bs
+uniquePkgBase :: [[Buildable]] -> [[Buildable]]
+uniquePkgBase bs = map (filter (\b -> bldNameOf b `S.member` goods)) bs
   where f a b | bldNameOf a == bldBaseNameOf a = a
               | bldNameOf b == bldBaseNameOf b = b
               | otherwise = a
-        goods = S.fromList . map bldNameOf . M.elems . M.fromListWith f $ map (bldBaseNameOf &&& id) bs
+        goods = S.fromList . map bldNameOf . M.elems . M.fromListWith f . map (bldBaseNameOf &&& id) $ concat bs
 
 confirmIgnored :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r (S.Set T.Text)
 confirmIgnored (toList -> ps) = do
@@ -130,7 +137,7 @@ lookupPkgs f pkgs = do
   pure $ map (\b -> b { isExplicit = True }) okay
 
 depsToInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  Repository -> [Buildable] -> Eff r [Package]
+  Repository -> [Buildable] -> Eff r [S.Set Package]
 depsToInstall repo bs = do
   ss <- ask
   traverse (send . packageBuildable ss) bs >>= resolveDeps repo
@@ -141,18 +148,20 @@ repoInstall ps = do
   pacOpts <- asks (asFlag . commonConfigOf)
   rethrow . pacman $ ["-S", "--asdeps"] <> pacOpts <> ps
 
-buildAndInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => [Buildable] -> Eff r ()
-buildAndInstall bs = do
+buildAndInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => [[Buildable]] -> Eff r ()
+buildAndInstall bss = do
   pth   <- asks (either id id . cachePathOf . commonConfigOf)
   cache <- send . shelly @IO $ cacheContents pth
-  traverse_ (f cache pth) bs
-  where f (Cache cache) pth b = do
+  traverse_ (f cache pth) bss
+  where f (Cache cache) pth bs = do
           ss <- ask
-          ps <- case bldVersionOf b >>= (\v -> SimplePkg (bldNameOf b) v `M.lookup` cache) of
-            Just pp | not (switch ss ForceBuilding) -> pure $ [ pth </> _pkgpath pp ]
-            _ -> buildPackages [b]
-          installPkgFiles asDeps $ map toTextIgnore ps
-            where asDeps = if isExplicit b then Nothing else Just "--asdeps"
+          let (ps, cached) = partitionEithers $ map g bs
+              g b = case bldVersionOf b >>= (\v -> SimplePkg (bldNameOf b) v `M.lookup` cache) of
+                Just pp | not (switch ss ForceBuilding) -> Right $ pth </> _pkgpath pp
+                _ -> Left b
+          built <- buildPackages ps
+          installPkgFiles $ map toTextIgnore (built <> cached)
+          send $ annotateDeps bs
 
 ------------
 -- REPORTING
@@ -169,15 +178,17 @@ displayPkgDeps opts ps =
   where reportDeps True  = send . uncurry reportListOfDeps
         reportDeps False = uncurry (reportPkgsToInstall $ label opts)
 
-reportPkgsToInstall :: (Member (Reader Settings) r, Member IO r) => T.Text -> [T.Text] -> [Buildable] -> Eff r ()
+reportPkgsToInstall :: (Member (Reader Settings) r, Member IO r) => T.Text -> [T.Text] -> [[Buildable]] -> Eff r ()
 reportPkgsToInstall la rps bps = do
+  let (explicits, deps) = partition isExplicit $ concat bps
   report green reportPkgsToInstall_1 (sort rps)
-  report green (reportPkgsToInstall_2 la) (sort $ map bldNameOf bps)
+  report green reportPkgsToInstall_3 (sort $ map bldNameOf deps)
+  report green (reportPkgsToInstall_2 la) (sort $ map bldNameOf explicits)
 
-reportListOfDeps :: [T.Text] -> [Buildable] -> IO ()
+reportListOfDeps :: [T.Text] -> [[Buildable]] -> IO ()
 reportListOfDeps rps bps = do
   traverse_ T.putStrLn $ sort rps
-  traverse_ T.putStrLn . sort $ map bldNameOf bps
+  traverse_ T.putStrLn . sort . map bldNameOf $ concat bps
 
 pkgbuildDiffs :: (Member (Reader Settings) r, Member IO r) => [Buildable] -> Eff r [Buildable]
 pkgbuildDiffs [] = pure []
