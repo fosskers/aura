@@ -105,6 +105,13 @@ install' opts pkgs = do
                   send $ storePkgbuilds buildPkgs
                   buildAndInstall buildPkgs
 
+-- | Give anything that was installed as a dependency the /Install Reason/ of
+-- "Installed as a dependency for another package".
+annotateDeps :: [Buildable] -> IO ()
+annotateDeps [] = pure ()
+annotateDeps bs = void . pacmanSuccess $ ["-D", "--asdeps"] <> map bldNameOf bs'
+  where bs' = filter (not . isExplicit) bs
+
 -- | Reduce a list of candidate packages to build, such that there is only one
 -- instance of each "Package Base". This will ensure that split packages will
 -- only be built once each. Precedence is given to packages that actually
@@ -147,15 +154,14 @@ buildAndInstall bss = do
   cache <- send . shelly @IO $ cacheContents pth
   traverse_ (f cache pth) bss
   where f (Cache cache) pth bs = do
-          send . print $ map bldNameOf bs  -- TODO remove
           ss <- ask
           let (ps, cached) = partitionEithers $ map g bs
               g b = case bldVersionOf b >>= (\v -> SimplePkg (bldNameOf b) v `M.lookup` cache) of
                 Just pp | not (switch ss ForceBuilding) -> Right $ pth </> _pkgpath pp
                 _ -> Left b
           built <- buildPackages ps
-          installPkgFiles Nothing $ map toTextIgnore (built <> cached)  -- TODO fix the Nothing
-            -- where asDeps = if isExplicit b then Nothing else Just "--asdeps"
+          installPkgFiles $ map toTextIgnore (built <> cached)
+          send $ annotateDeps bs
 
 ------------
 -- REPORTING

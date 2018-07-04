@@ -54,13 +54,12 @@ srcPkgStore :: FilePath
 srcPkgStore = "/var/cache/aura/src"
 
 -- | Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
-installPkgFiles :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  Maybe T.Text -> [T.Text] -> Eff r ()
-installPkgFiles _ []         = pure ()
-installPkgFiles asDeps files = do
+installPkgFiles :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => [T.Text] -> Eff r ()
+installPkgFiles []    = pure ()
+installPkgFiles files = do
   ss <- ask
   send . shelly @IO $ checkDBLock ss
-  rethrow . pacman $ ["-U"] <> maybeToList asDeps <> files <> asFlag (commonConfigOf ss)
+  rethrow . pacman $ ["-U"] <> files <> asFlag (commonConfigOf ss)
 
 -- | All building occurs within temp directories in the package cache,
 -- or in a location specified by the user with flags.
