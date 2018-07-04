@@ -69,7 +69,7 @@ colourCheck ss | shared ss (Colour Never)  = unAnnotate
 ----------
 yesNoPrompt :: Settings -> Doc AnsiStyle -> IO Bool
 yesNoPrompt ss msg = do
-  putStrA ss . yellow $ msg <+> yesNoMessage (langOf ss) <+> " "
+  putStrA ss . yellow $ msg <+> yesNoMessage (langOf ss) <> " "
   hFlush stdout
   response <- T.getLine
   pure $ isAffirmative (langOf ss) response
