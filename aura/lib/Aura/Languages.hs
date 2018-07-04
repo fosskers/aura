@@ -48,7 +48,7 @@ module Aura.Languages
 import           Aura.Colour
 import qualified Aura.Languages.Fields as Fields
 import           Aura.Types
-import           BasePrelude
+import           BasePrelude hiding ((<+>))
 import qualified Data.Map.Strict as Map (Map, (!), fromList, toList, mapWithKey)
 import qualified Data.Text as T
 import           Data.Text.Prettyprint.Doc
@@ -776,6 +776,16 @@ cleanStates_3 = \case
     Chinese    -> "没有删除任何包。"
     Swedish    -> "Inga paket togs bort."
     _          -> "No package states were removed."
+
+cleanStates_4 :: Int -> Language -> Doc AnsiStyle
+cleanStates_4 n = \case
+  Japanese -> "現在のパッケージ状態記録：" <> pretty n <> "個。"
+  _        -> "You currently have" <+> pretty n <+> "saved package states."
+
+cleanStates_5 :: T.Text -> Language -> Doc AnsiStyle
+cleanStates_5 t = \case
+  Japanese -> "一番最近に保存されたのは：" <> pretty t
+  _        -> "Mostly recently saved:" <+> pretty t
 
 readState_1 :: Language -> Doc AnsiStyle
 readState_1 = \case

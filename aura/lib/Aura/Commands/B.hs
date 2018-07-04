@@ -37,6 +37,7 @@ import BasePrelude
 import Control.Monad.Freer
 import Control.Monad.Freer.Error
 import Control.Monad.Freer.Reader
+import Filesystem.Path (filename)
 import Shelly
 
 ---
@@ -45,6 +46,9 @@ import Shelly
 cleanStates :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Word -> Eff r ()
 cleanStates (fromIntegral -> n) = do
   ss   <- ask
+  stfs <- reverse <$> getStateFiles
+  send . warn ss . cleanStates_4 (length stfs) $ langOf ss
+  when (not $ null stfs) . send . warn ss . cleanStates_5 (toTextIgnore . filename $ head stfs) $ langOf ss
   okay <- send . optionalPrompt ss $ cleanStates_2 n
   if | not okay  -> send . warn ss . cleanStates_3 $ langOf ss
-     | otherwise -> getStateFiles >>= send . shelly @IO . traverse_ rm . drop n . reverse
+     | otherwise -> send . shelly @IO . traverse_ rm . drop n $ stfs
