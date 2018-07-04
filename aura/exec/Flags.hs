@@ -230,7 +230,7 @@ program = Program
         pacOps = database <|> files <|> queries <|> remove <|> sync <|> testdeps <|> upgrades
 
 aursync :: Parser AuraOp
-aursync = bigA *> (AurSync <$> (fmap Right someArgs <|> fmap Left mods))
+aursync = bigA *> (AurSync <$> (fmap (Right . S.map T.toLower) someArgs <|> fmap Left mods))
   where bigA = flag' () (long "aursync" <> short 'A' <> help "Install packages from the AUR.")
         mods     = deps <|> ainfo <|> pkgbuild <|> search <|> upgrade <|> tarball <|> aur
         deps     = AurDeps <$> (flag' () (long "deps" <> short 'd' <> hidden <> help "View dependencies of an AUR package.") *> someArgs')
