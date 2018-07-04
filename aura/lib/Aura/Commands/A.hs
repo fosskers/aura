@@ -87,9 +87,10 @@ upgradeAURPkgs pkgs = do
          devel <- develPkgCheck
          send . notify ss $ upgradeAURPkgs_2 lang
          if | null toUpgrade && null devel -> send . warn ss $ upgradeAURPkgs_3 lang
-            | otherwise -> reportPkgsToUpgrade toUpgrade (toList devel)
-         unless (switch ss DryRun) saveState
-         install $ S.fromList (map (aurNameOf . fst) toUpgrade) <> pkgs <> devel
+            | otherwise -> do
+                reportPkgsToUpgrade toUpgrade (toList devel)
+                unless (switch ss DryRun) saveState
+                install $ S.fromList (map (aurNameOf . fst) toUpgrade) <> pkgs <> devel
 
 possibleUpdates :: (Member (Reader Settings) r, Member IO r) => S.Set SimplePkg -> Eff r [(AurInfo, Versioning)]
 possibleUpdates (toList -> pkgs) = do
