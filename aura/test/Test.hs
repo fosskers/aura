@@ -2,6 +2,7 @@
 
 module Main ( main ) where
 
+import           Aura.Languages
 import           Aura.Packages.Repository
 import           Aura.Pacman
 import           Aura.Types
@@ -47,6 +48,16 @@ suite conf = testGroup "Unit Tests"
         let p = parse config "pacman.conf" conf
             r = either (const Nothing) (\(Config c) -> Just c) p >>= M.lookup "HoldPkg"
         r @?= Just ["pacman", "glibc"]
+    ]
+  , testGroup "Aura.Languages"
+    [ testCase "Language names are complete" $ do
+        case [minBound..maxBound] :: [Language] of
+          [] -> assertFailure "No languages found"
+          lang:restOfLangs -> do
+            let names = languageNames lang
+            for_ restOfLangs $ \otherLang -> do
+              let otherNames = languageNames otherLang
+              assertEqual ("Language name maps for " ++ show lang ++ " and " ++ show otherLang ++ " have different size") (M.size names) (M.size otherNames)
     ]
   ]
 

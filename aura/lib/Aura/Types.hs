@@ -194,7 +194,7 @@ data Language = English
               | Norwegian
               | Indonesia
               | Chinese
-                deriving (Eq, Enum, Ord, Show)
+                deriving (Eq, Enum, Bounded, Ord, Show)
 
 data DepError = NonExistant T.Text
               | VerConflict (Doc AnsiStyle)
