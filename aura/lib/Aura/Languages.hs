@@ -85,12 +85,12 @@ languageNames = Map.fromList . zip [ Japanese, Polish, Croatian, Swedish, German
     Spanish    -> [ "Japanese", "Polaco", "Croata", "Sueco", "Alemán", "Español", "Portugués", "Francés", "Ruso", "Italiano", "Serbio", "Noruego", "Indonesio", "Chinese" ]
     Portuguese -> [ "Japonês", "Polonês", "Croata", "Sueco", "Alemão", "Espanhol", "Português", "Francês", "Russo", "Italiano", "Sérvio", "Norueguês", "Indonésio", "Chinês" ]
     French     -> [ "Japanese", "Polonais", "Croate", "Suédois", "Allemand", "Espagnol", "Portugais", "Français", "Russe", "Italien", "Serbe", "Norvégien", "Indonesian", "Chinese" ]
-    Russian    -> [ "Japanese", "Польский", "Хорватский", "Шведский", "Немецкий", "Испанский", "Португальский", "Французский", "Русский", "Итальянский", "Сербский", "Норвежский", "Индонезийский", "Chinese" ]
+    Russian    -> [ "Японский", "Польский", "Хорватский", "Шведский", "Немецкий", "Испанский", "Португальский", "Французский", "Русский", "Итальянский", "Сербский", "Норвежский", "Индонезийский", "Китайский" ]
     Italian    -> [ "Giapponese", "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "", "", "Indonesian", "Chinese" ]
     Serbian    -> [ "Japanese", "Пољски", "Хрватски", "Шведски", "Немачки", "Шпански", "Португалски", "Француски", "Руски", "Италијански", "Српски", "", "Indonesian", "Chinese" ]
     Norwegian  -> [ "Japanese", "Polsk", "Kroatisk", "Svensk", "Tysk", "Spansk", "Portugisisk", "Fransk", "Russisk", "Italiensk", "Serbisk", "Norsk", "Indonesian", "Chinese" ]
     Indonesia  -> [ "Japanese", "Polandia", "Kroasia", "Swedia", "Jerman", "Spanyol", "Portugis", "Prancis", "Rusia", "Italia", "Serbia", "Norwegia", "Indonesian", "Chinese" ]
-    Chinese    -> [ "Japanese", "波兰语", "克罗地亚语", "瑞典语", "德语", "西班牙语", "葡萄牙语", "法语", "俄语", "意大利语", "塞尔维亚语", "挪威语", "印度尼西亚语", "中文" ]
+    Chinese    -> [ "日语", "波兰语", "克罗地亚语", "瑞典语", "德语", "西班牙语", "葡萄牙语", "法语", "俄语", "意大利语", "塞尔维亚语", "挪威语", "印度尼西亚语", "中文" ]
     _          -> [ "Japanese", "Polish", "Croatian", "Swedish", "German", "Spanish", "Portuguese", "French", "Russian", "Italian", "Serbian", "Norwegian", "Indonesian", "Chinese" ]
 
 translatorMsgTitle :: Language -> T.Text
@@ -171,6 +171,7 @@ trueRoot_3 = \case
     German     -> "Seit makepkg v4.2 ist es nicht mehr möglich als root zu bauen."
     Spanish    -> "Desde makepkg v4.2 no es posible compilar paquetes como root."
     Portuguese -> "A partir da versão v4.2 de makepkg, não é mais possível compilar como root."
+    Russian    -> "С версии makepkg v4.2 сборка от имени root более невозможна."
     Chinese    -> "自从 makepkg v4.2 以后，就不能以根用户身份构建软件了。"
     Swedish    -> "I makepkg v4.2 och uppåt är det inte tillåtet att bygga som root."
     _          -> "As of makepkg v4.2, building as root is no longer possible."
@@ -286,6 +287,7 @@ buildFail_8 :: Language -> Doc AnsiStyle
 buildFail_8 = \case
     Japanese   -> "makepkgは失敗しました。"
     Portuguese -> "Ocorreu um erro ao executar makepkg"
+    Russian    -> "Произошла ошибка makepkg."
     _          -> "There was a makepkg failure."
 
 ------------------------------
@@ -336,11 +338,15 @@ depError _ (VerConflict s) = s
 depError _ (Ignored s)     = s
 depError l (NonExistant s) = case l of
   Portuguese -> "A dependência " <> bt s <> " não foi encontrada."
+  Russian    -> "Зависимость " <> bt s <> " не найдена."
   _          -> "The dependency " <> bt s <> " couldn't be found."
 depError l (UnparsableVersion s) = case l of
   Portuguese -> "A versão de " <> bt s <> " não pôde ser interpretada."
+  Russian    -> "Версия для " <> bt s <> " не распознана."
   _          -> "The version number for " <> bt s <> " couldn't be parsed."
-depError _ (BrokenProvides pkg pro name) = "The package " <> bt pkg <> " needs " <> bt name <> ", which provides " <> bt pro <> "."
+depError l (BrokenProvides pkg pro name) = case l of
+  Russian    -> "Пакету " <> bt pkg <> " требуется " <> bt name <> ", предоставляющий " <> bt pro <> "."
+  _          -> "The package " <> bt pkg <> " needs " <> bt name <> ", which provides " <> bt pro <> "."
 
 -----------------
 -- aura functions
