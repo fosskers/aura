@@ -9,21 +9,27 @@ in overall code size.
 
 ### Improvements
 
+#### Dependency Handling
+
 - Dependency resolution is now much faster and **handles split packages correctly**.
 - Dependency provider selection for AUR packages.
   - Example: `cron` is a legal dependency to specify, but there exists no package
     with that name. `cronie` and `fcron` both "provide" `cron`, and now the user
     can manually make a selection.
-- `-Su` and `-Au` automatically saves a package state before updating (unless you're doing `--dryrun`).
-  This lets you more easily roll back from problematic updates.
 - If the exact version of an AUR package is available in the package cache, it
   will be used automatically instead of being rebuilt. You can instead force a
   rebuild with `--force`.
-- Packages that aren't interdependent will be built in succession without prompting
-  the user, only calling down to `pacman` once per group.
-- Output text colour can be turned off with `--color never`. By default, Aura will only automatically
-  colour text when it detects that the output device is a terminal (and not a Unix pipe, say).
-  These behaviours match Pacman.
+
+#### Saved Package State
+
+- `-Su` and `-Au` automatically save a package state before updating (unless you're doing `--dryrun`).
+  This lets you more easily roll back from problematic updates.
+- Saved package states can now be "pinned", which will protect them from removal via `-Bc`.
+  To pin a certain state, open its JSON file (see below in *Breaking Changes*) and edit the
+  `pinned` field from `false` to `true`.
+
+#### CLI Flags
+
 - Various CLI flag improvements:
   - `-A --json <packages>`. Query the AUR directly for a package's raw JSON data. Great for debugging.
   - `-Br` has been restored as short-hand for `-B --restore`.
@@ -31,9 +37,20 @@ in overall code size.
   - `-Cb` added as a short-hand for `-C --backup`.
   - The Pacman flags `--ignoregroup`, `--cachedir`, `--config`, and `--logfile` also now affect Aura.
   - `--dryrun` no longer requires sudo.
+  - `--color never` turns off all text colouring. Further, by default, Aura will
+    only automatically colour text when it detects that the output device is a terminal
+    (and not a Unix pipe, say). These behaviours match Pacman.
+
+#### Translations
+
 - Improved Japanese translations thanks to **Onoue Takuro**.
 - Improved Portuguese translations thanks to **Wagner Amaral**.
 - Improved Russian translations thanks to **Alexey Kotlyarov**.
+
+#### Misc.
+
+- Packages that aren't interdependent will be built in succession without prompting
+  the user, only calling down to `pacman` once per group.
 - Modernized the Haskell code:
   - Removed custom CLI flag handling in favour of `optparse-applicative`.
   - Removed custom package version number parsing in favour of `versions`.
