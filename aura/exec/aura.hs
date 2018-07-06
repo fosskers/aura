@@ -88,8 +88,10 @@ executeOpts ops = do
     pPrintNoColor ops
     pPrintNoColor (buildConfigOf ss)
     pPrintNoColor (commonConfigOf ss)
+  let p o = rethrow . pacman $ asFlag o ++ asFlag (commonConfigOf ss) ++ bool [] ["--quiet"] (switch ss LowVerbosity)
   case ops of
-    Left o -> rethrow . pacman $ asFlag o ++ asFlag (commonConfigOf ss) ++ bool [] ["--quiet"] (switch ss LowVerbosity)
+    Left o@(Sync (Left (SyncUpgrade _)) _ _) -> sudo B.saveState *> p o
+    Left o -> p o
     Right (AurSync o) ->
       case o of
         Right ps              -> bool (trueRoot . sudo) id (switch ss DryRun) $ A.install ps

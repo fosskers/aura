@@ -2,7 +2,7 @@
 
 module Flags
   ( Program(..), opts
-  , PacmanOp(..)
+  , PacmanOp(..), SyncOp(..)
   , AuraOp(..), AurOp(..), BackupOp(..), CacheOp(..), LogOp(..), OrphanOp(..)
   ) where
 

@@ -14,7 +14,7 @@ in overall code size.
   - Example: `cron` is a legal dependency to specify, but there exists no package
     with that name. `cronie` and `fcron` both "provide" `cron`, and now the user
     can manually make a selection.
-- `-Au` automatically saves a package state before updating (unless you're doing `--dryrun`).
+- `-Su` and `-Au` automatically saves a package state before updating (unless you're doing `--dryrun`).
   This lets you more easily roll back from problematic updates.
 - If the exact version of an AUR package is available in the package cache, it
   will be used automatically instead of being rebuilt. You can instead force a
