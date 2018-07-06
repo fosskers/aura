@@ -65,7 +65,7 @@ translators = Map.fromList
     , (Spanish,    "Alejandro Gómez / Sergio Conde")
     , (Portuguese, "Henry Kupty / Thiago Perrotta / Wagner Amaral")
     , (French,     "Ma Jiehong / Fabien Dubosson")
-    , (Russian,    "Kyrylo Silin")
+    , (Russian,    "Kyrylo Silin / Alexey Kotlyarov")
     , (Italian,    "Bob Valantin")
     , (Serbian,    "Filip Brcic")
     , (Norwegian,  "\"chinatsun\"")
@@ -747,22 +747,22 @@ removeMakeDepsAfter_1 = \case
 ----------------------------
 -- NEEDS TRANSLATION
 cleanStates_2 :: Int -> Language -> Doc AnsiStyle
-cleanStates_2 (bt . T.pack . show -> n) = \case
-    Japanese   -> n <> "個のパッケージ状態記録だけが残される。その他削除？"
-    Polish     -> n <> " stan pakietów zostanie zachowany. Usunąć resztę?"
-    Croatian   -> n <> " stanja paketa će biti zadržano. Ukloniti ostatak?"
-    German     -> n <> " Paketzustände werden behalten. Den Rest entfernen?"
-    Spanish    -> "El estado del paquete" <> n <> " se mantendrá. ¿Deseas eliminar el resto?"
-    Serbian    -> n <> " стања пакета ће бити сачувано. Уклонити остатак?"
-    Norwegian  -> n <> " pakketilstander vil bli beholdt. Vil du fjerne resten?"
-    Italian    -> n <> " lo stato dei pacchetti sarà mantenuto. Rimuovere i rimanenti?"
-    Portuguese -> n <> " estados de pacotes serão mantidos. Remover o resto?"
-    French     -> n <> " états des paquets vont être conservés. Supprimer le reste ?"
-    Russian    -> n <> " -- столько состояний пакетов будут оставлены. Удалить оставшиеся?"
-    Indonesia  -> n <> " paket akan tetap sama. Hapus yang lainnya?"
-    Chinese    -> n <> " 个包的状态将会保留。删除其它的？"
-    Swedish    -> n <> " paket kommer att bevaras. Ta bort resten?"
-    _          -> n <> " package states will be kept. Remove the rest?"
+cleanStates_2 n@(bt . T.pack . show -> s) = \case
+    Japanese   -> s <> "個のパッケージ状態記録だけが残される。その他削除？"
+    Polish     -> s <> " stan pakietów zostanie zachowany. Usunąć resztę?"
+    Croatian   -> s <> " stanja paketa će biti zadržano. Ukloniti ostatak?"
+    German     -> s <> " Paketzustände werden behalten. Den Rest entfernen?"
+    Spanish    -> "El estado del paquete" <> s <> " se mantendrá. ¿Deseas eliminar el resto?"
+    Serbian    -> s <> " стања пакета ће бити сачувано. Уклонити остатак?"
+    Norwegian  -> s <> " pakketilstander vil bli beholdt. Vil du fjerne resten?"
+    Italian    -> s <> " lo stato dei pacchetti sarà mantenuto. Rimuovere i rimanenti?"
+    Portuguese -> s <> " estados de pacotes serão mantidos. Remover o resto?"
+    French     -> s <> " états des paquets vont être conservés. Supprimer le reste ?"
+    Russian    -> s <> (pluralRussian " состояние пакетов будет оставлено." " состояния пакетов будут оставлены." " состояний пакетов будет оставлено." n) <> " Удалить оставшиеся?"
+    Indonesia  -> s <> " paket akan tetap sama. Hapus yang lainnya?"
+    Chinese    -> s <> " 个包的状态将会保留。删除其它的？"
+    Swedish    -> s <> " paket kommer att bevaras. Ta bort resten?"
+    _          -> s <> " package states will be kept. Remove the rest?"
 
 -- NEEDS TRANSLATION
 cleanStates_3 :: Language -> Doc AnsiStyle
@@ -786,16 +786,19 @@ cleanStates_3 = \case
 cleanStates_4 :: Int -> Language -> Doc AnsiStyle
 cleanStates_4 n = \case
   Japanese -> "現在のパッケージ状態記録：" <> pretty n <> "個。"
+  Russian  -> "У вас сейчас " <+> pretty n <+> (pluralRussian " сохраненное состояние пакета" " сохраненных состояний пакета" " сохраненных состояний пакетов." n)
   _        -> "You currently have" <+> pretty n <+> "saved package states."
 
 cleanStates_5 :: T.Text -> Language -> Doc AnsiStyle
 cleanStates_5 t = \case
   Japanese -> "一番最近に保存されたのは：" <> pretty t
+  Russian  -> "Последнее сохраненное:" <+> pretty t
   _        -> "Mostly recently saved:" <+> pretty t
 
 readState_1 :: Language -> Doc AnsiStyle
 readState_1 = \case
     Portuguese -> "O arquivo de estado não pôde ser interpretado. É um arquivo JSON válido?"
+    Russian    -> "Это состояние не распознано. Это корректный JSON?"
     _          -> "That state file failed to parse. Is it legal JSON?"
 
 ----------------------------
@@ -964,22 +967,22 @@ cleanCache_2 = \case
     _          -> "This will delete the ENTIRE package cache."
 
 cleanCache_3 :: Word -> Language -> Doc AnsiStyle
-cleanCache_3 (bt . T.pack . show -> n) = \case
-    Japanese   -> "パッケージ・ファイルは" <> n <> "個保存されます。"
-    Polish     -> n <> " wersji każdego pakietu zostanie zachowane."
-    Croatian   -> n <> " zadnjih verzija svakog paketa će biti zadržano."
-    Swedish    -> n <> " av varje paketfil kommer att sparas."
-    German     -> n <> " jeder Paketdatei wird behalten."
-    Spanish    -> "Se mantendrán " <> n <> " ficheros de cada paquete."
-    Portuguese -> n <> " arquivos de cada pacote serão mantidos."
-    French     -> n <> " fichiers de chaque paquet sera conservé."
-    Russian    -> n <> " версии каждого пакета будут нетронуты."
-    Italian    -> n <> " di ciascun pacchetto sarà mantenuto."
-    Serbian    -> n <> " верзије сваког од пакета ће бити сачуване."
-    Norwegian  -> n <> " av hver pakkefil blir beholdt."
-    Indonesia  -> n <> " berkas dari tiap paket akan disimpan."
-    Chinese    -> "每个包文件将会保存 " <> n <> " 个版本。"
-    _          -> n <> " of each package file will be kept."
+cleanCache_3 n@(bt . T.pack . show -> s) = \case
+    Japanese   -> "パッケージ・ファイルは" <> s <> "個保存されます。"
+    Polish     -> s <> " wersji każdego pakietu zostanie zachowane."
+    Croatian   -> s <> " zadnjih verzija svakog paketa će biti zadržano."
+    Swedish    -> s <> " av varje paketfil kommer att sparas."
+    German     -> s <> " jeder Paketdatei wird behalten."
+    Spanish    -> "Se mantendrán " <> s <> " ficheros de cada paquete."
+    Portuguese -> s <> " arquivos de cada pacote serão mantidos."
+    French     -> s <> " fichiers de chaque paquet sera conservé."
+    Russian    -> s <> pluralRussian " версия каждого пакета будет нетронута." " версии каждого пакета будут нетронуты." " версий каждого пакета будут нетронуты." n
+    Italian    -> s <> " di ciascun pacchetto sarà mantenuto."
+    Serbian    -> s <> " верзије сваког од пакета ће бити сачуване."
+    Norwegian  -> s <> " av hver pakkefil blir beholdt."
+    Indonesia  -> s <> " berkas dari tiap paket akan disimpan."
+    Chinese    -> "每个包文件将会保存 " <> s <> " 个版本。"
+    _          -> s <> " of each package file will be kept."
 
 cleanCache_4 :: Language -> Doc AnsiStyle
 cleanCache_4 = \case
@@ -1055,7 +1058,7 @@ cleanNotSaved_1 = \case
 
 -- NEEDS TRANSLATION
 cleanNotSaved_2 :: Int -> Language -> Doc AnsiStyle
-cleanNotSaved_2 (cyan . pretty -> s) = \case
+cleanNotSaved_2 n@(cyan . pretty -> s) = \case
     Japanese   -> "「" <> s <> "」の不要パッケージファイルがあります。削除しますか？"
     Polish     -> s <> " niepotrzebnych plików zostało znalezionych. Usunąć?"
     Croatian   -> s <> " nepotrebnih datoteka pronađeno. Obrisati?"
@@ -1065,7 +1068,7 @@ cleanNotSaved_2 (cyan . pretty -> s) = \case
     Italian    -> s <> " pacchetti non necessari trovati. Cancellarli?"
     Portuguese -> s <> " pacotes não necessários encontrados. Removê-los?"
     French     -> s <> " paquets inutiles trouvés. Les supprimer ?"
-    Russian    -> s <> " -- столько ненужных пакетных файлов обнаружено. Удалить?"
+    Russian    -> pluralRussian ("Обнаружен " <> s <> " ненужный файл пакета.") ("Обнаружены " <> s <> " ненужных файла пакетов.") ("Обнаружено " <> s <> " ненужных файлов пакетов.") n <> " Удалить?"
     Indonesia  -> s <> " berkas paket yang tidak dibutuhkan ditemukan. Hapus?"
     Chinese    -> "发现了 " <> s <> " 个不需要的包文件。是否删除？"
     Swedish    -> s <> " oanvända paket hittades. Ta bort?"
@@ -1214,6 +1217,7 @@ restoreState_2 :: Language -> Doc AnsiStyle
 restoreState_2 = \case
     Japanese   -> "保存されたパッケージ状態がない。作るには「-B」を。"
     Portuguese -> "Nenhum estado disponível para ser recuperado. (Utilize -B para salvar o estado atual)"
+    Russian    -> "Нет сохраненных состояний для восстановления. (Используйте -B для сохранения текущего состояния)"
     Chinese    -> "没有要恢复的已保存状态。（使用 -B 保存当前状态）"
     Swedish    -> "Inga sparade tillstånd att återhämta. (Använd -B för att spara det nuvarande tillståndet)"
     _          -> "No saved states to be restored. (Use -B to save the current state)"
@@ -1243,6 +1247,7 @@ reinstallAndRemove_1 = \case
 whoIsBuildUser_1 :: Language -> Doc AnsiStyle
 whoIsBuildUser_1 = \case
     Portuguese -> "Não foi possível determinal o usuário que executará a compilação."
+    Russian    -> "Не удается определить, от имени какого пользователя производить сборку."
     _          -> "Can't determine which user account to build with."
 
 ------------------------
@@ -1270,6 +1275,7 @@ pacmanFailure_1 = \case
 confParsing_1 :: Language -> Doc AnsiStyle
 confParsing_1 = \case
     Portuguese -> "Não foi possível interpretar o arquivo pacman.conf ."
+    Russian    -> "Не удается распознать формат вашего файла pacman.conf."
     _          -> "Unable to parse your pacman.conf file."
 
 provides_1 :: T.Text -> Doc AnsiStyle
@@ -1327,6 +1333,7 @@ yesNoMessage = \case
     Italian    -> "[S/n]"
     Portuguese -> "[S/n]"
     French     -> "[O/n]"
+    Russian    -> "[Д/н]"
     _          -> "[Y/n]"
 
 yesPattern :: Language -> [T.Text]
@@ -1339,4 +1346,13 @@ yesPattern = \case
     Italian    -> ["s", "si"]
     Portuguese -> ["s", "sim"]
     French     -> ["o", "oui"]
+    Russian    -> ["д", "да"]
     _          -> ["y", "yes"]
+
+----------------------
+-- Pluralization rules
+----------------------
+pluralRussian :: Integral n => a -> a -> a -> n -> a
+pluralRussian singular plural1 plural2 n | n % 10 == 1 && n % 100 /= 11 = singular
+                                         | n % 10 `elem` [2, 3, 4] = plural1
+                                         | otherwise = plural2
