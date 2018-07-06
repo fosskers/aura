@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DataKinds, FlexibleContexts, MonoLocalBinds #-}
+{-# LANGUAGE DataKinds, FlexibleContexts, MonoLocalBinds, TypeApplications #-}
 
 {-
 
@@ -57,6 +57,7 @@ import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Flags
 import           Options.Applicative (execParser)
 import           Settings
+import           Shelly (shelly, run_, toTextIgnore)
 import           Text.Pretty.Simple (pPrintNoColor)
 import           Utilities
 
@@ -122,14 +123,20 @@ executeOpts ops = do
         Nothing               -> send O.displayOrphans
         Just OrphanAbandon    -> sudo $ send orphans >>= removePkgs
         Just (OrphanAdopt ps) -> O.adoptPkg ps
-    Right Version -> send getVersionInfo >>= animateVersionMsg
+    Right Version   -> send getVersionInfo >>= animateVersionMsg
     Right Languages -> displayOutputLanguages
+    Right ViewConf  -> viewConfFile
 
 displayOutputLanguages :: (Member (Reader Settings) r, Member IO r) => Eff r ()
 displayOutputLanguages = do
   ss <- ask
   send . notify ss . displayOutputLanguages_1 $ langOf ss
   send $ traverse_ print [English ..]
+
+viewConfFile :: (Member (Reader Settings) r, Member IO r) => Eff r ()
+viewConfFile = do
+  pth <- asks (either id id . configPathOf . commonConfigOf)
+  void . send . shelly @IO . loudSh $ run_ "less" [toTextIgnore pth]
 
 -- | Animated version message.
 animateVersionMsg :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r ()

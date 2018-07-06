@@ -198,6 +198,7 @@ data AuraOp = AurSync (Either AurOp (S.Set T.Text))
             | Orphans (Maybe  OrphanOp)
             | Version
             | Languages
+            | ViewConf
             deriving (Show)
 
 data AurOp = AurDeps     (S.Set T.Text)
@@ -226,7 +227,7 @@ program = Program
   <*> commonConfig
   <*> buildConfig
   <*> optional language
-  where aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version <|> languages
+  where aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version <|> languages <|> viewconf
         pacOps = database <|> files <|> queries <|> remove <|> sync <|> testdeps <|> upgrades
 
 aursync :: Parser AuraOp
@@ -277,6 +278,9 @@ version = flag' Version (long "version" <> short 'V' <> help "Display Aura's ver
 
 languages :: Parser AuraOp
 languages = flag' Languages (long "languages" <> help "Show all human languages available for output.")
+
+viewconf :: Parser AuraOp
+viewconf = flag' ViewConf (long "viewconf" <> help "View the Pacman config file.")
 
 buildConfig :: Parser BuildConfig
 buildConfig = BuildConfig <$> makepkg <*> bp <*> optional bu <*> trunc <*> buildSwitches
