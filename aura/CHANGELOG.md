@@ -33,6 +33,7 @@ in overall code size.
   - `--dryrun` no longer requires sudo.
 - Improved Japanese translations thanks to **Onoue Takuro**.
 - Improved Portuguese translations thanks to **Wagner Amaral**.
+- Improved Russian translations thanks to **Alexey Kotlyarov**.
 - Modernized the Haskell code:
   - Removed custom CLI flag handling in favour of `optparse-applicative`.
   - Removed custom package version number parsing in favour of `versions`.

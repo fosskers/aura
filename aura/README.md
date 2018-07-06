@@ -223,7 +223,7 @@ Aura is currently translated by these generous people:
 | Norwegian  | "chinatsun"                                     |
 | Polish     | Chris Warrick                                   |
 | Portuguese | Henry Kupty, Thiago Perrotta, and Wagner Amaral |
-| Russian    | Kyrylo Silin                                    |
+| Russian    | Kyrylo Silin, Alexey Kotlyarov                  |
 | Serbian    | Filip Brcic                                     |
 | Spanish    | Alejandro Gómez and Sergio Conde                |
 | Swedish    | Fredrik Haikarainen and Daniel Beecham          |
