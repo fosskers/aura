@@ -795,6 +795,10 @@ cleanStates_5 t = \case
   Russian  -> "Последнее сохраненное:" <+> pretty t
   _        -> "Mostly recently saved:" <+> pretty t
 
+cleanStates_6 :: Int -> Language -> Doc AnsiStyle
+cleanStates_6 n = \case
+  _ -> pretty n <+> "of these are pinned, and won't be removed."
+
 readState_1 :: Language -> Doc AnsiStyle
 readState_1 = \case
     Portuguese -> "O arquivo de estado não pôde ser interpretado. É um arquivo JSON válido?"

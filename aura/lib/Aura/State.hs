@@ -25,7 +25,8 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Aura.State
-    ( saveState
+    ( PkgState(..)
+    , saveState
     , restoreState
     , inState
     , readState
@@ -56,14 +57,15 @@ import           Utilities (list, getSelection)
 
 ---
 
-data PkgState = PkgState { timeOf :: ZonedTime, pkgsOf :: M.Map T.Text Versioning }
+data PkgState = PkgState { timeOf :: ZonedTime, pinnedOf :: Bool, pkgsOf :: M.Map T.Text Versioning }
 
 instance ToJSON PkgState where
-  toJSON (PkgState t ps) = object [ "time" .= t, "packages" .= fmap prettyV ps ]
+  toJSON (PkgState t pnd ps) = object [ "time" .= t, "pinned" .= pnd, "packages" .= fmap prettyV ps ]
 
 instance FromJSON PkgState where
   parseJSON (Object v) = PkgState
     <$> v .: "time"
+    <*> v .: "pinned"
     <*> fmap f (v .: "packages")
     where f = mapMaybe (either (const Nothing) Just . versioning)
   parseJSON invalid = typeMismatch "PkgState" invalid
@@ -83,7 +85,7 @@ currentState :: IO PkgState
 currentState = do
   pkgs <- rawCurrentState
   time <- getZonedTime
-  pure . PkgState time . M.fromAscList $ map (\(SimplePkg n v) -> (n, v)) pkgs
+  pure . PkgState time False . M.fromAscList $ map (\(SimplePkg n v) -> (n, v)) pkgs
 
 compareStates :: PkgState -> PkgState -> StateDiff
 compareStates old curr = tcar { _toAlter = olds old curr <> _toAlter tcar }
@@ -109,7 +111,7 @@ getStateFiles = send f >>= list (throwError $ Failure restoreState_2) pure
 -- automatically.
 saveState :: (Member (Reader Settings) r, Member IO r) => Eff r ()
 saveState = do
-  ss    <- ask
+  ss <- ask
   state <- send currentState
   let filename = T.unpack . toTextIgnore $ stateCache </> dotFormat (timeOf state) <.> "json"
   send . shelly @IO $ mkdir_p stateCache

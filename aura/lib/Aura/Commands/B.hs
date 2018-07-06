@@ -1,4 +1,5 @@
-{-# LANGUAGE MultiWayIf, ViewPatterns, FlexibleContexts, TypeApplications, MonoLocalBinds #-}
+{-# LANGUAGE MultiWayIf, ViewPatterns, TupleSections #-}
+{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
 
 {-
 
@@ -49,11 +50,14 @@ cleanStates :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO 
 cleanStates (fromIntegral -> n) = do
   ss   <- ask
   stfs <- reverse <$> getStateFiles
+  (pinned, others) <- partition p <$> send (traverse (\sf -> (sf,) <$> readState sf) stfs)
   send . warn ss . cleanStates_4 (length stfs) $ langOf ss
+  when (not $ null pinned) . send . warn ss . cleanStates_6 (length pinned) $ langOf ss
   when (not $ null stfs) . send . warn ss . cleanStates_5 (toTextIgnore . filename $ head stfs) $ langOf ss
   okay <- send . optionalPrompt ss $ cleanStates_2 n
   if | not okay  -> send . warn ss . cleanStates_3 $ langOf ss
-     | otherwise -> send . shelly @IO . traverse_ rm . drop n $ stfs
+     | otherwise -> send . shelly @IO . traverse_ (rm . fst) . drop n $ others
+  where p = maybe False pinnedOf . snd
 
 listStates :: (Member (Error Failure) r, Member IO r) => Eff r ()
 listStates = getStateFiles >>= send . traverse_ (T.putStrLn . toTextIgnore)
