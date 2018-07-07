@@ -40,7 +40,6 @@ module Utilities
   , openEditor
   , ifFile
   , getSelection
-  , decompress
   ) where
 
 import           BasePrelude hiding (FilePath)
@@ -106,13 +105,6 @@ getSelection choiceLabels = do
 -- | Opens the editor of the user's choice.
 openEditor :: T.Text -> T.Text -> Sh ()
 openEditor editor file = run_ (fromText editor) [file]
-
--- | All tarballs should be of the format `.tar.gz`, so dropping 7 chars
--- should remove the extension.
-decompress :: MonadIO m => T.Text -> T.Text -> m T.Text
-decompress fp file = do
-  shelly $ run_ "bsdtar" ["-zxf", file, "-C", fp]
-  pure . T.dropEnd 7 $ file
 
 -- | If a file exists, it performs action `t` on the argument.
 -- | If the file doesn't exist, it performs `f` and returns the argument.

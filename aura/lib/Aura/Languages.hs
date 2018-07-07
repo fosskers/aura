@@ -706,24 +706,6 @@ upgradeAURPkgs_3 = \case
     Chinese    -> "没有需要升级的 AUR 包。"
     _          -> "No AUR package upgrades necessary."
 
-downloadTarballs_1 :: T.Text -> Language -> Doc AnsiStyle
-downloadTarballs_1 (bt -> p) = \case
-    Japanese   -> p <> "のソースコードの tarball をダウンロード中・・・"
-    Polish     -> "Pobieranie paczki źródłowej " <> p <> "..."
-    Croatian   -> "Preuzimanje izvornog paketa (tarball) " <> p <> "..."
-    Swedish    -> "Laddar ner " <> p <> " källkodspaket (tarball)..."
-    German     -> "Lade Quelltext (tarball) von " <> p <> " herunter..."
-    Spanish    -> "Descargando los ficheros fuente comprimidos (tarball) de " <> p <> " ..."
-    Portuguese -> "Baixando os fontes (tarball) de " <> p <> " ..."
-    French     -> "Téléchargement de l'archive de " <> p <> " en cours…"
-    Russian    -> "Загрузка исходного архива " <> p <> "..."
-    Italian    -> "Downlaod del tarball di " <> p <> " in corso..."
-    Serbian    -> "Преузимање архиве изворног кода за " <> p <> "..."
-    Norwegian  -> "Laster ned " <> p <> " kildekodepakken (tarball)..."
-    Indonesia  -> "Mengunduh tarbal untuk paket " <> p <> "..."
-    Chinese    -> "正在下载 " <> p <> " 的源文件..."
-    _          -> "Downloading " <> p <> " source tarball..."
-
 removeMakeDepsAfter_1 :: Language -> Doc AnsiStyle
 removeMakeDepsAfter_1 = \case
     Japanese   -> "あと片付け。必要ないパッケージを削除："

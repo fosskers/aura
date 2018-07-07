@@ -21,34 +21,18 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Internet
-    ( urlContents
-    , saveUrlContents ) where
+module Internet ( urlContents ) where
 
 import           BasePrelude hiding (handle)
 import qualified Data.ByteString.Lazy as L
 import           Network.HTTP.Client
 import           Network.HTTP.Types.Status (statusCode)
-import           Network.URI (unEscapeString)
-import           System.FilePath (splitFileName, (</>))
-import           System.IO (hClose, openFile, IOMode(WriteMode))
 
 ---
 
+-- TODO Move to utilities
 -- | Assumes the given URL is correctly formatted.
 urlContents :: Manager -> String -> IO (Maybe L.ByteString)
 urlContents m url = f <$> httpLbs (parseRequest_ url) m
   where f res | statusCode (responseStatus res) == 200 = Just $ responseBody res
               | otherwise = Nothing
-
--- | Fetch data from some URL, and save it to the filesystem.
-saveUrlContents :: Manager -> FilePath -> String -> IO (Maybe FilePath)
-saveUrlContents m fpath url = do
-  contents <- urlContents m url
-  case contents of
-    Nothing -> pure Nothing
-    Just c  -> do
-      handle <- openFile filePath WriteMode
-      L.hPutStr handle c *> hClose handle $> Just filePath
-          where filePath = fpath </> file
-                (_, file) = splitFileName $ unEscapeString url

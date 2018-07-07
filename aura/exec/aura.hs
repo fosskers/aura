@@ -100,7 +100,6 @@ executeOpts ops = do
         Left (AurPkgbuild ps) -> A.displayPkgbuild ps
         Left (AurSearch s)    -> A.aurPkgSearch s
         Left (AurUpgrade ps)  -> bool (trueRoot . sudo) id (switch ss DryRun) $ A.upgradeAURPkgs ps
-        Left (AurTarball ps)  -> A.downloadTarballs ps
         Left (AurJson ps)     -> A.aurJson ps
     Right (Backup o) ->
       case o of

@@ -1,8 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
 
--- | Module for connecting to the AUR servers,
--- downloading PKGBUILDs and source tarballs, and handling them.
+-- | Module for connecting to the AUR servers, downloading PKGBUILDs and package sources.
 
 {-
 
@@ -30,7 +29,6 @@ module Aura.Packages.AUR
   , aurRepo
   , isAurPackage
   , clone
-  , sourceTarball
   , aurInfo
   , aurSearch
   , pkgUrl
@@ -47,7 +45,6 @@ import           Control.Monad.Freer.Reader
 import qualified Data.Set as S
 import qualified Data.Text as T
 import           Data.Versions (versioning)
-import           Internet
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
 import           Shelly (Sh, run_)
@@ -106,21 +103,6 @@ clone b = do
   case ec of
     (ExitFailure _) -> pure Nothing
     ExitSuccess     -> pure . Just . T.unpack $ bldBaseNameOf b
-
-------------------
--- SOURCE TARBALLS
-------------------
-sourceTarball :: Manager             -- ^ The request connection Manager.
-              -> FilePath            -- ^ Where to save the tarball.
-              -> T.Text              -- ^ Package name.
-              -> IO (Maybe FilePath) -- ^ Saved tarball location.
-sourceTarball m path pkg = do
-  i <- info m [pkg]
-  case i of
-    [] -> pure Nothing
-    (i':_) -> case urlPathOf i' of
-      Nothing -> pure Nothing
-      Just p  -> saveUrlContents m path . T.unpack $ aurLink <> p
 
 ------------
 -- RPC CALLS

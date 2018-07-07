@@ -12,6 +12,14 @@ in overall code size.
 #### Dependency Handling
 
 - Dependency resolution is now much faster and **handles split packages correctly**.
+  As such, the following troublesome packages now build correctly:
+  - `android-sdk`
+  - `backintime`
+  - `clion`
+  - `libc++`
+  - `mysql-connector-c++`
+  - `telegram-desktop-dev`
+  - `zoom`
 - Dependency provider selection for AUR packages.
   - Example: `cron` is a legal dependency to specify, but there exists no package
     with that name. `cronie` and `fcron` both "provide" `cron`, and now the user
@@ -69,6 +77,7 @@ in overall code size.
 - Various CLI flag changes:
   - `--auradebug` is now just `--debug`, matching Pacman.
   - `--aurignore` is now just `--ignore`, matching Pacman.
+  - `-Aw` has been removed.
   - `-y` no longer works with `-A`. Perform an `-Sy` ahead of time instead.
   - `-O` no longer accepts arguments to adopt packages, it only displays current
     orphans. Use `-O --adopt` instead for the old behaviour.
@@ -82,13 +91,6 @@ in overall code size.
 - `-Aq` no longer fails at the package installation step.
 - Ctrl+C at certain moments no longer preserves the Pacman lock file.
 - `makepkg` output is no longer coloured green.
-- Dependency resolution is now more robust, and split packages are handled correctly.
-  As such, the following troublesome packages now build correctly:
-  - `android-sdk`
-  - `backintime`
-  - `mysql-connector-c++`
-  - `telegram-desktop-dev`
-  - `zoom`
 
 ## 1.4.0
 - *Dependency resolution vastly improved.* We removed the Bash parser that used

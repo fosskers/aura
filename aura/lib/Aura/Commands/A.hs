@@ -30,7 +30,6 @@ module Aura.Commands.A
   , aurPkgInfo
   , aurPkgSearch
   , displayPkgDeps
-  , downloadTarballs
   , displayPkgbuild
   , aurJson
  ) where
@@ -60,7 +59,6 @@ import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions
 import           Linux.Arch.Aur
-import           Shelly (whenM, pwd, shelly, toTextIgnore)
 
 ---
 
@@ -163,17 +161,6 @@ renderSearch ss r (i, e) = searchResult
 
 displayPkgDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set T.Text -> Eff r ()
 displayPkgDeps = I.displayPkgDeps installOptions
-
-downloadTarballs :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r ()
-downloadTarballs pkgs = do
-  currDir <- T.unpack . toTextIgnore <$> send (shelly @IO pwd)
-  traverse_ (downloadTBall currDir) pkgs
-    where downloadTBall path pkg = whenM (isAurPackage pkg) $ do
-            ss <- ask
-            let manager = managerOf ss
-                lang    = langOf ss
-            send . notify ss $ downloadTarballs_1 pkg lang
-            void . send $ sourceTarball manager path pkg
 
 displayPkgbuild :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r ()
 displayPkgbuild ps = do
