@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts, MonoLocalBinds, TupleSections #-}
+
 -- Library for handling package dependencies and version conflicts.
 
 {-
@@ -63,7 +64,7 @@ resolveDeps' ss tv repo ps = concat <$> mapConcurrently f ps
       case M.lookup (pkgNameOf p) m of
         Just _  -> pure $ pure []  -- Bail early, we've checked this package already.
         Nothing -> modifyTVar' tv (M.insert (pkgNameOf p) p) $> do
-          deps <- fmap catMaybes . mapConcurrently (\d -> bool (Just d) Nothing <$> isSatisfied d) $ pkgDepsOf p
+          deps <- fmap catMaybes . traverse (\d -> bool (Just d) Nothing <$> isSatisfied d) $ pkgDepsOf p
           (bads, goods) <- repoLookup repo ss . S.fromList $ map depNameOf deps
 
           let depsMap     = M.fromList $ map (depNameOf &&& id) deps
