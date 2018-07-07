@@ -32,6 +32,7 @@ module Aura.Build
 import           Aura.Core
 import           Aura.Languages
 import           Aura.MakePkg
+import           Aura.Packages.AUR (clone)
 import           Aura.Pacman (pacman)
 import           Aura.Settings
 import           Aura.Types
@@ -100,7 +101,7 @@ build' ss p = do
 getBuildScripts :: Buildable -> User -> Sh (Either Failure FilePath)
 getBuildScripts pkg user = do
   currDir <- toTextIgnore <$> pwd
-  scriptsDir <- chown user currDir [] *> liftIO (buildScripts pkg (T.unpack currDir))
+  scriptsDir <- chown user currDir [] *> clone pkg
   case scriptsDir of
     Nothing -> pure . Left . Failure . buildFail_7 $ bldNameOf pkg
     Just sd -> do

@@ -173,11 +173,7 @@ data Buildable = Buildable
     , bldDepsOf     :: [Dep]
     , bldVersionOf  :: Maybe Versioning
     -- | Did the user select this package, or is it being built as a dep?
-    , isExplicit    :: Bool
-    -- | Fetch and extract the source code corresponding to the given package.
-    -- Expects a directory in which to place the scripts, and yields the path
-    -- they were successfully extracted to.
-    , buildScripts  :: FilePath -> IO (Maybe FilePath) }
+    , isExplicit    :: Bool }
 
 data Language = English
               | Japanese

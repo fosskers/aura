@@ -29,6 +29,7 @@ module Aura.Packages.AUR
   ( aurLookup
   , aurRepo
   , isAurPackage
+  , clone
   , sourceTarball
   , aurInfo
   , aurSearch
@@ -49,8 +50,9 @@ import           Data.Versions (versioning)
 import           Internet
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
+import           Shelly (Sh, run_)
 import           System.FilePath ((</>))
-import           Utilities (decompress, list)
+import           Utilities (list, quietSh)
 
 ---
 
@@ -81,9 +83,7 @@ buildable m ai = do
       , bldProvidesOf = list (Provides $ aurNameOf ai) (Provides . head) $ providesOf ai
       , bldDepsOf     = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai  -- TODO bad mapMaybe?
       , bldVersionOf  = either (const Nothing) Just . versioning $ aurVersionOf ai
-      , isExplicit    = False
-      , buildScripts  = f }
-    where f fp = sourceTarball m fp (pkgBaseOf ai) >>= traverse (fmap T.unpack . decompress (T.pack fp) . T.pack)
+      , isExplicit    = False }
 
 isAurPackage :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r Bool
 isAurPackage name = asks managerOf >>= \m -> isJust <$> send (pkgbuild' @IO m name)
@@ -96,6 +96,16 @@ aurLink = "https://aur.archlinux.org"
 
 pkgUrl :: T.Text -> T.Text
 pkgUrl pkg = T.pack $ T.unpack aurLink </> "packages" </> T.unpack pkg
+
+-------------------
+-- SOURCES FROM GIT
+-------------------
+clone :: Buildable -> Sh (Maybe FilePath)
+clone b = do
+  (ec, _) <- quietSh $ run_ "git" ["clone", "--depth", "1", aurLink <> "/" <> bldBaseNameOf b <> ".git"]
+  case ec of
+    (ExitFailure _) -> pure Nothing
+    ExitSuccess     -> pure . Just . T.unpack $ bldBaseNameOf b
 
 ------------------
 -- SOURCE TARBALLS
