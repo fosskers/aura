@@ -29,6 +29,8 @@ module Utilities
   , replaceByPatt, searchLines
     -- * Lists
   , list
+    -- * Network
+  , urlContents
     -- * Shell
   , Environment(..), User(..)
   , csi, cursorUpLineCode, hideCursor, showCursor
@@ -44,9 +46,12 @@ module Utilities
 
 import           BasePrelude hiding (FilePath)
 import           Control.Monad.Trans (MonadIO)
+import qualified Data.ByteString.Lazy as L
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import           Network.HTTP.Client
+import           Network.HTTP.Types.Status (statusCode)
 import           Shelly
 import           System.IO hiding (FilePath)
 
@@ -110,6 +115,15 @@ openEditor editor file = run_ (fromText editor) [file]
 -- | If the file doesn't exist, it performs `f` and returns the argument.
 ifFile :: MonadIO m => (a -> m a) -> m b -> FilePath -> a -> m a
 ifFile t f file x = shelly (test_f file) >>= bool (f $> x) (t x)
+
+----------
+-- NETWORK
+----------
+ -- | Assumes the given URL is correctly formatted.
+urlContents :: Manager -> String -> IO (Maybe L.ByteString)
+urlContents m url = f <$> httpLbs (parseRequest_ url) m
+  where f res | statusCode (responseStatus res) == 200 = Just $ responseBody res
+              | otherwise = Nothing
 
 --------
 -- SHELL

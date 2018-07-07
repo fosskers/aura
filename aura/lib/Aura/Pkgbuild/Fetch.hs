@@ -35,10 +35,10 @@ import           Data.Text
 import           Data.Text.Encoding.Error
 import qualified Data.Text.Lazy as TL
 import           Data.Text.Lazy.Encoding
-import           Internet
 import           Network.HTTP.Client (Manager)
 import           Network.URI (escapeURIString, isUnescapedInURIComponent)
 import           System.FilePath ((</>))
+import           Utilities (urlContents)
 
 ---
 
