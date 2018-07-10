@@ -36,6 +36,7 @@ import           Aura.Cache (Cache(..), cacheContents)
 import           Aura.Colour
 import           Aura.Core
 import           Aura.Dependencies
+import           Aura.Diff (diff)
 import           Aura.Languages
 import           Aura.Pacman
 import           Aura.Pkgbuild.Base
@@ -43,7 +44,7 @@ import           Aura.Pkgbuild.Records
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
-import           BasePrelude hiding (FilePath)
+import           BasePrelude hiding (FilePath, diff)
 import           Control.Concurrent.Async
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
@@ -52,7 +53,7 @@ import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
-import           Shelly (shelly, toTextIgnore, (</>))
+import           Shelly (shelly, toTextIgnore, (</>), withTmpDir, cd, writefile)
 import           System.IO (hFlush, stdout)
 
 ---
@@ -102,7 +103,7 @@ install' opts pkgs = do
            if | not continue -> throwError $ Failure install_4
               | otherwise    -> do
                   repoInstall repoPkgs
-                  send $ storePkgbuilds buildPkgs
+                  send . storePkgbuilds $ concat buildPkgs
                   buildAndInstall buildPkgs
 
 -- | Give anything that was installed as a dependency the /Install Reason/ of
@@ -203,11 +204,9 @@ pkgbuildDiffs ps = ask >>= check
             isStored <- send $ hasPkgbuildStored name
             if not isStored
                then send . warn ss $ reportPkgbuildDiffs_1 name lang
-               else do
-                 let new = _pkgbuild $ pkgbuildOf p
-                 old <- send $ readPkgbuild name
-                 case comparePkgbuilds old new of
-                   Nothing -> send . notify ss $ reportPkgbuildDiffs_2 name lang
-                   Just d  -> send $ do
-                      warn ss $ reportPkgbuildDiffs_3 name lang
-                      T.putStrLn d
+               else send . shelly @IO . withTmpDir $ \dir -> do
+                 cd dir
+                 let new = dir </> ("new.pb" :: T.Text)
+                 writefile new . _pkgbuild $ pkgbuildOf p
+                 liftIO . warn ss $ reportPkgbuildDiffs_3 name lang
+                 diff ss (pkgbuildPath name) new

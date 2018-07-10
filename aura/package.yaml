@@ -57,7 +57,6 @@ library:
     - async >= 2.1 && < 2.3
     - aur >= 6.0.1 && < 7
     - bytestring
-    - Diff >= 0.3 && < 0.4
     - filepath
     - http-types >= 0.9 && < 0.13
     - megaparsec >= 6.4 && < 6.6

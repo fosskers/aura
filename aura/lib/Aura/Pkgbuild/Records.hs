@@ -25,31 +25,21 @@ module Aura.Pkgbuild.Records
   ( storePkgbuilds
   , hasPkgbuildStored
   , readPkgbuild
-  , comparePkgbuilds
   ) where
 
 import           Aura.Pkgbuild.Base
 import           Aura.Types
 import           BasePrelude
-import           Data.Algorithm.Diff (getGroupedDiff)
-import           Data.Algorithm.DiffOutput (ppDiff)
 import qualified Data.Text as T
 import           Shelly (Sh, writefile, test_f, shelly, readfile, mkdir_p)
-import           Utilities (list)
 
 ---
-
-comparePkgbuilds :: T.Text -> T.Text -> Maybe T.Text
-comparePkgbuilds old new = list Nothing (p . T.strip . T.pack . ppDiff) $ getGroupedDiff old' new'
-  where old' = map T.unpack $ T.lines old
-        new' = map T.unpack $ T.lines new
-        p t  = bool (Just t) Nothing $ T.null t
 
 hasPkgbuildStored :: T.Text -> IO Bool
 hasPkgbuildStored = shelly . test_f . pkgbuildPath
 
-storePkgbuilds :: [[Buildable]] -> IO ()
-storePkgbuilds = shelly . traverse_ (\p -> writePkgbuild (bldNameOf p) (_pkgbuild $ pkgbuildOf p)) . concat
+storePkgbuilds :: [Buildable] -> IO ()
+storePkgbuilds = shelly . traverse_ (\p -> writePkgbuild (bldNameOf p) (_pkgbuild $ pkgbuildOf p))
 
 readPkgbuild :: T.Text -> IO T.Text
 readPkgbuild = shelly . readfile . pkgbuildPath
