@@ -52,8 +52,8 @@ cleanStates (fromIntegral -> n) = do
   stfs <- reverse <$> getStateFiles
   (pinned, others) <- partition p <$> send (traverse (\sf -> (sf,) <$> readState sf) stfs)
   send . warn ss . cleanStates_4 (length stfs) $ langOf ss
-  when (not $ null pinned) . send . warn ss . cleanStates_6 (length pinned) $ langOf ss
-  when (not $ null stfs) . send . warn ss . cleanStates_5 (toTextIgnore . filename $ head stfs) $ langOf ss
+  unless (null pinned) . send . warn ss . cleanStates_6 (length pinned) $ langOf ss
+  unless (null stfs) . send . warn ss . cleanStates_5 (toTextIgnore . filename $ head stfs) $ langOf ss
   okay <- send . optionalPrompt ss $ cleanStates_2 n
   if | not okay  -> send . warn ss . cleanStates_3 $ langOf ss
      | otherwise -> send . shelly @IO . traverse_ (rm . fst) . drop n $ others
