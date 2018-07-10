@@ -22,7 +22,21 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Aura.Core where
+module Aura.Core
+  ( -- * Types
+    Repository(..)
+  , rethrow
+    -- * User Privileges
+  , sudo, trueRoot
+    -- * Querying the Package Database
+  , foreignPackages, orphans, develPkgs
+  , isSatisfied, isInstalled
+  , checkDBLock
+    -- * Misc. Package Handling
+  , removePkgs, partitionPkgs
+    -- * IO
+  , notify, warn, scold, report
+  ) where
 
 import           Aura.Colour
 import           Aura.Languages
@@ -73,6 +87,7 @@ partitionPkgs = first concat . unzip . map (partitionEithers . map (toEither . p
 -----------
 -- THE WORK
 -----------
+-- | Lift a common return type into the `Eff` world. Usually used after a `pacman` call.
 rethrow :: (Member (Error a) r, Member IO r) => IO (Either a b) -> Eff r b
 rethrow = send >=> either throwError pure
 
@@ -93,9 +108,11 @@ trueRoot action = ask >>= \ss ->
 foreignPackages :: IO (S.Set SimplePkg)
 foreignPackages = S.fromList . mapMaybe simplepkg' . T.lines <$> pacmanOutput ["-Qm"]
 
+-- | Packages marked as a dependency, yet are required by no other package.
 orphans :: IO [T.Text]
 orphans = T.lines <$> pacmanOutput ["-Qqdt"]
 
+-- | Any package whose name is suffixed by git, hg, svn, darcs, cvs, or bzr.
 develPkgs :: IO (S.Set T.Text)
 develPkgs = S.filter isDevelPkg . S.map _spName <$> foreignPackages
   where isDevelPkg pkg = any (`T.isSuffixOf` pkg) suffixes
@@ -106,6 +123,7 @@ develPkgs = S.filter isDevelPkg . S.map _spName <$> foreignPackages
 isInstalled :: T.Text -> IO (Maybe T.Text)
 isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", pkg]
 
+-- | An @-Rsu@ call.
 removePkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => [T.Text] -> Eff r ()
 removePkgs []   = pure ()
 removePkgs pkgs = do
@@ -133,12 +151,15 @@ checkDBLock ss = do
 -- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`
 -------
 
+-- | Print some message in green with Aura flair.
 notify :: Settings -> Doc AnsiStyle -> IO ()
 notify ss = putStrLnA ss . green
 
+-- | Print some message in yellow with Aura flair.
 warn :: Settings -> Doc AnsiStyle -> IO ()
 warn ss = putStrLnA ss . yellow
 
+-- | Print some message in red with Aura flair.
 scold :: Settings -> Doc AnsiStyle -> IO ()
 scold ss = putStrLnA ss . red
 

@@ -131,7 +131,6 @@ dotFormat (ZonedTime t _) = intercalate "." items
           mnths = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ]
 
 -- | Does its best to restore a state chosen by the user.
--- restoreState :: Aura (Either Failure ())
 restoreState :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Eff r ()
 restoreState = do
   sfs <- getStateFiles

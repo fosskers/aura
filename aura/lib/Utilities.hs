@@ -119,7 +119,7 @@ ifFile t f file x = shelly (test_f file) >>= bool (f $> x) (t x)
 ----------
 -- NETWORK
 ----------
- -- | Assumes the given URL is correctly formatted.
+-- | Assumes the given URL is correctly formatted.
 urlContents :: Manager -> String -> IO (Maybe L.ByteString)
 urlContents m url = f <$> httpLbs (parseRequest_ url) m
   where f res | statusCode (responseStatus res) == 200 = Just $ responseBody res
