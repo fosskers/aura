@@ -1,28 +1,14 @@
 {-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns, MultiWayIf, OverloadedStrings #-}
 
--- | Handles all `-A` operations
-
-{-
-
-Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
-
-This file is part of Aura.
-
-Aura is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Aura is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Aura.  If not, see <http://www.gnu.org/licenses/>.
-
--}
+-- |
+-- Module    : Aura.Commands.A
+-- Copyright : (c) Colin Woodbury, 2012 - 2018
+-- License   : GPL3
+-- Maintainer: Colin Woodbury <colin@fosskers.ca>
+--
+-- Handle all @-A@ flags - those which involve viewing and building packages
+-- from the AUR.
 
 module Aura.Commands.A
   ( install
@@ -32,7 +18,7 @@ module Aura.Commands.A
   , displayPkgDeps
   , displayPkgbuild
   , aurJson
- ) where
+  ) where
 
 import           Aura.Colour
 import           Aura.Core
@@ -67,9 +53,11 @@ installOptions = I.InstallOptions { I.label         = "AUR"
                                   , I.installLookup = aurLookup
                                   , I.repository    = pacmanRepo <> aurRepo }
 
+-- | The result of @-A@.
 install :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set T.Text -> Eff r ()
 install = I.install installOptions
 
+-- | The result of @-Au@.
 upgradeAURPkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set T.Text -> Eff r ()
 upgradeAURPkgs pkgs = do
   ss <- ask
@@ -109,6 +97,7 @@ develPkgCheck :: (Member (Reader Settings) r, Member IO r) => Eff r (S.Set T.Tex
 develPkgCheck = ask >>= \ss ->
   if switch ss RebuildDevel then send develPkgs else pure S.empty
 
+-- | The result of @-Ai@.
 aurPkgInfo :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r ()
 aurPkgInfo = aurInfo . toList >=> traverse_ displayAurPkgInfo
 
@@ -132,6 +121,7 @@ renderAurPkgInfo ss ai = dtot . colourCheck ss $ entrify ss fields entries
                     , yellow . pretty . T.pack . printf "%0.2f" $ popularityOf ai
                     , maybe "(null)" pretty $ aurDescriptionOf ai ]
 
+-- | The result of @-As@.
 aurPkgSearch :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r ()
 aurPkgSearch regex = do
   ss <- ask
@@ -159,9 +149,11 @@ renderSearch ss r (i, e) = searchResult
             Just _  -> red . pretty $ aurVersionOf i
             Nothing -> green . pretty $ aurVersionOf i
 
+-- | The result of @-Ad@.
 displayPkgDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set T.Text -> Eff r ()
 displayPkgDeps = I.displayPkgDeps installOptions
 
+-- | The result of @-Ap@.
 displayPkgbuild :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r ()
 displayPkgbuild ps = do
   man <- asks managerOf
@@ -173,6 +165,7 @@ isntMostRecent :: (AurInfo, Versioning) -> Bool
 isntMostRecent (ai, v) = trueVer > Just v
   where trueVer = either (const Nothing) Just . versioning $ aurVersionOf ai
 
+-- | Similar to @-Ai@, but yields the raw data as JSON instead.
 aurJson :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r ()
 aurJson ps = do
   m <- asks managerOf

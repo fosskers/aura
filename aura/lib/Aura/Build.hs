@@ -1,28 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
 
-{-
-
-Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
-
-This file is part of Aura.
-
-Aura is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Aura is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Aura.  If not, see <http://www.gnu.org/licenses/>.
-
--}
-
--- Agnostically builds packages. They can be either AUR or ABS.
+-- |
+-- Module    : Aura.Build
+-- Copyright : (c) Colin Woodbury, 2012 - 2018
+-- License   : GPL3
+-- Maintainer: Colin Woodbury <colin@fosskers.ca>
+--
+-- Agnostically builds packages, regardless of original source.
 
 module Aura.Build
   ( installPkgFiles
@@ -54,7 +39,7 @@ import           Utilities
 srcPkgStore :: FilePath
 srcPkgStore = "/var/cache/aura/src"
 
--- | Expects files like: /var/cache/pacman/pkg/*.pkg.tar.xz
+-- | Expects files like: \/var\/cache\/pacman\/pkg\/*.pkg.tar.xz
 installPkgFiles :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => [T.Text] -> Eff r ()
 installPkgFiles []    = pure ()
 installPkgFiles files = do
@@ -62,7 +47,7 @@ installPkgFiles files = do
   send . shelly @IO $ checkDBLock ss
   rethrow . pacman $ ["-U"] <> files <> asFlag (commonConfigOf ss)
 
--- | All building occurs within temp directories in the package cache,
+-- | All building occurs within temp directories,
 -- or in a location specified by the user with flags.
 buildPackages :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
   [Buildable] -> Eff r [FilePath]
