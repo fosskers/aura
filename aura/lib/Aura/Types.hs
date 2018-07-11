@@ -36,7 +36,7 @@ module Aura.Types
     -- * Language
   , Language(..)
     -- * Other Wrappers
-  , PackagePath(..), sortPkgs
+  , PackagePath(..)
   , Pkgbuild(..)
   , Provides(..)
   ) where
@@ -145,17 +145,18 @@ simplepkg' = either (const Nothing) Just . parse parser "name-and-version"
   where parser = SimplePkg <$> takeWhile1P Nothing (/= ' ') <*> (space *> versioning')
 
 -- | Filepaths like:
---   * linux-3.2.14-1-x86_64.pkg.tar.xz
---   * wine-1.4rc6-1-x86_64.pkg.tar.xz
---   * ruby-1.9.3_p125-4-x86_64.pkg.tar.xz
-newtype PackagePath = PackagePath { _pkgpath :: T.Text } deriving (Eq, Ord)
+--
+--   * \/var\/cache\/pacman\/pkg\/linux-3.2.14-1-x86_64.pkg.tar.xz
+--   * \/var\/cache\/pacman\/pkg\/wine-1.4rc6-1-x86_64.pkg.tar.xz
+--   * \/var\/cache\/pacman\/pkg\/ruby-1.9.3_p125-4-x86_64.pkg.tar.xz
+newtype PackagePath = PackagePath { _pkgpath :: T.Text } deriving (Eq)
 
-sortPkgs :: [PackagePath] -> [PackagePath]
-sortPkgs = sortBy verNums
-    where verNums a b | name a /= name b = compare a b  -- Different pkgs
-                      | otherwise        = compare (ver a) (ver b)
-          name = fmap _spName . simplepkg
-          ver  = fmap _spVersion . simplepkg
+instance Ord PackagePath where
+  compare a b | nameA /= nameB = compare (_pkgpath a) (_pkgpath b)
+              | otherwise      = compare verA verB
+    where (nameA, verA) = f a
+          (nameB, verB) = f b
+          f = (fmap _spName &&& fmap _spVersion) . simplepkg
 
 -- | The contents of a PKGBUILD file.
 newtype Pkgbuild = Pkgbuild { _pkgbuild :: T.Text }

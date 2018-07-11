@@ -69,7 +69,7 @@ searchCache :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r ()
 searchCache ps = do
   ss <- ask
   matches <- send . shelly @IO $ cacheMatches ss ps
-  send . traverse_ (T.putStrLn . _pkgpath) $ sortPkgs matches
+  send . traverse_ (T.putStrLn . _pkgpath) $ sort matches
 
 -- | The destination folder must already exist for the back-up to begin.
 backupCache :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => FilePath -> Eff r ()
@@ -144,6 +144,6 @@ cleanNotSaved = do
 
 -- | Typically takes the contents of the package cache as an argument.
 groupByName :: [PackagePath] -> [[PackagePath]]
-groupByName pkgs = groupBy sameBaseName $ sortPkgs pkgs
+groupByName pkgs = groupBy sameBaseName $ sort pkgs
     where sameBaseName a b = baseName a == baseName b
           baseName p = _spName <$> simplepkg p
