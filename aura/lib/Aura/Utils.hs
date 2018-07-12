@@ -10,12 +10,12 @@
 
 module Aura.Utils
   ( -- * Strings
-    Regex(..), Pattern(..)
+    Pattern(..)
   , replaceByPatt, searchLines
     -- * Network
   , urlContents
     -- * Shell
-  , csi, cursorUpLineCode, hideCursor, showCursor, raiseCursorBy, raiseCursorBy'
+  , csi, cursorUpLineCode, hideCursor, showCursor, raiseCursorBy
   , getTrueUser, getEditor, getLocale
   , hasRootPriv, isTrueRoot
   , quietSh, loudSh, exitCode
@@ -55,11 +55,8 @@ import           System.IO (stdout, hFlush)
 -- STRING
 ---------
 
+-- | For regex-like find-and-replace in some `T.Text`.
 data Pattern = Pattern { _pattern :: T.Text, _target :: T.Text }
-
--- TODO This holding a regex pattern isn't respected anywhere.
--- The only two places that use it are calling `T.infixOf`.
-newtype Regex = Regex T.Text
 
 -- | Replaces a (p)attern with a (t)arget in a line if possible.
 replaceByPatt :: [Pattern] -> T.Text -> T.Text
@@ -71,8 +68,9 @@ replaceByPatt (Pattern p t : ps) l = case T.breakOn p l of
   -- so we need to drop it first.
   (cs, rest) -> replaceByPatt ps (cs <> t <> T.drop (T.length p) rest)
 
-searchLines :: Regex -> [T.Text] -> [T.Text]
-searchLines (Regex pat) = filter (T.isInfixOf pat)
+-- | Find lines which contain some given `T.Text`.
+searchLines :: T.Text -> [T.Text] -> [T.Text]
+searchLines pat = filter (T.isInfixOf pat)
 
 -----
 -- IO
@@ -117,6 +115,7 @@ urlContents m url = f <$> httpLbs (parseRequest_ url) m
 csi :: [Int] -> T.Text -> T.Text
 csi args code = "\ESC[" <> T.intercalate ";" (map (T.pack . show) args) <> code
 
+-- | Terminal code for raising the cursor.
 cursorUpLineCode :: Int -> T.Text
 cursorUpLineCode n = csi [n] "F"
 
@@ -148,6 +147,7 @@ getTrueUser env | isTrueRoot env  = Just $ User "root"
                 | hasRootPriv env = User <$> M.lookup "SUDO_USER" env
                 | otherwise       = User <$> M.lookup "USER" env
 
+-- | Is the current user of Aura the true @root@ user, and not just a sudo user?
 isTrueRoot :: Environment -> Bool
 isTrueRoot env = M.lookup "USER" env == Just "root" && not (M.member "SUDO_USER" env)
 
@@ -168,9 +168,11 @@ getLocale env = fromMaybe "C" . asum $ map (`M.lookup` env) ["LC_ALL", "LC_MESSA
 chown :: User -> T.Text -> [T.Text] -> Sh ()
 chown (User user) pth args = void . quietSh $ run_ "chown" (args <> [user, pth])
 
+-- | Hide the cursor in a terminal.
 hideCursor :: IO ()
 hideCursor = T.putStr hideCursorCode
 
+-- | Restore a cursor to visiblity in the terminal.
 showCursor :: IO ()
 showCursor = T.putStr showCursorCode
 
@@ -180,11 +182,9 @@ hideCursorCode = csi [] "?25l"
 showCursorCode :: T.Text
 showCursorCode = csi [] "?25h"
 
+-- | Raise the cursor by @n@ lines.
 raiseCursorBy :: Int -> IO ()
-raiseCursorBy = T.putStr . raiseCursorBy'
-
-raiseCursorBy' :: Int -> T.Text
-raiseCursorBy' = cursorUpLineCode
+raiseCursorBy = T.putStr . cursorUpLineCode
 
 ----------------
 -- CUSTOM OUTPUT

@@ -47,7 +47,7 @@ searchLogFile :: Settings -> T.Text -> IO ()
 searchLogFile ss input = do
   let pth = either id id . logPathOf $ commonConfigOf ss
   logFile <- T.lines <$> shelly (readfile pth)
-  traverse_ T.putStrLn $ searchLines (Regex input) logFile
+  traverse_ T.putStrLn $ searchLines input logFile
 
 -- | The result of @-Li@.
 logInfoOnPkg :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r ()

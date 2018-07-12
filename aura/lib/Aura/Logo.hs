@@ -99,7 +99,7 @@ renderPill pad = padString pad <$> pill
 renderPills :: Int -> [T.Text]
 renderPills numOfPills = take numOfPills pillPostitions >>= render
     where pillPostitions = [17, 12, 7]
-          render pos = renderPill pos <> [raiseCursorBy' 5]
+          render pos = renderPill pos <> [ cursorUpLineCode 5 ]
 
 renderPacmanHead :: Settings -> Int -> MouthState -> [T.Text]
 renderPacmanHead ss pad Open   = map (padString pad) $ openMouth ss
