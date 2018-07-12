@@ -25,7 +25,6 @@ import           BasePrelude hiding (FilePath)
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified Data.Text as T
-import           Filesystem.Path (filename)
 import           Shelly
 
 ---
@@ -46,7 +45,7 @@ cache = Cache . M.fromList . mapMaybe (\p -> (,p) <$> simplepkg p)
 
 -- | Given a path to the package cache, yields its contents in a usable form.
 cacheContents :: FilePath -> Sh Cache
-cacheContents = fmap (cache . map (PackagePath . toTextIgnore . filename)) . ls
+cacheContents = fmap (cache . map PackagePath) . ls
 
 -- | All packages from a given `S.Set` who have a copy in the cache.
 pkgsInCache :: Settings -> S.Set T.Text -> Sh (S.Set T.Text)
@@ -58,4 +57,4 @@ pkgsInCache ss ps = do
 cacheMatches :: Settings -> T.Text -> Sh [PackagePath]
 cacheMatches ss input = do
   c <- cacheContents . either id id . cachePathOf $ commonConfigOf ss
-  pure . filter (T.isInfixOf input . _pkgpath) . M.elems $ _cache c
+  pure . filter (T.isInfixOf input . toTextIgnore . _pkgpath) . M.elems $ _cache c

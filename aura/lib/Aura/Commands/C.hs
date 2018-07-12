@@ -54,6 +54,8 @@ downgradePackages pkgs =
       choices <- traverse (getDowngradeChoice cache) $ toList reals
       rethrow . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (toTextIgnore . (cachePath </>)) choices
 
+-- | For a given package, get a choice from the user about which version of it to
+-- downgrade to.
 getDowngradeChoice :: (Member (Reader Settings) r, Member IO r) => Cache -> T.Text -> Eff r T.Text
 getDowngradeChoice cache pkg = do
   let choices = getChoicesFromCache cache pkg
@@ -63,13 +65,13 @@ getDowngradeChoice cache pkg = do
 
 getChoicesFromCache :: Cache -> T.Text -> [T.Text]
 getChoicesFromCache (Cache cache) pkg = sort . mapMaybe f $ M.toList cache
-  where f (SimplePkg pn _, pth) = bool Nothing (Just $ _pkgpath pth) $ pkg == pn
+  where f (SimplePkg pn _, pth) = bool Nothing (Just . toTextIgnore $ _pkgpath pth) $ pkg == pn
 
 searchCache :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r ()
 searchCache ps = do
   ss <- ask
   matches <- send . shelly @IO $ cacheMatches ss ps
-  send . traverse_ (T.putStrLn . _pkgpath) $ sort matches
+  send . traverse_ (T.putStrLn . toTextIgnore . _pkgpath) $ sort matches
 
 -- | The destination folder must already exist for the back-up to begin.
 backupCache :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => FilePath -> Eff r ()
@@ -99,10 +101,9 @@ copyAndNotify :: (Member (Reader Settings) r, Member IO r) => FilePath -> [Packa
 copyAndNotify _ [] _ = pure ()
 copyAndNotify dir (PackagePath p : ps) n = do
   ss <- ask
-  cachePath <- asks (either id id . cachePathOf . commonConfigOf)
   send $ raiseCursorBy 1
   send . warn ss . copyAndNotify_1 n $ langOf ss
-  send . shelly @IO $ cp (cachePath </> p) (dir </> p)
+  send . shelly @IO $ cp p dir
   copyAndNotify dir ps $ n + 1
 
 -- | Keeps a certain number of package files in the cache according to
@@ -125,8 +126,7 @@ clean toSave = do
   let !files    = M.elems cache
       grouped   = take toSave . reverse <$> groupByName files
       toRemove  = files \\ fold grouped
-      filePaths = (\(PackagePath p) -> cachePath </> p) <$> toRemove
-  send . shelly @IO $ traverse_ rm filePaths
+  send . shelly @IO $ traverse_ rm $ map _pkgpath toRemove
 
 -- | Only package files with a version not in any PkgState will be
 -- removed.
@@ -140,7 +140,7 @@ cleanNotSaved = do
   (Cache cache)  <- send . shelly @IO $ cacheContents path
   let duds = M.filterWithKey (\p _ -> any (inState p) states) cache
   whenM (send . optionalPrompt ss $ cleanNotSaved_2 $ M.size duds) $
-    send $ shelly @IO $ traverse_ rm (map (\(PackagePath p) -> path </> p) $ M.elems duds)
+    send . shelly @IO . traverse_ rm . map _pkgpath $ M.elems duds
 
 -- | Typically takes the contents of the package cache as an argument.
 groupByName :: [PackagePath] -> [[PackagePath]]

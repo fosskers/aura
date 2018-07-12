@@ -162,6 +162,4 @@ reinstallAndRemove down remo
   | null down = remove
   | otherwise = reinstall *> remove
   where remove    = rethrow . pacman $ "-R" : remo
-        reinstall = do
-          pth <- asks (either id id . cachePathOf . commonConfigOf)
-          rethrow . pacman $ "-U" : map (toTextIgnore . (\pp -> pth </> _pkgpath pp)) down
+        reinstall = rethrow . pacman $ "-U" : map (toTextIgnore . _pkgpath) down

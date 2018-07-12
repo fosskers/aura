@@ -40,22 +40,22 @@ srcPkgStore :: FilePath
 srcPkgStore = "/var/cache/aura/src"
 
 -- | Expects files like: \/var\/cache\/pacman\/pkg\/*.pkg.tar.xz
-installPkgFiles :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => [T.Text] -> Eff r ()
+installPkgFiles :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => [PackagePath] -> Eff r ()
 installPkgFiles []    = pure ()
 installPkgFiles files = do
   ss <- ask
   send . shelly @IO $ checkDBLock ss
-  rethrow . pacman $ ["-U"] <> files <> asFlag (commonConfigOf ss)
+  rethrow . pacman $ ["-U"] <> map (toTextIgnore . _pkgpath) files <> asFlag (commonConfigOf ss)
 
 -- | All building occurs within temp directories,
 -- or in a location specified by the user with flags.
 buildPackages :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  [Buildable] -> Eff r [FilePath]
+  [Buildable] -> Eff r [PackagePath]
 buildPackages = fmap concat . traverse build
 
 -- | Handles the building of Packages. Fails nicely.
 -- Assumed: All dependencies are already installed.
-build :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Buildable -> Eff r [FilePath]
+build :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Buildable -> Eff r [PackagePath]
 build p = do
   ss     <- ask
   send $ notify ss (buildPackages_1 (bldNameOf p) (langOf ss)) *> hFlush stdout
@@ -64,7 +64,7 @@ build p = do
 
 -- | Should never throw a Shelly Exception. In theory all errors
 -- will come back via the @Language -> String@ function.
-build' :: Settings -> Buildable -> Sh (Either Failure [FilePath])
+build' :: Settings -> Buildable -> Sh (Either Failure [PackagePath])
 build' ss p = do
   let pth = buildPathOf $ buildConfigOf ss
   cd pth
@@ -112,8 +112,8 @@ buildFail p (Failure err) = do
   bool (throwError $ Failure buildFail_5) (pure []) response
 
 -- | Moves a file to the pacman package cache and returns its location.
-moveToCachePath :: Settings -> FilePath -> Sh FilePath
-moveToCachePath ss p = cp p newName $> newName
+moveToCachePath :: Settings -> FilePath -> Sh PackagePath
+moveToCachePath ss p = cp p newName $> PackagePath newName
   where newName = pth </> filename p
         pth     = either id id . cachePathOf $ commonConfigOf ss
 

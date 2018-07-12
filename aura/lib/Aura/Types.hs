@@ -41,12 +41,14 @@ module Aura.Types
   , Provides(..)
   ) where
 
-import           BasePrelude hiding (try)
+import           BasePrelude hiding (FilePath, try)
 import           Data.Bitraversable
 import qualified Data.Text as T
 import           Data.Text.Prettyprint.Doc hiding (space)
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions
+import           Filesystem.Path (filename)
+import           Shelly (FilePath, toTextIgnore)
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 
@@ -123,10 +125,13 @@ data InstallType = Pacman T.Text | Build Buildable
 data SimplePkg = SimplePkg { _spName :: T.Text, _spVersion :: Versioning } deriving (Eq, Ord, Show)
 
 -- | Attempt to create a `SimplePkg` from filepaths like:
---     linux-3.2.14-1-x86_64.pkg.tar.xz
+--
+--     * \/var\/cache\/pacman\/pkg\/linux-3.2.14-1-x86_64.pkg.tar.xz
 simplepkg :: PackagePath -> Maybe SimplePkg
-simplepkg (PackagePath t) = uncurry SimplePkg <$> bitraverse f f (parse n "name" t, parse v "version" t)
-  where n :: Parsec Void T.Text T.Text
+simplepkg (PackagePath t) = uncurry SimplePkg <$> bitraverse f f (parse n "name" t', parse v "version" t')
+  where t' = toTextIgnore $ filename t
+
+        n :: Parsec Void T.Text T.Text
         n = T.pack <$> manyTill anyChar (try finished)
 
         -- | Assumes that a version number will never start with a letter,
@@ -149,7 +154,7 @@ simplepkg' = either (const Nothing) Just . parse parser "name-and-version"
 --   * \/var\/cache\/pacman\/pkg\/linux-3.2.14-1-x86_64.pkg.tar.xz
 --   * \/var\/cache\/pacman\/pkg\/wine-1.4rc6-1-x86_64.pkg.tar.xz
 --   * \/var\/cache\/pacman\/pkg\/ruby-1.9.3_p125-4-x86_64.pkg.tar.xz
-newtype PackagePath = PackagePath { _pkgpath :: T.Text } deriving (Eq)
+newtype PackagePath = PackagePath { _pkgpath :: FilePath } deriving (Eq)
 
 instance Ord PackagePath where
   compare a b | nameA /= nameB = compare (_pkgpath a) (_pkgpath b)

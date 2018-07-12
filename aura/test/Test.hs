@@ -35,7 +35,7 @@ suite conf = testGroup "Unit Tests"
     ]
   , testGroup "Aura.Types"
     [ testCase "simplepkg"
-      $ simplepkg (PackagePath "linux-is-cool-3.2.14-1-x86_64.pkg.tar.xz")
+      $ simplepkg (PackagePath "/var/cache/pacman/pkg/linux-is-cool-3.2.14-1-x86_64.pkg.tar.xz")
       @?= Just (SimplePkg "linux-is-cool" . Ideal $ SemVer 3 2 14 [[Digits 1]] [])
     , testCase "simplepkg'"
       $ simplepkg' "xchat 2.8.8-19" @?= Just (SimplePkg "xchat" . Ideal $ SemVer 2 8 8 [[Digits 19]] [])

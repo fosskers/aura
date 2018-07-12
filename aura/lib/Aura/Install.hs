@@ -53,7 +53,7 @@ import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
-import           Shelly (shelly, toTextIgnore, (</>), withTmpDir, cd, writefile)
+import           Shelly (shelly, (</>), withTmpDir, cd, writefile)
 import           System.IO (hFlush, stdout)
 
 ---
@@ -153,15 +153,15 @@ buildAndInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member
 buildAndInstall bss = do
   pth   <- asks (either id id . cachePathOf . commonConfigOf)
   cache <- send . shelly @IO $ cacheContents pth
-  traverse_ (f cache pth) bss
-  where f (Cache cache) pth bs = do
+  traverse_ (f cache) bss
+  where f (Cache cache) bs = do
           ss <- ask
           let (ps, cached) = partitionEithers $ map g bs
               g b = case bldVersionOf b >>= (\v -> SimplePkg (bldNameOf b) v `M.lookup` cache) of
-                Just pp | not (switch ss ForceBuilding) -> Right $ pth </> _pkgpath pp
+                Just pp | not (switch ss ForceBuilding) -> Right pp
                 _ -> Left b
           built <- buildPackages ps
-          installPkgFiles $ map toTextIgnore (built <> cached)
+          installPkgFiles $ built <> cached
           send $ annotateDeps bs
 
 ------------
