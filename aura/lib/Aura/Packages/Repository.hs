@@ -18,6 +18,7 @@ import           Aura.Languages (provides_1)
 import           Aura.Pacman (pacmanOutput)
 import           Aura.Settings (Settings)
 import           Aura.Types
+import           Aura.Utils (getSelection)
 import           BasePrelude hiding (try)
 import           Control.Concurrent.Async
 import           Data.Bitraversable (bitraverse)
@@ -26,7 +27,6 @@ import qualified Data.Text as T
 import           Data.Versions
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
-import           Utilities (getSelection)
 
 ---
 
@@ -58,12 +58,12 @@ resolveName ss name = do
 
 -- | Choose a providing package, favoring installed packages.
 chooseProvider :: Settings -> T.Text -> [T.Text] -> IO T.Text
-chooseProvider _ name []   = pure name
-chooseProvider _ _    [p]  = pure p
-chooseProvider ss name ps  = do
+chooseProvider _ name []         = pure name
+chooseProvider _ _    [p]        = pure p
+chooseProvider ss name ps@(a:as) = do
   mp <- listToMaybe . catMaybes <$> mapConcurrently isInstalled ps
   maybe f pure mp
-  where f = warn ss (provides_1 name) *> getSelection ps
+  where f = warn ss (provides_1 name) *> getSelection (a :| as)
 
 -- | The most recent version of a package, if it exists in the respositories.
 mostRecentVersion :: T.Text -> IO (Maybe Versioning)

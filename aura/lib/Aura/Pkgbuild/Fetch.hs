@@ -15,6 +15,7 @@ module Aura.Pkgbuild.Fetch
   , pkgbuildUrl
   ) where
 
+import           Aura.Utils (urlContents)
 import           BasePrelude
 import           Control.Exception (SomeException, catch)
 import           Control.Monad.Trans (MonadIO, liftIO)
@@ -25,7 +26,6 @@ import           Data.Text.Lazy.Encoding
 import           Network.HTTP.Client (Manager)
 import           Network.URI (escapeURIString, isUnescapedInURIComponent)
 import           System.FilePath ((</>))
-import           Utilities (urlContents)
 
 ---
 

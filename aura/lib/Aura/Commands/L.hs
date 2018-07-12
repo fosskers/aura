@@ -19,7 +19,7 @@ import           Aura.Colour (red, dtot)
 import           Aura.Core (report)
 import           Aura.Languages
 import           Aura.Settings
-import           Aura.Utils (entrify, colourCheck)
+import           Aura.Utils
 import           BasePrelude hiding (FilePath)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Reader
@@ -28,7 +28,6 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
 import           Shelly
-import           Utilities
 
 ---
 

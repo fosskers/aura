@@ -20,11 +20,9 @@ import           Aura.Core (warn)
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.State
-import           Aura.Types
 import           Aura.Utils (optionalPrompt)
 import           BasePrelude
 import           Control.Monad.Freer
-import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
 import qualified Data.Text.IO as T
 import           Filesystem.Path (filename)
@@ -34,10 +32,10 @@ import           Shelly
 
 -- TODO Move this to `States` and delete this module
 -- | Remove all but the newest @n@ package states. Any "pinned" states will also remain.
-cleanStates :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Word -> Eff r ()
+cleanStates :: (Member (Reader Settings) r, Member IO r) => Word -> Eff r ()
 cleanStates (fromIntegral -> n) = do
   ss   <- ask
-  stfs <- reverse <$> getStateFiles
+  stfs <- reverse <$> send getStateFiles
   (pinned, others) <- partition p <$> send (traverse (\sf -> (sf,) <$> readState sf) stfs)
   send . warn ss . cleanStates_4 (length stfs) $ langOf ss
   unless (null pinned) . send . warn ss . cleanStates_6 (length pinned) $ langOf ss
@@ -48,5 +46,5 @@ cleanStates (fromIntegral -> n) = do
   where p = maybe False pinnedOf . snd
 
 -- | The result of @-Bl@.
-listStates :: (Member (Error Failure) r, Member IO r) => Eff r ()
-listStates = getStateFiles >>= send . traverse_ (T.putStrLn . toTextIgnore)
+listStates :: IO ()
+listStates = getStateFiles >>= traverse_ (T.putStrLn . toTextIgnore)

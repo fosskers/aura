@@ -43,7 +43,6 @@ import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions (prettyV)
 import           Shelly (Sh, test_f)
-import           Utilities
 
 ---
 

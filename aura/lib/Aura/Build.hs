@@ -32,7 +32,6 @@ import qualified Data.Text as T
 import           Filesystem.Path (filename)
 import           Shelly
 import           System.IO (hFlush, stdout)
-import           Utilities
 
 ---
 

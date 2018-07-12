@@ -26,6 +26,7 @@ import           Aura.Languages
 import           Aura.Pacman
 import           Aura.Settings
 import           Aura.Types
+import           Aura.Utils
 import           BasePrelude hiding (FilePath)
 import           Data.Bitraversable
 import qualified Data.Map.Strict as M
@@ -36,7 +37,6 @@ import           Network.HTTP.Client.TLS (tlsManagerSettings)
 import           Shelly
 import           System.Environment (getEnvironment)
 import           System.IO (hIsTerminalDevice, stdout)
-import           Utilities
 
 ---
 

@@ -21,7 +21,6 @@ import           Aura.Utils
 import           BasePrelude hiding (FilePath)
 import qualified Data.Text as T
 import           Shelly
-import           Utilities
 
 ---
 

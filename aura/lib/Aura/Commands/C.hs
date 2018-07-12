@@ -30,12 +30,12 @@ import           BasePrelude hiding (FilePath)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import           Data.List.NonEmpty (nonEmpty)
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Shelly hiding (path)
-import           Utilities
 
 ---
 
@@ -55,12 +55,15 @@ downgradePackages pkgs =
 
 -- | For a given package, get a choice from the user about which version of it to
 -- downgrade to.
-getDowngradeChoice :: (Member (Reader Settings) r, Member IO r) => Cache -> T.Text -> Eff r T.Text
+getDowngradeChoice :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+  Cache -> T.Text -> Eff r T.Text
 getDowngradeChoice cache pkg = do
-  let choices = getChoicesFromCache cache pkg
-  ss <- ask
-  send . notify ss . getDowngradeChoice_1 pkg $ langOf ss
-  send $ getSelection choices
+  case nonEmpty $ getChoicesFromCache cache pkg of
+    Nothing      -> throwError . Failure $ reportBadDowngradePkgs_2 pkg
+    Just choices -> do
+      ss <- ask
+      send . notify ss . getDowngradeChoice_1 pkg $ langOf ss
+      send $ getSelection choices
 
 getChoicesFromCache :: Cache -> T.Text -> [T.Text]
 getChoicesFromCache (Cache cache) pkg = sort . mapMaybe f $ M.toList cache
@@ -130,11 +133,11 @@ clean toSave = do
 
 -- | Only package files with a version not in any PkgState will be
 -- removed.
-cleanNotSaved :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Eff r ()
+cleanNotSaved :: (Member (Reader Settings) r, Member IO r) => Eff r ()
 cleanNotSaved = do
   ss <- ask
   send . notify ss . cleanNotSaved_1 $ langOf ss
-  sfs <- getStateFiles
+  sfs <- send getStateFiles
   states <- fmap catMaybes . send $ traverse readState sfs
   let path = either id id . cachePathOf $ commonConfigOf ss
   (Cache cache)  <- send . shelly @IO $ cacheContents path

@@ -9,13 +9,12 @@ module Flags
 import           Aura.Cache (defaultPackageCache)
 import           Aura.Pacman (pacmanConfFile, defaultLogFile)
 import           Aura.Settings
-import           Aura.Types (Language(..))
+import           Aura.Types (Language(..), User(..))
 import           BasePrelude hiding (Version, FilePath, option, log, exp)
 import qualified Data.Set as S
 import qualified Data.Text as T
 import           Options.Applicative
 import           Shelly
-import           Utilities (User(..))
 
 ---
 

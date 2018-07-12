@@ -638,6 +638,10 @@ reportBadDowngradePkgs_1 = \case
     Chinese    -> "以下包在缓存中没有版本，所以无法被降级："
     _          -> "The following have no versions in the cache, and thus can’t be downgraded:"
 
+reportBadDowngradePkgs_2 :: T.Text -> Language -> Doc AnsiStyle
+reportBadDowngradePkgs_2 p = \case
+  _ -> pretty p <+> "has no version in the cache."
+
 upgradeAURPkgs_1 :: Language -> Doc AnsiStyle
 upgradeAURPkgs_1 = \case
     Japanese   -> "パッケージ情報をダウンロード中・・・"

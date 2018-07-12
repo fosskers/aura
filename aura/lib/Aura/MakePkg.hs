@@ -17,10 +17,10 @@ module Aura.MakePkg
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
+import           Aura.Utils (exitCode)
 import           BasePrelude hiding (FilePath)
 import qualified Data.Text as T
 import           Shelly hiding (cmd)
-import           Utilities (User(..), exitCode)
 
 ---
 

@@ -26,9 +26,11 @@ import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings
 import           Aura.Types
-import           BasePrelude
+import           Aura.Utils (quietSh)
+import           BasePrelude hiding (head)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Reader
+import           Data.List.NonEmpty (head)
 import qualified Data.Set as S
 import qualified Data.Text as T
 import           Data.Versions (versioning)
@@ -36,7 +38,6 @@ import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
 import           Shelly (Sh, run_)
 import           System.FilePath ((</>))
-import           Utilities (list, quietSh)
 
 ---
 

@@ -46,6 +46,7 @@ import           Aura.Logo
 import           Aura.Pacman
 import           Aura.Settings
 import           Aura.Types
+import           Aura.Utils (loudSh)
 import           BasePrelude hiding (Version)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
@@ -59,7 +60,6 @@ import           Options.Applicative (execParser)
 import           Settings
 import           Shelly (shelly, run_, toTextIgnore)
 import           Text.Pretty.Simple (pPrintNoColor)
-import           Utilities
 
 ---
 
@@ -106,7 +106,7 @@ executeOpts ops = do
         Nothing              -> sudo B.saveState
         Just (BackupClean n) -> sudo $ B.cleanStates n
         Just BackupRestore   -> sudo B.restoreState
-        Just BackupList      -> B.listStates
+        Just BackupList      -> send B.listStates
     Right (Cache o) ->
       case o of
         Right ps                -> sudo $ C.downgradePackages ps

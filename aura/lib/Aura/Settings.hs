@@ -24,13 +24,13 @@ module Aura.Settings
   ) where
 
 import           Aura.Languages (Language)
+import           Aura.Types (Environment, User, list)
 import           BasePrelude hiding (FilePath)
 import qualified Data.Set as S
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Network.HTTP.Client (Manager)
 import           Shelly (FilePath, toTextIgnore)
-import           Utilities (Environment, User, list)
 
 ---
 
@@ -64,8 +64,8 @@ instance Flagable CommonConfig where
     either (const []) (\p -> ["--cachedir", toTextIgnore p]) cap
     ++ either (const []) (\p -> ["--config", toTextIgnore p]) cop
     ++ either (const []) (\p -> ["--logfile", toTextIgnore p]) lfp
-    ++ list [] (\xs -> ["--ignore", T.intercalate "," xs]) (toList igs)
-    ++ list [] (\xs -> ["--ignoregroup", T.intercalate "," xs]) (toList igg)
+    ++ list [] (\xs -> ["--ignore", T.intercalate "," $ toList xs]) (toList igs)
+    ++ list [] (\xs -> ["--ignoregroup", T.intercalate "," $ toList xs]) (toList igg)
     ++ concatMap asFlag (toList cs)
 
 -- | Yes/No-style switches that are common to both Aura and Pacman.

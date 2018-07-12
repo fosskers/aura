@@ -26,12 +26,18 @@ module Aura.Types
   , PackagePath(..)
   , Pkgbuild(..)
   , Provides(..)
+  , Environment(..)
+  , User(..)
+    -- * Misc.
+  , list
   ) where
 
 import           BasePrelude hiding (FilePath, try)
 import           Data.Bitraversable
+import           Data.List.NonEmpty (nonEmpty)
+import qualified Data.Map.Strict as M
 import qualified Data.Text as T
-import           Data.Text.Prettyprint.Doc hiding (space)
+import           Data.Text.Prettyprint.Doc hiding (space, list)
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions
 import           Filesystem.Path (filename)
@@ -198,3 +204,13 @@ data DepError = NonExistant T.Text
 -- | Some failure message that when given the current runtime `Language`
 -- will produce a human-friendly error.
 newtype Failure = Failure { _failure :: Language -> Doc AnsiStyle }
+
+-- | Shell environment variables.
+type Environment = M.Map T.Text T.Text
+
+-- | The name of a user account on a Linux system.
+newtype User = User { _user :: T.Text } deriving (Eq, Show)
+
+-- | Similar to `maybe` and `either`, but not quite the same.
+list :: b -> (NonEmpty a -> b) -> [a] -> b
+list def f as = maybe def f $ nonEmpty as

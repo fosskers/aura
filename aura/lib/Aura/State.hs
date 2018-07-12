@@ -26,6 +26,7 @@ import           Aura.Languages
 import           Aura.Pacman (pacmanOutput, pacman)
 import           Aura.Settings
 import           Aura.Types
+import           Aura.Utils
 import           BasePrelude hiding (Version, FilePath, mapMaybe)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
@@ -33,13 +34,13 @@ import           Control.Monad.Freer.Reader
 import           Data.Aeson
 import           Data.Aeson.Types (typeMismatch)
 import qualified Data.ByteString.Lazy as BL
+import           Data.List.NonEmpty (nonEmpty)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import           Data.Time
 import           Data.Versions
 import           Data.Witherable (mapMaybe)
 import           Shelly hiding (time)
-import           Utilities (list, getSelection)
 
 ---
 
@@ -94,9 +95,8 @@ olds :: PkgState -> PkgState -> [SimplePkg]
 olds old curr = map (uncurry SimplePkg) . M.assocs $ M.difference (pkgsOf old) (pkgsOf curr)
 
 -- | The filepaths of every saved package state.
-getStateFiles :: (Member (Error Failure) r, Member IO r) => Eff r [FilePath]
-getStateFiles = send f >>= list (throwError $ Failure restoreState_2) pure
-  where f = shelly @IO $ mkdir_p stateCache >> fmap sort (ls stateCache)
+getStateFiles :: IO [FilePath]
+getStateFiles = shelly $ mkdir_p stateCache >> fmap sort (ls stateCache)
 
 -- | Save a package state.
 -- In writing the first state file, the `states` directory is created automatically.
@@ -123,23 +123,23 @@ dotFormat (ZonedTime t _) = intercalate "." items
 
 -- | Does its best to restore a state chosen by the user.
 restoreState :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Eff r ()
-restoreState = do
-  sfs <- getStateFiles
-  ss  <- ask
-  let pth = either id id . cachePathOf $ commonConfigOf ss
-  mpast  <- send $ selectState sfs >>= readState
-  case mpast of
-    Nothing   -> throwError $ Failure readState_1
-    Just past -> do
-      curr <- send currentState
-      Cache cache <- send . shelly @IO $ cacheContents pth
-      let StateDiff rein remo = compareStates past curr
-          (okay, nope)        = partition (`M.member` cache) rein
-      unless (null nope) . report red restoreState_1 $ map _spName nope
-      reinstallAndRemove (mapMaybe (`M.lookup` cache) okay) remo
+restoreState = send getStateFiles >>= maybe (throwError $ Failure restoreState_2) f . nonEmpty
+  where f sfs = do
+          ss  <- ask
+          let pth = either id id . cachePathOf $ commonConfigOf ss
+          mpast  <- send $ selectState sfs >>= readState
+          case mpast of
+            Nothing   -> throwError $ Failure readState_1
+            Just past -> do
+              curr <- send currentState
+              Cache cache <- send . shelly @IO $ cacheContents pth
+              let StateDiff rein remo = compareStates past curr
+                  (okay, nope)        = partition (`M.member` cache) rein
+              unless (null nope) . report red restoreState_1 $ map _spName nope
+              reinstallAndRemove (mapMaybe (`M.lookup` cache) okay) remo
 
-selectState :: [FilePath] -> IO FilePath
-selectState = fmap fromText . getSelection . map toTextIgnore
+selectState :: NonEmpty FilePath -> IO FilePath
+selectState = fmap fromText . getSelection . fmap toTextIgnore
 
 -- | Given a `FilePath` to a package state file, attempt to read and parse
 -- its contents. As of Aura 2.0, only state files in JSON format are accepted.
