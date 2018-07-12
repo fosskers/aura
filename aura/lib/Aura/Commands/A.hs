@@ -61,8 +61,8 @@ install = I.install installOptions
 upgradeAURPkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set T.Text -> Eff r ()
 upgradeAURPkgs pkgs = do
   ss <- ask
-  let !ignores     = map Just . toList . ignoredPkgsOf $ commonConfigOf ss
-      notIgnored p = fmap fst (splitNameAndVer p) `notElem` ignores
+  let !ignores     = ignoredPkgsOf $ commonConfigOf ss
+      notIgnored p = p `notElem` ignores
       lang         = langOf ss
   send . notify ss $ upgradeAURPkgs_1 lang
   foreignPkgs <- S.filter (notIgnored . _spName) <$> send foreignPackages

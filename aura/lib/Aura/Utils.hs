@@ -1,27 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- Utility functions specific to Aura
-
-{-
-
-Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
-
-This file is part of Aura.
-
-Aura is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Aura is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Aura.  If not, see <http://www.gnu.org/licenses/>.
-
--}
+-- |
+-- Module    : Aura.Utils
+-- Copyright : (c) Colin Woodbury, 2012 - 2018
+-- License   : GPL3
+-- Maintainer: Colin Woodbury <colin@fosskers.ca>
+--
+-- Utility functions specific to Aura.
 
 module Aura.Utils
   ( -- * Output
@@ -30,8 +15,6 @@ module Aura.Utils
   , entrify
     -- * User Input
   , optionalPrompt
-    -- * Misc. Package Handling
-  , splitNameAndVer
   ) where
 
 import           Aura.Colour
@@ -43,7 +26,6 @@ import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           System.IO (stdout, hFlush)
-import           Text.Megaparsec
 
 ---
 
@@ -51,13 +33,16 @@ import           Text.Megaparsec
 -- CUSTOM OUTPUT
 ----------------
 
+-- | Print a `Doc` with Aura flair after performing a `colourCheck`.
 putStrLnA :: Settings -> Doc AnsiStyle -> IO ()
 putStrLnA ss d = putStrA ss $ d <> hardline
 
--- | Will remove all colour annotations if the user specified `--color=never`.
+-- | Will remove all colour annotations if the user specified @--color=never@.
 putStrA :: Settings -> Doc AnsiStyle -> IO ()
 putStrA ss d = T.putStr . dtot $ "aura >>=" <+> colourCheck ss d
 
+-- | Strip colours from a `Doc` if @--color=never@ is specified,
+-- or if the output target isn't a terminal.
 colourCheck :: Settings -> Doc ann -> Doc ann
 colourCheck ss | shared ss (Colour Never)  = unAnnotate
                | shared ss (Colour Always) = id
@@ -86,18 +71,6 @@ optionalPrompt ss msg | shared ss NoConfirm = pure True
 -------
 -- MISC
 -------
-
--- TODO `Versioning` here?
--- This is pretty similar to `parseDep`...
-splitNameAndVer :: T.Text -> Maybe (T.Text, T.Text)
-splitNameAndVer = either (const Nothing) Just . parse parser "splitNameAndVer"
-  where parser :: Parsec Void T.Text (T.Text, T.Text)
-        parser = do
-          name <- takeWhile1P Nothing (\c -> not $ c == '<' || c == '>' || c == '=')  -- DeMorgan's.
-          takeWhile1P Nothing (\c -> c == '<' || c == '>' || c == '=')
-          ver  <- takeRest
-          pure (name, ver)
-
 -- | Format two lists into two nice rows a la `-Qi` or `-Si`.
 entrify :: Settings -> [T.Text] -> [Doc AnsiStyle] -> Doc AnsiStyle
 entrify ss fs es = vsep $ zipWith combine fs' es
