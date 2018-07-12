@@ -33,6 +33,7 @@ import           Shelly
 ---
 
 -- TODO Move this to `States` and delete this module
+-- | Remove all but the newest @n@ package states. Any "pinned" states will also remain.
 cleanStates :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Word -> Eff r ()
 cleanStates (fromIntegral -> n) = do
   ss   <- ask
@@ -46,5 +47,6 @@ cleanStates (fromIntegral -> n) = do
      | otherwise -> send . shelly @IO . traverse_ (rm . fst) . drop n $ others
   where p = maybe False pinnedOf . snd
 
+-- | The result of @-Bl@.
 listStates :: (Member (Error Failure) r, Member IO r) => Eff r ()
 listStates = getStateFiles >>= send . traverse_ (T.putStrLn . toTextIgnore)

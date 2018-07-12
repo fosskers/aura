@@ -1,36 +1,23 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
 
--- | Module for connecting to the AUR servers, downloading PKGBUILDs and package sources.
-
-{-
-
-Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
-
-This file is part of Aura.
-
-Aura is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Aura is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Aura.  If not, see <http://www.gnu.org/licenses/>.
-
--}
+-- |
+-- Module    : Aura.Packages.AUR
+-- Copyright : (c) Colin Woodbury, 2012 - 2018
+-- License   : GPL3
+-- Maintainer: Colin Woodbury <colin@fosskers.ca>
+--
+-- Module for connecting to the AUR servers, downloading PKGBUILDs and package sources.
 
 module Aura.Packages.AUR
-  ( aurLookup
+  ( -- * Batch Querying
+    aurLookup
   , aurRepo
-  , isAurPackage
-  , clone
+    -- * Single Querying
   , aurInfo
   , aurSearch
+    -- * Source Retrieval
+  , clone
   , pkgUrl
   ) where
 
@@ -53,6 +40,8 @@ import           Utilities (list, quietSh)
 
 ---
 
+-- | Attempt to retrieve info about a given `S.Set` of packages from the AUR.
+-- This is a signature expected by `InstallOptions`.
 aurLookup :: MonadIO m => Settings -> S.Set T.Text -> m (S.Set T.Text, [Buildable])
 aurLookup ss names
   | null names = pure (S.empty, [])
@@ -62,6 +51,8 @@ aurLookup ss names
       pure (S.fromList bads <> names S.\\ goodNames, goods)
         where m = managerOf ss
 
+-- | Yield fully realized `Package`s from the AUR. This is the other signature
+-- expected by `InstallOptions`.
 aurRepo :: Repository
 aurRepo = Repository $ \ss ps -> do
   (bads, goods) <- aurLookup ss ps
@@ -70,7 +61,7 @@ aurRepo = Repository $ \ss ps -> do
 
 buildable :: MonadIO m => Manager -> AurInfo -> m (Either T.Text Buildable)
 buildable m ai = do
-  mpb <- pkgbuild' m (pkgBaseOf ai)  -- Using the package base ensures split packages work correctly.
+  mpb <- pkgbuild m (pkgBaseOf ai)  -- Using the package base ensures split packages work correctly.
   case mpb of
     Nothing -> pure . Left $ aurNameOf ai
     Just pb -> pure $ Right Buildable
@@ -82,21 +73,20 @@ buildable m ai = do
       , bldVersionOf  = either (const Nothing) Just . versioning $ aurVersionOf ai
       , isExplicit    = False }
 
-isAurPackage :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r Bool
-isAurPackage name = asks managerOf >>= \m -> isJust <$> send (pkgbuild' @IO m name)
-
 ----------------
 -- AUR PKGBUILDS
 ----------------
 aurLink :: T.Text
 aurLink = "https://aur.archlinux.org"
 
+-- | A package's home URL on the AUR.
 pkgUrl :: T.Text -> T.Text
 pkgUrl pkg = T.pack $ T.unpack aurLink </> "packages" </> T.unpack pkg
 
 -------------------
 -- SOURCES FROM GIT
 -------------------
+-- | Attempt to clone a package source from the AUR.
 clone :: Buildable -> Sh (Maybe FilePath)
 clone b = do
   (ec, _) <- quietSh $ run_ "git" ["clone", "--depth", "1", aurLink <> "/" <> bldBaseNameOf b <> ".git"]
@@ -113,11 +103,13 @@ sortAurInfo bs ai = sortBy compare' ai
                      Just SortAlphabetically -> compare `on` aurNameOf
                      _ -> \x y -> compare (aurVotesOf y) (aurVotesOf x)
 
+-- | Frontend to the `aur` library. For @-As@.
 aurSearch :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r [AurInfo]
 aurSearch regex = do
   ss  <- ask
   res <- send $ search @IO (managerOf ss) regex
   pure $ sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) res
 
+-- | Frontend to the `aur` library. For @-Ai@.
 aurInfo :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r [AurInfo]
 aurInfo pkgs = asks managerOf >>= \m -> sortAurInfo (Just SortAlphabetically) <$> send (info @IO m pkgs)

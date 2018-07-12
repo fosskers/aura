@@ -1,27 +1,12 @@
 {-# LANGUAGE FlexibleContexts, MonoLocalBinds, TupleSections #-}
 
+-- |
+-- Module    : Aura.Dependencies
+-- Copyright : (c) Colin Woodbury, 2012 - 2018
+-- License   : GPL3
+-- Maintainer: Colin Woodbury <colin@fosskers.ca>
+--
 -- Library for handling package dependencies and version conflicts.
-
-{-
-
-Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
-
-This file is part of Aura.
-
-Aura is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Aura is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Aura.  If not, see <http://www.gnu.org/licenses/>.
-
--}
 
 module Aura.Dependencies ( resolveDeps ) where
 
@@ -43,6 +28,11 @@ import qualified Data.Text as T
 
 ---
 
+-- | Given some `Package`s, determine its full dependency graph.
+-- The graph is collapsed into layers of packages which are not
+-- interdependent, and thus can be built and installed as a group.
+--
+-- Deeper layers of the result list (generally) depend on the previous layers.
 resolveDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
   Repository -> [Package] -> Eff r [S.Set Package]
 resolveDeps repo ps = do

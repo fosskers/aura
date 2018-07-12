@@ -1,27 +1,12 @@
 {-# LANGUAGE OverloadedStrings, ViewPatterns #-}
 
+-- |
+-- Module    : Aura.State
+-- Copyright : (c) Colin Woodbury, 2012 - 2018
+-- License   : GPL3
+-- Maintainer: Colin Woodbury <colin@fosskers.ca>
+--
 -- Interface to `makepkg`.
-
-{-
-
-Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
-
-This file is part of Aura.
-
-Aura is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Aura is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Aura.  If not, see <http://www.gnu.org/licenses/>.
-
--}
 
 module Aura.MakePkg
   ( makepkg
@@ -39,6 +24,7 @@ import           Utilities (User(..), exitCode)
 
 ---
 
+-- | The default location of the makepkg configuration: \/etc\/makepkg.conf
 makepkgConfFile :: FilePath
 makepkgConfFile = "/etc/makepkg.conf"
 
@@ -76,6 +62,6 @@ makepkgSource user = do
   filter (T.isSuffixOf ".src.tar.gz" . toTextIgnore) <$> (pwd >>= ls)
     where (cmd, opts) = runStyle user ["--allsource"]
 
--- As of makepkg v4.2, building with `--asroot` is no longer allowed.
+-- | As of makepkg v4.2, building with `--asroot` is no longer allowed.
 runStyle :: User -> [T.Text] -> (FilePath, [T.Text])
 runStyle (User user) opts = ("sudo", ["-u", user, makepkgCmd] <> opts)

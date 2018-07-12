@@ -33,7 +33,7 @@ module Utilities
   , urlContents
     -- * Shell
   , Environment(..), User(..)
-  , csi, cursorUpLineCode, hideCursor, showCursor
+  , csi, cursorUpLineCode, hideCursor, showCursor, raiseCursorBy, raiseCursorBy'
   , getTrueUser, getEditor, getLocale
   , hasRootPriv, isTrueRoot
   , quietSh, loudSh, exitCode
@@ -201,3 +201,9 @@ hideCursorCode = csi [] "?25l"
 
 showCursorCode :: T.Text
 showCursorCode = csi [] "?25h"
+
+raiseCursorBy :: Int -> IO ()
+raiseCursorBy = T.putStr . raiseCursorBy'
+
+raiseCursorBy' :: Int -> T.Text
+raiseCursorBy' = cursorUpLineCode

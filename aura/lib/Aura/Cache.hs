@@ -32,6 +32,7 @@ import           Shelly
 -- | Every package in the current cache, paired with its original filename.
 newtype Cache = Cache { _cache :: M.Map SimplePkg PackagePath }
 
+-- | The default location of the package cache: \/var\/cache\/pacman\/pkg\/
 defaultPackageCache :: FilePath
 defaultPackageCache = "/var/cache/pacman/pkg/"
 

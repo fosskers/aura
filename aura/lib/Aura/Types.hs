@@ -1,25 +1,12 @@
 {-# LANGUAGE OverloadedStrings, MultiWayIf #-}
 
-{-
-
-Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
-
-This file is part of Aura.
-
-Aura is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Aura is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Aura.  If not, see <http://www.gnu.org/licenses/>.
-
--}
+-- |
+-- Module    : Aura.Types
+-- Copyright : (c) Colin Woodbury, 2012 - 2018
+-- License   : GPL3
+-- Maintainer: Colin Woodbury <colin@fosskers.ca>
+--
+-- Core Aura types.
 
 module Aura.Types
   ( -- * Package Types
@@ -124,9 +111,8 @@ data InstallType = Pacman T.Text | Build Buildable
 -- | A package name with its version number.
 data SimplePkg = SimplePkg { _spName :: T.Text, _spVersion :: Versioning } deriving (Eq, Ord, Show)
 
--- | Attempt to create a `SimplePkg` from filepaths like:
---
---     * \/var\/cache\/pacman\/pkg\/linux-3.2.14-1-x86_64.pkg.tar.xz
+-- | Attempt to create a `SimplePkg` from filepaths like
+--   @\/var\/cache\/pacman\/pkg\/linux-3.2.14-1-x86_64.pkg.tar.xz@
 simplepkg :: PackagePath -> Maybe SimplePkg
 simplepkg (PackagePath t) = uncurry SimplePkg <$> bitraverse f f (parse n "name" t', parse v "version" t')
   where t' = toTextIgnore $ filename t

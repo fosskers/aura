@@ -157,7 +157,7 @@ displayPkgDeps = I.displayPkgDeps installOptions
 displayPkgbuild :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r ()
 displayPkgbuild ps = do
   man <- asks managerOf
-  pbs <- catMaybes <$> traverse (send . pkgbuild @IO man . T.unpack) (toList ps)
+  pbs <- catMaybes <$> traverse (send . pkgbuild @IO man) (toList ps)
   send . traverse_ T.putStrLn $ intersperse border pbs
   where border = "\n#========== NEXT PKGBUILD ==========#\n"
 

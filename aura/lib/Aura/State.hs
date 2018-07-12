@@ -1,28 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
 
--- A library for saving and restoring the state of installed packages.
-
-{-
-
-Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
-
-This file is part of Aura.
-
-Aura is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Aura is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Aura.  If not, see <http://www.gnu.org/licenses/>.
-
--}
+-- |
+-- Module    : Aura.State
+-- Copyright : (c) Colin Woodbury, 2012 - 2018
+-- License   : GPL3
+-- Maintainer: Colin Woodbury <colin@fosskers.ca>
+--
+-- Handle the saving and restoring of installed package states.
 
 module Aura.State
     ( PkgState(..)
@@ -31,7 +16,8 @@ module Aura.State
     , inState
     , readState
     , stateCache
-    , getStateFiles ) where
+    , getStateFiles
+    ) where
 
 import           Aura.Cache
 import           Aura.Colour (red)
@@ -57,6 +43,8 @@ import           Utilities (list, getSelection)
 
 ---
 
+-- | All packages installed at some specific `ZonedTime`. Any "pinned" PkgState will
+-- never be deleted by `-Bc`.
 data PkgState = PkgState { timeOf :: ZonedTime, pinnedOf :: Bool, pkgsOf :: M.Map T.Text Versioning }
 
 instance ToJSON PkgState where
@@ -72,9 +60,11 @@ instance FromJSON PkgState where
 
 data StateDiff = StateDiff { _toAlter :: [SimplePkg], _toRemove :: [T.Text] }
 
+-- | The default location of all saved states: \/var\/cache\/aura\/states
 stateCache :: FilePath
 stateCache = "/var/cache/aura/states"
 
+-- | Does a given package have an entry in a particulr `PkgState`?
 inState :: SimplePkg -> PkgState -> Bool
 inState (SimplePkg n v) s = maybe False (v ==) . M.lookup n $ pkgsOf s
 
@@ -103,12 +93,13 @@ toChangeAndRemove old curr = uncurry StateDiff . M.foldrWithKey status ([], []) 
 olds :: PkgState -> PkgState -> [SimplePkg]
 olds old curr = map (uncurry SimplePkg) . M.assocs $ M.difference (pkgsOf old) (pkgsOf curr)
 
+-- | The filepaths of every saved package state.
 getStateFiles :: (Member (Error Failure) r, Member IO r) => Eff r [FilePath]
 getStateFiles = send f >>= list (throwError $ Failure restoreState_2) pure
   where f = shelly @IO $ mkdir_p stateCache >> fmap sort (ls stateCache)
 
--- | In writing the first state file, the `states` directory is created
--- automatically.
+-- | Save a package state.
+-- In writing the first state file, the `states` directory is created automatically.
 saveState :: (Member (Reader Settings) r, Member IO r) => Eff r ()
 saveState = do
   ss <- ask
@@ -150,6 +141,8 @@ restoreState = do
 selectState :: [FilePath] -> IO FilePath
 selectState = fmap fromText . getSelection . map toTextIgnore
 
+-- | Given a `FilePath` to a package state file, attempt to read and parse
+-- its contents. As of Aura 2.0, only state files in JSON format are accepted.
 readState :: FilePath -> IO (Maybe PkgState)
 readState = fmap decode . BL.readFile . T.unpack . toTextIgnore
 

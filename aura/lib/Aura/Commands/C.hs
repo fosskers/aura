@@ -21,7 +21,6 @@ import           Aura.Cache
 import           Aura.Colour (red)
 import           Aura.Core
 import           Aura.Languages
-import           Aura.Logo (raiseCursorBy)
 import           Aura.Pacman (pacman)
 import           Aura.Settings
 import           Aura.State
@@ -67,6 +66,7 @@ getChoicesFromCache :: Cache -> T.Text -> [T.Text]
 getChoicesFromCache (Cache cache) pkg = sort . mapMaybe f $ M.toList cache
   where f (SimplePkg pn _, pth) = bool Nothing (Just . toTextIgnore $ _pkgpath pth) $ pkg == pn
 
+-- | Print all package filenames that match a given `T.Text`.
 searchCache :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r ()
 searchCache ps = do
   ss <- ask

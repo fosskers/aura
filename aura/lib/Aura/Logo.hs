@@ -1,40 +1,49 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- Library for printing an animated AURA version message.
+-- |
+-- Module    : Aura.Logo
+-- Copyright : (c) Colin Woodbury, 2012 - 2018
+-- License   : GPL3
+-- Maintainer: Colin Woodbury <colin@fosskers.ca>
+--
+-- Print an animated AURA version message.
 
-{-
-
-Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
-
-This file is part of Aura.
-
-Aura is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Aura is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Aura.  If not, see <http://www.gnu.org/licenses/>.
-
--}
-
-module Aura.Logo where
+module Aura.Logo ( animateVersionMsg ) where
 
 import           Aura.Colour (yellow, dtot)
+import           Aura.Languages (translatorMsg)
+import           Aura.Pacman (verMsgPad)
 import           Aura.Settings
 import           BasePrelude
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
 import           System.IO (stdout, hFlush)
-import           Utilities (cursorUpLineCode)
+import           Utilities (hideCursor, showCursor, raiseCursorBy, raiseCursorBy')
 
 ---
+
+-- | Show an animated version message, but only when the output target
+-- is a terminal.
+animateVersionMsg :: Settings -> T.Text -> [T.Text] -> IO ()
+animateVersionMsg ss auraVersion verMsg = do
+  when (isTerminal ss) $ do
+    hideCursor
+    traverse_ (T.putStrLn . padString verMsgPad) verMsg  -- Version message
+    raiseCursorBy 7  -- Initial reraising of the cursor.
+    drawPills 3
+    traverse_ T.putStrLn $ renderPacmanHead ss 0 Open  -- Initial rendering of head.
+    raiseCursorBy 4
+    takeABite ss 0  -- Initial bite animation.
+    traverse_ pillEating pillsAndWidths
+    clearGrid
+  T.putStrLn auraLogo
+  T.putStrLn $ "AURA Version " <> auraVersion
+  T.putStrLn " by Colin Woodbury\n"
+  traverse_ T.putStrLn . translatorMsg . langOf $ ss
+  when (isTerminal ss) showCursor
+    where pillEating (p, w) = clearGrid *> drawPills p *> takeABite ss w
+          pillsAndWidths    = [(2, 5), (1, 10), (0, 15)]
 
 data MouthState = Open | Closed deriving (Eq)
 
@@ -79,12 +88,6 @@ takeABite ss pad = drawMouth Closed *> drawMouth Open
 drawPills :: Int -> IO ()
 drawPills numOfPills = traverse_ T.putStrLn pills
     where pills = renderPills numOfPills
-
-raiseCursorBy :: Int -> IO ()
-raiseCursorBy = T.putStr . raiseCursorBy'
-
-raiseCursorBy' :: Int -> T.Text
-raiseCursorBy' = cursorUpLineCode
 
 clearGrid :: IO ()
 clearGrid = T.putStr blankLines *> raiseCursorBy 4

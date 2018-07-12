@@ -124,7 +124,7 @@ executeOpts ops = do
         Nothing               -> send O.displayOrphans
         Just OrphanAbandon    -> sudo $ send orphans >>= removePkgs
         Just (OrphanAdopt ps) -> O.adoptPkg ps
-    Right Version   -> send getVersionInfo >>= animateVersionMsg
+    Right Version   -> send $ getVersionInfo >>= animateVersionMsg ss auraVersion
     Right Languages -> displayOutputLanguages
     Right ViewConf  -> viewConfFile
 
@@ -138,24 +138,3 @@ viewConfFile :: (Member (Reader Settings) r, Member IO r) => Eff r ()
 viewConfFile = do
   pth <- asks (either id id . configPathOf . commonConfigOf)
   void . send . shelly @IO . loudSh $ run_ "less" [toTextIgnore pth]
-
--- | Animated version message.
-animateVersionMsg :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r ()
-animateVersionMsg verMsg = ask >>= \ss -> send $ do
-  when (isTerminal ss) $ do
-    hideCursor
-    traverse_ (T.putStrLn . padString verMsgPad) verMsg  -- Version message
-    raiseCursorBy 7  -- Initial reraising of the cursor.
-    drawPills 3
-    traverse_ T.putStrLn $ renderPacmanHead ss 0 Open  -- Initial rendering of head.
-    raiseCursorBy 4
-    takeABite ss 0  -- Initial bite animation.
-    traverse_ (pillEating ss) pillsAndWidths
-    clearGrid
-  T.putStrLn auraLogo
-  T.putStrLn $ "AURA Version " <> auraVersion
-  T.putStrLn " by Colin Woodbury\n"
-  traverse_ T.putStrLn . translatorMsg . langOf $ ss
-  when (isTerminal ss) showCursor
-    where pillEating ss (p, w) = clearGrid *> drawPills p *> takeABite ss w
-          pillsAndWidths       = [(2, 5), (1, 10), (0, 15)]

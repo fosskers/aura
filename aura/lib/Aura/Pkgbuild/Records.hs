@@ -1,50 +1,34 @@
--- Library for handling the storing and diff'ing of PKGBUILDs.
-
-{-
-
-Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
-
-This file is part of Aura.
-
-Aura is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Aura is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Aura.  If not, see <http://www.gnu.org/licenses/>.
-
--}
+-- |
+-- Module    : Aura.Pkgbuild.Records
+-- Copyright : (c) Colin Woodbury, 2012 - 2018
+-- License   : GPL3
+-- Maintainer: Colin Woodbury <colin@fosskers.ca>
+--
+-- Handle the storing of PKGBUILDs.
 
 module Aura.Pkgbuild.Records
-  ( storePkgbuilds
-  , hasPkgbuildStored
-  , readPkgbuild
+  ( hasPkgbuildStored
+  , storePkgbuilds
   ) where
 
 import           Aura.Pkgbuild.Base
 import           Aura.Types
 import           BasePrelude
 import qualified Data.Text as T
-import           Shelly (Sh, writefile, test_f, shelly, readfile, mkdir_p)
+import           Shelly (Sh, writefile, test_f, shelly, mkdir_p)
 
 ---
 
+-- | Does a given package has a PKGBUILD stored?
+-- This is `True` when a package has been built successfully once before.
 hasPkgbuildStored :: T.Text -> IO Bool
 hasPkgbuildStored = shelly . test_f . pkgbuildPath
 
+-- | Write the PKGBUILDs of some `Buildable`s to disk.
 storePkgbuilds :: [Buildable] -> IO ()
-storePkgbuilds = shelly . traverse_ (\p -> writePkgbuild (bldNameOf p) (_pkgbuild $ pkgbuildOf p))
-
-readPkgbuild :: T.Text -> IO T.Text
-readPkgbuild = shelly . readfile . pkgbuildPath
+storePkgbuilds bs = shelly $ do
+  mkdir_p pkgbuildCache
+  traverse_ (\p -> writePkgbuild (bldNameOf p) (_pkgbuild $ pkgbuildOf p)) bs
 
 writePkgbuild :: T.Text -> T.Text -> Sh ()
-writePkgbuild name pkgb = do
-  mkdir_p pkgbuildCache
-  writefile (pkgbuildPath name) pkgb
+writePkgbuild name pkgb = writefile (pkgbuildPath name) pkgb

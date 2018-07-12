@@ -25,6 +25,7 @@ import qualified Data.Text.IO as T
 
 ---
 
+-- | Print the result of @pacman -Qqdt@
 displayOrphans :: IO ()
 displayOrphans = orphans >>= traverse_ T.putStrLn
 

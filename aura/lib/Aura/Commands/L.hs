@@ -37,18 +37,20 @@ newtype Log = Log [T.Text]
 
 data LogEntry = LogEntry { _pkgName :: T.Text, _firstInstall :: T.Text, _upgrades :: Word, _recent :: [T.Text] }
 
+-- | Pipes the pacman log file through a @less@ session.
 viewLogFile :: (Member (Reader Settings) r, Member IO r) => Eff r ()
 viewLogFile = do
   pth <- asks (either id id . logPathOf . commonConfigOf)
   void . send . shelly @IO . loudSh $ run_ "less" [toTextIgnore pth]
 
--- Very similar to `searchCache`. But is this worth generalizing?
+-- | Print all lines in the log file which contain a given `T.Text`.
 searchLogFile :: Settings -> T.Text -> IO ()
 searchLogFile ss input = do
   let pth = either id id . logPathOf $ commonConfigOf ss
   logFile <- T.lines <$> shelly (readfile pth)
   traverse_ T.putStrLn $ searchLines (Regex input) logFile
 
+-- | The result of @-Li@.
 logInfoOnPkg :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r ()
 logInfoOnPkg pkgs =
   unless (null pkgs) $ do

@@ -2,31 +2,18 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE ViewPatterns #-}
 
-{-
-
-Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
-
-This file is part of Aura.
-
-Aura is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Aura is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Aura.  If not, see <http://www.gnu.org/licenses/>.
-
--}
+-- |
+-- Module    : Aura.State
+-- Copyright : (c) Colin Woodbury, 2012 - 2018
+-- License   : GPL3
+-- Maintainer: Colin Woodbury <colin@fosskers.ca>
+--
+-- Query the AUR for a package's PKGBUILD.
 
 module Aura.Pkgbuild.Fetch
   ( pkgbuild
-  , pkgbuild'
-  , pkgbuildUrl ) where
+  , pkgbuildUrl
+  ) where
 
 import           BasePrelude
 import           Control.Exception (SomeException, catch)
@@ -53,12 +40,8 @@ pkgbuildUrl p = baseUrl </> "cgit/aur.git/plain/PKGBUILD?h="
   ++ escapeURIString isUnescapedInURIComponent p
 
 -- | The PKGBUILD of a given package, retrieved from the AUR servers.
-pkgbuild :: MonadIO m => Manager -> String -> m (Maybe Text)
-pkgbuild m p = e $ do
+pkgbuild :: MonadIO m => Manager -> Text -> m (Maybe Text)
+pkgbuild m (unpack -> p) = e $ do
   t <- urlContents m $ pkgbuildUrl p
   pure $ fmap (TL.toStrict . decodeUtf8With lenientDecode) t
   where e f = liftIO $ f `catch` (\(_ :: E) -> return Nothing)
-
--- | Callable with Text as well, if that's easier.
-pkgbuild' :: MonadIO m => Manager -> Text -> m (Maybe Text)
-pkgbuild' m (unpack -> p) = pkgbuild m p

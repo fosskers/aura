@@ -1,25 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-{-
-
-Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
-
-This file is part of Aura.
-
-Aura is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Aura is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Aura.  If not, see <http://www.gnu.org/licenses/>.
-
--}
+-- |
+-- Module    : Aura.Pkgbuild.Base
+-- Copyright : (c) Colin Woodbury, 2012 - 2018
+-- License   : GPL3
+-- Maintainer: Colin Woodbury <colin@fosskers.ca>
 
 module Aura.Pkgbuild.Base where
 
@@ -32,13 +17,17 @@ import           Shelly
 
 ---
 
+-- | The default location: \/var\/cache\/aura\/pkgbuilds\/
 pkgbuildCache :: FilePath
 pkgbuildCache = "/var/cache/aura/pkgbuilds/"
 
+-- | The expected path to a stored PKGBUILD, given some package name.
 pkgbuildPath :: T.Text -> FilePath
 pkgbuildPath p = pkgbuildCache </> p <.> "pb"
 
 -- One of my favourite functions in this code base.
+-- | Allow the user to customize a PKGBUILD, depending on if they specified
+-- @--hotedit@ and/or @--custom@.
 pbCustomization :: Settings -> Buildable -> Sh Buildable
 pbCustomization ss = foldl (>=>) pure [customizepkg ss, hotEdit ss]
 
