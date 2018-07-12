@@ -1,4 +1,13 @@
 {-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# OPTIONS_HADDOCK prune #-}
+
+-- |
+-- Module    : Aura.Languages.Fields
+-- Copyright : (c) Colin Woodbury, 2012 - 2018
+-- License   : GPL3
+-- Maintainer: Colin Woodbury <colin@fosskers.ca>
+--
+-- The various fields for @-Ai@ output.
 
 module Aura.Languages.Fields where
 

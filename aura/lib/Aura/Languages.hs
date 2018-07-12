@@ -1,6 +1,13 @@
 {-# LANGUAGE LambdaCase, ViewPatterns, OverloadedStrings #-}
+{-# OPTIONS_HADDOCK prune #-}
 
--- Library for Aura output in different languages.
+-- |
+-- Module    : Aura.Languages.Fields
+-- Copyright : (c) Colin Woodbury, 2012 - 2018
+-- License   : GPL3
+-- Maintainer: Colin Woodbury <colin@fosskers.ca>
+--
+-- All output strings that a user can be shown.
 -- All normal restrictions on line length do not apply for this file, and this file only.
 
 {- AURA TRANSLATORS - Thank you all
@@ -20,30 +27,9 @@ Kai Zhang                                     | Chinese
 Onoue Takuro                                  | Japanese
 -}
 
-{-
-
-Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
-
-This file is part of Aura.
-
-Aura is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Aura is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Aura.  If not, see <http://www.gnu.org/licenses/>.
-
--}
-
 module Aura.Languages
-    ( module Aura.Languages
-    , Language(..) ) where
+  ( module Aura.Languages
+  , Language(..) ) where
 
 import           Aura.Colour
 import qualified Aura.Languages.Fields as Fields

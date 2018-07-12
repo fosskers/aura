@@ -1,27 +1,27 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-{-
+-- |
+-- Module    : Aura.Settings
+-- Copyright : (c) Colin Woodbury, 2012 - 2018
+-- License   : GPL3
+-- Maintainer: Colin Woodbury <colin@fosskers.ca>
+--
+-- Definition of the runtime environment.
 
-Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
-
-This file is part of Aura.
-
-Aura is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Aura is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Aura.  If not, see <http://www.gnu.org/licenses/>.
-
--}
-
-module Aura.Settings where
+module Aura.Settings
+  ( Settings(..)
+  , Flagable(..)
+    -- * Aura Configuration
+  , BuildConfig(..), BuildSwitch(..)
+  , switch
+  , Truncation(..)
+    -- * Pacman Interop
+  , CommonConfig(..), CommonSwitch(..)
+  , ColourMode(..)
+  , shared
+    -- * Makepkg Interop
+  , Makepkg(..)
+  ) where
 
 import           Aura.Languages (Language)
 import           BasePrelude hiding (FilePath)
@@ -38,8 +38,10 @@ import           Utilities (Environment, User, list)
 class Flagable a where
   asFlag :: a -> [T.Text]
 
-data Truncation = None | Head Int | Tail Int deriving (Eq, Show)
+-- | How @-As@ should truncate its results.
+data Truncation = None | Head Word | Tail Word deriving (Eq, Show)
 
+-- | CLI flags that will be passed down to @makepkg@ when building packages.
 data Makepkg = IgnoreArch | AllSource | SkipInteg deriving (Eq, Ord, Show)
 
 instance Flagable Makepkg where
@@ -66,6 +68,8 @@ instance Flagable CommonConfig where
     ++ list [] (\xs -> ["--ignoregroup", T.intercalate "," xs]) (toList igg)
     ++ concatMap asFlag (toList cs)
 
+-- | Yes/No-style switches that are common to both Aura and Pacman.
+-- Aura acts on them first, then passes them down to @pacman@ if necessary.
 data CommonSwitch = NoConfirm | NeededOnly | Debug | Colour ColourMode deriving (Eq, Ord, Show)
 
 instance Flagable CommonSwitch where
@@ -74,6 +78,8 @@ instance Flagable CommonSwitch where
   asFlag Debug        = ["--debug"]
   asFlag (Colour m)   = "--color" : asFlag m
 
+-- | Matches Pacman's colour options. `Auto` will ensure that text will only be coloured
+-- when the output target is a terminal.
 data ColourMode = Never | Always | Auto deriving (Eq, Ord, Show)
 
 instance Flagable ColourMode where
@@ -81,6 +87,7 @@ instance Flagable ColourMode where
   asFlag Always = ["always"]
   asFlag Auto   = ["auto"]
 
+-- | Settings unique to the AUR package building process.
 data BuildConfig = BuildConfig { makepkgFlagsOf  :: S.Set Makepkg
                                , buildPathOf     :: FilePath
                                , buildUserOf     :: Maybe User
@@ -100,10 +107,11 @@ data BuildSwitch = DeleteMakeDeps
                  | ForceBuilding
                  deriving (Eq, Ord, Show)
 
--- | Convenient short-hand.
+-- | Is some Aura-specific setting turned on for this run?
 switch :: Settings -> BuildSwitch -> Bool
 switch ss bs = S.member bs . buildSwitchesOf $ buildConfigOf ss
 
+-- | Is some Aura/Pacman common setting turned on for this run?
 shared :: Settings -> CommonSwitch -> Bool
 shared ss c = S.member c . commonSwitchesOf $ commonConfigOf ss
 

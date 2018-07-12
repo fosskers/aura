@@ -128,8 +128,8 @@ aurPkgSearch regex = do
   db <- S.map _spName <$> send foreignPackages
   let t = case truncationOf $ buildConfigOf ss of  -- Can't this go anywhere else?
             None   -> id
-            Head n -> take n
-            Tail n -> reverse . take n . reverse
+            Head n -> take $ fromIntegral n
+            Tail n -> reverse . take (fromIntegral n) . reverse
   results <- fmap (\x -> (x, aurNameOf x `S.member` db)) . t
             <$> aurSearch regex
   send $ traverse_ (T.putStrLn . renderSearch ss regex) results

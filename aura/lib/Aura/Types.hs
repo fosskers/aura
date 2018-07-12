@@ -68,6 +68,8 @@ data Dep = Dep { depNameOf      :: T.Text
                , depVerDemandOf :: VersionDemand } deriving (Eq, Show)
 
 -- TODO Return an Either if it failed to parse?
+-- TODO Doctest here, and fix up the haddock
+-- | Parse a dependency entry as it would appear in a PKGBUILD:
 parseDep :: T.Text -> Maybe Dep
 parseDep = either (const Nothing) Just . parse dep "dep"
   where dep :: Parsec Void T.Text Dep
@@ -98,6 +100,7 @@ instance Show VersionDemand where
     show (MustBe   v) = T.unpack $ "="  <> prettyV v
     show Anything     = "Anything"
 
+-- | Attempt to zoom into the `Versioning` hiding within a `VersionDemand`.
 _VersionDemand :: Traversal' VersionDemand Versioning
 _VersionDemand f (LessThan v) = LessThan <$> f v
 _VersionDemand f (AtLeast v)  = AtLeast  <$> f v
@@ -167,6 +170,7 @@ data Buildable = Buildable
     -- | Did the user select this package, or is it being built as a dep?
     , isExplicit    :: Bool }
 
+-- | All human languages available for text output.
 data Language = English
               | Japanese
               | Polish
@@ -184,6 +188,7 @@ data Language = English
               | Chinese
                 deriving (Eq, Enum, Bounded, Ord, Show)
 
+-- | The various ways that dependency resolution can fail.
 data DepError = NonExistant T.Text
               | VerConflict (Doc AnsiStyle)
               | Ignored (Doc AnsiStyle)
