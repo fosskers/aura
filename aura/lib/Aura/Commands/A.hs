@@ -37,6 +37,8 @@ import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
 import           Data.Aeson.Encode.Pretty (encodePrettyToTextBuilder)
 import qualified Data.Set as S
+import           Data.Set.NonEmpty (NonEmptySet)
+import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Text.Lazy (toStrict)
@@ -54,7 +56,7 @@ installOptions = I.InstallOptions { I.label         = "AUR"
                                   , I.repository    = pacmanRepo <> aurRepo }
 
 -- | The result of @-A@.
-install :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set T.Text -> Eff r ()
+install :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet T.Text -> Eff r ()
 install = I.install installOptions
 
 -- | The result of @-Au@.
@@ -76,7 +78,8 @@ upgradeAURPkgs pkgs = do
             | otherwise -> do
                 reportPkgsToUpgrade toUpgrade (toList devel)
                 unless (switch ss DryRun) saveState
-                install $ S.fromList (map (aurNameOf . fst) toUpgrade) <> pkgs <> devel
+                let allPs = NES.fromSet $ S.fromList (map (aurNameOf . fst) toUpgrade) <> pkgs <> devel
+                traverse_ install allPs
 
 possibleUpdates :: (Member (Reader Settings) r, Member IO r) => S.Set SimplePkg -> Eff r [(AurInfo, Versioning)]
 possibleUpdates (toList -> pkgs) = do
@@ -91,14 +94,14 @@ auraCheck toUpgrade = if "aura" `elem` toUpgrade
                          else pure False
 
 auraUpgrade :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Eff r ()
-auraUpgrade = install $ S.singleton "aura"
+auraUpgrade = install $ NES.singleton "aura"
 
 develPkgCheck :: (Member (Reader Settings) r, Member IO r) => Eff r (S.Set T.Text)
 develPkgCheck = ask >>= \ss ->
   if switch ss RebuildDevel then send develPkgs else pure S.empty
 
 -- | The result of @-Ai@.
-aurPkgInfo :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r ()
+aurPkgInfo :: (Member (Reader Settings) r, Member IO r) => NonEmptySet T.Text -> Eff r ()
 aurPkgInfo = aurInfo . toList >=> traverse_ displayAurPkgInfo
 
 displayAurPkgInfo :: (Member (Reader Settings) r, Member IO r) => AurInfo -> Eff r ()
@@ -141,7 +144,7 @@ renderSearch ss r (i, e) = searchResult
           verboseInfo  = repo <> n <+> v <+> "(" <> l <+> "|" <+> p <>
                          ")" <> (if e then annotate bold " [installed]" else "") <> "\n    " <> d
           repo = magenta "aur/"
-          n = mconcat . intersperse (bCyan $ pretty r) . map (annotate bold . pretty) . T.splitOn r $ aurNameOf i
+          n = fold . intersperse (bCyan $ pretty r) . map (annotate bold . pretty) . T.splitOn r $ aurNameOf i
           d = maybe "(null)" pretty $ aurDescriptionOf i
           l = yellow . pretty $ aurVotesOf i  -- `l` for likes?
           p = yellow . pretty . T.pack . printf "%0.2f" $ popularityOf i
@@ -150,11 +153,12 @@ renderSearch ss r (i, e) = searchResult
             Nothing -> green . pretty $ aurVersionOf i
 
 -- | The result of @-Ad@.
-displayPkgDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set T.Text -> Eff r ()
+displayPkgDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+  NonEmptySet T.Text -> Eff r ()
 displayPkgDeps = I.displayPkgDeps installOptions
 
 -- | The result of @-Ap@.
-displayPkgbuild :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r ()
+displayPkgbuild :: (Member (Reader Settings) r, Member IO r) => NonEmptySet T.Text -> Eff r ()
 displayPkgbuild ps = do
   man <- asks managerOf
   pbs <- catMaybes <$> traverse (send . pkgbuild @IO man) (toList ps)
@@ -166,7 +170,7 @@ isntMostRecent (ai, v) = trueVer > Just v
   where trueVer = either (const Nothing) Just . versioning $ aurVersionOf ai
 
 -- | Similar to @-Ai@, but yields the raw data as JSON instead.
-aurJson :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r ()
+aurJson :: (Member (Reader Settings) r, Member IO r) => NonEmptySet T.Text -> Eff r ()
 aurJson ps = do
   m <- asks managerOf
   infos <- send . info @IO m $ toList ps

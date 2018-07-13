@@ -11,7 +11,10 @@ import           Aura.Pacman (pacmanConfFile, defaultLogFile)
 import           Aura.Settings
 import           Aura.Types (Language(..), User(..))
 import           BasePrelude hiding (Version, FilePath, option, log, exp)
+import qualified Data.List.NonEmpty as NEL
 import qualified Data.Set as S
+import           Data.Set.NonEmpty (NonEmptySet)
+import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Options.Applicative
 import           Shelly
@@ -30,30 +33,30 @@ data Program = Program {
   , _language  :: Maybe Language } deriving (Show)
 
 -- | Inherited operations that are fed down to Pacman.
-data PacmanOp = Database (Either DatabaseOp (S.Set T.Text))
+data PacmanOp = Database (Either DatabaseOp (NonEmptySet T.Text))
               | Files    (S.Set FilesOp)
               | Query    (Either QueryOp (S.Set QueryFilter, S.Set T.Text))
-              | Remove   (S.Set RemoveOp) (S.Set T.Text)
-              | Sync     (Either SyncOp (S.Set T.Text)) (S.Set SyncSwitch)
-              | TestDeps (S.Set T.Text)
-              | Upgrade  (Maybe UpgradeSwitch) (S.Set T.Text)
+              | Remove   (S.Set RemoveOp) (NonEmptySet T.Text)
+              | Sync     (Either SyncOp (NonEmptySet T.Text)) (S.Set SyncSwitch)
+              | TestDeps (NonEmptySet T.Text)
+              | Upgrade  (Maybe UpgradeSwitch) (NonEmptySet T.Text)
               deriving (Show)
 
 instance Flagable PacmanOp where
   asFlag (Database (Left o))      = "-D" : asFlag o
   asFlag (Database (Right fs))    = "-D" : toList fs
-  asFlag (Files os)               = "-F" : concatMap asFlag (toList os)
+  asFlag (Files os)               = "-F" : foldMap asFlag os
   asFlag (Query (Left o))         = "-Q" : asFlag o
-  asFlag (Query (Right (fs, ps))) = "-Q" : toList ps ++ concatMap asFlag (toList fs)
-  asFlag (Remove os ps)           = "-R" : concatMap asFlag (toList os) ++ toList ps
-  asFlag (Sync (Left o) ss)       = "-S" : concatMap asFlag (toList ss) ++ asFlag o
-  asFlag (Sync (Right ps) ss)     = "-S" : concatMap asFlag (toList ss) ++ toList ps
+  asFlag (Query (Right (fs, ps))) = "-Q" : toList ps ++ foldMap asFlag fs
+  asFlag (Remove os ps)           = "-R" : foldMap asFlag os ++ toList ps
+  asFlag (Sync (Left o) ss)       = "-S" : foldMap asFlag ss ++ asFlag o
+  asFlag (Sync (Right ps) ss)     = "-S" : foldMap asFlag ss ++ toList ps
   asFlag (TestDeps ps)            = "-T" : toList ps
   asFlag (Upgrade s ps)           = "-U" : maybe [] asFlag s ++ toList ps
 
 data DatabaseOp = DBCheck
-                | DBAsDeps     (S.Set T.Text)
-                | DBAsExplicit (S.Set T.Text)
+                | DBAsDeps     (NonEmptySet T.Text)
+                | DBAsExplicit (NonEmptySet T.Text)
                 deriving (Show)
 
 instance Flagable DatabaseOp where
@@ -61,7 +64,7 @@ instance Flagable DatabaseOp where
   asFlag (DBAsDeps ps)     = "--asdeps" : toList ps
   asFlag (DBAsExplicit ps) = "--asexplicit" : toList ps
 
-data FilesOp = FilesList  (S.Set T.Text)
+data FilesOp = FilesList  (NonEmptySet T.Text)
              | FilesOwns   T.Text
              | FilesSearch T.Text
              | FilesRegex
@@ -77,13 +80,13 @@ instance Flagable FilesOp where
   asFlag FilesRefresh         = ["--refresh"]
   asFlag FilesMachineReadable = ["--machinereadable"]
 
-data QueryOp = QueryChangelog (S.Set T.Text)
-             | QueryGroups    (S.Set T.Text)
-             | QueryInfo      (S.Set T.Text)
-             | QueryCheck     (S.Set T.Text)
-             | QueryList      (S.Set T.Text)
-             | QueryOwns      (S.Set T.Text)
-             | QueryFile      (S.Set T.Text)
+data QueryOp = QueryChangelog (NonEmptySet T.Text)
+             | QueryGroups    (NonEmptySet T.Text)
+             | QueryInfo      (NonEmptySet T.Text)
+             | QueryCheck     (NonEmptySet T.Text)
+             | QueryList      (NonEmptySet T.Text)
+             | QueryOwns      (NonEmptySet T.Text)
+             | QueryFile      (NonEmptySet T.Text)
              | QuerySearch     T.Text
              deriving (Show)
 
@@ -126,12 +129,12 @@ instance Flagable RemoveOp where
   asFlag RemoveUnneeded  = ["--unneeded"]
 
 data SyncOp = SyncClean
-            | SyncGroups   (S.Set T.Text)
-            | SyncInfo     (S.Set T.Text)
+            | SyncGroups   (NonEmptySet T.Text)
+            | SyncInfo     (NonEmptySet T.Text)
             | SyncList      T.Text
             | SyncSearch    T.Text
             | SyncUpgrade  (S.Set T.Text)
-            | SyncDownload (S.Set T.Text)
+            | SyncDownload (NonEmptySet T.Text)
             deriving (Show)
 
 instance Flagable SyncOp where
@@ -190,9 +193,9 @@ instance Flagable MiscOp where
   asFlag MiscVerbose             = ["--verbose"]
 
 -- | Operations unique to Aura.
-data AuraOp = AurSync (Either AurOp (S.Set T.Text))
+data AuraOp = AurSync (Either AurOp (NonEmptySet T.Text))
             | Backup  (Maybe  BackupOp)
-            | Cache   (Either CacheOp (S.Set T.Text))
+            | Cache   (Either CacheOp (NonEmptySet T.Text))
             | Log     (Maybe  LogOp)
             | Orphans (Maybe  OrphanOp)
             | Version
@@ -200,21 +203,21 @@ data AuraOp = AurSync (Either AurOp (S.Set T.Text))
             | ViewConf
             deriving (Show)
 
-data AurOp = AurDeps     (S.Set T.Text)
-           | AurInfo     (S.Set T.Text)
-           | AurPkgbuild (S.Set T.Text)
+data AurOp = AurDeps     (NonEmptySet T.Text)
+           | AurInfo     (NonEmptySet T.Text)
+           | AurPkgbuild (NonEmptySet T.Text)
            | AurSearch    T.Text
            | AurUpgrade  (S.Set T.Text)
-           | AurJson     (S.Set T.Text)
+           | AurJson     (NonEmptySet T.Text)
            deriving (Show)
 
 data BackupOp = BackupClean Word | BackupRestore | BackupList deriving (Show)
 
 data CacheOp = CacheBackup FilePath | CacheClean Word | CacheCleanNotSaved | CacheSearch T.Text deriving (Show)
 
-data LogOp = LogInfo (S.Set T.Text) | LogSearch T.Text deriving (Show)
+data LogOp = LogInfo (NonEmptySet T.Text) | LogSearch T.Text deriving (Show)
 
-data OrphanOp = OrphanAbandon | OrphanAdopt (S.Set T.Text) deriving (Show)
+data OrphanOp = OrphanAbandon | OrphanAdopt (NonEmptySet T.Text) deriving (Show)
 
 opts :: ParserInfo Program
 opts = info (program <**> helper) (fullDesc <> header "Aura - Package manager for Arch Linux and the AUR.")
@@ -229,7 +232,8 @@ program = Program
         pacOps = database <|> files <|> queries <|> remove <|> sync <|> testdeps <|> upgrades
 
 aursync :: Parser AuraOp
-aursync = bigA *> (AurSync <$> (fmap (Right . S.map T.toLower) someArgs <|> fmap Left mods))
+aursync = bigA *>
+  (AurSync <$> (fmap (Right . NES.fromNonEmpty . fmap T.toLower . NES.toNonEmpty) someArgs <|> fmap Left mods))
   where bigA = flag' () (long "aursync" <> short 'A' <> help "Install packages from the AUR.")
         mods     = deps <|> ainfo <|> pkgbuild <|> search <|> upgrade <|> aur
         deps     = AurDeps <$> (flag' () (long "deps" <> short 'd' <> hidden <> help "View dependencies of an AUR package.") *> someArgs')
@@ -351,11 +355,12 @@ queries :: Parser PacmanOp
 queries = bigQ *> (Query <$> (fmap Right query <|> fmap Left mods))
   where bigQ  = flag' () (long "query" <> short 'Q' <> help "Interact with the local package database.")
         query = (,) <$> queryFilters <*> manyArgs
-        mods  = chl <|> gps <|> inf <|> lst <|> own <|> fls <|> sch
+        mods  = chl <|> gps <|> inf <|> lst <|> own <|> fls <|> sch <|> chk
         chl   = QueryChangelog <$> (flag' () (long "changelog" <> short 'c' <> hidden <> help "View a package's changelog.") *> someArgs')
         gps   = QueryGroups <$> (flag' () (long "groups" <> short 'g' <> hidden <> help "View all members of a package group.") *> someArgs')
         inf   = QueryInfo <$> (flag' () (long "info" <> short 'i' <> hidden <> help "View package information.") *> someArgs')
         lst   = QueryList <$> (flag' () (long "list" <> short 'l' <> hidden <> help "List files owned by a package.") *> someArgs')
+        chk = QueryCheck <$> (flag' () (long "check" <> short 'k' <> hidden <> help "Check that package files exist.") *> someArgs')
         own   = QueryOwns <$> (flag' () (long "owns" <> short 'o' <> hidden <> help "Find the package some file belongs to.") *> someArgs')
         fls   = QueryFile <$> (flag' () (long "file" <> short 'p' <> hidden <> help "Query a package file.") *> someArgs')
         sch   = QuerySearch <$> strOption (long "search" <> short 's' <> metavar "REGEX" <> hidden <> help "Search the local database.")
@@ -419,12 +424,12 @@ upgrades = bigU *> (Upgrade <$> optional mods <*> someArgs)
         mods = flag' UpgradeAsDeps (long "asdeps" <> hidden) <|> flag' UpgradeAsExplicit (long "asexplicit" <> hidden)
 
 -- | One or more arguments.
-someArgs :: Parser (S.Set T.Text)
-someArgs = S.fromList <$> some (argument str (metavar "PACKAGES"))
+someArgs :: Parser (NonEmptySet T.Text)
+someArgs = NES.fromNonEmpty . fromJust . NEL.nonEmpty <$> some (argument str (metavar "PACKAGES"))
 
 -- | Same as `someArgs`, but the help message "brief display" won't show PACKAGES.
-someArgs' :: Parser (S.Set T.Text)
-someArgs' = S.fromList <$> some (argument str (metavar "PACKAGES" <> hidden))
+someArgs' :: Parser (NonEmptySet T.Text)
+someArgs' = NES.fromNonEmpty . fromJust . NEL.nonEmpty <$> some (argument str (metavar "PACKAGES" <> hidden))
 
 -- | Zero or more arguments.
 manyArgs :: Parser (S.Set T.Text)

@@ -32,11 +32,15 @@ import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding ((<>))
+import           Control.Compactable (fmapEither)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import qualified Data.List.NonEmpty as NEL
 import           Data.Semigroup
 import qualified Data.Set as S
+import           Data.Set.NonEmpty (NonEmptySet)
+import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
@@ -52,22 +56,28 @@ import           Shelly (Sh, test_f)
 
 -- | A `Repository` is a place where packages may be fetched from. Multiple
 -- repositories can be combined with the `Semigroup` instance.
--- Check packages in batches for efficiency.
-newtype Repository = Repository { repoLookup :: Settings -> S.Set T.Text -> IO (S.Set T.Text, [Package]) }
+-- Checks packages in batches for efficiency.
+newtype Repository = Repository { repoLookup :: Settings -> NonEmptySet T.Text -> IO (S.Set T.Text, S.Set Package) }
 
 instance Semigroup Repository where
   a <> b = Repository $ \ss ps -> do
-    (bads, goods)   <- repoLookup a ss ps
-    (bads', goods') <- repoLookup b ss bads
-    pure (bads', goods <> goods')
+    (bads, goods) <- repoLookup a ss ps
+    case NES.fromSet bads of
+      Nothing    -> pure (bads, goods)
+      Just bads' -> second (goods <>) <$> repoLookup b ss bads'
 
 ---------------------------------
 -- Functions common to `Package`s
 ---------------------------------
 -- | Partition a list of packages into pacman and buildable groups.
-partitionPkgs :: [S.Set Package] -> ([T.Text], [[Buildable]])
-partitionPkgs = first concat . unzip . map (partitionEithers . map (toEither . pkgInstallTypeOf) . toList)
-  where toEither (Pacman s) = Left  s
+-- Yes, this is the correct signature. As far as this function (in isolation)
+-- is concerned, there is no way to guarantee that the list of `NonEmptySet`s
+-- will itself be non-empty.
+partitionPkgs :: NonEmpty (NonEmptySet Package) -> ([T.Text], [NonEmptySet Buildable])
+partitionPkgs = bimap fold f . unzip . fmap g . toList
+  where g = fmapEither (toEither . _pkgInstallType) . toList
+        f = mapMaybe (fmap NES.fromNonEmpty . NEL.nonEmpty)
+        toEither (Pacman s) = Left  s
         toEither (Build  b) = Right b
 
 -----------
@@ -95,8 +105,8 @@ foreignPackages :: IO (S.Set SimplePkg)
 foreignPackages = S.fromList . mapMaybe simplepkg' . T.lines <$> pacmanOutput ["-Qm"]
 
 -- | Packages marked as a dependency, yet are required by no other package.
-orphans :: IO [T.Text]
-orphans = T.lines <$> pacmanOutput ["-Qqdt"]
+orphans :: IO (S.Set T.Text)
+orphans = S.fromList . T.lines <$> pacmanOutput ["-Qqdt"]
 
 -- | Any package whose name is suffixed by git, hg, svn, darcs, cvs, or bzr.
 develPkgs :: IO (S.Set T.Text)
@@ -110,11 +120,10 @@ isInstalled :: T.Text -> IO (Maybe T.Text)
 isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", pkg]
 
 -- | An @-Rsu@ call.
-removePkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => [T.Text] -> Eff r ()
-removePkgs []   = pure ()
+removePkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet T.Text -> Eff r ()
 removePkgs pkgs = do
   pacOpts <- asks (asFlag . commonConfigOf)
-  rethrow . pacman $ ["-Rsu"] <> pkgs <> pacOpts
+  rethrow . pacman $ ["-Rsu"] <> toList pkgs <> pacOpts
 
 -- | True if a dependency is satisfied by an installed package.
 -- `asT` renders the `VersionDemand` into the specific form that `pacman -T`
@@ -152,9 +161,8 @@ scold ss = putStrLnA ss . red
 -- | Report a message with multiple associated items. Usually a list of
 -- naughty packages.
 report :: (Member (Reader Settings) r, Member IO r) =>
-  (Doc AnsiStyle -> Doc AnsiStyle) -> (Language -> Doc AnsiStyle) -> [T.Text] -> Eff r ()
-report _ _ []     = pure ()
+  (Doc AnsiStyle -> Doc AnsiStyle) -> (Language -> Doc AnsiStyle) -> NonEmpty T.Text -> Eff r ()
 report c msg pkgs = do
   ss <- ask
   send . putStrLnA ss . c . msg $ langOf ss
-  send . T.putStrLn . dtot . colourCheck ss . vsep $ map (cyan . pretty) pkgs
+  send . T.putStrLn . dtot . colourCheck ss . vsep . map (cyan . pretty) $ toList pkgs

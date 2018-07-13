@@ -35,17 +35,17 @@ import           Text.Megaparsec.Char
 pacmanRepo :: Repository
 pacmanRepo = Repository $ \ss names -> do
   badsgoods <- partitionEithers <$> mapConcurrently (resolveName ss) (toList names)
-  bitraverse (pure . S.fromList) (traverse f) badsgoods
+  bitraverse (pure . S.fromList) (fmap S.fromList . traverse f) badsgoods
   where f (r, p) = packageRepo r p <$> mostRecentVersion r
 
 packageRepo :: T.Text -> Provides -> Maybe Versioning -> Package
 packageRepo name pro ver = Package
-  { pkgNameOf        = name
-  , pkgVersionOf     = ver
-  , pkgBaseNameOf    = name
-  , pkgProvidesOf    = pro
-  , pkgDepsOf        = []  -- Let pacman handle dependencies.
-  , pkgInstallTypeOf = Pacman name }
+  { _pkgName        = name
+  , _pkgVersion     = ver
+  , _pkgBaseName    = name
+  , _pkgProvides    = pro
+  , _pkgDeps        = []  -- Let pacman handle dependencies.
+  , _pkgInstallType = Pacman name }
 
 -- | If given a virtual package, try to find a real package to install.
 -- Functions like this are why we need libalpm.

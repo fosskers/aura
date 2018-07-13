@@ -66,7 +66,7 @@ instance Flagable CommonConfig where
     ++ either (const []) (\p -> ["--logfile", toTextIgnore p]) lfp
     ++ list [] (\xs -> ["--ignore", T.intercalate "," $ toList xs]) (toList igs)
     ++ list [] (\xs -> ["--ignoregroup", T.intercalate "," $ toList xs]) (toList igg)
-    ++ concatMap asFlag (toList cs)
+    ++ foldMap asFlag cs
 
 -- | Yes/No-style switches that are common to both Aura and Pacman.
 -- Aura acts on them first, then passes them down to @pacman@ if necessary.

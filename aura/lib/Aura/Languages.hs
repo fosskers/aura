@@ -276,6 +276,14 @@ buildFail_8 = \case
     Russian    -> "Произошла ошибка makepkg."
     _          -> "There was a makepkg failure."
 
+buildFail_9 :: Language -> Doc AnsiStyle
+buildFail_9 = \case
+  _ -> "Failed to detect any built package files (*.pkg.tar.xz)."
+
+buildFail_10 :: Language -> Doc AnsiStyle
+buildFail_10 = \case
+  _ -> "Every package failed to build."
+
 ------------------------------
 -- Aura/Dependencies functions
 ------------------------------
@@ -333,6 +341,10 @@ depError l (UnparsableVersion s) = case l of
 depError l (BrokenProvides pkg pro name) = case l of
   Russian    -> "Пакету " <> bt pkg <> " требуется " <> bt name <> ", предоставляющий " <> bt pro <> "."
   _          -> "The package " <> bt pkg <> " needs " <> bt name <> ", which provides " <> bt pro <> "."
+
+missingPkg_3 :: Language -> Doc AnsiStyle
+missingPkg_3 = \case
+  _ -> "There was an error reorganizing the dependency graph. If you see this, something is very wrong."
 
 -----------------
 -- aura functions

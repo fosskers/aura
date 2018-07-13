@@ -14,6 +14,7 @@ module Aura.Pkgbuild.Records
 import           Aura.Pkgbuild.Base
 import           Aura.Types
 import           BasePrelude
+import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Text as T
 import           Shelly (Sh, writefile, test_f, shelly, mkdir_p)
 
@@ -25,7 +26,7 @@ hasPkgbuildStored :: T.Text -> IO Bool
 hasPkgbuildStored = shelly . test_f . pkgbuildPath
 
 -- | Write the PKGBUILDs of some `Buildable`s to disk.
-storePkgbuilds :: [Buildable] -> IO ()
+storePkgbuilds :: NonEmptySet Buildable -> IO ()
 storePkgbuilds bs = shelly $ do
   mkdir_p pkgbuildCache
   traverse_ (\p -> writePkgbuild (bldNameOf p) (_pkgbuild $ pkgbuildOf p)) bs

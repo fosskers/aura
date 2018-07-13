@@ -52,6 +52,7 @@ import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
 import qualified Data.Set as S
+import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
@@ -91,7 +92,7 @@ executeOpts ops = do
     pPrintNoColor (commonConfigOf ss)
   let p (ps, ms) = rethrow . pacman $
         asFlag ps
-        ++ concatMap asFlag (toList ms)
+        ++ foldMap asFlag ms
         ++ asFlag (commonConfigOf ss)
         ++ bool [] ["--quiet"] (switch ss LowVerbosity)
   case ops of
@@ -127,7 +128,7 @@ executeOpts ops = do
     Right (Orphans o) ->
       case o of
         Nothing               -> send O.displayOrphans
-        Just OrphanAbandon    -> sudo $ send orphans >>= removePkgs
+        Just OrphanAbandon    -> sudo $ send orphans >>= traverse_ removePkgs . NES.fromSet
         Just (OrphanAdopt ps) -> O.adoptPkg ps
     Right Version   -> send $ getVersionInfo >>= animateVersionMsg ss auraVersion
     Right Languages -> displayOutputLanguages

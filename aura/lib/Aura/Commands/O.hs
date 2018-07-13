@@ -19,7 +19,7 @@ import           BasePrelude
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
-import qualified Data.Set as S
+import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
@@ -30,5 +30,5 @@ displayOrphans :: IO ()
 displayOrphans = orphans >>= traverse_ T.putStrLn
 
 -- | Identical to @-D --asexplicit@.
-adoptPkg :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set T.Text -> Eff r ()
+adoptPkg :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet T.Text -> Eff r ()
 adoptPkg pkgs = sudo . rethrow . pacman $ ["-D", "--asexplicit"] <> toList pkgs

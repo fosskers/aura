@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, MonoLocalBinds, TupleSections #-}
+{-# LANGUAGE FlexibleContexts, MonoLocalBinds, TupleSections, MultiWayIf #-}
 
 -- |
 -- Module    : Aura.Dependencies
@@ -22,9 +22,13 @@ import           Control.Concurrent.STM.TVar
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import qualified Data.List.NonEmpty as NEL
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
+import           Data.Set.NonEmpty (NonEmptySet)
+import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
+import           Data.Witherable (wither)
 
 ---
 
@@ -34,48 +38,54 @@ import qualified Data.Text as T
 --
 -- Deeper layers of the result list (generally) depend on the previous layers.
 resolveDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  Repository -> [Package] -> Eff r [S.Set Package]
+  Repository -> NonEmptySet Package -> Eff r (NonEmpty (NonEmptySet Package))
 resolveDeps repo ps = do
   ss <- ask
   tv <- send $ newTVarIO M.empty
   de <- send $ resolveDeps' ss tv repo ps
   m  <- send $ readTVarIO tv
-  bool (throwError . Failure $ missingPkg_2 de) (pure $ sortInstall m) $ null de
+  unless (null de) . throwError . Failure $ missingPkg_2 de
+  maybe (throwError $ Failure missingPkg_3) pure $ sortInstall m
 
 -- | An empty list signals success.
-resolveDeps' :: Settings -> TVar (M.Map T.Text Package) -> Repository -> [Package] -> IO [DepError]
-resolveDeps' ss tv repo ps = concat <$> mapConcurrently f ps
+resolveDeps' :: Settings -> TVar (M.Map T.Text Package) -> Repository -> NonEmptySet Package -> IO [DepError]
+resolveDeps' ss tv repo ps = fold <$> mapConcurrently f (toList ps)
   where
     -- | `atomically` ensures that only one instance of a `Package` can
     -- ever be written to the TVar.
     f :: Package -> IO [DepError]
     f p = join . atomically $ do
       m <- readTVar tv
-      case M.lookup (pkgNameOf p) m of
+      case M.lookup (_pkgName p) m of
         Just _  -> pure $ pure []  -- Bail early, we've checked this package already.
-        Nothing -> modifyTVar' tv (M.insert (pkgNameOf p) p) $> do
-          deps <- fmap catMaybes . traverse (\d -> bool (Just d) Nothing <$> isSatisfied d) $ pkgDepsOf p
-          (bads, goods) <- repoLookup repo ss . S.fromList $ map depNameOf deps
+        Nothing -> modifyTVar' tv (M.insert (_pkgName p) p) $> do
+          deps <- wither (\d -> bool (Just d) Nothing <$> isSatisfied d) $ _pkgDeps p
+          case NEL.nonEmpty $ map depNameOf deps of
+            Nothing    -> pure []
+            Just deps' -> do
+              (bads, goods) <- repoLookup repo ss $ NES.fromNonEmpty deps'
 
-          let depsMap     = M.fromList $ map (depNameOf &&& id) deps
-              (brk, cnfs) = second catMaybes . partitionEithers $ map conflicting goods
-              evils       = map NonExistant (toList bads) <> cnfs <> brk
+              let depsMap = M.fromList $ map (depNameOf &&& id) deps
+                  cnfs    = mapMaybe conflicting $ toList goods
+                  evils   = map NonExistant (toList bads) <> cnfs
 
-              conflicting :: Package -> Either DepError (Maybe DepError)
-              conflicting p' = broken p' >>= Right . realPkgConflicts ss (pkgNameOf p) p'
+                  conflicting :: Package -> Maybe DepError
+                  conflicting p' = either Just (realPkgConflicts ss (_pkgName p) p') $ provider p'
 
-              broken :: Package -> Either DepError Dep
-              broken p' = maybe (Left $ BrokenProvides (pkgNameOf p) (_provides $ pkgProvidesOf p') (pkgNameOf p'))
-                          Right $
-                          M.lookup (_provides $ pkgProvidesOf p') depsMap <|> M.lookup (pkgNameOf p') depsMap
+                  provider :: Package -> Either DepError Dep
+                  provider p' = maybe
+                                (Left $ BrokenProvides (_pkgName p) (_provides $ _pkgProvides p') (_pkgName p'))
+                                Right $
+                                M.lookup (_provides $ _pkgProvides p') depsMap <|> M.lookup (_pkgName p') depsMap
 
-          bool (pure evils) (resolveDeps' ss tv repo goods) $ null evils
+              if | not (null evils) -> pure evils
+                 | otherwise        -> maybe (pure []) (resolveDeps' ss tv repo) $ NES.fromSet goods
 
-sortInstall :: M.Map T.Text Package -> [S.Set Package]
-sortInstall m = batch $ overlay connected singles
-  where f p = mapMaybe (\d -> fmap (p,) $ depNameOf d `M.lookup` m) $ pkgDepsOf p  -- TODO handle "provides"?
+sortInstall :: M.Map T.Text Package -> Maybe (NonEmpty (NonEmptySet Package))
+sortInstall m = NEL.nonEmpty . mapMaybe NES.fromSet . batch $ overlay connected singles
+  where f p = mapMaybe (\d -> fmap (p,) $ depNameOf d `M.lookup` m) $ _pkgDeps p  -- TODO handle "provides"?
         elems     = M.elems m
-        connected = edges $ concatMap f elems
+        connected = edges $ foldMap f elems
         singles   = overlays $ map vertex elems
 
 -- | Find the vertices that have no dependencies.

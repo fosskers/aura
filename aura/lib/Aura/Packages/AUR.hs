@@ -28,10 +28,13 @@ import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils (quietSh)
 import           BasePrelude hiding (head)
+import           Control.Compactable (traverseEither)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Reader
 import           Data.List.NonEmpty (head)
 import qualified Data.Set as S
+import           Data.Set.NonEmpty (NonEmptySet)
+import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Versions (versioning)
 import           Linux.Arch.Aur
@@ -43,22 +46,20 @@ import           System.FilePath ((</>))
 
 -- | Attempt to retrieve info about a given `S.Set` of packages from the AUR.
 -- This is a signature expected by `InstallOptions`.
-aurLookup :: MonadIO m => Settings -> S.Set T.Text -> m (S.Set T.Text, [Buildable])
-aurLookup ss names
-  | null names = pure (S.empty, [])
-  | otherwise  = do
-      (bads, goods) <- info m (toList names) >>= fmap partitionEithers . traverse (buildable m)
-      let goodNames = S.fromList $ map bldNameOf goods
-      pure (S.fromList bads <> names S.\\ goodNames, goods)
-        where m = managerOf ss
+aurLookup :: MonadIO m => Settings -> NonEmptySet T.Text -> m (S.Set T.Text, S.Set Buildable)
+aurLookup ss names = do
+  (bads, goods) <- info m (toList names) >>= traverseEither (buildable m)
+  let goodNames = S.fromList $ map bldNameOf goods
+  pure (S.fromList bads <> NES.toSet names S.\\ goodNames, S.fromList goods)
+    where m = managerOf ss
 
 -- | Yield fully realized `Package`s from the AUR. This is the other signature
 -- expected by `InstallOptions`.
 aurRepo :: Repository
 aurRepo = Repository $ \ss ps -> do
   (bads, goods) <- aurLookup ss ps
-  pkgs <- traverse (packageBuildable ss) goods
-  pure (bads, pkgs)
+  pkgs <- traverse (packageBuildable ss) $ toList goods
+  pure (bads, S.fromList pkgs)
 
 buildable :: MonadIO m => Manager -> AurInfo -> m (Either T.Text Buildable)
 buildable m ai = do

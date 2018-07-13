@@ -33,6 +33,8 @@ import           Control.Monad.Freer.Reader
 import           Data.List.NonEmpty (nonEmpty)
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
+import           Data.Set.NonEmpty (NonEmptySet)
+import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Shelly hiding (path)
@@ -41,13 +43,14 @@ import           Shelly hiding (path)
 
 -- | Interactive. Gives the user a choice as to exactly what versions
 -- they want to downgrade to.
-downgradePackages :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set T.Text -> Eff r ()
+downgradePackages :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+  NonEmptySet T.Text -> Eff r ()
 downgradePackages pkgs =
   unless (null pkgs) $ do
     ss    <- ask
     let cachePath = either id id . cachePathOf $ commonConfigOf ss
     reals <- send . shelly @IO $ pkgsInCache ss pkgs
-    report red reportBadDowngradePkgs_1 . toList $ pkgs S.\\ reals
+    traverse_ (report red reportBadDowngradePkgs_1) . nonEmpty . toList $ (NES.toSet pkgs) S.\\ reals
     unless (null reals) $ do
       cache   <- send . shelly @IO $ cacheContents cachePath
       choices <- traverse (getDowngradeChoice cache) $ toList reals

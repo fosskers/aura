@@ -28,8 +28,8 @@ realPkgConflicts ss parent pkg dep
     | isNothing curVer                = Just $ UnparsableVersion name
     | isVersionConflict reqVer curVer = Just $ VerConflict failMsg2
     | otherwise                       = Nothing
-    where name     = pkgNameOf pkg
-          curVer   = pkgVersionOf pkg   & _Just . release .~ []
+    where name     = _pkgName pkg
+          curVer   = _pkgVersion pkg   & _Just . release .~ []
           reqVer   = depVerDemandOf dep & _VersionDemand . release .~ []
           lang     = langOf ss
           toIgnore = ignoredPkgsOf $ commonConfigOf ss

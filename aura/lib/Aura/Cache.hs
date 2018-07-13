@@ -24,8 +24,11 @@ import           Aura.Types
 import           BasePrelude hiding (FilePath)
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
+import           Data.Set.NonEmpty (NonEmptySet)
+import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Shelly
+
 
 ---
 
@@ -49,10 +52,10 @@ cacheContents :: FilePath -> Sh Cache
 cacheContents = fmap (cache . map PackagePath) . ls
 
 -- | All packages from a given `S.Set` who have a copy in the cache.
-pkgsInCache :: Settings -> S.Set T.Text -> Sh (S.Set T.Text)
+pkgsInCache :: Settings -> NonEmptySet T.Text -> Sh (S.Set T.Text)
 pkgsInCache ss ps = do
   c <- cacheContents . either id id . cachePathOf $ commonConfigOf ss
-  pure . S.filter (`S.member` ps) . S.map _spName . M.keysSet $ _cache c
+  pure . S.filter (`NES.member` ps) . S.map _spName . M.keysSet $ _cache c
 
 -- | Any entries (filepaths) in the cache that match a given `T.Text`.
 cacheMatches :: Settings -> T.Text -> Sh [PackagePath]

@@ -21,9 +21,11 @@ import           Aura.Languages
 import           Aura.Settings
 import           Aura.Utils
 import           BasePrelude hiding (FilePath)
+import           Control.Compactable (fmapEither)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Reader
-import qualified Data.Set as S
+import qualified Data.List.NonEmpty as NEL
+import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
@@ -50,15 +52,14 @@ searchLogFile ss input = do
   traverse_ T.putStrLn $ searchLines input logFile
 
 -- | The result of @-Li@.
-logInfoOnPkg :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r ()
-logInfoOnPkg pkgs =
-  unless (null pkgs) $ do
-    ss <- ask
-    let pth = either id id . logPathOf $ commonConfigOf ss
-    logFile <- fmap (Log . T.lines) . send . shelly @IO $ readfile pth
-    let (bads, goods) = partitionEithers . map (logLookup logFile) $ toList pkgs
-    report red reportNotInLog_1 bads
-    send . traverse_ T.putStrLn $ map (renderEntry ss) goods
+logInfoOnPkg :: (Member (Reader Settings) r, Member IO r) => NonEmptySet T.Text -> Eff r ()
+logInfoOnPkg pkgs = do
+  ss <- ask
+  let pth = either id id . logPathOf $ commonConfigOf ss
+  logFile <- fmap (Log . T.lines) . send . shelly @IO $ readfile pth
+  let (bads, goods) = fmapEither (logLookup logFile) $ toList pkgs
+  traverse_ (report red reportNotInLog_1) $ NEL.nonEmpty bads
+  send . traverse_ T.putStrLn $ map (renderEntry ss) goods
 
 logLookup :: Log -> T.Text -> Either T.Text LogEntry
 logLookup (Log lns) p = case matches of

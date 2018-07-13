@@ -135,7 +135,7 @@ restoreState = send getStateFiles >>= maybe (throwError $ Failure restoreState_2
               Cache cache <- send . shelly @IO $ cacheContents pth
               let StateDiff rein remo = compareStates past curr
                   (okay, nope)        = partition (`M.member` cache) rein
-              unless (null nope) . report red restoreState_1 $ map _spName nope
+              traverse_ (report red restoreState_1 . fmap _spName) $ nonEmpty nope
               reinstallAndRemove (mapMaybe (`M.lookup` cache) okay) remo
 
 selectState :: NonEmpty FilePath -> IO FilePath

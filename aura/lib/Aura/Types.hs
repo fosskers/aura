@@ -49,29 +49,29 @@ import           Text.Megaparsec.Char
 
 -- TODO Make all these fields strict, here and elsewhere.
 -- | A package to be installed.
-data Package = Package { pkgNameOf        :: T.Text
-                       , pkgVersionOf     :: Maybe Versioning
-                       , pkgBaseNameOf    :: T.Text
-                       , pkgProvidesOf    :: Provides
-                       , pkgDepsOf        :: [Dep]
-                       , pkgInstallTypeOf :: InstallType }
+data Package = Package { _pkgName        :: T.Text
+                       , _pkgVersion     :: Maybe Versioning
+                       , _pkgBaseName    :: T.Text
+                       , _pkgProvides    :: Provides
+                       , _pkgDeps        :: [Dep]
+                       , _pkgInstallType :: InstallType }
 
 -- | Hacky instance to allow `Package` to be used in a `Set`. Beware.
 instance Eq Package where
-  a == b = pkgNameOf a == pkgNameOf b && pkgVersionOf a == pkgVersionOf b
+  a == b = _pkgName a == _pkgName b && _pkgVersion a == _pkgVersion b
 
 instance Ord Package where
-  compare a b = case compare (pkgNameOf a) (pkgNameOf b) of
-    EQ  -> compare (pkgVersionOf a) (pkgVersionOf b)
+  compare a b = case compare (_pkgName a) (_pkgName b) of
+    EQ  -> compare (_pkgVersion a) (_pkgVersion b)
     oth -> oth
   -- a <= b = pkgNameOf a <= pkgNameOf b && pkgVersionOf a <= pkgVersionOf b
 
 instance Show Package where
-  show p = printf "%s (%s)" (show $ pkgNameOf p) (show . fmap prettyV $ pkgVersionOf p)
+  show p = printf "%s (%s)" (show $ _pkgName p) (show . fmap prettyV $ _pkgVersion p)
 
 -- | A dependency on another package.
 data Dep = Dep { depNameOf      :: T.Text
-               , depVerDemandOf :: VersionDemand } deriving (Eq, Show)
+               , depVerDemandOf :: VersionDemand } deriving (Eq, Ord, Show)
 
 -- TODO Return an Either if it failed to parse?
 -- TODO Doctest here, and fix up the haddock
@@ -97,7 +97,7 @@ data VersionDemand = LessThan Versioning
                    | MoreThan Versioning
                    | MustBe   Versioning
                    | Anything
-                   deriving (Eq)
+                   deriving (Eq, Ord)
 
 instance Show VersionDemand where
     show (LessThan v) = T.unpack $ "<"  <> prettyV v
@@ -159,11 +159,11 @@ instance Ord PackagePath where
           f = (fmap _spName &&& fmap _spVersion) . simplepkg
 
 -- | The contents of a PKGBUILD file.
-newtype Pkgbuild = Pkgbuild { _pkgbuild :: T.Text }
+newtype Pkgbuild = Pkgbuild { _pkgbuild :: T.Text } deriving (Eq, Ord)
 
 -- | The dependency which some package provides. May not be the same name
 -- as the package itself (e.g. cronie provides cron).
-newtype Provides = Provides { _provides :: T.Text }
+newtype Provides = Provides { _provides :: T.Text } deriving (Eq, Ord)
 
 -- | A package to be built manually before installing.
 data Buildable = Buildable
@@ -174,7 +174,7 @@ data Buildable = Buildable
     , bldDepsOf     :: [Dep]
     , bldVersionOf  :: Maybe Versioning
     -- | Did the user select this package, or is it being built as a dep?
-    , isExplicit    :: Bool }
+    , isExplicit    :: Bool } deriving (Eq, Ord)
 
 -- | All human languages available for text output.
 data Language = English

@@ -7,3 +7,6 @@ packages:
 
 extra-deps:
   - algebraic-graphs-0.1.1.1
+  - compactable-0.1.2.2
+  - git: https://github.com/andrewthad/non-empty-containers
+    commit: a8293c40382983622cea9703da7dc841093e016c

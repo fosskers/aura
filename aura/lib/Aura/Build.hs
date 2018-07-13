@@ -27,8 +27,13 @@ import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
 import           Data.Bitraversable (bitraverse)
+import qualified Data.List.NonEmpty as NEL
+import           Data.Semigroup.Foldable (fold1)
 import qualified Data.Set as S
+import           Data.Set.NonEmpty (NonEmptySet)
+import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
+import           Data.Witherable (wither)
 import           Filesystem.Path (filename)
 import           Shelly
 import           System.IO (hFlush, stdout)
@@ -39,31 +44,33 @@ srcPkgStore :: FilePath
 srcPkgStore = "/var/cache/aura/src"
 
 -- | Expects files like: \/var\/cache\/pacman\/pkg\/*.pkg.tar.xz
-installPkgFiles :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => [PackagePath] -> Eff r ()
-installPkgFiles []    = pure ()
+installPkgFiles :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+  NonEmptySet PackagePath -> Eff r ()
 installPkgFiles files = do
   ss <- ask
   send . shelly @IO $ checkDBLock ss
-  rethrow . pacman $ ["-U"] <> map (toTextIgnore . _pkgpath) files <> asFlag (commonConfigOf ss)
+  rethrow . pacman $ ["-U"] <> map (toTextIgnore . _pkgpath) (toList files) <> asFlag (commonConfigOf ss)
 
 -- | All building occurs within temp directories,
 -- or in a location specified by the user with flags.
 buildPackages :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  [Buildable] -> Eff r [PackagePath]
-buildPackages = fmap concat . traverse build
+  NonEmptySet Buildable -> Eff r (NonEmptySet PackagePath)
+buildPackages = wither build . toList >=> maybe bad (pure . fold1) . NEL.nonEmpty
+  where bad = throwError $ Failure buildFail_10
 
 -- | Handles the building of Packages. Fails nicely.
 -- Assumed: All dependencies are already installed.
-build :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Buildable -> Eff r [PackagePath]
+build :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+  Buildable -> Eff r (Maybe (NonEmptySet PackagePath))
 build p = do
   ss     <- ask
   send $ notify ss (buildPackages_1 (bldNameOf p) (langOf ss)) *> hFlush stdout
   result <- send . shelly @IO $ build' ss p
-  either (buildFail p) pure result
+  either (buildFail p) (pure . Just) result
 
 -- | Should never throw a Shelly Exception. In theory all errors
 -- will come back via the @Language -> String@ function.
-build' :: Settings -> Buildable -> Sh (Either Failure [PackagePath])
+build' :: Settings -> Buildable -> Sh (Either Failure (NonEmptySet PackagePath))
 build' ss p = do
   let pth = buildPathOf $ buildConfigOf ss
   cd pth
@@ -77,7 +84,7 @@ build' ss p = do
           pNames <- makepkg ss user
           bitraverse pure g pNames
         g pns = do
-          paths <- traverse (moveToCachePath ss) pns
+          paths <- fmap NES.fromNonEmpty . traverse (moveToCachePath ss) $ NES.toNonEmpty pns
           when (S.member AllSource . makepkgFlagsOf $ buildConfigOf ss) $
             makepkgSource user >>= traverse_ moveToSourcePath
           pure paths
@@ -102,13 +109,13 @@ overwritePkgbuild ss p = when (switch ss HotEdit || switch ss UseCustomizepkg) $
 -- | Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
 buildFail :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  Buildable -> Failure -> Eff r [a]
+  Buildable -> Failure -> Eff r (Maybe a)
 buildFail p (Failure err) = do
   ss <- ask
   send . scold ss $ buildFail_1 (bldNameOf p) (langOf ss)
   send . scold ss . err $ langOf ss
   response <- send $ optionalPrompt ss buildFail_6
-  bool (throwError $ Failure buildFail_5) (pure []) response
+  bool (throwError $ Failure buildFail_5) (pure Nothing) response
 
 -- | Moves a file to the pacman package cache and returns its location.
 moveToCachePath :: Settings -> FilePath -> Sh PackagePath
