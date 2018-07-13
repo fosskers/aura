@@ -51,6 +51,7 @@ import           BasePrelude hiding (Version)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
@@ -81,16 +82,20 @@ exit :: Settings -> Either (Doc AnsiStyle) () -> IO a
 exit ss (Left e)  = scold ss e *> exitFailure
 exit _  (Right _) = exitSuccess
 
-executeOpts :: Either PacmanOp AuraOp -> Eff '[Error Failure, Reader Settings, IO] ()
+executeOpts :: Either (PacmanOp, S.Set MiscOp) AuraOp -> Eff '[Error Failure, Reader Settings, IO] ()
 executeOpts ops = do
   ss <- ask
   when (shared ss Debug) $ do
     pPrintNoColor ops
     pPrintNoColor (buildConfigOf ss)
     pPrintNoColor (commonConfigOf ss)
-  let p o = rethrow . pacman $ asFlag o ++ asFlag (commonConfigOf ss) ++ bool [] ["--quiet"] (switch ss LowVerbosity)
+  let p (ps, ms) = rethrow . pacman $
+        asFlag ps
+        ++ concatMap asFlag (toList ms)
+        ++ asFlag (commonConfigOf ss)
+        ++ bool [] ["--quiet"] (switch ss LowVerbosity)
   case ops of
-    Left o@(Sync (Left (SyncUpgrade _)) _ _) -> sudo B.saveState *> p o
+    Left o@(Sync (Left (SyncUpgrade _)) _, _) -> sudo B.saveState *> p o
     Left o -> p o
     Right (AurSync o) ->
       case o of

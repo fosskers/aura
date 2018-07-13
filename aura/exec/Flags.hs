@@ -2,7 +2,7 @@
 
 module Flags
   ( Program(..), opts
-  , PacmanOp(..), SyncOp(..)
+  , PacmanOp(..), SyncOp(..), MiscOp(..)
   , AuraOp(..), AurOp(..), BackupOp(..), CacheOp(..), LogOp(..), OrphanOp(..)
   ) where
 
@@ -21,7 +21,7 @@ import           Shelly
 -- | A description of a run of Aura to attempt.
 data Program = Program {
   -- ^ Whether Aura handles everything, or the ops and input are just passed down to Pacman.
-  _operation   :: Either PacmanOp AuraOp
+  _operation   :: Either (PacmanOp, S.Set MiscOp) AuraOp
   -- ^ Settings common to both Aura and Pacman.
   , _commons   :: CommonConfig
   -- ^ Settings specific to building packages.
@@ -30,26 +30,26 @@ data Program = Program {
   , _language  :: Maybe Language } deriving (Show)
 
 -- | Inherited operations that are fed down to Pacman.
-data PacmanOp = Database (Either DatabaseOp (S.Set T.Text)) (S.Set MiscOp)
-              | Files    (S.Set FilesOp) (S.Set MiscOp)
-              | Query    (Either QueryOp (S.Set QueryFilter, S.Set T.Text)) (S.Set MiscOp)
-              | Remove   (S.Set RemoveOp) (S.Set T.Text) (S.Set MiscOp)
-              | Sync     (Either SyncOp (S.Set T.Text)) (S.Set SyncSwitch) (S.Set MiscOp)
-              | TestDeps (S.Set T.Text) (S.Set MiscOp)
-              | Upgrade  (Maybe UpgradeSwitch) (S.Set T.Text) (S.Set MiscOp)
+data PacmanOp = Database (Either DatabaseOp (S.Set T.Text))
+              | Files    (S.Set FilesOp)
+              | Query    (Either QueryOp (S.Set QueryFilter, S.Set T.Text))
+              | Remove   (S.Set RemoveOp) (S.Set T.Text)
+              | Sync     (Either SyncOp (S.Set T.Text)) (S.Set SyncSwitch)
+              | TestDeps (S.Set T.Text)
+              | Upgrade  (Maybe UpgradeSwitch) (S.Set T.Text)
               deriving (Show)
 
 instance Flagable PacmanOp where
-  asFlag (Database (Left o) ms)      = "-D" : asFlag o ++ concatMap asFlag (toList ms)
-  asFlag (Database (Right fs) ms)    = "-D" : toList fs ++ concatMap asFlag (toList ms)
-  asFlag (Files os ms)               = "-F" : concatMap asFlag (toList os) ++ concatMap asFlag (toList ms)
-  asFlag (Query (Left o) ms)         = "-Q" : asFlag o ++ concatMap asFlag (toList ms)
-  asFlag (Query (Right (fs, ps)) ms) = "-Q" : toList ps ++ concatMap asFlag (toList fs) ++ concatMap asFlag (toList ms)
-  asFlag (Remove os ps ms)           = "-R" : concatMap asFlag (toList os) ++ toList ps ++ concatMap asFlag (toList ms)
-  asFlag (Sync (Left o) ss ms)       = "-S" : concatMap asFlag (toList ss) ++ asFlag o ++ concatMap asFlag (toList ms)
-  asFlag (Sync (Right ps) ss ms)     = "-S" : concatMap asFlag (toList ss) ++ toList ps ++ concatMap asFlag (toList ms)
-  asFlag (TestDeps ps ms)            = "-T" : toList ps ++ concatMap asFlag (toList ms)
-  asFlag (Upgrade s ps ms)           = "-U" : maybe [] asFlag s ++ toList ps ++ concatMap asFlag (toList ms)
+  asFlag (Database (Left o))      = "-D" : asFlag o
+  asFlag (Database (Right fs))    = "-D" : toList fs
+  asFlag (Files os)               = "-F" : concatMap asFlag (toList os)
+  asFlag (Query (Left o))         = "-Q" : asFlag o
+  asFlag (Query (Right (fs, ps))) = "-Q" : toList ps ++ concatMap asFlag (toList fs)
+  asFlag (Remove os ps)           = "-R" : concatMap asFlag (toList os) ++ toList ps
+  asFlag (Sync (Left o) ss)       = "-S" : concatMap asFlag (toList ss) ++ asFlag o
+  asFlag (Sync (Right ps) ss)     = "-S" : concatMap asFlag (toList ss) ++ toList ps
+  asFlag (TestDeps ps)            = "-T" : toList ps
+  asFlag (Upgrade s ps)           = "-U" : maybe [] asFlag s ++ toList ps
 
 data DatabaseOp = DBCheck
                 | DBAsDeps     (S.Set T.Text)
@@ -221,7 +221,7 @@ opts = info (program <**> helper) (fullDesc <> header "Aura - Package manager fo
 
 program :: Parser Program
 program = Program
-  <$> (fmap Right aurOps <|> fmap Left pacOps)
+  <$> (fmap Right aurOps <|> ((\ps ms -> Left (ps, ms)) <$> pacOps <*> misc))
   <*> commonConfig
   <*> buildConfig
   <*> optional language
@@ -329,7 +329,7 @@ commonSwitches = S.fromList <$> many (nc <|> no <|> dbg <|> clr)
         f _        = Auto
 
 database :: Parser PacmanOp
-database = bigD *> (Database <$> (fmap Right someArgs <|> fmap Left mods) <*> misc)
+database = bigD *> (Database <$> (fmap Right someArgs <|> fmap Left mods))
   where bigD   = flag' () (long "database" <> short 'D' <> help "Interact with the package database.")
         mods   = check <|> asdeps <|> asexp
         check  = flag' DBCheck (long "check" <> short 'k' <> hidden <> help "Test local database validity.")
@@ -337,7 +337,7 @@ database = bigD *> (Database <$> (fmap Right someArgs <|> fmap Left mods) <*> mi
         asexp  = DBAsExplicit <$> (flag' () (long "asexplicit" <> hidden <> help "Mark packages as being explicitely installed.") *> someArgs')
 
 files :: Parser PacmanOp
-files = bigF *> (Files <$> fmap S.fromList (many mods) <*> misc)
+files = bigF *> (Files <$> fmap S.fromList (many mods))
   where bigF = flag' () (long "files" <> short 'F' <> help "Interact with the file database.")
         mods = lst <|> own <|> sch <|> rgx <|> rfr <|> mch
         lst  = FilesList <$> (flag' () (long "list" <> short 'l' <> hidden <> help "List the files owned by given packages.") *> someArgs')
@@ -348,7 +348,7 @@ files = bigF *> (Files <$> fmap S.fromList (many mods) <*> misc)
         mch  = flag' FilesMachineReadable (long "machinereadable" <> hidden <> help "Produce machine-readable output.")
 
 queries :: Parser PacmanOp
-queries = bigQ *> (Query <$> (fmap Right query <|> fmap Left mods) <*> misc)
+queries = bigQ *> (Query <$> (fmap Right query <|> fmap Left mods))
   where bigQ  = flag' () (long "query" <> short 'Q' <> help "Interact with the local package database.")
         query = (,) <$> queryFilters <*> manyArgs
         mods  = chl <|> gps <|> inf <|> lst <|> own <|> fls <|> sch
@@ -370,7 +370,7 @@ queryFilters = S.fromList <$> many (dps <|> exp <|> frg <|> ntv <|> urq <|> upg)
         upg = flag' QueryUpgrades (long "upgrades" <> short 'u' <> hidden <> help "[filter] Only list outdated packages.")
 
 remove :: Parser PacmanOp
-remove = bigR *> (Remove <$> mods <*> someArgs <*> misc)
+remove = bigR *> (Remove <$> mods <*> someArgs)
   where bigR     = flag' () (long "remove" <> short 'R' <> help "Uninstall packages.")
         mods     = S.fromList <$> many (cascade <|> nosave <|> recurse <|> unneeded)
         cascade  = flag' RemoveCascade (long "cascade" <> short 'c' <> hidden <> help "Remove packages and all others that depend on them.")
@@ -379,7 +379,7 @@ remove = bigR *> (Remove <$> mods <*> someArgs <*> misc)
         unneeded = flag' RemoveUnneeded (long "unneeded" <> short 'u' <> hidden <> help "Remove unneeded packages.")
 
 sync :: Parser PacmanOp
-sync = bigS *> (Sync <$> (fmap Right someArgs <|> fmap Left mods) <*> ref <*> misc)
+sync = bigS *> (Sync <$> (fmap Right someArgs <|> fmap Left mods) <*> ref)
   where bigS = flag' () (long "sync" <> short 'S' <> help "Install official packages.")
         ref  = S.fromList <$> many (flag' SyncRefresh (long "refresh" <> short 'y' <> hidden <> help "Update the package database."))
         mods = cln <|> gps <|> inf <|> lst <|> sch <|> upg <|> dnl
@@ -410,11 +410,11 @@ misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> gpg <|> hd <|> con <|
         asi = MiscAssumeInstalled <$> strOption (long "assume-installed" <> metavar "<package=version>" <> hidden <> help "Add a virtual package to satisfy dependencies.")
 
 testdeps :: Parser PacmanOp
-testdeps = bigT *> (TestDeps <$> someArgs <*> misc)
+testdeps = bigT *> (TestDeps <$> someArgs)
   where bigT = flag' () (long "deptest" <> short 'T' <> help "Test dependencies - useful for scripts.")
 
 upgrades :: Parser PacmanOp
-upgrades = bigU *> (Upgrade <$> optional mods <*> someArgs <*> misc)
+upgrades = bigU *> (Upgrade <$> optional mods <*> someArgs)
   where bigU = flag' () (long "upgrade" <> short 'U' <> help "Install given package files.")
         mods = flag' UpgradeAsDeps (long "asdeps" <> hidden) <|> flag' UpgradeAsExplicit (long "asexplicit" <> hidden)
 
