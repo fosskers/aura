@@ -36,6 +36,7 @@ import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
 import           Data.Aeson.Encode.Pretty (encodePrettyToTextBuilder)
+import qualified Data.List.NonEmpty as NEL
 import qualified Data.Set as S
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
@@ -63,38 +64,53 @@ install = I.install installOptions
 upgradeAURPkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set T.Text -> Eff r ()
 upgradeAURPkgs pkgs = do
   ss <- ask
-  let !ignores     = ignoredPkgsOf $ commonConfigOf ss
-      notIgnored p = p `notElem` ignores
-      lang         = langOf ss
-  send . notify ss $ upgradeAURPkgs_1 lang
-  foreignPkgs <- S.filter (notIgnored . _spName) <$> send foreignPackages
-  toUpgrade   <- possibleUpdates foreignPkgs
-  auraFirst   <- auraCheck $ map (aurNameOf . fst) toUpgrade
-  if | auraFirst -> auraUpgrade
-     | otherwise -> do
-         devel <- develPkgCheck
-         send . notify ss $ upgradeAURPkgs_2 lang
-         if | null toUpgrade && null devel -> send . warn ss $ upgradeAURPkgs_3 lang
-            | otherwise -> do
-                reportPkgsToUpgrade toUpgrade (toList devel)
-                unless (switch ss DryRun) saveState
-                let allPs = NES.fromSet $ S.fromList (map (aurNameOf . fst) toUpgrade) <> pkgs <> devel
-                traverse_ install allPs
+  send . notify ss . upgradeAURPkgs_1 $ langOf ss
+  send (foreigns ss) >>= traverse_ (upgrade pkgs) . NES.fromSet
 
-possibleUpdates :: (Member (Reader Settings) r, Member IO r) => S.Set SimplePkg -> Eff r [(AurInfo, Versioning)]
-possibleUpdates (toList -> pkgs) = do
-  aurInfos <- aurInfo $ map _spName pkgs
+-- | Foreign packages to consider for upgrading, after "ignored packages" have
+-- been taken into consideration.
+foreigns :: Settings -> IO (S.Set SimplePkg)
+foreigns ss = S.filter (notIgnored . _spName) <$> foreignPackages
+  where ignores = ignoredPkgsOf $ commonConfigOf ss
+        notIgnored p = p `notElem` ignores
+
+upgrade :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+  S.Set T.Text -> NonEmptySet SimplePkg -> Eff r ()
+upgrade pkgs fs = do
+  ss        <- ask
+  toUpgrade <- possibleUpdates fs
+  let names = map (aurNameOf . fst) toUpgrade
+  auraFirst <- auraCheck names
+  case auraFirst of
+    Just a  -> auraUpgrade a
+    Nothing -> do
+      devel <- develPkgCheck
+      send . notify ss . upgradeAURPkgs_2 $ langOf ss
+      if | null toUpgrade && null devel -> send . warn ss . upgradeAURPkgs_3 $ langOf ss
+         | otherwise -> do
+             reportPkgsToUpgrade toUpgrade (toList devel)
+             unless (switch ss DryRun) saveState
+             traverse_ install . NES.fromSet $ S.fromList names <> pkgs <> devel
+
+possibleUpdates :: (Member (Reader Settings) r, Member IO r) => NonEmptySet SimplePkg -> Eff r [(AurInfo, Versioning)]
+possibleUpdates (NES.toNonEmpty -> pkgs) = do
+  aurInfos <- aurInfo $ fmap _spName pkgs
   let !names  = map aurNameOf aurInfos
-      aurPkgs = filter (\(SimplePkg n _) -> n `elem` names) pkgs
+      aurPkgs = NEL.filter (\(SimplePkg n _) -> n `elem` names) pkgs
   pure . filter isntMostRecent . zip aurInfos $ map _spVersion aurPkgs
 
-auraCheck :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r Bool
-auraCheck toUpgrade = if "aura" `elem` toUpgrade
-                         then ask >>= \ss -> send (optionalPrompt ss auraCheck_1)
-                         else pure False
+-- | Is there an update for Aura that we could apply first?
+auraCheck :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r (Maybe T.Text)
+auraCheck ps = join <$> traverse f auraPkg
+  where f a = do
+          ss <- ask
+          bool Nothing (Just a) <$> send (optionalPrompt ss auraCheck_1)
+        auraPkg | "aura" `elem` ps     = Just "aura"
+                | "aura-bin" `elem` ps = Just "aura-bin"
+                | otherwise            = Nothing
 
-auraUpgrade :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Eff r ()
-auraUpgrade = install $ NES.singleton "aura"
+auraUpgrade :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => T.Text -> Eff r ()
+auraUpgrade = install . NES.singleton
 
 develPkgCheck :: (Member (Reader Settings) r, Member IO r) => Eff r (S.Set T.Text)
 develPkgCheck = ask >>= \ss ->
@@ -102,7 +118,7 @@ develPkgCheck = ask >>= \ss ->
 
 -- | The result of @-Ai@.
 aurPkgInfo :: (Member (Reader Settings) r, Member IO r) => NonEmptySet T.Text -> Eff r ()
-aurPkgInfo = aurInfo . toList >=> traverse_ displayAurPkgInfo
+aurPkgInfo = aurInfo . NES.toNonEmpty >=> traverse_ displayAurPkgInfo
 
 displayAurPkgInfo :: (Member (Reader Settings) r, Member IO r) => AurInfo -> Eff r ()
 displayAurPkgInfo ai = ask >>= \ss -> send . T.putStrLn $ renderAurPkgInfo ss ai <> "\n"

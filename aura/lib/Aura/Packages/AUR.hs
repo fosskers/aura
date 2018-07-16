@@ -113,5 +113,5 @@ aurSearch regex = do
   pure $ sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) res
 
 -- | Frontend to the `aur` library. For @-Ai@.
-aurInfo :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r [AurInfo]
-aurInfo pkgs = asks managerOf >>= \m -> sortAurInfo (Just SortAlphabetically) <$> send (info @IO m pkgs)
+aurInfo :: (Member (Reader Settings) r, Member IO r) => NonEmpty T.Text -> Eff r [AurInfo]
+aurInfo pkgs = asks managerOf >>= \m -> sortAurInfo (Just SortAlphabetically) <$> send (info @IO m $ toList pkgs)
