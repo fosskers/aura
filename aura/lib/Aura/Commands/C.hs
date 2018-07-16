@@ -45,16 +45,15 @@ import           Shelly hiding (path)
 -- they want to downgrade to.
 downgradePackages :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
   NonEmptySet T.Text -> Eff r ()
-downgradePackages pkgs =
-  unless (null pkgs) $ do
-    ss    <- ask
-    let cachePath = either id id . cachePathOf $ commonConfigOf ss
-    reals <- send . shelly @IO $ pkgsInCache ss pkgs
-    traverse_ (report red reportBadDowngradePkgs_1) . nonEmpty . toList $ (NES.toSet pkgs) S.\\ reals
-    unless (null reals) $ do
-      cache   <- send . shelly @IO $ cacheContents cachePath
-      choices <- traverse (getDowngradeChoice cache) $ toList reals
-      rethrow . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (toTextIgnore . (cachePath </>)) choices
+downgradePackages pkgs = do
+  ss    <- ask
+  let cachePath = either id id . cachePathOf $ commonConfigOf ss
+  reals <- send . shelly @IO $ pkgsInCache ss pkgs
+  traverse_ (report red reportBadDowngradePkgs_1) . nonEmpty . toList $ (NES.toSet pkgs) S.\\ reals
+  unless (null reals) $ do
+    cache   <- send . shelly @IO $ cacheContents cachePath
+    choices <- traverse (getDowngradeChoice cache) $ toList reals
+    rethrow . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (toTextIgnore . (cachePath </>)) choices
 
 -- | For a given package, get a choice from the user about which version of it to
 -- downgrade to.
