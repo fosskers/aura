@@ -27,9 +27,7 @@ Kai Zhang                                     | Chinese
 Onoue Takuro                                  | Japanese
 -}
 
-module Aura.Languages
-  ( module Aura.Languages
-  , Language(..) ) where
+module Aura.Languages where
 
 import           Aura.Colour
 import qualified Aura.Languages.Fields as Fields

@@ -33,9 +33,9 @@ module Aura.Utils
   ) where
 
 import           Aura.Colour
-import           Aura.Languages (Language, whitespace, yesNoMessage, yesPattern)
+import           Aura.Languages (whitespace, yesNoMessage, yesPattern)
 import           Aura.Settings
-import           Aura.Types (Environment(..), User(..))
+import           Aura.Types (Language, Environment(..), User(..))
 import           BasePrelude hiding (FilePath, Version, (<+>))
 import           Control.Monad.Trans (MonadIO)
 import qualified Data.ByteString.Lazy as L

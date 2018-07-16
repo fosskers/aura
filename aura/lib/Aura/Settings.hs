@@ -23,8 +23,7 @@ module Aura.Settings
   , Makepkg(..)
   ) where
 
-import           Aura.Languages (Language)
-import           Aura.Types (Environment, User, list)
+import           Aura.Types (Language, Environment, User, list)
 import           BasePrelude hiding (FilePath)
 import qualified Data.Set as S
 import           Data.Text (Text)
