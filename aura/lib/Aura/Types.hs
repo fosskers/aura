@@ -54,17 +54,12 @@ data Package = Package { _pkgName        :: T.Text
                        , _pkgBaseName    :: T.Text
                        , _pkgProvides    :: Provides
                        , _pkgDeps        :: [Dep]
-                       , _pkgInstallType :: InstallType }
-
--- | Hacky instance to allow `Package` to be used in a `Set`. Beware.
-instance Eq Package where
-  a == b = _pkgName a == _pkgName b && _pkgVersion a == _pkgVersion b
+                       , _pkgInstallType :: InstallType } deriving (Eq)
 
 instance Ord Package where
   compare a b = case compare (_pkgName a) (_pkgName b) of
     EQ  -> compare (_pkgVersion a) (_pkgVersion b)
     oth -> oth
-  -- a <= b = pkgNameOf a <= pkgNameOf b && pkgVersionOf a <= pkgVersionOf b
 
 instance Show Package where
   show p = printf "%s (%s)" (show $ _pkgName p) (show . fmap prettyV $ _pkgVersion p)
@@ -115,7 +110,7 @@ _VersionDemand f (MustBe v)   = MustBe   <$> f v
 _VersionDemand _ p            = pure p
 
 -- | The installation method.
-data InstallType = Pacman T.Text | Build Buildable
+data InstallType = Pacman T.Text | Build Buildable deriving (Eq)
 
 -- | A package name with its version number.
 data SimplePkg = SimplePkg { _spName :: T.Text, _spVersion :: Versioning } deriving (Eq, Ord, Show)
@@ -159,11 +154,11 @@ instance Ord PackagePath where
           f = (fmap _spName &&& fmap _spVersion) . simplepkg
 
 -- | The contents of a PKGBUILD file.
-newtype Pkgbuild = Pkgbuild { _pkgbuild :: T.Text } deriving (Eq, Ord)
+newtype Pkgbuild = Pkgbuild { _pkgbuild :: T.Text } deriving (Eq, Ord, Show)
 
 -- | The dependency which some package provides. May not be the same name
 -- as the package itself (e.g. cronie provides cron).
-newtype Provides = Provides { _provides :: T.Text } deriving (Eq, Ord)
+newtype Provides = Provides { _provides :: T.Text } deriving (Eq, Ord, Show)
 
 -- | A package to be built manually before installing.
 data Buildable = Buildable
@@ -174,7 +169,7 @@ data Buildable = Buildable
     , bldDepsOf     :: [Dep]
     , bldVersionOf  :: Maybe Versioning
     -- | Did the user select this package, or is it being built as a dep?
-    , isExplicit    :: Bool } deriving (Eq, Ord)
+    , isExplicit    :: Bool } deriving (Eq, Ord, Show)
 
 -- | All human languages available for text output.
 data Language = English

@@ -65,7 +65,7 @@ data StateDiff = StateDiff { _toAlter :: [SimplePkg], _toRemove :: [T.Text] }
 stateCache :: FilePath
 stateCache = "/var/cache/aura/states"
 
--- | Does a given package have an entry in a particulr `PkgState`?
+-- | Does a given package have an entry in a particular `PkgState`?
 inState :: SimplePkg -> PkgState -> Bool
 inState (SimplePkg n v) s = maybe False (v ==) . M.lookup n $ pkgsOf s
 

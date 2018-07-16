@@ -79,7 +79,7 @@ upgrade :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =
 upgrade pkgs fs = do
   ss        <- ask
   toUpgrade <- possibleUpdates fs
-  let names = map (aurNameOf . fst) toUpgrade
+  let !names = map (aurNameOf . fst) toUpgrade
   auraFirst <- auraCheck names
   case auraFirst of
     Just a  -> auraUpgrade a
