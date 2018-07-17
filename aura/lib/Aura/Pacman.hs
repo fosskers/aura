@@ -37,6 +37,7 @@ import           Aura.Utils
 import           BasePrelude hiding (some, try)
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
+import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Text as T
 import           Lens.Micro
 import           Lens.Micro.GHC ()
@@ -90,18 +91,18 @@ getPacmanConf fp = shelly $ do
   pure . first (const (Failure confParsing_1)) $ parse config "pacman config" file
 
 -- | Fetches the @IgnorePkg@ entry from the config, if it's there.
-getIgnoredPkgs :: Config -> S.Set T.Text
-getIgnoredPkgs (Config c) = maybe S.empty S.fromList $ M.lookup "IgnorePkg" c
+getIgnoredPkgs :: Config -> S.Set PkgName
+getIgnoredPkgs (Config c) = maybe S.empty (S.fromList . map PkgName) $ M.lookup "IgnorePkg" c
 
 -- | Fetches the @IgnoreGroup@ entry from the config, if it's there.
-getIgnoredGroups :: Config -> S.Set T.Text
-getIgnoredGroups (Config c) = maybe S.empty S.fromList $ M.lookup "IgnoreGroup" c
+getIgnoredGroups :: Config -> S.Set PkgGroup
+getIgnoredGroups (Config c) = maybe S.empty (S.fromList . map PkgGroup) $ M.lookup "IgnoreGroup" c
 
 -- | Given a `Set` of package groups, yield all the packages they contain.
-groupPackages :: S.Set T.Text -> IO (S.Set T.Text)
+groupPackages :: NonEmptySet PkgGroup -> IO (S.Set PkgName)
 groupPackages igs | null igs  = pure S.empty
-                  | otherwise = fmap f . pacmanOutput $ "-Qg" : toList igs
-  where f = S.fromList . map ((!! 1) . T.words) . T.lines  -- Naughty
+                  | otherwise = fmap f . pacmanOutput $ "-Qg" : asFlag igs
+  where f = S.fromList . map (PkgName . (!! 1) . T.words) . T.lines  -- Naughty
 
 -- | Fetches the @CacheDir@ entry from the config, if it's there.
 getCachePath :: Config -> Maybe Sh.FilePath

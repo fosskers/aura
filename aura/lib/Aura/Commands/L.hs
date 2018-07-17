@@ -19,6 +19,7 @@ import           Aura.Colour (red, dtot)
 import           Aura.Core (report)
 import           Aura.Languages
 import           Aura.Settings
+import           Aura.Types (PkgName(..))
 import           Aura.Utils
 import           BasePrelude hiding (FilePath)
 import           Control.Compactable (fmapEither)
@@ -36,7 +37,7 @@ import           Shelly
 -- | The contents of the Pacman log file.
 newtype Log = Log [T.Text]
 
-data LogEntry = LogEntry { _pkgName :: T.Text, _firstInstall :: T.Text, _upgrades :: Word, _recent :: [T.Text] }
+data LogEntry = LogEntry { _pkgName :: PkgName, _firstInstall :: T.Text, _upgrades :: Word, _recent :: [T.Text] }
 
 -- | Pipes the pacman log file through a @less@ session.
 viewLogFile :: (Member (Reader Settings) r, Member IO r) => Eff r ()
@@ -52,7 +53,7 @@ searchLogFile ss input = do
   traverse_ T.putStrLn $ searchLines input logFile
 
 -- | The result of @-Li@.
-logInfoOnPkg :: (Member (Reader Settings) r, Member IO r) => NonEmptySet T.Text -> Eff r ()
+logInfoOnPkg :: (Member (Reader Settings) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
 logInfoOnPkg pkgs = do
   ss <- ask
   let pth = either id id . logPathOf $ commonConfigOf ss
@@ -61,17 +62,17 @@ logInfoOnPkg pkgs = do
   traverse_ (report red reportNotInLog_1) $ NEL.nonEmpty bads
   send . traverse_ T.putStrLn $ map (renderEntry ss) goods
 
-logLookup :: Log -> T.Text -> Either T.Text LogEntry
+logLookup :: Log -> PkgName -> Either PkgName LogEntry
 logLookup (Log lns) p = case matches of
   []    -> Left p
   (h:t) -> Right $ LogEntry p
                    (T.take 16 $ T.tail h)
                    (fromIntegral . length $ filter (T.isInfixOf " upgraded ") t)
                    (reverse . take 5 $ reverse t)
-  where matches = filter (T.isInfixOf (" " <> p <> " (")) lns
+  where matches = filter (T.isInfixOf (" " <> _pkgname p <> " (")) lns
 
 renderEntry :: Settings -> LogEntry -> T.Text
-renderEntry ss (LogEntry pn fi us rs) =
+renderEntry ss (LogEntry (PkgName pn) fi us rs) =
   dtot . colourCheck ss $ entrify ss fields entries <> hardline <> recent <> hardline
   where fields  = logLookUpFields $ langOf ss
         entries = map pretty [ pn, fi, T.pack (show us), "" ]

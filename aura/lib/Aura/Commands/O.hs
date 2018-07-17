@@ -20,15 +20,14 @@ import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
 import           Data.Set.NonEmpty (NonEmptySet)
-import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
 ---
 
 -- | Print the result of @pacman -Qqdt@
 displayOrphans :: IO ()
-displayOrphans = orphans >>= traverse_ T.putStrLn
+displayOrphans = orphans >>= traverse_ (T.putStrLn . _pkgname)
 
 -- | Identical to @-D --asexplicit@.
-adoptPkg :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet T.Text -> Eff r ()
-adoptPkg pkgs = sudo . rethrow . pacman $ ["-D", "--asexplicit"] <> toList pkgs
+adoptPkg :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
+adoptPkg pkgs = sudo . rethrow . pacman $ ["-D", "--asexplicit"] <> asFlag pkgs

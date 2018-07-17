@@ -48,16 +48,17 @@ import           System.IO (hFlush, stdout)
 
 ---
 
+-- TODO Factor this back out.
 -- | Installation options.
 data InstallOptions = InstallOptions
                       { label         :: T.Text
-                      , installLookup :: Settings -> NonEmptySet T.Text -> IO (S.Set T.Text, S.Set Buildable)
+                      , installLookup :: Settings -> NonEmptySet PkgName -> IO (S.Set PkgName, S.Set Buildable)
                       , repository    :: Repository }
 
 -- | High level 'install' command. Handles installing
 -- dependencies.
 install :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  InstallOptions -> NonEmptySet T.Text -> Eff r ()
+  InstallOptions -> NonEmptySet PkgName -> Eff r ()
 install opts pkgs = do
   ss <- ask
   if | not $ switch ss DeleteMakeDeps -> install' opts pkgs
@@ -69,7 +70,7 @@ install opts pkgs = do
          traverse_ (\mds -> send (notify ss . removeMakeDepsAfter_1 $ langOf ss) *> removePkgs mds) makeDeps
 
 install' :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  InstallOptions -> NonEmptySet T.Text -> Eff r ()
+  InstallOptions -> NonEmptySet PkgName -> Eff r ()
 install' opts pkgs = do
   ss       <- ask
   unneeded <- bool (pure S.empty) (S.fromList . catMaybes <$> send (mapConcurrently isInstalled $ toList pkgs)) $ shared ss NeededOnly
@@ -104,7 +105,7 @@ install' opts pkgs = do
 -- | Give anything that was installed as a dependency the /Install Reason/ of
 -- "Installed as a dependency for another package".
 annotateDeps :: NonEmptySet Buildable -> IO ()
-annotateDeps bs = void . pacmanSuccess $ ["-D", "--asdeps"] <> map bldNameOf bs'
+annotateDeps bs = void . pacmanSuccess $ ["-D", "--asdeps"] <> asFlag (map bldNameOf bs')
   where bs' = filter (not . isExplicit) $ toList bs
 
 -- | Reduce a list of candidate packages to build, such that there is only one
@@ -119,7 +120,7 @@ uniquePkgBase bs = mapMaybe (NES.fromSet . S.filter (\b -> bldNameOf b `S.member
         goods = S.fromList . map bldNameOf . M.elems . M.fromListWith f $ map (bldBaseNameOf &&& id) bs'
         bs'   = foldMap toList bs
 
-confirmIgnored :: (Member (Reader Settings) r, Member IO r) => S.Set T.Text -> Eff r (S.Set T.Text)
+confirmIgnored :: (Member (Reader Settings) r, Member IO r) => S.Set PkgName -> Eff r (S.Set PkgName)
 confirmIgnored (toList -> ps) = do
   ss <- ask
   S.fromList <$> filterM (send . optionalPrompt ss . confirmIgnored_1) ps
@@ -130,10 +131,10 @@ depsToInstall repo bs = do
   ss <- ask
   traverse (send . packageBuildable ss) (NES.toNonEmpty bs) >>= resolveDeps repo . NES.fromNonEmpty
 
-repoInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmpty T.Text -> Eff r ()
+repoInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmpty PkgName -> Eff r ()
 repoInstall ps = do
   pacOpts <- asks (asFlag . commonConfigOf)
-  rethrow . pacman $ ["-S", "--asdeps"] <> pacOpts <> toList ps
+  rethrow . pacman $ ["-S", "--asdeps"] <> pacOpts <> asFlag ps
 
 buildAndInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
   NonEmpty (NonEmptySet Buildable) -> Eff r ()
@@ -156,11 +157,11 @@ buildAndInstall bss = do
 ------------
 -- | Display dependencies. The result of @-Ad@.
 displayPkgDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  InstallOptions -> NonEmptySet T.Text -> Eff r ()
+  InstallOptions -> NonEmptySet PkgName -> Eff r ()
 displayPkgDeps opts ps = do
   ss   <- ask
   bs   <- snd <$> send (installLookup opts ss ps)
-  case NES.fromSet bs of
+  case NES.fromSet bs of -- TODO Use traverse_?
     Nothing  -> pure ()
     Just bs' -> do
       pkgs <- depsToInstall (repository opts) bs'
@@ -171,17 +172,17 @@ displayPkgDeps opts ps = do
 -- TODO Remove `label` handling. It's not necessary, now that ABS support
 -- has been removed.
 reportPkgsToInstall :: (Member (Reader Settings) r, Member IO r) =>
-   T.Text -> [T.Text] -> [NonEmptySet Buildable] -> Eff r ()
+   T.Text -> [PkgName] -> [NonEmptySet Buildable] -> Eff r ()
 reportPkgsToInstall la rps bps = do
   let (explicits, deps) = partition isExplicit $ foldMap toList bps
   traverse_ (report green reportPkgsToInstall_1) . NEL.nonEmpty $ sort rps
   traverse_ (report green reportPkgsToInstall_3) . NEL.nonEmpty . sort $ map bldNameOf deps
   traverse_ (report green (reportPkgsToInstall_2 la)) . NEL.nonEmpty . sort $ map bldNameOf explicits
 
-reportListOfDeps :: [T.Text] -> [NonEmptySet Buildable] -> IO ()
+reportListOfDeps :: [PkgName] -> [NonEmptySet Buildable] -> IO ()
 reportListOfDeps rps bps = do
-  traverse_ T.putStrLn $ sort rps
-  traverse_ T.putStrLn . sort . map bldNameOf $ foldMap toList bps
+  traverse_ (T.putStrLn . _pkgname) $ sort rps
+  traverse_ (T.putStrLn . _pkgname) . sort . map bldNameOf $ foldMap toList bps
 
 pkgbuildDiffs :: (Member (Reader Settings) r, Member IO r) => S.Set Buildable -> Eff r ()
 pkgbuildDiffs ps = ask >>= check

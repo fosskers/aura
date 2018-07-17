@@ -46,7 +46,7 @@ import           Shelly hiding (time)
 
 -- | All packages installed at some specific `ZonedTime`. Any "pinned" PkgState will
 -- never be deleted by `-Bc`.
-data PkgState = PkgState { timeOf :: ZonedTime, pinnedOf :: Bool, pkgsOf :: M.Map T.Text Versioning }
+data PkgState = PkgState { timeOf :: ZonedTime, pinnedOf :: Bool, pkgsOf :: M.Map PkgName Versioning }
 
 instance ToJSON PkgState where
   toJSON (PkgState t pnd ps) = object [ "time" .= t, "pinned" .= pnd, "packages" .= fmap prettyV ps ]
@@ -59,7 +59,7 @@ instance FromJSON PkgState where
     where f = mapMaybe (either (const Nothing) Just . versioning)
   parseJSON invalid = typeMismatch "PkgState" invalid
 
-data StateDiff = StateDiff { _toAlter :: [SimplePkg], _toRemove :: [T.Text] }
+data StateDiff = StateDiff { _toAlter :: [SimplePkg], _toRemove :: [PkgName] }
 
 -- | The default location of all saved states: \/var\/cache\/aura\/states
 stateCache :: FilePath
@@ -148,11 +148,11 @@ readState = fmap decode . BL.readFile . T.unpack . toTextIgnore
 
 -- | `reinstalling` can mean true reinstalling, or just altering.
 reinstallAndRemove :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  [PackagePath] -> [T.Text] -> Eff r ()
+  [PackagePath] -> [PkgName] -> Eff r ()
 reinstallAndRemove [] [] = ask >>= \ss -> send (warn ss . reinstallAndRemove_1 $ langOf ss)
 reinstallAndRemove down remo
   | null remo = reinstall
   | null down = remove
   | otherwise = reinstall *> remove
-  where remove    = rethrow . pacman $ "-R" : remo
+  where remove    = rethrow . pacman $ "-R" : asFlag remo
         reinstall = rethrow . pacman $ "-U" : map (toTextIgnore . _pkgpath) down

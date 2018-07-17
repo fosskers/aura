@@ -57,7 +57,7 @@ import           Shelly (Sh, test_f)
 -- | A `Repository` is a place where packages may be fetched from. Multiple
 -- repositories can be combined with the `Semigroup` instance.
 -- Checks packages in batches for efficiency.
-newtype Repository = Repository { repoLookup :: Settings -> NonEmptySet T.Text -> IO (S.Set T.Text, S.Set Package) }
+newtype Repository = Repository { repoLookup :: Settings -> NonEmptySet PkgName -> IO (S.Set PkgName, S.Set Package) }
 
 instance Semigroup Repository where
   a <> b = Repository $ \ss ps -> do
@@ -73,7 +73,7 @@ instance Semigroup Repository where
 -- Yes, this is the correct signature. As far as this function (in isolation)
 -- is concerned, there is no way to guarantee that the list of `NonEmptySet`s
 -- will itself be non-empty.
-partitionPkgs :: NonEmpty (NonEmptySet Package) -> ([T.Text], [NonEmptySet Buildable])
+partitionPkgs :: NonEmpty (NonEmptySet Package) -> ([PkgName], [NonEmptySet Buildable])
 partitionPkgs = bimap fold f . unzip . fmap g . toList
   where g = fmapEither (toEither . _pkgInstallType) . toList
         f = mapMaybe (fmap NES.fromNonEmpty . NEL.nonEmpty)
@@ -105,31 +105,31 @@ foreignPackages :: IO (S.Set SimplePkg)
 foreignPackages = S.fromList . mapMaybe simplepkg' . T.lines <$> pacmanOutput ["-Qm"]
 
 -- | Packages marked as a dependency, yet are required by no other package.
-orphans :: IO (S.Set T.Text)
-orphans = S.fromList . T.lines <$> pacmanOutput ["-Qqdt"]
+orphans :: IO (S.Set PkgName)
+orphans = S.fromList . map PkgName . T.lines <$> pacmanOutput ["-Qqdt"]
 
 -- | Any package whose name is suffixed by git, hg, svn, darcs, cvs, or bzr.
-develPkgs :: IO (S.Set T.Text)
+develPkgs :: IO (S.Set PkgName)
 develPkgs = S.filter isDevelPkg . S.map _spName <$> foreignPackages
-  where isDevelPkg pkg = any (`T.isSuffixOf` pkg) suffixes
+  where isDevelPkg (PkgName pkg) = any (`T.isSuffixOf` pkg) suffixes
         suffixes = ["-git", "-hg", "-svn", "-darcs", "-cvs", "-bzr"]
 
 -- | Returns what it was given if the package is already installed.
 -- Reasoning: Using raw bools can be less expressive.
-isInstalled :: T.Text -> IO (Maybe T.Text)
-isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", pkg]
+isInstalled :: PkgName -> IO (Maybe PkgName)
+isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", _pkgname pkg]
 
 -- | An @-Rsu@ call.
-removePkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet T.Text -> Eff r ()
+removePkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
 removePkgs pkgs = do
   pacOpts <- asks (asFlag . commonConfigOf)
-  rethrow . pacman $ ["-Rsu"] <> toList pkgs <> pacOpts
+  rethrow . pacman $ ["-Rsu"] <> asFlag pkgs <> pacOpts
 
 -- | True if a dependency is satisfied by an installed package.
 -- `asT` renders the `VersionDemand` into the specific form that `pacman -T`
 -- understands. See `man pacman` for more info.
 isSatisfied :: Dep -> IO Bool
-isSatisfied (Dep name ver) = T.null <$> pacmanOutput ["-T", name <> asT ver]
+isSatisfied (Dep name ver) = T.null <$> pacmanOutput ["-T", _pkgname name <> asT ver]
   where asT (LessThan v) = "<"  <> prettyV v
         asT (AtLeast  v) = ">=" <> prettyV v
         asT (MoreThan v) = ">"  <> prettyV v
@@ -161,8 +161,8 @@ scold ss = putStrLnA ss . red
 -- | Report a message with multiple associated items. Usually a list of
 -- naughty packages.
 report :: (Member (Reader Settings) r, Member IO r) =>
-  (Doc AnsiStyle -> Doc AnsiStyle) -> (Language -> Doc AnsiStyle) -> NonEmpty T.Text -> Eff r ()
+  (Doc AnsiStyle -> Doc AnsiStyle) -> (Language -> Doc AnsiStyle) -> NonEmpty PkgName -> Eff r ()
 report c msg pkgs = do
   ss <- ask
   send . putStrLnA ss . c . msg $ langOf ss
-  send . T.putStrLn . dtot . colourCheck ss . vsep . map (cyan . pretty) $ toList pkgs
+  send . T.putStrLn . dtot . colourCheck ss . vsep . map (cyan . pretty . _pkgname) $ toList pkgs

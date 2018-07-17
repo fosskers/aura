@@ -46,9 +46,9 @@ import           System.FilePath ((</>))
 
 -- | Attempt to retrieve info about a given `S.Set` of packages from the AUR.
 -- This is a signature expected by `InstallOptions`.
-aurLookup :: MonadIO m => Settings -> NonEmptySet T.Text -> m (S.Set T.Text, S.Set Buildable)
+aurLookup :: MonadIO m => Settings -> NonEmptySet PkgName -> m (S.Set PkgName, S.Set Buildable)
 aurLookup ss names = do
-  (bads, goods) <- info m (toList names) >>= traverseEither (buildable m)
+  (bads, goods) <- info m (foldMap (\(PkgName pn) -> [pn]) names) >>= traverseEither (buildable m)
   let goodNames = S.fromList $ map bldNameOf goods
   pure (S.fromList bads <> NES.toSet names S.\\ goodNames, S.fromList goods)
     where m = managerOf ss
@@ -61,15 +61,16 @@ aurRepo = Repository $ \ss ps -> do
   pkgs <- traverse (packageBuildable ss) $ toList goods
   pure (bads, S.fromList pkgs)
 
-buildable :: MonadIO m => Manager -> AurInfo -> m (Either T.Text Buildable)
+buildable :: MonadIO m => Manager -> AurInfo -> m (Either PkgName Buildable)
 buildable m ai = do
-  mpb <- pkgbuild m (pkgBaseOf ai)  -- Using the package base ensures split packages work correctly.
+  let !bse = PkgName $ pkgBaseOf ai
+  mpb <- pkgbuild m bse  -- Using the package base ensures split packages work correctly.
   case mpb of
-    Nothing -> pure . Left $ aurNameOf ai
+    Nothing -> pure . Left . PkgName $ aurNameOf ai
     Just pb -> pure $ Right Buildable
-      { bldNameOf     = aurNameOf ai
+      { bldNameOf     = PkgName $ aurNameOf ai
       , pkgbuildOf    = Pkgbuild pb
-      , bldBaseNameOf = pkgBaseOf ai
+      , bldBaseNameOf = bse
       , bldProvidesOf = list (Provides $ aurNameOf ai) (Provides . head) $ providesOf ai
       , bldDepsOf     = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai  -- TODO bad mapMaybe?
       , bldVersionOf  = either (const Nothing) Just . versioning $ aurVersionOf ai
@@ -82,19 +83,20 @@ aurLink :: T.Text
 aurLink = "https://aur.archlinux.org"
 
 -- | A package's home URL on the AUR.
-pkgUrl :: T.Text -> T.Text
-pkgUrl pkg = T.pack $ T.unpack aurLink </> "packages" </> T.unpack pkg
+pkgUrl :: PkgName -> T.Text
+pkgUrl (PkgName pkg) = T.pack $ T.unpack aurLink </> "packages" </> T.unpack pkg
 
 -------------------
 -- SOURCES FROM GIT
 -------------------
+-- TODO This can be a shelly FilePath, currently it isn't.
 -- | Attempt to clone a package source from the AUR.
 clone :: Buildable -> Sh (Maybe FilePath)
 clone b = do
-  (ec, _) <- quietSh $ run_ "git" ["clone", "--depth", "1", aurLink <> "/" <> bldBaseNameOf b <> ".git"]
+  (ec, _) <- quietSh $ run_ "git" ["clone", "--depth", "1", aurLink <> "/" <> _pkgname (bldBaseNameOf b) <> ".git"]
   case ec of
     (ExitFailure _) -> pure Nothing
-    ExitSuccess     -> pure . Just . T.unpack $ bldBaseNameOf b
+    ExitSuccess     -> pure . Just . T.unpack . _pkgname $ bldBaseNameOf b
 
 ------------
 -- RPC CALLS
@@ -113,5 +115,7 @@ aurSearch regex = do
   pure $ sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) res
 
 -- | Frontend to the `aur` library. For @-Ai@.
-aurInfo :: (Member (Reader Settings) r, Member IO r) => NonEmpty T.Text -> Eff r [AurInfo]
-aurInfo pkgs = asks managerOf >>= \m -> sortAurInfo (Just SortAlphabetically) <$> send (info @IO m $ toList pkgs)
+aurInfo :: (Member (Reader Settings) r, Member IO r) => NonEmpty PkgName -> Eff r [AurInfo]
+aurInfo pkgs = do
+  m <- asks managerOf
+  sortAurInfo (Just SortAlphabetically) <$> send (info @IO m . map _pkgname $ toList pkgs)

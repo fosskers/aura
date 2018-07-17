@@ -57,11 +57,11 @@ installOptions = I.InstallOptions { I.label         = "AUR"
                                   , I.repository    = pacmanRepo <> aurRepo }
 
 -- | The result of @-A@.
-install :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet T.Text -> Eff r ()
+install :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
 install = I.install installOptions
 
 -- | The result of @-Au@.
-upgradeAURPkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set T.Text -> Eff r ()
+upgradeAURPkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set PkgName -> Eff r ()
 upgradeAURPkgs pkgs = do
   ss <- ask
   send . notify ss . upgradeAURPkgs_1 $ langOf ss
@@ -75,11 +75,11 @@ foreigns ss = S.filter (notIgnored . _spName) <$> foreignPackages
         notIgnored p = p `notElem` ignores
 
 upgrade :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  S.Set T.Text -> NonEmptySet SimplePkg -> Eff r ()
+  S.Set PkgName -> NonEmptySet SimplePkg -> Eff r ()
 upgrade pkgs fs = do
   ss        <- ask
   toUpgrade <- possibleUpdates fs
-  let !names = map (aurNameOf . fst) toUpgrade
+  let !names = map (PkgName . aurNameOf . fst) toUpgrade
   auraFirst <- auraCheck names
   case auraFirst of
     Just a  -> auraUpgrade a
@@ -96,28 +96,28 @@ possibleUpdates :: (Member (Reader Settings) r, Member IO r) => NonEmptySet Simp
 possibleUpdates (NES.toNonEmpty -> pkgs) = do
   aurInfos <- aurInfo $ fmap _spName pkgs
   let !names  = map aurNameOf aurInfos
-      aurPkgs = NEL.filter (\(SimplePkg n _) -> n `elem` names) pkgs
+      aurPkgs = NEL.filter (\(SimplePkg (PkgName n) _) -> n `elem` names) pkgs
   pure . filter isntMostRecent . zip aurInfos $ map _spVersion aurPkgs
 
 -- | Is there an update for Aura that we could apply first?
-auraCheck :: (Member (Reader Settings) r, Member IO r) => [T.Text] -> Eff r (Maybe T.Text)
+auraCheck :: (Member (Reader Settings) r, Member IO r) => [PkgName] -> Eff r (Maybe PkgName)
 auraCheck ps = join <$> traverse f auraPkg
   where f a = do
           ss <- ask
           bool Nothing (Just a) <$> send (optionalPrompt ss auraCheck_1)
-        auraPkg | "aura" `elem` ps     = Just "aura"
-                | "aura-bin" `elem` ps = Just "aura-bin"
-                | otherwise            = Nothing
+        auraPkg | PkgName "aura" `elem` ps     = Just $ PkgName "aura"
+                | PkgName "aura-bin" `elem` ps = Just $ PkgName "aura-bin"
+                | otherwise                    = Nothing
 
-auraUpgrade :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => T.Text -> Eff r ()
+auraUpgrade :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => PkgName -> Eff r ()
 auraUpgrade = install . NES.singleton
 
-develPkgCheck :: (Member (Reader Settings) r, Member IO r) => Eff r (S.Set T.Text)
+develPkgCheck :: (Member (Reader Settings) r, Member IO r) => Eff r (S.Set PkgName)
 develPkgCheck = ask >>= \ss ->
   if switch ss RebuildDevel then send develPkgs else pure S.empty
 
 -- | The result of @-Ai@.
-aurPkgInfo :: (Member (Reader Settings) r, Member IO r) => NonEmptySet T.Text -> Eff r ()
+aurPkgInfo :: (Member (Reader Settings) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
 aurPkgInfo = aurInfo . NES.toNonEmpty >=> traverse_ displayAurPkgInfo
 
 displayAurPkgInfo :: (Member (Reader Settings) r, Member IO r) => AurInfo -> Eff r ()
@@ -132,7 +132,7 @@ renderAurPkgInfo ss ai = dtot . colourCheck ss $ entrify ss fields entries
                     , outOfDateMsg (dateObsoleteOf ai) $ langOf ss
                     , orphanedMsg (aurMaintainerOf ai) $ langOf ss
                     , cyan . maybe "(null)" pretty $ urlOf ai
-                    , pretty . pkgUrl $ aurNameOf ai
+                    , pretty . pkgUrl . PkgName $ aurNameOf ai
                     , pretty . T.unwords $ licenseOf ai
                     , pretty . T.unwords $ dependsOf ai
                     , pretty . T.unwords $ makeDepsOf ai
@@ -144,7 +144,7 @@ renderAurPkgInfo ss ai = dtot . colourCheck ss $ entrify ss fields entries
 aurPkgSearch :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r ()
 aurPkgSearch regex = do
   ss <- ask
-  db <- S.map _spName <$> send foreignPackages
+  db <- S.map (_pkgname . _spName) <$> send foreignPackages
   let t = case truncationOf $ buildConfigOf ss of  -- Can't this go anywhere else?
             None   -> id
             Head n -> take $ fromIntegral n
@@ -170,11 +170,11 @@ renderSearch ss r (i, e) = searchResult
 
 -- | The result of @-Ad@.
 displayPkgDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  NonEmptySet T.Text -> Eff r ()
+  NonEmptySet PkgName -> Eff r ()
 displayPkgDeps = I.displayPkgDeps installOptions
 
 -- | The result of @-Ap@.
-displayPkgbuild :: (Member (Reader Settings) r, Member IO r) => NonEmptySet T.Text -> Eff r ()
+displayPkgbuild :: (Member (Reader Settings) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
 displayPkgbuild ps = do
   man <- asks managerOf
   pbs <- catMaybes <$> traverse (send . pkgbuild @IO man) (toList ps)
@@ -186,10 +186,10 @@ isntMostRecent (ai, v) = trueVer > Just v
   where trueVer = either (const Nothing) Just . versioning $ aurVersionOf ai
 
 -- | Similar to @-Ai@, but yields the raw data as JSON instead.
-aurJson :: (Member (Reader Settings) r, Member IO r) => NonEmptySet T.Text -> Eff r ()
+aurJson :: (Member (Reader Settings) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
 aurJson ps = do
   m <- asks managerOf
-  infos <- send . info @IO m $ toList ps
+  infos <- send . info @IO m . map _pkgname $ toList ps
   let json = map (toStrict . toLazyText . encodePrettyToTextBuilder) infos
   send $ traverse_ T.putStrLn json
 
@@ -197,8 +197,8 @@ aurJson ps = do
 -- REPORTING
 ------------
 reportPkgsToUpgrade :: (Member (Reader Settings) r, Member IO r) =>
-  [(AurInfo, Versioning)] -> [T.Text] -> Eff r ()
-reportPkgsToUpgrade ups devels = do
+  [(AurInfo, Versioning)] -> [PkgName] -> Eff r ()
+reportPkgsToUpgrade ups (map _pkgname -> devels) = do
   ss <- ask
   send . notify ss . reportPkgsToUpgrade_1 $ langOf ss
   send $ putDoc (colourCheck ss . vcat $ map f ups' <> map g devels) >> T.putStrLn "\n"

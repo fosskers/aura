@@ -12,7 +12,6 @@ import           Aura.Pkgbuild.Editing
 import           Aura.Settings
 import           Aura.Types
 import           BasePrelude hiding (FilePath)
-import qualified Data.Text as T
 import           Shelly
 
 ---
@@ -22,8 +21,8 @@ pkgbuildCache :: FilePath
 pkgbuildCache = "/var/cache/aura/pkgbuilds/"
 
 -- | The expected path to a stored PKGBUILD, given some package name.
-pkgbuildPath :: T.Text -> FilePath
-pkgbuildPath p = pkgbuildCache </> p <.> "pb"
+pkgbuildPath :: PkgName -> FilePath
+pkgbuildPath (PkgName p) = pkgbuildCache </> p <.> "pb"
 
 -- One of my favourite functions in this code base.
 -- | Allow the user to customize a PKGBUILD, depending on if they specified

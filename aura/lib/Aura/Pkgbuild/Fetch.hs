@@ -15,6 +15,7 @@ module Aura.Pkgbuild.Fetch
   , pkgbuildUrl
   ) where
 
+import           Aura.Types (PkgName(..))
 import           Aura.Utils (urlContents)
 import           BasePrelude
 import           Control.Exception (SomeException, catch)
@@ -40,8 +41,8 @@ pkgbuildUrl p = baseUrl </> "cgit/aur.git/plain/PKGBUILD?h="
   ++ escapeURIString isUnescapedInURIComponent p
 
 -- | The PKGBUILD of a given package, retrieved from the AUR servers.
-pkgbuild :: MonadIO m => Manager -> Text -> m (Maybe Text)
-pkgbuild m (unpack -> p) = e $ do
+pkgbuild :: MonadIO m => Manager -> PkgName -> m (Maybe Text)
+pkgbuild m (unpack . _pkgname -> p) = e $ do
   t <- urlContents m $ pkgbuildUrl p
   pure $ fmap (TL.toStrict . decodeUtf8With lenientDecode) t
   where e f = liftIO $ f `catch` (\(_ :: E) -> return Nothing)

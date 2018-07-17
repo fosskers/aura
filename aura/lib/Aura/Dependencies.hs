@@ -49,7 +49,7 @@ resolveDeps repo ps = do
   maybe (throwError $ Failure missingPkg_3) pure $ sortInstall m
 
 -- | An empty list signals success.
-resolveDeps' :: Settings -> TVar (M.Map T.Text Package) -> Repository -> NonEmptySet Package -> IO [DepError]
+resolveDeps' :: Settings -> TVar (M.Map PkgName Package) -> Repository -> NonEmptySet Package -> IO [DepError]
 resolveDeps' ss tv repo ps = fold <$> mapConcurrently f (toList ps)
   where
     -- | `atomically` ensures that only one instance of a `Package` can
@@ -75,14 +75,15 @@ resolveDeps' ss tv repo ps = fold <$> mapConcurrently f (toList ps)
 
                   provider :: Package -> Either DepError Dep
                   provider p' = maybe
-                                (Left $ BrokenProvides (_pkgName p) (_provides $ _pkgProvides p') (_pkgName p'))
+                                (Left $ BrokenProvides (_pkgName p) (_pkgProvides p') (_pkgName p'))
                                 Right $
-                                M.lookup (_provides $ _pkgProvides p') depsMap <|> M.lookup (_pkgName p') depsMap
+                                M.lookup (PkgName . _provides $ _pkgProvides p') depsMap
+                                <|> M.lookup (_pkgName p') depsMap
 
               if | not (null evils) -> pure evils
                  | otherwise        -> maybe (pure []) (resolveDeps' ss tv repo) $ NES.fromSet goods
 
-sortInstall :: M.Map T.Text Package -> Maybe (NonEmpty (NonEmptySet Package))
+sortInstall :: M.Map PkgName Package -> Maybe (NonEmpty (NonEmptySet Package))
 sortInstall m = NEL.nonEmpty . mapMaybe NES.fromSet . batch $ overlay connected singles
   where f p = mapMaybe (\d -> fmap (p,) $ depNameOf d `M.lookup` m) $ _pkgDeps p  -- TODO handle "provides"?
         elems     = M.elems m
@@ -105,7 +106,7 @@ batch g | isEmpty g = []
 -- 1. Is the package ignored in `pacman.conf`?
 -- 2. Is the version requested different from the one provided by
 --    the most recent version?
-realPkgConflicts :: Settings -> T.Text -> Package -> Dep -> Maybe DepError
+realPkgConflicts :: Settings -> PkgName -> Package -> Dep -> Maybe DepError
 realPkgConflicts ss parent pkg dep
     | name `elem` toIgnore            = Just $ Ignored failMsg1
     | isNothing curVer                = Just $ UnparsableVersion name

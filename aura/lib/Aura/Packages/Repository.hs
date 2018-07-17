@@ -38,7 +38,7 @@ pacmanRepo = Repository $ \ss names -> do
   bitraverse (pure . S.fromList) (fmap S.fromList . traverse f) badsgoods
   where f (r, p) = packageRepo r p <$> mostRecentVersion r
 
-packageRepo :: T.Text -> Provides -> Maybe Versioning -> Package
+packageRepo :: PkgName -> Provides -> Maybe Versioning -> Package
 packageRepo name pro ver = Package
   { _pkgName        = name
   , _pkgVersion     = ver
@@ -49,25 +49,26 @@ packageRepo name pro ver = Package
 
 -- | If given a virtual package, try to find a real package to install.
 -- Functions like this are why we need libalpm.
-resolveName :: Settings -> T.Text -> IO (Either T.Text (T.Text, Provides))
+resolveName :: Settings -> PkgName -> IO (Either PkgName (PkgName, Provides))
 resolveName ss name = do
-  provs <- T.lines <$> pacmanOutput ["-Ssq", "^" <> name <> "$"]
+  provs <- map PkgName . T.lines <$> pacmanOutput ["-Ssq", "^" <> _pkgname name <> "$"]
   case provs of
     [] -> pure $ Left name
-    _  -> Right . (, Provides name) <$> chooseProvider ss name provs
+    _  -> Right . (, Provides $ _pkgname name) <$> chooseProvider ss name provs
 
 -- | Choose a providing package, favoring installed packages.
-chooseProvider :: Settings -> T.Text -> [T.Text] -> IO T.Text
+chooseProvider :: Settings -> PkgName -> [PkgName] -> IO PkgName
 chooseProvider _ name []         = pure name
 chooseProvider _ _    [p]        = pure p
-chooseProvider ss name ps@(a:as) = do
-  mp <- listToMaybe . catMaybes <$> mapConcurrently isInstalled ps
-  maybe f pure mp
-  where f = warn ss (provides_1 name) *> getSelection (a :| as)
+chooseProvider ss name ps@(a:as) =
+  mapConcurrently isInstalled ps >>= maybe f pure . listToMaybe . catMaybes
+  where f = do
+          warn ss $ provides_1 name
+          PkgName <$> getSelection (_pkgname a :| map _pkgname as)
 
 -- | The most recent version of a package, if it exists in the respositories.
-mostRecentVersion :: T.Text -> IO (Maybe Versioning)
-mostRecentVersion s = extractVersion <$> pacmanOutput ["-Si", s]
+mostRecentVersion :: PkgName -> IO (Maybe Versioning)
+mostRecentVersion (PkgName s) = extractVersion <$> pacmanOutput ["-Si", s]
 
 -- | Parses the version number of a package from the result of a
 -- @pacman -Si@ call.

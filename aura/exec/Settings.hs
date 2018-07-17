@@ -30,6 +30,8 @@ import           Aura.Utils
 import           BasePrelude hiding (FilePath)
 import           Data.Bitraversable
 import qualified Data.Map.Strict as M
+import qualified Data.Set as S
+import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Flags (Program(..))
 import           Network.HTTP.Client (newManager)
@@ -49,7 +51,7 @@ getSettings (Program _ co bc lng) = do
           buildPath'  <- checkBuildPath (buildPathOf bc) defaultPackageCache
           manager     <- newManager tlsManagerSettings
           isTerm      <- hIsTerminalDevice stdout
-          fromGroups  <- groupPackages $ getIgnoredGroups confFile <> ignoredGroupsOf co
+          fromGroups  <- maybe (pure S.empty) groupPackages . NES.fromSet $ getIgnoredGroups confFile <> ignoredGroupsOf co
           let language   = checkLang lng environment
               buildUser' = buildUserOf bc <|> getTrueUser environment
           pure $ do

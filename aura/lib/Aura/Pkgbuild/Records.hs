@@ -22,7 +22,7 @@ import           Shelly (Sh, writefile, test_f, shelly, mkdir_p)
 
 -- | Does a given package has a PKGBUILD stored?
 -- This is `True` when a package has been built successfully once before.
-hasPkgbuildStored :: T.Text -> IO Bool
+hasPkgbuildStored :: PkgName -> IO Bool
 hasPkgbuildStored = shelly . test_f . pkgbuildPath
 
 -- | Write the PKGBUILDs of some `Buildable`s to disk.
@@ -31,5 +31,5 @@ storePkgbuilds bs = shelly $ do
   mkdir_p pkgbuildCache
   traverse_ (\p -> writePkgbuild (bldNameOf p) (_pkgbuild $ pkgbuildOf p)) bs
 
-writePkgbuild :: T.Text -> T.Text -> Sh ()
+writePkgbuild :: PkgName -> T.Text -> Sh ()
 writePkgbuild name pkgb = writefile (pkgbuildPath name) pkgb

@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings, MultiWayIf #-}
+{-# LANGUAGE FlexibleInstances, GeneralizedNewtypeDeriving #-}
 
 -- |
 -- Module    : Aura.Types
@@ -14,6 +15,8 @@ module Aura.Types
   , SimplePkg(..), simplepkg, simplepkg'
   , Dep(..), parseDep
   , Buildable(..)
+    -- * Typeclasses
+  , Flagable(..)
     -- * Package Building
   , VersionDemand(..), _VersionDemand
   , InstallType(..)
@@ -23,9 +26,11 @@ module Aura.Types
     -- * Language
   , Language(..)
     -- * Other Wrappers
+  , PkgName(..)
+  , PkgGroup(..)
+  , Provides(..)
   , PackagePath(..)
   , Pkgbuild(..)
-  , Provides(..)
   , Environment(..)
   , User(..)
     -- * Misc.
@@ -33,6 +38,7 @@ module Aura.Types
   ) where
 
 import           BasePrelude hiding (FilePath, try)
+import           Data.Aeson (ToJSONKey, FromJSONKey)
 import           Data.Bitraversable
 import           Data.List.NonEmpty (nonEmpty)
 import qualified Data.Map.Strict as M
@@ -46,12 +52,21 @@ import           Text.Megaparsec
 import           Text.Megaparsec.Char
 
 ---
+-- | Types whose members can be converted to CLI flags.
+class Flagable a where
+  asFlag :: a -> [T.Text]
+
+instance Flagable T.Text where
+  asFlag = (:[])
+
+instance (Foldable f, Flagable a) => Flagable (f a) where
+  asFlag = foldMap asFlag
 
 -- TODO Make all these fields strict, here and elsewhere.
 -- | A package to be installed.
-data Package = Package { _pkgName        :: T.Text
+data Package = Package { _pkgName        :: PkgName
                        , _pkgVersion     :: Maybe Versioning
-                       , _pkgBaseName    :: T.Text
+                       , _pkgBaseName    :: PkgName
                        , _pkgProvides    :: Provides
                        , _pkgDeps        :: [Dep]
                        , _pkgInstallType :: InstallType } deriving (Eq)
@@ -65,7 +80,7 @@ instance Show Package where
   show p = printf "%s (%s)" (show $ _pkgName p) (show . fmap prettyV $ _pkgVersion p)
 
 -- | A dependency on another package.
-data Dep = Dep { depNameOf      :: T.Text
+data Dep = Dep { depNameOf      :: PkgName
                , depVerDemandOf :: VersionDemand } deriving (Eq, Ord, Show)
 
 -- TODO Return an Either if it failed to parse?
@@ -74,9 +89,10 @@ data Dep = Dep { depNameOf      :: T.Text
 parseDep :: T.Text -> Maybe Dep
 parseDep = either (const Nothing) Just . parse dep "dep"
   where dep :: Parsec Void T.Text Dep
-        dep = Dep <$> takeWhile1P Nothing (\c -> c /= '<' && c /= '>' && c /= '=') <*> ver
+        dep = Dep <$> name <*> ver
 
-        ver :: Parsec Void T.Text VersionDemand
+        name = PkgName <$> takeWhile1P Nothing (\c -> c /= '<' && c /= '>' && c /= '=')
+
         ver = do
           end <- atEnd
           if | end       -> pure Anything
@@ -110,10 +126,10 @@ _VersionDemand f (MustBe v)   = MustBe   <$> f v
 _VersionDemand _ p            = pure p
 
 -- | The installation method.
-data InstallType = Pacman T.Text | Build Buildable deriving (Eq)
+data InstallType = Pacman PkgName | Build Buildable deriving (Eq)
 
 -- | A package name with its version number.
-data SimplePkg = SimplePkg { _spName :: T.Text, _spVersion :: Versioning } deriving (Eq, Ord, Show)
+data SimplePkg = SimplePkg { _spName :: PkgName, _spVersion :: Versioning } deriving (Eq, Ord, Show)
 
 -- | Attempt to create a `SimplePkg` from filepaths like
 --   @\/var\/cache\/pacman\/pkg\/linux-3.2.14-1-x86_64.pkg.tar.xz@
@@ -121,8 +137,8 @@ simplepkg :: PackagePath -> Maybe SimplePkg
 simplepkg (PackagePath t) = uncurry SimplePkg <$> bitraverse f f (parse n "name" t', parse v "version" t')
   where t' = toTextIgnore $ filename t
 
-        n :: Parsec Void T.Text T.Text
-        n = T.pack <$> manyTill anyChar (try finished)
+        n :: Parsec Void T.Text PkgName
+        n = PkgName . T.pack <$> manyTill anyChar (try finished)
 
         -- | Assumes that a version number will never start with a letter,
         -- and that a package name section (i.e. abc-def-ghi) will never start
@@ -137,7 +153,7 @@ simplepkg (PackagePath t) = uncurry SimplePkg <$> bitraverse f f (parse n "name"
 --     xchat 2.8.8-19
 simplepkg' :: T.Text -> Maybe SimplePkg
 simplepkg' = either (const Nothing) Just . parse parser "name-and-version"
-  where parser = SimplePkg <$> takeWhile1P Nothing (/= ' ') <*> (space *> versioning')
+  where parser = SimplePkg <$> (PkgName <$> takeWhile1P Nothing (/= ' ')) <*> (space *> versioning')
 
 -- | Filepaths like:
 --
@@ -156,14 +172,10 @@ instance Ord PackagePath where
 -- | The contents of a PKGBUILD file.
 newtype Pkgbuild = Pkgbuild { _pkgbuild :: T.Text } deriving (Eq, Ord, Show)
 
--- | The dependency which some package provides. May not be the same name
--- as the package itself (e.g. cronie provides cron).
-newtype Provides = Provides { _provides :: T.Text } deriving (Eq, Ord, Show)
-
 -- | A package to be built manually before installing.
 data Buildable = Buildable
-    { bldNameOf     :: T.Text
-    , bldBaseNameOf :: T.Text
+    { bldNameOf     :: PkgName
+    , bldBaseNameOf :: PkgName
     , bldProvidesOf :: Provides
     , pkgbuildOf    :: Pkgbuild
     , bldDepsOf     :: [Dep]
@@ -190,11 +202,11 @@ data Language = English
                 deriving (Eq, Enum, Bounded, Ord, Show)
 
 -- | The various ways that dependency resolution can fail.
-data DepError = NonExistant T.Text
+data DepError = NonExistant PkgName
               | VerConflict (Doc AnsiStyle)
               | Ignored (Doc AnsiStyle)
-              | UnparsableVersion T.Text
-              | BrokenProvides T.Text T.Text T.Text
+              | UnparsableVersion PkgName
+              | BrokenProvides PkgName Provides PkgName
 
 -- | Some failure message that when given the current runtime `Language`
 -- will produce a human-friendly error.
@@ -205,6 +217,16 @@ type Environment = M.Map T.Text T.Text
 
 -- | The name of a user account on a Linux system.
 newtype User = User { _user :: T.Text } deriving (Eq, Show)
+
+-- | The name of an Arch Linux package.
+newtype PkgName = PkgName { _pkgname :: T.Text } deriving (Eq, Ord, Show, Flagable, ToJSONKey, FromJSONKey)
+
+-- | A group that a `Package` could belong too, like @base@, @base-devel@, etc.
+newtype PkgGroup = PkgGroup { _pkggroup :: T.Text } deriving (Eq, Ord, Show, Flagable)
+
+-- | The dependency which some package provides. May not be the same name
+-- as the package itself (e.g. cronie provides cron).
+newtype Provides = Provides { _provides :: T.Text } deriving (Eq, Ord, Show)
 
 -- | Similar to `maybe` and `either`, but not quite the same.
 list :: b -> (NonEmpty a -> b) -> [a] -> b

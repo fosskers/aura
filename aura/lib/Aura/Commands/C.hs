@@ -44,7 +44,7 @@ import           Shelly hiding (path)
 -- | Interactive. Gives the user a choice as to exactly what versions
 -- they want to downgrade to.
 downgradePackages :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  NonEmptySet T.Text -> Eff r ()
+  NonEmptySet PkgName -> Eff r ()
 downgradePackages pkgs = do
   ss    <- ask
   let cachePath = either id id . cachePathOf $ commonConfigOf ss
@@ -53,23 +53,24 @@ downgradePackages pkgs = do
   unless (null reals) $ do
     cache   <- send . shelly @IO $ cacheContents cachePath
     choices <- traverse (getDowngradeChoice cache) $ toList reals
-    rethrow . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (toTextIgnore . (cachePath </>)) choices
+    rethrow . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (toTextIgnore . _pkgpath) choices
 
 -- | For a given package, get a choice from the user about which version of it to
 -- downgrade to.
 getDowngradeChoice :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  Cache -> T.Text -> Eff r T.Text
+  Cache -> PkgName -> Eff r PackagePath
 getDowngradeChoice cache pkg = do
   case nonEmpty $ getChoicesFromCache cache pkg of
     Nothing      -> throwError . Failure $ reportBadDowngradePkgs_2 pkg
     Just choices -> do
       ss <- ask
       send . notify ss . getDowngradeChoice_1 pkg $ langOf ss
-      send $ getSelection choices
+      fmap (PackagePath . fromText) . send . getSelection $ fmap (toTextIgnore . _pkgpath) choices
 
-getChoicesFromCache :: Cache -> T.Text -> [T.Text]
+-- TODO Use `M.filterWithKey`
+getChoicesFromCache :: Cache -> PkgName -> [PackagePath]
 getChoicesFromCache (Cache cache) pkg = sort . mapMaybe f $ M.toList cache
-  where f (SimplePkg pn _, pth) = bool Nothing (Just . toTextIgnore $ _pkgpath pth) $ pkg == pn
+  where f (SimplePkg pn _, pth) = bool Nothing (Just pth) $ pkg == pn
 
 -- | Print all package filenames that match a given `T.Text`.
 searchCache :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r ()

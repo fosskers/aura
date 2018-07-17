@@ -61,7 +61,7 @@ customizepkg' :: Buildable -> Sh Buildable
 customizepkg' p = withTmpDir $ \tmp -> do
   cd tmp
   ifFile (edit $ const customize) (pure ()) conf p
-  where conf = customizepkgPath </> bldNameOf p
+  where conf = customizepkgPath </> _pkgname (bldNameOf p)
 
 customize :: Sh T.Text
 customize = fmap snd . quietSh $ run "customizepkg" ["--modify"]

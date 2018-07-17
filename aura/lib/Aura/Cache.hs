@@ -52,7 +52,7 @@ cacheContents :: FilePath -> Sh Cache
 cacheContents = fmap (cache . map PackagePath) . ls
 
 -- | All packages from a given `S.Set` who have a copy in the cache.
-pkgsInCache :: Settings -> NonEmptySet T.Text -> Sh (S.Set T.Text)
+pkgsInCache :: Settings -> NonEmptySet PkgName -> Sh (S.Set PkgName)
 pkgsInCache ss ps = do
   c <- cacheContents . either id id . cachePathOf $ commonConfigOf ss
   pure . S.filter (`NES.member` ps) . S.map _spName . M.keysSet $ _cache c

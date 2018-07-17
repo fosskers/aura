@@ -10,7 +10,6 @@
 
 module Aura.Settings
   ( Settings(..)
-  , Flagable(..)
     -- * Aura Configuration
   , BuildConfig(..), BuildSwitch(..)
   , switch
@@ -23,7 +22,7 @@ module Aura.Settings
   , Makepkg(..)
   ) where
 
-import           Aura.Types (Language, Environment, User, list)
+import           Aura.Types
 import           BasePrelude hiding (FilePath)
 import qualified Data.Set as S
 import           Data.Text (Text)
@@ -32,10 +31,6 @@ import           Network.HTTP.Client (Manager)
 import           Shelly (FilePath, toTextIgnore)
 
 ---
-
--- | Types whose members can be converted to CLI flags.
-class Flagable a where
-  asFlag :: a -> [T.Text]
 
 -- | How @-As@ should truncate its results.
 data Truncation = None | Head Word | Tail Word deriving (Eq, Show)
@@ -54,8 +49,8 @@ instance Flagable Makepkg where
 data CommonConfig = CommonConfig { cachePathOf      :: Either FilePath FilePath
                                  , configPathOf     :: Either FilePath FilePath
                                  , logPathOf        :: Either FilePath FilePath
-                                 , ignoredPkgsOf    :: S.Set Text
-                                 , ignoredGroupsOf  :: S.Set Text
+                                 , ignoredPkgsOf    :: S.Set PkgName
+                                 , ignoredGroupsOf  :: S.Set PkgGroup
                                  , commonSwitchesOf :: S.Set CommonSwitch } deriving (Show)
 
 instance Flagable CommonConfig where
@@ -63,9 +58,9 @@ instance Flagable CommonConfig where
     either (const []) (\p -> ["--cachedir", toTextIgnore p]) cap
     ++ either (const []) (\p -> ["--config", toTextIgnore p]) cop
     ++ either (const []) (\p -> ["--logfile", toTextIgnore p]) lfp
-    ++ list [] (\xs -> ["--ignore", T.intercalate "," $ toList xs]) (toList igs)
-    ++ list [] (\xs -> ["--ignoregroup", T.intercalate "," $ toList xs]) (toList igg)
-    ++ foldMap asFlag cs
+    ++ list [] (\xs -> ["--ignore", T.intercalate "," $ toList xs]) (asFlag igs)
+    ++ list [] (\xs -> ["--ignoregroup", T.intercalate "," $ toList xs]) (asFlag igg)
+    ++ asFlag cs
 
 -- | Yes/No-style switches that are common to both Aura and Pacman.
 -- Aura acts on them first, then passes them down to @pacman@ if necessary.

@@ -9,7 +9,7 @@ module Flags
 import           Aura.Cache (defaultPackageCache)
 import           Aura.Pacman (pacmanConfFile, defaultLogFile)
 import           Aura.Settings
-import           Aura.Types (Language(..), User(..))
+import           Aura.Types
 import           BasePrelude hiding (Version, FilePath, option, log, exp)
 import qualified Data.List.NonEmpty as NEL
 import qualified Data.Set as S
@@ -33,26 +33,26 @@ data Program = Program {
   , _language  :: Maybe Language } deriving (Show)
 
 -- | Inherited operations that are fed down to Pacman.
-data PacmanOp = Database (Either DatabaseOp (NonEmptySet T.Text))
+data PacmanOp = Database (Either DatabaseOp (NonEmptySet PkgName))
               | Files    (S.Set FilesOp)
-              | Query    (Either QueryOp (S.Set QueryFilter, S.Set T.Text))
-              | Remove   (S.Set RemoveOp) (NonEmptySet T.Text)
-              | Sync     (Either SyncOp (NonEmptySet T.Text)) (S.Set SyncSwitch)
+              | Query    (Either QueryOp (S.Set QueryFilter, S.Set PkgName))
+              | Remove   (S.Set RemoveOp) (NonEmptySet PkgName)
+              | Sync     (Either SyncOp (NonEmptySet PkgName)) (S.Set SyncSwitch)
               | TestDeps (NonEmptySet T.Text)
-              | Upgrade  (Maybe UpgradeSwitch) (NonEmptySet T.Text)
+              | Upgrade  (Maybe UpgradeSwitch) (NonEmptySet PkgName)
               deriving (Show)
 
 instance Flagable PacmanOp where
   asFlag (Database (Left o))      = "-D" : asFlag o
-  asFlag (Database (Right fs))    = "-D" : toList fs
-  asFlag (Files os)               = "-F" : foldMap asFlag os
+  asFlag (Database (Right fs))    = "-D" : asFlag fs
+  asFlag (Files os)               = "-F" : asFlag os
   asFlag (Query (Left o))         = "-Q" : asFlag o
-  asFlag (Query (Right (fs, ps))) = "-Q" : toList ps ++ foldMap asFlag fs
-  asFlag (Remove os ps)           = "-R" : foldMap asFlag os ++ toList ps
-  asFlag (Sync (Left o) ss)       = "-S" : foldMap asFlag ss ++ asFlag o
-  asFlag (Sync (Right ps) ss)     = "-S" : foldMap asFlag ss ++ toList ps
+  asFlag (Query (Right (fs, ps))) = "-Q" : asFlag ps ++ asFlag fs
+  asFlag (Remove os ps)           = "-R" : asFlag os ++ asFlag ps
+  asFlag (Sync (Left o) ss)       = "-S" : asFlag ss ++ asFlag o
+  asFlag (Sync (Right ps) ss)     = "-S" : asFlag ss ++ asFlag ps
   asFlag (TestDeps ps)            = "-T" : toList ps
-  asFlag (Upgrade s ps)           = "-U" : maybe [] asFlag s ++ toList ps
+  asFlag (Upgrade s ps)           = "-U" : maybe [] asFlag s ++ asFlag ps
 
 data DatabaseOp = DBCheck
                 | DBAsDeps     (NonEmptySet T.Text)
@@ -193,9 +193,9 @@ instance Flagable MiscOp where
   asFlag MiscVerbose             = ["--verbose"]
 
 -- | Operations unique to Aura.
-data AuraOp = AurSync (Either AurOp (NonEmptySet T.Text))
+data AuraOp = AurSync (Either AurOp (NonEmptySet PkgName))
             | Backup  (Maybe  BackupOp)
-            | Cache   (Either CacheOp (NonEmptySet T.Text))
+            | Cache   (Either CacheOp (NonEmptySet PkgName))
             | Log     (Maybe  LogOp)
             | Orphans (Maybe  OrphanOp)
             | Version
@@ -203,21 +203,21 @@ data AuraOp = AurSync (Either AurOp (NonEmptySet T.Text))
             | ViewConf
             deriving (Show)
 
-data AurOp = AurDeps     (NonEmptySet T.Text)
-           | AurInfo     (NonEmptySet T.Text)
-           | AurPkgbuild (NonEmptySet T.Text)
+data AurOp = AurDeps     (NonEmptySet PkgName)
+           | AurInfo     (NonEmptySet PkgName)
+           | AurPkgbuild (NonEmptySet PkgName)
            | AurSearch    T.Text
-           | AurUpgrade  (S.Set T.Text)
-           | AurJson     (NonEmptySet T.Text)
+           | AurUpgrade  (S.Set PkgName)
+           | AurJson     (NonEmptySet PkgName)
            deriving (Show)
 
 data BackupOp = BackupClean Word | BackupRestore | BackupList deriving (Show)
 
 data CacheOp = CacheBackup FilePath | CacheClean Word | CacheCleanNotSaved | CacheSearch T.Text deriving (Show)
 
-data LogOp = LogInfo (NonEmptySet T.Text) | LogSearch T.Text deriving (Show)
+data LogOp = LogInfo (NonEmptySet PkgName) | LogSearch T.Text deriving (Show)
 
-data OrphanOp = OrphanAbandon | OrphanAdopt (NonEmptySet T.Text) deriving (Show)
+data OrphanOp = OrphanAbandon | OrphanAdopt (NonEmptySet PkgName) deriving (Show)
 
 opts :: ParserInfo Program
 opts = info (program <**> helper) (fullDesc <> header "Aura - Package manager for Arch Linux and the AUR.")
@@ -233,26 +233,27 @@ program = Program
 
 aursync :: Parser AuraOp
 aursync = bigA *>
-  (AurSync <$> (fmap (Right . NES.fromNonEmpty . fmap T.toLower . NES.toNonEmpty) someArgs <|> fmap Left mods))
+  (AurSync <$> (fmap (Right . NES.fromNonEmpty . fmap (PkgName . T.toLower) . NES.toNonEmpty) someArgs
+              <|> fmap Left mods))
   where bigA = flag' () (long "aursync" <> short 'A' <> help "Install packages from the AUR.")
         mods     = deps <|> ainfo <|> pkgbuild <|> search <|> upgrade <|> aur
-        deps     = AurDeps <$> (flag' () (long "deps" <> short 'd' <> hidden <> help "View dependencies of an AUR package.") *> someArgs')
-        ainfo    = AurInfo <$> (flag' () (long "info" <> short 'i' <> hidden <> help "View AUR package information.") *> someArgs')
-        pkgbuild = AurPkgbuild <$> (flag' () (long "pkgbuild" <> short 'p' <> hidden <> help "View an AUR package's PKGBUILD file.") *> someArgs')
+        deps     = AurDeps <$> (flag' () (long "deps" <> short 'd' <> hidden <> help "View dependencies of an AUR package.") *> somePkgs')
+        ainfo    = AurInfo <$> (flag' () (long "info" <> short 'i' <> hidden <> help "View AUR package information.") *> somePkgs')
+        pkgbuild = AurPkgbuild <$> (flag' () (long "pkgbuild" <> short 'p' <> hidden <> help "View an AUR package's PKGBUILD file.") *> somePkgs')
         search   = AurSearch <$> strOption (long "search" <> short 's' <> metavar "STRING" <> hidden <> help "Search the AUR via a search string.")
-        upgrade  = AurUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade all installed AUR packages.") *> manyArgs')
-        aur      = AurJson <$> (flag' () (long "json" <> hidden <> help "Retrieve package JSON straight from the AUR.") *> someArgs')
+        upgrade  = AurUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade all installed AUR packages.") *> fmap (S.map PkgName) manyArgs')
+        aur      = AurJson <$> (flag' () (long "json" <> hidden <> help "Retrieve package JSON straight from the AUR.") *> somePkgs')
 
 backups :: Parser AuraOp
 backups = bigB *> (Backup <$> optional mods)
   where bigB = flag' () (long "save" <> short 'B' <> help "Save a package state.")
-        mods = clean <|> restore <|> list
+        mods = clean <|> restore <|> lst
         clean = BackupClean <$> option auto (long "clean" <> short 'c' <> metavar "N" <> hidden <> help "Keep the most recent N states, delete the rest.")
         restore = flag' BackupRestore (long "restore" <> short 'r' <> hidden <> help "Restore a previous package state.")
-        list = flag' BackupList (long "list" <> short 'l' <> hidden <> help "Show all saved package state filenames.")
+        lst = flag' BackupList (long "list" <> short 'l' <> hidden <> help "Show all saved package state filenames.")
 
 cache :: Parser AuraOp
-cache = bigC *> (Cache <$> (fmap Left mods <|> fmap Right someArgs))
+cache = bigC *> (Cache <$> (fmap Left mods <|> fmap Right somePkgs))
   where bigC = flag' () (long "downgrade" <> short 'C' <> help "Interact with the package cache.")
         mods = backup <|> clean <|> clean' <|> search
         backup = CacheBackup <$> strOption (long "backup" <> short 'b' <> metavar "PATH" <> help "Backup the package cache to a given directory." <> hidden)
@@ -264,7 +265,7 @@ log :: Parser AuraOp
 log = bigL *> (Log <$> optional mods)
   where bigL = flag' () (long "viewlog" <> short 'L' <> help "View the Pacman log.")
         mods = inf <|> sch
-        inf  = LogInfo <$> (flag' () (long "info" <> short 'i' <> help "Display the installation history for given packages." <> hidden) *> someArgs')
+        inf  = LogInfo <$> (flag' () (long "info" <> short 'i' <> help "Display the installation history for given packages." <> hidden) *> somePkgs')
         sch  = LogSearch <$> strOption (long "search" <> short 's' <> metavar "STRING" <> help "Search the Pacman log via a search string." <> hidden)
 
 orphans :: Parser AuraOp
@@ -272,7 +273,7 @@ orphans = bigO *> (Orphans <$> optional mods)
   where bigO    = flag' () (long "orphans" <> short 'O' <> help "Display all orphan packages.")
         mods    = abandon <|> adopt
         abandon = flag' OrphanAbandon (long "abandon" <> short 'j' <> hidden <> help "Uninstall all orphan packages.")
-        adopt   = OrphanAdopt <$> (flag' () (long "adopt" <> hidden <> help "Mark some packages' install reason as 'Explicit'.") *> someArgs')
+        adopt   = OrphanAdopt <$> (flag' () (long "adopt" <> hidden <> help "Mark some packages' install reason as 'Explicit'.") *> somePkgs')
 
 version :: Parser AuraOp
 version = flag' Version (long "version" <> short 'V' <> help "Display Aura's version.")
@@ -317,9 +318,9 @@ commonConfig = CommonConfig <$> cap <*> cop <*> lfp <*> ign <*> igg <*> commonSw
               <|> pure (Left pacmanConfFile)
         lfp = fmap Right (strOption (long "logfile"  <> hidden <> help "Use an alternate Pacman log."))
               <|> pure (Left defaultLogFile)
-        ign = maybe S.empty (S.fromList . T.split (== ',')) <$>
+        ign = maybe S.empty (S.fromList . map PkgName . T.split (== ',')) <$>
           optional (strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given packages."))
-        igg = maybe S.empty (S.fromList . T.split (== ',')) <$>
+        igg = maybe S.empty (S.fromList . map PkgGroup . T.split (== ',')) <$>
           optional (strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore packages from the given groups."))
 
 commonSwitches :: Parser (S.Set CommonSwitch)
@@ -333,7 +334,7 @@ commonSwitches = S.fromList <$> many (nc <|> no <|> dbg <|> clr)
         f _        = Auto
 
 database :: Parser PacmanOp
-database = bigD *> (Database <$> (fmap Right someArgs <|> fmap Left mods))
+database = bigD *> (Database <$> (fmap Right somePkgs <|> fmap Left mods))
   where bigD   = flag' () (long "database" <> short 'D' <> help "Interact with the package database.")
         mods   = check <|> asdeps <|> asexp
         check  = flag' DBCheck (long "check" <> short 'k' <> hidden <> help "Test local database validity.")
@@ -354,7 +355,7 @@ files = bigF *> (Files <$> fmap S.fromList (many mods))
 queries :: Parser PacmanOp
 queries = bigQ *> (Query <$> (fmap Right query <|> fmap Left mods))
   where bigQ  = flag' () (long "query" <> short 'Q' <> help "Interact with the local package database.")
-        query = (,) <$> queryFilters <*> manyArgs
+        query = curry (id *** S.map PkgName) <$> queryFilters <*> manyArgs
         mods  = chl <|> gps <|> inf <|> lst <|> own <|> fls <|> sch <|> chk
         chl   = QueryChangelog <$> (flag' () (long "changelog" <> short 'c' <> hidden <> help "View a package's changelog.") *> someArgs')
         gps   = QueryGroups <$> (flag' () (long "groups" <> short 'g' <> hidden <> help "View all members of a package group.") *> someArgs')
@@ -375,7 +376,7 @@ queryFilters = S.fromList <$> many (dps <|> exp <|> frg <|> ntv <|> urq <|> upg)
         upg = flag' QueryUpgrades (long "upgrades" <> short 'u' <> hidden <> help "[filter] Only list outdated packages.")
 
 remove :: Parser PacmanOp
-remove = bigR *> (Remove <$> mods <*> someArgs)
+remove = bigR *> (Remove <$> mods <*> somePkgs)
   where bigR     = flag' () (long "remove" <> short 'R' <> help "Uninstall packages.")
         mods     = S.fromList <$> many (cascade <|> nosave <|> recurse <|> unneeded)
         cascade  = flag' RemoveCascade (long "cascade" <> short 'c' <> hidden <> help "Remove packages and all others that depend on them.")
@@ -384,7 +385,7 @@ remove = bigR *> (Remove <$> mods <*> someArgs)
         unneeded = flag' RemoveUnneeded (long "unneeded" <> short 'u' <> hidden <> help "Remove unneeded packages.")
 
 sync :: Parser PacmanOp
-sync = bigS *> (Sync <$> (fmap Right someArgs <|> fmap Left mods) <*> ref)
+sync = bigS *> (Sync <$> (fmap Right somePkgs <|> fmap Left mods) <*> ref)
   where bigS = flag' () (long "sync" <> short 'S' <> help "Install official packages.")
         ref  = S.fromList <$> many (flag' SyncRefresh (long "refresh" <> short 'y' <> hidden <> help "Update the package database."))
         mods = cln <|> gps <|> inf <|> lst <|> sch <|> upg <|> dnl
@@ -419,9 +420,16 @@ testdeps = bigT *> (TestDeps <$> someArgs)
   where bigT = flag' () (long "deptest" <> short 'T' <> help "Test dependencies - useful for scripts.")
 
 upgrades :: Parser PacmanOp
-upgrades = bigU *> (Upgrade <$> optional mods <*> someArgs)
+upgrades = bigU *> (Upgrade <$> optional mods <*> somePkgs)
   where bigU = flag' () (long "upgrade" <> short 'U' <> help "Install given package files.")
         mods = flag' UpgradeAsDeps (long "asdeps" <> hidden) <|> flag' UpgradeAsExplicit (long "asexplicit" <> hidden)
+
+somePkgs :: Parser (NonEmptySet PkgName)
+somePkgs = NES.fromNonEmpty . fromJust . NEL.nonEmpty . map PkgName <$> some (argument str (metavar "PACKAGES"))
+
+-- | Same as `someArgs`, but the help message "brief display" won't show PACKAGES.
+somePkgs' :: Parser (NonEmptySet PkgName)
+somePkgs' = NES.fromNonEmpty . fromJust . NEL.nonEmpty . map PkgName <$> some (argument str (metavar "PACKAGES" <> hidden))
 
 -- | One or more arguments.
 someArgs :: Parser (NonEmptySet T.Text)
