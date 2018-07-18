@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, MultiWayIf #-}
-{-# LANGUAGE FlexibleInstances, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE FlexibleInstances, DerivingStrategies, GeneralizedNewtypeDeriving #-}
 
 -- |
 -- Module    : Aura.Types
@@ -219,10 +219,14 @@ type Environment = M.Map T.Text T.Text
 newtype User = User { _user :: T.Text } deriving (Eq, Show)
 
 -- | The name of an Arch Linux package.
-newtype PkgName = PkgName { _pkgname :: T.Text } deriving (Eq, Ord, Show, Flagable, ToJSONKey, FromJSONKey)
+newtype PkgName = PkgName { _pkgname :: T.Text }
+  deriving stock (Eq, Ord, Show)
+  deriving newtype (Flagable, ToJSONKey, FromJSONKey, IsString)
 
 -- | A group that a `Package` could belong too, like @base@, @base-devel@, etc.
-newtype PkgGroup = PkgGroup { _pkggroup :: T.Text } deriving (Eq, Ord, Show, Flagable)
+newtype PkgGroup = PkgGroup { _pkggroup :: T.Text }
+  deriving stock (Eq, Ord, Show)
+  deriving newtype (Flagable)
 
 -- | The dependency which some package provides. May not be the same name
 -- as the package itself (e.g. cronie provides cron).

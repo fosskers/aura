@@ -105,9 +105,9 @@ auraCheck ps = join <$> traverse f auraPkg
   where f a = do
           ss <- ask
           bool Nothing (Just a) <$> send (optionalPrompt ss auraCheck_1)
-        auraPkg | PkgName "aura" `elem` ps     = Just $ PkgName "aura"
-                | PkgName "aura-bin" `elem` ps = Just $ PkgName "aura-bin"
-                | otherwise                    = Nothing
+        auraPkg | "aura" `elem` ps     = Just "aura"
+                | "aura-bin" `elem` ps = Just "aura-bin"
+                | otherwise            = Nothing
 
 auraUpgrade :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => PkgName -> Eff r ()
 auraUpgrade = install . NES.singleton
