@@ -159,13 +159,9 @@ buildAndInstall bss = do
 displayPkgDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
   InstallOptions -> NonEmptySet PkgName -> Eff r ()
 displayPkgDeps opts ps = do
-  ss   <- ask
-  bs   <- snd <$> send (installLookup opts ss ps)
-  case NES.fromSet bs of -- TODO Use traverse_?
-    Nothing  -> pure ()
-    Just bs' -> do
-      pkgs <- depsToInstall (repository opts) bs'
-      reportDeps (switch ss LowVerbosity) $ partitionPkgs pkgs
+  ss <- ask
+  let f = depsToInstall (repository opts) >=> reportDeps (switch ss LowVerbosity) . partitionPkgs
+  send (installLookup opts ss ps) >>= traverse_ f . NES.fromSet . snd
   where reportDeps True  = send . uncurry reportListOfDeps
         reportDeps False = uncurry (reportPkgsToInstall $ label opts)
 

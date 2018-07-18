@@ -86,12 +86,9 @@ data Dep = Dep { depNameOf      :: !PkgName
 -- | Parse a dependency entry as it would appear in a PKGBUILD:
 parseDep :: T.Text -> Maybe Dep
 parseDep = either (const Nothing) Just . parse dep "dep"
-  where dep :: Parsec Void T.Text Dep
-        dep = Dep <$> name <*> ver
-
+  where dep  = Dep <$> name <*> ver
         name = PkgName <$> takeWhile1P Nothing (\c -> c /= '<' && c /= '>' && c /= '=')
-
-        ver = do
+        ver  = do
           end <- atEnd
           if | end       -> pure Anything
              | otherwise -> choice [ char '<'    *> fmap LessThan versioning'
