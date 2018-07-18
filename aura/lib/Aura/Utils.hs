@@ -155,6 +155,7 @@ isTrueRoot env = M.lookup "USER" env == Just "root" && not (M.member "SUDO_USER"
 hasRootPriv :: Environment -> Bool
 hasRootPriv env = M.member "SUDO_USER" env || isTrueRoot env
 
+-- TODO Test `vi` behaviour
 -- | `vi` is a sensible default, it should be installed by
 -- on any Arch system.
 getEditor :: Environment -> T.Text
