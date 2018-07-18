@@ -11,11 +11,11 @@
 -- from the AUR.
 
 module Aura.Commands.A
-  ( install
+  ( I.install
   , upgradeAURPkgs
   , aurPkgInfo
   , aurPkgSearch
-  , displayPkgDeps
+  , I.displayPkgDeps
   , displayPkgbuild
   , aurJson
   ) where
@@ -25,7 +25,6 @@ import           Aura.Core
 import qualified Aura.Install as I
 import           Aura.Languages
 import           Aura.Packages.AUR
-import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings
 import           Aura.State (saveState)
@@ -50,14 +49,6 @@ import           Data.Versions
 import           Linux.Arch.Aur
 
 ---
-
-installOptions :: I.InstallOptions
-installOptions = I.InstallOptions { I.installLookup = aurLookup
-                                  , I.repository    = pacmanRepo <> aurRepo }
-
--- | The result of @-A@.
-install :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
-install = I.install installOptions
 
 -- | The result of @-Au@.
 upgradeAURPkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set PkgName -> Eff r ()
@@ -89,7 +80,7 @@ upgrade pkgs fs = do
          | otherwise -> do
              reportPkgsToUpgrade toUpgrade (toList devel)
              unless (switch ss DryRun) saveState
-             traverse_ install . NES.fromSet $ S.fromList names <> pkgs <> devel
+             traverse_ I.install . NES.fromSet $ S.fromList names <> pkgs <> devel
 
 possibleUpdates :: (Member (Reader Settings) r, Member IO r) => NonEmptySet SimplePkg -> Eff r [(AurInfo, Versioning)]
 possibleUpdates (NES.toNonEmpty -> pkgs) = do
@@ -109,7 +100,7 @@ auraCheck ps = join <$> traverse f auraPkg
                 | otherwise            = Nothing
 
 auraUpgrade :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => PkgName -> Eff r ()
-auraUpgrade = install . NES.singleton
+auraUpgrade = I.install . NES.singleton
 
 develPkgCheck :: (Member (Reader Settings) r, Member IO r) => Eff r (S.Set PkgName)
 develPkgCheck = ask >>= \ss ->
@@ -166,11 +157,6 @@ renderSearch ss r (i, e) = searchResult
           v = case dateObsoleteOf i of
             Just _  -> red . pretty $ aurVersionOf i
             Nothing -> green . pretty $ aurVersionOf i
-
--- | The result of @-Ad@.
-displayPkgDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  NonEmptySet PkgName -> Eff r ()
-displayPkgDeps = I.displayPkgDeps installOptions
 
 -- | The result of @-Ap@.
 displayPkgbuild :: (Member (Reader Settings) r, Member IO r) => NonEmptySet PkgName -> Eff r ()

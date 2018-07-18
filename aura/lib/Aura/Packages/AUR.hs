@@ -46,7 +46,7 @@ import           System.FilePath ((</>))
 
 -- | Attempt to retrieve info about a given `S.Set` of packages from the AUR.
 -- This is a signature expected by `InstallOptions`.
-aurLookup :: MonadIO m => Settings -> NonEmptySet PkgName -> m (S.Set PkgName, S.Set Buildable)
+aurLookup :: Settings -> NonEmptySet PkgName -> IO (S.Set PkgName, S.Set Buildable)
 aurLookup ss names = do
   (bads, goods) <- info m (foldMap (\(PkgName pn) -> [pn]) names) >>= traverseEither (buildable m)
   let goodNames = S.fromList $ map bldNameOf goods
@@ -61,7 +61,7 @@ aurRepo = Repository $ \ss ps -> do
   pkgs <- traverse (packageBuildable ss) $ toList goods
   pure (bads, S.fromList pkgs)
 
-buildable :: MonadIO m => Manager -> AurInfo -> m (Either PkgName Buildable)
+buildable :: Manager -> AurInfo -> IO (Either PkgName Buildable)
 buildable m ai = do
   let !bse = PkgName $ pkgBaseOf ai
   mpb <- pkgbuild m bse  -- Using the package base ensures split packages work correctly.

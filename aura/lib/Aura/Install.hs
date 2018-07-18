@@ -7,12 +7,11 @@
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
--- Layer for agnostic package installation.
+-- Layer for AUR package installation.
 -- Backend for `Aura.Commands.A`.
 
 module Aura.Install
-  ( InstallOptions(..)
-  , install
+  ( install
   , displayPkgDeps
   ) where
 
@@ -23,6 +22,8 @@ import           Aura.Core
 import           Aura.Dependencies
 import           Aura.Diff (diff)
 import           Aura.Languages
+import           Aura.Packages.AUR (aurLookup, aurRepo)
+import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pacman
 import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Records
@@ -48,29 +49,26 @@ import           System.IO (hFlush, stdout)
 
 ---
 
--- TODO Factor this back out.
--- | Installation options.
-data InstallOptions = InstallOptions
-                      { installLookup :: Settings -> NonEmptySet PkgName -> IO (S.Set PkgName, S.Set Buildable)
-                      , repository    :: Repository }
+repository :: Repository
+repository = pacmanRepo <> aurRepo
 
 -- | High level 'install' command. Handles installing
 -- dependencies.
 install :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  InstallOptions -> NonEmptySet PkgName -> Eff r ()
-install opts pkgs = do
+  NonEmptySet PkgName -> Eff r ()
+install pkgs = do
   ss <- ask
-  if | not $ switch ss DeleteMakeDeps -> install' opts pkgs
+  if | not $ switch ss DeleteMakeDeps -> install' pkgs
      | otherwise -> do -- `-a` was used.
          orphansBefore <- send orphans
-         install' opts pkgs
+         install' pkgs
          orphansAfter <- send orphans
          let makeDeps = NES.fromSet (orphansAfter S.\\ orphansBefore)
          traverse_ (\mds -> send (notify ss . removeMakeDepsAfter_1 $ langOf ss) *> removePkgs mds) makeDeps
 
 install' :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  InstallOptions -> NonEmptySet PkgName -> Eff r ()
-install' opts pkgs = do
+  NonEmptySet PkgName -> Eff r ()
+install' pkgs = do
   ss       <- ask
   unneeded <- bool (pure S.empty) (S.fromList . catMaybes <$> send (mapConcurrently isInstalled $ toList pkgs)) $ shared ss NeededOnly
   let !pkgs' = NES.toSet pkgs
@@ -82,14 +80,14 @@ install' opts pkgs = do
            Nothing        -> send . warn ss . install_2 $ langOf ss
            Just toInstall -> do
              traverse_ (report yellow reportUnneededPackages_1) . NEL.nonEmpty $ toList unneeded
-             (nons, toBuild) <- send $ installLookup opts ss toInstall
+             (nons, toBuild) <- send $ aurLookup ss toInstall
              pkgbuildDiffs toBuild
              traverse_ (report red reportNonPackages_1) . NEL.nonEmpty $ toList nons
              case NES.fromSet $ S.map (\b -> b { isExplicit = True }) toBuild of
                Nothing       -> throwError $ Failure install_2
                Just toBuild' -> do
                  send $ notify ss (install_5 $ langOf ss) *> hFlush stdout
-                 allPkgs <- depsToInstall (repository opts) toBuild'
+                 allPkgs <- depsToInstall repository toBuild'
                  let (repoPkgs, buildPkgs) = second uniquePkgBase $ partitionPkgs allPkgs
                  reportPkgsToInstall repoPkgs buildPkgs
                  unless (switch ss DryRun) $ do
@@ -156,11 +154,11 @@ buildAndInstall bss = do
 ------------
 -- | Display dependencies. The result of @-Ad@.
 displayPkgDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  InstallOptions -> NonEmptySet PkgName -> Eff r ()
-displayPkgDeps opts ps = do
+  NonEmptySet PkgName -> Eff r ()
+displayPkgDeps ps = do
   ss <- ask
-  let f = depsToInstall (repository opts) >=> reportDeps (switch ss LowVerbosity) . partitionPkgs
-  send (installLookup opts ss ps) >>= traverse_ f . NES.fromSet . snd
+  let f = depsToInstall repository >=> reportDeps (switch ss LowVerbosity) . partitionPkgs
+  send (aurLookup ss ps) >>= traverse_ f . NES.fromSet . snd
   where reportDeps True  = send . uncurry reportListOfDeps
         reportDeps False = uncurry reportPkgsToInstall
 
