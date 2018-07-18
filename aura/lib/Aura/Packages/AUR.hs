@@ -27,7 +27,7 @@ import           Aura.Pkgbuild.Fetch
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils (quietSh)
-import           BasePrelude hiding (head)
+import           BasePrelude hiding (FilePath, head)
 import           Control.Compactable (traverseEither)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Reader
@@ -39,7 +39,7 @@ import qualified Data.Text as T
 import           Data.Versions (versioning)
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
-import           Shelly (Sh, run_)
+import qualified Shelly as Sh
 import           System.FilePath ((</>))
 
 ---
@@ -89,14 +89,13 @@ pkgUrl (PkgName pkg) = T.pack $ T.unpack aurLink </> "packages" </> T.unpack pkg
 -------------------
 -- SOURCES FROM GIT
 -------------------
--- TODO This can be a shelly FilePath, currently it isn't.
 -- | Attempt to clone a package source from the AUR.
-clone :: Buildable -> Sh (Maybe FilePath)
+clone :: Buildable -> Sh.Sh (Maybe Sh.FilePath)
 clone b = do
-  (ec, _) <- quietSh $ run_ "git" ["clone", "--depth", "1", aurLink <> "/" <> _pkgname (bldBaseNameOf b) <> ".git"]
+  (ec, _) <- quietSh $ Sh.run_ "git" ["clone", "--depth", "1", aurLink <> "/" <> _pkgname (bldBaseNameOf b) <> ".git"]
   case ec of
     (ExitFailure _) -> pure Nothing
-    ExitSuccess     -> pure . Just . T.unpack . _pkgname $ bldBaseNameOf b
+    ExitSuccess     -> Just . (Sh.</> _pkgname (bldBaseNameOf b)) <$> Sh.pwd
 
 ------------
 -- RPC CALLS

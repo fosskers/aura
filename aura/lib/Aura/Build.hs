@@ -32,7 +32,6 @@ import           Data.Semigroup.Foldable (fold1)
 import qualified Data.Set as S
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
 import           Data.Witherable (wither)
 import           Filesystem.Path (filename)
 import           Shelly
@@ -91,14 +90,13 @@ build' ss p = do
 
 getBuildScripts :: Buildable -> User -> Sh (Either Failure FilePath)
 getBuildScripts pkg user = do
-  currDir <- toTextIgnore <$> pwd
+  currDir <- pwd
   scriptsDir <- chown user currDir [] *> clone pkg
   case scriptsDir of
     Nothing -> pure . Left . Failure . buildFail_7 $ bldNameOf pkg
     Just sd -> do
-      let sd' = T.pack sd
-      chown user sd' ["-R"]
-      pure . Right $ fromText sd'
+      chown user sd ["-R"]
+      pure $ Right sd
 
 -- | The user may have edited the original PKGBUILD. If they have, we need to
 -- overwrite what's been downloaded before calling `makepkg`.
