@@ -67,10 +67,8 @@ getDowngradeChoice cache pkg = do
       send . notify ss . getDowngradeChoice_1 pkg $ langOf ss
       fmap (PackagePath . fromText) . send . getSelection $ fmap (toTextIgnore . _pkgpath) choices
 
--- TODO Use `M.filterWithKey`
 getChoicesFromCache :: Cache -> PkgName -> [PackagePath]
-getChoicesFromCache (Cache cache) pkg = sort . mapMaybe f $ M.toList cache
-  where f (SimplePkg pn _, pth) = bool Nothing (Just pth) $ pkg == pn
+getChoicesFromCache (Cache cache) p = sort . M.elems $ M.filterWithKey (\(SimplePkg pn _) _ -> p == pn) cache
 
 -- | Print all package filenames that match a given `T.Text`.
 searchCache :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r ()
