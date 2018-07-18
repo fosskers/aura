@@ -72,7 +72,11 @@ buildable m ai = do
       , pkgbuildOf    = Pkgbuild pb
       , bldBaseNameOf = bse
       , bldProvidesOf = list (Provides $ aurNameOf ai) (Provides . head) $ providesOf ai
-      , bldDepsOf     = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai  -- TODO bad mapMaybe?
+      -- TODO This is a potentially naughty mapMaybe, since deps that fail to parse
+      -- will be silently dropped. Unfortunately there isn't much to be done - `aurLookup`
+      -- and `aurRepo` which call this function only report existence errors
+      -- (i.e. "this package couldn't be found at all").
+      , bldDepsOf     = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai
       , bldVersionOf  = either (const Nothing) Just . versioning $ aurVersionOf ai
       , isExplicit    = False }
 

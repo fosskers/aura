@@ -62,14 +62,13 @@ instance Flagable T.Text where
 instance (Foldable f, Flagable a) => Flagable (f a) where
   asFlag = foldMap asFlag
 
--- TODO Make all these fields strict, here and elsewhere.
 -- | A package to be installed.
-data Package = Package { _pkgName        :: PkgName
-                       , _pkgVersion     :: Maybe Versioning
-                       , _pkgBaseName    :: PkgName
-                       , _pkgProvides    :: Provides
-                       , _pkgDeps        :: [Dep]
-                       , _pkgInstallType :: InstallType } deriving (Eq)
+data Package = Package { _pkgName        :: !PkgName
+                       , _pkgVersion     :: !(Maybe Versioning)
+                       , _pkgBaseName    :: !PkgName
+                       , _pkgProvides    :: !Provides
+                       , _pkgDeps        :: ![Dep]
+                       , _pkgInstallType :: !InstallType } deriving (Eq)
 
 instance Ord Package where
   compare a b = case compare (_pkgName a) (_pkgName b) of
@@ -80,10 +79,9 @@ instance Show Package where
   show p = printf "%s (%s)" (show $ _pkgName p) (show . fmap prettyV $ _pkgVersion p)
 
 -- | A dependency on another package.
-data Dep = Dep { depNameOf      :: PkgName
-               , depVerDemandOf :: VersionDemand } deriving (Eq, Ord, Show)
+data Dep = Dep { depNameOf      :: !PkgName
+               , depVerDemandOf :: !VersionDemand } deriving (Eq, Ord, Show)
 
--- TODO Return an Either if it failed to parse?
 -- TODO Doctest here, and fix up the haddock
 -- | Parse a dependency entry as it would appear in a PKGBUILD:
 parseDep :: T.Text -> Maybe Dep
@@ -174,14 +172,14 @@ newtype Pkgbuild = Pkgbuild { _pkgbuild :: T.Text } deriving (Eq, Ord, Show)
 
 -- | A package to be built manually before installing.
 data Buildable = Buildable
-    { bldNameOf     :: PkgName
-    , bldBaseNameOf :: PkgName
-    , bldProvidesOf :: Provides
-    , pkgbuildOf    :: Pkgbuild
-    , bldDepsOf     :: [Dep]
-    , bldVersionOf  :: Maybe Versioning
+    { bldNameOf     :: !PkgName
+    , bldBaseNameOf :: !PkgName
+    , bldProvidesOf :: !Provides
+    , pkgbuildOf    :: !Pkgbuild
+    , bldDepsOf     :: ![Dep]
+    , bldVersionOf  :: !(Maybe Versioning)
     -- | Did the user select this package, or is it being built as a dep?
-    , isExplicit    :: Bool } deriving (Eq, Ord, Show)
+    , isExplicit    :: !Bool } deriving (Eq, Ord, Show)
 
 -- | All human languages available for text output.
 data Language = English

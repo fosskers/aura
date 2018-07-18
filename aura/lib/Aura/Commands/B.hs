@@ -30,7 +30,6 @@ import           Shelly
 
 ---
 
--- TODO Move this to `States` and delete this module
 -- | Remove all but the newest @n@ package states. Any "pinned" states will also remain.
 cleanStates :: (Member (Reader Settings) r, Member IO r) => Word -> Eff r ()
 cleanStates (fromIntegral -> n) = do
