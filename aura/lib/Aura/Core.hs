@@ -91,12 +91,11 @@ rethrow = send >=> either throwError pure
 sudo :: (Member (Reader Settings) r, Member (Error Failure) r) => Eff r a -> Eff r a
 sudo action = asks (hasRootPriv . envOf) >>= bool (throwError $ Failure mustBeRoot_1) action
 
--- | Stop the user if they are the true Root. Building as isn't allowed
--- as of makepkg v4.2.
+-- | Stop the user if they are the true root. Building as root isn't allowed
+-- since makepkg v4.2.
 trueRoot :: (Member (Reader Settings) r, Member (Error Failure) r) => Eff r a -> Eff r a
 trueRoot action = ask >>= \ss ->
-  -- TODO Should be `(&&)` here? Double-check.
-  if not (isTrueRoot $ envOf ss) || buildUserOf (buildConfigOf ss) /= Just (User "root")
+  if not (isTrueRoot $ envOf ss) && buildUserOf (buildConfigOf ss) /= Just (User "root")
     then action else throwError $ Failure trueRoot_3
 
 -- | A list of non-prebuilt packages installed on the system.
