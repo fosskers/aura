@@ -21,7 +21,6 @@ module Aura.Utils
   , quietSh, loudSh, exitCode
   , chown
     -- * File IO
-  , openEditor
   , ifFile
     -- * Output
   , putStrLnA
@@ -90,10 +89,6 @@ getSelection choiceLabels = do
     Just valid -> pure valid
     Nothing    -> getSelection choiceLabels  -- Ask again.
 
--- | Opens the editor of the user's choice.
-openEditor :: T.Text -> T.Text -> Sh ()
-openEditor editor file = run_ (fromText editor) [file]
-
 -- | If a file exists, it performs action `t` on the argument.
 -- | If the file doesn't exist, it performs `f` and returns the argument.
 ifFile :: MonadIO m => (a -> m a) -> m b -> FilePath -> a -> m a
@@ -158,8 +153,8 @@ hasRootPriv env = M.member "SUDO_USER" env || isTrueRoot env
 -- TODO Test `vi` behaviour
 -- | `vi` is a sensible default, it should be installed by
 -- on any Arch system.
-getEditor :: Environment -> T.Text
-getEditor = fromMaybe "vi" . M.lookup "EDITOR"
+getEditor :: Environment -> FilePath
+getEditor = maybe "vi" fromText . M.lookup "EDITOR"
 
 -- | This will get the locale variable for translations from the environment
 getLocale :: Environment -> T.Text

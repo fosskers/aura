@@ -25,7 +25,6 @@ module Aura.Settings
 import           Aura.Types
 import           BasePrelude hiding (FilePath)
 import qualified Data.Set as S
-import           Data.Text (Text)
 import qualified Data.Text as T
 import           Network.HTTP.Client (Manager)
 import           Shelly (FilePath, toTextIgnore)
@@ -113,7 +112,7 @@ shared ss c = S.member c . commonSwitchesOf $ commonConfigOf ss
 data Settings = Settings { managerOf      :: Manager
                          , envOf          :: Environment
                          , langOf         :: Language
-                         , editorOf       :: Text  -- TODO Add to `BuildConfig`?
+                         , editorOf       :: FilePath
                          , isTerminal     :: Bool
                          , commonConfigOf :: CommonConfig
                          , buildConfigOf  :: BuildConfig }

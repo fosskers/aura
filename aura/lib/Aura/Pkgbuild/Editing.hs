@@ -47,7 +47,7 @@ hotEdit ss b
       bool (pure b) f ans
         where f = withTmpDir $ \tmp -> do
                 cd tmp
-                edit (openEditor (editorOf ss) . toTextIgnore) b
+                edit (run_ (editorOf ss) . (:[]) . toTextIgnore) b
 
 -- | Runs `customizepkg` on whatever PKGBUILD it can.
 -- To work, a package needs an entry in `/etc/customizepkg.d/`
