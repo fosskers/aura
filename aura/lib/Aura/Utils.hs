@@ -41,7 +41,7 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
-import           Data.Text.Prettyprint.Doc hiding (list)
+import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Network.HTTP.Client
 import           Network.HTTP.Types.Status (statusCode)

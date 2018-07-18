@@ -146,7 +146,7 @@ buildAndInstall bss = do
                 Just pp | not (switch ss ForceBuilding) -> Right pp
                 _ -> Left b
           built <- traverse (buildPackages . NES.fromNonEmpty) $ NEL.nonEmpty ps
-          traverse installPkgFiles $ built <> (NES.fromNonEmpty <$> NEL.nonEmpty cached)
+          traverse_ installPkgFiles $ built <> (NES.fromNonEmpty <$> NEL.nonEmpty cached)
           send $ annotateDeps bs
 
 ------------

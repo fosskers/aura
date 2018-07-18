@@ -49,7 +49,7 @@ downgradePackages pkgs = do
   ss    <- ask
   let cachePath = either id id . cachePathOf $ commonConfigOf ss
   reals <- send . shelly @IO $ pkgsInCache ss pkgs
-  traverse_ (report red reportBadDowngradePkgs_1) . nonEmpty . toList $ (NES.toSet pkgs) S.\\ reals
+  traverse_ (report red reportBadDowngradePkgs_1) . nonEmpty . toList $ NES.toSet pkgs S.\\ reals
   unless (null reals) $ do
     cache   <- send . shelly @IO $ cacheContents cachePath
     choices <- traverse (getDowngradeChoice cache) $ toList reals
@@ -59,7 +59,7 @@ downgradePackages pkgs = do
 -- downgrade to.
 getDowngradeChoice :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
   Cache -> PkgName -> Eff r PackagePath
-getDowngradeChoice cache pkg = do
+getDowngradeChoice cache pkg =
   case nonEmpty $ getChoicesFromCache cache pkg of
     Nothing      -> throwError . Failure $ reportBadDowngradePkgs_2 pkg
     Just choices -> do

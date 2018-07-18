@@ -42,7 +42,7 @@ import qualified Data.Text as T
 import           Lens.Micro
 import           Lens.Micro.GHC ()
 import qualified Shelly as Sh
-import           Shelly hiding (FilePath, cmd)
+import           Shelly hiding (FilePath)
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L

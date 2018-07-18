@@ -224,7 +224,7 @@ opts = info (program <**> helper) (fullDesc <> header "Aura - Package manager fo
 
 program :: Parser Program
 program = Program
-  <$> (fmap Right aurOps <|> ((\ps ms -> Left (ps, ms)) <$> pacOps <*> misc))
+  <$> (fmap Right aurOps <|> (curry Left <$> pacOps <*> misc))
   <*> commonConfig
   <*> buildConfig
   <*> optional language
@@ -355,7 +355,7 @@ files = bigF *> (Files <$> fmap S.fromList (many mods))
 queries :: Parser PacmanOp
 queries = bigQ *> (Query <$> (fmap Right query <|> fmap Left mods))
   where bigQ  = flag' () (long "query" <> short 'Q' <> help "Interact with the local package database.")
-        query = curry (id *** S.map PkgName) <$> queryFilters <*> manyArgs
+        query = curry (second (S.map PkgName)) <$> queryFilters <*> manyArgs
         mods  = chl <|> gps <|> inf <|> lst <|> own <|> fls <|> sch <|> chk
         chl   = QueryChangelog <$> (flag' () (long "changelog" <> short 'c' <> hidden <> help "View a package's changelog.") *> someArgs')
         gps   = QueryGroups <$> (flag' () (long "groups" <> short 'g' <> hidden <> help "View all members of a package group.") *> someArgs')

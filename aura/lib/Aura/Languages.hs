@@ -740,7 +740,7 @@ cleanStates_2 n@(bt . T.pack . show -> s) = \case
     Italian    -> s <> " lo stato dei pacchetti sarà mantenuto. Rimuovere i rimanenti?"
     Portuguese -> s <> " estados de pacotes serão mantidos. Remover o resto?"
     French     -> s <> " états des paquets vont être conservés. Supprimer le reste ?"
-    Russian    -> s <> (pluralRussian " состояние пакетов будет оставлено." " состояния пакетов будут оставлены." " состояний пакетов будет оставлено." n) <> " Удалить оставшиеся?"
+    Russian    -> s <> pluralRussian " состояние пакетов будет оставлено." " состояния пакетов будут оставлены." " состояний пакетов будет оставлено." n <> " Удалить оставшиеся?"
     Indonesia  -> s <> " paket akan tetap sama. Hapus yang lainnya?"
     Chinese    -> s <> " 个包的状态将会保留。删除其它的？"
     Swedish    -> s <> " paket kommer att bevaras. Ta bort resten?"
@@ -768,7 +768,7 @@ cleanStates_3 = \case
 cleanStates_4 :: Int -> Language -> Doc AnsiStyle
 cleanStates_4 n = \case
   Japanese -> "現在のパッケージ状態記録：" <> pretty n <> "個。"
-  Russian  -> "У вас сейчас " <+> pretty n <+> (pluralRussian " сохраненное состояние пакета" " сохраненных состояний пакета" " сохраненных состояний пакетов." n)
+  Russian  -> "У вас сейчас " <+> pretty n <+> pluralRussian " сохраненное состояние пакета" " сохраненных состояний пакета" " сохраненных состояний пакетов." n
   _        -> "You currently have" <+> pretty n <+> "saved package states."
 
 cleanStates_5 :: T.Text -> Language -> Doc AnsiStyle
