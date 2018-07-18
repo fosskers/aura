@@ -52,8 +52,7 @@ import           Linux.Arch.Aur
 ---
 
 installOptions :: I.InstallOptions
-installOptions = I.InstallOptions { I.label         = "AUR"
-                                  , I.installLookup = aurLookup
+installOptions = I.InstallOptions { I.installLookup = aurLookup
                                   , I.repository    = pacmanRepo <> aurRepo }
 
 -- | The result of @-A@.

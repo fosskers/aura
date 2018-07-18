@@ -520,22 +520,22 @@ reportPkgsToInstall_1 = \case
     _          -> "Repository dependencies:"
 
 -- NEEDS AN UPDATE
-reportPkgsToInstall_2 :: T.Text -> Language -> Doc AnsiStyle
-reportPkgsToInstall_2 (pretty -> l) = \case
-    Japanese   -> l <> "のパッケージ:"
-    Polish     -> l <> " Pakiety:"
-    Croatian   -> l <> " Paketi:"
-    German     -> l <> " Pakete:"
-    Spanish    -> l <> " Paquetes:"
-    Norwegian  -> l <> " Pakker:"
-    Italian    -> l <> " Pacchetti:"
-    Portuguese -> l <> " Pacotes:"
-    French     -> l <> " Paquets :"
-    Russian    -> l <> " Пакеты:"
-    Indonesia  -> l <> " Paket:"
-    Chinese    -> l <> " 包："
-    Swedish    -> l <> " Paket:"
-    _          -> l <> " Packages:"
+reportPkgsToInstall_2 :: Language -> Doc AnsiStyle
+reportPkgsToInstall_2 = \case
+    Japanese   -> "AURのパッケージ:"
+    Polish     -> "AUR Pakiety:"
+    Croatian   -> "AUR Paketi:"
+    German     -> "AUR Pakete:"
+    Spanish    -> "AUR Paquetes:"
+    Norwegian  -> "AUR Pakker:"
+    Italian    -> "AUR Pacchetti:"
+    Portuguese -> "AUR Pacotes:"
+    French     -> "AUR Paquets :"
+    Russian    -> "AUR Пакеты:"
+    Indonesia  -> "AUR Paket:"
+    Chinese    -> "AUR 包："
+    Swedish    -> "AUR Paket:"
+    _          -> "AUR Packages:"
 
 reportPkgsToInstall_3 :: Language -> Doc AnsiStyle
 reportPkgsToInstall_3 = \case

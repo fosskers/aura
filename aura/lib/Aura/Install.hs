@@ -51,8 +51,7 @@ import           System.IO (hFlush, stdout)
 -- TODO Factor this back out.
 -- | Installation options.
 data InstallOptions = InstallOptions
-                      { label         :: T.Text
-                      , installLookup :: Settings -> NonEmptySet PkgName -> IO (S.Set PkgName, S.Set Buildable)
+                      { installLookup :: Settings -> NonEmptySet PkgName -> IO (S.Set PkgName, S.Set Buildable)
                       , repository    :: Repository }
 
 -- | High level 'install' command. Handles installing
@@ -92,7 +91,7 @@ install' opts pkgs = do
                  send $ notify ss (install_5 $ langOf ss) *> hFlush stdout
                  allPkgs <- depsToInstall (repository opts) toBuild'
                  let (repoPkgs, buildPkgs) = second uniquePkgBase $ partitionPkgs allPkgs
-                 reportPkgsToInstall (label opts) repoPkgs buildPkgs
+                 reportPkgsToInstall repoPkgs buildPkgs
                  unless (switch ss DryRun) $ do
                    continue <- send $ optionalPrompt ss install_3
                    if | not continue -> throwError $ Failure install_4
@@ -163,17 +162,15 @@ displayPkgDeps opts ps = do
   let f = depsToInstall (repository opts) >=> reportDeps (switch ss LowVerbosity) . partitionPkgs
   send (installLookup opts ss ps) >>= traverse_ f . NES.fromSet . snd
   where reportDeps True  = send . uncurry reportListOfDeps
-        reportDeps False = uncurry (reportPkgsToInstall $ label opts)
+        reportDeps False = uncurry reportPkgsToInstall
 
--- TODO Remove `label` handling. It's not necessary, now that ABS support
--- has been removed.
 reportPkgsToInstall :: (Member (Reader Settings) r, Member IO r) =>
-   T.Text -> [PkgName] -> [NonEmptySet Buildable] -> Eff r ()
-reportPkgsToInstall la rps bps = do
+   [PkgName] -> [NonEmptySet Buildable] -> Eff r ()
+reportPkgsToInstall rps bps = do
   let (explicits, deps) = partition isExplicit $ foldMap toList bps
   traverse_ (report green reportPkgsToInstall_1) . NEL.nonEmpty $ sort rps
   traverse_ (report green reportPkgsToInstall_3) . NEL.nonEmpty . sort $ map bldNameOf deps
-  traverse_ (report green (reportPkgsToInstall_2 la)) . NEL.nonEmpty . sort $ map bldNameOf explicits
+  traverse_ (report green reportPkgsToInstall_2) . NEL.nonEmpty . sort $ map bldNameOf explicits
 
 reportListOfDeps :: [PkgName] -> [NonEmptySet Buildable] -> IO ()
 reportListOfDeps rps bps = do
