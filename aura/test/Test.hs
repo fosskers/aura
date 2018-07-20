@@ -11,6 +11,7 @@ import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Versions
+import qualified Language.Bash.Parse as B
 import           Test.Tasty
 import           Test.Tasty.HUnit
 import           Text.Megaparsec
@@ -58,6 +59,10 @@ suite conf = testGroup "Unit Tests"
             for_ restOfLangs $ \otherLang -> do
               let otherNames = languageNames otherLang
               assertEqual ("Language name maps for " ++ show lang ++ " and " ++ show otherLang ++ " have different size") (M.size names) (M.size otherNames)
+    ]
+  , testGroup "Aura.Pkgbuild.Security"
+    [ testCase "Parsing - aura.PKGBUILD" $ do
+        readFile "test/aura.PKGBUILD" >>= assertBool "Failed to parse" . isRight . B.parse "aura.PKGBUILD"
     ]
   ]
 
