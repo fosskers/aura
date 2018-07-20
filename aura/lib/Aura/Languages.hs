@@ -1291,20 +1291,28 @@ hotEdit_1 (bt . _pkgname -> p) = \case
 
 customizepkg_1 :: Language -> Doc AnsiStyle
 customizepkg_1 = let customizepkg = bt "customizepkg" in \case
-    Japanese   -> customizepkg <> "はインストールされていません。"
-    Polish     -> customizepkg <> "nie zainstalowany."
-    Croatian   -> customizepkg <> "nije instaliran."
-    German     -> customizepkg <> "ist nicht installiert."
-    Spanish    -> customizepkg <> "no está instalado."
-    Norwegian  -> customizepkg <> "er ikke installert."
-    Italian    -> customizepkg <> "non è installato."
-    Portuguese -> customizepkg <> "não está instalado."
-    French     -> customizepkg <> "n'est pas installé."
-    Russian    -> customizepkg <> "не установлен."
-    Indonesia  -> customizepkg <> "tidak terinstal."
-    Chinese    -> customizepkg <> " 没有被安装。"
-    Swedish    -> customizepkg <> "är inte installerad"
-    _          -> customizepkg <> "isn't installed."
+    Japanese   -> customizepkg <+> "はインストールされていません。"
+    Polish     -> customizepkg <+> "nie zainstalowany."
+    Croatian   -> customizepkg <+> "nije instaliran."
+    German     -> customizepkg <+> "ist nicht installiert."
+    Spanish    -> customizepkg <+> "no está instalado."
+    Norwegian  -> customizepkg <+> "er ikke installert."
+    Italian    -> customizepkg <+> "non è installato."
+    Portuguese -> customizepkg <+> "não está instalado."
+    French     -> customizepkg <+> "n'est pas installé."
+    Russian    -> customizepkg <+> "не установлен."
+    Indonesia  -> customizepkg <+> "tidak terinstal."
+    Chinese    -> customizepkg <+> " 没有被安装。"
+    Swedish    -> customizepkg <+> "är inte installerad"
+    _          -> customizepkg <+> "isn't installed."
+
+------------------------------
+-- Pkgbuild Security functions
+------------------------------
+security_1 :: Language -> Doc AnsiStyle
+security_1 = \case
+  _ -> "The PKGBUILD was too complex to parse - it may be obfuscating malicious code."
+
 
 -----------------------
 -- Aura/Utils functions

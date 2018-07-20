@@ -5,6 +5,7 @@ module Main ( main ) where
 import           Aura.Languages
 import           Aura.Packages.Repository
 import           Aura.Pacman
+import           Aura.Pkgbuild.Security (exploits)
 import           Aura.Types
 import           BasePrelude
 import qualified Data.Map.Strict as M
@@ -21,10 +22,11 @@ import           Text.Megaparsec
 main :: IO ()
 main = do
   conf <- T.readFile "test/pacman.conf"
-  defaultMain $ suite conf
+  pkb  <- Pkgbuild <$> T.readFile "test/aura.PKGBUILD"
+  defaultMain $ suite conf pkb
 
-suite :: T.Text -> TestTree
-suite conf = testGroup "Unit Tests"
+suite :: T.Text -> Pkgbuild -> TestTree
+suite conf pb = testGroup "Unit Tests"
   [ testGroup "Aura.Core"
     [ testCase "parseDep - python2" $ parseDep "python2" @?= Just (Dep "python2" Anything)
     , testCase "parseDep - python2-lxml>=3.1.0"
@@ -62,7 +64,9 @@ suite conf = testGroup "Unit Tests"
     ]
   , testGroup "Aura.Pkgbuild.Security"
     [ testCase "Parsing - aura.PKGBUILD" $ do
-        readFile "test/aura.PKGBUILD" >>= assertBool "Failed to parse" . isRight . B.parse "aura.PKGBUILD"
+        assertBool "Failed to parse" . isRight . B.parse "aura.PKGBUILD" . T.unpack $ _pkgbuild pb
+    , testCase "Detect curl" $ do
+        assertBool "Didn't detect curl!" . isJust $ exploits pb
     ]
   ]
 

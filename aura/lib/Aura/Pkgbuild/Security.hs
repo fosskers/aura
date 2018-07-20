@@ -8,9 +8,13 @@
 
 module Aura.Pkgbuild.Security ( exploits ) where
 
+import           Aura.Languages
 import           Aura.Types (Pkgbuild(..), Failure(..))
 import           BasePrelude hiding (Last, Word)
 import qualified Data.Map.Strict as M
+import qualified Data.Set as S
+import           Data.Set.NonEmpty (NonEmptySet)
+import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import qualified Language.Bash.Cond as Cond
 import           Language.Bash.Parse (parse)
@@ -20,20 +24,22 @@ import           Lens.Micro
 
 ---
 
-newtype BannedTerm = BannedTerm T.Text deriving (Eq, Ord, Show)
+data BannedTerm = Curl | Wget | Git | Ssh deriving (Eq, Ord, Show)  -- TODO add more
 
 blacklist :: M.Map T.Text BannedTerm
-blacklist = M.fromList $ map (id &&& BannedTerm) ["curl", "wget", "git", "ssh"]
+blacklist = M.fromList [("curl", Curl), ("wget", Wget), ("git", Git), ("ssh", Ssh)]
 
 -- | Determine if a given PKGBUILD contains bash exploits.
 -- Will also fail if parsing itself failed.
 exploits :: Pkgbuild -> Maybe Failure
 exploits (Pkgbuild pb) = case parse "PKGBUILD" $ T.unpack pb of
-  Left _ -> Just $ Failure undefined
-  Right (List sms) -> undefined $ mapMaybe exploit sms
+  Left _ -> Just $ Failure security_1
+  Right (List sms) -> case mapMaybe exploit sms of
+    [] -> Nothing
+    es -> (show $ map fst es) `trace` (Just . Failure $ const "OUCH!")
 
-exploit :: Statement -> Maybe ([BannedTerm], Statement)
-exploit s = (,s) <$> traverse banned (s ^.. terms)
+exploit :: Statement -> Maybe (NonEmptySet BannedTerm, Statement)
+exploit s = traverse banned (s ^.. terms) >>= fmap (,s) . NES.fromSet . S.fromList
 
 banned :: Word -> Maybe BannedTerm
 banned w = M.lookup (T.pack $ unquote w) blacklist
