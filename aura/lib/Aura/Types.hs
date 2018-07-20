@@ -38,6 +38,7 @@ module Aura.Types
   ) where
 
 import           BasePrelude hiding (FilePath, try)
+import           Control.Error.Util (hush)
 import           Data.Aeson (ToJSONKey, FromJSONKey)
 import           Data.Bitraversable
 import           Data.List.NonEmpty (nonEmpty)
@@ -85,7 +86,7 @@ data Dep = Dep { depNameOf      :: !PkgName
 -- TODO Doctest here, and fix up the haddock
 -- | Parse a dependency entry as it would appear in a PKGBUILD:
 parseDep :: T.Text -> Maybe Dep
-parseDep = either (const Nothing) Just . parse dep "dep"
+parseDep = hush . parse dep "dep"
   where dep  = Dep <$> name <*> ver
         name = PkgName <$> takeWhile1P Nothing (\c -> c /= '<' && c /= '>' && c /= '=')
         ver  = do
@@ -129,7 +130,7 @@ data SimplePkg = SimplePkg { _spName :: PkgName, _spVersion :: Versioning } deri
 -- | Attempt to create a `SimplePkg` from filepaths like
 --   @\/var\/cache\/pacman\/pkg\/linux-3.2.14-1-x86_64.pkg.tar.xz@
 simplepkg :: PackagePath -> Maybe SimplePkg
-simplepkg (PackagePath t) = uncurry SimplePkg <$> bitraverse f f (parse n "name" t', parse v "version" t')
+simplepkg (PackagePath t) = uncurry SimplePkg <$> bitraverse hush hush (parse n "name" t', parse v "version" t')
   where t' = toTextIgnore $ filename t
 
         n :: Parsec Void T.Text PkgName
@@ -142,12 +143,11 @@ simplepkg (PackagePath t) = uncurry SimplePkg <$> bitraverse f f (parse n "name"
         v    = manyTill anyChar (try finished) *> ver
         ver  = try (fmap Ideal semver' <* post) <|> try (fmap General version' <* post) <|> fmap Complex mess'
         post = char '-' *> (string "x86_64" <|> string "any") *> string ".pkg.tar.xz"
-        f    = either (const Nothing) Just
 
 -- | Attempt to create a `SimplePkg` from text like:
 --     xchat 2.8.8-19
 simplepkg' :: T.Text -> Maybe SimplePkg
-simplepkg' = either (const Nothing) Just . parse parser "name-and-version"
+simplepkg' = hush . parse parser "name-and-version"
   where parser = SimplePkg <$> (PkgName <$> takeWhile1P Nothing (/= ' ')) <*> (space *> versioning')
 
 -- | Filepaths like:

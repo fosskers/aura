@@ -38,12 +38,15 @@ dependencies:
   - base >= 4.8 && < 4.12
   - base-prelude >= 1.2 && < 1.4
   - containers
+  - errors >= 2.3 && < 2.4
   - freer-simple >= 1.1 && < 1.2
   - http-client >= 0.5 && < 0.6
+  - language-bash >= 0.7 && < 0.8
   - non-empty-containers >= 0.1 && < 0.2
   - prettyprinter >= 1.2 && < 1.3
   - prettyprinter-ansi-terminal >= 1.1 && < 1.2
   - text >= 1.2 && < 1.3
+  - transformers
   - shelly >= 1.7 && < 1.9
   - versions >= 3.4 && < 3.5
 

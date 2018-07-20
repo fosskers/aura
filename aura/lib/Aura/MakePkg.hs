@@ -19,6 +19,7 @@ import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils (exitCode)
 import           BasePrelude hiding (FilePath)
+import           Control.Error.Util (note)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
@@ -41,7 +42,7 @@ makepkg ss user = fmap g . f $ make cmd (opts <> colour)
   where (cmd, opts) = runStyle user . foldMap asFlag . makepkgFlagsOf $ buildConfigOf ss
         f | switch ss DontSuppressMakepkg = id
           | otherwise = print_stdout False . print_stderr False
-        g (ExitSuccess, fs) = maybe (Left $ Failure buildFail_9) (Right . NES.fromNonEmpty) $ NEL.nonEmpty fs
+        g (ExitSuccess, fs) = note (Failure buildFail_9) . fmap NES.fromNonEmpty $ NEL.nonEmpty fs
         g _ = Left $ Failure buildFail_8
         colour | shared ss (Colour Never)  = ["--nocolor"]
                | shared ss (Colour Always) = []

@@ -31,6 +31,7 @@ import           Aura.State (saveState)
 import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding ((<+>))
+import           Control.Error.Util (hush)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
@@ -168,7 +169,7 @@ displayPkgbuild ps = do
 
 isntMostRecent :: (AurInfo, Versioning) -> Bool
 isntMostRecent (ai, v) = trueVer > Just v
-  where trueVer = either (const Nothing) Just . versioning $ aurVersionOf ai
+  where trueVer = hush . versioning $ aurVersionOf ai
 
 -- | Similar to @-Ai@, but yields the raw data as JSON instead.
 aurJson :: (Member (Reader Settings) r, Member IO r) => NonEmptySet PkgName -> Eff r ()

@@ -28,7 +28,9 @@ import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding (FilePath)
-import           Data.Bitraversable
+import           Control.Error.Util (failWith)
+import           Control.Monad.Trans.Class (lift)
+import           Control.Monad.Trans.Except
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified Data.Set.NonEmpty as NES
@@ -43,39 +45,35 @@ import           System.IO (hIsTerminalDevice, stdout)
 ---
 
 getSettings :: Program -> IO (Either Failure Settings)
-getSettings (Program _ co bc lng) = do
-  confFile <- getPacmanConf . either id id $ configPathOf co
-  join <$> bitraverse pure f confFile
-  where f confFile = do
-          environment <- M.fromList . map (bimap T.pack T.pack) <$> getEnvironment
-          buildPath'  <- checkBuildPath (buildPathOf bc) defaultPackageCache
-          manager     <- newManager tlsManagerSettings
-          isTerm      <- hIsTerminalDevice stdout
-          fromGroups  <- maybe (pure S.empty) groupPackages . NES.fromSet $ getIgnoredGroups confFile <> ignoredGroupsOf co
-          let language   = checkLang lng environment
-              buildUser' = buildUserOf bc <|> getTrueUser environment
-          pure $ do
-            bu <- maybe (Left $ Failure whoIsBuildUser_1) Right buildUser'
-            Right Settings { managerOf      = manager
-                           , envOf          = environment
-                           , langOf         = language
-                           , editorOf       = getEditor environment
-                           , isTerminal     = isTerm
-                           , commonConfigOf =
-                             -- | These maintain the precedence order: flags, config file entry, default
-                             co { cachePathOf   = first (\x -> fromMaybe x $ getCachePath confFile) $ cachePathOf co
-                                , logPathOf     = first (\x -> fromMaybe x $ getLogFilePath confFile) $ logPathOf co
-                                , ignoredPkgsOf = getIgnoredPkgs confFile <> ignoredPkgsOf co <> fromGroups
-                                }
-                           , buildConfigOf  =
-                             bc { buildPathOf   = buildPath'
-                                , buildUserOf   = Just bu
-                                }
-                           }
+getSettings (Program _ co bc lng) = runExceptT $ do
+  confFile    <- ExceptT (getPacmanConf . either id id $ configPathOf co)
+  environment <- lift (M.fromList . map (bimap T.pack T.pack) <$> getEnvironment)
+  buildPath'  <- lift $ checkBuildPath (buildPathOf bc) defaultPackageCache
+  manager     <- lift $ newManager tlsManagerSettings
+  isTerm      <- lift $ hIsTerminalDevice stdout
+  fromGroups  <- lift . maybe (pure S.empty) groupPackages . NES.fromSet $ getIgnoredGroups confFile <> ignoredGroupsOf co
+  let language = checkLang lng environment
+  bu <- failWith (Failure whoIsBuildUser_1) $ buildUserOf bc <|> getTrueUser environment
+  pure $ Settings { managerOf      = manager
+                  , envOf          = environment
+                  , langOf         = language
+                  , editorOf       = getEditor environment
+                  , isTerminal     = isTerm
+                  , commonConfigOf =
+                      -- | These maintain the precedence order: flags, config file entry, default
+                      co { cachePathOf   = first (\x -> fromMaybe x $ getCachePath confFile) $ cachePathOf co
+                         , logPathOf     = first (\x -> fromMaybe x $ getLogFilePath confFile) $ logPathOf co
+                         , ignoredPkgsOf = getIgnoredPkgs confFile <> ignoredPkgsOf co <> fromGroups
+                         }
+                  , buildConfigOf  =
+                      bc { buildPathOf = buildPath'
+                         , buildUserOf = Just bu
+                         }
+                  }
 
 checkLang :: Maybe Language -> Environment -> Language
 checkLang Nothing env   = langFromLocale $ getLocale env
 checkLang (Just lang) _ = lang
 
-checkBuildPath :: MonadIO m => FilePath -> FilePath -> m FilePath
+checkBuildPath :: FilePath -> FilePath -> IO FilePath
 checkBuildPath bp def = bool def bp <$> shelly (test_d bp)

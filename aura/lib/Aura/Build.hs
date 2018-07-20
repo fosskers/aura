@@ -26,7 +26,8 @@ import           BasePrelude hiding (FilePath)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
-import           Data.Bitraversable (bitraverse)
+import           Control.Monad.Trans.Class (lift)
+import           Control.Monad.Trans.Except
 import qualified Data.List.NonEmpty as NEL
 import           Data.Semigroup.Foldable (fold1)
 import qualified Data.Set as S
@@ -75,18 +76,16 @@ build' ss p = do
   cd pth
   withTmpDir $ \curr -> do
     cd curr
-    getBuildScripts p user >>= fmap join . bitraverse pure f
+    runExceptT $ do
+      bs <- ExceptT $ getBuildScripts p user
+      lift $ cd bs
+      lift $ overwritePkgbuild ss p
+      pNames <- ExceptT $ makepkg ss user
+      paths  <- lift . fmap NES.fromNonEmpty . traverse (moveToCachePath ss) $ NES.toNonEmpty pNames
+      lift . when (S.member AllSource . makepkgFlagsOf $ buildConfigOf ss) $
+        makepkgSource user >>= traverse_ moveToSourcePath
+      pure paths
   where user = fromMaybe (User "桜木花道") . buildUserOf $ buildConfigOf ss
-        f bs = do
-          cd bs
-          overwritePkgbuild ss p
-          pNames <- makepkg ss user
-          bitraverse pure g pNames
-        g pns = do
-          paths <- fmap NES.fromNonEmpty . traverse (moveToCachePath ss) $ NES.toNonEmpty pns
-          when (S.member AllSource . makepkgFlagsOf $ buildConfigOf ss) $
-            makepkgSource user >>= traverse_ moveToSourcePath
-          pure paths
 
 getBuildScripts :: Buildable -> User -> Sh (Either Failure FilePath)
 getBuildScripts pkg user = do
@@ -94,9 +93,7 @@ getBuildScripts pkg user = do
   scriptsDir <- chown user currDir [] *> clone pkg
   case scriptsDir of
     Nothing -> pure . Left . Failure . buildFail_7 $ bldNameOf pkg
-    Just sd -> do
-      chown user sd ["-R"]
-      pure $ Right sd
+    Just sd -> chown user sd ["-R"] $> Right sd
 
 -- | The user may have edited the original PKGBUILD. If they have, we need to
 -- overwrite what's been downloaded before calling `makepkg`.

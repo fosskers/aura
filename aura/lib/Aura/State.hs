@@ -28,6 +28,7 @@ import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding (Version, FilePath, mapMaybe)
+import           Control.Error.Util (hush)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
@@ -56,7 +57,7 @@ instance FromJSON PkgState where
     <$> v .: "time"
     <*> v .: "pinned"
     <*> fmap f (v .: "packages")
-    where f = mapMaybe (either (const Nothing) Just . versioning)
+    where f = mapMaybe (hush . versioning)
   parseJSON invalid = typeMismatch "PkgState" invalid
 
 data StateDiff = StateDiff { _toAlter :: [SimplePkg], _toRemove :: [PkgName] }

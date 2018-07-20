@@ -29,6 +29,7 @@ import           Aura.Types
 import           Aura.Utils (quietSh)
 import           BasePrelude hiding (FilePath, head)
 import           Control.Compactable (traverseEither)
+import           Control.Error.Util (hush)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Reader
 import           Data.List.NonEmpty (head)
@@ -77,7 +78,7 @@ buildable m ai = do
       -- and `aurRepo` which call this function only report existence errors
       -- (i.e. "this package couldn't be found at all").
       , bldDepsOf     = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai
-      , bldVersionOf  = either (const Nothing) Just . versioning $ aurVersionOf ai
+      , bldVersionOf  = hush . versioning $ aurVersionOf ai
       , isExplicit    = False }
 
 ----------------

@@ -21,6 +21,7 @@ import           Aura.Types
 import           Aura.Utils (getSelection)
 import           BasePrelude hiding (try)
 import           Control.Concurrent.Async
+import           Control.Error.Util (hush)
 import           Data.Bitraversable (bitraverse)
 import qualified Data.Set as S
 import qualified Data.Text as T
@@ -73,7 +74,7 @@ mostRecentVersion (PkgName s) = extractVersion <$> pacmanOutput ["-Si", s]
 -- | Parses the version number of a package from the result of a
 -- @pacman -Si@ call.
 extractVersion :: T.Text -> Maybe Versioning
-extractVersion = either (const Nothing) Just . parse p "extractVersion"
+extractVersion = hush . parse p "extractVersion"
   where p = do
           takeWhile1P Nothing (/= '\n') *> newline
           takeWhile1P Nothing (/= '\n') *> newline
