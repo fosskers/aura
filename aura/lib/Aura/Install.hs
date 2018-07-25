@@ -107,14 +107,15 @@ install' pkgs = do
 analysePkgbuild :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Buildable -> Eff r ()
 analysePkgbuild b = do
   ss <- ask
-  send $ case parsedPB $ pkgbuildOf b of
-    Nothing -> warn ss (security_1 (bldNameOf b) $ langOf ss)
+  let f = whenM (send $ optionalPrompt ss security_6) . throwError $ Failure security_7
+  case parsedPB $ pkgbuildOf b of
+    Nothing -> send (warn ss (security_1 (bldNameOf b) $ langOf ss)) *> f
     Just l  -> case bannedTerms l of
       []  -> pure ()
       bts -> do
-        scold ss (security_5 (bldNameOf b) $ langOf ss)
-        traverse_ (displayBannedTerms ss) bts
-  whenM (send $ optionalPrompt ss security_6) . throwError $ Failure security_7
+        send $ scold ss (security_5 (bldNameOf b) $ langOf ss)
+        send $ traverse_ (displayBannedTerms ss) bts
+        f
 
 displayBannedTerms :: Settings -> (Statement, NonEmptySet BannedTerm) -> IO ()
 displayBannedTerms ss (stmt, bts) = do
