@@ -45,6 +45,7 @@ import           System.FilePath ((</>))
 
 ---
 
+-- TODO Make the call to `buildable` concurrent, since it makes web calls.
 -- | Attempt to retrieve info about a given `S.Set` of packages from the AUR.
 -- This is a signature expected by `InstallOptions`.
 aurLookup :: Settings -> NonEmptySet PkgName -> IO (S.Set PkgName, S.Set Buildable)
@@ -65,10 +66,11 @@ aurRepo = Repository $ \ss ps -> do
 buildable :: Manager -> AurInfo -> IO (Either PkgName Buildable)
 buildable m ai = do
   let !bse = PkgName $ pkgBaseOf ai
+      mver = hush . versioning $ aurVersionOf ai
   mpb <- pkgbuild m bse  -- Using the package base ensures split packages work correctly.
-  case mpb of
-    Nothing -> pure . Left . PkgName $ aurNameOf ai
-    Just pb -> pure $ Right Buildable
+  case (,) <$> mpb <*> mver of
+    Nothing        -> pure . Left . PkgName $ aurNameOf ai
+    Just (pb, ver) -> pure $ Right Buildable
       { bldNameOf     = PkgName $ aurNameOf ai
       , pkgbuildOf    = Pkgbuild pb
       , bldBaseNameOf = bse
@@ -78,7 +80,7 @@ buildable m ai = do
       -- and `aurRepo` which call this function only report existence errors
       -- (i.e. "this package couldn't be found at all").
       , bldDepsOf     = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai
-      , bldVersionOf  = hush . versioning $ aurVersionOf ai
+      , bldVersionOf  = ver
       , isExplicit    = False }
 
 ----------------

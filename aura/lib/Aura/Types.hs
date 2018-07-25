@@ -65,7 +65,7 @@ instance (Foldable f, Flagable a) => Flagable (f a) where
 
 -- | A package to be installed.
 data Package = Package { _pkgName        :: !PkgName
-                       , _pkgVersion     :: !(Maybe Versioning)
+                       , _pkgVersion     :: !Versioning
                        , _pkgBaseName    :: !PkgName
                        , _pkgProvides    :: !Provides
                        , _pkgDeps        :: ![Dep]
@@ -77,7 +77,7 @@ instance Ord Package where
     oth -> oth
 
 instance Show Package where
-  show p = printf "%s (%s)" (show $ _pkgName p) (show . fmap prettyV $ _pkgVersion p)
+  show p = printf "%s (%s)" (show $ _pkgName p) (show . prettyV $ _pkgVersion p)
 
 -- | A dependency on another package.
 data Dep = Dep { depNameOf      :: !PkgName
@@ -174,7 +174,7 @@ data Buildable = Buildable
     , bldProvidesOf :: !Provides
     , pkgbuildOf    :: !Pkgbuild
     , bldDepsOf     :: ![Dep]
-    , bldVersionOf  :: !(Maybe Versioning)
+    , bldVersionOf  :: !Versioning
     -- | Did the user select this package, or is it being built as a dep?
     , isExplicit    :: !Bool } deriving (Eq, Ord, Show)
 
@@ -200,7 +200,6 @@ data Language = English
 data DepError = NonExistant PkgName
               | VerConflict (Doc AnsiStyle)
               | Ignored (Doc AnsiStyle)
-              | UnparsableVersion PkgName
               | BrokenProvides PkgName Provides PkgName
 
 -- | Some failure message that when given the current runtime `Language`

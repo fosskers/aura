@@ -109,24 +109,22 @@ batch g | isEmpty g = []
 realPkgConflicts :: Settings -> PkgName -> Package -> Dep -> Maybe DepError
 realPkgConflicts ss parent pkg dep
     | name `elem` toIgnore            = Just $ Ignored failMsg1
-    | isNothing curVer                = Just $ UnparsableVersion name
     | isVersionConflict reqVer curVer = Just $ VerConflict failMsg2
     | otherwise                       = Nothing
     where name     = _pkgName pkg
-          curVer   = _pkgVersion pkg   & _Just . release .~ []
+          curVer   = _pkgVersion pkg & release .~ []
           reqVer   = depVerDemandOf dep & _VersionDemand . release .~ []
           lang     = langOf ss
           toIgnore = ignoredPkgsOf $ commonConfigOf ss
           failMsg1 = getRealPkgConflicts_2 name lang
-          failMsg2 = getRealPkgConflicts_1 parent name (prettyV $ fromJust curVer) (T.pack $ show reqVer) lang
+          failMsg2 = getRealPkgConflicts_1 parent name (prettyV curVer) (T.pack $ show reqVer) lang
 
 -- | Compares a (r)equested version number with a (c)urrent up-to-date one.
 -- The `MustBe` case uses regexes. A dependency demanding version 7.4
 -- SHOULD match as `okay` against version 7.4, 7.4.0.1, or even 7.4.0.1-2.
-isVersionConflict :: VersionDemand -> Maybe Versioning -> Bool
-isVersionConflict Anything _            = False
-isVersionConflict (LessThan r) (Just c) = c >= r
-isVersionConflict (MoreThan r) (Just c) = c <= r
-isVersionConflict (MustBe   r) (Just c) = c /= r
-isVersionConflict (AtLeast  r) (Just c) = c < r
-isVersionConflict _ _ = True  -- We expect this branch to never occur, due to the `isNothing` check above.
+isVersionConflict :: VersionDemand -> Versioning -> Bool
+isVersionConflict Anything _     = False
+isVersionConflict (LessThan r) c = c >= r
+isVersionConflict (MoreThan r) c = c <= r
+isVersionConflict (MustBe   r) c = c /= r
+isVersionConflict (AtLeast  r) c = c < r

@@ -166,7 +166,7 @@ buildAndInstall bss = do
   where f (Cache cache) bs = do
           ss <- ask
           let (ps, cached) = fmapEither g $ toList bs
-              g b = case bldVersionOf b >>= (\v -> SimplePkg (bldNameOf b) v `M.lookup` cache) of
+              g b = case (`M.lookup` cache) . SimplePkg (bldNameOf b) $ bldVersionOf b of  -- TODO generic lens! super!
                 Just pp | not (switch ss ForceBuilding) -> Right pp
                 _ -> Left b
           built <- traverse (buildPackages . NES.fromNonEmpty) $ NEL.nonEmpty ps

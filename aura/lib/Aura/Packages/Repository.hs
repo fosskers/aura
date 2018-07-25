@@ -20,9 +20,9 @@ import           Aura.Settings (Settings)
 import           Aura.Types
 import           Aura.Utils (getSelection)
 import           BasePrelude hiding (try)
+import           Control.Compactable (traverseEither)
 import           Control.Concurrent.Async
-import           Control.Error.Util (hush)
-import           Data.Bitraversable (bitraverse)
+import           Control.Error.Util (hush, note)
 import qualified Data.Set as S
 import qualified Data.Text as T
 import           Data.Versions
@@ -35,11 +35,12 @@ import           Text.Megaparsec.Char
 -- We expect this to fail when the package is actually an AUR package.
 pacmanRepo :: Repository
 pacmanRepo = Repository $ \ss names -> do
-  badsgoods <- partitionEithers <$> mapConcurrently (resolveName ss) (toList names)
-  bitraverse (pure . S.fromList) (fmap S.fromList . traverse f) badsgoods
-  where f (r, p) = packageRepo r p <$> mostRecentVersion r
+  (bads, goods)   <- partitionEithers <$> mapConcurrently (resolveName ss) (toList names)
+  (bads', goods') <- traverseEither f goods
+  pure (S.fromList $ bads <> bads', S.fromList goods')
+  where f (r, p) = fmap (packageRepo r p) <$> mostRecentVersion r
 
-packageRepo :: PkgName -> Provides -> Maybe Versioning -> Package
+packageRepo :: PkgName -> Provides -> Versioning -> Package
 packageRepo name pro ver = Package
   { _pkgName        = name
   , _pkgVersion     = ver
@@ -68,8 +69,8 @@ chooseProvider ss name ps@(a:as) =
           PkgName <$> getSelection (_pkgname a :| map _pkgname as)
 
 -- | The most recent version of a package, if it exists in the respositories.
-mostRecentVersion :: PkgName -> IO (Maybe Versioning)
-mostRecentVersion (PkgName s) = extractVersion <$> pacmanOutput ["-Si", s]
+mostRecentVersion :: PkgName -> IO (Either PkgName Versioning)
+mostRecentVersion p@(PkgName s) = note p . extractVersion <$> pacmanOutput ["-Si", s]
 
 -- | Parses the version number of a package from the result of a
 -- @pacman -Si@ call.

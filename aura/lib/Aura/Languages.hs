@@ -332,10 +332,6 @@ depError l (NonExistant (PkgName s)) = case l of
   Portuguese -> "A dependência " <> bt s <> " não foi encontrada."
   Russian    -> "Зависимость " <> bt s <> " не найдена."
   _          -> "The dependency " <> bt s <> " couldn't be found."
-depError l (UnparsableVersion (PkgName s)) = case l of
-  Portuguese -> "A versão de " <> bt s <> " não pôde ser interpretada."
-  Russian    -> "Версия для " <> bt s <> " не распознана."
-  _          -> "The version number for " <> bt s <> " couldn't be parsed."
 depError l (BrokenProvides (PkgName pkg) (Provides pro) (PkgName name)) = case l of
   Russian    -> "Пакету " <> bt pkg <> " требуется " <> bt name <> ", предоставляющий " <> bt pro <> "."
   _          -> "The package " <> bt pkg <> " needs " <> bt name <> ", which provides " <> bt pro <> "."
