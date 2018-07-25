@@ -5,14 +5,13 @@ module Main ( main ) where
 import           Aura.Languages
 import           Aura.Packages.Repository
 import           Aura.Pacman
-import           Aura.Pkgbuild.Security (exploits)
+import           Aura.Pkgbuild.Security
 import           Aura.Types
 import           BasePrelude
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Versions
-import qualified Language.Bash.Parse as B
 import           Test.Tasty
 import           Test.Tasty.HUnit
 import           Text.Megaparsec
@@ -64,9 +63,8 @@ suite conf pb = testGroup "Unit Tests"
     ]
   , testGroup "Aura.Pkgbuild.Security"
     [ testCase "Parsing - aura.PKGBUILD" $ do
-        assertBool "Failed to parse" . isRight . B.parse "aura.PKGBUILD" . T.unpack $ _pkgbuild pb
-    , testCase "Detect curl" $ do
-        assertBool "Didn't detect curl!" . isJust $ exploits pb
+        assertBool "Failed to parse" . isJust $ parsedPB pb
+    , testCase "Detecting banned terms" $ (fmap (not . null . bannedTerms) $ parsedPB pb) @?= Just True
     ]
   ]
 

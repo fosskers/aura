@@ -1313,6 +1313,29 @@ security_1 :: Language -> Doc AnsiStyle
 security_1 = \case
   _ -> "The PKGBUILD was too complex to parse - it may be obfuscating malicious code."
 
+security_2 :: T.Text -> Language -> Doc AnsiStyle
+security_2 (bt -> t) = \case
+  _ -> t <+> "can be used to download arbitrary scripts that aren't tracked by this PKGBUILD."
+
+security_3 :: T.Text -> Language -> Doc AnsiStyle
+security_3 (bt -> t) = \case
+  _ -> t <+> "can be used to execute arbitrary code not tracked by this PKGBUILD."
+
+security_4 :: T.Text -> Language -> Doc AnsiStyle
+security_4 (bt -> t) = \case
+  _ -> t <+> "indicates that someone may be trying to gain root access to your machine."
+
+security_5 :: PkgName -> Language -> Doc AnsiStyle
+security_5 (PkgName p) = \case
+  _ -> "WARNING: The PKGBUILD of" <+> bt p <+> "contains blacklisted bash terms."
+
+security_6 :: Language -> Doc AnsiStyle
+security_6 = \case
+  _ -> "Do you wish to quit the build process? (recommended)"
+
+security_7 :: Language -> Doc AnsiStyle
+security_7 = \case
+  _ -> "Cancelled further processing to avoid potentially malicious bash code."
 
 -----------------------
 -- Aura/Utils functions
