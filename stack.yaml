@@ -8,6 +8,8 @@ packages:
 extra-deps:
   - algebraic-graphs-0.1.1.1
   - compactable-0.1.2.2
-  - language-bash-0.7.1
+  # - language-bash-0.7.1
+  - git: https://github.com/fosskers/language-bash
+    commit: c586cedbef7ed343b5e071e3fdf6b07c5a9fc1c5
   - git: https://github.com/andrewthad/non-empty-containers
     commit: a8293c40382983622cea9703da7dc841093e016c
