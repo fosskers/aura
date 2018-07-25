@@ -41,31 +41,31 @@ pacmanRepo = Repository $ \ss names -> do
   where f (r, p) = fmap (packageRepo r p) <$> mostRecentVersion r
 
 packageRepo :: PkgName -> Provides -> Versioning -> Package
-packageRepo name pro ver = Package
-  { _pkgName        = name
+packageRepo pn pro ver = Package
+  { _pkgName        = pn
   , _pkgVersion     = ver
-  , _pkgBaseName    = name
+  , _pkgBaseName    = pn
   , _pkgProvides    = pro
   , _pkgDeps        = []  -- Let pacman handle dependencies.
-  , _pkgInstallType = Pacman name }
+  , _pkgInstallType = Pacman pn }
 
 -- | If given a virtual package, try to find a real package to install.
 -- Functions like this are why we need libalpm.
 resolveName :: Settings -> PkgName -> IO (Either PkgName (PkgName, Provides))
-resolveName ss name = do
-  provs <- map PkgName . T.lines <$> pacmanOutput ["-Ssq", "^" <> _pkgname name <> "$"]
+resolveName ss pn = do
+  provs <- map PkgName . T.lines <$> pacmanOutput ["-Ssq", "^" <> _pkgname pn <> "$"]
   case provs of
-    [] -> pure $ Left name
-    _  -> Right . (, Provides $ _pkgname name) <$> chooseProvider ss name provs
+    [] -> pure $ Left pn
+    _  -> Right . (, Provides $ _pkgname pn) <$> chooseProvider ss pn provs
 
 -- | Choose a providing package, favoring installed packages.
 chooseProvider :: Settings -> PkgName -> [PkgName] -> IO PkgName
-chooseProvider _ name []         = pure name
-chooseProvider _ _    [p]        = pure p
-chooseProvider ss name ps@(a:as) =
+chooseProvider _ pn []         = pure pn
+chooseProvider _ _ [p]         = pure p
+chooseProvider ss pn ps@(a:as) =
   mapConcurrently isInstalled ps >>= maybe f pure . listToMaybe . catMaybes
   where f = do
-          warn ss $ provides_1 name
+          warn ss $ provides_1 pn
           PkgName <$> getSelection (_pkgname a :| map _pkgname as)
 
 -- | The most recent version of a package, if it exists in the respositories.

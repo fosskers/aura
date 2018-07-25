@@ -61,12 +61,12 @@ single = L.lexeme garbage . void $ manyTill letterChar newline
 
 pair :: Parsec Void T.Text (T.Text, [T.Text])
 pair = L.lexeme garbage $ do
-  name <- takeWhile1P Nothing (/= ' ')
+  n <- takeWhile1P Nothing (/= ' ')
   space
   char '='
   space
   rest <- T.words <$> takeWhile1P Nothing (/= '\n')
-  pure (name, rest)
+  pure (n, rest)
 
 -- | Using `[]` as block comment markers is a trick to skip conf file "section" lines.
 garbage :: Parsec Void T.Text ()

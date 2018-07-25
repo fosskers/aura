@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, MonoLocalBinds, TypeApplications, DataKinds #-}
 {-# LANGUAGE MultiWayIf, OverloadedStrings #-}
 
 -- |
@@ -36,6 +36,7 @@ import           Control.Compactable (fmapEither)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Semigroup
 import qualified Data.Set as S
@@ -46,6 +47,7 @@ import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions (prettyV)
+import           Lens.Micro ((^.))
 import           Shelly (Sh, test_f)
 
 ---
@@ -109,7 +111,7 @@ orphans = S.fromList . map PkgName . T.lines <$> pacmanOutput ["-Qqdt"]
 
 -- | Any package whose name is suffixed by git, hg, svn, darcs, cvs, or bzr.
 develPkgs :: IO (S.Set PkgName)
-develPkgs = S.filter isDevelPkg . S.map _spName <$> foreignPackages
+develPkgs = S.filter isDevelPkg . S.map (^. field @"name") <$> foreignPackages
   where isDevelPkg (PkgName pkg) = any (`T.isSuffixOf` pkg) suffixes
         suffixes = ["-git", "-hg", "-svn", "-darcs", "-cvs", "-bzr"]
 
@@ -128,7 +130,7 @@ removePkgs pkgs = do
 -- `asT` renders the `VersionDemand` into the specific form that `pacman -T`
 -- understands. See `man pacman` for more info.
 isSatisfied :: Dep -> IO Bool
-isSatisfied (Dep name ver) = T.null <$> pacmanOutput ["-T", _pkgname name <> asT ver]
+isSatisfied (Dep n ver) = T.null <$> pacmanOutput ["-T", _pkgname n <> asT ver]
   where asT (LessThan v) = "<"  <> prettyV v
         asT (AtLeast  v) = ">=" <> prettyV v
         asT (MoreThan v) = ">"  <> prettyV v

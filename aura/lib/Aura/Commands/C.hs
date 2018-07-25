@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds, DataKinds #-}
 {-# LANGUAGE OverloadedStrings, MultiWayIf #-}
 
 -- |
@@ -30,6 +30,7 @@ import           BasePrelude hiding (FilePath)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (nonEmpty)
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
@@ -37,6 +38,7 @@ import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import           Lens.Micro ((^?), _Just)
 import           Shelly hiding (path)
 
 ---
@@ -150,4 +152,4 @@ cleanNotSaved = do
 groupByName :: [PackagePath] -> [[PackagePath]]
 groupByName pkgs = groupBy sameBaseName $ sort pkgs
     where sameBaseName a b = baseName a == baseName b
-          baseName p = _spName <$> simplepkg p
+          baseName p = simplepkg p ^? _Just . field @"name"

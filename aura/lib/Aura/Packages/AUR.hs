@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds, DataKinds #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 -- |
 -- Module    : Aura.Packages.AUR
@@ -32,12 +33,14 @@ import           Control.Compactable (traverseEither)
 import           Control.Error.Util (hush)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Reader
+import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (head)
 import qualified Data.Set as S
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Versions (versioning)
+import           Lens.Micro ((^..), each)
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
 import qualified Shelly as Sh
@@ -51,7 +54,8 @@ import           System.FilePath ((</>))
 aurLookup :: Settings -> NonEmptySet PkgName -> IO (S.Set PkgName, S.Set Buildable)
 aurLookup ss names = do
   (bads, goods) <- info m (foldMap (\(PkgName pn) -> [pn]) names) >>= traverseEither (buildable m)
-  let goodNames = S.fromList $ map bldNameOf goods
+  -- let goodNames = S.fromList $ map bldNameOf goods
+  let goodNames = S.fromList $ goods ^.. each . field @"name"
   pure (S.fromList bads <> NES.toSet names S.\\ goodNames, S.fromList goods)
     where m = managerOf ss
 
@@ -71,7 +75,7 @@ buildable m ai = do
   case (,) <$> mpb <*> mver of
     Nothing        -> pure . Left . PkgName $ aurNameOf ai
     Just (pb, ver) -> pure $ Right Buildable
-      { bldNameOf     = PkgName $ aurNameOf ai
+      { name          = PkgName $ aurNameOf ai
       , pkgbuildOf    = Pkgbuild pb
       , bldBaseNameOf = bse
       , bldProvidesOf = list (Provides $ aurNameOf ai) (Provides . head) $ providesOf ai
@@ -80,7 +84,7 @@ buildable m ai = do
       -- and `aurRepo` which call this function only report existence errors
       -- (i.e. "this package couldn't be found at all").
       , bldDepsOf     = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai
-      , bldVersionOf  = ver
+      , version       = ver
       , isExplicit    = False }
 
 ----------------

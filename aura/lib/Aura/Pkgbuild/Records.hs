@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeApplications, DataKinds #-}
+
 -- |
 -- Module    : Aura.Pkgbuild.Records
 -- Copyright : (c) Colin Woodbury, 2012 - 2018
@@ -14,8 +16,10 @@ module Aura.Pkgbuild.Records
 import           Aura.Pkgbuild.Base
 import           Aura.Types
 import           BasePrelude
+import           Data.Generics.Product (field)
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Text as T
+import           Lens.Micro ((^.))
 import           Shelly (Sh, writefile, test_f, shelly, mkdir_p)
 
 ---
@@ -29,7 +33,7 @@ hasPkgbuildStored = shelly . test_f . pkgbuildPath
 storePkgbuilds :: NonEmptySet Buildable -> IO ()
 storePkgbuilds bs = shelly $ do
   mkdir_p pkgbuildCache
-  traverse_ (\p -> writePkgbuild (bldNameOf p) (_pkgbuild $ pkgbuildOf p)) bs
+  traverse_ (\p -> writePkgbuild (p ^. field @"name") (_pkgbuild $ pkgbuildOf p)) bs
 
 writePkgbuild :: PkgName -> T.Text -> Sh ()
-writePkgbuild name pkgb = writefile (pkgbuildPath name) pkgb
+writePkgbuild pn pkgb = writefile (pkgbuildPath pn) pkgb

@@ -1,5 +1,7 @@
 {-# LANGUAGE OverloadedStrings, MultiWayIf #-}
-{-# LANGUAGE FlexibleInstances, DerivingStrategies, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE DataKinds, TypeApplications, DuplicateRecordFields #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DerivingStrategies, GeneralizedNewtypeDeriving, DeriveGeneric #-}
 
 -- |
 -- Module    : Aura.Types
@@ -41,18 +43,22 @@ import           BasePrelude hiding (FilePath, try)
 import           Control.Error.Util (hush)
 import           Data.Aeson (ToJSONKey, FromJSONKey)
 import           Data.Bitraversable
+import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (nonEmpty)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import           Data.Text.Prettyprint.Doc hiding (space, list)
 import           Data.Text.Prettyprint.Doc.Render.Terminal
-import           Data.Versions
+import           Data.Versions hiding (version, Traversal')
 import           Filesystem.Path (filename)
+import           GHC.Generics (Generic)
+import           Lens.Micro
 import           Shelly (FilePath, toTextIgnore)
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 
 ---
+
 -- | Types whose members can be converted to CLI flags.
 class Flagable a where
   asFlag :: a -> [T.Text]
@@ -87,9 +93,9 @@ data Dep = Dep { depNameOf      :: !PkgName
 -- | Parse a dependency entry as it would appear in a PKGBUILD:
 parseDep :: T.Text -> Maybe Dep
 parseDep = hush . parse dep "dep"
-  where dep  = Dep <$> name <*> ver
-        name = PkgName <$> takeWhile1P Nothing (\c -> c /= '<' && c /= '>' && c /= '=')
-        ver  = do
+  where dep = Dep <$> n <*> v
+        n   = PkgName <$> takeWhile1P Nothing (\c -> c /= '<' && c /= '>' && c /= '=')
+        v   = do
           end <- atEnd
           if | end       -> pure Anything
              | otherwise -> choice [ char '<'    *> fmap LessThan versioning'
@@ -125,7 +131,7 @@ _VersionDemand _ p            = pure p
 data InstallType = Pacman PkgName | Build Buildable deriving (Eq)
 
 -- | A package name with its version number.
-data SimplePkg = SimplePkg { _spName :: PkgName, _spVersion :: Versioning } deriving (Eq, Ord, Show)
+data SimplePkg = SimplePkg { name :: PkgName, version :: Versioning } deriving (Eq, Ord, Show, Generic)
 
 -- | Attempt to create a `SimplePkg` from filepaths like
 --   @\/var\/cache\/pacman\/pkg\/linux-3.2.14-1-x86_64.pkg.tar.xz@
@@ -157,26 +163,28 @@ simplepkg' = hush . parse parser "name-and-version"
 --   * \/var\/cache\/pacman\/pkg\/ruby-1.9.3_p125-4-x86_64.pkg.tar.xz
 newtype PackagePath = PackagePath { _pkgpath :: FilePath } deriving (Eq)
 
+-- | If they have the same package names, compare by their versions.
+-- Otherwise, do raw comparison of the path string.
 instance Ord PackagePath where
   compare a b | nameA /= nameB = compare (_pkgpath a) (_pkgpath b)
               | otherwise      = compare verA verB
     where (nameA, verA) = f a
           (nameB, verB) = f b
-          f = (fmap _spName &&& fmap _spVersion) . simplepkg
+          f = ((^? _Just . field @"name") &&& (^? _Just . field @"version")) . simplepkg
 
 -- | The contents of a PKGBUILD file.
 newtype Pkgbuild = Pkgbuild { _pkgbuild :: T.Text } deriving (Eq, Ord, Show)
 
 -- | A package to be built manually before installing.
 data Buildable = Buildable
-    { bldNameOf     :: !PkgName
+    { name          :: !PkgName
     , bldBaseNameOf :: !PkgName
     , bldProvidesOf :: !Provides
     , pkgbuildOf    :: !Pkgbuild
     , bldDepsOf     :: ![Dep]
-    , bldVersionOf  :: !Versioning
+    , version       :: !Versioning
     -- | Did the user select this package, or is it being built as a dep?
-    , isExplicit    :: !Bool } deriving (Eq, Ord, Show)
+    , isExplicit    :: !Bool } deriving (Eq, Ord, Show, Generic)
 
 -- | All human languages available for text output.
 data Language = English

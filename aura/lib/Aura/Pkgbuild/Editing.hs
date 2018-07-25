@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications, DataKinds #-}
 
 -- |
 -- Module    : Aura.Pkgbuild.Base
@@ -19,7 +20,9 @@ import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding (FilePath)
+import           Data.Generics.Product (field)
 import qualified Data.Text as T
+import           Lens.Micro ((^.))
 import           Shelly
 
 ---
@@ -43,7 +46,7 @@ hotEdit :: Settings -> Buildable -> Sh Buildable
 hotEdit ss b
   | not $ switch ss HotEdit = pure b
   | otherwise = do
-      ans <- liftIO $ optionalPrompt ss (hotEdit_1 $ bldNameOf b)
+      ans <- liftIO $ optionalPrompt ss (hotEdit_1 $ b ^. field @"name")
       bool (pure b) f ans
         where f = withTmpDir $ \tmp -> do
                 cd tmp
@@ -61,7 +64,7 @@ customizepkg' :: Buildable -> Sh Buildable
 customizepkg' p = withTmpDir $ \tmp -> do
   cd tmp
   ifFile (edit $ const customize) (pure ()) conf p
-  where conf = customizepkgPath </> _pkgname (bldNameOf p)
+  where conf = customizepkgPath </> _pkgname (p ^. field @"name")
 
 customize :: Sh T.Text
 customize = fmap snd . quietSh $ run "customizepkg" ["--modify"]

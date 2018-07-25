@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds, DataKinds #-}
 {-# LANGUAGE ViewPatterns, MultiWayIf, OverloadedStrings #-}
 
 -- |
@@ -36,6 +36,7 @@ import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
 import           Data.Aeson.Encode.Pretty (encodePrettyToTextBuilder)
+import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import qualified Data.Set as S
 import           Data.Set.NonEmpty (NonEmptySet)
@@ -46,7 +47,9 @@ import           Data.Text.Lazy (toStrict)
 import           Data.Text.Lazy.Builder (toLazyText)
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
-import           Data.Versions
+import           Data.Versions (Versioning, versioning, prettyV)
+import           Lens.Micro ((^.), (^..), each)
+import           Lens.Micro.Extras (view)
 import           Linux.Arch.Aur
 
 ---
@@ -61,7 +64,7 @@ upgradeAURPkgs pkgs = do
 -- | Foreign packages to consider for upgrading, after "ignored packages" have
 -- been taken into consideration.
 foreigns :: Settings -> IO (S.Set SimplePkg)
-foreigns ss = S.filter (notIgnored . _spName) <$> foreignPackages
+foreigns ss = S.filter (notIgnored . view (field @"name")) <$> foreignPackages
   where ignores = ignoredPkgsOf $ commonConfigOf ss
         notIgnored p = p `notElem` ignores
 
@@ -85,10 +88,10 @@ upgrade pkgs fs = do
 
 possibleUpdates :: (Member (Reader Settings) r, Member IO r) => NonEmptySet SimplePkg -> Eff r [(AurInfo, Versioning)]
 possibleUpdates (NES.toNonEmpty -> pkgs) = do
-  aurInfos <- aurInfo $ fmap _spName pkgs
+  aurInfos <- aurInfo $ fmap (^. field @"name") pkgs
   let !names  = map aurNameOf aurInfos
       aurPkgs = NEL.filter (\(SimplePkg (PkgName n) _) -> n `elem` names) pkgs
-  pure . filter isntMostRecent . zip aurInfos $ map _spVersion aurPkgs
+  pure . filter isntMostRecent . zip aurInfos $ aurPkgs ^.. each . field @"version"
 
 -- | Is there an update for Aura that we could apply first?
 auraCheck :: (Member (Reader Settings) r, Member IO r) => [PkgName] -> Eff r (Maybe PkgName)
@@ -135,7 +138,7 @@ renderAurPkgInfo ss ai = dtot . colourCheck ss $ entrify ss fields entries
 aurPkgSearch :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r ()
 aurPkgSearch regex = do
   ss <- ask
-  db <- S.map (_pkgname . _spName) <$> send foreignPackages
+  db <- S.map (_pkgname . view (field @"name")) <$> send foreignPackages
   let t = case truncationOf $ buildConfigOf ss of  -- Can't this go anywhere else?
             None   -> id
             Head n -> take $ fromIntegral n

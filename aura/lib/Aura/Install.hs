@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, MultiWayIf, ViewPatterns #-}
-{-# LANGUAGE FlexibleContexts, MonoLocalBinds, TypeApplications #-}
+{-# LANGUAGE FlexibleContexts, MonoLocalBinds, TypeApplications, DataKinds #-}
 
 -- |
 -- Module    : Aura.Install
@@ -37,6 +37,7 @@ import           Control.Concurrent.Async
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import           Data.Generics.Product (field, super)
 import qualified Data.List.NonEmpty as NEL
 import qualified Data.Map.Strict as M
 import           Data.Semigroup.Foldable (fold1)
@@ -47,6 +48,7 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Language.Bash.Pretty (prettyText)
 import           Language.Bash.Syntax (Statement)
+import           Lens.Micro ((^.), (^..), each)
 import           Shelly (shelly, (</>), withTmpDir, cd, writefile, whenM)
 import           System.IO (hFlush, stdout)
 
@@ -109,11 +111,11 @@ analysePkgbuild b = do
   ss <- ask
   let f = whenM (send $ optionalPrompt ss security_6) . throwError $ Failure security_7
   case parsedPB $ pkgbuildOf b of
-    Nothing -> send (warn ss (security_1 (bldNameOf b) $ langOf ss)) *> f
+    Nothing -> send (warn ss (security_1 (b ^. field @"name") $ langOf ss)) *> f
     Just l  -> case bannedTerms l of
       []  -> pure ()
       bts -> do
-        send $ scold ss (security_5 (bldNameOf b) $ langOf ss)
+        send $ scold ss (security_5 (b ^. field @"name") $ langOf ss)
         send $ traverse_ (displayBannedTerms ss) bts
         f
 
@@ -126,7 +128,7 @@ displayBannedTerms ss (stmt, bts) = do
 -- | Give anything that was installed as a dependency the /Install Reason/ of
 -- "Installed as a dependency for another package".
 annotateDeps :: NonEmptySet Buildable -> IO ()
-annotateDeps bs = void . pacmanSuccess $ ["-D", "--asdeps"] <> asFlag (map bldNameOf bs')
+annotateDeps bs = void . pacmanSuccess $ ["-D", "--asdeps"] <> asFlag (bs' ^.. each . field @"name")
   where bs' = filter (not . isExplicit) $ toList bs
 
 -- | Reduce a list of candidate packages to build, such that there is only one
@@ -134,11 +136,11 @@ annotateDeps bs = void . pacmanSuccess $ ["-D", "--asdeps"] <> asFlag (map bldNa
 -- only be built once each. Precedence is given to packages that actually
 -- match the base name (e.g. llvm50 vs llvm50-libs).
 uniquePkgBase :: [NonEmptySet Buildable] -> [NonEmptySet Buildable]
-uniquePkgBase bs = mapMaybe (NES.fromSet . S.filter (\b -> bldNameOf b `S.member` goods) . NES.toSet) bs
-  where f a b | bldNameOf a == bldBaseNameOf a = a
-              | bldNameOf b == bldBaseNameOf b = b
+uniquePkgBase bs = mapMaybe (NES.fromSet . S.filter (\b -> (b ^. field @"name") `S.member` goods) . NES.toSet) bs
+  where f a b | (a ^. field @"name") == bldBaseNameOf a = a
+              | (b ^. field @"name") == bldBaseNameOf b = b
               | otherwise = a
-        goods = S.fromList . map bldNameOf . M.elems . M.fromListWith f $ map (bldBaseNameOf &&& id) bs'
+        goods = S.fromList . (^.. each . field @"name") . M.elems . M.fromListWith f $ map (bldBaseNameOf &&& id) bs'
         bs'   = foldMap toList bs
 
 confirmIgnored :: (Member (Reader Settings) r, Member IO r) => S.Set PkgName -> Eff r (S.Set PkgName)
@@ -166,7 +168,7 @@ buildAndInstall bss = do
   where f (Cache cache) bs = do
           ss <- ask
           let (ps, cached) = fmapEither g $ toList bs
-              g b = case (`M.lookup` cache) . SimplePkg (bldNameOf b) $ bldVersionOf b of  -- TODO generic lens! super!
+              g b = case (b ^. super @SimplePkg) `M.lookup` cache of
                 Just pp | not (switch ss ForceBuilding) -> Right pp
                 _ -> Left b
           built <- traverse (buildPackages . NES.fromNonEmpty) $ NEL.nonEmpty ps
@@ -191,13 +193,13 @@ reportPkgsToInstall :: (Member (Reader Settings) r, Member IO r) =>
 reportPkgsToInstall rps bps = do
   let (explicits, deps) = partition isExplicit $ foldMap toList bps
   traverse_ (report green reportPkgsToInstall_1) . NEL.nonEmpty $ sort rps
-  traverse_ (report green reportPkgsToInstall_3) . NEL.nonEmpty . sort $ map bldNameOf deps
-  traverse_ (report green reportPkgsToInstall_2) . NEL.nonEmpty . sort $ map bldNameOf explicits
+  traverse_ (report green reportPkgsToInstall_3) . NEL.nonEmpty . sort $ deps ^.. each . field @"name"
+  traverse_ (report green reportPkgsToInstall_2) . NEL.nonEmpty . sort $ explicits ^.. each . field @"name"
 
 reportListOfDeps :: [PkgName] -> [NonEmptySet Buildable] -> IO ()
 reportListOfDeps rps bps = do
   traverse_ (T.putStrLn . _pkgname) $ sort rps
-  traverse_ (T.putStrLn . _pkgname) . sort . map bldNameOf $ foldMap toList bps
+  traverse_ (T.putStrLn . _pkgname) . sort . (^.. each . field @"name") $ foldMap toList bps
 
 pkgbuildDiffs :: (Member (Reader Settings) r, Member IO r) => S.Set Buildable -> Eff r ()
 pkgbuildDiffs ps = ask >>= check
@@ -206,14 +208,14 @@ pkgbuildDiffs ps = ask >>= check
           displayDiff :: (Member (Reader Settings) r, Member IO r) => Buildable -> Eff r ()
           displayDiff p = do
             ss <- ask
-            let name = bldNameOf p
+            let pn   = p ^. field @"name"
                 lang = langOf ss
-            isStored <- send $ hasPkgbuildStored name
+            isStored <- send $ hasPkgbuildStored pn
             if not isStored
-               then send . warn ss $ reportPkgbuildDiffs_1 name lang
+               then send . warn ss $ reportPkgbuildDiffs_1 pn lang
                else send . shelly @IO . withTmpDir $ \dir -> do
                  cd dir
                  let new = dir </> ("new.pb" :: T.Text)
                  writefile new . _pkgbuild $ pkgbuildOf p
-                 liftIO . warn ss $ reportPkgbuildDiffs_3 name lang
-                 diff ss (pkgbuildPath name) new
+                 liftIO . warn ss $ reportPkgbuildDiffs_3 pn lang
+                 diff ss (pkgbuildPath pn) new

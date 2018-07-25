@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 -- |
 -- Module    : Aura.Pkgbuild.Base
@@ -8,11 +9,12 @@
 
 module Aura.Pkgbuild.Base where
 
-import           Aura.Pkgbuild.Editing
-import           Aura.Settings
-import           Aura.Types
-import           BasePrelude hiding (FilePath)
-import           Shelly
+import Aura.Pkgbuild.Editing
+import Aura.Settings
+import Aura.Types
+import BasePrelude hiding (FilePath)
+import Data.Versions (Versioning)
+import Shelly
 
 ---
 
@@ -38,8 +40,8 @@ pbCustomization ss = foldl (>=>) pure [customizepkg ss, hotEdit ss]
 packageBuildable :: Settings -> Buildable -> IO Package
 packageBuildable ss b = do
   b' <- shelly $ pbCustomization ss b
-  pure Package { _pkgName        = bldNameOf b'
-               , _pkgVersion     = bldVersionOf b'
+  pure Package { _pkgName        = (name :: Buildable -> PkgName) b'
+               , _pkgVersion     = (version :: Buildable -> Versioning) b'
                , _pkgBaseName    = bldBaseNameOf b'
                , _pkgProvides    = bldProvidesOf b'
                , _pkgDeps        = bldDepsOf b'

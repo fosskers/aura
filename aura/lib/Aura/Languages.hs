@@ -332,9 +332,9 @@ depError l (NonExistant (PkgName s)) = case l of
   Portuguese -> "A dependência " <> bt s <> " não foi encontrada."
   Russian    -> "Зависимость " <> bt s <> " не найдена."
   _          -> "The dependency " <> bt s <> " couldn't be found."
-depError l (BrokenProvides (PkgName pkg) (Provides pro) (PkgName name)) = case l of
-  Russian    -> "Пакету " <> bt pkg <> " требуется " <> bt name <> ", предоставляющий " <> bt pro <> "."
-  _          -> "The package " <> bt pkg <> " needs " <> bt name <> ", which provides " <> bt pro <> "."
+depError l (BrokenProvides (PkgName pkg) (Provides pro) (PkgName n)) = case l of
+  Russian    -> "Пакету " <> bt pkg <> " требуется " <> bt n <> ", предоставляющий " <> bt pro <> "."
+  _          -> "The package " <> bt pkg <> " needs " <> bt n <> ", which provides " <> bt pro <> "."
 
 missingPkg_3 :: Language -> Doc AnsiStyle
 missingPkg_3 = \case

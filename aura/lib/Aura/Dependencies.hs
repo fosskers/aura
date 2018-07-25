@@ -108,16 +108,16 @@ batch g | isEmpty g = []
 --    the most recent version?
 realPkgConflicts :: Settings -> PkgName -> Package -> Dep -> Maybe DepError
 realPkgConflicts ss parent pkg dep
-    | name `elem` toIgnore            = Just $ Ignored failMsg1
+    | pn `elem` toIgnore              = Just $ Ignored failMsg1
     | isVersionConflict reqVer curVer = Just $ VerConflict failMsg2
     | otherwise                       = Nothing
-    where name     = _pkgName pkg
+    where pn       = _pkgName pkg
           curVer   = _pkgVersion pkg & release .~ []
           reqVer   = depVerDemandOf dep & _VersionDemand . release .~ []
           lang     = langOf ss
           toIgnore = ignoredPkgsOf $ commonConfigOf ss
-          failMsg1 = getRealPkgConflicts_2 name lang
-          failMsg2 = getRealPkgConflicts_1 parent name (prettyV curVer) (T.pack $ show reqVer) lang
+          failMsg1 = getRealPkgConflicts_2 pn lang
+          failMsg2 = getRealPkgConflicts_1 parent pn (prettyV curVer) (T.pack $ show reqVer) lang
 
 -- | Compares a (r)equested version number with a (c)urrent up-to-date one.
 -- The `MustBe` case uses regexes. A dependency demanding version 7.4

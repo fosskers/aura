@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds, DataKinds #-}
 
 -- |
 -- Module    : Aura.Build
@@ -28,6 +28,7 @@ import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Except
+import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Semigroup.Foldable (fold1)
 import qualified Data.Set as S
@@ -35,6 +36,7 @@ import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import           Data.Witherable (wither)
 import           Filesystem.Path (filename)
+import           Lens.Micro ((^.))
 import           Shelly
 import           System.IO (hFlush, stdout)
 
@@ -64,7 +66,7 @@ build :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
   Buildable -> Eff r (Maybe (NonEmptySet PackagePath))
 build p = do
   ss     <- ask
-  send $ notify ss (buildPackages_1 (bldNameOf p) (langOf ss)) *> hFlush stdout
+  send $ notify ss (buildPackages_1 (p ^. field @"name") (langOf ss)) *> hFlush stdout
   result <- send . shelly @IO $ build' ss p
   either (buildFail p) (pure . Just) result
 
@@ -92,7 +94,7 @@ getBuildScripts pkg user = do
   currDir <- pwd
   scriptsDir <- chown user currDir [] *> clone pkg
   case scriptsDir of
-    Nothing -> pure . Left . Failure . buildFail_7 $ bldNameOf pkg
+    Nothing -> pure . Left . Failure . buildFail_7 $ pkg ^. field @"name"
     Just sd -> chown user sd ["-R"] $> Right sd
 
 -- | The user may have edited the original PKGBUILD. If they have, we need to
@@ -101,13 +103,14 @@ overwritePkgbuild :: Settings -> Buildable -> Sh ()
 overwritePkgbuild ss p = when (switch ss HotEdit || switch ss UseCustomizepkg) $
   writefile "PKGBUILD" . _pkgbuild $ pkgbuildOf p
 
+-- TODO Make generic w/ HasField?
 -- | Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
 buildFail :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
   Buildable -> Failure -> Eff r (Maybe a)
 buildFail p (Failure err) = do
   ss <- ask
-  send . scold ss $ buildFail_1 (bldNameOf p) (langOf ss)
+  send . scold ss $ buildFail_1 (p ^. field @"name") (langOf ss)
   send . scold ss . err $ langOf ss
   response <- send $ optionalPrompt ss buildFail_6
   bool (throwError $ Failure buildFail_5) (pure Nothing) response
