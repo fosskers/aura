@@ -105,15 +105,16 @@ install' pkgs = do
 
 -- | Determine if a package's PKGBUILD might contain malicious bash code.
 analysePkgbuild :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Buildable -> Eff r ()
-analysePkgbuild b = case parsedPB $ pkgbuildOf b of
-  Nothing -> throwError $ Failure security_1
-  Just l  -> case bannedTerms l of
-    []  -> pure ()
-    bts -> do
-      ss <- ask
-      send $ scold ss (security_5 (bldNameOf b) $ langOf ss)
-      send $ traverse_ (displayBannedTerms ss) bts
-      whenM (send $ optionalPrompt ss security_6) . throwError $ Failure security_7
+analysePkgbuild b = do
+  ss <- ask
+  send $ case parsedPB $ pkgbuildOf b of
+    Nothing -> warn ss (security_1 (bldNameOf b) $ langOf ss)
+    Just l  -> case bannedTerms l of
+      []  -> pure ()
+      bts -> do
+        scold ss (security_5 (bldNameOf b) $ langOf ss)
+        traverse_ (displayBannedTerms ss) bts
+  whenM (send $ optionalPrompt ss security_6) . throwError $ Failure security_7
 
 displayBannedTerms :: Settings -> (Statement, NonEmptySet BannedTerm) -> IO ()
 displayBannedTerms ss (stmt, bts) = do

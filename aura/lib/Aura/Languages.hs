@@ -1309,9 +1309,9 @@ customizepkg_1 = let customizepkg = bt "customizepkg" in \case
 ------------------------------
 -- Pkgbuild Security functions
 ------------------------------
-security_1 :: Language -> Doc AnsiStyle
-security_1 = \case
-  _ -> "The PKGBUILD was too complex to parse - it may be obfuscating malicious code."
+security_1 :: PkgName -> Language -> Doc AnsiStyle
+security_1 (PkgName p) = \case
+  _ -> "The PKGBUILD of" <+> bt p <+> "was too complex to parse - it may be obfuscating malicious code."
 
 security_2 :: T.Text -> Language -> Doc AnsiStyle
 security_2 (bt -> t) = \case
