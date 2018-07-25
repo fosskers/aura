@@ -36,7 +36,7 @@ Install order is as follows:
   That said, a built package can't be handed off to pacman and installed
   if you _don't_ run as root. Other AUR helpers ignore this problem,
   but Aura does not. Even when run with `sudo`, packages are built
-  with normal user privilages, then handed to pacman and installed as root.
+  with normal user privileges, then handed to pacman and installed as root.
 
 ### Know your System
   Editing PKGBUILDs mid-build is not default behaviour.
