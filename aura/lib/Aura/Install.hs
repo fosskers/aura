@@ -189,14 +189,14 @@ displayPkgDeps ps = do
   where reportDeps True  = send . uncurry reportListOfDeps
         reportDeps False = uncurry reportPkgsToInstall
 
--- TODO Factor out repeated code a la `reportListOfDeps`
 reportPkgsToInstall :: (Member (Reader Settings) r, Member IO r) =>
    [Prebuilt] -> [NonEmptySet Buildable] -> Eff r ()
 reportPkgsToInstall rps bps = do
-  let (explicits, deps) = partition isExplicit $ foldMap toList bps
-  traverse_ (report green reportPkgsToInstall_1) . NEL.nonEmpty . sort $ rps ^.. each . field @"name"
-  traverse_ (report green reportPkgsToInstall_3) . NEL.nonEmpty . sort $ deps ^.. each . field @"name"
-  traverse_ (report green reportPkgsToInstall_2) . NEL.nonEmpty . sort $ explicits ^.. each . field @"name"
+  let (explicits, ds) = partition isExplicit $ foldMap toList bps
+  f reportPkgsToInstall_1 rps
+  f reportPkgsToInstall_3 ds
+  f reportPkgsToInstall_2 explicits
+  where f m xs = traverse_ (report green m) . NEL.nonEmpty . sort $ xs ^.. each . field @"name"
 
 reportListOfDeps :: [Prebuilt] -> [NonEmptySet Buildable] -> IO ()
 reportListOfDeps rps bps = f rps *> f (foldMap toList bps)

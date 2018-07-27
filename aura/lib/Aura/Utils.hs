@@ -162,7 +162,7 @@ getLocale env = fromMaybe "C" . asum $ map (`M.lookup` env) ["LC_ALL", "LC_MESSA
 
 -- | Strangely missing from `Shelly`.
 chown :: User -> FilePath -> [T.Text] -> Sh ()
-chown (User user) pth args = void . quietSh $ run_ "chown" (args <> [user, toTextIgnore pth])
+chown (User usr) pth args = void . quietSh $ run_ "chown" (args <> [usr, toTextIgnore pth])
 
 -- | Hide the cursor in a terminal.
 hideCursor :: IO ()

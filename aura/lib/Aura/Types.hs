@@ -45,14 +45,13 @@ import           BasePrelude hiding (FilePath, try)
 import           Control.Error.Util (hush)
 import           Data.Aeson (ToJSONKey, FromJSONKey)
 import           Data.Bitraversable
-import           Data.Generics.Product (field, field', HasField', super)
-import           Data.Generics.Sum (_Sub)
+import           Data.Generics.Product (field, super)
 import           Data.List.NonEmpty (nonEmpty)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import           Data.Text.Prettyprint.Doc hiding (space, list)
 import           Data.Text.Prettyprint.Doc.Render.Terminal
-import           Data.Versions hiding (version, Traversal')
+import           Data.Versions hiding (Traversal')
 import           Filesystem.Path (filename)
 import           GHC.Generics (Generic)
 import           Lens.Micro
@@ -71,15 +70,6 @@ instance Flagable T.Text where
 
 instance (Foldable f, Flagable a) => Flagable (f a) where
   asFlag = foldMap asFlag
-
--- TODO remove
--- | A package to be installed.
--- data Package = Package { _pkgName        :: !PkgName
---                        , _pkgVersion     :: !Versioning
---                        , _pkgBaseName    :: !PkgName
---                        , _pkgProvides    :: !Provides
---                        , _pkgDeps        :: ![Dep]
---                        , _pkgInstallType :: !InstallType } deriving (Eq)
 
 -- | A package to be installed.
 data Package = FromRepo Prebuilt | FromAUR Buildable deriving (Eq)
@@ -110,10 +100,6 @@ data Buildable = Buildable { name       :: !PkgName
                            , deps       :: ![Dep]
                            , pkgbuild   :: !Pkgbuild
                            , isExplicit :: !Bool } deriving (Eq, Ord, Show, Generic)
-
--- TODO reinstate
--- instance Show Package where
---   show p = printf "%s (%s)" (show $ _pkgName p) (show . prettyV $ _pkgVersion p)
 
 -- | A prebuilt `Package` from the official Arch repositories.
 data Prebuilt = Prebuilt { name     :: !PkgName

@@ -37,7 +37,6 @@ import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
 import           Data.Generics.Product (field)
-import           Data.Generics.Sum (_Sub)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Semigroup
 import qualified Data.Set as S

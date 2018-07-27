@@ -79,23 +79,23 @@ build' ss p = do
   withTmpDir $ \curr -> do
     cd curr
     runExceptT $ do
-      bs <- ExceptT $ getBuildScripts p user
+      bs <- ExceptT $ getBuildScripts p usr
       lift $ cd bs
       lift $ overwritePkgbuild ss p
-      pNames <- ExceptT $ makepkg ss user
+      pNames <- ExceptT $ makepkg ss usr
       paths  <- lift . fmap NES.fromNonEmpty . traverse (moveToCachePath ss) $ NES.toNonEmpty pNames
       lift . when (S.member AllSource . makepkgFlagsOf $ buildConfigOf ss) $
-        makepkgSource user >>= traverse_ moveToSourcePath
+        makepkgSource usr >>= traverse_ moveToSourcePath
       pure paths
-  where user = fromMaybe (User "桜木花道") . buildUserOf $ buildConfigOf ss
+  where usr = fromMaybe (User "桜木花道") . buildUserOf $ buildConfigOf ss
 
 getBuildScripts :: Buildable -> User -> Sh (Either Failure FilePath)
-getBuildScripts pkg user = do
+getBuildScripts pkg usr = do
   currDir <- pwd
-  scriptsDir <- chown user currDir [] *> clone pkg
+  scriptsDir <- chown usr currDir [] *> clone pkg
   case scriptsDir of
     Nothing -> pure . Left . Failure . buildFail_7 $ pkg ^. field @"name"
-    Just sd -> chown user sd ["-R"] $> Right sd
+    Just sd -> chown usr sd ["-R"] $> Right sd
 
 -- | The user may have edited the original PKGBUILD. If they have, we need to
 -- overwrite what's been downloaded before calling `makepkg`.

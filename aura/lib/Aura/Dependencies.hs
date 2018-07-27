@@ -70,13 +70,13 @@ resolveDeps' ss tv repo ps = fold <$> mapConcurrently f (toList ps)
       case M.lookup pn m of
         Just _  -> pure $ pure []  -- Bail early, we've checked this package already.
         Nothing -> modifyTVar' tv (M.insert pn p) $> do
-          deps <- wither (\d -> bool (Just d) Nothing <$> isSatisfied d) $ b ^. field @"deps"
-          case NEL.nonEmpty $ deps ^.. each . field @"name" of
+          ds <- wither (\d -> bool (Just d) Nothing <$> isSatisfied d) $ b ^. field @"deps"
+          case NEL.nonEmpty $ ds ^.. each . field @"name" of
             Nothing    -> pure []
             Just deps' -> do
               (bads, goods) <- repoLookup repo ss $ NES.fromNonEmpty deps'
 
-              let depsMap = M.fromList $ map (view (field @"name") &&& id) deps
+              let depsMap = M.fromList $ map (view (field @"name") &&& id) ds
                   cnfs    = mapMaybe conflicting $ toList goods
                   evils   = map NonExistant (toList bads) <> cnfs
 
