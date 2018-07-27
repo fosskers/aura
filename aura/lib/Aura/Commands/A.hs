@@ -167,7 +167,7 @@ displayPkgbuild :: (Member (Reader Settings) r, Member IO r) => NonEmptySet PkgN
 displayPkgbuild ps = do
   man <- asks managerOf
   pbs <- catMaybes <$> traverse (send . getPkgbuild @IO man) (toList ps)
-  send . traverse_ T.putStrLn $ intersperse border pbs
+  send . traverse_ T.putStrLn . intersperse border $ pbs ^.. each . field @"pkgbuild"
   where border = "\n#========== NEXT PKGBUILD ==========#\n"
 
 isntMostRecent :: (AurInfo, Versioning) -> Bool

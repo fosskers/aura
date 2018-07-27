@@ -83,7 +83,7 @@ buildable m ai = do
       -- and `aurRepo` which call this function only report existence errors
       -- (i.e. "this package couldn't be found at all").
       , deps       = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai
-      , pkgbuild   = Pkgbuild pb
+      , pkgbuild   = pb
       , isExplicit = False }
 
 ----------------
