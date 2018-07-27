@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleContexts, MonoLocalBinds, TupleSections, MultiWayIf #-}
-{-# LANGUAGE TypeApplications, DataKinds #-}
+{-# LANGUAGE TypeApplications, DataKinds, DeriveGeneric #-}
 
 -- |
 -- Module    : Aura.Dependencies
@@ -18,6 +18,7 @@ import           Aura.Settings
 import           Aura.Types
 import           BasePrelude
 import           Control.Concurrent.Async
+import           Control.Concurrent.STM.TQueue
 import           Control.Concurrent.STM.TVar
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
@@ -36,6 +37,18 @@ import           Lens.Micro.Extras (view)
 
 ---
 
+-- | To signal if one of the STM actions below wrote a new value to the
+-- shared Map.
+data Wrote = WroteNothing | WroteNew
+
+data Status = Waiting | Working deriving (Eq)
+
+data Pool = Pool { threads :: Int
+                 , waiters :: TVar Int
+                 , tmap    :: TVar (M.Map PkgName Package)
+                 , tqueue  :: TQueue Package
+                 } deriving (Generic)
+
 -- | Given some `Package`s, determine its full dependency graph.
 -- The graph is collapsed into layers of packages which are not
 -- interdependent, and thus can be built and installed as a group.
@@ -45,53 +58,76 @@ resolveDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO 
   Repository -> NonEmptySet Package -> Eff r (NonEmpty (NonEmptySet Package))
 resolveDeps repo ps = do
   ss <- ask
+  ts <- send getNumCapabilities
   tv <- send $ newTVarIO M.empty
-  de <- send $ resolveDeps' ss tv repo ps
+  w  <- send $ newTVarIO 0
+  tq <- send $ atomically $ newTQueue >>= \q -> traverse_ (writeTQueue q) ps $> q
+  de <- send $ resolveDeps' ss (Pool ts w tv tq) repo
   m  <- send $ readTVarIO tv
   unless (null de) . throwError . Failure $ missingPkg_2 de
   maybe (throwError $ Failure missingPkg_3) pure $ sortInstall m
 
+-- TODO implement and use
+workPool :: IO Pool
+workPool = undefined
+
 -- | An empty list signals success.
-resolveDeps' :: Settings -> TVar (M.Map PkgName Package) -> Repository -> NonEmptySet Package -> IO [DepError]
-resolveDeps' ss tv repo ps = fold <$> mapConcurrently f (toList ps)
+resolveDeps' :: Settings -> Pool -> Repository -> IO [DepError]
+resolveDeps' ss pool repo = fold <$> replicateConcurrently (threads pool) (g Working)
   where
-    -- | `atomically` ensures that only one instance of a `Package` can
-    -- ever be written to the TVar.
-    f :: Package -> IO [DepError]
-    f p@(FromRepo pb) = atomically $ do
-      let pn = pb ^. field @"name"
-      m <- readTVar tv
-      case M.lookup pn m of
-        Just _  -> pure []
-        Nothing -> [] <$ modifyTVar' tv (M.insert pn p)
-    f p@(FromAUR b)  = join . atomically $ do
-      let pn = b ^. field @"name"
-      m <- readTVar tv
-      case M.lookup pn m of
-        Just _  -> pure $ pure []  -- Bail early, we've checked this package already.
-        Nothing -> modifyTVar' tv (M.insert pn p) $> do
-          ds <- wither (\d -> bool (Just d) Nothing <$> isSatisfied d) $ b ^. field @"deps"
-          case NEL.nonEmpty $ ds ^.. each . field @"name" of
-            Nothing    -> pure []
-            Just deps' -> do
-              (bads, goods) <- repoLookup repo ss $ NES.fromNonEmpty deps'
+    -- | Handles the fetching of the next `Package` and detection of overall
+    -- completion of the task.
+    g :: Status -> IO [DepError]
+    g s = do
+      mp <- atomically . tryReadTQueue $ tqueue pool
+      ws <- atomically . readTVar $ waiters pool
+      case (mp, s) of
+        (Nothing, Waiting) | ws == threads pool -> pure []
+                           | otherwise -> threadDelay 500000 *> g Waiting
+        (Nothing, Working) -> atomically (modifyTVar' (waiters pool) succ) *> threadDelay 500000 *> g Waiting
+        (Just p,  Waiting) -> atomically (modifyTVar' (waiters pool) pred) *> h p
+        (Just p,  Working) -> h p
 
-              let depsMap = M.fromList $ map (view (field @"name") &&& id) ds
-                  cnfs    = mapMaybe conflicting $ toList goods
-                  evils   = map NonExistant (toList bads) <> cnfs
+    -- | Handles determining whether further work should be done. It won't
+    -- continue to `j` if this `Package` has already been analysed.
+    h :: Package -> IO [DepError]
+    h p = do
+      w <- atomically $ do
+        let pn = pname p
+        m <- readTVar $ tmap pool
+        case M.lookup pn m of
+          Just _  -> pure WroteNothing
+          Nothing -> modifyTVar' (tmap pool) (M.insert pn p) $> WroteNew
+      case w of
+        WroteNothing -> g Working
+        WroteNew     -> case p of
+          FromRepo _ -> g Working
+          FromAUR b  -> j b
 
-                  conflicting :: Package -> Maybe DepError
-                  conflicting p' = either Just (realPkgConflicts ss (b ^. field @"name") p') $ provider p'
+    j :: Buildable -> IO [DepError]
+    j b = do
+      ds <- wither (\d -> bool (Just d) Nothing <$> isSatisfied d) $ b ^. field @"deps"
+      case NEL.nonEmpty $ ds ^.. each . field @"name" of
+        Nothing    -> g Working
+        Just deps' -> do
+          (bads, goods) <- repoLookup repo ss $ NES.fromNonEmpty deps'
 
-                  provider :: Package -> Either DepError Dep
-                  provider p' = maybe
-                                (Left $ BrokenProvides (b ^. field @"name") (pprov p') (pname p'))
-                                Right $
-                                M.lookup (p' ^. to pprov . field' @"provides" . to PkgName) depsMap
-                                <|> M.lookup (pname p') depsMap
+          let depsMap = M.fromList $ map (view (field @"name") &&& id) ds
+              cnfs    = mapMaybe conflicting $ toList goods
+              evils   = map NonExistant (toList bads) <> cnfs
 
-              if | not (null evils) -> pure evils
-                 | otherwise        -> maybe (pure []) (resolveDeps' ss tv repo) $ NES.fromSet goods
+              conflicting :: Package -> Maybe DepError
+              conflicting p' = either Just (realPkgConflicts ss (b ^. field @"name") p') $ provider p'
+
+              provider :: Package -> Either DepError Dep
+              provider p' = maybe
+                            (Left $ BrokenProvides (b ^. field @"name") (pprov p') (pname p'))
+                            Right $
+                            M.lookup (p' ^. to pprov . field' @"provides" . to PkgName) depsMap
+                            <|> M.lookup (pname p') depsMap
+
+          atomically $ traverse_ (writeTQueue (tqueue pool)) goods
+          (evils <>) <$> g Working
 
 sortInstall :: M.Map PkgName Package -> Maybe (NonEmpty (NonEmptySet Package))
 sortInstall m = NEL.nonEmpty . mapMaybe NES.fromSet . batch $ overlay connected singles
