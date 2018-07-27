@@ -15,10 +15,10 @@
 module Aura.Types
   ( -- * Package Types
     Package(..), pname, pprov, pver
-  , SimplePkg(..), simplepkg, simplepkg'
   , Dep(..), parseDep
   , Buildable(..)
   , Prebuilt(..)
+  , SimplePkg(..), simplepkg, simplepkg'
     -- * Typeclasses
   , Flagable(..)
     -- * Package Building
@@ -74,14 +74,17 @@ instance (Foldable f, Flagable a) => Flagable (f a) where
 -- | A package to be installed.
 data Package = FromRepo Prebuilt | FromAUR Buildable deriving (Eq)
 
+-- | The name of a `Package`.
 pname :: Package -> PkgName
 pname (FromRepo pb) = pb ^. field @"name"
 pname (FromAUR b)   = b  ^. field @"name"
 
+-- | Other names which allow this `Package` to be satisfied as a dependency.
 pprov :: Package -> Provides
 pprov (FromRepo pb) = pb ^. field @"provides"
 pprov (FromAUR b)   = b  ^. field @"provides"
 
+-- | The version of a `Package`.
 pver :: Package -> Versioning
 pver (FromRepo pb) = pb ^. field @"version"
 pver (FromAUR b)   = b  ^. field @"version"
@@ -93,6 +96,7 @@ instance Ord Package where
   compare (FromAUR a) (FromRepo b)  = compare (a ^. super @SimplePkg) (b ^. super @SimplePkg)
   compare (FromRepo a) (FromAUR b)  = compare (a ^. super @SimplePkg) (b ^. super @SimplePkg)
 
+-- | A `Package` from the AUR that's buildable in some way on the user's machine.
 data Buildable = Buildable { name       :: !PkgName
                            , version    :: !Versioning
                            , base       :: !PkgName

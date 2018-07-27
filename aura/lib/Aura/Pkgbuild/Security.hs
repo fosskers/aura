@@ -65,6 +65,7 @@ banned w = M.lookup (T.pack $ unquote w) blacklist
 -- REPORTING
 ------------
 
+-- | Dispatch different error messages depending on the category of a `BannedTerm`.
 reportExploit :: BannedTerm -> (Language -> Doc AnsiStyle)
 reportExploit (BannedTerm t bc) = case bc of
   Downloading   -> security_2 t
