@@ -49,6 +49,14 @@ data Pool = Pool { threads :: Int
                  , tqueue  :: TQueue Package
                  } deriving (Generic)
 
+workPool :: NonEmptySet Package -> IO Pool
+workPool ps = do
+  ts <- getNumCapabilities
+  tv <- newTVarIO M.empty
+  w  <- newTVarIO 0
+  tq <- atomically $ newTQueue >>= \q -> traverse_ (writeTQueue q) ps $> q
+  pure $ Pool ts w tv tq
+
 -- | Given some `Package`s, determine its full dependency graph.
 -- The graph is collapsed into layers of packages which are not
 -- interdependent, and thus can be built and installed as a group.
@@ -57,19 +65,12 @@ data Pool = Pool { threads :: Int
 resolveDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
   Repository -> NonEmptySet Package -> Eff r (NonEmpty (NonEmptySet Package))
 resolveDeps repo ps = do
-  ss <- ask
-  ts <- send getNumCapabilities
-  tv <- send $ newTVarIO M.empty
-  w  <- send $ newTVarIO 0
-  tq <- send $ atomically $ newTQueue >>= \q -> traverse_ (writeTQueue q) ps $> q
-  de <- send $ resolveDeps' ss (Pool ts w tv tq) repo
-  m  <- send $ readTVarIO tv
+  ss   <- ask
+  pool <- send $ workPool ps
+  de   <- send $ resolveDeps' ss pool repo
+  m    <- send $ readTVarIO $ tmap pool
   unless (null de) . throwError . Failure $ missingPkg_2 de
   maybe (throwError $ Failure missingPkg_3) pure $ sortInstall m
-
--- TODO implement and use
-workPool :: IO Pool
-workPool = undefined
 
 -- | An empty list signals success.
 resolveDeps' :: Settings -> Pool -> Repository -> IO [DepError]
@@ -104,6 +105,8 @@ resolveDeps' ss pool repo = fold <$> replicateConcurrently (threads pool) (g Wor
           FromRepo _ -> g Working
           FromAUR b  -> j b
 
+    -- | Check for the existance of dependencies, as well as for any version conflicts
+    -- they might introduce.
     j :: Buildable -> IO [DepError]
     j b = do
       ds <- wither (\d -> bool (Just d) Nothing <$> isSatisfied d) $ b ^. field @"deps"
