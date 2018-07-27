@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts, MonoLocalBinds, TupleSections, MultiWayIf #-}
+{-# LANGUAGE TypeApplications, DataKinds #-}
 
 -- |
 -- Module    : Aura.Dependencies
@@ -21,6 +22,7 @@ import           Control.Concurrent.STM.TVar
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import           Data.Generics.Product (field, field')
 import qualified Data.List.NonEmpty as NEL
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
@@ -30,6 +32,7 @@ import qualified Data.Text as T
 import           Data.Versions
 import           Data.Witherable (wither)
 import           Lens.Micro
+import           Lens.Micro.Extras (view)
 
 ---
 
@@ -55,37 +58,45 @@ resolveDeps' ss tv repo ps = fold <$> mapConcurrently f (toList ps)
     -- | `atomically` ensures that only one instance of a `Package` can
     -- ever be written to the TVar.
     f :: Package -> IO [DepError]
-    f p = join . atomically $ do
+    f p@(FromRepo pb) = atomically $ do
+      let pn = pb ^. field @"name"
       m <- readTVar tv
-      case M.lookup (_pkgName p) m of
+      case M.lookup pn m of
+        Just _  -> pure []
+        Nothing -> [] <$ modifyTVar' tv (M.insert pn p)
+    f p@(FromAUR b)  = join . atomically $ do
+      let pn = b ^. field @"name"
+      m <- readTVar tv
+      case M.lookup pn m of
         Just _  -> pure $ pure []  -- Bail early, we've checked this package already.
-        Nothing -> modifyTVar' tv (M.insert (_pkgName p) p) $> do
-          deps <- wither (\d -> bool (Just d) Nothing <$> isSatisfied d) $ _pkgDeps p
-          case NEL.nonEmpty $ map depNameOf deps of
+        Nothing -> modifyTVar' tv (M.insert pn p) $> do
+          deps <- wither (\d -> bool (Just d) Nothing <$> isSatisfied d) $ b ^. field @"deps"
+          case NEL.nonEmpty $ deps ^.. each . field @"name" of
             Nothing    -> pure []
             Just deps' -> do
               (bads, goods) <- repoLookup repo ss $ NES.fromNonEmpty deps'
 
-              let depsMap = M.fromList $ map (depNameOf &&& id) deps
+              let depsMap = M.fromList $ map (view (field @"name") &&& id) deps
                   cnfs    = mapMaybe conflicting $ toList goods
                   evils   = map NonExistant (toList bads) <> cnfs
 
                   conflicting :: Package -> Maybe DepError
-                  conflicting p' = either Just (realPkgConflicts ss (_pkgName p) p') $ provider p'
+                  conflicting p' = either Just (realPkgConflicts ss (b ^. field @"name") p') $ provider p'
 
                   provider :: Package -> Either DepError Dep
                   provider p' = maybe
-                                (Left $ BrokenProvides (_pkgName p) (_pkgProvides p') (_pkgName p'))
+                                (Left $ BrokenProvides (b ^. field @"name") (pprov p') (pname p'))
                                 Right $
-                                M.lookup (PkgName . _provides $ _pkgProvides p') depsMap
-                                <|> M.lookup (_pkgName p') depsMap
+                                M.lookup (p' ^. to pprov . field' @"provides" . to PkgName) depsMap
+                                <|> M.lookup (pname p') depsMap
 
               if | not (null evils) -> pure evils
                  | otherwise        -> maybe (pure []) (resolveDeps' ss tv repo) $ NES.fromSet goods
 
 sortInstall :: M.Map PkgName Package -> Maybe (NonEmpty (NonEmptySet Package))
 sortInstall m = NEL.nonEmpty . mapMaybe NES.fromSet . batch $ overlay connected singles
-  where f p = mapMaybe (\d -> fmap (p,) $ depNameOf d `M.lookup` m) $ _pkgDeps p  -- TODO handle "provides"?
+  where f (FromRepo _)  = []
+        f p@(FromAUR b) = mapMaybe (\d -> fmap (p,) $ (d ^. field @"name") `M.lookup` m) $ b ^. field @"deps" -- TODO handle "provides"?
         elems     = M.elems m
         connected = edges $ foldMap f elems
         singles   = overlays $ map vertex elems
@@ -111,9 +122,9 @@ realPkgConflicts ss parent pkg dep
     | pn `elem` toIgnore              = Just $ Ignored failMsg1
     | isVersionConflict reqVer curVer = Just $ VerConflict failMsg2
     | otherwise                       = Nothing
-    where pn       = _pkgName pkg
-          curVer   = _pkgVersion pkg & release .~ []
-          reqVer   = depVerDemandOf dep & _VersionDemand . release .~ []
+    where pn       = pname pkg
+          curVer   = pver pkg & release .~ []
+          reqVer   = (dep ^. field @"demand") & _VersionDemand . release .~ []
           lang     = langOf ss
           toIgnore = ignoredPkgsOf $ commonConfigOf ss
           failMsg1 = getRealPkgConflicts_2 pn lang

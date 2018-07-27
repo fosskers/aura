@@ -1,4 +1,5 @@
-{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, MonoLocalBinds #-}
+{-# LANGUAGE TypeApplications, DataKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- |
@@ -25,11 +26,13 @@ import           BasePrelude hiding (FilePath)
 import           Control.Compactable (fmapEither)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Reader
+import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
+import           Lens.Micro ((^.))
 import           Shelly
 
 ---
@@ -69,7 +72,7 @@ logLookup (Log lns) p = case matches of
                    (T.take 16 $ T.tail h)
                    (fromIntegral . length $ filter (T.isInfixOf " upgraded ") t)
                    (reverse . take 5 $ reverse t)
-  where matches = filter (T.isInfixOf (" " <> _pkgname p <> " (")) lns
+  where matches = filter (T.isInfixOf (" " <> (p ^. field @"name") <> " (")) lns
 
 renderEntry :: Settings -> LogEntry -> T.Text
 renderEntry ss (LogEntry (PkgName pn) fi us rs) =

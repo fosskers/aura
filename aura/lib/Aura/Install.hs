@@ -37,7 +37,7 @@ import           Control.Concurrent.Async
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
-import           Data.Generics.Product (field, super)
+import           Data.Generics.Product (field, super, HasField'(..))
 import qualified Data.List.NonEmpty as NEL
 import qualified Data.Map.Strict as M
 import           Data.Semigroup.Foldable (fold1)
@@ -49,6 +49,7 @@ import qualified Data.Text.IO as T
 import           Language.Bash.Pretty (prettyText)
 import           Language.Bash.Syntax (Statement)
 import           Lens.Micro ((^.), (^..), each)
+import           Lens.Micro.Extras (view)
 import           Shelly (shelly, (</>), withTmpDir, cd, writefile, whenM)
 import           System.IO (hFlush, stdout)
 
@@ -110,7 +111,7 @@ analysePkgbuild :: (Member (Reader Settings) r, Member (Error Failure) r, Member
 analysePkgbuild b = do
   ss <- ask
   let f = whenM (send $ optionalPrompt ss security_6) . throwError $ Failure security_7
-  case parsedPB $ pkgbuildOf b of
+  case parsedPB $ b ^. field @"pkgbuild" of
     Nothing -> send (warn ss (security_1 (b ^. field @"name") $ langOf ss)) *> f
     Just l  -> case bannedTerms l of
       []  -> pure ()
@@ -137,10 +138,10 @@ annotateDeps bs = void . pacmanSuccess $ ["-D", "--asdeps"] <> asFlag (bs' ^.. e
 -- match the base name (e.g. llvm50 vs llvm50-libs).
 uniquePkgBase :: [NonEmptySet Buildable] -> [NonEmptySet Buildable]
 uniquePkgBase bs = mapMaybe (NES.fromSet . S.filter (\b -> (b ^. field @"name") `S.member` goods) . NES.toSet) bs
-  where f a b | (a ^. field @"name") == bldBaseNameOf a = a
-              | (b ^. field @"name") == bldBaseNameOf b = b
+  where f a b | (a ^. field @"name") == (a ^. field @"base") = a
+              | (b ^. field @"name") == (b ^. field @"base") = b
               | otherwise = a
-        goods = S.fromList . (^.. each . field @"name") . M.elems . M.fromListWith f $ map (bldBaseNameOf &&& id) bs'
+        goods = S.fromList . (^.. each . field @"name") . M.elems . M.fromListWith f $ map (view (field @"base") &&& id) bs'
         bs'   = foldMap toList bs
 
 confirmIgnored :: (Member (Reader Settings) r, Member IO r) => S.Set PkgName -> Eff r (S.Set PkgName)
@@ -154,10 +155,10 @@ depsToInstall repo bs = do
   ss <- ask
   traverse (send . packageBuildable ss) (NES.toNonEmpty bs) >>= resolveDeps repo . NES.fromNonEmpty
 
-repoInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmpty PkgName -> Eff r ()
+repoInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmpty Prebuilt -> Eff r ()
 repoInstall ps = do
   pacOpts <- asks (asFlag . commonConfigOf)
-  rethrow . pacman $ ["-S", "--asdeps"] <> pacOpts <> asFlag ps
+  rethrow . pacman $ ["-S", "--asdeps"] <> pacOpts <> asFlag (ps ^.. each . field @"name")
 
 buildAndInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
   NonEmpty (NonEmptySet Buildable) -> Eff r ()
@@ -188,18 +189,19 @@ displayPkgDeps ps = do
   where reportDeps True  = send . uncurry reportListOfDeps
         reportDeps False = uncurry reportPkgsToInstall
 
+-- TODO Factor out repeated code a la `reportListOfDeps`
 reportPkgsToInstall :: (Member (Reader Settings) r, Member IO r) =>
-   [PkgName] -> [NonEmptySet Buildable] -> Eff r ()
+   [Prebuilt] -> [NonEmptySet Buildable] -> Eff r ()
 reportPkgsToInstall rps bps = do
   let (explicits, deps) = partition isExplicit $ foldMap toList bps
-  traverse_ (report green reportPkgsToInstall_1) . NEL.nonEmpty $ sort rps
+  traverse_ (report green reportPkgsToInstall_1) . NEL.nonEmpty . sort $ rps ^.. each . field @"name"
   traverse_ (report green reportPkgsToInstall_3) . NEL.nonEmpty . sort $ deps ^.. each . field @"name"
   traverse_ (report green reportPkgsToInstall_2) . NEL.nonEmpty . sort $ explicits ^.. each . field @"name"
 
-reportListOfDeps :: [PkgName] -> [NonEmptySet Buildable] -> IO ()
-reportListOfDeps rps bps = do
-  traverse_ (T.putStrLn . _pkgname) $ sort rps
-  traverse_ (T.putStrLn . _pkgname) . sort . (^.. each . field @"name") $ foldMap toList bps
+reportListOfDeps :: [Prebuilt] -> [NonEmptySet Buildable] -> IO ()
+reportListOfDeps rps bps = f rps *> f (foldMap toList bps)
+  where f :: HasField' "name" s PkgName => [s] -> IO ()
+        f = traverse_ T.putStrLn . sort . (^.. each . field' @"name" . field' @"name")
 
 pkgbuildDiffs :: (Member (Reader Settings) r, Member IO r) => S.Set Buildable -> Eff r ()
 pkgbuildDiffs ps = ask >>= check
@@ -216,6 +218,6 @@ pkgbuildDiffs ps = ask >>= check
                else send . shelly @IO . withTmpDir $ \dir -> do
                  cd dir
                  let new = dir </> ("new.pb" :: T.Text)
-                 writefile new . _pkgbuild $ pkgbuildOf p
+                 writefile new $ p ^. field @"pkgbuild" . field @"pkgbuild"
                  liftIO . warn ss $ reportPkgbuildDiffs_3 pn lang
                  diff ss (pkgbuildPath pn) new

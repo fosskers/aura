@@ -29,7 +29,7 @@ import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Lens.Micro ((^.))
-import           Shelly
+import           Shelly hiding (path)
 
 
 ---
@@ -63,4 +63,4 @@ pkgsInCache ss ps = do
 cacheMatches :: Settings -> T.Text -> Sh [PackagePath]
 cacheMatches ss input = do
   c <- cacheContents . either id id . cachePathOf $ commonConfigOf ss
-  pure . filter (T.isInfixOf input . toTextIgnore . _pkgpath) . M.elems $ _cache c
+  pure . filter (T.isInfixOf input . toTextIgnore . path) . M.elems $ _cache c

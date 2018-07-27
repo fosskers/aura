@@ -2,6 +2,7 @@
 {-# LANGUAGE DataKinds, TypeApplications, DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE DerivingStrategies, GeneralizedNewtypeDeriving, DeriveGeneric #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 -- |
 -- Module    : Aura.Types
@@ -13,10 +14,11 @@
 
 module Aura.Types
   ( -- * Package Types
-    Package(..)
+    Package(..), pname, pprov, pver
   , SimplePkg(..), simplepkg, simplepkg'
   , Dep(..), parseDep
   , Buildable(..)
+  , Prebuilt(..)
     -- * Typeclasses
   , Flagable(..)
     -- * Package Building
@@ -43,7 +45,8 @@ import           BasePrelude hiding (FilePath, try)
 import           Control.Error.Util (hush)
 import           Data.Aeson (ToJSONKey, FromJSONKey)
 import           Data.Bitraversable
-import           Data.Generics.Product (field)
+import           Data.Generics.Product (field, field', HasField', super)
+import           Data.Generics.Sum (_Sub)
 import           Data.List.NonEmpty (nonEmpty)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
@@ -69,25 +72,58 @@ instance Flagable T.Text where
 instance (Foldable f, Flagable a) => Flagable (f a) where
   asFlag = foldMap asFlag
 
+-- TODO remove
 -- | A package to be installed.
-data Package = Package { _pkgName        :: !PkgName
-                       , _pkgVersion     :: !Versioning
-                       , _pkgBaseName    :: !PkgName
-                       , _pkgProvides    :: !Provides
-                       , _pkgDeps        :: ![Dep]
-                       , _pkgInstallType :: !InstallType } deriving (Eq)
+-- data Package = Package { _pkgName        :: !PkgName
+--                        , _pkgVersion     :: !Versioning
+--                        , _pkgBaseName    :: !PkgName
+--                        , _pkgProvides    :: !Provides
+--                        , _pkgDeps        :: ![Dep]
+--                        , _pkgInstallType :: !InstallType } deriving (Eq)
 
+-- | A package to be installed.
+data Package = FromRepo Prebuilt | FromAUR Buildable deriving (Eq)
+
+pname :: Package -> PkgName
+pname (FromRepo pb) = pb ^. field @"name"
+pname (FromAUR b)   = b  ^. field @"name"
+
+pprov :: Package -> Provides
+pprov (FromRepo pb) = pb ^. field @"provides"
+pprov (FromAUR b)   = b  ^. field @"provides"
+
+pver :: Package -> Versioning
+pver (FromRepo pb) = pb ^. field @"version"
+pver (FromAUR b)   = b  ^. field @"version"
+
+-- TODO Figure out how to do this more generically.
 instance Ord Package where
-  compare a b = case compare (_pkgName a) (_pkgName b) of
-    EQ  -> compare (_pkgVersion a) (_pkgVersion b)
-    oth -> oth
+  compare (FromAUR a) (FromAUR b)   = compare a b
+  compare (FromRepo a) (FromRepo b) = compare a b
+  compare (FromAUR a) (FromRepo b)  = compare (a ^. super @SimplePkg) (b ^. super @SimplePkg)
+  compare (FromRepo a) (FromAUR b)  = compare (a ^. super @SimplePkg) (b ^. super @SimplePkg)
 
-instance Show Package where
-  show p = printf "%s (%s)" (show $ _pkgName p) (show . prettyV $ _pkgVersion p)
+data Buildable = Buildable { name       :: !PkgName
+                           , version    :: !Versioning
+                           , base       :: !PkgName
+                           , provides   :: !Provides
+                           , deps       :: ![Dep]
+                           , pkgbuild   :: !Pkgbuild
+                           , isExplicit :: !Bool } deriving (Eq, Ord, Show, Generic)
+
+-- TODO reinstate
+-- instance Show Package where
+--   show p = printf "%s (%s)" (show $ _pkgName p) (show . prettyV $ _pkgVersion p)
+
+-- | A prebuilt `Package` from the official Arch repositories.
+data Prebuilt = Prebuilt { name     :: !PkgName
+                         , version  :: !Versioning
+                         , base     :: !PkgName
+                         , provides :: !Provides } deriving (Eq, Ord, Show, Generic)
 
 -- | A dependency on another package.
-data Dep = Dep { depNameOf      :: !PkgName
-               , depVerDemandOf :: !VersionDemand } deriving (Eq, Ord, Show)
+data Dep = Dep { name   :: !PkgName
+               , demand :: !VersionDemand } deriving (Eq, Ord, Show, Generic)
 
 -- TODO Doctest here, and fix up the haddock
 -- | Parse a dependency entry as it would appear in a PKGBUILD:
@@ -131,7 +167,7 @@ _VersionDemand _ p            = pure p
 data InstallType = Pacman PkgName | Build Buildable deriving (Eq)
 
 -- | A package name with its version number.
-data SimplePkg = SimplePkg { name :: PkgName, version :: Versioning } deriving (Eq, Ord, Show, Generic)
+data SimplePkg = SimplePkg { name :: !PkgName, version :: !Versioning } deriving (Eq, Ord, Show, Generic)
 
 -- | Attempt to create a `SimplePkg` from filepaths like
 --   @\/var\/cache\/pacman\/pkg\/linux-3.2.14-1-x86_64.pkg.tar.xz@
@@ -161,30 +197,19 @@ simplepkg' = hush . parse parser "name-and-version"
 --   * \/var\/cache\/pacman\/pkg\/linux-3.2.14-1-x86_64.pkg.tar.xz
 --   * \/var\/cache\/pacman\/pkg\/wine-1.4rc6-1-x86_64.pkg.tar.xz
 --   * \/var\/cache\/pacman\/pkg\/ruby-1.9.3_p125-4-x86_64.pkg.tar.xz
-newtype PackagePath = PackagePath { _pkgpath :: FilePath } deriving (Eq)
+newtype PackagePath = PackagePath { path :: FilePath } deriving (Eq, Generic)
 
 -- | If they have the same package names, compare by their versions.
 -- Otherwise, do raw comparison of the path string.
 instance Ord PackagePath where
-  compare a b | nameA /= nameB = compare (_pkgpath a) (_pkgpath b)
+  compare a b | nameA /= nameB = compare (path a) (path b)
               | otherwise      = compare verA verB
     where (nameA, verA) = f a
           (nameB, verB) = f b
           f = ((^? _Just . field @"name") &&& (^? _Just . field @"version")) . simplepkg
 
 -- | The contents of a PKGBUILD file.
-newtype Pkgbuild = Pkgbuild { _pkgbuild :: T.Text } deriving (Eq, Ord, Show)
-
--- | A package to be built manually before installing.
-data Buildable = Buildable
-    { name          :: !PkgName
-    , bldBaseNameOf :: !PkgName
-    , bldProvidesOf :: !Provides
-    , pkgbuildOf    :: !Pkgbuild
-    , bldDepsOf     :: ![Dep]
-    , version       :: !Versioning
-    -- | Did the user select this package, or is it being built as a dep?
-    , isExplicit    :: !Bool } deriving (Eq, Ord, Show, Generic)
+newtype Pkgbuild = Pkgbuild { pkgbuild :: T.Text } deriving (Eq, Ord, Show, Generic)
 
 -- | All human languages available for text output.
 data Language = English
@@ -212,27 +237,27 @@ data DepError = NonExistant PkgName
 
 -- | Some failure message that when given the current runtime `Language`
 -- will produce a human-friendly error.
-newtype Failure = Failure { _failure :: Language -> Doc AnsiStyle }
+newtype Failure = Failure { failure :: Language -> Doc AnsiStyle }
 
 -- | Shell environment variables.
 type Environment = M.Map T.Text T.Text
 
 -- | The name of a user account on a Linux system.
-newtype User = User { _user :: T.Text } deriving (Eq, Show)
+newtype User = User { user :: T.Text } deriving (Eq, Show, Generic)
 
 -- | The name of an Arch Linux package.
-newtype PkgName = PkgName { _pkgname :: T.Text }
-  deriving stock (Eq, Ord, Show)
+newtype PkgName = PkgName { name :: T.Text }
+  deriving stock (Eq, Ord, Show, Generic)
   deriving newtype (Flagable, ToJSONKey, FromJSONKey, IsString)
 
 -- | A group that a `Package` could belong too, like @base@, @base-devel@, etc.
-newtype PkgGroup = PkgGroup { _pkggroup :: T.Text }
-  deriving stock (Eq, Ord, Show)
+newtype PkgGroup = PkgGroup { group :: T.Text }
+  deriving stock (Eq, Ord, Show, Generic)
   deriving newtype (Flagable)
 
 -- | The dependency which some package provides. May not be the same name
 -- as the package itself (e.g. cronie provides cron).
-newtype Provides = Provides { _provides :: T.Text } deriving (Eq, Ord, Show)
+newtype Provides = Provides { provides :: T.Text } deriving (Eq, Ord, Show, Generic)
 
 -- | Similar to `maybe` and `either`, but not quite the same.
 list :: b -> (NonEmpty a -> b) -> [a] -> b

@@ -1,4 +1,5 @@
-{-# LANGUAGE OverloadedStrings, TupleSections #-}
+{-# LANGUAGE OverloadedStrings, TupleSections, DuplicateRecordFields #-}
+{-# LANGUAGE TypeApplications, DataKinds #-}
 
 -- |
 -- Module    : Aura.Packages.Repository
@@ -23,9 +24,11 @@ import           BasePrelude hiding (try)
 import           Control.Compactable (traverseEither)
 import           Control.Concurrent.Async
 import           Control.Error.Util (hush, note)
+import           Data.Generics.Product (field)
 import qualified Data.Set as S
 import qualified Data.Text as T
 import           Data.Versions
+import           Lens.Micro ((^.), (^..), each)
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 
@@ -38,25 +41,22 @@ pacmanRepo = Repository $ \ss names -> do
   (bads, goods)   <- partitionEithers <$> mapConcurrently (resolveName ss) (toList names)
   (bads', goods') <- traverseEither f goods
   pure (S.fromList $ bads <> bads', S.fromList goods')
-  where f (r, p) = fmap (packageRepo r p) <$> mostRecentVersion r
+  where f (r, p) = fmap (FromRepo . packageRepo r p) <$> mostRecentVersion r
 
-packageRepo :: PkgName -> Provides -> Versioning -> Package
-packageRepo pn pro ver = Package
-  { _pkgName        = pn
-  , _pkgVersion     = ver
-  , _pkgBaseName    = pn
-  , _pkgProvides    = pro
-  , _pkgDeps        = []  -- Let pacman handle dependencies.
-  , _pkgInstallType = Pacman pn }
+packageRepo :: PkgName -> Provides -> Versioning -> Prebuilt
+packageRepo pn pro ver = Prebuilt { name     = pn
+                                  , version  = ver
+                                  , base     = pn
+                                  , provides = pro }
 
 -- | If given a virtual package, try to find a real package to install.
 -- Functions like this are why we need libalpm.
 resolveName :: Settings -> PkgName -> IO (Either PkgName (PkgName, Provides))
 resolveName ss pn = do
-  provs <- map PkgName . T.lines <$> pacmanOutput ["-Ssq", "^" <> _pkgname pn <> "$"]
+  provs <- map PkgName . T.lines <$> pacmanOutput ["-Ssq", "^" <> (pn ^. field @"name") <> "$"]
   case provs of
     [] -> pure $ Left pn
-    _  -> Right . (, Provides $ _pkgname pn) <$> chooseProvider ss pn provs
+    _  -> Right . (, Provides $ pn ^. field @"name") <$> chooseProvider ss pn provs
 
 -- | Choose a providing package, favoring installed packages.
 chooseProvider :: Settings -> PkgName -> [PkgName] -> IO PkgName
@@ -66,7 +66,7 @@ chooseProvider ss pn ps@(a:as) =
   mapConcurrently isInstalled ps >>= maybe f pure . listToMaybe . catMaybes
   where f = do
           warn ss $ provides_1 pn
-          PkgName <$> getSelection (_pkgname a :| map _pkgname as)
+          PkgName <$> getSelection ((a ^. field @"name") :| (as ^.. each . field @"name"))
 
 -- | The most recent version of a package, if it exists in the respositories.
 mostRecentVersion :: PkgName -> IO (Either PkgName Versioning)

@@ -138,7 +138,7 @@ renderAurPkgInfo ss ai = dtot . colourCheck ss $ entrify ss fields entries
 aurPkgSearch :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r ()
 aurPkgSearch regex = do
   ss <- ask
-  db <- S.map (_pkgname . view (field @"name")) <$> send foreignPackages
+  db <- S.map (^. field @"name" . field @"name") <$> send foreignPackages
   let t = case truncationOf $ buildConfigOf ss of  -- Can't this go anywhere else?
             None   -> id
             Head n -> take $ fromIntegral n
@@ -166,7 +166,7 @@ renderSearch ss r (i, e) = searchResult
 displayPkgbuild :: (Member (Reader Settings) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
 displayPkgbuild ps = do
   man <- asks managerOf
-  pbs <- catMaybes <$> traverse (send . pkgbuild @IO man) (toList ps)
+  pbs <- catMaybes <$> traverse (send . getPkgbuild @IO man) (toList ps)
   send . traverse_ T.putStrLn $ intersperse border pbs
   where border = "\n#========== NEXT PKGBUILD ==========#\n"
 
@@ -178,7 +178,7 @@ isntMostRecent (ai, v) = trueVer > Just v
 aurJson :: (Member (Reader Settings) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
 aurJson ps = do
   m <- asks managerOf
-  infos <- send . info @IO m . map _pkgname $ toList ps
+  infos <- send . info @IO m . (^.. each . field @"name") $ toList ps
   let json = map (toStrict . toLazyText . encodePrettyToTextBuilder) infos
   send $ traverse_ T.putStrLn json
 
@@ -187,11 +187,12 @@ aurJson ps = do
 ------------
 reportPkgsToUpgrade :: (Member (Reader Settings) r, Member IO r) =>
   [(AurInfo, Versioning)] -> [PkgName] -> Eff r ()
-reportPkgsToUpgrade ups (map _pkgname -> devels) = do
+reportPkgsToUpgrade ups pns = do
   ss <- ask
   send . notify ss . reportPkgsToUpgrade_1 $ langOf ss
   send $ putDoc (colourCheck ss . vcat $ map f ups' <> map g devels) >> T.putStrLn "\n"
-  where ups'     = map (second prettyV) ups
+  where devels   = pns ^.. each . field @"name"
+        ups'     = map (second prettyV) ups
         nLen     = maximum $ map (T.length . aurNameOf . fst) ups <> map T.length devels
         vLen     = maximum $ map (T.length . snd) ups'
         g = annotate (color Cyan) . pretty

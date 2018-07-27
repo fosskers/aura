@@ -1,4 +1,5 @@
 {-# LANGUAGE LambdaCase, ViewPatterns, OverloadedStrings #-}
+{-# LANGUAGE TypeApplications, DataKinds #-}
 {-# OPTIONS_HADDOCK prune #-}
 
 -- |
@@ -33,10 +34,12 @@ import           Aura.Colour
 import qualified Aura.Languages.Fields as Fields
 import           Aura.Types
 import           BasePrelude hiding ((<+>))
+import           Data.Generics.Product (field)
 import qualified Data.Map.Strict as Map (Map, (!), fromList, toList, mapWithKey)
 import qualified Data.Text as T
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
+import           Lens.Micro.Extras (view)
 
 ---
 
@@ -182,7 +185,7 @@ mustBeRoot_1 = let sudo = bt "sudo" in \case
 -- Aura/Build functions
 -----------------------
 buildPackages_1 :: PkgName -> Language -> Doc AnsiStyle
-buildPackages_1 (bt . _pkgname -> p) = \case
+buildPackages_1 (bt . view (field @"name") -> p) = \case
     Japanese   -> p <> "を作成中・・・"
     Polish     -> "Budowanie " <> p <> "..."
     Croatian   -> "Gradim " <> p <> "..."
@@ -200,7 +203,7 @@ buildPackages_1 (bt . _pkgname -> p) = \case
     _          -> "Building " <> p <> "..."
 
 buildFail_1 :: PkgName -> Language -> Doc AnsiStyle
-buildFail_1 (bt . _pkgname -> p) = \case
+buildFail_1 (bt . view (field @"name") -> p) = \case
     Japanese   -> p <> "の作成は失敗しました。"
     Polish     -> "Budowanie " <> p <> " zakończyło się niepowodzeniem."
     Croatian   -> "Izgradnja " <> p <> " nije uspjela."
@@ -255,7 +258,7 @@ buildFail_6 = \case
 
 -- NEEDS TRANSLATION
 buildFail_7 :: PkgName -> Language -> Doc AnsiStyle
-buildFail_7 (bt . _pkgname -> p) = \case
+buildFail_7 (bt . view (field @"name") -> p) = \case
     Japanese   -> p <> "のビルドスクリプトを収得できませんでした。"
     Polish     -> "Nie udało się pozyskać skryptów budowania dla " <> p <> "."
     German     -> "Herunterladen der Build-Skripte für " <> p <> " fehlgeschlagen."
@@ -287,7 +290,7 @@ buildFail_10 = \case
 ------------------------------
 -- NEEDS UPDATE TO MATCH NEW ENGLISH
 getRealPkgConflicts_1 :: PkgName -> PkgName -> T.Text -> T.Text -> Language -> Doc AnsiStyle
-getRealPkgConflicts_1 (bt . _pkgname -> prnt) (bt . _pkgname -> p) (bt -> r) (bt -> d) = \case
+getRealPkgConflicts_1 (bt . view (field @"name") -> prnt) (bt . view (field @"name") -> p) (bt -> r) (bt -> d) = \case
     Japanese   -> "パッケージ" <> p <> "はバージョン" <> d <> "を要するが" <> "一番最新のバージョンは" <> r <> "。"
     Polish     -> "Zależność " <> p <> " powinna być w wersji " <> d <> ", ale najnowsza wersja to " <> r <> "."
     Croatian   -> "Zavisnost " <> p <> " zahtjeva verziju " <> d <> ", a najnovija dostupna verzija je " <> r <> "."
@@ -305,7 +308,7 @@ getRealPkgConflicts_1 (bt . _pkgname -> prnt) (bt . _pkgname -> p) (bt -> r) (bt
     _          -> "The package " <> prnt <> " depends on version " <> d <> " of " <> p <> ", but the most recent version is " <> r <> "."
 
 getRealPkgConflicts_2 :: PkgName -> Language -> Doc AnsiStyle
-getRealPkgConflicts_2 (bt . _pkgname -> p) = \case
+getRealPkgConflicts_2 (bt . view (field @"name") -> p) = \case
     Japanese   -> p <> "は無視されるパッケージ！`pacman.conf`を参考に。"
     Polish     -> p <> " jest ignorowany! Sprawdź plik `pacman.conf`."
     Croatian   -> p <> " je ignoriran paket! Provjerite svoj `pacman.conf`."
@@ -455,7 +458,7 @@ install_5 = \case
 
 -- 2014 December  7 @ 14:45 - NEEDS TRANSLATIONS
 confirmIgnored_1 :: PkgName -> Language -> Doc AnsiStyle
-confirmIgnored_1 (bt . _pkgname -> p) = \case
+confirmIgnored_1 (bt . view (field @"name") -> p) = \case
     Japanese   -> p <> "は無視されるはずのパッケージです。それでも続行しますか？"
     Polish     -> p <> " jest oznaczony jako ignorowany. Zainstalować mimo tego?"
     Spanish    -> p <> " está marcado como ignorado. ¿Deseas instalarlo de todas formas?"
@@ -551,7 +554,7 @@ reportPkgsToInstall_3 = \case
 
 -- NEEDS TRANSLATION
 reportPkgbuildDiffs_1 :: PkgName -> Language -> Doc AnsiStyle
-reportPkgbuildDiffs_1 (bt . _pkgname -> p) = \case
+reportPkgbuildDiffs_1 (bt . view (field @"name") -> p) = \case
     Japanese   -> p <> "のPKGBUILDはまだ保存されていません。"
     Polish     -> p <> " nie ma jeszcze przechowywanego pliku PKGBUILD."
     Croatian   -> p <> " još nema pohranjen PKGBUILD."
@@ -589,7 +592,7 @@ reportPkgbuildDiffs_2 (bt -> p) = \case
 
 -- NEEDS TRANSLATION
 reportPkgbuildDiffs_3 :: PkgName -> Language -> Doc AnsiStyle
-reportPkgbuildDiffs_3 (bt . _pkgname -> p) = \case
+reportPkgbuildDiffs_3 (bt . view (field @"name") -> p) = \case
     Japanese   -> p <> "のPKGBUILD変更報告："
     Polish     -> "Zmiany w PKGBUILD dla " <> p <> ":"
     Croatian   -> "Promjene u PKGBUILD-u za " <> p <> ":"
@@ -787,7 +790,7 @@ readState_1 = \case
 -- Aura/Commands/C functions
 ----------------------------
 getDowngradeChoice_1 :: PkgName -> Language -> Doc AnsiStyle
-getDowngradeChoice_1 (bt . _pkgname -> p) = \case
+getDowngradeChoice_1 (bt . view (field @"name") -> p) = \case
     Japanese   -> p <> "はどのバージョンにしますか？"
     Polish     -> "Którą wersję pakietu " <> p <> " zainstalować?"
     Croatian   -> "Koju verziju paketa " <> p <> " želite?"
@@ -1261,14 +1264,14 @@ confParsing_1 = \case
     _          -> "Unable to parse your pacman.conf file."
 
 provides_1 :: PkgName -> Doc AnsiStyle
-provides_1 (bt . _pkgname -> pro) =
+provides_1 (bt . view (field @"name") -> pro) =
   pro <+> "is required as a dependency, which is provided by multiple packages. Please select one:"
 
 ----------------------------------
 -- Aura/Pkgbuild/Editing functions
 ----------------------------------
 hotEdit_1 :: PkgName -> Language -> Doc AnsiStyle
-hotEdit_1 (bt . _pkgname -> p) = \case
+hotEdit_1 (bt . view (field @"name") -> p) = \case
     Japanese   -> p <> "のPKGBUILDを編成しますか？"
     Polish     -> "Czy chcesz edytować PKGBUILD " <> p <> "?"
     Croatian   -> "Želite li izmjeniti PKGBUILD " <> p <> "?"

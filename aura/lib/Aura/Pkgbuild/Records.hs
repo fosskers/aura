@@ -33,7 +33,7 @@ hasPkgbuildStored = shelly . test_f . pkgbuildPath
 storePkgbuilds :: NonEmptySet Buildable -> IO ()
 storePkgbuilds bs = shelly $ do
   mkdir_p pkgbuildCache
-  traverse_ (\p -> writePkgbuild (p ^. field @"name") (_pkgbuild $ pkgbuildOf p)) bs
+  traverse_ (\p -> writePkgbuild (p ^. field @"name") (p ^. field @"pkgbuild" . field @"pkgbuild")) bs
 
 writePkgbuild :: PkgName -> T.Text -> Sh ()
 writePkgbuild pn pkgb = writefile (pkgbuildPath pn) pkgb

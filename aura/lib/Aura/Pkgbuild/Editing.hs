@@ -22,7 +22,7 @@ import           Aura.Utils
 import           BasePrelude hiding (FilePath)
 import           Data.Generics.Product (field)
 import qualified Data.Text as T
-import           Lens.Micro ((^.))
+import           Lens.Micro ((^.), (.~))
 import           Shelly
 
 ---
@@ -35,10 +35,10 @@ customizepkgPath = "/etc/customizepkg.d/"
 -- package building.
 edit :: (FilePath -> Sh a) -> Buildable -> Sh Buildable
 edit f p = do
-  writefile filename . _pkgbuild $ pkgbuildOf p
+  writefile filename $ p ^. field @"pkgbuild" . field @"pkgbuild"
   void $ f filename
-  newPB <- readfile "PKGBUILD"
-  pure p { pkgbuildOf = Pkgbuild newPB }
+  newPB <- readfile filename
+  pure (p & field @"pkgbuild" .~ Pkgbuild newPB)
     where filename = "PKGBUILD"
 
 -- | Allow the user to edit the PKGBUILD if they asked to do so.
@@ -64,7 +64,7 @@ customizepkg' :: Buildable -> Sh Buildable
 customizepkg' p = withTmpDir $ \tmp -> do
   cd tmp
   ifFile (edit $ const customize) (pure ()) conf p
-  where conf = customizepkgPath </> _pkgname (p ^. field @"name")
+  where conf = customizepkgPath </> (p ^. field @"name" . field @"name")
 
 customize :: Sh T.Text
 customize = fmap snd . quietSh $ run "customizepkg" ["--modify"]

@@ -43,7 +43,7 @@ import           Data.Time
 import           Data.Versions
 import           Data.Witherable (mapMaybe)
 import           Lens.Micro ((^.))
-import           Shelly hiding (time)
+import           Shelly hiding (time, path)
 
 ---
 
@@ -158,4 +158,4 @@ reinstallAndRemove down remo
   | null down = remove
   | otherwise = reinstall *> remove
   where remove    = rethrow . pacman $ "-R" : asFlag remo
-        reinstall = rethrow . pacman $ "-U" : map (toTextIgnore . _pkgpath) down
+        reinstall = rethrow . pacman $ "-U" : map (toTextIgnore . path) down

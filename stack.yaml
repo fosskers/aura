@@ -10,6 +10,6 @@ extra-deps:
   - compactable-0.1.2.2
   # - language-bash-0.7.1
   - git: https://github.com/fosskers/language-bash
-    commit: c586cedbef7ed343b5e071e3fdf6b07c5a9fc1c5
+    commit: 3c9d8c92a2262573780fee60618aac9f727f94fc
   - git: https://github.com/andrewthad/non-empty-containers
     commit: a8293c40382983622cea9703da7dc841093e016c

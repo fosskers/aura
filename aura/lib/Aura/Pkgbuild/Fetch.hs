@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE TypeApplications, DataKinds #-}
 
 -- |
 -- Module    : Aura.State
@@ -11,7 +11,7 @@
 -- Query the AUR for a package's PKGBUILD.
 
 module Aura.Pkgbuild.Fetch
-  ( pkgbuild
+  ( getPkgbuild
   , pkgbuildUrl
   ) where
 
@@ -20,10 +20,12 @@ import           Aura.Utils (urlContents)
 import           BasePrelude
 import           Control.Exception (SomeException, catch)
 import           Control.Monad.Trans (MonadIO, liftIO)
-import           Data.Text
+import           Data.Generics.Product (field)
+import qualified Data.Text as T
 import           Data.Text.Encoding.Error
 import qualified Data.Text.Lazy as TL
 import           Data.Text.Lazy.Encoding
+import           Lens.Micro ((^.))
 import           Network.HTTP.Client (Manager)
 import           Network.URI (escapeURIString, isUnescapedInURIComponent)
 import           System.FilePath ((</>))
@@ -40,9 +42,10 @@ pkgbuildUrl :: String -> String
 pkgbuildUrl p = baseUrl </> "cgit/aur.git/plain/PKGBUILD?h="
   ++ escapeURIString isUnescapedInURIComponent p
 
+-- TODO Make this return the `Pkgbuild` type.
 -- | The PKGBUILD of a given package, retrieved from the AUR servers.
-pkgbuild :: MonadIO m => Manager -> PkgName -> m (Maybe Text)
-pkgbuild m (unpack . _pkgname -> p) = e $ do
-  t <- urlContents m $ pkgbuildUrl p
+getPkgbuild :: MonadIO m => Manager -> PkgName -> m (Maybe T.Text)
+getPkgbuild m p = e $ do
+  t <- urlContents m . pkgbuildUrl . T.unpack $ p ^. field @"name"
   pure $ fmap (TL.toStrict . decodeUtf8With lenientDecode) t
   where e f = liftIO $ f `catch` (\(_ :: E) -> return Nothing)

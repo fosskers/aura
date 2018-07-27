@@ -55,7 +55,7 @@ downgradePackages pkgs = do
   unless (null reals) $ do
     cache   <- send . shelly @IO $ cacheContents cachePath
     choices <- traverse (getDowngradeChoice cache) $ toList reals
-    rethrow . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (toTextIgnore . _pkgpath) choices
+    rethrow . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (toTextIgnore . path) choices
 
 -- | For a given package, get a choice from the user about which version of it to
 -- downgrade to.
@@ -67,7 +67,7 @@ getDowngradeChoice cache pkg =
     Just choices -> do
       ss <- ask
       send . notify ss . getDowngradeChoice_1 pkg $ langOf ss
-      fmap (PackagePath . fromText) . send . getSelection $ fmap (toTextIgnore . _pkgpath) choices
+      fmap (PackagePath . fromText) . send . getSelection $ fmap (toTextIgnore . path) choices
 
 getChoicesFromCache :: Cache -> PkgName -> [PackagePath]
 getChoicesFromCache (Cache cache) p = sort . M.elems $ M.filterWithKey (\(SimplePkg pn _) _ -> p == pn) cache
@@ -77,7 +77,7 @@ searchCache :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r ()
 searchCache ps = do
   ss <- ask
   matches <- send . shelly @IO $ cacheMatches ss ps
-  send . traverse_ (T.putStrLn . toTextIgnore . _pkgpath) $ sort matches
+  send . traverse_ (T.putStrLn . toTextIgnore . path) $ sort matches
 
 -- | The destination folder must already exist for the back-up to begin.
 backupCache :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => FilePath -> Eff r ()
@@ -132,7 +132,7 @@ clean toSave = do
   let !files    = M.elems cache
       grouped   = take toSave . reverse <$> groupByName files
       toRemove  = files \\ fold grouped
-  send . shelly @IO $ traverse_ rm $ map _pkgpath toRemove
+  send . shelly @IO $ traverse_ rm $ map path toRemove
 
 -- | Only package files with a version not in any PkgState will be
 -- removed.
@@ -142,11 +142,11 @@ cleanNotSaved = do
   send . notify ss . cleanNotSaved_1 $ langOf ss
   sfs <- send getStateFiles
   states <- fmap catMaybes . send $ traverse readState sfs
-  let path = either id id . cachePathOf $ commonConfigOf ss
-  (Cache cache)  <- send . shelly @IO $ cacheContents path
+  let cachePath = either id id . cachePathOf $ commonConfigOf ss
+  (Cache cache)  <- send . shelly @IO $ cacheContents cachePath
   let duds = M.filterWithKey (\p _ -> any (inState p) states) cache
   whenM (send . optionalPrompt ss $ cleanNotSaved_2 $ M.size duds) $
-    send . shelly @IO . traverse_ rm . map _pkgpath $ M.elems duds
+    send . shelly @IO . traverse_ rm . map path $ M.elems duds
 
 -- | Typically takes the contents of the package cache as an argument.
 groupByName :: [PackagePath] -> [[PackagePath]]

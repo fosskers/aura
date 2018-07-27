@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts, MonoLocalBinds #-}
+{-# LANGUAGE TypeApplications, DataKinds #-}
 
 -- |
 -- Module    : Aura.Commands.O
@@ -19,14 +20,16 @@ import           BasePrelude
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import           Data.Generics.Product (field)
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Text.IO as T
+import           Lens.Micro.Extras (view)
 
 ---
 
 -- | Print the result of @pacman -Qqdt@
 displayOrphans :: IO ()
-displayOrphans = orphans >>= traverse_ (T.putStrLn . _pkgname)
+displayOrphans = orphans >>= traverse_ (T.putStrLn . view (field @"name"))
 
 -- | Identical to @-D --asexplicit@.
 adoptPkg :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()

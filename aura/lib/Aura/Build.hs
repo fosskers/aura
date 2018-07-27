@@ -37,7 +37,7 @@ import qualified Data.Set.NonEmpty as NES
 import           Data.Witherable (wither)
 import           Filesystem.Path (filename)
 import           Lens.Micro ((^.))
-import           Shelly
+import           Shelly hiding (path)
 import           System.IO (hFlush, stdout)
 
 ---
@@ -51,7 +51,7 @@ installPkgFiles :: (Member (Reader Settings) r, Member (Error Failure) r, Member
 installPkgFiles files = do
   ss <- ask
   send . shelly @IO $ checkDBLock ss
-  rethrow . pacman $ ["-U"] <> map (toTextIgnore . _pkgpath) (toList files) <> asFlag (commonConfigOf ss)
+  rethrow . pacman $ ["-U"] <> map (toTextIgnore . path) (toList files) <> asFlag (commonConfigOf ss)
 
 -- | All building occurs within temp directories,
 -- or in a location specified by the user with flags.
@@ -101,9 +101,8 @@ getBuildScripts pkg user = do
 -- overwrite what's been downloaded before calling `makepkg`.
 overwritePkgbuild :: Settings -> Buildable -> Sh ()
 overwritePkgbuild ss p = when (switch ss HotEdit || switch ss UseCustomizepkg) $
-  writefile "PKGBUILD" . _pkgbuild $ pkgbuildOf p
+  writefile "PKGBUILD" $ p ^. field @"pkgbuild" . field @"pkgbuild"
 
--- TODO Make generic w/ HasField?
 -- | Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
 buildFail :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
