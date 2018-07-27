@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds, DataKinds #-}
 
 -- |
 -- Module    : Aura.Build
@@ -28,6 +28,7 @@ import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Except
+import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Semigroup.Foldable (fold1)
 import qualified Data.Set as S
@@ -35,7 +36,8 @@ import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import           Data.Witherable (wither)
 import           Filesystem.Path (filename)
-import           Shelly
+import           Lens.Micro ((^.))
+import           Shelly hiding (path)
 import           System.IO (hFlush, stdout)
 
 ---
@@ -49,7 +51,7 @@ installPkgFiles :: (Member (Reader Settings) r, Member (Error Failure) r, Member
 installPkgFiles files = do
   ss <- ask
   send . shelly @IO $ checkDBLock ss
-  rethrow . pacman $ ["-U"] <> map (toTextIgnore . _pkgpath) (toList files) <> asFlag (commonConfigOf ss)
+  rethrow . pacman $ ["-U"] <> map (toTextIgnore . path) (toList files) <> asFlag (commonConfigOf ss)
 
 -- | All building occurs within temp directories,
 -- or in a location specified by the user with flags.
@@ -64,7 +66,7 @@ build :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
   Buildable -> Eff r (Maybe (NonEmptySet PackagePath))
 build p = do
   ss     <- ask
-  send $ notify ss (buildPackages_1 (bldNameOf p) (langOf ss)) *> hFlush stdout
+  send $ notify ss (buildPackages_1 (p ^. field @"name") (langOf ss)) *> hFlush stdout
   result <- send . shelly @IO $ build' ss p
   either (buildFail p) (pure . Just) result
 
@@ -77,29 +79,29 @@ build' ss p = do
   withTmpDir $ \curr -> do
     cd curr
     runExceptT $ do
-      bs <- ExceptT $ getBuildScripts p user
+      bs <- ExceptT $ getBuildScripts p usr
       lift $ cd bs
       lift $ overwritePkgbuild ss p
-      pNames <- ExceptT $ makepkg ss user
+      pNames <- ExceptT $ makepkg ss usr
       paths  <- lift . fmap NES.fromNonEmpty . traverse (moveToCachePath ss) $ NES.toNonEmpty pNames
       lift . when (S.member AllSource . makepkgFlagsOf $ buildConfigOf ss) $
-        makepkgSource user >>= traverse_ moveToSourcePath
+        makepkgSource usr >>= traverse_ moveToSourcePath
       pure paths
-  where user = fromMaybe (User "桜木花道") . buildUserOf $ buildConfigOf ss
+  where usr = fromMaybe (User "桜木花道") . buildUserOf $ buildConfigOf ss
 
 getBuildScripts :: Buildable -> User -> Sh (Either Failure FilePath)
-getBuildScripts pkg user = do
+getBuildScripts pkg usr = do
   currDir <- pwd
-  scriptsDir <- chown user currDir [] *> clone pkg
+  scriptsDir <- chown usr currDir [] *> clone pkg
   case scriptsDir of
-    Nothing -> pure . Left . Failure . buildFail_7 $ bldNameOf pkg
-    Just sd -> chown user sd ["-R"] $> Right sd
+    Nothing -> pure . Left . Failure . buildFail_7 $ pkg ^. field @"name"
+    Just sd -> chown usr sd ["-R"] $> Right sd
 
 -- | The user may have edited the original PKGBUILD. If they have, we need to
 -- overwrite what's been downloaded before calling `makepkg`.
 overwritePkgbuild :: Settings -> Buildable -> Sh ()
 overwritePkgbuild ss p = when (switch ss HotEdit || switch ss UseCustomizepkg) $
-  writefile "PKGBUILD" . _pkgbuild $ pkgbuildOf p
+  writefile "PKGBUILD" $ p ^. field @"pkgbuild" . field @"pkgbuild"
 
 -- | Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
@@ -107,7 +109,7 @@ buildFail :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r)
   Buildable -> Failure -> Eff r (Maybe a)
 buildFail p (Failure err) = do
   ss <- ask
-  send . scold ss $ buildFail_1 (bldNameOf p) (langOf ss)
+  send . scold ss $ buildFail_1 (p ^. field @"name") (langOf ss)
   send . scold ss . err $ langOf ss
   response <- send $ optionalPrompt ss buildFail_6
   bool (throwError $ Failure buildFail_5) (pure Nothing) response

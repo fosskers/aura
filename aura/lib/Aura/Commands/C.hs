@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds, DataKinds #-}
 {-# LANGUAGE OverloadedStrings, MultiWayIf #-}
 
 -- |
@@ -30,6 +30,7 @@ import           BasePrelude hiding (FilePath)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (nonEmpty)
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
@@ -37,6 +38,7 @@ import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import           Lens.Micro ((^?), _Just)
 import           Shelly hiding (path)
 
 ---
@@ -53,7 +55,7 @@ downgradePackages pkgs = do
   unless (null reals) $ do
     cache   <- send . shelly @IO $ cacheContents cachePath
     choices <- traverse (getDowngradeChoice cache) $ toList reals
-    rethrow . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (toTextIgnore . _pkgpath) choices
+    rethrow . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (toTextIgnore . path) choices
 
 -- | For a given package, get a choice from the user about which version of it to
 -- downgrade to.
@@ -65,7 +67,7 @@ getDowngradeChoice cache pkg =
     Just choices -> do
       ss <- ask
       send . notify ss . getDowngradeChoice_1 pkg $ langOf ss
-      fmap (PackagePath . fromText) . send . getSelection $ fmap (toTextIgnore . _pkgpath) choices
+      fmap (PackagePath . fromText) . send . getSelection $ fmap (toTextIgnore . path) choices
 
 getChoicesFromCache :: Cache -> PkgName -> [PackagePath]
 getChoicesFromCache (Cache cache) p = sort . M.elems $ M.filterWithKey (\(SimplePkg pn _) _ -> p == pn) cache
@@ -75,7 +77,7 @@ searchCache :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r ()
 searchCache ps = do
   ss <- ask
   matches <- send . shelly @IO $ cacheMatches ss ps
-  send . traverse_ (T.putStrLn . toTextIgnore . _pkgpath) $ sort matches
+  send . traverse_ (T.putStrLn . toTextIgnore . path) $ sort matches
 
 -- | The destination folder must already exist for the back-up to begin.
 backupCache :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => FilePath -> Eff r ()
@@ -130,7 +132,7 @@ clean toSave = do
   let !files    = M.elems cache
       grouped   = take toSave . reverse <$> groupByName files
       toRemove  = files \\ fold grouped
-  send . shelly @IO $ traverse_ rm $ map _pkgpath toRemove
+  send . shelly @IO $ traverse_ rm $ map path toRemove
 
 -- | Only package files with a version not in any PkgState will be
 -- removed.
@@ -140,14 +142,14 @@ cleanNotSaved = do
   send . notify ss . cleanNotSaved_1 $ langOf ss
   sfs <- send getStateFiles
   states <- fmap catMaybes . send $ traverse readState sfs
-  let path = either id id . cachePathOf $ commonConfigOf ss
-  (Cache cache)  <- send . shelly @IO $ cacheContents path
+  let cachePath = either id id . cachePathOf $ commonConfigOf ss
+  (Cache cache)  <- send . shelly @IO $ cacheContents cachePath
   let duds = M.filterWithKey (\p _ -> any (inState p) states) cache
   whenM (send . optionalPrompt ss $ cleanNotSaved_2 $ M.size duds) $
-    send . shelly @IO . traverse_ rm . map _pkgpath $ M.elems duds
+    send . shelly @IO . traverse_ rm . map path $ M.elems duds
 
 -- | Typically takes the contents of the package cache as an argument.
 groupByName :: [PackagePath] -> [[PackagePath]]
 groupByName pkgs = groupBy sameBaseName $ sort pkgs
     where sameBaseName a b = baseName a == baseName b
-          baseName p = _spName <$> simplepkg p
+          baseName p = simplepkg p ^? _Just . field @"name"

@@ -228,21 +228,21 @@ program = Program
   <*> commonConfig
   <*> buildConfig
   <*> optional language
-  where aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version <|> languages <|> viewconf
+  where aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version' <|> languages <|> viewconf
         pacOps = database <|> files <|> queries <|> remove <|> sync <|> testdeps <|> upgrades
 
 aursync :: Parser AuraOp
 aursync = bigA *>
   (AurSync <$> (fmap (Right . NES.fromNonEmpty . fmap (PkgName . T.toLower) . NES.toNonEmpty) someArgs
               <|> fmap Left mods))
-  where bigA = flag' () (long "aursync" <> short 'A' <> help "Install packages from the AUR.")
-        mods     = deps <|> ainfo <|> pkgbuild <|> search <|> upgrade <|> aur
-        deps     = AurDeps <$> (flag' () (long "deps" <> short 'd' <> hidden <> help "View dependencies of an AUR package.") *> somePkgs')
-        ainfo    = AurInfo <$> (flag' () (long "info" <> short 'i' <> hidden <> help "View AUR package information.") *> somePkgs')
-        pkgbuild = AurPkgbuild <$> (flag' () (long "pkgbuild" <> short 'p' <> hidden <> help "View an AUR package's PKGBUILD file.") *> somePkgs')
-        search   = AurSearch <$> strOption (long "search" <> short 's' <> metavar "STRING" <> hidden <> help "Search the AUR via a search string.")
-        upgrade  = AurUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade all installed AUR packages.") *> fmap (S.map PkgName) manyArgs')
-        aur      = AurJson <$> (flag' () (long "json" <> hidden <> help "Retrieve package JSON straight from the AUR.") *> somePkgs')
+  where bigA    = flag' () (long "aursync" <> short 'A' <> help "Install packages from the AUR.")
+        mods    = ds <|> ainfo <|> pkgb <|> search <|> upgrade <|> aur
+        ds      = AurDeps <$> (flag' () (long "deps" <> short 'd' <> hidden <> help "View dependencies of an AUR package.") *> somePkgs')
+        ainfo   = AurInfo <$> (flag' () (long "info" <> short 'i' <> hidden <> help "View AUR package information.") *> somePkgs')
+        pkgb    = AurPkgbuild <$> (flag' () (long "pkgbuild" <> short 'p' <> hidden <> help "View an AUR package's PKGBUILD file.") *> somePkgs')
+        search  = AurSearch <$> strOption (long "search" <> short 's' <> metavar "STRING" <> hidden <> help "Search the AUR via a search string.")
+        upgrade = AurUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade all installed AUR packages.") *> fmap (S.map PkgName) manyArgs')
+        aur     = AurJson <$> (flag' () (long "json" <> hidden <> help "Retrieve package JSON straight from the AUR.") *> somePkgs')
 
 backups :: Parser AuraOp
 backups = bigB *> (Backup <$> optional mods)
@@ -275,8 +275,8 @@ orphans = bigO *> (Orphans <$> optional mods)
         abandon = flag' OrphanAbandon (long "abandon" <> short 'j' <> hidden <> help "Uninstall all orphan packages.")
         adopt   = OrphanAdopt <$> (flag' () (long "adopt" <> hidden <> help "Mark some packages' install reason as 'Explicit'.") *> somePkgs')
 
-version :: Parser AuraOp
-version = flag' Version (long "version" <> short 'V' <> help "Display Aura's version.")
+version' :: Parser AuraOp
+version' = flag' Version (long "version" <> short 'V' <> help "Display Aura's version.")
 
 languages :: Parser AuraOp
 languages = flag' Languages (long "languages" <> help "Show all human languages available for output.")

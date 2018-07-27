@@ -38,8 +38,8 @@ makepkgCmd = "/usr/bin/makepkg"
 -- | Given the current user name, build the package of whatever
 -- directory we're in.
 makepkg :: Settings -> User -> Sh (Either Failure (NonEmptySet FilePath))
-makepkg ss user = fmap g . f $ make cmd (opts <> colour)
-  where (cmd, opts) = runStyle user . foldMap asFlag . makepkgFlagsOf $ buildConfigOf ss
+makepkg ss usr = fmap g . f $ make cmd (opts <> colour)
+  where (cmd, opts) = runStyle usr . foldMap asFlag . makepkgFlagsOf $ buildConfigOf ss
         f | switch ss DontSuppressMakepkg = id
           | otherwise = print_stdout False . print_stderr False
         g (ExitSuccess, fs) = note (Failure buildFail_9) . fmap NES.fromNonEmpty $ NEL.nonEmpty fs
@@ -61,11 +61,11 @@ make cmd opts = errExit False $ do
 
 -- | Make a source package. See `man makepkg` and grep for `--allsource`.
 makepkgSource :: User -> Sh [FilePath]
-makepkgSource user = do
+makepkgSource usr = do
   run_ cmd opts
   filter (T.isSuffixOf ".src.tar.gz" . toTextIgnore) <$> (pwd >>= ls)
-    where (cmd, opts) = runStyle user ["--allsource"]
+    where (cmd, opts) = runStyle usr ["--allsource"]
 
 -- | As of makepkg v4.2, building with `--asroot` is no longer allowed.
 runStyle :: User -> [T.Text] -> (FilePath, [T.Text])
-runStyle (User user) opts = ("sudo", ["-u", user, makepkgCmd] <> opts)
+runStyle (User usr) opts = ("sudo", ["-u", usr, makepkgCmd] <> opts)

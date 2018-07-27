@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds, DataKinds #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 -- |
 -- Module    : Aura.Packages.AUR
@@ -32,12 +33,14 @@ import           Control.Compactable (traverseEither)
 import           Control.Error.Util (hush)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Reader
+import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (head)
 import qualified Data.Set as S
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Versions (versioning)
+import           Lens.Micro ((^.), (^..), each)
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
 import qualified Shelly as Sh
@@ -45,12 +48,13 @@ import           System.FilePath ((</>))
 
 ---
 
+-- TODO Make the call to `buildable` concurrent, since it makes web calls.
 -- | Attempt to retrieve info about a given `S.Set` of packages from the AUR.
 -- This is a signature expected by `InstallOptions`.
 aurLookup :: Settings -> NonEmptySet PkgName -> IO (S.Set PkgName, S.Set Buildable)
 aurLookup ss names = do
   (bads, goods) <- info m (foldMap (\(PkgName pn) -> [pn]) names) >>= traverseEither (buildable m)
-  let goodNames = S.fromList $ map bldNameOf goods
+  let goodNames = S.fromList $ goods ^.. each . field @"name"
   pure (S.fromList bads <> NES.toSet names S.\\ goodNames, S.fromList goods)
     where m = managerOf ss
 
@@ -65,21 +69,22 @@ aurRepo = Repository $ \ss ps -> do
 buildable :: Manager -> AurInfo -> IO (Either PkgName Buildable)
 buildable m ai = do
   let !bse = PkgName $ pkgBaseOf ai
-  mpb <- pkgbuild m bse  -- Using the package base ensures split packages work correctly.
-  case mpb of
-    Nothing -> pure . Left . PkgName $ aurNameOf ai
-    Just pb -> pure $ Right Buildable
-      { bldNameOf     = PkgName $ aurNameOf ai
-      , pkgbuildOf    = Pkgbuild pb
-      , bldBaseNameOf = bse
-      , bldProvidesOf = list (Provides $ aurNameOf ai) (Provides . head) $ providesOf ai
+      mver = hush . versioning $ aurVersionOf ai
+  mpb <- getPkgbuild m bse  -- Using the package base ensures split packages work correctly.
+  case (,) <$> mpb <*> mver of
+    Nothing        -> pure . Left . PkgName $ aurNameOf ai
+    Just (pb, ver) -> pure $ Right Buildable
+      { name     = PkgName $ aurNameOf ai
+      , version  = ver
+      , base     = bse
+      , provides = list (Provides $ aurNameOf ai) (Provides . head) $ providesOf ai
       -- TODO This is a potentially naughty mapMaybe, since deps that fail to parse
       -- will be silently dropped. Unfortunately there isn't much to be done - `aurLookup`
       -- and `aurRepo` which call this function only report existence errors
       -- (i.e. "this package couldn't be found at all").
-      , bldDepsOf     = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai
-      , bldVersionOf  = hush . versioning $ aurVersionOf ai
-      , isExplicit    = False }
+      , deps       = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai
+      , pkgbuild   = pb
+      , isExplicit = False }
 
 ----------------
 -- AUR PKGBUILDS
@@ -97,10 +102,11 @@ pkgUrl (PkgName pkg) = T.pack $ T.unpack aurLink </> "packages" </> T.unpack pkg
 -- | Attempt to clone a package source from the AUR.
 clone :: Buildable -> Sh.Sh (Maybe Sh.FilePath)
 clone b = do
-  (ec, _) <- quietSh $ Sh.run_ "git" ["clone", "--depth", "1", aurLink <> "/" <> _pkgname (bldBaseNameOf b) <> ".git"]
+  (ec, _) <- quietSh $ Sh.run_ "git" args
   case ec of
     (ExitFailure _) -> pure Nothing
-    ExitSuccess     -> Just . (Sh.</> _pkgname (bldBaseNameOf b)) <$> Sh.pwd
+    ExitSuccess     -> Just . (Sh.</> (b ^. field @"base" . field @"name")) <$> Sh.pwd
+  where args = ["clone", "--depth", "1", aurLink <> "/" <> (b ^. field @"base" . field @"name") <> ".git"]
 
 ------------
 -- RPC CALLS
@@ -122,4 +128,4 @@ aurSearch regex = do
 aurInfo :: (Member (Reader Settings) r, Member IO r) => NonEmpty PkgName -> Eff r [AurInfo]
 aurInfo pkgs = do
   m <- asks managerOf
-  sortAurInfo (Just SortAlphabetically) <$> send (info @IO m . map _pkgname $ toList pkgs)
+  sortAurInfo (Just SortAlphabetically) <$> send (info @IO m . map (^. field @"name") $ toList pkgs)

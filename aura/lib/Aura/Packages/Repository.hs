@@ -1,4 +1,5 @@
-{-# LANGUAGE OverloadedStrings, TupleSections #-}
+{-# LANGUAGE OverloadedStrings, TupleSections, DuplicateRecordFields #-}
+{-# LANGUAGE TypeApplications, DataKinds #-}
 
 -- |
 -- Module    : Aura.Packages.Repository
@@ -20,12 +21,14 @@ import           Aura.Settings (Settings)
 import           Aura.Types
 import           Aura.Utils (getSelection)
 import           BasePrelude hiding (try)
+import           Control.Compactable (traverseEither)
 import           Control.Concurrent.Async
-import           Control.Error.Util (hush)
-import           Data.Bitraversable (bitraverse)
+import           Control.Error.Util (hush, note)
+import           Data.Generics.Product (field)
 import qualified Data.Set as S
 import qualified Data.Text as T
 import           Data.Versions
+import           Lens.Micro ((^.), (^..), each)
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 
@@ -35,41 +38,39 @@ import           Text.Megaparsec.Char
 -- We expect this to fail when the package is actually an AUR package.
 pacmanRepo :: Repository
 pacmanRepo = Repository $ \ss names -> do
-  badsgoods <- partitionEithers <$> mapConcurrently (resolveName ss) (toList names)
-  bitraverse (pure . S.fromList) (fmap S.fromList . traverse f) badsgoods
-  where f (r, p) = packageRepo r p <$> mostRecentVersion r
+  (bads, goods)   <- partitionEithers <$> mapConcurrently (resolveName ss) (toList names)
+  (bads', goods') <- traverseEither f goods
+  pure (S.fromList $ bads <> bads', S.fromList goods')
+  where f (r, p) = fmap (FromRepo . packageRepo r p) <$> mostRecentVersion r
 
-packageRepo :: PkgName -> Provides -> Maybe Versioning -> Package
-packageRepo name pro ver = Package
-  { _pkgName        = name
-  , _pkgVersion     = ver
-  , _pkgBaseName    = name
-  , _pkgProvides    = pro
-  , _pkgDeps        = []  -- Let pacman handle dependencies.
-  , _pkgInstallType = Pacman name }
+packageRepo :: PkgName -> Provides -> Versioning -> Prebuilt
+packageRepo pn pro ver = Prebuilt { name     = pn
+                                  , version  = ver
+                                  , base     = pn
+                                  , provides = pro }
 
 -- | If given a virtual package, try to find a real package to install.
 -- Functions like this are why we need libalpm.
 resolveName :: Settings -> PkgName -> IO (Either PkgName (PkgName, Provides))
-resolveName ss name = do
-  provs <- map PkgName . T.lines <$> pacmanOutput ["-Ssq", "^" <> _pkgname name <> "$"]
+resolveName ss pn = do
+  provs <- map PkgName . T.lines <$> pacmanOutput ["-Ssq", "^" <> (pn ^. field @"name") <> "$"]
   case provs of
-    [] -> pure $ Left name
-    _  -> Right . (, Provides $ _pkgname name) <$> chooseProvider ss name provs
+    [] -> pure $ Left pn
+    _  -> Right . (, Provides $ pn ^. field @"name") <$> chooseProvider ss pn provs
 
 -- | Choose a providing package, favoring installed packages.
 chooseProvider :: Settings -> PkgName -> [PkgName] -> IO PkgName
-chooseProvider _ name []         = pure name
-chooseProvider _ _    [p]        = pure p
-chooseProvider ss name ps@(a:as) =
+chooseProvider _ pn []         = pure pn
+chooseProvider _ _ [p]         = pure p
+chooseProvider ss pn ps@(a:as) =
   mapConcurrently isInstalled ps >>= maybe f pure . listToMaybe . catMaybes
   where f = do
-          warn ss $ provides_1 name
-          PkgName <$> getSelection (_pkgname a :| map _pkgname as)
+          warn ss $ provides_1 pn
+          PkgName <$> getSelection ((a ^. field @"name") :| (as ^.. each . field @"name"))
 
 -- | The most recent version of a package, if it exists in the respositories.
-mostRecentVersion :: PkgName -> IO (Maybe Versioning)
-mostRecentVersion (PkgName s) = extractVersion <$> pacmanOutput ["-Si", s]
+mostRecentVersion :: PkgName -> IO (Either PkgName Versioning)
+mostRecentVersion p@(PkgName s) = note p . extractVersion <$> pacmanOutput ["-Si", s]
 
 -- | Parses the version number of a package from the result of a
 -- @pacman -Si@ call.

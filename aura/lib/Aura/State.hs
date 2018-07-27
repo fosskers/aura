@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds, DataKinds #-}
 
 -- |
 -- Module    : Aura.State
@@ -35,13 +35,15 @@ import           Control.Monad.Freer.Reader
 import           Data.Aeson
 import           Data.Aeson.Types (typeMismatch)
 import qualified Data.ByteString.Lazy as BL
+import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (nonEmpty)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import           Data.Time
 import           Data.Versions
 import           Data.Witherable (mapMaybe)
-import           Shelly hiding (time)
+import           Lens.Micro ((^.))
+import           Shelly hiding (time, path)
 
 ---
 
@@ -136,7 +138,7 @@ restoreState = send getStateFiles >>= maybe (throwError $ Failure restoreState_2
               Cache cache <- send . shelly @IO $ cacheContents pth
               let StateDiff rein remo = compareStates past curr
                   (okay, nope)        = partition (`M.member` cache) rein
-              traverse_ (report red restoreState_1 . fmap _spName) $ nonEmpty nope
+              traverse_ (report red restoreState_1 . fmap (^. field @"name")) $ nonEmpty nope
               reinstallAndRemove (mapMaybe (`M.lookup` cache) okay) remo
 
 selectState :: NonEmpty FilePath -> IO FilePath
@@ -156,4 +158,4 @@ reinstallAndRemove down remo
   | null down = remove
   | otherwise = reinstall *> remove
   where remove    = rethrow . pacman $ "-R" : asFlag remo
-        reinstall = rethrow . pacman $ "-U" : map (toTextIgnore . _pkgpath) down
+        reinstall = rethrow . pacman $ "-U" : map (toTextIgnore . path) down

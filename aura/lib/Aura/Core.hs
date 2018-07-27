@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, MonoLocalBinds, TypeApplications, DataKinds #-}
 {-# LANGUAGE MultiWayIf, OverloadedStrings #-}
 
 -- |
@@ -36,6 +36,7 @@ import           Control.Compactable (fmapEither)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Semigroup
 import qualified Data.Set as S
@@ -46,6 +47,8 @@ import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions (prettyV)
+import           Lens.Micro ((^.))
+import           Lens.Micro.Extras (view)
 import           Shelly (Sh, test_f)
 
 ---
@@ -73,12 +76,12 @@ instance Semigroup Repository where
 -- Yes, this is the correct signature. As far as this function (in isolation)
 -- is concerned, there is no way to guarantee that the list of `NonEmptySet`s
 -- will itself be non-empty.
-partitionPkgs :: NonEmpty (NonEmptySet Package) -> ([PkgName], [NonEmptySet Buildable])
-partitionPkgs = bimap fold f . unzip . fmap g . toList
-  where g = fmapEither (toEither . _pkgInstallType) . toList
+partitionPkgs :: NonEmpty (NonEmptySet Package) -> ([Prebuilt], [NonEmptySet Buildable])
+partitionPkgs = bimap fold f . unzip . map g . toList
+  where g = fmapEither toEither . toList
         f = mapMaybe (fmap NES.fromNonEmpty . NEL.nonEmpty)
-        toEither (Pacman s) = Left  s
-        toEither (Build  b) = Right b
+        toEither (FromAUR b)  = Right b
+        toEither (FromRepo b) = Left b
 
 -----------
 -- THE WORK
@@ -109,14 +112,14 @@ orphans = S.fromList . map PkgName . T.lines <$> pacmanOutput ["-Qqdt"]
 
 -- | Any package whose name is suffixed by git, hg, svn, darcs, cvs, or bzr.
 develPkgs :: IO (S.Set PkgName)
-develPkgs = S.filter isDevelPkg . S.map _spName <$> foreignPackages
+develPkgs = S.filter isDevelPkg . S.map (^. field @"name") <$> foreignPackages
   where isDevelPkg (PkgName pkg) = any (`T.isSuffixOf` pkg) suffixes
         suffixes = ["-git", "-hg", "-svn", "-darcs", "-cvs", "-bzr"]
 
 -- | Returns what it was given if the package is already installed.
 -- Reasoning: Using raw bools can be less expressive.
 isInstalled :: PkgName -> IO (Maybe PkgName)
-isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", _pkgname pkg]
+isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", pkg ^. field @"name"]
 
 -- | An @-Rsu@ call.
 removePkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
@@ -128,7 +131,7 @@ removePkgs pkgs = do
 -- `asT` renders the `VersionDemand` into the specific form that `pacman -T`
 -- understands. See `man pacman` for more info.
 isSatisfied :: Dep -> IO Bool
-isSatisfied (Dep name ver) = T.null <$> pacmanOutput ["-T", _pkgname name <> asT ver]
+isSatisfied (Dep n ver) = T.null <$> pacmanOutput ["-T", (n ^. field @"name") <> asT ver]
   where asT (LessThan v) = "<"  <> prettyV v
         asT (AtLeast  v) = ">=" <> prettyV v
         asT (MoreThan v) = ">"  <> prettyV v
@@ -164,4 +167,4 @@ report :: (Member (Reader Settings) r, Member IO r) =>
 report c msg pkgs = do
   ss <- ask
   send . putStrLnA ss . c . msg $ langOf ss
-  send . T.putStrLn . dtot . colourCheck ss . vsep . map (cyan . pretty . _pkgname) $ toList pkgs
+  send . T.putStrLn . dtot . colourCheck ss . vsep . map (cyan . pretty . view (field @"name")) $ toList pkgs

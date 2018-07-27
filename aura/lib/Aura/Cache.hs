@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TupleSections, TypeApplications, DataKinds #-}
 
 -- |
 -- Module    : Aura.Cache
@@ -22,12 +22,14 @@ module Aura.Cache
 import           Aura.Settings
 import           Aura.Types
 import           BasePrelude hiding (FilePath)
+import           Data.Generics.Product (field)
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
-import           Shelly
+import           Lens.Micro ((^.))
+import           Shelly hiding (path)
 
 
 ---
@@ -55,10 +57,10 @@ cacheContents = fmap (cache . map PackagePath) . ls
 pkgsInCache :: Settings -> NonEmptySet PkgName -> Sh (S.Set PkgName)
 pkgsInCache ss ps = do
   c <- cacheContents . either id id . cachePathOf $ commonConfigOf ss
-  pure . S.filter (`NES.member` ps) . S.map _spName . M.keysSet $ _cache c
+  pure . S.filter (`NES.member` ps) . S.map (^. field @"name") . M.keysSet $ _cache c
 
 -- | Any entries (filepaths) in the cache that match a given `T.Text`.
 cacheMatches :: Settings -> T.Text -> Sh [PackagePath]
 cacheMatches ss input = do
   c <- cacheContents . either id id . cachePathOf $ commonConfigOf ss
-  pure . filter (T.isInfixOf input . toTextIgnore . _pkgpath) . M.elems $ _cache c
+  pure . filter (T.isInfixOf input . toTextIgnore . path) . M.elems $ _cache c

@@ -63,6 +63,7 @@ library:
     - bytestring
     - compactable >= 0.1 && < 0.2
     - filepath
+    - generic-lens >= 1.0.0.1 && < 1.1
     - http-types >= 0.9 && < 0.13
     - megaparsec >= 6.4 && < 6.6
     - microlens >= 0.4 && < 0.5

@@ -8,11 +8,11 @@
 
 module Aura.Pkgbuild.Base where
 
-import           Aura.Pkgbuild.Editing
-import           Aura.Settings
-import           Aura.Types
-import           BasePrelude hiding (FilePath)
-import           Shelly
+import Aura.Pkgbuild.Editing
+import Aura.Settings
+import Aura.Types
+import BasePrelude hiding (FilePath)
+import Shelly
 
 ---
 
@@ -36,11 +36,4 @@ pbCustomization ss = foldl (>=>) pure [customizepkg ss, hotEdit ss]
 -- up user interaction, and there probably aren't enough packages in the list to
 -- make the concurrent scheduling worth it.
 packageBuildable :: Settings -> Buildable -> IO Package
-packageBuildable ss b = do
-  b' <- shelly $ pbCustomization ss b
-  pure Package { _pkgName        = bldNameOf b'
-               , _pkgVersion     = bldVersionOf b'
-               , _pkgBaseName    = bldBaseNameOf b'
-               , _pkgProvides    = bldProvidesOf b'
-               , _pkgDeps        = bldDepsOf b'
-               , _pkgInstallType = Build b' }
+packageBuildable ss b = FromAUR <$> shelly (pbCustomization ss b)

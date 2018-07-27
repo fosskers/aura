@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TupleSections #-}
+{-# LANGUAGE OverloadedStrings, TupleSections, TypeApplications #-}
 
 -- |
 -- Module    : Aura.Pkgbuild.Security
@@ -18,6 +18,7 @@ import           Aura.Languages
 import           Aura.Types (Pkgbuild(..), Language)
 import           BasePrelude hiding (Last, Word)
 import           Control.Error.Util (hush)
+import           Data.Generics.Product
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import           Data.Set.NonEmpty (NonEmptySet)
@@ -25,7 +26,6 @@ import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Text.Prettyprint.Doc (Doc)
 import           Data.Text.Prettyprint.Doc.Render.Terminal (AnsiStyle)
-import qualified Language.Bash.Cond as Cond
 import           Language.Bash.Parse (parse)
 import           Language.Bash.Syntax
 import           Language.Bash.Word (Word, unquote)
@@ -56,7 +56,7 @@ bannedTerms :: List -> [(Statement, NonEmptySet BannedTerm)]
 bannedTerms (List sms) = mapMaybe exploit sms
 
 exploit :: Statement -> Maybe (Statement, NonEmptySet BannedTerm)
-exploit s = fmap (s,) . NES.fromSet . S.fromList . mapMaybe banned $ s ^.. terms
+exploit s = fmap (s,) . NES.fromSet . S.fromList . mapMaybe banned $ s ^.. types @Word
 
 banned :: Word -> Maybe BannedTerm
 banned w = M.lookup (T.pack $ unquote w) blacklist
@@ -65,58 +65,9 @@ banned w = M.lookup (T.pack $ unquote w) blacklist
 -- REPORTING
 ------------
 
+-- | Dispatch different error messages depending on the category of a `BannedTerm`.
 reportExploit :: BannedTerm -> (Language -> Doc AnsiStyle)
 reportExploit (BannedTerm t bc) = case bc of
   Downloading   -> security_2 t
   ScriptRunning -> security_3 t
   Permissions   -> security_4 t
-
----------
--- OPTICS
----------
-
-statements :: List -> [Statement]
-statements (List sms) = sms
-
--- terms :: SimpleGetter Statement Word
-terms = andor . to pipeline . each . command . each . shellcommand . to allwords . each
-
-andor :: Lens' Statement AndOr
-andor = lens (\(Statement ao _) -> ao) (\(Statement _ lt) ao' -> Statement ao' lt)
-
-pipeline :: AndOr -> [Pipeline]
-pipeline (Last pl)   = [pl]
-pipeline (And pl ao) = pl : pipeline ao
-pipeline (Or  pl ao) = pl : pipeline ao
-
-command :: Lens' Pipeline [Command]
-command = lens commands (\pl cs' -> pl { commands = cs' })
-
-shellcommand :: Lens' Command ShellCommand
-shellcommand = lens (\(Command sc _) -> sc) (\(Command _ r) sc' -> Command sc' r)
-
-cond :: Cond.CondExpr a -> [a]
-cond (Cond.Unary _ a)    = [a]
-cond (Cond.Binary a _ b) = [a, b]
-cond (Cond.Not ce)       = cond ce
-cond (Cond.And as bs)    = cond as <> cond bs
-cond (Cond.Or as bs)     = cond as <> cond bs
-
-allwords :: ShellCommand -> [Word]
-allwords sc = case sc of
-  SimpleCommand _ ws -> ws
-  AssignBuiltin w es -> w : (es ^.. each . _Right)
-  FunctionDef _ ls   -> ls ^.. ts
-  Coproc _ c         -> c ^.. shellcommand . to allwords . each
-  Subshell ls        -> ls ^.. ts
-  Group ls           -> ls ^.. ts
-  Arith _            -> []
-  Cond ce            -> cond ce
-  For _ _ ls         -> ls ^.. ts
-  ArithFor _ ls      -> ls ^.. ts
-  Select _ _ ls      -> ls ^.. ts
-  Case _ cc          -> cc ^.. each . to (\(CaseClause _ ls _) -> ls) . ts
-  If as bs cs        -> (as ^.. ts) <> (bs ^.. ts) <> (cs ^.. _Just . ts)
-  Until as bs        -> (as ^.. ts) <> (bs ^.. ts)
-  While as bs        -> (as ^.. ts) <> (bs ^.. ts)
-  where ts = to statements . each . terms
