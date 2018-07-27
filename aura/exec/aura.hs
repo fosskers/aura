@@ -73,11 +73,11 @@ main = do
   options   <- execParser opts
   esettings <- getSettings options
   case esettings of
-    Left err -> T.putStrLn . dtot . ($ English) $ _failure err
+    Left err -> T.putStrLn . dtot . ($ English) $ failure err
     Right ss -> execute ss options >>= exit ss
 
 execute :: Settings -> Program -> IO (Either (Doc AnsiStyle) ())
-execute ss p = first (($ langOf ss) . _failure) <$> (runM . runReader ss . runError . executeOpts $ _operation p)
+execute ss p = first (($ langOf ss) . failure) <$> (runM . runReader ss . runError . executeOpts $ _operation p)
 
 exit :: Settings -> Either (Doc AnsiStyle) () -> IO a
 exit ss (Left e)  = scold ss e *> exitFailure
