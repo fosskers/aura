@@ -108,7 +108,7 @@ resolveDeps' ss repo tv ps = fold <$> throttled h ps
                             M.lookup (p' ^. to pprov . field' @"provides" . to PkgName) depsMap
                             <|> M.lookup (pname p') depsMap
 
-          atomically $ traverse_ (writeTQueue tq) goods
+          when (not $ null goods) . atomically $ traverse_ (writeTQueue tq) goods
           pure evils
 
 sortInstall :: M.Map PkgName Package -> Maybe (NonEmpty (NonEmptySet Package))
