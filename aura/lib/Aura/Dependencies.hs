@@ -12,12 +12,12 @@
 module Aura.Dependencies ( resolveDeps ) where
 
 import           Algebra.Graph.AdjacencyMap
+import           Aura.Concurrency (throttled)
 import           Aura.Core
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
 import           BasePrelude
-import           Control.Concurrent.Async
 import           Control.Concurrent.STM.TQueue
 import           Control.Concurrent.STM.TVar
 import           Control.Monad.Freer
@@ -49,14 +49,6 @@ data Pool = Pool { threads :: Int
                  , tqueue  :: TQueue Package
                  } deriving (Generic)
 
-workPool :: NonEmptySet Package -> IO Pool
-workPool ps = do
-  ts <- getNumCapabilities
-  tv <- newTVarIO M.empty
-  w  <- newTVarIO 0
-  tq <- atomically $ newTQueue >>= \q -> traverse_ (writeTQueue q) ps $> q
-  pure $ Pool ts w tv tq
-
 -- | Given some `Package`s, determine its full dependency graph.
 -- The graph is collapsed into layers of packages which are not
 -- interdependent, and thus can be built and installed as a group.
@@ -66,52 +58,39 @@ resolveDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO 
   Repository -> NonEmptySet Package -> Eff r (NonEmpty (NonEmptySet Package))
 resolveDeps repo ps = do
   ss   <- ask
-  pool <- send $ workPool ps
-  de   <- send $ resolveDeps' ss pool repo
-  m    <- send $ readTVarIO $ tmap pool
+  tv   <- send $ newTVarIO M.empty
+  de   <- send $ resolveDeps' ss repo tv ps
+  m    <- send $ readTVarIO tv
   unless (null de) . throwError . Failure $ missingPkg_2 de
   maybe (throwError $ Failure missingPkg_3) pure $ sortInstall m
 
 -- | An empty list signals success.
-resolveDeps' :: Settings -> Pool -> Repository -> IO [DepError]
-resolveDeps' ss pool repo = fold <$> replicateConcurrently (threads pool) (g Working)
+resolveDeps' :: Settings -> Repository -> TVar (M.Map PkgName Package) -> NonEmptySet Package -> IO [DepError]
+resolveDeps' ss repo tv ps = fold <$> throttled h ps
   where
-    -- | Handles the fetching of the next `Package` and detection of overall
-    -- completion of the task.
-    g :: Status -> IO [DepError]
-    g s = do
-      mp <- atomically . tryReadTQueue $ tqueue pool
-      ws <- atomically . readTVar $ waiters pool
-      case (mp, s) of
-        (Nothing, Waiting) | ws == threads pool -> pure []
-                           | otherwise -> threadDelay 500000 *> g Waiting
-        (Nothing, Working) -> atomically (modifyTVar' (waiters pool) succ) *> threadDelay 500000 *> g Waiting
-        (Just p,  Waiting) -> atomically (modifyTVar' (waiters pool) pred) *> h p
-        (Just p,  Working) -> h p
-
     -- | Handles determining whether further work should be done. It won't
     -- continue to `j` if this `Package` has already been analysed.
-    h :: Package -> IO [DepError]
-    h p = do
+    h :: TQueue Package -> Package -> IO [DepError]
+    h tq p = do
       w <- atomically $ do
         let pn = pname p
-        m <- readTVar $ tmap pool
+        m <- readTVar tv
         case M.lookup pn m of
           Just _  -> pure WroteNothing
-          Nothing -> modifyTVar' (tmap pool) (M.insert pn p) $> WroteNew
+          Nothing -> modifyTVar' tv (M.insert pn p) $> WroteNew
       case w of
-        WroteNothing -> g Working
+        WroteNothing -> pure []
         WroteNew     -> case p of
-          FromRepo _ -> g Working
-          FromAUR b  -> j b
+          FromRepo _ -> pure []
+          FromAUR b  -> j tq b
 
     -- | Check for the existance of dependencies, as well as for any version conflicts
     -- they might introduce.
-    j :: Buildable -> IO [DepError]
-    j b = do
+    j :: TQueue Package -> Buildable -> IO [DepError]
+    j tq b = do
       ds <- wither (\d -> bool (Just d) Nothing <$> isSatisfied d) $ b ^. field @"deps"
       case NEL.nonEmpty $ ds ^.. each . field @"name" of
-        Nothing    -> g Working
+        Nothing    -> pure []
         Just deps' -> do
           (bads, goods) <- repoLookup repo ss $ NES.fromNonEmpty deps'
 
@@ -129,8 +108,8 @@ resolveDeps' ss pool repo = fold <$> replicateConcurrently (threads pool) (g Wor
                             M.lookup (p' ^. to pprov . field' @"provides" . to PkgName) depsMap
                             <|> M.lookup (pname p') depsMap
 
-          atomically $ traverse_ (writeTQueue (tqueue pool)) goods
-          (evils <>) <$> g Working
+          atomically $ traverse_ (writeTQueue tq) goods
+          pure evils
 
 sortInstall :: M.Map PkgName Package -> Maybe (NonEmpty (NonEmptySet Package))
 sortInstall m = NEL.nonEmpty . mapMaybe NES.fromSet . batch $ overlay connected singles
