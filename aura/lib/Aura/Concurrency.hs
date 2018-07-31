@@ -33,21 +33,21 @@ data Status = Waiting | Working
 -- | Concurrently traverse over some `Foldable` using 1 thread per
 -- CPU that the user has. The user's function is also passed the
 -- source `TQueue`, in case they wish to dynamically add work to it.
-throttled :: Foldable f => (TQueue a -> a -> IO b) -> f a -> IO [b]
+--
+-- The order of elements in the original `Foldable` is not maintained.
+throttled :: Foldable f => (TQueue a -> a -> IO b) -> f a -> IO (TQueue b)
 throttled f xs = do
   pool <- newPool xs
   replicateConcurrently_ (fromIntegral $ threads pool) (work pool Working)
-  atomically . flushTQueue $ target pool
+  pure $ target pool
   where work pool s = do
           mx <- atomically . tryReadTQueue $ source pool
           ws <- atomically . readTVar $ waiters pool
-          -- tid <- myThreadId
-          -- printf "%s - %d\n" (show tid) ws
           case (mx, s) of
             (Nothing, Waiting) | ws == threads pool -> pure ()  -- All our threads have completed.
                                | otherwise -> threadDelay 100000 *> work pool Waiting
             (Nothing, Working) -> do
-              atomically (modifyTVar' (waiters pool) succ)
+              atomically $ modifyTVar' (waiters pool) succ
               threadDelay 100000
               work pool Waiting
             (Just x, Waiting) -> do

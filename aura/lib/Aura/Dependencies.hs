@@ -66,7 +66,7 @@ resolveDeps repo ps = do
 
 -- | An empty list signals success.
 resolveDeps' :: Settings -> Repository -> TVar (M.Map PkgName Package) -> NonEmptySet Package -> IO [DepError]
-resolveDeps' ss repo tv ps = fold <$> throttled h ps
+resolveDeps' ss repo tv ps = throttled h ps >>= fmap fold . atomically . flushTQueue
   where
     -- | Handles determining whether further work should be done. It won't
     -- continue to `j` if this `Package` has already been analysed.
@@ -94,9 +94,9 @@ resolveDeps' ss repo tv ps = fold <$> throttled h ps
         Just deps' -> do
           (bads, goods) <- repoLookup repo ss $ NES.fromNonEmpty deps'
 
-          let depsMap = M.fromList $ map (view (field @"name") &&& id) ds
-              cnfs    = mapMaybe conflicting $ toList goods
-              evils   = map NonExistant (toList bads) <> cnfs
+          let !depsMap = M.fromList $ map (view (field @"name") &&& id) ds
+              !cnfs    = mapMaybe conflicting $ toList goods
+              !evils   = map NonExistant (toList bads) <> cnfs
 
               conflicting :: Package -> Maybe DepError
               conflicting p' = either Just (realPkgConflicts ss (b ^. field @"name") p') $ provider p'
@@ -108,7 +108,7 @@ resolveDeps' ss repo tv ps = fold <$> throttled h ps
                             M.lookup (p' ^. to pprov . field' @"provides" . to PkgName) depsMap
                             <|> M.lookup (pname p') depsMap
 
-          when (not $ null goods) . atomically $ traverse_ (writeTQueue tq) goods
+          unless (null goods) . atomically $ traverse_ (writeTQueue tq) goods
           pure evils
 
 sortInstall :: M.Map PkgName Package -> Maybe (NonEmpty (NonEmptySet Package))

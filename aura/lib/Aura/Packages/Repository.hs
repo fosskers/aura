@@ -23,6 +23,7 @@ import           Aura.Types
 import           Aura.Utils (getSelection)
 import           BasePrelude hiding (try)
 import           Control.Compactable (traverseEither)
+import           Control.Concurrent.STM.TQueue
 import           Control.Error.Util (hush, note)
 import           Data.Generics.Product (field)
 import qualified Data.Set as S
@@ -38,7 +39,8 @@ import           Text.Megaparsec.Char
 -- We expect this to fail when the package is actually an AUR package.
 pacmanRepo :: Repository
 pacmanRepo = Repository $ \ss names -> do
-  (bads, goods)   <- partitionEithers <$> throttled (const $ resolveName ss) (toList names)
+  bgs <- throttled (const $ resolveName ss) names >>= atomically . flushTQueue
+  let (bads, goods) = partitionEithers bgs
   (bads', goods') <- traverseEither f goods
   pure (S.fromList $ bads <> bads', S.fromList goods')
   where f (r, p) = fmap (FromRepo . packageRepo r p) <$> mostRecentVersion r
@@ -63,7 +65,7 @@ chooseProvider :: Settings -> PkgName -> [PkgName] -> IO PkgName
 chooseProvider _ pn []         = pure pn
 chooseProvider _ _ [p]         = pure p
 chooseProvider ss pn ps@(a:as) =
-  throttled (const isInstalled) ps >>= maybe f pure . listToMaybe . catMaybes
+  throttled (const isInstalled) ps >>= atomically . flushTQueue >>= maybe f pure . listToMaybe . catMaybes
   where f = do
           warn ss $ provides_1 pn
           PkgName <$> getSelection ((a ^. field @"name") :| (as ^.. each . field @"name"))

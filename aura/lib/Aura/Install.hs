@@ -34,6 +34,7 @@ import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding (FilePath, diff)
 import           Control.Compactable (fmapEither)
+import           Control.Concurrent.STM.TQueue
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
@@ -76,7 +77,10 @@ install' :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) 
   NonEmptySet PkgName -> Eff r ()
 install' pkgs = do
   ss       <- ask
-  unneeded <- bool (pure S.empty) (S.fromList . catMaybes <$> send (throttled (const isInstalled) $ toList pkgs)) $ shared ss NeededOnly
+  unneeded <- bool
+              (pure S.empty)
+              (S.fromList . catMaybes <$> send (throttled (const isInstalled) pkgs >>= atomically . flushTQueue))
+              $ shared ss NeededOnly
   let !pkgs' = NES.toSet pkgs
   if | shared ss NeededOnly && unneeded == pkgs' -> send . warn ss . install_2 $ langOf ss
      | otherwise -> do
