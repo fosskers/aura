@@ -46,7 +46,6 @@ import           Aura.Logo
 import           Aura.Pacman
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils (loudSh)
 import           BasePrelude hiding (Version)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
@@ -60,7 +59,8 @@ import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Flags
 import           Options.Applicative (execParser)
 import           Settings
-import           Shelly (shelly, run_, toTextIgnore)
+import           System.Path (toFilePath)
+import           System.Process.Typed (proc, runProcess)
 import           Text.Pretty.Simple (pPrintNoColor)
 
 ---
@@ -96,7 +96,7 @@ executeOpts ops = do
         ++ asFlag (commonConfigOf ss)
         ++ bool [] ["--quiet"] (switch ss LowVerbosity)
   case ops of
-    Left o@(Sync (Left (SyncUpgrade _)) _, _) -> sudo B.saveState *> p o
+    Left o@(Sync (Left (SyncUpgrade _)) _, _) -> sudo (send $ B.saveState ss) *> p o
     Left o -> p o
     Right (AurSync o) ->
       case o of
@@ -109,8 +109,8 @@ executeOpts ops = do
         Left (AurJson ps)     -> A.aurJson ps
     Right (Backup o) ->
       case o of
-        Nothing              -> sudo B.saveState
-        Just (BackupClean n) -> sudo $ B.cleanStates n
+        Nothing              -> sudo . send $ B.saveState ss
+        Just (BackupClean n) -> sudo . send $ B.cleanStates ss n
         Just BackupRestore   -> sudo B.restoreState
         Just BackupList      -> send B.listStates
     Right (Cache o) ->
@@ -143,4 +143,4 @@ displayOutputLanguages = do
 viewConfFile :: (Member (Reader Settings) r, Member IO r) => Eff r ()
 viewConfFile = do
   pth <- asks (either id id . configPathOf . commonConfigOf)
-  void . send . shelly @IO . loudSh $ run_ "less" [toTextIgnore pth]
+  send . void . runProcess @IO $ proc "less" [toFilePath pth]

@@ -83,7 +83,7 @@ upgrade pkgs fs = do
       if | null toUpgrade && null devel -> send . warn ss . upgradeAURPkgs_3 $ langOf ss
          | otherwise -> do
              reportPkgsToUpgrade toUpgrade (toList devel)
-             unless (switch ss DryRun) saveState
+             send . unless (switch ss DryRun) $ saveState ss
              traverse_ I.install . NES.fromSet $ S.fromList names <> pkgs <> devel
 
 possibleUpdates :: (Member (Reader Settings) r, Member IO r) => NonEmptySet SimplePkg -> Eff r [(AurInfo, Versioning)]
@@ -167,8 +167,7 @@ displayPkgbuild :: (Member (Reader Settings) r, Member IO r) => NonEmptySet PkgN
 displayPkgbuild ps = do
   man <- asks managerOf
   pbs <- catMaybes <$> traverse (send . getPkgbuild @IO man) (toList ps)
-  send . traverse_ T.putStrLn . intersperse border $ pbs ^.. each . field @"pkgbuild"
-  where border = "\n#========== NEXT PKGBUILD ==========#\n"
+  send . traverse_ (T.putStrLn . strictText) $ pbs ^.. each . field @"pkgbuild"
 
 isntMostRecent :: (AurInfo, Versioning) -> Bool
 isntMostRecent (ai, v) = trueVer > Just v

@@ -14,6 +14,7 @@ module Aura.Settings
   , BuildConfig(..), BuildSwitch(..)
   , switch
   , Truncation(..)
+  , defaultBuildDir
     -- * Pacman Interop
   , CommonConfig(..), CommonSwitch(..)
   , ColourMode(..)
@@ -23,11 +24,10 @@ module Aura.Settings
   ) where
 
 import           Aura.Types
-import           BasePrelude hiding (FilePath)
+import           BasePrelude
 import qualified Data.Set as S
-import qualified Data.Text as T
 import           Network.HTTP.Client (Manager)
-import           Shelly (FilePath, toTextIgnore)
+import           System.Path (Path, Absolute, toFilePath, fromAbsoluteFilePath)
 
 ---
 
@@ -45,20 +45,20 @@ instance Flagable Makepkg where
 -- | Flags that are common to both Aura and Pacman.
 -- Aura will react to them, but also pass them through to `pacman`
 -- calls if necessary.
-data CommonConfig = CommonConfig { cachePathOf      :: Either FilePath FilePath
-                                 , configPathOf     :: Either FilePath FilePath
-                                 , logPathOf        :: Either FilePath FilePath
+data CommonConfig = CommonConfig { cachePathOf      :: Either (Path Absolute) (Path Absolute)
+                                 , configPathOf     :: Either (Path Absolute) (Path Absolute)
+                                 , logPathOf        :: Either (Path Absolute) (Path Absolute)
                                  , ignoredPkgsOf    :: S.Set PkgName
                                  , ignoredGroupsOf  :: S.Set PkgGroup
                                  , commonSwitchesOf :: S.Set CommonSwitch } deriving (Show)
 
 instance Flagable CommonConfig where
   asFlag (CommonConfig cap cop lfp igs igg cs) =
-    either (const []) (\p -> ["--cachedir", toTextIgnore p]) cap
-    ++ either (const []) (\p -> ["--config", toTextIgnore p]) cop
-    ++ either (const []) (\p -> ["--logfile", toTextIgnore p]) lfp
-    ++ list [] (\xs -> ["--ignore", T.intercalate "," $ toList xs]) (asFlag igs)
-    ++ list [] (\xs -> ["--ignoregroup", T.intercalate "," $ toList xs]) (asFlag igg)
+    either (const []) (\p -> ["--cachedir", toFilePath p]) cap
+    ++ either (const []) (\p -> ["--config", toFilePath p]) cop
+    ++ either (const []) (\p -> ["--logfile", toFilePath p]) lfp
+    ++ list [] (\xs -> ["--ignore", intercalate "," $ toList xs]) (asFlag igs)
+    ++ list [] (\xs -> ["--ignoregroup", intercalate "," $ toList xs]) (asFlag igg)
     ++ asFlag cs
 
 -- | Yes/No-style switches that are common to both Aura and Pacman.
@@ -82,7 +82,7 @@ instance Flagable ColourMode where
 
 -- | Settings unique to the AUR package building process.
 data BuildConfig = BuildConfig { makepkgFlagsOf  :: S.Set Makepkg
-                               , buildPathOf     :: FilePath
+                               , buildPathOf     :: (Path Absolute)
                                , buildUserOf     :: Maybe User
                                , truncationOf    :: Truncation  -- For `-As`
                                , buildSwitchesOf :: S.Set BuildSwitch } deriving (Show)
@@ -116,3 +116,7 @@ data Settings = Settings { managerOf      :: Manager
                          , isTerminal     :: Bool
                          , commonConfigOf :: CommonConfig
                          , buildConfigOf  :: BuildConfig }
+
+-- | Unless otherwise specified, packages will be built within @/tmp@.
+defaultBuildDir :: Path Absolute
+defaultBuildDir = fromAbsoluteFilePath "/tmp"

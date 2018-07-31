@@ -22,28 +22,25 @@ import           Aura.Settings
 import           Aura.State
 import           Aura.Utils (optionalPrompt)
 import           BasePrelude
-import           Control.Monad.Freer
-import           Control.Monad.Freer.Reader
-import qualified Data.Text.IO as T
-import           Filesystem.Path (filename)
-import           Shelly
+import qualified Data.Text as T
+import           System.Path (toFilePath, takeFileName, toUnrootedFilePath)
+import           System.Path.IO (removeFile)
 
 ---
 
 -- | Remove all but the newest @n@ package states. Any "pinned" states will also remain.
-cleanStates :: (Member (Reader Settings) r, Member IO r) => Word -> Eff r ()
-cleanStates (fromIntegral -> n) = do
-  ss   <- ask
-  stfs <- reverse <$> send getStateFiles
-  (pinned, others) <- partition p <$> send (traverse (\sf -> (sf,) <$> readState sf) stfs)
-  send . warn ss . cleanStates_4 (length stfs) $ langOf ss
-  unless (null pinned) . send . warn ss . cleanStates_6 (length pinned) $ langOf ss
-  unless (null stfs) . send . warn ss . cleanStates_5 (toTextIgnore . filename $ head stfs) $ langOf ss
-  okay <- send . optionalPrompt ss $ cleanStates_2 n
-  if | not okay  -> send . warn ss . cleanStates_3 $ langOf ss
-     | otherwise -> send . shelly @IO . traverse_ (rm . fst) . drop n $ others
+cleanStates :: Settings -> Word -> IO ()
+cleanStates ss (fromIntegral -> n) = do
+  stfs <- reverse <$> getStateFiles
+  (pinned, others) <- partition p <$> traverse (\sf -> (sf,) <$> readState sf) stfs
+  warn ss . cleanStates_4 (length stfs) $ langOf ss
+  unless (null pinned) . warn ss . cleanStates_6 (length pinned) $ langOf ss
+  unless (null stfs) . warn ss . cleanStates_5 (T.pack . toUnrootedFilePath . takeFileName $ head stfs) $ langOf ss
+  okay <- optionalPrompt ss $ cleanStates_2 n
+  if | not okay  -> warn ss . cleanStates_3 $ langOf ss
+     | otherwise -> traverse_ (removeFile . fst) . drop n $ others
   where p = maybe False pinnedOf . snd
 
 -- | The result of @-Bl@.
 listStates :: IO ()
-listStates = getStateFiles >>= traverse_ (T.putStrLn . toTextIgnore)
+listStates = getStateFiles >>= traverse_ (putStrLn . toFilePath)

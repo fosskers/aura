@@ -26,7 +26,7 @@ import           Aura.Settings
 import           Aura.State
 import           Aura.Types
 import           Aura.Utils
-import           BasePrelude hiding (FilePath)
+import           BasePrelude
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
@@ -37,9 +37,9 @@ import qualified Data.Set as S
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import           Lens.Micro ((^?), _Just)
-import           Shelly hiding (path)
+import           System.Path
+import           System.Path.IO (doesDirectoryExist, removeFile, copyFile)
 
 ---
 
@@ -50,12 +50,12 @@ downgradePackages :: (Member (Reader Settings) r, Member (Error Failure) r, Memb
 downgradePackages pkgs = do
   ss    <- ask
   let cachePath = either id id . cachePathOf $ commonConfigOf ss
-  reals <- send . shelly @IO $ pkgsInCache ss pkgs
+  reals <- send $ pkgsInCache ss pkgs
   traverse_ (report red reportBadDowngradePkgs_1) . nonEmpty . toList $ NES.toSet pkgs S.\\ reals
   unless (null reals) $ do
-    cache   <- send . shelly @IO $ cacheContents cachePath
+    cache   <- send $ cacheContents cachePath
     choices <- traverse (getDowngradeChoice cache) $ toList reals
-    rethrow . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (toTextIgnore . path) choices
+    rethrow . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (toFilePath . path) choices
 
 -- | For a given package, get a choice from the user about which version of it to
 -- downgrade to.
@@ -67,7 +67,7 @@ getDowngradeChoice cache pkg =
     Just choices -> do
       ss <- ask
       send . notify ss . getDowngradeChoice_1 pkg $ langOf ss
-      fmap (PackagePath . fromText) . send . getSelection $ fmap (toTextIgnore . path) choices
+      send $ getSelection (T.pack . toFilePath . path) choices
 
 getChoicesFromCache :: Cache -> PkgName -> [PackagePath]
 getChoicesFromCache (Cache cache) p = sort . M.elems $ M.filterWithKey (\(SimplePkg pn _) _ -> p == pn) cache
@@ -76,26 +76,26 @@ getChoicesFromCache (Cache cache) p = sort . M.elems $ M.filterWithKey (\(Simple
 searchCache :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r ()
 searchCache ps = do
   ss <- ask
-  matches <- send . shelly @IO $ cacheMatches ss ps
-  send . traverse_ (T.putStrLn . toTextIgnore . path) $ sort matches
+  matches <- send $ cacheMatches ss ps
+  send . traverse_ (putStrLn . toFilePath . path) $ sort matches
 
 -- | The destination folder must already exist for the back-up to begin.
-backupCache :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => FilePath -> Eff r ()
+backupCache :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Path Absolute -> Eff r ()
 backupCache dir = do
-  exists <- send . shelly @IO $ test_d dir
+  exists <- send $ doesDirectoryExist dir
   if | not exists -> throwError $ Failure backupCache_3
      | otherwise  -> confirmBackup dir >>= backup dir
 
-confirmBackup :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => FilePath -> Eff r Cache
+confirmBackup :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Path Absolute -> Eff r Cache
 confirmBackup dir = do
   ss    <- ask
-  cache <- send . shelly @IO . cacheContents . either id id . cachePathOf $ commonConfigOf ss
-  send . notify ss $ backupCache_4 (T.unpack $ toTextIgnore dir) (langOf ss)
+  cache <- send . cacheContents . either id id . cachePathOf $ commonConfigOf ss
+  send . notify ss $ backupCache_4 (toFilePath dir) (langOf ss)
   send . notify ss $ backupCache_5 (M.size $ _cache cache) (langOf ss)
   okay  <- send $ optionalPrompt ss backupCache_6
   bool (throwError $ Failure backupCache_7) (pure cache) okay
 
-backup :: (Member (Reader Settings) r, Member IO r) => FilePath -> Cache -> Eff r ()
+backup :: (Member (Reader Settings) r, Member IO r) => Path Absolute -> Cache -> Eff r ()
 backup dir (Cache cache) = do
   ss <- ask
   send . notify ss . backupCache_8 $ langOf ss
@@ -103,13 +103,13 @@ backup dir (Cache cache) = do
   copyAndNotify dir (M.elems cache) 1
 
 -- | Manages the file copying and display of the real-time progress notifier.
-copyAndNotify :: (Member (Reader Settings) r, Member IO r) => FilePath -> [PackagePath] -> Int -> Eff r ()
+copyAndNotify :: (Member (Reader Settings) r, Member IO r) => Path Absolute -> [PackagePath] -> Int -> Eff r ()
 copyAndNotify _ [] _ = pure ()
 copyAndNotify dir (PackagePath p : ps) n = do
   ss <- ask
   send $ raiseCursorBy 1
   send . warn ss . copyAndNotify_1 n $ langOf ss
-  send . shelly @IO $ cp p dir
+  send $ copyFile p dir
   copyAndNotify dir ps $ n + 1
 
 -- | Keeps a certain number of package files in the cache according to
@@ -128,11 +128,11 @@ clean toSave = do
   ss <- ask
   send . notify ss . cleanCache_6 $ langOf ss
   let cachePath = either id id . cachePathOf $ commonConfigOf ss
-  (Cache cache) <- send . shelly @IO $ cacheContents cachePath
+  (Cache cache) <- send $ cacheContents cachePath
   let !files    = M.elems cache
       grouped   = take toSave . reverse <$> groupByName files
       toRemove  = files \\ fold grouped
-  send . shelly @IO $ traverse_ rm $ map path toRemove
+  send $ traverse_ removeFile $ map path toRemove
 
 -- | Only package files with a version not in any PkgState will be
 -- removed.
@@ -143,10 +143,10 @@ cleanNotSaved = do
   sfs <- send getStateFiles
   states <- fmap catMaybes . send $ traverse readState sfs
   let cachePath = either id id . cachePathOf $ commonConfigOf ss
-  (Cache cache)  <- send . shelly @IO $ cacheContents cachePath
+  (Cache cache)  <- send $ cacheContents cachePath
   let duds = M.filterWithKey (\p _ -> any (inState p) states) cache
-  whenM (send . optionalPrompt ss $ cleanNotSaved_2 $ M.size duds) $
-    send . shelly @IO . traverse_ rm . map path $ M.elems duds
+  prop <- send . optionalPrompt ss $ cleanNotSaved_2 $ M.size duds
+  when prop . send . traverse_ removeFile . map path $ M.elems duds
 
 -- | Typically takes the contents of the package cache as an argument.
 groupByName :: [PackagePath] -> [[PackagePath]]

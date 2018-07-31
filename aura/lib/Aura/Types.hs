@@ -41,10 +41,11 @@ module Aura.Types
   , list
   ) where
 
-import           BasePrelude hiding (FilePath, try)
+import           BasePrelude hiding (try)
 import           Control.Error.Util (hush)
 import           Data.Aeson (ToJSONKey, FromJSONKey)
 import           Data.Bitraversable
+import qualified Data.ByteString.Lazy as BL
 import           Data.Generics.Product (field, super)
 import           Data.List.NonEmpty (nonEmpty)
 import qualified Data.Map.Strict as M
@@ -52,10 +53,9 @@ import qualified Data.Text as T
 import           Data.Text.Prettyprint.Doc hiding (space, list)
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions hiding (Traversal')
-import           Filesystem.Path (filename)
 import           GHC.Generics (Generic)
 import           Lens.Micro
-import           Shelly (FilePath, toTextIgnore)
+import           System.Path (Path, Absolute, takeFileName, toUnrootedFilePath)
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 
@@ -63,10 +63,10 @@ import           Text.Megaparsec.Char
 
 -- | Types whose members can be converted to CLI flags.
 class Flagable a where
-  asFlag :: a -> [T.Text]
+  asFlag :: a -> [String]
 
 instance Flagable T.Text where
-  asFlag = (:[])
+  asFlag t = [T.unpack t]
 
 instance (Foldable f, Flagable a) => Flagable (f a) where
   asFlag = foldMap asFlag
@@ -163,7 +163,7 @@ data SimplePkg = SimplePkg { name :: !PkgName, version :: !Versioning } deriving
 --   @\/var\/cache\/pacman\/pkg\/linux-3.2.14-1-x86_64.pkg.tar.xz@
 simplepkg :: PackagePath -> Maybe SimplePkg
 simplepkg (PackagePath t) = uncurry SimplePkg <$> bitraverse hush hush (parse n "name" t', parse v "version" t')
-  where t' = toTextIgnore $ filename t
+  where t' = T.pack . toUnrootedFilePath $ takeFileName t
 
         n :: Parsec Void T.Text PkgName
         n = PkgName . T.pack <$> manyTill anyChar (try finished)
@@ -187,7 +187,7 @@ simplepkg' = hush . parse parser "name-and-version"
 --   * \/var\/cache\/pacman\/pkg\/linux-3.2.14-1-x86_64.pkg.tar.xz
 --   * \/var\/cache\/pacman\/pkg\/wine-1.4rc6-1-x86_64.pkg.tar.xz
 --   * \/var\/cache\/pacman\/pkg\/ruby-1.9.3_p125-4-x86_64.pkg.tar.xz
-newtype PackagePath = PackagePath { path :: FilePath } deriving (Eq, Generic)
+newtype PackagePath = PackagePath { path :: Path Absolute } deriving (Eq, Generic)
 
 -- | If they have the same package names, compare by their versions.
 -- Otherwise, do raw comparison of the path string.
@@ -199,7 +199,7 @@ instance Ord PackagePath where
           f = ((^? _Just . field @"name") &&& (^? _Just . field @"version")) . simplepkg
 
 -- | The contents of a PKGBUILD file.
-newtype Pkgbuild = Pkgbuild { pkgbuild :: T.Text } deriving (Eq, Ord, Show, Generic)
+newtype Pkgbuild = Pkgbuild { pkgbuild :: BL.ByteString } deriving (Eq, Ord, Show, Generic)
 
 -- | All human languages available for text output.
 data Language = English

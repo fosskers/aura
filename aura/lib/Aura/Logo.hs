@@ -29,7 +29,7 @@ animateVersionMsg :: Settings -> T.Text -> [T.Text] -> IO ()
 animateVersionMsg ss auraVersion verMsg = do
   when (isTerminal ss) $ do
     hideCursor
-    traverse_ (T.putStrLn . padString verMsgPad) verMsg  -- Version message
+    traverse_ (T.putStrLn . padString (fromIntegral verMsgPad)) verMsg  -- Version message
     raiseCursorBy 7  -- Initial reraising of the cursor.
     drawPills 3
     traverse_ T.putStrLn $ renderPacmanHead ss 0 Open  -- Initial rendering of head.

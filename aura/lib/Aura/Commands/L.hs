@@ -26,14 +26,18 @@ import           BasePrelude hiding (FilePath)
 import           Control.Compactable (fmapEither)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Reader
+import qualified Data.ByteString.Char8 as BS
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Text as T
+import           Data.Text.Encoding as T
+import           Data.Text.Encoding.Error (lenientDecode)
 import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
 import           Lens.Micro ((^.))
-import           Shelly
+import           System.Path (toFilePath)
+import           System.Process.Typed (proc, runProcess)
 
 ---
 
@@ -45,22 +49,22 @@ data LogEntry = LogEntry { _pkgName :: PkgName, _firstInstall :: T.Text, _upgrad
 -- | Pipes the pacman log file through a @less@ session.
 viewLogFile :: (Member (Reader Settings) r, Member IO r) => Eff r ()
 viewLogFile = do
-  pth <- asks (either id id . logPathOf . commonConfigOf)
-  void . send . shelly @IO . loudSh $ run_ "less" [toTextIgnore pth]
+  pth <- asks (toFilePath . either id id . logPathOf . commonConfigOf)
+  send . void . runProcess @IO $ proc "less" [pth]
 
 -- | Print all lines in the log file which contain a given `T.Text`.
 searchLogFile :: Settings -> T.Text -> IO ()
 searchLogFile ss input = do
-  let pth = either id id . logPathOf $ commonConfigOf ss
-  logFile <- T.lines <$> shelly (readfile pth)
+  let pth = toFilePath . either id id . logPathOf $ commonConfigOf ss
+  logFile <- map (T.decodeUtf8With lenientDecode) . BS.lines <$> BS.readFile pth
   traverse_ T.putStrLn $ searchLines input logFile
 
 -- | The result of @-Li@.
 logInfoOnPkg :: (Member (Reader Settings) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
 logInfoOnPkg pkgs = do
   ss <- ask
-  let pth = either id id . logPathOf $ commonConfigOf ss
-  logFile <- fmap (Log . T.lines) . send . shelly @IO $ readfile pth
+  let pth = toFilePath . either id id . logPathOf $ commonConfigOf ss
+  logFile <- Log . map (T.decodeUtf8With lenientDecode) . BS.lines <$> send (BS.readFile pth)
   let (bads, goods) = fmapEither (logLookup logFile) $ toList pkgs
   traverse_ (report red reportNotInLog_1) $ NEL.nonEmpty bads
   send . traverse_ T.putStrLn $ map (renderEntry ss) goods

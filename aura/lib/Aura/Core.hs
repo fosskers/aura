@@ -36,6 +36,7 @@ import           Control.Compactable (fmapEither)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Semigroup
@@ -49,7 +50,7 @@ import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions (prettyV)
 import           Lens.Micro ((^.))
 import           Lens.Micro.Extras (view)
-import           Shelly (Sh, test_f)
+import           System.Path.IO (doesFileExist)
 
 ---
 
@@ -104,11 +105,11 @@ trueRoot action = ask >>= \ss ->
 -- | A list of non-prebuilt packages installed on the system.
 -- `-Qm` yields a list of sorted values.
 foreignPackages :: IO (S.Set SimplePkg)
-foreignPackages = S.fromList . mapMaybe simplepkg' . T.lines <$> pacmanOutput ["-Qm"]
+foreignPackages = S.fromList . mapMaybe (simplepkg' . strictText) . BL.lines <$> pacmanOutput ["-Qm"]
 
 -- | Packages marked as a dependency, yet are required by no other package.
 orphans :: IO (S.Set PkgName)
-orphans = S.fromList . map PkgName . T.lines <$> pacmanOutput ["-Qqdt"]
+orphans = S.fromList . map (PkgName . strictText) . BL.lines <$> pacmanOutput ["-Qqdt"]
 
 -- | Any package whose name is suffixed by git, hg, svn, darcs, cvs, or bzr.
 develPkgs :: IO (S.Set PkgName)
@@ -119,7 +120,7 @@ develPkgs = S.filter isDevelPkg . S.map (^. field @"name") <$> foreignPackages
 -- | Returns what it was given if the package is already installed.
 -- Reasoning: Using raw bools can be less expressive.
 isInstalled :: PkgName -> IO (Maybe PkgName)
-isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", pkg ^. field @"name"]
+isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", T.unpack (pkg ^. field @"name")]
 
 -- | An @-Rsu@ call.
 removePkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
@@ -131,7 +132,7 @@ removePkgs pkgs = do
 -- `asT` renders the `VersionDemand` into the specific form that `pacman -T`
 -- understands. See `man pacman` for more info.
 isSatisfied :: Dep -> IO Bool
-isSatisfied (Dep n ver) = T.null <$> pacmanOutput ["-T", (n ^. field @"name") <> asT ver]
+isSatisfied (Dep n ver) = BL.null <$> pacmanOutput (map T.unpack ["-T", (n ^. field @"name") <> asT ver])
   where asT (LessThan v) = "<"  <> prettyV v
         asT (AtLeast  v) = ">=" <> prettyV v
         asT (MoreThan v) = ">"  <> prettyV v
@@ -139,10 +140,10 @@ isSatisfied (Dep n ver) = T.null <$> pacmanOutput ["-T", (n ^. field @"name") <>
         asT Anything     = ""
 
 -- | Block further action until the database is free.
-checkDBLock :: Settings -> Sh ()
+checkDBLock :: Settings -> IO ()
 checkDBLock ss = do
-  locked <- test_f lockFile
-  when locked $ (liftIO . warn ss . checkDBLock_1 $ langOf ss) *> liftIO getLine *> checkDBLock ss
+  locked <- doesFileExist lockFile
+  when locked $ (warn ss . checkDBLock_1 $ langOf ss) *> getLine *> checkDBLock ss
 
 -------
 -- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`

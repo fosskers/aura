@@ -27,8 +27,7 @@ import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils (quietSh)
-import           BasePrelude hiding (FilePath, head)
+import           BasePrelude hiding (head)
 import           Control.Compactable (traverseEither)
 import           Control.Error.Util (hush)
 import           Control.Monad.Freer
@@ -40,11 +39,12 @@ import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Versions (versioning)
-import           Lens.Micro ((^.), (^..), each)
+import           Lens.Micro ((^.), (^..), each, to)
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
-import qualified Shelly as Sh
-import           System.FilePath ((</>))
+import           System.Path
+import           System.Path.IO (getCurrentDirectory)
+import           System.Process.Typed (proc, runProcess)
 
 ---
 
@@ -89,24 +89,27 @@ buildable m ai = do
 ----------------
 -- AUR PKGBUILDS
 ----------------
-aurLink :: T.Text
-aurLink = "https://aur.archlinux.org"
+aurLink :: Path Unrooted
+aurLink = fromUnrootedFilePath "https://aur.archlinux.org"
 
 -- | A package's home URL on the AUR.
 pkgUrl :: PkgName -> T.Text
-pkgUrl (PkgName pkg) = T.pack $ T.unpack aurLink </> "packages" </> T.unpack pkg
+pkgUrl (PkgName pkg) = T.pack . toUnrootedFilePath $ aurLink </> fromUnrootedFilePath "packages" </> fromUnrootedFilePath (T.unpack pkg)
 
 -------------------
 -- SOURCES FROM GIT
 -------------------
+-- TODO Make silent?
 -- | Attempt to clone a package source from the AUR.
-clone :: Buildable -> Sh.Sh (Maybe Sh.FilePath)
+clone :: Buildable -> IO (Maybe (Path Absolute))
 clone b = do
-  (ec, _) <- quietSh $ Sh.run_ "git" args
+  ec <- runProcess $ proc "git" [ "clone", "--depth", "1", toUnrootedFilePath url ]
   case ec of
     (ExitFailure _) -> pure Nothing
-    ExitSuccess     -> Just . (Sh.</> (b ^. field @"base" . field @"name")) <$> Sh.pwd
-  where args = ["clone", "--depth", "1", aurLink <> "/" <> (b ^. field @"base" . field @"name") <> ".git"]
+    ExitSuccess     -> do
+      pwd <- getCurrentDirectory
+      pure . Just $ pwd </> (b ^. field @"base" . field @"name" . to (fromUnrootedFilePath . T.unpack))
+  where url = aurLink </> (b ^. field @"base" . field @"name" . to (fromUnrootedFilePath . T.unpack)) <.> FileExt "git"
 
 ------------
 -- RPC CALLS

@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 -- |
 -- Module    : Aura.Diff
 -- Copyright : (c) Colin Woodbury, 2012 - 2018
@@ -11,8 +9,9 @@
 module Aura.Diff where
 
 import Aura.Settings
-import BasePrelude hiding (FilePath)
-import Shelly
+import BasePrelude
+import System.Path (Path, Absolute, toFilePath)
+import System.Process.Typed (runProcess, proc)
 
 ---
 
@@ -20,6 +19,6 @@ import Shelly
 -- Output will be coloured unless colour is deactivated by
 -- `--color never` or by detection of a non-terminal output
 -- target.
-diff :: Settings -> FilePath -> FilePath -> Sh ()
-diff ss f1 f2 = errExit False . run_ "diff" $ c <> ["-u", toTextIgnore f1, toTextIgnore f2]
+diff :: MonadIO m => Settings -> Path Absolute -> Path Absolute -> m ()
+diff ss f1 f2 = void . runProcess . proc "diff" $ c <> ["-u", toFilePath f1, toFilePath f2]
   where c = bool ["--color"] [] $ shared ss (Colour Never)

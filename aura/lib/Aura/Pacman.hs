@@ -28,21 +28,26 @@ module Aura.Pacman
     -- * Misc.
   , getVersionInfo
   , verMsgPad
-  , getPacmanHelpMsg
   ) where
 
 import           Aura.Languages
 import           Aura.Types
-import           Aura.Utils
+import           Aura.Utils (strictText)
 import           BasePrelude hiding (some, try)
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Text as T
+import           Data.Text.Encoding (decodeUtf8With)
+import           Data.Text.Encoding.Error (lenientDecode)
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Encoding as TL
 import           Lens.Micro
 import           Lens.Micro.GHC ()
-import qualified Shelly as Sh
-import           Shelly hiding (FilePath)
+import           System.Path (Path, Absolute, fromAbsoluteFilePath, toFilePath)
+import           System.Process.Typed (runProcess, readProcess, proc)
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
@@ -73,21 +78,21 @@ garbage :: Parsec Void T.Text ()
 garbage = L.space space1 (L.skipLineComment "#") (L.skipBlockComment "[" "]")
 
 -- | Default location of the pacman config file: \/etc\/pacman.conf
-pacmanConfFile :: Sh.FilePath
-pacmanConfFile = "/etc/pacman.conf"
+pacmanConfFile :: Path Absolute
+pacmanConfFile = fromAbsoluteFilePath "/etc/pacman.conf"
 
 -- | Default location of the pacman log flie: \/var\/log\/pacman.log
-defaultLogFile :: Sh.FilePath
-defaultLogFile = "/var/log/pacman.log"
+defaultLogFile :: Path Absolute
+defaultLogFile = fromAbsoluteFilePath "/var/log/pacman.log"
 
 -- | Default location of the pacman database lock file: \/var\/lib\/pacman\/db.lck
-lockFile :: Sh.FilePath
-lockFile = "/var/lib/pacman/db.lck"
+lockFile :: Path Absolute
+lockFile = fromAbsoluteFilePath "/var/lib/pacman/db.lck"
 
 -- | Given a filepath to the pacman config, try to parse its contents.
-getPacmanConf :: Sh.FilePath -> IO (Either Failure Config)
-getPacmanConf fp = shelly $ do
-  file <- readfile fp
+getPacmanConf :: Path Absolute -> IO (Either Failure Config)
+getPacmanConf fp = do
+  file <- decodeUtf8With lenientDecode <$> BS.readFile (toFilePath fp)
   pure . first (const (Failure confParsing_1)) $ parse config "pacman config" file
 
 -- | Fetches the @IgnorePkg@ entry from the config, if it's there.
@@ -102,46 +107,39 @@ getIgnoredGroups (Config c) = maybe S.empty (S.fromList . map PkgGroup) $ M.look
 groupPackages :: NonEmptySet PkgGroup -> IO (S.Set PkgName)
 groupPackages igs | null igs  = pure S.empty
                   | otherwise = fmap f . pacmanOutput $ "-Qg" : asFlag igs
-  where f = S.fromList . map (PkgName . (!! 1) . T.words) . T.lines  -- Naughty
+  where f = S.fromList . map (PkgName . strictText . (!! 1) . BL.words) . BL.lines
 
 -- | Fetches the @CacheDir@ entry from the config, if it's there.
-getCachePath :: Config -> Maybe Sh.FilePath
-getCachePath (Config c) = c ^? at "CacheDir" . _Just . _head . to fromText
+getCachePath :: Config -> Maybe (Path Absolute)
+getCachePath (Config c) = c ^? at "CacheDir" . _Just . _head . to (fromAbsoluteFilePath . T.unpack)
 
 -- | Fetches the @LogFile@ entry from the config, if it's there.
-getLogFilePath :: Config -> Maybe Sh.FilePath
-getLogFilePath (Config c) = c ^? at "LogFile" . _Just . _head . to fromText
+getLogFilePath :: Config -> Maybe (Path Absolute)
+getLogFilePath (Config c) = c ^? at "LogFile" . _Just . _head . to (fromAbsoluteFilePath . T.unpack)
 
 ----------
 -- ACTIONS
 ----------
 -- | Run a pacman action that may fail. Will never throw an IO exception.
-pacman :: [T.Text] -> IO (Either Failure ())
+pacman :: [String] -> IO (Either Failure ())
 pacman args = do
-  code <- shelly . errExit False $ do
-    runHandles "pacman" args [ InHandle Inherit, OutHandle Inherit, ErrorHandle Inherit ] n
-    lastExitCode
-  pure . bool (Left $ Failure pacmanFailure_1) (Right ()) $ code == 0
-  where n _ _ _ = pure ()
+  ec <- runProcess $ proc "pacman" args
+  pure . bool (Left $ Failure pacmanFailure_1) (Right ()) $ ec == ExitSuccess
 
 -- | Run some `pacman` process, but only care about whether it succeeded.
-pacmanSuccess :: [T.Text] -> IO Bool
-pacmanSuccess args = fmap success . shelly . quietSh $ run_ "pacman" args
-    where success (ExitSuccess, _) = True
-          success _ = False
+pacmanSuccess :: [String] -> IO Bool
+pacmanSuccess = fmap (== ExitSuccess) . runProcess . proc "pacman"  -- TODO silence this?
 
 -- | Runs pacman silently and returns only the stdout.
-pacmanOutput :: [T.Text] -> IO T.Text
-pacmanOutput = fmap snd . shelly . quietSh . Sh.run "pacman"
-
--- | The output of @pacman -h@.
-getPacmanHelpMsg :: IO [T.Text]
-getPacmanHelpMsg = T.lines <$> pacmanOutput ["-h"]
+pacmanOutput :: [String] -> IO BL.ByteString
+pacmanOutput = fmap (^. _2) . readProcess . proc "pacman"  -- TODO silence this?
 
 -- | Yields the lines given by `pacman -V` with the pacman image stripped.
 getVersionInfo :: IO [T.Text]
-getVersionInfo = fmap (T.drop verMsgPad) . T.lines <$> pacmanOutput ["-V"]
+getVersionInfo = do
+  out <- pacmanOutput ["-V"]
+  pure . map (TL.toStrict . TL.drop verMsgPad . TL.decodeUtf8With lenientDecode) $ BL.lines out
 
 -- | The amount of whitespace before text in the lines given by `pacman -V`
-verMsgPad :: Int
+verMsgPad :: Int64
 verMsgPad = 23

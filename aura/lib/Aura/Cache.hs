@@ -21,7 +21,7 @@ module Aura.Cache
 
 import           Aura.Settings
 import           Aura.Types
-import           BasePrelude hiding (FilePath)
+import           BasePrelude
 import           Data.Generics.Product (field)
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
@@ -29,8 +29,8 @@ import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Lens.Micro ((^.))
-import           Shelly hiding (path)
-
+import           System.Path (Path, Absolute, (</>), toFilePath, fromAbsoluteFilePath)
+import           System.Path.IO (getDirectoryContents)
 
 ---
 
@@ -38,8 +38,8 @@ import           Shelly hiding (path)
 newtype Cache = Cache { _cache :: M.Map SimplePkg PackagePath }
 
 -- | The default location of the package cache: \/var\/cache\/pacman\/pkg\/
-defaultPackageCache :: FilePath
-defaultPackageCache = "/var/cache/pacman/pkg/"
+defaultPackageCache :: Path Absolute
+defaultPackageCache = fromAbsoluteFilePath "/var/cache/pacman/pkg/"
 
 -- SILENT DROPS PATHS THAT DON'T PARSE
 -- Maybe that's okay, since we don't know what non-package garbage files
@@ -50,17 +50,17 @@ cache :: [PackagePath] -> Cache
 cache = Cache . M.fromList . mapMaybe (\p -> (,p) <$> simplepkg p)
 
 -- | Given a path to the package cache, yields its contents in a usable form.
-cacheContents :: FilePath -> Sh Cache
-cacheContents = fmap (cache . map PackagePath) . ls
+cacheContents :: Path Absolute -> IO Cache
+cacheContents pth = cache . map (PackagePath . (pth </>)) <$> getDirectoryContents pth
 
 -- | All packages from a given `S.Set` who have a copy in the cache.
-pkgsInCache :: Settings -> NonEmptySet PkgName -> Sh (S.Set PkgName)
+pkgsInCache :: Settings -> NonEmptySet PkgName -> IO (S.Set PkgName)
 pkgsInCache ss ps = do
   c <- cacheContents . either id id . cachePathOf $ commonConfigOf ss
   pure . S.filter (`NES.member` ps) . S.map (^. field @"name") . M.keysSet $ _cache c
 
 -- | Any entries (filepaths) in the cache that match a given `T.Text`.
-cacheMatches :: Settings -> T.Text -> Sh [PackagePath]
+cacheMatches :: Settings -> T.Text -> IO [PackagePath]
 cacheMatches ss input = do
   c <- cacheContents . either id id . cachePathOf $ commonConfigOf ss
-  pure . filter (T.isInfixOf input . toTextIgnore . path) . M.elems $ _cache c
+  pure . filter (T.isInfixOf input . T.pack . toFilePath . path) . M.elems $ _cache c

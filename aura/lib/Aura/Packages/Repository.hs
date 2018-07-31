@@ -20,16 +20,17 @@ import           Aura.Languages (provides_1)
 import           Aura.Pacman (pacmanOutput)
 import           Aura.Settings (Settings)
 import           Aura.Types
-import           Aura.Utils (getSelection)
+import           Aura.Utils (getSelection, strictText)
 import           BasePrelude hiding (try)
 import           Control.Compactable (traverseEither)
 import           Control.Concurrent.STM.TQueue
 import           Control.Error.Util (hush, note)
+import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
 import qualified Data.Set as S
 import qualified Data.Text as T
 import           Data.Versions
-import           Lens.Micro ((^.), (^..), each)
+import           Lens.Micro ((^.))
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 
@@ -55,7 +56,7 @@ packageRepo pn pro ver = Prebuilt { name     = pn
 -- Functions like this are why we need libalpm.
 resolveName :: Settings -> PkgName -> IO (Either PkgName (PkgName, Provides))
 resolveName ss pn = do
-  provs <- map PkgName . T.lines <$> pacmanOutput ["-Ssq", "^" <> (pn ^. field @"name") <> "$"]
+  provs <- map (PkgName . strictText) . BL.lines <$> pacmanOutput ["-Ssq", "^" <> T.unpack (pn ^. field @"name") <> "$"]
   case provs of
     [] -> pure $ Left pn
     _  -> Right . (, Provides $ pn ^. field @"name") <$> chooseProvider ss pn provs
@@ -66,13 +67,11 @@ chooseProvider _ pn []         = pure pn
 chooseProvider _ _ [p]         = pure p
 chooseProvider ss pn ps@(a:as) =
   throttled (const isInstalled) ps >>= atomically . flushTQueue >>= maybe f pure . listToMaybe . catMaybes
-  where f = do
-          warn ss $ provides_1 pn
-          PkgName <$> getSelection ((a ^. field @"name") :| (as ^.. each . field @"name"))
+  where f = warn ss (provides_1 pn) >> getSelection (^. field @"name") (a :| as)
 
 -- | The most recent version of a package, if it exists in the respositories.
 mostRecentVersion :: PkgName -> IO (Either PkgName Versioning)
-mostRecentVersion p@(PkgName s) = note p . extractVersion <$> pacmanOutput ["-Si", s]
+mostRecentVersion p@(PkgName s) = note p . extractVersion . strictText <$> pacmanOutput ["-Si", T.unpack s]
 
 -- | Parses the version number of a package from the result of a
 -- @pacman -Si@ call.

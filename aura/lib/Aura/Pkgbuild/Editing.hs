@@ -11,60 +11,77 @@
 
 module Aura.Pkgbuild.Editing
   ( hotEdit
-  , customizepkg
+  -- , customizepkg  -- TODO remove?
   ) where
 
-import           Aura.Core
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
-import           BasePrelude hiding (FilePath)
+import           BasePrelude
+import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
-import qualified Data.Text as T
 import           Lens.Micro ((^.), (.~))
-import           Shelly
+import           System.Directory (setCurrentDirectory)
+import           System.Path (toFilePath)
+import           System.Path.IO (getCurrentDirectory, getTemporaryDirectory)
+import           System.Process.Typed (runProcess, proc)
 
 ---
 
-customizepkgPath :: FilePath
-customizepkgPath = "/etc/customizepkg.d/"
+-- customizepkgPath :: Path Absolute
+-- customizepkgPath = fromAbsoluteFilePath "/etc/customizepkg.d/"
 
 -- | Write a PKGBUILD to the filesystem temporarily, run some effectful
 -- function over it, then read it back in before proceeding with
 -- package building.
-edit :: (FilePath -> Sh a) -> Buildable -> Sh Buildable
+edit :: (FilePath -> IO a) -> Buildable -> IO Buildable
 edit f p = do
-  writefile filename $ p ^. field @"pkgbuild" . field @"pkgbuild"
+  BL.writeFile filename $ p ^. field @"pkgbuild" . field @"pkgbuild"
   void $ f filename
-  newPB <- readfile filename
+  newPB <- BL.readFile filename
   pure (p & field @"pkgbuild" .~ Pkgbuild newPB)
     where filename = "PKGBUILD"
 
 -- | Allow the user to edit the PKGBUILD if they asked to do so.
-hotEdit :: Settings -> Buildable -> Sh Buildable
+hotEdit :: Settings -> Buildable -> IO Buildable
 hotEdit ss b
   | not $ switch ss HotEdit = pure b
   | otherwise = do
       ans <- liftIO $ optionalPrompt ss (hotEdit_1 $ b ^. field @"name")
       bool (pure b) f ans
-        where f = withTmpDir $ \tmp -> do
-                cd tmp
-                edit (run_ (editorOf ss) . (:[]) . toTextIgnore) b
+        where f = do
+                here <- getCurrentDirectory
+                tmp  <- getTemporaryDirectory
+                setCurrentDirectory $ toFilePath tmp
+                b' <- edit (runProcess . proc (editorOf ss) . (:[])) b
+                setCurrentDirectory $ toFilePath here
+                pure b'
 
+-- TODO remove all this?
 -- | Runs `customizepkg` on whatever PKGBUILD it can.
 -- To work, a package needs an entry in `/etc/customizepkg.d/`
-customizepkg :: Settings -> Buildable -> Sh Buildable
-customizepkg ss b
-  | not $ switch ss UseCustomizepkg = pure b
-  | otherwise = ifFile customizepkg' (liftIO . scold ss . customizepkg_1 $ langOf ss) bin b
-  where bin = "/usr/bin/customizepkg"
+-- customizepkg :: Settings -> Buildable -> IO Buildable
+-- customizepkg ss b
+--   | not $ switch ss UseCustomizepkg = pure b
+--   | otherwise = ifFile customizepkg' (liftIO . scold ss . customizepkg_1 $ langOf ss) bin b
+--   where bin = "/usr/bin/customizepkg"
 
-customizepkg' :: Buildable -> Sh Buildable
-customizepkg' p = withTmpDir $ \tmp -> do
-  cd tmp
-  ifFile (edit $ const customize) (pure ()) conf p
-  where conf = customizepkgPath </> (p ^. field @"name" . field @"name")
+-- customizepkg' :: Buildable -> IO Buildable
+-- customizepkg' b = do
+--   here <- getCurrentDirectory
+--   tmp  <- getTemporaryDirectory
+--   setCurrentDirectory $ toFilePath tmp
+--   ifFile (edit $ const customize) (pure ()) conf p
+--   where conf = customizepkgPath </> (p ^. field @"name" . field @"name")
 
-customize :: Sh T.Text
-customize = fmap snd . quietSh $ run "customizepkg" ["--modify"]
+--   undefined
+
+-- customizepkg' p = withTmpDir $ \tmp -> do
+--   cd tmp
+--   ifFile (edit $ const customize) (pure ()) conf p
+--   where conf = customizepkgPath </> (p ^. field @"name" . field @"name")
+
+-- TODO silence this
+-- customize :: MonadIO m => m ()
+-- customize = void . runProcess $ proc "customizepkg" ["--modify"]

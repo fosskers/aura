@@ -22,9 +22,6 @@ import           Control.Exception (SomeException, catch)
 import           Control.Monad.Trans (MonadIO, liftIO)
 import           Data.Generics.Product (field)
 import qualified Data.Text as T
-import           Data.Text.Encoding.Error
-import qualified Data.Text.Lazy as TL
-import           Data.Text.Lazy.Encoding
 import           Lens.Micro ((^.))
 import           Network.HTTP.Client (Manager)
 import           Network.URI (escapeURIString, isUnescapedInURIComponent)
@@ -46,5 +43,5 @@ pkgbuildUrl p = baseUrl </> "cgit/aur.git/plain/PKGBUILD?h="
 getPkgbuild :: MonadIO m => Manager -> PkgName -> m (Maybe Pkgbuild)
 getPkgbuild m p = e $ do
   t <- urlContents m . pkgbuildUrl . T.unpack $ p ^. field @"name"
-  pure $ fmap (Pkgbuild . TL.toStrict . decodeUtf8With lenientDecode) t
+  pure $ fmap Pkgbuild t
   where e f = liftIO $ f `catch` (\(_ :: E) -> return Nothing)

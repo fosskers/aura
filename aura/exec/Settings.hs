@@ -21,7 +21,6 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Settings ( getSettings ) where
 
-import           Aura.Cache (defaultPackageCache)
 import           Aura.Languages
 import           Aura.Pacman
 import           Aura.Settings
@@ -38,7 +37,6 @@ import qualified Data.Text as T
 import           Flags (Program(..))
 import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)
-import           Shelly
 import           System.Environment (getEnvironment)
 import           System.IO (hIsTerminalDevice, stdout)
 
@@ -48,7 +46,6 @@ getSettings :: Program -> IO (Either Failure Settings)
 getSettings (Program _ co bc lng) = runExceptT $ do
   confFile    <- ExceptT (getPacmanConf . either id id $ configPathOf co)
   environment <- lift (M.fromList . map (bimap T.pack T.pack) <$> getEnvironment)
-  buildPath'  <- lift $ checkBuildPath (buildPathOf bc) defaultPackageCache
   manager     <- lift $ newManager tlsManagerSettings
   isTerm      <- lift $ hIsTerminalDevice stdout
   fromGroups  <- lift . maybe (pure S.empty) groupPackages . NES.fromSet $ getIgnoredGroups confFile <> ignoredGroupsOf co
@@ -65,15 +62,9 @@ getSettings (Program _ co bc lng) = runExceptT $ do
                          , logPathOf     = first (\x -> fromMaybe x $ getLogFilePath confFile) $ logPathOf co
                          , ignoredPkgsOf = getIgnoredPkgs confFile <> ignoredPkgsOf co <> fromGroups
                          }
-                  , buildConfigOf  =
-                      bc { buildPathOf = buildPath'
-                         , buildUserOf = Just bu
-                         }
+                  , buildConfigOf = bc { buildUserOf = Just bu}
                   }
 
 checkLang :: Maybe Language -> Environment -> Language
 checkLang Nothing env   = langFromLocale $ getLocale env
 checkLang (Just lang) _ = lang
-
-checkBuildPath :: FilePath -> FilePath -> IO FilePath
-checkBuildPath bp def = bool def bp <$> shelly (test_d bp)

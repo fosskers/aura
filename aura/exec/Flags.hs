@@ -10,14 +10,14 @@ import           Aura.Cache (defaultPackageCache)
 import           Aura.Pacman (pacmanConfFile, defaultLogFile)
 import           Aura.Settings
 import           Aura.Types
-import           BasePrelude hiding (Version, FilePath, option, log, exp)
+import           BasePrelude hiding (Version, option, log, exp)
 import qualified Data.List.NonEmpty as NEL
 import qualified Data.Set as S
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Options.Applicative
-import           Shelly
+import           System.Path (Path, Absolute, toFilePath, fromAbsoluteFilePath)
 
 ---
 
@@ -51,7 +51,7 @@ instance Flagable PacmanOp where
   asFlag (Remove os ps)           = "-R" : asFlag os ++ asFlag ps
   asFlag (Sync (Left o) ss)       = "-S" : asFlag ss ++ asFlag o
   asFlag (Sync (Right ps) ss)     = "-S" : asFlag ss ++ asFlag ps
-  asFlag (TestDeps ps)            = "-T" : toList ps
+  asFlag (TestDeps ps)            = "-T" : asFlag ps
   asFlag (Upgrade s ps)           = "-U" : maybe [] asFlag s ++ asFlag ps
 
 data DatabaseOp = DBCheck
@@ -61,8 +61,8 @@ data DatabaseOp = DBCheck
 
 instance Flagable DatabaseOp where
   asFlag DBCheck           = ["--check"]
-  asFlag (DBAsDeps ps)     = "--asdeps" : toList ps
-  asFlag (DBAsExplicit ps) = "--asexplicit" : toList ps
+  asFlag (DBAsDeps ps)     = "--asdeps" : asFlag ps
+  asFlag (DBAsExplicit ps) = "--asexplicit" : asFlag ps
 
 data FilesOp = FilesList  (NonEmptySet T.Text)
              | FilesOwns   T.Text
@@ -73,9 +73,9 @@ data FilesOp = FilesList  (NonEmptySet T.Text)
              deriving (Eq, Ord, Show)
 
 instance Flagable FilesOp where
-  asFlag (FilesList fs)       = "--list" : toList fs
-  asFlag (FilesOwns f)        = ["--owns", f]
-  asFlag (FilesSearch f)      = ["--search", f]
+  asFlag (FilesList fs)       = "--list" : asFlag fs
+  asFlag (FilesOwns f)        = ["--owns", T.unpack f]
+  asFlag (FilesSearch f)      = ["--search", T.unpack f]
   asFlag FilesRegex           = ["--regex"]
   asFlag FilesRefresh         = ["--refresh"]
   asFlag FilesMachineReadable = ["--machinereadable"]
@@ -91,14 +91,14 @@ data QueryOp = QueryChangelog (NonEmptySet T.Text)
              deriving (Show)
 
 instance Flagable QueryOp where
-  asFlag (QueryChangelog ps) = "--changelog" : toList ps
-  asFlag (QueryGroups ps)    = "--groups" : toList ps
-  asFlag (QueryInfo ps)      = "--info" : toList ps
-  asFlag (QueryCheck ps)     = "--check" : toList ps
-  asFlag (QueryList ps)      = "--list" : toList ps
-  asFlag (QueryOwns ps)      = "--owns" : toList ps
-  asFlag (QueryFile ps)      = "--file" : toList ps
-  asFlag (QuerySearch t)     = ["--search", t]
+  asFlag (QueryChangelog ps) = "--changelog" : asFlag ps
+  asFlag (QueryGroups ps)    = "--groups" : asFlag ps
+  asFlag (QueryInfo ps)      = "--info" : asFlag ps
+  asFlag (QueryCheck ps)     = "--check" : asFlag ps
+  asFlag (QueryList ps)      = "--list" : asFlag ps
+  asFlag (QueryOwns ps)      = "--owns" : asFlag ps
+  asFlag (QueryFile ps)      = "--file" : asFlag ps
+  asFlag (QuerySearch t)     = ["--search", T.unpack t]
 
 data QueryFilter = QueryDeps
                  | QueryExplicit
@@ -139,12 +139,12 @@ data SyncOp = SyncClean
 
 instance Flagable SyncOp where
   asFlag SyncClean         = ["--clean"]
-  asFlag (SyncGroups gs)   = "--groups" : toList gs
-  asFlag (SyncInfo ps)     = "--info" : toList ps
-  asFlag (SyncList r)      = ["--list", r]
-  asFlag (SyncSearch s)    = ["--search", s]
-  asFlag (SyncUpgrade ps)  = "--sysupgrade" : toList ps
-  asFlag (SyncDownload ps) = "--downloadonly" : toList ps
+  asFlag (SyncGroups gs)   = "--groups" : asFlag gs
+  asFlag (SyncInfo ps)     = "--info" : asFlag ps
+  asFlag (SyncList r)      = ["--list", T.unpack r]
+  asFlag (SyncSearch s)    = ["--search", T.unpack s]
+  asFlag (SyncUpgrade ps)  = "--sysupgrade" : asFlag ps
+  asFlag (SyncDownload ps) = "--downloadonly" : asFlag ps
 
 data SyncSwitch = SyncRefresh deriving (Eq, Ord, Show)
 
@@ -158,32 +158,32 @@ instance Flagable UpgradeSwitch where
   asFlag UpgradeAsExplicit = ["--asexplicit"]
 
 -- | Flags common to several Pacman operations.
-data MiscOp = MiscArch    FilePath
+data MiscOp = MiscArch    (Path Absolute)
             | MiscAssumeInstalled T.Text
             | MiscColor   T.Text
             | MiscConfirm
             | MiscDBOnly
-            | MiscDBPath  FilePath
-            | MiscGpgDir  FilePath
-            | MiscHookDir FilePath
+            | MiscDBPath  (Path Absolute)
+            | MiscGpgDir  (Path Absolute)
+            | MiscHookDir (Path Absolute)
             | MiscNoDeps
             | MiscNoProgress
             | MiscNoScriptlet
             | MiscPrint
             | MiscPrintFormat T.Text
-            | MiscRoot    FilePath
+            | MiscRoot    (Path Absolute)
             | MiscVerbose
             deriving (Eq, Ord, Show)
 
 instance Flagable MiscOp where
-  asFlag (MiscArch p)            = ["--arch", toTextIgnore p]
-  asFlag (MiscAssumeInstalled p) = ["--assume-installed", p]
-  asFlag (MiscColor c)           = ["--color", c]
-  asFlag (MiscDBPath p)          = ["--dbpath", toTextIgnore p]
-  asFlag (MiscGpgDir p)          = ["--gpgdir", toTextIgnore p]
-  asFlag (MiscHookDir p)         = ["--hookdir", toTextIgnore p]
-  asFlag (MiscPrintFormat s)     = ["--print-format", s]
-  asFlag (MiscRoot p)            = ["--root", toTextIgnore p]
+  asFlag (MiscArch p)            = ["--arch", toFilePath p]
+  asFlag (MiscAssumeInstalled p) = ["--assume-installed", T.unpack p]
+  asFlag (MiscColor c)           = ["--color", T.unpack c]
+  asFlag (MiscDBPath p)          = ["--dbpath", toFilePath p]
+  asFlag (MiscGpgDir p)          = ["--gpgdir", toFilePath p]
+  asFlag (MiscHookDir p)         = ["--hookdir", toFilePath p]
+  asFlag (MiscPrintFormat s)     = ["--print-format", T.unpack s]
+  asFlag (MiscRoot p)            = ["--root", toFilePath p]
   asFlag MiscConfirm             = ["--confirm"]
   asFlag MiscDBOnly              = ["--dbonly"]
   asFlag MiscNoDeps              = ["--nodeps"]
@@ -213,7 +213,7 @@ data AurOp = AurDeps     (NonEmptySet PkgName)
 
 data BackupOp = BackupClean Word | BackupRestore | BackupList deriving (Show)
 
-data CacheOp = CacheBackup FilePath | CacheClean Word | CacheCleanNotSaved | CacheSearch T.Text deriving (Show)
+data CacheOp = CacheBackup (Path Absolute) | CacheClean Word | CacheCleanNotSaved | CacheSearch T.Text deriving (Show)
 
 data LogOp = LogInfo (NonEmptySet PkgName) | LogSearch T.Text deriving (Show)
 
@@ -256,7 +256,7 @@ cache :: Parser AuraOp
 cache = bigC *> (Cache <$> (fmap Left mods <|> fmap Right somePkgs))
   where bigC = flag' () (long "downgrade" <> short 'C' <> help "Interact with the package cache.")
         mods = backup <|> clean <|> clean' <|> search
-        backup = CacheBackup <$> strOption (long "backup" <> short 'b' <> metavar "PATH" <> help "Backup the package cache to a given directory." <> hidden)
+        backup = CacheBackup . fromAbsoluteFilePath <$> strOption (long "backup" <> short 'b' <> metavar "PATH" <> help "Backup the package cache to a given directory." <> hidden)
         clean  = CacheClean  <$> option auto (long "clean" <> short 'c' <> metavar "N" <> help "Save the most recent N versions of a package in the cache, deleting the rest." <> hidden)
         clean' = flag' CacheCleanNotSaved (long "notsaved" <> help "Clean out any cached package files which doesn't appear in any saved state." <> hidden)
         search = CacheSearch <$> strOption (long "search" <> short 's' <> metavar "STRING" <> help "Search the package cache via a search string." <> hidden)
@@ -290,8 +290,8 @@ buildConfig = BuildConfig <$> makepkg <*> bp <*> optional bu <*> trunc <*> build
         ia      = flag' IgnoreArch (long "ignorearch" <> hidden <> help "Exposed makepkg flag.")
         as      = flag' AllSource (long "allsource" <> hidden <> help "Exposed makepkg flag.")
         si      = flag' SkipInteg (long "skipinteg" <> hidden <> help "Skip all makepkg integrity checks.")
-        bp      = strOption (long "build" <> metavar "PATH" <> hidden <> help "Directory in which to build packages.")
-                  <|> pure defaultPackageCache
+        bp      = fmap fromAbsoluteFilePath (strOption (long "build" <> metavar "PATH" <> hidden <> help "Directory in which to build packages."))
+                  <|> pure defaultBuildDir
         bu      = User <$> strOption (long "builduser" <> metavar "USER" <> hidden <> help "User account to build as.")
         trunc   = fmap Head (option auto (long "head" <> metavar "N" <> hidden <> help "Only show top N search results."))
           <|> fmap Tail (option auto (long "tail" <> metavar "N" <> hidden <> help "Only show last N search results."))
@@ -312,11 +312,14 @@ buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <
 
 commonConfig :: Parser CommonConfig
 commonConfig = CommonConfig <$> cap <*> cop <*> lfp <*> ign <*> igg <*> commonSwitches
-  where cap = fmap Right (strOption (long "cachedir" <> hidden <> help "Use an alternate package cache location."))
+  where cap = fmap (Right . fromAbsoluteFilePath)
+                   (strOption (long "cachedir" <> hidden <> help "Use an alternate package cache location."))
               <|> pure (Left defaultPackageCache)
-        cop = fmap Right (strOption (long "config"   <> hidden <> help "Use an alternate Pacman config file."))
+        cop = fmap (Right . fromAbsoluteFilePath)
+                   (strOption (long "config"   <> hidden <> help "Use an alternate Pacman config file."))
               <|> pure (Left pacmanConfFile)
-        lfp = fmap Right (strOption (long "logfile"  <> hidden <> help "Use an alternate Pacman log."))
+        lfp = fmap (Right . fromAbsoluteFilePath)
+                   (strOption (long "logfile"  <> hidden <> help "Use an alternate Pacman log."))
               <|> pure (Left defaultLogFile)
         ign = maybe S.empty (S.fromList . map PkgName . T.split (== ',')) <$>
           optional (strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given packages."))
@@ -400,12 +403,17 @@ sync = bigS *> (Sync <$> (fmap Right somePkgs <|> fmap Left mods) <*> ref)
 
 misc :: Parser (S.Set MiscOp)
 misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> gpg <|> hd <|> con <|> dbo <|> nop <|> nos <|> pf <|> nod <|> prt <|> asi)
-  where ar  = MiscArch    <$> strOption (long "arch" <> metavar "ARCH" <> hidden <> help "Use an alternate architecture.")
-        dbp = MiscDBPath  <$> strOption (long "dbpath" <> short 'b' <> metavar "PATH" <> hidden <> help "Use an alternate database location.")
-        roo = MiscRoot    <$> strOption (long "root" <> short 'r' <> metavar "PATH" <> hidden <> help "Use an alternate installation root.")
+  where ar  = MiscArch . fromAbsoluteFilePath
+              <$> strOption (long "arch" <> metavar "ARCH" <> hidden <> help "Use an alternate architecture.")
+        dbp = MiscDBPath . fromAbsoluteFilePath
+              <$> strOption (long "dbpath" <> short 'b' <> metavar "PATH" <> hidden <> help "Use an alternate database location.")
+        roo = MiscRoot . fromAbsoluteFilePath
+              <$> strOption (long "root" <> short 'r' <> metavar "PATH" <> hidden <> help "Use an alternate installation root.")
         ver = flag' MiscVerbose (long "verbose" <> short 'v' <> hidden <> help "Be more verbose.")
-        gpg = MiscGpgDir  <$> strOption (long "gpgdir" <> metavar "PATH" <> hidden <> help "Use an alternate GnuGPG directory.")
-        hd  = MiscHookDir <$> strOption (long "hookdir" <> metavar "PATH" <> hidden <> help "Use an alternate hook directory.")
+        gpg = MiscGpgDir . fromAbsoluteFilePath
+              <$> strOption (long "gpgdir" <> metavar "PATH" <> hidden <> help "Use an alternate GnuGPG directory.")
+        hd  = MiscHookDir . fromAbsoluteFilePath
+              <$> strOption (long "hookdir" <> metavar "PATH" <> hidden <> help "Use an alternate hook directory.")
         con = flag' MiscConfirm (long "confirm" <> hidden <> help "Always ask for confirmation.")
         dbo = flag' MiscDBOnly (long "dbonly" <> hidden <> help "Only modify database entries, not package files.")
         nop = flag' MiscNoProgress (long "noprogressbar" <> hidden <> help "Don't show a progress bar when downloading.")

@@ -27,7 +27,7 @@ import           Aura.Pacman (pacmanOutput, pacman)
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
-import           BasePrelude hiding (Version, FilePath, mapMaybe)
+import           BasePrelude hiding (Version, mapMaybe)
 import           Control.Error.Util (hush)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
@@ -35,6 +35,7 @@ import           Control.Monad.Freer.Reader
 import           Data.Aeson
 import           Data.Aeson.Types (typeMismatch)
 import qualified Data.ByteString.Lazy as BL
+import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (nonEmpty)
 import qualified Data.Map.Strict as M
@@ -43,7 +44,8 @@ import           Data.Time
 import           Data.Versions
 import           Data.Witherable (mapMaybe)
 import           Lens.Micro ((^.))
-import           Shelly hiding (time, path)
+import           System.Path
+import           System.Path.IO (createDirectoryIfMissing, getDirectoryContents)
 
 ---
 
@@ -65,15 +67,15 @@ instance FromJSON PkgState where
 data StateDiff = StateDiff { _toAlter :: [SimplePkg], _toRemove :: [PkgName] }
 
 -- | The default location of all saved states: \/var\/cache\/aura\/states
-stateCache :: FilePath
-stateCache = "/var/cache/aura/states"
+stateCache :: Path Absolute
+stateCache = fromAbsoluteFilePath "/var/cache/aura/states"
 
 -- | Does a given package have an entry in a particular `PkgState`?
 inState :: SimplePkg -> PkgState -> Bool
 inState (SimplePkg n v) s = maybe False (v ==) . M.lookup n $ pkgsOf s
 
 rawCurrentState :: IO [SimplePkg]
-rawCurrentState = mapMaybe simplepkg' . T.lines <$> pacmanOutput ["-Q"]
+rawCurrentState = mapMaybe (simplepkg' . strictText) . BL.lines <$> pacmanOutput ["-Q"]
 
 currentState :: IO PkgState
 currentState = do
@@ -98,19 +100,20 @@ olds :: PkgState -> PkgState -> [SimplePkg]
 olds old curr = map (uncurry SimplePkg) . M.assocs $ M.difference (pkgsOf old) (pkgsOf curr)
 
 -- | The filepaths of every saved package state.
-getStateFiles :: IO [FilePath]
-getStateFiles = shelly $ mkdir_p stateCache >> fmap sort (ls stateCache)
+getStateFiles :: IO [Path Absolute]
+getStateFiles = do
+  createDirectoryIfMissing True stateCache
+  sort . map (stateCache </>) <$> getDirectoryContents stateCache
 
 -- | Save a package state.
 -- In writing the first state file, the `states` directory is created automatically.
-saveState :: (Member (Reader Settings) r, Member IO r) => Eff r ()
-saveState = do
-  ss <- ask
-  state <- send currentState
-  let filename = T.unpack . toTextIgnore $ stateCache </> dotFormat (timeOf state) <.> "json"
-  send . shelly @IO $ mkdir_p stateCache
-  send . BL.writeFile filename $ encode state
-  asks langOf >>= send . notify ss . saveState_1
+saveState :: Settings -> IO ()
+saveState ss = do
+  state <- currentState
+  let filename = stateCache </> fromUnrootedFilePath (dotFormat (timeOf state)) <.> FileExt "json"
+  createDirectoryIfMissing True stateCache
+  BL.writeFile (toFilePath filename) $ encode state
+  notify ss . saveState_1 $ langOf ss
 
 dotFormat :: ZonedTime -> String
 dotFormat (ZonedTime t _) = intercalate "." items
@@ -135,19 +138,19 @@ restoreState = send getStateFiles >>= maybe (throwError $ Failure restoreState_2
             Nothing   -> throwError $ Failure readState_1
             Just past -> do
               curr <- send currentState
-              Cache cache <- send . shelly @IO $ cacheContents pth
+              Cache cache <- send $ cacheContents pth
               let StateDiff rein remo = compareStates past curr
                   (okay, nope)        = partition (`M.member` cache) rein
               traverse_ (report red restoreState_1 . fmap (^. field @"name")) $ nonEmpty nope
               reinstallAndRemove (mapMaybe (`M.lookup` cache) okay) remo
 
-selectState :: NonEmpty FilePath -> IO FilePath
-selectState = fmap fromText . getSelection . fmap toTextIgnore
+selectState :: NonEmpty (Path Absolute) -> IO (Path Absolute)
+selectState = getSelection (T.pack . toFilePath)
 
 -- | Given a `FilePath` to a package state file, attempt to read and parse
 -- its contents. As of Aura 2.0, only state files in JSON format are accepted.
-readState :: FilePath -> IO (Maybe PkgState)
-readState = fmap decode . BL.readFile . T.unpack . toTextIgnore
+readState :: Path Absolute -> IO (Maybe PkgState)
+readState = fmap decode . BL.readFile . toFilePath
 
 -- | `reinstalling` can mean true reinstalling, or just altering.
 reinstallAndRemove :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
@@ -158,4 +161,4 @@ reinstallAndRemove down remo
   | null down = remove
   | otherwise = reinstall *> remove
   where remove    = rethrow . pacman $ "-R" : asFlag remo
-        reinstall = rethrow . pacman $ "-U" : map (toTextIgnore . path) down
+        reinstall = rethrow . pacman $ "-U" : map (toFilePath . path) down

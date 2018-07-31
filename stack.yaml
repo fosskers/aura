@@ -8,7 +8,9 @@ packages:
 extra-deps:
   - algebraic-graphs-0.1.1.1
   - compactable-0.1.2.2
+  - mwc-random-0.14.0.0
   # - language-bash-0.7.1
+  - paths-0.2.0.0
   - git: https://github.com/knrafto/language-bash
     commit: a4d6262e49db62614744968939594df8c5bd6ae4
   - git: https://github.com/andrewthad/non-empty-containers

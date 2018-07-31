@@ -38,6 +38,7 @@ import           Control.Concurrent.STM.TQueue
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field, super, HasField'(..))
 import qualified Data.List.NonEmpty as NEL
 import qualified Data.Map.Strict as M
@@ -45,14 +46,14 @@ import           Data.Semigroup.Foldable (fold1)
 import qualified Data.Set as S
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Language.Bash.Pretty (prettyText)
 import           Language.Bash.Syntax (Statement)
 import           Lens.Micro ((^.), (^..), each)
 import           Lens.Micro.Extras (view)
-import           Shelly (shelly, (</>), withTmpDir, cd, writefile, whenM)
+import           System.Directory (setCurrentDirectory)
 import           System.IO (hFlush, stdout)
+import           System.Path (fromAbsoluteFilePath)
 
 ---
 
@@ -114,7 +115,9 @@ install' pkgs = do
 analysePkgbuild :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Buildable -> Eff r ()
 analysePkgbuild b = do
   ss <- ask
-  let f = whenM (send $ optionalPrompt ss security_6) . throwError $ Failure security_7
+  let f = do
+        yes <- send $ optionalPrompt ss security_6
+        when yes . throwError $ Failure security_7
   case parsedPB $ b ^. field @"pkgbuild" of
     Nothing -> send (warn ss (security_1 (b ^. field @"name") $ langOf ss)) *> f
     Just l  -> case bannedTerms l of
@@ -168,7 +171,7 @@ buildAndInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member
   NonEmpty (NonEmptySet Buildable) -> Eff r ()
 buildAndInstall bss = do
   pth   <- asks (either id id . cachePathOf . commonConfigOf)
-  cache <- send . shelly @IO $ cacheContents pth
+  cache <- send $ cacheContents pth
   traverse_ (f cache) bss
   where f (Cache cache) bs = do
           ss <- ask
@@ -219,9 +222,9 @@ pkgbuildDiffs ps = ask >>= check
             isStored <- send $ hasPkgbuildStored pn
             if not isStored
                then send . warn ss $ reportPkgbuildDiffs_1 pn lang
-               else send . shelly @IO . withTmpDir $ \dir -> do
-                 cd dir
-                 let new = dir </> ("new.pb" :: T.Text)
-                 writefile new $ p ^. field @"pkgbuild" . field @"pkgbuild"
+               else send $ do
+                 setCurrentDirectory "/tmp"
+                 let new = "/tmp/new.pb"
+                 BL.writeFile new $ p ^. field @"pkgbuild" . field @"pkgbuild"
                  liftIO . warn ss $ reportPkgbuildDiffs_3 pn lang
-                 diff ss (pkgbuildPath pn) new
+                 diff ss (pkgbuildPath pn) $ fromAbsoluteFilePath new

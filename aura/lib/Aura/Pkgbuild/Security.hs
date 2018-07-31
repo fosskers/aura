@@ -16,6 +16,7 @@ module Aura.Pkgbuild.Security
 
 import           Aura.Languages
 import           Aura.Types (Pkgbuild(..), Language)
+import           Aura.Utils (strictText)
 import           BasePrelude hiding (Last, Word)
 import           Control.Error.Util (hush)
 import           Data.Generics.Product
@@ -48,7 +49,7 @@ blacklist = M.fromList $ downloading <> running <> permissions
 
 -- | Attempt to parse a PKGBUILD. Should succeed for all reasonable PKGBUILDs.
 parsedPB :: Pkgbuild -> Maybe List
-parsedPB (Pkgbuild pb) = hush . parse "PKGBUILD" $ T.unpack pb
+parsedPB (Pkgbuild pb) = hush . parse "PKGBUILD" . T.unpack $ strictText pb  -- TODO wasteful conversion!
 
 -- | Discover any banned terms lurking in a parsed PKGBUILD, paired with
 -- the surrounding context lines.

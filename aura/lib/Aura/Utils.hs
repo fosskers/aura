@@ -12,13 +12,14 @@ module Aura.Utils
   ( -- * Strings
     Pattern(..)
   , replaceByPatt, searchLines
+  , strictText
     -- * Network
   , urlContents
     -- * Shell
   , csi, cursorUpLineCode, hideCursor, showCursor, raiseCursorBy
   , getTrueUser, getEditor, getLocale
   , hasRootPriv, isTrueRoot
-  , quietSh, loudSh, exitCode
+  -- , quietSh, loudSh, exitCode  -- TODO remove
   , chown
     -- * File IO
   , ifFile
@@ -35,18 +36,24 @@ import           Aura.Colour
 import           Aura.Languages (whitespace, yesNoMessage, yesPattern)
 import           Aura.Settings
 import           Aura.Types (Language, Environment(..), User(..))
-import           BasePrelude hiding (FilePath, Version, (<+>))
+import           BasePrelude hiding (Version, (<+>))
 import           Control.Monad.Trans (MonadIO)
+import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
+import           Data.Text.Encoding.Error (lenientDecode)
 import qualified Data.Text.IO as T
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Encoding as TL
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Network.HTTP.Client
 import           Network.HTTP.Types.Status (statusCode)
-import           Shelly
 import           System.IO (stdout, hFlush)
+import           System.Path (Path, Absolute, toFilePath)
+import           System.Path.IO (doesFileExist)
+import           System.Process.Typed (runProcess, proc)
 
 ---
 
@@ -71,28 +78,32 @@ replaceByPatt (Pattern p t : ps) l = case T.breakOn p l of
 searchLines :: T.Text -> [T.Text] -> [T.Text]
 searchLines pat = filter (T.isInfixOf pat)
 
+-- | Get strict Text out of a lazy ByteString.
+strictText :: BL.ByteString -> T.Text
+strictText = TL.toStrict . TL.decodeUtf8With lenientDecode
+
 -----
 -- IO
 -----
 -- | Given a number of selections, allows the user to choose one.
-getSelection :: NonEmpty T.Text -> IO T.Text
-getSelection choiceLabels = do
+getSelection :: Foldable f => (a -> T.Text) -> f a -> IO a
+getSelection f choiceLabels = do
   let quantity = length choiceLabels
       valids   = show <$> [1..quantity]
       pad      = show . length . show $ quantity
       choices  = zip valids $ toList choiceLabels
-  traverse_ (uncurry (printf ("%" <> pad <> "s. %s\n"))) choices
+  traverse_ (\(l,v) -> printf ("%" <> pad <> "s. %s\n") l (f v)) choices
   putStr ">> "
   hFlush stdout
   userChoice <- getLine
   case userChoice `lookup` choices of
     Just valid -> pure valid
-    Nothing    -> getSelection choiceLabels  -- Ask again.
+    Nothing    -> getSelection f choiceLabels  -- Ask again.
 
 -- | If a file exists, it performs action `t` on the argument.
 -- | If the file doesn't exist, it performs `f` and returns the argument.
-ifFile :: MonadIO m => (a -> m a) -> m b -> FilePath -> a -> m a
-ifFile t f file x = shelly (test_f file) >>= bool (f $> x) (t x)
+ifFile :: MonadIO m => (a -> m a) -> m b -> Path Absolute -> a -> m a
+ifFile t f file x = liftIO (doesFileExist file) >>= bool (f $> x) (t x)
 
 ----------
 -- NETWORK
@@ -114,27 +125,28 @@ csi args code = "\ESC[" <> T.intercalate ";" (map (T.pack . show) args) <> code
 cursorUpLineCode :: Int -> T.Text
 cursorUpLineCode n = csi [n] "F"
 
+-- TODO remove
 -- | Perform a `Sh` action quietly while guarding against exceptions,
 -- and return the associated `ExitCode`.
-quietSh :: Sh a -> Sh (ExitCode, a)
-quietSh sh = do
-  a  <- errExit False . print_stdout False $ print_stderr False sh
-  ec <- exitCode <$> lastExitCode
-  pure (ec, a)
+-- quietSh :: Sh a -> Sh (ExitCode, a)
+-- quietSh sh = do
+--   a  <- errExit False . print_stdout False $ print_stderr False sh
+--   ec <- exitCode <$> lastExitCode
+--   pure (ec, a)
 
 -- | Perform a `Sh` action verbosely while guarding against exceptions,
 -- and return the associated `ExitCode`.
-loudSh :: Sh a -> Sh (ExitCode, a)
-loudSh sh = do
-  a  <- errExit False . print_stdout True $ print_stderr True sh
-  ec <- exitCode <$> lastExitCode
-  pure (ec, a)
+-- loudSh :: Sh a -> Sh (ExitCode, a)
+-- loudSh sh = do
+--   a  <- errExit False . print_stdout True $ print_stderr True sh
+--   ec <- exitCode <$> lastExitCode
+--   pure (ec, a)
 
 -- | Shelly's `lastExitCode` gives an `Int`, so this function here
 -- gives us a more usable form of the exit status.
-exitCode :: Int -> ExitCode
-exitCode 0 = ExitSuccess
-exitCode n = ExitFailure n
+-- exitCode :: Int -> ExitCode
+-- exitCode 0 = ExitSuccess
+-- exitCode n = ExitFailure n
 
 -- | This will get the true user name regardless of sudo-ing.
 getTrueUser :: Environment -> Maybe User
@@ -154,15 +166,15 @@ hasRootPriv env = M.member "SUDO_USER" env || isTrueRoot env
 -- | `vi` is a sensible default, it should be installed by
 -- on any Arch system.
 getEditor :: Environment -> FilePath
-getEditor = maybe "vi" fromText . M.lookup "EDITOR"
+getEditor = maybe "vi" T.unpack . M.lookup "EDITOR"
 
 -- | This will get the locale variable for translations from the environment
 getLocale :: Environment -> T.Text
 getLocale env = fromMaybe "C" . asum $ map (`M.lookup` env) ["LC_ALL", "LC_MESSAGES", "LANG"]
 
--- | Strangely missing from `Shelly`.
-chown :: User -> FilePath -> [T.Text] -> Sh ()
-chown (User usr) pth args = void . quietSh $ run_ "chown" (args <> [usr, toTextIgnore pth])
+-- | Mark some `Path` as being owned by a `User`.
+chown :: MonadIO m => User -> Path Absolute -> [String] -> m ()
+chown (User usr) pth args = void . runProcess $ proc "chown" (args <> [T.unpack usr, toFilePath pth])
 
 -- | Hide the cursor in a terminal.
 hideCursor :: IO ()
