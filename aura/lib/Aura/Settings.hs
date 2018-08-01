@@ -45,12 +45,12 @@ instance Flagable Makepkg where
 -- | Flags that are common to both Aura and Pacman.
 -- Aura will react to them, but also pass them through to `pacman`
 -- calls if necessary.
-data CommonConfig = CommonConfig { cachePathOf      :: Either (Path Absolute) (Path Absolute)
-                                 , configPathOf     :: Either (Path Absolute) (Path Absolute)
-                                 , logPathOf        :: Either (Path Absolute) (Path Absolute)
-                                 , ignoredPkgsOf    :: S.Set PkgName
-                                 , ignoredGroupsOf  :: S.Set PkgGroup
-                                 , commonSwitchesOf :: S.Set CommonSwitch } deriving (Show)
+data CommonConfig = CommonConfig { cachePathOf      :: !(Either (Path Absolute) (Path Absolute))
+                                 , configPathOf     :: !(Either (Path Absolute) (Path Absolute))
+                                 , logPathOf        :: !(Either (Path Absolute) (Path Absolute))
+                                 , ignoredPkgsOf    :: !(S.Set PkgName)
+                                 , ignoredGroupsOf  :: !(S.Set PkgGroup)
+                                 , commonSwitchesOf :: !(S.Set CommonSwitch) } deriving (Show)
 
 instance Flagable CommonConfig where
   asFlag (CommonConfig cap cop lfp igs igg cs) =
@@ -81,11 +81,11 @@ instance Flagable ColourMode where
   asFlag Auto   = ["auto"]
 
 -- | Settings unique to the AUR package building process.
-data BuildConfig = BuildConfig { makepkgFlagsOf  :: S.Set Makepkg
-                               , buildPathOf     :: (Path Absolute)
-                               , buildUserOf     :: Maybe User
-                               , truncationOf    :: Truncation  -- For `-As`
-                               , buildSwitchesOf :: S.Set BuildSwitch } deriving (Show)
+data BuildConfig = BuildConfig { makepkgFlagsOf  :: !(S.Set Makepkg)
+                               , buildPathOf     :: !(Path Absolute)
+                               , buildUserOf     :: !(Maybe User)
+                               , truncationOf    :: !Truncation  -- For `-As`
+                               , buildSwitchesOf :: !(S.Set BuildSwitch) } deriving (Show)
 
 -- | Extra options for customizing the build process.
 data BuildSwitch = DeleteMakeDeps
@@ -109,13 +109,13 @@ shared :: Settings -> CommonSwitch -> Bool
 shared ss c = S.member c . commonSwitchesOf $ commonConfigOf ss
 
 -- | The global settings as set by the user with command-line flags.
-data Settings = Settings { managerOf      :: Manager
-                         , envOf          :: Environment
-                         , langOf         :: Language
-                         , editorOf       :: FilePath
-                         , isTerminal     :: Bool
-                         , commonConfigOf :: CommonConfig
-                         , buildConfigOf  :: BuildConfig }
+data Settings = Settings { managerOf      :: !Manager
+                         , envOf          :: !Environment
+                         , langOf         :: !Language
+                         , editorOf       :: !FilePath
+                         , isTerminal     :: !Bool
+                         , commonConfigOf :: !CommonConfig
+                         , buildConfigOf  :: !BuildConfig }
 
 -- | Unless otherwise specified, packages will be built within @/tmp@.
 defaultBuildDir :: Path Absolute
