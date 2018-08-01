@@ -11,6 +11,7 @@
 
 module Aura.Dependencies ( resolveDeps ) where
 
+import           System.IO (stdout, hFlush)
 import           Algebra.Graph.AdjacencyMap
 import           Aura.Concurrency (throttled)
 import           Aura.Core
@@ -41,14 +42,6 @@ import           Lens.Micro.Extras (view)
 -- shared Map.
 data Wrote = WroteNothing | WroteNew
 
-data Status = Waiting | Working deriving (Eq)
-
-data Pool = Pool { threads :: Int
-                 , waiters :: TVar Int
-                 , tmap    :: TVar (M.Map PkgName Package)
-                 , tqueue  :: TQueue Package
-                 } deriving (Generic)
-
 -- | Given some `Package`s, determine its full dependency graph.
 -- The graph is collapsed into layers of packages which are not
 -- interdependent, and thus can be built and installed as a group.
@@ -61,6 +54,7 @@ resolveDeps repo ps = do
   tv   <- send $ newTVarIO M.empty
   de   <- send $ resolveDeps' ss repo tv ps
   m    <- send $ readTVarIO tv
+  send $ putStr "\n"
   unless (null de) . throwError . Failure $ missingPkg_2 de
   maybe (throwError $ Failure missingPkg_3) pure $ sortInstall m
 
@@ -93,6 +87,7 @@ resolveDeps' ss repo tv ps = throttled h ps >>= fmap fold . atomically . flushTQ
         Nothing    -> pure []
         Just deps' -> do
           -- TODO filter from `deps'` things that have already been checked!
+          putStr "." *> hFlush stdout
           (bads, goods) <- repoLookup repo ss $ NES.fromNonEmpty deps'
 
           -- let !depsMap = M.fromList $ map (view (field @"name") &&& id) ds
