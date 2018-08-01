@@ -52,15 +52,17 @@ resolveDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO 
 resolveDeps repo ps = do
   ss   <- ask
   tv   <- send $ newTVarIO M.empty
-  send $ resolveDeps' ss repo tv ps
+  ts   <- send $ newTVarIO S.empty
+  send $ resolveDeps' ss repo tv ts ps
   m    <- send $ readTVarIO tv
-  let de = conflicts ss m
+  s    <- send $ readTVarIO ts
+  let de = conflicts ss m s
   unless (null de) . throwError . Failure $ missingPkg_2 de
   maybe (throwError $ Failure missingPkg_3) pure $ sortInstall m
 
 -- | An empty list signals success.
-resolveDeps' :: Settings -> Repository -> TVar (M.Map PkgName Package) -> NonEmptySet Package -> IO ()
-resolveDeps' ss repo tv ps = throttled_ h ps *> putStr "\n"
+resolveDeps' :: Settings -> Repository -> TVar (M.Map PkgName Package) -> TVar (S.Set PkgName) -> NonEmptySet Package -> IO ()
+resolveDeps' ss repo tv ts ps = throttled_ h ps *> putStr "\n"
   where
     -- | Handles determining whether further work should be done. It won't
     -- continue to `j` if this `Package` has already been analysed.
@@ -82,12 +84,14 @@ resolveDeps' ss repo tv ps = throttled_ h ps *> putStr "\n"
     -- they might introduce.
     j :: TQueue Package -> Buildable -> M.Map PkgName Package -> IO ()
     j tq b m = do
-      ds <- wither (satisfied m) $ b ^. field @"deps"
+      s  <- atomically $ readTVar ts
+      (ds, sd) <- fmap partitionEithers . wither (satisfied m s) $ b ^. field @"deps"
+      atomically $ modifyTVar' ts (<> S.fromList sd)
       case NEL.nonEmpty $ ds ^.. each . field @"name" of
         Nothing    -> pure ()
         Just deps' -> do
           putStr "." *> hFlush stdout
-          (bads, goods) <- repoLookup repo ss $ NES.fromNonEmpty deps'
+          (_, goods) <- repoLookup repo ss $ NES.fromNonEmpty deps'
 
           -- let !depsMap = M.fromList $ map (view (field @"name") &&& id) ds
           --     !cnfs    = mapMaybe conflicting $ toList goods
@@ -106,19 +110,21 @@ resolveDeps' ss repo tv ps = throttled_ h ps *> putStr "\n"
           unless (null goods) . atomically $ traverse_ (writeTQueue tq) goods
           -- pure evils
 
-    satisfied :: M.Map PkgName Package -> Dep -> IO (Maybe Dep)
-    satisfied m d | (d ^. field @"name") `M.member` m = pure Nothing
-                  | otherwise = bool (Just d) Nothing <$> isSatisfied d
+    satisfied :: M.Map PkgName Package -> S.Set PkgName -> Dep -> IO (Maybe (Either Dep PkgName))
+    satisfied m s d | M.member dn m || S.member dn s = pure Nothing
+                    | otherwise = Just . bool (Left d) (Right dn) <$> isSatisfied d
+      where dn = d ^. field @"name"
 
-conflicts :: Settings -> M.Map PkgName Package -> [DepError]
-conflicts ss m = foldMap f m
+conflicts :: Settings -> M.Map PkgName Package -> S.Set PkgName -> [DepError]
+conflicts ss m s = foldMap f m
   where pm = M.fromList $ foldr (\p acc -> (pprov p ^. field @"provides" . to PkgName, p) : acc) [] m
         f (FromRepo _) = []
         f (FromAUR b)  = flip mapMaybe (b ^. field @"deps") $ \d ->
           let dn = d ^. field @"name"
-          in case M.lookup dn m <|> M.lookup dn pm of
-            Nothing -> Just $ NonExistant dn
-            Just p  -> realPkgConflicts ss (b ^. field @"name") p d
+          in if | S.member dn s -> Nothing
+                | otherwise     -> case M.lookup dn m <|> M.lookup dn pm of
+                                    Nothing -> Just $ NonExistant dn
+                                    Just p  -> realPkgConflicts ss (b ^. field @"name") p d
 
 sortInstall :: M.Map PkgName Package -> Maybe (NonEmpty (NonEmptySet Package))
 sortInstall m = NEL.nonEmpty . mapMaybe NES.fromSet . batch $ overlay connected singles
