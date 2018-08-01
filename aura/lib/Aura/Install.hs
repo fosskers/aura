@@ -136,7 +136,7 @@ displayBannedTerms ss (stmt, bts) = do
 -- | Give anything that was installed as a dependency the /Install Reason/ of
 -- "Installed as a dependency for another package".
 annotateDeps :: NonEmptySet Buildable -> IO ()
-annotateDeps bs = void . pacmanSuccess $ ["-D", "--asdeps"] <> asFlag (bs' ^.. each . field @"name")
+annotateDeps bs = unless (null bs') . void . pacman $ ["-D", "--asdeps"] <> asFlag (bs' ^.. each . field @"name")
   where bs' = filter (not . isExplicit) $ toList bs
 
 -- | Reduce a list of candidate packages to build, such that there is only one
