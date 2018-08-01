@@ -82,34 +82,36 @@ resolveDeps' ss repo tv ps = throttled h ps >>= fmap fold . atomically . flushTQ
         WroteNothing -> pure []
         WroteNew     -> case p of
           FromRepo _ -> pure []
-          FromAUR b  -> j tq b
+          FromAUR b  -> atomically (readTVar tv) >>= j tq b
 
     -- | Check for the existance of dependencies, as well as for any version conflicts
     -- they might introduce.
-    j :: TQueue Package -> Buildable -> IO [DepError]
-    j tq b = do
+    j :: TQueue Package -> Buildable -> M.Map PkgName Package -> IO [DepError]
+    j tq b m = do
       ds <- wither (\d -> bool (Just d) Nothing <$> isSatisfied d) $ b ^. field @"deps"
-      case NEL.nonEmpty $ ds ^.. each . field @"name" of
+      case NEL.nonEmpty $ ds ^.. each . field @"name" . filtered (`M.notMember` m) of
         Nothing    -> pure []
         Just deps' -> do
+          -- TODO filter from `deps'` things that have already been checked!
           (bads, goods) <- repoLookup repo ss $ NES.fromNonEmpty deps'
 
-          let !depsMap = M.fromList $ map (view (field @"name") &&& id) ds
-              !cnfs    = mapMaybe conflicting $ toList goods
-              !evils   = map NonExistant (toList bads) <> cnfs
+          -- let !depsMap = M.fromList $ map (view (field @"name") &&& id) ds
+          --     !cnfs    = mapMaybe conflicting $ toList goods
+          --     !evils   = map NonExistant (toList bads) <> cnfs
 
-              conflicting :: Package -> Maybe DepError
-              conflicting p' = either Just (realPkgConflicts ss (b ^. field @"name") p') $ provider p'
+          --     conflicting :: Package -> Maybe DepError
+          --     conflicting p' = either Just (realPkgConflicts ss (b ^. field @"name") p') $ provider p'
 
-              provider :: Package -> Either DepError Dep
-              provider p' = maybe
-                            (Left $ BrokenProvides (b ^. field @"name") (pprov p') (pname p'))
-                            Right $
-                            M.lookup (p' ^. to pprov . field' @"provides" . to PkgName) depsMap
-                            <|> M.lookup (pname p') depsMap
+          --     provider :: Package -> Either DepError Dep
+          --     provider p' = maybe
+          --                   (Left $ BrokenProvides (b ^. field @"name") (pprov p') (pname p'))
+          --                   Right $
+          --                   M.lookup (p' ^. to pprov . field' @"provides" . to PkgName) depsMap
+          --                   <|> M.lookup (pname p') depsMap
 
           unless (null goods) . atomically $ traverse_ (writeTQueue tq) goods
-          pure evils
+          -- pure evils
+          pure []
 
 sortInstall :: M.Map PkgName Package -> Maybe (NonEmpty (NonEmptySet Package))
 sortInstall m = NEL.nonEmpty . mapMaybe NES.fromSet . batch $ overlay connected singles
