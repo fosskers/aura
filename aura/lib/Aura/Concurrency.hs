@@ -7,7 +7,10 @@
 -- Handle concurrent fetches from a `TQueue`, throttled by the number
 -- of CPUs that the user has available.
 
-module Aura.Concurrency ( throttled ) where
+module Aura.Concurrency
+  ( throttled
+  , throttled_
+  ) where
 
 import BasePrelude
 import Control.Concurrent.Async
@@ -36,26 +39,29 @@ data Status = Waiting | Working
 --
 -- The order of elements in the original `Foldable` is not maintained.
 throttled :: Foldable f => (TQueue a -> a -> IO b) -> f a -> IO (TQueue b)
-throttled f xs = do
-  pool <- newPool xs
-  replicateConcurrently_ (fromIntegral $ threads pool) (work pool Working)
-  pure $ target pool
-  where work pool s = do
-          mx <- atomically . tryReadTQueue $ source pool
-          ws <- atomically . readTVar $ waiters pool
+throttled f xs = throttledGen (\q b -> atomically $ writeTQueue q b) f xs
+
+-- | Like `throttled`, but doesn't store any output.
+throttled_ :: Foldable f => (TQueue a -> a -> IO ()) -> f a -> IO ()
+throttled_ f xs = void $ throttledGen (\_ _ -> pure ()) f xs
+
+-- | The generic case. The caller can choose what to do with the value produced by the work.
+throttledGen :: Foldable f => (TQueue b -> b -> IO ()) -> (TQueue a -> a -> IO b) -> f a -> IO (TQueue b)
+throttledGen g f xs = do
+  p <- newPool xs
+  replicateConcurrently_ (fromIntegral $ threads p) (work p Working)
+  pure $ target p
+  where work p s = do
+          mx <- atomically . tryReadTQueue $ source p
+          ws <- atomically . readTVar $ waiters p
           case (mx, s) of
-            (Nothing, Waiting) | ws == threads pool -> pure ()  -- All our threads have completed.
-                               | otherwise -> threadDelay 100000 *> work pool Waiting
+            (Nothing, Waiting) | ws == threads p -> pure ()  -- All our threads have completed.
+                               | otherwise -> threadDelay 100000 *> work p Waiting
             (Nothing, Working) -> do
-              atomically $ modifyTVar' (waiters pool) succ
+              atomically $ modifyTVar' (waiters p) succ
               threadDelay 100000
-              work pool Waiting
+              work p Waiting
             (Just x, Waiting) -> do
-              atomically $ modifyTVar' (waiters pool) pred
-              b <- f (source pool) x
-              atomically $ writeTQueue (target pool) b
-              work pool Working
-            (Just x, Working) -> do
-              b <- f (source pool) x
-              atomically $ writeTQueue (target pool) b
-              work pool Working
+              atomically $ modifyTVar' (waiters p) pred
+              f (source p) x >>= g (target p) >> work p Working
+            (Just x, Working) -> f (source p) x >>= g (target p) >> work p Working
