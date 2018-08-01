@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleContexts, MonoLocalBinds, TupleSections, MultiWayIf #-}
-{-# LANGUAGE TypeApplications, DataKinds, DeriveGeneric #-}
+{-# LANGUAGE TypeApplications, DataKinds #-}
 
 -- |
 -- Module    : Aura.Dependencies

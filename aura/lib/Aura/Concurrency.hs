@@ -39,7 +39,7 @@ data Status = Waiting | Working
 --
 -- The order of elements in the original `Foldable` is not maintained.
 throttled :: Foldable f => (TQueue a -> a -> IO b) -> f a -> IO (TQueue b)
-throttled f xs = throttledGen (\q b -> atomically $ writeTQueue q b) f xs
+throttled = throttledGen (\q b -> atomically $ writeTQueue q b)
 
 -- | Like `throttled`, but doesn't store any output.
 throttled_ :: Foldable f => (TQueue a -> a -> IO ()) -> f a -> IO ()

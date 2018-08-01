@@ -1,5 +1,5 @@
 {-# LANGUAGE MultiWayIf, ViewPatterns, TupleSections #-}
-{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, MonoLocalBinds #-}
 
 -- |
 -- Module    : Aura.Commands.B

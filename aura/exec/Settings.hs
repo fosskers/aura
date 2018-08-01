@@ -51,19 +51,19 @@ getSettings (Program _ co bc lng) = runExceptT $ do
   fromGroups  <- lift . maybe (pure S.empty) groupPackages . NES.fromSet $ getIgnoredGroups confFile <> ignoredGroupsOf co
   let language = checkLang lng environment
   bu <- failWith (Failure whoIsBuildUser_1) $ buildUserOf bc <|> getTrueUser environment
-  pure $ Settings { managerOf      = manager
-                  , envOf          = environment
-                  , langOf         = language
-                  , editorOf       = getEditor environment
-                  , isTerminal     = isTerm
-                  , commonConfigOf =
-                      -- | These maintain the precedence order: flags, config file entry, default
-                      co { cachePathOf   = first (\x -> fromMaybe x $ getCachePath confFile) $ cachePathOf co
-                         , logPathOf     = first (\x -> fromMaybe x $ getLogFilePath confFile) $ logPathOf co
-                         , ignoredPkgsOf = getIgnoredPkgs confFile <> ignoredPkgsOf co <> fromGroups
-                         }
-                  , buildConfigOf = bc { buildUserOf = Just bu}
-                  }
+  pure Settings { managerOf      = manager
+                , envOf          = environment
+                , langOf         = language
+                , editorOf       = getEditor environment
+                , isTerminal     = isTerm
+                , commonConfigOf =
+                    -- | These maintain the precedence order: flags, config file entry, default
+                    co { cachePathOf   = first (\x -> fromMaybe x $ getCachePath confFile) $ cachePathOf co
+                       , logPathOf     = first (\x -> fromMaybe x $ getLogFilePath confFile) $ logPathOf co
+                       , ignoredPkgsOf = getIgnoredPkgs confFile <> ignoredPkgsOf co <> fromGroups
+                       }
+                , buildConfigOf = bc { buildUserOf = Just bu}
+                }
 
 checkLang :: Maybe Language -> Environment -> Language
 checkLang Nothing env   = langFromLocale $ getLocale env
