@@ -8,10 +8,12 @@ import           Aura.Pacman
 import           Aura.Pkgbuild.Security
 import           Aura.Types
 import           BasePrelude
+import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Versions
+import           System.Path
 import           Test.Tasty
 import           Test.Tasty.HUnit
 import           Text.Megaparsec
@@ -21,7 +23,7 @@ import           Text.Megaparsec
 main :: IO ()
 main = do
   conf <- T.readFile "test/pacman.conf"
-  pkb  <- Pkgbuild <$> T.readFile "test/aura.PKGBUILD"
+  pkb  <- Pkgbuild <$> BL.readFile "test/aura.PKGBUILD"
   defaultMain $ suite conf pkb
 
 suite :: T.Text -> Pkgbuild -> TestTree
@@ -37,7 +39,7 @@ suite conf pb = testGroup "Unit Tests"
     ]
   , testGroup "Aura.Types"
     [ testCase "simplepkg"
-      $ simplepkg (PackagePath "/var/cache/pacman/pkg/linux-is-cool-3.2.14-1-x86_64.pkg.tar.xz")
+      $ simplepkg (PackagePath $ fromAbsoluteFilePath "/var/cache/pacman/pkg/linux-is-cool-3.2.14-1-x86_64.pkg.tar.xz")
       @?= Just (SimplePkg "linux-is-cool" . Ideal $ SemVer 3 2 14 [[Digits 1]] [])
     , testCase "simplepkg'"
       $ simplepkg' "xchat 2.8.8-19" @?= Just (SimplePkg "xchat" . Ideal $ SemVer 2 8 8 [[Digits 19]] [])
