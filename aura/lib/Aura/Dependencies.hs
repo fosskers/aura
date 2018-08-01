@@ -24,7 +24,7 @@ import           Control.Concurrent.STM.TVar
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
-import           Data.Generics.Product (field, field')
+import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
@@ -34,7 +34,6 @@ import qualified Data.Text as T
 import           Data.Versions
 import           Data.Witherable (wither)
 import           Lens.Micro
-import           Lens.Micro.Extras (view)
 
 ---
 
@@ -87,28 +86,10 @@ resolveDeps' ss repo tv ts ps = throttled_ h ps *> putStr "\n"
       s  <- atomically $ readTVar ts
       (ds, sd) <- fmap partitionEithers . wither (satisfied m s) $ b ^. field @"deps"
       atomically $ modifyTVar' ts (<> S.fromList sd)
-      case NEL.nonEmpty $ ds ^.. each . field @"name" of
-        Nothing    -> pure ()
-        Just deps' -> do
-          putStr "." *> hFlush stdout
-          (_, goods) <- repoLookup repo ss $ NES.fromNonEmpty deps'
-
-          -- let !depsMap = M.fromList $ map (view (field @"name") &&& id) ds
-          --     !cnfs    = mapMaybe conflicting $ toList goods
-          --     !evils   = map NonExistant (toList bads) <> cnfs
-
-          --     conflicting :: Package -> Maybe DepError
-          --     conflicting p' = either Just (realPkgConflicts ss (b ^. field @"name") p') $ provider p'
-
-          --     provider :: Package -> Either DepError Dep
-          --     provider p' = maybe
-          --                   (Left $ BrokenProvides (b ^. field @"name") (pprov p') (pname p'))
-          --                   Right $
-          --                   M.lookup (p' ^. to pprov . field' @"provides" . to PkgName) depsMap
-          --                   <|> M.lookup (pname p') depsMap
-
-          unless (null goods) . atomically $ traverse_ (writeTQueue tq) goods
-          -- pure evils
+      for_ (NEL.nonEmpty $ ds ^.. each . field @"name") $ \deps' -> do
+        putStr "." *> hFlush stdout
+        (_, goods) <- repoLookup repo ss $ NES.fromNonEmpty deps'
+        unless (null goods) . atomically $ traverse_ (writeTQueue tq) goods
 
     satisfied :: M.Map PkgName Package -> S.Set PkgName -> Dep -> IO (Maybe (Either Dep PkgName))
     satisfied m s d | M.member dn m || S.member dn s = pure Nothing
