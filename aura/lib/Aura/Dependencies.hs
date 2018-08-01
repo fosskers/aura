@@ -13,7 +13,7 @@ module Aura.Dependencies ( resolveDeps ) where
 
 import           System.IO (stdout, hFlush)
 import           Algebra.Graph.AdjacencyMap
-import           Aura.Concurrency (throttled)
+import           Aura.Concurrency (throttled_)
 import           Aura.Core
 import           Aura.Languages
 import           Aura.Settings
@@ -60,11 +60,11 @@ resolveDeps repo ps = do
 
 -- | An empty list signals success.
 resolveDeps' :: Settings -> Repository -> TVar (M.Map PkgName Package) -> NonEmptySet Package -> IO [DepError]
-resolveDeps' ss repo tv ps = throttled h ps >>= fmap fold . atomically . flushTQueue
+resolveDeps' ss repo tv ps = throttled_ h ps $> []
   where
     -- | Handles determining whether further work should be done. It won't
     -- continue to `j` if this `Package` has already been analysed.
-    h :: TQueue Package -> Package -> IO [DepError]
+    h :: TQueue Package -> Package -> IO ()
     h tq p = do
       w <- atomically $ do
         let pn = pname p
@@ -73,20 +73,19 @@ resolveDeps' ss repo tv ps = throttled h ps >>= fmap fold . atomically . flushTQ
           Just _  -> pure WroteNothing
           Nothing -> modifyTVar' tv (M.insert pn p) $> WroteNew
       case w of
-        WroteNothing -> pure []
+        WroteNothing -> pure ()
         WroteNew     -> case p of
-          FromRepo _ -> pure []
+          FromRepo _ -> pure ()
           FromAUR b  -> atomically (readTVar tv) >>= j tq b
 
     -- | Check for the existance of dependencies, as well as for any version conflicts
     -- they might introduce.
-    j :: TQueue Package -> Buildable -> M.Map PkgName Package -> IO [DepError]
+    j :: TQueue Package -> Buildable -> M.Map PkgName Package -> IO ()
     j tq b m = do
       ds <- wither (\d -> bool (Just d) Nothing <$> isSatisfied d) $ b ^. field @"deps"
       case NEL.nonEmpty $ ds ^.. each . field @"name" . filtered (`M.notMember` m) of
-        Nothing    -> pure []
+        Nothing    -> pure ()
         Just deps' -> do
-          -- TODO filter from `deps'` things that have already been checked!
           putStr "." *> hFlush stdout
           (bads, goods) <- repoLookup repo ss $ NES.fromNonEmpty deps'
 
@@ -106,7 +105,6 @@ resolveDeps' ss repo tv ps = throttled h ps >>= fmap fold . atomically . flushTQ
 
           unless (null goods) . atomically $ traverse_ (writeTQueue tq) goods
           -- pure evils
-          pure []
 
 sortInstall :: M.Map PkgName Package -> Maybe (NonEmpty (NonEmptySet Package))
 sortInstall m = NEL.nonEmpty . mapMaybe NES.fromSet . batch $ overlay connected singles
