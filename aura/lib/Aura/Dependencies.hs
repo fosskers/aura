@@ -82,8 +82,8 @@ resolveDeps' ss repo tv ps = throttled_ h ps $> []
     -- they might introduce.
     j :: TQueue Package -> Buildable -> M.Map PkgName Package -> IO ()
     j tq b m = do
-      ds <- wither (\d -> bool (Just d) Nothing <$> isSatisfied d) $ b ^. field @"deps"
-      case NEL.nonEmpty $ ds ^.. each . field @"name" . filtered (`M.notMember` m) of
+      ds <- wither (satisfied m) $ b ^. field @"deps"
+      case NEL.nonEmpty $ ds ^.. each . field @"name" of
         Nothing    -> pure ()
         Just deps' -> do
           putStr "." *> hFlush stdout
@@ -105,6 +105,10 @@ resolveDeps' ss repo tv ps = throttled_ h ps $> []
 
           unless (null goods) . atomically $ traverse_ (writeTQueue tq) goods
           -- pure evils
+
+    satisfied :: M.Map PkgName Package -> Dep -> IO (Maybe Dep)
+    satisfied m d | (d ^. field @"name") `M.member` m = pure Nothing
+                  | otherwise = bool (Just d) Nothing <$> isSatisfied d
 
 sortInstall :: M.Map PkgName Package -> Maybe (NonEmpty (NonEmptySet Package))
 sortInstall m = NEL.nonEmpty . mapMaybe NES.fromSet . batch $ overlay connected singles
