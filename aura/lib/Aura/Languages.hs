@@ -341,7 +341,7 @@ depError l (BrokenProvides (PkgName pkg) (Provides pro) (PkgName n)) = case l of
 
 missingPkg_3 :: Language -> Doc AnsiStyle
 missingPkg_3 = \case
-  _ -> "There was an error reorganizing the dependency graph. If you see this, something is very wrong."
+  _ -> "Dependency cycle detected!"
 
 -----------------
 -- aura functions

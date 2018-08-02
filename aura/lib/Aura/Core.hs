@@ -126,7 +126,7 @@ isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", T.unpack (pk
 removePkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
 removePkgs pkgs = do
   pacOpts <- asks commonConfigOf
-  let pacOpts' = pacOpts & field @"ignoredPkgsOf" .~ S.empty
+  let pacOpts' = pacOpts & field @"ignoredPkgsOf"   .~ S.empty
                          & field @"ignoredGroupsOf" .~ S.empty
   rethrow . pacman $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts'
 

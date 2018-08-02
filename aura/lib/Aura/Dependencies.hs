@@ -108,9 +108,10 @@ conflicts ss m s = foldMap f m
                                     Just p  -> realPkgConflicts ss (b ^. field @"name") p d
 
 sortInstall :: M.Map PkgName Package -> Maybe (NonEmpty (NonEmptySet Package))
-sortInstall m = NEL.nonEmpty . mapMaybe NES.fromSet . batch $ overlay connected singles
+sortInstall m = topSort depGraph >> NEL.nonEmpty (mapMaybe NES.fromSet $ batch depGraph)
   where f (FromRepo _)  = []
         f p@(FromAUR b) = mapMaybe (\d -> fmap (p,) $ (d ^. field @"name") `M.lookup` m) $ b ^. field @"deps" -- TODO handle "provides"?
+        depGraph  = overlay connected singles
         elems     = M.elems m
         connected = edges $ foldMap f elems
         singles   = overlays $ map vertex elems
