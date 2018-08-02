@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 -- |
 -- Module    : Aura.Settings
@@ -50,7 +51,7 @@ data CommonConfig = CommonConfig { cachePathOf      :: !(Either (Path Absolute) 
                                  , logPathOf        :: !(Either (Path Absolute) (Path Absolute))
                                  , ignoredPkgsOf    :: !(S.Set PkgName)
                                  , ignoredGroupsOf  :: !(S.Set PkgGroup)
-                                 , commonSwitchesOf :: !(S.Set CommonSwitch) } deriving (Show)
+                                 , commonSwitchesOf :: !(S.Set CommonSwitch) } deriving (Show, Generic)
 
 instance Flagable CommonConfig where
   asFlag (CommonConfig cap cop lfp igs igg cs) =

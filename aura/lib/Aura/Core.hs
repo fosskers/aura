@@ -48,7 +48,7 @@ import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions (prettyV)
-import           Lens.Micro ((^.))
+import           Lens.Micro ((^.), (.~))
 import           Lens.Micro.Extras (view)
 import           System.Path.IO (doesFileExist)
 
@@ -125,8 +125,10 @@ isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", T.unpack (pk
 -- | An @-Rsu@ call.
 removePkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
 removePkgs pkgs = do
-  pacOpts <- asks (asFlag . commonConfigOf)
-  rethrow . pacman $ ["-Rsu"] <> asFlag pkgs <> pacOpts
+  pacOpts <- asks commonConfigOf
+  let pacOpts' = pacOpts & field @"ignoredPkgsOf" .~ S.empty
+                         & field @"ignoredGroupsOf" .~ S.empty
+  rethrow . pacman $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts'
 
 -- | True if a dependency is satisfied by an installed package.
 -- `asT` renders the `VersionDemand` into the specific form that `pacman -T`
