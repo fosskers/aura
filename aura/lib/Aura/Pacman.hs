@@ -47,7 +47,7 @@ import qualified Data.Text.Lazy.Encoding as TL
 import           Lens.Micro
 import           Lens.Micro.GHC ()
 import           System.Path (Path, Absolute, fromAbsoluteFilePath, toFilePath)
-import           System.Process.Typed (runProcess, readProcess, proc)
+import           System.Process.Typed
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
@@ -128,7 +128,7 @@ pacman args = do
 
 -- | Run some `pacman` process, but only care about whether it succeeded.
 pacmanSuccess :: [String] -> IO Bool
-pacmanSuccess = fmap (== ExitSuccess) . runProcess . proc "pacman"  -- TODO silence this?
+pacmanSuccess = fmap (\out -> (out ^. _1) == ExitSuccess) . readProcess . proc "pacman"  -- TODO silence this better?
 
 -- | Runs pacman silently and returns only the stdout.
 pacmanOutput :: [String] -> IO BL.ByteString
