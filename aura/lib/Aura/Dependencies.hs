@@ -11,7 +11,6 @@
 
 module Aura.Dependencies ( resolveDeps ) where
 
-import           System.IO (stdout, hFlush)
 import           Algebra.Graph.AdjacencyMap
 import           Aura.Concurrency (throttled_)
 import           Aura.Core
@@ -21,6 +20,7 @@ import           Aura.Types
 import           BasePrelude
 import           Control.Concurrent.STM.TQueue
 import           Control.Concurrent.STM.TVar
+import           Control.Error.Util (note)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
@@ -34,6 +34,7 @@ import qualified Data.Text as T
 import           Data.Versions
 import           Data.Witherable (wither)
 import           Lens.Micro
+import           System.IO (stdout, hFlush)
 
 ---
 
@@ -57,7 +58,7 @@ resolveDeps repo ps = do
   s    <- send $ readTVarIO ts
   let de = conflicts ss m s
   unless (null de) . throwError . Failure $ missingPkg_2 de
-  maybe (throwError $ Failure missingPkg_3) pure $ sortInstall m
+  either throwError pure $ sortInstall m
 
 -- | An empty list signals success.
 resolveDeps' :: Settings -> Repository -> TVar (M.Map PkgName Package) -> TVar (S.Set PkgName) -> NonEmptySet Package -> IO ()
@@ -107,14 +108,20 @@ conflicts ss m s = foldMap f m
                                     Nothing -> Just $ NonExistant dn
                                     Just p  -> realPkgConflicts ss (b ^. field @"name") p d
 
-sortInstall :: M.Map PkgName Package -> Maybe (NonEmpty (NonEmptySet Package))
-sortInstall m = topSort depGraph >> NEL.nonEmpty (mapMaybe NES.fromSet $ batch depGraph)
+sortInstall :: M.Map PkgName Package -> Either Failure (NonEmpty (NonEmptySet Package))
+sortInstall m = case cycles depGraph of
+  [] -> note (Failure missingPkg_3) . NEL.nonEmpty . mapMaybe NES.fromSet $ batch depGraph
+  cs -> Left . Failure . missingPkg_4 $ map (map pname . vertexList) cs
   where f (FromRepo _)  = []
         f p@(FromAUR b) = mapMaybe (\d -> fmap (p,) $ (d ^. field @"name") `M.lookup` m) $ b ^. field @"deps" -- TODO handle "provides"?
         depGraph  = overlay connected singles
         elems     = M.elems m
         connected = edges $ foldMap f elems
         singles   = overlays $ map vertex elems
+
+cycles :: Ord a => AdjacencyMap a -> [AdjacencyMap a]
+cycles x = [ induce (`S.member` c) x | c <- cs ]
+  where cs = filter (\c -> S.size c > 1) $ vertexList (scc x)
 
 -- | Find the vertices that have no dependencies.
 -- O(n) complexity.

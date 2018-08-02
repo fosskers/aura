@@ -341,7 +341,12 @@ depError l (BrokenProvides (PkgName pkg) (Provides pro) (PkgName n)) = case l of
 
 missingPkg_3 :: Language -> Doc AnsiStyle
 missingPkg_3 = \case
-  _ -> "Dependency cycle detected!"
+  _ -> "There was an error reorganizing the dependency graph. If you see this, something is very wrong."
+
+missingPkg_4 :: [[PkgName]] -> Language -> Doc AnsiStyle
+missingPkg_4 pns = \case
+  _ -> vsep $ "The following dependency cycles were detected:" : pns'
+  where pns' = map (hsep . map pretty . intersperse "=>" . map (view (field @"name"))) pns
 
 -----------------
 -- aura functions
