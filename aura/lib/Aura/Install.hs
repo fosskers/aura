@@ -100,7 +100,7 @@ install' pkgs = do
                  send $ notify ss (install_5 $ langOf ss) *> hFlush stdout
                  allPkgs <- depsToInstall repository toBuild'
                  let (repoPkgs, buildPkgs) = second uniquePkgBase $ partitionPkgs allPkgs
-                 traverse_ (traverse_ analysePkgbuild) buildPkgs
+                 unless (switch ss NoPkgbuildCheck) $ traverse_ (traverse_ analysePkgbuild) buildPkgs
                  reportPkgsToInstall repoPkgs buildPkgs
                  unless (switch ss DryRun) $ do
                    continue <- send $ optionalPrompt ss install_3
