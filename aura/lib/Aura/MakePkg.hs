@@ -17,12 +17,15 @@ module Aura.MakePkg
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
+import           Aura.Utils (strictText)
 import           BasePrelude
 import           Control.Error.Util (note)
+import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.List.NonEmpty as NEL
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
+import           Lens.Micro ((^.), _2)
 import           System.Path (Path, Absolute, fromAbsoluteFilePath, (</>), toFilePath)
 import           System.Path.IO (getCurrentDirectory, getDirectoryContents)
 import           System.Process.Typed
@@ -39,7 +42,7 @@ makepkgCmd = fromAbsoluteFilePath "/usr/bin/makepkg"
 -- | Given the current user name, build the package of whatever
 -- directory we're in.
 makepkg :: Settings -> User -> IO (Either Failure (NonEmptySet (Path Absolute)))
-makepkg ss usr = fmap g . f . make $ proc cmd (opts <> colour)
+makepkg ss usr = fmap g . f . make usr $ proc cmd (opts <> colour)
   where (cmd, opts) = runStyle usr . foldMap asFlag . makepkgFlagsOf $ buildConfigOf ss
         f | switch ss DontSuppressMakepkg = id
           -- TODO restore
@@ -53,13 +56,12 @@ makepkg ss usr = fmap g . f . make $ proc cmd (opts <> colour)
 
 -- | Actually build the package, guarding on exceptions.
 -- Yields the filepaths of the built package tarballs.
-make :: ProcessConfig stdin stdout stderr -> IO (ExitCode, [Path Absolute])
-make pc = do
+make :: User -> ProcessConfig stdin stdout stderr -> IO (ExitCode, [Path Absolute])
+make (User usr) pc = do
   ec  <- runProcess pc
-  pwd <- getCurrentDirectory
-  fs  <- filter p . map (pwd </>) <$> getDirectoryContents pwd
+  res <- readProcess $ proc "sudo" ["-u", T.unpack usr, toFilePath makepkgCmd, "--packagelist"]
+  let fs = map (fromAbsoluteFilePath . T.unpack . strictText) . BL.lines $ res ^. _2
   pure (ec, fs)
-  where p (T.pack . toFilePath -> fp) = T.isSuffixOf "-x86_64.pkg.tar.xz" fp || T.isSuffixOf "-any.pkg.tar.xz" fp
 
 -- | Make a source package. See `man makepkg` and grep for `--allsource`.
 makepkgSource :: User -> IO [Path Absolute]
