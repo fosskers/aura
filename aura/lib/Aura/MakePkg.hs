@@ -25,7 +25,7 @@ import qualified Data.List.NonEmpty as NEL
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
-import           Lens.Micro ((^.), _2)
+import           Control.Lens ((^.), _2)
 import           System.Path (Path, Absolute, fromAbsoluteFilePath, (</>), toFilePath)
 import           System.Path.IO (getCurrentDirectory, getDirectoryContents)
 import           System.Process.Typed
@@ -42,11 +42,10 @@ makepkgCmd = fromAbsoluteFilePath "/usr/bin/makepkg"
 -- | Given the current user name, build the package of whatever
 -- directory we're in.
 makepkg :: Settings -> User -> IO (Either Failure (NonEmptySet (Path Absolute)))
-makepkg ss usr = fmap g . f . make usr $ proc cmd (opts <> colour)
+makepkg ss usr = fmap g . make usr . f $ proc cmd (opts <> colour)
   where (cmd, opts) = runStyle usr . foldMap asFlag . makepkgFlagsOf $ buildConfigOf ss
         f | switch ss DontSuppressMakepkg = id
-          -- TODO restore
-          | otherwise = id -- print_stdout False . print_stderr False
+          | otherwise = setStdout closed
         g (ExitSuccess, fs) = note (Failure buildFail_9) . fmap NES.fromNonEmpty $ NEL.nonEmpty fs
         g _ = Left $ Failure buildFail_8
         colour | shared ss (Colour Never)  = ["--nocolor"]
@@ -56,7 +55,7 @@ makepkg ss usr = fmap g . f . make usr $ proc cmd (opts <> colour)
 
 -- | Actually build the package, guarding on exceptions.
 -- Yields the filepaths of the built package tarballs.
-make :: User -> ProcessConfig stdin stdout stderr -> IO (ExitCode, [Path Absolute])
+make :: MonadIO m => User -> ProcessConfig stdin stdout stderr -> m (ExitCode, [Path Absolute])
 make (User usr) pc = do
   ec  <- runProcess pc
   res <- readProcess $ proc "sudo" ["-u", T.unpack usr, toFilePath makepkgCmd, "--packagelist"]

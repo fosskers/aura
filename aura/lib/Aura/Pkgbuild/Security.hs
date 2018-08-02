@@ -30,7 +30,7 @@ import           Data.Text.Prettyprint.Doc.Render.Terminal (AnsiStyle)
 import           Language.Bash.Parse (parse)
 import           Language.Bash.Syntax
 import           Language.Bash.Word (Word, unquote)
-import           Lens.Micro
+import           Control.Lens
 
 ---
 
@@ -53,14 +53,27 @@ parsedPB (Pkgbuild pb) = hush . parse "PKGBUILD" . T.unpack $ strictText pb  -- 
 
 -- | Discover any banned terms lurking in a parsed PKGBUILD, paired with
 -- the surrounding context lines.
-bannedTerms :: List -> [(Statement, NonEmptySet BannedTerm)]
-bannedTerms (List sms) = mapMaybe exploit sms
+-- bannedTerms :: List -> [(Statement, NonEmptySet BannedTerm)]
+-- bannedTerms (List sms) = mapMaybe exploit sms
+
+bannedTerms :: List -> [(ShellCommand, BannedTerm)]
+bannedTerms = mapMaybe bannedCommand . simpleCommands
 
 exploit :: Statement -> Maybe (Statement, NonEmptySet BannedTerm)
 exploit s = fmap (s,) . NES.fromSet . S.fromList . mapMaybe banned $ s ^.. types @Word
 
 banned :: Word -> Maybe BannedTerm
-banned w = M.lookup (T.pack $ unquote w) blacklist
+banned w = show w `trace` M.lookup (T.pack $ unquote w) blacklist
+
+simpleCommands :: List -> [ShellCommand]
+simpleCommands l = l ^.. types @ShellCommand . filtered p
+  where p (SimpleCommand _ _) = True
+        p _ = False
+
+bannedCommand :: ShellCommand -> Maybe (ShellCommand, BannedTerm)
+bannedCommand s@(SimpleCommand _ (c:_)) = "HERE!" `trace` ((s,) <$> banned c)
+-- bannedCommand s@(SimpleCommand _ _) = show s `trace` Nothing  -- All assignments
+bannedCommand _ = Nothing
 
 ------------
 -- REPORTING
