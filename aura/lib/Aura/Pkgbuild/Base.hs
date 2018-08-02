@@ -25,17 +25,10 @@ pkgbuildCache = fromAbsoluteFilePath "/var/cache/aura/pkgbuilds/"
 pkgbuildPath :: PkgName -> Path Absolute
 pkgbuildPath (PkgName p) = pkgbuildCache </> fromUnrootedFilePath (T.unpack p) <.> FileExt "pb"
 
--- One of my favourite functions in this code base.
--- | Allow the user to customize a PKGBUILD, depending on if they specified
--- @--hotedit@ and/or @--custom@.
-pbCustomization :: Settings -> Buildable -> IO Buildable
-pbCustomization = hotEdit
--- pbCustomization ss = foldl (>=>) pure [customizepkg ss, hotEdit ss]
-
 -- | Package a Buildable, running the customization handler first.
 --
 -- REMINDER: This shouldn't be called concurrently. It could seriously mess
 -- up user interaction, and there probably aren't enough packages in the list to
 -- make the concurrent scheduling worth it.
 packageBuildable :: Settings -> Buildable -> IO Package
-packageBuildable ss b = FromAUR <$> pbCustomization ss b
+packageBuildable ss b = FromAUR <$> hotEdit ss b

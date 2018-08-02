@@ -84,6 +84,7 @@ in overall code size.
   - `-Ccc` is now `-C --notsaved`.
 - Help messages (`-h`) are no longer localised.
 - Support for `powerpill` removed.
+- Support for `customizepkg` removed.
 
 ### Bug Fixes
 

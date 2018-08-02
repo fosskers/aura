@@ -9,10 +9,7 @@
 --
 -- For handling the editing of PKGBUILDs.
 
-module Aura.Pkgbuild.Editing
-  ( hotEdit
-  -- , customizepkg  -- TODO remove?
-  ) where
+module Aura.Pkgbuild.Editing ( hotEdit ) where
 
 import           Aura.Languages
 import           Aura.Settings
@@ -28,9 +25,6 @@ import           System.Path.IO (getCurrentDirectory, getTemporaryDirectory)
 import           System.Process.Typed (runProcess, proc)
 
 ---
-
--- customizepkgPath :: Path Absolute
--- customizepkgPath = fromAbsoluteFilePath "/etc/customizepkg.d/"
 
 -- | Write a PKGBUILD to the filesystem temporarily, run some effectful
 -- function over it, then read it back in before proceeding with
@@ -57,31 +51,3 @@ hotEdit ss b
                 b' <- edit (runProcess . proc (editorOf ss) . (:[])) b
                 setCurrentDirectory $ toFilePath here
                 pure b'
-
--- TODO remove all this?
--- | Runs `customizepkg` on whatever PKGBUILD it can.
--- To work, a package needs an entry in `/etc/customizepkg.d/`
--- customizepkg :: Settings -> Buildable -> IO Buildable
--- customizepkg ss b
---   | not $ switch ss UseCustomizepkg = pure b
---   | otherwise = ifFile customizepkg' (liftIO . scold ss . customizepkg_1 $ langOf ss) bin b
---   where bin = "/usr/bin/customizepkg"
-
--- customizepkg' :: Buildable -> IO Buildable
--- customizepkg' b = do
---   here <- getCurrentDirectory
---   tmp  <- getTemporaryDirectory
---   setCurrentDirectory $ toFilePath tmp
---   ifFile (edit $ const customize) (pure ()) conf p
---   where conf = customizepkgPath </> (p ^. field @"name" . field @"name")
-
---   undefined
-
--- customizepkg' p = withTmpDir $ \tmp -> do
---   cd tmp
---   ifFile (edit $ const customize) (pure ()) conf p
---   where conf = customizepkgPath </> (p ^. field @"name" . field @"name")
-
--- TODO silence this
--- customize :: MonadIO m => m ()
--- customize = void . runProcess $ proc "customizepkg" ["--modify"]
