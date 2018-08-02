@@ -18,7 +18,7 @@ import           Aura.Concurrency (throttled)
 import           Aura.Core
 import           Aura.Languages (provides_1)
 import           Aura.Pacman (pacmanOutput)
-import           Aura.Settings (Settings)
+import           Aura.Settings (Settings, CommonSwitch(..), shared)
 import           Aura.Types
 import           Aura.Utils (getSelection, strictText)
 import           BasePrelude hiding (try)
@@ -67,7 +67,8 @@ chooseProvider _ pn []         = pure pn
 chooseProvider _ _ [p]         = pure p
 chooseProvider ss pn ps@(a:as) =
   throttled (const isInstalled) ps >>= atomically . flushTQueue >>= maybe f pure . listToMaybe . catMaybes
-  where f = warn ss (provides_1 pn) >> getSelection (^. field @"name") (a :| as)
+  where f | shared ss NoConfirm = pure a
+          | otherwise = warn ss (provides_1 pn) >> getSelection (^. field @"name") (a :| as)
 
 -- | The most recent version of a package, if it exists in the respositories.
 mostRecentVersion :: PkgName -> IO (Either PkgName Versioning)
