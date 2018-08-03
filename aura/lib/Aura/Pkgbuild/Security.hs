@@ -51,7 +51,7 @@ parsedPB (Pkgbuild pb) = hush . parse "PKGBUILD" . T.unpack $ strictText pb  -- 
 -- | Discover any banned terms lurking in a parsed PKGBUILD, paired with
 -- the surrounding context lines.
 bannedTerms :: List -> [(ShellCommand, BannedTerm)]
-bannedTerms = simpleCommands >=> bannedCommand -- mapMaybe bannedCommand . simpleCommands
+bannedTerms = simpleCommands >=> bannedCommand
 
 banned :: Word -> Maybe BannedTerm
 banned w = M.lookup (T.pack $ unquote w) blacklist

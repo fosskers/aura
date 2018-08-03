@@ -129,7 +129,7 @@ analysePkgbuild b = do
 
 displayBannedTerms :: Settings -> (ShellCommand, BannedTerm) -> IO ()
 displayBannedTerms ss (stmt, b) = do
-  putStrLn $ prettyText stmt
+  putStrLn $ "\n    " <> prettyText stmt <> "\n"
   warn ss $ reportExploit b lang
   where lang = langOf ss
 

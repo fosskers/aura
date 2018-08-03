@@ -1335,7 +1335,7 @@ security_5 (PkgName p) = \case
 
 security_6 :: Language -> Doc AnsiStyle
 security_6 = \case
-  _ -> "Do you wish to quit the build process? (recommended)"
+  _ -> "Do you wish to quit the build process?"
 
 security_7 :: Language -> Doc AnsiStyle
 security_7 = \case
