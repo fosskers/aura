@@ -1331,7 +1331,7 @@ security_4 (bt -> t) = \case
 
 security_5 :: PkgName -> Language -> Doc AnsiStyle
 security_5 (PkgName p) = \case
-  _ -> "WARNING: The PKGBUILD of" <+> bt p <+> "contains blacklisted bash terms."
+  _ -> "WARNING: The PKGBUILD of" <+> bt p <+> "contains blacklisted bash expressions."
 
 security_6 :: Language -> Doc AnsiStyle
 security_6 = \case
@@ -1348,6 +1348,10 @@ security_8 (bt -> t) = \case
 security_9 :: T.Text -> Language -> Doc AnsiStyle
 security_9 (bt -> t) = \case
   _ -> t <+> "is a strange thing to have in your array fields. Is it safe?"
+
+security_10 :: T.Text -> Language -> Doc AnsiStyle
+security_10 (bt -> t) = \case
+  _ -> t <+> "implies that someone was trying to be clever with variables to hide malicious commands."
 
 -----------------------
 -- Aura/Utils functions

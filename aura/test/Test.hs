@@ -70,7 +70,7 @@ suite conf pb = testGroup "Unit Tests"
         -- pPrintNoColor $ map (first prettyText) . bannedTerms <$> ppb
         -- pPrintNoColor ppb
         assertBool "Failed to parse" $ isJust ppb
-    , testCase "Detecting banned terms" $ (length . bannedTerms <$> ppb) @?= Just 6
+    , testCase "Detecting banned terms" $ (length . bannedTerms <$> ppb) @?= Just 7
     ]
   ]
   where ppb = parsedPB pb

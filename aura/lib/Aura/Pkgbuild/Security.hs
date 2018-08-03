@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, TupleSections, TypeApplications #-}
+{-# LANGUAGE OverloadedStrings, TupleSections, TypeApplications, DeriveGeneric #-}
 
 -- |
 -- Module    : Aura.Pkgbuild.Security
@@ -33,10 +33,16 @@ import           Lens.Micro
 
 -- | A bash term which should never appear in a PKGBUILD. If one does, it's
 -- either a sign of maintainer negligence or malicious behaviour.
-data BannedTerm = BannedTerm T.Text BanCategory deriving (Eq, Ord, Show)
+data BannedTerm = BannedTerm T.Text BanCategory deriving (Eq, Ord, Show, Generic)
 
 -- | The reason why the bash term is black-listed.
-data BanCategory = Downloading | ScriptRunning | Permissions | InlinedBash | StrangeBashism deriving (Eq, Ord, Show)
+data BanCategory = Downloading
+                 | ScriptRunning
+                 | Permissions
+                 | InlinedBash
+                 | StrangeBashism
+                 | CleverRedirect
+                 deriving (Eq, Ord, Show)
 
 blacklist :: M.Map T.Text BannedTerm
 blacklist = M.fromList $ downloading <> running <> permissions
@@ -67,11 +73,18 @@ bannedCommand s@(SimpleCommand [] (g:c:_))
   | g == [Char 'g', Char 'i', Char 't'] &&
     c == [Char 'c', Char 'l', Char 'o', Char 'n', Char 'e'] = [(s, BannedTerm "git" Downloading)]
 bannedCommand s@(SimpleCommand [] (c:_)) = maybeToList $ (s,) <$> banned c
-bannedCommand s@(SimpleCommand as _) = as ^.. each . typed @RValue . types @Word . each . to p . each . to (s,)
-  where p (CommandSubst str)   = [BannedTerm (T.pack str) InlinedBash]
-        p (ArithSubst str)     = [BannedTerm (T.pack str) StrangeBashism]
-        p (ProcessSubst _ str) = [BannedTerm (T.pack str) StrangeBashism]
-        p sp = sp ^.. types @Word . each . to p . each
+bannedCommand s@(SimpleCommand as _) = as ^.. each . typed @RValue . to r . each
+  where
+    r rv@(RValue w) = maybeToList ((s,) <$> (banned w & _Just . typed @BanCategory .~ CleverRedirect)) <> q rv
+    r rv = q rv
+
+    q :: RValue -> [(ShellCommand, BannedTerm)]
+    q rv = rv ^.. types @Word . each . to p . each . to (s,)
+
+    p (CommandSubst str)   = [BannedTerm (T.pack str) InlinedBash]
+    p (ArithSubst str)     = [BannedTerm (T.pack str) StrangeBashism]
+    p (ProcessSubst _ str) = [BannedTerm (T.pack str) StrangeBashism]
+    p sp = sp ^.. types @Word . each . to p . each
 bannedCommand _ = []
 
 ------------
@@ -86,3 +99,4 @@ reportExploit (BannedTerm t bc) = case bc of
   Permissions    -> security_4 t
   InlinedBash    -> security_8 t
   StrangeBashism -> security_9 t
+  CleverRedirect -> security_10 t
