@@ -26,7 +26,7 @@ import           Data.Text.Prettyprint.Doc (Doc)
 import           Data.Text.Prettyprint.Doc.Render.Terminal (AnsiStyle)
 import           Language.Bash.Parse (parse)
 import           Language.Bash.Syntax
-import           Language.Bash.Word (Word, unquote)
+import           Language.Bash.Word (Word, unquote, Span(..))
 import           Lens.Micro
 
 ---
@@ -40,7 +40,7 @@ data BanCategory = Downloading | ScriptRunning | Permissions deriving (Eq, Ord, 
 
 blacklist :: M.Map T.Text BannedTerm
 blacklist = M.fromList $ downloading <> running <> permissions
-  where downloading = map (\t -> (t, BannedTerm t Downloading)) ["curl", "wget", "git", "rsync", "scp"]
+  where downloading = map (\t -> (t, BannedTerm t Downloading)) ["curl", "wget", "rsync", "scp"]
         running     = map (\t -> (t, BannedTerm t ScriptRunning)) ["sh", "bash", "source", ".", "eval", "zsh", "fish"]
         permissions = map (\t -> (t, BannedTerm t Permissions)) ["sudo", "ssh"]
 
@@ -50,22 +50,22 @@ parsedPB (Pkgbuild pb) = hush . parse "PKGBUILD" . T.unpack $ strictText pb  -- 
 
 -- | Discover any banned terms lurking in a parsed PKGBUILD, paired with
 -- the surrounding context lines.
--- bannedTerms :: List -> [(Statement, NonEmptySet BannedTerm)]
--- bannedTerms (List sms) = mapMaybe exploit sms
-
 bannedTerms :: List -> [(ShellCommand, BannedTerm)]
 bannedTerms = mapMaybe bannedCommand . simpleCommands
 
 banned :: Word -> Maybe BannedTerm
 banned w = M.lookup (T.pack $ unquote w) blacklist
 
+-- | Extract all `SimpleCommand`s from a parsed bash AST.
 simpleCommands :: List -> [ShellCommand]
 simpleCommands l = l ^.. types @ShellCommand . to p . each
   where p sc@(SimpleCommand _ _) = [sc]
-        p (FunctionDef _ l') = simpleCommands l'
-        p _ = []
+        p sc = sc ^.. types @List . to simpleCommands . each
 
 bannedCommand :: ShellCommand -> Maybe (ShellCommand, BannedTerm)
+bannedCommand s@(SimpleCommand _ (g:c:_))
+  | g == [Char 'g', Char 'i', Char 't'] &&
+    c == [Char 'c', Char 'l', Char 'o', Char 'n', Char 'e'] = Just (s, BannedTerm "git" Downloading)
 bannedCommand s@(SimpleCommand _ (c:_)) = (s,) <$> banned c
 bannedCommand _ = Nothing
 

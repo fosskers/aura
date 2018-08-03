@@ -68,8 +68,9 @@ suite conf pb = testGroup "Unit Tests"
   , testGroup "Aura.Pkgbuild.Security"
     [ testCase "Parsing - aura.PKGBUILD" $ do
         -- pPrintNoColor $ map (first prettyText) . bannedTerms <$> ppb
+        -- pPrintNoColor ppb
         assertBool "Failed to parse" $ isJust ppb
-    , testCase "Detecting banned terms" $ (not . null . bannedTerms <$> ppb) @?= Just True
+    , testCase "Detecting banned terms" $ (length . bannedTerms <$> ppb) @?= Just 5
     ]
   ]
   where ppb = parsedPB pb
