@@ -1341,6 +1341,10 @@ security_7 :: Language -> Doc AnsiStyle
 security_7 = \case
   _ -> "Cancelled further processing to avoid potentially malicious bash code."
 
+security_8 :: T.Text -> Language -> Doc AnsiStyle
+security_8 (bt -> t) = \case
+  _ -> t <+> "is a bash command inlined in your PKGBUILD array fields."
+
 -----------------------
 -- Aura/Utils functions
 -----------------------

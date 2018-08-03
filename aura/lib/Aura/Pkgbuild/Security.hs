@@ -36,7 +36,7 @@ import           Lens.Micro
 data BannedTerm = BannedTerm T.Text BanCategory deriving (Eq, Ord, Show)
 
 -- | The reason why the bash term is black-listed.
-data BanCategory = Downloading | ScriptRunning | Permissions deriving (Eq, Ord, Show)
+data BanCategory = Downloading | ScriptRunning | Permissions | InlinedBash deriving (Eq, Ord, Show)
 
 blacklist :: M.Map T.Text BannedTerm
 blacklist = M.fromList $ downloading <> running <> permissions
@@ -51,7 +51,7 @@ parsedPB (Pkgbuild pb) = hush . parse "PKGBUILD" . T.unpack $ strictText pb  -- 
 -- | Discover any banned terms lurking in a parsed PKGBUILD, paired with
 -- the surrounding context lines.
 bannedTerms :: List -> [(ShellCommand, BannedTerm)]
-bannedTerms = mapMaybe bannedCommand . simpleCommands
+bannedTerms = simpleCommands >=> bannedCommand -- mapMaybe bannedCommand . simpleCommands
 
 banned :: Word -> Maybe BannedTerm
 banned w = M.lookup (T.pack $ unquote w) blacklist
@@ -62,12 +62,15 @@ simpleCommands l = l ^.. types @ShellCommand . to p . each
   where p sc@(SimpleCommand _ _) = [sc]
         p sc = sc ^.. types @List . to simpleCommands . each
 
-bannedCommand :: ShellCommand -> Maybe (ShellCommand, BannedTerm)
-bannedCommand s@(SimpleCommand _ (g:c:_))
+bannedCommand :: ShellCommand -> [(ShellCommand, BannedTerm)]
+bannedCommand s@(SimpleCommand [] (g:c:_))
   | g == [Char 'g', Char 'i', Char 't'] &&
-    c == [Char 'c', Char 'l', Char 'o', Char 'n', Char 'e'] = Just (s, BannedTerm "git" Downloading)
-bannedCommand s@(SimpleCommand _ (c:_)) = (s,) <$> banned c
-bannedCommand _ = Nothing
+    c == [Char 'c', Char 'l', Char 'o', Char 'n', Char 'e'] = [(s, BannedTerm "git" Downloading)]
+bannedCommand s@(SimpleCommand [] (c:_)) = maybeToList $ (s,) <$> banned c
+bannedCommand s@(SimpleCommand as _) = as ^.. each . typed @RValue . types @Word . each . to p . each . to (s,)
+  where p (CommandSubst str) = [BannedTerm (T.pack str) InlinedBash]
+        p sp = sp ^.. types @Word . each . to p . each
+bannedCommand _ = []
 
 ------------
 -- REPORTING
@@ -79,3 +82,4 @@ reportExploit (BannedTerm t bc) = case bc of
   Downloading   -> security_2 t
   ScriptRunning -> security_3 t
   Permissions   -> security_4 t
+  InlinedBash   -> security_8 t
