@@ -4,7 +4,7 @@
 
 This is a large update representing about a month of full-time effort. Aura is now
 *much* faster, solves dependencies more reliably, has a few new features, and
-many fewer bugs. This is all while modernizing the code and seeing a ~17% decrease
+many fewer bugs. This is all while modernizing the code and seeing a ~15% decrease
 in overall code size.
 
 ### Improvements
@@ -24,9 +24,20 @@ in overall code size.
   - Example: `cron` is a legal dependency to specify, but there exists no package
     with that name. `cronie` and `fcron` both "provide" `cron`, and now the user
     can manually make a selection.
+  - Including `--noconfirm` will have Aura make its best guess.
 - If the exact version of an AUR package is available in the package cache, it
   will be used automatically instead of being rebuilt. You can instead force a
   rebuild with `--force`.
+
+#### PKGBUILD Analysis
+
+- In light of the recent [compromise of the Acroread package](https://lists.archlinux.org/pipermail/aur-general/2018-July/034151.html),
+  Aura nows performs static PKGBUILD analysis before building, and warns the user if
+  potentially malicious terms like `curl` are found.
+  - This feature can be disabled with `--noanalysis`. Caveat emptor!
+  - **This feature is a supplement in checking PKGBUILD safety, not a fool-proof replacement.**
+    It is always your responsiblity to understand what build scripts are running
+    on your machine.
 
 #### Saved Package State
 
