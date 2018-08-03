@@ -134,7 +134,7 @@ removePkgs pkgs = do
 -- `asT` renders the `VersionDemand` into the specific form that `pacman -T`
 -- understands. See `man pacman` for more info.
 isSatisfied :: Dep -> IO Bool
-isSatisfied (Dep n ver) = BL.null <$> pacmanOutput (map T.unpack ["-T", (n ^. field @"name") <> asT ver])
+isSatisfied (Dep n ver) = pacmanSuccess $ map T.unpack ["-T", (n ^. field @"name") <> asT ver]
   where asT (LessThan v) = "<"  <> prettyV v
         asT (AtLeast  v) = ">=" <> prettyV v
         asT (MoreThan v) = ">"  <> prettyV v
