@@ -1345,6 +1345,10 @@ security_8 :: T.Text -> Language -> Doc AnsiStyle
 security_8 (bt -> t) = \case
   _ -> t <+> "is a bash command inlined in your PKGBUILD array fields."
 
+security_9 :: T.Text -> Language -> Doc AnsiStyle
+security_9 (bt -> t) = \case
+  _ -> t <+> "is a strange thing to have in your array fields. Is it safe?"
+
 -----------------------
 -- Aura/Utils functions
 -----------------------

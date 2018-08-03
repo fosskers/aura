@@ -36,7 +36,7 @@ import           Lens.Micro
 data BannedTerm = BannedTerm T.Text BanCategory deriving (Eq, Ord, Show)
 
 -- | The reason why the bash term is black-listed.
-data BanCategory = Downloading | ScriptRunning | Permissions | InlinedBash deriving (Eq, Ord, Show)
+data BanCategory = Downloading | ScriptRunning | Permissions | InlinedBash | StrangeBashism deriving (Eq, Ord, Show)
 
 blacklist :: M.Map T.Text BannedTerm
 blacklist = M.fromList $ downloading <> running <> permissions
@@ -68,7 +68,9 @@ bannedCommand s@(SimpleCommand [] (g:c:_))
     c == [Char 'c', Char 'l', Char 'o', Char 'n', Char 'e'] = [(s, BannedTerm "git" Downloading)]
 bannedCommand s@(SimpleCommand [] (c:_)) = maybeToList $ (s,) <$> banned c
 bannedCommand s@(SimpleCommand as _) = as ^.. each . typed @RValue . types @Word . each . to p . each . to (s,)
-  where p (CommandSubst str) = [BannedTerm (T.pack str) InlinedBash]
+  where p (CommandSubst str)   = [BannedTerm (T.pack str) InlinedBash]
+        p (ArithSubst str)     = [BannedTerm (T.pack str) StrangeBashism]
+        p (ProcessSubst _ str) = [BannedTerm (T.pack str) StrangeBashism]
         p sp = sp ^.. types @Word . each . to p . each
 bannedCommand _ = []
 
@@ -79,7 +81,8 @@ bannedCommand _ = []
 -- | Dispatch different error messages depending on the category of a `BannedTerm`.
 reportExploit :: BannedTerm -> (Language -> Doc AnsiStyle)
 reportExploit (BannedTerm t bc) = case bc of
-  Downloading   -> security_2 t
-  ScriptRunning -> security_3 t
-  Permissions   -> security_4 t
-  InlinedBash   -> security_8 t
+  Downloading    -> security_2 t
+  ScriptRunning  -> security_3 t
+  Permissions    -> security_4 t
+  InlinedBash    -> security_8 t
+  StrangeBashism -> security_9 t
