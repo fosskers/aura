@@ -56,13 +56,14 @@ resolveDeps repo ps = do
   send $ resolveDeps' ss repo tv ts ps
   m    <- send $ readTVarIO tv
   s    <- send $ readTVarIO ts
+  unless (length ps == length m) $ send (putStr "\n")
   let de = conflicts ss m s
   unless (null de) . throwError . Failure $ missingPkg_2 de
   either throwError pure $ sortInstall m
 
 -- | An empty list signals success.
 resolveDeps' :: Settings -> Repository -> TVar (M.Map PkgName Package) -> TVar (S.Set PkgName) -> NonEmptySet Package -> IO ()
-resolveDeps' ss repo tv ts ps = throttled_ h ps *> putStr "\n"
+resolveDeps' ss repo tv ts ps = throttled_ h ps
   where
     -- | Handles determining whether further work should be done. It won't
     -- continue to `j` if this `Package` has already been analysed.

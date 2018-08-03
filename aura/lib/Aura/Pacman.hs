@@ -128,11 +128,11 @@ pacman args = do
 
 -- | Run some `pacman` process, but only care about whether it succeeded.
 pacmanSuccess :: [String] -> IO Bool
-pacmanSuccess = fmap (\out -> (out ^. _1) == ExitSuccess) . readProcess . proc "pacman"  -- TODO silence this better?
+pacmanSuccess = fmap (== ExitSuccess) . runProcess . setStderr closed . setStdout closed . proc "pacman"
 
 -- | Runs pacman silently and returns only the stdout.
 pacmanOutput :: [String] -> IO BL.ByteString
-pacmanOutput = fmap (^. _2) . readProcess . proc "pacman"  -- TODO silence this?
+pacmanOutput = fmap (^. _2) . readProcess . proc "pacman"
 
 -- | Yields the lines given by `pacman -V` with the pacman image stripped.
 getVersionInfo :: IO [T.Text]

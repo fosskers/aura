@@ -45,7 +45,7 @@ makepkg :: Settings -> User -> IO (Either Failure (NonEmptySet (Path Absolute)))
 makepkg ss usr = fmap g . make usr . f $ proc cmd (opts <> colour)
   where (cmd, opts) = runStyle usr . foldMap asFlag . makepkgFlagsOf $ buildConfigOf ss
         f | switch ss DontSuppressMakepkg = id
-          | otherwise = setStdout closed
+          | otherwise = setStderr closed . setStdout closed
         g (ExitSuccess, fs) = note (Failure buildFail_9) . fmap NES.fromNonEmpty $ NEL.nonEmpty fs
         g _ = Left $ Failure buildFail_8
         colour | shared ss (Colour Never)  = ["--nocolor"]

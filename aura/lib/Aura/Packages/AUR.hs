@@ -44,7 +44,7 @@ import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
 import           System.Path
 import           System.Path.IO (getCurrentDirectory)
-import           System.Process.Typed (proc, runProcess)
+import           System.Process.Typed
 
 ---
 
@@ -99,11 +99,10 @@ pkgUrl (PkgName pkg) = T.pack . toUnrootedFilePath $ aurLink </> fromUnrootedFil
 -------------------
 -- SOURCES FROM GIT
 -------------------
--- TODO Make silent?
 -- | Attempt to clone a package source from the AUR.
 clone :: Buildable -> IO (Maybe (Path Absolute))
 clone b = do
-  ec <- runProcess $ proc "git" [ "clone", "--depth", "1", toUnrootedFilePath url ]
+  ec <- runProcess . setStderr closed . setStdout closed $ proc "git" [ "clone", "--depth", "1", toUnrootedFilePath url ]
   case ec of
     (ExitFailure _) -> pure Nothing
     ExitSuccess     -> do
