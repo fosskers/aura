@@ -75,7 +75,7 @@ in overall code size.
   - Removed custom package version number parsing in favour of `versions`.
   - Removed custom text colouring code in favour of `prettyprinter`.
   - Removed the `Aura` Monad in favour of Extensible Effects via `freer-simple`.
-  - Removed custom shell interaction code in favour of `shelly`.
+  - Removed custom shell interaction code in favour of `typed-process`.
   - Used `async` to make AUR and `pacman` calls concurrent.
   - `megaparsec` parsers used in place of hacky Regexes.
 - `aura` is now a library as well, and can be pulled into other Haskell projects.
