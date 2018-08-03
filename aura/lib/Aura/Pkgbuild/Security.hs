@@ -21,16 +21,13 @@ import           BasePrelude hiding (Last, Word)
 import           Control.Error.Util (hush)
 import           Data.Generics.Product
 import qualified Data.Map.Strict as M
-import qualified Data.Set as S
-import           Data.Set.NonEmpty (NonEmptySet)
-import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Text.Prettyprint.Doc (Doc)
 import           Data.Text.Prettyprint.Doc.Render.Terminal (AnsiStyle)
 import           Language.Bash.Parse (parse)
 import           Language.Bash.Syntax
 import           Language.Bash.Word (Word, unquote)
-import           Control.Lens
+import           Lens.Micro
 
 ---
 
@@ -59,20 +56,17 @@ parsedPB (Pkgbuild pb) = hush . parse "PKGBUILD" . T.unpack $ strictText pb  -- 
 bannedTerms :: List -> [(ShellCommand, BannedTerm)]
 bannedTerms = mapMaybe bannedCommand . simpleCommands
 
-exploit :: Statement -> Maybe (Statement, NonEmptySet BannedTerm)
-exploit s = fmap (s,) . NES.fromSet . S.fromList . mapMaybe banned $ s ^.. types @Word
-
 banned :: Word -> Maybe BannedTerm
-banned w = show w `trace` M.lookup (T.pack $ unquote w) blacklist
+banned w = M.lookup (T.pack $ unquote w) blacklist
 
 simpleCommands :: List -> [ShellCommand]
-simpleCommands l = l ^.. types @ShellCommand . filtered p
-  where p (SimpleCommand _ _) = True
-        p _ = False
+simpleCommands l = l ^.. types @ShellCommand . to p . each
+  where p sc@(SimpleCommand _ _) = [sc]
+        p (FunctionDef _ l') = simpleCommands l'
+        p _ = []
 
 bannedCommand :: ShellCommand -> Maybe (ShellCommand, BannedTerm)
-bannedCommand s@(SimpleCommand _ (c:_)) = "HERE!" `trace` ((s,) <$> banned c)
--- bannedCommand s@(SimpleCommand _ _) = show s `trace` Nothing  -- All assignments
+bannedCommand s@(SimpleCommand _ (c:_)) = (s,) <$> banned c
 bannedCommand _ = Nothing
 
 ------------

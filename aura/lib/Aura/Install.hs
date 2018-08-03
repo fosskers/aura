@@ -48,7 +48,7 @@ import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text.IO as T
 import           Language.Bash.Pretty (prettyText)
-import           Language.Bash.Syntax (Statement)
+import           Language.Bash.Syntax (ShellCommand)
 import           Lens.Micro ((^.), (^..), each)
 import           Lens.Micro.Extras (view)
 import           System.Directory (setCurrentDirectory)
@@ -127,10 +127,10 @@ analysePkgbuild b = do
         send $ traverse_ (displayBannedTerms ss) bts
         f
 
-displayBannedTerms :: Settings -> (Statement, NonEmptySet BannedTerm) -> IO ()
-displayBannedTerms ss (stmt, bts) = do
+displayBannedTerms :: Settings -> (ShellCommand, BannedTerm) -> IO ()
+displayBannedTerms ss (stmt, b) = do
   putStrLn $ prettyText stmt
-  traverse_ (\b -> warn ss $ reportExploit b lang) bts
+  warn ss $ reportExploit b lang
   where lang = langOf ss
 
 -- | Give anything that was installed as a dependency the /Install Reason/ of

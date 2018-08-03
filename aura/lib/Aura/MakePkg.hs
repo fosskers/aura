@@ -25,7 +25,7 @@ import qualified Data.List.NonEmpty as NEL
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
-import           Control.Lens ((^.), _2)
+import           Lens.Micro ((^.), _2)
 import           System.Path (Path, Absolute, fromAbsoluteFilePath, (</>), toFilePath)
 import           System.Path.IO (getCurrentDirectory, getDirectoryContents)
 import           System.Process.Typed

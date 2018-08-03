@@ -13,10 +13,12 @@ import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Versions
+-- import           Language.Bash.Pretty (prettyText)
 import           System.Path
 import           Test.Tasty
 import           Test.Tasty.HUnit
 import           Text.Megaparsec
+-- import           Text.Pretty.Simple (pPrintNoColor)
 
 ---
 
@@ -65,10 +67,12 @@ suite conf pb = testGroup "Unit Tests"
     ]
   , testGroup "Aura.Pkgbuild.Security"
     [ testCase "Parsing - aura.PKGBUILD" $ do
-        assertBool "Failed to parse" . isJust $ parsedPB pb
-    , testCase "Detecting banned terms" $ (fmap (not . null . bannedTerms) $ parsedPB pb) @?= Just True
+        -- pPrintNoColor $ map (first prettyText) . bannedTerms <$> ppb
+        assertBool "Failed to parse" $ isJust ppb
+    , testCase "Detecting banned terms" $ (not . null . bannedTerms <$> ppb) @?= Just True
     ]
   ]
+  where ppb = parsedPB pb
 
 firefox :: T.Text
 firefox = "Repository      : extra\n\

