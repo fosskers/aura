@@ -52,8 +52,9 @@ packageRepo pn pro ver = Prebuilt { name     = pn
                                   , base     = pn
                                   , provides = pro }
 
+-- TODO Bind to libalpm /just/ for the @-Ssq@ functionality. These shell
+-- calls are one of the remaining bottlenecks.
 -- | If given a virtual package, try to find a real package to install.
--- Functions like this are why we need libalpm.
 resolveName :: Settings -> PkgName -> IO (Either PkgName (PkgName, Provides))
 resolveName ss pn = do
   provs <- map (PkgName . strictText) . BL.lines <$> pacmanOutput ["-Ssq", "^" <> T.unpack (pn ^. field @"name") <> "$"]

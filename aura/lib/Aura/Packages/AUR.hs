@@ -22,13 +22,14 @@ module Aura.Packages.AUR
   , pkgUrl
   ) where
 
+import           Aura.Concurrency (throttled)
 import           Aura.Core
 import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings
 import           Aura.Types
 import           BasePrelude hiding (head)
-import           Control.Compactable (traverseEither)
+import           Control.Concurrent.STM.TQueue
 import           Control.Error.Util (hush)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Reader
@@ -48,13 +49,14 @@ import           System.Process.Typed
 
 ---
 
--- TODO Make the call to `buildable` concurrent, since it makes web calls.
 -- | Attempt to retrieve info about a given `S.Set` of packages from the AUR.
 -- This is a signature expected by `InstallOptions`.
 aurLookup :: Settings -> NonEmptySet PkgName -> IO (S.Set PkgName, S.Set Buildable)
 aurLookup ss names = do
-  (bads, goods) <- info m (foldMap (\(PkgName pn) -> [pn]) names) >>= traverseEither (buildable m)
-  let goodNames = S.fromList $ goods ^.. each . field @"name"
+  infos     <- info m (foldMap (\(PkgName pn) -> [pn]) names)
+  badsgoods <- throttled (\_ a -> buildable m a) infos >>= atomically . flushTQueue
+  let (bads, goods) = partitionEithers badsgoods
+      goodNames     = S.fromList $ goods ^.. each . field @"name"
   pure (S.fromList bads <> NES.toSet names S.\\ goodNames, S.fromList goods)
     where m = managerOf ss
 

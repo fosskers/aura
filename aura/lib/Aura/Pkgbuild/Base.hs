@@ -26,9 +26,5 @@ pkgbuildPath :: PkgName -> Path Absolute
 pkgbuildPath (PkgName p) = pkgbuildCache </> fromUnrootedFilePath (T.unpack p) <.> FileExt "pb"
 
 -- | Package a Buildable, running the customization handler first.
---
--- REMINDER: This shouldn't be called concurrently. It could seriously mess
--- up user interaction, and there probably aren't enough packages in the list to
--- make the concurrent scheduling worth it.
 packageBuildable :: Settings -> Buildable -> IO Package
 packageBuildable ss b = FromAUR <$> hotEdit ss b
