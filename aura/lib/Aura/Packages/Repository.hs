@@ -14,7 +14,6 @@ module Aura.Packages.Repository
   , extractVersion
   ) where
 
-import           Aura.Concurrency (throttled)
 import           Aura.Core
 import           Aura.Languages (provides_1)
 import           Aura.Pacman (pacmanOutput)
@@ -24,6 +23,7 @@ import           Aura.Utils (getSelection, strictText)
 import           BasePrelude hiding (try)
 import           Control.Compactable (traverseEither)
 import           Control.Concurrent.STM.TQueue
+import           Control.Concurrent.Throttled (throttled)
 import           Control.Error.Util (hush, note)
 import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)

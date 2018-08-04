@@ -22,7 +22,6 @@ module Aura.Packages.AUR
   , pkgUrl
   ) where
 
-import           Aura.Concurrency (throttled)
 import           Aura.Core
 import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Fetch
@@ -30,6 +29,7 @@ import           Aura.Settings
 import           Aura.Types
 import           BasePrelude hiding (head)
 import           Control.Concurrent.STM.TQueue
+import           Control.Concurrent.Throttled (throttled)
 import           Control.Error.Util (hush)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Reader

@@ -12,7 +12,6 @@
 module Aura.Dependencies ( resolveDeps ) where
 
 import           Algebra.Graph.AdjacencyMap
-import           Aura.Concurrency (throttled_)
 import           Aura.Core
 import           Aura.Languages
 import           Aura.Settings
@@ -20,6 +19,7 @@ import           Aura.Types
 import           BasePrelude
 import           Control.Concurrent.STM.TQueue
 import           Control.Concurrent.STM.TVar
+import           Control.Concurrent.Throttled (throttled_)
 import           Control.Error.Util (note)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error

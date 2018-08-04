@@ -18,7 +18,6 @@ module Aura.Install
 import           Aura.Build
 import           Aura.Cache (Cache(..), cacheContents)
 import           Aura.Colour
-import           Aura.Concurrency (throttled)
 import           Aura.Core
 import           Aura.Dependencies
 import           Aura.Diff (diff)
@@ -35,6 +34,7 @@ import           Aura.Utils
 import           BasePrelude hiding (FilePath, diff)
 import           Control.Compactable (fmapEither)
 import           Control.Concurrent.STM.TQueue
+import           Control.Concurrent.Throttled (throttled)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
