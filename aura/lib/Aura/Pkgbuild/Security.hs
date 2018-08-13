@@ -47,7 +47,7 @@ data BanCategory = Downloading
 blacklist :: M.Map T.Text BannedTerm
 blacklist = M.fromList $ downloading <> running <> permissions
   where downloading = map (\t -> (t, BannedTerm t Downloading)) ["curl", "wget", "rsync", "scp"]
-        running     = map (\t -> (t, BannedTerm t ScriptRunning)) ["sh", "bash", "source", ".", "eval", "zsh", "fish"]
+        running     = map (\t -> (t, BannedTerm t ScriptRunning)) ["sh", "bash", "eval", "zsh", "fish"]
         permissions = map (\t -> (t, BannedTerm t Permissions)) ["sudo", "ssh"]
 
 -- | Attempt to parse a PKGBUILD. Should succeed for all reasonable PKGBUILDs.
