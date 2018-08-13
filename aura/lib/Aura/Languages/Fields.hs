@@ -1,5 +1,6 @@
 {-# LANGUAGE LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_HADDOCK prune #-}
+{-# OPTIONS_GHC -fno-warn-missing-export-lists #-}
 
 -- |
 -- Module    : Aura.Languages.Fields

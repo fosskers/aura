@@ -23,13 +23,17 @@ extra-source-files:
   - doc/completions/_aura
 
 ghc-options:
-  - -fwarn-unused-imports
-  - -fwarn-unused-binds
-  - -fwarn-name-shadowing
-  - -fwarn-unused-matches
-  - -fwarn-incomplete-patterns
-  - -fwarn-incomplete-uni-patterns
-  - -fwarn-redundant-constraints
+  - -Widentities
+  - -Wincomplete-patterns
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+  - -Wmissing-export-lists
+  - -Wname-shadowing
+  - -Wpartial-fields
+  - -Wredundant-constraints
+  - -Wunused-binds
+  - -Wunused-imports
+  - -Wunused-matches
 
 default-extensions:
   - NoImplicitPrelude

@@ -20,7 +20,7 @@ module Aura.Core
   , isSatisfied, isInstalled
   , checkDBLock
     -- * Misc. Package Handling
-  , removePkgs, partitionPkgs
+  , removePkgs, partitionPkgs, packageBuildable
     -- * IO
   , notify, warn, scold, report
   ) where
@@ -28,6 +28,7 @@ module Aura.Core
 import           Aura.Colour
 import           Aura.Languages
 import           Aura.Pacman
+import           Aura.Pkgbuild.Editing (hotEdit)
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
@@ -83,6 +84,10 @@ partitionPkgs = bimap fold f . unzip . map g . toList
         f = mapMaybe (fmap NES.fromNonEmpty . NEL.nonEmpty)
         toEither (FromAUR b)  = Right b
         toEither (FromRepo b) = Left b
+
+-- | Package a Buildable, running the customization handler first.
+packageBuildable :: Settings -> Buildable -> IO Package
+packageBuildable ss b = FromAUR <$> hotEdit ss b
 
 -----------
 -- THE WORK

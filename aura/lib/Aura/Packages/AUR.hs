@@ -23,7 +23,6 @@ module Aura.Packages.AUR
   ) where
 
 import           Aura.Core
-import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings
 import           Aura.Types

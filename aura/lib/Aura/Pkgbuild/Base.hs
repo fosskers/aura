@@ -6,12 +6,13 @@
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 
-module Aura.Pkgbuild.Base where
+module Aura.Pkgbuild.Base
+  ( -- * Paths
+    pkgbuildCache
+  , pkgbuildPath
+  ) where
 
-import           Aura.Pkgbuild.Editing
-import           Aura.Settings
 import           Aura.Types
-import           BasePrelude
 import qualified Data.Text as T
 import           System.Path (Path, Absolute, FileExt(..), fromAbsoluteFilePath, fromUnrootedFilePath, (</>), (<.>))
 
@@ -24,7 +25,3 @@ pkgbuildCache = fromAbsoluteFilePath "/var/cache/aura/pkgbuilds/"
 -- | The expected path to a stored PKGBUILD, given some package name.
 pkgbuildPath :: PkgName -> Path Absolute
 pkgbuildPath (PkgName p) = pkgbuildCache </> fromUnrootedFilePath (T.unpack p) <.> FileExt "pb"
-
--- | Package a Buildable, running the customization handler first.
-packageBuildable :: Settings -> Buildable -> IO Package
-packageBuildable ss b = FromAUR <$> hotEdit ss b

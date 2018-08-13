@@ -6,10 +6,10 @@
 --
 -- Diffing files.
 
-module Aura.Diff where
+module Aura.Diff ( diff ) where
 
 import Aura.Settings
-import BasePrelude
+import BasePrelude hiding (diff)
 import System.Path (Path, Absolute, toFilePath)
 import System.Process.Typed (runProcess, proc)
 

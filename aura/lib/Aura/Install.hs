@@ -15,22 +15,22 @@ module Aura.Install
   , displayPkgDeps
   ) where
 
-import           Aura.Build
+import           Aura.Build (buildPackages, installPkgFiles)
 import           Aura.Cache (Cache(..), cacheContents)
 import           Aura.Colour
 import           Aura.Core
-import           Aura.Dependencies
+import           Aura.Dependencies (resolveDeps)
 import           Aura.Diff (diff)
 import           Aura.Languages
 import           Aura.Packages.AUR (aurLookup, aurRepo)
 import           Aura.Packages.Repository (pacmanRepo)
-import           Aura.Pacman
+import           Aura.Pacman (pacman)
 import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Records
 import           Aura.Pkgbuild.Security
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils
+import           Aura.Utils (optionalPrompt)
 import           BasePrelude hiding (FilePath, diff)
 import           Control.Compactable (fmapEither)
 import           Control.Concurrent.STM.TQueue

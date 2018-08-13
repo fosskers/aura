@@ -10,7 +10,7 @@
 --
 -- Handle all @-O@ flags - those which involve orphan packages.
 
-module Aura.Commands.O where
+module Aura.Commands.O ( displayOrphans, adoptPkg ) where
 
 import           Aura.Core (orphans, sudo, rethrow)
 import           Aura.Pacman (pacman)

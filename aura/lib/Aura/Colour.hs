@@ -6,7 +6,12 @@
 --
 -- Annotate `Doc` text with various colours.
 
-module Aura.Colour where
+module Aura.Colour
+  ( -- * Render to Text
+    dtot
+    -- * Colours
+  , cyan, bCyan, green, yellow, red, magenta
+  ) where
 
 import BasePrelude
 import Data.Text (Text)
