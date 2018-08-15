@@ -35,6 +35,7 @@ library:
   other-modules: []
   dependencies:
     - aeson >= 0.9 && < 1.4
+    - errors >= 2.3 && < 2.4
     - servant >= 0.9 && < 0.15
     - servant-client >= 0.13 && < 0.15
     - text
