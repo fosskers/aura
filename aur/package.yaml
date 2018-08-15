@@ -1,5 +1,5 @@
 name:                aur
-version:             6.0.1
+version:             6.1.0
 synopsis:            Access metadata from the Arch Linux User Repository.
 description:         Access package information from Arch Linux\'s AUR via its
                      RPC interface. The main exposed functions reflect those of the RPC.
