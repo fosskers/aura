@@ -124,12 +124,12 @@ sortAurInfo bs ai = sortBy compare' ai
 aurSearch :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => T.Text -> Eff r [AurInfo]
 aurSearch regex = do
   ss  <- ask
-  res <- send (search (managerOf ss) regex) >>= liftMaybe (Failure connectionFailure_1)
+  res <- liftMaybeM (Failure connectionFailure_1) $ search (managerOf ss) regex
   pure $ sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) res
 
 -- | Frontend to the `aur` library. For @-Ai@.
 aurInfo :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmpty PkgName -> Eff r [AurInfo]
 aurInfo pkgs = do
   m   <- asks managerOf
-  res <- send (info m . map (^. field @"name") $ toList pkgs) >>= liftMaybe (Failure connectionFailure_1)
+  res <- liftMaybeM (Failure connectionFailure_1) . info m . map (^. field @"name") $ toList pkgs
   pure $ sortAurInfo (Just SortAlphabetically) res

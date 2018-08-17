@@ -55,7 +55,7 @@ resolveDeps repo ps = do
   ss <- ask
   tv <- send $ newTVarIO M.empty
   ts <- send $ newTVarIO S.empty
-  send (resolveDeps' ss repo tv ts ps) >>= liftMaybe (Failure connectionFailure_1)
+  liftMaybeM (Failure connectionFailure_1) $ resolveDeps' ss repo tv ts ps
   m  <- send $ readTVarIO tv
   s  <- send $ readTVarIO ts
   unless (length ps == length m) $ send (putStr "\n")

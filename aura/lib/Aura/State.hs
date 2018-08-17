@@ -21,7 +21,7 @@ module Aura.State
 
 import           Aura.Cache
 import           Aura.Colour (red)
-import           Aura.Core (warn, notify, liftEither, report)
+import           Aura.Core (warn, notify, liftEitherM, report)
 import           Aura.Languages
 import           Aura.Pacman (pacmanOutput, pacman)
 import           Aura.Settings
@@ -160,5 +160,5 @@ reinstallAndRemove down remo
   | null remo = reinstall
   | null down = remove
   | otherwise = reinstall *> remove
-  where remove    = send (pacman $ "-R" : asFlag remo) >>= liftEither
-        reinstall = send (pacman $ "-U" : map (toFilePath . path) down) >>= liftEither
+  where remove    = liftEitherM . pacman $ "-R" : asFlag remo
+        reinstall = liftEitherM . pacman $ "-U" : map (toFilePath . path) down

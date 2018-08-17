@@ -12,7 +12,8 @@
 module Aura.Core
   ( -- * Types
     Repository(..)
-  , liftEither, liftMaybe
+  , liftEither, liftEitherM
+  , liftMaybe, liftMaybeM
     -- * User Privileges
   , sudo, trueRoot
     -- * Querying the Package Database
@@ -96,9 +97,18 @@ packageBuildable ss b = FromAUR <$> hotEdit ss b
 liftEither :: Member (Error a) r => Either a b -> Eff r b
 liftEither = either throwError pure
 
+-- | Like `liftEither`, but the `Either` can be embedded in something else,
+-- usually a `Monad`.
+liftEitherM :: (Member (Error a) r, Member m r) => m (Either a b) -> Eff r b
+liftEitherM = send >=> liftEither
+
 -- | Like `liftEither`, but for `Maybe`.
 liftMaybe :: Member (Error a) r => a -> Maybe b -> Eff r b
 liftMaybe a m = maybe (throwError a) pure m
+
+-- | Like `liftEitherM`, but for `Maybe`.
+liftMaybeM :: (Member (Error a) r, Member m r) => a -> m (Maybe b) -> Eff r b
+liftMaybeM a m = send m >>= liftMaybe a
 
 -- | Action won't be allowed unless user is root, or using sudo.
 sudo :: (Member (Reader Settings) r, Member (Error Failure) r) => Eff r a -> Eff r a
@@ -137,7 +147,7 @@ removePkgs pkgs = do
   pacOpts <- asks commonConfigOf
   let pacOpts' = pacOpts & field @"ignoredPkgsOf"   .~ S.empty
                          & field @"ignoredGroupsOf" .~ S.empty
-  send (pacman $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts') >>= liftEither
+  liftEitherM . pacman $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts'
 
 -- | True if a dependency is satisfied by an installed package.
 -- `asT` renders the `VersionDemand` into the specific form that `pacman -T`
