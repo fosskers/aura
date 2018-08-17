@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, MonoLocalBinds, TupleSections, MultiWayIf #-}
+{-# LANGUAGE FlexibleContexts, MonoLocalBinds, TupleSections, MultiWayIf, LambdaCase #-}
 {-# LANGUAGE TypeApplications, DataKinds #-}
 
 -- |
@@ -19,11 +19,13 @@ import           Aura.Types
 import           BasePrelude
 import           Control.Concurrent.STM.TQueue
 import           Control.Concurrent.STM.TVar
-import           Control.Concurrent.Throttled (throttled_)
-import           Control.Error.Util (note)
+import           Control.Concurrent.Throttled (throttleMaybe_)
+import           Control.Error.Util (note, hush)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import           Control.Monad.Trans.Class (lift)
+import           Control.Monad.Trans.Maybe
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import qualified Data.Map.Strict as M
@@ -50,24 +52,24 @@ data Wrote = WroteNothing | WroteNew
 resolveDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
   Repository -> NonEmptySet Package -> Eff r (NonEmpty (NonEmptySet Package))
 resolveDeps repo ps = do
-  ss   <- ask
-  tv   <- send $ newTVarIO M.empty
-  ts   <- send $ newTVarIO S.empty
-  send $ resolveDeps' ss repo tv ts ps
-  m    <- send $ readTVarIO tv
-  s    <- send $ readTVarIO ts
+  ss <- ask
+  tv <- send $ newTVarIO M.empty
+  ts <- send $ newTVarIO S.empty
+  send (resolveDeps' ss repo tv ts ps) >>= liftMaybe (Failure connectionFailure_1)
+  m  <- send $ readTVarIO tv
+  s  <- send $ readTVarIO ts
   unless (length ps == length m) $ send (putStr "\n")
   let de = conflicts ss m s
   unless (null de) . throwError . Failure $ missingPkg_2 de
   either throwError pure $ sortInstall m
 
 -- | An empty list signals success.
-resolveDeps' :: Settings -> Repository -> TVar (M.Map PkgName Package) -> TVar (S.Set PkgName) -> NonEmptySet Package -> IO ()
-resolveDeps' ss repo tv ts ps = throttled_ h ps
+resolveDeps' :: Settings -> Repository -> TVar (M.Map PkgName Package) -> TVar (S.Set PkgName) -> NonEmptySet Package -> IO (Maybe ())
+resolveDeps' ss repo tv ts ps = hush <$> throttleMaybe_ h ps
   where
     -- | Handles determining whether further work should be done. It won't
     -- continue to `j` if this `Package` has already been analysed.
-    h :: TQueue Package -> Package -> IO ()
+    h :: TQueue Package -> Package -> IO (Maybe ())
     h tq p = do
       w <- atomically $ do
         let pn = pname p
@@ -76,22 +78,24 @@ resolveDeps' ss repo tv ts ps = throttled_ h ps
           Just _  -> pure WroteNothing
           Nothing -> modifyTVar' tv (M.insert pn p) $> WroteNew
       case w of
-        WroteNothing -> pure ()
+        WroteNothing -> pure $ Just ()
         WroteNew     -> case p of
-          FromRepo _ -> pure ()
-          FromAUR b  -> atomically (readTVar tv) >>= j tq b
+          FromRepo _ -> pure $ Just ()
+          FromAUR b  -> readTVarIO tv >>= j tq b
 
     -- | Check for the existance of dependencies, as well as for any version conflicts
     -- they might introduce.
-    j :: TQueue Package -> Buildable -> M.Map PkgName Package -> IO ()
+    j :: TQueue Package -> Buildable -> M.Map PkgName Package -> IO (Maybe ())
     j tq b m = do
-      s  <- atomically $ readTVar ts
+      s <- readTVarIO ts
       (ds, sd) <- fmap partitionEithers . wither (satisfied m s) $ b ^. field @"deps"
       atomically $ modifyTVar' ts (<> S.fromList sd)
-      for_ (NEL.nonEmpty $ ds ^.. each . field @"name") $ \deps' -> do
-        putStr "." *> hFlush stdout
-        (_, goods) <- repoLookup repo ss $ NES.fromNonEmpty deps'
-        unless (null goods) . atomically $ traverse_ (writeTQueue tq) goods
+      case NEL.nonEmpty $ ds ^.. each . field @"name" of
+        Nothing -> pure $ Just ()
+        Just deps' -> do
+          putStr "." *> hFlush stdout
+          runMaybeT $ MaybeT (repoLookup repo ss $ NES.fromNonEmpty deps') >>= \(_, goods) ->
+            unless (null goods) (lift . atomically $ traverse_ (writeTQueue tq) goods)
 
     satisfied :: M.Map PkgName Package -> S.Set PkgName -> Dep -> IO (Maybe (Either Dep PkgName))
     satisfied m s d | M.member dn m || S.member dn s = pure Nothing

@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleContexts, MonoLocalBinds, TypeApplications, DataKinds #-}
-{-# LANGUAGE MultiWayIf, OverloadedStrings #-}
+{-# LANGUAGE MultiWayIf, OverloadedStrings, LambdaCase #-}
 
 -- |
 -- Module    : Aura.Core
@@ -37,6 +37,7 @@ import           Control.Compactable (fmapEither)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import           Control.Monad.Trans.Maybe
 import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
@@ -62,14 +63,13 @@ import           System.Path.IO (doesFileExist)
 -- | A `Repository` is a place where packages may be fetched from. Multiple
 -- repositories can be combined with the `Semigroup` instance.
 -- Checks packages in batches for efficiency.
-newtype Repository = Repository { repoLookup :: Settings -> NonEmptySet PkgName -> IO (S.Set PkgName, S.Set Package) }
+newtype Repository = Repository { repoLookup :: Settings -> NonEmptySet PkgName -> IO (Maybe (S.Set PkgName, S.Set Package)) }
 
 instance Semigroup Repository where
-  a <> b = Repository $ \ss ps -> do
-    (bads, goods) <- repoLookup a ss ps
-    case NES.fromSet bads of
+  a <> b = Repository $ \ss ps -> runMaybeT $ do
+    MaybeT (repoLookup a ss ps) >>= \(bads, goods) -> case NES.fromSet bads of
       Nothing    -> pure (bads, goods)
-      Just bads' -> second (goods <>) <$> repoLookup b ss bads'
+      Just bads' -> second (goods <>) <$> MaybeT (repoLookup b ss bads')
 
 ---------------------------------
 -- Functions common to `Package`s

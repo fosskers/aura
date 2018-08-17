@@ -23,15 +23,19 @@ module Aura.Packages.AUR
   ) where
 
 import           Aura.Core
+import           Aura.Languages
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings
 import           Aura.Types
 import           BasePrelude hiding (head)
 import           Control.Concurrent.STM.TQueue
-import           Control.Concurrent.Throttled (throttled)
+import           Control.Concurrent.Throttled (throttle)
 import           Control.Error.Util (hush)
 import           Control.Monad.Freer
+import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import           Control.Monad.Trans.Class (lift)
+import           Control.Monad.Trans.Maybe
 import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (head)
 import qualified Data.Set as S
@@ -49,22 +53,18 @@ import           System.Process.Typed
 ---
 
 -- | Attempt to retrieve info about a given `S.Set` of packages from the AUR.
--- This is a signature expected by `InstallOptions`.
-aurLookup :: Settings -> NonEmptySet PkgName -> IO (S.Set PkgName, S.Set Buildable)
-aurLookup ss names = do
-  infos     <- info m (foldMap (\(PkgName pn) -> [pn]) names)
-  badsgoods <- throttled (\_ a -> buildable m a) infos >>= atomically . flushTQueue
+aurLookup :: Manager -> NonEmptySet PkgName -> IO (Maybe (S.Set PkgName, S.Set Buildable))
+aurLookup m names = runMaybeT $ MaybeT (info m (foldMap (\(PkgName pn) -> [pn]) names)) >>= \infos -> do
+  badsgoods <- lift $ throttle (\_ a -> buildable m a) infos >>= atomically . flushTQueue
   let (bads, goods) = partitionEithers badsgoods
       goodNames     = S.fromList $ goods ^.. each . field @"name"
   pure (S.fromList bads <> NES.toSet names S.\\ goodNames, S.fromList goods)
-    where m = managerOf ss
 
--- | Yield fully realized `Package`s from the AUR. This is the other signature
--- expected by `InstallOptions`.
+-- | Yield fully realized `Package`s from the AUR.
 aurRepo :: Repository
-aurRepo = Repository $ \ss ps -> do
-  (bads, goods) <- aurLookup ss ps
-  pkgs <- traverse (packageBuildable ss) $ toList goods
+aurRepo = Repository $ \ss ps -> runMaybeT $ do
+  (bads, goods) <- MaybeT $ aurLookup (managerOf ss) ps
+  pkgs <- lift . traverse (packageBuildable ss) $ toList goods
   pure (bads, S.fromList pkgs)
 
 buildable :: Manager -> AurInfo -> IO (Either PkgName Buildable)
@@ -121,14 +121,15 @@ sortAurInfo bs ai = sortBy compare' ai
                      _ -> \x y -> compare (aurVotesOf y) (aurVotesOf x)
 
 -- | Frontend to the `aur` library. For @-As@.
-aurSearch :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r [AurInfo]
+aurSearch :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => T.Text -> Eff r [AurInfo]
 aurSearch regex = do
   ss  <- ask
-  res <- send $ search @IO (managerOf ss) regex
+  res <- send (search (managerOf ss) regex) >>= liftMaybe (Failure connectionFailure_1)
   pure $ sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) res
 
 -- | Frontend to the `aur` library. For @-Ai@.
-aurInfo :: (Member (Reader Settings) r, Member IO r) => NonEmpty PkgName -> Eff r [AurInfo]
+aurInfo :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmpty PkgName -> Eff r [AurInfo]
 aurInfo pkgs = do
-  m <- asks managerOf
-  sortAurInfo (Just SortAlphabetically) <$> send (info @IO m . map (^. field @"name") $ toList pkgs)
+  m   <- asks managerOf
+  res <- send (info m . map (^. field @"name") $ toList pkgs) >>= liftMaybe (Failure connectionFailure_1)
+  pure $ sortAurInfo (Just SortAlphabetically) res
