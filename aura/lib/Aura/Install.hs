@@ -34,7 +34,7 @@ import           Aura.Utils (optionalPrompt)
 import           BasePrelude hiding (FilePath, diff)
 import           Control.Compactable (fmapEither)
 import           Control.Concurrent.STM.TQueue
-import           Control.Concurrent.Throttled (throttled)
+import           Control.Concurrent.Throttled (throttle)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
@@ -80,7 +80,7 @@ install' pkgs = do
   ss       <- ask
   unneeded <- bool
               (pure S.empty)
-              (S.fromList . catMaybes <$> send (throttled (const isInstalled) pkgs >>= atomically . flushTQueue))
+              (S.fromList . catMaybes <$> send (throttle (const isInstalled) pkgs >>= atomically . flushTQueue))
               $ shared ss NeededOnly
   let !pkgs' = NES.toSet pkgs
   if | shared ss NeededOnly && unneeded == pkgs' -> send . warn ss . install_2 $ langOf ss
@@ -91,7 +91,7 @@ install' pkgs = do
            Nothing        -> send . warn ss . install_2 $ langOf ss
            Just toInstall -> do
              traverse_ (report yellow reportUnneededPackages_1) . NEL.nonEmpty $ toList unneeded
-             (nons, toBuild) <- send $ aurLookup ss toInstall
+             (nons, toBuild) <- liftMaybeM (Failure connectionFailure_1) $ aurLookup (managerOf ss) toInstall
              pkgbuildDiffs toBuild
              traverse_ (report red reportNonPackages_1) . NEL.nonEmpty $ toList nons
              case NES.fromSet $ S.map (\b -> b { isExplicit = True }) toBuild of
@@ -165,7 +165,7 @@ depsToInstall repo bs = do
 repoInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmpty Prebuilt -> Eff r ()
 repoInstall ps = do
   pacOpts <- asks (asFlag . commonConfigOf)
-  rethrow . pacman $ ["-S", "--asdeps"] <> pacOpts <> asFlag (ps ^.. each . field @"name")
+  liftEitherM . pacman $ ["-S", "--asdeps"] <> pacOpts <> asFlag (ps ^.. each . field @"name")
 
 buildAndInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
   NonEmpty (NonEmptySet Buildable) -> Eff r ()
@@ -192,7 +192,8 @@ displayPkgDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member 
 displayPkgDeps ps = do
   ss <- ask
   let f = depsToInstall repository >=> reportDeps (switch ss LowVerbosity) . partitionPkgs
-  send (aurLookup ss ps) >>= traverse_ f . NES.fromSet . snd
+  (_, goods) <- liftMaybeM (Failure connectionFailure_1) $ aurLookup (managerOf ss) ps
+  traverse_ f $ NES.fromSet goods
   where reportDeps True  = send . uncurry reportListOfDeps
         reportDeps False = uncurry reportPkgsToInstall
 

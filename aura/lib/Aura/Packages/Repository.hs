@@ -23,7 +23,7 @@ import           Aura.Utils (getSelection, strictText)
 import           BasePrelude hiding (try)
 import           Control.Compactable (traverseEither)
 import           Control.Concurrent.STM.TQueue
-import           Control.Concurrent.Throttled (throttled)
+import           Control.Concurrent.Throttled (throttle)
 import           Control.Error.Util (hush, note)
 import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
@@ -37,13 +37,13 @@ import           Text.Megaparsec.Char
 ---
 
 -- | Repository package source.
--- We expect this to fail when the package is actually an AUR package.
+-- We expect no matches to be found when the package is actually an AUR package.
 pacmanRepo :: Repository
 pacmanRepo = Repository $ \ss names -> do
-  bgs <- throttled (const $ resolveName ss) names >>= atomically . flushTQueue
+  bgs <- throttle (const $ resolveName ss) names >>= atomically . flushTQueue
   let (bads, goods) = partitionEithers bgs
   (bads', goods') <- traverseEither f goods
-  pure (S.fromList $ bads <> bads', S.fromList goods')
+  pure $ Just (S.fromList $ bads <> bads', S.fromList goods')
   where f (r, p) = fmap (FromRepo . packageRepo r p) <$> mostRecentVersion r
 
 packageRepo :: PkgName -> Provides -> Versioning -> Prebuilt
@@ -70,7 +70,7 @@ chooseProvider :: Settings -> PkgName -> [PkgName] -> IO PkgName
 chooseProvider _ pn []         = pure pn
 chooseProvider _ _ [p]         = pure p
 chooseProvider ss pn ps@(a:as) =
-  throttled (const isInstalled) ps >>= atomically . flushTQueue >>= maybe f pure . listToMaybe . catMaybes
+  throttle (const isInstalled) ps >>= atomically . flushTQueue >>= maybe f pure . listToMaybe . catMaybes
   where f | shared ss NoConfirm = pure . bool a pn $ pn `elem` ps
           | otherwise = warn ss (provides_1 pn) >> getSelection (^. field @"name") (a :| as)
 

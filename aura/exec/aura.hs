@@ -90,7 +90,7 @@ executeOpts ops = do
     pPrintNoColor ops
     pPrintNoColor (buildConfigOf ss)
     pPrintNoColor (commonConfigOf ss)
-  let p (ps, ms) = rethrow . pacman $
+  let p (ps, ms) = liftEitherM . pacman $
         asFlag ps
         ++ foldMap asFlag ms
         ++ asFlag (commonConfigOf ss)

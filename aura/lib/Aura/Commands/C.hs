@@ -55,7 +55,7 @@ downgradePackages pkgs = do
   unless (null reals) $ do
     cache   <- send $ cacheContents cachePath
     choices <- traverse (getDowngradeChoice cache) $ toList reals
-    rethrow . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (toFilePath . path) choices
+    liftEitherM . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (toFilePath . path) choices
 
 -- | For a given package, get a choice from the user about which version of it to
 -- downgrade to.
@@ -116,7 +116,7 @@ copyAndNotify dir (PackagePath p : ps) n = do
 -- a number provided by the user. The rest are deleted.
 cleanCache :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Word -> Eff r ()
 cleanCache toSave
-  | toSave == 0 = ask >>= \ss -> send (warn ss . cleanCache_2 $ langOf ss) >> rethrow (pacman ["-Scc"])
+  | toSave == 0 = ask >>= \ss -> send (warn ss . cleanCache_2 $ langOf ss) >> liftEitherM (pacman ["-Scc"])
   | otherwise   = do
       ss <- ask
       send . warn ss . cleanCache_3 toSave $ langOf ss

@@ -1095,6 +1095,12 @@ reportNotInLog_1 = \case
 -------------------------------
 -- Aura/AUR functions
 -------------------------------
+
+-- https://github.com/aurapm/aura/issues/498
+connectionFailure_1 :: Language -> Doc AnsiStyle
+connectionFailure_1 = \case
+  _ -> "Failed to contact the AUR. Do you have an internet connection?"
+
 infoFields :: Language -> [T.Text]
 infoFields = sequence [ Fields.repository
                       , Fields.name

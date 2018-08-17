@@ -1,6 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE OverloadedStrings, TypeOperators, DataKinds #-}
 
 -- |
 -- Module    : Linux.Arch.Aur.Rpc
@@ -10,10 +8,9 @@
 --
 -- See https://aur.archlinux.org/rpc for details.
 
-module Linux.Arch.Aur.Rpc
-       ( info, search ) where
+module Linux.Arch.Aur.Rpc ( info, search ) where
 
-import Control.Monad.IO.Class (MonadIO, liftIO)
+import Control.Error.Util (hush)
 import Data.Proxy
 import Data.Text (Text)
 import Linux.Arch.Aur.Types
@@ -45,12 +42,14 @@ url = BaseUrl Https "aur.archlinux.org" 443 ""
 rpcI :<|> rpcS = client api
 
 -- | Perform an @info@ call on one or more package names.
-info :: MonadIO m => Manager -> [Text] -> m [AurInfo]
+-- Will fail with a `Nothing` if there was a connection/decoding error.
+info :: Manager -> [Text] -> IO (Maybe [AurInfo])
 info m ps = unwrap m $ rpcI (Just "5") (Just "info") ps
 
 -- | Perform a @search@ call on a package name or description text.
-search :: MonadIO m => Manager -> Text -> m [AurInfo]
+-- Will fail with a `Nothing` if there was a connection/decoding error.
+search :: Manager -> Text -> IO (Maybe [AurInfo])
 search m p = unwrap m $ rpcS (Just "5") (Just "search") (Just p)
 
-unwrap :: MonadIO m => Manager -> ClientM RPCResp -> m [AurInfo]
-unwrap m r = liftIO . fmap (either (const []) _results) $ runClientM r (ClientEnv m url Nothing)
+unwrap :: Manager -> ClientM RPCResp -> IO (Maybe [AurInfo])
+unwrap m r = fmap _results . hush <$> runClientM r (ClientEnv m url Nothing)

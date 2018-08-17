@@ -1,5 +1,5 @@
 name:                aur
-version:             6.0.1
+version:             6.1.0
 synopsis:            Access metadata from the Arch Linux User Repository.
 description:         Access package information from Arch Linux\'s AUR via its
                      RPC interface. The main exposed functions reflect those of the RPC.
@@ -35,6 +35,7 @@ library:
   other-modules: []
   dependencies:
     - aeson >= 0.9 && < 1.4
+    - errors >= 2.3 && < 2.4
     - servant >= 0.9 && < 0.15
     - servant-client >= 0.13 && < 0.15
     - text

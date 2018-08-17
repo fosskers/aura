@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleContexts, MonoLocalBinds, TypeApplications, DataKinds #-}
-{-# LANGUAGE MultiWayIf, OverloadedStrings #-}
+{-# LANGUAGE MultiWayIf, OverloadedStrings, LambdaCase #-}
 
 -- |
 -- Module    : Aura.Core
@@ -12,7 +12,8 @@
 module Aura.Core
   ( -- * Types
     Repository(..)
-  , rethrow
+  , liftEither, liftEitherM
+  , liftMaybe, liftMaybeM
     -- * User Privileges
   , sudo, trueRoot
     -- * Querying the Package Database
@@ -37,6 +38,7 @@ import           Control.Compactable (fmapEither)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import           Control.Monad.Trans.Maybe
 import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
@@ -62,14 +64,13 @@ import           System.Path.IO (doesFileExist)
 -- | A `Repository` is a place where packages may be fetched from. Multiple
 -- repositories can be combined with the `Semigroup` instance.
 -- Checks packages in batches for efficiency.
-newtype Repository = Repository { repoLookup :: Settings -> NonEmptySet PkgName -> IO (S.Set PkgName, S.Set Package) }
+newtype Repository = Repository { repoLookup :: Settings -> NonEmptySet PkgName -> IO (Maybe (S.Set PkgName, S.Set Package)) }
 
 instance Semigroup Repository where
-  a <> b = Repository $ \ss ps -> do
-    (bads, goods) <- repoLookup a ss ps
-    case NES.fromSet bads of
+  a <> b = Repository $ \ss ps -> runMaybeT $ do
+    MaybeT (repoLookup a ss ps) >>= \(bads, goods) -> case NES.fromSet bads of
       Nothing    -> pure (bads, goods)
-      Just bads' -> second (goods <>) <$> repoLookup b ss bads'
+      Just bads' -> second (goods <>) <$> MaybeT (repoLookup b ss bads')
 
 ---------------------------------
 -- Functions common to `Package`s
@@ -93,8 +94,21 @@ packageBuildable ss b = FromAUR <$> hotEdit ss b
 -- THE WORK
 -----------
 -- | Lift a common return type into the `Eff` world. Usually used after a `pacman` call.
-rethrow :: (Member (Error a) r, Member IO r) => IO (Either a b) -> Eff r b
-rethrow = send >=> either throwError pure
+liftEither :: Member (Error a) r => Either a b -> Eff r b
+liftEither = either throwError pure
+
+-- | Like `liftEither`, but the `Either` can be embedded in something else,
+-- usually a `Monad`.
+liftEitherM :: (Member (Error a) r, Member m r) => m (Either a b) -> Eff r b
+liftEitherM = send >=> liftEither
+
+-- | Like `liftEither`, but for `Maybe`.
+liftMaybe :: Member (Error a) r => a -> Maybe b -> Eff r b
+liftMaybe a m = maybe (throwError a) pure m
+
+-- | Like `liftEitherM`, but for `Maybe`.
+liftMaybeM :: (Member (Error a) r, Member m r) => a -> m (Maybe b) -> Eff r b
+liftMaybeM a m = send m >>= liftMaybe a
 
 -- | Action won't be allowed unless user is root, or using sudo.
 sudo :: (Member (Reader Settings) r, Member (Error Failure) r) => Eff r a -> Eff r a
@@ -133,7 +147,7 @@ removePkgs pkgs = do
   pacOpts <- asks commonConfigOf
   let pacOpts' = pacOpts & field @"ignoredPkgsOf"   .~ S.empty
                          & field @"ignoredGroupsOf" .~ S.empty
-  rethrow . pacman $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts'
+  liftEitherM . pacman $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts'
 
 -- | True if a dependency is satisfied by an installed package.
 -- `asT` renders the `VersionDemand` into the specific form that `pacman -T`

@@ -86,7 +86,8 @@ upgrade pkgs fs = do
              send . unless (switch ss DryRun) $ saveState ss
              traverse_ I.install . NES.fromSet $ S.fromList names <> pkgs <> devel
 
-possibleUpdates :: (Member (Reader Settings) r, Member IO r) => NonEmptySet SimplePkg -> Eff r [(AurInfo, Versioning)]
+possibleUpdates :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+  NonEmptySet SimplePkg -> Eff r [(AurInfo, Versioning)]
 possibleUpdates (NES.toNonEmpty -> pkgs) = do
   aurInfos <- aurInfo $ fmap (^. field @"name") pkgs
   let !names  = map aurNameOf aurInfos
@@ -111,7 +112,7 @@ develPkgCheck = ask >>= \ss ->
   if switch ss RebuildDevel then send develPkgs else pure S.empty
 
 -- | The result of @-Ai@.
-aurPkgInfo :: (Member (Reader Settings) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
+aurPkgInfo :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
 aurPkgInfo = aurInfo . NES.toNonEmpty >=> traverse_ displayAurPkgInfo
 
 displayAurPkgInfo :: (Member (Reader Settings) r, Member IO r) => AurInfo -> Eff r ()
@@ -135,7 +136,7 @@ renderAurPkgInfo ss ai = dtot . colourCheck ss $ entrify ss fields entries
                     , maybe "(null)" pretty $ aurDescriptionOf ai ]
 
 -- | The result of @-As@.
-aurPkgSearch :: (Member (Reader Settings) r, Member IO r) => T.Text -> Eff r ()
+aurPkgSearch :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => T.Text -> Eff r ()
 aurPkgSearch regex = do
   ss <- ask
   db <- S.map (^. field @"name" . field @"name") <$> send foreignPackages
@@ -174,10 +175,10 @@ isntMostRecent (ai, v) = trueVer > Just v
   where trueVer = hush . versioning $ aurVersionOf ai
 
 -- | Similar to @-Ai@, but yields the raw data as JSON instead.
-aurJson :: (Member (Reader Settings) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
+aurJson :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
 aurJson ps = do
   m <- asks managerOf
-  infos <- send . info @IO m . (^.. each . field @"name") $ toList ps
+  infos <- liftMaybeM (Failure connectionFailure_1) . info m . (^.. each . field @"name") $ toList ps
   let json = map (toStrict . toLazyText . encodePrettyToTextBuilder) infos
   send $ traverse_ T.putStrLn json
 

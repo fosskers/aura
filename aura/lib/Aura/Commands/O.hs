@@ -12,7 +12,7 @@
 
 module Aura.Commands.O ( displayOrphans, adoptPkg ) where
 
-import           Aura.Core (orphans, sudo, rethrow)
+import           Aura.Core (orphans, sudo, liftEitherM)
 import           Aura.Pacman (pacman)
 import           Aura.Settings (Settings)
 import           Aura.Types
@@ -33,4 +33,4 @@ displayOrphans = orphans >>= traverse_ (T.putStrLn . view (field @"name"))
 
 -- | Identical to @-D --asexplicit@.
 adoptPkg :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
-adoptPkg pkgs = sudo . rethrow . pacman $ ["-D", "--asexplicit"] <> asFlag pkgs
+adoptPkg pkgs = sudo . liftEitherM . pacman $ ["-D", "--asexplicit"] <> asFlag pkgs
