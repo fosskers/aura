@@ -12,7 +12,7 @@
 module Aura.Core
   ( -- * Types
     Repository(..)
-  , rethrow
+  , liftEither, liftMaybe
     -- * User Privileges
   , sudo, trueRoot
     -- * Querying the Package Database
@@ -93,8 +93,12 @@ packageBuildable ss b = FromAUR <$> hotEdit ss b
 -- THE WORK
 -----------
 -- | Lift a common return type into the `Eff` world. Usually used after a `pacman` call.
-rethrow :: (Member (Error a) r, Member IO r) => IO (Either a b) -> Eff r b
-rethrow = send >=> either throwError pure
+liftEither :: Member (Error a) r => Either a b -> Eff r b
+liftEither = either throwError pure
+
+-- | Like `liftEither`, but for `Maybe`.
+liftMaybe :: Member (Error a) r => a -> Maybe b -> Eff r b
+liftMaybe a m = maybe (throwError a) pure m
 
 -- | Action won't be allowed unless user is root, or using sudo.
 sudo :: (Member (Reader Settings) r, Member (Error Failure) r) => Eff r a -> Eff r a
@@ -133,7 +137,7 @@ removePkgs pkgs = do
   pacOpts <- asks commonConfigOf
   let pacOpts' = pacOpts & field @"ignoredPkgsOf"   .~ S.empty
                          & field @"ignoredGroupsOf" .~ S.empty
-  rethrow . pacman $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts'
+  send (pacman $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts') >>= liftEither
 
 -- | True if a dependency is satisfied by an installed package.
 -- `asT` renders the `VersionDemand` into the specific form that `pacman -T`
