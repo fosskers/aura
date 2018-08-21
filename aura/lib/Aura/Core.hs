@@ -51,7 +51,7 @@ import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions (prettyV)
-import           Lens.Micro ((^.), (.~))
+import           Lens.Micro ((^.))
 import           Lens.Micro.Extras (view)
 import           System.Path.IO (doesFileExist)
 

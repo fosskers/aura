@@ -3,7 +3,8 @@
 module Flags
   ( Program(..), opts
   , PacmanOp(..), SyncOp(..), MiscOp(..)
-  , AuraOp(..), AurOp(..), BackupOp(..), CacheOp(..), LogOp(..), OrphanOp(..)
+  , AuraOp(..), _AurSync, _AurIgnore, _AurIgnoreGroup
+  , AurSwitch(..), AurOp(..), BackupOp(..), CacheOp(..), LogOp(..), OrphanOp(..)
   ) where
 
 import           Aura.Cache (defaultPackageCache)
@@ -16,6 +17,7 @@ import qualified Data.Set as S
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
+import           Lens.Micro
 import           Options.Applicative
 import           System.Path (Path, Absolute, toFilePath, fromAbsoluteFilePath)
 
@@ -204,7 +206,7 @@ instance Flagable MiscOp where
   asFlag MiscVerbose             = ["--verbose"]
 
 -- | Operations unique to Aura.
-data AuraOp = AurSync (Either AurOp (NonEmptySet PkgName))
+data AuraOp = AurSync (Either AurOp (NonEmptySet PkgName)) (S.Set AurSwitch)
             | Backup  (Maybe  BackupOp)
             | Cache   (Either CacheOp (NonEmptySet PkgName))
             | Log     (Maybe  LogOp)
@@ -214,6 +216,10 @@ data AuraOp = AurSync (Either AurOp (NonEmptySet PkgName))
             | ViewConf
             deriving (Show)
 
+_AurSync :: Traversal' AuraOp (S.Set AurSwitch)
+_AurSync f (AurSync o s) = AurSync o <$> f s
+_AurSync _ x = pure x
+
 data AurOp = AurDeps     (NonEmptySet PkgName)
            | AurInfo     (NonEmptySet PkgName)
            | AurPkgbuild (NonEmptySet PkgName)
@@ -221,6 +227,18 @@ data AurOp = AurDeps     (NonEmptySet PkgName)
            | AurUpgrade  (S.Set PkgName)
            | AurJson     (NonEmptySet PkgName)
            deriving (Show)
+
+data AurSwitch = AurIgnore      (S.Set PkgName)
+               | AurIgnoreGroup (S.Set PkgGroup)
+               deriving (Eq, Ord, Show)
+
+_AurIgnore :: Traversal' AurSwitch (S.Set PkgName)
+_AurIgnore f (AurIgnore s) = AurIgnore <$> f s
+_AurIgnore _ x = pure x
+
+_AurIgnoreGroup :: Traversal' AurSwitch (S.Set PkgGroup)
+_AurIgnoreGroup f (AurIgnoreGroup s) = AurIgnoreGroup <$> f s
+_AurIgnoreGroup _ x = pure x
 
 data BackupOp = BackupClean Word | BackupRestore | BackupList deriving (Show)
 
@@ -244,8 +262,10 @@ program = Program
 
 aursync :: Parser AuraOp
 aursync = bigA *>
-  (AurSync <$> (fmap (Right . NES.fromNonEmpty . fmap (PkgName . T.toLower) . NES.toNonEmpty) someArgs
-              <|> fmap Left mods))
+  (AurSync
+   <$> (fmap (Right . NES.fromNonEmpty . fmap (PkgName . T.toLower) . NES.toNonEmpty) someArgs <|> fmap Left mods)
+   <*> (S.fromList <$> many switches)
+  )
   where bigA    = flag' () (long "aursync" <> short 'A' <> help "Install packages from the AUR.")
         mods    = ds <|> ainfo <|> pkgb <|> search <|> upgrade <|> aur
         ds      = AurDeps <$> (flag' () (long "deps" <> short 'd' <> hidden <> help "View dependencies of an AUR package.") *> somePkgs')
@@ -254,6 +274,11 @@ aursync = bigA *>
         search  = AurSearch <$> strOption (long "search" <> short 's' <> metavar "STRING" <> hidden <> help "Search the AUR via a search string.")
         upgrade = AurUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade all installed AUR packages.") *> fmap (S.map PkgName) manyArgs')
         aur     = AurJson <$> (flag' () (long "json" <> hidden <> help "Retrieve package JSON straight from the AUR.") *> somePkgs')
+        switches = ign <|> igg
+        ign  = AurIgnore <$> (S.fromList . map PkgName . T.split (== ',')) <$>
+          strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given packages.")
+        igg  = AurIgnoreGroup <$> (S.fromList . map PkgGroup . T.split (== ',')) <$>
+          strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore packages from the given groups.")
 
 backups :: Parser AuraOp
 backups = bigB *> (Backup <$> optional mods)

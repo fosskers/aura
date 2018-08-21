@@ -98,7 +98,7 @@ executeOpts ops = do
   case ops of
     Left o@(Sync (Left (SyncUpgrade _)) _, _) -> sudo (send $ B.saveState ss) *> p o
     Left o -> p o
-    Right (AurSync o) ->
+    Right (AurSync o _) ->
       case o of
         Right ps              -> bool (trueRoot . sudo) id (switch ss DryRun) $ A.install ps
         Left (AurDeps ps)     -> A.displayPkgDeps ps
