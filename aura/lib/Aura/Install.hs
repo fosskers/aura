@@ -85,7 +85,7 @@ install' pkgs = do
   let !pkgs' = NES.toSet pkgs
   if | shared ss NeededOnly && unneeded == pkgs' -> send . warn ss . install_2 $ langOf ss
      | otherwise -> do
-         let (ignored, notIgnored) = S.partition (`elem` ignoredPkgsOf (commonConfigOf ss)) pkgs'
+         let (ignored, notIgnored) = S.partition (`S.member` ignoresOf ss) pkgs'
          installAnyway <- confirmIgnored ignored
          case NES.fromSet $ (notIgnored <> installAnyway) S.\\ unneeded of
            Nothing        -> send . warn ss . install_2 $ langOf ss

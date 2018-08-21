@@ -49,17 +49,13 @@ instance Flagable Makepkg where
 data CommonConfig = CommonConfig { cachePathOf      :: !(Either (Path Absolute) (Path Absolute))
                                  , configPathOf     :: !(Either (Path Absolute) (Path Absolute))
                                  , logPathOf        :: !(Either (Path Absolute) (Path Absolute))
-                                 , ignoredPkgsOf    :: !(S.Set PkgName)
-                                 , ignoredGroupsOf  :: !(S.Set PkgGroup)
                                  , commonSwitchesOf :: !(S.Set CommonSwitch) } deriving (Show, Generic)
 
 instance Flagable CommonConfig where
-  asFlag (CommonConfig cap cop lfp igs igg cs) =
+  asFlag (CommonConfig cap cop lfp cs) =
     either (const []) (\p -> ["--cachedir", toFilePath p]) cap
     ++ either (const []) (\p -> ["--config", toFilePath p]) cop
     ++ either (const []) (\p -> ["--logfile", toFilePath p]) lfp
-    ++ list [] (\xs -> ["--ignore", intercalate "," $ toList xs]) (asFlag igs)
-    ++ list [] (\xs -> ["--ignoregroup", intercalate "," $ toList xs]) (asFlag igg)
     ++ asFlag cs
 
 -- | Yes/No-style switches that are common to both Aura and Pacman.
@@ -116,6 +112,7 @@ data Settings = Settings { managerOf      :: !Manager
                          , langOf         :: !Language
                          , editorOf       :: !FilePath
                          , isTerminal     :: !Bool
+                         , ignoresOf      :: !(S.Set PkgName)
                          , commonConfigOf :: !CommonConfig
                          , buildConfigOf  :: !BuildConfig }
 

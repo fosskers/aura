@@ -3,7 +3,8 @@
 module Flags
   ( Program(..), opts
   , PacmanOp(..), SyncOp(..), MiscOp(..)
-  , AuraOp(..), AurOp(..), BackupOp(..), CacheOp(..), LogOp(..), OrphanOp(..)
+  , AuraOp(..), _AurSync, _AurIgnore, _AurIgnoreGroup
+  , AurSwitch(..), AurOp(..), BackupOp(..), CacheOp(..), LogOp(..), OrphanOp(..)
   ) where
 
 import           Aura.Cache (defaultPackageCache)
@@ -16,6 +17,7 @@ import qualified Data.Set as S
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
+import           Lens.Micro
 import           Options.Applicative
 import           System.Path (Path, Absolute, toFilePath, fromAbsoluteFilePath)
 
@@ -39,7 +41,7 @@ data PacmanOp = Database (Either DatabaseOp (NonEmptySet PkgName))
               | Remove   (S.Set RemoveOp) (NonEmptySet PkgName)
               | Sync     (Either SyncOp (NonEmptySet PkgName)) (S.Set SyncSwitch)
               | TestDeps (NonEmptySet T.Text)
-              | Upgrade  (Maybe UpgradeSwitch) (NonEmptySet PkgName)
+              | Upgrade  (S.Set UpgradeSwitch) (NonEmptySet PkgName)
               deriving (Show)
 
 instance Flagable PacmanOp where
@@ -52,7 +54,7 @@ instance Flagable PacmanOp where
   asFlag (Sync (Left o) ss)       = "-S" : asFlag ss ++ asFlag o
   asFlag (Sync (Right ps) ss)     = "-S" : asFlag ss ++ asFlag ps
   asFlag (TestDeps ps)            = "-T" : asFlag ps
-  asFlag (Upgrade s ps)           = "-U" : maybe [] asFlag s ++ asFlag ps
+  asFlag (Upgrade s ps)           = "-U" : asFlag s ++ asFlag ps
 
 data DatabaseOp = DBCheck
                 | DBAsDeps     (NonEmptySet T.Text)
@@ -146,16 +148,27 @@ instance Flagable SyncOp where
   asFlag (SyncUpgrade ps)  = "--sysupgrade" : asFlag ps
   asFlag (SyncDownload ps) = "--downloadonly" : asFlag ps
 
-data SyncSwitch = SyncRefresh deriving (Eq, Ord, Show)
+data SyncSwitch = SyncRefresh
+                | SyncIgnore      (S.Set PkgName)
+                | SyncIgnoreGroup (S.Set PkgGroup)
+                deriving (Eq, Ord, Show)
 
 instance Flagable SyncSwitch where
-  asFlag SyncRefresh = ["--refresh"]
+  asFlag SyncRefresh          = ["--refresh"]
+  asFlag (SyncIgnore ps)      = ["--ignore", intercalate "," $ asFlag ps ]
+  asFlag (SyncIgnoreGroup gs) = ["--ignoregroup" , intercalate "," $ asFlag gs ]
 
-data UpgradeSwitch = UpgradeAsDeps | UpgradeAsExplicit deriving (Show)
+data UpgradeSwitch = UpgradeAsDeps
+                   | UpgradeAsExplicit
+                   | UpgradeIgnore      (S.Set PkgName)
+                   | UpgradeIgnoreGroup (S.Set PkgGroup)
+                   deriving (Eq, Ord, Show)
 
 instance Flagable UpgradeSwitch where
-  asFlag UpgradeAsDeps     = ["--asdeps"]
-  asFlag UpgradeAsExplicit = ["--asexplicit"]
+  asFlag UpgradeAsDeps           = ["--asdeps"]
+  asFlag UpgradeAsExplicit       = ["--asexplicit"]
+  asFlag (UpgradeIgnore ps)      = ["--ignore", intercalate "," $ asFlag ps ]
+  asFlag (UpgradeIgnoreGroup gs) = ["--ignoregroup" , intercalate "," $ asFlag gs ]
 
 -- | Flags common to several Pacman operations.
 data MiscOp = MiscArch    (Path Absolute)
@@ -193,7 +206,7 @@ instance Flagable MiscOp where
   asFlag MiscVerbose             = ["--verbose"]
 
 -- | Operations unique to Aura.
-data AuraOp = AurSync (Either AurOp (NonEmptySet PkgName))
+data AuraOp = AurSync (Either AurOp (NonEmptySet PkgName)) (S.Set AurSwitch)
             | Backup  (Maybe  BackupOp)
             | Cache   (Either CacheOp (NonEmptySet PkgName))
             | Log     (Maybe  LogOp)
@@ -203,6 +216,10 @@ data AuraOp = AurSync (Either AurOp (NonEmptySet PkgName))
             | ViewConf
             deriving (Show)
 
+_AurSync :: Traversal' AuraOp (S.Set AurSwitch)
+_AurSync f (AurSync o s) = AurSync o <$> f s
+_AurSync _ x = pure x
+
 data AurOp = AurDeps     (NonEmptySet PkgName)
            | AurInfo     (NonEmptySet PkgName)
            | AurPkgbuild (NonEmptySet PkgName)
@@ -210,6 +227,18 @@ data AurOp = AurDeps     (NonEmptySet PkgName)
            | AurUpgrade  (S.Set PkgName)
            | AurJson     (NonEmptySet PkgName)
            deriving (Show)
+
+data AurSwitch = AurIgnore      (S.Set PkgName)
+               | AurIgnoreGroup (S.Set PkgGroup)
+               deriving (Eq, Ord, Show)
+
+_AurIgnore :: Traversal' AurSwitch (S.Set PkgName)
+_AurIgnore f (AurIgnore s) = AurIgnore <$> f s
+_AurIgnore _ x = pure x
+
+_AurIgnoreGroup :: Traversal' AurSwitch (S.Set PkgGroup)
+_AurIgnoreGroup f (AurIgnoreGroup s) = AurIgnoreGroup <$> f s
+_AurIgnoreGroup _ x = pure x
 
 data BackupOp = BackupClean Word | BackupRestore | BackupList deriving (Show)
 
@@ -233,8 +262,10 @@ program = Program
 
 aursync :: Parser AuraOp
 aursync = bigA *>
-  (AurSync <$> (fmap (Right . NES.fromNonEmpty . fmap (PkgName . T.toLower) . NES.toNonEmpty) someArgs
-              <|> fmap Left mods))
+  (AurSync
+   <$> (fmap (Right . NES.fromNonEmpty . fmap (PkgName . T.toLower) . NES.toNonEmpty) someArgs <|> fmap Left mods)
+   <*> (S.fromList <$> many switches)
+  )
   where bigA    = flag' () (long "aursync" <> short 'A' <> help "Install packages from the AUR.")
         mods    = ds <|> ainfo <|> pkgb <|> search <|> upgrade <|> aur
         ds      = AurDeps <$> (flag' () (long "deps" <> short 'd' <> hidden <> help "View dependencies of an AUR package.") *> somePkgs')
@@ -243,6 +274,11 @@ aursync = bigA *>
         search  = AurSearch <$> strOption (long "search" <> short 's' <> metavar "STRING" <> hidden <> help "Search the AUR via a search string.")
         upgrade = AurUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade all installed AUR packages.") *> fmap (S.map PkgName) manyArgs')
         aur     = AurJson <$> (flag' () (long "json" <> hidden <> help "Retrieve package JSON straight from the AUR.") *> somePkgs')
+        switches = ign <|> igg
+        ign  = AurIgnore <$> (S.fromList . map PkgName . T.split (== ',')) <$>
+          strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given packages.")
+        igg  = AurIgnoreGroup <$> (S.fromList . map PkgGroup . T.split (== ',')) <$>
+          strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore packages from the given groups.")
 
 backups :: Parser AuraOp
 backups = bigB *> (Backup <$> optional mods)
@@ -312,7 +348,7 @@ buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <
         npc = flag' NoPkgbuildCheck (long "noanalysis" <> hidden <> help "Do not analyse PKGBUILDs for security flaws.")
 
 commonConfig :: Parser CommonConfig
-commonConfig = CommonConfig <$> cap <*> cop <*> lfp <*> ign <*> igg <*> commonSwitches
+commonConfig = CommonConfig <$> cap <*> cop <*> lfp <*> commonSwitches
   where cap = fmap (Right . fromAbsoluteFilePath)
                    (strOption (long "cachedir" <> hidden <> help "Use an alternate package cache location."))
               <|> pure (Left defaultPackageCache)
@@ -322,10 +358,6 @@ commonConfig = CommonConfig <$> cap <*> cop <*> lfp <*> ign <*> igg <*> commonSw
         lfp = fmap (Right . fromAbsoluteFilePath)
                    (strOption (long "logfile"  <> hidden <> help "Use an alternate Pacman log."))
               <|> pure (Left defaultLogFile)
-        ign = maybe S.empty (S.fromList . map PkgName . T.split (== ',')) <$>
-          optional (strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given packages."))
-        igg = maybe S.empty (S.fromList . map PkgGroup . T.split (== ',')) <$>
-          optional (strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore packages from the given groups."))
 
 commonSwitches :: Parser (S.Set CommonSwitch)
 commonSwitches = S.fromList <$> many (nc <|> no <|> dbg <|> clr)
@@ -389,9 +421,9 @@ remove = bigR *> (Remove <$> mods <*> somePkgs)
         unneeded = flag' RemoveUnneeded (long "unneeded" <> short 'u' <> hidden <> help "Remove unneeded packages.")
 
 sync :: Parser PacmanOp
-sync = bigS *> (Sync <$> (fmap Right somePkgs <|> fmap Left mods) <*> ref)
+sync = bigS *> (Sync <$> (fmap Right somePkgs <|> fmap Left mods) <*> (S.fromList <$> many (ref <|> ign <|> igg)))
   where bigS = flag' () (long "sync" <> short 'S' <> help "Install official packages.")
-        ref  = S.fromList <$> many (flag' SyncRefresh (long "refresh" <> short 'y' <> hidden <> help "Update the package database."))
+        ref  = flag' SyncRefresh (long "refresh" <> short 'y' <> hidden <> help "Update the package database.")
         mods = cln <|> gps <|> inf <|> lst <|> sch <|> upg <|> dnl
         cln  = flag' SyncClean (long "clean" <> short 'c' <> hidden <> help "Remove old packages from the cache.")
         gps  = SyncGroups <$> (flag' () (long "groups" <> short 'g' <> hidden <> help "View members of a package group.") *> someArgs')
@@ -400,7 +432,10 @@ sync = bigS *> (Sync <$> (fmap Right somePkgs <|> fmap Left mods) <*> ref)
         sch  = SyncSearch <$> strOption (long "search" <> short 's' <> metavar "REGEX" <> hidden <> help "Search the official package repos.")
         upg  = SyncUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade installed packages.") *> manyArgs')
         dnl  = SyncDownload <$> (flag' () (long "downloadonly" <> short 'w' <> hidden <> help "Download package tarballs.") *> someArgs')
-
+        ign  = SyncIgnore <$> (S.fromList . map PkgName . T.split (== ',')) <$>
+          strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given packages.")
+        igg  = SyncIgnoreGroup <$> (S.fromList . map PkgGroup . T.split (== ',')) <$>
+          strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore packages from the given groups.")
 
 misc :: Parser (S.Set MiscOp)
 misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> gpg <|> hd <|> con <|> dbo <|> nop <|> nos <|> pf <|> nod <|> prt <|> asi)
@@ -429,9 +464,15 @@ testdeps = bigT *> (TestDeps <$> someArgs)
   where bigT = flag' () (long "deptest" <> short 'T' <> help "Test dependencies - useful for scripts.")
 
 upgrades :: Parser PacmanOp
-upgrades = bigU *> (Upgrade <$> optional mods <*> somePkgs)
+upgrades = bigU *> (Upgrade <$> (S.fromList <$> many mods) <*> somePkgs)
   where bigU = flag' () (long "upgrade" <> short 'U' <> help "Install given package files.")
-        mods = flag' UpgradeAsDeps (long "asdeps" <> hidden) <|> flag' UpgradeAsExplicit (long "asexplicit" <> hidden)
+        mods = asd <|> ase <|> ign <|> igg
+        asd = flag' UpgradeAsDeps (long "asdeps" <> hidden)
+        ase = flag' UpgradeAsExplicit (long "asexplicit" <> hidden)
+        ign  = UpgradeIgnore <$> (S.fromList . map PkgName . T.split (== ',')) <$>
+          strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given packages.")
+        igg  = UpgradeIgnoreGroup <$> (S.fromList . map PkgGroup . T.split (== ',')) <$>
+          strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore packages from the given groups.")
 
 somePkgs :: Parser (NonEmptySet PkgName)
 somePkgs = NES.fromNonEmpty . fromJust . NEL.nonEmpty . map PkgName <$> some (argument str (metavar "PACKAGES"))

@@ -65,8 +65,7 @@ upgradeAURPkgs pkgs = do
 -- been taken into consideration.
 foreigns :: Settings -> IO (S.Set SimplePkg)
 foreigns ss = S.filter (notIgnored . view (field @"name")) <$> foreignPackages
-  where ignores = ignoredPkgsOf $ commonConfigOf ss
-        notIgnored p = p `notElem` ignores
+  where notIgnored p = not . S.member p $ ignoresOf ss
 
 upgrade :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
   S.Set PkgName -> NonEmptySet SimplePkg -> Eff r ()
