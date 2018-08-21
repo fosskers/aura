@@ -153,7 +153,7 @@ realPkgConflicts ss parent pkg dep
           curVer   = pver pkg & release .~ []
           reqVer   = (dep ^. field @"demand") & _VersionDemand . release .~ []
           lang     = langOf ss
-          toIgnore = ignoredPkgsOf $ commonConfigOf ss
+          toIgnore = ignoresOf ss
           failMsg1 = getRealPkgConflicts_2 pn lang
           failMsg2 = getRealPkgConflicts_1 parent pn (prettyV curVer) (T.pack $ show reqVer) lang
 
