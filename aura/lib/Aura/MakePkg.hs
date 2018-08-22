@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, ViewPatterns #-}
+{-# LANGUAGE OverloadedStrings, ViewPatterns, TupleSections #-}
 
 -- |
 -- Module    : Aura.State
@@ -17,7 +17,7 @@ module Aura.MakePkg
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils (strictText)
+import           Aura.Utils (strictText, optionalPrompt)
 import           BasePrelude
 import           Control.Error.Util (note)
 import qualified Data.ByteString.Lazy.Char8 as BL
@@ -42,12 +42,14 @@ makepkgCmd = fromAbsoluteFilePath "/usr/bin/makepkg"
 -- | Given the current user name, build the package of whatever
 -- directory we're in.
 makepkg :: Settings -> User -> IO (Either Failure (NonEmptySet (Path Absolute)))
-makepkg ss usr = fmap g . make usr . f $ proc cmd (opts <> colour)
+makepkg ss usr = make ss usr (proc cmd $ opts <> colour) >>= g
   where (cmd, opts) = runStyle usr . foldMap asFlag . makepkgFlagsOf $ buildConfigOf ss
-        f | switch ss DontSuppressMakepkg = id
-          | otherwise = setStderr closed . setStdout closed
-        g (ExitSuccess, fs) = note (Failure buildFail_9) . fmap NES.fromNonEmpty $ NEL.nonEmpty fs
-        g _ = Left $ Failure buildFail_8
+        g (ExitSuccess, _, fs)   = pure . note (Failure buildFail_9) . fmap NES.fromNonEmpty $ NEL.nonEmpty fs
+        g (ExitFailure _, se, _) = do
+          unless (switch ss DontSuppressMakepkg) $ do
+            showError <- optionalPrompt ss buildFail_11
+            when showError $ BL.putStrLn se
+          pure . Left $ Failure buildFail_8
         colour | shared ss (Colour Never)  = ["--nocolor"]
                | shared ss (Colour Always) = []
                | isTerminal ss = []
@@ -55,12 +57,16 @@ makepkg ss usr = fmap g . make usr . f $ proc cmd (opts <> colour)
 
 -- | Actually build the package, guarding on exceptions.
 -- Yields the filepaths of the built package tarballs.
-make :: MonadIO m => User -> ProcessConfig stdin stdout stderr -> m (ExitCode, [Path Absolute])
-make (User usr) pc = do
-  ec  <- runProcess pc
+make :: MonadIO m => Settings -> User -> ProcessConfig stdin stdout stderr -> m (ExitCode, BL.ByteString, [Path Absolute])
+make ss (User usr) pc = do
+  (ec, se) <- runIt ss pc
   res <- readProcess $ proc "sudo" ["-u", T.unpack usr, toFilePath makepkgCmd, "--packagelist"]
   let fs = map (fromAbsoluteFilePath . T.unpack . strictText) . BL.lines $ res ^. _2
-  pure (ec, fs)
+  pure (ec, se, fs)
+
+runIt :: MonadIO m => Settings -> ProcessConfig stdin stdout stderr -> m (ExitCode, BL.ByteString)
+runIt ss pc | switch ss DontSuppressMakepkg = (,mempty) <$> runProcess pc
+            | otherwise = (\(ec, _, se) -> (ec, se)) <$> readProcess pc
 
 -- | Make a source package. See `man makepkg` and grep for `--allsource`.
 makepkgSource :: User -> IO [Path Absolute]

@@ -286,6 +286,11 @@ buildFail_10 :: Language -> Doc AnsiStyle
 buildFail_10 = \case
   _ -> "Every package failed to build."
 
+buildFail_11 :: Language -> Doc AnsiStyle
+buildFail_11 = \case
+  Japanese   -> "作成は失敗しました。エラーを見ますか？"
+  _          -> "Building failed. Would you like to see the error?"
+
 ------------------------------
 -- Aura/Dependencies functions
 ------------------------------
