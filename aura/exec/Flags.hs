@@ -39,7 +39,7 @@ data PacmanOp = Database (Either DatabaseOp (NonEmptySet PkgName))
               | Files    (S.Set FilesOp)
               | Query    (Either QueryOp (S.Set QueryFilter, S.Set PkgName))
               | Remove   (S.Set RemoveOp) (NonEmptySet PkgName)
-              | Sync     (Either SyncOp (NonEmptySet PkgName)) (S.Set SyncSwitch)
+              | Sync     (Either SyncOp (S.Set PkgName)) (S.Set SyncSwitch)
               | TestDeps (NonEmptySet T.Text)
               | Upgrade  (S.Set UpgradeSwitch) (NonEmptySet PkgName)
               deriving (Show)
@@ -421,7 +421,7 @@ remove = bigR *> (Remove <$> mods <*> somePkgs)
         unneeded = flag' RemoveUnneeded (long "unneeded" <> short 'u' <> hidden <> help "Remove unneeded packages.")
 
 sync :: Parser PacmanOp
-sync = bigS *> (Sync <$> (fmap Right somePkgs <|> fmap Left mods) <*> (S.fromList <$> many (ref <|> ign <|> igg)))
+sync = bigS *> (Sync <$> (fmap (Right . S.map PkgName) manyArgs <|> fmap Left mods) <*> (S.fromList <$> many (ref <|> ign <|> igg)))
   where bigS = flag' () (long "sync" <> short 'S' <> help "Install official packages.")
         ref  = flag' SyncRefresh (long "refresh" <> short 'y' <> hidden <> help "Update the package database.")
         mods = cln <|> gps <|> inf <|> lst <|> sch <|> upg <|> dnl
