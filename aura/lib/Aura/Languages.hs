@@ -203,24 +203,6 @@ buildPackages_1 (bt . view (field @"name") -> p) = \case
     Chinese    -> p <> " 正在构建中..."
     _          -> "Building " <> p <> "..."
 
-buildFail_1 :: PkgName -> Language -> Doc AnsiStyle
-buildFail_1 (bt . view (field @"name") -> p) = \case
-    Japanese   -> p <> "の作成は失敗しました。"
-    Polish     -> "Budowanie " <> p <> " zakończyło się niepowodzeniem."
-    Croatian   -> "Izgradnja " <> p <> " nije uspjela."
-    Swedish    -> "Det gick inte att bygga paketet " <> p <> "."
-    German     -> "Bauen von " <> p <> " ist fehlgeschlagen."
-    Spanish    -> "La compilación de " <> p <> " ha fallado."
-    Portuguese -> "Falha na compilação do pacote " <> p <> "."
-    French     -> "Bon, la compilation de " <> p <> " a échouée."
-    Russian    -> "Что ж, сборка " <> p <> " не удалась."
-    Italian    -> "La compilazione di " <> p <> "è fallita."
-    Serbian    -> "Изградња пакета " <> p <> " није успела."
-    Norwegian  -> "Bygging av " <> p <> " feilet."
-    Indonesia  -> "Gagal membangun " <> p
-    Chinese    -> p <> " 构建失败。"
-    _          -> "Well, building " <> p <> " failed."
-
 buildFail_5 :: Language -> Doc AnsiStyle
 buildFail_5 = \case
     Japanese   -> "パッケージ作成に失敗しました。"

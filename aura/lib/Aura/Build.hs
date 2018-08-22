@@ -74,7 +74,7 @@ build g p = do
   ss     <- ask
   send $ notify ss (buildPackages_1 (p ^. field @"name") (langOf ss)) *> hFlush stdout
   result <- send $ build' ss g p
-  either (buildFail p) (pure . Just) result
+  either buildFail (pure . Just) result
 
 -- | Should never throw an IO Exception. In theory all errors
 -- will come back via the @Language -> String@ function.
@@ -123,11 +123,9 @@ overwritePkgbuild ss p = when (switch ss HotEdit || switch ss UseCustomizepkg) $
 
 -- | Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
-buildFail :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  Buildable -> Failure -> Eff r (Maybe a)
-buildFail p (Failure err) = do
+buildFail :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Failure -> Eff r (Maybe a)
+buildFail (Failure err) = do
   ss <- ask
-  send . scold ss $ buildFail_1 (p ^. field @"name") (langOf ss)
   send . scold ss . err $ langOf ss
   response <- send $ optionalPrompt ss buildFail_6
   bool (throwError $ Failure buildFail_5) (pure Nothing) response
