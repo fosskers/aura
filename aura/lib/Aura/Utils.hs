@@ -19,7 +19,6 @@ module Aura.Utils
   , csi, cursorUpLineCode, hideCursor, showCursor, raiseCursorBy
   , getTrueUser, getEditor, getLocale
   , hasRootPriv, isTrueRoot
-  -- , quietSh, loudSh, exitCode  -- TODO remove
   , chown
     -- * File IO
   , ifFile
@@ -124,29 +123,6 @@ csi args code = "\ESC[" <> T.intercalate ";" (map (T.pack . show) args) <> code
 -- | Terminal code for raising the cursor.
 cursorUpLineCode :: Int -> T.Text
 cursorUpLineCode n = csi [n] "F"
-
--- TODO remove
--- | Perform a `Sh` action quietly while guarding against exceptions,
--- and return the associated `ExitCode`.
--- quietSh :: Sh a -> Sh (ExitCode, a)
--- quietSh sh = do
---   a  <- errExit False . print_stdout False $ print_stderr False sh
---   ec <- exitCode <$> lastExitCode
---   pure (ec, a)
-
--- | Perform a `Sh` action verbosely while guarding against exceptions,
--- and return the associated `ExitCode`.
--- loudSh :: Sh a -> Sh (ExitCode, a)
--- loudSh sh = do
---   a  <- errExit False . print_stdout True $ print_stderr True sh
---   ec <- exitCode <$> lastExitCode
---   pure (ec, a)
-
--- | Shelly's `lastExitCode` gives an `Int`, so this function here
--- gives us a more usable form of the exit status.
--- exitCode :: Int -> ExitCode
--- exitCode 0 = ExitSuccess
--- exitCode n = ExitFailure n
 
 -- | This will get the true user name regardless of sudo-ing.
 getTrueUser :: Environment -> Maybe User

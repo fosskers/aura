@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, ViewPatterns, TupleSections #-}
+{-# LANGUAGE OverloadedStrings, TupleSections #-}
 
 -- |
 -- Module    : Aura.State
@@ -53,7 +53,7 @@ makepkg ss usr = make ss usr (proc cmd $ opts <> colour) >>= g
         colour | shared ss (Colour Never)  = ["--nocolor"]
                | shared ss (Colour Always) = []
                | isTerminal ss = []
-               | otherwise = ["--nocolor"] -- TODO is this right?
+               | otherwise = ["--nocolor"]
 
 -- | Actually build the package, guarding on exceptions.
 -- Yields the filepaths of the built package tarballs.

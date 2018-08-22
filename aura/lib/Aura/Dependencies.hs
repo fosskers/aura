@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, MonoLocalBinds, TupleSections, MultiWayIf, LambdaCase #-}
+{-# LANGUAGE FlexibleContexts, MonoLocalBinds, TupleSections, MultiWayIf #-}
 {-# LANGUAGE TypeApplications, DataKinds #-}
 
 -- |

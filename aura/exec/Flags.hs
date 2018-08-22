@@ -275,9 +275,9 @@ aursync = bigA *>
         upgrade = AurUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade all installed AUR packages.") *> fmap (S.map PkgName) manyArgs')
         aur     = AurJson <$> (flag' () (long "json" <> hidden <> help "Retrieve package JSON straight from the AUR.") *> somePkgs')
         switches = ign <|> igg
-        ign  = AurIgnore <$> (S.fromList . map PkgName . T.split (== ',')) <$>
+        ign  = AurIgnore . S.fromList . map PkgName . T.split (== ',') <$>
           strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given packages.")
-        igg  = AurIgnoreGroup <$> (S.fromList . map PkgGroup . T.split (== ',')) <$>
+        igg  = AurIgnoreGroup . S.fromList . map PkgGroup . T.split (== ',') <$>
           strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore packages from the given groups.")
 
 backups :: Parser AuraOp
@@ -432,9 +432,9 @@ sync = bigS *> (Sync <$> (fmap (Right . S.map PkgName) manyArgs <|> fmap Left mo
         sch  = SyncSearch <$> strOption (long "search" <> short 's' <> metavar "REGEX" <> hidden <> help "Search the official package repos.")
         upg  = SyncUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade installed packages.") *> manyArgs')
         dnl  = SyncDownload <$> (flag' () (long "downloadonly" <> short 'w' <> hidden <> help "Download package tarballs.") *> someArgs')
-        ign  = SyncIgnore <$> (S.fromList . map PkgName . T.split (== ',')) <$>
+        ign  = SyncIgnore . S.fromList . map PkgName . T.split (== ',') <$>
           strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given packages.")
-        igg  = SyncIgnoreGroup <$> (S.fromList . map PkgGroup . T.split (== ',')) <$>
+        igg  = SyncIgnoreGroup . S.fromList . map PkgGroup . T.split (== ',') <$>
           strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore packages from the given groups.")
 
 misc :: Parser (S.Set MiscOp)
@@ -469,9 +469,9 @@ upgrades = bigU *> (Upgrade <$> (S.fromList <$> many mods) <*> somePkgs)
         mods = asd <|> ase <|> ign <|> igg
         asd = flag' UpgradeAsDeps (long "asdeps" <> hidden)
         ase = flag' UpgradeAsExplicit (long "asexplicit" <> hidden)
-        ign  = UpgradeIgnore <$> (S.fromList . map PkgName . T.split (== ',')) <$>
+        ign  = UpgradeIgnore . S.fromList . map PkgName . T.split (== ',') <$>
           strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given packages.")
-        igg  = UpgradeIgnoreGroup <$> (S.fromList . map PkgGroup . T.split (== ',')) <$>
+        igg  = UpgradeIgnoreGroup . S.fromList . map PkgGroup . T.split (== ',') <$>
           strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore packages from the given groups.")
 
 somePkgs :: Parser (NonEmptySet PkgName)

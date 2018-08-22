@@ -115,8 +115,12 @@ data Prebuilt = Prebuilt { name     :: !PkgName
 data Dep = Dep { name   :: !PkgName
                , demand :: !VersionDemand } deriving (Eq, Ord, Show, Generic)
 
--- TODO Doctest here, and fix up the haddock
 -- | Parse a dependency entry as it would appear in a PKGBUILD:
+--
+-- @
+-- >>> parseDep "pacman>1.2.3"
+-- Just (Dep {name = PkgName {name = "pacman"}, demand = >1.2.3})
+-- @
 parseDep :: T.Text -> Maybe Dep
 parseDep = hush . parse dep "dep"
   where dep = Dep <$> n <*> v

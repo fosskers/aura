@@ -96,7 +96,6 @@ build' ss g b = do
     lift . when (S.member AllSource . makepkgFlagsOf $ buildConfigOf ss) $
       makepkgSource usr >>= traverse_ moveToSourcePath
     pure paths
-  -- TODO Remove temp dir unless user says not to
   where usr = fromMaybe (User "桜木花道") . buildUserOf $ buildConfigOf ss
 
 -- | Create a temporary directory with a semi-random name based on

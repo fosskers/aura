@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleContexts, MonoLocalBinds, TypeApplications, DataKinds #-}
-{-# LANGUAGE MultiWayIf, OverloadedStrings, LambdaCase #-}
+{-# LANGUAGE MultiWayIf, OverloadedStrings #-}
 
 -- |
 -- Module    : Aura.Core
@@ -67,7 +67,7 @@ import           System.Path.IO (doesFileExist)
 newtype Repository = Repository { repoLookup :: Settings -> NonEmptySet PkgName -> IO (Maybe (S.Set PkgName, S.Set Package)) }
 
 instance Semigroup Repository where
-  a <> b = Repository $ \ss ps -> runMaybeT $ do
+  a <> b = Repository $ \ss ps -> runMaybeT $
     MaybeT (repoLookup a ss ps) >>= \(bads, goods) -> case NES.fromSet bads of
       Nothing    -> pure (bads, goods)
       Just bads' -> second (goods <>) <$> MaybeT (repoLookup b ss bads')
@@ -104,7 +104,7 @@ liftEitherM = send >=> liftEither
 
 -- | Like `liftEither`, but for `Maybe`.
 liftMaybe :: Member (Error a) r => a -> Maybe b -> Eff r b
-liftMaybe a m = maybe (throwError a) pure m
+liftMaybe a = maybe (throwError a) pure
 
 -- | Like `liftEitherM`, but for `Maybe`.
 liftMaybeM :: (Member (Error a) r, Member m r) => a -> m (Maybe b) -> Eff r b
