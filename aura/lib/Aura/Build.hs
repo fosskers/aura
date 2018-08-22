@@ -42,6 +42,7 @@ import           System.Directory (setCurrentDirectory)
 import           System.IO (hFlush, stdout)
 import           System.Path
 import           System.Path.IO
+import           System.Process.Typed
 import           System.Random.MWC (GenIO, uniform, createSystemRandom)
 
 ---
@@ -132,9 +133,11 @@ buildFail (Failure err) = do
 
 -- | Moves a file to the pacman package cache and returns its location.
 moveToCachePath :: Settings -> Path Absolute -> IO PackagePath
-moveToCachePath ss p = copyFile p newName $> PackagePath newName
+moveToCachePath ss p = copy $> PackagePath newName
   where newName = pth </> takeFileName p
         pth     = either id id . cachePathOf $ commonConfigOf ss
+        copy    = runProcess . setStderr closed . setStdout closed
+                  $ proc "cp" ["--reflink=auto", toFilePath p, toFilePath newName ]
 
 -- | Moves a file to the aura src package cache and returns its location.
 moveToSourcePath :: Path Absolute -> IO (Path Absolute)
