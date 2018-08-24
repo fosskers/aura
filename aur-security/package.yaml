@@ -1,0 +1,50 @@
+name:        aur-security
+version:     '1.0.0'
+synopsis:    Sweeps the AUR for security flaws in PKGBUILDs.
+description: Sweeps the AUR for security flaws in PKGBUILDs.
+category:    System
+author:      Colin Woodbury
+maintainer:  colin@fosskers.ca
+homepage:    https://github.com/aurapm/aura
+license:     GPL-3
+
+ghc-options:
+  - -Widentities
+  - -Wincomplete-patterns
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+  - -Wmissing-export-lists
+  - -Wname-shadowing
+  - -Wpartial-fields
+  - -Wredundant-constraints
+  - -Wunused-binds
+  - -Wunused-imports
+  - -Wunused-matches
+
+default-extensions:
+  - NoImplicitPrelude
+
+executables:
+  aur-security:
+    source-dirs: .
+    main: Main.hs
+    dependencies:
+      - base >= 4.8 && < 4.12
+      - base-prelude >= 1.2 && < 1.4
+      - aura
+      - compactable >= 0.1 && < 0.2
+      - containers
+      - errors >= 2.3 && < 2.4
+      - http-client >= 0.5 && < 0.6
+      - http-client-tls >= 0.3 && < 0.4
+      - language-bash >= 0.7 && < 0.8
+      - non-empty-containers
+      - pretty-simple >= 2.1 && < 2.2
+      - split >= 0.2 && < 0.3
+      - stm
+      - throttled >= 1.1 && < 1.2
+      - text
+    ghc-options:
+      - -threaded
+      - -O2
+      - -with-rtsopts=-N

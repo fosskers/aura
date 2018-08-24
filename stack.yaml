@@ -4,6 +4,7 @@ packages:
   - aura/
   - aur/
   - arel/
+  - aur-security/
 
 extra-deps:
   - algebraic-graphs-0.1.1.1
