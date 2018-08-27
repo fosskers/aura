@@ -81,7 +81,7 @@ bannedCommand s@(SimpleCommand as _) = as ^.. each . typed @RValue . to r . each
     q :: RValue -> [(ShellCommand, BannedTerm)]
     q rv = rv ^.. types @Word . each . to p . each . to (s,)
 
-    p (CommandSubst str)   = [BannedTerm (T.pack str) InlinedBash]
+    p (CommandSubst str)   = maybeToList (hush $ parse "CommandSubst" str) >>= simpleCommands >>= map snd . bannedCommand
     p (ArithSubst str)     = [BannedTerm (T.pack str) StrangeBashism]
     p (ProcessSubst _ str) = [BannedTerm (T.pack str) StrangeBashism]
     p sp = sp ^.. types @Word . each . to p . each
