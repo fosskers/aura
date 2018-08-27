@@ -46,7 +46,7 @@ dependencies:
   - errors >= 2.3 && < 2.4
   - freer-simple >= 1.1 && < 1.2
   - http-client >= 0.5 && < 0.6
-  - language-bash >= 0.7 && < 0.8
+  - language-bash >= 0.8 && < 0.9
   - microlens >= 0.4 && < 0.5
   - non-empty-containers >= 0.1 && < 0.2
   - paths >= 0.2 && < 0.3
