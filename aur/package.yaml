@@ -17,6 +17,10 @@ maintainer:          colin@fosskers.ca
 copyright:           2018 Colin Woodbury
 category:            Linux
 
+extra-source-files:
+  - README.md
+  - CHANGELOG.md
+
 ghc-options:
   - -fwarn-unused-imports
   - -fwarn-unused-binds
