@@ -37,8 +37,6 @@ module Aura.Types
   , Pkgbuild(..)
   , Environment(..)
   , User(..)
-    -- * Misc.
-  , list
   ) where
 
 import           BasePrelude hiding (try)
@@ -47,7 +45,6 @@ import           Data.Aeson (ToJSONKey, FromJSONKey)
 import           Data.Bitraversable
 import qualified Data.ByteString.Lazy as BL
 import           Data.Generics.Product (field, super)
-import           Data.List.NonEmpty (nonEmpty)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import           Data.Text.Prettyprint.Doc hiding (space, list)
@@ -252,7 +249,3 @@ newtype PkgGroup = PkgGroup { group :: T.Text }
 -- | The dependency which some package provides. May not be the same name
 -- as the package itself (e.g. cronie provides cron).
 newtype Provides = Provides { provides :: T.Text } deriving (Eq, Ord, Show, Generic)
-
--- | Similar to `maybe` and `either`, but not quite the same.
-list :: b -> (NonEmpty a -> b) -> [a] -> b
-list def f as = maybe def f $ nonEmpty as

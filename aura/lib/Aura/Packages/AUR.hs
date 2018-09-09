@@ -37,12 +37,12 @@ import           Control.Monad.Freer.Reader
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Maybe
 import           Data.Generics.Product (field)
-import           Data.List.NonEmpty (head)
 import qualified Data.Set as S
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Versions (versioning)
+import           Lens.Micro
 import           Lens.Micro ((^.), (^..), each, to)
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
@@ -78,7 +78,7 @@ buildable m ai = do
       { name     = PkgName $ aurNameOf ai
       , version  = ver
       , base     = bse
-      , provides = list (Provides $ aurNameOf ai) (Provides . head) $ providesOf ai
+      , provides = providesOf ai ^. to listToMaybe . non (aurNameOf ai) . to Provides
       -- TODO This is a potentially naughty mapMaybe, since deps that fail to parse
       -- will be silently dropped. Unfortunately there isn't much to be done - `aurLookup`
       -- and `aurRepo` which call this function only report existence errors
