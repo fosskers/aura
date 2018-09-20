@@ -167,13 +167,13 @@ simplepkg (PackagePath t) = uncurry SimplePkg <$> bitraverse hush hush (parse n 
   where t' = T.pack . toUnrootedFilePath $ takeFileName t
 
         n :: Parsec Void T.Text PkgName
-        n = PkgName . T.pack <$> manyTill anyChar (try finished)
+        n = PkgName . T.pack <$> manyTill anySingle (try finished)
 
         -- | Assumes that a version number will never start with a letter,
         -- and that a package name section (i.e. abc-def-ghi) will never start
         -- with a number.
         finished = char '-' *> lookAhead digitChar
-        v    = manyTill anyChar (try finished) *> ver
+        v    = manyTill anySingle (try finished) *> ver
         ver  = try (fmap Ideal semver' <* post) <|> try (fmap General version' <* post) <|> fmap Complex mess'
         post = char '-' *> (string "x86_64" <|> string "any") *> string ".pkg.tar.xz"
 

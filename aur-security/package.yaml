@@ -38,7 +38,7 @@ executables:
       - http-client >= 0.5 && < 0.6
       - http-client-tls >= 0.3 && < 0.4
       - language-bash >= 0.8 && < 0.9
-      - pretty-simple >= 2.1 && < 2.2
+      - pretty-simple >= 2.1 && < 2.3
       - split >= 0.2 && < 0.3
       - text
     ghc-options:

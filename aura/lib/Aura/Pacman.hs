@@ -48,7 +48,7 @@ import           Lens.Micro
 import           Lens.Micro.GHC ()
 import           System.Path (Path, Absolute, fromAbsoluteFilePath, toFilePath)
 import           System.Process.Typed
-import           Text.Megaparsec
+import           Text.Megaparsec hiding (single)
 import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 

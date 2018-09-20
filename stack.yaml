@@ -1,4 +1,4 @@
-resolver: lts-12.9
+resolver: lts-12.10
 
 packages:
   - aura/
@@ -7,11 +7,14 @@ packages:
   - aur-security/
 
 extra-deps:
-  - algebraic-graphs-0.1.1.1
+  - algebraic-graphs-0.2
   - compactable-0.1.2.2
   - generic-lens-1.0.0.2
   - language-bash-0.8.0
+  - megaparsec-7.0.1
   - mwc-random-0.14.0.0
   - non-empty-containers-0.1.2.0
   - paths-0.2.0.0
+  - pretty-simple-2.2.0.0
   - throttled-1.1.0
+  - versions-3.5.0
