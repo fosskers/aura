@@ -218,7 +218,7 @@ data Language = English
               | Norwegian
               | Indonesia
               | Chinese
-	      | Esperanto
+              | Esperanto
                 deriving (Eq, Enum, Bounded, Ord, Show)
 
 -- | The various ways that dependency resolution can fail.
