@@ -27,6 +27,7 @@ Filip Brcic                                   | Serbian
 "pak tua Greg"                                | Indonesia
 Kai Zhang                                     | Chinese
 Onoue Takuro                                  | Japanese
+Zachary "Ghosy" Matthews                      | Esperanto
 -}
 
 module Aura.Languages where
@@ -60,6 +61,7 @@ translators = Map.fromList
     , (Indonesia,  "\"pak tua Greg\"")
     , (Chinese,    "Kai Zhang")
     , (Japanese,   "Onoue Takuro")
+    , (Esperanto,  "Zachary Matthews")
     ]
 
 -- These need updating! Or removing...
@@ -79,6 +81,7 @@ languageNames = Map.fromList . zip [ Japanese, Polish, Croatian, Swedish, German
     Norwegian  -> [ "Japanese", "Polsk", "Kroatisk", "Svensk", "Tysk", "Spansk", "Portugisisk", "Fransk", "Russisk", "Italiensk", "Serbisk", "Norsk", "Indonesian", "Chinese" ]
     Indonesia  -> [ "Japanese", "Polandia", "Kroasia", "Swedia", "Jerman", "Spanyol", "Portugis", "Prancis", "Rusia", "Italia", "Serbia", "Norwegia", "Indonesian", "Chinese" ]
     Chinese    -> [ "日语", "波兰语", "克罗地亚语", "瑞典语", "德语", "西班牙语", "葡萄牙语", "法语", "俄语", "意大利语", "塞尔维亚语", "挪威语", "印度尼西亚语", "中文" ]
+    Esperanto  -> [ "La japana", "La pola", "La kroata", "La sevda", "La germana", "La hispana", "La portugala", "La franca", "La rusa", "La itala", "La serba", "La norvega", "La indonezia", "La ĉina"]
     _          -> [ "Japanese", "Polish", "Croatian", "Swedish", "German", "Spanish", "Portuguese", "French", "Russian", "Italian", "Serbian", "Norwegian", "Indonesian", "Chinese" ]
 
 translatorMsgTitle :: Language -> T.Text
@@ -97,6 +100,7 @@ translatorMsgTitle = \case
     Norwegian  -> "Aura Oversettere:"
     Indonesia  -> "Penerjemah Aura:"
     Chinese    -> "Aura 的翻译者："
+    Esperanto  -> "Tradukistoj de Aura:"
     _          -> "Aura Translators:"
 
 translatorMsg :: Language -> [T.Text]
@@ -132,6 +136,7 @@ langFromLocale = T.take 2 >>> \case
     "nb" -> Norwegian
     "id" -> Indonesia
     "zh" -> Chinese
+    "eo" -> Esperanto
     _    -> English
 
 ----------------------
@@ -151,6 +156,7 @@ checkDBLock_1 = \case
     Russian    -> "База данных пакетов заблокирована. Нажмите \"Ввод\", когда она разблокируется, чтобы продолжить."
     Chinese    -> "包数据库已锁定。请在解锁后按下回车以继续。"
     Swedish    -> "Paketdatabasen är låst. Klicka på enter när den är upplåst."
+    Esperanto  -> "La datumbazo de pakaĵoj estas ŝlosita. Premu enen-klavo kiam la datumbazo estas malŝlosita por daŭrigi"
     _          -> "The package database is locked. Press enter when it's unlocked to continue."
 
 trueRoot_3 :: Language -> Doc AnsiStyle
@@ -162,6 +168,7 @@ trueRoot_3 = \case
     Russian    -> "С версии makepkg v4.2 сборка от имени root более невозможна."
     Chinese    -> "自从 makepkg v4.2 以后，就不能以根用户身份构建软件了。"
     Swedish    -> "I makepkg v4.2 och uppåt är det inte tillåtet att bygga som root."
+    Esperanto  -> "Depost makepkg v4.2, konstruanto ĉefuzante ne eblas."
     _          -> "As of makepkg v4.2, building as root is no longer possible."
 
 mustBeRoot_1 :: Language -> Doc AnsiStyle
@@ -180,6 +187,7 @@ mustBeRoot_1 = let sudo = bt "sudo" in \case
     Norwegian  -> "Du må bruke " <> sudo <> " for det."
     Indonesia  -> "Anda harus menggunakan " <> sudo <> " untuk melakukannya."
     Chinese    -> "除非是根用户，否则不能执行此操作。"
+    Esperanto  -> "Vi ne povas fari ĉi tiun operacion, sen " <> sudo <> "."
     _          -> "You cannot perform this operation without using sudo."
 
 -----------------------
@@ -201,6 +209,7 @@ buildPackages_1 (bt . view (field @"name") -> p) = \case
     Norwegian  -> "Bygger " <> p <> "..."
     Indonesia  -> "Membangun " <> p <> "..."
     Chinese    -> p <> " 正在构建中..."
+    Esperanto  -> "Muntanta" <> p <> "..."
     _          -> "Building " <> p <> "..."
 
 buildFail_5 :: Language -> Doc AnsiStyle
@@ -219,6 +228,7 @@ buildFail_5 = \case
     Norwegian  -> "Bygging feilet."
     Indonesia  -> "Proses gagal."
     Chinese    -> "构建失败。"
+    Esperanto  -> "Muntado paneis"
     _          -> "Building failed."
 
 -- NEEDS TRANSLATION
@@ -237,6 +247,7 @@ buildFail_6 = \case
     Indonesia  -> "Apakah anda tetap ingin melanjutkan?"
     Chinese    -> "你仍然希望继续吗？"
     Swedish    -> "Vill du fortsätta ändå?"
+    Esperanto  -> "Ĉu vi volas daŭrigi?"
     _          -> "Would you like to continue anyway?"
 
 -- NEEDS TRANSLATION
@@ -251,6 +262,7 @@ buildFail_7 (bt . view (field @"name") -> p) = \case
     Russian    -> "Не удалось получить сценарии сборки для " <> p <> "."
     Chinese    -> "无法获得 " <> p <> " 的构建脚本。"
     Swedish    -> "Kunde inte hämta byggskript för " <> p <> "."
+    Esperanto  -> "Paneis akiri muntaj skriptoj de " <> p <> "."
     _          -> "Failed to obtain build scripts for " <> p <> "."
 
 buildFail_8 :: Language -> Doc AnsiStyle
@@ -258,19 +270,23 @@ buildFail_8 = \case
     Japanese   -> "makepkgは失敗しました。"
     Portuguese -> "Ocorreu um erro ao executar makepkg"
     Russian    -> "Произошла ошибка makepkg."
+    Esperanto  -> "Paneo de makepkg okazis."
     _          -> "There was a makepkg failure."
 
 buildFail_9 :: Language -> Doc AnsiStyle
 buildFail_9 = \case
-  _ -> "Failed to detect any built package files (*.pkg.tar.xz)."
+  Esperanto -> "Paneis detekti ĉiujn dosierojn de pakaĵoj (*.pkg.tar.xz)."
+  _         -> "Failed to detect any built package files (*.pkg.tar.xz)."
 
 buildFail_10 :: Language -> Doc AnsiStyle
 buildFail_10 = \case
-  _ -> "Every package failed to build."
+  Esperanto -> "Ĉiuj pakaĵoj paneis munti."
+  _         -> "Every package failed to build."
 
 buildFail_11 :: Language -> Doc AnsiStyle
 buildFail_11 = \case
   Japanese   -> "作成は失敗しました。エラーを見ますか？"
+  Esperanto  -> "Muntado paneis. Ĉu vi volas vidi la eraron?"
   _          -> "Building failed. Would you like to see the error?"
 
 ------------------------------
@@ -293,6 +309,7 @@ getRealPkgConflicts_1 (bt . view (field @"name") -> prnt) (bt . view (field @"na
     Norwegian  -> "Avhengigheten " <> p <> " krever versjon " <> d <>", men den nyeste versjonen er " <> r <> "."
     Indonesia  -> "Dependensi " <> p <> " meminta versi " <> d <> " namun versi paling baru adalah " <> r <> "."
     Chinese    -> "依赖 " <> p <> " 需要版本 " <> d <> "，但是最新的版本是 " <> r <> "。"
+    Esperanto  -> "La pakaĵo, " <> prnt <> ", dependas de versio " <> d <> " de " <> p <> ", sed la plej nova versio estas " <> r <> "."
     _          -> "The package " <> prnt <> " depends on version " <> d <> " of " <> p <> ", but the most recent version is " <> r <> "."
 
 getRealPkgConflicts_2 :: PkgName -> Language -> Doc AnsiStyle
@@ -311,8 +328,9 @@ getRealPkgConflicts_2 (bt . view (field @"name") -> p) = \case
     Norwegian  -> p <> " er en ignorert pakke! Sjekk din `pacman.conf`-fil."
     Indonesia  -> p <> " merupakan paket yang diabaikan! Lihat `pacman.conf` anda."
     Chinese    -> p <> " 是一个被忽略的包！请查看你的 `pacman.conf` 文件。"
+    Esperanto  -> p <> " estas malatenta pakaĵo! Vidu vian `pacman.conf` dosieron."
     _          -> p <> " is an ignored package! See your `pacman.conf` file."
-
+                
 missingPkg_2 :: [DepError] -> Language -> Doc AnsiStyle
 missingPkg_2 ps l = vsep $ map (depError l) ps
 
@@ -322,14 +340,17 @@ depError _ (Ignored s)     = s
 depError l (NonExistant (PkgName s)) = case l of
   Portuguese -> "A dependência " <> bt s <> " não foi encontrada."
   Russian    -> "Зависимость " <> bt s <> " не найдена."
+  Esperanto  -> "La dependeco " <> bt s <> " ne povis troviĝi."
   _          -> "The dependency " <> bt s <> " couldn't be found."
 depError l (BrokenProvides (PkgName pkg) (Provides pro) (PkgName n)) = case l of
   Russian    -> "Пакету " <> bt pkg <> " требуется " <> bt n <> ", предоставляющий " <> bt pro <> "."
+  Esperanto  -> "La pakaĵo, " <> bt pkg <> " bezonas " <> bt n <> ", kiu donas " <> bt pro <> "."
   _          -> "The package " <> bt pkg <> " needs " <> bt n <> ", which provides " <> bt pro <> "."
 
 missingPkg_3 :: Language -> Doc AnsiStyle
 missingPkg_3 = \case
-  _ -> "There was an error reorganizing the dependency graph. If you see this, something is very wrong."
+  Esperanto  -> "Eraro okazis kiam reorganizi la grafeo de dependeco. Io estas erarega."
+  _          -> "There was an error reorganizing the dependency graph. If you see this, something is very wrong."
 
 missingPkg_4 :: [[PkgName]] -> Language -> Doc AnsiStyle
 missingPkg_4 pns = \case
@@ -355,6 +376,7 @@ displayOutputLanguages_1 = \case
     Norwegian  -> "Følgende språk er tilgjengelig:"
     Indonesia  -> "Berikut ini adalah bahasa yang tersedia:"
     Chinese    -> "以下语言是可用的："
+    Esperanto  -> "La sekvaj lingvo estas disponebla:"
     _          -> "The following languages are available:"
 
 ----------------------------
@@ -375,6 +397,7 @@ auraCheck_1 = \case
     Indonesia  -> "Pemutakhiran aura tersedia. Mutakhirkan aura dulu?"
     Chinese    -> "Aura 可以升级。先升级 aura？"
     Swedish    -> "Det finns en uppdatering tillgänglig till Aura. Vill du uppdatera Aura först?"
+    Esperanto  -> "Ĝisdatigo de Aura estas disponebla. Ĉu ĝisdatigas ĝin?"
     _          -> "Aura update available. Update it first?"
 
 install_2 :: Language -> Doc AnsiStyle
@@ -393,6 +416,7 @@ install_2 = \case
     Norwegian  -> "Ingen gyldige pakker er valgte."
     Indonesia  -> "Tidak ada paket valid yang dispesifikkan."
     Chinese    -> "没有指定有效的包。"
+    Esperanto  -> "Ne validajn pakaĵojn specifis"
     _          -> "No valid packages specified."
 
 install_3 :: Language -> Doc AnsiStyle
@@ -411,6 +435,7 @@ install_3 = \case
     Norwegian  -> "Fortsett?"
     Indonesia  -> "Lanjut?"
     Chinese    -> "继续？"
+    Esperanto  -> "Ĉu daŭrigi?"
     _          -> "Continue?"
 
 install_4 :: Language -> Doc AnsiStyle
@@ -429,6 +454,7 @@ install_4 = \case
     Norwegian  -> "Installasjonen ble avbrutt manuelt."
     Indonesia  -> "Instalasi dibatalkan secara paksa."
     Chinese    -> "手动安装已中止。"
+    Esperanto  -> "Instalon ĉesigi permane"
     _          -> "Installation manually aborted."
 
 install_5 :: Language -> Doc AnsiStyle
@@ -447,6 +473,7 @@ install_5 = \case
     Norwegian  -> "Bestemmer avhengigheter..."
     Indonesia  -> "Menentukan dependensi..."
     Chinese    -> "确定依赖中..."
+    Esperanto  -> "Difinas dependecojn..."
     _          -> "Determining dependencies..."
 
 -- 2014 December  7 @ 14:45 - NEEDS TRANSLATIONS
@@ -459,6 +486,7 @@ confirmIgnored_1 (bt . view (field @"name") -> p) = \case
     Russian    -> p <> " отмечен как игнорируемый. Всё равно установить?"
     Chinese    -> p <> " 已被标记为忽略。仍然安装？"
     Swedish    -> p <> " är markerad som ignorerad. Vill du installera ändå?"
+    Esperanto  -> p <> " estas markita kiel malatenta. Ĉu instali?"
     _          -> p <> " is marked as Ignored. Install anyway?"
 
 -- NEEDS UPDATE TO REFLECT CHANGED ENGLISH
@@ -478,6 +506,7 @@ reportNonPackages_1 = \case
     Norwegian  -> "Det følgende er ikke AUR-pakker:"
     Indonesia  -> "Paket berikut ini bukan merupakan paket AUR:"
     Chinese    -> "以下软件不是 AUR 包："
+    Esperanto  -> "La sekvaj ne estas pakaĵoj de la AUR:"
     _          -> "The following are not AUR packages:"
 
 -- NEEDS TRANSLATION
@@ -491,6 +520,7 @@ reportUnneededPackages_1 = \case
     Spanish    -> "Los siguientes paquetes ya están instalados:"
     Chinese    -> "以下包已被安装："
     Swedish    -> "Följande paket är redan installerade:"
+    Esperanto  -> "La sekvaj pakaĵoj jam instaliĝas:"
     _          -> "The following packages are already installed:"
 
 reportPkgsToInstall_1 :: Language -> Doc AnsiStyle
@@ -509,6 +539,7 @@ reportPkgsToInstall_1 = \case
     Norwegian  -> "Avhengigheter fra depotet:"
     Indonesia  -> "Dependensi dari repositori:"
     Chinese    -> "仓库依赖："
+    Esperanto  -> "Dependecoj de deponejo:"
     _          -> "Repository dependencies:"
 
 -- NEEDS AN UPDATE
@@ -527,6 +558,7 @@ reportPkgsToInstall_2 = \case
     Indonesia  -> "AUR Paket:"
     Chinese    -> "AUR 包："
     Swedish    -> "AUR Paket:"
+    Esperanto  -> "Pakaĵoj de AUR:"
     _          -> "AUR Packages:"
 
 reportPkgsToInstall_3 :: Language -> Doc AnsiStyle
@@ -543,6 +575,7 @@ reportPkgsToInstall_3 = \case
     Italian    -> "Dipendenze in AUR:"
     Serbian    -> "Зависности из AUR-а:"
     Norwegian  -> "Avhengigheter fra AUR:"
+    Esperanto  -> "Dependencoj de AUR:"
     _          -> "AUR dependencies:"
 
 -- NEEDS TRANSLATION
@@ -562,6 +595,7 @@ reportPkgbuildDiffs_1 (bt . view (field @"name") -> p) = \case
     Indonesia  -> p <> " tidak mempunyai PKGBUILD yang tersimpan untuk saat ini."
     Chinese    -> p <> " 还没有保存的 PKGBUILD。"
     Swedish    -> p <> " har ännu ingen PKGBUILD."
+    Esperanto  -> p <> " ne havas PKGBUILD jam."
     _          -> p <> " has no stored PKGBUILD yet."
 
 -- NEEDS TRANSLATION
@@ -581,6 +615,7 @@ reportPkgbuildDiffs_2 (bt -> p) = \case
     Indonesia  -> "PKGBUILD dari paket " <> p <> " sudah mutakhir."
     Chinese    -> p <> " 的 PKGBUILD 已经最新。"
     Swedish    -> "PKGBUILD för " <> p <> " är aktuell."
+    Esperanto  -> p <> " PKGBUILD estas ĝisdata."
     _          -> p <> " PKGBUILD is up to date."
 
 -- NEEDS TRANSLATION
@@ -600,6 +635,7 @@ reportPkgbuildDiffs_3 (bt . view (field @"name") -> p) = \case
     Indonesia  -> "Perubahan PKGBUILD " <> p <> ":"
     Chinese    -> p <> " 的 PKGBUILD 变化："
     Swedish    -> "Förändringar i PKGBUILD för " <> p <> ":"
+    Esperanto  -> p <> " PKGBUILD ŝanĝoj:"
     _          -> p <> " PKGBUILD changes:"
 
 -- NEEDS TRANSLATION
@@ -619,6 +655,7 @@ reportPkgsToUpgrade_1 = \case
     Norwegian  -> "AUR-pakker å oppgradere:"
     Indonesia  -> "Paket AUR yang akan ditingkatkan:"
     Chinese    -> "要升级的 AUR 包："
+    Esperanto  -> "Pakaĵoj de AUR ĝisdatigi:"
     _          -> "AUR Packages to upgrade:"
 
 -- NEEDS UPDATING
@@ -638,6 +675,7 @@ reportBadDowngradePkgs_1 = \case
     Norwegian  -> "Følgende pakker har ingen versjoner i cache, og kan derfor ikke bli nedgradert:"
     Indonesia  -> "Berikut ini tidak mempunyai versi pada cache, sehingga tidak akan diturunkan:"
     Chinese    -> "以下包在缓存中没有版本，所以无法被降级："
+    Esperanto  -> "La sekvaj pakaĵoj havas ne kaŝmemorigitajn versiojn, do ĝi ne povas malpromociigi:"
     _          -> "The following have no versions in the cache, and thus can’t be downgraded:"
 
 reportBadDowngradePkgs_2 :: PkgName -> Language -> Doc AnsiStyle
@@ -660,6 +698,7 @@ upgradeAURPkgs_1 = \case
     Norwegian  -> "Henter pakkeinformasjon..."
     Indonesia  -> "Mengambil informasi paket..."
     Chinese    -> "正在获取包信息..."
+    Esperanto  -> "Venigas informacion de pakaĵoj..."
     _          -> "Fetching package information..."
 
 upgradeAURPkgs_2 :: Language -> Doc AnsiStyle
@@ -678,6 +717,7 @@ upgradeAURPkgs_2 = \case
     Norwegian  -> "Sammenligner pakkeversjoner..."
     Indonesia  -> "Membandingkan versi paket..."
     Chinese    -> "正在比较包的版本..."
+    Esperanto  -> "Komparas versiojn de pakaĵoj..."
     _          -> "Comparing package versions..."
 
 upgradeAURPkgs_3 :: Language -> Doc AnsiStyle
@@ -696,6 +736,7 @@ upgradeAURPkgs_3 = \case
     Norwegian  -> "Ingen pakkeoppgradering fra AUR nødvendig."
     Indonesia  -> "Tidak ada peningkatan AUR yang dibutuhkan."
     Chinese    -> "没有需要升级的 AUR 包。"
+    Esperanto  -> "Ne ĝisdatigoj de pakaĵoj de AUR necesas."
     _          -> "No AUR package upgrades necessary."
 
 removeMakeDepsAfter_1 :: Language -> Doc AnsiStyle
@@ -714,6 +755,7 @@ removeMakeDepsAfter_1 = \case
     Norwegian  -> "Fjerner unødvendige make-avhengigheter..."
     Indonesia  -> "Menghapus dependensi `make` yang tidak dibutuhkan..."
     Chinese    -> "移除不需要的 make 依赖..."
+    Esperanto  -> "Forigas nenecesajn dependecojn de make..."
     _          -> "Removing unneeded make dependencies..."
 
 ----------------------------
@@ -736,6 +778,7 @@ cleanStates_2 n@(bt . T.pack . show -> s) = \case
     Indonesia  -> s <> " paket akan tetap sama. Hapus yang lainnya?"
     Chinese    -> s <> " 个包的状态将会保留。删除其它的？"
     Swedish    -> s <> " paket kommer att bevaras. Ta bort resten?"
+    Esperanto  -> s <> " statoj de pakaĵoj teniĝas. Ĉu forigi la ceteron?"
     _          -> s <> " package states will be kept. Remove the rest?"
 
 -- NEEDS TRANSLATION
@@ -755,19 +798,22 @@ cleanStates_3 = \case
     Indonesia  -> "Tidak ada paket yang dihapus."
     Chinese    -> "没有删除任何包。"
     Swedish    -> "Inga paket togs bort."
+    Esperanto  -> "Ne statojn de pakaĵoj forigis."
     _          -> "No package states were removed."
 
 cleanStates_4 :: Int -> Language -> Doc AnsiStyle
 cleanStates_4 n = \case
-  Japanese -> "現在のパッケージ状態記録：" <> pretty n <> "個。"
-  Russian  -> "У вас сейчас " <+> pretty n <+> pluralRussian " сохраненное состояние пакета" " сохраненных состояний пакета" " сохраненных состояний пакетов." n
-  _        -> "You currently have" <+> pretty n <+> "saved package states."
+  Japanese  -> "現在のパッケージ状態記録：" <> pretty n <> "個。"
+  Russian   -> "У вас сейчас " <+> pretty n <+> pluralRussian " сохраненное состояние пакета" " сохраненных состояний пакета" " сохраненных состояний пакетов." n
+  Esperanto -> "Vi havas " <+> pretty n <+> " konservajn statojn de pakaĵoj."
+  _         -> "You currently have" <+> pretty n <+> "saved package states."
 
 cleanStates_5 :: T.Text -> Language -> Doc AnsiStyle
 cleanStates_5 t = \case
-  Japanese -> "一番最近に保存されたのは：" <> pretty t
-  Russian  -> "Последнее сохраненное:" <+> pretty t
-  _        -> "Mostly recently saved:" <+> pretty t
+  Japanese  -> "一番最近に保存されたのは：" <> pretty t
+  Russian   -> "Последнее сохраненное:" <+> pretty t
+  Esperanto -> "Lastaj konservaj:" <+> pretty t
+  _         -> "Mostly recently saved:" <+> pretty t
 
 cleanStates_6 :: Int -> Language -> Doc AnsiStyle
 cleanStates_6 n = \case
@@ -777,6 +823,7 @@ readState_1 :: Language -> Doc AnsiStyle
 readState_1 = \case
     Portuguese -> "O arquivo de estado não pôde ser interpretado. É um arquivo JSON válido?"
     Russian    -> "Это состояние не распознано. Это корректный JSON?"
+    Esperanto  -> "Tiu statdosiero paneis sintake analizi. Ĉu ĝi estas valida JSON?"
     _          -> "That state file failed to parse. Is it legal JSON?"
 
 ----------------------------
@@ -798,6 +845,7 @@ getDowngradeChoice_1 (bt . view (field @"name") -> p) = \case
     Norwegian  -> "Hvilken versjon av " <> p <> " vil du ha?"
     Indonesia  -> "Versi dari paket " <> p <> " mana yang anda inginkan?"
     Chinese    -> "你希望安装 " <> p <> " 的哪个版本？"
+    Esperanto  -> "Kiu versio de " <> p <> " vi volas?"
     _          -> "What version of " <> p <> " do you want?"
 
 backupCache_3 :: Language -> Doc AnsiStyle
@@ -816,6 +864,7 @@ backupCache_3 = \case
     Norwegian  -> "Spesifisert backup-plass finnes ikke."
     Indonesia  -> "Lokasi `backup` tidak ada."
     Chinese    -> "备份位置不存在。"
+    Esperanto  -> "La savkopia loko ne ekzistas."
     _          -> "The backup location does not exist."
 
 backupCache_4 :: FilePath -> Language -> Doc AnsiStyle
@@ -834,6 +883,7 @@ backupCache_4 (bt . T.pack -> dir) = \case
     Norwegian  -> "Tar backup på cache til " <> dir
     Indonesia  -> "Melakukan `backup` pada direktori " <> dir
     Chinese    -> "正在将缓存备份到 " <> dir
+    Esperanto  -> "Enarkivigas la kaŝdosieron al " <> dir
     _          -> "Backing up cache to " <> dir
 
 backupCache_5 :: Int -> Language -> Doc AnsiStyle
@@ -852,6 +902,7 @@ backupCache_5 (bt . T.pack . show -> n) = \case
     Norwegian  -> "Pakker som blir tatt backup på: " <> n
     Indonesia  -> "Jumlah paket yang di-`backup`: " <> n
     Chinese    -> "将要备份的包文件：" <> n
+    Esperanto  -> "La dosierojn de la pakaĵoj enarkivigi: " <> n
     _          -> "Package files to backup: " <> n
 
 backupCache_6 :: Language -> Doc AnsiStyle
@@ -870,6 +921,7 @@ backupCache_6 = \case
     Norwegian  -> "Fortsett med backup?"
     Indonesia  -> "Lanjutkan dengan `backup`?"
     Chinese    -> "开始备份？"
+    Esperanto  -> "Ĉu daŭrigu enarkivigi?"
     _          -> "Proceed with backup?"
 
 backupCache_7 :: Language -> Doc AnsiStyle
@@ -888,6 +940,7 @@ backupCache_7 = \case
     Norwegian  -> "Backup ble avbrutt manuelt."
     Indonesia  -> "Proses `backup` dibatalkan secara paksa."
     Chinese    -> "手动备份已中止。"
+    Esperanto  -> "Enarkivigadon ĉesigis permane."
     _          -> "Backup manually aborted."
 
 backupCache_8 :: Language -> Doc AnsiStyle
@@ -906,6 +959,7 @@ backupCache_8 = \case
     Norwegian  -> "Tar backup. Dette kan ta en stund..."
     Indonesia  -> "Melakukan `backup`. Proses ini akan berjalan untuk beberapa menit..."
     Chinese    -> "正在备份中。可能需要几分钟的时间..."
+    Esperanto  -> "Enarkiviganta. Ĉi tiu eble daŭros dum kelkaj tagoj..."
     _          -> "Backing up. This may take a few minutes..."
 
 copyAndNotify_1 :: Int -> Language -> Doc AnsiStyle
@@ -924,6 +978,7 @@ copyAndNotify_1 (cyan . pretty -> n) = \case
     Norwegian  -> "Kopierer #[" <> n <> "]"
     Indonesia  -> "Menyalin #[" <> n <> "]"
     Chinese    -> "正在复制 #[" <> n <> "]"
+    Esperanto  -> "Kopianta #[" <> n <> "]"
     _          -> "Copying #[" <> n <> "]"
 
 cleanCache_2 :: Language -> Doc AnsiStyle
@@ -942,6 +997,7 @@ cleanCache_2 = \case
     Norwegian  -> "Dette vil slette HELE pakke-cachen."
     Indonesia  -> "Akan menghapus SEMUA `cache` paket"
     Chinese    -> "这将会删除全部的包缓存。"
+    Esperanto  -> "Ĉi tiu forigos la TUTAN kaŝmemoron de pakaĵoj."
     _          -> "This will delete the ENTIRE package cache."
 
 cleanCache_3 :: Word -> Language -> Doc AnsiStyle
@@ -960,6 +1016,7 @@ cleanCache_3 n@(bt . T.pack . show -> s) = \case
     Norwegian  -> s <> " av hver pakkefil blir beholdt."
     Indonesia  -> s <> " berkas dari tiap paket akan disimpan."
     Chinese    -> "每个包文件将会保存 " <> s <> " 个版本。"
+    Esperanto  -> s <> " de ĉiu dosiero de pakaĵo teniĝos."
     _          -> s <> " of each package file will be kept."
 
 cleanCache_4 :: Language -> Doc AnsiStyle
@@ -978,6 +1035,7 @@ cleanCache_4 = \case
     Norwegian  -> "Resten vil bli slettet. Er det OK?"
     Indonesia  -> "Selainnya akan dihapus. Ikhlas kan?"
     Chinese    -> "其余的将会被删除。确定？"
+    Esperanto  -> "La cetero foriĝos. Ĉu bone?"
     _          -> "The rest will be deleted. Okay?"
 
 cleanCache_5 :: Language -> Doc AnsiStyle
@@ -996,6 +1054,7 @@ cleanCache_5 = \case
     Norwegian  -> "Cache-rensing ble avbrutt manuelt."
     Indonesia  -> "Pembersihan `cache` dibatalkan secara paksa."
     Chinese    -> "手动清理缓存已中止。"
+    Esperanto  -> "Puriganta Kaŝmemoro ĉesis permane."
     _          -> "Cache cleaning manually aborted."
 
 cleanCache_6 :: Language -> Doc AnsiStyle
@@ -1014,6 +1073,7 @@ cleanCache_6 = \case
     Norwegian  -> "Renser pakke-cache..."
     Indonesia  -> "Membersihkan `cache` paket..."
     Chinese    -> "正在清理包缓存..."
+    Esperanto  -> "Purigas Kaŝmemoron de pakaĵoj..."
     _          -> "Cleaning package cache..."
 
 -- NEEDS TRANSLATION
@@ -1032,6 +1092,7 @@ cleanNotSaved_1 = \case
     Indonesia  -> "Menentukan berkas paket yang tidak dibutuhkan..."
     Chinese    -> "正在确定不需要的包文件..."
     Swedish    -> "Beräknar onödiga paketfiler..."
+    Esperanto  -> "Decidas nebezonajn dosierojn de pakaĵoj..."
     _          -> "Determining unneeded package files..."
 
 -- NEEDS TRANSLATION
@@ -1050,6 +1111,7 @@ cleanNotSaved_2 n@(cyan . pretty -> s) = \case
     Indonesia  -> s <> " berkas paket yang tidak dibutuhkan ditemukan. Hapus?"
     Chinese    -> "发现了 " <> s <> " 个不需要的包文件。是否删除？"
     Swedish    -> s <> " oanvända paket hittades. Ta bort?"
+    Esperanto  -> s <> " nebezonajn dosierojn de pakaĵoj trovis. Ĉu forigi"
     _          -> s <> " unneeded package files found. Delete?"
 
 ----------------------------
@@ -1077,6 +1139,7 @@ reportNotInLog_1 = \case
     Norwegian  -> "Følgende har ikke vist seg i loggen:"
     Indonesia  -> "Tidak terlihat pada berkas log:"
     Chinese    -> "这些没有在日志文件中出现："
+    Esperanto  -> "Ĉi tiuj ne enestis la protokolajn dosierojn:"
     _          -> "These have not appeared in the log file:"
 
 -------------------------------
@@ -1120,6 +1183,7 @@ outOfDateMsg (Just _) = red . \case
     Norwegian  -> "Utdatert!"
     Indonesia  -> "Ketinggalan Zaman!"
     Chinese    -> "过期！"
+    Esperanto  -> "Neĝisdata!"
     _          -> "Out of Date!"
 outOfDateMsg Nothing = green . \case
     Japanese   -> "最新"
@@ -1136,6 +1200,7 @@ outOfDateMsg Nothing = green . \case
     Norwegian  -> "Oppdatert"
     Indonesia  -> "Mutakhir"
     Chinese    -> "最新"
+    Esperanto  -> "Ĝisdata"
     _          -> "Up to Date"
 
 -- NEEDS TRANSLATION
@@ -1154,6 +1219,7 @@ orphanedMsg Nothing = red . \case
     Indonesia  -> "Tak dipelihara!"
     Chinese    -> "孤包！"
     Swedish    -> "Föräldralös!"
+    Esperanto  -> "Orfita!"
     _          -> "Orphaned!"
 
 -----------------------
@@ -1176,6 +1242,7 @@ saveState_1 = \case
     Indonesia  -> "Kondisi paket tersimpan."
     Chinese    -> "已保存包状态。"
     Swedish    -> "Det lokala pakettillståndet har sparats."
+    Esperanto  -> "Konservita stato de pakaĵo."
     _          -> "Saved package state."
 
 -- NEEDS TRANSLATION
@@ -1195,6 +1262,7 @@ restoreState_1 = \case
     Indonesia  -> "Versi yang diturunkan tidak tersedia untuk: "
     Chinese    -> "请求的降级版本对以下包不可用："
     Swedish    -> "Den begärda nedgraderingen finns inte tillgänglig för:"
+    Esperanto  -> "Petitajn malpromociajn versiojn ne estas disponebla de:"
     _          -> "Requested downgrade versions not available for:"
 
 restoreState_2 :: Language -> Doc AnsiStyle
@@ -1204,6 +1272,7 @@ restoreState_2 = \case
     Russian    -> "Нет сохраненных состояний для восстановления. (Используйте -B для сохранения текущего состояния)"
     Chinese    -> "没有要恢复的已保存状态。（使用 -B 保存当前状态）"
     Swedish    -> "Inga sparade tillstånd att återhämta. (Använd -B för att spara det nuvarande tillståndet)"
+    Esperanto  -> "Ne konservitaj statoj restaŭros. (Uzu -B konservi la aktualan staton)"
     _          -> "No saved states to be restored. (Use -B to save the current state)"
 
 -- NEEDS TRANSLATION
@@ -1223,6 +1292,7 @@ reinstallAndRemove_1 = \case
     Indonesia  -> "Tidak ada paket yang diubah."
     Chinese    -> "没有包需要改变。"
     Swedish    -> "Inga paket behöver ändras."
+    Esperanto  -> "Ne pakaĵoj devas ŝanĝiĝi."
     _          -> "No packages need changing."
 
 --------------------------------------
@@ -1232,6 +1302,7 @@ whoIsBuildUser_1 :: Language -> Doc AnsiStyle
 whoIsBuildUser_1 = \case
     Portuguese -> "Não foi possível determinal o usuário que executará a compilação."
     Russian    -> "Не удается определить, от имени какого пользователя производить сборку."
+    Esperanto  -> "Ne povas decidi, per kiu konto de uzanto munti."
     _          -> "Can't determine which user account to build with."
 
 ------------------------
@@ -1254,12 +1325,14 @@ pacmanFailure_1 = \case
     Indonesia  -> "Mohon periksa masukan anda."
     Chinese    -> "请检查你的输入。"
     Swedish    -> "Var god dubbelkolla indata."
+    Esperanto  -> "Bonvolu kontroli vian enigon."
     _          -> "Please check your input."
 
 confParsing_1 :: Language -> Doc AnsiStyle
 confParsing_1 = \case
     Portuguese -> "Não foi possível interpretar o arquivo pacman.conf ."
     Russian    -> "Не удается распознать формат вашего файла pacman.conf."
+    Esperanto  -> "Ne kapablas sintaske analizi vian dosieron, pacman.conf."
     _          -> "Unable to parse your pacman.conf file."
 
 provides_1 :: PkgName -> Doc AnsiStyle
@@ -1285,6 +1358,7 @@ hotEdit_1 (bt . view (field @"name") -> p) = \case
     Norwegian  -> "Vil du endre PKGBUILD for " <> p <> "?"
     Indonesia  -> "Apakah anda ingin menyunting PKGBUILD untuk paket " <> p <> "?"
     Chinese    -> "你希望编辑 " <> p <> " 的 PKGBUILD 文件吗？"
+    Esperanto  -> "Ĉu vi volas redakti la PKGBUILD de " <> p <> "?"
     _          -> "Would you like to edit the PKGBUILD of " <> p <> "?"
 
 customizepkg_1 :: Language -> Doc AnsiStyle
@@ -1302,6 +1376,7 @@ customizepkg_1 = let customizepkg = bt "customizepkg" in \case
     Indonesia  -> customizepkg <+> "tidak terinstal."
     Chinese    -> customizepkg <+> " 没有被安装。"
     Swedish    -> customizepkg <+> "är inte installerad"
+    Esperanto  -> customizepkg <+> "ne estas instalita."
     _          -> customizepkg <+> "isn't installed."
 
 ------------------------------
@@ -1361,6 +1436,7 @@ yesNoMessage = \case
     Portuguese -> "[S/n]"
     French     -> "[O/n]"
     Russian    -> "[Д/н]"
+    Esperanto  -> "[J/n]"
     _          -> "[Y/n]"
 
 yesPattern :: Language -> [T.Text]
@@ -1374,6 +1450,7 @@ yesPattern = \case
     Portuguese -> ["s", "sim"]
     French     -> ["o", "oui"]
     Russian    -> ["д", "да"]
+    Esperanto  -> ["j", "jes"]
     _          -> ["y", "yes"]
 
 ----------------------

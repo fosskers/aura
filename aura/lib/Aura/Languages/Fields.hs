@@ -32,6 +32,7 @@ package = \case
     Serbian    -> "Пакет"
     Norwegian  -> "Pakke"
     Indonesia  -> "Paket"
+    Esperanto  -> "Pakaĵo"
     _          -> "Package"
 
 firstInstall :: Language -> T.Text
@@ -49,6 +50,7 @@ firstInstall = \case
     Serbian    -> "Прва инсталација"
     Norwegian  -> "Første installasjon"
     Indonesia  -> "Versi sistem"
+    Esperanto  -> "Unua Instalo"
     _          -> "First Install"
 
 upgrades :: Language -> T.Text
@@ -66,6 +68,7 @@ upgrades = \case
     Serbian    -> "Ажурирања"
     Norwegian  -> "Oppgraderinger"
     Indonesia  -> "Tingkatkan"
+    Esperanto  -> "Noveldonoj"
     _          -> "Upgrades"
 
 recentActions :: Language -> T.Text
@@ -83,6 +86,7 @@ recentActions = \case
     Serbian    -> "Недавне радње"
     Norwegian  -> "Nylige hendelser"
     Indonesia  -> "Aksi sekarang"
+    Esperanto  -> "Ĵusaj Agoj"
     _          -> "Recent Actions"
 
 repository :: Language -> T.Text
@@ -100,6 +104,7 @@ repository = \case
     Serbian    -> "Ризница"
     Norwegian  -> "Depot"
     Indonesia  -> "Lumbung"
+    Esperanto  -> "Deponejo"
     _          -> "Repository"
 
 name :: Language -> T.Text
@@ -117,6 +122,7 @@ name = \case
     Serbian    -> "Име"
     Norwegian  -> "Navn"
     Indonesia  -> "Nama"
+    Esperanto  -> "Nomo"
     _          -> "Name"
 
 version :: Language -> T.Text
@@ -134,6 +140,7 @@ version = \case
     Serbian    -> "Верзија"
     Norwegian  -> "Versjon"
     Indonesia  -> "Versi"
+    Esperanto  -> "Versio"
     _          -> "Version"
 
 aurStatus :: Language -> T.Text
@@ -149,6 +156,7 @@ aurStatus = \case
     Italian    -> "Stato in AUR"
     Serbian    -> "Статус у AUR-у"
     Indonesia  -> "Status AUR"
+    Esperanto  -> "Stato en AUR"
     _          -> "AUR Status"
 
 -- NEEDS TRANSLATION
@@ -161,6 +169,7 @@ maintainer = \case
     Russian    -> "Ответственный"
     Norwegian  -> "Vedlikeholder"
     Indonesia  -> "Pemelihara"
+    Esperanto  -> "Daŭriganto"
     _          -> "Maintainer"
 
 projectUrl :: Language -> T.Text
@@ -178,6 +187,7 @@ projectUrl = \case
     Serbian    -> "Страница пројекта"
     Norwegian  -> "Prosjekt-URL"
     Indonesia  -> "URL Proyek"
+    Esperanto  -> "URL de Projekto"
     _          -> "Project URL"
 
 aurUrl :: Language -> T.Text
@@ -192,6 +202,7 @@ aurUrl = \case
     Italian    -> "URL AUR"
     Serbian    -> "Страница у AUR-у"
     Indonesia  -> "URL AUR"
+    Esperanto  -> "URL en AUR"
     _          -> "AUR URL"
 
 license :: Language -> T.Text
@@ -209,6 +220,7 @@ license = \case
     Serbian    -> "Лиценца"
     Norwegian  -> "Lisens"
     Indonesia  -> "Lisensi"
+    Esperanto  -> "Permesilo"
     _          -> "License"
 
 dependsOn :: Language -> T.Text
@@ -224,6 +236,7 @@ dependsOn = \case
     Italian    -> "Dipende da"
     Norwegian  -> "Er avhengig av"
     Indonesia  -> "Bergantung pada"
+    Esperanto  -> "Dependi de"
     _          -> "Depends On"
 
 buildDeps :: Language -> T.Text
@@ -235,6 +248,7 @@ buildDeps = \case
     French     -> "Dépendances de compilation"
     Russian    -> "Зависимости сборки"
     Indonesia  -> "Dependensi bangun"
+    Esperanto  -> "Muntaj Dependecoj"
     _          -> "Build Deps"
 
 votes :: Language -> T.Text
@@ -252,12 +266,14 @@ votes = \case
     Serbian    -> "Гласови"
     Norwegian  -> "Stemmer"
     Indonesia  -> "Suara"
+    Esperanto  -> "Balotiloj"
     _          -> "Votes"
 
 popularity :: Language -> T.Text
 popularity = \case
     Japanese   -> "人気"
     Portuguese -> "Popularidade"
+    Esperanto  -> "Populareco"
     _          -> "Popularity"
 
 description :: Language -> T.Text
@@ -275,6 +291,7 @@ description = \case
     Serbian    -> "Опис"
     Norwegian  -> "Beskrivelse"
     Indonesia  -> "Deskripsi"
+    Esperanto  -> "Priskribo"
     _          -> "Description"
 
 makeDeps :: Language -> T.Text
@@ -287,4 +304,5 @@ makeDeps = \case
     French     -> "Dépendances de compilation"
     Russian    -> "Зависимости Make"
     Indonesia  -> "Dependensi bangun"
+    Esperanto  -> "Make Dependecoj"
     _          -> "Make Deps"
