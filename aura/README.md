@@ -215,6 +215,7 @@ Aura is currently translated by these generous people:
 |------------|-------------------------------------------------|
 | Chinese    | Kai Zhang                                       |
 | Croatian   | Denis Kasak and "stranac"                       |
+| Esperanto  | Zachary "Ghosy" Matthews                        |
 | French     | Ma Jiehong and Fabien Dubosson                  |
 | German     | Lukas Niederbremer and Jonas Platte             |
 | Indonesian | "pak tua Greg"                                  |
