@@ -512,4 +512,5 @@ language = foldr1 (<|>) $ map (\(f, v) -> flag' v (long f <> hidden)) langs
                 , ( "serbian",    Serbian ),    ( "српски",    Serbian )
                 , ( "norwegian",  Norwegian ),  ( "norsk",     Norwegian )
                 , ( "indonesian", Indonesia )
-                , ( "chinese",    Chinese ),    ( "中文",       Chinese ) ]
+                , ( "chinese",    Chinese ),    ( "中文",       Chinese )
+                , ( "esperanto",  Esperanto ) ]
