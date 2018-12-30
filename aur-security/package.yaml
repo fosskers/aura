@@ -9,17 +9,11 @@ homepage:    https://github.com/aurapm/aura
 license:     GPL-3
 
 ghc-options:
-  - -Widentities
-  - -Wincomplete-patterns
+  - -Wall
   - -Wincomplete-record-updates
   - -Wincomplete-uni-patterns
-  - -Wmissing-export-lists
-  - -Wname-shadowing
-  - -Wpartial-fields
   - -Wredundant-constraints
-  - -Wunused-binds
-  - -Wunused-imports
-  - -Wunused-matches
+  - -Widentities
 
 default-extensions:
   - NoImplicitPrelude
@@ -29,7 +23,7 @@ executables:
     source-dirs: .
     main: Main.hs
     dependencies:
-      - base >= 4.8 && < 4.12
+      - base >= 4.8 && < 4.13
       - base-prelude >= 1.2 && < 1.4
       - aura
       - async
