@@ -19,6 +19,7 @@ module Aura.Dependencies ( resolveDeps ) where
 import           Algebra.Graph.AdjacencyMap
 import           Algebra.Graph.AdjacencyMap.Algorithm (scc)
 import qualified Algebra.Graph.NonEmpty.AdjacencyMap as NAM
+import           Algebra.Graph.ToGraph (isAcyclic)
 import           Aura.Core
 import           Aura.Languages
 import           Aura.Settings
@@ -123,7 +124,7 @@ conflicts ss m s = foldMap f m
 sortInstall :: M.Map PkgName Package -> Either Failure (NonEmpty (NonEmptySet Package))
 sortInstall m = case cycles depGraph of
   [] -> note (Failure missingPkg_3) . NEL.nonEmpty . mapMaybe NES.fromSet $ batch depGraph
-  cs -> Left . Failure . missingPkg_4 $ map (map pname . vertexList) cs
+  cs -> Left . Failure . missingPkg_4 $ map (NEL.map pname . NAM.vertexList1) cs
   where f (FromRepo _)  = []
         f p@(FromAUR b) = mapMaybe (\d -> fmap (p,) $ (d ^. field @"name") `M.lookup` m) $ b ^. field @"deps" -- TODO handle "provides"?
         depGraph  = overlay connected singles
@@ -131,9 +132,8 @@ sortInstall m = case cycles depGraph of
         connected = edges $ foldMap f elems
         singles   = overlays $ map vertex elems
 
-cycles :: Ord a => AdjacencyMap a -> [AdjacencyMap a]
-cycles x = [ induce (`NAM.hasVertex` c) x | c <- cs ]
-  where cs = filter (\c -> NAM.vertexCount c > 1) . vertexList $ scc x
+cycles :: Ord a => AdjacencyMap a -> [NAM.AdjacencyMap a]
+cycles = filter (not . isAcyclic) . vertexList . scc
 
 -- | Find the vertices that have no dependencies.
 -- O(n) complexity.
