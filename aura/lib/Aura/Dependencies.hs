@@ -1,5 +1,10 @@
-{-# LANGUAGE FlexibleContexts, MonoLocalBinds, TupleSections, MultiWayIf #-}
-{-# LANGUAGE TypeApplications, DataKinds #-}
+{-# LANGUAGE DataKinds        #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MonoLocalBinds   #-}
+{-# LANGUAGE MultiWayIf       #-}
+{-# LANGUAGE RankNTypes       #-}
+{-# LANGUAGE TupleSections    #-}
+{-# LANGUAGE TypeApplications #-}
 
 -- |
 -- Module    : Aura.Dependencies
@@ -12,6 +17,8 @@
 module Aura.Dependencies ( resolveDeps ) where
 
 import           Algebra.Graph.AdjacencyMap
+import           Algebra.Graph.AdjacencyMap.Algorithm (scc)
+import qualified Algebra.Graph.NonEmpty.AdjacencyMap  as NAM
 import           Aura.Core
 import           Aura.Languages
 import           Aura.Settings
@@ -19,24 +26,24 @@ import           Aura.Types
 import           BasePrelude
 import           Control.Concurrent.STM.TQueue
 import           Control.Concurrent.STM.TVar
-import           Control.Concurrent.Throttled (throttleMaybe_)
-import           Control.Error.Util (note, hush)
+import           Control.Concurrent.Throttled         (throttleMaybe_)
+import           Control.Error.Util                   (hush, note)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
-import           Control.Monad.Trans.Class (lift)
+import           Control.Monad.Trans.Class            (lift)
 import           Control.Monad.Trans.Maybe
-import           Data.Generics.Product (field)
-import qualified Data.List.NonEmpty as NEL
-import qualified Data.Map.Strict as M
-import qualified Data.Set as S
-import           Data.Set.NonEmpty (NonEmptySet)
-import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
+import           Data.Generics.Product                (field)
+import qualified Data.List.NonEmpty                   as NEL
+import qualified Data.Map.Strict                      as M
+import qualified Data.Set                             as S
+import           Data.Set.NonEmpty                    (NonEmptySet)
+import qualified Data.Set.NonEmpty                    as NES
+import qualified Data.Text                            as T
 import           Data.Versions
-import           Data.Witherable (wither)
+import           Data.Witherable                      (wither)
 import           Lens.Micro
-import           System.IO (stdout, hFlush)
+import           System.IO                            (hFlush, stdout)
 
 ---
 
@@ -125,8 +132,8 @@ sortInstall m = case cycles depGraph of
         singles   = overlays $ map vertex elems
 
 cycles :: Ord a => AdjacencyMap a -> [AdjacencyMap a]
-cycles x = [ induce (`S.member` c) x | c <- cs ]
-  where cs = filter (\c -> S.size c > 1) $ vertexList (scc x)
+cycles x = [ induce (`NAM.hasVertex` c) x | c <- cs ]
+  where cs = filter (\c -> NAM.vertexCount c > 1) . vertexList $ scc x
 
 -- | Find the vertices that have no dependencies.
 -- O(n) complexity.

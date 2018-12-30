@@ -1,6 +1,10 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds, DataKinds #-}
+{-# LANGUAGE BangPatterns          #-}
+{-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MonoLocalBinds        #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TypeApplications      #-}
 
 -- |
 -- Module    : Aura.Packages.AUR
@@ -27,27 +31,27 @@ import           Aura.Languages
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings
 import           Aura.Types
-import           BasePrelude hiding (head)
+import           BasePrelude                   hiding (head)
 import           Control.Concurrent.STM.TQueue
-import           Control.Concurrent.Throttled (throttle)
-import           Control.Error.Util (hush)
+import           Control.Concurrent.Throttled  (throttle)
+import           Control.Error.Util            (hush)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
-import           Control.Monad.Trans.Class (lift)
+import           Control.Monad.Trans.Class     (lift)
 import           Control.Monad.Trans.Maybe
-import           Data.Generics.Product (field)
-import qualified Data.Set as S
-import           Data.Set.NonEmpty (NonEmptySet)
-import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
-import           Data.Versions (versioning)
+import           Data.Generics.Product         (field)
+import qualified Data.Set                      as S
+import           Data.Set.NonEmpty             (NonEmptySet)
+import qualified Data.Set.NonEmpty             as NES
+import qualified Data.Text                     as T
+import           Data.Versions                 (versioning)
 import           Lens.Micro
-import           Lens.Micro ((^.), (^..), each, to)
+import           Lens.Micro                    (each, to, (^.), (^..))
 import           Linux.Arch.Aur
-import           Network.HTTP.Client (Manager)
+import           Network.HTTP.Client           (Manager)
 import           System.Path
-import           System.Path.IO (getCurrentDirectory)
+import           System.Path.IO                (getCurrentDirectory)
 import           System.Process.Typed
 
 ---

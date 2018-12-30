@@ -1,5 +1,10 @@
-{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds, DataKinds #-}
-{-# LANGUAGE OverloadedStrings, MultiWayIf #-}
+{-# LANGUAGE BangPatterns      #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE MonoLocalBinds    #-}
+{-# LANGUAGE MultiWayIf        #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications  #-}
 
 -- |
 -- Module    : Aura.Commands.C
@@ -18,10 +23,10 @@ module Aura.Commands.C
   ) where
 
 import           Aura.Cache
-import           Aura.Colour (red)
+import           Aura.Colour                (red)
 import           Aura.Core
 import           Aura.Languages
-import           Aura.Pacman (pacman)
+import           Aura.Pacman                (pacman)
 import           Aura.Settings
 import           Aura.State
 import           Aura.Types
@@ -30,16 +35,17 @@ import           BasePrelude
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
-import           Data.Generics.Product (field)
-import           Data.List.NonEmpty (nonEmpty)
-import qualified Data.Map.Strict as M
-import qualified Data.Set as S
-import           Data.Set.NonEmpty (NonEmptySet)
-import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
-import           Lens.Micro ((^?), _Just)
+import           Data.Generics.Product      (field)
+import           Data.List.NonEmpty         (nonEmpty)
+import qualified Data.Map.Strict            as M
+import qualified Data.Set                   as S
+import           Data.Set.NonEmpty          (NonEmptySet)
+import qualified Data.Set.NonEmpty          as NES
+import qualified Data.Text                  as T
+import           Lens.Micro                 ((^?), _Just)
 import           System.Path
-import           System.Path.IO (doesDirectoryExist, removeFile, copyFile)
+import           System.Path.IO             (copyFile, doesDirectoryExist,
+                                             removeFile)
 
 ---
 
