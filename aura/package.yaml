@@ -28,6 +28,7 @@ ghc-options:
   - -Wincomplete-uni-patterns
   - -Wredundant-constraints
   - -Widentities
+  - -funclutter-valid-hole-fits
 
 default-extensions:
   - NoImplicitPrelude
