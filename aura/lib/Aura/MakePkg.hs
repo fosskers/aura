@@ -18,20 +18,18 @@ module Aura.MakePkg
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils                 (optionalPrompt, strictText)
+import           Aura.Utils (optionalPrompt, strictText)
 import           BasePrelude
-import           Control.Error.Util         (note)
+import           Control.Error.Util (note)
 import qualified Data.ByteString.Lazy.Char8 as BL
-import qualified Data.List.NonEmpty         as NEL
-import           Data.Set.NonEmpty          (NonEmptySet)
-import qualified Data.Set.NonEmpty          as NES
-import qualified Data.Text                  as T
-import           Lens.Micro                 ((^.), _2)
-import           System.Path                (Absolute, Path,
-                                             fromAbsoluteFilePath, toFilePath,
-                                             (</>))
-import           System.Path.IO             (getCurrentDirectory,
-                                             getDirectoryContents)
+import qualified Data.List.NonEmpty as NEL
+import           Data.Set.NonEmpty (NonEmptySet)
+import qualified Data.Set.NonEmpty as NES
+import qualified Data.Text as T
+import           Lens.Micro ((^.), _2)
+import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath,
+                              (</>))
+import           System.Path.IO (getCurrentDirectory, getDirectoryContents)
 import           System.Process.Typed
 
 ---

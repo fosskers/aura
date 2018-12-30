@@ -34,24 +34,23 @@ module Aura.Pacman
 
 import           Aura.Languages
 import           Aura.Types
-import           Aura.Utils                 (strictText)
-import           BasePrelude                hiding (some, try)
-import qualified Data.ByteString            as BS
+import           Aura.Utils (strictText)
+import           BasePrelude hiding (some, try)
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
-import qualified Data.Map.Strict            as M
-import qualified Data.Set                   as S
-import           Data.Set.NonEmpty          (NonEmptySet)
-import qualified Data.Text                  as T
-import           Data.Text.Encoding         (decodeUtf8With)
-import           Data.Text.Encoding.Error   (lenientDecode)
-import qualified Data.Text.Lazy             as TL
-import qualified Data.Text.Lazy.Encoding    as TL
+import qualified Data.Map.Strict as M
+import qualified Data.Set as S
+import           Data.Set.NonEmpty (NonEmptySet)
+import qualified Data.Text as T
+import           Data.Text.Encoding (decodeUtf8With)
+import           Data.Text.Encoding.Error (lenientDecode)
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Encoding as TL
 import           Lens.Micro
-import           Lens.Micro.GHC             ()
-import           System.Path                (Absolute, Path,
-                                             fromAbsoluteFilePath, toFilePath)
+import           Lens.Micro.GHC ()
+import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath)
 import           System.Process.Typed
-import           Text.Megaparsec            hiding (single)
+import           Text.Megaparsec hiding (single)
 import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 

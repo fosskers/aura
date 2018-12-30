@@ -7,20 +7,19 @@ module Flags
   , AurSwitch(..), AurOp(..), BackupOp(..), CacheOp(..), LogOp(..), OrphanOp(..)
   ) where
 
-import           Aura.Cache          (defaultPackageCache)
-import           Aura.Pacman         (defaultLogFile, pacmanConfFile)
+import           Aura.Cache (defaultPackageCache)
+import           Aura.Pacman (defaultLogFile, pacmanConfFile)
 import           Aura.Settings
 import           Aura.Types
-import           BasePrelude         hiding (Version, exp, log, option)
-import qualified Data.List.NonEmpty  as NEL
-import qualified Data.Set            as S
-import           Data.Set.NonEmpty   (NonEmptySet)
-import qualified Data.Set.NonEmpty   as NES
-import qualified Data.Text           as T
+import           BasePrelude hiding (Version, exp, log, option)
+import qualified Data.List.NonEmpty as NEL
+import qualified Data.Set as S
+import           Data.Set.NonEmpty (NonEmptySet)
+import qualified Data.Set.NonEmpty as NES
+import qualified Data.Text as T
 import           Lens.Micro
 import           Options.Applicative
-import           System.Path         (Absolute, Path, fromAbsoluteFilePath,
-                                      toFilePath)
+import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath)
 
 ---
 

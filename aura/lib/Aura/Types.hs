@@ -44,23 +44,20 @@ module Aura.Types
   , User(..)
   ) where
 
-import           BasePrelude                               hiding (try)
-import           Control.Error.Util                        (hush)
-import           Data.Aeson                                (FromJSONKey,
-                                                            ToJSONKey)
+import           BasePrelude hiding (try)
+import           Control.Error.Util (hush)
+import           Data.Aeson (FromJSONKey, ToJSONKey)
 import           Data.Bitraversable
-import qualified Data.ByteString.Lazy                      as BL
-import           Data.Generics.Product                     (field, super)
-import qualified Data.Map.Strict                           as M
-import qualified Data.Text                                 as T
-import           Data.Text.Prettyprint.Doc                 hiding (list, space)
+import qualified Data.ByteString.Lazy as BL
+import           Data.Generics.Product (field, super)
+import qualified Data.Map.Strict as M
+import qualified Data.Text as T
+import           Data.Text.Prettyprint.Doc hiding (list, space)
 import           Data.Text.Prettyprint.Doc.Render.Terminal
-import           Data.Versions                             hiding (Traversal')
-import           GHC.Generics                              (Generic)
+import           Data.Versions hiding (Traversal')
+import           GHC.Generics (Generic)
 import           Lens.Micro
-import           System.Path                               (Absolute, Path,
-                                                            takeFileName,
-                                                            toUnrootedFilePath)
+import           System.Path (Absolute, Path, takeFileName, toUnrootedFilePath)
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 

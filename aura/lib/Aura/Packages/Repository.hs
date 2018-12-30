@@ -18,23 +18,22 @@ module Aura.Packages.Repository
   ) where
 
 import           Aura.Core
-import           Aura.Languages                (provides_1)
-import           Aura.Pacman                   (pacmanOutput)
-import           Aura.Settings                 (CommonSwitch(..), Settings,
-                                                shared)
+import           Aura.Languages (provides_1)
+import           Aura.Pacman (pacmanOutput)
+import           Aura.Settings (CommonSwitch(..), Settings, shared)
 import           Aura.Types
-import           Aura.Utils                    (getSelection, strictText)
-import           BasePrelude                   hiding (try)
-import           Control.Compactable           (traverseEither)
+import           Aura.Utils (getSelection, strictText)
+import           BasePrelude hiding (try)
+import           Control.Compactable (traverseEither)
 import           Control.Concurrent.STM.TQueue
-import           Control.Concurrent.Throttled  (throttle)
-import           Control.Error.Util            (hush, note)
-import qualified Data.ByteString.Lazy.Char8    as BL
-import           Data.Generics.Product         (field)
-import qualified Data.Set                      as S
-import qualified Data.Text                     as T
+import           Control.Concurrent.Throttled (throttle)
+import           Control.Error.Util (hush, note)
+import qualified Data.ByteString.Lazy.Char8 as BL
+import           Data.Generics.Product (field)
+import qualified Data.Set as S
+import qualified Data.Text as T
 import           Data.Versions
-import           Lens.Micro                    ((^.))
+import           Lens.Micro ((^.))
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 
