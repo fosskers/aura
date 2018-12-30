@@ -2,9 +2,9 @@
 
 module Flags
   ( Program(..), opts
-  , PacmanOp(..), SyncOp(..), MiscOp(..)
+  , PacmanOp( Sync ), SyncOp( SyncUpgrade ), MiscOp
   , AuraOp(..), _AurSync, _AurIgnore, _AurIgnoreGroup
-  , AurSwitch(..), AurOp(..), BackupOp(..), CacheOp(..), LogOp(..), OrphanOp(..)
+  , AurOp(..), BackupOp(..), CacheOp(..), LogOp(..), OrphanOp(..)
   ) where
 
 import           Aura.Cache (defaultPackageCache)
