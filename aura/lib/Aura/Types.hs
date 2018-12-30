@@ -1,8 +1,13 @@
-{-# LANGUAGE OverloadedStrings, MultiWayIf #-}
-{-# LANGUAGE DataKinds, TypeApplications, DuplicateRecordFields #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE DerivingStrategies, GeneralizedNewtypeDeriving, DeriveGeneric #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE DataKinds                  #-}
+{-# LANGUAGE DeriveGeneric              #-}
+{-# LANGUAGE DerivingStrategies         #-}
+{-# LANGUAGE DuplicateRecordFields      #-}
+{-# LANGUAGE FlexibleInstances          #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE MultiWayIf                 #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE TypeApplications           #-}
 
 -- |
 -- Module    : Aura.Types
@@ -35,24 +40,27 @@ module Aura.Types
   , Provides(..)
   , PackagePath(..)
   , Pkgbuild(..)
-  , Environment(..)
+  , Environment
   , User(..)
   ) where
 
-import           BasePrelude hiding (try)
-import           Control.Error.Util (hush)
-import           Data.Aeson (ToJSONKey, FromJSONKey)
+import           BasePrelude                               hiding (try)
+import           Control.Error.Util                        (hush)
+import           Data.Aeson                                (FromJSONKey,
+                                                            ToJSONKey)
 import           Data.Bitraversable
-import qualified Data.ByteString.Lazy as BL
-import           Data.Generics.Product (field, super)
-import qualified Data.Map.Strict as M
-import qualified Data.Text as T
-import           Data.Text.Prettyprint.Doc hiding (space, list)
+import qualified Data.ByteString.Lazy                      as BL
+import           Data.Generics.Product                     (field, super)
+import qualified Data.Map.Strict                           as M
+import qualified Data.Text                                 as T
+import           Data.Text.Prettyprint.Doc                 hiding (list, space)
 import           Data.Text.Prettyprint.Doc.Render.Terminal
-import           Data.Versions hiding (Traversal')
-import           GHC.Generics (Generic)
+import           Data.Versions                             hiding (Traversal')
+import           GHC.Generics                              (Generic)
 import           Lens.Micro
-import           System.Path (Path, Absolute, takeFileName, toUnrootedFilePath)
+import           System.Path                               (Absolute, Path,
+                                                            takeFileName,
+                                                            toUnrootedFilePath)
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 

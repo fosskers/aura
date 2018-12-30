@@ -32,27 +32,32 @@ module Aura.Utils
   ) where
 
 import           Aura.Colour
-import           Aura.Languages (whitespace, yesNoMessage, yesPattern)
+import           Aura.Languages                            (whitespace,
+                                                            yesNoMessage,
+                                                            yesPattern)
 import           Aura.Settings
-import           Aura.Types (Language, Environment(..), User(..))
-import           BasePrelude hiding (Version, (<+>))
-import           Control.Monad.Trans (MonadIO)
-import qualified Data.ByteString.Lazy as BL
-import qualified Data.ByteString.Lazy as L
-import qualified Data.Map.Strict as M
-import qualified Data.Text as T
-import           Data.Text.Encoding.Error (lenientDecode)
-import qualified Data.Text.IO as T
-import qualified Data.Text.Lazy as TL
-import qualified Data.Text.Lazy.Encoding as TL
+import           Aura.Types                                (Environment,
+                                                            Language, User(..))
+import           BasePrelude                               hiding (Version,
+                                                            (<+>))
+import           Control.Monad.Trans                       (MonadIO)
+import qualified Data.ByteString.Lazy                      as BL
+import qualified Data.ByteString.Lazy                      as L
+import qualified Data.Map.Strict                           as M
+import qualified Data.Text                                 as T
+import           Data.Text.Encoding.Error                  (lenientDecode)
+import qualified Data.Text.IO                              as T
+import qualified Data.Text.Lazy                            as TL
+import qualified Data.Text.Lazy.Encoding                   as TL
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Network.HTTP.Client
-import           Network.HTTP.Types.Status (statusCode)
-import           System.IO (stdout, hFlush)
-import           System.Path (Path, Absolute, toFilePath)
-import           System.Path.IO (doesFileExist)
-import           System.Process.Typed (runProcess, proc)
+import           Network.HTTP.Types.Status                 (statusCode)
+import           System.IO                                 (hFlush, stdout)
+import           System.Path                               (Absolute, Path,
+                                                            toFilePath)
+import           System.Path.IO                            (doesFileExist)
+import           System.Process.Typed                      (proc, runProcess)
 
 ---
 

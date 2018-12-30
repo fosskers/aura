@@ -1,4 +1,5 @@
-{-# LANGUAGE OverloadedStrings, TupleSections #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TupleSections     #-}
 
 -- |
 -- Module    : Aura.State
@@ -17,17 +18,20 @@ module Aura.MakePkg
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils (strictText, optionalPrompt)
+import           Aura.Utils                 (optionalPrompt, strictText)
 import           BasePrelude
-import           Control.Error.Util (note)
+import           Control.Error.Util         (note)
 import qualified Data.ByteString.Lazy.Char8 as BL
-import qualified Data.List.NonEmpty as NEL
-import           Data.Set.NonEmpty (NonEmptySet)
-import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
-import           Lens.Micro ((^.), _2)
-import           System.Path (Path, Absolute, fromAbsoluteFilePath, (</>), toFilePath)
-import           System.Path.IO (getCurrentDirectory, getDirectoryContents)
+import qualified Data.List.NonEmpty         as NEL
+import           Data.Set.NonEmpty          (NonEmptySet)
+import qualified Data.Set.NonEmpty          as NES
+import qualified Data.Text                  as T
+import           Lens.Micro                 ((^.), _2)
+import           System.Path                (Absolute, Path,
+                                             fromAbsoluteFilePath, toFilePath,
+                                             (</>))
+import           System.Path.IO             (getCurrentDirectory,
+                                             getDirectoryContents)
 import           System.Process.Typed
 
 ---
@@ -71,7 +75,7 @@ runIt ss pc | switch ss DontSuppressMakepkg = (,mempty) <$> runProcess pc
 -- | Make a source package. See `man makepkg` and grep for `--allsource`.
 makepkgSource :: User -> IO [Path Absolute]
 makepkgSource usr = do
-  runProcess $ proc cmd opts
+  void . runProcess $ proc cmd opts
   pwd <- getCurrentDirectory
   filter (T.isSuffixOf ".src.tar.gz" . T.pack . toFilePath) . map (pwd </>) <$> getDirectoryContents pwd
     where (cmd, opts) = runStyle usr ["--allsource"]

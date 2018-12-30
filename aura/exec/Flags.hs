@@ -7,19 +7,20 @@ module Flags
   , AurSwitch(..), AurOp(..), BackupOp(..), CacheOp(..), LogOp(..), OrphanOp(..)
   ) where
 
-import           Aura.Cache (defaultPackageCache)
-import           Aura.Pacman (pacmanConfFile, defaultLogFile)
+import           Aura.Cache          (defaultPackageCache)
+import           Aura.Pacman         (defaultLogFile, pacmanConfFile)
 import           Aura.Settings
 import           Aura.Types
-import           BasePrelude hiding (Version, option, log, exp)
-import qualified Data.List.NonEmpty as NEL
-import qualified Data.Set as S
-import           Data.Set.NonEmpty (NonEmptySet)
-import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
+import           BasePrelude         hiding (Version, exp, log, option)
+import qualified Data.List.NonEmpty  as NEL
+import qualified Data.Set            as S
+import           Data.Set.NonEmpty   (NonEmptySet)
+import qualified Data.Set.NonEmpty   as NES
+import qualified Data.Text           as T
 import           Lens.Micro
 import           Options.Applicative
-import           System.Path (Path, Absolute, toFilePath, fromAbsoluteFilePath)
+import           System.Path         (Absolute, Path, fromAbsoluteFilePath,
+                                      toFilePath)
 
 ---
 
@@ -218,7 +219,7 @@ data AuraOp = AurSync (Either AurOp (NonEmptySet PkgName)) (S.Set AurSwitch)
 
 _AurSync :: Traversal' AuraOp (S.Set AurSwitch)
 _AurSync f (AurSync o s) = AurSync o <$> f s
-_AurSync _ x = pure x
+_AurSync _ x             = pure x
 
 data AurOp = AurDeps     (NonEmptySet PkgName)
            | AurInfo     (NonEmptySet PkgName)
@@ -234,11 +235,11 @@ data AurSwitch = AurIgnore      (S.Set PkgName)
 
 _AurIgnore :: Traversal' AurSwitch (S.Set PkgName)
 _AurIgnore f (AurIgnore s) = AurIgnore <$> f s
-_AurIgnore _ x = pure x
+_AurIgnore _ x             = pure x
 
 _AurIgnoreGroup :: Traversal' AurSwitch (S.Set PkgGroup)
 _AurIgnoreGroup f (AurIgnoreGroup s) = AurIgnoreGroup <$> f s
-_AurIgnoreGroup _ x = pure x
+_AurIgnoreGroup _ x                  = pure x
 
 data BackupOp = BackupClean Word | BackupRestore | BackupList deriving (Show)
 
@@ -365,6 +366,7 @@ commonSwitches = S.fromList <$> many (nc <|> no <|> dbg <|> clr)
         no  = flag' NeededOnly (long "needed"    <> hidden <> help "Don't rebuild/reinstall up-to-date packages.")
         dbg = flag' Debug      (long "debug"     <> hidden <> help "Print useful debugging info.")
         clr = Colour . f <$> strOption (long "color" <> metavar "WHEN" <> hidden <> help "Colourize the output.")
+        f :: String -> ColourMode
         f "never"  = Never
         f "always" = Always
         f _        = Auto
