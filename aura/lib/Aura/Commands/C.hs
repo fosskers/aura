@@ -1,5 +1,10 @@
-{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds, DataKinds #-}
-{-# LANGUAGE OverloadedStrings, MultiWayIf #-}
+{-# LANGUAGE BangPatterns      #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE MonoLocalBinds    #-}
+{-# LANGUAGE MultiWayIf        #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications  #-}
 
 -- |
 -- Module    : Aura.Commands.C
@@ -39,7 +44,7 @@ import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Lens.Micro ((^?), _Just)
 import           System.Path
-import           System.Path.IO (doesDirectoryExist, removeFile, copyFile)
+import           System.Path.IO (copyFile, doesDirectoryExist, removeFile)
 
 ---
 

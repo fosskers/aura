@@ -1,6 +1,10 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds, DataKinds #-}
+{-# LANGUAGE BangPatterns          #-}
+{-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MonoLocalBinds        #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TypeApplications      #-}
 
 -- |
 -- Module    : Aura.Packages.AUR
@@ -43,7 +47,7 @@ import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Versions (versioning)
 import           Lens.Micro
-import           Lens.Micro ((^.), (^..), each, to)
+import           Lens.Micro (each, to, (^.), (^..))
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
 import           System.Path

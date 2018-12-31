@@ -8,15 +8,14 @@ maintainer:  colin@fosskers.ca
 license:     GPL-3
 
 ghc-options:
-  - -fwarn-unused-imports
-  - -fwarn-unused-binds
-  - -fwarn-name-shadowing
-  - -fwarn-unused-matches
-  - -fwarn-incomplete-patterns
-  - -fwarn-incomplete-uni-patterns
+  - -Wall
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+  - -Wredundant-constraints
+  - -Widentities
 
 dependencies:
-  - base >= 4.8 && < 4.12
+  - base >= 4.8 && < 4.13
   - optparse-generic >= 1.1 && < 1.4
   - shelly >= 1.6 && < 1.9
   - text >= 1.2 && < 1.3

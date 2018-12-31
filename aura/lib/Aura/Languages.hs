@@ -1,5 +1,8 @@
-{-# LANGUAGE LambdaCase, ViewPatterns, OverloadedStrings #-}
-{-# LANGUAGE TypeApplications, DataKinds #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE LambdaCase        #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications  #-}
+{-# LANGUAGE ViewPatterns      #-}
 {-# OPTIONS_HADDOCK prune #-}
 {-# OPTIONS_GHC -fno-warn-missing-export-lists #-}
 
@@ -37,7 +40,7 @@ import qualified Aura.Languages.Fields as Fields
 import           Aura.Types
 import           BasePrelude hiding ((<+>))
 import           Data.Generics.Product (field)
-import qualified Data.Map.Strict as Map (Map, (!), fromList, toList, mapWithKey)
+import qualified Data.Map.Strict as Map (Map, fromList, mapWithKey, toList, (!))
 import qualified Data.Text as T
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
@@ -118,7 +121,7 @@ bt cs = "`" <> pretty cs <> "`"
 
 whitespace :: Language -> Char
 whitespace Japanese = '　'  -- \12288
-whitespace _ = ' '          -- \32
+whitespace _        = ' '   -- \32
 
 langFromLocale :: T.Text -> Language
 langFromLocale = T.take 2 >>> \case
@@ -352,10 +355,10 @@ missingPkg_3 = \case
   Esperanto  -> "Eraro okazis kiam reorganizi la grafeo de dependeco. Io estas erarega."
   _          -> "There was an error reorganizing the dependency graph. If you see this, something is very wrong."
 
-missingPkg_4 :: [[PkgName]] -> Language -> Doc AnsiStyle
+missingPkg_4 :: [NonEmpty PkgName] -> Language -> Doc AnsiStyle
 missingPkg_4 pns = \case
   _ -> vsep $ "The following dependency cycles were detected:" : pns'
-  where pns' = map (hsep . map pretty . intersperse "=>" . map (view (field @"name"))) pns
+  where pns' = map (hsep . map pretty . intersperse "=>" . map (view (field @"name")) . toList) pns
 
 -----------------
 -- aura functions

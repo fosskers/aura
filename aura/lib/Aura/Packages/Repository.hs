@@ -1,5 +1,8 @@
-{-# LANGUAGE OverloadedStrings, TupleSections, DuplicateRecordFields #-}
-{-# LANGUAGE TypeApplications, DataKinds #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TupleSections         #-}
+{-# LANGUAGE TypeApplications      #-}
 
 -- |
 -- Module    : Aura.Packages.Repository
@@ -17,7 +20,7 @@ module Aura.Packages.Repository
 import           Aura.Core
 import           Aura.Languages (provides_1)
 import           Aura.Pacman (pacmanOutput)
-import           Aura.Settings (Settings, CommonSwitch(..), shared)
+import           Aura.Settings (CommonSwitch(..), Settings, shared)
 import           Aura.Types
 import           Aura.Utils (getSelection, strictText)
 import           BasePrelude hiding (try)
@@ -83,8 +86,8 @@ mostRecentVersion p@(PkgName s) = note p . extractVersion . strictText <$> pacma
 extractVersion :: T.Text -> Maybe Versioning
 extractVersion = hush . parse p "extractVersion"
   where p = do
-          takeWhile1P Nothing (/= '\n') *> newline
-          takeWhile1P Nothing (/= '\n') *> newline
+          void $ takeWhile1P Nothing (/= '\n') *> newline
+          void $ takeWhile1P Nothing (/= '\n') *> newline
           string "Version" *> space1 *> char ':' *> space1 *> v
         v = choice [ try (fmap Ideal semver'    <* string "Description")
                    , try (fmap General version' <* string "Description")

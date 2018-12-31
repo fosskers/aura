@@ -1,9 +1,13 @@
-{-# LANGUAGE LambdaCase, NamedFieldPuns, DuplicateRecordFields, TupleSections #-}
+{-# LANGUAGE BangPatterns          #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE LambdaCase            #-}
+{-# LANGUAGE NamedFieldPuns        #-}
+{-# LANGUAGE TupleSections         #-}
 
 module Main ( main ) where
 
 import           Aura.Pkgbuild.Fetch (getPkgbuild)
-import           Aura.Pkgbuild.Security (parsedPB, bannedTerms)
+import           Aura.Pkgbuild.Security (bannedTerms, parsedPB)
 import           Aura.Types
 import           BasePrelude
 import           Control.Compactable (fmapEither)

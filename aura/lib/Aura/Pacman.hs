@@ -1,5 +1,7 @@
-{-# LANGUAGE MultiWayIf, OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts, MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE MonoLocalBinds    #-}
+{-# LANGUAGE MultiWayIf        #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 -- |
 -- Module    : Aura.Pacman
@@ -46,7 +48,7 @@ import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Encoding as TL
 import           Lens.Micro
 import           Lens.Micro.GHC ()
-import           System.Path (Path, Absolute, fromAbsoluteFilePath, toFilePath)
+import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath)
 import           System.Process.Typed
 import           Text.Megaparsec hiding (single)
 import           Text.Megaparsec.Char
@@ -68,7 +70,7 @@ pair :: Parsec Void T.Text (T.Text, [T.Text])
 pair = L.lexeme garbage $ do
   n <- takeWhile1P Nothing (/= ' ')
   space
-  char '='
+  void $ char '='
   space
   rest <- T.words <$> takeWhile1P Nothing (/= '\n')
   pure (n, rest)

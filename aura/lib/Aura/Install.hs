@@ -1,5 +1,11 @@
-{-# LANGUAGE OverloadedStrings, MultiWayIf, ViewPatterns #-}
-{-# LANGUAGE FlexibleContexts, MonoLocalBinds, TypeApplications, DataKinds #-}
+{-# LANGUAGE BangPatterns      #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE MonoLocalBinds    #-}
+{-# LANGUAGE MultiWayIf        #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications  #-}
+{-# LANGUAGE ViewPatterns      #-}
 
 -- |
 -- Module    : Aura.Install
@@ -39,7 +45,7 @@ import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
 import qualified Data.ByteString.Lazy.Char8 as BL
-import           Data.Generics.Product (field, super, HasField'(..))
+import           Data.Generics.Product (HasField'(..), field, super)
 import qualified Data.List.NonEmpty as NEL
 import qualified Data.Map.Strict as M
 import           Data.Semigroup.Foldable (fold1)
@@ -49,7 +55,7 @@ import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text.IO as T
 import           Language.Bash.Pretty (prettyText)
 import           Language.Bash.Syntax (ShellCommand)
-import           Lens.Micro ((^.), (^..), each)
+import           Lens.Micro (each, (^.), (^..))
 import           Lens.Micro.Extras (view)
 import           System.Directory (setCurrentDirectory)
 import           System.IO (hFlush, stdout)
@@ -178,7 +184,7 @@ buildAndInstall bss = do
           let (ps, cached) = fmapEither g $ toList bs
               g b = case (b ^. super @SimplePkg) `M.lookup` cache of
                 Just pp | not (switch ss ForceBuilding) -> Right pp
-                _ -> Left b
+                _                                       -> Left b
           built <- traverse (buildPackages . NES.fromNonEmpty) $ NEL.nonEmpty ps
           traverse_ installPkgFiles $ built <> (NES.fromNonEmpty <$> NEL.nonEmpty cached)
           send $ annotateDeps bs

@@ -1,5 +1,11 @@
-{-# LANGUAGE FlexibleContexts, TypeApplications, MonoLocalBinds, DataKinds #-}
-{-# LANGUAGE ViewPatterns, MultiWayIf, OverloadedStrings #-}
+{-# LANGUAGE BangPatterns      #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE MonoLocalBinds    #-}
+{-# LANGUAGE MultiWayIf        #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications  #-}
+{-# LANGUAGE ViewPatterns      #-}
 
 -- |
 -- Module    : Aura.Commands.A
@@ -47,8 +53,8 @@ import           Data.Text.Lazy (toStrict)
 import           Data.Text.Lazy.Builder (toLazyText)
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
-import           Data.Versions (Versioning, versioning, prettyV)
-import           Lens.Micro ((^.), (^..), each)
+import           Data.Versions (Versioning, prettyV, versioning)
+import           Lens.Micro (each, (^.), (^..))
 import           Lens.Micro.Extras (view)
 import           Linux.Arch.Aur
 
