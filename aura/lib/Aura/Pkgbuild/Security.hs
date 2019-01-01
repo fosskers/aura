@@ -18,7 +18,7 @@ module Aura.Pkgbuild.Security
   ) where
 
 import           Aura.Languages
-import           Aura.Types (Pkgbuild(..), Language)
+import           Aura.Types (Language, Pkgbuild(..))
 import           Aura.Utils (strictText)
 import           BasePrelude hiding (Last, Word)
 import           Control.Error.Util (hush)
@@ -29,7 +29,7 @@ import           Data.Text.Prettyprint.Doc (Doc)
 import           Data.Text.Prettyprint.Doc.Render.Terminal (AnsiStyle)
 import           Language.Bash.Parse (parse)
 import           Language.Bash.Syntax
-import           Language.Bash.Word (Word, unquote, Span(..))
+import           Language.Bash.Word (Span(..), Word, unquote)
 import           Lens.Micro
 
 ---

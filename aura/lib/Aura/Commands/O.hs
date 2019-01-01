@@ -14,7 +14,7 @@
 
 module Aura.Commands.O ( displayOrphans, adoptPkg ) where
 
-import           Aura.Core (orphans, sudo, liftEitherM)
+import           Aura.Core (liftEitherM, orphans, sudo)
 import           Aura.Pacman (pacman)
 import           Aura.Settings (Settings)
 import           Aura.Types

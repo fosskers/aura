@@ -46,7 +46,7 @@ import           System.IO (hFlush, stdout)
 import           System.Path
 import           System.Path.IO
 import           System.Process.Typed
-import           System.Random.MWC (GenIO, uniform, createSystemRandom)
+import           System.Random.MWC (GenIO, createSystemRandom, uniform)
 
 ---
 

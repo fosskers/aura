@@ -333,7 +333,7 @@ getRealPkgConflicts_2 (bt . view (field @"name") -> p) = \case
     Chinese    -> p <> " 是一个被忽略的包！请查看你的 `pacman.conf` 文件。"
     Esperanto  -> p <> " estas malatenta pakaĵo! Vidu vian `pacman.conf` dosieron."
     _          -> p <> " is an ignored package! See your `pacman.conf` file."
-                
+
 missingPkg_2 :: [DepError] -> Language -> Doc AnsiStyle
 missingPkg_2 ps l = vsep $ map (depError l) ps
 

@@ -10,8 +10,8 @@ module Aura.Diff ( diff ) where
 
 import Aura.Settings
 import BasePrelude hiding (diff)
-import System.Path (Path, Absolute, toFilePath)
-import System.Process.Typed (runProcess, proc)
+import System.Path (Absolute, Path, toFilePath)
+import System.Process.Typed (proc, runProcess)
 
 ---
 

@@ -22,7 +22,7 @@ import           Data.Generics.Product (field)
 import           Data.Set.NonEmpty (NonEmptySet)
 import           Lens.Micro ((^.))
 import           System.Path (toFilePath)
-import           System.Path.IO (doesFileExist, createDirectoryIfMissing)
+import           System.Path.IO (createDirectoryIfMissing, doesFileExist)
 
 ---
 

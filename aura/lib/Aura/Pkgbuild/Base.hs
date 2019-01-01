@@ -14,7 +14,8 @@ module Aura.Pkgbuild.Base
 
 import           Aura.Types
 import qualified Data.Text as T
-import           System.Path (Path, Absolute, FileExt(..), fromAbsoluteFilePath, fromUnrootedFilePath, (</>), (<.>))
+import           System.Path (Absolute, FileExt(..), Path, fromAbsoluteFilePath,
+                              fromUnrootedFilePath, (<.>), (</>))
 
 ---
 

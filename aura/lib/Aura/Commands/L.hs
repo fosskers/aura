@@ -18,7 +18,7 @@ module Aura.Commands.L
   , logInfoOnPkg
   ) where
 
-import           Aura.Colour (red, dtot)
+import           Aura.Colour (dtot, red)
 import           Aura.Core (report)
 import           Aura.Languages
 import           Aura.Settings

@@ -31,7 +31,8 @@ import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Lens.Micro ((^.))
-import           System.Path (Path, Absolute, (</>), toFilePath, fromAbsoluteFilePath)
+import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath,
+                              (</>))
 import           System.Path.IO (getDirectoryContents)
 
 ---

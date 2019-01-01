@@ -24,9 +24,9 @@ module Aura.State
 
 import           Aura.Cache
 import           Aura.Colour (red)
-import           Aura.Core (warn, notify, liftEitherM, report)
+import           Aura.Core (liftEitherM, notify, report, warn)
 import           Aura.Languages
-import           Aura.Pacman (pacmanOutput, pacman)
+import           Aura.Pacman (pacman, pacmanOutput)
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils

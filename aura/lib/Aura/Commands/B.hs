@@ -26,7 +26,7 @@ import           Aura.State
 import           Aura.Utils (optionalPrompt)
 import           BasePrelude
 import qualified Data.Text as T
-import           System.Path (toFilePath, takeFileName, toUnrootedFilePath)
+import           System.Path (takeFileName, toFilePath, toUnrootedFilePath)
 import           System.Path.IO (removeFile)
 
 ---

@@ -28,7 +28,7 @@ import           Aura.Types
 import           BasePrelude
 import qualified Data.Set as S
 import           Network.HTTP.Client (Manager)
-import           System.Path (Path, Absolute, toFilePath, fromAbsoluteFilePath)
+import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath)
 
 ---
 
@@ -63,10 +63,10 @@ instance Flagable CommonConfig where
 data CommonSwitch = NoConfirm | NeededOnly | Debug | Colour ColourMode deriving (Eq, Ord, Show)
 
 instance Flagable CommonSwitch where
-  asFlag NoConfirm    = ["--noconfirm"]
-  asFlag NeededOnly   = ["--needed"]
-  asFlag Debug        = ["--debug"]
-  asFlag (Colour m)   = "--color" : asFlag m
+  asFlag NoConfirm  = ["--noconfirm"]
+  asFlag NeededOnly = ["--needed"]
+  asFlag Debug      = ["--debug"]
+  asFlag (Colour m) = "--color" : asFlag m
 
 -- | Matches Pacman's colour options. `Auto` will ensure that text will only be coloured
 -- when the output target is a terminal.

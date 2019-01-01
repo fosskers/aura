@@ -18,10 +18,10 @@ import Data.Text
 
 ---
 
-data RPCResp = RPCResp { _version :: Int
-                       , _type :: Text
+data RPCResp = RPCResp { _version     :: Int
+                       , _type        :: Text
                        , _resultCount :: Int
-                       , _results :: [AurInfo] } deriving (Show)
+                       , _results     :: [AurInfo] } deriving (Show)
 
 instance FromJSON RPCResp where
   parseJSON (Object v) = RPCResp <$>
