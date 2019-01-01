@@ -1,8 +1,10 @@
-{-# LANGUAGE OverloadedStrings, TypeOperators, DataKinds #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeOperators     #-}
 
 -- |
 -- Module    : Linux.Arch.Aur.Rpc
--- Copyright : (c) Colin Woodbury, 2014 - 2018
+-- Copyright : (c) Colin Woodbury, 2014 - 2019
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --

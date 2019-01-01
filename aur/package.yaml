@@ -14,7 +14,7 @@ homepage:            https://github.com/aurapm/aura
 license:             GPL-3
 author:              Colin Woodbury
 maintainer:          colin@fosskers.ca
-copyright:           2018 Colin Woodbury
+copyright:           2014 - 2019 Colin Woodbury
 category:            Linux
 
 extra-source-files:

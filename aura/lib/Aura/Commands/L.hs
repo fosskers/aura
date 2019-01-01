@@ -1,10 +1,12 @@
-{-# LANGUAGE FlexibleContexts, MonoLocalBinds #-}
-{-# LANGUAGE TypeApplications, DataKinds #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE MonoLocalBinds    #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications  #-}
 
 -- |
 -- Module    : Aura.Commands.L
--- Copyright : (c) Colin Woodbury, 2012 - 2018
+-- Copyright : (c) Colin Woodbury, 2012 - 2019
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --

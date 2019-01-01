@@ -1,10 +1,11 @@
-{-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE LambdaCase        #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_HADDOCK prune #-}
 {-# OPTIONS_GHC -fno-warn-missing-export-lists #-}
 
 -- |
 -- Module    : Aura.Languages.Fields
--- Copyright : (c) Colin Woodbury, 2012 - 2018
+-- Copyright : (c) Colin Woodbury, 2012 - 2019
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --

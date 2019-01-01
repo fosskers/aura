@@ -1,9 +1,13 @@
-{-# LANGUAGE FlexibleContexts, MonoLocalBinds, TypeApplications, DataKinds #-}
-{-# LANGUAGE MultiWayIf, OverloadedStrings #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE MonoLocalBinds    #-}
+{-# LANGUAGE MultiWayIf        #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications  #-}
 
 -- |
 -- Module    : Aura.Core
--- Copyright : (c) Colin Woodbury, 2012 - 2018
+-- Copyright : (c) Colin Woodbury, 2012 - 2019
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --

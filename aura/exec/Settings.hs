@@ -1,6 +1,6 @@
 {-
 
-Copyright 2012 - 2018 Colin Woodbury <colin@fosskers.ca>
+Copyright 2012 - 2019 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 

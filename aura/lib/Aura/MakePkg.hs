@@ -3,7 +3,7 @@
 
 -- |
 -- Module    : Aura.State
--- Copyright : (c) Colin Woodbury, 2012 - 2018
+-- Copyright : (c) Colin Woodbury, 2012 - 2019
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
