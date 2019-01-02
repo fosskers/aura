@@ -34,7 +34,7 @@ default-extensions:
   - NoImplicitPrelude
 
 dependencies:
-  - base >= 4.8 && < 4.13
+  - base >= 4.12 && < 4.13
   - base-prelude >= 1.2 && < 1.4
   - bytestring
   - containers
