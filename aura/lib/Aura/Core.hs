@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE ScopedTypeVariables         #-}
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE MonoLocalBinds    #-}
 {-# LANGUAGE MultiWayIf        #-}
@@ -18,6 +19,7 @@ module Aura.Core
     Repository(..)
   , liftEither, liftEitherM
   , liftMaybe, liftMaybeM
+  , sendM
     -- * User Privileges
   , sudo, trueRoot
     -- * Querying the Package Database
@@ -39,9 +41,10 @@ import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding ((<>))
 import           Control.Compactable (fmapEither)
-import           Control.Monad.Freer
-import           Control.Monad.Freer.Error
-import           Control.Monad.Freer.Reader
+import           Control.Effect
+import           Control.Effect.Error
+import           Control.Effect.Lift
+import           Control.Effect.Reader
 import           Control.Monad.Trans.Maybe
 import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
@@ -97,30 +100,45 @@ packageBuildable ss b = FromAUR <$> hotEdit ss b
 -----------
 -- THE WORK
 -----------
+-- | Lift an arbitrary Monadic effect into the `fused-effects` framework.
+sendM :: ( Monad m, Monad n
+         , Carrier sig m
+         , Member (Lift n) sig
+         ) => n a -> m a
+sendM = send . Lift . fmap pure
+
 -- | Lift a common return type into the `Eff` world. Usually used after a `pacman` call.
-liftEither :: Member (Error a) r => Either a b -> Eff r b
+liftEither :: (Monad m, Carrier sig m, Member (Error a) sig) => Either a b -> m b
 liftEither = either throwError pure
 
 -- | Like `liftEither`, but the `Either` can be embedded in something else,
 -- usually a `Monad`.
-liftEitherM :: (Member (Error a) r, Member m r) => m (Either a b) -> Eff r b
-liftEitherM = send >=> liftEither
+liftEitherM :: (Monad m, Carrier sig m, Member (Error a) sig) => m (Either a b) -> m b
+liftEitherM m = m >>= liftEither
 
 -- | Like `liftEither`, but for `Maybe`.
-liftMaybe :: Member (Error a) r => a -> Maybe b -> Eff r b
+liftMaybe :: (Monad m, Carrier sig m, Member (Error a) sig) => a -> Maybe b -> m b
 liftMaybe a = maybe (throwError a) pure
 
 -- | Like `liftEitherM`, but for `Maybe`.
-liftMaybeM :: (Member (Error a) r, Member m r) => a -> m (Maybe b) -> Eff r b
-liftMaybeM a m = send m >>= liftMaybe a
+liftMaybeM :: (Monad m, Carrier sig m, Member (Error a) sig) => a -> m (Maybe b) -> m b
+liftMaybeM a m = m >>= liftMaybe a
 
 -- | Action won't be allowed unless user is root, or using sudo.
-sudo :: (Member (Reader Settings) r, Member (Error Failure) r) => Eff r a -> Eff r a
+sudo :: ( Monad m, Carrier sig m
+        , Member (Reader Settings) sig
+        , Member (Error Failure) sig
+        )
+     => m a -> m a
 sudo action = asks (hasRootPriv . envOf) >>= bool (throwError $ Failure mustBeRoot_1) action
 
 -- | Stop the user if they are the true root. Building as root isn't allowed
 -- since makepkg v4.2.
-trueRoot :: (Member (Reader Settings) r, Member (Error Failure) r) => Eff r a -> Eff r a
+trueRoot :: ( Monad m, Carrier sig m
+            , Member (Reader Settings) sig
+            , Member (Error Failure) sig
+            )
+         => m a -> m a
 trueRoot action = ask >>= \ss ->
   if not (isTrueRoot $ envOf ss) && buildUserOf (buildConfigOf ss) /= Just (User "root")
     then action else throwError $ Failure trueRoot_3
@@ -146,10 +164,14 @@ isInstalled :: PkgName -> IO (Maybe PkgName)
 isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", T.unpack (pkg ^. field @"name")]
 
 -- | An @-Rsu@ call.
-removePkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
+removePkgs :: ( Monad m, Carrier sig m
+              , Member (Reader Settings) sig
+              , Member (Error Failure) sig
+              , Member (Lift IO) sig
+              ) => NonEmptySet PkgName -> m ()
 removePkgs pkgs = do
   pacOpts <- asks commonConfigOf
-  liftEitherM . pacman $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts
+  liftEitherM . sendM . pacman $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts
 
 -- | True if a dependency is satisfied by an installed package.
 -- `asT` renders the `VersionDemand` into the specific form that `pacman -T`
@@ -186,9 +208,15 @@ scold ss = putStrLnA ss . red
 
 -- | Report a message with multiple associated items. Usually a list of
 -- naughty packages.
-report :: (Member (Reader Settings) r, Member IO r) =>
-  (Doc AnsiStyle -> Doc AnsiStyle) -> (Language -> Doc AnsiStyle) -> NonEmpty PkgName -> Eff r ()
+report :: ( Monad m, Carrier sig m
+          , Member (Reader Settings) sig
+          , Member (Lift IO) sig
+          )
+       => (Doc AnsiStyle -> Doc AnsiStyle)
+       -> (Language -> Doc AnsiStyle)
+       -> NonEmpty PkgName
+       -> m ()
 report c msg pkgs = do
   ss <- ask
-  send . putStrLnA ss . c . msg $ langOf ss
-  send . T.putStrLn . dtot . colourCheck ss . vsep . map (cyan . pretty . view (field @"name")) $ toList pkgs
+  sendM . putStrLnA ss . c . msg $ langOf ss
+  sendM . T.putStrLn . dtot . colourCheck ss . vsep . map (cyan . pretty . view (field @"name")) $ toList pkgs
