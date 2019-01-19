@@ -35,9 +35,8 @@ import           BasePrelude hiding (head)
 import           Control.Concurrent.STM.TQueue
 import           Control.Concurrent.Throttled (throttle)
 import           Control.Error.Util (hush)
-import           Control.Monad.Freer
-import           Control.Monad.Freer.Error
-import           Control.Monad.Freer.Reader
+import           Control.Effect
+import           Control.Effect.Reader
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Maybe
 import           Data.Generics.Product (field)
@@ -125,15 +124,24 @@ sortAurInfo bs ai = sortBy compare' ai
                      _ -> \x y -> compare (aurVotesOf y) (aurVotesOf x)
 
 -- | Frontend to the `aur` library. For @-As@.
-aurSearch :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => T.Text -> Eff r [AurInfo]
+aurSearch :: ( Monad m, Carrier sig m
+             , Member (Reader Settings) sig
+             , Member (Error Failure) sig
+             , Member (Lift IO) sig
+             ) => T.Text -> m [AurInfo]
 aurSearch regex = do
   ss  <- ask
-  res <- liftMaybeM (Failure connectionFailure_1) $ search (managerOf ss) regex
+  res <- liftMaybeM (Failure connectionFailure_1) . sendM $ search (managerOf ss) regex
   pure $ sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) res
 
 -- | Frontend to the `aur` library. For @-Ai@.
-aurInfo :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmpty PkgName -> Eff r [AurInfo]
+aurInfo :: ( Monad m, Carrier sig m
+           , Member (Reader Settings) sig
+           , Member (Error Failure) sig
+           , Member (Lift IO) sig
+           )
+        => NonEmpty PkgName -> m [AurInfo]
 aurInfo pkgs = do
   m   <- asks managerOf
-  res <- liftMaybeM (Failure connectionFailure_1) . info m . map (^. field @"name") $ toList pkgs
+  res <- liftMaybeM (Failure connectionFailure_1) . sendM . info m . map (^. field @"name") $ toList pkgs
   pure $ sortAurInfo (Just SortAlphabetically) res
