@@ -50,13 +50,14 @@ import           Aura.Pacman
 import           Aura.Settings
 import           Aura.Types
 import           BasePrelude hiding (Version)
-import           Control.Monad.Freer
-import           Control.Monad.Freer.Error
-import           Control.Monad.Freer.Reader
+import           Control.Effect
+import           Control.Effect.Error
+import           Control.Effect.Reader
 import qualified Data.Set as S
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import qualified Data.Text.Lazy.IO as LT
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Flags
@@ -64,9 +65,14 @@ import           Options.Applicative (execParser)
 import           Settings
 import           System.Path (toFilePath)
 import           System.Process.Typed (proc, runProcess)
-import           Text.Pretty.Simple (pPrintNoColor)
+import           Text.Pretty.Simple (defaultOutputOptionsNoColor,
+                                     pShowOpt)
 
 ---
+
+-- | Re-implemented from 'Text.Pretty.Simple', but reified to 'IO'
+pPrintNoColor :: Show a => a -> IO ()
+pPrintNoColor = LT.putStrLn . pShowOpt defaultOutputOptionsNoColor
 
 auraVersion :: T.Text
 auraVersion = "2.0.0"
@@ -86,20 +92,24 @@ exit :: Settings -> Either (Doc AnsiStyle) () -> IO a
 exit ss (Left e)  = scold ss e *> exitFailure
 exit _  (Right _) = exitSuccess
 
-executeOpts :: Either (PacmanOp, S.Set MiscOp) AuraOp -> Eff '[Error Failure, Reader Settings, IO] ()
+executeOpts :: ( Monad m, Carrier sig m
+               , Member (Reader Settings) sig
+               , Member (Error Failure) sig
+               , Member (Lift IO) sig
+               ) => Either (PacmanOp, S.Set MiscOp) AuraOp -> m ()
 executeOpts ops = do
   ss <- ask
   when (shared ss Debug) $ do
-    pPrintNoColor ops
-    pPrintNoColor (buildConfigOf ss)
-    pPrintNoColor (commonConfigOf ss)
-  let p (ps, ms) = liftEitherM . pacman $
+    sendM . pPrintNoColor $ ops
+    sendM . pPrintNoColor $ buildConfigOf ss
+    sendM . pPrintNoColor $ commonConfigOf ss
+  let p (ps, ms) = liftEitherM . sendM . pacman $
         asFlag ps
         ++ foldMap asFlag ms
         ++ asFlag (commonConfigOf ss)
         ++ bool [] ["--quiet"] (switch ss LowVerbosity)
   case ops of
-    Left o@(Sync (Left (SyncUpgrade _)) _, _) -> sudo (send $ B.saveState ss) *> p o
+    Left o@(Sync (Left (SyncUpgrade _)) _, _) -> sudo (sendM $ B.saveState ss) *> p o
     Left o -> p o
     Right (AurSync o _) ->
       case o of
@@ -112,10 +122,10 @@ executeOpts ops = do
         Left (AurJson ps)     -> A.aurJson ps
     Right (Backup o) ->
       case o of
-        Nothing              -> sudo . send $ B.saveState ss
-        Just (BackupClean n) -> sudo . send $ B.cleanStates ss n
+        Nothing              -> sudo . sendM $ B.saveState ss
+        Just (BackupClean n) -> sudo . sendM $ B.cleanStates ss n
         Just BackupRestore   -> sudo B.restoreState
-        Just BackupList      -> send B.listStates
+        Just BackupList      -> sendM B.listStates
     Right (Cache o) ->
       case o of
         Right ps                -> sudo $ C.downgradePackages ps
@@ -127,23 +137,29 @@ executeOpts ops = do
       case o of
         Nothing            -> L.viewLogFile
         Just (LogInfo ps)  -> L.logInfoOnPkg ps
-        Just (LogSearch s) -> ask >>= send . flip L.searchLogFile s
+        Just (LogSearch s) -> ask >>= sendM . flip L.searchLogFile s
     Right (Orphans o) ->
       case o of
-        Nothing               -> send O.displayOrphans
-        Just OrphanAbandon    -> sudo $ send orphans >>= traverse_ removePkgs . NES.fromSet
+        Nothing               -> sendM O.displayOrphans
+        Just OrphanAbandon    -> sudo $ sendM orphans >>= traverse_ removePkgs . NES.fromSet
         Just (OrphanAdopt ps) -> O.adoptPkg ps
-    Right Version   -> send $ getVersionInfo >>= animateVersionMsg ss auraVersion
+    Right Version   -> sendM $ getVersionInfo >>= animateVersionMsg ss auraVersion
     Right Languages -> displayOutputLanguages
     Right ViewConf  -> viewConfFile
 
-displayOutputLanguages :: (Member (Reader Settings) r, Member IO r) => Eff r ()
+displayOutputLanguages :: ( Monad m, Carrier sig m
+                          , Member (Reader Settings) sig
+                          , Member (Lift IO) sig
+                          ) => m ()
 displayOutputLanguages = do
   ss <- ask
-  send . notify ss . displayOutputLanguages_1 $ langOf ss
-  send $ traverse_ print [English ..]
+  sendM . notify ss . displayOutputLanguages_1 $ langOf ss
+  sendM $ traverse_ print [English ..]
 
-viewConfFile :: (Member (Reader Settings) r, Member IO r) => Eff r ()
+viewConfFile :: ( Monad m, Carrier sig m
+                , Member (Reader Settings) sig
+                , Member (Lift IO) sig
+                ) => m ()
 viewConfFile = do
   pth <- asks (either id id . configPathOf . commonConfigOf)
-  send . void . runProcess @IO $ proc "less" [toFilePath pth]
+  sendM . void . runProcess @IO $ proc "less" [toFilePath pth]
