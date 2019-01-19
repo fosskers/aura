@@ -24,7 +24,7 @@ module Aura.State
 
 import           Aura.Cache
 import           Aura.Colour (red)
-import           Aura.Core (liftEitherM, notify, report, warn)
+import           Aura.Core (liftEitherM, notify, report, sendM, warn)
 import           Aura.Languages
 import           Aura.Pacman (pacman, pacmanOutput)
 import           Aura.Settings
@@ -32,9 +32,9 @@ import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding (Version, mapMaybe)
 import           Control.Error.Util (hush)
-import           Control.Monad.Freer
-import           Control.Monad.Freer.Error
-import           Control.Monad.Freer.Reader
+import           Control.Effect
+import           Control.Effect.Error
+import           Control.Effect.Reader
 import           Data.Aeson
 import           Data.Aeson.Types (typeMismatch)
 import qualified Data.ByteString.Lazy as BL
@@ -131,17 +131,28 @@ dotFormat (ZonedTime t _) = intercalate "." items
           mnths = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ]
 
 -- | Does its best to restore a state chosen by the user.
-restoreState :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Eff r ()
-restoreState = send getStateFiles >>= maybe (throwError $ Failure restoreState_2) f . nonEmpty
-  where f sfs = do
+restoreState :: ( Monad m, Carrier sig m
+                , Member (Reader Settings) sig
+                , Member (Error Failure) sig
+                , Member (Lift IO) sig
+                ) => m ()
+restoreState =
+  sendM getStateFiles >>= maybe (throwError $ Failure restoreState_2) f . nonEmpty
+  where f :: ( Monad m, Carrier sig m
+             , Member (Reader Settings) sig
+             , Member (Error Failure) sig
+             , Member (Lift IO) sig
+             )
+          => NonEmpty (Path Absolute) -> m ()
+        f sfs = do
           ss  <- ask
           let pth = either id id . cachePathOf $ commonConfigOf ss
-          mpast  <- send $ selectState sfs >>= readState
+          mpast  <- sendM $ selectState sfs >>= readState
           case mpast of
             Nothing   -> throwError $ Failure readState_1
             Just past -> do
-              curr <- send currentState
-              Cache cache <- send $ cacheContents pth
+              curr <- sendM currentState
+              Cache cache <- sendM $ cacheContents pth
               let StateDiff rein remo = compareStates past curr
                   (okay, nope)        = partition (`M.member` cache) rein
               traverse_ (report red restoreState_1 . fmap (^. field @"name")) $ nonEmpty nope
@@ -156,12 +167,15 @@ readState :: Path Absolute -> IO (Maybe PkgState)
 readState = fmap decode . BL.readFile . toFilePath
 
 -- | `reinstalling` can mean true reinstalling, or just altering.
-reinstallAndRemove :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  [PackagePath] -> [PkgName] -> Eff r ()
-reinstallAndRemove [] [] = ask >>= \ss -> send (warn ss . reinstallAndRemove_1 $ langOf ss)
+reinstallAndRemove :: ( Monad m, Carrier sig m
+                      , Member (Reader Settings) sig
+                      , Member (Error Failure) sig
+                      , Member (Lift IO) sig
+                      ) => [PackagePath] -> [PkgName] -> m ()
+reinstallAndRemove [] [] = ask >>= \ss -> sendM (warn ss . reinstallAndRemove_1 $ langOf ss)
 reinstallAndRemove down remo
   | null remo = reinstall
   | null down = remove
   | otherwise = reinstall *> remove
-  where remove    = liftEitherM . pacman $ "-R" : asFlag remo
-        reinstall = liftEitherM . pacman $ "-U" : map (toFilePath . path) down
+  where remove    = liftEitherM . sendM . pacman $ "-R" : asFlag remo
+        reinstall = liftEitherM . sendM . pacman $ "-U" : map (toFilePath . path) down
