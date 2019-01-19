@@ -29,9 +29,9 @@ import           Control.Concurrent.STM.TQueue
 import           Control.Concurrent.STM.TVar
 import           Control.Concurrent.Throttled (throttleMaybe_)
 import           Control.Error.Util (hush, note)
-import           Control.Monad.Freer
-import           Control.Monad.Freer.Error
-import           Control.Monad.Freer.Reader
+import           Control.Effect
+import           Control.Effect.Error
+import           Control.Effect.Reader
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Maybe
 import           Data.Generics.Product (field)
@@ -57,16 +57,20 @@ data Wrote = WroteNothing | WroteNew
 -- interdependent, and thus can be built and installed as a group.
 --
 -- Deeper layers of the result list (generally) depend on the previous layers.
-resolveDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  Repository -> NonEmptySet Package -> Eff r (NonEmpty (NonEmptySet Package))
+resolveDeps :: ( Monad m, Carrier sig m
+               , Member (Reader Settings) sig
+               , Member (Error Failure) sig
+               , Member (Lift IO) sig
+               )
+            => Repository -> NonEmptySet Package -> m (NonEmpty (NonEmptySet Package))
 resolveDeps repo ps = do
   ss <- ask
-  tv <- send $ newTVarIO M.empty
-  ts <- send $ newTVarIO S.empty
-  liftMaybeM (Failure connectionFailure_1) $ resolveDeps' ss repo tv ts ps
-  m  <- send $ readTVarIO tv
-  s  <- send $ readTVarIO ts
-  unless (length ps == length m) $ send (putStr "\n")
+  tv <- sendM $ newTVarIO M.empty
+  ts <- sendM $ newTVarIO S.empty
+  liftMaybeM (Failure connectionFailure_1) . sendM $ resolveDeps' ss repo tv ts ps
+  m  <- sendM $ readTVarIO tv
+  s  <- sendM $ readTVarIO ts
+  unless (length ps == length m) $ sendM (putStr "\n")
   let de = conflicts ss m s
   unless (null de) . throwError . Failure $ missingPkg_2 de
   either throwError pure $ sortInstall m
