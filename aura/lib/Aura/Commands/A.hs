@@ -38,9 +38,8 @@ import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding ((<+>))
 import           Control.Error.Util (hush)
-import           Control.Monad.Freer
-import           Control.Monad.Freer.Error
-import           Control.Monad.Freer.Reader
+import           Control.Effect
+import           Control.Effect.Reader
 import           Data.Aeson.Encode.Pretty (encodePrettyToTextBuilder)
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
@@ -61,11 +60,15 @@ import           Linux.Arch.Aur
 ---
 
 -- | The result of @-Au@.
-upgradeAURPkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set PkgName -> Eff r ()
+upgradeAURPkgs :: ( Monad m, Carrier sig m
+                  , Member (Reader Settings) sig
+                  , Member (Error Failure) sig
+                  , Member (Lift IO) sig
+                  ) => S.Set PkgName -> m ()
 upgradeAURPkgs pkgs = do
   ss <- ask
-  send . notify ss . upgradeAURPkgs_1 $ langOf ss
-  send (foreigns ss) >>= traverse_ (upgrade pkgs) . NES.fromSet
+  sendM . notify ss . upgradeAURPkgs_1 $ langOf ss
+  sendM (foreigns ss) >>= traverse_ (upgrade pkgs) . NES.fromSet
 
 -- | Foreign packages to consider for upgrading, after "ignored packages" have
 -- been taken into consideration.
@@ -73,8 +76,11 @@ foreigns :: Settings -> IO (S.Set SimplePkg)
 foreigns ss = S.filter (notIgnored . view (field @"name")) <$> foreignPackages
   where notIgnored p = not . S.member p $ ignoresOf ss
 
-upgrade :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  S.Set PkgName -> NonEmptySet SimplePkg -> Eff r ()
+upgrade :: ( Monad m, Carrier sig m
+           , Member (Reader Settings) sig
+           , Member (Error Failure) sig
+           , Member (Lift IO) sig
+           ) => S.Set PkgName -> NonEmptySet SimplePkg -> m ()
 upgrade pkgs fs = do
   ss        <- ask
   toUpgrade <- possibleUpdates fs
@@ -84,15 +90,18 @@ upgrade pkgs fs = do
     Just a  -> auraUpgrade a
     Nothing -> do
       devel <- develPkgCheck
-      send . notify ss . upgradeAURPkgs_2 $ langOf ss
-      if | null toUpgrade && null devel -> send . warn ss . upgradeAURPkgs_3 $ langOf ss
+      sendM . notify ss . upgradeAURPkgs_2 $ langOf ss
+      if | null toUpgrade && null devel -> sendM . warn ss . upgradeAURPkgs_3 $ langOf ss
          | otherwise -> do
              reportPkgsToUpgrade toUpgrade (toList devel)
-             send . unless (switch ss DryRun) $ saveState ss
+             sendM . unless (switch ss DryRun) $ saveState ss
              traverse_ I.install . NES.fromSet $ S.fromList names <> pkgs <> devel
 
-possibleUpdates :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  NonEmptySet SimplePkg -> Eff r [(AurInfo, Versioning)]
+possibleUpdates :: ( Monad m, Carrier sig m
+                   , Member (Reader Settings) sig
+                   , Member (Error Failure) sig
+                   , Member (Lift IO) sig
+                   ) => NonEmptySet SimplePkg -> m [(AurInfo, Versioning)]
 possibleUpdates (NES.toNonEmpty -> pkgs) = do
   aurInfos <- aurInfo $ fmap (^. field @"name") pkgs
   let !names  = map aurNameOf aurInfos
@@ -100,28 +109,45 @@ possibleUpdates (NES.toNonEmpty -> pkgs) = do
   pure . filter isntMostRecent . zip aurInfos $ aurPkgs ^.. each . field @"version"
 
 -- | Is there an update for Aura that we could apply first?
-auraCheck :: (Member (Reader Settings) r, Member IO r) => [PkgName] -> Eff r (Maybe PkgName)
+auraCheck :: ( Monad m, Carrier sig m
+             , Member (Reader Settings) sig
+             , Member (Lift IO) sig
+             ) => [PkgName] -> m (Maybe PkgName)
 auraCheck ps = join <$> traverse f auraPkg
   where f a = do
           ss <- ask
-          bool Nothing (Just a) <$> send (optionalPrompt ss auraCheck_1)
+          bool Nothing (Just a) <$> sendM (optionalPrompt ss auraCheck_1)
         auraPkg | "aura" `elem` ps     = Just "aura"
                 | "aura-bin" `elem` ps = Just "aura-bin"
                 | otherwise            = Nothing
 
-auraUpgrade :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => PkgName -> Eff r ()
+auraUpgrade :: ( Monad m, Carrier sig m
+               , Member (Reader Settings) sig
+               , Member (Error Failure) sig
+               , Member (Lift IO) sig
+               ) => PkgName -> m ()
 auraUpgrade = I.install . NES.singleton
 
-develPkgCheck :: (Member (Reader Settings) r, Member IO r) => Eff r (S.Set PkgName)
+develPkgCheck :: ( Monad m, Carrier sig m
+                 , Member (Reader Settings) sig
+                 , Member (Lift IO) sig
+                 ) => m (S.Set PkgName)
 develPkgCheck = ask >>= \ss ->
-  if switch ss RebuildDevel then send develPkgs else pure S.empty
+  if switch ss RebuildDevel then sendM develPkgs else pure S.empty
 
 -- | The result of @-Ai@.
-aurPkgInfo :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
+aurPkgInfo :: (Monad m, Carrier sig m
+              , Member (Reader Settings) sig
+              , Member (Error Failure) sig
+              , Member (Lift IO) sig
+              ) => NonEmptySet PkgName -> m ()
 aurPkgInfo = aurInfo . NES.toNonEmpty >=> traverse_ displayAurPkgInfo
 
-displayAurPkgInfo :: (Member (Reader Settings) r, Member IO r) => AurInfo -> Eff r ()
-displayAurPkgInfo ai = ask >>= \ss -> send . T.putStrLn $ renderAurPkgInfo ss ai <> "\n"
+displayAurPkgInfo :: ( Monad m, Carrier sig m
+                     , Member (Reader Settings) sig
+                     , Member (Lift IO) sig
+                     ) => AurInfo -> m ()
+displayAurPkgInfo ai = ask >>= \ss -> sendM . T.putStrLn $ renderAurPkgInfo ss ai <> "\n"
 
 renderAurPkgInfo :: Settings -> AurInfo -> T.Text
 renderAurPkgInfo ss ai = dtot . colourCheck ss $ entrify ss fields entries
@@ -141,17 +167,21 @@ renderAurPkgInfo ss ai = dtot . colourCheck ss $ entrify ss fields entries
                     , maybe "(null)" pretty $ aurDescriptionOf ai ]
 
 -- | The result of @-As@.
-aurPkgSearch :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => T.Text -> Eff r ()
+aurPkgSearch :: ( Monad m, Carrier sig m
+                , Member (Reader Settings) sig
+                , Member (Error Failure) sig
+                , Member (Lift IO) sig
+                ) => T.Text -> m ()
 aurPkgSearch regex = do
   ss <- ask
-  db <- S.map (^. field @"name" . field @"name") <$> send foreignPackages
+  db <- S.map (^. field @"name" . field @"name") <$> sendM foreignPackages
   let t = case truncationOf $ buildConfigOf ss of  -- Can't this go anywhere else?
             None   -> id
             Head n -> take $ fromIntegral n
             Tail n -> reverse . take (fromIntegral n) . reverse
   results <- fmap (\x -> (x, aurNameOf x `S.member` db)) . t
             <$> aurSearch regex
-  send $ traverse_ (T.putStrLn . renderSearch ss regex) results
+  sendM $ traverse_ (T.putStrLn . renderSearch ss regex) results
 
 renderSearch :: Settings -> T.Text -> (AurInfo, Bool) -> T.Text
 renderSearch ss r (i, e) = searchResult
@@ -169,33 +199,42 @@ renderSearch ss r (i, e) = searchResult
             Nothing -> green . pretty $ aurVersionOf i
 
 -- | The result of @-Ap@.
-displayPkgbuild :: (Member (Reader Settings) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
+displayPkgbuild :: ( Monad m, Carrier sig m
+                   , Member (Reader Settings) sig
+                   , Member (Lift IO) sig
+                   ) => NonEmptySet PkgName -> m ()
 displayPkgbuild ps = do
   man <- asks managerOf
-  pbs <- catMaybes <$> traverse (send . getPkgbuild @IO man) (toList ps)
-  send . traverse_ (T.putStrLn . strictText) $ pbs ^.. each . field @"pkgbuild"
+  pbs <- catMaybes <$> traverse (sendM . getPkgbuild @IO man) (toList ps)
+  sendM . traverse_ (T.putStrLn . strictText) $ pbs ^.. each . field @"pkgbuild"
 
 isntMostRecent :: (AurInfo, Versioning) -> Bool
 isntMostRecent (ai, v) = trueVer > Just v
   where trueVer = hush . versioning $ aurVersionOf ai
 
 -- | Similar to @-Ai@, but yields the raw data as JSON instead.
-aurJson :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
+aurJson :: ( Monad m, Carrier sig m
+           , Member (Reader Settings) sig
+           , Member (Error Failure) sig
+           , Member (Lift IO) sig
+           ) => NonEmptySet PkgName -> m ()
 aurJson ps = do
   m <- asks managerOf
-  infos <- liftMaybeM (Failure connectionFailure_1) . info m . (^.. each . field @"name") $ toList ps
+  infos <- liftMaybeM (Failure connectionFailure_1) . sendM . info m . (^.. each . field @"name") $ toList ps
   let json = map (toStrict . toLazyText . encodePrettyToTextBuilder) infos
-  send $ traverse_ T.putStrLn json
+  sendM $ traverse_ T.putStrLn json
 
 ------------
 -- REPORTING
 ------------
-reportPkgsToUpgrade :: (Member (Reader Settings) r, Member IO r) =>
-  [(AurInfo, Versioning)] -> [PkgName] -> Eff r ()
+reportPkgsToUpgrade :: ( Monad m, Carrier sig m
+                       , Member (Reader Settings) sig
+                       , Member (Lift IO) sig
+                       ) => [(AurInfo, Versioning)] -> [PkgName] -> m ()
 reportPkgsToUpgrade ups pns = do
   ss <- ask
-  send . notify ss . reportPkgsToUpgrade_1 $ langOf ss
-  send $ putDoc (colourCheck ss . vcat $ map f ups' <> map g devels) >> T.putStrLn "\n"
+  sendM . notify ss . reportPkgsToUpgrade_1 $ langOf ss
+  sendM $ putDoc (colourCheck ss . vcat $ map f ups' <> map g devels) >> T.putStrLn "\n"
   where devels   = pns ^.. each . field @"name"
         ups'     = map (second prettyV) ups
         nLen     = maximum $ map (T.length . aurNameOf . fst) ups <> map T.length devels
