@@ -26,9 +26,9 @@ import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           BasePrelude
-import           Control.Monad.Freer
-import           Control.Monad.Freer.Error
-import           Control.Monad.Freer.Reader
+import           Control.Effect
+import           Control.Effect.Error
+import           Control.Effect.Reader
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Except
 import qualified Data.ByteString.Lazy.Char8 as BL
@@ -54,30 +54,39 @@ srcPkgStore :: Path Absolute
 srcPkgStore = fromAbsoluteFilePath "/var/cache/aura/src"
 
 -- | Expects files like: \/var\/cache\/pacman\/pkg\/*.pkg.tar.xz
-installPkgFiles :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  NonEmptySet PackagePath -> Eff r ()
+installPkgFiles :: ( Monad m, Carrier sig m
+                   , Member (Reader Settings) sig
+                   , Member (Error Failure) sig
+                   , Member (Lift IO) sig
+                   ) => NonEmptySet PackagePath -> m ()
 installPkgFiles files = do
   ss <- ask
-  send $ checkDBLock ss
-  liftEitherM . pacman $ ["-U"] <> map (toFilePath . path) (toList files) <> asFlag (commonConfigOf ss)
+  sendM $ checkDBLock ss
+  liftEitherM . sendM . pacman $ ["-U"] <> map (toFilePath . path) (toList files) <> asFlag (commonConfigOf ss)
 
 -- | All building occurs within temp directories,
 -- or in a location specified by the user with flags.
-buildPackages :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  NonEmptySet Buildable -> Eff r (NonEmptySet PackagePath)
+buildPackages :: ( Monad m, Carrier sig m
+                 , Member (Reader Settings) sig
+                 , Member (Error Failure) sig
+                 , Member (Lift IO) sig
+                 ) => NonEmptySet Buildable -> m (NonEmptySet PackagePath)
 buildPackages bs = do
-  g <- send createSystemRandom
+  g <- sendM createSystemRandom
   wither (build g) (toList bs) >>= maybe bad (pure . fold1) . NEL.nonEmpty
   where bad = throwError $ Failure buildFail_10
 
 -- | Handles the building of Packages. Fails nicely.
 -- Assumed: All dependencies are already installed.
-build :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
-  GenIO -> Buildable -> Eff r (Maybe (NonEmptySet PackagePath))
+build :: ( Monad m, Carrier sig m
+         , Member (Reader Settings) sig
+         , Member (Error Failure) sig
+         , Member (Lift IO) sig
+         ) => GenIO -> Buildable -> m (Maybe (NonEmptySet PackagePath))
 build g p = do
   ss     <- ask
-  send $ notify ss (buildPackages_1 (p ^. field @"name") (langOf ss)) *> hFlush stdout
-  result <- send $ build' ss g p
+  sendM $ notify ss (buildPackages_1 (p ^. field @"name") (langOf ss)) *> hFlush stdout
+  result <- sendM $ build' ss g p
   either buildFail (pure . Just) result
 
 -- | Should never throw an IO Exception. In theory all errors
@@ -126,11 +135,15 @@ overwritePkgbuild ss p = when (switch ss HotEdit || switch ss UseCustomizepkg) $
 
 -- | Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
-buildFail :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Failure -> Eff r (Maybe a)
+buildFail :: ( Monad m, Carrier sig m
+             , Member (Reader Settings) sig
+             , Member (Error Failure) sig
+             , Member (Lift IO) sig
+             ) => Failure -> m (Maybe a)
 buildFail (Failure err) = do
   ss <- ask
-  send . scold ss . err $ langOf ss
-  response <- send $ optionalPrompt ss buildFail_6
+  sendM . scold ss . err $ langOf ss
+  response <- sendM $ optionalPrompt ss buildFail_6
   bool (throwError $ Failure buildFail_5) (pure Nothing) response
 
 -- | Moves a file to the pacman package cache and returns its location.
