@@ -19,15 +19,15 @@ module Aura.Commands.L
   ) where
 
 import           Aura.Colour (dtot, red)
-import           Aura.Core (report)
+import           Aura.Core (report, sendM)
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types (PkgName(..))
 import           Aura.Utils
 import           BasePrelude hiding (FilePath)
 import           Control.Compactable (fmapEither)
-import           Control.Monad.Freer
-import           Control.Monad.Freer.Reader
+import           Control.Effect
+import           Control.Effect.Reader
 import qualified Data.ByteString.Char8 as BS
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
@@ -49,10 +49,14 @@ newtype Log = Log [T.Text]
 data LogEntry = LogEntry { _pkgName :: PkgName, _firstInstall :: T.Text, _upgrades :: Word, _recent :: [T.Text] }
 
 -- | Pipes the pacman log file through a @less@ session.
-viewLogFile :: (Member (Reader Settings) r, Member IO r) => Eff r ()
+viewLogFile :: ( Monad m, Carrier sig m
+               , Member (Reader Settings) sig
+               , Member (Lift IO) sig
+               )
+            => m ()
 viewLogFile = do
   pth <- asks (toFilePath . either id id . logPathOf . commonConfigOf)
-  send . void . runProcess @IO $ proc "less" [pth]
+  sendM . void . runProcess @IO $ proc "less" [pth]
 
 -- | Print all lines in the log file which contain a given `T.Text`.
 searchLogFile :: Settings -> T.Text -> IO ()
@@ -62,14 +66,18 @@ searchLogFile ss input = do
   traverse_ T.putStrLn $ searchLines input logFile
 
 -- | The result of @-Li@.
-logInfoOnPkg :: (Member (Reader Settings) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
+logInfoOnPkg :: ( Monad m, Carrier sig m
+                , Member (Reader Settings) sig
+                , Member (Lift IO) sig
+                )
+             => NonEmptySet PkgName -> m ()
 logInfoOnPkg pkgs = do
   ss <- ask
   let pth = toFilePath . either id id . logPathOf $ commonConfigOf ss
-  logFile <- Log . map (T.decodeUtf8With lenientDecode) . BS.lines <$> send (BS.readFile pth)
+  logFile <- Log . map (T.decodeUtf8With lenientDecode) . BS.lines <$> sendM (BS.readFile pth)
   let (bads, goods) = fmapEither (logLookup logFile) $ toList pkgs
   traverse_ (report red reportNotInLog_1) $ NEL.nonEmpty bads
-  send . traverse_ T.putStrLn $ map (renderEntry ss) goods
+  sendM . traverse_ T.putStrLn $ map (renderEntry ss) goods
 
 logLookup :: Log -> PkgName -> Either PkgName LogEntry
 logLookup (Log lns) p = case matches of
