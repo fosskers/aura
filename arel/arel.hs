@@ -1,6 +1,6 @@
+{-# LANGUAGE DeriveAnyClass    #-}
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DeriveAnyClass #-}
 
 module Main where
 
@@ -36,6 +36,7 @@ makeNewPkgFile (Env v) = do
   run_ "stack" ["sdist", "aura"]
   cp (tarballPath v) aurDir
 
+-- TODO Use flags to dump the tarball / binary to a static location.
 -- | The location of a built release tarball, the output of `stack sdist`.
 -- Beware: the `cabal` version is not static.
 -- See: https://github.com/commercialhaskell/stack/issues/3568
