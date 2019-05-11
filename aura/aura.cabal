@@ -1,0 +1,137 @@
+cabal-version: 2.2
+
+name:         aura
+version:      2.0.1
+synopsis:     A secure package manager for Arch Linux and the AUR, written in Haskell.
+
+description:
+    Aura is a package manager for Arch Linux written in Haskell. It connects to
+    both the official Arch repostitories and to the AUR, allowing easy control
+    of all packages on an Arch system. It allows /all/ pacman operations and
+    provides /new/ custom ones for dealing with AUR packages. This differs from
+    some other AUR package managers.
+
+category:     System
+homepage:     https://github.com/aurapm/aura
+author:       Colin Woodbury
+maintainer:   colin@fosskers.ca
+license:      GPL-3.0-only
+license-file: LICENSE
+build-type:   Simple
+
+extra-source-files:
+    README.md
+    CHANGELOG.md
+    doc/aura.8
+    doc/completions/bashcompletion.sh
+    doc/completions/_aura
+
+common commons
+  default-language: Haskell2010
+  default-extensions: NoImplicitPrelude
+  ghc-options:
+      -Wall
+      -Wincomplete-record-updates
+      -Wincomplete-uni-patterns
+      -Wredundant-constraints
+      -Widentities
+      -funclutter-valid-hole-fits
+  build-depends:
+      base >=4.12 && < 5
+    , base-prelude >=1.2 && <1.4
+    , bytestring
+    , containers
+    , microlens >=0.4 && <0.5
+    , paths >=0.2 && <0.3
+    , text >=1.2 && <1.3
+    , versions >=3.5 && <3.6
+
+common libexec
+   build-depends:
+      errors >=2.3 && <2.4
+    , freer-simple >=1.1 && <1.3
+    , http-client >=0.5 && <0.6
+    , non-empty-containers >=0.1.2 && <0.2
+    , prettyprinter >=1.2 && <1.3
+    , prettyprinter-ansi-terminal >=1.1 && <1.2
+    , transformers >= 0.5
+    , typed-process >= 0.2
+
+library
+  import: commons, libexec
+  hs-source-dirs: lib
+  exposed-modules:
+      Aura.Build
+      Aura.Cache
+      Aura.Colour
+      Aura.Commands.A
+      Aura.Commands.B
+      Aura.Commands.C
+      Aura.Commands.L
+      Aura.Commands.O
+      Aura.Core
+      Aura.Dependencies
+      Aura.Diff
+      Aura.Install
+      Aura.Languages
+      Aura.Languages.Fields
+      Aura.Logo
+      Aura.MakePkg
+      Aura.Packages.AUR
+      Aura.Packages.Repository
+      Aura.Pacman
+      Aura.Pkgbuild.Base
+      Aura.Pkgbuild.Editing
+      Aura.Pkgbuild.Fetch
+      Aura.Pkgbuild.Records
+      Aura.Pkgbuild.Security
+      Aura.Settings
+      Aura.State
+      Aura.Types
+      Aura.Utils
+  build-depends:
+      aeson >=1.2 && <1.5
+    , aeson-pretty >=0.8 && <0.9
+    , algebraic-graphs >=0.1 && <0.4
+    , aur ^>=6.1
+    , compactable ^>=0.1
+    , directory
+    , filepath
+    , generic-lens ^>=1.1
+    , http-types >=0.9 && <0.13
+    , language-bash >=0.8 && <0.9
+    , megaparsec ^>=7
+    , microlens-ghc ^>=0.4
+    , mwc-random >=0.14 && <0.15
+    , network-uri >=2.6 && <2.7
+    , semigroupoids >=5.2 && <5.4
+    , stm
+    , throttled >=1.1 && <1.2
+    , time
+    , witherable >=0.2 && <0.4
+
+executable aura
+  import: commons, libexec
+  main-is: aura.hs
+  other-modules:
+      Flags
+      Settings
+  hs-source-dirs: exec
+  ghc-options: -threaded -O2 -with-rtsopts=-N
+  build-depends:
+      aura
+    , http-client-tls >=0.3 && <0.4
+    , optparse-applicative >=0.14 && <0.15
+    , pretty-simple >=2.1 && <2.3
+
+test-suite aura-test
+  import: commons
+  type: exitcode-stdio-1.0
+  main-is: Test.hs
+  hs-source-dirs: test
+  ghc-options: -threaded -with-rtsopts=-N
+  build-depends:
+      aura
+    , megaparsec
+    , tasty >=0.11 && < 1.3
+    , tasty-hunit >=0.9 && <0.11

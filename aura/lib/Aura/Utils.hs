@@ -36,7 +36,6 @@ import           Aura.Languages (whitespace, yesNoMessage, yesPattern)
 import           Aura.Settings
 import           Aura.Types (Environment, Language, User(..))
 import           BasePrelude hiding (Version, (<+>))
-import           Control.Monad.Trans (MonadIO)
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map.Strict as M

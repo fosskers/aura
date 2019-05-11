@@ -7,9 +7,9 @@
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 
 module Linux.Arch.Aur.Types
-    ( RPCResp(..)
-    , AurInfo(..)
-    ) where
+  ( RPCResp(..)
+  , AurInfo(..)
+  ) where
 
 import Control.Applicative ((<|>))
 import Control.Monad (mzero)

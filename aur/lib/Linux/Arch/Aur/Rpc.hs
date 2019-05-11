@@ -41,6 +41,8 @@ url :: BaseUrl
 url = BaseUrl Https "aur.archlinux.org" 443 ""
 
 -- | Make a call to the AUR RPC. Assumes version 5 of the API.
+rpcI :: Maybe Text -> Maybe Text -> [Text] -> ClientM RPCResp
+rpcS :: Maybe Text -> Maybe Text -> Maybe Text -> ClientM RPCResp
 rpcI :<|> rpcS = client api
 
 -- | Perform an @info@ call on one or more package names.

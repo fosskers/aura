@@ -20,7 +20,6 @@ import           Aura.Types (PkgName(..), Pkgbuild(..))
 import           Aura.Utils (urlContents)
 import           BasePrelude
 import           Control.Exception (SomeException, catch)
-import           Control.Monad.Trans (MonadIO, liftIO)
 import           Data.Generics.Product (field)
 import qualified Data.Text as T
 import           Lens.Micro ((^.))

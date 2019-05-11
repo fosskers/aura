@@ -1,4 +1,4 @@
-resolver: lts-13.1
+resolver: lts-13.20
 
 packages:
   - aura/
@@ -7,10 +7,8 @@ packages:
   - aur-security/
 
 extra-deps:
-  - compactable-0.1.2.2@sha256:38a8f3a1089794a3d1daa50730abc98ccafaedad17cf68ffca09b271c165ff52
-  - language-bash-0.8.0@sha256:2a7b0498c029f0e7c30d3b273897e32036a629ff9ffa5c92ec2f3a51f46af86f
+  - compactable-0.1.2.3
+  - language-bash-0.8.0
   - non-empty-containers-0.1.4.0
-  - paths-0.2.0.0@sha256:85e77985968860365cdb2074515b339863344ca0d28baa879baf4105f93e87cc
-  - throttled-1.1.0@sha256:a8fac12213a23fa77badfddfb5d80139f6359b6775d661ba245cf2fc1f029bf6
-
-allow-newer: true
+  - paths-0.2.0.0
+  - throttled-1.1.0
