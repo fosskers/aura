@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.1.0.1
+
+- Massaged various bounds for future-proofing.
+
 ## 6.1.0
 
 - RPC functions now return in `Maybe`, for occasions where connection to the AUR
