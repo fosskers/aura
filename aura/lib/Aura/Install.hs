@@ -39,11 +39,10 @@ import           Aura.Types
 import           Aura.Utils (optionalPrompt)
 import           BasePrelude hiding (FilePath, diff)
 import           Control.Compactable (fmapEither)
-import           Control.Concurrent.STM.TQueue
-import           Control.Concurrent.Throttled (throttle)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
+import           Control.Scheduler (Comp(..), traverseConcurrently)
 import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (HasField'(..), field, super)
 import qualified Data.List.NonEmpty as NEL
@@ -86,7 +85,7 @@ install' pkgs = do
   ss       <- ask
   unneeded <- bool
               (pure S.empty)
-              (S.fromList . catMaybes <$> send (throttle (const isInstalled) pkgs >>= atomically . flushTQueue))
+              (S.fromList . catMaybes <$> send (traverseConcurrently Par' isInstalled $ toList pkgs))
               $ shared ss NeededOnly
   let !pkgs' = NES.toSet pkgs
   if | shared ss NeededOnly && unneeded == pkgs' -> send . warn ss . install_2 $ langOf ss

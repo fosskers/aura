@@ -12,7 +12,8 @@
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
--- Module for connecting to the AUR servers, downloading PKGBUILDs and package sources.
+-- Module for connecting to the AUR servers, downloading PKGBUILDs and package
+-- sources.
 
 module Aura.Packages.AUR
   ( -- * Batch Querying
@@ -32,14 +33,13 @@ import           Aura.Pkgbuild.Fetch
 import           Aura.Settings
 import           Aura.Types
 import           BasePrelude hiding (head)
-import           Control.Concurrent.STM.TQueue
-import           Control.Concurrent.Throttled (throttle)
 import           Control.Error.Util (hush)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Maybe
+import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Generics.Product (field)
 import qualified Data.Set as S
 import           Data.Set.NonEmpty (NonEmptySet)
@@ -59,7 +59,7 @@ import           System.Process.Typed
 -- | Attempt to retrieve info about a given `S.Set` of packages from the AUR.
 aurLookup :: Manager -> NonEmptySet PkgName -> IO (Maybe (S.Set PkgName, S.Set Buildable))
 aurLookup m names = runMaybeT $ MaybeT (info m (foldMap (\(PkgName pn) -> [pn]) names)) >>= \infos -> do
-  badsgoods <- lift $ throttle (\_ a -> buildable m a) infos >>= atomically . flushTQueue
+  badsgoods <- lift $ traverseConcurrently Par' (buildable m) infos
   let (bads, goods) = partitionEithers badsgoods
       goodNames     = S.fromList $ goods ^.. each . field @"name"
   pure (S.fromList bads <> NES.toSet names S.\\ goodNames, S.fromList goods)
@@ -83,10 +83,10 @@ buildable m ai = do
       , version  = ver
       , base     = bse
       , provides = providesOf ai ^. to listToMaybe . non (aurNameOf ai) . to Provides
-      -- TODO This is a potentially naughty mapMaybe, since deps that fail to parse
-      -- will be silently dropped. Unfortunately there isn't much to be done - `aurLookup`
-      -- and `aurRepo` which call this function only report existence errors
-      -- (i.e. "this package couldn't be found at all").
+      -- TODO This is a potentially naughty mapMaybe, since deps that fail to
+      -- parse will be silently dropped. Unfortunately there isn't much to be
+      -- done - `aurLookup` and `aurRepo` which call this function only report
+      -- existence errors (i.e. "this package couldn't be found at all").
       , deps       = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai
       , pkgbuild   = pb
       , isExplicit = False }

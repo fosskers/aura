@@ -104,10 +104,11 @@ library
     , microlens-ghc ^>=0.4
     , mwc-random >=0.14 && <0.15
     , network-uri >=2.6 && <2.7
+    , scheduler ^>= 1.1
     , semigroupoids >=5.2 && <5.4
     , stm
-    , throttled >=1.1 && <1.2
     , time
+    , unliftio >= 0.2
     , witherable >=0.2 && <0.4
 
 executable aura
