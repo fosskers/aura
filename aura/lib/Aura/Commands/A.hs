@@ -61,9 +61,9 @@ import           Linux.Arch.Aur
 ---
 
 -- | The result of @-Au@.
-upgradeAURPkgs :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => S.Set PkgName -> Eff r ()
+upgradeAURPkgs :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => S.Set PkgName -> Eff r ()
 upgradeAURPkgs pkgs = do
-  ss <- ask
+  ss <- asks settings
   send . notify ss . upgradeAURPkgs_1 $ langOf ss
   send (foreigns ss) >>= traverse_ (upgrade pkgs) . NES.fromSet
 
@@ -73,10 +73,10 @@ foreigns :: Settings -> IO (S.Set SimplePkg)
 foreigns ss = S.filter (notIgnored . view (field @"name")) <$> foreignPackages
   where notIgnored p = not . S.member p $ ignoresOf ss
 
-upgrade :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+upgrade :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
   S.Set PkgName -> NonEmptySet SimplePkg -> Eff r ()
 upgrade pkgs fs = do
-  ss        <- ask
+  ss        <- asks settings
   toUpgrade <- possibleUpdates fs
   let !names = map (PkgName . aurNameOf . fst) toUpgrade
   auraFirst <- auraCheck names
@@ -91,7 +91,7 @@ upgrade pkgs fs = do
              send . unless (switch ss DryRun) $ saveState ss
              traverse_ I.install . NES.fromSet $ S.fromList names <> pkgs <> devel
 
-possibleUpdates :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+possibleUpdates :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
   NonEmptySet SimplePkg -> Eff r [(AurInfo, Versioning)]
 possibleUpdates (NES.toNonEmpty -> pkgs) = do
   aurInfos <- aurInfo $ fmap (^. field @"name") pkgs
@@ -100,28 +100,28 @@ possibleUpdates (NES.toNonEmpty -> pkgs) = do
   pure . filter isntMostRecent . zip aurInfos $ aurPkgs ^.. each . field @"version"
 
 -- | Is there an update for Aura that we could apply first?
-auraCheck :: (Member (Reader Settings) r, Member IO r) => [PkgName] -> Eff r (Maybe PkgName)
+auraCheck :: (Member (Reader Env) r, Member IO r) => [PkgName] -> Eff r (Maybe PkgName)
 auraCheck ps = join <$> traverse f auraPkg
   where f a = do
-          ss <- ask
+          ss <- asks settings
           bool Nothing (Just a) <$> send (optionalPrompt ss auraCheck_1)
         auraPkg | "aura" `elem` ps     = Just "aura"
                 | "aura-bin" `elem` ps = Just "aura-bin"
                 | otherwise            = Nothing
 
-auraUpgrade :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => PkgName -> Eff r ()
+auraUpgrade :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => PkgName -> Eff r ()
 auraUpgrade = I.install . NES.singleton
 
-develPkgCheck :: (Member (Reader Settings) r, Member IO r) => Eff r (S.Set PkgName)
-develPkgCheck = ask >>= \ss ->
+develPkgCheck :: (Member (Reader Env) r, Member IO r) => Eff r (S.Set PkgName)
+develPkgCheck = asks settings >>= \ss ->
   if switch ss RebuildDevel then send develPkgs else pure S.empty
 
 -- | The result of @-Ai@.
-aurPkgInfo :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
+aurPkgInfo :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
 aurPkgInfo = aurInfo . NES.toNonEmpty >=> traverse_ displayAurPkgInfo
 
-displayAurPkgInfo :: (Member (Reader Settings) r, Member IO r) => AurInfo -> Eff r ()
-displayAurPkgInfo ai = ask >>= \ss -> send . T.putStrLn $ renderAurPkgInfo ss ai <> "\n"
+displayAurPkgInfo :: (Member (Reader Env) r, Member IO r) => AurInfo -> Eff r ()
+displayAurPkgInfo ai = asks settings >>= \ss -> send . T.putStrLn $ renderAurPkgInfo ss ai <> "\n"
 
 renderAurPkgInfo :: Settings -> AurInfo -> T.Text
 renderAurPkgInfo ss ai = dtot . colourCheck ss $ entrify ss fields entries
@@ -141,9 +141,9 @@ renderAurPkgInfo ss ai = dtot . colourCheck ss $ entrify ss fields entries
                     , maybe "(null)" pretty $ aurDescriptionOf ai ]
 
 -- | The result of @-As@.
-aurPkgSearch :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => T.Text -> Eff r ()
+aurPkgSearch :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => T.Text -> Eff r ()
 aurPkgSearch regex = do
-  ss <- ask
+  ss <- asks settings
   db <- S.map (^. field @"name" . field @"name") <$> send foreignPackages
   let t = case truncationOf $ buildConfigOf ss of  -- Can't this go anywhere else?
             None   -> id
@@ -169,9 +169,9 @@ renderSearch ss r (i, e) = searchResult
             Nothing -> green . pretty $ aurVersionOf i
 
 -- | The result of @-Ap@.
-displayPkgbuild :: (Member (Reader Settings) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
+displayPkgbuild :: (Member (Reader Env) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
 displayPkgbuild ps = do
-  man <- asks managerOf
+  man <- asks (managerOf . settings)
   pbs <- catMaybes <$> traverse (send . getPkgbuild @IO man) (toList ps)
   send . traverse_ (T.putStrLn . strictText) $ pbs ^.. each . field @"pkgbuild"
 
@@ -180,9 +180,9 @@ isntMostRecent (ai, v) = trueVer > Just v
   where trueVer = hush . versioning $ aurVersionOf ai
 
 -- | Similar to @-Ai@, but yields the raw data as JSON instead.
-aurJson :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
+aurJson :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
 aurJson ps = do
-  m <- asks managerOf
+  m <- asks (managerOf . settings)
   infos <- liftMaybeM (Failure connectionFailure_1) . info m . (^.. each . field @"name") $ toList ps
   let json = map (toStrict . toLazyText . encodePrettyToTextBuilder) infos
   send $ traverse_ T.putStrLn json
@@ -190,10 +190,10 @@ aurJson ps = do
 ------------
 -- REPORTING
 ------------
-reportPkgsToUpgrade :: (Member (Reader Settings) r, Member IO r) =>
+reportPkgsToUpgrade :: (Member (Reader Env) r, Member IO r) =>
   [(AurInfo, Versioning)] -> [PkgName] -> Eff r ()
 reportPkgsToUpgrade ups pns = do
-  ss <- ask
+  ss <- asks settings
   send . notify ss . reportPkgsToUpgrade_1 $ langOf ss
   send $ putDoc (colourCheck ss . vcat $ map f ups' <> map g devels) >> T.putStrLn "\n"
   where devels   = pns ^.. each . field @"name"

@@ -54,16 +54,16 @@ srcPkgStore :: Path Absolute
 srcPkgStore = fromAbsoluteFilePath "/var/cache/aura/src"
 
 -- | Expects files like: \/var\/cache\/pacman\/pkg\/*.pkg.tar.xz
-installPkgFiles :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+installPkgFiles :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
   NonEmptySet PackagePath -> Eff r ()
 installPkgFiles files = do
-  ss <- ask
+  ss <- asks settings
   send $ checkDBLock ss
   liftEitherM . pacman $ ["-U"] <> map (toFilePath . path) (toList files) <> asFlag (commonConfigOf ss)
 
 -- | All building occurs within temp directories,
 -- or in a location specified by the user with flags.
-buildPackages :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+buildPackages :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
   NonEmptySet Buildable -> Eff r (NonEmptySet PackagePath)
 buildPackages bs = do
   g <- send createSystemRandom
@@ -72,10 +72,10 @@ buildPackages bs = do
 
 -- | Handles the building of Packages. Fails nicely.
 -- Assumed: All dependencies are already installed.
-build :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+build :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
   GenIO -> Buildable -> Eff r (Maybe (NonEmptySet PackagePath))
 build g p = do
-  ss     <- ask
+  ss     <- asks settings
   send $ notify ss (buildPackages_1 (p ^. field @"name") (langOf ss)) *> hFlush stdout
   result <- send $ build' ss g p
   either buildFail (pure . Just) result
@@ -126,9 +126,9 @@ overwritePkgbuild ss p = when (switch ss HotEdit || switch ss UseCustomizepkg) $
 
 -- | Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
-buildFail :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Failure -> Eff r (Maybe a)
+buildFail :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => Failure -> Eff r (Maybe a)
 buildFail (Failure err) = do
-  ss <- ask
+  ss <- asks settings
   send . scold ss . err $ langOf ss
   response <- send $ optionalPrompt ss buildFail_6
   bool (throwError $ Failure buildFail_5) (pure Nothing) response

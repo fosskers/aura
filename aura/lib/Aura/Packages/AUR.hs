@@ -65,11 +65,14 @@ aurLookup m names = runMaybeT $ MaybeT (info m (foldMap (\(PkgName pn) -> [pn]) 
   pure (S.fromList bads <> NES.toSet names S.\\ goodNames, S.fromList goods)
 
 -- | Yield fully realized `Package`s from the AUR.
-aurRepo :: Repository
-aurRepo = Repository $ \ss ps -> runMaybeT $ do
-  (bads, goods) <- MaybeT $ aurLookup (managerOf ss) ps
-  pkgs <- lift . traverse (packageBuildable ss) $ toList goods
-  pure (bads, S.fromList pkgs)
+aurRepo :: IO Repository
+aurRepo = do
+  tv <- newTVarIO mempty
+  let f ss ps = runMaybeT $ do
+        (bads, goods) <- MaybeT $ aurLookup (managerOf ss) ps
+        pkgs <- lift . traverse (packageBuildable ss) $ toList goods
+        pure (bads, S.fromList pkgs)
+  pure $ Repository tv f
 
 buildable :: Manager -> AurInfo -> IO (Either PkgName Buildable)
 buildable m ai = do
@@ -125,15 +128,15 @@ sortAurInfo bs ai = sortBy compare' ai
                      _ -> \x y -> compare (aurVotesOf y) (aurVotesOf x)
 
 -- | Frontend to the `aur` library. For @-As@.
-aurSearch :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => T.Text -> Eff r [AurInfo]
+aurSearch :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => T.Text -> Eff r [AurInfo]
 aurSearch regex = do
-  ss  <- ask
+  ss  <- asks settings
   res <- liftMaybeM (Failure connectionFailure_1) $ search (managerOf ss) regex
   pure $ sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) res
 
 -- | Frontend to the `aur` library. For @-Ai@.
-aurInfo :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmpty PkgName -> Eff r [AurInfo]
+aurInfo :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => NonEmpty PkgName -> Eff r [AurInfo]
 aurInfo pkgs = do
-  m   <- asks managerOf
+  m   <- asks (managerOf . settings)
   res <- liftMaybeM (Failure connectionFailure_1) . info m . map (^. field @"name") $ toList pkgs
   pure $ sortAurInfo (Just SortAlphabetically) res

@@ -40,12 +40,15 @@ import           Text.Megaparsec.Char
 
 -- | Repository package source.
 -- We expect no matches to be found when the package is actually an AUR package.
-pacmanRepo :: Repository
-pacmanRepo = Repository $ \ss names -> do
-  bgs <- traverseConcurrently Par' (resolveName ss) $ toList names
-  let (bads, goods) = partitionEithers bgs
-  (bads', goods') <- traverseEither f goods
-  pure $ Just (S.fromList $ bads <> bads', S.fromList goods')
+pacmanRepo :: IO Repository
+pacmanRepo = do
+  tv <- newTVarIO mempty
+  let g ss names = do
+        bgs <- traverseConcurrently Par' (resolveName ss) $ toList names
+        let (bads, goods) = partitionEithers bgs
+        (bads', goods') <- traverseEither f goods
+        pure $ Just (S.fromList $ bads <> bads', S.fromList goods')
+  pure $ Repository tv g
   where
     f (r, p) = fmap (FromRepo . packageRepo r p) <$> mostRecentVersion r
 

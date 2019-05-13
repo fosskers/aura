@@ -58,10 +58,10 @@ data Wrote = WroteNothing | WroteNew
 -- interdependent, and thus can be built and installed as a group.
 --
 -- Deeper layers of the result list (generally) depend on the previous layers.
-resolveDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+resolveDeps :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
   Repository -> NonEmptySet Package -> Eff r (NonEmpty (NonEmptySet Package))
 resolveDeps repo ps = do
-  ss <- ask
+  ss <- asks settings
   tv <- send $ newTVarIO M.empty
   ts <- send $ newTVarIO S.empty
   liftMaybeM (Failure connectionFailure_1) $

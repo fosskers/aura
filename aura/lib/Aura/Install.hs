@@ -28,8 +28,7 @@ import           Aura.Core
 import           Aura.Dependencies (resolveDeps)
 import           Aura.Diff (diff)
 import           Aura.Languages
-import           Aura.Packages.AUR (aurLookup, aurRepo)
-import           Aura.Packages.Repository (pacmanRepo)
+import           Aura.Packages.AUR (aurLookup)
 import           Aura.Pacman (pacman, pacmanSuccess)
 import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Records
@@ -62,15 +61,12 @@ import           System.Path (fromAbsoluteFilePath)
 
 ---
 
-repository :: Repository
-repository = pacmanRepo <> aurRepo
-
 -- | High level 'install' command. Handles installing
 -- dependencies.
-install :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+install :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
   NonEmptySet PkgName -> Eff r ()
 install pkgs = do
-  ss <- ask
+  ss <- asks settings
   if | not $ switch ss DeleteMakeDeps -> install' pkgs
      | otherwise -> do -- `-a` was used.
          orphansBefore <- send orphans
@@ -79,10 +75,11 @@ install pkgs = do
          let makeDeps = NES.fromSet (orphansAfter S.\\ orphansBefore)
          traverse_ (\mds -> send (notify ss . removeMakeDepsAfter_1 $ langOf ss) *> removePkgs mds) makeDeps
 
-install' :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+install' :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
   NonEmptySet PkgName -> Eff r ()
 install' pkgs = do
-  ss       <- ask
+  rpstry   <- asks repository
+  ss       <- asks settings
   unneeded <- bool
               (pure S.empty)
               (S.fromList . catMaybes <$> send (traverseConcurrently Par' isInstalled $ toList pkgs))
@@ -103,7 +100,7 @@ install' pkgs = do
                Nothing       -> throwError $ Failure install_2
                Just toBuild' -> do
                  send $ notify ss (install_5 $ langOf ss) *> hFlush stdout
-                 allPkgs <- depsToInstall repository toBuild'
+                 allPkgs <- depsToInstall rpstry toBuild'
                  let (repoPkgs, buildPkgs) = second uniquePkgBase $ partitionPkgs allPkgs
                  unless (switch ss NoPkgbuildCheck) $ traverse_ (traverse_ analysePkgbuild) buildPkgs
                  reportPkgsToInstall repoPkgs buildPkgs
@@ -117,9 +114,9 @@ install' pkgs = do
                           traverse_ buildAndInstall mbuildPkgs
 
 -- | Determine if a package's PKGBUILD might contain malicious bash code.
-analysePkgbuild :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Buildable -> Eff r ()
+analysePkgbuild :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => Buildable -> Eff r ()
 analysePkgbuild b = do
-  ss <- ask
+  ss <- asks settings
   let f = do
         yes <- send $ optionalPrompt ss security_6
         when yes . throwError $ Failure security_7
@@ -156,30 +153,30 @@ uniquePkgBase bs = mapMaybe (NES.fromSet . S.filter (\b -> (b ^. field @"name") 
         goods = S.fromList . (^.. each . field @"name") . M.elems . M.fromListWith f $ map (view (field @"base") &&& id) bs'
         bs'   = foldMap toList bs
 
-confirmIgnored :: (Member (Reader Settings) r, Member IO r) => S.Set PkgName -> Eff r (S.Set PkgName)
+confirmIgnored :: (Member (Reader Env) r, Member IO r) => S.Set PkgName -> Eff r (S.Set PkgName)
 confirmIgnored (toList -> ps) = do
-  ss <- ask
+  ss <- asks settings
   S.fromList <$> filterM (send . optionalPrompt ss . confirmIgnored_1) ps
 
-depsToInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+depsToInstall :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
   Repository -> NonEmptySet Buildable -> Eff r (NonEmpty (NonEmptySet Package))
 depsToInstall repo bs = do
-  ss <- ask
+  ss <- asks settings
   traverse (send . packageBuildable ss) (NES.toNonEmpty bs) >>= resolveDeps repo . NES.fromNonEmpty
 
-repoInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => NonEmpty Prebuilt -> Eff r ()
+repoInstall :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => NonEmpty Prebuilt -> Eff r ()
 repoInstall ps = do
-  pacOpts <- asks (asFlag . commonConfigOf)
+  pacOpts <- asks (asFlag . commonConfigOf . settings)
   liftEitherM . pacman $ ["-S", "--asdeps"] <> pacOpts <> asFlag (ps ^.. each . field @"name")
 
-buildAndInstall :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+buildAndInstall :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
   NonEmpty (NonEmptySet Buildable) -> Eff r ()
 buildAndInstall bss = do
-  pth   <- asks (either id id . cachePathOf . commonConfigOf)
+  pth   <- asks (either id id . cachePathOf . commonConfigOf . settings)
   cache <- send $ cacheContents pth
   traverse_ (f cache) bss
   where f (Cache cache) bs = do
-          ss <- ask
+          ss <- asks settings
           let (ps, cached) = fmapEither g $ toList bs
               g b = case (b ^. super @SimplePkg) `M.lookup` cache of
                 Just pp | not (switch ss ForceBuilding) -> Right pp
@@ -192,17 +189,18 @@ buildAndInstall bss = do
 -- REPORTING
 ------------
 -- | Display dependencies. The result of @-Ad@.
-displayPkgDeps :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+displayPkgDeps :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
   NonEmptySet PkgName -> Eff r ()
 displayPkgDeps ps = do
-  ss <- ask
-  let f = depsToInstall repository >=> reportDeps (switch ss LowVerbosity) . partitionPkgs
+  rpstry <- asks repository
+  ss <- asks settings
+  let f = depsToInstall rpstry >=> reportDeps (switch ss LowVerbosity) . partitionPkgs
   (_, goods) <- liftMaybeM (Failure connectionFailure_1) $ aurLookup (managerOf ss) ps
   traverse_ f $ NES.fromSet goods
   where reportDeps True  = send . uncurry reportListOfDeps
         reportDeps False = uncurry reportPkgsToInstall
 
-reportPkgsToInstall :: (Member (Reader Settings) r, Member IO r) =>
+reportPkgsToInstall :: (Member (Reader Env) r, Member IO r) =>
    [Prebuilt] -> [NonEmptySet Buildable] -> Eff r ()
 reportPkgsToInstall rps bps = do
   let (explicits, ds) = partition isExplicit $ foldMap toList bps
@@ -216,13 +214,13 @@ reportListOfDeps rps bps = f rps *> f (foldMap toList bps)
   where f :: HasField' "name" s PkgName => [s] -> IO ()
         f = traverse_ T.putStrLn . sort . (^.. each . field' @"name" . field' @"name")
 
-pkgbuildDiffs :: (Member (Reader Settings) r, Member IO r) => S.Set Buildable -> Eff r ()
-pkgbuildDiffs ps = ask >>= check
+pkgbuildDiffs :: (Member (Reader Env) r, Member IO r) => S.Set Buildable -> Eff r ()
+pkgbuildDiffs ps = asks settings >>= check
     where check ss | not $ switch ss DiffPkgbuilds = pure ()
                    | otherwise = traverse_ displayDiff ps
-          displayDiff :: (Member (Reader Settings) r, Member IO r) => Buildable -> Eff r ()
+          displayDiff :: (Member (Reader Env) r, Member IO r) => Buildable -> Eff r ()
           displayDiff p = do
-            ss <- ask
+            ss <- asks settings
             let pn   = p ^. field @"name"
                 lang = langOf ss
             isStored <- send $ hasPkgbuildStored pn
