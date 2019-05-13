@@ -19,7 +19,6 @@ module Aura.Core
     Repository(..)
   , liftEither, liftEitherM
   , liftMaybe, liftMaybeM
-  , sendM
     -- * User Privileges
   , sudo, trueRoot
     -- * Querying the Package Database
@@ -41,10 +40,10 @@ import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding ((<>))
 import           Control.Compactable (fmapEither)
-import           Control.Effect
-import           Control.Effect.Error
-import           Control.Effect.Lift
-import           Control.Effect.Reader
+import           Control.Effect (Carrier, Member)
+import           Control.Effect.Error (Error, throwError)
+import           Control.Effect.Lift (Lift, sendM)
+import           Control.Effect.Reader (Reader, ask, asks)
 import           Control.Monad.Trans.Maybe
 import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
@@ -100,32 +99,25 @@ packageBuildable ss b = FromAUR <$> hotEdit ss b
 -----------
 -- THE WORK
 -----------
--- | Lift an arbitrary Monadic effect into the `fused-effects` framework.
-sendM :: ( Monad m, Monad n
-         , Carrier sig m
-         , Member (Lift n) sig
-         ) => n a -> m a
-sendM = send . Lift . fmap pure
-
 -- | Lift a common return type into the `Eff` world. Usually used after a `pacman` call.
-liftEither :: (Monad m, Carrier sig m, Member (Error a) sig) => Either a b -> m b
+liftEither :: (Carrier sig m, Member (Error a) sig) => Either a b -> m b
 liftEither = either throwError pure
 
 -- | Like `liftEither`, but the `Either` can be embedded in something else,
 -- usually a `Monad`.
-liftEitherM :: (Monad m, Carrier sig m, Member (Error a) sig) => m (Either a b) -> m b
+liftEitherM :: (Carrier sig m, Member (Error a) sig) => m (Either a b) -> m b
 liftEitherM m = m >>= liftEither
 
 -- | Like `liftEither`, but for `Maybe`.
-liftMaybe :: (Monad m, Carrier sig m, Member (Error a) sig) => a -> Maybe b -> m b
+liftMaybe :: (Carrier sig m, Member (Error a) sig) => a -> Maybe b -> m b
 liftMaybe a = maybe (throwError a) pure
 
 -- | Like `liftEitherM`, but for `Maybe`.
-liftMaybeM :: (Monad m, Carrier sig m, Member (Error a) sig) => a -> m (Maybe b) -> m b
+liftMaybeM :: (Carrier sig m, Member (Error a) sig) => a -> m (Maybe b) -> m b
 liftMaybeM a m = m >>= liftMaybe a
 
 -- | Action won't be allowed unless user is root, or using sudo.
-sudo :: ( Monad m, Carrier sig m
+sudo :: ( Carrier sig m
         , Member (Reader Settings) sig
         , Member (Error Failure) sig
         )
@@ -134,7 +126,7 @@ sudo action = asks (hasRootPriv . envOf) >>= bool (throwError $ Failure mustBeRo
 
 -- | Stop the user if they are the true root. Building as root isn't allowed
 -- since makepkg v4.2.
-trueRoot :: ( Monad m, Carrier sig m
+trueRoot :: ( Carrier sig m
             , Member (Reader Settings) sig
             , Member (Error Failure) sig
             )
@@ -164,7 +156,7 @@ isInstalled :: PkgName -> IO (Maybe PkgName)
 isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", T.unpack (pkg ^. field @"name")]
 
 -- | An @-Rsu@ call.
-removePkgs :: ( Monad m, Carrier sig m
+removePkgs :: ( Carrier sig m
               , Member (Reader Settings) sig
               , Member (Error Failure) sig
               , Member (Lift IO) sig
@@ -208,7 +200,7 @@ scold ss = putStrLnA ss . red
 
 -- | Report a message with multiple associated items. Usually a list of
 -- naughty packages.
-report :: ( Monad m, Carrier sig m
+report :: ( Carrier sig m
           , Member (Reader Settings) sig
           , Member (Lift IO) sig
           )

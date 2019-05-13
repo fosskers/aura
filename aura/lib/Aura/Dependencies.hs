@@ -29,9 +29,10 @@ import           Control.Concurrent.STM.TQueue
 import           Control.Concurrent.STM.TVar
 import           Control.Concurrent.Throttled (throttleMaybe_)
 import           Control.Error.Util (hush, note)
-import           Control.Effect
-import           Control.Effect.Error
-import           Control.Effect.Reader
+import           Control.Effect (Carrier, Member)
+import           Control.Effect.Error (Error, throwError)
+import           Control.Effect.Lift (Lift, sendM)
+import           Control.Effect.Reader (Reader, ask)
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Maybe
 import           Data.Generics.Product (field)
@@ -57,7 +58,7 @@ data Wrote = WroteNothing | WroteNew
 -- interdependent, and thus can be built and installed as a group.
 --
 -- Deeper layers of the result list (generally) depend on the previous layers.
-resolveDeps :: ( Monad m, Carrier sig m
+resolveDeps :: ( Carrier sig m
                , Member (Reader Settings) sig
                , Member (Error Failure) sig
                , Member (Lift IO) sig

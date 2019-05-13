@@ -32,9 +32,10 @@ import           Aura.State
 import           Aura.Types
 import           Aura.Utils
 import           BasePrelude
-import           Control.Effect
-import           Control.Effect.Error
-import           Control.Effect.Reader
+import           Control.Effect (Carrier, Member)
+import           Control.Effect.Error (Error, throwError)
+import           Control.Effect.Lift (Lift, sendM)
+import           Control.Effect.Reader (Reader, ask)
 import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (nonEmpty)
 import qualified Data.Map.Strict as M
@@ -50,7 +51,7 @@ import           System.Path.IO (copyFile, doesDirectoryExist, removeFile)
 
 -- | Interactive. Gives the user a choice as to exactly what versions
 -- they want to downgrade to.
-downgradePackages :: ( Monad m, Carrier sig m
+downgradePackages :: ( Carrier sig m
                      , Member (Reader Settings) sig
                      , Member (Error Failure) sig
                      , Member (Lift IO) sig
@@ -67,7 +68,7 @@ downgradePackages pkgs = do
 
 -- | For a given package, get a choice from the user about which version of it to
 -- downgrade to.
-getDowngradeChoice :: ( Monad m, Carrier sig m
+getDowngradeChoice :: ( Carrier sig m
                       , Member (Reader Settings) sig
                       , Member (Error Failure) sig
                       , Member (Lift IO) sig
@@ -84,7 +85,7 @@ getChoicesFromCache :: Cache -> PkgName -> [PackagePath]
 getChoicesFromCache (Cache cache) p = sort . M.elems $ M.filterWithKey (\(SimplePkg pn _) _ -> p == pn) cache
 
 -- | Print all package filenames that match a given `T.Text`.
-searchCache :: ( Monad m, Carrier sig m
+searchCache :: ( Carrier sig m
                , Member (Reader Settings) sig
                , Member (Lift IO) sig
                ) => T.Text -> m ()
@@ -94,7 +95,7 @@ searchCache ps = do
   sendM . traverse_ (putStrLn . toFilePath . path) $ sort matches
 
 -- | The destination folder must already exist for the back-up to begin.
-backupCache :: ( Monad m, Carrier sig m
+backupCache :: ( Carrier sig m
                , Member (Reader Settings) sig
                , Member (Error Failure) sig
                , Member (Lift IO) sig
@@ -104,7 +105,7 @@ backupCache dir = do
   if | not exists -> throwError $ Failure backupCache_3
      | otherwise  -> confirmBackup dir >>= backup dir
 
-confirmBackup :: ( Monad m, Carrier sig m
+confirmBackup :: ( Carrier sig m
                  , Member (Reader Settings) sig
                  , Member (Error Failure) sig
                  , Member (Lift IO) sig
@@ -117,7 +118,7 @@ confirmBackup dir = do
   okay  <- sendM $ optionalPrompt ss backupCache_6
   bool (throwError $ Failure backupCache_7) (pure cache) okay
 
-backup :: ( Monad m, Carrier sig m
+backup :: ( Carrier sig m
           , Member (Reader Settings) sig
           , Member (Lift IO) sig
           ) => Path Absolute -> Cache -> m ()
@@ -128,7 +129,7 @@ backup dir (Cache cache) = do
   copyAndNotify dir (M.elems cache) 1
 
 -- | Manages the file copying and display of the real-time progress notifier.
-copyAndNotify :: ( Monad m, Carrier sig m
+copyAndNotify :: ( Carrier sig m
                  , Member (Reader Settings) sig
                  , Member (Lift IO) sig
                  ) => Path Absolute -> [PackagePath] -> Int -> m ()
@@ -142,7 +143,7 @@ copyAndNotify dir (PackagePath p : ps) n = do
 
 -- | Keeps a certain number of package files in the cache according to
 -- a number provided by the user. The rest are deleted.
-cleanCache :: ( Monad m, Carrier sig m
+cleanCache :: ( Carrier sig m
               , Member (Reader Settings) sig
               , Member (Error Failure) sig
               , Member (Lift IO) sig
@@ -155,7 +156,7 @@ cleanCache toSave
       okay <- sendM $ optionalPrompt ss cleanCache_4
       bool (throwError $ Failure cleanCache_5) (clean (fromIntegral toSave)) okay
 
-clean :: ( Monad m, Carrier sig m
+clean :: ( Carrier sig m
          , Member (Reader Settings) sig
          , Member (Lift IO) sig
          ) => Int -> m ()
@@ -171,7 +172,7 @@ clean toSave = do
 
 -- | Only package files with a version not in any PkgState will be
 -- removed.
-cleanNotSaved :: ( Monad m, Carrier sig m
+cleanNotSaved :: ( Carrier sig m
                  , Member (Reader Settings) sig
                  , Member (Lift IO) sig
                  ) => m ()

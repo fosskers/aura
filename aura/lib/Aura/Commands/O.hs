@@ -14,12 +14,15 @@
 
 module Aura.Commands.O ( displayOrphans, adoptPkg ) where
 
-import           Aura.Core (liftEitherM, orphans, sendM, sudo)
+import           Aura.Core (liftEitherM, orphans, sudo)
 import           Aura.Pacman (pacman)
 import           Aura.Settings (Settings)
 import           Aura.Types
 import           BasePrelude
-import           Control.Effect
+import           Control.Effect (Carrier, Member)
+import           Control.Effect.Error (Error)
+import           Control.Effect.Reader (Reader)
+import           Control.Effect.Lift (Lift, sendM)
 import           Data.Generics.Product (field)
 import           Data.Set.NonEmpty (NonEmptySet)
 import qualified Data.Text.IO as T
@@ -32,7 +35,7 @@ displayOrphans :: IO ()
 displayOrphans = orphans >>= traverse_ (T.putStrLn . view (field @"name"))
 
 -- | Identical to @-D --asexplicit@.
-adoptPkg :: ( Monad m, Carrier sig m
+adoptPkg :: ( Carrier sig m
             , Member (Reader Settings) sig
             , Member (Error Failure) sig
             , Member (Lift IO) sig

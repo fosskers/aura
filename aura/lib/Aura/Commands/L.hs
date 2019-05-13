@@ -19,15 +19,16 @@ module Aura.Commands.L
   ) where
 
 import           Aura.Colour (dtot, red)
-import           Aura.Core (report, sendM)
+import           Aura.Core (report)
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types (PkgName(..))
 import           Aura.Utils
 import           BasePrelude hiding (FilePath)
 import           Control.Compactable (fmapEither)
-import           Control.Effect
-import           Control.Effect.Reader
+import           Control.Effect (Carrier, Member)
+import           Control.Effect.Lift (Lift, sendM)
+import           Control.Effect.Reader (Reader, ask, asks)
 import qualified Data.ByteString.Char8 as BS
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
@@ -49,7 +50,7 @@ newtype Log = Log [T.Text]
 data LogEntry = LogEntry { _pkgName :: PkgName, _firstInstall :: T.Text, _upgrades :: Word, _recent :: [T.Text] }
 
 -- | Pipes the pacman log file through a @less@ session.
-viewLogFile :: ( Monad m, Carrier sig m
+viewLogFile :: ( Carrier sig m
                , Member (Reader Settings) sig
                , Member (Lift IO) sig
                )
@@ -66,7 +67,7 @@ searchLogFile ss input = do
   traverse_ T.putStrLn $ searchLines input logFile
 
 -- | The result of @-Li@.
-logInfoOnPkg :: ( Monad m, Carrier sig m
+logInfoOnPkg :: ( Carrier sig m
                 , Member (Reader Settings) sig
                 , Member (Lift IO) sig
                 )

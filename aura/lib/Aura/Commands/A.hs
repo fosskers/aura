@@ -38,8 +38,10 @@ import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding ((<+>))
 import           Control.Error.Util (hush)
-import           Control.Effect
-import           Control.Effect.Reader
+import           Control.Effect (Carrier, Member)
+import           Control.Effect.Error (Error)
+import           Control.Effect.Lift (Lift, sendM)
+import           Control.Effect.Reader (Reader, ask, asks)
 import           Data.Aeson.Encode.Pretty (encodePrettyToTextBuilder)
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
@@ -60,7 +62,7 @@ import           Linux.Arch.Aur
 ---
 
 -- | The result of @-Au@.
-upgradeAURPkgs :: ( Monad m, Carrier sig m
+upgradeAURPkgs :: ( Carrier sig m
                   , Member (Reader Settings) sig
                   , Member (Error Failure) sig
                   , Member (Lift IO) sig
@@ -76,7 +78,7 @@ foreigns :: Settings -> IO (S.Set SimplePkg)
 foreigns ss = S.filter (notIgnored . view (field @"name")) <$> foreignPackages
   where notIgnored p = not . S.member p $ ignoresOf ss
 
-upgrade :: ( Monad m, Carrier sig m
+upgrade :: ( Carrier sig m
            , Member (Reader Settings) sig
            , Member (Error Failure) sig
            , Member (Lift IO) sig
@@ -97,7 +99,7 @@ upgrade pkgs fs = do
              sendM . unless (switch ss DryRun) $ saveState ss
              traverse_ I.install . NES.fromSet $ S.fromList names <> pkgs <> devel
 
-possibleUpdates :: ( Monad m, Carrier sig m
+possibleUpdates :: ( Carrier sig m
                    , Member (Reader Settings) sig
                    , Member (Error Failure) sig
                    , Member (Lift IO) sig
@@ -109,7 +111,7 @@ possibleUpdates (NES.toNonEmpty -> pkgs) = do
   pure . filter isntMostRecent . zip aurInfos $ aurPkgs ^.. each . field @"version"
 
 -- | Is there an update for Aura that we could apply first?
-auraCheck :: ( Monad m, Carrier sig m
+auraCheck :: ( Carrier sig m
              , Member (Reader Settings) sig
              , Member (Lift IO) sig
              ) => [PkgName] -> m (Maybe PkgName)
@@ -121,14 +123,14 @@ auraCheck ps = join <$> traverse f auraPkg
                 | "aura-bin" `elem` ps = Just "aura-bin"
                 | otherwise            = Nothing
 
-auraUpgrade :: ( Monad m, Carrier sig m
+auraUpgrade :: ( Carrier sig m
                , Member (Reader Settings) sig
                , Member (Error Failure) sig
                , Member (Lift IO) sig
                ) => PkgName -> m ()
 auraUpgrade = I.install . NES.singleton
 
-develPkgCheck :: ( Monad m, Carrier sig m
+develPkgCheck :: ( Carrier sig m
                  , Member (Reader Settings) sig
                  , Member (Lift IO) sig
                  ) => m (S.Set PkgName)
@@ -136,14 +138,14 @@ develPkgCheck = ask >>= \ss ->
   if switch ss RebuildDevel then sendM develPkgs else pure S.empty
 
 -- | The result of @-Ai@.
-aurPkgInfo :: (Monad m, Carrier sig m
+aurPkgInfo :: ( Carrier sig m
               , Member (Reader Settings) sig
               , Member (Error Failure) sig
               , Member (Lift IO) sig
               ) => NonEmptySet PkgName -> m ()
 aurPkgInfo = aurInfo . NES.toNonEmpty >=> traverse_ displayAurPkgInfo
 
-displayAurPkgInfo :: ( Monad m, Carrier sig m
+displayAurPkgInfo :: ( Carrier sig m
                      , Member (Reader Settings) sig
                      , Member (Lift IO) sig
                      ) => AurInfo -> m ()
@@ -213,7 +215,7 @@ isntMostRecent (ai, v) = trueVer > Just v
   where trueVer = hush . versioning $ aurVersionOf ai
 
 -- | Similar to @-Ai@, but yields the raw data as JSON instead.
-aurJson :: ( Monad m, Carrier sig m
+aurJson :: ( Carrier sig m
            , Member (Reader Settings) sig
            , Member (Error Failure) sig
            , Member (Lift IO) sig
@@ -227,7 +229,7 @@ aurJson ps = do
 ------------
 -- REPORTING
 ------------
-reportPkgsToUpgrade :: ( Monad m, Carrier sig m
+reportPkgsToUpgrade :: ( Carrier sig m
                        , Member (Reader Settings) sig
                        , Member (Lift IO) sig
                        ) => [(AurInfo, Versioning)] -> [PkgName] -> m ()

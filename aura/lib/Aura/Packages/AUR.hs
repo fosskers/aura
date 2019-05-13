@@ -35,8 +35,10 @@ import           BasePrelude hiding (head)
 import           Control.Concurrent.STM.TQueue
 import           Control.Concurrent.Throttled (throttle)
 import           Control.Error.Util (hush)
-import           Control.Effect
-import           Control.Effect.Reader
+import           Control.Effect (Carrier, Member)
+import           Control.Effect.Error (Error)
+import           Control.Effect.Lift (Lift, sendM)
+import           Control.Effect.Reader (Reader, ask, asks)
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Maybe
 import           Data.Generics.Product (field)
@@ -124,7 +126,7 @@ sortAurInfo bs ai = sortBy compare' ai
                      _ -> \x y -> compare (aurVotesOf y) (aurVotesOf x)
 
 -- | Frontend to the `aur` library. For @-As@.
-aurSearch :: ( Monad m, Carrier sig m
+aurSearch :: ( Carrier sig m
              , Member (Reader Settings) sig
              , Member (Error Failure) sig
              , Member (Lift IO) sig
@@ -135,7 +137,7 @@ aurSearch regex = do
   pure $ sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) res
 
 -- | Frontend to the `aur` library. For @-Ai@.
-aurInfo :: ( Monad m, Carrier sig m
+aurInfo :: ( Carrier sig m
            , Member (Reader Settings) sig
            , Member (Error Failure) sig
            , Member (Lift IO) sig

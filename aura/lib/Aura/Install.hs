@@ -41,9 +41,10 @@ import           BasePrelude hiding (FilePath, diff)
 import           Control.Compactable (fmapEither)
 import           Control.Concurrent.STM.TQueue
 import           Control.Concurrent.Throttled (throttle)
-import           Control.Effect
-import           Control.Effect.Error
-import           Control.Effect.Reader
+import           Control.Effect (Carrier, Member)
+import           Control.Effect.Error (Error, throwError)
+import           Control.Effect.Lift (Lift, sendM)
+import           Control.Effect.Reader (Reader, ask, asks)
 import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (HasField'(..), field, super)
 import qualified Data.List.NonEmpty as NEL
@@ -68,7 +69,7 @@ repository = pacmanRepo <> aurRepo
 
 -- | High level 'install' command. Handles installing
 -- dependencies.
-install :: ( Monad m, Carrier sig m
+install :: ( Carrier sig m
            , Member (Reader Settings) sig
            , Member (Error Failure) sig
            , Member (Lift IO) sig
@@ -83,7 +84,7 @@ install pkgs = do
          let makeDeps = NES.fromSet (orphansAfter S.\\ orphansBefore)
          traverse_ (\mds -> sendM (notify ss . removeMakeDepsAfter_1 $ langOf ss) *> removePkgs mds) makeDeps
 
-install' :: ( Monad m, Carrier sig m
+install' :: ( Carrier sig m
             , Member (Reader Settings) sig
             , Member (Error Failure) sig
             , Member (Lift IO) sig
@@ -124,7 +125,7 @@ install' pkgs = do
                           traverse_ buildAndInstall mbuildPkgs
 
 -- | Determine if a package's PKGBUILD might contain malicious bash code.
-analysePkgbuild :: ( Monad m, Carrier sig m
+analysePkgbuild :: ( Carrier sig m
                    , Member (Reader Settings) sig
                    , Member (Error Failure) sig
                    , Member (Lift IO) sig
@@ -167,7 +168,7 @@ uniquePkgBase bs = mapMaybe (NES.fromSet . S.filter (\b -> (b ^. field @"name") 
         goods = S.fromList . (^.. each . field @"name") . M.elems . M.fromListWith f $ map (view (field @"base") &&& id) bs'
         bs'   = foldMap toList bs
 
-confirmIgnored :: ( Monad m, Carrier sig m
+confirmIgnored :: ( Carrier sig m
                   , Member (Reader Settings) sig
                   , Member (Lift IO) sig
                   ) => S.Set PkgName -> m (S.Set PkgName)
@@ -175,7 +176,7 @@ confirmIgnored (toList -> ps) = do
   ss <- ask
   S.fromList <$> filterM (sendM . optionalPrompt ss . confirmIgnored_1) ps
 
-depsToInstall :: ( Monad m, Carrier sig m
+depsToInstall :: ( Carrier sig m
                  , Member (Reader Settings) sig
                  , Member (Error Failure) sig
                  , Member (Lift IO) sig
@@ -184,7 +185,7 @@ depsToInstall repo bs = do
   ss <- ask
   traverse (sendM . packageBuildable ss) (NES.toNonEmpty bs) >>= resolveDeps repo . NES.fromNonEmpty
 
-repoInstall :: ( Monad m, Carrier sig m
+repoInstall :: ( Carrier sig m
                , Member (Reader Settings) sig
                , Member (Error Failure) sig
                , Member (Lift IO) sig
@@ -193,7 +194,7 @@ repoInstall ps = do
   pacOpts <- asks (asFlag . commonConfigOf)
   liftEitherM . sendM . pacman $ ["-S", "--asdeps"] <> pacOpts <> asFlag (ps ^.. each . field @"name")
 
-buildAndInstall :: ( Monad m, Carrier sig m
+buildAndInstall :: ( Carrier sig m
                    , Member (Reader Settings) sig
                    , Member (Error Failure) sig
                    , Member (Lift IO) sig
@@ -216,7 +217,7 @@ buildAndInstall bss = do
 -- REPORTING
 ------------
 -- | Display dependencies. The result of @-Ad@.
-displayPkgDeps :: ( Monad m, Carrier sig m
+displayPkgDeps :: ( Carrier sig m
                   , Member (Reader Settings) sig
                   , Member (Error Failure) sig
                   , Member (Lift IO) sig
@@ -229,7 +230,7 @@ displayPkgDeps ps = do
   where reportDeps True  = sendM . uncurry reportListOfDeps
         reportDeps False = uncurry reportPkgsToInstall
 
-reportPkgsToInstall :: ( Monad m, Carrier sig m
+reportPkgsToInstall :: ( Carrier sig m
                        , Member (Reader Settings) sig
                        , Member (Lift IO) sig
                        ) => [Prebuilt] -> [NonEmptySet Buildable] -> m ()
@@ -245,14 +246,14 @@ reportListOfDeps rps bps = f rps *> f (foldMap toList bps)
   where f :: HasField' "name" s PkgName => [s] -> IO ()
         f = traverse_ T.putStrLn . sort . (^.. each . field' @"name" . field' @"name")
 
-pkgbuildDiffs :: ( Monad m, Carrier sig m
+pkgbuildDiffs :: ( Carrier sig m
                  , Member (Reader Settings) sig
                  , Member (Lift IO) sig
                  ) => S.Set Buildable -> m ()
 pkgbuildDiffs ps = ask >>= check
     where check ss | not $ switch ss DiffPkgbuilds = pure ()
                    | otherwise = traverse_ displayDiff ps
-          displayDiff :: ( Monad m, Carrier sig m
+          displayDiff :: ( Carrier sig m
                          , Member (Reader Settings) sig
                          , Member (Lift IO) sig
                          ) => Buildable -> m ()

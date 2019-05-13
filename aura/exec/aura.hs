@@ -50,9 +50,10 @@ import           Aura.Pacman
 import           Aura.Settings
 import           Aura.Types
 import           BasePrelude hiding (Version)
-import           Control.Effect
-import           Control.Effect.Error
-import           Control.Effect.Reader
+import           Control.Effect (Carrier, Member)
+import           Control.Effect.Error (Error, runError)
+import           Control.Effect.Lift (Lift, runM, sendM)
+import           Control.Effect.Reader (Reader, ask, asks, runReader)
 import qualified Data.Set as S
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
@@ -92,7 +93,7 @@ exit :: Settings -> Either (Doc AnsiStyle) () -> IO a
 exit ss (Left e)  = scold ss e *> exitFailure
 exit _  (Right _) = exitSuccess
 
-executeOpts :: ( Monad m, Carrier sig m
+executeOpts :: ( Carrier sig m
                , Member (Reader Settings) sig
                , Member (Error Failure) sig
                , Member (Lift IO) sig
@@ -147,7 +148,7 @@ executeOpts ops = do
     Right Languages -> displayOutputLanguages
     Right ViewConf  -> viewConfFile
 
-displayOutputLanguages :: ( Monad m, Carrier sig m
+displayOutputLanguages :: ( Carrier sig m
                           , Member (Reader Settings) sig
                           , Member (Lift IO) sig
                           ) => m ()
@@ -156,7 +157,7 @@ displayOutputLanguages = do
   sendM . notify ss . displayOutputLanguages_1 $ langOf ss
   sendM $ traverse_ print [English ..]
 
-viewConfFile :: ( Monad m, Carrier sig m
+viewConfFile :: ( Carrier sig m
                 , Member (Reader Settings) sig
                 , Member (Lift IO) sig
                 ) => m ()

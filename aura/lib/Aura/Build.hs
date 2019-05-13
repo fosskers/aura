@@ -26,9 +26,10 @@ import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           BasePrelude
-import           Control.Effect
-import           Control.Effect.Error
-import           Control.Effect.Reader
+import           Control.Effect (Carrier, Member)
+import           Control.Effect.Error (Error, throwError)
+import           Control.Effect.Lift (Lift, sendM)
+import           Control.Effect.Reader (Reader, ask)
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Except
 import qualified Data.ByteString.Lazy.Char8 as BL
@@ -54,7 +55,7 @@ srcPkgStore :: Path Absolute
 srcPkgStore = fromAbsoluteFilePath "/var/cache/aura/src"
 
 -- | Expects files like: \/var\/cache\/pacman\/pkg\/*.pkg.tar.xz
-installPkgFiles :: ( Monad m, Carrier sig m
+installPkgFiles :: ( Carrier sig m
                    , Member (Reader Settings) sig
                    , Member (Error Failure) sig
                    , Member (Lift IO) sig
@@ -66,7 +67,7 @@ installPkgFiles files = do
 
 -- | All building occurs within temp directories,
 -- or in a location specified by the user with flags.
-buildPackages :: ( Monad m, Carrier sig m
+buildPackages :: ( Carrier sig m
                  , Member (Reader Settings) sig
                  , Member (Error Failure) sig
                  , Member (Lift IO) sig
@@ -78,7 +79,7 @@ buildPackages bs = do
 
 -- | Handles the building of Packages. Fails nicely.
 -- Assumed: All dependencies are already installed.
-build :: ( Monad m, Carrier sig m
+build :: ( Carrier sig m
          , Member (Reader Settings) sig
          , Member (Error Failure) sig
          , Member (Lift IO) sig
@@ -135,7 +136,7 @@ overwritePkgbuild ss p = when (switch ss HotEdit || switch ss UseCustomizepkg) $
 
 -- | Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
-buildFail :: ( Monad m, Carrier sig m
+buildFail :: ( Carrier sig m
              , Member (Reader Settings) sig
              , Member (Error Failure) sig
              , Member (Lift IO) sig
