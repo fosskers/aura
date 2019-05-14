@@ -58,7 +58,6 @@ import qualified Data.Set as S
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
-import qualified Data.Text.Lazy.IO as LT
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Flags
@@ -66,14 +65,9 @@ import           Options.Applicative (execParser)
 import           Settings
 import           System.Path (toFilePath)
 import           System.Process.Typed (proc, runProcess)
-import           Text.Pretty.Simple (defaultOutputOptionsNoColor,
-                                     pShowOpt)
+import           Text.Pretty.Simple (pPrintNoColor)
 
 ---
-
--- | Re-implemented from 'Text.Pretty.Simple', but reified to 'IO'
-pPrintNoColor :: Show a => a -> IO ()
-pPrintNoColor = LT.putStrLn . pShowOpt defaultOutputOptionsNoColor
 
 auraVersion :: T.Text
 auraVersion = "2.0.0"
@@ -101,9 +95,9 @@ executeOpts :: ( Carrier sig m
 executeOpts ops = do
   ss <- ask
   when (shared ss Debug) $ do
-    sendM . pPrintNoColor $ ops
-    sendM . pPrintNoColor $ buildConfigOf ss
-    sendM . pPrintNoColor $ commonConfigOf ss
+    sendM @IO . pPrintNoColor $ ops
+    sendM @IO . pPrintNoColor $ buildConfigOf ss
+    sendM @IO . pPrintNoColor $ commonConfigOf ss
   let p (ps, ms) = liftEitherM . sendM . pacman $
         asFlag ps
         ++ foldMap asFlag ms
