@@ -48,7 +48,7 @@ import qualified Data.List.NonEmpty as NEL
 import qualified Data.Map.Strict as M
 import           Data.Semigroup.Foldable (fold1)
 import qualified Data.Set as S
-import           Data.Set.NonEmpty (NonEmptySet)
+import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text.IO as T
 import           Language.Bash.Pretty (prettyText)
@@ -64,7 +64,7 @@ import           System.Path (fromAbsoluteFilePath)
 -- | High level 'install' command. Handles installing
 -- dependencies.
 install :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
-  NonEmptySet PkgName -> Eff r ()
+  NESet PkgName -> Eff r ()
 install pkgs = do
   ss <- asks settings
   if | not $ switch ss DeleteMakeDeps -> install' pkgs
@@ -72,11 +72,11 @@ install pkgs = do
          orphansBefore <- send orphans
          install' pkgs
          orphansAfter <- send orphans
-         let makeDeps = NES.fromSet (orphansAfter S.\\ orphansBefore)
+         let makeDeps = NES.nonEmptySet (orphansAfter S.\\ orphansBefore)
          traverse_ (\mds -> send (notify ss . removeMakeDepsAfter_1 $ langOf ss) *> removePkgs mds) makeDeps
 
 install' :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
-  NonEmptySet PkgName -> Eff r ()
+  NESet PkgName -> Eff r ()
 install' pkgs = do
   rpstry   <- asks repository
   ss       <- asks settings
@@ -89,14 +89,14 @@ install' pkgs = do
      | otherwise -> do
          let (ignored, notIgnored) = S.partition (`S.member` ignoresOf ss) pkgs'
          installAnyway <- confirmIgnored ignored
-         case NES.fromSet $ (notIgnored <> installAnyway) S.\\ unneeded of
+         case NES.nonEmptySet $ (notIgnored <> installAnyway) S.\\ unneeded of
            Nothing        -> send . warn ss . install_2 $ langOf ss
            Just toInstall -> do
              traverse_ (report yellow reportUnneededPackages_1) . NEL.nonEmpty $ toList unneeded
              (nons, toBuild) <- liftMaybeM (Failure connectionFailure_1) $ aurLookup (managerOf ss) toInstall
              pkgbuildDiffs toBuild
              traverse_ (report red reportNonPackages_1) . NEL.nonEmpty $ toList nons
-             case NES.fromSet $ S.map (\b -> b { isExplicit = True }) toBuild of
+             case NES.nonEmptySet $ S.map (\b -> b { isExplicit = True }) toBuild of
                Nothing       -> throwError $ Failure install_2
                Just toBuild' -> do
                  send $ notify ss (install_5 $ langOf ss) *> hFlush stdout
@@ -137,7 +137,7 @@ displayBannedTerms ss (stmt, b) = do
 
 -- | Give anything that was installed as a dependency the /Install Reason/ of
 -- "Installed as a dependency for another package".
-annotateDeps :: NonEmptySet Buildable -> IO ()
+annotateDeps :: NESet Buildable -> IO ()
 annotateDeps bs = unless (null bs') . void . pacmanSuccess $ ["-D", "--asdeps"] <> asFlag (bs' ^.. each . field @"name")
   where bs' = filter (not . isExplicit) $ toList bs
 
@@ -145,8 +145,8 @@ annotateDeps bs = unless (null bs') . void . pacmanSuccess $ ["-D", "--asdeps"] 
 -- instance of each "Package Base". This will ensure that split packages will
 -- only be built once each. Precedence is given to packages that actually
 -- match the base name (e.g. llvm50 vs llvm50-libs).
-uniquePkgBase :: [NonEmptySet Buildable] -> [NonEmptySet Buildable]
-uniquePkgBase bs = mapMaybe (NES.fromSet . S.filter (\b -> (b ^. field @"name") `S.member` goods) . NES.toSet) bs
+uniquePkgBase :: [NESet Buildable] -> [NESet Buildable]
+uniquePkgBase bs = mapMaybe (NES.nonEmptySet . S.filter (\b -> (b ^. field @"name") `S.member` goods) . NES.toSet) bs
   where f a b | (a ^. field @"name") == (a ^. field @"base") = a
               | (b ^. field @"name") == (b ^. field @"base") = b
               | otherwise = a
@@ -159,10 +159,10 @@ confirmIgnored (toList -> ps) = do
   S.fromList <$> filterM (send . optionalPrompt ss . confirmIgnored_1) ps
 
 depsToInstall :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
-  Repository -> NonEmptySet Buildable -> Eff r (NonEmpty (NonEmptySet Package))
+  Repository -> NESet Buildable -> Eff r (NonEmpty (NESet Package))
 depsToInstall repo bs = do
   ss <- asks settings
-  traverse (send . packageBuildable ss) (NES.toNonEmpty bs) >>= resolveDeps repo . NES.fromNonEmpty
+  traverse (send . packageBuildable ss) (NES.toList bs) >>= resolveDeps repo . NES.fromList
 
 repoInstall :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => NonEmpty Prebuilt -> Eff r ()
 repoInstall ps = do
@@ -170,7 +170,7 @@ repoInstall ps = do
   liftEitherM . pacman $ ["-S", "--asdeps"] <> pacOpts <> asFlag (ps ^.. each . field @"name")
 
 buildAndInstall :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
-  NonEmpty (NonEmptySet Buildable) -> Eff r ()
+  NonEmpty (NESet Buildable) -> Eff r ()
 buildAndInstall bss = do
   pth   <- asks (either id id . cachePathOf . commonConfigOf . settings)
   cache <- send $ cacheContents pth
@@ -181,8 +181,8 @@ buildAndInstall bss = do
               g b = case (b ^. super @SimplePkg) `M.lookup` cache of
                 Just pp | not (switch ss ForceBuilding) -> Right pp
                 _                                       -> Left b
-          built <- traverse (buildPackages . NES.fromNonEmpty) $ NEL.nonEmpty ps
-          traverse_ installPkgFiles $ built <> (NES.fromNonEmpty <$> NEL.nonEmpty cached)
+          built <- traverse (buildPackages . NES.fromList) $ NEL.nonEmpty ps
+          traverse_ installPkgFiles $ built <> (NES.fromList <$> NEL.nonEmpty cached)
           send $ annotateDeps bs
 
 ------------
@@ -190,18 +190,18 @@ buildAndInstall bss = do
 ------------
 -- | Display dependencies. The result of @-Ad@.
 displayPkgDeps :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
-  NonEmptySet PkgName -> Eff r ()
+  NESet PkgName -> Eff r ()
 displayPkgDeps ps = do
   rpstry <- asks repository
   ss <- asks settings
   let f = depsToInstall rpstry >=> reportDeps (switch ss LowVerbosity) . partitionPkgs
   (_, goods) <- liftMaybeM (Failure connectionFailure_1) $ aurLookup (managerOf ss) ps
-  traverse_ f $ NES.fromSet goods
+  traverse_ f $ NES.nonEmptySet goods
   where reportDeps True  = send . uncurry reportListOfDeps
         reportDeps False = uncurry reportPkgsToInstall
 
 reportPkgsToInstall :: (Member (Reader Env) r, Member IO r) =>
-   [Prebuilt] -> [NonEmptySet Buildable] -> Eff r ()
+   [Prebuilt] -> [NESet Buildable] -> Eff r ()
 reportPkgsToInstall rps bps = do
   let (explicits, ds) = partition isExplicit $ foldMap toList bps
   f reportPkgsToInstall_1 rps
@@ -209,7 +209,7 @@ reportPkgsToInstall rps bps = do
   f reportPkgsToInstall_2 explicits
   where f m xs = traverse_ (report green m) . NEL.nonEmpty . sort $ xs ^.. each . field @"name"
 
-reportListOfDeps :: [Prebuilt] -> [NonEmptySet Buildable] -> IO ()
+reportListOfDeps :: [Prebuilt] -> [NESet Buildable] -> IO ()
 reportListOfDeps rps bps = f rps *> f (foldMap toList bps)
   where f :: HasField' "name" s PkgName => [s] -> IO ()
         f = traverse_ T.putStrLn . sort . (^.. each . field' @"name" . field' @"name")

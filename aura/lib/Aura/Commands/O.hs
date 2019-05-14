@@ -22,7 +22,7 @@ import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
 import           Data.Generics.Product (field)
-import           Data.Set.NonEmpty (NonEmptySet)
+import           Data.Set.NonEmpty (NESet)
 import qualified Data.Text.IO as T
 import           Lens.Micro.Extras (view)
 
@@ -33,5 +33,5 @@ displayOrphans :: IO ()
 displayOrphans = orphans >>= traverse_ (T.putStrLn . view (field @"name"))
 
 -- | Identical to @-D --asexplicit@.
-adoptPkg :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
+adoptPkg :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => NESet PkgName -> Eff r ()
 adoptPkg pkgs = sudo . liftEitherM . pacman $ ["-D", "--asexplicit"] <> asFlag pkgs

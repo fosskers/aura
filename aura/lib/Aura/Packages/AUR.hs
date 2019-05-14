@@ -42,7 +42,7 @@ import           Control.Monad.Trans.Maybe
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Generics.Product (field)
 import qualified Data.Set as S
-import           Data.Set.NonEmpty (NonEmptySet)
+import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Versions (versioning)
@@ -57,7 +57,7 @@ import           System.Process.Typed
 ---
 
 -- | Attempt to retrieve info about a given `S.Set` of packages from the AUR.
-aurLookup :: Manager -> NonEmptySet PkgName -> IO (Maybe (S.Set PkgName, S.Set Buildable))
+aurLookup :: Manager -> NESet PkgName -> IO (Maybe (S.Set PkgName, S.Set Buildable))
 aurLookup m names = runMaybeT $ MaybeT (info m (foldMap (\(PkgName pn) -> [pn]) names)) >>= \infos -> do
   badsgoods <- lift $ traverseConcurrently Par' (buildable m) infos
   let (bads, goods) = partitionEithers badsgoods

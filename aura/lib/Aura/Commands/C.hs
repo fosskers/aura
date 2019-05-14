@@ -39,7 +39,7 @@ import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (nonEmpty)
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
-import           Data.Set.NonEmpty (NonEmptySet)
+import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Lens.Micro ((^?), _Just)
@@ -51,7 +51,7 @@ import           System.Path.IO (copyFile, doesDirectoryExist, removeFile)
 -- | Interactive. Gives the user a choice as to exactly what versions
 -- they want to downgrade to.
 downgradePackages :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
-  NonEmptySet PkgName -> Eff r ()
+  NESet PkgName -> Eff r ()
 downgradePackages pkgs = do
   ss    <- asks settings
   let cachePath = either id id . cachePathOf $ commonConfigOf ss

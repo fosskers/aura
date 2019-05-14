@@ -14,7 +14,7 @@ import           Aura.Types
 import           BasePrelude hiding (Version, exp, log, option)
 import qualified Data.List.NonEmpty as NEL
 import qualified Data.Set as S
-import           Data.Set.NonEmpty (NonEmptySet)
+import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Lens.Micro
@@ -35,13 +35,13 @@ data Program = Program {
   , _language  :: Maybe Language } deriving (Show)
 
 -- | Inherited operations that are fed down to Pacman.
-data PacmanOp = Database (Either DatabaseOp (NonEmptySet PkgName))
+data PacmanOp = Database (Either DatabaseOp (NESet PkgName))
               | Files    (S.Set FilesOp)
               | Query    (Either QueryOp (S.Set QueryFilter, S.Set PkgName))
-              | Remove   (S.Set RemoveOp) (NonEmptySet PkgName)
+              | Remove   (S.Set RemoveOp) (NESet PkgName)
               | Sync     (Either SyncOp (S.Set PkgName)) (S.Set SyncSwitch)
-              | TestDeps (NonEmptySet T.Text)
-              | Upgrade  (S.Set UpgradeSwitch) (NonEmptySet PkgName)
+              | TestDeps (NESet T.Text)
+              | Upgrade  (S.Set UpgradeSwitch) (NESet PkgName)
               deriving (Show)
 
 instance Flagable PacmanOp where
@@ -57,8 +57,8 @@ instance Flagable PacmanOp where
   asFlag (Upgrade s ps)           = "-U" : asFlag s ++ asFlag ps
 
 data DatabaseOp = DBCheck
-                | DBAsDeps     (NonEmptySet T.Text)
-                | DBAsExplicit (NonEmptySet T.Text)
+                | DBAsDeps     (NESet T.Text)
+                | DBAsExplicit (NESet T.Text)
                 deriving (Show)
 
 instance Flagable DatabaseOp where
@@ -66,7 +66,7 @@ instance Flagable DatabaseOp where
   asFlag (DBAsDeps ps)     = "--asdeps" : asFlag ps
   asFlag (DBAsExplicit ps) = "--asexplicit" : asFlag ps
 
-data FilesOp = FilesList  (NonEmptySet T.Text)
+data FilesOp = FilesList  (NESet T.Text)
              | FilesOwns   T.Text
              | FilesSearch T.Text
              | FilesRegex
@@ -82,13 +82,13 @@ instance Flagable FilesOp where
   asFlag FilesRefresh         = ["--refresh"]
   asFlag FilesMachineReadable = ["--machinereadable"]
 
-data QueryOp = QueryChangelog (NonEmptySet T.Text)
-             | QueryGroups    (NonEmptySet T.Text)
-             | QueryInfo      (NonEmptySet T.Text)
-             | QueryCheck     (NonEmptySet T.Text)
-             | QueryList      (NonEmptySet T.Text)
-             | QueryOwns      (NonEmptySet T.Text)
-             | QueryFile      (NonEmptySet T.Text)
+data QueryOp = QueryChangelog (NESet T.Text)
+             | QueryGroups    (NESet T.Text)
+             | QueryInfo      (NESet T.Text)
+             | QueryCheck     (NESet T.Text)
+             | QueryList      (NESet T.Text)
+             | QueryOwns      (NESet T.Text)
+             | QueryFile      (NESet T.Text)
              | QuerySearch     T.Text
              deriving (Show)
 
@@ -131,12 +131,12 @@ instance Flagable RemoveOp where
   asFlag RemoveUnneeded  = ["--unneeded"]
 
 data SyncOp = SyncClean
-            | SyncGroups   (NonEmptySet T.Text)
-            | SyncInfo     (NonEmptySet T.Text)
+            | SyncGroups   (NESet T.Text)
+            | SyncInfo     (NESet T.Text)
             | SyncList      T.Text
             | SyncSearch    T.Text
             | SyncUpgrade  (S.Set T.Text)
-            | SyncDownload (NonEmptySet T.Text)
+            | SyncDownload (NESet T.Text)
             deriving (Show)
 
 instance Flagable SyncOp where
@@ -206,9 +206,9 @@ instance Flagable MiscOp where
   asFlag MiscVerbose             = ["--verbose"]
 
 -- | Operations unique to Aura.
-data AuraOp = AurSync (Either AurOp (NonEmptySet PkgName)) (S.Set AurSwitch)
+data AuraOp = AurSync (Either AurOp (NESet PkgName)) (S.Set AurSwitch)
             | Backup  (Maybe  BackupOp)
-            | Cache   (Either CacheOp (NonEmptySet PkgName))
+            | Cache   (Either CacheOp (NESet PkgName))
             | Log     (Maybe  LogOp)
             | Orphans (Maybe  OrphanOp)
             | Version
@@ -220,12 +220,12 @@ _AurSync :: Traversal' AuraOp (S.Set AurSwitch)
 _AurSync f (AurSync o s) = AurSync o <$> f s
 _AurSync _ x             = pure x
 
-data AurOp = AurDeps     (NonEmptySet PkgName)
-           | AurInfo     (NonEmptySet PkgName)
-           | AurPkgbuild (NonEmptySet PkgName)
+data AurOp = AurDeps     (NESet PkgName)
+           | AurInfo     (NESet PkgName)
+           | AurPkgbuild (NESet PkgName)
            | AurSearch    T.Text
            | AurUpgrade  (S.Set PkgName)
-           | AurJson     (NonEmptySet PkgName)
+           | AurJson     (NESet PkgName)
            deriving (Show)
 
 data AurSwitch = AurIgnore      (S.Set PkgName)
@@ -244,9 +244,9 @@ data BackupOp = BackupClean Word | BackupRestore | BackupList deriving (Show)
 
 data CacheOp = CacheBackup (Path Absolute) | CacheClean Word | CacheCleanNotSaved | CacheSearch T.Text deriving (Show)
 
-data LogOp = LogInfo (NonEmptySet PkgName) | LogSearch T.Text deriving (Show)
+data LogOp = LogInfo (NESet PkgName) | LogSearch T.Text deriving (Show)
 
-data OrphanOp = OrphanAbandon | OrphanAdopt (NonEmptySet PkgName) deriving (Show)
+data OrphanOp = OrphanAbandon | OrphanAdopt (NESet PkgName) deriving (Show)
 
 opts :: ParserInfo Program
 opts = info (program <**> helper) (fullDesc <> header "Aura - Package manager for Arch Linux and the AUR.")
@@ -263,7 +263,7 @@ program = Program
 aursync :: Parser AuraOp
 aursync = bigA *>
   (AurSync
-   <$> (fmap (Right . NES.fromNonEmpty . fmap (PkgName . T.toLower) . NES.toNonEmpty) someArgs <|> fmap Left mods)
+   <$> (fmap (Right . NES.fromList . fmap (PkgName . T.toLower) . NES.toList) someArgs <|> fmap Left mods)
    <*> (S.fromList <$> many switches)
   )
   where bigA    = flag' () (long "aursync" <> short 'A' <> help "Install packages from the AUR.")
@@ -475,20 +475,20 @@ upgrades = bigU *> (Upgrade <$> (S.fromList <$> many mods) <*> somePkgs)
         igg  = UpgradeIgnoreGroup . S.fromList . map PkgGroup . T.split (== ',') <$>
           strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore packages from the given groups.")
 
-somePkgs :: Parser (NonEmptySet PkgName)
-somePkgs = NES.fromNonEmpty . fromJust . NEL.nonEmpty . map PkgName <$> some (argument str (metavar "PACKAGES"))
+somePkgs :: Parser (NESet PkgName)
+somePkgs = NES.fromList . fromJust . NEL.nonEmpty . map PkgName <$> some (argument str (metavar "PACKAGES"))
 
 -- | Same as `someArgs`, but the help message "brief display" won't show PACKAGES.
-somePkgs' :: Parser (NonEmptySet PkgName)
-somePkgs' = NES.fromNonEmpty . fromJust . NEL.nonEmpty . map PkgName <$> some (argument str (metavar "PACKAGES" <> hidden))
+somePkgs' :: Parser (NESet PkgName)
+somePkgs' = NES.fromList . fromJust . NEL.nonEmpty . map PkgName <$> some (argument str (metavar "PACKAGES" <> hidden))
 
 -- | One or more arguments.
-someArgs :: Parser (NonEmptySet T.Text)
-someArgs = NES.fromNonEmpty . fromJust . NEL.nonEmpty <$> some (argument str (metavar "PACKAGES"))
+someArgs :: Parser (NESet T.Text)
+someArgs = NES.fromList . fromJust . NEL.nonEmpty <$> some (argument str (metavar "PACKAGES"))
 
 -- | Same as `someArgs`, but the help message "brief display" won't show PACKAGES.
-someArgs' :: Parser (NonEmptySet T.Text)
-someArgs' = NES.fromNonEmpty . fromJust . NEL.nonEmpty <$> some (argument str (metavar "PACKAGES" <> hidden))
+someArgs' :: Parser (NESet T.Text)
+someArgs' = NES.fromList . fromJust . NEL.nonEmpty <$> some (argument str (metavar "PACKAGES" <> hidden))
 
 -- | Zero or more arguments.
 manyArgs :: Parser (S.Set T.Text)

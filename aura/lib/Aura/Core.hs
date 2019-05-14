@@ -51,7 +51,7 @@ import           Data.Map.Strict (Map)
 import           Data.Semigroup
 import           Data.Set (Set)
 import qualified Data.Set as S
-import           Data.Set.NonEmpty (NonEmptySet)
+import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -78,7 +78,7 @@ data Env = Env { repository :: !Repository, settings :: !Settings }
 -- in batches for efficiency.
 data Repository = Repository
   { repoCache :: !(TVar (Map PkgName Package))
-  , repoLookup :: Settings -> NonEmptySet PkgName -> IO (Maybe (Set PkgName, Set Package)) }
+  , repoLookup :: Settings -> NESet PkgName -> IO (Maybe (Set PkgName, Set Package)) }
 
 -- NOTE The `repoCache` value passed to the combined `Repository` constructor is
 -- irrelevant, and only sits there for typechecking purposes. Each `Repository`
@@ -86,7 +86,7 @@ data Repository = Repository
 instance Semigroup Repository where
   a <> b = Repository (repoCache a) $ \ss ps -> runMaybeT $ do
     items@(bads, goods) <- MaybeT $ repoLookup a ss ps
-    case NES.fromSet bads of
+    case NES.nonEmptySet bads of
       Nothing    -> pure items
       Just bads' -> second (goods <>) <$> MaybeT (repoLookup b ss bads')
 
@@ -95,12 +95,12 @@ instance Semigroup Repository where
 ---------------------------------
 -- | Partition a list of packages into pacman and buildable groups. Yes, this is
 -- the correct signature. As far as this function (in isolation) is concerned,
--- there is no way to guarantee that the list of `NonEmptySet`s will itself be
+-- there is no way to guarantee that the list of `NESet`s will itself be
 -- non-empty.
-partitionPkgs :: NonEmpty (NonEmptySet Package) -> ([Prebuilt], [NonEmptySet Buildable])
+partitionPkgs :: NonEmpty (NESet Package) -> ([Prebuilt], [NESet Buildable])
 partitionPkgs = bimap fold f . unzip . map g . toList
   where g = fmapEither toEither . toList
-        f = mapMaybe (fmap NES.fromNonEmpty . NEL.nonEmpty)
+        f = mapMaybe (fmap NES.fromList . NEL.nonEmpty)
         toEither (FromAUR b)  = Right b
         toEither (FromRepo b) = Left b
 
@@ -162,7 +162,7 @@ isInstalled :: PkgName -> IO (Maybe PkgName)
 isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", T.unpack (pkg ^. field @"name")]
 
 -- | An @-Rsu@ call.
-removePkgs :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
+removePkgs :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => NESet PkgName -> Eff r ()
 removePkgs pkgs = do
   pacOpts <- asks (commonConfigOf . settings)
   liftEitherM . pacman $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts

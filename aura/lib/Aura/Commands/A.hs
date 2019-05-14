@@ -45,7 +45,7 @@ import           Data.Aeson.Encode.Pretty (encodePrettyToTextBuilder)
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import qualified Data.Set as S
-import           Data.Set.NonEmpty (NonEmptySet)
+import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -65,7 +65,7 @@ upgradeAURPkgs :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r)
 upgradeAURPkgs pkgs = do
   ss <- asks settings
   send . notify ss . upgradeAURPkgs_1 $ langOf ss
-  send (foreigns ss) >>= traverse_ (upgrade pkgs) . NES.fromSet
+  send (foreigns ss) >>= traverse_ (upgrade pkgs) . NES.nonEmptySet
 
 -- | Foreign packages to consider for upgrading, after "ignored packages" have
 -- been taken into consideration.
@@ -74,7 +74,7 @@ foreigns ss = S.filter (notIgnored . view (field @"name")) <$> foreignPackages
   where notIgnored p = not . S.member p $ ignoresOf ss
 
 upgrade :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
-  S.Set PkgName -> NonEmptySet SimplePkg -> Eff r ()
+  S.Set PkgName -> NESet SimplePkg -> Eff r ()
 upgrade pkgs fs = do
   ss        <- asks settings
   toUpgrade <- possibleUpdates fs
@@ -89,11 +89,11 @@ upgrade pkgs fs = do
          | otherwise -> do
              reportPkgsToUpgrade toUpgrade (toList devel)
              send . unless (switch ss DryRun) $ saveState ss
-             traverse_ I.install . NES.fromSet $ S.fromList names <> pkgs <> devel
+             traverse_ I.install . NES.nonEmptySet $ S.fromList names <> pkgs <> devel
 
 possibleUpdates :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
-  NonEmptySet SimplePkg -> Eff r [(AurInfo, Versioning)]
-possibleUpdates (NES.toNonEmpty -> pkgs) = do
+  NESet SimplePkg -> Eff r [(AurInfo, Versioning)]
+possibleUpdates (NES.toList -> pkgs) = do
   aurInfos <- aurInfo $ fmap (^. field @"name") pkgs
   let !names  = map aurNameOf aurInfos
       aurPkgs = NEL.filter (\(SimplePkg (PkgName n) _) -> n `elem` names) pkgs
@@ -117,8 +117,8 @@ develPkgCheck = asks settings >>= \ss ->
   if switch ss RebuildDevel then send develPkgs else pure S.empty
 
 -- | The result of @-Ai@.
-aurPkgInfo :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
-aurPkgInfo = aurInfo . NES.toNonEmpty >=> traverse_ displayAurPkgInfo
+aurPkgInfo :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => NESet PkgName -> Eff r ()
+aurPkgInfo = aurInfo . NES.toList >=> traverse_ displayAurPkgInfo
 
 displayAurPkgInfo :: (Member (Reader Env) r, Member IO r) => AurInfo -> Eff r ()
 displayAurPkgInfo ai = asks settings >>= \ss -> send . T.putStrLn $ renderAurPkgInfo ss ai <> "\n"
@@ -169,7 +169,7 @@ renderSearch ss r (i, e) = searchResult
             Nothing -> green . pretty $ aurVersionOf i
 
 -- | The result of @-Ap@.
-displayPkgbuild :: (Member (Reader Env) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
+displayPkgbuild :: (Member (Reader Env) r, Member IO r) => NESet PkgName -> Eff r ()
 displayPkgbuild ps = do
   man <- asks (managerOf . settings)
   pbs <- catMaybes <$> traverse (send . getPkgbuild @IO man) (toList ps)
@@ -180,7 +180,7 @@ isntMostRecent (ai, v) = trueVer > Just v
   where trueVer = hush . versioning $ aurVersionOf ai
 
 -- | Similar to @-Ai@, but yields the raw data as JSON instead.
-aurJson :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
+aurJson :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => NESet PkgName -> Eff r ()
 aurJson ps = do
   m <- asks (managerOf . settings)
   infos <- liftMaybeM (Failure connectionFailure_1) . info m . (^.. each . field @"name") $ toList ps

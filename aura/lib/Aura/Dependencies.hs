@@ -38,7 +38,7 @@ import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import           Data.Set (Set)
 import qualified Data.Set as S
-import           Data.Set.NonEmpty (NonEmptySet)
+import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Versions
@@ -59,7 +59,7 @@ data Wrote = WroteNothing | WroteNew
 --
 -- Deeper layers of the result list (generally) depend on the previous layers.
 resolveDeps :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
-  Repository -> NonEmptySet Package -> Eff r (NonEmpty (NonEmptySet Package))
+  Repository -> NESet Package -> Eff r (NonEmpty (NESet Package))
 resolveDeps repo ps = do
   ss <- asks settings
   tv <- send $ newTVarIO M.empty
@@ -82,7 +82,7 @@ resolveDeps'
   -> TVar (Set PkgName)
   -- ^ A cache of packages which have already been
   -- confirmed to be installed, or otherwise "satisfied".
-  -> NonEmptySet Package
+  -> NESet Package
   -- ^ The set of `Package`s to solve deps for.
   -> IO ()
 resolveDeps' ss repo tv ts ps =
@@ -117,7 +117,7 @@ resolveDeps' ss repo tv ts ps =
       atomically $ modifyTVar' ts (<> S.fromList sd)
       forM_ (NEL.nonEmpty $ ds ^.. each . field @"name") $ \deps' -> do
         putStr "." *> hFlush stdout
-        repoLookup repo ss (NES.fromNonEmpty deps') >>= \case
+        repoLookup repo ss (NES.fromList deps') >>= \case
           Nothing -> throwString "Connection Error"
           Just (_, goods) -> traverse_ (scheduleWork sch . h sch) goods
 
@@ -144,9 +144,9 @@ conflicts ss m s = foldMap f m
                                     Nothing -> Just $ NonExistant dn
                                     Just p  -> realPkgConflicts ss (b ^. field @"name") p d
 
-sortInstall :: Map PkgName Package -> Either Failure (NonEmpty (NonEmptySet Package))
+sortInstall :: Map PkgName Package -> Either Failure (NonEmpty (NESet Package))
 sortInstall m = case cycles depGraph of
-  [] -> note (Failure missingPkg_3) . NEL.nonEmpty . mapMaybe NES.fromSet $ batch depGraph
+  [] -> note (Failure missingPkg_3) . NEL.nonEmpty . mapMaybe NES.nonEmptySet $ batch depGraph
   cs -> Left . Failure . missingPkg_4 $ map (NEL.map pname . NAM.vertexList1) cs
   where f (FromRepo _)  = []
         f p@(FromAUR b) = mapMaybe (\d -> fmap (p,) $ (d ^. field @"name") `M.lookup` m) $ b ^. field @"deps" -- TODO handle "provides"?

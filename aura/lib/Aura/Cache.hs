@@ -27,12 +27,12 @@ import           BasePrelude
 import           Data.Generics.Product (field)
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
-import           Data.Set.NonEmpty (NonEmptySet)
+import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Lens.Micro ((^.))
-import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath,
-                              (</>))
+import           System.Path
+    (Absolute, Path, fromAbsoluteFilePath, toFilePath, (</>))
 import           System.Path.IO (getDirectoryContents)
 
 ---
@@ -57,7 +57,7 @@ cacheContents :: Path Absolute -> IO Cache
 cacheContents pth = cache . map (PackagePath . (pth </>)) <$> getDirectoryContents pth
 
 -- | All packages from a given `S.Set` who have a copy in the cache.
-pkgsInCache :: Settings -> NonEmptySet PkgName -> IO (S.Set PkgName)
+pkgsInCache :: Settings -> NESet PkgName -> IO (S.Set PkgName)
 pkgsInCache ss ps = do
   c <- cacheContents . either id id . cachePathOf $ commonConfigOf ss
   pure . S.filter (`NES.member` ps) . S.map (^. field @"name") . M.keysSet $ _cache c

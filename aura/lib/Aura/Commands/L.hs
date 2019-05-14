@@ -31,7 +31,7 @@ import           Control.Monad.Freer.Reader
 import qualified Data.ByteString.Char8 as BS
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
-import           Data.Set.NonEmpty (NonEmptySet)
+import           Data.Set.NonEmpty (NESet)
 import qualified Data.Text as T
 import           Data.Text.Encoding as T
 import           Data.Text.Encoding.Error (lenientDecode)
@@ -66,7 +66,7 @@ searchLogFile ss input = do
   traverse_ T.putStrLn $ searchLines input logFile
 
 -- | The result of @-Li@.
-logInfoOnPkg :: (Member (Reader Env) r, Member IO r) => NonEmptySet PkgName -> Eff r ()
+logInfoOnPkg :: (Member (Reader Env) r, Member IO r) => NESet PkgName -> Eff r ()
 logInfoOnPkg pkgs = do
   ss <- asks settings
   let pth = toFilePath . either id id . logPathOf $ commonConfigOf ss
