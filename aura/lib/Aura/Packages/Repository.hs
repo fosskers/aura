@@ -24,12 +24,16 @@ import           Aura.Settings (CommonSwitch(..), Settings, shared)
 import           Aura.Types
 import           Aura.Utils (getSelection, strictText)
 import           BasePrelude hiding (try)
+import           Control.Compactable (fmapEither)
 import           Control.Compactable (traverseEither)
+import           Control.Concurrent.STM.TVar (modifyTVar')
 import           Control.Error.Util (hush, note)
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
+import qualified Data.Map.Strict as M
 import qualified Data.Set as S
+import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Versions
 import           Lens.Micro ((^.))
@@ -43,11 +47,21 @@ import           Text.Megaparsec.Char
 pacmanRepo :: IO Repository
 pacmanRepo = do
   tv <- newTVarIO mempty
-  let g ss names = do
-        bgs <- traverseConcurrently Par' (resolveName ss) $ toList names
+
+  let g :: Settings -> NES.NESet PkgName -> IO (Maybe (S.Set PkgName, S.Set Package))
+      g ss names = do
+        --- Retrieve cached Packages ---
+        cache <- readTVarIO tv
+        let (uncached, cached) = fmapEither (\p -> note p $ M.lookup p cache) $ toList names
+        --- Lookup uncached Packages ---
+        bgs <- traverseConcurrently Par' (resolveName ss) uncached
         let (bads, goods) = partitionEithers bgs
-        (bads', goods') <- traverseEither f goods
-        pure $ Just (S.fromList $ bads <> bads', S.fromList goods')
+        (bads', goods') <- traverseEither f goods  -- TODO Should also be made concurrent?
+        --- Update Cache ---
+        let m = M.fromList $ map (pname &&& id) goods'
+        atomically $ modifyTVar' tv (<> m)
+        pure $ Just (S.fromList $ bads <> bads', S.fromList $ cached <> goods')
+
   pure $ Repository tv g
   where
     f (r, p) = fmap (FromRepo . packageRepo r p) <$> mostRecentVersion r
