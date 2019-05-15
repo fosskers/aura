@@ -33,7 +33,9 @@ import           Aura.Pkgbuild.Fetch
 import           Aura.Settings
 import           Aura.Types
 import           BasePrelude hiding (head)
-import           Control.Error.Util (hush)
+import           Control.Compactable (fmapEither)
+import           Control.Concurrent.STM.TVar (modifyTVar')
+import           Control.Error.Util (hush, note)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
@@ -41,6 +43,8 @@ import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Maybe
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Generics.Product (field)
+import qualified Data.List.NonEmpty as NEL
+import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
@@ -58,20 +62,36 @@ import           System.Process.Typed
 
 -- | Attempt to retrieve info about a given `S.Set` of packages from the AUR.
 aurLookup :: Manager -> NESet PkgName -> IO (Maybe (S.Set PkgName, S.Set Buildable))
-aurLookup m names = runMaybeT $ MaybeT (info m (foldMap (\(PkgName pn) -> [pn]) names)) >>= \infos -> do
-  badsgoods <- lift $ traverseConcurrently Par' (buildable m) infos
-  let (bads, goods) = partitionEithers badsgoods
-      goodNames     = S.fromList $ goods ^.. each . field @"name"
-  pure (S.fromList bads <> NES.toSet names S.\\ goodNames, S.fromList goods)
+aurLookup m names =
+  runMaybeT $ MaybeT (info m (foldMap (\(PkgName pn) -> [pn]) names)) >>= \infos -> do
+    badsgoods <- lift $ traverseConcurrently Par' (buildable m) infos
+    let (bads, goods) = partitionEithers badsgoods
+        goodNames     = S.fromList $ goods ^.. each . field @"name"
+    pure (S.fromList bads <> NES.toSet names S.\\ goodNames, S.fromList goods)
 
 -- | Yield fully realized `Package`s from the AUR.
 aurRepo :: IO Repository
 aurRepo = do
   tv <- newTVarIO mempty
-  let f ss ps = runMaybeT $ do
-        (bads, goods) <- MaybeT $ aurLookup (managerOf ss) ps
-        pkgs <- lift . traverse (packageBuildable ss) $ toList goods
-        pure (bads, S.fromList pkgs)
+
+  -- TODO Use `data-or` here to offer `Or (NESet PkgName) (NESet Package)`?
+  -- Yes that sounds like a good idea :)
+  let f :: Settings -> NESet PkgName -> IO (Maybe (S.Set PkgName, S.Set Package))
+      f ss ps = do
+        --- Retrieve cached Packages ---
+        cache <- readTVarIO tv
+        let (uncached, cached) = fmapEither (\p -> note p $ M.lookup p cache) $ toList ps
+        --- Lookup uncached Packages ---
+        case NEL.nonEmpty uncached of
+          Nothing -> pure $ Just (S.empty, S.fromList cached)
+          Just uncached' -> runMaybeT $ do
+            (bads, goods) <- MaybeT . aurLookup (managerOf ss) $ NES.fromList uncached'
+            pkgs <- lift . traverse (packageBuildable ss) $ toList goods
+            --- Update Cache ---
+            let m = M.fromList $ map (pname &&& id) pkgs
+            liftIO . atomically $ modifyTVar' tv (<> m)
+            pure (bads, S.fromList $ cached <> pkgs)
+
   pure $ Repository tv f
 
 buildable :: Manager -> AurInfo -> IO (Either PkgName Buildable)
