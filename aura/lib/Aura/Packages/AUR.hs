@@ -62,12 +62,12 @@ import           System.Process.Typed
 
 -- | Attempt to retrieve info about a given `S.Set` of packages from the AUR.
 aurLookup :: Manager -> NESet PkgName -> IO (Maybe (S.Set PkgName, S.Set Buildable))
-aurLookup m names =
-  runMaybeT $ MaybeT (info m (foldMap (\(PkgName pn) -> [pn]) names)) >>= \infos -> do
-    badsgoods <- lift $ traverseConcurrently Par' (buildable m) infos
-    let (bads, goods) = partitionEithers badsgoods
-        goodNames     = S.fromList $ goods ^.. each . field @"name"
-    pure (S.fromList bads <> NES.toSet names S.\\ goodNames, S.fromList goods)
+aurLookup m names = runMaybeT $ do
+  infos <- MaybeT . info m $ foldr (\(PkgName pn) acc -> pn : acc) [] names
+  badsgoods <- lift $ traverseConcurrently Par' (buildable m) infos
+  let (bads, goods) = partitionEithers badsgoods
+      goodNames     = S.fromList $ goods ^.. each . field @"name"
+  pure (S.fromList bads <> NES.toSet names S.\\ goodNames, S.fromList goods)
 
 -- | Yield fully realized `Package`s from the AUR.
 aurRepo :: IO Repository
