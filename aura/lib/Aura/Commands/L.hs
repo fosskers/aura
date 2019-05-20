@@ -1,8 +1,9 @@
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE FlexibleContexts  #-}
-{-# LANGUAGE MonoLocalBinds    #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications  #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MonoLocalBinds        #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TypeApplications      #-}
 
 -- |
 -- Module    : Aura.Commands.L
@@ -47,10 +48,10 @@ import           System.Process.Typed (proc, runProcess)
 newtype Log = Log [T.Text]
 
 data LogEntry = LogEntry
-  { _pkgName      :: PkgName
-  , _firstInstall :: T.Text
-  , _upgrades     :: Word
-  , _recent       :: [T.Text] }
+  { name         :: PkgName
+  , firstInstall :: T.Text
+  , upgrades     :: Word
+  , recent       :: [T.Text] }
 
 -- | Pipes the pacman log file through a @less@ session.
 viewLogFile :: (Member (Reader Env) r, Member IO r) => Eff r ()
@@ -78,15 +79,16 @@ logInfoOnPkg pkgs = do
 logLookup :: Log -> PkgName -> Either PkgName LogEntry
 logLookup (Log lns) p = case matches of
   []    -> Left p
-  (h:t) -> Right $ LogEntry p
-                   (T.take 16 $ T.tail h)
-                   (fromIntegral . length $ filter (T.isInfixOf " upgraded ") t)
-                   (reverse . take 5 $ reverse t)
+  (h:t) -> Right $
+    LogEntry { name = p
+             , firstInstall = T.take 16 $ T.tail h
+             , upgrades = fromIntegral . length $ filter (T.isInfixOf " upgraded ") t
+             , recent = reverse . take 5 $ reverse t }
   where matches = filter (T.isInfixOf (" " <> (p ^. field @"name") <> " (")) lns
 
 renderEntry :: Settings -> LogEntry -> T.Text
 renderEntry ss (LogEntry (PkgName pn) fi us rs) =
-  dtot . colourCheck ss $ entrify ss fields entries <> hardline <> recent <> hardline
+  dtot . colourCheck ss $ entrify ss fields entries <> hardline <> recents <> hardline
   where fields  = logLookUpFields $ langOf ss
         entries = map pretty [ pn, fi, T.pack (show us), "" ]
-        recent  = vsep $ map pretty rs
+        recents = vsep $ map pretty rs
