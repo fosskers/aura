@@ -24,7 +24,7 @@ module Aura.State
 
 import           Aura.Cache
 import           Aura.Colour (red)
-import           Aura.Core (liftEitherM, notify, report, warn)
+import           Aura.Core (Env(..), liftEitherM, notify, report, warn)
 import           Aura.Languages
 import           Aura.Pacman (pacman, pacmanOutput)
 import           Aura.Settings
@@ -131,10 +131,10 @@ dotFormat (ZonedTime t _) = intercalate "." items
           mnths = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ]
 
 -- | Does its best to restore a state chosen by the user.
-restoreState :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) => Eff r ()
+restoreState :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => Eff r ()
 restoreState = send getStateFiles >>= maybe (throwError $ Failure restoreState_2) f . nonEmpty
   where f sfs = do
-          ss  <- ask
+          ss  <- asks settings
           let pth = either id id . cachePathOf $ commonConfigOf ss
           mpast  <- send $ selectState sfs >>= readState
           case mpast of
@@ -156,9 +156,10 @@ readState :: Path Absolute -> IO (Maybe PkgState)
 readState = fmap decode . BL.readFile . toFilePath
 
 -- | `reinstalling` can mean true reinstalling, or just altering.
-reinstallAndRemove :: (Member (Reader Settings) r, Member (Error Failure) r, Member IO r) =>
+reinstallAndRemove :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
   [PackagePath] -> [PkgName] -> Eff r ()
-reinstallAndRemove [] [] = ask >>= \ss -> send (warn ss . reinstallAndRemove_1 $ langOf ss)
+reinstallAndRemove [] [] = asks settings >>= \ss ->
+  send (warn ss . reinstallAndRemove_1 $ langOf ss)
 reinstallAndRemove down remo
   | null remo = reinstall
   | null down = remove

@@ -19,7 +19,7 @@ import           Aura.Types
 import           BasePrelude
 import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
-import           Data.Set.NonEmpty (NonEmptySet)
+import           Data.Set.NonEmpty (NESet)
 import           Lens.Micro ((^.))
 import           System.Path (toFilePath)
 import           System.Path.IO (createDirectoryIfMissing, doesFileExist)
@@ -32,7 +32,7 @@ hasPkgbuildStored :: PkgName -> IO Bool
 hasPkgbuildStored = doesFileExist . pkgbuildPath
 
 -- | Write the PKGBUILDs of some `Buildable`s to disk.
-storePkgbuilds :: NonEmptySet Buildable -> IO ()
+storePkgbuilds :: NESet Buildable -> IO ()
 storePkgbuilds bs = do
   createDirectoryIfMissing True pkgbuildCache
   traverse_ (\p -> writePkgbuild (p ^. field @"name") (p ^. field @"pkgbuild")) bs

@@ -51,7 +51,7 @@ getSettings (Program op co bc lng) = runExceptT $ do
   environment <- lift (M.fromList . map (bimap T.pack T.pack) <$> getEnvironment)
   manager     <- lift $ newManager tlsManagerSettings
   isTerm      <- lift $ hIsTerminalDevice stdout
-  fromGroups  <- lift . maybe (pure S.empty) groupPackages . NES.fromSet $ getIgnoredGroups confFile <> igg
+  fromGroups  <- lift . maybe (pure S.empty) groupPackages . NES.nonEmptySet $ getIgnoredGroups confFile <> igg
   let language = checkLang lng environment
   bu <- failWith (Failure whoIsBuildUser_1) $ buildUserOf bc <|> getTrueUser environment
   pure Settings { managerOf      = manager

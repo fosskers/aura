@@ -46,10 +46,11 @@ instance Flagable Makepkg where
 -- | Flags that are common to both Aura and Pacman.
 -- Aura will react to them, but also pass them through to `pacman`
 -- calls if necessary.
-data CommonConfig = CommonConfig { cachePathOf      :: !(Either (Path Absolute) (Path Absolute))
-                                 , configPathOf     :: !(Either (Path Absolute) (Path Absolute))
-                                 , logPathOf        :: !(Either (Path Absolute) (Path Absolute))
-                                 , commonSwitchesOf :: !(S.Set CommonSwitch) } deriving (Show, Generic)
+data CommonConfig = CommonConfig
+  { cachePathOf      :: !(Either (Path Absolute) (Path Absolute))
+  , configPathOf     :: !(Either (Path Absolute) (Path Absolute))
+  , logPathOf        :: !(Either (Path Absolute) (Path Absolute))
+  , commonSwitchesOf :: !(S.Set CommonSwitch) } deriving (Show, Generic)
 
 instance Flagable CommonConfig where
   asFlag (CommonConfig cap cop lfp cs) =
@@ -78,11 +79,12 @@ instance Flagable ColourMode where
   asFlag Auto   = ["auto"]
 
 -- | Settings unique to the AUR package building process.
-data BuildConfig = BuildConfig { makepkgFlagsOf  :: !(S.Set Makepkg)
-                               , buildPathOf     :: !(Path Absolute)
-                               , buildUserOf     :: !(Maybe User)
-                               , truncationOf    :: !Truncation  -- For `-As`
-                               , buildSwitchesOf :: !(S.Set BuildSwitch) } deriving (Show)
+data BuildConfig = BuildConfig
+  { makepkgFlagsOf  :: !(S.Set Makepkg)
+  , buildPathOf     :: !(Path Absolute)
+  , buildUserOf     :: !(Maybe User)
+  , truncationOf    :: !Truncation  -- For `-As`
+  , buildSwitchesOf :: !(S.Set BuildSwitch) } deriving (Show)
 
 -- | Extra options for customizing the build process.
 data BuildSwitch = DeleteMakeDeps
@@ -107,14 +109,15 @@ shared :: Settings -> CommonSwitch -> Bool
 shared ss c = S.member c . commonSwitchesOf $ commonConfigOf ss
 
 -- | The global settings as set by the user with command-line flags.
-data Settings = Settings { managerOf      :: !Manager
-                         , envOf          :: !Environment
-                         , langOf         :: !Language
-                         , editorOf       :: !FilePath
-                         , isTerminal     :: !Bool
-                         , ignoresOf      :: !(S.Set PkgName)
-                         , commonConfigOf :: !CommonConfig
-                         , buildConfigOf  :: !BuildConfig }
+data Settings = Settings
+  { managerOf      :: !Manager
+  , envOf          :: !Environment
+  , langOf         :: !Language
+  , editorOf       :: !FilePath
+  , isTerminal     :: !Bool
+  , ignoresOf      :: !(S.Set PkgName)
+  , commonConfigOf :: !CommonConfig
+  , buildConfigOf  :: !BuildConfig }
 
 -- | Unless otherwise specified, packages will be built within @/tmp@.
 defaultBuildDir :: Path Absolute

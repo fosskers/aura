@@ -1,4 +1,4 @@
-resolver: lts-13.20
+resolver: lts-13.21
 
 packages:
   - aura/
@@ -9,6 +9,6 @@ packages:
 extra-deps:
   - compactable-0.1.2.3
   - language-bash-0.8.0
-  - non-empty-containers-0.1.4.0
+  - nonempty-containers-0.2.0.0
   - paths-0.2.0.0
-  - throttled-1.1.0
+  - scheduler-1.1.0

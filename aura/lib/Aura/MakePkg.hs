@@ -23,12 +23,12 @@ import           BasePrelude
 import           Control.Error.Util (note)
 import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.List.NonEmpty as NEL
-import           Data.Set.NonEmpty (NonEmptySet)
+import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Lens.Micro ((^.), _2)
-import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath,
-                              (</>))
+import           System.Path
+    (Absolute, Path, fromAbsoluteFilePath, toFilePath, (</>))
 import           System.Path.IO (getCurrentDirectory, getDirectoryContents)
 import           System.Process.Typed
 
@@ -43,10 +43,10 @@ makepkgCmd = fromAbsoluteFilePath "/usr/bin/makepkg"
 
 -- | Given the current user name, build the package of whatever
 -- directory we're in.
-makepkg :: Settings -> User -> IO (Either Failure (NonEmptySet (Path Absolute)))
+makepkg :: Settings -> User -> IO (Either Failure (NESet (Path Absolute)))
 makepkg ss usr = make ss usr (proc cmd $ opts <> colour) >>= g
   where (cmd, opts) = runStyle usr . foldMap asFlag . makepkgFlagsOf $ buildConfigOf ss
-        g (ExitSuccess, _, fs)   = pure . note (Failure buildFail_9) . fmap NES.fromNonEmpty $ NEL.nonEmpty fs
+        g (ExitSuccess, _, fs)   = pure . note (Failure buildFail_9) . fmap NES.fromList $ NEL.nonEmpty fs
         g (ExitFailure _, se, _) = do
           unless (switch ss DontSuppressMakepkg) $ do
             showError <- optionalPrompt ss buildFail_11
