@@ -29,7 +29,7 @@ import           BasePrelude hiding (FilePath)
 import           Control.Compactable (fmapEither)
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Lift (Lift, sendM)
-import           Control.Effect.Reader (Reader, ask, asks)
+import           Control.Effect.Reader (Reader, asks)
 import qualified Data.ByteString.Char8 as BS
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL

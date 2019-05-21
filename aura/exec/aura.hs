@@ -55,7 +55,7 @@ import           BasePrelude hiding (Version)
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error, runError)
 import           Control.Effect.Lift (Lift, runM, sendM)
-import           Control.Effect.Reader (Reader, ask, asks, runReader)
+import           Control.Effect.Reader (Reader, asks, runReader)
 import           Data.Set (Set)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
