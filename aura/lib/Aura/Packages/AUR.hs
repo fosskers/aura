@@ -12,7 +12,8 @@
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
--- Module for connecting to the AUR servers, downloading PKGBUILDs and package sources.
+-- Module for connecting to the AUR servers, downloading PKGBUILDs and package
+-- sources.
 
 module Aura.Packages.AUR
   ( -- * Batch Querying
@@ -32,18 +33,21 @@ import           Aura.Pkgbuild.Fetch
 import           Aura.Settings
 import           Aura.Types
 import           BasePrelude hiding (head)
-import           Control.Concurrent.STM.TQueue
-import           Control.Concurrent.Throttled (throttle)
-import           Control.Error.Util (hush)
+import           Control.Compactable (fmapEither)
+import           Control.Concurrent.STM.TVar (modifyTVar')
+import           Control.Error.Util (hush, note)
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error)
 import           Control.Effect.Lift (Lift, sendM)
-import           Control.Effect.Reader (Reader, ask, asks)
+import           Control.Effect.Reader (Reader, asks)
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Maybe
+import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Generics.Product (field)
+import qualified Data.List.NonEmpty as NEL
+import qualified Data.Map.Strict as M
 import qualified Data.Set as S
-import           Data.Set.NonEmpty (NonEmptySet)
+import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Versions (versioning)
@@ -58,19 +62,38 @@ import           System.Process.Typed
 ---
 
 -- | Attempt to retrieve info about a given `S.Set` of packages from the AUR.
-aurLookup :: Manager -> NonEmptySet PkgName -> IO (Maybe (S.Set PkgName, S.Set Buildable))
-aurLookup m names = runMaybeT $ MaybeT (info m (foldMap (\(PkgName pn) -> [pn]) names)) >>= \infos -> do
-  badsgoods <- lift $ throttle (\_ a -> buildable m a) infos >>= atomically . flushTQueue
+aurLookup :: Manager -> NESet PkgName -> IO (Maybe (S.Set PkgName, S.Set Buildable))
+aurLookup m names = runMaybeT $ do
+  infos <- MaybeT . info m $ foldr (\(PkgName pn) acc -> pn : acc) [] names
+  badsgoods <- lift $ traverseConcurrently Par' (buildable m) infos
   let (bads, goods) = partitionEithers badsgoods
       goodNames     = S.fromList $ goods ^.. each . field @"name"
   pure (S.fromList bads <> NES.toSet names S.\\ goodNames, S.fromList goods)
 
 -- | Yield fully realized `Package`s from the AUR.
-aurRepo :: Repository
-aurRepo = Repository $ \ss ps -> runMaybeT $ do
-  (bads, goods) <- MaybeT $ aurLookup (managerOf ss) ps
-  pkgs <- lift . traverse (packageBuildable ss) $ toList goods
-  pure (bads, S.fromList pkgs)
+aurRepo :: IO Repository
+aurRepo = do
+  tv <- newTVarIO mempty
+
+  -- TODO Use `data-or` here to offer `Or (NESet PkgName) (NESet Package)`?
+  -- Yes that sounds like a good idea :)
+  let f :: Settings -> NESet PkgName -> IO (Maybe (S.Set PkgName, S.Set Package))
+      f ss ps = do
+        --- Retrieve cached Packages ---
+        cache <- readTVarIO tv
+        let (uncached, cached) = fmapEither (\p -> note p $ M.lookup p cache) $ toList ps
+        --- Lookup uncached Packages ---
+        case NEL.nonEmpty uncached of
+          Nothing -> pure $ Just (S.empty, S.fromList cached)
+          Just uncached' -> runMaybeT $ do
+            (bads, goods) <- MaybeT . aurLookup (managerOf ss) $ NES.fromList uncached'
+            pkgs <- lift . traverse (packageBuildable ss) $ toList goods
+            --- Update Cache ---
+            let m = M.fromList $ map (pname &&& id) pkgs
+            liftIO . atomically $ modifyTVar' tv (<> m)
+            pure (bads, S.fromList $ cached <> pkgs)
+
+  pure $ Repository tv f
 
 buildable :: Manager -> AurInfo -> IO (Either PkgName Buildable)
 buildable m ai = do
@@ -84,10 +107,10 @@ buildable m ai = do
       , version  = ver
       , base     = bse
       , provides = providesOf ai ^. to listToMaybe . non (aurNameOf ai) . to Provides
-      -- TODO This is a potentially naughty mapMaybe, since deps that fail to parse
-      -- will be silently dropped. Unfortunately there isn't much to be done - `aurLookup`
-      -- and `aurRepo` which call this function only report existence errors
-      -- (i.e. "this package couldn't be found at all").
+      -- TODO This is a potentially naughty mapMaybe, since deps that fail to
+      -- parse will be silently dropped. Unfortunately there isn't much to be
+      -- done - `aurLookup` and `aurRepo` which call this function only report
+      -- existence errors (i.e. "this package couldn't be found at all").
       , deps       = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai
       , pkgbuild   = pb
       , isExplicit = False }
@@ -126,24 +149,17 @@ sortAurInfo bs ai = sortBy compare' ai
                      _ -> \x y -> compare (aurVotesOf y) (aurVotesOf x)
 
 -- | Frontend to the `aur` library. For @-As@.
-aurSearch :: ( Carrier sig m
-             , Member (Reader Settings) sig
-             , Member (Error Failure) sig
-             , Member (Lift IO) sig
-             ) => T.Text -> m [AurInfo]
+aurSearch :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
+  T.Text -> m [AurInfo]
 aurSearch regex = do
-  ss  <- ask
+  ss  <- asks settings
   res <- liftMaybeM (Failure connectionFailure_1) . sendM $ search (managerOf ss) regex
   pure $ sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) res
 
 -- | Frontend to the `aur` library. For @-Ai@.
-aurInfo :: ( Carrier sig m
-           , Member (Reader Settings) sig
-           , Member (Error Failure) sig
-           , Member (Lift IO) sig
-           )
-        => NonEmpty PkgName -> m [AurInfo]
+aurInfo :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
+  NonEmpty PkgName -> m [AurInfo]
 aurInfo pkgs = do
-  m   <- asks managerOf
+  m   <- asks (managerOf . settings)
   res <- liftMaybeM (Failure connectionFailure_1) . sendM . info m . map (^. field @"name") $ toList pkgs
   pure $ sortAurInfo (Just SortAlphabetically) res

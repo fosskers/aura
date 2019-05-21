@@ -29,7 +29,7 @@ import           BasePrelude
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error, throwError)
 import           Control.Effect.Lift (Lift, sendM)
-import           Control.Effect.Reader (Reader, ask)
+import           Control.Effect.Reader (Reader, asks)
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Except
 import qualified Data.ByteString.Lazy.Char8 as BL
@@ -37,7 +37,7 @@ import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Semigroup.Foldable (fold1)
 import qualified Data.Set as S
-import           Data.Set.NonEmpty (NonEmptySet)
+import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Witherable (wither)
@@ -55,23 +55,17 @@ srcPkgStore :: Path Absolute
 srcPkgStore = fromAbsoluteFilePath "/var/cache/aura/src"
 
 -- | Expects files like: \/var\/cache\/pacman\/pkg\/*.pkg.tar.xz
-installPkgFiles :: ( Carrier sig m
-                   , Member (Reader Settings) sig
-                   , Member (Error Failure) sig
-                   , Member (Lift IO) sig
-                   ) => NonEmptySet PackagePath -> m ()
+installPkgFiles :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
+  NESet PackagePath -> m ()
 installPkgFiles files = do
-  ss <- ask
+  ss <- asks settings
   sendM $ checkDBLock ss
   liftEitherM . sendM . pacman $ ["-U"] <> map (toFilePath . path) (toList files) <> asFlag (commonConfigOf ss)
 
 -- | All building occurs within temp directories,
 -- or in a location specified by the user with flags.
-buildPackages :: ( Carrier sig m
-                 , Member (Reader Settings) sig
-                 , Member (Error Failure) sig
-                 , Member (Lift IO) sig
-                 ) => NonEmptySet Buildable -> m (NonEmptySet PackagePath)
+buildPackages :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
+  NESet Buildable -> m (NESet PackagePath)
 buildPackages bs = do
   g <- sendM createSystemRandom
   wither (build g) (toList bs) >>= maybe bad (pure . fold1) . NEL.nonEmpty
@@ -79,20 +73,17 @@ buildPackages bs = do
 
 -- | Handles the building of Packages. Fails nicely.
 -- Assumed: All dependencies are already installed.
-build :: ( Carrier sig m
-         , Member (Reader Settings) sig
-         , Member (Error Failure) sig
-         , Member (Lift IO) sig
-         ) => GenIO -> Buildable -> m (Maybe (NonEmptySet PackagePath))
+build :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
+  GenIO -> Buildable -> m (Maybe (NESet PackagePath))
 build g p = do
-  ss     <- ask
+  ss     <- asks settings
   sendM $ notify ss (buildPackages_1 (p ^. field @"name") (langOf ss)) *> hFlush stdout
   result <- sendM $ build' ss g p
   either buildFail (pure . Just) result
 
 -- | Should never throw an IO Exception. In theory all errors
 -- will come back via the @Language -> String@ function.
-build' :: Settings -> GenIO -> Buildable -> IO (Either Failure (NonEmptySet PackagePath))
+build' :: Settings -> GenIO -> Buildable -> IO (Either Failure (NESet PackagePath))
 build' ss g b = do
   let pth = buildPathOf $ buildConfigOf ss
   createDirectoryIfMissing True pth
@@ -105,7 +96,7 @@ build' ss g b = do
     lift . setCurrentDirectory $ toFilePath bs
     lift $ overwritePkgbuild ss b
     pNames <- ExceptT $ makepkg ss usr
-    paths  <- lift . fmap NES.fromNonEmpty . traverse (moveToCachePath ss) $ NES.toNonEmpty pNames
+    paths  <- lift . fmap NES.fromList . traverse (moveToCachePath ss) $ NES.toList pNames
     lift . when (S.member AllSource . makepkgFlagsOf $ buildConfigOf ss) $
       makepkgSource usr >>= traverse_ moveToSourcePath
     pure paths
@@ -136,13 +127,9 @@ overwritePkgbuild ss p = when (switch ss HotEdit || switch ss UseCustomizepkg) $
 
 -- | Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
-buildFail :: ( Carrier sig m
-             , Member (Reader Settings) sig
-             , Member (Error Failure) sig
-             , Member (Lift IO) sig
-             ) => Failure -> m (Maybe a)
+buildFail :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => Failure -> m (Maybe a)
 buildFail (Failure err) = do
-  ss <- ask
+  ss <- asks settings
   sendM . scold ss . err $ langOf ss
   response <- sendM $ optionalPrompt ss buildFail_6
   bool (throwError $ Failure buildFail_5) (pure Nothing) response

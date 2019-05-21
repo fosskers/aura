@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds        #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase       #-}
 {-# LANGUAGE MonoLocalBinds   #-}
 {-# LANGUAGE MultiWayIf       #-}
 {-# LANGUAGE RankNTypes       #-}
@@ -25,27 +26,27 @@ import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
 import           BasePrelude
-import           Control.Concurrent.STM.TQueue
 import           Control.Concurrent.STM.TVar
-import           Control.Concurrent.Throttled (throttleMaybe_)
-import           Control.Error.Util (hush, note)
+import           Control.Error.Util (note)
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error, throwError)
 import           Control.Effect.Lift (Lift, sendM)
-import           Control.Effect.Reader (Reader, ask)
-import           Control.Monad.Trans.Class (lift)
-import           Control.Monad.Trans.Maybe
+import           Control.Effect.Reader (Reader, asks)
+import           Control.Scheduler hiding (traverse_)
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
+import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
+import           Data.Set (Set)
 import qualified Data.Set as S
-import           Data.Set.NonEmpty (NonEmptySet)
+import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Versions
 import           Data.Witherable (wither)
 import           Lens.Micro
 import           System.IO (hFlush, stdout)
+import           UnliftIO.Exception (catchAny, throwString)
 
 ---
 
@@ -58,17 +59,14 @@ data Wrote = WroteNothing | WroteNew
 -- interdependent, and thus can be built and installed as a group.
 --
 -- Deeper layers of the result list (generally) depend on the previous layers.
-resolveDeps :: ( Carrier sig m
-               , Member (Reader Settings) sig
-               , Member (Error Failure) sig
-               , Member (Lift IO) sig
-               )
-            => Repository -> NonEmptySet Package -> m (NonEmpty (NonEmptySet Package))
+resolveDeps :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
+  Repository -> NESet Package -> m (NonEmpty (NESet Package))
 resolveDeps repo ps = do
-  ss <- ask
+  ss <- asks settings
   tv <- sendM $ newTVarIO M.empty
   ts <- sendM $ newTVarIO S.empty
-  liftMaybeM (Failure connectionFailure_1) . sendM $ resolveDeps' ss repo tv ts ps
+  liftMaybeM (Failure connectionFailure_1) . sendM $
+    (Just <$> resolveDeps' ss repo tv ts ps) `catchAny` (const $ pure Nothing)
   m  <- sendM $ readTVarIO tv
   s  <- sendM $ readTVarIO ts
   unless (length ps == length m) $ sendM (putStr "\n")
@@ -76,14 +74,27 @@ resolveDeps repo ps = do
   unless (null de) . throwError . Failure $ missingPkg_2 de
   either throwError pure $ sortInstall m
 
--- | An empty list signals success.
-resolveDeps' :: Settings -> Repository -> TVar (M.Map PkgName Package) -> TVar (S.Set PkgName) -> NonEmptySet Package -> IO (Maybe ())
-resolveDeps' ss repo tv ts ps = hush <$> throttleMaybe_ h ps
+resolveDeps'
+  :: Settings
+  -> Repository
+  -> TVar (Map PkgName Package)
+  -- ^ A cache of `Package`s that have already
+  -- been checked by the `j` function below.
+  -> TVar (Set PkgName)
+  -- ^ A cache of packages which have already been
+  -- confirmed to be installed, or otherwise "satisfied".
+  -> NESet Package
+  -- ^ The set of `Package`s to solve deps for.
+  -> IO ()
+resolveDeps' ss repo tv ts ps =
+  withScheduler_ Par' $ \sch -> traverse_ (scheduleWork sch . h sch) ps
   where
     -- | Handles determining whether further work should be done. It won't
     -- continue to `j` if this `Package` has already been analysed.
-    h :: TQueue Package -> Package -> IO (Maybe ())
-    h tq p = do
+    h :: Scheduler IO () -> Package -> IO ()
+    h sch p = do
+      -- We do the existance check and the `M.insert` in the same transaction to
+      -- guarantee that no package will be fully checked more than once.
       w <- atomically $ do
         let pn = pname p
         m <- readTVar tv
@@ -91,31 +102,39 @@ resolveDeps' ss repo tv ts ps = hush <$> throttleMaybe_ h ps
           Just _  -> pure WroteNothing
           Nothing -> modifyTVar' tv (M.insert pn p) $> WroteNew
       case w of
-        WroteNothing -> pure $ Just ()
+        WroteNothing -> pure ()
         WroteNew     -> case p of
-          FromRepo _ -> pure $ Just ()
-          FromAUR b  -> readTVarIO tv >>= j tq b
+          -- Pacman will solve further deps for "repo" packages by itself.
+          FromRepo _ -> pure ()
+          -- We check for conflicts / recursive deps for AUR packages manually.
+          FromAUR b  -> readTVarIO tv >>= j sch b
 
-    -- | Check for the existance of dependencies, as well as for any version conflicts
-    -- they might introduce.
-    j :: TQueue Package -> Buildable -> M.Map PkgName Package -> IO (Maybe ())
-    j tq b m = do
+    -- | Check for the existance of dependencies, as well as for any version
+    -- conflicts that they might introduce.
+    j :: Scheduler IO () -> Buildable -> Map PkgName Package -> IO ()
+    j sch b m = do
       s <- readTVarIO ts
       (ds, sd) <- fmap partitionEithers . wither (satisfied m s) $ b ^. field @"deps"
       atomically $ modifyTVar' ts (<> S.fromList sd)
-      case NEL.nonEmpty $ ds ^.. each . field @"name" of
-        Nothing -> pure $ Just ()
-        Just deps' -> do
-          putStr "." *> hFlush stdout
-          runMaybeT $ MaybeT (repoLookup repo ss $ NES.fromNonEmpty deps') >>= \(_, goods) ->
-            unless (null goods) (lift . atomically $ traverse_ (writeTQueue tq) goods)
+      forM_ (NEL.nonEmpty $ ds ^.. each . field @"name") $ \deps' -> do
+        putStr "." *> hFlush stdout
+        repoLookup repo ss (NES.fromList deps') >>= \case
+          Nothing -> throwString "Connection Error"
+          Just (_, goods) -> traverse_ (scheduleWork sch . h sch) goods
 
-    satisfied :: M.Map PkgName Package -> S.Set PkgName -> Dep -> IO (Maybe (Either Dep PkgName))
-    satisfied m s d | M.member dn m || S.member dn s = pure Nothing
-                    | otherwise = Just . bool (Left d) (Right dn) <$> isSatisfied d
-      where dn = d ^. field @"name"
+    satisfied :: Map PkgName Package -> Set PkgName -> Dep -> IO (Maybe (Either Dep PkgName))
+    satisfied m s d
+      -- This `Dep` has already been checked.
+      | M.member dn m || S.member dn s = pure Nothing
+      -- Check if a `Dep` is installed, or is otherwise "satisfied" by some
+      -- installed package. This invokes a shell call to Pacman, hence the
+      -- desire to cache the result.
+      | otherwise = Just . bool (Left d) (Right dn) <$> isSatisfied d
+      where
+        dn :: PkgName
+        dn = d ^. field @"name"
 
-conflicts :: Settings -> M.Map PkgName Package -> S.Set PkgName -> [DepError]
+conflicts :: Settings -> Map PkgName Package -> Set PkgName -> [DepError]
 conflicts ss m s = foldMap f m
   where pm = M.fromList $ foldr (\p acc -> (pprov p ^. field @"provides" . to PkgName, p) : acc) [] m
         f (FromRepo _) = []
@@ -126,9 +145,9 @@ conflicts ss m s = foldMap f m
                                     Nothing -> Just $ NonExistant dn
                                     Just p  -> realPkgConflicts ss (b ^. field @"name") p d
 
-sortInstall :: M.Map PkgName Package -> Either Failure (NonEmpty (NonEmptySet Package))
+sortInstall :: Map PkgName Package -> Either Failure (NonEmpty (NESet Package))
 sortInstall m = case cycles depGraph of
-  [] -> note (Failure missingPkg_3) . NEL.nonEmpty . mapMaybe NES.fromSet $ batch depGraph
+  [] -> note (Failure missingPkg_3) . NEL.nonEmpty . mapMaybe NES.nonEmptySet $ batch depGraph
   cs -> Left . Failure . missingPkg_4 $ map (NEL.map pname . NAM.vertexList1) cs
   where f (FromRepo _)  = []
         f p@(FromAUR b) = mapMaybe (\d -> fmap (p,) $ (d ^. field @"name") `M.lookup` m) $ b ^. field @"deps" -- TODO handle "provides"?
@@ -142,12 +161,12 @@ cycles = filter (not . isAcyclic) . vertexList . scc
 
 -- | Find the vertices that have no dependencies.
 -- O(n) complexity.
-leaves :: Ord a => AdjacencyMap a -> S.Set a
+leaves :: Ord a => AdjacencyMap a -> Set a
 leaves x = S.filter (null . flip postSet x) $ vertexSet x
 
 -- | Split a graph into batches of mutually independent vertices.
 -- Probably O(m * n * log(n)) complexity.
-batch :: Ord a => AdjacencyMap a -> [S.Set a]
+batch :: Ord a => AdjacencyMap a -> [Set a]
 batch g | isEmpty g = []
         | otherwise = ls : batch (induce (`S.notMember` ls) g)
   where ls = leaves g

@@ -40,7 +40,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
-import           Data.Set.NonEmpty (NonEmptySet)
+import           Data.Set.NonEmpty (NESet)
 import qualified Data.Text as T
 import           Data.Text.Encoding (decodeUtf8With)
 import           Data.Text.Encoding.Error (lenientDecode)
@@ -106,7 +106,7 @@ getIgnoredGroups :: Config -> S.Set PkgGroup
 getIgnoredGroups (Config c) = maybe S.empty (S.fromList . map PkgGroup) $ M.lookup "IgnoreGroup" c
 
 -- | Given a `Set` of package groups, yield all the packages they contain.
-groupPackages :: NonEmptySet PkgGroup -> IO (S.Set PkgName)
+groupPackages :: NESet PkgGroup -> IO (S.Set PkgName)
 groupPackages igs | null igs  = pure S.empty
                   | otherwise = fmap f . pacmanOutput $ "-Qg" : asFlag igs
   where f = S.fromList . map (PkgName . strictText . (!! 1) . BL.words) . BL.lines

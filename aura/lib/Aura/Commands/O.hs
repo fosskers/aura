@@ -14,9 +14,8 @@
 
 module Aura.Commands.O ( displayOrphans, adoptPkg ) where
 
-import           Aura.Core (liftEitherM, orphans, sudo)
+import           Aura.Core (Env(..), liftEitherM, orphans, sudo)
 import           Aura.Pacman (pacman)
-import           Aura.Settings (Settings)
 import           Aura.Types
 import           BasePrelude
 import           Control.Effect (Carrier, Member)
@@ -24,7 +23,7 @@ import           Control.Effect.Error (Error)
 import           Control.Effect.Reader (Reader)
 import           Control.Effect.Lift (Lift, sendM)
 import           Data.Generics.Product (field)
-import           Data.Set.NonEmpty (NonEmptySet)
+import           Data.Set.NonEmpty (NESet)
 import qualified Data.Text.IO as T
 import           Lens.Micro.Extras (view)
 
@@ -35,10 +34,5 @@ displayOrphans :: IO ()
 displayOrphans = orphans >>= traverse_ (T.putStrLn . view (field @"name"))
 
 -- | Identical to @-D --asexplicit@.
-adoptPkg :: ( Carrier sig m
-            , Member (Reader Settings) sig
-            , Member (Error Failure) sig
-            , Member (Lift IO) sig
-            )
-         => NonEmptySet PkgName -> m ()
+adoptPkg :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => NESet PkgName -> m ()
 adoptPkg pkgs = sudo . liftEitherM . sendM . pacman $ ["-D", "--asexplicit"] <> asFlag pkgs

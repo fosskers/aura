@@ -1,8 +1,9 @@
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE FlexibleContexts  #-}
-{-# LANGUAGE MonoLocalBinds    #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications  #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MonoLocalBinds        #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TypeApplications      #-}
 
 -- |
 -- Module    : Aura.Commands.L
@@ -19,7 +20,7 @@ module Aura.Commands.L
   ) where
 
 import           Aura.Colour (dtot, red)
-import           Aura.Core (report)
+import           Aura.Core (Env(..), report)
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types (PkgName(..))
@@ -32,7 +33,7 @@ import           Control.Effect.Reader (Reader, ask, asks)
 import qualified Data.ByteString.Char8 as BS
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
-import           Data.Set.NonEmpty (NonEmptySet)
+import           Data.Set.NonEmpty (NESet)
 import qualified Data.Text as T
 import           Data.Text.Encoding as T
 import           Data.Text.Encoding.Error (lenientDecode)
@@ -47,16 +48,16 @@ import           System.Process.Typed (proc, runProcess)
 -- | The contents of the Pacman log file.
 newtype Log = Log [T.Text]
 
-data LogEntry = LogEntry { _pkgName :: PkgName, _firstInstall :: T.Text, _upgrades :: Word, _recent :: [T.Text] }
+data LogEntry = LogEntry
+  { name         :: PkgName
+  , firstInstall :: T.Text
+  , upgrades     :: Word
+  , recent       :: [T.Text] }
 
 -- | Pipes the pacman log file through a @less@ session.
-viewLogFile :: ( Carrier sig m
-               , Member (Reader Settings) sig
-               , Member (Lift IO) sig
-               )
-            => m ()
+viewLogFile :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => m ()
 viewLogFile = do
-  pth <- asks (toFilePath . either id id . logPathOf . commonConfigOf)
+  pth <- asks (toFilePath . either id id . logPathOf . commonConfigOf . settings)
   sendM . void . runProcess @IO $ proc "less" [pth]
 
 -- | Print all lines in the log file which contain a given `T.Text`.
@@ -67,13 +68,9 @@ searchLogFile ss input = do
   traverse_ T.putStrLn $ searchLines input logFile
 
 -- | The result of @-Li@.
-logInfoOnPkg :: ( Carrier sig m
-                , Member (Reader Settings) sig
-                , Member (Lift IO) sig
-                )
-             => NonEmptySet PkgName -> m ()
+logInfoOnPkg :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => NESet PkgName -> m ()
 logInfoOnPkg pkgs = do
-  ss <- ask
+  ss <- asks settings
   let pth = toFilePath . either id id . logPathOf $ commonConfigOf ss
   logFile <- Log . map (T.decodeUtf8With lenientDecode) . BS.lines <$> sendM (BS.readFile pth)
   let (bads, goods) = fmapEither (logLookup logFile) $ toList pkgs
@@ -83,15 +80,16 @@ logInfoOnPkg pkgs = do
 logLookup :: Log -> PkgName -> Either PkgName LogEntry
 logLookup (Log lns) p = case matches of
   []    -> Left p
-  (h:t) -> Right $ LogEntry p
-                   (T.take 16 $ T.tail h)
-                   (fromIntegral . length $ filter (T.isInfixOf " upgraded ") t)
-                   (reverse . take 5 $ reverse t)
+  (h:t) -> Right $
+    LogEntry { name = p
+             , firstInstall = T.take 16 $ T.tail h
+             , upgrades = fromIntegral . length $ filter (T.isInfixOf " upgraded ") t
+             , recent = reverse . take 5 $ reverse t }
   where matches = filter (T.isInfixOf (" " <> (p ^. field @"name") <> " (")) lns
 
 renderEntry :: Settings -> LogEntry -> T.Text
 renderEntry ss (LogEntry (PkgName pn) fi us rs) =
-  dtot . colourCheck ss $ entrify ss fields entries <> hardline <> recent <> hardline
+  dtot . colourCheck ss $ entrify ss fields entries <> hardline <> recents <> hardline
   where fields  = logLookUpFields $ langOf ss
         entries = map pretty [ pn, fi, T.pack (show us), "" ]
-        recent  = vsep $ map pretty rs
+        recents = vsep $ map pretty rs

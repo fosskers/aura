@@ -46,6 +46,8 @@ import           Aura.Commands.O as O
 import           Aura.Core
 import           Aura.Languages
 import           Aura.Logo
+import           Aura.Packages.AUR (aurRepo)
+import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pacman
 import           Aura.Settings
 import           Aura.Types
@@ -54,7 +56,7 @@ import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error, runError)
 import           Control.Effect.Lift (Lift, runM, sendM)
 import           Control.Effect.Reader (Reader, ask, asks, runReader)
-import qualified Data.Set as S
+import           Data.Set (Set)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -70,30 +72,28 @@ import           Text.Pretty.Simple (pPrintNoColor)
 ---
 
 auraVersion :: T.Text
-auraVersion = "2.0.0"
+auraVersion = "2.0.1"
 
 main :: IO ()
 main = do
   options   <- execParser opts
   esettings <- getSettings options
+  repos     <- (<>) <$> pacmanRepo <*> aurRepo
   case esettings of
     Left err -> T.putStrLn . dtot . ($ English) $ failure err
-    Right ss -> execute ss options >>= exit ss
+    Right ss -> execute ss repos options >>= exit ss
 
-execute :: Settings -> Program -> IO (Either (Doc AnsiStyle) ())
-execute ss p = first (($ langOf ss) . failure) <$> (runM . runReader ss . runError . executeOpts $ _operation p)
+execute :: Settings -> Repository -> Program -> IO (Either (Doc AnsiStyle) ())
+execute ss r p = first (($ langOf ss) . failure) <$> (runM . runReader (Env r ss) . runError . executeOpts $ _operation p)
 
 exit :: Settings -> Either (Doc AnsiStyle) () -> IO a
 exit ss (Left e)  = scold ss e *> exitFailure
 exit _  (Right _) = exitSuccess
 
-executeOpts :: ( Carrier sig m
-               , Member (Reader Settings) sig
-               , Member (Error Failure) sig
-               , Member (Lift IO) sig
-               ) => Either (PacmanOp, S.Set MiscOp) AuraOp -> m ()
+executeOpts :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
+  Either (PacmanOp, Set MiscOp) AuraOp -> m ()
 executeOpts ops = do
-  ss <- ask
+  ss <- asks settings
   when (shared ss Debug) $ do
     sendM @IO . pPrintNoColor $ ops
     sendM @IO . pPrintNoColor $ buildConfigOf ss
@@ -132,29 +132,23 @@ executeOpts ops = do
       case o of
         Nothing            -> L.viewLogFile
         Just (LogInfo ps)  -> L.logInfoOnPkg ps
-        Just (LogSearch s) -> ask >>= sendM . flip L.searchLogFile s
+        Just (LogSearch s) -> asks settings >>= sendM . flip L.searchLogFile s
     Right (Orphans o) ->
       case o of
         Nothing               -> sendM O.displayOrphans
-        Just OrphanAbandon    -> sudo $ sendM orphans >>= traverse_ removePkgs . NES.fromSet
+        Just OrphanAbandon    -> sudo $ sendM orphans >>= traverse_ removePkgs . NES.nonEmptySet
         Just (OrphanAdopt ps) -> O.adoptPkg ps
     Right Version   -> sendM $ getVersionInfo >>= animateVersionMsg ss auraVersion
     Right Languages -> displayOutputLanguages
     Right ViewConf  -> viewConfFile
 
-displayOutputLanguages :: ( Carrier sig m
-                          , Member (Reader Settings) sig
-                          , Member (Lift IO) sig
-                          ) => m ()
+displayOutputLanguages :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => m ()
 displayOutputLanguages = do
-  ss <- ask
+  ss <- asks settings
   sendM . notify ss . displayOutputLanguages_1 $ langOf ss
   sendM $ traverse_ print [English ..]
 
-viewConfFile :: ( Carrier sig m
-                , Member (Reader Settings) sig
-                , Member (Lift IO) sig
-                ) => m ()
+viewConfFile :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => m ()
 viewConfFile = do
-  pth <- asks (either id id . configPathOf . commonConfigOf)
+  pth <- asks (either id id . configPathOf . commonConfigOf . settings)
   sendM . void . runProcess @IO $ proc "less" [toFilePath pth]

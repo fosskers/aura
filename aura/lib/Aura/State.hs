@@ -24,7 +24,7 @@ module Aura.State
 
 import           Aura.Cache
 import           Aura.Colour (red)
-import           Aura.Core (liftEitherM, notify, report, warn)
+import           Aura.Core (Env(..), liftEitherM, notify, report, warn)
 import           Aura.Languages
 import           Aura.Pacman (pacman, pacmanOutput)
 import           Aura.Settings
@@ -35,7 +35,7 @@ import           Control.Error.Util (hush)
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error, throwError)
 import           Control.Effect.Lift (Lift, sendM)
-import           Control.Effect.Reader (Reader, ask)
+import           Control.Effect.Reader (Reader, asks)
 import           Data.Aeson
 import           Data.Aeson.Types (typeMismatch)
 import qualified Data.ByteString.Lazy as BL
@@ -132,21 +132,12 @@ dotFormat (ZonedTime t _) = intercalate "." items
           mnths = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ]
 
 -- | Does its best to restore a state chosen by the user.
-restoreState :: ( Carrier sig m
-                , Member (Reader Settings) sig
-                , Member (Error Failure) sig
-                , Member (Lift IO) sig
-                ) => m ()
+restoreState :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => m ()
 restoreState =
   sendM getStateFiles >>= maybe (throwError $ Failure restoreState_2) f . nonEmpty
-  where f :: ( Carrier sig m
-             , Member (Reader Settings) sig
-             , Member (Error Failure) sig
-             , Member (Lift IO) sig
-             )
-          => NonEmpty (Path Absolute) -> m ()
+  where f :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => NonEmpty (Path Absolute) -> m ()
         f sfs = do
-          ss  <- ask
+          ss  <- asks settings
           let pth = either id id . cachePathOf $ commonConfigOf ss
           mpast  <- sendM $ selectState sfs >>= readState
           case mpast of
@@ -168,12 +159,10 @@ readState :: Path Absolute -> IO (Maybe PkgState)
 readState = fmap decode . BL.readFile . toFilePath
 
 -- | `reinstalling` can mean true reinstalling, or just altering.
-reinstallAndRemove :: ( Carrier sig m
-                      , Member (Reader Settings) sig
-                      , Member (Error Failure) sig
-                      , Member (Lift IO) sig
-                      ) => [PackagePath] -> [PkgName] -> m ()
-reinstallAndRemove [] [] = ask >>= \ss -> sendM (warn ss . reinstallAndRemove_1 $ langOf ss)
+reinstallAndRemove :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
+  [PackagePath] -> [PkgName] -> m ()
+reinstallAndRemove [] [] = asks settings >>= \ss ->
+  sendM (warn ss . reinstallAndRemove_1 $ langOf ss)
 reinstallAndRemove down remo
   | null remo = reinstall
   | null down = remove
