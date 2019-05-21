@@ -51,7 +51,8 @@ import           System.Path.IO (copyFile, doesDirectoryExist, removeFile)
 
 -- | Interactive. Gives the user a choice as to exactly what versions
 -- they want to downgrade to.
-downgradePackages :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => NESet PkgName -> m ()
+downgradePackages :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => 
+  NESet PkgName -> m ()
 downgradePackages pkgs = do
   ss    <- asks settings
   let cachePath = either id id . cachePathOf $ commonConfigOf ss
@@ -64,7 +65,8 @@ downgradePackages pkgs = do
 
 -- | For a given package, get a choice from the user about which version of it to
 -- downgrade to.
-getDowngradeChoice :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => Cache -> PkgName -> m PackagePath
+getDowngradeChoice :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => 
+  Cache -> PkgName -> m PackagePath
 getDowngradeChoice cache pkg =
   case nonEmpty $ getChoicesFromCache cache pkg of
     Nothing      -> throwError . Failure $ reportBadDowngradePkgs_2 pkg

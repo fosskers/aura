@@ -74,7 +74,8 @@ foreigns :: Settings -> IO (S.Set SimplePkg)
 foreigns ss = S.filter (notIgnored . view (field @"name")) <$> foreignPackages
   where notIgnored p = not . S.member p $ ignoresOf ss
 
-upgrade :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => S.Set PkgName -> NESet SimplePkg -> m ()
+upgrade :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => 
+  S.Set PkgName -> NESet SimplePkg -> m ()
 upgrade pkgs fs = do
   ss        <- asks settings
   toUpgrade <- possibleUpdates fs
@@ -91,7 +92,8 @@ upgrade pkgs fs = do
              sendM . unless (switch ss DryRun) $ saveState ss
              traverse_ I.install . NES.nonEmptySet $ S.fromList names <> pkgs <> devel
 
-possibleUpdates :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => NESet SimplePkg -> m [(AurInfo, Versioning)]
+possibleUpdates :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => 
+  NESet SimplePkg -> m [(AurInfo, Versioning)]
 possibleUpdates (NES.toList -> pkgs) = do
   aurInfos <- aurInfo $ fmap (^. field @"name") pkgs
   let !names  = map aurNameOf aurInfos
