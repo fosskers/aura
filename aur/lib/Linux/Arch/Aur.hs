@@ -15,6 +15,10 @@ module Linux.Arch.Aur
     AurInfo(..)
     -- * Queries
   , info, search
+    -- * Re-exports
+    -- | These are __Servant__ types which you could want to manipulate without
+    -- directly depending on (and importing) servant.
+  , ClientError(..)
   ) where
 
 import Control.Applicative ((<|>))

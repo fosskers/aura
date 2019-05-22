@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.2.0
+
+- `info` and `search` now return in `Either`.
+- Everything has been combined into a single module.
+- Hard requirement on `servant ^>= 0.16`.
+
 ## 6.1.0.1
 
 - Massaged various bounds for future-proofing.
