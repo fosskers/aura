@@ -183,7 +183,7 @@ isntMostRecent (ai, v) = trueVer > Just v
 aurJson :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => NESet PkgName -> Eff r ()
 aurJson ps = do
   m <- asks (managerOf . settings)
-  infos <- liftMaybeM (Failure connectionFailure_1) . info m . (^.. each . field @"name") $ toList ps
+  infos <- liftMaybeM (Failure connectionFailure_1) . fmap hush . info m . (^.. each . field @"name") $ toList ps
   let json = map (toStrict . toLazyText . encodePrettyToTextBuilder) infos
   send $ traverse_ T.putStrLn json
 
