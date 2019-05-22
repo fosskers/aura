@@ -7,6 +7,8 @@
 -- Copyright : (c) Colin Woodbury, 2014 - 2019
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
+--
+-- Access package metadata from the Arch Linux User Repository.
 
 module Linux.Arch.Aur
   ( -- * Types
@@ -16,7 +18,6 @@ module Linux.Arch.Aur
   ) where
 
 import Control.Applicative ((<|>))
-import Control.Error.Util (hush)
 import Control.Monad (mzero)
 import Data.Aeson
 import Data.Proxy
@@ -143,13 +144,13 @@ rpcI :<|> rpcS = client api
 
 -- | Perform an @info@ call on one or more package names.
 -- Will fail with a `Nothing` if there was a connection/decoding error.
-info :: Manager -> [Text] -> IO (Maybe [AurInfo])
+info :: Manager -> [Text] -> IO (Either ClientError [AurInfo])
 info m ps = unwrap m $ rpcI (Just "5") (Just "info") ps
 
 -- | Perform a @search@ call on a package name or description text.
 -- Will fail with a `Nothing` if there was a connection/decoding error.
-search :: Manager -> Text -> IO (Maybe [AurInfo])
+search :: Manager -> Text -> IO (Either ClientError [AurInfo])
 search m p = unwrap m $ rpcS (Just "5") (Just "search") (Just p)
 
-unwrap :: Manager -> ClientM RPCResp -> IO (Maybe [AurInfo])
-unwrap m r = fmap _results . hush <$> runClientM r (ClientEnv m url Nothing)
+unwrap :: Manager -> ClientM RPCResp -> IO (Either ClientError [AurInfo])
+unwrap m r = fmap _results <$> runClientM r (ClientEnv m url Nothing)

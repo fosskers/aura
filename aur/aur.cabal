@@ -43,9 +43,8 @@ library
       Linux.Arch.Aur
   build-depends:
       aeson >= 0.9 && < 1.5
-    , errors ^>= 2.3
-    , servant >= 0.9 && < 0.17
-    , servant-client >= 0.13 && < 0.17
+    , servant ^>= 0.16
+    , servant-client ^>= 0.16
     , text
 
 test-suite aur-test
