@@ -41,8 +41,6 @@ library
   hs-source-dirs: lib
   exposed-modules:
       Linux.Arch.Aur
-      Linux.Arch.Aur.Rpc
-      Linux.Arch.Aur.Types
   build-depends:
       aeson >= 0.9 && < 1.5
     , errors ^>= 2.3
