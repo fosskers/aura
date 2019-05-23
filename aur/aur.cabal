@@ -1,7 +1,7 @@
 cabal-version: 2.2
 
 name:         aur
-version:      6.2.0
+version:      6.2.0.1
 synopsis:     Access metadata from the Arch Linux User Repository.
 
 description:
@@ -34,7 +34,7 @@ common commons
       -Widentities
   build-depends:
       base >= 4.10 && < 5
-    , http-client ^>= 0.5
+    , http-client >= 0.5 && < 0.7
 
 library
   import: commons

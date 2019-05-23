@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.2.0.1
+
+- Relax `http-client` bounds.
+
 ## 6.2.0
 
 - `info` and `search` now return in `Either`.
