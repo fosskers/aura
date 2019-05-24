@@ -18,10 +18,10 @@ suite m = testGroup "RPC Calls"
   ]
 
 infoTest :: Manager -> Assertion
-infoTest m = info m ["aura"] >>= \x -> (not . null <$> x) @?= Just True
+infoTest m = info m ["aura"] >>= \x -> (not . null <$> x) @?= Right True
 
 infoTest' :: Manager -> Assertion
-infoTest' m = info m ["aura1234567"] >>= \x -> (null <$> x) @?= Just True
+infoTest' m = info m ["aura1234567"] >>= \x -> (null <$> x) @?= Right True
 
 searchTest :: Manager -> Assertion
 searchTest m = search m "aura" >>= assertBool "Good search" . not . null

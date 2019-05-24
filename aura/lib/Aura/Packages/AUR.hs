@@ -51,8 +51,7 @@ import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Versions (versioning)
-import           Lens.Micro
-import           Lens.Micro (each, to, (^.), (^..))
+import           Lens.Micro (each, non, to, (^.), (^..))
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
 import           System.Path
@@ -64,7 +63,7 @@ import           System.Process.Typed
 -- | Attempt to retrieve info about a given `S.Set` of packages from the AUR.
 aurLookup :: Manager -> NESet PkgName -> IO (Maybe (S.Set PkgName, S.Set Buildable))
 aurLookup m names = runMaybeT $ do
-  infos <- MaybeT . info m $ foldr (\(PkgName pn) acc -> pn : acc) [] names
+  infos <- MaybeT . fmap hush . info m $ foldr (\(PkgName pn) acc -> pn : acc) [] names
   badsgoods <- lift $ traverseConcurrently Par' (buildable m) infos
   let (bads, goods) = partitionEithers badsgoods
       goodNames     = S.fromList $ goods ^.. each . field @"name"
@@ -153,7 +152,7 @@ aurSearch :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig
   T.Text -> m [AurInfo]
 aurSearch regex = do
   ss  <- asks settings
-  res <- liftMaybeM (Failure connectionFailure_1) . sendM $ search (managerOf ss) regex
+  res <- liftMaybeM (Failure connectionFailure_1) . fmap hush . sendM $ search (managerOf ss) regex
   pure $ sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) res
 
 -- | Frontend to the `aur` library. For @-Ai@.
@@ -161,5 +160,5 @@ aurInfo :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, 
   NonEmpty PkgName -> m [AurInfo]
 aurInfo pkgs = do
   m   <- asks (managerOf . settings)
-  res <- liftMaybeM (Failure connectionFailure_1) . sendM . info m . map (^. field @"name") $ toList pkgs
+  res <- liftMaybeM (Failure connectionFailure_1) . fmap hush . sendM . info m . map (^. field @"name") $ toList pkgs
   pure $ sortAurInfo (Just SortAlphabetically) res

@@ -187,7 +187,7 @@ aurJson :: (Carrier sig m , Member (Reader Env) sig, Member (Error Failure) sig,
   NESet PkgName -> m ()
 aurJson ps = do
   m <- asks (managerOf . settings)
-  infos <- liftMaybeM (Failure connectionFailure_1) . sendM . info m . (^.. each . field @"name") $ toList ps
+  infos <- liftMaybeM (Failure connectionFailure_1) . fmap hush . sendM . info m . (^.. each . field @"name") $ toList ps
   let json = map (toStrict . toLazyText . encodePrettyToTextBuilder) infos
   sendM $ traverse_ T.putStrLn json
 
