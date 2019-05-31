@@ -32,12 +32,21 @@ suite :: T.Text -> Pkgbuild -> TestTree
 suite conf pb = testGroup "Unit Tests"
   [ testGroup "Aura.Core"
     [ testCase "parseDep - python2" $ parseDep "python2" @?= Just (Dep "python2" Anything)
-    , testCase "parseDep - python2-lxml>=3.1.0"
-      $ parseDep "python2-lxml>=3.1.0" @?= Just (Dep "python2-lxml" . AtLeast . Ideal $ SemVer 3 1 0 [] [])
-    , testCase "parseDep - foobar>1.2.3"
-      $ parseDep "foobar>1.2.3" @?= Just (Dep "foobar" . MoreThan . Ideal $ SemVer 1 2 3 [] [])
-    , testCase "parseDep - foobar=1.2.3"
-      $ parseDep "foobar=1.2.3" @?= Just (Dep "foobar" . MustBe . Ideal $ SemVer 1 2 3 [] [])
+    , testCase "parseDep - python2-lxml>=3.1.0" $ do
+        let pn = "python2-lxml>=3.1.0"
+            p = parseDep pn
+        p @?= Just (Dep "python2-lxml" . AtLeast . Ideal $ SemVer 3 1 0 [] [])
+        fmap renderedDep p @?= Just pn
+    , testCase "parseDep - foobar>1.2.3" $ do
+        let pn = "foobar>1.2.3"
+            p = parseDep pn
+        p @?= Just (Dep "foobar" . MoreThan . Ideal $ SemVer 1 2 3 [] [])
+        fmap renderedDep p @?= Just pn
+    , testCase "parseDep - foobar=1.2.3" $ do
+        let pn = "foobar=1.2.3"
+            p = parseDep pn
+        p @?= Just (Dep "foobar" . MustBe . Ideal $ SemVer 1 2 3 [] [])
+        fmap renderedDep p @?= Just pn
     ]
   , testGroup "Aura.Types"
     [ testCase "simplepkg"

@@ -9,6 +9,8 @@
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE TypeApplications           #-}
 
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 -- |
 -- Module    : Aura.Types
 -- Copyright : (c) Colin Woodbury, 2012 - 2019
@@ -19,8 +21,8 @@
 
 module Aura.Types
   ( -- * Package Types
-    Package(..), pname, pprov, pver
-  , Dep(..), parseDep
+    Package(..), pname, pprov, pver, dividePkgs
+  , Dep(..), parseDep, renderedDep
   , Buildable(..)
   , Prebuilt(..)
   , SimplePkg(..), simplepkg, simplepkg'
@@ -47,10 +49,13 @@ module Aura.Types
 import           BasePrelude hiding (try)
 import           Control.Error.Util (hush)
 import           Data.Aeson (FromJSONKey, ToJSONKey)
+import           Data.Bifoldable (Bifoldable(..))
 import           Data.Bitraversable
 import qualified Data.ByteString.Lazy as BL
 import           Data.Generics.Product (field, super)
 import qualified Data.Map.Strict as M
+import           Data.Or (Or(..))
+import           Data.Semigroup.Foldable (Foldable1(..))
 import qualified Data.Text as T
 import           Data.Text.Prettyprint.Doc hiding (list, space)
 import           Data.Text.Prettyprint.Doc.Render.Terminal
@@ -90,6 +95,18 @@ pprov (FromAUR b)   = b  ^. field @"provides"
 pver :: Package -> Versioning
 pver (FromRepo pb) = pb ^. field @"version"
 pver (FromAUR b)   = b  ^. field @"version"
+
+dividePkgs :: NonEmpty Package -> Or (NonEmpty Prebuilt) (NonEmpty Buildable)
+dividePkgs = partNonEmpty f
+  where
+    f :: Package -> Or Prebuilt Buildable
+    f (FromRepo p) = Fst p
+    f (FromAUR b)  = Snd b
+
+-- TODO Contribute this upstream.
+-- | Partition a `NonEmpty` based on some function.
+partNonEmpty :: (a -> Or b c) -> NonEmpty a -> Or (NonEmpty b) (NonEmpty c)
+partNonEmpty f = foldMap1 (bimap pure pure . f)
 
 -- TODO Figure out how to do this more generically.
 instance Ord Package where
@@ -135,6 +152,18 @@ parseDep = hush . parse dep "dep"
                                    , char '>'    *> fmap MoreThan versioning'
                                    , char '='    *> fmap MustBe   versioning'
                                    , pure Anything ]
+
+-- | Renders the `Dep` into a form that @pacman -T@ understands. The dual of
+-- `parseDep`.
+renderedDep :: Dep -> T.Text
+renderedDep (Dep n ver) = (n ^. field @"name") <> asT ver
+  where
+    asT :: VersionDemand -> T.Text
+    asT (LessThan v) = "<"  <> prettyV v
+    asT (AtLeast  v) = ">=" <> prettyV v
+    asT (MoreThan v) = ">"  <> prettyV v
+    asT (MustBe   v) = "="  <> prettyV v
+    asT Anything     = ""
 
 -- | The versioning requirement of some package's dependency.
 data VersionDemand = LessThan Versioning
@@ -255,3 +284,42 @@ newtype PkgGroup = PkgGroup { group :: T.Text }
 -- | The dependency which some package provides. May not be the same name
 -- as the package itself (e.g. cronie provides cron).
 newtype Provides = Provides { provides :: T.Text } deriving (Eq, Ord, Show, Generic)
+
+instance (Semigroup a, Semigroup b) => Semigroup (Or a b) where
+  Fst l <> Fst r     = Fst $ l <> r
+  Fst l <> Snd r     = Both l r
+  Fst l <> Both l' r = Both (l <> l') r
+
+  Snd l <> Snd r     = Snd $ l <> r
+  Snd l <> Fst r     = Both r l
+  Snd l <> Both l' r = Both l' (l <> r)
+
+  Both l r <> Fst a    = Both (l <> a) r
+  Both l r <> Snd a    = Both l (r <> a)
+  Both l r <> Both a b = Both (l <> a) (r <> b)
+
+-- instance Functor (Or a) where
+--   fmap f (Fst a)    = Fst a
+--   fmap f (Both a b) = Both a $ f b
+--   fmap f (Snd b)    = Snd $ f b
+
+-- instance Semigroup a => Applicative (Or a) where
+--   pure = Snd
+
+--   Fst  a   <*> _        = Fst a
+--   Snd    _ <*> Fst  b   = Fst b
+--   Snd    f <*> Snd    x = Snd (f x)
+--   Snd    f <*> Both b x = Both b (f x)
+--   Both a _ <*> Fst  b   = Fst (a <> b)
+--   Both a f <*> Snd    x = Both a (f x)
+--   Both a f <*> Both b x = Both (a <> b) (f x)
+
+instance Bifunctor Or where
+  bimap l _ (Fst a)    = Fst $ l a
+  bimap l r (Both a b) = Both (l a) (r b)
+  bimap _ r (Snd b)    = Snd $ r b
+
+instance Bifoldable Or where
+  bifoldMap l _ (Fst a)    = l a
+  bifoldMap l r (Both a b) = l a <> r b
+  bifoldMap _ r (Snd b)    = r b

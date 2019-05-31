@@ -95,6 +95,7 @@ library
     , algebraic-graphs >=0.1 && <0.4
     , aur ^>= 6.2
     , compactable ^>=0.1
+    , data-or ^>= 1.0
     , directory
     , filepath
     , generic-lens ^>=1.1
