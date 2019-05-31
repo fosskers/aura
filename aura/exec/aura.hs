@@ -136,7 +136,7 @@ executeOpts ops = do
         Nothing               -> send O.displayOrphans
         Just OrphanAbandon    -> sudo $ send orphans >>= traverse_ removePkgs . NES.nonEmptySet
         Just (OrphanAdopt ps) -> O.adoptPkg ps
-    Right Version   -> send $ getVersionInfo >>= animateVersionMsg ss auraVersion
+    Right Version   -> send $ versionInfo >>= animateVersionMsg ss auraVersion
     Right Languages -> displayOutputLanguages
     Right ViewConf  -> viewConfFile
 

@@ -15,7 +15,7 @@
 module Aura.Pacman
   ( -- * Calling Pacman
     pacman
-  , pacmanOutput, pacmanSuccess
+  , pacmanOutput, pacmanSuccess, pacmanLines
     -- * Paths
   , lockFile
   , pacmanConfFile
@@ -28,7 +28,7 @@ module Aura.Pacman
   , getIgnoredPkgs, getIgnoredGroups
   , groupPackages
     -- * Misc.
-  , getVersionInfo
+  , versionInfo
   , verMsgPad
   ) where
 
@@ -136,12 +136,14 @@ pacmanSuccess = fmap (== ExitSuccess) . runProcess . setStderr closed . setStdou
 pacmanOutput :: [String] -> IO BL.ByteString
 pacmanOutput = fmap (^. _2) . readProcess . proc "pacman"
 
+-- | Runs pacman silently and returns the stdout as UTF8-decoded `Text` lines.
+pacmanLines :: [String] -> IO [T.Text]
+pacmanLines s = T.lines . TL.toStrict . TL.decodeUtf8With lenientDecode <$> pacmanOutput s
+
 -- | Yields the lines given by `pacman -V` with the pacman image stripped.
-getVersionInfo :: IO [T.Text]
-getVersionInfo = do
-  out <- pacmanOutput ["-V"]
-  pure . map (TL.toStrict . TL.drop verMsgPad . TL.decodeUtf8With lenientDecode) $ BL.lines out
+versionInfo :: IO [T.Text]
+versionInfo = map (T.drop verMsgPad) <$> pacmanLines ["-V"]
 
 -- | The amount of whitespace before text in the lines given by `pacman -V`
-verMsgPad :: Int64
+verMsgPad :: Int
 verMsgPad = 23
