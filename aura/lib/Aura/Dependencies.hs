@@ -82,43 +82,39 @@ resolveDeps' ss repo ps = z (Resolution mempty mempty) ps
     z r@(Resolution m _) xs = maybe' (pure r) (NES.nonEmptySet goods) $ \goods' -> do
       let m' = M.fromList (map (pname &&& id) $ toList goods')
           r' = r & field @"toInstall" %~ (<> m')
-      elimOr (const $ pure r') (const $ zeep r') (zeep r') $ hog goods'
+      elimOr (const $ pure r') (const $ satisfy r') (satisfy r') $ dividePkgs goods'
       where
         goods :: Set Package
         goods = NES.filter (\p -> not $ pname p `M.member` m) xs
 
-    -- | A unique split of some `Package`s into their underlying "subtypes".
-    hog :: NESet Package -> Or (NESet Prebuilt) (NESet Buildable)
-    hog = bimap NES.fromList NES.fromList . dividePkgs . NES.toList
-
     -- | All dependencies from all potential `Buildable`s.
-    shong :: NESet Buildable -> Set Dep
-    shong = foldMap1 (S.fromList . (^.. field @"deps" . each))
+    allDeps :: NESet Buildable -> Set Dep
+    allDeps = foldMap1 (S.fromList . (^.. field @"deps" . each))
 
     -- | Deps which are not yet queued for install.
-    forn :: Resolution -> Set Dep -> Set Dep
-    forn (Resolution m s) = S.filter f
+    freshDeps :: Resolution -> Set Dep -> Set Dep
+    freshDeps (Resolution m s) = S.filter f
       where
         f :: Dep -> Bool
         f d = let n = d ^. field @"name" in not $ M.member n m || S.member n s
 
     -- | Consider only "unsatisfied" deps.
-    zeep :: Resolution -> NESet Buildable -> IO Resolution
-    zeep r bs = maybe' (pure r) (NES.nonEmptySet . forn r $ shong bs) $
+    satisfy :: Resolution -> NESet Buildable -> IO Resolution
+    satisfy r bs = maybe' (pure r) (NES.nonEmptySet . freshDeps r $ allDeps bs) $
       areSatisfied >=> \case
-        Fst uns -> porg r uns
+        Fst uns -> lookups r uns
         Snd (Satisfied sat) -> do
           let sat' = S.map (^. field @"name") $ NES.toSet sat
           pure $ r & field @"satisfied" %~ (<> sat')
         Both uns (Satisfied sat) -> do
           let sat' = S.map (^. field @"name") $ NES.toSet sat
-          porg (r & field @"satisfied" %~ (<> sat')) uns
+          lookups (r & field @"satisfied" %~ (<> sat')) uns
 
     -- TODO What about if `repoLookup` reports deps that don't exist?
     -- i.e. the left-hand side of the tuple.
     -- | Lookup unsatisfied deps and recurse the entire lookup process.
-    porg :: Resolution -> Unsatisfied -> IO Resolution
-    porg r (Unsatisfied ds) = do
+    lookups :: Resolution -> Unsatisfied -> IO Resolution
+    lookups r (Unsatisfied ds) = do
       let names = NES.map (^. field @"name") ds
       repoLookup repo ss names >>= \case
         Nothing -> throwString "AUR Connection Error"
