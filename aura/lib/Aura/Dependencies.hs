@@ -3,6 +3,7 @@
 {-# LANGUAGE LambdaCase       #-}
 {-# LANGUAGE MonoLocalBinds   #-}
 {-# LANGUAGE MultiWayIf       #-}
+{-# LANGUAGE PatternSynonyms  #-}
 {-# LANGUAGE RankNTypes       #-}
 {-# LANGUAGE TupleSections    #-}
 {-# LANGUAGE TypeApplications #-}
@@ -25,33 +26,28 @@ import           Aura.Core
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
+import           Aura.Utils (maybe')
 import           BasePrelude
-import           Control.Concurrent.STM.TVar
 import           Control.Error.Util (note)
 import           Control.Monad.Freer
 import           Control.Monad.Freer.Error
 import           Control.Monad.Freer.Reader
-import           Control.Scheduler hiding (traverse_)
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
+import           Data.Or (Or(..), elimOr)
+import           Data.Semigroup.Foldable (foldMap1)
 import           Data.Set (Set)
 import qualified Data.Set as S
-import           Data.Set.NonEmpty (NESet)
+import           Data.Set.NonEmpty (pattern IsEmpty, pattern IsNonEmpty, NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Versions
-import           Data.Witherable (wither)
 import           Lens.Micro
-import           System.IO (hFlush, stdout)
 import           UnliftIO.Exception (catchAny, throwString)
 
 ---
-
--- | To signal if one of the STM actions below wrote a new value to the
--- shared Map.
-data Wrote = WroteNothing | WroteNew
 
 -- | Given some `Package`s, determine its full dependency graph.
 -- The graph is collapsed into layers of packages which are not
@@ -62,87 +58,115 @@ resolveDeps :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
   Repository -> NESet Package -> Eff r (NonEmpty (NESet Package))
 resolveDeps repo ps = do
   ss <- asks settings
-  tv <- send $ newTVarIO M.empty
-  ts <- send $ newTVarIO S.empty
-  liftMaybeM (Failure connectionFailure_1) $
-    (Just <$> resolveDeps' ss repo tv ts ps) `catchAny` (const $ pure Nothing)
-  m  <- send $ readTVarIO tv
-  s  <- send $ readTVarIO ts
+  m  <- liftMaybeM (Failure connectionFailure_1) $
+    (Just <$> resolveDeps' ss repo ps) `catchAny` (const $ pure Nothing)
   unless (length ps == length m) $ send (putStr "\n")
-  let de = conflicts ss m s
-  unless (null de) . throwError . Failure $ missingPkg_2 de
+  -- let de = conflicts ss m undefined
+  -- unless (null de) . throwError . Failure $ missingPkg_2 de
   either throwError pure $ sortInstall m
 
-resolveDeps'
-  :: Settings
-  -> Repository
-  -> TVar (Map PkgName Package)
-  -- ^ A cache of `Package`s that have already
-  -- been checked by the `j` function below.
-  -> TVar (Set PkgName)
-  -- ^ A cache of packages which have already been
-  -- confirmed to be installed, or otherwise "satisfied".
-  -> NESet Package
-  -- ^ The set of `Package`s to solve deps for.
-  -> IO ()
-resolveDeps' ss repo tv ts ps =
-  withScheduler_ Par' $ \sch -> traverse_ (scheduleWork sch . h sch) ps
+-- | Solve dependencies for a set of `Package`s assumed to not be
+-- installed/satisfied.
+resolveDeps' :: Settings -> Repository -> NESet Package -> IO (Map PkgName Package)
+resolveDeps' ss repo ps = z mempty ps
   where
+    -- | Only searches for packages that we haven't checked yet.
+    z :: Map PkgName Package -> NESet Package -> IO (Map PkgName Package)
+    z m xs = maybe' (pure m) (NES.nonEmptySet goods) $ \goods' -> do
+      let m' = m <> M.fromList (map (pname &&& id) $ toList goods')
+      elimOr (const $ pure m') (const $ zeep m') (zeep m') $ hog goods'
+      where
+        goods :: Set Package
+        goods = NES.filter (\p -> not $ pname p `M.member` m) xs
+
+    -- | A unique split of some `Package`s into their underlying "subtypes".
+    hog :: NESet Package -> Or (NESet Prebuilt) (NESet Buildable)
+    hog = bimap NES.fromList NES.fromList . dividePkgs . NES.toList
+
+    -- | All dependencies from all potential `Buildable`s.
+    shong :: NESet Buildable -> Set Dep
+    shong = foldMap1 (S.fromList . (^.. field @"deps" . each))
+
+    -- | Deps which are not yet queued for install.
+    forn :: Map PkgName Package -> Set Dep -> Set Dep
+    forn m = S.filter (\d -> not $ M.member (d ^. field @"name") m)
+
+    -- | Consider only "unsatisfied" deps.
+    zeep :: Map PkgName Package -> NESet Buildable -> IO (Map PkgName Package)
+    zeep m bs = maybe' (pure m) (NES.nonEmptySet . forn m $ shong bs) $
+      areSatisfied >=> elimOr (porg m) (\u _ -> porg m u) (const $ pure m)
+
+    -- TODO What about if `repoLookup` reports deps that don't exist?
+    -- i.e. the left-hand side of the tuple.
+    -- | Lookup unsatisfied deps and recurse the entire lookup process.
+    porg :: Map PkgName Package -> Unsatisfied -> IO (Map PkgName Package)
+    porg m (Unsatisfied ds) = do
+      let names = NES.map (^. field @"name") ds
+      repoLookup repo ss names >>= \case
+        Nothing -> throwString "AUR Connection Error"
+        Just (_, IsEmpty) -> throwString "Non-existant deps"
+        Just (_, IsNonEmpty goods) -> z m goods
+
     -- | Handles determining whether further work should be done. It won't
     -- continue to `j` if this `Package` has already been analysed.
-    h :: Scheduler IO () -> Package -> IO ()
-    h sch p = do
-      -- We do the existance check and the `M.insert` in the same transaction to
-      -- guarantee that no package will be fully checked more than once.
-      w <- atomically $ do
-        let pn = pname p
-        m <- readTVar tv
-        case M.lookup pn m of
-          Just _  -> pure WroteNothing
-          Nothing -> modifyTVar' tv (M.insert pn p) $> WroteNew
-      case w of
-        WroteNothing -> pure ()
-        WroteNew     -> case p of
-          -- Pacman will solve further deps for "repo" packages by itself.
-          FromRepo _ -> pure ()
-          -- We check for conflicts / recursive deps for AUR packages manually.
-          FromAUR b  -> readTVarIO tv >>= j sch b
+    -- h :: Scheduler IO () -> Package -> IO ()
+    -- h sch p = do
+    --   -- We do the existance check and the `M.insert` in the same transaction to
+    --   -- guarantee that no package will be fully checked more than once.
+    --   w <- atomically $ do
+    --     let pn = pname p
+    --     m <- readTVar tv
+    --     case M.lookup pn m of
+    --       Just _  -> pure WroteNothing
+    --       Nothing -> modifyTVar' tv (M.insert pn p) $> WroteNew
+    --   case w of
+    --     WroteNothing -> pure ()
+    --     WroteNew     -> case p of
+    --       -- Pacman will solve further deps for "repo" packages by itself.
+    --       FromRepo _ -> pure ()
+    --       -- We check for conflicts / recursive deps for AUR packages manually.
+    --       FromAUR b  -> readTVarIO tv >>= j sch b
 
-    -- | Check for the existance of dependencies, as well as for any version
-    -- conflicts that they might introduce.
-    j :: Scheduler IO () -> Buildable -> Map PkgName Package -> IO ()
-    j sch b m = do
-      s <- readTVarIO ts
-      (ds, sd) <- fmap partitionEithers . wither (satisfied m s) $ b ^. field @"deps"
-      atomically $ modifyTVar' ts (<> S.fromList sd)
-      forM_ (NEL.nonEmpty $ ds ^.. each . field @"name") $ \deps' -> do
-        putStr "." *> hFlush stdout
-        repoLookup repo ss (NES.fromList deps') >>= \case
-          Nothing -> throwString "Connection Error"
-          Just (_, goods) -> traverse_ (scheduleWork sch . h sch) goods
+    -- -- | Check for the existance of dependencies, as well as for any version
+    -- -- conflicts that they might introduce.
+    -- j :: Scheduler IO () -> Buildable -> Map PkgName Package -> IO ()
+    -- j sch b m = do
+    --   s <- readTVarIO ts
+    --   (ds, sd) <- fmap partitionEithers . wither (satisfied m s) $ b ^. field @"deps"
+    --   atomically $ modifyTVar' ts (<> S.fromList sd)
+    --   forM_ (NEL.nonEmpty $ ds ^.. each . field @"name") $ \deps' -> do
+    --     putStr "." *> hFlush stdout
+    --     repoLookup repo ss (NES.fromList deps') >>= \case
+    --       Nothing -> throwString "Connection Error"
+    --       Just (_, goods) -> traverse_ (scheduleWork sch . h sch) goods
 
-    satisfied :: Map PkgName Package -> Set PkgName -> Dep -> IO (Maybe (Either Dep PkgName))
-    satisfied m s d
-      -- This `Dep` has already been checked.
-      | M.member dn m || S.member dn s = pure Nothing
-      -- Check if a `Dep` is installed, or is otherwise "satisfied" by some
-      -- installed package. This invokes a shell call to Pacman, hence the
-      -- desire to cache the result.
-      | otherwise = Just . bool (Left d) (Right dn) <$> isSatisfied d
-      where
-        dn :: PkgName
-        dn = d ^. field @"name"
+    -- satisfied :: Map PkgName Package -> Set PkgName -> Dep -> IO (Maybe (Either Dep PkgName))
+    -- satisfied m s d
+    --   -- This `Dep` has already been checked.
+    --   | M.member dn m || S.member dn s = pure Nothing
+    --   -- Check if a `Dep` is installed, or is otherwise "satisfied" by some
+    --   -- installed package. This invokes a shell call to Pacman, hence the
+    --   -- desire to cache the result.
+    --   | otherwise = Just . bool (Left d) (Right dn) <$> isSatisfied d
+    --   where
+    --     dn :: PkgName
+    --     dn = d ^. field @"name"
 
 conflicts :: Settings -> Map PkgName Package -> Set PkgName -> [DepError]
 conflicts ss m s = foldMap f m
-  where pm = M.fromList $ foldr (\p acc -> (pprov p ^. field @"provides" . to PkgName, p) : acc) [] m
-        f (FromRepo _) = []
-        f (FromAUR b)  = flip mapMaybe (b ^. field @"deps") $ \d ->
-          let dn = d ^. field @"name"
-          in if | S.member dn s -> Nothing
-                | otherwise     -> case M.lookup dn m <|> M.lookup dn pm of
-                                    Nothing -> Just $ NonExistant dn
-                                    Just p  -> realPkgConflicts ss (b ^. field @"name") p d
+  where
+    pm :: Map PkgName Package
+    pm = M.fromList $ foldr (\p acc -> (pprov p ^. field @"provides" . to PkgName, p) : acc) [] m
+
+    f :: Package -> [DepError]
+    f (FromRepo _) = []
+    f (FromAUR b)  = flip mapMaybe (b ^. field @"deps") $ \d ->
+      let dn = d ^. field @"name"
+      -- Why is this branch important?
+      in if | S.member dn s -> Nothing
+            | otherwise     -> case M.lookup dn m <|> M.lookup dn pm of
+                                Nothing -> Just $ NonExistant dn
+                                Just p  -> realPkgConflicts ss (b ^. field @"name") p d
 
 sortInstall :: Map PkgName Package -> Either Failure (NonEmpty (NESet Package))
 sortInstall m = case cycles depGraph of

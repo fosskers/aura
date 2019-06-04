@@ -29,6 +29,8 @@ module Aura.Utils
     -- * User Input
   , optionalPrompt
   , getSelection
+    -- * Misc.
+  , maybe'
   ) where
 
 import           Aura.Colour
@@ -221,3 +223,7 @@ padding :: Settings -> [T.Text] -> [T.Text]
 padding ss fs = map (T.justifyLeft longest ws) fs
     where ws      = whitespace $ langOf ss
           longest = maximum $ map T.length fs
+
+-- | `maybe` with the function at the end.
+maybe' :: b -> Maybe a -> (a -> b) -> b
+maybe' zero m f = maybe zero f m
