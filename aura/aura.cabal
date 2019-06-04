@@ -35,6 +35,8 @@ common commons
       -Wincomplete-uni-patterns
       -Wredundant-constraints
       -Widentities
+      -Wpartial-fields
+      -Wcompat
       -funclutter-valid-hole-fits
   build-depends:
       base >=4.12 && < 5
