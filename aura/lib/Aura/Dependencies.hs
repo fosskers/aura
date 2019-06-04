@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds        #-}
+{-# LANGUAGE DeriveGeneric    #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase       #-}
 {-# LANGUAGE MonoLocalBinds   #-}
@@ -49,6 +50,12 @@ import           UnliftIO.Exception (catchAny, throwString)
 
 ---
 
+-- | The results of dependency resolution.
+data Resolution = Resolution
+  { toInstall :: Map PkgName Package
+  , satisfied :: Set PkgName }
+  deriving (Generic)
+
 -- | Given some `Package`s, determine its full dependency graph.
 -- The graph is collapsed into layers of packages which are not
 -- interdependent, and thus can be built and installed as a group.
@@ -58,23 +65,24 @@ resolveDeps :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
   Repository -> NESet Package -> Eff r (NonEmpty (NESet Package))
 resolveDeps repo ps = do
   ss <- asks settings
-  m  <- liftMaybeM (Failure connectionFailure_1) $
+  Resolution m s <- liftMaybeM (Failure connectionFailure_1) $
     (Just <$> resolveDeps' ss repo ps) `catchAny` (const $ pure Nothing)
   unless (length ps == length m) $ send (putStr "\n")
-  -- let de = conflicts ss m undefined
-  -- unless (null de) . throwError . Failure $ missingPkg_2 de
+  let de = conflicts ss m s
+  unless (null de) . throwError . Failure $ missingPkg_2 de
   either throwError pure $ sortInstall m
 
 -- | Solve dependencies for a set of `Package`s assumed to not be
 -- installed/satisfied.
-resolveDeps' :: Settings -> Repository -> NESet Package -> IO (Map PkgName Package)
-resolveDeps' ss repo ps = z mempty ps
+resolveDeps' :: Settings -> Repository -> NESet Package -> IO Resolution
+resolveDeps' ss repo ps = z (Resolution mempty mempty) ps
   where
     -- | Only searches for packages that we haven't checked yet.
-    z :: Map PkgName Package -> NESet Package -> IO (Map PkgName Package)
-    z m xs = maybe' (pure m) (NES.nonEmptySet goods) $ \goods' -> do
-      let m' = m <> M.fromList (map (pname &&& id) $ toList goods')
-      elimOr (const $ pure m') (const $ zeep m') (zeep m') $ hog goods'
+    z :: Resolution -> NESet Package -> IO Resolution
+    z r@(Resolution m _) xs = maybe' (pure r) (NES.nonEmptySet goods) $ \goods' -> do
+      let m' = M.fromList (map (pname &&& id) $ toList goods')
+          r' = r & field @"toInstall" %~ (<> m')
+      elimOr (const $ pure r') (const $ zeep r') (zeep r') $ hog goods'
       where
         goods :: Set Package
         goods = NES.filter (\p -> not $ pname p `M.member` m) xs
@@ -88,69 +96,34 @@ resolveDeps' ss repo ps = z mempty ps
     shong = foldMap1 (S.fromList . (^.. field @"deps" . each))
 
     -- | Deps which are not yet queued for install.
-    forn :: Map PkgName Package -> Set Dep -> Set Dep
-    forn m = S.filter (\d -> not $ M.member (d ^. field @"name") m)
+    forn :: Resolution -> Set Dep -> Set Dep
+    forn (Resolution m s) = S.filter f
+      where
+        f :: Dep -> Bool
+        f d = let n = d ^. field @"name" in not $ M.member n m || S.member n s
 
     -- | Consider only "unsatisfied" deps.
-    zeep :: Map PkgName Package -> NESet Buildable -> IO (Map PkgName Package)
-    zeep m bs = maybe' (pure m) (NES.nonEmptySet . forn m $ shong bs) $
-      areSatisfied >=> elimOr (porg m) (\u _ -> porg m u) (const $ pure m)
+    zeep :: Resolution -> NESet Buildable -> IO Resolution
+    zeep r bs = maybe' (pure r) (NES.nonEmptySet . forn r $ shong bs) $
+      areSatisfied >=> \case
+        Fst uns -> porg r uns
+        Snd (Satisfied sat) -> do
+          let sat' = S.map (^. field @"name") $ NES.toSet sat
+          pure $ r & field @"satisfied" %~ (<> sat')
+        Both uns (Satisfied sat) -> do
+          let sat' = S.map (^. field @"name") $ NES.toSet sat
+          porg (r & field @"satisfied" %~ (<> sat')) uns
 
     -- TODO What about if `repoLookup` reports deps that don't exist?
     -- i.e. the left-hand side of the tuple.
     -- | Lookup unsatisfied deps and recurse the entire lookup process.
-    porg :: Map PkgName Package -> Unsatisfied -> IO (Map PkgName Package)
-    porg m (Unsatisfied ds) = do
+    porg :: Resolution -> Unsatisfied -> IO Resolution
+    porg r (Unsatisfied ds) = do
       let names = NES.map (^. field @"name") ds
       repoLookup repo ss names >>= \case
         Nothing -> throwString "AUR Connection Error"
         Just (_, IsEmpty) -> throwString "Non-existant deps"
-        Just (_, IsNonEmpty goods) -> z m goods
-
-    -- | Handles determining whether further work should be done. It won't
-    -- continue to `j` if this `Package` has already been analysed.
-    -- h :: Scheduler IO () -> Package -> IO ()
-    -- h sch p = do
-    --   -- We do the existance check and the `M.insert` in the same transaction to
-    --   -- guarantee that no package will be fully checked more than once.
-    --   w <- atomically $ do
-    --     let pn = pname p
-    --     m <- readTVar tv
-    --     case M.lookup pn m of
-    --       Just _  -> pure WroteNothing
-    --       Nothing -> modifyTVar' tv (M.insert pn p) $> WroteNew
-    --   case w of
-    --     WroteNothing -> pure ()
-    --     WroteNew     -> case p of
-    --       -- Pacman will solve further deps for "repo" packages by itself.
-    --       FromRepo _ -> pure ()
-    --       -- We check for conflicts / recursive deps for AUR packages manually.
-    --       FromAUR b  -> readTVarIO tv >>= j sch b
-
-    -- -- | Check for the existance of dependencies, as well as for any version
-    -- -- conflicts that they might introduce.
-    -- j :: Scheduler IO () -> Buildable -> Map PkgName Package -> IO ()
-    -- j sch b m = do
-    --   s <- readTVarIO ts
-    --   (ds, sd) <- fmap partitionEithers . wither (satisfied m s) $ b ^. field @"deps"
-    --   atomically $ modifyTVar' ts (<> S.fromList sd)
-    --   forM_ (NEL.nonEmpty $ ds ^.. each . field @"name") $ \deps' -> do
-    --     putStr "." *> hFlush stdout
-    --     repoLookup repo ss (NES.fromList deps') >>= \case
-    --       Nothing -> throwString "Connection Error"
-    --       Just (_, goods) -> traverse_ (scheduleWork sch . h sch) goods
-
-    -- satisfied :: Map PkgName Package -> Set PkgName -> Dep -> IO (Maybe (Either Dep PkgName))
-    -- satisfied m s d
-    --   -- This `Dep` has already been checked.
-    --   | M.member dn m || S.member dn s = pure Nothing
-    --   -- Check if a `Dep` is installed, or is otherwise "satisfied" by some
-    --   -- installed package. This invokes a shell call to Pacman, hence the
-    --   -- desire to cache the result.
-    --   | otherwise = Just . bool (Left d) (Right dn) <$> isSatisfied d
-    --   where
-    --     dn :: PkgName
-    --     dn = d ^. field @"name"
+        Just (_, IsNonEmpty goods) -> z r goods
 
 conflicts :: Settings -> Map PkgName Package -> Set PkgName -> [DepError]
 conflicts ss m s = foldMap f m
