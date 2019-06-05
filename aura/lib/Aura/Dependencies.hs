@@ -130,7 +130,8 @@ conflicts ss m s = foldMap f m
     f (FromRepo _) = []
     f (FromAUR b)  = flip mapMaybe (b ^. field @"deps") $ \d ->
       let dn = d ^. field @"name"
-      -- Why is this branch important?
+      -- Don't do conflict checks for deps which are known to be satisfied on
+      -- the system.
       in if | S.member dn s -> Nothing
             | otherwise     -> case M.lookup dn m <|> M.lookup dn pm of
                                 Nothing -> Just $ NonExistant dn

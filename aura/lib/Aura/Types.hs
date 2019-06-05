@@ -56,6 +56,8 @@ import           Data.Generics.Product (field, super)
 import qualified Data.Map.Strict as M
 import           Data.Or (Or(..))
 import           Data.Semigroup.Foldable (Foldable1(..))
+import           Data.Set.NonEmpty (NESet)
+import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Text.Prettyprint.Doc hiding (list, space)
 import           Data.Text.Prettyprint.Doc.Render.Terminal
@@ -96,8 +98,8 @@ pver :: Package -> Versioning
 pver (FromRepo pb) = pb ^. field @"version"
 pver (FromAUR b)   = b  ^. field @"version"
 
-dividePkgs :: NonEmpty Package -> Or (NonEmpty Prebuilt) (NonEmpty Buildable)
-dividePkgs = partNonEmpty f
+dividePkgs :: NESet Package -> Or (NESet Prebuilt) (NESet Buildable)
+dividePkgs = bimap NES.fromList NES.fromList . partNonEmpty f . NES.toList
   where
     f :: Package -> Or Prebuilt Buildable
     f (FromRepo p) = Fst p
@@ -281,6 +283,7 @@ newtype PkgGroup = PkgGroup { group :: T.Text }
   deriving stock (Eq, Ord, Show, Generic)
   deriving newtype (Flagable)
 
+-- TODO Make this hold a `PkgName` instead?
 -- | The dependency which some package provides. May not be the same name
 -- as the package itself (e.g. cronie provides cron).
 newtype Provides = Provides { provides :: T.Text } deriving (Eq, Ord, Show, Generic)

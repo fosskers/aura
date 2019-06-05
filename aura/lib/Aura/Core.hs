@@ -23,7 +23,8 @@ module Aura.Core
   , sudo, trueRoot
     -- * Querying the Package Database
   , foreignPackages, orphans, develPkgs
-  , isSatisfied, isInstalled
+  , Unsatisfied(..), Satisfied(..)
+  , areSatisfied, isInstalled
   , checkDBLock
     -- * Misc. Package Handling
   , removePkgs, partitionPkgs, packageBuildable
@@ -48,6 +49,7 @@ import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Map.Strict (Map)
+import           Data.Or (Or(..))
 import           Data.Semigroup
 import           Data.Set (Set)
 import qualified Data.Set as S
@@ -57,7 +59,6 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
-import           Data.Versions (prettyV)
 import           Lens.Micro ((^.))
 import           Lens.Micro.Extras (view)
 import           System.Path.IO (doesFileExist)
@@ -167,16 +168,22 @@ removePkgs pkgs = do
   pacOpts <- asks (commonConfigOf . settings)
   liftEitherM . pacman $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts
 
--- | True if a dependency is satisfied by an installed package. `asT` renders
--- the `VersionDemand` into the specific form that `pacman -T` understands. See
--- `man pacman` for more info.
-isSatisfied :: Dep -> IO Bool
-isSatisfied (Dep n ver) = pacmanSuccess $ map T.unpack ["-T", (n ^. field @"name") <> asT ver]
-  where asT (LessThan v) = "<"  <> prettyV v
-        asT (AtLeast  v) = ">=" <> prettyV v
-        asT (MoreThan v) = ">"  <> prettyV v
-        asT (MustBe   v) = "="  <> prettyV v
-        asT Anything     = ""
+-- | Depedencies which are not installed, or otherwise provided by some
+-- installed package.
+newtype Unsatisfied = Unsatisfied (NESet Dep)
+
+-- | The opposite of `Unsatisfied`.
+newtype Satisfied = Satisfied (NESet Dep)
+
+-- | Similar to `isSatisfied`, but dependencies are checked in a batch, since
+-- @-T@ can accept multiple inputs.
+areSatisfied :: NESet Dep -> IO (Or Unsatisfied Satisfied)
+areSatisfied ds = do
+  unsats <- S.fromList . mapMaybe parseDep <$> unsat
+  pure . bimap Unsatisfied Satisfied $ NES.partition (\d -> S.member d unsats) ds
+  where
+    unsat :: IO [T.Text]
+    unsat = pacmanLines $ "-T" : map (T.unpack . renderedDep) (toList ds)
 
 -- | Block further action until the database is free.
 checkDBLock :: Settings -> IO ()
