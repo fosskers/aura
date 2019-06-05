@@ -283,10 +283,9 @@ newtype PkgGroup = PkgGroup { group :: T.Text }
   deriving stock (Eq, Ord, Show, Generic)
   deriving newtype (Flagable)
 
--- TODO Make this hold a `PkgName` instead?
 -- | The dependency which some package provides. May not be the same name
 -- as the package itself (e.g. cronie provides cron).
-newtype Provides = Provides { provides :: T.Text } deriving (Eq, Ord, Show, Generic)
+newtype Provides = Provides { provides :: PkgName } deriving (Eq, Ord, Show, Generic)
 
 instance (Semigroup a, Semigroup b) => Semigroup (Or a b) where
   Fst l <> Fst r     = Fst $ l <> r

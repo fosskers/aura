@@ -104,7 +104,7 @@ buildable m ai = do
       { name     = PkgName $ aurNameOf ai
       , version  = ver
       , base     = bse
-      , provides = providesOf ai ^. to listToMaybe . non (aurNameOf ai) . to Provides
+      , provides = providesOf ai ^. to listToMaybe . non (aurNameOf ai) . to (Provides . PkgName)
       -- TODO This is a potentially naughty mapMaybe, since deps that fail to
       -- parse will be silently dropped. Unfortunately there isn't much to be
       -- done - `aurLookup` and `aurRepo` which call this function only report

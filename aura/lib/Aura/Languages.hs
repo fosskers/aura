@@ -345,7 +345,7 @@ depError l (NonExistant (PkgName s)) = case l of
   Russian    -> "Зависимость " <> bt s <> " не найдена."
   Esperanto  -> "La dependeco " <> bt s <> " ne povis troviĝi."
   _          -> "The dependency " <> bt s <> " couldn't be found."
-depError l (BrokenProvides (PkgName pkg) (Provides pro) (PkgName n)) = case l of
+depError l (BrokenProvides (PkgName pkg) (Provides (PkgName pro)) (PkgName n)) = case l of
   Russian    -> "Пакету " <> bt pkg <> " требуется " <> bt n <> ", предоставляющий " <> bt pro <> "."
   Esperanto  -> "La pakaĵo, " <> bt pkg <> " bezonas " <> bt n <> ", kiu donas " <> bt pro <> "."
   _          -> "The package " <> bt pkg <> " needs " <> bt n <> ", which provides " <> bt pro <> "."

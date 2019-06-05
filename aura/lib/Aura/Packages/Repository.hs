@@ -80,7 +80,7 @@ resolveName ss pn = do
   provs <- map (PkgName . strictText) . BL.lines <$> pacmanOutput ["-Ssq", "^" <> T.unpack (pn ^. field @"name") <> "$"]
   case provs of
     [] -> pure $ Left pn
-    _  -> Right . (, Provides $ pn ^. field @"name") <$> chooseProvider ss pn provs
+    _  -> Right . (, Provides pn) <$> chooseProvider ss pn provs
 
 -- | Choose a providing package, favoring installed packages.
 -- If `--noconfirm` is provided, it will try to automatically select the provider

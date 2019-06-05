@@ -124,7 +124,7 @@ conflicts :: Settings -> Map PkgName Package -> Set PkgName -> [DepError]
 conflicts ss m s = foldMap f m
   where
     pm :: Map PkgName Package
-    pm = M.fromList $ foldr (\p acc -> (pprov p ^. field @"provides" . to PkgName, p) : acc) [] m
+    pm = M.fromList $ foldr (\p acc -> (pprov p ^. field @"provides", p) : acc) [] m
 
     f :: Package -> [DepError]
     f (FromRepo _) = []
