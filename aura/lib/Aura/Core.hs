@@ -160,7 +160,7 @@ develPkgs = S.filter isDevelPkg . S.map (^. field @"name") <$> foreignPackages
 -- | Returns what it was given if the package is already installed.
 -- Reasoning: Using raw bools can be less expressive.
 isInstalled :: PkgName -> IO (Maybe PkgName)
-isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", T.unpack (pkg ^. field @"name")]
+isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", pkg ^. field @"name"]
 
 -- | An @-Rsu@ call.
 removePkgs :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => NESet PkgName -> Eff r ()
@@ -183,7 +183,7 @@ areSatisfied ds = do
   pure . bimap Unsatisfied Satisfied $ NES.partition (\d -> S.member d unsats) ds
   where
     unsat :: IO [T.Text]
-    unsat = pacmanLines $ "-T" : map (T.unpack . renderedDep) (toList ds)
+    unsat = pacmanLines $ "-T" : map renderedDep (toList ds)
 
 -- | Block further action until the database is free.
 checkDBLock :: Settings -> IO ()

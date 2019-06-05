@@ -165,4 +165,4 @@ reinstallAndRemove down remo
   | null down = remove
   | otherwise = reinstall *> remove
   where remove    = liftEitherM . pacman $ "-R" : asFlag remo
-        reinstall = liftEitherM . pacman $ "-U" : map (toFilePath . path) down
+        reinstall = liftEitherM . pacman $ "-U" : map (T.pack . toFilePath . path) down

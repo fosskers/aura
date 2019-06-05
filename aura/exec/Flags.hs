@@ -76,8 +76,8 @@ data FilesOp = FilesList  (NESet T.Text)
 
 instance Flagable FilesOp where
   asFlag (FilesList fs)       = "--list" : asFlag fs
-  asFlag (FilesOwns f)        = ["--owns", T.unpack f]
-  asFlag (FilesSearch f)      = ["--search", T.unpack f]
+  asFlag (FilesOwns f)        = ["--owns", f]
+  asFlag (FilesSearch f)      = ["--search", f]
   asFlag FilesRegex           = ["--regex"]
   asFlag FilesRefresh         = ["--refresh"]
   asFlag FilesMachineReadable = ["--machinereadable"]
@@ -100,7 +100,7 @@ instance Flagable QueryOp where
   asFlag (QueryList ps)      = "--list" : asFlag ps
   asFlag (QueryOwns ps)      = "--owns" : asFlag ps
   asFlag (QueryFile ps)      = "--file" : asFlag ps
-  asFlag (QuerySearch t)     = ["--search", T.unpack t]
+  asFlag (QuerySearch t)     = ["--search", t]
 
 data QueryFilter = QueryDeps
                  | QueryExplicit
@@ -143,8 +143,8 @@ instance Flagable SyncOp where
   asFlag SyncClean         = ["--clean"]
   asFlag (SyncGroups gs)   = "--groups" : asFlag gs
   asFlag (SyncInfo ps)     = "--info" : asFlag ps
-  asFlag (SyncList r)      = ["--list", T.unpack r]
-  asFlag (SyncSearch s)    = ["--search", T.unpack s]
+  asFlag (SyncList r)      = ["--list", r]
+  asFlag (SyncSearch s)    = ["--search", s]
   asFlag (SyncUpgrade ps)  = "--sysupgrade" : asFlag ps
   asFlag (SyncDownload ps) = "--downloadonly" : asFlag ps
 
@@ -155,8 +155,8 @@ data SyncSwitch = SyncRefresh
 
 instance Flagable SyncSwitch where
   asFlag SyncRefresh          = ["--refresh"]
-  asFlag (SyncIgnore ps)      = ["--ignore", intercalate "," $ asFlag ps ]
-  asFlag (SyncIgnoreGroup gs) = ["--ignoregroup" , intercalate "," $ asFlag gs ]
+  asFlag (SyncIgnore ps)      = ["--ignore", T.intercalate "," $ asFlag ps ]
+  asFlag (SyncIgnoreGroup gs) = ["--ignoregroup" , T.intercalate "," $ asFlag gs ]
 
 data UpgradeSwitch = UpgradeAsDeps
                    | UpgradeAsExplicit
@@ -167,8 +167,8 @@ data UpgradeSwitch = UpgradeAsDeps
 instance Flagable UpgradeSwitch where
   asFlag UpgradeAsDeps           = ["--asdeps"]
   asFlag UpgradeAsExplicit       = ["--asexplicit"]
-  asFlag (UpgradeIgnore ps)      = ["--ignore", intercalate "," $ asFlag ps ]
-  asFlag (UpgradeIgnoreGroup gs) = ["--ignoregroup" , intercalate "," $ asFlag gs ]
+  asFlag (UpgradeIgnore ps)      = ["--ignore", T.intercalate "," $ asFlag ps ]
+  asFlag (UpgradeIgnoreGroup gs) = ["--ignoregroup", T.intercalate "," $ asFlag gs ]
 
 -- | Flags common to several Pacman operations.
 data MiscOp = MiscArch    (Path Absolute)
@@ -189,14 +189,14 @@ data MiscOp = MiscArch    (Path Absolute)
             deriving (Eq, Ord, Show)
 
 instance Flagable MiscOp where
-  asFlag (MiscArch p)            = ["--arch", toFilePath p]
-  asFlag (MiscAssumeInstalled p) = ["--assume-installed", T.unpack p]
-  asFlag (MiscColor c)           = ["--color", T.unpack c]
-  asFlag (MiscDBPath p)          = ["--dbpath", toFilePath p]
-  asFlag (MiscGpgDir p)          = ["--gpgdir", toFilePath p]
-  asFlag (MiscHookDir p)         = ["--hookdir", toFilePath p]
-  asFlag (MiscPrintFormat s)     = ["--print-format", T.unpack s]
-  asFlag (MiscRoot p)            = ["--root", toFilePath p]
+  asFlag (MiscArch p)            = ["--arch", T.pack $ toFilePath p]
+  asFlag (MiscAssumeInstalled p) = ["--assume-installed", p]
+  asFlag (MiscColor c)           = ["--color", c]
+  asFlag (MiscDBPath p)          = ["--dbpath", T.pack $ toFilePath p]
+  asFlag (MiscGpgDir p)          = ["--gpgdir", T.pack $ toFilePath p]
+  asFlag (MiscHookDir p)         = ["--hookdir", T.pack $ toFilePath p]
+  asFlag (MiscPrintFormat s)     = ["--print-format", s]
+  asFlag (MiscRoot p)            = ["--root", T.pack $ toFilePath p]
   asFlag MiscConfirm             = ["--confirm"]
   asFlag MiscDBOnly              = ["--dbonly"]
   asFlag MiscNoDeps              = ["--nodeps"]

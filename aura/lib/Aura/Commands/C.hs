@@ -60,7 +60,7 @@ downgradePackages pkgs = do
   unless (null reals) $ do
     cache   <- send $ cacheContents cachePath
     choices <- traverse (getDowngradeChoice cache) $ toList reals
-    liftEitherM . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (toFilePath . path) choices
+    liftEitherM . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (T.pack . toFilePath . path) choices
 
 -- | For a given package, get a choice from the user about which version of it to
 -- downgrade to.

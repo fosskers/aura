@@ -2,6 +2,7 @@
 {-# LANGUAGE MonoLocalBinds    #-}
 {-# LANGUAGE MultiWayIf        #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ViewPatterns      #-}
 
 -- |
 -- Module    : Aura.Pacman
@@ -39,6 +40,7 @@ import           BasePrelude hiding (some, try)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.Map.Strict as M
+import           Data.Set (Set)
 import qualified Data.Set as S
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Text as T
@@ -98,18 +100,21 @@ getPacmanConf fp = do
   pure . first (const (Failure confParsing_1)) $ parse config "pacman config" file
 
 -- | Fetches the @IgnorePkg@ entry from the config, if it's there.
-getIgnoredPkgs :: Config -> S.Set PkgName
+getIgnoredPkgs :: Config -> Set PkgName
 getIgnoredPkgs (Config c) = maybe S.empty (S.fromList . map PkgName) $ M.lookup "IgnorePkg" c
 
 -- | Fetches the @IgnoreGroup@ entry from the config, if it's there.
-getIgnoredGroups :: Config -> S.Set PkgGroup
+getIgnoredGroups :: Config -> Set PkgGroup
 getIgnoredGroups (Config c) = maybe S.empty (S.fromList . map PkgGroup) $ M.lookup "IgnoreGroup" c
 
 -- | Given a `Set` of package groups, yield all the packages they contain.
-groupPackages :: NESet PkgGroup -> IO (S.Set PkgName)
-groupPackages igs | null igs  = pure S.empty
-                  | otherwise = fmap f . pacmanOutput $ "-Qg" : asFlag igs
-  where f = S.fromList . map (PkgName . strictText . (!! 1) . BL.words) . BL.lines
+groupPackages :: NESet PkgGroup -> IO (Set PkgName)
+groupPackages igs
+  | null igs  = pure S.empty
+  | otherwise = fmap f . pacmanOutput $ "-Qg" : asFlag igs
+  where
+    f :: BL.ByteString -> Set PkgName
+    f = S.fromList . map (PkgName . strictText . (!! 1) . BL.words) . BL.lines
 
 -- | Fetches the @CacheDir@ entry from the config, if it's there.
 getCachePath :: Config -> Maybe (Path Absolute)
@@ -123,21 +128,21 @@ getLogFilePath (Config c) = c ^? at "LogFile" . _Just . _head . to (fromAbsolute
 -- ACTIONS
 ----------
 -- | Run a pacman action that may fail. Will never throw an IO exception.
-pacman :: [String] -> IO (Either Failure ())
-pacman args = do
+pacman :: [T.Text] -> IO (Either Failure ())
+pacman (map T.unpack -> args) = do
   ec <- runProcess $ proc "pacman" args
   pure . bool (Left $ Failure pacmanFailure_1) (Right ()) $ ec == ExitSuccess
 
 -- | Run some `pacman` process, but only care about whether it succeeded.
-pacmanSuccess :: [String] -> IO Bool
-pacmanSuccess = fmap (== ExitSuccess) . runProcess . setStderr closed . setStdout closed . proc "pacman"
+pacmanSuccess :: [T.Text] -> IO Bool
+pacmanSuccess = fmap (== ExitSuccess) . runProcess . setStderr closed . setStdout closed . proc "pacman" . map T.unpack
 
 -- | Runs pacman silently and returns only the stdout.
-pacmanOutput :: [String] -> IO BL.ByteString
-pacmanOutput = fmap (^. _2) . readProcess . proc "pacman"
+pacmanOutput :: [T.Text] -> IO BL.ByteString
+pacmanOutput = fmap (^. _2) . readProcess . proc "pacman" . map T.unpack
 
 -- | Runs pacman silently and returns the stdout as UTF8-decoded `Text` lines.
-pacmanLines :: [String] -> IO [T.Text]
+pacmanLines :: [T.Text] -> IO [T.Text]
 pacmanLines s = T.lines . TL.toStrict . TL.decodeUtf8With lenientDecode <$> pacmanOutput s
 
 -- | Yields the lines given by `pacman -V` with the pacman image stripped.

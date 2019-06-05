@@ -72,10 +72,10 @@ import           Text.Megaparsec.Char
 
 -- | Types whose members can be converted to CLI flags.
 class Flagable a where
-  asFlag :: a -> [String]
+  asFlag :: a -> [T.Text]
 
 instance Flagable T.Text where
-  asFlag t = [T.unpack t]
+  asFlag t = [t]
 
 instance (Foldable f, Flagable a) => Flagable (f a) where
   asFlag = foldMap asFlag

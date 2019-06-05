@@ -45,17 +45,18 @@ makepkgCmd = fromAbsoluteFilePath "/usr/bin/makepkg"
 -- directory we're in.
 makepkg :: Settings -> User -> IO (Either Failure (NESet (Path Absolute)))
 makepkg ss usr = make ss usr (proc cmd $ opts <> colour) >>= g
-  where (cmd, opts) = runStyle usr . foldMap asFlag . makepkgFlagsOf $ buildConfigOf ss
-        g (ExitSuccess, _, fs)   = pure . note (Failure buildFail_9) . fmap NES.fromList $ NEL.nonEmpty fs
-        g (ExitFailure _, se, _) = do
-          unless (switch ss DontSuppressMakepkg) $ do
-            showError <- optionalPrompt ss buildFail_11
-            when showError $ BL.putStrLn se
-          pure . Left $ Failure buildFail_8
-        colour | shared ss (Colour Never)  = ["--nocolor"]
-               | shared ss (Colour Always) = []
-               | isTerminal ss = []
-               | otherwise = ["--nocolor"]
+  where
+    (cmd, opts) = runStyle usr . map T.unpack . foldMap asFlag . makepkgFlagsOf $ buildConfigOf ss
+    g (ExitSuccess, _, fs)   = pure . note (Failure buildFail_9) . fmap NES.fromList $ NEL.nonEmpty fs
+    g (ExitFailure _, se, _) = do
+      unless (switch ss DontSuppressMakepkg) $ do
+        showError <- optionalPrompt ss buildFail_11
+        when showError $ BL.putStrLn se
+      pure . Left $ Failure buildFail_8
+    colour | shared ss (Colour Never)  = ["--nocolor"]
+           | shared ss (Colour Always) = []
+           | isTerminal ss = []
+           | otherwise = ["--nocolor"]
 
 -- | Actually build the package, guarding on exceptions.
 -- Yields the filepaths of the built package tarballs.

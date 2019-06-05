@@ -19,7 +19,7 @@ module Aura.Packages.Repository
 
 import           Aura.Core
 import           Aura.Languages (provides_1)
-import           Aura.Pacman (pacmanOutput)
+import           Aura.Pacman (pacmanLines, pacmanOutput)
 import           Aura.Settings (CommonSwitch(..), Settings, shared)
 import           Aura.Types
 import           Aura.Utils (getSelection, strictText)
@@ -29,7 +29,6 @@ import           Control.Compactable (traverseEither)
 import           Control.Concurrent.STM.TVar (modifyTVar')
 import           Control.Error.Util (hush, note)
 import           Control.Scheduler (Comp(..), traverseConcurrently)
-import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
@@ -64,7 +63,7 @@ pacmanRepo = do
 
   pure $ Repository tv g
   where
-    f (r, p) = fmap (FromRepo . packageRepo r p) <$> mostRecentVersion r
+    f (r, p) = fmap (FromRepo . packageRepo r p) <$> mostRecent r
 
 packageRepo :: PkgName -> Provides -> Versioning -> Prebuilt
 packageRepo pn pro ver = Prebuilt { name     = pn
@@ -77,7 +76,7 @@ packageRepo pn pro ver = Prebuilt { name     = pn
 -- | If given a virtual package, try to find a real package to install.
 resolveName :: Settings -> PkgName -> IO (Either PkgName (PkgName, Provides))
 resolveName ss pn = do
-  provs <- map (PkgName . strictText) . BL.lines <$> pacmanOutput ["-Ssq", "^" <> T.unpack (pn ^. field @"name") <> "$"]
+  provs <- map PkgName <$> pacmanLines ["-Ssq", "^" <> (pn ^. field @"name") <> "$"]
   case provs of
     [] -> pure $ Left pn
     _  -> Right . (, Provides pn) <$> chooseProvider ss pn provs
@@ -96,8 +95,8 @@ chooseProvider ss pn ps@(a:as) =
       | otherwise = warn ss (provides_1 pn) >> getSelection (^. field @"name") (a :| as)
 
 -- | The most recent version of a package, if it exists in the respositories.
-mostRecentVersion :: PkgName -> IO (Either PkgName Versioning)
-mostRecentVersion p@(PkgName s) = note p . extractVersion . strictText <$> pacmanOutput ["-Si", T.unpack s]
+mostRecent :: PkgName -> IO (Either PkgName Versioning)
+mostRecent p@(PkgName s) = note p . extractVersion . strictText <$> pacmanOutput ["-Si", s]
 
 -- | Parses the version number of a package from the result of a
 -- @pacman -Si@ call.

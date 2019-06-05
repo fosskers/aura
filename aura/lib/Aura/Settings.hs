@@ -27,6 +27,7 @@ module Aura.Settings
 import           Aura.Types
 import           BasePrelude
 import qualified Data.Set as S
+import qualified Data.Text as T
 import           Network.HTTP.Client (Manager)
 import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath)
 
@@ -54,10 +55,10 @@ data CommonConfig = CommonConfig
 
 instance Flagable CommonConfig where
   asFlag (CommonConfig cap cop lfp cs) =
-    either (const []) (\p -> ["--cachedir", toFilePath p]) cap
-    ++ either (const []) (\p -> ["--config", toFilePath p]) cop
-    ++ either (const []) (\p -> ["--logfile", toFilePath p]) lfp
-    ++ asFlag cs
+    either (const []) (\p -> ["--cachedir", T.pack $ toFilePath p]) cap
+    <> either (const []) (\p -> ["--config", T.pack $ toFilePath p]) cop
+    <> either (const []) (\p -> ["--logfile", T.pack $ toFilePath p]) lfp
+    <> asFlag cs
 
 -- | Yes/No-style switches that are common to both Aura and Pacman.
 -- Aura acts on them first, then passes them down to @pacman@ if necessary.

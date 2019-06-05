@@ -59,7 +59,7 @@ installPkgFiles :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r
 installPkgFiles files = do
   ss <- asks settings
   send $ checkDBLock ss
-  liftEitherM . pacman $ ["-U"] <> map (toFilePath . path) (toList files) <> asFlag (commonConfigOf ss)
+  liftEitherM . pacman $ ["-U"] <> map (T.pack . toFilePath . path) (toList files) <> asFlag (commonConfigOf ss)
 
 -- | All building occurs within temp directories,
 -- or in a location specified by the user with flags.
