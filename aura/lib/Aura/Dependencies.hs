@@ -37,7 +37,7 @@ import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
-import           Data.Or (Or(..), elimOr)
+import           Data.Or (elimOr)
 import           Data.Semigroup.Foldable (foldMap1)
 import           Data.Set (Set)
 import qualified Data.Set as S
@@ -75,11 +75,11 @@ resolveDeps repo ps = do
 -- | Solve dependencies for a set of `Package`s assumed to not be
 -- installed/satisfied.
 resolveDeps' :: Settings -> Repository -> NESet Package -> IO Resolution
-resolveDeps' ss repo ps = z (Resolution mempty mempty) ps
+resolveDeps' ss repo ps = resolve (Resolution mempty mempty) ps
   where
     -- | Only searches for packages that we haven't checked yet.
-    z :: Resolution -> NESet Package -> IO Resolution
-    z r@(Resolution m _) xs = maybe' (pure r) (NES.nonEmptySet goods) $ \goods' -> do
+    resolve :: Resolution -> NESet Package -> IO Resolution
+    resolve r@(Resolution m _) xs = maybe' (pure r) (NES.nonEmptySet goods) $ \goods' -> do
       let m' = M.fromList (map (pname &&& id) $ toList goods')
           r' = r & field @"toInstall" %~ (<> m')
       elimOr (const $ pure r') (const $ satisfy r') (satisfy r') $ dividePkgs goods'
@@ -101,14 +101,13 @@ resolveDeps' ss repo ps = z (Resolution mempty mempty) ps
     -- | Consider only "unsatisfied" deps.
     satisfy :: Resolution -> NESet Buildable -> IO Resolution
     satisfy r bs = maybe' (pure r) (NES.nonEmptySet . freshDeps r $ allDeps bs) $
-      areSatisfied >=> \case
-        Fst uns -> lookups r uns
-        Snd (Satisfied sat) -> do
-          let sat' = S.map (^. field @"name") $ NES.toSet sat
-          pure $ r & field @"satisfied" %~ (<> sat')
-        Both uns (Satisfied sat) -> do
-          let sat' = S.map (^. field @"name") $ NES.toSet sat
-          lookups (r & field @"satisfied" %~ (<> sat')) uns
+      areSatisfied >=> elimOr (lookups r) (\uns sat -> lookups (r' sat) uns) (pure . r')
+      where
+        r' :: Satisfied -> Resolution
+        r' (Satisfied sat) = r & field @"satisfied" %~ (<> f sat)
+
+        f :: NESet Dep -> Set PkgName
+        f = S.map (^. field @"name") . NES.toSet
 
     -- TODO What about if `repoLookup` reports deps that don't exist?
     -- i.e. the left-hand side of the tuple.
@@ -119,7 +118,7 @@ resolveDeps' ss repo ps = z (Resolution mempty mempty) ps
       repoLookup repo ss names >>= \case
         Nothing -> throwString "AUR Connection Error"
         Just (_, IsEmpty) -> throwString "Non-existant deps"
-        Just (_, IsNonEmpty goods) -> z r goods
+        Just (_, IsNonEmpty goods) -> resolve r goods
 
 conflicts :: Settings -> Map PkgName Package -> Set PkgName -> [DepError]
 conflicts ss m s = foldMap f m
