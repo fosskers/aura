@@ -46,12 +46,13 @@ module Aura.Types
   , User(..)
   ) where
 
-import           BasePrelude hiding (try)
 import           Control.Error.Util (hush)
 import           Data.Aeson (FromJSONKey, ToJSONKey)
+import           Data.Bifunctor (Bifunctor(..))
 import           Data.Bitraversable
 import qualified Data.ByteString.Lazy as BL
 import           Data.Generics.Product (field, super)
+import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.Map.Strict as M
 import           Data.Or (Or(..))
 import           Data.Semigroup.Foldable (Foldable1(..))
@@ -63,6 +64,7 @@ import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions hiding (Traversal')
 import           GHC.Generics (Generic)
 import           Lens.Micro
+import           RIO hiding (try)
 import           System.Path (Absolute, Path, takeFileName, toUnrootedFilePath)
 import           Text.Megaparsec
 import           Text.Megaparsec.Char

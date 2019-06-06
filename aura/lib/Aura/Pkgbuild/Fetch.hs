@@ -18,14 +18,12 @@ module Aura.Pkgbuild.Fetch
 
 import           Aura.Types (PkgName(..), Pkgbuild(..))
 import           Aura.Utils (urlContents)
-import           BasePrelude
-import           Control.Exception (SomeException, catch)
 import           Data.Generics.Product (field)
 import qualified Data.Text as T
-import           Lens.Micro ((^.))
 import           Network.HTTP.Client (Manager)
 import           Network.URI (escapeURIString, isUnescapedInURIComponent)
-import           System.FilePath ((</>))
+import           RIO
+import           RIO.FilePath ((</>))
 
 ---
 

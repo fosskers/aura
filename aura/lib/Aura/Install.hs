@@ -36,7 +36,6 @@ import           Aura.Pkgbuild.Security
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils (optionalPrompt)
-import           BasePrelude hiding (FilePath, diff)
 import           Control.Compactable (fmapEither)
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error, throwError)
@@ -45,19 +44,22 @@ import           Control.Effect.Reader (Reader, asks)
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (HasField'(..), field, super)
+import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NEL
 import qualified Data.Map.Strict as M
 import           Data.Semigroup.Foldable (fold1)
 import qualified Data.Set as S
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
+import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Language.Bash.Pretty (prettyText)
 import           Language.Bash.Syntax (ShellCommand)
-import           Lens.Micro (each, (^.), (^..))
-import           Lens.Micro.Extras (view)
+import           Lens.Micro (each, (^..))
+import           RIO hiding (FilePath, Reader, asks)
+import           RIO.List (partition, sort)
 import           System.Directory (setCurrentDirectory)
-import           System.IO (hFlush, stdout)
+import           System.IO (stdout)
 import           System.Path (fromAbsoluteFilePath)
 
 ---
@@ -133,7 +135,7 @@ analysePkgbuild b = do
 
 displayBannedTerms :: Settings -> (ShellCommand, BannedTerm) -> IO ()
 displayBannedTerms ss (stmt, b) = do
-  putStrLn $ "\n    " <> prettyText stmt <> "\n"
+  T.putStrLn . T.pack $ "\n    " <> prettyText stmt <> "\n"
   warn ss $ reportExploit b lang
   where lang = langOf ss
 

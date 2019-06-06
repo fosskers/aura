@@ -7,12 +7,12 @@ import           Aura.Packages.Repository
 import           Aura.Pacman
 import           Aura.Pkgbuild.Security
 import           Aura.Types
-import           BasePrelude
 import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Versions
+import           RIO
 -- import           Language.Bash.Pretty (prettyText)
 import           System.Path
 import           Test.Tasty

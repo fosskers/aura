@@ -25,7 +25,6 @@ import           Aura.Pacman (pacman)
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
-import           BasePrelude
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error, throwError)
 import           Control.Effect.Lift (Lift, sendM)
@@ -41,9 +40,9 @@ import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Witherable (wither)
-import           Lens.Micro ((^.))
+import           RIO hiding (Reader, asks)
 import           System.Directory (setCurrentDirectory)
-import           System.IO (hFlush, stdout)
+import           System.IO (stdout)
 import           System.Path
 import           System.Path.IO
 import           System.Process.Typed

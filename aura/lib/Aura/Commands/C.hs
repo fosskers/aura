@@ -31,7 +31,6 @@ import           Aura.Settings
 import           Aura.State
 import           Aura.Types
 import           Aura.Utils
-import           BasePrelude
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error, throwError)
 import           Control.Effect.Lift (Lift, sendM)
@@ -43,7 +42,10 @@ import qualified Data.Set as S
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
+import qualified Data.Text.IO as T
 import           Lens.Micro ((^?), _Just)
+import           RIO hiding (Reader, asks)
+import           RIO.List (groupBy, sort, (\\))
 import           System.Path
 import           System.Path.IO (copyFile, doesDirectoryExist, removeFile)
 
@@ -83,7 +85,7 @@ searchCache :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) =>
 searchCache ps = do
   ss <- asks settings
   matches <- sendM $ cacheMatches ss ps
-  sendM . traverse_ (putStrLn . toFilePath . path) $ sort matches
+  sendM . traverse_ (T.putStrLn . T.pack . toFilePath . path) $ sort matches
 
 -- | The destination folder must already exist for the back-up to begin.
 backupCache :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
@@ -108,7 +110,7 @@ backup :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) =>
 backup dir (Cache cache) = do
   ss <- asks settings
   sendM . notify ss . backupCache_8 $ langOf ss
-  sendM $ putStrLn ""  -- So that the cursor can rise at first.
+  sendM $ T.putStrLn ""  -- So that the cursor can rise at first.
   copyAndNotify dir (M.elems cache) 1
 
 -- | Manages the file copying and display of the real-time progress notifier.

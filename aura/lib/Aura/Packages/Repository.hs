@@ -23,19 +23,19 @@ import           Aura.Pacman (pacmanLines, pacmanOutput)
 import           Aura.Settings (CommonSwitch(..), Settings, shared)
 import           Aura.Types
 import           Aura.Utils (getSelection, strictText)
-import           BasePrelude hiding (try)
 import           Control.Compactable (fmapEither)
 import           Control.Compactable (traverseEither)
 import           Control.Concurrent.STM.TVar (modifyTVar')
 import           Control.Error.Util (hush, note)
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Generics.Product (field)
+import           Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Versions
-import           Lens.Micro ((^.))
+import           RIO hiding (try)
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 

@@ -30,7 +30,6 @@ import           Aura.Pacman (pacman, pacmanOutput)
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
-import           BasePrelude hiding (Version, mapMaybe)
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error, throwError)
 import           Control.Effect.Lift (Lift, sendM)
@@ -42,14 +41,18 @@ import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (nonEmpty)
+import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import           Data.Time
 import           Data.Versions
 import           Data.Witherable (mapMaybe)
-import           Lens.Micro ((^.))
+import           RIO hiding (Reader, asks, mapMaybe)
+import           RIO.List (intercalate, partition, sort)
+import           RIO.List.Partial ((!!))
 import           System.Path
 import           System.Path.IO (createDirectoryIfMissing, getDirectoryContents)
+import           Text.Printf (printf)
 
 ---
 

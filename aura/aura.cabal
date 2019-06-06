@@ -31,20 +31,20 @@ common commons
   default-extensions: NoImplicitPrelude
   ghc-options:
       -Wall
+      -Wcompat
       -Wincomplete-record-updates
       -Wincomplete-uni-patterns
       -Wredundant-constraints
       -Widentities
       -Wpartial-fields
-      -Wcompat
       -funclutter-valid-hole-fits
   build-depends:
       base >=4.12 && < 5
-    , base-prelude >=1.2 && <1.4
     , bytestring
     , containers
     , microlens >=0.4 && <0.5
     , paths >=0.2 && <0.3
+    , rio ^>= 0.1
     , text >=1.2 && <1.3
     , versions >=3.5 && <3.6
 

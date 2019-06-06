@@ -23,7 +23,6 @@ module Aura.Cache
 
 import           Aura.Settings
 import           Aura.Types
-import           BasePrelude
 import           Data.Generics.Product (field)
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
@@ -31,6 +30,7 @@ import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Lens.Micro ((^.))
+import           RIO
 import           System.Path
     (Absolute, Path, fromAbsoluteFilePath, toFilePath, (</>))
 import           System.Path.IO (getDirectoryContents)

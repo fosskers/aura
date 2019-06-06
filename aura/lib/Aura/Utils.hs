@@ -37,7 +37,6 @@ import           Aura.Colour
 import           Aura.Languages (whitespace, yesNoMessage, yesPattern)
 import           Aura.Settings
 import           Aura.Types (Environment, Language, User(..))
-import           BasePrelude hiding (Version, (<+>))
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map.Strict as M
@@ -50,17 +49,19 @@ import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Network.HTTP.Client
 import           Network.HTTP.Types.Status (statusCode)
-import           System.IO (hFlush, stdout)
+import           RIO
+import           RIO.List.Partial (maximum)
+import           System.IO (stdout)
 import           System.Path (Absolute, Path, toFilePath)
 import           System.Path.IO (doesFileExist)
 import           System.Process.Typed (proc, runProcess)
+import           Text.Printf (printf)
 
 ---
 
 ---------
 -- STRING
 ---------
-
 -- | For regex-like find-and-replace in some `T.Text`.
 data Pattern = Pattern { _pattern :: T.Text, _target :: T.Text }
 
@@ -89,13 +90,13 @@ strictText = TL.toStrict . TL.decodeUtf8With lenientDecode
 getSelection :: Foldable f => (a -> T.Text) -> f a -> IO a
 getSelection f choiceLabels = do
   let quantity = length choiceLabels
-      valids   = show <$> [1..quantity]
+      valids   = T.pack . show <$> [1..quantity]
       pad      = show . length . show $ quantity
       choices  = zip valids $ toList choiceLabels
   traverse_ (\(l,v) -> printf ("%" <> pad <> "s. %s\n") l (f v)) choices
-  putStr ">> "
+  T.putStr ">> "
   hFlush stdout
-  userChoice <- getLine
+  userChoice <- T.getLine
   case userChoice `lookup` choices of
     Just valid -> pure valid
     Nothing    -> getSelection f choiceLabels  -- Ask again.
@@ -173,7 +174,6 @@ raiseCursorBy = T.putStr . cursorUpLineCode
 ----------------
 -- CUSTOM OUTPUT
 ----------------
-
 -- | Print a `Doc` with Aura flair after performing a `colourCheck`.
 putStrLnA :: Settings -> Doc AnsiStyle -> IO ()
 putStrLnA ss d = putStrA ss $ d <> hardline

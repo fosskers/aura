@@ -38,13 +38,15 @@ module Aura.Languages where
 import           Aura.Colour
 import qualified Aura.Languages.Fields as Fields
 import           Aura.Types
-import           BasePrelude hiding ((<+>))
 import           Data.Generics.Product (field)
+import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.Map.Strict as Map (Map, fromList, mapWithKey, toList, (!))
+import           Data.Ratio ((%))
 import qualified Data.Text as T
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
-import           Lens.Micro.Extras (view)
+import           RIO
+import           RIO.List (intersperse)
 
 ---
 
@@ -816,7 +818,7 @@ cleanStates_5 t = \case
   Japanese  -> "一番最近に保存されたのは：" <> pretty t
   Russian   -> "Последнее сохраненное:" <+> pretty t
   Esperanto -> "Lastaj konservaj:" <+> pretty t
-  _         -> "Mostly recently saved:" <+> pretty t
+  _         -> "Most recently saved:" <+> pretty t
 
 cleanStates_6 :: Int -> Language -> Doc AnsiStyle
 cleanStates_6 n = \case

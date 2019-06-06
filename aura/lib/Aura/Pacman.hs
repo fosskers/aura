@@ -36,7 +36,7 @@ module Aura.Pacman
 import           Aura.Languages
 import           Aura.Types
 import           Aura.Utils (strictText)
-import           BasePrelude hiding (some, try)
+import           Data.Bifunctor (first)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.Map.Strict as M
@@ -50,6 +50,8 @@ import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Encoding as TL
 import           Lens.Micro
 import           Lens.Micro.GHC ()
+import           RIO hiding (first, some, try)
+import           RIO.List.Partial ((!!))
 import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath)
 import           System.Process.Typed
 import           Text.Megaparsec hiding (single)

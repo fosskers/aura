@@ -17,15 +17,14 @@ module Aura.Commands.O ( displayOrphans, adoptPkg ) where
 import           Aura.Core (Env(..), liftEitherM, orphans, sudo)
 import           Aura.Pacman (pacman)
 import           Aura.Types
-import           BasePrelude
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error)
-import           Control.Effect.Reader (Reader)
 import           Control.Effect.Lift (Lift, sendM)
+import           Control.Effect.Reader (Reader)
 import           Data.Generics.Product (field)
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Text.IO as T
-import           Lens.Micro.Extras (view)
+import           RIO hiding (Reader)
 
 ---
 

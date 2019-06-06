@@ -16,11 +16,11 @@ module Aura.Pkgbuild.Records
 
 import           Aura.Pkgbuild.Base
 import           Aura.Types
-import           BasePrelude
 import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
 import           Data.Set.NonEmpty (NESet)
 import           Lens.Micro ((^.))
+import           RIO
 import           System.Path (toFilePath)
 import           System.Path.IO (createDirectoryIfMissing, doesFileExist)
 

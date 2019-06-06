@@ -51,11 +51,11 @@ import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pacman
 import           Aura.Settings
 import           Aura.Types
-import           BasePrelude hiding (Version)
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error, runError)
 import           Control.Effect.Lift (Lift, runM, sendM)
 import           Control.Effect.Reader (Reader, asks, runReader)
+import           Data.Bifunctor (first)
 import           Data.Set (Set)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
@@ -64,6 +64,7 @@ import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Flags
 import           Options.Applicative (execParser)
+import           RIO hiding (Reader, asks, first, runReader)
 import           Settings
 import           System.Path (toFilePath)
 import           System.Process.Typed (proc, runProcess)
@@ -146,7 +147,7 @@ displayOutputLanguages :: (Carrier sig m, Member (Reader Env) sig, Member (Lift 
 displayOutputLanguages = do
   ss <- asks settings
   sendM . notify ss . displayOutputLanguages_1 $ langOf ss
-  sendM $ traverse_ print [English ..]
+  sendM $ traverse_ (T.putStrLn . T.pack . show) [English ..]
 
 viewConfFile :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => m ()
 viewConfFile = do

@@ -25,7 +25,6 @@ import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types (PkgName(..))
 import           Aura.Utils
-import           BasePrelude hiding (FilePath)
 import           Control.Compactable (fmapEither)
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Lift (Lift, sendM)
@@ -39,7 +38,7 @@ import           Data.Text.Encoding as T
 import           Data.Text.Encoding.Error (lenientDecode)
 import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
-import           Lens.Micro ((^.))
+import           RIO hiding (FilePath, Reader, asks)
 import           System.Path (toFilePath)
 import           System.Process.Typed (proc, runProcess)
 

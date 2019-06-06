@@ -12,6 +12,7 @@ extra-deps:
   - language-bash-0.8.0
   - nonempty-containers-0.2.0.0
   - paths-0.2.0.0
+  - rio-0.1.9.2
   - scheduler-1.4.0
   - servant-0.16.0.1
   - servant-client-0.16

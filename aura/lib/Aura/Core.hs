@@ -1,10 +1,10 @@
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE ScopedTypeVariables         #-}
-{-# LANGUAGE FlexibleContexts  #-}
-{-# LANGUAGE MonoLocalBinds    #-}
-{-# LANGUAGE MultiWayIf        #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications  #-}
+{-# LANGUAGE DataKinds           #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE MonoLocalBinds      #-}
+{-# LANGUAGE MultiWayIf          #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
 
 -- |
 -- Module    : Aura.Core
@@ -40,15 +40,16 @@ import           Aura.Pkgbuild.Editing (hotEdit)
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
-import           BasePrelude hiding ((<>))
 import           Control.Compactable (fmapEither)
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error, throwError)
 import           Control.Effect.Lift (Lift, sendM)
 import           Control.Effect.Reader (Reader, asks)
 import           Control.Monad.Trans.Maybe
+import           Data.Bifunctor (bimap)
 import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
+import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Map.Strict (Map)
 import           Data.Or (Or(..))
@@ -61,8 +62,8 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
-import           Lens.Micro ((^.))
-import           Lens.Micro.Extras (view)
+import           RIO hiding (Reader, asks, (<>))
+import           RIO.List (unzip)
 import           System.Path.IO (doesFileExist)
 
 ---
@@ -191,7 +192,7 @@ areSatisfied ds = do
 checkDBLock :: Settings -> IO ()
 checkDBLock ss = do
   locked <- doesFileExist lockFile
-  when locked $ (warn ss . checkDBLock_1 $ langOf ss) *> getLine *> checkDBLock ss
+  when locked $ (warn ss . checkDBLock_1 $ langOf ss) *> T.getLine *> checkDBLock ss
 
 -------
 -- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`

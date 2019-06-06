@@ -25,10 +25,10 @@ module Aura.Settings
   ) where
 
 import           Aura.Types
-import           BasePrelude
 import qualified Data.Set as S
 import qualified Data.Text as T
 import           Network.HTTP.Client (Manager)
+import           RIO
 import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath)
 
 ---

@@ -11,7 +11,6 @@ import           Aura.Cache (defaultPackageCache)
 import           Aura.Pacman (defaultLogFile, pacmanConfFile)
 import           Aura.Settings
 import           Aura.Types
-import           BasePrelude hiding (Version, exp, log, option)
 import qualified Data.List.NonEmpty as NEL
 import qualified Data.Set as S
 import           Data.Set.NonEmpty (NESet)
@@ -19,6 +18,8 @@ import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Lens.Micro
 import           Options.Applicative
+import           RIO hiding (exp, log)
+import           RIO.List.Partial (foldr1)
 import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath)
 
 ---
@@ -476,19 +477,19 @@ upgrades = bigU *> (Upgrade <$> (S.fromList <$> many mods) <*> somePkgs)
           strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore packages from the given groups.")
 
 somePkgs :: Parser (NESet PkgName)
-somePkgs = NES.fromList . fromJust . NEL.nonEmpty . map PkgName <$> some (argument str (metavar "PACKAGES"))
+somePkgs = NES.fromList . NEL.fromList . map PkgName <$> some (argument str (metavar "PACKAGES"))
 
 -- | Same as `someArgs`, but the help message "brief display" won't show PACKAGES.
 somePkgs' :: Parser (NESet PkgName)
-somePkgs' = NES.fromList . fromJust . NEL.nonEmpty . map PkgName <$> some (argument str (metavar "PACKAGES" <> hidden))
+somePkgs' = NES.fromList . NEL.fromList . map PkgName <$> some (argument str (metavar "PACKAGES" <> hidden))
 
 -- | One or more arguments.
 someArgs :: Parser (NESet T.Text)
-someArgs = NES.fromList . fromJust . NEL.nonEmpty <$> some (argument str (metavar "PACKAGES"))
+someArgs = NES.fromList . NEL.fromList <$> some (argument str (metavar "PACKAGES"))
 
 -- | Same as `someArgs`, but the help message "brief display" won't show PACKAGES.
 someArgs' :: Parser (NESet T.Text)
-someArgs' = NES.fromList . fromJust . NEL.nonEmpty <$> some (argument str (metavar "PACKAGES" <> hidden))
+someArgs' = NES.fromList . NEL.fromList <$> some (argument str (metavar "PACKAGES" <> hidden))
 
 -- | Zero or more arguments.
 manyArgs :: Parser (S.Set T.Text)

@@ -24,8 +24,11 @@ import           Aura.Languages
 import           Aura.Settings
 import           Aura.State
 import           Aura.Utils (optionalPrompt)
-import           BasePrelude
+import qualified Data.List.NonEmpty as NEL
 import qualified Data.Text as T
+import qualified Data.Text.IO as T
+import           RIO
+import           RIO.List (partition)
 import           System.Path (takeFileName, toFilePath, toUnrootedFilePath)
 import           System.Path.IO (removeFile)
 
@@ -38,12 +41,16 @@ cleanStates ss (fromIntegral -> n) = do
   (pinned, others) <- partition p <$> traverse (\sf -> (sf,) <$> readState sf) stfs
   warn ss . cleanStates_4 (length stfs) $ langOf ss
   unless (null pinned) . warn ss . cleanStates_6 (length pinned) $ langOf ss
-  unless (null stfs) . warn ss . cleanStates_5 (T.pack . toUnrootedFilePath . takeFileName $ head stfs) $ langOf ss
+  forM_ (NEL.nonEmpty stfs) $ \stfs' -> do
+    let mostRecent = T.pack . toUnrootedFilePath . takeFileName $ NEL.head stfs'
+    warn ss . cleanStates_5 mostRecent $ langOf ss
   okay <- optionalPrompt ss $ cleanStates_2 n
   if | not okay  -> warn ss . cleanStates_3 $ langOf ss
      | otherwise -> traverse_ (removeFile . fst) . drop n $ others
-  where p = maybe False pinnedOf . snd
+  where
+    p :: (a, Maybe PkgState) -> Bool
+    p = maybe False pinnedOf . snd
 
 -- | The result of @-Bl@.
 listStates :: IO ()
-listStates = getStateFiles >>= traverse_ (putStrLn . toFilePath)
+listStates = getStateFiles >>= traverse_ (T.putStrLn . T.pack . toFilePath)

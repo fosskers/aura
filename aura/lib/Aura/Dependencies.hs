@@ -1,13 +1,14 @@
-{-# LANGUAGE DataKinds        #-}
-{-# LANGUAGE DeriveGeneric    #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase       #-}
-{-# LANGUAGE MonoLocalBinds   #-}
-{-# LANGUAGE MultiWayIf       #-}
-{-# LANGUAGE PatternSynonyms  #-}
-{-# LANGUAGE RankNTypes       #-}
-{-# LANGUAGE TupleSections    #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE LambdaCase        #-}
+{-# LANGUAGE MonoLocalBinds    #-}
+{-# LANGUAGE MultiWayIf        #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE PatternSynonyms   #-}
+{-# LANGUAGE RankNTypes        #-}
+{-# LANGUAGE TupleSections     #-}
+{-# LANGUAGE TypeApplications  #-}
 
 -- |
 -- Module    : Aura.Dependencies
@@ -28,13 +29,13 @@ import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils (maybe')
-import           BasePrelude
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error, throwError)
 import           Control.Effect.Lift (Lift, sendM)
 import           Control.Effect.Reader (Reader, asks)
 import           Control.Error.Util (note)
 import           Data.Generics.Product (field)
+import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
@@ -45,8 +46,10 @@ import qualified Data.Set as S
 import           Data.Set.NonEmpty (pattern IsEmpty, pattern IsNonEmpty, NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
+import qualified Data.Text.IO as T
 import           Data.Versions
 import           Lens.Micro
+import           RIO hiding (Reader, asks)
 import           UnliftIO.Exception (catchAny, throwString)
 
 ---
@@ -68,7 +71,7 @@ resolveDeps repo ps = do
   ss <- asks settings
   Resolution m s <- liftMaybeM (Failure connectionFailure_1) . sendM $
     (Just <$> resolveDeps' ss repo ps) `catchAny` (const $ pure Nothing)
-  unless (length ps == length m) $ sendM (putStr "\n")
+  unless (length ps == length m) $ sendM (T.putStr "\n")
   let de = conflicts ss m s
   unless (null de) . throwError . Failure $ missingPkg_2 de
   either throwError pure $ sortInstall m

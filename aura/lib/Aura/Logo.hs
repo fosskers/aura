@@ -15,11 +15,11 @@ import           Aura.Languages (translatorMsg)
 import           Aura.Pacman (verMsgPad)
 import           Aura.Settings
 import           Aura.Utils
-import           BasePrelude
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
-import           System.IO (hFlush, stdout)
+import           RIO
+import           System.IO (stdout)
 
 ---
 

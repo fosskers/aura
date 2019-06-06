@@ -20,7 +20,6 @@ module Aura.Pkgbuild.Security
 import           Aura.Languages
 import           Aura.Types (Language, Pkgbuild(..))
 import           Aura.Utils (strictText)
-import           BasePrelude hiding (Last, Word)
 import           Control.Error.Util (hush)
 import           Data.Generics.Product
 import qualified Data.Map.Strict as M
@@ -31,6 +30,7 @@ import           Language.Bash.Parse (parse)
 import           Language.Bash.Syntax
 import           Language.Bash.Word (Span(..), Word, unquote)
 import           Lens.Micro
+import           RIO hiding (Word)
 
 ---
 
