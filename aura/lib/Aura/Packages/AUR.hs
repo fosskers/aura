@@ -36,9 +36,10 @@ import           BasePrelude hiding (head)
 import           Control.Compactable (fmapEither)
 import           Control.Concurrent.STM.TVar (modifyTVar')
 import           Control.Error.Util (hush, note)
-import           Control.Monad.Freer
-import           Control.Monad.Freer.Error
-import           Control.Monad.Freer.Reader
+import           Control.Effect (Carrier, Member)
+import           Control.Effect.Error (Error)
+import           Control.Effect.Lift (Lift, sendM)
+import           Control.Effect.Reader (Reader, asks)
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Maybe
 import           Control.Scheduler (Comp(..), traverseConcurrently)
@@ -147,15 +148,17 @@ sortAurInfo bs ai = sortBy compare' ai
                      _ -> \x y -> compare (aurVotesOf y) (aurVotesOf x)
 
 -- | Frontend to the `aur` library. For @-As@.
-aurSearch :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => T.Text -> Eff r [AurInfo]
+aurSearch :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
+  T.Text -> m [AurInfo]
 aurSearch regex = do
   ss  <- asks settings
-  res <- liftMaybeM (Failure connectionFailure_1) . fmap hush $ search (managerOf ss) regex
+  res <- liftMaybeM (Failure connectionFailure_1) . fmap hush . sendM $ search (managerOf ss) regex
   pure $ sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) res
 
 -- | Frontend to the `aur` library. For @-Ai@.
-aurInfo :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => NonEmpty PkgName -> Eff r [AurInfo]
+aurInfo :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
+  NonEmpty PkgName -> m [AurInfo]
 aurInfo pkgs = do
   m   <- asks (managerOf . settings)
-  res <- liftMaybeM (Failure connectionFailure_1) . fmap hush . info m . map (^. field @"name") $ toList pkgs
+  res <- liftMaybeM (Failure connectionFailure_1) . fmap hush . sendM . info m . map (^. field @"name") $ toList pkgs
   pure $ sortAurInfo (Just SortAlphabetically) res

@@ -18,9 +18,10 @@ import           Aura.Core (Env(..), liftEitherM, orphans, sudo)
 import           Aura.Pacman (pacman)
 import           Aura.Types
 import           BasePrelude
-import           Control.Monad.Freer
-import           Control.Monad.Freer.Error
-import           Control.Monad.Freer.Reader
+import           Control.Effect (Carrier, Member)
+import           Control.Effect.Error (Error)
+import           Control.Effect.Reader (Reader)
+import           Control.Effect.Lift (Lift, sendM)
 import           Data.Generics.Product (field)
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Text.IO as T
@@ -33,5 +34,5 @@ displayOrphans :: IO ()
 displayOrphans = orphans >>= traverse_ (T.putStrLn . view (field @"name"))
 
 -- | Identical to @-D --asexplicit@.
-adoptPkg :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => NESet PkgName -> Eff r ()
-adoptPkg pkgs = sudo . liftEitherM . pacman $ ["-D", "--asexplicit"] <> asFlag pkgs
+adoptPkg :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => NESet PkgName -> m ()
+adoptPkg pkgs = sudo . liftEitherM . sendM . pacman $ ["-D", "--asexplicit"] <> asFlag pkgs

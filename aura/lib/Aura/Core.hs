@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE ScopedTypeVariables         #-}
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE MonoLocalBinds    #-}
 {-# LANGUAGE MultiWayIf        #-}
@@ -41,9 +42,10 @@ import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding ((<>))
 import           Control.Compactable (fmapEither)
-import           Control.Monad.Freer
-import           Control.Monad.Freer.Error
-import           Control.Monad.Freer.Reader
+import           Control.Effect (Carrier, Member)
+import           Control.Effect.Error (Error, throwError)
+import           Control.Effect.Lift (Lift, sendM)
+import           Control.Effect.Reader (Reader, asks)
 import           Control.Monad.Trans.Maybe
 import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
@@ -112,32 +114,31 @@ packageBuildable ss b = FromAUR <$> hotEdit ss b
 -----------
 -- THE WORK
 -----------
--- | Lift a common return type into the `Eff` world. Usually used after a
--- `pacman` call.
-liftEither :: Member (Error a) r => Either a b -> Eff r b
+-- | Lift a common return type into the `fused-effects` world. Usually used
+-- after a `pacman` call.
+liftEither :: (Carrier sig m, Member (Error a) sig) => Either a b -> m b
 liftEither = either throwError pure
 
 -- | Like `liftEither`, but the `Either` can be embedded in something else,
 -- usually a `Monad`.
-liftEitherM :: (Member (Error a) r, Member m r) => m (Either a b) -> Eff r b
-liftEitherM = send >=> liftEither
+liftEitherM :: (Carrier sig m, Member (Error a) sig) => m (Either a b) -> m b
+liftEitherM m = m >>= liftEither
 
 -- | Like `liftEither`, but for `Maybe`.
-liftMaybe :: Member (Error a) r => a -> Maybe b -> Eff r b
+liftMaybe :: (Carrier sig m, Member (Error a) sig) => a -> Maybe b -> m b
 liftMaybe a = maybe (throwError a) pure
 
 -- | Like `liftEitherM`, but for `Maybe`.
-liftMaybeM :: (Member (Error a) r, Member m r) => a -> m (Maybe b) -> Eff r b
-liftMaybeM a m = send m >>= liftMaybe a
+liftMaybeM :: (Carrier sig m, Member (Error a) sig) => a -> m (Maybe b) -> m b
+liftMaybeM a m = m >>= liftMaybe a
 
 -- | Action won't be allowed unless user is root, or using sudo.
-sudo :: (Member (Reader Env) r, Member (Error Failure) r) => Eff r a -> Eff r a
-sudo action =
-  asks (hasRootPriv . envOf . settings) >>= bool (throwError $ Failure mustBeRoot_1) action
+sudo :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig) => m a -> m a
+sudo action = asks (hasRootPriv . envOf . settings) >>= bool (throwError $ Failure mustBeRoot_1) action
 
 -- | Stop the user if they are the true root. Building as root isn't allowed
 -- since makepkg v4.2.
-trueRoot :: (Member (Reader Env) r, Member (Error Failure) r) => Eff r a -> Eff r a
+trueRoot :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig) => m a -> m a
 trueRoot action = asks settings >>= \ss ->
   if not (isTrueRoot $ envOf ss) && buildUserOf (buildConfigOf ss) /= Just (User "root")
     then action else throwError $ Failure trueRoot_3
@@ -163,10 +164,11 @@ isInstalled :: PkgName -> IO (Maybe PkgName)
 isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", pkg ^. field @"name"]
 
 -- | An @-Rsu@ call.
-removePkgs :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) => NESet PkgName -> Eff r ()
+removePkgs :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
+  NESet PkgName -> m ()
 removePkgs pkgs = do
   pacOpts <- asks (commonConfigOf . settings)
-  liftEitherM . pacman $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts
+  liftEitherM . sendM . pacman $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts
 
 -- | Depedencies which are not installed, or otherwise provided by some
 -- installed package.
@@ -209,9 +211,9 @@ scold ss = putStrLnA ss . red
 
 -- | Report a message with multiple associated items. Usually a list of
 -- naughty packages.
-report :: (Member (Reader Env) r, Member IO r) =>
-  (Doc AnsiStyle -> Doc AnsiStyle) -> (Language -> Doc AnsiStyle) -> NonEmpty PkgName -> Eff r ()
+report :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) =>
+  (Doc AnsiStyle -> Doc AnsiStyle) -> (Language -> Doc AnsiStyle) -> NonEmpty PkgName -> m ()
 report c msg pkgs = do
   ss <- asks settings
-  send . putStrLnA ss . c . msg $ langOf ss
-  send . T.putStrLn . dtot . colourCheck ss . vsep . map (cyan . pretty . view (field @"name")) $ toList pkgs
+  sendM . putStrLnA ss . c . msg $ langOf ss
+  sendM . T.putStrLn . dtot . colourCheck ss . vsep . map (cyan . pretty . view (field @"name")) $ toList pkgs

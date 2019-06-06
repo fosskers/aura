@@ -29,10 +29,11 @@ import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils (maybe')
 import           BasePrelude
+import           Control.Effect (Carrier, Member)
+import           Control.Effect.Error (Error, throwError)
+import           Control.Effect.Lift (Lift, sendM)
+import           Control.Effect.Reader (Reader, asks)
 import           Control.Error.Util (note)
-import           Control.Monad.Freer
-import           Control.Monad.Freer.Error
-import           Control.Monad.Freer.Reader
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Map.Strict (Map)
@@ -61,13 +62,13 @@ data Resolution = Resolution
 -- interdependent, and thus can be built and installed as a group.
 --
 -- Deeper layers of the result list (generally) depend on the previous layers.
-resolveDeps :: (Member (Reader Env) r, Member (Error Failure) r, Member IO r) =>
-  Repository -> NESet Package -> Eff r (NonEmpty (NESet Package))
+resolveDeps :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
+  Repository -> NESet Package -> m (NonEmpty (NESet Package))
 resolveDeps repo ps = do
   ss <- asks settings
-  Resolution m s <- liftMaybeM (Failure connectionFailure_1) $
+  Resolution m s <- liftMaybeM (Failure connectionFailure_1) . sendM $
     (Just <$> resolveDeps' ss repo ps) `catchAny` (const $ pure Nothing)
-  unless (length ps == length m) $ send (putStr "\n")
+  unless (length ps == length m) $ sendM (putStr "\n")
   let de = conflicts ss m s
   unless (null de) . throwError . Failure $ missingPkg_2 de
   either throwError pure $ sortInstall m

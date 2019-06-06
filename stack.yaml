@@ -8,6 +8,7 @@ packages:
 
 extra-deps:
   - compactable-0.1.2.3
+  - fused-effects-0.4.0.0
   - language-bash-0.8.0
   - nonempty-containers-0.2.0.0
   - paths-0.2.0.0
