@@ -75,7 +75,7 @@ Install order is as follows:
   Aura code demonstrates:
   * Parser Combinators (`megaparsec`)
   * CLI Flag Handling (`optparse-applicative`)
-  * Extensible Effects (`freer-simple`)
+  * Extensible Effects (`fused-effects`)
   * Concurrency (`async`)
   * Shell Interaction (`shelly`)
 
