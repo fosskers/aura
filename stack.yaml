@@ -1,4 +1,4 @@
-resolver: lts-13.23
+resolver: lts-13.24
 
 packages:
   - aura/
@@ -11,7 +11,7 @@ extra-deps:
   - language-bash-0.8.0
   - nonempty-containers-0.2.0.0
   - paths-0.2.0.0
-  - scheduler-1.1.0
+  - scheduler-1.4.0
   - servant-0.16.0.1
   - servant-client-0.16
   - servant-client-core-0.16

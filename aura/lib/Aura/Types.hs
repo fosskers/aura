@@ -49,7 +49,6 @@ module Aura.Types
 import           BasePrelude hiding (try)
 import           Control.Error.Util (hush)
 import           Data.Aeson (FromJSONKey, ToJSONKey)
-import           Data.Bifoldable (Bifoldable(..))
 import           Data.Bitraversable
 import qualified Data.ByteString.Lazy as BL
 import           Data.Generics.Product (field, super)
@@ -300,28 +299,7 @@ instance (Semigroup a, Semigroup b) => Semigroup (Or a b) where
   Both l r <> Snd a    = Both l (r <> a)
   Both l r <> Both a b = Both (l <> a) (r <> b)
 
--- instance Functor (Or a) where
---   fmap f (Fst a)    = Fst a
---   fmap f (Both a b) = Both a $ f b
---   fmap f (Snd b)    = Snd $ f b
-
--- instance Semigroup a => Applicative (Or a) where
---   pure = Snd
-
---   Fst  a   <*> _        = Fst a
---   Snd    _ <*> Fst  b   = Fst b
---   Snd    f <*> Snd    x = Snd (f x)
---   Snd    f <*> Both b x = Both b (f x)
---   Both a _ <*> Fst  b   = Fst (a <> b)
---   Both a f <*> Snd    x = Both a (f x)
---   Both a f <*> Both b x = Both (a <> b) (f x)
-
 instance Bifunctor Or where
   bimap l _ (Fst a)    = Fst $ l a
   bimap l r (Both a b) = Both (l a) (r b)
   bimap _ r (Snd b)    = Snd $ r b
-
-instance Bifoldable Or where
-  bifoldMap l _ (Fst a)    = l a
-  bifoldMap l r (Both a b) = l a <> r b
-  bifoldMap _ r (Snd b)    = r b
