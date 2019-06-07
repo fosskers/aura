@@ -47,23 +47,19 @@ import           Control.Effect.Lift (Lift, sendM)
 import           Control.Effect.Reader (Reader, asks)
 import           Control.Monad.Trans.Maybe
 import           Data.Bifunctor (bimap)
-import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NEL
-import           Data.Map.Strict (Map)
 import           Data.Or (Or(..))
-import           Data.Semigroup
-import           Data.Set (Set)
-import qualified Data.Set as S
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           RIO hiding (Reader, asks, (<>))
+import qualified RIO.ByteString as B
 import           RIO.List (unzip)
+import qualified RIO.Set as S
+import qualified RIO.Text as T
 import           System.Path.IO (doesFileExist)
 
 ---
@@ -147,11 +143,11 @@ trueRoot action = asks settings >>= \ss ->
 -- | A list of non-prebuilt packages installed on the system.
 -- `-Qm` yields a list of sorted values.
 foreignPackages :: IO (Set SimplePkg)
-foreignPackages = S.fromList . mapMaybe (simplepkg' . strictText) . BL.lines <$> pacmanOutput ["-Qm"]
+foreignPackages = S.fromList . mapMaybe simplepkg' <$> pacmanLines ["-Qm"]
 
 -- | Packages marked as a dependency, yet are required by no other package.
 orphans :: IO (Set PkgName)
-orphans = S.fromList . map (PkgName . strictText) . BL.lines <$> pacmanOutput ["-Qqdt"]
+orphans = S.fromList . map PkgName <$> pacmanLines ["-Qqdt"]
 
 -- | Any package whose name is suffixed by git, hg, svn, darcs, cvs, or bzr.
 develPkgs :: IO (Set PkgName)
@@ -185,14 +181,14 @@ areSatisfied ds = do
   unsats <- S.fromList . mapMaybe parseDep <$> unsat
   pure . bimap Unsatisfied Satisfied $ NES.partition (\d -> S.member d unsats) ds
   where
-    unsat :: IO [T.Text]
+    unsat :: IO [Text]
     unsat = pacmanLines $ "-T" : map renderedDep (toList ds)
 
 -- | Block further action until the database is free.
 checkDBLock :: Settings -> IO ()
 checkDBLock ss = do
   locked <- doesFileExist lockFile
-  when locked $ (warn ss . checkDBLock_1 $ langOf ss) *> T.getLine *> checkDBLock ss
+  when locked $ (warn ss . checkDBLock_1 $ langOf ss) *> B.getLine *> checkDBLock ss
 
 -------
 -- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`
@@ -217,4 +213,4 @@ report :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) =>
 report c msg pkgs = do
   ss <- asks settings
   sendM . putStrLnA ss . c . msg $ langOf ss
-  sendM . T.putStrLn . dtot . colourCheck ss . vsep . map (cyan . pretty . view (field @"name")) $ toList pkgs
+  sendM . putTextLn . dtot . colourCheck ss . vsep . map (cyan . pretty . view (field @"name")) $ toList pkgs

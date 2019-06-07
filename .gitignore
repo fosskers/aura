@@ -1,8 +1,11 @@
-dist/
 *.hi
 *.o
-.cabal-sandbox
-cabal.sandbox.config
-build/
-.stack-work/*
 *.svg
+.cabal-sandbox
+.stack-work/*
+AUR-SECURITY.*
+TAGS
+build/
+cabal.sandbox.config
+dist/
+flames

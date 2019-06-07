@@ -18,15 +18,15 @@ module Aura.MakePkg
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils (optionalPrompt, strictText)
+import           Aura.Utils (optionalPrompt)
 import           Control.Error.Util (note)
-import qualified Data.ByteString.Lazy.Char8 as BL
 import qualified Data.List.NonEmpty as NEL
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
-import           Lens.Micro ((^.), _2)
+import           Lens.Micro (_2)
 import           RIO
+import qualified RIO.ByteString.Lazy as BL
+import qualified RIO.Text as T
 import           System.Path
     (Absolute, Path, fromAbsoluteFilePath, toFilePath, (</>))
 import           System.Path.IO (getCurrentDirectory, getDirectoryContents)
@@ -64,7 +64,7 @@ make :: MonadIO m => Settings -> User -> ProcessConfig stdin stdout stderr -> m 
 make ss (User usr) pc = do
   (ec, se) <- runIt ss pc
   res <- readProcess $ proc "sudo" ["-u", T.unpack usr, toFilePath makepkgCmd, "--packagelist"]
-  let fs = map (fromAbsoluteFilePath . T.unpack . strictText) . BL.lines $ res ^. _2
+  let fs = map (fromAbsoluteFilePath . T.unpack) . T.lines . decodeUtf8Lenient . BL.toStrict $ res ^. _2
   pure (ec, se, fs)
 
 runIt :: MonadIO m => Settings -> ProcessConfig stdin stdout stderr -> m (ExitCode, BL.ByteString)

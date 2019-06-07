@@ -45,25 +45,25 @@ import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NEL
-import qualified Data.Map.Strict as M
-import qualified Data.Set as S
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
 import           Data.Versions (versioning)
 import           Lens.Micro (each, non, (^..))
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
 import           RIO hiding (Reader, asks)
 import           RIO.List (sortBy)
+import qualified RIO.Map as M
+import qualified RIO.Set as S
+import qualified RIO.Text as T
 import           System.Path
 import           System.Path.IO (getCurrentDirectory)
 import           System.Process.Typed
 
 ---
 
--- | Attempt to retrieve info about a given `S.Set` of packages from the AUR.
-aurLookup :: Manager -> NESet PkgName -> IO (Maybe (S.Set PkgName, S.Set Buildable))
+-- | Attempt to retrieve info about a given `Set` of packages from the AUR.
+aurLookup :: Manager -> NESet PkgName -> IO (Maybe (Set PkgName, Set Buildable))
 aurLookup m names = runMaybeT $ do
   infos <- MaybeT . fmap hush . info m $ foldr (\(PkgName pn) acc -> pn : acc) [] names
   badsgoods <- lift $ traverseConcurrently Par' (buildable m) infos
@@ -78,7 +78,7 @@ aurRepo = do
 
   -- TODO Use `data-or` here to offer `Or (NESet PkgName) (NESet Package)`?
   -- Yes that sounds like a good idea :)
-  let f :: Settings -> NESet PkgName -> IO (Maybe (S.Set PkgName, S.Set Package))
+  let f :: Settings -> NESet PkgName -> IO (Maybe (Set PkgName, Set Package))
       f ss ps = do
         --- Retrieve cached Packages ---
         cache <- readTVarIO tv
@@ -123,7 +123,7 @@ aurLink :: Path Unrooted
 aurLink = fromUnrootedFilePath "https://aur.archlinux.org"
 
 -- | A package's home URL on the AUR.
-pkgUrl :: PkgName -> T.Text
+pkgUrl :: PkgName -> Text
 pkgUrl (PkgName pkg) = T.pack . toUnrootedFilePath $ aurLink </> fromUnrootedFilePath "packages" </> fromUnrootedFilePath (T.unpack pkg)
 
 -------------------
@@ -151,7 +151,7 @@ sortAurInfo bs ai = sortBy compare' ai
 
 -- | Frontend to the `aur` library. For @-As@.
 aurSearch :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  T.Text -> m [AurInfo]
+  Text -> m [AurInfo]
 aurSearch regex = do
   ss  <- asks settings
   res <- liftMaybeM (Failure connectionFailure_1) . fmap hush . sendM $ search (managerOf ss) regex

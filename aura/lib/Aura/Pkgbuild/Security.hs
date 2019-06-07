@@ -19,24 +19,23 @@ module Aura.Pkgbuild.Security
 
 import           Aura.Languages
 import           Aura.Types (Language, Pkgbuild(..))
-import           Aura.Utils (strictText)
 import           Control.Error.Util (hush)
-import           Data.Generics.Product
-import qualified Data.Map.Strict as M
-import qualified Data.Text as T
+import           Data.Generics.Product (typed, types)
 import           Data.Text.Prettyprint.Doc (Doc)
 import           Data.Text.Prettyprint.Doc.Render.Terminal (AnsiStyle)
 import           Language.Bash.Parse (parse)
 import           Language.Bash.Syntax
 import           Language.Bash.Word (Span(..), Word, unquote)
-import           Lens.Micro
+import           Lens.Micro (each, (.~), (^..), _Just)
 import           RIO hiding (Word)
+import qualified RIO.Map as M
+import qualified RIO.Text as T
 
 ---
 
 -- | A bash term which should never appear in a PKGBUILD. If one does, it's
 -- either a sign of maintainer negligence or malicious behaviour.
-data BannedTerm = BannedTerm T.Text BanCategory deriving (Eq, Ord, Show, Generic)
+data BannedTerm = BannedTerm Text BanCategory deriving (Eq, Ord, Show, Generic)
 
 -- | The reason why the bash term is black-listed.
 data BanCategory = Downloading
@@ -47,15 +46,17 @@ data BanCategory = Downloading
                  | CleverRedirect
                  deriving (Eq, Ord, Show)
 
-blacklist :: M.Map T.Text BannedTerm
+blacklist :: Map Text BannedTerm
 blacklist = M.fromList $ downloading <> running <> permissions
-  where downloading = map (\t -> (t, BannedTerm t Downloading)) ["curl", "wget", "rsync", "scp"]
-        running     = map (\t -> (t, BannedTerm t ScriptRunning)) ["sh", "bash", "eval", "zsh", "fish"]
-        permissions = map (\t -> (t, BannedTerm t Permissions)) ["sudo", "ssh"]
+  where
+    downloading = map (\t -> (t, BannedTerm t Downloading)) ["curl", "wget", "rsync", "scp"]
+    running     = map (\t -> (t, BannedTerm t ScriptRunning)) ["sh", "bash", "eval", "zsh", "fish"]
+    permissions = map (\t -> (t, BannedTerm t Permissions)) ["sudo", "ssh"]
 
+-- TODO wasteful conversion!
 -- | Attempt to parse a PKGBUILD. Should succeed for all reasonable PKGBUILDs.
 parsedPB :: Pkgbuild -> Maybe List
-parsedPB (Pkgbuild pb) = hush . parse "PKGBUILD" . T.unpack $ strictText pb  -- TODO wasteful conversion!
+parsedPB (Pkgbuild pb) = hush . parse "PKGBUILD" . T.unpack $ decodeUtf8Lenient pb
 
 -- | Discover any banned terms lurking in a parsed PKGBUILD, paired with
 -- the surrounding context lines.

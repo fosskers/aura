@@ -23,12 +23,11 @@ import           Aura.Core (warn)
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.State
-import           Aura.Utils (optionalPrompt)
+import           Aura.Utils (optionalPrompt, putTextLn)
 import qualified Data.List.NonEmpty as NEL
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import           RIO
 import           RIO.List (partition)
+import qualified RIO.Text as T
 import           System.Path (takeFileName, toFilePath, toUnrootedFilePath)
 import           System.Path.IO (removeFile)
 
@@ -53,4 +52,4 @@ cleanStates ss (fromIntegral -> n) = do
 
 -- | The result of @-Bl@.
 listStates :: IO ()
-listStates = getStateFiles >>= traverse_ (T.putStrLn . T.pack . toFilePath)
+listStates = getStateFiles >>= traverse_ (putTextLn . T.pack . toFilePath)

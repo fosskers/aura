@@ -28,7 +28,7 @@ main = do
   pkb  <- Pkgbuild <$> BL.readFile "test/aura.PKGBUILD"
   defaultMain $ suite conf pkb
 
-suite :: T.Text -> Pkgbuild -> TestTree
+suite :: Text -> Pkgbuild -> TestTree
 suite conf pb = testGroup "Unit Tests"
   [ testGroup "Aura.Core"
     [ testCase "parseDep - python2" $ parseDep "python2" @?= Just (Dep "python2" Anything)
@@ -84,7 +84,7 @@ suite conf pb = testGroup "Unit Tests"
   ]
   where ppb = parsedPB pb
 
-firefox :: T.Text
+firefox :: Text
 firefox = "Repository      : extra\n\
 \Name            : firefox\n\
 \Version         : 60.0.2-1\n\

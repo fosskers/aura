@@ -13,12 +13,12 @@
 
 module Aura.Languages.Fields where
 
-import           Aura.Types (Language(..))
-import qualified Data.Text as T
+import Aura.Types (Language(..))
+import RIO (Text)
 
 ---
 
-package :: Language -> T.Text
+package :: Language -> Text
 package = \case
     Japanese   -> "パッケージ"
     Polish     -> "Pakiet"
@@ -36,7 +36,7 @@ package = \case
     Esperanto  -> "Pakaĵo"
     _          -> "Package"
 
-firstInstall :: Language -> T.Text
+firstInstall :: Language -> Text
 firstInstall = \case
     Japanese   -> "初インストール"
     Polish     -> "Pierwsza instalacja"
@@ -54,7 +54,7 @@ firstInstall = \case
     Esperanto  -> "Unua Instalo"
     _          -> "First Install"
 
-upgrades :: Language -> T.Text
+upgrades :: Language -> Text
 upgrades = \case
     Japanese   -> "アップグレード回数"
     Polish     -> "Aktualizacje"
@@ -72,7 +72,7 @@ upgrades = \case
     Esperanto  -> "Noveldonoj"
     _          -> "Upgrades"
 
-recentActions :: Language -> T.Text
+recentActions :: Language -> Text
 recentActions = \case
     Japanese   -> "近況"
     Polish     -> "Ostatnie akcje"
@@ -90,7 +90,7 @@ recentActions = \case
     Esperanto  -> "Ĵusaj Agoj"
     _          -> "Recent Actions"
 
-repository :: Language -> T.Text
+repository :: Language -> Text
 repository = \case
     Japanese   -> "リポジトリ"
     Polish     -> "Repozytorium"
@@ -108,7 +108,7 @@ repository = \case
     Esperanto  -> "Deponejo"
     _          -> "Repository"
 
-name :: Language -> T.Text
+name :: Language -> Text
 name = \case
     Japanese   -> "名前"
     Polish     -> "Nazwa"
@@ -126,7 +126,7 @@ name = \case
     Esperanto  -> "Nomo"
     _          -> "Name"
 
-version :: Language -> T.Text
+version :: Language -> Text
 version = \case
     Japanese   -> "バージョン"
     Polish     -> "Wersja"
@@ -144,7 +144,7 @@ version = \case
     Esperanto  -> "Versio"
     _          -> "Version"
 
-aurStatus :: Language -> T.Text
+aurStatus :: Language -> Text
 aurStatus = \case
     Japanese   -> "パッケージ状態"
     Polish     -> "Status w AUR"
@@ -161,7 +161,7 @@ aurStatus = \case
     _          -> "AUR Status"
 
 -- NEEDS TRANSLATION
-maintainer :: Language -> T.Text
+maintainer :: Language -> Text
 maintainer = \case
     Japanese   -> "管理者"
     Spanish    -> "Mantenedor"
@@ -173,7 +173,7 @@ maintainer = \case
     Esperanto  -> "Daŭriganto"
     _          -> "Maintainer"
 
-projectUrl :: Language -> T.Text
+projectUrl :: Language -> Text
 projectUrl = \case
     Japanese   -> "プロジェクト"
     Polish     -> "URL Projektu"
@@ -191,7 +191,7 @@ projectUrl = \case
     Esperanto  -> "URL de Projekto"
     _          -> "Project URL"
 
-aurUrl :: Language -> T.Text
+aurUrl :: Language -> Text
 aurUrl = \case
     Japanese   -> "パッケージページ"
     Polish     -> "URL w AUR"
@@ -206,7 +206,7 @@ aurUrl = \case
     Esperanto  -> "URL en AUR"
     _          -> "AUR URL"
 
-license :: Language -> T.Text
+license :: Language -> Text
 license = \case
     Japanese   -> "ライセンス"
     Polish     -> "Licencja"
@@ -224,7 +224,7 @@ license = \case
     Esperanto  -> "Permesilo"
     _          -> "License"
 
-dependsOn :: Language -> T.Text
+dependsOn :: Language -> Text
 dependsOn = \case
     Japanese   -> "従属パッケージ"
     Polish     -> "Zależności"
@@ -240,7 +240,7 @@ dependsOn = \case
     Esperanto  -> "Dependi de"
     _          -> "Depends On"
 
-buildDeps :: Language -> T.Text
+buildDeps :: Language -> Text
 buildDeps = \case
     Japanese   -> "作成時従属パ"
     German     -> "Build-Abhängigkeiten"
@@ -252,7 +252,7 @@ buildDeps = \case
     Esperanto  -> "Muntaj Dependecoj"
     _          -> "Build Deps"
 
-votes :: Language -> T.Text
+votes :: Language -> Text
 votes = \case
     Japanese   -> "投票数"
     Polish     -> "Głosy"
@@ -270,14 +270,14 @@ votes = \case
     Esperanto  -> "Balotiloj"
     _          -> "Votes"
 
-popularity :: Language -> T.Text
+popularity :: Language -> Text
 popularity = \case
     Japanese   -> "人気"
     Portuguese -> "Popularidade"
     Esperanto  -> "Populareco"
     _          -> "Popularity"
 
-description :: Language -> T.Text
+description :: Language -> Text
 description = \case
     Japanese   -> "概要"
     Polish     -> "Opis"
@@ -295,7 +295,7 @@ description = \case
     Esperanto  -> "Priskribo"
     _          -> "Description"
 
-makeDeps :: Language -> T.Text
+makeDeps :: Language -> Text
 makeDeps = \case
     Polish     -> "Zależności Make"
     Croatian   -> "Make Zavisnosti"

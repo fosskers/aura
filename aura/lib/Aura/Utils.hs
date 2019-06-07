@@ -12,7 +12,6 @@ module Aura.Utils
   ( -- * Strings
     Pattern(..)
   , replaceByPatt, searchLines
-  , strictText
     -- * Network
   , urlContents
     -- * Shell
@@ -24,6 +23,8 @@ module Aura.Utils
   , ifFile
     -- * Output
   , putStrLnA
+  , putText
+  , putTextLn
   , colourCheck
   , entrify
     -- * User Input
@@ -37,21 +38,17 @@ import           Aura.Colour
 import           Aura.Languages (whitespace, yesNoMessage, yesPattern)
 import           Aura.Settings
 import           Aura.Types (Environment, Language, User(..))
-import qualified Data.ByteString.Lazy as BL
-import qualified Data.ByteString.Lazy as L
-import qualified Data.Map.Strict as M
-import qualified Data.Text as T
-import           Data.Text.Encoding.Error (lenientDecode)
-import qualified Data.Text.IO as T
-import qualified Data.Text.Lazy as TL
-import qualified Data.Text.Lazy.Encoding as TL
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Network.HTTP.Client
 import           Network.HTTP.Types.Status (statusCode)
 import           RIO
+import qualified RIO.ByteString as B
+import qualified RIO.ByteString.Lazy as BL
 import           RIO.List.Partial (maximum)
-import           System.IO (stdout)
+import qualified RIO.Map as M
+import qualified RIO.Text as T
+import           RIO.Text.Partial (breakOn)
 import           System.Path (Absolute, Path, toFilePath)
 import           System.Path.IO (doesFileExist)
 import           System.Process.Typed (proc, runProcess)
@@ -62,41 +59,37 @@ import           Text.Printf (printf)
 ---------
 -- STRING
 ---------
--- | For regex-like find-and-replace in some `T.Text`.
-data Pattern = Pattern { _pattern :: T.Text, _target :: T.Text }
+-- | For regex-like find-and-replace in some `Text`.
+data Pattern = Pattern { _pattern :: Text, _target :: Text }
 
 -- | Replaces a (p)attern with a (t)arget in a line if possible.
-replaceByPatt :: [Pattern] -> T.Text -> T.Text
+replaceByPatt :: [Pattern] -> Text -> Text
 replaceByPatt [] l = l
-replaceByPatt (Pattern p t : ps) l = case T.breakOn p l of
+replaceByPatt (Pattern p t : ps) l = case breakOn p l of
   -- No match.
   (_, "")    -> replaceByPatt ps l
   -- Matched. The matched pattern is still present at the head of `rest`,
   -- so we need to drop it first.
   (cs, rest) -> replaceByPatt ps (cs <> t <> T.drop (T.length p) rest)
 
--- | Find lines which contain some given `T.Text`.
-searchLines :: T.Text -> [T.Text] -> [T.Text]
+-- | Find lines which contain some given `Text`.
+searchLines :: Text -> [Text] -> [Text]
 searchLines pat = filter (T.isInfixOf pat)
-
--- | Get strict Text out of a lazy ByteString.
-strictText :: BL.ByteString -> T.Text
-strictText = TL.toStrict . TL.decodeUtf8With lenientDecode
 
 -----
 -- IO
 -----
 -- | Given a number of selections, allows the user to choose one.
-getSelection :: Foldable f => (a -> T.Text) -> f a -> IO a
+getSelection :: Foldable f => (a -> Text) -> f a -> IO a
 getSelection f choiceLabels = do
   let quantity = length choiceLabels
-      valids   = T.pack . show <$> [1..quantity]
+      valids   = map tshow [1..quantity]
       pad      = show . length . show $ quantity
       choices  = zip valids $ toList choiceLabels
   traverse_ (\(l,v) -> printf ("%" <> pad <> "s. %s\n") l (f v)) choices
-  T.putStr ">> "
+  BL.putStr ">> "
   hFlush stdout
-  userChoice <- T.getLine
+  userChoice <- decodeUtf8Lenient <$> B.getLine
   case userChoice `lookup` choices of
     Just valid -> pure valid
     Nothing    -> getSelection f choiceLabels  -- Ask again.
@@ -110,20 +103,22 @@ ifFile t f file x = liftIO (doesFileExist file) >>= bool (f $> x) (t x)
 -- NETWORK
 ----------
 -- | Assumes the given URL is correctly formatted.
-urlContents :: Manager -> String -> IO (Maybe L.ByteString)
+urlContents :: Manager -> String -> IO (Maybe ByteString)
 urlContents m url = f <$> httpLbs (parseRequest_ url) m
-  where f res | statusCode (responseStatus res) == 200 = Just $ responseBody res
-              | otherwise = Nothing
+  where
+    f :: Response BL.ByteString -> Maybe ByteString
+    f res | statusCode (responseStatus res) == 200 = Just . BL.toStrict $ responseBody res
+          | otherwise = Nothing
 
 --------
 -- SHELL
 --------
 -- | Code borrowed from `ansi-terminal` library by Max Bolingbroke.
-csi :: [Int] -> T.Text -> T.Text
-csi args code = "\ESC[" <> T.intercalate ";" (map (T.pack . show) args) <> code
+csi :: [Int] -> ByteString -> ByteString
+csi args code = "\ESC[" <> B.intercalate ";" (map (encodeUtf8 . textDisplay) args) <> code
 
 -- | Terminal code for raising the cursor.
-cursorUpLineCode :: Int -> T.Text
+cursorUpLineCode :: Int -> ByteString
 cursorUpLineCode n = csi [n] "F"
 
 -- | This will get the true user name regardless of sudo-ing.
@@ -146,7 +141,7 @@ getEditor :: Environment -> FilePath
 getEditor = maybe "vi" T.unpack . M.lookup "EDITOR"
 
 -- | This will get the locale variable for translations from the environment
-getLocale :: Environment -> T.Text
+getLocale :: Environment -> Text
 getLocale env = fromMaybe "C" . asum $ map (`M.lookup` env) ["LC_ALL", "LC_MESSAGES", "LANG"]
 
 -- | Mark some `Path` as being owned by a `User`.
@@ -155,21 +150,21 @@ chown (User usr) pth args = void . runProcess $ proc "chown" (args <> [T.unpack 
 
 -- | Hide the cursor in a terminal.
 hideCursor :: IO ()
-hideCursor = T.putStr hideCursorCode
+hideCursor = B.putStr hideCursorCode
 
 -- | Restore a cursor to visiblity in the terminal.
 showCursor :: IO ()
-showCursor = T.putStr showCursorCode
+showCursor = B.putStr showCursorCode
 
-hideCursorCode :: T.Text
+hideCursorCode :: ByteString
 hideCursorCode = csi [] "?25l"
 
-showCursorCode :: T.Text
+showCursorCode :: ByteString
 showCursorCode = csi [] "?25h"
 
 -- | Raise the cursor by @n@ lines.
 raiseCursorBy :: Int -> IO ()
-raiseCursorBy = T.putStr . cursorUpLineCode
+raiseCursorBy = B.putStr . cursorUpLineCode
 
 ----------------
 -- CUSTOM OUTPUT
@@ -180,7 +175,7 @@ putStrLnA ss d = putStrA ss $ d <> hardline
 
 -- | Will remove all colour annotations if the user specified @--color=never@.
 putStrA :: Settings -> Doc AnsiStyle -> IO ()
-putStrA ss d = T.putStr . dtot $ "aura >>=" <+> colourCheck ss d
+putStrA ss d = B.putStr . encodeUtf8 . dtot $ "aura >>=" <+> colourCheck ss d
 
 -- | Strip colours from a `Doc` if @--color=never@ is specified,
 -- or if the output target isn't a terminal.
@@ -190,6 +185,12 @@ colourCheck ss | shared ss (Colour Never)  = unAnnotate
                | isTerminal ss = id
                | otherwise = unAnnotate
 
+putText :: Text -> IO ()
+putText = B.putStr . encodeUtf8
+
+putTextLn :: Text -> IO ()
+putTextLn = BL.putStrLn . BL.fromStrict . encodeUtf8
+
 ----------
 -- PROMPTS
 ----------
@@ -197,11 +198,11 @@ yesNoPrompt :: Settings -> Doc AnsiStyle -> IO Bool
 yesNoPrompt ss msg = do
   putStrA ss . yellow $ msg <+> yesNoMessage (langOf ss) <> " "
   hFlush stdout
-  response <- T.getLine
+  response <- decodeUtf8Lenient <$> B.getLine
   pure $ isAffirmative (langOf ss) response
 
 -- | An empty response emplies "yes".
-isAffirmative :: Language -> T.Text -> Bool
+isAffirmative :: Language -> Text -> Bool
 isAffirmative l t = T.null t || elem t (yesPattern l)
 
 -- | Doesn't prompt when `--noconfirm` is used.
@@ -213,16 +214,16 @@ optionalPrompt ss msg | shared ss NoConfirm = pure True
 -- MISC
 -------
 -- | Format two lists into two nice rows a la `-Qi` or `-Si`.
-entrify :: Settings -> [T.Text] -> [Doc AnsiStyle] -> Doc AnsiStyle
+entrify :: Settings -> [Text] -> [Doc AnsiStyle] -> Doc AnsiStyle
 entrify ss fs es = vsep $ zipWith combine fs' es
-    where fs' = padding ss fs
-          combine f e = annotate bold (pretty f) <+> ":" <+> e
+  where fs' = padding ss fs
+        combine f e = annotate bold (pretty f) <+> ":" <+> e
 
 -- | Right-pads strings according to the longest string in the group.
-padding :: Settings -> [T.Text] -> [T.Text]
+padding :: Settings -> [Text] -> [Text]
 padding ss fs = map (T.justifyLeft longest ws) fs
-    where ws      = whitespace $ langOf ss
-          longest = maximum $ map T.length fs
+  where ws      = whitespace $ langOf ss
+        longest = maximum $ map T.length fs
 
 -- | `maybe` with the function at the end.
 maybe' :: b -> Maybe a -> (a -> b) -> b

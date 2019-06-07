@@ -26,7 +26,7 @@ import           Aura.Cache
 import           Aura.Colour (red)
 import           Aura.Core (Env(..), liftEitherM, notify, report, warn)
 import           Aura.Languages
-import           Aura.Pacman (pacman, pacmanOutput)
+import           Aura.Pacman (pacman, pacmanLines)
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
@@ -37,19 +37,18 @@ import           Control.Effect.Reader (Reader, asks)
 import           Control.Error.Util (hush)
 import           Data.Aeson
 import           Data.Aeson.Types (typeMismatch)
-import qualified Data.ByteString.Lazy as BL
-import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
-import           Data.List.NonEmpty (nonEmpty)
-import           Data.List.NonEmpty (NonEmpty)
-import qualified Data.Map.Strict as M
-import qualified Data.Text as T
-import           Data.Time
+import           Data.List.NonEmpty (NonEmpty, nonEmpty)
 import           Data.Versions
 import           Data.Witherable (mapMaybe)
 import           RIO hiding (Reader, asks, mapMaybe)
+import qualified RIO.ByteString.Lazy as BL
 import           RIO.List (intercalate, partition, sort)
 import           RIO.List.Partial ((!!))
+import qualified RIO.Map as M
+import qualified RIO.Map.Unchecked as M
+import qualified RIO.Text as T
+import           RIO.Time
 import           System.Path
 import           System.Path.IO (createDirectoryIfMissing, getDirectoryContents)
 import           Text.Printf (printf)
@@ -58,7 +57,7 @@ import           Text.Printf (printf)
 
 -- | All packages installed at some specific `ZonedTime`. Any "pinned" PkgState will
 -- never be deleted by `-Bc`.
-data PkgState = PkgState { timeOf :: ZonedTime, pinnedOf :: Bool, pkgsOf :: M.Map PkgName Versioning }
+data PkgState = PkgState { timeOf :: ZonedTime, pinnedOf :: Bool, pkgsOf :: Map PkgName Versioning }
 
 instance ToJSON PkgState where
   toJSON (PkgState t pnd ps) = object [ "time" .= t, "pinned" .= pnd, "packages" .= fmap prettyV ps ]
@@ -82,7 +81,7 @@ inState :: SimplePkg -> PkgState -> Bool
 inState (SimplePkg n v) s = maybe False (v ==) . M.lookup n $ pkgsOf s
 
 rawCurrentState :: IO [SimplePkg]
-rawCurrentState = mapMaybe (simplepkg' . strictText) . BL.lines <$> pacmanOutput ["-Q"]
+rawCurrentState = mapMaybe simplepkg' <$> pacmanLines ["-Q"]
 
 currentState :: IO PkgState
 currentState = do

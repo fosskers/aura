@@ -25,10 +25,10 @@ module Aura.Settings
   ) where
 
 import           Aura.Types
-import qualified Data.Set as S
-import qualified Data.Text as T
 import           Network.HTTP.Client (Manager)
 import           RIO
+import qualified RIO.Set as S
+import qualified RIO.Text as T
 import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath)
 
 ---
@@ -51,7 +51,7 @@ data CommonConfig = CommonConfig
   { cachePathOf      :: !(Either (Path Absolute) (Path Absolute))
   , configPathOf     :: !(Either (Path Absolute) (Path Absolute))
   , logPathOf        :: !(Either (Path Absolute) (Path Absolute))
-  , commonSwitchesOf :: !(S.Set CommonSwitch) } deriving (Show, Generic)
+  , commonSwitchesOf :: !(Set CommonSwitch) } deriving (Show, Generic)
 
 instance Flagable CommonConfig where
   asFlag (CommonConfig cap cop lfp cs) =
@@ -81,11 +81,11 @@ instance Flagable ColourMode where
 
 -- | Settings unique to the AUR package building process.
 data BuildConfig = BuildConfig
-  { makepkgFlagsOf  :: !(S.Set Makepkg)
+  { makepkgFlagsOf  :: !(Set Makepkg)
   , buildPathOf     :: !(Path Absolute)
   , buildUserOf     :: !(Maybe User)
   , truncationOf    :: !Truncation  -- For `-As`
-  , buildSwitchesOf :: !(S.Set BuildSwitch) } deriving (Show)
+  , buildSwitchesOf :: !(Set BuildSwitch) } deriving (Show)
 
 -- | Extra options for customizing the build process.
 data BuildSwitch = DeleteMakeDeps
@@ -116,7 +116,7 @@ data Settings = Settings
   , langOf         :: !Language
   , editorOf       :: !FilePath
   , isTerminal     :: !Bool
-  , ignoresOf      :: !(S.Set PkgName)
+  , ignoresOf      :: !(Set PkgName)
   , commonConfigOf :: !CommonConfig
   , buildConfigOf  :: !BuildConfig }
 

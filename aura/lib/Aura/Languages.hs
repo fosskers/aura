@@ -40,18 +40,19 @@ import qualified Aura.Languages.Fields as Fields
 import           Aura.Types
 import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (NonEmpty)
-import qualified Data.Map.Strict as Map (Map, fromList, mapWithKey, toList, (!))
 import           Data.Ratio ((%))
-import qualified Data.Text as T
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           RIO
 import           RIO.List (intersperse)
+import qualified RIO.Map as M
+import qualified RIO.Map.Partial as M
+import qualified RIO.Text as T
 
 ---
 
-translators :: Map.Map Language T.Text
-translators = Map.fromList
+translators :: Map Language Text
+translators = M.fromList
     [ (Polish,     "Chris Warrick")
     , (Croatian,   "Denis Kasak / \"stranac\"")
     , (Swedish,    "Fredrik Haikarainen / Daniel Beecham")
@@ -70,8 +71,8 @@ translators = Map.fromList
     ]
 
 -- These need updating! Or removing...
-languageNames :: Language -> Map.Map Language T.Text
-languageNames = Map.fromList . zip [ Japanese, Polish, Croatian, Swedish, German, Spanish, Portuguese, French, Russian, Italian, Serbian, Norwegian, Indonesia, Chinese ] . \case
+languageNames :: Language -> Map Language Text
+languageNames = M.fromList . zip [ Japanese, Polish, Croatian, Swedish, German, Spanish, Portuguese, French, Russian, Italian, Serbian, Norwegian, Indonesia, Chinese ] . \case
     Japanese   -> [ "日本語", "ポーランド語", "クロアチア語", "スウェーデン語", "ドイツ語", "スペイン語", "ポルトガル語", "フランス語", "ロシア語", "イタリア語", "セルビア語", "ノルウェー語", "インドネシア語", "中国語" ]
     Polish     -> [ "Japanese", "polski", "chorwacki", "szwedzki", "niemiecki", "hiszpański", "portugalski", "francuski", "rosyjski", "", "", "", "Indonesian", "Chinese" ]
     Croatian   -> [ "Japanese", "poljski", "hrvatski", "švedski", "njemački", "španjolski", "portugalski", "francuski", "ruski", "talijanski", "srpski", "norveški", "Indonesian", "Chinese" ]
@@ -89,7 +90,7 @@ languageNames = Map.fromList . zip [ Japanese, Polish, Croatian, Swedish, German
     Esperanto  -> [ "La japana", "La pola", "La kroata", "La sevda", "La germana", "La hispana", "La portugala", "La franca", "La rusa", "La itala", "La serba", "La norvega", "La indonezia", "La ĉina"]
     _          -> [ "Japanese", "Polish", "Croatian", "Swedish", "German", "Spanish", "Portuguese", "French", "Russian", "Italian", "Serbian", "Norwegian", "Indonesian", "Chinese" ]
 
-translatorMsgTitle :: Language -> T.Text
+translatorMsgTitle :: Language -> Text
 translatorMsgTitle = \case
     Japanese   -> "Auraの翻訳者："
     Polish     -> "Tłumacze Aury:"
@@ -108,24 +109,24 @@ translatorMsgTitle = \case
     Esperanto  -> "Tradukistoj de Aura:"
     _          -> "Aura Translators:"
 
-translatorMsg :: Language -> [T.Text]
+translatorMsg :: Language -> [Text]
 translatorMsg lang = title : names
   where title = translatorMsgTitle lang
-        names = fmap snd . Map.toList $
-            Map.mapWithKey (\l t -> formatLang (assocLang l t)) translators
-        assocLang lang' translator = (translator, langNames Map.! lang')
+        names = fmap snd . M.toList $
+            M.mapWithKey (\l t -> formatLang (assocLang l t)) translators
+        assocLang lang' translator = (translator, langNames M.! lang')
         formatLang (translator, lang') = " (" <> lang' <> ") " <> translator
         langNames = languageNames lang
 
 -- Wrap a String in backticks
-bt :: T.Text -> Doc AnsiStyle
+bt :: Text -> Doc AnsiStyle
 bt cs = "`" <> pretty cs <> "`"
 
 whitespace :: Language -> Char
 whitespace Japanese = '　'  -- \12288
 whitespace _        = ' '   -- \32
 
-langFromLocale :: T.Text -> Language
+langFromLocale :: Text -> Language
 langFromLocale = T.take 2 >>> \case
     "ja" -> Japanese
     "pl" -> Polish
@@ -298,7 +299,7 @@ buildFail_11 = \case
 -- Aura/Dependencies functions
 ------------------------------
 -- NEEDS UPDATE TO MATCH NEW ENGLISH
-getRealPkgConflicts_1 :: PkgName -> PkgName -> T.Text -> T.Text -> Language -> Doc AnsiStyle
+getRealPkgConflicts_1 :: PkgName -> PkgName -> Text -> Text -> Language -> Doc AnsiStyle
 getRealPkgConflicts_1 (bt . view (field @"name") -> prnt) (bt . view (field @"name") -> p) (bt -> r) (bt -> d) = \case
     Japanese   -> "パッケージ" <> p <> "はバージョン" <> d <> "を要するが" <> "一番最新のバージョンは" <> r <> "。"
     Polish     -> "Zależność " <> p <> " powinna być w wersji " <> d <> ", ale najnowsza wersja to " <> r <> "."
@@ -604,7 +605,7 @@ reportPkgbuildDiffs_1 (bt . view (field @"name") -> p) = \case
     _          -> p <> " has no stored PKGBUILD yet."
 
 -- NEEDS TRANSLATION
-reportPkgbuildDiffs_2 :: T.Text -> Language -> Doc AnsiStyle
+reportPkgbuildDiffs_2 :: Text -> Language -> Doc AnsiStyle
 reportPkgbuildDiffs_2 (bt -> p) = \case
     Japanese   -> p <> "のPKGBUILDは最新です。"
     Polish     -> "PKGBUILD pakietu " <> p <> " jest aktualny."
@@ -768,7 +769,7 @@ removeMakeDepsAfter_1 = \case
 ----------------------------
 -- NEEDS TRANSLATION
 cleanStates_2 :: Int -> Language -> Doc AnsiStyle
-cleanStates_2 n@(bt . T.pack . show -> s) = \case
+cleanStates_2 n@(bt . tshow -> s) = \case
     Japanese   -> s <> "個のパッケージ状態記録だけが残される。その他削除？"
     Polish     -> s <> " stan pakietów zostanie zachowany. Usunąć resztę?"
     Croatian   -> s <> " stanja paketa će biti zadržano. Ukloniti ostatak?"
@@ -813,7 +814,7 @@ cleanStates_4 n = \case
   Esperanto -> "Vi havas " <+> pretty n <+> " konservajn statojn de pakaĵoj."
   _         -> "You currently have" <+> pretty n <+> "saved package states."
 
-cleanStates_5 :: T.Text -> Language -> Doc AnsiStyle
+cleanStates_5 :: Text -> Language -> Doc AnsiStyle
 cleanStates_5 t = \case
   Japanese  -> "一番最近に保存されたのは：" <> pretty t
   Russian   -> "Последнее сохраненное:" <+> pretty t
@@ -892,7 +893,7 @@ backupCache_4 (bt . T.pack -> dir) = \case
     _          -> "Backing up cache to " <> dir
 
 backupCache_5 :: Int -> Language -> Doc AnsiStyle
-backupCache_5 (bt . T.pack . show -> n) = \case
+backupCache_5 (bt . tshow -> n) = \case
     Japanese   -> "パッケージのファイル数：" <> n
     Polish     -> "Pliki będące częścią\xa0kopii zapasowej: " <> n
     Croatian   -> "Datoteke koje su dio sigurnosne kopije: " <> n
@@ -1006,7 +1007,7 @@ cleanCache_2 = \case
     _          -> "This will delete the ENTIRE package cache."
 
 cleanCache_3 :: Word -> Language -> Doc AnsiStyle
-cleanCache_3 n@(bt . T.pack . show -> s) = \case
+cleanCache_3 n@(bt . tshow -> s) = \case
     Japanese   -> "パッケージ・ファイルは" <> s <> "個保存されます。"
     Polish     -> s <> " wersji każdego pakietu zostanie zachowane."
     Croatian   -> s <> " zadnjih verzija svakog paketa će biti zadržano."
@@ -1122,7 +1123,7 @@ cleanNotSaved_2 n@(cyan . pretty -> s) = \case
 ----------------------------
 -- Aura/Commands/L functions
 ----------------------------
-logLookUpFields :: Language -> [T.Text]
+logLookUpFields :: Language -> [Text]
 logLookUpFields = sequence [ Fields.package
                            , Fields.firstInstall
                            , Fields.upgrades
@@ -1156,7 +1157,7 @@ connectionFailure_1 :: Language -> Doc AnsiStyle
 connectionFailure_1 = \case
   _ -> "Failed to contact the AUR. Do you have an internet connection?"
 
-infoFields :: Language -> [T.Text]
+infoFields :: Language -> [Text]
 infoFields = sequence [ Fields.repository
                       , Fields.name
                       , Fields.version
@@ -1209,7 +1210,7 @@ outOfDateMsg Nothing = green . \case
     _          -> "Up to Date"
 
 -- NEEDS TRANSLATION
-orphanedMsg :: Maybe T.Text -> Language -> Doc AnsiStyle
+orphanedMsg :: Maybe Text -> Language -> Doc AnsiStyle
 orphanedMsg (Just m) = const (pretty m)
 orphanedMsg Nothing = red . \case
     Japanese   -> "孤児です!"
@@ -1391,15 +1392,15 @@ security_1 :: PkgName -> Language -> Doc AnsiStyle
 security_1 (PkgName p) = \case
   _ -> "The PKGBUILD of" <+> bt p <+> "was too complex to parse - it may be obfuscating malicious code."
 
-security_2 :: T.Text -> Language -> Doc AnsiStyle
+security_2 :: Text -> Language -> Doc AnsiStyle
 security_2 (bt -> t) = \case
   _ -> t <+> "can be used to download arbitrary scripts that aren't tracked by this PKGBUILD."
 
-security_3 :: T.Text -> Language -> Doc AnsiStyle
+security_3 :: Text -> Language -> Doc AnsiStyle
 security_3 (bt -> t) = \case
   _ -> t <+> "can be used to execute arbitrary code not tracked by this PKGBUILD."
 
-security_4 :: T.Text -> Language -> Doc AnsiStyle
+security_4 :: Text -> Language -> Doc AnsiStyle
 security_4 (bt -> t) = \case
   _ -> t <+> "indicates that someone may be trying to gain root access to your machine."
 
@@ -1415,15 +1416,15 @@ security_7 :: Language -> Doc AnsiStyle
 security_7 = \case
   _ -> "Cancelled further processing to avoid potentially malicious bash code."
 
-security_8 :: T.Text -> Language -> Doc AnsiStyle
+security_8 :: Text -> Language -> Doc AnsiStyle
 security_8 (bt -> t) = \case
   _ -> t <+> "is a bash command inlined in your PKGBUILD array fields."
 
-security_9 :: T.Text -> Language -> Doc AnsiStyle
+security_9 :: Text -> Language -> Doc AnsiStyle
 security_9 (bt -> t) = \case
   _ -> t <+> "is a strange thing to have in your array fields. Is it safe?"
 
-security_10 :: T.Text -> Language -> Doc AnsiStyle
+security_10 :: Text -> Language -> Doc AnsiStyle
 security_10 (bt -> t) = \case
   _ -> t <+> "implies that someone was trying to be clever with variables to hide malicious commands."
 
@@ -1444,7 +1445,7 @@ yesNoMessage = \case
     Esperanto  -> "[J/n]"
     _          -> "[Y/n]"
 
-yesPattern :: Language -> [T.Text]
+yesPattern :: Language -> [Text]
 yesPattern = \case
     Polish     -> ["t", "tak"]
     Croatian   -> ["d", "da"]

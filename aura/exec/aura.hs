@@ -51,15 +51,13 @@ import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pacman
 import           Aura.Settings
 import           Aura.Types
+import           Aura.Utils (putTextLn)
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error, runError)
 import           Control.Effect.Lift (Lift, runM, sendM)
 import           Control.Effect.Reader (Reader, asks, runReader)
 import           Data.Bifunctor (first)
-import           Data.Set (Set)
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Flags
@@ -72,7 +70,7 @@ import           Text.Pretty.Simple (pPrintNoColor)
 
 ---
 
-auraVersion :: T.Text
+auraVersion :: Text
 auraVersion = "2.0.1"
 
 main :: IO ()
@@ -81,7 +79,7 @@ main = do
   esettings <- getSettings options
   repos     <- (<>) <$> pacmanRepo <*> aurRepo
   case esettings of
-    Left err -> T.putStrLn . dtot . ($ English) $ failure err
+    Left err -> putTextLn . dtot . ($ English) $ failure err
     Right ss -> execute ss repos options >>= exit ss
 
 execute :: Settings -> Repository -> Program -> IO (Either (Doc AnsiStyle) ())
@@ -147,7 +145,7 @@ displayOutputLanguages :: (Carrier sig m, Member (Reader Env) sig, Member (Lift 
 displayOutputLanguages = do
   ss <- asks settings
   sendM . notify ss . displayOutputLanguages_1 $ langOf ss
-  sendM $ traverse_ (T.putStrLn . T.pack . show) [English ..]
+  sendM $ traverse_ (putTextLn . tshow) [English ..]
 
 viewConfFile :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => m ()
 viewConfFile = do

@@ -28,7 +28,7 @@ import           Aura.Core
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils (maybe')
+import           Aura.Utils (maybe', putText)
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error, throwError)
 import           Control.Effect.Lift (Lift, sendM)
@@ -37,19 +37,16 @@ import           Control.Error.Util (note)
 import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NEL
-import           Data.Map.Strict (Map)
-import qualified Data.Map.Strict as M
 import           Data.Or (elimOr)
 import           Data.Semigroup.Foldable (foldMap1)
-import           Data.Set (Set)
-import qualified Data.Set as S
 import           Data.Set.NonEmpty (pattern IsEmpty, pattern IsNonEmpty, NESet)
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import           Data.Versions
 import           Lens.Micro
 import           RIO hiding (Reader, asks)
+import qualified RIO.Map as M
+import qualified RIO.Set as S
+import qualified RIO.Text as T
 import           UnliftIO.Exception (catchAny, throwString)
 
 ---
@@ -71,7 +68,7 @@ resolveDeps repo ps = do
   ss <- asks settings
   Resolution m s <- liftMaybeM (Failure connectionFailure_1) . sendM $
     (Just <$> resolveDeps' ss repo ps) `catchAny` (const $ pure Nothing)
-  unless (length ps == length m) $ sendM (T.putStr "\n")
+  unless (length ps == length m) $ sendM (putText "\n")
   let de = conflicts ss m s
   unless (null de) . throwError . Failure $ missingPkg_2 de
   either throwError pure $ sortInstall m

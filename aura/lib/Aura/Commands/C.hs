@@ -37,15 +37,14 @@ import           Control.Effect.Lift (Lift, sendM)
 import           Control.Effect.Reader (Reader, asks)
 import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (nonEmpty)
-import qualified Data.Map.Strict as M
-import qualified Data.Set as S
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import           Lens.Micro ((^?), _Just)
 import           RIO hiding (Reader, asks)
 import           RIO.List (groupBy, sort, (\\))
+import qualified RIO.Map as M
+import qualified RIO.Set as S
+import qualified RIO.Text as T
 import           System.Path
 import           System.Path.IO (copyFile, doesDirectoryExist, removeFile)
 
@@ -80,12 +79,12 @@ getDowngradeChoice cache pkg =
 getChoicesFromCache :: Cache -> PkgName -> [PackagePath]
 getChoicesFromCache (Cache cache) p = sort . M.elems $ M.filterWithKey (\(SimplePkg pn _) _ -> p == pn) cache
 
--- | Print all package filenames that match a given `T.Text`.
-searchCache :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => T.Text -> m ()
+-- | Print all package filenames that match a given `Text`.
+searchCache :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => Text -> m ()
 searchCache ps = do
   ss <- asks settings
   matches <- sendM $ cacheMatches ss ps
-  sendM . traverse_ (T.putStrLn . T.pack . toFilePath . path) $ sort matches
+  sendM . traverse_ (putTextLn . T.pack . toFilePath . path) $ sort matches
 
 -- | The destination folder must already exist for the back-up to begin.
 backupCache :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
@@ -110,7 +109,7 @@ backup :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) =>
 backup dir (Cache cache) = do
   ss <- asks settings
   sendM . notify ss . backupCache_8 $ langOf ss
-  sendM $ T.putStrLn ""  -- So that the cursor can rise at first.
+  sendM $ putTextLn ""  -- So that the cursor can rise at first.
   copyAndNotify dir (M.elems cache) 1
 
 -- | Manages the file copying and display of the real-time progress notifier.

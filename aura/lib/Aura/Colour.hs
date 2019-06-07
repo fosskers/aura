@@ -13,7 +13,6 @@ module Aura.Colour
   , cyan, bCyan, green, yellow, red, magenta
   ) where
 
-import Data.Text (Text)
 import Data.Text.Prettyprint.Doc
 import Data.Text.Prettyprint.Doc.Render.Terminal
 import RIO

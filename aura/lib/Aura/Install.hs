@@ -35,31 +35,28 @@ import           Aura.Pkgbuild.Records
 import           Aura.Pkgbuild.Security
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils (optionalPrompt)
+import           Aura.Utils (optionalPrompt, putTextLn)
 import           Control.Compactable (fmapEither)
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error, throwError)
 import           Control.Effect.Lift (Lift, sendM)
 import           Control.Effect.Reader (Reader, asks)
 import           Control.Scheduler (Comp(..), traverseConcurrently)
-import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (HasField'(..), field, super)
 import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NEL
-import qualified Data.Map.Strict as M
 import           Data.Semigroup.Foldable (fold1)
-import qualified Data.Set as S
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import           Language.Bash.Pretty (prettyText)
 import           Language.Bash.Syntax (ShellCommand)
 import           Lens.Micro (each, (^..))
 import           RIO hiding (FilePath, Reader, asks)
+import           RIO.Directory (setCurrentDirectory)
 import           RIO.List (partition, sort)
-import           System.Directory (setCurrentDirectory)
-import           System.IO (stdout)
+import qualified RIO.Map as M
+import qualified RIO.Set as S
+import qualified RIO.Text as T
 import           System.Path (fromAbsoluteFilePath)
 
 ---
@@ -135,7 +132,7 @@ analysePkgbuild b = do
 
 displayBannedTerms :: Settings -> (ShellCommand, BannedTerm) -> IO ()
 displayBannedTerms ss (stmt, b) = do
-  T.putStrLn . T.pack $ "\n    " <> prettyText stmt <> "\n"
+  putTextLn . T.pack $ "\n    " <> prettyText stmt <> "\n"
   warn ss $ reportExploit b lang
   where lang = langOf ss
 
@@ -158,7 +155,7 @@ uniquePkgBase bs = mapMaybe (NES.nonEmptySet . S.filter (\b -> (b ^. field @"nam
         bs'   = foldMap toList bs
 
 confirmIgnored :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) =>
-  S.Set PkgName -> m (S.Set PkgName)
+  Set PkgName -> m (Set PkgName)
 confirmIgnored (toList -> ps) = do
   ss <- asks settings
   S.fromList <$> filterM (sendM . optionalPrompt ss . confirmIgnored_1) ps
@@ -218,9 +215,9 @@ reportPkgsToInstall rps bps = do
 reportListOfDeps :: [Prebuilt] -> [NESet Buildable] -> IO ()
 reportListOfDeps rps bps = f rps *> f (foldMap toList bps)
   where f :: HasField' "name" s PkgName => [s] -> IO ()
-        f = traverse_ T.putStrLn . sort . (^.. each . field' @"name" . field' @"name")
+        f = traverse_ putTextLn . sort . (^.. each . field' @"name" . field' @"name")
 
-pkgbuildDiffs :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => S.Set Buildable -> m ()
+pkgbuildDiffs :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => Set Buildable -> m ()
 pkgbuildDiffs ps = asks settings >>= check
     where check ss | not $ switch ss DiffPkgbuilds = pure ()
                    | otherwise = traverse_ displayDiff ps
@@ -235,6 +232,6 @@ pkgbuildDiffs ps = asks settings >>= check
                else sendM $ do
                  setCurrentDirectory "/tmp"
                  let new = "/tmp/new.pb"
-                 BL.writeFile new $ p ^. field @"pkgbuild" . field @"pkgbuild"
+                 writeFileBinary @IO new $ p ^. field @"pkgbuild" . field @"pkgbuild"
                  liftIO . warn ss $ reportPkgbuildDiffs_3 pn lang
                  diff ss (pkgbuildPath pn) $ fromAbsoluteFilePath new

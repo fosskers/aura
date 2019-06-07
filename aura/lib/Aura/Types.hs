@@ -50,21 +50,18 @@ import           Control.Error.Util (hush)
 import           Data.Aeson (FromJSONKey, ToJSONKey)
 import           Data.Bifunctor (Bifunctor(..))
 import           Data.Bitraversable
-import qualified Data.ByteString.Lazy as BL
 import           Data.Generics.Product (field, super)
 import           Data.List.NonEmpty (NonEmpty)
-import qualified Data.Map.Strict as M
 import           Data.Or (Or(..))
 import           Data.Semigroup.Foldable (Foldable1(..))
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
 import           Data.Text.Prettyprint.Doc hiding (list, space)
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions hiding (Traversal')
-import           GHC.Generics (Generic)
 import           Lens.Micro
 import           RIO hiding (try)
+import qualified RIO.Text as T
 import           System.Path (Absolute, Path, takeFileName, toUnrootedFilePath)
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
@@ -73,9 +70,9 @@ import           Text.Megaparsec.Char
 
 -- | Types whose members can be converted to CLI flags.
 class Flagable a where
-  asFlag :: a -> [T.Text]
+  asFlag :: a -> [Text]
 
-instance Flagable T.Text where
+instance Flagable Text where
   asFlag t = [t]
 
 instance (Foldable f, Flagable a) => Flagable (f a) where
@@ -143,7 +140,7 @@ data Dep = Dep { name   :: !PkgName
 -- >>> parseDep "pacman>1.2.3"
 -- Just (Dep {name = PkgName {name = "pacman"}, demand = >1.2.3})
 -- @
-parseDep :: T.Text -> Maybe Dep
+parseDep :: Text -> Maybe Dep
 parseDep = hush . parse dep "dep"
   where dep = Dep <$> n <*> v
         n   = PkgName <$> takeWhile1P Nothing (\c -> c /= '<' && c /= '>' && c /= '=')
@@ -158,10 +155,10 @@ parseDep = hush . parse dep "dep"
 
 -- | Renders the `Dep` into a form that @pacman -T@ understands. The dual of
 -- `parseDep`.
-renderedDep :: Dep -> T.Text
+renderedDep :: Dep -> Text
 renderedDep (Dep n ver) = (n ^. field @"name") <> asT ver
   where
-    asT :: VersionDemand -> T.Text
+    asT :: VersionDemand -> Text
     asT (LessThan v) = "<"  <> prettyV v
     asT (AtLeast  v) = ">=" <> prettyV v
     asT (MoreThan v) = ">"  <> prettyV v
@@ -203,7 +200,7 @@ simplepkg :: PackagePath -> Maybe SimplePkg
 simplepkg (PackagePath t) = uncurry SimplePkg <$> bitraverse hush hush (parse n "name" t', parse v "version" t')
   where t' = T.pack . toUnrootedFilePath $ takeFileName t
 
-        n :: Parsec Void T.Text PkgName
+        n :: Parsec Void Text PkgName
         n = PkgName . T.pack <$> manyTill anySingle (try finished)
 
         -- | Assumes that a version number will never start with a letter,
@@ -216,7 +213,7 @@ simplepkg (PackagePath t) = uncurry SimplePkg <$> bitraverse hush hush (parse n 
 
 -- | Attempt to create a `SimplePkg` from text like:
 --     xchat 2.8.8-19
-simplepkg' :: T.Text -> Maybe SimplePkg
+simplepkg' :: Text -> Maybe SimplePkg
 simplepkg' = hush . parse parser "name-and-version"
   where parser = SimplePkg <$> (PkgName <$> takeWhile1P Nothing (/= ' ')) <*> (space *> versioning')
 
@@ -237,7 +234,7 @@ instance Ord PackagePath where
           f = ((^? _Just . field @"name") &&& (^? _Just . field @"version")) . simplepkg
 
 -- | The contents of a PKGBUILD file.
-newtype Pkgbuild = Pkgbuild { pkgbuild :: BL.ByteString } deriving (Eq, Ord, Show, Generic)
+newtype Pkgbuild = Pkgbuild { pkgbuild :: ByteString } deriving (Eq, Ord, Show, Generic)
 
 -- | All human languages available for text output.
 data Language = English
@@ -269,18 +266,18 @@ data DepError = NonExistant PkgName
 newtype Failure = Failure { failure :: Language -> Doc AnsiStyle }
 
 -- | Shell environment variables.
-type Environment = M.Map T.Text T.Text
+type Environment = Map Text Text
 
 -- | The name of a user account on a Linux system.
-newtype User = User { user :: T.Text } deriving (Eq, Show, Generic)
+newtype User = User { user :: Text } deriving (Eq, Show, Generic)
 
 -- | The name of an Arch Linux package.
-newtype PkgName = PkgName { name :: T.Text }
+newtype PkgName = PkgName { name :: Text }
   deriving stock (Eq, Ord, Show, Generic)
   deriving newtype (Flagable, ToJSONKey, FromJSONKey, IsString)
 
 -- | A group that a `Package` could belong too, like @base@, @base-devel@, etc.
-newtype PkgGroup = PkgGroup { group :: T.Text }
+newtype PkgGroup = PkgGroup { group :: Text }
   deriving stock (Eq, Ord, Show, Generic)
   deriving newtype (Flagable)
 

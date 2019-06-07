@@ -12,18 +12,17 @@
 
 module Aura.Pkgbuild.Editing ( hotEdit ) where
 
-import           Aura.Languages
-import           Aura.Settings
-import           Aura.Types
-import           Aura.Utils
-import qualified Data.ByteString.Lazy.Char8 as BL
-import           Data.Generics.Product (field)
-import           Lens.Micro ((.~), (^.))
-import           RIO
-import           System.Directory (setCurrentDirectory)
-import           System.Path (toFilePath)
-import           System.Path.IO (getCurrentDirectory, getTemporaryDirectory)
-import           System.Process.Typed (proc, runProcess)
+import Aura.Languages
+import Aura.Settings
+import Aura.Types
+import Aura.Utils
+import Data.Generics.Product (field)
+import Lens.Micro ((.~))
+import RIO
+import RIO.Directory (setCurrentDirectory)
+import System.Path (toFilePath)
+import System.Path.IO (getCurrentDirectory, getTemporaryDirectory)
+import System.Process.Typed (proc, runProcess)
 
 ---
 
@@ -32,9 +31,9 @@ import           System.Process.Typed (proc, runProcess)
 -- package building.
 edit :: (FilePath -> IO a) -> Buildable -> IO Buildable
 edit f p = do
-  BL.writeFile filename $ p ^. field @"pkgbuild" . field @"pkgbuild"
+  writeFileBinary filename $ p ^. field @"pkgbuild" . field @"pkgbuild"
   void $ f filename
-  newPB <- BL.readFile filename
+  newPB <- readFileBinary filename
   pure (p & field @"pkgbuild" .~ Pkgbuild newPB)
     where filename = "PKGBUILD"
 

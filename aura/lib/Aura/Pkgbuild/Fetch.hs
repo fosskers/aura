@@ -19,15 +19,13 @@ module Aura.Pkgbuild.Fetch
 import           Aura.Types (PkgName(..), Pkgbuild(..))
 import           Aura.Utils (urlContents)
 import           Data.Generics.Product (field)
-import qualified Data.Text as T
 import           Network.HTTP.Client (Manager)
 import           Network.URI (escapeURIString, isUnescapedInURIComponent)
 import           RIO
 import           RIO.FilePath ((</>))
+import qualified RIO.Text as T
 
 ---
-
-type E = SomeException
 
 baseUrl :: String
 baseUrl = "https://aur.archlinux.org/"
@@ -38,8 +36,11 @@ pkgbuildUrl p = baseUrl </> "cgit/aur.git/plain/PKGBUILD?h="
   ++ escapeURIString isUnescapedInURIComponent p
 
 -- | The PKGBUILD of a given package, retrieved from the AUR servers.
-getPkgbuild :: MonadIO m => Manager -> PkgName -> m (Maybe Pkgbuild)
+getPkgbuild :: Manager -> PkgName -> IO (Maybe Pkgbuild)
 getPkgbuild m p = e $ do
   t <- urlContents m . pkgbuildUrl . T.unpack $ p ^. field @"name"
   pure $ fmap Pkgbuild t
-  where e f = liftIO $ f `catch` (\(_ :: E) -> return Nothing)
+  where
+    -- TODO Make this less "baby's first Haskell".
+    e :: IO (Maybe a) -> IO (Maybe a)
+    e f = f `catch` (\(_ :: SomeException) -> return Nothing)

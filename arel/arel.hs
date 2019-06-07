@@ -12,7 +12,7 @@ import           Shelly
 
 ---
 
-newtype Env = Env { release :: T.Text } deriving (Generic, ParseRecord)
+newtype Env = Env { release :: Text } deriving (Generic, ParseRecord)
 
 projectDir :: FilePath
 projectDir = "/home/colin/code/haskell/aura/"

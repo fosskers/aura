@@ -24,13 +24,12 @@ module Aura.Cache
 import           Aura.Settings
 import           Aura.Types
 import           Data.Generics.Product (field)
-import qualified Data.Map.Strict as M
-import qualified Data.Set as S
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
-import           Lens.Micro ((^.))
 import           RIO
+import qualified RIO.Map as M
+import qualified RIO.Set as S
+import qualified RIO.Text as T
 import           System.Path
     (Absolute, Path, fromAbsoluteFilePath, toFilePath, (</>))
 import           System.Path.IO (getDirectoryContents)
@@ -38,7 +37,7 @@ import           System.Path.IO (getDirectoryContents)
 ---
 
 -- | Every package in the current cache, paired with its original filename.
-newtype Cache = Cache { _cache :: M.Map SimplePkg PackagePath }
+newtype Cache = Cache { _cache :: Map SimplePkg PackagePath }
 
 -- | The default location of the package cache: \/var\/cache\/pacman\/pkg\/
 defaultPackageCache :: Path Absolute
@@ -56,14 +55,14 @@ cache = Cache . M.fromList . mapMaybe (\p -> (,p) <$> simplepkg p)
 cacheContents :: Path Absolute -> IO Cache
 cacheContents pth = cache . map (PackagePath . (pth </>)) <$> getDirectoryContents pth
 
--- | All packages from a given `S.Set` who have a copy in the cache.
-pkgsInCache :: Settings -> NESet PkgName -> IO (S.Set PkgName)
+-- | All packages from a given `Set` who have a copy in the cache.
+pkgsInCache :: Settings -> NESet PkgName -> IO (Set PkgName)
 pkgsInCache ss ps = do
   c <- cacheContents . either id id . cachePathOf $ commonConfigOf ss
   pure . S.filter (`NES.member` ps) . S.map (^. field @"name") . M.keysSet $ _cache c
 
--- | Any entries (filepaths) in the cache that match a given `T.Text`.
-cacheMatches :: Settings -> T.Text -> IO [PackagePath]
+-- | Any entries (filepaths) in the cache that match a given `Text`.
+cacheMatches :: Settings -> Text -> IO [PackagePath]
 cacheMatches ss input = do
   c <- cacheContents . either id id . cachePathOf $ commonConfigOf ss
   pure . filter (T.isInfixOf input . T.pack . toFilePath . path) . M.elems $ _cache c

@@ -13,9 +13,8 @@ module Aura.Pkgbuild.Base
   ) where
 
 import           Aura.Types
-import qualified Data.Text as T
-import           System.Path (Absolute, FileExt(..), Path, fromAbsoluteFilePath,
-                              fromUnrootedFilePath, (<.>), (</>))
+import qualified RIO.Text as T
+import           System.Path
 
 ---
 

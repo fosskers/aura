@@ -31,18 +31,16 @@ import           Control.Effect.Lift (Lift, sendM)
 import           Control.Effect.Reader (Reader, asks)
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Except
-import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Semigroup.Foldable (fold1)
-import qualified Data.Set as S
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
 import           Data.Witherable (wither)
 import           RIO hiding (Reader, asks)
-import           System.Directory (setCurrentDirectory)
-import           System.IO (stdout)
+import           RIO.Directory (setCurrentDirectory)
+import qualified RIO.Set as S
+import qualified RIO.Text as T
 import           System.Path
 import           System.Path.IO
 import           System.Process.Typed
@@ -122,7 +120,7 @@ cloneRepo pkg usr = do
 -- overwrite what's been downloaded before calling `makepkg`.
 overwritePkgbuild :: Settings -> Buildable -> IO ()
 overwritePkgbuild ss p = when (switch ss HotEdit || switch ss UseCustomizepkg) $
-  BL.writeFile "PKGBUILD" $ p ^. field @"pkgbuild" . field @"pkgbuild"
+  writeFileBinary "PKGBUILD" $ p ^. field @"pkgbuild" . field @"pkgbuild"
 
 -- | Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
