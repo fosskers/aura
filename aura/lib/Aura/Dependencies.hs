@@ -66,7 +66,7 @@ resolveDeps :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) s
 resolveDeps repo ps = do
   ss <- asks settings
   Resolution m s <- liftMaybeM (Failure connectionFailure_1) . sendM $
-    (Just <$> resolveDeps' ss repo ps) `catchAny` (const $ pure Nothing)
+    (Just <$> resolveDeps' ss repo ps) `catchAny` const (pure Nothing)
   unless (length ps == length m) $ sendM (putText "\n")
   let de = conflicts ss m s
   unless (null de) . throwError . Failure $ missingPkg_2 de
@@ -124,7 +124,7 @@ conflicts :: Settings -> Map PkgName Package -> Set PkgName -> [DepError]
 conflicts ss m s = foldMap f m
   where
     pm :: Map PkgName Package
-    pm = M.fromList $ foldr (\p acc -> (pprov p ^. field @"provides", p) : acc) [] m
+    pm = M.fromList $ map (\p -> (pprov p ^. field @"provides", p)) $ toList m
 
     f :: Package -> [DepError]
     f (FromRepo _) = []

@@ -179,7 +179,7 @@ newtype Satisfied = Satisfied (NESet Dep)
 areSatisfied :: NESet Dep -> IO (Or Unsatisfied Satisfied)
 areSatisfied ds = do
   unsats <- S.fromList . mapMaybe parseDep <$> unsat
-  pure . bimap Unsatisfied Satisfied $ NES.partition (\d -> S.member d unsats) ds
+  pure . bimap Unsatisfied Satisfied $ NES.partition (`S.member` unsats) ds
   where
     unsat :: IO [Text]
     unsat = pacmanLines $ "-T" : map renderedDep (toList ds)

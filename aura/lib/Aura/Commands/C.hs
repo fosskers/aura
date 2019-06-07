@@ -144,7 +144,7 @@ clean toSave = do
   let !files    = M.elems cache
       grouped   = take toSave . reverse <$> groupByName files
       toRemove  = files \\ fold grouped
-  sendM $ traverse_ removeFile $ map path toRemove
+  sendM $ traverse_ (removeFile . path) toRemove
 
 -- | Only package files with a version not in any PkgState will be
 -- removed.
@@ -158,7 +158,7 @@ cleanNotSaved = do
   (Cache cache)  <- sendM $ cacheContents cachePath
   let duds = M.filterWithKey (\p _ -> any (inState p) states) cache
   prop <- sendM . optionalPrompt ss $ cleanNotSaved_2 $ M.size duds
-  when prop . sendM . traverse_ removeFile . map path $ M.elems duds
+  when prop . sendM . traverse_ (removeFile . path) $ M.elems duds
 
 -- | Typically takes the contents of the package cache as an argument.
 groupByName :: [PackagePath] -> [[PackagePath]]
