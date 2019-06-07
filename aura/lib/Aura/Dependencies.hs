@@ -47,7 +47,6 @@ import           RIO hiding (Reader, asks)
 import qualified RIO.Map as M
 import qualified RIO.Set as S
 import qualified RIO.Text as T
-import           UnliftIO.Exception (catchAny, throwString)
 
 ---
 
