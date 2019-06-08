@@ -7,12 +7,9 @@ import           Aura.Packages.Repository
 import           Aura.Pacman
 import           Aura.Pkgbuild.Security
 import           Aura.Types
-import qualified Data.ByteString.Lazy.Char8 as BL
-import qualified Data.Map.Strict as M
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import           Data.Versions
 import           RIO
+import qualified RIO.Map as M
 -- import           Language.Bash.Pretty (prettyText)
 import           System.Path
 import           Test.Tasty
@@ -24,8 +21,8 @@ import           Text.Megaparsec
 
 main :: IO ()
 main = do
-  conf <- T.readFile "test/pacman.conf"
-  pkb  <- Pkgbuild <$> BL.readFile "test/aura.PKGBUILD"
+  conf <- readFileUtf8 "test/pacman.conf"
+  pkb  <- Pkgbuild <$> readFileBinary "test/aura.PKGBUILD"
   defaultMain $ suite conf pkb
 
 suite :: Text -> Pkgbuild -> TestTree
