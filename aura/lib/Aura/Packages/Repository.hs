@@ -24,7 +24,6 @@ import           Aura.Settings (CommonSwitch(..), Settings, shared)
 import           Aura.Types
 import           Aura.Utils (getSelection)
 import           Control.Compactable (fmapEither, traverseEither)
-import           Control.Concurrent.STM.TVar (modifyTVar')
 import           Control.Error.Util (hush, note)
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Generics.Product (field)

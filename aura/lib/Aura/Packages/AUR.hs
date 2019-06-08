@@ -33,7 +33,6 @@ import           Aura.Pkgbuild.Fetch
 import           Aura.Settings
 import           Aura.Types
 import           Control.Compactable (fmapEither)
-import           Control.Concurrent.STM.TVar (modifyTVar')
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error)
 import           Control.Effect.Lift (Lift, sendM)
