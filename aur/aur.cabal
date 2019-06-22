@@ -45,7 +45,7 @@ library
       aeson >= 0.9 && < 1.5
     , servant ^>= 0.16
     , servant-client ^>= 0.16
-    , text
+    , text ^>= 1.2
 
 test-suite aur-test
   import: commons
