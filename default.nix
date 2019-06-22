@@ -17,7 +17,7 @@ let
   stack2nix-script = import "${static-haskell-nix}/static-stack2nix-builder/stack2nix-script.nix" {
     inherit pkgs;
     stack-project-dir = toString ./.; # where stack.yaml is
-    hackageSnapshot = "2019-05-24T00:00:00Z"; # pins e.g. extra-deps without hashes or revisions
+    hackageSnapshot = "2019-06-11T00:00:00Z"; # pins e.g. extra-deps without hashes or revisions
   };
 
   static-stack2nix-builder = import "${static-haskell-nix}/static-stack2nix-builder/default.nix" {
