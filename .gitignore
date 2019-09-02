@@ -6,3 +6,5 @@ cabal.sandbox.config
 build/
 .stack-work/*
 *.svg
+*.prof
+flames
