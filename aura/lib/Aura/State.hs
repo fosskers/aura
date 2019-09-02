@@ -30,7 +30,8 @@ import           Aura.Pacman (pacman, pacmanOutput)
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
-import           BasePrelude hiding (Version, mapMaybe)
+import           BasePrelude hiding (Version)
+import           Control.Compactable (fmapMaybe)
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error, throwError)
 import           Control.Effect.Lift (Lift, sendM)
@@ -46,7 +47,6 @@ import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 import           Data.Time
 import           Data.Versions
-import           Data.Witherable (mapMaybe)
 import           Lens.Micro ((^.))
 import           System.Path
 import           System.Path.IO (createDirectoryIfMissing, getDirectoryContents)
@@ -65,7 +65,7 @@ instance FromJSON PkgState where
     <$> v .: "time"
     <*> v .: "pinned"
     <*> fmap f (v .: "packages")
-    where f = mapMaybe (hush . versioning)
+    where f = fmapMaybe (hush . versioning)
   parseJSON invalid = typeMismatch "PkgState" invalid
 
 data StateDiff = StateDiff { _toAlter :: [SimplePkg], _toRemove :: [PkgName] }
