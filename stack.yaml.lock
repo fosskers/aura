@@ -12,13 +12,6 @@ packages:
   original:
     hackage: compactable-0.1.2.3
 - completed:
-    hackage: fused-effects-0.4.0.0@sha256:e9744131a9140968147389e7bbb7e4b448034af5829a27fffdbefb5688daefa3,4257
-    pantry-tree:
-      size: 2402
-      sha256: beceed19bb0b5d1cf1666c2bb3f12a3dc18067d1e4d5f7d63e5e487e3f40c864
-  original:
-    hackage: fused-effects-0.4.0.0
-- completed:
     hackage: language-bash-0.8.0@sha256:2a7b0498c029f0e7c30d3b273897e32036a629ff9ffa5c92ec2f3a51f46af86f,1620
     pantry-tree:
       size: 1006
@@ -26,50 +19,15 @@ packages:
   original:
     hackage: language-bash-0.8.0
 - completed:
-    hackage: nonempty-containers-0.2.0.0@sha256:1744301828cd7e040bc23d53ca201ec66205a21a4319718027bfeed8ec03bd94,2654
-    pantry-tree:
-      size: 1479
-      sha256: 7d7a1b87b899e75c5225a5b8c04d773b1a3cfef5e2fad1af94865a8c72d4a2a3
-  original:
-    hackage: nonempty-containers-0.2.0.0
-- completed:
     hackage: paths-0.2.0.0@sha256:85e77985968860365cdb2074515b339863344ca0d28baa879baf4105f93e87cc,2628
     pantry-tree:
       size: 732
       sha256: a7708dbe22d777004b61b93eacb73ba47fa2a19245b6bf704bd93d508715b17d
   original:
     hackage: paths-0.2.0.0
-- completed:
-    hackage: scheduler-1.4.0@sha256:b182be9a7b84e1dba02dac761c3f4e204521d0f779d72d86040789d5aaadf92a,2833
-    pantry-tree:
-      size: 838
-      sha256: 534b4237c72124e0214893076dd8d5d3b261b80f6cd6f070577da37da274bbfe
-  original:
-    hackage: scheduler-1.4.0
-- completed:
-    hackage: servant-0.16.0.1@sha256:671d08459463fa760cce1801ab183a63a5e06b46ae126692f4945c0fbeed03bf,5832
-    pantry-tree:
-      size: 2604
-      sha256: ee381fdb2d9436d6359a3b99d9343a51827260eaed9338dc47cebf498b242fd3
-  original:
-    hackage: servant-0.16.0.1
-- completed:
-    hackage: servant-client-0.16@sha256:06d1b4c0b2d85ad9c17f6b6399add68a6abcf9ac32d1af44e0d065e5d2d1b975,4394
-    pantry-tree:
-      size: 804
-      sha256: 40644ee3c38135d45fc47de080b71a48e8c59e8c8b22a3b08ef1f4b59eaf49ab
-  original:
-    hackage: servant-client-0.16
-- completed:
-    hackage: servant-client-core-0.16@sha256:494007c6d22e95c74d65cedcdfc77cd1d0dcef9f1b3d1b0809e193f035a256c1,3531
-    pantry-tree:
-      size: 1365
-      sha256: 58406b4b1d38b9d2d2a6aa2ba57c68ae76d67d41ecd9073e0690acbd3b93e999
-  original:
-    hackage: servant-client-core-0.16
 snapshots:
 - completed:
-    size: 498402
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/13/24.yaml
-    sha256: 33e96adfe24f112b62f6edd22565cdbaa13155703bbfbfdc3d0a9bc6138ae7bf
-  original: lts-13.24
+    size: 523878
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/14/3.yaml
+    sha256: 470c46c27746a48c7c50f829efc0cf00112787a7804ee4ac7a27754658f6d92c
+  original: lts-14.3

@@ -1,10 +1,10 @@
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE ScopedTypeVariables         #-}
-{-# LANGUAGE FlexibleContexts  #-}
-{-# LANGUAGE MonoLocalBinds    #-}
-{-# LANGUAGE MultiWayIf        #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications  #-}
+{-# LANGUAGE DataKinds           #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE MonoLocalBinds      #-}
+{-# LANGUAGE MultiWayIf          #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
 
 -- |
 -- Module    : Aura.Core
@@ -51,7 +51,6 @@ import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Map.Strict (Map)
-import           Data.Or (Or(..))
 import           Data.Semigroup
 import           Data.Set (Set)
 import qualified Data.Set as S
@@ -61,6 +60,7 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
+import           Data.These (These(..))
 import           Lens.Micro ((^.))
 import           Lens.Micro.Extras (view)
 import           System.Path.IO (doesFileExist)
@@ -179,7 +179,7 @@ newtype Satisfied = Satisfied (NESet Dep)
 
 -- | Similar to `isSatisfied`, but dependencies are checked in a batch, since
 -- @-T@ can accept multiple inputs.
-areSatisfied :: NESet Dep -> IO (Or Unsatisfied Satisfied)
+areSatisfied :: NESet Dep -> IO (These Unsatisfied Satisfied)
 areSatisfied ds = do
   unsats <- S.fromList . mapMaybe parseDep <$> unsat
   pure . bimap Unsatisfied Satisfied $ NES.partition (\d -> S.member d unsats) ds

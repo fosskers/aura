@@ -53,13 +53,13 @@ import           Data.Bitraversable
 import qualified Data.ByteString.Lazy as BL
 import           Data.Generics.Product (field, super)
 import qualified Data.Map.Strict as M
-import           Data.Or (Or(..))
 import           Data.Semigroup.Foldable (Foldable1(..))
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
 import           Data.Text.Prettyprint.Doc hiding (list, space)
 import           Data.Text.Prettyprint.Doc.Render.Terminal
+import           Data.These (These(..))
 import           Data.Versions hiding (Traversal')
 import           GHC.Generics (Generic)
 import           Lens.Micro
@@ -97,16 +97,16 @@ pver :: Package -> Versioning
 pver (FromRepo pb) = pb ^. field @"version"
 pver (FromAUR b)   = b  ^. field @"version"
 
-dividePkgs :: NESet Package -> Or (NESet Prebuilt) (NESet Buildable)
+dividePkgs :: NESet Package -> These (NESet Prebuilt) (NESet Buildable)
 dividePkgs = bimap NES.fromList NES.fromList . partNonEmpty f . NES.toList
   where
-    f :: Package -> Or Prebuilt Buildable
-    f (FromRepo p) = Fst p
-    f (FromAUR b)  = Snd b
+    f :: Package -> These Prebuilt Buildable
+    f (FromRepo p) = This p
+    f (FromAUR b)  = That b
 
 -- TODO Contribute this upstream.
 -- | Partition a `NonEmpty` based on some function.
-partNonEmpty :: (a -> Or b c) -> NonEmpty a -> Or (NonEmpty b) (NonEmpty c)
+partNonEmpty :: (a -> These b c) -> NonEmpty a -> These (NonEmpty b) (NonEmpty c)
 partNonEmpty f = foldMap1 (bimap pure pure . f)
 
 -- TODO Figure out how to do this more generically.
@@ -285,21 +285,3 @@ newtype PkgGroup = PkgGroup { group :: T.Text }
 -- | The dependency which some package provides. May not be the same name
 -- as the package itself (e.g. cronie provides cron).
 newtype Provides = Provides { provides :: PkgName } deriving (Eq, Ord, Show, Generic)
-
-instance (Semigroup a, Semigroup b) => Semigroup (Or a b) where
-  Fst l <> Fst r     = Fst $ l <> r
-  Fst l <> Snd r     = Both l r
-  Fst l <> Both l' r = Both (l <> l') r
-
-  Snd l <> Snd r     = Snd $ l <> r
-  Snd l <> Fst r     = Both r l
-  Snd l <> Both l' r = Both l' (l <> r)
-
-  Both l r <> Fst a    = Both (l <> a) r
-  Both l r <> Snd a    = Both l (r <> a)
-  Both l r <> Both a b = Both (l <> a) (r <> b)
-
-instance Bifunctor Or where
-  bimap l _ (Fst a)    = Fst $ l a
-  bimap l r (Both a b) = Both (l a) (r b)
-  bimap _ r (Snd b)    = Snd $ r b

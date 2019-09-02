@@ -31,7 +31,7 @@ executable aur-security
     , base-prelude >=1.2 && <1.4
     , compactable >=0.1 && <0.2
     , errors >=2.3 && <2.4
-    , http-client >=0.5 && <0.6
+    , http-client >=0.5 && <0.7
     , http-client-tls >=0.3 && <0.4
     , language-bash >=0.8 && <0.9
     , pretty-simple >=2.1 && <2.3
