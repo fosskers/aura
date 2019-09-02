@@ -66,13 +66,10 @@ suite conf pb = testGroup "Unit Tests"
     ]
   , testGroup "Aura.Languages"
     [ testCase "Language names are complete" $ do
-        case [minBound..maxBound] :: [Language] of
-          [] -> assertFailure "No languages found"
-          lang:restOfLangs -> do
-            let names = languageNames lang
-            for_ restOfLangs $ \otherLang -> do
-              let otherNames = languageNames otherLang
-              assertEqual ("Language name maps for " ++ show lang ++ " and " ++ show otherLang ++ " have different size") (M.size names) (M.size otherNames)
+        let languages = [minBound..maxBound] :: [Language]
+        for_ languages $ \lang -> do
+          let names = languageNames lang
+          assertEqual ("Language name map for " ++ show lang ++ " has incorrect number of items") (length languages - 1) (M.size names)
     ]
   , testGroup "Aura.Pkgbuild.Security"
     [ testCase "Parsing - aura.PKGBUILD" $ do
