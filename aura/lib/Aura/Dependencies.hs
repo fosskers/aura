@@ -38,13 +38,13 @@ import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
-import           Data.Or (elimOr)
 import           Data.Semigroup.Foldable (foldMap1)
 import           Data.Set (Set)
 import qualified Data.Set as S
 import           Data.Set.NonEmpty (pattern IsEmpty, pattern IsNonEmpty, NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
+import           Data.These (these)
 import           Data.Versions
 import           Lens.Micro
 import           UnliftIO.Exception (catchAny, throwString)
@@ -83,7 +83,7 @@ resolveDeps' ss repo ps = resolve (Resolution mempty mempty) ps
     resolve r@(Resolution m _) xs = maybe' (pure r) (NES.nonEmptySet goods) $ \goods' -> do
       let m' = M.fromList (map (pname &&& id) $ toList goods')
           r' = r & field @"toInstall" %~ (<> m')
-      elimOr (const $ pure r') (const $ satisfy r') (satisfy r') $ dividePkgs goods'
+      these (const $ pure r') (satisfy r') (const $ satisfy r') $ dividePkgs goods'
       where
         goods :: Set Package
         goods = NES.filter (\p -> not $ pname p `M.member` m) xs
@@ -102,7 +102,7 @@ resolveDeps' ss repo ps = resolve (Resolution mempty mempty) ps
     -- | Consider only "unsatisfied" deps.
     satisfy :: Resolution -> NESet Buildable -> IO Resolution
     satisfy r bs = maybe' (pure r) (NES.nonEmptySet . freshDeps r $ allDeps bs) $
-      areSatisfied >=> elimOr (lookups r) (\uns sat -> lookups (r' sat) uns) (pure . r')
+      areSatisfied >=> these (lookups r) (pure . r') (\uns sat -> lookups (r' sat) uns)
       where
         r' :: Satisfied -> Resolution
         r' (Satisfied sat) = r & field @"satisfied" %~ (<> f sat)

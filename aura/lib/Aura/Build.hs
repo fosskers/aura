@@ -26,6 +26,7 @@ import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           BasePrelude
+import           Control.Compactable (traverseMaybe)
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error, throwError)
 import           Control.Effect.Lift (Lift, sendM)
@@ -40,7 +41,6 @@ import qualified Data.Set as S
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import qualified Data.Text as T
-import           Data.Witherable (wither)
 import           Lens.Micro ((^.))
 import           System.Directory (setCurrentDirectory)
 import           System.IO (hFlush, stdout)
@@ -68,7 +68,7 @@ buildPackages :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure)
   NESet Buildable -> m (NESet PackagePath)
 buildPackages bs = do
   g <- sendM createSystemRandom
-  wither (build g) (toList bs) >>= maybe bad (pure . fold1) . NEL.nonEmpty
+  traverseMaybe (build g) (toList bs) >>= maybe bad (pure . fold1) . NEL.nonEmpty
   where bad = throwError $ Failure buildFail_10
 
 -- | Handles the building of Packages. Fails nicely.
