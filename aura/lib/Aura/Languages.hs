@@ -1443,7 +1443,7 @@ yesNoMessage = \case
     _          -> "[Y/n]"
 
 yesPattern :: Language -> [T.Text]
-yesPattern = \case
+yesPattern lang = map T.toCaseFold $ case lang of
     Polish     -> ["t", "tak"]
     Croatian   -> ["d", "da"]
     German     -> ["j", "ja"]

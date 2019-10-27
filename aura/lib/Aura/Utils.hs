@@ -202,7 +202,7 @@ yesNoPrompt ss msg = do
 
 -- | An empty response emplies "yes".
 isAffirmative :: Language -> T.Text -> Bool
-isAffirmative l t = T.null t || elem t (yesPattern l)
+isAffirmative l t = T.null t || elem (T.toCaseFold t) (yesPattern l)
 
 -- | Doesn't prompt when `--noconfirm` is used.
 optionalPrompt :: Settings -> (Language -> Doc AnsiStyle) -> IO Bool
