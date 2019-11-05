@@ -271,6 +271,7 @@ buildFail_7 (bt . view (field @"name") -> p) = \case
 buildFail_8 :: Language -> Doc AnsiStyle
 buildFail_8 = \case
     Japanese   -> "makepkgは失敗しました。"
+    Spanish    -> "Ocurrió un error al ejecutar makepkg"
     Portuguese -> "Ocorreu um erro ao executar makepkg"
     Russian    -> "Произошла ошибка makepkg."
     Esperanto  -> "Paneo de makepkg okazis."
@@ -278,17 +279,20 @@ buildFail_8 = \case
 
 buildFail_9 :: Language -> Doc AnsiStyle
 buildFail_9 = \case
+  Spanish   -> "Error al detectar todos los archivo de paquete (*.pkg.tar.xz)."
   Esperanto -> "Paneis detekti ĉiujn dosierojn de pakaĵoj (*.pkg.tar.xz)."
   _         -> "Failed to detect any built package files (*.pkg.tar.xz)."
 
 buildFail_10 :: Language -> Doc AnsiStyle
 buildFail_10 = \case
+  Spanish   -> "Los paquetes no se pudieron construir."
   Esperanto -> "Ĉiuj pakaĵoj paneis munti."
   _         -> "Every package failed to build."
 
 buildFail_11 :: Language -> Doc AnsiStyle
 buildFail_11 = \case
   Japanese   -> "作成は失敗しました。エラーを見ますか？"
+  Spanish    -> "Construcción fallida. ¿Te gustaría ver el error?"
   Esperanto  -> "Muntado paneis. Ĉu vi volas vidi la eraron?"
   _          -> "Building failed. Would you like to see the error?"
 
@@ -341,6 +345,7 @@ depError :: Language -> DepError -> Doc AnsiStyle
 depError _ (VerConflict s) = s
 depError _ (Ignored s)     = s
 depError l (NonExistant (PkgName s)) = case l of
+  Spanish    -> "La dependencia " <> bt s <> " no pudo ser encontrada."
   Portuguese -> "A dependência " <> bt s <> " não foi encontrada."
   Russian    -> "Зависимость " <> bt s <> " не найдена."
   Esperanto  -> "La dependeco " <> bt s <> " ne povis troviĝi."
@@ -352,6 +357,7 @@ depError l (BrokenProvides (PkgName pkg) (Provides (PkgName pro)) (PkgName n)) =
 
 missingPkg_3 :: Language -> Doc AnsiStyle
 missingPkg_3 = \case
+  Spanish    -> "Se produjo un error al reorganizar el gráfico de dependencia. Si ves esto, algo está muy mal."
   Esperanto  -> "Eraro okazis kiam reorganizi la grafeo de dependeco. Io estas erarega."
   _          -> "There was an error reorganizing the dependency graph. If you see this, something is very wrong."
 
@@ -807,6 +813,7 @@ cleanStates_3 = \case
 cleanStates_4 :: Int -> Language -> Doc AnsiStyle
 cleanStates_4 n = \case
   Japanese  -> "現在のパッケージ状態記録：" <> pretty n <> "個。"
+  Spanish   -> "Actualmente tiene " <+> pretty n <+> "estados de paquetes guardados."
   Russian   -> "У вас сейчас " <+> pretty n <+> pluralRussian " сохраненное состояние пакета" " сохраненных состояний пакета" " сохраненных состояний пакетов." n
   Esperanto -> "Vi havas " <+> pretty n <+> " konservajn statojn de pakaĵoj."
   _         -> "You currently have" <+> pretty n <+> "saved package states."
@@ -814,6 +821,7 @@ cleanStates_4 n = \case
 cleanStates_5 :: T.Text -> Language -> Doc AnsiStyle
 cleanStates_5 t = \case
   Japanese  -> "一番最近に保存されたのは：" <> pretty t
+  Spanish   -> "Guardado recientemente:" <+> pretty t
   Russian   -> "Последнее сохраненное:" <+> pretty t
   Esperanto -> "Lastaj konservaj:" <+> pretty t
   _         -> "Mostly recently saved:" <+> pretty t
@@ -824,6 +832,7 @@ cleanStates_6 n = \case
 
 readState_1 :: Language -> Doc AnsiStyle
 readState_1 = \case
+    Spanish    -> "Ese archivo de estado no se pudo analizar. ¿Es un archivo JSON válido?"
     Portuguese -> "O arquivo de estado não pôde ser interpretado. É um arquivo JSON válido?"
     Russian    -> "Это состояние не распознано. Это корректный JSON?"
     Esperanto  -> "Tiu statdosiero paneis sintake analizi. Ĉu ĝi estas valida JSON?"
@@ -1271,6 +1280,7 @@ restoreState_1 = \case
 restoreState_2 :: Language -> Doc AnsiStyle
 restoreState_2 = \case
     Japanese   -> "保存されたパッケージ状態がない。作るには「-B」を。"
+    Spanish    -> "No hay estados guardados para ser restaurados. (Utilice -B para guardar el estado actual)"
     Portuguese -> "Nenhum estado disponível para ser recuperado. (Utilize -B para salvar o estado atual)"
     Russian    -> "Нет сохраненных состояний для восстановления. (Используйте -B для сохранения текущего состояния)"
     Chinese    -> "没有要恢复的已保存状态。（使用 -B 保存当前状态）"
@@ -1303,6 +1313,7 @@ reinstallAndRemove_1 = \case
 --------------------------------------
 whoIsBuildUser_1 :: Language -> Doc AnsiStyle
 whoIsBuildUser_1 = \case
+    Spanish    -> "No se puede determinar el usuario que ejecutará la compilación."
     Portuguese -> "Não foi possível determinal o usuário que executará a compilação."
     Russian    -> "Не удается определить, от имени какого пользователя производить сборку."
     Esperanto  -> "Ne povas decidi, per kiu konto de uzanto munti."
@@ -1333,6 +1344,7 @@ pacmanFailure_1 = \case
 
 confParsing_1 :: Language -> Doc AnsiStyle
 confParsing_1 = \case
+    Spanish    -> "No fue posible analizar su archivo pacman.conf."
     Portuguese -> "Não foi possível interpretar o arquivo pacman.conf ."
     Russian    -> "Не удается распознать формат вашего файла pacman.conf."
     Esperanto  -> "Ne kapablas sintaske analizi vian dosieron, pacman.conf."
