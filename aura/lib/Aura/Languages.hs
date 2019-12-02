@@ -351,6 +351,7 @@ depError l (NonExistant (PkgName s)) = case l of
   Esperanto  -> "La dependeco " <> bt s <> " ne povis troviĝi."
   _          -> "The dependency " <> bt s <> " couldn't be found."
 depError l (BrokenProvides (PkgName pkg) (Provides (PkgName pro)) (PkgName n)) = case l of
+  Spanish    -> "El paquete " <> bt pkg <> " necesita " <> bt n <> " que proporciona " <> bt pro <> "."
   Russian    -> "Пакету " <> bt pkg <> " требуется " <> bt n <> ", предоставляющий " <> bt pro <> "."
   Esperanto  -> "La pakaĵo, " <> bt pkg <> " bezonas " <> bt n <> ", kiu donas " <> bt pro <> "."
   _          -> "The package " <> bt pkg <> " needs " <> bt n <> ", which provides " <> bt pro <> "."
@@ -363,6 +364,7 @@ missingPkg_3 = \case
 
 missingPkg_4 :: [NonEmpty PkgName] -> Language -> Doc AnsiStyle
 missingPkg_4 pns = \case
+  Spanish    -> vsep $ "Se detectaron los siguientes ciclos de dependencia:" : pns'
   _ -> vsep $ "The following dependency cycles were detected:" : pns'
   where pns' = map (hsep . map pretty . intersperse "=>" . map (view (field @"name")) . toList) pns
 
@@ -689,6 +691,7 @@ reportBadDowngradePkgs_1 = \case
 
 reportBadDowngradePkgs_2 :: PkgName -> Language -> Doc AnsiStyle
 reportBadDowngradePkgs_2 (PkgName p) = \case
+  Spanish     -> pretty p <+> "no tiene una versión en la caché."
   _ -> pretty p <+> "has no version in the cache."
 
 upgradeAURPkgs_1 :: Language -> Doc AnsiStyle
@@ -828,6 +831,7 @@ cleanStates_5 t = \case
 
 cleanStates_6 :: Int -> Language -> Doc AnsiStyle
 cleanStates_6 n = \case
+  Spanish   -> pretty n <+> "de estos están anclados y no se eliminarán."
   _ -> pretty n <+> "of these are pinned, and won't be removed."
 
 readState_1 :: Language -> Doc AnsiStyle
@@ -1161,6 +1165,7 @@ reportNotInLog_1 = \case
 -- https://github.com/aurapm/aura/issues/498
 connectionFailure_1 :: Language -> Doc AnsiStyle
 connectionFailure_1 = \case
+  Spanish   -> "No se pudo contactar con el AUR. ¿Tienes conexión a internet?"
   _ -> "Failed to contact the AUR. Do you have an internet connection?"
 
 infoFields :: Language -> [T.Text]
@@ -1399,42 +1404,52 @@ customizepkg_1 = let customizepkg = bt "customizepkg" in \case
 ------------------------------
 security_1 :: PkgName -> Language -> Doc AnsiStyle
 security_1 (PkgName p) = \case
+  Spanish   -> "El PKGBUILD de" <+> bt p <+> "era demasiado complejo de analizar - puede estar ofuscando código malicioso."
   _ -> "The PKGBUILD of" <+> bt p <+> "was too complex to parse - it may be obfuscating malicious code."
 
 security_2 :: T.Text -> Language -> Doc AnsiStyle
 security_2 (bt -> t) = \case
+  Spanish   -> t <+> "se puede usar para descargar scripts arbitrarios que este PKGBUILD no rastrea."
   _ -> t <+> "can be used to download arbitrary scripts that aren't tracked by this PKGBUILD."
 
 security_3 :: T.Text -> Language -> Doc AnsiStyle
 security_3 (bt -> t) = \case
+  Spanish   -> t <+> "se puede usar para ejecutar código arbitrario que este PKGBUILD no rastrea."
   _ -> t <+> "can be used to execute arbitrary code not tracked by this PKGBUILD."
 
 security_4 :: T.Text -> Language -> Doc AnsiStyle
 security_4 (bt -> t) = \case
+  Spanish   -> t <+> "indica que alguien puede estar intentando obtener acceso de root a su máquina."
   _ -> t <+> "indicates that someone may be trying to gain root access to your machine."
 
 security_5 :: PkgName -> Language -> Doc AnsiStyle
 security_5 (PkgName p) = \case
+  Spanish   -> "ADVERTENCIA: El PKGBUILD de" <+> bt p <+> "contiene expresiones bash en la lista negra."
   _ -> "WARNING: The PKGBUILD of" <+> bt p <+> "contains blacklisted bash expressions."
 
 security_6 :: Language -> Doc AnsiStyle
 security_6 = \case
+  Spanish   -> "¿Desea salir del proceso de compilación?"
   _ -> "Do you wish to quit the build process?"
 
 security_7 :: Language -> Doc AnsiStyle
 security_7 = \case
+  Spanish   -> "Se canceló el procesamiento posterior para evitar el código bash potencialmente malicioso."
   _ -> "Cancelled further processing to avoid potentially malicious bash code."
 
 security_8 :: T.Text -> Language -> Doc AnsiStyle
 security_8 (bt -> t) = \case
+  Spanish   -> t <+> "es un comando bash integrado en los campos de la matriz del PKGBUILD."
   _ -> t <+> "is a bash command inlined in your PKGBUILD array fields."
 
 security_9 :: T.Text -> Language -> Doc AnsiStyle
 security_9 (bt -> t) = \case
+  Spanish   -> t <+> "es algo extraño para tener en sus campos de matriz. ¿Es seguro?"
   _ -> t <+> "is a strange thing to have in your array fields. Is it safe?"
 
 security_10 :: T.Text -> Language -> Doc AnsiStyle
 security_10 (bt -> t) = \case
+  Spanish   -> t <+> "implica que alguien estaba tratando de ser astuto con las variables para ocultar comandos maliciosos."
   _ -> t <+> "implies that someone was trying to be clever with variables to hide malicious commands."
 
 -----------------------
