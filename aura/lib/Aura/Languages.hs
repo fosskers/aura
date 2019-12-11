@@ -1356,8 +1356,9 @@ confParsing_1 = \case
     _          -> "Unable to parse your pacman.conf file."
 
 provides_1 :: PkgName -> Doc AnsiStyle
-provides_1 (bt . view (field @"name") -> pro) =
-  pro <+> "is required as a dependency, which is provided by multiple packages. Please select one:"
+provides_1 (bt . view (field @"name") -> pro) = \case
+    Spanish    -> pro <+> "se requiere como una dependencia, que es proporcionada por múltiples paquetes. Por favor, seleccione uno:"
+    _          -> pro <+> "is required as a dependency, which is provided by multiple packages. Please select one:"
 
 ----------------------------------
 -- Aura/Pkgbuild/Editing functions
