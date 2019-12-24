@@ -1,4 +1,5 @@
 dist/
+dist-newstyle/
 *.hi
 *.o
 .cabal-sandbox
