@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.3.0
+
+- `servant-0.17` support.
+
 ## 6.2.0.1
 
 - Relax `http-client` bounds.
