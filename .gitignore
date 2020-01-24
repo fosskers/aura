@@ -9,3 +9,5 @@ build/
 *.svg
 *.prof
 flames
+*.txt
+*.dump-hi

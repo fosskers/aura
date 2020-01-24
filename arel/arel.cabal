@@ -21,5 +21,5 @@ executable arel
   build-depends:
       base              >=4.8 && <5
     , optparse-generic  >=1.1 && <1.4
-    , shelly            >=1.6 && <1.9
+    , shelly            >=1.6 && <1.10
     , text              >=1.2 && <1.3

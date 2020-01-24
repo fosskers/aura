@@ -37,8 +37,8 @@ library
   exposed-modules: Linux.Arch.Aur
   build-depends:
     , aeson           >=0.9  && <1.5
-    , servant         ^>=0.16
-    , servant-client  ^>=0.16
+    , servant         >=0.16 && <0.18
+    , servant-client  ^>=0.17
     , text            ^>=1.2
 
 test-suite aur-test

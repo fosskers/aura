@@ -157,4 +157,4 @@ search :: Manager -> Text -> IO (Either ClientError [AurInfo])
 search m p = unwrap m $ rpcS (Just "5") (Just "search") (Just p)
 
 unwrap :: Manager -> ClientM RPCResp -> IO (Either ClientError [AurInfo])
-unwrap m r = fmap _results <$> runClientM r (ClientEnv m url Nothing)
+unwrap m r = fmap _results <$> runClientM r (ClientEnv m url Nothing defaultMakeClientRequest)
