@@ -9,7 +9,7 @@
 
 -- |
 -- Module    : Aura.Commands.A
--- Copyright : (c) Colin Woodbury, 2012 - 2019
+-- Copyright : (c) Colin Woodbury, 2012 - 2020
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
@@ -37,11 +37,11 @@ import           Aura.State (saveState)
 import           Aura.Types
 import           Aura.Utils
 import           BasePrelude hiding ((<+>))
-import           Control.Error.Util (hush)
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error)
 import           Control.Effect.Lift (Lift, sendM)
 import           Control.Effect.Reader (Reader, asks)
+import           Control.Error.Util (hush)
 import           Data.Aeson.Encode.Pretty (encodePrettyToTextBuilder)
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
@@ -74,7 +74,7 @@ foreigns :: Settings -> IO (S.Set SimplePkg)
 foreigns ss = S.filter (notIgnored . view (field @"name")) <$> foreignPackages
   where notIgnored p = not . S.member p $ ignoresOf ss
 
-upgrade :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => 
+upgrade :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
   S.Set PkgName -> NESet SimplePkg -> m ()
 upgrade pkgs fs = do
   ss        <- asks settings
@@ -92,7 +92,7 @@ upgrade pkgs fs = do
              sendM . unless (switch ss DryRun) $ saveState ss
              traverse_ I.install . NES.nonEmptySet $ S.fromList names <> pkgs <> devel
 
-possibleUpdates :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => 
+possibleUpdates :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
   NESet SimplePkg -> m [(AurInfo, Versioning)]
 possibleUpdates (NES.toList -> pkgs) = do
   aurInfos <- aurInfo $ fmap (^. field @"name") pkgs

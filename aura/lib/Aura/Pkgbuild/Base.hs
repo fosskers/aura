@@ -2,7 +2,7 @@
 
 -- |
 -- Module    : Aura.Pkgbuild.Base
--- Copyright : (c) Colin Woodbury, 2012 - 2019
+-- Copyright : (c) Colin Woodbury, 2012 - 2020
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 
@@ -14,8 +14,9 @@ module Aura.Pkgbuild.Base
 
 import           Aura.Types
 import qualified Data.Text as T
-import           System.Path (Absolute, FileExt(..), Path, fromAbsoluteFilePath,
-                              fromUnrootedFilePath, (<.>), (</>))
+import           System.Path
+    (Absolute, FileExt(..), Path, fromAbsoluteFilePath, fromUnrootedFilePath,
+    (<.>), (</>))
 
 ---
 

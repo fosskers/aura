@@ -8,7 +8,7 @@
 
 -- |
 -- Module    : Aura.Packages.AUR
--- Copyright : (c) Colin Woodbury, 2012 - 2019
+-- Copyright : (c) Colin Woodbury, 2012 - 2020
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
@@ -35,11 +35,11 @@ import           Aura.Types
 import           BasePrelude hiding (head)
 import           Control.Compactable (fmapEither)
 import           Control.Concurrent.STM.TVar (modifyTVar')
-import           Control.Error.Util (hush, note)
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error)
 import           Control.Effect.Lift (Lift, sendM)
 import           Control.Effect.Reader (Reader, asks)
+import           Control.Error.Util (hush, note)
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Maybe
 import           Control.Scheduler (Comp(..), traverseConcurrently)

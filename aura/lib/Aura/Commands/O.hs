@@ -6,7 +6,7 @@
 
 -- |
 -- Module    : Aura.Commands.O
--- Copyright : (c) Colin Woodbury, 2012 - 2019
+-- Copyright : (c) Colin Woodbury, 2012 - 2020
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
@@ -20,8 +20,8 @@ import           Aura.Types
 import           BasePrelude
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error)
-import           Control.Effect.Reader (Reader)
 import           Control.Effect.Lift (Lift, sendM)
+import           Control.Effect.Reader (Reader)
 import           Data.Generics.Product (field)
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Text.IO as T

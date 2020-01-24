@@ -4,7 +4,7 @@
 
 -- |
 -- Module    : Linux.Arch.Aur
--- Copyright : (c) Colin Woodbury, 2014 - 2019
+-- Copyright : (c) Colin Woodbury, 2014 - 2020
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --

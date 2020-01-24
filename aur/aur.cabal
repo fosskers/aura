@@ -13,7 +13,7 @@ category:           Linux
 homepage:           https://github.com/aurapm/aura
 author:             Colin Woodbury
 maintainer:         colin@fosskers.ca
-copyright:          2014 - 2019 Colin Woodbury
+copyright:          2014 - 2020 Colin Woodbury
 license:            GPL-3.0-only
 license-file:       LICENSE
 build-type:         Simple
