@@ -20,7 +20,7 @@ module Aura.Packages.Repository
 import           Aura.Core
 import           Aura.Languages (provides_1)
 import           Aura.Pacman (pacmanLines, pacmanOutput)
-import           Aura.Settings (CommonSwitch(..), Settings, shared)
+import           Aura.Settings (CommonSwitch(..), Settings(..), shared)
 import           Aura.Types
 import           Aura.Utils (getSelection, strictText)
 import           BasePrelude hiding (try)
@@ -92,7 +92,7 @@ chooseProvider ss pn ps@(a:as) =
   traverseConcurrently Par' isInstalled ps >>= maybe f pure . listToMaybe . catMaybes
   where
     f | shared ss NoConfirm = pure . bool a pn $ pn `elem` ps
-      | otherwise = warn ss (provides_1 pn) >> getSelection (^. field @"name") (a :| as)
+      | otherwise = warn ss (provides_1 pn $ langOf ss) >> getSelection (^. field @"name") (a :| as)
 
 -- | The most recent version of a package, if it exists in the respositories.
 mostRecent :: PkgName -> IO (Either PkgName Versioning)

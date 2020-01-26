@@ -1355,7 +1355,7 @@ confParsing_1 = \case
     Esperanto  -> "Ne kapablas sintaske analizi vian dosieron, pacman.conf."
     _          -> "Unable to parse your pacman.conf file."
 
-provides_1 :: PkgName -> Doc AnsiStyle
+provides_1 :: PkgName -> Language -> Doc AnsiStyle
 provides_1 (bt . view (field @"name") -> pro) = \case
     Spanish    -> pro <+> "se requiere como una dependencia, que es proporcionada por múltiples paquetes. Por favor, seleccione uno:"
     _          -> pro <+> "is required as a dependency, which is provided by multiple packages. Please select one:"
