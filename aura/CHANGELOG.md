@@ -3,6 +3,7 @@
 ## 2.0.3
 
 - Updated Spanish translations. Thanks to Max Ferrer!
+- Fixed bug #543. Thanks to Alexey Kotlyarov!
 
 ## 2.0.2
 
