@@ -20,7 +20,7 @@ Chris "Kwpolska" Warrick                      | Polish
 Denis Kasak / "stranac"                       | Croatian
 Fredrik Haikarainen / Daniel Beecham          | Swedish
 Lukas Niederbremer / Jonas Platte             | German
-Alejandro Gómez / Sergio Conde                | Spanish
+Alejandro Gómez / Sergio Conde / Max Ferrer   | Spanish
 Henry Kupty / Thiago Perrotta / Wagner Amaral | Portuguese
 Ma Jiehong / Fabien Dubosson                  | French
 Kyrylo Silin                                  | Russian
@@ -54,7 +54,7 @@ translators = Map.fromList
     , (Croatian,   "Denis Kasak / \"stranac\"")
     , (Swedish,    "Fredrik Haikarainen / Daniel Beecham")
     , (German,     "Lukas Niederbremer / Jonas Platte")
-    , (Spanish,    "Alejandro Gómez / Sergio Conde")
+    , (Spanish,    "Alejandro Gómez / Sergio Conde / Max Ferrer")
     , (Portuguese, "Henry Kupty / Thiago Perrotta / Wagner Amaral")
     , (French,     "Ma Jiehong / Fabien Dubosson")
     , (Russian,    "Kyrylo Silin / Alexey Kotlyarov")

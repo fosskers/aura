@@ -1,5 +1,9 @@
 # Aura Changelog
 
+## 2.0.3
+
+- Updated Spanish translations. Thanks to Max Ferrer!
+
 ## 2.0.2
 
 - Bug fixes and performance improvements.

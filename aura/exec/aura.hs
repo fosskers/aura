@@ -72,7 +72,7 @@ import           Text.Pretty.Simple (pPrintNoColor)
 ---
 
 auraVersion :: T.Text
-auraVersion = "2.0.2"
+auraVersion = "2.0.3"
 
 main :: IO ()
 main = do
