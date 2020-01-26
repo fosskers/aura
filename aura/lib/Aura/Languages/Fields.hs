@@ -273,6 +273,7 @@ votes = \case
 popularity :: Language -> T.Text
 popularity = \case
     Japanese   -> "人気"
+    Spanish    -> "Popularidad"
     Portuguese -> "Popularidade"
     Esperanto  -> "Populareco"
     _          -> "Popularity"
