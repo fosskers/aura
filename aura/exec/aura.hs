@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP               #-}
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE MonoLocalBinds    #-}
@@ -71,8 +72,12 @@ import           Text.Pretty.Simple (pPrintNoColor)
 
 ---
 
+#ifndef CURRENT_PACKAGE_VERSION
+#define CURRENT_PACKAGE_VERSION "UNKNOWN"
+#endif
+
 auraVersion :: T.Text
-auraVersion = "2.0.3"
+auraVersion = CURRENT_PACKAGE_VERSION
 
 main :: IO ()
 main = do
