@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP               #-}
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators     #-}
@@ -157,4 +158,10 @@ search :: Manager -> Text -> IO (Either ClientError [AurInfo])
 search m p = unwrap m $ rpcS (Just "5") (Just "search") (Just p)
 
 unwrap :: Manager -> ClientM RPCResp -> IO (Either ClientError [AurInfo])
-unwrap m r = fmap _results <$> runClientM r (ClientEnv m url Nothing defaultMakeClientRequest)
+unwrap m r = fmap _results <$> runClientM r env
+  where
+#if !MIN_VERSION_servant_client(0,17,0)
+    env = ClientEnv m url Nothing
+#else
+    env = ClientEnv m url Nothing defaultMakeClientRequest
+#endif

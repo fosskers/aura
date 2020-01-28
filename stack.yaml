@@ -19,6 +19,3 @@ extra-deps:
   - compactable-0.1.2.3
   - language-bash-0.8.0
   - paths-0.2.0.0
-  - servant-0.17
-  - servant-client-0.17
-  - servant-client-core-0.17

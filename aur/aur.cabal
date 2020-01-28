@@ -1,6 +1,6 @@
 cabal-version:      2.2
 name:               aur
-version:            6.3.0
+version:            6.3.1
 synopsis:           Access metadata from the Arch Linux User Repository.
 description:
   Access package information from Arch Linux's AUR via its RPC interface. The
@@ -38,7 +38,7 @@ library
   build-depends:
     , aeson           >=0.9  && <1.5
     , servant         >=0.16 && <0.18
-    , servant-client  ^>=0.17
+    , servant-client  >=0.16 && <0.18
     , text            ^>=1.2
 
 test-suite aur-test

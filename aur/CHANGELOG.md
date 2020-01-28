@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.3.1
+
+- Rewiden `servant` bounds.
+
 ## 6.3.0
 
 - `servant-0.17` support.
