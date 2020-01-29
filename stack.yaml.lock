@@ -27,7 +27,7 @@ packages:
     hackage: paths-0.2.0.0
 snapshots:
 - completed:
-    size: 524162
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/14/21.yaml
-    sha256: 9a55dd75853718f2bbbe951872b36a3b7802fcd71796e0f25b8664f24e34c666
-  original: lts-14.21
+    size: 524164
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/14/22.yaml
+    sha256: 7ad8f33179b32d204165a3a662c6269464a47a7e65a30abc38d01b5a38ec42c0
+  original: lts-14.22
