@@ -8,16 +8,23 @@ let
   cabalPackageName = "aura";
   compiler = "ghc865"; # matching stack.yaml
 
-  # Pin nixpkgs version.
-  pkgs = import (fetchTarball https://github.com/nh2/nixpkgs/archive/a2d7e9b875e8ba7fd15b989cf2d80be4e183dc72.tar.gz) {};
-
   # Pin static-haskell-nix version.
-  static-haskell-nix = fetchTarball https://github.com/nh2/static-haskell-nix/archive/1d37d9a83e570eceef9c7dad5c89557f8179a076.tar.gz;
+  static-haskell-nix =
+    if builtins.pathExists ../.in-static-haskell-nix
+      then toString ../. # for the case that we're in static-haskell-nix itself, so that CI always builds the latest version.
+      # Update this hash to use a different `static-haskell-nix` version:
+      else fetchTarball https://github.com/nh2/static-haskell-nix/archive/81006c805289116811650416a83f5689bed0209b.tar.gz;
+
+  # Pin nixpkgs version
+  # By default to the one `static-haskell-nix` provides, but you may also give
+  # your own as long as it has the necessary patches, using e.g.
+  #     pkgs = import (fetchTarball https://github.com/nh2/nixpkgs/archive/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa123.tar.gz) {};
+  pkgs = import "${static-haskell-nix}/nixpkgs.nix";
 
   stack2nix-script = import "${static-haskell-nix}/static-stack2nix-builder/stack2nix-script.nix" {
     inherit pkgs;
     stack-project-dir = toString ./.; # where stack.yaml is
-    hackageSnapshot = "2019-06-22T00:00:00Z"; # pins e.g. extra-deps without hashes or revisions
+    hackageSnapshot = "2020-01-27T00:00:00Z"; # pins e.g. extra-deps without hashes or revisions
   };
 
   static-stack2nix-builder = import "${static-haskell-nix}/static-stack2nix-builder/default.nix" {
@@ -27,32 +34,16 @@ let
   };
 
   # Full invocation, including pinning `nix` version itself.
-  fullBuildScript = pkgs.writeScript "stack2nix-and-build-script.sh" ''
-    #!/usr/bin/env bash
+  fullBuildScript = pkgs.writeShellScript "stack2nix-and-build-script.sh" ''
     set -eu -o pipefail
     STACK2NIX_OUTPUT_PATH=$(${stack2nix-script})
-    set -x
+    export NIX_PATH=nixpkgs=${pkgs.path}
     ${pkgs.nix}/bin/nix-build --no-link -A static_package --argstr stack2nix-output-path "$STACK2NIX_OUTPUT_PATH" "$@"
   '';
 
-  static_haskellPackages = static-stack2nix-builder.haskell-static-nix_output.haskellPackages;
-
-  # Override some packages in the snapshot.
-  static_haskellPackages_with_fixes = static_haskellPackages.override (old: {
-    overrides = pkgs.lib.composeExtensions (old.overrides or (_: _: {})) (self: super: {
-
-      # Remove nixpkgs-specific patch that no longer applies to >= 0.16
-      # See https://github.com/NixOS/nixpkgs/blob/a2d7e9b875e8ba7fd15b989cf2d80be4e183dc72/pkgs/development/haskell-modules/configuration-nix.nix#L473-L474
-      servant-client-core = pkgs.haskell.lib.overrideCabal super.servant-client-core (old: {
-        patches = with pkgs.lib;
-          filter (p: !(hasSuffix "streamBody.patch" p)) (old.patches or []);
-      });
-
-    });
-  });
 in
   {
-    static_package = static_haskellPackages_with_fixes."${cabalPackageName}";
+    static_package = static-stack2nix-builder.static_package;
     inherit fullBuildScript;
     # For debugging:
     inherit stack2nix-script;

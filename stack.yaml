@@ -12,7 +12,6 @@ flags:
 packages:
   - aura/
   - aur/
-  - arel/
   - aur-security/
 
 extra-deps:

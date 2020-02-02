@@ -19,7 +19,3 @@ A library for accessing the AUR, powered by
 ## The `aur-security` Tool
 
 Performs a sweep of all PKGBUILDs on the AUR, looking for Bash misuse.
-
-## The `arel` Tool
-
-A release tool for publishing Aura releases.
