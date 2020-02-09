@@ -22,20 +22,17 @@ import           Aura.Languages (provides_1)
 import           Aura.Pacman (pacmanLines, pacmanOutput)
 import           Aura.Settings (CommonSwitch(..), Settings(..), shared)
 import           Aura.Types
-import           Aura.Utils (getSelection, strictText)
-import           BasePrelude hiding (try)
-import           Control.Compactable (fmapEither)
-import           Control.Compactable (traverseEither)
-import           Control.Concurrent.STM.TVar (modifyTVar')
+import           Aura.Utils (getSelection)
+import           Control.Compactable (fmapEither, traverseEither)
 import           Control.Error.Util (hush, note)
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Generics.Product (field)
-import qualified Data.Map.Strict as M
-import qualified Data.Set as S
+import           Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
 import           Data.Versions
-import           Lens.Micro ((^.))
+import           RIO hiding (try)
+import qualified RIO.Map as M
+import qualified RIO.Set as S
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 
@@ -47,7 +44,7 @@ pacmanRepo :: IO Repository
 pacmanRepo = do
   tv <- newTVarIO mempty
 
-  let g :: Settings -> NES.NESet PkgName -> IO (Maybe (S.Set PkgName, S.Set Package))
+  let g :: Settings -> NES.NESet PkgName -> IO (Maybe (Set PkgName, Set Package))
       g ss names = do
         --- Retrieve cached Packages ---
         cache <- readTVarIO tv
@@ -96,11 +93,11 @@ chooseProvider ss pn ps@(a:as) =
 
 -- | The most recent version of a package, if it exists in the respositories.
 mostRecent :: PkgName -> IO (Either PkgName Versioning)
-mostRecent p@(PkgName s) = note p . extractVersion . strictText <$> pacmanOutput ["-Si", s]
+mostRecent p@(PkgName s) = note p . extractVersion . decodeUtf8Lenient <$> pacmanOutput ["-Si", s]
 
 -- | Parses the version number of a package from the result of a
 -- @pacman -Si@ call.
-extractVersion :: T.Text -> Maybe Versioning
+extractVersion :: Text -> Maybe Versioning
 extractVersion = hush . parse p "extractVersion"
   where p = do
           void $ takeWhile1P Nothing (/= '\n') *> newline

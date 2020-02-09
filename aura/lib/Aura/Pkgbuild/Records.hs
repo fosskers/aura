@@ -14,15 +14,13 @@ module Aura.Pkgbuild.Records
   , storePkgbuilds
   ) where
 
-import           Aura.Pkgbuild.Base
-import           Aura.Types
-import           BasePrelude
-import qualified Data.ByteString.Lazy.Char8 as BL
-import           Data.Generics.Product (field)
-import           Data.Set.NonEmpty (NESet)
-import           Lens.Micro ((^.))
-import           System.Path (toFilePath)
-import           System.Path.IO (createDirectoryIfMissing, doesFileExist)
+import Aura.Pkgbuild.Base
+import Aura.Types
+import Data.Generics.Product (field)
+import Data.Set.NonEmpty (NESet)
+import RIO
+import System.Path (toFilePath)
+import System.Path.IO (createDirectoryIfMissing, doesFileExist)
 
 ---
 
@@ -38,4 +36,4 @@ storePkgbuilds bs = do
   traverse_ (\p -> writePkgbuild (p ^. field @"name") (p ^. field @"pkgbuild")) bs
 
 writePkgbuild :: PkgName -> Pkgbuild -> IO ()
-writePkgbuild pn (Pkgbuild pb) = BL.writeFile (toFilePath $ pkgbuildPath pn) pb
+writePkgbuild pn (Pkgbuild pb) = writeFileBinary (toFilePath $ pkgbuildPath pn) pb

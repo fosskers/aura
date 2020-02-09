@@ -52,19 +52,14 @@ import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pacman
 import           Aura.Settings
 import           Aura.Types
-import           BasePrelude hiding (Version)
-import           Control.Effect (Carrier, Member)
-import           Control.Effect.Error (Error, runError)
-import           Control.Effect.Lift (Lift, runM, sendM)
-import           Control.Effect.Reader (Reader, asks, runReader)
-import           Data.Set (Set)
+import           Aura.Utils (putTextLn)
+import           Data.Bifunctor (first)
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Flags
 import           Options.Applicative (execParser)
+import           RIO hiding (first)
 import           Settings
 import           System.Path (toFilePath)
 import           System.Process.Typed (proc, runProcess)
@@ -76,7 +71,7 @@ import           Text.Pretty.Simple (pPrintNoColor)
 #define CURRENT_PACKAGE_VERSION "UNKNOWN"
 #endif
 
-auraVersion :: T.Text
+auraVersion :: Text
 auraVersion = CURRENT_PACKAGE_VERSION
 
 main :: IO ()
@@ -85,31 +80,32 @@ main = do
   esettings <- getSettings options
   repos     <- (<>) <$> pacmanRepo <*> aurRepo
   case esettings of
-    Left err -> T.putStrLn . dtot . ($ English) $ failure err
+    Left err -> putTextLn . dtot . ($ English) $ failure err
     Right ss -> execute ss repos options >>= exit ss
 
 execute :: Settings -> Repository -> Program -> IO (Either (Doc AnsiStyle) ())
-execute ss r p = first (($ langOf ss) . failure) <$> (runM . runReader (Env r ss) . runError . executeOpts $ _operation p)
+execute ss r p = first f <$> try (runRIO (Env r ss) . execOpts $ _operation p)
+  where
+    f (Failure fl) = fl $ langOf ss
 
 exit :: Settings -> Either (Doc AnsiStyle) () -> IO a
 exit ss (Left e)  = scold ss e *> exitFailure
 exit _  (Right _) = exitSuccess
 
-executeOpts :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  Either (PacmanOp, Set MiscOp) AuraOp -> m ()
-executeOpts ops = do
+execOpts :: Either (PacmanOp, Set MiscOp) AuraOp -> RIO Env ()
+execOpts ops = do
   ss <- asks settings
   when (shared ss Debug) $ do
-    sendM @IO . pPrintNoColor $ ops
-    sendM @IO . pPrintNoColor $ buildConfigOf ss
-    sendM @IO . pPrintNoColor $ commonConfigOf ss
-  let p (ps, ms) = liftEitherM . sendM . pacman $
+    liftIO . pPrintNoColor $ ops
+    liftIO . pPrintNoColor $ buildConfigOf ss
+    liftIO . pPrintNoColor $ commonConfigOf ss
+  let p (ps, ms) = liftIO . pacman $
         asFlag ps
         ++ foldMap asFlag ms
         ++ asFlag (commonConfigOf ss)
         ++ bool [] ["--quiet"] (switch ss LowVerbosity)
   case ops of
-    Left o@(Sync (Left (SyncUpgrade _)) _, _) -> sudo (sendM $ B.saveState ss) *> p o
+    Left o@(Sync (Left (SyncUpgrade _)) _, _) -> sudo (liftIO $ B.saveState ss) *> p o
     Left o -> p o
     Right (AurSync o _) ->
       case o of
@@ -122,10 +118,10 @@ executeOpts ops = do
         Left (AurJson ps)     -> A.aurJson ps
     Right (Backup o) ->
       case o of
-        Nothing              -> sudo . sendM $ B.saveState ss
-        Just (BackupClean n) -> sudo . sendM $ B.cleanStates ss n
+        Nothing              -> sudo . liftIO $ B.saveState ss
+        Just (BackupClean n) -> sudo . liftIO $ B.cleanStates ss n
         Just BackupRestore   -> sudo B.restoreState
-        Just BackupList      -> sendM B.listStates
+        Just BackupList      -> liftIO B.listStates
     Right (Cache o) ->
       case o of
         Right ps                -> sudo $ C.downgradePackages ps
@@ -137,23 +133,23 @@ executeOpts ops = do
       case o of
         Nothing            -> L.viewLogFile
         Just (LogInfo ps)  -> L.logInfoOnPkg ps
-        Just (LogSearch s) -> asks settings >>= sendM . flip L.searchLogFile s
+        Just (LogSearch s) -> asks settings >>= liftIO . flip L.searchLogFile s
     Right (Orphans o) ->
       case o of
-        Nothing               -> sendM O.displayOrphans
-        Just OrphanAbandon    -> sudo $ sendM orphans >>= traverse_ removePkgs . NES.nonEmptySet
+        Nothing               -> liftIO O.displayOrphans
+        Just OrphanAbandon    -> sudo $ liftIO orphans >>= traverse_ removePkgs . NES.nonEmptySet
         Just (OrphanAdopt ps) -> O.adoptPkg ps
-    Right Version   -> sendM $ versionInfo >>= animateVersionMsg ss auraVersion
+    Right Version   -> liftIO $ versionInfo >>= animateVersionMsg ss auraVersion
     Right Languages -> displayOutputLanguages
     Right ViewConf  -> viewConfFile
 
-displayOutputLanguages :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => m ()
+displayOutputLanguages :: RIO Env ()
 displayOutputLanguages = do
   ss <- asks settings
-  sendM . notify ss . displayOutputLanguages_1 $ langOf ss
-  sendM $ traverse_ print [English ..]
+  liftIO . notify ss . displayOutputLanguages_1 $ langOf ss
+  liftIO $ traverse_ (putTextLn . tshow) [English ..]
 
-viewConfFile :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => m ()
+viewConfFile :: RIO Env ()
 viewConfFile = do
   pth <- asks (either id id . configPathOf . commonConfigOf . settings)
-  sendM . void . runProcess @IO $ proc "less" [toFilePath pth]
+  liftIO . void . runProcess @IO $ proc "less" [toFilePath pth]

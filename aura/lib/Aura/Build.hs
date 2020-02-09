@@ -25,25 +25,18 @@ import           Aura.Pacman (pacman)
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
-import           BasePrelude
 import           Control.Compactable (traverseMaybe)
-import           Control.Effect (Carrier, Member)
-import           Control.Effect.Error (Error, throwError)
-import           Control.Effect.Lift (Lift, sendM)
-import           Control.Effect.Reader (Reader, asks)
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Except
-import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Semigroup.Foldable (fold1)
-import qualified Data.Set as S
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
-import           Lens.Micro ((^.))
-import           System.Directory (setCurrentDirectory)
-import           System.IO (hFlush, stdout)
+import           RIO
+import           RIO.Directory (setCurrentDirectory)
+import qualified RIO.Set as S
+import qualified RIO.Text as T
 import           System.Path
 import           System.Path.IO
 import           System.Process.Typed
@@ -55,30 +48,27 @@ srcPkgStore :: Path Absolute
 srcPkgStore = fromAbsoluteFilePath "/var/cache/aura/src"
 
 -- | Expects files like: \/var\/cache\/pacman\/pkg\/*.pkg.tar.xz
-installPkgFiles :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  NESet PackagePath -> m ()
+installPkgFiles :: NESet PackagePath -> RIO Env ()
 installPkgFiles files = do
   ss <- asks settings
-  sendM $ checkDBLock ss
-  liftEitherM . sendM . pacman $ ["-U"] <> map (T.pack . toFilePath . path) (toList files) <> asFlag (commonConfigOf ss)
+  liftIO $ checkDBLock ss
+  liftIO . pacman $ ["-U"] <> map (T.pack . toFilePath . path) (toList files) <> asFlag (commonConfigOf ss)
 
 -- | All building occurs within temp directories,
 -- or in a location specified by the user with flags.
-buildPackages :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  NESet Buildable -> m (NESet PackagePath)
+buildPackages :: NESet Buildable -> RIO Env (NESet PackagePath)
 buildPackages bs = do
-  g <- sendM createSystemRandom
+  g <- liftIO createSystemRandom
   traverseMaybe (build g) (toList bs) >>= maybe bad (pure . fold1) . NEL.nonEmpty
-  where bad = throwError $ Failure buildFail_10
+  where bad = throwM $ Failure buildFail_10
 
 -- | Handles the building of Packages. Fails nicely.
 -- Assumed: All dependencies are already installed.
-build :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  GenIO -> Buildable -> m (Maybe (NESet PackagePath))
+build :: GenIO -> Buildable -> RIO Env (Maybe (NESet PackagePath))
 build g p = do
   ss     <- asks settings
-  sendM $ notify ss (buildPackages_1 (p ^. field @"name") (langOf ss)) *> hFlush stdout
-  result <- sendM $ build' ss g p
+  liftIO $ notify ss (buildPackages_1 (p ^. field @"name") (langOf ss)) *> hFlush stdout
+  result <- liftIO $ build' ss g p
   either buildFail (pure . Just) result
 
 -- | Should never throw an IO Exception. In theory all errors
@@ -123,16 +113,16 @@ cloneRepo pkg usr = do
 -- overwrite what's been downloaded before calling `makepkg`.
 overwritePkgbuild :: Settings -> Buildable -> IO ()
 overwritePkgbuild ss p = when (switch ss HotEdit || switch ss UseCustomizepkg) $
-  BL.writeFile "PKGBUILD" $ p ^. field @"pkgbuild" . field @"pkgbuild"
+  writeFileBinary "PKGBUILD" $ p ^. field @"pkgbuild" . field @"pkgbuild"
 
 -- | Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
-buildFail :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => Failure -> m (Maybe a)
+buildFail :: Failure -> RIO Env (Maybe a)
 buildFail (Failure err) = do
   ss <- asks settings
-  sendM . scold ss . err $ langOf ss
-  response <- sendM $ optionalPrompt ss buildFail_6
-  bool (throwError $ Failure buildFail_5) (pure Nothing) response
+  liftIO . scold ss . err $ langOf ss
+  response <- liftIO $ optionalPrompt ss buildFail_6
+  bool (throwM $ Failure buildFail_5) (pure Nothing) response
 
 -- | Moves a file to the pacman package cache and returns its location.
 moveToCachePath :: Settings -> Path Absolute -> IO PackagePath

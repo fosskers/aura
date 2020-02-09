@@ -35,21 +35,17 @@ module Aura.Pacman
 
 import           Aura.Languages
 import           Aura.Types
-import           Aura.Utils (strictText)
-import           BasePrelude hiding (setEnv, some, try)
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Lazy.Char8 as BL
-import qualified Data.Map.Strict as M
-import           Data.Set (Set)
-import qualified Data.Set as S
+import           Data.Bifunctor (first)
 import           Data.Set.NonEmpty (NESet)
-import qualified Data.Text as T
-import           Data.Text.Encoding (decodeUtf8With)
-import           Data.Text.Encoding.Error (lenientDecode)
-import qualified Data.Text.Lazy as TL
-import qualified Data.Text.Lazy.Encoding as TL
-import           Lens.Micro
+import           Lens.Micro (at, (^?), _2, _Just, _head)
 import           Lens.Micro.GHC ()
+import           RIO hiding (first, some, try)
+import qualified RIO.ByteString as BS
+import qualified RIO.ByteString.Lazy as BL
+import           RIO.List.Partial ((!!))
+import qualified RIO.Map as M
+import qualified RIO.Set as S
+import qualified RIO.Text as T
 import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath)
 import           System.Process.Typed
 import           Text.Megaparsec hiding (single)
@@ -59,16 +55,16 @@ import qualified Text.Megaparsec.Char.Lexer as L
 ---
 
 -- | The (meaningful) contents of the Pacman config file.
-newtype Config = Config (M.Map T.Text [T.Text]) deriving (Show)
+newtype Config = Config (Map Text [Text]) deriving (Show)
 
 -- | Parse a `Config`, the pacman configuration file.
-config :: Parsec Void T.Text Config
+config :: Parsec Void Text Config
 config = Config . M.fromList . rights <$> (garbage *> some (fmap Right (try pair) <|> fmap Left single) <* eof)
 
-single :: Parsec Void T.Text ()
+single :: Parsec Void Text ()
 single = L.lexeme garbage . void $ manyTill letterChar newline
 
-pair :: Parsec Void T.Text (T.Text, [T.Text])
+pair :: Parsec Void Text (Text, [Text])
 pair = L.lexeme garbage $ do
   n <- takeWhile1P Nothing (/= ' ')
   space
@@ -78,7 +74,7 @@ pair = L.lexeme garbage $ do
   pure (n, rest)
 
 -- | Using `[]` as block comment markers is a trick to skip conf file "section" lines.
-garbage :: Parsec Void T.Text ()
+garbage :: Parsec Void Text ()
 garbage = L.space space1 (L.skipLineComment "#") (L.skipBlockComment "[" "]")
 
 -- | Default location of the pacman config file: \/etc\/pacman.conf
@@ -96,7 +92,7 @@ lockFile = fromAbsoluteFilePath "/var/lib/pacman/db.lck"
 -- | Given a filepath to the pacman config, try to parse its contents.
 getPacmanConf :: Path Absolute -> IO (Either Failure Config)
 getPacmanConf fp = do
-  file <- decodeUtf8With lenientDecode <$> BS.readFile (toFilePath fp)
+  file <- decodeUtf8Lenient <$> BS.readFile (toFilePath fp)
   pure . first (const (Failure confParsing_1)) $ parse config "pacman config" file
 
 -- | Fetches the @IgnorePkg@ entry from the config, if it's there.
@@ -109,12 +105,10 @@ getIgnoredGroups (Config c) = maybe S.empty (S.fromList . map PkgGroup) $ M.look
 
 -- | Given a `Set` of package groups, yield all the packages they contain.
 groupPackages :: NESet PkgGroup -> IO (Set PkgName)
-groupPackages igs
-  | null igs  = pure S.empty
-  | otherwise = fmap f . pacmanOutput $ "-Qg" : asFlag igs
+groupPackages igs = fmap (f . decodeUtf8Lenient) . pacmanOutput $ "-Qg" : asFlag igs
   where
-    f :: BL.ByteString -> Set PkgName
-    f = S.fromList . map (PkgName . strictText . (!! 1) . BL.words) . BL.lines
+    f :: Text -> Set PkgName
+    f = S.fromList . map (PkgName . (!! 1) . T.words) . T.lines
 
 -- | Fetches the @CacheDir@ entry from the config, if it's there.
 getCachePath :: Config -> Maybe (Path Absolute)
@@ -132,26 +126,26 @@ getLogFilePath (Config c) = c ^? at "LogFile" . _Just . _head . to (fromAbsolute
 pacmanProc :: [String] -> ProcessConfig () () ()
 pacmanProc args = setEnv [("LC_ALL", "C")] $ proc "pacman" args
 
--- | Run a pacman action that may fail. Will never throw an IO exception.
-pacman :: [T.Text] -> IO (Either Failure ())
+-- | Run a pacman action that may fail.
+pacman :: [Text] -> IO ()
 pacman (map T.unpack -> args) = do
   ec <- runProcess $ pacmanProc args
-  pure . bool (Left $ Failure pacmanFailure_1) (Right ()) $ ec == ExitSuccess
+  unless (ec == ExitSuccess) $ throwM (Failure pacmanFailure_1)
 
 -- | Run some `pacman` process, but only care about whether it succeeded.
 pacmanSuccess :: [T.Text] -> IO Bool
 pacmanSuccess = fmap (== ExitSuccess) . runProcess . setStderr closed . setStdout closed . pacmanProc . map T.unpack
 
 -- | Runs pacman silently and returns only the stdout.
-pacmanOutput :: [T.Text] -> IO BL.ByteString
-pacmanOutput = fmap (^. _2) . readProcess . pacmanProc . map T.unpack
+pacmanOutput :: [Text] -> IO ByteString
+pacmanOutput = fmap (^. _2 . to BL.toStrict) . readProcess . pacmanProc . map T.unpack
 
 -- | Runs pacman silently and returns the stdout as UTF8-decoded `Text` lines.
-pacmanLines :: [T.Text] -> IO [T.Text]
-pacmanLines s = T.lines . TL.toStrict . TL.decodeUtf8With lenientDecode <$> pacmanOutput s
+pacmanLines :: [Text] -> IO [Text]
+pacmanLines s = T.lines . decodeUtf8Lenient <$> pacmanOutput s
 
 -- | Yields the lines given by `pacman -V` with the pacman image stripped.
-versionInfo :: IO [T.Text]
+versionInfo :: IO [Text]
 versionInfo = map (T.drop verMsgPad) <$> pacmanLines ["-V"]
 
 -- | The amount of whitespace before text in the lines given by `pacman -V`

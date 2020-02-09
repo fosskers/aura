@@ -31,19 +31,16 @@ import           Aura.Settings
 import           Aura.State
 import           Aura.Types
 import           Aura.Utils
-import           BasePrelude
-import           Control.Effect (Carrier, Member)
-import           Control.Effect.Error (Error, throwError)
-import           Control.Effect.Lift (Lift, sendM)
-import           Control.Effect.Reader (Reader, asks)
 import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (nonEmpty)
-import qualified Data.Map.Strict as M
-import qualified Data.Set as S
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
 import           Lens.Micro ((^?), _Just)
+import           RIO
+import           RIO.List (groupBy, sort, (\\))
+import qualified RIO.Map as M
+import qualified RIO.Set as S
+import qualified RIO.Text as T
 import           System.Path
 import           System.Path.IO (copyFile, doesDirectoryExist, removeFile)
 
@@ -51,113 +48,109 @@ import           System.Path.IO (copyFile, doesDirectoryExist, removeFile)
 
 -- | Interactive. Gives the user a choice as to exactly what versions
 -- they want to downgrade to.
-downgradePackages :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  NESet PkgName -> m ()
+downgradePackages :: NESet PkgName -> RIO Env ()
 downgradePackages pkgs = do
   ss    <- asks settings
   let cachePath = either id id . cachePathOf $ commonConfigOf ss
-  reals <- sendM $ pkgsInCache ss pkgs
+  reals <- liftIO $ pkgsInCache ss pkgs
   traverse_ (report red reportBadDowngradePkgs_1) . nonEmpty . toList $ NES.toSet pkgs S.\\ reals
   unless (null reals) $ do
-    cache   <- sendM $ cacheContents cachePath
+    cache   <- liftIO $ cacheContents cachePath
     choices <- traverse (getDowngradeChoice cache) $ toList reals
-    liftEitherM . sendM . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (T.pack . toFilePath . path) choices
+    liftIO . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (T.pack . toFilePath . path) choices
 
 -- | For a given package, get a choice from the user about which version of it to
 -- downgrade to.
-getDowngradeChoice :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  Cache -> PkgName -> m PackagePath
+getDowngradeChoice :: Cache -> PkgName -> RIO Env PackagePath
 getDowngradeChoice cache pkg =
   case nonEmpty $ getChoicesFromCache cache pkg of
-    Nothing      -> throwError . Failure $ reportBadDowngradePkgs_2 pkg
+    Nothing      -> throwM . Failure $ reportBadDowngradePkgs_2 pkg
     Just choices -> do
       ss <- asks settings
-      sendM . notify ss . getDowngradeChoice_1 pkg $ langOf ss
-      sendM $ getSelection (T.pack . toFilePath . path) choices
+      liftIO . notify ss . getDowngradeChoice_1 pkg $ langOf ss
+      liftIO $ getSelection (T.pack . toFilePath . path) choices
 
 getChoicesFromCache :: Cache -> PkgName -> [PackagePath]
 getChoicesFromCache (Cache cache) p = sort . M.elems $ M.filterWithKey (\(SimplePkg pn _) _ -> p == pn) cache
 
--- | Print all package filenames that match a given `T.Text`.
-searchCache :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => T.Text -> m ()
+-- | Print all package filenames that match a given `Text`.
+searchCache :: Text -> RIO Env ()
 searchCache ps = do
   ss <- asks settings
-  matches <- sendM $ cacheMatches ss ps
-  sendM . traverse_ (putStrLn . toFilePath . path) $ sort matches
+  matches <- liftIO $ cacheMatches ss ps
+  liftIO . traverse_ (putTextLn . T.pack . toFilePath . path) $ sort matches
 
 -- | The destination folder must already exist for the back-up to begin.
-backupCache :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  Path Absolute -> m ()
+backupCache :: Path Absolute -> RIO Env ()
 backupCache dir = do
-  exists <- sendM $ doesDirectoryExist dir
-  if | not exists -> throwError $ Failure backupCache_3
+  exists <- liftIO $ doesDirectoryExist dir
+  if | not exists -> throwM $ Failure backupCache_3
      | otherwise  -> confirmBackup dir >>= backup dir
 
-confirmBackup :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  Path Absolute -> m Cache
+confirmBackup :: Path Absolute -> RIO Env Cache
 confirmBackup dir = do
   ss    <- asks settings
-  cache <- sendM . cacheContents . either id id . cachePathOf $ commonConfigOf ss
-  sendM . notify ss $ backupCache_4 (toFilePath dir) (langOf ss)
-  sendM . notify ss $ backupCache_5 (M.size $ _cache cache) (langOf ss)
-  okay  <- sendM $ optionalPrompt ss backupCache_6
-  bool (throwError $ Failure backupCache_7) (pure cache) okay
+  cache <- liftIO . cacheContents . either id id . cachePathOf $ commonConfigOf ss
+  liftIO . notify ss $ backupCache_4 (toFilePath dir) (langOf ss)
+  liftIO . notify ss $ backupCache_5 (M.size $ _cache cache) (langOf ss)
+  okay  <- liftIO $ optionalPrompt ss backupCache_6
+  bool (throwM $ Failure backupCache_7) (pure cache) okay
 
-backup :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) =>
-  Path Absolute -> Cache -> m ()
+backup :: Path Absolute -> Cache -> RIO Env ()
 backup dir (Cache cache) = do
   ss <- asks settings
-  sendM . notify ss . backupCache_8 $ langOf ss
-  sendM $ putStrLn ""  -- So that the cursor can rise at first.
+  liftIO . notify ss . backupCache_8 $ langOf ss
+  liftIO $ putTextLn ""  -- So that the cursor can rise at first.
   copyAndNotify dir (M.elems cache) 1
 
 -- | Manages the file copying and display of the real-time progress notifier.
-copyAndNotify :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) =>
-  Path Absolute -> [PackagePath] -> Int -> m ()
+copyAndNotify :: Path Absolute -> [PackagePath] -> Int -> RIO Env ()
 copyAndNotify _ [] _ = pure ()
 copyAndNotify dir (PackagePath p : ps) n = do
   ss <- asks settings
-  sendM $ raiseCursorBy 1
-  sendM . warn ss . copyAndNotify_1 n $ langOf ss
-  sendM $ copyFile p dir
+  liftIO $ raiseCursorBy 1
+  liftIO . warn ss . copyAndNotify_1 n $ langOf ss
+  liftIO $ copyFile p dir
   copyAndNotify dir ps $ n + 1
 
 -- | Keeps a certain number of package files in the cache according to
 -- a number provided by the user. The rest are deleted.
-cleanCache :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  Word -> m ()
+cleanCache :: Word -> RIO Env ()
 cleanCache toSave
-  | toSave == 0 = asks settings >>= \ss -> sendM (warn ss . cleanCache_2 $ langOf ss) >> (liftEitherM . sendM . pacman $ ["-Scc"])
-  | otherwise   = do
+  | toSave == 0 = do
       ss <- asks settings
-      sendM . warn ss . cleanCache_3 toSave $ langOf ss
-      okay <- sendM $ optionalPrompt ss cleanCache_4
-      bool (throwError $ Failure cleanCache_5) (clean (fromIntegral toSave)) okay
+      liftIO . warn ss . cleanCache_2 $ langOf ss
+      liftIO $ pacman ["-Scc"]
+  | otherwise = do
+      ss <- asks settings
+      liftIO . warn ss . cleanCache_3 toSave $ langOf ss
+      okay <- liftIO $ optionalPrompt ss cleanCache_4
+      bool (throwM $ Failure cleanCache_5) (clean (fromIntegral toSave)) okay
 
-clean :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => Int -> m ()
+clean :: Int -> RIO Env ()
 clean toSave = do
   ss <- asks settings
-  sendM . notify ss . cleanCache_6 $ langOf ss
+  liftIO . notify ss . cleanCache_6 $ langOf ss
   let cachePath = either id id . cachePathOf $ commonConfigOf ss
-  (Cache cache) <- sendM $ cacheContents cachePath
+  (Cache cache) <- liftIO $ cacheContents cachePath
   let !files    = M.elems cache
       grouped   = take toSave . reverse <$> groupByName files
       toRemove  = files \\ fold grouped
-  sendM $ traverse_ removeFile $ map path toRemove
+  liftIO $ traverse_ (removeFile . path) toRemove
 
 -- | Only package files with a version not in any PkgState will be
 -- removed.
-cleanNotSaved :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => m ()
+cleanNotSaved :: RIO Env ()
 cleanNotSaved = do
   ss <- asks settings
-  sendM . notify ss . cleanNotSaved_1 $ langOf ss
-  sfs <- sendM getStateFiles
-  states <- fmap catMaybes . sendM $ traverse readState sfs
+  liftIO . notify ss . cleanNotSaved_1 $ langOf ss
+  sfs <- liftIO getStateFiles
+  states <- fmap catMaybes . liftIO $ traverse readState sfs
   let cachePath = either id id . cachePathOf $ commonConfigOf ss
-  (Cache cache)  <- sendM $ cacheContents cachePath
+  (Cache cache)  <- liftIO $ cacheContents cachePath
   let duds = M.filterWithKey (\p _ -> any (inState p) states) cache
-  prop <- sendM . optionalPrompt ss $ cleanNotSaved_2 $ M.size duds
-  when prop . sendM . traverse_ removeFile . map path $ M.elems duds
+  prop <- liftIO . optionalPrompt ss $ cleanNotSaved_2 $ M.size duds
+  when prop . liftIO . traverse_ (removeFile . path) $ M.elems duds
 
 -- | Typically takes the contents of the package cache as an argument.
 groupByName :: [PackagePath] -> [[PackagePath]]

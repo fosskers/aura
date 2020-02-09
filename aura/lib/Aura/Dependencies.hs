@@ -1,13 +1,14 @@
-{-# LANGUAGE DataKinds        #-}
-{-# LANGUAGE DeriveGeneric    #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase       #-}
-{-# LANGUAGE MonoLocalBinds   #-}
-{-# LANGUAGE MultiWayIf       #-}
-{-# LANGUAGE PatternSynonyms  #-}
-{-# LANGUAGE RankNTypes       #-}
-{-# LANGUAGE TupleSections    #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE LambdaCase        #-}
+{-# LANGUAGE MonoLocalBinds    #-}
+{-# LANGUAGE MultiWayIf        #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE PatternSynonyms   #-}
+{-# LANGUAGE RankNTypes        #-}
+{-# LANGUAGE TupleSections     #-}
+{-# LANGUAGE TypeApplications  #-}
 
 -- |
 -- Module    : Aura.Dependencies
@@ -27,27 +28,21 @@ import           Aura.Core
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils (maybe')
-import           BasePrelude
-import           Control.Effect (Carrier, Member)
-import           Control.Effect.Error (Error, throwError)
-import           Control.Effect.Lift (Lift, sendM)
-import           Control.Effect.Reader (Reader, asks)
+import           Aura.Utils (maybe', putText)
 import           Control.Error.Util (note)
 import           Data.Generics.Product (field)
+import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NEL
-import           Data.Map.Strict (Map)
-import qualified Data.Map.Strict as M
 import           Data.Semigroup.Foldable (foldMap1)
-import           Data.Set (Set)
-import qualified Data.Set as S
 import           Data.Set.NonEmpty (pattern IsEmpty, pattern IsNonEmpty, NESet)
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
 import           Data.These (these)
 import           Data.Versions
 import           Lens.Micro
-import           UnliftIO.Exception (catchAny, throwString)
+import           RIO
+import qualified RIO.Map as M
+import qualified RIO.Set as S
+import qualified RIO.Text as T
 
 ---
 
@@ -62,16 +57,15 @@ data Resolution = Resolution
 -- interdependent, and thus can be built and installed as a group.
 --
 -- Deeper layers of the result list (generally) depend on the previous layers.
-resolveDeps :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  Repository -> NESet Package -> m (NonEmpty (NESet Package))
+resolveDeps :: Repository -> NESet Package -> RIO Env (NonEmpty (NESet Package))
 resolveDeps repo ps = do
   ss <- asks settings
-  Resolution m s <- liftMaybeM (Failure connectionFailure_1) . sendM $
-    (Just <$> resolveDeps' ss repo ps) `catchAny` (const $ pure Nothing)
-  unless (length ps == length m) $ sendM (putStr "\n")
+  res <- liftIO $ (Just <$> resolveDeps' ss repo ps) `catchAny` const (pure Nothing)
+  Resolution m s <- maybe (throwM $ Failure connectionFailure_1) pure res
+  unless (length ps == length m) $ liftIO (putText "\n")
   let de = conflicts ss m s
-  unless (null de) . throwError . Failure $ missingPkg_2 de
-  either throwError pure $ sortInstall m
+  unless (null de) . throwM . Failure $ missingPkg_2 de
+  either throwM pure $ sortInstall m
 
 -- | Solve dependencies for a set of `Package`s assumed to not be
 -- installed/satisfied.
@@ -125,7 +119,7 @@ conflicts :: Settings -> Map PkgName Package -> Set PkgName -> [DepError]
 conflicts ss m s = foldMap f m
   where
     pm :: Map PkgName Package
-    pm = M.fromList $ foldr (\p acc -> (pprov p ^. field @"provides", p) : acc) [] m
+    pm = M.fromList $ map (\p -> (pprov p ^. field @"provides", p)) $ toList m
 
     f :: Package -> [DepError]
     f (FromRepo _) = []

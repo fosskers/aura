@@ -18,8 +18,7 @@ module Aura.Core
   ( -- * Types
     Env(..)
   , Repository(..)
-  , liftEither, liftEitherM
-  , liftMaybe, liftMaybeM
+  , liftMaybeM
     -- * User Privileges
   , sudo, trueRoot
     -- * Querying the Package Database
@@ -40,29 +39,23 @@ import           Aura.Pkgbuild.Editing (hotEdit)
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
-import           BasePrelude hiding ((<>))
 import           Control.Compactable (fmapEither)
-import           Control.Effect (Carrier, Member)
-import           Control.Effect.Error (Error, throwError)
-import           Control.Effect.Lift (Lift, sendM)
-import           Control.Effect.Reader (Reader, asks)
 import           Control.Monad.Trans.Maybe
-import qualified Data.ByteString.Lazy.Char8 as BL
+import           Data.Bifunctor (bimap)
 import           Data.Generics.Product (field)
+import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NEL
-import           Data.Map.Strict (Map)
-import           Data.Semigroup
-import           Data.Set (Set)
-import qualified Data.Set as S
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.These (These(..))
 import           Lens.Micro ((^.))
-import           Lens.Micro.Extras (view)
+import           RIO hiding ((<>))
+import qualified RIO.ByteString as B
+import           RIO.List (unzip)
+import qualified RIO.Set as S
+import qualified RIO.Text as T
 import           System.Path.IO (doesFileExist)
 
 ---
@@ -114,43 +107,28 @@ packageBuildable ss b = FromAUR <$> hotEdit ss b
 -----------
 -- THE WORK
 -----------
--- | Lift a common return type into the `fused-effects` world. Usually used
--- after a `pacman` call.
-liftEither :: (Carrier sig m, Member (Error a) sig) => Either a b -> m b
-liftEither = either throwError pure
-
--- | Like `liftEither`, but the `Either` can be embedded in something else,
--- usually a `Monad`.
-liftEitherM :: (Carrier sig m, Member (Error a) sig) => m (Either a b) -> m b
-liftEitherM m = m >>= liftEither
-
--- | Like `liftEither`, but for `Maybe`.
-liftMaybe :: (Carrier sig m, Member (Error a) sig) => a -> Maybe b -> m b
-liftMaybe a = maybe (throwError a) pure
-
--- | Like `liftEitherM`, but for `Maybe`.
-liftMaybeM :: (Carrier sig m, Member (Error a) sig) => a -> m (Maybe b) -> m b
-liftMaybeM a m = m >>= liftMaybe a
+liftMaybeM :: (MonadThrow m, Exception e) => e -> m (Maybe a) -> m a
+liftMaybeM a m = m >>= maybe (throwM a) pure
 
 -- | Action won't be allowed unless user is root, or using sudo.
-sudo :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig) => m a -> m a
-sudo action = asks (hasRootPriv . envOf . settings) >>= bool (throwError $ Failure mustBeRoot_1) action
+sudo :: RIO Env a -> RIO Env a
+sudo act = asks (hasRootPriv . envOf . settings) >>= bool (throwM $ Failure mustBeRoot_1) act
 
 -- | Stop the user if they are the true root. Building as root isn't allowed
 -- since makepkg v4.2.
-trueRoot :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig) => m a -> m a
+trueRoot :: RIO Env a -> RIO Env a
 trueRoot action = asks settings >>= \ss ->
   if not (isTrueRoot $ envOf ss) && buildUserOf (buildConfigOf ss) /= Just (User "root")
-    then action else throwError $ Failure trueRoot_3
+    then action else throwM $ Failure trueRoot_3
 
 -- | A list of non-prebuilt packages installed on the system.
 -- `-Qm` yields a list of sorted values.
 foreignPackages :: IO (Set SimplePkg)
-foreignPackages = S.fromList . mapMaybe (simplepkg' . strictText) . BL.lines <$> pacmanOutput ["-Qm"]
+foreignPackages = S.fromList . mapMaybe simplepkg' <$> pacmanLines ["-Qm"]
 
 -- | Packages marked as a dependency, yet are required by no other package.
 orphans :: IO (Set PkgName)
-orphans = S.fromList . map (PkgName . strictText) . BL.lines <$> pacmanOutput ["-Qqdt"]
+orphans = S.fromList . map PkgName <$> pacmanLines ["-Qqdt"]
 
 -- | Any package whose name is suffixed by git, hg, svn, darcs, cvs, or bzr.
 develPkgs :: IO (Set PkgName)
@@ -164,11 +142,10 @@ isInstalled :: PkgName -> IO (Maybe PkgName)
 isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", pkg ^. field @"name"]
 
 -- | An @-Rsu@ call.
-removePkgs :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  NESet PkgName -> m ()
+removePkgs :: NESet PkgName -> RIO Env ()
 removePkgs pkgs = do
   pacOpts <- asks (commonConfigOf . settings)
-  liftEitherM . sendM . pacman $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts
+  liftIO . pacman $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts
 
 -- | Depedencies which are not installed, or otherwise provided by some
 -- installed package.
@@ -182,16 +159,16 @@ newtype Satisfied = Satisfied (NESet Dep)
 areSatisfied :: NESet Dep -> IO (These Unsatisfied Satisfied)
 areSatisfied ds = do
   unsats <- S.fromList . mapMaybe parseDep <$> unsat
-  pure . bimap Unsatisfied Satisfied $ NES.partition (\d -> S.member d unsats) ds
+  pure . bimap Unsatisfied Satisfied $ NES.partition (`S.member` unsats) ds
   where
-    unsat :: IO [T.Text]
+    unsat :: IO [Text]
     unsat = pacmanLines $ "-T" : map renderedDep (toList ds)
 
 -- | Block further action until the database is free.
 checkDBLock :: Settings -> IO ()
 checkDBLock ss = do
   locked <- doesFileExist lockFile
-  when locked $ (warn ss . checkDBLock_1 $ langOf ss) *> getLine *> checkDBLock ss
+  when locked $ (warn ss . checkDBLock_1 $ langOf ss) *> B.getLine *> checkDBLock ss
 
 -------
 -- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`
@@ -211,9 +188,8 @@ scold ss = putStrLnA ss . red
 
 -- | Report a message with multiple associated items. Usually a list of
 -- naughty packages.
-report :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) =>
-  (Doc AnsiStyle -> Doc AnsiStyle) -> (Language -> Doc AnsiStyle) -> NonEmpty PkgName -> m ()
+report :: (Doc AnsiStyle -> Doc AnsiStyle) -> (Language -> Doc AnsiStyle) -> NonEmpty PkgName -> RIO Env ()
 report c msg pkgs = do
   ss <- asks settings
-  sendM . putStrLnA ss . c . msg $ langOf ss
-  sendM . T.putStrLn . dtot . colourCheck ss . vsep . map (cyan . pretty . view (field @"name")) $ toList pkgs
+  liftIO . putStrLnA ss . c . msg $ langOf ss
+  liftIO . putTextLn . dtot . colourCheck ss . vsep . map (cyan . pretty . view (field @"name")) $ toList pkgs

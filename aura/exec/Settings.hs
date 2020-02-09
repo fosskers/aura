@@ -26,20 +26,20 @@ import           Aura.Pacman
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
-import           BasePrelude hiding (FilePath)
 import           Control.Error.Util (failWith)
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Except
-import qualified Data.Map.Strict as M
-import qualified Data.Set as S
+import           Data.Bifunctor (Bifunctor(..))
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
 import           Flags
-import           Lens.Micro
+import           Lens.Micro (folded, (^..), _Right)
 import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)
+import           RIO hiding (FilePath, first)
+import qualified RIO.Map as M
+import qualified RIO.Set as S
+import qualified RIO.Text as T
 import           System.Environment (getEnvironment)
-import           System.IO (hIsTerminalDevice, stdout)
 
 ---
 

@@ -11,14 +11,15 @@ import           Aura.Cache (defaultPackageCache)
 import           Aura.Pacman (defaultLogFile, pacmanConfFile)
 import           Aura.Settings
 import           Aura.Types
-import           BasePrelude hiding (Version, exp, log, option)
 import qualified Data.List.NonEmpty as NEL
-import qualified Data.Set as S
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
 import           Lens.Micro
 import           Options.Applicative
+import           RIO hiding (exp, log)
+import           RIO.List.Partial (foldr1)
+import qualified RIO.Set as S
+import qualified RIO.Text as T
 import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath)
 
 ---
@@ -26,7 +27,7 @@ import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath)
 -- | A description of a run of Aura to attempt.
 data Program = Program {
   -- ^ Whether Aura handles everything, or the ops and input are just passed down to Pacman.
-  _operation   :: Either (PacmanOp, S.Set MiscOp) AuraOp
+  _operation   :: Either (PacmanOp, Set MiscOp) AuraOp
   -- ^ Settings common to both Aura and Pacman.
   , _commons   :: CommonConfig
   -- ^ Settings specific to building packages.
@@ -36,12 +37,12 @@ data Program = Program {
 
 -- | Inherited operations that are fed down to Pacman.
 data PacmanOp = Database (Either DatabaseOp (NESet PkgName))
-              | Files    (S.Set FilesOp)
-              | Query    (Either QueryOp (S.Set QueryFilter, S.Set PkgName))
-              | Remove   (S.Set RemoveOp) (NESet PkgName)
-              | Sync     (Either SyncOp (S.Set PkgName)) (S.Set SyncSwitch)
-              | TestDeps (NESet T.Text)
-              | Upgrade  (S.Set UpgradeSwitch) (NESet PkgName)
+              | Files    (Set FilesOp)
+              | Query    (Either QueryOp (Set QueryFilter, Set PkgName))
+              | Remove   (Set RemoveOp) (NESet PkgName)
+              | Sync     (Either SyncOp (Set PkgName)) (Set SyncSwitch)
+              | TestDeps (NESet Text)
+              | Upgrade  (Set UpgradeSwitch) (NESet PkgName)
               deriving (Show)
 
 instance Flagable PacmanOp where
@@ -57,8 +58,8 @@ instance Flagable PacmanOp where
   asFlag (Upgrade s ps)           = "-U" : asFlag s ++ asFlag ps
 
 data DatabaseOp = DBCheck
-                | DBAsDeps     (NESet T.Text)
-                | DBAsExplicit (NESet T.Text)
+                | DBAsDeps     (NESet Text)
+                | DBAsExplicit (NESet Text)
                 deriving (Show)
 
 instance Flagable DatabaseOp where
@@ -66,9 +67,9 @@ instance Flagable DatabaseOp where
   asFlag (DBAsDeps ps)     = "--asdeps" : asFlag ps
   asFlag (DBAsExplicit ps) = "--asexplicit" : asFlag ps
 
-data FilesOp = FilesList  (NESet T.Text)
-             | FilesOwns   T.Text
-             | FilesSearch T.Text
+data FilesOp = FilesList  (NESet Text)
+             | FilesOwns   Text
+             | FilesSearch Text
              | FilesRegex
              | FilesRefresh
              | FilesMachineReadable
@@ -82,14 +83,14 @@ instance Flagable FilesOp where
   asFlag FilesRefresh         = ["--refresh"]
   asFlag FilesMachineReadable = ["--machinereadable"]
 
-data QueryOp = QueryChangelog (NESet T.Text)
-             | QueryGroups    (NESet T.Text)
-             | QueryInfo      (NESet T.Text)
-             | QueryCheck     (NESet T.Text)
-             | QueryList      (NESet T.Text)
-             | QueryOwns      (NESet T.Text)
-             | QueryFile      (NESet T.Text)
-             | QuerySearch     T.Text
+data QueryOp = QueryChangelog (NESet Text)
+             | QueryGroups    (NESet Text)
+             | QueryInfo      (NESet Text)
+             | QueryCheck     (NESet Text)
+             | QueryList      (NESet Text)
+             | QueryOwns      (NESet Text)
+             | QueryFile      (NESet Text)
+             | QuerySearch     Text
              deriving (Show)
 
 instance Flagable QueryOp where
@@ -131,12 +132,12 @@ instance Flagable RemoveOp where
   asFlag RemoveUnneeded  = ["--unneeded"]
 
 data SyncOp = SyncClean
-            | SyncGroups   (NESet T.Text)
-            | SyncInfo     (NESet T.Text)
-            | SyncList      T.Text
-            | SyncSearch    T.Text
-            | SyncUpgrade  (S.Set T.Text)
-            | SyncDownload (NESet T.Text)
+            | SyncGroups   (NESet Text)
+            | SyncInfo     (NESet Text)
+            | SyncList      Text
+            | SyncSearch    Text
+            | SyncUpgrade  (Set Text)
+            | SyncDownload (NESet Text)
             deriving (Show)
 
 instance Flagable SyncOp where
@@ -149,8 +150,8 @@ instance Flagable SyncOp where
   asFlag (SyncDownload ps) = "--downloadonly" : asFlag ps
 
 data SyncSwitch = SyncRefresh
-                | SyncIgnore      (S.Set PkgName)
-                | SyncIgnoreGroup (S.Set PkgGroup)
+                | SyncIgnore      (Set PkgName)
+                | SyncIgnoreGroup (Set PkgGroup)
                 deriving (Eq, Ord, Show)
 
 instance Flagable SyncSwitch where
@@ -160,8 +161,8 @@ instance Flagable SyncSwitch where
 
 data UpgradeSwitch = UpgradeAsDeps
                    | UpgradeAsExplicit
-                   | UpgradeIgnore      (S.Set PkgName)
-                   | UpgradeIgnoreGroup (S.Set PkgGroup)
+                   | UpgradeIgnore      (Set PkgName)
+                   | UpgradeIgnoreGroup (Set PkgGroup)
                    deriving (Eq, Ord, Show)
 
 instance Flagable UpgradeSwitch where
@@ -172,8 +173,8 @@ instance Flagable UpgradeSwitch where
 
 -- | Flags common to several Pacman operations.
 data MiscOp = MiscArch    (Path Absolute)
-            | MiscAssumeInstalled T.Text
-            | MiscColor   T.Text
+            | MiscAssumeInstalled Text
+            | MiscColor   Text
             | MiscConfirm
             | MiscDBOnly
             | MiscDBPath  (Path Absolute)
@@ -183,7 +184,7 @@ data MiscOp = MiscArch    (Path Absolute)
             | MiscNoProgress
             | MiscNoScriptlet
             | MiscPrint
-            | MiscPrintFormat T.Text
+            | MiscPrintFormat Text
             | MiscRoot    (Path Absolute)
             | MiscVerbose
             deriving (Eq, Ord, Show)
@@ -206,7 +207,7 @@ instance Flagable MiscOp where
   asFlag MiscVerbose             = ["--verbose"]
 
 -- | Operations unique to Aura.
-data AuraOp = AurSync (Either AurOp (NESet PkgName)) (S.Set AurSwitch)
+data AuraOp = AurSync (Either AurOp (NESet PkgName)) (Set AurSwitch)
             | Backup  (Maybe  BackupOp)
             | Cache   (Either CacheOp (NESet PkgName))
             | Log     (Maybe  LogOp)
@@ -216,35 +217,35 @@ data AuraOp = AurSync (Either AurOp (NESet PkgName)) (S.Set AurSwitch)
             | ViewConf
             deriving (Show)
 
-_AurSync :: Traversal' AuraOp (S.Set AurSwitch)
+_AurSync :: Traversal' AuraOp (Set AurSwitch)
 _AurSync f (AurSync o s) = AurSync o <$> f s
 _AurSync _ x             = pure x
 
 data AurOp = AurDeps     (NESet PkgName)
            | AurInfo     (NESet PkgName)
            | AurPkgbuild (NESet PkgName)
-           | AurSearch    T.Text
-           | AurUpgrade  (S.Set PkgName)
+           | AurSearch    Text
+           | AurUpgrade  (Set PkgName)
            | AurJson     (NESet PkgName)
            deriving (Show)
 
-data AurSwitch = AurIgnore      (S.Set PkgName)
-               | AurIgnoreGroup (S.Set PkgGroup)
+data AurSwitch = AurIgnore      (Set PkgName)
+               | AurIgnoreGroup (Set PkgGroup)
                deriving (Eq, Ord, Show)
 
-_AurIgnore :: Traversal' AurSwitch (S.Set PkgName)
+_AurIgnore :: Traversal' AurSwitch (Set PkgName)
 _AurIgnore f (AurIgnore s) = AurIgnore <$> f s
 _AurIgnore _ x             = pure x
 
-_AurIgnoreGroup :: Traversal' AurSwitch (S.Set PkgGroup)
+_AurIgnoreGroup :: Traversal' AurSwitch (Set PkgGroup)
 _AurIgnoreGroup f (AurIgnoreGroup s) = AurIgnoreGroup <$> f s
 _AurIgnoreGroup _ x                  = pure x
 
 data BackupOp = BackupClean Word | BackupRestore | BackupList deriving (Show)
 
-data CacheOp = CacheBackup (Path Absolute) | CacheClean Word | CacheCleanNotSaved | CacheSearch T.Text deriving (Show)
+data CacheOp = CacheBackup (Path Absolute) | CacheClean Word | CacheCleanNotSaved | CacheSearch Text deriving (Show)
 
-data LogOp = LogInfo (NESet PkgName) | LogSearch T.Text deriving (Show)
+data LogOp = LogInfo (NESet PkgName) | LogSearch Text deriving (Show)
 
 data OrphanOp = OrphanAbandon | OrphanAdopt (NESet PkgName) deriving (Show)
 
@@ -333,7 +334,7 @@ buildConfig = BuildConfig <$> makepkg <*> bp <*> optional bu <*> trunc <*> build
           <|> fmap Tail (option auto (long "tail" <> metavar "N" <> hidden <> help "Only show last N search results."))
           <|> pure None
 
-buildSwitches :: Parser (S.Set BuildSwitch)
+buildSwitches :: Parser (Set BuildSwitch)
 buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> ucp <|> dr <|> sa <|> fo <|> npc)
   where dmd = flag' DeleteMakeDeps (long "delmakedeps" <> short 'a' <> hidden <> help "Uninstall makedeps after building.")
         dsm = flag' DontSuppressMakepkg (long "unsuppress" <> short 'x' <> hidden <> help "Unsuppress makepkg output.")
@@ -359,7 +360,7 @@ commonConfig = CommonConfig <$> cap <*> cop <*> lfp <*> commonSwitches
                    (strOption (long "logfile"  <> hidden <> help "Use an alternate Pacman log."))
               <|> pure (Left defaultLogFile)
 
-commonSwitches :: Parser (S.Set CommonSwitch)
+commonSwitches :: Parser (Set CommonSwitch)
 commonSwitches = S.fromList <$> many (nc <|> no <|> dbg <|> clr)
   where nc  = flag' NoConfirm  (long "noconfirm" <> hidden <> help "Never ask for Aura or Pacman confirmation.")
         no  = flag' NeededOnly (long "needed"    <> hidden <> help "Don't rebuild/reinstall up-to-date packages.")
@@ -403,7 +404,7 @@ queries = bigQ *> (Query <$> (fmap Right query <|> fmap Left mods))
         fls   = QueryFile <$> (flag' () (long "file" <> short 'p' <> hidden <> help "Query a package file.") *> someArgs')
         sch   = QuerySearch <$> strOption (long "search" <> short 's' <> metavar "REGEX" <> hidden <> help "Search the local database.")
 
-queryFilters :: Parser (S.Set QueryFilter)
+queryFilters :: Parser (Set QueryFilter)
 queryFilters = S.fromList <$> many (dps <|> exp <|> frg <|> ntv <|> urq <|> upg)
   where dps = flag' QueryDeps (long "deps" <> short 'd' <> hidden <> help "[filter] Only list packages installed as deps.")
         exp = flag' QueryExplicit (long "explicit" <> short 'e' <> hidden <> help "[filter] Only list explicitly installed packages.")
@@ -438,7 +439,7 @@ sync = bigS *> (Sync <$> (fmap (Right . S.map PkgName) manyArgs <|> fmap Left mo
         igg  = SyncIgnoreGroup . S.fromList . map PkgGroup . T.split (== ',') <$>
           strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore packages from the given groups.")
 
-misc :: Parser (S.Set MiscOp)
+misc :: Parser (Set MiscOp)
 misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> gpg <|> hd <|> con <|> dbo <|> nop <|> nos <|> pf <|> nod <|> prt <|> asi)
   where ar  = MiscArch . fromAbsoluteFilePath
               <$> strOption (long "arch" <> metavar "ARCH" <> hidden <> help "Use an alternate architecture.")
@@ -476,26 +477,26 @@ upgrades = bigU *> (Upgrade <$> (S.fromList <$> many mods) <*> somePkgs)
           strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore packages from the given groups.")
 
 somePkgs :: Parser (NESet PkgName)
-somePkgs = NES.fromList . fromJust . NEL.nonEmpty . map PkgName <$> some (argument str (metavar "PACKAGES"))
+somePkgs = NES.fromList . NEL.fromList . map PkgName <$> some (argument str (metavar "PACKAGES"))
 
 -- | Same as `someArgs`, but the help message "brief display" won't show PACKAGES.
 somePkgs' :: Parser (NESet PkgName)
-somePkgs' = NES.fromList . fromJust . NEL.nonEmpty . map PkgName <$> some (argument str (metavar "PACKAGES" <> hidden))
+somePkgs' = NES.fromList . NEL.fromList . map PkgName <$> some (argument str (metavar "PACKAGES" <> hidden))
 
 -- | One or more arguments.
-someArgs :: Parser (NESet T.Text)
-someArgs = NES.fromList . fromJust . NEL.nonEmpty <$> some (argument str (metavar "PACKAGES"))
+someArgs :: Parser (NESet Text)
+someArgs = NES.fromList . NEL.fromList <$> some (argument str (metavar "PACKAGES"))
 
 -- | Same as `someArgs`, but the help message "brief display" won't show PACKAGES.
-someArgs' :: Parser (NESet T.Text)
-someArgs' = NES.fromList . fromJust . NEL.nonEmpty <$> some (argument str (metavar "PACKAGES" <> hidden))
+someArgs' :: Parser (NESet Text)
+someArgs' = NES.fromList . NEL.fromList <$> some (argument str (metavar "PACKAGES" <> hidden))
 
 -- | Zero or more arguments.
-manyArgs :: Parser (S.Set T.Text)
+manyArgs :: Parser (Set Text)
 manyArgs = S.fromList <$> many (argument str (metavar "PACKAGES"))
 
 -- | Zero or more arguments.
-manyArgs' :: Parser (S.Set T.Text)
+manyArgs' :: Parser (Set Text)
 manyArgs' = S.fromList <$> many (argument str (metavar "PACKAGES" <> hidden))
 
 language :: Parser Language

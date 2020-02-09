@@ -7,12 +7,9 @@ import           Aura.Packages.Repository
 import           Aura.Pacman
 import           Aura.Pkgbuild.Security
 import           Aura.Types
-import           BasePrelude
-import qualified Data.ByteString.Lazy.Char8 as BL
-import qualified Data.Map.Strict as M
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import           Data.Versions
+import           RIO
+import qualified RIO.Map as M
 -- import           Language.Bash.Pretty (prettyText)
 import           System.Path
 import           Test.Tasty
@@ -24,11 +21,11 @@ import           Text.Megaparsec
 
 main :: IO ()
 main = do
-  conf <- T.readFile "test/pacman.conf"
-  pkb  <- Pkgbuild <$> BL.readFile "test/aura.PKGBUILD"
+  conf <- readFileUtf8 "test/pacman.conf"
+  pkb  <- Pkgbuild <$> readFileBinary "test/aura.PKGBUILD"
   defaultMain $ suite conf pkb
 
-suite :: T.Text -> Pkgbuild -> TestTree
+suite :: Text -> Pkgbuild -> TestTree
 suite conf pb = testGroup "Unit Tests"
   [ testGroup "Aura.Core"
     [ testCase "parseDep - python2" $ parseDep "python2" @?= Just (Dep "python2" Anything)
@@ -72,7 +69,7 @@ suite conf pb = testGroup "Unit Tests"
           assertEqual ("Language name map for " ++ show lang ++ " has incorrect number of items") (length languages - 1) (M.size names)
     ]
   , testGroup "Aura.Pkgbuild.Security"
-    [ testCase "Parsing - aura.PKGBUILD" $ do
+    [ testCase "Parsing - aura.PKGBUILD" $
         -- pPrintNoColor $ map (first prettyText) . bannedTerms <$> ppb
         -- pPrintNoColor ppb
         assertBool "Failed to parse" $ isJust ppb
@@ -81,7 +78,7 @@ suite conf pb = testGroup "Unit Tests"
   ]
   where ppb = parsedPB pb
 
-firefox :: T.Text
+firefox :: Text
 firefox = "Repository      : extra\n\
 \Name            : firefox\n\
 \Version         : 60.0.2-1\n\

@@ -32,36 +32,34 @@ import           Aura.Languages
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings
 import           Aura.Types
-import           BasePrelude hiding (head)
 import           Control.Compactable (fmapEither)
 import           Control.Concurrent.STM.TVar (modifyTVar')
-import           Control.Effect (Carrier, Member)
-import           Control.Effect.Error (Error)
-import           Control.Effect.Lift (Lift, sendM)
-import           Control.Effect.Reader (Reader, asks)
 import           Control.Error.Util (hush, note)
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Maybe
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Generics.Product (field)
+import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NEL
-import qualified Data.Map.Strict as M
-import qualified Data.Set as S
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
-import qualified Data.Text as T
 import           Data.Versions (versioning)
-import           Lens.Micro (each, non, to, (^.), (^..))
+import           Lens.Micro (each, non, (^..))
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
+import           RIO
+import           RIO.List (sortBy)
+import qualified RIO.Map as M
+import qualified RIO.Set as S
+import qualified RIO.Text as T
 import           System.Path
 import           System.Path.IO (getCurrentDirectory)
 import           System.Process.Typed
 
 ---
 
--- | Attempt to retrieve info about a given `S.Set` of packages from the AUR.
-aurLookup :: Manager -> NESet PkgName -> IO (Maybe (S.Set PkgName, S.Set Buildable))
+-- | Attempt to retrieve info about a given `Set` of packages from the AUR.
+aurLookup :: Manager -> NESet PkgName -> IO (Maybe (Set PkgName, Set Buildable))
 aurLookup m names = runMaybeT $ do
   infos <- MaybeT . fmap hush . info m $ foldr (\(PkgName pn) acc -> pn : acc) [] names
   badsgoods <- lift $ traverseConcurrently Par' (buildable m) infos
@@ -76,7 +74,7 @@ aurRepo = do
 
   -- TODO Use `data-or` here to offer `Or (NESet PkgName) (NESet Package)`?
   -- Yes that sounds like a good idea :)
-  let f :: Settings -> NESet PkgName -> IO (Maybe (S.Set PkgName, S.Set Package))
+  let f :: Settings -> NESet PkgName -> IO (Maybe (Set PkgName, Set Package))
       f ss ps = do
         --- Retrieve cached Packages ---
         cache <- readTVarIO tv
@@ -121,7 +119,7 @@ aurLink :: Path Unrooted
 aurLink = fromUnrootedFilePath "https://aur.archlinux.org"
 
 -- | A package's home URL on the AUR.
-pkgUrl :: PkgName -> T.Text
+pkgUrl :: PkgName -> Text
 pkgUrl (PkgName pkg) = T.pack . toUnrootedFilePath $ aurLink </> fromUnrootedFilePath "packages" </> fromUnrootedFilePath (T.unpack pkg)
 
 -------------------
@@ -148,17 +146,15 @@ sortAurInfo bs ai = sortBy compare' ai
                      _ -> \x y -> compare (aurVotesOf y) (aurVotesOf x)
 
 -- | Frontend to the `aur` library. For @-As@.
-aurSearch :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  T.Text -> m [AurInfo]
+aurSearch :: Text -> RIO Env [AurInfo]
 aurSearch regex = do
   ss  <- asks settings
-  res <- liftMaybeM (Failure connectionFailure_1) . fmap hush . sendM $ search (managerOf ss) regex
+  res <- liftMaybeM (Failure connectionFailure_1) . fmap hush . liftIO $ search (managerOf ss) regex
   pure $ sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) res
 
 -- | Frontend to the `aur` library. For @-Ai@.
-aurInfo :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  NonEmpty PkgName -> m [AurInfo]
+aurInfo :: NonEmpty PkgName -> RIO Env [AurInfo]
 aurInfo pkgs = do
   m   <- asks (managerOf . settings)
-  res <- liftMaybeM (Failure connectionFailure_1) . fmap hush . sendM . info m . map (^. field @"name") $ toList pkgs
+  res <- liftMaybeM (Failure connectionFailure_1) . fmap hush . liftIO . info m . map (^. field @"name") $ toList pkgs
   pure $ sortAurInfo (Just SortAlphabetically) res

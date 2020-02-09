@@ -24,49 +24,52 @@ module Aura.State
 
 import           Aura.Cache
 import           Aura.Colour (red)
-import           Aura.Core (Env(..), liftEitherM, notify, report, warn)
+import           Aura.Core (Env(..), notify, report, warn)
 import           Aura.Languages
-import           Aura.Pacman (pacman, pacmanOutput)
+import           Aura.Pacman (pacman, pacmanLines)
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
-import           BasePrelude hiding (Version)
 import           Control.Compactable (fmapMaybe)
-import           Control.Effect (Carrier, Member)
-import           Control.Effect.Error (Error, throwError)
-import           Control.Effect.Lift (Lift, sendM)
-import           Control.Effect.Reader (Reader, asks)
 import           Control.Error.Util (hush)
 import           Data.Aeson
-import           Data.Aeson.Types (typeMismatch)
-import qualified Data.ByteString.Lazy as BL
-import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.Generics.Product (field)
-import           Data.List.NonEmpty (nonEmpty)
-import qualified Data.Map.Strict as M
-import qualified Data.Text as T
-import           Data.Time
+import           Data.List.NonEmpty (NonEmpty, nonEmpty)
 import           Data.Versions
 import           Lens.Micro ((^.))
+import           RIO
+import qualified RIO.ByteString.Lazy as BL
+import           RIO.List (intercalate, partition, sort)
+import           RIO.List.Partial ((!!))
+import qualified RIO.Map as M
+import qualified RIO.Map.Unchecked as M
+import qualified RIO.Text as T
+import           RIO.Time
 import           System.Path
 import           System.Path.IO (createDirectoryIfMissing, getDirectoryContents)
+import           Text.Printf (printf)
 
 ---
 
 -- | All packages installed at some specific `ZonedTime`. Any "pinned" PkgState will
 -- never be deleted by `-Bc`.
-data PkgState = PkgState { timeOf :: ZonedTime, pinnedOf :: Bool, pkgsOf :: M.Map PkgName Versioning }
+data PkgState = PkgState
+  { timeOf   :: ZonedTime
+  , pinnedOf :: Bool
+  , pkgsOf   :: Map PkgName Versioning }
 
 instance ToJSON PkgState where
-  toJSON (PkgState t pnd ps) = object [ "time" .= t, "pinned" .= pnd, "packages" .= fmap prettyV ps ]
+  toJSON (PkgState t pnd ps) = object
+    [ "time" .= t
+    , "pinned" .= pnd
+    , "packages" .= fmap prettyV ps ]
 
 instance FromJSON PkgState where
-  parseJSON (Object v) = PkgState
+  parseJSON = withObject "PkgState" $ \v -> PkgState
     <$> v .: "time"
     <*> v .: "pinned"
     <*> fmap f (v .: "packages")
     where f = fmapMaybe (hush . versioning)
-  parseJSON invalid = typeMismatch "PkgState" invalid
 
 data StateDiff = StateDiff { _toAlter :: [SimplePkg], _toRemove :: [PkgName] }
 
@@ -79,7 +82,7 @@ inState :: SimplePkg -> PkgState -> Bool
 inState (SimplePkg n v) s = maybe False (v ==) . M.lookup n $ pkgsOf s
 
 rawCurrentState :: IO [SimplePkg]
-rawCurrentState = mapMaybe (simplepkg' . strictText) . BL.lines <$> pacmanOutput ["-Q"]
+rawCurrentState = mapMaybe simplepkg' <$> pacmanLines ["-Q"]
 
 currentState :: IO PkgState
 currentState = do
@@ -132,19 +135,19 @@ dotFormat (ZonedTime t _) = intercalate "." items
           mnths = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ]
 
 -- | Does its best to restore a state chosen by the user.
-restoreState :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => m ()
+restoreState :: RIO Env ()
 restoreState =
-  sendM getStateFiles >>= maybe (throwError $ Failure restoreState_2) f . nonEmpty
-  where f :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => NonEmpty (Path Absolute) -> m ()
+  liftIO getStateFiles >>= maybe (throwM $ Failure restoreState_2) f . nonEmpty
+  where f :: NonEmpty (Path Absolute) -> RIO Env ()
         f sfs = do
           ss  <- asks settings
           let pth = either id id . cachePathOf $ commonConfigOf ss
-          mpast  <- sendM $ selectState sfs >>= readState
+          mpast  <- liftIO $ selectState sfs >>= readState
           case mpast of
-            Nothing   -> throwError $ Failure readState_1
+            Nothing   -> throwM $ Failure readState_1
             Just past -> do
-              curr <- sendM currentState
-              Cache cache <- sendM $ cacheContents pth
+              curr <- liftIO currentState
+              Cache cache <- liftIO $ cacheContents pth
               let StateDiff rein remo = compareStates past curr
                   (okay, nope)        = partition (`M.member` cache) rein
               traverse_ (report red restoreState_1 . fmap (^. field @"name")) $ nonEmpty nope
@@ -159,14 +162,13 @@ readState :: Path Absolute -> IO (Maybe PkgState)
 readState = fmap decode . BL.readFile . toFilePath
 
 -- | `reinstalling` can mean true reinstalling, or just altering.
-reinstallAndRemove :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  [PackagePath] -> [PkgName] -> m ()
+reinstallAndRemove :: [PackagePath] -> [PkgName] -> RIO Env ()
 reinstallAndRemove [] [] = asks settings >>= \ss ->
-  sendM (warn ss . reinstallAndRemove_1 $ langOf ss)
+  liftIO (warn ss . reinstallAndRemove_1 $ langOf ss)
 reinstallAndRemove down remo
   | null remo = reinstall
   | null down = remove
   | otherwise = reinstall *> remove
   where
-    remove    = liftEitherM . sendM . pacman $ "-R" : asFlag remo
-    reinstall = liftEitherM . sendM . pacman $ "-U" : map (T.pack . toFilePath . path) down
+    remove    = liftIO . pacman $ "-R" : asFlag remo
+    reinstall = liftIO . pacman $ "-U" : map (T.pack . toFilePath . path) down
