@@ -37,7 +37,7 @@ import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (NonEmpty, nonEmpty)
 import           Data.Versions
 import           Lens.Micro ((^.))
-import           RIO hiding (Reader)
+import           RIO
 import qualified RIO.ByteString.Lazy as BL
 import           RIO.List (intercalate, partition, sort)
 import           RIO.List.Partial ((!!))

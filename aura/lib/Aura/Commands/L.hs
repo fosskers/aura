@@ -30,7 +30,7 @@ import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Set.NonEmpty (NESet)
 import           Data.Text.Prettyprint.Doc
-import           RIO hiding (FilePath, Reader)
+import           RIO hiding (FilePath)
 import qualified RIO.Text as T
 import qualified RIO.Text.Partial as T
 import           System.Path (toFilePath)

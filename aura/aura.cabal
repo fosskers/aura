@@ -34,14 +34,14 @@ common commons
     -funclutter-valid-hole-fits
 
   build-depends:
-    , base          >=4.12   && <5
-    , bytestring    ^>=0.10
-    , containers    ^>=0.6
-    , microlens     ^>=0.4
-    , paths         ^>=0.2
-    , rio           ^>=0.1.13
-    , text          ^>=1.2
-    , versions      ^>=3.5
+    , base        >=4.12   && <5
+    , bytestring  ^>=0.10
+    , containers  ^>=0.6
+    , microlens   ^>=0.4
+    , paths       ^>=0.2
+    , rio         ^>=0.1.13
+    , text        ^>=1.2
+    , versions    ^>=3.5
 
 common libexec
   build-depends:

@@ -51,7 +51,7 @@ import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.These (These(..))
 import           Lens.Micro ((^.))
-import           RIO hiding (Reader, (<>))
+import           RIO hiding ((<>))
 import qualified RIO.ByteString as B
 import           RIO.List (unzip)
 import qualified RIO.Set as S

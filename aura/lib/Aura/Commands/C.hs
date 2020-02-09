@@ -36,7 +36,7 @@ import           Data.List.NonEmpty (nonEmpty)
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import           Lens.Micro ((^?), _Just)
-import           RIO hiding (Reader)
+import           RIO
 import           RIO.List (groupBy, sort, (\\))
 import qualified RIO.Map as M
 import qualified RIO.Set as S

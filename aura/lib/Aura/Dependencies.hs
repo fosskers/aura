@@ -39,7 +39,7 @@ import qualified Data.Set.NonEmpty as NES
 import           Data.These (these)
 import           Data.Versions
 import           Lens.Micro
-import           RIO hiding (Reader)
+import           RIO
 import qualified RIO.Map as M
 import qualified RIO.Set as S
 import qualified RIO.Text as T
