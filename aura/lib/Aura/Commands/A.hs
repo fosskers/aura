@@ -36,10 +36,6 @@ import           Aura.Settings
 import           Aura.State (saveState)
 import           Aura.Types
 import           Aura.Utils
-import           Control.Effect (Carrier, Member)
-import           Control.Effect.Error (Error)
-import           Control.Effect.Lift (Lift, sendM)
-import           Control.Effect.Reader (Reader, asks)
 import           Control.Error.Util (hush)
 import           Data.Aeson.Encode.Pretty (encodePretty)
 import           Data.Generics.Product (field)
@@ -52,7 +48,7 @@ import           Data.Versions (Versioning, prettyV, versioning)
 import           Lens.Micro (each, (^..))
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
-import           RIO hiding (Reader, asks)
+import           RIO
 import qualified RIO.ByteString as B
 import qualified RIO.ByteString.Lazy as BL
 import           RIO.List (intersperse)
@@ -65,11 +61,11 @@ import           Text.Printf (printf)
 ---
 
 -- | The result of @-Au@.
-upgradeAURPkgs :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => Set PkgName -> m ()
+upgradeAURPkgs :: Set PkgName -> RIO Env ()
 upgradeAURPkgs pkgs = do
   ss <- asks settings
-  sendM . notify ss . upgradeAURPkgs_1 $ langOf ss
-  sendM (foreigns ss) >>= traverse_ (upgrade pkgs) . NES.nonEmptySet
+  liftIO . notify ss . upgradeAURPkgs_1 $ langOf ss
+  liftIO (foreigns ss) >>= traverse_ (upgrade pkgs) . NES.nonEmptySet
 
 -- | Foreign packages to consider for upgrading, after "ignored packages" have
 -- been taken into consideration.
@@ -77,8 +73,7 @@ foreigns :: Settings -> IO (Set SimplePkg)
 foreigns ss = S.filter (notIgnored . view (field @"name")) <$> foreignPackages
   where notIgnored p = not . S.member p $ ignoresOf ss
 
-upgrade :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  Set PkgName -> NESet SimplePkg -> m ()
+upgrade :: Set PkgName -> NESet SimplePkg -> RIO Env ()
 upgrade pkgs fs = do
   ss        <- asks settings
   toUpgrade <- possibleUpdates fs
@@ -88,15 +83,14 @@ upgrade pkgs fs = do
     Just a  -> auraUpgrade a
     Nothing -> do
       devel <- develPkgCheck
-      sendM . notify ss . upgradeAURPkgs_2 $ langOf ss
-      if | null toUpgrade && null devel -> sendM . warn ss . upgradeAURPkgs_3 $ langOf ss
+      liftIO . notify ss . upgradeAURPkgs_2 $ langOf ss
+      if | null toUpgrade && null devel -> liftIO . warn ss . upgradeAURPkgs_3 $ langOf ss
          | otherwise -> do
              reportPkgsToUpgrade toUpgrade (toList devel)
-             sendM . unless (switch ss DryRun) $ saveState ss
+             liftIO . unless (switch ss DryRun) $ saveState ss
              traverse_ I.install . NES.nonEmptySet $ S.fromList names <> pkgs <> devel
 
-possibleUpdates :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  NESet SimplePkg -> m [(AurInfo, Versioning)]
+possibleUpdates :: NESet SimplePkg -> RIO Env [(AurInfo, Versioning)]
 possibleUpdates (NES.toList -> pkgs) = do
   aurInfos <- aurInfo $ fmap (^. field @"name") pkgs
   let !names  = map aurNameOf aurInfos
@@ -104,28 +98,28 @@ possibleUpdates (NES.toList -> pkgs) = do
   pure . filter isntMostRecent . zip aurInfos $ aurPkgs ^.. each . field @"version"
 
 -- | Is there an update for Aura that we could apply first?
-auraCheck :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => [PkgName] -> m (Maybe PkgName)
+auraCheck :: [PkgName] -> RIO Env (Maybe PkgName)
 auraCheck ps = join <$> traverse f auraPkg
   where f a = do
           ss <- asks settings
-          bool Nothing (Just a) <$> sendM (optionalPrompt ss auraCheck_1)
+          bool Nothing (Just a) <$> liftIO (optionalPrompt ss auraCheck_1)
         auraPkg | "aura" `elem` ps     = Just "aura"
                 | "aura-bin" `elem` ps = Just "aura-bin"
                 | otherwise            = Nothing
 
-auraUpgrade :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => PkgName -> m ()
+auraUpgrade :: PkgName -> RIO Env ()
 auraUpgrade = I.install . NES.singleton
 
-develPkgCheck :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => m (Set PkgName)
+develPkgCheck :: RIO Env (Set PkgName)
 develPkgCheck = asks settings >>= \ss ->
-  if switch ss RebuildDevel then sendM develPkgs else pure S.empty
+  if switch ss RebuildDevel then liftIO develPkgs else pure S.empty
 
 -- | The result of @-Ai@.
-aurPkgInfo :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => NESet PkgName -> m ()
+aurPkgInfo :: NESet PkgName -> RIO Env ()
 aurPkgInfo = aurInfo . NES.toList >=> traverse_ displayAurPkgInfo
 
-displayAurPkgInfo :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => AurInfo -> m ()
-displayAurPkgInfo ai = asks settings >>= \ss -> sendM . putTextLn $ renderAurPkgInfo ss ai <> "\n"
+displayAurPkgInfo :: AurInfo -> RIO Env ()
+displayAurPkgInfo ai = asks settings >>= \ss -> liftIO . putTextLn $ renderAurPkgInfo ss ai <> "\n"
 
 renderAurPkgInfo :: Settings -> AurInfo -> Text
 renderAurPkgInfo ss ai = dtot . colourCheck ss $ entrify ss fields entries
@@ -145,18 +139,17 @@ renderAurPkgInfo ss ai = dtot . colourCheck ss $ entrify ss fields entries
                     , maybe "(null)" pretty $ aurDescriptionOf ai ]
 
 -- | The result of @-As@.
-aurPkgSearch :: (Monad m, Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  Text -> m ()
+aurPkgSearch :: Text -> RIO Env ()
 aurPkgSearch regex = do
   ss <- asks settings
-  db <- S.map (^. field @"name" . field @"name") <$> sendM foreignPackages
+  db <- S.map (^. field @"name" . field @"name") <$> liftIO foreignPackages
   let t = case truncationOf $ buildConfigOf ss of  -- Can't this go anywhere else?
             None   -> id
             Head n -> take $ fromIntegral n
             Tail n -> reverse . take (fromIntegral n) . reverse
   results <- fmap (\x -> (x, aurNameOf x `S.member` db)) . t
             <$> aurSearch regex
-  sendM $ traverse_ (putTextLn . renderSearch ss regex) results
+  liftIO $ traverse_ (putTextLn . renderSearch ss regex) results
 
 renderSearch :: Settings -> Text -> (AurInfo, Bool) -> Text
 renderSearch ss r (i, e) = searchResult
@@ -174,43 +167,39 @@ renderSearch ss r (i, e) = searchResult
             Nothing -> green . pretty $ aurVersionOf i
 
 -- | The result of @-Ap@.
-displayPkgbuild :: (Monad m, Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) =>
-  NESet PkgName -> m ()
+displayPkgbuild :: NESet PkgName -> RIO Env ()
 displayPkgbuild ps = do
   man <- asks (managerOf . settings)
-  pbs <- catMaybes <$> traverse (sendM . getPkgbuild man) (toList ps)
-  sendM . traverse_ (\p -> B.putStr @IO p >> B.putStr "\n") $ pbs ^.. each . field @"pkgbuild"
+  pbs <- catMaybes <$> traverse (liftIO . getPkgbuild man) (toList ps)
+  liftIO . traverse_ (\p -> B.putStr @IO p >> B.putStr "\n") $ pbs ^.. each . field @"pkgbuild"
 
 isntMostRecent :: (AurInfo, Versioning) -> Bool
 isntMostRecent (ai, v) = trueVer > Just v
   where trueVer = hush . versioning $ aurVersionOf ai
 
 -- | Similar to @-Ai@, but yields the raw data as JSON instead.
-aurJson :: (Carrier sig m , Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  NESet PkgName -> m ()
+aurJson :: NESet PkgName -> RIO Env ()
 aurJson ps = do
   m <- asks (managerOf . settings)
-  infos <- liftMaybeM (Failure connectionFailure_1) . fmap hush . sendM $ f m ps
-  sendM $ traverse_ (BL.putStrLn @IO . encodePretty) infos
+  infos <- liftMaybeM (Failure connectionFailure_1) . fmap hush . liftIO $ f m ps
+  liftIO $ traverse_ (BL.putStrLn @IO . encodePretty) infos
   where
     f :: Manager -> NESet PkgName -> IO (Either ClientError [AurInfo])
     f m = info m . (^.. each . field @"name") . toList
 
-
 ------------
 -- REPORTING
 ------------
-reportPkgsToUpgrade :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) =>
-  [(AurInfo, Versioning)] -> [PkgName] -> m ()
+reportPkgsToUpgrade :: [(AurInfo, Versioning)] -> [PkgName] -> RIO Env ()
 reportPkgsToUpgrade ups pns = do
   ss <- asks settings
-  sendM . notify ss . reportPkgsToUpgrade_1 $ langOf ss
-  sendM $ putDoc (colourCheck ss . vcat $ map f ups' <> map g devels) >> putTextLn "\n"
+  liftIO . notify ss . reportPkgsToUpgrade_1 $ langOf ss
+  liftIO $ putDoc (colourCheck ss . vcat $ map f ups' <> map g devels) >> putTextLn "\n"
   where devels   = pns ^.. each . field @"name"
         ups'     = map (second prettyV) ups
         nLen     = maximum $ map (T.length . aurNameOf . fst) ups <> map T.length devels
         vLen     = maximum $ map (T.length . snd) ups'
-        g = annotate (color Cyan) . pretty
+        g        = annotate (color Cyan) . pretty
         f (p, v) = hsep [ cyan . fill nLen . pretty $ aurNameOf p
                         , "::"
                         , yellow . fill vLen $ pretty v

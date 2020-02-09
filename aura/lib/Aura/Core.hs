@@ -18,8 +18,7 @@ module Aura.Core
   ( -- * Types
     Env(..)
   , Repository(..)
-  , liftEither, liftEitherM
-  , liftMaybe, liftMaybeM
+  , liftMaybeM
     -- * User Privileges
   , sudo, trueRoot
     -- * Querying the Package Database
@@ -41,10 +40,6 @@ import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           Control.Compactable (fmapEither)
-import           Control.Effect (Carrier, Member)
-import           Control.Effect.Error (Error, throwError)
-import           Control.Effect.Lift (Lift, sendM)
-import           Control.Effect.Reader (Reader, asks)
 import           Control.Monad.Trans.Maybe
 import           Data.Bifunctor (bimap)
 import           Data.Generics.Product (field)
@@ -56,7 +51,7 @@ import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.These (These(..))
 import           Lens.Micro ((^.))
-import           RIO hiding (Reader, asks, (<>))
+import           RIO hiding (Reader, (<>))
 import qualified RIO.ByteString as B
 import           RIO.List (unzip)
 import qualified RIO.Set as S
@@ -112,34 +107,32 @@ packageBuildable ss b = FromAUR <$> hotEdit ss b
 -----------
 -- THE WORK
 -----------
--- | Lift a common return type into the `fused-effects` world. Usually used
--- after a `pacman` call.
-liftEither :: (Carrier sig m, Member (Error a) sig) => Either a b -> m b
-liftEither = either throwError pure
+-- -- after a `pacman` call.
+-- liftEither :: (Carrier sig m, Member (Error a) sig) => Either a b -> m b
+-- liftEither = either throwError pure
 
--- | Like `liftEither`, but the `Either` can be embedded in something else,
--- usually a `Monad`.
-liftEitherM :: (Carrier sig m, Member (Error a) sig) => m (Either a b) -> m b
-liftEitherM m = m >>= liftEither
+-- -- | Like `liftEither`, but the `Either` can be embedded in something else,
+-- -- usually a `Monad`.
+-- liftEitherM :: (Carrier sig m, Member (Error a) sig) => m (Either a b) -> m b
+-- liftEitherM m = m >>= liftEither
 
--- | Like `liftEither`, but for `Maybe`.
-liftMaybe :: (Carrier sig m, Member (Error a) sig) => a -> Maybe b -> m b
-liftMaybe a = maybe (throwError a) pure
+-- -- | Like `liftEither`, but for `Maybe`.
+-- liftMaybe :: (Carrier sig m, Member (Error a) sig) => a -> Maybe b -> m b
+-- liftMaybe a = maybe (throwError a) pure
 
--- | Like `liftEitherM`, but for `Maybe`.
-liftMaybeM :: (Carrier sig m, Member (Error a) sig) => a -> m (Maybe b) -> m b
-liftMaybeM a m = m >>= liftMaybe a
+liftMaybeM :: (MonadThrow m, Exception e) => e -> m (Maybe a) -> m a
+liftMaybeM a m = m >>= maybe (throwM a) pure
 
 -- | Action won't be allowed unless user is root, or using sudo.
-sudo :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig) => m a -> m a
-sudo action = asks (hasRootPriv . envOf . settings) >>= bool (throwError $ Failure mustBeRoot_1) action
+sudo :: RIO Env a -> RIO Env a
+sudo act = asks (hasRootPriv . envOf . settings) >>= bool (throwM $ Failure mustBeRoot_1) act
 
 -- | Stop the user if they are the true root. Building as root isn't allowed
 -- since makepkg v4.2.
-trueRoot :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig) => m a -> m a
+trueRoot :: RIO Env a -> RIO Env a
 trueRoot action = asks settings >>= \ss ->
   if not (isTrueRoot $ envOf ss) && buildUserOf (buildConfigOf ss) /= Just (User "root")
-    then action else throwError $ Failure trueRoot_3
+    then action else throwM $ Failure trueRoot_3
 
 -- | A list of non-prebuilt packages installed on the system.
 -- `-Qm` yields a list of sorted values.
@@ -162,11 +155,10 @@ isInstalled :: PkgName -> IO (Maybe PkgName)
 isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", pkg ^. field @"name"]
 
 -- | An @-Rsu@ call.
-removePkgs :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  NESet PkgName -> m ()
+removePkgs :: NESet PkgName -> RIO Env ()
 removePkgs pkgs = do
   pacOpts <- asks (commonConfigOf . settings)
-  liftEitherM . sendM . pacman $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts
+  liftIO . pacman $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts
 
 -- | Depedencies which are not installed, or otherwise provided by some
 -- installed package.
@@ -209,9 +201,8 @@ scold ss = putStrLnA ss . red
 
 -- | Report a message with multiple associated items. Usually a list of
 -- naughty packages.
-report :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) =>
-  (Doc AnsiStyle -> Doc AnsiStyle) -> (Language -> Doc AnsiStyle) -> NonEmpty PkgName -> m ()
+report :: (Doc AnsiStyle -> Doc AnsiStyle) -> (Language -> Doc AnsiStyle) -> NonEmpty PkgName -> RIO Env ()
 report c msg pkgs = do
   ss <- asks settings
-  sendM . putStrLnA ss . c . msg $ langOf ss
-  sendM . putTextLn . dtot . colourCheck ss . vsep . map (cyan . pretty . view (field @"name")) $ toList pkgs
+  liftIO . putStrLnA ss . c . msg $ langOf ss
+  liftIO . putTextLn . dtot . colourCheck ss . vsep . map (cyan . pretty . view (field @"name")) $ toList pkgs

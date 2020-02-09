@@ -29,10 +29,6 @@ import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils (maybe', putText)
-import           Control.Effect (Carrier, Member)
-import           Control.Effect.Error (Error, throwError)
-import           Control.Effect.Lift (Lift, sendM)
-import           Control.Effect.Reader (Reader, asks)
 import           Control.Error.Util (note)
 import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (NonEmpty)
@@ -43,7 +39,7 @@ import qualified Data.Set.NonEmpty as NES
 import           Data.These (these)
 import           Data.Versions
 import           Lens.Micro
-import           RIO hiding (Reader, asks)
+import           RIO hiding (Reader)
 import qualified RIO.Map as M
 import qualified RIO.Set as S
 import qualified RIO.Text as T
@@ -61,16 +57,15 @@ data Resolution = Resolution
 -- interdependent, and thus can be built and installed as a group.
 --
 -- Deeper layers of the result list (generally) depend on the previous layers.
-resolveDeps :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  Repository -> NESet Package -> m (NonEmpty (NESet Package))
+resolveDeps :: Repository -> NESet Package -> RIO Env (NonEmpty (NESet Package))
 resolveDeps repo ps = do
   ss <- asks settings
-  Resolution m s <- liftMaybeM (Failure connectionFailure_1) . sendM $
-    (Just <$> resolveDeps' ss repo ps) `catchAny` const (pure Nothing)
-  unless (length ps == length m) $ sendM (putText "\n")
+  res <- liftIO $ (Just <$> resolveDeps' ss repo ps) `catchAny` const (pure Nothing)
+  Resolution m s <- maybe (throwM $ Failure connectionFailure_1) pure res
+  unless (length ps == length m) $ liftIO (putText "\n")
   let de = conflicts ss m s
-  unless (null de) . throwError . Failure $ missingPkg_2 de
-  either throwError pure $ sortInstall m
+  unless (null de) . throwM . Failure $ missingPkg_2 de
+  either throwM pure $ sortInstall m
 
 -- | Solve dependencies for a set of `Package`s assumed to not be
 -- installed/satisfied.

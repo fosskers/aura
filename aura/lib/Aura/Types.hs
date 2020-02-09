@@ -4,6 +4,7 @@
 {-# LANGUAGE DuplicateRecordFields      #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE LambdaCase                 #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE MultiWayIf                 #-}
 {-# LANGUAGE OverloadedStrings          #-}
@@ -263,6 +264,11 @@ data DepError = NonExistant PkgName
 -- | Some failure message that when given the current runtime `Language`
 -- will produce a human-friendly error.
 newtype Failure = Failure { failure :: Language -> Doc AnsiStyle }
+
+instance Exception Failure
+
+instance Show Failure where
+  show (Failure _) = "There was some failure."
 
 -- | Shell environment variables.
 type Environment = Map Text Text

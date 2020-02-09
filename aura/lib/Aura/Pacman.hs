@@ -126,11 +126,11 @@ getLogFilePath (Config c) = c ^? at "LogFile" . _Just . _head . to (fromAbsolute
 pacmanProc :: [String] -> ProcessConfig () () ()
 pacmanProc args = setEnv [("LC_ALL", "C")] $ proc "pacman" args
 
--- | Run a pacman action that may fail. Will never throw an IO exception.
-pacman :: [Text] -> IO (Either Failure ())
+-- | Run a pacman action that may fail.
+pacman :: [Text] -> IO ()
 pacman (map T.unpack -> args) = do
   ec <- runProcess $ pacmanProc args
-  pure . bool (Left $ Failure pacmanFailure_1) (Right ()) $ ec == ExitSuccess
+  unless (ec == ExitSuccess) $ throwM (Failure pacmanFailure_1)
 
 -- | Run some `pacman` process, but only care about whether it succeeded.
 pacmanSuccess :: [T.Text] -> IO Bool

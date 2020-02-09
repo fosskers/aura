@@ -26,14 +26,11 @@ import           Aura.Settings
 import           Aura.Types (PkgName(..))
 import           Aura.Utils
 import           Control.Compactable (fmapEither)
-import           Control.Effect (Carrier, Member)
-import           Control.Effect.Lift (Lift, sendM)
-import           Control.Effect.Reader (Reader, asks)
 import           Data.Generics.Product (field)
 import qualified Data.List.NonEmpty as NEL
 import           Data.Set.NonEmpty (NESet)
 import           Data.Text.Prettyprint.Doc
-import           RIO hiding (FilePath, Reader, asks)
+import           RIO hiding (FilePath, Reader)
 import qualified RIO.Text as T
 import qualified RIO.Text.Partial as T
 import           System.Path (toFilePath)
@@ -51,10 +48,10 @@ data LogEntry = LogEntry
   , recent       :: [Text] }
 
 -- | Pipes the pacman log file through a @less@ session.
-viewLogFile :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => m ()
+viewLogFile :: RIO Env ()
 viewLogFile = do
   pth <- asks (toFilePath . either id id . logPathOf . commonConfigOf . settings)
-  sendM . void . runProcess @IO $ proc "less" [pth]
+  liftIO . void . runProcess @IO $ proc "less" [pth]
 
 -- | Print all lines in the log file which contain a given `Text`.
 searchLogFile :: Settings -> Text -> IO ()
@@ -64,14 +61,14 @@ searchLogFile ss input = do
   traverse_ putTextLn $ searchLines input logFile
 
 -- | The result of @-Li@.
-logInfoOnPkg :: (Carrier sig m, Member (Reader Env) sig, Member (Lift IO) sig) => NESet PkgName -> m ()
+logInfoOnPkg :: NESet PkgName -> RIO Env ()
 logInfoOnPkg pkgs = do
   ss <- asks settings
   let pth = toFilePath . either id id . logPathOf $ commonConfigOf ss
-  logFile <- Log . T.lines . decodeUtf8Lenient <$> sendM (readFileBinary @IO pth)
+  logFile <- Log . T.lines . decodeUtf8Lenient <$> liftIO (readFileBinary @IO pth)
   let (bads, goods) = fmapEither (logLookup logFile) $ toList pkgs
   traverse_ (report red reportNotInLog_1) $ NEL.nonEmpty bads
-  sendM . traverse_ putTextLn $ map (renderEntry ss) goods
+  liftIO . traverse_ putTextLn $ map (renderEntry ss) goods
 
 logLookup :: Log -> PkgName -> Either PkgName LogEntry
 logLookup (Log lns) p = case matches of

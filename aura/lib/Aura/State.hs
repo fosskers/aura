@@ -24,24 +24,20 @@ module Aura.State
 
 import           Aura.Cache
 import           Aura.Colour (red)
-import           Aura.Core (Env(..), liftEitherM, notify, report, warn)
+import           Aura.Core (Env(..), notify, report, warn)
 import           Aura.Languages
 import           Aura.Pacman (pacman, pacmanLines)
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           Control.Compactable (fmapMaybe)
-import           Control.Effect (Carrier, Member)
-import           Control.Effect.Error (Error, throwError)
-import           Control.Effect.Lift (Lift, sendM)
-import           Control.Effect.Reader (Reader, asks)
 import           Control.Error.Util (hush)
 import           Data.Aeson
 import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (NonEmpty, nonEmpty)
 import           Data.Versions
 import           Lens.Micro ((^.))
-import           RIO hiding (Reader, asks)
+import           RIO hiding (Reader)
 import qualified RIO.ByteString.Lazy as BL
 import           RIO.List (intercalate, partition, sort)
 import           RIO.List.Partial ((!!))
@@ -139,19 +135,19 @@ dotFormat (ZonedTime t _) = intercalate "." items
           mnths = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ]
 
 -- | Does its best to restore a state chosen by the user.
-restoreState :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => m ()
+restoreState :: RIO Env ()
 restoreState =
-  sendM getStateFiles >>= maybe (throwError $ Failure restoreState_2) f . nonEmpty
-  where f :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) => NonEmpty (Path Absolute) -> m ()
+  liftIO getStateFiles >>= maybe (throwM $ Failure restoreState_2) f . nonEmpty
+  where f :: NonEmpty (Path Absolute) -> RIO Env ()
         f sfs = do
           ss  <- asks settings
           let pth = either id id . cachePathOf $ commonConfigOf ss
-          mpast  <- sendM $ selectState sfs >>= readState
+          mpast  <- liftIO $ selectState sfs >>= readState
           case mpast of
-            Nothing   -> throwError $ Failure readState_1
+            Nothing   -> throwM $ Failure readState_1
             Just past -> do
-              curr <- sendM currentState
-              Cache cache <- sendM $ cacheContents pth
+              curr <- liftIO currentState
+              Cache cache <- liftIO $ cacheContents pth
               let StateDiff rein remo = compareStates past curr
                   (okay, nope)        = partition (`M.member` cache) rein
               traverse_ (report red restoreState_1 . fmap (^. field @"name")) $ nonEmpty nope
@@ -166,14 +162,13 @@ readState :: Path Absolute -> IO (Maybe PkgState)
 readState = fmap decode . BL.readFile . toFilePath
 
 -- | `reinstalling` can mean true reinstalling, or just altering.
-reinstallAndRemove :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  [PackagePath] -> [PkgName] -> m ()
+reinstallAndRemove :: [PackagePath] -> [PkgName] -> RIO Env ()
 reinstallAndRemove [] [] = asks settings >>= \ss ->
-  sendM (warn ss . reinstallAndRemove_1 $ langOf ss)
+  liftIO (warn ss . reinstallAndRemove_1 $ langOf ss)
 reinstallAndRemove down remo
   | null remo = reinstall
   | null down = remove
   | otherwise = reinstall *> remove
   where
-    remove    = liftEitherM . sendM . pacman $ "-R" : asFlag remo
-    reinstall = liftEitherM . sendM . pacman $ "-U" : map (T.pack . toFilePath . path) down
+    remove    = liftIO . pacman $ "-R" : asFlag remo
+    reinstall = liftIO . pacman $ "-U" : map (T.pack . toFilePath . path) down

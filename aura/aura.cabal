@@ -1,6 +1,6 @@
 cabal-version:      2.2
 name:               aura
-version:            2.0.3
+version:            2.0.4
 synopsis:
   A secure package manager for Arch Linux and the AUR, written in Haskell.
 
@@ -12,7 +12,7 @@ description:
   AUR package managers.
 
 category:           System
-homepage:           https://github.com/aurapm/aura
+homepage:           https://github.com/fosskers/aura
 author:             Colin Woodbury
 maintainer:         colin@fosskers.ca
 license:            GPL-3.0-only
@@ -46,7 +46,6 @@ common commons
 common libexec
   build-depends:
     , errors                       ^>=2.3
-    , fused-effects                >=0.4 && <1.1
     , http-client                  >=0.5 && <0.7
     , nonempty-containers          ^>=0.3
     , prettyprinter                >=1.2 && <1.6

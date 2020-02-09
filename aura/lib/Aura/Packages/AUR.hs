@@ -34,10 +34,6 @@ import           Aura.Settings
 import           Aura.Types
 import           Control.Compactable (fmapEither)
 import           Control.Concurrent.STM.TVar (modifyTVar')
-import           Control.Effect (Carrier, Member)
-import           Control.Effect.Error (Error)
-import           Control.Effect.Lift (Lift, sendM)
-import           Control.Effect.Reader (Reader, asks)
 import           Control.Error.Util (hush, note)
 import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Maybe
@@ -51,7 +47,7 @@ import           Data.Versions (versioning)
 import           Lens.Micro (each, non, (^..))
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
-import           RIO hiding (Reader, asks)
+import           RIO
 import           RIO.List (sortBy)
 import qualified RIO.Map as M
 import qualified RIO.Set as S
@@ -150,17 +146,15 @@ sortAurInfo bs ai = sortBy compare' ai
                      _ -> \x y -> compare (aurVotesOf y) (aurVotesOf x)
 
 -- | Frontend to the `aur` library. For @-As@.
-aurSearch :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  Text -> m [AurInfo]
+aurSearch :: Text -> RIO Env [AurInfo]
 aurSearch regex = do
   ss  <- asks settings
-  res <- liftMaybeM (Failure connectionFailure_1) . fmap hush . sendM $ search (managerOf ss) regex
+  res <- liftMaybeM (Failure connectionFailure_1) . fmap hush . liftIO $ search (managerOf ss) regex
   pure $ sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) res
 
 -- | Frontend to the `aur` library. For @-Ai@.
-aurInfo :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure) sig, Member (Lift IO) sig) =>
-  NonEmpty PkgName -> m [AurInfo]
+aurInfo :: NonEmpty PkgName -> RIO Env [AurInfo]
 aurInfo pkgs = do
   m   <- asks (managerOf . settings)
-  res <- liftMaybeM (Failure connectionFailure_1) . fmap hush . sendM . info m . map (^. field @"name") $ toList pkgs
+  res <- liftMaybeM (Failure connectionFailure_1) . fmap hush . liftIO . info m . map (^. field @"name") $ toList pkgs
   pure $ sortAurInfo (Just SortAlphabetically) res
