@@ -23,7 +23,6 @@ module Linux.Arch.Aur
   ) where
 
 import Control.Applicative ((<|>))
-import Control.Monad (mzero)
 import Data.Aeson
 import Data.Proxy
 import Data.Text (Text)
@@ -40,13 +39,11 @@ data RPCResp = RPCResp
   , _results     :: [AurInfo] } deriving (Show)
 
 instance FromJSON RPCResp where
-  parseJSON (Object v) = RPCResp
+  parseJSON = withObject "RPCResp" $ \v -> RPCResp
     <$> v .: "version"
     <*> v .: "type"
     <*> v .: "resultcount"
     <*> v .: "results"
-
-  parseJSON _ = mzero
 
 -- | All relevant information about an AUR package.
 data AurInfo = AurInfo
@@ -73,7 +70,7 @@ data AurInfo = AurInfo
   , keywordsOf       :: [Text] } deriving (Eq,Show)
 
 instance FromJSON AurInfo where
-    parseJSON (Object v) = AurInfo
+    parseJSON = withObject "AurInfo" $ \v -> AurInfo
       <$> v .:  "ID"
       <*> v .:  "Name"
       <*> v .:  "PackageBaseID"
@@ -95,8 +92,6 @@ instance FromJSON AurInfo where
       <*> v .:? "Provides"    .!= []
       <*> v .:? "License"     .!= []
       <*> v .:? "Keywords"    .!= []
-
-    parseJSON _ = mzero
 
 instance ToJSON AurInfo where
   toJSON ai = object
