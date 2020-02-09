@@ -1,5 +1,9 @@
 # Aura Changelog
 
+## 2.0.4 (2020-02-08)
+
+- Removed `fused-effects` dependency in favour of `rio` to simplify code.
+
 ## 2.0.3
 
 - Updated Spanish translations. Thanks to Max Ferrer!
