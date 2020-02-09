@@ -107,19 +107,6 @@ packageBuildable ss b = FromAUR <$> hotEdit ss b
 -----------
 -- THE WORK
 -----------
--- -- after a `pacman` call.
--- liftEither :: (Carrier sig m, Member (Error a) sig) => Either a b -> m b
--- liftEither = either throwError pure
-
--- -- | Like `liftEither`, but the `Either` can be embedded in something else,
--- -- usually a `Monad`.
--- liftEitherM :: (Carrier sig m, Member (Error a) sig) => m (Either a b) -> m b
--- liftEitherM m = m >>= liftEither
-
--- -- | Like `liftEither`, but for `Maybe`.
--- liftMaybe :: (Carrier sig m, Member (Error a) sig) => a -> Maybe b -> m b
--- liftMaybe a = maybe (throwError a) pure
-
 liftMaybeM :: (MonadThrow m, Exception e) => e -> m (Maybe a) -> m a
 liftMaybeM a m = m >>= maybe (throwM a) pure
 
