@@ -5,7 +5,7 @@
 
 -- |
 -- Module    : Aura.Languages.Fields
--- Copyright : (c) Colin Woodbury, 2012 - 2019
+-- Copyright : (c) Colin Woodbury, 2012 - 2020
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
@@ -273,6 +273,7 @@ votes = \case
 popularity :: Language -> Text
 popularity = \case
     Japanese   -> "人気"
+    Spanish    -> "Popularidad"
     Portuguese -> "Popularidade"
     Esperanto  -> "Populareco"
     _          -> "Popularity"

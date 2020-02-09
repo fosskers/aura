@@ -6,7 +6,7 @@
 
 -- |
 -- Module    : Aura.State
--- Copyright : (c) Colin Woodbury, 2012 - 2019
+-- Copyright : (c) Colin Woodbury, 2012 - 2020
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
@@ -30,18 +30,18 @@ import           Aura.Pacman (pacman, pacmanLines)
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
+import           Control.Compactable (fmapMaybe)
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error, throwError)
 import           Control.Effect.Lift (Lift, sendM)
 import           Control.Effect.Reader (Reader, asks)
 import           Control.Error.Util (hush)
 import           Data.Aeson
-import           Data.Aeson.Types (typeMismatch)
 import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (NonEmpty, nonEmpty)
 import           Data.Versions
-import           Data.Witherable (mapMaybe)
-import           RIO hiding (Reader, asks, mapMaybe)
+import           Lens.Micro ((^.))
+import           RIO hiding (Reader, asks)
 import qualified RIO.ByteString.Lazy as BL
 import           RIO.List (intercalate, partition, sort)
 import           RIO.List.Partial ((!!))
@@ -57,18 +57,23 @@ import           Text.Printf (printf)
 
 -- | All packages installed at some specific `ZonedTime`. Any "pinned" PkgState will
 -- never be deleted by `-Bc`.
-data PkgState = PkgState { timeOf :: ZonedTime, pinnedOf :: Bool, pkgsOf :: Map PkgName Versioning }
+data PkgState = PkgState
+  { timeOf   :: ZonedTime
+  , pinnedOf :: Bool
+  , pkgsOf   :: Map PkgName Versioning }
 
 instance ToJSON PkgState where
-  toJSON (PkgState t pnd ps) = object [ "time" .= t, "pinned" .= pnd, "packages" .= fmap prettyV ps ]
+  toJSON (PkgState t pnd ps) = object
+    [ "time" .= t
+    , "pinned" .= pnd
+    , "packages" .= fmap prettyV ps ]
 
 instance FromJSON PkgState where
-  parseJSON (Object v) = PkgState
+  parseJSON = withObject "PkgState" $ \v -> PkgState
     <$> v .: "time"
     <*> v .: "pinned"
     <*> fmap f (v .: "packages")
-    where f = mapMaybe (hush . versioning)
-  parseJSON invalid = typeMismatch "PkgState" invalid
+    where f = fmapMaybe (hush . versioning)
 
 data StateDiff = StateDiff { _toAlter :: [SimplePkg], _toRemove :: [PkgName] }
 

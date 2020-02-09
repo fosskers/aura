@@ -6,7 +6,7 @@
 
 -- |
 -- Module    : Aura.Build
--- Copyright : (c) Colin Woodbury, 2012 - 2019
+-- Copyright : (c) Colin Woodbury, 2012 - 2020
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
@@ -25,6 +25,7 @@ import           Aura.Pacman (pacman)
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
+import           Control.Compactable (traverseMaybe)
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error, throwError)
 import           Control.Effect.Lift (Lift, sendM)
@@ -36,7 +37,6 @@ import qualified Data.List.NonEmpty as NEL
 import           Data.Semigroup.Foldable (fold1)
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
-import           Data.Witherable (wither)
 import           RIO hiding (Reader, asks)
 import           RIO.Directory (setCurrentDirectory)
 import qualified RIO.Set as S
@@ -65,7 +65,7 @@ buildPackages :: (Carrier sig m, Member (Reader Env) sig, Member (Error Failure)
   NESet Buildable -> m (NESet PackagePath)
 buildPackages bs = do
   g <- sendM createSystemRandom
-  wither (build g) (toList bs) >>= maybe bad (pure . fold1) . NEL.nonEmpty
+  traverseMaybe (build g) (toList bs) >>= maybe bad (pure . fold1) . NEL.nonEmpty
   where bad = throwError $ Failure buildFail_10
 
 -- | Handles the building of Packages. Fails nicely.

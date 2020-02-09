@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP               #-}
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE MonoLocalBinds    #-}
@@ -6,7 +7,7 @@
 
 {-
 
-Copyright 2012 - 2019 Colin Woodbury <colin@fosskers.ca>
+Copyright 2012 - 2020 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -70,8 +71,12 @@ import           Text.Pretty.Simple (pPrintNoColor)
 
 ---
 
+#ifndef CURRENT_PACKAGE_VERSION
+#define CURRENT_PACKAGE_VERSION "UNKNOWN"
+#endif
+
 auraVersion :: Text
-auraVersion = "2.0.1"
+auraVersion = CURRENT_PACKAGE_VERSION
 
 main :: IO ()
 main = do

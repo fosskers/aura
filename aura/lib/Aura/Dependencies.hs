@@ -12,7 +12,7 @@
 
 -- |
 -- Module    : Aura.Dependencies
--- Copyright : (c) Colin Woodbury, 2012 - 2019
+-- Copyright : (c) Colin Woodbury, 2012 - 2020
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
@@ -37,10 +37,10 @@ import           Control.Error.Util (note)
 import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NEL
-import           Data.Or (elimOr)
 import           Data.Semigroup.Foldable (foldMap1)
 import           Data.Set.NonEmpty (pattern IsEmpty, pattern IsNonEmpty, NESet)
 import qualified Data.Set.NonEmpty as NES
+import           Data.These (these)
 import           Data.Versions
 import           Lens.Micro
 import           RIO hiding (Reader, asks)
@@ -82,7 +82,7 @@ resolveDeps' ss repo ps = resolve (Resolution mempty mempty) ps
     resolve r@(Resolution m _) xs = maybe' (pure r) (NES.nonEmptySet goods) $ \goods' -> do
       let m' = M.fromList (map (pname &&& id) $ toList goods')
           r' = r & field @"toInstall" %~ (<> m')
-      elimOr (const $ pure r') (const $ satisfy r') (satisfy r') $ dividePkgs goods'
+      these (const $ pure r') (satisfy r') (const $ satisfy r') $ dividePkgs goods'
       where
         goods :: Set Package
         goods = NES.filter (\p -> not $ pname p `M.member` m) xs
@@ -101,7 +101,7 @@ resolveDeps' ss repo ps = resolve (Resolution mempty mempty) ps
     -- | Consider only "unsatisfied" deps.
     satisfy :: Resolution -> NESet Buildable -> IO Resolution
     satisfy r bs = maybe' (pure r) (NES.nonEmptySet . freshDeps r $ allDeps bs) $
-      areSatisfied >=> elimOr (lookups r) (\uns sat -> lookups (r' sat) uns) (pure . r')
+      areSatisfied >=> these (lookups r) (pure . r') (\uns sat -> lookups (r' sat) uns)
       where
         r' :: Satisfied -> Resolution
         r' (Satisfied sat) = r & field @"satisfied" %~ (<> f sat)

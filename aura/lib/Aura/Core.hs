@@ -8,7 +8,7 @@
 
 -- |
 -- Module    : Aura.Core
--- Copyright : (c) Colin Woodbury, 2012 - 2019
+-- Copyright : (c) Colin Woodbury, 2012 - 2020
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
@@ -50,11 +50,12 @@ import           Data.Bifunctor (bimap)
 import           Data.Generics.Product (field)
 import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NEL
-import           Data.Or (Or(..))
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
+import           Data.These (These(..))
+import           Lens.Micro ((^.))
 import           RIO hiding (Reader, asks, (<>))
 import qualified RIO.ByteString as B
 import           RIO.List (unzip)
@@ -176,7 +177,7 @@ newtype Satisfied = Satisfied (NESet Dep)
 
 -- | Similar to `isSatisfied`, but dependencies are checked in a batch, since
 -- @-T@ can accept multiple inputs.
-areSatisfied :: NESet Dep -> IO (Or Unsatisfied Satisfied)
+areSatisfied :: NESet Dep -> IO (These Unsatisfied Satisfied)
 areSatisfied ds = do
   unsats <- S.fromList . mapMaybe parseDep <$> unsat
   pure . bimap Unsatisfied Satisfied $ NES.partition (`S.member` unsats) ds

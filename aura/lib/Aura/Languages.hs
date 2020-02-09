@@ -8,7 +8,7 @@
 
 -- |
 -- Module    : Aura.Languages.Fields
--- Copyright : (c) Colin Woodbury, 2012 - 2019
+-- Copyright : (c) Colin Woodbury, 2012 - 2020
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
@@ -20,7 +20,7 @@ Chris "Kwpolska" Warrick                      | Polish
 Denis Kasak / "stranac"                       | Croatian
 Fredrik Haikarainen / Daniel Beecham          | Swedish
 Lukas Niederbremer / Jonas Platte             | German
-Alejandro Gómez / Sergio Conde                | Spanish
+Alejandro Gómez / Sergio Conde / Max Ferrer   | Spanish
 Henry Kupty / Thiago Perrotta / Wagner Amaral | Portuguese
 Ma Jiehong / Fabien Dubosson                  | French
 Kyrylo Silin                                  | Russian
@@ -57,7 +57,7 @@ translators = M.fromList
     , (Croatian,   "Denis Kasak / \"stranac\"")
     , (Swedish,    "Fredrik Haikarainen / Daniel Beecham")
     , (German,     "Lukas Niederbremer / Jonas Platte")
-    , (Spanish,    "Alejandro Gómez / Sergio Conde")
+    , (Spanish,    "Alejandro Gómez / Sergio Conde / Max Ferrer")
     , (Portuguese, "Henry Kupty / Thiago Perrotta / Wagner Amaral")
     , (French,     "Ma Jiehong / Fabien Dubosson")
     , (Russian,    "Kyrylo Silin / Alexey Kotlyarov")
@@ -71,24 +71,24 @@ translators = M.fromList
     ]
 
 -- These need updating! Or removing...
-languageNames :: Language -> Map Language Text
-languageNames = M.fromList . zip [ Japanese, Polish, Croatian, Swedish, German, Spanish, Portuguese, French, Russian, Italian, Serbian, Norwegian, Indonesia, Chinese ] . \case
-    Japanese   -> [ "日本語", "ポーランド語", "クロアチア語", "スウェーデン語", "ドイツ語", "スペイン語", "ポルトガル語", "フランス語", "ロシア語", "イタリア語", "セルビア語", "ノルウェー語", "インドネシア語", "中国語" ]
-    Polish     -> [ "Japanese", "polski", "chorwacki", "szwedzki", "niemiecki", "hiszpański", "portugalski", "francuski", "rosyjski", "", "", "", "Indonesian", "Chinese" ]
-    Croatian   -> [ "Japanese", "poljski", "hrvatski", "švedski", "njemački", "španjolski", "portugalski", "francuski", "ruski", "talijanski", "srpski", "norveški", "Indonesian", "Chinese" ]
-    Swedish    -> [ "Japanese", "Polska", "Kroatiska", "Svenska", "Tyska", "Spanska", "Portugisiska", "Franska", "Ryska", "Italienska", "Serbiska", "Norska", "Indonesian", "Chinese" ]
-    German     -> [ "Japanisch", "Polnisch", "Kroatisch", "Schwedisch", "Deutsch", "Spanisch", "Portugiesisch", "Französisch", "Russisch", "Italienisch", "Serbisch", "Norwegisch", "Indonesisch", "Chinese" ]
-    Spanish    -> [ "Japanese", "Polaco", "Croata", "Sueco", "Alemán", "Español", "Portugués", "Francés", "Ruso", "Italiano", "Serbio", "Noruego", "Indonesio", "Chinese" ]
-    Portuguese -> [ "Japonês", "Polonês", "Croata", "Sueco", "Alemão", "Espanhol", "Português", "Francês", "Russo", "Italiano", "Sérvio", "Norueguês", "Indonésio", "Chinês" ]
-    French     -> [ "Japanese", "Polonais", "Croate", "Suédois", "Allemand", "Espagnol", "Portugais", "Français", "Russe", "Italien", "Serbe", "Norvégien", "Indonesian", "Chinese" ]
-    Russian    -> [ "Японский", "Польский", "Хорватский", "Шведский", "Немецкий", "Испанский", "Португальский", "Французский", "Русский", "Итальянский", "Сербский", "Норвежский", "Индонезийский", "Китайский" ]
-    Italian    -> [ "Giapponese", "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "", "", "Indonesian", "Chinese" ]
-    Serbian    -> [ "Japanese", "Пољски", "Хрватски", "Шведски", "Немачки", "Шпански", "Португалски", "Француски", "Руски", "Италијански", "Српски", "", "Indonesian", "Chinese" ]
-    Norwegian  -> [ "Japanese", "Polsk", "Kroatisk", "Svensk", "Tysk", "Spansk", "Portugisisk", "Fransk", "Russisk", "Italiensk", "Serbisk", "Norsk", "Indonesian", "Chinese" ]
-    Indonesia  -> [ "Japanese", "Polandia", "Kroasia", "Swedia", "Jerman", "Spanyol", "Portugis", "Prancis", "Rusia", "Italia", "Serbia", "Norwegia", "Indonesian", "Chinese" ]
-    Chinese    -> [ "日语", "波兰语", "克罗地亚语", "瑞典语", "德语", "西班牙语", "葡萄牙语", "法语", "俄语", "意大利语", "塞尔维亚语", "挪威语", "印度尼西亚语", "中文" ]
-    Esperanto  -> [ "La japana", "La pola", "La kroata", "La sevda", "La germana", "La hispana", "La portugala", "La franca", "La rusa", "La itala", "La serba", "La norvega", "La indonezia", "La ĉina"]
-    _          -> [ "Japanese", "Polish", "Croatian", "Swedish", "German", "Spanish", "Portuguese", "French", "Russian", "Italian", "Serbian", "Norwegian", "Indonesian", "Chinese" ]
+languageNames :: Language -> Map Language T.Text
+languageNames = M.fromList . zip [ Japanese, Polish, Croatian, Swedish, German, Spanish, Portuguese, French, Russian, Italian, Serbian, Norwegian, Indonesia, Chinese, Esperanto ] . \case
+    Japanese   -> [ "日本語", "ポーランド語", "クロアチア語", "スウェーデン語", "ドイツ語", "スペイン語", "ポルトガル語", "フランス語", "ロシア語", "イタリア語", "セルビア語", "ノルウェー語", "インドネシア語", "中国語", "エスペラント" ]
+    Polish     -> [ "Japanese", "polski", "chorwacki", "szwedzki", "niemiecki", "hiszpański", "portugalski", "francuski", "rosyjski", "", "", "", "Indonesian", "Chinese", "Esperanto" ]
+    Croatian   -> [ "Japanese", "poljski", "hrvatski", "švedski", "njemački", "španjolski", "portugalski", "francuski", "ruski", "talijanski", "srpski", "norveški", "Indonesian", "Chinese", "Esperanto" ]
+    Swedish    -> [ "Japanese", "Polska", "Kroatiska", "Svenska", "Tyska", "Spanska", "Portugisiska", "Franska", "Ryska", "Italienska", "Serbiska", "Norska", "Indonesian", "Chinese", "Esperanto" ]
+    German     -> [ "Japanisch", "Polnisch", "Kroatisch", "Schwedisch", "Deutsch", "Spanisch", "Portugiesisch", "Französisch", "Russisch", "Italienisch", "Serbisch", "Norwegisch", "Indonesisch", "Chinese", "Esperanto" ]
+    Spanish    -> [ "Japanese", "Polaco", "Croata", "Sueco", "Alemán", "Español", "Portugués", "Francés", "Ruso", "Italiano", "Serbio", "Noruego", "Indonesio", "Chinese", "Esperanto" ]
+    Portuguese -> [ "Japonês", "Polonês", "Croata", "Sueco", "Alemão", "Espanhol", "Português", "Francês", "Russo", "Italiano", "Sérvio", "Norueguês", "Indonésio", "Chinês", "Esperanto" ]
+    French     -> [ "Japanese", "Polonais", "Croate", "Suédois", "Allemand", "Espagnol", "Portugais", "Français", "Russe", "Italien", "Serbe", "Norvégien", "Indonesian", "Chinese", "Esperanto" ]
+    Russian    -> [ "Японский", "Польский", "Хорватский", "Шведский", "Немецкий", "Испанский", "Португальский", "Французский", "Русский", "Итальянский", "Сербский", "Норвежский", "Индонезийский", "Китайский", "Эсперанто" ]
+    Italian    -> [ "Giapponese", "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "", "", "Indonesian", "Chinese", "Esperanto" ]
+    Serbian    -> [ "Japanese", "Пољски", "Хрватски", "Шведски", "Немачки", "Шпански", "Португалски", "Француски", "Руски", "Италијански", "Српски", "", "Indonesian", "Chinese", "Esperanto" ]
+    Norwegian  -> [ "Japanese", "Polsk", "Kroatisk", "Svensk", "Tysk", "Spansk", "Portugisisk", "Fransk", "Russisk", "Italiensk", "Serbisk", "Norsk", "Indonesian", "Chinese", "Esperanto" ]
+    Indonesia  -> [ "Japanese", "Polandia", "Kroasia", "Swedia", "Jerman", "Spanyol", "Portugis", "Prancis", "Rusia", "Italia", "Serbia", "Norwegia", "Indonesian", "Chinese", "Esperanto" ]
+    Chinese    -> [ "日语", "波兰语", "克罗地亚语", "瑞典语", "德语", "西班牙语", "葡萄牙语", "法语", "俄语", "意大利语", "塞尔维亚语", "挪威语", "印度尼西亚语", "中文", "世界语" ]
+    Esperanto  -> [ "La japana", "La pola", "La kroata", "La sevda", "La germana", "La hispana", "La portugala", "La franca", "La rusa", "La itala", "La serba", "La norvega", "La indonezia", "La ĉina", "Esperanto" ]
+    _          -> [ "Japanese", "Polish", "Croatian", "Swedish", "German", "Spanish", "Portuguese", "French", "Russian", "Italian", "Serbian", "Norwegian", "Indonesian", "Chinese", "Esperanto" ]
 
 translatorMsgTitle :: Language -> Text
 translatorMsgTitle = \case
@@ -274,6 +274,7 @@ buildFail_7 (bt . view (field @"name") -> p) = \case
 buildFail_8 :: Language -> Doc AnsiStyle
 buildFail_8 = \case
     Japanese   -> "makepkgは失敗しました。"
+    Spanish    -> "Ocurrió un error al ejecutar makepkg"
     Portuguese -> "Ocorreu um erro ao executar makepkg"
     Russian    -> "Произошла ошибка makepkg."
     Esperanto  -> "Paneo de makepkg okazis."
@@ -281,17 +282,20 @@ buildFail_8 = \case
 
 buildFail_9 :: Language -> Doc AnsiStyle
 buildFail_9 = \case
+  Spanish   -> "Error al detectar todos los archivo de paquete (*.pkg.tar.xz)."
   Esperanto -> "Paneis detekti ĉiujn dosierojn de pakaĵoj (*.pkg.tar.xz)."
   _         -> "Failed to detect any built package files (*.pkg.tar.xz)."
 
 buildFail_10 :: Language -> Doc AnsiStyle
 buildFail_10 = \case
+  Spanish   -> "Los paquetes no se pudieron construir."
   Esperanto -> "Ĉiuj pakaĵoj paneis munti."
   _         -> "Every package failed to build."
 
 buildFail_11 :: Language -> Doc AnsiStyle
 buildFail_11 = \case
   Japanese   -> "作成は失敗しました。エラーを見ますか？"
+  Spanish    -> "Construcción fallida. ¿Te gustaría ver el error?"
   Esperanto  -> "Muntado paneis. Ĉu vi volas vidi la eraron?"
   _          -> "Building failed. Would you like to see the error?"
 
@@ -344,22 +348,26 @@ depError :: Language -> DepError -> Doc AnsiStyle
 depError _ (VerConflict s) = s
 depError _ (Ignored s)     = s
 depError l (NonExistant (PkgName s)) = case l of
+  Spanish    -> "La dependencia " <> bt s <> " no pudo ser encontrada."
   Portuguese -> "A dependência " <> bt s <> " não foi encontrada."
   Russian    -> "Зависимость " <> bt s <> " не найдена."
   Esperanto  -> "La dependeco " <> bt s <> " ne povis troviĝi."
   _          -> "The dependency " <> bt s <> " couldn't be found."
 depError l (BrokenProvides (PkgName pkg) (Provides (PkgName pro)) (PkgName n)) = case l of
+  Spanish    -> "El paquete " <> bt pkg <> " necesita " <> bt n <> " que proporciona " <> bt pro <> "."
   Russian    -> "Пакету " <> bt pkg <> " требуется " <> bt n <> ", предоставляющий " <> bt pro <> "."
   Esperanto  -> "La pakaĵo, " <> bt pkg <> " bezonas " <> bt n <> ", kiu donas " <> bt pro <> "."
   _          -> "The package " <> bt pkg <> " needs " <> bt n <> ", which provides " <> bt pro <> "."
 
 missingPkg_3 :: Language -> Doc AnsiStyle
 missingPkg_3 = \case
+  Spanish    -> "Se produjo un error al reorganizar el gráfico de dependencia. Si ves esto, algo está muy mal."
   Esperanto  -> "Eraro okazis kiam reorganizi la grafeo de dependeco. Io estas erarega."
   _          -> "There was an error reorganizing the dependency graph. If you see this, something is very wrong."
 
 missingPkg_4 :: [NonEmpty PkgName] -> Language -> Doc AnsiStyle
 missingPkg_4 pns = \case
+  Spanish    -> vsep $ "Se detectaron los siguientes ciclos de dependencia:" : pns'
   _ -> vsep $ "The following dependency cycles were detected:" : pns'
   where pns' = map (hsep . map pretty . intersperse "=>" . map (view (field @"name")) . toList) pns
 
@@ -686,6 +694,7 @@ reportBadDowngradePkgs_1 = \case
 
 reportBadDowngradePkgs_2 :: PkgName -> Language -> Doc AnsiStyle
 reportBadDowngradePkgs_2 (PkgName p) = \case
+  Spanish     -> pretty p <+> "no tiene una versión en la caché."
   _ -> pretty p <+> "has no version in the cache."
 
 upgradeAURPkgs_1 :: Language -> Doc AnsiStyle
@@ -810,6 +819,7 @@ cleanStates_3 = \case
 cleanStates_4 :: Int -> Language -> Doc AnsiStyle
 cleanStates_4 n = \case
   Japanese  -> "現在のパッケージ状態記録：" <> pretty n <> "個。"
+  Spanish   -> "Actualmente tiene " <+> pretty n <+> "estados de paquetes guardados."
   Russian   -> "У вас сейчас " <+> pretty n <+> pluralRussian " сохраненное состояние пакета" " сохраненных состояний пакета" " сохраненных состояний пакетов." n
   Esperanto -> "Vi havas " <+> pretty n <+> " konservajn statojn de pakaĵoj."
   _         -> "You currently have" <+> pretty n <+> "saved package states."
@@ -817,16 +827,19 @@ cleanStates_4 n = \case
 cleanStates_5 :: Text -> Language -> Doc AnsiStyle
 cleanStates_5 t = \case
   Japanese  -> "一番最近に保存されたのは：" <> pretty t
+  Spanish   -> "Guardado recientemente:" <+> pretty t
   Russian   -> "Последнее сохраненное:" <+> pretty t
   Esperanto -> "Lastaj konservaj:" <+> pretty t
   _         -> "Most recently saved:" <+> pretty t
 
 cleanStates_6 :: Int -> Language -> Doc AnsiStyle
 cleanStates_6 n = \case
+  Spanish   -> pretty n <+> "de estos están anclados y no se eliminarán."
   _ -> pretty n <+> "of these are pinned, and won't be removed."
 
 readState_1 :: Language -> Doc AnsiStyle
 readState_1 = \case
+    Spanish    -> "Ese archivo de estado no se pudo analizar. ¿Es un archivo JSON válido?"
     Portuguese -> "O arquivo de estado não pôde ser interpretado. É um arquivo JSON válido?"
     Russian    -> "Это состояние не распознано. Это корректный JSON?"
     Esperanto  -> "Tiu statdosiero paneis sintake analizi. Ĉu ĝi estas valida JSON?"
@@ -1155,6 +1168,7 @@ reportNotInLog_1 = \case
 -- https://github.com/aurapm/aura/issues/498
 connectionFailure_1 :: Language -> Doc AnsiStyle
 connectionFailure_1 = \case
+  Spanish   -> "No se pudo contactar con el AUR. ¿Tienes conexión a internet?"
   _ -> "Failed to contact the AUR. Do you have an internet connection?"
 
 infoFields :: Language -> [Text]
@@ -1274,6 +1288,7 @@ restoreState_1 = \case
 restoreState_2 :: Language -> Doc AnsiStyle
 restoreState_2 = \case
     Japanese   -> "保存されたパッケージ状態がない。作るには「-B」を。"
+    Spanish    -> "No hay estados guardados para ser restaurados. (Utilice -B para guardar el estado actual)"
     Portuguese -> "Nenhum estado disponível para ser recuperado. (Utilize -B para salvar o estado atual)"
     Russian    -> "Нет сохраненных состояний для восстановления. (Используйте -B для сохранения текущего состояния)"
     Chinese    -> "没有要恢复的已保存状态。（使用 -B 保存当前状态）"
@@ -1306,6 +1321,7 @@ reinstallAndRemove_1 = \case
 --------------------------------------
 whoIsBuildUser_1 :: Language -> Doc AnsiStyle
 whoIsBuildUser_1 = \case
+    Spanish    -> "No se puede determinar el usuario que ejecutará la compilación."
     Portuguese -> "Não foi possível determinal o usuário que executará a compilação."
     Russian    -> "Не удается определить, от имени какого пользователя производить сборку."
     Esperanto  -> "Ne povas decidi, per kiu konto de uzanto munti."
@@ -1336,14 +1352,16 @@ pacmanFailure_1 = \case
 
 confParsing_1 :: Language -> Doc AnsiStyle
 confParsing_1 = \case
+    Spanish    -> "No fue posible analizar su archivo pacman.conf."
     Portuguese -> "Não foi possível interpretar o arquivo pacman.conf ."
     Russian    -> "Не удается распознать формат вашего файла pacman.conf."
     Esperanto  -> "Ne kapablas sintaske analizi vian dosieron, pacman.conf."
     _          -> "Unable to parse your pacman.conf file."
 
-provides_1 :: PkgName -> Doc AnsiStyle
-provides_1 (bt . view (field @"name") -> pro) =
-  pro <+> "is required as a dependency, which is provided by multiple packages. Please select one:"
+provides_1 :: PkgName -> Language -> Doc AnsiStyle
+provides_1 (bt . view (field @"name") -> pro) = \case
+    Spanish    -> pro <+> "se requiere como una dependencia, que es proporcionada por múltiples paquetes. Por favor, seleccione uno:"
+    _          -> pro <+> "is required as a dependency, which is provided by multiple packages. Please select one:"
 
 ----------------------------------
 -- Aura/Pkgbuild/Editing functions
@@ -1390,42 +1408,52 @@ customizepkg_1 = let customizepkg = bt "customizepkg" in \case
 ------------------------------
 security_1 :: PkgName -> Language -> Doc AnsiStyle
 security_1 (PkgName p) = \case
+  Spanish   -> "El PKGBUILD de" <+> bt p <+> "era demasiado complejo de analizar - puede estar ofuscando código malicioso."
   _ -> "The PKGBUILD of" <+> bt p <+> "was too complex to parse - it may be obfuscating malicious code."
 
 security_2 :: Text -> Language -> Doc AnsiStyle
 security_2 (bt -> t) = \case
+  Spanish   -> t <+> "se puede usar para descargar scripts arbitrarios que este PKGBUILD no rastrea."
   _ -> t <+> "can be used to download arbitrary scripts that aren't tracked by this PKGBUILD."
 
 security_3 :: Text -> Language -> Doc AnsiStyle
 security_3 (bt -> t) = \case
+  Spanish   -> t <+> "se puede usar para ejecutar código arbitrario que este PKGBUILD no rastrea."
   _ -> t <+> "can be used to execute arbitrary code not tracked by this PKGBUILD."
 
 security_4 :: Text -> Language -> Doc AnsiStyle
 security_4 (bt -> t) = \case
+  Spanish   -> t <+> "indica que alguien puede estar intentando obtener acceso de root a su máquina."
   _ -> t <+> "indicates that someone may be trying to gain root access to your machine."
 
 security_5 :: PkgName -> Language -> Doc AnsiStyle
 security_5 (PkgName p) = \case
+  Spanish   -> "ADVERTENCIA: El PKGBUILD de" <+> bt p <+> "contiene expresiones bash en la lista negra."
   _ -> "WARNING: The PKGBUILD of" <+> bt p <+> "contains blacklisted bash expressions."
 
 security_6 :: Language -> Doc AnsiStyle
 security_6 = \case
+  Spanish   -> "¿Desea salir del proceso de compilación?"
   _ -> "Do you wish to quit the build process?"
 
 security_7 :: Language -> Doc AnsiStyle
 security_7 = \case
+  Spanish   -> "Se canceló el procesamiento posterior para evitar el código bash potencialmente malicioso."
   _ -> "Cancelled further processing to avoid potentially malicious bash code."
 
 security_8 :: Text -> Language -> Doc AnsiStyle
 security_8 (bt -> t) = \case
+  Spanish   -> t <+> "es un comando bash integrado en los campos de la matriz del PKGBUILD."
   _ -> t <+> "is a bash command inlined in your PKGBUILD array fields."
 
 security_9 :: Text -> Language -> Doc AnsiStyle
 security_9 (bt -> t) = \case
+  Spanish   -> t <+> "es algo extraño para tener en sus campos de matriz. ¿Es seguro?"
   _ -> t <+> "is a strange thing to have in your array fields. Is it safe?"
 
 security_10 :: Text -> Language -> Doc AnsiStyle
 security_10 (bt -> t) = \case
+  Spanish   -> t <+> "implica que alguien estaba tratando de ser astuto con las variables para ocultar comandos maliciosos."
   _ -> t <+> "implies that someone was trying to be clever with variables to hide malicious commands."
 
 -----------------------
@@ -1445,8 +1473,8 @@ yesNoMessage = \case
     Esperanto  -> "[J/n]"
     _          -> "[Y/n]"
 
-yesPattern :: Language -> [Text]
-yesPattern = \case
+yesPattern :: Language -> [T.Text]
+yesPattern lang = map T.toCaseFold $ case lang of
     Polish     -> ["t", "tak"]
     Croatian   -> ["d", "da"]
     German     -> ["j", "ja"]

@@ -8,7 +8,7 @@
 
 -- |
 -- Module    : Aura.Packages.AUR
--- Copyright : (c) Colin Woodbury, 2012 - 2019
+-- Copyright : (c) Colin Woodbury, 2012 - 2020
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
@@ -33,6 +33,7 @@ import           Aura.Pkgbuild.Fetch
 import           Aura.Settings
 import           Aura.Types
 import           Control.Compactable (fmapEither)
+import           Control.Concurrent.STM.TVar (modifyTVar')
 import           Control.Effect (Carrier, Member)
 import           Control.Effect.Error (Error)
 import           Control.Effect.Lift (Lift, sendM)

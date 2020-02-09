@@ -1,11 +1,28 @@
+<<<<<<< HEAD
+||||||| fcf5334
+dist/
+=======
+dist/
+dist-newstyle/
+>>>>>>> master
 *.hi
 *.o
 *.svg
 .cabal-sandbox
 .stack-work/*
+<<<<<<< HEAD
 AUR-SECURITY.*
 TAGS
 build/
 cabal.sandbox.config
 dist/
 flames
+||||||| fcf5334
+*.svg
+=======
+*.svg
+*.prof
+flames
+*.txt
+*.dump-hi
+>>>>>>> master

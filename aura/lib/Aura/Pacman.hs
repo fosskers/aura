@@ -6,7 +6,7 @@
 
 -- |
 -- Module    : Aura.Pacman
--- Copyright : (c) Colin Woodbury, 2012 - 2019
+-- Copyright : (c) Colin Woodbury, 2012 - 2020
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
@@ -121,19 +121,24 @@ getLogFilePath (Config c) = c ^? at "LogFile" . _Just . _head . to (fromAbsolute
 ----------
 -- ACTIONS
 ----------
+
+-- | Create a pacman process to run.
+pacmanProc :: [String] -> ProcessConfig () () ()
+pacmanProc args = setEnv [("LC_ALL", "C")] $ proc "pacman" args
+
 -- | Run a pacman action that may fail. Will never throw an IO exception.
 pacman :: [Text] -> IO (Either Failure ())
 pacman (map T.unpack -> args) = do
-  ec <- runProcess $ proc "pacman" args
+  ec <- runProcess $ pacmanProc args
   pure . bool (Left $ Failure pacmanFailure_1) (Right ()) $ ec == ExitSuccess
 
 -- | Run some `pacman` process, but only care about whether it succeeded.
-pacmanSuccess :: [Text] -> IO Bool
-pacmanSuccess = fmap (== ExitSuccess) . runProcess . setStderr closed . setStdout closed . proc "pacman" . map T.unpack
+pacmanSuccess :: [T.Text] -> IO Bool
+pacmanSuccess = fmap (== ExitSuccess) . runProcess . setStderr closed . setStdout closed . pacmanProc . map T.unpack
 
 -- | Runs pacman silently and returns only the stdout.
 pacmanOutput :: [Text] -> IO ByteString
-pacmanOutput = fmap (^. _2 . to BL.toStrict) . readProcess . proc "pacman" . map T.unpack
+pacmanOutput = fmap (^. _2 . to BL.toStrict) . readProcess . pacmanProc . map T.unpack
 
 -- | Runs pacman silently and returns the stdout as UTF8-decoded `Text` lines.
 pacmanLines :: [Text] -> IO [Text]
