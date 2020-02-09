@@ -69,7 +69,7 @@ suite conf pb = testGroup "Unit Tests"
           assertEqual ("Language name map for " ++ show lang ++ " has incorrect number of items") (length languages - 1) (M.size names)
     ]
   , testGroup "Aura.Pkgbuild.Security"
-    [ testCase "Parsing - aura.PKGBUILD" $ do
+    [ testCase "Parsing - aura.PKGBUILD" $
         -- pPrintNoColor $ map (first prettyText) . bannedTerms <$> ppb
         -- pPrintNoColor ppb
         assertBool "Failed to parse" $ isJust ppb
