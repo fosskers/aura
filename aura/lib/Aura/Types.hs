@@ -191,7 +191,10 @@ _VersionDemand _ p            = pure p
 data InstallType = Pacman PkgName | Build Buildable deriving (Eq)
 
 -- | A package name with its version number.
-data SimplePkg = SimplePkg { name :: !PkgName, version :: !Versioning } deriving (Eq, Ord, Show, Generic)
+data SimplePkg = SimplePkg
+  { name    :: !PkgName
+  , version :: !Versioning }
+  deriving (Eq, Ord, Show, Generic)
 
 -- | Attempt to create a `SimplePkg` from filepaths like
 --   @\/var\/cache\/pacman\/pkg\/linux-3.2.14-1-x86_64.pkg.tar.xz@

@@ -54,9 +54,9 @@ import           Text.Printf (printf)
 -- | All packages installed at some specific `ZonedTime`. Any "pinned" PkgState will
 -- never be deleted by `-Bc`.
 data PkgState = PkgState
-  { timeOf   :: ZonedTime
-  , pinnedOf :: Bool
-  , pkgsOf   :: Map PkgName Versioning }
+  { timeOf   :: !ZonedTime
+  , pinnedOf :: !Bool
+  , pkgsOf   :: !(Map PkgName Versioning) }
 
 instance ToJSON PkgState where
   toJSON (PkgState t pnd ps) = object
@@ -71,7 +71,9 @@ instance FromJSON PkgState where
     <*> fmap f (v .: "packages")
     where f = fmapMaybe (hush . versioning)
 
-data StateDiff = StateDiff { _toAlter :: [SimplePkg], _toRemove :: [PkgName] }
+data StateDiff = StateDiff
+  { _toAlter  :: ![SimplePkg]
+  , _toRemove :: ![PkgName] }
 
 -- | The default location of all saved states: \/var\/cache\/aura\/states
 stateCache :: Path Absolute
