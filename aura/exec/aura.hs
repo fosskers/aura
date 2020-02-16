@@ -105,7 +105,7 @@ execOpts ops = do
         ++ asFlag (commonConfigOf ss)
         ++ bool [] ["--quiet"] (switch ss LowVerbosity)
   case ops of
-    Left o@(Sync (Left (SyncUpgrade _)) _, _) -> sudo (liftIO $ B.saveState ss) *> p o
+    Left o@(Sync (Left sops) _, _) | any isUpgrade sops -> sudo (liftIO $ B.saveState ss) *> p o
     Left o -> p o
     Right (AurSync o _) ->
       case o of
@@ -142,6 +142,10 @@ execOpts ops = do
     Right Version   -> liftIO $ versionInfo >>= animateVersionMsg ss auraVersion
     Right Languages -> displayOutputLanguages
     Right ViewConf  -> viewConfFile
+
+isUpgrade :: SyncOp -> Bool
+isUpgrade (SyncUpgrade _) = True
+isUpgrade _               = False
 
 displayOutputLanguages :: RIO Env ()
 displayOutputLanguages = do

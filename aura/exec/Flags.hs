@@ -40,7 +40,7 @@ data PacmanOp = Database (Either DatabaseOp (NESet PkgName))
               | Files    (Set FilesOp)
               | Query    (Either QueryOp (Set QueryFilter, Set PkgName))
               | Remove   (Set RemoveOp) (NESet PkgName)
-              | Sync     (Either SyncOp (Set PkgName)) (Set SyncSwitch)
+              | Sync     (Either (NESet SyncOp) (Set PkgName)) (Set SyncSwitch)
               | TestDeps (NESet Text)
               | Upgrade  (Set UpgradeSwitch) (NESet PkgName)
               deriving (Show)
@@ -138,7 +138,7 @@ data SyncOp = SyncClean
             | SyncSearch    Text
             | SyncUpgrade  (Set Text)
             | SyncDownload (NESet Text)
-            deriving (Show)
+            deriving (Eq, Ord, Show)
 
 instance Flagable SyncOp where
   asFlag SyncClean         = ["--clean"]
@@ -423,10 +423,10 @@ remove = bigR *> (Remove <$> mods <*> somePkgs)
         unneeded = flag' RemoveUnneeded (long "unneeded" <> short 'u' <> hidden <> help "Remove unneeded packages.")
 
 sync :: Parser PacmanOp
-sync = bigS *> (Sync <$> (fmap (Right . S.map PkgName) manyArgs <|> fmap Left mods) <*> (S.fromList <$> many (ref <|> ign <|> igg)))
+sync = bigS *> (Sync <$> (fmap Left mods <|> fmap (Right . S.map PkgName) manyArgs) <*> (S.fromList <$> many (ref <|> ign <|> igg)))
   where bigS = flag' () (long "sync" <> short 'S' <> help "Install official packages.")
         ref  = flag' SyncRefresh (long "refresh" <> short 'y' <> hidden <> help "Update the package database.")
-        mods = cln <|> gps <|> inf <|> lst <|> sch <|> upg <|> dnl
+        mods = NES.unsafeFromSet . S.fromList <$> some (cln <|> gps <|> inf <|> lst <|> sch <|> upg <|> dnl)
         cln  = flag' SyncClean (long "clean" <> short 'c' <> hidden <> help "Remove old packages from the cache.")
         gps  = SyncGroups <$> (flag' () (long "groups" <> short 'g' <> hidden <> help "View members of a package group.") *> someArgs')
         inf  = SyncInfo <$> (flag' () (long "info" <> short 'i' <> hidden <> help "View package information.") *> someArgs')
