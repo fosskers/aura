@@ -1,0 +1,21 @@
+#+TITLE: The Aura Package Manager
+#+AUTHOR: Colin
+
+[[https://github.com/fosskers/aura/workflows/Tests/badge.svg]]
+
+Welcome to the main repository for all things Aura.
+
+* Table of Contents                                       :TOC_4_gh:noexport:
+- [[#aura][Aura]]
+- [[#the-aur-haskell-library][The ~aur~ Haskell Library]]
+- [[#the-aur-security-tool][The ~aur-security~ Tool]]
+
+* Aura
+
+* The ~aur~ Haskell Library
+
+A library for accessing the AUR, powered by [[https://haskell-servant.readthedocs.io/en/stable/][Servant]].
+
+* The ~aur-security~ Tool
+
+Performs a sweep of all PKGBUILDs on the [[https://aur.archlinux.org/][AUR]], looking for Bash misuse.
