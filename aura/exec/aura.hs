@@ -105,7 +105,8 @@ execOpts ops = do
         ++ asFlag (commonConfigOf ss)
         ++ bool [] ["--quiet"] (switch ss LowVerbosity)
   case ops of
-    Left o@(Sync (Left sops) _, _) | any isUpgrade sops -> sudo (liftIO $ B.saveState ss) *> p o
+    Left o@(Sync (Left sops) _, _)
+      | any isUpgrade sops -> sudo (liftIO $ B.saveState ss) *> p o
     Left o -> p o
     Right (AurSync o _) ->
       case o of
