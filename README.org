@@ -248,7 +248,7 @@ Display orphan packages:
   aura -O
 #+end_src
 
-Adopt an orphan package:
+Change a package's install reason to ~Explicitly installed~.
 
 #+begin_src bash
   aura -O --adopt (package)
