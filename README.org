@@ -144,7 +144,7 @@ stack install -- aura
 #+end_src
 
 This may take a while to initially build all of Aura's dependencies. Once
-complete, your ~aura~ binary will be available in ~\~/.local/bin/~.
+complete, your ~aura~ binary will be available in ~/home/YOU/.local/bin/~.
 
 ** Sample Usage
 
