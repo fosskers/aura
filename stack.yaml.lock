@@ -5,13 +5,6 @@
 
 packages:
 - completed:
-    hackage: compactable-0.1.2.3@sha256:1dccae8bcf6aa4cfd01e2fd0ec36c98d6efdd3247b6ab1a49a7cfdede4d27d95,1707
-    pantry-tree:
-      size: 275
-      sha256: ffbb73c57e16e3cf2d943a47bed42dd949648fca934715bcd1a3fb93b715edcf
-  original:
-    hackage: compactable-0.1.2.3
-- completed:
     hackage: language-bash-0.8.0@sha256:2a7b0498c029f0e7c30d3b273897e32036a629ff9ffa5c92ec2f3a51f46af86f,1620
     pantry-tree:
       size: 1006
@@ -27,7 +20,7 @@ packages:
     hackage: paths-0.2.0.0
 snapshots:
 - completed:
-    size: 524996
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/14/27.yaml
-    sha256: 7ea31a280c56bf36ff591a7397cc384d0dff622e7f9e4225b47d8980f019a0f0
-  original: lts-14.27
+    size: 488576
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/15/0.yaml
+    sha256: e4b6a87b47ec1cf63a7f1a0884a3b276fce2b0d174a10e8753c4f618e7983568
+  original: lts-15.0
