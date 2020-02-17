@@ -1,6 +1,7 @@
 {-# LANGUAGE BangPatterns      #-}
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE MonoLocalBinds    #-}
 {-# LANGUAGE MultiWayIf        #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -24,6 +25,7 @@ module Aura.Commands.A
   , I.displayPkgDeps
   , displayPkgbuild
   , aurJson
+  , fetchTarball
   ) where
 
 import           Aura.Colour
@@ -171,7 +173,7 @@ displayPkgbuild :: NESet PkgName -> RIO Env ()
 displayPkgbuild ps = do
   man <- asks (managerOf . settings)
   pbs <- catMaybes <$> traverse (liftIO . getPkgbuild man) (toList ps)
-  liftIO . traverse_ (\p -> B.putStr @IO p >> B.putStr "\n") $ pbs ^.. each . field @"pkgbuild"
+  traverse_ (\p -> B.putStr p >> B.putStr "\n") $ pbs ^.. each . field @"pkgbuild"
 
 isntMostRecent :: (AurInfo, Versioning) -> Bool
 isntMostRecent (ai, v) = trueVer > Just v
@@ -182,10 +184,25 @@ aurJson :: NESet PkgName -> RIO Env ()
 aurJson ps = do
   m <- asks (managerOf . settings)
   infos <- liftMaybeM (Failure connectionFailure_1) . fmap hush . liftIO $ f m ps
-  liftIO $ traverse_ (BL.putStrLn @IO . encodePretty) infos
+  traverse_ (BL.putStrLn . encodePretty) infos
   where
     f :: Manager -> NESet PkgName -> IO (Either ClientError [AurInfo])
     f m = info m . (^.. each . field @"name") . toList
+
+-- | @https://aur.archlinux.org/cgit/aur.git/snapshot/aura-bin.tar.gz@
+fetchTarball :: NESet PkgName -> RIO Env ()
+fetchTarball ps = do
+  ss <- asks settings
+  traverse_ (liftIO . g ss) ps
+  where
+    f :: PkgName -> String
+    f (PkgName p) =
+      "https://aur.archlinux.org/cgit/aur.git/snapshot/" <> T.unpack p <> ".tar.gz"
+
+    g :: Settings -> PkgName -> IO ()
+    g ss p@(PkgName pn) = urlContents (managerOf ss) (f p) >>= \case
+      Nothing -> warn ss . missingPkg_5 p $ langOf ss
+      Just bs -> writeFileBinary (T.unpack pn <> ".tar.gz") bs
 
 ------------
 -- REPORTING

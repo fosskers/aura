@@ -117,6 +117,7 @@ execOpts ops = do
         Left (AurSearch s)    -> A.aurPkgSearch s
         Left (AurUpgrade ps)  -> bool (trueRoot . sudo) id (switch ss DryRun) $ A.upgradeAURPkgs ps
         Left (AurJson ps)     -> A.aurJson ps
+        Left (AurTarball ps)  -> A.fetchTarball ps
     Right (Backup o) ->
       case o of
         Nothing              -> sudo . liftIO $ B.saveState ss
@@ -157,4 +158,4 @@ displayOutputLanguages = do
 viewConfFile :: RIO Env ()
 viewConfFile = do
   pth <- asks (either id id . configPathOf . commonConfigOf . settings)
-  liftIO . void . runProcess @IO $ proc "less" [toFilePath pth]
+  void . runProcess $ proc "less" [toFilePath pth]

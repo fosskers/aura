@@ -323,22 +323,22 @@ getRealPkgConflicts_1 (bt . view (field @"name") -> prnt) (bt . view (field @"na
 
 getRealPkgConflicts_2 :: PkgName -> Language -> Doc AnsiStyle
 getRealPkgConflicts_2 (bt . view (field @"name") -> p) = \case
-    Japanese   -> p <> "は無視されるパッケージ！`pacman.conf`を参考に。"
-    Polish     -> p <> " jest ignorowany! Sprawdź plik `pacman.conf`."
-    Croatian   -> p <> " je ignoriran paket! Provjerite svoj `pacman.conf`."
-    Swedish    -> p <> " är ett ignorerat paket! Kolla din `pacman.conf`-fil."
-    German     -> p <> " ist ein ignoriertes Paket! Siehe /etc/pacman.conf."
-    Spanish    -> "¡" <> p <> " es un paquete ignorado! Revisa tu fichero `pacman.conf`."
-    Portuguese -> p <> " é um pacote ignorado conforme configuração em `pacman.conf`!"
-    French     -> "Le paquet " <> p <> " est ignoré. Vous devriez jeter un œil à votre `pacman.conf`."
-    Russian    -> "Пакет " <> p <> " игнорируется! Проверьте ваш файл `pacman.conf`."
-    Italian    -> p <> " è un pacchetto ignorato, controllare `pacman.conf`."
-    Serbian    -> "Пакет " <> p <> " је игнорисан! Видите ваш фајл „pacman.conf“."
-    Norwegian  -> p <> " er en ignorert pakke! Sjekk din `pacman.conf`-fil."
-    Indonesia  -> p <> " merupakan paket yang diabaikan! Lihat `pacman.conf` anda."
-    Chinese    -> p <> " 是一个被忽略的包！请查看你的 `pacman.conf` 文件。"
-    Esperanto  -> p <> " estas malatenta pakaĵo! Vidu vian `pacman.conf` dosieron."
-    _          -> p <> " is an ignored package! See your `pacman.conf` file."
+  Japanese   -> p <> "は無視されるパッケージ！`pacman.conf`を参考に。"
+  Polish     -> p <> " jest ignorowany! Sprawdź plik `pacman.conf`."
+  Croatian   -> p <> " je ignoriran paket! Provjerite svoj `pacman.conf`."
+  Swedish    -> p <> " är ett ignorerat paket! Kolla din `pacman.conf`-fil."
+  German     -> p <> " ist ein ignoriertes Paket! Siehe /etc/pacman.conf."
+  Spanish    -> "¡" <> p <> " es un paquete ignorado! Revisa tu fichero `pacman.conf`."
+  Portuguese -> p <> " é um pacote ignorado conforme configuração em `pacman.conf`!"
+  French     -> "Le paquet " <> p <> " est ignoré. Vous devriez jeter un œil à votre `pacman.conf`."
+  Russian    -> "Пакет " <> p <> " игнорируется! Проверьте ваш файл `pacman.conf`."
+  Italian    -> p <> " è un pacchetto ignorato, controllare `pacman.conf`."
+  Serbian    -> "Пакет " <> p <> " је игнорисан! Видите ваш фајл „pacman.conf“."
+  Norwegian  -> p <> " er en ignorert pakke! Sjekk din `pacman.conf`-fil."
+  Indonesia  -> p <> " merupakan paket yang diabaikan! Lihat `pacman.conf` anda."
+  Chinese    -> p <> " 是一个被忽略的包！请查看你的 `pacman.conf` 文件。"
+  Esperanto  -> p <> " estas malatenta pakaĵo! Vidu vian `pacman.conf` dosieron."
+  _          -> p <> " is an ignored package! See your `pacman.conf` file."
 
 missingPkg_2 :: [DepError] -> Language -> Doc AnsiStyle
 missingPkg_2 ps l = vsep $ map (depError l) ps
@@ -369,6 +369,10 @@ missingPkg_4 pns = \case
   Spanish    -> vsep $ "Se detectaron los siguientes ciclos de dependencia:" : pns'
   _ -> vsep $ "The following dependency cycles were detected:" : pns'
   where pns' = map (hsep . map pretty . L.intersperse "=>" . map (view (field @"name")) . toList) pns
+
+missingPkg_5 :: PkgName -> Language -> Doc AnsiStyle
+missingPkg_5 (PkgName p) = \case
+  _ -> bt p <> " does not exist."
 
 -----------------
 -- aura functions

@@ -221,6 +221,6 @@ pkgbuildDiffs ps = asks settings >>= check
         else liftIO $ do
           setCurrentDirectory "/tmp"
           let new = "/tmp/new.pb"
-          writeFileBinary @IO new $ p ^. field @"pkgbuild" . field @"pkgbuild"
+          writeFileBinary new $ p ^. field @"pkgbuild" . field @"pkgbuild"
           liftIO . warn ss $ reportPkgbuildDiffs_3 pn lang
           diff ss (pkgbuildPath pn) $ fromAbsoluteFilePath new

@@ -227,6 +227,7 @@ data AurOp = AurDeps     (NESet PkgName)
            | AurSearch    Text
            | AurUpgrade  (Set PkgName)
            | AurJson     (NESet PkgName)
+           | AurTarball  (NESet PkgName)
            deriving (Show)
 
 data AurSwitch = AurIgnore      (Set PkgName)
@@ -268,13 +269,14 @@ aursync = bigA *>
    <*> (S.fromList <$> many switches)
   )
   where bigA    = flag' () (long "aursync" <> short 'A' <> help "Install packages from the AUR.")
-        mods    = ds <|> ainfo <|> pkgb <|> search <|> upgrade <|> aur
+        mods    = ds <|> ainfo <|> pkgb <|> search <|> upgrade <|> aur <|> tarball
         ds      = AurDeps <$> (flag' () (long "deps" <> short 'd' <> hidden <> help "View dependencies of an AUR package.") *> somePkgs')
         ainfo   = AurInfo <$> (flag' () (long "info" <> short 'i' <> hidden <> help "View AUR package information.") *> somePkgs')
         pkgb    = AurPkgbuild <$> (flag' () (long "pkgbuild" <> short 'p' <> hidden <> help "View an AUR package's PKGBUILD file.") *> somePkgs')
         search  = AurSearch <$> strOption (long "search" <> short 's' <> metavar "STRING" <> hidden <> help "Search the AUR via a search string.")
         upgrade = AurUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade all installed AUR packages.") *> fmap (S.map PkgName) manyArgs')
         aur     = AurJson <$> (flag' () (long "json" <> hidden <> help "Retrieve package JSON straight from the AUR.") *> somePkgs')
+        tarball = AurTarball <$> (flag' () (long "downloadonly" <> short 'w' <> hidden <> help "Download a package tarball.") *> somePkgs')
         switches = ign <|> igg
         ign  = AurIgnore . S.fromList . map PkgName . T.split (== ',') <$>
           strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given packages.")
