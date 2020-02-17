@@ -1,5 +1,9 @@
 # Aura Changelog
 
+## 2.0.5 (2020-02-16)
+
+- Fixed a bug that prevented `-Syuu` and `-Scc`.
+
 ## 2.0.4 (2020-02-08)
 
 - Removed `fused-effects` dependency in favour of `rio` to simplify code.
