@@ -39,21 +39,18 @@ import           Aura.Pkgbuild.Editing (hotEdit)
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
-import           Control.Compactable (fmapEither)
 import           Control.Monad.Trans.Maybe
 import           Data.Bifunctor (bimap)
 import           Data.Generics.Product (field)
-import           Data.List.NonEmpty (NonEmpty)
-import qualified Data.List.NonEmpty as NEL
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.These (These(..))
-import           Lens.Micro ((^.))
 import           RIO hiding ((<>))
 import qualified RIO.ByteString as B
-import           RIO.List (unzip)
+import qualified RIO.List as L
+import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
 import           System.Path.IO (doesFileExist)
@@ -94,7 +91,7 @@ instance Semigroup Repository where
 -- there is no way to guarantee that the list of `NESet`s will itself be
 -- non-empty.
 partitionPkgs :: NonEmpty (NESet Package) -> ([Prebuilt], [NESet Buildable])
-partitionPkgs = bimap fold f . unzip . map g . toList
+partitionPkgs = bimap fold f . L.unzip . map g . toList
   where g = fmapEither toEither . toList
         f = mapMaybe (fmap NES.fromList . NEL.nonEmpty)
         toEither (FromAUR b)  = Right b

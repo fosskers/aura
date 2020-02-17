@@ -35,12 +35,9 @@ import           Aura.Pkgbuild.Records
 import           Aura.Pkgbuild.Security
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils (optionalPrompt, putTextLn)
-import           Control.Compactable (fmapEither)
+import           Aura.Utils (fmapEither, optionalPrompt, putTextLn)
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Generics.Product (HasField'(..), field, super)
-import           Data.List.NonEmpty (NonEmpty)
-import qualified Data.List.NonEmpty as NEL
 import           Data.Semigroup.Foldable (fold1)
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
@@ -49,8 +46,9 @@ import           Language.Bash.Syntax (ShellCommand)
 import           Lens.Micro (each, (^..))
 import           RIO hiding (FilePath)
 import           RIO.Directory (setCurrentDirectory)
-import           RIO.List (partition, sort)
+import qualified RIO.List as L
 import qualified RIO.Map as M
+import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
 import           System.Path (fromAbsoluteFilePath)
@@ -193,17 +191,17 @@ displayPkgDeps ps = do
 
 reportPkgsToInstall :: [Prebuilt] -> [NESet Buildable] -> RIO Env ()
 reportPkgsToInstall rps bps = do
-  let (explicits, ds) = partition isExplicit $ foldMap toList bps
+  let (explicits, ds) = L.partition isExplicit $ foldMap toList bps
   f reportPkgsToInstall_1 rps
   f reportPkgsToInstall_3 ds
   f reportPkgsToInstall_2 explicits
   where
-    f m xs = traverse_ (report green m) . NEL.nonEmpty . sort $ xs ^.. each . field @"name"
+    f m xs = traverse_ (report green m) . NEL.nonEmpty . L.sort $ xs ^.. each . field @"name"
 
 reportListOfDeps :: [Prebuilt] -> [NESet Buildable] -> IO ()
 reportListOfDeps rps bps = f rps *> f (foldMap toList bps)
   where f :: HasField' "name" s PkgName => [s] -> IO ()
-        f = traverse_ putTextLn . sort . (^.. each . field' @"name" . field' @"name")
+        f = traverse_ putTextLn . L.sort . (^.. each . field' @"name" . field' @"name")
 
 pkgbuildDiffs :: Set Buildable -> RIO Env ()
 pkgbuildDiffs ps = asks settings >>= check

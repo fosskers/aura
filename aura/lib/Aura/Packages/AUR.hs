@@ -32,15 +32,11 @@ import           Aura.Languages
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings
 import           Aura.Types
-import           Control.Compactable (fmapEither)
-import           Control.Concurrent.STM.TVar (modifyTVar')
+import           Aura.Utils (fmapEither)
 import           Control.Error.Util (hush, note)
-import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Maybe
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Generics.Product (field)
-import           Data.List.NonEmpty (NonEmpty)
-import qualified Data.List.NonEmpty as NEL
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import           Data.Versions (versioning)
@@ -48,8 +44,9 @@ import           Lens.Micro (each, non, (^..))
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
 import           RIO
-import           RIO.List (sortBy)
+import qualified RIO.List as L
 import qualified RIO.Map as M
+import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
 import           System.Path
@@ -140,7 +137,7 @@ clone b = do
 -- RPC CALLS
 ------------
 sortAurInfo :: Maybe BuildSwitch -> [AurInfo] -> [AurInfo]
-sortAurInfo bs ai = sortBy compare' ai
+sortAurInfo bs ai = L.sortBy compare' ai
   where compare' = case bs of
                      Just SortAlphabetically -> compare `on` aurNameOf
                      _ -> \x y -> compare (aurVotesOf y) (aurVotesOf x)

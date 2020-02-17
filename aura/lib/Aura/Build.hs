@@ -25,16 +25,14 @@ import           Aura.Pacman (pacman)
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
-import           Control.Compactable (traverseMaybe)
-import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Except
 import           Data.Generics.Product (field)
-import qualified Data.List.NonEmpty as NEL
 import           Data.Semigroup.Foldable (fold1)
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import           RIO
 import           RIO.Directory (setCurrentDirectory)
+import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
 import           System.Path

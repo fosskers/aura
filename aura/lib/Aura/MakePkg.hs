@@ -20,12 +20,12 @@ import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils (optionalPrompt)
 import           Control.Error.Util (note)
-import qualified Data.List.NonEmpty as NEL
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import           Lens.Micro (_2)
 import           RIO
 import qualified RIO.ByteString.Lazy as BL
+import qualified RIO.NonEmpty as NEL
 import qualified RIO.Text as T
 import           System.Path
     (Absolute, Path, fromAbsoluteFilePath, toFilePath, (</>))

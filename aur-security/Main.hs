@@ -8,8 +8,8 @@ module Main ( main ) where
 import           Aura.Pkgbuild.Fetch (getPkgbuild)
 import           Aura.Pkgbuild.Security (bannedTerms, parsedPB)
 import           Aura.Types
+import           Aura.Utils (fmapEither)
 import           BasePrelude
-import           Control.Compactable (fmapEither)
 import           Control.Concurrent.Async (mapConcurrently)
 import           Control.Error.Util (note)
 import           Data.List.Split (chunksOf)

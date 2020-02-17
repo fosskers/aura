@@ -30,19 +30,17 @@ import           Aura.Pacman (pacman, pacmanLines)
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
-import           Control.Compactable (fmapMaybe)
 import           Control.Error.Util (hush)
 import           Data.Aeson
 import           Data.Generics.Product (field)
-import           Data.List.NonEmpty (NonEmpty, nonEmpty)
 import           Data.Versions
-import           Lens.Micro ((^.))
 import           RIO
 import qualified RIO.ByteString.Lazy as BL
-import           RIO.List (intercalate, partition, sort)
+import qualified RIO.List as L
 import           RIO.List.Partial ((!!))
 import qualified RIO.Map as M
 import qualified RIO.Map.Unchecked as M
+import qualified RIO.NonEmpty as NEL
 import qualified RIO.Text as T
 import           RIO.Time
 import           System.Path
@@ -69,7 +67,7 @@ instance FromJSON PkgState where
     <$> v .: "time"
     <*> v .: "pinned"
     <*> fmap f (v .: "packages")
-    where f = fmapMaybe (hush . versioning)
+    where f = M.mapMaybe (hush . versioning)
 
 data StateDiff = StateDiff
   { _toAlter  :: ![SimplePkg]
@@ -112,7 +110,7 @@ olds old curr = map (uncurry SimplePkg) . M.assocs $ M.difference (pkgsOf old) (
 getStateFiles :: IO [Path Absolute]
 getStateFiles = do
   createDirectoryIfMissing True stateCache
-  sort . map (stateCache </>) <$> getDirectoryContents stateCache
+  L.sort . map (stateCache </>) <$> getDirectoryContents stateCache
 
 -- | Save a package state.
 -- In writing the first state file, the `states` directory is created automatically.
@@ -125,7 +123,7 @@ saveState ss = do
   notify ss . saveState_1 $ langOf ss
 
 dotFormat :: ZonedTime -> String
-dotFormat (ZonedTime t _) = intercalate "." items
+dotFormat (ZonedTime t _) = L.intercalate "." items
     where items = [ show ye
                   , printf "%02d(%s)" mo (mnths !! (mo - 1))
                   , printf "%02d" da
@@ -139,7 +137,7 @@ dotFormat (ZonedTime t _) = intercalate "." items
 -- | Does its best to restore a state chosen by the user.
 restoreState :: RIO Env ()
 restoreState =
-  liftIO getStateFiles >>= maybe (throwM $ Failure restoreState_2) f . nonEmpty
+  liftIO getStateFiles >>= maybe (throwM $ Failure restoreState_2) f . NEL.nonEmpty
   where f :: NonEmpty (Path Absolute) -> RIO Env ()
         f sfs = do
           ss  <- asks settings
@@ -151,8 +149,8 @@ restoreState =
               curr <- liftIO currentState
               Cache cache <- liftIO $ cacheContents pth
               let StateDiff rein remo = compareStates past curr
-                  (okay, nope)        = partition (`M.member` cache) rein
-              traverse_ (report red restoreState_1 . fmap (^. field @"name")) $ nonEmpty nope
+                  (okay, nope)        = L.partition (`M.member` cache) rein
+              traverse_ (report red restoreState_1 . fmap (^. field @"name")) $ NEL.nonEmpty nope
               reinstallAndRemove (mapMaybe (`M.lookup` cache) okay) remo
 
 selectState :: NonEmpty (Path Absolute) -> IO (Path Absolute)

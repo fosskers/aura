@@ -27,7 +27,6 @@ import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           Control.Error.Util (failWith)
-import           Control.Monad.Trans.Class (lift)
 import           Control.Monad.Trans.Except
 import           Data.Bifunctor (Bifunctor(..))
 import qualified Data.Set.NonEmpty as NES

@@ -24,9 +24,9 @@ import           Aura.Languages
 import           Aura.Settings
 import           Aura.State
 import           Aura.Utils (optionalPrompt, putTextLn)
-import qualified Data.List.NonEmpty as NEL
 import           RIO
-import           RIO.List (partition)
+import qualified RIO.List as L
+import qualified RIO.NonEmpty as NEL
 import qualified RIO.Text as T
 import           System.Path (takeFileName, toFilePath, toUnrootedFilePath)
 import           System.Path.IO (removeFile)
@@ -37,7 +37,7 @@ import           System.Path.IO (removeFile)
 cleanStates :: Settings -> Word -> IO ()
 cleanStates ss (fromIntegral -> n) = do
   stfs <- reverse <$> getStateFiles
-  (pinned, others) <- partition p <$> traverse (\sf -> (sf,) <$> readState sf) stfs
+  (pinned, others) <- L.partition p <$> traverse (\sf -> (sf,) <$> readState sf) stfs
   warn ss . cleanStates_4 (length stfs) $ langOf ss
   unless (null pinned) . warn ss . cleanStates_6 (length pinned) $ langOf ss
   forM_ (NEL.nonEmpty stfs) $ \stfs' -> do

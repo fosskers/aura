@@ -39,7 +39,6 @@ import           Aura.Utils
 import           Control.Error.Util (hush)
 import           Data.Aeson.Encode.Pretty (encodePretty)
 import           Data.Generics.Product (field)
-import qualified Data.List.NonEmpty as NEL
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import           Data.Text.Prettyprint.Doc
@@ -51,8 +50,9 @@ import           Network.HTTP.Client (Manager)
 import           RIO
 import qualified RIO.ByteString as B
 import qualified RIO.ByteString.Lazy as BL
-import           RIO.List (intersperse)
+import qualified RIO.List as L
 import           RIO.List.Partial (maximum)
+import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
 import           RIO.Text.Partial (splitOn)
@@ -158,7 +158,7 @@ renderSearch ss r (i, e) = searchResult
           verboseInfo  = repo <> n <+> v <+> "(" <> l <+> "|" <+> p <>
                          ")" <> (if e then annotate bold " [installed]" else "") <> "\n    " <> d
           repo = magenta "aur/"
-          n = fold . intersperse (bCyan $ pretty r) . map (annotate bold . pretty) . splitOn r $ aurNameOf i
+          n = fold . L.intersperse (bCyan $ pretty r) . map (annotate bold . pretty) . splitOn r $ aurNameOf i
           d = maybe "(null)" pretty $ aurDescriptionOf i
           l = yellow . pretty $ aurVotesOf i  -- `l` for likes?
           p = yellow . pretty . T.pack . printf "%0.2f" $ popularityOf i

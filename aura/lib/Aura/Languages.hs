@@ -39,12 +39,11 @@ import           Aura.Colour
 import qualified Aura.Languages.Fields as Fields
 import           Aura.Types
 import           Data.Generics.Product (field)
-import           Data.List.NonEmpty (NonEmpty)
 import           Data.Ratio ((%))
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           RIO
-import           RIO.List (intersperse)
+import qualified RIO.List as L
 import qualified RIO.Map as M
 import qualified RIO.Map.Partial as M
 import qualified RIO.Text as T
@@ -369,7 +368,7 @@ missingPkg_4 :: [NonEmpty PkgName] -> Language -> Doc AnsiStyle
 missingPkg_4 pns = \case
   Spanish    -> vsep $ "Se detectaron los siguientes ciclos de dependencia:" : pns'
   _ -> vsep $ "The following dependency cycles were detected:" : pns'
-  where pns' = map (hsep . map pretty . intersperse "=>" . map (view (field @"name")) . toList) pns
+  where pns' = map (hsep . map pretty . L.intersperse "=>" . map (view (field @"name")) . toList) pns
 
 -----------------
 -- aura functions

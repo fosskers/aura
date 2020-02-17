@@ -11,13 +11,13 @@ import           Aura.Cache (defaultPackageCache)
 import           Aura.Pacman (defaultLogFile, pacmanConfFile)
 import           Aura.Settings
 import           Aura.Types
-import qualified Data.List.NonEmpty as NEL
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
-import           Lens.Micro
+import           Lens.Micro (Traversal')
 import           Options.Applicative
 import           RIO hiding (exp, log)
 import           RIO.List.Partial (foldr1)
+import qualified RIO.NonEmpty.Partial as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
 import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath)

@@ -31,8 +31,6 @@ import           Aura.Types
 import           Aura.Utils (maybe', putText)
 import           Control.Error.Util (note)
 import           Data.Generics.Product (field)
-import           Data.List.NonEmpty (NonEmpty)
-import qualified Data.List.NonEmpty as NEL
 import           Data.Semigroup.Foldable (foldMap1)
 import           Data.Set.NonEmpty (pattern IsEmpty, pattern IsNonEmpty, NESet)
 import qualified Data.Set.NonEmpty as NES
@@ -41,6 +39,7 @@ import           Data.Versions
 import           Lens.Micro
 import           RIO
 import qualified RIO.Map as M
+import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
 

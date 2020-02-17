@@ -32,6 +32,9 @@ module Aura.Utils
   , getSelection
     -- * Misc.
   , maybe'
+  , fmapEither
+  , traverseMaybe
+  , traverseEither
   ) where
 
 import           Aura.Colour
@@ -228,3 +231,23 @@ padding ss fs = map (T.justifyLeft longest ws) fs
 -- | `maybe` with the function at the end.
 maybe' :: b -> Maybe a -> (a -> b) -> b
 maybe' zero m f = maybe zero f m
+
+-- | Borrowed from Compactable.
+fmapEither :: (a -> Either b c) -> [a] -> ([b], [c])
+fmapEither f = foldl' (deal f) ([],[])
+  where
+    deal :: (a -> Either b c) -> ([b], [c]) -> a -> ([b], [c])
+    deal g ~(bs, cs) a = case g a of
+      Left b  -> (b:bs, cs)
+      Right c -> (bs, c:cs)
+
+-- | Borrowed from Compactable.
+traverseMaybe :: Applicative f => (a -> f (Maybe b)) -> [a] -> f [b]
+traverseMaybe f = go
+  where
+    go (x:xs) = maybe id (:) <$> f x <*> go xs
+    go []     = pure []
+
+-- | Borrowed from Compactable.
+traverseEither :: Applicative f => (a -> f (Either b c)) -> [a] -> f ([b], [c])
+traverseEither f = fmap partitionEithers . traverse f

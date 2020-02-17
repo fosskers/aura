@@ -25,12 +25,11 @@ import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types (PkgName(..))
 import           Aura.Utils
-import           Control.Compactable (fmapEither)
 import           Data.Generics.Product (field)
-import qualified Data.List.NonEmpty as NEL
 import           Data.Set.NonEmpty (NESet)
 import           Data.Text.Prettyprint.Doc
 import           RIO hiding (FilePath)
+import qualified RIO.NonEmpty as NEL
 import qualified RIO.Text as T
 import qualified RIO.Text.Partial as T
 import           System.Path (toFilePath)

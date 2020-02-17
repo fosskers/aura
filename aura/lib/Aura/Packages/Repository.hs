@@ -22,12 +22,10 @@ import           Aura.Languages (provides_1)
 import           Aura.Pacman (pacmanLines, pacmanOutput)
 import           Aura.Settings (CommonSwitch(..), Settings(..), shared)
 import           Aura.Types
-import           Aura.Utils (getSelection)
-import           Control.Compactable (fmapEither, traverseEither)
+import           Aura.Utils (fmapEither, getSelection, traverseEither)
 import           Control.Error.Util (hush, note)
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Generics.Product (field)
-import           Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.Set.NonEmpty as NES
 import           Data.Versions
 import           RIO hiding (try)

@@ -32,13 +32,13 @@ import           Aura.State
 import           Aura.Types
 import           Aura.Utils
 import           Data.Generics.Product (field)
-import           Data.List.NonEmpty (nonEmpty)
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import           Lens.Micro ((^?), _Just)
 import           RIO
-import           RIO.List (groupBy, sort, (\\))
+import qualified RIO.List as L
 import qualified RIO.Map as M
+import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
 import           System.Path
@@ -53,7 +53,7 @@ downgradePackages pkgs = do
   ss    <- asks settings
   let cachePath = either id id . cachePathOf $ commonConfigOf ss
   reals <- liftIO $ pkgsInCache ss pkgs
-  traverse_ (report red reportBadDowngradePkgs_1) . nonEmpty . toList $ NES.toSet pkgs S.\\ reals
+  traverse_ (report red reportBadDowngradePkgs_1) . NEL.nonEmpty . toList $ NES.toSet pkgs S.\\ reals
   unless (null reals) $ do
     cache   <- liftIO $ cacheContents cachePath
     choices <- traverse (getDowngradeChoice cache) $ toList reals
@@ -63,7 +63,7 @@ downgradePackages pkgs = do
 -- downgrade to.
 getDowngradeChoice :: Cache -> PkgName -> RIO Env PackagePath
 getDowngradeChoice cache pkg =
-  case nonEmpty $ getChoicesFromCache cache pkg of
+  case NEL.nonEmpty $ getChoicesFromCache cache pkg of
     Nothing      -> throwM . Failure $ reportBadDowngradePkgs_2 pkg
     Just choices -> do
       ss <- asks settings
@@ -71,14 +71,14 @@ getDowngradeChoice cache pkg =
       liftIO $ getSelection (T.pack . toFilePath . path) choices
 
 getChoicesFromCache :: Cache -> PkgName -> [PackagePath]
-getChoicesFromCache (Cache cache) p = sort . M.elems $ M.filterWithKey (\(SimplePkg pn _) _ -> p == pn) cache
+getChoicesFromCache (Cache cache) p = L.sort . M.elems $ M.filterWithKey (\(SimplePkg pn _) _ -> p == pn) cache
 
 -- | Print all package filenames that match a given `Text`.
 searchCache :: Text -> RIO Env ()
 searchCache ps = do
   ss <- asks settings
   matches <- liftIO $ cacheMatches ss ps
-  liftIO . traverse_ (putTextLn . T.pack . toFilePath . path) $ sort matches
+  liftIO . traverse_ (putTextLn . T.pack . toFilePath . path) $ L.sort matches
 
 -- | The destination folder must already exist for the back-up to begin.
 backupCache :: Path Absolute -> RIO Env ()
@@ -135,7 +135,7 @@ clean toSave = do
   (Cache cache) <- liftIO $ cacheContents cachePath
   let !files    = M.elems cache
       grouped   = take toSave . reverse <$> groupByName files
-      toRemove  = files \\ fold grouped
+      toRemove  = files L.\\ fold grouped
   liftIO $ traverse_ (removeFile . path) toRemove
 
 -- | Only package files with a version not in any PkgState will be
@@ -154,6 +154,6 @@ cleanNotSaved = do
 
 -- | Typically takes the contents of the package cache as an argument.
 groupByName :: [PackagePath] -> [[PackagePath]]
-groupByName pkgs = groupBy sameBaseName $ sort pkgs
+groupByName pkgs = L.groupBy sameBaseName $ L.sort pkgs
     where sameBaseName a b = baseName a == baseName b
           baseName p = simplepkg p ^? _Just . field @"name"
