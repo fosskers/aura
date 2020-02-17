@@ -1,5 +1,9 @@
 # Aura Changelog
 
+## 2.1.0 (2020-02-17)
+
+- Reinstated `-Aw`, which downloads a snapshot tarball of an AUR package.
+
 ## 2.0.6 (2020-02-16)
 
 - Fixed the broken `-S`.
