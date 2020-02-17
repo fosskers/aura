@@ -423,7 +423,7 @@ remove = bigR *> (Remove <$> mods <*> somePkgs)
         unneeded = flag' RemoveUnneeded (long "unneeded" <> short 'u' <> hidden <> help "Remove unneeded packages.")
 
 sync :: Parser PacmanOp
-sync = bigS *> (Sync <$> (fmap Left mods <|> fmap (Right . S.map PkgName) manyArgs) <*> (S.fromList <$> many (ref <|> ign <|> igg)))
+sync = bigS *> (Sync <$> (fmap (Right . S.map PkgName) manyArgs <|> fmap Left mods) <*> (S.fromList <$> many (ref <|> ign <|> igg)))
   where bigS = flag' () (long "sync" <> short 'S' <> help "Install official packages.")
         ref  = flag' SyncRefresh (long "refresh" <> short 'y' <> hidden <> help "Update the package database.")
         mods = NEL.fromList <$> some (cln <|> gps <|> inf <|> lst <|> sch <|> upg <|> dnl)
