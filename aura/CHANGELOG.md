@@ -1,5 +1,9 @@
 # Aura Changelog
 
+## 2.0.6 (2020-02-16)
+
+- Fixed the broken `-S`.
+
 ## 2.0.5 (2020-02-16)
 
 - Fixed a bug that prevented `-Syuu` and `-Scc`.
