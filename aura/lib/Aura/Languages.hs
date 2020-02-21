@@ -513,7 +513,7 @@ confirmIgnored_1 (bt . view (field @"name") -> p) = \case
     Spanish    -> p <> " está marcado como ignorado. ¿Deseas instalarlo de todas formas?"
     Portuguese -> p <> " está marcado como Ignorado. Deseja instalar mesmo assim?"
     Russian    -> p <> " отмечен как игнорируемый. Всё равно установить?"
-    Russian    -> p <> " è un pacchetto Ignorato. Installare comunque?"
+    Italian    -> p <> " è un pacchetto Ignorato. Installare comunque?"
     Chinese    -> p <> " 已被标记为忽略。仍然安装？"
     Swedish    -> p <> " är markerad som ignorerad. Vill du installera ändå?"
     Esperanto  -> p <> " estas markita kiel malatenta. Ĉu instali?"
@@ -855,15 +855,15 @@ cleanStates_5 t = \case
 cleanStates_6 :: Int -> Language -> Doc AnsiStyle
 cleanStates_6 n = \case
   Spanish   -> pretty n <+> "de estos están anclados y no se eliminarán."
-  Spanish   -> pretty n <+> "di questi sono stati fissati e non saranno rimossi."
-  _ -> pretty n <+> "of these are pinned, and won't be removed."
+  Italian   -> pretty n <+> "di questi sono stati fissati e non saranno rimossi."
+  _         -> pretty n <+> "of these are pinned, and won't be removed."
 
 readState_1 :: Language -> Doc AnsiStyle
 readState_1 = \case
     Spanish    -> "Ese archivo de estado no se pudo analizar. ¿Es un archivo JSON válido?"
     Portuguese -> "O arquivo de estado não pôde ser interpretado. É um arquivo JSON válido?"
     Russian    -> "Это состояние не распознано. Это корректный JSON?"
-    Russian    -> "Non è stato possibile analizzare il file di stato. E' correttamente formattato in JSON?"
+    Italian    -> "Non è stato possibile analizzare il file di stato. E' correttamente formattato in JSON?"
     Esperanto  -> "Tiu statdosiero paneis sintake analizi. Ĉu ĝi estas valida JSON?"
     _          -> "That state file failed to parse. Is it legal JSON?"
 
@@ -1259,7 +1259,7 @@ orphanedMsg Nothing = red . \case
     Portuguese -> "Órfão!"
     French     -> "Abandonné !"
     Russian    -> "Осиротевший!"
-    Russian    -> "Orfano!"
+    Italian    -> "Orfano!"
     Indonesia  -> "Tak dipelihara!"
     Chinese    -> "孤包！"
     Swedish    -> "Föräldralös!"
@@ -1315,7 +1315,7 @@ restoreState_2 = \case
     Spanish    -> "No hay estados guardados para ser restaurados. (Utilice -B para guardar el estado actual)"
     Portuguese -> "Nenhum estado disponível para ser recuperado. (Utilize -B para salvar o estado atual)"
     Russian    -> "Нет сохраненных состояний для восстановления. (Используйте -B для сохранения текущего состояния)"
-    Russian    -> "Nessuno stato precedente da recuperare. (Usa -B per salvare lo stato attuale)"
+    Italian    -> "Nessuno stato precedente da recuperare. (Usa -B per salvare lo stato attuale)"
     Chinese    -> "没有要恢复的已保存状态。（使用 -B 保存当前状态）"
     Swedish    -> "Inga sparade tillstånd att återhämta. (Använd -B för att spara det nuvarande tillståndet)"
     Esperanto  -> "Ne konservitaj statoj restaŭros. (Uzu -B konservi la aktualan staton)"
@@ -1381,7 +1381,7 @@ confParsing_1 = \case
     Spanish    -> "No fue posible analizar su archivo pacman.conf."
     Portuguese -> "Não foi possível interpretar o arquivo pacman.conf ."
     Russian    -> "Не удается распознать формат вашего файла pacman.conf."
-    Russian    -> "Non è stato possibile analizzare il tuo pacman.conf."
+    Italian    -> "Non è stato possibile analizzare il tuo pacman.conf."
     Esperanto  -> "Ne kapablas sintaske analizi vian dosieron, pacman.conf."
     _          -> "Unable to parse your pacman.conf file."
 
@@ -1437,7 +1437,7 @@ customizepkg_1 = let customizepkg = bt "customizepkg" in \case
 security_1 :: PkgName -> Language -> Doc AnsiStyle
 security_1 (PkgName p) = \case
   Spanish   -> "El PKGBUILD de" <+> bt p <+> "era demasiado complejo de analizar - puede estar ofuscando código malicioso."
-  Spanish   -> "Il PKGBUILD di" <+> bt p <+> "è troppo complesso per essere analizzato - è possibile che stia offuscando codice malevolo."
+  Italian   -> "Il PKGBUILD di" <+> bt p <+> "è troppo complesso per essere analizzato - è possibile che stia offuscando codice malevolo."
   _ -> "The PKGBUILD of" <+> bt p <+> "was too complex to parse - it may be obfuscating malicious code."
 
 security_2 :: Text -> Language -> Doc AnsiStyle
