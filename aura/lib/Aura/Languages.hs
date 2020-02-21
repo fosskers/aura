@@ -24,7 +24,7 @@ Alejandro Gómez / Sergio Conde / Max Ferrer   | Spanish
 Henry Kupty / Thiago Perrotta / Wagner Amaral | Portuguese
 Ma Jiehong / Fabien Dubosson                  | French
 Kyrylo Silin                                  | Russian
-Bob Valantin                                  | Italian
+Bob Valantin / Cristian Tentella              | Italian
 Filip Brcic                                   | Serbian
 "chinatsun"                                   | Norwegian
 "pak tua Greg"                                | Indonesia
@@ -60,7 +60,7 @@ translators = M.fromList
     , (Portuguese, "Henry Kupty / Thiago Perrotta / Wagner Amaral")
     , (French,     "Ma Jiehong / Fabien Dubosson")
     , (Russian,    "Kyrylo Silin / Alexey Kotlyarov")
-    , (Italian,    "Bob Valantin")
+    , (Italian,    "Bob Valantin / Cristian Tentella")
     , (Serbian,    "Filip Brcic")
     , (Norwegian,  "\"chinatsun\"")
     , (Indonesia,  "\"pak tua Greg\"")

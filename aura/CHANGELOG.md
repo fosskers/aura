@@ -1,5 +1,9 @@
 # Aura Changelog
 
+## 2.x.x
+
+- Updated Italian translations. Grazie, Cristian Tentella!
+
 ## 2.1.0 (2020-02-17)
 
 - Reinstated `-Aw`, which downloads a snapshot tarball of an AUR package.

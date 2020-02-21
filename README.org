@@ -269,14 +269,14 @@ to Aura, please consult *LOCALISATION.md*.
 Aura is currently translated by these generous people:
 
 | Language   | Translators                                     |
-|------------|-------------------------------------------------|
+|------------+-------------------------------------------------|
 | Chinese    | Kai Zhang                                       |
 | Croatian   | Denis Kasak and "stranac"                       |
 | Esperanto  | Zachary "Ghosy" Matthews                        |
 | French     | Ma Jiehong and Fabien Dubosson                  |
 | German     | Lukas Niederbremer and Jonas Platte             |
 | Indonesian | "pak tua Greg"                                  |
-| Italian    | Bob Valantin                                    |
+| Italian    | Bob Valantin and Cristian Tentella              |
 | Japanese   | Colin Woodbury and Onoue Takuro                 |
 | Norwegian  | "chinatsun"                                     |
 | Polish     | Chris Warrick                                   |
