@@ -202,7 +202,7 @@ are not actually depended upon by any installed package.
 
 As mentioned in the Philosophy above, adding new languages to Aura is quite
 easy. If you speak a language other than those available and would like it added
-to Aura, please consult *LOCALISATION.md*.
+to Aura, please consult [[./aura/LOCALISATION.md][LOCALISATION.md]].
 
 Aura is currently translated by these generous people:
 
