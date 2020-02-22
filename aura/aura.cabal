@@ -99,6 +99,7 @@ library
     , network-uri       ^>=2.6
     , scheduler         >=1.1  && <1.5
     , semigroupoids     >=5.2  && <5.4
+    , servant-client-core >= 0.16 && < 0.18
     , stm               ^>=2.5
     , these             ^>=1.0
     , time              >=1.8  && <1.10

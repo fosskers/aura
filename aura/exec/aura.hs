@@ -108,7 +108,7 @@ execOpts ops = do
   case ops of
     Left o@(Sync (Left sops) _, _)
       | any isUpgrade sops -> sudo (liftIO $ B.saveState ss) *> p o
-    Left o -> p o
+    Left o -> logDebug "Performing a pacman operation." >> p o
     Right (AurSync o _) ->
       case o of
         Right ps              -> bool (trueRoot . sudo) id (switch ss DryRun) $ A.install ps

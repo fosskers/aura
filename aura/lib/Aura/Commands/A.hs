@@ -67,7 +67,8 @@ upgradeAURPkgs :: Set PkgName -> RIO Env ()
 upgradeAURPkgs pkgs = do
   ss <- asks settings
   liftIO . notify ss . upgradeAURPkgs_1 $ langOf ss
-  liftIO (foreigns ss) >>= traverse_ (upgrade pkgs) . NES.nonEmptySet
+  fs <- liftIO (foreigns ss)
+  traverse_ (upgrade pkgs) $ NES.nonEmptySet fs
 
 -- | Foreign packages to consider for upgrading, after "ignored packages" have
 -- been taken into consideration.
@@ -77,10 +78,15 @@ foreigns ss = S.filter (notIgnored . view (field @"name")) <$> foreignPackages
 
 upgrade :: Set PkgName -> NESet SimplePkg -> RIO Env ()
 upgrade pkgs fs = do
+  logDebug $ "Considering " <> display (NES.size fs) <> " 'foreign' packages for upgrade."
+  unless (null pkgs)
+    $ logDebug $ "Also installing " <> display (S.size pkgs) <> " other packages."
   ss        <- asks settings
   toUpgrade <- possibleUpdates fs
+  logDebug $ "Potential upgrades: " <> display (length toUpgrade)
   let !names = map (PkgName . aurNameOf . fst) toUpgrade
   auraFirst <- auraCheck names
+  logDebug $ "Upgrade Aura first? ... " <> maybe "No." (const "Yes!") auraFirst
   case auraFirst of
     Just a  -> auraUpgrade a
     Nothing -> do
@@ -97,6 +103,7 @@ possibleUpdates (NES.toList -> pkgs) = do
   aurInfos <- aurInfo $ fmap (^. field @"name") pkgs
   let !names  = map aurNameOf aurInfos
       aurPkgs = NEL.filter (\(SimplePkg (PkgName n) _) -> n `elem` names) pkgs
+  logDebug "Package lookup successful."
   pure . filter isntMostRecent . zip aurInfos $ aurPkgs ^.. each . field @"version"
 
 -- | Is there an update for Aura that we could apply first?

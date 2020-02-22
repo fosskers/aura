@@ -1190,9 +1190,17 @@ reportNotInLog_1 = \case
 -- https://github.com/aurapm/aura/issues/498
 connectionFailure_1 :: Language -> Doc AnsiStyle
 connectionFailure_1 = \case
-  Spanish   -> "No se pudo contactar con el AUR. ¿Tienes conexión a internet?"
-  Italian   -> "Non è stato possibile contattare la AUR. Il computer è connesso ad internet?"
-  _ -> "Failed to contact the AUR. Do you have an internet connection?"
+  Spanish -> "No se pudo contactar con el AUR. ¿Tienes conexión a internet?"
+  Italian -> "Non è stato possibile contattare la AUR. Il computer è connesso ad internet?"
+  _       -> "Failed to contact the AUR. Do you have an internet connection?"
+
+miscAURFailure_1 :: Language -> Doc AnsiStyle
+miscAURFailure_1 = \case
+  _ -> "Contacting the AUR failed in some unknown way."
+
+miscAURFailure_2 :: Language -> Doc AnsiStyle
+miscAURFailure_2 = \case
+  _ -> "The AUR server rejected the request."
 
 infoFields :: Language -> [Text]
 infoFields = sequence [ Fields.repository

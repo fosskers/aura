@@ -2,6 +2,7 @@
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE LambdaCase            #-}
 {-# LANGUAGE MonoLocalBinds        #-}
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE TypeApplications      #-}
@@ -49,6 +50,7 @@ import qualified RIO.Map as M
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
+import           Servant.Client.Core (responseBody)
 import           System.Path
 import           System.Path.IO (getCurrentDirectory)
 import           System.Process.Typed
@@ -152,6 +154,13 @@ aurSearch regex = do
 -- | Frontend to the `aur` library. For @-Ai@.
 aurInfo :: NonEmpty PkgName -> RIO Env [AurInfo]
 aurInfo pkgs = do
-  m   <- asks (managerOf . settings)
-  res <- liftMaybeM (Failure connectionFailure_1) . fmap hush . liftIO . info m . map (^. field @"name") $ toList pkgs
-  pure $ sortAurInfo (Just SortAlphabetically) res
+  logDebug $ "AUR: Looking up " <> display (length pkgs) <> " packages..."
+  m <- asks (managerOf . settings)
+  liftIO (info m . map (^. field @"name") $ toList pkgs) >>= \case
+    Left (ConnectionError _) -> throwM (Failure connectionFailure_1)
+    Left (FailureResponse _ r) -> do
+      let !resp = display . decodeUtf8Lenient . toStrictBytes $ responseBody r
+      logDebug $ "Failed! Server said: " <> resp
+      throwM (Failure miscAURFailure_2)
+    Left _ -> throwM (Failure miscAURFailure_1)
+    Right res -> pure $ sortAurInfo (Just SortAlphabetically) res
