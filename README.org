@@ -153,41 +153,14 @@ complete, your ~aura~ binary will be available in ~/home/YOU/.local/bin/~.
 
 *** Installing Packages
 
-Install an AUR package:
-
-#+begin_src bash
-  aura -A (package)
-#+end_src
-
-Author's favourite (upgrades, removes make deps, shows PKGBUILD diffs):
-
-#+begin_src bash
-  aura -Akuax
-#+end_src
-
-Just upgrade all installed AUR packages:
-
-#+begin_src bash
-  aura -Au
-#+end_src
-
-Look up information on an AUR package:
-
-#+begin_src bash
-  aura -Ai (package)
-#+end_src
-
-Search the AUR via a regex:
-
-#+begin_src bash
-  aura -As (regex)
-#+end_src
-
-Display an AUR package's PKGBUILD:
-
-#+begin_src bash
-  aura -Ap (package)
-#+end_src
+| Command              | Note                                                                 |
+|----------------------+----------------------------------------------------------------------|
+| ~aura -A <package>~  | Install an AUR package.                                              |
+| ~aura -Au~           | Upgrade all installed AUR packages.                                  |
+| ~aura -Akuax~        | Author's favourite (upgrades, removes makedeps, shows PKGBUILD diffs |
+| ~aura -Ai <package>~ | Look up information on an AUR package.                               |
+| ~aura -As <regex>~   | Search the AUR via a regex.                                          |
+| ~aura -Ap <package>~ | Display a package's PKGBUILD.                                        |
 
 *** Package Set Snapshots
 
