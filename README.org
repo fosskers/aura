@@ -1,11 +1,12 @@
 #+TITLE: The Aura Package Manager
 #+AUTHOR: Colin
 
-| Build                                                      | Release                                   | Chat                                               | Downloads                                                       |
-|------------------------------------------------------------+-------------------------------------------+----------------------------------------------------+-----------------------------------------------------------------|
-| [[https://github.com/fosskers/aura/workflows/Tests/badge.svg]] | [[http://hackage.haskell.org/package/aura][https://img.shields.io/hackage/v/aura.svg]] | [[https://gitter.im/aurapm/aura][https://img.shields.io/gitter/room/aurapm/aura.svg]] | [[https://img.shields.io/github/downloads/fosskers/aura/total.svg]] |
+| Build                                                      | Release                                   | Chat                                               | Downloads                                                       | Languages                                         |
+|------------------------------------------------------------+-------------------------------------------+----------------------------------------------------+-----------------------------------------------------------------+---------------------------------------------------|
+| [[https://github.com/fosskers/aura/workflows/Tests/badge.svg]] | [[http://hackage.haskell.org/package/aura][https://img.shields.io/hackage/v/aura.svg]] | [[https://gitter.im/aurapm/aura][https://img.shields.io/gitter/room/aurapm/aura.svg]] | [[https://img.shields.io/github/downloads/fosskers/aura/total.svg]] | :uk: :jp: :croatia: :sweden: :de: :es: :portugal: |
 
-Welcome to the main repository for all things Aura.
+Welcome to the main repository for Aura, a secure, multilingual package manager
+for Arch Linux.
 
 * Table of Contents                                       :TOC_4_gh:noexport:
 - [[#aura][Aura]]
