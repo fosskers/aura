@@ -143,12 +143,12 @@ rpcS :: Maybe Text -> Maybe Text -> Maybe Text -> ClientM RPCResp
 rpcI :<|> rpcS = client api
 
 -- | Perform an @info@ call on one or more package names.
--- Will fail with a `Nothing` if there was a connection/decoding error.
+-- Will fail with a `Left` if there was a connection/decoding error.
 info :: Manager -> [Text] -> IO (Either ClientError [AurInfo])
 info m ps = unwrap m $ rpcI (Just "5") (Just "info") ps
 
 -- | Perform a @search@ call on a package name or description text.
--- Will fail with a `Nothing` if there was a connection/decoding error.
+-- Will fail with a `Left` if there was a connection/decoding error.
 search :: Manager -> Text -> IO (Either ClientError [AurInfo])
 search m p = unwrap m $ rpcS (Just "5") (Just "search") (Just p)
 
