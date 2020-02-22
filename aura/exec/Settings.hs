@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 {-
 
 Copyright 2012 - 2020 Colin Woodbury <colin@fosskers.ca>
@@ -19,15 +21,16 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Settings ( getSettings ) where
+module Settings ( withEnv ) where
 
+import           Aura.Core (Env(..))
 import           Aura.Languages
+import           Aura.Packages.AUR (aurRepo)
+import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pacman
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
-import           Control.Error.Util (failWith)
-import           Control.Monad.Trans.Except
 import           Data.Bifunctor (Bifunctor(..))
 import qualified Data.Set.NonEmpty as NES
 import           Flags
@@ -42,29 +45,42 @@ import           System.Environment (getEnvironment)
 
 ---
 
-getSettings :: Program -> IO (Either Failure Settings)
-getSettings (Program op co bc lng) = runExceptT $ do
+-- | Bracket around the `Env` type to properly initialize the `Manager` and
+-- `RIO` logger function (among other things).
+--
+-- Throws in `IO` if there were any errors.
+withEnv :: Program -> (Env -> IO a) -> IO a
+withEnv (Program op co bc lng) f = do
   let ign = S.fromList $ op ^.. _Right . _AurSync . folded . _AurIgnore . folded
       igg = S.fromList $ op ^.. _Right . _AurSync . folded . _AurIgnoreGroup . folded
-  confFile    <- ExceptT (getPacmanConf . either id id $ configPathOf co)
-  environment <- lift (M.fromList . map (bimap T.pack T.pack) <$> getEnvironment)
-  manager     <- lift $ newManager tlsManagerSettings
-  isTerm      <- lift $ hIsTerminalDevice stdout
-  fromGroups  <- lift . maybe (pure S.empty) groupPackages . NES.nonEmptySet $ getIgnoredGroups confFile <> igg
+  confFile    <- getPacmanConf (either id id $ configPathOf co) >>= either throwM pure
+  environment <- M.fromList . map (bimap T.pack T.pack) <$> getEnvironment
+  manager     <- newManager tlsManagerSettings
+  isTerm      <- hIsTerminalDevice stdout
+  fromGroups  <- maybe (pure S.empty) groupPackages . NES.nonEmptySet
+    $ getIgnoredGroups confFile <> igg
   let language = checkLang lng environment
-  bu <- failWith (Failure whoIsBuildUser_1) $ buildUserOf bc <|> getTrueUser environment
-  pure Settings { managerOf      = manager
-                , envOf          = environment
-                , langOf         = language
-                , editorOf       = getEditor environment
-                , isTerminal     = isTerm
-                , ignoresOf      = getIgnoredPkgs confFile <> fromGroups <> ign
-                , commonConfigOf =
-                    -- | These maintain the precedence order: flags, config file entry, default
-                    co { cachePathOf = first (\x -> fromMaybe x $ getCachePath confFile) $ cachePathOf co
-                       , logPathOf   = first (\x -> fromMaybe x $ getLogFilePath confFile) $ logPathOf co }
-                , buildConfigOf = bc { buildUserOf = Just bu}
-                }
+  bu <- maybe (throwM $ Failure whoIsBuildUser_1) pure
+    $ buildUserOf bc <|> getTrueUser environment
+  repos <- (<>) <$> pacmanRepo <*> aurRepo
+  lopts <- setLogMinLevel LevelInfo . setLogUseLoc True <$> logOptionsHandle stderr True
+  withLogFunc lopts $ \logFunc -> do
+    let !ss = Settings
+          { managerOf      = manager
+          , envOf          = environment
+          , langOf         = language
+          , editorOf       = getEditor environment
+          , isTerminal     = isTerm
+          , ignoresOf      = getIgnoredPkgs confFile <> fromGroups <> ign
+          , commonConfigOf =
+              -- | These maintain the precedence order: flags, config file entry, default
+              co { cachePathOf =
+                     first (\x -> fromMaybe x $ getCachePath confFile) $ cachePathOf co
+                 , logPathOf   =
+                     first (\x -> fromMaybe x $ getLogFilePath confFile) $ logPathOf co }
+          , buildConfigOf = bc { buildUserOf = Just bu}
+          , logFuncOf = logFunc }
+    f (Env repos ss)
 
 checkLang :: Maybe Language -> Environment -> Language
 checkLang Nothing env   = langFromLocale $ getLocale env

@@ -118,7 +118,8 @@ data Settings = Settings
   , isTerminal     :: !Bool
   , ignoresOf      :: !(Set PkgName)
   , commonConfigOf :: !CommonConfig
-  , buildConfigOf  :: !BuildConfig }
+  , buildConfigOf  :: !BuildConfig
+  , logFuncOf      :: !LogFunc }
 
 -- | Unless otherwise specified, packages will be built within @/tmp@.
 defaultBuildDir :: Path Absolute

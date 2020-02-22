@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP               #-}
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE MonoLocalBinds    #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications  #-}
@@ -47,8 +48,6 @@ import           Aura.Commands.O as O
 import           Aura.Core
 import           Aura.Languages
 import           Aura.Logo
-import           Aura.Packages.AUR (aurRepo)
-import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pacman
 import           Aura.Settings
 import           Aura.Types
@@ -76,17 +75,18 @@ auraVersion = CURRENT_PACKAGE_VERSION
 
 main :: IO ()
 main = do
-  options   <- execParser opts
-  esettings <- getSettings options
-  repos     <- (<>) <$> pacmanRepo <*> aurRepo
-  case esettings of
-    Left err -> putTextLn . dtot . ($ English) $ failure err
-    Right ss -> execute ss repos options >>= exit ss
+  options <- execParser opts
+  res <- try $ withEnv options $ \env ->
+    execute env options >>= exit (settings env)
+  case res of
+    Left err -> putTextLn (dtot . ($ English) $ failure err) *> exitFailure
+    Right r  -> pure r
 
-execute :: Settings -> Repository -> Program -> IO (Either (Doc AnsiStyle) ())
-execute ss r p = first f <$> try (runRIO (Env r ss) . execOpts $ _operation p)
+-- | Won't throw due to the `try`.
+execute :: Env -> Program -> IO (Either (Doc AnsiStyle) ())
+execute env p = first f <$> try (runRIO env . execOpts $ _operation p)
   where
-    f (Failure fl) = fl $ langOf ss
+    f (Failure fl) = fl $ langOf (settings env)
 
 exit :: Settings -> Either (Doc AnsiStyle) () -> IO a
 exit ss (Left e)  = scold ss e *> exitFailure
