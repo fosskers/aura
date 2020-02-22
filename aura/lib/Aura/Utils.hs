@@ -33,7 +33,6 @@ module Aura.Utils
     -- * Misc.
   , maybe'
   , fmapEither
-  , traverseMaybe
   , traverseEither
   ) where
 
@@ -240,13 +239,6 @@ fmapEither f = foldl' (deal f) ([],[])
     deal g ~(bs, cs) a = case g a of
       Left b  -> (b:bs, cs)
       Right c -> (bs, c:cs)
-
--- | Borrowed from Compactable.
-traverseMaybe :: Applicative f => (a -> f (Maybe b)) -> [a] -> f [b]
-traverseMaybe f = go
-  where
-    go (x:xs) = maybe id (:) <$> f x <*> go xs
-    go []     = pure []
 
 -- | Borrowed from Compactable.
 traverseEither :: Applicative f => (a -> f (Either b c)) -> [a] -> f ([b], [c])

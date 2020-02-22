@@ -30,6 +30,7 @@ import           Data.Generics.Product (field)
 import           Data.Semigroup.Foldable (fold1)
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
+import           Data.Witherable.Class (wither)
 import           RIO
 import           RIO.Directory (setCurrentDirectory)
 import qualified RIO.NonEmpty as NEL
@@ -57,7 +58,7 @@ installPkgFiles files = do
 buildPackages :: NESet Buildable -> RIO Env (NESet PackagePath)
 buildPackages bs = do
   g <- liftIO createSystemRandom
-  traverseMaybe (build g) (toList bs) >>= maybe bad (pure . fold1) . NEL.nonEmpty
+  wither (build g) (toList bs) >>= maybe bad (pure . fold1) . NEL.nonEmpty
   where bad = throwM $ Failure buildFail_10
 
 -- | Handles the building of Packages. Fails nicely.

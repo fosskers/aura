@@ -17,3 +17,4 @@ packages:
 extra-deps:
   - language-bash-0.8.0
   - paths-0.2.0.0
+  - witherable-class-0

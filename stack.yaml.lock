@@ -18,6 +18,13 @@ packages:
       sha256: 775674b5c4b1431aa855b1966abbd59d64da87e8f05fb9bb0d782baca10a470d
   original:
     hackage: paths-0.2.0.0
+- completed:
+    hackage: witherable-class-0@sha256:91f05518f9f4af5b02424f13ee7dcdab5d6618e01346aa2f388a72ff93e2e501,775
+    pantry-tree:
+      size: 277
+      sha256: e99696bf95da593a3892c7b9a28db09ffd139b4b1b313f32cec9d26979aa7ce2
+  original:
+    hackage: witherable-class-0
 snapshots:
 - completed:
     size: 488576

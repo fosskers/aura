@@ -105,6 +105,7 @@ library
     , these             ^>=1.0
     , time              >=1.8  && <1.10
     , unliftio          ^>=0.2
+    , witherable-class  ^>= 0
 
 executable aura
   import:         commons, libexec
