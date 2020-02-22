@@ -94,6 +94,7 @@ exit _  (Right _) = exitSuccess
 
 execOpts :: Either (PacmanOp, Set MiscOp) AuraOp -> RIO Env ()
 execOpts ops = do
+  logDebug "Interpreting CLI options."
   ss <- asks settings
   when (shared ss Debug) $ do
     liftIO . pPrintNoColor $ ops

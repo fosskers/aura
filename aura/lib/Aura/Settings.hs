@@ -1,5 +1,6 @@
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric      #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE OverloadedStrings  #-}
 
 -- |
 -- Module    : Aura.Settings
@@ -120,6 +121,7 @@ data Settings = Settings
   , commonConfigOf :: !CommonConfig
   , buildConfigOf  :: !BuildConfig
   , logFuncOf      :: !LogFunc }
+  deriving stock (Generic)
 
 -- | Unless otherwise specified, packages will be built within @/tmp@.
 defaultBuildDir :: Path Absolute

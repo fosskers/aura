@@ -1,4 +1,6 @@
 {-# LANGUAGE DataKinds           #-}
+{-# LANGUAGE DeriveGeneric       #-}
+{-# LANGUAGE DerivingStrategies  #-}
 {-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE MonoLocalBinds      #-}
 {-# LANGUAGE MultiWayIf          #-}
@@ -41,7 +43,7 @@ import           Aura.Types
 import           Aura.Utils
 import           Control.Monad.Trans.Maybe
 import           Data.Bifunctor (bimap)
-import           Data.Generics.Product (field)
+import           Data.Generics.Product (field, typed)
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import           Data.Text.Prettyprint.Doc
@@ -65,6 +67,10 @@ import           System.Path.IO (doesFileExist)
 -- instantiated in `IO`, while `Settings` is mostly static and derived from
 -- command-line arguments.
 data Env = Env { repository :: !Repository, settings :: !Settings }
+  deriving stock (Generic)
+
+instance HasLogFunc Env where
+  logFuncL = typed @Settings . typed @LogFunc
 
 -- | A `Repository` is a place where packages may be fetched from. Multiple
 -- repositories can be combined with the `Semigroup` instance. Checks packages
