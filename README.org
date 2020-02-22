@@ -122,6 +122,7 @@ demonstrates:
 - Concurrency (~scheduler~)
 - Shell Interaction (~typed-process~)
 - Pretty Printing (~prettyprinter~)
+- Logging (~rio~)
 
 ** Installation
 
