@@ -153,7 +153,7 @@ complete, your ~aura~ binary will be available in ~/home/YOU/.local/bin/~.
 
 *** Installing Packages
 
-| Command              | Note                                                                 |
+| Command              | Function                                                         |
 |----------------------+----------------------------------------------------------------------|
 | ~aura -A <package>~  | Install an AUR package.                                              |
 | ~aura -Au~           | Upgrade all installed AUR packages.                                  |
@@ -164,77 +164,38 @@ complete, your ~aura~ binary will be available in ~/home/YOU/.local/bin/~.
 
 *** Package Set Snapshots
 
-Store a record of all installed packages:
-
-#+begin_src bash
-  aura -B
-#+end_src
-
-Restore a saved record. Rolls back, uninstalls, and reinstalls packages as necessary:
-
-#+begin_src bash
-  aura -Br
-#+end_src
+| Command        | Function                                                        |
+|----------------+-----------------------------------------------------------------|
+| ~aura -B~      | Store a JSON record of all installed packages.                  |
+| ~aura -Br~     | Restore a saved record. Rolls back and uninstalls as necessary. |
+| ~aura -Bc <n>~ | Delete all but the most recent ~n~ saved states.                |
 
 *** Downgrading via the Package Cache
 
-Downgrade a package (this is interactive):
-
-#+begin_src bash
-  aura -C (package)
-#+end_src
-
-Search the package cache for package files via a regex:
-
-#+begin_src bash
-  aura -Cs (regex)
-#+end_src
-
-Reduce the package cache to contain only 'x' of each package file:
-
-#+begin_src bash
-  aura -Cc x
-#+end_src
+| Command             | Function                                                            |
+|---------------------+---------------------------------------------------------------------|
+| ~aura -C <package>~ | Downgrade a package.                                                |
+| ~aura -Cs <regex>~  | Search the package cache for files that match a regex.              |
+| ~aura -Cc <n>~      | Delete all but the most recent ~n~ versions of each cached package. |
 
 *** Searching the Pacman Log
 
-View the Pacman Log:
-
-#+begin_src bash
-  aura -L
-#+end_src
-
-Display install / upgrade history for a package:
-
-#+begin_src bash
-  aura -Li (package)
-#+end_src
-
-Search the pacman logfile via a regex:
-
-#+begin_src bash
-  aura -Ls (regex)
-#+end_src
+| Command              | Function                                         |
+|----------------------+--------------------------------------------------|
+| ~aura -L~            | View the Pacman log.                             |
+| ~aura -Li <package>~ | View the install / upgrade history of a package. |
+| ~aura -Ls <regex>~   | Search the Pacman log via a regex.               |
 
 *** Managing Orphan Packages
 
-Display orphan packages:
+Orphan packages are those whose install reason is marked as "As Dependency", but
+are not actually depended upon by any installed package.
 
-#+begin_src bash
-  aura -O
-#+end_src
-
-Change a package's install reason to ~Explicitly installed~.
-
-#+begin_src bash
-  aura -O --adopt (package)
-#+end_src
-
-Uninstall all orphan packages:
-
-#+begin_src bash
-  aura -Oj
-#+end_src
+| Command                     | Function                                                      |
+|-----------------------------+---------------------------------------------------------------|
+| ~aura -O~                   | Display orphan packages.                                      |
+| ~aura -O --adopt <package>~ | Change a package's install reason to ~Excplicitly installed~. |
+| ~aura -Oj~                  | Uninstall all orphan packages.                                |
 
 ** Localisation
 
