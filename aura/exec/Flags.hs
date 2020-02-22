@@ -26,14 +26,17 @@ import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath)
 
 -- | A description of a run of Aura to attempt.
 data Program = Program {
-  -- ^ Whether Aura handles everything, or the ops and input are just passed down to Pacman.
   _operation   :: Either (PacmanOp, Set MiscOp) AuraOp
-  -- ^ Settings common to both Aura and Pacman.
+  -- ^ Whether Aura handles everything, or the ops and input are just passed down to Pacman.
   , _commons   :: CommonConfig
-  -- ^ Settings specific to building packages.
+  -- ^ Settings common to both Aura and Pacman.
   , _buildConf :: BuildConfig
+  -- ^ Settings specific to building packages.
+  , _language  :: Maybe Language
   -- ^ The human language of text output.
-  , _language  :: Maybe Language } deriving (Show)
+  , _logLevel  :: LogLevel
+  -- ^ The default RIO logging level.
+  } deriving (Show)
 
 -- | Inherited operations that are fed down to Pacman.
 data PacmanOp = Database (Either DatabaseOp (NESet PkgName))
@@ -259,8 +262,10 @@ program = Program
   <*> commonConfig
   <*> buildConfig
   <*> optional language
-  where aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version' <|> languages <|> viewconf
-        pacOps = database <|> files <|> queries <|> remove <|> sync <|> testdeps <|> upgrades
+  <*> logLevel
+  where
+    aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version' <|> languages <|> viewconf
+    pacOps = database <|> files <|> queries <|> remove <|> sync <|> testdeps <|> upgrades
 
 aursync :: Parser AuraOp
 aursync = bigA *>
@@ -518,3 +523,15 @@ language = foldr1 (<|>) $ map (\(f, v) -> flag' v (long f <> hidden)) langs
                 , ( "indonesian", Indonesia )
                 , ( "chinese",    Chinese ),    ( "中文",       Chinese )
                 , ( "esperanto",  Esperanto ) ]
+
+logLevel :: Parser LogLevel
+logLevel = option (eitherReader l)
+  (long "log-level" <> metavar "debug|info|warn|error" <> value LevelInfo
+   <> help "The minimum level of log messages to display (default: info)")
+  where
+    l :: String -> Either String LogLevel
+    l "debug" = Right LevelDebug
+    l "info"  = Right LevelInfo
+    l "warn"  = Right LevelWarn
+    l "error" = Right LevelError
+    l _       = Left "Must be one of debug|info|warn|error"

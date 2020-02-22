@@ -50,7 +50,7 @@ import           System.Environment (getEnvironment)
 --
 -- Throws in `IO` if there were any errors.
 withEnv :: Program -> (Env -> IO a) -> IO a
-withEnv (Program op co bc lng) f = do
+withEnv (Program op co bc lng ll) f = do
   let ign = S.fromList $ op ^.. _Right . _AurSync . folded . _AurIgnore . folded
       igg = S.fromList $ op ^.. _Right . _AurSync . folded . _AurIgnoreGroup . folded
   confFile    <- getPacmanConf (either id id $ configPathOf co) >>= either throwM pure
@@ -63,7 +63,7 @@ withEnv (Program op co bc lng) f = do
   bu <- maybe (throwM $ Failure whoIsBuildUser_1) pure
     $ buildUserOf bc <|> getTrueUser environment
   repos <- (<>) <$> pacmanRepo <*> aurRepo
-  lopts <- setLogMinLevel LevelInfo . setLogUseLoc True <$> logOptionsHandle stderr True
+  lopts <- setLogMinLevel ll . setLogUseLoc True <$> logOptionsHandle stderr True
   withLogFunc lopts $ \logFunc -> do
     let !ss = Settings
           { managerOf      = manager
