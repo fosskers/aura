@@ -154,14 +154,14 @@ complete, your ~aura~ binary will be available in ~/home/YOU/.local/bin/~.
 
 *** Installing Packages
 
-| Command              | Function                                                         |
-|----------------------+----------------------------------------------------------------------|
-| ~aura -A <package>~  | Install an AUR package.                                              |
-| ~aura -Au~           | Upgrade all installed AUR packages.                                  |
-| ~aura -Akuax~        | Author's favourite (upgrades, removes makedeps, shows PKGBUILD diffs |
-| ~aura -Ai <package>~ | Look up information on an AUR package.                               |
-| ~aura -As <regex>~   | Search the AUR via a regex.                                          |
-| ~aura -Ap <package>~ | Display a package's PKGBUILD.                                        |
+| Command              | Function                                                                              |
+|----------------------+---------------------------------------------------------------------------------------|
+| ~aura -A <package>~  | Install an AUR package.                                                               |
+| ~aura -Au~           | Upgrade all installed AUR packages.                                                   |
+| ~aura -Akuax~        | Author's favourite (upgrades, removes makedeps, shows PKGBUILD diffs, shows progress) |
+| ~aura -Ai <package>~ | Look up information on an AUR package.                                                |
+| ~aura -As <regex>~   | Search the AUR via a regex.                                                           |
+| ~aura -Ap <package>~ | Display a package's PKGBUILD.                                                         |
 
 *** Package Set Snapshots
 
@@ -192,11 +192,11 @@ complete, your ~aura~ binary will be available in ~/home/YOU/.local/bin/~.
 Orphan packages are those whose install reason is marked as "As Dependency", but
 are not actually depended upon by any installed package.
 
-| Command                     | Function                                                      |
-|-----------------------------+---------------------------------------------------------------|
-| ~aura -O~                   | Display orphan packages.                                      |
-| ~aura -O --adopt <package>~ | Change a package's install reason to ~Excplicitly installed~. |
-| ~aura -Oj~                  | Uninstall all orphan packages.                                |
+| Command                     | Function                                                     |
+|-----------------------------+--------------------------------------------------------------|
+| ~aura -O~                   | Display orphan packages.                                     |
+| ~aura -O --adopt <package>~ | Change a package's install reason to ~Explicitly installed~. |
+| ~aura -Oj~                  | Uninstall all orphan packages.                               |
 
 ** Localisation
 
