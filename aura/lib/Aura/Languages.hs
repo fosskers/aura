@@ -1187,7 +1187,7 @@ reportNotInLog_1 = \case
 -- Aura/AUR functions
 -------------------------------
 
--- https://github.com/aurapm/aura/issues/498
+-- https://github.com/fosskers/aura/issues/498
 connectionFailure_1 :: Language -> Doc AnsiStyle
 connectionFailure_1 = \case
   Spanish   -> "No se pudo contactar con el AUR. ¿Tienes conexión a internet?"

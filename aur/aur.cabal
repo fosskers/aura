@@ -10,7 +10,7 @@ description:
   of the AUR.
 
 category:           Linux
-homepage:           https://github.com/aurapm/aura
+homepage:           https://github.com/fosskers/aura
 author:             Colin Woodbury
 maintainer:         colin@fosskers.ca
 copyright:          2014 - 2020 Colin Woodbury

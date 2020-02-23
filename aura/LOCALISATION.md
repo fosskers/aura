@@ -10,7 +10,7 @@ contribution, and its a great opportunity to contribute to Open Source.
 
 ## What You Need
 
-1. The aura source code. Get it at: https://github.com/aurapm/aura
+1. The aura source code. Get it at: https://github.com/fosskers/aura
 
 2. An editor. Whichever one you like.
    Vim users, run the following easter-egg command to unlock a better version:
