@@ -28,7 +28,7 @@ optdepends=('powerpill:    For faster repository downloads.'
 provides=('aura')
 conflicts=('aura-git' 'aura-bin')
 options=('strip')
-source=(https://github.com/aurapm/aura/releases/download/v${pkgver}/aura-${pkgver}.tar.gz)
+source=(https://github.com/fosskers/aura/releases/download/v${pkgver}/aura-${pkgver}.tar.gz)
 md5sums=('fd2defff494ad7847a0fb9fe73296cf1')
 
 build() {

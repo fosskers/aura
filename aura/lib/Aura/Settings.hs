@@ -1,6 +1,5 @@
 {-# LANGUAGE DeriveGeneric      #-}
 {-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE OverloadedStrings  #-}
 
 -- |
 -- Module    : Aura.Settings

@@ -1,5 +1,4 @@
-{-# LANGUAGE DataKinds        #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 
 -- |
 -- Module    : Aura.Pkgbuild.Records

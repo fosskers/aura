@@ -1,13 +1,11 @@
 {-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE LambdaCase        #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications  #-}
 {-# LANGUAGE ViewPatterns      #-}
+
 {-# OPTIONS_HADDOCK prune #-}
 {-# OPTIONS_GHC -fno-warn-missing-export-lists #-}
 
 -- |
--- Module    : Aura.Languages.Fields
+-- Module    : Aura.Languages
 -- Copyright : (c) Colin Woodbury, 2012 - 2020
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
@@ -1187,7 +1185,7 @@ reportNotInLog_1 = \case
 -- Aura/AUR functions
 -------------------------------
 
--- https://github.com/aurapm/aura/issues/498
+-- https://github.com/fosskers/aura/issues/498
 connectionFailure_1 :: Language -> Doc AnsiStyle
 connectionFailure_1 = \case
   Spanish -> "No se pudo contactar con el AUR. ¿Tienes conexión a internet?"

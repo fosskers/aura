@@ -25,7 +25,14 @@ extra-source-files:
 
 common commons
   default-language:   Haskell2010
-  default-extensions: NoImplicitPrelude
+  default-extensions:
+    NoImplicitPrelude
+    BangPatterns
+    LambdaCase
+    OverloadedStrings
+    TupleSections
+    TypeApplications
+
   ghc-options:
     -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns
     -Wredundant-constraints -Widentities -Wpartial-fields -Wcompat

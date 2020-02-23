@@ -4,7 +4,7 @@ version:       1.0.0
 synopsis:      Sweeps the AUR for security flaws in PKGBUILDs.
 description:   Sweeps the AUR for security flaws in PKGBUILDs.
 category:      System
-homepage:      https://github.com/aurapm/aura
+homepage:      https://github.com/fosskers/aura
 author:        Colin Woodbury
 maintainer:    colin@fosskers.ca
 license:       GPL-3

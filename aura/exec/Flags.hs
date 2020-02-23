@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Flags
   ( Program(..), opts
   , PacmanOp( Sync ), SyncOp( SyncUpgrade ), MiscOp
