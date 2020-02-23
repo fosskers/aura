@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 -- |
 -- Module    : Aura.Logo
 -- Copyright : (c) Colin Woodbury, 2012 - 2020

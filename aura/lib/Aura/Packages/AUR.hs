@@ -2,10 +2,6 @@
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE MonoLocalBinds        #-}
-{-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE TypeApplications      #-}
-
 -- |
 -- Module    : Aura.Packages.AUR
 -- Copyright : (c) Colin Woodbury, 2012 - 2020

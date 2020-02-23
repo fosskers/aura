@@ -1,6 +1,4 @@
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications  #-}
+{-# LANGUAGE DataKinds #-}
 
 -- |
 -- Module    : Aura.Pkgbuild.Base
