@@ -27,7 +27,7 @@ packages:
     hackage: witherable-class-0
 snapshots:
 - completed:
-    size: 488576
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/15/0.yaml
-    sha256: e4b6a87b47ec1cf63a7f1a0884a3b276fce2b0d174a10e8753c4f618e7983568
-  original: lts-15.0
+    size: 489011
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/15/1.yaml
+    sha256: d4ecc42b7125d68e4c3c036a08046ad0cd02ae0d9efbe3af2223a00ff8cc16f3
+  original: lts-15.1
