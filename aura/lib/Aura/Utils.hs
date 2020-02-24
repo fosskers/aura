@@ -32,6 +32,7 @@ module Aura.Utils
   , maybe'
   , fmapEither
   , traverseEither
+  , groupsOf
   ) where
 
 import           Aura.Colour
@@ -45,6 +46,7 @@ import           Network.HTTP.Types.Status (statusCode)
 import           RIO
 import qualified RIO.ByteString as B
 import qualified RIO.ByteString.Lazy as BL
+import qualified RIO.List as L
 import           RIO.List.Partial (maximum)
 import qualified RIO.Map as M
 import qualified RIO.Text as T
@@ -241,3 +243,15 @@ fmapEither f = foldl' (deal f) ([],[])
 -- | Borrowed from Compactable.
 traverseEither :: Applicative f => (a -> f (Either b c)) -> [a] -> f ([b], [c])
 traverseEither f = fmap partitionEithers . traverse f
+
+-- | Break a list into groups of @n@ elements. The last item in the result is
+-- not guaranteed to have the same length as the others.
+groupsOf :: Int -> [a] -> [[a]]
+groupsOf n as
+  | n <= 0 = []
+  | otherwise = go as
+  where
+    go [] = []
+    go bs = xs : go rest
+      where
+        (xs, rest) = L.splitAt n bs

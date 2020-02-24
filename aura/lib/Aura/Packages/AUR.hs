@@ -28,7 +28,7 @@ import           Aura.Languages
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils (fmapEither)
+import           Aura.Utils (fmapEither, groupsOf)
 import           Control.Error.Util (hush, note)
 import           Control.Monad.Trans.Maybe
 import           Control.Scheduler (Comp(..), traverseConcurrently)
@@ -151,11 +151,15 @@ aurInfo :: NonEmpty PkgName -> RIO Env [AurInfo]
 aurInfo pkgs = do
   logDebug $ "AUR: Looking up " <> display (length pkgs) <> " packages..."
   m <- asks (managerOf . settings)
-  liftIO (info m . map (^. field @"name") $ toList pkgs) >>= \case
-    Left (ConnectionError _) -> throwM (Failure connectionFailure_1)
-    Left (FailureResponse _ r) -> do
-      let !resp = display . decodeUtf8Lenient . toStrictBytes $ responseBody r
-      logDebug $ "Failed! Server said: " <> resp
-      throwM (Failure miscAURFailure_2)
-    Left _ -> throwM (Failure miscAURFailure_1)
-    Right res -> pure $ sortAurInfo (Just SortAlphabetically) res
+  fmap fold . traverseConcurrently Par' (work m) . groupsOf 50 $ NEL.toList pkgs
+  where
+    work :: Manager -> [PkgName] -> RIO Env [AurInfo]
+    work m ps = do
+      liftIO (info m $ map (^. field @"name") ps) >>= \case
+        Left (ConnectionError _) -> throwM (Failure connectionFailure_1)
+        Left (FailureResponse _ r) -> do
+          let !resp = display . decodeUtf8Lenient . toStrictBytes $ responseBody r
+          logDebug $ "Failed! Server said: " <> resp
+          throwM (Failure miscAURFailure_2)
+        Left _ -> throwM (Failure miscAURFailure_1)
+        Right res -> pure $ sortAurInfo (Just SortAlphabetically) res
