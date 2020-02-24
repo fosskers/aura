@@ -155,12 +155,11 @@ aurInfo pkgs = do
     <$> traverseConcurrently Par' (work m) (groupsOf 50 $ NEL.toList pkgs)
   where
     work :: Manager -> [PkgName] -> RIO Env [AurInfo]
-    work m ps = do
-      liftIO (info m $ map (^. field @"name") ps) >>= \case
-        Left (ConnectionError _) -> throwM (Failure connectionFailure_1)
-        Left (FailureResponse _ r) -> do
-          let !resp = display . decodeUtf8Lenient . toStrictBytes $ responseBody r
-          logDebug $ "Failed! Server said: " <> resp
-          throwM (Failure miscAURFailure_2)
-        Left _ -> throwM (Failure miscAURFailure_1)
-        Right res -> pure res
+    work m ps = liftIO (info m $ map (^. field @"name") ps) >>= \case
+      Left (ConnectionError _) -> throwM (Failure connectionFailure_1)
+      Left (FailureResponse _ r) -> do
+        let !resp = display . decodeUtf8Lenient . toStrictBytes $ responseBody r
+        logDebug $ "Failed! Server said: " <> resp
+        throwM (Failure miscAURFailure_2)
+      Left _ -> throwM (Failure miscAURFailure_1)
+      Right res -> pure res
