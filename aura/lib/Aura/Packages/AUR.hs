@@ -151,7 +151,8 @@ aurInfo :: NonEmpty PkgName -> RIO Env [AurInfo]
 aurInfo pkgs = do
   logDebug $ "AUR: Looking up " <> display (length pkgs) <> " packages..."
   m <- asks (managerOf . settings)
-  fmap fold . traverseConcurrently Par' (work m) . groupsOf 50 $ NEL.toList pkgs
+  sortAurInfo (Just SortAlphabetically) . fold
+    <$> traverseConcurrently Par' (work m) (groupsOf 50 $ NEL.toList pkgs)
   where
     work :: Manager -> [PkgName] -> RIO Env [AurInfo]
     work m ps = do
@@ -162,4 +163,4 @@ aurInfo pkgs = do
           logDebug $ "Failed! Server said: " <> resp
           throwM (Failure miscAURFailure_2)
         Left _ -> throwM (Failure miscAURFailure_1)
-        Right res -> pure $ sortAurInfo (Just SortAlphabetically) res
+        Right res -> pure res
