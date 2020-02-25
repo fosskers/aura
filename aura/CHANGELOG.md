@@ -1,13 +1,14 @@
 # Aura Changelog
 
-## 2.2.x
+## 2.2.0 (2020-02-25)
 
-- **New Feature:**: `--log-level`. Setting this to `debug` will give you some verbose
-  logging output.
+- **New Feature:**: `--log-level` flag. Setting this to `debug` will give you
+  some verbose logging output. This is different from the usual `-x` behaviour.
 - **Bug Fix:** Users with many AUR packages installed will no longer see
   mysterious AUR connection failures.
   ([#528](https://github.com/fosskers/aura/issues/528))
 - Updated Italian translations. Grazie, Cristian Tentella!
+- Support for GHC 8.8.2.
 
 ## 2.1.0 (2020-02-17)
 
