@@ -62,13 +62,15 @@ instance Flagable CommonConfig where
 
 -- | Yes/No-style switches that are common to both Aura and Pacman.
 -- Aura acts on them first, then passes them down to @pacman@ if necessary.
-data CommonSwitch = NoConfirm | NeededOnly | Debug | Colour ColourMode deriving (Eq, Ord, Show)
+data CommonSwitch = NoConfirm | NeededOnly | Debug | Colour ColourMode | Overwrite Text
+  deriving (Eq, Ord, Show)
 
 instance Flagable CommonSwitch where
-  asFlag NoConfirm  = ["--noconfirm"]
-  asFlag NeededOnly = ["--needed"]
-  asFlag Debug      = ["--debug"]
-  asFlag (Colour m) = "--color" : asFlag m
+  asFlag NoConfirm     = ["--noconfirm"]
+  asFlag NeededOnly    = ["--needed"]
+  asFlag Debug         = ["--debug"]
+  asFlag (Colour m)    = "--color" : asFlag m
+  asFlag (Overwrite t) = "--overwrite" : asFlag t
 
 -- | Matches Pacman's colour options. `Auto` will ensure that text will only be coloured
 -- when the output target is a terminal.

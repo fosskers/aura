@@ -153,17 +153,20 @@ instance Flagable SyncOp where
 data SyncSwitch = SyncRefresh
                 | SyncIgnore      (Set PkgName)
                 | SyncIgnoreGroup (Set PkgGroup)
+                | SyncOverwrite   Text
                 deriving (Eq, Ord, Show)
 
 instance Flagable SyncSwitch where
   asFlag SyncRefresh          = ["--refresh"]
   asFlag (SyncIgnore ps)      = ["--ignore", T.intercalate "," $ asFlag ps ]
   asFlag (SyncIgnoreGroup gs) = ["--ignoregroup" , T.intercalate "," $ asFlag gs ]
+  asFlag (SyncOverwrite glob) = "--overwrite" : asFlag glob
 
 data UpgradeSwitch = UpgradeAsDeps
                    | UpgradeAsExplicit
                    | UpgradeIgnore      (Set PkgName)
                    | UpgradeIgnoreGroup (Set PkgGroup)
+                   | UpgradeOverwrite   Text
                    deriving (Eq, Ord, Show)
 
 instance Flagable UpgradeSwitch where
@@ -171,6 +174,7 @@ instance Flagable UpgradeSwitch where
   asFlag UpgradeAsExplicit       = ["--asexplicit"]
   asFlag (UpgradeIgnore ps)      = ["--ignore", T.intercalate "," $ asFlag ps ]
   asFlag (UpgradeIgnoreGroup gs) = ["--ignoregroup", T.intercalate "," $ asFlag gs ]
+  asFlag (UpgradeOverwrite glob) = "--overwrite" : asFlag glob
 
 -- | Flags common to several Pacman operations.
 data MiscOp = MiscArch    (Path Absolute)
@@ -366,10 +370,11 @@ commonConfig = CommonConfig <$> cap <*> cop <*> lfp <*> commonSwitches
               <|> pure (Left defaultLogFile)
 
 commonSwitches :: Parser (Set CommonSwitch)
-commonSwitches = S.fromList <$> many (nc <|> no <|> dbg <|> clr)
+commonSwitches = S.fromList <$> many (nc <|> no <|> dbg <|> clr <|> ovr)
   where nc  = flag' NoConfirm  (long "noconfirm" <> hidden <> help "Never ask for Aura or Pacman confirmation.")
         no  = flag' NeededOnly (long "needed"    <> hidden <> help "Don't rebuild/reinstall up-to-date packages.")
         dbg = flag' Debug      (long "debug"     <> hidden <> help "Print useful debugging info.")
+        ovr = Overwrite <$> strOption (long "overwrite" <> hidden <> help "Bypas file conflict checks." <> metavar "GLOB")
         clr = Colour . f <$> strOption (long "color" <> metavar "WHEN" <> hidden <> help "Colourize the output.")
         f :: String -> ColourMode
         f "never"  = Never

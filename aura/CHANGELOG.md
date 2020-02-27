@@ -1,5 +1,9 @@
 # Aura Changelog
 
+## 2.2.x
+
+- Pass the Pacman flag `--overwrite` through properly.
+
 ## 2.2.0 (2020-02-25)
 
 - **New Feature:**: `--log-level` flag. Setting this to `debug` will give you
