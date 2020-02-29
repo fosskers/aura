@@ -79,7 +79,7 @@ languageNames = M.fromList . zip [ Japanese, Polish, Croatian, Swedish, German, 
     Portuguese -> [ "Japonês", "Polonês", "Croata", "Sueco", "Alemão", "Espanhol", "Português", "Francês", "Russo", "Italiano", "Sérvio", "Norueguês", "Indonésio", "Chinês", "Esperanto" ]
     French     -> [ "Japanese", "Polonais", "Croate", "Suédois", "Allemand", "Espagnol", "Portugais", "Français", "Russe", "Italien", "Serbe", "Norvégien", "Indonesian", "Chinese", "Esperanto" ]
     Russian    -> [ "Японский", "Польский", "Хорватский", "Шведский", "Немецкий", "Испанский", "Португальский", "Французский", "Русский", "Итальянский", "Сербский", "Норвежский", "Индонезийский", "Китайский", "Эсперанто" ]
-    Italian    -> [ "Giapponese", "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "", "", "Indonesiano", "Cinese", "Esperanto" ]
+    Italian    -> [ "Giapponese", "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "Serbo", "Norvegese", "Indonesiano", "Cinese", "Esperanto" ]
     Serbian    -> [ "Japanese", "Пољски", "Хрватски", "Шведски", "Немачки", "Шпански", "Португалски", "Француски", "Руски", "Италијански", "Српски", "", "Indonesian", "Chinese", "Esperanto" ]
     Norwegian  -> [ "Japanese", "Polsk", "Kroatisk", "Svensk", "Tysk", "Spansk", "Portugisisk", "Fransk", "Russisk", "Italiensk", "Serbisk", "Norsk", "Indonesian", "Chinese", "Esperanto" ]
     Indonesia  -> [ "Japanese", "Polandia", "Kroasia", "Swedia", "Jerman", "Spanyol", "Portugis", "Prancis", "Rusia", "Italia", "Serbia", "Norwegia", "Indonesian", "Chinese", "Esperanto" ]
@@ -157,7 +157,7 @@ checkDBLock_1 = \case
     French     -> "La base de données des paquets est bloquée. Appuyez sur enter pour continuer."
     Portuguese -> "Banco de dados de pacote travado. Aperte 'enter' quando estiver destravado para poder continuar."
     Russian    -> "База данных пакетов заблокирована. Нажмите \"Ввод\", когда она разблокируется, чтобы продолжить."
-    Italian    -> "Il database dei pacchetti è bloccato. Premi invio quando sarà sbloccato per continuare."
+    Italian    -> "Non è stato possibile accedere alla banca dati dei pacchetti. Per continuare premere invio quando sarà di nuovo disponibile."
     Chinese    -> "包数据库已锁定。请在解锁后按下回车以继续。"
     Swedish    -> "Paketdatabasen är låst. Klicka på enter när den är upplåst."
     Esperanto  -> "La datumbazo de pakaĵoj estas ŝlosita. Premu enen-klavo kiam la datumbazo estas malŝlosita por daŭrigi"
@@ -170,7 +170,7 @@ trueRoot_3 = \case
     Spanish    -> "Desde makepkg v4.2 no es posible compilar paquetes como root."
     Portuguese -> "A partir da versão v4.2 de makepkg, não é mais possível compilar como root."
     Russian    -> "С версии makepkg v4.2 сборка от имени root более невозможна."
-    Italian    -> "A partire da makepkg v4.2 non è più possibile compilare come utente root."
+    Italian    -> "A partire dalla versione 4.2 di makepkg non è più possibile compilare come root."
     Chinese    -> "自从 makepkg v4.2 以后，就不能以根用户身份构建软件了。"
     Swedish    -> "I makepkg v4.2 och uppåt är det inte tillåtet att bygga som root."
     Esperanto  -> "Depost makepkg v4.2, konstruanto ĉefuzante ne eblas."
@@ -187,7 +187,7 @@ mustBeRoot_1 = let sudo = bt "sudo" in \case
     Portuguese -> "Utilize " <> sudo <> " para isso."
     French     -> "Vous devez utiliser " <> sudo <> " pour ça."
     Russian    -> "Необходимо использовать " <> sudo <> " для этого."
-    Italian    -> "È necessario utilizzare " <> sudo <> " per questo."
+    Italian    -> "Per eseguire questa operazione è necessario utilizzare " <> sudo <> "."
     Serbian    -> "Морате да користите " <> sudo <> " за ову радњу."
     Norwegian  -> "Du må bruke " <> sudo <> " for det."
     Indonesia  -> "Anda harus menggunakan " <> sudo <> " untuk melakukannya."
@@ -245,7 +245,7 @@ buildFail_6 = \case
     German     -> "Möchten Sie trotzdem fortfahren?"
     Spanish    -> "¿Deseas continuar de todas formas?"
     Norwegian  -> "Vil du fortsette likevel?"
-    Italian    -> "Vuoi continuare comunque?"
+    Italian    -> "Procedere comunque?"
     Portuguese -> "Gostaria de continuar mesmo assim?"
     French     -> "Voulez-vous tout de même continuer ?"
     Russian    -> "Продолжить, несмотря ни на что?"
@@ -284,7 +284,7 @@ buildFail_8 = \case
 buildFail_9 :: Language -> Doc AnsiStyle
 buildFail_9 = \case
   Spanish   -> "Error al detectar todos los archivo de paquete (*.pkg.tar.xz)."
-  Italian   -> "Non è stato possibile trovare nessun pacchetto compilato (*.pkg.tar.xz)."
+  Italian   -> "Non è stato possibile trovare nessun archivio risultante dalla compilazione del pacchetto (*.pkg.tar.xz)."
   Esperanto -> "Paneis detekti ĉiujn dosierojn de pakaĵoj (*.pkg.tar.xz)."
   _         -> "Failed to detect any built package files (*.pkg.tar.xz)."
 
@@ -299,7 +299,7 @@ buildFail_11 :: Language -> Doc AnsiStyle
 buildFail_11 = \case
   Japanese   -> "作成は失敗しました。エラーを見ますか？"
   Spanish    -> "Construcción fallida. ¿Te gustaría ver el error?"
-  Italian    -> "La compilazione è fallita. Vuoi dare un'occhiata all'errore?"
+  Italian    -> "La compilazione è fallita. Visionare l'errore?"
   Esperanto  -> "Muntado paneis. Ĉu vi volas vidi la eraron?"
   _          -> "Building failed. Would you like to see the error?"
 
@@ -318,7 +318,7 @@ getRealPkgConflicts_1 (bt . view (field @"name") -> prnt) (bt . view (field @"na
     Portuguese -> "A dependência " <> p <> " exige a versão " <> d <> " mas a versão mais recente é " <> r <> "."
     French     -> p <> " est une dépendance nécessitant la version " <> d <> ", mais la plus récente est la version " <> r <> "."
     Russian    -> "Зависимость " <> p <> " требует версию " <> d <> ", однако самой последней версией является " <> r <> "."
-    Italian    -> "La dipendenza " <> p <> " richiede la versione " <> d <> " ma la versione disponibile è " <> r <> "."
+    Italian    -> p <> "è una dipendenza che necessita della versione " <> d <> ", ma la più recente è la " <> r <> "."
     Serbian    -> "Зависност " <> p <> " захтева верзију " <> d <> ", али најновија верзија је " <> r <> "."
     Norwegian  -> "Avhengigheten " <> p <> " krever versjon " <> d <>", men den nyeste versjonen er " <> r <> "."
     Indonesia  -> "Dependensi " <> p <> " meminta versi " <> d <> " namun versi paling baru adalah " <> r <> "."
@@ -337,7 +337,7 @@ getRealPkgConflicts_2 (bt . view (field @"name") -> p) = \case
   Portuguese -> p <> " é um pacote ignorado conforme configuração em `pacman.conf`!"
   French     -> "Le paquet " <> p <> " est ignoré. Vous devriez jeter un œil à votre `pacman.conf`."
   Russian    -> "Пакет " <> p <> " игнорируется! Проверьте ваш файл `pacman.conf`."
-  Italian    -> p <> " è un pacchetto ignorato, controllare `pacman.conf`."
+  Italian    -> p <> " è marcato come pacchetto ignorato all'interno del file `pacman.conf`."
   Serbian    -> "Пакет " <> p <> " је игнорисан! Видите ваш фајл „pacman.conf“."
   Norwegian  -> p <> " er en ignorert pakke! Sjekk din `pacman.conf`-fil."
   Indonesia  -> p <> " merupakan paket yang diabaikan! Lihat `pacman.conf` anda."
@@ -355,7 +355,7 @@ depError l (NonExistant (PkgName s)) = case l of
   Spanish    -> "La dependencia " <> bt s <> " no pudo ser encontrada."
   Portuguese -> "A dependência " <> bt s <> " não foi encontrada."
   Russian    -> "Зависимость " <> bt s <> " не найдена."
-  Italian    -> "La dipendenza " <> bt s <> "non è stata trovata."
+  Italian    -> "Non è stato possibile trovare la dipendenza " <> bt s <> "."
   Esperanto  -> "La dependeco " <> bt s <> " ne povis troviĝi."
   _          -> "The dependency " <> bt s <> " couldn't be found."
 depError l (BrokenProvides (PkgName pkg) (Provides (PkgName pro)) (PkgName n)) = case l of
@@ -369,7 +369,7 @@ missingPkg_3 :: Language -> Doc AnsiStyle
 missingPkg_3 = \case
   Spanish    -> "Se produjo un error al reorganizar el gráfico de dependencia. Si ves esto, algo está muy mal."
   Esperanto  -> "Eraro okazis kiam reorganizi la grafeo de dependeco. Io estas erarega."
-  Italian    -> "C'è stato un errore nella riorganizzazione dell'albero del grafico delle dipendenze. Se vedi questo messaggio, qualcosa è andato davvero storto."
+  Italian    -> "C'è stato un errore nella riorganizzazione della gerarchia delle dipendenze. Se vedi questo messaggio, qualcosa è andato davvero storto."
   _          -> "There was an error reorganizing the dependency graph. If you see this, something is very wrong."
 
 missingPkg_4 :: [NonEmpty PkgName] -> Language -> Doc AnsiStyle
@@ -381,7 +381,8 @@ missingPkg_4 pns = \case
 
 missingPkg_5 :: PkgName -> Language -> Doc AnsiStyle
 missingPkg_5 (PkgName p) = \case
-  _ -> bt p <> " does not exist."
+  Italian   -> bt p <> " non esiste."
+  _         -> bt p <> " does not exist."
 
 -----------------
 -- aura functions
@@ -420,7 +421,7 @@ auraCheck_1 = \case
     Portuguese -> "Uma atualização para Aura está disponível. Deseja atualizar antes?"
     French     -> "Une mise à jour d'Aura est disponible. Voulez-vous la mettre à jour en premier ?"
     Russian    -> "Доступно обновление Aura. Обновить сперва её?"
-    Italian    -> "Un aggiornamento per Aur è disponibile. Eseguirlo subito?"
+    Italian    -> "È disponibile un nuovo aggiornamento per Aura. Eseguirlo subito?"
     Indonesia  -> "Pemutakhiran aura tersedia. Mutakhirkan aura dulu?"
     Chinese    -> "Aura 可以升级。先升级 aura？"
     Swedish    -> "Det finns en uppdatering tillgänglig till Aura. Vill du uppdatera Aura först?"
@@ -495,7 +496,7 @@ install_5 = \case
     Portuguese -> "Determinando as dependências..."
     French     -> "Détermination des dépendances en cours…"
     Russian    -> "Определение зависимостей..."
-    Italian    -> "Determinazione dipendenze..."
+    Italian    -> "Determinazione delle dipendenze..."
     Serbian    -> "Утврђивање зависности..."
     Norwegian  -> "Bestemmer avhengigheter..."
     Indonesia  -> "Menentukan dependensi..."
@@ -511,7 +512,7 @@ confirmIgnored_1 (bt . view (field @"name") -> p) = \case
     Spanish    -> p <> " está marcado como ignorado. ¿Deseas instalarlo de todas formas?"
     Portuguese -> p <> " está marcado como Ignorado. Deseja instalar mesmo assim?"
     Russian    -> p <> " отмечен как игнорируемый. Всё равно установить?"
-    Italian    -> p <> " è un pacchetto Ignorato. Installare comunque?"
+    Italian    -> p <> " è marcato come pacchetto ignorato. Installarlo comunque?"
     Chinese    -> p <> " 已被标记为忽略。仍然安装？"
     Swedish    -> p <> " är markerad som ignorerad. Vill du installera ändå?"
     Esperanto  -> p <> " estas markita kiel malatenta. Ĉu instali?"
@@ -529,7 +530,7 @@ reportNonPackages_1 = \case
     Portuguese -> "Os seguintes não são pacotes AUR:"
     French     -> "Les éléments suivants ne sont pas des paquets AUR :"
     Russian    -> "Ниже указано то, что не является пакетами AUR:"
-    Italian    -> "I seguenti pacchetti non sono presenti nella AUR:"
+    Italian    -> "I seguenti pacchetti non fanno parte dell'AUR:"
     Serbian    -> "Ово нису пакети:"
     Norwegian  -> "Det følgende er ikke AUR-pakker:"
     Indonesia  -> "Paket berikut ini bukan merupakan paket AUR:"
@@ -544,7 +545,7 @@ reportUnneededPackages_1 = \case
     Polish     -> "Następujące pakiety zostały już zainstalowane:"
     Portuguese -> "Os seguintes pacotes já estão instalados:"
     Russian    -> "Следующие пакеты уже установлены:"
-    Italian    -> "I seguenti pacchetti sono già presenti nel sistema."
+    Italian    -> "I seguenti pacchetti sono già stati installati:"
     German     -> "Die folgenden Pakete sind bereits installiert:"
     Spanish    -> "Los siguientes paquetes ya están instalados:"
     Chinese    -> "以下包已被安装："
@@ -563,7 +564,7 @@ reportPkgsToInstall_1 = \case
     Portuguese -> "Dependências no repositório:"
     French     -> "Dépendances du dépôt :"
     Russian    -> "Зависимости из репозитория:"
-    Italian    -> "Dipendenze nei repository:"
+    Italian    -> "Dipendenze del repository:"
     Serbian    -> "Зависности из ризница:"
     Norwegian  -> "Avhengigheter fra depotet:"
     Indonesia  -> "Dependensi dari repositori:"
@@ -601,7 +602,7 @@ reportPkgsToInstall_3 = \case
     Portuguese -> "Dependências no AUR:"
     French     -> "Dépendances AUR\xa0:"
     Russian    -> "Зависимости из AUR:"
-    Italian    -> "Dipendenze nella AUR:"
+    Italian    -> "Dipendenze nell'AUR:"
     Serbian    -> "Зависности из AUR-а:"
     Norwegian  -> "Avhengigheter fra AUR:"
     Esperanto  -> "Dependencoj de AUR:"
@@ -618,7 +619,7 @@ reportPkgbuildDiffs_1 (bt . view (field @"name") -> p) = \case
     Portuguese -> p <> " não possui PKGBUILD."
     French     -> p <> " n'a pas encore de PKGBUILD enregistré."
     Russian    -> "У " <> p <> " ещё нет сохраненного PKGBUILD."
-    Italian    -> p <> " non ci sono PKGBUILD salvati"
+    Italian    -> p <> " non ci sono ancora PKGBUILD salvati"
     Serbian    -> p <> " још нема похрањен PKGBUILD."
     Norwegian  -> p <> " har ingen PKGBUILD ennå."
     Indonesia  -> p <> " tidak mempunyai PKGBUILD yang tersimpan untuk saat ini."
@@ -638,7 +639,7 @@ reportPkgbuildDiffs_2 (bt -> p) = \case
     Portuguese -> "O PKGBUILD de " <> p <> "está atualizado."
     Russian    -> "PKGBUILD " <> p <> " является новейшим."
     French     -> "Le PKGBUILD de " <> p <> " est à jour."
-    Italian    -> "Il PKGBUILD di " <> p <> " è aggiornato."
+    Italian    -> "Il PKGBUILD di " <> p <> " è aggiornato all'ultima versione."
     Serbian    -> "PKGBUILD пакета " <> p <> " је ажуран."
     Norwegian  -> p <> "'s PKGBUILD er oppdatert."
     Indonesia  -> "PKGBUILD dari paket " <> p <> " sudah mutakhir."
@@ -658,7 +659,7 @@ reportPkgbuildDiffs_3 (bt . view (field @"name") -> p) = \case
     Portuguese -> "Mudanças no PKGBUILD de " <> p <> ":"
     Russian    -> "Изменения, вносимые " <> p <> " PKGBUILD:"
     French     -> "Changements du PKGBUILD de " <> p <> " :"
-    Italian    -> "Cambiamenti nel PKGBUILD di " <> p <>":"
+    Italian    -> "Cambiamenti nel PKGBUILD del pacchetto " <> p <>":"
     Serbian    -> "Промене PKGBUILD-a за " <> p <> ":"
     Norwegian  -> p <> "'s endringer i PKGBUILD:"
     Indonesia  -> "Perubahan PKGBUILD " <> p <> ":"
@@ -679,7 +680,7 @@ reportPkgsToUpgrade_1 = \case
     Portuguese -> "Pacotes do AUR para atualizar:"
     French     -> "Paquets AUR à mettre à jour :"
     Russian    -> "Пакеты AUR, готовые для обновления:"
-    Italian    -> "Pacchetti in AUR da aggiornare:"
+    Italian    -> "Pacchetti dell'AUR da aggiornare:"
     Serbian    -> "Пакети из AUR-а за надоградњу:"
     Norwegian  -> "AUR-pakker å oppgradere:"
     Indonesia  -> "Paket AUR yang akan ditingkatkan:"
@@ -699,7 +700,7 @@ reportBadDowngradePkgs_1 = \case
     Portuguese -> "Os seguintes pacotes não possuem versões no cache, logo não podem retornar a uma versão anterior:"
     French     -> "Aucune version des paquets suivants n'est présente dans le cache ; ils ne peuvent pas être mis à niveau à une version antérieure :"
     Russian    -> "Следующих пакетов нет в кэше. Следовательно, они не могут быть откачены к старой версии:"
-    Italian    -> "I seguenti pacchetti non hanno versioni nella cache e non posso essere retrocessi:"
+    Italian    -> "Nessuna versione dei seguenti pacchetti è disponibile nella cache, perciò non è possibile riportarli ad una versione precedente:"
     Serbian    -> "Следећи пакети нису ни инсталирани, те се не могу вратити на старију верзију:"
     Norwegian  -> "Følgende pakker har ingen versjoner i cache, og kan derfor ikke bli nedgradert:"
     Indonesia  -> "Berikut ini tidak mempunyai versi pada cache, sehingga tidak akan diturunkan:"
@@ -724,7 +725,7 @@ upgradeAURPkgs_1 = \case
     Portuguese -> "Obtendo informação dos pacotes..."
     French     -> "Obtention des informations des paquets en cours…"
     Russian    -> "Сборка информации о пакетах..."
-    Italian    -> "Ottengo le informazioni del pacchetto..."
+    Italian    -> "Ottenimento di informazioni sui pacchetti..."
     Serbian    -> "Преузимање информација о пакетима..."
     Norwegian  -> "Henter pakkeinformasjon..."
     Indonesia  -> "Mengambil informasi paket..."
@@ -743,7 +744,7 @@ upgradeAURPkgs_2 = \case
     Portuguese -> "Comparando versões dos pacotes..."
     French     -> "Comparaison des versions des paquets en cours…"
     Russian    -> "Сравнение версий пакетов..."
-    Italian    -> "Confronto le versioni del pacchetto..."
+    Italian    -> "Esecuzione di un confronto fra le versioni dei pacchetti..."
     Serbian    -> "Упоређивање верзија пакета..."
     Norwegian  -> "Sammenligner pakkeversjoner..."
     Indonesia  -> "Membandingkan versi paket..."
@@ -762,7 +763,7 @@ upgradeAURPkgs_3 = \case
     Portuguese -> "Nenhum pacote do AUR precisa de atualização."
     French     -> "Aucune mise à jour de paquet AUR n'est nécessaire."
     Russian    -> "Обновление пакетов из AUR не требуется."
-    Italian    -> "Nessun pacchetto della AUR necessita di un aggiornamento."
+    Italian    -> "Nessun pacchetto dell'AUR necessita di aggiornamenti."
     Serbian    -> "Ажурирање пакета из AUR-а није потребно."
     Norwegian  -> "Ingen pakkeoppgradering fra AUR nødvendig."
     Indonesia  -> "Tidak ada peningkatan AUR yang dibutuhkan."
@@ -781,7 +782,7 @@ removeMakeDepsAfter_1 = \case
     Portuguese -> "Removendo dependências `make` desnecessárias..."
     French     -> "Suppression des dépendances inutiles…"
     Russian    -> "Удаление ненужных зависимостей make..."
-    Italian    -> "Rimuovo le dipendenze di compilazione..."
+    Italian    -> "Rimozione delle dipendenze utilizzate per la compilazione..."
     Serbian    -> "Уклањање непотребних зависности за изградњу..."
     Norwegian  -> "Fjerner unødvendige make-avhengigheter..."
     Indonesia  -> "Menghapus dependensi `make` yang tidak dibutuhkan..."
@@ -802,7 +803,7 @@ cleanStates_2 n@(bt . tshow -> s) = \case
     Spanish    -> "El estado del paquete" <> s <> " se mantendrá. ¿Deseas eliminar el resto?"
     Serbian    -> s <> " стања пакета ће бити сачувано. Уклонити остатак?"
     Norwegian  -> s <> " pakketilstander vil bli beholdt. Vil du fjerne resten?"
-    Italian    -> s <> " lo stato dei pacchetti sarà mantenuto. Rimuovere i rimanenti?"
+    Italian    -> "Lo stato del pacchetto" <> s <> " sarà mantenuto. Rimuovere il resto?"
     Portuguese -> s <> " estados de pacotes serão mantidos. Remover o resto?"
     French     -> s <> " états des paquets vont être conservés. Supprimer le reste ?"
     Russian    -> s <> pluralRussian " состояние пакетов будет оставлено." " состояния пакетов будут оставлены." " состояний пакетов будет оставлено." n <> " Удалить оставшиеся?"
@@ -822,7 +823,7 @@ cleanStates_3 = \case
     Spanish    -> "No se han eliminado estados de los paquetes."
     Serbian    -> "Ниједно стање пакета није уклоњено."
     Norwegian  -> "Ingen pakketilstander ble fjernet."
-    Italian    -> "Nessuno stato di pacchetto è stato rimosso."
+    Italian    -> "Nessuno stato dei pacchetti è stato rimosso."
     Portuguese -> "Nenhum estado de pacote será removido."
     French     -> "Aucun état des paquets n'a été supprimé."
     Russian    -> "Состояния пакетов отались нетронутыми."
@@ -837,7 +838,7 @@ cleanStates_4 n = \case
   Japanese  -> "現在のパッケージ状態記録：" <> pretty n <> "個。"
   Spanish   -> "Actualmente tiene " <+> pretty n <+> "estados de paquetes guardados."
   Russian   -> "У вас сейчас " <+> pretty n <+> pluralRussian " сохраненное состояние пакета" " сохраненных состояний пакета" " сохраненных состояний пакетов." n
-  Italian   -> "Al momento ci sono " <+> pretty n <+> " stati di pacchetti salvati."
+  Italian   -> "Al momento ci sono" <+> pretty n <+> "stati di pacchetti salvati."
   Esperanto -> "Vi havas " <+> pretty n <+> " konservajn statojn de pakaĵoj."
   _         -> "You currently have" <+> pretty n <+> "saved package states."
 
@@ -853,7 +854,7 @@ cleanStates_5 t = \case
 cleanStates_6 :: Int -> Language -> Doc AnsiStyle
 cleanStates_6 n = \case
   Spanish   -> pretty n <+> "de estos están anclados y no se eliminarán."
-  Italian   -> pretty n <+> "di questi sono stati fissati e non saranno rimossi."
+  Italian   -> pretty n <+> "di questi sono stati fissati, perciò non saranno rimossi."
   _         -> pretty n <+> "of these are pinned, and won't be removed."
 
 readState_1 :: Language -> Doc AnsiStyle
@@ -936,7 +937,7 @@ backupCache_5 (bt . tshow -> n) = \case
     Portuguese -> "Arquivos de pacotes para backup: " <> n
     French     -> "Copie de sauvegarde des fichiers de paquets suivants : " <> n
     Russian    -> "Файлы пакета для бэкапа: " <> n
-    Italian    -> "File del pacchetto da salvare: " <> n
+    Italian    -> "Archivi dei pacchetti per cui sarà eseguito un backup: " <> n
     Serbian    -> "Датотеке за бекап: " <> n
     Norwegian  -> "Pakker som blir tatt backup på: " <> n
     Indonesia  -> "Jumlah paket yang di-`backup`: " <> n
@@ -955,7 +956,7 @@ backupCache_6 = \case
     Portuguese -> "Proceder com o backup?"
     French     -> "Procéder à la copie de sauvegarde ?"
     Russian    -> "Продолжить создание бэкапа?"
-    Italian    -> "Procedere con il salvataggio?"
+    Italian    -> "Procedere con il backup?"
     Serbian    -> "Наставити бекаповање?"
     Norwegian  -> "Fortsett med backup?"
     Indonesia  -> "Lanjutkan dengan `backup`?"
@@ -974,7 +975,7 @@ backupCache_7 = \case
     Portuguese -> "Backup cancelado manualmente."
     French     -> "Copie de sauvegarde manuelle annulée."
     Russian    -> "Создание бэкапа прервано пользователем."
-    Italian    -> "Salvataggio manuale interrotto."
+    Italian    -> "Backup interrotto manualmente."
     Serbian    -> "Бекаповање је ручно прекинуто."
     Norwegian  -> "Backup ble avbrutt manuelt."
     Indonesia  -> "Proses `backup` dibatalkan secara paksa."
@@ -993,7 +994,7 @@ backupCache_8 = \case
     Portuguese -> "Efetuando backup. Isso pode levar alguns minutos..."
     French     -> "Copie de sauvegarde en cours. Ceci peut prendre quelques minutes…"
     Russian    -> "Создается бэкап. Это может занять пару минут..."
-    Italian    -> "Sto eseguendo il backup. Potrebbe volerci qualche minuto..."
+    Italian    -> "Esecuzione del backup in corso. Potrebbe volerci qualche minuto..."
     Serbian    -> "Бекапујем. Ово може да потраје пар минута..."
     Norwegian  -> "Tar backup. Dette kan ta en stund..."
     Indonesia  -> "Melakukan `backup`. Proses ini akan berjalan untuk beberapa menit..."
@@ -1031,7 +1032,7 @@ cleanCache_2 = \case
     Portuguese -> "Isso removerá TODOS OS PACOTES do cache."
     French     -> "Ceci va supprimer la TOTALITÉ du cache des paquets."
     Russian    -> "Это действие ВСЕЦЕЛО уничтожит кэш пакетов."
-    Italian    -> "Questo cancellerà l'INTERA cache dei pacchetti."
+    Italian    -> "Questa operazione cancellerà l'INTERA cache dei pacchetti."
     Serbian    -> "Ово ће избрисати ЦЕО кеш пакета."
     Norwegian  -> "Dette vil slette HELE pakke-cachen."
     Indonesia  -> "Akan menghapus SEMUA `cache` paket"
@@ -1050,7 +1051,7 @@ cleanCache_3 n@(bt . tshow -> s) = \case
     Portuguese -> s <> " arquivos de cada pacote serão mantidos."
     French     -> s <> " fichiers de chaque paquet sera conservé."
     Russian    -> s <> pluralRussian " версия каждого пакета будет нетронута." " версии каждого пакета будут нетронуты." " версий каждого пакета будут нетронуты." n
-    Italian    -> s <> " di ciascun pacchetto sarà mantenuto."
+    Italian    -> "Saranno mantenuti " <> s <> " file di ciascun pacchetto."
     Serbian    -> s <> " верзије сваког од пакета ће бити сачуване."
     Norwegian  -> s <> " av hver pakkefil blir beholdt."
     Indonesia  -> s <> " berkas dari tiap paket akan disimpan."
@@ -1088,7 +1089,7 @@ cleanCache_5 = \case
     Portuguese -> "Limpeza do cache cancelada manualmente."
     French     -> "Le nettoyage du cache a été arrêté manuellement."
     Russian    -> "Очистка кэша прервана пользователем."
-    Italian    -> "Pulizia manuale della cache interrotta."
+    Italian    -> "La pulizia della cache è stata interrotta manualmente."
     Serbian    -> "Чишћење кеша је ручно прекинуто."
     Norwegian  -> "Cache-rensing ble avbrutt manuelt."
     Indonesia  -> "Pembersihan `cache` dibatalkan secara paksa."
@@ -1107,7 +1108,7 @@ cleanCache_6 = \case
     Portuguese -> "Limpando cache de pacotes..."
     French     -> "Nettoyage du cache des paquets…"
     Russian    -> "Очистка кэша пакета..."
-    Italian    -> "Pulisco la cache dei pacchetti..."
+    Italian    -> "Pulizia della cache dei pacchetti..."
     Serbian    -> "Чишћење кеша..."
     Norwegian  -> "Renser pakke-cache..."
     Indonesia  -> "Membersihkan `cache` paket..."
@@ -1124,7 +1125,7 @@ cleanNotSaved_1 = \case
     German     -> "Bestimme nicht benötigte Paketdateien..."
     Spanish    -> "Determinando ficheros de paquetes innecesarios..."
     Norwegian  -> "Finner unødige pakkefiler..."
-    Italian    -> "Determino i pacchetti non più necessari..."
+    Italian    -> "Inviduazione dei pacchetti non più necessari..."
     Portuguese -> "Determinando pacotes não necessários..."
     French     -> "Détermination des fichiers de paquet inutiles…"
     Russian    -> "Вычисляются ненужные файлы пакетов..."
@@ -1143,7 +1144,7 @@ cleanNotSaved_2 n@(cyan . pretty -> s) = \case
     German     -> s <> " nicht benötigte Paketdateien gefunden. Löschen?"
     Spanish    -> s <> " ficheros innecesarios de paquetes encontrados. ¿Deseas eliminarlos?"
     Norwegian  -> s <> " unødige pakkefiler funnet. Vil du slette?"
-    Italian    -> s <> " pacchetti non necessari trovati. Cancellarli?"
+    Italian    -> "Sono stati trovati " <> s <> " file non necessari per i pacchetti. Cancellarli?"
     Portuguese -> s <> " pacotes não necessários encontrados. Removê-los?"
     French     -> s <> " paquets inutiles trouvés. Les supprimer ?"
     Russian    -> pluralRussian ("Обнаружен " <> s <> " ненужный файл пакета.") ("Обнаружены " <> s <> " ненужных файла пакетов.") ("Обнаружено " <> s <> " ненужных файлов пакетов.") n <> " Удалить?"
@@ -1173,7 +1174,7 @@ reportNotInLog_1 = \case
     Portuguese -> "Os seguintes não apareceram no arquivo de log:"
     French     -> "Ceci n'apparaît pas des les journaux (log) :"
     Russian    -> "Следующих пакетов нет в лог-файле:"
-    Italian    -> "Questo non apparirà nei file di log;"
+    Italian    -> "Questi non sono apparsi nel file di log:"
     Serbian    -> "Ови пакети се не спомињу у дневнику:"
     Norwegian  -> "Følgende har ikke vist seg i loggen:"
     Indonesia  -> "Tidak terlihat pada berkas log:"
@@ -1189,16 +1190,18 @@ reportNotInLog_1 = \case
 connectionFailure_1 :: Language -> Doc AnsiStyle
 connectionFailure_1 = \case
   Spanish -> "No se pudo contactar con el AUR. ¿Tienes conexión a internet?"
-  Italian -> "Non è stato possibile contattare la AUR. Il computer è connesso ad internet?"
+  Italian -> "Non è stato possibile contattare l'AUR. Il computer è connesso ad internet?"
   _       -> "Failed to contact the AUR. Do you have an internet connection?"
 
 miscAURFailure_1 :: Language -> Doc AnsiStyle
 miscAURFailure_1 = \case
-  _ -> "Contacting the AUR failed in some unknown way."
+  Italian   -> "C'è stato un errore sconosciuto nel contattare l'AUR."
+  _         -> "Contacting the AUR failed in some unknown way."
 
 miscAURFailure_2 :: Language -> Doc AnsiStyle
 miscAURFailure_2 = \case
-  _ -> "The AUR server rejected the request."
+  Italian   -> "Il server dell'AUR ha rifiutato la richiesta."
+  _         -> "The AUR server rejected the request."
 
 infoFields :: Language -> [Text]
 infoFields = sequence [ Fields.repository
@@ -1227,7 +1230,7 @@ outOfDateMsg (Just _) = red . \case
     Portuguese -> "Desatualizado!"
     French     -> "Périmé !"
     Russian    -> "Устарел!"
-    Italian    -> "Non aggiornato!"
+    Italian    -> "Non aggiornato all'ultima versione!"
     Serbian    -> "Застарео!"
     Norwegian  -> "Utdatert!"
     Indonesia  -> "Ketinggalan Zaman!"
@@ -1244,7 +1247,7 @@ outOfDateMsg Nothing = green . \case
     Portuguese -> "Atualizado"
     French     -> "À jour"
     Russian    -> "Новейший"
-    Italian    -> "Aggiornato"
+    Italian    -> "Aggiornato all'ultima versione"
     Serbian    -> "Ажуран"
     Norwegian  -> "Oppdatert"
     Indonesia  -> "Mutakhir"
@@ -1305,7 +1308,7 @@ restoreState_1 = \case
     Spanish    -> "Versiones anteriores no disponibles para:"
     Serbian    -> "Захтеване старе верзије нису доступне за:"
     Norwegian  -> "De spesifiserte nedgraderingsversjonene er ikke tilgjengelig for:"
-    Italian    -> "Le richieste di retrocessione di versione non sono disponibili per:"
+    Italian    -> "Non sono disponibili versioni precedenti a cui tornare per:"
     Portuguese -> "Versões anteriores requisitadas não disponívels para:"
     French     -> "Version antérieure requise non disponible pour :"
     Russian    -> "Запрошенные версии для отката не доступны для:"
@@ -1321,7 +1324,7 @@ restoreState_2 = \case
     Spanish    -> "No hay estados guardados para ser restaurados. (Utilice -B para guardar el estado actual)"
     Portuguese -> "Nenhum estado disponível para ser recuperado. (Utilize -B para salvar o estado atual)"
     Russian    -> "Нет сохраненных состояний для восстановления. (Используйте -B для сохранения текущего состояния)"
-    Italian    -> "Nessuno stato precedente da recuperare. (Usa -B per salvare lo stato attuale)"
+    Italian    -> "Nessuno stato precedente a cui tornare. (Usa -B per salvare lo stato attuale)"
     Chinese    -> "没有要恢复的已保存状态。（使用 -B 保存当前状态）"
     Swedish    -> "Inga sparade tillstånd att återhämta. (Använd -B för att spara det nuvarande tillståndet)"
     Esperanto  -> "Ne konservitaj statoj restaŭros. (Uzu -B konservi la aktualan staton)"
@@ -1337,7 +1340,7 @@ reinstallAndRemove_1 = \case
     Spanish    -> "Ningún paquete necesita cambios."
     Serbian    -> "Ниједан пакет не захтева измене."
     Norwegian  -> "Ingen pakker trenger forandring."
-    Italian    -> "Nessun pacchetto necessita cambiamenti."
+    Italian    -> "Nessun pacchetto necessita di cambiamenti."
     Portuguese -> "Nenhum pacote requer alteração."
     French     -> "Aucun paquet n'a besoin de changement."
     Russian    -> "Пакеты не нуждаются в изменениях."
@@ -1355,7 +1358,7 @@ whoIsBuildUser_1 = \case
     Spanish    -> "No se puede determinar el usuario que ejecutará la compilación."
     Portuguese -> "Não foi possível determinal o usuário que executará a compilação."
     Russian    -> "Не удается определить, от имени какого пользователя производить сборку."
-    Italian    -> "Non è stato possibile determinare quale utente utilizzare per la compilazione."
+    Italian    -> "Non è stato possibile determinare l'utente che eseguirà la compilazione."
     Esperanto  -> "Ne povas decidi, per kiu konto de uzanto munti."
     _          -> "Can't determine which user account to build with."
 
@@ -1372,7 +1375,7 @@ pacmanFailure_1 = \case
     Spanish    -> "Por favor comprueba los datos proporcionados."
     Serbian    -> "Молим Вас, проверите ваш унос."
     Norwegian  -> "Vennligst sjekk din oppføring."
-    Italian    -> "Controllare il proprio input."
+    Italian    -> "Verificare ciò che è stato immesso come input."
     Portuguese -> "Por favor, verifique os dados informados."
     French     -> "Merci de vérifier les donnés entrées."
     Russian    -> "Пожалуйста, проверьте ваши введенные данные."
@@ -1387,14 +1390,14 @@ confParsing_1 = \case
     Spanish    -> "No fue posible analizar su archivo pacman.conf."
     Portuguese -> "Não foi possível interpretar o arquivo pacman.conf ."
     Russian    -> "Не удается распознать формат вашего файла pacman.conf."
-    Italian    -> "Non è stato possibile analizzare il tuo pacman.conf."
+    Italian    -> "Non è stato possibile analizzare il file pacman.conf."
     Esperanto  -> "Ne kapablas sintaske analizi vian dosieron, pacman.conf."
     _          -> "Unable to parse your pacman.conf file."
 
 provides_1 :: PkgName -> Language -> Doc AnsiStyle
 provides_1 (bt . view (field @"name") -> pro) = \case
     Spanish    -> pro <+> "se requiere como una dependencia, que es proporcionada por múltiples paquetes. Por favor, seleccione uno:"
-    Italian    -> pro <+> "è richiesto come dipendenza, che è disponibile in molteplici pacchetti. Per favore, scegline uno:"
+    Italian    -> pro <+> "è richiesto come dipendenza; si trova in molteplici pacchetti. Selezionarne uno:"
     _          -> pro <+> "is required as a dependency, which is provided by multiple packages. Please select one:"
 
 ----------------------------------
@@ -1411,7 +1414,7 @@ hotEdit_1 (bt . view (field @"name") -> p) = \case
     Portuguese -> "Deseja editar o PKGBUILD de " <> p <> "?"
     French     -> "Voulez-vous éditer le PKGBUILD de " <> p <> " ?"
     Russian    -> "Отредактировать PKGBUILD пакета " <> p <> "?"
-    Italian    -> "Vorresti modificare il PKGBUILD di " <> p <> "?"
+    Italian    -> "Modificare il PKGBUILD di " <> p <> "?"
     Serbian    -> "Желите ли да измените PKGBUILD за " <> p <> "?"
     Norwegian  -> "Vil du endre PKGBUILD for " <> p <> "?"
     Indonesia  -> "Apakah anda ingin menyunting PKGBUILD untuk paket " <> p <> "?"
@@ -1449,7 +1452,7 @@ security_1 (PkgName p) = \case
 security_2 :: Text -> Language -> Doc AnsiStyle
 security_2 (bt -> t) = \case
   Spanish   -> t <+> "se puede usar para descargar scripts arbitrarios que este PKGBUILD no rastrea."
-  Italian   -> t <+> "può essere usato per scaricare scripts arbitrari non tracciati da questo PKGBUILD."
+  Italian   -> t <+> "può essere usato per scaricare script arbitrari non tracciati da questo PKGBUILD."
   _ -> t <+> "can be used to download arbitrary scripts that aren't tracked by this PKGBUILD."
 
 security_3 :: Text -> Language -> Doc AnsiStyle
@@ -1461,43 +1464,43 @@ security_3 (bt -> t) = \case
 security_4 :: Text -> Language -> Doc AnsiStyle
 security_4 (bt -> t) = \case
   Spanish   -> t <+> "indica que alguien puede estar intentando obtener acceso de root a su máquina."
-  Italian   -> t <+> "indica che forse qualcuno sta cercando di ottenere accesso alla tua macchina come utente root."
+  Italian   -> t <+> "indica che forse qualcuno sta cercando di ottenere accesso alla tua macchina come root."
   _ -> t <+> "indicates that someone may be trying to gain root access to your machine."
 
 security_5 :: PkgName -> Language -> Doc AnsiStyle
 security_5 (PkgName p) = \case
   Spanish   -> "ADVERTENCIA: El PKGBUILD de" <+> bt p <+> "contiene expresiones bash en la lista negra."
-  Italian   -> "ATTENZIONE: Il PKGBUILD di" <+> bt p <+> "contiene espressioni in bash che fanno parte della lista nera."
+  Italian   -> "ATTENZIONE: Il PKGBUILD di" <+> bt p <+> "contiene espressioni bash presenti nella lista nera."
   _ -> "WARNING: The PKGBUILD of" <+> bt p <+> "contains blacklisted bash expressions."
 
 security_6 :: Language -> Doc AnsiStyle
 security_6 = \case
   Spanish   -> "¿Desea salir del proceso de compilación?"
-  Italian   -> "Terminare la compilazione"
+  Italian   -> "Terminare la compilazione?"
   _ -> "Do you wish to quit the build process?"
 
 security_7 :: Language -> Doc AnsiStyle
 security_7 = \case
   Spanish   -> "Se canceló el procesamiento posterior para evitar el código bash potencialmente malicioso."
-  Italian   -> "Non saranno eseguite altre operazioni al fine di evitare codice bash malevolo."
+  Italian   -> "Non saranno eseguite altre operazioni al fine di evitare l'esecuzione di codice bash potenzialmente malevolo."
   _ -> "Cancelled further processing to avoid potentially malicious bash code."
 
 security_8 :: Text -> Language -> Doc AnsiStyle
 security_8 (bt -> t) = \case
   Spanish   -> t <+> "es un comando bash integrado en los campos de la matriz del PKGBUILD."
-  Italian   -> t <+> "è un comando bash integrato nei campi array del tuo PKGBUILD."
+  Italian   -> t <+> "è un comando bash presente all'interno degli array del tuo PKGBUILD."
   _ -> t <+> "is a bash command inlined in your PKGBUILD array fields."
 
 security_9 :: Text -> Language -> Doc AnsiStyle
 security_9 (bt -> t) = \case
   Spanish   -> t <+> "es algo extraño para tener en sus campos de matriz. ¿Es seguro?"
-  Italian   -> t <+> "è una cosa strana da trovare nei tuoi campi array. E' sicura?"
+  Italian   -> t <+> "è una cosa strana da trovare all'interno degli array. E' sicura?"
   _ -> t <+> "is a strange thing to have in your array fields. Is it safe?"
 
 security_10 :: Text -> Language -> Doc AnsiStyle
 security_10 (bt -> t) = \case
   Spanish   -> t <+> "implica que alguien estaba tratando de ser astuto con las variables para ocultar comandos maliciosos."
-  Italian   -> t <+> "implica che qualcuno stava provando a fare il sapientone con le variabili al fine di nascondere comandi malevoli."
+  Italian   -> t <+> "implica che qualcuno stava trafficando con le variabili per nascondere comandi malevoli."
   _ -> t <+> "implies that someone was trying to be clever with variables to hide malicious commands."
 
 -----------------------
