@@ -274,7 +274,7 @@ popularity = \case
     Japanese   -> "人気"
     Spanish    -> "Popularidad"
     Portuguese -> "Popularidade"
-    Italiano   -> "Popolarità"
+    Italian    -> "Popolarità"
     Esperanto  -> "Populareco"
     _          -> "Popularity"
 
@@ -305,7 +305,7 @@ makeDeps = \case
     Portuguese -> "Dependências de compilação"
     French     -> "Dépendances de compilation"
     Russian    -> "Зависимости Make"
-    Italiano   -> "Dipendenze di compilazione"
+    Italian    -> "Dipendenze di compilazione"
     Indonesia  -> "Dependensi bangun"
     Esperanto  -> "Make Dependecoj"
     _          -> "Make Deps"
