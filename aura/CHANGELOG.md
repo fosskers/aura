@@ -3,6 +3,7 @@
 ## 2.2.x
 
 - Pass the Pacman flag `--overwrite` through properly.
+- Further improved Italian translations.
 
 ## 2.2.0 (2020-02-25)
 
