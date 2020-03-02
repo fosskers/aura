@@ -1,6 +1,6 @@
 # Aura Changelog
 
-## 2.2.x
+## 2.2.1 (2020-03-01)
 
 - Pass the Pacman flag `--overwrite` through properly.
 - Further improved Italian translations.
