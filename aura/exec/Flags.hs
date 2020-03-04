@@ -256,7 +256,8 @@ data LogOp = LogInfo (NESet PkgName) | LogSearch Text deriving (Show)
 data OrphanOp = OrphanAbandon | OrphanAdopt (NESet PkgName) deriving (Show)
 
 opts :: ParserInfo Program
-opts = info (program <**> helper) (fullDesc <> header "Aura - Package manager for Arch Linux and the AUR.")
+opts = info (program <**> helper)
+  (fullDesc <> header "Aura - Package manager for Arch Linux and the AUR.")
 
 program :: Parser Program
 program = Program
@@ -344,7 +345,7 @@ buildConfig = BuildConfig <$> makepkg <*> bp <*> optional bu <*> trunc <*> build
           <|> pure None
 
 buildSwitches :: Parser (Set BuildSwitch)
-buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> ucp <|> dr <|> sa <|> fo <|> npc)
+buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> ucp <|> dr <|> sa <|> fo <|> npc <|> asd)
   where dmd = flag' DeleteMakeDeps (long "delmakedeps" <> short 'a' <> hidden <> help "Uninstall makedeps after building.")
         dsm = flag' DontSuppressMakepkg (long "unsuppress" <> short 'x' <> hidden <> help "Unsuppress makepkg output.")
         dpb = flag' DiffPkgbuilds (long "diff" <> short 'k' <> hidden <> help "Show PKGBUILD diffs.")
@@ -356,6 +357,7 @@ buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <
         lv  = flag' LowVerbosity (long "quiet" <> short 'q' <> hidden <> help "Display less information.")
         fo  = flag' ForceBuilding (long "force" <> hidden <> help "Always (re)build specified packages.")
         npc = flag' NoPkgbuildCheck (long "noanalysis" <> hidden <> help "Do not analyse PKGBUILDs for security flaws.")
+        asd = flag' AsDeps (long "asdeps" <> hidden <> help "All installed packages will be marked as dependencies.")
 
 commonConfig :: Parser CommonConfig
 commonConfig = CommonConfig <$> cap <*> cop <*> lfp <*> commonSwitches

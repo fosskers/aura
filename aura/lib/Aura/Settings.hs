@@ -101,6 +101,7 @@ data BuildSwitch = DeleteMakeDeps
                  | UseCustomizepkg
                  | ForceBuilding
                  | NoPkgbuildCheck
+                 | AsDeps
                  deriving (Eq, Ord, Show)
 
 -- | Is some Aura-specific setting turned on for this run?

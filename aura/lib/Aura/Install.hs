@@ -81,17 +81,22 @@ install' pkgs = do
          case NES.nonEmptySet $ (notIgnored <> installAnyway) S.\\ unneeded of
            Nothing        -> liftIO . warn ss . install_2 $ langOf ss
            Just toInstall -> do
-             traverse_ (report yellow reportUnneededPackages_1) . NEL.nonEmpty $ toList unneeded
-             (nons, toBuild) <- liftMaybeM (Failure connectionFailure_1) . liftIO $ aurLookup (managerOf ss) toInstall
+             traverse_ (report yellow reportUnneededPackages_1) . NEL.nonEmpty
+               $ toList unneeded
+             (nons, toBuild) <- liftMaybeM (Failure connectionFailure_1) . liftIO
+               $ aurLookup (managerOf ss) toInstall
              pkgbuildDiffs toBuild
              traverse_ (report red reportNonPackages_1) . NEL.nonEmpty $ toList nons
-             case NES.nonEmptySet $ S.map (\b -> b { isExplicit = True }) toBuild of
+             let !explicits = bool (S.map (\b -> b { isExplicit = True }) toBuild) toBuild
+                   $ switch ss AsDeps
+             case NES.nonEmptySet explicits of
                Nothing       -> throwM $ Failure install_2
                Just toBuild' -> do
                  liftIO $ notify ss (install_5 $ langOf ss) *> hFlush stdout
                  allPkgs <- depsToInstall rpstry toBuild'
                  let (repoPkgs, buildPkgs) = second uniquePkgBase $ partitionPkgs allPkgs
-                 unless (switch ss NoPkgbuildCheck) $ traverse_ (traverse_ analysePkgbuild) buildPkgs
+                 unless (switch ss NoPkgbuildCheck)
+                   $ traverse_ (traverse_ analysePkgbuild) buildPkgs
                  reportPkgsToInstall repoPkgs buildPkgs
                  unless (switch ss DryRun) $ do
                    continue <- liftIO $ optionalPrompt ss install_3
@@ -127,7 +132,8 @@ displayBannedTerms ss (stmt, b) = do
 -- | Give anything that was installed as a dependency the /Install Reason/ of
 -- "Installed as a dependency for another package".
 annotateDeps :: NESet Buildable -> IO ()
-annotateDeps bs = unless (null bs') . void . pacmanSuccess $ ["-D", "--asdeps"] <> asFlag (bs' ^.. each . field @"name")
+annotateDeps bs = unless (null bs') . void . pacmanSuccess
+  $ ["-D", "--asdeps"] <> asFlag (bs' ^.. each . field @"name")
   where bs' = filter (not . isExplicit) $ toList bs
 
 -- | Reduce a list of candidate packages to build, such that there is only one
