@@ -1,40 +1,71 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Added
+
+- Allow `--asdeps` to be passed to `-A` commands.
+
 ## 2.2.1 (2020-03-01)
 
-- Pass the Pacman flag `--overwrite` through properly.
+#### Changed
+
 - Further improved Italian translations.
+
+#### Fixed
+
+- Pass the Pacman flag `--overwrite` through properly.
 
 ## 2.2.0 (2020-02-25)
 
-- **New Feature:**: `--log-level` flag. Setting this to `debug` will give you
-  some verbose logging output. This is different from the usual `-x` behaviour.
-- **Bug Fix:** Users with many AUR packages installed will no longer see
-  mysterious AUR connection failures.
-  ([#528](https://github.com/fosskers/aura/issues/528))
+#### Added
+
+- `--log-level` flag. Setting this to `debug` will give you some verbose logging
+  output. This is different from the usual `-x` behaviour.
+
+#### Changed
+
 - Updated Italian translations. Grazie, Cristian Tentella!
 - Support for GHC 8.8.2.
 
+#### Fixed
+
+- Users with many AUR packages installed will no longer see mysterious AUR
+  connection failures. ([#528](https://github.com/fosskers/aura/issues/528))
+
 ## 2.1.0 (2020-02-17)
+
+#### Added
 
 - Reinstated `-Aw`, which downloads a snapshot tarball of an AUR package.
 
 ## 2.0.6 (2020-02-16)
 
+#### Fixed
+
 - Fixed the broken `-S`.
 
 ## 2.0.5 (2020-02-16)
+
+#### Fixed
 
 - Fixed a bug that prevented `-Syuu` and `-Scc`.
 
 ## 2.0.4 (2020-02-08)
 
+#### Changed
+
 - Removed `fused-effects` dependency in favour of `rio` to simplify code.
 
 ## 2.0.3
 
+#### Changed
+
 - Updated Spanish translations. Thanks to Max Ferrer!
-- Fixed bug #543. Thanks to Alexey Kotlyarov!
+
+#### Fixed
+
+- Bug #543 involving locales. Thanks to Alexey Kotlyarov!
 
 ## 2.0.2
 
