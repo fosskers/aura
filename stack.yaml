@@ -1,4 +1,4 @@
-resolver: lts-15.1
+resolver: lts-15.2
 
 ghc-options: {"$locals": -ddump-to-file -ddump-hi}
 
