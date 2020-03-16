@@ -295,17 +295,3 @@ description = \case
     Indonesia  -> "Deskripsi"
     Esperanto  -> "Priskribo"
     _          -> "Description"
-
-makeDeps :: Language -> Text
-makeDeps = \case
-    Polish     -> "Zależności Make"
-    Croatian   -> "Make Zavisnosti"
-    German     -> "Make-Abhängigkeiten"
-    Spanish    -> "Dependencias de compilación"
-    Portuguese -> "Dependências de compilação"
-    French     -> "Dépendances de compilation"
-    Russian    -> "Зависимости Make"
-    Italian    -> "Dipendenze di compilazione"
-    Indonesia  -> "Dependensi bangun"
-    Esperanto  -> "Make Dependecoj"
-    _          -> "Make Deps"

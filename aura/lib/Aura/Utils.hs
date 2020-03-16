@@ -9,7 +9,7 @@
 module Aura.Utils
   ( -- * Strings
     Pattern(..)
-  , replaceByPatt, searchLines
+  , searchLines
     -- * Network
   , urlContents
     -- * Shell
@@ -17,8 +17,6 @@ module Aura.Utils
   , getTrueUser, getEditor, getLocale
   , hasRootPriv, isTrueRoot
   , chown
-    -- * File IO
-  , ifFile
     -- * Output
   , putStrLnA
   , putText
@@ -50,9 +48,7 @@ import qualified RIO.List as L
 import           RIO.List.Partial (maximum)
 import qualified RIO.Map as M
 import qualified RIO.Text as T
-import           RIO.Text.Partial (breakOn)
 import           System.Path (Absolute, Path, toFilePath)
-import           System.Path.IO (doesFileExist)
 import           System.Process.Typed (proc, runProcess)
 import           Text.Printf (printf)
 
@@ -63,16 +59,6 @@ import           Text.Printf (printf)
 ---------
 -- | For regex-like find-and-replace in some `Text`.
 data Pattern = Pattern { _pattern :: Text, _target :: Text }
-
--- | Replaces a (p)attern with a (t)arget in a line if possible.
-replaceByPatt :: [Pattern] -> Text -> Text
-replaceByPatt [] l = l
-replaceByPatt (Pattern p t : ps) l = case breakOn p l of
-  -- No match.
-  (_, "")    -> replaceByPatt ps l
-  -- Matched. The matched pattern is still present at the head of `rest`,
-  -- so we need to drop it first.
-  (cs, rest) -> replaceByPatt ps (cs <> t <> T.drop (T.length p) rest)
 
 -- | Find lines which contain some given `Text`.
 searchLines :: Text -> [Text] -> [Text]
@@ -95,11 +81,6 @@ getSelection f choiceLabels = do
   case userChoice `lookup` choices of
     Just valid -> pure valid
     Nothing    -> getSelection f choiceLabels  -- Ask again.
-
--- | If a file exists, it performs action `t` on the argument.
--- | If the file doesn't exist, it performs `f` and returns the argument.
-ifFile :: MonadIO m => (a -> m a) -> m b -> Path Absolute -> a -> m a
-ifFile t f file x = liftIO (doesFileExist file) >>= bool (f $> x) (t x)
 
 ----------
 -- NETWORK

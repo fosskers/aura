@@ -629,26 +629,6 @@ reportPkgbuildDiffs_1 (bt . view (field @"name") -> p) = \case
     _          -> p <> " has no stored PKGBUILD yet."
 
 -- NEEDS TRANSLATION
-reportPkgbuildDiffs_2 :: Text -> Language -> Doc AnsiStyle
-reportPkgbuildDiffs_2 (bt -> p) = \case
-    Japanese   -> p <> "のPKGBUILDは最新です。"
-    Polish     -> "PKGBUILD pakietu " <> p <> " jest aktualny."
-    Croatian   -> "PKGBUILD paketa " <> p <> " je na najnovijoj verziji."
-    German     -> "PKGBUILD von " <> p <> " ist aktuell."
-    Spanish    -> "El PKGBUILD de " <> p <> " está actualizado."
-    Portuguese -> "O PKGBUILD de " <> p <> "está atualizado."
-    Russian    -> "PKGBUILD " <> p <> " является новейшим."
-    French     -> "Le PKGBUILD de " <> p <> " est à jour."
-    Italian    -> "Il PKGBUILD di " <> p <> " è aggiornato all'ultima versione."
-    Serbian    -> "PKGBUILD пакета " <> p <> " је ажуран."
-    Norwegian  -> p <> "'s PKGBUILD er oppdatert."
-    Indonesia  -> "PKGBUILD dari paket " <> p <> " sudah mutakhir."
-    Chinese    -> p <> " 的 PKGBUILD 已经最新。"
-    Swedish    -> "PKGBUILD för " <> p <> " är aktuell."
-    Esperanto  -> p <> " PKGBUILD estas ĝisdata."
-    _          -> p <> " PKGBUILD is up to date."
-
--- NEEDS TRANSLATION
 reportPkgbuildDiffs_3 :: PkgName -> Language -> Doc AnsiStyle
 reportPkgbuildDiffs_3 (bt . view (field @"name") -> p) = \case
     Japanese   -> p <> "のPKGBUILD変更報告："
@@ -1421,24 +1401,6 @@ hotEdit_1 (bt . view (field @"name") -> p) = \case
     Chinese    -> "你希望编辑 " <> p <> " 的 PKGBUILD 文件吗？"
     Esperanto  -> "Ĉu vi volas redakti la PKGBUILD de " <> p <> "?"
     _          -> "Would you like to edit the PKGBUILD of " <> p <> "?"
-
-customizepkg_1 :: Language -> Doc AnsiStyle
-customizepkg_1 = let customizepkg = bt "customizepkg" in \case
-    Japanese   -> customizepkg <+> "はインストールされていません。"
-    Polish     -> customizepkg <+> "nie zainstalowany."
-    Croatian   -> customizepkg <+> "nije instaliran."
-    German     -> customizepkg <+> "ist nicht installiert."
-    Spanish    -> customizepkg <+> "no está instalado."
-    Norwegian  -> customizepkg <+> "er ikke installert."
-    Italian    -> customizepkg <+> "non è installato."
-    Portuguese -> customizepkg <+> "não está instalado."
-    French     -> customizepkg <+> "n'est pas installé."
-    Russian    -> customizepkg <+> "не установлен."
-    Indonesia  -> customizepkg <+> "tidak terinstal."
-    Chinese    -> customizepkg <+> " 没有被安装。"
-    Swedish    -> customizepkg <+> "är inte installerad"
-    Esperanto  -> customizepkg <+> "ne estas instalita."
-    _          -> customizepkg <+> "isn't installed."
 
 ------------------------------
 -- Pkgbuild Security functions

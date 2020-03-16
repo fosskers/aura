@@ -1,6 +1,6 @@
-resolver: lts-15.2
+resolver: lts-15.3
 
-ghc-options: {"$locals": -ddump-to-file -ddump-hi}
+ghc-options: {"$locals": -fwrite-ide-info}
 
 flags:
   these:

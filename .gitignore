@@ -13,3 +13,4 @@ cabal.sandbox.config
 dist-newstyle/
 dist/
 flames
+*.hie
