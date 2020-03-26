@@ -5,6 +5,7 @@
 #### Added
 
 - Allow `--asdeps` to be passed to `-A` commands.
+- Dutch translations. Thank you, Joris Blanken!
 
 ## 2.2.1 (2020-03-01)
 

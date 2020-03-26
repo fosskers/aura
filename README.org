@@ -1,9 +1,9 @@
 #+TITLE: The Aura Package Manager
 #+AUTHOR: Colin
 
-| Build                                                      | Release                                   | Chat                                               | Downloads                                                       | Languages                                         |
-|------------------------------------------------------------+-------------------------------------------+----------------------------------------------------+-----------------------------------------------------------------+---------------------------------------------------|
-| [[https://github.com/fosskers/aura/workflows/Tests/badge.svg]] | [[http://hackage.haskell.org/package/aura][https://img.shields.io/hackage/v/aura.svg]] | [[https://gitter.im/aurapm/aura][https://img.shields.io/gitter/room/aurapm/aura.svg]] | [[https://img.shields.io/github/downloads/fosskers/aura/total.svg]] | :uk: :jp: :croatia: :sweden: :de: :es: :portugal: :fr: :ru: :it: :serbia: :norway: :indonesia: :cn: |
+| Build                                                      | Release                                   | Chat                                               | Downloads                                                       | Languages                                                                                                         |
+|------------------------------------------------------------+-------------------------------------------+----------------------------------------------------+-----------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------|
+| [[https://github.com/fosskers/aura/workflows/Tests/badge.svg]] | [[http://hackage.haskell.org/package/aura][https://img.shields.io/hackage/v/aura.svg]] | [[https://gitter.im/aurapm/aura][https://img.shields.io/gitter/room/aurapm/aura.svg]] | [[https://img.shields.io/github/downloads/fosskers/aura/total.svg]] | :uk: :jp: :croatia: :sweden: :de: :es: :portugal: :fr: :ru: :it: :serbia: :norway: :indonesia: :cn: :netherlands: |
 
 Welcome to the main repository for Aura, a secure, multilingual package manager
 for Arch Linux.
@@ -210,6 +210,7 @@ Aura is currently translated by these generous people:
 |------------+-------------------------------------------------|
 | Chinese    | Kai Zhang                                       |
 | Croatian   | Denis Kasak and "stranac"                       |
+| Dutch      | Joris Blanken                                   |
 | Esperanto  | Zachary "Ghosy" Matthews                        |
 | French     | Ma Jiehong and Fabien Dubosson                  |
 | German     | Lukas Niederbremer and Jonas Platte             |

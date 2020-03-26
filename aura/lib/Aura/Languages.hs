@@ -29,6 +29,7 @@ Filip Brcic                                   | Serbian
 Kai Zhang                                     | Chinese
 Onoue Takuro                                  | Japanese
 Zachary "Ghosy" Matthews                      | Esperanto
+Joris Blanken                                 | Dutch
 -}
 
 module Aura.Languages where
@@ -65,6 +66,7 @@ translators = M.fromList
     , (Chinese,    "Kai Zhang")
     , (Japanese,   "Onoue Takuro")
     , (Esperanto,  "Zachary Matthews")
+    , (Dutch,      "Joris Blanken")
     ]
 
 -- These need updating! Or removing...
