@@ -31,6 +31,7 @@ package = \case
     Norwegian  -> "Pakke"
     Indonesia  -> "Paket"
     Esperanto  -> "Pakaĵo"
+    Dutch      -> "Pakket"
     _          -> "Package"
 
 firstInstall :: Language -> Text
@@ -49,6 +50,7 @@ firstInstall = \case
     Norwegian  -> "Første installasjon"
     Indonesia  -> "Versi sistem"
     Esperanto  -> "Unua Instalo"
+    Dutch      -> "Eerste installatie"
     _          -> "First Install"
 
 upgrades :: Language -> Text
@@ -67,6 +69,7 @@ upgrades = \case
     Norwegian  -> "Oppgraderinger"
     Indonesia  -> "Tingkatkan"
     Esperanto  -> "Noveldonoj"
+    Dutch      -> "Upgrades"
     _          -> "Upgrades"
 
 recentActions :: Language -> Text
@@ -85,6 +88,7 @@ recentActions = \case
     Norwegian  -> "Nylige hendelser"
     Indonesia  -> "Aksi sekarang"
     Esperanto  -> "Ĵusaj Agoj"
+    Dutch      -> "Recente Acties"
     _          -> "Recent Actions"
 
 repository :: Language -> Text
@@ -103,6 +107,7 @@ repository = \case
     Norwegian  -> "Depot"
     Indonesia  -> "Lumbung"
     Esperanto  -> "Deponejo"
+    Dutch      -> "Repository"
     _          -> "Repository"
 
 name :: Language -> Text
@@ -121,6 +126,7 @@ name = \case
     Norwegian  -> "Navn"
     Indonesia  -> "Nama"
     Esperanto  -> "Nomo"
+    Dutch      -> "Naam"
     _          -> "Name"
 
 version :: Language -> Text
@@ -139,6 +145,7 @@ version = \case
     Norwegian  -> "Versjon"
     Indonesia  -> "Versi"
     Esperanto  -> "Versio"
+    Dutch      -> "Versie"
     _          -> "Version"
 
 aurStatus :: Language -> Text
@@ -155,6 +162,7 @@ aurStatus = \case
     Serbian    -> "Статус у AUR-у"
     Indonesia  -> "Status AUR"
     Esperanto  -> "Stato en AUR"
+    Dutch      -> "AUR Status"
     _          -> "AUR Status"
 
 -- NEEDS TRANSLATION
@@ -169,6 +177,7 @@ maintainer = \case
     Norwegian  -> "Vedlikeholder"
     Indonesia  -> "Pemelihara"
     Esperanto  -> "Daŭriganto"
+    Dutch      -> "Onderhouder"
     _          -> "Maintainer"
 
 projectUrl :: Language -> Text
@@ -187,6 +196,7 @@ projectUrl = \case
     Norwegian  -> "Prosjekt-URL"
     Indonesia  -> "URL Proyek"
     Esperanto  -> "URL de Projekto"
+    Dutch      -> "Project URL"
     _          -> "Project URL"
 
 aurUrl :: Language -> Text
@@ -202,6 +212,7 @@ aurUrl = \case
     Serbian    -> "Страница у AUR-у"
     Indonesia  -> "URL AUR"
     Esperanto  -> "URL en AUR"
+    Dutch      -> "AUR URL"
     _          -> "AUR URL"
 
 license :: Language -> Text
@@ -220,6 +231,7 @@ license = \case
     Norwegian  -> "Lisens"
     Indonesia  -> "Lisensi"
     Esperanto  -> "Permesilo"
+    Dutch      -> "Licentie"
     _          -> "License"
 
 dependsOn :: Language -> Text
@@ -236,6 +248,7 @@ dependsOn = \case
     Norwegian  -> "Er avhengig av"
     Indonesia  -> "Bergantung pada"
     Esperanto  -> "Dependi de"
+    Dutch      -> "Hangt af van"
     _          -> "Depends On"
 
 buildDeps :: Language -> Text
@@ -249,6 +262,7 @@ buildDeps = \case
     Italian    -> "Dipendenze di compilazione"
     Indonesia  -> "Dependensi bangun"
     Esperanto  -> "Muntaj Dependecoj"
+    Dutch      -> "Bouw afhankelijkheden"
     _          -> "Build Deps"
 
 votes :: Language -> Text
@@ -267,6 +281,7 @@ votes = \case
     Norwegian  -> "Stemmer"
     Indonesia  -> "Suara"
     Esperanto  -> "Balotiloj"
+    Dutch      -> "Stemmen"
     _          -> "Votes"
 
 popularity :: Language -> Text
@@ -276,6 +291,7 @@ popularity = \case
     Portuguese -> "Popularidade"
     Italian    -> "Popolarità"
     Esperanto  -> "Populareco"
+    Dutch      -> "Populairiteit"
     _          -> "Popularity"
 
 description :: Language -> Text
@@ -294,4 +310,5 @@ description = \case
     Norwegian  -> "Beskrivelse"
     Indonesia  -> "Deskripsi"
     Esperanto  -> "Priskribo"
+    Dutch      -> "Beschrijving"
     _          -> "Description"

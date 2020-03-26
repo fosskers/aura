@@ -513,21 +513,22 @@ manyArgs' = S.fromList <$> many (argument str (metavar "PACKAGES" <> hidden))
 
 language :: Parser Language
 language = foldr1 (<|>) $ map (\(f, v) -> flag' v (long f <> hidden)) langs
-  where langs = [ ( "japanese",   Japanese ),   ( "日本語",     Japanese )
-                , ( "polish",     Polish ),     ( "polski",    Polish )
-                , ( "croatian",   Croatian ),   ( "hrvatski",  Croatian )
-                , ( "swedish",    Swedish ),    ( "svenska",   Swedish )
-                , ( "german",     German ),     ( "deutsch",   German )
-                , ( "spanish",    Spanish ),    ( "español",   Spanish )
-                , ( "portuguese", Portuguese ), ( "português", Portuguese )
-                , ( "french",     French),      ( "français",  French )
-                , ( "russian",    Russian ),    ( "русский",   Russian )
-                , ( "italian",    Italian ),    ( "italiano",  Italian )
-                , ( "serbian",    Serbian ),    ( "српски",    Serbian )
-                , ( "norwegian",  Norwegian ),  ( "norsk",     Norwegian )
+  where langs = [ ( "japanese",   Japanese ),   ( "日本語",        Japanese )
+                , ( "polish",     Polish ),     ( "polski",     Polish )
+                , ( "croatian",   Croatian ),   ( "hrvatski",   Croatian )
+                , ( "swedish",    Swedish ),    ( "svenska",    Swedish )
+                , ( "german",     German ),     ( "deutsch",    German )
+                , ( "spanish",    Spanish ),    ( "español",    Spanish )
+                , ( "portuguese", Portuguese ), ( "português",  Portuguese )
+                , ( "french",     French),      ( "français",   French )
+                , ( "russian",    Russian ),    ( "русский",    Russian )
+                , ( "italian",    Italian ),    ( "italiano",   Italian )
+                , ( "serbian",    Serbian ),    ( "српски",     Serbian )
+                , ( "norwegian",  Norwegian ),  ( "norsk",      Norwegian )
                 , ( "indonesian", Indonesia )
-                , ( "chinese",    Chinese ),    ( "中文",       Chinese )
-                , ( "esperanto",  Esperanto ) ]
+                , ( "chinese",    Chinese ),    ( "中文",         Chinese )
+                , ( "esperanto",  Esperanto )
+                , ( "dutch",      Dutch ),      ( "nederlands", Dutch ) ]
 
 logLevel :: Parser LogLevel
 logLevel = option (eitherReader l)
