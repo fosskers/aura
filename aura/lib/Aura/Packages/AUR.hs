@@ -30,8 +30,7 @@ import           Aura.Languages
 import           Aura.Pkgbuild.Fetch
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils (fmapEither, groupsOf)
-import           Control.Error.Util (hush, note)
+import           Aura.Utils
 import           Control.Monad.Trans.Maybe
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Generics.Product (field)

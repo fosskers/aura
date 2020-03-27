@@ -37,7 +37,6 @@ import           Aura.Settings
 import           Aura.State (saveState)
 import           Aura.Types
 import           Aura.Utils
-import           Control.Error.Util (hush)
 import           Data.Aeson.Encode.Pretty (encodePretty)
 import           Data.Generics.Product (field)
 import           Data.Set.NonEmpty (NESet)

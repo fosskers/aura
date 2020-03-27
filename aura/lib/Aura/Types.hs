@@ -44,7 +44,7 @@ module Aura.Types
   , User(..)
   ) where
 
-import           Control.Error.Util (hush)
+import           Aura.Utils (hush)
 import           Data.Aeson (FromJSONKey, ToJSONKey)
 import           Data.Bifunctor (Bifunctor(..))
 import           Data.Bitraversable

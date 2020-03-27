@@ -25,8 +25,7 @@ import           Aura.IO
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils (maybe')
-import           Control.Error.Util (note)
+import           Aura.Utils (maybe', note)
 import           Data.Generics.Product (field)
 import           Data.Semigroup.Foldable (foldMap1)
 import           Data.Set.NonEmpty (pattern IsEmpty, pattern IsNonEmpty, NESet)

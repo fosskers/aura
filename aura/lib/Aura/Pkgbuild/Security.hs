@@ -18,7 +18,7 @@ module Aura.Pkgbuild.Security
 
 import           Aura.Languages
 import           Aura.Types (Language, Pkgbuild(..))
-import           Control.Error.Util (hush)
+import           Aura.Utils (hush)
 import           Data.Generics.Product (typed, types)
 import           Data.Text.Prettyprint.Doc (Doc)
 import           Data.Text.Prettyprint.Doc.Render.Terminal (AnsiStyle)

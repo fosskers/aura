@@ -27,7 +27,7 @@ import           Aura.Languages
 import           Aura.Pacman (pacman, pacmanLines)
 import           Aura.Settings
 import           Aura.Types
-import           Control.Error.Util (hush)
+import           Aura.Utils (hush)
 import           Data.Aeson
 import           Data.Generics.Product (field)
 import           Data.Versions

@@ -22,8 +22,7 @@ import           Aura.Languages (provides_1)
 import           Aura.Pacman (pacmanLines, pacmanOutput)
 import           Aura.Settings (CommonSwitch(..), Settings(..), shared)
 import           Aura.Types
-import           Aura.Utils (fmapEither, traverseEither)
-import           Control.Error.Util (hush, note)
+import           Aura.Utils
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Generics.Product (field)
 import qualified Data.Set.NonEmpty as NES

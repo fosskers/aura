@@ -17,6 +17,8 @@ module Aura.Utils
   , fmapEither
   , traverseEither
   , groupsOf
+  , hush
+  , note
   ) where
 
 import           Network.HTTP.Client
@@ -80,3 +82,9 @@ groupsOf n as
     go bs = xs : go rest
       where
         (xs, rest) = L.splitAt n bs
+
+hush :: Either a b -> Maybe b
+hush = either (const Nothing) Just
+
+note :: a -> Maybe b -> Either a b
+note a = maybe (Left a) Right

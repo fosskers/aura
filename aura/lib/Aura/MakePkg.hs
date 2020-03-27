@@ -18,7 +18,7 @@ import           Aura.IO (optionalPrompt)
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
-import           Control.Error.Util (note)
+import           Aura.Utils (note)
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
 import           Lens.Micro (_2)
