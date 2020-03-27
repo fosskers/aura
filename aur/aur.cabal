@@ -37,6 +37,7 @@ library
   exposed-modules: Linux.Arch.Aur
   build-depends:
     , aeson       >=0.9  && <1.5
+    , bytestring
     , http-types  ^>=0.12
     , text        ^>=1.2
 

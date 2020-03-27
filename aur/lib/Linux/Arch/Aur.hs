@@ -21,6 +21,7 @@ module Linux.Arch.Aur
 
 import           Control.Applicative ((<|>))
 import           Data.Aeson
+import           Data.ByteString (ByteString)
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Network.HTTP.Client
@@ -114,7 +115,7 @@ instance ToJSON AurInfo where
     , "License" .= licenseOf ai
     , "Keywords" .= keywordsOf ai ]
 
-data AurError = NoConnection | BadJSON | OtherAurError
+data AurError = NotFound ByteString | BadJSON | OtherAurError ByteString
   deriving stock (Eq, Ord, Show)
 
 -- | Perform an @info@ call on one or more package names.
@@ -138,5 +139,5 @@ work m url = do
   res <- httpLbs req m
   case responseStatus res of
     Status 200 _ -> pure . maybe (Left BadJSON) (Right . _results) . decode' $ responseBody res
-    Status 404 _ -> pure $ Left NoConnection
-    Status _ _   -> pure $ Left OtherAurError
+    Status 404 e -> pure . Left $ NotFound e
+    Status _ e   -> pure . Left $ OtherAurError e
