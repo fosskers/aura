@@ -26,6 +26,7 @@ import           Aura.Shell (chown)
 import           Aura.Types
 import           Control.Monad.Trans.Except
 import           Data.Generics.Product (field)
+import           Data.Hashable (hash)
 import           Data.Semigroup.Foldable (fold1)
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
@@ -38,7 +39,6 @@ import qualified RIO.Text as T
 import           System.Path
 import           System.Path.IO
 import           System.Process.Typed
-import           System.Random.MWC (GenIO, createSystemRandom, uniform)
 
 ---
 
@@ -55,28 +55,26 @@ installPkgFiles files = do
 -- | All building occurs within temp directories,
 -- or in a location specified by the user with flags.
 buildPackages :: NESet Buildable -> RIO Env (NESet PackagePath)
-buildPackages bs = do
-  g <- liftIO createSystemRandom
-  wither (build g) (toList bs) >>= maybe bad (pure . fold1) . NEL.nonEmpty
+buildPackages bs = wither build (toList bs) >>= maybe bad (pure . fold1) . NEL.nonEmpty
   where bad = throwM $ Failure buildFail_10
 
 -- | Handles the building of Packages. Fails nicely.
 -- Assumed: All dependencies are already installed.
-build :: GenIO -> Buildable -> RIO Env (Maybe (NESet PackagePath))
-build g p = do
+build :: Buildable -> RIO Env (Maybe (NESet PackagePath))
+build p = do
   ss     <- asks settings
   liftIO $ notify ss (buildPackages_1 (p ^. field @"name") (langOf ss)) *> hFlush stdout
-  result <- liftIO $ build' ss g p
+  result <- liftIO $ build' ss p
   either buildFail (pure . Just) result
 
 -- | Should never throw an IO Exception. In theory all errors
 -- will come back via the @Language -> String@ function.
-build' :: Settings -> GenIO -> Buildable -> IO (Either Failure (NESet PackagePath))
-build' ss g b = do
+build' :: Settings -> Buildable -> IO (Either Failure (NESet PackagePath))
+build' ss b = do
   let pth = buildPathOf $ buildConfigOf ss
   createDirectoryIfMissing True pth
   setCurrentDirectory $ toFilePath pth
-  buildDir <- randomDirName g b
+  buildDir <- randomDirName b
   createDirectoryIfMissing True buildDir
   setCurrentDirectory $ toFilePath buildDir
   runExceptT $ do
@@ -92,11 +90,13 @@ build' ss g b = do
 
 -- | Create a temporary directory with a semi-random name based on
 -- the `Buildable` we're working with.
-randomDirName :: GenIO -> Buildable -> IO (Path Absolute)
-randomDirName g b = do
+randomDirName :: Buildable -> IO (Path Absolute)
+randomDirName b = do
   pwd <- getCurrentDirectory
-  v   <- uniform g :: IO Word
-  let dir = T.unpack (b ^. field @"name" . field @"name") <> "-" <> show v
+  let nh = hash $ b ^. field @"name" . field @"name"
+      vh = hash $ b ^. field @"version"
+      v  = abs $ nh + vh
+      dir = T.unpack (b ^. field @"name" . field @"name") <> "-" <> show v
   pure $ pwd </> fromUnrootedFilePath dir
 
 cloneRepo :: Buildable -> User -> IO (Either Failure (Path Absolute))

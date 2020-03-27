@@ -95,11 +95,11 @@ library
     , aur               ^>=7.0
     , filepath          ^>=1.4
     , generic-lens      >=1.1  && <1.3
+    , hashable          ^>= 1.3
     , http-types        >=0.9  && <0.13
     , language-bash     >=0.8  && <0.10
     , megaparsec        >=7    && <9
     , microlens-ghc     ^>=0.4
-    , mwc-random        ^>=0.14
     , network-uri       ^>=2.6
     , scheduler         >=1.1  && <1.5
     , semigroupoids     >=5.2  && <5.4
