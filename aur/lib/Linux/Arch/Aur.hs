@@ -1,7 +1,7 @@
-{-# LANGUAGE CPP               #-}
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeOperators     #-}
+{-# LANGUAGE DataKinds          #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE TypeOperators      #-}
 
 -- |
 -- Module    : Linux.Arch.Aur
@@ -14,21 +14,18 @@
 module Linux.Arch.Aur
   ( -- * Types
     AurInfo(..)
+  , AurError(..)
     -- * Queries
   , info, search
-    -- * Re-exports
-    -- | These are __Servant__ types which you could want to manipulate without
-    -- directly depending on (and importing) servant.
-  , ClientError(..)
   ) where
 
-import Control.Applicative ((<|>))
-import Data.Aeson
-import Data.Proxy
-import Data.Text (Text)
-import Network.HTTP.Client (Manager)
-import Servant.API
-import Servant.Client
+import           Control.Applicative ((<|>))
+import           Data.Aeson
+import           Data.Text (Text)
+import qualified Data.Text as T
+import           Network.HTTP.Client
+import           Network.HTTP.Types.Status
+import           Text.Printf (printf)
 
 ---
 
@@ -36,7 +33,8 @@ data RPCResp = RPCResp
   { _version     :: Int
   , _type        :: Text
   , _resultCount :: Int
-  , _results     :: [AurInfo] } deriving (Show)
+  , _results     :: [AurInfo] }
+  deriving (Show)
 
 instance FromJSON RPCResp where
   parseJSON = withObject "RPCResp" $ \v -> RPCResp
@@ -119,41 +117,41 @@ instance ToJSON AurInfo where
 
 ---
 
-type Info = "rpc" :> QueryParam "v" Text
-           :> QueryParam "type" Text
-           :> QueryParams "arg[]" Text
-           :> Get '[JSON] RPCResp
+-- type Info = "rpc" :> QueryParam "v" Text
+--            :> QueryParam "type" Text
+--            :> QueryParams "arg[]" Text
+--            :> Get '[JSON] RPCResp
 
-type Search = "rpc" :> QueryParam "v" Text
-           :> QueryParam "type" Text
-           :> QueryParam "arg" Text
-           :> Get '[JSON] RPCResp
+-- type Search = "rpc" :> QueryParam "v" Text
+--            :> QueryParam "type" Text
+--            :> QueryParam "arg" Text
+--            :> Get '[JSON] RPCResp
 
-type API = Info :<|> Search
+data AurError = NoConnection | BadJSON | OtherAurError
+  deriving stock (Eq, Ord, Show)
 
-url :: BaseUrl
-url = BaseUrl Https "aur.archlinux.org" 443 ""
-
--- | Make a call to the AUR RPC. Assumes version 5 of the API.
-rpcI :: Maybe Text -> Maybe Text -> [Text] -> ClientM RPCResp
-rpcS :: Maybe Text -> Maybe Text -> Maybe Text -> ClientM RPCResp
-rpcI :<|> rpcS = client (Proxy :: Proxy API)
+-- TODO What's the problem with the `arg[]` syntax?
 
 -- | Perform an @info@ call on one or more package names.
 -- Will fail with a `Left` if there was a connection/decoding error.
-info :: Manager -> [Text] -> IO (Either ClientError [AurInfo])
-info m ps = unwrap m $ rpcI (Just "5") (Just "info") ps
+info :: Manager -> [Text] -> IO (Either AurError [AurInfo])
+info m ps = work m url
+  where
+    url = "https://aur.archlinux.org/rpc?v=5&type=info&" <> as
+    as = T.unpack . T.intercalate "&" $ map ("arg=" <>) ps
 
 -- | Perform a @search@ call on a package name or description text.
 -- Will fail with a `Left` if there was a connection/decoding error.
-search :: Manager -> Text -> IO (Either ClientError [AurInfo])
-search m p = unwrap m $ rpcS (Just "5") (Just "search") (Just p)
-
-unwrap :: Manager -> ClientM RPCResp -> IO (Either ClientError [AurInfo])
-unwrap m r = fmap _results <$> runClientM r env
+search :: Manager -> Text -> IO (Either AurError [AurInfo])
+search m p = work m url
   where
-#if !MIN_VERSION_servant_client(0,17,0)
-    env = ClientEnv m url Nothing
-#else
-    env = ClientEnv m url Nothing defaultMakeClientRequest
-#endif
+    url = printf "https://aur.archlinux.org/rpc?v=5&type=search&arg=%s" p
+
+work :: Manager -> String -> IO (Either AurError [AurInfo])
+work m url = do
+  req <- parseRequest url
+  res <- httpLbs req m
+  case responseStatus res of
+    Status 200 _ -> pure . maybe (Left BadJSON) (Right . _results) . decode' $ responseBody res
+    Status 404 _ -> pure $ Left NoConnection
+    Status _ _   -> pure $ Left OtherAurError
