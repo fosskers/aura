@@ -188,7 +188,7 @@ aurJson ps = do
   infos <- liftMaybeM (Failure connectionFailure_1) . fmap hush . liftIO $ f m ps
   traverse_ (BL.putStrLn . encodePretty) infos
   where
-    f :: Manager -> NESet PkgName -> IO (Either ClientError [AurInfo])
+    f :: Manager -> NESet PkgName -> IO (Either AurError [AurInfo])
     f m = info m . (^.. each . field @"name") . toList
 
 -- | @https://aur.archlinux.org/cgit/aur.git/snapshot/aura-bin.tar.gz@

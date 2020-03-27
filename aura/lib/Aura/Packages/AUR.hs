@@ -45,7 +45,6 @@ import qualified RIO.Map as M
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
-import           Servant.Client.Core (responseBody)
 import           System.Path
 import           System.Path.IO (getCurrentDirectory)
 import           System.Process.Typed
@@ -156,10 +155,10 @@ aurInfo pkgs = do
   where
     work :: Manager -> [PkgName] -> RIO Env [AurInfo]
     work m ps = liftIO (info m $ map (^. field @"name") ps) >>= \case
-      Left (ConnectionError _) -> throwM (Failure connectionFailure_1)
-      Left (FailureResponse _ r) -> do
-        let !resp = display . decodeUtf8Lenient . toStrictBytes $ responseBody r
+      Left (NotFound _) -> throwM (Failure connectionFailure_1)
+      Left BadJSON -> throwM (Failure miscAURFailure_3)
+      Left (OtherAurError e) -> do
+        let !resp = display $ decodeUtf8Lenient e
         logDebug $ "Failed! Server said: " <> resp
-        throwM (Failure miscAURFailure_2)
-      Left _ -> throwM (Failure miscAURFailure_1)
+        throwM (Failure miscAURFailure_1)
       Right res -> pure res

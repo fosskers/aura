@@ -1252,6 +1252,10 @@ miscAURFailure_2 = \case
   Dutch     -> "De AUR server heeft het verzoek afgewezen."
   _         -> "The AUR server rejected the request."
 
+miscAURFailure_3 :: Language -> Doc AnsiStyle
+miscAURFailure_3 = \case
+  _ -> "The JSON returned from the AUR server could not be decoded."
+
 infoFields :: Language -> [Text]
 infoFields = sequence [ Fields.repository
                       , Fields.name
