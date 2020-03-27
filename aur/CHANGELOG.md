@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+#### Added
+
+- The `AurError` type to account for the API change described below.
+
+#### Changed
+
+- The `servant` dependency has been dropped in favour of vanilla `http-client`.
+- `info` and `search` now return the custom `AurError` type instead of servant's
+  `ClientError`.
+
+#### Removed
+
+- The reexport of `ClientError` from servant.
+
 ## 6.3.1
 
 - Rewiden `servant` bounds.
