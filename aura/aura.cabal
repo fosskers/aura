@@ -122,7 +122,6 @@ executable aura
     , aura
     , http-client-tls       ^>=0.3
     , optparse-applicative  >=0.14 && <0.16
-    , pretty-simple         >=2.1  && <3.3
 
 test-suite aura-test
   import:         commons

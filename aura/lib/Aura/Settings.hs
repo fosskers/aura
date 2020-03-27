@@ -122,6 +122,7 @@ data Settings = Settings
   , ignoresOf      :: !(Set PkgName)
   , commonConfigOf :: !CommonConfig
   , buildConfigOf  :: !BuildConfig
+  , logLevelOf     :: !LogLevel
   , logFuncOf      :: !LogFunc }
   deriving stock (Generic)
 

@@ -17,7 +17,6 @@ import qualified Data.Text.IO as T
 import           Language.Bash.Pretty (prettyText)
 import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)
-import           Text.Pretty.Simple (pPrintNoColor)
 
 ---
 
@@ -38,7 +37,7 @@ main = do
   let !bads = mapMaybe g parsed
   unless (null bads) $ do
     putStrLn $ printf "%d PKGBUILDs contained banned bash terms. They were:" (length bads)
-    traverse_ pPrintNoColor bads
+    traverse_ print bads
   putStrLn "Done."
     where f pair@(pn, _) = note pn $ traverse parsedPB pair
           g = traverse (maybeList . map (first prettyText) . bannedTerms)

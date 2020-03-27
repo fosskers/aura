@@ -79,6 +79,7 @@ withEnv (Program op co bc lng ll) f = do
                  , logPathOf   =
                      first (\x -> fromMaybe x $ getLogFilePath confFile) $ logPathOf co }
           , buildConfigOf = bc { buildUserOf = Just bu}
+          , logLevelOf = ll
           , logFuncOf = logFunc }
     f (Env repos ss)
 

@@ -58,7 +58,6 @@ import           RIO hiding (first)
 import           Settings
 import           System.Path (toFilePath)
 import           System.Process.Typed (proc, runProcess)
-import           Text.Pretty.Simple (pPrintNoColor)
 
 ---
 
@@ -92,10 +91,10 @@ execOpts :: Either (PacmanOp, Set MiscOp) AuraOp -> RIO Env ()
 execOpts ops = do
   logDebug "Interpreting CLI options."
   ss <- asks settings
-  when (shared ss Debug) $ do
-    liftIO . pPrintNoColor $ ops
-    liftIO . pPrintNoColor $ buildConfigOf ss
-    liftIO . pPrintNoColor $ commonConfigOf ss
+  when (logLevelOf ss == LevelDebug) $ do
+    logDebug $ displayShow ops
+    logDebug . displayShow $ buildConfigOf ss
+    logDebug . displayShow $ commonConfigOf ss
   let p (ps, ms) = liftIO . pacman $
         asFlag ps
         ++ foldMap asFlag ms
