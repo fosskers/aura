@@ -25,7 +25,6 @@ import           Data.Text (Text)
 import qualified Data.Text as T
 import           Network.HTTP.Client
 import           Network.HTTP.Types.Status
-import           Text.Printf (printf)
 
 ---
 
@@ -115,22 +114,8 @@ instance ToJSON AurInfo where
     , "License" .= licenseOf ai
     , "Keywords" .= keywordsOf ai ]
 
----
-
--- type Info = "rpc" :> QueryParam "v" Text
---            :> QueryParam "type" Text
---            :> QueryParams "arg[]" Text
---            :> Get '[JSON] RPCResp
-
--- type Search = "rpc" :> QueryParam "v" Text
---            :> QueryParam "type" Text
---            :> QueryParam "arg" Text
---            :> Get '[JSON] RPCResp
-
 data AurError = NoConnection | BadJSON | OtherAurError
   deriving stock (Eq, Ord, Show)
-
--- TODO What's the problem with the `arg[]` syntax?
 
 -- | Perform an @info@ call on one or more package names.
 -- Will fail with a `Left` if there was a connection/decoding error.
@@ -138,14 +123,14 @@ info :: Manager -> [Text] -> IO (Either AurError [AurInfo])
 info m ps = work m url
   where
     url = "https://aur.archlinux.org/rpc?v=5&type=info&" <> as
-    as = T.unpack . T.intercalate "&" $ map ("arg=" <>) ps
+    as = T.unpack . T.intercalate "&" $ map ("arg%5B%5D=" <>) ps
 
 -- | Perform a @search@ call on a package name or description text.
 -- Will fail with a `Left` if there was a connection/decoding error.
 search :: Manager -> Text -> IO (Either AurError [AurInfo])
 search m p = work m url
   where
-    url = printf "https://aur.archlinux.org/rpc?v=5&type=search&arg=%s" p
+    url = "https://aur.archlinux.org/rpc?v=5&type=search&arg=" <> T.unpack p
 
 work :: Manager -> String -> IO (Either AurError [AurInfo])
 work m url = do
