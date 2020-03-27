@@ -12,9 +12,9 @@
 module Aura.Commands.O ( displayOrphans, adoptPkg ) where
 
 import Aura.Core (Env(..), orphans, sudo)
+import Aura.IO (putTextLn)
 import Aura.Pacman (pacman)
 import Aura.Types
-import Aura.Utils (putTextLn)
 import Data.Generics.Product (field)
 import Data.Set.NonEmpty (NESet)
 import RIO

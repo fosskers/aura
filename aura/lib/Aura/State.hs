@@ -22,11 +22,11 @@ module Aura.State
 import           Aura.Cache
 import           Aura.Colour (red)
 import           Aura.Core (Env(..), notify, report, warn)
+import           Aura.IO
 import           Aura.Languages
 import           Aura.Pacman (pacman, pacmanLines)
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils
 import           Control.Error.Util (hush)
 import           Data.Aeson
 import           Data.Generics.Product (field)

@@ -42,12 +42,12 @@ import           Aura.Commands.C as C
 import           Aura.Commands.L as L
 import           Aura.Commands.O as O
 import           Aura.Core
+import           Aura.IO
 import           Aura.Languages
 import           Aura.Logo
 import           Aura.Pacman
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils (putTextLn)
 import           Data.Bifunctor (first)
 import qualified Data.Set.NonEmpty as NES
 import           Data.Text.Prettyprint.Doc

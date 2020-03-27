@@ -12,15 +12,6 @@ module Aura.Utils
   , searchLines
     -- * Network
   , urlContents
-    -- * Output
-  , putStrLnA
-  , putText
-  , putTextLn
-  , colourCheck
-  , entrify
-    -- * User Input
-  , optionalPrompt
-  , getSelection
     -- * Misc.
   , maybe'
   , fmapEither
@@ -28,21 +19,12 @@ module Aura.Utils
   , groupsOf
   ) where
 
-import           Aura.Colour
-import           Aura.Languages (whitespace, yesNoMessage, yesPattern)
-import           Aura.Settings
-import           Aura.Types (Language)
-import           Data.Text.Prettyprint.Doc
-import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Network.HTTP.Client
 import           Network.HTTP.Types.Status (statusCode)
 import           RIO
-import qualified RIO.ByteString as B
 import qualified RIO.ByteString.Lazy as BL
 import qualified RIO.List as L
-import           RIO.List.Partial (maximum)
 import qualified RIO.Text as T
-import           Text.Printf (printf)
 
 ---
 
@@ -56,24 +38,6 @@ data Pattern = Pattern { _pattern :: Text, _target :: Text }
 searchLines :: Text -> [Text] -> [Text]
 searchLines pat = filter (T.isInfixOf pat)
 
------
--- IO
------
--- | Given a number of selections, allows the user to choose one.
-getSelection :: Foldable f => (a -> Text) -> f a -> IO a
-getSelection f choiceLabels = do
-  let quantity = length choiceLabels
-      valids   = map tshow [1..quantity]
-      pad      = show . length . show $ quantity
-      choices  = zip valids $ toList choiceLabels
-  traverse_ (\(l,v) -> printf ("%" <> pad <> "s. %s\n") l (f v)) choices
-  BL.putStr ">> "
-  hFlush stdout
-  userChoice <- decodeUtf8Lenient <$> B.getLine
-  case userChoice `lookup` choices of
-    Just valid -> pure valid
-    Nothing    -> getSelection f choiceLabels  -- Ask again.
-
 ----------
 -- NETWORK
 ----------
@@ -85,65 +49,9 @@ urlContents m url = f <$> httpLbs (parseRequest_ url) m
     f res | statusCode (responseStatus res) == 200 = Just . BL.toStrict $ responseBody res
           | otherwise = Nothing
 
-----------------
--- CUSTOM OUTPUT
-----------------
--- | Print a `Doc` with Aura flair after performing a `colourCheck`.
-putStrLnA :: Settings -> Doc AnsiStyle -> IO ()
-putStrLnA ss d = putStrA ss $ d <> hardline
-
--- | Will remove all colour annotations if the user specified @--color=never@.
-putStrA :: Settings -> Doc AnsiStyle -> IO ()
-putStrA ss d = B.putStr . encodeUtf8 . dtot $ "aura >>=" <+> colourCheck ss d
-
--- | Strip colours from a `Doc` if @--color=never@ is specified,
--- or if the output target isn't a terminal.
-colourCheck :: Settings -> Doc ann -> Doc ann
-colourCheck ss | shared ss (Colour Never)  = unAnnotate
-               | shared ss (Colour Always) = id
-               | isTerminal ss = id
-               | otherwise = unAnnotate
-
-putText :: Text -> IO ()
-putText = B.putStr . encodeUtf8
-
-putTextLn :: Text -> IO ()
-putTextLn = BL.putStrLn . BL.fromStrict . encodeUtf8
-
-----------
--- PROMPTS
-----------
-yesNoPrompt :: Settings -> Doc AnsiStyle -> IO Bool
-yesNoPrompt ss msg = do
-  putStrA ss . yellow $ msg <+> yesNoMessage (langOf ss) <> " "
-  hFlush stdout
-  response <- decodeUtf8Lenient <$> B.getLine
-  pure $ isAffirmative (langOf ss) response
-
--- | An empty response emplies "yes".
-isAffirmative :: Language -> Text -> Bool
-isAffirmative l t = T.null t || elem (T.toCaseFold t) (yesPattern l)
-
--- | Doesn't prompt when `--noconfirm` is used.
-optionalPrompt :: Settings -> (Language -> Doc AnsiStyle) -> IO Bool
-optionalPrompt ss msg | shared ss NoConfirm = pure True
-                      | otherwise           = yesNoPrompt ss (msg $ langOf ss)
-
 -------
 -- MISC
 -------
--- | Format two lists into two nice rows a la `-Qi` or `-Si`.
-entrify :: Settings -> [Text] -> [Doc AnsiStyle] -> Doc AnsiStyle
-entrify ss fs es = vsep $ zipWith combine fs' es
-  where fs' = padding ss fs
-        combine f e = annotate bold (pretty f) <+> ":" <+> e
-
--- | Right-pads strings according to the longest string in the group.
-padding :: Settings -> [Text] -> [Text]
-padding ss fs = map (T.justifyLeft longest ws) fs
-  where ws      = whitespace $ langOf ss
-        longest = maximum $ map T.length fs
-
 -- | `maybe` with the function at the end.
 maybe' :: b -> Maybe a -> (a -> b) -> b
 maybe' zero m f = maybe zero f m

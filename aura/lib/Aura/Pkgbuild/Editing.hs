@@ -11,10 +11,10 @@
 
 module Aura.Pkgbuild.Editing ( hotEdit ) where
 
+import Aura.IO
 import Aura.Languages
 import Aura.Settings
 import Aura.Types
-import Aura.Utils
 import Data.Generics.Product (field)
 import Lens.Micro ((.~))
 import RIO

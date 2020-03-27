@@ -19,6 +19,7 @@ module Aura.Commands.L
 
 import           Aura.Colour (dtot, red)
 import           Aura.Core (Env(..), report)
+import           Aura.IO
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types (PkgName(..))

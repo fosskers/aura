@@ -16,6 +16,7 @@ module Aura.Build
   ) where
 
 import           Aura.Core
+import           Aura.IO
 import           Aura.Languages
 import           Aura.MakePkg
 import           Aura.Packages.AUR (clone)
@@ -23,7 +24,6 @@ import           Aura.Pacman (pacman)
 import           Aura.Settings
 import           Aura.Shell (chown)
 import           Aura.Types
-import           Aura.Utils
 import           Control.Monad.Trans.Except
 import           Data.Generics.Product (field)
 import           Data.Semigroup.Foldable (fold1)

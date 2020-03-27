@@ -23,13 +23,13 @@ module Aura.Commands.C
 import           Aura.Cache
 import           Aura.Colour (red)
 import           Aura.Core
+import           Aura.IO
 import           Aura.Languages
 import           Aura.Pacman (pacman)
 import           Aura.Settings
 import           Aura.Shell
 import           Aura.State
 import           Aura.Types
-import           Aura.Utils
 import           Data.Generics.Product (field)
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES

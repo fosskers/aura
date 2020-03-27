@@ -17,11 +17,12 @@ module Aura.Packages.Repository
   ) where
 
 import           Aura.Core
+import           Aura.IO
 import           Aura.Languages (provides_1)
 import           Aura.Pacman (pacmanLines, pacmanOutput)
 import           Aura.Settings (CommonSwitch(..), Settings(..), shared)
 import           Aura.Types
-import           Aura.Utils (fmapEither, getSelection, traverseEither)
+import           Aura.Utils (fmapEither, traverseEither)
 import           Control.Error.Util (hush, note)
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Generics.Product (field)

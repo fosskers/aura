@@ -14,10 +14,10 @@ module Aura.MakePkg
   , makepkgConfFile
   ) where
 
+import           Aura.IO (optionalPrompt)
 import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils (optionalPrompt)
 import           Control.Error.Util (note)
 import           Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
@@ -27,7 +27,6 @@ import qualified RIO.ByteString.Lazy as BL
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Text as T
 import           System.Path
-    (Absolute, Path, fromAbsoluteFilePath, toFilePath, (</>))
 import           System.Path.IO (getCurrentDirectory, getDirectoryContents)
 import           System.Process.Typed
 

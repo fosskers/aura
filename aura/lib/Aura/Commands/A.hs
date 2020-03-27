@@ -29,6 +29,7 @@ module Aura.Commands.A
 import           Aura.Colour
 import           Aura.Core
 import qualified Aura.Install as I
+import           Aura.IO
 import           Aura.Languages
 import           Aura.Packages.AUR
 import           Aura.Pkgbuild.Fetch

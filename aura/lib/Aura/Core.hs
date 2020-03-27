@@ -31,6 +31,7 @@ module Aura.Core
   ) where
 
 import           Aura.Colour
+import           Aura.IO
 import           Aura.Languages
 import           Aura.Pacman
 import           Aura.Pkgbuild.Editing (hotEdit)

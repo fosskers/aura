@@ -1,3 +1,11 @@
+-- |
+-- Module    : Aura.Shell
+-- Copyright : (c) Colin Woodbury, 2012 - 2020
+-- License   : GPL3
+-- Maintainer: Colin Woodbury <colin@fosskers.ca>
+--
+-- Interaction with the terminal.
+
 module Aura.Shell where
 
 import           Aura.Types

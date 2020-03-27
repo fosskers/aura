@@ -9,11 +9,11 @@
 module Aura.Logo ( animateVersionMsg ) where
 
 import           Aura.Colour (dtot, yellow)
+import           Aura.IO
 import           Aura.Languages (translatorMsg)
 import           Aura.Pacman (verMsgPad)
 import           Aura.Settings
 import           Aura.Shell
-import           Aura.Utils
 import           Data.Text.Prettyprint.Doc
 import           RIO
 import qualified RIO.Text as T

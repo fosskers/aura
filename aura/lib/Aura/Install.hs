@@ -26,6 +26,7 @@ import           Aura.Colour
 import           Aura.Core
 import           Aura.Dependencies (resolveDeps)
 import           Aura.Diff (diff)
+import           Aura.IO
 import           Aura.Languages
 import           Aura.Packages.AUR (aurLookup)
 import           Aura.Pacman (pacman, pacmanSuccess)
@@ -34,7 +35,7 @@ import           Aura.Pkgbuild.Records
 import           Aura.Pkgbuild.Security
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils (fmapEither, optionalPrompt, putTextLn)
+import           Aura.Utils (fmapEither)
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Generics.Product (HasField'(..), field, super)
 import           Data.Semigroup.Foldable (fold1)
