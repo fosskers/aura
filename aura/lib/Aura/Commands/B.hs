@@ -1,4 +1,5 @@
 {-# LANGUAGE MultiWayIf    #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE ViewPatterns  #-}
 
 -- |

@@ -27,11 +27,7 @@ common commons
   default-language:   Haskell2010
   default-extensions:
     NoImplicitPrelude
-    BangPatterns
-    LambdaCase
     OverloadedStrings
-    TupleSections
-    TypeApplications
 
   ghc-options:
     -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns
@@ -87,6 +83,7 @@ library
     Aura.Pkgbuild.Records
     Aura.Pkgbuild.Security
     Aura.Settings
+    Aura.Shell
     Aura.State
     Aura.Types
     Aura.Utils

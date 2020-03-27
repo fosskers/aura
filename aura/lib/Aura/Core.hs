@@ -2,6 +2,7 @@
 {-# LANGUAGE DeriveGeneric      #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE MultiWayIf         #-}
+{-# LANGUAGE TypeApplications   #-}
 
 -- |
 -- Module    : Aura.Core
@@ -34,6 +35,7 @@ import           Aura.Languages
 import           Aura.Pacman
 import           Aura.Pkgbuild.Editing (hotEdit)
 import           Aura.Settings
+import           Aura.Shell
 import           Aura.Types
 import           Aura.Utils
 import           Control.Monad.Trans.Maybe

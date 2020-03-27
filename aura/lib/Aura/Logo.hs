@@ -12,6 +12,7 @@ import           Aura.Colour (dtot, yellow)
 import           Aura.Languages (translatorMsg)
 import           Aura.Pacman (verMsgPad)
 import           Aura.Settings
+import           Aura.Shell
 import           Aura.Utils
 import           Data.Text.Prettyprint.Doc
 import           RIO

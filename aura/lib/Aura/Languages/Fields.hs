@@ -1,3 +1,5 @@
+{-# LANGUAGE LambdaCase #-}
+
 {-# OPTIONS_HADDOCK prune #-}
 
 -- |

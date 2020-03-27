@@ -29,8 +29,8 @@ import           Aura.Packages.AUR (aurRepo)
 import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pacman
 import           Aura.Settings
+import           Aura.Shell
 import           Aura.Types
-import           Aura.Utils
 import           Data.Bifunctor (Bifunctor(..))
 import qualified Data.Set.NonEmpty as NES
 import           Flags

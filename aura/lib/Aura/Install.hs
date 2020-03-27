@@ -1,7 +1,9 @@
+{-# LANGUAGE BangPatterns     #-}
 {-# LANGUAGE DataKinds        #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MonoLocalBinds   #-}
 {-# LANGUAGE MultiWayIf       #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ViewPatterns     #-}
 
 -- |

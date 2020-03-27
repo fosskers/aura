@@ -2,6 +2,8 @@
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE LambdaCase            #-}
+{-# LANGUAGE TypeApplications      #-}
 -- |
 -- Module    : Aura.Packages.AUR
 -- Copyright : (c) Colin Woodbury, 2012 - 2020

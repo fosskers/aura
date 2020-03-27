@@ -1,6 +1,8 @@
+{-# LANGUAGE BangPatterns     #-}
 {-# LANGUAGE DataKinds        #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiWayIf       #-}
+{-# LANGUAGE TypeApplications #-}
 
 -- |
 -- Module    : Aura.Commands.C
@@ -24,6 +26,7 @@ import           Aura.Core
 import           Aura.Languages
 import           Aura.Pacman (pacman)
 import           Aura.Settings
+import           Aura.Shell
 import           Aura.State
 import           Aura.Types
 import           Aura.Utils

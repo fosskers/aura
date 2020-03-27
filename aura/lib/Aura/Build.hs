@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds        #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeApplications #-}
 
 -- |
 -- Module    : Aura.Build
@@ -20,6 +21,7 @@ import           Aura.MakePkg
 import           Aura.Packages.AUR (clone)
 import           Aura.Pacman (pacman)
 import           Aura.Settings
+import           Aura.Shell (chown)
 import           Aura.Types
 import           Aura.Utils
 import           Control.Monad.Trans.Except

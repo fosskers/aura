@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds        #-}
+{-# LANGUAGE TypeApplications #-}
 
 -- |
 -- Module    : Aura.Commands.O
