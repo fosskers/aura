@@ -24,12 +24,10 @@ import           Aura.Pacman (pacman)
 import           Aura.Settings
 import           Aura.Shell (chown)
 import           Aura.Types
+import           Aura.Utils
 import           Control.Monad.Trans.Except
 import           Data.Generics.Product (field)
 import           Data.Hashable (hash)
-import           Data.Semigroup.Foldable (fold1)
-import           Data.Set.NonEmpty (NESet)
-import qualified Data.Set.NonEmpty as NES
 import           Data.Witherable.Class (wither)
 import           RIO
 import           RIO.Directory (setCurrentDirectory)
@@ -46,7 +44,7 @@ srcPkgStore :: Path Absolute
 srcPkgStore = fromAbsoluteFilePath "/var/cache/aura/src"
 
 -- | Expects files like: \/var\/cache\/pacman\/pkg\/*.pkg.tar.xz
-installPkgFiles :: NESet PackagePath -> RIO Env ()
+installPkgFiles :: NonEmpty PackagePath -> RIO Env ()
 installPkgFiles files = do
   ss <- asks settings
   liftIO $ checkDBLock ss
@@ -54,13 +52,13 @@ installPkgFiles files = do
 
 -- | All building occurs within temp directories,
 -- or in a location specified by the user with flags.
-buildPackages :: NESet Buildable -> RIO Env (NESet PackagePath)
-buildPackages bs = wither build (toList bs) >>= maybe bad (pure . fold1) . NEL.nonEmpty
+buildPackages :: NonEmpty Buildable -> RIO Env (NonEmpty PackagePath)
+buildPackages bs = wither build (NEL.toList bs) >>= maybe bad (pure . fold1) . NEL.nonEmpty
   where bad = throwM $ Failure buildFail_10
 
 -- | Handles the building of Packages. Fails nicely.
 -- Assumed: All dependencies are already installed.
-build :: Buildable -> RIO Env (Maybe (NESet PackagePath))
+build :: Buildable -> RIO Env (Maybe (NonEmpty PackagePath))
 build p = do
   ss     <- asks settings
   liftIO $ notify ss (buildPackages_1 (p ^. field @"name") (langOf ss)) *> hFlush stdout
@@ -69,7 +67,7 @@ build p = do
 
 -- | Should never throw an IO Exception. In theory all errors
 -- will come back via the @Language -> String@ function.
-build' :: Settings -> Buildable -> IO (Either Failure (NESet PackagePath))
+build' :: Settings -> Buildable -> IO (Either Failure (NonEmpty PackagePath))
 build' ss b = do
   let pth = buildPathOf $ buildConfigOf ss
   createDirectoryIfMissing True pth
@@ -82,7 +80,7 @@ build' ss b = do
     lift . setCurrentDirectory $ toFilePath bs
     lift $ overwritePkgbuild ss b
     pNames <- ExceptT $ makepkg ss usr
-    paths  <- lift . fmap NES.fromList . traverse (moveToCachePath ss) $ NES.toList pNames
+    paths  <- liftIO $ traverse (moveToCachePath ss) pNames
     lift . when (S.member AllSource . makepkgFlagsOf $ buildConfigOf ss) $
       makepkgSource usr >>= traverse_ moveToSourcePath
     pure paths

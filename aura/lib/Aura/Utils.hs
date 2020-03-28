@@ -12,20 +12,31 @@ module Aura.Utils
   , searchLines
     -- * Network
   , urlContents
-    -- * Misc.
-  , maybe'
-  , fmapEither
-  , traverseEither
-  , groupsOf
+    -- * Semigroupoids
+  , foldMap1
+  , fold1
+    -- * Errors
   , hush
   , note
+    -- * Compactable
+  , fmapEither
+  , traverseEither
+    -- * Misc.
+  , maybe'
+  , groupsOf
+  , nes
+  , partNonEmpty
   ) where
 
+import           Data.Bifunctor (bimap)
+import           Data.These (These(..))
 import           Network.HTTP.Client
 import           Network.HTTP.Types.Status (statusCode)
 import           RIO
 import qualified RIO.ByteString.Lazy as BL
 import qualified RIO.List as L
+import qualified RIO.NonEmpty as NEL
+import qualified RIO.Set as S
 import qualified RIO.Text as T
 
 ---
@@ -83,8 +94,24 @@ groupsOf n as
       where
         (xs, rest) = L.splitAt n bs
 
+nes :: Set a -> Maybe (NonEmpty a)
+nes = NEL.nonEmpty . S.toList
+
 hush :: Either a b -> Maybe b
 hush = either (const Nothing) Just
 
 note :: a -> Maybe b -> Either a b
 note a = maybe (Left a) Right
+
+-- | Borrowed from semigroupoids.
+foldMap1 :: Semigroup m => (a -> m) -> NonEmpty a -> m
+foldMap1 f (a :| [])     = f a
+foldMap1 f (a :| b : bs) = f a <> foldMap1 f (b :| bs)
+
+-- | Borrowed from semigroupoids.
+fold1 :: Semigroup m => NonEmpty m -> m
+fold1 = foldMap1 id
+
+-- | Partition a `NonEmpty` based on some function.
+partNonEmpty :: (a -> These b c) -> NonEmpty a -> These (NonEmpty b) (NonEmpty c)
+partNonEmpty f = foldMap1 (bimap pure pure . f)

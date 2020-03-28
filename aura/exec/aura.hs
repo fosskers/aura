@@ -35,29 +35,29 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Main ( main ) where
 
-import           Aura.Colour (dtot)
-import           Aura.Commands.A as A
-import           Aura.Commands.B as B
-import           Aura.Commands.C as C
-import           Aura.Commands.L as L
-import           Aura.Commands.O as O
-import           Aura.Core
-import           Aura.IO
-import           Aura.Languages
-import           Aura.Logo
-import           Aura.Pacman
-import           Aura.Settings
-import           Aura.Types
-import           Data.Bifunctor (first)
-import qualified Data.Set.NonEmpty as NES
-import           Data.Text.Prettyprint.Doc
-import           Data.Text.Prettyprint.Doc.Render.Terminal
-import           Flags
-import           Options.Applicative (execParser)
-import           RIO hiding (first)
-import           Settings
-import           System.Path (toFilePath)
-import           System.Process.Typed (proc, runProcess)
+import Aura.Colour (dtot)
+import Aura.Commands.A as A
+import Aura.Commands.B as B
+import Aura.Commands.C as C
+import Aura.Commands.L as L
+import Aura.Commands.O as O
+import Aura.Core
+import Aura.IO
+import Aura.Languages
+import Aura.Logo
+import Aura.Pacman
+import Aura.Settings
+import Aura.Types
+import Aura.Utils (nes)
+import Data.Bifunctor (first)
+import Data.Text.Prettyprint.Doc
+import Data.Text.Prettyprint.Doc.Render.Terminal
+import Flags
+import Options.Applicative (execParser)
+import RIO hiding (first)
+import Settings
+import System.Path (toFilePath)
+import System.Process.Typed (proc, runProcess)
 
 ---
 
@@ -135,7 +135,7 @@ execOpts ops = do
     Right (Orphans o) ->
       case o of
         Nothing               -> liftIO O.displayOrphans
-        Just OrphanAbandon    -> sudo $ liftIO orphans >>= traverse_ removePkgs . NES.nonEmptySet
+        Just OrphanAbandon    -> sudo $ liftIO orphans >>= traverse_ removePkgs . nes
         Just (OrphanAdopt ps) -> O.adoptPkg ps
     Right Version   -> liftIO $ versionInfo >>= animateVersionMsg ss auraVersion
     Right Languages -> displayOutputLanguages

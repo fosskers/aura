@@ -47,7 +47,6 @@ common commons
 common libexec
   build-depends:
     , http-client                  >=0.5 && <0.7
-    , nonempty-containers          ^>=0.3
     , prettyprinter                >=1.2 && <1.7
     , prettyprinter-ansi-terminal  ^>=1.1
     , transformers                 ^>=0.5
@@ -102,7 +101,6 @@ library
     , microlens-ghc     ^>=0.4
     , network-uri       ^>=2.6
     , scheduler         >=1.1  && <1.5
-    , semigroupoids     >=5.2  && <5.4
     , stm               ^>=2.5
     , these             ^>=1.0
     , time              >=1.8  && <1.10

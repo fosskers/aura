@@ -1235,8 +1235,8 @@ reportNotInLog_1 = \case
 -------------------------------
 
 -- https://github.com/fosskers/aura/issues/498
-connectionFailure_1 :: Language -> Doc AnsiStyle
-connectionFailure_1 = \case
+connectFailure_1 :: Language -> Doc AnsiStyle
+connectFailure_1 = \case
   Spanish -> "No se pudo contactar con el AUR. ¿Tienes conexión a internet?"
   Italian -> "Non è stato possibile contattare l'AUR. Il computer è connesso ad internet?"
   Dutch   -> "Contact opnemen met de AUR mislukt. Heeft U een internet connectie?"

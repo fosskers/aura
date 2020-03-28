@@ -34,8 +34,6 @@ import           Aura.Utils
 import           Control.Monad.Trans.Maybe
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Generics.Product (field)
-import           Data.Set.NonEmpty (NESet)
-import qualified Data.Set.NonEmpty as NES
 import           Data.Versions (versioning)
 import           Lens.Micro (each, non, (^..))
 import           Linux.Arch.Aur
@@ -53,13 +51,13 @@ import           System.Process.Typed
 ---
 
 -- | Attempt to retrieve info about a given `Set` of packages from the AUR.
-aurLookup :: Manager -> NESet PkgName -> IO (Maybe (Set PkgName, Set Buildable))
+aurLookup :: Manager -> NonEmpty PkgName -> IO (Maybe (Set PkgName, Set Buildable))
 aurLookup m names = runMaybeT $ do
   infos <- MaybeT . fmap hush . info m $ foldr (\(PkgName pn) acc -> pn : acc) [] names
   badsgoods <- lift $ traverseConcurrently Par' (buildable m) infos
   let (bads, goods) = partitionEithers badsgoods
       goodNames     = S.fromList $ goods ^.. each . field @"name"
-  pure (S.fromList bads <> NES.toSet names S.\\ goodNames, S.fromList goods)
+  pure (S.fromList bads <> S.fromList (NEL.toList names) S.\\ goodNames, S.fromList goods)
 
 -- | Yield fully realized `Package`s from the AUR.
 aurRepo :: IO Repository
@@ -68,7 +66,7 @@ aurRepo = do
 
   -- TODO Use `data-or` here to offer `Or (NESet PkgName) (NESet Package)`?
   -- Yes that sounds like a good idea :)
-  let f :: Settings -> NESet PkgName -> IO (Maybe (Set PkgName, Set Package))
+  let f :: Settings -> NonEmpty PkgName -> IO (Maybe (Set PkgName, Set Package))
       f ss ps = do
         --- Retrieve cached Packages ---
         cache <- readTVarIO tv
@@ -77,7 +75,7 @@ aurRepo = do
         case NEL.nonEmpty uncached of
           Nothing -> pure $ Just (S.empty, S.fromList cached)
           Just uncached' -> runMaybeT $ do
-            (bads, goods) <- MaybeT . aurLookup (managerOf ss) $ NES.fromList uncached'
+            (bads, goods) <- MaybeT $ aurLookup (managerOf ss) uncached'
             pkgs <- lift . traverse (packageBuildable ss) $ toList goods
             --- Update Cache ---
             let m = M.fromList $ map (pname &&& id) pkgs
@@ -143,7 +141,7 @@ sortAurInfo bs ai = L.sortBy compare' ai
 aurSearch :: Text -> RIO Env [AurInfo]
 aurSearch regex = do
   ss  <- asks settings
-  res <- liftMaybeM (Failure connectionFailure_1) . fmap hush . liftIO $ search (managerOf ss) regex
+  res <- liftMaybeM (Failure connectFailure_1) . fmap hush . liftIO $ search (managerOf ss) regex
   pure $ sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) res
 
 -- | Frontend to the `aur` library. For @-Ai@.
@@ -156,7 +154,7 @@ aurInfo pkgs = do
   where
     work :: Manager -> [PkgName] -> RIO Env [AurInfo]
     work m ps = liftIO (info m $ map (^. field @"name") ps) >>= \case
-      Left (NotFound _) -> throwM (Failure connectionFailure_1)
+      Left (NotFound _) -> throwM (Failure connectFailure_1)
       Left BadJSON -> throwM (Failure miscAURFailure_3)
       Left (OtherAurError e) -> do
         let !resp = display $ decodeUtf8Lenient e

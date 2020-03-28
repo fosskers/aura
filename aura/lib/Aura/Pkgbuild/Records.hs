@@ -17,7 +17,6 @@ module Aura.Pkgbuild.Records
 import Aura.Pkgbuild.Base
 import Aura.Types
 import Data.Generics.Product (field)
-import Data.Set.NonEmpty (NESet)
 import RIO
 import System.Path (toFilePath)
 import System.Path.IO (createDirectoryIfMissing, doesFileExist)
@@ -30,7 +29,7 @@ hasPkgbuildStored :: PkgName -> IO Bool
 hasPkgbuildStored = doesFileExist . pkgbuildPath
 
 -- | Write the PKGBUILDs of some `Buildable`s to disk.
-storePkgbuilds :: NESet Buildable -> IO ()
+storePkgbuilds :: NonEmpty Buildable -> IO ()
 storePkgbuilds bs = do
   createDirectoryIfMissing True pkgbuildCache
   traverse_ (\p -> writePkgbuild (p ^. field @"name") (p ^. field @"pkgbuild")) bs

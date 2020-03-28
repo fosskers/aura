@@ -25,7 +25,6 @@ import           Aura.Settings
 import           Aura.Types (PkgName(..))
 import           Aura.Utils
 import           Data.Generics.Product (field)
-import           Data.Set.NonEmpty (NESet)
 import           Data.Text.Prettyprint.Doc
 import           RIO hiding (FilePath)
 import qualified RIO.NonEmpty as NEL
@@ -59,7 +58,7 @@ searchLogFile ss input = do
   traverse_ putTextLn $ searchLines input logFile
 
 -- | The result of @-Li@.
-logInfoOnPkg :: NESet PkgName -> RIO Env ()
+logInfoOnPkg :: NonEmpty PkgName -> RIO Env ()
 logInfoOnPkg pkgs = do
   ss <- asks settings
   let pth = toFilePath . either id id . logPathOf $ commonConfigOf ss

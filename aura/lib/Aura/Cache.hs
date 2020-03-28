@@ -23,8 +23,6 @@ module Aura.Cache
 import           Aura.Settings
 import           Aura.Types
 import           Data.Generics.Product (field)
-import           Data.Set.NonEmpty (NESet)
-import qualified Data.Set.NonEmpty as NES
 import           RIO
 import qualified RIO.Map as M
 import qualified RIO.Set as S
@@ -55,10 +53,10 @@ cacheContents :: Path Absolute -> IO Cache
 cacheContents pth = cache . map (PackagePath . (pth </>)) <$> getDirectoryContents pth
 
 -- | All packages from a given `Set` who have a copy in the cache.
-pkgsInCache :: Settings -> NESet PkgName -> IO (Set PkgName)
+pkgsInCache :: Settings -> Set PkgName -> IO (Set PkgName)
 pkgsInCache ss ps = do
   c <- cacheContents . either id id . cachePathOf $ commonConfigOf ss
-  pure . S.filter (`NES.member` ps) . S.map (^. field @"name") . M.keysSet $ _cache c
+  pure . S.filter (`S.member` ps) . S.map (^. field @"name") . M.keysSet $ _cache c
 
 -- | Any entries (filepaths) in the cache that match a given `Text`.
 cacheMatches :: Settings -> Text -> IO [PackagePath]

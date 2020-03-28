@@ -25,7 +25,6 @@ import           Aura.Types
 import           Aura.Utils
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Generics.Product (field)
-import qualified Data.Set.NonEmpty as NES
 import           Data.Versions
 import           RIO hiding (try)
 import qualified RIO.Map as M
@@ -41,7 +40,7 @@ pacmanRepo :: IO Repository
 pacmanRepo = do
   tv <- newTVarIO mempty
 
-  let g :: Settings -> NES.NESet PkgName -> IO (Maybe (Set PkgName, Set Package))
+  let g :: Settings -> NonEmpty PkgName -> IO (Maybe (Set PkgName, Set Package))
       g ss names = do
         --- Retrieve cached Packages ---
         cache <- readTVarIO tv

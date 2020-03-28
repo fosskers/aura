@@ -19,7 +19,7 @@
 
 module Aura.Types
   ( -- * Package Types
-    Package(..), pname, pprov, pver, dividePkgs
+    Package(..), pname, pprov, pver, dividePkgs, dividePkgs'
   , Dep(..), parseDep, renderedDep
   , Buildable(..)
   , Prebuilt(..)
@@ -44,20 +44,17 @@ module Aura.Types
   , User(..)
   ) where
 
-import           Aura.Utils (hush)
+import           Aura.Utils
 import           Data.Aeson (FromJSONKey, ToJSONKey)
-import           Data.Bifunctor (Bifunctor(..))
 import           Data.Bitraversable
 import           Data.Generics.Product (field, super)
-import           Data.Semigroup.Foldable (Foldable1(..))
-import           Data.Set.NonEmpty (NESet)
-import qualified Data.Set.NonEmpty as NES
 import           Data.Text.Prettyprint.Doc hiding (list, space)
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.These (These(..))
 import           Data.Versions hiding (Traversal')
 import           Lens.Micro
 import           RIO hiding (try)
+import qualified RIO.NonEmpty as NEL
 import qualified RIO.Text as T
 import           System.Path (Absolute, Path, takeFileName, toUnrootedFilePath)
 import           Text.Megaparsec
@@ -93,17 +90,19 @@ pver :: Package -> Versioning
 pver (FromRepo pb) = pb ^. field @"version"
 pver (FromAUR b)   = b  ^. field @"version"
 
-dividePkgs :: NESet Package -> These (NESet Prebuilt) (NESet Buildable)
-dividePkgs = bimap NES.fromList NES.fromList . partNonEmpty f . NES.toList
+dividePkgs :: NonEmpty Package -> These (NonEmpty Prebuilt) (NonEmpty Buildable)
+dividePkgs = partNonEmpty f
   where
     f :: Package -> These Prebuilt Buildable
     f (FromRepo p) = This p
     f (FromAUR b)  = That b
 
--- TODO Contribute this upstream.
--- | Partition a `NonEmpty` based on some function.
-partNonEmpty :: (a -> These b c) -> NonEmpty a -> These (NonEmpty b) (NonEmpty c)
-partNonEmpty f = foldMap1 (bimap pure pure . f)
+-- | A version of `dividePkgs` that discards information about non-emptiness.
+dividePkgs' :: NonEmpty Package -> ([Prebuilt], [Buildable])
+dividePkgs' ps = case dividePkgs ps of
+  This p    -> (NEL.toList p, [])
+  That b    -> ([], NEL.toList b)
+  These p b -> (NEL.toList p, NEL.toList b)
 
 -- TODO Figure out how to do this more generically.
 instance Ord Package where

@@ -35,12 +35,9 @@ import           Aura.Pkgbuild.Records
 import           Aura.Pkgbuild.Security
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils (fmapEither)
+import           Aura.Utils
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Generics.Product (HasField'(..), field, super)
-import           Data.Semigroup.Foldable (fold1)
-import           Data.Set.NonEmpty (NESet)
-import qualified Data.Set.NonEmpty as NES
 import           Language.Bash.Pretty (prettyText)
 import           Language.Bash.Syntax (ShellCommand)
 import           Lens.Micro (each, (^..))
@@ -55,9 +52,8 @@ import           System.Path (fromAbsoluteFilePath)
 
 ---
 
--- | High level 'install' command. Handles installing
--- dependencies.
-install :: NESet PkgName -> RIO Env ()
+-- | High level 'install' command. Handles installing dependencies.
+install :: NonEmpty PkgName -> RIO Env ()
 install pkgs = do
   ss <- asks settings
   if | not $ switch ss DeleteMakeDeps -> install' pkgs
@@ -65,10 +61,10 @@ install pkgs = do
          orphansBefore <- liftIO orphans
          install' pkgs
          orphansAfter <- liftIO orphans
-         let makeDeps = NES.nonEmptySet (orphansAfter S.\\ orphansBefore)
+         let makeDeps = nes $ orphansAfter S.\\ orphansBefore
          traverse_ (\mds -> liftIO (notify ss . removeMakeDepsAfter_1 $ langOf ss) *> removePkgs mds) makeDeps
 
-install' :: NESet PkgName -> RIO Env ()
+install' :: NonEmpty PkgName -> RIO Env ()
 install' pkgs = do
   rpstry   <- asks repository
   ss       <- asks settings
@@ -76,23 +72,23 @@ install' pkgs = do
               (pure S.empty)
               (S.fromList . catMaybes <$> liftIO (traverseConcurrently Par' isInstalled $ toList pkgs))
               $ shared ss NeededOnly
-  let !pkgs' = NES.toSet pkgs
+  let !pkgs' = S.fromList $ NEL.toList pkgs
   if | shared ss NeededOnly && unneeded == pkgs' -> liftIO . warn ss . install_2 $ langOf ss
      | otherwise -> do
          let (ignored, notIgnored) = S.partition (`S.member` ignoresOf ss) pkgs'
          installAnyway <- confirmIgnored ignored
-         case NES.nonEmptySet $ (notIgnored <> installAnyway) S.\\ unneeded of
+         case nes $ (notIgnored <> installAnyway) S.\\ unneeded of
            Nothing        -> liftIO . warn ss . install_2 $ langOf ss
            Just toInstall -> do
              traverse_ (report yellow reportUnneededPackages_1) . NEL.nonEmpty
                $ toList unneeded
-             (nons, toBuild) <- liftMaybeM (Failure connectionFailure_1) . liftIO
+             (nons, toBuild) <- liftMaybeM (Failure connectFailure_1) . liftIO
                $ aurLookup (managerOf ss) toInstall
              pkgbuildDiffs toBuild
              traverse_ (report red reportNonPackages_1) . NEL.nonEmpty $ toList nons
              let !explicits = bool (S.map (\b -> b { isExplicit = True }) toBuild) toBuild
                    $ switch ss AsDeps
-             case NES.nonEmptySet explicits of
+             case nes explicits of
                Nothing       -> throwM $ Failure install_2
                Just toBuild' -> do
                  liftIO $ notify ss (install_5 $ langOf ss) *> hFlush stdout
@@ -134,68 +130,91 @@ displayBannedTerms ss (stmt, b) = do
 
 -- | Give anything that was installed as a dependency the /Install Reason/ of
 -- "Installed as a dependency for another package".
-annotateDeps :: NESet Buildable -> IO ()
+annotateDeps :: NonEmpty Buildable -> IO ()
 annotateDeps bs = unless (null bs') . void . pacmanSuccess
   $ ["-D", "--asdeps"] <> asFlag (bs' ^.. each . field @"name")
-  where bs' = filter (not . isExplicit) $ toList bs
+  where bs' = NEL.filter (not . isExplicit) bs
 
 -- | Reduce a list of candidate packages to build, such that there is only one
 -- instance of each "Package Base". This will ensure that split packages will
 -- only be built once each. Precedence is given to packages that actually
 -- match the base name (e.g. llvm50 vs llvm50-libs).
-uniquePkgBase :: [NESet Buildable] -> [NESet Buildable]
-uniquePkgBase bs = mapMaybe (NES.nonEmptySet . S.filter (\b -> (b ^. field @"name") `S.member` goods) . NES.toSet) bs
-  where f a b | (a ^. field @"name") == (a ^. field @"base") = a
-              | (b ^. field @"name") == (b ^. field @"base") = b
-              | otherwise = a
-        goods = S.fromList . (^.. each . field @"name") . M.elems . M.fromListWith f $ map (view (field @"base") &&& id) bs'
-        bs'   = foldMap toList bs
+uniquePkgBase :: [NonEmpty Buildable] -> [NonEmpty Buildable]
+uniquePkgBase bs = mapMaybe g bs
+  where
+    bs' :: [Buildable]
+    bs' = foldMap NEL.toList bs
+
+    g :: NonEmpty Buildable -> Maybe (NonEmpty Buildable)
+    g = NEL.nonEmpty . L.nub . NEL.filter (\b -> (b ^. field @"name") `S.member` goods)
+
+    f :: Buildable -> Buildable -> Buildable
+    f a b | (a ^. field @"name") == (a ^. field @"base") = a
+          | (b ^. field @"name") == (b ^. field @"base") = b
+          | otherwise = a
+
+    goods :: Set PkgName
+    goods = S.fromList . (^.. each . field @"name") . M.elems . M.fromListWith f
+      $ map (view (field @"base") &&& id) bs'
 
 confirmIgnored :: Set PkgName -> RIO Env (Set PkgName)
 confirmIgnored (toList -> ps) = do
   ss <- asks settings
   S.fromList <$> filterM (liftIO . optionalPrompt ss . confirmIgnored_1) ps
 
-depsToInstall :: Repository -> NESet Buildable -> RIO Env (NonEmpty (NESet Package))
+-- | The nested `NonEmpty`s represent the package "hierarchy", namely, what can
+-- be built/installed before what.
+depsToInstall :: Repository -> NonEmpty Buildable -> RIO Env (NonEmpty (NonEmpty Package))
 depsToInstall repo bs = do
   ss <- asks settings
-  traverse (liftIO . packageBuildable ss) (NES.toList bs) >>= resolveDeps repo . NES.fromList
+  traverse (liftIO . packageBuildable ss) bs >>= resolveDeps repo
 
 repoInstall :: NonEmpty Prebuilt -> RIO Env ()
 repoInstall ps = do
   pacOpts <- asks (asFlag . commonConfigOf . settings)
   liftIO . pacman $ ["-S", "--asdeps"] <> pacOpts <> asFlag (ps ^.. each . field @"name")
 
-buildAndInstall :: NonEmpty (NESet Buildable) -> RIO Env ()
+buildAndInstall :: NonEmpty (NonEmpty Buildable) -> RIO Env ()
 buildAndInstall bss = do
   pth   <- asks (either id id . cachePathOf . commonConfigOf . settings)
   cache <- liftIO $ cacheContents pth
   traverse_ (f cache) bss
-  where f (Cache cache) bs = do
-          ss <- asks settings
-          let (ps, cached) = fmapEither g $ toList bs
-              g b = case (b ^. super @SimplePkg) `M.lookup` cache of
-                Just pp | not (switch ss ForceBuilding) -> Right pp
-                _                                       -> Left b
-          built <- traverse (buildPackages . NES.fromList) $ NEL.nonEmpty ps
-          traverse_ installPkgFiles $ built <> (NES.fromList <$> NEL.nonEmpty cached)
-          liftIO $ annotateDeps bs
+  where
+    -- TODO There is a weird edge case (which might be impossible anyway) where
+    -- `built` and the `traverse_` line below don't run, but `annotateDeps` is
+    -- called anyway. There is definitely a better way to manage the `NonEmpty`s
+    -- here.
+    f :: Cache -> NonEmpty Buildable -> RIO Env ()
+    f (Cache cache) bs = do
+      ss <- asks settings
+      let (ps, cached) = fmapEither g $ NEL.toList bs
+          g b = case (b ^. super @SimplePkg) `M.lookup` cache of
+            Just pp | not (switch ss ForceBuilding) -> Right pp
+            _                                       -> Left b
+      built <- traverse buildPackages $ NEL.nonEmpty ps
+      traverse_ installPkgFiles $ built <> NEL.nonEmpty cached
+      liftIO $ annotateDeps bs
 
 ------------
 -- REPORTING
 ------------
 -- | Display dependencies. The result of @-Ad@.
-displayPkgDeps :: NESet PkgName -> RIO Env ()
+displayPkgDeps :: NonEmpty PkgName -> RIO Env ()
 displayPkgDeps ps = do
   rpstry <- asks repository
   ss <- asks settings
-  let f = depsToInstall rpstry >=> reportDeps (switch ss LowVerbosity) . partitionPkgs
-  (_, goods) <- liftMaybeM (Failure connectionFailure_1) . liftIO $ aurLookup (managerOf ss) ps
-  traverse_ f $ NES.nonEmptySet goods
-  where reportDeps True  = liftIO . uncurry reportListOfDeps
-        reportDeps False = uncurry reportPkgsToInstall
 
-reportPkgsToInstall :: [Prebuilt] -> [NESet Buildable] -> RIO Env ()
+  let f :: NonEmpty Buildable -> RIO Env ()
+      f = depsToInstall rpstry >=> reportDeps (switch ss LowVerbosity) . partitionPkgs
+
+  (_, goods) <- liftMaybeM (Failure connectFailure_1) . liftIO $ aurLookup (managerOf ss) ps
+  traverse_ f $ nes goods
+  where
+    reportDeps :: Bool -> ([Prebuilt], [NonEmpty Buildable]) -> RIO Env ()
+    reportDeps True  = liftIO . uncurry reportListOfDeps
+    reportDeps False = uncurry reportPkgsToInstall
+
+reportPkgsToInstall :: [Prebuilt] -> [NonEmpty Buildable] -> RIO Env ()
 reportPkgsToInstall rps bps = do
   let (explicits, ds) = L.partition isExplicit $ foldMap toList bps
   f reportPkgsToInstall_1 rps
@@ -204,7 +223,7 @@ reportPkgsToInstall rps bps = do
   where
     f m xs = traverse_ (report green m) . NEL.nonEmpty . L.sort $ xs ^.. each . field @"name"
 
-reportListOfDeps :: [Prebuilt] -> [NESet Buildable] -> IO ()
+reportListOfDeps :: [Prebuilt] -> [NonEmpty Buildable] -> IO ()
 reportListOfDeps rps bps = f rps *> f (foldMap toList bps)
   where f :: HasField' "name" s PkgName => [s] -> IO ()
         f = traverse_ putTextLn . L.sort . (^.. each . field' @"name" . field' @"name")

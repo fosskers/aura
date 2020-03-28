@@ -4,7 +4,6 @@
 {-# LANGUAGE LambdaCase       #-}
 {-# LANGUAGE MultiWayIf       #-}
 {-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE ViewPatterns     #-}
 
 -- |
 -- Module    : Aura.Commands.A
@@ -39,8 +38,6 @@ import           Aura.Types
 import           Aura.Utils
 import           Data.Aeson.Encode.Pretty (encodePretty)
 import           Data.Generics.Product (field)
-import           Data.Set.NonEmpty (NESet)
-import qualified Data.Set.NonEmpty as NES
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions (Versioning, prettyV, versioning)
@@ -66,7 +63,7 @@ upgradeAURPkgs pkgs = do
   ss <- asks settings
   liftIO . notify ss . upgradeAURPkgs_1 $ langOf ss
   fs <- liftIO (foreigns ss)
-  traverse_ (upgrade pkgs) $ NES.nonEmptySet fs
+  traverse_ (upgrade pkgs) $ nes fs
 
 -- | Foreign packages to consider for upgrading, after "ignored packages" have
 -- been taken into consideration.
@@ -74,9 +71,9 @@ foreigns :: Settings -> IO (Set SimplePkg)
 foreigns ss = S.filter (notIgnored . view (field @"name")) <$> foreignPackages
   where notIgnored p = not . S.member p $ ignoresOf ss
 
-upgrade :: Set PkgName -> NESet SimplePkg -> RIO Env ()
+upgrade :: Set PkgName -> NonEmpty SimplePkg -> RIO Env ()
 upgrade pkgs fs = do
-  logDebug $ "Considering " <> display (NES.size fs) <> " 'foreign' packages for upgrade."
+  logDebug $ "Considering " <> display (NEL.length fs) <> " 'foreign' packages for upgrade."
   unless (null pkgs)
     $ logDebug $ "Also installing " <> display (S.size pkgs) <> " other packages."
   ss        <- asks settings
@@ -94,10 +91,10 @@ upgrade pkgs fs = do
          | otherwise -> do
              reportPkgsToUpgrade toUpgrade (toList devel)
              liftIO . unless (switch ss DryRun) $ saveState ss
-             traverse_ I.install . NES.nonEmptySet $ S.fromList names <> pkgs <> devel
+             traverse_ I.install . nes $ S.fromList names <> pkgs <> devel
 
-possibleUpdates :: NESet SimplePkg -> RIO Env [(AurInfo, Versioning)]
-possibleUpdates (NES.toList -> pkgs) = do
+possibleUpdates :: NonEmpty SimplePkg -> RIO Env [(AurInfo, Versioning)]
+possibleUpdates pkgs = do
   aurInfos <- aurInfo $ fmap (^. field @"name") pkgs
   let !names  = map aurNameOf aurInfos
       aurPkgs = NEL.filter (\(SimplePkg (PkgName n) _) -> n `elem` names) pkgs
@@ -115,15 +112,15 @@ auraCheck ps = join <$> traverse f auraPkg
                 | otherwise            = Nothing
 
 auraUpgrade :: PkgName -> RIO Env ()
-auraUpgrade = I.install . NES.singleton
+auraUpgrade = I.install . pure
 
 develPkgCheck :: RIO Env (Set PkgName)
 develPkgCheck = asks settings >>= \ss ->
   if switch ss RebuildDevel then liftIO develPkgs else pure S.empty
 
 -- | The result of @-Ai@.
-aurPkgInfo :: NESet PkgName -> RIO Env ()
-aurPkgInfo = aurInfo . NES.toList >=> traverse_ displayAurPkgInfo
+aurPkgInfo :: NonEmpty PkgName -> RIO Env ()
+aurPkgInfo = aurInfo >=> traverse_ displayAurPkgInfo
 
 displayAurPkgInfo :: AurInfo -> RIO Env ()
 displayAurPkgInfo ai = asks settings >>= \ss -> liftIO . putTextLn $ renderAurPkgInfo ss ai <> "\n"
@@ -174,7 +171,7 @@ renderSearch ss r (i, e) = searchResult
             Nothing -> green . pretty $ aurVersionOf i
 
 -- | The result of @-Ap@.
-displayPkgbuild :: NESet PkgName -> RIO Env ()
+displayPkgbuild :: NonEmpty PkgName -> RIO Env ()
 displayPkgbuild ps = do
   man <- asks (managerOf . settings)
   pbs <- catMaybes <$> traverse (liftIO . getPkgbuild man) (toList ps)
@@ -185,17 +182,17 @@ isntMostRecent (ai, v) = trueVer > Just v
   where trueVer = hush . versioning $ aurVersionOf ai
 
 -- | Similar to @-Ai@, but yields the raw data as JSON instead.
-aurJson :: NESet PkgName -> RIO Env ()
+aurJson :: NonEmpty PkgName -> RIO Env ()
 aurJson ps = do
   m <- asks (managerOf . settings)
-  infos <- liftMaybeM (Failure connectionFailure_1) . fmap hush . liftIO $ f m ps
+  infos <- liftMaybeM (Failure connectFailure_1) . fmap hush . liftIO $ f m ps
   traverse_ (BL.putStrLn . encodePretty) infos
   where
-    f :: Manager -> NESet PkgName -> IO (Either AurError [AurInfo])
+    f :: Manager -> NonEmpty PkgName -> IO (Either AurError [AurInfo])
     f m = info m . (^.. each . field @"name") . toList
 
 -- | @https://aur.archlinux.org/cgit/aur.git/snapshot/aura-bin.tar.gz@
-fetchTarball :: NESet PkgName -> RIO Env ()
+fetchTarball :: NonEmpty PkgName -> RIO Env ()
 fetchTarball ps = do
   ss <- asks settings
   traverse_ (liftIO . g ss) ps

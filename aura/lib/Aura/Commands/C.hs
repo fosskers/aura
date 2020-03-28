@@ -30,9 +30,8 @@ import           Aura.Settings
 import           Aura.Shell
 import           Aura.State
 import           Aura.Types
+import           Aura.Utils (nes)
 import           Data.Generics.Product (field)
-import           Data.Set.NonEmpty (NESet)
-import qualified Data.Set.NonEmpty as NES
 import           Lens.Micro ((^?), _Just)
 import           RIO
 import qualified RIO.List as L
@@ -47,16 +46,19 @@ import           System.Path.IO (copyFile, doesDirectoryExist, removeFile)
 
 -- | Interactive. Gives the user a choice as to exactly what versions
 -- they want to downgrade to.
-downgradePackages :: NESet PkgName -> RIO Env ()
+downgradePackages :: NonEmpty PkgName -> RIO Env ()
 downgradePackages pkgs = do
-  ss    <- asks settings
+  ss <- asks settings
   let cachePath = either id id . cachePathOf $ commonConfigOf ss
-  reals <- liftIO $ pkgsInCache ss pkgs
-  traverse_ (report red reportBadDowngradePkgs_1) . NEL.nonEmpty . toList $ NES.toSet pkgs S.\\ reals
+  reals <- liftIO $ pkgsInCache ss pkgsSet
+  traverse_ (report red reportBadDowngradePkgs_1) . nes $ pkgsSet S.\\ reals
   unless (null reals) $ do
     cache   <- liftIO $ cacheContents cachePath
     choices <- traverse (getDowngradeChoice cache) $ toList reals
     liftIO . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (T.pack . toFilePath . path) choices
+  where
+    pkgsSet :: Set PkgName
+    pkgsSet = S.fromList $ NEL.toList pkgs
 
 -- | For a given package, get a choice from the user about which version of it to
 -- downgrade to.

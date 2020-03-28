@@ -16,7 +16,6 @@ import Aura.IO (putTextLn)
 import Aura.Pacman (pacman)
 import Aura.Types
 import Data.Generics.Product (field)
-import Data.Set.NonEmpty (NESet)
 import RIO
 
 ---
@@ -26,5 +25,5 @@ displayOrphans :: IO ()
 displayOrphans = orphans >>= traverse_ (putTextLn . view (field @"name"))
 
 -- | Identical to @-D --asexplicit@.
-adoptPkg :: NESet PkgName -> RIO Env ()
+adoptPkg :: NonEmpty PkgName -> RIO Env ()
 adoptPkg pkgs = sudo . liftIO . pacman $ ["-D", "--asexplicit"] <> asFlag pkgs

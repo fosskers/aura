@@ -31,8 +31,8 @@ import           Aura.Pacman
 import           Aura.Settings
 import           Aura.Shell
 import           Aura.Types
+import           Aura.Utils (nes)
 import           Data.Bifunctor (Bifunctor(..))
-import qualified Data.Set.NonEmpty as NES
 import           Flags
 import           Lens.Micro (folded, (^..), _Right)
 import           Network.HTTP.Client (newManager)
@@ -57,7 +57,7 @@ withEnv (Program op co bc lng ll) f = do
   environment <- M.fromList . map (bimap T.pack T.pack) <$> getEnvironment
   manager     <- newManager tlsManagerSettings
   isTerm      <- hIsTerminalDevice stdout
-  fromGroups  <- maybe (pure S.empty) groupPackages . NES.nonEmptySet
+  fromGroups  <- maybe (pure S.empty) groupPackages . nes
     $ getIgnoredGroups confFile <> igg
   let language = checkLang lng environment
   bu <- maybe (throwM $ Failure whoIsBuildUser_1) pure

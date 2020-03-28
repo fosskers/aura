@@ -32,7 +32,6 @@ module Aura.Pacman
 import           Aura.Languages
 import           Aura.Types
 import           Data.Bifunctor (first)
-import           Data.Set.NonEmpty (NESet)
 import           Lens.Micro (at, (^?), _2, _Just, _head)
 import           Lens.Micro.GHC ()
 import           RIO hiding (first, some, try)
@@ -100,7 +99,7 @@ getIgnoredGroups :: Config -> Set PkgGroup
 getIgnoredGroups (Config c) = maybe S.empty (S.fromList . map PkgGroup) $ M.lookup "IgnoreGroup" c
 
 -- | Given a `Set` of package groups, yield all the packages they contain.
-groupPackages :: NESet PkgGroup -> IO (Set PkgName)
+groupPackages :: NonEmpty PkgGroup -> IO (Set PkgName)
 groupPackages igs = fmap (f . decodeUtf8Lenient) . pacmanOutput $ "-Qg" : asFlag igs
   where
     f :: Text -> Set PkgName

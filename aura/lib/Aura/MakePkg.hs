@@ -19,8 +19,6 @@ import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils (note)
-import           Data.Set.NonEmpty (NESet)
-import qualified Data.Set.NonEmpty as NES
 import           Lens.Micro (_2)
 import           RIO
 import qualified RIO.ByteString.Lazy as BL
@@ -41,11 +39,11 @@ makepkgCmd = fromAbsoluteFilePath "/usr/bin/makepkg"
 
 -- | Given the current user name, build the package of whatever
 -- directory we're in.
-makepkg :: Settings -> User -> IO (Either Failure (NESet (Path Absolute)))
+makepkg :: Settings -> User -> IO (Either Failure (NonEmpty (Path Absolute)))
 makepkg ss usr = make ss usr (proc cmd $ opts <> colour) >>= g
   where
     (cmd, opts) = runStyle usr . map T.unpack . foldMap asFlag . makepkgFlagsOf $ buildConfigOf ss
-    g (ExitSuccess, _, fs)   = pure . note (Failure buildFail_9) . fmap NES.fromList $ NEL.nonEmpty fs
+    g (ExitSuccess, _, fs)   = pure . note (Failure buildFail_9) $ NEL.nonEmpty fs
     g (ExitFailure _, se, _) = do
       unless (switch ss DontSuppressMakepkg) $ do
         showError <- optionalPrompt ss buildFail_11
