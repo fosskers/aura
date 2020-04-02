@@ -34,6 +34,7 @@ import           RIO.Directory (setCurrentDirectory)
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
+import           RIO.Time
 import           System.Path
 import           System.Path.IO
 import           System.Process.Typed
@@ -60,28 +61,29 @@ buildPackages bs = wither build (NEL.toList bs) >>= maybe bad (pure . fold1) . N
 -- Assumed: All dependencies are already installed.
 build :: Buildable -> RIO Env (Maybe (NonEmpty PackagePath))
 build p = do
-  ss     <- asks settings
+  logDebug $ "Building: " <> display (p ^. field @"name" . field @"name")
+  ss <- asks settings
   liftIO $ notify ss (buildPackages_1 (p ^. field @"name") (langOf ss)) *> hFlush stdout
-  result <- liftIO $ build' ss p
+  result <- build' ss p
   either buildFail (pure . Just) result
 
 -- | Should never throw an IO Exception. In theory all errors
 -- will come back via the @Language -> String@ function.
-build' :: Settings -> Buildable -> IO (Either Failure (NonEmpty PackagePath))
+build' :: Settings -> Buildable -> RIO Env (Either Failure (NonEmpty PackagePath))
 build' ss b = do
   let pth = buildPathOf $ buildConfigOf ss
-  createDirectoryIfMissing True pth
+  liftIO $ createDirectoryIfMissing True pth
   setCurrentDirectory $ toFilePath pth
-  buildDir <- randomDirName b
-  createDirectoryIfMissing True buildDir
+  buildDir <- liftIO $ randomDirName b
+  liftIO $ createDirectoryIfMissing True buildDir
   setCurrentDirectory $ toFilePath buildDir
   runExceptT $ do
     bs <- ExceptT $ cloneRepo b usr
     lift . setCurrentDirectory $ toFilePath bs
-    lift $ overwritePkgbuild ss b
-    pNames <- ExceptT $ makepkg ss usr
+    lift . liftIO $ overwritePkgbuild ss b
+    pNames <- ExceptT . liftIO $ makepkg ss usr
     paths  <- liftIO $ traverse (moveToCachePath ss) pNames
-    lift . when (S.member AllSource . makepkgFlagsOf $ buildConfigOf ss) $
+    lift . liftIO . when (S.member AllSource . makepkgFlagsOf $ buildConfigOf ss) $
       makepkgSource usr >>= traverse_ moveToSourcePath
     pure paths
   where usr = fromMaybe (User "桜木花道") . buildUserOf $ buildConfigOf ss
@@ -91,16 +93,18 @@ build' ss b = do
 randomDirName :: Buildable -> IO (Path Absolute)
 randomDirName b = do
   pwd <- getCurrentDirectory
+  UTCTime (ModifiedJulianDay d) _ <- getCurrentTime
   let nh = hash $ b ^. field @"name" . field @"name"
       vh = hash $ b ^. field @"version"
-      v  = abs $ nh + vh
+      v  = abs $ nh + vh + hash d
       dir = T.unpack (b ^. field @"name" . field @"name") <> "-" <> show v
   pure $ pwd </> fromUnrootedFilePath dir
 
-cloneRepo :: Buildable -> User -> IO (Either Failure (Path Absolute))
+cloneRepo :: Buildable -> User -> RIO Env (Either Failure (Path Absolute))
 cloneRepo pkg usr = do
-  currDir <- getCurrentDirectory
-  scriptsDir <- chown usr currDir [] *> clone pkg
+  currDir <- liftIO getCurrentDirectory
+  logDebug $ "Currently in: " <> displayShow currDir
+  scriptsDir <- liftIO $ chown usr currDir [] *> clone pkg
   case scriptsDir of
     Nothing -> pure . Left . Failure . buildFail_7 $ pkg ^. field @"name"
     Just sd -> chown usr sd ["-R"] $> Right sd
