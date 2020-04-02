@@ -92,10 +92,10 @@ build' ss b = do
 randomDirName :: Buildable -> IO (Path Absolute)
 randomDirName b = do
   pwd <- getCurrentDirectory
-  UTCTime (ModifiedJulianDay d) _ <- getCurrentTime
+  UTCTime _ dt <- getCurrentTime
   let nh = hash . pnName $ bName b
       vh = hash $ bVersion b
-      v  = abs $ nh + vh + hash d
+      v  = abs $ nh + vh + floor dt
       dir = T.unpack (pnName $ bName b) <> "-" <> show v
   pure $ pwd </> fromUnrootedFilePath dir
 
