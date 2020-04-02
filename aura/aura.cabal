@@ -89,7 +89,6 @@ library
 
   build-depends:
     , aeson             >=1.2  && <1.5
-    , aeson-pretty      ^>=0.8
     , algebraic-graphs  >=0.1  && <0.6
     , aur               ^>=7.0
     , filepath          ^>=1.4

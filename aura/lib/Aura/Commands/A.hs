@@ -36,7 +36,7 @@ import           Aura.Settings
 import           Aura.State (saveState)
 import           Aura.Types
 import           Aura.Utils
-import           Data.Aeson.Encode.Pretty (encodePretty)
+import           Data.Aeson
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions (Versioning, prettyV, versioning)
@@ -184,7 +184,7 @@ aurJson :: NonEmpty PkgName -> RIO Env ()
 aurJson ps = do
   m <- asks (managerOf . settings)
   infos <- liftMaybeM (Failure connectFailure_1) . fmap hush . liftIO $ f m ps
-  traverse_ (BL.putStrLn . encodePretty) infos
+  traverse_ (BL.putStrLn . encode) infos
   where
     f :: Manager -> NonEmpty PkgName -> IO (Either AurError [AurInfo])
     f m = info m . map pnName . NEL.toList
