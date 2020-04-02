@@ -1,6 +1,5 @@
-{-# LANGUAGE BangPatterns      #-}
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE TupleSections     #-}
+{-# LANGUAGE BangPatterns  #-}
+{-# LANGUAGE TupleSections #-}
 
 module Main ( main ) where
 
@@ -8,14 +7,20 @@ import           Aura.Pkgbuild.Fetch (getPkgbuild)
 import           Aura.Pkgbuild.Security (bannedTerms, parsedPB)
 import           Aura.Types
 import           Aura.Utils
-import           BasePrelude
 import           Control.Concurrent.Async (mapConcurrently)
+import           Control.Monad (unless)
+import           Data.Bifunctor (first)
+import           Data.Either (partitionEithers)
+import           Data.Foldable (fold, traverse_)
+import           Data.List (sort)
 import           Data.List.Split (chunksOf)
+import           Data.Maybe (mapMaybe)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import           Language.Bash.Pretty (prettyText)
 import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)
+import           Text.Printf (printf)
 
 ---
 
