@@ -32,8 +32,7 @@ module Aura.Pacman
 import           Aura.Languages
 import           Aura.Types
 import           Data.Bifunctor (first)
-import           Lens.Micro (at, (^?), _2, _Just, _head)
-import           Lens.Micro.GHC ()
+import           Lens.Micro (_2)
 import           RIO hiding (first, some, try)
 import qualified RIO.ByteString as BS
 import qualified RIO.ByteString.Lazy as BL
@@ -107,11 +106,13 @@ groupPackages igs = fmap (f . decodeUtf8Lenient) . pacmanOutput $ "-Qg" : asFlag
 
 -- | Fetches the @CacheDir@ entry from the config, if it's there.
 getCachePath :: Config -> Maybe (Path Absolute)
-getCachePath (Config c) = c ^? at "CacheDir" . _Just . _head . to (fromAbsoluteFilePath . T.unpack)
+getCachePath (Config c) =
+  M.lookup "CacheDir" c >>= listToMaybe >>= pure . fromAbsoluteFilePath . T.unpack
 
 -- | Fetches the @LogFile@ entry from the config, if it's there.
 getLogFilePath :: Config -> Maybe (Path Absolute)
-getLogFilePath (Config c) = c ^? at "LogFile" . _Just . _head . to (fromAbsoluteFilePath . T.unpack)
+getLogFilePath (Config c) =
+  M.lookup "LogFile" c >>= listToMaybe >>= pure . fromAbsoluteFilePath . T.unpack
 
 ----------
 -- ACTIONS

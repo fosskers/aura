@@ -96,7 +96,6 @@ library
     , http-types        >=0.9  && <0.13
     , language-bash     >=0.8  && <0.10
     , megaparsec        >=7    && <9
-    , microlens-ghc     ^>=0.4
     , network-uri       ^>=2.6
     , scheduler         >=1.1  && <1.5
     , stm               ^>=2.5
