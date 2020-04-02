@@ -26,9 +26,8 @@ import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
-import           Data.Generics.Product (field)
 import           Data.These (these)
-import           Data.Versions
+import           Data.Versions hiding (Lens')
 import           Lens.Micro
 import           RIO
 import qualified RIO.Map as M
@@ -43,6 +42,12 @@ data Resolution = Resolution
   { toInstall :: Map PkgName Package
   , satisfied :: Set PkgName }
   deriving (Generic)
+
+toInstallL :: Lens' Resolution (Map PkgName Package)
+toInstallL f r = (\m -> r { toInstall = m }) <$> f (toInstall r)
+
+satisfiedL :: Lens' Resolution (Set PkgName)
+satisfiedL f r = (\s -> r { satisfied = s }) <$> f (satisfied r)
 
 -- | Given some `Package`s, determine its full dependency graph.
 -- The graph is collapsed into layers of packages which are not
@@ -68,7 +73,7 @@ resolveDeps' ss repo ps = resolve (Resolution mempty mempty) ps
     resolve :: Resolution -> NonEmpty Package -> IO Resolution
     resolve r@(Resolution m _) xs = maybe' (pure r) (NEL.nonEmpty goods) $ \goods' -> do
       let m' = M.fromList (map (pname &&& id) $ toList goods')
-          r' = r & field @"toInstall" %~ (<> m')
+          r' = r & toInstallL %~ (<> m')
       these (const $ pure r') (satisfy r') (const $ satisfy r') $ dividePkgs goods'
       where
         goods :: [Package]
@@ -76,14 +81,14 @@ resolveDeps' ss repo ps = resolve (Resolution mempty mempty) ps
 
     -- | All dependencies from all potential `Buildable`s.
     allDeps :: NonEmpty Buildable -> Set Dep
-    allDeps = foldMap1 (S.fromList . (^.. field @"deps" . each))
+    allDeps = foldMap1 (S.fromList . (^.. to bDeps . each))
 
     -- | Deps which are not yet queued for install.
     freshDeps :: Resolution -> Set Dep -> Set Dep
     freshDeps (Resolution m s) = S.filter f
       where
         f :: Dep -> Bool
-        f d = let n = d ^. field @"name" in not $ M.member n m || S.member n s
+        f d = let n = dName d in not $ M.member n m || S.member n s
 
     -- | Consider only "unsatisfied" deps.
     satisfy :: Resolution -> NonEmpty Buildable -> IO Resolution
@@ -91,18 +96,18 @@ resolveDeps' ss repo ps = resolve (Resolution mempty mempty) ps
       areSatisfied >=> these (lookups r) (pure . r') (\uns sat -> lookups (r' sat) uns)
       where
         r' :: Satisfied -> Resolution
-        r' (Satisfied sat) = r & field @"satisfied" %~ (<> f sat)
+        r' (Satisfied sat) = r & satisfiedL %~ (<> f sat)
 
         -- | Unique names of some dependencies.
         f :: NonEmpty Dep -> Set PkgName
-        f = S.fromList . NEL.toList . NEL.map (^. field @"name")
+        f = S.fromList . NEL.toList . NEL.map dName
 
     -- TODO What about if `repoLookup` reports deps that don't exist?
     -- i.e. the left-hand side of the tuple.
     -- | Lookup unsatisfied deps and recurse the entire lookup process.
     lookups :: Resolution -> Unsatisfied -> IO Resolution
     lookups r (Unsatisfied ds) = do
-      let names = NEL.map (^. field @"name") ds
+      let names = NEL.map dName ds
       repoLookup repo ss names >>= \case
         Nothing -> throwString "AUR Connection Error"
         Just (_, could) -> case nes could of
@@ -113,18 +118,18 @@ conflicts :: Settings -> Map PkgName Package -> Set PkgName -> [DepError]
 conflicts ss m s = foldMap f m
   where
     pm :: Map PkgName Package
-    pm = M.fromList $ map (\p -> (pprov p ^. field @"provides", p)) $ toList m
+    pm = M.fromList $ map (\p -> (provides $ pprov p, p)) $ toList m
 
     f :: Package -> [DepError]
     f (FromRepo _) = []
-    f (FromAUR b)  = flip mapMaybe (b ^. field @"deps") $ \d ->
-      let dn = d ^. field @"name"
+    f (FromAUR b)  = flip mapMaybe (bDeps b) $ \d ->
+      let dn = dName d
       -- Don't do conflict checks for deps which are known to be satisfied on
       -- the system.
       in if | S.member dn s -> Nothing
             | otherwise     -> case M.lookup dn m <|> M.lookup dn pm of
                                 Nothing -> Just $ NonExistant dn
-                                Just p  -> realPkgConflicts ss (b ^. field @"name") p d
+                                Just p  -> realPkgConflicts ss (bName b) p d
 
 sortInstall :: Map PkgName Package -> Either Failure (NonEmpty (NonEmpty Package))
 sortInstall m = case cycles depGraph of
@@ -133,8 +138,8 @@ sortInstall m = case cycles depGraph of
   where
     f :: Package -> [(Package, Package)]
     f (FromRepo _)  = []
-    f p@(FromAUR b) = mapMaybe (\d -> fmap (p,) $ (d ^. field @"name") `M.lookup` m)
-      $ b ^. field @"deps" -- TODO handle "provides"?
+    f p@(FromAUR b) = mapMaybe (\d -> fmap (p,) $ (dName d) `M.lookup` m)
+      $ bDeps b -- TODO handle "provides"?
 
     depGraph  = overlay connected singles
     elems     = M.elems m
@@ -167,7 +172,7 @@ realPkgConflicts ss parent pkg dep
     | otherwise                       = Nothing
     where pn       = pname pkg
           curVer   = pver pkg & release .~ []
-          reqVer   = (dep ^. field @"demand") & _VersionDemand . release .~ []
+          reqVer   = dDemand dep & _VersionDemand . release .~ []
           lang     = langOf ss
           toIgnore = ignoresOf ss
           failMsg1 = getRealPkgConflicts_2 pn lang

@@ -31,8 +31,6 @@ import           Aura.Shell
 import           Aura.State
 import           Aura.Types
 import           Aura.Utils (nes)
-import           Data.Generics.Product (field)
-import           Lens.Micro ((^?), _Just)
 import           RIO
 import qualified RIO.List as L
 import qualified RIO.Map as M
@@ -55,7 +53,7 @@ downgradePackages pkgs = do
   unless (null reals) $ do
     cache   <- liftIO $ cacheContents cachePath
     choices <- traverse (getDowngradeChoice cache) $ toList reals
-    liftIO . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (T.pack . toFilePath . path) choices
+    liftIO . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (T.pack . toFilePath . ppPath) choices
   where
     pkgsSet :: Set PkgName
     pkgsSet = S.fromList $ NEL.toList pkgs
@@ -69,7 +67,7 @@ getDowngradeChoice cache pkg =
     Just choices -> do
       ss <- asks settings
       liftIO . notify ss . getDowngradeChoice_1 pkg $ langOf ss
-      liftIO $ getSelection (T.pack . toFilePath . path) choices
+      liftIO $ getSelection (T.pack . toFilePath . ppPath) choices
 
 getChoicesFromCache :: Cache -> PkgName -> [PackagePath]
 getChoicesFromCache (Cache cache) p = L.sort . M.elems $ M.filterWithKey (\(SimplePkg pn _) _ -> p == pn) cache
@@ -79,7 +77,7 @@ searchCache :: Text -> RIO Env ()
 searchCache ps = do
   ss <- asks settings
   matches <- liftIO $ cacheMatches ss ps
-  liftIO . traverse_ (putTextLn . T.pack . toFilePath . path) $ L.sort matches
+  liftIO . traverse_ (putTextLn . T.pack . toFilePath . ppPath) $ L.sort matches
 
 -- | The destination folder must already exist for the back-up to begin.
 backupCache :: Path Absolute -> RIO Env ()
@@ -137,7 +135,7 @@ clean toSave = do
   let !files    = M.elems cache
       grouped   = take toSave . reverse <$> groupByName files
       toRemove  = files L.\\ fold grouped
-  liftIO $ traverse_ (removeFile . path) toRemove
+  liftIO $ traverse_ (removeFile . ppPath) toRemove
 
 -- | Only package files with a version not in any PkgState will be
 -- removed.
@@ -151,10 +149,10 @@ cleanNotSaved = do
   (Cache cache)  <- liftIO $ cacheContents cachePath
   let duds = M.filterWithKey (\p _ -> any (inState p) states) cache
   prop <- liftIO . optionalPrompt ss $ cleanNotSaved_2 $ M.size duds
-  when prop . liftIO . traverse_ (removeFile . path) $ M.elems duds
+  when prop . liftIO . traverse_ (removeFile . ppPath) $ M.elems duds
 
 -- | Typically takes the contents of the package cache as an argument.
 groupByName :: [PackagePath] -> [[PackagePath]]
 groupByName pkgs = L.groupBy sameBaseName $ L.sort pkgs
     where sameBaseName a b = baseName a == baseName b
-          baseName p = simplepkg p ^? _Just . field @"name"
+          baseName p = spName <$> simplepkg p

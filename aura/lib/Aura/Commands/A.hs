@@ -37,11 +37,9 @@ import           Aura.State (saveState)
 import           Aura.Types
 import           Aura.Utils
 import           Data.Aeson.Encode.Pretty (encodePretty)
-import           Data.Generics.Product (field)
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions (Versioning, prettyV, versioning)
-import           Lens.Micro (each, (^..))
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
 import           RIO
@@ -68,7 +66,7 @@ upgradeAURPkgs pkgs = do
 -- | Foreign packages to consider for upgrading, after "ignored packages" have
 -- been taken into consideration.
 foreigns :: Settings -> IO (Set SimplePkg)
-foreigns ss = S.filter (notIgnored . view (field @"name")) <$> foreignPackages
+foreigns ss = S.filter (notIgnored . spName) <$> foreignPackages
   where notIgnored p = not . S.member p $ ignoresOf ss
 
 upgrade :: Set PkgName -> NonEmpty SimplePkg -> RIO Env ()
@@ -95,11 +93,11 @@ upgrade pkgs fs = do
 
 possibleUpdates :: NonEmpty SimplePkg -> RIO Env [(AurInfo, Versioning)]
 possibleUpdates pkgs = do
-  aurInfos <- aurInfo $ fmap (^. field @"name") pkgs
+  aurInfos <- aurInfo $ fmap spName pkgs
   let !names  = map aurNameOf aurInfos
       aurPkgs = NEL.filter (\(SimplePkg (PkgName n) _) -> n `elem` names) pkgs
   logDebug "Package lookup successful."
-  pure . filter isntMostRecent . zip aurInfos $ aurPkgs ^.. each . field @"version"
+  pure . filter isntMostRecent . zip aurInfos $ map spVersion aurPkgs
 
 -- | Is there an update for Aura that we could apply first?
 auraCheck :: [PkgName] -> RIO Env (Maybe PkgName)
@@ -146,7 +144,7 @@ renderAurPkgInfo ss ai = dtot . colourCheck ss $ entrify ss fields entries
 aurPkgSearch :: Text -> RIO Env ()
 aurPkgSearch regex = do
   ss <- asks settings
-  db <- S.map (^. field @"name" . field @"name") <$> liftIO foreignPackages
+  db <- S.map (pnName . spName) <$> liftIO foreignPackages
   let t = case truncationOf $ buildConfigOf ss of  -- Can't this go anywhere else?
             None   -> id
             Head n -> take $ fromIntegral n
@@ -175,7 +173,7 @@ displayPkgbuild :: NonEmpty PkgName -> RIO Env ()
 displayPkgbuild ps = do
   man <- asks (managerOf . settings)
   pbs <- catMaybes <$> traverse (liftIO . getPkgbuild man) (toList ps)
-  traverse_ (\p -> B.putStr p >> B.putStr "\n") $ pbs ^.. each . field @"pkgbuild"
+  traverse_ (\p -> B.putStr p >> B.putStr "\n") $ map pkgbuild pbs
 
 isntMostRecent :: (AurInfo, Versioning) -> Bool
 isntMostRecent (ai, v) = trueVer > Just v
@@ -189,7 +187,7 @@ aurJson ps = do
   traverse_ (BL.putStrLn . encodePretty) infos
   where
     f :: Manager -> NonEmpty PkgName -> IO (Either AurError [AurInfo])
-    f m = info m . (^.. each . field @"name") . toList
+    f m = info m . map pnName . NEL.toList
 
 -- | @https://aur.archlinux.org/cgit/aur.git/snapshot/aura-bin.tar.gz@
 fetchTarball :: NonEmpty PkgName -> RIO Env ()
@@ -214,7 +212,7 @@ reportPkgsToUpgrade ups pns = do
   ss <- asks settings
   liftIO . notify ss . reportPkgsToUpgrade_1 $ langOf ss
   liftIO $ putDoc (colourCheck ss . vcat $ map f ups' <> map g devels) >> putTextLn "\n"
-  where devels   = pns ^.. each . field @"name"
+  where devels   = map pnName pns
         ups'     = map (second prettyV) ups
         nLen     = maximum $ map (T.length . aurNameOf . fst) ups <> map T.length devels
         vLen     = maximum $ map (T.length . snd) ups'

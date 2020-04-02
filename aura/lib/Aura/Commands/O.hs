@@ -15,14 +15,13 @@ import Aura.Core (Env(..), orphans, sudo)
 import Aura.IO (putTextLn)
 import Aura.Pacman (pacman)
 import Aura.Types
-import Data.Generics.Product (field)
 import RIO
 
 ---
 
 -- | Print the result of @pacman -Qqdt@
 displayOrphans :: IO ()
-displayOrphans = orphans >>= traverse_ (putTextLn . view (field @"name"))
+displayOrphans = orphans >>= traverse_ (putTextLn . pnName)
 
 -- | Identical to @-D --asexplicit@.
 adoptPkg :: NonEmpty PkgName -> RIO Env ()

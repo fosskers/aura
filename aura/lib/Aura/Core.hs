@@ -41,7 +41,6 @@ import           Aura.Types
 import           Aura.Utils
 import           Control.Monad.Trans.Maybe
 import           Data.Bifunctor (bimap)
-import           Data.Generics.Product (field, typed)
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.These (These(..))
@@ -65,8 +64,11 @@ import           System.Path.IO (doesFileExist)
 data Env = Env { repository :: !Repository, settings :: !Settings }
   deriving stock (Generic)
 
+settingsL :: Lens' Env Settings
+settingsL f e = (\ss -> e { settings = ss }) <$> f (settings e)
+
 instance HasLogFunc Env where
-  logFuncL = typed @Settings . typed @LogFunc
+  logFuncL = settingsL . logFuncOfL
 
 -- | A `Repository` is a place where packages may be fetched from. Multiple
 -- repositories can be combined with the `Semigroup` instance. Checks packages
@@ -137,14 +139,14 @@ orphans = S.fromList . map PkgName <$> pacmanLines ["-Qqdt"]
 
 -- | Any package whose name is suffixed by git, hg, svn, darcs, cvs, or bzr.
 develPkgs :: IO (Set PkgName)
-develPkgs = S.filter isDevelPkg . S.map (^. field @"name") <$> foreignPackages
+develPkgs = S.filter isDevelPkg . S.map spName <$> foreignPackages
   where isDevelPkg (PkgName pkg) = any (`T.isSuffixOf` pkg) suffixes
         suffixes = ["-git", "-hg", "-svn", "-darcs", "-cvs", "-bzr"]
 
 -- | Returns what it was given if the package is already installed.
 -- Reasoning: Using raw bools can be less expressive.
 isInstalled :: PkgName -> IO (Maybe PkgName)
-isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", pkg ^. field @"name"]
+isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", pnName pkg]
 
 -- | An @-Rsu@ call.
 removePkgs :: NonEmpty PkgName -> RIO Env ()
@@ -201,4 +203,4 @@ report :: (Doc AnsiStyle -> Doc AnsiStyle) -> (Language -> Doc AnsiStyle) -> Non
 report c msg pkgs = do
   ss <- asks settings
   liftIO . putStrLnA ss . c . msg $ langOf ss
-  liftIO . putTextLn . dtot . colourCheck ss . vsep . map (cyan . pretty . view (field @"name")) $ toList pkgs
+  liftIO . putTextLn . dtot . colourCheck ss . vsep . map (cyan . pretty . pnName) $ toList pkgs

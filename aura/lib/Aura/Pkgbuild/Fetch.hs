@@ -17,7 +17,6 @@ module Aura.Pkgbuild.Fetch
 
 import           Aura.Types (PkgName(..), Pkgbuild(..))
 import           Aura.Utils (urlContents)
-import           Data.Generics.Product (field)
 import           Network.HTTP.Client (Manager)
 import           Network.URI (escapeURIString, isUnescapedInURIComponent)
 import           RIO
@@ -37,7 +36,7 @@ pkgbuildUrl p = baseUrl </> "cgit/aur.git/plain/PKGBUILD?h="
 -- | The PKGBUILD of a given package, retrieved from the AUR servers.
 getPkgbuild :: Manager -> PkgName -> IO (Maybe Pkgbuild)
 getPkgbuild m p = e $ do
-  t <- urlContents m . pkgbuildUrl . T.unpack $ p ^. field @"name"
+  t <- urlContents m . pkgbuildUrl . T.unpack $ pnName p
   pure $ fmap Pkgbuild t
   where
     -- TODO Make this less "baby's first Haskell".

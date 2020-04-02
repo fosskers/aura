@@ -11,6 +11,7 @@
 
 module Aura.Settings
   ( Settings(..)
+  , logFuncOfL
     -- * Aura Configuration
   , BuildConfig(..), BuildSwitch(..)
   , switch
@@ -125,6 +126,9 @@ data Settings = Settings
   , logLevelOf     :: !LogLevel
   , logFuncOf      :: !LogFunc }
   deriving stock (Generic)
+
+logFuncOfL :: Lens' Settings LogFunc
+logFuncOfL f s = (\lf -> s { logFuncOf = lf }) <$> f (logFuncOf s)
 
 -- | Unless otherwise specified, packages will be built within @/tmp@.
 defaultBuildDir :: Path Absolute

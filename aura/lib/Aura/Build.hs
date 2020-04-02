@@ -26,7 +26,6 @@ import           Aura.Shell (chown)
 import           Aura.Types
 import           Aura.Utils
 import           Control.Monad.Trans.Except
-import           Data.Generics.Product (field)
 import           Data.Hashable (hash)
 import           Data.Witherable.Class (wither)
 import           RIO
@@ -49,7 +48,7 @@ installPkgFiles :: NonEmpty PackagePath -> RIO Env ()
 installPkgFiles files = do
   ss <- asks settings
   liftIO $ checkDBLock ss
-  liftIO . pacman $ ["-U"] <> map (T.pack . toFilePath . path) (toList files) <> asFlag (commonConfigOf ss)
+  liftIO . pacman $ ["-U"] <> map (T.pack . toFilePath . ppPath) (toList files) <> asFlag (commonConfigOf ss)
 
 -- | All building occurs within temp directories,
 -- or in a location specified by the user with flags.
@@ -61,9 +60,9 @@ buildPackages bs = wither build (NEL.toList bs) >>= maybe bad (pure . fold1) . N
 -- Assumed: All dependencies are already installed.
 build :: Buildable -> RIO Env (Maybe (NonEmpty PackagePath))
 build p = do
-  logDebug $ "Building: " <> display (p ^. field @"name" . field @"name")
+  logDebug $ "Building: " <> display (pnName $ bName p)
   ss <- asks settings
-  liftIO $ notify ss (buildPackages_1 (p ^. field @"name") (langOf ss)) *> hFlush stdout
+  liftIO $ notify ss (buildPackages_1 (bName p) (langOf ss)) *> hFlush stdout
   result <- build' ss p
   either buildFail (pure . Just) result
 
@@ -94,10 +93,10 @@ randomDirName :: Buildable -> IO (Path Absolute)
 randomDirName b = do
   pwd <- getCurrentDirectory
   UTCTime (ModifiedJulianDay d) _ <- getCurrentTime
-  let nh = hash $ b ^. field @"name" . field @"name"
-      vh = hash $ b ^. field @"version"
+  let nh = hash . pnName $ bName b
+      vh = hash $ bVersion b
       v  = abs $ nh + vh + hash d
-      dir = T.unpack (b ^. field @"name" . field @"name") <> "-" <> show v
+      dir = T.unpack (pnName $ bName b) <> "-" <> show v
   pure $ pwd </> fromUnrootedFilePath dir
 
 cloneRepo :: Buildable -> User -> RIO Env (Either Failure (Path Absolute))
@@ -106,14 +105,14 @@ cloneRepo pkg usr = do
   logDebug $ "Currently in: " <> displayShow currDir
   scriptsDir <- liftIO $ chown usr currDir [] *> clone pkg
   case scriptsDir of
-    Nothing -> pure . Left . Failure . buildFail_7 $ pkg ^. field @"name"
+    Nothing -> pure . Left . Failure . buildFail_7 $ bName pkg
     Just sd -> chown usr sd ["-R"] $> Right sd
 
 -- | The user may have edited the original PKGBUILD. If they have, we need to
 -- overwrite what's been downloaded before calling `makepkg`.
 overwritePkgbuild :: Settings -> Buildable -> IO ()
 overwritePkgbuild ss p = when (switch ss HotEdit || switch ss UseCustomizepkg) $
-  writeFileBinary "PKGBUILD" $ p ^. field @"pkgbuild" . field @"pkgbuild"
+  writeFileBinary "PKGBUILD" . pkgbuild $ bPkgbuild p
 
 -- | Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.

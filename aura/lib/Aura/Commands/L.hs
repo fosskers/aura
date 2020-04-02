@@ -1,7 +1,6 @@
-{-# LANGUAGE DataKinds             #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE TypeApplications      #-}
+{-# LANGUAGE DataKinds        #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeApplications #-}
 
 -- |
 -- Module    : Aura.Commands.L
@@ -24,7 +23,6 @@ import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types (PkgName(..))
 import           Aura.Utils
-import           Data.Generics.Product (field)
 import           Data.Text.Prettyprint.Doc
 import           RIO hiding (FilePath)
 import qualified RIO.NonEmpty as NEL
@@ -75,7 +73,7 @@ logLookup (Log lns) p = case matches of
              , firstInstall = T.take 16 $ T.tail h
              , upgrades = fromIntegral . length $ filter (T.isInfixOf " upgraded ") t
              , recent = reverse . take 5 $ reverse t }
-  where matches = filter (T.isInfixOf (" " <> (p ^. field @"name") <> " (")) lns
+  where matches = filter (T.isInfixOf (" " <> pnName p <> " (")) lns
 
 renderEntry :: Settings -> LogEntry -> Text
 renderEntry ss (LogEntry (PkgName pn) fi us rs) =

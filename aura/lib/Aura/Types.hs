@@ -1,7 +1,6 @@
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE DerivingStrategies         #-}
-{-# LANGUAGE DuplicateRecordFields      #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiWayIf                 #-}
@@ -23,7 +22,7 @@ module Aura.Types
   , Dep(..), parseDep, renderedDep
   , Buildable(..)
   , Prebuilt(..)
-  , SimplePkg(..), simplepkg, simplepkg'
+  , SimplePkg(..), simplepkg, simplepkg', bToSP, pToSP
     -- * Typeclasses
   , Flagable(..)
     -- * Package Building
@@ -47,7 +46,6 @@ module Aura.Types
 import           Aura.Utils
 import           Data.Aeson (FromJSONKey, ToJSONKey)
 import           Data.Bitraversable
-import           Data.Generics.Product (field, super)
 import           Data.Text.Prettyprint.Doc hiding (list, space)
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.These (These(..))
@@ -77,18 +75,18 @@ data Package = FromRepo Prebuilt | FromAUR Buildable deriving (Eq)
 
 -- | The name of a `Package`.
 pname :: Package -> PkgName
-pname (FromRepo pb) = pb ^. field @"name"
-pname (FromAUR b)   = b  ^. field @"name"
+pname (FromRepo pb) = pName pb
+pname (FromAUR b)   = bName b
 
 -- | Other names which allow this `Package` to be satisfied as a dependency.
 pprov :: Package -> Provides
-pprov (FromRepo pb) = pb ^. field @"provides"
-pprov (FromAUR b)   = b  ^. field @"provides"
+pprov (FromRepo pb) = pProvides pb
+pprov (FromAUR b)   = bProvides b
 
 -- | The version of a `Package`.
 pver :: Package -> Versioning
-pver (FromRepo pb) = pb ^. field @"version"
-pver (FromAUR b)   = b  ^. field @"version"
+pver (FromRepo pb) = pVersion pb
+pver (FromAUR b)   = bVersion b
 
 dividePkgs :: NonEmpty Package -> These (NonEmpty Prebuilt) (NonEmpty Buildable)
 dividePkgs = partNonEmpty f
@@ -108,27 +106,33 @@ dividePkgs' ps = case dividePkgs ps of
 instance Ord Package where
   compare (FromAUR a) (FromAUR b)   = compare a b
   compare (FromRepo a) (FromRepo b) = compare a b
-  compare (FromAUR a) (FromRepo b)  = compare (a ^. super @SimplePkg) (b ^. super @SimplePkg)
-  compare (FromRepo a) (FromAUR b)  = compare (a ^. super @SimplePkg) (b ^. super @SimplePkg)
+  compare (FromAUR a) (FromRepo b)  = compare (bToSP a) (pToSP b)
+  compare (FromRepo a) (FromAUR b)  = compare (pToSP a) (bToSP b)
 
 -- | A `Package` from the AUR that's buildable in some way on the user's machine.
-data Buildable = Buildable { name       :: !PkgName
-                           , version    :: !Versioning
-                           , base       :: !PkgName
-                           , provides   :: !Provides
-                           , deps       :: ![Dep]
-                           , pkgbuild   :: !Pkgbuild
-                           , isExplicit :: !Bool } deriving (Eq, Ord, Show, Generic)
+data Buildable = Buildable
+  { bName       :: !PkgName
+  , bVersion    :: !Versioning
+  , bBase       :: !PkgName
+  , bProvides   :: !Provides
+  , bDeps       :: ![Dep]
+  , bPkgbuild   :: !Pkgbuild
+  , bIsExplicit :: !Bool }
+  deriving (Eq, Ord, Show, Generic)
 
 -- | A prebuilt `Package` from the official Arch repositories.
-data Prebuilt = Prebuilt { name     :: !PkgName
-                         , version  :: !Versioning
-                         , base     :: !PkgName
-                         , provides :: !Provides } deriving (Eq, Ord, Show, Generic)
+data Prebuilt = Prebuilt
+  { pName     :: !PkgName
+  , pVersion  :: !Versioning
+  , pBase     :: !PkgName
+  , pProvides :: !Provides }
+  deriving (Eq, Ord, Show, Generic)
 
 -- | A dependency on another package.
-data Dep = Dep { name   :: !PkgName
-               , demand :: !VersionDemand } deriving (Eq, Ord, Show, Generic)
+data Dep = Dep
+  { dName   :: !PkgName
+  , dDemand :: !VersionDemand }
+  deriving (Eq, Ord, Show, Generic)
 
 -- | Parse a dependency entry as it would appear in a PKGBUILD:
 --
@@ -152,7 +156,7 @@ parseDep = hush . parse dep "dep"
 -- | Renders the `Dep` into a form that @pacman -T@ understands. The dual of
 -- `parseDep`.
 renderedDep :: Dep -> Text
-renderedDep (Dep n ver) = (n ^. field @"name") <> asT ver
+renderedDep (Dep n ver) = pnName n <> asT ver
   where
     asT :: VersionDemand -> Text
     asT (LessThan v) = "<"  <> prettyV v
@@ -170,11 +174,11 @@ data VersionDemand = LessThan Versioning
                    deriving (Eq, Ord)
 
 instance Show VersionDemand where
-    show (LessThan v) = T.unpack $ "<"  <> prettyV v
-    show (AtLeast  v) = T.unpack $ ">=" <> prettyV v
-    show (MoreThan v) = T.unpack $ ">"  <> prettyV v
-    show (MustBe   v) = T.unpack $ "="  <> prettyV v
-    show Anything     = "Anything"
+  show (LessThan v) = T.unpack $ "<"  <> prettyV v
+  show (AtLeast  v) = T.unpack $ ">=" <> prettyV v
+  show (MoreThan v) = T.unpack $ ">"  <> prettyV v
+  show (MustBe   v) = T.unpack $ "="  <> prettyV v
+  show Anything     = "Anything"
 
 -- | Attempt to zoom into the `Versioning` hiding within a `VersionDemand`.
 _VersionDemand :: Traversal' VersionDemand Versioning
@@ -189,9 +193,15 @@ data InstallType = Pacman PkgName | Build Buildable deriving (Eq)
 
 -- | A package name with its version number.
 data SimplePkg = SimplePkg
-  { name    :: !PkgName
-  , version :: !Versioning }
+  { spName    :: !PkgName
+  , spVersion :: !Versioning }
   deriving (Eq, Ord, Show, Generic)
+
+bToSP :: Buildable -> SimplePkg
+bToSP b = SimplePkg (bName b) (bVersion b)
+
+pToSP :: Prebuilt -> SimplePkg
+pToSP p = SimplePkg (pName p) (pVersion p)
 
 -- | Attempt to create a `SimplePkg` from filepaths like
 --   @\/var\/cache\/pacman\/pkg\/linux-3.2.14-1-x86_64.pkg.tar.xz@
@@ -221,19 +231,24 @@ simplepkg' = hush . parse parser "name-and-version"
 --   * \/var\/cache\/pacman\/pkg\/linux-3.2.14-1-x86_64.pkg.tar.xz
 --   * \/var\/cache\/pacman\/pkg\/wine-1.4rc6-1-x86_64.pkg.tar.xz
 --   * \/var\/cache\/pacman\/pkg\/ruby-1.9.3_p125-4-x86_64.pkg.tar.xz
-newtype PackagePath = PackagePath { path :: Path Absolute } deriving (Eq, Generic)
+newtype PackagePath = PackagePath { ppPath :: Path Absolute }
+  deriving (Eq, Generic)
 
 -- | If they have the same package names, compare by their versions.
 -- Otherwise, do raw comparison of the path string.
 instance Ord PackagePath where
-  compare a b | nameA /= nameB = compare (path a) (path b)
+  compare a b | nameA /= nameB = compare (ppPath a) (ppPath b)
               | otherwise      = compare verA verB
-    where (nameA, verA) = f a
-          (nameB, verB) = f b
-          f = ((^? _Just . field @"name") &&& (^? _Just . field @"version")) . simplepkg
+    where
+      (nameA, verA) = f a
+      (nameB, verB) = f b
+
+      f :: PackagePath -> (Maybe PkgName, Maybe Versioning)
+      f = (fmap spName &&& fmap spVersion) . simplepkg
 
 -- | The contents of a PKGBUILD file.
-newtype Pkgbuild = Pkgbuild { pkgbuild :: ByteString } deriving (Eq, Ord, Show, Generic)
+newtype Pkgbuild = Pkgbuild { pkgbuild :: ByteString }
+  deriving (Eq, Ord, Show, Generic)
 
 -- | All human languages available for text output.
 data Language = English
@@ -274,18 +289,20 @@ instance Show Failure where
 type Environment = Map Text Text
 
 -- | The name of a user account on a Linux system.
-newtype User = User { user :: Text } deriving (Eq, Show, Generic)
+newtype User = User { user :: Text }
+  deriving (Eq, Show, Generic)
 
 -- | The name of an Arch Linux package.
-newtype PkgName = PkgName { name :: Text }
+newtype PkgName = PkgName { pnName :: Text }
   deriving stock (Eq, Ord, Show, Generic)
   deriving newtype (Flagable, ToJSONKey, FromJSONKey, IsString)
 
 -- | A group that a `Package` could belong too, like @base@, @base-devel@, etc.
-newtype PkgGroup = PkgGroup { group :: Text }
+newtype PkgGroup = PkgGroup { pgGroup :: Text }
   deriving stock (Eq, Ord, Show, Generic)
   deriving newtype (Flagable)
 
 -- | The dependency which some package provides. May not be the same name
 -- as the package itself (e.g. cronie provides cron).
-newtype Provides = Provides { provides :: PkgName } deriving (Eq, Ord, Show, Generic)
+newtype Provides = Provides { provides :: PkgName }
+  deriving (Eq, Ord, Show, Generic)

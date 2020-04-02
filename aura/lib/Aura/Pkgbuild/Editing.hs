@@ -15,8 +15,6 @@ import Aura.IO
 import Aura.Languages
 import Aura.Settings
 import Aura.Types
-import Data.Generics.Product (field)
-import Lens.Micro ((.~))
 import RIO
 import RIO.Directory (setCurrentDirectory)
 import System.Path (toFilePath)
@@ -30,23 +28,27 @@ import System.Process.Typed (proc, runProcess)
 -- package building.
 edit :: (FilePath -> IO a) -> Buildable -> IO Buildable
 edit f p = do
-  writeFileBinary filename $ p ^. field @"pkgbuild" . field @"pkgbuild"
+  writeFileBinary filename . pkgbuild $ bPkgbuild p
   void $ f filename
   newPB <- readFileBinary filename
-  pure (p & field @"pkgbuild" .~ Pkgbuild newPB)
-    where filename = "PKGBUILD"
+  pure (p { bPkgbuild = Pkgbuild newPB})
+  where
+    filename :: FilePath
+    filename = "PKGBUILD"
 
 -- | Allow the user to edit the PKGBUILD if they asked to do so.
 hotEdit :: Settings -> Buildable -> IO Buildable
 hotEdit ss b
   | not $ switch ss HotEdit = pure b
   | otherwise = do
-      ans <- liftIO $ optionalPrompt ss (hotEdit_1 $ b ^. field @"name")
+      ans <- liftIO $ optionalPrompt ss (hotEdit_1 $ bName b)
       bool (pure b) f ans
-        where f = do
-                here <- getCurrentDirectory
-                tmp  <- getTemporaryDirectory
-                setCurrentDirectory $ toFilePath tmp
-                b' <- edit (runProcess . proc (editorOf ss) . (:[])) b
-                setCurrentDirectory $ toFilePath here
-                pure b'
+        where
+          f :: IO Buildable
+          f = do
+            here <- getCurrentDirectory
+            tmp  <- getTemporaryDirectory
+            setCurrentDirectory $ toFilePath tmp
+            b' <- edit (runProcess . proc (editorOf ss) . (:[])) b
+            setCurrentDirectory $ toFilePath here
+            pure b'

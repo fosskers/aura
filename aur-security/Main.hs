@@ -1,7 +1,6 @@
-{-# LANGUAGE BangPatterns          #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE NoImplicitPrelude     #-}
-{-# LANGUAGE TupleSections         #-}
+{-# LANGUAGE BangPatterns      #-}
+{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE TupleSections     #-}
 
 module Main ( main ) where
 

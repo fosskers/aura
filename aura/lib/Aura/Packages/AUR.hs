@@ -1,9 +1,8 @@
-{-# LANGUAGE BangPatterns          #-}
-{-# LANGUAGE DataKinds             #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE LambdaCase            #-}
-{-# LANGUAGE TypeApplications      #-}
+{-# LANGUAGE BangPatterns     #-}
+{-# LANGUAGE DataKinds        #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase       #-}
+{-# LANGUAGE TypeApplications #-}
 -- |
 -- Module    : Aura.Packages.AUR
 -- Copyright : (c) Colin Woodbury, 2012 - 2020
@@ -33,7 +32,6 @@ import           Aura.Types
 import           Aura.Utils
 import           Control.Monad.Trans.Maybe
 import           Control.Scheduler (Comp(..), traverseConcurrently)
-import           Data.Generics.Product (field)
 import           Data.Versions (versioning)
 import           Lens.Micro (each, non, (^..))
 import           Linux.Arch.Aur
@@ -56,7 +54,7 @@ aurLookup m names = runMaybeT $ do
   infos <- MaybeT . fmap hush . info m $ foldr (\(PkgName pn) acc -> pn : acc) [] names
   badsgoods <- lift $ traverseConcurrently Par' (buildable m) infos
   let (bads, goods) = partitionEithers badsgoods
-      goodNames     = S.fromList $ goods ^.. each . field @"name"
+      goodNames     = S.fromList $ goods ^.. each . to bName
   pure (S.fromList bads <> S.fromList (NEL.toList names) S.\\ goodNames, S.fromList goods)
 
 -- | Yield fully realized `Package`s from the AUR.
@@ -92,17 +90,17 @@ buildable m ai = do
   case (,) <$> mpb <*> mver of
     Nothing        -> pure . Left . PkgName $ aurNameOf ai
     Just (pb, ver) -> pure $ Right Buildable
-      { name     = PkgName $ aurNameOf ai
-      , version  = ver
-      , base     = bse
-      , provides = providesOf ai ^. to listToMaybe . non (aurNameOf ai) . to (Provides . PkgName)
+      { bName     = PkgName $ aurNameOf ai
+      , bVersion  = ver
+      , bBase     = bse
+      , bProvides = providesOf ai ^. to listToMaybe . non (aurNameOf ai) . to (Provides . PkgName)
       -- TODO This is a potentially naughty mapMaybe, since deps that fail to
       -- parse will be silently dropped. Unfortunately there isn't much to be
       -- done - `aurLookup` and `aurRepo` which call this function only report
       -- existence errors (i.e. "this package couldn't be found at all").
-      , deps       = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai
-      , pkgbuild   = pb
-      , isExplicit = False }
+      , bDeps       = mapMaybe parseDep $ dependsOf ai ++ makeDepsOf ai
+      , bPkgbuild   = pb
+      , bIsExplicit = False }
 
 ----------------
 -- AUR PKGBUILDS
@@ -122,11 +120,16 @@ clone :: Buildable -> IO (Maybe (Path Absolute))
 clone b = do
   ec <- runProcess . setStderr closed . setStdout closed $ proc "git" [ "clone", "--depth", "1", toUnrootedFilePath url ]
   case ec of
-    (ExitFailure _) -> pure Nothing
-    ExitSuccess     -> do
+    ExitFailure _ -> pure Nothing
+    ExitSuccess   -> do
       pwd <- getCurrentDirectory
-      pure . Just $ pwd </> (b ^. field @"base" . field @"name" . to (fromUnrootedFilePath . T.unpack))
-  where url = aurLink </> (b ^. field @"base" . field @"name" . to (fromUnrootedFilePath . T.unpack)) <.> FileExt "git"
+      pure . Just $ pwd </> pathy
+  where
+    pathy :: Path Unrooted
+    pathy = fromUnrootedFilePath . T.unpack . pnName $ bBase b
+
+    url :: Path Unrooted
+    url = aurLink </> pathy <.> FileExt "git"
 
 ------------
 -- RPC CALLS
@@ -153,7 +156,7 @@ aurInfo pkgs = do
     <$> traverseConcurrently Par' (work m) (groupsOf 50 $ NEL.toList pkgs)
   where
     work :: Manager -> [PkgName] -> RIO Env [AurInfo]
-    work m ps = liftIO (info m $ map (^. field @"name") ps) >>= \case
+    work m ps = liftIO (info m $ map pnName ps) >>= \case
       Left (NotFound _) -> throwM (Failure connectFailure_1)
       Left BadJSON -> throwM (Failure miscAURFailure_3)
       Left (OtherAurError e) -> do

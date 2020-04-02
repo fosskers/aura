@@ -22,7 +22,6 @@ module Aura.Cache
 
 import           Aura.Settings
 import           Aura.Types
-import           Data.Generics.Product (field)
 import           RIO
 import qualified RIO.Map as M
 import qualified RIO.Set as S
@@ -56,10 +55,10 @@ cacheContents pth = cache . map (PackagePath . (pth </>)) <$> getDirectoryConten
 pkgsInCache :: Settings -> Set PkgName -> IO (Set PkgName)
 pkgsInCache ss ps = do
   c <- cacheContents . either id id . cachePathOf $ commonConfigOf ss
-  pure . S.filter (`S.member` ps) . S.map (^. field @"name") . M.keysSet $ _cache c
+  pure . S.filter (`S.member` ps) . S.map spName . M.keysSet $ _cache c
 
 -- | Any entries (filepaths) in the cache that match a given `Text`.
 cacheMatches :: Settings -> Text -> IO [PackagePath]
 cacheMatches ss input = do
   c <- cacheContents . either id id . cachePathOf $ commonConfigOf ss
-  pure . filter (T.isInfixOf input . T.pack . toFilePath . path) . M.elems $ _cache c
+  pure . filter (T.isInfixOf input . T.pack . toFilePath . ppPath) . M.elems $ _cache c

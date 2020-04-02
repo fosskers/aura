@@ -37,10 +37,10 @@ import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           Control.Scheduler (Comp(..), traverseConcurrently)
-import           Data.Generics.Product (HasField'(..), field, super)
+import           Data.Text.Prettyprint.Doc
+import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Language.Bash.Pretty (prettyText)
 import           Language.Bash.Syntax (ShellCommand)
-import           Lens.Micro (each, (^..))
 import           RIO hiding (FilePath)
 import           RIO.Directory (setCurrentDirectory)
 import qualified RIO.List as L
@@ -86,7 +86,7 @@ install' pkgs = do
                $ aurLookup (managerOf ss) toInstall
              pkgbuildDiffs toBuild
              traverse_ (report red reportNonPackages_1) . NEL.nonEmpty $ toList nons
-             let !explicits = bool (S.map (\b -> b { isExplicit = True }) toBuild) toBuild
+             let !explicits = bool (S.map (\b -> b { bIsExplicit = True }) toBuild) toBuild
                    $ switch ss AsDeps
              case nes explicits of
                Nothing       -> throwM $ Failure install_2
@@ -113,12 +113,12 @@ analysePkgbuild b = do
   let f = do
         yes <- liftIO $ optionalPrompt ss security_6
         when yes . throwM $ Failure security_7
-  case parsedPB $ b ^. field @"pkgbuild" of
-    Nothing -> liftIO (warn ss (security_1 (b ^. field @"name") $ langOf ss)) *> f
+  case parsedPB $ bPkgbuild b of
+    Nothing -> liftIO (warn ss (security_1 (bName b) $ langOf ss)) *> f
     Just l  -> case bannedTerms l of
       []  -> pure ()
       bts -> do
-        liftIO $ scold ss (security_5 (b ^. field @"name") $ langOf ss)
+        liftIO $ scold ss (security_5 (bName b) $ langOf ss)
         liftIO $ traverse_ (displayBannedTerms ss) bts
         f
 
@@ -132,8 +132,10 @@ displayBannedTerms ss (stmt, b) = do
 -- "Installed as a dependency for another package".
 annotateDeps :: NonEmpty Buildable -> IO ()
 annotateDeps bs = unless (null bs') . void . pacmanSuccess
-  $ ["-D", "--asdeps"] <> asFlag (bs' ^.. each . field @"name")
-  where bs' = NEL.filter (not . isExplicit) bs
+  $ ["-D", "--asdeps"] <> asFlag (map bName bs')
+  where
+    bs' :: [Buildable]
+    bs' = NEL.filter (not . bIsExplicit) bs
 
 -- | Reduce a list of candidate packages to build, such that there is only one
 -- instance of each "Package Base". This will ensure that split packages will
@@ -146,16 +148,15 @@ uniquePkgBase bs = mapMaybe g bs
     bs' = foldMap NEL.toList bs
 
     g :: NonEmpty Buildable -> Maybe (NonEmpty Buildable)
-    g = NEL.nonEmpty . L.nub . NEL.filter (\b -> (b ^. field @"name") `S.member` goods)
+    g = NEL.nonEmpty . L.nub . NEL.filter (\b -> bName b `S.member` goods)
 
     f :: Buildable -> Buildable -> Buildable
-    f a b | (a ^. field @"name") == (a ^. field @"base") = a
-          | (b ^. field @"name") == (b ^. field @"base") = b
+    f a b | bName a == bBase a = a
+          | bName b == bBase b = b
           | otherwise = a
 
     goods :: Set PkgName
-    goods = S.fromList . (^.. each . field @"name") . M.elems . M.fromListWith f
-      $ map (view (field @"base") &&& id) bs'
+    goods = S.fromList . map bName . M.elems . M.fromListWith f $ map (bBase &&& id) bs'
 
 confirmIgnored :: Set PkgName -> RIO Env (Set PkgName)
 confirmIgnored (toList -> ps) = do
@@ -172,7 +173,7 @@ depsToInstall repo bs = do
 repoInstall :: NonEmpty Prebuilt -> RIO Env ()
 repoInstall ps = do
   pacOpts <- asks (asFlag . commonConfigOf . settings)
-  liftIO . pacman $ ["-S", "--asdeps"] <> pacOpts <> asFlag (ps ^.. each . field @"name")
+  liftIO . pacman $ ["-S", "--asdeps"] <> pacOpts <> asFlag (NEL.map pName ps)
 
 buildAndInstall :: NonEmpty (NonEmpty Buildable) -> RIO Env ()
 buildAndInstall bss = do
@@ -188,7 +189,7 @@ buildAndInstall bss = do
     f (Cache cache) bs = do
       ss <- asks settings
       let (ps, cached) = fmapEither g $ NEL.toList bs
-          g b = case (b ^. super @SimplePkg) `M.lookup` cache of
+          g b = case bToSP b `M.lookup` cache of
             Just pp | not (switch ss ForceBuilding) -> Right pp
             _                                       -> Left b
       built <- traverse buildPackages $ NEL.nonEmpty ps
@@ -216,17 +217,19 @@ displayPkgDeps ps = do
 
 reportPkgsToInstall :: [Prebuilt] -> [NonEmpty Buildable] -> RIO Env ()
 reportPkgsToInstall rps bps = do
-  let (explicits, ds) = L.partition isExplicit $ foldMap toList bps
-  f reportPkgsToInstall_1 rps
-  f reportPkgsToInstall_3 ds
-  f reportPkgsToInstall_2 explicits
+  let (explicits, ds) = L.partition bIsExplicit $ foldMap NEL.toList bps
+  f reportPkgsToInstall_1 $ map pName rps
+  f reportPkgsToInstall_3 $ map bName ds
+  f reportPkgsToInstall_2 $ map bName explicits
   where
-    f m xs = traverse_ (report green m) . NEL.nonEmpty . L.sort $ xs ^.. each . field @"name"
+    f :: (Language -> Doc AnsiStyle) -> [PkgName] -> RIO Env ()
+    f m xs = traverse_ (report green m) . NEL.nonEmpty $ L.sort xs
 
 reportListOfDeps :: [Prebuilt] -> [NonEmpty Buildable] -> IO ()
-reportListOfDeps rps bps = f rps *> f (foldMap toList bps)
-  where f :: HasField' "name" s PkgName => [s] -> IO ()
-        f = traverse_ putTextLn . L.sort . (^.. each . field' @"name" . field' @"name")
+reportListOfDeps rps bps = f (map pName rps) *> f (map bName $ foldMap NEL.toList bps)
+  where
+    f :: [PkgName] -> IO ()
+    f = traverse_ putTextLn . L.sort . map pnName
 
 pkgbuildDiffs :: Set Buildable -> RIO Env ()
 pkgbuildDiffs ps = asks settings >>= check
@@ -238,7 +241,7 @@ pkgbuildDiffs ps = asks settings >>= check
     displayDiff :: Buildable -> RIO Env ()
     displayDiff p = do
       ss <- asks settings
-      let pn   = p ^. field @"name"
+      let pn   = bName p
           lang = langOf ss
       isStored <- liftIO $ hasPkgbuildStored pn
       if not isStored
@@ -246,6 +249,6 @@ pkgbuildDiffs ps = asks settings >>= check
         else liftIO $ do
           setCurrentDirectory "/tmp"
           let new = "/tmp/new.pb"
-          writeFileBinary new $ p ^. field @"pkgbuild" . field @"pkgbuild"
+          writeFileBinary new . pkgbuild $ bPkgbuild p
           liftIO . warn ss $ reportPkgbuildDiffs_3 pn lang
           diff ss (pkgbuildPath pn) $ fromAbsoluteFilePath new

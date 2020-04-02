@@ -1,7 +1,6 @@
-{-# LANGUAGE DataKinds             #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE TupleSections         #-}
-{-# LANGUAGE TypeApplications      #-}
+{-# LANGUAGE DataKinds        #-}
+{-# LANGUAGE TupleSections    #-}
+{-# LANGUAGE TypeApplications #-}
 
 -- |
 -- Module    : Aura.Packages.Repository
@@ -24,7 +23,6 @@ import           Aura.Settings (CommonSwitch(..), Settings(..), shared)
 import           Aura.Types
 import           Aura.Utils
 import           Control.Scheduler (Comp(..), traverseConcurrently)
-import           Data.Generics.Product (field)
 import           Data.Versions
 import           RIO hiding (try)
 import qualified RIO.Map as M
@@ -59,17 +57,17 @@ pacmanRepo = do
     f (r, p) = fmap (FromRepo . packageRepo r p) <$> mostRecent r
 
 packageRepo :: PkgName -> Provides -> Versioning -> Prebuilt
-packageRepo pn pro ver = Prebuilt { name     = pn
-                                  , version  = ver
-                                  , base     = pn
-                                  , provides = pro }
+packageRepo pn pro ver = Prebuilt { pName     = pn
+                                  , pVersion  = ver
+                                  , pBase     = pn
+                                  , pProvides = pro }
 
 -- TODO Bind to libalpm /just/ for the @-Ssq@ functionality. These shell
 -- calls are one of the remaining bottlenecks.
 -- | If given a virtual package, try to find a real package to install.
 resolveName :: Settings -> PkgName -> IO (Either PkgName (PkgName, Provides))
 resolveName ss pn = do
-  provs <- map PkgName <$> pacmanLines ["-Ssq", "^" <> (pn ^. field @"name") <> "$"]
+  provs <- map PkgName <$> pacmanLines ["-Ssq", "^" <> pnName pn <> "$"]
   case provs of
     [] -> pure $ Left pn
     _  -> Right . (, Provides pn) <$> chooseProvider ss pn provs
@@ -85,7 +83,7 @@ chooseProvider ss pn ps@(a:as) =
   traverseConcurrently Par' isInstalled ps >>= maybe f pure . listToMaybe . catMaybes
   where
     f | shared ss NoConfirm = pure . bool a pn $ pn `elem` ps
-      | otherwise = warn ss (provides_1 pn $ langOf ss) >> getSelection (^. field @"name") (a :| as)
+      | otherwise = warn ss (provides_1 pn $ langOf ss) >> getSelection pnName (a :| as)
 
 -- | The most recent version of a package, if it exists in the respositories.
 mostRecent :: PkgName -> IO (Either PkgName Versioning)

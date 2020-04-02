@@ -29,7 +29,6 @@ import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils (hush)
 import           Data.Aeson
-import           Data.Generics.Product (field)
 import           Data.Versions
 import           RIO
 import qualified RIO.ByteString.Lazy as BL
@@ -147,7 +146,7 @@ restoreState =
               Cache cache <- liftIO $ cacheContents pth
               let StateDiff rein remo = compareStates past curr
                   (okay, nope)        = L.partition (`M.member` cache) rein
-              traverse_ (report red restoreState_1 . fmap (^. field @"name")) $ NEL.nonEmpty nope
+              traverse_ (report red restoreState_1 . fmap spName) $ NEL.nonEmpty nope
               reinstallAndRemove (mapMaybe (`M.lookup` cache) okay) remo
 
 selectState :: NonEmpty (Path Absolute) -> IO (Path Absolute)
@@ -168,4 +167,4 @@ reinstallAndRemove down remo
   | otherwise = reinstall *> remove
   where
     remove    = liftIO . pacman $ "-R" : asFlag remo
-    reinstall = liftIO . pacman $ "-U" : map (T.pack . toFilePath . path) down
+    reinstall = liftIO . pacman $ "-U" : map (T.pack . toFilePath . ppPath) down
