@@ -107,12 +107,12 @@ groupPackages igs = fmap (f . decodeUtf8Lenient) . pacmanOutput $ "-Qg" : asFlag
 -- | Fetches the @CacheDir@ entry from the config, if it's there.
 getCachePath :: Config -> Maybe (Path Absolute)
 getCachePath (Config c) =
-  M.lookup "CacheDir" c >>= listToMaybe >>= pure . fromAbsoluteFilePath . T.unpack
+  fromAbsoluteFilePath . T.unpack <$> (M.lookup "CacheDir" c >>= listToMaybe)
 
 -- | Fetches the @LogFile@ entry from the config, if it's there.
 getLogFilePath :: Config -> Maybe (Path Absolute)
 getLogFilePath (Config c) =
-  M.lookup "LogFile" c >>= listToMaybe >>= pure . fromAbsoluteFilePath . T.unpack
+  fromAbsoluteFilePath . T.unpack <$> (M.lookup "LogFile" c >>= listToMaybe)
 
 ----------
 -- ACTIONS

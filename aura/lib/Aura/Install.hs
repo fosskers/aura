@@ -1,10 +1,5 @@
-{-# LANGUAGE BangPatterns     #-}
-{-# LANGUAGE DataKinds        #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE MonoLocalBinds   #-}
-{-# LANGUAGE MultiWayIf       #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE ViewPatterns     #-}
+{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE ViewPatterns #-}
 
 -- |
 -- Module    : Aura.Install
@@ -56,13 +51,14 @@ import           System.Path (fromAbsoluteFilePath)
 install :: NonEmpty PkgName -> RIO Env ()
 install pkgs = do
   ss <- asks settings
-  if | not $ switch ss DeleteMakeDeps -> install' pkgs
-     | otherwise -> do -- `-a` was used.
-         orphansBefore <- liftIO orphans
-         install' pkgs
-         orphansAfter <- liftIO orphans
-         let makeDeps = nes $ orphansAfter S.\\ orphansBefore
-         traverse_ (\mds -> liftIO (notify ss . removeMakeDepsAfter_1 $ langOf ss) *> removePkgs mds) makeDeps
+  if not $ switch ss DeleteMakeDeps
+    then install' pkgs
+    else do -- `-a` was used.
+      orphansBefore <- liftIO orphans
+      install' pkgs
+      orphansAfter <- liftIO orphans
+      let makeDeps = nes $ orphansAfter S.\\ orphansBefore
+      traverse_ (\mds -> liftIO (notify ss . removeMakeDepsAfter_1 $ langOf ss) *> removePkgs mds) makeDeps
 
 install' :: NonEmpty PkgName -> RIO Env ()
 install' pkgs = do
@@ -73,38 +69,40 @@ install' pkgs = do
               (S.fromList . catMaybes <$> liftIO (traverseConcurrently Par' isInstalled $ toList pkgs))
               $ shared ss NeededOnly
   let !pkgs' = S.fromList $ NEL.toList pkgs
-  if | shared ss NeededOnly && unneeded == pkgs' -> liftIO . warn ss . install_2 $ langOf ss
-     | otherwise -> do
-         let (ignored, notIgnored) = S.partition (`S.member` ignoresOf ss) pkgs'
-         installAnyway <- confirmIgnored ignored
-         case nes $ (notIgnored <> installAnyway) S.\\ unneeded of
-           Nothing        -> liftIO . warn ss . install_2 $ langOf ss
-           Just toInstall -> do
-             traverse_ (report yellow reportUnneededPackages_1) . NEL.nonEmpty
-               $ toList unneeded
-             (nons, toBuild) <- liftMaybeM (Failure connectFailure_1) . liftIO
-               $ aurLookup (managerOf ss) toInstall
-             pkgbuildDiffs toBuild
-             traverse_ (report red reportNonPackages_1) . NEL.nonEmpty $ toList nons
-             let !explicits = bool (S.map (\b -> b { bIsExplicit = True }) toBuild) toBuild
-                   $ switch ss AsDeps
-             case nes explicits of
-               Nothing       -> throwM $ Failure install_2
-               Just toBuild' -> do
-                 liftIO $ notify ss (install_5 $ langOf ss) *> hFlush stdout
-                 allPkgs <- depsToInstall rpstry toBuild'
-                 let (repoPkgs, buildPkgs) = second uniquePkgBase $ partitionPkgs allPkgs
-                 unless (switch ss NoPkgbuildCheck)
-                   $ traverse_ (traverse_ analysePkgbuild) buildPkgs
-                 reportPkgsToInstall repoPkgs buildPkgs
-                 unless (switch ss DryRun) $ do
-                   continue <- liftIO $ optionalPrompt ss install_3
-                   if | not continue -> throwM $ Failure install_4
-                      | otherwise    -> do
-                          traverse_ repoInstall $ NEL.nonEmpty repoPkgs
-                          let !mbuildPkgs = NEL.nonEmpty buildPkgs
-                          traverse_ (liftIO . storePkgbuilds . fold1) mbuildPkgs
-                          traverse_ buildAndInstall mbuildPkgs
+  if shared ss NeededOnly && unneeded == pkgs'
+    then liftIO . warn ss . install_2 $ langOf ss
+    else do
+      let (ignored, notIgnored) = S.partition (`S.member` ignoresOf ss) pkgs'
+      installAnyway <- confirmIgnored ignored
+      case nes $ (notIgnored <> installAnyway) S.\\ unneeded of
+        Nothing        -> liftIO . warn ss . install_2 $ langOf ss
+        Just toInstall -> do
+          traverse_ (report yellow reportUnneededPackages_1) . NEL.nonEmpty
+            $ toList unneeded
+          (nons, toBuild) <- liftMaybeM (Failure connectFailure_1) . liftIO
+            $ aurLookup (managerOf ss) toInstall
+          pkgbuildDiffs toBuild
+          traverse_ (report red reportNonPackages_1) . NEL.nonEmpty $ toList nons
+          let !explicits = bool (S.map (\b -> b { bIsExplicit = True }) toBuild) toBuild
+                $ switch ss AsDeps
+          case nes explicits of
+            Nothing       -> throwM $ Failure install_2
+            Just toBuild' -> do
+              liftIO $ notify ss (install_5 $ langOf ss) *> hFlush stdout
+              allPkgs <- depsToInstall rpstry toBuild'
+              let (repoPkgs, buildPkgs) = second uniquePkgBase $ partitionPkgs allPkgs
+              unless (switch ss NoPkgbuildCheck)
+                $ traverse_ (traverse_ analysePkgbuild) buildPkgs
+              reportPkgsToInstall repoPkgs buildPkgs
+              unless (switch ss DryRun) $ do
+                continue <- liftIO $ optionalPrompt ss install_3
+                if not continue
+                  then throwM $ Failure install_4
+                  else do
+                    traverse_ repoInstall $ NEL.nonEmpty repoPkgs
+                    let !mbuildPkgs = NEL.nonEmpty buildPkgs
+                    traverse_ (liftIO . storePkgbuilds . fold1) mbuildPkgs
+                    traverse_ buildAndInstall mbuildPkgs
 
 -- | Determine if a package's PKGBUILD might contain malicious bash code.
 analysePkgbuild :: Buildable -> RIO Env ()

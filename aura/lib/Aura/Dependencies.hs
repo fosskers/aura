@@ -1,10 +1,7 @@
-{-# LANGUAGE DataKinds        #-}
-{-# LANGUAGE DeriveGeneric    #-}
-{-# LANGUAGE LambdaCase       #-}
-{-# LANGUAGE MultiWayIf       #-}
-{-# LANGUAGE PatternSynonyms  #-}
-{-# LANGUAGE TupleSections    #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DeriveGeneric   #-}
+{-# LANGUAGE LambdaCase      #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE TupleSections   #-}
 
 -- |
 -- Module    : Aura.Dependencies
@@ -126,10 +123,10 @@ conflicts ss m s = foldMap f m
       let dn = dName d
       -- Don't do conflict checks for deps which are known to be satisfied on
       -- the system.
-      in if | S.member dn s -> Nothing
-            | otherwise     -> case M.lookup dn m <|> M.lookup dn pm of
-                                Nothing -> Just $ NonExistant dn
-                                Just p  -> realPkgConflicts ss (bName b) p d
+      in if S.member dn s then Nothing
+         else case M.lookup dn m <|> M.lookup dn pm of
+                Nothing -> Just $ NonExistant dn
+                Just p  -> realPkgConflicts ss (bName b) p d
 
 sortInstall :: Map PkgName Package -> Either Failure (NonEmpty (NonEmpty Package))
 sortInstall m = case cycles depGraph of
@@ -138,7 +135,7 @@ sortInstall m = case cycles depGraph of
   where
     f :: Package -> [(Package, Package)]
     f (FromRepo _)  = []
-    f p@(FromAUR b) = mapMaybe (\d -> fmap (p,) $ (dName d) `M.lookup` m)
+    f p@(FromAUR b) = mapMaybe (\d -> fmap (p,) $ dName d `M.lookup` m)
       $ bDeps b -- TODO handle "provides"?
 
     depGraph  = overlay connected singles

@@ -1,8 +1,6 @@
-{-# LANGUAGE BangPatterns     #-}
-{-# LANGUAGE DataKinds        #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase       #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE LambdaCase   #-}
+
 -- |
 -- Module    : Aura.Packages.AUR
 -- Copyright : (c) Colin Woodbury, 2012 - 2020

@@ -1,7 +1,5 @@
-{-# LANGUAGE DataKinds        #-}
-{-# LANGUAGE LambdaCase       #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE ViewPatterns     #-}
+{-# LANGUAGE LambdaCase   #-}
+{-# LANGUAGE ViewPatterns #-}
 
 {-# OPTIONS_HADDOCK prune #-}
 {-# OPTIONS_GHC -fno-warn-missing-export-lists #-}

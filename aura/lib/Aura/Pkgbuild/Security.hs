@@ -1,6 +1,5 @@
-{-# LANGUAGE DeriveGeneric    #-}
-{-# LANGUAGE TupleSections    #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TupleSections #-}
 
 -- |
 -- Module    : Aura.Pkgbuild.Security
@@ -36,7 +35,7 @@ import qualified RIO.Text as T
 data BannedTerm = BannedTerm Text BanCategory deriving (Eq, Ord, Show, Generic)
 
 banCatL :: Lens' BannedTerm BanCategory
-banCatL f (BannedTerm t bc) = (\bc' -> BannedTerm t bc') <$> f bc
+banCatL f (BannedTerm t bc) = BannedTerm t <$> f bc
 
 -- | The reason why the bash term is black-listed.
 data BanCategory = Downloading
@@ -120,13 +119,13 @@ bannedCommand s@(SimpleCommand as _) = as ^.. each . rValueL . to r . each
     r rv = q rv
 
     q :: RValue -> [(ShellCommand, BannedTerm)]
-    q rv = map (s,) $ rWords rv >>= id >>= p
+    q rv = map (s,) $ join (rWords rv) >>= p
 
     p :: Span -> [BannedTerm]
     p (CommandSubst str)   = maybeToList (hush $ parse "CommandSubst" str) >>= simpleCommands >>= map snd . bannedCommand
     p (ArithSubst str)     = [BannedTerm (T.pack str) StrangeBashism]
     p (ProcessSubst _ str) = [BannedTerm (T.pack str) StrangeBashism]
-    p sp = sWords sp >>= id >>= p
+    p sp = join (sWords sp) >>= p
 
     rWords :: RValue -> [Word]
     rWords (RValue w)  = [w]
@@ -173,4 +172,4 @@ reportExploit (BannedTerm t bc) = case bc of
 --------
 
 rValueL :: Lens' Assign RValue
-rValueL f (Assign p ao r) = (\r' -> Assign p ao r') <$> f r
+rValueL f (Assign p ao r) = Assign p ao <$> f r

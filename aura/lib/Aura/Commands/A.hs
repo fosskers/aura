@@ -1,9 +1,5 @@
-{-# LANGUAGE BangPatterns     #-}
-{-# LANGUAGE DataKinds        #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase       #-}
-{-# LANGUAGE MultiWayIf       #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE LambdaCase   #-}
 
 -- |
 -- Module    : Aura.Commands.A
@@ -85,11 +81,12 @@ upgrade pkgs fs = do
     Nothing -> do
       devel <- develPkgCheck
       liftIO . notify ss . upgradeAURPkgs_2 $ langOf ss
-      if | null toUpgrade && null devel -> liftIO . warn ss . upgradeAURPkgs_3 $ langOf ss
-         | otherwise -> do
-             reportPkgsToUpgrade toUpgrade (toList devel)
-             liftIO . unless (switch ss DryRun) $ saveState ss
-             traverse_ I.install . nes $ S.fromList names <> pkgs <> devel
+      if null toUpgrade && null devel
+        then liftIO . warn ss . upgradeAURPkgs_3 $ langOf ss
+        else do
+          reportPkgsToUpgrade toUpgrade (toList devel)
+          liftIO . unless (switch ss DryRun) $ saveState ss
+          traverse_ I.install . nes $ S.fromList names <> pkgs <> devel
 
 possibleUpdates :: NonEmpty SimplePkg -> RIO Env [(AurInfo, Versioning)]
 possibleUpdates pkgs = do
@@ -102,12 +99,16 @@ possibleUpdates pkgs = do
 -- | Is there an update for Aura that we could apply first?
 auraCheck :: [PkgName] -> RIO Env (Maybe PkgName)
 auraCheck ps = join <$> traverse f auraPkg
-  where f a = do
-          ss <- asks settings
-          bool Nothing (Just a) <$> liftIO (optionalPrompt ss auraCheck_1)
-        auraPkg | "aura" `elem` ps     = Just "aura"
-                | "aura-bin" `elem` ps = Just "aura-bin"
-                | otherwise            = Nothing
+  where
+    f :: a -> RIO Env (Maybe a)
+    f a = do
+      ss <- asks settings
+      bool Nothing (Just a) <$> liftIO (optionalPrompt ss auraCheck_1)
+
+    auraPkg :: Maybe PkgName
+    auraPkg | "aura" `elem` ps     = Just "aura"
+            | "aura-bin" `elem` ps = Just "aura-bin"
+            | otherwise            = Nothing
 
 auraUpgrade :: PkgName -> RIO Env ()
 auraUpgrade = I.install . pure
@@ -173,7 +174,7 @@ displayPkgbuild :: NonEmpty PkgName -> RIO Env ()
 displayPkgbuild ps = do
   man <- asks (managerOf . settings)
   pbs <- catMaybes <$> traverse (liftIO . getPkgbuild man) (toList ps)
-  traverse_ (\p -> B.putStr p >> B.putStr "\n") $ map pkgbuild pbs
+  traverse_ ((\p -> B.putStr p >> B.putStr "\n") . pkgbuild) pbs
 
 isntMostRecent :: (AurInfo, Versioning) -> Bool
 isntMostRecent (ai, v) = trueVer > Just v

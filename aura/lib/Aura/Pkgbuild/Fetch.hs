@@ -1,6 +1,4 @@
-{-# LANGUAGE DataKinds           #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications    #-}
 
 -- |
 -- Module    : Aura.State

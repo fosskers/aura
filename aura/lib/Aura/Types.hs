@@ -1,10 +1,7 @@
-{-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE DerivingStrategies         #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE MultiWayIf                 #-}
-{-# LANGUAGE TypeApplications           #-}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -138,12 +135,13 @@ parseDep = hush . parse dep "dep"
         n   = PkgName <$> takeWhile1P Nothing (\c -> c /= '<' && c /= '>' && c /= '=')
         v   = do
           end <- atEnd
-          if | end       -> pure Anything
-             | otherwise -> choice [ char '<'    *> fmap LessThan versioning'
-                                   , string ">=" *> fmap AtLeast  versioning'
-                                   , char '>'    *> fmap MoreThan versioning'
-                                   , char '='    *> fmap MustBe   versioning'
-                                   , pure Anything ]
+          if end
+            then pure Anything
+            else choice [ char '<'    *> fmap LessThan versioning'
+                        , string ">=" *> fmap AtLeast  versioning'
+                        , char '>'    *> fmap MoreThan versioning'
+                        , char '='    *> fmap MustBe   versioning'
+                        , pure Anything ]
 
 -- | Renders the `Dep` into a form that @pacman -T@ understands. The dual of
 -- `parseDep`.

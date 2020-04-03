@@ -1,6 +1,3 @@
-{-# LANGUAGE DataKinds        #-}
-{-# LANGUAGE TypeApplications #-}
-
 -- |
 -- Module    : Aura.State
 -- Copyright : (c) Colin Woodbury, 2012 - 2020

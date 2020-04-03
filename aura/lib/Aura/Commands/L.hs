@@ -1,7 +1,3 @@
-{-# LANGUAGE DataKinds        #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeApplications #-}
-
 -- |
 -- Module    : Aura.Commands.L
 -- Copyright : (c) Colin Woodbury, 2012 - 2020

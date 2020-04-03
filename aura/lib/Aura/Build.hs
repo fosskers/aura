@@ -1,7 +1,3 @@
-{-# LANGUAGE DataKinds        #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeApplications #-}
-
 -- |
 -- Module    : Aura.Build
 -- Copyright : (c) Colin Woodbury, 2012 - 2020

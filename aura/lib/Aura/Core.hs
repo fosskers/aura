@@ -1,8 +1,5 @@
-{-# LANGUAGE DataKinds          #-}
 {-# LANGUAGE DeriveGeneric      #-}
 {-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE MultiWayIf         #-}
-{-# LANGUAGE TypeApplications   #-}
 
 -- |
 -- Module    : Aura.Core

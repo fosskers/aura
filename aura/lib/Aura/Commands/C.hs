@@ -1,8 +1,4 @@
-{-# LANGUAGE BangPatterns     #-}
-{-# LANGUAGE DataKinds        #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE MultiWayIf       #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE BangPatterns #-}
 
 -- |
 -- Module    : Aura.Commands.C
@@ -83,8 +79,9 @@ searchCache ps = do
 backupCache :: Path Absolute -> RIO Env ()
 backupCache dir = do
   exists <- liftIO $ doesDirectoryExist dir
-  if | not exists -> throwM $ Failure backupCache_3
-     | otherwise  -> confirmBackup dir >>= backup dir
+  if not exists
+    then throwM $ Failure backupCache_3
+    else confirmBackup dir >>= backup dir
 
 confirmBackup :: Path Absolute -> RIO Env Cache
 confirmBackup dir = do

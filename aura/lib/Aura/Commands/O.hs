@@ -1,6 +1,3 @@
-{-# LANGUAGE DataKinds        #-}
-{-# LANGUAGE TypeApplications #-}
-
 -- |
 -- Module    : Aura.Commands.O
 -- Copyright : (c) Colin Woodbury, 2012 - 2020

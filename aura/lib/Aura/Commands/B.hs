@@ -1,4 +1,3 @@
-{-# LANGUAGE MultiWayIf    #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE ViewPatterns  #-}
 
@@ -42,8 +41,9 @@ cleanStates ss (fromIntegral -> n) = do
     let mostRecent = T.pack . toUnrootedFilePath . takeFileName $ NEL.head stfs'
     warn ss . cleanStates_5 mostRecent $ langOf ss
   okay <- optionalPrompt ss $ cleanStates_2 n
-  if | not okay  -> warn ss . cleanStates_3 $ langOf ss
-     | otherwise -> traverse_ (removeFile . fst) . drop n $ others
+  if not okay
+    then warn ss . cleanStates_3 $ langOf ss
+    else traverse_ (removeFile . fst) . drop n $ others
   where
     p :: (a, Maybe PkgState) -> Bool
     p = maybe False pinnedOf . snd
