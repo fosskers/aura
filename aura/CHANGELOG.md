@@ -7,6 +7,12 @@
 - Allow `--asdeps` to be passed to `-A` commands.
 - Dutch translations. Thank you, Joris Blanken!
 
+#### Changed
+
+- ~15% reduction in binary size and must faster compiles due to removal of
+  unnecessary dependencies.
+- A few more messages when using `--log-level=debug`.
+
 ## 2.2.1 (2020-03-01)
 
 #### Changed
