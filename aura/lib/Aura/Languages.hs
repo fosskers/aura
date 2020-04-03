@@ -1249,12 +1249,6 @@ miscAURFailure_1 = \case
   Dutch     -> "Contact opnemen met de AUR is op een onbekende manier mislukt."
   _         -> "Contacting the AUR failed in some unknown way."
 
-miscAURFailure_2 :: Language -> Doc AnsiStyle
-miscAURFailure_2 = \case
-  Italian   -> "Il server dell'AUR ha rifiutato la richiesta."
-  Dutch     -> "De AUR server heeft het verzoek afgewezen."
-  _         -> "The AUR server rejected the request."
-
 miscAURFailure_3 :: Language -> Doc AnsiStyle
 miscAURFailure_3 = \case
   _ -> "The JSON returned from the AUR server could not be decoded."

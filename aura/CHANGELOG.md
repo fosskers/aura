@@ -13,6 +13,10 @@
   unnecessary dependencies.
 - A few more messages when using `--log-level=debug`.
 
+#### Removed
+
+- `makepkgConfFile` wasn't being used anywhere.
+
 ## 2.2.1 (2020-03-01)
 
 #### Changed

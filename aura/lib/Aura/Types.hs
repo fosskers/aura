@@ -18,7 +18,7 @@
 
 module Aura.Types
   ( -- * Package Types
-    Package(..), pname, pprov, pver, dividePkgs, dividePkgs'
+    Package(..), pname, pprov, pver, dividePkgs
   , Dep(..), parseDep, renderedDep
   , Buildable(..)
   , Prebuilt(..)
@@ -52,7 +52,6 @@ import           Data.These (These(..))
 import           Data.Versions hiding (Traversal')
 import           Lens.Micro
 import           RIO hiding (try)
-import qualified RIO.NonEmpty as NEL
 import qualified RIO.Text as T
 import           System.Path (Absolute, Path, takeFileName, toUnrootedFilePath)
 import           Text.Megaparsec
@@ -94,13 +93,6 @@ dividePkgs = partNonEmpty f
     f :: Package -> These Prebuilt Buildable
     f (FromRepo p) = This p
     f (FromAUR b)  = That b
-
--- | A version of `dividePkgs` that discards information about non-emptiness.
-dividePkgs' :: NonEmpty Package -> ([Prebuilt], [Buildable])
-dividePkgs' ps = case dividePkgs ps of
-  This p    -> (NEL.toList p, [])
-  That b    -> ([], NEL.toList b)
-  These p b -> (NEL.toList p, NEL.toList b)
 
 -- TODO Figure out how to do this more generically.
 instance Ord Package where

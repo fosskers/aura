@@ -11,7 +11,6 @@
 module Aura.MakePkg
   ( makepkg
   , makepkgSource
-  , makepkgConfFile
   ) where
 
 import           Aura.IO (optionalPrompt)
@@ -29,10 +28,6 @@ import           System.Path.IO (getCurrentDirectory, getDirectoryContents)
 import           System.Process.Typed
 
 ---
-
--- | The default location of the makepkg configuration: \/etc\/makepkg.conf
-makepkgConfFile :: Path Absolute
-makepkgConfFile = fromAbsoluteFilePath "/etc/makepkg.conf"
 
 makepkgCmd :: Path Absolute
 makepkgCmd = fromAbsoluteFilePath "/usr/bin/makepkg"
