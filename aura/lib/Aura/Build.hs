@@ -23,7 +23,6 @@ import           Aura.Types
 import           Aura.Utils
 import           Control.Monad.Trans.Except
 import           Data.Hashable (hash)
-import           Data.Witherable.Class (wither)
 import           RIO
 import           RIO.Directory (setCurrentDirectory)
 import qualified RIO.NonEmpty as NEL
@@ -49,8 +48,10 @@ installPkgFiles files = do
 -- | All building occurs within temp directories,
 -- or in a location specified by the user with flags.
 buildPackages :: NonEmpty Buildable -> RIO Env (NonEmpty PackagePath)
-buildPackages bs = wither build (NEL.toList bs) >>= maybe bad (pure . fold1) . NEL.nonEmpty
-  where bad = throwM $ Failure buildFail_10
+buildPackages bs = mapMaybeA build (NEL.toList bs) >>= maybe bad (pure . fold1) . NEL.nonEmpty
+  where
+    bad :: RIO Env a
+    bad = throwM $ Failure buildFail_10
 
 -- | Handles the building of Packages. Fails nicely.
 -- Assumed: All dependencies are already installed.
