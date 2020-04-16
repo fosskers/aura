@@ -40,7 +40,6 @@ import           Control.Monad.Trans.Maybe
 import           Data.Bifunctor (bimap)
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
-import           Data.These (These(..))
 import           RIO hiding ((<>))
 import qualified RIO.ByteString as B
 import qualified RIO.List as L

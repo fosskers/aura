@@ -23,7 +23,6 @@ import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
-import           Data.These (these)
 import           Data.Versions hiding (Lens')
 import           Lens.Micro
 import           RIO

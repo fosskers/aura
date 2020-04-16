@@ -2,13 +2,6 @@ resolver: lts-15.8
 
 ghc-options: {"$locals": -fwrite-ide-info}
 
-flags:
-  these:
-    aeson: false
-    assoc: false
-    semigroupoids: false
-    QuickCheck: false
-
 packages:
   - aura/
   - aur/

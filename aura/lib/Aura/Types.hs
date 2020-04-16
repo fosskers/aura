@@ -45,7 +45,6 @@ import           Data.Aeson (FromJSONKey, ToJSONKey)
 import           Data.Bitraversable
 import           Data.Text.Prettyprint.Doc hiding (list, space)
 import           Data.Text.Prettyprint.Doc.Render.Terminal
-import           Data.These (These(..))
 import           Data.Versions hiding (Traversal')
 import           Lens.Micro
 import           RIO hiding (try)
