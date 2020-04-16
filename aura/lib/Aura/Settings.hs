@@ -30,7 +30,6 @@ import           Network.HTTP.Client (Manager)
 import           RIO
 import qualified RIO.Set as S
 import qualified RIO.Text as T
-import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath)
 
 ---
 
@@ -49,16 +48,16 @@ instance Flagable Makepkg where
 -- Aura will react to them, but also pass them through to `pacman`
 -- calls if necessary.
 data CommonConfig = CommonConfig
-  { cachePathOf      :: !(Either (Path Absolute) (Path Absolute))
-  , configPathOf     :: !(Either (Path Absolute) (Path Absolute))
-  , logPathOf        :: !(Either (Path Absolute) (Path Absolute))
+  { cachePathOf      :: !(Either FilePath FilePath)
+  , configPathOf     :: !(Either FilePath FilePath)
+  , logPathOf        :: !(Either FilePath FilePath)
   , commonSwitchesOf :: !(Set CommonSwitch) } deriving (Show, Generic)
 
 instance Flagable CommonConfig where
   asFlag (CommonConfig cap cop lfp cs) =
-    either (const []) (\p -> ["--cachedir", T.pack $ toFilePath p]) cap
-    <> either (const []) (\p -> ["--config", T.pack $ toFilePath p]) cop
-    <> either (const []) (\p -> ["--logfile", T.pack $ toFilePath p]) lfp
+    either (const []) (\p -> ["--cachedir", T.pack p]) cap
+    <> either (const []) (\p -> ["--config", T.pack p]) cop
+    <> either (const []) (\p -> ["--logfile", T.pack p]) lfp
     <> asFlag cs
 
 -- | Yes/No-style switches that are common to both Aura and Pacman.
@@ -85,7 +84,7 @@ instance Flagable ColourMode where
 -- | Settings unique to the AUR package building process.
 data BuildConfig = BuildConfig
   { makepkgFlagsOf  :: !(Set Makepkg)
-  , buildPathOf     :: !(Path Absolute)
+  , buildPathOf     :: !FilePath
   , buildUserOf     :: !(Maybe User)
   , truncationOf    :: !Truncation  -- For `-As`
   , buildSwitchesOf :: !(Set BuildSwitch) } deriving (Show)
@@ -131,5 +130,5 @@ logFuncOfL :: Lens' Settings LogFunc
 logFuncOfL f s = (\lf -> s { logFuncOf = lf }) <$> f (logFuncOf s)
 
 -- | Unless otherwise specified, packages will be built within @/tmp@.
-defaultBuildDir :: Path Absolute
-defaultBuildDir = fromAbsoluteFilePath "/tmp"
+defaultBuildDir :: FilePath
+defaultBuildDir = "/tmp"

@@ -8,8 +8,8 @@ import           Aura.Types
 import           Data.Versions
 import           RIO
 import qualified RIO.Map as M
+import           RIO.Partial
 -- import           Language.Bash.Pretty (prettyText)
-import           System.Path
 import           Test.Tasty
 import           Test.Tasty.HUnit
 import           Text.Megaparsec
@@ -45,7 +45,7 @@ suite conf pb = testGroup "Unit Tests"
     ]
   , testGroup "Aura.Types"
     [ testCase "simplepkg"
-      $ simplepkg (PackagePath $ fromAbsoluteFilePath "/var/cache/pacman/pkg/linux-is-cool-3.2.14-1-x86_64.pkg.tar.xz")
+      $ simplepkg (fromJust $ packagePath "/var/cache/pacman/pkg/linux-is-cool-3.2.14-1-x86_64.pkg.tar.xz")
       @?= Just (SimplePkg "linux-is-cool" . Ideal $ SemVer 3 2 14 [[Digits 1]] [])
     , testCase "simplepkg'"
       $ simplepkg' "xchat 2.8.8-19" @?= Just (SimplePkg "xchat" . Ideal $ SemVer 2 8 8 [[Digits 19]] [])

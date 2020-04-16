@@ -22,11 +22,11 @@ import           Aura.Languages
 import           Aura.Settings
 import           Aura.State
 import           RIO
+import           RIO.Directory
+import           RIO.FilePath
 import qualified RIO.List as L
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Text as T
-import           System.Path (takeFileName, toFilePath, toUnrootedFilePath)
-import           System.Path.IO (removeFile)
 
 ---
 
@@ -38,7 +38,7 @@ cleanStates ss (fromIntegral -> n) = do
   warn ss . cleanStates_4 (length stfs) $ langOf ss
   unless (null pinned) . warn ss . cleanStates_6 (length pinned) $ langOf ss
   forM_ (NEL.nonEmpty stfs) $ \stfs' -> do
-    let mostRecent = T.pack . toUnrootedFilePath . takeFileName $ NEL.head stfs'
+    let mostRecent = T.pack . takeFileName $ NEL.head stfs'
     warn ss . cleanStates_5 mostRecent $ langOf ss
   okay <- optionalPrompt ss $ cleanStates_2 n
   if not okay
@@ -50,4 +50,4 @@ cleanStates ss (fromIntegral -> n) = do
 
 -- | The result of @-Bl@.
 listStates :: IO ()
-listStates = getStateFiles >>= traverse_ (putTextLn . T.pack . toFilePath)
+listStates = getStateFiles >>= traverse_ (putTextLn . T.pack)

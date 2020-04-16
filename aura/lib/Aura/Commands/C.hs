@@ -28,13 +28,12 @@ import           Aura.State
 import           Aura.Types
 import           Aura.Utils (nes)
 import           RIO
+import           RIO.Directory
 import qualified RIO.List as L
 import qualified RIO.Map as M
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
-import           System.Path
-import           System.Path.IO (copyFile, doesDirectoryExist, removeFile)
 
 ---
 
@@ -49,7 +48,7 @@ downgradePackages pkgs = do
   unless (null reals) $ do
     cache   <- liftIO $ cacheContents cachePath
     choices <- traverse (getDowngradeChoice cache) $ toList reals
-    liftIO . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (T.pack . toFilePath . ppPath) choices
+    liftIO . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (T.pack . ppPath) choices
   where
     pkgsSet :: Set PkgName
     pkgsSet = S.fromList $ NEL.toList pkgs
@@ -63,7 +62,7 @@ getDowngradeChoice cache pkg =
     Just choices -> do
       ss <- asks settings
       liftIO . notify ss . getDowngradeChoice_1 pkg $ langOf ss
-      liftIO $ getSelection (T.pack . toFilePath . ppPath) choices
+      liftIO $ getSelection (T.pack . ppPath) choices
 
 getChoicesFromCache :: Cache -> PkgName -> [PackagePath]
 getChoicesFromCache (Cache cache) p = L.sort . M.elems $ M.filterWithKey (\(SimplePkg pn _) _ -> p == pn) cache
@@ -73,26 +72,26 @@ searchCache :: Text -> RIO Env ()
 searchCache ps = do
   ss <- asks settings
   matches <- liftIO $ cacheMatches ss ps
-  liftIO . traverse_ (putTextLn . T.pack . toFilePath . ppPath) $ L.sort matches
+  liftIO . traverse_ (putTextLn . T.pack . ppPath) $ L.sort matches
 
 -- | The destination folder must already exist for the back-up to begin.
-backupCache :: Path Absolute -> RIO Env ()
+backupCache :: FilePath -> RIO Env ()
 backupCache dir = do
   exists <- liftIO $ doesDirectoryExist dir
   if not exists
     then throwM $ Failure backupCache_3
     else confirmBackup dir >>= backup dir
 
-confirmBackup :: Path Absolute -> RIO Env Cache
+confirmBackup :: FilePath -> RIO Env Cache
 confirmBackup dir = do
   ss    <- asks settings
   cache <- liftIO . cacheContents . either id id . cachePathOf $ commonConfigOf ss
-  liftIO . notify ss $ backupCache_4 (toFilePath dir) (langOf ss)
+  liftIO . notify ss $ backupCache_4 dir (langOf ss)
   liftIO . notify ss $ backupCache_5 (M.size $ _cache cache) (langOf ss)
   okay  <- liftIO $ optionalPrompt ss backupCache_6
   bool (throwM $ Failure backupCache_7) (pure cache) okay
 
-backup :: Path Absolute -> Cache -> RIO Env ()
+backup :: FilePath -> Cache -> RIO Env ()
 backup dir (Cache cache) = do
   ss <- asks settings
   liftIO . notify ss . backupCache_8 $ langOf ss
@@ -100,13 +99,13 @@ backup dir (Cache cache) = do
   copyAndNotify dir (M.elems cache) 1
 
 -- | Manages the file copying and display of the real-time progress notifier.
-copyAndNotify :: Path Absolute -> [PackagePath] -> Int -> RIO Env ()
+copyAndNotify :: FilePath -> [PackagePath] -> Int -> RIO Env ()
 copyAndNotify _ [] _ = pure ()
-copyAndNotify dir (PackagePath p : ps) n = do
+copyAndNotify dir (p : ps) n = do
   ss <- asks settings
   liftIO $ raiseCursorBy 1
   liftIO . warn ss . copyAndNotify_1 n $ langOf ss
-  liftIO $ copyFile p dir
+  liftIO $ copyFile (ppPath p) dir
   copyAndNotify dir ps $ n + 1
 
 -- | Keeps a certain number of package files in the cache according to

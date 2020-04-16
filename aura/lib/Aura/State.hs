@@ -29,6 +29,8 @@ import           Data.Aeson
 import           Data.Versions
 import           RIO
 import qualified RIO.ByteString.Lazy as BL
+import           RIO.Directory
+import           RIO.FilePath
 import qualified RIO.List as L
 import           RIO.List.Partial ((!!))
 import qualified RIO.Map as M
@@ -36,8 +38,6 @@ import qualified RIO.Map.Unchecked as M
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Text as T
 import           RIO.Time
-import           System.Path
-import           System.Path.IO (createDirectoryIfMissing, getDirectoryContents)
 import           Text.Printf (printf)
 
 ---
@@ -67,8 +67,8 @@ data StateDiff = StateDiff
   , _toRemove :: ![PkgName] }
 
 -- | The default location of all saved states: \/var\/cache\/aura\/states
-stateCache :: Path Absolute
-stateCache = fromAbsoluteFilePath "/var/cache/aura/states"
+stateCache :: FilePath
+stateCache = "/var/cache/aura/states"
 
 -- | Does a given package have an entry in a particular `PkgState`?
 inState :: SimplePkg -> PkgState -> Bool
@@ -100,7 +100,7 @@ olds :: PkgState -> PkgState -> [SimplePkg]
 olds old curr = map (uncurry SimplePkg) . M.assocs $ M.difference (pkgsOf old) (pkgsOf curr)
 
 -- | The filepaths of every saved package state.
-getStateFiles :: IO [Path Absolute]
+getStateFiles :: IO [FilePath]
 getStateFiles = do
   createDirectoryIfMissing True stateCache
   L.sort . map (stateCache </>) <$> getDirectoryContents stateCache
@@ -110,9 +110,9 @@ getStateFiles = do
 saveState :: Settings -> IO ()
 saveState ss = do
   state <- currentState
-  let filename = stateCache </> fromUnrootedFilePath (dotFormat (timeOf state)) <.> FileExt "json"
+  let filename = stateCache </> dotFormat (timeOf state) <.> "json"
   createDirectoryIfMissing True stateCache
-  BL.writeFile (toFilePath filename) $ encode state
+  BL.writeFile filename $ encode state
   notify ss . saveState_1 $ langOf ss
 
 dotFormat :: ZonedTime -> String
@@ -131,7 +131,7 @@ dotFormat (ZonedTime t _) = L.intercalate "." items
 restoreState :: RIO Env ()
 restoreState =
   liftIO getStateFiles >>= maybe (throwM $ Failure restoreState_2) f . NEL.nonEmpty
-  where f :: NonEmpty (Path Absolute) -> RIO Env ()
+  where f :: NonEmpty FilePath -> RIO Env ()
         f sfs = do
           ss  <- asks settings
           let pth = either id id . cachePathOf $ commonConfigOf ss
@@ -146,13 +146,13 @@ restoreState =
               traverse_ (report red restoreState_1 . fmap spName) $ NEL.nonEmpty nope
               reinstallAndRemove (mapMaybe (`M.lookup` cache) okay) remo
 
-selectState :: NonEmpty (Path Absolute) -> IO (Path Absolute)
-selectState = getSelection (T.pack . toFilePath)
+selectState :: NonEmpty FilePath -> IO FilePath
+selectState = getSelection T.pack
 
 -- | Given a `FilePath` to a package state file, attempt to read and parse
 -- its contents. As of Aura 2.0, only state files in JSON format are accepted.
-readState :: Path Absolute -> IO (Maybe PkgState)
-readState = fmap decode . BL.readFile . toFilePath
+readState :: FilePath -> IO (Maybe PkgState)
+readState = fmap decode . BL.readFile
 
 -- | `reinstalling` can mean true reinstalling, or just altering.
 reinstallAndRemove :: [PackagePath] -> [PkgName] -> RIO Env ()
@@ -164,4 +164,4 @@ reinstallAndRemove down remo
   | otherwise = reinstall *> remove
   where
     remove    = liftIO . pacman $ "-R" : asFlag remo
-    reinstall = liftIO . pacman $ "-U" : map (T.pack . toFilePath . ppPath) down
+    reinstall = liftIO . pacman $ "-U" : map (T.pack . ppPath) down

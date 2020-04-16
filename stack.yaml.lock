@@ -11,13 +11,6 @@ packages:
       sha256: 2ce9873423de0aa54f098f3f46daa7519697bd2e79cb63c6aedc054b0293061b
   original:
     hackage: language-bash-0.9.0
-- completed:
-    hackage: paths-0.2.0.0@sha256:b550399f0d1181a00221931255c48d72d6eaa8301056afcc9f96288c71aab664,2629
-    pantry-tree:
-      size: 732
-      sha256: 775674b5c4b1431aa855b1966abbd59d64da87e8f05fb9bb0d782baca10a470d
-  original:
-    hackage: paths-0.2.0.0
 snapshots:
 - completed:
     size: 492015

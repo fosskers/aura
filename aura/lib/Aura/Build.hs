@@ -24,26 +24,26 @@ import           Aura.Utils
 import           Control.Monad.Trans.Except
 import           Data.Hashable (hash)
 import           RIO
-import           RIO.Directory (setCurrentDirectory)
+import           RIO.Directory
+import           RIO.FilePath
 import qualified RIO.NonEmpty as NEL
+import           RIO.Partial (fromJust)
 import qualified RIO.Set as S
 import qualified RIO.Text as T
 import           RIO.Time
-import           System.Path
-import           System.Path.IO
 import           System.Process.Typed
 
 ---
 
-srcPkgStore :: Path Absolute
-srcPkgStore = fromAbsoluteFilePath "/var/cache/aura/src"
+srcPkgStore :: FilePath
+srcPkgStore = "/var/cache/aura/src"
 
 -- | Expects files like: \/var\/cache\/pacman\/pkg\/*.pkg.tar.xz
 installPkgFiles :: NonEmpty PackagePath -> RIO Env ()
 installPkgFiles files = do
   ss <- asks settings
   liftIO $ checkDBLock ss
-  liftIO . pacman $ ["-U"] <> map (T.pack . toFilePath . ppPath) (toList files) <> asFlag (commonConfigOf ss)
+  liftIO . pacman $ ["-U"] <> map (T.pack . ppPath) (toList files) <> asFlag (commonConfigOf ss)
 
 -- | All building occurs within temp directories,
 -- or in a location specified by the user with flags.
@@ -69,24 +69,26 @@ build' :: Settings -> Buildable -> RIO Env (Either Failure (NonEmpty PackagePath
 build' ss b = do
   let pth = buildPathOf $ buildConfigOf ss
   liftIO $ createDirectoryIfMissing True pth
-  setCurrentDirectory $ toFilePath pth
+  setCurrentDirectory pth
   buildDir <- liftIO $ randomDirName b
   liftIO $ createDirectoryIfMissing True buildDir
-  setCurrentDirectory $ toFilePath buildDir
+  setCurrentDirectory buildDir
   runExceptT $ do
     bs <- ExceptT $ cloneRepo b usr
-    lift . setCurrentDirectory $ toFilePath bs
-    lift . liftIO $ overwritePkgbuild ss b
+    liftIO $ setCurrentDirectory bs
+    liftIO $ overwritePkgbuild ss b
     pNames <- ExceptT . liftIO $ makepkg ss usr
     paths  <- liftIO $ traverse (moveToCachePath ss) pNames
-    lift . liftIO . when (S.member AllSource . makepkgFlagsOf $ buildConfigOf ss) $
+    liftIO . when (S.member AllSource . makepkgFlagsOf $ buildConfigOf ss) $
       makepkgSource usr >>= traverse_ moveToSourcePath
     pure paths
-  where usr = fromMaybe (User "桜木花道") . buildUserOf $ buildConfigOf ss
+  where
+    usr :: User
+    usr = fromMaybe (User "桜木花道") . buildUserOf $ buildConfigOf ss
 
 -- | Create a temporary directory with a semi-random name based on
 -- the `Buildable` we're working with.
-randomDirName :: Buildable -> IO (Path Absolute)
+randomDirName :: Buildable -> IO FilePath
 randomDirName b = do
   pwd <- getCurrentDirectory
   UTCTime _ dt <- getCurrentTime
@@ -94,9 +96,9 @@ randomDirName b = do
       vh = hash $ bVersion b
       v  = abs $ nh + vh + floor dt
       dir = T.unpack (pnName $ bName b) <> "-" <> show v
-  pure $ pwd </> fromUnrootedFilePath dir
+  pure $ pwd </> dir
 
-cloneRepo :: Buildable -> User -> RIO Env (Either Failure (Path Absolute))
+cloneRepo :: Buildable -> User -> RIO Env (Either Failure FilePath)
 cloneRepo pkg usr = do
   currDir <- liftIO getCurrentDirectory
   logDebug $ "Currently in: " <> displayShow currDir
@@ -121,14 +123,14 @@ buildFail (Failure err) = do
   bool (throwM $ Failure buildFail_5) (pure Nothing) response
 
 -- | Moves a file to the pacman package cache and returns its location.
-moveToCachePath :: Settings -> Path Absolute -> IO PackagePath
-moveToCachePath ss p = copy $> PackagePath newName
+moveToCachePath :: Settings -> FilePath -> IO PackagePath
+moveToCachePath ss p = copy $> fromJust (packagePath newName)
   where newName = pth </> takeFileName p
         pth     = either id id . cachePathOf $ commonConfigOf ss
         copy    = runProcess . setStderr closed . setStdout closed
-                  $ proc "cp" ["--reflink=auto", toFilePath p, toFilePath newName ]
+                  $ proc "cp" ["--reflink=auto", p, newName]
 
 -- | Moves a file to the aura src package cache and returns its location.
-moveToSourcePath :: Path Absolute -> IO (Path Absolute)
+moveToSourcePath :: FilePath -> IO FilePath
 moveToSourcePath p = renameFile p newName $> newName
   where newName = srcPkgStore </> takeFileName p

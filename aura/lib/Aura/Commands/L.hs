@@ -24,7 +24,6 @@ import           RIO hiding (FilePath)
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Text as T
 import qualified RIO.Text.Partial as T
-import           System.Path (toFilePath)
 import           System.Process.Typed (proc, runProcess)
 
 ---
@@ -41,13 +40,13 @@ data LogEntry = LogEntry
 -- | Pipes the pacman log file through a @less@ session.
 viewLogFile :: RIO Env ()
 viewLogFile = do
-  pth <- asks (toFilePath . either id id . logPathOf . commonConfigOf . settings)
+  pth <- asks (either id id . logPathOf . commonConfigOf . settings)
   void . runProcess $ proc "less" [pth]
 
 -- | Print all lines in the log file which contain a given `Text`.
 searchLogFile :: Settings -> Text -> IO ()
 searchLogFile ss input = do
-  let pth = toFilePath . either id id . logPathOf $ commonConfigOf ss
+  let pth = either id id . logPathOf $ commonConfigOf ss
   logFile <- T.lines . decodeUtf8Lenient <$> readFileBinary pth
   traverse_ putTextLn $ searchLines input logFile
 
@@ -55,7 +54,7 @@ searchLogFile ss input = do
 logInfoOnPkg :: NonEmpty PkgName -> RIO Env ()
 logInfoOnPkg pkgs = do
   ss <- asks settings
-  let pth = toFilePath . either id id . logPathOf $ commonConfigOf ss
+  let pth = either id id . logPathOf $ commonConfigOf ss
   logFile <- Log . T.lines . decodeUtf8Lenient <$> readFileBinary pth
   let (bads, goods) = fmapEither (logLookup logFile) $ toList pkgs
   traverse_ (report red reportNotInLog_1) $ NEL.nonEmpty bads

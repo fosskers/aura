@@ -13,7 +13,6 @@ import           RIO
 import qualified RIO.ByteString as B
 import qualified RIO.Map as M
 import qualified RIO.Text as T
-import           System.Path (Absolute, Path, toFilePath)
 import           System.Process.Typed (proc, runProcess)
 
 ---
@@ -50,8 +49,8 @@ getLocale :: Environment -> Text
 getLocale env = fromMaybe "C" . asum $ map (`M.lookup` env) ["LC_ALL", "LC_MESSAGES", "LANG"]
 
 -- | Mark some `Path` as being owned by a `User`.
-chown :: MonadIO m => User -> Path Absolute -> [String] -> m ()
-chown (User usr) pth args = void . runProcess $ proc "chown" (args <> [T.unpack usr, toFilePath pth])
+chown :: MonadIO m => User -> FilePath -> [String] -> m ()
+chown (User usr) pth args = void . runProcess $ proc "chown" (args <> [T.unpack usr, pth])
 
 -- | Hide the cursor in a terminal.
 hideCursor :: IO ()

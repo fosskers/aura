@@ -42,11 +42,11 @@ import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           RIO hiding ((<>))
 import qualified RIO.ByteString as B
+import           RIO.Directory (doesFileExist)
 import qualified RIO.List as L
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
-import           System.Path.IO (doesFileExist)
 
 ---
 

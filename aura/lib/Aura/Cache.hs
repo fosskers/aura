@@ -21,12 +21,11 @@ module Aura.Cache
 import           Aura.Settings
 import           Aura.Types
 import           RIO
+import           RIO.Directory
+import           RIO.FilePath
 import qualified RIO.Map as M
 import qualified RIO.Set as S
 import qualified RIO.Text as T
-import           System.Path
-    (Absolute, Path, fromAbsoluteFilePath, toFilePath, (</>))
-import           System.Path.IO (getDirectoryContents)
 
 ---
 
@@ -34,8 +33,8 @@ import           System.Path.IO (getDirectoryContents)
 newtype Cache = Cache { _cache :: Map SimplePkg PackagePath }
 
 -- | The default location of the package cache: \/var\/cache\/pacman\/pkg\/
-defaultPackageCache :: Path Absolute
-defaultPackageCache = fromAbsoluteFilePath "/var/cache/pacman/pkg/"
+defaultPackageCache :: FilePath
+defaultPackageCache = "/var/cache/pacman/pkg/"
 
 -- SILENT DROPS PATHS THAT DON'T PARSE
 -- Maybe that's okay, since we don't know what non-package garbage files
@@ -46,8 +45,8 @@ cache :: [PackagePath] -> Cache
 cache = Cache . M.fromList . mapMaybe (\p -> (,p) <$> simplepkg p)
 
 -- | Given a path to the package cache, yields its contents in a usable form.
-cacheContents :: Path Absolute -> IO Cache
-cacheContents pth = cache . map (PackagePath . (pth </>)) <$> getDirectoryContents pth
+cacheContents :: FilePath -> IO Cache
+cacheContents pth = cache . mapMaybe (packagePath . (pth </>)) <$> getDirectoryContents pth
 
 -- | All packages from a given `Set` who have a copy in the cache.
 pkgsInCache :: Settings -> Set PkgName -> IO (Set PkgName)
@@ -59,4 +58,4 @@ pkgsInCache ss ps = do
 cacheMatches :: Settings -> Text -> IO [PackagePath]
 cacheMatches ss input = do
   c <- cacheContents . either id id . cachePathOf $ commonConfigOf ss
-  pure . filter (T.isInfixOf input . T.pack . toFilePath . ppPath) . M.elems $ _cache c
+  pure . filter (T.isInfixOf input . T.pack . ppPath) . M.elems $ _cache c

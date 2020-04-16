@@ -10,7 +10,6 @@ module Aura.Diff ( diff ) where
 
 import Aura.Settings
 import RIO
-import System.Path (Absolute, Path, toFilePath)
 import System.Process.Typed (proc, runProcess)
 
 ---
@@ -19,6 +18,8 @@ import System.Process.Typed (proc, runProcess)
 -- Output will be coloured unless colour is deactivated by
 -- `--color never` or by detection of a non-terminal output
 -- target.
-diff :: MonadIO m => Settings -> Path Absolute -> Path Absolute -> m ()
-diff ss f1 f2 = void . runProcess . proc "diff" $ c <> ["-u", toFilePath f1, toFilePath f2]
-  where c = bool ["--color"] [] $ shared ss (Colour Never)
+diff :: MonadIO m => Settings -> FilePath -> FilePath -> m ()
+diff ss f1 f2 = void . runProcess . proc "diff" $ c <> ["-u", f1, f2]
+  where
+    c :: [FilePath]
+    c = bool ["--color"] [] $ shared ss (Colour Never)

@@ -36,11 +36,11 @@ import           Lens.Micro (_2)
 import           RIO hiding (first, some, try)
 import qualified RIO.ByteString as BS
 import qualified RIO.ByteString.Lazy as BL
+import           RIO.FilePath
 import           RIO.List.Partial ((!!))
 import qualified RIO.Map as M
 import qualified RIO.Set as S
 import qualified RIO.Text as T
-import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath)
 import           System.Process.Typed
 import           Text.Megaparsec hiding (single)
 import           Text.Megaparsec.Char
@@ -72,21 +72,21 @@ garbage :: Parsec Void Text ()
 garbage = L.space space1 (L.skipLineComment "#") (L.skipBlockComment "[" "]")
 
 -- | Default location of the pacman config file: \/etc\/pacman.conf
-pacmanConfFile :: Path Absolute
-pacmanConfFile = fromAbsoluteFilePath "/etc/pacman.conf"
+pacmanConfFile :: FilePath
+pacmanConfFile = "/etc/pacman.conf"
 
 -- | Default location of the pacman log flie: \/var\/log\/pacman.log
-defaultLogFile :: Path Absolute
-defaultLogFile = fromAbsoluteFilePath "/var/log/pacman.log"
+defaultLogFile :: FilePath
+defaultLogFile = "/var/log/pacman.log"
 
 -- | Default location of the pacman database lock file: \/var\/lib\/pacman\/db.lck
-lockFile :: Path Absolute
-lockFile = fromAbsoluteFilePath "/var/lib/pacman/db.lck"
+lockFile :: FilePath
+lockFile = "/var/lib/pacman/db.lck"
 
 -- | Given a filepath to the pacman config, try to parse its contents.
-getPacmanConf :: Path Absolute -> IO (Either Failure Config)
+getPacmanConf :: FilePath -> IO (Either Failure Config)
 getPacmanConf fp = do
-  file <- decodeUtf8Lenient <$> BS.readFile (toFilePath fp)
+  file <- decodeUtf8Lenient <$> BS.readFile fp
   pure . first (const (Failure confParsing_1)) $ parse config "pacman config" file
 
 -- | Fetches the @IgnorePkg@ entry from the config, if it's there.
@@ -105,14 +105,16 @@ groupPackages igs = fmap (f . decodeUtf8Lenient) . pacmanOutput $ "-Qg" : asFlag
     f = S.fromList . map (PkgName . (!! 1) . T.words) . T.lines
 
 -- | Fetches the @CacheDir@ entry from the config, if it's there.
-getCachePath :: Config -> Maybe (Path Absolute)
-getCachePath (Config c) =
-  fromAbsoluteFilePath . T.unpack <$> (M.lookup "CacheDir" c >>= listToMaybe)
+getCachePath :: Config -> Maybe FilePath
+getCachePath (Config c) = do
+  fp <- T.unpack <$> (M.lookup "CacheDir" c >>= listToMaybe)
+  bool Nothing (Just fp) $ isAbsolute fp
 
 -- | Fetches the @LogFile@ entry from the config, if it's there.
-getLogFilePath :: Config -> Maybe (Path Absolute)
-getLogFilePath (Config c) =
-  fromAbsoluteFilePath . T.unpack <$> (M.lookup "LogFile" c >>= listToMaybe)
+getLogFilePath :: Config -> Maybe FilePath
+getLogFilePath (Config c) = do
+  fp <- T.unpack <$> (M.lookup "LogFile" c >>= listToMaybe)
+  bool Nothing (Just fp) $ isAbsolute fp
 
 ----------
 -- ACTIONS

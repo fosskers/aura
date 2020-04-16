@@ -9,7 +9,7 @@
 
 #### Changed
 
-- ~15% reduction in binary size and must faster compiles due to removal of
+- ~15% reduction in binary size and much faster compiles due to removal of
   unnecessary dependencies.
 - A few more messages when using `--log-level=debug`.
 

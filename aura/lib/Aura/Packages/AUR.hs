@@ -35,13 +35,13 @@ import           Lens.Micro (each, non, (^..))
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
 import           RIO
+import           RIO.Directory
+import           RIO.FilePath
 import qualified RIO.List as L
 import qualified RIO.Map as M
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
-import           System.Path
-import           System.Path.IO (getCurrentDirectory)
 import           System.Process.Typed
 
 ---
@@ -103,31 +103,32 @@ buildable m ai = do
 ----------------
 -- AUR PKGBUILDS
 ----------------
-aurLink :: Path Unrooted
-aurLink = fromUnrootedFilePath "https://aur.archlinux.org"
+aurLink :: FilePath
+aurLink = "https://aur.archlinux.org"
 
 -- | A package's home URL on the AUR.
 pkgUrl :: PkgName -> Text
-pkgUrl (PkgName pkg) = T.pack . toUnrootedFilePath $ aurLink </> fromUnrootedFilePath "packages" </> fromUnrootedFilePath (T.unpack pkg)
+pkgUrl (PkgName pkg) = T.pack $ aurLink </> "packages" </> T.unpack pkg
 
 -------------------
 -- SOURCES FROM GIT
 -------------------
 -- | Attempt to clone a package source from the AUR.
-clone :: Buildable -> IO (Maybe (Path Absolute))
+clone :: Buildable -> IO (Maybe FilePath)
 clone b = do
-  ec <- runProcess . setStderr closed . setStdout closed $ proc "git" [ "clone", "--depth", "1", toUnrootedFilePath url ]
+  ec <- runProcess . setStderr closed . setStdout closed
+    $ proc "git" [ "clone", "--depth", "1", url ]
   case ec of
     ExitFailure _ -> pure Nothing
     ExitSuccess   -> do
       pwd <- getCurrentDirectory
       pure . Just $ pwd </> pathy
   where
-    pathy :: Path Unrooted
-    pathy = fromUnrootedFilePath . T.unpack . pnName $ bBase b
+    pathy :: FilePath
+    pathy = T.unpack . pnName $ bBase b
 
-    url :: Path Unrooted
-    url = aurLink </> pathy <.> FileExt "git"
+    url :: FilePath
+    url = aurLink </> pathy <.> "git"
 
 ------------
 -- RPC CALLS

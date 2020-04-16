@@ -54,7 +54,6 @@ import Flags
 import Options.Applicative (execParser)
 import RIO hiding (first)
 import Settings
-import System.Path (toFilePath)
 import System.Process.Typed (proc, runProcess)
 
 ---
@@ -152,4 +151,4 @@ displayOutputLanguages = do
 viewConfFile :: RIO Env ()
 viewConfFile = do
   pth <- asks (either id id . configPathOf . commonConfigOf . settings)
-  void . runProcess $ proc "less" [toFilePath pth]
+  void . runProcess $ proc "less" [pth]

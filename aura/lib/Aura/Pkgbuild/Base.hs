@@ -11,15 +11,16 @@ module Aura.Pkgbuild.Base
   ) where
 
 import           Aura.Types
+import           RIO
+import           RIO.FilePath
 import qualified RIO.Text as T
-import           System.Path
 
 ---
 
 -- | The default location: \/var\/cache\/aura\/pkgbuilds\/
-pkgbuildCache :: Path Absolute
-pkgbuildCache = fromAbsoluteFilePath "/var/cache/aura/pkgbuilds/"
+pkgbuildCache :: FilePath
+pkgbuildCache = "/var/cache/aura/pkgbuilds/"
 
 -- | The expected path to a stored PKGBUILD, given some package name.
-pkgbuildPath :: PkgName -> Path Absolute
-pkgbuildPath (PkgName p) = pkgbuildCache </> fromUnrootedFilePath (T.unpack p) <.> FileExt "pb"
+pkgbuildPath :: PkgName -> FilePath
+pkgbuildPath (PkgName p) = pkgbuildCache </> T.unpack p <.> "pb"

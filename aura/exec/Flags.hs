@@ -12,12 +12,12 @@ import           Aura.Types
 import           Lens.Micro (Traversal')
 import           Options.Applicative
 import           RIO hiding (exp, log)
+import           RIO.FilePath
 import           RIO.List.Partial (foldr1)
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.NonEmpty.Partial as NELP
 import qualified RIO.Set as S
 import qualified RIO.Text as T
-import           System.Path (Absolute, Path, fromAbsoluteFilePath, toFilePath)
 
 ---
 
@@ -176,32 +176,32 @@ instance Flagable UpgradeSwitch where
   asFlag (UpgradeOverwrite glob) = "--overwrite" : asFlag glob
 
 -- | Flags common to several Pacman operations.
-data MiscOp = MiscArch    (Path Absolute)
+data MiscOp = MiscArch    FilePath
             | MiscAssumeInstalled Text
             | MiscColor   Text
             | MiscConfirm
             | MiscDBOnly
-            | MiscDBPath  (Path Absolute)
-            | MiscGpgDir  (Path Absolute)
-            | MiscHookDir (Path Absolute)
+            | MiscDBPath  FilePath
+            | MiscGpgDir  FilePath
+            | MiscHookDir FilePath
             | MiscNoDeps
             | MiscNoProgress
             | MiscNoScriptlet
             | MiscPrint
             | MiscPrintFormat Text
-            | MiscRoot    (Path Absolute)
+            | MiscRoot    FilePath
             | MiscVerbose
             deriving (Eq, Ord, Show)
 
 instance Flagable MiscOp where
-  asFlag (MiscArch p)            = ["--arch", T.pack $ toFilePath p]
+  asFlag (MiscArch p)            = ["--arch", T.pack p]
   asFlag (MiscAssumeInstalled p) = ["--assume-installed", p]
   asFlag (MiscColor c)           = ["--color", c]
-  asFlag (MiscDBPath p)          = ["--dbpath", T.pack $ toFilePath p]
-  asFlag (MiscGpgDir p)          = ["--gpgdir", T.pack $ toFilePath p]
-  asFlag (MiscHookDir p)         = ["--hookdir", T.pack $ toFilePath p]
+  asFlag (MiscDBPath p)          = ["--dbpath", T.pack p]
+  asFlag (MiscGpgDir p)          = ["--gpgdir", T.pack p]
+  asFlag (MiscHookDir p)         = ["--hookdir", T.pack p]
   asFlag (MiscPrintFormat s)     = ["--print-format", s]
-  asFlag (MiscRoot p)            = ["--root", T.pack $ toFilePath p]
+  asFlag (MiscRoot p)            = ["--root", T.pack p]
   asFlag MiscConfirm             = ["--confirm"]
   asFlag MiscDBOnly              = ["--dbonly"]
   asFlag MiscNoDeps              = ["--nodeps"]
@@ -248,7 +248,7 @@ _AurIgnoreGroup _ x                  = pure x
 
 data BackupOp = BackupClean Word | BackupRestore | BackupList deriving (Show)
 
-data CacheOp = CacheBackup (Path Absolute) | CacheClean Word | CacheCleanNotSaved | CacheSearch Text deriving (Show)
+data CacheOp = CacheBackup FilePath | CacheClean Word | CacheCleanNotSaved | CacheSearch Text deriving (Show)
 
 data LogOp = LogInfo (NonEmpty PkgName) | LogSearch Text deriving (Show)
 
@@ -302,7 +302,7 @@ cache :: Parser AuraOp
 cache = bigC *> (Cache <$> (fmap Left mods <|> fmap Right somePkgs))
   where bigC = flag' () (long "downgrade" <> short 'C' <> help "Interact with the package cache.")
         mods = backup <|> clean <|> clean' <|> search
-        backup = CacheBackup . fromAbsoluteFilePath <$> strOption (long "backup" <> short 'b' <> metavar "PATH" <> help "Backup the package cache to a given directory." <> hidden)
+        backup = CacheBackup <$> option (eitherReader absFilePath) (long "backup" <> short 'b' <> metavar "PATH" <> help "Backup the package cache to a given directory." <> hidden)
         clean  = CacheClean  <$> option auto (long "clean" <> short 'c' <> metavar "N" <> help "Save the most recent N versions of a package in the cache, deleting the rest." <> hidden)
         clean' = flag' CacheCleanNotSaved (long "notsaved" <> help "Clean out any cached package files which doesn't appear in any saved state." <> hidden)
         search = CacheSearch <$> strOption (long "search" <> short 's' <> metavar "STRING" <> help "Search the package cache via a search string." <> hidden)
@@ -336,7 +336,7 @@ buildConfig = BuildConfig <$> makepkg <*> bp <*> optional bu <*> trunc <*> build
         ia      = flag' IgnoreArch (long "ignorearch" <> hidden <> help "Exposed makepkg flag.")
         as      = flag' AllSource (long "allsource" <> hidden <> help "Exposed makepkg flag.")
         si      = flag' SkipInteg (long "skipinteg" <> hidden <> help "Skip all makepkg integrity checks.")
-        bp      = fmap fromAbsoluteFilePath (strOption (long "build" <> metavar "PATH" <> hidden <> help "Directory in which to build packages."))
+        bp      = option (eitherReader absFilePath) (long "build" <> metavar "PATH" <> hidden <> help "Directory in which to build packages.")
                   <|> pure defaultBuildDir
         bu      = User <$> strOption (long "builduser" <> metavar "USER" <> hidden <> help "User account to build as.")
         trunc   = fmap Head (option auto (long "head" <> metavar "N" <> hidden <> help "Only show top N search results."))
@@ -360,14 +360,14 @@ buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <
 
 commonConfig :: Parser CommonConfig
 commonConfig = CommonConfig <$> cap <*> cop <*> lfp <*> commonSwitches
-  where cap = fmap (Right . fromAbsoluteFilePath)
-                   (strOption (long "cachedir" <> hidden <> help "Use an alternate package cache location."))
+  where cap = fmap Right
+                   (option (eitherReader absFilePath) (long "cachedir" <> hidden <> help "Use an alternate package cache location."))
               <|> pure (Left defaultPackageCache)
-        cop = fmap (Right . fromAbsoluteFilePath)
-                   (strOption (long "config"   <> hidden <> help "Use an alternate Pacman config file."))
+        cop = fmap Right
+                   (option (eitherReader absFilePath) (long "config"   <> hidden <> help "Use an alternate Pacman config file."))
               <|> pure (Left pacmanConfFile)
-        lfp = fmap (Right . fromAbsoluteFilePath)
-                   (strOption (long "logfile"  <> hidden <> help "Use an alternate Pacman log."))
+        lfp = fmap Right
+                   (option (eitherReader absFilePath) (long "logfile"  <> hidden <> help "Use an alternate Pacman log."))
               <|> pure (Left defaultLogFile)
 
 commonSwitches :: Parser (Set CommonSwitch)
@@ -452,17 +452,17 @@ sync = bigS *> (Sync <$> (fmap (Right . S.map PkgName) manyArgs <|> fmap Left mo
 
 misc :: Parser (Set MiscOp)
 misc = S.fromList <$> many (ar <|> dbp <|> roo <|> ver <|> gpg <|> hd <|> con <|> dbo <|> nop <|> nos <|> pf <|> nod <|> prt <|> asi)
-  where ar  = MiscArch . fromAbsoluteFilePath
-              <$> strOption (long "arch" <> metavar "ARCH" <> hidden <> help "Use an alternate architecture.")
-        dbp = MiscDBPath . fromAbsoluteFilePath
-              <$> strOption (long "dbpath" <> short 'b' <> metavar "PATH" <> hidden <> help "Use an alternate database location.")
-        roo = MiscRoot . fromAbsoluteFilePath
-              <$> strOption (long "root" <> short 'r' <> metavar "PATH" <> hidden <> help "Use an alternate installation root.")
+  where ar  = MiscArch
+              <$> option (eitherReader absFilePath) (long "arch" <> metavar "ARCH" <> hidden <> help "Use an alternate architecture.")
+        dbp = MiscDBPath
+              <$> option (eitherReader absFilePath) (long "dbpath" <> short 'b' <> metavar "PATH" <> hidden <> help "Use an alternate database location.")
+        roo = MiscRoot
+              <$> option (eitherReader absFilePath) (long "root" <> short 'r' <> metavar "PATH" <> hidden <> help "Use an alternate installation root.")
         ver = flag' MiscVerbose (long "verbose" <> short 'v' <> hidden <> help "Be more verbose.")
-        gpg = MiscGpgDir . fromAbsoluteFilePath
-              <$> strOption (long "gpgdir" <> metavar "PATH" <> hidden <> help "Use an alternate GnuGPG directory.")
-        hd  = MiscHookDir . fromAbsoluteFilePath
-              <$> strOption (long "hookdir" <> metavar "PATH" <> hidden <> help "Use an alternate hook directory.")
+        gpg = MiscGpgDir
+              <$> option (eitherReader absFilePath) (long "gpgdir" <> metavar "PATH" <> hidden <> help "Use an alternate GnuGPG directory.")
+        hd  = MiscHookDir
+              <$> option (eitherReader absFilePath) (long "hookdir" <> metavar "PATH" <> hidden <> help "Use an alternate hook directory.")
         con = flag' MiscConfirm (long "confirm" <> hidden <> help "Always ask for confirmation.")
         dbo = flag' MiscDBOnly (long "dbonly" <> hidden <> help "Only modify database entries, not package files.")
         nop = flag' MiscNoProgress (long "noprogressbar" <> hidden <> help "Don't show a progress bar when downloading.")
@@ -540,3 +540,6 @@ logLevel = option (eitherReader l)
     l "warn"  = Right LevelWarn
     l "error" = Right LevelError
     l _       = Left "Must be one of debug|info|warn|error"
+
+absFilePath :: String -> Either String FilePath
+absFilePath fp = bool (Left $ "Not absolute: " <> fp) (Right fp) $ isAbsolute fp

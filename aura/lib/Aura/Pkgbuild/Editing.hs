@@ -13,9 +13,7 @@ import Aura.Languages
 import Aura.Settings
 import Aura.Types
 import RIO
-import RIO.Directory (setCurrentDirectory)
-import System.Path (toFilePath)
-import System.Path.IO (getCurrentDirectory, getTemporaryDirectory)
+import RIO.Directory
 import System.Process.Typed (proc, runProcess)
 
 ---
@@ -45,7 +43,7 @@ hotEdit ss b
           f = do
             here <- getCurrentDirectory
             tmp  <- getTemporaryDirectory
-            setCurrentDirectory $ toFilePath tmp
+            setCurrentDirectory tmp
             b' <- edit (runProcess . proc (editorOf ss) . (:[])) b
-            setCurrentDirectory $ toFilePath here
+            setCurrentDirectory here
             pure b'

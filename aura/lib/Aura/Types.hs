@@ -34,7 +34,7 @@ module Aura.Types
   , PkgName(..)
   , PkgGroup(..)
   , Provides(..)
-  , PackagePath(..)
+  , PackagePath, packagePath, ppPath
   , Pkgbuild(..)
   , Environment
   , User(..)
@@ -48,8 +48,8 @@ import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions hiding (Traversal')
 import           Lens.Micro
 import           RIO hiding (try)
+import           RIO.FilePath
 import qualified RIO.Text as T
-import           System.Path (Absolute, Path, takeFileName, toUnrootedFilePath)
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 
@@ -195,19 +195,22 @@ pToSP p = SimplePkg (pName p) (pVersion p)
 -- | Attempt to create a `SimplePkg` from filepaths like
 --   @\/var\/cache\/pacman\/pkg\/linux-3.2.14-1-x86_64.pkg.tar.xz@
 simplepkg :: PackagePath -> Maybe SimplePkg
-simplepkg (PackagePath t) = uncurry SimplePkg <$> bitraverse hush hush (parse n "name" t', parse v "version" t')
-  where t' = T.pack . toUnrootedFilePath $ takeFileName t
+simplepkg (PackagePath t) =
+  uncurry SimplePkg <$> bitraverse hush hush (parse n "name" t', parse v "version" t')
+  where
+    t' :: Text
+    t' = T.pack $ takeFileName t
 
-        n :: Parsec Void Text PkgName
-        n = PkgName . T.pack <$> manyTill anySingle (try finished)
+    n :: Parsec Void Text PkgName
+    n = PkgName . T.pack <$> manyTill anySingle (try finished)
 
-        -- | Assumes that a version number will never start with a letter,
-        -- and that a package name section (i.e. abc-def-ghi) will never start
-        -- with a number.
-        finished = char '-' *> lookAhead digitChar
-        v    = manyTill anySingle (try finished) *> ver
-        ver  = try (fmap Ideal semver' <* post) <|> try (fmap General version' <* post) <|> fmap Complex mess'
-        post = char '-' *> (string "x86_64" <|> string "any") *> string ".pkg.tar.xz"
+    -- | Assumes that a version number will never start with a letter,
+    -- and that a package name section (i.e. abc-def-ghi) will never start
+    -- with a number.
+    finished = char '-' *> lookAhead digitChar
+    v    = manyTill anySingle (try finished) *> ver
+    ver  = try (fmap Ideal semver' <* post) <|> try (fmap General version' <* post) <|> fmap Complex mess'
+    post = char '-' *> (string "x86_64" <|> string "any") *> string ".pkg.tar.xz"
 
 -- | Attempt to create a `SimplePkg` from text like:
 --     xchat 2.8.8-19
@@ -220,7 +223,7 @@ simplepkg' = hush . parse parser "name-and-version"
 --   * \/var\/cache\/pacman\/pkg\/linux-3.2.14-1-x86_64.pkg.tar.xz
 --   * \/var\/cache\/pacman\/pkg\/wine-1.4rc6-1-x86_64.pkg.tar.xz
 --   * \/var\/cache\/pacman\/pkg\/ruby-1.9.3_p125-4-x86_64.pkg.tar.xz
-newtype PackagePath = PackagePath { ppPath :: Path Absolute }
+newtype PackagePath = PackagePath { ppPath :: FilePath }
   deriving (Eq, Generic)
 
 -- | If they have the same package names, compare by their versions.
@@ -234,6 +237,10 @@ instance Ord PackagePath where
 
       f :: PackagePath -> (Maybe PkgName, Maybe Versioning)
       f = (fmap spName &&& fmap spVersion) . simplepkg
+
+-- | Smart constructor for `PackagePath`.
+packagePath :: FilePath -> Maybe PackagePath
+packagePath fp = bool Nothing (Just $ PackagePath fp) $ isAbsolute fp
 
 -- | The contents of a PKGBUILD file.
 newtype Pkgbuild = Pkgbuild { pkgbuild :: ByteString }

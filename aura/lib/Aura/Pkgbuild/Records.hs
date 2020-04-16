@@ -14,8 +14,7 @@ module Aura.Pkgbuild.Records
 import Aura.Pkgbuild.Base
 import Aura.Types
 import RIO
-import System.Path (toFilePath)
-import System.Path.IO (createDirectoryIfMissing, doesFileExist)
+import RIO.Directory
 
 ---
 
@@ -31,4 +30,4 @@ storePkgbuilds bs = do
   traverse_ (\p -> writePkgbuild (bName p) (bPkgbuild p)) bs
 
 writePkgbuild :: PkgName -> Pkgbuild -> IO ()
-writePkgbuild pn (Pkgbuild pb) = writeFileBinary (toFilePath $ pkgbuildPath pn) pb
+writePkgbuild pn (Pkgbuild pb) = writeFileBinary (pkgbuildPath pn) pb

@@ -43,7 +43,6 @@ import qualified RIO.Map as M
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
-import           System.Path (fromAbsoluteFilePath)
 
 ---
 
@@ -249,4 +248,4 @@ pkgbuildDiffs ps = asks settings >>= check
           let new = "/tmp/new.pb"
           writeFileBinary new . pkgbuild $ bPkgbuild p
           liftIO . warn ss $ reportPkgbuildDiffs_3 pn lang
-          diff ss (pkgbuildPath pn) $ fromAbsoluteFilePath new
+          diff ss (pkgbuildPath pn) new
