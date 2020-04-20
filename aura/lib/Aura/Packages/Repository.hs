@@ -35,6 +35,9 @@ import           Text.Megaparsec.Char
 pacmanRepo :: IO Repository
 pacmanRepo = do
   tv <- newTVarIO mempty
+  -- A mutex to ensure that the user will only be prompted for one input at a
+  -- time.
+  mv <- newMVar ()
 
   let g :: Settings -> NonEmpty PkgName -> IO (Maybe (Set PkgName, Set Package))
       g ss names = do
@@ -42,7 +45,7 @@ pacmanRepo = do
         cache <- readTVarIO tv
         let (uncached, cached) = fmapEither (\p -> note p $ M.lookup p cache) $ toList names
         --- Lookup uncached Packages ---
-        bgs <- traverseConcurrently Par' (resolveName ss) uncached
+        bgs <- traverseConcurrently Par' (resolveName mv ss) uncached
         let (bads, goods) = partitionEithers bgs
         (bads', goods') <- traverseEither f goods  -- TODO Should also be made concurrent?
         --- Update Cache ---
@@ -63,25 +66,31 @@ packageRepo pn pro ver = Prebuilt { pName     = pn
 -- TODO Bind to libalpm /just/ for the @-Ssq@ functionality. These shell
 -- calls are one of the remaining bottlenecks.
 -- | If given a virtual package, try to find a real package to install.
-resolveName :: Settings -> PkgName -> IO (Either PkgName (PkgName, Provides))
-resolveName ss pn = do
+resolveName :: MVar () -> Settings -> PkgName -> IO (Either PkgName (PkgName, Provides))
+resolveName mv ss pn = do
   provs <- map PkgName <$> pacmanLines ["-Ssq", "^" <> pnName pn <> "$"]
   case provs of
     [] -> pure $ Left pn
-    _  -> Right . (, Provides pn) <$> chooseProvider ss pn provs
+    _  -> Right . (, Provides pn) <$> chooseProvider mv ss pn provs
 
--- | Choose a providing package, favoring installed packages.
+-- | Choose a providing package, favouring installed packages.
 -- If `--noconfirm` is provided, it will try to automatically select the provider
 -- with the same name as the dependency. If that doesn't exist, it will select
 -- the first available provider.
-chooseProvider :: Settings -> PkgName -> [PkgName] -> IO PkgName
-chooseProvider _ pn []         = pure pn
-chooseProvider _ _ [p]         = pure p
-chooseProvider ss pn ps@(a:as) =
+chooseProvider :: MVar () -> Settings -> PkgName -> [PkgName] -> IO PkgName
+chooseProvider _ _ pn []          = pure pn
+chooseProvider _ _ _ [p]          = pure p
+chooseProvider mv ss pn ps@(a:as) =
   traverseConcurrently Par' isInstalled ps >>= maybe f pure . listToMaybe . catMaybes
   where
+    f :: IO PkgName
     f | shared ss NoConfirm = pure . bool a pn $ pn `elem` ps
-      | otherwise = warn ss (provides_1 pn $ langOf ss) >> getSelection pnName (a :| as)
+      | otherwise = do
+          void $ takeMVar mv
+          warn ss (provides_1 pn $ langOf ss)
+          r <- getSelection pnName (a :| as)
+          putMVar mv ()
+          pure r
 
 -- | The most recent version of a package, if it exists in the respositories.
 mostRecent :: PkgName -> IO (Either PkgName Versioning)

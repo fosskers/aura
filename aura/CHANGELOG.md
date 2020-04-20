@@ -18,6 +18,11 @@
 
 - `makepkgConfFile` wasn't being used anywhere.
 
+#### Fixed
+
+- A bug involving multiple prompts appearing at the same time when more than one
+  package needs a custom provider selection [#541](https://github.com/fosskers/aura/issues/541).
+
 ## 2.2.1 (2020-03-01)
 
 #### Changed
