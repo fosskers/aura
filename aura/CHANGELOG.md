@@ -5,6 +5,7 @@
 #### Added
 
 - Allow `--asdeps` to be passed to `-A` commands.
+- `-y` can be passed to `-A` commands again, like `-Ayu`.
 - Dutch translations. Thank you, Joris Blanken!
 
 #### Changed

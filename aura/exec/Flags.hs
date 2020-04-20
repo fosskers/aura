@@ -1,7 +1,7 @@
 module Flags
   ( Program(..), opts
-  , PacmanOp( Sync ), SyncOp( SyncUpgrade ), MiscOp
-  , AuraOp(..), _AurSync, _AurIgnore, _AurIgnoreGroup
+  , PacmanOp( Sync ), SyncOp( SyncUpgrade ), SyncSwitch(..), MiscOp
+  , AuraOp(..), AurSwitch(..), _AurSync, _AurIgnore, _AurIgnoreGroup
   , AurOp(..), BackupOp(..), CacheOp(..), LogOp(..), OrphanOp(..)
   ) where
 
@@ -236,6 +236,7 @@ data AurOp = AurDeps     (NonEmpty PkgName)
 
 data AurSwitch = AurIgnore      (Set PkgName)
                | AurIgnoreGroup (Set PkgGroup)
+               | AurRepoSync
                deriving (Eq, Ord, Show)
 
 _AurIgnore :: Traversal' AurSwitch (Set PkgName)
@@ -284,11 +285,12 @@ aursync = bigA *>
         upgrade = AurUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade all installed AUR packages.") *> fmap (S.map PkgName) manyArgs')
         aur     = AurJson <$> (flag' () (long "json" <> hidden <> help "Retrieve package JSON straight from the AUR.") *> somePkgs')
         tarball = AurTarball <$> (flag' () (long "downloadonly" <> short 'w' <> hidden <> help "Download a package tarball.") *> somePkgs')
-        switches = ign <|> igg
-        ign  = AurIgnore . S.fromList . map PkgName . T.split (== ',') <$>
-          strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given packages.")
-        igg  = AurIgnoreGroup . S.fromList . map PkgGroup . T.split (== ',') <$>
-          strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore packages from the given groups.")
+        switches = ign <|> igg <|> y
+        ign  = AurIgnore . S.fromList . map PkgName . T.split (== ',')
+          <$> strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given packages.")
+        igg  = AurIgnoreGroup . S.fromList . map PkgGroup . T.split (== ',')
+          <$> strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore packages from the given groups.")
+        y    = flag' AurRepoSync (short 'y' <> hidden <> help "Do an -Sy before continuing.")
 
 backups :: Parser AuraOp
 backups = bigB *> (Backup <$> optional mods)

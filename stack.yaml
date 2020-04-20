@@ -1,6 +1,6 @@
-resolver: lts-15.8
+resolver: lts-15.9
 
-ghc-options: {"$locals": -fwrite-ide-info}
+# ghc-options: {"$locals": -fwrite-ide-info}
 
 packages:
   - aura/

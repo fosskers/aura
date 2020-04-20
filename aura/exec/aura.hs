@@ -33,28 +33,29 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Main ( main ) where
 
-import Aura.Colour (dtot)
-import Aura.Commands.A as A
-import Aura.Commands.B as B
-import Aura.Commands.C as C
-import Aura.Commands.L as L
-import Aura.Commands.O as O
-import Aura.Core
-import Aura.IO
-import Aura.Languages
-import Aura.Logo
-import Aura.Pacman
-import Aura.Settings
-import Aura.Types
-import Aura.Utils (nes)
-import Data.Bifunctor (first)
-import Data.Text.Prettyprint.Doc
-import Data.Text.Prettyprint.Doc.Render.Terminal
-import Flags
-import Options.Applicative (execParser)
-import RIO hiding (first)
-import Settings
-import System.Process.Typed (proc, runProcess)
+import           Aura.Colour (dtot)
+import           Aura.Commands.A as A
+import           Aura.Commands.B as B
+import           Aura.Commands.C as C
+import           Aura.Commands.L as L
+import           Aura.Commands.O as O
+import           Aura.Core
+import           Aura.IO
+import           Aura.Languages
+import           Aura.Logo
+import           Aura.Pacman
+import           Aura.Settings
+import           Aura.Types
+import           Aura.Utils (nes)
+import           Data.Bifunctor (first)
+import           Data.Text.Prettyprint.Doc
+import           Data.Text.Prettyprint.Doc.Render.Terminal
+import           Flags
+import           Options.Applicative (execParser)
+import           RIO hiding (first)
+import qualified RIO.Set as S
+import           Settings
+import           System.Process.Typed (proc, runProcess)
 
 ---
 
@@ -92,16 +93,21 @@ execOpts ops = do
     logDebug $ displayShow ops
     logDebug . displayShow $ buildConfigOf ss
     logDebug . displayShow $ commonConfigOf ss
-  let p (ps, ms) = liftIO . pacman $
+
+  let p :: (PacmanOp, Set MiscOp) -> RIO Env ()
+      p (ps, ms) = liftIO . pacman $
         asFlag ps
         ++ foldMap asFlag ms
         ++ asFlag (commonConfigOf ss)
         ++ bool [] ["--quiet"] (switch ss LowVerbosity)
+
   case ops of
     Left o@(Sync (Left sops) _, _)
-      | any isUpgrade sops -> sudo (liftIO $ B.saveState ss) *> p o
+      | any isUpgrade sops -> sudo (liftIO $ B.saveState ss) >> p o
     Left o -> logDebug "Performing a pacman operation." >> p o
-    Right (AurSync o _) ->
+    Right (AurSync o sws) -> do
+      when (any isYWithA sws)
+        $ sudo $ p (Sync (Right mempty) (S.singleton SyncRefresh), mempty)
       case o of
         Right ps              -> bool (trueRoot . sudo) id (switch ss DryRun) $ A.install ps
         Left (AurDeps ps)     -> A.displayPkgDeps ps
@@ -141,6 +147,11 @@ execOpts ops = do
 isUpgrade :: SyncOp -> Bool
 isUpgrade (SyncUpgrade _) = True
 isUpgrade _               = False
+
+-- | Did the user supply a `-y` alongside an `-A` command?
+isYWithA :: AurSwitch -> Bool
+isYWithA AurRepoSync = True
+isYWithA _           = False
 
 displayOutputLanguages :: RIO Env ()
 displayOutputLanguages = do
