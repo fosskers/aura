@@ -25,6 +25,7 @@ import           Data.Versions
 import           RIO hiding (try)
 import qualified RIO.Map as M
 import qualified RIO.Set as S
+import qualified RIO.Text as T
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 
@@ -68,10 +69,17 @@ packageRepo pn pro ver = Prebuilt { pName     = pn
 -- | If given a virtual package, try to find a real package to install.
 resolveName :: MVar () -> Settings -> PkgName -> IO (Either PkgName (PkgName, Provides))
 resolveName mv ss pn = do
-  provs <- map PkgName <$> pacmanLines ["-Ssq", "^" <> pnName pn <> "$"]
+  provs <- map PkgName <$> pacmanLines ["-Ssq", "^" <> escape (pnName pn) <> "$"]
   case provs of
     [] -> pure $ Left pn
     _  -> Right . (, Provides pn) <$> chooseProvider mv ss pn provs
+  where
+    escape :: Text -> Text
+    escape = T.foldl' f ""
+
+    f :: Text -> Char -> Text
+    f acc '+' = acc <> "\\+"
+    f acc c   = T.snoc acc c
 
 -- | Choose a providing package, favouring installed packages.
 -- If `--noconfirm` is provided, it will try to automatically select the provider

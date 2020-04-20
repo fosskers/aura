@@ -221,7 +221,7 @@ buildPackages_1 (bt . pnName -> p) = \case
     Norwegian  -> "Bygger " <> p <> "..."
     Indonesia  -> "Membangun " <> p <> "..."
     Chinese    -> p <> " 正在构建中..."
-    Esperanto  -> "Muntanta" <> p <> "..."
+    Esperanto  -> "Muntanta " <> p <> "..."
     Dutch      -> "Pakket " <> p <> " aan het bouwen..."
     _          -> "Building " <> p <> "..."
 

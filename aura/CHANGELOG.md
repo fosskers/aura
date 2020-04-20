@@ -21,7 +21,10 @@
 #### Fixed
 
 - A bug involving multiple prompts appearing at the same time when more than one
-  package needs a custom provider selection [#541](https://github.com/fosskers/aura/issues/541).
+  package needs a custom provider selection.
+  [#541](https://github.com/fosskers/aura/issues/541)
+- A bug involving the `+` character appearing in package names, like `crypto++`.
+  [#520](https://github.com/fosskers/aura/issues/520)
 
 ## 2.2.1 (2020-03-01)
 
