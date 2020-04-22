@@ -119,8 +119,7 @@ buildFail :: Failure -> RIO Env (Maybe a)
 buildFail (Failure err) = do
   ss <- asks settings
   liftIO . scold ss . err $ langOf ss
-  response <- liftIO $ optionalPrompt ss buildFail_6
-  bool (throwM $ Failure buildFail_5) (pure Nothing) response
+  withOkay ss buildFail_6 buildFail_5 $ pure Nothing
 
 -- | Moves a file to the pacman package cache and returns its location.
 moveToCachePath :: Settings -> FilePath -> IO PackagePath

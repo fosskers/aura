@@ -90,8 +90,7 @@ confirmBackup dir = do
   cache <- liftIO . cacheContents . either id id . cachePathOf $ commonConfigOf ss
   liftIO . notify ss $ backupCache_4 dir (langOf ss)
   liftIO . notify ss $ backupCache_5 (M.size $ _cache cache) (langOf ss)
-  okay  <- liftIO $ optionalPrompt ss backupCache_6
-  bool (throwM $ Failure backupCache_7) (pure cache) okay
+  withOkay ss backupCache_6 backupCache_7 $ pure cache
 
 backup :: FilePath -> Cache -> RIO Env ()
 backup dir (Cache cache) = do

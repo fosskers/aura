@@ -94,14 +94,11 @@ install' pkgs = do
                 $ traverse_ (traverse_ analysePkgbuild) buildPkgs
               reportPkgsToInstall repoPkgs buildPkgs
               unless (switch ss DryRun) $ do
-                continue <- liftIO $ optionalPrompt ss install_3
-                if not continue
-                  then throwM $ Failure install_4
-                  else do
-                    traverse_ repoInstall $ NEL.nonEmpty repoPkgs
-                    let !mbuildPkgs = NEL.nonEmpty buildPkgs
-                    traverse_ (liftIO . storePkgbuilds . fold1) mbuildPkgs
-                    traverse_ buildAndInstall mbuildPkgs
+                withOkay ss install_3 install_4 $ do
+                  traverse_ repoInstall $ NEL.nonEmpty repoPkgs
+                  let !mbuildPkgs = NEL.nonEmpty buildPkgs
+                  traverse_ (liftIO . storePkgbuilds . fold1) mbuildPkgs
+                  traverse_ buildAndInstall mbuildPkgs
 
 -- | Determine if a package's PKGBUILD might contain malicious bash code.
 analysePkgbuild :: Buildable -> RIO Env ()
