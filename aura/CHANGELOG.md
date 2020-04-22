@@ -12,6 +12,7 @@
 
 - ~15% reduction in binary size and much faster compiles due to removal of
   unnecessary dependencies.
+- `-Cc` now reports how much storage space was cleared.
 - A few more messages when using `--log-level=debug`.
 
 #### Removed

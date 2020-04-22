@@ -1,4 +1,6 @@
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BangPatterns       #-}
+{-# LANGUAGE NumericUnderscores #-}
+{-# LANGUAGE TypeApplications   #-}
 
 -- |
 -- Module    : Aura.Commands.C
@@ -118,18 +120,31 @@ cleanCache toSave
       liftIO $ pacman ["-Scc"]
   | otherwise = do
       ss <- asks settings
+      let cachePath = either id id . cachePathOf $ commonConfigOf ss
+      -- Measuring the cache size before removal --
+      beforeCache@(Cache c) <- liftIO $ cacheContents cachePath
+      beforeBytes <- liftIO $ cacheSize beforeCache
+      liftIO . notify ss . cleanCache_7 (fromIntegral $ M.size c) beforeBytes $ langOf ss
+      -- Proceed with user confirmation --
       liftIO . warn ss . cleanCache_3 toSave $ langOf ss
-      okay <- liftIO $ optionalPrompt ss cleanCache_4
-      bool (throwM $ Failure cleanCache_5) (clean (fromIntegral toSave)) okay
+      withOkay ss cleanCache_4 cleanCache_5 $ do
+        clean toSave beforeCache
+        afterCache <- liftIO $ cacheContents cachePath
+        afterBytes <- liftIO $ cacheSize afterCache
+        liftIO . notify ss . cleanCache_8 (beforeBytes - afterBytes) $ langOf ss
 
-clean :: Int -> RIO Env ()
-clean toSave = do
+-- | How big, in megabytes, are all the files in the cache?
+cacheSize :: Cache -> IO Word
+cacheSize (Cache cache) = do
+  bytes <- foldl' (+) 0 <$> traverse (getFileSize . ppPath) (M.elems cache)
+  pure . floor @Double $ fromIntegral bytes / 1_048_576  -- 1024 * 1024
+
+clean :: Word -> Cache -> RIO Env ()
+clean toSave (Cache cache) = do
   ss <- asks settings
   liftIO . notify ss . cleanCache_6 $ langOf ss
-  let cachePath = either id id . cachePathOf $ commonConfigOf ss
-  (Cache cache) <- liftIO $ cacheContents cachePath
   let !files    = M.elems cache
-      grouped   = take toSave . reverse <$> groupByName files
+      grouped   = take (fromIntegral toSave) . reverse <$> groupByName files
       toRemove  = files L.\\ fold grouped
   liftIO $ traverse_ (removeFile . ppPath) toRemove
 

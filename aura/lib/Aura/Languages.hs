@@ -1160,6 +1160,14 @@ cleanCache_6 = \case
     Dutch      -> "Pakketcache aan het reinigen..."
     _          -> "Cleaning package cache..."
 
+cleanCache_7 :: Word -> Word -> Language -> Doc AnsiStyle
+cleanCache_7 (bt . tshow -> ps) (bt . tshow -> bytes) = \case
+  _ -> "The cache contains " <> ps <> " packages, consuming " <> bytes <> " megabytes."
+
+cleanCache_8 :: Word -> Language -> Doc AnsiStyle
+cleanCache_8 (bt . tshow -> bytes) = \case
+  _ -> bytes <> " megabytes freed."
+
 -- NEEDS TRANSLATION
 cleanNotSaved_1 :: Language -> Doc AnsiStyle
 cleanNotSaved_1 = \case

@@ -11,7 +11,7 @@ module Aura.IO where
 import           Aura.Colour
 import           Aura.Languages (whitespace, yesNoMessage, yesPattern)
 import           Aura.Settings
-import           Aura.Types (Language)
+import           Aura.Types (Failure(..), Language)
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           RIO
@@ -78,6 +78,16 @@ isAffirmative l t = T.null t || elem (T.toCaseFold t) (yesPattern l)
 optionalPrompt :: Settings -> (Language -> Doc AnsiStyle) -> IO Bool
 optionalPrompt ss msg | shared ss NoConfirm = pure True
                       | otherwise           = yesNoPrompt ss (msg $ langOf ss)
+
+withOkay
+  :: Settings
+  -> (Language -> Doc AnsiStyle)
+  -> (Language -> Doc AnsiStyle)
+  -> RIO e a
+  -> RIO e a
+withOkay ss asking failed f = do
+  okay <- liftIO $ optionalPrompt ss asking
+  bool (throwM $ Failure failed) f okay
 
 -- | Given a number of selections, allows the user to choose one.
 getSelection :: Foldable f => (a -> Text) -> f a -> IO a
