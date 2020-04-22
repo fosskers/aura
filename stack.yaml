@@ -1,7 +1,6 @@
 resolver: lts-15.9
 
-# ghc-options: {"$locals": -fwrite-ide-info}
-
+ghc-options: {"$locals": -fwrite-ide-info -fmax-relevant-binds=0}
 packages:
   - aura/
   - aur/

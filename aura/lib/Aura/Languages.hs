@@ -118,9 +118,9 @@ translatorMsg lang = title : names
         formatLang (translator, lang') = " (" <> lang' <> ") " <> translator
         langNames = languageNames lang
 
--- Wrap a String in backticks
+-- | Make some `Text` cyan. Previous wrapped things in backticks.
 bt :: Text -> Doc AnsiStyle
-bt cs = "`" <> pretty cs <> "`"
+bt cs = cyan $ pretty cs
 
 whitespace :: Language -> Char
 whitespace Japanese = '　'  -- \12288
