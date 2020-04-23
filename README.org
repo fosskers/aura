@@ -227,7 +227,7 @@ Aura is currently translated by these generous people:
 
 * The ~aur~ Haskell Library
 
-A library for accessing the AUR, powered by [[https://haskell-servant.readthedocs.io/en/stable/][Servant]].
+A library for accessing the AUR.
 
 * The ~aur-security~ Tool
 
