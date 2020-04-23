@@ -175,7 +175,7 @@ areSatisfied ds = do
 checkDBLock :: Settings -> IO ()
 checkDBLock ss = do
   locked <- doesFileExist lockFile
-  when locked $ (warn ss checkDBLock_1) *> B.getLine *> checkDBLock ss
+  when locked $ warn ss checkDBLock_1 *> B.getLine *> checkDBLock ss
 
 -------
 -- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`
