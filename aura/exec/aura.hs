@@ -82,7 +82,7 @@ execute env p = first f <$> try (runRIO env . execOpts $ _operation p)
     f (Failure fl) = fl $ langOf (settings env)
 
 exit :: Settings -> Either (Doc AnsiStyle) () -> IO a
-exit ss (Left e)  = scold ss e *> exitFailure
+exit ss (Left e)  = scold ss (const e) *> exitFailure
 exit _  (Right _) = exitSuccess
 
 execOpts :: Either (PacmanOp, Set MiscOp) AuraOp -> RIO Env ()

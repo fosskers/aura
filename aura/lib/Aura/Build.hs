@@ -118,7 +118,7 @@ overwritePkgbuild ss p = when (switch ss HotEdit || switch ss UseCustomizepkg) $
 buildFail :: Failure -> RIO Env (Maybe a)
 buildFail (Failure err) = do
   ss <- asks settings
-  liftIO . scold ss . err $ langOf ss
+  scold ss err
   withOkay ss buildFail_6 buildFail_5 $ pure Nothing
 
 -- | Moves a file to the pacman package cache and returns its location.

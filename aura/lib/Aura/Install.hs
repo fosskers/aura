@@ -112,7 +112,7 @@ analysePkgbuild b = do
     Just l  -> case bannedTerms l of
       []  -> pure ()
       bts -> do
-        liftIO $ scold ss (security_5 (bName b) $ langOf ss)
+        scold ss . security_5 $ bName b
         liftIO $ traverse_ (displayBannedTerms ss) bts
         f
 

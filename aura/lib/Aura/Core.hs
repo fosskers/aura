@@ -190,8 +190,8 @@ warn :: MonadIO m => Settings -> (Language -> Doc AnsiStyle) -> m ()
 warn ss msg = putStrLnA ss $ yellow (msg $ langOf ss)
 
 -- | Print some message in red with Aura flair.
-scold :: Settings -> Doc AnsiStyle -> IO ()
-scold ss = putStrLnA ss . red
+scold :: MonadIO m => Settings -> (Language -> Doc AnsiStyle) -> m ()
+scold ss msg = putStrLnA ss $ red (msg $ langOf ss)
 
 -- | Report a message with multiple associated items. Usually a list of
 -- naughty packages.
