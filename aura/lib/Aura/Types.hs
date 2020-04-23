@@ -267,7 +267,7 @@ data Language = English
                 deriving (Eq, Enum, Bounded, Ord, Show)
 
 -- | The various ways that dependency resolution can fail.
-data DepError = NonExistant PkgName
+data DepError = NonExistant PkgName PkgName
               | VerConflict (Doc AnsiStyle)
               | Ignored (Doc AnsiStyle)
               | BrokenProvides PkgName Provides PkgName

@@ -26,6 +26,9 @@
   [#541](https://github.com/fosskers/aura/issues/541)
 - A bug involving the `+` character appearing in package names, like `crypto++`.
   [#520](https://github.com/fosskers/aura/issues/520)
+- A regression where the name of a parent package wouldn't be displayed when a
+  dependency couldn't be found.
+  [#513](https://github.com/fosskers/aura/issues/513)
 
 ## 2.2.1 (2020-03-01)
 

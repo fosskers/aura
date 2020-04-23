@@ -368,14 +368,14 @@ missingPkg_2 ps l = vsep $ map (depError l) ps
 depError :: Language -> DepError -> Doc AnsiStyle
 depError _ (VerConflict s) = s
 depError _ (Ignored s)     = s
-depError l (NonExistant (PkgName s)) = case l of
+depError l (NonExistant (PkgName s) (PkgName par)) = case l of
   Spanish    -> "La dependencia " <> bt s <> " no pudo ser encontrada."
   Portuguese -> "A dependência " <> bt s <> " não foi encontrada."
   Russian    -> "Зависимость " <> bt s <> " не найдена."
   Italian    -> "Non è stato possibile trovare la dipendenza " <> bt s <> "."
-  Esperanto  -> "La dependeco " <> bt s <> " ne povis troviĝi."
+  Esperanto  -> "La dependeco " <> bt s <> " de " <> bt par <> " ne povis troviĝi."
   Dutch      -> "Het afhankelijkheid " <> bt s <> "kan niet worden gevonden."
-  _          -> "The dependency " <> bt s <> " couldn't be found."
+  _          -> "The dependency " <> bt s <> " of " <> bt par <> " couldn't be found."
 depError l (BrokenProvides (PkgName pkg) (Provides (PkgName pro)) (PkgName n)) = case l of
   Spanish    -> "El paquete " <> bt pkg <> " necesita " <> bt n <> " que proporciona " <> bt pro <> "."
   Russian    -> "Пакету " <> bt pkg <> " требуется " <> bt n <> ", предоставляющий " <> bt pro <> "."

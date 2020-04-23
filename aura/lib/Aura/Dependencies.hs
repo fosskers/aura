@@ -68,7 +68,7 @@ resolveDeps' ss repo ps = resolve (Resolution mempty mempty) ps
     -- | Only searches for packages that we haven't checked yet.
     resolve :: Resolution -> NonEmpty Package -> IO Resolution
     resolve r@(Resolution m _) xs = maybe' (pure r) (NEL.nonEmpty goods) $ \goods' -> do
-      let m' = M.fromList (map (pname &&& id) $ toList goods')
+      let m' = M.fromList . map (pname &&& id) $ toList goods'
           r' = r & toInstallL %~ (<> m')
       these (const $ pure r') (satisfy r') (const $ satisfy r') $ dividePkgs goods'
       where
@@ -124,7 +124,7 @@ conflicts ss m s = foldMap f m
       -- the system.
       in if S.member dn s then Nothing
          else case M.lookup dn m <|> M.lookup dn pm of
-                Nothing -> Just $ NonExistant dn
+                Nothing -> Just . NonExistant dn $ bName b
                 Just p  -> realPkgConflicts ss (bName b) p d
 
 sortInstall :: Map PkgName Package -> Either Failure (NonEmpty (NonEmpty Package))
