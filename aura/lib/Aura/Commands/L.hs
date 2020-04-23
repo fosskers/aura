@@ -58,7 +58,7 @@ logInfoOnPkg pkgs = do
   logFile <- Log . T.lines . decodeUtf8Lenient <$> readFileBinary pth
   let (bads, goods) = fmapEither (logLookup logFile) $ toList pkgs
   traverse_ (report red reportNotInLog_1) $ NEL.nonEmpty bads
-  liftIO . traverse_ putTextLn $ map (renderEntry ss) goods
+  traverse_ (putTextLn . renderEntry ss) goods
 
 logLookup :: Log -> PkgName -> Either PkgName LogEntry
 logLookup (Log lns) p = case matches of

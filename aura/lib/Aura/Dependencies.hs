@@ -55,7 +55,7 @@ resolveDeps repo ps = do
   ss <- asks settings
   res <- liftIO $ (Just <$> resolveDeps' ss repo ps) `catchAny` const (pure Nothing)
   Resolution m s <- maybe (throwM $ Failure connectFailure_1) pure res
-  unless (length ps == length m) $ liftIO (putText "\n")
+  unless (length ps == length m) $ putText "\n"
   let de = conflicts ss m s
   unless (null de) . throwM . Failure $ missingPkg_2 de
   either throwM pure $ sortInstall m

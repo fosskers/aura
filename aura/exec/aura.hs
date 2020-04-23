@@ -157,7 +157,7 @@ displayOutputLanguages :: RIO Env ()
 displayOutputLanguages = do
   ss <- asks settings
   notify ss displayOutputLanguages_1
-  liftIO $ traverse_ (putTextLn . tshow) [English ..]
+  traverse_ (putTextLn . tshow) [English ..]
 
 viewConfFile :: RIO Env ()
 viewConfFile = do

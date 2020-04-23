@@ -74,7 +74,7 @@ searchCache :: Text -> RIO Env ()
 searchCache ps = do
   ss <- asks settings
   matches <- liftIO $ cacheMatches ss ps
-  liftIO . traverse_ (putTextLn . T.pack . ppPath) $ L.sort matches
+  traverse_ (putTextLn . T.pack . ppPath) $ L.sort matches
 
 -- | The destination folder must already exist for the back-up to begin.
 backupCache :: FilePath -> RIO Env ()
@@ -96,7 +96,7 @@ backup :: FilePath -> Cache -> RIO Env ()
 backup dir (Cache cache) = do
   ss <- asks settings
   notify ss backupCache_8
-  liftIO $ putTextLn ""  -- So that the cursor can rise at first.
+  putTextLn ""  -- So that the cursor can rise at first.
   copyAndNotify dir (M.elems cache) 1
 
 -- | Manages the file copying and display of the real-time progress notifier.

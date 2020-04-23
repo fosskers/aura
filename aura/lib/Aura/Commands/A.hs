@@ -122,7 +122,7 @@ aurPkgInfo :: NonEmpty PkgName -> RIO Env ()
 aurPkgInfo = aurInfo >=> traverse_ displayAurPkgInfo
 
 displayAurPkgInfo :: AurInfo -> RIO Env ()
-displayAurPkgInfo ai = asks settings >>= \ss -> liftIO . putTextLn $ renderAurPkgInfo ss ai <> "\n"
+displayAurPkgInfo ai = asks settings >>= \ss -> putTextLn $ renderAurPkgInfo ss ai <> "\n"
 
 renderAurPkgInfo :: Settings -> AurInfo -> Text
 renderAurPkgInfo ss ai = dtot . colourCheck ss $ entrify ss fields entries
@@ -152,7 +152,7 @@ aurPkgSearch regex = do
             Tail n -> reverse . take (fromIntegral n) . reverse
   results <- fmap (\x -> (x, aurNameOf x `S.member` db)) . t
             <$> aurSearch regex
-  liftIO $ traverse_ (putTextLn . renderSearch ss regex) results
+  traverse_ (putTextLn . renderSearch ss regex) results
 
 renderSearch :: Settings -> Text -> (AurInfo, Bool) -> Text
 renderSearch ss r (i, e) = searchResult
