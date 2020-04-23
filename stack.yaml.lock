@@ -5,12 +5,12 @@
 
 packages:
 - completed:
-    hackage: language-bash-0.9.0@sha256:2e715a32e4ad93467fb8ba063b5cf0d5c2a1dfffe5d2cd7c25edfb5949871ba3,1671
+    hackage: language-bash-0.9.2@sha256:fa7fa9f1223eb1d0587bce1b9f534775b900827601a5d2cbf9b3c9b15c64c2ed,1750
     pantry-tree:
-      size: 1007
-      sha256: 2ce9873423de0aa54f098f3f46daa7519697bd2e79cb63c6aedc054b0293061b
+      size: 2706
+      sha256: 42fdbbd9c5ba50a4e8a652dab2ff2dc3c5890bdb480c86201d658a5dac42309b
   original:
-    hackage: language-bash-0.9.0
+    hackage: language-bash-0.9.2
 snapshots:
 - completed:
     size: 492027
