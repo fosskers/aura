@@ -35,14 +35,14 @@ cleanStates :: Settings -> Word -> IO ()
 cleanStates ss (fromIntegral -> n) = do
   stfs <- reverse <$> getStateFiles
   (pinned, others) <- L.partition p <$> traverse (\sf -> (sf,) <$> readState sf) stfs
-  warn ss . cleanStates_4 (length stfs) $ langOf ss
-  unless (null pinned) . warn ss . cleanStates_6 (length pinned) $ langOf ss
+  warn ss $ cleanStates_4 (length stfs)
+  unless (null pinned) . warn ss $ cleanStates_6 (length pinned)
   forM_ (NEL.nonEmpty stfs) $ \stfs' -> do
     let mostRecent = T.pack . takeFileName $ NEL.head stfs'
-    warn ss . cleanStates_5 mostRecent $ langOf ss
+    warn ss $ cleanStates_5 mostRecent
   okay <- optionalPrompt ss $ cleanStates_2 n
   if not okay
-    then warn ss . cleanStates_3 $ langOf ss
+    then warn ss cleanStates_3
     else traverse_ (removeFile . fst) . drop n $ others
   where
     p :: (a, Maybe PkgState) -> Bool

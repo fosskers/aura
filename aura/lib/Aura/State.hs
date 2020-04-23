@@ -156,8 +156,7 @@ readState = fmap decode . BL.readFile
 
 -- | `reinstalling` can mean true reinstalling, or just altering.
 reinstallAndRemove :: [PackagePath] -> [PkgName] -> RIO Env ()
-reinstallAndRemove [] [] = asks settings >>= \ss ->
-  liftIO (warn ss . reinstallAndRemove_1 $ langOf ss)
+reinstallAndRemove [] [] = asks settings >>= \ss -> warn ss reinstallAndRemove_1
 reinstallAndRemove down remo
   | null remo = reinstall
   | null down = remove

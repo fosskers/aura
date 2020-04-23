@@ -95,7 +95,7 @@ chooseProvider mv ss pn ps@(a:as) =
     f | shared ss NoConfirm = pure . bool a pn $ pn `elem` ps
       | otherwise = do
           void $ takeMVar mv
-          warn ss (provides_1 pn $ langOf ss)
+          warn ss $ provides_1 pn
           r <- getSelection pnName (a :| as)
           putMVar mv ()
           pure r

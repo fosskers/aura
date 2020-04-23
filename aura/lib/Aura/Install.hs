@@ -69,12 +69,12 @@ install' pkgs = do
               $ shared ss NeededOnly
   let !pkgs' = S.fromList $ NEL.toList pkgs
   if shared ss NeededOnly && unneeded == pkgs'
-    then liftIO . warn ss . install_2 $ langOf ss
+    then warn ss install_2
     else do
       let (ignored, notIgnored) = S.partition (`S.member` ignoresOf ss) pkgs'
       installAnyway <- confirmIgnored ignored
       case nes $ (notIgnored <> installAnyway) S.\\ unneeded of
-        Nothing        -> liftIO . warn ss . install_2 $ langOf ss
+        Nothing        -> warn ss install_2
         Just toInstall -> do
           traverse_ (report yellow reportUnneededPackages_1) . NEL.nonEmpty
             $ toList unneeded
@@ -108,7 +108,7 @@ analysePkgbuild b = do
         yes <- liftIO $ optionalPrompt ss security_6
         when yes . throwM $ Failure security_7
   case parsedPB $ bPkgbuild b of
-    Nothing -> liftIO (warn ss (security_1 (bName b) $ langOf ss)) *> f
+    Nothing -> warn ss (security_1 $ bName b) *> f
     Just l  -> case bannedTerms l of
       []  -> pure ()
       bts -> do
@@ -119,8 +119,7 @@ analysePkgbuild b = do
 displayBannedTerms :: Settings -> (ShellCommand, BannedTerm) -> IO ()
 displayBannedTerms ss (stmt, b) = do
   putTextLn . T.pack $ "\n    " <> prettyText stmt <> "\n"
-  warn ss $ reportExploit b lang
-  where lang = langOf ss
+  warn ss $ reportExploit b
 
 -- | Give anything that was installed as a dependency the /Install Reason/ of
 -- "Installed as a dependency for another package".
@@ -235,14 +234,13 @@ pkgbuildDiffs ps = asks settings >>= check
     displayDiff :: Buildable -> RIO Env ()
     displayDiff p = do
       ss <- asks settings
-      let pn   = bName p
-          lang = langOf ss
+      let pn = bName p
       isStored <- liftIO $ hasPkgbuildStored pn
       if not isStored
-        then liftIO . warn ss $ reportPkgbuildDiffs_1 pn lang
+        then warn ss $ reportPkgbuildDiffs_1 pn
         else liftIO $ do
           setCurrentDirectory "/tmp"
           let new = "/tmp/new.pb"
           writeFileBinary new . pkgbuild $ bPkgbuild p
-          liftIO . warn ss $ reportPkgbuildDiffs_3 pn lang
+          warn ss $ reportPkgbuildDiffs_3 pn
           diff ss (pkgbuildPath pn) new

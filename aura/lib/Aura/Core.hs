@@ -175,7 +175,7 @@ areSatisfied ds = do
 checkDBLock :: Settings -> IO ()
 checkDBLock ss = do
   locked <- doesFileExist lockFile
-  when locked $ (warn ss . checkDBLock_1 $ langOf ss) *> B.getLine *> checkDBLock ss
+  when locked $ (warn ss checkDBLock_1) *> B.getLine *> checkDBLock ss
 
 -------
 -- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`
@@ -186,8 +186,8 @@ notify :: MonadIO m => Settings -> (Language -> Doc AnsiStyle) -> m ()
 notify ss msg = putStrLnA ss $ green (msg $ langOf ss)
 
 -- | Print some message in yellow with Aura flair.
-warn :: Settings -> Doc AnsiStyle -> IO ()
-warn ss = putStrLnA ss . yellow
+warn :: MonadIO m => Settings -> (Language -> Doc AnsiStyle) -> m ()
+warn ss msg = putStrLnA ss $ yellow (msg $ langOf ss)
 
 -- | Print some message in red with Aura flair.
 scold :: Settings -> Doc AnsiStyle -> IO ()

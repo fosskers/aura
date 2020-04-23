@@ -105,7 +105,7 @@ copyAndNotify _ [] _ = pure ()
 copyAndNotify dir (p : ps) n = do
   ss <- asks settings
   liftIO $ raiseCursorBy 1
-  liftIO . warn ss . copyAndNotify_1 n $ langOf ss
+  warn ss $ copyAndNotify_1 n
   liftIO $ copyFile (ppPath p) dir
   copyAndNotify dir ps $ n + 1
 
@@ -115,7 +115,7 @@ cleanCache :: Word -> RIO Env ()
 cleanCache toSave
   | toSave == 0 = do
       ss <- asks settings
-      liftIO . warn ss . cleanCache_2 $ langOf ss
+      warn ss cleanCache_2
       liftIO $ pacman ["-Scc"]
   | otherwise = do
       ss <- asks settings
@@ -125,7 +125,7 @@ cleanCache toSave
       beforeBytes <- liftIO $ cacheSize beforeCache
       notify ss $ cleanCache_7 (fromIntegral $ M.size c) beforeBytes
       -- Proceed with user confirmation --
-      liftIO . warn ss . cleanCache_3 toSave $ langOf ss
+      warn ss $ cleanCache_3 toSave
       withOkay ss cleanCache_4 cleanCache_5 $ do
         clean toSave beforeCache
         afterCache <- liftIO $ cacheContents cachePath

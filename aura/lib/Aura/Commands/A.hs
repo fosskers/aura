@@ -82,7 +82,7 @@ upgrade pkgs fs = do
       devel <- develPkgCheck
       notify ss upgradeAURPkgs_2
       if null toUpgrade && null devel
-        then liftIO . warn ss . upgradeAURPkgs_3 $ langOf ss
+        then warn ss upgradeAURPkgs_3
         else do
           reportPkgsToUpgrade toUpgrade (toList devel)
           liftIO . unless (switch ss DryRun) $ saveState ss
@@ -202,7 +202,7 @@ fetchTarball ps = do
 
     g :: Settings -> PkgName -> IO ()
     g ss p@(PkgName pn) = urlContents (managerOf ss) (f p) >>= \case
-      Nothing -> warn ss . missingPkg_5 p $ langOf ss
+      Nothing -> warn ss $ missingPkg_5 p
       Just bs -> writeFileBinary (T.unpack pn <> ".tar.gz") bs
 
 ------------
