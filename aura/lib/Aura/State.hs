@@ -113,7 +113,7 @@ saveState ss = do
   let filename = stateCache </> dotFormat (timeOf state) <.> "json"
   createDirectoryIfMissing True stateCache
   BL.writeFile filename $ encode state
-  notify ss . saveState_1 $ langOf ss
+  notify ss saveState_1
 
 dotFormat :: ZonedTime -> String
 dotFormat (ZonedTime t _) = L.intercalate "." items

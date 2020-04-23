@@ -63,7 +63,7 @@ getDowngradeChoice cache pkg =
     Nothing      -> throwM . Failure $ reportBadDowngradePkgs_2 pkg
     Just choices -> do
       ss <- asks settings
-      liftIO . notify ss . getDowngradeChoice_1 pkg $ langOf ss
+      notify ss $ getDowngradeChoice_1 pkg
       liftIO $ getSelection (T.pack . ppPath) choices
 
 getChoicesFromCache :: Cache -> PkgName -> [PackagePath]
@@ -88,14 +88,14 @@ confirmBackup :: FilePath -> RIO Env Cache
 confirmBackup dir = do
   ss    <- asks settings
   cache <- liftIO . cacheContents . either id id . cachePathOf $ commonConfigOf ss
-  liftIO . notify ss $ backupCache_4 dir (langOf ss)
-  liftIO . notify ss $ backupCache_5 (M.size $ _cache cache) (langOf ss)
+  notify ss $ backupCache_4 dir
+  notify ss $ backupCache_5 (M.size $ _cache cache)
   withOkay ss backupCache_6 backupCache_7 $ pure cache
 
 backup :: FilePath -> Cache -> RIO Env ()
 backup dir (Cache cache) = do
   ss <- asks settings
-  liftIO . notify ss . backupCache_8 $ langOf ss
+  notify ss backupCache_8
   liftIO $ putTextLn ""  -- So that the cursor can rise at first.
   copyAndNotify dir (M.elems cache) 1
 
@@ -123,14 +123,14 @@ cleanCache toSave
       -- Measuring the cache size before removal --
       beforeCache@(Cache c) <- liftIO $ cacheContents cachePath
       beforeBytes <- liftIO $ cacheSize beforeCache
-      liftIO . notify ss . cleanCache_7 (fromIntegral $ M.size c) beforeBytes $ langOf ss
+      notify ss $ cleanCache_7 (fromIntegral $ M.size c) beforeBytes
       -- Proceed with user confirmation --
       liftIO . warn ss . cleanCache_3 toSave $ langOf ss
       withOkay ss cleanCache_4 cleanCache_5 $ do
         clean toSave beforeCache
         afterCache <- liftIO $ cacheContents cachePath
         afterBytes <- liftIO $ cacheSize afterCache
-        liftIO . notify ss . cleanCache_8 (beforeBytes - afterBytes) $ langOf ss
+        notify ss $ cleanCache_8 (beforeBytes - afterBytes)
 
 -- | How big, in megabytes, are all the files in the cache?
 cacheSize :: Cache -> IO Word
@@ -141,7 +141,7 @@ cacheSize (Cache cache) = do
 clean :: Word -> Cache -> RIO Env ()
 clean toSave (Cache cache) = do
   ss <- asks settings
-  liftIO . notify ss . cleanCache_6 $ langOf ss
+  notify ss cleanCache_6
   let !files    = M.elems cache
       grouped   = take (fromIntegral toSave) . reverse <$> groupByName files
       toRemove  = files L.\\ fold grouped
@@ -152,7 +152,7 @@ clean toSave (Cache cache) = do
 cleanNotSaved :: RIO Env ()
 cleanNotSaved = do
   ss <- asks settings
-  liftIO . notify ss . cleanNotSaved_1 $ langOf ss
+  notify ss cleanNotSaved_1
   sfs <- liftIO getStateFiles
   states <- fmap catMaybes . liftIO $ traverse readState sfs
   let cachePath = either id id . cachePathOf $ commonConfigOf ss

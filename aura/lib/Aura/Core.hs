@@ -182,8 +182,8 @@ checkDBLock ss = do
 -------
 
 -- | Print some message in green with Aura flair.
-notify :: Settings -> Doc AnsiStyle -> IO ()
-notify ss = putStrLnA ss . green
+notify :: MonadIO m => Settings -> (Language -> Doc AnsiStyle) -> m ()
+notify ss msg = putStrLnA ss $ green (msg $ langOf ss)
 
 -- | Print some message in yellow with Aura flair.
 warn :: Settings -> Doc AnsiStyle -> IO ()
@@ -198,5 +198,5 @@ scold ss = putStrLnA ss . red
 report :: (Doc AnsiStyle -> Doc AnsiStyle) -> (Language -> Doc AnsiStyle) -> NonEmpty PkgName -> RIO Env ()
 report c msg pkgs = do
   ss <- asks settings
-  liftIO . putStrLnA ss . c . msg $ langOf ss
-  liftIO . putTextLn . dtot . colourCheck ss . vsep . map (cyan . pretty . pnName) $ toList pkgs
+  putStrLnA ss . c . msg $ langOf ss
+  putTextLn . dtot . colourCheck ss . vsep . map (cyan . pretty . pnName) $ toList pkgs

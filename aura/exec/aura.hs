@@ -156,7 +156,7 @@ isYWithA _           = False
 displayOutputLanguages :: RIO Env ()
 displayOutputLanguages = do
   ss <- asks settings
-  liftIO . notify ss . displayOutputLanguages_1 $ langOf ss
+  notify ss displayOutputLanguages_1
   liftIO $ traverse_ (putTextLn . tshow) [English ..]
 
 viewConfFile :: RIO Env ()

@@ -57,7 +57,7 @@ install pkgs = do
       install' pkgs
       orphansAfter <- liftIO orphans
       let makeDeps = nes $ orphansAfter S.\\ orphansBefore
-      traverse_ (\mds -> liftIO (notify ss . removeMakeDepsAfter_1 $ langOf ss) *> removePkgs mds) makeDeps
+      traverse_ (\mds -> liftIO (notify ss removeMakeDepsAfter_1) *> removePkgs mds) makeDeps
 
 install' :: NonEmpty PkgName -> RIO Env ()
 install' pkgs = do
@@ -87,7 +87,7 @@ install' pkgs = do
           case nes explicits of
             Nothing       -> throwM $ Failure install_2
             Just toBuild' -> do
-              liftIO $ notify ss (install_5 $ langOf ss) *> hFlush stdout
+              notify ss install_5 *> hFlush stdout
               allPkgs <- depsToInstall rpstry toBuild'
               let (repoPkgs, buildPkgs) = second uniquePkgBase $ partitionPkgs allPkgs
               unless (switch ss NoPkgbuildCheck)

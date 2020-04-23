@@ -59,7 +59,7 @@ build :: Buildable -> RIO Env (Maybe (NonEmpty PackagePath))
 build p = do
   logDebug $ "Building: " <> display (pnName $ bName p)
   ss <- asks settings
-  liftIO $ notify ss (buildPackages_1 (bName p) (langOf ss)) *> hFlush stdout
+  notify ss (buildPackages_1 $ bName p) *> hFlush stdout
   result <- build' ss p
   either buildFail (pure . Just) result
 

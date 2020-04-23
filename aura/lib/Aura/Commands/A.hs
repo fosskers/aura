@@ -55,7 +55,7 @@ import           Text.Printf (printf)
 upgradeAURPkgs :: Set PkgName -> RIO Env ()
 upgradeAURPkgs pkgs = do
   ss <- asks settings
-  liftIO . notify ss . upgradeAURPkgs_1 $ langOf ss
+  notify ss upgradeAURPkgs_1
   fs <- liftIO (foreigns ss)
   traverse_ (upgrade pkgs) $ nes fs
 
@@ -80,7 +80,7 @@ upgrade pkgs fs = do
     Just a  -> auraUpgrade a
     Nothing -> do
       devel <- develPkgCheck
-      liftIO . notify ss . upgradeAURPkgs_2 $ langOf ss
+      notify ss upgradeAURPkgs_2
       if null toUpgrade && null devel
         then liftIO . warn ss . upgradeAURPkgs_3 $ langOf ss
         else do
@@ -211,7 +211,7 @@ fetchTarball ps = do
 reportPkgsToUpgrade :: [(AurInfo, Versioning)] -> [PkgName] -> RIO Env ()
 reportPkgsToUpgrade ups pns = do
   ss <- asks settings
-  liftIO . notify ss . reportPkgsToUpgrade_1 $ langOf ss
+  notify ss reportPkgsToUpgrade_1
   liftIO $ putDoc (colourCheck ss . vcat $ map f ups' <> map g devels) >> putTextLn "\n"
   where devels   = map pnName pns
         ups'     = map (second prettyV) ups

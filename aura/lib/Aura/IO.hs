@@ -27,11 +27,11 @@ import           Text.Printf (printf)
 -- CUSTOM OUTPUT
 ----------------
 -- | Print a `Doc` with Aura flair after performing a `colourCheck`.
-putStrLnA :: Settings -> Doc AnsiStyle -> IO ()
+putStrLnA :: MonadIO m => Settings -> Doc AnsiStyle -> m ()
 putStrLnA ss d = putStrA ss $ d <> hardline
 
 -- | Will remove all colour annotations if the user specified @--color=never@.
-putStrA :: Settings -> Doc AnsiStyle -> IO ()
+putStrA :: MonadIO m => Settings -> Doc AnsiStyle -> m ()
 putStrA ss d = B.putStr . encodeUtf8 . dtot $ "aura >>=" <+> colourCheck ss d
 
 -- | Strip colours from a `Doc` if @--color=never@ is specified,
@@ -42,10 +42,10 @@ colourCheck ss | shared ss (Colour Never)  = unAnnotate
                | isTerminal ss = id
                | otherwise = unAnnotate
 
-putText :: Text -> IO ()
+putText :: MonadIO m => Text -> m ()
 putText = B.putStr . encodeUtf8
 
-putTextLn :: Text -> IO ()
+putTextLn :: MonadIO m => Text -> m ()
 putTextLn = BL.putStrLn . BL.fromStrict . encodeUtf8
 
 -- | Format two lists into two nice rows a la `-Qi` or `-Si`.
