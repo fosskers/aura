@@ -1,8 +1,8 @@
 module Main ( main ) where
 
+import           Aura.Config
 import           Aura.Languages
 import           Aura.Packages.Repository
-import           Aura.Pacman
 import           Aura.Pkgbuild.Security
 import           Aura.Types
 import           Data.Versions
