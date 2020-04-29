@@ -36,6 +36,7 @@ Welcome to the main repository for Aura, a secure, multilingual package manager 
         - [Searching the Pacman Log](#searching-the-pacman-log)
         - [Managing Orphan Packages](#managing-orphan-packages)
     - [Localisation](#localisation)
+    - [Credits](#credits)
 - [The `aur` Haskell Library](#the-aur-haskell-library)
 - [The `aur-security` Tool](#the-aur-security-tool)
 
