@@ -1,6 +1,8 @@
 #+TITLE: The Aura Package Manager
 #+AUTHOR: Colin
 
+[[/logo/medium-150x150.png]]
+
 | Build                                                      | Release                                   | Chat                                               | Downloads                                                       | Languages                                                                                                         |
 |------------------------------------------------------------+-------------------------------------------+----------------------------------------------------+-----------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------|
 | [[https://github.com/fosskers/aura/workflows/Tests/badge.svg]] | [[http://hackage.haskell.org/package/aura][https://img.shields.io/hackage/v/aura.svg]] | [[https://gitter.im/aurapm/aura][https://img.shields.io/gitter/room/aurapm/aura.svg]] | [[https://img.shields.io/github/downloads/fosskers/aura/total.svg]] | :uk: :jp: :croatia: :sweden: :de: :es: :portugal: :fr: :ru: :it: :serbia: :norway: :indonesia: :cn: :netherlands: |
