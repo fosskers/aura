@@ -210,7 +210,9 @@ As mentioned in the Philosophy above, adding new languages to Aura is quite
 easy. If you speak a language other than those available and would like it added
 to Aura, please consult [LOCALISATION.md](./aura/LOCALISATION.md).
 
-Aura is currently translated by these generous people:
+## Credits
+
+Aura has been translated by these generous people:
 
 | Language   | Translators                                     |
 |------------|-------------------------------------------------|
@@ -230,6 +232,8 @@ Aura is currently translated by these generous people:
 | Serbian    | Filip Brcic                                     |
 | Spanish    | Alejandro Gómez and Sergio Conde                |
 | Swedish    | Fredrik Haikarainen and Daniel Beecham          |
+
+Aura's logo is thanks to Cristiano Vitorino (@cristianovitorino).
 
 # The `aur` Haskell Library
 
