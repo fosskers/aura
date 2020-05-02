@@ -9,7 +9,6 @@ import           Aura.Cache (defaultPackageCache)
 import           Aura.Pacman (defaultLogFile, pacmanConfFile)
 import           Aura.Settings
 import           Aura.Types
-import           Aura.Utils
 import           Lens.Micro (Traversal')
 import           Options.Applicative
 import           RIO hiding (exp, log)
@@ -340,7 +339,7 @@ buildConfig = BuildConfig <$> makepkg <*> bp <*> bu <*> trunc <*> buildSwitches
         as      = flag' AllSource (long "allsource" <> hidden <> help "Exposed makepkg flag.")
         si      = flag' SkipInteg (long "skipinteg" <> hidden <> help "Skip all makepkg integrity checks.")
         bp      = optional $ option (eitherReader absFilePath) (long "build" <> metavar "PATH" <> hidden <> help "Directory in which to build packages.")
-        bu      = fmap (note (User "UNKNOWN")) . optional $ User <$> strOption (long "builduser" <> metavar "USER" <> hidden <> help "User account to build as.")
+        bu      = optional $ User <$> strOption (long "builduser" <> metavar "USER" <> hidden <> help "User account to build as.")
         trunc   = fmap Head (option auto (long "head" <> metavar "N" <> hidden <> help "Only show top N search results."))
           <|> fmap Tail (option auto (long "tail" <> metavar "N" <> hidden <> help "Only show last N search results."))
           <|> pure None

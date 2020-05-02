@@ -121,8 +121,7 @@ sudo act = asks (hasRootPriv . envOf . settings) >>= bool (throwM $ Failure must
 -- since makepkg v4.2.
 trueRoot :: RIO Env a -> RIO Env a
 trueRoot action = asks settings >>= \ss ->
-  if not (isTrueRoot $ envOf ss)
-     && either id id (buildUserOf (buildConfigOf ss)) /= User "root"
+  if not (isTrueRoot $ envOf ss) && buildUserOf (buildConfigOf ss) /= Just (User "root")
     then action else throwM $ Failure trueRoot_3
 
 -- | A list of non-prebuilt packages installed on the system.

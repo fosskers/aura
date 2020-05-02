@@ -63,7 +63,7 @@ withEnv (Program op co bc lng ll) f = do
   isTerm      <- hIsTerminalDevice stdout
   fromGroups  <- maybe (pure S.empty) groupPackages . nes
     $ getIgnoredGroups confFile <> igg
-  let !bu = hush (buildUserOf bc) <|> acUser auraConf <|> getTrueUser environment
+  let !bu = buildUserOf bc <|> acUser auraConf <|> getTrueUser environment
   when (isNothing bu) . throwM $ Failure whoIsBuildUser_1
   repos <- (<>) <$> pacmanRepo <*> aurRepo
   lopts <- setLogMinLevel ll . setLogUseLoc True <$> logOptionsHandle stderr True
@@ -81,7 +81,7 @@ withEnv (Program op co bc lng ll) f = do
                      first (\x -> fromMaybe x $ getCachePath confFile) $ cachePathOf co
                  , logPathOf   =
                      first (\x -> fromMaybe x $ getLogFilePath confFile) $ logPathOf co }
-          , buildConfigOf = bc { buildUserOf = note (User "UNKNOWN") bu
+          , buildConfigOf = bc { buildUserOf = bu
                                , buildPathOf = buildPathOf bc <|> acBuildPath auraConf
                                }
           , logLevelOf = ll

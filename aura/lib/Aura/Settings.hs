@@ -85,7 +85,7 @@ instance Flagable ColourMode where
 data BuildConfig = BuildConfig
   { makepkgFlagsOf  :: !(Set Makepkg)
   , buildPathOf     :: !(Maybe FilePath)
-  , buildUserOf     :: !(Either User User)
+  , buildUserOf     :: !(Maybe User)
   , truncationOf    :: !Truncation  -- For `-As`
   , buildSwitchesOf :: !(Set BuildSwitch) } deriving (Show)
 

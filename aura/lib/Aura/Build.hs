@@ -86,7 +86,7 @@ build' ss b = do
     pure paths
   where
     usr :: User
-    usr = either id id . buildUserOf $ buildConfigOf ss
+    usr = fromMaybe (User "UNKNOWN") . buildUserOf $ buildConfigOf ss
 
 -- | Create a temporary directory with a semi-random name based on
 -- the `Buildable` we're working with.
