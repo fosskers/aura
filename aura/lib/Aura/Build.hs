@@ -85,6 +85,8 @@ build' ss b = do
       makepkgSource usr >>= traverse_ moveToSourcePath
     pure paths
   where
+    -- | We expect `buildUserOf` to always return a `Just` at this point. Aura
+    -- should have failed at startup otherwise.
     usr :: User
     usr = fromMaybe (User "UNKNOWN") . buildUserOf $ buildConfigOf ss
 
@@ -112,8 +114,8 @@ cloneRepo pkg usr = do
 -- | The user may have edited the original PKGBUILD. If they have, we need to
 -- overwrite what's been downloaded before calling `makepkg`.
 overwritePkgbuild :: Settings -> Buildable -> IO ()
-overwritePkgbuild ss p = when (switch ss HotEdit || switch ss UseCustomizepkg) $
-  writeFileBinary "PKGBUILD" . pkgbuild $ bPkgbuild p
+overwritePkgbuild ss p =
+  when (switch ss HotEdit) . writeFileBinary "PKGBUILD" . pkgbuild $ bPkgbuild p
 
 -- | Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.

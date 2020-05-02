@@ -345,13 +345,12 @@ buildConfig = BuildConfig <$> makepkg <*> bp <*> bu <*> trunc <*> buildSwitches
           <|> pure None
 
 buildSwitches :: Parser (Set BuildSwitch)
-buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> ucp <|> dr <|> sa <|> fo <|> npc <|> asd)
+buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> dr <|> sa <|> fo <|> npc <|> asd)
   where dmd = flag' DeleteMakeDeps (long "delmakedeps" <> short 'a' <> hidden <> help "Uninstall makedeps after building.")
         dsm = flag' DontSuppressMakepkg (long "unsuppress" <> short 'x' <> hidden <> help "Unsuppress makepkg output.")
         dpb = flag' DiffPkgbuilds (long "diff" <> short 'k' <> hidden <> help "Show PKGBUILD diffs.")
         rbd = flag' RebuildDevel (long "devel" <> hidden <> help "Rebuild all git/hg/svn/darcs-based packages.")
         he  = flag' HotEdit (long "hotedit" <> hidden <> help "Edit a PKGBUILD before building.")
-        ucp = flag' UseCustomizepkg (long "custom" <> hidden <> help "Run customizepkg before building.")
         dr  = flag' DryRun (long "dryrun" <> hidden <> help "Run dependency checks and PKGBUILD diffs, but don't build.")
         sa  = flag' SortAlphabetically (long "abc" <> hidden <> help "Sort search results alphabetically.")
         lv  = flag' LowVerbosity (long "quiet" <> short 'q' <> hidden <> help "Display less information.")

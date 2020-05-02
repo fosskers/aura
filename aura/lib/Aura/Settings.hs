@@ -98,7 +98,6 @@ data BuildSwitch = DeleteMakeDeps
                  | LowVerbosity
                  | RebuildDevel
                  | SortAlphabetically  -- For `-As`
-                 | UseCustomizepkg
                  | ForceBuilding
                  | NoPkgbuildCheck
                  | AsDeps
