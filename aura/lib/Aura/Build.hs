@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 -- |
 -- Module    : Aura.Build
 -- Copyright : (c) Colin Woodbury, 2012 - 2020
@@ -67,15 +69,15 @@ build p = do
 -- will come back via the @Language -> String@ function.
 build' :: Settings -> Buildable -> RIO Env (Either Failure (NonEmpty PackagePath))
 build' ss b = do
-  let pth = buildPathOf $ buildConfigOf ss
-  liftIO $ createDirectoryIfMissing True pth
+  let !pth = fromMaybe defaultBuildDir . buildPathOf $ buildConfigOf ss
+  createDirectoryIfMissing True pth
   setCurrentDirectory pth
   buildDir <- liftIO $ randomDirName b
-  liftIO $ createDirectoryIfMissing True buildDir
+  createDirectoryIfMissing True buildDir
   setCurrentDirectory buildDir
   runExceptT $ do
     bs <- ExceptT $ cloneRepo b usr
-    liftIO $ setCurrentDirectory bs
+    setCurrentDirectory bs
     liftIO $ overwritePkgbuild ss b
     pNames <- ExceptT . liftIO $ makepkg ss usr
     paths  <- liftIO $ traverse (moveToCachePath ss) pNames
@@ -84,7 +86,7 @@ build' ss b = do
     pure paths
   where
     usr :: User
-    usr = fromMaybe (User "桜木花道") . buildUserOf $ buildConfigOf ss
+    usr = either id id . buildUserOf $ buildConfigOf ss
 
 -- | Create a temporary directory with a semi-random name based on
 -- the `Buildable` we're working with.

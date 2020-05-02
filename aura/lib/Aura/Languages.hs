@@ -126,25 +126,26 @@ whitespace :: Language -> Char
 whitespace Japanese = '　'  -- \12288
 whitespace _        = ' '   -- \32
 
-langFromLocale :: Text -> Language
+langFromLocale :: Text -> Maybe Language
 langFromLocale = T.take 2 >>> \case
-    "ja" -> Japanese
-    "pl" -> Polish
-    "hr" -> Croatian
-    "sv" -> Swedish
-    "de" -> German
-    "es" -> Spanish
-    "pt" -> Portuguese
-    "fr" -> French
-    "ru" -> Russian
-    "it" -> Italian
-    "sr" -> Serbian
-    "nb" -> Norwegian
-    "id" -> Indonesia
-    "zh" -> Chinese
-    "eo" -> Esperanto
-    "nl" -> Dutch
-    _    -> English
+  "ja" -> Just Japanese
+  "pl" -> Just Polish
+  "hr" -> Just Croatian
+  "sv" -> Just Swedish
+  "de" -> Just German
+  "es" -> Just Spanish
+  "pt" -> Just Portuguese
+  "fr" -> Just French
+  "ru" -> Just Russian
+  "it" -> Just Italian
+  "sr" -> Just Serbian
+  "nb" -> Just Norwegian
+  "id" -> Just Indonesia
+  "zh" -> Just Chinese
+  "eo" -> Just Esperanto
+  "nl" -> Just Dutch
+  "en" -> Just English
+  _    -> Nothing
 
 ----------------------
 -- Aura/Core functions

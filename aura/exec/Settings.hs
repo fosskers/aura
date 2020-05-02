@@ -23,6 +23,7 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Settings ( withEnv ) where
 
+import           Aura.Config
 import           Aura.Core (Env(..))
 import           Aura.Languages
 import           Aura.Packages.AUR (aurRepo)
@@ -31,17 +32,19 @@ import           Aura.Pacman
 import           Aura.Settings
 import           Aura.Shell
 import           Aura.Types
-import           Aura.Utils (nes)
+import           Aura.Utils
 import           Data.Bifunctor (Bifunctor(..))
 import           Flags
 import           Lens.Micro (folded, (^..), _Right)
 import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)
-import           RIO hiding (FilePath, first)
+import           RIO hiding (first)
+import qualified RIO.ByteString as BS
 import qualified RIO.Map as M
 import qualified RIO.Set as S
 import qualified RIO.Text as T
 import           System.Environment (getEnvironment)
+import           Text.Megaparsec (parse)
 
 ---
 
@@ -54,22 +57,22 @@ withEnv (Program op co bc lng ll) f = do
   let ign = S.fromList $ op ^.. _Right . _AurSync . folded . _AurIgnore . folded
       igg = S.fromList $ op ^.. _Right . _AurSync . folded . _AurIgnoreGroup . folded
   confFile    <- getPacmanConf (either id id $ configPathOf co) >>= either throwM pure
+  auraConf    <- auraConfig <$> getAuraConf defaultAuraConf
   environment <- M.fromList . map (bimap T.pack T.pack) <$> getEnvironment
   manager     <- newManager tlsManagerSettings
   isTerm      <- hIsTerminalDevice stdout
   fromGroups  <- maybe (pure S.empty) groupPackages . nes
     $ getIgnoredGroups confFile <> igg
-  let language = checkLang lng environment
-  bu <- maybe (throwM $ Failure whoIsBuildUser_1) pure
-    $ buildUserOf bc <|> getTrueUser environment
+  let !bu = hush (buildUserOf bc) <|> acUser auraConf <|> getTrueUser environment
+  when (isNothing bu) . throwM $ Failure whoIsBuildUser_1
   repos <- (<>) <$> pacmanRepo <*> aurRepo
   lopts <- setLogMinLevel ll . setLogUseLoc True <$> logOptionsHandle stderr True
   withLogFunc lopts $ \logFunc -> do
     let !ss = Settings
           { managerOf      = manager
           , envOf          = environment
-          , langOf         = language
-          , editorOf       = getEditor environment
+          , langOf         = setLang (lng <|> acLang auraConf) environment
+          , editorOf       = fromMaybe (getEditor environment) $ acEditor auraConf
           , isTerminal     = isTerm
           , ignoresOf      = getIgnoredPkgs confFile <> fromGroups <> ign
           , commonConfigOf =
@@ -78,11 +81,37 @@ withEnv (Program op co bc lng ll) f = do
                      first (\x -> fromMaybe x $ getCachePath confFile) $ cachePathOf co
                  , logPathOf   =
                      first (\x -> fromMaybe x $ getLogFilePath confFile) $ logPathOf co }
-          , buildConfigOf = bc { buildUserOf = Just bu}
+          , buildConfigOf = bc { buildUserOf = note (User "UNKNOWN") bu
+                               , buildPathOf = buildPathOf bc <|> acBuildPath auraConf
+                               }
           , logLevelOf = ll
           , logFuncOf = logFunc }
     f (Env repos ss)
 
-checkLang :: Maybe Language -> Environment -> Language
-checkLang Nothing env   = langFromLocale $ getLocale env
-checkLang (Just lang) _ = lang
+setLang :: Maybe Language -> Environment -> Language
+setLang Nothing env   = fromMaybe English . langFromLocale $ getLocale env
+setLang (Just lang) _ = lang
+
+--------------------------------------------------------------------------------
+-- Aura-specific Configuration
+
+data AuraConfig = AuraConfig
+  { acLang      :: Maybe Language
+  , acEditor    :: Maybe FilePath
+  , acUser      :: Maybe User
+  , acBuildPath :: Maybe FilePath
+  }
+
+-- TODO Check if the file exists first.
+getAuraConf :: FilePath -> IO Config
+getAuraConf fp = do
+  file <- decodeUtf8Lenient <$> BS.readFile fp
+  pure . either (const $ Config M.empty) id $ parse config "aura config" file
+
+auraConfig :: Config -> AuraConfig
+auraConfig (Config m) = AuraConfig
+  { acLang = M.lookup "language" m >>= listToMaybe >>= langFromLocale
+  , acEditor = T.unpack <$> (M.lookup "editor" m >>= listToMaybe)
+  , acUser = User <$> (M.lookup "user" m >>= listToMaybe)
+  , acBuildPath = T.unpack <$> (M.lookup "build-path" m >>= listToMaybe)
+  }

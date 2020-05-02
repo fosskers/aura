@@ -36,7 +36,7 @@ import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Language.Bash.Pretty (prettyText)
 import           Language.Bash.Syntax (ShellCommand)
-import           RIO hiding (FilePath)
+import           RIO
 import           RIO.Directory (setCurrentDirectory)
 import qualified RIO.List as L
 import qualified RIO.Map as M

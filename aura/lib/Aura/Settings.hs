@@ -84,8 +84,8 @@ instance Flagable ColourMode where
 -- | Settings unique to the AUR package building process.
 data BuildConfig = BuildConfig
   { makepkgFlagsOf  :: !(Set Makepkg)
-  , buildPathOf     :: !FilePath
-  , buildUserOf     :: !(Maybe User)
+  , buildPathOf     :: !(Maybe FilePath)
+  , buildUserOf     :: !(Either User User)
   , truncationOf    :: !Truncation  -- For `-As`
   , buildSwitchesOf :: !(Set BuildSwitch) } deriving (Show)
 

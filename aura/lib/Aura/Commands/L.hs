@@ -20,7 +20,7 @@ import           Aura.Settings
 import           Aura.Types (PkgName(..))
 import           Aura.Utils
 import           Data.Text.Prettyprint.Doc
-import           RIO hiding (FilePath)
+import           RIO
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Text as T
 import qualified RIO.Text.Partial as T

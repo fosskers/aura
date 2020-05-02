@@ -7,8 +7,11 @@
 -- A simple parser for .conf files.
 
 module Aura.Config
-  ( Config(..)
+  ( -- * Types
+    Config(..)
   , config
+    -- * Aura Config
+  , defaultAuraConf
   ) where
 
 import           RIO hiding (first, some, try)
@@ -19,6 +22,9 @@ import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 
 ---
+
+defaultAuraConf :: FilePath
+defaultAuraConf = "/etc/aura.conf"
 
 -- | The (meaningful) contents of a .conf file.
 newtype Config = Config (Map Text [Text]) deriving (Show)
