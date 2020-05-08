@@ -72,7 +72,7 @@ stateCache = "/var/cache/aura/states"
 
 -- | Does a given package have an entry in a particular `PkgState`?
 inState :: SimplePkg -> PkgState -> Bool
-inState (SimplePkg n v) s = maybe False (v ==) . M.lookup n $ pkgsOf s
+inState (SimplePkg n v) s = (Just v ==) . M.lookup n $ pkgsOf s
 
 rawCurrentState :: IO [SimplePkg]
 rawCurrentState = mapMaybe simplepkg' <$> pacmanLines ["-Q"]

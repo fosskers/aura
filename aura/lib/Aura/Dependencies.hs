@@ -1,7 +1,6 @@
-{-# LANGUAGE DeriveGeneric   #-}
-{-# LANGUAGE LambdaCase      #-}
-{-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE TupleSections   #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase    #-}
+{-# LANGUAGE TupleSections #-}
 
 -- |
 -- Module    : Aura.Dependencies
