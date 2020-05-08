@@ -81,8 +81,10 @@ withEnv (Program op co bc lng ll) f = do
                      first (\x -> fromMaybe x $ getCachePath confFile) $ cachePathOf co
                  , logPathOf   =
                      first (\x -> fromMaybe x $ getLogFilePath confFile) $ logPathOf co }
-          , buildConfigOf = bc & buildUserOfL .~ bu
-                               & buildPathOfL %~ (<|> acBuildPath auraConf)
+          , buildConfigOf =
+              bc & buildUserOfL .~ bu
+                 & buildPathOfL %~ (<|> acBuildPath auraConf)
+                 & buildSwitchesOfL %~ (<> maybe S.empty S.singleton (acAnalyse auraConf))
           , logLevelOf = ll
           , logFuncOf = logFunc }
     f (Env repos ss)
