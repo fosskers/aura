@@ -20,7 +20,6 @@ module Aura.Pacman
   , getCachePath
   , getLogFilePath
     -- * Pacman Config
-  , Config(..), config
   , getPacmanConf
   , getIgnoredPkgs, getIgnoredGroups
   , groupPackages
@@ -30,6 +29,7 @@ module Aura.Pacman
   ) where
 
 import           Aura.Languages
+import           Aura.Settings.External
 import           Aura.Types
 import           Data.Bifunctor (first)
 import           Lens.Micro (_2)
@@ -42,34 +42,9 @@ import qualified RIO.Map as M
 import qualified RIO.Set as S
 import qualified RIO.Text as T
 import           System.Process.Typed
-import           Text.Megaparsec hiding (single)
-import           Text.Megaparsec.Char
-import qualified Text.Megaparsec.Char.Lexer as L
+import           Text.Megaparsec (parse)
 
 ---
-
--- | The (meaningful) contents of the Pacman config file.
-newtype Config = Config (Map Text [Text]) deriving (Show)
-
--- | Parse a `Config`, the pacman configuration file.
-config :: Parsec Void Text Config
-config = Config . M.fromList . rights <$> (garbage *> some (fmap Right (try pair) <|> fmap Left single) <* eof)
-
-single :: Parsec Void Text ()
-single = L.lexeme garbage . void $ manyTill letterChar newline
-
-pair :: Parsec Void Text (Text, [Text])
-pair = L.lexeme garbage $ do
-  n <- takeWhile1P Nothing (/= ' ')
-  space
-  void $ char '='
-  space
-  rest <- T.words <$> takeWhile1P Nothing (/= '\n')
-  pure (n, rest)
-
--- | Using `[]` as block comment markers is a trick to skip conf file "section" lines.
-garbage :: Parsec Void Text ()
-garbage = L.space space1 (L.skipLineComment "#") (L.skipBlockComment "[" "]")
 
 -- | Default location of the pacman config file: \/etc\/pacman.conf
 pacmanConfFile :: FilePath

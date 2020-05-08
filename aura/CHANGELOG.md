@@ -1,5 +1,11 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Added
+
+- Aura is now configurable via a conf file! Aura expects it at `/etc/aura.conf`.
+
 ## 2.3.0 (2020-04-22)
 
 #### Added

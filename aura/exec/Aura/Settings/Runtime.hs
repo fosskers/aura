@@ -21,23 +21,24 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Settings ( withEnv ) where
+module Aura.Settings.Runtime ( withEnv ) where
 
 import           Aura.Core (Env(..))
+import           Aura.Flags
 import           Aura.Languages
 import           Aura.Packages.AUR (aurRepo)
 import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pacman
 import           Aura.Settings
+import           Aura.Settings.External
 import           Aura.Shell
 import           Aura.Types
-import           Aura.Utils (nes)
+import           Aura.Utils
 import           Data.Bifunctor (Bifunctor(..))
-import           Flags
-import           Lens.Micro (folded, (^..), _Right)
+import           Lens.Micro (folded, (%~), (.~), (<>~), (^..), _Left, _Right)
 import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)
-import           RIO hiding (FilePath, first)
+import           RIO hiding (first)
 import qualified RIO.Map as M
 import qualified RIO.Set as S
 import qualified RIO.Text as T
@@ -54,35 +55,36 @@ withEnv (Program op co bc lng ll) f = do
   let ign = S.fromList $ op ^.. _Right . _AurSync . folded . _AurIgnore . folded
       igg = S.fromList $ op ^.. _Right . _AurSync . folded . _AurIgnoreGroup . folded
   confFile    <- getPacmanConf (either id id $ configPathOf co) >>= either throwM pure
+  auraConf    <- auraConfig <$> getAuraConf defaultAuraConf
   environment <- M.fromList . map (bimap T.pack T.pack) <$> getEnvironment
   manager     <- newManager tlsManagerSettings
   isTerm      <- hIsTerminalDevice stdout
   fromGroups  <- maybe (pure S.empty) groupPackages . nes
     $ getIgnoredGroups confFile <> igg
-  let language = checkLang lng environment
-  bu <- maybe (throwM $ Failure whoIsBuildUser_1) pure
-    $ buildUserOf bc <|> getTrueUser environment
+  let !bu = buildUserOf bc <|> acUser auraConf <|> getTrueUser environment
+  when (isNothing bu) . throwM $ Failure whoIsBuildUser_1
   repos <- (<>) <$> pacmanRepo <*> aurRepo
   lopts <- setLogMinLevel ll . setLogUseLoc True <$> logOptionsHandle stderr True
   withLogFunc lopts $ \logFunc -> do
     let !ss = Settings
           { managerOf      = manager
           , envOf          = environment
-          , langOf         = language
-          , editorOf       = getEditor environment
+          , langOf         = setLang (lng <|> acLang auraConf) environment
+          , editorOf       = fromMaybe (getEditor environment) $ acEditor auraConf
           , isTerminal     = isTerm
           , ignoresOf      = getIgnoredPkgs confFile <> fromGroups <> ign
           , commonConfigOf =
               -- | These maintain the precedence order: flags, config file entry, default
-              co { cachePathOf =
-                     first (\x -> fromMaybe x $ getCachePath confFile) $ cachePathOf co
-                 , logPathOf   =
-                     first (\x -> fromMaybe x $ getLogFilePath confFile) $ logPathOf co }
-          , buildConfigOf = bc { buildUserOf = Just bu}
+              co & cachePathOfL . _Left %~ (\x -> fromMaybe x $ getCachePath confFile)
+                 & logPathOfL   . _Left %~ (\x -> fromMaybe x $ getLogFilePath confFile)
+          , buildConfigOf =
+              bc & buildUserOfL     .~ bu
+                 & buildPathOfL     %~ (<|> acBuildPath auraConf)
+                 & buildSwitchesOfL <>~ maybe S.empty S.singleton (acAnalyse auraConf)
           , logLevelOf = ll
           , logFuncOf = logFunc }
     f (Env repos ss)
 
-checkLang :: Maybe Language -> Environment -> Language
-checkLang Nothing env   = langFromLocale $ getLocale env
-checkLang (Just lang) _ = lang
+setLang :: Maybe Language -> Environment -> Language
+setLang Nothing env   = fromMaybe English . langFromLocale $ getLocale env
+setLang (Just lang) _ = lang

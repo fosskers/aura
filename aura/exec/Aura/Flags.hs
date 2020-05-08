@@ -1,4 +1,4 @@
-module Flags
+module Aura.Flags
   ( Program(..), opts
   , PacmanOp( Sync ), SyncOp( SyncUpgrade ), SyncSwitch(..), MiscOp
   , AuraOp(..), AurSwitch(..), _AurSync, _AurIgnore, _AurIgnoreGroup
@@ -333,26 +333,24 @@ viewconf :: Parser AuraOp
 viewconf = flag' ViewConf (long "viewconf" <> help "View the Pacman config file.")
 
 buildConfig :: Parser BuildConfig
-buildConfig = BuildConfig <$> makepkg <*> bp <*> optional bu <*> trunc <*> buildSwitches
+buildConfig = BuildConfig <$> makepkg <*> bp <*> bu <*> trunc <*> buildSwitches
   where makepkg = S.fromList <$> many (ia <|> as <|> si)
         ia      = flag' IgnoreArch (long "ignorearch" <> hidden <> help "Exposed makepkg flag.")
         as      = flag' AllSource (long "allsource" <> hidden <> help "Exposed makepkg flag.")
         si      = flag' SkipInteg (long "skipinteg" <> hidden <> help "Skip all makepkg integrity checks.")
-        bp      = option (eitherReader absFilePath) (long "build" <> metavar "PATH" <> hidden <> help "Directory in which to build packages.")
-                  <|> pure defaultBuildDir
-        bu      = User <$> strOption (long "builduser" <> metavar "USER" <> hidden <> help "User account to build as.")
+        bp      = optional $ option (eitherReader absFilePath) (long "build" <> metavar "PATH" <> hidden <> help "Directory in which to build packages.")
+        bu      = optional $ User <$> strOption (long "builduser" <> metavar "USER" <> hidden <> help "User account to build as.")
         trunc   = fmap Head (option auto (long "head" <> metavar "N" <> hidden <> help "Only show top N search results."))
           <|> fmap Tail (option auto (long "tail" <> metavar "N" <> hidden <> help "Only show last N search results."))
           <|> pure None
 
 buildSwitches :: Parser (Set BuildSwitch)
-buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> ucp <|> dr <|> sa <|> fo <|> npc <|> asd)
+buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> dr <|> sa <|> fo <|> npc <|> asd)
   where dmd = flag' DeleteMakeDeps (long "delmakedeps" <> short 'a' <> hidden <> help "Uninstall makedeps after building.")
         dsm = flag' DontSuppressMakepkg (long "unsuppress" <> short 'x' <> hidden <> help "Unsuppress makepkg output.")
         dpb = flag' DiffPkgbuilds (long "diff" <> short 'k' <> hidden <> help "Show PKGBUILD diffs.")
         rbd = flag' RebuildDevel (long "devel" <> hidden <> help "Rebuild all git/hg/svn/darcs-based packages.")
         he  = flag' HotEdit (long "hotedit" <> hidden <> help "Edit a PKGBUILD before building.")
-        ucp = flag' UseCustomizepkg (long "custom" <> hidden <> help "Run customizepkg before building.")
         dr  = flag' DryRun (long "dryrun" <> hidden <> help "Run dependency checks and PKGBUILD diffs, but don't build.")
         sa  = flag' SortAlphabetically (long "abc" <> hidden <> help "Sort search results alphabetically.")
         lv  = flag' LowVerbosity (long "quiet" <> short 'q' <> hidden <> help "Display less information.")

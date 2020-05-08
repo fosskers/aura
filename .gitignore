@@ -14,3 +14,4 @@ dist-newstyle/
 dist/
 flames
 *.hie
+aur-pkgs/*

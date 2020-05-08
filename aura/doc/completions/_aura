@@ -144,7 +144,6 @@ _aura_opts_aursync_modifiers=(
     '*--aurignore[Ignore AUR packages when installing]:package: _aura_completions_aur_packages'
     '--build[Build packages in specified path]'
     '--builduser[Use specified user to build packages]'
-    '--custom[Run customizepkg]'
     {--dev,--devel}'[With -Au, also upgrades all development packages]'
     "--dryrun[Perform checks, but don't build]"
     '--hotedit[Prompt user to edit PKGBUILD before dep checks]'

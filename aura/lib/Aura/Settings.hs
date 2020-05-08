@@ -14,11 +14,13 @@ module Aura.Settings
   , logFuncOfL
     -- * Aura Configuration
   , BuildConfig(..), BuildSwitch(..)
+  , buildPathOfL, buildUserOfL, buildSwitchesOfL
   , switch
   , Truncation(..)
   , defaultBuildDir
     -- * Pacman Interop
   , CommonConfig(..), CommonSwitch(..)
+  , cachePathOfL, logPathOfL
   , ColourMode(..)
   , shared
     -- * Makepkg Interop
@@ -53,6 +55,12 @@ data CommonConfig = CommonConfig
   , logPathOf        :: !(Either FilePath FilePath)
   , commonSwitchesOf :: !(Set CommonSwitch) } deriving (Show, Generic)
 
+cachePathOfL :: Lens' CommonConfig (Either FilePath FilePath)
+cachePathOfL f cc = (\cp -> cc { cachePathOf = cp }) <$> f (cachePathOf cc)
+
+logPathOfL :: Lens' CommonConfig (Either FilePath FilePath)
+logPathOfL f cc = (\cp -> cc { logPathOf = cp }) <$> f (logPathOf cc)
+
 instance Flagable CommonConfig where
   asFlag (CommonConfig cap cop lfp cs) =
     either (const []) (\p -> ["--cachedir", T.pack p]) cap
@@ -84,10 +92,19 @@ instance Flagable ColourMode where
 -- | Settings unique to the AUR package building process.
 data BuildConfig = BuildConfig
   { makepkgFlagsOf  :: !(Set Makepkg)
-  , buildPathOf     :: !FilePath
+  , buildPathOf     :: !(Maybe FilePath)
   , buildUserOf     :: !(Maybe User)
   , truncationOf    :: !Truncation  -- For `-As`
   , buildSwitchesOf :: !(Set BuildSwitch) } deriving (Show)
+
+buildPathOfL :: Lens' BuildConfig (Maybe FilePath)
+buildPathOfL f bc = (\bp -> bc { buildPathOf = bp }) <$> f (buildPathOf bc)
+
+buildUserOfL :: Lens' BuildConfig (Maybe User)
+buildUserOfL f bc = (\bu -> bc { buildUserOf = bu }) <$> f (buildUserOf bc)
+
+buildSwitchesOfL :: Lens' BuildConfig (Set BuildSwitch)
+buildSwitchesOfL f bc = (\bs -> bc { buildSwitchesOf = bs }) <$> f (buildSwitchesOf bc)
 
 -- | Extra options for customizing the build process.
 data BuildSwitch = DeleteMakeDeps
@@ -98,7 +115,6 @@ data BuildSwitch = DeleteMakeDeps
                  | LowVerbosity
                  | RebuildDevel
                  | SortAlphabetically  -- For `-As`
-                 | UseCustomizepkg
                  | ForceBuilding
                  | NoPkgbuildCheck
                  | AsDeps
