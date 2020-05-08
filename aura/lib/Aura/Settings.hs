@@ -12,8 +12,11 @@
 module Aura.Settings
   ( Settings(..)
   , logFuncOfL
+  , buildConfigOfL
     -- * Aura Configuration
   , BuildConfig(..), BuildSwitch(..)
+  , buildPathOfL
+  , buildUserOfL
   , switch
   , Truncation(..)
   , defaultBuildDir
@@ -89,6 +92,12 @@ data BuildConfig = BuildConfig
   , truncationOf    :: !Truncation  -- For `-As`
   , buildSwitchesOf :: !(Set BuildSwitch) } deriving (Show)
 
+buildPathOfL :: Lens' BuildConfig (Maybe FilePath)
+buildPathOfL f bc = (\bp -> bc { buildPathOf = bp }) <$> f (buildPathOf bc)
+
+buildUserOfL :: Lens' BuildConfig (Maybe User)
+buildUserOfL f bc = (\bu -> bc { buildUserOf = bu }) <$> f (buildUserOf bc)
+
 -- | Extra options for customizing the build process.
 data BuildSwitch = DeleteMakeDeps
                  | DiffPkgbuilds
@@ -127,6 +136,9 @@ data Settings = Settings
 
 logFuncOfL :: Lens' Settings LogFunc
 logFuncOfL f s = (\lf -> s { logFuncOf = lf }) <$> f (logFuncOf s)
+
+buildConfigOfL :: Lens' Settings BuildConfig
+buildConfigOfL f s = (\bc -> s { buildConfigOf = bc }) <$> f (buildConfigOf s)
 
 -- | Unless otherwise specified, packages will be built within @/tmp@.
 defaultBuildDir :: FilePath

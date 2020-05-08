@@ -35,7 +35,7 @@ import           Aura.Types
 import           Aura.Utils
 import           Data.Bifunctor (Bifunctor(..))
 import           Flags
-import           Lens.Micro (folded, (^..), _Right)
+import           Lens.Micro (folded, (%~), (.~), (^..), _Right)
 import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)
 import           RIO hiding (first)
@@ -81,9 +81,8 @@ withEnv (Program op co bc lng ll) f = do
                      first (\x -> fromMaybe x $ getCachePath confFile) $ cachePathOf co
                  , logPathOf   =
                      first (\x -> fromMaybe x $ getLogFilePath confFile) $ logPathOf co }
-          , buildConfigOf = bc { buildUserOf = bu
-                               , buildPathOf = buildPathOf bc <|> acBuildPath auraConf
-                               }
+          , buildConfigOf = bc & buildUserOfL .~ bu
+                               & buildPathOfL %~ (<|> acBuildPath auraConf)
           , logLevelOf = ll
           , logFuncOf = logFunc }
     f (Env repos ss)
