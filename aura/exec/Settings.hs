@@ -40,6 +40,7 @@ import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)
 import           RIO hiding (first)
 import qualified RIO.ByteString as BS
+import           RIO.Directory
 import qualified RIO.Map as M
 import qualified RIO.Set as S
 import qualified RIO.Text as T
@@ -102,11 +103,14 @@ data AuraConfig = AuraConfig
   , acAnalyse   :: Maybe BuildSwitch
   }
 
--- TODO Check if the file exists first.
 getAuraConf :: FilePath -> IO Config
 getAuraConf fp = do
-  file <- decodeUtf8Lenient <$> BS.readFile fp
-  pure . either (const $ Config M.empty) id $ parse config "aura config" file
+  exists <- doesFileExist fp
+  if not exists
+    then pure $ Config mempty
+    else do
+      file <- decodeUtf8Lenient <$> BS.readFile fp
+      pure . either (const $ Config M.empty) id $ parse config "aura config" file
 
 auraConfig :: Config -> AuraConfig
 auraConfig (Config m) = AuraConfig
