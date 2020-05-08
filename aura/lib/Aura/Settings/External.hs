@@ -4,7 +4,8 @@
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
--- A simple parser for .conf files.
+-- A simple parser for .conf files, along with types for aura-specific config
+-- files.
 
 module Aura.Settings.External
   ( -- * Aura Config
