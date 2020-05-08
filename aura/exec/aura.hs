@@ -40,21 +40,21 @@ import           Aura.Commands.C as C
 import           Aura.Commands.L as L
 import           Aura.Commands.O as O
 import           Aura.Core
+import           Aura.Flags
 import           Aura.IO
 import           Aura.Languages
 import           Aura.Logo
 import           Aura.Pacman
 import           Aura.Settings
+import           Aura.Settings.Runtime
 import           Aura.Types
 import           Aura.Utils (nes)
 import           Data.Bifunctor (first)
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
-import           Flags
 import           Options.Applicative (execParser)
 import           RIO hiding (first)
 import qualified RIO.Set as S
-import           Settings
 import           System.Process.Typed (proc, runProcess)
 
 ---

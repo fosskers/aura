@@ -21,9 +21,10 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 -}
 
-module Settings ( withEnv ) where
+module Aura.Settings.Runtime ( withEnv ) where
 
 import           Aura.Core (Env(..))
+import           Aura.Flags
 import           Aura.Languages
 import           Aura.Packages.AUR (aurRepo)
 import           Aura.Packages.Repository (pacmanRepo)
@@ -34,7 +35,6 @@ import           Aura.Shell
 import           Aura.Types
 import           Aura.Utils
 import           Data.Bifunctor (Bifunctor(..))
-import           Flags
 import           Lens.Micro (folded, (%~), (.~), (<>~), (^..), _Left, _Right)
 import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)

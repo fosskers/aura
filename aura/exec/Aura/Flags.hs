@@ -1,4 +1,4 @@
-module Flags
+module Aura.Flags
   ( Program(..), opts
   , PacmanOp( Sync ), SyncOp( SyncUpgrade ), SyncSwitch(..), MiscOp
   , AuraOp(..), AurSwitch(..), _AurSync, _AurIgnore, _AurIgnoreGroup

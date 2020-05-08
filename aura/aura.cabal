@@ -106,8 +106,8 @@ executable aura
   import:         commons, libexec
   main-is:        aura.hs
   other-modules:
-    Flags
-    Settings
+    Aura.Flags
+    Aura.Settings.Runtime
 
   hs-source-dirs: exec
   ghc-options:    -threaded -O2 -with-rtsopts=-N
