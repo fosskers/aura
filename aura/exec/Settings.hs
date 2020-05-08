@@ -100,6 +100,7 @@ data AuraConfig = AuraConfig
   , acEditor    :: Maybe FilePath
   , acUser      :: Maybe User
   , acBuildPath :: Maybe FilePath
+  , acAnalyse   :: Maybe BuildSwitch
   }
 
 -- TODO Check if the file exists first.
@@ -110,8 +111,11 @@ getAuraConf fp = do
 
 auraConfig :: Config -> AuraConfig
 auraConfig (Config m) = AuraConfig
-  { acLang = M.lookup "language" m >>= listToMaybe >>= langFromLocale
-  , acEditor = T.unpack <$> (M.lookup "editor" m >>= listToMaybe)
-  , acUser = User <$> (M.lookup "user" m >>= listToMaybe)
-  , acBuildPath = T.unpack <$> (M.lookup "build-path" m >>= listToMaybe)
+  { acLang = one "language" >>= langFromLocale
+  , acEditor = T.unpack <$> one "editor"
+  , acUser = User <$> one "user"
+  , acBuildPath = T.unpack <$> one "build-path"
+  , acAnalyse = one "analyse" >>= readMaybe . T.unpack >>= bool (Just NoPkgbuildCheck) Nothing
   }
+  where
+    one x = M.lookup x m >>= listToMaybe

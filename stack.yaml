@@ -1,4 +1,4 @@
-resolver: lts-15.10
+resolver: lts-15.11
 
 ghc-options: {"$locals": -fwrite-ide-info -fmax-relevant-binds=0}
 
