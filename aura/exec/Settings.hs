@@ -35,7 +35,7 @@ import           Aura.Types
 import           Aura.Utils
 import           Data.Bifunctor (Bifunctor(..))
 import           Flags
-import           Lens.Micro (folded, (%~), (.~), (^..), _Right)
+import           Lens.Micro (folded, (%~), (.~), (<>~), (^..), _Left, _Right)
 import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)
 import           RIO hiding (first)
@@ -77,14 +77,12 @@ withEnv (Program op co bc lng ll) f = do
           , ignoresOf      = getIgnoredPkgs confFile <> fromGroups <> ign
           , commonConfigOf =
               -- | These maintain the precedence order: flags, config file entry, default
-              co { cachePathOf =
-                     first (\x -> fromMaybe x $ getCachePath confFile) $ cachePathOf co
-                 , logPathOf   =
-                     first (\x -> fromMaybe x $ getLogFilePath confFile) $ logPathOf co }
+              co & cachePathOfL . _Left %~ (\x -> fromMaybe x $ getCachePath confFile)
+                 & logPathOfL   . _Left %~ (\x -> fromMaybe x $ getLogFilePath confFile)
           , buildConfigOf =
-              bc & buildUserOfL .~ bu
-                 & buildPathOfL %~ (<|> acBuildPath auraConf)
-                 & buildSwitchesOfL %~ (<> maybe S.empty S.singleton (acAnalyse auraConf))
+              bc & buildUserOfL     .~ bu
+                 & buildPathOfL     %~ (<|> acBuildPath auraConf)
+                 & buildSwitchesOfL <>~ maybe S.empty S.singleton (acAnalyse auraConf)
           , logLevelOf = ll
           , logFuncOf = logFunc }
     f (Env repos ss)

@@ -21,6 +21,7 @@ module Aura.Settings
   , defaultBuildDir
     -- * Pacman Interop
   , CommonConfig(..), CommonSwitch(..)
+  , cachePathOfL, logPathOfL
   , ColourMode(..)
   , shared
     -- * Makepkg Interop
@@ -54,6 +55,12 @@ data CommonConfig = CommonConfig
   , configPathOf     :: !(Either FilePath FilePath)
   , logPathOf        :: !(Either FilePath FilePath)
   , commonSwitchesOf :: !(Set CommonSwitch) } deriving (Show, Generic)
+
+cachePathOfL :: Lens' CommonConfig (Either FilePath FilePath)
+cachePathOfL f cc = (\cp -> cc { cachePathOf = cp }) <$> f (cachePathOf cc)
+
+logPathOfL :: Lens' CommonConfig (Either FilePath FilePath)
+logPathOfL f cc = (\cp -> cc { logPathOf = cp }) <$> f (logPathOf cc)
 
 instance Flagable CommonConfig where
   asFlag (CommonConfig cap cop lfp cs) =
