@@ -97,7 +97,6 @@ library
     , scheduler         >=1.1 && <1.5
     , stm               ^>=2.5
     , time              >=1.8 && <1.10
-    , unliftio          ^>=0.2
 
 executable aura
   import:         commons, libexec
