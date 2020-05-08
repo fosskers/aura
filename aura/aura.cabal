@@ -48,6 +48,8 @@ common commons
 
 common libexec
   build-depends:
+    , aeson                        >=1.2 && <1.5
+    , aur                          ^>=7.0
     , http-client                  >=0.5 && <0.7
     , prettyprinter                >=1.2 && <1.7
     , prettyprinter-ansi-terminal  ^>=1.1
@@ -61,11 +63,6 @@ library
     Aura.Build
     Aura.Cache
     Aura.Colour
-    Aura.Commands.A
-    Aura.Commands.B
-    Aura.Commands.C
-    Aura.Commands.L
-    Aura.Commands.O
     Aura.Core
     Aura.Dependencies
     Aura.Diff
@@ -91,9 +88,7 @@ library
     Aura.Utils
 
   build-depends:
-    , aeson             >=1.2 && <1.5
     , algebraic-graphs  >=0.1 && <0.6
-    , aur               ^>=7.0
     , filepath          ^>=1.4
     , hashable          ^>=1.3
     , http-types        >=0.9 && <0.13
@@ -108,6 +103,11 @@ executable aura
   import:         commons, libexec
   main-is:        aura.hs
   other-modules:
+    Aura.Commands.A
+    Aura.Commands.B
+    Aura.Commands.C
+    Aura.Commands.L
+    Aura.Commands.O
     Aura.Flags
     Aura.Settings.Runtime
 
