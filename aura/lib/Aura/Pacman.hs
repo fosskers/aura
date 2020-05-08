@@ -28,8 +28,8 @@ module Aura.Pacman
   , verMsgPad
   ) where
 
-import           Aura.Config
 import           Aura.Languages
+import           Aura.Settings.External
 import           Aura.Types
 import           Data.Bifunctor (first)
 import           Lens.Micro (_2)

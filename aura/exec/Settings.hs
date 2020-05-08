@@ -23,13 +23,13 @@ along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 module Settings ( withEnv ) where
 
-import           Aura.Config
 import           Aura.Core (Env(..))
 import           Aura.Languages
 import           Aura.Packages.AUR (aurRepo)
 import           Aura.Packages.Repository (pacmanRepo)
 import           Aura.Pacman
 import           Aura.Settings
+import           Aura.Settings.External
 import           Aura.Shell
 import           Aura.Types
 import           Aura.Utils

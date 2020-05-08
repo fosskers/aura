@@ -64,7 +64,6 @@ library
     Aura.Commands.C
     Aura.Commands.L
     Aura.Commands.O
-    Aura.Config
     Aura.Core
     Aura.Dependencies
     Aura.Diff
@@ -83,6 +82,7 @@ library
     Aura.Pkgbuild.Records
     Aura.Pkgbuild.Security
     Aura.Settings
+    Aura.Settings.External
     Aura.Shell
     Aura.State
     Aura.Types
