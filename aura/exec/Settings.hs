@@ -39,13 +39,10 @@ import           Lens.Micro (folded, (%~), (.~), (<>~), (^..), _Left, _Right)
 import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)
 import           RIO hiding (first)
-import qualified RIO.ByteString as BS
-import           RIO.Directory
 import qualified RIO.Map as M
 import qualified RIO.Set as S
 import qualified RIO.Text as T
 import           System.Environment (getEnvironment)
-import           Text.Megaparsec (parse)
 
 ---
 
@@ -91,34 +88,3 @@ withEnv (Program op co bc lng ll) f = do
 setLang :: Maybe Language -> Environment -> Language
 setLang Nothing env   = fromMaybe English . langFromLocale $ getLocale env
 setLang (Just lang) _ = lang
-
---------------------------------------------------------------------------------
--- Aura-specific Configuration
-
-data AuraConfig = AuraConfig
-  { acLang      :: Maybe Language
-  , acEditor    :: Maybe FilePath
-  , acUser      :: Maybe User
-  , acBuildPath :: Maybe FilePath
-  , acAnalyse   :: Maybe BuildSwitch
-  }
-
-getAuraConf :: FilePath -> IO Config
-getAuraConf fp = do
-  exists <- doesFileExist fp
-  if not exists
-    then pure $ Config mempty
-    else do
-      file <- decodeUtf8Lenient <$> BS.readFile fp
-      pure . either (const $ Config M.empty) id $ parse config "aura config" file
-
-auraConfig :: Config -> AuraConfig
-auraConfig (Config m) = AuraConfig
-  { acLang = one "language" >>= langFromLocale
-  , acEditor = T.unpack <$> one "editor"
-  , acUser = User <$> one "user"
-  , acBuildPath = T.unpack <$> one "build-path"
-  , acAnalyse = one "analyse" >>= readMaybe . T.unpack >>= bool (Just NoPkgbuildCheck) Nothing
-  }
-  where
-    one x = M.lookup x m >>= listToMaybe

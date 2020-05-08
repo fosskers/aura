@@ -7,24 +7,64 @@
 -- A simple parser for .conf files.
 
 module Aura.Config
-  ( -- * Types
-    Config(..)
-  , config
-    -- * Aura Config
+  ( -- * Aura Config
+    AuraConfig(..)
+  , getAuraConf
+  , auraConfig
   , defaultAuraConf
+    -- * Parsing
+  , Config(..)
+  , config
   ) where
 
+import           Aura.Languages (langFromLocale)
+import           Aura.Settings
+import           Aura.Types
 import           RIO hiding (first, some, try)
+import qualified RIO.ByteString as BS
+import           RIO.Directory
 import qualified RIO.Map as M
 import qualified RIO.Text as T
 import           Text.Megaparsec hiding (single)
 import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 
----
+--------------------------------------------------------------------------------
+-- Aura-specific Configuration
+
+data AuraConfig = AuraConfig
+  { acLang      :: Maybe Language
+  , acEditor    :: Maybe FilePath
+  , acUser      :: Maybe User
+  , acBuildPath :: Maybe FilePath
+  , acAnalyse   :: Maybe BuildSwitch
+  }
 
 defaultAuraConf :: FilePath
 defaultAuraConf = "/etc/aura.conf"
+
+getAuraConf :: FilePath -> IO Config
+getAuraConf fp = do
+  exists <- doesFileExist fp
+  if not exists
+    then pure $ Config mempty
+    else do
+      file <- decodeUtf8Lenient <$> BS.readFile fp
+      pure . either (const $ Config M.empty) id $ parse config "aura config" file
+
+auraConfig :: Config -> AuraConfig
+auraConfig (Config m) = AuraConfig
+  { acLang = one "language" >>= langFromLocale
+  , acEditor = T.unpack <$> one "editor"
+  , acUser = User <$> one "user"
+  , acBuildPath = T.unpack <$> one "build-path"
+  , acAnalyse = one "analyse" >>= readMaybe . T.unpack >>= bool (Just NoPkgbuildCheck) Nothing
+  }
+  where
+    one x = M.lookup x m >>= listToMaybe
+
+--------------------------------------------------------------------------------
+-- Parsing
 
 -- | The (meaningful) contents of a .conf file.
 newtype Config = Config (Map Text [Text]) deriving (Show)
