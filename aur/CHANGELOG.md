@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.0.1 (2020-05-11)
+
+#### Changed
+
+- Bumped `tasty` bounds.
+
 ## 7.0.0 (2020-04-22)
 
 #### Added

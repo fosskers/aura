@@ -125,5 +125,5 @@ test-suite aura-test
   ghc-options:    -threaded -with-rtsopts=-N
   build-depends:
     , aura
-    , tasty        >=0.11 && <1.3
+    , tasty        >=0.11 && <1.4
     , tasty-hunit  >=0.9  && <0.11

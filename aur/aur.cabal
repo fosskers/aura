@@ -1,6 +1,6 @@
 cabal-version:      2.2
 name:               aur
-version:            7.0.0
+version:            7.0.1
 synopsis:           Access metadata from the Arch Linux User Repository.
 description:
   Access package information from Arch Linux's AUR via its RPC interface. The
@@ -50,5 +50,5 @@ test-suite aur-test
   build-depends:
     , aur
     , http-client-tls  ^>=0.3
-    , tasty            >=0.11 && <1.3
+    , tasty            >=0.11 && <1.4
     , tasty-hunit      >=0.9  && <0.11
