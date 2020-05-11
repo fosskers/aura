@@ -5,6 +5,8 @@
 #### Added
 
 - Aura is now configurable via a conf file! Aura expects it at `/etc/aura.conf`.
+  If you install Aura via its AUR package, this file will be installed for you
+  automatically.
 
 ## 2.3.0 (2020-04-22)
 
