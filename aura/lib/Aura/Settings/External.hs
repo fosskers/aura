@@ -58,7 +58,7 @@ auraConfig (Config m) = AuraConfig
   { acLang = one "language" >>= langFromLocale
   , acEditor = T.unpack <$> one "editor"
   , acUser = User <$> one "user"
-  , acBuildPath = T.unpack <$> one "build-path"
+  , acBuildPath = T.unpack <$> one "buildpath"
   , acAnalyse = one "analyse" >>= readMaybe . T.unpack >>= bool (Just NoPkgbuildCheck) Nothing
   }
   where
