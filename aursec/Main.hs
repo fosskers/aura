@@ -27,7 +27,7 @@ import           Text.Printf (printf)
 main :: IO ()
 main = do
   m   <- newManager tlsManagerSettings
-  pns <- sort . map PkgName . T.lines <$> T.readFile "aur-security/packages.txt"
+  pns <- sort . map PkgName . T.lines <$> T.readFile "aursec/packages.txt"
   let !len = length pns
   putStrLn $ printf "Read %d package names." len
   q <- mapConcurrently (traverse (\pn -> fmap (pn,) . note pn <$> getPkgbuild m pn)) $ chunksOf (len `div` 16) pns

@@ -38,7 +38,7 @@ Welcome to the main repository for Aura, a secure, multilingual package manager 
     - [Localisation](#localisation)
     - [Credits](#credits)
 - [The `aur` Haskell Library](#the-aur-haskell-library)
-- [The `aur-security` Tool](#the-aur-security-tool)
+- [The `aursec` Tool](#the-aursec-tool)
 
 <!-- markdown-toc end -->
 
@@ -240,7 +240,7 @@ Aura's logo is thanks to [Cristiano Vitorino](https://github.com/cristianovitori
 
 A library for accessing the AUR.
 
-# The `aur-security` Tool
+# The `aursec` Tool
 
 Performs a sweep of all PKGBUILDs on the [AUR](https://aur.archlinux.org/),
 looking for Bash misuse.
