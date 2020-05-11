@@ -1,3 +1,5 @@
+{-# LANGUAGE DerivingStrategies #-}
+
 -- |
 -- Module    : Aura.Settings.External
 -- Copyright : (c) Colin Woodbury, 2012 - 2020
@@ -38,8 +40,8 @@ data AuraConfig = AuraConfig
   , acEditor    :: Maybe FilePath
   , acUser      :: Maybe User
   , acBuildPath :: Maybe FilePath
-  , acAnalyse   :: Maybe BuildSwitch
-  }
+  , acAnalyse   :: Maybe BuildSwitch }
+  deriving stock (Show)
 
 defaultAuraConf :: FilePath
 defaultAuraConf = "/etc/aura.conf"

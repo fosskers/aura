@@ -43,6 +43,7 @@ import qualified RIO.Map as M
 import qualified RIO.Set as S
 import qualified RIO.Text as T
 import           System.Environment (getEnvironment)
+import           Text.Printf
 
 ---
 
@@ -56,6 +57,7 @@ withEnv (Program op co bc lng ll) f = do
       igg = S.fromList $ op ^.. _Right . _AurSync . folded . _AurIgnoreGroup . folded
   confFile    <- getPacmanConf (either id id $ configPathOf co) >>= either throwM pure
   auraConf    <- auraConfig <$> getAuraConf defaultAuraConf
+  when (ll == LevelDebug) . printf "%s\n" $ show auraConf
   environment <- M.fromList . map (bimap T.pack T.pack) <$> getEnvironment
   manager     <- newManager tlsManagerSettings
   isTerm      <- hIsTerminalDevice stdout
