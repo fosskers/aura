@@ -8,6 +8,14 @@
   If you install Aura via its AUR package, this file will be installed for you
   automatically.
 
+#### Changed
+
+- Some modules have been renamed and moved around, particularly on the `exec` side.
+
+#### Fixed
+
+- A regression that broke `-Bc`. [#592](https://github.com/fosskers/aura/issues/592)
+
 ## 2.3.0 (2020-04-22)
 
 #### Added

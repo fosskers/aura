@@ -103,7 +103,7 @@ olds old curr = map (uncurry SimplePkg) . M.assocs $ M.difference (pkgsOf old) (
 getStateFiles :: IO [FilePath]
 getStateFiles = do
   createDirectoryIfMissing True stateCache
-  L.sort . map (stateCache </>) <$> getDirectoryContents stateCache
+  L.sort . map (stateCache </>) <$> listDirectory stateCache
 
 -- | Save a package state.
 -- In writing the first state file, the `states` directory is created automatically.

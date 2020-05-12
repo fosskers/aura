@@ -46,7 +46,7 @@ cache = Cache . M.fromList . mapMaybe (\p -> (,p) <$> simplepkg p)
 
 -- | Given a path to the package cache, yields its contents in a usable form.
 cacheContents :: FilePath -> IO Cache
-cacheContents pth = cache . mapMaybe (packagePath . (pth </>)) <$> getDirectoryContents pth
+cacheContents pth = cache . mapMaybe (packagePath . (pth </>)) <$> listDirectory pth
 
 -- | All packages from a given `Set` who have a copy in the cache.
 pkgsInCache :: Settings -> Set PkgName -> IO (Set PkgName)

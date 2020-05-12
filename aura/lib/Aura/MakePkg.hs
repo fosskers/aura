@@ -74,7 +74,7 @@ makepkgSource :: User -> IO [FilePath]
 makepkgSource usr = do
   void . runProcess $ proc cmd opts
   pwd <- getCurrentDirectory
-  filter (T.isSuffixOf ".src.tar.gz" . T.pack) . map (pwd </>) <$> getDirectoryContents pwd
+  filter (T.isSuffixOf ".src.tar.gz" . T.pack) . map (pwd </>) <$> listDirectory pwd
     where (cmd, opts) = runStyle usr ["--allsource"]
 
 -- | As of makepkg v4.2, building with `--asroot` is no longer allowed.
