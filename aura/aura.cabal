@@ -45,7 +45,7 @@ common commons
     , microlens   ^>=0.4
     , rio         ^>=0.1.13
     , text        ^>=1.2
-    , versions    ^>=3.5
+    , versions    ^>=3.5.4
 
 common libexec
   build-depends:
