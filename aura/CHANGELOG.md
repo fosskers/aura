@@ -4,9 +4,9 @@
 
 #### Added
 
-- Aura is now configurable via a conf file! Aura expects it at `/etc/aura.conf`.
-  If you install Aura via its AUR package, this file will be installed for you
-  automatically.
+- Aura is now configurable via a conf file! Aura expects it at `/etc/aura.conf`,
+  but will not break if it's missing. If you install Aura via its AUR package,
+  this file will be installed for you automatically.
 
 #### Changed
 
@@ -15,6 +15,7 @@
 #### Fixed
 
 - A regression that broke `-Bc`. [#592](https://github.com/fosskers/aura/issues/592)
+- The functionality of `--allsource` has been restored. [#538](https://github.com/fosskers/aura/issues/538)
 
 ## 2.3.0 (2020-04-22)
 
