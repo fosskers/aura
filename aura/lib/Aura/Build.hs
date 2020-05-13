@@ -1,4 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE LambdaCase   #-}
 
 -- |
 -- Module    : Aura.Build
@@ -22,7 +23,6 @@ import           Aura.Pacman (pacman)
 import           Aura.Settings
 import           Aura.Shell (chown)
 import           Aura.Types
-import           Aura.Utils
 import           Control.Monad.Trans.Except
 import           Data.Hashable (hash)
 import           RIO
@@ -49,15 +49,14 @@ installPkgFiles files = do
 
 -- | All building occurs within temp directories,
 -- or in a location specified by the user with flags.
-buildPackages :: NonEmpty Buildable -> RIO Env (NonEmpty PackagePath)
-buildPackages bs = mapMaybeA build (NEL.toList bs) >>= maybe bad (pure . fold1) . NEL.nonEmpty
-  where
-    bad :: RIO Env a
-    bad = throwM $ Failure buildFail_10
+buildPackages :: NonEmpty Buildable -> RIO Env [PackagePath]
+buildPackages bs = mapMaybeA build (NEL.toList bs) >>= \case
+  [] -> throwM $ Failure buildFail_10
+  built -> pure $ concat built
 
 -- | Handles the building of Packages. Fails nicely.
 -- Assumed: All dependencies are already installed.
-build :: Buildable -> RIO Env (Maybe (NonEmpty PackagePath))
+build :: Buildable -> RIO Env (Maybe [PackagePath])
 build p = do
   logDebug $ "Building: " <> display (pnName $ bName p)
   ss <- asks settings
@@ -67,7 +66,10 @@ build p = do
 
 -- | Should never throw an IO Exception. In theory all errors
 -- will come back via the @Language -> String@ function.
-build' :: Settings -> Buildable -> RIO Env (Either Failure (NonEmpty PackagePath))
+--
+-- If `--allsource` was given, then the package isn't actually built.
+-- Instead, a @.src.tar.gz@ file is produced and copied to `srcPkgStore`.
+build' :: Settings -> Buildable -> RIO Env (Either Failure [PackagePath])
 build' ss b = do
   let !pth = fromMaybe defaultBuildDir . buildPathOf $ buildConfigOf ss
   createDirectoryIfMissing True pth
@@ -79,7 +81,7 @@ build' ss b = do
     bs <- ExceptT $ cloneRepo b usr
     setCurrentDirectory bs
     liftIO $ overwritePkgbuild ss b
-    pNames <- ExceptT . liftIO $ makepkg ss usr
+    pNames <- ExceptT . liftIO . fmap (fmap NEL.toList) $ makepkg ss usr
     paths  <- liftIO $ traverse (moveToCachePath ss) pNames
     liftIO . when (S.member AllSource . makepkgFlagsOf $ buildConfigOf ss) $
       makepkgSource usr >>= traverse_ moveToSourcePath

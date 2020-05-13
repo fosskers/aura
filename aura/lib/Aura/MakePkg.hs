@@ -37,13 +37,18 @@ makepkgCmd = "/usr/bin/makepkg"
 makepkg :: Settings -> User -> IO (Either Failure (NonEmpty FilePath))
 makepkg ss usr = make ss usr (proc cmd $ opts <> colour) >>= g
   where
-    (cmd, opts) = runStyle usr . map T.unpack . foldMap asFlag . makepkgFlagsOf $ buildConfigOf ss
+    (cmd, opts) =
+      runStyle usr . map T.unpack . foldMap asFlag . makepkgFlagsOf $ buildConfigOf ss
+
+    g :: (ExitCode, LByteString, [a]) -> IO (Either Failure (NonEmpty a))
     g (ExitSuccess, _, fs)   = pure . note (Failure buildFail_9) $ NEL.nonEmpty fs
     g (ExitFailure _, se, _) = do
       unless (switch ss DontSuppressMakepkg) $ do
         showError <- optionalPrompt ss buildFail_11
         when showError $ BL.putStrLn se
       pure . Left $ Failure buildFail_8
+
+    colour :: [String]
     colour | shared ss (Colour Never)  = ["--nocolor"]
            | shared ss (Colour Always) = []
            | isTerminal ss = []
