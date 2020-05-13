@@ -226,6 +226,14 @@ buildPackages_1 (bt . pnName -> p) = \case
     Dutch      -> "Pakket " <> p <> " aan het bouwen..."
     _          -> "Building " <> p <> "..."
 
+buildPackages_2 :: Language -> Doc AnsiStyle
+buildPackages_2 = \case
+  _ -> "'--allsource' detected. No actual installable packages will be built."
+
+buildPackages_3 :: FilePath -> Language -> Doc AnsiStyle
+buildPackages_3 fp = \case
+  _ -> "All .src.tar.gz files were built and copied to: " <> pretty fp
+
 buildFail_5 :: Language -> Doc AnsiStyle
 buildFail_5 = \case
     Japanese   -> "パッケージ作成に失敗しました。"

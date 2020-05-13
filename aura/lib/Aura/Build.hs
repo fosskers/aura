@@ -12,6 +12,7 @@
 module Aura.Build
   ( installPkgFiles
   , buildPackages
+  , srcPkgStore
   ) where
 
 import           Aura.Core

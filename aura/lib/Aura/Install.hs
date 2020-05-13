@@ -15,7 +15,7 @@ module Aura.Install
   , displayPkgDeps
   ) where
 
-import           Aura.Build (buildPackages, installPkgFiles)
+import           Aura.Build
 import           Aura.Cache (Cache(..), cacheContents)
 import           Aura.Colour
 import           Aura.Core
@@ -169,9 +169,13 @@ repoInstall ps = do
 
 buildAndInstall :: NonEmpty (NonEmpty Buildable) -> RIO Env ()
 buildAndInstall bss = do
-  pth   <- asks (either id id . cachePathOf . commonConfigOf . settings)
+  ss    <- asks settings
+  let !pth = either id id . cachePathOf $ commonConfigOf ss
+      !allsource = S.member AllSource . makepkgFlagsOf $ buildConfigOf ss
   cache <- liftIO $ cacheContents pth
+  when allsource $ notify ss buildPackages_2
   traverse_ (f cache) bss
+  when allsource . notify ss $ buildPackages_3 srcPkgStore
   where
     -- TODO There is a weird edge case (which might be impossible anyway) where
     -- `built` and the `traverse_` line below don't run, but `annotateDeps` is
