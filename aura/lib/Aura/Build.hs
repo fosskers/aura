@@ -138,5 +138,7 @@ moveToCachePath ss p = copy $> fromJust (packagePath newName)
 
 -- | Moves a file to the aura src package cache and returns its location.
 moveToSourcePath :: FilePath -> IO FilePath
-moveToSourcePath p = renameFile p newName $> newName
+moveToSourcePath p = do
+  createDirectoryIfMissing True srcPkgStore
+  renameFile p newName $> newName
   where newName = srcPkgStore </> takeFileName p
