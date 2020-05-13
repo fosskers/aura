@@ -140,5 +140,8 @@ moveToCachePath ss p = copy $> fromJust (packagePath newName)
 moveToSourcePath :: FilePath -> FilePath -> IO FilePath
 moveToSourcePath allsourcePath p = do
   createDirectoryIfMissing True allsourcePath
-  renameFile p newName $> newName
-  where newName = allsourcePath </> takeFileName p
+  copy $> newName
+  where
+    newName = allsourcePath </> takeFileName p
+    copy    = runProcess . setStderr closed . setStdout closed
+              $ proc "cp" ["--reflink=auto", p, newName]

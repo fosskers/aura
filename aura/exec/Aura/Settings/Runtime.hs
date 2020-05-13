@@ -82,6 +82,7 @@ withEnv (Program op co bc lng ll) f = do
           , buildConfigOf =
               bc & buildUserOfL     .~ bu
                  & buildPathOfL     %~ (<|> acBuildPath auraConf)
+                 & allsourcePathOfL %~ (<|> acASPath auraConf)
                  & buildSwitchesOfL <>~ maybe S.empty S.singleton (acAnalyse auraConf)
           , logLevelOf = ll
           , logFuncOf = logFunc }

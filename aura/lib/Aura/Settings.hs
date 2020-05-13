@@ -14,7 +14,7 @@ module Aura.Settings
   , logFuncOfL
     -- * Aura Configuration
   , BuildConfig(..), BuildSwitch(..)
-  , buildPathOfL, buildUserOfL, buildSwitchesOfL
+  , buildPathOfL, buildUserOfL, buildSwitchesOfL, allsourcePathOfL
   , switch
   , Truncation(..)
   , defaultBuildDir
@@ -106,6 +106,9 @@ buildUserOfL f bc = (\bu -> bc { buildUserOf = bu }) <$> f (buildUserOf bc)
 
 buildSwitchesOfL :: Lens' BuildConfig (Set BuildSwitch)
 buildSwitchesOfL f bc = (\bs -> bc { buildSwitchesOf = bs }) <$> f (buildSwitchesOf bc)
+
+allsourcePathOfL :: Lens' BuildConfig (Maybe FilePath)
+allsourcePathOfL f bc = (\pth -> bc { allsourcePathOf = pth }) <$> f (allsourcePathOf bc)
 
 -- | Extra options for customizing the build process.
 data BuildSwitch = DeleteMakeDeps

@@ -175,7 +175,9 @@ buildAndInstall bss = do
   cache <- liftIO $ cacheContents pth
   when allsource $ notify ss buildPackages_2
   traverse_ (f cache) bss
-  when allsource . notify ss $ buildPackages_3 srcPkgStore
+  when allsource $ do
+    let !allsourcePath = fromMaybe srcPkgStore . allsourcePathOf $ buildConfigOf ss
+    notify ss $ buildPackages_3 allsourcePath
   where
     -- TODO There is a weird edge case (which might be impossible anyway) where
     -- `built` and the `traverse_` line below don't run, but `annotateDeps` is

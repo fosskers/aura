@@ -40,6 +40,7 @@ data AuraConfig = AuraConfig
   , acEditor    :: Maybe FilePath
   , acUser      :: Maybe User
   , acBuildPath :: Maybe FilePath
+  , acASPath    :: Maybe FilePath
   , acAnalyse   :: Maybe BuildSwitch }
   deriving stock (Show)
 
@@ -61,6 +62,7 @@ auraConfig (Config m) = AuraConfig
   , acEditor = T.unpack <$> one "editor"
   , acUser = User <$> one "user"
   , acBuildPath = T.unpack <$> one "buildpath"
+  , acASPath = T.unpack <$> one "allsourcepath"
   , acAnalyse = one "analyse" >>= readMaybe . T.unpack >>= bool (Just NoPkgbuildCheck) Nothing
   }
   where
