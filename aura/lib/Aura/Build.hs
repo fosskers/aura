@@ -81,11 +81,12 @@ build' ss b = do
     bs <- ExceptT $ cloneRepo b usr
     setCurrentDirectory bs
     liftIO $ overwritePkgbuild ss b
-    pNames <- ExceptT . liftIO . fmap (fmap NEL.toList) $ makepkg ss usr
-    paths  <- liftIO $ traverse (moveToCachePath ss) pNames
-    liftIO . when (S.member AllSource . makepkgFlagsOf $ buildConfigOf ss) $
-      makepkgSource usr >>= traverse_ moveToSourcePath
-    pure paths
+    if S.member AllSource . makepkgFlagsOf $ buildConfigOf ss
+      then liftIO (makepkgSource usr >>= traverse_ moveToSourcePath) $> []
+      else do
+        pNames <- ExceptT . liftIO . fmap (fmap NEL.toList) $ makepkg ss usr
+        paths  <- liftIO $ traverse (moveToCachePath ss) pNames
+        pure paths
   where
     -- | We expect `buildUserOf` to always return a `Just` at this point. Aura
     -- should have failed at startup otherwise.
