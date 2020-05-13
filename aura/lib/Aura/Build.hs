@@ -62,7 +62,7 @@ build p = do
   logDebug $ "Building: " <> display (pnName $ bName p)
   ss <- asks settings
   notify ss (buildPackages_1 $ bName p) *> hFlush stdout
-  result <- build' ss p
+  result <- build' p
   either buildFail (pure . Just) result
 
 -- | Should never throw an IO Exception. In theory all errors
@@ -70,9 +70,11 @@ build p = do
 --
 -- If `--allsource` was given, then the package isn't actually built.
 -- Instead, a @.src.tar.gz@ file is produced and copied to `srcPkgStore`.
-build' :: Settings -> Buildable -> RIO Env (Either Failure [PackagePath])
-build' ss b = do
+build' :: Buildable -> RIO Env (Either Failure [PackagePath])
+build' b = do
+  ss <- asks settings
   let !pth = fromMaybe defaultBuildDir . buildPathOf $ buildConfigOf ss
+      !usr = fromMaybe (User "UNKNOWN") . buildUserOf $ buildConfigOf ss
   createDirectoryIfMissing True pth
   setCurrentDirectory pth
   buildDir <- liftIO $ randomDirName b
@@ -83,16 +85,13 @@ build' ss b = do
     setCurrentDirectory bs
     liftIO $ overwritePkgbuild ss b
     if S.member AllSource . makepkgFlagsOf $ buildConfigOf ss
-      then liftIO (makepkgSource usr >>= traverse_ moveToSourcePath) $> []
+      then do
+        let !allsourcePath = fromMaybe srcPkgStore . allsourcePathOf $ buildConfigOf ss
+        liftIO (makepkgSource usr >>= traverse_ (moveToSourcePath allsourcePath)) $> []
       else do
         pNames <- ExceptT . liftIO . fmap (fmap NEL.toList) $ makepkg ss usr
         paths  <- liftIO $ traverse (moveToCachePath ss) pNames
         pure paths
-  where
-    -- | We expect `buildUserOf` to always return a `Just` at this point. Aura
-    -- should have failed at startup otherwise.
-    usr :: User
-    usr = fromMaybe (User "UNKNOWN") . buildUserOf $ buildConfigOf ss
 
 -- | Create a temporary directory with a semi-random name based on
 -- the `Buildable` we're working with.
@@ -138,8 +137,8 @@ moveToCachePath ss p = copy $> fromJust (packagePath newName)
                   $ proc "cp" ["--reflink=auto", p, newName]
 
 -- | Moves a file to the aura src package cache and returns its location.
-moveToSourcePath :: FilePath -> IO FilePath
-moveToSourcePath p = do
-  createDirectoryIfMissing True srcPkgStore
+moveToSourcePath :: FilePath -> FilePath -> IO FilePath
+moveToSourcePath allsourcePath p = do
+  createDirectoryIfMissing True allsourcePath
   renameFile p newName $> newName
-  where newName = srcPkgStore </> takeFileName p
+  where newName = allsourcePath </> takeFileName p

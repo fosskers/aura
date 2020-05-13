@@ -94,6 +94,7 @@ data BuildConfig = BuildConfig
   { makepkgFlagsOf  :: !(Set Makepkg)
   , buildPathOf     :: !(Maybe FilePath)
   , buildUserOf     :: !(Maybe User)
+  , allsourcePathOf :: !(Maybe FilePath)
   , truncationOf    :: !Truncation  -- For `-As`
   , buildSwitchesOf :: !(Set BuildSwitch) } deriving (Show)
 
