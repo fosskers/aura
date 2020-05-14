@@ -12,8 +12,8 @@ import Aura.IO
 import Aura.Languages
 import Aura.Settings
 import Aura.Types
+import Aura.Utils
 import RIO
-import RIO.Directory
 import System.Process.Typed (proc, runProcess)
 
 ---
@@ -34,14 +34,8 @@ edit f p = do
 -- | Allow the user to edit the PKGBUILD.
 hotEdit :: Settings -> Buildable -> IO Buildable
 hotEdit ss b = do
-  ans <- liftIO $ optionalPrompt ss (hotEdit_1 $ bName b)
+  ans <- optionalPrompt ss (hotEdit_1 $ bName b)
   bool (pure b) f ans
   where
     f :: IO Buildable
-    f = do
-      here <- getCurrentDirectory
-      tmp  <- getTemporaryDirectory
-      setCurrentDirectory tmp
-      b' <- edit (runProcess . proc (editorOf ss) . (:[])) b
-      setCurrentDirectory here
-      pure b'
+    f = withTempDir $ edit (runProcess . proc (editorOf ss) . (:[])) b

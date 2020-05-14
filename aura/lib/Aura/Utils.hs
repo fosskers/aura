@@ -24,6 +24,8 @@ module Aura.Utils
     -- * These
   , These(..)
   , these
+    -- * Directory
+  , withTempDir
     -- * Misc.
   , maybe'
   , groupsOf
@@ -36,6 +38,7 @@ import           Network.HTTP.Client
 import           Network.HTTP.Types.Status (statusCode)
 import           RIO
 import qualified RIO.ByteString.Lazy as BL
+import           RIO.Directory
 import qualified RIO.List as L
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
@@ -63,6 +66,18 @@ urlContents m url = f <$> httpLbs (parseRequest_ url) m
     f :: Response BL.ByteString -> Maybe ByteString
     f res | statusCode (responseStatus res) == 200 = Just . BL.toStrict $ responseBody res
           | otherwise = Nothing
+
+--------------
+-- DIRECTORIES
+--------------
+withTempDir :: IO a -> IO a
+withTempDir f = do
+  here <- getCurrentDirectory
+  tmp  <- getTemporaryDirectory
+  setCurrentDirectory tmp
+  r <- f
+  setCurrentDirectory here
+  pure r
 
 -------
 -- MISC
