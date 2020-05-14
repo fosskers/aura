@@ -77,7 +77,6 @@ library
     Aura.Packages.Repository
     Aura.Pacman
     Aura.Pkgbuild.Base
-    Aura.Pkgbuild.Editing
     Aura.Pkgbuild.Fetch
     Aura.Pkgbuild.Records
     Aura.Pkgbuild.Security

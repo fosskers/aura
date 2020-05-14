@@ -21,10 +21,10 @@ import           Aura.Languages
 import           Aura.MakePkg
 import           Aura.Packages.AUR (clone)
 import           Aura.Pacman (pacman)
-import           Aura.Pkgbuild.Editing
 import           Aura.Settings
 import           Aura.Shell (chown)
 import           Aura.Types
+import           Aura.Utils (edit)
 import           Control.Monad.Trans.Except
 import           Data.Hashable (hash)
 import           RIO
@@ -119,7 +119,7 @@ cloneRepo pkg usr = do
 overwritePkgbuild :: Settings -> Buildable -> IO ()
 overwritePkgbuild ss b = when (switch ss HotEdit) . liftIO $ do
   ans <- optionalPrompt ss (hotEdit_1 $ bName b)
-  when ans $ edit ss "PKGBUILD"
+  when ans $ edit (editorOf ss) "PKGBUILD"
 
 -- | Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.

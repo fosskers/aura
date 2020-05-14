@@ -26,6 +26,7 @@ module Aura.Utils
   , these
     -- * Directory
   , withTempDir
+  , edit
     -- * Misc.
   , maybe'
   , groupsOf
@@ -43,6 +44,7 @@ import qualified RIO.List as L
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
+import           System.Process.Typed (proc, runProcess)
 
 ---
 
@@ -78,6 +80,10 @@ withTempDir f = do
   r <- f
   setCurrentDirectory here
   pure r
+
+-- | Edit some file in-place with the user's specified editor.
+edit :: FilePath -> FilePath -> IO ()
+edit editor p = void . runProcess $ proc editor [p]
 
 -------
 -- MISC
