@@ -17,3 +17,7 @@ flames
 aur-pkgs/*
 weeder.dhall
 .hlint.yaml
+
+# Nix
+.envrc
+/result*
