@@ -72,7 +72,7 @@ aurRepo = do
           Nothing -> pure $ Just (S.empty, S.fromList cached)
           Just uncached' -> runMaybeT $ do
             (bads, goods) <- MaybeT $ aurLookup (managerOf ss) uncached'
-            pkgs <- lift . traverse (packageBuildable ss) $ toList goods
+            let !pkgs = map FromAUR $ S.toList goods
             --- Update Cache ---
             let m = M.fromList $ map (pname &&& id) pkgs
             liftIO . atomically $ modifyTVar' tv (<> m)

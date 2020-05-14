@@ -158,9 +158,7 @@ confirmIgnored (toList -> ps) = do
 -- | The nested `NonEmpty`s represent the package "hierarchy", namely, what can
 -- be built/installed before what.
 depsToInstall :: Repository -> NonEmpty Buildable -> RIO Env (NonEmpty (NonEmpty Package))
-depsToInstall repo bs = do
-  ss <- asks settings
-  traverse (liftIO . packageBuildable ss) bs >>= resolveDeps repo
+depsToInstall repo bs = resolveDeps repo $ NEL.map FromAUR bs
 
 repoInstall :: NonEmpty Prebuilt -> RIO Env ()
 repoInstall ps = do

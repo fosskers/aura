@@ -21,6 +21,7 @@ import           Aura.Languages
 import           Aura.MakePkg
 import           Aura.Packages.AUR (clone)
 import           Aura.Pacman (pacman)
+import           Aura.Pkgbuild.Editing
 import           Aura.Settings
 import           Aura.Shell (chown)
 import           Aura.Types
@@ -114,11 +115,11 @@ cloneRepo pkg usr = do
     Nothing -> pure . Left . Failure . buildFail_7 $ bName pkg
     Just sd -> chown usr sd ["-R"] $> Right sd
 
--- | The user may have edited the original PKGBUILD. If they have, we need to
--- overwrite what's been downloaded before calling `makepkg`.
+-- | Edit the PKGBUILD in-place, if the user wants to.
 overwritePkgbuild :: Settings -> Buildable -> IO ()
-overwritePkgbuild ss p =
-  when (switch ss HotEdit) . writeFileBinary "PKGBUILD" . pkgbuild $ bPkgbuild p
+overwritePkgbuild ss b = when (switch ss HotEdit) . liftIO $ do
+  ans <- optionalPrompt ss (hotEdit_1 $ bName b)
+  when ans $ edit ss "PKGBUILD"
 
 -- | Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.

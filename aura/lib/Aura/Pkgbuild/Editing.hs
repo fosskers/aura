@@ -4,38 +4,17 @@
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
--- For handling the editing of PKGBUILDs.
+-- For handling the editing of PKGBUILDs, .install files, and .patch files.
 
-module Aura.Pkgbuild.Editing ( hotEdit ) where
+module Aura.Pkgbuild.Editing ( edit ) where
 
-import Aura.IO
-import Aura.Languages
 import Aura.Settings
-import Aura.Types
-import Aura.Utils
 import RIO
 import System.Process.Typed (proc, runProcess)
 
 ---
 
--- | Write a PKGBUILD to the filesystem temporarily, run some effectful
--- function over it, then read it back in before proceeding with
--- package building.
-edit :: (FilePath -> IO a) -> Buildable -> IO Buildable
-edit f p = do
-  writeFileBinary filename . pkgbuild $ bPkgbuild p
-  void $ f filename
-  newPB <- readFileBinary filename
-  pure (p { bPkgbuild = Pkgbuild newPB})
-  where
-    filename :: FilePath
-    filename = "PKGBUILD"
-
--- | Allow the user to edit the PKGBUILD.
-hotEdit :: Settings -> Buildable -> IO Buildable
-hotEdit ss b = do
-  ans <- optionalPrompt ss (hotEdit_1 $ bName b)
-  bool (pure b) f ans
-  where
-    f :: IO Buildable
-    f = withTempDir $ edit (runProcess . proc (editorOf ss) . (:[])) b
+-- TODO Move to Utils and delete this module.
+-- | Edit some file in-place with the user's specified editor.
+edit :: Settings -> FilePath -> IO ()
+edit ss p = void . runProcess $ proc (editorOf ss) [p]
