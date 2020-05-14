@@ -12,6 +12,7 @@
 
 #### Changed
 
+- `--hotedit` will now offer to edit `.install` and `.patch` files. [#208](https://github.com/fosskers/aura/issues/208)
 - Some modules have been renamed and moved around, particularly on the `exec` side.
 
 #### Fixed
