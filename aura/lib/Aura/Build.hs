@@ -85,6 +85,8 @@ build' b = do
     bs <- ExceptT $ cloneRepo b usr
     setCurrentDirectory bs
     liftIO $ overwritePkgbuild ss b
+    liftIO $ overwriteInstall ss
+    liftIO $ overwritePatches ss
     if S.member AllSource . makepkgFlagsOf $ buildConfigOf ss
       then do
         let !allsourcePath = fromMaybe srcPkgStore . allsourcePathOf $ buildConfigOf ss
@@ -120,6 +122,28 @@ overwritePkgbuild :: Settings -> Buildable -> IO ()
 overwritePkgbuild ss b = when (switch ss HotEdit) . liftIO $ do
   ans <- optionalPrompt ss (hotEdit_1 $ bName b)
   when ans $ edit (editorOf ss) "PKGBUILD"
+
+-- | Edit the .install file in-place, if the user wants to and it exists.
+overwriteInstall :: Settings -> IO ()
+overwriteInstall ss = when (switch ss HotEdit) . liftIO $ do
+  files <- getCurrentDirectory >>= listDirectory
+  case listToMaybe (filter ((== ".install") . takeFileName) files) of
+    Nothing -> pure ()
+    Just _  -> do
+      ans <- optionalPrompt ss hotEdit_2
+      when ans $ edit (editorOf ss) ".install"
+
+-- | Edit the all .patch files, if the user wants to and some exist.
+overwritePatches :: Settings -> IO ()
+overwritePatches ss = when (switch ss HotEdit) . liftIO $ do
+  files <- getCurrentDirectory >>= listDirectory
+  let !patches = filter ((== ".patch") . takeExtension) files
+  traverse_ f patches
+  where
+    f :: FilePath -> IO ()
+    f p = do
+      ans <- optionalPrompt ss $ hotEdit_3 p
+      when ans $ edit (editorOf ss) p
 
 -- | Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.

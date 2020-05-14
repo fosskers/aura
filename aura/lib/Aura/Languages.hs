@@ -1499,6 +1499,14 @@ hotEdit_1 (bt . pnName -> p) = \case
     Dutch      -> "Wilt u het PKGBUILD-bestand van " <> p <> " bewerken?"
     _          -> "Would you like to edit the PKGBUILD of " <> p <> "?"
 
+hotEdit_2 :: Language -> Doc AnsiStyle
+hotEdit_2 = \case
+  _ -> "Would you like to edit the .install file?"
+
+hotEdit_3 :: FilePath -> Language -> Doc AnsiStyle
+hotEdit_3 fp = \case
+  _ -> "Would you like to edit " <> pretty fp <> "?"
+
 ------------------------------
 -- Pkgbuild Security functions
 ------------------------------
