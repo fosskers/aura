@@ -105,7 +105,8 @@ partitionPkgs = bimap fold f . L.unzip . map g . NEL.toList
 
 -- | Package a Buildable, running the customization handler first.
 packageBuildable :: Settings -> Buildable -> IO Package
-packageBuildable ss b = FromAUR <$> hotEdit ss b
+packageBuildable ss b | switch ss HotEdit = FromAUR <$> hotEdit ss b
+                      | otherwise = pure $ FromAUR b
 
 -----------
 -- THE WORK

@@ -31,19 +31,17 @@ edit f p = do
     filename :: FilePath
     filename = "PKGBUILD"
 
--- | Allow the user to edit the PKGBUILD if they asked to do so.
+-- | Allow the user to edit the PKGBUILD.
 hotEdit :: Settings -> Buildable -> IO Buildable
-hotEdit ss b
-  | not $ switch ss HotEdit = pure b
-  | otherwise = do
-      ans <- liftIO $ optionalPrompt ss (hotEdit_1 $ bName b)
-      bool (pure b) f ans
-        where
-          f :: IO Buildable
-          f = do
-            here <- getCurrentDirectory
-            tmp  <- getTemporaryDirectory
-            setCurrentDirectory tmp
-            b' <- edit (runProcess . proc (editorOf ss) . (:[])) b
-            setCurrentDirectory here
-            pure b'
+hotEdit ss b = do
+  ans <- liftIO $ optionalPrompt ss (hotEdit_1 $ bName b)
+  bool (pure b) f ans
+  where
+    f :: IO Buildable
+    f = do
+      here <- getCurrentDirectory
+      tmp  <- getTemporaryDirectory
+      setCurrentDirectory tmp
+      b' <- edit (runProcess . proc (editorOf ss) . (:[])) b
+      setCurrentDirectory here
+      pure b'
