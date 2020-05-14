@@ -4,6 +4,9 @@ ghc-options:
   $everything: -split-sections
   $locals: -fwrite-ide-info -hiedir=.hie -fmax-relevant-binds=0
 
+nix:
+  shell-file: nix/stack.nix
+
 packages:
   - aura/
   - aur/
