@@ -185,9 +185,15 @@ buildAndInstall bss = do
     f (Cache cache) bs = do
       ss <- asks settings
       let (ps, cached) = fmapEither g $ NEL.toList bs
+
+          -- | If we used @--force@, then take the package as-is. Otherwise, try
+          -- to look it up in the package cache. If we find a match, we don't
+          -- need to build it.
+          g :: Buildable -> Either Buildable PackagePath
           g b = case bToSP b `M.lookup` cache of
             Just pp | not (switch ss ForceBuilding) -> Right pp
             _                                       -> Left b
+
       built <- traverse buildPackages $ NEL.nonEmpty ps
       traverse_ installPkgFiles $ built >>= NEL.nonEmpty . (<> cached)
       liftIO $ annotateDeps bs
