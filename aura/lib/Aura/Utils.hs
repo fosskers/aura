@@ -25,7 +25,6 @@ module Aura.Utils
   , These(..)
   , these
     -- * Directory
-  , withTempDir
   , edit
     -- * Misc.
   , maybe'
@@ -39,7 +38,6 @@ import           Network.HTTP.Client
 import           Network.HTTP.Types.Status (statusCode)
 import           RIO
 import qualified RIO.ByteString.Lazy as BL
-import           RIO.Directory
 import qualified RIO.List as L
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
@@ -72,15 +70,6 @@ urlContents m url = f <$> httpLbs (parseRequest_ url) m
 --------------
 -- DIRECTORIES
 --------------
-withTempDir :: IO a -> IO a
-withTempDir f = do
-  here <- getCurrentDirectory
-  tmp  <- getTemporaryDirectory
-  setCurrentDirectory tmp
-  r <- f
-  setCurrentDirectory here
-  pure r
-
 -- | Edit some file in-place with the user's specified editor.
 edit :: FilePath -> FilePath -> IO ()
 edit editor p = void . runProcess $ proc editor [p]
