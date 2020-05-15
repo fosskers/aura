@@ -327,6 +327,10 @@ buildFail_11 = \case
   Dutch      -> "Bouwen mislukt. Wilt U de fouten zien?"
   _          -> "Building failed. Would you like to see the error?"
 
+buildFail_12 :: Language -> Doc AnsiStyle
+buildFail_12 = \case
+  _ -> "Failed to 'git pull' the latest updates."
+
 ------------------------------
 -- Aura/Dependencies functions
 ------------------------------

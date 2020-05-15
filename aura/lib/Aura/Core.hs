@@ -17,7 +17,8 @@ module Aura.Core
     -- * User Privileges
   , sudo, trueRoot
     -- * Querying the Package Database
-  , foreignPackages, orphans, develPkgs
+  , foreignPackages, orphans
+  , develPkgs, isDevelPkg
   , Unsatisfied(..), Satisfied(..)
   , areSatisfied, isInstalled
   , checkDBLock
@@ -128,11 +129,17 @@ foreignPackages = S.fromList . mapMaybe simplepkg' <$> pacmanLines ["-Qm"]
 orphans :: IO (Set PkgName)
 orphans = S.fromList . map PkgName <$> pacmanLines ["-Qqdt"]
 
--- | Any package whose name is suffixed by git, hg, svn, darcs, cvs, or bzr.
+-- | Any installed package whose name is suffixed by git, hg, svn, darcs, cvs,
+-- or bzr.
 develPkgs :: IO (Set PkgName)
 develPkgs = S.filter isDevelPkg . S.map spName <$> foreignPackages
-  where isDevelPkg (PkgName pkg) = any (`T.isSuffixOf` pkg) suffixes
-        suffixes = ["-git", "-hg", "-svn", "-darcs", "-cvs", "-bzr"]
+
+-- | Is a package suffixed by git, hg, svn, darcs, cvs, or bzr?
+isDevelPkg :: PkgName -> Bool
+isDevelPkg (PkgName pkg) = any (`T.isSuffixOf` pkg) suffixes
+  where
+    suffixes :: [Text]
+    suffixes = ["-git", "-hg", "-svn", "-darcs", "-cvs", "-bzr"]
 
 -- | Returns what it was given if the package is already installed.
 -- Reasoning: Using raw bools can be less expressive.

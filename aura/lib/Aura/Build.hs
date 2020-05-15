@@ -13,6 +13,7 @@ module Aura.Build
   ( installPkgFiles
   , buildPackages
   , srcPkgStore
+  , vcsStore
   ) where
 
 import           Aura.Core
@@ -40,8 +41,16 @@ import           System.Process.Typed
 
 ---
 
+-- | Storage location for "source" packages built with @--allsource@.
+-- Can be overridden in config or with @--allsourcepath@.
 srcPkgStore :: FilePath
 srcPkgStore = "/var/cache/aura/src"
+
+-- | Storage/build location for VCS packages like @cool-retroterm-git@. Some of
+-- these packages are quite large (e.g. kernels), and so recloning them in their
+-- entirety upon each @-Au@ is wasteful.
+vcsStore :: FilePath
+vcsStore = "/var/cache/aura/vcs"
 
 -- | Expects files like: \/var\/cache\/pacman\/pkg\/*.pkg.tar.xz
 installPkgFiles :: NonEmpty PackagePath -> RIO Env ()
@@ -70,21 +79,31 @@ build p = do
 -- | Should never throw an IO Exception. In theory all errors
 -- will come back via the @Language -> String@ function.
 --
+-- If the package is a VCS package (i.e. ending in -git, etc.), it will be built
+-- and stored in a separate, deterministic location to prevent repeated clonings
+-- during subsequent builds.
+--
 -- If `--allsource` was given, then the package isn't actually built.
 -- Instead, a @.src.tar.gz@ file is produced and copied to `srcPkgStore`.
 build' :: Buildable -> RIO Env (Either Failure [PackagePath])
 build' b = do
   ss <- asks settings
-  let !pth = fromMaybe defaultBuildDir . buildPathOf $ buildConfigOf ss
+  let !isDevel = isDevelPkg $ bName b
+      !pth | isDevel = vcsStore
+           | otherwise = fromMaybe defaultBuildDir . buildPathOf $ buildConfigOf ss
       !usr = fromMaybe (User "UNKNOWN") . buildUserOf $ buildConfigOf ss
   createDirectoryIfMissing True pth
   setCurrentDirectory pth
-  buildDir <- liftIO $ randomDirName b
+  buildDir <- liftIO $ getBuildDir b
   createDirectoryIfMissing True buildDir
   setCurrentDirectory buildDir
   runExceptT $ do
-    bs <- ExceptT $ cloneRepo b usr
+    bs <- ExceptT $ do
+      let !dir = buildDir </> T.unpack (pnName $ bName b)
+      pulled <- doesDirectoryExist dir
+      bool (cloneRepo b usr) (pure $ Right dir) pulled
     setCurrentDirectory bs
+    when isDevel $ ExceptT pullRepo
     liftIO $ overwritePkgbuild ss b
     liftIO $ overwriteInstall ss
     liftIO $ overwritePatches ss
@@ -95,6 +114,16 @@ build' b = do
       else do
         pNames <- ExceptT . liftIO . fmap (fmap NEL.toList) $ makepkg ss usr
         liftIO $ traverse (moveToCachePath ss) pNames
+
+getBuildDir :: Buildable -> IO FilePath
+getBuildDir b
+  | isDevelPkg $ bName b = vcsBuildDir $ bName b
+  | otherwise = randomDirName b
+
+vcsBuildDir :: PkgName -> IO FilePath
+vcsBuildDir (PkgName pn) = do
+  pwd <- getCurrentDirectory
+  pure $ pwd </> T.unpack pn
 
 -- | Create a temporary directory with a semi-random name based on
 -- the `Buildable` we're working with.
@@ -116,6 +145,15 @@ cloneRepo pkg usr = do
   case scriptsDir of
     Nothing -> pure . Left . Failure . buildFail_7 $ bName pkg
     Just sd -> chown usr sd ["-R"] $> Right sd
+
+-- | Assuming that we're already in a VCS-based package's build folder,
+-- just pull the latest instead of cloning.
+pullRepo :: RIO Env (Either Failure ())
+pullRepo = do
+  ec <- runProcess . setStderr closed . setStdout closed $ proc "git" ["pull"]
+  case ec of
+    ExitFailure _ -> pure . Left $ Failure buildFail_12
+    ExitSuccess   -> pure $ Right ()
 
 -- | Edit the PKGBUILD in-place, if the user wants to.
 overwritePkgbuild :: Settings -> Buildable -> IO ()
