@@ -89,7 +89,7 @@ build' :: Buildable -> RIO Env (Either Failure [PackagePath])
 build' b = do
   ss <- asks settings
   let !isDevel = isDevelPkg $ bName b
-      !pth | isDevel = vcsStore
+      !pth | isDevel = fromMaybe vcsStore . vcsPathOf $ buildConfigOf ss
            | otherwise = fromMaybe defaultBuildDir . buildPathOf $ buildConfigOf ss
       !usr = fromMaybe (User "UNKNOWN") . buildUserOf $ buildConfigOf ss
   createDirectoryIfMissing True pth

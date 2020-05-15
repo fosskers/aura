@@ -195,7 +195,7 @@ buildAndInstall bss = do
             _                                       -> Left b
 
       built <- traverse buildPackages $ NEL.nonEmpty ps
-      traverse_ installPkgFiles $ built >>= NEL.nonEmpty . (<> cached)
+      traverse_ installPkgFiles $ (built <> Just cached) >>= NEL.nonEmpty
       liftIO $ annotateDeps bs
 
 ------------

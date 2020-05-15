@@ -333,7 +333,7 @@ viewconf :: Parser AuraOp
 viewconf = flag' ViewConf (long "viewconf" <> help "View the Pacman config file.")
 
 buildConfig :: Parser BuildConfig
-buildConfig = BuildConfig <$> makepkg <*> bp <*> bu <*> asp <*> trunc <*> buildSwitches
+buildConfig = BuildConfig <$> makepkg <*> bp <*> bu <*> asp <*> vp <*> trunc <*> buildSwitches
   where makepkg = S.fromList <$> many (ia <|> as <|> si)
         ia      = flag' IgnoreArch (long "ignorearch" <> hidden <> help "Exposed makepkg flag.")
         as      = flag' AllSource (long "allsource" <> hidden <> help "Exposed makepkg flag.")
@@ -341,6 +341,7 @@ buildConfig = BuildConfig <$> makepkg <*> bp <*> bu <*> asp <*> trunc <*> buildS
         bp      = optional $ option (eitherReader absFilePath) (long "build" <> metavar "PATH" <> hidden <> help "Directory in which to build packages.")
         bu      = optional $ User <$> strOption (long "builduser" <> metavar "USER" <> hidden <> help "User account to build as.")
         asp     = optional $ option (eitherReader absFilePath) (long "allsourcepath" <> metavar "PATH" <> hidden <> help "Directory in which to store the output of --allsource.")
+        vp      = optional $ option (eitherReader absFilePath) (long "vcspath" <> metavar "PATH" <> hidden <> help "Directory in which to build and store VCS packages.")
         trunc   = fmap Head (option auto (long "head" <> metavar "N" <> hidden <> help "Only show top N search results."))
           <|> fmap Tail (option auto (long "tail" <> metavar "N" <> hidden <> help "Only show last N search results."))
           <|> pure None
