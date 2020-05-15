@@ -35,7 +35,7 @@ makepkgCmd = "/usr/bin/makepkg"
 -- | Given the current user name, build the package of whatever
 -- directory we're in.
 makepkg :: Settings -> User -> IO (Either Failure (NonEmpty FilePath))
-makepkg ss usr = make ss usr (proc cmd $ opts <> colour) >>= g
+makepkg ss usr = make ss usr (proc cmd $ opts <> overwrite <> colour) >>= g
   where
     (cmd, opts) =
       runStyle usr . map T.unpack . foldMap asFlag . makepkgFlagsOf $ buildConfigOf ss
@@ -47,6 +47,10 @@ makepkg ss usr = make ss usr (proc cmd $ opts <> colour) >>= g
         showError <- optionalPrompt ss buildFail_11
         when showError $ BL.putStrLn se
       pure . Left $ Failure buildFail_8
+
+    overwrite :: [String]
+    overwrite | switch ss ForceBuilding = ["-f"]
+              | otherwise = []
 
     colour :: [String]
     colour | shared ss (Colour Never)  = ["--nocolor"]
