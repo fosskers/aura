@@ -4,9 +4,9 @@
 
 #### Added
 
-- Aura is now configurable via a conf file! Aura expects it at `/etc/aura.conf`,
-  but will not break if it's missing. If you install Aura via its AUR package,
-  this file will be installed for you automatically.
+- **Aura is now configurable via a conf file!** Aura expects it at
+  `/etc/aura.conf`, but will not break if it's missing. If you install Aura via
+  its AUR package, this file will be installed for you automatically.
 - A new flag `--allsourcepath` to accompany the restored `--allsource`
   functionality, as mentioned below.
 

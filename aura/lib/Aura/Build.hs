@@ -30,6 +30,7 @@ import           Data.Hashable (hash)
 import           RIO
 import           RIO.Directory
 import           RIO.FilePath
+import qualified RIO.List as L
 import qualified RIO.NonEmpty as NEL
 import           RIO.Partial (fromJust)
 import qualified RIO.Set as S
@@ -93,8 +94,7 @@ build' b = do
         liftIO (makepkgSource usr >>= traverse_ (moveToSourcePath allsourcePath)) $> []
       else do
         pNames <- ExceptT . liftIO . fmap (fmap NEL.toList) $ makepkg ss usr
-        paths  <- liftIO $ traverse (moveToCachePath ss) pNames
-        pure paths
+        liftIO $ traverse (moveToCachePath ss) pNames
 
 -- | Create a temporary directory with a semi-random name based on
 -- the `Buildable` we're working with.
@@ -127,7 +127,7 @@ overwritePkgbuild ss b = when (switch ss HotEdit) . liftIO $ do
 overwriteInstall :: Settings -> IO ()
 overwriteInstall ss = when (switch ss HotEdit) . liftIO $ do
   files <- getCurrentDirectory >>= listDirectory
-  case listToMaybe (filter ((== ".install") . takeFileName) files) of
+  case L.find ((== ".install") . takeFileName) files of
     Nothing -> pure ()
     Just _  -> do
       ans <- optionalPrompt ss hotEdit_2
