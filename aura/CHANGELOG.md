@@ -7,6 +7,19 @@
 - **Aura is now configurable via a conf file!** Aura expects it at
   `/etc/aura.conf`, but will not break if it's missing. If you install Aura via
   its AUR package, this file will be installed for you automatically.
+- **A new top-level command: `-P`**. This allows users to analyse PKGBUILD
+  files manually, as is usually done during building.
+  - `-Pf` accepts a path to a PKGBUILD.
+  - `-Pd` accepts a path to a directory containing a PKGBUILD.
+  - `-P` on its own will read from stdin. Combine this with `-Ap` to pull from the AUR:
+```
+> aura -Ap myget | aura -P
+
+    sudo pacman -S aurvote
+
+aura >>= sudo indicates that someone may be trying to gain root access to your machine.
+aura >>= Potential PKGBUILD vulnerabilities detected.
+```
 - A new flag `--vcspath` to accompany the new VCS build behaviour (see below).
 - A new flag `--allsourcepath` to accompany the restored `--allsource`
   functionality (see below).
