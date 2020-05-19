@@ -25,7 +25,6 @@ import           Aura.IO
 import           Aura.Languages
 import           Aura.Packages.AUR (aurLookup)
 import           Aura.Pacman (pacman, pacmanSuccess)
-import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Records
 import           Aura.Security
 import           Aura.Settings

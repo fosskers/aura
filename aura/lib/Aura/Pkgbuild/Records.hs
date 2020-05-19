@@ -9,14 +9,24 @@
 module Aura.Pkgbuild.Records
   ( hasPkgbuildStored
   , storePkgbuilds
+  , pkgbuildPath
   ) where
 
-import Aura.Pkgbuild.Base
-import Aura.Types
-import RIO
-import RIO.Directory
+import           Aura.Types
+import           RIO
+import           RIO.Directory
+import           RIO.FilePath
+import qualified RIO.Text as T
 
 ---
+
+-- | The default location: \/var\/cache\/aura\/pkgbuilds\/
+pkgbuildCache :: FilePath
+pkgbuildCache = "/var/cache/aura/pkgbuilds/"
+
+-- | The expected path to a stored PKGBUILD, given some package name.
+pkgbuildPath :: PkgName -> FilePath
+pkgbuildPath (PkgName p) = pkgbuildCache </> T.unpack p <.> "pb"
 
 -- | Does a given package has a PKGBUILD stored?
 -- This is `True` when a package has been built successfully once before.
