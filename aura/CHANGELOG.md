@@ -23,6 +23,7 @@
 
 - A regression that broke `-Bc`. [#592](https://github.com/fosskers/aura/issues/592)
 - The functionality of `--allsource` has been restored. [#538](https://github.com/fosskers/aura/issues/538)
+- A minor difference in the behaviour of `-Ss` relative to `pacman`. [#599](https://github.com/fosskers/aura/issues/599)
 
 ## 2.3.0 (2020-04-22)
 
