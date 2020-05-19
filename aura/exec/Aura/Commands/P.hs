@@ -9,6 +9,7 @@
 
 module Aura.Commands.P
   ( exploitsFromFile
+  , exploitsFromStdin
   ) where
 
 import Aura.Core
@@ -35,6 +36,9 @@ What functionality am I looking for?
 -- exit the program aggressively to force a naughty exit code.
 exploitsFromFile :: FilePath -> RIO Env ()
 exploitsFromFile = readFileBinary >=> findExploits . Pkgbuild
+
+exploitsFromStdin :: RIO Env ()
+exploitsFromStdin = undefined
 
 findExploits :: Pkgbuild -> RIO Env ()
 findExploits pb = case parsedPB pb of

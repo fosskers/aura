@@ -55,6 +55,7 @@ import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Options.Applicative (execParser)
 import           RIO hiding (first)
+import           RIO.FilePath
 import qualified RIO.Set as S
 import           System.Process.Typed (proc, runProcess)
 
@@ -118,29 +119,29 @@ execOpts ops = do
         Left (AurUpgrade ps)  -> bool (trueRoot . sudo) id (switch ss DryRun) $ A.upgradeAURPkgs ps
         Left (AurJson ps)     -> A.aurJson ps
         Left (AurTarball ps)  -> A.fetchTarball ps
-    Right (Backup o) ->
-      case o of
-        Nothing              -> sudo . liftIO $ B.saveState ss
-        Just (BackupClean n) -> sudo . liftIO $ B.cleanStates ss n
-        Just BackupRestore   -> sudo B.restoreState
-        Just BackupList      -> liftIO B.listStates
-    Right (Cache o) ->
-      case o of
-        Right ps                -> sudo $ C.downgradePackages ps
-        Left (CacheSearch s)    -> C.searchCache s
-        Left (CacheClean n)     -> sudo $ C.cleanCache n
-        Left CacheCleanNotSaved -> sudo C.cleanNotSaved
-        Left (CacheBackup pth)  -> sudo $ C.backupCache pth
-    Right (Log o) ->
-      case o of
-        Nothing            -> L.viewLogFile
-        Just (LogInfo ps)  -> L.logInfoOnPkg ps
-        Just (LogSearch s) -> asks settings >>= liftIO . flip L.searchLogFile s
-    Right (Orphans o) ->
-      case o of
-        Nothing               -> liftIO O.displayOrphans
-        Just OrphanAbandon    -> sudo $ liftIO orphans >>= traverse_ removePkgs . nes
-        Just (OrphanAdopt ps) -> O.adoptPkg ps
+    Right (Backup o) -> case o of
+      Nothing              -> sudo . liftIO $ B.saveState ss
+      Just (BackupClean n) -> sudo . liftIO $ B.cleanStates ss n
+      Just BackupRestore   -> sudo B.restoreState
+      Just BackupList      -> liftIO B.listStates
+    Right (Cache o) -> case o of
+      Right ps                -> sudo $ C.downgradePackages ps
+      Left (CacheSearch s)    -> C.searchCache s
+      Left (CacheClean n)     -> sudo $ C.cleanCache n
+      Left CacheCleanNotSaved -> sudo C.cleanNotSaved
+      Left (CacheBackup pth)  -> sudo $ C.backupCache pth
+    Right (Log o) -> case o of
+      Nothing            -> L.viewLogFile
+      Just (LogInfo ps)  -> L.logInfoOnPkg ps
+      Just (LogSearch s) -> asks settings >>= liftIO . flip L.searchLogFile s
+    Right (Orphans o) -> case o of
+      Nothing               -> liftIO O.displayOrphans
+      Just OrphanAbandon    -> sudo $ liftIO orphans >>= traverse_ removePkgs . nes
+      Just (OrphanAdopt ps) -> O.adoptPkg ps
+    Right (Analysis o) -> case o of
+      Nothing                -> P.exploitsFromStdin
+      Just (AnalysisFile fp) -> P.exploitsFromFile fp
+      Just (AnalysisDir fp)  -> P.exploitsFromFile $ fp </> "PKGBUILD"
     Right Version   -> liftIO $ versionInfo >>= animateVersionMsg ss auraVersion
     Right Languages -> displayOutputLanguages
     Right ViewConf  -> viewConfFile

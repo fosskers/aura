@@ -227,6 +227,7 @@ data AuraOp
   | Cache   (Either CacheOp (NonEmpty PkgName))
   | Log     (Maybe  LogOp)
   | Orphans (Maybe  OrphanOp)
+  | Analysis (Maybe AnalysisOp)
   | Version
   | Languages
   | ViewConf
@@ -285,7 +286,6 @@ data OrphanOp
 data AnalysisOp
   = AnalysisFile FilePath
   | AnalysisDir FilePath
-  | AnalysisStdin
   deriving (Show)
 
 opts :: ParserInfo Program
@@ -300,7 +300,7 @@ program = Program
   <*> optional language
   <*> logLevel
   where
-    aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> version' <|> languages <|> viewconf
+    aurOps = aursync <|> backups <|> cache <|> log <|> orphans <|> analysis <|> version' <|> languages <|> viewconf
     pacOps = database <|> files <|> queries <|> remove <|> sync <|> testdeps <|> upgrades
 
 aursync :: Parser AuraOp
@@ -355,6 +355,14 @@ orphans = bigO *> (Orphans <$> optional mods)
         mods    = abandon <|> adopt
         abandon = flag' OrphanAbandon (long "abandon" <> short 'j' <> hidden <> help "Uninstall all orphan packages.")
         adopt   = OrphanAdopt <$> (flag' () (long "adopt" <> hidden <> help "Mark some packages' install reason as 'Explicit'.") *> somePkgs')
+
+analysis :: Parser AuraOp
+analysis = bigP *> (Analysis <$> optional mods)
+  where
+    bigP = flag' () (long "analysis" <> short 'P' <> help "Analyse PKGBUILDs for malicious bash code.")
+    mods = file <|> dir
+    file = AnalysisFile <$> strOption (long "file" <> short 'f' <> metavar "PATH" <> hidden <> help "Path to a PKGBUILD file.")
+    dir = AnalysisDir <$> strOption (long "dir" <> short 'd' <> metavar "PATH" <> hidden <> help "Path to a directory containing a PKGBUILD file.")
 
 version' :: Parser AuraOp
 version' = flag' Version (long "version" <> short 'V' <> help "Display Aura's version.")
