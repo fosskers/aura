@@ -20,11 +20,12 @@ import           Text.Megaparsec
 main :: IO ()
 main = do
   conf <- readFileUtf8 "test/pacman.conf"
-  pkb  <- Pkgbuild <$> readFileBinary "test/aura.PKGBUILD"
-  defaultMain $ suite conf pkb
+  bad  <- Pkgbuild <$> readFileBinary "test/bad.PKGBUILD"
+  good  <- Pkgbuild <$> readFileBinary "test/good.PKGBUILD"
+  defaultMain $ suite conf bad good
 
-suite :: Text -> Pkgbuild -> TestTree
-suite conf pb = testGroup "Unit Tests"
+suite :: Text -> Pkgbuild -> Pkgbuild -> TestTree
+suite conf badRaw goodRaw = testGroup "Unit Tests"
   [ testGroup "Aura.Core"
     [ testCase "parseDep - python2" $ parseDep "python2" @?= Just (Dep "python2" Anything)
     , testCase "parseDep - python2-lxml>=3.1.0" $ do
@@ -67,14 +68,18 @@ suite conf pb = testGroup "Unit Tests"
           assertEqual ("Language name map for " ++ show lang ++ " has incorrect number of items") (length languages - 1) (M.size names)
     ]
   , testGroup "Aura.Pkgbuild.Security"
-    [ testCase "Parsing - aura.PKGBUILD" $
+    [ testCase "Parsing - bad.PKGBUILD" $
         -- pPrintNoColor $ map (first prettyText) . bannedTerms <$> ppb
         -- pPrintNoColor ppb
-        assertBool "Failed to parse" $ isJust ppb
-    , testCase "Detecting banned terms" $ (length . bannedTerms <$> ppb) @?= Just 5
+        assertBool "Failed to parse" $ isJust bad
+    , testCase "Detecting banned terms" $ (length . bannedTerms <$> bad) @?= Just 5
+    , testCase "Parsing - good.PKGBUILD" $ assertBool "Failed to parse" $ isJust good
+    , testCase "Shouldn't find anything" $ (length . bannedTerms <$> good) @?= Just 0
     ]
   ]
-  where ppb = parsedPB pb
+  where
+    bad = parsedPB badRaw
+    good = parsedPB goodRaw
 
 firefox :: Text
 firefox = "Repository      : extra\n\

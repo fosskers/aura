@@ -24,7 +24,8 @@ extra-source-files:
   doc/completions/bashcompletion.sh
   doc/completions/_aura
   test/pacman.conf
-  test/aura.PKGBUILD
+  test/good.PKGBUILD
+  test/bad.PKGBUILD
 
 common commons
   default-language:   Haskell2010
