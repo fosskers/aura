@@ -7,7 +7,9 @@
 --
 -- Handles @-P@ flags for analysing PKGBUILDs.
 
-module Aura.Commands.P where
+module Aura.Commands.P
+  ( exploitsFromFile
+  ) where
 
 import Aura.Core
 import Aura.Languages
@@ -28,6 +30,11 @@ What functionality am I looking for?
 (1) and (3) are basically the same. (1) can be an alias for (3).
 
 -}
+
+-- | Given a specific file path, print out any potential PKGBUILD exploits and
+-- exit the program aggressively to force a naughty exit code.
+exploitsFromFile :: FilePath -> RIO Env ()
+exploitsFromFile = readFileBinary >=> findExploits . Pkgbuild
 
 findExploits :: Pkgbuild -> RIO Env ()
 findExploits pb = case parsedPB pb of

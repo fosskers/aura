@@ -2,7 +2,7 @@ module Aura.Flags
   ( Program(..), opts
   , PacmanOp( Sync ), SyncOp( SyncUpgrade ), SyncSwitch(..), MiscOp
   , AuraOp(..), AurSwitch(..), _AurSync, _AurIgnore, _AurIgnoreGroup
-  , AurOp(..), BackupOp(..), CacheOp(..), LogOp(..), OrphanOp(..)
+  , AurOp(..), BackupOp(..), CacheOp(..), LogOp(..), OrphanOp(..), AnalysisOp(..)
   ) where
 
 import           Aura.Cache (defaultPackageCache)
@@ -36,14 +36,15 @@ data Program = Program {
   } deriving (Show)
 
 -- | Inherited operations that are fed down to Pacman.
-data PacmanOp = Database (Either DatabaseOp (NonEmpty PkgName))
-              | Files    (Set FilesOp)
-              | Query    (Either QueryOp (Set QueryFilter, Set PkgName))
-              | Remove   (Set RemoveOp) (NonEmpty PkgName)
-              | Sync     (Either (NonEmpty SyncOp) (Set PkgName)) (Set SyncSwitch)
-              | TestDeps (NonEmpty Text)
-              | Upgrade  (Set UpgradeSwitch) (NonEmpty PkgName)
-              deriving (Show)
+data PacmanOp
+  = Database (Either DatabaseOp (NonEmpty PkgName))
+  | Files    (Set FilesOp)
+  | Query    (Either QueryOp (Set QueryFilter, Set PkgName))
+  | Remove   (Set RemoveOp) (NonEmpty PkgName)
+  | Sync     (Either (NonEmpty SyncOp) (Set PkgName)) (Set SyncSwitch)
+  | TestDeps (NonEmpty Text)
+  | Upgrade  (Set UpgradeSwitch) (NonEmpty PkgName)
+  deriving (Show)
 
 instance Flagable PacmanOp where
   asFlag (Database (Left o))      = "-D" : asFlag o
@@ -57,23 +58,25 @@ instance Flagable PacmanOp where
   asFlag (TestDeps ps)            = "-T" : asFlag ps
   asFlag (Upgrade s ps)           = "-U" : asFlag s ++ asFlag ps
 
-data DatabaseOp = DBCheck
-                | DBAsDeps     (NonEmpty Text)
-                | DBAsExplicit (NonEmpty Text)
-                deriving (Show)
+data DatabaseOp
+  = DBCheck
+  | DBAsDeps     (NonEmpty Text)
+  | DBAsExplicit (NonEmpty Text)
+  deriving (Show)
 
 instance Flagable DatabaseOp where
   asFlag DBCheck           = ["--check"]
   asFlag (DBAsDeps ps)     = "--asdeps" : asFlag ps
   asFlag (DBAsExplicit ps) = "--asexplicit" : asFlag ps
 
-data FilesOp = FilesList  (NonEmpty Text)
-             | FilesOwns   Text
-             | FilesSearch Text
-             | FilesRegex
-             | FilesRefresh
-             | FilesMachineReadable
-             deriving (Eq, Ord, Show)
+data FilesOp
+  = FilesList  (NonEmpty Text)
+  | FilesOwns   Text
+  | FilesSearch Text
+  | FilesRegex
+  | FilesRefresh
+  | FilesMachineReadable
+  deriving (Eq, Ord, Show)
 
 instance Flagable FilesOp where
   asFlag (FilesList fs)       = "--list" : asFlag fs
@@ -83,15 +86,16 @@ instance Flagable FilesOp where
   asFlag FilesRefresh         = ["--refresh"]
   asFlag FilesMachineReadable = ["--machinereadable"]
 
-data QueryOp = QueryChangelog (NonEmpty Text)
-             | QueryGroups    (NonEmpty Text)
-             | QueryInfo      (NonEmpty Text)
-             | QueryCheck     (NonEmpty Text)
-             | QueryList      (NonEmpty Text)
-             | QueryOwns      (NonEmpty Text)
-             | QueryFile      (NonEmpty Text)
-             | QuerySearch     Text
-             deriving (Show)
+data QueryOp
+  = QueryChangelog (NonEmpty Text)
+  | QueryGroups    (NonEmpty Text)
+  | QueryInfo      (NonEmpty Text)
+  | QueryCheck     (NonEmpty Text)
+  | QueryList      (NonEmpty Text)
+  | QueryOwns      (NonEmpty Text)
+  | QueryFile      (NonEmpty Text)
+  | QuerySearch     Text
+  deriving (Show)
 
 instance Flagable QueryOp where
   asFlag (QueryChangelog ps) = "--changelog" : asFlag ps
@@ -103,13 +107,14 @@ instance Flagable QueryOp where
   asFlag (QueryFile ps)      = "--file" : asFlag ps
   asFlag (QuerySearch t)     = ["--search", t]
 
-data QueryFilter = QueryDeps
-                 | QueryExplicit
-                 | QueryForeign
-                 | QueryNative
-                 | QueryUnrequired
-                 | QueryUpgrades
-                 deriving (Eq, Ord, Show)
+data QueryFilter
+  = QueryDeps
+  | QueryExplicit
+  | QueryForeign
+  | QueryNative
+  | QueryUnrequired
+  | QueryUpgrades
+  deriving (Eq, Ord, Show)
 
 instance Flagable QueryFilter where
   asFlag QueryDeps       = ["--deps"]
@@ -119,11 +124,12 @@ instance Flagable QueryFilter where
   asFlag QueryUnrequired = ["--unrequired"]
   asFlag QueryUpgrades   = ["--upgrades"]
 
-data RemoveOp = RemoveCascade
-              | RemoveNoSave
-              | RemoveRecursive
-              | RemoveUnneeded
-              deriving (Eq, Ord, Show)
+data RemoveOp
+  = RemoveCascade
+  | RemoveNoSave
+  | RemoveRecursive
+  | RemoveUnneeded
+  deriving (Eq, Ord, Show)
 
 instance Flagable RemoveOp where
   asFlag RemoveCascade   = ["--cascade"]
@@ -131,14 +137,15 @@ instance Flagable RemoveOp where
   asFlag RemoveRecursive = ["--recursive"]
   asFlag RemoveUnneeded  = ["--unneeded"]
 
-data SyncOp = SyncClean
-            | SyncGroups   (NonEmpty Text)
-            | SyncInfo     (NonEmpty Text)
-            | SyncList      Text
-            | SyncSearch   (NonEmpty Text)
-            | SyncUpgrade  (Set Text)
-            | SyncDownload (NonEmpty Text)
-            deriving (Eq, Ord, Show)
+data SyncOp
+  = SyncClean
+  | SyncGroups   (NonEmpty Text)
+  | SyncInfo     (NonEmpty Text)
+  | SyncList      Text
+  | SyncSearch   (NonEmpty Text)
+  | SyncUpgrade  (Set Text)
+  | SyncDownload (NonEmpty Text)
+  deriving (Eq, Ord, Show)
 
 instance Flagable SyncOp where
   asFlag SyncClean         = ["--clean"]
@@ -149,11 +156,12 @@ instance Flagable SyncOp where
   asFlag (SyncUpgrade ps)  = "--sysupgrade" : asFlag ps
   asFlag (SyncDownload ps) = "--downloadonly" : asFlag ps
 
-data SyncSwitch = SyncRefresh
-                | SyncIgnore      (Set PkgName)
-                | SyncIgnoreGroup (Set PkgGroup)
-                | SyncOverwrite   Text
-                deriving (Eq, Ord, Show)
+data SyncSwitch
+  = SyncRefresh
+  | SyncIgnore      (Set PkgName)
+  | SyncIgnoreGroup (Set PkgGroup)
+  | SyncOverwrite   Text
+  deriving (Eq, Ord, Show)
 
 instance Flagable SyncSwitch where
   asFlag SyncRefresh          = ["--refresh"]
@@ -161,12 +169,13 @@ instance Flagable SyncSwitch where
   asFlag (SyncIgnoreGroup gs) = ["--ignoregroup" , T.intercalate "," $ asFlag gs ]
   asFlag (SyncOverwrite glob) = "--overwrite" : asFlag glob
 
-data UpgradeSwitch = UpgradeAsDeps
-                   | UpgradeAsExplicit
-                   | UpgradeIgnore      (Set PkgName)
-                   | UpgradeIgnoreGroup (Set PkgGroup)
-                   | UpgradeOverwrite   Text
-                   deriving (Eq, Ord, Show)
+data UpgradeSwitch
+  = UpgradeAsDeps
+  | UpgradeAsExplicit
+  | UpgradeIgnore      (Set PkgName)
+  | UpgradeIgnoreGroup (Set PkgGroup)
+  | UpgradeOverwrite   Text
+  deriving (Eq, Ord, Show)
 
 instance Flagable UpgradeSwitch where
   asFlag UpgradeAsDeps           = ["--asdeps"]
@@ -176,22 +185,23 @@ instance Flagable UpgradeSwitch where
   asFlag (UpgradeOverwrite glob) = "--overwrite" : asFlag glob
 
 -- | Flags common to several Pacman operations.
-data MiscOp = MiscArch    FilePath
-            | MiscAssumeInstalled Text
-            | MiscColor   Text
-            | MiscConfirm
-            | MiscDBOnly
-            | MiscDBPath  FilePath
-            | MiscGpgDir  FilePath
-            | MiscHookDir FilePath
-            | MiscNoDeps
-            | MiscNoProgress
-            | MiscNoScriptlet
-            | MiscPrint
-            | MiscPrintFormat Text
-            | MiscRoot    FilePath
-            | MiscVerbose
-            deriving (Eq, Ord, Show)
+data MiscOp
+  = MiscArch    FilePath
+  | MiscAssumeInstalled Text
+  | MiscColor   Text
+  | MiscConfirm
+  | MiscDBOnly
+  | MiscDBPath  FilePath
+  | MiscGpgDir  FilePath
+  | MiscHookDir FilePath
+  | MiscNoDeps
+  | MiscNoProgress
+  | MiscNoScriptlet
+  | MiscPrint
+  | MiscPrintFormat Text
+  | MiscRoot    FilePath
+  | MiscVerbose
+  deriving (Eq, Ord, Show)
 
 instance Flagable MiscOp where
   asFlag (MiscArch p)            = ["--arch", T.pack p]
@@ -211,33 +221,36 @@ instance Flagable MiscOp where
   asFlag MiscVerbose             = ["--verbose"]
 
 -- | Operations unique to Aura.
-data AuraOp = AurSync (Either AurOp (NonEmpty PkgName)) (Set AurSwitch)
-            | Backup  (Maybe  BackupOp)
-            | Cache   (Either CacheOp (NonEmpty PkgName))
-            | Log     (Maybe  LogOp)
-            | Orphans (Maybe  OrphanOp)
-            | Version
-            | Languages
-            | ViewConf
-            deriving (Show)
+data AuraOp
+  = AurSync (Either AurOp (NonEmpty PkgName)) (Set AurSwitch)
+  | Backup  (Maybe  BackupOp)
+  | Cache   (Either CacheOp (NonEmpty PkgName))
+  | Log     (Maybe  LogOp)
+  | Orphans (Maybe  OrphanOp)
+  | Version
+  | Languages
+  | ViewConf
+  deriving (Show)
 
 _AurSync :: Traversal' AuraOp (Set AurSwitch)
 _AurSync f (AurSync o s) = AurSync o <$> f s
 _AurSync _ x             = pure x
 
-data AurOp = AurDeps     (NonEmpty PkgName)
-           | AurInfo     (NonEmpty PkgName)
-           | AurPkgbuild (NonEmpty PkgName)
-           | AurSearch    Text
-           | AurUpgrade  (Set PkgName)
-           | AurJson     (NonEmpty PkgName)
-           | AurTarball  (NonEmpty PkgName)
-           deriving (Show)
+data AurOp
+  = AurDeps     (NonEmpty PkgName)
+  | AurInfo     (NonEmpty PkgName)
+  | AurPkgbuild (NonEmpty PkgName)
+  | AurSearch    Text
+  | AurUpgrade  (Set PkgName)
+  | AurJson     (NonEmpty PkgName)
+  | AurTarball  (NonEmpty PkgName)
+  deriving (Show)
 
-data AurSwitch = AurIgnore      (Set PkgName)
-               | AurIgnoreGroup (Set PkgGroup)
-               | AurRepoSync
-               deriving (Eq, Ord, Show)
+data AurSwitch
+  = AurIgnore      (Set PkgName)
+  | AurIgnoreGroup (Set PkgGroup)
+  | AurRepoSync
+  deriving (Eq, Ord, Show)
 
 _AurIgnore :: Traversal' AurSwitch (Set PkgName)
 _AurIgnore f (AurIgnore s) = AurIgnore <$> f s
@@ -247,13 +260,33 @@ _AurIgnoreGroup :: Traversal' AurSwitch (Set PkgGroup)
 _AurIgnoreGroup f (AurIgnoreGroup s) = AurIgnoreGroup <$> f s
 _AurIgnoreGroup _ x                  = pure x
 
-data BackupOp = BackupClean Word | BackupRestore | BackupList deriving (Show)
+data BackupOp
+  = BackupClean Word
+  | BackupRestore
+  | BackupList deriving (Show)
 
-data CacheOp = CacheBackup FilePath | CacheClean Word | CacheCleanNotSaved | CacheSearch Text deriving (Show)
+data CacheOp
+  = CacheBackup FilePath
+  | CacheClean Word
+  | CacheCleanNotSaved
+  | CacheSearch Text
+  deriving (Show)
 
-data LogOp = LogInfo (NonEmpty PkgName) | LogSearch Text deriving (Show)
+data LogOp
+  = LogInfo (NonEmpty PkgName)
+  | LogSearch Text
+  deriving (Show)
 
-data OrphanOp = OrphanAbandon | OrphanAdopt (NonEmpty PkgName) deriving (Show)
+data OrphanOp
+  = OrphanAbandon
+  | OrphanAdopt (NonEmpty PkgName)
+  deriving (Show)
+
+data AnalysisOp
+  = AnalysisFile FilePath
+  | AnalysisDir FilePath
+  | AnalysisStdin
+  deriving (Show)
 
 opts :: ParserInfo Program
 opts = info (program <**> helper)
