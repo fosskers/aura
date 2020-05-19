@@ -24,6 +24,8 @@ module Aura.Core
   , checkDBLock
     -- * Misc. Package Handling
   , removePkgs, partitionPkgs
+    -- * Content Diffing
+  , diff
     -- * IO
   , notify, warn, scold, report
   ) where
@@ -47,6 +49,7 @@ import qualified RIO.List as L
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
+import           System.Process.Typed (proc, runProcess)
 
 ---
 
@@ -178,6 +181,20 @@ checkDBLock :: Settings -> IO ()
 checkDBLock ss = do
   locked <- doesFileExist lockFile
   when locked $ warn ss checkDBLock_1 *> B.getLine *> checkDBLock ss
+
+----------
+-- DIFFING
+----------
+
+-- | Given two filepaths, output the diff of the two files.
+-- Output will be coloured unless colour is deactivated by
+-- `--color never` or by detection of a non-terminal output
+-- target.
+diff :: MonadIO m => Settings -> FilePath -> FilePath -> m ()
+diff ss f1 f2 = void . runProcess . proc "diff" $ c <> ["-u", f1, f2]
+  where
+    c :: [FilePath]
+    c = bool ["--color"] [] $ shared ss (Colour Never)
 
 -------
 -- MISC  -- Too specific for `Utilities.hs` or `Aura.Utils`

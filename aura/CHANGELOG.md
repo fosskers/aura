@@ -17,7 +17,9 @@
   built and stored in `/var/cache/aura/vcs`. **Subsequent builds will no longer
   reclone everything.** [#462](https://github.com/fosskers/aura/issues/462)
 - `--hotedit` will now offer to edit `.install` and `.patch` files. [#208](https://github.com/fosskers/aura/issues/208)
-- Some modules have been renamed and moved around, particularly on the `exec` side.
+- Some modules have been renamed and moved around.
+- `Aura.Diff` and `Aura.Pkgbuild.Base` have had their contents folded into other
+  modules.
 
 #### Fixed
 

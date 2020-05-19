@@ -20,7 +20,6 @@ import           Aura.Cache (Cache(..), cacheContents)
 import           Aura.Colour
 import           Aura.Core
 import           Aura.Dependencies (resolveDeps)
-import           Aura.Diff (diff)
 import           Aura.IO
 import           Aura.Languages
 import           Aura.Packages.AUR (aurLookup)
