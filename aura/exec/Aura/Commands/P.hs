@@ -18,19 +18,9 @@ import Aura.Pkgbuild.Security
 import Aura.Security
 import Aura.Types
 import RIO
+import RIO.ByteString (getContents)
 
 ---
-
-{-
-What functionality am I looking for?
-
-1. Directory-based analysis.
-2. Stdin-based analysis, for piping from -Ap.
-3. File-based analysis for passing a full-path.
-
-(1) and (3) are basically the same. (1) can be an alias for (3).
-
--}
 
 -- | Given a specific file path, print out any potential PKGBUILD exploits and
 -- exit the program aggressively to force a naughty exit code.
@@ -38,7 +28,7 @@ exploitsFromFile :: FilePath -> RIO Env ()
 exploitsFromFile = readFileBinary >=> findExploits . Pkgbuild
 
 exploitsFromStdin :: RIO Env ()
-exploitsFromStdin = undefined
+exploitsFromStdin = getContents >>= findExploits . Pkgbuild
 
 findExploits :: Pkgbuild -> RIO Env ()
 findExploits pb = case parsedPB pb of
