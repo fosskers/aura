@@ -1,5 +1,5 @@
 # Stack is unhappy without a `ghc` attribute argument
-{ common ? import ./. args, ghc ? null, ... } @ args:
+{ ghc ? null, common ? import ./. args, ... } @ args:
 
 let
   inherit (common) pkgs ghc;

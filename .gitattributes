@@ -1,0 +1,4 @@
+# Nix
+/nix/sources.nix linguist-vendored
+/nix/sources.json linguist-generated
+/nix/*-stack2nix-output.nix linguist-generated

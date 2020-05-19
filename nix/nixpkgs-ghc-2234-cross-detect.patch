@@ -1,0 +1,24 @@
+--- a/pkgs/development/compilers/ghc/8.8.3.nix
++++ b/pkgs/development/compilers/ghc/8.8.3.nix
+@@ -2,7 +2,7 @@
+
+ # build-tools
+ , bootPkgs
+-, autoconf, automake, coreutils, fetchurl, perl, python3, m4, sphinx
++, autoconf, automake, coreutils, fetchpatch, fetchurl, perl, python3, m4, sphinx
+ , bash
+
+ , libiconv ? null, ncurses
+@@ -100,6 +100,11 @@
+
+   outputs = [ "out" "doc" ];
+
++  patches = [ (fetchpatch {
++    url = "https://gitlab.haskell.org/ghc/ghc/commit/4cbd5b47a00a29b7835710f1b91bb93ac8e3f790.patch";
++    sha256 = "09z0l2yy41b7wpp70f9xwfyxmar8ics48hm34892aqvrk715h8jk";
++  }) ];
++
+   postPatch = "patchShebangs .";
+
+   # GHC is a bit confused on its cross terminology.
+

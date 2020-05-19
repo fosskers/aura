@@ -1,0 +1,117 @@
+--- a/README.md
++++ b/README.md
+@@ -54,3 +54,13 @@
+ ## Testing
+ 
+ Run `./scripts/travis.sh` to build and test.
++
++## Development
++
++### Updating GHC base packages
++
++```
++curl https://raw.githubusercontent.com/bgamari/ghc-utils/master/library-versions/pkg_versions.txt > pkg_versions.txt
++```
++
++then check it into the repo.
+--- a/src/Stack2nix/External/Stack.hs
++++ b/src/Stack2nix/External/Stack.hs
+@@ -18,6 +18,7 @@
+ import           Distribution.Nixpkgs.Haskell.Derivation        (Derivation,
+                                                                  configureFlags)
+ import qualified Distribution.Nixpkgs.Haskell.Hackage           as DB
++import           Distribution.Pretty                            (prettyShow)
+ import           Distribution.Types.Version                     (nullVersion, versionNumbers)
+ import           Options.Applicative
+ import           Path                                           (parseRelFile, parseAbsDir, fromAbsDir)
+@@ -141,7 +142,10 @@
+     )
+     pkgs
+   let locals = M.elems . M.map (\ local -> show . cpName . ppCommon $ local) . smProject $ sourceMap
+-  liftIO . render drvs args locals $ (mconcat . map show . versionNumbers $ ghcVersion)
++  basePackageNames <- case M.lookup (prettyShow ghcVersion) ghcBaseLibsMap of
++    Nothing -> fail $ "GHC version " ++ prettyShow ghcVersion ++ " was not in compiled-in pkg_versions.txt!"
++    Just names -> pure (Set.fromList names)
++  liftIO . render drvs args locals (mconcat . map show . versionNumbers $ ghcVersion) $ basePackageNames
+
+ -- | Add ghc-options declared in stack.yaml to the nix derivation for a package
+ --   by adding to the configureFlags attribute of the derivation
+@@ -219,3 +223,5 @@
+
+ buildOpts :: BuildOptsCLI
+ buildOpts = fromJust . getParseResult $ execParserPure defaultPrefs (info (buildOptsParser Build) briefDesc) ["--dry-run"]
++
++ghcBaseLibsMap :: Map String [String]
+--- a/src/Stack2nix/Render.hs
++++ b/src/Stack2nix/Render.hs
+@@ -40,58 +40,8 @@
+                                                           pPrint, punctuate,
+                                                           semi, space, text)
+
+--- Boot packages (wired-in and non-wired-in).
+--- These are set to `null` in the generated nix package set.
+--- The wired-in packages follow
+---    * https://github.com/commercialhaskell/stack/blob/d8e942ea69eb189f67a045f0c595612034dbb75d/src/Stack/Constants.hs#L102
+---    * https://downloads.haskell.org/~ghc/7.10.1/docs/html/libraries/ghc/src/Module.html#integerPackageKey
+--- For recent GHC releases:
+---    * https://github.com/ghc/ghc/blob/ghc-8.2.2-release/compiler/basicTypes/Module.hs#L1073
+---    * https://github.com/ghc/ghc/blob/ghc-8.4.4-release/compiler/basicTypes/Module.hs#L1078
+---    * https://github.com/ghc/ghc/blob/ghc-8.6.4-release/compiler/basicTypes/Module.hs#L1066 (got rid of "dph-seq" and "dph-par")
+---    * https://github.com/ghc/ghc/blob/334dd6da47326f47b/compiler/basicTypes/Module.hs#L1088 (in-progress 8.8)
+--- TODO: This should probably be dependent on the GHC version used.
+---       A split into wired-in and not-wired-in packages may also be advisable.
+-basePackages :: Set String
+-basePackages = Set.fromList
+-  [ "array"
+-  , "base"
+-  -- bin-package-db is in GHC 7.10's boot libraries
+-  , "bin-package-db"
+-  , "binary"
+-  , "bytestring"
+-  , "Cabal"
+-  , "containers"
+-  , "deepseq"
+-  , "directory"
+-  , "dph-par" -- for GHC < 8.6
+-  , "dph-seq" -- for GHC < 8.6
+-  , "filepath"
+-  , "ghc"
+-  , "ghc-boot"
+-  , "ghc-boot-th"
+-  , "ghc-prim"
+-  , "ghci"
+-  , "haskeline"
+-  , "hoopl"
+-  , "hpc"
+-  , "integer-gmp" -- for GHC < 8.8
+-  , "integer-simple" -- for GHC < 8.8
+-  , "integer-wired-in" -- for GHC >= 8.8, see https://gitlab.haskell.org/ghc/ghc/commit/fc2ff6dd7496a33bf68165b28f37f40b7d647418
+-  , "interactive"
+-  , "pretty"
+-  , "process"
+-  , "rts"
+-  , "template-haskell"
+-  , "terminfo"
+-  , "time"
+-  , "transformers"
+-  , "unix"
+-  , "xhtml"
+-  ]
+-
+-render :: [Either Doc Derivation] -> Args -> [String] -> String -> IO ()
+-render results args locals ghcnixversion = do
++render :: [Either Doc Derivation] -> Args -> [String] -> String -> Set String -> IO ()
++render results args locals ghcnixversion basePackages = do
+    let docs = lefts results
+    when (length docs > 0) $ do
+      hPutStrLn stderr $ show docs
+--- a/stack2nix.cabal
++++ b/stack2nix.cabal
+@@ -11,6 +11,7 @@
+ extra-source-files:
+   README.md
+   ChangeLog.md
++  pkg_versions.txt
+ cabal-version:       >= 1.10
+
+ source-repository head

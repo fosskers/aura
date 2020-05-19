@@ -1,0 +1,28 @@
+--- a/survey/default.nix
++++ b/survey/default.nix
+@@ -45,6 +45,7 @@
+       ghc864 = throw "static-haskell-nix: ghc863 is no longer supported, please upgrade";
+       ghc865 = "Cabal_2_4_1_0"; # TODO this is technically incorrect for ghc 8.6.5, should be 2.4.0.1, but nixpkgs doesn't have that
+       ghc881 = "Cabal_3_0_0_0";
++      ghc883 = "Cabal"; # "Cabal_3_0_1_0"; # TODO this is technically incorrect for ghc 8.8.3, should be 3.0.1.0, but nixpkgs doesn't have that
+     }."${compiler}"),
+
+   # Use `integer-simple` instead of `integer-gmp` to avoid linking in
+@@ -336,7 +337,7 @@
+     in
+       patchOnCabalLibraryFilesOnly;
+
+-  applyPatchesToCabalDrv = cabalDrv: pkgs.haskell.lib.overrideCabal cabalDrv (old: {
++  applyPatchesToCabalDrv = cabalDrv: if cabalDrv == null then pkgs.lib.warn "applyPatchesToCabalDrv given a null Cabal (should be >= 3.0.0.0)" null else pkgs.haskell.lib.overrideCabal cabalDrv (old: {
+     patches =
+       # Patches we know are merged in a certain cabal version
+       # (we include them conditionally here anyway, for the case
+@@ -411,7 +412,7 @@
+           map patchIfCabal nonNullPackageList;
+       fixedCabal = buildPlatformHaskellPackagesWithFixedCabal.Cabal;
+     in
+-      drv: (pkgs.haskell.lib.overrideCabal drv (old: {
++      if fixedCabal == null then drv: drv else drv: (pkgs.haskell.lib.overrideCabal drv (old: {
+         # If the package already depends on some explicit version
+         # of Cabal, patch it, so that it has --enable-executable-static.
+         # If it doesn't (it depends on the version of Cabal that comes

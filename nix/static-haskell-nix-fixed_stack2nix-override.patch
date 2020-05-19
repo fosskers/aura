@@ -1,0 +1,46 @@
+--- a/static-stack2nix-builder/default.nix
++++ a/static-stack2nix-builder/default.nix
+@@ -11,6 +11,7 @@
+   #     <command line>: cannot satisfy -package-id Cabal-2.4.1.0-ALhzvdqe44A7vLWPOxSupv
+   # TODO: Make `stack2nix` tell us that.
+   compiler ? "ghc864",
++  defaultCabalPackageVersionComingWithGhc ? null,
+ 
+   # Path to `stack2nix` output that shall be used as Haskell packages.
+   # You should usually give this the store path that `stack2nix-script` outputs.
+@@ -31,6 +32,7 @@
+   static-haskell-nix_pkgsMusl = (import ../survey/default.nix {
+     inherit normalPkgs;
+     inherit compiler;
++    ${if defaultCabalPackageVersionComingWithGhc == null then null else "defaultCabalPackageVersionComingWithGhc"} = defaultCabalPackageVersionComingWithGhc;
+     inherit disableOptimization;
+   }).pkgs;
+ 
+@@ -45,6 +47,7 @@
+   haskell-static-nix_output = (import ../survey/default.nix {
+     normalPkgs = pkgs_with_stack2nix_packages_inside;
+     inherit compiler;
++    ${if defaultCabalPackageVersionComingWithGhc == null then null else "defaultCabalPackageVersionComingWithGhc"} = defaultCabalPackageVersionComingWithGhc;
+     inherit disableOptimization;
+     inherit integer-simple;
+   });
+--- a/static-stack2nix-builder/stack2nix-script.nix
++++ b/static-stack2nix-builder/stack2nix-script.nix
+@@ -24,6 +24,8 @@
+   # e.g. when adding extra cabal flags to packages for static builds,
+   # such as the `integer-simple` flag to the `text` library.
+   stack-yaml ? "stack.yaml",
++
++  stack2nix ? null,
+ }:
+   # `stack2nix` requires `cabal` on $PATH.
+   # We put our nixpkgs's version of `nix` on $PATH for reproducibility.
+@@ -49,7 +51,7 @@
+       "${pkgs.wget}/bin" # `wget`
+     ];
+ 
+-    fixed_stack2nix =
++    fixed_stack2nix = if stack2nix != null then stack2nix else
+       let
+         # stack2nix isn't compatible with Stack >= 2.0, see
+         # https://github.com/input-output-hk/stack2nix/issues/168.
