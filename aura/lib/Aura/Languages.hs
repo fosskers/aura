@@ -1584,6 +1584,14 @@ security_10 (bt -> t) = \case
   Dutch     -> t <+> "impliceert dat iemand slim probeerde om te gaan met variabelen om schadelijke opdrachten te verbergen."
   _ -> t <+> "implies that someone was trying to be clever with variables to hide malicious commands."
 
+security_11 :: Language -> Doc AnsiStyle
+security_11 = \case
+  _ -> "That PKGBUILD is too complex to parse - it may be obfuscating malicious code."
+
+security_12 :: Language -> Doc AnsiStyle
+security_12 = \case
+  _ -> "Potential PKGBUILD vulnerabilities detected."
+
 -----------------------
 -- Aura/Utils functions
 -----------------------

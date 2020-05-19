@@ -80,6 +80,7 @@ library
     Aura.Pkgbuild.Fetch
     Aura.Pkgbuild.Records
     Aura.Pkgbuild.Security
+    Aura.Security
     Aura.Settings
     Aura.Settings.External
     Aura.Shell
@@ -107,6 +108,7 @@ executable aura
     Aura.Commands.C
     Aura.Commands.L
     Aura.Commands.O
+    Aura.Commands.P
     Aura.Flags
     Aura.Settings.Runtime
 

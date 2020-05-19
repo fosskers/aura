@@ -27,22 +27,19 @@ import           Aura.Packages.AUR (aurLookup)
 import           Aura.Pacman (pacman, pacmanSuccess)
 import           Aura.Pkgbuild.Base
 import           Aura.Pkgbuild.Records
-import           Aura.Pkgbuild.Security
+import           Aura.Security
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
-import           Language.Bash.Pretty (prettyText)
-import           Language.Bash.Syntax (ShellCommand)
 import           RIO
 import           RIO.Directory (setCurrentDirectory)
 import qualified RIO.List as L
 import qualified RIO.Map as M
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
-import qualified RIO.Text as T
 
 ---
 
@@ -98,27 +95,6 @@ install' pkgs = do
                 let !mbuildPkgs = NEL.nonEmpty buildPkgs
                 traverse_ (liftIO . storePkgbuilds . fold1) mbuildPkgs
                 traverse_ buildAndInstall mbuildPkgs
-
--- | Determine if a package's PKGBUILD might contain malicious bash code.
-analysePkgbuild :: Buildable -> RIO Env ()
-analysePkgbuild b = do
-  ss <- asks settings
-  let f = do
-        yes <- liftIO $ optionalPrompt ss security_6
-        when yes . throwM $ Failure security_7
-  case parsedPB $ bPkgbuild b of
-    Nothing -> warn ss (security_1 $ bName b) *> f
-    Just l  -> case bannedTerms l of
-      []  -> pure ()
-      bts -> do
-        scold ss . security_5 $ bName b
-        liftIO $ traverse_ (displayBannedTerms ss) bts
-        f
-
-displayBannedTerms :: Settings -> (ShellCommand, BannedTerm) -> IO ()
-displayBannedTerms ss (stmt, b) = do
-  putTextLn . T.pack $ "\n    " <> prettyText stmt <> "\n"
-  warn ss $ reportExploit b
 
 -- | Give anything that was installed as a dependency the /Install Reason/ of
 -- "Installed as a dependency for another package".
