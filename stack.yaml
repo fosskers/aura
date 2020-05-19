@@ -1,4 +1,4 @@
-resolver: lts-15.12
+resolver: lts-15.13
 
 ghc-options: {"$locals": -fwrite-ide-info -fmax-relevant-binds=0}
 
@@ -9,4 +9,3 @@ packages:
 
 extra-deps:
   - language-bash-0.9.2
-  - versions-3.5.4

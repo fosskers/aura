@@ -11,16 +11,9 @@ packages:
       sha256: 42fdbbd9c5ba50a4e8a652dab2ff2dc3c5890bdb480c86201d658a5dac42309b
   original:
     hackage: language-bash-0.9.2
-- completed:
-    hackage: versions-3.5.4@sha256:7738fef90048a8f2b48862896692976e66d0b683b9508c0ee23a529e755ad2ec,1904
-    pantry-tree:
-      size: 366
-      sha256: 3b9f21c8ee4ce1d0bf91b39489136958e36354a85949a2c8b99b58ca08fb52cb
-  original:
-    hackage: versions-3.5.4
 snapshots:
 - completed:
-    size: 494635
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/15/12.yaml
-    sha256: a71c4293d8f461f455ff0d9815dfe4ab2f1adacd7e0bbc9a218f46ced8c4929a
-  original: lts-15.12
+    size: 496112
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/15/13.yaml
+    sha256: 75a1a0f870e1876898b117b0e443f911b3fa2985bfabb53158c81ab5765beda5
+  original: lts-15.13
