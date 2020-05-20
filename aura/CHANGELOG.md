@@ -11,6 +11,7 @@
   files manually, as is usually done during building.
   - `-Pf` accepts a path to a PKGBUILD.
   - `-Pd` accepts a path to a directory containing a PKGBUILD.
+  - `-Pa` to scan the PKGBUILDs of all locally installed AUR packages.
   - `-P` on its own will read from stdin. Combine this with `-Ap` to pull from the AUR:
 ```
 > aura -Ap myget | aura -P

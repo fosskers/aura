@@ -142,6 +142,7 @@ execOpts ops = do
       Nothing                -> P.exploitsFromStdin
       Just (AnalysisFile fp) -> P.exploitsFromFile fp
       Just (AnalysisDir fp)  -> P.exploitsFromFile $ fp </> "PKGBUILD"
+      Just AnalysisAudit     -> P.audit
     Right Version   -> liftIO $ versionInfo >>= animateVersionMsg ss auraVersion
     Right Languages -> displayOutputLanguages
     Right ViewConf  -> viewConfFile

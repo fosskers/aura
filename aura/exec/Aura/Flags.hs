@@ -286,6 +286,7 @@ data OrphanOp
 data AnalysisOp
   = AnalysisFile FilePath
   | AnalysisDir FilePath
+  | AnalysisAudit
   deriving (Show)
 
 opts :: ParserInfo Program
@@ -360,9 +361,10 @@ analysis :: Parser AuraOp
 analysis = bigP *> (Analysis <$> optional mods)
   where
     bigP = flag' () (long "analysis" <> short 'P' <> help "Analyse PKGBUILDs for malicious bash code.")
-    mods = file <|> dir
+    mods = file <|> dir <|> audit
     file = AnalysisFile <$> strOption (long "file" <> short 'f' <> metavar "PATH" <> hidden <> help "Path to a PKGBUILD file.")
     dir = AnalysisDir <$> strOption (long "dir" <> short 'd' <> metavar "PATH" <> hidden <> help "Path to a directory containing a PKGBUILD file.")
+    audit = flag' AnalysisAudit (long "audit" <> short 'a' <> hidden <> help "Analyse PKGBUILDs of installed AUR packages.")
 
 version' :: Parser AuraOp
 version' = flag' Version (long "version" <> short 'V' <> help "Display Aura's version.")

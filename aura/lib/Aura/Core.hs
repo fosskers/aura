@@ -124,7 +124,7 @@ trueRoot action = asks settings >>= \ss ->
     then action else throwM $ Failure trueRoot_3
 
 -- | A list of non-prebuilt packages installed on the system.
--- `-Qm` yields a list of sorted values.
+-- @-Qm@ yields a list of sorted values.
 foreignPackages :: IO (Set SimplePkg)
 foreignPackages = S.fromList . mapMaybe simplepkg' <$> pacmanLines ["-Qm"]
 

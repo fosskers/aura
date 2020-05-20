@@ -1,5 +1,6 @@
-{-# LANGUAGE LambdaCase   #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE LambdaCase       #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ViewPatterns     #-}
 
 {-# OPTIONS_HADDOCK prune #-}
 {-# OPTIONS_GHC -fno-warn-missing-export-lists #-}
@@ -119,8 +120,8 @@ translatorMsg lang = title : names
         langNames = languageNames lang
 
 -- | Make some `Text` cyan. Previous wrapped things in backticks.
-bt :: Text -> Doc AnsiStyle
-bt cs = cyan $ pretty cs
+bt :: Pretty a => a -> Doc AnsiStyle
+bt = cyan . pretty
 
 whitespace :: Language -> Char
 whitespace Japanese = '　'  -- \12288
@@ -184,7 +185,7 @@ trueRoot_3 = \case
     _          -> "As of makepkg v4.2, building as root is no longer possible."
 
 mustBeRoot_1 :: Language -> Doc AnsiStyle
-mustBeRoot_1 = let sudo = bt "sudo" in \case
+mustBeRoot_1 = let sudo = bt @Text "sudo" in \case
     Japanese   -> sudo <> "を使わないとそれができない！"
     Polish     -> "Musisz użyć " <> sudo <> ", żeby to zrobić."
     Croatian   -> "Morate koristiti" <> sudo <> "za ovu radnju."
@@ -1591,6 +1592,14 @@ security_11 = \case
 security_12 :: Language -> Doc AnsiStyle
 security_12 = \case
   _ -> "Potential PKGBUILD vulnerabilities detected."
+
+security_13 :: Word -> Language -> Doc AnsiStyle
+security_13 (bt -> w) = \case
+  _ -> "Checking" <+> w <+> "PKGBUILDs for vulnerabilities..."
+
+security_14 :: Language -> Doc AnsiStyle
+security_14 = \case
+  _ -> "No vulnerabilities detected."
 
 -----------------------
 -- Aura/Utils functions
