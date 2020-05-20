@@ -18,12 +18,8 @@ Welcome to the main repository for Aura, a secure, multilingual package manager 
     - [The Aura Philosophy](#the-aura-philosophy)
         - [Aura is Pacman](#aura-is-pacman)
         - [Arch is Arch - AUR is AUR](#arch-is-arch---aur-is-aur)
-        - [All Together](#all-together)
-        - [Quiet Building](#quiet-building)
-        - [Run as Root, Build as a User](#run-as-root-build-as-a-user)
-        - [Know your System](#know-your-system)
+        - [Secure Package Building](#secure-package-building)
         - [Downgradibility](#downgradibility)
-        - [No Orphans](#no-orphans)
         - [Arch Linux for Everyone](#arch-linux-for-everyone)
         - [Haskell](#haskell)
     - [Installation](#installation)
@@ -35,6 +31,8 @@ Welcome to the main repository for Aura, a secure, multilingual package manager 
         - [Downgrading via the Package Cache](#downgrading-via-the-package-cache)
         - [Searching the Pacman Log](#searching-the-pacman-log)
         - [Managing Orphan Packages](#managing-orphan-packages)
+        - [PKGBUILD Security Analysis](#pkgbuild-security-analysis)
+    - [Configuration](#configuration)
     - [Localisation](#localisation)
     - [Credits](#credits)
 - [The `aur` Haskell Library](#the-aur-haskell-library)
@@ -46,7 +44,7 @@ Welcome to the main repository for Aura, a secure, multilingual package manager 
 
 ## What is Aura?
 
-Aura is a package manager for Arch Linux. It's main purpose is as an *AUR
+Aura is a package manager for Arch Linux. Its original purpose is as an *AUR
 helper*, in that it automates the process of installating packages from the Arch
 User Repositories. It is, however, capable of much more.
 
@@ -60,75 +58,47 @@ their sub-options are allowed. Some even hold special meaning in Aura as well.
 ### Arch is Arch - AUR is AUR
 
 `-S` yields pacman packages and *only* pacman packages. This agrees with the
-above. Thus in Aura, the `-A` operation is introduced for obtaining AUR
-packages. `-A` comes with sub-options you're used to (`-u`, `-s`, `-i`, etc.).
+above. In Aura, the `-A` operation is introduced for obtaining AUR packages.
+`-A` comes with sub-options you're used to (`-u`, `-s`, `-i`, etc.).
 
-### All Together
+### Secure Package Building
 
-Dependencies and packages are not built and installed one at a time. Install
-order is as follows:
+PKGBUILDs from the AUR can contain anything. It's a user's responsibility to
+verify the contents of a PKGBUILD before building, but people can make mistakes
+and overlook details. Aura scans PKGBUILDs before building to detect bash misuse
+and other exploits. The `-P` command is also provided for scanning your own
+PKGBUILDs.
 
-1.  All pacman dependencies (all at once).
-2.  All AUR dependencies that don't depend on each other (all at once, in groups).
-3.  All "top level" AUR packages (all at once).
-
-### Quiet Building
-
-By default `makepkg` output is suppressed. If you want the people behind you to
-think you're a cool hacker, then this suppression can be disabled by using `-x`
-alongside `-A`.
-
-### Run as Root, Build as a User
-
-`makepkg` gets very upset if you try to build a package as root. That said, a
-built package can't be handed off to pacman and installed if you *don't* run as
-root. Other AUR helpers ignore this problem, but Aura does not. Even when run
-with `sudo`, packages are built with normal user privileges, then handed to
-pacman and installed as root.
-
-### Know your System
-
-Editing PKGBUILDs mid-build is not default behaviour. An Arch user should know
-*exactly* what they're putting into their system, thus research into prospective
-packages should be done beforehand. However, for functionality's sake, the
-option `--hotedit` used with `-A` will prompt the user for PKGBUILD editing.
-Regardless, as a responsible user you must know what you are building.
+Also, while pre-build PKGBUILD editing is not default behaviour, this can be
+achieved with `--hotedit`.
 
 ### Downgradibility
 
-Built AUR package files are moved to the package cache. This allows for them to
-be easily downgraded when problems arise. Other top AUR helper programs do not
-do this. The option `-B` will save a package state, and `-Br` will restore a
-state you select. `-Au` also automatically invokes a save, to help you roll back
-from problematic updates.
-
-### No Orphans
-
-Sometimes dependencies lose their *required* status, but remain installed on
-your system. Sometimes AUR package `makedepends` aren't required at all after
-install. Packages like this just sit there, receiving upgrades for no reason.
-Aura helps keep track of and remove packages like this.
+Aura allows you to downgrade individual packages to previous versions with `-C`.
+It also handles snapshots of your entire system, so that you can roll back whole
+sets of packages when problems arise. The option `-B` will save a package state,
+and `-Br` will restore a state you select. `-Su` and `-Au` also invoke a save
+automatically.
 
 ### Arch Linux for Everyone
 
-English is well established as the world's Lingua Franca, and is also the
-dominant language of computing and the internet. That said, it's natural that
-some people are going to be more comfortable working in their native language.
-From the beginning Aura has been built with multiple-language support in mind,
-making it very easy to add new ones.
+English is the dominant language of computing and the internet. That said, it's
+natural that some people are going to be more comfortable working in their
+native language. From the beginning, Aura has been built with multiple-language
+support in mind, making it very easy to add new ones.
 
 ### Haskell
 
 Aura is written in Haskell, which means easy development and beautiful code.
-Please feel free to use it as a simple Haskell reference. Aura code
-demonstrates:
+Please feel free to use it as a Haskell reference. Aura code demonstrates:
 
--   Parser Combinators (`megaparsec`)
--   CLI Flag Handling (`optparse-applicative`)
--   Concurrency (`scheduler`)
--   Shell Interaction (`typed-process`)
--   Pretty Printing (`prettyprinter`)
--   Logging (`rio`)
+- Parser combinators (`megaparsec`)
+- CLI flag handling (`optparse-applicative`)
+- Concurrency (`scheduler`)
+- Shell interaction (`typed-process`)
+- Pretty printing (`prettyprinter`)
+- Logging (`rio`)
+- Modern Haskell project architecture (config, CI, distribution)
 
 ## Installation
 
@@ -159,6 +129,8 @@ complete, your `aura` binary will be available in `/home/YOU/.local/bin/`.
 
 ## Sample Usage
 
+Full usage information can be found in Aura's man page.
+
 ### Installing Packages
 
 | Command              | Function                                                                              |
@@ -169,6 +141,7 @@ complete, your `aura` binary will be available in `/home/YOU/.local/bin/`.
 | `aura -Ai <package>` | Look up information on an AUR package.                                                |
 | `aura -As <regex>`   | Search the AUR via a regex.                                                           |
 | `aura -Ap <package>` | Display a package's PKGBUILD.                                                         |
+| `aura -Ad <package>` | List a package's dependencies.
 
 ### Package Set Snapshots
 
@@ -177,6 +150,7 @@ complete, your `aura` binary will be available in `/home/YOU/.local/bin/`.
 | `aura -B`      | Store a JSON record of all installed packages.                  |
 | `aura -Br`     | Restore a saved record. Rolls back and uninstalls as necessary. |
 | `aura -Bc <n>` | Delete all but the most recent `n` saved states.                |
+| `aura -Bl`     | Show all saved package state filenames.                         |
 
 ### Downgrading via the Package Cache
 
@@ -199,11 +173,30 @@ complete, your `aura` binary will be available in `/home/YOU/.local/bin/`.
 Orphan packages are those whose install reason is marked as "As Dependency", but
 are not actually depended upon by any installed package.
 
-| Command                     | Function                                                     |
-|-----------------------------|--------------------------------------------------------------|
-| `aura -O`                   | Display orphan packages.                                     |
-| `aura -O --adopt <package>` | Change a package's install reason to `Explicitly installed`. |
-| `aura -Oj`                  | Uninstall all orphan packages.                               |
+| Command              | Function                                                     |
+|----------------------|--------------------------------------------------------------|
+| `aura -O`            | Display orphan packages.                                     |
+| `aura -Oa <package>` | Change a package's install reason to `Explicitly installed`. |
+| `aura -Oj`           | Uninstall all orphan packages.                               |
+
+### PKGBUILD Security Analysis
+
+As mentioned above, the `-P` commands can help us detect bash usage that
+conflicts with the AUR guidelines, as well as outright exploits.
+
+| Command           | Function                                        |
+|-------------------|-------------------------------------------------|
+| `aura -P <stdin>` | Analyse a PKGBUILD piped from `-Ap`.            |
+| `aura -Pf <file>` | Analyse a PKGBUILD file.                        |
+| `aura -Pd <dir>`  | Analyse the PKGBUILD file found in a directory. |
+| `aura -Pa`        | Analyse all locally installed AUR packages.     |
+
+## Configuration
+
+Aura looks for a configuration file at `/etc/aura.conf`, but won't break if one
+isn't present. A template config file [can be found here](aura/doc/aura.conf)
+and contains all instructions. If you install Aura via its AUR package, this
+file is added for you.
 
 ## Localisation
 
