@@ -15,3 +15,5 @@ dist/
 flames
 *.hie
 aur-pkgs/*
+weeder.dhall
+.hlint.yaml
