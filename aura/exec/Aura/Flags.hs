@@ -354,7 +354,7 @@ orphans = bigO *> (Orphans <$> optional mods)
   where bigO    = flag' () (long "orphans" <> short 'O' <> help "Display all orphan packages.")
         mods    = abandon <|> adopt
         abandon = flag' OrphanAbandon (long "abandon" <> short 'j' <> hidden <> help "Uninstall all orphan packages.")
-        adopt   = OrphanAdopt <$> (flag' () (long "adopt" <> hidden <> help "Mark some packages' install reason as 'Explicit'.") *> somePkgs')
+        adopt   = OrphanAdopt <$> (flag' () (long "adopt" <> short 'a' <> hidden <> help "Mark some packages' install reason as 'Explicit'.") *> somePkgs')
 
 analysis :: Parser AuraOp
 analysis = bigP *> (Analysis <$> optional mods)
@@ -418,7 +418,7 @@ commonSwitches = S.fromList <$> many (nc <|> no <|> dbg <|> clr <|> ovr)
   where nc  = flag' NoConfirm  (long "noconfirm" <> hidden <> help "Never ask for Aura or Pacman confirmation.")
         no  = flag' NeededOnly (long "needed"    <> hidden <> help "Don't rebuild/reinstall up-to-date packages.")
         dbg = flag' Debug      (long "debug"     <> hidden <> help "Print useful debugging info.")
-        ovr = Overwrite <$> strOption (long "overwrite" <> hidden <> help "Bypas file conflict checks." <> metavar "GLOB")
+        ovr = Overwrite <$> strOption (long "overwrite" <> hidden <> help "Bypass file conflict checks." <> metavar "GLOB")
         clr = Colour . f <$> strOption (long "color" <> metavar "WHEN" <> hidden <> help "Colourize the output.")
         f :: String -> ColourMode
         f "never"  = Never
