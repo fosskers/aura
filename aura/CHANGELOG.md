@@ -24,6 +24,7 @@ aura >>= Potential PKGBUILD vulnerabilities detected.
 - A new flag `--vcspath` to accompany the new VCS build behaviour (see below).
 - A new flag `--allsourcepath` to accompany the restored `--allsource`
   functionality (see below).
+- `-O --adopt` can now be called as `-Oa`.
 
 #### Changed
 
@@ -31,7 +32,6 @@ aura >>= Potential PKGBUILD vulnerabilities detected.
   built and stored in `/var/cache/aura/vcs`. **Subsequent builds will no longer
   reclone everything.** [#462](https://github.com/fosskers/aura/issues/462)
 - `--hotedit` will now offer to edit `.install` and `.patch` files. [#208](https://github.com/fosskers/aura/issues/208)
-- `-O --adopt` can now be called as `-Oa`.
 - Some modules have been renamed and moved around.
 - `Aura.Diff` and `Aura.Pkgbuild.Base` have had their contents folded into other
   modules.
