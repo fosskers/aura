@@ -10,7 +10,7 @@
 
 #### Changed
 
-- Bumped `aeson` bounds.
+- Bumped `aeson` and `http-client` bounds.
 
 ## 3.0.0 (2020-05-20)
 

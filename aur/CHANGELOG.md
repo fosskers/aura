@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.0.3 (2020-05-26)
+
+- Bumped `http-client` bounds.
+
 ## 7.0.2 (2020-05-26)
 
 #### Changed
