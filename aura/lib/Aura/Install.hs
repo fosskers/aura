@@ -83,7 +83,9 @@ install' pkgs = do
             Nothing       -> throwM $ Failure install_2
             Just toBuild' -> do
               notify ss install_5 *> hFlush stdout
-              allPkgs <- depsToInstall rpstry toBuild'
+              allPkgs <- if switch ss SkipDepCheck
+                           then pure . (:| []) $ NEL.map FromAUR toBuild'
+                           else depsToInstall rpstry toBuild'
               let (repoPkgs, buildPkgs) = second uniquePkgBase $ partitionPkgs allPkgs
               unless (switch ss NoPkgbuildCheck)
                 $ traverse_ (traverse_ analysePkgbuild) buildPkgs

@@ -390,7 +390,7 @@ buildConfig = BuildConfig <$> makepkg <*> bp <*> bu <*> asp <*> vp <*> trunc <*>
           <|> pure None
 
 buildSwitches :: Parser (Set BuildSwitch)
-buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> dr <|> sa <|> fo <|> npc <|> asd)
+buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> dr <|> sa <|> fo <|> npc <|> asd <|> sdc)
   where dmd = flag' DeleteMakeDeps (long "delmakedeps" <> short 'a' <> hidden <> help "Uninstall makedeps after building.")
         dsm = flag' DontSuppressMakepkg (long "unsuppress" <> short 'x' <> hidden <> help "Unsuppress makepkg output.")
         dpb = flag' DiffPkgbuilds (long "diff" <> short 'k' <> hidden <> help "Show PKGBUILD diffs.")
@@ -402,6 +402,7 @@ buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <
         fo  = flag' ForceBuilding (long "force" <> hidden <> help "Always (re)build specified packages.")
         npc = flag' NoPkgbuildCheck (long "noanalysis" <> hidden <> help "Do not analyse PKGBUILDs for security flaws.")
         asd = flag' AsDeps (long "asdeps" <> hidden <> help "All installed packages will be marked as dependencies.")
+        sdc = flag' SkipDepCheck (long "skip-dep-check" <> hidden <> help "Don't perform dependency solving.")
 
 commonConfig :: Parser CommonConfig
 commonConfig = CommonConfig <$> cap <*> cop <*> lfp <*> commonSwitches
