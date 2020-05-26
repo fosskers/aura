@@ -50,7 +50,7 @@ common commons
 
 common libexec
   build-depends:
-    , aeson                        >=1.2 && <1.5
+    , aeson                        >=1.2 && <1.6
     , aur                          ^>=7.0
     , http-client                  >=0.5 && <0.7
     , prettyprinter                >=1.2 && <1.7

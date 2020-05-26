@@ -1,5 +1,11 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Changed
+
+- Bumped `aeson` bounds.
+
 ## 3.0.0 (2020-05-20)
 
 #### Added
