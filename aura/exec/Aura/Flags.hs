@@ -377,10 +377,11 @@ viewconf = flag' ViewConf (long "viewconf" <> help "View the Pacman config file.
 
 buildConfig :: Parser BuildConfig
 buildConfig = BuildConfig <$> makepkg <*> bp <*> bu <*> asp <*> vp <*> trunc <*> buildSwitches
-  where makepkg = S.fromList <$> many (ia <|> as <|> si)
+  where makepkg = S.fromList <$> many (ia <|> as <|> si <|> sp)
         ia      = flag' IgnoreArch (long "ignorearch" <> hidden <> help "Exposed makepkg flag.")
         as      = flag' AllSource (long "allsource" <> hidden <> help "Exposed makepkg flag.")
         si      = flag' SkipInteg (long "skipinteg" <> hidden <> help "Skip all makepkg integrity checks.")
+        sp      = flag' SkipPGP (long "skippgpcheck" <> hidden <> help "Skip all makepkg PGP checks.")
         bp      = optional $ option (eitherReader absFilePath) (long "build" <> metavar "PATH" <> hidden <> help "Directory in which to build packages.")
         bu      = optional $ User <$> strOption (long "builduser" <> metavar "USER" <> hidden <> help "User account to build as.")
         asp     = optional $ option (eitherReader absFilePath) (long "allsourcepath" <> metavar "PATH" <> hidden <> help "Directory in which to store the output of --allsource.")

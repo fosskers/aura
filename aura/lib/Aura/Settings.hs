@@ -39,12 +39,13 @@ import qualified RIO.Text as T
 data Truncation = None | Head Word | Tail Word deriving (Eq, Show)
 
 -- | CLI flags that will be passed down to @makepkg@ when building packages.
-data Makepkg = IgnoreArch | AllSource | SkipInteg deriving (Eq, Ord, Show)
+data Makepkg = IgnoreArch | AllSource | SkipInteg | SkipPGP deriving (Eq, Ord, Show)
 
 instance Flagable Makepkg where
   asFlag IgnoreArch = ["--ignorearch"]
   asFlag AllSource  = ["--allsource"]
   asFlag SkipInteg  = ["--skipinteg"]
+  asFlag SkipPGP    = ["--skippgpcheck"]
 
 -- | Flags that are common to both Aura and Pacman.
 -- Aura will react to them, but also pass them through to `pacman`
