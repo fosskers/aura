@@ -402,7 +402,7 @@ buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <
         fo  = flag' ForceBuilding (long "force" <> hidden <> help "Always (re)build specified packages.")
         npc = flag' NoPkgbuildCheck (long "noanalysis" <> hidden <> help "Do not analyse PKGBUILDs for security flaws.")
         asd = flag' AsDeps (long "asdeps" <> hidden <> help "All installed packages will be marked as dependencies.")
-        sdc = flag' SkipDepCheck (long "skip-dep-check" <> hidden <> help "Don't perform dependency solving.")
+        sdc = flag' SkipDepCheck (long "skipdepcheck" <> hidden <> help "Don't perform dependency solving.")
 
 commonConfig :: Parser CommonConfig
 commonConfig = CommonConfig <$> cap <*> cop <*> lfp <*> commonSwitches
