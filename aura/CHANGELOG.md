@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+#### Added
+
+- The `--skipdepcheck` flag to skip all dependency solving. Combine this with
+  `--hotedit` to avoid discrepancies in custom dependency listings.
+
 #### Changed
 
 - Bumped `aeson` bounds.

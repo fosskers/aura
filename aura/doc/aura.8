@@ -187,6 +187,13 @@ environment variables to be passed, have a look at the \fIenv_reset\fR and
 \fIenv_keep\fR options in \fBsudoers\fR(5).
 .RE
 .P
+\fB\-\-skipdepcheck\fR
+.RS 4
+Perform no dependency solving. Consider this when using \fI\-\-hotedit\fR to
+avoid building annoying dependencies that aren't necessary for your special
+use-case.
+.RE
+.P
 \fB\-\-vcspath <path>\fR
 .RS 4
 Save the cloned sources of VCS packages (i.e. those that end in \fI*-git\fR, etc.)
