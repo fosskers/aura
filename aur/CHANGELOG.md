@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.0.2 (2020-05-26)
+
+#### Changed
+
+- Bumped `aeson` bounds.
+
 ## 7.0.1 (2020-05-11)
 
 #### Changed
