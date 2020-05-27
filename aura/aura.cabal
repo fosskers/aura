@@ -21,6 +21,7 @@ extra-source-files:
   CHANGELOG.md
   doc/aura.8
   doc/aura.conf
+  doc/aura.conf.5
   doc/completions/bashcompletion.sh
   doc/completions/_aura
   test/pacman.conf

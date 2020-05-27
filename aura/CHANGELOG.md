@@ -7,6 +7,7 @@
 - The `--skipdepcheck` flag to skip all dependency solving. Combine this with
   `--hotedit` to avoid discrepancies in custom dependency listings.
 - `--skippgpcheck` is now available to pass through to `makepkg`.
+- `aura.conf` now has a man page.
 
 #### Changed
 

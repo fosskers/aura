@@ -1,0 +1,128 @@
+.\" Man page for `aura.conf`
+.\" Written by Colin Woodbury <colin@fosskers.ca>
+
+.TH aura.conf 5 "2020 May" "Aura" "Aura Manual"
+
+.\" Disable hyphenation.
+.nh
+
+.de SAMPLE
+.br
+.RS
+.nf
+.nh
+..
+.de ESAMPLE
+.hy
+.fi
+.RE
+..
+
+.SH NAME
+aura.conf \- Configuration for the Aura Package Manager
+
+.SH SYNOPSIS
+/etc/aura.conf
+
+.SH DESCRIPTION
+.P
+Aura can be configured at runtime by commandline flags, but for users who use
+the same options all the time (say, build paths or language flags) this can be
+verbose. \fIaura.conf\fR lets you make these common settings permanent.
+
+.SH EXAMPLE
+.SAMPLE
+# --- Language --- #
+language = en  # English.
+
+# --- Build Settings --- #
+user = <you>
+buildpath = /tmp
+vcspath = /var/cache/aura/vcs
+
+# --- Misc. --- #
+editor = vi
+.ESAMPLE
+
+.SH OPTIONS
+.P
+.B language
+.RS 4
+Aura can be used in different human languages. This field must be a 2-letter
+language code, similar to those used in LOCALE. The available codes are:
+
+.SAMPLE
+|------+------------|
+| Code | Language   |
+|------+------------|
+| nl   | Dutch      |
+| en   | English    |
+| de   | German     |
+| nb   | Norwegian  |
+| sv   | Swedish    |
+|------+------------|
+| fr   | French     |
+| it   | Italian    |
+| pt   | Portuguese |
+| es   | Spanish    |
+|------+------------|
+| hr   | Croatian   |
+| pl   | Polish     |
+| ru   | Russian    |
+| sr   | Serbian    |
+|------+------------|
+| zh   | Chinese    |
+| id   | Indonesian |
+| ja   | Japanese   |
+|------+------------|
+| eo   | Esperanto  |
+|------+------------|
+.ESAMPLE
+.RE
+
+.P
+.B user
+.RS 4
+The real, non-sudo user to build packages as.
+.RE
+
+.P
+.B buildpath
+.RS 4
+The location on the filesystem in which to build packages.
+.RE
+
+.P
+.B allsourcepath
+.RS 4
+The location on the filesystem in which to save "source packages" built with
+\fI\-\-allsource\fR.
+.RE
+
+.P
+.B vcspath
+.RS 4
+The location on the filesystem in which to store the cloned repositories of
+\fI*-git\fR, etc., packages.
+.RE
+
+.P
+.B analyse
+.RS 4
+Aura automatically scans PKGBUILDs for malicious bash usage and other "bad
+practices". Set this to \fIFalse\fR to turn this off.
+.RE
+
+.P
+.B editor
+.RS 4
+The editor to use during \fI\-\-hotedit\fR.
+.RE
+
+.SH SEE ALSO
+.P
+aura(8)
+
+.SH AUTHOR
+.P
+Colin Woodbury <colin@fosskers.ca>
