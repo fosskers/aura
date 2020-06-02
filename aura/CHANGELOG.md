@@ -1,5 +1,15 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Changed
+
+- Running Aura with `sudo -E aura ...` will ensure that the transfer of the true
+  user's environment will persist all the way to the internal `makepkg` calls.
+  This should help people who have set custom paths for GPG, `npm`, etc., via
+  environment variables. See [#606](https://github.com/fosskers/aura/issues/606).
+  Users with standard setups don't need to worry about `-E`.
+
 ## 3.1.0 (2020-05-27)
 
 #### Added

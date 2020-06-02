@@ -66,7 +66,9 @@ make :: MonadIO m
   -> ProcessConfig stdin stdout stderr
   -> m (ExitCode, BL.ByteString, [FilePath])
 make ss (User usr) pc = do
+  -- Perform the actual building.
   (ec, se) <- runIt ss pc
+  -- Fetch the filenames of the built tarballs.
   res <- readProcess $ proc "sudo" ["-u", T.unpack usr, makepkgCmd, "--packagelist"]
   let fs = map T.unpack . T.lines . decodeUtf8Lenient . BL.toStrict $ res ^. _2
   pure (ec, se, fs)
@@ -88,4 +90,4 @@ makepkgSource usr = do
 
 -- | As of makepkg v4.2, building with `--asroot` is no longer allowed.
 runStyle :: User -> [String] -> (FilePath, [String])
-runStyle (User usr) opts = ("sudo", ["-u", T.unpack usr, makepkgCmd] <> opts)
+runStyle (User usr) opts = ("sudo", ["-E", "-u", T.unpack usr, makepkgCmd] <> opts)
