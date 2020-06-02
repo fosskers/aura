@@ -1,6 +1,6 @@
 # Aura Changelog
 
-## Unreleased
+## 3.1.1 (2020-06-02)
 
 #### Changed
 
@@ -9,6 +9,10 @@
   This should help people who have set custom paths for GPG, `npm`, etc., via
   environment variables. See [#606](https://github.com/fosskers/aura/issues/606).
   Users with standard setups don't need to worry about `-E`.
+
+#### Removed
+
+- Explicit dependency on `microlens`. Everything Aura uses now comes through `rio`.
 
 ## 3.1.0 (2020-05-27)
 
