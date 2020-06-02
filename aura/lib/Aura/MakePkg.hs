@@ -18,11 +18,11 @@ import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils (note)
-import           Lens.Micro (_2)
 import           RIO
 import qualified RIO.ByteString.Lazy as BL
 import           RIO.Directory
 import           RIO.FilePath
+import           RIO.Lens (_2)
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Text as T
 import           System.Process.Typed

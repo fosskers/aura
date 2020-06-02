@@ -23,8 +23,8 @@ import           Data.Text.Prettyprint.Doc.Render.Terminal (AnsiStyle)
 import           Language.Bash.Parse (parse)
 import           Language.Bash.Syntax
 import           Language.Bash.Word
-import           Lens.Micro (each, (.~), (^..), _Just)
 import           RIO hiding (Word)
+import           RIO.Lens (each, _Just)
 import qualified RIO.Map as M
 import qualified RIO.Text as T
 

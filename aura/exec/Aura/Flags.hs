@@ -9,7 +9,7 @@ import           Aura.Cache (defaultPackageCache)
 import           Aura.Pacman (defaultLogFile, pacmanConfFile)
 import           Aura.Settings
 import           Aura.Types
-import           Lens.Micro (Traversal')
+import           Aura.Utils (Traversal')
 import           Options.Applicative
 import           RIO hiding (exp, log)
 import           RIO.FilePath

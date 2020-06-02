@@ -23,8 +23,8 @@ import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           Data.Versions hiding (Lens')
-import           Lens.Micro
 import           RIO
+import           RIO.Lens (each)
 import qualified RIO.Map as M
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S

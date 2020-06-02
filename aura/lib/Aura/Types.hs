@@ -46,7 +46,6 @@ import           Data.Bitraversable
 import           Data.Text.Prettyprint.Doc hiding (list, space)
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions hiding (Traversal')
-import           Lens.Micro
 import           RIO hiding (try)
 import           RIO.FilePath
 import qualified RIO.Text as T

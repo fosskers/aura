@@ -5,6 +5,13 @@
 
 packages:
 - completed:
+    hackage: aeson-1.5.0.0@sha256:a4ec683c3e40a41665f4f6806521211ce2253a469c82d4df855aadb2cc34bec4,6812
+    pantry-tree:
+      size: 39758
+      sha256: 69b028939df0c092b1d8c3e9447461ca362e4fa8b93bfaf37fc199785df775da
+  original:
+    hackage: aeson-1.5.0.0
+- completed:
     hackage: language-bash-0.9.2@sha256:fa7fa9f1223eb1d0587bce1b9f534775b900827601a5d2cbf9b3c9b15c64c2ed,1750
     pantry-tree:
       size: 2706
@@ -12,12 +19,12 @@ packages:
   original:
     hackage: language-bash-0.9.2
 - completed:
-    hackage: aeson-1.5.0.0@sha256:a4ec683c3e40a41665f4f6806521211ce2253a469c82d4df855aadb2cc34bec4,6812
+    hackage: rio-0.1.16.0@sha256:de53ce9a8feeebe1b90cc697d35897e78cd03dc4636b7d5e348e415ddddb8a86,3611
     pantry-tree:
-      size: 39758
-      sha256: 69b028939df0c092b1d8c3e9447461ca362e4fa8b93bfaf37fc199785df775da
+      size: 4800
+      sha256: af1d2e59f9b56a0e0650512a9202059e5968ba8afcba4a643495a0f618a4041f
   original:
-    hackage: aeson-1.5.0.0
+    hackage: rio-0.1.16.0
 snapshots:
 - completed:
     size: 496111

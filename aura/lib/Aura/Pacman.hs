@@ -32,11 +32,11 @@ import           Aura.Languages
 import           Aura.Settings.External
 import           Aura.Types
 import           Data.Bifunctor (first)
-import           Lens.Micro (_2)
 import           RIO hiding (first, some, try)
 import qualified RIO.ByteString as BS
 import qualified RIO.ByteString.Lazy as BL
 import           RIO.FilePath
+import           RIO.Lens (_2)
 import           RIO.List.Partial ((!!))
 import qualified RIO.Map as M
 import qualified RIO.Set as S

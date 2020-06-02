@@ -35,10 +35,10 @@ import           Aura.Shell
 import           Aura.Types
 import           Aura.Utils
 import           Data.Bifunctor (Bifunctor(..))
-import           Lens.Micro (folded, (%~), (.~), (<>~), (^..), _Left, _Right)
 import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)
 import           RIO hiding (first)
+import           RIO.Lens (each, _Left, _Right)
 import qualified RIO.Map as M
 import qualified RIO.Set as S
 import qualified RIO.Text as T
@@ -53,8 +53,8 @@ import           Text.Printf
 -- Throws in `IO` if there were any errors.
 withEnv :: Program -> (Env -> IO a) -> IO a
 withEnv (Program op co bc lng ll) f = do
-  let ign = S.fromList $ op ^.. _Right . _AurSync . folded . _AurIgnore . folded
-      igg = S.fromList $ op ^.. _Right . _AurSync . folded . _AurIgnoreGroup . folded
+  let ign = S.fromList $ op ^.. _Right . _AurSync . to toList . each . _AurIgnore . to toList . each
+      igg = S.fromList $ op ^.. _Right . _AurSync . to toList . each . _AurIgnoreGroup . to toList . each
   confFile    <- getPacmanConf (either id id $ configPathOf co) >>= either throwM pure
   auraConf    <- auraConfig <$> getAuraConf defaultAuraConf
   when (ll == LevelDebug) . printf "%s\n" $ show auraConf
@@ -84,7 +84,7 @@ withEnv (Program op co bc lng ll) f = do
                  & buildPathOfL     %~ (<|> acBuildPath auraConf)
                  & allsourcePathOfL %~ (<|> acASPath auraConf)
                  & vcsPathOfL       %~ (<|> acVCSPath auraConf)
-                 & buildSwitchesOfL <>~ maybe S.empty S.singleton (acAnalyse auraConf)
+                 & buildSwitchesOfL %~ (<> maybe S.empty S.singleton (acAnalyse auraConf))
           , logLevelOf = ll
           , logFuncOf = logFunc }
     f (Env repos ss)

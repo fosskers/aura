@@ -1,3 +1,5 @@
+{-# LANGUAGE RankNTypes #-}
+
 -- |
 -- Module    : Aura.Utils
 -- Copyright : (c) Colin Woodbury, 2012 - 2020
@@ -26,6 +28,8 @@ module Aura.Utils
   , these
     -- * Directory
   , edit
+    -- * Lens
+  , Traversal'
     -- * Misc.
   , maybe'
   , groupsOf
@@ -127,6 +131,12 @@ fold1 = foldMap1 id
 -- | Partition a `NonEmpty` based on some function.
 partNonEmpty :: (a -> These b c) -> NonEmpty a -> These (NonEmpty b) (NonEmpty c)
 partNonEmpty f = foldMap1 (bimap pure pure . f)
+
+--------------------------------------------------------------------------------
+-- Lens
+
+-- | Simple Traversals compatible with both lens and microlens.
+type Traversal' s a = forall f. Applicative f => (a -> f a) -> s -> f s
 
 --------------------------------------------------------------------------------
 -- These

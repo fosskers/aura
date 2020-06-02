@@ -31,12 +31,12 @@ import           Aura.Utils
 import           Control.Monad.Trans.Maybe
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Versions (versioning)
-import           Lens.Micro (each, non, (^..))
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
 import           RIO
 import           RIO.Directory
 import           RIO.FilePath
+import           RIO.Lens (each, non)
 import qualified RIO.List as L
 import qualified RIO.Map as M
 import qualified RIO.NonEmpty as NEL

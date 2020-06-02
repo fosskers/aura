@@ -44,8 +44,7 @@ common commons
     , bytestring  ^>=0.10
     , containers  ^>=0.6
     , megaparsec  >=7      && <9
-    , microlens   ^>=0.4
-    , rio         ^>=0.1.13
+    , rio         ^>=0.1.16
     , text        ^>=1.2
     , versions    ^>=3.5.4
 
