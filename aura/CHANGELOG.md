@@ -1,5 +1,14 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Added
+
+- The `-c` / `--clean` flag for `-A`. After a package's tarball has been built
+  and copied to the package cache, delete its build directory immediately. By
+  default, build directories are left in `/tmp` to be cleaned by the OS, but for
+  users who don't restart their machines often, this can clog up disk space.
+
 ## 3.1.1 (2020-06-02)
 
 #### Changed

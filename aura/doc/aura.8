@@ -1,7 +1,7 @@
 .\" Man page for `aura`
 .\" Written by Colin Woodbury <colin@fosskers.ca>
 
-.TH aura 8 "2020 May" "Aura" "Aura Manual"
+.TH aura 8 "2020 June" "Aura" "Aura Manual"
 
 .\" Disable hyphenation.
 .nh
@@ -74,6 +74,12 @@ Uninstalls build dependencies that are no longer required after installing the
 main package. This prevents the creation of orphan packages. Also note that
 while the package itself will be uninstalled, its package file will remain in
 the cache.
+.RE
+.P
+\fB\-c\fR, \-\-clean
+.RS 4
+After a package's tarball has been built and copied to the package cache, delete
+its build directory immediately.
 .RE
 .P
 \fB\-d\fR, \-\-deps <package(s)>
