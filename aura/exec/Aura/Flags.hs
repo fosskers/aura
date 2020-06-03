@@ -391,7 +391,7 @@ buildConfig = BuildConfig <$> makepkg <*> bp <*> bu <*> asp <*> vp <*> trunc <*>
           <|> pure None
 
 buildSwitches :: Parser (Set BuildSwitch)
-buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> dr <|> sa <|> fo <|> npc <|> asd <|> sdc)
+buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <|> dr <|> sa <|> fo <|> npc <|> asd <|> sdc <|> dbd)
   where dmd = flag' DeleteMakeDeps (long "delmakedeps" <> short 'a' <> hidden <> help "Uninstall makedeps after building.")
         dsm = flag' DontSuppressMakepkg (long "unsuppress" <> short 'x' <> hidden <> help "Unsuppress makepkg output.")
         dpb = flag' DiffPkgbuilds (long "diff" <> short 'k' <> hidden <> help "Show PKGBUILD diffs.")
@@ -404,6 +404,7 @@ buildSwitches = S.fromList <$> many (lv <|> dmd <|> dsm <|> dpb <|> rbd <|> he <
         npc = flag' NoPkgbuildCheck (long "noanalysis" <> hidden <> help "Do not analyse PKGBUILDs for security flaws.")
         asd = flag' AsDeps (long "asdeps" <> hidden <> help "All installed packages will be marked as dependencies.")
         sdc = flag' SkipDepCheck (long "skipdepcheck" <> hidden <> help "Don't perform dependency solving.")
+        dbd = flag' DeleteBuildDir (long "clean" <> short 'c' <> hidden <> help "Delete each package's build directory after building.")
 
 commonConfig :: Parser CommonConfig
 commonConfig = CommonConfig <$> cap <*> cop <*> lfp <*> commonSwitches

@@ -116,19 +116,21 @@ vcsPathOfL :: Lens' BuildConfig (Maybe FilePath)
 vcsPathOfL f bc = (\pth -> bc { vcsPathOf = pth }) <$> f (vcsPathOf bc)
 
 -- | Extra options for customizing the build process.
-data BuildSwitch = DeleteMakeDeps
-                 | DiffPkgbuilds
-                 | DontSuppressMakepkg
-                 | DryRun
-                 | HotEdit
-                 | LowVerbosity
-                 | RebuildDevel
-                 | SortAlphabetically  -- For `-As`
-                 | ForceBuilding
-                 | NoPkgbuildCheck
-                 | AsDeps
-                 | SkipDepCheck
-                 deriving (Eq, Ord, Show)
+data BuildSwitch
+  = AsDeps
+  | DeleteBuildDir
+  | DeleteMakeDeps
+  | DiffPkgbuilds
+  | DontSuppressMakepkg
+  | DryRun
+  | ForceBuilding
+  | HotEdit
+  | LowVerbosity
+  | NoPkgbuildCheck
+  | RebuildDevel
+  | SkipDepCheck
+  | SortAlphabetically  -- For `-As`
+  deriving (Eq, Ord, Show)
 
 -- | Is some Aura-specific setting turned on for this run?
 switch :: Settings -> BuildSwitch -> Bool

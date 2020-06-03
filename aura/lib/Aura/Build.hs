@@ -97,7 +97,7 @@ build' b = do
   buildDir <- liftIO $ getBuildDir b
   createDirectoryIfMissing True buildDir
   setCurrentDirectory buildDir
-  runExceptT $ do
+  r <- runExceptT $ do
     bs <- ExceptT $ do
       let !dir = buildDir </> T.unpack (pnName $ bName b)
       pulled <- doesDirectoryExist dir
@@ -114,6 +114,10 @@ build' b = do
       else do
         pNames <- ExceptT . liftIO . fmap (fmap NEL.toList) $ makepkg ss usr
         liftIO $ traverse (moveToCachePath ss) pNames
+  when (switch ss DeleteBuildDir) $ do
+    logDebug . fromString $ "Deleting build directory: " <> buildDir
+    removeDirectoryRecursive buildDir
+  pure r
 
 getBuildDir :: Buildable -> IO FilePath
 getBuildDir b
