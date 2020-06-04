@@ -11,10 +11,10 @@ Aura's original purpose is as an *AUR helper*, in that it automates the process
 of installing packages from the Arch User Repositories. It is, however, capable
 of much more.
 
-**You can press `s` at any time to search this book.**
-
 New to Aura? Check out [Aura's Philosophy](philosophy.md) or just jump right
 into [Installation](install.md)!
+
+> **💡 Tip:** You can press `s` at any time to search this book.
 
 ## Contact
 
