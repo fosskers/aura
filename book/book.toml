@@ -1,0 +1,11 @@
+[book]
+authors = ["Colin Woodbury"]
+language = "en"
+multilingual = false
+src = "src"
+title = "The Aura User Guide"
+description = "A full usage guide for Aura."
+
+[output.html]
+git-repository-url = "https://github.com/fosskers/aura"
+git-repository-icon = "fa-github"
