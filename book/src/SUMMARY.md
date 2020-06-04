@@ -5,6 +5,7 @@
 - [Philosophy](./philosophy.md)
 - [Installation](./install.md)
 - [Usage](./usage.md)
+  - [Aura-as-Pacman](./pacman.md)
   - [Installing AUR Packages](./aur.md)
     - [Package Storage Locations](./storage.md)
   - [Downgrading Packages](./downgrading.md)
