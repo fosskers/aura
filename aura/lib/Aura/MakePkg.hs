@@ -90,4 +90,4 @@ makepkgSource usr = do
 
 -- | As of makepkg v4.2, building with `--asroot` is no longer allowed.
 runStyle :: User -> [String] -> (FilePath, [String])
-runStyle (User usr) opts = ("sudo", ["-E", "-u", T.unpack usr, makepkgCmd] <> opts)
+runStyle (User usr) opts = ("sudo", ["-u", T.unpack usr, makepkgCmd] <> opts)

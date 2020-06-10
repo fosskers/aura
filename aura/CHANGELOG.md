@@ -1,6 +1,8 @@
 # Aura Changelog
 
-## Unreleased
+## 3.1.2 (2020-06-10)
+
+This release fixes a regression in `3.1.1`. Please update as soon as possible.
 
 #### Added
 
@@ -8,6 +10,12 @@
   and copied to the package cache, delete its build directory immediately. By
   default, build directories are left in `/tmp` to be cleaned by the OS, but for
   users who don't restart their machines often, this can clog up disk space.
+
+#### Fixed
+
+- **Apologies to Aura users.** The `-E` change in the previous release caused a
+  lot of unexpected behaviour, so that change has be revoked. A future version
+  of Aura will explore a better solution for handling environment variables.
 
 ## 3.1.1 (2020-06-02)
 
