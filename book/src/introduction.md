@@ -26,4 +26,5 @@ Channel!](https://gitter.im/aurapm/aura)
   people](https://github.com/fosskers/aura#credits) from all over the world!
 - **Who made that neat logo?** [Cristiano
   Vitorino](https://github.com/cristianovitorino) from Brazil!
-- **Who is the original author of Aura?** [This guy](https://github.com/fosskers) from Canada!
+- **Who is the original author of Aura?** [Colin
+  Woodbury](https://github.com/fosskers) from Canada!

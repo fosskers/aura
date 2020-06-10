@@ -90,7 +90,8 @@ Recent Actions :
 [2020-05-04T09:20:53-0700] [ALPM] upgraded firefox (75.0-1 -> 75.0-2)
 [2020-05-18T08:39:43-0700] [ALPM] upgraded firefox (75.0-2 -> 76.0.1-1)
 ```
-- [`-O`](orphans.md): Handle "orphans" - dependencies whose parent package is gone.
+- [`-O`](orphans.md): Handle "orphans" - dependencies whose parent package is no
+  longer installed.
 ```
 > aura -O
 ruby-bundler

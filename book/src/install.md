@@ -21,12 +21,12 @@ sudo pacman -U <the-package-file-that-makepkg-produces>
 ### Source Package
 
 For users who choose to build packages themselves or who already have an
-established Haskell developement environment, the vanilla
+established Haskell development environment, the vanilla
 [aura](https://aur.archlinux.org/packages/aura) package is also available.
 
 ```bash
-git clone https://aur.archlinux.org/aura-bin.git
-cd aura-bin
+git clone https://aur.archlinux.org/aura.git
+cd aura
 makepkg -s
 sudo pacman -U <the-package-file-that-makepkg-produces>
 ```

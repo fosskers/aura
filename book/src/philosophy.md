@@ -20,12 +20,9 @@ interaction.
 
 PKGBUILDs from the AUR are raw `bash` code and can contain anything. It's a
 user's responsibility to verify the contents of a PKGBUILD before building, but
-people can make mistakes and overlook details. Aura scans PKGBUILDs before
+people sometimes make mistakes and overlook details. Aura scans PKGBUILDs before
 building to detect bash misuse and other exploits. The `-P` command is also
 provided for scanning your own PKGBUILDs.
-
-Also, while pre-build PKGBUILD editing is not default behaviour, this can be
-achieved with `--hotedit`.
 
 ### Downgradibility
 
