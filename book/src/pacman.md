@@ -122,7 +122,7 @@ firefox /usr/lib/firefox/firefox-bin
 Pacman and Aura store built packages in `/var/cache/pacman/pkg/`. This directory
 can grow quite large, but the following commands can help selectively clear it.
 
-> **💡 Note:** The Aura command `-Cc` offers additional control over clearing
+> **💡 Tip:** The Aura command `-Cc` offers additional control over clearing
 > the cache.
 
 ### Removing the tarballs of uninstalled packages
