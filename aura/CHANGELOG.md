@@ -1,5 +1,13 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Fixed
+
+- `PATH` is now passed down to all internal `pacman` calls. This fixes the
+  inability to install DKMS packages.
+  [#584](https://github.com/fosskers/aura/issues/584)
+
 ## 3.1.2 (2020-06-10)
 
 This release fixes a regression in `3.1.1`. Please update as soon as possible.
