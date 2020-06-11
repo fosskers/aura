@@ -22,7 +22,6 @@ import           RIO
 import qualified RIO.ByteString.Lazy as BL
 import           RIO.Directory
 import           RIO.FilePath
-import           RIO.Lens (_2)
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Text as T
 import           System.Process.Typed
@@ -68,9 +67,12 @@ make :: MonadIO m
 make ss (User usr) pc = do
   -- Perform the actual building.
   (ec, se) <- runIt ss pc
+  -- TESTING --
+  (_, foo, _) <- readProcess $ proc "sudo" ["-u", T.unpack usr, "env"]
+  BL.putStrLn foo
   -- Fetch the filenames of the built tarballs.
-  res <- readProcess $ proc "sudo" ["-u", T.unpack usr, makepkgCmd, "--packagelist"]
-  let fs = map T.unpack . T.lines . decodeUtf8Lenient . BL.toStrict $ res ^. _2
+  (_, out, _) <- readProcess $ proc "sudo" ["-u", T.unpack usr, makepkgCmd, "--packagelist"]
+  let fs = map T.unpack . T.lines . decodeUtf8Lenient $ BL.toStrict out
   pure (ec, se, fs)
 
 runIt :: MonadIO m

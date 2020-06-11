@@ -73,8 +73,8 @@ getIgnoredGroups :: Config -> Set PkgGroup
 getIgnoredGroups (Config c) = maybe S.empty (S.fromList . map PkgGroup) $ M.lookup "IgnoreGroup" c
 
 -- | Given a `Set` of package groups, yield all the packages they contain.
-groupPackages :: NonEmpty PkgGroup -> IO (Set PkgName)
-groupPackages igs = fmap (f . decodeUtf8Lenient) . pacmanOutput $ "-Qg" : asFlag igs
+groupPackages :: Environment -> NonEmpty PkgGroup -> IO (Set PkgName)
+groupPackages env igs = fmap (f . decodeUtf8Lenient) . pacmanOutput env $ "-Qg" : asFlag igs
   where
     f :: Text -> Set PkgName
     f = S.fromList . map (PkgName . (!! 1) . T.words) . T.lines
@@ -96,30 +96,34 @@ getLogFilePath (Config c) = do
 ----------
 
 -- | Create a pacman process to run.
-pacmanProc :: [String] -> ProcessConfig () () ()
-pacmanProc args = setEnv [("LC_ALL", "C")] $ proc "pacman" args
+pacmanProc :: Environment -> [String] -> ProcessConfig () () ()
+pacmanProc env args = setEnv vars $ proc "pacman" args
+  where
+    vars :: [(String, String)]
+    vars = ("LC_ALL", "C") : maybe [] (\p -> [("PATH", T.unpack p)]) (M.lookup "PATH" env)
 
 -- | Run a pacman action that may fail.
-pacman :: [Text] -> IO ()
-pacman (map T.unpack -> args) = do
-  ec <- runProcess $ pacmanProc args
+pacman :: Environment -> [Text] -> IO ()
+pacman env (map T.unpack -> args) = do
+  ec <- runProcess $ pacmanProc env args
   unless (ec == ExitSuccess) $ throwM (Failure pacmanFailure_1)
 
 -- | Run some `pacman` process, but only care about whether it succeeded.
-pacmanSuccess :: [T.Text] -> IO Bool
-pacmanSuccess = fmap (== ExitSuccess) . runProcess . setStderr closed . setStdout closed . pacmanProc . map T.unpack
+pacmanSuccess :: Environment -> [T.Text] -> IO Bool
+pacmanSuccess env i = fmap (== ExitSuccess) . runProcess . setStderr closed . setStdout closed . pacmanProc env $ map T.unpack i
 
 -- | Runs pacman silently and returns only the stdout.
-pacmanOutput :: [Text] -> IO ByteString
-pacmanOutput = fmap (^. _2 . to BL.toStrict) . readProcess . pacmanProc . map T.unpack
+pacmanOutput :: Environment -> [Text] -> IO ByteString
+pacmanOutput env i =
+  fmap (^. _2 . to BL.toStrict) . readProcess . pacmanProc env $ map T.unpack i
 
 -- | Runs pacman silently and returns the stdout as UTF8-decoded `Text` lines.
-pacmanLines :: [Text] -> IO [Text]
-pacmanLines s = T.lines . decodeUtf8Lenient <$> pacmanOutput s
+pacmanLines :: Environment -> [Text] -> IO [Text]
+pacmanLines env s = T.lines . decodeUtf8Lenient <$> pacmanOutput env s
 
 -- | Yields the lines given by `pacman -V` with the pacman image stripped.
-versionInfo :: IO [Text]
-versionInfo = map (T.drop verMsgPad) <$> pacmanLines ["-V"]
+versionInfo :: Environment -> IO [Text]
+versionInfo env = map (T.drop verMsgPad) <$> pacmanLines env ["-V"]
 
 -- | The amount of whitespace before text in the lines given by `pacman -V`
 verMsgPad :: Int

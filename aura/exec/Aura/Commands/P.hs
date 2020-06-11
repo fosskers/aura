@@ -43,7 +43,7 @@ audit :: RIO Env ()
 audit = do
   ss <- asks settings
   let !m = managerOf ss
-  ps <- liftIO foreignPackages
+  ps <- liftIO . foreignPackages $ envOf ss
   warn ss . security_13 . fromIntegral $ S.size ps
   pbs <- catMaybes <$> liftIO (traverseConcurrently Par' (getPkgbuild m . spName) $ S.toList ps)
   mapMaybeA f pbs >>= \case

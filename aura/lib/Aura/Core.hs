@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns       #-}
 {-# LANGUAGE DeriveGeneric      #-}
 {-# LANGUAGE DerivingStrategies #-}
 
@@ -125,17 +126,17 @@ trueRoot action = asks settings >>= \ss ->
 
 -- | A list of non-prebuilt packages installed on the system.
 -- @-Qm@ yields a list of sorted values.
-foreignPackages :: IO (Set SimplePkg)
-foreignPackages = S.fromList . mapMaybe simplepkg' <$> pacmanLines ["-Qm"]
+foreignPackages :: Environment -> IO (Set SimplePkg)
+foreignPackages env = S.fromList . mapMaybe simplepkg' <$> pacmanLines env ["-Qm"]
 
 -- | Packages marked as a dependency, yet are required by no other package.
-orphans :: IO (Set PkgName)
-orphans = S.fromList . map PkgName <$> pacmanLines ["-Qqdt"]
+orphans :: Environment -> IO (Set PkgName)
+orphans env = S.fromList . map PkgName <$> pacmanLines env ["-Qqdt"]
 
 -- | Any installed package whose name is suffixed by git, hg, svn, darcs, cvs,
 -- or bzr.
-develPkgs :: IO (Set PkgName)
-develPkgs = S.filter isDevelPkg . S.map spName <$> foreignPackages
+develPkgs :: Environment -> IO (Set PkgName)
+develPkgs env = S.filter isDevelPkg . S.map spName <$> foreignPackages env
 
 -- | Is a package suffixed by git, hg, svn, darcs, cvs, or bzr?
 isDevelPkg :: PkgName -> Bool
@@ -146,14 +147,16 @@ isDevelPkg (PkgName pkg) = any (`T.isSuffixOf` pkg) suffixes
 
 -- | Returns what it was given if the package is already installed.
 -- Reasoning: Using raw bools can be less expressive.
-isInstalled :: PkgName -> IO (Maybe PkgName)
-isInstalled pkg = bool Nothing (Just pkg) <$> pacmanSuccess ["-Qq", pnName pkg]
+isInstalled :: Environment -> PkgName -> IO (Maybe PkgName)
+isInstalled env pkg = bool Nothing (Just pkg) <$> pacmanSuccess env ["-Qq", pnName pkg]
 
 -- | An @-Rsu@ call.
 removePkgs :: NonEmpty PkgName -> RIO Env ()
 removePkgs pkgs = do
-  pacOpts <- asks (commonConfigOf . settings)
-  liftIO . pacman $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts
+  ss <- asks settings
+  let !pacOpts = commonConfigOf ss
+      !env = envOf ss
+  liftIO . pacman env $ ["-Rsu"] <> asFlag pkgs <> asFlag pacOpts
 
 -- | Depedencies which are not installed, or otherwise provided by some
 -- installed package.
@@ -164,13 +167,13 @@ newtype Satisfied = Satisfied (NonEmpty Dep)
 
 -- | Similar to `isSatisfied`, but dependencies are checked in a batch, since
 -- @-T@ can accept multiple inputs.
-areSatisfied :: NonEmpty Dep -> IO (These Unsatisfied Satisfied)
-areSatisfied ds = do
+areSatisfied :: Environment -> NonEmpty Dep -> IO (These Unsatisfied Satisfied)
+areSatisfied env ds = do
   unsats <- S.fromList . mapMaybe parseDep <$> unsat
   pure . bimap Unsatisfied Satisfied $ partNonEmpty (f unsats) ds
   where
     unsat :: IO [Text]
-    unsat = pacmanLines $ "-T" : map renderedDep (toList ds)
+    unsat = pacmanLines env $ "-T" : map renderedDep (toList ds)
 
     f :: Set Dep -> Dep -> These Dep Dep
     f unsats d | S.member d unsats = This d

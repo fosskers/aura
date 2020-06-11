@@ -1,4 +1,5 @@
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE CPP          #-}
 
 {-
 
@@ -91,13 +92,14 @@ execOpts :: Either (PacmanOp, Set MiscOp) AuraOp -> RIO Env ()
 execOpts ops = do
   logDebug "Interpreting CLI options."
   ss <- asks settings
+  let !env = envOf ss
   when (logLevelOf ss == LevelDebug) $ do
     logDebug $ displayShow ops
     logDebug . displayShow $ buildConfigOf ss
     logDebug . displayShow $ commonConfigOf ss
 
   let p :: (PacmanOp, Set MiscOp) -> RIO Env ()
-      p (ps, ms) = liftIO . pacman $
+      p (ps, ms) = liftIO . pacman env $
         asFlag ps
         ++ foldMap asFlag ms
         ++ asFlag (commonConfigOf ss)
@@ -135,15 +137,15 @@ execOpts ops = do
       Just (LogInfo ps)  -> L.logInfoOnPkg ps
       Just (LogSearch s) -> asks settings >>= liftIO . flip L.searchLogFile s
     Right (Orphans o) -> case o of
-      Nothing               -> liftIO O.displayOrphans
-      Just OrphanAbandon    -> sudo $ liftIO orphans >>= traverse_ removePkgs . nes
+      Nothing               -> liftIO $ O.displayOrphans env
+      Just OrphanAbandon    -> sudo $ liftIO (orphans env) >>= traverse_ removePkgs . nes
       Just (OrphanAdopt ps) -> O.adoptPkg ps
     Right (Analysis o) -> case o of
       Nothing                -> P.exploitsFromStdin
       Just (AnalysisFile fp) -> P.exploitsFromFile fp
       Just (AnalysisDir fp)  -> P.exploitsFromFile $ fp </> "PKGBUILD"
       Just AnalysisAudit     -> P.audit
-    Right Version   -> liftIO $ versionInfo >>= animateVersionMsg ss auraVersion
+    Right Version   -> liftIO $ (versionInfo env) >>= animateVersionMsg ss auraVersion
     Right Languages -> displayOutputLanguages
     Right ViewConf  -> viewConfFile
 

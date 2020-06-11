@@ -48,9 +48,9 @@ install pkgs = do
   if not $ switch ss DeleteMakeDeps
     then install' pkgs
     else do -- `-a` was used.
-      orphansBefore <- liftIO orphans
+      orphansBefore <- liftIO . orphans $ envOf ss
       install' pkgs
-      orphansAfter <- liftIO orphans
+      orphansAfter <- liftIO . orphans $ envOf ss
       let makeDeps = nes $ orphansAfter S.\\ orphansBefore
       traverse_ (\mds -> liftIO (notify ss removeMakeDepsAfter_1) *> removePkgs mds) makeDeps
 
@@ -58,9 +58,10 @@ install' :: NonEmpty PkgName -> RIO Env ()
 install' pkgs = do
   rpstry   <- asks repository
   ss       <- asks settings
+  let !env = envOf ss
   unneeded <- bool
               (pure S.empty)
-              (S.fromList . catMaybes <$> liftIO (traverseConcurrently Par' isInstalled $ toList pkgs))
+              (S.fromList . catMaybes <$> liftIO (traverseConcurrently Par' (isInstalled env) $ toList pkgs))
               $ shared ss NeededOnly
   let !pkgs' = S.fromList $ NEL.toList pkgs
   if shared ss NeededOnly && unneeded == pkgs'
@@ -98,8 +99,8 @@ install' pkgs = do
 
 -- | Give anything that was installed as a dependency the /Install Reason/ of
 -- "Installed as a dependency for another package".
-annotateDeps :: NonEmpty Buildable -> IO ()
-annotateDeps bs = unless (null bs') . void . pacmanSuccess
+annotateDeps :: Environment -> NonEmpty Buildable -> IO ()
+annotateDeps env bs = unless (null bs') . void . pacmanSuccess env
   $ ["-D", "--asdeps"] <> asFlag (map bName bs')
   where
     bs' :: [Buildable]
@@ -138,8 +139,9 @@ depsToInstall repo bs = resolveDeps repo $ NEL.map FromAUR bs
 
 repoInstall :: NonEmpty Prebuilt -> RIO Env ()
 repoInstall ps = do
-  pacOpts <- asks (asFlag . commonConfigOf . settings)
-  liftIO . pacman $ ["-S", "--asdeps"] <> pacOpts <> asFlag (NEL.map pName ps)
+  ss <- asks settings
+  let !pacOpts = asFlag $ commonConfigOf ss
+  liftIO . pacman (envOf ss) $ ["-S", "--asdeps"] <> pacOpts <> asFlag (NEL.map pName ps)
 
 buildAndInstall :: NonEmpty (NonEmpty Buildable) -> RIO Env ()
 buildAndInstall bss = do
@@ -172,7 +174,7 @@ buildAndInstall bss = do
 
       built <- traverse buildPackages $ NEL.nonEmpty ps
       traverse_ installPkgFiles $ (built <> Just cached) >>= NEL.nonEmpty
-      liftIO $ annotateDeps bs
+      liftIO $ annotateDeps (envOf ss) bs
 
 ------------
 -- REPORTING

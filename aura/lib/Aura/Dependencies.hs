@@ -88,7 +88,7 @@ resolveDeps' ss repo ps = resolve (Resolution mempty mempty) ps
     -- | Consider only "unsatisfied" deps.
     satisfy :: Resolution -> NonEmpty Buildable -> IO Resolution
     satisfy r bs = maybe' (pure r) (nes . freshDeps r $ allDeps bs) $
-      areSatisfied >=> these (lookups r) (pure . r') (\uns sat -> lookups (r' sat) uns)
+      areSatisfied (envOf ss) >=> these (lookups r) (pure . r') (\uns sat -> lookups (r' sat) uns)
       where
         r' :: Satisfied -> Resolution
         r' (Satisfied sat) = r & satisfiedL %~ (<> f sat)

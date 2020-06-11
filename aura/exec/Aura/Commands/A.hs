@@ -62,7 +62,7 @@ upgradeAURPkgs pkgs = do
 -- | Foreign packages to consider for upgrading, after "ignored packages" have
 -- been taken into consideration.
 foreigns :: Settings -> IO (Set SimplePkg)
-foreigns ss = S.filter (notIgnored . spName) <$> foreignPackages
+foreigns ss = S.filter (notIgnored . spName) <$> foreignPackages (envOf ss)
   where notIgnored p = not . S.member p $ ignoresOf ss
 
 upgrade :: Set PkgName -> NonEmpty SimplePkg -> RIO Env ()
@@ -115,7 +115,7 @@ auraUpgrade = I.install . pure
 
 develPkgCheck :: RIO Env (Set PkgName)
 develPkgCheck = asks settings >>= \ss ->
-  if switch ss RebuildDevel then liftIO develPkgs else pure S.empty
+  if switch ss RebuildDevel then liftIO (develPkgs $ envOf ss) else pure S.empty
 
 -- | The result of @-Ai@.
 aurPkgInfo :: NonEmpty PkgName -> RIO Env ()
@@ -145,7 +145,7 @@ renderAurPkgInfo ss ai = dtot . colourCheck ss $ entrify ss fields entries
 aurPkgSearch :: Text -> RIO Env ()
 aurPkgSearch regex = do
   ss <- asks settings
-  db <- S.map (pnName . spName) <$> liftIO foreignPackages
+  db <- S.map (pnName . spName) <$> liftIO (foreignPackages $ envOf ss)
   let t = case truncationOf $ buildConfigOf ss of  -- Can't this go anywhere else?
             None   -> id
             Head n -> take $ fromIntegral n

@@ -50,7 +50,7 @@ downgradePackages pkgs = do
   unless (null reals) $ do
     cache   <- liftIO $ cacheContents cachePath
     choices <- traverse (getDowngradeChoice cache) $ toList reals
-    liftIO . pacman $ "-U" : asFlag (commonConfigOf ss) <> map (T.pack . ppPath) choices
+    liftIO . pacman (envOf ss) $ "-U" : asFlag (commonConfigOf ss) <> map (T.pack . ppPath) choices
   where
     pkgsSet :: Set PkgName
     pkgsSet = S.fromList $ NEL.toList pkgs
@@ -116,7 +116,7 @@ cleanCache toSave
   | toSave == 0 = do
       ss <- asks settings
       warn ss cleanCache_2
-      liftIO $ pacman ["-Scc"]
+      liftIO $ pacman (envOf ss) ["-Scc"]
   | otherwise = do
       ss <- asks settings
       let cachePath = either id id . cachePathOf $ commonConfigOf ss

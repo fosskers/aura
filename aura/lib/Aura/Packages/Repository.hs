@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns  #-}
 {-# LANGUAGE TupleSections #-}
 
 -- |
@@ -48,7 +49,8 @@ pacmanRepo = do
         --- Lookup uncached Packages ---
         bgs <- traverseConcurrently Par' (resolveName mv ss) uncached
         let (bads, goods) = partitionEithers bgs
-        (bads', goods') <- traverseEither f goods  -- TODO Should also be made concurrent?
+        let !env = envOf ss
+        (bads', goods') <- traverseEither (f env) goods  -- TODO Also make concurrent?
         --- Update Cache ---
         let m = M.fromList $ map (pname &&& id) goods'
         atomically $ modifyTVar' tv (<> m)
@@ -56,7 +58,7 @@ pacmanRepo = do
 
   pure $ Repository tv g
   where
-    f (r, p) = fmap (FromRepo . packageRepo r p) <$> mostRecent r
+    f env (r, p) = fmap (FromRepo . packageRepo r p) <$> mostRecent env r
 
 packageRepo :: PkgName -> Provides -> Versioning -> Prebuilt
 packageRepo pn pro ver = Prebuilt { pName     = pn
@@ -69,7 +71,7 @@ packageRepo pn pro ver = Prebuilt { pName     = pn
 -- | If given a virtual package, try to find a real package to install.
 resolveName :: MVar () -> Settings -> PkgName -> IO (Either PkgName (PkgName, Provides))
 resolveName mv ss pn = do
-  provs <- map PkgName <$> pacmanLines ["-Ssq", "^" <> escape (pnName pn) <> "$"]
+  provs <- map PkgName <$> pacmanLines (envOf ss) ["-Ssq", "^" <> escape (pnName pn) <> "$"]
   case provs of
     [] -> pure $ Left pn
     _  -> Right . (, Provides pn) <$> chooseProvider mv ss pn provs
@@ -89,8 +91,10 @@ chooseProvider :: MVar () -> Settings -> PkgName -> [PkgName] -> IO PkgName
 chooseProvider _ _ pn []          = pure pn
 chooseProvider _ _ _ [p]          = pure p
 chooseProvider mv ss pn ps@(a:as) =
-  traverseConcurrently Par' isInstalled ps >>= maybe f pure . listToMaybe . catMaybes
+  traverseConcurrently Par' (isInstalled env) ps >>= maybe f pure . listToMaybe . catMaybes
   where
+    env = envOf ss
+
     f :: IO PkgName
     f | shared ss NoConfirm = pure . bool a pn $ pn `elem` ps
       | otherwise = do
@@ -101,8 +105,8 @@ chooseProvider mv ss pn ps@(a:as) =
           pure r
 
 -- | The most recent version of a package, if it exists in the respositories.
-mostRecent :: PkgName -> IO (Either PkgName Versioning)
-mostRecent p@(PkgName s) = note p . extractVersion . decodeUtf8Lenient <$> pacmanOutput ["-Si", s]
+mostRecent :: Environment -> PkgName -> IO (Either PkgName Versioning)
+mostRecent env p@(PkgName s) = note p . extractVersion . decodeUtf8Lenient <$> pacmanOutput env ["-Si", s]
 
 -- | Parses the version number of a package from the result of a
 -- @pacman -Si@ call.

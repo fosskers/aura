@@ -57,7 +57,7 @@ installPkgFiles :: NonEmpty PackagePath -> RIO Env ()
 installPkgFiles files = do
   ss <- asks settings
   liftIO $ checkDBLock ss
-  liftIO . pacman $ ["-U"] <> map (T.pack . ppPath) (toList files) <> asFlag (commonConfigOf ss)
+  liftIO . pacman (envOf ss) $ ["-U"] <> map (T.pack . ppPath) (toList files) <> asFlag (commonConfigOf ss)
 
 -- | All building occurs within temp directories,
 -- or in a location specified by the user with flags.

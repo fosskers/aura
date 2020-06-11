@@ -74,12 +74,12 @@ stateCache = "/var/cache/aura/states"
 inState :: SimplePkg -> PkgState -> Bool
 inState (SimplePkg n v) s = (Just v ==) . M.lookup n $ pkgsOf s
 
-rawCurrentState :: IO [SimplePkg]
-rawCurrentState = mapMaybe simplepkg' <$> pacmanLines ["-Q"]
+rawCurrentState :: Environment -> IO [SimplePkg]
+rawCurrentState env = mapMaybe simplepkg' <$> pacmanLines env ["-Q"]
 
-currentState :: IO PkgState
-currentState = do
-  pkgs <- rawCurrentState
+currentState :: Environment -> IO PkgState
+currentState env = do
+  pkgs <- rawCurrentState env
   time <- getZonedTime
   pure . PkgState time False . M.fromAscList $ map (\(SimplePkg n v) -> (n, v)) pkgs
 
@@ -109,7 +109,7 @@ getStateFiles = do
 -- In writing the first state file, the `states` directory is created automatically.
 saveState :: Settings -> IO ()
 saveState ss = do
-  state <- currentState
+  state <- currentState $ envOf ss
   let filename = stateCache </> dotFormat (timeOf state) <.> "json"
   createDirectoryIfMissing True stateCache
   BL.writeFile filename $ encode state
@@ -139,7 +139,7 @@ restoreState =
           case mpast of
             Nothing   -> throwM $ Failure readState_1
             Just past -> do
-              curr <- liftIO currentState
+              curr <- liftIO . currentState $ envOf ss
               Cache cache <- liftIO $ cacheContents pth
               let StateDiff rein remo = compareStates past curr
                   (okay, nope)        = L.partition (`M.member` cache) rein
@@ -162,5 +162,5 @@ reinstallAndRemove down remo
   | null down = remove
   | otherwise = reinstall *> remove
   where
-    remove    = liftIO . pacman $ "-R" : asFlag remo
-    reinstall = liftIO . pacman $ "-U" : map (T.pack . ppPath) down
+    remove = asks (envOf . settings) >>= \env -> liftIO . pacman env $ "-R" : asFlag remo
+    reinstall = asks (envOf . settings) >>= \env -> liftIO . pacman env $ "-U" : map (T.pack . ppPath) down

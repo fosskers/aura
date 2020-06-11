@@ -61,7 +61,7 @@ withEnv (Program op co bc lng ll) f = do
   environment <- M.fromList . map (bimap T.pack T.pack) <$> getEnvironment
   manager     <- newManager tlsManagerSettings
   isTerm      <- hIsTerminalDevice stdout
-  fromGroups  <- maybe (pure S.empty) groupPackages . nes
+  fromGroups  <- maybe (pure S.empty) (groupPackages environment) . nes
     $ getIgnoredGroups confFile <> igg
   let !bu = buildUserOf bc <|> acUser auraConf <|> getTrueUser environment
   when (isNothing bu) . throwM $ Failure whoIsBuildUser_1
