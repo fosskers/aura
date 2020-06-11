@@ -67,9 +67,6 @@ make :: MonadIO m
 make ss (User usr) pc = do
   -- Perform the actual building.
   (ec, se) <- runIt ss pc
-  -- TESTING --
-  (_, foo, _) <- readProcess $ proc "sudo" ["-u", T.unpack usr, "env"]
-  BL.putStrLn foo
   -- Fetch the filenames of the built tarballs.
   (_, out, _) <- readProcess $ proc "sudo" ["-u", T.unpack usr, makepkgCmd, "--packagelist"]
   let fs = map T.unpack . T.lines . decodeUtf8Lenient $ BL.toStrict out
