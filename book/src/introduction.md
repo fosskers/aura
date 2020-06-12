@@ -24,7 +24,6 @@ Tracker!](https://github.com/fosskers/aura/issues)
 Channel!](https://gitter.im/aurapm/aura)
 - **Who translated Aura?** [These fine
   people](https://github.com/fosskers/aura#credits) from all over the world!
-- **Who made that neat logo?** [Cristiano
-  Vitorino](https://github.com/cristianovitorino) from Brazil!
+- **Who made that neat logo?** The designer [Atra](https://github.com/estatra)!
 - **Who is the original author of Aura?** [Colin
   Woodbury](https://github.com/fosskers) from Canada!
