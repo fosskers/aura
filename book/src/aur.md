@@ -1,7 +1,7 @@
 # Installing AUR Packages
 
 Let's walk through the full process of installing an AUR package. This will show
-us how to discover packages, how to install them, and how to deal with problems.
+us how to discover packages, install them, and upgrade them.
 
 > **💡 Tip:** Just want to update all your AUR packages? Aura's author uses
 > `sudo aura -Auax`.
@@ -157,7 +157,7 @@ python-grip  4.5.2-1        0.34 MiB
 Total Installed Size:  0.34 MiB
 
 :: Proceed with installation? [Y/n]
-... pacman output...
+... pacman output ...
 ```
 
 A few things to note:
@@ -258,7 +258,6 @@ below, I added `echo "I CHANGED THE PKGBUILD"` to the build commands:
 
 ```
 > sudo aura -Axa python-grip --hotedit
-[sudo] password for colin:
 aura >>= Determining dependencies...
 
 ... the usual ...
@@ -303,8 +302,142 @@ Some things to note:
 
 ## Updating your AUR Packages
 
+`sudo aura -Ayu` works, but `sudo aura -Auax` is a more common way to update
+your installed AUR packages.
+
+- `-A`: Only consider AUR packages.
+- `-u`: Update all packages that can be.
+- `-a`: Uninstall unneeded makedepends afterward.
+- `-x`: Display `makepkg` output as we go.
+
+```
+> sudo aura -Auax
+aura >>= Fetching package information...
+aura >>= Comparing package versions...
+aura >>= AUR Packages to upgrade:
+aseprite :: 1.2.16.2-3 -> 1.2.19.2-1
+
+aura >>= Saved package state.
+aura >>= Determining dependencies...
+
+aura >>= Repository dependencies:
+ninja
+aura >>= AUR Packages:
+aseprite
+aura >>= Continue? [Y/n]
+```
+
+Note that `-u` automatically invoked a saving of the current package state. If
+you update your system and there is a serious problem, you can roll back with
+`-Br` and return to the state that was just saved. See [Package Set
+Snapshots](snapshots.md) for more detail.
+
 ### Displaying PKGBUILD Changes
+
+Hey wait a minute, aren't we supposed to check PKGBUILDs before building
+packages? `-k` will show us any changes that were made to a PKGBUILD compared to
+the version we have installed:
+
+```
+> sudo aura -Auaxk
+aura >>= Fetching package information...
+aura >>= Comparing package versions...
+aura >>= AUR Packages to upgrade:
+aseprite :: 1.2.16.2-3 -> 1.2.19.2-1
+
+aura >>= Saved package state.
+aura >>= aseprite PKGBUILD changes:
+--- /var/cache/aura/pkgbuilds/aseprite.pb	2020-02-26 14:11:52.427913916 -0800
++++ /tmp/new.pb	2020-06-12 10:19:55.564270161 -0700
+@@ -7,50 +7,57 @@
+ # Contributor: Kamil Biduś <kamil.bidus@gmail.com>
+
+ pkgname=aseprite
+-pkgver=1.2.16.2
+-pkgrel=3
++pkgver=1.2.19.2
++pkgrel=1
+ pkgdesc='Create animated sprites and pixel art'
+-arch=('x86_64' 'i686')
++arch=('x86_64')
+ url="http://www.aseprite.org/"
+ license=('custom')
+-depends=('cmark' 'pixman' 'curl' 'giflib' 'zlib' 'libpng' 'libjpeg-turbo' 'tinyxml' 'freetype2'
+-         'harfbuzz' 'nettle' 'fontconfig' 'libxcursor' 'desktop-file-utils' 'hicolor-icon-theme')
+-makedepends=('cmake' 'ninja' 'git' 'python2')
++depends=('cmark' 'curl' 'giflib' 'zlib' 'libpng' 'tinyxml' 'freetype2' 'fontconfig' 'libxcursor'
++         'hicolor-icon-theme')
++makedepends=('cmake' 'ninja' 'git' 'python2' 'freeglut' 'xorgproto' 'libxi' 'harfbuzz-icu'
++             'nettle')
+
+... etc ...
+
+aura >>= Determining dependencies...
+
+aura >>= Repository dependencies:
+ninja
+aura >>= AUR Packages:
+aseprite
+aura >>= Continue? [Y/n]
+```
+
+In the terminal, the `+` and `-` lines are shown in colour, so it's much easier
+to tell what changed.
 
 ### Including `*-git` Packages
 
+The AUR has many packages postfixed with `-git`, `-svn`, etc. These typically
+pull straight from the `master` branch of some code respository, and so the idea
+of comparing version numbers to detect updates doesn't work as well.
+
+`--devel` will consider all such packages for updates:
+
+```
+> sudo aura -Auax --devel
+aura >>= Fetching package information...
+aura >>= Comparing package versions...
+aura >>= AUR Packages to upgrade:
+aseprite    :: 1.2.16.2-3 -> 1.2.19.2-1
+libumem-git
+
+aura >>= Saved package state.
+aura >>= Determining dependencies...
+
+aura >>= Repository dependencies:
+ninja
+aura >>= AUR Packages:
+aseprite
+libumem-git
+aura >>= Continue? [Y/n]
+```
+
+Notice that no `a -> b` version number update was given for the `-git` package.
+
+> **💡 Note:** Usually packages are built in semi-randomly named directories
+> within `/tmp`, which is cleared upon every reboot of the machine. (Pass
+> `-c`/`--clean` to `-A` to be proactive about clearing these directories.)
+>
+> "VCS" packages on the other hand are stored elsewhere and given fixed names,
+> so that updates invoke a `git pull` instead of a full `git clone` (which may
+> be expensive!).
+>
+> See [the next page](storage.md) for more information.
+
 ### Forcing a Rebuild
+
+By default, Aura won't rebuild a package if the most recent version is already
+installed (or even just available in your package cache). But sometimes you *do*
+want to force a rebuild. For instance, some `-git` packages have no concept of a
+version number. Even with `--devel`, an update will never be detected. In these
+cases, `--force` will cause the package to be completely rebuilt.
+
+### Blindly Accepting all Prompts
+
+Tired of pressing the `Enter` key? Or maybe you've automated `aura` into a
+script. In these cases, you may want to accept all prompts automatically.
+`pacman` exposes the `--noconfirm` flag for this, which also affects Aura.
+
+> **💡 Note:** If a PKGBUILD vulnerability was detected, Aura **will exit** and
+> not proceed with building, even if `--noconfirm` was given.
+>
+> See [PKGBUILD Security Analysis](security.md) for more information.
