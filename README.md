@@ -227,7 +227,7 @@ Aura has been translated by these generous people:
 | Spanish    | Alejandro Gómez and Sergio Conde                |
 | Swedish    | Fredrik Haikarainen and Daniel Beecham          |
 
-Aura's logo is thanks to [Cristiano Vitorino](https://github.com/cristianovitorino).
+Aura's logo is thanks to the designer [Atra](https://github.com/estatra).
 
 # The `aur` Haskell Library
 
