@@ -1,6 +1,6 @@
 # Package Storage Locations
 
-This page explains all important filepaths for Aura. All paths here can [be
+This page explains all important filepaths for Aura. Build paths can [be
 configured](configuration.md) in `aura.conf` or changed dynamically with CLI
 flags.
 
