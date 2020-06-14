@@ -100,7 +100,10 @@ security scanning:
 > aura -Ap python-grip | aura -P
 ```
 
-Okay, no output and no error code, so we should be safe to proceed.
+Okay, no output and no error code, so we should be safe to proceed. Normally you
+don't need to do `-P` yourself - the same check happens automatically before
+building packages with `-A`. See [PKGBUILD Security Analysis](security.md) for
+more information.
 
 ### A Normal Install
 
@@ -338,7 +341,7 @@ Hey wait a minute, aren't we supposed to check PKGBUILDs before building
 packages? `-k` will show us any changes that were made to a PKGBUILD compared to
 the version we have installed:
 
-```
+```diff
 > sudo aura -Auaxk
 aura >>= Fetching package information...
 aura >>= Comparing package versions...
@@ -381,9 +384,6 @@ aseprite
 aura >>= Continue? [Y/n]
 ```
 
-In the terminal, the `+` and `-` lines are shown in colour, so it's much easier
-to tell what changed.
-
 ### Including `*-git` Packages
 
 The AUR has many packages postfixed with `-git`, `-svn`, etc. These typically
@@ -411,7 +411,7 @@ libumem-git
 aura >>= Continue? [Y/n]
 ```
 
-Notice that no `a -> b` version number update was given for the `-git` package.
+Notice that no `a -> b` version number update was shown for the `-git` package.
 
 > **💡 Note:** Usually packages are built in semi-randomly named directories
 > within `/tmp`, which is cleared upon every reboot of the machine. (Pass

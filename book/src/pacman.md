@@ -78,12 +78,11 @@ local/qt5-webengine 5.14.2-3 (qt qt5)
 ### Producing a list of installed packages
 
 ```
-> aura -Qm
-alsi 0.4.8-1
-aseprite 1.2.16.2-3
-ccextractor 0.88-2
-ctop 0.7.3-1
-deb2targz 0.1-7
+> aura -Q
+a52dec 0.7.4-11
+aalib 1.4rc5-14
+accounts-qml-module 0.7-2
+acetoneiso2 2.3-10
 ... etc ...
 ```
 
