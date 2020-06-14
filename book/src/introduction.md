@@ -26,4 +26,4 @@ Channel!](https://gitter.im/aurapm/aura)
   people](https://github.com/fosskers/aura#credits) from all over the world!
 - **Who made that neat logo?** The designer [Atra](https://github.com/estatra)!
 - **Who is the original author of Aura?** [Colin
-  Woodbury](https://github.com/fosskers) from Canada!
+  Woodbury](https://www.fosskers.ca) from Canada!
