@@ -27,4 +27,4 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.PERSONAL_TOKEN }}
-          publish_dir: ./book/book/html
+          publish_dir: ./book/book/
