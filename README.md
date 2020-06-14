@@ -45,7 +45,7 @@ Welcome to the main repository for Aura, a secure, multilingual package manager 
 ## What is Aura?
 
 Aura is a package manager for Arch Linux. Its original purpose is as an *AUR
-helper*, in that it automates the process of installating packages from the Arch
+helper*, in that it automates the process of installing packages from the Arch
 User Repositories. It is, however, capable of much more.
 
 ## The Aura Philosophy

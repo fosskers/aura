@@ -17,3 +17,4 @@ flames
 aur-pkgs/*
 weeder.dhall
 .hlint.yaml
+book/book/*
