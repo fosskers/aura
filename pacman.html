@@ -1,0 +1,312 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Aura-as-Pacman - The Aura User Guide</title>
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="A full usage guide for Aura.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="philosophy.html"><strong aria-hidden="true">1.</strong> Philosophy</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="usage.html"><strong aria-hidden="true">3.</strong> Usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="pacman.html" class="active"><strong aria-hidden="true">3.1.</strong> Aura-as-Pacman</a></li><li class="chapter-item expanded "><a href="aur.html"><strong aria-hidden="true">3.2.</strong> Installing AUR Packages</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="storage.html"><strong aria-hidden="true">3.2.1.</strong> Package Storage Locations</a></li></ol></li><li class="chapter-item expanded "><a href="downgrading.html"><strong aria-hidden="true">3.3.</strong> Downgrading Packages</a></li><li class="chapter-item expanded "><a href="orphans.html"><strong aria-hidden="true">3.4.</strong> Managing Orphan Packages</a></li><li class="chapter-item expanded "><a href="snapshots.html"><strong aria-hidden="true">3.5.</strong> Package Set Snapshots</a></li><li class="chapter-item expanded "><a href="security.html"><strong aria-hidden="true">3.6.</strong> PKGBUILD Security Analysis</a></li><li class="chapter-item expanded "><a href="log.html"><strong aria-hidden="true">3.7.</strong> Log Interaction</a></li></ol></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">4.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">5.</strong> Appendix</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="localisation.html"><strong aria-hidden="true">5.1.</strong> Localisation Guide</a></li><li class="chapter-item expanded "><a href="faq.html"><strong aria-hidden="true">5.2.</strong> FAQ</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        
+                    </div>
+
+                    <h1 class="menu-title">The Aura User Guide</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        
+                        <a href="https://github.com/fosskers/aura" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#aura-as-pacman" id="aura-as-pacman">Aura-as-Pacman</a></h1>
+<p><code>aura</code> can be used in place of <code>pacman</code> in all situations. At the very least,
+this is two fewer letters to type!</p>
+<p>Below are some common <code>pacman</code> idioms for managing your system. The list is a
+handy reference but not exhaustive. For everything that <code>pacman</code> is capable of,
+see <code>man pacman</code>.</p>
+<p>To find out how to use Aura to interact with the AUR, continue to <a href="aur.html">the next
+page</a>.</p>
+<h2><a class="header" href="#package-installation-and-updates" id="package-installation-and-updates">Package Installation and Updates</a></h2>
+<h3><a class="header" href="#install-an-official-package" id="install-an-official-package">Install an official package</a></h3>
+<pre><code>sudo aura -S firefox
+</code></pre>
+<blockquote>
+<p><strong>💡 Note:</strong> Like with <code>pacman</code>, <code>sudo</code> must be used for all &quot;admin&quot; actions.</p>
+</blockquote>
+<h3><a class="header" href="#update-all-official-packages" id="update-all-official-packages">Update all official packages</a></h3>
+<p>The classic command.</p>
+<pre><code>sudo aura -Syu
+</code></pre>
+<h3><a class="header" href="#install-a-package-built-with-makepkg" id="install-a-package-built-with-makepkg">Install a package built with <code>makepkg</code></a></h3>
+<pre><code>sudo aura -U foobar-1.2.3-1-x86_64.pkg.tar.xz
+</code></pre>
+<h2><a class="header" href="#removing-packages" id="removing-packages">Removing Packages</a></h2>
+<h3><a class="header" href="#the-package-and-all-unneeded-dependencies" id="the-package-and-all-unneeded-dependencies">The package and all unneeded dependencies</a></h3>
+<p>From the manpage of <code>pacman</code>:</p>
+<blockquote>
+<p>This operation is recursive and analogous to a backwards <code>--sync</code> operation,
+and it helps keep a clean system without orphans.</p>
+</blockquote>
+<pre><code>sudo aura -Rsu firefox
+</code></pre>
+<h3><a class="header" href="#the-package-and-everything-that-depends-on-it" id="the-package-and-everything-that-depends-on-it">The package and everything that depends on it</a></h3>
+<p>Use this with care. See <code>man pacman</code> for more details.</p>
+<pre><code>sudo aura -Rcu firefox
+</code></pre>
+<h2><a class="header" href="#querying-your-system" id="querying-your-system">Querying your System</a></h2>
+<h3><a class="header" href="#searching-an-exact-package" id="searching-an-exact-package">Searching an exact package</a></h3>
+<pre><code>aura -Qi firefox
+</code></pre>
+<h3><a class="header" href="#searching-a-local-package-by-description" id="searching-a-local-package-by-description">Searching a local package by description</a></h3>
+<pre><code>&gt; aura -Qs browser
+local/chromium 83.0.4103.61-1
+    A web browser built for speed, simplicity, and security
+local/firefox 76.0.1-1
+    Standalone web browser from mozilla.org
+local/qt5-webengine 5.14.2-3 (qt qt5)
+    Provides support for web applications using the Chromium browser project
+</code></pre>
+<h3><a class="header" href="#producing-a-list-of-installed-packages" id="producing-a-list-of-installed-packages">Producing a list of installed packages</a></h3>
+<pre><code>&gt; aura -Q
+a52dec 0.7.4-11
+aalib 1.4rc5-14
+accounts-qml-module 0.7-2
+acetoneiso2 2.3-10
+... etc ...
+</code></pre>
+<h3><a class="header" href="#discovering-what-package-owns-a-certain-file" id="discovering-what-package-owns-a-certain-file">Discovering what package owns a certain file</a></h3>
+<pre><code>&gt; aura -Qo /usr/bin/firefox
+/usr/bin/firefox is owned by firefox 76.0.1-1
+</code></pre>
+<h3><a class="header" href="#discovering-which-files-are-brought-in-by-a-package" id="discovering-which-files-are-brought-in-by-a-package">Discovering which files are brought in by a package</a></h3>
+<pre><code>&gt; aura -Ql firefox
+firefox /usr/
+firefox /usr/bin/
+firefox /usr/bin/firefox
+firefox /usr/lib/
+firefox /usr/lib/firefox/
+firefox /usr/lib/firefox/Throbber-small.gif
+firefox /usr/lib/firefox/application.ini
+... etc ...
+</code></pre>
+<p>You can use <code>grep</code> to filter what you're looking for:</p>
+<pre><code>&gt; aura -Ql firefox | grep bin
+firefox /usr/bin/
+firefox /usr/bin/firefox
+firefox /usr/lib/firefox/firefox-bin
+</code></pre>
+<h2><a class="header" href="#clearing-your-package-cache" id="clearing-your-package-cache">Clearing your Package Cache</a></h2>
+<p>Pacman and Aura store built packages in <code>/var/cache/pacman/pkg/</code>. This directory
+can grow quite large, but the following commands can help selectively clear it.</p>
+<blockquote>
+<p><strong>💡 Tip:</strong> The Aura command <code>-Cc</code> offers additional control over clearing
+the cache.</p>
+</blockquote>
+<h3><a class="header" href="#removing-the-tarballs-of-uninstalled-packages" id="removing-the-tarballs-of-uninstalled-packages">Removing the tarballs of uninstalled packages</a></h3>
+<pre><code>sudo aura -Sc
+</code></pre>
+<h3><a class="header" href="#removing-all-tarballs" id="removing-all-tarballs">Removing <em>all</em> tarballs</a></h3>
+<pre><code>sudo aura -Scc
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="usage.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+                            <a rel="next" href="aur.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a rel="prev" href="usage.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a rel="next" href="aur.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+        
+        
+        <script type="text/javascript">
+            window.playpen_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+
+    </body>
+</html>

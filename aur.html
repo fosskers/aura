@@ -1,0 +1,608 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Installing AUR Packages - The Aura User Guide</title>
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="A full usage guide for Aura.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="philosophy.html"><strong aria-hidden="true">1.</strong> Philosophy</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="usage.html"><strong aria-hidden="true">3.</strong> Usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="pacman.html"><strong aria-hidden="true">3.1.</strong> Aura-as-Pacman</a></li><li class="chapter-item expanded "><a href="aur.html" class="active"><strong aria-hidden="true">3.2.</strong> Installing AUR Packages</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="storage.html"><strong aria-hidden="true">3.2.1.</strong> Package Storage Locations</a></li></ol></li><li class="chapter-item expanded "><a href="downgrading.html"><strong aria-hidden="true">3.3.</strong> Downgrading Packages</a></li><li class="chapter-item expanded "><a href="orphans.html"><strong aria-hidden="true">3.4.</strong> Managing Orphan Packages</a></li><li class="chapter-item expanded "><a href="snapshots.html"><strong aria-hidden="true">3.5.</strong> Package Set Snapshots</a></li><li class="chapter-item expanded "><a href="security.html"><strong aria-hidden="true">3.6.</strong> PKGBUILD Security Analysis</a></li><li class="chapter-item expanded "><a href="log.html"><strong aria-hidden="true">3.7.</strong> Log Interaction</a></li></ol></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">4.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">5.</strong> Appendix</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="localisation.html"><strong aria-hidden="true">5.1.</strong> Localisation Guide</a></li><li class="chapter-item expanded "><a href="faq.html"><strong aria-hidden="true">5.2.</strong> FAQ</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        
+                    </div>
+
+                    <h1 class="menu-title">The Aura User Guide</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        
+                        <a href="https://github.com/fosskers/aura" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#installing-aur-packages" id="installing-aur-packages">Installing AUR Packages</a></h1>
+<p>Let's walk through the full process of installing an AUR package. This will show
+us how to discover packages, install them, and upgrade them.</p>
+<blockquote>
+<p><strong>💡 Tip:</strong> Just want to update all your AUR packages? Aura's author uses
+<code>sudo aura -Auax</code>.</p>
+</blockquote>
+<blockquote>
+<p><strong>💡 Tip:</strong> For the full list of all options with detailed descriptions, see
+<code>man aura</code>.</p>
+</blockquote>
+<h2><a class="header" href="#installing-a-package" id="installing-a-package">Installing a Package</a></h2>
+<h3><a class="header" href="#searching-for-a-package" id="searching-for-a-package">Searching for a Package</a></h3>
+<p>Let's say we want to install a package that can render <code>.md</code> files for us.
+First, we search the AUR for candidates:</p>
+<pre><code>&gt; aura -As readme
+aur/gtk3-mushrooms 3.24.11-1 (28 | 1.29)
+    GTK3 patched for classic desktops like XFCE or MATE. Please see README.
+aur/python-grip-git 4.5.2-1 (15 | 0.00)
+    Preview GitHub Markdown files like Readme locally before committing them.
+aur/python-grip 4.5.2-1 (13 | 0.14)
+    Preview GitHub Markdown files like Readme locally before committing them
+aur/gtk3-classic 3.24.14-1 (7 | 1.63)
+    GTK3 patched for classic desktops like XFCE or MATE. Please see README.
+aur/ruby-github-markup 3.0.4-1 (4 | 0.00)
+    The code GitHub uses to render README.markup
+... etc ...
+</code></pre>
+<p>By default, results are ordered by their vote count. If <code>-As</code> filled the screen
+and we only wish to see a few results, we can filter with <code>--head</code>:</p>
+<pre><code>&gt; aura -As readme --head 3
+aur/gtk3-mushrooms 3.24.11-1 (28 | 1.28)
+    GTK3 patched for classic desktops like XFCE or MATE. Please see README.
+aur/python-grip-git 4.5.2-1 (15 | 0.00)
+    Preview GitHub Markdown files like Readme locally before committing them.
+aur/python-grip 4.5.2-1 (13 | 0.14)
+    Preview GitHub Markdown files like Readme locally before committing them
+</code></pre>
+<p><code>--abc</code> can be used to sort alphabetically instead.</p>
+<h3><a class="header" href="#scrutinizing-a-package" id="scrutinizing-a-package">Scrutinizing a Package</a></h3>
+<p>Alright, <code>python-grip</code> looks good. Let's take a closer look...</p>
+<pre><code>&gt; aura -Ai python-grip
+Repository  : aur
+Name        : python-grip
+Version     : 4.5.2-1
+AUR Status  : Up to Date
+Maintainer  : craftyguy
+Project URL : https://github.com/joeyespo/grip
+AUR URL     : https://aur.archlinux.org/packages/python-grip
+License     : MIT
+Depends On  : python python-docopt python-flask python-markdown python-path-and-address python-pygments python-requests
+Build Deps  : python-setuptools
+Votes       : 13
+Popularity  : 0.14
+Description : Preview GitHub Markdown files like Readme locally before committing them
+</code></pre>
+<p>Does the PKGBUILD look alright?</p>
+<pre><code>&gt; aura -Ap python-grip
+# Maintainer: Clayton Craft &lt;clayton at craftyguy dot net&gt;
+
+pkgname=python-grip
+pkgver=4.5.2
+pkgrel=1
+pkgdesc=&quot;Preview GitHub Markdown files like Readme locally before committing them&quot;
+arch=('any')
+license=('MIT')
+url=&quot;https://github.com/joeyespo/grip&quot;
+depends=('python' 'python-docopt' 'python-flask' 'python-markdown'
+         'python-path-and-address' 'python-pygments' 'python-requests')
+makedepends=('python-setuptools')
+source=(&quot;$pkgname-$pkgver.tar.gz::https://github.com/joeyespo/grip/archive/v$pkgver.tar.gz&quot;)
+sha256sums=('bdf8949f33470e9ef9e3f09596b72cda968116ff32f0280baabe837c2ad1b29b')
+
+package() {
+  cd grip-$pkgver
+  python setup.py install --root=&quot;$pkgdir&quot; --optimize=1
+  install -Dm644 LICENSE &quot;$pkgdir&quot;/usr/share/licenses/$pkgname/LICENSE
+}
+</code></pre>
+<p>Looks good, but let's make sure we didn't miss anything by using Aura's PKGBUILD
+security scanning:</p>
+<pre><code>&gt; aura -Ap python-grip | aura -P
+</code></pre>
+<p>Okay, no output and no error code, so we should be safe to proceed. Normally you
+don't need to do <code>-P</code> yourself - the same check happens automatically before
+building packages with <code>-A</code>. See <a href="security.html">PKGBUILD Security Analysis</a> for
+more information.</p>
+<h3><a class="header" href="#a-normal-install" id="a-normal-install">A Normal Install</a></h3>
+<pre><code>&gt; sudo aura -A python-grip
+aura &gt;&gt;= Determining dependencies...
+
+aura &gt;&gt;= Repository dependencies:
+python-docopt
+python-flask
+aura &gt;&gt;= AUR dependencies:
+python-path-and-address
+aura &gt;&gt;= AUR Packages:
+python-grip
+aura &gt;&gt;= Continue? [Y/n]
+resolving dependencies...
+looking for conflicting packages...
+
+Package (4)                    New Version  Net Change
+
+community/python-itsdangerous  1.1.0-4        0.11 MiB
+community/python-werkzeug      1.0.1-2        2.13 MiB
+community/python-docopt        0.6.2-7        0.08 MiB
+community/python-flask         1.1.2-2        0.80 MiB
+
+Total Installed Size:  3.11 MiB
+
+:: Proceed with installation? [Y/n]
+... pacman output ...
+
+aura &gt;&gt;= Building python-path-and-address...
+loading packages...
+resolving dependencies...
+looking for conflicting packages...
+
+Package (1)              New Version  Net Change
+
+python-path-and-address  2.0.1-1        0.01 MiB
+
+Total Installed Size:  0.01 MiB
+
+:: Proceed with installation? [Y/n]
+... pacman output ...
+
+aura &gt;&gt;= Building python-grip...
+loading packages...
+resolving dependencies...
+looking for conflicting packages...
+
+Package (1)  New Version  Net Change
+
+python-grip  4.5.2-1        0.34 MiB
+
+Total Installed Size:  0.34 MiB
+
+:: Proceed with installation? [Y/n]
+... pacman output ...
+</code></pre>
+<p>A few things to note:</p>
+<ul>
+<li><code>python-grip</code> has both official and AUR dependencies. These have to be built
+and installed in a specific order for <code>python-grip</code> to even build.</li>
+<li>Aura calls <code>makepkg</code> under the hood. By default, the output of <code>makepkg</code> is
+hidden.</li>
+<li>If two or more packages don't depend on each other, they'll be built one after
+another and installed at the same time. This avoids needless user prompting.</li>
+</ul>
+<h3><a class="header" href="#a-verbose-install" id="a-verbose-install">A Verbose Install</a></h3>
+<p>But what if we <em>do</em> want to see the output from <code>makepkg</code>? For long builds (e.g.
+<a href="https://aur.archlinux.org/packages/aseprite/">aseprite</a>), it can be reassuring
+to see the ongoing build output.</p>
+<p>Let's add <code>-x</code> to <code>-A</code>:</p>
+<pre><code>&gt; sudo aura -Ax python-grip
+aura &gt;&gt;= Determining dependencies...
+
+aura &gt;&gt;= Repository dependencies:
+python-docopt
+python-flask
+aura &gt;&gt;= AUR dependencies:
+python-path-and-address
+aura &gt;&gt;= AUR Packages:
+python-grip
+aura &gt;&gt;= Continue? [Y/n]
+
+... pacman output ...
+
+aura &gt;&gt;= Building python-path-and-address...
+==&gt; Making package: python-path-and-address 2.0.1-1 (Fri 12 Jun 2020 09:39:46 AM PDT)
+==&gt; Checking runtime dependencies...
+==&gt; Checking buildtime dependencies...
+==&gt; Retrieving sources...
+  -&gt; Downloading v2.0.1.tar.gz...
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   133  100   133    0     0     70      0  0:00:01  0:00:01 --:--:--    70
+100  5130    0  5130    0     0   2197      0 --:--:--  0:00:02 --:--:--  2197
+==&gt; Validating source files with md5sums...
+    v2.0.1.tar.gz ... Passed
+==&gt; Extracting sources...
+  -&gt; Extracting v2.0.1.tar.gz with bsdtar
+==&gt; Entering fakeroot environment...
+==&gt; Starting package()...
+
+... makepkg output ...
+
+==&gt; Finished making: python-path-and-address 2.0.1-1 (Fri 12 Jun 2020 09:39:49 AM PDT)
+
+... etc ...
+</code></pre>
+<p>Wonderful.</p>
+<h3><a class="header" href="#automatically-removing-makedepends" id="automatically-removing-makedepends">Automatically Removing <code>makedepends</code></a></h3>
+<p>There's a difference between the dependencies that a package needs to <em>build</em>
+and the dependencies it needs to <em>run</em>. We call the former <em>makedepends</em>. Once a
+package is installed, we no longer need its makedepends sitting around on our
+machine. Adding <code>-a</code> to <code>-A</code> will automatically clear them out:</p>
+<pre><code>&gt; sudo aura -Axa python-grip
+aura &gt;&gt;= Determining dependencies...
+
+... the usual ...
+
+Package (1)  Old Version  New Version  Net Change
+
+python-grip  4.5.2-1      4.5.2-1        0.00 MiB
+
+Total Installed Size:  0.34 MiB
+Net Upgrade Size:      0.00 MiB
+
+:: Proceed with installation? [Y/n]
+
+... pacman output ...
+</code></pre>
+<p>Ah, there were none in this case. Since <code>python-grip</code> is a Python package, it
+never really has <code>makedepends</code>. That's okay - it's a good habit to use <code>-a</code>,
+especially when updating all your AUR packages at once (see below).</p>
+<h3><a class="header" href="#altering-the-pkgbuild-before-building" id="altering-the-pkgbuild-before-building">Altering the PKGBUILD Before Building</a></h3>
+<p>Sometimes you want to change something specific about how a package is built.
+Without an AUR helper, you'd clone the package from the AUR, edit the PKGBUILD,
+and then run <code>makepkg</code>, handling dependencies yourself.</p>
+<p>Aura's <code>--hotedit</code> flag will let you edit a PKGBUILD on-the-fly. In the example
+below, I added <code>echo &quot;I CHANGED THE PKGBUILD&quot;</code> to the build commands:</p>
+<pre><code>&gt; sudo aura -Axa python-grip --hotedit
+aura &gt;&gt;= Determining dependencies...
+
+... the usual ...
+
+aura &gt;&gt;= Building python-grip...
+aura &gt;&gt;= Would you like to edit the PKGBUILD of python-grip? [Y/n]
+
+... Your EDITOR opens, and your changes are saved to the real PKGBUILD file ...
+
+==&gt; Making package: python-grip 4.5.2-1 (Fri 12 Jun 2020 09:52:26 AM PDT)
+==&gt; Checking runtime dependencies...
+==&gt; Checking buildtime dependencies...
+==&gt; Retrieving sources...
+  -&gt; Downloading python-grip-4.5.2.tar.gz...
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   121  100   121    0     0    288      0 --:--:-- --:--:-- --:--:--   289
+100  174k    0  174k    0     0   165k      0 --:--:--  0:00:01 --:--:--  938k
+==&gt; Validating source files with sha256sums...
+    python-grip-4.5.2.tar.gz ... Passed
+==&gt; Extracting sources...
+  -&gt; Extracting python-grip-4.5.2.tar.gz with bsdtar
+==&gt; Entering fakeroot environment...
+==&gt; Starting package()...
+I CHANGED THE PKGBUILD
+
+... normal makepkg output, etc ...
+</code></pre>
+<p>Some things to note:</p>
+<ul>
+<li>If <code>.install</code> or <code>.patch</code> files are present, <code>--hotedit</code> will also prompt you
+to edit those.</li>
+<li>You can change the dependency lists, but <strong>this will only affect <code>makepkg</code>'s
+dependency resolution, not Aura's</strong>. If you want Aura to skip dependency
+checks completely because you know you're right (and you know <code>makepkg</code> will
+succeed after you hotedit), use the <code>--skipdepcheck</code> flag. See issue
+<a href="https://github.com/fosskers/aura/issues/605">#605</a> for more information.</li>
+<li>If you want customizations to a PKGBUILD to apply to all future builds of a
+package, it's recommended that you maintain a separate PKGBUILD and call
+<code>makepkg</code> yourself.</li>
+</ul>
+<h2><a class="header" href="#updating-your-aur-packages" id="updating-your-aur-packages">Updating your AUR Packages</a></h2>
+<p><code>sudo aura -Ayu</code> works, but <code>sudo aura -Auax</code> is a more common way to update
+your installed AUR packages.</p>
+<ul>
+<li><code>-A</code>: Only consider AUR packages.</li>
+<li><code>-u</code>: Update all packages that can be.</li>
+<li><code>-a</code>: Uninstall unneeded makedepends afterward.</li>
+<li><code>-x</code>: Display <code>makepkg</code> output as we go.</li>
+</ul>
+<pre><code>&gt; sudo aura -Auax
+aura &gt;&gt;= Fetching package information...
+aura &gt;&gt;= Comparing package versions...
+aura &gt;&gt;= AUR Packages to upgrade:
+aseprite :: 1.2.16.2-3 -&gt; 1.2.19.2-1
+
+aura &gt;&gt;= Saved package state.
+aura &gt;&gt;= Determining dependencies...
+
+aura &gt;&gt;= Repository dependencies:
+ninja
+aura &gt;&gt;= AUR Packages:
+aseprite
+aura &gt;&gt;= Continue? [Y/n]
+</code></pre>
+<p>Note that <code>-u</code> automatically invoked a saving of the current package state. If
+you update your system and there is a serious problem, you can roll back with
+<code>-Br</code> and return to the state that was just saved. See <a href="snapshots.html">Package Set
+Snapshots</a> for more detail.</p>
+<h3><a class="header" href="#displaying-pkgbuild-changes" id="displaying-pkgbuild-changes">Displaying PKGBUILD Changes</a></h3>
+<p>Hey wait a minute, aren't we supposed to check PKGBUILDs before building
+packages? <code>-k</code> will show us any changes that were made to a PKGBUILD compared to
+the version we have installed:</p>
+<pre><code class="language-diff">&gt; sudo aura -Auaxk
+aura &gt;&gt;= Fetching package information...
+aura &gt;&gt;= Comparing package versions...
+aura &gt;&gt;= AUR Packages to upgrade:
+aseprite :: 1.2.16.2-3 -&gt; 1.2.19.2-1
+
+aura &gt;&gt;= Saved package state.
+aura &gt;&gt;= aseprite PKGBUILD changes:
+--- /var/cache/aura/pkgbuilds/aseprite.pb	2020-02-26 14:11:52.427913916 -0800
++++ /tmp/new.pb	2020-06-12 10:19:55.564270161 -0700
+@@ -7,50 +7,57 @@
+ # Contributor: Kamil Biduś &lt;kamil.bidus@gmail.com&gt;
+
+ pkgname=aseprite
+-pkgver=1.2.16.2
+-pkgrel=3
++pkgver=1.2.19.2
++pkgrel=1
+ pkgdesc='Create animated sprites and pixel art'
+-arch=('x86_64' 'i686')
++arch=('x86_64')
+ url=&quot;http://www.aseprite.org/&quot;
+ license=('custom')
+-depends=('cmark' 'pixman' 'curl' 'giflib' 'zlib' 'libpng' 'libjpeg-turbo' 'tinyxml' 'freetype2'
+-         'harfbuzz' 'nettle' 'fontconfig' 'libxcursor' 'desktop-file-utils' 'hicolor-icon-theme')
+-makedepends=('cmake' 'ninja' 'git' 'python2')
++depends=('cmark' 'curl' 'giflib' 'zlib' 'libpng' 'tinyxml' 'freetype2' 'fontconfig' 'libxcursor'
++         'hicolor-icon-theme')
++makedepends=('cmake' 'ninja' 'git' 'python2' 'freeglut' 'xorgproto' 'libxi' 'harfbuzz-icu'
++             'nettle')
+
+... etc ...
+
+aura &gt;&gt;= Determining dependencies...
+
+aura &gt;&gt;= Repository dependencies:
+ninja
+aura &gt;&gt;= AUR Packages:
+aseprite
+aura &gt;&gt;= Continue? [Y/n]
+</code></pre>
+<h3><a class="header" href="#including--git-packages" id="including--git-packages">Including <code>*-git</code> Packages</a></h3>
+<p>The AUR has many packages postfixed with <code>-git</code>, <code>-svn</code>, etc. These typically
+pull straight from the <code>master</code> branch of some code respository, and so the idea
+of comparing version numbers to detect updates doesn't work as well.</p>
+<p><code>--devel</code> will consider all such packages for updates:</p>
+<pre><code>&gt; sudo aura -Auax --devel
+aura &gt;&gt;= Fetching package information...
+aura &gt;&gt;= Comparing package versions...
+aura &gt;&gt;= AUR Packages to upgrade:
+aseprite    :: 1.2.16.2-3 -&gt; 1.2.19.2-1
+libumem-git
+
+aura &gt;&gt;= Saved package state.
+aura &gt;&gt;= Determining dependencies...
+
+aura &gt;&gt;= Repository dependencies:
+ninja
+aura &gt;&gt;= AUR Packages:
+aseprite
+libumem-git
+aura &gt;&gt;= Continue? [Y/n]
+</code></pre>
+<p>Notice that no <code>a -&gt; b</code> version number update was shown for the <code>-git</code> package.</p>
+<blockquote>
+<p><strong>💡 Note:</strong> Usually packages are built in semi-randomly named directories
+within <code>/tmp</code>, which is cleared upon every reboot of the machine. (Pass
+<code>-c</code>/<code>--clean</code> to <code>-A</code> to be proactive about clearing these directories.)</p>
+<p>&quot;VCS&quot; packages on the other hand are stored elsewhere and given fixed names,
+so that updates invoke a <code>git pull</code> instead of a full <code>git clone</code> (which may
+be expensive!).</p>
+<p>See <a href="storage.html">the next page</a> for more information.</p>
+</blockquote>
+<h3><a class="header" href="#forcing-a-rebuild" id="forcing-a-rebuild">Forcing a Rebuild</a></h3>
+<p>By default, Aura won't rebuild a package if the most recent version is already
+installed (or even just available in your package cache). But sometimes you <em>do</em>
+want to force a rebuild. For instance, some <code>-git</code> packages have no concept of a
+version number. Even with <code>--devel</code>, an update will never be detected. In these
+cases, <code>--force</code> will cause the package to be completely rebuilt.</p>
+<h3><a class="header" href="#blindly-accepting-all-prompts" id="blindly-accepting-all-prompts">Blindly Accepting all Prompts</a></h3>
+<p>Tired of pressing the <code>Enter</code> key? Or maybe you've automated <code>aura</code> into a
+script. In these cases, you may want to accept all prompts automatically.
+<code>pacman</code> exposes the <code>--noconfirm</code> flag for this, which also affects Aura.</p>
+<blockquote>
+<p><strong>💡 Note:</strong> If a PKGBUILD vulnerability was detected, Aura <strong>will exit</strong> and
+not proceed with building, even if <code>--noconfirm</code> was given.</p>
+<p>See <a href="security.html">PKGBUILD Security Analysis</a> for more information.</p>
+</blockquote>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="pacman.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+                            <a rel="next" href="storage.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a rel="prev" href="pacman.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a rel="next" href="storage.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+        
+        
+        <script type="text/javascript">
+            window.playpen_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+
+    </body>
+</html>

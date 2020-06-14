@@ -1,0 +1,362 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Localisation Guide - The Aura User Guide</title>
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="A full usage guide for Aura.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="philosophy.html"><strong aria-hidden="true">1.</strong> Philosophy</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="usage.html"><strong aria-hidden="true">3.</strong> Usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="pacman.html"><strong aria-hidden="true">3.1.</strong> Aura-as-Pacman</a></li><li class="chapter-item expanded "><a href="aur.html"><strong aria-hidden="true">3.2.</strong> Installing AUR Packages</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="storage.html"><strong aria-hidden="true">3.2.1.</strong> Package Storage Locations</a></li></ol></li><li class="chapter-item expanded "><a href="downgrading.html"><strong aria-hidden="true">3.3.</strong> Downgrading Packages</a></li><li class="chapter-item expanded "><a href="orphans.html"><strong aria-hidden="true">3.4.</strong> Managing Orphan Packages</a></li><li class="chapter-item expanded "><a href="snapshots.html"><strong aria-hidden="true">3.5.</strong> Package Set Snapshots</a></li><li class="chapter-item expanded "><a href="security.html"><strong aria-hidden="true">3.6.</strong> PKGBUILD Security Analysis</a></li><li class="chapter-item expanded "><a href="log.html"><strong aria-hidden="true">3.7.</strong> Log Interaction</a></li></ol></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">4.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">5.</strong> Appendix</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="localisation.html" class="active"><strong aria-hidden="true">5.1.</strong> Localisation Guide</a></li><li class="chapter-item expanded "><a href="faq.html"><strong aria-hidden="true">5.2.</strong> FAQ</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        
+                    </div>
+
+                    <h1 class="menu-title">The Aura User Guide</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        
+                        <a href="https://github.com/fosskers/aura" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#language-localisation-guide" id="language-localisation-guide">Language Localisation Guide</a></h1>
+<p>Welcome! こんにちは！ Saluton!</p>
+<p>If you're reading this then it's likely that you want to help localise Aura into
+another language. Arch users everywhere can benefit from your contribution, and
+it's a great opportunity to contribute to Open Source.</p>
+<h2><a class="header" href="#what-you-need" id="what-you-need">What You Need</a></h2>
+<ol>
+<li>
+<p><a href="https://github.com/fosskers/aura">The Aura source code</a>.</p>
+</li>
+<li>
+<p>An editor. Whichever one you like.</p>
+</li>
+<li>
+<p><code>git</code>. As Aura is hosted on github, cloning, making changes and adding pull
+requests will be easiest if you have a working git/github setup.</p>
+</li>
+<li>
+<p>Minimal Haskell knowledge. You'll see just how much below.</p>
+</li>
+<li>
+<p>A brain (hopefully yours) with a language in it. As for me, no hablo español,
+Я не могу говорить по-русски, nor do I يتكلم العربية, so that's where you
+come in.</p>
+</li>
+</ol>
+<h2><a class="header" href="#localisation" id="localisation">Localisation</a></h2>
+<h3><a class="header" href="#step-one---tell-haskell-about-the-new-language" id="step-one---tell-haskell-about-the-new-language">Step One - Tell Haskell About the New Language</a></h3>
+<p>The languages we have already available to us are defined in <code>lib/Aura/Types.hs</code>.
+You'll notice this entry:</p>
+<pre><code class="language-haskell">data Language = English
+              | Japanese
+              | Polish
+              ...  -- More in between.
+              | Indonesia
+              | Chinese
+                deriving (Eq, Enum, Ord, Show)
+</code></pre>
+<p>As an example, let's say we're adding French translations to Aura.
+First, let's extend our <code>Language</code> type:</p>
+<pre><code class="language-haskell">data Language = English
+              | Japanese
+              | Polish
+              ...  -- More in between.
+              | Indonesia
+              | Chinese
+              | French  -- Added a pipe character and the new Language name.
+                deriving (Eq, Enum, Ord, Show)
+</code></pre>
+<h3><a class="header" href="#step-two---adding-your-languages-locale-code" id="step-two---adding-your-languages-locale-code">Step Two - Adding your Language's Locale Code</a></h3>
+<p>All strings that contain messages for the user are stored in a single source
+file: <code>lib/Aura/Languages.hs</code>. One function here is called <code>langFromLocale</code>:</p>
+<pre><code class="language-haskell">langFromLocale :: T.Text -&gt; Language
+langFromLocale = T.take 2 &gt;&gt;&gt; \case
+    &quot;ja&quot; -&gt; Japanese
+    &quot;pl&quot; -&gt; Polish
+    ...   -- More in between.
+    &quot;id&quot; -&gt; Indonesia
+    &quot;zh&quot; -&gt; Chinese
+    _    -&gt; English
+</code></pre>
+<p>This helps Aura auto-detect your computer's human language. By default,
+it picks English. Let's add French:</p>
+<pre><code class="language-haskell">langFromLocale :: T.Text -&gt; Language
+langFromLocale = T.take 2 &gt;&gt;&gt; \case
+    &quot;ja&quot; -&gt; Japanese
+    &quot;pl&quot; -&gt; Polish
+    ...   -- More in between.
+    &quot;id&quot; -&gt; Indonesia
+    &quot;zh&quot; -&gt; Chinese
+    &quot;fr&quot; -&gt; French
+    _    -&gt; English
+</code></pre>
+<p>Your entry <em>must</em> go above the <code>_ -&gt; English</code> line.</p>
+<p>Don't know your locale code? You can find them all in
+<code>/usr/share/i18n/locales</code>.</p>
+<h3><a class="header" href="#step-three---translation" id="step-three---translation">Step Three - Translation</a></h3>
+<p>This is the real work. Let's take a look at a simple message. The user
+is trying to build a package as <code>root</code>... what to tell them?</p>
+<pre><code class="language-haskell">trueRoot_3 :: Language -&gt; T.Text
+trueRoot_3 = \case
+  Japanese -&gt; &quot;「root」としてパッケージを作成するのは「makepkg v4.2」で不可能になりました。&quot;
+  German   -&gt; &quot;Seit makepkg v4.2 ist es nicht mehr möglich als root zu bauen.&quot;
+  Spanish  -&gt; &quot;Desde makepkg v4.2 no es posible compilar paquetes como root.&quot;
+  Chinese  -&gt; &quot;自从 makepkg v4.2 以后，就不能以根用户身份构建软件了。&quot;
+  Swedish  -&gt; &quot;I makepkg v4.2 och uppåt är det inte tillåtet att bygga som root.&quot;
+  _        -&gt; &quot;As of makepkg v4.2, building as root is no longer possible.&quot;
+</code></pre>
+<p>We use the naming convention <code>someIssue_n</code> to show what the error involves.
+<code>_3</code> in the above means that there are (at least) 3 potential errors involving
+&quot;true root&quot;.</p>
+<p>As with <code>langFromLocale</code>, your French entry would go above the <code>_ -&gt; &quot;As of makepkg...&quot;</code> line.</p>
+<p>Sometimes you'll get functions with extra variables to put in the message:</p>
+<pre><code class="language-haskell">buildPackages_1 :: T.Text -&gt; Language -&gt; T.Text
+buildPackages_1 (bt -&gt; p) = \case
+  Japanese   -&gt; p ++ &quot;を作成中・・・&quot;
+  _          -&gt; &quot;Building &quot; ++ p ++ &quot;...&quot;
+</code></pre>
+<p>The arguments <code>p</code> is probably a package name. To double check,
+just check out the function that calls this message dispatch. A quick search
+tells us it's in <code>lib/Aura/Build.hs</code>, and the function is called <code>build</code>.
+Once you know what's going on, go ahead and add the translation:</p>
+<pre><code class="language-haskell">buildPackages_1 :: String -&gt; Language -&gt; String
+buildPackages_1 (bt -&gt; p) = \case
+  Japanese   -&gt; p ++ &quot;を作成中・・・&quot;
+  French     -&gt; &quot;Construction de &quot; ++ p ++ &quot;…&quot;
+  _          -&gt; &quot;Building &quot; ++ p ++ &quot;...&quot;
+</code></pre>
+<p>Obviously the syntax among languages is different, and so where you insert the
+variables you've been given into the sentence depends on your language.</p>
+<h3><a class="header" href="#step-four---command-line-flag" id="step-four---command-line-flag">Step Four - Command-line Flag</a></h3>
+<p>We choose output languages in Aura by using flags on the command line.
+Japanese, for example, uses the <code>--japanese</code> flag. We'll have to make
+a flag for the new language you're adding too.</p>
+<p>At the bottom of <code>exec/Flags.hs</code> you'll find:</p>
+<pre><code class="language-haskell">language :: Parser Language
+language = foldr1 (&lt;|&gt;) $ map (\(f, v) -&gt; flag' v (long f &lt;&gt; hidden)) langs
+  where langs = [ ( &quot;japanese&quot;,   Japanese ),   ( &quot;日本語&quot;,     Japanese )
+                , ( &quot;polish&quot;,     Polish ),     ( &quot;polski&quot;,    Polish )
+                , ( &quot;croatian&quot;,   Croatian ),   ( &quot;hrvatski&quot;,  Croatian )
+                ... -- More in between.
+                , ( &quot;norwegian&quot;,  Norwegian ),  ( &quot;norsk&quot;,     Norwegian )
+                , ( &quot;indonesian&quot;, Indonesia )
+                , ( &quot;chinese&quot;,    Chinese ),    ( &quot;中文&quot;,       Chinese ) ]
+</code></pre>
+<p>The convention is to add two flags for each language. One is that language's name
+in English, and the other is its name in its own language (e.g. <code>&quot;croatian&quot;</code> and <code>&quot;hrvatski&quot;</code>).
+The second element of each pair is the same value you added to the <code>Language</code> type.</p>
+<h3><a class="header" href="#step-five---pull-request" id="step-five---pull-request">Step Five - Pull Request</a></h3>
+<p>With the translations complete, you'll need to tell us about it on Github.
+Once your changes are looked over, we'll release a new version of Aura with
+your language included as soon as possible. Provided you followed the above
+instructions, this shouldn't take long. Furthermore, chances are we won't be
+able to proofread the translation itself, as we probably don't speak your
+language. You could hide your doomsday take-over plans in the code and no
+one would know.</p>
+<h3><a class="header" href="#step-six---youve-helped-others-who-speak-your-language" id="step-six---youve-helped-others-who-speak-your-language">Step Six - You've Helped Others who Speak your Language</a></h3>
+<p>You've done a great thing by increasing Aura's usability. Your name will be
+included in both Aura's README and in its <code>-V</code> version message.
+Thanks a lot for your hard work!</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="appendix.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+                            <a rel="next" href="faq.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a rel="prev" href="appendix.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a rel="next" href="faq.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+        
+        
+        <script type="text/javascript">
+            window.playpen_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+
+    </body>
+</html>
