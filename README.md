@@ -10,6 +10,9 @@
 
 Welcome to the main repository for Aura, a secure, multilingual package manager for Arch Linux.
 
+Check out [The Aura Book](https://fosskers.github.io/aura/) for all knowledge
+and usage instructions!
+
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
 
@@ -202,7 +205,9 @@ file is added for you.
 
 As mentioned in the Philosophy above, adding new languages to Aura is quite
 easy. If you speak a language other than those available and would like it added
-to Aura, please consult [LOCALISATION.md](./aura/LOCALISATION.md).
+to Aura, please see the
+[Localisation](https://fosskers.github.io/aura/localisation.html) section of The
+Aura Book.
 
 ## Credits
 
