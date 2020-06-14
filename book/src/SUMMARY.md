@@ -14,7 +14,6 @@
   - [PKGBUILD Security Analysis](./security.md)
   - [Log Interaction](./log.md)
 - [Configuration](./configuration.md)
-- [Localisation Guide](./localisation.md)
 - [Appendix](./appendix.md)
+  - [Localisation Guide](./localisation.md)
   - [FAQ](./faq.md)
-  - [Notes for Developers](./developers.md)

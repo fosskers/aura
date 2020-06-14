@@ -8,7 +8,7 @@ it's a great opportunity to contribute to Open Source.
 
 ## What You Need
 
-1. The aura source code. [Get it here](https://github.com/fosskers/aura).
+1. [The Aura source code](https://github.com/fosskers/aura).
 
 2. An editor. Whichever one you like.
 
@@ -21,7 +21,7 @@ it's a great opportunity to contribute to Open Source.
    Я не могу говорить по-русски, nor do I يتكلم العربية, so that's where you
    come in.
 
-## Getting Started
+## Localisation
 
 ### Step One - Tell Haskell About the New Language
 
