@@ -229,11 +229,13 @@ buildPackages_1 (bt . pnName -> p) = \case
 
 buildPackages_2 :: Language -> Doc AnsiStyle
 buildPackages_2 = \case
-  _ -> "'--allsource' detected. No actual installable packages will be built."
+    Spanish    -> "'--allsource' detectado. No se construirán paquetes instalables reales."
+    _          -> "'--allsource' detected. No actual installable packages will be built."
 
 buildPackages_3 :: FilePath -> Language -> Doc AnsiStyle
 buildPackages_3 fp = \case
-  _ -> "All .src.tar.gz files were built and copied to: " <> pretty fp
+    Spanish    -> "Todos los archivos .src.tar.gz fueron construidos y copiados a: " <> pretty fp
+    _          -> "All .src.tar.gz files were built and copied to: " <> pretty fp
 
 buildFail_5 :: Language -> Doc AnsiStyle
 buildFail_5 = \case
@@ -330,7 +332,8 @@ buildFail_11 = \case
 
 buildFail_12 :: Language -> Doc AnsiStyle
 buildFail_12 = \case
-  _ -> "Failed to 'git pull' the latest updates."
+    Spanish    -> "Error al 'git pull' las últimas actualizaciones."
+    _          -> "Failed to 'git pull' the latest updates."
 
 ------------------------------
 -- Aura/Dependencies functions
@@ -418,6 +421,7 @@ missingPkg_4 pns = \case
 
 missingPkg_5 :: PkgName -> Language -> Doc AnsiStyle
 missingPkg_5 (PkgName p) = \case
+  Spanish   -> bt p <> " no existe."
   Italian   -> bt p <> " non esiste."
   Dutch     -> bt p <> " bestaat niet."
   _         -> bt p <> " does not exist."
@@ -1176,11 +1180,13 @@ cleanCache_6 = \case
 
 cleanCache_7 :: Word -> Word -> Language -> Doc AnsiStyle
 cleanCache_7 (bt . tshow -> ps) (bt . tshow -> bytes) = \case
-  _ -> "The cache contains " <> ps <> " packages, consuming " <> bytes <> " megabytes."
+    Spanish    -> "La caché contiene " <> ps <> " paquetes, consumiendo " <> bytes <> " megabytes."
+    _          -> "The cache contains " <> ps <> " packages, consuming " <> bytes <> " megabytes."
 
 cleanCache_8 :: Word -> Language -> Doc AnsiStyle
 cleanCache_8 (bt . tshow -> bytes) = \case
-  _ -> bytes <> " megabytes freed."
+   Spanish     -> bytes <> " megabytes liberados."
+   _           -> bytes <> " megabytes freed."
 
 -- NEEDS TRANSLATION
 cleanNotSaved_1 :: Language -> Doc AnsiStyle
@@ -1265,13 +1271,15 @@ connectFailure_1 = \case
 
 miscAURFailure_1 :: Language -> Doc AnsiStyle
 miscAURFailure_1 = \case
+  Spanish   -> "El contacto con el AUR falló de alguna manera desconocida."
   Italian   -> "C'è stato un errore sconosciuto nel contattare l'AUR."
   Dutch     -> "Contact opnemen met de AUR is op een onbekende manier mislukt."
   _         -> "Contacting the AUR failed in some unknown way."
 
 miscAURFailure_3 :: Language -> Doc AnsiStyle
 miscAURFailure_3 = \case
-  _ -> "The JSON returned from the AUR server could not be decoded."
+  Spanish   -> "El JSON devuelto por el servidor AUR no se pudo decodificar."
+  _         -> "The JSON returned from the AUR server could not be decoded."
 
 infoFields :: Language -> [Text]
 infoFields = sequence [ Fields.repository
@@ -1506,11 +1514,13 @@ hotEdit_1 (bt . pnName -> p) = \case
 
 hotEdit_2 :: Language -> Doc AnsiStyle
 hotEdit_2 = \case
-  _ -> "Would you like to edit the .install file?"
+  Spanish   -> "¿Desea editar el archivo .install?"
+  _         -> "Would you like to edit the .install file?"
 
 hotEdit_3 :: FilePath -> Language -> Doc AnsiStyle
 hotEdit_3 fp = \case
-  _ -> "Would you like to edit " <> pretty fp <> "?"
+  Spanish   -> "¿Desea editar " <> pretty fp <> "?"
+  _         -> "Would you like to edit " <> pretty fp <> "?"
 
 ------------------------------
 -- Pkgbuild Security functions
@@ -1587,19 +1597,23 @@ security_10 (bt -> t) = \case
 
 security_11 :: Language -> Doc AnsiStyle
 security_11 = \case
-  _ -> "That PKGBUILD is too complex to parse - it may be obfuscating malicious code."
+  Spanish   -> "Éste PKGBUILD es demasiado complejo para analizar, puede estar ofuscando código malicioso."
+  _         -> "That PKGBUILD is too complex to parse - it may be obfuscating malicious code."
 
 security_12 :: Language -> Doc AnsiStyle
 security_12 = \case
-  _ -> "Potential PKGBUILD vulnerabilities detected."
+  Spanish   -> "Posibles vulnerabilidades de PKGBUILD detectadas."
+  _         -> "Potential PKGBUILD vulnerabilities detected."
 
 security_13 :: Word -> Language -> Doc AnsiStyle
 security_13 (bt -> w) = \case
-  _ -> "Checking" <+> w <+> "PKGBUILDs for vulnerabilities..."
+  Spanish   -> "Comprobando" <+> w <+> "PKGBUILDs por vulnerabilidades..."
+  _         -> "Checking" <+> w <+> "PKGBUILDs for vulnerabilities..."
 
 security_14 :: Language -> Doc AnsiStyle
 security_14 = \case
-  _ -> "No vulnerabilities detected."
+  Spanish   -> "No se detectaron vulnerabilidades."
+  _         -> "No vulnerabilities detected."
 
 -----------------------
 -- Aura/Utils functions
