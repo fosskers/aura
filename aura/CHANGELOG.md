@@ -1,5 +1,11 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Changed
+
+- Updated Spanish translations. Thank you, Max Ferrer!
+
 ## 3.1.4 (2020-06-11)
 
 #### Fixed
