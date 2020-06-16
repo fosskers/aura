@@ -14,25 +14,6 @@
 -- All output strings that a user can be shown.
 -- All normal restrictions on line length do not apply for this file, and this file only.
 
-{- AURA TRANSLATORS - Thank you all
-Chris "Kwpolska" Warrick                      | Polish
-Denis Kasak / "stranac"                       | Croatian
-Fredrik Haikarainen / Daniel Beecham          | Swedish
-Lukas Niederbremer / Jonas Platte             | German
-Alejandro Gómez / Sergio Conde / Max Ferrer   | Spanish
-Henry Kupty / Thiago Perrotta / Wagner Amaral | Portuguese
-Ma Jiehong / Fabien Dubosson                  | French
-Kyrylo Silin                                  | Russian
-Bob Valantin / Cristian Tentella              | Italian
-Filip Brcic                                   | Serbian
-"chinatsun"                                   | Norwegian
-"pak tua Greg"                                | Indonesia
-Kai Zhang                                     | Chinese
-Onoue Takuro                                  | Japanese
-Zachary "Ghosy" Matthews                      | Esperanto
-Joris Blanken                                 | Dutch
--}
-
 module Aura.Languages where
 
 import           Aura.Colour
@@ -49,6 +30,7 @@ import qualified RIO.Text as T
 
 ---
 
+-- | Thank you all!
 translators :: Map Language Text
 translators = M.fromList
     [ (Polish,     "Chris Warrick")
