@@ -37,7 +37,6 @@ module Aura.Utils
   , partNonEmpty
   ) where
 
-import           Data.Bifunctor
 import           Network.HTTP.Client
 import           Network.HTTP.Types.Status (statusCode)
 import           RIO

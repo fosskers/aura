@@ -34,10 +34,9 @@ import           Aura.Settings.External
 import           Aura.Shell
 import           Aura.Types
 import           Aura.Utils
-import           Data.Bifunctor (Bifunctor(..))
 import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)
-import           RIO hiding (first)
+import           RIO
 import           RIO.Lens (each, _Left, _Right)
 import qualified RIO.Map as M
 import qualified RIO.Set as S

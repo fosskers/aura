@@ -42,7 +42,6 @@ module Aura.Types
 
 import           Aura.Utils
 import           Data.Aeson (FromJSONKey, ToJSONKey)
-import           Data.Bitraversable
 import           Data.Text.Prettyprint.Doc hiding (list, space)
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions hiding (Traversal')

@@ -44,7 +44,7 @@ common commons
     , bytestring  ^>=0.10
     , containers  ^>=0.6
     , megaparsec  >=7      && <9
-    , rio         ^>=0.1.16
+    , rio         ^>=0.1.17
     , text        ^>=1.2
     , versions    ^>=3.5.4
 

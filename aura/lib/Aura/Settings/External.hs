@@ -23,7 +23,7 @@ module Aura.Settings.External
 import           Aura.Languages (langFromLocale)
 import           Aura.Settings
 import           Aura.Types
-import           RIO hiding (first, some, try)
+import           RIO hiding (some, try)
 import qualified RIO.ByteString as BS
 import           RIO.Directory
 import qualified RIO.Map as M

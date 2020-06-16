@@ -31,8 +31,7 @@ module Aura.Pacman
 import           Aura.Languages
 import           Aura.Settings.External
 import           Aura.Types
-import           Data.Bifunctor (first)
-import           RIO hiding (first, some, try)
+import           RIO hiding (some, try)
 import qualified RIO.ByteString as BS
 import qualified RIO.ByteString.Lazy as BL
 import           RIO.FilePath

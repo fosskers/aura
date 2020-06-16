@@ -40,7 +40,6 @@ import           Aura.Shell
 import           Aura.Types
 import           Aura.Utils
 import           Control.Monad.Trans.Maybe
-import           Data.Bifunctor (bimap)
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           RIO hiding ((<>))

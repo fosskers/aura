@@ -51,11 +51,10 @@ import           Aura.Settings
 import           Aura.Settings.Runtime
 import           Aura.Types
 import           Aura.Utils (nes)
-import           Data.Bifunctor (first)
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Options.Applicative (execParser)
-import           RIO hiding (first)
+import           RIO
 import           RIO.FilePath
 import qualified RIO.Set as S
 import           System.Process.Typed (proc, runProcess)
