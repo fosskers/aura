@@ -229,7 +229,7 @@ Aura has been translated by these generous people:
 | Portuguese | Henry Kupty, Thiago Perrotta, and Wagner Amaral |
 | Russian    | Kyrylo Silin, Alexey Kotlyarov                  |
 | Serbian    | Filip Brcic                                     |
-| Spanish    | Alejandro Gómez and Sergio Conde                |
+| Spanish    | Alejandro Gómez, Sergio Conde and Max Ferrer    |
 | Swedish    | Fredrik Haikarainen and Daniel Beecham          |
 
 Aura's logo is thanks to the designer [Atra](https://github.com/estatra).
