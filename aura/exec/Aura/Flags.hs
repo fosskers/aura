@@ -23,27 +23,27 @@ import qualified RIO.Text as T
 
 -- | A description of a run of Aura to attempt.
 data Program = Program {
-  _operation   :: Either (PacmanOp, Set MiscOp) AuraOp
+  _operation   :: !(Either (PacmanOp, Set MiscOp) AuraOp)
   -- ^ Whether Aura handles everything, or the ops and input are just passed down to Pacman.
-  , _commons   :: CommonConfig
+  , _commons   :: !CommonConfig
   -- ^ Settings common to both Aura and Pacman.
-  , _buildConf :: BuildConfig
+  , _buildConf :: !BuildConfig
   -- ^ Settings specific to building packages.
-  , _language  :: Maybe Language
+  , _language  :: !(Maybe Language)
   -- ^ The human language of text output.
-  , _logLevel  :: LogLevel
+  , _logLevel  :: !LogLevel
   -- ^ The default RIO logging level.
   } deriving (Show)
 
 -- | Inherited operations that are fed down to Pacman.
 data PacmanOp
-  = Database (Either DatabaseOp (NonEmpty PkgName))
-  | Files    (Set FilesOp)
-  | Query    (Either QueryOp (Set QueryFilter, Set PkgName))
-  | Remove   (Set RemoveOp) (NonEmpty PkgName)
-  | Sync     (Either (NonEmpty SyncOp) (Set PkgName)) (Set SyncSwitch)
-  | TestDeps (NonEmpty Text)
-  | Upgrade  (Set UpgradeSwitch) (NonEmpty PkgName)
+  = Database !(Either DatabaseOp (NonEmpty PkgName))
+  | Files    !(Set FilesOp)
+  | Query    !(Either QueryOp (Set QueryFilter, Set PkgName))
+  | Remove   !(Set RemoveOp) !(NonEmpty PkgName)
+  | Sync     !(Either (NonEmpty SyncOp) (Set PkgName)) !(Set SyncSwitch)
+  | TestDeps !(NonEmpty Text)
+  | Upgrade  !(Set UpgradeSwitch) !(NonEmpty PkgName)
   deriving (Show)
 
 instance Flagable PacmanOp where
@@ -60,8 +60,8 @@ instance Flagable PacmanOp where
 
 data DatabaseOp
   = DBCheck
-  | DBAsDeps     (NonEmpty Text)
-  | DBAsExplicit (NonEmpty Text)
+  | DBAsDeps     !(NonEmpty Text)
+  | DBAsExplicit !(NonEmpty Text)
   deriving (Show)
 
 instance Flagable DatabaseOp where
@@ -70,9 +70,9 @@ instance Flagable DatabaseOp where
   asFlag (DBAsExplicit ps) = "--asexplicit" : asFlag ps
 
 data FilesOp
-  = FilesList  (NonEmpty Text)
-  | FilesOwns   Text
-  | FilesSearch Text
+  = FilesList   !(NonEmpty Text)
+  | FilesOwns   !Text
+  | FilesSearch !Text
   | FilesRegex
   | FilesRefresh
   | FilesMachineReadable
@@ -87,14 +87,14 @@ instance Flagable FilesOp where
   asFlag FilesMachineReadable = ["--machinereadable"]
 
 data QueryOp
-  = QueryChangelog (NonEmpty Text)
-  | QueryGroups    (NonEmpty Text)
-  | QueryInfo      (NonEmpty Text)
-  | QueryCheck     (NonEmpty Text)
-  | QueryList      (NonEmpty Text)
-  | QueryOwns      (NonEmpty Text)
-  | QueryFile      (NonEmpty Text)
-  | QuerySearch     Text
+  = QueryChangelog !(NonEmpty Text)
+  | QueryGroups    !(NonEmpty Text)
+  | QueryInfo      !(NonEmpty Text)
+  | QueryCheck     !(NonEmpty Text)
+  | QueryList      !(NonEmpty Text)
+  | QueryOwns      !(NonEmpty Text)
+  | QueryFile      !(NonEmpty Text)
+  | QuerySearch    !Text
   deriving (Show)
 
 instance Flagable QueryOp where
@@ -139,12 +139,12 @@ instance Flagable RemoveOp where
 
 data SyncOp
   = SyncClean
-  | SyncGroups   (NonEmpty Text)
-  | SyncInfo     (NonEmpty Text)
-  | SyncList      Text
-  | SyncSearch   (NonEmpty Text)
-  | SyncUpgrade  (Set Text)
-  | SyncDownload (NonEmpty Text)
+  | SyncGroups   !(NonEmpty Text)
+  | SyncInfo     !(NonEmpty Text)
+  | SyncList     !Text
+  | SyncSearch   !(NonEmpty Text)
+  | SyncUpgrade  !(Set Text)
+  | SyncDownload !(NonEmpty Text)
   deriving (Eq, Ord, Show)
 
 instance Flagable SyncOp where
@@ -158,9 +158,9 @@ instance Flagable SyncOp where
 
 data SyncSwitch
   = SyncRefresh
-  | SyncIgnore      (Set PkgName)
-  | SyncIgnoreGroup (Set PkgGroup)
-  | SyncOverwrite   Text
+  | SyncIgnore      !(Set PkgName)
+  | SyncIgnoreGroup !(Set PkgGroup)
+  | SyncOverwrite   !Text
   deriving (Eq, Ord, Show)
 
 instance Flagable SyncSwitch where
@@ -172,9 +172,9 @@ instance Flagable SyncSwitch where
 data UpgradeSwitch
   = UpgradeAsDeps
   | UpgradeAsExplicit
-  | UpgradeIgnore      (Set PkgName)
-  | UpgradeIgnoreGroup (Set PkgGroup)
-  | UpgradeOverwrite   Text
+  | UpgradeIgnore      !(Set PkgName)
+  | UpgradeIgnoreGroup !(Set PkgGroup)
+  | UpgradeOverwrite   !Text
   deriving (Eq, Ord, Show)
 
 instance Flagable UpgradeSwitch where
@@ -186,20 +186,20 @@ instance Flagable UpgradeSwitch where
 
 -- | Flags common to several Pacman operations.
 data MiscOp
-  = MiscArch    FilePath
-  | MiscAssumeInstalled Text
-  | MiscColor   Text
+  = MiscArch    !FilePath
+  | MiscAssumeInstalled !Text
+  | MiscColor   !Text
   | MiscConfirm
   | MiscDBOnly
-  | MiscDBPath  FilePath
-  | MiscGpgDir  FilePath
-  | MiscHookDir FilePath
+  | MiscDBPath  !FilePath
+  | MiscGpgDir  !FilePath
+  | MiscHookDir !FilePath
   | MiscNoDeps
   | MiscNoProgress
   | MiscNoScriptlet
   | MiscPrint
-  | MiscPrintFormat Text
-  | MiscRoot    FilePath
+  | MiscPrintFormat !Text
+  | MiscRoot    !FilePath
   | MiscVerbose
   deriving (Eq, Ord, Show)
 
@@ -222,12 +222,12 @@ instance Flagable MiscOp where
 
 -- | Operations unique to Aura.
 data AuraOp
-  = AurSync (Either AurOp (NonEmpty PkgName)) (Set AurSwitch)
-  | Backup  (Maybe  BackupOp)
-  | Cache   (Either CacheOp (NonEmpty PkgName))
-  | Log     (Maybe  LogOp)
-  | Orphans (Maybe  OrphanOp)
-  | Analysis (Maybe AnalysisOp)
+  = AurSync  !(Either AurOp (NonEmpty PkgName)) !(Set AurSwitch)
+  | Backup   !(Maybe  BackupOp)
+  | Cache    !(Either CacheOp (NonEmpty PkgName))
+  | Log      !(Maybe  LogOp)
+  | Orphans  !(Maybe  OrphanOp)
+  | Analysis !(Maybe AnalysisOp)
   | Version
   | Languages
   | ViewConf
@@ -238,18 +238,18 @@ _AurSync f (AurSync o s) = AurSync o <$> f s
 _AurSync _ x             = pure x
 
 data AurOp
-  = AurDeps     (NonEmpty PkgName)
-  | AurInfo     (NonEmpty PkgName)
-  | AurPkgbuild (NonEmpty PkgName)
-  | AurSearch    Text
-  | AurUpgrade  (Set PkgName)
-  | AurJson     (NonEmpty PkgName)
-  | AurTarball  (NonEmpty PkgName)
+  = AurDeps     !(NonEmpty PkgName)
+  | AurInfo     !(NonEmpty PkgName)
+  | AurPkgbuild !(NonEmpty PkgName)
+  | AurSearch   !Text
+  | AurUpgrade  !(Set PkgName)
+  | AurJson     !(NonEmpty PkgName)
+  | AurTarball  !(NonEmpty PkgName)
   deriving (Show)
 
 data AurSwitch
-  = AurIgnore      (Set PkgName)
-  | AurIgnoreGroup (Set PkgGroup)
+  = AurIgnore      !(Set PkgName)
+  | AurIgnoreGroup !(Set PkgGroup)
   | AurRepoSync
   deriving (Eq, Ord, Show)
 
@@ -262,30 +262,30 @@ _AurIgnoreGroup f (AurIgnoreGroup s) = AurIgnoreGroup <$> f s
 _AurIgnoreGroup _ x                  = pure x
 
 data BackupOp
-  = BackupClean Word
+  = BackupClean !Word
   | BackupRestore
   | BackupList deriving (Show)
 
 data CacheOp
-  = CacheBackup FilePath
-  | CacheClean Word
+  = CacheBackup !FilePath
+  | CacheClean  !Word
   | CacheCleanNotSaved
-  | CacheSearch Text
+  | CacheSearch !Text
   deriving (Show)
 
 data LogOp
-  = LogInfo (NonEmpty PkgName)
-  | LogSearch Text
+  = LogInfo   !(NonEmpty PkgName)
+  | LogSearch !Text
   deriving (Show)
 
 data OrphanOp
   = OrphanAbandon
-  | OrphanAdopt (NonEmpty PkgName)
+  | OrphanAdopt !(NonEmpty PkgName)
   deriving (Show)
 
 data AnalysisOp
-  = AnalysisFile FilePath
-  | AnalysisDir FilePath
+  = AnalysisFile !FilePath
+  | AnalysisDir  !FilePath
   | AnalysisAudit
   deriving (Show)
 

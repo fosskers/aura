@@ -36,13 +36,13 @@ import qualified Text.Megaparsec.Char.Lexer as L
 -- Aura-specific Configuration
 
 data AuraConfig = AuraConfig
-  { acLang      :: Maybe Language
-  , acEditor    :: Maybe FilePath
-  , acUser      :: Maybe User
-  , acBuildPath :: Maybe FilePath
-  , acASPath    :: Maybe FilePath
-  , acVCSPath   :: Maybe FilePath
-  , acAnalyse   :: Maybe BuildSwitch }
+  { acLang      :: !(Maybe Language)
+  , acEditor    :: !(Maybe FilePath)
+  , acUser      :: !(Maybe User)
+  , acBuildPath :: !(Maybe FilePath)
+  , acASPath    :: !(Maybe FilePath)
+  , acVCSPath   :: !(Maybe FilePath)
+  , acAnalyse   :: !(Maybe BuildSwitch) }
   deriving stock (Show)
 
 defaultAuraConf :: FilePath

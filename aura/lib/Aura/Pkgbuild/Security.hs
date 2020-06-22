@@ -32,7 +32,8 @@ import qualified RIO.Text as T
 
 -- | A bash term which should never appear in a PKGBUILD. If one does, it's
 -- either a sign of maintainer negligence or malicious behaviour.
-data BannedTerm = BannedTerm Text BanCategory deriving (Eq, Ord, Show, Generic)
+data BannedTerm = BannedTerm !Text !BanCategory
+  deriving (Eq, Ord, Show, Generic)
 
 banCatL :: Lens' BannedTerm BanCategory
 banCatL f (BannedTerm t bc) = BannedTerm t <$> f bc

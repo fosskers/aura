@@ -64,7 +64,7 @@ instance (Foldable f, Flagable a) => Flagable (f a) where
   asFlag = foldMap asFlag
 
 -- | A package to be installed.
-data Package = FromRepo Prebuilt | FromAUR Buildable deriving (Eq)
+data Package = FromRepo !Prebuilt | FromAUR !Buildable deriving (Eq)
 
 -- | The name of a `Package`.
 pname :: Package -> PkgName
@@ -153,10 +153,10 @@ renderedDep (Dep n ver) = pnName n <> asT ver
     asT Anything     = ""
 
 -- | The versioning requirement of some package's dependency.
-data VersionDemand = LessThan Versioning
-                   | AtLeast  Versioning
-                   | MoreThan Versioning
-                   | MustBe   Versioning
+data VersionDemand = LessThan !Versioning
+                   | AtLeast  !Versioning
+                   | MoreThan !Versioning
+                   | MustBe   !Versioning
                    | Anything
                    deriving (Eq, Ord)
 
@@ -176,7 +176,7 @@ _VersionDemand f (MustBe v)   = MustBe   <$> f v
 _VersionDemand _ p            = pure p
 
 -- | The installation method.
-data InstallType = Pacman PkgName | Build Buildable deriving (Eq)
+data InstallType = Pacman !PkgName | Build !Buildable deriving (Eq)
 
 -- | A package name with its version number.
 data SimplePkg = SimplePkg
@@ -265,10 +265,10 @@ data Language = English
                 deriving (Eq, Enum, Bounded, Ord, Show)
 
 -- | The various ways that dependency resolution can fail.
-data DepError = NonExistant PkgName PkgName
-              | VerConflict (Doc AnsiStyle)
-              | Ignored (Doc AnsiStyle)
-              | BrokenProvides PkgName Provides PkgName
+data DepError = NonExistant !PkgName !PkgName
+              | VerConflict !(Doc AnsiStyle)
+              | Ignored !(Doc AnsiStyle)
+              | BrokenProvides !PkgName !Provides !PkgName
 
 -- | Some failure message that when given the current runtime `Language`
 -- will produce a human-friendly error.

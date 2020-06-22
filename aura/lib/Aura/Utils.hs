@@ -53,7 +53,7 @@ import           System.Process.Typed (proc, runProcess)
 -- STRING
 ---------
 -- | For regex-like find-and-replace in some `Text`.
-data Pattern = Pattern { _pattern :: Text, _target :: Text }
+data Pattern = Pattern { _pattern :: !Text, _target :: !Text }
 
 -- | Find lines which contain some given `Text`.
 searchLines :: Text -> [Text] -> [Text]

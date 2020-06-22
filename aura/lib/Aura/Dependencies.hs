@@ -34,8 +34,8 @@ import qualified RIO.Text as T
 
 -- | The results of dependency resolution.
 data Resolution = Resolution
-  { toInstall :: Map PkgName Package
-  , satisfied :: Set PkgName }
+  { toInstall :: !(Map PkgName Package)
+  , satisfied :: !(Set PkgName) }
   deriving (Generic)
 
 toInstallL :: Lens' Resolution (Map PkgName Package)

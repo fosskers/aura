@@ -32,10 +32,10 @@ import           System.Process.Typed (proc, runProcess)
 newtype Log = Log [Text]
 
 data LogEntry = LogEntry
-  { name         :: PkgName
-  , firstInstall :: Text
-  , upgrades     :: Word
-  , recent       :: [Text] }
+  { name         :: !PkgName
+  , firstInstall :: !Text
+  , upgrades     :: !Word
+  , recent       :: ![Text] }
 
 -- | Pipes the pacman log file through a @less@ session.
 viewLogFile :: RIO Env ()

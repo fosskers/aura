@@ -36,7 +36,7 @@ import qualified RIO.Text as T
 ---
 
 -- | How @-As@ should truncate its results.
-data Truncation = None | Head Word | Tail Word deriving (Eq, Show)
+data Truncation = None | Head !Word | Tail !Word deriving (Eq, Show)
 
 -- | CLI flags that will be passed down to @makepkg@ when building packages.
 data Makepkg = IgnoreArch | AllSource | SkipInteg | SkipPGP deriving (Eq, Ord, Show)
@@ -71,7 +71,7 @@ instance Flagable CommonConfig where
 
 -- | Yes/No-style switches that are common to both Aura and Pacman.
 -- Aura acts on them first, then passes them down to @pacman@ if necessary.
-data CommonSwitch = NoConfirm | NeededOnly | Debug | Colour ColourMode | Overwrite Text
+data CommonSwitch = NoConfirm | NeededOnly | Debug | Colour !ColourMode | Overwrite !Text
   deriving (Eq, Ord, Show)
 
 instance Flagable CommonSwitch where
