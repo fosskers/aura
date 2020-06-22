@@ -1,6 +1,6 @@
-resolver: lts-16.1
+resolver: lts-16.2
 
-ghc-options: {"$locals": -fwrite-ide-info -fmax-relevant-binds=0}
+ghc-options: {"$locals": -fwrite-ide-info -hiedir=.hie -fmax-relevant-binds=0}
 
 packages:
   - aura/
