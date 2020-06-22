@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedLists #-}
+
 module Aura.Flags
   ( Program(..), opts
   , PacmanOp( Sync ), SyncOp( SyncUpgrade ), SyncSwitch(..), MiscOp
@@ -559,7 +561,7 @@ manyArgs' :: Parser (Set Text)
 manyArgs' = S.fromList <$> many (argument str (metavar "PACKAGES" <> hidden))
 
 language :: Parser Language
-language = foldr1 (<|>) $ map (\(f, v) -> flag' v (long f <> hidden)) langs
+language = foldr1 (<|>) $ NEL.map (\(f, v) -> flag' v (long f <> hidden)) langs
   where langs = [ ( "japanese",   Japanese ),   ( "日本語",        Japanese )
                 , ( "polish",     Polish ),     ( "polski",     Polish )
                 , ( "croatian",   Croatian ),   ( "hrvatski",   Croatian )

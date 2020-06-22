@@ -117,7 +117,7 @@ uniquePkgBase bs = mapMaybe g bs
     bs' = foldMap NEL.toList bs
 
     g :: NonEmpty Buildable -> Maybe (NonEmpty Buildable)
-    g = NEL.nonEmpty . L.nub . NEL.filter (\b -> bName b `S.member` goods)
+    g = NEL.nonEmpty . nubOrd . NEL.filter (\b -> bName b `S.member` goods)
 
     f :: Buildable -> Buildable -> Buildable
     f a b | bName a == bBase a = a
