@@ -51,13 +51,18 @@ satisfiedL f r = (\s -> r { satisfied = s }) <$> f (satisfied r)
 -- Deeper layers of the result list (generally) depend on the previous layers.
 resolveDeps :: Repository -> NonEmpty Package -> RIO Env (NonEmpty (NonEmpty Package))
 resolveDeps repo ps = do
+  logDebug "resolveDeps: Entered."
   ss <- asks settings
-  res <- liftIO $ (Just <$> resolveDeps' ss repo ps) `catchAny` const (pure Nothing)
-  Resolution m s <- maybe (throwM $ Failure connectFailure_1) pure res
+  res <- liftIO (Right <$> resolveDeps' ss repo ps) `catchAny` handleError
+  Resolution m s <- either throwM pure res
+  logDebug "resolveDeps: Successful recursive dep lookup."
   unless (length ps == length m) $ putText "\n"
   let de = conflicts ss m s
   unless (null de) . throwM . Failure $ missingPkg_2 de
   either throwM pure $ sortInstall m
+  where
+    handleError :: SomeException -> RIO Env (Either Failure a)
+    handleError e = pure . Left . Failure . dependencyLookup_1 $ tshow e
 
 -- | Solve dependencies for a set of `Package`s assumed to not be
 -- installed/satisfied.
@@ -97,16 +102,16 @@ resolveDeps' ss repo ps = resolve (Resolution mempty mempty) ps
         f :: NonEmpty Dep -> Set PkgName
         f = S.fromList . NEL.toList . NEL.map dName
 
-    -- TODO What about if `repoLookup` reports deps that don't exist?
-    -- i.e. the left-hand side of the tuple.
     -- | Lookup unsatisfied deps and recurse the entire lookup process.
     lookups :: Resolution -> Unsatisfied -> IO Resolution
     lookups r (Unsatisfied ds) = do
       let names = NEL.map dName ds
       repoLookup repo ss names >>= \case
-        Nothing -> throwString "AUR Connection Error"
-        Just (_, could) -> case nes could of
-          Nothing    -> throwString "Non-existant deps"
+        Nothing -> throwString "Unexpected AUR Connection Error"
+        Just (bads, could) -> case nes could of
+          Nothing    -> do
+            let badNames = unwords . map (T.unpack . pnName) $ S.toList bads
+            throwString $ "Non-existant deps: " <> badNames
           Just goods -> resolve r goods
 
 conflicts :: Settings -> Map PkgName Package -> Set PkgName -> [DepError]

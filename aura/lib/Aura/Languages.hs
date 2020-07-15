@@ -1251,6 +1251,10 @@ connectFailure_1 = \case
   Dutch   -> "Contact opnemen met de AUR mislukt. Heeft U een internet connectie?"
   _       -> "Failed to contact the AUR. Do you have an internet connection?"
 
+dependencyLookup_1 :: Text -> Language -> Doc AnsiStyle
+dependencyLookup_1 t = \case
+  _ -> vsep ["There was an issue during recursive dependency lookup:", pretty t]
+
 miscAURFailure_1 :: Language -> Doc AnsiStyle
 miscAURFailure_1 = \case
   Spanish   -> "El contacto con el AUR falló de alguna manera desconocida."

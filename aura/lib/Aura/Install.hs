@@ -1,4 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE LambdaCase   #-}
 {-# LANGUAGE ViewPatterns #-}
 
 -- |
@@ -182,14 +183,20 @@ buildAndInstall bss = do
 -- | Display dependencies. The result of @-Ad@.
 displayPkgDeps :: NonEmpty PkgName -> RIO Env ()
 displayPkgDeps ps = do
+  logDebug "-Ad: Checking dependencies."
   rpstry <- asks repository
   ss <- asks settings
 
   let f :: NonEmpty Buildable -> RIO Env ()
       f = depsToInstall rpstry >=> reportDeps (switch ss LowVerbosity) . partitionPkgs
 
-  (_, goods) <- liftMaybeM (Failure connectFailure_1) . liftIO $ aurLookup (managerOf ss) ps
-  traverse_ f $ nes goods
+  liftIO (aurLookup (managerOf ss) ps) >>= \case
+    Nothing -> do
+      logDebug "-Ad: Receiving `Nothing` from `aurLookup`."
+      throwM $ Failure connectFailure_1
+    Just (_, goods) -> do
+      logDebug "-Ad: Initial AUR lookup successful."
+      traverse_ f $ nes goods
   where
     reportDeps :: Bool -> ([Prebuilt], [NonEmpty Buildable]) -> RIO Env ()
     reportDeps True  = liftIO . uncurry reportListOfDeps
