@@ -6,6 +6,10 @@
 
 - Updated Spanish translations. Thank you, Max Ferrer!
 
+#### Fixed
+
+- Provide better output when a listed dependency doesn't exist.
+
 ## 3.1.4 (2020-06-11)
 
 #### Fixed
