@@ -1,6 +1,8 @@
-resolver: lts-16.5
+resolver: lts-16.6
 
-ghc-options: {"$locals": -fwrite-ide-info -hiedir=.hie -fmax-relevant-binds=0}
+ghc-options:
+  $everything: -split-sections
+  $locals: -fwrite-ide-info -hiedir=.hie -fmax-relevant-binds=0
 
 packages:
   - aura/
