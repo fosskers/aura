@@ -1,5 +1,11 @@
 # Aura Changelog
 
+## 3.1.6 (2020-07-21)
+
+#### Changed
+
+- Binary size reduced by 60%!
+
 ## 3.1.5 (2020-07-15)
 
 #### Changed
