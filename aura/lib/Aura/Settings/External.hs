@@ -14,7 +14,6 @@ module Aura.Settings.External
     AuraConfig(..)
   , getAuraConf
   , auraConfig
-  , defaultAuraConf
     -- * Parsing
   , Config(..)
   , config
@@ -23,11 +22,13 @@ module Aura.Settings.External
 import           Aura.Languages (langFromLocale)
 import           Aura.Settings
 import           Aura.Types
+import           Aura.Utils (hush)
 import           RIO hiding (some, try)
 import qualified RIO.ByteString as BS
 import           RIO.Directory
 import qualified RIO.Map as M
 import qualified RIO.Text as T
+import           System.Environment.XDG.BaseDir (getUserConfigFile)
 import           Text.Megaparsec hiding (single)
 import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
@@ -45,17 +46,28 @@ data AuraConfig = AuraConfig
   , acAnalyse   :: !(Maybe BuildSwitch) }
   deriving stock (Show)
 
-defaultAuraConf :: FilePath
-defaultAuraConf = "/etc/aura.conf"
+userAuraConfPath :: IO FilePath
+userAuraConfPath = getUserConfigFile "aura" "config"
 
-getAuraConf :: FilePath -> IO Config
-getAuraConf fp = do
-  exists <- doesFileExist fp
+systemAuraConfPath :: FilePath
+systemAuraConfPath = "/etc/aura.conf"
+
+-- | Attempt to get a valid Aura config from a specified path.
+getAuraConfFrom :: FilePath -> IO (Maybe Config)
+getAuraConfFrom path = do
+  exists <- doesFileExist path
   if not exists
-    then pure $ Config mempty
+    then pure Nothing
     else do
-      file <- decodeUtf8Lenient <$> BS.readFile fp
-      pure . either (const $ Config M.empty) id $ parse config "aura config" file
+      file <- decodeUtf8Lenient <$> BS.readFile path
+      pure . hush $ parse config "aura config" file
+
+getAuraConf :: IO Config
+getAuraConf = do
+  userCfg <- getAuraConfFrom =<< userAuraConfPath
+  case userCfg of
+    (Just x) -> pure x
+    Nothing -> fromMaybe (Config M.empty) <$> getAuraConfFrom systemAuraConfPath
 
 auraConfig :: Config -> AuraConfig
 auraConfig (Config m) = AuraConfig
