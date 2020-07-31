@@ -11,6 +11,3 @@ packages:
   - aura/
   - aur/
   - aursec/
-
-extra-deps:
-  - aeson-1.5.0.0  # Pinned to avoid `these` dependency.
