@@ -47,7 +47,7 @@ data AuraConfig = AuraConfig
   deriving stock (Show)
 
 userAuraConfPath :: IO FilePath
-userAuraConfPath = getUserConfigFile "aura" "config"
+userAuraConfPath = getUserConfigFile "aura" "aura.conf"
 
 systemAuraConfPath :: FilePath
 systemAuraConfPath = "/etc/aura.conf"
