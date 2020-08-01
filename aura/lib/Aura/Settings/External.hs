@@ -1,4 +1,5 @@
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE LambdaCase   #-}
 
 -- |
 -- Module    : Aura.Settings.External
@@ -63,11 +64,9 @@ getAuraConfFrom path = do
       pure . hush $ parse config "aura config" file
 
 getAuraConf :: IO Config
-getAuraConf = do
-  userCfg <- getAuraConfFrom =<< userAuraConfPath
-  case userCfg of
-    (Just x) -> pure x
-    Nothing -> fromMaybe (Config M.empty) <$> getAuraConfFrom systemAuraConfPath
+getAuraConf = userAuraConfPath >>= getAuraConfFrom >>= \case
+  Just x -> pure x
+  Nothing -> fromMaybe (Config M.empty) <$> getAuraConfFrom systemAuraConfPath
 
 auraConfig :: Config -> AuraConfig
 auraConfig (Config m) = AuraConfig
