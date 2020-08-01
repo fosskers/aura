@@ -97,7 +97,7 @@ library
     , network-uri       ^>=2.6
     , stm               ^>=2.5
     , time              >=1.8 && <1.10
-    , xdg-basedir       ==0.2.2
+    , xdg-basedir       ^>=0.2
 
 executable aura
   import:         commons, libexec
