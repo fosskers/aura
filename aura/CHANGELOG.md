@@ -2,10 +2,18 @@
 
 ## Unreleased
 
+Thanks to Sam Horvath-Hunt for contributing to this release.
+
 #### Added
 
 - Users can now configure Aura in `/home/YOU/.config/aura/aura.conf` instead,
   which takes priority over the default one at `/etc/aura.conf`.
+
+#### Fixed
+
+- Complications involving the cloning of `*-git` packages. [#615]
+
+[#615]: https://github.com/fosskers/aura/issues/615
 
 ## 3.1.6 (2020-07-21)
 

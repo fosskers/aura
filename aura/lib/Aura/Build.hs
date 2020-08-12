@@ -154,6 +154,9 @@ cloneRepo pkg usr = do
 -- just pull the latest instead of cloning.
 pullRepo :: RIO Env (Either Failure ())
 pullRepo = do
+  logDebug "git: Clearing worktree. "
+  void . runProcess . setStderr closed . setStdout closed $ proc "git" ["reset", "--hard", "HEAD"]
+  logDebug "git: Pulling repo."
   ec <- runProcess . setStderr closed . setStdout closed $ proc "git" ["pull"]
   case ec of
     ExitFailure _ -> pure . Left $ Failure buildFail_12
