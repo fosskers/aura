@@ -1,5 +1,12 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Added
+
+- Users can now configure Aura in `/home/YOU/.config/aura/aura.conf` instead,
+  which takes priority over the default one at `/etc/aura.conf`.
+
 ## 3.1.6 (2020-07-21)
 
 #### Changed
