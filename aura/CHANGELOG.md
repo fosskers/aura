@@ -1,6 +1,6 @@
 # Aura Changelog
 
-## Unreleased
+## 3.1.7 (2020-08-12)
 
 Thanks to Sam Horvath-Hunt for contributing to this release.
 
