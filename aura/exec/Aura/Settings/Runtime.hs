@@ -55,7 +55,7 @@ withEnv (Program op co bc lng ll) f = do
   let ign = S.fromList $ op ^.. _Right . _AurSync . to toList . each . _AurIgnore . to toList . each
       igg = S.fromList $ op ^.. _Right . _AurSync . to toList . each . _AurIgnoreGroup . to toList . each
   confFile    <- getPacmanConf (either id id $ configPathOf co) >>= either throwM pure
-  auraConf    <- auraConfig <$> getAuraConf defaultAuraConf
+  auraConf    <- auraConfig <$> getAuraConf
   when (ll == LevelDebug) . printf "%s\n" $ show auraConf
   environment <- M.fromList . map (bimap T.pack T.pack) <$> getEnvironment
   manager     <- newManager tlsManagerSettings
