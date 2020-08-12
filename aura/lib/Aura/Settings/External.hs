@@ -1,5 +1,5 @@
 {-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE LambdaCase   #-}
+{-# LANGUAGE LambdaCase         #-}
 
 -- |
 -- Module    : Aura.Settings.External
@@ -22,14 +22,15 @@ module Aura.Settings.External
 
 import           Aura.Languages (langFromLocale)
 import           Aura.Settings
+import           Aura.Shell (getTrueUser)
 import           Aura.Types
 import           Aura.Utils (hush)
 import           RIO hiding (some, try)
 import qualified RIO.ByteString as BS
 import           RIO.Directory
+import           RIO.FilePath ((</>))
 import qualified RIO.Map as M
 import qualified RIO.Text as T
-import           System.Environment.XDG.BaseDir (getUserConfigFile)
 import           Text.Megaparsec hiding (single)
 import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
@@ -47,8 +48,11 @@ data AuraConfig = AuraConfig
   , acAnalyse   :: !(Maybe BuildSwitch) }
   deriving stock (Show)
 
-userAuraConfPath :: IO FilePath
-userAuraConfPath = getUserConfigFile "aura" "aura.conf"
+userAuraConfPath :: Environment -> Maybe FilePath
+userAuraConfPath env = case getTrueUser env of
+  Nothing            -> Nothing
+  Just (User "root") -> Nothing
+  Just (User u)      -> Just $ "/home/" </> T.unpack u </> ".config/aura/aura.conf"
 
 systemAuraConfPath :: FilePath
 systemAuraConfPath = "/etc/aura.conf"
@@ -63,10 +67,12 @@ getAuraConfFrom path = do
       file <- decodeUtf8Lenient <$> BS.readFile path
       pure . hush $ parse config "aura config" file
 
-getAuraConf :: IO Config
-getAuraConf = userAuraConfPath >>= getAuraConfFrom >>= \case
-  Just x -> pure x
-  Nothing -> fromMaybe (Config M.empty) <$> getAuraConfFrom systemAuraConfPath
+getAuraConf :: Environment -> IO Config
+getAuraConf env = case userAuraConfPath env of
+  Nothing   -> bad
+  Just path -> getAuraConfFrom path >>= maybe bad pure
+  where
+    bad = fromMaybe (Config M.empty) <$> getAuraConfFrom systemAuraConfPath
 
 auraConfig :: Config -> AuraConfig
 auraConfig (Config m) = AuraConfig
