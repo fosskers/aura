@@ -3,7 +3,14 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: optparse-applicative-0.16.0.0@sha256:de6f2a1be366a1f6db786883c605bbd121bbafbe41c4fff00a306672566b0e7f,4785
+    pantry-tree:
+      size: 2979
+      sha256: fabeefe6fe000bbc1ba8d0a10e9452197e882f625937a8b6f40afec14d03eba4
+  original:
+    hackage: optparse-applicative-0.16.0.0
 snapshots:
 - completed:
     size: 532380
