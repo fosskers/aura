@@ -1,5 +1,12 @@
 # Aura Changelog
 
+## 3.1.8 (2020-08-23)
+
+#### Changed
+
+- Updated Polish translations. Thank you, Michał Kurek!
+- Bumped dependency bounds.
+
 ## 3.1.7 (2020-08-12)
 
 Thanks to Sam Horvath-Hunt for contributing to this release.
