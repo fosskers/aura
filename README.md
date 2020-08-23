@@ -225,7 +225,7 @@ Aura has been translated by these generous people:
 | Italian    | Bob Valantin and Cristian Tentella              |
 | Japanese   | Colin Woodbury and Onoue Takuro                 |
 | Norwegian  | "chinatsun"                                     |
-| Polish     | Chris Warrick                                   |
+| Polish     | Chris Warrick, Michał Kurek                     |
 | Portuguese | Henry Kupty, Thiago Perrotta, and Wagner Amaral |
 | Russian    | Kyrylo Silin, Alexey Kotlyarov                  |
 | Serbian    | Filip Brcic                                     |

@@ -33,7 +33,7 @@ import qualified RIO.Text as T
 -- | Thank you all!
 translators :: Map Language Text
 translators = M.fromList
-    [ (Polish,     "Chris Warrick")
+    [ (Polish,     "Chris Warrick / Michał Kurek")
     , (Croatian,   "Denis Kasak / \"stranac\"")
     , (Swedish,    "Fredrik Haikarainen / Daniel Beecham")
     , (German,     "Lukas Niederbremer / Jonas Platte")
@@ -55,7 +55,7 @@ translators = M.fromList
 languageNames :: Language -> Map Language T.Text
 languageNames = M.fromList . zip [ Japanese, Polish, Croatian, Swedish, German, Spanish, Portuguese, French, Russian, Italian, Serbian, Norwegian, Indonesia, Chinese, Esperanto, Dutch ] . \case
     Japanese   -> [ "日本語", "ポーランド語", "クロアチア語", "スウェーデン語", "ドイツ語", "スペイン語", "ポルトガル語", "フランス語", "ロシア語", "イタリア語", "セルビア語", "ノルウェー語", "インドネシア語", "中国語", "エスペラント", "オランダ語" ]
-    Polish     -> [ "Japanese", "polski", "chorwacki", "szwedzki", "niemiecki", "hiszpański", "portugalski", "francuski", "rosyjski", "", "", "", "Indonesian", "Chinese", "Esperanto", "Dutch" ]
+    Polish     -> [ "Japanese", "polski", "chorwacki", "szwedzki", "niemiecki", "hiszpański", "portugalski", "francuski", "rosyjski", "włoski", "serbski", "norweski", "indonezyjski", "chiński", "esperanto", "niderlandzki" ]
     Croatian   -> [ "Japanese", "poljski", "hrvatski", "švedski", "njemački", "španjolski", "portugalski", "francuski", "ruski", "talijanski", "srpski", "norveški", "Indonesian", "Chinese", "Esperanto", "Dutch" ]
     Swedish    -> [ "Japanese", "Polska", "Kroatiska", "Svenska", "Tyska", "Spanska", "Portugisiska", "Franska", "Ryska", "Italienska", "Serbiska", "Norska", "Indonesian", "Chinese", "Esperanto", "Dutch" ]
     German     -> [ "Japanisch", "Polnisch", "Kroatisch", "Schwedisch", "Deutsch", "Spanisch", "Portugiesisch", "Französisch", "Russisch", "Italienisch", "Serbisch", "Norwegisch", "Indonesisch", "Chinese", "Esperanto", "Dutch" ]
@@ -155,6 +155,7 @@ checkDBLock_1 = \case
 trueRoot_3 :: Language -> Doc AnsiStyle
 trueRoot_3 = \case
     Japanese   -> "「root」としてパッケージを作成するのは「makepkg v4.2」で不可能になりました。"
+    Polish     -> "Od makepkg v4.2, budowanie jako root nie jest dozwolone."
     German     -> "Seit makepkg v4.2 ist es nicht mehr möglich als root zu bauen."
     Spanish    -> "Desde makepkg v4.2 no es posible compilar paquetes como root."
     Portuguese -> "A partir da versão v4.2 de makepkg, não é mais possível compilar como root."
@@ -211,11 +212,13 @@ buildPackages_1 (bt . pnName -> p) = \case
 
 buildPackages_2 :: Language -> Doc AnsiStyle
 buildPackages_2 = \case
+    Polish     -> "'--allsource' wykryte. Nie zostaną zbudowane żadne pakiety."
     Spanish    -> "'--allsource' detectado. No se construirán paquetes instalables reales."
     _          -> "'--allsource' detected. No actual installable packages will be built."
 
 buildPackages_3 :: FilePath -> Language -> Doc AnsiStyle
 buildPackages_3 fp = \case
+    Polish     -> "Wszystkie pliki .src.tar.gz zostały zbudowane i przekopiowane do: " <> pretty fp
     Spanish    -> "Todos los archivos .src.tar.gz fueron construidos y copiados a: " <> pretty fp
     _          -> "All .src.tar.gz files were built and copied to: " <> pretty fp
 
@@ -279,6 +282,7 @@ buildFail_7 (bt . pnName -> p) = \case
 buildFail_8 :: Language -> Doc AnsiStyle
 buildFail_8 = \case
     Japanese   -> "makepkgは失敗しました。"
+    Polish     -> "Wystąpił problem z makepkg."
     Spanish    -> "Ocurrió un error al ejecutar makepkg"
     Portuguese -> "Ocorreu um erro ao executar makepkg"
     Russian    -> "Произошла ошибка makepkg."
@@ -289,6 +293,7 @@ buildFail_8 = \case
 
 buildFail_9 :: Language -> Doc AnsiStyle
 buildFail_9 = \case
+  Polish    -> "Nie udało się zlokalizować żadnych zbudowanych pakietów (*.pkg.tar.xz)."
   Spanish   -> "Error al detectar todos los archivo de paquete (*.pkg.tar.xz)."
   Italian   -> "Non è stato possibile trovare nessun archivio risultante dalla compilazione del pacchetto (*.pkg.tar.xz)."
   Esperanto -> "Paneis detekti ĉiujn dosierojn de pakaĵoj (*.pkg.tar.xz)."
@@ -297,6 +302,7 @@ buildFail_9 = \case
 
 buildFail_10 :: Language -> Doc AnsiStyle
 buildFail_10 = \case
+  Polish    -> "Nie udało się zbudować żadnego pakietu."
   Spanish   -> "Los paquetes no se pudieron construir."
   Italian   -> "Non è stato possibile compilare i pacchetti."
   Esperanto -> "Ĉiuj pakaĵoj paneis munti."
@@ -306,6 +312,7 @@ buildFail_10 = \case
 buildFail_11 :: Language -> Doc AnsiStyle
 buildFail_11 = \case
   Japanese   -> "作成は失敗しました。エラーを見ますか？"
+  Polish     -> "Budowa zakończona niepowodzeniem. Czy chcesz zobaczyć błąd?"
   Spanish    -> "Construcción fallida. ¿Te gustaría ver el error?"
   Italian    -> "La compilazione è fallita. Visionare l'errore?"
   Esperanto  -> "Muntado paneis. Ĉu vi volas vidi la eraron?"
@@ -314,6 +321,7 @@ buildFail_11 = \case
 
 buildFail_12 :: Language -> Doc AnsiStyle
 buildFail_12 = \case
+    Polish     -> "Błąd podczas pobierania najnowszych aktualizacji poprzez 'git pull'."
     Spanish    -> "Error al 'git pull' las últimas actualizaciones."
     _          -> "Failed to 'git pull' the latest updates."
 
@@ -368,6 +376,7 @@ depError :: Language -> DepError -> Doc AnsiStyle
 depError _ (VerConflict s) = s
 depError _ (Ignored s)     = s
 depError l (NonExistant (PkgName s) (PkgName par)) = case l of
+  Polish     -> "Zależność " <> bt s <> "nie została znaleziona."
   Spanish    -> "La dependencia " <> bt s <> " no pudo ser encontrada."
   Portuguese -> "A dependência " <> bt s <> " não foi encontrada."
   Russian    -> "Зависимость " <> bt s <> " не найдена."
@@ -385,6 +394,7 @@ depError l (BrokenProvides (PkgName pkg) (Provides (PkgName pro)) (PkgName n)) =
 
 missingPkg_3 :: Language -> Doc AnsiStyle
 missingPkg_3 = \case
+  Polish     -> "Wystąpił problem podczas reorganizowania grafu zależności. Jeśli widzisz tą wiadomość, coś poszło bardzo nie tak."
   Spanish    -> "Se produjo un error al reorganizar el gráfico de dependencia. Si ves esto, algo está muy mal."
   Esperanto  -> "Eraro okazis kiam reorganizi la grafeo de dependeco. Io estas erarega."
   Italian    -> "C'è stato un errore nella riorganizzazione della gerarchia delle dipendenze. Se vedi questo messaggio, qualcosa è andato davvero storto."
@@ -393,6 +403,7 @@ missingPkg_3 = \case
 
 missingPkg_4 :: [NonEmpty PkgName] -> Language -> Doc AnsiStyle
 missingPkg_4 pns = \case
+  Polish     -> vsep $ "Następujące cykle zależności zostały wykryte:" : pns'
   Spanish    -> vsep $ "Se detectaron los siguientes ciclos de dependencia:" : pns'
   Italian    -> vsep $ "Sono stati individuati i seguenti cicli di dipendenza:" : pns'
   Dutch      -> vsep $ "The volgende afhankelijkheidscycli zijn gedetecteerd:" : pns'
@@ -403,6 +414,7 @@ missingPkg_4 pns = \case
 
 missingPkg_5 :: PkgName -> Language -> Doc AnsiStyle
 missingPkg_5 (PkgName p) = \case
+  Polish    -> bt p <> " nie istnieje."
   Spanish   -> bt p <> " no existe."
   Italian   -> bt p <> " non esiste."
   Dutch     -> bt p <> " bestaat niet."
@@ -553,7 +565,7 @@ confirmIgnored_1 (bt . pnName -> p) = \case
 reportNonPackages_1 :: Language -> Doc AnsiStyle
 reportNonPackages_1 = \case
     Japanese   -> "下記はAURパッケージではありません："
-    Polish     -> "To nie są pakiety:"
+    Polish     -> "To nie są pakiety AUR:"
     Croatian   -> "Ovo nisu AUR paketi:"
     Swedish    -> "Följande är inte paket:"
     German     -> "Folgende sind keine AUR-Pakete:"
@@ -610,7 +622,7 @@ reportPkgsToInstall_1 = \case
 reportPkgsToInstall_2 :: Language -> Doc AnsiStyle
 reportPkgsToInstall_2 = \case
     Japanese   -> "AURのパッケージ:"
-    Polish     -> "AUR Pakiety:"
+    Polish     -> "Pakiety AUR:"
     Croatian   -> "AUR Paketi:"
     German     -> "AUR Pakete:"
     Spanish    -> "AUR Paquetes:"
@@ -711,7 +723,7 @@ reportPkgsToUpgrade_1 = \case
 reportBadDowngradePkgs_1 :: Language -> Doc AnsiStyle
 reportBadDowngradePkgs_1 = \case
     Japanese   -> "このパッケージはキャッシュには入っていないので、ダウングレードできません。"
-    Polish     -> "Poniższe pakeity nie są zainstalowane, i nie mogą być zainstalowane w starszej wersji:"
+    Polish     -> "Poniższe pakiety nie są zainstalowane i nie mogą być zainstalowane w starszej wersji:"
     Croatian   -> "Sljedeći paketi nisu instalirani te se stoga ne mogu vratiti na stare verzije:"
     Swedish    -> "Följande paket är inte installerade, och kan därför inte bli nergraderade:"
     German     -> "Folgende Pakete sind in keiner Version im Cache und können daher nicht gedowngradet werden:"
@@ -863,6 +875,7 @@ cleanStates_3 = \case
 cleanStates_4 :: Int -> Language -> Doc AnsiStyle
 cleanStates_4 n = \case
   Japanese  -> "現在のパッケージ状態記録：" <> pretty n <> "個。"
+  Polish    -> "Chwilowo posiadasz" <+> pretty n <+> "zapisanych stanów pakietów."
   Spanish   -> "Actualmente tiene " <+> pretty n <+> "estados de paquetes guardados."
   Russian   -> "У вас сейчас " <+> pretty n <+> pluralRussian " сохраненное состояние пакета" " сохраненных состояний пакета" " сохраненных состояний пакетов." n
   Italian   -> "Al momento ci sono" <+> pretty n <+> "stati di pacchetti salvati."
@@ -873,6 +886,7 @@ cleanStates_4 n = \case
 cleanStates_5 :: Text -> Language -> Doc AnsiStyle
 cleanStates_5 t = \case
   Japanese  -> "一番最近に保存されたのは：" <> pretty t
+  Polish    -> "Ostatnio zapisane:" <+> pretty t
   Spanish   -> "Guardado recientemente:" <+> pretty t
   Russian   -> "Последнее сохраненное:" <+> pretty t
   Italian   -> "Salvato più recentemente:" <+> pretty t
@@ -882,6 +896,7 @@ cleanStates_5 t = \case
 
 cleanStates_6 :: Int -> Language -> Doc AnsiStyle
 cleanStates_6 n = \case
+  Polish    -> pretty n <+> "jest przypiętych i nie zostanie usuniętych."
   Spanish   -> pretty n <+> "de estos están anclados y no se eliminarán."
   Italian   -> pretty n <+> "di questi sono stati fissati, perciò non saranno rimossi."
   Dutch     -> pretty n <+> "hiervan zijn vastgezet, en worden niet verwijderd."
@@ -889,6 +904,7 @@ cleanStates_6 n = \case
 
 readState_1 :: Language -> Doc AnsiStyle
 readState_1 = \case
+    Polish     -> "Ten plik stanu nie mógł zostać odczytany. Czy jest to prawidłowy plik JSON?"
     Spanish    -> "Ese archivo de estado no se pudo analizar. ¿Es un archivo JSON válido?"
     Portuguese -> "O arquivo de estado não pôde ser interpretado. É um arquivo JSON válido?"
     Russian    -> "Это состояние не распознано. Это корректный JSON?"
@@ -1162,11 +1178,13 @@ cleanCache_6 = \case
 
 cleanCache_7 :: Word -> Word -> Language -> Doc AnsiStyle
 cleanCache_7 (bt . tshow -> ps) (bt . tshow -> bytes) = \case
+    Polish     -> "Pamięć podręczna posiada " <> ps <> " pakietów, zajmujących " <> bytes <> " megabajtów."
     Spanish    -> "La caché contiene " <> ps <> " paquetes, consumiendo " <> bytes <> " megabytes."
     _          -> "The cache contains " <> ps <> " packages, consuming " <> bytes <> " megabytes."
 
 cleanCache_8 :: Word -> Language -> Doc AnsiStyle
 cleanCache_8 (bt . tshow -> bytes) = \case
+   Polish      -> bytes <> " megabajtów zwolnionych."
    Spanish     -> bytes <> " megabytes liberados."
    _           -> bytes <> " megabytes freed."
 
@@ -1174,7 +1192,7 @@ cleanCache_8 (bt . tshow -> bytes) = \case
 cleanNotSaved_1 :: Language -> Doc AnsiStyle
 cleanNotSaved_1 = \case
     Japanese   -> "不要パッケージファイルを確認・・・"
-    Polish     -> "Określanie niepotrzebnych plków pakietów"
+    Polish     -> "Określanie niepotrzebnych plików pakietów..."
     Croatian   -> "Pronalazim nepotrebne datoteke paketa..."
     German     -> "Bestimme nicht benötigte Paketdateien..."
     Spanish    -> "Determinando ficheros de paquetes innecesarios..."
@@ -1246,6 +1264,7 @@ reportNotInLog_1 = \case
 -- https://github.com/fosskers/aura/issues/498
 connectFailure_1 :: Language -> Doc AnsiStyle
 connectFailure_1 = \case
+  Polish  -> "Nie udało się nawiązać połączenia z AUR. Czy jesteś połączony z internetem?"
   Spanish -> "No se pudo contactar con el AUR. ¿Tienes conexión a internet?"
   Italian -> "Non è stato possibile contattare l'AUR. Il computer è connesso ad internet?"
   Dutch   -> "Contact opnemen met de AUR mislukt. Heeft U een internet connectie?"
@@ -1257,6 +1276,7 @@ dependencyLookup_1 t = \case
 
 miscAURFailure_1 :: Language -> Doc AnsiStyle
 miscAURFailure_1 = \case
+  Polish    -> "Wystąpił nieznany błąd podczas próby łączenia z AUR."
   Spanish   -> "El contacto con el AUR falló de alguna manera desconocida."
   Italian   -> "C'è stato un errore sconosciuto nel contattare l'AUR."
   Dutch     -> "Contact opnemen met de AUR is op een onbekende manier mislukt."
@@ -1264,6 +1284,7 @@ miscAURFailure_1 = \case
 
 miscAURFailure_3 :: Language -> Doc AnsiStyle
 miscAURFailure_3 = \case
+  Polish    -> "Plik JSON zwrócony z AUR nie mógł zostać rozszyfrowany."
   Spanish   -> "El JSON devuelto por el servidor AUR no se pudo decodificar."
   _         -> "The JSON returned from the AUR server could not be decoded."
 
@@ -1390,6 +1411,7 @@ restoreState_1 = \case
 restoreState_2 :: Language -> Doc AnsiStyle
 restoreState_2 = \case
     Japanese   -> "保存されたパッケージ状態がない。作るには「-B」を。"
+    Polish     -> "Brak zapisanych stanów do przywrócenia. (Użyj -B by zapisać aktualny stan)"
     Spanish    -> "No hay estados guardados para ser restaurados. (Utilice -B para guardar el estado actual)"
     Portuguese -> "Nenhum estado disponível para ser recuperado. (Utilize -B para salvar o estado atual)"
     Russian    -> "Нет сохраненных состояний для восстановления. (Используйте -B для сохранения текущего состояния)"
@@ -1426,6 +1448,7 @@ reinstallAndRemove_1 = \case
 --------------------------------------
 whoIsBuildUser_1 :: Language -> Doc AnsiStyle
 whoIsBuildUser_1 = \case
+    Polish     -> "Nie można określić z którego konta użytkownika chcesz budować."
     Spanish    -> "No se puede determinar el usuario que ejecutará la compilación."
     Portuguese -> "Não foi possível determinal o usuário que executará a compilação."
     Russian    -> "Не удается определить, от имени какого пользователя производить сборку."
@@ -1460,6 +1483,7 @@ pacmanFailure_1 = \case
 
 confParsing_1 :: Language -> Doc AnsiStyle
 confParsing_1 = \case
+    Polish     -> "Nie udało się odczytać twojego pliku pacman.conf"
     Spanish    -> "No fue posible analizar su archivo pacman.conf."
     Portuguese -> "Não foi possível interpretar o arquivo pacman.conf ."
     Russian    -> "Не удается распознать формат вашего файла pacman.conf."
@@ -1470,6 +1494,7 @@ confParsing_1 = \case
 
 provides_1 :: PkgName -> Language -> Doc AnsiStyle
 provides_1 (bt . pnName -> pro) = \case
+    Polish     -> pro <+> "jest wymagany/a jako zależność, dostarczana przez wiele pakietów. Proszę wybrać jeden:"
     Spanish    -> pro <+> "se requiere como una dependencia, que es proporcionada por múltiples paquetes. Por favor, seleccione uno:"
     Italian    -> pro <+> "è richiesto come dipendenza; si trova in molteplici pacchetti. Selezionarne uno:"
     Dutch      -> pro <+> "is vereist als afhankelijkheid, die wordt geleverd door meerdere pakketten. Selecteer er alstublieft een:"
@@ -1500,11 +1525,13 @@ hotEdit_1 (bt . pnName -> p) = \case
 
 hotEdit_2 :: Language -> Doc AnsiStyle
 hotEdit_2 = \case
+  Polish    -> "Czy chcesz edytować plik .install?"
   Spanish   -> "¿Desea editar el archivo .install?"
   _         -> "Would you like to edit the .install file?"
 
 hotEdit_3 :: FilePath -> Language -> Doc AnsiStyle
 hotEdit_3 fp = \case
+  Polish    -> "Czy chcesz edytować " <> pretty fp <> "?"
   Spanish   -> "¿Desea editar " <> pretty fp <> "?"
   _         -> "Would you like to edit " <> pretty fp <> "?"
 
@@ -1513,6 +1540,7 @@ hotEdit_3 fp = \case
 ------------------------------
 security_1 :: PkgName -> Language -> Doc AnsiStyle
 security_1 (PkgName p) = \case
+  Polish    -> "PKGBUILD dla" <+> bt p <+> "był zbyt zawiły do odczytania - może zawierać złośliwy kod."
   Spanish   -> "El PKGBUILD de" <+> bt p <+> "era demasiado complejo de analizar - puede estar ofuscando código malicioso."
   Italian   -> "Il PKGBUILD di" <+> bt p <+> "è troppo complesso per essere analizzato - è possibile che stia offuscando codice malevolo."
   Dutch     -> "Het PKGBUILD-bestand van" <+> bt p <+> " was te complex om te parseren - het kan schadelijke code versluieren."
@@ -1520,6 +1548,7 @@ security_1 (PkgName p) = \case
 
 security_2 :: Text -> Language -> Doc AnsiStyle
 security_2 (bt -> t) = \case
+  Polish    -> t <+> "może zostać użyty do pobrania arbitralnych skryptów, które nie są śledzone przez ten PKGBUILD."
   Spanish   -> t <+> "se puede usar para descargar scripts arbitrarios que este PKGBUILD no rastrea."
   Italian   -> t <+> "può essere usato per scaricare script arbitrari non tracciati da questo PKGBUILD."
   Dutch     -> t <+> "kan gebruikt worden om willekeurige scripten te downloaden die niet worden bijgehouden door dit PKGBUILD-bestand."
@@ -1527,6 +1556,7 @@ security_2 (bt -> t) = \case
 
 security_3 :: Text -> Language -> Doc AnsiStyle
 security_3 (bt -> t) = \case
+  Polish    -> t <+> "może zostać użyty do wykonywania arbitralnego kodu, który nie jest śledzony przez ten PKGBUILD."
   Spanish   -> t <+> "se puede usar para ejecutar código arbitrario que este PKGBUILD no rastrea."
   Italian   -> t <+> "può essere usato per eseguire codice arbitrario non tracciato da questo PKGBUILD."
   Dutch     -> t <+> "kan gebruikt worden om willekeurige code uit te voeren die niet worden bijgehouden door dit PKGBUILD-bestand."
@@ -1534,6 +1564,7 @@ security_3 (bt -> t) = \case
 
 security_4 :: Text -> Language -> Doc AnsiStyle
 security_4 (bt -> t) = \case
+  Polish    -> t <+> "wskazuje na to, że ktoś może próbować uzyskać dostęp root'a do twojej maszyny."
   Spanish   -> t <+> "indica que alguien puede estar intentando obtener acceso de root a su máquina."
   Italian   -> t <+> "indica che forse qualcuno sta cercando di ottenere accesso alla tua macchina come root."
   Dutch     -> t <+> "geeft aan dat iemand mogelijk root-toegang to uw machine probeert te krijgen."
@@ -1541,6 +1572,7 @@ security_4 (bt -> t) = \case
 
 security_5 :: PkgName -> Language -> Doc AnsiStyle
 security_5 (PkgName p) = \case
+  Polish    -> "UWAGA: PKGBUILD dla " <+> bt p <+> "zawiera wyrażenia bash znajdujące się na czarnej liście."
   Spanish   -> "ADVERTENCIA: El PKGBUILD de" <+> bt p <+> "contiene expresiones bash en la lista negra."
   Italian   -> "ATTENZIONE: Il PKGBUILD di" <+> bt p <+> "contiene espressioni bash presenti nella lista nera."
   Dutch     -> "WAARSCHUWING: De PKGBUILD van" <+> bt p <+> "bevat bash uitdrukkingen die op de zwarte lijst staan."
@@ -1548,6 +1580,7 @@ security_5 (PkgName p) = \case
 
 security_6 :: Language -> Doc AnsiStyle
 security_6 = \case
+  Polish    -> "Czy chcesz zakończyć proces budowania?"
   Spanish   -> "¿Desea salir del proceso de compilación?"
   Italian   -> "Terminare la compilazione?"
   Dutch     -> "Wilt u het bouw process stoppen?"
@@ -1555,6 +1588,7 @@ security_6 = \case
 
 security_7 :: Language -> Doc AnsiStyle
 security_7 = \case
+  Polish    -> "Anulowano dalsze przetwarzanie by uniknąć egzekucji potencjalnie złośliwego kodu bash"
   Spanish   -> "Se canceló el procesamiento posterior para evitar el código bash potencialmente malicioso."
   Italian   -> "Non saranno eseguite altre operazioni al fine di evitare l'esecuzione di codice bash potenzialmente malevolo."
   Dutch     -> "Verdere verwerking geannuleerd om het uitvoeren van potentieel schadelijke bash-code te voorkomen."
@@ -1562,6 +1596,7 @@ security_7 = \case
 
 security_8 :: Text -> Language -> Doc AnsiStyle
 security_8 (bt -> t) = \case
+  Polish    -> t <+> "jest komendą bash zawartą w polach tablicy twojego PKGBUILD."
   Spanish   -> t <+> "es un comando bash integrado en los campos de la matriz del PKGBUILD."
   Italian   -> t <+> "è un comando bash presente all'interno degli array del tuo PKGBUILD."
   Dutch     -> t <+> "is een bash-opdracht die is opgenomen in uw PKGBUILD-arrayvelden."
@@ -1569,6 +1604,7 @@ security_8 (bt -> t) = \case
 
 security_9 :: Text -> Language -> Doc AnsiStyle
 security_9 (bt -> t) = \case
+  Polish    -> t <+> "jest dziwną rzeczą w polach tablicy. Czy to bezpieczne?"
   Spanish   -> t <+> "es algo extraño para tener en sus campos de matriz. ¿Es seguro?"
   Italian   -> t <+> "è una cosa strana da trovare all'interno degli array. E' sicura?"
   Dutch     -> t <+> "is een vreemd ding om in uw arrayvelden te hebben. Is het veilig?"
@@ -1576,6 +1612,7 @@ security_9 (bt -> t) = \case
 
 security_10 :: Text -> Language -> Doc AnsiStyle
 security_10 (bt -> t) = \case
+  Polish    -> t <+> "sugeruje, że ktoś próbował być sprytny używając zmiennych do ukrycia złośliwych komend."
   Spanish   -> t <+> "implica que alguien estaba tratando de ser astuto con las variables para ocultar comandos maliciosos."
   Italian   -> t <+> "implica che qualcuno stava trafficando con le variabili per nascondere comandi malevoli."
   Dutch     -> t <+> "impliceert dat iemand slim probeerde om te gaan met variabelen om schadelijke opdrachten te verbergen."
@@ -1583,21 +1620,25 @@ security_10 (bt -> t) = \case
 
 security_11 :: Language -> Doc AnsiStyle
 security_11 = \case
+  Polish    -> "Ten PKGBUILD jest zbyt zawiły do odczytania - może ukrywać w sobie złośliwy kod."
   Spanish   -> "Éste PKGBUILD es demasiado complejo para analizar, puede estar ofuscando código malicioso."
   _         -> "That PKGBUILD is too complex to parse - it may be obfuscating malicious code."
 
 security_12 :: Language -> Doc AnsiStyle
 security_12 = \case
+  Polish    -> "Potencjalne luki w bezpieczeństwie wykryte w PKGBUILD"
   Spanish   -> "Posibles vulnerabilidades de PKGBUILD detectadas."
   _         -> "Potential PKGBUILD vulnerabilities detected."
 
 security_13 :: Word -> Language -> Doc AnsiStyle
 security_13 (bt -> w) = \case
+  Polish    -> "Sprawdzanie PKGBUILD" <+> w <+> "w poszukiwaniu luk w bezpieczeństwie..."
   Spanish   -> "Comprobando" <+> w <+> "PKGBUILDs por vulnerabilidades..."
   _         -> "Checking" <+> w <+> "PKGBUILDs for vulnerabilities..."
 
 security_14 :: Language -> Doc AnsiStyle
 security_14 = \case
+  Polish    -> "Nie wykryto żadnych luk w bezpieczeństwie."
   Spanish   -> "No se detectaron vulnerabilidades."
   _         -> "No vulnerabilities detected."
 
