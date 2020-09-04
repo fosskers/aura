@@ -1,4 +1,4 @@
-resolver: lts-16.10
+resolver: lts-16.12
 
 ghc-options:
   $everything: -split-sections
