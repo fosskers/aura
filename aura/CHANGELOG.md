@@ -1,6 +1,6 @@
 # Aura Changelog
 
-## Unreleased
+## 3.1.9 (2020-09-11)
 
 #### Added
 
