@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 7.0.4 (2020-09-11)
 
 - Escape `+` that can occasionally appear in package names.
 
