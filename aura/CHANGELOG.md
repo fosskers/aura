@@ -1,5 +1,27 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Added
+
+- Pass `-u` to `-Cc` to save N installed packages, and remove all uninstalled ones. Example:
+
+```
+> sudo aura -Cc 3 -u
+aura >>= The cache contains 1706 packages, consuming 7324 megabytes.
+aura >>= 3 versions of each installed package will be kept.
+aura >>= The rest will be deleted. Okay? [Y/n] n
+```
+
+Otherwise, the usual behaviour of `-Cc` is to save N packages in the cache,
+regardless of if they are installed or not.
+
+#### Fixed
+
+- AUR packages with `+` in their name (e.g. `libc++`) can be searched and installed. [#630]
+
+[#630]: https://github.com/fosskers/aura/issues/630
+
 ## 3.1.8 (2020-08-23)
 
 #### Changed
