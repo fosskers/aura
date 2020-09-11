@@ -162,7 +162,7 @@ clean toSave mode (Cache cache) = do
     f _ []       = pure Nothing
     f e ps@(a:_) = runMaybeT $ do
       pn <- MaybeT . pure $ simplepkg a
-      lift . void . isInstalled e $ spName pn
+      void . MaybeT . isInstalled e $ spName pn
       pure $ recent ps
 
     recent :: [PackagePath] -> [PackagePath]
