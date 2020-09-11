@@ -123,7 +123,11 @@ info :: Manager -> [Text] -> IO (Either AurError [AurInfo])
 info m ps = work m url
   where
     url = "https://aur.archlinux.org/rpc?v=5&type=info&" <> as
-    as = T.unpack . T.intercalate "&" $ map ("arg%5B%5D=" <>) ps
+    as = T.unpack . T.intercalate "&" $ map (\p -> "arg%5B%5D=" <> T.concatMap escape p) ps
+
+escape :: Char -> Text
+escape '+' = "%2B"
+escape c   = T.singleton c
 
 -- | Perform a @search@ call on a package name or description text.
 -- Will fail with a `Left` if there was a connection/decoding error.

@@ -18,7 +18,7 @@ suite m = testGroup "RPC Calls"
   ]
 
 infoTest :: Manager -> Assertion
-infoTest m = info m ["aura", "aura-bin"] >>= \x -> (length <$> x) @?= Right 2
+infoTest m = info m ["aura", "aura-bin", "libc++"] >>= \x -> (length <$> x) @?= Right 3
 
 infoTest' :: Manager -> Assertion
 infoTest' m = info m ["aura1234567"] >>= \x -> (null <$> x) @?= Right True
