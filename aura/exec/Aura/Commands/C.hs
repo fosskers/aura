@@ -1,4 +1,4 @@
-{-# LANGUAGE BangPatterns       #-}
+{-# LANGUAGE LambdaCase         #-}
 {-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE TypeApplications   #-}
 
@@ -29,6 +29,8 @@ import           Aura.Shell
 import           Aura.State
 import           Aura.Types
 import           Aura.Utils (nes)
+import           Control.Monad.Trans.Maybe
+import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           RIO
 import           RIO.Directory
 import qualified RIO.List as L
@@ -111,8 +113,8 @@ copyAndNotify dir (p : ps) n = do
 
 -- | Keeps a certain number of package files in the cache according to
 -- a number provided by the user. The rest are deleted.
-cleanCache :: Word -> RIO Env ()
-cleanCache toSave
+cleanCache :: Word -> CleanMode -> RIO Env ()
+cleanCache toSave mode
   | toSave == 0 = do
       ss <- asks settings
       warn ss cleanCache_2
@@ -125,9 +127,10 @@ cleanCache toSave
       beforeBytes <- liftIO $ cacheSize beforeCache
       notify ss $ cleanCache_7 (fromIntegral $ M.size c) beforeBytes
       -- Proceed with user confirmation --
-      warn ss $ cleanCache_3 toSave
+      let msg = bool cleanCache_9 cleanCache_3 $ mode == Quantity
+      warn ss $ msg toSave
       withOkay ss cleanCache_4 cleanCache_5 $ do
-        clean toSave beforeCache
+        clean toSave mode beforeCache
         afterCache <- liftIO $ cacheContents cachePath
         afterBytes <- liftIO $ cacheSize afterCache
         notify ss $ cleanCache_8 (beforeBytes - afterBytes)
@@ -138,14 +141,38 @@ cacheSize (Cache cache) = do
   bytes <- foldl' (+) 0 <$> traverse (getFileSize . ppPath) (M.elems cache)
   pure . floor @Double $ fromIntegral bytes / 1_048_576  -- 1024 * 1024
 
-clean :: Word -> Cache -> RIO Env ()
-clean toSave (Cache cache) = do
+clean :: Word -> CleanMode -> Cache -> RIO Env ()
+clean toSave mode (Cache cache) = do
   ss <- asks settings
+  keep <- toKeep
   notify ss cleanCache_6
-  let !files    = M.elems cache
-      grouped   = take (fromIntegral toSave) . reverse <$> groupByName files
-      toRemove  = files L.\\ fold grouped
-  liftIO $ traverse_ (removeFile . ppPath) toRemove
+  liftIO . traverse_ (removeFile . ppPath) $ toRemove keep
+  where
+    files :: [PackagePath]
+    files = M.elems cache
+
+    toKeep :: RIO Env [PackagePath]
+    toKeep = case mode of
+      Quantity       -> pure $ grouped >>= recent
+      AndUninstalled -> do
+        env <- asks (envOf . settings)
+        fold . catMaybes <$> liftIO (traverseConcurrently Par' (f env) grouped)
+
+    f :: Environment -> [PackagePath] -> IO (Maybe [PackagePath])
+    f _ []       = pure Nothing
+    f e ps@(a:_) = runMaybeT $ do
+      pn <- MaybeT . pure $ simplepkg a
+      lift . void . isInstalled e $ spName pn
+      pure $ recent ps
+
+    recent :: [PackagePath] -> [PackagePath]
+    recent = take (fromIntegral toSave) . reverse
+
+    grouped :: [[PackagePath]]
+    grouped = groupByName files
+
+    toRemove :: [PackagePath] -> [PackagePath]
+    toRemove keep = files L.\\ keep
 
 -- | Only package files with a version not in any PkgState will be
 -- removed.

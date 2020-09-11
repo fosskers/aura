@@ -128,7 +128,7 @@ execOpts ops = do
     Right (Cache o) -> case o of
       Right ps                -> sudo $ C.downgradePackages ps
       Left (CacheSearch s)    -> C.searchCache s
-      Left (CacheClean n)     -> sudo $ C.cleanCache n
+      Left (CacheClean n u)   -> sudo $ C.cleanCache n u
       Left CacheCleanNotSaved -> sudo C.cleanNotSaved
       Left (CacheBackup pth)  -> sudo $ C.backupCache pth
     Right (Log o) -> case o of
@@ -144,7 +144,7 @@ execOpts ops = do
       Just (AnalysisFile fp) -> P.exploitsFromFile fp
       Just (AnalysisDir fp)  -> P.exploitsFromFile $ fp </> "PKGBUILD"
       Just AnalysisAudit     -> P.audit
-    Right Version   -> liftIO $ (versionInfo env) >>= animateVersionMsg ss auraVersion
+    Right Version   -> liftIO $ versionInfo env >>= animateVersionMsg ss auraVersion
     Right Languages -> displayOutputLanguages
     Right ViewConf  -> viewConfFile
 

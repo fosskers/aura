@@ -7,9 +7,9 @@ module Aura.Flags
   , AurOp(..), BackupOp(..), CacheOp(..), LogOp(..), OrphanOp(..), AnalysisOp(..)
   ) where
 
-import           Aura.Cache (defaultPackageCache)
+import           Aura.Cache (CleanMode(..), defaultPackageCache)
 import           Aura.Pacman (defaultLogFile, pacmanConfFile)
-import           Aura.Settings
+import           Aura.Settings hiding (switch)
 import           Aura.Types
 import           Aura.Utils (Traversal')
 import           Options.Applicative
@@ -270,7 +270,7 @@ data BackupOp
 
 data CacheOp
   = CacheBackup !FilePath
-  | CacheClean  !Word
+  | CacheClean  !Word !CleanMode
   | CacheCleanNotSaved
   | CacheSearch !Text
   deriving (Show)
@@ -341,7 +341,9 @@ cache = bigC *> (Cache <$> (fmap Left mods <|> fmap Right somePkgs))
   where bigC = flag' () (long "downgrade" <> short 'C' <> help "Interact with the package cache.")
         mods = backup <|> clean <|> clean' <|> search
         backup = CacheBackup <$> option (eitherReader absFilePath) (long "backup" <> short 'b' <> metavar "PATH" <> help "Backup the package cache to a given directory." <> hidden)
-        clean  = CacheClean  <$> option auto (long "clean" <> short 'c' <> metavar "N" <> help "Save the most recent N versions of a package in the cache, deleting the rest." <> hidden)
+        clean  = CacheClean
+          <$> option auto (long "clean" <> short 'c' <> metavar "N" <> help "Save the most recent N versions of a package in the cache, deleting the rest." <> hidden)
+          <*> flag Quantity AndUninstalled (long "uninstalled" <> short 'u' <> help "Add to -c. Clears out any uninstalled packages from the cache.")
         clean' = flag' CacheCleanNotSaved (long "notsaved" <> help "Clean out any cached package files which doesn't appear in any saved state." <> hidden)
         search = CacheSearch <$> strOption (long "search" <> short 's' <> metavar "STRING" <> help "Search the package cache via a search string." <> hidden)
 

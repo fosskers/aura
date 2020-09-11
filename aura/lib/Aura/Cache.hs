@@ -12,6 +12,7 @@ module Aura.Cache
   ( -- * Types
     Cache(..)
   , cacheContents
+  , CleanMode(..)
     -- * Misc.
   , defaultPackageCache
   , cacheMatches
@@ -31,6 +32,10 @@ import qualified RIO.Text as T
 
 -- | Every package in the current cache, paired with its original filename.
 newtype Cache = Cache { _cache :: Map SimplePkg PackagePath }
+
+-- | For manipulating the specifics of the cache cleaning process.
+data CleanMode = Quantity | AndUninstalled
+  deriving (Eq, Show)
 
 -- | The default location of the package cache: \/var\/cache\/pacman\/pkg\/
 defaultPackageCache :: FilePath

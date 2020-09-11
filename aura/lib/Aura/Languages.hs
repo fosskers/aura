@@ -1188,6 +1188,10 @@ cleanCache_8 (bt . tshow -> bytes) = \case
    Spanish     -> bytes <> " megabytes liberados."
    _           -> bytes <> " megabytes freed."
 
+cleanCache_9 :: Word -> Language -> Doc AnsiStyle
+cleanCache_9 (bt . tshow -> w) = \case
+  _ -> w <> " versions of each installed package will be kept."
+
 -- NEEDS TRANSLATION
 cleanNotSaved_1 :: Language -> Doc AnsiStyle
 cleanNotSaved_1 = \case
