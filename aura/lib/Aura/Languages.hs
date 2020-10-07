@@ -224,7 +224,7 @@ buildPackages_3 fp = \case
 
 buildPackages_4 :: Language -> Doc AnsiStyle
 buildPackages_4 = \case
-  _ -> "--hotedit detected, but the following have entries in the cache and will be skipped:"
+  _ -> bt @Text "--hotedit" <+> "detected, but the following have cache entries and will be skipped for editing:"
 
 buildPackages_5 :: Language -> Doc AnsiStyle
 buildPackages_5 = \case
