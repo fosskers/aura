@@ -41,6 +41,13 @@ import           System.Process.Typed
 
 ---
 
+-- | There are multiple outcomes to a single call to `makepkg`.
+data BuildResult = AllSourced | Built !(NonEmpty PackagePath)
+
+builtPPs :: BuildResult -> Maybe (NonEmpty PackagePath)
+builtPPs (Built pps) = Just pps
+builtPPs _           = Nothing
+
 -- | Storage location for "source" packages built with @--allsource@.
 -- Can be overridden in config or with @--allsourcepath@.
 srcPkgStore :: FilePath
@@ -59,16 +66,16 @@ installPkgFiles files = do
   liftIO $ checkDBLock ss
   liftIO . pacman (envOf ss) $ ["-U"] <> map (T.pack . ppPath) (toList files) <> asFlag (commonConfigOf ss)
 
--- | All building occurs within temp directories,
--- or in a location specified by the user with flags.
+-- | All building occurs within temp directories, or in a location specified by
+-- the user with flags.
 buildPackages :: NonEmpty Buildable -> RIO Env [PackagePath]
 buildPackages bs = mapMaybeA build (NEL.toList bs) >>= \case
   [] -> throwM $ Failure buildFail_10
-  built -> pure $ concat built
+  built -> pure . foldMap toList $ mapMaybe builtPPs built
 
 -- | Handles the building of Packages. Fails nicely.
 -- Assumed: All dependencies are already installed.
-build :: Buildable -> RIO Env (Maybe [PackagePath])
+build :: Buildable -> RIO Env (Maybe BuildResult)
 build p = do
   logDebug $ "Building: " <> display (pnName $ bName p)
   ss <- asks settings
@@ -76,8 +83,8 @@ build p = do
   result <- build' p
   either buildFail (pure . Just) result
 
--- | Should never throw an IO Exception. In theory all errors
--- will come back via the @Language -> String@ function.
+-- | Should never throw an IO Exception. In theory all errors will come back via
+-- the @Language -> String@ function.
 --
 -- If the package is a VCS package (i.e. ending in -git, etc.), it will be built
 -- and stored in a separate, deterministic location to prevent repeated clonings
@@ -85,7 +92,10 @@ build p = do
 --
 -- If `--allsource` was given, then the package isn't actually built.
 -- Instead, a @.src.tar.gz@ file is produced and copied to `srcPkgStore`.
-build' :: Buildable -> RIO Env (Either Failure [PackagePath])
+--
+-- One `Buildable` can become multiple `PackagePath` due to "split packages".
+-- i.e. a single call to `makepkg` can produce multiple related packages.
+build' :: Buildable -> RIO Env (Either Failure BuildResult)
 build' b = do
   ss <- asks settings
   let !isDevel = isDevelPkg $ bName b
@@ -110,10 +120,10 @@ build' b = do
     if S.member AllSource . makepkgFlagsOf $ buildConfigOf ss
       then do
         let !allsourcePath = fromMaybe srcPkgStore . allsourcePathOf $ buildConfigOf ss
-        liftIO (makepkgSource usr >>= traverse_ (moveToSourcePath allsourcePath)) $> []
+        liftIO (makepkgSource usr >>= traverse_ (moveToSourcePath allsourcePath)) $> AllSourced
       else do
-        pNames <- ExceptT . liftIO . fmap (fmap NEL.toList) $ makepkg ss usr
-        liftIO $ traverse (moveToCachePath ss) pNames
+        pNames <- ExceptT . liftIO $ makepkg ss usr
+        liftIO . fmap Built $ traverse (moveToCachePath ss) pNames
   when (switch ss DeleteBuildDir) $ do
     logDebug . fromString $ "Deleting build directory: " <> buildDir
     removeDirectoryRecursive buildDir
