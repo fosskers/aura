@@ -75,7 +75,7 @@ withEnv (Program op co bc lng ll) f = do
           , isTerminal     = isTerm
           , ignoresOf      = getIgnoredPkgs confFile <> fromGroups <> ign
           , commonConfigOf =
-              -- | These maintain the precedence order: flags, config file entry, default
+              -- These maintain the precedence order: flags, config file entry, default
               co & cachePathOfL . _Left %~ (\x -> fromMaybe x $ getCachePath confFile)
                  & logPathOfL   . _Left %~ (\x -> fromMaybe x $ getLogFilePath confFile)
           , buildConfigOf =
