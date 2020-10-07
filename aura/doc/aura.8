@@ -182,15 +182,14 @@ whose versions are already available in the local package cache.
 \fB\-\-hotedit\fR
 .RS 4
 Prompt the user before building to ask if they wish to view/edit the PKGBUILD,
-as well as any .install or .patch files. This is not default behavior and thus
-does not have a single\-letter option. Research into packages (and by extension,
-their PKGBUILDs) should be done before any building occurs. Please use
-\fI\-Ap\fR and \fI\-Ad\fR for this, as they will be much faster at presenting
-information than searching the AUR website manually. Note that, since aura is
-run through sudo, your local value of $EDITOR may not be preserved. Run as "sudo
-\fI\-E\fR aura -A --hotedit ..." to preserve your environment. To always allow
-environment variables to be passed, have a look at the \fIenv_reset\fR and
-\fIenv_keep\fR options in \fBsudoers\fR(5).
+as well as any .install or .patch files. However, research into packages (and by
+extension, their PKGBUILDs) should be done by the user before any building
+occurs. Please use \fI\-Ap\fR and \fI\-Ad\fR for this, as they will be much
+faster at presenting information than searching the AUR website manually. Note
+that, since aura is run through sudo, your local value of $EDITOR may not be
+preserved. Run as "sudo \fI\-E\fR aura -A --hotedit ..." to preserve your
+environment. To always allow environment variables to be passed, have a look at
+the \fIenv_reset\fR and \fIenv_keep\fR options in \fBsudoers\fR(5).
 .RE
 .P
 \fB\-\-skipdepcheck\fR

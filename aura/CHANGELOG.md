@@ -6,8 +6,10 @@
 
 - `--nocheck` will be passed down to `makepkg` to avoid calling the `check()`
   function during the build process. [#647]
+- `--hotedit` now has a short variant: `-e`. [#643]
 
 [#647]: https://github.com/fosskers/aura/pull/647
+[#643]: https://github.com/fosskers/aura/issues/643
 
 ## 3.1.9 (2020-09-11)
 
