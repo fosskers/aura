@@ -41,7 +41,7 @@ data Program = Program {
 data PacmanOp
   = Database !(Either DatabaseOp (NonEmpty PkgName))
   | Files    !(Set FilesOp)
-  | Query    !(Either QueryOp (Set QueryFilter, Set PkgName)) (Set QueryExtra)
+  | Query    !(Either (Set QueryOp, Set Text) (Set QueryFilter, Set PkgName))
   | Remove   !(Set RemoveOp) !(NonEmpty PkgName)
   | Sync     !(Either (NonEmpty SyncOp) (Set PkgName)) !(Set SyncSwitch)
   | TestDeps !(NonEmpty Text)
@@ -49,16 +49,16 @@ data PacmanOp
   deriving (Show)
 
 instance Flagable PacmanOp where
-  asFlag (Database (Left o))        = "-D" : asFlag o
-  asFlag (Database (Right fs))      = "-D" : asFlag fs
-  asFlag (Files os)                 = "-F" : asFlag os
-  asFlag (Query (Left o) e)         = "-Q" : asFlag e ++ asFlag o
-  asFlag (Query (Right (fs, ps)) e) = "-Q" : asFlag e ++ asFlag ps ++ asFlag fs
-  asFlag (Remove os ps)             = "-R" : asFlag os ++ asFlag ps
-  asFlag (Sync (Left o) ss)         = "-S" : asFlag ss ++ asFlag o
-  asFlag (Sync (Right ps) ss)       = "-S" : asFlag ss ++ asFlag ps
-  asFlag (TestDeps ps)              = "-T" : asFlag ps
-  asFlag (Upgrade s ps)             = "-U" : asFlag s ++ asFlag ps
+  asFlag (Database (Left o))      = "-D" : asFlag o
+  asFlag (Database (Right fs))    = "-D" : asFlag fs
+  asFlag (Files os)               = "-F" : asFlag os
+  asFlag (Query (Left (os, as)))  = "-Q" : asFlag os ++ asFlag as
+  asFlag (Query (Right (fs, ps))) = "-Q" : asFlag ps ++ asFlag fs
+  asFlag (Remove os ps)           = "-R" : asFlag os ++ asFlag ps
+  asFlag (Sync (Left o) ss)       = "-S" : asFlag ss ++ asFlag o
+  asFlag (Sync (Right ps) ss)     = "-S" : asFlag ss ++ asFlag ps
+  asFlag (TestDeps ps)            = "-T" : asFlag ps
+  asFlag (Upgrade s ps)           = "-U" : asFlag s ++ asFlag ps
 
 data DatabaseOp
   = DBCheck
@@ -89,33 +89,25 @@ instance Flagable FilesOp where
   asFlag FilesMachineReadable = ["--machinereadable"]
 
 data QueryOp
-  = QueryChangelog !(NonEmpty Text)
-  | QueryGroups    !(NonEmpty Text)
-  | QueryInfo      !(NonEmpty Text)
-  | QueryCheck     !(NonEmpty Text)
-  | QueryList      !(NonEmpty Text)
-  | QueryOwns      !(NonEmpty Text)
-  | QueryFile      !(NonEmpty Text)
-  | QuerySearch    !Text
-  deriving (Show)
-
-instance Flagable QueryOp where
-  asFlag (QueryChangelog ps) = "--changelog" : asFlag ps
-  asFlag (QueryGroups ps)    = "--groups" : asFlag ps
-  asFlag (QueryInfo ps)      = "--info" : asFlag ps
-  asFlag (QueryCheck ps)     = "--check" : asFlag ps
-  asFlag (QueryList ps)      = "--list" : asFlag ps
-  asFlag (QueryOwns ps)      = "--owns" : asFlag ps
-  asFlag (QueryFile ps)      = "--file" : asFlag ps
-  asFlag (QuerySearch t)     = ["--search", t]
-
--- | To handle an edge case where `-l` can be supplied alongside the other main
--- ops, and both actions are performed. This doesn't apply to all ops.
-data QueryExtra = QueryList'
+  = QueryChangelog
+  | QueryGroups
+  | QueryInfo
+  | QueryCheck
+  | QueryList
+  | QueryOwns
+  | QueryFile
+  | QuerySearch
   deriving (Eq, Ord, Show)
 
-instance Flagable QueryExtra where
-  asFlag QueryList' = ["--list"]
+instance Flagable QueryOp where
+  asFlag QueryChangelog = ["--changelog"]
+  asFlag QueryGroups    = ["--groups"]
+  asFlag QueryInfo      = ["--info"]
+  asFlag QueryCheck     = ["--check"]
+  asFlag QueryList      = ["--list"]
+  asFlag QueryOwns      = ["--owns"]
+  asFlag QueryFile      = ["--file"]
+  asFlag QuerySearch    = ["--search"]
 
 data QueryFilter
   = QueryDeps
@@ -463,19 +455,18 @@ files = bigF *> (Files <$> fmap S.fromList (many mods))
         mch  = flag' FilesMachineReadable (long "machinereadable" <> hidden <> help "Produce machine-readable output.")
 
 queries :: Parser PacmanOp
-queries = bigQ *> (Query <$> (fmap Right query <|> fmap Left mods) <*> (S.fromList <$> many lst'))
+queries = bigQ *> (Query <$> (fmap Right query <|> fmap Left mods))
   where bigQ  = flag' () (long "query" <> short 'Q' <> help "Interact with the local package database.")
         query = curry (second (S.map PkgName)) <$> queryFilters <*> manyArgs
-        mods  = chl <|> gps <|> inf <|> lst <|> own <|> fls <|> sch <|> chk
-        chl   = QueryChangelog <$> (flag' () (long "changelog" <> short 'c' <> hidden <> help "View a package's changelog.") *> someArgs')
-        gps   = QueryGroups <$> (flag' () (long "groups" <> short 'g' <> hidden <> help "View all members of a package group.") *> someArgs')
-        inf   = QueryInfo <$> (flag' () (long "info" <> short 'i' <> hidden <> help "View package information.") *> someArgs')
-        lst   = QueryList <$> (flag' () (long "list" <> short 'l' <> hidden <> help "List files owned by a package.") *> someArgs')
-        lst'  = flag' QueryList' (long "list" <> short 'l' <> hidden <> help "List files owned by a package.")
-        chk = QueryCheck <$> (flag' () (long "check" <> short 'k' <> hidden <> help "Check that package files exist.") *> someArgs')
-        own   = QueryOwns <$> (flag' () (long "owns" <> short 'o' <> hidden <> help "Find the package some file belongs to.") *> someArgs')
-        fls   = QueryFile <$> (flag' () (long "file" <> short 'p' <> hidden <> help "Query a package file.") *> someArgs')
-        sch   = QuerySearch <$> strOption (long "search" <> short 's' <> metavar "REGEX" <> hidden <> help "Search the local database.")
+        mods  = (,) <$> (S.fromList <$> many (chl <|> gps <|> inf <|> lst <|> own <|> fls <|> sch <|> chk)) <*> manyArgs
+        chl   = flag' QueryChangelog (long "changelog" <> short 'c' <> hidden <> help "View a package's changelog.")
+        gps   = flag' QueryGroups (long "groups" <> short 'g' <> hidden <> help "View members of a package group.")
+        inf   = flag' QueryInfo (long "info" <> short 'i' <> hidden <> help "View package information.")
+        lst   = flag' QueryList (long "list" <> short 'l' <> hidden <> help "List files owned by a package.")
+        chk   = flag' QueryCheck (long "check" <> short 'k' <> hidden <> help "Check that package files exist.")
+        own   = flag' QueryOwns (long "owns" <> short 'o' <> hidden <> help "Find the package some file belongs to.")
+        fls   = flag' QueryFile (long "file" <> short 'p' <> hidden <> help "Query a package file.")
+        sch   = flag' QuerySearch (long "search" <> short 's' <> hidden <> help "Search the local database.")
 
 queryFilters :: Parser (Set QueryFilter)
 queryFilters = S.fromList <$> many (dps <|> exp <|> frg <|> ntv <|> urq <|> upg)
