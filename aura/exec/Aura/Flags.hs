@@ -143,7 +143,7 @@ data SyncOp
   = SyncClean
   | SyncGroups   !(NonEmpty Text)
   | SyncInfo     !(NonEmpty Text)
-  | SyncList     !Text
+  | SyncList     !(Set Text)
   | SyncSearch   !(NonEmpty Text)
   | SyncUpgrade  !(Set Text)
   | SyncDownload !(NonEmpty Text)
@@ -153,7 +153,7 @@ instance Flagable SyncOp where
   asFlag SyncClean         = ["--clean"]
   asFlag (SyncGroups gs)   = "--groups" : asFlag gs
   asFlag (SyncInfo ps)     = "--info" : asFlag ps
-  asFlag (SyncList r)      = ["--list", r]
+  asFlag (SyncList rs)     = "--list" : asFlag rs
   asFlag (SyncSearch s)    = "--search" : asFlag s
   asFlag (SyncUpgrade ps)  = "--sysupgrade" : asFlag ps
   asFlag (SyncDownload ps) = "--downloadonly" : asFlag ps
@@ -494,7 +494,7 @@ sync = bigS *> (Sync <$> (fmap (Right . S.map PkgName) manyArgs <|> fmap Left mo
         cln  = flag' SyncClean (long "clean" <> short 'c' <> hidden <> help "Remove old packages from the cache.")
         gps  = SyncGroups <$> (flag' () (long "groups" <> short 'g' <> hidden <> help "View members of a package group.") *> someArgs')
         inf  = SyncInfo <$> (flag' () (long "info" <> short 'i' <> hidden <> help "View package information.") *> someArgs')
-        lst  = SyncList <$> strOption (long "list" <> short 'l' <> metavar "REPO" <> hidden <> help "List the packages in a REPO.")
+        lst  = SyncList <$> (flag' () (long "list" <> short 'l' <> hidden <> help "List the packages in a REPO.") *> manyArgs')
         sch  = SyncSearch <$> (flag' () (long "search" <> short 's' <> hidden <> help "Search the official package repos.") *> someArgs')
         upg  = SyncUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade installed packages.") *> manyArgs')
         dnl  = SyncDownload <$> (flag' () (long "downloadonly" <> short 'w' <> hidden <> help "Download package tarballs.") *> someArgs')
