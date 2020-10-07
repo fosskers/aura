@@ -1,7 +1,7 @@
-resolver: lts-16.13
+resolver: lts-16.17
 
 ghc-options:
-  $everything: -split-sections
+  $everything: -split-sections -haddock
   $locals: -fwrite-ide-info -hiedir=.hie -fmax-relevant-binds=0
 
 nix:
