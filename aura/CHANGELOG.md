@@ -1,5 +1,14 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Added
+
+- `--nocheck` will be passed down to `makepkg` to avoid calling the `check()`
+  function during the build process. [#647]
+
+[#647]: https://github.com/fosskers/aura/pull/647
+
 ## 3.1.9 (2020-09-11)
 
 #### Added
