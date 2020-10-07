@@ -41,7 +41,7 @@ data Program = Program {
 data PacmanOp
   = Database !(Either DatabaseOp (NonEmpty PkgName))
   | Files    !(Set FilesOp)
-  | Query    !(Either QueryOp (Set QueryFilter, Set PkgName))
+  | Query    !(Either (Set QueryOp, Set Text) (Set QueryFilter, Set PkgName))
   | Remove   !(Set RemoveOp) !(NonEmpty PkgName)
   | Sync     !(Either (NonEmpty SyncOp) (Set PkgName)) !(Set SyncSwitch)
   | TestDeps !(NonEmpty Text)
@@ -52,7 +52,7 @@ instance Flagable PacmanOp where
   asFlag (Database (Left o))      = "-D" : asFlag o
   asFlag (Database (Right fs))    = "-D" : asFlag fs
   asFlag (Files os)               = "-F" : asFlag os
-  asFlag (Query (Left o))         = "-Q" : asFlag o
+  asFlag (Query (Left (os, as)))  = "-Q" : asFlag os ++ asFlag as
   asFlag (Query (Right (fs, ps))) = "-Q" : asFlag ps ++ asFlag fs
   asFlag (Remove os ps)           = "-R" : asFlag os ++ asFlag ps
   asFlag (Sync (Left o) ss)       = "-S" : asFlag ss ++ asFlag o
@@ -89,25 +89,25 @@ instance Flagable FilesOp where
   asFlag FilesMachineReadable = ["--machinereadable"]
 
 data QueryOp
-  = QueryChangelog !(NonEmpty Text)
-  | QueryGroups    !(NonEmpty Text)
-  | QueryInfo      !(NonEmpty Text)
-  | QueryCheck     !(NonEmpty Text)
-  | QueryList      !(NonEmpty Text)
-  | QueryOwns      !(NonEmpty Text)
-  | QueryFile      !(NonEmpty Text)
-  | QuerySearch    !Text
-  deriving (Show)
+  = QueryChangelog
+  | QueryGroups
+  | QueryInfo
+  | QueryCheck
+  | QueryList
+  | QueryOwns
+  | QueryFile
+  | QuerySearch
+  deriving (Eq, Ord, Show)
 
 instance Flagable QueryOp where
-  asFlag (QueryChangelog ps) = "--changelog" : asFlag ps
-  asFlag (QueryGroups ps)    = "--groups" : asFlag ps
-  asFlag (QueryInfo ps)      = "--info" : asFlag ps
-  asFlag (QueryCheck ps)     = "--check" : asFlag ps
-  asFlag (QueryList ps)      = "--list" : asFlag ps
-  asFlag (QueryOwns ps)      = "--owns" : asFlag ps
-  asFlag (QueryFile ps)      = "--file" : asFlag ps
-  asFlag (QuerySearch t)     = ["--search", t]
+  asFlag QueryChangelog = ["--changelog"]
+  asFlag QueryGroups    = ["--groups"]
+  asFlag QueryInfo      = ["--info"]
+  asFlag QueryCheck     = ["--check"]
+  asFlag QueryList      = ["--list"]
+  asFlag QueryOwns      = ["--owns"]
+  asFlag QueryFile      = ["--file"]
+  asFlag QuerySearch    = ["--search"]
 
 data QueryFilter
   = QueryDeps
@@ -143,7 +143,7 @@ data SyncOp
   = SyncClean
   | SyncGroups   !(NonEmpty Text)
   | SyncInfo     !(NonEmpty Text)
-  | SyncList     !Text
+  | SyncList     !(Set Text)
   | SyncSearch   !(NonEmpty Text)
   | SyncUpgrade  !(Set Text)
   | SyncDownload !(NonEmpty Text)
@@ -153,7 +153,7 @@ instance Flagable SyncOp where
   asFlag SyncClean         = ["--clean"]
   asFlag (SyncGroups gs)   = "--groups" : asFlag gs
   asFlag (SyncInfo ps)     = "--info" : asFlag ps
-  asFlag (SyncList r)      = ["--list", r]
+  asFlag (SyncList rs)     = "--list" : asFlag rs
   asFlag (SyncSearch s)    = "--search" : asFlag s
   asFlag (SyncUpgrade ps)  = "--sysupgrade" : asFlag ps
   asFlag (SyncDownload ps) = "--downloadonly" : asFlag ps
@@ -458,15 +458,15 @@ queries :: Parser PacmanOp
 queries = bigQ *> (Query <$> (fmap Right query <|> fmap Left mods))
   where bigQ  = flag' () (long "query" <> short 'Q' <> help "Interact with the local package database.")
         query = curry (second (S.map PkgName)) <$> queryFilters <*> manyArgs
-        mods  = chl <|> gps <|> inf <|> lst <|> own <|> fls <|> sch <|> chk
-        chl   = QueryChangelog <$> (flag' () (long "changelog" <> short 'c' <> hidden <> help "View a package's changelog.") *> someArgs')
-        gps   = QueryGroups <$> (flag' () (long "groups" <> short 'g' <> hidden <> help "View all members of a package group.") *> someArgs')
-        inf   = QueryInfo <$> (flag' () (long "info" <> short 'i' <> hidden <> help "View package information.") *> someArgs')
-        lst   = QueryList <$> (flag' () (long "list" <> short 'l' <> hidden <> help "List files owned by a package.") *> someArgs')
-        chk = QueryCheck <$> (flag' () (long "check" <> short 'k' <> hidden <> help "Check that package files exist.") *> someArgs')
-        own   = QueryOwns <$> (flag' () (long "owns" <> short 'o' <> hidden <> help "Find the package some file belongs to.") *> someArgs')
-        fls   = QueryFile <$> (flag' () (long "file" <> short 'p' <> hidden <> help "Query a package file.") *> someArgs')
-        sch   = QuerySearch <$> strOption (long "search" <> short 's' <> metavar "REGEX" <> hidden <> help "Search the local database.")
+        mods  = (,) <$> (S.fromList <$> many (chl <|> gps <|> inf <|> lst <|> own <|> fls <|> sch <|> chk)) <*> manyArgs
+        chl   = flag' QueryChangelog (long "changelog" <> short 'c' <> hidden <> help "View a package's changelog.")
+        gps   = flag' QueryGroups (long "groups" <> short 'g' <> hidden <> help "View members of a package group.")
+        inf   = flag' QueryInfo (long "info" <> short 'i' <> hidden <> help "View package information.")
+        lst   = flag' QueryList (long "list" <> short 'l' <> hidden <> help "List files owned by a package.")
+        chk   = flag' QueryCheck (long "check" <> short 'k' <> hidden <> help "Check that package files exist.")
+        own   = flag' QueryOwns (long "owns" <> short 'o' <> hidden <> help "Find the package some file belongs to.")
+        fls   = flag' QueryFile (long "file" <> short 'p' <> hidden <> help "Query a package file.")
+        sch   = flag' QuerySearch (long "search" <> short 's' <> hidden <> help "Search the local database.")
 
 queryFilters :: Parser (Set QueryFilter)
 queryFilters = S.fromList <$> many (dps <|> exp <|> frg <|> ntv <|> urq <|> upg)
@@ -494,7 +494,7 @@ sync = bigS *> (Sync <$> (fmap (Right . S.map PkgName) manyArgs <|> fmap Left mo
         cln  = flag' SyncClean (long "clean" <> short 'c' <> hidden <> help "Remove old packages from the cache.")
         gps  = SyncGroups <$> (flag' () (long "groups" <> short 'g' <> hidden <> help "View members of a package group.") *> someArgs')
         inf  = SyncInfo <$> (flag' () (long "info" <> short 'i' <> hidden <> help "View package information.") *> someArgs')
-        lst  = SyncList <$> strOption (long "list" <> short 'l' <> metavar "REPO" <> hidden <> help "List the packages in a REPO.")
+        lst  = SyncList <$> (flag' () (long "list" <> short 'l' <> hidden <> help "List the packages in a REPO.") *> manyArgs')
         sch  = SyncSearch <$> (flag' () (long "search" <> short 's' <> hidden <> help "Search the official package repos.") *> someArgs')
         upg  = SyncUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade installed packages.") *> manyArgs')
         dnl  = SyncDownload <$> (flag' () (long "downloadonly" <> short 'w' <> hidden <> help "Download package tarballs.") *> someArgs')
