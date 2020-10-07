@@ -35,10 +35,12 @@ import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           RIO
 import           RIO.Directory (setCurrentDirectory)
+import           RIO.FilePath (takeFileName)
 import qualified RIO.List as L
 import qualified RIO.Map as M
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
+import           Text.Printf (printf)
 
 ---
 
@@ -144,14 +146,16 @@ repoInstall ps = do
   let !pacOpts = asFlag $ commonConfigOf ss
   liftIO . pacman (envOf ss) $ ["-S", "--asdeps"] <> pacOpts <> asFlag (NEL.map pName ps)
 
+-- | Try to build and install all packages. Requested packages that already have
+-- a version in the cache will not be rebuilt unless `--force` was passed.
 buildAndInstall :: NonEmpty (NonEmpty Buildable) -> RIO Env ()
 buildAndInstall bss = do
-  ss    <- asks settings
+  ss <- asks settings
   let !pth = either id id . cachePathOf $ commonConfigOf ss
       !allsource = S.member AllSource . makepkgFlagsOf $ buildConfigOf ss
   cache <- liftIO $ cacheContents pth
   when allsource $ notify ss buildPackages_2
-  traverse_ (f cache) bss
+  traverse_ (f ss cache) bss
   when allsource $ do
     let !allsourcePath = fromMaybe srcPkgStore . allsourcePathOf $ buildConfigOf ss
     notify ss $ buildPackages_3 allsourcePath
@@ -160,22 +164,25 @@ buildAndInstall bss = do
     -- `built` and the `traverse_` line below don't run, but `annotateDeps` is
     -- called anyway. There is definitely a better way to manage the `NonEmpty`s
     -- here.
-    f :: Cache -> NonEmpty Buildable -> RIO Env ()
-    f (Cache cache) bs = do
-      ss <- asks settings
-      let (ps, cached) = fmapEither g $ NEL.toList bs
-
-          -- | If we used @--force@, then take the package as-is. Otherwise, try
-          -- to look it up in the package cache. If we find a match, we don't
-          -- need to build it.
-          g :: Buildable -> Either Buildable PackagePath
-          g b = case bToSP b `M.lookup` cache of
-            Just pp | not (switch ss ForceBuilding) -> Right pp
-            _                                       -> Left b
-
+    f :: Settings -> Cache -> NonEmpty Buildable -> RIO Env ()
+    f ss cache bs = do
+      let (ps, cached) = fmapEither (g ss cache) $ NEL.toList bs
+      when (switch ss HotEdit && not (null cached)) $ do
+        warn ss buildPackages_4
+        traverse_ (liftIO . printf "  - %s\n" . takeFileName . ppPath) cached
+        warn ss buildPackages_5
       built <- traverse buildPackages $ NEL.nonEmpty ps
       traverse_ installPkgFiles $ (built <> Just cached) >>= NEL.nonEmpty
       liftIO $ annotateDeps (envOf ss) bs
+
+    -- | If we used @--force@, then take the package as-is. Otherwise, try
+    -- to look it up in the package cache. If we find a match, we don't
+    -- need to build it.
+    g :: Settings -> Cache -> Buildable -> Either Buildable PackagePath
+    g ss (Cache cache) b = case bToSP b `M.lookup` cache of
+      Just pp | not (switch ss ForceBuilding) -> Right pp
+      _                                       -> Left b
+
 
 ------------
 -- REPORTING

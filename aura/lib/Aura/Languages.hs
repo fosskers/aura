@@ -222,6 +222,14 @@ buildPackages_3 fp = \case
     Spanish    -> "Todos los archivos .src.tar.gz fueron construidos y copiados a: " <> pretty fp
     _          -> "All .src.tar.gz files were built and copied to: " <> pretty fp
 
+buildPackages_4 :: Language -> Doc AnsiStyle
+buildPackages_4 = \case
+  _ -> "--hotedit detected, but the following have entries in the cache and will be skipped:"
+
+buildPackages_5 :: Language -> Doc AnsiStyle
+buildPackages_5 = \case
+  _ -> "You can use" <+> bt @Text "--force" <+> "to override this behaviour."
+
 buildFail_5 :: Language -> Doc AnsiStyle
 buildFail_5 = \case
     Japanese   -> "パッケージ作成に失敗しました。"
