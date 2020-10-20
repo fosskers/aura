@@ -1,4 +1,4 @@
-resolver: lts-16.17
+resolver: lts-16.19
 
 ghc-options:
   $everything: -split-sections -haddock
@@ -11,3 +11,6 @@ packages:
   - aura/
   - aur/
   - aursec/
+
+extra-deps:
+  - versions-4.0.0

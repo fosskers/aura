@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedLists #-}
+
 module Main ( main ) where
 
 import           Aura.Languages
