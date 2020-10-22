@@ -143,7 +143,7 @@ sortAurInfo bs ai = L.sortBy compare' ai
 aurSearch :: Text -> RIO Env [AurInfo]
 aurSearch regex = do
   ss  <- asks settings
-  res <- liftMaybeM (Failure connectFailure_1) . fmap hush . liftIO $ search (managerOf ss) regex
+  res <- liftMaybeM (Failure $ FailMsg connectFailure_1) . fmap hush . liftIO $ search (managerOf ss) regex
   pure $ sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) res
 
 -- | Frontend to the `aur` library. For @-Ai@.
@@ -156,10 +156,10 @@ aurInfo pkgs = do
   where
     work :: Manager -> [PkgName] -> RIO Env [AurInfo]
     work m ps = liftIO (info m $ map pnName ps) >>= \case
-      Left (NotFound _) -> throwM (Failure connectFailure_1)
-      Left BadJSON -> throwM (Failure miscAURFailure_3)
+      Left (NotFound _) -> throwM (Failure $ FailMsg connectFailure_1)
+      Left BadJSON -> throwM (Failure $ FailMsg miscAURFailure_3)
       Left (OtherAurError e) -> do
         let !resp = display $ decodeUtf8Lenient e
         logDebug $ "Failed! Server said: " <> resp
-        throwM (Failure miscAURFailure_1)
+        throwM (Failure $ FailMsg miscAURFailure_1)
       Right res -> pure res

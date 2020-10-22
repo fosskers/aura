@@ -40,12 +40,12 @@ makepkg ss usr = make ss usr (proc cmd $ opts <> overwrite <> colour) >>= g
       runStyle usr . map T.unpack . foldMap asFlag . makepkgFlagsOf $ buildConfigOf ss
 
     g :: (ExitCode, LByteString, [a]) -> IO (Either Failure (NonEmpty a))
-    g (ExitSuccess, _, fs)   = pure . note (Failure buildFail_9) $ NEL.nonEmpty fs
+    g (ExitSuccess, _, fs)   = pure . note (Failure $ FailMsg buildFail_9) $ NEL.nonEmpty fs
     g (ExitFailure _, se, _) = do
       unless (switch ss DontSuppressMakepkg) $ do
         showError <- optionalPrompt ss buildFail_11
         when showError $ BL.putStrLn se
-      pure . Left $ Failure buildFail_8
+      pure . Left . Failure $ FailMsg buildFail_8
 
     overwrite :: [String]
     overwrite | switch ss ForceBuilding = ["-f"]

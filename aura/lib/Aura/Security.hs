@@ -27,7 +27,7 @@ analysePkgbuild b = do
   ss <- asks settings
   let f = do
         yes <- liftIO $ optionalPrompt ss security_6
-        when yes . throwM $ Failure security_7
+        when yes . throwM . Failure $ FailMsg security_7
   case parsedPB $ bPkgbuild b of
     Nothing -> warn ss (security_1 $ bName b) *> f
     Just l  -> case bannedTerms l of

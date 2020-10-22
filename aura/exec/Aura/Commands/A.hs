@@ -184,7 +184,7 @@ isntMostRecent (ai, v) = trueVer > Just v
 aurJson :: NonEmpty PkgName -> RIO Env ()
 aurJson ps = do
   m <- asks (managerOf . settings)
-  infos <- liftMaybeM (Failure connectFailure_1) . fmap hush . liftIO $ f m ps
+  infos <- liftMaybeM (Failure $ FailMsg connectFailure_1) . fmap hush . liftIO $ f m ps
   traverse_ (BL.putStrLn . encode) infos
   where
     f :: Manager -> NonEmpty PkgName -> IO (Either AurError [AurInfo])

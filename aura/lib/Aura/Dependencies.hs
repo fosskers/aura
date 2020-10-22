@@ -58,11 +58,11 @@ resolveDeps repo ps = do
   logDebug "resolveDeps: Successful recursive dep lookup."
   unless (length ps == length m) $ putText "\n"
   let de = conflicts ss m s
-  unless (null de) . throwM . Failure $ missingPkg_2 de
+  unless (null de) . throwM . Failure . FailMsg $ missingPkg_2 de
   either throwM pure $ sortInstall m
   where
     handleError :: SomeException -> RIO Env (Either Failure a)
-    handleError e = pure . Left . Failure . dependencyLookup_1 $ tshow e
+    handleError e = pure . Left . Failure . FailMsg . dependencyLookup_1 $ tshow e
 
 -- | Solve dependencies for a set of `Package`s assumed to not be
 -- installed/satisfied.
@@ -133,8 +133,8 @@ conflicts ss m s = foldMap f m
 
 sortInstall :: Map PkgName Package -> Either Failure (NonEmpty (NonEmpty Package))
 sortInstall m = case cycles depGraph of
-  [] -> note (Failure missingPkg_3) . NEL.nonEmpty . mapMaybe nes $ batch depGraph
-  cs -> Left . Failure . missingPkg_4 $ map (NEL.map pname . NAM.vertexList1) cs
+  [] -> note (Failure $ FailMsg missingPkg_3) . NEL.nonEmpty . mapMaybe nes $ batch depGraph
+  cs -> Left . Failure . FailMsg . missingPkg_4 $ map (NEL.map pname . NAM.vertexList1) cs
   where
     f :: Package -> [(Package, Package)]
     f (FromRepo _)  = []

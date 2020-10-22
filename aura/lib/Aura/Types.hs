@@ -28,6 +28,7 @@ module Aura.Types
     -- * Errors
   , DepError(..)
   , Failure(..)
+  , FailMsg(..)
     -- * Language
   , Language(..)
     -- * Other Wrappers
@@ -270,14 +271,21 @@ data DepError = NonExistant !PkgName !PkgName
               | Ignored !(Doc AnsiStyle)
               | BrokenProvides !PkgName !Provides !PkgName
 
--- | Some failure message that when given the current runtime `Language`
--- will produce a human-friendly error.
-newtype Failure = Failure { failure :: Language -> Doc AnsiStyle }
+-- | Failures that can occur during Aura processing. Could be a message, or a
+-- silent failure that should print nothing to the console.
+data Failure = Silent | Failure FailMsg
+  deriving stock (Show)
 
 instance Exception Failure
 
-instance Show Failure where
-  show (Failure _) = "There was some failure."
+-- | Some failure message that when given the current runtime `Language`
+-- will produce a human-friendly error.
+newtype FailMsg = FailMsg { failure :: Language -> Doc AnsiStyle }
+
+instance Exception FailMsg
+
+instance Show FailMsg where
+  show _ = "There was some failure."
 
 -- | Shell environment variables.
 type Environment = Map Text Text

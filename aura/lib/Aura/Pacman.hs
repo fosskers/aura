@@ -61,7 +61,7 @@ lockFile = "/var/lib/pacman/db.lck"
 getPacmanConf :: FilePath -> IO (Either Failure Config)
 getPacmanConf fp = do
   file <- decodeUtf8Lenient <$> BS.readFile fp
-  pure . first (const (Failure confParsing_1)) $ parse config "pacman config" file
+  pure . first (const (Failure $ FailMsg confParsing_1)) $ parse config "pacman config" file
 
 -- | Fetches the @IgnorePkg@ entry from the config, if it's there.
 getIgnoredPkgs :: Config -> Set PkgName
@@ -105,7 +105,7 @@ pacmanProc env args = setEnv vars $ proc "pacman" args
 pacman :: Environment -> [Text] -> IO ()
 pacman env (map T.unpack -> args) = do
   ec <- runProcess $ pacmanProc env args
-  unless (ec == ExitSuccess) $ throwM (Failure pacmanFailure_1)
+  unless (ec == ExitSuccess) $ throwM Silent
 
 -- | Run some `pacman` process, but only care about whether it succeeded.
 pacmanSuccess :: Environment -> [T.Text] -> IO Bool

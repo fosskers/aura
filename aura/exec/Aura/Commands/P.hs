@@ -48,7 +48,7 @@ audit = do
   pbs <- catMaybes <$> liftIO (traverseConcurrently Par' (getPkgbuild m . spName) $ S.toList ps)
   mapMaybeA f pbs >>= \case
     [] -> notify ss security_14
-    _  -> throwM $ Failure security_12
+    _  -> throwM . Failure $ FailMsg security_12
   where
     f :: Pkgbuild -> RIO Env (Maybe Pkgbuild)
     f pb = case parsedPB pb of
@@ -62,10 +62,10 @@ audit = do
 
 findExploits :: Pkgbuild -> RIO Env ()
 findExploits pb = case parsedPB pb of
-  Nothing -> throwM $ Failure security_11
+  Nothing -> throwM . Failure $ FailMsg security_11
   Just l  -> case bannedTerms l of
     []  -> pure ()
     bts -> do
       ss <- asks settings
       liftIO $ traverse_ (displayBannedTerms ss) bts
-      throwM $ Failure security_12
+      throwM . Failure $ FailMsg security_12

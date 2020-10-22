@@ -62,7 +62,7 @@ downgradePackages pkgs = do
 getDowngradeChoice :: Cache -> PkgName -> RIO Env PackagePath
 getDowngradeChoice cache pkg =
   case NEL.nonEmpty $ getChoicesFromCache cache pkg of
-    Nothing      -> throwM . Failure $ reportBadDowngradePkgs_2 pkg
+    Nothing      -> throwM . Failure . FailMsg $ reportBadDowngradePkgs_2 pkg
     Just choices -> do
       ss <- asks settings
       notify ss $ getDowngradeChoice_1 pkg
@@ -83,7 +83,7 @@ backupCache :: FilePath -> RIO Env ()
 backupCache dir = do
   exists <- liftIO $ doesDirectoryExist dir
   if not exists
-    then throwM $ Failure backupCache_3
+    then throwM . Failure $ FailMsg backupCache_3
     else confirmBackup dir >>= backup dir
 
 confirmBackup :: FilePath -> RIO Env Cache

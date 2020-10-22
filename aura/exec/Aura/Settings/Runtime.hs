@@ -63,7 +63,7 @@ withEnv (Program op co bc lng ll) f = do
   fromGroups  <- maybe (pure S.empty) (groupPackages environment) . nes
     $ getIgnoredGroups confFile <> igg
   let !bu = buildUserOf bc <|> acUser auraConf <|> getTrueUser environment
-  when (isNothing bu) . throwM $ Failure whoIsBuildUser_1
+  when (isNothing bu) . throwM . Failure $ FailMsg whoIsBuildUser_1
   repos <- (<>) <$> pacmanRepo <*> aurRepo
   lopts <- setLogMinLevel ll . setLogUseLoc True <$> logOptionsHandle stderr True
   withLogFunc lopts $ \logFunc -> do

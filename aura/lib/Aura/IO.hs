@@ -11,7 +11,7 @@ module Aura.IO where
 import           Aura.Colour
 import           Aura.Languages (whitespace, yesNoMessage, yesPattern)
 import           Aura.Settings
-import           Aura.Types (Failure(..), Language)
+import           Aura.Types (FailMsg(..), Failure(..), Language)
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           RIO
@@ -87,7 +87,7 @@ withOkay
   -> RIO e a
 withOkay ss asking failed f = do
   okay <- liftIO $ optionalPrompt ss asking
-  bool (throwM $ Failure failed) f okay
+  bool (throwM . Failure $ FailMsg failed) f okay
 
 -- | Given a number of selections, allows the user to choose one.
 getSelection :: Foldable f => (a -> Text) -> f a -> IO a

@@ -51,8 +51,6 @@ import           Aura.Settings
 import           Aura.Settings.Runtime
 import           Aura.Types
 import           Aura.Utils (nes)
-import           Data.Text.Prettyprint.Doc
-import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Options.Applicative (execParser)
 import           RIO
 import           RIO.FilePath
@@ -78,14 +76,13 @@ main = do
     Right r  -> pure r
 
 -- | Won't throw due to the `try`.
-execute :: Env -> Program -> IO (Either (Doc AnsiStyle) ())
-execute env p = first f <$> try (runRIO env . execOpts $ _operation p)
-  where
-    f (Failure fl) = fl $ langOf (settings env)
+execute :: Env -> Program -> IO (Either Failure ())
+execute env p = try (runRIO env . execOpts $ _operation p)
 
-exit :: Settings -> Either (Doc AnsiStyle) () -> IO a
-exit ss (Left e)  = scold ss (const e) *> exitFailure
-exit _  (Right _) = exitSuccess
+exit :: Settings -> Either Failure () -> IO a
+exit _  (Left Silent)                = exitFailure
+exit ss (Left (Failure (FailMsg e))) = scold ss e *> exitFailure
+exit _  (Right _)                    = exitSuccess
 
 execOpts :: Either (PacmanOp, Set MiscOp) AuraOp -> RIO Env ()
 execOpts ops = do

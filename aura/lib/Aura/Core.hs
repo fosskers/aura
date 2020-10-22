@@ -114,14 +114,14 @@ liftMaybeM a m = m >>= maybe (throwM a) pure
 
 -- | Action won't be allowed unless user is root, or using sudo.
 sudo :: RIO Env a -> RIO Env a
-sudo act = asks (hasRootPriv . envOf . settings) >>= bool (throwM $ Failure mustBeRoot_1) act
+sudo act = asks (hasRootPriv . envOf . settings) >>= bool (throwM . Failure $ FailMsg mustBeRoot_1) act
 
 -- | Stop the user if they are the true root. Building as root isn't allowed
 -- since makepkg v4.2.
 trueRoot :: RIO Env a -> RIO Env a
 trueRoot action = asks settings >>= \ss ->
   if not (isTrueRoot $ envOf ss) && buildUserOf (buildConfigOf ss) /= Just (User "root")
-    then action else throwM $ Failure trueRoot_3
+    then action else throwM . Failure $ FailMsg trueRoot_3
 
 -- | A list of non-prebuilt packages installed on the system.
 -- @-Qm@ yields a list of sorted values.

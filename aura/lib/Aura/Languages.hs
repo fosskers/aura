@@ -1472,27 +1472,6 @@ whoIsBuildUser_1 = \case
 ------------------------
 -- Aura/Pacman functions
 ------------------------
--- NEEDS TRANSLATION
-pacmanFailure_1 :: Language -> Doc AnsiStyle
-pacmanFailure_1 = \case
-    Japanese   -> "入力を確認して下さい。"
-    Polish     -> "Sprawdź swoje dane wejściowe"
-    Croatian   -> "Molim vas, provjerite svoj unos."
-    German     -> "Bitte überprüfen Sie Ihre Eingabe."
-    Spanish    -> "Por favor comprueba los datos proporcionados."
-    Serbian    -> "Молим Вас, проверите ваш унос."
-    Norwegian  -> "Vennligst sjekk din oppføring."
-    Italian    -> "Verificare ciò che è stato immesso come input."
-    Portuguese -> "Por favor, verifique os dados informados."
-    French     -> "Merci de vérifier les donnés entrées."
-    Russian    -> "Пожалуйста, проверьте ваши введенные данные."
-    Indonesia  -> "Mohon periksa masukan anda."
-    Chinese    -> "请检查你的输入。"
-    Swedish    -> "Var god dubbelkolla indata."
-    Esperanto  -> "Bonvolu kontroli vian enigon."
-    Dutch      -> "Controleer alstublieft uw input."
-    _          -> "Please check your input."
-
 confParsing_1 :: Language -> Doc AnsiStyle
 confParsing_1 = \case
     Polish     -> "Nie udało się odczytać twojego pliku pacman.conf"

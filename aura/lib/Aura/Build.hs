@@ -70,7 +70,7 @@ installPkgFiles files = do
 -- the user with flags.
 buildPackages :: NonEmpty Buildable -> RIO Env [PackagePath]
 buildPackages bs = mapMaybeA build (NEL.toList bs) >>= \case
-  [] -> throwM $ Failure buildFail_10
+  [] -> throwM . Failure $ FailMsg buildFail_10
   built -> pure . foldMap toList $ mapMaybe builtPPs built
 
 -- | Handles the building of Packages. Fails nicely.
@@ -157,7 +157,7 @@ cloneRepo pkg usr = do
   logDebug $ "Currently in: " <> displayShow currDir
   scriptsDir <- liftIO $ chown usr currDir [] *> clone pkg
   case scriptsDir of
-    Nothing -> pure . Left . Failure . buildFail_7 $ bName pkg
+    Nothing -> pure . Left . Failure . FailMsg.  buildFail_7 $ bName pkg
     Just sd -> chown usr sd ["-R"] $> Right sd
 
 -- | Assuming that we're already in a VCS-based package's build folder,
@@ -169,7 +169,7 @@ pullRepo = do
   logDebug "git: Pulling repo."
   ec <- runProcess . setStderr closed . setStdout closed $ proc "git" ["pull"]
   case ec of
-    ExitFailure _ -> pure . Left $ Failure buildFail_12
+    ExitFailure _ -> pure . Left . Failure $ FailMsg buildFail_12
     ExitSuccess   -> pure $ Right ()
 
 -- | Edit the PKGBUILD in-place, if the user wants to.
@@ -203,9 +203,11 @@ overwritePatches ss = when (switch ss HotEdit) . liftIO $ do
 -- | Inform the user that building failed. Ask them if they want to
 -- continue installing previous packages that built successfully.
 buildFail :: Failure -> RIO Env (Maybe a)
-buildFail (Failure err) = do
+buildFail err = do
   ss <- asks settings
-  scold ss err
+  case err of
+    Silent               -> pure ()
+    Failure (FailMsg fm) -> scold ss fm
   withOkay ss buildFail_6 buildFail_5 $ pure Nothing
 
 -- | Moves a file to the pacman package cache and returns its location.

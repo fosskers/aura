@@ -130,14 +130,14 @@ dotFormat (ZonedTime t _) = L.intercalate "." items
 -- | Does its best to restore a state chosen by the user.
 restoreState :: RIO Env ()
 restoreState =
-  liftIO getStateFiles >>= maybe (throwM $ Failure restoreState_2) f . NEL.nonEmpty
+  liftIO getStateFiles >>= maybe (throwM . Failure $ FailMsg restoreState_2) f . NEL.nonEmpty
   where f :: NonEmpty FilePath -> RIO Env ()
         f sfs = do
           ss  <- asks settings
           let pth = either id id . cachePathOf $ commonConfigOf ss
           mpast  <- liftIO $ selectState sfs >>= readState
           case mpast of
-            Nothing   -> throwM $ Failure readState_1
+            Nothing   -> throwM . Failure $ FailMsg readState_1
             Just past -> do
               curr <- liftIO . currentState $ envOf ss
               Cache cache <- liftIO $ cacheContents pth

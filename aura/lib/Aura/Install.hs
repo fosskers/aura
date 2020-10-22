@@ -77,14 +77,14 @@ install' pkgs = do
         Just toInstall -> do
           traverse_ (report yellow reportUnneededPackages_1) . NEL.nonEmpty
             $ toList unneeded
-          (nons, toBuild) <- liftMaybeM (Failure connectFailure_1) . liftIO
+          (nons, toBuild) <- liftMaybeM (Failure $ FailMsg connectFailure_1) . liftIO
             $ aurLookup (managerOf ss) toInstall
           pkgbuildDiffs toBuild
           traverse_ (report red reportNonPackages_1) . NEL.nonEmpty $ toList nons
           let !explicits = bool (S.map (\b -> b { bIsExplicit = True }) toBuild) toBuild
                 $ switch ss AsDeps
           case nes explicits of
-            Nothing       -> throwM $ Failure install_2
+            Nothing       -> throwM . Failure $ FailMsg install_2
             Just toBuild' -> do
               notify ss install_5 *> hFlush stdout
               allPkgs <- if switch ss SkipDepCheck
@@ -200,7 +200,7 @@ displayPkgDeps ps = do
   liftIO (aurLookup (managerOf ss) ps) >>= \case
     Nothing -> do
       logDebug "-Ad: Receiving `Nothing` from `aurLookup`."
-      throwM $ Failure connectFailure_1
+      throwM . Failure $ FailMsg connectFailure_1
     Just (_, goods) -> do
       logDebug "-Ad: Initial AUR lookup successful."
       traverse_ f $ nes goods
