@@ -113,7 +113,11 @@ execOpts ops = do
         Left (AurDeps ps)     -> A.displayPkgDeps ps
         Left (AurInfo ps)     -> A.aurPkgInfo ps
         Left (AurPkgbuild ps) -> A.displayPkgbuild ps
-        Left (AurSearch s)    -> A.aurPkgSearch s
+        Left (AurSearch s)    -> do
+          A.aurPkgSearch s
+          when (S.member AurWideSearch sws) $ do
+            let term = pure . SyncSearch $ pure s
+            p (Sync (Left term) S.empty, S.empty)
         Left (AurUpgrade ps)  -> bool (trueRoot . sudo) id (switch ss DryRun) $ A.upgradeAURPkgs ps
         Left (AurJson ps)     -> A.aurJson ps
         Left (AurTarball ps)  -> A.fetchTarball ps

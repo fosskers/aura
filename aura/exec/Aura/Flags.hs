@@ -2,7 +2,7 @@
 
 module Aura.Flags
   ( Program(..), opts
-  , PacmanOp( Sync ), SyncOp( SyncUpgrade ), SyncSwitch(..), MiscOp
+  , PacmanOp( Sync ), SyncOp( SyncUpgrade, SyncSearch ), SyncSwitch(..), MiscOp
   , AuraOp(..), AurSwitch(..), _AurSync, _AurIgnore, _AurIgnoreGroup
   , AurOp(..), BackupOp(..), CacheOp(..), LogOp(..), OrphanOp(..), AnalysisOp(..)
   ) where
@@ -253,6 +253,7 @@ data AurSwitch
   = AurIgnore      !(Set PkgName)
   | AurIgnoreGroup !(Set PkgGroup)
   | AurRepoSync
+  | AurWideSearch
   deriving (Eq, Ord, Show)
 
 _AurIgnore :: Traversal' AurSwitch (Set PkgName)
@@ -321,12 +322,13 @@ aursync = bigA *>
         upgrade = AurUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade all installed AUR packages.") *> fmap (S.map PkgName) manyArgs')
         aur     = AurJson <$> (flag' () (long "json" <> hidden <> help "Retrieve package JSON straight from the AUR.") *> somePkgs')
         tarball = AurTarball <$> (flag' () (long "downloadonly" <> short 'w' <> hidden <> help "Download a package tarball.") *> somePkgs')
-        switches = ign <|> igg <|> y
+        switches = ign <|> igg <|> y <|> wide
         ign  = AurIgnore . S.fromList . map PkgName . T.split (== ',')
           <$> strOption (long "ignore" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore given packages.")
         igg  = AurIgnoreGroup . S.fromList . map PkgGroup . T.split (== ',')
           <$> strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore packages from the given groups.")
         y    = flag' AurRepoSync (short 'y' <> hidden <> help "Do an -Sy before continuing.")
+        wide = flag' AurWideSearch (short 'r' <> long "--reposearch" <> hidden <> help "With -s: Search the official repos as well.")
 
 backups :: Parser AuraOp
 backups = bigB *> (Backup <$> optional mods)
