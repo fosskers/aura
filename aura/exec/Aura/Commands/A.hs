@@ -119,7 +119,10 @@ develPkgCheck = asks settings >>= \ss ->
 
 -- | The result of @-Ai@.
 aurPkgInfo :: NonEmpty PkgName -> RIO Env ()
-aurPkgInfo = aurInfo >=> traverse_ displayAurPkgInfo
+aurPkgInfo ps = do
+  res <- aurInfo ps
+  when (null res) $ throwM (Failure $ FailMsg packageNotFound_1)
+  traverse_ displayAurPkgInfo res
 
 displayAurPkgInfo :: AurInfo -> RIO Env ()
 displayAurPkgInfo ai = asks settings >>= \ss -> putTextLn $ renderAurPkgInfo ss ai <> "\n"

@@ -1273,6 +1273,10 @@ reportNotInLog_1 = \case
 -- Aura/AUR functions
 -------------------------------
 
+packageNotFound_1 :: Language -> Doc AnsiStyle
+packageNotFound_1 = \case
+  _ -> "No packages found."
+
 -- https://github.com/fosskers/aura/issues/498
 connectFailure_1 :: Language -> Doc AnsiStyle
 connectFailure_1 = \case
