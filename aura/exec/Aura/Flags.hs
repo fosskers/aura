@@ -328,7 +328,7 @@ aursync = bigA *>
         igg  = AurIgnoreGroup . S.fromList . map PkgGroup . T.split (== ',')
           <$> strOption (long "ignoregroup" <> metavar "PKG(,PKG,...)" <> hidden <> help "Ignore packages from the given groups.")
         y    = flag' AurRepoSync (short 'y' <> hidden <> help "Do an -Sy before continuing.")
-        wide = flag' AurWideSearch (short 'r' <> long "--reposearch" <> hidden <> help "With -s: Search the official repos as well.")
+        wide = flag' AurWideSearch (short 'r' <> long "both" <> hidden <> help "With -s: Search the official repos as well.")
 
 backups :: Parser AuraOp
 backups = bigB *> (Backup <$> optional mods)
