@@ -113,7 +113,8 @@ build' b = do
       pulled <- doesDirectoryExist dir
       bool (cloneRepo b usr) (pure $ Right dir) pulled
     setCurrentDirectory bs
-    when isDevel $ ExceptT pullRepo
+    when isDevel . ExceptT $ pullRepo usr
+    logDebug "Potential hotediting..."
     liftIO $ overwritePkgbuild ss b
     liftIO $ overwriteInstall ss
     liftIO $ overwritePatches ss
@@ -122,6 +123,7 @@ build' b = do
         let !allsourcePath = fromMaybe srcPkgStore . allsourcePathOf $ buildConfigOf ss
         liftIO (makepkgSource usr >>= traverse_ (moveToSourcePath allsourcePath)) $> AllSourced
       else do
+        logDebug "Building package."
         pNames <- ExceptT . liftIO $ makepkg ss usr
         liftIO . fmap Built $ traverse (moveToCachePath ss) pNames
   when (switch ss DeleteBuildDir) $ do
@@ -156,21 +158,22 @@ cloneRepo pkg usr = do
   currDir <- liftIO getCurrentDirectory
   logDebug $ "Currently in: " <> displayShow currDir
   scriptsDir <- liftIO $ chown usr currDir [] *> clone pkg
+  logDebug "git: Initial cloning complete."
   case scriptsDir of
     Nothing -> pure . Left . Failure . FailMsg.  buildFail_7 $ bName pkg
     Just sd -> chown usr sd ["-R"] $> Right sd
 
 -- | Assuming that we're already in a VCS-based package's build folder,
 -- just pull the latest instead of cloning.
-pullRepo :: RIO Env (Either Failure ())
-pullRepo = do
+pullRepo :: User -> RIO Env (Either Failure ())
+pullRepo usr = do
   logDebug "git: Clearing worktree. "
   void . runProcess . setStderr closed . setStdout closed $ proc "git" ["reset", "--hard", "HEAD"]
   logDebug "git: Pulling repo."
   ec <- runProcess . setStderr closed . setStdout closed $ proc "git" ["pull"]
   case ec of
     ExitFailure _ -> pure . Left . Failure $ FailMsg buildFail_12
-    ExitSuccess   -> pure $ Right ()
+    ExitSuccess   -> liftIO (chown usr "." ["-R"]) $> Right ()
 
 -- | Edit the PKGBUILD in-place, if the user wants to.
 overwritePkgbuild :: Settings -> Buildable -> IO ()
