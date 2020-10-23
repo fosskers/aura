@@ -12,12 +12,14 @@
 
 - `-Sl` and `-Qil` now work as expected. [#636] [#642]
 - Aura no longer displays the misleading `Please check your input.` message. [#639]
+- Bash completions are now possible again for Pacman commands. [#641]
 
 [#647]: https://github.com/fosskers/aura/pull/647
 [#643]: https://github.com/fosskers/aura/issues/643
 [#636]: https://github.com/fosskers/aura/issues/636
 [#642]: https://github.com/fosskers/aura/issues/642
 [#639]: https://github.com/fosskers/aura/issues/639
+[#641]: https://github.com/fosskers/aura/issues/641
 
 ## 3.1.9 (2020-09-11)
 
