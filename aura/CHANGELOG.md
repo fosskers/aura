@@ -2,11 +2,18 @@
 
 ## Unreleased
 
+#### Changed
+
+- *Breaking:* `-As` and `-Ai` will yield an exit code of `1` if no results were
+  found. This matches `pacman`.
+
 #### Added
 
 - `--nocheck` will be passed down to `makepkg` to avoid calling the `check()`
   function during the build process. [#647]
 - `--hotedit` now has a short variant: `-e`. [#643]
+- `-Ars <term>` or `-As <term> --reposearch` can be used to yield results from
+  both the AUR and official repos at the same time. [#644]
 
 #### Fixed
 
@@ -18,6 +25,7 @@
 [#636]: https://github.com/fosskers/aura/issues/636
 [#642]: https://github.com/fosskers/aura/issues/642
 [#639]: https://github.com/fosskers/aura/issues/639
+[#644]: https://github.com/fosskers/aura/issues/644
 
 ## 3.1.9 (2020-09-11)
 
