@@ -57,7 +57,7 @@ _aura() {
   upgrade=('asdeps asexplicit needed nodeps assume-installed print recursive' 'p')
   common=('arch cachedir color config confirm dbpath debug gpgdir help hookdir logfile
            noconfirm noprogressbar noscriptlet quiet root verbose' 'b d h q r v')
-  core=('database files help query remove sync upgrade version' 'D F Q R S U V h')
+  core=('aursync save downgrade database files viewlog help orphans analysis query remove sync upgrade version' 'A B C D F L O P Q R S U V h')
 
   for o in 'D database' 'F files' 'Q query' 'R remove' 'S sync' 'U upgrade'; do
     _aura_incomp "$o" && break
@@ -90,8 +90,6 @@ _aura() {
           _aura_pkg Slq;;
       U)
           _aura_file;;
-      # Aura Commands
-
       esac
   fi
   true
