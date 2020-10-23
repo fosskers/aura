@@ -152,6 +152,7 @@ aurPkgSearch regex = do
             Tail n -> reverse . take (fromIntegral n) . reverse
   results <- fmap (\x -> (x, aurNameOf x `S.member` db)) . t
             <$> aurSearch regex
+  when (null results) $ throwM Silent
   traverse_ (putTextLn . renderSearch ss regex) results
 
 renderSearch :: Settings -> Text -> (AurInfo, Bool) -> Text
