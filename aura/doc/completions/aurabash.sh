@@ -27,68 +27,6 @@ _aura_incomp() {
   local r="[[:space:]]-(-${1#* }[[:space:]]|[[:alnum:]_]*${1% *})"; [[ $COMP_LINE =~ $r ]]
 }
 
-_aura_keyids() {
-  \pacman-key --list-keys 2>/dev/null | awk '
-    $1 == "pub" {
-      # key id
-      split($2, a, "/"); print a[2]
-    }
-    $1 == "uid" {
-      # email
-      if (match($NF, /<[^>]+>/))
-        print substr($NF, RSTART + 1, RLENGTH - 2)
-    }'
-}
-
-_aura_key() {
-  local o opts wantfiles
-  local cur prev words cword
-  _init_completion || return
-  opts=('add config delete edit-key export finger gpgdir
-         help import import-trustdb init keyserver list-keys list-sigs
-         lsign-key nocolor populate recv-keys refresh-keys updatedb
-         verify version'
-        'a d e f h l r u v V')
-
-  # operations for which we want to complete keyids
-  for o in 'd delete' 'e export' 'f finger' 'l list-keys' 'r recv-keys' \
-      'edit-key' 'list-sigs' 'lsign-key' 'refresh-keys'; do
-    _aura_incomp "$o" && break
-    unset o
-  done
-
-  # options for which we want file completion
-  wantfiles='-@(c|-config|g|-gpgdir)'
-
-  if [[ $prev = 'pacman-key' || ( $cur = -* && $prev != $wantfiles ) ]]; then
-    _aura_ptr2comp opts
-  elif [[ $prev = @(-k|--keyserver) ]]; then
-    return
-  elif [[ $prev != $wantfiles && $o ]]; then
-    COMPREPLY=($(compgen -W '$(_aura_keyids)' -- "$cur"))
-  fi
-  true
-}
-
-_makepkg() {
-  compopt +o default
-  local opts
-  local cur prev words cword
-  _init_completion || return
-  if [[ $prev = @(-p|--config) ]]; then
-    compopt -o default
-  elif [[ ! $prev =~ ^-(-(config|help|key|version)$|[[:alnum:]_]*[Vh]) ]]; then
-    opts=('allsource asdeps check clean cleanbuild config force geninteg help
-           holdver ignorearch install key log needed noarchive nobuild nocheck
-           nocolor noconfirm nodeps noextract noprepare noprogressbar nosign
-           packagelist printsrcinfo repackage rmdeps sign skipchecksums
-           skipinteg skippgpcheck source syncdeps verifysource version'
-          'A C L R S c d e f g h i m o p r s')
-    _aura_ptr2comp opts
-  fi
-  true
-}
-
 _aura_pkg() {
   _aura_compgen "$(
     if [[ $2 ]]; then
@@ -132,6 +70,7 @@ _aura() {
   then
     [[ $cur = -* ]] && _aura_ptr2comp ${o#* } common ||
       case ${o% *} in
+      # Pacman Commands
       D|R)
           _aura_pkg Qq;;
       F)
@@ -151,6 +90,8 @@ _aura() {
           _aura_pkg Slq;;
       U)
           _aura_file;;
+      # Aura Commands
+
       esac
   fi
   true
