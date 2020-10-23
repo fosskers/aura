@@ -12,8 +12,8 @@
 - `--nocheck` will be passed down to `makepkg` to avoid calling the `check()`
   function during the build process. [#647]
 - `--hotedit` now has a short variant: `-e`. [#643]
-- `-Ars <term>` or `-As <term> --reposearch` can be used to yield results from
-  both the AUR and official repos at the same time. [#644]
+- `-Ars <term>` or `-As <term> --both` can be used to yield results from both
+  the AUR and official repos at the same time. [#644]
 
 #### Fixed
 
