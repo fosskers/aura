@@ -2,12 +2,13 @@ use alpm::Alpm;
 use clap::{crate_authors, crate_version, App, AppSettings, Arg};
 
 fn main() -> alpm::Result<()> {
-    let v = format!("{} - libalpm {}", crate_version!(), alpm::version());
+    let alpm = Alpm::new("/", "/var/lib/pacman/")?;
+    let db = alpm.localdb();
+    let ver: &str = &format!("{} - libalpm {}", crate_version!(), alpm::version());
 
     let args = App::new("aura")
         .author(crate_authors!())
-        .version(crate_version!())
-        .long_version(&*v)
+        .version(ver)
         .about("Install and manage Arch Linux and AUR packages.")
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .setting(AppSettings::VersionlessSubcommands)
@@ -43,35 +44,54 @@ fn main() -> alpm::Result<()> {
                         .short('s')
                         .long("search")
                         .conflicts_with("info")
-                        .multiple_values(true)
-                        .value_name("PACKAGE")
-                        .about("search remote repositories for matching strings"),
+                        .about("Search repositories for a matching regex."),
                 )
                 .arg(
                     Arg::new("info")
                         .short('i')
                         .long("info")
                         .conflicts_with("search")
-                        .multiple_values(true)
-                        .value_name("PACKAGE")
-                        .about("view package information"),
+                        .about("View package information."),
                 )
                 .arg(
                     Arg::new("package")
                         .about("Packages to install.")
                         .multiple(true)
-                        .required_unless_present("search")
+                        // .required_unless_present("search")
                         .takes_value(true),
                 ),
         )
         .get_matches();
 
-    println!("{:?}", args);
+    match args.subcommand() {
+        Some(("sync", matches)) => {
+            if matches.is_present("info") {
+                let packages: Vec<_> = matches
+                    .values_of("package")
+                    .map(|v| v.collect())
+                    .unwrap_or_else(|| Vec::new());
 
-    let alpm = Alpm::new("/", "/var/lib/pacman/")?;
-    let db = alpm.localdb();
-    let pkg = db.pkg("linux")?;
-    println!("{} - {}", pkg.name(), pkg.version());
+                match packages.as_slice() {
+                    // Fetch all packages.
+                    [] => {
+                        for p in db.pkgs() {
+                            println!("{} - {}", p.name(), p.version());
+                        }
+                    }
+                    // Do lookups for each package.
+                    _ => {
+                        for p in packages {
+                            let pkg = db.pkg(p)?;
+                            println!("{} - {}", pkg.name(), pkg.version());
+                        }
+                    }
+                }
+            } else {
+                println!("Installing...");
+            }
+        }
+        _ => unreachable!(),
+    }
 
     Ok(())
 }
