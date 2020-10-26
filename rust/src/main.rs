@@ -1,9 +1,12 @@
 use clap::{crate_authors, crate_version, App, AppSettings, Arg};
 
 fn main() {
+    let v = format!("{} - libalpm {}", crate_version!(), alpm::version());
+
     let args = App::new("aura")
         .author(crate_authors!())
         .version(crate_version!())
+        .long_version(&*v)
         .about("Install and manage Arch Linux and AUR packages.")
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .setting(AppSettings::VersionlessSubcommands)
@@ -63,4 +66,6 @@ fn main() {
         .get_matches();
 
     println!("{:?}", args);
+
+    println!("{}", alpm::version());
 }
