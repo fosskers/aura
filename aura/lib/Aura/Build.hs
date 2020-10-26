@@ -102,11 +102,14 @@ build' b = do
       !pth | isDevel = fromMaybe vcsStore . vcsPathOf $ buildConfigOf ss
            | otherwise = fromMaybe defaultBuildDir . buildPathOf $ buildConfigOf ss
       !usr = fromMaybe (User "UNKNOWN") . buildUserOf $ buildConfigOf ss
-  createDirectoryIfMissing True pth
+  -- Create the build dir with open permissions so as to avoid issues involving git cloning.
+  createWritableIfMissing pth
+  -- Move into the final build dir.
   setCurrentDirectory pth
   buildDir <- liftIO $ getBuildDir b
-  createDirectoryIfMissing True buildDir
+  createWritableIfMissing buildDir
   setCurrentDirectory buildDir
+  -- Build the package.
   r <- runExceptT $ do
     bs <- ExceptT $ do
       let !dir = buildDir </> T.unpack (pnName $ bName b)
@@ -131,6 +134,15 @@ build' b = do
     removeDirectoryRecursive buildDir
   pure r
 
+createWritableIfMissing :: FilePath -> RIO e ()
+createWritableIfMissing pth = do
+  exists <- doesDirectoryExist pth
+  if exists
+    then pure ()
+    else void . runProcess . setStderr closed . setStdout closed $ proc "mkdir" ["-p", "-m755", pth]
+
+-- | A unique directory name (within the greater "parent" build dir) in which to
+-- copy sources and actually build a package.
 getBuildDir :: Buildable -> IO FilePath
 getBuildDir b
   | isDevelPkg $ bName b = vcsBuildDir $ bName b
