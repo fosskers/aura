@@ -13,6 +13,7 @@
 - `-Sl` and `-Qil` now work as expected. [#636] [#642]
 - Aura no longer displays the misleading `Please check your input.` message. [#639]
 - File permission issues when building `*-git` packages. [#651] [#634]
+- Bash completions are now possible again for Pacman commands. [#641]
 
 [#647]: https://github.com/fosskers/aura/pull/647
 [#643]: https://github.com/fosskers/aura/issues/643
@@ -21,6 +22,7 @@
 [#639]: https://github.com/fosskers/aura/issues/639
 [#651]: https://github.com/fosskers/aura/issues/651
 [#634]: https://github.com/fosskers/aura/issues/634
+[#641]: https://github.com/fosskers/aura/issues/641
 
 ## 3.1.9 (2020-09-11)
 
