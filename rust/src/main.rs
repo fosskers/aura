@@ -1,6 +1,7 @@
+use alpm::Alpm;
 use clap::{crate_authors, crate_version, App, AppSettings, Arg};
 
-fn main() {
+fn main() -> alpm::Result<()> {
     let v = format!("{} - libalpm {}", crate_version!(), alpm::version());
 
     let args = App::new("aura")
@@ -67,5 +68,10 @@ fn main() {
 
     println!("{:?}", args);
 
-    println!("{}", alpm::version());
+    let alpm = Alpm::new("/", "/var/lib/pacman/")?;
+    let db = alpm.localdb();
+    let pkg = db.pkg("linux")?;
+    println!("{} - {}", pkg.name(), pkg.version());
+
+    Ok(())
 }
