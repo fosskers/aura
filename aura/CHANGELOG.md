@@ -1,6 +1,6 @@
 # Aura Changelog
 
-## 3.2.0 (2020-10-27)
+## 3.2.1 (2020-10-27)
 
 With this release, Aura has passed 2,000 commits. Thank you for your ongoing support!
 
