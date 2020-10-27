@@ -138,7 +138,13 @@ createWritableIfMissing :: FilePath -> RIO e ()
 createWritableIfMissing pth = do
   exists <- doesDirectoryExist pth
   if exists
-    then pure ()
+    -- This is a migration strategy - it ensures that directories created with
+    -- old versions of Aura automatically have their permissions fixed.
+    then void . runProcess . setStderr closed . setStdout closed $ proc "chmod" ["755", pth]
+    -- The library function `createDirectoryIfMissing` seems to obey umasks when
+    -- creating directories, which can cause problem later during the build
+    -- processes of git packages. By manually creating the directory with the
+    -- expected permissions, we avoid this problem.
     else void . runProcess . setStderr closed . setStdout closed $ proc "mkdir" ["-p", "-m755", pth]
 
 -- | A unique directory name (within the greater "parent" build dir) in which to
