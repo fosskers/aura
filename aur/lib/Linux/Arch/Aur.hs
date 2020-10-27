@@ -1,4 +1,6 @@
 {-# LANGUAGE DataKinds          #-}
+{-# LANGUAGE DeriveAnyClass     #-}
+{-# LANGUAGE DeriveGeneric      #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE OverloadedStrings  #-}
 
@@ -21,8 +23,10 @@ module Linux.Arch.Aur
 import           Control.Applicative ((<|>))
 import           Data.Aeson
 import           Data.ByteString (ByteString)
+import           Data.Hashable (Hashable)
 import           Data.Text (Text)
 import qualified Data.Text as T
+import           GHC.Generics (Generic)
 import           Network.HTTP.Client
 import           Network.HTTP.Types.Status
 
@@ -64,7 +68,8 @@ data AurInfo = AurInfo
   , conflictsOf      :: [Text]
   , providesOf       :: [Text]
   , licenseOf        :: [Text]
-  , keywordsOf       :: [Text] } deriving (Eq,Show)
+  , keywordsOf       :: [Text]}
+  deriving (Eq, Ord, Show, Generic, Hashable)
 
 instance FromJSON AurInfo where
     parseJSON = withObject "AurInfo" $ \v -> AurInfo

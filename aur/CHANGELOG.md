@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+#### Added
+
+- `Ord` and `Hashable` instances for `AurInfo`.
+
 ## 7.0.4 (2020-09-11)
 
 - Escape `+` that can occasionally appear in package names.
