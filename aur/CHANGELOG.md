@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 7.0.5 (2020-10-27)
 
 #### Added
 
