@@ -1,6 +1,7 @@
-{-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE LambdaCase   #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE BangPatterns  #-}
+{-# LANGUAGE LambdaCase    #-}
+{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE ViewPatterns  #-}
 
 -- |
 -- Module    : Aura.Commands.A
@@ -46,6 +47,7 @@ import qualified RIO.ByteString.Lazy as BL
 import qualified RIO.HashSet as HS
 import qualified RIO.List as L
 import           RIO.List.Partial (maximum)
+import qualified RIO.Map as M
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
@@ -93,11 +95,10 @@ upgrade pkgs fs = do
 
 possibleUpdates :: NonEmpty SimplePkg -> RIO Env [(AurInfo, Versioning)]
 possibleUpdates pkgs = do
-  aurInfos <- aurInfo $ fmap spName pkgs
-  let !names  = map aurNameOf aurInfos
-      aurPkgs = NEL.filter (\(SimplePkg (PkgName n) _) -> n `elem` names) pkgs
+  aurInfos <- M.fromList . map (\ai -> (aurNameOf ai, ai)) <$> aurInfo (NEL.map spName pkgs)
+  let realPkgs = mapMaybe (\(SimplePkg (PkgName n) v) -> (,v) <$> M.lookup n aurInfos) $ NEL.toList pkgs
   logDebug "Package lookup successful."
-  pure . filter isntMostRecent . zip aurInfos $ map spVersion aurPkgs
+  pure $ filter isntMostRecent realPkgs
 
 -- | Is there an update for Aura that we could apply first?
 auraCheck :: [PkgName] -> RIO Env (Maybe PkgName)
