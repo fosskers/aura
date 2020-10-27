@@ -55,6 +55,7 @@ import           Aura.Utils (nes)
 import           Options.Applicative (execParser)
 import           RIO
 import           RIO.FilePath
+import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import           System.Process.Typed (proc, runProcess)
 
@@ -115,11 +116,11 @@ execOpts ops = do
         Left (AurInfo ps)     -> A.aurPkgInfo ps
         Left (AurPkgbuild ps) -> A.displayPkgbuild ps
         Left (AurSearch s)
-          | not (S.member AurWideSearch sws) -> A.aurPkgSearch s
+          | not (S.member AurWideSearch sws) -> A.aurPkgSearch $ NEL.head s
           | otherwise -> do
-              aur <- try @(RIO Env) @Failure $ A.aurPkgSearch s
+              aur <- try @(RIO Env) @Failure . A.aurPkgSearch $ NEL.head s
               -- If the AUR lookup succeeded but the -S didn't, the exit code should still be success.
-              let term = pure . SyncSearch $ pure s
+              let term = SyncSearch s :| []
               repo <- try @(RIO Env) @Failure $ p (Sync (Left term) S.empty, S.empty)
               case (aur, repo) of
                 (Left _, Left e) -> throwM e

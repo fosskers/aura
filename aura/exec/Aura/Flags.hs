@@ -243,7 +243,7 @@ data AurOp
   = AurDeps     !(NonEmpty PkgName)
   | AurInfo     !(NonEmpty PkgName)
   | AurPkgbuild !(NonEmpty PkgName)
-  | AurSearch   !Text
+  | AurSearch   !(NonEmpty Text)
   | AurUpgrade  !(Set PkgName)
   | AurJson     !(NonEmpty PkgName)
   | AurTarball  !(NonEmpty PkgName)
@@ -318,7 +318,7 @@ aursync = bigA *>
         ds      = AurDeps <$> (flag' () (long "deps" <> short 'd' <> hidden <> help "View dependencies of an AUR package.") *> somePkgs')
         ainfo   = AurInfo <$> (flag' () (long "info" <> short 'i' <> hidden <> help "View AUR package information.") *> somePkgs')
         pkgb    = AurPkgbuild <$> (flag' () (long "pkgbuild" <> short 'p' <> hidden <> help "View an AUR package's PKGBUILD file.") *> somePkgs')
-        search  = AurSearch <$> strOption (long "search" <> short 's' <> metavar "STRING" <> hidden <> help "Search the AUR via a search string.")
+        search  = AurSearch <$> (flag' () (long "search" <> short 's' <> hidden <> help "Search the AUR via a search string.") *> someArgs')
         upgrade = AurUpgrade <$> (flag' () (long "sysupgrade" <> short 'u' <> hidden <> help "Upgrade all installed AUR packages.") *> fmap (S.map PkgName) manyArgs')
         aur     = AurJson <$> (flag' () (long "json" <> hidden <> help "Retrieve package JSON straight from the AUR.") *> somePkgs')
         tarball = AurTarball <$> (flag' () (long "downloadonly" <> short 'w' <> hidden <> help "Download a package tarball.") *> somePkgs')
