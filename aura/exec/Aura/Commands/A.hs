@@ -33,6 +33,7 @@ import           Aura.Settings
 import           Aura.State (saveState)
 import           Aura.Types
 import           Aura.Utils
+import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Aeson
 import           Data.Text.Prettyprint.Doc
 import           Data.Text.Prettyprint.Doc.Render.Terminal
@@ -151,7 +152,7 @@ aurPkgSearch :: NonEmpty Text -> RIO Env ()
 aurPkgSearch (NEL.map T.toLower -> terms) = do
   ss <- asks settings
   db <- S.map (pnName . spName) <$> liftIO (foreignPackages $ envOf ss)
-  infoSet <- HS.filter matched . HS.fromList . fold <$> traverse aurSearch terms
+  infoSet <- HS.filter matched . HS.fromList . fold <$> traverseConcurrently Par' aurSearch terms
   when (null infoSet) $ throwM Silent
   let sorted = sortAurInfo ss $ HS.toList infoSet
       truncated = map (\ai -> (ai, aurNameOf ai `S.member` db)) $ trunc ss sorted
