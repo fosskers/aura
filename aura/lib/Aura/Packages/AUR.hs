@@ -113,7 +113,7 @@ pkgUrl (PkgName pkg) = T.pack $ aurLink </> "packages" </> T.unpack pkg
 -------------------
 -- SOURCES FROM GIT
 -------------------
--- | Attempt to clone a package source from the AUR.
+-- | Attempt to freshly clone a package source from the AUR.
 clone :: Buildable -> IO (Maybe FilePath)
 clone b = do
   ec <- runProcess . setStderr closed . setStdout closed

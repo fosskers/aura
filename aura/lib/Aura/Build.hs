@@ -102,18 +102,22 @@ build' b = do
       !pth | isDevel = fromMaybe vcsStore . vcsPathOf $ buildConfigOf ss
            | otherwise = fromMaybe defaultBuildDir . buildPathOf $ buildConfigOf ss
       !usr = fromMaybe (User "UNKNOWN") . buildUserOf $ buildConfigOf ss
-  createDirectoryIfMissing True pth
+  -- Create the build dir with open permissions so as to avoid issues involving git cloning.
+  createWritableIfMissing pth
+  -- Move into the final build dir.
   setCurrentDirectory pth
   buildDir <- liftIO $ getBuildDir b
-  createDirectoryIfMissing True buildDir
+  createWritableIfMissing buildDir
   setCurrentDirectory buildDir
+  -- Build the package.
   r <- runExceptT $ do
     bs <- ExceptT $ do
       let !dir = buildDir </> T.unpack (pnName $ bName b)
       pulled <- doesDirectoryExist dir
       bool (cloneRepo b usr) (pure $ Right dir) pulled
     setCurrentDirectory bs
-    when isDevel $ ExceptT pullRepo
+    when isDevel . ExceptT $ pullRepo usr
+    logDebug "Potential hotediting..."
     liftIO $ overwritePkgbuild ss b
     liftIO $ overwriteInstall ss
     liftIO $ overwritePatches ss
@@ -122,6 +126,7 @@ build' b = do
         let !allsourcePath = fromMaybe srcPkgStore . allsourcePathOf $ buildConfigOf ss
         liftIO (makepkgSource usr >>= traverse_ (moveToSourcePath allsourcePath)) $> AllSourced
       else do
+        logDebug "Building package."
         pNames <- ExceptT . liftIO $ makepkg ss usr
         liftIO . fmap Built $ traverse (moveToCachePath ss) pNames
   when (switch ss DeleteBuildDir) $ do
@@ -129,6 +134,21 @@ build' b = do
     removeDirectoryRecursive buildDir
   pure r
 
+createWritableIfMissing :: FilePath -> RIO e ()
+createWritableIfMissing pth = do
+  exists <- doesDirectoryExist pth
+  if exists
+    -- This is a migration strategy - it ensures that directories created with
+    -- old versions of Aura automatically have their permissions fixed.
+    then void . runProcess . setStderr closed . setStdout closed $ proc "chmod" ["755", pth]
+    -- The library function `createDirectoryIfMissing` seems to obey umasks when
+    -- creating directories, which can cause problem later during the build
+    -- processes of git packages. By manually creating the directory with the
+    -- expected permissions, we avoid this problem.
+    else void . runProcess . setStderr closed . setStdout closed $ proc "mkdir" ["-p", "-m755", pth]
+
+-- | A unique directory name (within the greater "parent" build dir) in which to
+-- copy sources and actually build a package.
 getBuildDir :: Buildable -> IO FilePath
 getBuildDir b
   | isDevelPkg $ bName b = vcsBuildDir $ bName b
@@ -156,21 +176,22 @@ cloneRepo pkg usr = do
   currDir <- liftIO getCurrentDirectory
   logDebug $ "Currently in: " <> displayShow currDir
   scriptsDir <- liftIO $ chown usr currDir [] *> clone pkg
+  logDebug "git: Initial cloning complete."
   case scriptsDir of
     Nothing -> pure . Left . Failure . FailMsg.  buildFail_7 $ bName pkg
     Just sd -> chown usr sd ["-R"] $> Right sd
 
 -- | Assuming that we're already in a VCS-based package's build folder,
 -- just pull the latest instead of cloning.
-pullRepo :: RIO Env (Either Failure ())
-pullRepo = do
+pullRepo :: User -> RIO Env (Either Failure ())
+pullRepo usr = do
   logDebug "git: Clearing worktree. "
   void . runProcess . setStderr closed . setStdout closed $ proc "git" ["reset", "--hard", "HEAD"]
   logDebug "git: Pulling repo."
   ec <- runProcess . setStderr closed . setStdout closed $ proc "git" ["pull"]
   case ec of
     ExitFailure _ -> pure . Left . Failure $ FailMsg buildFail_12
-    ExitSuccess   -> pure $ Right ()
+    ExitSuccess   -> liftIO (chown usr "." ["-R"]) $> Right ()
 
 -- | Edit the PKGBUILD in-place, if the user wants to.
 overwritePkgbuild :: Settings -> Buildable -> IO ()

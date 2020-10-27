@@ -1,333 +1,104 @@
-# Bash completion for Aura
+# This file is in the public domain.
 
-# generates completion line
 _aura_compgen() {
-    local i r
-    COMPREPLY=($( compgen -W "$1" -- "$cur" ))
-    for (( i=1; i < ${#COMP_WORDS[@]}-1; i++ )); do
-        for r in ${!COMPREPLY[@]}; do
-            if [[ ${COMP_WORDS[i]} = ${COMPREPLY[r]} ]]; then
-                unset 'COMPREPLY[r]'; break
-            fi
-        done
+  local i r
+  COMPREPLY=($(compgen -W '$*' -- "$cur"))
+  for ((i=1; i < ${#COMP_WORDS[@]}-1; i++)); do
+    for r in ${!COMPREPLY[@]}; do
+      if [[ ${COMP_WORDS[i]} = ${COMPREPLY[r]} ]]; then
+        unset 'COMPREPLY[r]'; break
+      fi
     done
-    return 0
+  done
 }
 
-# check if COMP_LINE contains a given string
+_aura_ptr2comp() {
+  local list= x y
+  for x; do
+    for y in '0 --' '1 -'; do
+      eval 'set -- ${'$x'[${y% *}]}'
+      list+=\ ${@/#/${y#* }}
+    done
+  done
+  _aura_compgen $list
+}
+
 _aura_incomp() {
-    if [[ $COMP_LINE =~ $1 ]]; then
-        return 0
-    fi
-    return 1
+  local r="[[:space:]]-(-${1#* }[[:space:]]|[[:alnum:]_]*${1% *})"; [[ $COMP_LINE =~ $r ]]
 }
 
-# deal with options that have an equal sign at the end
-# NOTE: regex for username might need tweaking to match
-#       Arch Linux username requirements
-_aura_has_equal() {
-    # to make sure these options haven't been used already
-    local b_reg=--build=[^\0]+[[:blank:]]
-    local bu_reg=--builduser=[a-z_][-a-z0-9_]*[[:blank:]]
-    if [[ $cur == *=* ]]; then
-        prev=${cur%%=*}
-        cur=${cur#*=}
-    fi
-    if ! _aura_incomp "$b_reg"; then
-        if _aura_incomp --build=; then
-            _filedir -d
-            return 0
-        fi
-    fi
-    if ! _aura_incomp "$bu_reg"; then
-        if _aura_incomp --builduser=; then
-            _usergroup
-            return 0
-        fi
-    fi
-    return 1
-}
-
-# these common pacman options require directory or file completion
-_aura_pac_common_opts() {
-    local c status regex dir_comm file_comm
-    status="1"
-    # to make sure these options haven't been used already
-    regex=($c[[:blank:]][^\0]+[[:blank:]])
-    dir_comm="--cachedir --dbpath --gpgdir --root -b -r"
-    file_comm="--config --logfile"
-    for c in $dir_comm $file_comm; do
-        if [[ $dir_comm == *$c* ]]; then
-            if ! _aura_incomp "$regex" && _aura_incomp $c ; then
-                _filedir -d
-                status="0"
-                break
-            fi
-        elif [[ $file_comm == *$c* ]]; then
-            if  ! _aura_incomp "$regex" && _aura_incomp $c ; then
-                _filedir
-                status="0"
-                break
-            fi
-        fi
-    done
-    return "$status"
-}
-
-# sends list of ABS packages to compgen
-_aura_pac_pkg() {
-    _aura_compgen "$(
-        if [[ $2 ]]; then
-            \aura -"$1" 2>/dev/null | \cut -d' ' -f1 | \sort -u
-        else
-            \aura -"$1" 2>/dev/null
-        fi
-    )"
-    return 0
-}
-
-# complete pacman package files
-_aura_pac_file() {
-    compopt -o filenames
-    _filedir 'pkg.tar*'
-    return 0
-}
-
-_aura()
-{
-    local cur prev core pcommon o showopts opts
-    COMPREPLY=()
-    _init_completion || return
-    _get_comp_words_by_ref cur prev
-    core="-A --aursync -B --save -C --downgrade -L --viewlog -M --abssync \
-        -O --orphans -D --database -Q --query -R --remove -S --sync \
-        -T --deptest -U --upgrade --auradebug --languages --noconfirm --no-pp \
-        -V --version -h --help"
-    # options common to all pacman functions
-    pcommon="--arch --cachedir --color --config --dbpath --debug --gpgdir \
-        --help --logfile --noconfirm --root --verbose -b -h -r -v"
-
-    # check if base option has been selected
-    for o in $core; do
-        _aura_incomp $o && break
-    done
-
-    # if no core option entered
-    if [[ $? != 0 ]]; then
-        _aura_compgen "$core"
+_aura_pkg() {
+  _aura_compgen "$(
+    if [[ $2 ]]; then
+      \pacman -$1 2>/dev/null | \cut -d' ' -f1 | \sort -u
     else
-        # show options for core selection when dash typed
-        if [[ "$cur" = -* ]]; then
-            showopts=true
-        else
-            showopts=false
-        fi
-        # main option handling
-        case ${o} in
-            ##### Aura Options #####
-            -A|--aursync)
-                if $showopts; then
-                    opts="-a --delmakedeps -d --deps -i --info -k --diff -p \
-                        --pkgbuild -q --quiet -s --search -u --sysupgrade -w \
-                        --downloadonly -x --unsuppress -y --refresh \
-                        --aurignore= --build= --builduser= -custom --devel \
-                        --hotedit --ignorearch --absdeps --dryrun"
-                    # include suboptions when searching
-                    local a search_opts="--abc --head --tail"
-                    for a in '-As' '-s' '--search'; do
-                        if _aura_incomp $a; then
-                            _aura_compgen "$opts $search_opts"
-                            return 0
-                        fi
-                    done
-                    _aura_compgen "$opts"
-                    return 0
-                else
-                    _aura_has_equal
-                    return 0
-                fi
-                ;;
-            -B|--save)
-                opts="-c --clean -r --restore"
-                _aura_compgen "$opts"
-                return 0
-                ;;
-            -C|--downgrade)
-                if $showopts; then
-                    opts="-b --backup -c --clean -s --search"
-                    _aura_compgen "$opts"
-                    return 0
-                else
-                    local c
-                    # complete for dir to backup cache
-                    for c in '-Cb' 'b' '--backup'; do
-                        if _aura_incomp $c; then
-                            _filedir
-                            return 0
-                        fi
-                    done
-                fi
-                ;;
-            -L|--viewlog)
-                opts="-i --info -s --search"
-                _aura_compgen "$opts"
-                return 0
-                ;;
-            -M|--abssync)
-                if $showopts; then
-                    opts="-a --delmakedeps -c --clean -d --deps -i --info \
-                        -k --diff -p --pkgbuild -s --search -t --treesync \
-                        -x --unsuppress -y --refresh --absdeps"
-                    _aura_compgen "$opts"
-                    return 0
-                else
-                    # offer ABS pkg selection
-                    _aura_pac_pkg Slq
-                    return 0
-                fi
-                ;;
-            -O|--orphans)
-                if $showopts; then
-                    opts="-j --abandon"
-                    _aura_compgen "$opts"
-                    return 0
-                else
-                    # use self generated orphan list
-                    local o=$( aura -O )
-                    if [[ $o != "" ]]; then
-                        _aura_compgen "$o"
-                        return 0
-                    fi
-                fi
-                ;;
-            ##### Pacman Options #####
-            -D|--database)
-                if $showopts; then
-                    opts="--asdeps --asexplicit $pcommon"
-                    _aura_compgen "$opts"
-                    return 0
-                else
-                    if _aura_pac_common_opts; then
-                        return 0
-                    fi
-                    _aura_pac_pkg Qq
-                    return 0
-                fi
-                ;;
-            -Q|--query)
-                if $showopts; then
-                    opts="--changelog --check --deps --explicit --file \
-                        --foreign --groups --info --list --native --owns \
-                        --quiet --search --unrequired --upgrades -c -d -e -g \
-                        -i -k -l -m -n -o -p -q -s -t -u $pcommon"
-                    _aura_compgen "$opts"
-                    return 0
-                else
-                    local q
-                    local ary=('-Qg' '-g' '--groups' '-Qp' '-p' '--file'
-                            '-Qo' '-o' '--owns')
-                    for q in ${ary[@]}; do
-                        if _aura_incomp $q; then
-                            case $q in
-                                -Qg|-g|--groups)
-                                    _aura_pac_pkg Qg sort
-                                    ;;
-                                -Qp|-p|--file)
-                                    _aura_pac_file
-                                    ;;
-                                -Qo|-o|--owns)
-                                    _filedir
-                                    ;;
-                            esac
-                            return 0
-                        fi
-                    done
-                    if _aura_pac_common_opts; then
-                        return 0
-                    fi
-                    _aura_pac_pkg Qq
-                    return 0
-                fi
-                ;;
-            -R|--remove)
-                if $showopts; then
-                    opts="--cascade --dbonly --nodeps --noprogressbar --nosave \
-                        --noscriptlet --print --print-format --recursive \
-                        --unneeded -c -d -n -p -s -u $pcommon"
-                    _aura_compgen "$opts"
-                    return 0
-                else
-                    if _aura_pac_common_opts; then
-                        return 0
-                    fi
-                    _aura_pac_pkg Qq
-                    return 0
-                fi
-                ;;
-            -S|--sync)
-                if $showopts; then
-                    opts="--asdeps --asexplicit --clean --dbonly --downloadonly \
-                        --force --groups --ignore --ignoregroup --info --list \
-                        --needed --nodeps --noprogressbar --noscriptlet --print \
-                        --print-format --quiet --refresh --recursive --search \
-                        --sysupgrade -c -d -g -i -l -p -q -s -u -w -y $pcommon"
-                    _aura_compgen "$opts"
-                    return 0
-                else
-                    local s ary
-                    local ary=('-Sg' '-g' '--groups' '-Sl' '-l' '--list')
-                    for s in ${ary[@]}; do
-                        if _aura_incomp $s; then
-                            case $s in
-                                -Sg|-g|--groups)
-                                    _aura_pac_pkg Sg sort
-                                    ;;
-                                -Sl|-l|--list)
-                                    _aura_pac_pkg Sl sort
-                                    ;;
-                            esac
-                            return 0
-                        fi
-                    done
-                    if _aura_pac_common_opts; then
-                        return 0
-                    fi
-                    _aura_pac_pkg Slq
-                    return 0
-                fi
-                ;;
-            -T|--deptest)
-                if $showopts; then
-                    _aura_compgen "$pcommon"
-                    return 0
-                else
-                    if _aura_pac_common_opts; then
-                        return 0
-                    fi
-                    _aura_pac_pkg Slq
-                    return 0
-                fi
-                ;;
-            -U|--upgrade)
-                if $showopts; then
-                    opts="--asdeps --asexplicit --dbonly --force --ignore \
-                        --ignoregroup --needed --nodeps --noprogressbar \
-                        --noscriptlet --print --print-format --recursive \
-                        -d -p $pcommon"
-                    _aura_compgen "$opts"
-                    return 0
-                else
-                    if _aura_pac_common_opts; then
-                        return 0
-                    fi
-                    _aura_pac_file
-                    return 0
-                fi
-                ;;
-            *)
-                return 0
-                ;;
-        esac
+      \pacman -$1 2>/dev/null
     fi
+  )"
 }
-complete -F _aura -o nospace aura
+
+_aura_repo_list() {
+  _aura_compgen "$(pacman-conf --repo-list)"
+}
+
+_aura() {
+  compopt -o default
+  local common core database files query remove sync upgrade o
+  local cur prev words cword
+  _init_completion || return
+  database=('asdeps asexplicit')
+  files=('list machinereadable refresh regex' 'l x y')
+  query=('changelog check deps explicit file foreign groups info list native owns
+          search unrequired upgrades' 'c e g i k l m n o p s t u')
+  remove=('cascade dbonly nodeps assume-installed nosave print recursive unneeded' 'c n p s u')
+  sync=('asdeps asexplicit clean dbonly downloadonly groups ignore ignoregroup
+         info list needed nodeps assume-installed print refresh recursive search sysupgrade'
+        'c g i l p s u w y')
+  upgrade=('asdeps asexplicit needed nodeps assume-installed print recursive' 'p')
+  common=('arch cachedir color config confirm dbpath debug gpgdir help hookdir logfile
+           noconfirm noprogressbar noscriptlet quiet root verbose' 'b d h q r v')
+  core=('aursync save downgrade database files viewlog help orphans analysis query remove sync upgrade version' 'A B C D F L O P Q R S U V h')
+
+  for o in 'D database' 'F files' 'Q query' 'R remove' 'S sync' 'U upgrade'; do
+    _aura_incomp "$o" && break
+  done
+
+  if [[ $? != 0 ]]; then
+    _aura_ptr2comp core
+  elif [[ ! $prev =~ ^-[[:alnum:]_]*[Vbhr] &&
+    ! $prev = --@(cachedir|color|config|dbpath|help|hookdir|gpgdir|logfile|root|version) ]]
+  then
+    [[ $cur = -* ]] && _aura_ptr2comp ${o#* } common ||
+      case ${o% *} in
+      # Pacman Commands
+      D|R)
+          _aura_pkg Qq;;
+      F)
+        { _aura_incomp 'l list'   && _aura_pkg Slq ; }       ||
+          compopt +o default;;
+      Q)
+        { _aura_incomp 'g groups' && _aura_pkg Qg sort; }    ||
+        { _aura_incomp 'p file'   && _aura_file; }           ||
+        { _aura_incomp 's search' && compopt +o default; }     ||
+        { _aura_incomp 'u upgrades' && compopt +o default; }   ||
+          _aura_incomp 'o owns'   ||
+          _aura_pkg Qq;;
+      S)
+        { _aura_incomp 'g groups' && _aura_pkg Sg; }      ||
+        { _aura_incomp 'l list'   && _aura_repo_list; } ||
+        { _aura_incomp 's search' && compopt +o default; }  ||
+          _aura_pkg Slq;;
+      U)
+          _aura_file;;
+      esac
+  fi
+  true
+}
+
+_aura_file() {
+  compopt -o filenames; _filedir 'pkg.tar*'
+}
+
+complete -F _aura aura
+
+# ex:et ts=2 sw=2 ft=sh
