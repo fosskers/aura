@@ -17,6 +17,7 @@ module Aura.Packages.AUR
     -- * Single Querying
   , aurInfo
   , aurSearch
+  , sortAurInfo
     -- * Source Retrieval
   , clone
   , pkgUrl

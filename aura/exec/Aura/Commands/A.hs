@@ -1,5 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE LambdaCase   #-}
+{-# LANGUAGE ViewPatterns #-}
 
 -- |
 -- Module    : Aura.Commands.A
@@ -41,6 +42,7 @@ import           Network.HTTP.Client (Manager)
 import           RIO
 import qualified RIO.ByteString as B
 import qualified RIO.ByteString.Lazy as BL
+import qualified RIO.HashSet as HS
 import qualified RIO.List as L
 import           RIO.List.Partial (maximum)
 import qualified RIO.NonEmpty as NEL
@@ -145,27 +147,41 @@ renderAurPkgInfo ss ai = dtot . colourCheck ss $ entrify ss fields entries
                     , maybe "(null)" pretty $ aurDescriptionOf ai ]
 
 -- | The result of @-As@.
-aurPkgSearch :: Text -> RIO Env ()
-aurPkgSearch regex = do
+aurPkgSearch :: NonEmpty Text -> RIO Env ()
+aurPkgSearch (NEL.map T.toLower -> terms) = do
   ss <- asks settings
   db <- S.map (pnName . spName) <$> liftIO (foreignPackages $ envOf ss)
-  let t = case truncationOf $ buildConfigOf ss of  -- Can't this go anywhere else?
-            None   -> id
-            Head n -> take $ fromIntegral n
-            Tail n -> reverse . take (fromIntegral n) . reverse
-  results <- fmap (\x -> (x, aurNameOf x `S.member` db)) . t
-            <$> aurSearch regex
-  when (null results) $ throwM Silent
-  traverse_ (putTextLn . renderSearch ss regex) results
+  infoSet <- HS.filter matched . HS.fromList . fold <$> traverse aurSearch terms
+  when (null infoSet) $ throwM Silent
+  let sorted = sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) $ HS.toList infoSet
+      truncated = map (\ai -> (ai, aurNameOf ai `S.member` db)) $ trunc ss sorted
+  traverse_ (putTextLn . renderSearch ss terms) truncated
+  where
+    -- | Reduce the number of the results to show.
+    trunc :: Settings -> ([a] -> [a])
+    trunc ss = case truncationOf $ buildConfigOf ss of  -- Can't this go anywhere else?
+      None   -> id
+      Head n -> take $ fromIntegral n
+      Tail n -> reverse . take (fromIntegral n) . reverse
 
-renderSearch :: Settings -> Text -> (AurInfo, Bool) -> Text
-renderSearch ss r (i, e) = searchResult
+    -- | Keep only results that contained every search term in either their name
+    -- or their description.
+    matched :: AurInfo -> Bool
+    matched ai = all (\t -> t `T.isInfixOf` aurNameOf ai) terms
+      || maybe False descMatch (aurDescriptionOf ai)
+
+    descMatch :: Text -> Bool
+    descMatch (T.toLower -> d) = all (\t -> t `T.isInfixOf` d) terms
+
+renderSearch :: Settings -> NonEmpty Text -> (AurInfo, Bool) -> Text
+renderSearch ss terms (i, e) = searchResult
     where searchResult = if switch ss LowVerbosity then sparseInfo else dtot $ colourCheck ss verboseInfo
           sparseInfo   = aurNameOf i
           verboseInfo  = repo <> n <+> v <+> "(" <> l <+> "|" <+> p <>
                          ")" <> (if e then annotate bold " [installed]" else "") <> "\n    " <> d
           repo = magenta "aur/"
-          n = fold . L.intersperse (bCyan $ pretty r) . map (annotate bold . pretty) . splitOn r $ aurNameOf i
+          -- n = fold . L.intersperse (bCyan $ pretty r) . map (annotate bold . pretty) . splitOn r $ aurNameOf i
+          n = pretty $ aurNameOf i
           d = maybe "(null)" pretty $ aurDescriptionOf i
           l = yellow . pretty $ aurVotesOf i  -- `l` for likes?
           p = yellow . pretty . T.pack . printf "%0.2f" $ popularityOf i
