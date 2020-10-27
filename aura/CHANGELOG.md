@@ -6,6 +6,7 @@
 
 - *Breaking:* `-As` and `-Ai` will yield an exit code of `1` if no results were
   found. This matches `pacman`.
+- `-As` now accepts multiple search terms to narrow in on specific packages.
 
 #### Added
 
