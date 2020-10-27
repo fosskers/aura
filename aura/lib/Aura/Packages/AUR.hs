@@ -134,26 +134,26 @@ clone b = do
 ------------
 -- RPC CALLS
 ------------
-sortAurInfo :: Maybe BuildSwitch -> [AurInfo] -> [AurInfo]
-sortAurInfo bs ai = L.sortBy compare' ai
-  where compare' = case bs of
-                     Just SortAlphabetically -> compare `on` aurNameOf
-                     _ -> \x y -> compare (aurVotesOf y) (aurVotesOf x)
+sortAurInfo :: Settings -> [AurInfo] -> [AurInfo]
+sortAurInfo ss ai = L.sortBy compare' ai
+  where
+    compare' :: AurInfo -> AurInfo -> Ordering
+    compare' | switch ss SortAlphabetically = compare `on` aurNameOf
+             | otherwise = \x y -> compare (aurVotesOf y) (aurVotesOf x)
 
 -- | Frontend to the `aur` library. For @-As@.
 aurSearch :: Text -> RIO Env [AurInfo]
 aurSearch regex = do
   ss  <- asks settings
-  res <- liftMaybeM (Failure $ FailMsg connectFailure_1) . fmap hush . liftIO $ search (managerOf ss) regex
-  pure $ sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) res
+  liftMaybeM (Failure $ FailMsg connectFailure_1) . fmap hush . liftIO $ search (managerOf ss) regex
 
 -- | Frontend to the `aur` library. For @-Ai@.
 aurInfo :: NonEmpty PkgName -> RIO Env [AurInfo]
 aurInfo pkgs = do
   logDebug $ "AUR: Looking up " <> display (length pkgs) <> " packages..."
-  m <- asks (managerOf . settings)
-  sortAurInfo (Just SortAlphabetically) . fold
-    <$> traverseConcurrently Par' (work m) (groupsOf 50 $ NEL.toList pkgs)
+  ss <- asks settings
+  let !m = managerOf ss
+  sortAurInfo ss . fold <$> traverseConcurrently Par' (work m) (groupsOf 50 $ NEL.toList pkgs)
   where
     work :: Manager -> [PkgName] -> RIO Env [AurInfo]
     work m ps = liftIO (info m $ map pnName ps) >>= \case

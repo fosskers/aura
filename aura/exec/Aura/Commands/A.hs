@@ -153,7 +153,7 @@ aurPkgSearch (NEL.map T.toLower -> terms) = do
   db <- S.map (pnName . spName) <$> liftIO (foreignPackages $ envOf ss)
   infoSet <- HS.filter matched . HS.fromList . fold <$> traverse aurSearch terms
   when (null infoSet) $ throwM Silent
-  let sorted = sortAurInfo (bool Nothing (Just SortAlphabetically) $ switch ss SortAlphabetically) $ HS.toList infoSet
+  let sorted = sortAurInfo ss $ HS.toList infoSet
       truncated = map (\ai -> (ai, aurNameOf ai `S.member` db)) $ trunc ss sorted
   traverse_ (putTextLn . renderSearch ss terms) truncated
   where
@@ -174,14 +174,13 @@ aurPkgSearch (NEL.map T.toLower -> terms) = do
     descMatch (T.toLower -> d) = all (\t -> t `T.isInfixOf` d) terms
 
 renderSearch :: Settings -> NonEmpty Text -> (AurInfo, Bool) -> Text
-renderSearch ss terms (i, e) = searchResult
+renderSearch ss (r :| _) (i, e) = searchResult
     where searchResult = if switch ss LowVerbosity then sparseInfo else dtot $ colourCheck ss verboseInfo
           sparseInfo   = aurNameOf i
           verboseInfo  = repo <> n <+> v <+> "(" <> l <+> "|" <+> p <>
                          ")" <> (if e then annotate bold " [installed]" else "") <> "\n    " <> d
           repo = magenta "aur/"
-          -- n = fold . L.intersperse (bCyan $ pretty r) . map (annotate bold . pretty) . splitOn r $ aurNameOf i
-          n = pretty $ aurNameOf i
+          n = fold . L.intersperse (bCyan $ pretty r) . map (annotate bold . pretty) . splitOn r $ aurNameOf i
           d = maybe "(null)" pretty $ aurDescriptionOf i
           l = yellow . pretty $ aurVotesOf i  -- `l` for likes?
           p = yellow . pretty . T.pack . printf "%0.2f" $ popularityOf i
