@@ -1,8 +1,10 @@
-use alpm::Db;
-use alpm::{Alpm, SigLevel};
+use std::sync::Arc;
+use std::thread;
+
+use alpm::{Alpm, Package, SigLevel};
 use clap::{crate_authors, crate_version, App, AppSettings, Arg};
 use curl::easy::Easy;
-use indicatif::ProgressBar;
+use indicatif::{MultiProgress, ProgressBar};
 use r2d2::{ManageConnection, Pool, PooledConnection};
 use rayon::prelude::*;
 
@@ -52,6 +54,7 @@ impl Default for AlpmManager {
                 "core".to_string(),
                 "extra".to_string(),
                 "community".to_string(),
+                "multilib".to_string(),
             ],
         }
     }
@@ -155,7 +158,7 @@ fn main() -> Result<(), Error> {
     match args.subcommand() {
         Some(("sync", matches)) => {
             // The actual package names.
-            let packages: Vec<_> = matches
+            let pkg_names: Vec<_> = matches
                 .values_of("package")
                 .map(|v| v.collect())
                 .unwrap_or_else(|| Vec::new());
@@ -163,7 +166,7 @@ fn main() -> Result<(), Error> {
             if matches.is_present("info") {
                 let conn: PooledConnection<AlpmManager> = pool.get().unwrap();
                 let db = conn.localdb();
-                match packages.as_slice() {
+                match pkg_names.as_slice() {
                     // Fetch all packages.
                     [] => {
                         for p in db.pkgs() {
@@ -172,53 +175,63 @@ fn main() -> Result<(), Error> {
                     }
                     // Do lookups for each package.
                     _ => {
-                        for p in packages {
+                        for p in pkg_names {
                             let pkg = db.pkg(p).map_err(Error::ALPM)?;
                             println!("{} - {}", pkg.name(), pkg.version());
                         }
                     }
                 }
             } else {
-                packages
+                // Initialize the download progress display.
+                let marc = Arc::new(MultiProgress::new());
+                let marc1 = marc.clone();
+                thread::spawn(move || marc1.join());
+
+                let packages: Vec<(String, u64)> = pkg_names
                     .into_par_iter()
                     .map_with(pool, |pul, pkg| {
                         let conn: PooledConnection<AlpmManager> = pul.get().unwrap();
                         let dbs = conn.syncdbs();
                         dbs.iter()
-                            .filter_map(|db| package_url(&db, pkg).ok())
+                            .filter_map(|db| db.pkg(pkg).ok())
+                            .filter_map(|p| {
+                                let total = p.download_size() as u64;
+                                package_url(&p).ok().map(|u| (u, total))
+                            })
                             .next()
                     })
-                    .filter_map(|url| url)
-                    .for_each(|url| {
-                        println!("Fetching {}", url);
+                    .filter_map(|o| o)
+                    .collect();
+
+                // Set up download progress display.
+                let m = MultiProgress::new();
+                let spinners: Vec<ProgressBar> = packages
+                    .iter()
+                    .map(|(_, total)| m.add(ProgressBar::new(*total)))
+                    .collect();
+                thread::spawn(move || m.join());
+
+                packages
+                    .into_par_iter()
+                    .zip(spinners)
+                    .for_each(|((url, _), pb)| {
+                        // TODO Could cache the `Easy` sessions and use
+                        // `Easy::reset` between each use!
                         let mut handle = Easy::new();
                         // handle.progress(true).map_err(Error::CURL)?;
                         // handle.url(&url).map_err(Error::CURL)?;
                         handle.progress(true).unwrap();
                         handle.url(&url).unwrap();
+                        handle
+                            .progress_function(move |_, dld, _, _| {
+                                let du = dld as u64;
+                                pb.set_position(du);
+                                true
+                            })
+                            .unwrap();
+
                         handle.perform().unwrap();
-                        println!("Done {}", url);
                     });
-
-                // // Set up the tarball download.
-                // let total = pkg.download_size() as u64;
-                // let pb = ProgressBar::new(total);
-                // let mut handle = Easy::new();
-                // handle.progress(true).map_err(Error::CURL)?;
-                // handle.url(&url).map_err(Error::CURL)?;
-                // handle
-                //     .progress_function(move |_, dld, _, _| {
-                //         let du = dld as u64;
-                //         pb.set_position(du);
-                //         if du == total {
-                //             pb.finish_with_message("");
-                //         }
-                //         true
-                //     })
-                //     .map_err(Error::CURL)?;
-
-                // // Download the package tarball.
-                // handle.perform().map_err(Error::CURL)?;
             }
         }
         _ => unreachable!(),
@@ -228,22 +241,19 @@ fn main() -> Result<(), Error> {
 }
 
 /// Given the name of some package, attempt to form the download URL of its tarball.
-fn package_url(db: &Db, pkg: &str) -> Result<String, Error> {
-    // Look up the package.
-    let p = db.pkg(pkg).map_err(Error::ALPM)?;
-
+fn package_url(pkg: &Package) -> Result<String, Error> {
     // Form the download URL.
-    let db_str = p
+    let db_str = pkg
         .db()
         .map(|db| db.name())
         .ok_or(Error::Other("Unknown DB!"))?;
-    let arch = p.arch().ok_or(Error::Other("Unknown architecture!"))?;
+    let arch = pkg.arch().ok_or(Error::Other("Unknown architecture!"))?;
     let url = format!(
         "https://mirror.f4st.host/archlinux/{}/os/{}/{}-{}-{}.pkg.tar.zst",
         db_str,
         arch,
-        p.name(),
-        p.version(),
+        pkg.name(),
+        pkg.version(),
         arch,
     );
 
