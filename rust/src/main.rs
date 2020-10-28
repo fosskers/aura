@@ -1,6 +1,7 @@
 use alpm::{Alpm, SigLevel};
 use clap::{crate_authors, crate_version, App, AppSettings, Arg};
 use curl::easy::Easy;
+use indicatif::ProgressBar;
 
 #[derive(Debug)]
 enum Error {
@@ -145,12 +146,14 @@ fn main() -> Result<(), Error> {
                 );
 
                 // Set up the tarball download.
+                let total = pkg.download_size() as u64;
+                let pb = ProgressBar::new(total);
                 let mut handle = Easy::new();
                 handle.progress(true).map_err(Error::CURL)?;
                 handle.url(&url).map_err(Error::CURL)?;
                 handle
-                    .progress_function(|_, dld, _, _| {
-                        println!("Downloaded: {}", dld);
+                    .progress_function(move |_, dld, _, _| {
+                        pb.set_position(dld as u64);
                         true
                     })
                     .map_err(Error::CURL)?;

@@ -8,6 +8,7 @@ edition = "2018"
 alpm = "1.0.0-rc2"
 clap = "3.0.0-beta.2"
 curl = "0.4"
+indicatif = "0.15"
 
 [profile.release]
 lto = true
