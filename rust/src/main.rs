@@ -187,7 +187,7 @@ fn main() -> Result<(), Error> {
                 let marc1 = marc.clone();
                 thread::spawn(move || marc1.join());
 
-                let packages: Vec<(String, u64)> = pkg_names
+                let packages: Vec<(String, String, u64)> = pkg_names
                     .into_par_iter()
                     .map_with(pool, |pul, pkg| {
                         let conn: PooledConnection<AlpmManager> = pul.get().unwrap();
@@ -196,7 +196,9 @@ fn main() -> Result<(), Error> {
                             .filter_map(|db| db.pkg(pkg).ok())
                             .filter_map(|p| {
                                 let total = p.download_size() as u64;
-                                package_url(&p).ok().map(|u| (u, total))
+                                package_url(&p)
+                                    .ok()
+                                    .map(|u| (p.name().to_string(), u, total))
                             })
                             .next()
                     })
@@ -207,10 +209,14 @@ fn main() -> Result<(), Error> {
                 let m = MultiProgress::new();
                 let spinners: Vec<ProgressBar> = packages
                     .iter()
-                    .map(|(_, total)| {
+                    .map(|(p_name, _, total)| {
                         let pb = ProgressBar::new(*total);
+                        let template = format!(
+                            "{:<10} [{{wide_bar:.cyan/blue}}] {{bytes}}/{{total_bytes}} ({{eta}})",
+                            p_name
+                        );
                         let style = ProgressStyle::default_bar()
-                            .template("{spinner:.green} [{wide_bar:.cyan/blue}] {bytes}/{total_bytes} ({eta})")
+                            .template(&template)
                             .progress_chars("#>-");
                         pb.set_style(style);
                         m.add(pb)
@@ -221,7 +227,7 @@ fn main() -> Result<(), Error> {
                 packages
                     .into_par_iter()
                     .zip(spinners)
-                    .for_each(|((url, _), pb)| {
+                    .for_each(|((_, url, _), pb)| {
                         // TODO Could cache the `Easy` sessions and use
                         // `Easy::reset` between each use!
                         let mut handle = Easy::new();
