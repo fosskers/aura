@@ -4,7 +4,7 @@ use std::thread;
 use alpm::{Alpm, Package, SigLevel};
 use clap::{crate_authors, crate_version, App, AppSettings, Arg};
 use curl::easy::Easy;
-use indicatif::{MultiProgress, ProgressBar};
+use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use r2d2::{ManageConnection, Pool, PooledConnection};
 use rayon::prelude::*;
 
@@ -207,7 +207,14 @@ fn main() -> Result<(), Error> {
                 let m = MultiProgress::new();
                 let spinners: Vec<ProgressBar> = packages
                     .iter()
-                    .map(|(_, total)| m.add(ProgressBar::new(*total)))
+                    .map(|(_, total)| {
+                        let pb = ProgressBar::new(*total);
+                        let style = ProgressStyle::default_bar()
+                            .template("{spinner:.green} [{wide_bar:.cyan/blue}] {bytes}/{total_bytes} ({eta})")
+                            .progress_chars("#>-");
+                        pb.set_style(style);
+                        m.add(pb)
+                    })
                     .collect();
                 thread::spawn(move || m.join());
 
