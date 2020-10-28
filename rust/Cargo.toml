@@ -9,6 +9,8 @@ alpm = "1.0.0-rc2"
 clap = "3.0.0-beta.2"
 curl = "0.4"
 indicatif = "0.15"
+r2d2 = "0.8"
+rayon = "1.5.0"
 
 [profile.release]
 lto = true
