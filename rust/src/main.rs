@@ -1,9 +1,36 @@
-use alpm::Alpm;
+use alpm::{Alpm, SigLevel};
 use clap::{crate_authors, crate_version, App, AppSettings, Arg};
+use curl::easy::Easy;
 
-fn main() -> alpm::Result<()> {
-    let alpm = Alpm::new("/", "/var/lib/pacman/")?;
-    let db = alpm.localdb();
+#[derive(Debug)]
+enum Error {
+    ALPM(alpm::Error),
+    CURL(curl::Error),
+    Other(&'static str),
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Error::ALPM(e) => e.fmt(f),
+            Error::CURL(e) => e.fmt(f),
+            Error::Other(s) => write!(f, "{}", s),
+        }
+    }
+}
+
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Error::ALPM(e) => Some(e),
+            Error::CURL(e) => Some(e),
+            Error::Other(_) => None,
+        }
+    }
+}
+
+fn main() -> Result<(), Error> {
+    let alpm = Alpm::new("/", "/var/lib/pacman/").map_err(Error::ALPM)?;
     let ver: &str = &format!("{} - libalpm {}", crate_version!(), alpm::version());
 
     let args = App::new("aura")
@@ -65,12 +92,14 @@ fn main() -> alpm::Result<()> {
 
     match args.subcommand() {
         Some(("sync", matches)) => {
-            if matches.is_present("info") {
-                let packages: Vec<_> = matches
-                    .values_of("package")
-                    .map(|v| v.collect())
-                    .unwrap_or_else(|| Vec::new());
+            // The actual package names.
+            let packages: Vec<_> = matches
+                .values_of("package")
+                .map(|v| v.collect())
+                .unwrap_or_else(|| Vec::new());
 
+            if matches.is_present("info") {
+                let db = alpm.localdb();
                 match packages.as_slice() {
                     // Fetch all packages.
                     [] => {
@@ -81,17 +110,68 @@ fn main() -> alpm::Result<()> {
                     // Do lookups for each package.
                     _ => {
                         for p in packages {
-                            let pkg = db.pkg(p)?;
+                            let pkg = db.pkg(p).map_err(Error::ALPM)?;
                             println!("{} - {}", pkg.name(), pkg.version());
                         }
                     }
                 }
             } else {
-                println!("Installing...");
+                // Look up the package.
+                let sync_dbs = init_sync_dbs(&alpm).map_err(Error::ALPM)?;
+                let p = packages
+                    .first()
+                    .ok_or_else(|| Error::Other("No packages!"))?;
+                println!("Looking for {}...", p);
+                println!("# of Sync DBs: {}", sync_dbs.len());
+                let pkg = sync_dbs
+                    .into_iter()
+                    .filter_map(|db| db.pkg(*p).ok())
+                    .next()
+                    .ok_or_else(|| Error::Other("No db matches!"))?;
+
+                // Form the download URL.
+                let db_str = pkg
+                    .db()
+                    .map(|db| db.name())
+                    .ok_or(Error::Other("Unknown DB!"))?;
+                let arch = pkg.arch().ok_or(Error::Other("Unknown architecture!"))?;
+                let url = format!(
+                    "https://mirror.f4st.host/archlinux/{}/os/{}/{}-{}-{}.pkg.tar.zst",
+                    db_str,
+                    arch,
+                    pkg.name(),
+                    pkg.version(),
+                    arch,
+                );
+
+                // Set up the tarball download.
+                let mut handle = Easy::new();
+                handle.progress(true).map_err(Error::CURL)?;
+                handle.url(&url).map_err(Error::CURL)?;
+                handle
+                    .progress_function(|_, dld, _, _| {
+                        println!("Downloaded: {}", dld);
+                        true
+                    })
+                    .map_err(Error::CURL)?;
+
+                // Download the package tarball.
+                handle.perform().map_err(Error::CURL)?;
             }
         }
         _ => unreachable!(),
     }
 
     Ok(())
+}
+
+/// Handles to the official repos must be initialized before they can be
+/// queried.
+fn init_sync_dbs(alpm: &Alpm) -> alpm::Result<Vec<alpm::Db>> {
+    let names = vec!["core", "extra", "community"];
+
+    names
+        .into_iter()
+        .map(|s| alpm.register_syncdb(s, SigLevel::USE_DEFAULT))
+        .collect()
 }
