@@ -1,17 +1,17 @@
-use std::sync::Arc;
-use std::thread;
-
 use alpm::{Alpm, Package, SigLevel};
 use clap::{crate_authors, crate_version, App, AppSettings, Arg};
 use curl::easy::Easy;
+use fluent::{FluentBundle, FluentResource};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use r2d2::{ManageConnection, Pool, PooledConnection};
 use rayon::prelude::*;
+use std::thread;
+use unic_langid::langid;
 
 #[derive(Debug)]
 enum Error {
     ALPM(alpm::Error),
-    CURL(curl::Error),
+    // CURL(curl::Error),
     R2D2(r2d2::Error),
     Other(&'static str),
 }
@@ -20,7 +20,7 @@ impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Error::ALPM(e) => e.fmt(f),
-            Error::CURL(e) => e.fmt(f),
+            // Error::CURL(e) => e.fmt(f),
             Error::R2D2(e) => e.fmt(f),
             Error::Other(s) => write!(f, "{}", s),
         }
@@ -31,7 +31,7 @@ impl std::error::Error for Error {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Error::ALPM(e) => Some(e),
-            Error::CURL(e) => Some(e),
+            // Error::CURL(e) => Some(e),
             Error::R2D2(e) => Some(e),
             Error::Other(_) => None,
         }
@@ -91,11 +91,30 @@ impl ManageConnection for AlpmManager {
 }
 
 fn main() -> Result<(), Error> {
+    // Pooled connections to ALPM.
     let manager = AlpmManager::default();
     let pool = Pool::builder()
-        .max_size(4)
+        .max_size(4) // TODO Should be the number of CPU cores available.
         .build(manager)
         .map_err(Error::R2D2)?;
+
+    // Localization Settings
+    let english = langid!("en-US");
+    let japanese = langid!("ja-JP");
+    let en_msg = "downloading = Downloading tarballs...";
+    let ja_msg = "downloading = ターボールをダウンロード中…";
+    let en_res = FluentResource::try_new(en_msg.to_owned())
+        .map_err(|_| Error::Other("Couldn't parse English localisations."))?;
+    let ja_res = FluentResource::try_new(ja_msg.to_owned())
+        .map_err(|_| Error::Other("Couldn't parse Japanese localisations."))?;
+    let mut bundle = FluentBundle::new(&[english, japanese]);
+    bundle
+        .add_resource(&en_res)
+        .map_err(|_| Error::Other("Failed to add English to bundle."))?;
+    // bundle
+    //     .add_resource(&ja_res)
+    //     .map_err(|_| Error::Other("Failed to add Japanese to bundle."))?;
+
     let ver: &str = &format!("{} - libalpm {}", crate_version!(), alpm::version());
 
     let args = App::new("aura")
@@ -182,10 +201,10 @@ fn main() -> Result<(), Error> {
                     }
                 }
             } else {
-                // Initialize the download progress display.
-                let marc = Arc::new(MultiProgress::new());
-                let marc1 = marc.clone();
-                thread::spawn(move || marc1.join());
+                let pat = bundle.get_message("downloading").unwrap().value.unwrap();
+                let mut err = vec![];
+                let msg = bundle.format_pattern(&pat, None, &mut err);
+                println!("{}", msg);
 
                 let packages: Vec<(String, String, u64)> = pkg_names
                     .into_par_iter()
@@ -211,8 +230,9 @@ fn main() -> Result<(), Error> {
                     .iter()
                     .map(|(p_name, _, total)| {
                         let pb = ProgressBar::new(*total);
+                        // TODO Make the spacing dynamic based on the package names.
                         let template = format!(
-                            "{:<10} [{{wide_bar:.cyan/blue}}] {{bytes}}/{{total_bytes}} ({{eta}})",
+                            "{:<8} [{{wide_bar:.cyan/blue}}] {{bytes}}/{{total_bytes}} ({{eta}})",
                             p_name
                         );
                         let style = ProgressStyle::default_bar()
@@ -227,7 +247,7 @@ fn main() -> Result<(), Error> {
                 packages
                     .into_par_iter()
                     .zip(spinners)
-                    .for_each(|((_, url, _), pb)| {
+                    .for_each(|((_, url, total), pb)| {
                         // TODO Could cache the `Easy` sessions and use
                         // `Easy::reset` between each use!
                         let mut handle = Easy::new();
@@ -239,6 +259,9 @@ fn main() -> Result<(), Error> {
                             .progress_function(move |_, dld, _, _| {
                                 let du = dld as u64;
                                 pb.set_position(du);
+                                if du == total {
+                                    pb.finish();
+                                }
                                 true
                             })
                             .unwrap();
