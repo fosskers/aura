@@ -1,5 +1,5 @@
 use alpm::{Alpm, Package, SigLevel};
-use clap::{crate_authors, crate_version, App, AppSettings, Arg};
+use clap::{crate_authors, crate_version, App, AppSettings, Arg, ArgGroup};
 use curl::easy::Easy;
 use fluent::{FluentBundle, FluentResource};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
@@ -37,6 +37,12 @@ impl std::error::Error for Error {
         }
     }
 }
+
+/// Localization languages for users output.
+// enum Language {
+//     English,
+//     Japanese,
+// }
 
 // TODO Consider string slices later.
 struct AlpmManager {
@@ -123,6 +129,24 @@ fn main() -> Result<(), Error> {
         .about("Install and manage Arch Linux and AUR packages.")
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .setting(AppSettings::VersionlessSubcommands)
+        .arg(
+            Arg::new("english")
+                .long("english")
+                .about("Output is in English.")
+                .global(true),
+        )
+        .arg(
+            Arg::new("japanese")
+                .long("japanese")
+                .alias("日本語")
+                .about("Output is in Japanese.")
+                .global(true),
+        )
+        .group(
+            ArgGroup::new("language")
+                .args(&["english", "japanese"])
+                .required(true),
+        )
         // .subcommand(
         //     App::new("query")
         //         .short_flag('Q')
@@ -173,6 +197,8 @@ fn main() -> Result<(), Error> {
                 ),
         )
         .get_matches();
+
+    println!("{:#?}", args);
 
     match args.subcommand() {
         Some(("sync", matches)) => {
