@@ -141,14 +141,17 @@ createWritableIfMissing pth = do
     -- This is a migration strategy - it ensures that directories created with
     -- old versions of Aura automatically have their permissions fixed.
     then case pth of
-      "/var/cache/aura/vcs" -> void . runProcess . setStderr closed . setStdout closed $ proc "chmod" ["755", pth]
-      "/tmp" -> void . runProcess . setStderr closed . setStdout closed $ proc "chmod" ["1777", pth]
-      _ -> pure ()
+      "/var/cache/aura/vcs" -> setMode "755"
+      "/tmp"                -> setMode "1777"
+      _                     -> pure ()
     -- The library function `createDirectoryIfMissing` seems to obey umasks when
     -- creating directories, which can cause problem later during the build
     -- processes of git packages. By manually creating the directory with the
     -- expected permissions, we avoid this problem.
     else void . runProcess . setStderr closed . setStdout closed $ proc "mkdir" ["-p", "-m755", pth]
+  where
+    setMode :: String -> RIO Env ()
+    setMode mode = void . runProcess . setStderr closed . setStdout closed $ proc "chmod" [mode, pth]
 
 -- | A unique directory name (within the greater "parent" build dir) in which to
 -- copy sources and actually build a package.
