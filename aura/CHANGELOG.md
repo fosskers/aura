@@ -1,5 +1,13 @@
 # Aura Changelog
 
+## 3.2.2 (2020-10-29)
+
+#### Fixed
+
+- A bug involving permissions on the `/tmp` directory. [#661]
+
+[#661]: https://github.com/fosskers/aura/issues/661
+
 ## 3.2.1 (2020-10-27)
 
 With this release, Aura has passed 2,000 commits. Thank you for your ongoing support!
