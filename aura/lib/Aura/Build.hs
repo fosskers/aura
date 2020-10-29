@@ -134,13 +134,16 @@ build' b = do
     removeDirectoryRecursive buildDir
   pure r
 
-createWritableIfMissing :: FilePath -> RIO e ()
+createWritableIfMissing :: FilePath -> RIO Env ()
 createWritableIfMissing pth = do
   exists <- doesDirectoryExist pth
   if exists
     -- This is a migration strategy - it ensures that directories created with
     -- old versions of Aura automatically have their permissions fixed.
-    then void . runProcess . setStderr closed . setStdout closed $ proc "chmod" ["755", pth]
+    then case pth of
+      "/var/cache/aura/vcs" -> void . runProcess . setStderr closed . setStdout closed $ proc "chmod" ["755", pth]
+      "/tmp" -> void . runProcess . setStderr closed . setStdout closed $ proc "chmod" ["1777", pth]
+      _ -> pure ()
     -- The library function `createDirectoryIfMissing` seems to obey umasks when
     -- creating directories, which can cause problem later during the build
     -- processes of git packages. By manually creating the directory with the
