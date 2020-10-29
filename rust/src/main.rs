@@ -1,5 +1,9 @@
 use alpm::{Alpm, Package, SigLevel};
-use clap::{crate_version, AppSettings, Clap};
+use clap::{crate_version, AppSettings, Clap, IntoApp};
+use clap_generate::{
+    generate,
+    generators::{Bash, Fish, Zsh},
+};
 use curl::easy::Easy;
 use fluent::{FluentBundle, FluentResource};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
@@ -13,6 +17,7 @@ enum Error {
     // ALPM(alpm::Error),
     // CURL(curl::Error),
     R2D2(r2d2::Error),
+    Completions,
     Other(&'static str),
 }
 
@@ -21,6 +26,7 @@ impl std::fmt::Display for Error {
         match self {
             // Error::ALPM(e) => e.fmt(f),
             // Error::CURL(e) => e.fmt(f),
+            Error::Completions => write!(f, "There was some error generating completions."),
             Error::R2D2(e) => e.fmt(f),
             Error::Other(s) => write!(f, "{}", s),
         }
@@ -33,6 +39,7 @@ impl std::error::Error for Error {
             // Error::ALPM(e) => Some(e),
             // Error::CURL(e) => Some(e),
             Error::R2D2(e) => Some(e),
+            Error::Completions => None,
             Error::Other(_) => None,
         }
     }
@@ -42,24 +49,26 @@ impl std::error::Error for Error {
 #[clap(version = crate_version!(),
        author = "Colin Woodbury",
        about = "Install and manage Arch Linux and AUR packages",
-       setting = AppSettings::VersionlessSubcommands)]
-struct Args {
+       setting = AppSettings::VersionlessSubcommands,
+       setting = AppSettings::DisableHelpSubcommand)]
+pub struct Args {
     /// Output in English.
     #[clap(group = "lang", long, global = true)]
     english: bool,
     /// Output in Japanese.
-    #[clap(group = "lang", long, global = true)]
+    #[clap(group = "lang", long, global = true, alias = "日本語")]
     japanese: bool,
     /// Less verbose output.
     #[clap(long, short, global = true)]
     quiet: bool,
     #[clap(subcommand)]
-    subcmd: SubCommand,
+    subcmd: SubCmd,
 }
 
 #[derive(Clap, Debug)]
-enum SubCommand {
+enum SubCmd {
     Sync(Sync),
+    Completions(Completions),
 }
 
 /// Synchronize packages.
@@ -72,6 +81,35 @@ struct Sync {
     info: bool,
     #[clap(about = "Packages to search/install.")]
     packages: Vec<String>,
+}
+
+/// Generate shell completions for Aura.
+#[derive(Clap, Debug)]
+#[clap(short_flag = 'G')]
+struct Completions {
+    /// Completions to generate.
+    #[clap(possible_values = &["bash", "zsh", "fish"])]
+    out: Completion,
+}
+
+#[derive(Debug)]
+enum Completion {
+    Bash,
+    Zsh,
+    Fish,
+}
+
+impl std::str::FromStr for Completion {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Completion, Self::Err> {
+        match s {
+            "bash" => Ok(Completion::Bash),
+            "zsh" => Ok(Completion::Zsh),
+            "fish" => Ok(Completion::Fish),
+            _ => Err(Error::Completions),
+        }
+    }
 }
 
 // TODO Consider string slices later.
@@ -137,7 +175,7 @@ fn main() -> Result<(), Error> {
         .build(manager)
         .map_err(Error::R2D2)?;
 
-    // Localization Settings
+    // Localization Settings.
     let english = langid!("en-US");
     let japanese = langid!("ja-JP");
     let en_msg = "downloading = Downloading tarballs...";
@@ -162,9 +200,18 @@ fn main() -> Result<(), Error> {
     };
 
     match args.subcmd {
-        SubCommand::Sync(s) if s.info => println!("Info!"),
-        SubCommand::Sync(s) if s.search => println!("Search!"),
-        SubCommand::Sync(s) => {
+        SubCmd::Completions(c) => {
+            let mut app = Args::into_app();
+
+            match c.out {
+                Completion::Bash => generate::<Bash, _>(&mut app, "Aura", &mut std::io::stdout()),
+                Completion::Zsh => generate::<Zsh, _>(&mut app, "Aura", &mut std::io::stdout()),
+                Completion::Fish => generate::<Fish, _>(&mut app, "Aura", &mut std::io::stdout()),
+            }
+        }
+        SubCmd::Sync(s) if s.info => println!("Info!"),
+        SubCmd::Sync(s) if s.search => println!("Search!"),
+        SubCmd::Sync(s) => {
             // Display localized message.
             let pat = bundle.get_message("downloading").unwrap().value.unwrap();
             let mut err = vec![];
