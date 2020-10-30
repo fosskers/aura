@@ -1,3 +1,5 @@
+use clap::Clap;
+
 fn main() {
-    println!("Hello, world!");
+    let args = aura::flags::Args::parse();
 }
