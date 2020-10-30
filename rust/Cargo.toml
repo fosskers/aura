@@ -1,0 +1,2 @@
+[workspace]
+members = ["aura", "aura-core", "aura-arch", "aura-common"]
