@@ -1,14 +1,14 @@
 use alpm::{Alpm, Package, SigLevel};
 use clap::{crate_version, AppSettings, Clap, IntoApp};
-use clap_generate::{
-    generate,
-    generators::{Bash, Fish, Zsh},
-};
+use clap_generate::generate;
+use clap_generate::generators::{Bash, Fish, Zsh};
 use curl::easy::Easy;
 use fluent::{FluentBundle, FluentResource};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+use log::debug;
 use r2d2::{ManageConnection, Pool, PooledConnection};
 use rayon::prelude::*;
+use simplelog::{Config, LevelFilter, TermLogger, TerminalMode};
 use std::thread;
 use unic_langid::langid;
 
@@ -17,6 +17,7 @@ enum Error {
     // ALPM(alpm::Error),
     // CURL(curl::Error),
     R2D2(r2d2::Error),
+    Log(simplelog::TermLogError),
     Completions,
     Other(&'static str),
 }
@@ -27,6 +28,7 @@ impl std::fmt::Display for Error {
             // Error::ALPM(e) => e.fmt(f),
             // Error::CURL(e) => e.fmt(f),
             Error::Completions => write!(f, "There was some error generating completions."),
+            Error::Log(e) => e.fmt(f),
             Error::R2D2(e) => e.fmt(f),
             Error::Other(s) => write!(f, "{}", s),
         }
@@ -39,6 +41,7 @@ impl std::error::Error for Error {
             // Error::ALPM(e) => Some(e),
             // Error::CURL(e) => Some(e),
             Error::R2D2(e) => Some(e),
+            Error::Log(e) => Some(e),
             Error::Completions => None,
             Error::Other(_) => None,
         }
@@ -168,6 +171,10 @@ fn main() -> Result<(), Error> {
     // Parse commandline args before anything else.
     let args = Args::parse();
 
+    // Initialize the global logger.
+    TermLogger::init(LevelFilter::Debug, Config::default(), TerminalMode::Mixed)
+        .map_err(Error::Log)?;
+
     // Pooled connections to ALPM.
     let manager = AlpmManager::default();
     let pool = Pool::builder()
@@ -201,6 +208,8 @@ fn main() -> Result<(), Error> {
 
     match args.subcmd {
         SubCmd::Completions(c) => {
+            debug!("Doing completions.");
+
             let mut app = Args::into_app();
 
             match c.out {
@@ -212,6 +221,8 @@ fn main() -> Result<(), Error> {
         SubCmd::Sync(s) if s.info => println!("Info!"),
         SubCmd::Sync(s) if s.search => println!("Search!"),
         SubCmd::Sync(s) => {
+            debug!("Beginning package downloads.");
+
             // Display localized message.
             let pat = bundle.get_message("downloading").unwrap().value.unwrap();
             let mut err = vec![];

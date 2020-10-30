@@ -11,8 +11,10 @@ clap_generate = "3.0.0-beta.2"
 curl = "0.4"
 fluent = "0.13.1"
 indicatif = "0.15"
+log = "0.4"
 r2d2 = "0.8"
 rayon = "1.5.0"
+simplelog = "0.8"
 unic-langid = { version = "0.9", features = ["macros"] }
 
 [profile.release]
