@@ -64,6 +64,9 @@ pub struct Args {
     /// Less verbose output.
     #[clap(long, short, global = true)]
     quiet: bool,
+    /// Minimum level of log messages to display.
+    #[clap(long, value_name = "LEVEL", possible_values = &["debug", "info", "warn", "error"], global = true)]
+    log_level: Option<LevelFilter>,
     #[clap(subcommand)]
     subcmd: SubCmd,
 }
@@ -172,8 +175,14 @@ fn main() -> Result<(), Error> {
     let args = Args::parse();
 
     // Initialize the global logger.
-    TermLogger::init(LevelFilter::Debug, Config::default(), TerminalMode::Mixed)
-        .map_err(Error::Log)?;
+    match args.log_level {
+        None => {}
+        Some(l) => {
+            TermLogger::init(l, Config::default(), TerminalMode::Mixed).map_err(Error::Log)?;
+        }
+    }
+
+    debug!("{:#?}", args);
 
     // Pooled connections to ALPM.
     let manager = AlpmManager::default();
@@ -217,6 +226,8 @@ fn main() -> Result<(), Error> {
                 Completion::Zsh => generate::<Zsh, _>(&mut app, "Aura", &mut std::io::stdout()),
                 Completion::Fish => generate::<Fish, _>(&mut app, "Aura", &mut std::io::stdout()),
             }
+
+            debug!("Done completions!");
         }
         SubCmd::Sync(s) if s.info => println!("Info!"),
         SubCmd::Sync(s) if s.search => println!("Search!"),
