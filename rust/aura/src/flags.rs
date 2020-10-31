@@ -1,27 +1,35 @@
 use clap::{crate_version, AppSettings, Clap};
 use simplelog::LevelFilter;
 
+/// Subcommands which can be reduced back into their raw argument form for
+/// passing to Pacman.
+pub trait ToArgs {
+    fn to_args(&self) -> Vec<&str>;
+}
+
+/// Commandline arguments to the Aura executable.
 #[derive(Clap, Debug)]
 #[clap(version = crate_version!(),
        author = "Colin Woodbury",
        about = "Install and manage Arch Linux and AUR packages",
        setting = AppSettings::VersionlessSubcommands,
+       // setting = AppSettings::UnifiedHelpMessage, // TODO Is this broken?
        setting = AppSettings::DisableHelpSubcommand)]
 pub struct Args {
     /// Output in English.
     #[clap(group = "lang", long, global = true)]
-    english: bool,
+    pub english: bool,
     /// Output in Japanese.
     #[clap(group = "lang", long, global = true, alias = "日本語")]
-    japanese: bool,
+    pub japanese: bool,
     /// Less verbose output.
-    #[clap(long, short, global = true)]
-    quiet: bool,
+    #[clap(long, short, global = true, display_order = 2)]
+    pub quiet: bool,
     /// Minimum level of Aura log messages to display.
     #[clap(long, value_name = "level", possible_values = &["debug", "info", "warn", "error"], global = true)]
-    log_level: Option<LevelFilter>,
+    pub log_level: Option<LevelFilter>,
     #[clap(subcommand)]
-    subcmd: SubCmd,
+    pub subcmd: SubCmd,
 }
 
 #[derive(Clap, Debug)]
@@ -51,43 +59,43 @@ pub enum SubCmd {
 #[clap(short_flag = 'S', long_flag = "sync")]
 pub struct Sync {
     /// Set an alternate database location.
-    #[clap(long, short = 'b', value_name = "path")]
+    #[clap(long, short = 'b', value_name = "path", display_order = 1)]
     dbpath: Option<String>,
     /// Remove old packages from cache directory (-cc for all).
-    #[clap(long, short)]
+    #[clap(long, short, multiple_occurrences = true, display_order = 1)]
     clean: bool,
     /// Skip dependency version checks (-dd to skip all checks).
-    #[clap(long, short = 'd')]
+    #[clap(long, short = 'd', display_order = 1)]
     nodeps: bool,
     /// View all members of a package group (-gg to view all groups and members).
-    #[clap(long, short)]
+    #[clap(long, short, display_order = 1)]
     groups: bool,
     /// View package information (-ii for extended information).
-    #[clap(long, short, about = "Look up a specific package.")]
+    #[clap(long, short, display_order = 1)]
     info: bool,
     /// View a list of packages in a repo.
-    #[clap(long, short)]
+    #[clap(long, short, display_order = 1)]
     list: bool,
     /// Print the targets instead of performing the operation.
-    #[clap(long, short)]
+    #[clap(long, short, display_order = 1)]
     print: bool,
     /// Set an alternate installation root.
-    #[clap(long, short, value_name = "path")]
+    #[clap(long, short, value_name = "path", display_order = 1)]
     root: Option<String>,
     /// Search remote repositories for matchings strings.
-    #[clap(long, short)]
+    #[clap(long, short, display_order = 1)]
     search: bool,
     /// Upgrade installed packages (-uu enables downgrades).
-    #[clap(long, short = 'u')]
+    #[clap(long, short = 'u', display_order = 1)]
     sysupgrade: bool,
     /// Be verbose.
-    #[clap(long, short)]
+    #[clap(long, short, display_order = 1)]
     verbose: bool,
     /// Download packages but do not install/upgrade anything.
-    #[clap(long, short = 'w')]
+    #[clap(long, short = 'w', display_order = 1)]
     downloadonly: bool,
     /// Download fresh package databases from the server (-yy to force a refresh even if up to date).
-    #[clap(long, short = 'y')]
+    #[clap(long, short = 'y', display_order = 1)]
     refresh: bool,
     /// Set an alternate architecture.
     #[clap(long)]
@@ -162,9 +170,22 @@ pub struct Sync {
     packages: Vec<String>,
 }
 
-#[derive(Clap, Debug)]
-pub struct Misc {
-    /// More verbose output.
-    #[clap(long, short)]
-    verbose: bool,
+impl ToArgs for Sync {
+    fn to_args(&self) -> Vec<&str> {
+        let mut args = vec!["-S"];
+
+        if self.refresh {
+            args.push("--refresh");
+        }
+
+        if self.sysupgrade {
+            args.push("--sysupgrade");
+        }
+
+        for p in &self.packages {
+            args.push(p);
+        }
+
+        args
+    }
 }
