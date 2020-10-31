@@ -288,7 +288,7 @@ votes = \case
     Croatian   -> "Glasovi"
     Swedish    -> "Röster"
     German     -> "Stimmen"
-    Turkish    -> "Paket"
+    Turkish    -> "Oylar"
     Spanish    -> "Votos"
     Portuguese -> "Votos"
     French     -> "Votes"
@@ -299,7 +299,7 @@ votes = \case
     Indonesia  -> "Suara"
     Esperanto  -> "Balotiloj"
     Dutch      -> "Stemmen"
-    _          -> "Oylar"
+    _          -> "Votes"
 
 popularity :: Language -> Text
 popularity = \case
