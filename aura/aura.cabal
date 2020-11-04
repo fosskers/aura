@@ -55,7 +55,7 @@ common libexec
     , http-client                  >=0.5 && <0.8
     , prettyprinter                >=1.2 && <1.8
     , prettyprinter-ansi-terminal  ^>=1.1
-    , scheduler                    >=1.1 && <1.5
+    , scheduler                    >=1.1 && <1.6
     , transformers                 ^>=0.5
     , typed-process                ^>=0.2
 
