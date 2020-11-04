@@ -22,9 +22,6 @@ pub struct Args {
     /// Output in Japanese.
     #[clap(group = "lang", long, global = true, alias = "日本語")]
     pub japanese: bool,
-    /// Less verbose output.
-    #[clap(long, short, global = true, display_order = 2)]
-    pub quiet: bool,
     /// Minimum level of Aura log messages to display.
     #[clap(long, value_name = "level", possible_values = &["debug", "info", "warn", "error"], global = true)]
     pub log_level: Option<LevelFilter>,
@@ -40,7 +37,7 @@ pub enum SubCmd {
     Query,
     Remove,
     Sync(Sync),
-    TestDeps,
+    TestDeps(TestDeps),
     Upgrade,
     // --- Aura Commands --- //
     AurSync,
@@ -79,6 +76,9 @@ pub struct Sync {
     /// Print the targets instead of performing the operation.
     #[clap(long, short, display_order = 1)]
     print: bool,
+    /// Show less information for query and search.
+    #[clap(long, short, display_order = 1)]
+    quiet: bool,
     /// Set an alternate installation root.
     #[clap(long, short, value_name = "path", display_order = 1)]
     root: Option<String>,
@@ -174,12 +174,56 @@ impl ToArgs for Sync {
     fn to_args(&self) -> Vec<&str> {
         let mut args = vec!["-S"];
 
+        if self.clean {
+            args.push("-c");
+        }
+
+        if self.downloadonly {
+            args.push("-w");
+        }
+
+        if self.groups {
+            args.push("-g");
+        }
+
+        if self.info {
+            args.push("-i");
+        }
+
+        if self.list {
+            args.push("-l");
+        }
+
+        if self.nodeps {
+            args.push("-d");
+        }
+
+        if self.print {
+            args.push("-p");
+        }
+
+        if self.quiet {
+            args.push("-q");
+        }
+
         if self.refresh {
-            args.push("--refresh");
+            args.push("-y");
+        }
+
+        if self.search {
+            args.push("-s");
         }
 
         if self.sysupgrade {
-            args.push("--sysupgrade");
+            args.push("-u");
+        }
+
+        if self.verbose {
+            args.push("-b");
+        }
+
+        if self.asdeps {
+            args.push("--asdeps");
         }
 
         for p in &self.packages {
@@ -188,4 +232,62 @@ impl ToArgs for Sync {
 
         args
     }
+}
+
+// TODO Reconcile `pacman -Th` and the manpage entry for -T.
+// TODO Is it possible to disable subcommand "plan names"? i.e. to have only
+// their long/short variants remain valid (or at least shown in `-h`).
+/// Check if given dependencies are satisfied.
+#[derive(Clap, Debug)]
+#[clap(short_flag = 'T', long_flag = "deptest")]
+pub struct TestDeps {
+    /// Set an alternate database location.
+    #[clap(long, short = 'b', value_name = "path", display_order = 1)]
+    dbpath: Option<String>,
+    /// Set an alternate installation root.
+    #[clap(long, short, value_name = "path", display_order = 1)]
+    root: Option<String>,
+    /// Be verbose.
+    #[clap(long, short, display_order = 1)]
+    verbose: bool,
+    /// Set an alternate architecture.
+    #[clap(long)]
+    arch: Option<String>,
+    /// Set an alternate package cache location.
+    #[clap(long, value_name = "dir")]
+    cachedir: Option<String>,
+    /// Colorize the output.
+    #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
+    color: Option<String>,
+    /// Set an alternate Pacman configuration file.
+    #[clap(long, value_name = "path")]
+    config: Option<String>,
+    /// Always ask for confirmation.
+    #[clap(long)]
+    confirm: bool,
+    /// Display Pacman debug messages.
+    #[clap(long)]
+    debug: bool,
+    // TODO This shouldn't make any sense for -T. Why does it appear in -Th? Is
+    // it actually used?
+    /// Use relaxed timeouts for download.
+    #[clap(long)]
+    disable_download_timeout: bool,
+    /// Set an alternate home directory for GnuPG.
+    #[clap(long, value_name = "path")]
+    gpgdir: Option<String>,
+    /// Set an alternate hook location.
+    #[clap(long, value_name = "dir")]
+    hookdir: Option<String>,
+    /// Set an alternate log file.
+    #[clap(long, value_name = "path")]
+    logfile: Option<String>,
+    /// Do not ask for any confirmation.
+    #[clap(long)]
+    noconfirm: bool,
+    /// Operate on a mounted guests system (root-only).
+    #[clap(long)]
+    sysroot: bool,
+    /// Packages to search/install.
+    packages: Vec<String>,
 }
