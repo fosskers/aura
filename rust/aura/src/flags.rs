@@ -35,7 +35,7 @@ pub enum SubCmd {
     Database,
     Files(Files),
     Query,
-    Remove,
+    Remove(Remove),
     Sync(Sync),
     TestDeps(TestDeps),
     Upgrade(Upgrade),
@@ -452,4 +452,90 @@ pub struct Files {
     sysroot: bool,
     /// Files to search.
     files: Vec<String>,
+}
+
+/// Remove packages from the system.
+#[derive(Clap, Debug)]
+#[clap(short_flag = 'R', long_flag = "remove")]
+pub struct Remove {
+    /// Set an alternate database location.
+    #[clap(long, short = 'b', value_name = "path", display_order = 1)]
+    dbpath: Option<String>,
+    /// Remove packages and all packages that depend on them.
+    #[clap(long, short, display_order = 1)]
+    cascade: bool,
+    /// Skip dependency version checks (-dd to skip all checks).
+    #[clap(long, short = 'd', display_order = 1)]
+    nodeps: bool,
+    /// Remove configuration files.
+    #[clap(long, short = 'n', display_order = 1)]
+    nosave: bool,
+    /// Print the targets instead of performing the operation.
+    #[clap(long, short, display_order = 1)]
+    print: bool,
+    /// Set an alternate installation root.
+    #[clap(long, short, value_name = "path", display_order = 1)]
+    root: Option<String>,
+    /// Remove unnecessary dependencies (-ss includes explicitly installed dependencies).
+    #[clap(long, short = 's', display_order = 1)]
+    recursive: bool,
+    /// Remove unneeded packages.
+    #[clap(long, short, display_order = 1)]
+    unneeded: bool,
+    /// Be verbose.
+    #[clap(long, short, display_order = 1)]
+    verbose: bool,
+    /// Set an alternate architecture.
+    #[clap(long)]
+    arch: Option<String>,
+    /// Add a virtual package to satisfy dependencies.
+    #[clap(long, value_name = "package=version")]
+    assumed_installed: Option<String>,
+    /// Set an alternate package cache location.
+    #[clap(long, value_name = "dir")]
+    cachedir: Option<String>,
+    /// Colorize the output.
+    #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
+    color: Option<String>,
+    /// Set an alternate Pacman configuration file.
+    #[clap(long, value_name = "path")]
+    config: Option<String>,
+    /// Always ask for confirmation.
+    #[clap(long)]
+    confirm: bool,
+    /// Only modify database entries, not package files.
+    #[clap(long)]
+    dbonly: bool,
+    /// Display Pacman debug messages.
+    #[clap(long)]
+    debug: bool,
+    /// Use relaxed timeouts for download.
+    #[clap(long)]
+    disable_download_timeout: bool,
+    /// Set an alternate home directory for GnuPG.
+    #[clap(long, value_name = "path")]
+    gpgdir: Option<String>,
+    /// Set an alternate hook location.
+    #[clap(long, value_name = "dir")]
+    hookdir: Option<String>,
+    /// Set an alternate log file.
+    #[clap(long, value_name = "path")]
+    logfile: Option<String>,
+    /// Do not ask for any confirmation.
+    #[clap(long)]
+    noconfirm: bool,
+    /// Do not show a progress bar when downloading files.
+    #[clap(long)]
+    noprogressbar: bool,
+    /// Do not execute the install scriptlet if one exists.
+    #[clap(long)]
+    noscriptlet: bool,
+    /// Specify how the targets should be printed.
+    #[clap(long, value_name = "string")]
+    print_format: Option<String>,
+    /// Operate on a mounted guest system (root-only).
+    #[clap(long)]
+    sysroot: bool,
+    /// Packages to remove.
+    packages: Vec<String>,
 }
