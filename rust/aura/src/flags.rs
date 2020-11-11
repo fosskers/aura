@@ -34,7 +34,7 @@ pub enum SubCmd {
     // --- Pacman Commands --- //
     Database(Database),
     Files(Files),
-    Query,
+    Query(Query),
     Remove(Remove),
     Sync(Sync),
     DepTest(DepTest),
@@ -602,5 +602,104 @@ pub struct Database {
     #[clap(long)]
     sysroot: bool,
     /// Packages to modify.
+    packages: Vec<String>,
+}
+
+/// Query the package database.
+#[derive(Clap, Debug)]
+#[clap(short_flag = 'Q', long_flag = "query")]
+pub struct Query {
+    /// Set an alternate database location.
+    #[clap(long, short = 'b', value_name = "path", display_order = 1)]
+    dbpath: Option<String>,
+    /// View the changelog of a package.
+    #[clap(long, short, display_order = 1)]
+    changelog: bool,
+    /// List packages installed as dependencies [filter].
+    #[clap(long, short, display_order = 1)]
+    deps: bool,
+    /// List packages explicitly installed [filter].
+    #[clap(long, short, display_order = 1)]
+    explicit: bool,
+    /// View all members of a package group.
+    #[clap(long, short, display_order = 1)]
+    groups: bool,
+    /// View package information (-ii for backup files).
+    #[clap(long, short, display_order = 1)]
+    info: bool,
+    /// Check that package files exist (-kk for file properties).
+    #[clap(long, short = 'k', multiple_occurrences = true, display_order = 1)]
+    check: bool,
+    /// List the files owned by the queried package.
+    #[clap(long, short, display_order = 1)]
+    list: bool,
+    /// List installed packages not found in sync db(s) [filter].
+    #[clap(long, short = 'm', display_order = 1)]
+    foreign: bool,
+    /// List installed packages only found in sync db(s) [filter].
+    #[clap(long, short, display_order = 1)]
+    /// Print the targets instead of performing the operation.
+    native: bool,
+    /// Query the package that owns <file>.
+    #[clap(long, short, value_name = "file", display_order = 1)]
+    owns: Option<String>,
+    /// Query a package file instead of the database.
+    #[clap(long, short = 'p', value_name = "package", display_order = 1)]
+    file: Option<String>,
+    /// Show less information for query and search.
+    #[clap(long, short, display_order = 1)]
+    quiet: bool,
+    /// Set an alternate installation root.
+    #[clap(long, short, value_name = "path", display_order = 1)]
+    root: Option<String>,
+    /// Search remote repositories for matchings strings.
+    #[clap(long, short, display_order = 1)]
+    search: bool,
+    /// List packages not (optionally) required by any package (-tt to ignore optdepends) [filter].
+    #[clap(long, short = 't', display_order = 1)]
+    unrequired: bool,
+    /// List outdated pacakges [filter].
+    #[clap(long, short, display_order = 1)]
+    upgrades: bool,
+    /// Be verbose.
+    #[clap(long, short, display_order = 1)]
+    verbose: bool,
+    /// Set an alternate architecture.
+    #[clap(long)]
+    arch: Option<String>,
+    /// Set an alternate package cache location.
+    #[clap(long, value_name = "dir")]
+    cachedir: Option<String>,
+    /// Colorize the output.
+    #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
+    color: Option<String>,
+    /// Set an alternate Pacman configuration file.
+    #[clap(long, value_name = "path")]
+    config: Option<String>,
+    /// Always ask for confirmation.
+    #[clap(long)]
+    confirm: bool,
+    /// Display Pacman debug messages.
+    #[clap(long)]
+    debug: bool,
+    /// Use relaxed timeouts for download.
+    #[clap(long)]
+    disable_download_timeout: bool,
+    /// Set an alternate home directory for GnuPG.
+    #[clap(long, value_name = "path")]
+    gpgdir: Option<String>,
+    /// Set an alternate hook location.
+    #[clap(long, value_name = "dir")]
+    hookdir: Option<String>,
+    /// Set an alternate log file.
+    #[clap(long, value_name = "path")]
+    logfile: Option<String>,
+    /// Do not ask for any confirmation.
+    #[clap(long)]
+    noconfirm: bool,
+    /// Operate on a mounted guest system (root-only).
+    #[clap(long)]
+    sysroot: bool,
+    /// Packages to query.
     packages: Vec<String>,
 }
