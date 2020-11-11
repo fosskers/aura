@@ -33,7 +33,7 @@ pub struct Args {
 pub enum SubCmd {
     // --- Pacman Commands --- //
     Database,
-    Files,
+    Files(Files),
     Query,
     Remove,
     Sync(Sync),
@@ -163,7 +163,7 @@ pub struct Sync {
     /// Specify how the targets should be printed.
     #[clap(long, value_name = "string")]
     print_format: Option<String>,
-    /// Operate on a mounted guests system (root-only).
+    /// Operate on a mounted guest system (root-only).
     #[clap(long)]
     sysroot: bool,
     /// Packages to search/install.
@@ -285,14 +285,14 @@ pub struct TestDeps {
     /// Do not ask for any confirmation.
     #[clap(long)]
     noconfirm: bool,
-    /// Operate on a mounted guests system (root-only).
+    /// Operate on a mounted guest system (root-only).
     #[clap(long)]
     sysroot: bool,
     /// Dependencies to check.
     packages: Vec<String>,
 }
 
-/// ???
+/// Upgrade or add packages to the system.
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'U', long_flag = "upgrade")]
 pub struct Upgrade {
@@ -341,7 +341,6 @@ pub struct Upgrade {
     /// Display Pacman debug messages.
     #[clap(long)]
     debug: bool,
-    // TODO Here too, this shouldn't be relevant.
     /// Use relaxed timeouts for download.
     #[clap(long)]
     disable_download_timeout: bool,
@@ -378,9 +377,79 @@ pub struct Upgrade {
     /// Specify how the targets should be printed.
     #[clap(long, value_name = "string")]
     print_format: Option<String>,
-    /// Operate on a mounted guests system (root-only).
+    /// Operate on a mounted guest system (root-only).
     #[clap(long)]
     sysroot: bool,
-    /// Tarballed packages to install.
+    /// Packages to install, either a tarball or a URL.
+    packages: Vec<String>,
+}
+
+// TODO `pacman -Fh` does not include the top-level usage line!
+/// Query the files database.
+#[derive(Clap, Debug)]
+#[clap(short_flag = 'F', long_flag = "files")]
+pub struct Files {
+    /// Set an alternate database location.
+    #[clap(long, short = 'b', value_name = "path", display_order = 1)]
+    dbpath: Option<String>,
+    /// View a list of packages in a repo.
+    #[clap(long, short, display_order = 1)]
+    list: bool,
+    /// Show less information for query and search.
+    #[clap(long, short, display_order = 1)]
+    quiet: bool,
+    /// Set an alternate installation root.
+    #[clap(long, short, value_name = "path", display_order = 1)]
+    root: Option<String>,
+    /// Be verbose.
+    #[clap(long, short, display_order = 1)]
+    verbose: bool,
+    /// Enable searching using regular expressions.
+    #[clap(long, short = 'x', display_order = 1)]
+    regex: bool,
+    /// Download fresh package databases from the server (-yy to force a refresh even if up to date).
+    #[clap(long, short = 'y', display_order = 1)]
+    refresh: bool,
+    /// Set an alternate architecture.
+    #[clap(long)]
+    arch: Option<String>,
+    /// Set an alternate package cache location.
+    #[clap(long, value_name = "dir")]
+    cachedir: Option<String>,
+    /// Colorize the output.
+    #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
+    color: Option<String>,
+    /// Set an alternate Pacman configuration file.
+    #[clap(long, value_name = "path")]
+    config: Option<String>,
+    /// Always ask for confirmation.
+    #[clap(long)]
+    confirm: bool,
+    /// Display Pacman debug messages.
+    #[clap(long)]
+    debug: bool,
+    // TODO Here too.
+    /// Use relaxed timeouts for download.
+    #[clap(long)]
+    disable_download_timeout: bool,
+    /// Set an alternate home directory for GnuPG.
+    #[clap(long, value_name = "path")]
+    gpgdir: Option<String>,
+    /// Set an alternate hook location.
+    #[clap(long, value_name = "dir")]
+    hookdir: Option<String>,
+    /// Set an alternate log file.
+    #[clap(long, value_name = "path")]
+    logfile: Option<String>,
+    /// Produce machine-readable output.
+    #[clap(long)]
+    machinereadable: bool,
+    /// Do not ask for any confirmation.
+    #[clap(long)]
+    noconfirm: bool,
+    /// Operate on a mounted guest system (root-only).
+    #[clap(long)]
+    sysroot: bool,
+    /// Files to search.
     files: Vec<String>,
 }
