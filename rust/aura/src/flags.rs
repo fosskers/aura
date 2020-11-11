@@ -45,7 +45,7 @@ pub enum SubCmd {
     Cache,
     Log,
     Orphans,
-    Analysis,
+    Analysis(Analysis),
     Languages,
     ViewConf,
     Extra, // TODO completions, dot output, etc?
@@ -702,4 +702,19 @@ pub struct Query {
     sysroot: bool,
     /// Packages to query.
     packages: Vec<String>,
+}
+
+/// Perform security analysis of a PKGBUILD.
+#[derive(Clap, Debug)]
+#[clap(short_flag = 'P', long_flag = "analysis")]
+pub struct Analysis {
+    /// Analyse a given PKGBUILD.
+    #[clap(group = "analyse", long, short, value_name = "path")]
+    file: Option<String>,
+    /// Analyse a PKGBUILD found in the specified directory.
+    #[clap(group = "analyse", long, short, value_name = "path")]
+    dir: Option<String>,
+    /// Analyse the PKGBUILDs of all locally installed AUR packages.
+    #[clap(group = "analyse", long, short)]
+    audit: bool,
 }
