@@ -44,7 +44,7 @@ pub enum SubCmd {
     Backup,
     Cache,
     Log,
-    Orphans,
+    Orphans(Orphans),
     Analysis(Analysis),
     Languages,
     ViewConf,
@@ -717,4 +717,16 @@ pub struct Analysis {
     /// Analyse the PKGBUILDs of all locally installed AUR packages.
     #[clap(group = "analyse", long, short)]
     audit: bool,
+}
+
+/// Handle orphan packages.
+#[derive(Clap, Debug)]
+#[clap(short_flag = 'O', long_flag = "orphans")]
+pub struct Orphans {
+    /// Mark a package as being explicitly installed.
+    #[clap(group = "orphans", long, short, value_name = "packages")]
+    adopt: Vec<String>,
+    /// Uninstall all orphan packages.
+    #[clap(group = "orphans", long, short = 'j')]
+    abandon: bool,
 }
