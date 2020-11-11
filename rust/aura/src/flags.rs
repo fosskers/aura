@@ -32,12 +32,12 @@ pub struct Args {
 #[derive(Clap, Debug)]
 pub enum SubCmd {
     // --- Pacman Commands --- //
-    Database,
+    Database(Database),
     Files(Files),
     Query,
     Remove(Remove),
     Sync(Sync),
-    TestDeps(TestDeps),
+    DepTest(DepTest),
     Upgrade(Upgrade),
     // --- Aura Commands --- //
     AurSync,
@@ -240,7 +240,7 @@ impl ToArgs for Sync {
 /// Check if given dependencies are satisfied.
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'T', long_flag = "deptest")]
-pub struct TestDeps {
+pub struct DepTest {
     /// Set an alternate database location.
     #[clap(long, short = 'b', value_name = "path", display_order = 1)]
     dbpath: Option<String>,
@@ -537,5 +537,70 @@ pub struct Remove {
     #[clap(long)]
     sysroot: bool,
     /// Packages to remove.
+    packages: Vec<String>,
+}
+
+/// Operate on the package database.
+#[derive(Clap, Debug)]
+#[clap(short_flag = 'D', long_flag = "database")]
+pub struct Database {
+    /// Set an alternate database location.
+    #[clap(long, short = 'b', value_name = "path", display_order = 1)]
+    dbpath: Option<String>,
+    /// Test local database for validity (-kk for sync databases).
+    #[clap(long, short = 'k', multiple_occurrences = true, display_order = 1)]
+    check: bool,
+    /// Show less information for query and search.
+    #[clap(long, short, display_order = 1)]
+    quiet: bool,
+    /// Set an alternate installation root.
+    #[clap(long, short, value_name = "path", display_order = 1)]
+    root: Option<String>,
+    /// Be verbose.
+    #[clap(long, short, display_order = 1)]
+    verbose: bool,
+    /// Set an alternate architecture.
+    #[clap(long)]
+    arch: Option<String>,
+    /// Install packages as non-explicitly installed.
+    #[clap(long)]
+    asdeps: bool,
+    /// Install pacakges as explicitly installed.
+    #[clap(long)]
+    asexplicit: bool,
+    /// Set an alternate package cache location.
+    #[clap(long, value_name = "dir")]
+    cachedir: Option<String>,
+    /// Colorize the output.
+    #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
+    color: Option<String>,
+    /// Set an alternate Pacman configuration file.
+    #[clap(long, value_name = "path")]
+    config: Option<String>,
+    /// Always ask for confirmation.
+    #[clap(long)]
+    confirm: bool,
+    /// Display Pacman debug messages.
+    #[clap(long)]
+    debug: bool,
+    /// Use relaxed timeouts for download.
+    #[clap(long)]
+    disable_download_timeout: bool,
+    /// Set an alternate home directory for GnuPG.
+    #[clap(long, value_name = "path")]
+    gpgdir: Option<String>,
+    /// Set an alternate hook location.
+    #[clap(long, value_name = "dir")]
+    hookdir: Option<String>,
+    /// Set an alternate log file.
+    #[clap(long, value_name = "path")]
+    logfile: Option<String>,
+    /// Do not ask for any confirmation.
+    #[clap(long)]
+    noconfirm: bool,
+    /// Operate on a mounted guest system (root-only).
+    #[clap(long)]
+    sysroot: bool,
+    /// Packages to modify.
     packages: Vec<String>,
 }
