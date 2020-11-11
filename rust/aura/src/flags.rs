@@ -710,13 +710,13 @@ pub struct Query {
 pub struct Analysis {
     /// Analyse a given PKGBUILD.
     #[clap(group = "analyse", long, short, value_name = "path")]
-    file: Option<String>,
+    pub file: Option<String>,
     /// Analyse a PKGBUILD found in the specified directory.
     #[clap(group = "analyse", long, short, value_name = "path")]
-    dir: Option<String>,
+    pub dir: Option<String>,
     /// Analyse the PKGBUILDs of all locally installed AUR packages.
     #[clap(group = "analyse", long, short)]
-    audit: bool,
+    pub audit: bool,
 }
 
 /// Handle orphan packages.
@@ -725,8 +725,8 @@ pub struct Analysis {
 pub struct Orphans {
     /// Mark a package as being explicitly installed.
     #[clap(group = "orphans", long, short, value_name = "packages")]
-    adopt: Vec<String>,
+    pub adopt: Vec<String>,
     /// Uninstall all orphan packages.
     #[clap(group = "orphans", long, short = 'j')]
-    abandon: bool,
+    pub abandon: bool,
 }
