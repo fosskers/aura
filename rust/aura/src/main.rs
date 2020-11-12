@@ -6,11 +6,13 @@ use std::process::Command;
 #[derive(Debug)]
 enum Error {
     IO(std::io::Error),
+    Arch(arch::Error),
 }
 
 fn main() -> Result<(), Error> {
     let args = aura::flags::Args::parse();
     // let raw = aura::flags::Args::into_app().get_matches();
+    let alpm = arch::open_alpm().map_err(Error::Arch)?;
 
     match args.subcmd {
         // --- Pacman Commands --- //
@@ -38,11 +40,12 @@ fn main() -> Result<(), Error> {
         // --- Orphan Packages --- //
         SubCmd::Orphans(o) if o.abandon => unimplemented!(),
         SubCmd::Orphans(o) if !o.adopt.is_empty() => unimplemented!(),
-        SubCmd::Orphans(_) => arch::orphans().iter().for_each(|o| println!("{}", o)),
+        SubCmd::Orphans(_) => arch::orphans(&alpm)
+            .iter()
+            .for_each(|o| println!("{}", o.name())),
         // --- PKGBUILD Analysis --- //
         SubCmd::Analysis(_) => unimplemented!(),
     }
 
     Ok(())
-    // println!("{:#?}", args);
 }
