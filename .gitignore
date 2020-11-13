@@ -18,6 +18,7 @@ aur-pkgs/*
 weeder.dhall
 .hlint.yaml
 book/book/*
+rust/target/*
 
 # Nix
 .envrc
