@@ -263,7 +263,8 @@ data Language = English
               | Chinese
               | Esperanto
               | Dutch
-                deriving (Eq, Enum, Bounded, Ord, Show)
+              | Turkish
+              deriving (Eq, Enum, Bounded, Ord, Show)
 
 -- | The various ways that dependency resolution can fail.
 data DepError = NonExistant !PkgName !PkgName
