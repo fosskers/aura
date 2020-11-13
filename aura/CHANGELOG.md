@@ -1,5 +1,11 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Added
+
+- Turkish translations thanks to Cihan Alkan. Teşekkür ederim!
+
 ## 3.2.2 (2020-10-29)
 
 #### Fixed
