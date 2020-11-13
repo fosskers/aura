@@ -46,11 +46,10 @@ translators = M.fromList
     , (Norwegian,  "\"chinatsun\"")
     , (Indonesia,  "\"pak tua Greg\"")
     , (Chinese,    "Kai Zhang")
-    , (Turkish,    "Cihan Alkan")
     , (Japanese,   "Onoue Takuro")
     , (Esperanto,  "Zachary Matthews")
     , (Dutch,      "Joris Blanken")
-    , (Turkish,    "\"oltulu\"")
+    , (Turkish,    "Cihan Alkan")
     ]
 
 -- These need updating! Or removing...
