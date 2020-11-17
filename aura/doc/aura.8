@@ -402,15 +402,26 @@ remove make deps, as well as show PKGBUILD diffs before building.
 .P
 4. If you want to search both the Repos and the AUR at the same time, you can
 use the following shell functions:
-.RS 4
-Bash => function search() {
-          aura -Ss $1 && aura -As $1
-        }
-
-Fish => function search
-          aura -Ss $argv
-          aura -As $argv
-        end
+.
+.RS
+.
+.TP
+.B Bash
+.EX
+function search() {
+    aura -Ss $1 && aura -As $1
+}
+.EE
+.
+.TP
+.B Fish
+.EX
+function search
+    aura -Ss $argv
+    aura -As $argv
+end
+.EE
+.
 .RE
 .
 .SH SEE ALSO
