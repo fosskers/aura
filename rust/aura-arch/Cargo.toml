@@ -5,4 +5,4 @@ authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2018"
 
 [dependencies]
-alpm = "1.0.0"
+alpm = "1.1"

@@ -7,12 +7,13 @@ use std::process::Command;
 enum Error {
     IO(std::io::Error),
     Arch(arch::Error),
+    Alpm(alpm::Error),
 }
 
 fn main() -> Result<(), Error> {
     let args = aura::flags::Args::parse();
     // let raw = aura::flags::Args::into_app().get_matches();
-    let alpm = arch::open_alpm().map_err(Error::Arch)?;
+    let mut alpm = arch::open_alpm().map_err(Error::Arch)?;
 
     match args.subcmd {
         // --- Pacman Commands --- //
@@ -38,7 +39,9 @@ fn main() -> Result<(), Error> {
         SubCmd::ViewConf => unimplemented!(),
         SubCmd::Extra => unimplemented!(),
         // --- Orphan Packages --- //
-        SubCmd::Orphans(o) if o.abandon => unimplemented!(),
+        SubCmd::Orphans(o) if o.abandon => {
+            aura::command::orphans::remove(&mut alpm).map_err(Error::Alpm)?
+        }
         SubCmd::Orphans(o) if !o.adopt.is_empty() => unimplemented!(),
         SubCmd::Orphans(_) => aura::command::orphans::list(&alpm),
         // --- PKGBUILD Analysis --- //
