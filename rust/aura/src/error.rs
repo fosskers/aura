@@ -5,4 +5,6 @@ pub enum Error {
     Arch(aura_arch::Error),
     Alpm(alpm::Error),
     RustyLine(rustyline::error::ReadlineError),
+    /// The said "no" at some prompt.
+    Rejected,
 }

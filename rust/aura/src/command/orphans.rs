@@ -47,10 +47,11 @@ pub fn remove(alpm: &mut Alpm) -> Result<(), Error> {
         let mut rl = Editor::<()>::new();
         match rl.readline("aura :: Proceed? [Y/n] ") {
             Ok(line) if line.is_empty() || line == "y" || line == "Y" => {
-                println!("Go!");
-                // alpm.trans_commit().map_err(|(_, e)| e)?;
+                println!("Doing it!");
+                // alpm.trans_commit().map_err(|(_, e)| Error::Alpm(e))?;
             }
-            _ => {}
+            Ok(_) => Err(Error::Rejected)?,
+            Err(e) => Err(Error::RustyLine(e))?,
         }
 
         alpm.trans_release().map_err(Error::Alpm)?;
