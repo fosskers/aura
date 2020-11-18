@@ -9,5 +9,6 @@ alpm = "1.1"
 aura-arch = { path = "../aura-arch" }
 clap = "3.0.0-beta.2"
 clap_generate = "3.0.0-beta.2"
+rustyline = "6.3"
 simplelog = "0.8"
 ubyte = "0.10"

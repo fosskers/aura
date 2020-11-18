@@ -1,14 +1,9 @@
+use aura::command::orphans;
+use aura::error::Error;
 use aura::flags::{SubCmd, ToArgs};
 use aura_arch as arch;
 use clap::Clap;
 use std::process::Command;
-
-#[derive(Debug)]
-enum Error {
-    IO(std::io::Error),
-    Arch(arch::Error),
-    Alpm(alpm::Error),
-}
 
 fn main() -> Result<(), Error> {
     let args = aura::flags::Args::parse();
@@ -39,11 +34,9 @@ fn main() -> Result<(), Error> {
         SubCmd::ViewConf => unimplemented!(),
         SubCmd::Extra => unimplemented!(),
         // --- Orphan Packages --- //
-        SubCmd::Orphans(o) if o.abandon => {
-            aura::command::orphans::remove(&mut alpm).map_err(Error::Alpm)?
-        }
+        SubCmd::Orphans(o) if o.abandon => orphans::remove(&mut alpm)?,
         SubCmd::Orphans(o) if !o.adopt.is_empty() => unimplemented!(),
-        SubCmd::Orphans(_) => aura::command::orphans::list(&alpm),
+        SubCmd::Orphans(_) => orphans::list(&alpm),
         // --- PKGBUILD Analysis --- //
         SubCmd::Analysis(_) => unimplemented!(),
     }
