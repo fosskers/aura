@@ -1,4 +1,4 @@
-use alpm::{Alpm, Package, PackageReason};
+pub use alpm::{Alpm, Package, PackageReason};
 
 #[derive(Debug)]
 pub enum Error {

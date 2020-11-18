@@ -40,9 +40,7 @@ fn main() -> Result<(), Error> {
         // --- Orphan Packages --- //
         SubCmd::Orphans(o) if o.abandon => unimplemented!(),
         SubCmd::Orphans(o) if !o.adopt.is_empty() => unimplemented!(),
-        SubCmd::Orphans(_) => arch::orphans(&alpm)
-            .iter()
-            .for_each(|o| println!("{}", o.name())),
+        SubCmd::Orphans(_) => aura::command::orphans::list(&alpm),
         // --- PKGBUILD Analysis --- //
         SubCmd::Analysis(_) => unimplemented!(),
     }
