@@ -2,6 +2,8 @@ use crate::error::Error;
 use alpm::{Alpm, TransFlag};
 use aura_arch as arch;
 use rustyline::Editor;
+use std::io::Write;
+use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 use ubyte::ToByteUnit;
 
 /// Print the name of each orphaned package.
@@ -36,7 +38,8 @@ pub fn remove(alpm: &mut Alpm) -> Result<(), Error> {
         alpm.trans_prepare().map_err(|(_, e)| Error::Alpm(e))?;
         let removal = alpm.trans_remove();
         let longest = removal.iter().map(|p| p.name().len()).max().unwrap_or(0);
-        println!("aura :: The following orphans and their dependencies will be removed:\n");
+        yellow("The following orphans and their dependencies will be removed:\n")?;
+        // println!("aura :: The following orphans and their dependencies will be removed:\n");
         for p in removal {
             let size = format!("{}", p.isize().bytes());
             println!("  {:w$} {:>9}", p.name(), size, w = longest);
@@ -57,5 +60,16 @@ pub fn remove(alpm: &mut Alpm) -> Result<(), Error> {
         alpm.trans_release().map_err(Error::Alpm)?;
     }
 
+    Ok(())
+}
+
+fn yellow(msg: &str) -> Result<(), Error> {
+    let mut stdout = StandardStream::stdout(ColorChoice::Always);
+    write!(&mut stdout, "aura :: ").map_err(Error::IO)?;
+    stdout
+        .set_color(ColorSpec::new().set_fg(Some(Color::Yellow)))
+        .map_err(Error::IO)?;
+    writeln!(&mut stdout, "{}", msg).map_err(Error::IO)?;
+    stdout.reset().map_err(Error::IO)?;
     Ok(())
 }
