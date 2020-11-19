@@ -35,7 +35,7 @@ fn main() -> Result<(), Error> {
         SubCmd::Extra => unimplemented!(),
         // --- Orphan Packages --- //
         SubCmd::Orphans(o) if o.abandon => orphans::remove(&mut alpm)?,
-        SubCmd::Orphans(o) if !o.adopt.is_empty() => unimplemented!(),
+        SubCmd::Orphans(o) if !o.adopt.is_empty() => orphans::adopt(&alpm, o.adopt)?,
         SubCmd::Orphans(_) => orphans::list(&alpm),
         // --- PKGBUILD Analysis --- //
         SubCmd::Analysis(_) => unimplemented!(),

@@ -1,5 +1,5 @@
 use crate::error::Error;
-use alpm::{Alpm, TransFlag};
+use alpm::{Alpm, PackageReason, TransFlag};
 use aura_arch as arch;
 use rustyline::Editor;
 use std::collections::HashSet;
@@ -12,6 +12,26 @@ pub fn list(alpm: &Alpm) {
     arch::orphans(&alpm)
         .iter()
         .for_each(|o| println!("{}", o.name()))
+}
+
+/// Sets a package's install reason to "as explicit". An alias for `-D --asexplicit`.
+pub fn adopt(alpm: &Alpm, packages: Vec<String>) -> Result<(), Error> {
+    let db = alpm.localdb();
+    let reals: Vec<_> = packages
+        .into_iter()
+        .filter_map(|p| db.pkg(p).ok())
+        .collect();
+
+    if reals.is_empty() {
+        Err(Error::NoneExist)
+    } else {
+        for mut p in reals {
+            p.set_reason(PackageReason::Explicit).map_err(Error::Alpm)?;
+            agreenln(&format!("{} now marked as explicitly installed.", p.name()))?;
+        }
+
+        Ok(())
+    }
 }
 
 // NOTES
@@ -104,7 +124,11 @@ fn coloured(colour: Color, msg: &str) -> Result<(), Error> {
 /// Optionally inserts a newline.
 fn aurad(colour: Color, nl: bool, msg: &str) -> Result<(), Error> {
     let mut stdout = StandardStream::stdout(ColorChoice::Always);
-    write!(&mut stdout, "aura :: ").map_err(Error::IO)?;
+    write!(&mut stdout, "aura").map_err(Error::IO)?;
+    stdout
+        .set_color(ColorSpec::new().set_fg(Some(Color::Cyan)))
+        .map_err(Error::IO)?;
+    write!(&mut stdout, " :: ").map_err(Error::IO)?;
     stdout
         .set_color(ColorSpec::new().set_fg(Some(colour)))
         .map_err(Error::IO)?;

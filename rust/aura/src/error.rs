@@ -7,4 +7,6 @@ pub enum Error {
     RustyLine(rustyline::error::ReadlineError),
     /// The said "no" at some prompt.
     Rejected,
+    /// None of the packages specified by the user actually exist.
+    NoneExist,
 }
