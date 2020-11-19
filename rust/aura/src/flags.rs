@@ -16,12 +16,29 @@ pub trait ToArgs {
        // setting = AppSettings::UnifiedHelpMessage, // TODO Is this broken?
        setting = AppSettings::DisableHelpSubcommand)]
 pub struct Args {
+    // --- Global Pacman Options --- //
+    /// Set an alternate database location.
+    #[clap(
+        long,
+        short = 'b',
+        value_name = "path",
+        global = true,
+        display_order = 1
+    )]
+    pub dbpath: Option<String>,
+    /// Set an alternate installation root.
+    #[clap(long, short, value_name = "path", global = true, display_order = 1)]
+    pub root: Option<String>,
+
+    // --- Aura Language Options --- //
     /// Output in English.
     #[clap(group = "lang", long, global = true)]
     pub english: bool,
     /// Output in Japanese.
     #[clap(group = "lang", long, global = true, alias = "日本語")]
     pub japanese: bool,
+
+    // --- Other Aura Options --- //
     /// Minimum level of Aura log messages to display.
     #[clap(long, value_name = "level", possible_values = &["debug", "info", "warn", "error"], global = true)]
     pub log_level: Option<LevelFilter>,
@@ -55,9 +72,6 @@ pub enum SubCmd {
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'S', long_flag = "sync")]
 pub struct Sync {
-    /// Set an alternate database location.
-    #[clap(long, short = 'b', value_name = "path", display_order = 1)]
-    dbpath: Option<String>,
     /// Remove old packages from cache directory (-cc for all).
     #[clap(long, short, multiple_occurrences = true, display_order = 1)]
     clean: bool,
@@ -79,9 +93,6 @@ pub struct Sync {
     /// Show less information for query and search.
     #[clap(long, short, display_order = 1)]
     quiet: bool,
-    /// Set an alternate installation root.
-    #[clap(long, short, value_name = "path", display_order = 1)]
-    root: Option<String>,
     /// Search remote repositories for matchings strings.
     #[clap(long, short, display_order = 1)]
     search: bool,
@@ -241,12 +252,6 @@ impl ToArgs for Sync {
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'T', long_flag = "deptest")]
 pub struct DepTest {
-    /// Set an alternate database location.
-    #[clap(long, short = 'b', value_name = "path", display_order = 1)]
-    dbpath: Option<String>,
-    /// Set an alternate installation root.
-    #[clap(long, short, value_name = "path", display_order = 1)]
-    root: Option<String>,
     /// Be verbose.
     #[clap(long, short, display_order = 1)]
     verbose: bool,
@@ -296,18 +301,12 @@ pub struct DepTest {
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'U', long_flag = "upgrade")]
 pub struct Upgrade {
-    /// Set an alternate database location.
-    #[clap(long, short = 'b', value_name = "path", display_order = 1)]
-    dbpath: Option<String>,
     /// Skip dependency version checks (-dd to skip all checks).
     #[clap(long, short = 'd', display_order = 1)]
     nodeps: bool,
     /// Print the targets instead of performing the operation.
     #[clap(long, short, display_order = 1)]
     print: bool,
-    /// Set an alternate installation root.
-    #[clap(long, short, value_name = "path", display_order = 1)]
-    root: Option<String>,
     /// Be verbose.
     #[clap(long, short, display_order = 1)]
     verbose: bool,
@@ -389,18 +388,12 @@ pub struct Upgrade {
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'F', long_flag = "files")]
 pub struct Files {
-    /// Set an alternate database location.
-    #[clap(long, short = 'b', value_name = "path", display_order = 1)]
-    dbpath: Option<String>,
     /// View a list of packages in a repo.
     #[clap(long, short, display_order = 1)]
     list: bool,
     /// Show less information for query and search.
     #[clap(long, short, display_order = 1)]
     quiet: bool,
-    /// Set an alternate installation root.
-    #[clap(long, short, value_name = "path", display_order = 1)]
-    root: Option<String>,
     /// Be verbose.
     #[clap(long, short, display_order = 1)]
     verbose: bool,
@@ -458,9 +451,6 @@ pub struct Files {
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'R', long_flag = "remove")]
 pub struct Remove {
-    /// Set an alternate database location.
-    #[clap(long, short = 'b', value_name = "path", display_order = 1)]
-    dbpath: Option<String>,
     /// Remove packages and all packages that depend on them.
     #[clap(long, short, display_order = 1)]
     cascade: bool,
@@ -473,9 +463,6 @@ pub struct Remove {
     /// Print the targets instead of performing the operation.
     #[clap(long, short, display_order = 1)]
     print: bool,
-    /// Set an alternate installation root.
-    #[clap(long, short, value_name = "path", display_order = 1)]
-    root: Option<String>,
     /// Remove unnecessary dependencies (-ss includes explicitly installed dependencies).
     #[clap(long, short = 's', display_order = 1)]
     recursive: bool,
@@ -544,18 +531,12 @@ pub struct Remove {
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'D', long_flag = "database")]
 pub struct Database {
-    /// Set an alternate database location.
-    #[clap(long, short = 'b', value_name = "path", display_order = 1)]
-    dbpath: Option<String>,
     /// Test local database for validity (-kk for sync databases).
     #[clap(long, short = 'k', multiple_occurrences = true, display_order = 1)]
     check: bool,
     /// Show less information for query and search.
     #[clap(long, short, display_order = 1)]
     quiet: bool,
-    /// Set an alternate installation root.
-    #[clap(long, short, value_name = "path", display_order = 1)]
-    root: Option<String>,
     /// Be verbose.
     #[clap(long, short, display_order = 1)]
     verbose: bool,
@@ -609,9 +590,6 @@ pub struct Database {
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'Q', long_flag = "query")]
 pub struct Query {
-    /// Set an alternate database location.
-    #[clap(long, short = 'b', value_name = "path", display_order = 1)]
-    dbpath: Option<String>,
     /// View the changelog of a package.
     #[clap(long, short, display_order = 1)]
     changelog: bool,
@@ -649,9 +627,6 @@ pub struct Query {
     /// Show less information for query and search.
     #[clap(long, short, display_order = 1)]
     quiet: bool,
-    /// Set an alternate installation root.
-    #[clap(long, short, value_name = "path", display_order = 1)]
-    root: Option<String>,
     /// Search remote repositories for matchings strings.
     #[clap(long, short, display_order = 1)]
     search: bool,

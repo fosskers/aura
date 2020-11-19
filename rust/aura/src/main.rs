@@ -1,3 +1,4 @@
+use alpm::Alpm;
 use aura::command::orphans;
 use aura::error::Error;
 use aura::flags::{SubCmd, ToArgs};
@@ -8,7 +9,11 @@ use std::process::Command;
 fn main() -> Result<(), Error> {
     let args = aura::flags::Args::parse();
     // let raw = aura::flags::Args::into_app().get_matches();
-    let mut alpm = arch::open_alpm().map_err(Error::Arch)?;
+    let mut alpm = Alpm::new(
+        args.root.unwrap_or(arch::DEFAULT_ROOT.to_string()),
+        args.dbpath.unwrap_or(arch::DEFAULT_DB.to_string()),
+    )
+    .map_err(Error::Alpm)?;
 
     match args.subcmd {
         // --- Pacman Commands --- //

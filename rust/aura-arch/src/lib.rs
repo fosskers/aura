@@ -1,13 +1,16 @@
+//! A layer over the `alpm` library to aid with common tasks.
+
 use alpm::{Alpm, Package, PackageReason};
+
+/// The default "root" filepath as required by `alpm`.
+pub const DEFAULT_ROOT: &str = "/";
+
+/// The default filepath of the pacman/libalpm database.
+pub const DEFAULT_DB: &str = "/var/lib/pacman/";
 
 #[derive(Debug)]
 pub enum Error {
     Alpm(alpm::Error),
-}
-
-/// Open an `Alpm` handle with default settings.
-pub fn open_alpm() -> Result<Alpm, Error> {
-    Alpm::new("/", "/var/lib/pacman/").map_err(Error::Alpm)
 }
 
 /// All orphaned packages.
@@ -24,12 +27,4 @@ pub fn orphans(alpm: &Alpm) -> Vec<Package> {
                 && p.optional_for().is_empty()
         })
         .collect()
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
 }
