@@ -1,5 +1,6 @@
 use clap::{crate_version, AppSettings, Clap};
 use simplelog::LevelFilter;
+use unic_langid::{langid, LanguageIdentifier};
 
 /// Subcommands which can be reduced back into their raw argument form for
 /// passing to Pacman.
@@ -44,6 +45,17 @@ pub struct Args {
     pub log_level: Option<LevelFilter>,
     #[clap(subcommand)]
     pub subcmd: SubCmd,
+}
+
+impl Args {
+    /// If a language flag was given on the command line, extract the
+    /// corresponding standardized language code.
+    pub fn language(&self) -> Option<LanguageIdentifier> {
+        match () {
+            _ if self.japanese => Some(langid!("ja-JP")),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Clap, Debug)]

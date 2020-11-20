@@ -5,6 +5,7 @@ pub enum Error {
     Arch(aura_arch::Error),
     Alpm(alpm::Error),
     RustyLine(rustyline::error::ReadlineError),
+    I18n(i18n_embed::I18nEmbedError),
     /// The said "no" at some prompt.
     Rejected,
     /// None of the packages specified by the user actually exist.

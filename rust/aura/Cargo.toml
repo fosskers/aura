@@ -16,3 +16,4 @@ rustyline = "6.3"
 simplelog = "0.8"
 termcolor = "1.1"
 ubyte = "0.10"
+unic-langid = { version = "0.9", features = ["macros"] }
