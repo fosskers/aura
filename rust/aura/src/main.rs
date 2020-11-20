@@ -4,7 +4,15 @@ use aura::error::Error;
 use aura::flags::{SubCmd, ToArgs};
 use aura_arch as arch;
 use clap::Clap;
+use i18n_embed::fluent::{fluent_language_loader, FluentLanguageLoader};
+use i18n_embed::LanguageLoader;
+use i18n_embed_fl::fl;
+use rust_embed::RustEmbed;
 use std::process::Command;
+
+#[derive(RustEmbed)]
+#[folder = "i18n"]
+struct Translations;
 
 fn main() -> Result<(), Error> {
     let args = aura::flags::Args::parse();
@@ -14,6 +22,13 @@ fn main() -> Result<(), Error> {
         args.dbpath.unwrap_or(arch::DEFAULT_DB.to_string()),
     )
     .map_err(Error::Alpm)?;
+
+    let loader: FluentLanguageLoader = fluent_language_loader!();
+    loader
+        .load_languages(&Translations, &[loader.fallback_language()])
+        .unwrap();
+
+    println!("{}", fl!(loader, "hello"));
 
     match args.subcmd {
         // --- Pacman Commands --- //
