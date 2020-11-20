@@ -1,6 +1,8 @@
 use crate::error::Error;
 use alpm::{Alpm, PackageReason, TransFlag};
 use aura_arch as arch;
+use i18n_embed::fluent::FluentLanguageLoader;
+use i18n_embed_fl::fl;
 use rustyline::Editor;
 use std::collections::HashSet;
 use std::io::Write;
@@ -41,7 +43,7 @@ pub fn adopt(alpm: &Alpm, packages: Vec<String>) -> Result<(), Error> {
 ///
 /// Will fail if the process does not have permission to create the lockfile,
 /// which usually lives in a root-owned directory.
-pub fn remove(alpm: &mut Alpm) -> Result<(), Error> {
+pub fn remove(alpm: &mut Alpm, loader: FluentLanguageLoader) -> Result<(), Error> {
     // Check for orphans.
     let orphans = arch::orphans(alpm);
     if !orphans.is_empty() {
@@ -63,7 +65,7 @@ pub fn remove(alpm: &mut Alpm) -> Result<(), Error> {
         // Notify the user of the results.
         let removal = alpm.trans_remove();
         let longest = removal.iter().map(|p| p.name().len()).max().unwrap_or(0);
-        ayellowln("The following orphans and their dependencies will be removed:\n")?;
+        ayellowln(&format!("{}:\n", fl!(loader, "orphans")))?;
         for p in removal {
             let size = format!("{}", p.isize().bytes());
             if names.contains(p.name()) {

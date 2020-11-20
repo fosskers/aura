@@ -4,7 +4,6 @@ use aura::error::Error;
 use aura::flags::{SubCmd, ToArgs};
 use aura_arch as arch;
 use clap::Clap;
-use i18n_embed_fl::fl;
 use std::process::Command;
 
 fn main() -> Result<(), Error> {
@@ -13,9 +12,6 @@ fn main() -> Result<(), Error> {
     // Establish the language strings to be used.
     let lang = args.language();
     let loader = aura::localization::loader(lang).map_err(Error::I18n)?;
-
-    println!("{}", fl!(loader, "hello"));
-    println!("{}", fl!(loader, "cat"));
 
     let mut alpm = Alpm::new(
         args.root.unwrap_or(arch::DEFAULT_ROOT.to_string()),
@@ -47,7 +43,7 @@ fn main() -> Result<(), Error> {
         SubCmd::ViewConf => unimplemented!(),
         SubCmd::Extra => unimplemented!(),
         // --- Orphan Packages --- //
-        SubCmd::Orphans(o) if o.abandon => orphans::remove(&mut alpm)?,
+        SubCmd::Orphans(o) if o.abandon => orphans::remove(&mut alpm, loader)?,
         SubCmd::Orphans(o) if !o.adopt.is_empty() => orphans::adopt(&alpm, o.adopt)?,
         SubCmd::Orphans(_) => orphans::list(&alpm),
         // --- PKGBUILD Analysis --- //

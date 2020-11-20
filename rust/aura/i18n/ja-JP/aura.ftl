@@ -1,1 +1,2 @@
-hello = 世界
+# Orphans (-O)
+orphans = 日本語
