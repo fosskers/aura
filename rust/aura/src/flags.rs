@@ -85,17 +85,17 @@ pub enum SubCmd {
 #[clap(short_flag = 'S', long_flag = "sync")]
 pub struct Sync {
     /// Remove old packages from cache directory (-cc for all).
-    #[clap(long, short, multiple_occurrences = true, display_order = 1)]
-    clean: bool,
+    #[clap(long, short, parse(from_occurrences), display_order = 1)]
+    pub clean: u8,
     /// Skip dependency version checks (-dd to skip all checks).
-    #[clap(long, short = 'd', display_order = 1)]
-    nodeps: bool,
+    #[clap(long, short = 'd', parse(from_occurrences), display_order = 1)]
+    nodeps: u8,
     /// View all members of a package group (-gg to view all groups and members).
-    #[clap(long, short, display_order = 1)]
-    groups: bool,
+    #[clap(long, short, parse(from_occurrences), display_order = 1)]
+    groups: u8,
     /// View package information (-ii for extended information).
-    #[clap(long, short, display_order = 1)]
-    info: bool,
+    #[clap(long, short, parse(from_occurrences), display_order = 1)]
+    info: u8,
     /// View a list of packages in a repo.
     #[clap(long, short, display_order = 1)]
     list: bool,
@@ -109,8 +109,8 @@ pub struct Sync {
     #[clap(long, short, display_order = 1)]
     search: bool,
     /// Upgrade installed packages (-uu enables downgrades).
-    #[clap(long, short = 'u', display_order = 1)]
-    sysupgrade: bool,
+    #[clap(long, short = 'u', parse(from_occurrences), display_order = 1)]
+    sysupgrade: u8,
     /// Be verbose.
     #[clap(long, short, display_order = 1)]
     verbose: bool,
@@ -118,8 +118,8 @@ pub struct Sync {
     #[clap(long, short = 'w', display_order = 1)]
     downloadonly: bool,
     /// Download fresh package databases from the server (-yy to force a refresh even if up to date).
-    #[clap(long, short = 'y', display_order = 1)]
-    refresh: bool,
+    #[clap(long, short = 'y', parse(from_occurrences), display_order = 1)]
+    refresh: u8,
     /// Set an alternate architecture.
     #[clap(long)]
     arch: Option<String>,
@@ -197,28 +197,36 @@ impl ToArgs for Sync {
     fn to_args(&self) -> Vec<&str> {
         let mut args = vec!["-S"];
 
-        if self.clean {
+        if self.clean == 1 {
             args.push("-c");
+        } else if self.clean == 2 {
+            args.push("-cc");
         }
 
         if self.downloadonly {
             args.push("-w");
         }
 
-        if self.groups {
+        if self.groups == 1 {
             args.push("-g");
+        } else if self.groups == 2 {
+            args.push("-gg");
         }
 
-        if self.info {
+        if self.info == 1 {
             args.push("-i");
+        } else if self.info == 2 {
+            args.push("-ii");
         }
 
         if self.list {
             args.push("-l");
         }
 
-        if self.nodeps {
+        if self.nodeps == 1 {
             args.push("-d");
+        } else if self.nodeps == 2 {
+            args.push("-dd");
         }
 
         if self.print {
@@ -229,16 +237,20 @@ impl ToArgs for Sync {
             args.push("-q");
         }
 
-        if self.refresh {
+        if self.refresh == 1 {
             args.push("-y");
+        } else if self.refresh == 2 {
+            args.push("-yy");
         }
 
         if self.search {
             args.push("-s");
         }
 
-        if self.sysupgrade {
+        if self.sysupgrade == 1 {
             args.push("-u");
+        } else if self.sysupgrade == 2 {
+            args.push("-uu");
         }
 
         if self.verbose {
