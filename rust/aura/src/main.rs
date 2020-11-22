@@ -11,7 +11,7 @@ fn main() -> Result<(), Error> {
 
     // Establish the language strings to be used.
     let lang = args.language();
-    let loader = aura::localization::loader(lang).map_err(Error::I18n)?;
+    let fll = aura::localization::loader(lang).map_err(Error::I18n)?;
 
     let mut alpm = Alpm::new(
         args.root.unwrap_or(arch::DEFAULT_ROOT.to_string()),
@@ -43,8 +43,8 @@ fn main() -> Result<(), Error> {
         SubCmd::ViewConf => unimplemented!(),
         SubCmd::Extra => unimplemented!(),
         // --- Orphan Packages --- //
-        SubCmd::Orphans(o) if o.abandon => orphans::remove(&mut alpm, loader)?,
-        SubCmd::Orphans(o) if !o.adopt.is_empty() => orphans::adopt(&alpm, o.adopt)?,
+        SubCmd::Orphans(o) if o.abandon => orphans::remove(&mut alpm, fll)?,
+        SubCmd::Orphans(o) if !o.adopt.is_empty() => orphans::adopt(&alpm, fll, o.adopt)?,
         SubCmd::Orphans(_) => orphans::list(&alpm),
         // --- PKGBUILD Analysis --- //
         SubCmd::Analysis(_) => unimplemented!(),

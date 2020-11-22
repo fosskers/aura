@@ -1,3 +1,1 @@
 fallback_language = "en-US"
-
-subcrates = ["aura"]

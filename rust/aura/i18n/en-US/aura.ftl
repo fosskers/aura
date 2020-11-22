@@ -1,2 +1,3 @@
 # Orphans (-O)
-orphans = The following orphans and their dependencies will be removed
+orphans-abandon = The following orphans and their dependencies will be removed:
+orphans-adopt = { $package } now marked as explicitly installed.

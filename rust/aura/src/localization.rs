@@ -15,5 +15,6 @@ pub fn loader(lang: Option<LanguageIdentifier>) -> Result<FluentLanguageLoader, 
         &Translations,
         &[lang.as_ref().unwrap_or_else(|| loader.fallback_language())],
     )?;
+    loader.set_use_isolating(false);
     Ok(loader)
 }

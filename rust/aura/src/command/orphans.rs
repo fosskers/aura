@@ -17,7 +17,7 @@ pub fn list(alpm: &Alpm) {
 }
 
 /// Sets a package's install reason to "as explicit". An alias for `-D --asexplicit`.
-pub fn adopt(alpm: &Alpm, packages: Vec<String>) -> Result<(), Error> {
+pub fn adopt(alpm: &Alpm, fll: FluentLanguageLoader, packages: Vec<String>) -> Result<(), Error> {
     let db = alpm.localdb();
     let reals: Vec<_> = packages
         .into_iter()
@@ -29,21 +29,18 @@ pub fn adopt(alpm: &Alpm, packages: Vec<String>) -> Result<(), Error> {
     } else {
         for mut p in reals {
             p.set_reason(PackageReason::Explicit).map_err(Error::Alpm)?;
-            agreenln(&format!("{} now marked as explicitly installed.", p.name()))?;
+            agreenln(&fl!(fll, "orphans-adopt", package = p.name()))?;
         }
 
         Ok(())
     }
 }
 
-// NOTES
-// `trans_commit` will fail if the NO_LOCK flag is set.
-
 /// Uninstall all orphan packages.
 ///
 /// Will fail if the process does not have permission to create the lockfile,
 /// which usually lives in a root-owned directory.
-pub fn remove(alpm: &mut Alpm, loader: FluentLanguageLoader) -> Result<(), Error> {
+pub fn remove(alpm: &mut Alpm, fll: FluentLanguageLoader) -> Result<(), Error> {
     // Check for orphans.
     let orphans = arch::orphans(alpm);
     if !orphans.is_empty() {
@@ -65,7 +62,7 @@ pub fn remove(alpm: &mut Alpm, loader: FluentLanguageLoader) -> Result<(), Error
         // Notify the user of the results.
         let removal = alpm.trans_remove();
         let longest = removal.iter().map(|p| p.name().len()).max().unwrap_or(0);
-        ayellowln(&format!("{}:\n", fl!(loader, "orphans")))?;
+        ayellowln(&format!("{}\n", fl!(fll, "orphans-abandon")))?;
         for p in removal {
             let size = format!("{}", p.isize().bytes());
             if names.contains(p.name()) {
