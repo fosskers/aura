@@ -1,12 +1,15 @@
+//! The Aura Package Manager.
+
 use alpm::Alpm;
 use aura::command::orphans;
 use aura::error::Error;
-use aura::flags::{SubCmd, ToArgs};
+use aura::flags::SubCmd;
 use aura_arch as arch;
 use clap::Clap;
 use std::process::Command;
 
 fn main() -> Result<(), Error> {
+    // Parse all CLI input. Exits immediately if invalid input is given.
     let args = aura::flags::Args::parse();
 
     // Establish the language strings to be used.
@@ -21,19 +24,13 @@ fn main() -> Result<(), Error> {
 
     match args.subcmd {
         // --- Pacman Commands --- //
-        SubCmd::Database(_) => unimplemented!(),
-        SubCmd::Files(_) => unimplemented!(),
-        SubCmd::Query(_) => unimplemented!(),
-        SubCmd::Remove(_) => unimplemented!(),
-        SubCmd::DepTest(_) => unimplemented!(),
-        SubCmd::Upgrade(_) => unimplemented!(),
-        SubCmd::Sync(s) => {
-            let back = s.to_args();
-            Command::new("pacman")
-                .args(back)
-                .status()
-                .map_err(Error::IO)?;
-        }
+        SubCmd::Database(_) => pacman()?,
+        SubCmd::Files(_) => pacman()?,
+        SubCmd::Query(_) => pacman()?,
+        SubCmd::Remove(_) => pacman()?,
+        SubCmd::DepTest(_) => pacman()?,
+        SubCmd::Upgrade(_) => pacman()?,
+        SubCmd::Sync(_) => pacman()?,
         // --- AUR Packages --- //
         SubCmd::AurSync => unimplemented!(),
         SubCmd::Backup => unimplemented!(),
@@ -50,5 +47,15 @@ fn main() -> Result<(), Error> {
         SubCmd::Analysis(_) => unimplemented!(),
     }
 
+    Ok(())
+}
+
+/// Run a Pacman command.
+fn pacman() -> Result<(), Error> {
+    let raw = std::env::args().skip(1);
+    Command::new("pacman")
+        .args(raw)
+        .status()
+        .map_err(Error::IO)?;
     Ok(())
 }

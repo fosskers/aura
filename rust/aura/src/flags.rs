@@ -2,12 +2,6 @@ use clap::{crate_version, AppSettings, Clap};
 use simplelog::LevelFilter;
 use unic_langid::{langid, LanguageIdentifier};
 
-/// Subcommands which can be reduced back into their raw argument form for
-/// passing to Pacman.
-pub trait ToArgs {
-    fn to_args(&self) -> Vec<&str>;
-}
-
 /// Commandline arguments to the Aura executable.
 #[derive(Clap, Debug)]
 #[clap(version = crate_version!(),
@@ -191,82 +185,6 @@ pub struct Sync {
     sysroot: bool,
     /// Packages to search/install.
     packages: Vec<String>,
-}
-
-impl ToArgs for Sync {
-    fn to_args(&self) -> Vec<&str> {
-        let mut args = vec!["-S"];
-
-        if self.clean == 1 {
-            args.push("-c");
-        } else if self.clean == 2 {
-            args.push("-cc");
-        }
-
-        if self.downloadonly {
-            args.push("-w");
-        }
-
-        if self.groups == 1 {
-            args.push("-g");
-        } else if self.groups == 2 {
-            args.push("-gg");
-        }
-
-        if self.info == 1 {
-            args.push("-i");
-        } else if self.info == 2 {
-            args.push("-ii");
-        }
-
-        if self.list {
-            args.push("-l");
-        }
-
-        if self.nodeps == 1 {
-            args.push("-d");
-        } else if self.nodeps == 2 {
-            args.push("-dd");
-        }
-
-        if self.print {
-            args.push("-p");
-        }
-
-        if self.quiet {
-            args.push("-q");
-        }
-
-        if self.refresh == 1 {
-            args.push("-y");
-        } else if self.refresh == 2 {
-            args.push("-yy");
-        }
-
-        if self.search {
-            args.push("-s");
-        }
-
-        if self.sysupgrade == 1 {
-            args.push("-u");
-        } else if self.sysupgrade == 2 {
-            args.push("-uu");
-        }
-
-        if self.verbose {
-            args.push("-b");
-        }
-
-        if self.asdeps {
-            args.push("--asdeps");
-        }
-
-        for p in &self.packages {
-            args.push(p);
-        }
-
-        args
-    }
 }
 
 // TODO Reconcile `pacman -Th` and the manpage entry for -T.
