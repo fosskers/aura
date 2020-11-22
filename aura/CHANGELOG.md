@@ -1,5 +1,13 @@
 # Aura Changelog
 
+## Unreleased
+
+(Rust Port)
+
+#### Changed
+
+- **Breaking:** The top-level command `--viewconf` is now called `--pacconf`.
+
 ## 3.2.2 (2020-10-29)
 
 #### Fixed

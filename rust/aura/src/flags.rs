@@ -88,8 +88,10 @@ pub enum SubCmd {
     Analysis(Analysis),
     /// Display Aura's available localizations
     Languages,
+    /// View the aura.conf detected by Aura.
+    Conf(Conf),
     /// View your pacman.conf.
-    ViewConf,
+    PacConf(PacConf),
     // Extra, // TODO completions, dot output, etc?
 }
 
@@ -665,4 +667,18 @@ pub struct Orphans {
     /// Uninstall all orphan packages.
     #[clap(group = "orphans", long, short = 'j')]
     pub abandon: bool,
+}
+
+/// View the aura.conf detected by Aura.
+#[derive(Clap, Debug)]
+#[clap(long_flag = "conf")]
+pub struct Conf {}
+
+/// View your pacman.conf.
+#[derive(Clap, Debug)]
+#[clap(long_flag = "pacconf")]
+pub struct PacConf {
+    /// Set an alternate Pacman configuration file.
+    #[clap(long, value_name = "path")]
+    pub config: Option<String>,
 }

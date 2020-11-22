@@ -1,7 +1,7 @@
 //! The Aura Package Manager.
 
 use alpm::Alpm;
-use aura::command::orphans;
+use aura::command::{misc, orphans};
 use aura::error::Error;
 use aura::flags::SubCmd;
 use aura_arch as arch;
@@ -37,7 +37,8 @@ fn main() -> Result<(), Error> {
         SubCmd::Cache => unimplemented!(),
         SubCmd::Log => unimplemented!(),
         SubCmd::Languages => unimplemented!(),
-        SubCmd::ViewConf => unimplemented!(),
+        SubCmd::Conf(_) => unimplemented!(),
+        SubCmd::PacConf(pc) => misc::pacman_conf(pc)?,
         // --- Orphan Packages --- //
         SubCmd::Orphans(o) if o.abandon => orphans::remove(&mut alpm, fll)?,
         SubCmd::Orphans(o) if !o.adopt.is_empty() => orphans::adopt(&alpm, fll, o.adopt)?,
