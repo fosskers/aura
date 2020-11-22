@@ -38,7 +38,6 @@ fn main() -> Result<(), Error> {
         SubCmd::Log => unimplemented!(),
         SubCmd::Languages => unimplemented!(),
         SubCmd::ViewConf => unimplemented!(),
-        SubCmd::Extra => unimplemented!(),
         // --- Orphan Packages --- //
         SubCmd::Orphans(o) if o.abandon => orphans::remove(&mut alpm, fll)?,
         SubCmd::Orphans(o) if !o.adopt.is_empty() => orphans::adopt(&alpm, fll, o.adopt)?,

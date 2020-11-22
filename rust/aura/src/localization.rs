@@ -9,6 +9,15 @@ use unic_langid::LanguageIdentifier;
 #[folder = "i18n"]
 struct Translations;
 
+/// Load all localizations.
+///
+/// ```
+/// use i18n_embed_fl::fl;
+///
+/// let fll = aura::localization::loader(None).unwrap();
+/// let msg = fl!(fll, "orphans-adopt");
+/// println!("{}", msg);
+/// ```
 pub fn loader(lang: Option<LanguageIdentifier>) -> Result<FluentLanguageLoader, I18nEmbedError> {
     let loader = fluent_language_loader!();
     loader.load_languages(

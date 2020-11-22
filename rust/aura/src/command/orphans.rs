@@ -1,3 +1,5 @@
+//! All functionality involving the `-O` command.
+
 use crate::error::Error;
 use alpm::{Alpm, PackageReason, TransFlag};
 use aura_arch as arch;

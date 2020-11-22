@@ -1,3 +1,5 @@
+//! Types and utilities for parsing flags from the command line.
+
 use clap::{crate_version, AppSettings, Clap};
 use simplelog::LevelFilter;
 use unic_langid::{langid, LanguageIdentifier};
@@ -37,6 +39,7 @@ pub struct Args {
     /// Minimum level of Aura log messages to display.
     #[clap(long, value_name = "level", possible_values = &["debug", "info", "warn", "error"], global = true)]
     pub log_level: Option<LevelFilter>,
+    /// The Pacman/Aura subcommand to run.
     #[clap(subcommand)]
     pub subcmd: SubCmd,
 }
@@ -52,26 +55,42 @@ impl Args {
     }
 }
 
+/// The Aura Package Manager.
 #[derive(Clap, Debug)]
 pub enum SubCmd {
     // --- Pacman Commands --- //
+    /// Operate on the package database.
     Database(Database),
+    /// Query the files database.
     Files(Files),
+    /// Query the package database.
     Query(Query),
+    /// Remove packages from the system.
     Remove(Remove),
+    /// Synchronize packages.
     Sync(Sync),
+    /// Check if given dependencies are satisfied.
     DepTest(DepTest),
+    /// Upgrade or add packages to the system.
     Upgrade(Upgrade),
     // --- Aura Commands --- //
+    /// Synchronize AUR packages.
     AurSync,
+    /// Save and restore the global package state.
     Backup,
+    /// Manage the package cache.
     Cache,
+    /// View the Pacman/ALPM log.
     Log,
+    /// Handle orphan packages.
     Orphans(Orphans),
+    /// Perform security analysis of a PKGBUILD.
     Analysis(Analysis),
+    /// Display Aura's available localizations
     Languages,
+    /// View your pacman.conf.
     ViewConf,
-    Extra, // TODO completions, dot output, etc?
+    // Extra, // TODO completions, dot output, etc?
 }
 
 /// Synchronize packages.
