@@ -53,9 +53,9 @@ fn main() -> Result<(), Error> {
 /// Run a Pacman command.
 fn pacman() -> Result<(), Error> {
     let raw = std::env::args().skip(1);
-    Command::new("pacman")
-        .args(raw)
-        .status()
-        .map_err(Error::IO)?;
-    Ok(())
+    match Command::new("pacman").args(raw).status() {
+        Err(e) => Err(Error::IO(e)),
+        Ok(es) if es.success() => Ok(()),
+        Ok(_) => Err(Error::PacmanError),
+    }
 }

@@ -18,4 +18,6 @@ pub enum Error {
     Rejected,
     /// None of the packages specified by the user actually exist.
     NoneExist,
+    /// A non-zero exit code was returned from a call to Pacman.
+    PacmanError,
 }
