@@ -35,16 +35,20 @@ fn main() -> Result<(), Error> {
         SubCmd::AurSync => unimplemented!(),
         SubCmd::Backup => unimplemented!(),
         SubCmd::Cache => unimplemented!(),
-        SubCmd::Log(l) => log::view_log(l.logfile)?,
-        SubCmd::Languages(_) => misc::languages(),
-        SubCmd::Conf(_) => unimplemented!(),
-        SubCmd::PacConf(pc) => misc::pacman_conf(pc)?,
+        // --- Logs --- //
+        SubCmd::Log(l) if l.search.is_some() => log::search(l.logfile, l.search.unwrap())?,
+        SubCmd::Log(l) => log::view(l.logfile)?,
         // --- Orphan Packages --- //
         SubCmd::Orphans(o) if o.abandon => orphans::remove(&mut alpm, fll)?,
         SubCmd::Orphans(o) if !o.adopt.is_empty() => orphans::adopt(&alpm, fll, o.adopt)?,
         SubCmd::Orphans(_) => orphans::list(&alpm),
         // --- PKGBUILD Analysis --- //
         SubCmd::Analysis(_) => unimplemented!(),
+        // --- Configuration --- //
+        SubCmd::Conf(_) => unimplemented!(),
+        SubCmd::PacConf(pc) => misc::pacman_conf(pc)?,
+        // --- Other --- //
+        SubCmd::Languages(_) => misc::languages(),
     }
 
     Ok(())

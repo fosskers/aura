@@ -692,6 +692,14 @@ pub struct Languages {}
 #[clap(short_flag = 'L', long_flag = "viewlog")]
 /// View the Pacman/ALPM log.
 pub struct Log {
+    /// Display install/upgrade history for the given packages.
+    #[clap(group = "log", long, short, value_name = "packages", display_order = 1)]
+    pub info: Vec<String>,
+
+    /// Search the Pacman log for a matching string.
+    #[clap(group = "log", long, short, value_name = "term", display_order = 1)]
+    pub search: Option<String>,
+
     /// Set an alternate log file.
     #[clap(long, value_name = "path")]
     pub logfile: Option<String>,
