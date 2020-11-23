@@ -36,7 +36,7 @@ fn main() -> Result<(), Error> {
         SubCmd::Backup => unimplemented!(),
         SubCmd::Cache => unimplemented!(),
         SubCmd::Log => unimplemented!(),
-        SubCmd::Languages(_) => misc::languages(fll),
+        SubCmd::Languages(_) => misc::languages(),
         SubCmd::Conf(_) => unimplemented!(),
         SubCmd::PacConf(pc) => misc::pacman_conf(pc)?,
         // --- Orphan Packages --- //
