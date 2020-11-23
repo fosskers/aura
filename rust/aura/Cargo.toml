@@ -22,5 +22,6 @@ unic-langid = { version = "0.9", features = ["macros"] }
 [dependencies.i18n-embed]
 version = "0.9"
 git = "https://github.com/fosskers/cargo-i18n"
-rev = "18bc16e785efbb2b53b3c8782b393f13a2d11175"
-features = ["fluent-system"]
+# rev = "18bc16e785efbb2b53b3c8782b393f13a2d11175"
+rev = "78c98b2234ecc69ca1ca1876b1dc72fcd84194ef"
+features = ["fluent-system", "desktop-requester"]

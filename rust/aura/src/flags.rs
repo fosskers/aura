@@ -86,8 +86,8 @@ pub enum SubCmd {
     Orphans(Orphans),
     /// Perform security analysis of a PKGBUILD.
     Analysis(Analysis),
-    /// Display Aura's available localizations
-    Languages,
+    /// Display Aura's available localizations.
+    Languages(Languages),
     /// View the aura.conf detected by Aura.
     Conf(Conf),
     /// View your pacman.conf.
@@ -682,3 +682,8 @@ pub struct PacConf {
     #[clap(long, value_name = "path")]
     pub config: Option<String>,
 }
+
+#[derive(Clap, Debug)]
+#[clap(long_flag = "languages")]
+/// Display Aura's available localizations.
+pub struct Languages {}

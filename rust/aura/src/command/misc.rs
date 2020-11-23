@@ -2,6 +2,7 @@
 
 use crate::error::Error;
 use crate::flags::PacConf;
+use i18n_embed::fluent::FluentLanguageLoader;
 use std::path::Path;
 use std::process::Command;
 
@@ -19,4 +20,11 @@ pub fn pacman_conf(pc: PacConf) -> Result<(), Error> {
 
     Command::new(prog).arg(conf).status().map_err(Error::IO)?;
     Ok(())
+}
+
+/// Display the locales that Aura has been translated to.
+pub fn languages(fll: FluentLanguageLoader) {
+    for lang in fll.current_languages() {
+        println!("{}", lang);
+    }
 }
