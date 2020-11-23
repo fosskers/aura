@@ -5,11 +5,14 @@ use alpm::{Alpm, Package, PackageReason};
 /// The default "root" filepath as required by `alpm`.
 pub const DEFAULT_ROOT: &str = "/";
 
-/// The default filepath of the pacman/libalpm database.
+/// The default filepath of the Pacman/libalpm database.
 pub const DEFAULT_DB: &str = "/var/lib/pacman/";
 
-/// The default filepath of the pacman configuration.
+/// The default filepath of the Pacman configuration.
 pub const DEFAULT_PAC_CONF: &str = "/etc/pacman.conf";
+
+/// The default filepath of the Pacman log.
+pub const DEFAULT_LOG: &str = "/var/log/pacman.log";
 
 #[derive(Debug)]
 pub enum Error {

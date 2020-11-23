@@ -1,7 +1,7 @@
 //! The Aura Package Manager.
 
 use alpm::Alpm;
-use aura::command::{misc, orphans};
+use aura::command::{log, misc, orphans};
 use aura::error::Error;
 use aura::flags::SubCmd;
 use aura_arch as arch;
@@ -35,7 +35,7 @@ fn main() -> Result<(), Error> {
         SubCmd::AurSync => unimplemented!(),
         SubCmd::Backup => unimplemented!(),
         SubCmd::Cache => unimplemented!(),
-        SubCmd::Log => unimplemented!(),
+        SubCmd::Log(l) => log::view_log(l.logfile)?,
         SubCmd::Languages(_) => misc::languages(),
         SubCmd::Conf(_) => unimplemented!(),
         SubCmd::PacConf(pc) => misc::pacman_conf(pc)?,

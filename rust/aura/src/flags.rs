@@ -81,7 +81,7 @@ pub enum SubCmd {
     /// Manage the package cache.
     Cache,
     /// View the Pacman/ALPM log.
-    Log,
+    Log(Log),
     /// Handle orphan packages.
     Orphans(Orphans),
     /// Perform security analysis of a PKGBUILD.
@@ -687,3 +687,12 @@ pub struct PacConf {
 #[clap(long_flag = "languages")]
 /// Display Aura's available localizations.
 pub struct Languages {}
+
+#[derive(Clap, Debug)]
+#[clap(short_flag = 'L', long_flag = "viewlog")]
+/// View the Pacman/ALPM log.
+pub struct Log {
+    /// Set an alternate log file.
+    #[clap(long, value_name = "path")]
+    pub logfile: Option<String>,
+}
