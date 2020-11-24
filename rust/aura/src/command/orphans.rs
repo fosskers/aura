@@ -1,9 +1,10 @@
 //! All functionality involving the `-O` command.
 
 use crate::error::Error;
-use crate::io;
+use crate::io::{a, aln};
 use alpm::{Alpm, PackageReason, TransFlag};
 use aura_arch as arch;
+use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use rustyline::Editor;
@@ -30,7 +31,8 @@ pub fn adopt(alpm: &Alpm, fll: FluentLanguageLoader, packages: Vec<String>) -> R
     } else {
         for mut p in reals {
             p.set_reason(PackageReason::Explicit).map_err(Error::Alpm)?;
-            io::agreenln(&fl!(fll, "orphans-adopt", package = p.name()))?;
+            let msg = format!("{}", fl!(fll, "orphans-adopt", package = p.name()).green());
+            aln(&msg);
         }
 
         Ok(())
@@ -63,27 +65,27 @@ pub fn remove(alpm: &mut Alpm, fll: FluentLanguageLoader) -> Result<(), Error> {
         // Notify the user of the results.
         let removal = alpm.trans_remove();
         let longest = removal.iter().map(|p| p.name().len()).max().unwrap_or(0);
-        io::ayellowln(&format!("{}\n", fl!(fll, "orphans-abandon")))?;
+        aln(&format!("{}\n", fl!(fll, "orphans-abandon").yellow()));
         for p in removal {
             let size = format!("{}", p.isize().bytes());
             if names.contains(p.name()) {
-                io::cyan(&format!("  {:w$} ", p.name(), w = longest))?;
+                print!("  {:w$} ", p.name().cyan(), w = longest);
                 println!("{:>9}", size);
             } else {
                 println!("  {:w$} {:>9}", p.name(), size, w = longest);
             }
         }
-        io::magenta(&format!("  {:-<w$}\n", "-", w = longest + 10))?;
+        println!("  {:-<w$}", "-".magenta(), w = longest + 10);
         let total: i64 = removal.iter().map(|p| p.isize()).sum();
         let size = format!("{}", total.bytes());
         println!("  {:w$} {:>9}\n", "Total", size, w = longest);
 
         // Proceed with the removal?
         let mut rl = Editor::<()>::new();
-        match rl.readline("aura :: Proceed? [Y/n] ") {
+        match rl.readline(&a("Proceed? [Y/n] ")) {
             Ok(line) if line.is_empty() || line == "y" || line == "Y" => {
                 alpm.trans_commit().map_err(|(_, e)| Error::Alpm(e))?;
-                io::agreenln("Done.")?;
+                aln("Done.");
             }
             Ok(_) => Err(Error::Rejected)?,
             Err(e) => Err(Error::RustyLine(e))?,
