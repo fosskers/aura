@@ -11,17 +11,10 @@ aura-core = { path = "../aura-core" }
 clap = "3.0.0-beta.2"
 clap_generate = "3.0.0-beta.2"
 colored = "2.0"
-# i18n-embed = { version = "0.9", features = ["fluent-system"] }
+i18n-embed = { version = "0.9.4", features = ["fluent-system"] }
 i18n-embed-fl = "0.2"
 rust-embed = "5.6"
 rustyline = "6.3"
 simplelog = "0.8"
 ubyte = "0.10"
 unic-langid = { version = "0.9", features = ["macros"] }
-
-# Temporary branch until PR is merged.
-[dependencies.i18n-embed]
-version = "0.9"
-git = "https://github.com/fosskers/cargo-i18n"
-rev = "18bc16e785efbb2b53b3c8782b393f13a2d11175"
-features = ["fluent-system"]
