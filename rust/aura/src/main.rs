@@ -6,6 +6,7 @@ use aura::error::Error;
 use aura::flags::SubCmd;
 use aura_arch as arch;
 use clap::Clap;
+use std::path::Path;
 use std::process::Command;
 
 fn main() -> Result<(), Error> {
@@ -16,9 +17,16 @@ fn main() -> Result<(), Error> {
     let lang = args.language();
     let fll = aura::localization::loader(lang).map_err(Error::I18n)?;
 
+    // Establish common file paths.
+    let log_path: &Path = args
+        .logfile
+        .as_ref()
+        .map(|p| Path::new(p))
+        .unwrap_or_else(|| Path::new(arch::DEFAULT_LOG));
+
     let mut alpm = Alpm::new(
-        args.root.unwrap_or(arch::DEFAULT_ROOT.to_string()),
-        args.dbpath.unwrap_or(arch::DEFAULT_DB.to_string()),
+        args.root.unwrap_or_else(|| arch::DEFAULT_ROOT.to_string()),
+        args.dbpath.unwrap_or_else(|| arch::DEFAULT_DB.to_string()),
     )
     .map_err(Error::Alpm)?;
 
@@ -36,8 +44,9 @@ fn main() -> Result<(), Error> {
         SubCmd::Backup => unimplemented!(),
         SubCmd::Cache => unimplemented!(),
         // --- Logs --- //
-        SubCmd::Log(l) if l.search.is_some() => log::search(l.logfile, l.search.unwrap())?,
-        SubCmd::Log(l) => log::view(l.logfile)?,
+        SubCmd::Log(l) if l.search.is_some() => log::search(log_path, l.search.unwrap())?,
+        SubCmd::Log(l) if !l.info.is_empty() => log::info(log_path, l.info),
+        SubCmd::Log(_) => log::view(log_path)?,
         // --- Orphan Packages --- //
         SubCmd::Orphans(o) if o.abandon => orphans::remove(&mut alpm, fll)?,
         SubCmd::Orphans(o) if !o.adopt.is_empty() => orphans::adopt(&alpm, fll, o.adopt)?,

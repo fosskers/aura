@@ -26,6 +26,9 @@ pub struct Args {
     /// Set an alternate installation root.
     #[clap(long, short, value_name = "path", global = true, display_order = 1)]
     pub root: Option<String>,
+    /// Set an alternate log file.
+    #[clap(long, value_name = "path", global = true)]
+    pub logfile: Option<String>,
 
     // --- Aura Language Options --- //
     /// Output in English.
@@ -180,9 +183,6 @@ pub struct Sync {
     /// Ignore a group ugrade (can be used more than once).
     #[clap(long, value_name = "grp")]
     ignoregroup: Option<String>,
-    /// Set an alternate log file.
-    #[clap(long, value_name = "path")]
-    logfile: Option<String>,
     /// Do not reinstall up to date packages.
     #[clap(long)]
     needed: bool,
@@ -247,9 +247,6 @@ pub struct DepTest {
     /// Set an alternate hook location.
     #[clap(long, value_name = "dir")]
     hookdir: Option<String>,
-    /// Set an alternate log file.
-    #[clap(long, value_name = "path")]
-    logfile: Option<String>,
     /// Do not ask for any confirmation.
     #[clap(long)]
     noconfirm: bool,
@@ -318,9 +315,6 @@ pub struct Upgrade {
     /// Ignore a group ugrade (can be used more than once).
     #[clap(long, value_name = "grp")]
     ignoregroup: Option<String>,
-    /// Set an alternate log file.
-    #[clap(long, value_name = "path")]
-    logfile: Option<String>,
     /// Do not reinstall up to date packages.
     #[clap(long)]
     needed: bool,
@@ -394,9 +388,6 @@ pub struct Files {
     /// Set an alternate hook location.
     #[clap(long, value_name = "dir")]
     hookdir: Option<String>,
-    /// Set an alternate log file.
-    #[clap(long, value_name = "path")]
-    logfile: Option<String>,
     /// Produce machine-readable output.
     #[clap(long)]
     machinereadable: bool,
@@ -468,9 +459,6 @@ pub struct Remove {
     /// Set an alternate hook location.
     #[clap(long, value_name = "dir")]
     hookdir: Option<String>,
-    /// Set an alternate log file.
-    #[clap(long, value_name = "path")]
-    logfile: Option<String>,
     /// Do not ask for any confirmation.
     #[clap(long)]
     noconfirm: bool,
@@ -536,9 +524,6 @@ pub struct Database {
     /// Set an alternate hook location.
     #[clap(long, value_name = "dir")]
     hookdir: Option<String>,
-    /// Set an alternate log file.
-    #[clap(long, value_name = "path")]
-    logfile: Option<String>,
     /// Do not ask for any confirmation.
     #[clap(long)]
     noconfirm: bool,
@@ -629,9 +614,6 @@ pub struct Query {
     /// Set an alternate hook location.
     #[clap(long, value_name = "dir")]
     hookdir: Option<String>,
-    /// Set an alternate log file.
-    #[clap(long, value_name = "path")]
-    logfile: Option<String>,
     /// Do not ask for any confirmation.
     #[clap(long)]
     noconfirm: bool,
@@ -699,8 +681,4 @@ pub struct Log {
     /// Search the Pacman log for a matching string.
     #[clap(group = "log", long, short, value_name = "term", display_order = 1)]
     pub search: Option<String>,
-
-    /// Set an alternate log file.
-    #[clap(long, value_name = "path")]
-    pub logfile: Option<String>,
 }
