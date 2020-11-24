@@ -5,6 +5,7 @@ use crate::error::Error;
 use aura_core as core;
 use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
+use i18n_embed::LanguageLoader;
 use i18n_embed_fl::fl;
 use std::path::Path;
 use std::process::Command;
@@ -34,14 +35,26 @@ pub fn info(fll: FluentLanguageLoader, path: &Path, pks: Vec<String>) {
         let f = fl!(fll, "logs-first");
         let u = fl!(fll, "logs-upgrades");
         let r = fl!(fll, "logs-recent");
-        let longest = vec![&p, &f, &u, &r].iter().map(|s| s.len()).max().unwrap();
-        println!("{:w$} : {}", p.bold(), e.package, w = longest);
-        println!("{:w$} : {}", f.bold(), e.installed, w = longest);
-        println!("{:w$} : {}", u.bold(), e.upgrades, w = longest);
-        println!("{:w$} :", r.bold(), w = longest);
+        // The longest field.
+        let l = vec![&p, &f, &u, &r]
+            .iter()
+            .map(|s| s.chars().count())
+            .max()
+            .unwrap();
+        // A width multiplier to aid in proper padding below.
+        let lang = fll.current_language().language;
+        let m = if lang == "ja" { 2 } else { 1 };
+        println!("{}{:w$} : {}", p.bold(), "", e.package, w = pad(m, l, &p));
+        println!("{}{:w$} : {}", f.bold(), "", e.installed, w = pad(m, l, &f));
+        println!("{}{:w$} : {}", u.bold(), "", e.upgrades, w = pad(m, l, &u));
+        println!("{}{:w$} :", r.bold(), "", w = pad(m, l, &r));
         for r in e.recent {
             println!("{}", r);
         }
         println!("");
     }
+}
+
+fn pad(mult: usize, longest: usize, s: &str) -> usize {
+    mult * (longest - s.chars().count())
 }
