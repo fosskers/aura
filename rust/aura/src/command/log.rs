@@ -3,6 +3,7 @@
 use crate::command::misc;
 use crate::error::Error;
 use aura_core as core;
+use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use std::path::Path;
@@ -34,10 +35,10 @@ pub fn info(fll: FluentLanguageLoader, path: &Path, pks: Vec<String>) {
         let u = fl!(fll, "logs-upgrades");
         let r = fl!(fll, "logs-recent");
         let longest = vec![&p, &f, &u, &r].iter().map(|s| s.len()).max().unwrap();
-        println!("{:w$} : {}", p, e.package, w = longest);
-        println!("{:w$} : {}", f, e.installed, w = longest);
-        println!("{:w$} : {}", u, e.upgrades, w = longest);
-        println!("{:w$} :", r, w = longest);
+        println!("{:w$} : {}", p.bold(), e.package, w = longest);
+        println!("{:w$} : {}", f.bold(), e.installed, w = longest);
+        println!("{:w$} : {}", u.bold(), e.upgrades, w = longest);
+        println!("{:w$} :", r.bold(), w = longest);
         for r in e.recent {
             println!("{}", r);
         }
