@@ -45,7 +45,7 @@ fn main() -> Result<(), Error> {
         SubCmd::Cache => unimplemented!(),
         // --- Logs --- //
         SubCmd::Log(l) if l.search.is_some() => log::search(log_path, l.search.unwrap())?,
-        SubCmd::Log(l) if !l.info.is_empty() => log::info(log_path, l.info),
+        SubCmd::Log(l) if !l.info.is_empty() => log::info(fll, log_path, l.info),
         SubCmd::Log(_) => log::view(log_path)?,
         // --- Orphan Packages --- //
         SubCmd::Orphans(o) if o.abandon => orphans::remove(&mut alpm, fll)?,

@@ -5,4 +5,5 @@
 pub mod command;
 pub mod error;
 pub mod flags;
+pub mod io;
 pub mod localization;

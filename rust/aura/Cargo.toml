@@ -7,6 +7,7 @@ edition = "2018"
 [dependencies]
 alpm = "1.1"
 aura-arch = { path = "../aura-arch" }
+aura-core = { path = "../aura-core" }
 clap = "3.0.0-beta.2"
 clap_generate = "3.0.0-beta.2"
 # i18n-embed = { version = "0.9", features = ["fluent-system"] }
