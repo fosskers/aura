@@ -64,8 +64,8 @@ fn main() -> Result<(), Error> {
         SubCmd::Analysis(_) => unimplemented!(),
         // --- Configuration --- //
         SubCmd::Conf(c) if c.aura => unimplemented!(),
-        SubCmd::Conf(c) if c.makepkg => misc::makepkg_conf()?,
-        SubCmd::Conf(c) => misc::pacman_conf(c)?,
+        SubCmd::Conf(c) if c.makepkg => conf::makepkg_conf()?,
+        SubCmd::Conf(c) => conf::pacman_conf(c)?,
         // --- Statistics --- //
         SubCmd::Stats(s) if s.localization => stats::localization()?,
         SubCmd::Stats(_) => unimplemented!(),
