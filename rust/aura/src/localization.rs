@@ -1,10 +1,8 @@
 //! Utilities for localizing messages printed by the Aura executable.
 
-use crate::error::Error;
 use i18n_embed::fluent::{fluent_language_loader, FluentLanguageLoader};
 use i18n_embed::{I18nEmbedError, LanguageLoader};
 use rust_embed::RustEmbed;
-use std::collections::HashMap;
 use unic_langid::LanguageIdentifier;
 
 #[derive(RustEmbed)]
@@ -70,26 +68,4 @@ pub fn available_languages() -> Vec<LanguageIdentifier> {
         .collect();
     vec.sort();
     vec
-}
-
-/// Raw contents of loaded localizations.
-pub fn foo() -> Result<(), Error> {
-    let fll = loader_all().map_err(Error::I18n)?;
-    let stats: HashMap<LanguageIdentifier, usize> = available_languages()
-        .into_iter()
-        .map(|lang| {
-            let count = fll.with_message_iter(&lang, |iter| iter.count());
-            (lang, count)
-        })
-        .collect();
-
-    let english = fll.current_language();
-    let max = stats.get(&english).unwrap().clone();
-
-    for (lang, count) in stats {
-        let perc = 100.0 * count as f64 / max as f64;
-        println!("{} {}/{} ({:.2}%)", lang, count, max, perc);
-    }
-
-    Ok(())
 }

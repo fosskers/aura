@@ -1,7 +1,7 @@
 //! The Aura Package Manager.
 
 use alpm::Alpm;
-use aura::command::{log, misc, orphans};
+use aura::command::*;
 use aura::error::Error;
 use aura::flags::SubCmd;
 use aura_arch as arch;
@@ -57,7 +57,7 @@ fn main() -> Result<(), Error> {
         SubCmd::Conf(_) => unimplemented!(),
         SubCmd::PacConf(pc) => misc::pacman_conf(pc)?,
         // --- Statistics --- //
-        SubCmd::Stats(s) if s.localization => aura::localization::foo()?,
+        SubCmd::Stats(s) if s.localization => stats::localization()?,
         SubCmd::Stats(_) => unimplemented!(),
         // --- Other --- //
         SubCmd::Languages(_) => misc::languages(),
