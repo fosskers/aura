@@ -16,6 +16,8 @@ pub enum Error {
     I18n(i18n_embed::I18nEmbedError),
     /// An error during logger initialization.
     Log(simplelog::TermLogError),
+    /// An error reading an environment variable.
+    Env(std::env::VarError),
     /// The said "no" at some prompt.
     Rejected,
     /// None of the packages specified by the user actually exist.
