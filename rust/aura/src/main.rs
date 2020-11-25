@@ -1,5 +1,6 @@
 //! The Aura Package Manager.
 
+use ::log::debug;
 use alpm::Alpm;
 use aura::command::*;
 use aura::error::Error;
@@ -48,9 +49,9 @@ fn main() -> Result<(), Error> {
         SubCmd::Upgrade(_) => pacman()?,
         SubCmd::Sync(_) => pacman()?,
         // --- AUR Packages --- //
-        SubCmd::AurSync => unimplemented!(),
-        SubCmd::Backup => unimplemented!(),
-        SubCmd::Cache => unimplemented!(),
+        SubCmd::Aur(_) => unimplemented!(),
+        SubCmd::Backup(_) => unimplemented!(),
+        SubCmd::Cache(_) => unimplemented!(),
         // --- Logs --- //
         SubCmd::Log(l) if l.search.is_some() => log::search(log_path, l.search.unwrap())?,
         SubCmd::Log(l) if !l.info.is_empty() => log::info(fll, log_path, l.info),
@@ -62,13 +63,14 @@ fn main() -> Result<(), Error> {
         // --- PKGBUILD Analysis --- //
         SubCmd::Analysis(_) => unimplemented!(),
         // --- Configuration --- //
-        SubCmd::Conf(_) => unimplemented!(),
-        SubCmd::PacConf(pc) => misc::pacman_conf(pc)?,
+        SubCmd::Conf(c) if c.aura => unimplemented!(),
+        SubCmd::Conf(c) if c.makepkg => misc::makepkg_conf()?,
+        SubCmd::Conf(c) => misc::pacman_conf(c)?,
         // --- Statistics --- //
         SubCmd::Stats(s) if s.localization => stats::localization()?,
         SubCmd::Stats(_) => unimplemented!(),
         // --- Other --- //
-        SubCmd::Languages(_) => misc::languages(),
+        SubCmd::Lang(_) => misc::languages(),
     }
 
     Ok(())
@@ -76,6 +78,8 @@ fn main() -> Result<(), Error> {
 
 /// Run a Pacman command.
 fn pacman() -> Result<(), Error> {
+    debug!("Running a Pacman command.");
+    // TODO Remove Aura flags.
     let raw = std::env::args().skip(1);
     match Command::new("pacman").args(raw).status() {
         Err(e) => Err(Error::IO(e)),

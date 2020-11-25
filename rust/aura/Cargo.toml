@@ -13,6 +13,7 @@ clap_generate = "3.0.0-beta.2"
 colored = "2.0"
 i18n-embed = { version = "0.9.4", features = ["fluent-system"] }
 i18n-embed-fl = "0.2"
+log = "0.4"
 rust-embed = "5.6"
 rustyline = "6.3"
 simplelog = "0.8"

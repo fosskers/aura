@@ -11,6 +11,9 @@ pub const DEFAULT_DB: &str = "/var/lib/pacman/";
 /// The default filepath of the Pacman configuration.
 pub const DEFAULT_PAC_CONF: &str = "/etc/pacman.conf";
 
+/// The default filepath of the Makepkg configuration.
+pub const DEFAULT_MAKEPKG_CONF: &str = "/etc/makepkg.conf";
+
 /// The default filepath of the Pacman log.
 pub const DEFAULT_LOG: &str = "/var/log/pacman.log";
 

@@ -70,7 +70,7 @@ pub enum SubCmd {
     Query(Query),
     /// Remove packages from the system.
     Remove(Remove),
-    /// Synchronize packages.
+    /// Synchronize official packages.
     Sync(Sync),
     /// Check if given dependencies are satisfied.
     DepTest(DepTest),
@@ -78,11 +78,11 @@ pub enum SubCmd {
     Upgrade(Upgrade),
     // --- Aura Commands --- //
     /// Synchronize AUR packages.
-    AurSync,
+    Aur(Aur),
     /// Save and restore the global package state.
-    Backup,
+    Backup(Backup),
     /// Manage the package cache.
-    Cache,
+    Cache(Cache),
     /// View the Pacman/ALPM log.
     Log(Log),
     /// Handle orphan packages.
@@ -90,17 +90,15 @@ pub enum SubCmd {
     /// Perform security analysis of a PKGBUILD.
     Analysis(Analysis),
     /// Display Aura's available localizations.
-    Languages(Languages),
-    /// View the aura.conf detected by Aura.
+    Lang(Lang),
+    /// View various configuration files.
     Conf(Conf),
-    /// View your pacman.conf.
-    PacConf(PacConf),
     /// View statistics about your machine or about Aura itself.
     Stats(Stats),
     // Extra, // TODO completions, dot output, etc?
 }
 
-/// Synchronize packages.
+/// Synchronize official packages.
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'S', long_flag = "sync")]
 pub struct Sync {
@@ -653,24 +651,23 @@ pub struct Orphans {
     pub abandon: bool,
 }
 
-/// View the aura.conf detected by Aura.
+/// View various config files. Default: pacman.conf
 #[derive(Clap, Debug)]
-#[clap(long_flag = "conf")]
-pub struct Conf {}
-
-/// View your pacman.conf.
-#[derive(Clap, Debug)]
-#[clap(long_flag = "pacconf")]
-pub struct PacConf {
+pub struct Conf {
     /// Set an alternate Pacman configuration file.
     #[clap(long, value_name = "path")]
     pub config: Option<String>,
+    /// View the Aura conf.
+    #[clap(group = "conf", long, short, display_order = 1)]
+    pub aura: bool,
+    /// View the Makepkg conf.
+    #[clap(group = "conf", long, short, display_order = 1)]
+    pub makepkg: bool,
 }
 
 #[derive(Clap, Debug)]
-#[clap(long_flag = "languages")]
 /// Display Aura's available localizations.
-pub struct Languages {}
+pub struct Lang {}
 
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'L', long_flag = "viewlog")]
@@ -685,10 +682,25 @@ pub struct Log {
     pub search: Option<String>,
 }
 
-/// View statistics about your machine or about Aura itself.
+/// View statistics about your machine or Aura itself.
 #[derive(Clap, Debug)]
 pub struct Stats {
     /// View Aura's localization statistics.
     #[clap(group = "stats", long)]
     pub localization: bool,
 }
+
+/// Synchronize AUR packages.
+#[derive(Clap, Debug)]
+#[clap(short_flag = 'A', long_flag = "aursync")]
+pub struct Aur {}
+
+/// Save and restore the global package state.
+#[derive(Clap, Debug)]
+#[clap(short_flag = 'B', long_flag = "backup")]
+pub struct Backup {}
+
+/// Manage the package cache.
+#[derive(Clap, Debug)]
+#[clap(short_flag = 'C', long_flag = "cache")]
+pub struct Cache {}
