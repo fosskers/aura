@@ -4,7 +4,7 @@ use ::log::debug;
 use alpm::Alpm;
 use aura::command::*;
 use aura::error::Error;
-use aura::flags::SubCmd;
+use aura::flags::{SubCmd, AURA_GLOBALS};
 use aura_arch as arch;
 use clap::Clap;
 use simplelog::Config;
@@ -18,7 +18,7 @@ fn main() -> Result<(), Error> {
     let args = aura::flags::Args::parse();
 
     // Activate the logger.
-    for l in args.log_level {
+    if let Some(l) = args.log_level {
         TermLogger::init(l, Config::default(), TerminalMode::Mixed).map_err(Error::Log)?;
     }
 
@@ -80,10 +80,25 @@ fn main() -> Result<(), Error> {
 
 /// Run a Pacman command.
 fn pacman() -> Result<(), Error> {
-    debug!("Running a Pacman command.");
-    // TODO Remove Aura flags.
-    let raw = std::env::args().skip(1);
-    match Command::new("pacman").args(raw).status() {
+    let mut raws: Vec<String> = std::env::args()
+        .skip(1)
+        .filter(|a| !(AURA_GLOBALS.contains(&a.as_str()) || a.starts_with("--log-level=")))
+        .collect();
+
+    // Special consideration for split cases like `--log-level debug`.
+    if let Some(ix) = raws
+        .iter()
+        .enumerate()
+        // TODO Use `bool::then` once it soon stabilizes.
+        .find_map(|(i, v)| if v == "--log-level" { Some(i) } else { None })
+    {
+        raws.remove(ix); // --log-level
+        raws.remove(ix); // Its argument.
+    }
+
+    debug!("Passing to Pacman: {:?}", raws);
+
+    match Command::new("pacman").args(raws).status() {
         Err(e) => Err(Error::IO(e)),
         Ok(es) if es.success() => Ok(()),
         Ok(_) => Err(Error::PacmanError),
