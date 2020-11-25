@@ -1,4 +1,4 @@
-//! Viewing the Pacman/ALPM log.
+//! All functionality involving the `-L` command.
 
 use crate::command::misc;
 use crate::error::Error;

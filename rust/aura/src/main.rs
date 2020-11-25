@@ -15,7 +15,7 @@ fn main() -> Result<(), Error> {
 
     // Establish the language strings to be used.
     let lang = args.language();
-    let fll = aura::localization::loader(lang).map_err(Error::I18n)?;
+    let fll = aura::localization::load(lang).map_err(Error::I18n)?;
 
     // Establish common file paths.
     let log_path: &Path = args

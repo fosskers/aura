@@ -29,7 +29,8 @@ struct Translations;
 // nl-NL Dutch
 // ??? Esperanto ???
 
-/// Load all localizations.
+/// Load the localizations for a particular language, or just fallback to
+/// English.
 ///
 /// ```
 /// use i18n_embed_fl::fl;
@@ -38,7 +39,7 @@ struct Translations;
 /// let msg = fl!(fll, "orphans-adopt");
 /// println!("{}", msg);
 /// ```
-pub fn loader(lang: Option<LanguageIdentifier>) -> Result<FluentLanguageLoader, I18nEmbedError> {
+pub fn load(lang: Option<LanguageIdentifier>) -> Result<FluentLanguageLoader, I18nEmbedError> {
     let loader = fluent_language_loader!();
     loader.load_languages(
         &Translations,
@@ -48,11 +49,11 @@ pub fn loader(lang: Option<LanguageIdentifier>) -> Result<FluentLanguageLoader, 
     Ok(loader)
 }
 
-/// Like [`loader`], but loads all available languages.
+/// Like [`load`], but loads all available languages.
 ///
 /// There is no guarantee about what language will end up the default, so this
 /// shouldn't be used for normal localization purposes.
-pub fn loader_all() -> Result<FluentLanguageLoader, I18nEmbedError> {
+pub fn load_all() -> Result<FluentLanguageLoader, I18nEmbedError> {
     let loader = fluent_language_loader!();
     let langs = available_languages();
     let slice: Vec<&LanguageIdentifier> = langs.iter().collect();
