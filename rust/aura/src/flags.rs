@@ -91,7 +91,7 @@ pub enum SubCmd {
     Analysis(Analysis),
     /// Display Aura's available localizations.
     Lang(Lang),
-    /// View various configuration files.
+    /// View various configuration settings and files.
     Conf(Conf),
     /// View statistics about your machine or about Aura itself.
     Stats(Stats),
@@ -651,18 +651,24 @@ pub struct Orphans {
     pub abandon: bool,
 }
 
-/// View various config files. Default: pacman.conf
+/// View various configuration settings and files.
 #[derive(Clap, Debug)]
 pub struct Conf {
     /// Set an alternate Pacman configuration file.
     #[clap(long, value_name = "path")]
     pub config: Option<String>,
+    /// View the Pacman conf.
+    #[clap(group = "conf", long, short, display_order = 1)]
+    pub pacman: bool,
     /// View the Aura conf.
     #[clap(group = "conf", long, short, display_order = 1)]
     pub aura: bool,
     /// View the Makepkg conf.
     #[clap(group = "conf", long, short, display_order = 1)]
     pub makepkg: bool,
+    /// List all `.pacnew` files newer than their originals.
+    #[clap(group = "conf", long = "new", display_order = 1)]
+    pub pacnew: bool,
 }
 
 #[derive(Clap, Debug)]
@@ -688,6 +694,10 @@ pub struct Stats {
     /// View Aura's localization statistics.
     #[clap(group = "stats", long)]
     pub localization: bool,
+
+    /// View the Top 10 heaviest installed packages.
+    #[clap(group = "stats", long)]
+    pub heavy: bool,
 }
 
 /// Synchronize AUR packages.

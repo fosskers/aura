@@ -63,11 +63,13 @@ fn main() -> Result<(), Error> {
         // --- PKGBUILD Analysis --- //
         SubCmd::Analysis(_) => unimplemented!(),
         // --- Configuration --- //
+        SubCmd::Conf(c) if c.pacman => conf::pacman_conf(c)?,
         SubCmd::Conf(c) if c.aura => unimplemented!(),
         SubCmd::Conf(c) if c.makepkg => conf::makepkg_conf()?,
-        SubCmd::Conf(c) => conf::pacman_conf(c)?,
+        SubCmd::Conf(_) => unimplemented!(),
         // --- Statistics --- //
         SubCmd::Stats(s) if s.localization => stats::localization()?,
+        SubCmd::Stats(s) if s.heavy => stats::heavy_packages(&alpm),
         SubCmd::Stats(_) => unimplemented!(),
         // --- Other --- //
         SubCmd::Lang(_) => misc::languages(),
