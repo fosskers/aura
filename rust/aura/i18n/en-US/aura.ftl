@@ -7,3 +7,6 @@ logs-package = Package
 logs-first = First Install
 logs-upgrades = Upgrades
 logs-recent = Recent Actions
+
+# Test
+silly = thing

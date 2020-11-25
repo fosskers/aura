@@ -95,6 +95,8 @@ pub enum SubCmd {
     Conf(Conf),
     /// View your pacman.conf.
     PacConf(PacConf),
+    /// View statistics about your machine or about Aura itself.
+    Stats(Stats),
     // Extra, // TODO completions, dot output, etc?
 }
 
@@ -681,4 +683,12 @@ pub struct Log {
     /// Search the Pacman log for a matching string.
     #[clap(group = "log", long, short, value_name = "term", display_order = 1)]
     pub search: Option<String>,
+}
+
+/// View statistics about your machine or about Aura itself.
+#[derive(Clap, Debug)]
+pub struct Stats {
+    /// View Aura's localization statistics.
+    #[clap(group = "stats", long)]
+    pub localization: bool,
 }

@@ -56,6 +56,9 @@ fn main() -> Result<(), Error> {
         // --- Configuration --- //
         SubCmd::Conf(_) => unimplemented!(),
         SubCmd::PacConf(pc) => misc::pacman_conf(pc)?,
+        // --- Statistics --- //
+        SubCmd::Stats(s) if s.localization => aura::localization::foo()?,
+        SubCmd::Stats(_) => unimplemented!(),
         // --- Other --- //
         SubCmd::Languages(_) => misc::languages(),
     }
