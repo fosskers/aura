@@ -6,12 +6,20 @@ use aura::error::Error;
 use aura::flags::SubCmd;
 use aura_arch as arch;
 use clap::Clap;
+use simplelog::Config;
+use simplelog::TermLogger;
+use simplelog::TerminalMode;
 use std::path::Path;
 use std::process::Command;
 
 fn main() -> Result<(), Error> {
     // Parse all CLI input. Exits immediately if invalid input is given.
     let args = aura::flags::Args::parse();
+
+    // Activate the logger.
+    for l in args.log_level {
+        TermLogger::init(l, Config::default(), TerminalMode::Mixed).map_err(Error::Log)?;
+    }
 
     // Establish the language strings to be used.
     let lang = args.language();

@@ -14,6 +14,8 @@ pub enum Error {
     RustyLine(rustyline::error::ReadlineError),
     /// An error occurred when reading the localizations upon startup.
     I18n(i18n_embed::I18nEmbedError),
+    /// An error during logger initialization.
+    Log(simplelog::TermLogError),
     /// The said "no" at some prompt.
     Rejected,
     /// None of the packages specified by the user actually exist.
