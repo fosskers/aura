@@ -27,12 +27,12 @@ fn main() -> Result<(), Error> {
     let fll = aura::localization::load(lang).map_err(Error::I18n)?;
 
     // Establish common file paths.
-    let log_path: &Path = args
+    let logp: &Path = args
         .logfile
         .as_ref()
         .map(|p| Path::new(p))
         .unwrap_or_else(|| Path::new(arch::DEFAULT_LOG));
-    let cache_path: &Path = args
+    let cachep: &Path = args
         .cachedir
         .as_ref()
         .map(|p| Path::new(p))
@@ -57,12 +57,13 @@ fn main() -> Result<(), Error> {
         SubCmd::Aur(_) => unimplemented!(),
         SubCmd::Backup(_) => unimplemented!(),
         // --- The Package Cache --- //
-        SubCmd::Cache(c) if c.search.is_some() => cache::search(cache_path, c.search.unwrap())?,
+        SubCmd::Cache(c) if c.search.is_some() => cache::search(cachep, c.search.unwrap())?,
+        SubCmd::Cache(c) if c.backup.is_some() => cache::backup(fll, cachep, &c.backup.unwrap())?,
         SubCmd::Cache(_) => unimplemented!(),
         // --- Logs --- //
-        SubCmd::Log(l) if l.search.is_some() => log::search(log_path, l.search.unwrap())?,
-        SubCmd::Log(l) if !l.info.is_empty() => log::info(fll, log_path, l.info),
-        SubCmd::Log(_) => log::view(log_path)?,
+        SubCmd::Log(l) if l.search.is_some() => log::search(logp, l.search.unwrap())?,
+        SubCmd::Log(l) if !l.info.is_empty() => log::info(fll, logp, l.info),
+        SubCmd::Log(_) => log::view(logp)?,
         // --- Orphan Packages --- //
         SubCmd::Orphans(o) if o.abandon => orphans::remove(&mut alpm, fll)?,
         SubCmd::Orphans(o) if !o.adopt.is_empty() => orphans::adopt(&alpm, fll, o.adopt)?,

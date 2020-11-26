@@ -29,6 +29,6 @@ impl Iterator for CacheMatches {
 
 /// All package filenames that match a given string.
 pub fn search(path: &Path, term: String) -> Result<CacheMatches, std::io::Error> {
-    let read_dir = std::fs::read_dir(path)?;
+    let read_dir = path.read_dir()?;
     Ok(CacheMatches { read_dir, term })
 }

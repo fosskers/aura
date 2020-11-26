@@ -1,7 +1,7 @@
 //! All functionality involving the `-O` command.
 
 use crate::error::Error;
-use crate::io::{a, aln};
+use crate::{a, aln};
 use alpm::{Alpm, PackageReason, TransFlag};
 use aura_arch as arch;
 use colored::*;
@@ -32,7 +32,7 @@ pub fn adopt(alpm: &Alpm, fll: FluentLanguageLoader, packages: Vec<String>) -> R
         for mut p in reals {
             p.set_reason(PackageReason::Explicit).map_err(Error::Alpm)?;
             let msg = format!("{}", fl!(fll, "orphans-adopt", package = p.name()).green());
-            aln(&msg);
+            aln!(&msg);
         }
 
         Ok(())
@@ -65,7 +65,7 @@ pub fn remove(alpm: &mut Alpm, fll: FluentLanguageLoader) -> Result<(), Error> {
         // Notify the user of the results.
         let removal = alpm.trans_remove();
         let longest = removal.iter().map(|p| p.name().len()).max().unwrap_or(0);
-        aln(&format!("{}\n", fl!(fll, "orphans-abandon").yellow()));
+        aln!(format!("{}\n", fl!(fll, "orphans-abandon").yellow()));
         for p in removal {
             let size = format!("{}", p.isize().bytes());
             if names.contains(p.name()) {
@@ -82,10 +82,10 @@ pub fn remove(alpm: &mut Alpm, fll: FluentLanguageLoader) -> Result<(), Error> {
 
         // Proceed with the removal?
         let mut rl = Editor::<()>::new();
-        match rl.readline(&a("Proceed? [Y/n] ")) {
+        match rl.readline(&a!("Proceed? [Y/n] ")) {
             Ok(line) if line.is_empty() || line == "y" || line == "Y" => {
                 alpm.trans_commit().map_err(|(_, e)| Error::Alpm(e))?;
-                aln("Done.");
+                aln!("Done.");
             }
             Ok(_) => Err(Error::Rejected)?,
             Err(e) => Err(Error::RustyLine(e))?,

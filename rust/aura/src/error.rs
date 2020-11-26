@@ -24,4 +24,9 @@ pub enum Error {
     NoneExist,
     /// A non-zero exit code was returned from a call to Pacman.
     PacmanError,
+    /// A silent, miscellaneous error.
+    ///
+    /// In theory any relevant error messages have already been localized and
+    /// shown to the user.
+    Silent,
 }

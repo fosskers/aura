@@ -1,5 +1,7 @@
 //! Types and utilities for parsing flags from the command line.
 
+use std::path::PathBuf;
+
 use clap::{crate_version, AppSettings, Clap};
 use simplelog::LevelFilter;
 use unic_langid::{langid, LanguageIdentifier};
@@ -703,4 +705,10 @@ pub struct Cache {
     /// Search the package cache.
     #[clap(group = "cache", long, short, display_order = 1)]
     pub search: Option<String>,
+
+    // TODO Make other options elsewhere that expect a path have `PathBuf` too.
+    // TODO Restore the `short` flag for this option after resolving the conflict with `--dbpath`!
+    /// Back up the package cache to a given directory.
+    #[clap(group = "cache", long, display_order = 1)]
+    pub backup: Option<PathBuf>,
 }
