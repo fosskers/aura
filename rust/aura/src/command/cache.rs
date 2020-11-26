@@ -6,10 +6,12 @@ use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use log::debug;
+use pbr::ProgressBar;
 use rayon::prelude::*;
 use rustyline::Editor;
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 use ubyte::ToByteUnit;
 
 /// Print all package filepaths from the cache that match some search term.
@@ -38,13 +40,13 @@ pub fn backup(fll: FluentLanguageLoader, source: &Path, target: &Path) -> Result
         Err(Error::Silent)
     } else {
         // How big is the current cache?
-        let cache_bytes: u64 = source
+        let (file_count, cache_bytes): (u64, u64) = source
             .read_dir()
             .map_err(Error::IO)?
             .filter_map(|de| de.ok())
             .filter_map(|de| de.metadata().ok())
             .map(|meta| meta.len())
-            .sum();
+            .fold((0, 0), |(ac, al), l| (ac + 1, al + l));
         let size = format!("{}", cache_bytes.bytes());
         aln!(fl!(fll, "cache-backup-size", size = size));
 
@@ -58,7 +60,9 @@ pub fn backup(fll: FluentLanguageLoader, source: &Path, target: &Path) -> Result
         let mut rl = Editor::<()>::new();
         let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
         match rl.readline(&a!(msg)) {
-            Ok(line) if line.is_empty() || line == "y" || line == "Y" => copy(source, &full),
+            Ok(line) if line.is_empty() || line == "y" || line == "Y" => {
+                copy(source, &full, file_count)
+            }
             Ok(_) => Err(Error::Rejected),
             Err(e) => Err(Error::RustyLine(e)),
         }
@@ -66,8 +70,11 @@ pub fn backup(fll: FluentLanguageLoader, source: &Path, target: &Path) -> Result
 }
 
 /// Copy all the cache files concurrently.
-fn copy(source: &Path, target: &Path) -> Result<(), Error> {
+fn copy(source: &Path, target: &Path, file_count: u64) -> Result<(), Error> {
     debug!("Begin cache copying.");
+
+    // A progress bar to display the copying progress.
+    let pb = Arc::new(Mutex::new(ProgressBar::new(file_count)));
 
     // Silently succeeds if the directory already exists.
     std::fs::create_dir_all(target).map_err(Error::IO)?;
@@ -85,9 +92,10 @@ fn copy(source: &Path, target: &Path) -> Result<(), Error> {
             })
         })
         .par_bridge()
-        .for_each(|(from, to)| match std::fs::copy(from, to) {
-            Err(e) => println!("{}", e),
-            Ok(_) => {}
+        .for_each(|(from, to)| {
+            if let Ok(_) = std::fs::copy(from, to) {
+                pb.lock().unwrap().inc();
+            }
         });
     Ok(())
 }
