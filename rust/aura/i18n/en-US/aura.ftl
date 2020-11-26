@@ -1,5 +1,9 @@
 # Cache (-C)
-cache-backup-target = { $target } already exists and is not a directory.
+cache-backup-file = { $target } already exists and is not a directory.
+cache-backup-size = Current cache size: { $size }
+cache-backup-nonempty = Target { $target } exists but is not empty!
+# backupCache_4
+cache-backup-target = Backing up cache to { $target }
 
 # Orphans (-O)
 orphans-abandon = The following orphans and their dependencies will be removed:
@@ -11,5 +15,7 @@ logs-first = First Install
 logs-upgrades = Upgrades
 logs-recent = Recent Actions
 
-# Test
-silly = thing
+# Misc.
+proceed = Proceed?
+proceed-yes = [Y/n]
+proceed-no = [y/N]
