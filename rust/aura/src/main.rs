@@ -32,6 +32,11 @@ fn main() -> Result<(), Error> {
         .as_ref()
         .map(|p| Path::new(p))
         .unwrap_or_else(|| Path::new(arch::DEFAULT_LOG));
+    let cache_path: &Path = args
+        .cachedir
+        .as_ref()
+        .map(|p| Path::new(p))
+        .unwrap_or_else(|| Path::new(arch::DEFAULT_CACHE));
 
     let mut alpm = Alpm::new(
         args.root.unwrap_or_else(|| arch::DEFAULT_ROOT.to_string()),
@@ -51,6 +56,8 @@ fn main() -> Result<(), Error> {
         // --- AUR Packages --- //
         SubCmd::Aur(_) => unimplemented!(),
         SubCmd::Backup(_) => unimplemented!(),
+        // --- The Package Cache --- //
+        SubCmd::Cache(c) if c.search.is_some() => cache::search(cache_path, c.search.unwrap())?,
         SubCmd::Cache(_) => unimplemented!(),
         // --- Logs --- //
         SubCmd::Log(l) if l.search.is_some() => log::search(log_path, l.search.unwrap())?,

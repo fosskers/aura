@@ -8,6 +8,9 @@ pub const DEFAULT_ROOT: &str = "/";
 /// The default filepath of the Pacman/libalpm database.
 pub const DEFAULT_DB: &str = "/var/lib/pacman/";
 
+/// The default filepath of the package cache.
+pub const DEFAULT_CACHE: &str = "/var/cache/pacman/pkg/";
+
 /// The default filepath of the Pacman configuration.
 pub const DEFAULT_PAC_CONF: &str = "/etc/pacman.conf";
 

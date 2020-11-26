@@ -33,6 +33,9 @@ pub struct Args {
     /// Set an alternate log file.
     #[clap(long, value_name = "path", global = true)]
     pub logfile: Option<String>,
+    /// Set an alternate package cache location.
+    #[clap(long, value_name = "path", global = true)]
+    pub cachedir: Option<String>,
 
     // --- Aura Language Options --- //
     /// Output in English.
@@ -154,9 +157,6 @@ pub struct Sync {
     /// Add a virtual package to satisfy dependencies.
     #[clap(long, value_name = "package=version")]
     assumed_installed: Option<String>,
-    /// Set an alternate package cache location.
-    #[clap(long, value_name = "dir")]
-    cachedir: Option<String>,
     /// Colorize the output.
     #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
     color: Option<String>,
@@ -225,9 +225,6 @@ pub struct DepTest {
     /// Set an alternate architecture.
     #[clap(long)]
     arch: Option<String>,
-    /// Set an alternate package cache location.
-    #[clap(long, value_name = "dir")]
-    cachedir: Option<String>,
     /// Colorize the output.
     #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
     color: Option<String>,
@@ -286,9 +283,6 @@ pub struct Upgrade {
     /// Add a virtual package to satisfy dependencies.
     #[clap(long, value_name = "package=version")]
     assumed_installed: Option<String>,
-    /// Set an alternate package cache location.
-    #[clap(long, value_name = "dir")]
-    cachedir: Option<String>,
     /// Colorize the output.
     #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
     color: Option<String>,
@@ -367,9 +361,6 @@ pub struct Files {
     /// Set an alternate architecture.
     #[clap(long)]
     arch: Option<String>,
-    /// Set an alternate package cache location.
-    #[clap(long, value_name = "dir")]
-    cachedir: Option<String>,
     /// Colorize the output.
     #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
     color: Option<String>,
@@ -436,9 +427,6 @@ pub struct Remove {
     /// Add a virtual package to satisfy dependencies.
     #[clap(long, value_name = "package=version")]
     assumed_installed: Option<String>,
-    /// Set an alternate package cache location.
-    #[clap(long, value_name = "dir")]
-    cachedir: Option<String>,
     /// Colorize the output.
     #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
     color: Option<String>,
@@ -504,9 +492,6 @@ pub struct Database {
     /// Install pacakges as explicitly installed.
     #[clap(long)]
     asexplicit: bool,
-    /// Set an alternate package cache location.
-    #[clap(long, value_name = "dir")]
-    cachedir: Option<String>,
     /// Colorize the output.
     #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
     color: Option<String>,
@@ -594,9 +579,6 @@ pub struct Query {
     /// Set an alternate architecture.
     #[clap(long)]
     arch: Option<String>,
-    /// Set an alternate package cache location.
-    #[clap(long, value_name = "dir")]
-    cachedir: Option<String>,
     /// Colorize the output.
     #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
     color: Option<String>,
@@ -717,4 +699,8 @@ pub struct Backup {}
 /// Manage the package cache.
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'C', long_flag = "cache")]
-pub struct Cache {}
+pub struct Cache {
+    /// Search the package cache.
+    #[clap(group = "cache", long, short, display_order = 1)]
+    pub search: Option<String>,
+}

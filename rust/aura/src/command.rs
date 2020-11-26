@@ -1,5 +1,6 @@
 //! All Aura commands.
 
+pub mod cache;
 pub mod conf;
 pub mod log;
 pub mod misc;
