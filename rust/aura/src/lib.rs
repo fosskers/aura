@@ -6,4 +6,4 @@ pub mod command;
 pub mod error;
 pub mod flags;
 pub mod localization;
-pub mod macros;
+mod macros;
