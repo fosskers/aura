@@ -7,7 +7,6 @@ use aura_arch as arch;
 use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
-use rustyline::Editor;
 use std::collections::HashSet;
 use ubyte::ToByteUnit;
 
@@ -80,18 +79,12 @@ pub fn remove(alpm: &mut Alpm, fll: FluentLanguageLoader) -> Result<(), Error> {
         let size = format!("{}", total.bytes());
         println!("  {:w$} {:>9}\n", "Total", size, w = longest);
 
-        // Proceed with the removal?
-        let mut rl = Editor::<()>::new();
-        match rl.readline(&a!("Proceed? [Y/n] ")) {
-            Ok(line) if line.is_empty() || line == "y" || line == "Y" => {
-                alpm.trans_commit().map_err(|(_, e)| Error::Alpm(e))?;
-                aln!("Done.");
-            }
-            Ok(_) => Err(Error::Rejected)?,
-            Err(e) => Err(Error::RustyLine(e))?,
-        }
-
+        // Proceed with the removal if the user accepts.
+        let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
+        crate::utils::prompt(&a!(msg))?;
+        alpm.trans_commit().map_err(|(_, e)| Error::Alpm(e))?;
         alpm.trans_release().map_err(Error::Alpm)?;
+        aln!("Done.".green());
     }
 
     Ok(())

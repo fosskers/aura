@@ -7,3 +7,4 @@ pub mod error;
 pub mod flags;
 pub mod localization;
 mod macros;
+pub mod utils;
