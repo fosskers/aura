@@ -6,6 +6,7 @@ use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use log::debug;
+use rayon::prelude::*;
 use rustyline::Editor;
 use std::path::Path;
 use std::path::PathBuf;
@@ -83,6 +84,7 @@ fn copy(source: &Path, target: &Path) -> Result<(), Error> {
                 (from, to)
             })
         })
+        .par_bridge()
         .for_each(|(from, to)| match std::fs::copy(from, to) {
             Err(e) => println!("{}", e),
             Ok(_) => {}
