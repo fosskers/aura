@@ -104,7 +104,8 @@ pub enum SubCmd {
     Conf(Conf),
     /// View statistics about your machine or about Aura itself.
     Stats(Stats),
-    // Extra, // TODO completions, dot output, etc?
+    /// Open various webpages related to Aura.
+    Open(Open),
 }
 
 /// Synchronize official packages.
@@ -711,4 +712,21 @@ pub struct Cache {
     /// Back up the package cache to a given directory.
     #[clap(group = "cache", long, display_order = 1)]
     pub backup: Option<PathBuf>,
+}
+
+/// Open various webpages related to Aura.
+#[derive(Clap, Debug)]
+pub struct Open {
+    /// Open the Aura Guide Book.
+    #[clap(group = "open", long, short, display_order = 1)]
+    pub docs: bool,
+    /// Open Aura's Github repository.
+    #[clap(group = "open", long, short, display_order = 1)]
+    pub repo: bool,
+    /// File a bug report for Aura.
+    #[clap(group = "open", long, short, display_order = 1)]
+    pub bug: bool,
+    /// Open Aura's AUR page.
+    #[clap(group = "open", long, short, display_order = 1)]
+    pub aur: bool,
 }

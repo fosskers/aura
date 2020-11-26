@@ -79,6 +79,12 @@ fn main() -> Result<(), Error> {
         SubCmd::Stats(s) if s.localization => stats::localization()?,
         SubCmd::Stats(s) if s.heavy => stats::heavy_packages(&alpm),
         SubCmd::Stats(_) => unimplemented!(),
+        // --- Opening Webpages --- //
+        SubCmd::Open(o) if o.docs => open::book()?,
+        SubCmd::Open(o) if o.repo => open::repo()?,
+        SubCmd::Open(o) if o.bug => open::bug()?,
+        SubCmd::Open(o) if o.aur => open::aur()?,
+        SubCmd::Open(_) => open::repo()?,
         // --- Other --- //
         SubCmd::Lang(_) => misc::languages(),
     }
