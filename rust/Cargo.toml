@@ -3,3 +3,4 @@ members = ["aura", "aura-core", "aura-arch", "aura-common"]
 
 [profile.release]
 lto = true
+panic = "abort"
