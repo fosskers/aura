@@ -23,14 +23,14 @@ pub struct Args {
     /// Set an alternate database location.
     #[clap(
         long,
-        short = 'b',
+        // short = 'b',
         value_name = "path",
         global = true,
         display_order = 1
     )]
     pub dbpath: Option<String>,
     /// Set an alternate installation root.
-    #[clap(long, short, value_name = "path", global = true, display_order = 1)]
+    #[clap(long, value_name = "path", global = true, display_order = 1)]
     pub root: Option<String>,
     /// Set an alternate log file.
     #[clap(long, value_name = "path", global = true)]
