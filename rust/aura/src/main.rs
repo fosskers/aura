@@ -5,7 +5,6 @@ use alpm::Alpm;
 use aura::command::*;
 use aura::error::Error;
 use aura::flags::{SubCmd, AURA_GLOBALS};
-use aura_arch as arch;
 use clap::Clap;
 use simplelog::Config;
 use simplelog::TermLogger;
@@ -26,21 +25,26 @@ fn main() -> Result<(), Error> {
     let lang = args.language();
     let fll = aura::localization::load(lang).map_err(Error::I18n)?;
 
+    // Parse the major configuration files.
+    // TODO Consider the flag they might have given to change the conf path.
+    let pconf = pacmanconf::Config::new().map_err(Error::PacConf)?;
+
     // Establish common file paths.
     let logp: &Path = args
         .logfile
         .as_ref()
         .map(|p| Path::new(p))
-        .unwrap_or_else(|| Path::new(arch::DEFAULT_LOG));
+        .unwrap_or_else(|| Path::new(&pconf.log_file));
+    // TODO Allow for multiple cache paths?
     let cachep: &Path = args
         .cachedir
         .as_ref()
         .map(|p| Path::new(p))
-        .unwrap_or_else(|| Path::new(arch::DEFAULT_CACHE));
+        .unwrap_or_else(|| Path::new(pconf.cache_dir.first().unwrap()));
 
     let mut alpm = Alpm::new(
-        args.root.unwrap_or_else(|| arch::DEFAULT_ROOT.to_string()),
-        args.dbpath.unwrap_or_else(|| arch::DEFAULT_DB.to_string()),
+        args.root.unwrap_or_else(|| pconf.root_dir.clone()),
+        args.dbpath.unwrap_or_else(|| pconf.db_path.clone()),
     )
     .map_err(Error::Alpm)?;
 

@@ -18,6 +18,8 @@ pub enum Error {
     Log(simplelog::TermLogError),
     /// An error reading an environment variable.
     Env(std::env::VarError),
+    /// An error parsing `pacman.conf`.
+    PacConf(pacmanconf::Error),
     /// The said "no" at some prompt.
     Rejected,
     /// None of the packages specified by the user actually exist.
