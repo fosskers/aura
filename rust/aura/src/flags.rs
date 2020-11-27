@@ -34,10 +34,10 @@ pub struct Args {
     pub root: Option<String>,
     /// Set an alternate log file.
     #[clap(long, value_name = "path", global = true)]
-    pub logfile: Option<String>,
+    pub logfile: Option<PathBuf>,
     /// Set an alternate package cache location.
     #[clap(long, value_name = "path", global = true)]
-    pub cachedir: Option<String>,
+    pub cachedir: Option<PathBuf>,
 
     // --- Aura Language Options --- //
     /// Output in English.

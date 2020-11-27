@@ -33,13 +33,13 @@ fn main() -> Result<(), Error> {
     let logp: &Path = args
         .logfile
         .as_ref()
-        .map(|p| Path::new(p))
+        .map(|p| p.as_path())
         .unwrap_or_else(|| Path::new(&pconf.log_file));
     // TODO Allow for multiple cache paths?
     let cachep: &Path = args
         .cachedir
         .as_ref()
-        .map(|p| Path::new(p))
+        .map(|p| p.as_path())
         .unwrap_or_else(|| Path::new(pconf.cache_dir.first().unwrap()));
 
     let mut alpm = Alpm::new(
