@@ -41,14 +41,31 @@ pub fn search(path: &Path, term: String) -> Result<CacheMatches, std::io::Error>
     Ok(CacheMatches { read_dir, term })
 }
 
-// TODO Filter on legal package extensions!
 /// The number of files and all bytes consumed by a given `Path`.
 pub fn size(path: &Path) -> Result<CacheSize, std::io::Error> {
     let (files, bytes) = path
         .read_dir()?
         .filter_map(|de| de.ok())
+        .filter(|de| is_package(&de.path()))
         .filter_map(|de| de.metadata().ok())
         .map(|meta| meta.len())
         .fold((0, 0), |(ac, al), l| (ac + 1, al + l));
     Ok(CacheSize { files, bytes })
+}
+
+// TODO Provide a similar function for signature files.
+/// Is a given `Path` a legal Arch Linux package tarball?
+///
+/// ```
+/// use aura_core::cache::is_package;
+/// use std::path::Path;
+///
+/// assert!(is_package(Path::new("libebml-1.3.10-1-x86_64.pkg.tar.xz")));
+/// assert!(is_package(Path::new("libebml-1.4.0-1-x86_64.pkg.tar.zst")));
+/// ```
+pub fn is_package(path: &Path) -> bool {
+    match path.to_str() {
+        None => false,
+        Some(s) => s.ends_with(".pkg.tar.zst") || s.ends_with(".pkg.tar.xz"),
+    }
 }

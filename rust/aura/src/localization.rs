@@ -35,7 +35,7 @@ struct Translations;
 /// ```
 /// use i18n_embed_fl::fl;
 ///
-/// let fll = aura::localization::loader(None).unwrap();
+/// let fll = aura::localization::load(None).unwrap();
 /// let msg = fl!(fll, "orphans-adopt");
 /// println!("{}", msg);
 /// ```
