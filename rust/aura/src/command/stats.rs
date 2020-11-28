@@ -3,6 +3,7 @@
 use crate::error::Error;
 use crate::localization;
 use alpm::Alpm;
+use colored::*;
 use i18n_embed::LanguageLoader;
 use std::collections::HashMap;
 use ubyte::ToByteUnit;
@@ -21,10 +22,20 @@ pub fn localization() -> Result<(), Error> {
 
     let english = fll.fallback_language();
     let max = stats.get(&english).unwrap().clone();
+    let mut sorted: Vec<_> = stats.into_iter().collect();
+    sorted.sort_by_key(|(_, count)| *count);
+    sorted.reverse();
 
-    for (lang, count) in stats {
+    for (lang, count) in sorted {
         let perc = 100.0 * count as f64 / max as f64;
-        println!("{} {}/{} ({:.2}%)", lang, count, max, perc);
+        let l = if perc < 50.0 {
+            format!("{}", lang).red()
+        } else if perc < 100.0 {
+            format!("{}", lang).yellow()
+        } else {
+            format!("{}", lang).green()
+        };
+        println!("{} {:02}/{} ({:.2}%)", l, count, max, perc);
     }
 
     Ok(())
