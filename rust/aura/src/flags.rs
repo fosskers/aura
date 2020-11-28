@@ -26,11 +26,11 @@ pub struct Args {
         // short = 'b',
         value_name = "path",
         global = true,
-        display_order = 1
+        display_order = 2
     )]
     pub dbpath: Option<String>,
     /// Set an alternate installation root.
-    #[clap(long, value_name = "path", global = true, display_order = 1)]
+    #[clap(long, value_name = "path", global = true, display_order = 2)]
     pub root: Option<String>,
     /// Set an alternate log file.
     #[clap(long, value_name = "path", global = true)]
@@ -704,7 +704,7 @@ pub struct Backup {}
 #[clap(short_flag = 'C', long_flag = "cache")]
 pub struct Cache {
     /// Search the package cache.
-    #[clap(group = "cache", long, short, display_order = 1)]
+    #[clap(group = "cache", short, long, display_order = 1)]
     pub search: Option<String>,
 
     // TODO Make other options elsewhere that expect a path have `PathBuf` too.
@@ -712,6 +712,10 @@ pub struct Cache {
     /// Back up the package cache to a given directory.
     #[clap(group = "cache", long, display_order = 1)]
     pub backup: Option<PathBuf>,
+
+    /// Save the most recent <N> versions of a package.
+    #[clap(group = "cache", short, long, display_order = 1)]
+    pub clean: Option<u8>,
 }
 
 /// Open various webpages related to Aura.

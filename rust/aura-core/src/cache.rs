@@ -3,6 +3,14 @@
 use std::fs::ReadDir;
 use std::path::{Path, PathBuf};
 
+/// A description of the size of the package cache.
+pub struct CacheSize {
+    /// The number of package files in the cache.
+    pub files: u64,
+    /// The number of bytes of all files combined.
+    pub bytes: u64,
+}
+
 /// An iterator of filepaths that matched some search term.
 pub struct CacheMatches {
     read_dir: ReadDir,
@@ -33,13 +41,14 @@ pub fn search(path: &Path, term: String) -> Result<CacheMatches, std::io::Error>
     Ok(CacheMatches { read_dir, term })
 }
 
+// TODO Filter on legal package extensions!
 /// The number of files and all bytes consumed by a given `Path`.
-pub fn size(path: &Path) -> Result<(u64, u64), std::io::Error> {
-    let res = path
+pub fn size(path: &Path) -> Result<CacheSize, std::io::Error> {
+    let (files, bytes) = path
         .read_dir()?
         .filter_map(|de| de.ok())
         .filter_map(|de| de.metadata().ok())
         .map(|meta| meta.len())
         .fold((0, 0), |(ac, al), l| (ac + 1, al + l));
-    Ok(res)
+    Ok(CacheSize { files, bytes })
 }

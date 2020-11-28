@@ -40,8 +40,8 @@ pub fn backup(fll: FluentLanguageLoader, source: &Path, target: &Path) -> Result
         Err(Error::Silent)
     } else {
         // How big is the current cache?
-        let (file_count, cache_bytes): (u64, u64) = core::cache::size(source).map_err(Error::IO)?;
-        let size = format!("{}", cache_bytes.bytes());
+        let cache_size: core::cache::CacheSize = core::cache::size(source).map_err(Error::IO)?;
+        let size = format!("{}", cache_size.bytes.bytes());
         aln!(fl!(fll, "cache-backup-size", size = size));
 
         // Is the target directory empty?
@@ -55,7 +55,7 @@ pub fn backup(fll: FluentLanguageLoader, source: &Path, target: &Path) -> Result
         // Proceed if the user accepts.
         let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
         crate::utils::prompt(&a!(msg))?;
-        copy(source, &full, file_count)
+        copy(source, &full, cache_size.files)
     }
 }
 
