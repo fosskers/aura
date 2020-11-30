@@ -28,6 +28,6 @@ pub fn aur() -> Result<(), Error> {
 }
 
 fn open(url: &str) -> Result<(), Error> {
-    webbrowser::open(url).map_err(Error::IO)?;
+    webbrowser::open(url)?;
     Ok(())
 }

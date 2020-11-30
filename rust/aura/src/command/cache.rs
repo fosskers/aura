@@ -16,7 +16,7 @@ use ubyte::ToByteUnit;
 
 /// Print all package filepaths from the cache that match some search term.
 pub fn search(path: &Path, term: String) -> Result<(), Error> {
-    let matches = core::cache::search(path, term).map_err(Error::IO)?;
+    let matches = core::cache::search(path, term)?;
     for file in matches {
         println!("{}", file.display());
     }
@@ -29,7 +29,7 @@ pub fn backup(fll: FluentLanguageLoader, source: &Path, target: &Path) -> Result
     let full: PathBuf = if target.is_absolute() {
         target.to_path_buf()
     } else {
-        let mut curr = std::env::current_dir().map_err(Error::IO)?;
+        let mut curr = std::env::current_dir()?;
         curr.push(target);
         curr
     };
@@ -40,7 +40,7 @@ pub fn backup(fll: FluentLanguageLoader, source: &Path, target: &Path) -> Result
         Err(Error::Silent)
     } else {
         // How big is the current cache?
-        let cache_size: core::cache::CacheSize = core::cache::size(source).map_err(Error::IO)?;
+        let cache_size: core::cache::CacheSize = core::cache::size(source)?;
         let size = format!("{}", cache_size.bytes.bytes());
         aln!(fl!(fll, "cache-backup-size", size = size));
 
@@ -68,11 +68,10 @@ fn copy(source: &Path, target: &Path, file_count: u64) -> Result<(), Error> {
     let pb = Arc::new(Mutex::new(ProgressBar::new(file_count)));
 
     // Silently succeeds if the directory already exists.
-    std::fs::create_dir_all(target).map_err(Error::IO)?;
+    std::fs::create_dir_all(target)?;
 
     source
-        .read_dir()
-        .map_err(Error::IO)?
+        .read_dir()?
         .filter_map(|entry| entry.ok())
         .filter_map(|entry| {
             let from = entry.path();

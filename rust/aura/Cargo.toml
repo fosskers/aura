@@ -26,4 +26,3 @@ webbrowser = "0.5"
 
 [features]
 git = ["alpm/git"]
-

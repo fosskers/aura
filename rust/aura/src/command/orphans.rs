@@ -29,7 +29,7 @@ pub fn adopt(alpm: &Alpm, fll: FluentLanguageLoader, packages: Vec<String>) -> R
         Err(Error::NoneExist)
     } else {
         for mut p in reals {
-            p.set_reason(PackageReason::Explicit).map_err(Error::Alpm)?;
+            p.set_reason(PackageReason::Explicit)?;
             let msg = format!("{}", fl!(fll, "orphans-adopt", package = p.name()).green());
             aln!(&msg);
         }
@@ -52,10 +52,10 @@ pub fn remove(alpm: &mut Alpm, fll: FluentLanguageLoader) -> Result<(), Error> {
         // Initialize the transaction.
         let mut flag = TransFlag::RECURSE;
         flag.insert(TransFlag::UNNEEDED);
-        alpm.trans_init(flag).map_err(Error::Alpm)?;
+        alpm.trans_init(flag)?;
 
         for p in orphans {
-            alpm.trans_remove_pkg(p).map_err(Error::Alpm)?;
+            alpm.trans_remove_pkg(p)?;
         }
 
         // Advance the transaction, calculating the effects of the TransFlags.
@@ -83,7 +83,7 @@ pub fn remove(alpm: &mut Alpm, fll: FluentLanguageLoader) -> Result<(), Error> {
         let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
         crate::utils::prompt(&a!(msg))?;
         alpm.trans_commit().map_err(|(_, e)| Error::Alpm(e))?;
-        alpm.trans_release().map_err(Error::Alpm)?;
+        alpm.trans_release()?;
         aln!("Done.".green());
     }
 

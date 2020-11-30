@@ -12,7 +12,7 @@ pub fn pacman_conf(c: Conf) -> Result<(), Error> {
         .config
         .unwrap_or_else(|| aura_arch::DEFAULT_PAC_CONF.to_string());
     let prog = misc::viewer();
-    Command::new(prog).arg(conf).status().map_err(Error::IO)?;
+    Command::new(prog).arg(conf).status()?;
     Ok(())
 }
 
@@ -21,6 +21,6 @@ pub fn makepkg_conf() -> Result<(), Error> {
     let conf =
         env::var("MAKEPKG_CONF").unwrap_or_else(|_| aura_arch::DEFAULT_MAKEPKG_CONF.to_string());
     let prog = misc::viewer();
-    Command::new(prog).arg(conf).status().map_err(Error::IO)?;
+    Command::new(prog).arg(conf).status()?;
     Ok(())
 }

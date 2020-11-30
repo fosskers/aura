@@ -27,16 +27,16 @@ fn main() -> Result<(), Error> {
 
     // Activate the logger.
     if let Some(l) = args.log_level {
-        TermLogger::init(l, Config::default(), TerminalMode::Mixed).map_err(Error::Log)?;
+        TermLogger::init(l, Config::default(), TerminalMode::Mixed)?;
     }
 
     // Establish the language strings to be used.
     let lang = args.language();
-    let fll = localization::load(lang).map_err(Error::I18n)?;
+    let fll = localization::load(lang)?;
 
     // Parse the major configuration files.
     // TODO Consider the flag they might have given to change the conf path.
-    let pconf = pacmanconf::Config::new().map_err(Error::PacConf)?;
+    let pconf = pacmanconf::Config::new()?;
 
     // Establish common file paths.
     let logp: &Path = args
@@ -52,8 +52,7 @@ fn main() -> Result<(), Error> {
     let mut alpm = Alpm::new(
         args.root.unwrap_or_else(|| pconf.root_dir.clone()),
         args.dbpath.unwrap_or_else(|| pconf.db_path.clone()),
-    )
-    .map_err(Error::Alpm)?;
+    )?;
 
     match args.subcmd {
         // --- Pacman Commands --- //

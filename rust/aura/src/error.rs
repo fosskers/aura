@@ -32,3 +32,45 @@ pub enum Error {
     /// shown to the user.
     Silent,
 }
+
+impl From<simplelog::TermLogError> for Error {
+    fn from(error: simplelog::TermLogError) -> Self {
+        Error::Log(error)
+    }
+}
+
+impl From<i18n_embed::I18nEmbedError> for Error {
+    fn from(error: i18n_embed::I18nEmbedError) -> Self {
+        Error::I18n(error)
+    }
+}
+
+impl From<pacmanconf::Error> for Error {
+    fn from(error: pacmanconf::Error) -> Self {
+        Error::PacConf(error)
+    }
+}
+
+impl From<alpm::Error> for Error {
+    fn from(error: alpm::Error) -> Self {
+        Error::Alpm(error)
+    }
+}
+
+impl From<std::io::Error> for Error {
+    fn from(error: std::io::Error) -> Self {
+        Error::IO(error)
+    }
+}
+
+impl From<rustyline::error::ReadlineError> for Error {
+    fn from(error: rustyline::error::ReadlineError) -> Self {
+        Error::RustyLine(error)
+    }
+}
+
+impl From<std::env::VarError> for Error {
+    fn from(error: std::env::VarError) -> Self {
+        Error::Env(error)
+    }
+}

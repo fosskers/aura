@@ -13,18 +13,14 @@ use std::process::Command;
 /// Open the Pacman/ALPM log in `bat` or `less`.
 pub fn view(path: &Path) -> Result<(), Error> {
     let prog = misc::viewer();
-    Command::new(prog).arg(path).status().map_err(Error::IO)?;
+    Command::new(prog).arg(path).status()?;
     Ok(())
 }
 
 /// Search the Pacman log for a matching string.
 pub fn search(path: &Path, term: String) -> Result<(), Error> {
     let srch = misc::searcher();
-    Command::new(srch)
-        .arg(term)
-        .arg(path)
-        .status()
-        .map_err(Error::IO)?;
+    Command::new(srch).arg(term).arg(path).status()?;
     Ok(())
 }
 

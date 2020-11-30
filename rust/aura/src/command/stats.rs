@@ -11,7 +11,7 @@ use unic_langid::LanguageIdentifier;
 
 /// Raw contents of loaded localizations.
 pub fn localization() -> Result<(), Error> {
-    let fll = localization::load_all().map_err(Error::I18n)?;
+    let fll = localization::load_all()?;
     let stats: HashMap<LanguageIdentifier, usize> = localization::available_languages()
         .into_iter()
         .map(|lang| {
