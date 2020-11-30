@@ -1,11 +1,20 @@
 //! The Aura Package Manager.
 
+#![warn(missing_docs)]
+
+pub mod command;
+pub mod error;
+pub mod flags;
+pub mod localization;
+mod macros;
+pub mod utils;
+
 use ::log::debug;
 use alpm::Alpm;
-use aura::command::*;
-use aura::error::Error;
-use aura::flags::{SubCmd, AURA_GLOBALS};
 use clap::Clap;
+use command::*;
+use error::Error;
+use flags::{SubCmd, AURA_GLOBALS};
 use simplelog::Config;
 use simplelog::TermLogger;
 use simplelog::TerminalMode;
@@ -14,7 +23,7 @@ use std::process::Command;
 
 fn main() -> Result<(), Error> {
     // Parse all CLI input. Exits immediately if invalid input is given.
-    let args = aura::flags::Args::parse();
+    let args = flags::Args::parse();
 
     // Activate the logger.
     if let Some(l) = args.log_level {
@@ -23,7 +32,7 @@ fn main() -> Result<(), Error> {
 
     // Establish the language strings to be used.
     let lang = args.language();
-    let fll = aura::localization::load(lang).map_err(Error::I18n)?;
+    let fll = localization::load(lang).map_err(Error::I18n)?;
 
     // Parse the major configuration files.
     // TODO Consider the flag they might have given to change the conf path.
