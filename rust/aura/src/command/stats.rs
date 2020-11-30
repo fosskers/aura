@@ -21,7 +21,7 @@ pub fn localization() -> Result<(), Error> {
         .collect();
 
     let english = fll.fallback_language();
-    let max = stats.get(&english).unwrap().clone();
+    let max = *stats.get(&english).unwrap();
     let mut sorted: Vec<_> = stats.into_iter().collect();
     sorted.sort_by_key(|(_, count)| *count);
     sorted.reverse();

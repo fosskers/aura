@@ -8,7 +8,7 @@ use unic_langid::{langid, LanguageIdentifier};
 
 /// Global options only applicable to Aura that must be removed from the
 /// top-level args list before sending it to Pacman.
-pub const AURA_GLOBALS: &[&'static str] = &["--english", "--japanese"];
+pub const AURA_GLOBALS: &[&str] = &["--english", "--japanese"];
 
 /// Commandline arguments to the Aura executable.
 #[derive(Clap, Debug)]

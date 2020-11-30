@@ -24,13 +24,19 @@ pub fn languages() {
 /// A complete path to a file viewer program like `less`.
 pub fn viewer() -> &'static str {
     let bat = Path::new(BAT);
-    let viewer = if bat.exists() { BAT } else { LESS };
-    viewer
+    if bat.exists() {
+        BAT
+    } else {
+        LESS
+    }
 }
 
 /// A complete path to a file searcher program like `grep`.
 pub fn searcher() -> &'static str {
     let rg = Path::new(RIPGREP);
-    let searcher = if rg.exists() { RIPGREP } else { GREP };
-    searcher
+    if rg.exists() {
+        RIPGREP
+    } else {
+        GREP
+    }
 }

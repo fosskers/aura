@@ -1,7 +1,6 @@
 //! Open various webpages related to Aura.
 
 use crate::error::Error;
-use webbrowser;
 
 const BOOK_URL: &str = "https://fosskers.github.io/aura/";
 const REPO_URL: &str = "https://github.com/fosskers/aura";

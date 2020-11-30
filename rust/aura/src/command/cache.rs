@@ -84,7 +84,7 @@ fn copy(source: &Path, target: &Path, file_count: u64) -> Result<(), Error> {
         })
         .par_bridge()
         .for_each(|(from, to)| {
-            if let Ok(_) = std::fs::copy(from, to) {
+            if std::fs::copy(from, to).is_ok() {
                 pb.lock().unwrap().inc();
             }
         });

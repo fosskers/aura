@@ -51,7 +51,7 @@ pub fn info(fll: FluentLanguageLoader, path: &Path, pks: Vec<String>) {
         for r in e.recent {
             println!("{}", r);
         }
-        println!("");
+        println!();
     }
 }
 
