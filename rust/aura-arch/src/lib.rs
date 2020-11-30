@@ -9,11 +9,6 @@ pub const DEFAULT_PAC_CONF: &str = "/etc/pacman.conf";
 /// The default filepath of the Makepkg configuration.
 pub const DEFAULT_MAKEPKG_CONF: &str = "/etc/makepkg.conf";
 
-#[derive(Debug)]
-pub enum Error {
-    Alpm(alpm::Error),
-}
-
 /// All orphaned packages.
 ///
 /// An orphan is a package that was installed as a dependency, but whose parent
