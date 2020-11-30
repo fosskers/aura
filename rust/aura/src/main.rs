@@ -9,34 +9,58 @@ pub mod localization;
 mod macros;
 pub mod utils;
 
+use crate::error::Silent;
 use ::log::debug;
 use alpm::Alpm;
+use anyhow::{ensure, Context, Result};
 use clap::Clap;
+use colored::Colorize;
 use command::*;
-use error::Error;
 use flags::{SubCmd, AURA_GLOBALS};
 use simplelog::Config;
 use simplelog::TermLogger;
 use simplelog::TerminalMode;
+use std::error::Error;
 use std::path::Path;
 use std::process::Command;
 
-fn main() -> Result<(), Error> {
+fn main() {
+    if let Err(err) = run() {
+        let mut iter = err.chain().peekable();
+
+        if Error::is::<Silent>(*iter.peek().unwrap()) {
+            eprint!("{}", iter.peek().unwrap());
+            return;
+        }
+
+        eprint!("{} ", "error:".red());
+        while let Some(link) = iter.next() {
+            eprint!("{}", link);
+            if iter.peek().is_some() {
+                eprint!(": ");
+            }
+        }
+        eprintln!();
+    }
+}
+
+fn run() -> Result<()> {
     // Parse all CLI input. Exits immediately if invalid input is given.
     let args = flags::Args::parse();
 
     // Activate the logger.
     if let Some(l) = args.log_level {
-        TermLogger::init(l, Config::default(), TerminalMode::Mixed).map_err(Error::Log)?;
+        TermLogger::init(l, Config::default(), TerminalMode::Mixed)
+            .context("failed to initialise logger")?;
     }
 
     // Establish the language strings to be used.
     let lang = args.language();
-    let fll = localization::load(lang).map_err(Error::I18n)?;
+    let fll = localization::load(lang).context("failed to load localization")?;
 
     // Parse the major configuration files.
     // TODO Consider the flag they might have given to change the conf path.
-    let pconf = pacmanconf::Config::new().map_err(Error::PacConf)?;
+    let pconf = pacmanconf::Config::new().context("failed to parse pacman.conf")?;
 
     // Establish common file paths.
     let logp: &Path = args
@@ -49,11 +73,14 @@ fn main() -> Result<(), Error> {
         .as_deref()
         .unwrap_or_else(|| Path::new(pconf.cache_dir.first().unwrap()));
 
-    let mut alpm = Alpm::new(
-        args.root.unwrap_or_else(|| pconf.root_dir.clone()),
-        args.dbpath.unwrap_or_else(|| pconf.db_path.clone()),
-    )
-    .map_err(Error::Alpm)?;
+    let root = args.root.as_deref().unwrap_or(&pconf.root_dir);
+    let dbpath = args.dbpath.as_deref().unwrap_or(&pconf.db_path);
+    let mut alpm = Alpm::new(root, dbpath).with_context(|| {
+        format!(
+            "failed to initialize alpm: root='{}' dbpath='{}'",
+            root, dbpath
+        )
+    })?;
 
     match args.subcmd {
         // --- Pacman Commands --- //
@@ -104,7 +131,7 @@ fn main() -> Result<(), Error> {
 }
 
 /// Run a Pacman command.
-fn pacman() -> Result<(), Error> {
+fn pacman() -> Result<()> {
     let mut raws: Vec<String> = std::env::args()
         .skip(1)
         .filter(|a| !(AURA_GLOBALS.contains(&a.as_str()) || a.starts_with("--log-level=")))
@@ -123,9 +150,10 @@ fn pacman() -> Result<(), Error> {
 
     debug!("Passing to Pacman: {:?}", raws);
 
-    match Command::new("pacman").args(raws).status() {
-        Err(e) => Err(Error::IO(e)),
-        Ok(es) if es.success() => Ok(()),
-        Ok(_) => Err(Error::PacmanError),
-    }
+    let status = Command::new("pacman")
+        .args(raws)
+        .status()
+        .context("could not exec pacman")?;
+    ensure!(status.success(), "pacman failed to run");
+    Ok(())
 }

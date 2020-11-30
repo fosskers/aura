@@ -1,8 +1,8 @@
 //! Statistics about the user's machine or about Aura itself.
 
-use crate::error::Error;
 use crate::localization;
 use alpm::Alpm;
+use anyhow::{Context, Result};
 use colored::*;
 use i18n_embed::LanguageLoader;
 use std::collections::HashMap;
@@ -10,8 +10,8 @@ use ubyte::ToByteUnit;
 use unic_langid::LanguageIdentifier;
 
 /// Raw contents of loaded localizations.
-pub fn localization() -> Result<(), Error> {
-    let fll = localization::load_all().map_err(Error::I18n)?;
+pub fn localization() -> Result<()> {
+    let fll = localization::load_all().context("failed to load localization")?;
     let stats: HashMap<LanguageIdentifier, usize> = localization::available_languages()
         .into_iter()
         .map(|lang| {

@@ -1,7 +1,7 @@
 //! All functionality involving the `-L` command.
 
 use crate::command::misc;
-use crate::error::Error;
+use anyhow::{Context, Result};
 use aura_core as core;
 use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
@@ -11,20 +11,23 @@ use std::path::Path;
 use std::process::Command;
 
 /// Open the Pacman/ALPM log in `bat` or `less`.
-pub fn view(path: &Path) -> Result<(), Error> {
+pub fn view(path: &Path) -> Result<()> {
     let prog = misc::viewer();
-    Command::new(prog).arg(path).status().map_err(Error::IO)?;
+    Command::new(prog)
+        .arg(path)
+        .status()
+        .with_context(|| format!("failed to exec '{}'", prog))?;
     Ok(())
 }
 
 /// Search the Pacman log for a matching string.
-pub fn search(path: &Path, term: String) -> Result<(), Error> {
+pub fn search(path: &Path, term: String) -> Result<()> {
     let srch = misc::searcher();
     Command::new(srch)
         .arg(term)
         .arg(path)
         .status()
-        .map_err(Error::IO)?;
+        .with_context(|| format!("failed to exec '{}'", srch))?;
     Ok(())
 }
 
