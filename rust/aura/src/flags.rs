@@ -106,6 +106,8 @@ pub enum SubCmd {
     Stats(Stats),
     /// Open various webpages related to Aura.
     Open(Open),
+    /// Output a dependency graph in DOT format.
+    Deps(Deps),
 }
 
 /// Synchronize official packages.
@@ -733,4 +735,11 @@ pub struct Open {
     /// Open Aura's AUR page.
     #[clap(group = "open", long, short, display_order = 1)]
     pub aur: bool,
+}
+
+/// Output a dependency graph in DOT format.
+#[derive(Clap, Debug)]
+pub struct Deps {
+    /// Packages focus on.
+    pub packages: Vec<String>,
 }

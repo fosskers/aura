@@ -95,6 +95,8 @@ fn main() -> Result<(), Error> {
         SubCmd::Open(o) if o.bug => open::bug()?,
         SubCmd::Open(o) if o.aur => open::aur()?,
         SubCmd::Open(_) => open::repo()?,
+        // --- Dependency Management --- //
+        SubCmd::Deps(d) => deps::graph(&alpm, d.packages)?,
         // --- Other --- //
         SubCmd::Lang(_) => misc::languages(),
     }

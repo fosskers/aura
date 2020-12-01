@@ -4,4 +4,5 @@
 #![warn(missing_docs)]
 
 pub mod cache;
+pub mod deps;
 pub mod log;
