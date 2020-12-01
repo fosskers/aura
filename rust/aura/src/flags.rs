@@ -740,6 +740,10 @@ pub struct Open {
 /// Output a dependency graph in DOT format.
 #[derive(Clap, Debug)]
 pub struct Deps {
-    /// Packages focus on.
+    /// Display packages that depend on the given args.
+    #[clap(long)]
+    pub reverse: bool,
+
+    /// Packages to focus on.
     pub packages: Vec<String>,
 }

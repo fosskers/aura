@@ -9,7 +9,18 @@ use aura_core::deps;
 pub fn graph(alpm: &Alpm, packages: Vec<String>) -> Result<(), Error> {
     let db = alpm.localdb();
     let pkgs: Vec<_> = packages.iter().map(|p| p.as_ref()).collect();
-    let graph = deps::PkgGraph::new(&db, &pkgs)?;
+    let graph = deps::PkgGraph::by_deps(&db, &pkgs)?;
+
+    println!("{}", graph);
+    Ok(())
+}
+
+/// Like [`graph`], but display all packages that depend on the given ones
+/// instead.
+pub fn reverse(alpm: &Alpm, packages: Vec<String>) -> Result<(), Error> {
+    let db = alpm.localdb();
+    let pkgs: Vec<_> = packages.iter().map(|p| p.as_ref()).collect();
+    let graph = deps::PkgGraph::by_parents(&db, &pkgs)?;
 
     println!("{}", graph);
     Ok(())
