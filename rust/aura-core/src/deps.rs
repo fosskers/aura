@@ -34,13 +34,14 @@ impl<'a> PkgGraph<'a> {
     pub fn by_deps(
         db: &'a Db,
         limit: Option<u8>,
+        optional: bool,
         pkgs: &[&'a str],
     ) -> Result<PkgGraph<'a>, alpm::Error> {
         let mut graph = Graph::default();
         let mut indices = HashMap::new();
 
         for p in pkgs {
-            PkgGraph::add_dep(db, &mut graph, &mut indices, limit, p);
+            PkgGraph::add_dep(db, &mut graph, &mut indices, limit, optional, p);
         }
 
         Ok(PkgGraph(graph))
@@ -50,13 +51,14 @@ impl<'a> PkgGraph<'a> {
     pub fn by_parents(
         db: &'a Db,
         limit: Option<u8>,
+        optional: bool,
         pkgs: &[&'a str],
     ) -> Result<PkgGraph<'a>, alpm::Error> {
         let mut graph = Graph::default();
         let mut indices = HashMap::new();
 
         for p in pkgs {
-            PkgGraph::add_parent(db, &mut graph, &mut indices, limit, p);
+            PkgGraph::add_parent(db, &mut graph, &mut indices, limit, optional, p);
         }
 
         Ok(PkgGraph(graph))
@@ -68,6 +70,7 @@ impl<'a> PkgGraph<'a> {
         graph: &mut Graph<&'a str, DepType, Directed, u16>,
         indices: &mut HashMap<&'a str, NodeIndex<u16>>,
         limit: Option<u8>,
+        optional: bool,
         parent: &'a str,
     ) -> Option<NodeIndex<u16>> {
         indices.get(parent).cloned().or_else(|| {
@@ -79,8 +82,20 @@ impl<'a> PkgGraph<'a> {
                 if next.is_none() || next > Some(0) {
                     // Dependencies required at runtime.
                     for d in p.depends().iter() {
-                        if let Some(dix) = PkgGraph::add_dep(db, graph, indices, next, d.name()) {
+                        if let Some(dix) =
+                            PkgGraph::add_dep(db, graph, indices, next, optional, d.name())
+                        {
                             graph.add_edge(ix, dix, DepType::Hard);
+                        }
+                    }
+
+                    if optional {
+                        for d in p.optdepends().iter() {
+                            if let Some(dix) =
+                                PkgGraph::add_dep(db, graph, indices, next, optional, d.name())
+                            {
+                                graph.add_edge(ix, dix, DepType::Opt);
+                            }
                         }
                     }
                 }
@@ -95,6 +110,7 @@ impl<'a> PkgGraph<'a> {
         graph: &mut Graph<&'a str, DepType, Directed, u16>,
         indices: &mut HashMap<&'a str, NodeIndex<u16>>,
         limit: Option<u8>,
+        optional: bool,
         // No lifetime because `required_by` yields owned Strings, which can't
         // have a `'a` lifetime.
         child: &str,
@@ -110,14 +126,20 @@ impl<'a> PkgGraph<'a> {
 
                 if next.is_none() || next > Some(0) {
                     for parent in p.required_by() {
-                        if let Some(pix) = PkgGraph::add_parent(db, graph, indices, next, &parent) {
+                        if let Some(pix) =
+                            PkgGraph::add_parent(db, graph, indices, next, optional, &parent)
+                        {
                             graph.add_edge(pix, ix, DepType::Hard);
                         }
                     }
 
-                    for parent in p.optional_for() {
-                        if let Some(pix) = PkgGraph::add_parent(db, graph, indices, next, &parent) {
-                            graph.add_edge(pix, ix, DepType::Opt);
+                    if optional {
+                        for parent in p.optional_for() {
+                            if let Some(pix) =
+                                PkgGraph::add_parent(db, graph, indices, next, optional, &parent)
+                            {
+                                graph.add_edge(pix, ix, DepType::Opt);
+                            }
                         }
                     }
                 }

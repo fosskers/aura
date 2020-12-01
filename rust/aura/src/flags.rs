@@ -741,11 +741,15 @@ pub struct Open {
 #[derive(Clap, Debug)]
 pub struct Deps {
     /// Display packages that depend on the given args.
-    #[clap(long)]
+    #[clap(long, display_order = 1)]
     pub reverse: bool,
 
+    /// Include optional dependencies.
+    #[clap(long, short, display_order = 1)]
+    pub optional: bool,
+
     /// The number of layers up or down to allow.
-    #[clap(long)]
+    #[clap(long, display_order = 1)]
     pub limit: Option<u8>,
 
     /// Packages to focus on.

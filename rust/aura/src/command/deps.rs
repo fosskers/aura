@@ -6,10 +6,15 @@ use aura_core::deps;
 
 /// Given some packages to focus on, print their combined dependency graph in
 /// DOT format.
-pub fn graph(alpm: &Alpm, limit: Option<u8>, packages: Vec<String>) -> Result<(), Error> {
+pub fn graph(
+    alpm: &Alpm,
+    limit: Option<u8>,
+    optional: bool,
+    packages: Vec<String>,
+) -> Result<(), Error> {
     let db = alpm.localdb();
     let pkgs: Vec<_> = packages.iter().map(|p| p.as_ref()).collect();
-    let graph = deps::PkgGraph::by_deps(&db, limit, &pkgs)?;
+    let graph = deps::PkgGraph::by_deps(&db, limit, optional, &pkgs)?;
 
     println!("{}", graph);
     Ok(())
@@ -17,10 +22,15 @@ pub fn graph(alpm: &Alpm, limit: Option<u8>, packages: Vec<String>) -> Result<()
 
 /// Like [`graph`], but display all packages that depend on the given ones
 /// instead.
-pub fn reverse(alpm: &Alpm, limit: Option<u8>, packages: Vec<String>) -> Result<(), Error> {
+pub fn reverse(
+    alpm: &Alpm,
+    limit: Option<u8>,
+    optional: bool,
+    packages: Vec<String>,
+) -> Result<(), Error> {
     let db = alpm.localdb();
     let pkgs: Vec<_> = packages.iter().map(|p| p.as_ref()).collect();
-    let graph = deps::PkgGraph::by_parents(&db, limit, &pkgs)?;
+    let graph = deps::PkgGraph::by_parents(&db, limit, optional, &pkgs)?;
 
     println!("{}", graph);
     Ok(())
