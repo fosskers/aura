@@ -31,24 +31,32 @@ pub struct PkgGraph<'a>(Graph<&'a str, DepType, Directed, u16>);
 
 impl<'a> PkgGraph<'a> {
     /// Create a new `PkgGraph` of given packages and all their dependencies.
-    pub fn by_deps(db: &'a Db, pkgs: &[&'a str]) -> Result<PkgGraph<'a>, alpm::Error> {
+    pub fn by_deps(
+        db: &'a Db,
+        limit: Option<u8>,
+        pkgs: &[&'a str],
+    ) -> Result<PkgGraph<'a>, alpm::Error> {
         let mut graph = Graph::default();
         let mut indices = HashMap::new();
 
         for p in pkgs {
-            PkgGraph::add_dep(db, &mut graph, &mut indices, p);
+            PkgGraph::add_dep(db, &mut graph, &mut indices, limit, p);
         }
 
         Ok(PkgGraph(graph))
     }
 
     /// Create a new `PkgGraph` of given packages and all packages that require them.
-    pub fn by_parents(db: &'a Db, pkgs: &[&'a str]) -> Result<PkgGraph<'a>, alpm::Error> {
+    pub fn by_parents(
+        db: &'a Db,
+        limit: Option<u8>,
+        pkgs: &[&'a str],
+    ) -> Result<PkgGraph<'a>, alpm::Error> {
         let mut graph = Graph::default();
         let mut indices = HashMap::new();
 
         for p in pkgs {
-            PkgGraph::add_parent(db, &mut graph, &mut indices, p);
+            PkgGraph::add_parent(db, &mut graph, &mut indices, limit, p);
         }
 
         Ok(PkgGraph(graph))
@@ -59,17 +67,21 @@ impl<'a> PkgGraph<'a> {
         db: &'a Db,
         graph: &mut Graph<&'a str, DepType, Directed, u16>,
         indices: &mut HashMap<&'a str, NodeIndex<u16>>,
+        limit: Option<u8>,
         parent: &'a str,
     ) -> Option<NodeIndex<u16>> {
         indices.get(parent).cloned().or_else(|| {
             db.pkg(parent).ok().map(|p| {
                 let ix = graph.add_node(parent);
                 indices.insert(parent, ix);
+                let next = limit.map(|l| l - 1);
 
-                // Dependencies required at runtime.
-                for d in p.depends().iter() {
-                    if let Some(dix) = PkgGraph::add_dep(db, graph, indices, d.name()) {
-                        graph.add_edge(ix, dix, DepType::Hard);
+                if next.is_none() || next > Some(0) {
+                    // Dependencies required at runtime.
+                    for d in p.depends().iter() {
+                        if let Some(dix) = PkgGraph::add_dep(db, graph, indices, next, d.name()) {
+                            graph.add_edge(ix, dix, DepType::Hard);
+                        }
                     }
                 }
 
@@ -82,6 +94,7 @@ impl<'a> PkgGraph<'a> {
         db: &'a Db,
         graph: &mut Graph<&'a str, DepType, Directed, u16>,
         indices: &mut HashMap<&'a str, NodeIndex<u16>>,
+        limit: Option<u8>,
         // No lifetime because `required_by` yields owned Strings, which can't
         // have a `'a` lifetime.
         child: &str,
@@ -93,16 +106,19 @@ impl<'a> PkgGraph<'a> {
                 let name = p.name();
                 let ix = graph.add_node(name);
                 indices.insert(name, ix);
+                let next = limit.map(|l| l - 1);
 
-                for parent in p.required_by() {
-                    if let Some(pix) = PkgGraph::add_parent(db, graph, indices, &parent) {
-                        graph.add_edge(pix, ix, DepType::Hard);
+                if next.is_none() || next > Some(0) {
+                    for parent in p.required_by() {
+                        if let Some(pix) = PkgGraph::add_parent(db, graph, indices, next, &parent) {
+                            graph.add_edge(pix, ix, DepType::Hard);
+                        }
                     }
-                }
 
-                for parent in p.optional_for() {
-                    if let Some(pix) = PkgGraph::add_parent(db, graph, indices, &parent) {
-                        graph.add_edge(pix, ix, DepType::Opt);
+                    for parent in p.optional_for() {
+                        if let Some(pix) = PkgGraph::add_parent(db, graph, indices, next, &parent) {
+                            graph.add_edge(pix, ix, DepType::Opt);
+                        }
                     }
                 }
 

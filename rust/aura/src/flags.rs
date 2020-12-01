@@ -744,6 +744,10 @@ pub struct Deps {
     #[clap(long)]
     pub reverse: bool,
 
+    /// The number of layers up or down to allow.
+    #[clap(long)]
+    pub limit: Option<u8>,
+
     /// Packages to focus on.
     pub packages: Vec<String>,
 }
