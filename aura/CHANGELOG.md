@@ -6,7 +6,23 @@
 
 #### Changed
 
-- **Breaking:** The top-level command `--viewconf` is now called `--pacconf`.
+- **Breaking:** The top-level command `--viewconf` is now called `conf`.
+
+#### Added
+
+- `deps` command for analyzing dependency connections. Generates output in
+  [Graphviz DOT format](https://en.wikipedia.org/wiki/DOT_%28graph_description_language%29),
+  and can be used like so:
+
+```
+aura deps gcc --reverse --optional | dot -Tpng > graph.png
+```
+
+This produces the following image:
+
+![](assets/gcc-graph.png)
+
+- `open` command for opening various Aura-related webpages in your browser.
 
 ## 3.2.2 (2020-10-29)
 
