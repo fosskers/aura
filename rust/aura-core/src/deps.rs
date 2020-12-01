@@ -40,17 +40,15 @@ impl<'a> PkgGraph<'a> {
         parent: &'a str,
     ) -> Option<NodeIndex<u16>> {
         indices.get(parent).cloned().or_else(|| {
-            db.pkg(parent).ok().map(|_| {
+            db.pkg(parent).ok().map(|p| {
                 let ix = graph.add_node(parent);
                 indices.insert(parent, ix);
 
-                // let v: Vec<_> = p.depends().iter().map(|d| d.name()).collect();
-
-                // for d in p.depends().iter() {
-                //     if let Some(dix) = PkgGraph::add_dep(db, graph, indices, d.name()) {
-                //         graph.add_edge(ix, dix, DepType::Hard);
-                //     }
-                // }
+                for d in p.depends().iter() {
+                    if let Some(dix) = PkgGraph::add_dep(db, graph, indices, d.name()) {
+                        graph.add_edge(ix, dix, DepType::Hard);
+                    }
+                }
 
                 ix
             })
@@ -60,11 +58,19 @@ impl<'a> PkgGraph<'a> {
 
 impl std::fmt::Display for PkgGraph<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "digraph {{\n")?;
+        writeln!(f, "digraph {{")?;
         let graph = &self.0;
 
+        // Render nodes.
         for (ix, name) in graph.node_indices().map(|ix| (ix, graph[ix])) {
-            write!(f, "    {} [ label=\"{}\"]\n", ix.index(), name)?;
+            writeln!(f, "    {} [ label=\"{}\"]", ix.index(), name)?;
+        }
+
+        writeln!(f, "")?;
+
+        // Render edges.
+        for e in graph.raw_edges().iter() {
+            writeln!(f, "    {} -> {}", e.source().index(), e.target().index())?;
         }
 
         write!(f, "}}")
