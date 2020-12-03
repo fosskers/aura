@@ -19,8 +19,12 @@ pub fn view(path: &Path) -> Result<(), Error> {
 
 /// Search the Pacman log for a matching string.
 pub fn search(path: &Path, term: String) -> Result<(), Error> {
-    let srch = misc::searcher();
-    Command::new(srch).arg(term).arg(path).status()?;
+    let (search, args) = misc::searcher();
+    Command::new(search)
+        .args(args)
+        .arg(term)
+        .arg(path)
+        .status()?;
     Ok(())
 }
 

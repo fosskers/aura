@@ -31,12 +31,13 @@ pub fn viewer() -> &'static str {
     }
 }
 
-/// A complete path to a file searcher program like `grep`.
-pub fn searcher() -> &'static str {
+/// A complete path to a file searcher program like `grep`, along with any extra
+/// arguments needed to affect the exact output.
+pub fn searcher() -> (&'static str, &'static [&'static str]) {
     let rg = Path::new(RIPGREP);
     if rg.exists() {
-        RIPGREP
+        (RIPGREP, &["-N"])
     } else {
-        GREP
+        (GREP, &[])
     }
 }
