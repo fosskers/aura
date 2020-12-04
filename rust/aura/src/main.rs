@@ -91,6 +91,7 @@ fn main() -> Result<(), Error> {
         // --- Statistics --- //
         SubCmd::Stats(s) if s.localization => stats::localization()?,
         SubCmd::Stats(s) if s.heavy => stats::heavy_packages(&alpm),
+        SubCmd::Stats(s) if s.groups => stats::groups(&alpm),
         SubCmd::Stats(_) => unimplemented!(),
         // --- Opening Webpages --- //
         SubCmd::Open(o) if o.docs => open::book()?,

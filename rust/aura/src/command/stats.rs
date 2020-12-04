@@ -5,7 +5,7 @@ use crate::localization;
 use alpm::Alpm;
 use colored::*;
 use i18n_embed::LanguageLoader;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use ubyte::ToByteUnit;
 use unic_langid::LanguageIdentifier;
 
@@ -56,5 +56,24 @@ pub fn heavy_packages(alpm: &Alpm) {
 
     for (pkg, size) in sizes.into_iter().take(10) {
         println!("{:w$} {}", pkg, size.bytes(), w = longest);
+    }
+}
+
+/// Display the unique groups found installed on the system.
+pub fn groups(alpm: &Alpm) {
+    let db = alpm.localdb();
+    let mut groups = HashSet::new();
+
+    for p in db.pkgs() {
+        for g in p.groups() {
+            groups.insert(g);
+        }
+    }
+
+    let mut v: Vec<_> = groups.into_iter().collect();
+    v.sort();
+
+    for p in v {
+        println!("{}", p);
     }
 }

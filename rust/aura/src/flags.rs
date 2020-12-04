@@ -686,6 +686,10 @@ pub struct Stats {
     #[clap(group = "stats", long)]
     pub localization: bool,
 
+    /// View all installed package groups.
+    #[clap(group = "stats", long)]
+    pub groups: bool,
+
     /// View the Top 10 heaviest installed packages.
     #[clap(group = "stats", long)]
     pub heavy: bool,
