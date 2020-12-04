@@ -13,7 +13,6 @@ aura \- A package manager for Arch Linux and the AUR.
 \fIaura\fR <operation> [options] [package(s)]
 .
 .SH DESCRIPTION
-.P
 \fIaura\fR is a secure, multilingual package manager for Arch Linux written in
 Haskell. It connects to both the official Arch repositories and to the Arch User
 Repositories (AUR), allowing easy control of all packages on an Arch system.
@@ -21,7 +20,6 @@ Aura allows \fIall\fR pacman operations and provides \fInew\fR custom ones for
 dealing with AUR packages.
 .
 .SH OPERATIONS
-.P
 \fB\-A\fR, \-\-aursync [package(s)]
 .RS 4
 Perform actions involving the [A]UR. Default action installs packages from the
@@ -67,7 +65,6 @@ aura -Ap <package> | aura -P
 .RE
 .
 .SH AUR SYNC OPTIONS (\fI\-A\fR)
-.P
 \fB\-a\fR, \-\-delmakedeps
 .RS 4
 Uninstalls build dependencies that are no longer required after installing the
@@ -213,7 +210,6 @@ in the given location, instead of the default \fI/var/cache/aura/vcs/\fR.
 .RE
 .
 .SH GLOBAL PACKAGE STATE OPTIONS (\fI\-B\fR)
-.P
 \fB\-c\fR, \-\-clean <states-to-retain>
 .RS 4
 Saves a given number of the most recently saved package states and removes the
@@ -233,7 +229,6 @@ Show all saved package state filenames.
 .RE
 .
 .SH DOWNGRADE OPTIONS (\fI\-C\fR)
-.P
 \fB\-b\fR, \-\-backup\fR <path>
 .RS 4
 Backup the package cache to a given directory. The given directory must already
@@ -265,7 +260,6 @@ will be output as\-is.
 .RE
 .
 .SH LOGFILE OPTIONS (\fI\-L\fR)
-.P
 \fB\-i\fR, \-\-info <package(s)>
 .RS 4
 Displays install / upgrade history for a given package. Under the `Recent
@@ -281,7 +275,6 @@ actions performed on a package.
 .RE
 .
 .SH ORPHAN PACKAGE OPTIONS (\fI\-O\fR)
-.P
 \fB\-a\fR, \-\-adopt <package(s)>
 .RS 4
 Mark a package as being explicitly installed (i.e. it's not a dependency).
@@ -293,7 +286,6 @@ Uninstall all orphan packages.
 .RE
 .
 .SH ANALYSIS OPTIONS (\fI\-P\fR)
-.P
 \fB\-f\fR, \-\-file <path>
 .RS 4
 Analyse a given PKGBUILD.
@@ -309,7 +301,6 @@ Analyse the PKGBUILDs of all locally installed AUR packages.
 .RE
 .
 .SH PACMAN / AURA DUAL FUNCTIONALITY OPTIONS
-.P
 \-\-noconfirm
 .RS 4
 Never ask for any Aura or Pacman confirmation. Any time a prompt would
@@ -341,7 +332,6 @@ that match the given glob pattern.
 .RE
 .
 .SH EXPOSED MAKEPKG OPTIONS
-.P
 \-\-ignorearch
 .RS 4
 Ignores processor architecture when building packages.
@@ -365,7 +355,6 @@ Skip all PGP checks.
 .RE
 .
 .SH LANGUAGE OPTIONS
-.P
 Aura is available in multiple languages. As options, they can be used with
 either their English names or their real names written in their native
 characters. The available languages are, in option form:
@@ -405,7 +394,6 @@ characters. The available languages are, in option form:
 \-\-dutch, \-\-nederlands
 .
 .SH PRO TIPS
-.P
 1. If you build a package and then choose not to install it, the built package
 file will still be moved to the cache. You can then install it whenever you
 want with \fI\-C\fR.
@@ -429,22 +417,18 @@ Fish => function search
 .RE
 .
 .SH SEE ALSO
-.P
 \fBaura.conf(5)\fR, \fBpacman\fR(8), \fBpacman.conf\fR(5), \fBmakepkg\fR(8)
 .
 .SH BUGS
-.P
 It is not recommended to install non-AUR packages with pacman or aura. Aura will
 assume they are AUR packages during a \fI\-Au\fR and attempt to upgrade them. If
 a name collision occurs (that is, if there is a legitimate AUR package with the
 same name as the one you installed) previous installations could be overwritten.
 .
 .SH AUTHOR
-.P
 Colin Woodbury <colin@fosskers.ca>
 .
 .SH CONTRIBUTORS
-.P
 Chris Warrick
 .P
 Brayden Banks
