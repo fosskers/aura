@@ -14,7 +14,8 @@ pub fn graph(
 ) -> Result<(), Error> {
     let db = alpm.localdb();
     let pkgs: Vec<_> = packages.iter().map(|p| p.as_ref()).collect();
-    let graph = deps::PkgGraph::by_deps(&db, limit, optional, &pkgs)?;
+    let foreigns: Vec<_> = aura_arch::foreigns(alpm).map(|p| p.name()).collect();
+    let graph = deps::PkgGraph::by_deps(&db, limit, optional, &foreigns, &pkgs)?;
 
     println!("{}", graph);
     Ok(())
@@ -30,7 +31,8 @@ pub fn reverse(
 ) -> Result<(), Error> {
     let db = alpm.localdb();
     let pkgs: Vec<_> = packages.iter().map(|p| p.as_ref()).collect();
-    let graph = deps::PkgGraph::by_parents(&db, limit, optional, &pkgs)?;
+    let foreigns: Vec<_> = aura_arch::foreigns(alpm).map(|p| p.name()).collect();
+    let graph = deps::PkgGraph::by_parents(&db, limit, optional, &foreigns, &pkgs)?;
 
     println!("{}", graph);
     Ok(())

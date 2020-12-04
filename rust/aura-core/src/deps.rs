@@ -33,6 +33,8 @@ pub struct PkgGraph<'a> {
     graph: Graph<&'a str, DepType, Directed, u16>,
     /// The original nodes around which the graph was built.
     focii: &'a [&'a str],
+    /// Foreign packages in the system.
+    foreigns: &'a [&'a str],
 }
 
 impl<'a> PkgGraph<'a> {
@@ -41,6 +43,7 @@ impl<'a> PkgGraph<'a> {
         db: &'a Db,
         limit: Option<u8>,
         optional: bool,
+        foreigns: &'a [&'a str],
         focii: &'a [&'a str],
     ) -> Result<PkgGraph<'a>, alpm::Error> {
         let mut graph = Graph::default();
@@ -50,7 +53,11 @@ impl<'a> PkgGraph<'a> {
             PkgGraph::add_dep(db, &mut graph, &mut indices, limit, optional, p);
         }
 
-        Ok(PkgGraph { graph, focii })
+        Ok(PkgGraph {
+            graph,
+            focii,
+            foreigns,
+        })
     }
 
     /// Create a new `PkgGraph` of given packages and all packages that require them.
@@ -58,6 +65,7 @@ impl<'a> PkgGraph<'a> {
         db: &'a Db,
         limit: Option<u8>,
         optional: bool,
+        foreigns: &'a [&'a str],
         focii: &'a [&'a str],
     ) -> Result<PkgGraph<'a>, alpm::Error> {
         let mut graph = Graph::default();
@@ -67,7 +75,11 @@ impl<'a> PkgGraph<'a> {
             PkgGraph::add_parent(db, &mut graph, &mut indices, limit, optional, p);
         }
 
-        Ok(PkgGraph { graph, focii })
+        Ok(PkgGraph {
+            graph,
+            focii,
+            foreigns,
+        })
     }
 
     /// Recursively add dependencies to the package `Graph`.
@@ -163,18 +175,22 @@ impl std::fmt::Display for PkgGraph<'_> {
 
         // Render nodes.
         for (ix, name) in graph.node_indices().map(|ix| (ix, graph[ix])) {
-            let style = if self.focii.contains(&name) {
-                "rounded,bold"
-            } else {
-                "rounded"
-            };
+            let mut styles = vec!["rounded"];
+
+            if self.focii.contains(&name) {
+                styles.push("bold");
+            }
+
+            if self.foreigns.contains(&name) {
+                styles.push("filled");
+            }
 
             writeln!(
                 f,
-                "    {} [ label=\"{}\", style=\"{}\", shape=box]",
+                "    {} [ label=\"{}\", style=\"{}\", shape=box, fillcolor=\"#4DC6FA\"]",
                 ix.index(),
                 name,
-                style
+                styles.join(",")
             )?;
         }
 

@@ -10,7 +10,7 @@ mod macros;
 pub mod utils;
 
 use ::log::debug;
-use alpm::Alpm;
+use alpm::{Alpm, SigLevel};
 use clap::Clap;
 use command::*;
 use error::Error;
@@ -53,6 +53,9 @@ fn main() -> Result<(), Error> {
         args.root.unwrap_or_else(|| pconf.root_dir.clone()),
         args.dbpath.unwrap_or_else(|| pconf.db_path.clone()),
     )?;
+    for repo in pconf.repos.iter() {
+        alpm.register_syncdb(repo.name.as_str(), SigLevel::USE_DEFAULT)?;
+    }
 
     match args.subcmd {
         // --- Pacman Commands --- //
