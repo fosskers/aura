@@ -1,6 +1,7 @@
 //! Dependency analysis internals.
 
 use alpm::Db;
+use itertools::Itertools;
 use petgraph::{graph::NodeIndex, Directed, Graph};
 use std::collections::HashMap;
 
@@ -26,11 +27,14 @@ impl DepType {
     }
 }
 
+/// The name of a package group.
+type Group<'a> = &'a str;
+
 /// A unique collection of `Package`s and their dependencies.
 pub struct PkgGraph<'a> {
     /// The graph itself. Contents are borrowed from an ALPM [`alpm::Db`] to
     /// stay zero-cost.
-    graph: Graph<&'a str, DepType, Directed, u16>,
+    graph: Graph<(&'a str, Option<Group<'a>>), DepType, Directed, u16>,
     /// The original nodes around which the graph was built.
     focii: &'a [&'a str],
     /// Foreign packages in the system.
@@ -85,7 +89,7 @@ impl<'a> PkgGraph<'a> {
     /// Recursively add dependencies to the package `Graph`.
     fn add_dep(
         db: &'a Db,
-        graph: &mut Graph<&'a str, DepType, Directed, u16>,
+        graph: &mut Graph<(&'a str, Option<Group<'a>>), DepType, Directed, u16>,
         indices: &mut HashMap<&'a str, NodeIndex<u16>>,
         limit: Option<u8>,
         optional: bool,
@@ -93,7 +97,7 @@ impl<'a> PkgGraph<'a> {
     ) -> Option<NodeIndex<u16>> {
         indices.get(parent).cloned().or_else(|| {
             db.pkg(parent).ok().map(|p| {
-                let ix = graph.add_node(parent);
+                let ix = graph.add_node((parent, p.groups().first()));
                 indices.insert(parent, ix);
                 let next = limit.map(|l| l - 1);
 
@@ -125,7 +129,7 @@ impl<'a> PkgGraph<'a> {
 
     fn add_parent(
         db: &'a Db,
-        graph: &mut Graph<&'a str, DepType, Directed, u16>,
+        graph: &mut Graph<(&'a str, Option<Group<'a>>), DepType, Directed, u16>,
         indices: &mut HashMap<&'a str, NodeIndex<u16>>,
         limit: Option<u8>,
         optional: bool,
@@ -138,7 +142,7 @@ impl<'a> PkgGraph<'a> {
                 // We pull the name back out of the summoned `Package` instead
                 // of using the given `child: &str` to avoid lifetime issues.
                 let name = p.name();
-                let ix = graph.add_node(name);
+                let ix = graph.add_node((name, p.groups().first()));
                 indices.insert(name, ix);
                 let next = limit.map(|l| l - 1);
 
@@ -174,24 +178,67 @@ impl std::fmt::Display for PkgGraph<'_> {
         let graph = &self.graph;
 
         // Render nodes.
-        for (ix, name) in graph.node_indices().map(|ix| (ix, graph[ix])) {
-            let mut styles = vec!["rounded"];
+        for (n, (gname, group)) in graph
+            .node_indices()
+            .filter_map(|ix| graph.node_weight(ix).map(|(name, group)| (ix, name, group)))
+            .sorted_by(|a, b| a.2.cmp(&b.2))
+            .group_by(|triple| triple.2)
+            .into_iter()
+            .enumerate()
+        {
+            match gname {
+                Some(g) => {
+                    writeln!(f, "")?;
+                    writeln!(f, "    subgraph cluster_{} {{", n)?;
+                    writeln!(f, "        label=\"{}\"", g)?;
+                    writeln!(f, "        style=dashed;")?;
+                    writeln!(f, "        color=brown;")?;
 
-            if self.focii.contains(&name) {
-                styles.push("bold");
+                    // TODO Deduplicate.
+                    for (ix, name, _) in group {
+                        let mut styles = vec!["rounded"];
+
+                        if self.focii.contains(&name) {
+                            styles.push("bold");
+                        }
+
+                        if self.foreigns.contains(&name) {
+                            styles.push("filled");
+                        }
+
+                        writeln!(
+                            f,
+                            "        {} [ label=\"{}\", style=\"{}\", shape=box, fillcolor=\"#4DC6FA\"]",
+                            ix.index(),
+                            name,
+                            styles.join(",")
+                        )?;
+                    }
+
+                    writeln!(f, "    }}")?;
+                }
+                None => {
+                    for (ix, name, _) in group {
+                        let mut styles = vec!["rounded"];
+
+                        if self.focii.contains(&name) {
+                            styles.push("bold");
+                        }
+
+                        if self.foreigns.contains(&name) {
+                            styles.push("filled");
+                        }
+
+                        writeln!(
+                            f,
+                            "    {} [ label=\"{}\", style=\"{}\", shape=box, fillcolor=\"#4DC6FA\"]",
+                            ix.index(),
+                            name,
+                            styles.join(",")
+                        )?;
+                    }
+                }
             }
-
-            if self.foreigns.contains(&name) {
-                styles.push("filled");
-            }
-
-            writeln!(
-                f,
-                "    {} [ label=\"{}\", style=\"{}\", shape=box, fillcolor=\"#4DC6FA\"]",
-                ix.index(),
-                name,
-                styles.join(",")
-            )?;
         }
 
         writeln!(f, "")?;

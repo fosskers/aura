@@ -6,4 +6,5 @@ edition = "2018"
 
 [dependencies]
 alpm = "1.1.5"
+itertools = "0.9"
 petgraph = { version = "0.5", default-features = false }
