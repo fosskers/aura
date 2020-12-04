@@ -24,7 +24,7 @@ impl<'a> Iterator for Foreigns<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         self.locals.next().and_then(|p| {
             let name = p.name();
-            match self.syncs.iter().filter_map(|db| db.pkg(name).ok()).next() {
+            match self.syncs.iter().find_map(|db| db.pkg(name).ok()) {
                 None => Some(p),
                 Some(_) => self.next(),
             }
@@ -49,6 +49,7 @@ pub fn orphans(alpm: &Alpm) -> Vec<Package> {
         .collect()
 }
 
+// TODO Consider replacing this with a call to `alpm_utils::DbListExt::pkgs`.
 /// All foreign packages as an `Iterator`.
 pub fn foreigns(alpm: &Alpm) -> Foreigns {
     let locals = alpm.localdb().pkgs().into_iter();
