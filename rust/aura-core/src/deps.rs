@@ -2,7 +2,7 @@
 
 use alpm::Db;
 use petgraph::{graph::NodeIndex, Directed, Graph};
-use std::{collections::HashMap, ops::Deref};
+use std::collections::HashMap;
 
 /// A dependency relationship between parent and child.
 pub enum DepType {
@@ -27,7 +27,13 @@ impl DepType {
 }
 
 /// A unique collection of `Package`s and their dependencies.
-pub struct PkgGraph<'a>(Graph<&'a str, DepType, Directed, u16>);
+pub struct PkgGraph<'a> {
+    /// The graph itself. Contents are borrowed from an ALPM [`alpm::Db`] to
+    /// stay zero-cost.
+    graph: Graph<&'a str, DepType, Directed, u16>,
+    /// The original nodes around which the graph was built.
+    focii: &'a [&'a str],
+}
 
 impl<'a> PkgGraph<'a> {
     /// Create a new `PkgGraph` of given packages and all their dependencies.
@@ -35,16 +41,16 @@ impl<'a> PkgGraph<'a> {
         db: &'a Db,
         limit: Option<u8>,
         optional: bool,
-        pkgs: &[&'a str],
+        focii: &'a [&'a str],
     ) -> Result<PkgGraph<'a>, alpm::Error> {
         let mut graph = Graph::default();
         let mut indices = HashMap::new();
 
-        for p in pkgs {
+        for p in focii {
             PkgGraph::add_dep(db, &mut graph, &mut indices, limit, optional, p);
         }
 
-        Ok(PkgGraph(graph))
+        Ok(PkgGraph { graph, focii })
     }
 
     /// Create a new `PkgGraph` of given packages and all packages that require them.
@@ -52,16 +58,16 @@ impl<'a> PkgGraph<'a> {
         db: &'a Db,
         limit: Option<u8>,
         optional: bool,
-        pkgs: &[&'a str],
+        focii: &'a [&'a str],
     ) -> Result<PkgGraph<'a>, alpm::Error> {
         let mut graph = Graph::default();
         let mut indices = HashMap::new();
 
-        for p in pkgs {
+        for p in focii {
             PkgGraph::add_parent(db, &mut graph, &mut indices, limit, optional, p);
         }
 
-        Ok(PkgGraph(graph))
+        Ok(PkgGraph { graph, focii })
     }
 
     /// Recursively add dependencies to the package `Graph`.
@@ -153,11 +159,23 @@ impl<'a> PkgGraph<'a> {
 impl std::fmt::Display for PkgGraph<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         writeln!(f, "digraph {{")?;
-        let graph = &self.0;
+        let graph = &self.graph;
 
         // Render nodes.
         for (ix, name) in graph.node_indices().map(|ix| (ix, graph[ix])) {
-            writeln!(f, "    {} [ label=\"{}\"]", ix.index(), name)?;
+            let style = if self.focii.contains(&name) {
+                "rounded,bold"
+            } else {
+                "rounded"
+            };
+
+            writeln!(
+                f,
+                "    {} [ label=\"{}\", style=\"{}\", shape=box]",
+                ix.index(),
+                name,
+                style
+            )?;
         }
 
         writeln!(f, "")?;
@@ -174,14 +192,5 @@ impl std::fmt::Display for PkgGraph<'_> {
         }
 
         write!(f, "}}")
-    }
-}
-
-// TODO Is this needed?
-impl<'a> Deref for PkgGraph<'a> {
-    type Target = Graph<&'a str, DepType, Directed, u16>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
     }
 }
