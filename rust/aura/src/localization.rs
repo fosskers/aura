@@ -39,7 +39,9 @@ struct Translations;
 /// let msg = fl!(fll, "orphans-adopt");
 /// println!("{}", msg);
 /// ```
-pub fn load(lang: Option<LanguageIdentifier>) -> Result<FluentLanguageLoader, I18nEmbedError> {
+pub(crate) fn load(
+    lang: Option<LanguageIdentifier>,
+) -> Result<FluentLanguageLoader, I18nEmbedError> {
     let loader = fluent_language_loader!();
     loader.load_languages(
         &Translations,
@@ -53,7 +55,7 @@ pub fn load(lang: Option<LanguageIdentifier>) -> Result<FluentLanguageLoader, I1
 ///
 /// There is no guarantee about what language will end up the default, so this
 /// shouldn't be used for normal localization purposes.
-pub fn load_all() -> Result<FluentLanguageLoader, I18nEmbedError> {
+pub(crate) fn load_all() -> Result<FluentLanguageLoader, I18nEmbedError> {
     let loader = fluent_language_loader!();
     let langs = available_languages();
     let slice: Vec<&LanguageIdentifier> = langs.iter().collect();
@@ -63,7 +65,7 @@ pub fn load_all() -> Result<FluentLanguageLoader, I18nEmbedError> {
 }
 
 /// The list of languages that Aura has localization files for (e.g. `en-US`).
-pub fn available_languages() -> Vec<LanguageIdentifier> {
+pub(crate) fn available_languages() -> Vec<LanguageIdentifier> {
     let mut vec: Vec<_> = Translations::iter()
         .filter_map(|l| l[0..5].parse().ok())
         .collect();

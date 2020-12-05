@@ -11,14 +11,14 @@ use std::path::Path;
 use std::process::Command;
 
 /// Open the Pacman/ALPM log in `bat` or `less`.
-pub fn view(path: &Path) -> Result<(), Error> {
+pub(crate) fn view(path: &Path) -> Result<(), Error> {
     let prog = misc::viewer();
     Command::new(prog).arg(path).status()?;
     Ok(())
 }
 
 /// Search the Pacman log for a matching string.
-pub fn search(path: &Path, term: String) -> Result<(), Error> {
+pub(crate) fn search(path: &Path, term: String) -> Result<(), Error> {
     let (search, args) = misc::searcher();
     Command::new(search)
         .args(args)
@@ -29,7 +29,7 @@ pub fn search(path: &Path, term: String) -> Result<(), Error> {
 }
 
 /// Display install/upgrade history for the given packages.
-pub fn info(fll: FluentLanguageLoader, path: &Path, pks: Vec<String>) {
+pub(crate) fn info(fll: FluentLanguageLoader, path: &Path, pks: Vec<String>) {
     for e in pks.into_iter().filter_map(|p| core::log::info(path, p)) {
         let p = fl!(fll, "common-name");
         let f = fl!(fll, "logs-first");

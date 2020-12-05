@@ -10,7 +10,7 @@ use ubyte::ToByteUnit;
 use unic_langid::LanguageIdentifier;
 
 /// Raw contents of loaded localizations.
-pub fn localization() -> Result<(), Error> {
+pub(crate) fn localization() -> Result<(), Error> {
     let fll = localization::load_all()?;
     let stats: HashMap<LanguageIdentifier, usize> = localization::available_languages()
         .into_iter()
@@ -42,7 +42,7 @@ pub fn localization() -> Result<(), Error> {
 }
 
 /// Display the Top 10 packages with the biggest installation footprint.
-pub fn heavy_packages(alpm: &Alpm) {
+pub(crate) fn heavy_packages(alpm: &Alpm) {
     let db = alpm.localdb();
     let mut sizes: Vec<(&str, i64)> = db.pkgs().iter().map(|p| (p.name(), p.isize())).collect();
     sizes.sort_by_key(|(_, size)| *size);
@@ -60,7 +60,7 @@ pub fn heavy_packages(alpm: &Alpm) {
 }
 
 /// Display the unique groups found installed on the system.
-pub fn groups(alpm: &Alpm) {
+pub(crate) fn groups(alpm: &Alpm) {
     let db = alpm.localdb();
     let mut groups = HashSet::new();
 

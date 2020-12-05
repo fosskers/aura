@@ -17,7 +17,7 @@ use std::sync::{Arc, Mutex};
 use ubyte::ToByteUnit;
 
 /// Print cache data for given packages.
-pub fn info(
+pub(crate) fn info(
     fll: FluentLanguageLoader,
     alpm: &Alpm,
     path: &Path,
@@ -76,7 +76,7 @@ pub fn info(
 }
 
 /// Print all package filepaths from the cache that match some search term.
-pub fn search(path: &Path, term: &str) -> Result<(), Error> {
+pub(crate) fn search(path: &Path, term: &str) -> Result<(), Error> {
     let matches = core::cache::search(path, term)?;
     for file in matches {
         println!("{}", file.path().display());
@@ -85,7 +85,7 @@ pub fn search(path: &Path, term: &str) -> Result<(), Error> {
 }
 
 /// Backup the package cache to a given directory.
-pub fn backup(fll: FluentLanguageLoader, source: &Path, target: &Path) -> Result<(), Error> {
+pub(crate) fn backup(fll: FluentLanguageLoader, source: &Path, target: &Path) -> Result<(), Error> {
     // The full, absolute path to copy files to.
     let full: PathBuf = if target.is_absolute() {
         target.to_path_buf()

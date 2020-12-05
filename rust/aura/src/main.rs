@@ -2,12 +2,12 @@
 
 #![warn(missing_docs)]
 
-pub mod command;
-pub mod error;
-pub mod flags;
-pub mod localization;
+pub(crate) mod command;
+pub(crate) mod error;
+pub(crate) mod flags;
+pub(crate) mod localization;
 mod macros;
-pub mod utils;
+pub(crate) mod utils;
 
 use ::log::debug;
 use alpm::{Alpm, SigLevel};

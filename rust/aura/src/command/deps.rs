@@ -6,7 +6,7 @@ use aura_core::deps;
 
 /// Given some packages to focus on, print their combined dependency graph in
 /// DOT format.
-pub fn graph(
+pub(crate) fn graph(
     alpm: &Alpm,
     limit: Option<u8>,
     optional: bool,
@@ -23,7 +23,7 @@ pub fn graph(
 
 /// Like [`graph`], but display all packages that depend on the given ones
 /// instead.
-pub fn reverse(
+pub(crate) fn reverse(
     alpm: &Alpm,
     limit: Option<u8>,
     optional: bool,

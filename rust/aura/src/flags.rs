@@ -8,7 +8,7 @@ use unic_langid::{langid, LanguageIdentifier};
 
 /// Global options only applicable to Aura that must be removed from the
 /// top-level args list before sending it to Pacman.
-pub const AURA_GLOBALS: &[&str] = &["--english", "--japanese"];
+pub(crate) const AURA_GLOBALS: &[&str] = &["--english", "--japanese"];
 
 /// Commandline arguments to the Aura executable.
 #[derive(Clap, Debug)]
@@ -18,7 +18,7 @@ pub const AURA_GLOBALS: &[&str] = &["--english", "--japanese"];
        setting = AppSettings::VersionlessSubcommands,
        // setting = AppSettings::UnifiedHelpMessage, // TODO Is this broken?
        setting = AppSettings::DisableHelpSubcommand)]
-pub struct Args {
+pub(crate) struct Args {
     // --- Global Pacman Options --- //
     /// Set an alternate database location.
     #[clap(
@@ -28,21 +28,21 @@ pub struct Args {
         global = true,
         display_order = 2
     )]
-    pub dbpath: Option<String>,
+    pub(crate) dbpath: Option<String>,
     /// Set an alternate installation root.
     #[clap(long, value_name = "path", global = true, display_order = 2)]
-    pub root: Option<String>,
+    pub(crate) root: Option<String>,
     /// Set an alternate log file.
     #[clap(long, value_name = "path", global = true)]
-    pub logfile: Option<PathBuf>,
+    pub(crate) logfile: Option<PathBuf>,
     /// Set an alternate package cache location.
     #[clap(long, value_name = "path", global = true)]
-    pub cachedir: Option<PathBuf>,
+    pub(crate) cachedir: Option<PathBuf>,
 
     // --- Aura Language Options --- //
     /// Output in English.
     #[clap(group = "language", long, global = true, display_order = 2)]
-    pub english: bool,
+    pub(crate) english: bool,
     /// Output in Japanese.
     #[clap(
         group = "language",
@@ -51,21 +51,21 @@ pub struct Args {
         alias = "日本語",
         display_order = 2
     )]
-    pub japanese: bool,
+    pub(crate) japanese: bool,
 
     // --- Other Aura Options --- //
     /// Minimum level of Aura log messages to display.
     #[clap(long, value_name = "level", possible_values = &["debug", "info", "warn", "error"], global = true)]
-    pub log_level: Option<LevelFilter>,
+    pub(crate) log_level: Option<LevelFilter>,
     /// The Pacman/Aura subcommand to run.
     #[clap(subcommand)]
-    pub subcmd: SubCmd,
+    pub(crate) subcmd: SubCmd,
 }
 
 impl Args {
     /// If a language flag was given on the command line, extract the
     /// corresponding standardized language code.
-    pub fn language(&self) -> Option<LanguageIdentifier> {
+    pub(crate) fn language(&self) -> Option<LanguageIdentifier> {
         match () {
             _ if self.japanese => Some(langid!("ja-JP")),
             _ => None,
@@ -75,7 +75,7 @@ impl Args {
 
 /// The Aura Package Manager.
 #[derive(Clap, Debug)]
-pub enum SubCmd {
+pub(crate) enum SubCmd {
     // --- Pacman Commands --- //
     /// Operate on the package database.
     Database(Database),
@@ -117,10 +117,10 @@ pub enum SubCmd {
 /// Synchronize official packages.
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'S', long_flag = "sync")]
-pub struct Sync {
+pub(crate) struct Sync {
     /// Remove old packages from cache directory (-cc for all).
     #[clap(long, short, parse(from_occurrences), display_order = 1)]
-    pub clean: u8,
+    pub(crate) clean: u8,
     /// Skip dependency version checks (-dd to skip all checks).
     #[clap(long, short = 'd', parse(from_occurrences), display_order = 1)]
     nodeps: u8,
@@ -227,7 +227,7 @@ pub struct Sync {
 /// Check if given dependencies are satisfied.
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'T', long_flag = "deptest")]
-pub struct DepTest {
+pub(crate) struct DepTest {
     /// Be verbose.
     #[clap(long, short, display_order = 1)]
     verbose: bool,
@@ -270,7 +270,7 @@ pub struct DepTest {
 /// Upgrade or add packages to the system.
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'U', long_flag = "upgrade")]
-pub struct Upgrade {
+pub(crate) struct Upgrade {
     /// Skip dependency version checks (-dd to skip all checks).
     #[clap(long, short = 'd', display_order = 1)]
     nodeps: bool,
@@ -351,7 +351,7 @@ pub struct Upgrade {
 /// Query the files database.
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'F', long_flag = "files")]
-pub struct Files {
+pub(crate) struct Files {
     /// View a list of packages in a repo.
     #[clap(long, short, display_order = 1)]
     list: bool,
@@ -408,7 +408,7 @@ pub struct Files {
 /// Remove packages from the system.
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'R', long_flag = "remove")]
-pub struct Remove {
+pub(crate) struct Remove {
     /// Remove packages and all packages that depend on them.
     #[clap(long, short, display_order = 1)]
     cascade: bool,
@@ -482,7 +482,7 @@ pub struct Remove {
 /// Operate on the package database.
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'D', long_flag = "database")]
-pub struct Database {
+pub(crate) struct Database {
     /// Test local database for validity (-kk for sync databases).
     #[clap(long, short = 'k', multiple_occurrences = true, display_order = 1)]
     check: bool,
@@ -535,7 +535,7 @@ pub struct Database {
 /// Query the package database.
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'Q', long_flag = "query")]
-pub struct Query {
+pub(crate) struct Query {
     /// View the changelog of a package.
     #[clap(long, short, display_order = 1)]
     changelog: bool,
@@ -622,106 +622,106 @@ pub struct Query {
 /// Perform security analysis of a PKGBUILD.
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'P', long_flag = "analysis")]
-pub struct Analysis {
+pub(crate) struct Analysis {
     /// Analyse a given PKGBUILD.
     #[clap(group = "analyse", long, short, value_name = "path")]
-    pub file: Option<String>,
+    pub(crate) file: Option<String>,
     /// Analyse a PKGBUILD found in the specified directory.
     #[clap(group = "analyse", long, short, value_name = "path")]
-    pub dir: Option<String>,
+    pub(crate) dir: Option<String>,
     /// Analyse the PKGBUILDs of all locally installed AUR packages.
     #[clap(group = "analyse", long, short)]
-    pub audit: bool,
+    pub(crate) audit: bool,
 }
 
 /// Handle orphan packages.
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'O', long_flag = "orphans")]
-pub struct Orphans {
+pub(crate) struct Orphans {
     /// Mark a package as being explicitly installed.
     #[clap(group = "orphans", long, short, value_name = "packages")]
-    pub adopt: Vec<String>,
+    pub(crate) adopt: Vec<String>,
     /// Uninstall all orphan packages.
     #[clap(group = "orphans", long, short = 'j')]
-    pub abandon: bool,
+    pub(crate) abandon: bool,
 }
 
 /// View various configuration settings and files.
 #[derive(Clap, Debug)]
-pub struct Conf {
+pub(crate) struct Conf {
     /// Set an alternate Pacman configuration file.
     #[clap(long, value_name = "path")]
-    pub config: Option<String>,
+    pub(crate) config: Option<String>,
     /// View the Pacman conf.
     #[clap(group = "conf", long, short, display_order = 1)]
-    pub pacman: bool,
+    pub(crate) pacman: bool,
     /// View the Aura conf.
     #[clap(group = "conf", long, short, display_order = 1)]
-    pub aura: bool,
+    pub(crate) aura: bool,
     /// View the Makepkg conf.
     #[clap(group = "conf", long, short, display_order = 1)]
-    pub makepkg: bool,
+    pub(crate) makepkg: bool,
     /// List all `.pacnew` files newer than their originals.
     #[clap(group = "conf", long = "new", display_order = 1)]
-    pub pacnew: bool,
+    pub(crate) pacnew: bool,
 }
 
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'L', long_flag = "viewlog")]
 /// View the Pacman/ALPM log.
-pub struct Log {
+pub(crate) struct Log {
     /// Display install/upgrade history for the given packages.
     #[clap(group = "log", long, short, value_name = "packages", display_order = 1)]
-    pub info: Vec<String>,
+    pub(crate) info: Vec<String>,
 
     /// Search the Pacman log for a matching string.
     #[clap(group = "log", long, short, value_name = "term", display_order = 1)]
-    pub search: Option<String>,
+    pub(crate) search: Option<String>,
 }
 
 /// View statistics about your machine or Aura itself.
 #[derive(Clap, Debug)]
-pub struct Stats {
+pub(crate) struct Stats {
     /// View Aura's localization statistics.
     #[clap(group = "stats", long, display_order = 1)]
-    pub lang: bool,
+    pub(crate) lang: bool,
 
     /// View all installed package groups.
     #[clap(group = "stats", long, display_order = 1)]
-    pub groups: bool,
+    pub(crate) groups: bool,
 
     /// View the Top 10 heaviest installed packages.
     #[clap(group = "stats", long, display_order = 1)]
-    pub heavy: bool,
+    pub(crate) heavy: bool,
 }
 
 /// Synchronize AUR packages.
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'A', long_flag = "aursync")]
-pub struct Aur {}
+pub(crate) struct Aur {}
 
 /// Save and restore the global package state.
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'B', long_flag = "backup")]
-pub struct Backup {}
+pub(crate) struct Backup {}
 
 /// Manage the package cache.
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'C', long_flag = "cache")]
-pub struct Cache {
+pub(crate) struct Cache {
     /// Search the package cache.
     #[clap(group = "cache", short, long, value_name = "term", display_order = 1)]
-    pub search: Option<String>,
+    pub(crate) search: Option<String>,
 
     // TODO Make other options elsewhere that expect a path have `PathBuf` too.
     // TODO Restore the `short` flag for this option after resolving the conflict with `--dbpath`!
     /// Back up the package cache to a given directory.
     #[clap(group = "cache", long, value_name = "target", display_order = 1)]
-    pub backup: Option<PathBuf>,
+    pub(crate) backup: Option<PathBuf>,
 
     /// Save the most recent <N> versions of a package.
     #[clap(group = "cache", short, long, value_name = "N", display_order = 1)]
-    pub clean: Option<u8>,
+    pub(crate) clean: Option<u8>,
 
     /// Look up specific packages for info on their cache entries.
     #[clap(
@@ -731,41 +731,41 @@ pub struct Cache {
         value_name = "package(s)",
         display_order = 1
     )]
-    pub info: Vec<String>,
+    pub(crate) info: Vec<String>,
 }
 
 /// Open various webpages related to Aura.
 #[derive(Clap, Debug)]
-pub struct Open {
+pub(crate) struct Open {
     /// Open the Aura Guide Book.
     #[clap(group = "open", long, short, display_order = 1)]
-    pub docs: bool,
+    pub(crate) docs: bool,
     /// Open Aura's Github repository.
     #[clap(group = "open", long, short, display_order = 1)]
-    pub repo: bool,
+    pub(crate) repo: bool,
     /// File a bug report for Aura.
     #[clap(group = "open", long, short, display_order = 1)]
-    pub bug: bool,
+    pub(crate) bug: bool,
     /// Open Aura's AUR page.
     #[clap(group = "open", long, short, display_order = 1)]
-    pub aur: bool,
+    pub(crate) aur: bool,
 }
 
 /// Output a dependency graph in DOT format.
 #[derive(Clap, Debug)]
-pub struct Deps {
+pub(crate) struct Deps {
     /// Display packages that depend on the given args.
     #[clap(long, display_order = 1)]
-    pub reverse: bool,
+    pub(crate) reverse: bool,
 
     /// Include optional dependencies.
     #[clap(long, short, display_order = 1)]
-    pub optional: bool,
+    pub(crate) optional: bool,
 
     /// The number of layers up or down to allow.
     #[clap(long, display_order = 1)]
-    pub limit: Option<u8>,
+    pub(crate) limit: Option<u8>,
 
     /// Packages to focus on.
-    pub packages: Vec<String>,
+    pub(crate) packages: Vec<String>,
 }

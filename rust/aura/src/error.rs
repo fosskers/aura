@@ -2,7 +2,7 @@
 
 /// Error type for all issues that can occur in the Aura library or executable.
 #[derive(Debug)]
-pub enum Error {
+pub(crate) enum Error {
     /// Some IO error, say from reading a file or sending a command to the
     /// shell.
     IO(std::io::Error),

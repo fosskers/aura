@@ -11,14 +11,18 @@ use std::collections::HashSet;
 use ubyte::ToByteUnit;
 
 /// Print the name of each orphaned package.
-pub fn list(alpm: &Alpm) {
+pub(crate) fn list(alpm: &Alpm) {
     arch::orphans(&alpm)
         .iter()
         .for_each(|o| println!("{}", o.name()))
 }
 
 /// Sets a package's install reason to "as explicit". An alias for `-D --asexplicit`.
-pub fn adopt(alpm: &Alpm, fll: FluentLanguageLoader, packages: Vec<String>) -> Result<(), Error> {
+pub(crate) fn adopt(
+    alpm: &Alpm,
+    fll: FluentLanguageLoader,
+    packages: Vec<String>,
+) -> Result<(), Error> {
     let db = alpm.localdb();
     let reals: Vec<_> = packages
         .into_iter()
@@ -42,7 +46,7 @@ pub fn adopt(alpm: &Alpm, fll: FluentLanguageLoader, packages: Vec<String>) -> R
 ///
 /// Will fail if the process does not have permission to create the lockfile,
 /// which usually lives in a root-owned directory.
-pub fn remove(alpm: &mut Alpm, fll: FluentLanguageLoader) -> Result<(), Error> {
+pub(crate) fn remove(alpm: &mut Alpm, fll: FluentLanguageLoader) -> Result<(), Error> {
     // Check for orphans.
     let orphans = arch::orphans(alpm);
     if !orphans.is_empty() {

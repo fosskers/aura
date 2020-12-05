@@ -7,7 +7,7 @@ use std::env;
 use std::process::Command;
 
 /// Open the `pacman.conf` in `bat` or `less`.
-pub fn pacman_conf(c: Conf) -> Result<(), Error> {
+pub(crate) fn pacman_conf(c: Conf) -> Result<(), Error> {
     let conf = c
         .config
         .unwrap_or_else(|| aura_arch::DEFAULT_PAC_CONF.to_string());
@@ -17,7 +17,7 @@ pub fn pacman_conf(c: Conf) -> Result<(), Error> {
 }
 
 /// Open the `makepkg.conf` in `bat` or `less`.
-pub fn makepkg_conf() -> Result<(), Error> {
+pub(crate) fn makepkg_conf() -> Result<(), Error> {
     let conf =
         env::var("MAKEPKG_CONF").unwrap_or_else(|_| aura_arch::DEFAULT_MAKEPKG_CONF.to_string());
     let prog = misc::viewer();
