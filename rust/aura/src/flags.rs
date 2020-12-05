@@ -41,10 +41,16 @@ pub struct Args {
 
     // --- Aura Language Options --- //
     /// Output in English.
-    #[clap(group = "lang", long, global = true)]
+    #[clap(group = "language", long, global = true, display_order = 2)]
     pub english: bool,
     /// Output in Japanese.
-    #[clap(group = "lang", long, global = true, alias = "日本語")]
+    #[clap(
+        group = "language",
+        long,
+        global = true,
+        alias = "日本語",
+        display_order = 2
+    )]
     pub japanese: bool,
 
     // --- Other Aura Options --- //
@@ -98,8 +104,6 @@ pub enum SubCmd {
     Orphans(Orphans),
     /// Perform security analysis of a PKGBUILD.
     Analysis(Analysis),
-    /// Display Aura's available localizations.
-    Lang(Lang),
     /// View various configuration settings and files.
     Conf(Conf),
     /// View statistics about your machine or about Aura itself.
@@ -663,10 +667,6 @@ pub struct Conf {
 }
 
 #[derive(Clap, Debug)]
-/// Display Aura's available localizations.
-pub struct Lang {}
-
-#[derive(Clap, Debug)]
 #[clap(short_flag = 'L', long_flag = "viewlog")]
 /// View the Pacman/ALPM log.
 pub struct Log {
@@ -683,15 +683,15 @@ pub struct Log {
 #[derive(Clap, Debug)]
 pub struct Stats {
     /// View Aura's localization statistics.
-    #[clap(group = "stats", long)]
-    pub localization: bool,
+    #[clap(group = "stats", long, display_order = 1)]
+    pub lang: bool,
 
     /// View all installed package groups.
-    #[clap(group = "stats", long)]
+    #[clap(group = "stats", long, display_order = 1)]
     pub groups: bool,
 
     /// View the Top 10 heaviest installed packages.
-    #[clap(group = "stats", long)]
+    #[clap(group = "stats", long, display_order = 1)]
     pub heavy: bool,
 }
 

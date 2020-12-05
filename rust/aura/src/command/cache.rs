@@ -62,6 +62,7 @@ pub fn info(
                 fl!(fll, "common-no").yellow()
             };
 
+            // TODO Handle non-ASCII padding.
             println!("{:w$} : {}", name.bold(), ci.name, w = long);
             println!("{:w$} : {} {}", ver.bold(), ci.version, is_in, w = long);
             println!("{:w$} : {}", created.bold(), dt, w = long);

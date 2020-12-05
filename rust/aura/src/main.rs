@@ -90,7 +90,7 @@ fn main() -> Result<(), Error> {
         SubCmd::Conf(c) if c.makepkg => conf::makepkg_conf()?,
         SubCmd::Conf(_) => unimplemented!(),
         // --- Statistics --- //
-        SubCmd::Stats(s) if s.localization => stats::localization()?,
+        SubCmd::Stats(s) if s.lang => stats::localization()?,
         SubCmd::Stats(s) if s.heavy => stats::heavy_packages(&alpm),
         SubCmd::Stats(s) if s.groups => stats::groups(&alpm),
         SubCmd::Stats(_) => unimplemented!(),
@@ -103,8 +103,6 @@ fn main() -> Result<(), Error> {
         // --- Dependency Management --- //
         SubCmd::Deps(d) if d.reverse => deps::reverse(&alpm, d.limit, d.optional, d.packages)?,
         SubCmd::Deps(d) => deps::graph(&alpm, d.limit, d.optional, d.packages)?,
-        // --- Other --- //
-        SubCmd::Lang(_) => misc::languages(),
     }
 
     Ok(())
