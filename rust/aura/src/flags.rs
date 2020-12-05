@@ -8,7 +8,7 @@ use unic_langid::{langid, LanguageIdentifier};
 
 /// Global options only applicable to Aura that must be removed from the
 /// top-level args list before sending it to Pacman.
-pub(crate) const AURA_GLOBALS: &[&str] = &["--english", "--japanese"];
+pub(crate) const AURA_GLOBALS: &[&str] = &["--english", "--japanese", "--german"];
 
 /// Commandline arguments to the Aura executable.
 #[derive(Clap, Debug)]
@@ -43,7 +43,7 @@ pub(crate) struct Args {
     /// Output in English.
     #[clap(group = "language", long, global = true, display_order = 2)]
     pub(crate) english: bool,
-    /// Output in Japanese.
+    /// Output in Japanese (alias: 日本語).
     #[clap(
         group = "language",
         long,
@@ -52,6 +52,15 @@ pub(crate) struct Args {
         display_order = 2
     )]
     pub(crate) japanese: bool,
+    /// Output in German (alias: deutsch).
+    #[clap(
+        group = "language",
+        long,
+        global = true,
+        alias = "deutsch",
+        display_order = 2
+    )]
+    pub(crate) german: bool,
 
     // --- Other Aura Options --- //
     /// Minimum level of Aura log messages to display.
@@ -67,6 +76,8 @@ impl Args {
     /// corresponding standardized language code.
     pub(crate) fn language(&self) -> Option<LanguageIdentifier> {
         match () {
+            _ if self.english => Some(langid!("en-US")),
+            _ if self.german => Some(langid!("de-DE")),
             _ if self.japanese => Some(langid!("ja-JP")),
             _ => None,
         }
