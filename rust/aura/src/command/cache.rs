@@ -33,20 +33,28 @@ pub fn info(
             let name = fl!(fll, "common-name");
             let ver = fl!(fll, "cache-info-latest");
             let created = fl!(fll, "cache-info-created");
-            let installed = fl!(fll, "cache-info-installed");
             let sig = fl!(fll, "cache-info-sig");
             let size = fl!(fll, "cache-info-size");
-            let long = vec![&name, &ver, &created, &installed, &sig, &size]
+            let av = fl!(fll, "cache-info-avail");
+            let long = vec![&name, &ver, &created, &sig, &size, &av]
                 .iter()
                 .map(|s| s.len())
                 .max()
                 .unwrap();
 
             let dt = DateTime::<Local>::from(ci.created).format("%F %T");
-            let in_yes_no = if db.pkg(ci.name.as_str()).is_ok() {
-                fl!(fll, "common-yes").green().bold()
+            let is_in = if let Ok(pkg) = db.pkg(ci.name.as_str()) {
+                if ci.version == pkg.version().as_str() {
+                    format!("[{}]", fl!(fll, "cache-info-installed"))
+                        .cyan()
+                        .bold()
+                } else {
+                    format!("[{}: {}]", fl!(fll, "cache-info-installed"), pkg.version())
+                        .yellow()
+                        .bold()
+                }
             } else {
-                fl!(fll, "common-no").yellow()
+                "".normal()
             };
             let sig_yes_no = if ci.signature {
                 fl!(fll, "common-yes").green().bold()
@@ -55,11 +63,11 @@ pub fn info(
             };
 
             println!("{:w$} : {}", name.bold(), ci.name, w = long);
-            println!("{:w$} : {}", ver.bold(), ci.version, w = long);
+            println!("{:w$} : {} {}", ver.bold(), ci.version, is_in, w = long);
             println!("{:w$} : {}", created.bold(), dt, w = long);
-            println!("{:w$} : {}", installed.bold(), in_yes_no, w = long);
             println!("{:w$} : {}", sig.bold(), sig_yes_no, w = long);
             println!("{:w$} : {}", size.bold(), ci.size.bytes(), w = long);
+            println!("{:w$} : {}", av.bold(), ci.available.join(", "), w = long);
             println!();
         });
 

@@ -7,9 +7,10 @@ cache-backup-target = Backing up cache to { $target }
 
 cache-info-latest = Latest
 cache-info-created = Created
-cache-info-installed = Installed
+cache-info-installed = installed
 cache-info-sig = Signature
 cache-info-size = Tarball Size
+cache-info-avail = Available Versions
 
 # Orphans (-O)
 orphans-abandon = The following orphans and their dependencies will be removed:
@@ -24,6 +25,7 @@ logs-recent = Recent Actions
 # Common Fields
 common-yes = Yes
 common-no = No
+common-none = None
 common-name = Name
 
 # Misc.

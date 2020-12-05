@@ -48,6 +48,8 @@ pub struct CacheInfo {
     pub signature: bool,
     /// Size in bytes of the tarball.
     pub size: u64,
+    /// Available versions.
+    pub available: Vec<String>,
 }
 
 /// All package filenames that match a given string.
@@ -64,6 +66,7 @@ pub fn info(cache: &Path, package: &str) -> Result<Option<CacheInfo>, std::io::E
         .filter(|(name, _, _)| name == package)
         .collect();
     matches.sort_by(|(_, v0, _), (_, v1, _)| alpm::vercmp(v1.as_str(), v0.as_str()));
+    let available = matches.iter().map(|(_, v, _)| v.clone()).collect();
 
     match matches.into_iter().next() {
         None => Ok(None),
@@ -82,6 +85,7 @@ pub fn info(cache: &Path, package: &str) -> Result<Option<CacheInfo>, std::io::E
                         created,
                         signature: path.exists(),
                         size: meta.len(),
+                        available,
                     };
 
                     Ok(Some(info))
