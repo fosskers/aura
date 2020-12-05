@@ -683,11 +683,11 @@ pub(crate) struct Log {
 #[derive(Clap, Debug)]
 pub(crate) struct Stats {
     /// View Aura's localization statistics.
-    #[clap(group = "stats", long, display_order = 1)]
+    #[clap(group = "stats", long, short, display_order = 1)]
     pub(crate) lang: bool,
 
     /// View all installed package groups.
-    #[clap(group = "stats", long, display_order = 1)]
+    #[clap(group = "stats", long, short, display_order = 1)]
     pub(crate) groups: bool,
 
     /// View the Top 10 heaviest installed packages.
@@ -716,7 +716,7 @@ pub(crate) struct Cache {
     // TODO Make other options elsewhere that expect a path have `PathBuf` too.
     // TODO Restore the `short` flag for this option after resolving the conflict with `--dbpath`!
     /// Back up the package cache to a given directory.
-    #[clap(group = "cache", long, value_name = "target", display_order = 1)]
+    #[clap(group = "cache", long, short, value_name = "target", display_order = 1)]
     pub(crate) backup: Option<PathBuf>,
 
     /// Save the most recent <N> versions of a package.
