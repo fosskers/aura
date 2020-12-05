@@ -70,7 +70,8 @@ fn main() -> Result<(), Error> {
         SubCmd::Aur(_) => unimplemented!(),
         SubCmd::Backup(_) => unimplemented!(),
         // --- The Package Cache --- //
-        SubCmd::Cache(c) if c.search.is_some() => cache::search(cachep, c.search.unwrap())?,
+        SubCmd::Cache(c) if !c.info.is_empty() => cache::info(fll, &alpm, cachep, c.info)?,
+        SubCmd::Cache(c) if c.search.is_some() => cache::search(cachep, &c.search.unwrap())?,
         SubCmd::Cache(c) if c.backup.is_some() => cache::backup(fll, cachep, &c.backup.unwrap())?,
         SubCmd::Cache(_) => unimplemented!(),
         // --- Logs --- //

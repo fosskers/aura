@@ -2,7 +2,9 @@
 
 use crate::error::Error;
 use crate::{a, aln};
+use alpm::Alpm;
 use aura_core as core;
+use chrono::{DateTime, Local};
 use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
@@ -14,11 +16,61 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use ubyte::ToByteUnit;
 
+/// Print cache data for given packages.
+pub fn info(
+    fll: FluentLanguageLoader,
+    alpm: &Alpm,
+    path: &Path,
+    packages: Vec<String>,
+) -> Result<(), Error> {
+    let db = alpm.localdb();
+
+    packages
+        .iter()
+        .filter_map(|p| core::cache::info(path, p).ok())
+        .filter_map(|ci| ci)
+        .for_each(|ci| {
+            let name = fl!(fll, "common-name");
+            let ver = fl!(fll, "cache-info-latest");
+            let created = fl!(fll, "cache-info-created");
+            let installed = fl!(fll, "cache-info-installed");
+            let sig = fl!(fll, "cache-info-sig");
+            let size = fl!(fll, "cache-info-size");
+            let long = vec![&name, &ver, &created, &installed, &sig, &size]
+                .iter()
+                .map(|s| s.len())
+                .max()
+                .unwrap();
+
+            let dt = DateTime::<Local>::from(ci.created).format("%F %T");
+            let in_yes_no = if db.pkg(ci.name.as_str()).is_ok() {
+                fl!(fll, "common-yes").green().bold()
+            } else {
+                fl!(fll, "common-no").yellow()
+            };
+            let sig_yes_no = if ci.signature {
+                fl!(fll, "common-yes").green().bold()
+            } else {
+                fl!(fll, "common-no").yellow()
+            };
+
+            println!("{:w$} : {}", name.bold(), ci.name, w = long);
+            println!("{:w$} : {}", ver.bold(), ci.version, w = long);
+            println!("{:w$} : {}", created.bold(), dt, w = long);
+            println!("{:w$} : {}", installed.bold(), in_yes_no, w = long);
+            println!("{:w$} : {}", sig.bold(), sig_yes_no, w = long);
+            println!("{:w$} : {}", size.bold(), ci.size.bytes(), w = long);
+            println!();
+        });
+
+    Ok(())
+}
+
 /// Print all package filepaths from the cache that match some search term.
-pub fn search(path: &Path, term: String) -> Result<(), Error> {
+pub fn search(path: &Path, term: &str) -> Result<(), Error> {
     let matches = core::cache::search(path, term)?;
     for file in matches {
-        println!("{}", file.display());
+        println!("{}", file.path().display());
     }
     Ok(())
 }

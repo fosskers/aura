@@ -710,18 +710,28 @@ pub struct Backup {}
 #[clap(short_flag = 'C', long_flag = "cache")]
 pub struct Cache {
     /// Search the package cache.
-    #[clap(group = "cache", short, long, display_order = 1)]
+    #[clap(group = "cache", short, long, value_name = "term", display_order = 1)]
     pub search: Option<String>,
 
     // TODO Make other options elsewhere that expect a path have `PathBuf` too.
     // TODO Restore the `short` flag for this option after resolving the conflict with `--dbpath`!
     /// Back up the package cache to a given directory.
-    #[clap(group = "cache", long, display_order = 1)]
+    #[clap(group = "cache", long, value_name = "target", display_order = 1)]
     pub backup: Option<PathBuf>,
 
     /// Save the most recent <N> versions of a package.
-    #[clap(group = "cache", short, long, display_order = 1)]
+    #[clap(group = "cache", short, long, value_name = "N", display_order = 1)]
     pub clean: Option<u8>,
+
+    /// Look up specific packages for info on their cache entries.
+    #[clap(
+        group = "cache",
+        short,
+        long,
+        value_name = "package(s)",
+        display_order = 1
+    )]
+    pub info: Vec<String>,
 }
 
 /// Open various webpages related to Aura.

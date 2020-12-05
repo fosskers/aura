@@ -8,6 +8,7 @@ edition = "2018"
 alpm = "1.1"
 aura-arch = { path = "../aura-arch" }
 aura-core = { path = "../aura-core" }
+chrono = "0.4"
 clap = "3.0.0-beta.2"
 clap_generate = "3.0.0-beta.2"
 colored = "2.0"
