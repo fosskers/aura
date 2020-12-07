@@ -1,10 +1,9 @@
 //! Cache manipulation internals.
 
+use crate::common::Package;
+use std::fs::{DirEntry, ReadDir};
 use std::path::Path;
-use std::{
-    fs::{DirEntry, ReadDir},
-    time::SystemTime,
-};
+use std::time::SystemTime;
 
 /// A description of the size of the package cache.
 pub struct CacheSize {
@@ -62,15 +61,15 @@ pub fn search<'a>(cache: &Path, term: &'a str) -> Result<CacheMatches<'a>, std::
 pub fn info(cache: &Path, package: &str) -> Result<Option<CacheInfo>, std::io::Error> {
     let mut matches: Vec<_> = search(cache, package)?
         .filter(|de| is_package(&de.path()))
-        .filter_map(|de| split_path(&de.path()).map(|(name, ver)| (name, ver, de)))
-        .filter(|(name, _, _)| name == package)
+        .filter_map(|de| Package::from_path(&de.path()).map(|pkg| (pkg, de)))
+        .filter(|(pkg, _)| pkg.name == package)
         .collect();
-    matches.sort_by(|(_, v0, _), (_, v1, _)| alpm::vercmp(v1.as_str(), v0.as_str()));
-    let available = matches.iter().map(|(_, v, _)| v.clone()).collect();
+    matches.sort_by(|(p0, _), (p1, _)| alpm::vercmp(p1.version.as_str(), p0.version.as_str()));
+    let available = matches.iter().map(|(pkg, _)| pkg.version.clone()).collect();
 
     match matches.into_iter().next() {
         None => Ok(None),
-        Some((name, version, de)) => {
+        Some((Package { name, version }, de)) => {
             let meta = de.metadata()?;
             let created = meta.created()?;
             let mut path = de.path();
@@ -122,34 +121,6 @@ pub fn is_package(path: &Path) -> bool {
         None => false,
         Some(s) => s.ends_with(".pkg.tar.zst") || s.ends_with(".pkg.tar.xz"),
     }
-}
-
-// TODO Avoid the extra String allocation.
-/// Split a path into its package name and version.
-///
-/// ```
-/// use aura_core::cache;
-/// use std::path::Path;
-///
-/// let path = Path::new("/var/cache/pacman/pkg/aura-bin-3.2.1-1-x86_64.pkg.tar.zst");
-/// assert_eq!(Some(("aura-bin".to_string(), "3.2.1-1".to_string())), cache::split_path(path));
-///
-/// let simple = Path::new("aura-bin-3.2.1-1-x86_64.pkg.tar.zst");
-/// assert_eq!(Some(("aura-bin".to_string(), "3.2.1-1".to_string())), cache::split_path(simple));
-/// ```
-pub fn split_path(path: &Path) -> Option<(String, String)> {
-    path.file_name()
-        .and_then(|file| file.to_str())
-        .and_then(|file| file.rsplitn(2, '-').skip(1).next())
-        .and_then(|pkg| {
-            let mut vec: Vec<_> = pkg.rsplitn(3, '-').collect();
-            let name = vec.last()?.to_string();
-            vec.pop();
-            vec.reverse();
-            let ver = vec.join("-");
-
-            Some((name, ver))
-        })
 }
 
 /// Feed the output of this to [`PathBuf::set_extension`].
