@@ -18,6 +18,10 @@ jobs:
 
       - name: Cache Dependencies
         uses: Swatinem/rust-cache@v1
+        with:
+          working-directory: rust/
 
       - name: Build and Test
-        run: cargo test
+        run: |
+          cd rust/
+          cargo test
