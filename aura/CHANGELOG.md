@@ -23,6 +23,7 @@ This produces the following image:
 ![](assets/gcc-graph.png)
 
 - `open` command for opening various Aura-related webpages in your browser.
+- Turkish translations thanks to Cihan Alkan. Teşekkür ederim!
 
 ## 3.2.2 (2020-10-29)
 

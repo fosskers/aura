@@ -49,33 +49,36 @@ translators = M.fromList
     , (Japanese,   "Onoue Takuro")
     , (Esperanto,  "Zachary Matthews")
     , (Dutch,      "Joris Blanken")
+    , (Turkish,    "Cihan Alkan")
     ]
 
 -- These need updating! Or removing...
 languageNames :: Language -> Map Language T.Text
-languageNames = M.fromList . zip [ Japanese, Polish, Croatian, Swedish, German, Spanish, Portuguese, French, Russian, Italian, Serbian, Norwegian, Indonesia, Chinese, Esperanto, Dutch ] . \case
-    Japanese   -> [ "日本語", "ポーランド語", "クロアチア語", "スウェーデン語", "ドイツ語", "スペイン語", "ポルトガル語", "フランス語", "ロシア語", "イタリア語", "セルビア語", "ノルウェー語", "インドネシア語", "中国語", "エスペラント", "オランダ語" ]
-    Polish     -> [ "Japanese", "polski", "chorwacki", "szwedzki", "niemiecki", "hiszpański", "portugalski", "francuski", "rosyjski", "włoski", "serbski", "norweski", "indonezyjski", "chiński", "esperanto", "niderlandzki" ]
-    Croatian   -> [ "Japanese", "poljski", "hrvatski", "švedski", "njemački", "španjolski", "portugalski", "francuski", "ruski", "talijanski", "srpski", "norveški", "Indonesian", "Chinese", "Esperanto", "Dutch" ]
-    Swedish    -> [ "Japanese", "Polska", "Kroatiska", "Svenska", "Tyska", "Spanska", "Portugisiska", "Franska", "Ryska", "Italienska", "Serbiska", "Norska", "Indonesian", "Chinese", "Esperanto", "Dutch" ]
-    German     -> [ "Japanisch", "Polnisch", "Kroatisch", "Schwedisch", "Deutsch", "Spanisch", "Portugiesisch", "Französisch", "Russisch", "Italienisch", "Serbisch", "Norwegisch", "Indonesisch", "Chinese", "Esperanto", "Dutch" ]
-    Spanish    -> [ "Japanese", "Polaco", "Croata", "Sueco", "Alemán", "Español", "Portugués", "Francés", "Ruso", "Italiano", "Serbio", "Noruego", "Indonesio", "Chinese", "Esperanto", "Dutch" ]
-    Portuguese -> [ "Japonês", "Polonês", "Croata", "Sueco", "Alemão", "Espanhol", "Português", "Francês", "Russo", "Italiano", "Sérvio", "Norueguês", "Indonésio", "Chinês", "Esperanto", "Dutch" ]
-    French     -> [ "Japanese", "Polonais", "Croate", "Suédois", "Allemand", "Espagnol", "Portugais", "Français", "Russe", "Italien", "Serbe", "Norvégien", "Indonesian", "Chinese", "Esperanto", "Dutch" ]
-    Russian    -> [ "Японский", "Польский", "Хорватский", "Шведский", "Немецкий", "Испанский", "Португальский", "Французский", "Русский", "Итальянский", "Сербский", "Норвежский", "Индонезийский", "Китайский", "Эсперанто", "Dutch" ]
-    Italian    -> [ "Giapponese", "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "Serbo", "Norvegese", "Indonesiano", "Cinese", "Esperanto", "Dutch" ]
-    Serbian    -> [ "Japanese", "Пољски", "Хрватски", "Шведски", "Немачки", "Шпански", "Португалски", "Француски", "Руски", "Италијански", "Српски", "", "Indonesian", "Chinese", "Esperanto", "Dutch" ]
-    Norwegian  -> [ "Japanese", "Polsk", "Kroatisk", "Svensk", "Tysk", "Spansk", "Portugisisk", "Fransk", "Russisk", "Italiensk", "Serbisk", "Norsk", "Indonesian", "Chinese", "Esperanto", "Dutch" ]
-    Indonesia  -> [ "Japanese", "Polandia", "Kroasia", "Swedia", "Jerman", "Spanyol", "Portugis", "Prancis", "Rusia", "Italia", "Serbia", "Norwegia", "Indonesian", "Chinese", "Esperanto", "Dutch" ]
-    Chinese    -> [ "日语", "波兰语", "克罗地亚语", "瑞典语", "德语", "西班牙语", "葡萄牙语", "法语", "俄语", "意大利语", "塞尔维亚语", "挪威语", "印度尼西亚语", "中文", "世界语", "Dutch" ]
-    Esperanto  -> [ "La japana", "La pola", "La kroata", "La sevda", "La germana", "La hispana", "La portugala", "La franca", "La rusa", "La itala", "La serba", "La norvega", "La indonezia", "La ĉina", "Esperanto", "La nederlanda" ]
-    Dutch      -> [ "Japans", "Pools", "Kroatisch", "Zweeds", "Duits", "Spaans", "Portugees", "Frans", "Russisch", "Italiaans", "Servisch", "Noors", "Indonesisch", "Chinees", "Esperanto", "Nederlands" ]
-    _          -> [ "Japanese", "Polish", "Croatian", "Swedish", "German", "Spanish", "Portuguese", "French", "Russian", "Italian", "Serbian", "Norwegian", "Indonesian", "Chinese", "Esperanto", "Dutch" ]
+languageNames = M.fromList . zip [ Japanese, Polish, Croatian, Swedish, German, Spanish, Portuguese, French, Russian, Italian, Serbian, Norwegian, Indonesia, Chinese, Esperanto, Dutch, Turkish ] . \case
+    Japanese   -> [ "日本語", "ポーランド語", "クロアチア語", "スウェーデン語", "ドイツ語", "スペイン語", "ポルトガル語", "フランス語", "ロシア語", "イタリア語", "セルビア語", "ノルウェー語", "インドネシア語", "中国語", "エスペラント", "オランダ語", "トルコ語" ]
+    Turkish    -> [ "Japonca", "Lehçe", "Hırvatça", "İsveççe", "Almanca", "İspanyolca", "Portekizce", "Fransızca", "Rusça", "İtalyanca", "Sırpça", "Norveççe", "Endonezce", "Çince", "Esperanto", "Hollandaca", "Türkçe" ]
+    Polish     -> [ "Japanese", "polski", "chorwacki", "szwedzki", "niemiecki", "hiszpański", "portugalski", "francuski", "rosyjski", "włoski", "serbski", "norweski", "indonezyjski", "chiński", "esperanto", "niderlandzki", "Turkish" ]
+    Croatian   -> [ "Japanese", "poljski", "hrvatski", "švedski", "njemački", "španjolski", "portugalski", "francuski", "ruski", "talijanski", "srpski", "norveški", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish" ]
+    Swedish    -> [ "Japanese", "Polska", "Kroatiska", "Svenska", "Tyska", "Spanska", "Portugisiska", "Franska", "Ryska", "Italienska", "Serbiska", "Norska", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish" ]
+    German     -> [ "Japanisch", "Polnisch", "Kroatisch", "Schwedisch", "Deutsch", "Spanisch", "Portugiesisch", "Französisch", "Russisch", "Italienisch", "Serbisch", "Norwegisch", "Indonesisch", "Chinese", "Esperanto", "Dutch", "Turkish" ]
+    Spanish    -> [ "Japanese", "Polaco", "Croata", "Sueco", "Alemán", "Español", "Portugués", "Francés", "Ruso", "Italiano", "Serbio", "Noruego", "Indonesio", "Chinese", "Esperanto", "Dutch", "Turkish" ]
+    Portuguese -> [ "Japonês", "Polonês", "Croata", "Sueco", "Alemão", "Espanhol", "Português", "Francês", "Russo", "Italiano", "Sérvio", "Norueguês", "Indonésio", "Chinês", "Esperanto", "Dutch", "Turkish" ]
+    French     -> [ "Japanese", "Polonais", "Croate", "Suédois", "Allemand", "Espagnol", "Portugais", "Français", "Russe", "Italien", "Serbe", "Norvégien", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish" ]
+    Russian    -> [ "Японский", "Польский", "Хорватский", "Шведский", "Немецкий", "Испанский", "Португальский", "Французский", "Русский", "Итальянский", "Сербский", "Норвежский", "Индонезийский", "Китайский", "Эсперанто", "Dutch", "Turkish" ]
+    Italian    -> [ "Giapponese", "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "Serbo", "Norvegese", "Indonesiano", "Cinese", "Esperanto", "Dutch", "Turkish" ]
+    Serbian    -> [ "Japanese", "Пољски", "Хрватски", "Шведски", "Немачки", "Шпански", "Португалски", "Француски", "Руски", "Италијански", "Српски", "", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish" ]
+    Norwegian  -> [ "Japanese", "Polsk", "Kroatisk", "Svensk", "Tysk", "Spansk", "Portugisisk", "Fransk", "Russisk", "Italiensk", "Serbisk", "Norsk", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish" ]
+    Indonesia  -> [ "Japanese", "Polandia", "Kroasia", "Swedia", "Jerman", "Spanyol", "Portugis", "Prancis", "Rusia", "Italia", "Serbia", "Norwegia", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish" ]
+    Chinese    -> [ "日语", "波兰语", "克罗地亚语", "瑞典语", "德语", "西班牙语", "葡萄牙语", "法语", "俄语", "意大利语", "塞尔维亚语", "挪威语", "印度尼西亚语", "中文", "世界语", "Dutch", "Turkish" ]
+    Esperanto  -> [ "La japana", "La pola", "La kroata", "La sevda", "La germana", "La hispana", "La portugala", "La franca", "La rusa", "La itala", "La serba", "La norvega", "La indonezia", "La ĉina", "Esperanto", "La nederlanda", "Turkish" ]
+    Dutch      -> [ "Japans", "Pools", "Kroatisch", "Zweeds", "Duits", "Spaans", "Portugees", "Frans", "Russisch", "Italiaans", "Servisch", "Noors", "Indonesisch", "Chinees", "Esperanto", "Nederlands", "Turkish" ]
+    _          -> [ "Japanese", "Polish", "Croatian", "Swedish", "German", "Spanish", "Portuguese", "French", "Russian", "Italian", "Serbian", "Norwegian", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish" ]
 
 translatorMsgTitle :: Language -> Text
 translatorMsgTitle = \case
     Japanese   -> "Auraの翻訳者："
     Polish     -> "Tłumacze Aury:"
+    Turkish     -> "Aura Çevirmeni::"
     Croatian   -> "Aura Prevoditelji:"
     Swedish    -> "Aura Översättare:"
     German     -> "Aura Übersetzer:"
@@ -112,6 +115,7 @@ whitespace _        = ' '   -- \32
 langFromLocale :: Text -> Maybe Language
 langFromLocale = T.take 2 >>> \case
   "ja" -> Just Japanese
+  "tr" -> Just Turkish
   "pl" -> Just Polish
   "hr" -> Just Croatian
   "sv" -> Just Swedish
@@ -138,6 +142,7 @@ checkDBLock_1 :: Language -> Doc AnsiStyle
 checkDBLock_1 = \case
     Japanese   -> "パッケージデータベースが閉鎖されている状態です。開放したらキーを押して続行してください。"
     Polish     -> "Baza pakietów jest zablokowana. Kiedy zostanie odblokowana naciśnij enter aby kontynuować"
+    Turkish    -> "Paket veritabanı kilitlendi. Devam etmek için kilidi açıldığında enter tuşuna basın."
     Croatian   -> "Baza paketa je zaključana. Kad se otključa, pritisnite enter da biste nastavili."
     German     -> "Die Paketdatenbank ist gesperrt. Drücken Sie Enter wenn sie entsperrt ist um fortzufahren."
     Spanish    -> "La base de datos de paquetes está bloqueada. Presiona enter cuando esté desbloqueada para continuar."
@@ -156,6 +161,7 @@ trueRoot_3 :: Language -> Doc AnsiStyle
 trueRoot_3 = \case
     Japanese   -> "「root」としてパッケージを作成するのは「makepkg v4.2」で不可能になりました。"
     Polish     -> "Od makepkg v4.2, budowanie jako root nie jest dozwolone."
+    Turkish    -> "Makepkg v4.2'den itibaren, kök olarak oluşturmak artık mümkün değildir."
     German     -> "Seit makepkg v4.2 ist es nicht mehr möglich als root zu bauen."
     Spanish    -> "Desde makepkg v4.2 no es posible compilar paquetes como root."
     Portuguese -> "A partir da versão v4.2 de makepkg, não é mais possível compilar como root."
@@ -171,6 +177,7 @@ mustBeRoot_1 :: Language -> Doc AnsiStyle
 mustBeRoot_1 = let sudo = bt @Text "sudo" in \case
     Japanese   -> sudo <> "を使わないとそれができない！"
     Polish     -> "Musisz użyć " <> sudo <> ", żeby to zrobić."
+    Turkish    -> "Sudo kullanmadan bu işlemi gerçekleştiremezsiniz."
     Croatian   -> "Morate koristiti" <> sudo <> "za ovu radnju."
     Swedish    -> "Du måste använda " <> sudo <> " för det."
     German     -> "Sie müssen dafür " <> sudo <> " benutzen."
@@ -193,6 +200,7 @@ mustBeRoot_1 = let sudo = bt @Text "sudo" in \case
 buildPackages_1 :: PkgName -> Language -> Doc AnsiStyle
 buildPackages_1 (bt . pnName -> p) = \case
     Japanese   -> p <> "を作成中・・・"
+    Turkish    -> "İnşa ediliyor " <> p <> "..."
     Polish     -> "Budowanie " <> p <> "..."
     Croatian   -> "Gradim " <> p <> "..."
     Swedish    -> "Bygger paket " <> p <> "..."
@@ -213,12 +221,14 @@ buildPackages_1 (bt . pnName -> p) = \case
 buildPackages_2 :: Language -> Doc AnsiStyle
 buildPackages_2 = \case
     Polish     -> "'--allsource' wykryte. Nie zostaną zbudowane żadne pakiety."
+    Turkish    -> "'--allsource' bulundu. Yüklenebilir gerçek paketler oluşturulmayacaktır."
     Spanish    -> "'--allsource' detectado. No se construirán paquetes instalables reales."
     _          -> "'--allsource' detected. No actual installable packages will be built."
 
 buildPackages_3 :: FilePath -> Language -> Doc AnsiStyle
 buildPackages_3 fp = \case
     Polish     -> "Wszystkie pliki .src.tar.gz zostały zbudowane i przekopiowane do: " <> pretty fp
+    Turkish    -> "Tüm .src.tar.gz dosyaları oluşturuldu ve şuraya kopyalandı: " <> pretty fp
     Spanish    -> "Todos los archivos .src.tar.gz fueron construidos y copiados a: " <> pretty fp
     _          -> "All .src.tar.gz files were built and copied to: " <> pretty fp
 
@@ -261,7 +271,7 @@ buildFail_6 = \case
     Norwegian  -> "Vil du fortsette likevel?"
     Italian    -> "Procedere comunque?"
     Portuguese -> "Gostaria de continuar mesmo assim?"
-    French     -> "Voulez-vous tout de même continuer ?"
+    French     -> "Voulez-vous tout de même continuer ?"
     Russian    -> "Продолжить, несмотря ни на что?"
     Indonesia  -> "Apakah anda tetap ingin melanjutkan?"
     Chinese    -> "你仍然希望继续吗？"
@@ -301,7 +311,7 @@ buildFail_8 = \case
 
 buildFail_9 :: Language -> Doc AnsiStyle
 buildFail_9 = \case
-  Polish    -> "Nie udało się zlokalizować żadnych zbudowanych pakietów (*.pkg.tar.xz)."
+  Polish    -> "Nie udało się zlokalizować żadnych zbudowanych pakietów (*.pkg.tar.xz)."
   Spanish   -> "Error al detectar todos los archivo de paquete (*.pkg.tar.xz)."
   Italian   -> "Non è stato possibile trovare nessun archivio risultante dalla compilazione del pacchetto (*.pkg.tar.xz)."
   Esperanto -> "Paneis detekti ĉiujn dosierojn de pakaĵoj (*.pkg.tar.xz)."
@@ -402,7 +412,7 @@ depError l (BrokenProvides (PkgName pkg) (Provides (PkgName pro)) (PkgName n)) =
 
 missingPkg_3 :: Language -> Doc AnsiStyle
 missingPkg_3 = \case
-  Polish     -> "Wystąpił problem podczas reorganizowania grafu zależności. Jeśli widzisz tą wiadomość, coś poszło bardzo nie tak."
+  Polish     -> "Wystąpił problem podczas reorganizowania grafu zależności. Jeśli widzisz tą wiadomość, coś poszło bardzo nie tak."
   Spanish    -> "Se produjo un error al reorganizar el gráfico de dependencia. Si ves esto, algo está muy mal."
   Esperanto  -> "Eraro okazis kiam reorganizi la grafeo de dependeco. Io estas erarega."
   Italian    -> "C'è stato un errore nella riorganizzazione della gerarchia delle dipendenze. Se vedi questo messaggio, qualcosa è andato davvero storto."
@@ -440,7 +450,7 @@ displayOutputLanguages_1 = \case
     German     -> "Die folgenden Sprachen sind verfügbar:"
     Spanish    -> "Los siguientes idiomas están disponibles:"
     Portuguese -> "Os seguintes idiomas estão disponíveis:"
-    French     -> "Les langues suivantes sont disponibles :"
+    French     -> "Les langues suivantes sont disponibles :"
     Russian    -> "Доступны следующие языки:"
     Italian    -> "Sono disponibili le seguenti lingue:"
     Serbian    -> "Доступни су следећи језици:"
@@ -464,7 +474,7 @@ auraCheck_1 = \case
     Spanish    -> "Hay una actualización de aura disponible. ¿Deseas actualizar aura primero?"
     Norwegian  -> "En Aura-oppdatering er tilgjengelig. Oppdater den først?"
     Portuguese -> "Uma atualização para Aura está disponível. Deseja atualizar antes?"
-    French     -> "Une mise à jour d'Aura est disponible. Voulez-vous la mettre à jour en premier ?"
+    French     -> "Une mise à jour d'Aura est disponible. Voulez-vous la mettre à jour en premier ?"
     Russian    -> "Доступно обновление Aura. Обновить сперва её?"
     Italian    -> "È disponibile un nuovo aggiornamento per Aura. Eseguirlo subito?"
     Indonesia  -> "Pemutakhiran aura tersedia. Mutakhirkan aura dulu?"
@@ -497,13 +507,14 @@ install_2 = \case
 install_3 :: Language -> Doc AnsiStyle
 install_3 = \case
     Japanese   -> "続行しますか？"
+    Turkish    -> "Devam edilsin mi?"
     Polish     -> "Kontynuować?"
     Croatian   -> "Nastaviti?"
     Swedish    -> "Fortsätta?"
     German     -> "Fortsetzen?"
     Spanish    -> "¿Continuar?"
     Portuguese -> "Continuar?"
-    French     -> "Continuer ?"
+    French     -> "Continuer ?"
     Russian    -> "Продолжить?"
     Italian    -> "Continuare?"
     Serbian    -> "Наставити?"
@@ -579,7 +590,7 @@ reportNonPackages_1 = \case
     German     -> "Folgende sind keine AUR-Pakete:"
     Spanish    -> "Los siguientes paquetes no son de AUR:"
     Portuguese -> "Os seguintes não são pacotes AUR:"
-    French     -> "Les éléments suivants ne sont pas des paquets AUR :"
+    French     -> "Les éléments suivants ne sont pas des paquets AUR :"
     Russian    -> "Ниже указано то, что не является пакетами AUR:"
     Italian    -> "I seguenti pacchetti non fanno parte dell'AUR:"
     Serbian    -> "Ово нису пакети:"
@@ -615,7 +626,7 @@ reportPkgsToInstall_1 = \case
     German     -> "Abhängigkeiten in den Paketquellen:"
     Spanish    -> "Dependencias del repositorio:"
     Portuguese -> "Dependências no repositório:"
-    French     -> "Dépendances du dépôt :"
+    French     -> "Dépendances du dépôt :"
     Russian    -> "Зависимости из репозитория:"
     Italian    -> "Dipendenze del repository:"
     Serbian    -> "Зависности из ризница:"
@@ -631,13 +642,14 @@ reportPkgsToInstall_2 :: Language -> Doc AnsiStyle
 reportPkgsToInstall_2 = \case
     Japanese   -> "AURのパッケージ:"
     Polish     -> "Pakiety AUR:"
+    Turkish    -> "AUR Paketleri:"
     Croatian   -> "AUR Paketi:"
     German     -> "AUR Pakete:"
     Spanish    -> "AUR Paquetes:"
     Norwegian  -> "AUR Pakker:"
     Italian    -> "AUR Pacchetti:"
     Portuguese -> "AUR Pacotes:"
-    French     -> "AUR Paquets :"
+    French     -> "AUR Paquets :"
     Russian    -> "AUR Пакеты:"
     Indonesia  -> "AUR Paket:"
     Chinese    -> "AUR 包："
@@ -695,7 +707,7 @@ reportPkgbuildDiffs_3 (bt . pnName -> p) = \case
     Spanish    -> "Cambios en el PKGBUILD de " <> p <> ":"
     Portuguese -> "Mudanças no PKGBUILD de " <> p <> ":"
     Russian    -> "Изменения, вносимые " <> p <> " PKGBUILD:"
-    French     -> "Changements du PKGBUILD de " <> p <> " :"
+    French     -> "Changements du PKGBUILD de " <> p <> " :"
     Italian    -> "Cambiamenti nel PKGBUILD del pacchetto " <> p <>":"
     Serbian    -> "Промене PKGBUILD-a за " <> p <> ":"
     Norwegian  -> p <> "'s endringer i PKGBUILD:"
@@ -716,7 +728,7 @@ reportPkgsToUpgrade_1 = \case
     German     -> "Zu aktualisierendes AUR-Paket:"
     Spanish    -> "Paquetes de AUR a actualizar:"
     Portuguese -> "Pacotes do AUR para atualizar:"
-    French     -> "Paquets AUR à mettre à jour :"
+    French     -> "Paquets AUR à mettre à jour :"
     Russian    -> "Пакеты AUR, готовые для обновления:"
     Italian    -> "Pacchetti dell'AUR da aggiornare:"
     Serbian    -> "Пакети из AUR-а за надоградњу:"
@@ -737,7 +749,7 @@ reportBadDowngradePkgs_1 = \case
     German     -> "Folgende Pakete sind in keiner Version im Cache und können daher nicht gedowngradet werden:"
     Spanish    -> "Los siguientes paquetes no tienen versiones en la caché, por lo que no se pueden bajar a versiones anteriores:"
     Portuguese -> "Os seguintes pacotes não possuem versões no cache, logo não podem retornar a uma versão anterior:"
-    French     -> "Aucune version des paquets suivants n'est présente dans le cache ; ils ne peuvent pas être mis à niveau à une version antérieure :"
+    French     -> "Aucune version des paquets suivants n'est présente dans le cache ; ils ne peuvent pas être mis à niveau à une version antérieure :"
     Russian    -> "Следующих пакетов нет в кэше. Следовательно, они не могут быть откачены к старой версии:"
     Italian    -> "Nessuna versione dei seguenti pacchetti è disponibile nella cache, perciò non è possibile riportarli ad una versione precedente:"
     Serbian    -> "Следећи пакети нису ни инсталирани, те се не могу вратити на старију верзију:"
@@ -850,7 +862,7 @@ cleanStates_2 n@(bt . tshow -> s) = \case
     Norwegian  -> s <> " pakketilstander vil bli beholdt. Vil du fjerne resten?"
     Italian    -> "Lo stato del pacchetto" <> s <> " sarà mantenuto. Rimuovere il resto?"
     Portuguese -> s <> " estados de pacotes serão mantidos. Remover o resto?"
-    French     -> s <> " états des paquets vont être conservés. Supprimer le reste ?"
+    French     -> s <> " états des paquets vont être conservés. Supprimer le reste ?"
     Russian    -> s <> pluralRussian " состояние пакетов будет оставлено." " состояния пакетов будут оставлены." " состояний пакетов будет оставлено." n <> " Удалить оставшиеся?"
     Indonesia  -> s <> " paket akan tetap sama. Hapus yang lainnya?"
     Chinese    -> s <> " 个包的状态将会保留。删除其它的？"
@@ -933,7 +945,7 @@ getDowngradeChoice_1 (bt . pnName -> p) = \case
     German     -> "Welche Version von " <> p <> " möchten Sie haben?"
     Spanish    -> "¿Qué versión de " <> p <> " deseas?"
     Portuguese -> "Qual versão de " <> p <> " deseja?"
-    French     -> "Quelle version de " <> p <> " voulez-vous ?"
+    French     -> "Quelle version de " <> p <> " voulez-vous ?"
     Russian    -> "Какую версию " <> p <> " вы хотите?"
     Italian    -> "Quale versione di " <> p <> " preferisci?"
     Serbian    -> "Коју верзију " <> p <> "-а желите?"
@@ -993,7 +1005,7 @@ backupCache_5 (bt . tshow -> n) = \case
     German     -> "Zu sichernde Paketdateien: " <> n
     Spanish    -> "Ficheros de paquetes de los que se hará copia de seguridad: " <> n
     Portuguese -> "Arquivos de pacotes para backup: " <> n
-    French     -> "Copie de sauvegarde des fichiers de paquets suivants : " <> n
+    French     -> "Copie de sauvegarde des fichiers de paquets suivants : " <> n
     Russian    -> "Файлы пакета для бэкапа: " <> n
     Italian    -> "Archivi dei pacchetti per cui sarà eseguito un backup: " <> n
     Serbian    -> "Датотеке за бекап: " <> n
@@ -1013,7 +1025,7 @@ backupCache_6 = \case
     German     -> "Sicherung fortsetzen?"
     Spanish    -> "¿Proceder con la copia de seguridad?"
     Portuguese -> "Proceder com o backup?"
-    French     -> "Procéder à la copie de sauvegarde ?"
+    French     -> "Procéder à la copie de sauvegarde ?"
     Russian    -> "Продолжить создание бэкапа?"
     Italian    -> "Procedere con il backup?"
     Serbian    -> "Наставити бекаповање?"
@@ -1068,6 +1080,7 @@ copyAndNotify_1 :: Int -> Language -> Doc AnsiStyle
 copyAndNotify_1 (cyan . pretty -> n) = \case
     Japanese   -> "#[" <> n <> "]をコピー中・・・"
     Polish     -> "Kopiowanie #[" <> n <> "]"
+    Turkish    -> "Kopyalanıyor #[" <> n <> "]"
     Croatian   -> "Kopiranje #[" <> n <> "]"
     Swedish    -> "Kopierar #[" <> n <> "]"
     German     -> "Kopiere #[" <> n <> "]"
@@ -1133,7 +1146,7 @@ cleanCache_4 = \case
     German     -> "Der Rest wird gelöscht. Ist das OK?"
     Spanish    -> "El resto se eliminarán. ¿De acuerdo?"
     Portuguese -> "O resto será removido. OK?"
-    French     -> "Le reste sera supprimé. Êtes-vous d'accord ?"
+    French     -> "Le reste sera supprimé. Êtes-vous d'accord ?"
     Russian    -> "Всё остальное будет удалено. Годится?"
     Italian    -> "Il resto sarà rimosso. Continuare?"
     Serbian    -> "Остатак ће бити избрисан. Да ли је то у реду?"
@@ -1231,7 +1244,7 @@ cleanNotSaved_2 n@(cyan . pretty -> s) = \case
     Norwegian  -> s <> " unødige pakkefiler funnet. Vil du slette?"
     Italian    -> "Sono stati trovati " <> s <> " file non necessari per i pacchetti. Cancellarli?"
     Portuguese -> s <> " pacotes não necessários encontrados. Removê-los?"
-    French     -> s <> " paquets inutiles trouvés. Les supprimer ?"
+    French     -> s <> " paquets inutiles trouvés. Les supprimer ?"
     Russian    -> pluralRussian ("Обнаружен " <> s <> " ненужный файл пакета.") ("Обнаружены " <> s <> " ненужных файла пакетов.") ("Обнаружено " <> s <> " ненужных файлов пакетов.") n <> " Удалить?"
     Indonesia  -> s <> " berkas paket yang tidak dibutuhkan ditemukan. Hapus?"
     Chinese    -> "发现了 " <> s <> " 个不需要的包文件。是否删除？"
@@ -1258,7 +1271,7 @@ reportNotInLog_1 = \case
     German     -> "Diese sind nicht in der Logdatei aufgetaucht:"
     Spanish    -> "Estos no aparecen en el fichero log:"
     Portuguese -> "Os seguintes não apareceram no arquivo de log:"
-    French     -> "Ceci n'apparaît pas des les journaux (log) :"
+    French     -> "Ceci n'apparaît pas des les journaux (log) :"
     Russian    -> "Следующих пакетов нет в лог-файле:"
     Italian    -> "Questi non sono apparsi nel file di log:"
     Serbian    -> "Ови пакети се не спомињу у дневнику:"
@@ -1329,7 +1342,7 @@ outOfDateMsg (Just _) = red . \case
     German     -> "Veraltet!"
     Spanish    -> "¡Desactualizado!"
     Portuguese -> "Desatualizado!"
-    French     -> "Périmé !"
+    French     -> "Périmé !"
     Russian    -> "Устарел!"
     Italian    -> "Non aggiornato all'ultima versione!"
     Serbian    -> "Застарео!"
@@ -1369,7 +1382,7 @@ orphanedMsg Nothing = red . \case
     Spanish    -> "¡Huérfano!"
     Norwegian  -> "Foreldreløs!"
     Portuguese -> "Órfão!"
-    French     -> "Abandonné !"
+    French     -> "Abandonné !"
     Russian    -> "Осиротевший!"
     Italian    -> "Orfano!"
     Indonesia  -> "Tak dipelihara!"
@@ -1415,7 +1428,7 @@ restoreState_1 = \case
     Norwegian  -> "De spesifiserte nedgraderingsversjonene er ikke tilgjengelig for:"
     Italian    -> "Non sono disponibili versioni precedenti a cui tornare per:"
     Portuguese -> "Versões anteriores requisitadas não disponívels para:"
-    French     -> "Version antérieure requise non disponible pour :"
+    French     -> "Version antérieure requise non disponible pour :"
     Russian    -> "Запрошенные версии для отката не доступны для:"
     Indonesia  -> "Versi yang diturunkan tidak tersedia untuk: "
     Chinese    -> "请求的降级版本对以下包不可用："
@@ -1507,7 +1520,7 @@ hotEdit_1 (bt . pnName -> p) = \case
     German     -> "Möchten Sie die PKGBUILD-Datei für " <> p <> " bearbeiten?"
     Spanish    -> "¿Deseas editar el PKGBUILD de " <> p <> "?"
     Portuguese -> "Deseja editar o PKGBUILD de " <> p <> "?"
-    French     -> "Voulez-vous éditer le PKGBUILD de " <> p <> " ?"
+    French     -> "Voulez-vous éditer le PKGBUILD de " <> p <> " ?"
     Russian    -> "Отредактировать PKGBUILD пакета " <> p <> "?"
     Italian    -> "Modificare il PKGBUILD di " <> p <> "?"
     Serbian    -> "Желите ли да измените PKGBUILD за " <> p <> "?"
@@ -1643,6 +1656,7 @@ security_14 = \case
 yesNoMessage :: Language -> Doc ann
 yesNoMessage = \case
     Polish     -> "[T/n]"
+    Turkish    -> "[e/h]"
     Croatian   -> "[D/n]"
     German     -> "[J/n]"
     Spanish    -> "[S/n]"
@@ -1658,6 +1672,7 @@ yesNoMessage = \case
 yesPattern :: Language -> [T.Text]
 yesPattern lang = map T.toCaseFold $ case lang of
     Polish     -> ["t", "tak"]
+    Turkish    -> ["e", "evet"]
     Croatian   -> ["d", "da"]
     German     -> ["j", "ja"]
     Spanish    -> ["s", "si"]

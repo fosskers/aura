@@ -231,6 +231,7 @@ Aura has been translated by these generous people:
 | Serbian    | Filip Brcic                                     |
 | Spanish    | Alejandro Gómez, Sergio Conde and Max Ferrer    |
 | Swedish    | Fredrik Haikarainen and Daniel Beecham          |
+| Turkish    | Cihan Alkan                                     |
 
 Aura's logo is thanks to the designer [Atra](https://github.com/estatra).
 
