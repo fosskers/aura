@@ -133,6 +133,9 @@ pub fn is_package(path: &Path) -> bool {
 ///
 /// let path = Path::new("/var/cache/pacman/pkg/aura-bin-3.2.1-1-x86_64.pkg.tar.zst");
 /// assert_eq!(Some(("aura-bin".to_string(), "3.2.1-1".to_string())), cache::split_path(path));
+///
+/// let simple = Path::new("aura-bin-3.2.1-1-x86_64.pkg.tar.zst");
+/// assert_eq!(Some(("aura-bin".to_string(), "3.2.1-1".to_string())), cache::split_path(simple));
 /// ```
 pub fn split_path(path: &Path) -> Option<(String, String)> {
     path.file_name()

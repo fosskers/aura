@@ -72,3 +72,20 @@ pub(crate) fn available_languages() -> Vec<LanguageIdentifier> {
     vec.sort();
     vec
 }
+
+/// Prove that localizations don't contain extra fields that aren't expected in
+/// English, the base language.
+#[test]
+fn no_extra_localizations() {
+    let english = load(None).unwrap();
+    let all = load_all().unwrap();
+    for lang in available_languages() {
+        all.with_message_iter(&lang, |msgs| {
+            for msg in msgs {
+                if !english.has(msg.id.name) {
+                    panic!("{} has extra field: {}", lang, msg.id.name);
+                }
+            }
+        })
+    }
+}
