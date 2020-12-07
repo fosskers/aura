@@ -1,0 +1,23 @@
+name: Rust
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Rust
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Project
+        uses: actions/checkout@v2
+
+      - name: Cache Dependencies
+        uses: Swatinem/rust-cache@v1
+
+      - name: Build and Test
+        run: cargo test
