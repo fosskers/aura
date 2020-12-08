@@ -15,6 +15,9 @@ jobs:
     container:
       image: archlinux
     steps:
+      - name: Install Rust
+        run: pacman -Sy rust
+
       - name: Clone Project
         uses: actions/checkout@v2
 
