@@ -12,6 +12,8 @@ jobs:
   build:
     name: Rust
     runs-on: ubuntu-latest
+    container:
+      image: archlinux
     steps:
       - name: Clone Project
         uses: actions/checkout@v2
