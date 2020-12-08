@@ -735,13 +735,7 @@ pub(crate) struct Cache {
     pub(crate) clean: Option<u8>,
 
     /// Look up specific packages for info on their cache entries.
-    #[clap(
-        group = "cache",
-        short,
-        long,
-        value_name = "package(s)",
-        display_order = 1
-    )]
+    #[clap(group = "cache", short, long, value_name = "pkg(s)", display_order = 1)]
     pub(crate) info: Vec<String>,
 }
 

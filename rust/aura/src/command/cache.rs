@@ -1,9 +1,10 @@
 //! All functionality involving the `-C` command.
 
 use crate::error::Error;
-use crate::{a, aln};
+use crate::{a, aln, aura, green, red, yellow};
 use alpm::Alpm;
 use aura_core as core;
+use aura_core::cache::CacheSize;
 use chrono::{DateTime, Local};
 use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
@@ -84,6 +85,21 @@ pub(crate) fn search(path: &Path, term: &str) -> Result<(), Error> {
     Ok(())
 }
 
+/// Delete all but `keep`-many old tarballs for each package in the cache.
+pub(crate) fn clean(fll: FluentLanguageLoader, path: &Path, keep: u8) -> Result<(), Error> {
+    let CacheSize { bytes, .. } = core::cache::size(path)?;
+    let human = format!("{}", bytes.bytes());
+    aura!(fll, "cache-size", size = human);
+    yellow!(fll, "cache-clean-keep", pkgs = keep);
+
+    // Proceed if the user accepts.
+    let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
+    crate::utils::prompt(&a!(msg))?;
+
+    green!(fll, "common-done");
+    Ok(())
+}
+
 /// Backup the package cache to a given directory.
 pub(crate) fn backup(fll: FluentLanguageLoader, source: &Path, target: &Path) -> Result<(), Error> {
     // The full, absolute path to copy files to.
@@ -95,29 +111,30 @@ pub(crate) fn backup(fll: FluentLanguageLoader, source: &Path, target: &Path) ->
         curr
     };
     let ts = full.to_str().unwrap();
+
+    // Exit early if the target is an existing file, not a directory.
     if target.is_file() {
-        let msg = fl!(fll, "cache-backup-file", target = ts);
-        aln!(msg.red());
-        Err(Error::Silent)
-    } else {
-        // How big is the current cache?
-        let cache_size: core::cache::CacheSize = core::cache::size(source)?;
-        let size = format!("{}", cache_size.bytes.bytes());
-        aln!(fl!(fll, "cache-backup-size", size = size));
-
-        // Is the target directory empty?
-        let target_count = target.read_dir().map(|d| d.count()).unwrap_or(0);
-        if target_count > 0 {
-            aln!(fl!(fll, "cache-backup-nonempty", target = ts).yellow());
-        } else {
-            aln!(fl!(fll, "cache-backup-target", target = ts));
-        }
-
-        // Proceed if the user accepts.
-        let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
-        crate::utils::prompt(&a!(msg))?;
-        copy(source, &full, cache_size.files)
+        red!(fll, "cache-backup-file", target = ts);
+        Err(Error::Silent)?;
     }
+
+    // How big is the current cache?
+    let cache_size: core::cache::CacheSize = core::cache::size(source)?;
+    let size = format!("{}", cache_size.bytes.bytes());
+    aura!(fll, "cache-size", size = size);
+
+    // Is the target directory empty?
+    let target_count = target.read_dir().map(|d| d.count()).unwrap_or(0);
+    if target_count > 0 {
+        yellow!(fll, "cache-backup-nonempty", target = ts);
+    } else {
+        aura!(fll, "cache-backup-target", target = ts);
+    }
+
+    // Proceed if the user accepts.
+    let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
+    crate::utils::prompt(&a!(msg))?;
+    copy(source, &full, cache_size.files)
 }
 
 /// Copy all the cache files concurrently.

@@ -10,7 +10,7 @@ env:
 
 jobs:
   build:
-    name: Rust
+    name: Tests
     runs-on: ubuntu-latest
     container:
       image: archlinux

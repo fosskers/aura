@@ -1,7 +1,7 @@
 //! All functionality involving the `-O` command.
 
 use crate::error::Error;
-use crate::{a, aln};
+use crate::{a, aln, green, yellow};
 use alpm::{Alpm, PackageReason, TransFlag};
 use aura_arch as arch;
 use colored::*;
@@ -29,17 +29,17 @@ pub(crate) fn adopt(
         .filter_map(|p| db.pkg(p).ok())
         .collect();
 
+    // Exit early if no real packages were given.
     if reals.is_empty() {
-        Err(Error::NoneExist)
-    } else {
-        for mut p in reals {
-            p.set_reason(PackageReason::Explicit)?;
-            let msg = format!("{}", fl!(fll, "orphans-adopt", package = p.name()).green());
-            aln!(&msg);
-        }
-
-        Ok(())
+        Err(Error::NoneExist)?;
     }
+
+    for mut p in reals {
+        p.set_reason(PackageReason::Explicit)?;
+        green!(fll, "orphans-adopt", package = p.name());
+    }
+
+    Ok(())
 }
 
 /// Uninstall all orphan packages.
@@ -68,7 +68,8 @@ pub(crate) fn remove(alpm: &mut Alpm, fll: FluentLanguageLoader) -> Result<(), E
         // Notify the user of the results.
         let removal = alpm.trans_remove();
         let longest = removal.iter().map(|p| p.name().len()).max().unwrap_or(0);
-        aln!(format!("{}\n", fl!(fll, "orphans-abandon").yellow()));
+        yellow!(fll, "orphans-abandon");
+        println!();
         for p in removal {
             let size = format!("{}", p.isize().bytes());
             if names.contains(p.name()) {
@@ -88,7 +89,7 @@ pub(crate) fn remove(alpm: &mut Alpm, fll: FluentLanguageLoader) -> Result<(), E
         crate::utils::prompt(&a!(msg))?;
         alpm.trans_commit().map_err(|(_, e)| Error::Alpm(e))?;
         alpm.trans_release()?;
-        aln!("Done.".green());
+        green!(fll, "common-done");
     }
 
     Ok(())

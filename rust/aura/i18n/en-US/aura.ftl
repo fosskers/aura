@@ -1,6 +1,7 @@
 # Cache (-C)
+cache-size = Current cache size: { $size }
+
 cache-backup-file = { $target } already exists and is not a directory.
-cache-backup-size = Current cache size: { $size }
 cache-backup-nonempty = Target { $target } exists but is not empty!
 # backupCache_4
 cache-backup-target = Backing up cache to { $target }
@@ -11,6 +12,9 @@ cache-info-installed = installed
 cache-info-sig = Signature
 cache-info-size = Tarball Size
 cache-info-avail = Available Versions
+
+# cleanCache_3 + 4
+cache-clean-keep = { $pkgs } of each package file will be kept. The rest will be deleted.
 
 # Orphans (-O)
 orphans-abandon = The following orphans and their dependencies will be removed:
@@ -26,6 +30,7 @@ common-yes = Yes
 common-no = No
 common-none = None
 common-name = Name
+common-done = Done.
 
 # Misc.
 proceed = Proceed?
