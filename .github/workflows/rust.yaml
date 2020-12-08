@@ -16,7 +16,7 @@ jobs:
       image: archlinux
     steps:
       - name: Install Rust
-        run: pacman -Sy rust
+        run: pacman -Sy rust --noconfirm
 
       - name: Clone Project
         uses: actions/checkout@v2
