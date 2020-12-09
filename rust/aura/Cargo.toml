@@ -21,6 +21,7 @@ rayon = "1.5"
 rust-embed = "5.6"
 rustyline = "6.3"
 simplelog = "0.8"
+sudo = "0.5"
 ubyte = "0.10"
 unic-langid = { version = "0.9", features = ["macros"] }
 webbrowser = "0.5"

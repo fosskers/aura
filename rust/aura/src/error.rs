@@ -18,6 +18,8 @@ pub(crate) enum Error {
     Env(std::env::VarError),
     /// An error parsing `pacman.conf`.
     PacConf(pacmanconf::Error),
+    /// A boxed dynamic error.
+    Boxed(Box<dyn std::error::Error>),
     /// The said "no" at some prompt.
     Rejected,
     /// None of the packages specified by the user actually exist.
@@ -41,6 +43,7 @@ impl std::fmt::Display for Error {
             Error::Log(e) => write!(f, "{}", e),
             Error::Env(e) => write!(f, "{}", e),
             Error::PacConf(e) => write!(f, "{}", e),
+            Error::Boxed(e) => write!(f, "{}", e),
             Error::Rejected => write!(f, "The user said no."),
             Error::NoneExist => write!(f, "None of those packages exist."),
             Error::PacmanError => write!(f, "A shell call to Pacman gave a non-zero exit code."),
@@ -59,6 +62,7 @@ impl std::error::Error for Error {
             Error::Log(e) => Some(e),
             Error::Env(e) => Some(e),
             Error::PacConf(e) => Some(e),
+            Error::Boxed(_) => None, // TODO `Some` gives a warning.
             Error::Rejected => None,
             Error::NoneExist => None,
             Error::PacmanError => None,
@@ -106,5 +110,11 @@ impl From<rustyline::error::ReadlineError> for Error {
 impl From<std::env::VarError> for Error {
     fn from(error: std::env::VarError) -> Self {
         Error::Env(error)
+    }
+}
+
+impl From<Box<dyn std::error::Error>> for Error {
+    fn from(error: Box<dyn std::error::Error>) -> Self {
+        Error::Boxed(error)
     }
 }

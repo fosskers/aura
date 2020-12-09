@@ -87,6 +87,8 @@ pub(crate) fn search(path: &Path, term: &str) -> Result<(), Error> {
 
 /// Delete all but `keep`-many old tarballs for each package in the cache.
 pub(crate) fn clean(fll: FluentLanguageLoader, path: &Path, keep: u8) -> Result<(), Error> {
+    sudo::escalate_if_needed()?;
+
     let CacheSize { bytes, .. } = core::cache::size(path)?;
     let human = format!("{}", bytes.bytes());
     aura!(fll, "cache-size", size = human);
