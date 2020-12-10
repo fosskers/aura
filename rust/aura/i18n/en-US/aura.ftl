@@ -15,6 +15,7 @@ cache-info-avail = Available Versions
 
 # cleanCache_3 + 4
 cache-clean-keep = { $pkgs } of each package file will be kept. The rest will be deleted.
+cache-clean-freed = { $bytes } freed.
 
 # Orphans (-O)
 orphans-abandon = The following orphans and their dependencies will be removed:

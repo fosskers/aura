@@ -4,7 +4,6 @@ use crate::error::Error;
 use crate::{a, aln, aura, green, red, yellow};
 use alpm::Alpm;
 use aura_core as core;
-use aura_core::cache::CacheSize;
 use chrono::{DateTime, Local};
 use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
@@ -99,8 +98,8 @@ pub(crate) fn search(path: &Path, term: &str) -> Result<(), Error> {
 pub(crate) fn clean(fll: FluentLanguageLoader, path: &Path, keep: usize) -> Result<(), Error> {
     sudo::escalate_if_needed()?;
 
-    let CacheSize { bytes, .. } = core::cache::size(path)?;
-    let human = format!("{}", bytes.bytes());
+    let size_before = core::cache::size(path)?;
+    let human = format!("{}", size_before.bytes.bytes());
     aura!(fll, "cache-size", size = human);
     yellow!(fll, "cache-clean-keep", pkgs = keep);
 
@@ -127,7 +126,9 @@ pub(crate) fn clean(fll: FluentLanguageLoader, path: &Path, keep: usize) -> Resu
             let _ = std::fs::remove_file(pth); // TODO Handle these better.
         });
 
-    green!(fll, "common-done");
+    let size_after = core::cache::size(path)?;
+    let freed = format!("{}", (size_before.bytes - size_after.bytes).bytes());
+    green!(fll, "cache-clean-freed", bytes = freed);
     Ok(())
 }
 
