@@ -124,7 +124,7 @@ pub fn is_package(path: &Path) -> bool {
 }
 
 /// Feed the output of this to [`PathBuf::set_extension`].
-fn sig_extension(path: &Path) -> Option<String> {
+pub fn sig_extension(path: &Path) -> Option<String> {
     path.extension()
         .and_then(|s| s.to_str())
         .map(|ext| vec![ext, "sig"].join("."))

@@ -122,8 +122,16 @@ pub(crate) fn clean(fll: FluentLanguageLoader, path: &Path, keep: usize) -> Resu
                 .skip(keep)
         })
         .flatten()
-        .for_each(|(_, pth)| {
-            let _ = std::fs::remove_file(pth); // TODO Handle these better.
+        .for_each(|(_, mut pth)| {
+            let _ = std::fs::remove_file(&pth); // TODO Handle these better.
+
+            if let Some(sig) = core::cache::sig_extension(&pth) {
+                pth.set_extension(sig);
+
+                if pth.exists() {
+                    let _ = std::fs::remove_file(&pth); // TODO Handle these better.
+                }
+            }
         });
 
     let size_after = core::cache::size(path)?;
