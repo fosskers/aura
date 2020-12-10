@@ -106,36 +106,34 @@ pub fn search<'a>(cache: &Path, term: &'a str) -> Result<CacheMatches<'a>, std::
 /// Yield the [`CacheInfo`], if possible, of the given packages.
 pub fn info(cache: &Path, package: &str) -> Result<Option<CacheInfo>, std::io::Error> {
     let mut matches: Vec<_> = search(cache, package)?
-        .filter(|de| is_package(&de.path()))
-        .filter_map(|de| Package::from_path(&de.path()).map(|pkg| (pkg, de)))
-        .filter(|(pkg, _)| pkg.name == package)
+        .filter_map(|de| {
+            de.metadata()
+                .ok()
+                .and_then(|meta| PkgPath::new(de.path()).map(|pp| (pp, meta)))
+        })
+        .filter(|(pp, _)| pp.pkg.name == package)
         .collect();
-    matches.sort_by(|(p0, _), (p1, _)| alpm::vercmp(p1.version.as_str(), p0.version.as_str()));
-    let available = matches.iter().map(|(pkg, _)| pkg.version.clone()).collect();
+    matches.sort_by(|(p0, _), (p1, _)| p1.cmp(&p0));
+    let available = matches
+        .iter()
+        .map(|(pp, _)| pp.pkg.version.clone())
+        .collect();
 
     match matches.into_iter().next() {
         None => Ok(None),
-        Some((Package { name, version }, de)) => {
-            let meta = de.metadata()?;
-            let created = meta.created()?;
-            let mut path = de.path();
+        Some((pp, meta)) => {
+            let signature = pp.sig_file().exists();
 
-            match sig_extension(&path) {
-                None => Ok(None),
-                Some(ext) => {
-                    path.set_extension(ext);
-                    let info = CacheInfo {
-                        name,
-                        version,
-                        created,
-                        signature: path.exists(),
-                        size: meta.len(),
-                        available,
-                    };
+            let info = CacheInfo {
+                name: pp.pkg.name,
+                version: pp.pkg.version,
+                created: meta.created()?,
+                signature,
+                size: meta.len(),
+                available,
+            };
 
-                    Ok(Some(info))
-                }
-            }
+            Ok(Some(info))
         }
     }
 }
@@ -169,6 +167,7 @@ pub fn is_package(path: &Path) -> bool {
     }
 }
 
+// TODO Remove
 /// Feed the output of this to [`PathBuf::set_extension`].
 pub fn sig_extension(path: &Path) -> Option<String> {
     path.extension()
