@@ -9,6 +9,7 @@ use chrono::{DateTime, Local};
 use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
+use itertools::Itertools;
 use log::debug;
 use pbr::ProgressBar;
 use rayon::prelude::*;
@@ -95,7 +96,7 @@ pub(crate) fn search(path: &Path, term: &str) -> Result<(), Error> {
 }
 
 /// Delete all but `keep`-many old tarballs for each package in the cache.
-pub(crate) fn clean(fll: FluentLanguageLoader, path: &Path, keep: u8) -> Result<(), Error> {
+pub(crate) fn clean(fll: FluentLanguageLoader, path: &Path, keep: usize) -> Result<(), Error> {
     sudo::escalate_if_needed()?;
 
     let CacheSize { bytes, .. } = core::cache::size(path)?;
@@ -106,6 +107,25 @@ pub(crate) fn clean(fll: FluentLanguageLoader, path: &Path, keep: u8) -> Result<
     // Proceed if the user accepts.
     let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
     crate::utils::prompt(&a!(msg))?;
+
+    // Get all the tarball paths, group them by name, sort by version number, and remove them.
+    path.read_dir()?
+        .filter_map(|de| de.ok())
+        .map(|de| de.path())
+        .filter(|p| core::cache::is_package(p))
+        .filter_map(|p| core::common::Package::from_path(&p).map(|pkg| (pkg, p)))
+        .sorted_by(|(p0, _), (p1, _)| p0.name.cmp(&p1.name))
+        .group_by(|(pkg, _)| pkg.name.clone()) // TODO Naughty clone.
+        .into_iter()
+        .map(|(_, group)| {
+            group
+                .sorted_by(|(a, _), (b, _)| alpm::vercmp(b.version.as_str(), a.version.as_str()))
+                .skip(keep)
+        })
+        .flatten()
+        .for_each(|(_, pth)| {
+            let _ = std::fs::remove_file(pth); // TODO Handle these better.
+        });
 
     green!(fll, "common-done");
     Ok(())

@@ -732,7 +732,7 @@ pub(crate) struct Cache {
 
     /// Save the most recent <N> versions of a package.
     #[clap(group = "cache", short, long, value_name = "N", display_order = 1)]
-    pub(crate) clean: Option<u8>,
+    pub(crate) clean: Option<usize>,
 
     /// Look up specific packages for info on their cache entries.
     #[clap(group = "cache", short, long, value_name = "pkg(s)", display_order = 1)]
