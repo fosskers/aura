@@ -74,6 +74,7 @@ fn main() -> Result<(), Error> {
         SubCmd::Cache(c) if c.search.is_some() => cache::search(cachep, &c.search.unwrap())?,
         SubCmd::Cache(c) if c.backup.is_some() => cache::backup(fll, cachep, &c.backup.unwrap())?,
         SubCmd::Cache(c) if c.clean.is_some() => cache::clean(fll, cachep, c.clean.unwrap())?,
+        SubCmd::Cache(c) if c.list => cache::list(cachep)?,
         SubCmd::Cache(_) => unimplemented!(),
         // --- Logs --- //
         SubCmd::Log(l) if l.search.is_some() => log::search(logp, l.search.unwrap())?,

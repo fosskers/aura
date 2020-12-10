@@ -17,6 +17,15 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use ubyte::ToByteUnit;
 
+/// Print the contents of the package cache.
+pub(crate) fn list(path: &Path) -> Result<(), Error> {
+    for de in path.read_dir()?.filter_map(|de| de.ok()) {
+        println!("{}", de.path().display());
+    }
+
+    Ok(())
+}
+
 /// Print cache data for given packages.
 pub(crate) fn info(
     fll: FluentLanguageLoader,

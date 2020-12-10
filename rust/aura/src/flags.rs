@@ -737,6 +737,10 @@ pub(crate) struct Cache {
     /// Look up specific packages for info on their cache entries.
     #[clap(group = "cache", short, long, value_name = "pkg(s)", display_order = 1)]
     pub(crate) info: Vec<String>,
+
+    /// Print the contents of the package cache.
+    #[clap(group = "cache", short, long, display_order = 1)]
+    pub(crate) list: bool,
 }
 
 /// Open various webpages related to Aura.
