@@ -1,9 +1,35 @@
 //! Cache manipulation internals.
 
 use crate::common::Package;
+use std::ffi::OsString;
 use std::fs::{DirEntry, ReadDir};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::SystemTime;
+
+/// A path to a package tarball.
+pub struct PkgPath(PathBuf);
+
+impl PkgPath {
+    /// Validate that `PathBuf` is UTF8 and has an expected extension.
+    pub fn new(path: PathBuf) -> Option<PkgPath> {
+        // TODO Refactor once `bool::then` stabilizes.
+        if is_package(&path) {
+            Some(PkgPath(path))
+        } else {
+            None
+        }
+    }
+
+    /// The path postfixed by its `.sig` extension.
+    pub fn sig_file(&self) -> PathBuf {
+        let mut new: PathBuf = self.0.clone();
+        let mut ext: OsString = new.extension().unwrap().to_os_string();
+        ext.push(".sig");
+        new.set_extension(ext);
+
+        new
+    }
+}
 
 /// A description of the size of the package cache.
 pub struct CacheSize {
