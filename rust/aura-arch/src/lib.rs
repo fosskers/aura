@@ -54,21 +54,16 @@ impl<'a> Iterator for Foreigns<'a> {
     }
 }
 
-// TODO Make this an iterator.
 /// All orphaned packages.
 ///
 /// An orphan is a package that was installed as a dependency, but whose parent
 /// package is no longer installed.
-pub fn orphans(alpm: &Alpm) -> Vec<Package> {
-    alpm.localdb()
-        .pkgs()
-        .iter()
-        .filter(|p| {
-            p.reason() == PackageReason::Depend
-                && p.required_by().is_empty()
-                && p.optional_for().is_empty()
-        })
-        .collect()
+pub fn orphans(alpm: &Alpm) -> impl Iterator<Item = Package> {
+    alpm.localdb().pkgs().into_iter().filter(|p| {
+        p.reason() == PackageReason::Depend
+            && p.required_by().is_empty()
+            && p.optional_for().is_empty()
+    })
 }
 
 /// All official packages as an `Iterator`.

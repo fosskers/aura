@@ -12,9 +12,7 @@ use ubyte::ToByteUnit;
 
 /// Print the name of each orphaned package.
 pub(crate) fn list(alpm: &Alpm) {
-    arch::orphans(&alpm)
-        .iter()
-        .for_each(|o| println!("{}", o.name()))
+    arch::orphans(&alpm).for_each(|o| println!("{}", o.name()))
 }
 
 /// Sets a package's install reason to "as explicit". An alias for `-D --asexplicit`.
@@ -48,7 +46,7 @@ pub(crate) fn adopt(
 /// which usually lives in a root-owned directory.
 pub(crate) fn remove(alpm: &mut Alpm, fll: FluentLanguageLoader) -> Result<(), Error> {
     // Check for orphans.
-    let orphans = arch::orphans(alpm);
+    let orphans: Vec<_> = arch::orphans(alpm).collect();
     if !orphans.is_empty() {
         // Copy the name of each original orphan.
         let names: HashSet<_> = orphans.iter().map(|p| p.name().to_string()).collect();
