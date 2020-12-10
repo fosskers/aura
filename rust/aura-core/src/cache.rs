@@ -1,33 +1,53 @@
 //! Cache manipulation internals.
 
 use crate::common::Package;
+use std::cmp::Ordering;
 use std::ffi::OsString;
 use std::fs::{DirEntry, ReadDir};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
-/// A path to a package tarball.
-pub struct PkgPath(PathBuf);
+/// A validated path to a package tarball.
+#[derive(Debug, PartialEq, Eq)]
+pub struct PkgPath {
+    path: PathBuf,
+    pkg: Package,
+}
 
 impl PkgPath {
-    /// Validate that `PathBuf` is UTF8 and has an expected extension.
+    /// Validate that `PathBuf` has an expected extension.
     pub fn new(path: PathBuf) -> Option<PkgPath> {
-        // TODO Refactor once `bool::then` stabilizes.
-        if is_package(&path) {
-            Some(PkgPath(path))
-        } else {
-            None
+        match Package::from_path(&path) {
+            Some(pkg) if is_package(&path) => Some(PkgPath { path, pkg }),
+            _ => None,
         }
     }
 
     /// The path postfixed by its `.sig` extension.
     pub fn sig_file(&self) -> PathBuf {
-        let mut new: PathBuf = self.0.clone();
+        let mut new: PathBuf = self.path.clone();
         let mut ext: OsString = new.extension().unwrap().to_os_string();
         ext.push(".sig");
         new.set_extension(ext);
 
         new
+    }
+
+    /// Pull a simple package definition from this tarball path.
+    pub fn to_package(&self) -> &Package {
+        &self.pkg
+    }
+}
+
+impl PartialOrd for PkgPath {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for PkgPath {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.pkg.cmp(&other.pkg)
     }
 }
 

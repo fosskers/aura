@@ -1,8 +1,9 @@
 //! Common types across the library.
 
-use std::path::Path;
+use std::{cmp::Ordering, path::Path};
 
 /// The simplest form a package.
+#[derive(Debug, PartialEq, Eq)]
 pub struct Package {
     /// The name of the package.
     pub name: String,
@@ -41,5 +42,20 @@ impl Package {
 
                 Some(Package { name, version })
             })
+    }
+}
+
+impl PartialOrd for Package {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Package {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.name.cmp(&other.name) {
+            Ordering::Equal => alpm::vercmp(self.version.as_str(), other.version.as_str()),
+            otherwise => otherwise,
+        }
     }
 }
