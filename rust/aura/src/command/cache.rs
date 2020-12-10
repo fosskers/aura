@@ -13,9 +13,9 @@ use itertools::Itertools;
 use log::debug;
 use pbr::ProgressBar;
 use rayon::prelude::*;
-use std::path::Path;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
+use std::{collections::HashMap, path::Path};
 use ubyte::ToByteUnit;
 
 const FIFTY_MB: i64 = 52_428_800;
@@ -136,7 +136,7 @@ pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Re
     // sudo::escalate_if_needed()?;
 
     // Every version of every package in the cache.
-    let groups = path
+    let groups: HashMap<_, _> = path
         .read_dir()?
         .filter_map(|de| de.ok())
         .filter_map(|de| core::cache::PkgPath::new(de.path()))
@@ -148,39 +148,60 @@ pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Re
 
     let ps: Vec<_> = arch::officials(alpm)
         .filter(|p| {
+            let pv = p.version().as_str();
             groups
                 .get(p.name())
-                .map(|vs| !vs.iter().any(|v| v == p.version().as_str()))
+                .map(|vs| !vs.iter().any(|v| v == pv))
                 .unwrap_or(true)
         })
         .map(|p| (p.name(), p.version().as_str(), p.download_size()))
         .sorted_by(|(a, _, _), (b, _, _)| a.cmp(b))
         .collect();
 
-    if !ps.is_empty() {
+    if ps.is_empty() {
+        green!(fll, "cache-refresh-no-work");
+    } else {
         let long_n = ps.iter().map(|(n, _, _)| n.chars().count()).max().unwrap();
         let long_v = ps.iter().map(|(_, v, _)| v.chars().count()).max().unwrap();
         // TODO Localize.
         let p = format!("Package ({})", ps.len()).bold();
         let v = "Version".bold();
-        let s = "Download Size".bold();
+        let s = "Download Size";
+        let total = colour_size(ps.iter().map(|(_, _, s)| s).sum());
+        let span = long_n + long_v;
 
         // Display a summary.
-        println!("{:n$} {:v$} {}\n", p, v, s, n = long_n, v = long_v); // TODO localize
+        println!("{:n$} {:v$} {}\n", p, v, s.bold(), n = long_n, v = long_v);
         for (n, v, size) in ps {
-            let coloured = if size >= FIFTY_MB {
-                size.bytes().to_string().yellow()
-            } else if size >= FIVE_HUNDRED_MB {
-                size.bytes().to_string().red()
-            } else {
-                size.bytes().to_string().normal()
-            };
-
-            println!("{:n$} {:v$} {}", n, v, coloured, n = long_n, v = long_v);
+            let coloured = colour_size(size);
+            println!("{:n$} {:v$} {:>9}", n, v, coloured, n = long_n, v = long_v);
         }
+        println!("{:-<w$}", "-".magenta(), w = span + s.chars().count());
+        println!(
+            "{:w$} {:>9}\n",
+            fl!(fll, "common-total").bold(),
+            total,
+            w = span + 1
+        );
+
+        // Proceed if the user accepts.
+        let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
+        crate::utils::prompt(&a!(msg))?;
+        green!(fll, "common-done");
     }
 
     Ok(())
+}
+
+/// Colour a size string depending on the count of bytes.
+fn colour_size(size: i64) -> ColoredString {
+    if size >= FIVE_HUNDRED_MB {
+        size.bytes().to_string().red()
+    } else if size >= FIFTY_MB {
+        size.bytes().to_string().yellow()
+    } else {
+        size.bytes().to_string().normal()
+    }
 }
 
 /// Backup the package cache to a given directory.

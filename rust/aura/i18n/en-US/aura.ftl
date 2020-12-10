@@ -17,6 +17,8 @@ cache-info-avail = Available Versions
 cache-clean-keep = { $pkgs } of each package file will be kept. The rest will be deleted.
 cache-clean-freed = { $bytes } freed.
 
+cache-refresh-no-work = Package cache already synchronized.
+
 # Orphans (-O)
 orphans-abandon = The following orphans and their dependencies will be removed:
 orphans-adopt = { $package } now marked as explicitly installed.
@@ -32,6 +34,7 @@ common-no = No
 common-none = None
 common-name = Name
 common-done = Done.
+common-total = Total
 
 # Misc.
 proceed = Proceed?
