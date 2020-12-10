@@ -107,31 +107,17 @@ pub(crate) fn clean(fll: FluentLanguageLoader, path: &Path, keep: usize) -> Resu
     let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
     crate::utils::prompt(&a!(msg))?;
 
-    // Get all the tarball paths, group them by name, sort by version number, and remove them.
+    // Get all the tarball paths, sort and group them by name, and then remove them.
     path.read_dir()?
         .filter_map(|de| de.ok())
-        .map(|de| de.path())
-        .filter(|p| core::cache::is_package(p))
-        .filter_map(|p| core::common::Package::from_path(&p).map(|pkg| (pkg, p)))
-        .sorted_by(|(p0, _), (p1, _)| p0.name.cmp(&p1.name))
-        .group_by(|(pkg, _)| pkg.name.clone()) // TODO Naughty clone.
+        .filter_map(|de| core::cache::PkgPath::new(de.path()))
+        .sorted_by(|p0, p1| p1.cmp(&p0))
+        .group_by(|pp| pp.to_package().name.clone()) // TODO Naughty clone.
         .into_iter()
-        .map(|(_, group)| {
-            group
-                .sorted_by(|(a, _), (b, _)| alpm::vercmp(b.version.as_str(), a.version.as_str()))
-                .skip(keep)
-        })
+        .map(|(_, group)| group.skip(keep))
         .flatten()
-        .for_each(|(_, mut pth)| {
-            let _ = std::fs::remove_file(&pth); // TODO Handle these better.
-
-            if let Some(sig) = core::cache::sig_extension(&pth) {
-                pth.set_extension(sig);
-
-                if pth.exists() {
-                    let _ = std::fs::remove_file(&pth); // TODO Handle these better.
-                }
-            }
+        .for_each(|pp| {
+            let _ = pp.remove(); // TODO Handle this error better?
         });
 
     let size_after = core::cache::size(path)?;

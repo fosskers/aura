@@ -37,6 +37,18 @@ impl PkgPath {
     pub fn to_package(&self) -> &Package {
         &self.pkg
     }
+
+    /// Delete this `PkgPath` and its `.sig` file, if there is one.
+    pub fn remove(self) -> Result<(), std::io::Error> {
+        std::fs::remove_file(&self.path)?;
+
+        let sig = self.sig_file();
+        if sig.exists() {
+            std::fs::remove_file(sig)?;
+        }
+
+        Ok(())
+    }
 }
 
 impl PartialOrd for PkgPath {
@@ -165,12 +177,4 @@ pub fn is_package(path: &Path) -> bool {
         None => false,
         Some(s) => s.ends_with(".pkg.tar.zst") || s.ends_with(".pkg.tar.xz"),
     }
-}
-
-// TODO Remove
-/// Feed the output of this to [`PathBuf::set_extension`].
-pub fn sig_extension(path: &Path) -> Option<String> {
-    path.extension()
-        .and_then(|s| s.to_str())
-        .map(|ext| vec![ext, "sig"].join("."))
 }
