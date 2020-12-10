@@ -3,6 +3,7 @@
 use crate::error::Error;
 use crate::{a, aln, aura, green, red, yellow};
 use alpm::Alpm;
+use aura_arch as arch;
 use aura_core as core;
 use chrono::{DateTime, Local};
 use colored::*;
@@ -16,6 +17,10 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use ubyte::ToByteUnit;
+
+const FIFTY_MB: i64 = 52_428_800;
+
+const FIVE_HUNDRED_MB: i64 = 524_288_000;
 
 /// Print the contents of the package cache.
 pub(crate) fn list(path: &Path) -> Result<(), Error> {
@@ -123,6 +128,58 @@ pub(crate) fn clean(fll: FluentLanguageLoader, path: &Path, keep: usize) -> Resu
     let size_after = core::cache::size(path)?;
     let freed = format!("{}", (size_before.bytes - size_after.bytes).bytes());
     green!(fll, "cache-clean-freed", bytes = freed);
+    Ok(())
+}
+
+/// Download tarballs of installed packages that are missing from the cache.
+pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Result<(), Error> {
+    // sudo::escalate_if_needed()?;
+
+    // Every version of every package in the cache.
+    let groups = path
+        .read_dir()?
+        .filter_map(|de| de.ok())
+        .filter_map(|de| core::cache::PkgPath::new(de.path()))
+        .map(|pp| {
+            let p = core::common::Package::from(pp);
+            (p.name, p.version)
+        })
+        .into_group_map();
+
+    let ps: Vec<_> = arch::officials(alpm)
+        .filter(|p| {
+            groups
+                .get(p.name())
+                .map(|vs| !vs.iter().any(|v| v == p.version().as_str()))
+                .unwrap_or(true)
+        })
+        .map(|p| (p.name(), p.version().as_str(), p.download_size()))
+        .sorted_by(|(a, _, _), (b, _, _)| a.cmp(b))
+        .collect();
+
+    if !ps.is_empty() {
+        let long_n = ps.iter().map(|(n, _, _)| n.chars().count()).max().unwrap();
+        let long_v = ps.iter().map(|(_, v, _)| v.chars().count()).max().unwrap();
+        // TODO Localize.
+        let p = format!("Package ({})", ps.len()).bold();
+        let v = "Version".bold();
+        let s = "Download Size".bold();
+
+        // Display a summary.
+        println!("{:n$} {:v$} {}\n", p, v, s, n = long_n, v = long_v); // TODO localize
+        for (n, v, size) in ps {
+            let coloured = if size >= FIFTY_MB {
+                size.bytes().to_string().yellow()
+            } else if size >= FIVE_HUNDRED_MB {
+                size.bytes().to_string().red()
+            } else {
+                size.bytes().to_string().normal()
+            };
+
+            println!("{:n$} {:v$} {}", n, v, coloured, n = long_n, v = long_v);
+        }
+    }
+
     Ok(())
 }
 

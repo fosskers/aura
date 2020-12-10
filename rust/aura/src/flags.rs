@@ -741,6 +741,10 @@ pub(crate) struct Cache {
     /// Print the contents of the package cache.
     #[clap(group = "cache", short, long, display_order = 1)]
     pub(crate) list: bool,
+
+    /// Download tarballs of installed packages that are missing from the cache.
+    #[clap(group = "cache", short = 'y', long, display_order = 1)]
+    pub(crate) refresh: bool,
 }
 
 /// Open various webpages related to Aura.

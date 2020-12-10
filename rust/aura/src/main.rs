@@ -75,6 +75,7 @@ fn main() -> Result<(), Error> {
         SubCmd::Cache(c) if c.backup.is_some() => cache::backup(fll, cachep, &c.backup.unwrap())?,
         SubCmd::Cache(c) if c.clean.is_some() => cache::clean(fll, cachep, c.clean.unwrap())?,
         SubCmd::Cache(c) if c.list => cache::list(cachep)?,
+        SubCmd::Cache(c) if c.refresh => cache::refresh(fll, &alpm, cachep)?,
         SubCmd::Cache(_) => unimplemented!(),
         // --- Logs --- //
         SubCmd::Log(l) if l.search.is_some() => log::search(logp, l.search.unwrap())?,
@@ -90,7 +91,7 @@ fn main() -> Result<(), Error> {
         SubCmd::Conf(c) if c.pacman => conf::pacman_conf(c)?,
         SubCmd::Conf(c) if c.aura => unimplemented!(),
         SubCmd::Conf(c) if c.makepkg => conf::makepkg_conf()?,
-        SubCmd::Conf(_) => unimplemented!(),
+        SubCmd::Conf(_) => conf::general(&alpm, pconf),
         // --- Statistics --- //
         SubCmd::Stats(s) if s.lang => stats::localization()?,
         SubCmd::Stats(s) if s.heavy => stats::heavy_packages(&alpm),
