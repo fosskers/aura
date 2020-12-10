@@ -111,10 +111,10 @@ pub(crate) fn clean(fll: FluentLanguageLoader, path: &Path, keep: usize) -> Resu
     path.read_dir()?
         .filter_map(|de| de.ok())
         .filter_map(|de| core::cache::PkgPath::new(de.path()))
-        .sorted_by(|p0, p1| p1.cmp(&p0))
+        .sorted_by(|p0, p1| p1.cmp(&p0)) // Forces a `collect` underneath.
         .group_by(|pp| pp.to_package().name.clone()) // TODO Naughty clone.
         .into_iter()
-        .map(|(_, group)| group.skip(keep))
+        .map(|(_, group)| group.skip(keep)) // Thanks to the reverse-sort above, `group` is already backwards.
         .flatten()
         .for_each(|pp| {
             let _ = pp.remove(); // TODO Handle this error better?

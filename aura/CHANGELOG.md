@@ -7,8 +7,25 @@
 #### Changed
 
 - **Breaking:** The top-level command `--viewconf` is now called `conf`.
+- **Breaking:** The top-level command `--languages` is now invoked by `stats -l`
+  and also shows localization coverage for each language.
 
 #### Added
+
+- `-Cl` to print the contents of the package cache. Useful to pipe to other shell commands.
+- `-Ci` to display data of a package's cache entries. In the case below, we see
+  what versions are available to downgrade to, but also that the installed version
+  is missing a tarball in the cache:
+
+```
+> aura -Ci linux
+Name               : linux
+Latest             : 5.8.13.arch1-1 [installed: 5.9.13.arch1-1]
+Created            : 2020-10-08 08:33:38
+Signature          : No
+Tarball Size       : 72.09MiB
+Available Versions : 5.8.13.arch1-1, 5.8.10.arch1-1
+```
 
 - `deps` command for analyzing dependency connections. Generates output in
   [Graphviz DOT format](https://en.wikipedia.org/wiki/DOT_%28graph_description_language%29),
@@ -23,7 +40,15 @@ This produces the following image:
 ![](assets/gcc-graph.png)
 
 - `open` command for opening various Aura-related webpages in your browser.
+- `stats` command for viewing various data about your system:
+  - `--groups (-g)`: All installed package groups.
+  - `--heavy`: The Top 10 packages with the biggest installation footprint.
+  - `--lang (-l)`: Available localizations and how complete they are.
 - Turkish translations thanks to Cihan Alkan. Teşekkür ederim!
+
+#### Fixed
+
+- `-Cc` now deletes associated `.sig` files as well.
 
 ## 3.2.2 (2020-10-29)
 
