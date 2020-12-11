@@ -18,8 +18,8 @@ use flags::{SubCmd, AURA_GLOBALS};
 use simplelog::Config;
 use simplelog::TermLogger;
 use simplelog::TerminalMode;
-use std::path::Path;
 use std::process::Command;
+use std::{collections::HashMap, path::Path};
 
 fn main() -> Result<(), Error> {
     // Parse all CLI input. Exits immediately if invalid input is given.
@@ -49,13 +49,9 @@ fn main() -> Result<(), Error> {
         .as_deref()
         .unwrap_or_else(|| Path::new(pconf.cache_dir.first().unwrap()));
 
-    let mut alpm = Alpm::new(
-        args.root.unwrap_or_else(|| pconf.root_dir.clone()),
-        args.dbpath.unwrap_or_else(|| pconf.db_path.clone()),
-    )?;
-    for repo in pconf.repos.iter() {
-        alpm.register_syncdb(repo.name.as_str(), SigLevel::USE_DEFAULT)?;
-    }
+    let root = args.root.unwrap_or_else(|| pconf.root_dir.clone());
+    let dbpath = args.dbpath.unwrap_or_else(|| pconf.db_path.clone());
+    let mut alpm = alpm(&pconf, root, dbpath)?;
 
     match args.subcmd {
         // --- Pacman Commands --- //
@@ -91,7 +87,7 @@ fn main() -> Result<(), Error> {
         SubCmd::Conf(c) if c.pacman => conf::pacman_conf(c)?,
         SubCmd::Conf(c) if c.aura => unimplemented!(),
         SubCmd::Conf(c) if c.makepkg => conf::makepkg_conf()?,
-        SubCmd::Conf(_) => conf::general(&alpm, pconf),
+        SubCmd::Conf(_) => conf::general(&alpm),
         // --- Statistics --- //
         SubCmd::Stats(s) if s.lang => stats::localization()?,
         SubCmd::Stats(s) if s.heavy => stats::heavy_packages(&alpm),
@@ -136,4 +132,33 @@ fn pacman() -> Result<(), Error> {
         Ok(es) if es.success() => Ok(()),
         Ok(_) => Err(Error::PacmanError),
     }
+}
+
+/// Fully initialize an ALPM handle.
+fn alpm(conf: &pacmanconf::Config, root: String, dbpath: String) -> Result<Alpm, Error> {
+    let mut alpm = Alpm::new(root, dbpath)?;
+    let mirrors: HashMap<_, _> = conf
+        .repos
+        .iter()
+        .map(|r| (r.name.as_str(), r.servers.as_slice()))
+        .collect();
+
+    // Register official "sync" databases. Without this step, the ALPM handle
+    // can't access the non-local databases.
+    for repo in conf.repos.iter() {
+        // TODO If I ever plan to install packages manually, get the proper
+        // SigLevel from `pacman.conf`.
+        alpm.register_syncdb(repo.name.as_str(), SigLevel::USE_DEFAULT)?;
+    }
+
+    // Associate each registered sync db with mirrors pulled from `pacman.conf`.
+    for db in alpm.syncdbs_mut() {
+        if let Some(ms) = mirrors.get(db.name()) {
+            for mirror in ms.iter() {
+                db.add_server(mirror.as_str())?;
+            }
+        }
+    }
+
+    Ok(alpm)
 }

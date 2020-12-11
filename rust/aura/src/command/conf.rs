@@ -4,17 +4,14 @@ use crate::command::misc;
 use crate::error::Error;
 use crate::flags::Conf;
 use alpm::Alpm;
-use pacmanconf::Config;
 use std::env;
 use std::process::Command;
 
 /// General settings.
-pub(crate) fn general(alpm: &Alpm, config: Config) {
-    let syncs = alpm.syncdbs();
-
-    for repo in config.repos {
-        println!("{}", repo.name);
-        for server in repo.servers {
+pub(crate) fn general(alpm: &Alpm) {
+    for db in alpm.syncdbs() {
+        println!("[{}]", db.name());
+        for server in db.servers() {
             println!("  {}", server);
         }
     }
