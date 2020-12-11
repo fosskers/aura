@@ -3,6 +3,7 @@
 #![warn(missing_docs)]
 
 pub(crate) mod command;
+pub(crate) mod download;
 pub(crate) mod error;
 pub(crate) mod flags;
 pub(crate) mod localization;

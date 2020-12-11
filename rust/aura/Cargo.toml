@@ -12,6 +12,7 @@ chrono = "0.4"
 clap = "3.0.0-beta.2"
 clap_generate = "3.0.0-beta.2"
 colored = "2.0"
+curl = "0.4"
 i18n-embed = { version = "0.9.4", features = ["fluent-system"] }
 i18n-embed-fl = "0.2"
 itertools = "0.9"

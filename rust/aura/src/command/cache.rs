@@ -133,7 +133,7 @@ pub(crate) fn clean(fll: FluentLanguageLoader, path: &Path, keep: usize) -> Resu
 
 /// Download tarballs of installed packages that are missing from the cache.
 pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Result<(), Error> {
-    // sudo::escalate_if_needed()?;
+    sudo::escalate_if_needed()?;
 
     // Every version of every package in the cache.
     let groups: HashMap<String, Vec<String>> = path
@@ -146,6 +146,9 @@ pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Re
         })
         .into_group_map();
 
+    // TODO Getting the packages from the sync database isn't quite right. It
+    // won't pull the versions of things currently installed, it'll pull
+    // whatever it thinks the newest is.
     let ps: Vec<_> = arch::officials(alpm)
         .filter(|p| {
             let pv = p.version().as_str();
@@ -193,17 +196,34 @@ pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Re
         let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
         crate::utils::prompt(&a!(msg))?;
 
-        // Show servers
-        for p in ps {
-            let db = p.db();
-            let mirror = db.as_ref().and_then(|db| db.servers().first());
-            let arch = p.arch();
+        // Mirrors.
+        let mirrors: HashMap<&str, Vec<&str>> = alpm
+            .syncdbs()
+            .iter()
+            .map(|db| (db.name(), db.servers().into_iter().collect()))
+            .collect();
 
-            // TODO Warn if they were no mirrors?
-            if let (Some(m), Some(a)) = (mirror, arch) {
-                let url = format!("{}/{}-{}-{}.pkg.tar.zst", m, p.name(), p.version(), a,);
-                println!("{}", url);
-            }
+        // Syncable package values.
+        let foo: Vec<_> = ps
+            .iter()
+            .filter_map(|p| match (p.db(), p.arch()) {
+                (Some(db), Some(arch)) => mirrors
+                    .get(db.name())
+                    .map(|ms| (p.name(), p.version().as_str(), arch, ms)),
+                _ => None,
+            })
+            .collect();
+
+        // foo.into_par_iter().for_each(|(n, v, a, ms)| {
+        //     println!("{}", n);
+        // });
+
+        if let Some((n, v, a, ms)) = foo.first() {
+            let tarball = format!("{}-{}-{}.pkg.tar.zst", n, v, a);
+            let url = format!("{}/{}", ms[0], tarball);
+            let mut target = path.to_path_buf();
+            target.push(tarball);
+            crate::download::download(&url, &target)?;
         }
 
         green!(fll, "common-done");

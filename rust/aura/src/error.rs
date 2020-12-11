@@ -18,6 +18,8 @@ pub(crate) enum Error {
     Env(std::env::VarError),
     /// An error parsing `pacman.conf`.
     PacConf(pacmanconf::Error),
+    /// An error from `curl`.
+    Curl(curl::Error),
     /// A boxed dynamic error.
     Boxed(Box<dyn std::error::Error>),
     /// The said "no" at some prompt.
@@ -26,6 +28,8 @@ pub(crate) enum Error {
     NoneExist,
     /// A non-zero exit code was returned from a call to Pacman.
     PacmanError,
+    /// A file IO target already exists.
+    FileConflict,
     /// A silent, miscellaneous error.
     ///
     /// In theory any relevant error messages have already been localized and
@@ -43,10 +47,12 @@ impl std::fmt::Display for Error {
             Error::Log(e) => write!(f, "{}", e),
             Error::Env(e) => write!(f, "{}", e),
             Error::PacConf(e) => write!(f, "{}", e),
+            Error::Curl(e) => write!(f, "{}", e),
             Error::Boxed(e) => write!(f, "{}", e),
             Error::Rejected => write!(f, "The user said no."),
             Error::NoneExist => write!(f, "None of those packages exist."),
             Error::PacmanError => write!(f, "A shell call to Pacman gave a non-zero exit code."),
+            Error::FileConflict => write!(f, "The given file target already exists."),
             Error::Silent => write!(f, ""),
         }
     }
@@ -62,10 +68,12 @@ impl std::error::Error for Error {
             Error::Log(e) => Some(e),
             Error::Env(e) => Some(e),
             Error::PacConf(e) => Some(e),
+            Error::Curl(e) => Some(e),
             Error::Boxed(_) => None, // TODO `Some` gives a warning.
             Error::Rejected => None,
             Error::NoneExist => None,
             Error::PacmanError => None,
+            Error::FileConflict => None,
             Error::Silent => None,
         }
     }
@@ -116,5 +124,11 @@ impl From<std::env::VarError> for Error {
 impl From<Box<dyn std::error::Error>> for Error {
     fn from(error: Box<dyn std::error::Error>) -> Self {
         Error::Boxed(error)
+    }
+}
+
+impl From<curl::Error> for Error {
+    fn from(error: curl::Error) -> Self {
+        Error::Curl(error)
     }
 }
