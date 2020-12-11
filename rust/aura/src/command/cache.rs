@@ -136,7 +136,7 @@ pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Re
     // sudo::escalate_if_needed()?;
 
     // Every version of every package in the cache.
-    let groups: HashMap<_, _> = path
+    let groups: HashMap<String, Vec<String>> = path
         .read_dir()?
         .filter_map(|de| de.ok())
         .filter_map(|de| core::cache::PkgPath::new(de.path()))
@@ -154,27 +154,32 @@ pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Re
                 .map(|vs| !vs.iter().any(|v| v == pv))
                 .unwrap_or(true)
         })
-        .map(|p| (p.name(), p.version().as_str(), p.download_size()))
-        .sorted_by(|(a, _, _), (b, _, _)| a.cmp(b))
+        .sorted_by(|a, b| a.name().cmp(b.name()))
         .collect();
 
     if ps.is_empty() {
         green!(fll, "cache-refresh-no-work");
     } else {
-        let long_n = ps.iter().map(|(n, _, _)| n.chars().count()).max().unwrap();
-        let long_v = ps.iter().map(|(_, v, _)| v.chars().count()).max().unwrap();
+        let long_n = ps.iter().map(|p| p.name().chars().count()).max().unwrap();
+        let long_v = ps
+            .iter()
+            .map(|p| p.version().as_str().chars().count())
+            .max()
+            .unwrap();
         // TODO Localize.
         let p = format!("Package ({})", ps.len()).bold();
         let v = "Version".bold();
         let s = "Download Size";
-        let total = colour_size(ps.iter().map(|(_, _, s)| s).sum());
+        let total = colour_size(ps.iter().map(|p| p.download_size()).sum());
         let span = long_n + long_v;
 
         // Display a summary.
         println!("{:n$} {:v$} {}\n", p, v, s.bold(), n = long_n, v = long_v);
-        for (n, v, size) in ps {
-            let coloured = colour_size(size);
-            println!("{:n$} {:v$} {:>9}", n, v, coloured, n = long_n, v = long_v);
+        for p in ps.iter() {
+            let n = p.name();
+            let v = p.version().as_str();
+            let s = colour_size(p.download_size());
+            println!("{:n$} {:v$} {:>9}", n, v, s, n = long_n, v = long_v);
         }
         println!("{:-<w$}", "-".magenta(), w = span + s.chars().count());
         println!(
@@ -187,6 +192,20 @@ pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Re
         // Proceed if the user accepts.
         let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
         crate::utils::prompt(&a!(msg))?;
+
+        // Show servers
+        for p in ps {
+            let db = p.db();
+            let mirror = db.as_ref().and_then(|db| db.servers().first());
+            let arch = p.arch();
+
+            // TODO Warn if they were no mirrors?
+            if let (Some(m), Some(a)) = (mirror, arch) {
+                let url = format!("{}/{}-{}-{}.pkg.tar.zst", m, p.name(), p.version(), a,);
+                println!("{}", url);
+            }
+        }
+
         green!(fll, "common-done");
     }
 

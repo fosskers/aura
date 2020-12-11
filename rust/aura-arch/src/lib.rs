@@ -26,7 +26,7 @@ impl<'a> Iterator for Officials<'a> {
             match self.syncs.iter().find_map(|db| db.pkg(name).ok()) {
                 None => self.next(),
                 // NOTE: Returning the original `p` instead will lack correct
-                // `download_size` information.
+                // `download_size` information and `Db` pointer.
                 Some(repo_pkg) => Some(repo_pkg),
             }
         })

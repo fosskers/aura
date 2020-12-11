@@ -1,6 +1,10 @@
 [workspace]
 members = ["aura", "aura-core", "aura-arch", "aura-common"]
 
+[patch.crates-io]
+alpm = { git = "https://github.com/Morganamilo/alpm.rs", rev = "c7f133dfe1b0893879ed0568cd9e26bf679a211e" }
+
 [profile.release]
 lto = true
 panic = "abort"
+# opt-level = "s"  # Reduces final stripped size by ~17%.
