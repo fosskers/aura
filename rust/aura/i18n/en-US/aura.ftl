@@ -1,3 +1,5 @@
+language-name = English
+
 # Cache (-C)
 cache-size = Current cache size: { $size }
 

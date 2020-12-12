@@ -4,30 +4,35 @@ use crate::error::Error;
 use crate::localization;
 use alpm::Alpm;
 use colored::*;
-use i18n_embed::LanguageLoader;
+use i18n_embed_fl::fl;
 use std::collections::{HashMap, HashSet};
 use ubyte::ToByteUnit;
-use unic_langid::LanguageIdentifier;
+use unic_langid::{langid, LanguageIdentifier};
 
 /// Raw contents of loaded localizations.
 pub(crate) fn localization() -> Result<(), Error> {
-    let fll = localization::load_all()?;
-    let stats: HashMap<LanguageIdentifier, usize> = localization::available_languages()
+    let stats: HashMap<LanguageIdentifier, (String, usize)> = localization::load_all()?
         .into_iter()
-        .map(|lang| {
+        .map(|(lang, fll)| {
             let count = fll.with_message_iter(&lang, |iter| iter.count());
-            (lang, count)
+            let name = fl!(fll, "language-name");
+            (lang, (name, count))
         })
         .collect();
 
-    let english = fll.fallback_language();
-    let max = *stats.get(&english).unwrap();
+    let (_, max) = *stats.get(&langid!("en-US")).unwrap();
     let mut sorted: Vec<_> = stats.into_iter().collect();
-    sorted.sort_by_key(|(_, count)| *count);
+    sorted.sort_by_key(|(_, (_, count))| *count);
     sorted.reverse();
+    let long = sorted
+        .iter()
+        .map(|(_, (n, _))| n.chars().count())
+        .max()
+        .unwrap_or(0);
 
-    for (lang, count) in sorted {
-        let perc = 100.0 * count as f64 / max as f64;
+    // TODO Make this a proper table with generalized table code.
+    for (lang, (n, c)) in sorted {
+        let perc = 100.0 * c as f64 / max as f64;
         let l = if perc < 50.0 {
             format!("{}", lang).red()
         } else if perc < 100.0 {
@@ -35,10 +40,28 @@ pub(crate) fn localization() -> Result<(), Error> {
         } else {
             format!("{}", lang).green()
         };
-        println!("{} {:02}/{} ({:.2}%)", l, count, max, perc);
+        let pad = long - visual_len(&lang, &n);
+        println!(
+            "{} [{}]{:w$} {:02}/{} ({:.2}%)",
+            l,
+            n,
+            "",
+            c,
+            max,
+            perc,
+            w = pad
+        );
     }
 
     Ok(())
+}
+
+fn visual_len(lang: &LanguageIdentifier, msg: &str) -> usize {
+    let raw = msg.chars().count();
+    match lang.language.as_str() {
+        "ja" => raw * 2,
+        _ => raw,
+    }
 }
 
 /// Display the Top 10 packages with the biggest installation footprint.

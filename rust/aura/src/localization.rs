@@ -3,6 +3,7 @@
 use i18n_embed::fluent::{fluent_language_loader, FluentLanguageLoader};
 use i18n_embed::{I18nEmbedError, LanguageLoader};
 use rust_embed::RustEmbed;
+use std::collections::HashMap;
 use unic_langid::LanguageIdentifier;
 
 #[derive(RustEmbed)]
@@ -55,13 +56,17 @@ pub(crate) fn load(
 ///
 /// There is no guarantee about what language will end up the default, so this
 /// shouldn't be used for normal localization purposes.
-pub(crate) fn load_all() -> Result<FluentLanguageLoader, I18nEmbedError> {
-    let loader = fluent_language_loader!();
-    let langs = available_languages();
-    let slice: Vec<&LanguageIdentifier> = langs.iter().collect();
-    loader.load_languages(&Translations, &slice)?;
-    loader.set_use_isolating(false);
-    Ok(loader)
+pub(crate) fn load_all() -> Result<HashMap<LanguageIdentifier, FluentLanguageLoader>, I18nEmbedError>
+{
+    available_languages()
+        .into_iter()
+        .map(|lang| {
+            let loader = fluent_language_loader!();
+            loader
+                .load_languages(&Translations, &[&lang])
+                .map(|_| (lang, loader))
+        })
+        .collect()
 }
 
 /// The list of languages that Aura has localization files for (e.g. `en-US`).
@@ -80,7 +85,7 @@ fn no_extra_localizations() {
     let english = load(None).unwrap();
     let all = load_all().unwrap();
     for lang in available_languages() {
-        all.with_message_iter(&lang, |msgs| {
+        all.get(&lang).unwrap().with_message_iter(&lang, |msgs| {
             for msg in msgs {
                 if !english.has(msg.id.name) {
                     panic!("{} has extra field: {}", lang, msg.id.name);
