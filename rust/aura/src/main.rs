@@ -73,6 +73,7 @@ fn main() -> Result<(), Error> {
         SubCmd::Cache(c) if c.clean.is_some() => cache::clean(fll, cachep, c.clean.unwrap())?,
         SubCmd::Cache(c) if c.list => cache::list(cachep)?,
         SubCmd::Cache(c) if c.refresh => cache::refresh(fll, &alpm, cachep)?,
+        SubCmd::Cache(c) if c.test => download::bar_test2(),
         SubCmd::Cache(_) => unimplemented!(),
         // --- Logs --- //
         SubCmd::Log(l) if l.search.is_some() => log::search(logp, l.search.unwrap())?,

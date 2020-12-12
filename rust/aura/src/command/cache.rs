@@ -11,7 +11,7 @@ use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use itertools::Itertools;
 use log::debug;
-use pbr::{ProgressBar, Units};
+use pbr::ProgressBar;
 use rayon::prelude::*;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -214,20 +214,38 @@ pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Re
             })
             .collect();
 
-        // foo.into_par_iter().for_each(|(n, v, a, ms)| {
-        //     println!("{}", n);
+        // let mb = Arc::new(MultiBar::new());
+        // std::thread::spawn({
+        //     let mb = Arc::clone(&mb);
+        //     move || {
+        //         mb.listen();
+        //     }
         // });
 
-        if let Some((n, v, a, bytes, ms)) = foo.first() {
+        foo.into_par_iter().for_each(|(n, v, a, _, ms)| {
             let tarball = format!("{}-{}-{}.pkg.tar.zst", n, v, a);
-            let url = format!("{}/{}", ms[0], tarball);
+            let url = format!("{}/{}", ms[0], tarball); // TODO dangerous
             let mut target = path.to_path_buf();
             target.push(tarball);
-            let mut bar = ProgressBar::new(*bytes as u64);
-            bar.set_units(Units::Bytes);
-            bar.message(&format!("{} ", n));
-            crate::download::download_with_progress(&url, &target, Some(bar))?;
-        }
+            // let mut bar = mb.create_bar(bytes as u64);
+            // bar.set_units(Units::Bytes);
+            // bar.message(&format!("{}-{} ", n, v));
+            println!("Downloading: {}", n);
+            let _ = crate::download::download(&url, &target);
+        });
+
+        // mb.listen();
+
+        // if let Some((n, v, a, bytes, ms)) = foo.first() {
+        //     let tarball = format!("{}-{}-{}.pkg.tar.zst", n, v, a);
+        //     let url = format!("{}/{}", ms[0], tarball);
+        //     let mut target = path.to_path_buf();
+        //     target.push(tarball);
+        //     let mut bar = ProgressBar::new(*bytes as u64);
+        //     bar.set_units(Units::Bytes);
+        //     bar.message(&format!("{}-{} ", n, v));
+        //     crate::download::download_with_progress(&url, &target, Some(bar))?;
+        // }
 
         green!(fll, "common-done");
     }
