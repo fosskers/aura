@@ -11,7 +11,7 @@ use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use itertools::Itertools;
 use log::debug;
-use pbr::ProgressBar;
+use pbr::{ProgressBar, Units};
 use rayon::prelude::*;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -209,7 +209,7 @@ pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Re
             .filter_map(|p| match (p.db(), p.arch()) {
                 (Some(db), Some(arch)) => mirrors
                     .get(db.name())
-                    .map(|ms| (p.name(), p.version().as_str(), arch, ms)),
+                    .map(|ms| (p.name(), p.version().as_str(), arch, p.download_size(), ms)),
                 _ => None,
             })
             .collect();
@@ -218,12 +218,15 @@ pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Re
         //     println!("{}", n);
         // });
 
-        if let Some((n, v, a, ms)) = foo.first() {
+        if let Some((n, v, a, bytes, ms)) = foo.first() {
             let tarball = format!("{}-{}-{}.pkg.tar.zst", n, v, a);
             let url = format!("{}/{}", ms[0], tarball);
             let mut target = path.to_path_buf();
             target.push(tarball);
-            crate::download::download(&url, &target)?;
+            let mut bar = ProgressBar::new(*bytes as u64);
+            bar.set_units(Units::Bytes);
+            bar.message(&format!("{} ", n));
+            crate::download::download_with_progress(&url, &target, Some(bar))?;
         }
 
         green!(fll, "common-done");
