@@ -16,7 +16,7 @@ jobs:
       image: archlinux
     steps:
       - name: Install Rust
-        run: pacman -Sy rust gcc openssl --noconfirm
+        run: pacman -Sy rust gcc openssl pkgconf --noconfirm
 
       - name: Clone Project
         uses: actions/checkout@v2
