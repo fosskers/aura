@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup GHC
-        uses: actions/setup-haskell@v1.1.3
+        uses: actions/setup-haskell@v1.1.4
         with:
           ghc-version: "8.8.4"
           enable-stack: true
