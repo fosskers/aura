@@ -72,7 +72,7 @@ impl Ord for PkgPath {
 /// A description of the size of the package cache.
 pub struct CacheSize {
     /// The number of package files in the cache.
-    pub files: u64,
+    pub files: usize,
     /// The number of bytes of all files combined.
     pub bytes: u64,
 }

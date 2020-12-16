@@ -12,7 +12,6 @@ use i18n_embed_fl::fl;
 use itertools::Itertools;
 use linya::Progress;
 use log::debug;
-use pbr::ProgressBar;
 use rayon::prelude::*;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -284,12 +283,13 @@ pub(crate) fn backup(fll: FluentLanguageLoader, source: &Path, target: &Path) ->
 }
 
 /// Copy all the cache files concurrently.
-fn copy(source: &Path, target: &Path, file_count: u64) -> Result<(), Error> {
+fn copy(source: &Path, target: &Path, file_count: usize) -> Result<(), Error> {
     debug!("Begin cache copying.");
 
     // TODO Change the bar style.
     // A progress bar to display the copying progress.
-    let pb = Arc::new(Mutex::new(ProgressBar::new(file_count)));
+    let pb = Arc::new(Mutex::new(Progress::new()));
+    let bar = pb.lock().unwrap().bar(file_count, "File Copying"); // TODO Localize.
 
     // Silently succeeds if the directory already exists.
     std::fs::create_dir_all(target)?;
@@ -306,9 +306,9 @@ fn copy(source: &Path, target: &Path, file_count: u64) -> Result<(), Error> {
             })
         })
         .par_bridge()
-        .for_each(|(from, to)| {
+        .for_each_with(pb, |p, (from, to)| {
             if std::fs::copy(from, to).is_ok() {
-                pb.lock().unwrap().inc();
+                p.lock().unwrap().inc_and_draw(&bar, 1);
             }
         });
     Ok(())
