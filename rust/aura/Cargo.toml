@@ -28,5 +28,10 @@ ubyte = "0.10"
 unic-langid = { version = "0.9", features = ["macros"] }
 webbrowser = "0.5"
 
+[dependencies.linya]
+version = "0.1"
+git = "https://github.com/fosskers/linya"
+rev = "6a28de0dbc641d7104ab4a7632a9fcb79f0762f1"
+
 [features]
 git = ["alpm/git"]

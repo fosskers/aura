@@ -745,10 +745,6 @@ pub(crate) struct Cache {
     /// Download tarballs of installed packages that are missing from the cache.
     #[clap(group = "cache", short = 'y', long, display_order = 1)]
     pub(crate) refresh: bool,
-
-    /// Do the multibar test.
-    #[clap(group = "cache", long, display_order = 1)]
-    pub(crate) test: bool,
 }
 
 /// Open various webpages related to Aura.

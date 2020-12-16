@@ -3,6 +3,7 @@ members = ["aura", "aura-core", "aura-arch", "aura-common"]
 
 [patch.crates-io]
 alpm = { git = "https://github.com/Morganamilo/alpm.rs", rev = "c7f133dfe1b0893879ed0568cd9e26bf679a211e" }
+pbr = { git = "https://github.com/fosskers/pb", rev = "043337c20471f3934672ba2a4378f97ae5272e44" }
 
 [profile.release]
 lto = true
