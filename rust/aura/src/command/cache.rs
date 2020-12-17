@@ -1,5 +1,6 @@
 //! All functionality involving the `-C` command.
 
+use crate::download::download_with_progress;
 use crate::error::Error;
 use crate::{a, aln, aura, green, red, yellow};
 use alpm::Alpm;
@@ -224,8 +225,9 @@ pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Re
                 let url = format!("{}/{}", ms[0], tarball); // TODO dangerous
                 let mut target = path.to_path_buf();
                 target.push(tarball);
-                let _ =
-                    crate::download::download_with_progress(&url, &target, Some((pr.clone(), bar)));
+                if let Err(_) = download_with_progress(&url, &target, Some((pr.clone(), &bar))) {
+                    pr.lock().unwrap().cancel(bar);
+                }
             });
 
         green!(fll, "common-done");

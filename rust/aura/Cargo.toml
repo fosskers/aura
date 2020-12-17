@@ -30,7 +30,7 @@ webbrowser = "0.5"
 [dependencies.linya]
 version = "0.1"
 git = "https://github.com/fosskers/linya"
-rev = "6a28de0dbc641d7104ab4a7632a9fcb79f0762f1"
+rev = "6a5c4eea8b80fa65e8f5d132efe83a11d2a2cdb7"
 
 [features]
 git = ["alpm/git"]
