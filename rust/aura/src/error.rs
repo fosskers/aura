@@ -13,7 +13,7 @@ pub(crate) enum Error {
     /// An error occurred when reading the localizations upon startup.
     I18n(i18n_embed::I18nEmbedError),
     /// An error during logger initialization.
-    Log(simplelog::TermLogError),
+    Log(log::SetLoggerError),
     /// An error reading an environment variable.
     Env(std::env::VarError),
     /// An error parsing `pacman.conf`.
@@ -79,8 +79,8 @@ impl std::error::Error for Error {
     }
 }
 
-impl From<simplelog::TermLogError> for Error {
-    fn from(error: simplelog::TermLogError) -> Self {
+impl From<log::SetLoggerError> for Error {
+    fn from(error: log::SetLoggerError) -> Self {
         Error::Log(error)
     }
 }
