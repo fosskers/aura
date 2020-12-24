@@ -95,7 +95,7 @@ pub(crate) fn info(
 pub(crate) fn search(path: &Path, term: &str) -> Result<(), Error> {
     let matches = core::cache::search(path, term)?;
     for file in matches {
-        println!("{}", file.path().display());
+        println!("{}", file.display());
     }
     Ok(())
 }
@@ -114,9 +114,7 @@ pub(crate) fn clean(fll: FluentLanguageLoader, path: &Path, keep: usize) -> Resu
     crate::utils::prompt(&a!(msg))?;
 
     // Get all the tarball paths, sort and group them by name, and then remove them.
-    path.read_dir()?
-        .filter_map(|de| de.ok())
-        .filter_map(|de| core::cache::PkgPath::new(de.path()))
+    core::cache::package_paths(path)?
         .sorted_by(|p0, p1| p1.cmp(&p0)) // Forces a `collect` underneath.
         .group_by(|pp| pp.to_package().name.clone()) // TODO Naughty clone.
         .into_iter()
@@ -137,10 +135,7 @@ pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Re
     sudo::escalate_if_needed()?;
 
     // Every version of every package in the cache.
-    let groups: HashMap<String, Vec<String>> = path
-        .read_dir()?
-        .filter_map(|de| de.ok())
-        .filter_map(|de| core::cache::PkgPath::new(de.path()))
+    let groups: HashMap<String, Vec<String>> = core::cache::package_paths(path)?
         .map(|pp| {
             let p = core::common::Package::from(pp);
             (p.name, p.version)

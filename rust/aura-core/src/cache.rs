@@ -3,7 +3,7 @@
 use crate::common::Package;
 use std::cmp::Ordering;
 use std::ffi::OsString;
-use std::fs::{DirEntry, ReadDir};
+use std::fs::ReadDir;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
@@ -84,16 +84,34 @@ pub struct CacheMatches<'a> {
 }
 
 impl<'a> Iterator for CacheMatches<'a> {
-    type Item = DirEntry;
+    type Item = PathBuf;
 
     fn next(&mut self) -> Option<Self::Item> {
-        match self.read_dir.next() {
-            None => None,
-            Some(Err(_)) => self.next(),
-            Some(Ok(entry)) => match entry.path().to_str() {
-                Some(s) if s.contains(self.term) => Some(entry),
-                _ => self.next(),
-            },
+        match self.read_dir.next()? {
+            Err(_) => self.next(),
+            Ok(entry) => {
+                let path = entry.path();
+                match path.to_str() {
+                    Some(s) if s.contains(self.term) => Some(path),
+                    _ => self.next(),
+                }
+            }
+        }
+    }
+}
+
+/// An iterator of all legal package tarballs in the cache.
+pub struct PkgPaths {
+    read_dir: ReadDir,
+}
+
+impl Iterator for PkgPaths {
+    type Item = PkgPath;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.read_dir.next()? {
+            Err(_) => self.next(),
+            Ok(entry) => PkgPath::new(entry.path()).or_else(|| self.next()),
         }
     }
 }
@@ -124,10 +142,10 @@ pub fn search<'a>(cache: &Path, term: &'a str) -> Result<CacheMatches<'a>, std::
 /// Yield the [`CacheInfo`], if possible, of the given packages.
 pub fn info(cache: &Path, package: &str) -> Result<Option<CacheInfo>, std::io::Error> {
     let mut matches: Vec<_> = search(cache, package)?
-        .filter_map(|de| {
-            de.metadata()
+        .filter_map(|path| {
+            path.metadata()
                 .ok()
-                .and_then(|meta| PkgPath::new(de.path()).map(|pp| (pp, meta)))
+                .and_then(|meta| PkgPath::new(path).map(|pp| (pp, meta)))
         })
         .filter(|(pp, _)| pp.pkg.name == package)
         .collect();
@@ -166,6 +184,12 @@ pub fn size(path: &Path) -> Result<CacheSize, std::io::Error> {
         .map(|meta| meta.len())
         .fold((0, 0), |(ac, al), l| (ac + 1, al + l));
     Ok(CacheSize { files, bytes })
+}
+
+/// All valid [`PkgPath`]s in the given cache.
+pub fn package_paths(path: &Path) -> Result<PkgPaths, std::io::Error> {
+    let read_dir = path.read_dir()?;
+    Ok(PkgPaths { read_dir })
 }
 
 // TODO Provide a similar function for signature files.
