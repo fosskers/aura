@@ -33,6 +33,11 @@ impl PkgPath {
         new
     }
 
+    /// The internal `Path` of this validated tarball.
+    pub fn path(&self) -> &Path {
+        &self.path
+    }
+
     /// Pull a simple package definition from this tarball path.
     pub fn to_package(&self) -> &Package {
         &self.pkg

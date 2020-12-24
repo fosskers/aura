@@ -1,6 +1,7 @@
 //! A layer over the `alpm` library to aid with common tasks.
 
-use alpm::{Alpm, AlpmList, Db, IntoIter, Package, PackageReason};
+use alpm::{Alpm, AlpmList, Db, IntoIter, Package, PackageReason, SigLevel};
+use std::path::Path;
 
 /// The default filepath of the Pacman configuration.
 pub const DEFAULT_PAC_CONF: &str = "/etc/pacman.conf";
@@ -82,4 +83,12 @@ pub fn foreigns(alpm: &Alpm) -> Foreigns {
     let locals = alpm.localdb().pkgs().into_iter();
     let syncs = alpm.syncdbs();
     Foreigns { locals, syncs }
+}
+
+/// Does the given `Path` point to a valid tarball that can can loaded by ALPM?
+pub fn is_valid_package(alpm: &Alpm, path: &Path) -> bool {
+    match path.to_str() {
+        None => false,
+        Some(p) => path.exists() && alpm.pkg_load(p, true, SigLevel::USE_DEFAULT).is_ok(),
+    }
 }
