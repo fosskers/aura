@@ -590,7 +590,7 @@ pub(crate) struct Query {
     /// List packages not (optionally) required by any package (-tt to ignore optdepends) [filter].
     #[clap(long, short = 't', display_order = 1)]
     unrequired: bool,
-    /// List outdated pacakges [filter].
+    /// List outdated packages [filter].
     #[clap(long, short, display_order = 1)]
     upgrades: bool,
     /// Be verbose.

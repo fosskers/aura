@@ -219,13 +219,18 @@ pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Re
 
         foo.into_par_iter()
             .for_each_with(progress, |pr, (n, v, a, bytes, ms)| {
-                let b_msg = format!("{}-{}", n, v);
+                let b_msg = format!("{} {}", n, v.dimmed());
                 let bar = pr.lock().unwrap().bar(bytes as usize, b_msg);
                 let tarball = format!("{}-{}-{}.pkg.tar.zst", n, v, a);
-                let url = format!("{}/{}", ms[0], tarball); // TODO dangerous
-                let mut target = path.to_path_buf();
-                target.push(tarball);
-                if let Err(_) = download_with_progress(&url, &target, Some((pr.clone(), &bar))) {
+
+                let mut res = ms.into_iter().filter_map(|m| {
+                    let url = format!("{}/{}", m, tarball);
+                    let mut target = path.to_path_buf();
+                    target.push(&tarball);
+                    download_with_progress(&url, &target, Some((pr.clone(), &bar))).ok()
+                });
+
+                if let None = res.next() {
                     pr.lock().unwrap().cancel(bar);
                 }
             });
