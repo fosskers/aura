@@ -37,6 +37,8 @@ check-cache = Package Cache
 check-cache-unreadable = Unable to read cache path { $path }
 check-cache-tarballs = All tarballs valid?
 check-cache-tarballs-fix = Fix: You can remove invalid tarballs with { $command }
+check-cache-missing = Every installed package has a tarball?
+check-cache-missing-fix = Fix: You can download missing tarballs with { $command }
 
 # Common Fields
 common-yes = Yes

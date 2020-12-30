@@ -19,17 +19,14 @@ pub(crate) fn check(fll: &FluentLanguageLoader, alpm: &Alpm, cache_path: &Path) 
 
 fn cache(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) {
     aura!(fll, "check-cache");
+    packages_have_tarballs(fll, alpm, cache);
     valid_tarballs(fll, alpm, cache);
 }
 
 /// Is every tarball in the cache valid and loadable by ALPM?
 fn valid_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) {
     match aura_core::cache::package_paths(cache) {
-        Err(_) => {
-            let p = cache.to_str().unwrap();
-            let msg = fl!(fll, "check-cache-unreadable", path = p);
-            println!("  [{}] {}", "✕".red(), msg);
-        }
+        Err(_) => unreadable_cache(fll, cache),
         Ok(paths) => {
             // We short-circuit if even a single invalid tarball is found.
             // This keeps the operation fast.
@@ -38,7 +35,7 @@ fn valid_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) {
                 .next()
                 .is_some();
 
-            let symbol = if !is_bad { GOOD.green() } else { BAD.red() };
+            let symbol = if is_bad { BAD.red() } else { GOOD.green() };
             println!("  [{}] {}", symbol, fl!(fll, "check-cache-tarballs"));
 
             if is_bad {
@@ -51,4 +48,32 @@ fn valid_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) {
             }
         }
     }
+}
+
+/// Does every installed package have a tarball in the cache?
+fn packages_have_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) {
+    match aura_core::cache::missing_tarballs(alpm, cache) {
+        Err(_) => unreadable_cache(fll, cache),
+        Ok(mut pkgs) => {
+            let is_bad = pkgs.next().is_some();
+
+            let symbol = if is_bad { BAD.red() } else { GOOD.green() };
+            println!("  [{}] {}", symbol, fl!(fll, "check-cache-missing"));
+
+            if is_bad {
+                let msg = fl!(
+                    fll,
+                    "check-cache-missing-fix",
+                    command = "aura -Cy".bold().cyan().to_string()
+                );
+                println!("      └─ {}", msg);
+            }
+        }
+    }
+}
+
+fn unreadable_cache(fll: &FluentLanguageLoader, cache: &Path) {
+    let p = cache.to_str().unwrap();
+    let msg = fl!(fll, "check-cache-unreadable", path = p);
+    println!("  [{}] {}", "✕".red(), msg);
 }
