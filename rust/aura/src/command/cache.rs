@@ -23,9 +23,24 @@ const FIFTY_MB: i64 = 52_428_800;
 
 const FIVE_HUNDRED_MB: i64 = 524_288_000;
 
+/// Delete invalid tarballs from the cache.
+pub(crate) fn invalid(fll: FluentLanguageLoader, alpm: &Alpm, cache: &Path) -> Result<(), Error> {
+    sudo::escalate_if_needed()?;
+    aura!(fll, "cache-invalids");
+
+    aura_core::cache::package_paths(cache)?
+        .filter(|pp| !aura_arch::is_valid_package(alpm, pp.path()))
+        .for_each(|pp| {
+            let _ = pp.remove(); // TODO Better handling.
+        });
+
+    green!(fll, "common-done");
+    Ok(())
+}
+
 /// Print the contents of the package cache.
-pub(crate) fn list(path: &Path) -> Result<(), Error> {
-    for de in path.read_dir()?.filter_map(|de| de.ok()) {
+pub(crate) fn list(cache: &Path) -> Result<(), Error> {
+    for de in cache.read_dir()?.filter_map(|de| de.ok()) {
         println!("{}", de.path().display());
     }
 

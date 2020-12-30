@@ -20,6 +20,7 @@ cache-clean-keep = { $pkgs } of each package file will be kept. The rest will be
 cache-clean-freed = { $bytes } freed.
 
 cache-refresh-no-work = Package cache already synchronized.
+cache-invalids = Removing invalid package tarballs.
 
 # Orphans (-O)
 orphans-abandon = The following orphans and their dependencies will be removed:

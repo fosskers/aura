@@ -13,6 +13,7 @@
 #### Added
 
 - `-Cl` to print the contents of the package cache. Useful to pipe to other shell commands.
+- `-Ct` to remove invalid package tarballs from the cache.
 - `-Ci` to display data of a package's cache entries. In the case below, we see
   what versions are available to downgrade to, but also that the installed version
   is missing a tarball in the cache:

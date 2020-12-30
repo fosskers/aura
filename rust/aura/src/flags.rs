@@ -747,6 +747,10 @@ pub(crate) struct Cache {
     /// Download tarballs of installed packages that are missing from the cache.
     #[clap(group = "cache", short = 'y', long, display_order = 1)]
     pub(crate) refresh: bool,
+
+    /// Delete invalid tarballs from the cache.
+    #[clap(group = "cache", short = 't', long, display_order = 1)]
+    pub(crate) invalid: bool,
 }
 
 /// Open various webpages related to Aura.
