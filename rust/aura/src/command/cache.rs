@@ -204,14 +204,13 @@ pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Re
         // Syncable package values.
         let syncables: Vec<_> = ps
             .iter()
-            .filter_map(|p| match (p.db(), p.arch()) {
-                (Some(db), Some(arch)) => mirrors.get(db.name()).map(|ms| {
+            .filter_map(|p| match (p.db(), package_tarball(p)) {
+                (Some(db), Some(tarball)) => mirrors.get(db.name()).map(|ms| {
                     (
                         p.name(),
                         p.version().as_str(),
-                        arch,
                         p.download_size(),
-                        p.build_date(),
+                        tarball,
                         ms,
                     )
                 }),
@@ -221,13 +220,12 @@ pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Re
 
         let progress = Arc::new(Mutex::new(Progress::new()));
 
+        // Concurrently download every expected tarball.
         syncables
             .into_par_iter()
-            .for_each_with(progress, |pr, (n, v, a, bytes, date, ms)| {
+            .for_each_with(progress, |pr, (n, v, bytes, tarball, ms)| {
                 let b_msg = format!("{} {}", n, v.dimmed());
                 let bar = pr.lock().unwrap().bar(bytes as usize, b_msg);
-                let ext = if date < CMPR_SWITCH { "xz" } else { "zst" };
-                let tarball = format!("{}-{}-{}.pkg.tar.{}", n, v, a, ext);
 
                 let mut res = ms.into_iter().filter_map(|m| {
                     let url = format!("{}/{}", m, tarball);
@@ -246,6 +244,19 @@ pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Re
     }
 
     Ok(())
+}
+
+/// The form of a given `Package`'s tarball that we'd expect to find on a mirror.
+///
+/// May fail, since `Package`s are not guaranteed to have an architecture field.
+fn package_tarball(pkg: &alpm::Package) -> Option<String> {
+    let name = pkg.name();
+    let ver = pkg.version().as_str();
+    let arch = pkg.arch()?;
+    let date = pkg.build_date();
+    let ext = if date < CMPR_SWITCH { "xz" } else { "zst" };
+    let tarball = format!("{}-{}-{}.pkg.tar.{}", name, ver, arch, ext);
+    Some(tarball)
 }
 
 /// Colour a size string depending on the count of bytes.
