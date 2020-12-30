@@ -145,11 +145,11 @@ pub(crate) fn clean(fll: FluentLanguageLoader, path: &Path, keep: usize) -> Resu
     Ok(())
 }
 
-/// Download tarballs of installed packages that are missing from the cache.
-pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Result<(), Error> {
-    sudo::escalate_if_needed()?;
-
-    // Every version of every package in the cache.
+/// Installed packages that have no tarball in the cache.
+fn missing_tarballs<'a>(
+    alpm: &'a Alpm,
+    path: &Path,
+) -> Result<impl Iterator<Item = alpm::Package<'a>>, std::io::Error> {
     let groups: HashMap<String, Vec<String>> = core::cache::package_paths(path)?
         .map(|pp| {
             let p = core::common::Package::from(pp);
@@ -157,19 +157,27 @@ pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Re
         })
         .into_group_map();
 
-    // TODO Getting the packages from the sync database isn't quite right. It
-    // won't pull the versions of things currently installed, it'll pull
-    // whatever it thinks the newest is.
-    let ps: Vec<_> = arch::officials(alpm)
-        .filter(|p| {
-            let pv = p.version().as_str();
-            groups
-                .get(p.name())
-                .map(|vs| !vs.iter().any(|v| v == pv))
-                .unwrap_or(true)
-        })
-        .sorted_by(|a, b| a.name().cmp(b.name()))
-        .collect();
+    let missings = arch::officials(alpm).filter(move |p| {
+        let pv = p.version().as_str();
+        groups
+            .get(p.name())
+            .map(|vs| !vs.iter().any(|v| v == pv))
+            .unwrap_or(true)
+    });
+
+    Ok(missings)
+}
+
+/// Download tarballs of installed packages that are missing from the cache.
+pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Result<(), Error> {
+    sudo::escalate_if_needed()?;
+
+    // All installed packages that are missing a tarball in the cache.
+    let ps: Vec<alpm::Package> = {
+        let mut ps: Vec<_> = missing_tarballs(alpm, path)?.collect();
+        ps.sort_by(|a, b| a.name().cmp(b.name()));
+        ps
+    };
 
     if ps.is_empty() {
         green!(fll, "cache-refresh-no-work");
