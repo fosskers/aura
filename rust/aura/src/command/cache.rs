@@ -4,7 +4,6 @@ use crate::download::download_with_progress;
 use crate::error::Error;
 use crate::{a, aln, aura, green, red, yellow};
 use alpm::Alpm;
-use aura_arch as arch;
 use aura_core as core;
 use chrono::{DateTime, Local};
 use colored::*;
@@ -145,36 +144,13 @@ pub(crate) fn clean(fll: FluentLanguageLoader, path: &Path, keep: usize) -> Resu
     Ok(())
 }
 
-/// Installed packages that have no tarball in the cache.
-fn missing_tarballs<'a>(
-    alpm: &'a Alpm,
-    path: &Path,
-) -> Result<impl Iterator<Item = alpm::Package<'a>>, std::io::Error> {
-    let groups: HashMap<String, Vec<String>> = core::cache::package_paths(path)?
-        .map(|pp| {
-            let p = core::common::Package::from(pp);
-            (p.name, p.version)
-        })
-        .into_group_map();
-
-    let missings = arch::officials(alpm).filter(move |p| {
-        let pv = p.version().as_str();
-        groups
-            .get(p.name())
-            .map(|vs| !vs.iter().any(|v| v == pv))
-            .unwrap_or(true)
-    });
-
-    Ok(missings)
-}
-
 /// Download tarballs of installed packages that are missing from the cache.
 pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Result<(), Error> {
     sudo::escalate_if_needed()?;
 
     // All installed packages that are missing a tarball in the cache.
     let ps: Vec<alpm::Package> = {
-        let mut ps: Vec<_> = missing_tarballs(alpm, path)?.collect();
+        let mut ps: Vec<_> = core::cache::missing_tarballs(alpm, path)?.collect();
         ps.sort_by(|a, b| a.name().cmp(b.name()));
         ps
     };

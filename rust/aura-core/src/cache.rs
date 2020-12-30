@@ -1,11 +1,13 @@
 //! Cache manipulation internals.
 
 use crate::common::Package;
-use std::cmp::Ordering;
+use alpm::Alpm;
+use itertools::Itertools;
 use std::ffi::OsString;
 use std::fs::ReadDir;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
+use std::{cmp::Ordering, collections::HashMap};
 
 /// A validated path to a package tarball.
 #[derive(Debug, PartialEq, Eq)]
@@ -195,6 +197,29 @@ pub fn size(path: &Path) -> Result<CacheSize, std::io::Error> {
 pub fn package_paths(path: &Path) -> Result<PkgPaths, std::io::Error> {
     let read_dir = path.read_dir()?;
     Ok(PkgPaths { read_dir })
+}
+
+/// Installed packages that have no tarball in the cache.
+pub fn missing_tarballs<'a>(
+    alpm: &'a Alpm,
+    path: &Path,
+) -> Result<impl Iterator<Item = alpm::Package<'a>>, std::io::Error> {
+    let groups: HashMap<String, Vec<String>> = package_paths(path)?
+        .map(|pp| {
+            let p = Package::from(pp);
+            (p.name, p.version)
+        })
+        .into_group_map();
+
+    let missings = aura_arch::officials(alpm).filter(move |p| {
+        let pv = p.version().as_str();
+        groups
+            .get(p.name())
+            .map(|vs| !vs.iter().any(|v| v == pv))
+            .unwrap_or(true)
+    });
+
+    Ok(missings)
 }
 
 // TODO Provide a similar function for signature files.

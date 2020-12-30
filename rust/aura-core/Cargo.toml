@@ -5,6 +5,7 @@ authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2018"
 
 [dependencies]
-alpm = "1.1.5"
+alpm = "1.1.7"
+aura-arch = { path = "../aura-arch" }
 itertools = "0.10"
 petgraph = { version = "0.5", default-features = false }
