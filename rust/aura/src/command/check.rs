@@ -31,20 +31,23 @@ fn valid_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) {
             println!("  [{}] {}", "✕".red(), msg);
         }
         Ok(paths) => {
-            let bads: Vec<_> = paths
+            // We short-circuit if even a single invalid tarball is found.
+            // This keeps the operation fast.
+            let is_bad = paths
                 .filter(|pp| !aura_arch::is_valid_package(alpm, pp.path()))
-                .collect();
-            let symbol = if bads.is_empty() {
-                GOOD.green()
-            } else {
-                BAD.red()
-            };
+                .next()
+                .is_some();
 
-            let msg = fl!(fll, "check-cache-tarballs");
-            println!("  [{}] {}", symbol, msg);
+            let symbol = if !is_bad { GOOD.green() } else { BAD.red() };
+            println!("  [{}] {}", symbol, fl!(fll, "check-cache-tarballs"));
 
-            for bad in bads {
-                println!("      {}", bad.path().display());
+            if is_bad {
+                let msg = fl!(
+                    fll,
+                    "check-cache-tarballs-fix",
+                    command = "aura -Ct".bold().cyan().to_string()
+                );
+                println!("      └─ {}", msg);
             }
         }
     }

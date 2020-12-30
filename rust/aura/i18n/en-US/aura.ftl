@@ -36,6 +36,7 @@ check-start = Validating your system.
 check-cache = Package Cache
 check-cache-unreadable = Unable to read cache path { $path }
 check-cache-tarballs = All tarballs valid?
+check-cache-tarballs-fix = Fix: You can remove invalid tarballs with { $command }
 
 # Common Fields
 common-yes = Yes
