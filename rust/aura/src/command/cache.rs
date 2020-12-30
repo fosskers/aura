@@ -22,6 +22,9 @@ const FIFTY_MB: i64 = 52_428_800;
 
 const FIVE_HUNDRED_MB: i64 = 524_288_000;
 
+/// The date where Arch Linux switched compression schemes from XZ to ZSTD.
+const CMPR_SWITCH: i64 = 1_577_404_800;
+
 /// Delete invalid tarballs from the cache.
 pub(crate) fn invalid(fll: FluentLanguageLoader, alpm: &Alpm, cache: &Path) -> Result<(), Error> {
     sudo::escalate_if_needed()?;
@@ -199,23 +202,32 @@ pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Re
             .collect();
 
         // Syncable package values.
-        let foo: Vec<_> = ps
+        let syncables: Vec<_> = ps
             .iter()
             .filter_map(|p| match (p.db(), p.arch()) {
-                (Some(db), Some(arch)) => mirrors
-                    .get(db.name())
-                    .map(|ms| (p.name(), p.version().as_str(), arch, p.download_size(), ms)),
+                (Some(db), Some(arch)) => mirrors.get(db.name()).map(|ms| {
+                    (
+                        p.name(),
+                        p.version().as_str(),
+                        arch,
+                        p.download_size(),
+                        p.build_date(),
+                        ms,
+                    )
+                }),
                 _ => None,
             })
             .collect();
 
         let progress = Arc::new(Mutex::new(Progress::new()));
 
-        foo.into_par_iter()
-            .for_each_with(progress, |pr, (n, v, a, bytes, ms)| {
+        syncables
+            .into_par_iter()
+            .for_each_with(progress, |pr, (n, v, a, bytes, date, ms)| {
                 let b_msg = format!("{} {}", n, v.dimmed());
                 let bar = pr.lock().unwrap().bar(bytes as usize, b_msg);
-                let tarball = format!("{}-{}-{}.pkg.tar.zst", n, v, a);
+                let ext = if date < CMPR_SWITCH { "xz" } else { "zst" };
+                let tarball = format!("{}-{}-{}.pkg.tar.{}", n, v, a, ext);
 
                 let mut res = ms.into_iter().filter_map(|m| {
                     let url = format!("{}/{}", m, tarball);
@@ -224,6 +236,7 @@ pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Re
                     download_with_progress(&url, &target, Some((pr.clone(), &bar))).ok()
                 });
 
+                // If the download failed from every mirror, cancel the progress bar.
                 if let None = res.next() {
                     pr.lock().unwrap().cancel(bar);
                 }

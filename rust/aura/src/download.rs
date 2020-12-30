@@ -19,11 +19,7 @@ pub(crate) fn download_with_progress(
     target: &Path,
     bars: Option<(Arc<Mutex<Progress>>, &Bar)>,
 ) -> Result<(), Error> {
-    // Exit early if the given target already exists.
-    if target.exists() {
-        Err(Error::FileConflict)?;
-    }
-
+    // Overwrites the file if it already exists.
     let mut file = File::create(target)?;
     let mut handle = Easy::new();
     handle.url(url)?;

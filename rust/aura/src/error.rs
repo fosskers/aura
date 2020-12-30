@@ -28,8 +28,8 @@ pub(crate) enum Error {
     NoneExist,
     /// A non-zero exit code was returned from a call to Pacman.
     PacmanError,
-    /// A file IO target already exists.
-    FileConflict,
+    // /// A file IO target already exists.
+    // FileConflict,
     /// A silent, miscellaneous error.
     ///
     /// In theory any relevant error messages have already been localized and
@@ -52,7 +52,7 @@ impl std::fmt::Display for Error {
             Error::Rejected => write!(f, "The user said no."),
             Error::NoneExist => write!(f, "None of those packages exist."),
             Error::PacmanError => write!(f, "A shell call to Pacman gave a non-zero exit code."),
-            Error::FileConflict => write!(f, "The given file target already exists."),
+            // Error::FileConflict => write!(f, "The given file target already exists."),
             Error::Silent => write!(f, ""),
         }
     }
@@ -73,7 +73,7 @@ impl std::error::Error for Error {
             Error::Rejected => None,
             Error::NoneExist => None,
             Error::PacmanError => None,
-            Error::FileConflict => None,
+            // Error::FileConflict => None,
             Error::Silent => None,
         }
     }
