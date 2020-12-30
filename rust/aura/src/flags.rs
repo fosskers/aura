@@ -123,6 +123,8 @@ pub(crate) enum SubCmd {
     Open(Open),
     /// Output a dependency graph in DOT format.
     Deps(Deps),
+    /// Validate your system.
+    Check(Check),
 }
 
 /// Synchronize official packages.
@@ -782,3 +784,7 @@ pub(crate) struct Deps {
     /// Packages to focus on.
     pub(crate) packages: Vec<String>,
 }
+
+/// Validate your system.
+#[derive(Clap, Debug)]
+pub(crate) struct Check {}

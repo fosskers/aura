@@ -30,6 +30,12 @@ logs-first = First Install
 logs-upgrades = Upgrades
 logs-recent = Recent Actions
 
+# System Validation (check)
+check-start = Validating your system.
+check-cache = Package Cache
+check-cache-unreadable = Unable to read cache path { $path }
+check-cache-tarballs = All tarballs valid?
+
 # Common Fields
 common-yes = Yes
 common-no = No
