@@ -47,6 +47,8 @@ common-none = None
 common-name = Name
 common-done = Done.
 common-total = Total
+common-no-packages = No packages specified.
+common-no-work = Nothing to do.
 
 # Misc.
 proceed = Proceed?

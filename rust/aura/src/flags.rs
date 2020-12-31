@@ -751,6 +751,9 @@ pub(crate) struct Cache {
     /// Delete invalid tarballs from the cache.
     #[clap(group = "cache", short = 't', long, display_order = 1)]
     pub(crate) invalid: bool,
+
+    /// Packages to downgrade.
+    pub(crate) packages: Vec<String>,
 }
 
 /// Open various webpages related to Aura.
@@ -759,12 +762,15 @@ pub(crate) struct Open {
     /// Open the Aura Guide Book.
     #[clap(group = "open", long, short, display_order = 1)]
     pub(crate) docs: bool,
+
     /// Open Aura's Github repository.
     #[clap(group = "open", long, short, display_order = 1)]
     pub(crate) repo: bool,
+
     /// File a bug report for Aura.
     #[clap(group = "open", long, short, display_order = 1)]
     pub(crate) bug: bool,
+
     /// Open Aura's AUR page.
     #[clap(group = "open", long, short, display_order = 1)]
     pub(crate) aur: bool,

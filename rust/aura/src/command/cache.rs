@@ -4,7 +4,7 @@ use crate::download::download_with_progress;
 use crate::error::Error;
 use crate::{a, aln, aura, green, red, yellow};
 use alpm::Alpm;
-use aura_core as core;
+use aura_core::cache::{CacheSize, PkgPath};
 use chrono::{DateTime, Local};
 use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
@@ -25,8 +25,42 @@ const FIVE_HUNDRED_MB: i64 = 524_288_000;
 /// The date where Arch Linux switched compression schemes from XZ to ZSTD.
 const CMPR_SWITCH: i64 = 1_577_404_800;
 
+/// The given packages.
+pub(crate) fn downgrade(
+    fll: &FluentLanguageLoader,
+    alpm: &Alpm,
+    cache: &Path,
+    packages: Vec<String>,
+) -> Result<(), Error> {
+    // Exit early if the user passed no packages.
+    if packages.is_empty() {
+        red!(fll, "common-no-packages");
+        Err(Error::Silent)?;
+    }
+
+    let mut to_downgrade: Vec<String> = packages
+        .into_iter()
+        .filter_map(|p| {
+            //
+            None
+        })
+        .collect();
+
+    if to_downgrade.is_empty() {
+        red!(fll, "common-no-work");
+        Err(Error::Silent)?;
+    }
+
+    to_downgrade.push("-U".to_string());
+    to_downgrade.reverse();
+
+    crate::utils::pacman(to_downgrade)?;
+    green!(fll, "common-done");
+    Ok(())
+}
+
 /// Delete invalid tarballs from the cache.
-pub(crate) fn invalid(fll: FluentLanguageLoader, alpm: &Alpm, cache: &Path) -> Result<(), Error> {
+pub(crate) fn invalid(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) -> Result<(), Error> {
     sudo::escalate_if_needed()?;
     aura!(fll, "cache-invalids");
 
@@ -51,7 +85,7 @@ pub(crate) fn list(cache: &Path) -> Result<(), Error> {
 
 /// Print cache data for given packages.
 pub(crate) fn info(
-    fll: FluentLanguageLoader,
+    fll: &FluentLanguageLoader,
     alpm: &Alpm,
     path: &Path,
     packages: Vec<String>,
@@ -60,7 +94,7 @@ pub(crate) fn info(
 
     packages
         .iter()
-        .filter_map(|p| core::cache::info(path, p).ok())
+        .filter_map(|p| aura_core::cache::info(path, p).ok())
         .filter_map(|ci| ci)
         .for_each(|ci| {
             let name = fl!(fll, "common-name");
@@ -110,7 +144,7 @@ pub(crate) fn info(
 
 /// Print all package filepaths from the cache that match some search term.
 pub(crate) fn search(path: &Path, term: &str) -> Result<(), Error> {
-    let matches = core::cache::search(path, term)?;
+    let matches = aura_core::cache::search(path, term)?;
     for file in matches {
         println!("{}", file.display());
     }
@@ -118,10 +152,10 @@ pub(crate) fn search(path: &Path, term: &str) -> Result<(), Error> {
 }
 
 /// Delete all but `keep`-many old tarballs for each package in the cache.
-pub(crate) fn clean(fll: FluentLanguageLoader, path: &Path, keep: usize) -> Result<(), Error> {
+pub(crate) fn clean(fll: &FluentLanguageLoader, path: &Path, keep: usize) -> Result<(), Error> {
     sudo::escalate_if_needed()?;
 
-    let size_before = core::cache::size(path)?;
+    let size_before = aura_core::cache::size(path)?;
     let human = format!("{}", size_before.bytes.bytes());
     aura!(fll, "cache-size", size = human);
     yellow!(fll, "cache-clean-keep", pkgs = keep);
@@ -131,7 +165,7 @@ pub(crate) fn clean(fll: FluentLanguageLoader, path: &Path, keep: usize) -> Resu
     crate::utils::prompt(&a!(msg))?;
 
     // Get all the tarball paths, sort and group them by name, and then remove them.
-    core::cache::package_paths(path)?
+    aura_core::cache::package_paths(path)?
         .sorted_by(|p0, p1| p1.cmp(&p0)) // Forces a `collect` underneath.
         .group_by(|pp| pp.to_package().name.clone()) // TODO Naughty clone.
         .into_iter()
@@ -141,19 +175,19 @@ pub(crate) fn clean(fll: FluentLanguageLoader, path: &Path, keep: usize) -> Resu
             let _ = pp.remove(); // TODO Handle this error better?
         });
 
-    let size_after = core::cache::size(path)?;
+    let size_after = aura_core::cache::size(path)?;
     let freed = format!("{}", (size_before.bytes - size_after.bytes).bytes());
     green!(fll, "cache-clean-freed", bytes = freed);
     Ok(())
 }
 
 /// Download tarballs of installed packages that are missing from the cache.
-pub(crate) fn refresh(fll: FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Result<(), Error> {
+pub(crate) fn refresh(fll: &FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Result<(), Error> {
     sudo::escalate_if_needed()?;
 
     // All installed packages that are missing a tarball in the cache.
     let ps: Vec<alpm::Package> = {
-        let mut ps: Vec<_> = core::cache::missing_tarballs(alpm, path)?.collect();
+        let mut ps: Vec<_> = aura_core::cache::missing_tarballs(alpm, path)?.collect();
         ps.sort_by(|a, b| a.name().cmp(b.name()));
         ps
     };
@@ -271,7 +305,11 @@ fn colour_size(size: i64) -> ColoredString {
 }
 
 /// Backup the package cache to a given directory.
-pub(crate) fn backup(fll: FluentLanguageLoader, source: &Path, target: &Path) -> Result<(), Error> {
+pub(crate) fn backup(
+    fll: &FluentLanguageLoader,
+    source: &Path,
+    target: &Path,
+) -> Result<(), Error> {
     // The full, absolute path to copy files to.
     let full: PathBuf = if target.is_absolute() {
         target.to_path_buf()
@@ -289,7 +327,7 @@ pub(crate) fn backup(fll: FluentLanguageLoader, source: &Path, target: &Path) ->
     }
 
     // How big is the current cache?
-    let cache_size: core::cache::CacheSize = core::cache::size(source)?;
+    let cache_size: CacheSize = aura_core::cache::size(source)?;
     let size = format!("{}", cache_size.bytes.bytes());
     aura!(fll, "cache-size", size = size);
 

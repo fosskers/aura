@@ -65,16 +65,17 @@ fn main() -> Result<(), Error> {
         SubCmd::Sync(_) => pacman()?,
         // --- AUR Packages --- //
         SubCmd::Aur(_) => unimplemented!(),
+        // --- Package Sets --- //
         SubCmd::Backup(_) => unimplemented!(),
-        // --- The Package Cache --- //
-        SubCmd::Cache(c) if !c.info.is_empty() => cache::info(fll, &alpm, cachep, c.info)?,
+        // --- Cache Management --- //
+        SubCmd::Cache(c) if !c.info.is_empty() => cache::info(&fll, &alpm, cachep, c.info)?,
         SubCmd::Cache(c) if c.search.is_some() => cache::search(cachep, &c.search.unwrap())?,
-        SubCmd::Cache(c) if c.backup.is_some() => cache::backup(fll, cachep, &c.backup.unwrap())?,
-        SubCmd::Cache(c) if c.clean.is_some() => cache::clean(fll, cachep, c.clean.unwrap())?,
-        SubCmd::Cache(c) if c.invalid => cache::invalid(fll, &alpm, cachep)?,
+        SubCmd::Cache(c) if c.backup.is_some() => cache::backup(&fll, cachep, &c.backup.unwrap())?,
+        SubCmd::Cache(c) if c.clean.is_some() => cache::clean(&fll, cachep, c.clean.unwrap())?,
+        SubCmd::Cache(c) if c.invalid => cache::invalid(&fll, &alpm, cachep)?,
         SubCmd::Cache(c) if c.list => cache::list(cachep)?,
-        SubCmd::Cache(c) if c.refresh => cache::refresh(fll, &alpm, cachep)?,
-        SubCmd::Cache(_) => unimplemented!(),
+        SubCmd::Cache(c) if c.refresh => cache::refresh(&fll, &alpm, cachep)?,
+        SubCmd::Cache(c) => cache::downgrade(&fll, &alpm, cachep, c.packages)?,
         // --- Logs --- //
         SubCmd::Log(l) if l.search.is_some() => log::search(logp, l.search.unwrap())?,
         SubCmd::Log(l) if !l.info.is_empty() => log::info(fll, logp, l.info),
@@ -130,12 +131,7 @@ fn pacman() -> Result<(), Error> {
     }
 
     debug!("Passing to Pacman: {:?}", raws);
-
-    match Command::new("pacman").args(raws).status() {
-        Err(e) => Err(Error::IO(e)),
-        Ok(es) if es.success() => Ok(()),
-        Ok(_) => Err(Error::PacmanError),
-    }
+    utils::pacman(raws)
 }
 
 /// Fully initialize an ALPM handle.
