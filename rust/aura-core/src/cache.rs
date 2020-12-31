@@ -64,6 +64,12 @@ impl From<PkgPath> for Package {
     }
 }
 
+impl From<PkgPath> for PathBuf {
+    fn from(pp: PkgPath) -> Self {
+        pp.path
+    }
+}
+
 impl PartialOrd for PkgPath {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))

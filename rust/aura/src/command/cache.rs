@@ -13,9 +13,10 @@ use itertools::Itertools;
 use linya::Progress;
 use log::debug;
 use rayon::prelude::*;
-use std::path::PathBuf;
+use std::ffi::OsString;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
-use std::{collections::HashMap, path::Path};
+use std::{collections::HashMap, ffi::OsStr};
 use ubyte::ToByteUnit;
 
 const FIFTY_MB: i64 = 52_428_800;
@@ -38,12 +39,10 @@ pub(crate) fn downgrade(
         Err(Error::Silent)?;
     }
 
-    let mut to_downgrade: Vec<String> = packages
+    let mut to_downgrade: Vec<OsString> = packages
         .into_iter()
-        .filter_map(|p| {
-            //
-            None
-        })
+        .filter_map(|p| downgrade_one(fll, cache, &p).ok())
+        .map(|pp| PathBuf::from(pp).into_os_string())
         .collect();
 
     if to_downgrade.is_empty() {
@@ -51,12 +50,20 @@ pub(crate) fn downgrade(
         Err(Error::Silent)?;
     }
 
-    to_downgrade.push("-U".to_string());
+    to_downgrade.push(OsStr::new("-U").to_os_string());
     to_downgrade.reverse();
 
     crate::utils::pacman(to_downgrade)?;
     green!(fll, "common-done");
     Ok(())
+}
+
+fn downgrade_one(
+    fll: &FluentLanguageLoader,
+    cache: &Path,
+    package: &str,
+) -> Result<PkgPath, Error> {
+    todo!()
 }
 
 /// Delete invalid tarballs from the cache.

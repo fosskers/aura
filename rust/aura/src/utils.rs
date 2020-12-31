@@ -2,6 +2,7 @@
 
 use crate::error::Error;
 use rustyline::Editor;
+use std::ffi::OsStr;
 use std::process::Command;
 
 // TODO Localize the acceptance chars.
@@ -16,7 +17,11 @@ pub(crate) fn prompt(msg: &str) -> Result<(), Error> {
 }
 
 /// Make a shell call to `pacman`.
-pub(crate) fn pacman(args: Vec<String>) -> Result<(), Error> {
+pub(crate) fn pacman<I, S>(args: I) -> Result<(), Error>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+{
     match Command::new("pacman").args(args).status() {
         Err(e) => Err(Error::IO(e)),
         Ok(es) if es.success() => Ok(()),
