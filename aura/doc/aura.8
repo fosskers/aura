@@ -64,7 +64,7 @@ any package on the AUR, try the following:
 aura -Ap <package> | aura -P
 .RE
 .
-.SH AUR SYNC OPTIONS (\fI\-A\fR)
+.SH AUR SYNC OPTIONS (\fI\-A\fP)
 \fB\-a\fR, \-\-delmakedeps
 .RS 4
 Uninstalls build dependencies that are no longer required after installing the
@@ -209,7 +209,7 @@ Save the cloned sources of VCS packages (i.e. those that end in \fI*-git\fR, etc
 in the given location, instead of the default \fI/var/cache/aura/vcs/\fR.
 .RE
 .
-.SH GLOBAL PACKAGE STATE OPTIONS (\fI\-B\fR)
+.SH GLOBAL PACKAGE STATE OPTIONS (\fI\-B\fP)
 \fB\-c\fR, \-\-clean <states-to-retain>
 .RS 4
 Saves a given number of the most recently saved package states and removes the
@@ -228,7 +228,7 @@ the time.
 Show all saved package state filenames.
 .RE
 .
-.SH DOWNGRADE OPTIONS (\fI\-C\fR)
+.SH DOWNGRADE OPTIONS (\fI\-C\fP)
 \fB\-b\fR, \-\-backup\fR <path>
 .RS 4
 Backup the package cache to a given directory. The given directory must already
@@ -259,7 +259,7 @@ Search the package cache via a regex. Any package name that matches the regex
 will be output as\-is.
 .RE
 .
-.SH LOGFILE OPTIONS (\fI\-L\fR)
+.SH LOGFILE OPTIONS (\fI\-L\fP)
 \fB\-i\fR, \-\-info <package(s)>
 .RS 4
 Displays install / upgrade history for a given package. Under the `Recent
@@ -274,7 +274,7 @@ Search the pacman log file via a regex. Useful for singling out any and all
 actions performed on a package.
 .RE
 .
-.SH ORPHAN PACKAGE OPTIONS (\fI\-O\fR)
+.SH ORPHAN PACKAGE OPTIONS (\fI\-O\fP)
 \fB\-a\fR, \-\-adopt <package(s)>
 .RS 4
 Mark a package as being explicitly installed (i.e. it's not a dependency).
@@ -285,7 +285,7 @@ Mark a package as being explicitly installed (i.e. it's not a dependency).
 Uninstall all orphan packages.
 .RE
 .
-.SH ANALYSIS OPTIONS (\fI\-P\fR)
+.SH ANALYSIS OPTIONS (\fI\-P\fP)
 \fB\-f\fR, \-\-file <path>
 .RS 4
 Analyse a given PKGBUILD.
