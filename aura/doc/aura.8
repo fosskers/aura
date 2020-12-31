@@ -142,7 +142,7 @@ suppressed for a more silent install. Note that when this option isn't used,
 \fImakepkg\fR output is actually collected and printed if any errors occur.
 .RE
 .P
-\fB\-\-json <package(s)>
+\fB\-\-json\fP <package(s)>
 .RS 4
 Query the AUR RPC for package info as raw JSON. Good for debugging.
 .RE
@@ -203,7 +203,7 @@ avoid building annoying dependencies that aren't necessary for your special
 use-case.
 .RE
 .P
-\fB\-\-vcspath <path>\fR
+\fB\-\-vcspath\fP \fI<path>\fP
 .RS 4
 Save the cloned sources of VCS packages (i.e. those that end in \fI*-git\fR, etc.)
 in the given location, instead of the default \fI/var/cache/aura/vcs/\fR.
@@ -229,7 +229,7 @@ Show all saved package state filenames.
 .RE
 .
 .SH DOWNGRADE OPTIONS (\fI\-C\fP)
-\fB\-b\fR, \-\-backup\fR <path>
+\fB\-b\fR, \-\-backup <path>
 .RS 4
 Backup the package cache to a given directory. The given directory must already
 exist. During copying, progress will be shown. If the copy takes too long, you
@@ -248,7 +248,7 @@ would save the three most recent versions of each package file.
 Giving the number 0 as an argument is identical to \fI\-Scc\fR.
 .RE
 .P
-\fB\-\-notsaved
+\fB\-\-notsaved\fP
 .RS 4
 Remove only those package files which are not saved in a package record (a la \fI\-B\fR).
 .RE
