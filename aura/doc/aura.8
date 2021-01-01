@@ -1,17 +1,17 @@
 .\" Man page for `aura`
 .\" Written by Colin Woodbury <colin@fosskers.ca>
-
+.
 .TH aura 8 "2020 June" "Aura" "Aura Manual"
-
+.
 .\" Disable hyphenation.
 .nh
-
+.
 .SH NAME
 aura \- A package manager for Arch Linux and the AUR.
-
+.
 .SH SYNOPSIS
 \fIaura\fR <operation> [options] [package(s)]
-
+.
 .SH DESCRIPTION
 .P
 \fIaura\fR is a secure, multilingual package manager for Arch Linux written in
@@ -19,7 +19,7 @@ Haskell. It connects to both the official Arch repositories and to the Arch User
 Repositories (AUR), allowing easy control of all packages on an Arch system.
 Aura allows \fIall\fR pacman operations and provides \fInew\fR custom ones for
 dealing with AUR packages.
-
+.
 .SH OPERATIONS
 .P
 \fB\-A\fR, \-\-aursync [package(s)]
@@ -65,7 +65,7 @@ any package on the AUR, try the following:
 .RS 4
 aura -Ap <package> | aura -P
 .RE
-
+.
 .SH AUR SYNC OPTIONS (\fI\-A\fR)
 .P
 \fB\-a\fR, \-\-delmakedeps
@@ -211,7 +211,7 @@ use-case.
 Save the cloned sources of VCS packages (i.e. those that end in \fI*-git\fR, etc.)
 in the given location, instead of the default \fI/var/cache/aura/vcs/\fR.
 .RE
-
+.
 .SH GLOBAL PACKAGE STATE OPTIONS (\fI\-B\fR)
 .P
 \fB\-c\fR, \-\-clean <states-to-retain>
@@ -231,7 +231,7 @@ the time.
 .RS 4
 Show all saved package state filenames.
 .RE
-
+.
 .SH DOWNGRADE OPTIONS (\fI\-C\fR)
 .P
 \fB\-b\fR, \-\-backup\fR <path>
@@ -263,7 +263,7 @@ Remove only those package files which are not saved in a package record (a la \f
 Search the package cache via a regex. Any package name that matches the regex
 will be output as\-is.
 .RE
-
+.
 .SH LOGFILE OPTIONS (\fI\-L\fR)
 .P
 \fB\-i\fR, \-\-info <package(s)>
@@ -279,7 +279,7 @@ be printed.
 Search the pacman log file via a regex. Useful for singling out any and all
 actions performed on a package.
 .RE
-
+.
 .SH ORPHAN PACKAGE OPTIONS (\fI\-O\fR)
 .P
 \fB\-a\fR, \-\-adopt <package(s)>
@@ -291,6 +291,7 @@ Mark a package as being explicitly installed (i.e. it's not a dependency).
 .RS 4
 Uninstall all orphan packages.
 .RE
+.
 .SH ANALYSIS OPTIONS (\fI\-P\fR)
 .P
 \fB\-f\fR, \-\-file <path>
@@ -306,7 +307,7 @@ Analyse a PKGBUILD found in the specified directory.
 .RS 4
 Analyse the PKGBUILDs of all locally installed AUR packages.
 .RE
-
+.
 .SH PACMAN / AURA DUAL FUNCTIONALITY OPTIONS
 .P
 \-\-noconfirm
@@ -338,7 +339,7 @@ will attempt to colour text if the terminal allows it. Otherwise, you can pass
 If there are file conflicts during installation, overwrite conflicting files
 that match the given glob pattern.
 .RE
-
+.
 .SH EXPOSED MAKEPKG OPTIONS
 .P
 \-\-ignorearch
@@ -362,7 +363,7 @@ Skip package source integrity checks.
 .RS 4
 Skip all PGP checks.
 .RE
-
+.
 .SH LANGUAGE OPTIONS
 .P
 Aura is available in multiple languages. As options, they can be used with
@@ -402,7 +403,7 @@ characters. The available languages are, in option form:
 \-\-esperanto
 .P
 \-\-dutch, \-\-nederlands
-
+.
 .SH PRO TIPS
 .P
 1. If you build a package and then choose not to install it, the built package
@@ -426,22 +427,22 @@ Fish => function search
           aura -As $argv
         end
 .RE
-
+.
 .SH SEE ALSO
 .P
 \fBaura.conf(5)\fR, \fBpacman\fR(8), \fBpacman.conf\fR(5), \fBmakepkg\fR(8)
-
+.
 .SH BUGS
 .P
 It is not recommended to install non-AUR packages with pacman or aura. Aura will
 assume they are AUR packages during a \fI\-Au\fR and attempt to upgrade them. If
 a name collision occurs (that is, if there is a legitimate AUR package with the
 same name as the one you installed) previous installations could be overwritten.
-
+.
 .SH AUTHOR
 .P
 Colin Woodbury <colin@fosskers.ca>
-
+.
 .SH CONTRIBUTORS
 .P
 Chris Warrick
@@ -457,7 +458,7 @@ Jimmy Brisson
 Kyle Raftogianis
 .P
 Nicholas Clarke
-
+.
 .SH TRANSLATORS
 .P
 (   Polish   ) Chris Warrick and Michał Kurek
