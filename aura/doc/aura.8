@@ -3,6 +3,24 @@
 .
 .TH aura 8 "2021 January" "Aura" "Aura Manual"
 .
+.de SAMPLE      \" Indented example - on its own paragraph.
+.  P
+.  RS
+.  EX
+..
+.de ESAMPLE     \" End of Indented example.
+.  EE
+.  RE
+..
+.de RSAMPLE     \" Relative sample - even more indented example.
+.  RS
+.  SAMPLE
+..
+.de ERSAMPLE    \" End of Relative sample.
+.  ESAMPLE
+.  RE
+..
+.
 .SH NAME
 aura \- package manager utility and AUR helper
 .

@@ -3,16 +3,22 @@
 .
 .TH aura.conf 5 "2021 January" "Aura" "Aura Manual"
 .
-.de SAMPLE
-.br
-.RS
-.nf
-.nh
+.de SAMPLE      \" Indented example - on its own paragraph.
+.  P
+.  RS
+.  EX
 ..
-.de ESAMPLE
-.hy
-.fi
-.RE
+.de ESAMPLE     \" End of Indented example.
+.  EE
+.  RE
+..
+.de RSAMPLE     \" Relative sample - even more indented example.
+.  RS
+.  SAMPLE
+..
+.de ERSAMPLE    \" End of Relative sample.
+.  ESAMPLE
+.  RE
 ..
 .
 .SH NAME
