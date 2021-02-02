@@ -128,9 +128,9 @@ _aura_opts_sync_modifiers=(
 # options for passing to _arguments: options for --aursync command
 _aura_opts_aursync_actions=(
     '(-A --aursync)'{-A,--aursync}
-    {-p,--pkgbuild}'[Display an AUR package PKGBUILD]'
+    {-p,--pkgbuild}'[Display an AUR package's PKGBUILD]'
     {-s,--search}'[Search AUR package names and descriptions]'
-    {-w,--downloadonly}'[Download an AUR package source tarball]'
+    {-w,--downloadonly}'[Download an AUR package's source tarball]'
 )
 
 # options for passing to _arguments: options for --aursync command
