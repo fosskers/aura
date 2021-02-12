@@ -162,6 +162,7 @@ Full usage information can be found in Aura's man page.
 | `aura -C <package>` | Downgrade a package.                                                |
 | `aura -Cs <regex>`  | Search the package cache for files that match a regex.              |
 | `aura -Cc <n>`      | Delete all but the most recent `n` versions of each cached package. |
+| `aura -Cv`          | Delete all of the `/var/cache/aura/vcs` cache                       | 
 
 ### Searching the Pacman Log
 

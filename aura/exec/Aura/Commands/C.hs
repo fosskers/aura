@@ -1,6 +1,7 @@
 {-# LANGUAGE LambdaCase         #-}
 {-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE TypeApplications   #-}
+{-# LANGUAGE BangPatterns       #-}
 
 -- |
 -- Module    : Aura.Commands.C
@@ -9,16 +10,16 @@
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
 -- Handle all @-C@ flags - those which involve the package cache.
-
 module Aura.Commands.C
   ( downgradePackages
   , searchCache
   , backupCache
   , cleanCache
   , cleanNotSaved
-  ) where
+  , cleanDir) where
 
 import           Aura.Cache
+import           Aura.Build (vcsStore)
 import           Aura.Colour (red)
 import           Aura.Core
 import           Aura.IO
@@ -40,7 +41,6 @@ import qualified RIO.Set as S
 import qualified RIO.Text as T
 
 ---
-
 -- | Interactive. Gives the user a choice as to exactly what versions
 -- they want to downgrade to.
 downgradePackages :: NonEmpty PkgName -> RIO Env ()
@@ -193,3 +193,12 @@ groupByName :: [PackagePath] -> [[PackagePath]]
 groupByName pkgs = L.groupBy sameBaseName $ L.sort pkgs
     where sameBaseName a b = baseName a == baseName b
           baseName p = spName <$> simplepkg p
+
+-- | Delete all the files in the given path dir
+cleanDir :: RIO Env ()
+cleanDir = do
+  ss <- asks settings
+  let !vcsPath = fromMaybe vcsStore . vcsPathOf $ buildConfigOf ss
+  notify ss cleanCache_6
+  list <- listDirectory vcsPath
+  traverse_ removeDirectoryRecursive list
