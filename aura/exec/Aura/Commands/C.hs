@@ -16,7 +16,7 @@ module Aura.Commands.C
   , backupCache
   , cleanCache
   , cleanNotSaved
-  , cleanDir) where
+  , cleanDir ) where
 
 import           Aura.Cache
 import           Aura.Build (vcsStore)
@@ -39,6 +39,7 @@ import qualified RIO.Map as M
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
+import           RIO.FilePath
 
 ---
 -- | Interactive. Gives the user a choice as to exactly what versions
@@ -200,5 +201,4 @@ cleanDir = do
   ss <- asks settings
   let !vcsPath = fromMaybe vcsStore . vcsPathOf $ buildConfigOf ss
   notify ss cleanCache_6
-  list <- listDirectory vcsPath
-  traverse_ removeDirectoryRecursive list
+  listDirectory vcsPath >>= traverse_ (removeDirectoryRecursive . (</>) vcsPath)
