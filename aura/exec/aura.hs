@@ -138,6 +138,7 @@ execOpts ops = do
       Left (CacheClean n u)   -> sudo $ C.cleanCache n u
       Left CacheCleanNotSaved -> sudo C.cleanNotSaved
       Left (CacheBackup pth)  -> sudo $ C.backupCache pth
+      Left CacheCleanVCS      -> sudo C.cleanDir
     Right (Log o) -> case o of
       Nothing            -> L.viewLogFile
       Just (LogInfo ps)  -> L.logInfoOnPkg ps
