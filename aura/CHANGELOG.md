@@ -1,10 +1,20 @@
 # Aura Changelog
 
-## Unreleased
+## 3.2.3 (2021-02-26)
+
+Thanks to Cihan Alkan, Ratijas, and Evan Cameron for contributing to this release.
 
 #### Added
 
+- `-Cv` to clear the VCS cache (usually `/var/cache/aura/vcs/`). [#693]
 - Turkish translations thanks to Cihan Alkan. Teşekkür ederim!
+
+#### Changed
+
+- Man pages enhanced and reformatted. [#672]
+
+[#693]: https://github.com/fosskers/aura/pull/693
+[#672]: https://github.com/fosskers/aura/pull/672
 
 ## 3.2.2 (2020-10-29)
 
