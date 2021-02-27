@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.0.6 (2021-02-26)
+
+#### Fixed
+
+- Broken tests.
+
 ## 7.0.5 (2020-10-27)
 
 #### Added

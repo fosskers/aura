@@ -1,6 +1,6 @@
 cabal-version:      2.2
 name:               aur
-version:            7.0.5
+version:            7.0.6
 synopsis:           Access metadata from the Arch Linux User Repository.
 description:
   Access package information from Arch Linux's AUR via its RPC interface. The
