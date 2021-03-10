@@ -2,8 +2,7 @@
 members = ["aura", "aura-core", "aura-arch", "aura-common"]
 
 [patch.crates-io]
-alpm = { git = "https://github.com/Morganamilo/alpm.rs", rev = "c7f133dfe1b0893879ed0568cd9e26bf679a211e" }
-i18n-embed-fl = { git = "https://github.com/fosskers/cargo-i18n", rev = "1f26b5458c75a732fd5b0bd27f88672b2a04b046" }
+# i18n-embed-fl = { git = "https://github.com/fosskers/cargo-i18n", rev = "1f26b5458c75a732fd5b0bd27f88672b2a04b046" }
 
 [profile.release]
 lto = true
