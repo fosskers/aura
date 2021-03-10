@@ -1,13 +1,14 @@
 # Aura Changelog
 
-## Unreleased
+## 3.2.4 (2021-03-10)
 
 #### Fixed
 
-- A bug involving `pacman.conf` field parsing. [#697]
+- A bug involving `pacman.conf` field parsing. [#697] [#698]
 - Broken ZSH completions.
 
 [#697]: https://github.com/fosskers/aura/issues/697
+[#697]: https://github.com/fosskers/aura/issues/698
 
 ## 3.2.3 (2021-02-26)
 
