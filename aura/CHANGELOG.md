@@ -8,7 +8,7 @@
 - Broken ZSH completions.
 
 [#697]: https://github.com/fosskers/aura/issues/697
-[#697]: https://github.com/fosskers/aura/issues/698
+[#698]: https://github.com/fosskers/aura/issues/698
 
 ## 3.2.3 (2021-02-26)
 
