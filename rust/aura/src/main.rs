@@ -123,8 +123,7 @@ fn pacman() -> Result<(), Error> {
     if let Some(ix) = raws
         .iter()
         .enumerate()
-        // TODO Use `bool::then` once it soon stabilizes.
-        .find_map(|(i, v)| if v == "--log-level" { Some(i) } else { None })
+        .find_map(|(i, v)| (v == "--log-level").then(|| i))
     {
         raws.remove(ix); // --log-level
         raws.remove(ix); // Its argument.
