@@ -64,6 +64,7 @@ suite conf badRaw goodRaw = testGroup "Unit Tests"
         (r >>= M.lookup "GoodLine") @?= Just ["good"]
         (r >>= M.lookup "BadLine") @?= Just ["bad"]
         (r >>= M.lookup "OkLine") @?= Just ["ok"]
+        (r >>= M.lookup "ParallelDownloads") @?= Just ["5"]
     ]
   , testGroup "Aura.Languages"
     [ testCase "Language names are complete" $ do
