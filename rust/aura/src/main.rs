@@ -16,10 +16,9 @@ use clap::Clap;
 use command::*;
 use error::Error;
 use flags::{SubCmd, AURA_GLOBALS};
-use simplelog::Config;
-use simplelog::TermLogger;
-use simplelog::TerminalMode;
-use std::{collections::HashMap, path::Path};
+use simplelog::{Config, TermLogger, TerminalMode};
+use std::collections::HashMap;
+use std::path::{Path, PathBuf};
 
 fn main() -> Result<(), Error> {
     // Parse all CLI input. Exits immediately if invalid input is given.
@@ -39,6 +38,7 @@ fn main() -> Result<(), Error> {
     let pconf = pacmanconf::Config::new()?;
 
     // Establish common file paths.
+    let aurap: PathBuf = utils::aura_xdg_cache()?;
     let logp: &Path = args
         .logfile
         .as_deref()
@@ -49,6 +49,7 @@ fn main() -> Result<(), Error> {
         .as_deref()
         .unwrap_or_else(|| Path::new(pconf.cache_dir.first().unwrap()));
 
+    // A handle to ALPM.
     let root = args.root.unwrap_or_else(|| pconf.root_dir.clone());
     let dbpath = args.dbpath.unwrap_or_else(|| pconf.db_path.clone());
     let mut alpm = alpm(&pconf, root, dbpath)?;
