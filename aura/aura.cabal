@@ -1,6 +1,6 @@
 cabal-version:      2.2
 name:               aura
-version:            3.2.2
+version:            3.2.4
 synopsis:           A secure package manager for Arch Linux and the AUR.
 description:
   Aura is a package manager for Arch Linux. It connects to both the
@@ -126,5 +126,5 @@ test-suite aura-test
   ghc-options:    -threaded -with-rtsopts=-N
   build-depends:
     , aura
-    , tasty        >=0.11 && <1.4
+    , tasty        >=0.11 && <1.5
     , tasty-hunit  >=0.9  && <0.11

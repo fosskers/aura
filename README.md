@@ -4,14 +4,17 @@
 
 # The Aura Package Manager
 
-| Build                                                              | Release                                                                                      | Chat                                                                                        | Downloads                                                               | Languages                                                                                                         |
-|--------------------------------------------------------------------|----------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| ![img](https://github.com/fosskers/aura/workflows/Tests/badge.svg) | [![img](https://img.shields.io/hackage/v/aura.svg)](http://hackage.haskell.org/package/aura) | [![img](https://img.shields.io/gitter/room/aurapm/aura.svg)](https://gitter.im/aurapm/aura) | ![img](https://img.shields.io/github/downloads/fosskers/aura/total.svg) | :uk: :jp: :croatia: :sweden: :de: :es: :portugal: :fr: :ru: :it: :serbia: :norway: :indonesia: :cn: :netherlands: |
+| Build                                                              | Release                                                                                      | Downloads                                                               | Languages                                                                                                         |
+|--------------------------------------------------------------------|----------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
+| ![img](https://github.com/fosskers/aura/workflows/Tests/badge.svg) | [![img](https://img.shields.io/hackage/v/aura.svg)](http://hackage.haskell.org/package/aura) | ![img](https://img.shields.io/github/downloads/fosskers/aura/total.svg) | :uk: :jp: :croatia: :sweden: :de: :es: :portugal: :fr: :ru: :it: :serbia: :norway: :indonesia: :cn: :netherlands: |
 
 Welcome to the main repository for Aura, a secure, multilingual package manager for Arch Linux.
 
 Check out [The Aura Book](https://fosskers.github.io/aura/) for all knowledge
 and usage instructions!
+
+If Aura has made your life easier, please consider [buying me a
+coffee](https://www.buymeacoffee.com/fosskers) :coffee:.
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
@@ -162,6 +165,7 @@ Full usage information can be found in Aura's man page.
 | `aura -C <package>` | Downgrade a package.                                                |
 | `aura -Cs <regex>`  | Search the package cache for files that match a regex.              |
 | `aura -Cc <n>`      | Delete all but the most recent `n` versions of each cached package. |
+| `aura -Cv`          | Delete all of the `/var/cache/aura/vcs` cache                       |
 
 ### Searching the Pacman Log
 
@@ -233,7 +237,7 @@ Aura has been translated by these generous people:
 | Swedish    | Fredrik Haikarainen and Daniel Beecham          |
 | Turkish    | Cihan Alkan                                     |
 
-Aura's logo is thanks to the designer [Atra](https://github.com/estatra).
+Aura's logo is thanks to the designer [Cristiano Vitorino](https://github.com/cristianovitorino).
 
 # The `aur` Haskell Library
 

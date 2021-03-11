@@ -1,15 +1,6 @@
 # Aura Changelog
 
-## Unreleased
-
-(Rust Port)
-
-#### Changed
-
-- **Breaking:** The top-level command `--viewconf` is now called `conf`.
-- **Breaking:** The top-level command `--languages` is now invoked by `stats -l`
-  and also shows localization coverage for each language.
-- **Breaking:** `-L` now prints to `stdout`.
+## Unreleased (Rust Port)
 
 #### Added
 
@@ -47,11 +38,43 @@ This produces the following image:
   - `--groups (-g)`: All installed package groups.
   - `--heavy`: The Top 10 packages with the biggest installation footprint.
   - `--lang (-l)`: Available localizations and how complete they are.
-- Turkish translations thanks to Cihan Alkan. Teşekkür ederim!
+
+#### Changed
+
+- **Breaking:** The top-level command `--viewconf` is now called `conf`.
+- **Breaking:** The top-level command `--languages` is now invoked by `stats -l`
+  and also shows localization coverage for each language.
+- **Breaking:** `-L` now prints to `stdout`.
 
 #### Fixed
 
 - `-Cc` now deletes associated `.sig` files as well.
+
+## 3.2.4 (2021-03-10)
+
+#### Fixed
+
+- A bug involving `pacman.conf` field parsing. [#697] [#698]
+- Broken ZSH completions.
+
+[#697]: https://github.com/fosskers/aura/issues/697
+[#698]: https://github.com/fosskers/aura/issues/698
+
+## 3.2.3 (2021-02-26)
+
+Thanks to Cihan Alkan, Ratijas, and Evan Cameron for contributing to this release.
+
+#### Added
+
+- `-Cv` to clear the VCS cache (usually `/var/cache/aura/vcs/`). [#693]
+- Turkish translations thanks to Cihan Alkan. Teşekkür ederim!
+
+#### Changed
+
+- Man pages enhanced and reformatted. [#672]
+
+[#693]: https://github.com/fosskers/aura/pull/693
+[#672]: https://github.com/fosskers/aura/pull/672
 
 ## 3.2.2 (2020-10-29)
 

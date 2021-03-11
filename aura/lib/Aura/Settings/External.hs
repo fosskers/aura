@@ -106,8 +106,7 @@ single = L.lexeme garbage . void $ manyTill letterChar newline
 
 pair :: Parsec Void Text (Text, [Text])
 pair = L.lexeme garbage $ do
-  n <- takeWhile1P Nothing (/= ' ')
-  space
+  n <- T.stripEnd <$> takeWhile1P Nothing (/= '=')
   void $ char '='
   space
   rest <- T.words <$> takeWhile1P Nothing (/= '\n')

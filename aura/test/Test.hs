@@ -59,8 +59,12 @@ suite conf badRaw goodRaw = testGroup "Unit Tests"
   , testGroup "Aura.Pacman"
     [ testCase "Parsing pacman.conf" $ do
         let p = parse config "pacman.conf" conf
-            r = either (const Nothing) (\(Config c) -> Just c) p >>= M.lookup "HoldPkg"
-        r @?= Just ["pacman", "glibc"]
+            r = either (const Nothing) (\(Config c) -> Just c) p
+        (r >>= M.lookup "HoldPkg") @?= Just ["pacman", "glibc"]
+        (r >>= M.lookup "GoodLine") @?= Just ["good"]
+        (r >>= M.lookup "BadLine") @?= Just ["bad"]
+        (r >>= M.lookup "OkLine") @?= Just ["ok"]
+        (r >>= M.lookup "ParallelDownloads") @?= Just ["5"]
     ]
   , testGroup "Aura.Languages"
     [ testCase "Language names are complete" $ do
