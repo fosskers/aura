@@ -20,6 +20,8 @@ pub(crate) enum Error {
     PacConf(pacmanconf::Error),
     /// An error from `curl`.
     Curl(curl::Error),
+    /// An error from `chrono`.
+    Chrono(chrono::ParseError),
     /// A boxed dynamic error.
     Boxed(Box<dyn std::error::Error>),
     /// The said "no" at some prompt.
@@ -48,6 +50,7 @@ impl std::fmt::Display for Error {
             Error::Env(e) => write!(f, "{}", e),
             Error::PacConf(e) => write!(f, "{}", e),
             Error::Curl(e) => write!(f, "{}", e),
+            Error::Chrono(e) => write!(f, "{}", e),
             Error::Boxed(e) => write!(f, "{}", e),
             Error::Rejected => write!(f, "The user said no."),
             Error::NoneExist => write!(f, "None of those packages exist."),
@@ -69,6 +72,7 @@ impl std::error::Error for Error {
             Error::Env(e) => Some(e),
             Error::PacConf(e) => Some(e),
             Error::Curl(e) => Some(e),
+            Error::Chrono(e) => Some(e),
             Error::Boxed(_) => None, // TODO `Some` gives a warning.
             Error::Rejected => None,
             Error::NoneExist => None,
@@ -112,6 +116,12 @@ impl From<std::io::Error> for Error {
 impl From<rustyline::error::ReadlineError> for Error {
     fn from(error: rustyline::error::ReadlineError) -> Self {
         Error::RustyLine(error)
+    }
+}
+
+impl From<chrono::ParseError> for Error {
+    fn from(error: chrono::ParseError) -> Self {
+        Error::Chrono(error)
     }
 }
 

@@ -9,6 +9,7 @@
 - **Breaking:** The top-level command `--viewconf` is now called `conf`.
 - **Breaking:** The top-level command `--languages` is now invoked by `stats -l`
   and also shows localization coverage for each language.
+- **Breaking:** `-L` now prints to `stdout`.
 
 #### Added
 

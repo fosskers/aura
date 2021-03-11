@@ -78,7 +78,7 @@ fn main() -> Result<(), Error> {
         // --- Logs --- //
         SubCmd::Log(l) if l.search.is_some() => log::search(logp, l.search.unwrap())?,
         SubCmd::Log(l) if !l.info.is_empty() => log::info(fll, logp, l.info),
-        SubCmd::Log(_) => log::view(logp)?,
+        SubCmd::Log(l) => log::view(logp, l.before, l.after)?,
         // --- Orphan Packages --- //
         SubCmd::Orphans(o) if o.abandon => orphans::remove(&mut alpm, fll)?,
         SubCmd::Orphans(o) if !o.adopt.is_empty() => orphans::adopt(&alpm, fll, o.adopt)?,

@@ -2,6 +2,7 @@
 
 use std::path::PathBuf;
 
+use chrono::NaiveDate;
 use clap::{crate_version, AppSettings, Clap};
 use simplelog::LevelFilter;
 use unic_langid::{langid, LanguageIdentifier};
@@ -690,6 +691,14 @@ pub(crate) struct Log {
     /// Search the Pacman log for a matching string.
     #[clap(group = "log", long, short, value_name = "term", display_order = 1)]
     pub(crate) search: Option<String>,
+
+    /// Only display log entries from before the given date.
+    #[clap(long, short, value_name = "YYYY-MM-DD")]
+    pub(crate) before: Option<NaiveDate>,
+
+    /// Only display log entries from after the given date.
+    #[clap(long, short, value_name = "YYYY-MM-DD")]
+    pub(crate) after: Option<NaiveDate>,
 }
 
 /// View statistics about your machine or Aura itself.
