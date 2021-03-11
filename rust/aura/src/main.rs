@@ -19,7 +19,6 @@ use flags::{SubCmd, AURA_GLOBALS};
 use simplelog::Config;
 use simplelog::TermLogger;
 use simplelog::TerminalMode;
-use std::process::Command;
 use std::{collections::HashMap, path::Path};
 
 fn main() -> Result<(), Error> {
@@ -75,7 +74,7 @@ fn main() -> Result<(), Error> {
         SubCmd::Cache(c) if c.invalid => cache::invalid(&fll, &alpm, cachep)?,
         SubCmd::Cache(c) if c.list => cache::list(cachep)?,
         SubCmd::Cache(c) if c.refresh => cache::refresh(&fll, &alpm, cachep)?,
-        SubCmd::Cache(c) => cache::downgrade(&fll, &alpm, cachep, c.packages)?,
+        SubCmd::Cache(c) => cache::downgrade(&fll, cachep, c.packages)?,
         // --- Logs --- //
         SubCmd::Log(l) if l.search.is_some() => log::search(logp, l.search.unwrap())?,
         SubCmd::Log(l) if !l.info.is_empty() => log::info(fll, logp, l.info),

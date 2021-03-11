@@ -26,10 +26,9 @@ const FIVE_HUNDRED_MB: i64 = 524_288_000;
 /// The date where Arch Linux switched compression schemes from XZ to ZSTD.
 const CMPR_SWITCH: i64 = 1_577_404_800;
 
-/// The given packages.
+/// Downgrade the given packages.
 pub(crate) fn downgrade(
     fll: &FluentLanguageLoader,
-    alpm: &Alpm,
     cache: &Path,
     packages: Vec<String>,
 ) -> Result<(), Error> {
@@ -39,9 +38,21 @@ pub(crate) fn downgrade(
         Err(Error::Silent)?;
     }
 
+    sudo::escalate_if_needed()?;
+
+    // --- All tarball paths for packages the user asked for --- //
+    let mut tarballs: HashMap<&str, Vec<PkgPath>> = HashMap::new();
+    for pp in aura_core::cache::package_paths(cache)? {
+        if let Some(p) = packages.iter().find(|p| p == &&pp.to_package().name) {
+            let paths = tarballs.entry(p).or_insert(Vec::new());
+            paths.push(pp);
+        }
+    }
+
     let mut to_downgrade: Vec<OsString> = packages
-        .into_iter()
-        .filter_map(|p| downgrade_one(fll, cache, &p).ok())
+        .iter()
+        .filter_map(|p| tarballs.remove(p.as_str()).map(|pps| (p, pps)))
+        .filter_map(|(p, pps)| downgrade_one(fll, &p, pps).ok())
         .map(|pp| PathBuf::from(pp).into_os_string())
         .collect();
 
@@ -60,10 +71,20 @@ pub(crate) fn downgrade(
 
 fn downgrade_one(
     fll: &FluentLanguageLoader,
-    cache: &Path,
     package: &str,
+    mut tarballs: Vec<PkgPath>,
 ) -> Result<PkgPath, Error> {
-    todo!()
+    tarballs.sort_by(|a, b| b.to_package().cmp(a.to_package()));
+
+    aura!(fll, "cache-downgrade-which", pkg = package);
+
+    for (i, pp) in tarballs.iter().enumerate() {
+        println!("  {}) {}", i, pp.to_package().version);
+    }
+
+    let index = crate::utils::select(">>> ", tarballs.len() - 1)?;
+
+    Ok(tarballs.remove(index))
 }
 
 /// Delete invalid tarballs from the cache.

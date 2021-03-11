@@ -19,6 +19,9 @@ cache-info-avail = Available Versions
 cache-clean-keep = { $pkgs } of each package file will be kept. The rest will be deleted.
 cache-clean-freed = { $bytes } freed.
 
+# getDowngradeChoice_1
+cache-downgrade-which = What version of { $pkg } do you want?
+
 cache-refresh-no-work = Package cache already synchronized.
 cache-invalids = Removing invalid package tarballs.
 
