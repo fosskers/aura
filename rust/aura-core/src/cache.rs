@@ -3,11 +3,12 @@
 use crate::common::Package;
 use alpm::Alpm;
 use itertools::Itertools;
+use std::cmp::Ordering;
+use std::collections::{HashMap, HashSet};
 use std::ffi::OsString;
 use std::fs::ReadDir;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
-use std::{cmp::Ordering, collections::HashMap};
 
 /// A validated path to a package tarball.
 #[derive(Debug, PartialEq, Eq)]
@@ -243,4 +244,17 @@ pub fn is_package(path: &Path) -> bool {
         None => false,
         Some(s) => s.ends_with(".pkg.tar.zst") || s.ends_with(".pkg.tar.xz"),
     }
+}
+
+/// Every version of every package available in the cache.
+pub fn all_versions(cache: &Path) -> Result<HashMap<String, HashSet<String>>, std::io::Error> {
+    let mut map = HashMap::new();
+
+    for pp in package_paths(cache)? {
+        let pkg = Package::from(pp);
+        let set = map.entry(pkg.name).or_insert(HashSet::new());
+        set.insert(pkg.version);
+    }
+
+    Ok(map)
 }
