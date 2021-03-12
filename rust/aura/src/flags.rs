@@ -725,7 +725,19 @@ pub(crate) struct Aur {}
 /// Save and restore the global package state.
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'B', long_flag = "backup")]
-pub(crate) struct Backup {}
+pub(crate) struct Backup {
+    /// Show all saved package snapshot filenames.
+    #[clap(group = "backup", long, short, display_order = 1)]
+    pub(crate) list: bool,
+
+    /// Remove all snapshots without matching tarballs in the cache.
+    #[clap(group = "backup", long, short, display_order = 1)]
+    pub(crate) clean: bool,
+
+    /// Restore to a previous package snapshot.
+    #[clap(group = "backup", long, short, display_order = 1)]
+    pub(crate) restore: bool,
+}
 
 /// Manage the package cache.
 #[derive(Clap, Debug)]

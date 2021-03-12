@@ -11,10 +11,45 @@ const GOOD: &str = "✓";
 const BAD: &str = "✕";
 
 /// Validate the system.
-pub(crate) fn check(fll: &FluentLanguageLoader, alpm: &Alpm, cache_path: &Path) {
+pub(crate) fn check(
+    fll: &FluentLanguageLoader,
+    alpm: &Alpm,
+    cache_path: &Path,
+    snapshot_path: &Path,
+) {
     aura!(fll, "check-start");
+    snapshots(fll, snapshot_path, cache_path);
     cache(fll, alpm, cache_path);
     green!(fll, "common-done");
+}
+
+fn snapshots(fll: &FluentLanguageLoader, s_path: &Path, t_path: &Path) {
+    aura!(fll, "check-snapshots");
+    usable_snapshots(fll, s_path, t_path);
+}
+
+fn usable_snapshots(fll: &FluentLanguageLoader, s_path: &Path, t_path: &Path) {
+    match aura_core::snapshot::snapshots(s_path) {
+        Err(_) => unreadable_snapshots(fll, s_path),
+        Ok(mut ss) => match aura_core::cache::all_versions(t_path) {
+            Err(_) => unreadable_cache(fll, t_path),
+            Ok(vs) => {
+                let good = ss.all(|s| s.usable(&vs));
+
+                let symbol = if good { GOOD.green() } else { BAD.red() };
+                println!("  [{}] {}", symbol, fl!(fll, "check-snapshot-usable"));
+
+                if !good {
+                    let msg = fl!(
+                        fll,
+                        "check-snapshot-usable-fix",
+                        command = "aura -Bc".bold().cyan().to_string()
+                    );
+                    println!("      └─ {}", msg);
+                }
+            }
+        },
+    }
 }
 
 fn cache(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) {
@@ -75,5 +110,11 @@ fn packages_have_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path)
 fn unreadable_cache(fll: &FluentLanguageLoader, cache: &Path) {
     let p = cache.to_str().unwrap();
     let msg = fl!(fll, "check-cache-unreadable", path = p);
+    println!("  [{}] {}", "✕".red(), msg);
+}
+
+fn unreadable_snapshots(fll: &FluentLanguageLoader, path: &Path) {
+    let p = path.to_str().unwrap();
+    let msg = fl!(fll, "check-snapshots-unreadable", path = p);
     println!("  [{}] {}", "✕".red(), msg);
 }

@@ -36,7 +36,11 @@ logs-recent = Recent Actions
 
 # System Validation (check)
 check-start = Validating your system.
-check-cache = Package Cache
+check-snapshots = Package Snapshots
+check-snapshots-unreadable = Unable to read snapshot path { $path }
+check-snapshot-usable = All snapshots have corresponding tarballs?
+check-snapshot-usable-fix = Fix: You can remove old/unusable snapshots with { $command }
+check-cache = Package Tarball Cache
 check-cache-unreadable = Unable to read cache path { $path }
 check-cache-tarballs = All tarballs valid?
 check-cache-tarballs-fix = Fix: You can remove invalid tarballs with { $command }

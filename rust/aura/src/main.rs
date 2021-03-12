@@ -66,7 +66,7 @@ fn main() -> Result<(), Error> {
         // --- AUR Packages --- //
         SubCmd::Aur(_) => unimplemented!(),
         // --- Package Sets --- //
-        SubCmd::Backup(_) => unimplemented!(),
+        SubCmd::Backup(_) => snapshot::save(&alpm)?,
         // --- Cache Management --- //
         SubCmd::Cache(c) if !c.info.is_empty() => cache::info(&fll, &alpm, cachep, c.info)?,
         SubCmd::Cache(c) if c.search.is_some() => cache::search(cachep, &c.search.unwrap())?,
@@ -106,7 +106,10 @@ fn main() -> Result<(), Error> {
         SubCmd::Deps(d) if d.reverse => deps::reverse(&alpm, d.limit, d.optional, d.packages)?,
         SubCmd::Deps(d) => deps::graph(&alpm, d.limit, d.optional, d.packages)?,
         // --- System Validation --- //
-        SubCmd::Check(_) => check::check(&fll, &alpm, cachep),
+        SubCmd::Check(_) => {
+            let snapshot_path = snapshot::snapshot_dir()?;
+            check::check(&fll, &alpm, cachep, &snapshot_path);
+        }
     }
 
     Ok(())
