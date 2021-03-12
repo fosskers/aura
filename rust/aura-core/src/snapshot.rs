@@ -35,12 +35,31 @@ impl Iterator for Snapshots {
 /// should never be considered for deletion.
 #[derive(Serialize, Deserialize)]
 pub struct Snapshot {
-    time: DateTime<Local>,
+    /// The local date and time of when this snapshot was taken.
+    pub time: DateTime<Local>,
     pinned: bool,
     packages: HashMap<String, String>,
 }
 
 impl Snapshot {
+    /// Given a handle to ALPM, take a snapshot of all currently installed
+    /// packages and their versions.
+    pub fn from_alpm(alpm: &Alpm) -> Snapshot {
+        let time = Local::now();
+        let packages = alpm
+            .localdb()
+            .pkgs()
+            .iter()
+            .map(|p| (p.name().to_owned(), p.version().as_str().to_owned()))
+            .collect();
+
+        Snapshot {
+            time,
+            pinned: false,
+            packages,
+        }
+    }
+
     /// Does this `Snapshot` match what is currently installed?
     pub fn current(&self, alpm: &Alpm) -> bool {
         alpm.localdb()

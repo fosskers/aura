@@ -22,6 +22,8 @@ pub(crate) enum Error {
     Curl(curl::Error),
     /// An error from `chrono`.
     Chrono(chrono::ParseError),
+    /// A JSON (de)serialization error.
+    JSON(serde_json::Error),
     /// A boxed dynamic error.
     Boxed(Box<dyn std::error::Error>),
     /// The said "no" at some prompt.
@@ -51,6 +53,7 @@ impl std::fmt::Display for Error {
             Error::PacConf(e) => write!(f, "{}", e),
             Error::Curl(e) => write!(f, "{}", e),
             Error::Chrono(e) => write!(f, "{}", e),
+            Error::JSON(e) => write!(f, "{}", e),
             Error::Boxed(e) => write!(f, "{}", e),
             Error::Rejected => write!(f, "The user said no."),
             Error::NoneExist => write!(f, "None of those packages exist."),
@@ -73,6 +76,7 @@ impl std::error::Error for Error {
             Error::PacConf(e) => Some(e),
             Error::Curl(e) => Some(e),
             Error::Chrono(e) => Some(e),
+            Error::JSON(e) => Some(e),
             Error::Boxed(_) => None, // TODO `Some` gives a warning.
             Error::Rejected => None,
             Error::NoneExist => None,
@@ -140,5 +144,11 @@ impl From<Box<dyn std::error::Error>> for Error {
 impl From<curl::Error> for Error {
     fn from(error: curl::Error) -> Self {
         Error::Curl(error)
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(error: serde_json::Error) -> Self {
+        Error::JSON(error)
     }
 }

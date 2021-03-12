@@ -1,5 +1,9 @@
 language-name = English
 
+# Snapshots (-B)
+# saveState_1
+snapshot-saved = Saved package state.
+
 # Cache (-C)
 cache-size = Current cache size: { $size }
 
