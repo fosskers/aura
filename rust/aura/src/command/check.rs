@@ -5,6 +5,7 @@ use alpm::Alpm;
 use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
+use itertools::Itertools;
 use std::path::Path;
 
 const GOOD: &str = "✓";
@@ -18,10 +19,16 @@ pub(crate) fn check(
     snapshot_path: &Path,
 ) {
     aura!(fll, "check-start");
+    // directories(fll, snapshot_path);
     snapshots(fll, snapshot_path, cache_path);
     cache(fll, alpm, cache_path);
     green!(fll, "common-done");
 }
+
+// fn directories(fll: &FluentLanguageLoader, s_path: &Path) {
+//     aura!(fll, "check-directories");
+//     directory_existance(fll, s_path);
+// }
 
 fn snapshots(fll: &FluentLanguageLoader, s_path: &Path, t_path: &Path) {
     aura!(fll, "check-snapshots");
@@ -31,13 +38,20 @@ fn snapshots(fll: &FluentLanguageLoader, s_path: &Path, t_path: &Path) {
 fn usable_snapshots(fll: &FluentLanguageLoader, s_path: &Path, t_path: &Path) {
     match aura_core::snapshot::snapshots(s_path) {
         Err(_) => unreadable_snapshots(fll, s_path),
-        Ok(mut ss) => match aura_core::cache::all_versions(t_path) {
+        Ok(ss) => match aura_core::cache::all_versions(t_path) {
             Err(_) => unreadable_cache(fll, t_path),
             Ok(vs) => {
-                let good = ss.all(|s| s.usable(&vs));
+                let (goods, bads): (Vec<_>, Vec<_>) = ss.partition(|s| s.usable(&vs));
+                let good = bads.is_empty();
 
                 let symbol = if good { GOOD.green() } else { BAD.red() };
-                println!("  [{}] {}", symbol, fl!(fll, "check-snapshot-usable"));
+                println!(
+                    "  [{}] {} ({}/{})",
+                    symbol,
+                    fl!(fll, "check-snapshot-usable"),
+                    goods.len(),
+                    goods.len() + bads.len()
+                );
 
                 if !good {
                     let cmd = "aura -Bc".bold().cyan().to_string();
