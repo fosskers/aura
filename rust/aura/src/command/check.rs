@@ -40,11 +40,8 @@ fn usable_snapshots(fll: &FluentLanguageLoader, s_path: &Path, t_path: &Path) {
                 println!("  [{}] {}", symbol, fl!(fll, "check-snapshot-usable"));
 
                 if !good {
-                    let msg = fl!(
-                        fll,
-                        "check-snapshot-usable-fix",
-                        command = "aura -Bc".bold().cyan().to_string()
-                    );
+                    let cmd = "aura -Bc".bold().cyan().to_string();
+                    let msg = fl!(fll, "check-snapshot-usable-fix", command = cmd);
                     println!("      └─ {}", msg);
                 }
             }
@@ -62,23 +59,15 @@ fn cache(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) {
 fn valid_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) {
     match aura_core::cache::package_paths(cache) {
         Err(_) => unreadable_cache(fll, cache),
-        Ok(paths) => {
-            // We short-circuit if even a single invalid tarball is found.
-            // This keeps the operation fast.
-            let is_bad = paths
-                .filter(|pp| !aura_arch::is_valid_package(alpm, pp.path()))
-                .next()
-                .is_some();
+        Ok(mut paths) => {
+            let good = paths.all(|pp| aura_arch::is_valid_package(alpm, pp.path()));
 
-            let symbol = if is_bad { BAD.red() } else { GOOD.green() };
+            let symbol = if good { GOOD.green() } else { BAD.red() };
             println!("  [{}] {}", symbol, fl!(fll, "check-cache-tarballs"));
 
-            if is_bad {
-                let msg = fl!(
-                    fll,
-                    "check-cache-tarballs-fix",
-                    command = "aura -Ct".bold().cyan().to_string()
-                );
+            if !good {
+                let cmd = "aura -Ct".bold().cyan().to_string();
+                let msg = fl!(fll, "check-cache-tarballs-fix", command = cmd);
                 println!("      └─ {}", msg);
             }
         }
@@ -96,11 +85,8 @@ fn packages_have_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path)
             println!("  [{}] {}", symbol, fl!(fll, "check-cache-missing"));
 
             if is_bad {
-                let msg = fl!(
-                    fll,
-                    "check-cache-missing-fix",
-                    command = "aura -Cy".bold().cyan().to_string()
-                );
+                let cmd = "aura -Cy".bold().cyan().to_string();
+                let msg = fl!(fll, "check-cache-missing-fix", command = cmd);
                 println!("      └─ {}", msg);
             }
         }
