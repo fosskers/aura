@@ -76,7 +76,8 @@ fn downgrade_one(
 ) -> Result<PkgPath, Error> {
     tarballs.sort_by(|a, b| b.to_package().cmp(a.to_package()));
 
-    aura!(fll, "cache-downgrade-which", pkg = package);
+    let pkg = package.bold().cyan().to_string();
+    aura!(fll, "cache-downgrade-which", pkg = pkg);
 
     for (i, pp) in tarballs.iter().enumerate() {
         println!("  {}) {}", i, pp.to_package().version);
