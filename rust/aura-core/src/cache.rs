@@ -2,7 +2,6 @@
 
 use crate::common::Package;
 use alpm::Alpm;
-use itertools::Itertools;
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::ffi::OsString;
@@ -206,23 +205,36 @@ pub fn package_paths(path: &Path) -> Result<PkgPaths, std::io::Error> {
     Ok(PkgPaths { read_dir })
 }
 
-/// Installed packages that have no tarball in the cache.
-pub fn missing_tarballs<'a>(
+/// Installed official packages that have no tarball in the cache.
+pub fn officials_missing_tarballs<'a>(
     alpm: &'a Alpm,
     path: &Path,
 ) -> Result<impl Iterator<Item = alpm::Package<'a>>, std::io::Error> {
-    let groups: HashMap<String, Vec<String>> = package_paths(path)?
-        .map(|pp| {
-            let p = Package::from(pp);
-            (p.name, p.version)
-        })
-        .into_group_map();
+    let groups = all_versions(path)?;
 
     let missings = aura_arch::officials(alpm).filter(move |p| {
         let pv = p.version().as_str();
         groups
             .get(p.name())
-            .map(|vs| !vs.iter().any(|v| v == pv))
+            .map(|vs| !vs.contains(pv))
+            .unwrap_or(true)
+    });
+
+    Ok(missings)
+}
+
+/// Installed packages that have no tarball in the cache.
+pub fn missing_tarballs<'a>(
+    alpm: &'a Alpm,
+    path: &Path,
+) -> Result<impl Iterator<Item = alpm::Package<'a>>, std::io::Error> {
+    let groups = all_versions(path)?;
+
+    let missings = alpm.localdb().pkgs().into_iter().filter(move |p| {
+        let pv = p.version().as_str();
+        groups
+            .get(p.name())
+            .map(|vs| !vs.contains(pv))
             .unwrap_or(true)
     });
 

@@ -5,7 +5,6 @@ use alpm::Alpm;
 use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
-use itertools::Itertools;
 use std::path::Path;
 
 const GOOD: &str = "✓";

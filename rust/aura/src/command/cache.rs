@@ -216,7 +216,7 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader, alpm: &Alpm, path: &Path) -> R
 
     // All installed packages that are missing a tarball in the cache.
     let ps: Vec<alpm::Package> = {
-        let mut ps: Vec<_> = aura_core::cache::missing_tarballs(alpm, path)?.collect();
+        let mut ps: Vec<_> = aura_core::cache::officials_missing_tarballs(alpm, path)?.collect();
         ps.sort_by(|a, b| a.name().cmp(b.name()));
         ps
     };
