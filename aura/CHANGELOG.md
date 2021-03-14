@@ -6,6 +6,7 @@
 
 - `-Cl` to print the contents of the package cache. Useful to pipe to other shell commands.
 - `-Ct` to remove invalid package tarballs from the cache.
+- `-Cm` to display all installed packages that are missing tarballs in the cache.
 - `-Cy` to download missing tarballs for installed packages.
 - `-Ci` to display data of a package's cache entries. In the case below, we see
   what versions are available to downgrade to, but also that the installed version
@@ -45,6 +46,9 @@ This produces the following image:
 - **Breaking:** The top-level command `--languages` is now invoked by `stats -l`
   and also shows localization coverage for each language.
 - **Breaking:** `-L` now prints to `stdout`.
+- **Breaking:** `-Bc` no longer accepts an integer argument and instead clears
+  all stale snapshots. "Stale" means that one or more packages in the snapshot
+  is missing a tarball in the package cache.
 
 #### Fixed
 

@@ -773,6 +773,10 @@ pub(crate) struct Cache {
     #[clap(group = "cache", short = 't', long, display_order = 1)]
     pub(crate) invalid: bool,
 
+    /// Display packages that don't have a tarball in the cache.
+    #[clap(group = "cache", long, short, display_order = 1)]
+    pub(crate) missing: bool,
+
     /// Packages to downgrade.
     pub(crate) packages: Vec<String>,
 }

@@ -76,6 +76,7 @@ fn main() -> Result<(), Error> {
         SubCmd::Cache(c) if c.invalid => cache::invalid(&fll, &alpm, cachep)?,
         SubCmd::Cache(c) if c.list => cache::list(cachep)?,
         SubCmd::Cache(c) if c.refresh => cache::refresh(&fll, &alpm, cachep)?,
+        SubCmd::Cache(c) if c.missing => cache::missing(&alpm, cachep)?,
         SubCmd::Cache(c) => cache::downgrade(&fll, cachep, c.packages)?,
         // --- Logs --- //
         SubCmd::Log(l) if l.search.is_some() => log::search(logp, l.search.unwrap())?,

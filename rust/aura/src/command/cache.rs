@@ -405,3 +405,12 @@ fn copy(source: &Path, target: &Path, file_count: usize) -> Result<(), Error> {
         });
     Ok(())
 }
+
+/// Display packages that don't have a tarball in the cache.
+pub(crate) fn missing(alpm: &Alpm, cache: &Path) -> Result<(), Error> {
+    for pkg in aura_core::cache::missing_tarballs(alpm, cache)? {
+        println!("{} {}", pkg.name(), pkg.version());
+    }
+
+    Ok(())
+}
