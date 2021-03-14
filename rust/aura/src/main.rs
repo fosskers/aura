@@ -66,6 +66,7 @@ fn main() -> Result<(), Error> {
         // --- AUR Packages --- //
         SubCmd::Aur(_) => unimplemented!(),
         // --- Package Sets --- //
+        SubCmd::Backup(b) if b.clean => snapshot::clean(&fll, cachep)?,
         SubCmd::Backup(_) => snapshot::save(&fll, &alpm)?,
         // --- Cache Management --- //
         SubCmd::Cache(c) if !c.info.is_empty() => cache::info(&fll, &alpm, cachep, c.info)?,

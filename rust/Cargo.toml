@@ -7,4 +7,4 @@ members = ["aura", "aura-core", "aura-arch", "aura-common"]
 [profile.release]
 lto = true
 panic = "abort"
-# opt-level = "s"  # Reduces final stripped size by ~17%.
+# opt-level = "z"  # Reduces final stripped size by ~20%.
