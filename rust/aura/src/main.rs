@@ -16,7 +16,7 @@ use clap::Clap;
 use command::*;
 use error::Error;
 use flags::{SubCmd, AURA_GLOBALS};
-use simplelog::{Config, TermLogger, TerminalMode};
+use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
@@ -26,7 +26,7 @@ fn main() -> Result<(), Error> {
 
     // Activate the logger.
     if let Some(l) = args.log_level {
-        TermLogger::init(l, Config::default(), TerminalMode::Mixed)?;
+        TermLogger::init(l, Config::default(), TerminalMode::Mixed, ColorChoice::Auto)?;
     }
 
     // Establish the language strings to be used.
