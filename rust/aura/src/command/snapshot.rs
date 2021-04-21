@@ -58,3 +58,14 @@ pub(crate) fn clean(fll: &FluentLanguageLoader, cache: &Path) -> Result<(), Erro
     green!(fll, "common-done");
     Ok(())
 }
+
+/// Show all saved package snapshot filenames.
+pub(crate) fn list() -> Result<(), Error> {
+    let snap = snapshot_dir()?;
+
+    for (path, _) in aura_core::snapshot::snapshots_with_paths(&snap)? {
+        println!("{}", path.display());
+    }
+
+    Ok(())
+}
