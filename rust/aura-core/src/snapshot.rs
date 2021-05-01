@@ -8,7 +8,7 @@ use std::fs::{File, ReadDir};
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
 
-/// An iterator of all legal [`Snapshot`]s.
+/// An iterator of all legal (but not necessarily usable) [`Snapshot`]s.
 pub struct Snapshots {
     with_paths: SnapshotsWithPaths,
 }

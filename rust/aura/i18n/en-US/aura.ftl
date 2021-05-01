@@ -4,6 +4,7 @@ language-name = English
 # saveState_1
 snapshot-saved = Saved package state.
 snapshot-clean = Remove stale snapshots?
+snapshot-none = No usable snapshots found.
 
 # Cache (-C)
 cache-size = Current cache size: { $size }

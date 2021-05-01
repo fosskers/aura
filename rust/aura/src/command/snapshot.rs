@@ -1,7 +1,7 @@
 //! All functionality involving the `-B` command.
 
 use crate::error::Error;
-use crate::{a, aln, green};
+use crate::{a, aln, green, red};
 use alpm::Alpm;
 use aura_core::snapshot::Snapshot;
 use colored::*;
@@ -66,6 +66,24 @@ pub(crate) fn list() -> Result<(), Error> {
     for (path, _) in aura_core::snapshot::snapshots_with_paths(&snap)? {
         println!("{}", path.display());
     }
+
+    Ok(())
+}
+
+pub(crate) fn restore(fll: &FluentLanguageLoader, cache: &Path) -> Result<(), Error> {
+    let snap = snapshot_dir()?;
+    let vers = aura_core::cache::all_versions(cache)?;
+
+    let shots: Vec<_> = aura_core::snapshot::snapshots(&snap)?
+        .filter(|ss| ss.usable(&vers))
+        .collect();
+
+    if shots.is_empty() {
+        red!(fll, "snapshot-none");
+        Err(Error::Silent)?
+    }
+
+    println!("Yes!");
 
     Ok(())
 }
