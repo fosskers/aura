@@ -75,12 +75,13 @@ fn downgrade_one(
     mut tarballs: Vec<PkgPath>,
 ) -> Result<PkgPath, Error> {
     tarballs.sort_by(|a, b| b.to_package().cmp(a.to_package()));
+    let digits = 1 + (tarballs.len() / 10);
 
     let pkg = package.bold().cyan().to_string();
     aura!(fll, "cache-downgrade-which", pkg = pkg);
 
     for (i, pp) in tarballs.iter().enumerate() {
-        println!("  {}) {}", i, pp.to_package().version);
+        println!(" {:w$}) {}", i, pp.to_package().version, w = digits);
     }
 
     let index = crate::utils::select(">>> ", tarballs.len() - 1)?;

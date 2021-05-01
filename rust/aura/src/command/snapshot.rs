@@ -1,7 +1,7 @@
 //! All functionality involving the `-B` command.
 
 use crate::error::Error;
-use crate::{a, aln, green, red};
+use crate::{a, aln, aura, green, red};
 use alpm::Alpm;
 use aura_core::snapshot::Snapshot;
 use colored::*;
@@ -74,16 +74,30 @@ pub(crate) fn restore(fll: &FluentLanguageLoader, cache: &Path) -> Result<(), Er
     let snap = snapshot_dir()?;
     let vers = aura_core::cache::all_versions(cache)?;
 
-    let shots: Vec<_> = aura_core::snapshot::snapshots(&snap)?
+    let mut shots: Vec<_> = aura_core::snapshot::snapshots(&snap)?
         .filter(|ss| ss.usable(&vers))
         .collect();
+    shots.sort_by_key(|ss| ss.time);
+    let digits = 1 + (shots.len() / 10);
 
     if shots.is_empty() {
         red!(fll, "snapshot-none");
         Err(Error::Silent)?
     }
 
-    println!("Yes!");
+    aura!(fll, "snapshot-select");
+    for (i, ss) in shots.iter().enumerate() {
+        let time = ss.time.format("%Y %B %d %T");
+        let pinned = ss
+            .pinned
+            .then(|| "[pinned]".cyan())
+            .unwrap_or_else(|| "".normal());
+        println!(" {:w$}) {} {}", i, time, pinned, w = digits);
+    }
 
+    let index = crate::utils::select(">>> ", shots.len() - 1)?;
+    println!("{}", index);
+
+    green!(fll, "common-done");
     Ok(())
 }
