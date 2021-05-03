@@ -14,7 +14,9 @@ Check out [The Aura Book](https://fosskers.github.io/aura/) for all knowledge
 and usage instructions!
 
 If Aura has made your life easier, please consider [buying me a
-coffee](https://www.buymeacoffee.com/fosskers) :coffee:.
+coffee](https://www.buymeacoffee.com/fosskers) :coffee: or supporting Aura
+through [Github Sponsors](https://github.com/sponsors/fosskers) :octocat:. Your
+help goes a long way!
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
@@ -214,6 +216,13 @@ to Aura, please see the
 Aura Book.
 
 ## Credits
+
+Aura is sponsored by these wonderful people:
+
+[<img class="avatar avatar-user" src="https://avatars.githubusercontent.com/u/81970309?s=70&amp;v=4" alt="@ace-deuce" width="35" height="35">](https://github.com/ace-deuce)
+[<img class="avatar avatar-user" src="https://avatars.githubusercontent.com/u/81332165?s=70&amp;v=4" alt="@tianip220" width="35" height="35">](https://github.com/tianip220)
+[<img class="avatar avatar-user" src="https://avatars.githubusercontent.com/u/5953670?s=70&amp;v=4" alt="@sidagrawal" width="35" height="35">](https://github.com/sidagrawal)
+
 
 Aura has been translated by these generous people:
 
