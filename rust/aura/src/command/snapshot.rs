@@ -7,10 +7,24 @@ use aura_core::snapshot::Snapshot;
 use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufWriter;
 use std::ops::Not;
 use std::path::{Path, PathBuf};
+
+/// During a `-Br`, the packages to update and/or remove.
+struct StateDiff<'a> {
+    /// Packages that need to be reinstalled.
+    to_add: Vec<&'a str>,
+
+    /// Packages that need to be upgraded or downgraded.
+    to_alter: Vec<&'a str>,
+
+    /// Packages that are installed now, but weren't when the snapshot was
+    /// taken.
+    to_remove: Vec<&'a str>,
+}
 
 /// The full path to package snapshot directory.
 pub fn snapshot_dir() -> Result<PathBuf, std::env::VarError> {
@@ -70,7 +84,7 @@ pub(crate) fn list() -> Result<(), Error> {
     Ok(())
 }
 
-pub(crate) fn restore(fll: &FluentLanguageLoader, cache: &Path) -> Result<(), Error> {
+pub(crate) fn restore(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) -> Result<(), Error> {
     let snap = snapshot_dir()?;
     let vers = aura_core::cache::all_versions(cache)?;
 
@@ -96,8 +110,51 @@ pub(crate) fn restore(fll: &FluentLanguageLoader, cache: &Path) -> Result<(), Er
     }
 
     let index = crate::utils::select(">>> ", shots.len() - 1)?;
-    println!("{}", index);
+    restore_snapshot(alpm, shots.remove(index))?;
 
     green!(fll, "common-done");
     Ok(())
+}
+
+// TODO Find the diff
+fn restore_snapshot(alpm: &Alpm, snapshot: Snapshot) -> Result<(), Error> {
+    let diff = package_diff(alpm, &snapshot)?;
+
+    Ok(())
+}
+
+fn package_diff<'a>(alpm: &'a Alpm, snapshot: &'a Snapshot) -> Result<StateDiff<'a>, Error> {
+    let mut to_add = Vec::new();
+    let mut to_alter = Vec::new();
+    let mut to_remove = Vec::new();
+
+    let installed: HashMap<&'a str, &'a str> = alpm
+        .localdb()
+        .pkgs()
+        .iter()
+        .map(|p| (p.name(), p.version().as_str()))
+        .collect();
+
+    for name in snapshot.packages.keys() {
+        // If a package saved in the snapshot isn't installed at all anymore, it
+        // needs to be reinstalled.
+        if installed.contains_key(name.as_str()).not() {
+            to_add.push(name.as_str());
+        }
+    }
+
+    for (name, ver) in installed.into_iter() {
+        // If an installed package wasn't in the snapshot at all, we need to
+        // remove it.
+        if snapshot.packages.contains_key(name).not() {
+            to_remove.push(name);
+        }
+    }
+
+    let diff = StateDiff {
+        to_add,
+        to_alter,
+        to_remove,
+    };
+    Ok(diff)
 }

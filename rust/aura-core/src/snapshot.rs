@@ -59,7 +59,8 @@ pub struct Snapshot {
     pub time: DateTime<Local>,
     /// Should this `Snapshot` never be removed?
     pub pinned: bool,
-    packages: HashMap<String, String>,
+    /// Every package name in the `Snapshot`, with its version.
+    pub packages: HashMap<String, String>,
 }
 
 impl Snapshot {

@@ -68,7 +68,7 @@ fn main() -> Result<(), Error> {
         // --- Package Sets --- //
         SubCmd::Backup(b) if b.clean => snapshot::clean(&fll, cachep)?,
         SubCmd::Backup(b) if b.list => snapshot::list()?,
-        SubCmd::Backup(b) if b.restore => snapshot::restore(&fll, cachep)?,
+        SubCmd::Backup(b) if b.restore => snapshot::restore(&fll, &alpm, cachep)?,
         SubCmd::Backup(_) => snapshot::save(&fll, &alpm)?,
         // --- Cache Management --- //
         SubCmd::Cache(c) if !c.info.is_empty() => cache::info(&fll, &alpm, cachep, c.info)?,
