@@ -1,6 +1,38 @@
 //! Common types across the library.
 
-use std::{cmp::Ordering, path::Path};
+use std::cmp::Ordering;
+use std::path::Path;
+
+/// Like [`Package`], but its `String` contents are borrowed.
+#[derive(Debug, PartialEq, Eq)]
+pub struct Pkg<'a> {
+    /// The name of the package.
+    pub name: &'a str,
+    /// The version of the package.
+    pub version: &'a str,
+}
+
+impl<'a> Pkg<'a> {
+    /// Construct a new `Pkg`.
+    pub fn new(name: &'a str, version: &'a str) -> Pkg<'a> {
+        Pkg { name, version }
+    }
+}
+
+impl<'a> PartialOrd for Pkg<'a> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<'a> Ord for Pkg<'a> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.name.cmp(&other.name) {
+            Ordering::Equal => alpm::vercmp(self.version, other.version),
+            otherwise => otherwise,
+        }
+    }
+}
 
 /// The simplest form a package.
 #[derive(Debug, PartialEq, Eq)]
@@ -42,6 +74,14 @@ impl Package {
 
                 Some(Package { name, version })
             })
+    }
+
+    /// A borrowed variant of the internal `String` values.
+    pub fn to_pkg(&self) -> Pkg {
+        Pkg {
+            name: self.name.as_str(),
+            version: self.version.as_str(),
+        }
     }
 }
 

@@ -46,6 +46,19 @@ where
     }
 }
 
+/// Make an elevated shell call to `pacman`.
+pub(crate) fn sudo_pacman<I, S>(args: I) -> Result<(), Error>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+{
+    match Command::new("sudo").arg("pacman").args(args).status() {
+        Err(e) => Err(Error::IO(e)),
+        Ok(es) if es.success() => Ok(()),
+        Ok(_) => Err(Error::PacmanError),
+    }
+}
+
 /// Fetch the path value of `$XDG_CACHE_HOME` or provide its default according
 /// to the specification:
 ///

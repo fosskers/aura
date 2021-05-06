@@ -1,25 +1,27 @@
 //! All functionality involving the `-B` command.
 
-use crate::error::Error;
 use crate::{a, aln, aura, green, red};
+use crate::{error::Error, utils};
 use alpm::Alpm;
+use aura_core::common::Pkg;
 use aura_core::snapshot::Snapshot;
 use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufWriter;
 use std::ops::Not;
 use std::path::{Path, PathBuf};
+use std::{cmp::Ordering, collections::HashMap};
 
 /// During a `-Br`, the packages to update and/or remove.
+#[derive(Debug)]
 struct StateDiff<'a> {
     /// Packages that need to be reinstalled.
-    to_add: Vec<&'a str>,
+    to_add: Vec<Pkg<'a>>,
 
     /// Packages that need to be upgraded or downgraded.
-    to_alter: Vec<&'a str>,
+    to_alter: Vec<Pkg<'a>>,
 
     /// Packages that are installed now, but weren't when the snapshot was
     /// taken.
@@ -116,45 +118,59 @@ pub(crate) fn restore(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) -> 
     Ok(())
 }
 
-// TODO Find the diff
 fn restore_snapshot(alpm: &Alpm, snapshot: Snapshot) -> Result<(), Error> {
-    let diff = package_diff(alpm, &snapshot)?;
-
-    Ok(())
-}
-
-fn package_diff<'a>(alpm: &'a Alpm, snapshot: &'a Snapshot) -> Result<StateDiff<'a>, Error> {
-    let mut to_add = Vec::new();
-    let mut to_alter = Vec::new();
-    let mut to_remove = Vec::new();
-
-    let installed: HashMap<&'a str, &'a str> = alpm
+    let installed: HashMap<&str, &str> = alpm
         .localdb()
         .pkgs()
         .iter()
         .map(|p| (p.name(), p.version().as_str()))
         .collect();
+    let diff = package_diff(&snapshot, &installed);
 
-    for name in snapshot.packages.keys() {
+    if diff.to_remove.is_empty().not() {
+        utils::sudo_pacman(std::iter::once("-R").chain(diff.to_remove))?;
+    }
+
+    Ok(())
+}
+
+// TODO Audit the lifetimes.
+fn package_diff<'a>(
+    snapshot: &'a Snapshot,
+    installed: &'a HashMap<&'a str, &'a str>,
+) -> StateDiff<'a> {
+    let mut to_add: Vec<Pkg<'a>> = Vec::new();
+    let mut to_alter: Vec<Pkg<'a>> = Vec::new();
+    let mut to_remove: Vec<&'a str> = Vec::new();
+
+    for (name, ver) in snapshot.packages.iter() {
         // If a package saved in the snapshot isn't installed at all anymore, it
         // needs to be reinstalled.
         if installed.contains_key(name.as_str()).not() {
-            to_add.push(name.as_str());
+            to_add.push(Pkg::new(name, ver));
         }
     }
 
-    for (name, ver) in installed.into_iter() {
-        // If an installed package wasn't in the snapshot at all, we need to
-        // remove it.
-        if snapshot.packages.contains_key(name).not() {
-            to_remove.push(name);
+    for (name, ver) in installed.iter() {
+        match snapshot.packages.get(*name) {
+            // If an installed package wasn't in the snapshot at all, we need to
+            // remove it.
+            None => to_remove.push(name),
+            Some(v) => match alpm::vercmp(v.as_str(), ver) {
+                // The installed version is the same as the snapshot; no action
+                // necessary.
+                Ordering::Equal => {}
+                // Otherwise, the version in the snapshot must be installed.
+                Ordering::Less | Ordering::Greater => {
+                    to_alter.push(Pkg::new(name, v));
+                }
+            },
         }
     }
 
-    let diff = StateDiff {
+    StateDiff {
         to_add,
         to_alter,
         to_remove,
-    };
-    Ok(diff)
+    }
 }
