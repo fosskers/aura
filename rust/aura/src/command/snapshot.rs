@@ -3,29 +3,26 @@
 use crate::{a, aln, aura, green, red};
 use crate::{error::Error, utils};
 use alpm::Alpm;
-use aura_core::common::Pkg;
 use aura_core::snapshot::Snapshot;
 use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::BufWriter;
 use std::ops::Not;
 use std::path::{Path, PathBuf};
-use std::{cmp::Ordering, collections::HashMap};
+use std::{cmp::Ordering, ffi::OsStr};
 
 /// During a `-Br`, the packages to update and/or remove.
 #[derive(Debug)]
 struct StateDiff<'a> {
-    /// Packages that need to be reinstalled.
-    to_add: Vec<Pkg<'a>>,
-
-    /// Packages that need to be upgraded or downgraded.
-    to_alter: Vec<Pkg<'a>>,
+    /// Packages that need to be reinstalled, upgraded, or downgraded.
+    to_add_or_alter: HashMap<&'a str, &'a str>,
 
     /// Packages that are installed now, but weren't when the snapshot was
     /// taken.
-    to_remove: Vec<&'a str>,
+    to_remove: HashSet<&'a str>,
 }
 
 /// The full path to package snapshot directory.
@@ -112,13 +109,13 @@ pub(crate) fn restore(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) -> 
     }
 
     let index = crate::utils::select(">>> ", shots.len() - 1)?;
-    restore_snapshot(alpm, shots.remove(index))?;
+    restore_snapshot(alpm, cache, shots.remove(index))?;
 
     green!(fll, "common-done");
     Ok(())
 }
 
-fn restore_snapshot(alpm: &Alpm, snapshot: Snapshot) -> Result<(), Error> {
+fn restore_snapshot(alpm: &Alpm, cache: &Path, snapshot: Snapshot) -> Result<(), Error> {
     let installed: HashMap<&str, &str> = alpm
         .localdb()
         .pkgs()
@@ -127,6 +124,23 @@ fn restore_snapshot(alpm: &Alpm, snapshot: Snapshot) -> Result<(), Error> {
         .collect();
     let diff = package_diff(&snapshot, &installed);
 
+    // Alter packages first to avoid potential breakage from the later removal
+    // step.
+    if diff.to_add_or_alter.is_empty().not() {
+        let tarballs = aura_core::cache::package_paths(cache)?
+            .filter(|pp| {
+                let p = pp.to_package();
+                match diff.to_add_or_alter.get(p.name.as_str()) {
+                    Some(v) if p.same_version(v) => true,
+                    Some(_) | None => false,
+                }
+            })
+            .map(|pp| pp.pathbuf().into_os_string());
+
+        utils::sudo_pacman(std::iter::once(OsStr::new("-U").to_os_string()).chain(tarballs))?;
+    }
+
+    // Remove packages that weren't installed within the chosen snapshot.
     if diff.to_remove.is_empty().not() {
         utils::sudo_pacman(std::iter::once("-R").chain(diff.to_remove))?;
     }
@@ -139,15 +153,14 @@ fn package_diff<'a>(
     snapshot: &'a Snapshot,
     installed: &'a HashMap<&'a str, &'a str>,
 ) -> StateDiff<'a> {
-    let mut to_add: Vec<Pkg<'a>> = Vec::new();
-    let mut to_alter: Vec<Pkg<'a>> = Vec::new();
-    let mut to_remove: Vec<&'a str> = Vec::new();
+    let mut to_add_or_alter: HashMap<&'a str, &'a str> = HashMap::new();
+    let mut to_remove: HashSet<&'a str> = HashSet::new();
 
     for (name, ver) in snapshot.packages.iter() {
         // If a package saved in the snapshot isn't installed at all anymore, it
         // needs to be reinstalled.
         if installed.contains_key(name.as_str()).not() {
-            to_add.push(Pkg::new(name, ver));
+            to_add_or_alter.insert(name, ver);
         }
     }
 
@@ -155,22 +168,23 @@ fn package_diff<'a>(
         match snapshot.packages.get(*name) {
             // If an installed package wasn't in the snapshot at all, we need to
             // remove it.
-            None => to_remove.push(name),
+            None => {
+                to_remove.insert(name);
+            }
             Some(v) => match alpm::vercmp(v.as_str(), ver) {
                 // The installed version is the same as the snapshot; no action
                 // necessary.
                 Ordering::Equal => {}
                 // Otherwise, the version in the snapshot must be installed.
                 Ordering::Less | Ordering::Greater => {
-                    to_alter.push(Pkg::new(name, v));
+                    to_add_or_alter.insert(name, v);
                 }
             },
         }
     }
 
     StateDiff {
-        to_add,
-        to_alter,
+        to_add_or_alter,
         to_remove,
     }
 }

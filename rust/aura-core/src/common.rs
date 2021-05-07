@@ -83,6 +83,15 @@ impl Package {
             version: self.version.as_str(),
         }
     }
+
+    /// Does some given version string have the same value as the one in this
+    /// `Package`?
+    pub fn same_version(&self, other: &str) -> bool {
+        match alpm::vercmp(other, &self.version) {
+            Ordering::Equal => true,
+            Ordering::Less | Ordering::Greater => false,
+        }
+    }
 }
 
 impl PartialOrd for Package {

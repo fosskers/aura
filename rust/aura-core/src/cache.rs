@@ -40,6 +40,11 @@ impl PkgPath {
         &self.path
     }
 
+    /// Consume this `PkgPath` to get its inner `PathBuf`.
+    pub fn pathbuf(self) -> PathBuf {
+        self.path
+    }
+
     /// Pull a simple package definition from this tarball path.
     pub fn to_package(&self) -> &Package {
         &self.pkg
