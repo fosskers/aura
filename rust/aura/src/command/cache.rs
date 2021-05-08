@@ -217,9 +217,14 @@ pub(crate) fn clean_not_saved(
     cache: &Path,
     snapshot_dir: &Path,
 ) -> Result<(), Error> {
+    // Report the initial size of the cache.
     let size_before = aura_core::cache::size(cache)?;
     let human = format!("{}", size_before.bytes.bytes());
     aura!(fll, "cache-size", size = human);
+
+    // Proceed if the user accepts.
+    let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
+    crate::utils::prompt(&a!(msg))?;
 
     let tarballs = aura_core::cache::package_paths(cache)?;
 
@@ -248,6 +253,7 @@ pub(crate) fn clean_not_saved(
         }
     }
 
+    // Report the amount of disk space freed.
     let size_after = aura_core::cache::size(cache)?;
     let freed = format!("{}", (size_before.bytes - size_after.bytes).bytes());
     green!(fll, "cache-clean-freed", bytes = freed);
