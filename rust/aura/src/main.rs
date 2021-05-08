@@ -38,7 +38,7 @@ fn main() -> Result<(), Error> {
     let pconf = pacmanconf::Config::new()?;
 
     // Establish common file paths.
-    let aurap: PathBuf = utils::aura_xdg_cache()?;
+    // let aurap: PathBuf = utils::aura_xdg_cache()?;
     let logp: &Path = args
         .logfile
         .as_deref()
@@ -65,6 +65,7 @@ fn main() -> Result<(), Error> {
         SubCmd::Upgrade(_) => pacman()?,
         SubCmd::Sync(_) => pacman()?,
         // --- AUR Packages --- //
+        SubCmd::Aur(a) if a.open.is_some() => aur::open(&a.open.unwrap())?,
         SubCmd::Aur(_) => unimplemented!(),
         // --- Package Sets --- //
         SubCmd::Backup(b) if b.clean => snapshot::clean(&fll, cachep)?,

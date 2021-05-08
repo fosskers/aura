@@ -720,7 +720,11 @@ pub(crate) struct Stats {
 /// Synchronize AUR packages.
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'A', long_flag = "aursync")]
-pub(crate) struct Aur {}
+pub(crate) struct Aur {
+    /// Open a given package's AUR package.
+    #[clap(group = "aur", long, short, display_order = 1)]
+    pub(crate) open: Option<String>,
+}
 
 /// Save and restore the global package state.
 #[derive(Clap, Debug)]

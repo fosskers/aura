@@ -1,5 +1,6 @@
 //! All Aura commands.
 
+pub(crate) mod aur;
 pub(crate) mod cache;
 pub(crate) mod check;
 pub(crate) mod conf;
