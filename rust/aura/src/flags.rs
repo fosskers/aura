@@ -757,6 +757,10 @@ pub(crate) struct Cache {
     #[clap(group = "cache", short, long, value_name = "N", display_order = 1)]
     pub(crate) clean: Option<usize>,
 
+    /// Delete only those tarballs which aren't present in a snapshot.
+    #[clap(group = "cache", long = "notsaved", display_order = 1)]
+    pub(crate) clean_unsaved: bool,
+
     /// Look up specific packages for info on their cache entries.
     #[clap(group = "cache", short, long, value_name = "pkg(s)", display_order = 1)]
     pub(crate) info: Vec<String>,

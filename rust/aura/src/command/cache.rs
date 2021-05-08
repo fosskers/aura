@@ -13,10 +13,10 @@ use itertools::Itertools;
 use linya::Progress;
 use log::debug;
 use rayon::prelude::*;
-use std::ffi::OsString;
+use std::collections::{HashMap, HashSet};
+use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
-use std::{collections::HashMap, ffi::OsStr};
 use ubyte::ToByteUnit;
 
 const FIFTY_MB: i64 = 52_428_800;
@@ -208,6 +208,50 @@ pub(crate) fn clean(fll: &FluentLanguageLoader, path: &Path, keep: usize) -> Res
     let size_after = aura_core::cache::size(path)?;
     let freed = format!("{}", (size_before.bytes - size_after.bytes).bytes());
     green!(fll, "cache-clean-freed", bytes = freed);
+    Ok(())
+}
+
+/// Delete only those tarballs which aren't present in a snapshot.
+pub(crate) fn clean_not_saved(
+    fll: &FluentLanguageLoader,
+    cache: &Path,
+    snapshot_dir: &Path,
+) -> Result<(), Error> {
+    let size_before = aura_core::cache::size(cache)?;
+    let human = format!("{}", size_before.bytes.bytes());
+    aura!(fll, "cache-size", size = human);
+
+    let tarballs = aura_core::cache::package_paths(cache)?;
+
+    // Every package across all snapshots, keyed to all unique versions present.
+    let snaps: HashMap<String, HashSet<String>> = {
+        let mut snaps: HashMap<_, HashSet<_>> = HashMap::new();
+
+        for snap in aura_core::snapshot::snapshots(snapshot_dir)? {
+            for (name, ver) in snap.packages.into_iter() {
+                let entry = snaps.entry(name).or_default();
+                entry.insert(ver);
+            }
+        }
+
+        snaps
+    };
+
+    for tarball in tarballs {
+        let p = tarball.to_package();
+
+        // If no snapshot contains this tarball's particular version, remove it
+        // from the filesystem.
+        match snaps.get(&p.name) {
+            Some(vs) if vs.contains(&p.version) => {}
+            Some(_) | None => tarball.sudo_remove().ok_or(Error::MiscShell)?,
+        }
+    }
+
+    let size_after = aura_core::cache::size(cache)?;
+    let freed = format!("{}", (size_before.bytes - size_after.bytes).bytes());
+    green!(fll, "cache-clean-freed", bytes = freed);
+
     Ok(())
 }
 

@@ -34,6 +34,8 @@ pub(crate) enum Error {
     PacmanError,
     // /// A file IO target already exists.
     // FileConflict,
+    /// A miscellaneous shell call failed.
+    MiscShell,
     /// A silent, miscellaneous error.
     ///
     /// In theory any relevant error messages have already been localized and
@@ -58,6 +60,7 @@ impl std::fmt::Display for Error {
             Error::Rejected => write!(f, "The user said no."),
             Error::NoneExist => write!(f, "None of those packages exist."),
             Error::PacmanError => write!(f, "A shell call to Pacman gave a non-zero exit code."),
+            Error::MiscShell => write!(f, "A miscellaneous shell call failed."),
             // Error::FileConflict => write!(f, "The given file target already exists."),
             Error::Silent => write!(f, ""),
         }
@@ -81,6 +84,7 @@ impl std::error::Error for Error {
             Error::Rejected => None,
             Error::NoneExist => None,
             Error::PacmanError => None,
+            Error::MiscShell => None,
             // Error::FileConflict => None,
             Error::Silent => None,
         }

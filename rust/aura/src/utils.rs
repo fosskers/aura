@@ -68,11 +68,13 @@ where
 fn xdg_cache() -> Result<PathBuf, std::env::VarError> {
     std::env::var("XDG_CACHE_HOME")
         .map(PathBuf::from)
-        .or(std::env::var("HOME").map(|h| {
-            let mut path = PathBuf::from(h);
-            path.push(".cache");
-            path
-        }))
+        .or_else(|_| {
+            std::env::var("HOME").map(|h| {
+                let mut path = PathBuf::from(h);
+                path.push(".cache");
+                path
+            })
+        })
 }
 
 /// The full path to the Aura cache.

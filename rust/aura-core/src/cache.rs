@@ -2,12 +2,12 @@
 
 use crate::common::Package;
 use alpm::Alpm;
-use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::ffi::OsString;
 use std::fs::ReadDir;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
+use std::{cmp::Ordering, process::Command};
 
 /// A validated path to a package tarball.
 #[derive(Debug, PartialEq, Eq)]
@@ -60,6 +60,15 @@ impl PkgPath {
         }
 
         Ok(())
+    }
+
+    // TODO I'd like it if this could be avoided.
+    /// Remove this via a shell call to `rm`.
+    pub fn sudo_remove(self) -> Option<()> {
+        match Command::new("sudo").arg("rm").arg(self.path).status() {
+            Ok(es) if es.success() => Some(()),
+            _ => None,
+        }
     }
 }
 

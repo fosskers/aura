@@ -48,6 +48,7 @@ fn main() -> Result<(), Error> {
         .cachedir
         .as_deref()
         .unwrap_or_else(|| Path::new(pconf.cache_dir.first().unwrap()));
+    let snapshots: PathBuf = snapshot::snapshot_dir()?;
 
     // A handle to ALPM.
     let root = args.root.unwrap_or_else(|| pconf.root_dir.clone());
@@ -75,6 +76,7 @@ fn main() -> Result<(), Error> {
         SubCmd::Cache(c) if c.search.is_some() => cache::search(cachep, &c.search.unwrap())?,
         SubCmd::Cache(c) if c.backup.is_some() => cache::backup(&fll, cachep, &c.backup.unwrap())?,
         SubCmd::Cache(c) if c.clean.is_some() => cache::clean(&fll, cachep, c.clean.unwrap())?,
+        SubCmd::Cache(c) if c.clean_unsaved => cache::clean_not_saved(&fll, cachep, &snapshots)?,
         SubCmd::Cache(c) if c.invalid => cache::invalid(&fll, &alpm, cachep)?,
         SubCmd::Cache(c) if c.list => cache::list(cachep)?,
         SubCmd::Cache(c) if c.refresh => cache::refresh(&fll, &alpm, cachep)?,
