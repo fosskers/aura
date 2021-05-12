@@ -34,7 +34,7 @@ h1 code, h2 code, h3 code, h4 code, h5 code, h6 code {
 .right { float: right; }
 .boring { opacity: 0.6; }
 .hide-boring .boring { display: none; }
-.hidden { display: none; }
+.hidden { display: none !important; }
 
 h2, h3 { margin-top: 2.5em; }
 h4, h5 { margin-top: 2em; }
@@ -45,20 +45,23 @@ h4, h5 { margin-top: 2em; }
     margin-top: 1em;
 }
 
-h1 a.header:target::before,
-h2 a.header:target::before,
-h3 a.header:target::before,
-h4 a.header:target::before {
+h1:target::before,
+h2:target::before,
+h3:target::before,
+h4:target::before,
+h5:target::before,
+h6:target::before {
     display: inline-block;
     content: "»";
     margin-left: -30px;
     width: 30px;
 }
 
-h1 a.header:target,
-h2 a.header:target,
-h3 a.header:target,
-h4 a.header:target {
+/* This is broken on Safari as of version 14, but is fixed
+   in Safari Technology Preview 117 which I think will be Safari 14.2.
+   https://bugs.webkit.org/show_bug.cgi?id=218076
+*/
+:target {
     scroll-margin-top: calc(var(--menu-bar-height) + 0.5em);
 }
 
@@ -165,4 +168,10 @@ blockquote {
 }
 .tooltipped .tooltiptext {
     visibility: visible;
+}
+
+.chapter li.part-title {
+    color: var(--sidebar-fg);
+    margin: 5px 0px;
+    font-weight: bold;
 }

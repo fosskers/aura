@@ -5,22 +5,36 @@
         <meta charset="UTF-8">
         <title>Installation - The Aura User Guide</title>
         
+        
+
+
+        <!-- Custom HTML head -->
+        
+
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="A full usage guide for Aura.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff" />
 
+        
+        <link rel="icon" href="favicon.svg">
+        
+        
         <link rel="shortcut icon" href="favicon.png">
+        
         <link rel="stylesheet" href="css/variables.css">
         <link rel="stylesheet" href="css/general.css">
         <link rel="stylesheet" href="css/chrome.css">
+        
         <link rel="stylesheet" href="css/print.css" media="print">
+        
 
         <!-- Fonts -->
         <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
-        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+        
+        <link rel="stylesheet" href="fonts/fonts.css">
+        
 
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" href="highlight.css">
@@ -36,7 +50,7 @@
         <!-- Provide site root to javascript -->
         <script type="text/javascript">
             var path_to_root = "";
-            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
 
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
@@ -116,9 +130,11 @@
                     <h1 class="menu-title">The Aura User Guide</h1>
 
                     <div class="right-buttons">
+                        
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
+                        
                         
                         <a href="https://github.com/fosskers/aura" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
@@ -151,12 +167,12 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#installation" id="installation">Installation</a></h1>
+                        <h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
 <p>Aura is software specific to <a href="https://www.archlinux.org/">Arch Linux</a>. It should
 also work on Arch-derivatives like <a href="https://manjaro.org/">Manjaro</a>, but would
 not be useful on any other Linux distribution.</p>
-<h2><a class="header" href="#from-the-aur" id="from-the-aur">From the AUR</a></h2>
-<h3><a class="header" href="#prebuilt-binary" id="prebuilt-binary">Prebuilt Binary</a></h3>
+<h2 id="from-the-aur"><a class="header" href="#from-the-aur">From the AUR</a></h2>
+<h3 id="prebuilt-binary"><a class="header" href="#prebuilt-binary">Prebuilt Binary</a></h3>
 <p>It is recommended to install the <a href="https://aur.archlinux.org/packages/aura-bin/">prebuilt
 binary</a> of Aura:</p>
 <pre><code class="language-bash">git clone https://aur.archlinux.org/aura-bin.git
@@ -164,7 +180,7 @@ cd aura-bin
 makepkg -s
 sudo pacman -U &lt;the-package-file-that-makepkg-produces&gt;
 </code></pre>
-<h3><a class="header" href="#source-package" id="source-package">Source Package</a></h3>
+<h3 id="source-package"><a class="header" href="#source-package">Source Package</a></h3>
 <p>For users who choose to build packages themselves or who already have an
 established Haskell development environment, the vanilla
 <a href="https://aur.archlinux.org/packages/aura">aura</a> package is also available.</p>
@@ -173,7 +189,7 @@ cd aura
 makepkg -s
 sudo pacman -U &lt;the-package-file-that-makepkg-produces&gt;
 </code></pre>
-<h2><a class="header" href="#building-from-source" id="building-from-source">Building from Source</a></h2>
+<h2 id="building-from-source"><a class="header" href="#building-from-source">Building from Source</a></h2>
 <p>You will need the <a href="https://docs.haskellstack.org/en/stable/README/">Stack Tool</a>
 for Haskell to compile Aura yourself. Then:</p>
 <pre><code class="language-bash">git clone https://github.com/fosskers/aura.git
@@ -227,10 +243,10 @@ and so it will be easier to miss updates.</p>
         
 
         
-        
+
         
         <script type="text/javascript">
-            window.playpen_copyable = true;
+            window.playground_copyable = true;
         </script>
         
 

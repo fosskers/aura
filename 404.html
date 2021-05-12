@@ -3,8 +3,10 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Package Set Snapshots - The Aura User Guide</title>
+        <title></title>
         
+        
+        <base href="/">
         
 
 
@@ -95,7 +97,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="philosophy.html"><strong aria-hidden="true">1.</strong> Philosophy</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="usage.html"><strong aria-hidden="true">3.</strong> Usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="pacman.html"><strong aria-hidden="true">3.1.</strong> Aura-as-Pacman</a></li><li class="chapter-item expanded "><a href="aur.html"><strong aria-hidden="true">3.2.</strong> Installing AUR Packages</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="storage.html"><strong aria-hidden="true">3.2.1.</strong> Package Storage Locations</a></li></ol></li><li class="chapter-item expanded "><a href="downgrading.html"><strong aria-hidden="true">3.3.</strong> Downgrading Packages</a></li><li class="chapter-item expanded "><a href="orphans.html"><strong aria-hidden="true">3.4.</strong> Managing Orphan Packages</a></li><li class="chapter-item expanded "><a href="snapshots.html" class="active"><strong aria-hidden="true">3.5.</strong> Package Set Snapshots</a></li><li class="chapter-item expanded "><a href="security.html"><strong aria-hidden="true">3.6.</strong> PKGBUILD Security Analysis</a></li><li class="chapter-item expanded "><a href="log.html"><strong aria-hidden="true">3.7.</strong> Log Interaction</a></li></ol></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">4.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">5.</strong> Appendix</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="localisation.html"><strong aria-hidden="true">5.1.</strong> Localisation Guide</a></li><li class="chapter-item expanded "><a href="faq.html"><strong aria-hidden="true">5.2.</strong> FAQ</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="philosophy.html"><strong aria-hidden="true">1.</strong> Philosophy</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="usage.html"><strong aria-hidden="true">3.</strong> Usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="pacman.html"><strong aria-hidden="true">3.1.</strong> Aura-as-Pacman</a></li><li class="chapter-item expanded "><a href="aur.html"><strong aria-hidden="true">3.2.</strong> Installing AUR Packages</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="storage.html"><strong aria-hidden="true">3.2.1.</strong> Package Storage Locations</a></li></ol></li><li class="chapter-item expanded "><a href="downgrading.html"><strong aria-hidden="true">3.3.</strong> Downgrading Packages</a></li><li class="chapter-item expanded "><a href="orphans.html"><strong aria-hidden="true">3.4.</strong> Managing Orphan Packages</a></li><li class="chapter-item expanded "><a href="snapshots.html"><strong aria-hidden="true">3.5.</strong> Package Set Snapshots</a></li><li class="chapter-item expanded "><a href="security.html"><strong aria-hidden="true">3.6.</strong> PKGBUILD Security Analysis</a></li><li class="chapter-item expanded "><a href="log.html"><strong aria-hidden="true">3.7.</strong> Log Interaction</a></li></ol></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">4.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">5.</strong> Appendix</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="localisation.html"><strong aria-hidden="true">5.1.</strong> Localisation Guide</a></li><li class="chapter-item expanded "><a href="faq.html"><strong aria-hidden="true">5.2.</strong> FAQ</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -167,131 +169,15 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="saving-package-set-snapshots"><a class="header" href="#saving-package-set-snapshots">Saving Package Set Snapshots</a></h1>
-<p>Arch Linux (and Linux in general) used to have a reputation of breaking every
-time packages were upgraded. Around 2010, Aura's author used to run Arch on a
-Macbook, and such catastrophic breakage <em>did</em> occur every six months or so. But
-fast-forward to the present day, and such problems are rare. Even so, the idea
-of &quot;whole system rollback&quot; is spreading, and even since those early Arch-on-Mac
-days, Aura has had the <code>-B</code> Command for saving and restoring entire package
-sets.</p>
-<h2 id="saving-a-package-set"><a class="header" href="#saving-a-package-set">Saving a Package Set</a></h2>
-<pre><code>&gt; sudo aura -B
-aura &gt;&gt;= Saved package state.
-</code></pre>
-<p>This saves a file like <code>2020.06(Jun).14.08.56.46.json</code> to
-<code>/var/cache/aura/states/</code>. If we take a peek inside, we see:</p>
-<pre><code>&gt; cat 2020.06\(Jun\).14.08.56.46.json | aeson-pretty | head
-{
-    &quot;time&quot;: &quot;2020-06-14T08:56:46.437911573-07:00&quot;,
-    &quot;pinned&quot;: false,
-    &quot;packages&quot;: {
-        &quot;rasqal&quot;: &quot;1:0.9.33-3&quot;,
-        &quot;java-environment-common&quot;: &quot;3-3&quot;,
-        &quot;kwallet&quot;: &quot;5.70.0-1&quot;,
-        &quot;python2-livereload&quot;: &quot;2.6.1-1&quot;,
-        &quot;nethogs&quot;: &quot;0.8.6-1&quot;,
-        &quot;coreutils&quot;: &quot;8.32-1&quot;,
-</code></pre>
-<p>Simple enough - a list of all installed packages with their versions. We'll talk
-about <code>pinned</code> below.</p>
-<p>These files are in JSON format in case other tools wish to read them.</p>
-<h2 id="restoring-a-package-set"><a class="header" href="#restoring-a-package-set">Restoring a Package Set</a></h2>
-<p>I performed a big <code>-Syu</code> of about 250 packages, but wish to roll them all back
-to the saved state I just made above. Let's see that happen:</p>
-<pre><code>&gt; sudo aura -Br
- 1. /var/cache/aura/states/2018.07(Jul).06.10.03.18.json
- 2. /var/cache/aura/states/2020.05(May).04.09.15.57.json
- 3. /var/cache/aura/states/2020.05(May).11.11.30.35.json
-
-... many choices ...
-
-49. /var/cache/aura/states/2020.06(Jun).12.10.23.12.json
-50. /var/cache/aura/states/2020.06(Jun).14.08.56.46.json
-51. /var/cache/aura/states/2020.06(Jun).14.09.03.59.json
-&gt;&gt; 51
-aura &gt;&gt;= Requested downgrade versions not available for:
-lib32-libdrm
-libdrm
-libretro-nestopia
-linux-firmware
-portaudio
-runc
-spandsp
-virtualbox
-vlc
-xine-lib
-
-resolving dependencies...
-looking for conflicting packages...
-
-Package (234)                 Old Version             New Version           Net Change
-
-acorn                         1:7.3.1-1               1:7.2.0-1               0.00 MiB
-alsa-lib                      1.2.3-1                 1.2.2-1                -0.01 MiB
-alsa-topology-conf            1.2.3-1                 1.2.2-2                -0.19 MiB
-alsa-ucm-conf                 1.2.3-1                 1.2.2-1                -0.02 MiB
-alsa-utils                    1.2.3-1                 1.2.2-1                 0.00 MiB
-
-... etc ...
-
-wine                          5.10-1                  5.9-1                  -1.26 MiB
-x265                          3.4-1                   3.3-1                  -0.01 MiB
-xkeyboard-config              2.30-1                  2.29-1                  0.09 MiB
-
-Total Installed Size:  3315.10 MiB
-Net Upgrade Size:       -38.46 MiB
-
-:: Proceed with installation? [Y/n]
-
-... downgrading ...
-</code></pre>
-<p>It all went smoothly, even rolling back the kernel. Notice that Aura will warn
-you if it couldn't find certain versions to roll back to.</p>
-<h2 id="clearing-out-old-saved-states"><a class="header" href="#clearing-out-old-saved-states">Clearing out old Saved States</a></h2>
-<p>50 saved states is a little much. I probably don't even have most of the
-packages necessary to roll back to those early states, since I use <code>-Cc</code> often.
-Let's clear out the old ones:</p>
-<pre><code>&gt; sudo aura -Bc 5
-aura &gt;&gt;= You currently have 52 saved package states.
-aura &gt;&gt;= 1 of these are pinned, and won't be removed.
-aura &gt;&gt;= Most recently saved: 2020.06(Jun).14.09.17.09.json
-aura &gt;&gt;= 5 package states will be kept. Remove the rest? [Y/n]
-</code></pre>
-<p>And sure enough, only the most recent remain:</p>
-<pre><code>&gt; sudo aura -Br
-1. /var/cache/aura/states/2018.07(Jul).06.10.03.18.json
-2. /var/cache/aura/states/2020.06(Jun).12.10.22.56.json
-3. /var/cache/aura/states/2020.06(Jun).12.10.23.12.json
-4. /var/cache/aura/states/2020.06(Jun).14.08.56.46.json
-5. /var/cache/aura/states/2020.06(Jun).14.09.03.59.json
-6. /var/cache/aura/states/2020.06(Jun).14.09.17.09.json
-&gt;&gt;
-</code></pre>
-<p>Hey wait, what is that state from 2018 still doing there? Notice:</p>
-<blockquote>
-<p>aura &gt;&gt;= 1 of these are pinned, and won't be removed.</p>
-</blockquote>
-<p>Now we can talk about pinning.</p>
-<h2 id="pinning-a-saved-state"><a class="header" href="#pinning-a-saved-state">Pinning a Saved State</a></h2>
-<p>If we don't want a certain package state to be removed by <code>-Bc</code> no matter what,
-we can pin it. There is no flag for this, we need to open the <code>.json</code> file of
-the state we wish to pin, and change its <code>pinned</code> field from <code>false</code> to <code>true</code>.</p>
+                        <h1 id="document-not-found-404"><a class="header" href="#document-not-found-404">Document not found (404)</a></h1>
+<p>This URL is invalid, sorry. Please use the navigation bar or search to continue.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="orphans.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
-                                <i class="fa fa-angle-left"></i>
-                            </a>
-                        
 
-                        
-                            <a rel="next" href="security.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
-                            </a>
                         
 
                         <div style="clear: both"></div>
@@ -301,15 +187,7 @@ the state we wish to pin, and change its <code>pinned</code> field from <code>fa
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="orphans.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
-                        <i class="fa fa-angle-left"></i>
-                    </a>
-                
 
-                
-                    <a rel="next" href="security.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
-                    </a>
                 
             </nav>
 

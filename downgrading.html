@@ -5,22 +5,36 @@
         <meta charset="UTF-8">
         <title>Downgrading Packages - The Aura User Guide</title>
         
+        
+
+
+        <!-- Custom HTML head -->
+        
+
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="A full usage guide for Aura.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff" />
 
+        
+        <link rel="icon" href="favicon.svg">
+        
+        
         <link rel="shortcut icon" href="favicon.png">
+        
         <link rel="stylesheet" href="css/variables.css">
         <link rel="stylesheet" href="css/general.css">
         <link rel="stylesheet" href="css/chrome.css">
+        
         <link rel="stylesheet" href="css/print.css" media="print">
+        
 
         <!-- Fonts -->
         <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
-        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+        
+        <link rel="stylesheet" href="fonts/fonts.css">
+        
 
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" href="highlight.css">
@@ -36,7 +50,7 @@
         <!-- Provide site root to javascript -->
         <script type="text/javascript">
             var path_to_root = "";
-            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
 
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
@@ -116,9 +130,11 @@
                     <h1 class="menu-title">The Aura User Guide</h1>
 
                     <div class="right-buttons">
+                        
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
+                        
                         
                         <a href="https://github.com/fosskers/aura" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
@@ -151,15 +167,15 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#downgrading-packages" id="downgrading-packages">Downgrading Packages</a></h1>
+                        <h1 id="downgrading-packages"><a class="header" href="#downgrading-packages">Downgrading Packages</a></h1>
 <p>The <code>-C</code> command is used to interact with the Package Cache.</p>
-<h2><a class="header" href="#searching-the-cache" id="searching-the-cache">Searching the Cache</a></h2>
+<h2 id="searching-the-cache"><a class="header" href="#searching-the-cache">Searching the Cache</a></h2>
 <p><code>-Cs</code> can show us what's available in the cache.</p>
 <pre><code>&gt; aura -Cs firefox
 /var/cache/pacman/pkg/firefox-75.0-2-x86_64.pkg.tar.zst
 /var/cache/pacman/pkg/firefox-76.0.1-1-x86_64.pkg.tar.zst
 </code></pre>
-<h2><a class="header" href="#downgrading-or-installing-lost-versions" id="downgrading-or-installing-lost-versions">Downgrading or Installing &quot;Lost&quot; Versions</a></h2>
+<h2 id="downgrading-or-installing-lost-versions"><a class="header" href="#downgrading-or-installing-lost-versions">Downgrading or Installing &quot;Lost&quot; Versions</a></h2>
 <p>Let's say the newest version of some package is somehow broken. Let's downgrade:</p>
 <pre><code>&gt; sudo aura -C firefox
 aura &gt;&gt;= What version of firefox do you want?
@@ -184,7 +200,7 @@ Net Upgrade Size:       -2.08 MiB
 </code></pre>
 <p>In fact, <code>-C</code> works even if we no longer have that package installed. All that
 matters is whether you have a copy of the old version in your cache.</p>
-<h2><a class="header" href="#cleaning-the-cache" id="cleaning-the-cache">Cleaning the Cache</a></h2>
+<h2 id="cleaning-the-cache"><a class="header" href="#cleaning-the-cache">Cleaning the Cache</a></h2>
 <p><code>-Cc</code> can help keep our cache small.</p>
 <pre><code>&gt; sudo aura -Cc 2
 aura &gt;&gt;= The cache contains 2050 packages, consuming 5887 megabytes.
@@ -236,10 +252,10 @@ aura &gt;&gt;= 529 megabytes freed.
         
 
         
-        
+
         
         <script type="text/javascript">
-            window.playpen_copyable = true;
+            window.playground_copyable = true;
         </script>
         
 

@@ -5,22 +5,36 @@
         <meta charset="UTF-8">
         <title>Package Storage Locations - The Aura User Guide</title>
         
+        
+
+
+        <!-- Custom HTML head -->
+        
+
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="A full usage guide for Aura.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff" />
 
+        
+        <link rel="icon" href="favicon.svg">
+        
+        
         <link rel="shortcut icon" href="favicon.png">
+        
         <link rel="stylesheet" href="css/variables.css">
         <link rel="stylesheet" href="css/general.css">
         <link rel="stylesheet" href="css/chrome.css">
+        
         <link rel="stylesheet" href="css/print.css" media="print">
+        
 
         <!-- Fonts -->
         <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
-        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+        
+        <link rel="stylesheet" href="fonts/fonts.css">
+        
 
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" href="highlight.css">
@@ -36,7 +50,7 @@
         <!-- Provide site root to javascript -->
         <script type="text/javascript">
             var path_to_root = "";
-            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
 
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
@@ -116,9 +130,11 @@
                     <h1 class="menu-title">The Aura User Guide</h1>
 
                     <div class="right-buttons">
+                        
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
+                        
                         
                         <a href="https://github.com/fosskers/aura" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
@@ -151,11 +167,11 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#package-storage-locations" id="package-storage-locations">Package Storage Locations</a></h1>
+                        <h1 id="package-storage-locations"><a class="header" href="#package-storage-locations">Package Storage Locations</a></h1>
 <p>This page explains all important filepaths for Aura. Build paths can <a href="configuration.html">be
 configured</a> in <code>aura.conf</code> or changed dynamically with CLI
 flags.</p>
-<h2><a class="header" href="#where-are-packages-built" id="where-are-packages-built">Where are packages built?</a></h2>
+<h2 id="where-are-packages-built"><a class="header" href="#where-are-packages-built">Where are packages built?</a></h2>
 <p>By default, non-VCS packages are built within <code>/tmp</code> in a semi-randomly named
 directory. This avoids odd collisions during repeated attempts at building a
 package. <code>/tmp</code> is cleared automatically upon a restart of the machine, but for
@@ -167,11 +183,11 @@ in a directory other than <code>/tmp</code>.</p>
 subdirectories with fixed names. This is so that they can be reused during
 upgrades; <code>makepkg</code> is smart enough to do <code>git pull</code> instead of a full <code>git clone</code> in these cases.</p>
 <p><code>--vcspath</code> can be passed to <code>-A</code> to build/store such packages elsewhere.</p>
-<h2><a class="header" href="#where-are-packages-stored" id="where-are-packages-stored">Where are packages stored?</a></h2>
+<h2 id="where-are-packages-stored"><a class="header" href="#where-are-packages-stored">Where are packages stored?</a></h2>
 <p>Once built, all packages are sent to the Pacman cache: <code>/var/cache/pacman/pkg/</code>.</p>
 <p>This directory can grow quite large, but can be cleaned with
 <a href="downgrading.html"><code>-Cc</code></a>.</p>
-<h2><a class="header" href="#what-other-filepaths-are-there" id="what-other-filepaths-are-there">What other filepaths are there?</a></h2>
+<h2 id="what-other-filepaths-are-there"><a class="header" href="#what-other-filepaths-are-there">What other filepaths are there?</a></h2>
 <p>Aura stores historical PKGBUILDs in <code>/var/cache/aura/pkgbuilds/</code>, and saved
 package set states in <code>/var/cache/aura/states/</code>.</p>
 
@@ -217,10 +233,10 @@ package set states in <code>/var/cache/aura/states/</code>.</p>
         
 
         
-        
+
         
         <script type="text/javascript">
-            window.playpen_copyable = true;
+            window.playground_copyable = true;
         </script>
         
 

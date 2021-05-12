@@ -5,22 +5,36 @@
         <meta charset="UTF-8">
         <title>Aura-as-Pacman - The Aura User Guide</title>
         
+        
+
+
+        <!-- Custom HTML head -->
+        
+
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="A full usage guide for Aura.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff" />
 
+        
+        <link rel="icon" href="favicon.svg">
+        
+        
         <link rel="shortcut icon" href="favicon.png">
+        
         <link rel="stylesheet" href="css/variables.css">
         <link rel="stylesheet" href="css/general.css">
         <link rel="stylesheet" href="css/chrome.css">
+        
         <link rel="stylesheet" href="css/print.css" media="print">
+        
 
         <!-- Fonts -->
         <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
-        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+        
+        <link rel="stylesheet" href="fonts/fonts.css">
+        
 
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" href="highlight.css">
@@ -36,7 +50,7 @@
         <!-- Provide site root to javascript -->
         <script type="text/javascript">
             var path_to_root = "";
-            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
 
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
@@ -116,9 +130,11 @@
                     <h1 class="menu-title">The Aura User Guide</h1>
 
                     <div class="right-buttons">
+                        
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
+                        
                         
                         <a href="https://github.com/fosskers/aura" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
@@ -151,7 +167,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#aura-as-pacman" id="aura-as-pacman">Aura-as-Pacman</a></h1>
+                        <h1 id="aura-as-pacman"><a class="header" href="#aura-as-pacman">Aura-as-Pacman</a></h1>
 <p><code>aura</code> can be used in place of <code>pacman</code> in all situations. At the very least,
 this is two fewer letters to type!</p>
 <p>Below are some common <code>pacman</code> idioms for managing your system. The list is a
@@ -159,22 +175,22 @@ handy reference but not exhaustive. For everything that <code>pacman</code> is c
 see <code>man pacman</code>.</p>
 <p>To find out how to use Aura to interact with the AUR, continue to <a href="aur.html">the next
 page</a>.</p>
-<h2><a class="header" href="#package-installation-and-updates" id="package-installation-and-updates">Package Installation and Updates</a></h2>
-<h3><a class="header" href="#install-an-official-package" id="install-an-official-package">Install an official package</a></h3>
+<h2 id="package-installation-and-updates"><a class="header" href="#package-installation-and-updates">Package Installation and Updates</a></h2>
+<h3 id="install-an-official-package"><a class="header" href="#install-an-official-package">Install an official package</a></h3>
 <pre><code>sudo aura -S firefox
 </code></pre>
 <blockquote>
 <p><strong>💡 Note:</strong> Like with <code>pacman</code>, <code>sudo</code> must be used for all &quot;admin&quot; actions.</p>
 </blockquote>
-<h3><a class="header" href="#update-all-official-packages" id="update-all-official-packages">Update all official packages</a></h3>
+<h3 id="update-all-official-packages"><a class="header" href="#update-all-official-packages">Update all official packages</a></h3>
 <p>The classic command.</p>
 <pre><code>sudo aura -Syu
 </code></pre>
-<h3><a class="header" href="#install-a-package-built-with-makepkg" id="install-a-package-built-with-makepkg">Install a package built with <code>makepkg</code></a></h3>
+<h3 id="install-a-package-built-with-makepkg"><a class="header" href="#install-a-package-built-with-makepkg">Install a package built with <code>makepkg</code></a></h3>
 <pre><code>sudo aura -U foobar-1.2.3-1-x86_64.pkg.tar.xz
 </code></pre>
-<h2><a class="header" href="#removing-packages" id="removing-packages">Removing Packages</a></h2>
-<h3><a class="header" href="#the-package-and-all-unneeded-dependencies" id="the-package-and-all-unneeded-dependencies">The package and all unneeded dependencies</a></h3>
+<h2 id="removing-packages"><a class="header" href="#removing-packages">Removing Packages</a></h2>
+<h3 id="the-package-and-all-unneeded-dependencies"><a class="header" href="#the-package-and-all-unneeded-dependencies">The package and all unneeded dependencies</a></h3>
 <p>From the manpage of <code>pacman</code>:</p>
 <blockquote>
 <p>This operation is recursive and analogous to a backwards <code>--sync</code> operation,
@@ -182,15 +198,15 @@ and it helps keep a clean system without orphans.</p>
 </blockquote>
 <pre><code>sudo aura -Rsu firefox
 </code></pre>
-<h3><a class="header" href="#the-package-and-everything-that-depends-on-it" id="the-package-and-everything-that-depends-on-it">The package and everything that depends on it</a></h3>
+<h3 id="the-package-and-everything-that-depends-on-it"><a class="header" href="#the-package-and-everything-that-depends-on-it">The package and everything that depends on it</a></h3>
 <p>Use this with care. See <code>man pacman</code> for more details.</p>
 <pre><code>sudo aura -Rcu firefox
 </code></pre>
-<h2><a class="header" href="#querying-your-system" id="querying-your-system">Querying your System</a></h2>
-<h3><a class="header" href="#searching-an-exact-package" id="searching-an-exact-package">Searching an exact package</a></h3>
+<h2 id="querying-your-system"><a class="header" href="#querying-your-system">Querying your System</a></h2>
+<h3 id="searching-an-exact-package"><a class="header" href="#searching-an-exact-package">Searching an exact package</a></h3>
 <pre><code>aura -Qi firefox
 </code></pre>
-<h3><a class="header" href="#searching-a-local-package-by-description" id="searching-a-local-package-by-description">Searching a local package by description</a></h3>
+<h3 id="searching-a-local-package-by-description"><a class="header" href="#searching-a-local-package-by-description">Searching a local package by description</a></h3>
 <pre><code>&gt; aura -Qs browser
 local/chromium 83.0.4103.61-1
     A web browser built for speed, simplicity, and security
@@ -199,7 +215,7 @@ local/firefox 76.0.1-1
 local/qt5-webengine 5.14.2-3 (qt qt5)
     Provides support for web applications using the Chromium browser project
 </code></pre>
-<h3><a class="header" href="#producing-a-list-of-installed-packages" id="producing-a-list-of-installed-packages">Producing a list of installed packages</a></h3>
+<h3 id="producing-a-list-of-installed-packages"><a class="header" href="#producing-a-list-of-installed-packages">Producing a list of installed packages</a></h3>
 <pre><code>&gt; aura -Q
 a52dec 0.7.4-11
 aalib 1.4rc5-14
@@ -207,11 +223,11 @@ accounts-qml-module 0.7-2
 acetoneiso2 2.3-10
 ... etc ...
 </code></pre>
-<h3><a class="header" href="#discovering-what-package-owns-a-certain-file" id="discovering-what-package-owns-a-certain-file">Discovering what package owns a certain file</a></h3>
+<h3 id="discovering-what-package-owns-a-certain-file"><a class="header" href="#discovering-what-package-owns-a-certain-file">Discovering what package owns a certain file</a></h3>
 <pre><code>&gt; aura -Qo /usr/bin/firefox
 /usr/bin/firefox is owned by firefox 76.0.1-1
 </code></pre>
-<h3><a class="header" href="#discovering-which-files-are-brought-in-by-a-package" id="discovering-which-files-are-brought-in-by-a-package">Discovering which files are brought in by a package</a></h3>
+<h3 id="discovering-which-files-are-brought-in-by-a-package"><a class="header" href="#discovering-which-files-are-brought-in-by-a-package">Discovering which files are brought in by a package</a></h3>
 <pre><code>&gt; aura -Ql firefox
 firefox /usr/
 firefox /usr/bin/
@@ -228,17 +244,17 @@ firefox /usr/bin/
 firefox /usr/bin/firefox
 firefox /usr/lib/firefox/firefox-bin
 </code></pre>
-<h2><a class="header" href="#clearing-your-package-cache" id="clearing-your-package-cache">Clearing your Package Cache</a></h2>
+<h2 id="clearing-your-package-cache"><a class="header" href="#clearing-your-package-cache">Clearing your Package Cache</a></h2>
 <p>Pacman and Aura store built packages in <code>/var/cache/pacman/pkg/</code>. This directory
 can grow quite large, but the following commands can help selectively clear it.</p>
 <blockquote>
 <p><strong>💡 Tip:</strong> The Aura command <code>-Cc</code> offers additional control over clearing
 the cache.</p>
 </blockquote>
-<h3><a class="header" href="#removing-the-tarballs-of-uninstalled-packages" id="removing-the-tarballs-of-uninstalled-packages">Removing the tarballs of uninstalled packages</a></h3>
+<h3 id="removing-the-tarballs-of-uninstalled-packages"><a class="header" href="#removing-the-tarballs-of-uninstalled-packages">Removing the tarballs of uninstalled packages</a></h3>
 <pre><code>sudo aura -Sc
 </code></pre>
-<h3><a class="header" href="#removing-all-tarballs" id="removing-all-tarballs">Removing <em>all</em> tarballs</a></h3>
+<h3 id="removing-all-tarballs"><a class="header" href="#removing-all-tarballs">Removing <em>all</em> tarballs</a></h3>
 <pre><code>sudo aura -Scc
 </code></pre>
 
@@ -284,10 +300,10 @@ the cache.</p>
         
 
         
-        
+
         
         <script type="text/javascript">
-            window.playpen_copyable = true;
+            window.playground_copyable = true;
         </script>
         
 

@@ -5,22 +5,36 @@
         <meta charset="UTF-8">
         <title>Managing Orphan Packages - The Aura User Guide</title>
         
+        
+
+
+        <!-- Custom HTML head -->
+        
+
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="A full usage guide for Aura.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff" />
 
+        
+        <link rel="icon" href="favicon.svg">
+        
+        
         <link rel="shortcut icon" href="favicon.png">
+        
         <link rel="stylesheet" href="css/variables.css">
         <link rel="stylesheet" href="css/general.css">
         <link rel="stylesheet" href="css/chrome.css">
+        
         <link rel="stylesheet" href="css/print.css" media="print">
+        
 
         <!-- Fonts -->
         <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
-        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+        
+        <link rel="stylesheet" href="fonts/fonts.css">
+        
 
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" href="highlight.css">
@@ -36,7 +50,7 @@
         <!-- Provide site root to javascript -->
         <script type="text/javascript">
             var path_to_root = "";
-            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
 
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
@@ -116,9 +130,11 @@
                     <h1 class="menu-title">The Aura User Guide</h1>
 
                     <div class="right-buttons">
+                        
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
+                        
                         
                         <a href="https://github.com/fosskers/aura" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
@@ -151,7 +167,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#managing-orphan-packages" id="managing-orphan-packages">Managing Orphan Packages</a></h1>
+                        <h1 id="managing-orphan-packages"><a class="header" href="#managing-orphan-packages">Managing Orphan Packages</a></h1>
 <p>Orphan packages are those marked as <code>Installed as a dependency for another package</code>, but which are missing the parent package that depended on them. This
 can occur when a package with many dependencies is installed and then later
 removed via a single <code>-R</code> (without <code>-su</code>). Or when a package is upgraded, and
@@ -159,7 +175,7 @@ the new version no longer requires a certain dependency.</p>
 <p>In these cases, the dependencies are left behind and becomes orphans, chewing up
 disk space.</p>
 <p>The <code>-O</code> command can help deal with these.</p>
-<h2><a class="header" href="#what-packages-have-become-orphans" id="what-packages-have-become-orphans">What packages have become orphans?</a></h2>
+<h2 id="what-packages-have-become-orphans"><a class="header" href="#what-packages-have-become-orphans">What packages have become orphans?</a></h2>
 <pre><code>&gt; aura -O
 python-docopt
 python-flask
@@ -190,7 +206,7 @@ Install Script  : No
 Validated By    : Signature
 </code></pre>
 <p>Sure enough, <code>Required By: None</code>.</p>
-<h2><a class="header" href="#uninstalling-orphans" id="uninstalling-orphans">Uninstalling Orphans</a></h2>
+<h2 id="uninstalling-orphans"><a class="header" href="#uninstalling-orphans">Uninstalling Orphans</a></h2>
 <p>Clearing orphans doesn't just save us space now - it saves the space of all
 future upgrades we won't have to download anymore.</p>
 <p><code>-Oj</code> will uninstall all such packages. Under the hood, it passes <code>-Rsu</code> to
@@ -211,7 +227,7 @@ Total Removed Size:  3.12 MiB
 
 :: Do you want to remove these packages? [Y/n]
 </code></pre>
-<h2><a class="header" href="#adopting-an-orphan" id="adopting-an-orphan">Adopting an Orphan</a></h2>
+<h2 id="adopting-an-orphan"><a class="header" href="#adopting-an-orphan">Adopting an Orphan</a></h2>
 <p>Changing a package's install reason from &quot;dependency&quot; to &quot;explicitly installed&quot;
 is possible via <code>pacman</code> alone, but Aura offers a shorthand:</p>
 <pre><code>&gt; sudo aura -Oa python-path-and-address
@@ -260,10 +276,10 @@ python-path-and-address: install reason has been set to 'explicitly installed'
         
 
         
-        
+
         
         <script type="text/javascript">
-            window.playpen_copyable = true;
+            window.playground_copyable = true;
         </script>
         
 

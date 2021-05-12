@@ -7,22 +7,36 @@
         
         <meta name="robots" content="noindex" />
         
+        
+
+
+        <!-- Custom HTML head -->
+        
+
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="A full usage guide for Aura.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff" />
 
+        
+        <link rel="icon" href="favicon.svg">
+        
+        
         <link rel="shortcut icon" href="favicon.png">
+        
         <link rel="stylesheet" href="css/variables.css">
         <link rel="stylesheet" href="css/general.css">
         <link rel="stylesheet" href="css/chrome.css">
+        
         <link rel="stylesheet" href="css/print.css" media="print">
+        
 
         <!-- Fonts -->
         <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
-        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+        
+        <link rel="stylesheet" href="fonts/fonts.css">
+        
 
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" href="highlight.css">
@@ -38,7 +52,7 @@
         <!-- Provide site root to javascript -->
         <script type="text/javascript">
             var path_to_root = "";
-            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
 
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
@@ -118,9 +132,11 @@
                     <h1 class="menu-title">The Aura User Guide</h1>
 
                     <div class="right-buttons">
+                        
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
+                        
                         
                         <a href="https://github.com/fosskers/aura" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
@@ -156,7 +172,7 @@
                         <p align="center">
   <img src="logo.png">
 </p>
-<h1><a class="header" href="#the-aura-user-guide" id="the-aura-user-guide">The Aura User Guide</a></h1>
+<h1 id="the-aura-user-guide"><a class="header" href="#the-aura-user-guide">The Aura User Guide</a></h1>
 <p>Welcome to the User Guide for Aura, a secure, multilingual package manager for
 Arch Linux.</p>
 <p>Aura's original purpose is as an <em>AUR helper</em>, in that it automates the process
@@ -167,48 +183,44 @@ into <a href="install.html">Installation</a>!</p>
 <blockquote>
 <p><strong>💡 Tip:</strong> You can press <code>s</code> at any time to search this book.</p>
 </blockquote>
-<h2><a class="header" href="#contact" id="contact">Contact</a></h2>
+<h2 id="contact"><a class="header" href="#contact">Contact</a></h2>
 <ul>
-<li><strong>Found an issue with Aura?</strong> <a href="https://github.com/fosskers/aura/issues">Visit our Bug
-Tracker!</a></li>
-<li><strong>Want to speak to an Aura dev directly?</strong> <a href="https://gitter.im/aurapm/aura">Visit our Gitter
-Channel!</a></li>
-<li><strong>Who translated Aura?</strong> <a href="https://github.com/fosskers/aura#credits">These fine
-people</a> from all over the world!</li>
+<li><strong>Found an issue with Aura?</strong> <a href="https://github.com/fosskers/aura/issues">Visit our Bug Tracker!</a></li>
+<li><strong>Want to speak to an Aura dev directly?</strong> <a href="https://github.com/fosskers/aura/discussions">Visit our Discussions forum!</a></li>
+<li><strong>Who translated Aura?</strong> <a href="https://github.com/fosskers/aura#credits">These fine people</a> from all over the world!</li>
 <li><strong>Who made that neat logo?</strong> The designer <a href="https://github.com/cristianovitorino">Cristiano Vitorino</a>!</li>
-<li><strong>Who is the original author of Aura?</strong> <a href="https://www.fosskers.ca">Colin
-Woodbury</a> from Canada!</li>
+<li><strong>Who is the original author of Aura?</strong> <a href="https://www.fosskers.ca">Colin Woodbury</a> from Canada!</li>
 </ul>
-<h1><a class="header" href="#the-aura-philosophy" id="the-aura-philosophy">The Aura Philosophy</a></h1>
+<h1 id="the-aura-philosophy"><a class="header" href="#the-aura-philosophy">The Aura Philosophy</a></h1>
 <p>The Aura project began in 2012 as an answer to the shortcomings of other AUR
 helpers. Certain ground-rules were set in the beginning to guide development.
 They are:</p>
-<h3><a class="header" href="#aura-is-pacman" id="aura-is-pacman">Aura is Pacman</a></h3>
+<h3 id="aura-is-pacman"><a class="header" href="#aura-is-pacman">Aura is Pacman</a></h3>
 <p>Aura doesn't just mimic <code>pacman</code>; it <em>is</em> <code>pacman</code>. All <code>pacman</code> operations and
 their sub-options are allowed. Some even hold special meaning in Aura as well.</p>
-<h3><a class="header" href="#arch-is-arch---aur-is-aur" id="arch-is-arch---aur-is-aur">Arch is Arch - AUR is AUR</a></h3>
+<h3 id="arch-is-arch---aur-is-aur"><a class="header" href="#arch-is-arch---aur-is-aur">Arch is Arch - AUR is AUR</a></h3>
 <p><code>-S</code> yields pacman packages and <em>only</em> pacman packages. In Aura, the <code>-A</code>
 operation is introduced for obtaining AUR packages. <code>-A</code> comes with sub-options
 you're used to (<code>-u</code>, <code>-s</code>, <code>-i</code>, etc.) and adds new ones to enhance AUR
 interaction.</p>
-<h3><a class="header" href="#secure-package-building" id="secure-package-building">Secure Package Building</a></h3>
+<h3 id="secure-package-building"><a class="header" href="#secure-package-building">Secure Package Building</a></h3>
 <p>PKGBUILDs from the AUR are raw <code>bash</code> code and can contain anything. It's a
 user's responsibility to verify the contents of a PKGBUILD before building, but
 people sometimes make mistakes and overlook details. Aura scans PKGBUILDs before
 building to detect bash misuse and other exploits. The <code>-P</code> command is also
 provided for scanning your own PKGBUILDs.</p>
-<h3><a class="header" href="#downgradibility" id="downgradibility">Downgradibility</a></h3>
+<h3 id="downgradibility"><a class="header" href="#downgradibility">Downgradibility</a></h3>
 <p>Aura allows you to downgrade individual packages to previous versions with <code>-C</code>.
 It also handles snapshots of your entire system, so that you can roll back whole
 sets of packages when problems arise. The option <code>-B</code> will save a package state,
 and <code>-Br</code> will restore a state you select. <code>-Su</code> and <code>-Au</code> also invoke a save
 automatically.</p>
-<h3><a class="header" href="#arch-linux-for-everyone" id="arch-linux-for-everyone">Arch Linux for Everyone</a></h3>
+<h3 id="arch-linux-for-everyone"><a class="header" href="#arch-linux-for-everyone">Arch Linux for Everyone</a></h3>
 <p>English is the dominant language of computing and the internet. That said, it's
 natural that some people are going to be more comfortable working in their
 native language. From the beginning, Aura has been built with multiple-language
 support in mind, making it very easy to add new ones.</p>
-<h3><a class="header" href="#haskell" id="haskell">Haskell</a></h3>
+<h3 id="haskell"><a class="header" href="#haskell">Haskell</a></h3>
 <p>Aura is written in Haskell, which means easy development and beautiful code.
 Please feel free to use it as a Haskell reference. Aura code demonstrates:</p>
 <ul>
@@ -220,12 +232,12 @@ Please feel free to use it as a Haskell reference. Aura code demonstrates:</p>
 <li>Logging (<code>rio</code>)</li>
 <li>Modern Haskell project architecture (config, CI, distribution)</li>
 </ul>
-<h1><a class="header" href="#installation" id="installation">Installation</a></h1>
+<h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
 <p>Aura is software specific to <a href="https://www.archlinux.org/">Arch Linux</a>. It should
 also work on Arch-derivatives like <a href="https://manjaro.org/">Manjaro</a>, but would
 not be useful on any other Linux distribution.</p>
-<h2><a class="header" href="#from-the-aur" id="from-the-aur">From the AUR</a></h2>
-<h3><a class="header" href="#prebuilt-binary" id="prebuilt-binary">Prebuilt Binary</a></h3>
+<h2 id="from-the-aur"><a class="header" href="#from-the-aur">From the AUR</a></h2>
+<h3 id="prebuilt-binary"><a class="header" href="#prebuilt-binary">Prebuilt Binary</a></h3>
 <p>It is recommended to install the <a href="https://aur.archlinux.org/packages/aura-bin/">prebuilt
 binary</a> of Aura:</p>
 <pre><code class="language-bash">git clone https://aur.archlinux.org/aura-bin.git
@@ -233,7 +245,7 @@ cd aura-bin
 makepkg -s
 sudo pacman -U &lt;the-package-file-that-makepkg-produces&gt;
 </code></pre>
-<h3><a class="header" href="#source-package" id="source-package">Source Package</a></h3>
+<h3 id="source-package"><a class="header" href="#source-package">Source Package</a></h3>
 <p>For users who choose to build packages themselves or who already have an
 established Haskell development environment, the vanilla
 <a href="https://aur.archlinux.org/packages/aura">aura</a> package is also available.</p>
@@ -242,7 +254,7 @@ cd aura
 makepkg -s
 sudo pacman -U &lt;the-package-file-that-makepkg-produces&gt;
 </code></pre>
-<h2><a class="header" href="#building-from-source" id="building-from-source">Building from Source</a></h2>
+<h2 id="building-from-source"><a class="header" href="#building-from-source">Building from Source</a></h2>
 <p>You will need the <a href="https://docs.haskellstack.org/en/stable/README/">Stack Tool</a>
 for Haskell to compile Aura yourself. Then:</p>
 <pre><code class="language-bash">git clone https://github.com/fosskers/aura.git
@@ -253,12 +265,12 @@ stack install -- aura
 complete, your <code>aura</code> binary will be available in <code>/home/YOU/.local/bin/</code>.</p>
 <p>Keep in mind that this version of Aura won't be tracked in <code>pacman</code>'s database,
 and so it will be easier to miss updates.</p>
-<h1><a class="header" href="#usage" id="usage">Usage</a></h1>
+<h1 id="usage"><a class="header" href="#usage">Usage</a></h1>
 <blockquote>
 <p><strong>💡 Did you know?</strong> Aura has a manpage with every flag explained in detail.
 Check it out in your terminal with <code>man aura</code>.</p>
 </blockquote>
-<h2><a class="header" href="#pacman-commands" id="pacman-commands">Pacman Commands</a></h2>
+<h2 id="pacman-commands"><a class="header" href="#pacman-commands">Pacman Commands</a></h2>
 <p>First and foremost, Aura is compatible with <code>pacman</code>. This gives us access to
 the following <strong>Commands</strong>:</p>
 <ul>
@@ -316,7 +328,7 @@ qt&gt;100
 <li><code>-V</code>: Display a fun version message.</li>
 </ul>
 <p>See <a href="pacman.html">the next page</a> for a list of common Pacman idioms.</p>
-<h2><a class="header" href="#aura-commands" id="aura-commands">Aura Commands</a></h2>
+<h2 id="aura-commands"><a class="header" href="#aura-commands">Aura Commands</a></h2>
 <p>Aura also provides a number of new Commands:</p>
 <ul>
 <li><a href="aur.html"><code>-A</code></a>: Search and install packages from the AUR.</li>
@@ -370,7 +382,7 @@ vim
 aura &gt;&gt;= sudo indicates that someone may be trying to gain root access to your machine.
 aura &gt;&gt;= Potential PKGBUILD vulnerabilities detected.
 </code></pre>
-<h1><a class="header" href="#aura-as-pacman" id="aura-as-pacman">Aura-as-Pacman</a></h1>
+<h1 id="aura-as-pacman"><a class="header" href="#aura-as-pacman">Aura-as-Pacman</a></h1>
 <p><code>aura</code> can be used in place of <code>pacman</code> in all situations. At the very least,
 this is two fewer letters to type!</p>
 <p>Below are some common <code>pacman</code> idioms for managing your system. The list is a
@@ -378,22 +390,22 @@ handy reference but not exhaustive. For everything that <code>pacman</code> is c
 see <code>man pacman</code>.</p>
 <p>To find out how to use Aura to interact with the AUR, continue to <a href="aur.html">the next
 page</a>.</p>
-<h2><a class="header" href="#package-installation-and-updates" id="package-installation-and-updates">Package Installation and Updates</a></h2>
-<h3><a class="header" href="#install-an-official-package" id="install-an-official-package">Install an official package</a></h3>
+<h2 id="package-installation-and-updates"><a class="header" href="#package-installation-and-updates">Package Installation and Updates</a></h2>
+<h3 id="install-an-official-package"><a class="header" href="#install-an-official-package">Install an official package</a></h3>
 <pre><code>sudo aura -S firefox
 </code></pre>
 <blockquote>
 <p><strong>💡 Note:</strong> Like with <code>pacman</code>, <code>sudo</code> must be used for all &quot;admin&quot; actions.</p>
 </blockquote>
-<h3><a class="header" href="#update-all-official-packages" id="update-all-official-packages">Update all official packages</a></h3>
+<h3 id="update-all-official-packages"><a class="header" href="#update-all-official-packages">Update all official packages</a></h3>
 <p>The classic command.</p>
 <pre><code>sudo aura -Syu
 </code></pre>
-<h3><a class="header" href="#install-a-package-built-with-makepkg" id="install-a-package-built-with-makepkg">Install a package built with <code>makepkg</code></a></h3>
+<h3 id="install-a-package-built-with-makepkg"><a class="header" href="#install-a-package-built-with-makepkg">Install a package built with <code>makepkg</code></a></h3>
 <pre><code>sudo aura -U foobar-1.2.3-1-x86_64.pkg.tar.xz
 </code></pre>
-<h2><a class="header" href="#removing-packages" id="removing-packages">Removing Packages</a></h2>
-<h3><a class="header" href="#the-package-and-all-unneeded-dependencies" id="the-package-and-all-unneeded-dependencies">The package and all unneeded dependencies</a></h3>
+<h2 id="removing-packages"><a class="header" href="#removing-packages">Removing Packages</a></h2>
+<h3 id="the-package-and-all-unneeded-dependencies"><a class="header" href="#the-package-and-all-unneeded-dependencies">The package and all unneeded dependencies</a></h3>
 <p>From the manpage of <code>pacman</code>:</p>
 <blockquote>
 <p>This operation is recursive and analogous to a backwards <code>--sync</code> operation,
@@ -401,15 +413,15 @@ and it helps keep a clean system without orphans.</p>
 </blockquote>
 <pre><code>sudo aura -Rsu firefox
 </code></pre>
-<h3><a class="header" href="#the-package-and-everything-that-depends-on-it" id="the-package-and-everything-that-depends-on-it">The package and everything that depends on it</a></h3>
+<h3 id="the-package-and-everything-that-depends-on-it"><a class="header" href="#the-package-and-everything-that-depends-on-it">The package and everything that depends on it</a></h3>
 <p>Use this with care. See <code>man pacman</code> for more details.</p>
 <pre><code>sudo aura -Rcu firefox
 </code></pre>
-<h2><a class="header" href="#querying-your-system" id="querying-your-system">Querying your System</a></h2>
-<h3><a class="header" href="#searching-an-exact-package" id="searching-an-exact-package">Searching an exact package</a></h3>
+<h2 id="querying-your-system"><a class="header" href="#querying-your-system">Querying your System</a></h2>
+<h3 id="searching-an-exact-package"><a class="header" href="#searching-an-exact-package">Searching an exact package</a></h3>
 <pre><code>aura -Qi firefox
 </code></pre>
-<h3><a class="header" href="#searching-a-local-package-by-description" id="searching-a-local-package-by-description">Searching a local package by description</a></h3>
+<h3 id="searching-a-local-package-by-description"><a class="header" href="#searching-a-local-package-by-description">Searching a local package by description</a></h3>
 <pre><code>&gt; aura -Qs browser
 local/chromium 83.0.4103.61-1
     A web browser built for speed, simplicity, and security
@@ -418,7 +430,7 @@ local/firefox 76.0.1-1
 local/qt5-webengine 5.14.2-3 (qt qt5)
     Provides support for web applications using the Chromium browser project
 </code></pre>
-<h3><a class="header" href="#producing-a-list-of-installed-packages" id="producing-a-list-of-installed-packages">Producing a list of installed packages</a></h3>
+<h3 id="producing-a-list-of-installed-packages"><a class="header" href="#producing-a-list-of-installed-packages">Producing a list of installed packages</a></h3>
 <pre><code>&gt; aura -Q
 a52dec 0.7.4-11
 aalib 1.4rc5-14
@@ -426,11 +438,11 @@ accounts-qml-module 0.7-2
 acetoneiso2 2.3-10
 ... etc ...
 </code></pre>
-<h3><a class="header" href="#discovering-what-package-owns-a-certain-file" id="discovering-what-package-owns-a-certain-file">Discovering what package owns a certain file</a></h3>
+<h3 id="discovering-what-package-owns-a-certain-file"><a class="header" href="#discovering-what-package-owns-a-certain-file">Discovering what package owns a certain file</a></h3>
 <pre><code>&gt; aura -Qo /usr/bin/firefox
 /usr/bin/firefox is owned by firefox 76.0.1-1
 </code></pre>
-<h3><a class="header" href="#discovering-which-files-are-brought-in-by-a-package" id="discovering-which-files-are-brought-in-by-a-package">Discovering which files are brought in by a package</a></h3>
+<h3 id="discovering-which-files-are-brought-in-by-a-package"><a class="header" href="#discovering-which-files-are-brought-in-by-a-package">Discovering which files are brought in by a package</a></h3>
 <pre><code>&gt; aura -Ql firefox
 firefox /usr/
 firefox /usr/bin/
@@ -447,20 +459,20 @@ firefox /usr/bin/
 firefox /usr/bin/firefox
 firefox /usr/lib/firefox/firefox-bin
 </code></pre>
-<h2><a class="header" href="#clearing-your-package-cache" id="clearing-your-package-cache">Clearing your Package Cache</a></h2>
+<h2 id="clearing-your-package-cache"><a class="header" href="#clearing-your-package-cache">Clearing your Package Cache</a></h2>
 <p>Pacman and Aura store built packages in <code>/var/cache/pacman/pkg/</code>. This directory
 can grow quite large, but the following commands can help selectively clear it.</p>
 <blockquote>
 <p><strong>💡 Tip:</strong> The Aura command <code>-Cc</code> offers additional control over clearing
 the cache.</p>
 </blockquote>
-<h3><a class="header" href="#removing-the-tarballs-of-uninstalled-packages" id="removing-the-tarballs-of-uninstalled-packages">Removing the tarballs of uninstalled packages</a></h3>
+<h3 id="removing-the-tarballs-of-uninstalled-packages"><a class="header" href="#removing-the-tarballs-of-uninstalled-packages">Removing the tarballs of uninstalled packages</a></h3>
 <pre><code>sudo aura -Sc
 </code></pre>
-<h3><a class="header" href="#removing-all-tarballs" id="removing-all-tarballs">Removing <em>all</em> tarballs</a></h3>
+<h3 id="removing-all-tarballs"><a class="header" href="#removing-all-tarballs">Removing <em>all</em> tarballs</a></h3>
 <pre><code>sudo aura -Scc
 </code></pre>
-<h1><a class="header" href="#installing-aur-packages" id="installing-aur-packages">Installing AUR Packages</a></h1>
+<h1 id="installing-aur-packages"><a class="header" href="#installing-aur-packages">Installing AUR Packages</a></h1>
 <p>Let's walk through the full process of installing an AUR package. This will show
 us how to discover packages, install them, and upgrade them.</p>
 <blockquote>
@@ -471,8 +483,8 @@ us how to discover packages, install them, and upgrade them.</p>
 <p><strong>💡 Tip:</strong> For the full list of all options with detailed descriptions, see
 <code>man aura</code>.</p>
 </blockquote>
-<h2><a class="header" href="#installing-a-package" id="installing-a-package">Installing a Package</a></h2>
-<h3><a class="header" href="#searching-for-a-package" id="searching-for-a-package">Searching for a Package</a></h3>
+<h2 id="installing-a-package"><a class="header" href="#installing-a-package">Installing a Package</a></h2>
+<h3 id="searching-for-a-package"><a class="header" href="#searching-for-a-package">Searching for a Package</a></h3>
 <p>Let's say we want to install a package that can render <code>.md</code> files for us.
 First, we search the AUR for candidates:</p>
 <pre><code>&gt; aura -As readme
@@ -499,7 +511,7 @@ aur/python-grip 4.5.2-1 (13 | 0.14)
     Preview GitHub Markdown files like Readme locally before committing them
 </code></pre>
 <p><code>--abc</code> can be used to sort alphabetically instead.</p>
-<h3><a class="header" href="#scrutinizing-a-package" id="scrutinizing-a-package">Scrutinizing a Package</a></h3>
+<h3 id="scrutinizing-a-package"><a class="header" href="#scrutinizing-a-package">Scrutinizing a Package</a></h3>
 <p>Alright, <code>python-grip</code> looks good. Let's take a closer look...</p>
 <pre><code>&gt; aura -Ai python-grip
 Repository  : aur
@@ -547,7 +559,7 @@ security scanning:</p>
 don't need to do <code>-P</code> yourself - the same check happens automatically before
 building packages with <code>-A</code>. See <a href="security.html">PKGBUILD Security Analysis</a> for
 more information.</p>
-<h3><a class="header" href="#a-normal-install" id="a-normal-install">A Normal Install</a></h3>
+<h3 id="a-normal-install"><a class="header" href="#a-normal-install">A Normal Install</a></h3>
 <pre><code>&gt; sudo aura -A python-grip
 aura &gt;&gt;= Determining dependencies...
 
@@ -611,7 +623,7 @@ hidden.</li>
 <li>If two or more packages don't depend on each other, they'll be built one after
 another and installed at the same time. This avoids needless user prompting.</li>
 </ul>
-<h3><a class="header" href="#a-verbose-install" id="a-verbose-install">A Verbose Install</a></h3>
+<h3 id="a-verbose-install"><a class="header" href="#a-verbose-install">A Verbose Install</a></h3>
 <p>But what if we <em>do</em> want to see the output from <code>makepkg</code>? For long builds (e.g.
 <a href="https://aur.archlinux.org/packages/aseprite/">aseprite</a>), it can be reassuring
 to see the ongoing build output.</p>
@@ -654,7 +666,7 @@ aura &gt;&gt;= Building python-path-and-address...
 ... etc ...
 </code></pre>
 <p>Wonderful.</p>
-<h3><a class="header" href="#automatically-removing-makedepends" id="automatically-removing-makedepends">Automatically Removing <code>makedepends</code></a></h3>
+<h3 id="automatically-removing-makedepends"><a class="header" href="#automatically-removing-makedepends">Automatically Removing <code>makedepends</code></a></h3>
 <p>There's a difference between the dependencies that a package needs to <em>build</em>
 and the dependencies it needs to <em>run</em>. We call the former <em>makedepends</em>. Once a
 package is installed, we no longer need its makedepends sitting around on our
@@ -678,7 +690,7 @@ Net Upgrade Size:      0.00 MiB
 <p>Ah, there were none in this case. Since <code>python-grip</code> is a Python package, it
 never really has <code>makedepends</code>. That's okay - it's a good habit to use <code>-a</code>,
 especially when updating all your AUR packages at once (see below).</p>
-<h3><a class="header" href="#altering-the-pkgbuild-before-building" id="altering-the-pkgbuild-before-building">Altering the PKGBUILD Before Building</a></h3>
+<h3 id="altering-the-pkgbuild-before-building"><a class="header" href="#altering-the-pkgbuild-before-building">Altering the PKGBUILD Before Building</a></h3>
 <p>Sometimes you want to change something specific about how a package is built.
 Without an AUR helper, you'd clone the package from the AUR, edit the PKGBUILD,
 and then run <code>makepkg</code>, handling dependencies yourself.</p>
@@ -726,7 +738,7 @@ succeed after you hotedit), use the <code>--skipdepcheck</code> flag. See issue
 package, it's recommended that you maintain a separate PKGBUILD and call
 <code>makepkg</code> yourself.</li>
 </ul>
-<h2><a class="header" href="#updating-your-aur-packages" id="updating-your-aur-packages">Updating your AUR Packages</a></h2>
+<h2 id="updating-your-aur-packages"><a class="header" href="#updating-your-aur-packages">Updating your AUR Packages</a></h2>
 <p><code>sudo aura -Ayu</code> works, but <code>sudo aura -Auax</code> is a more common way to update
 your installed AUR packages.</p>
 <ul>
@@ -754,7 +766,7 @@ aura &gt;&gt;= Continue? [Y/n]
 you update your system and there is a serious problem, you can roll back with
 <code>-Br</code> and return to the state that was just saved. See <a href="snapshots.html">Package Set
 Snapshots</a> for more detail.</p>
-<h3><a class="header" href="#displaying-pkgbuild-changes" id="displaying-pkgbuild-changes">Displaying PKGBUILD Changes</a></h3>
+<h3 id="displaying-pkgbuild-changes"><a class="header" href="#displaying-pkgbuild-changes">Displaying PKGBUILD Changes</a></h3>
 <p>Hey wait a minute, aren't we supposed to check PKGBUILDs before building
 packages? <code>-k</code> will show us any changes that were made to a PKGBUILD compared to
 the version we have installed:</p>
@@ -799,7 +811,7 @@ aura &gt;&gt;= AUR Packages:
 aseprite
 aura &gt;&gt;= Continue? [Y/n]
 </code></pre>
-<h3><a class="header" href="#including--git-packages" id="including--git-packages">Including <code>*-git</code> Packages</a></h3>
+<h3 id="including--git-packages"><a class="header" href="#including--git-packages">Including <code>*-git</code> Packages</a></h3>
 <p>The AUR has many packages postfixed with <code>-git</code>, <code>-svn</code>, etc. These typically
 pull straight from the <code>master</code> branch of some code respository, and so the idea
 of comparing version numbers to detect updates doesn't work as well.</p>
@@ -831,13 +843,13 @@ so that updates invoke a <code>git pull</code> instead of a full <code>git clone
 be expensive!).</p>
 <p>See <a href="storage.html">the next page</a> for more information.</p>
 </blockquote>
-<h3><a class="header" href="#forcing-a-rebuild" id="forcing-a-rebuild">Forcing a Rebuild</a></h3>
+<h3 id="forcing-a-rebuild"><a class="header" href="#forcing-a-rebuild">Forcing a Rebuild</a></h3>
 <p>By default, Aura won't rebuild a package if the most recent version is already
 installed (or even just available in your package cache). But sometimes you <em>do</em>
 want to force a rebuild. For instance, some <code>-git</code> packages have no concept of a
 version number. Even with <code>--devel</code>, an update will never be detected. In these
 cases, <code>--force</code> will cause the package to be completely rebuilt.</p>
-<h3><a class="header" href="#blindly-accepting-all-prompts" id="blindly-accepting-all-prompts">Blindly Accepting all Prompts</a></h3>
+<h3 id="blindly-accepting-all-prompts"><a class="header" href="#blindly-accepting-all-prompts">Blindly Accepting all Prompts</a></h3>
 <p>Tired of pressing the <code>Enter</code> key? Or maybe you've automated <code>aura</code> into a
 script. In these cases, you may want to accept all prompts automatically.
 <code>pacman</code> exposes the <code>--noconfirm</code> flag for this, which also affects Aura.</p>
@@ -846,11 +858,11 @@ script. In these cases, you may want to accept all prompts automatically.
 not proceed with building, even if <code>--noconfirm</code> was given.</p>
 <p>See <a href="security.html">PKGBUILD Security Analysis</a> for more information.</p>
 </blockquote>
-<h1><a class="header" href="#package-storage-locations" id="package-storage-locations">Package Storage Locations</a></h1>
+<h1 id="package-storage-locations"><a class="header" href="#package-storage-locations">Package Storage Locations</a></h1>
 <p>This page explains all important filepaths for Aura. Build paths can <a href="configuration.html">be
 configured</a> in <code>aura.conf</code> or changed dynamically with CLI
 flags.</p>
-<h2><a class="header" href="#where-are-packages-built" id="where-are-packages-built">Where are packages built?</a></h2>
+<h2 id="where-are-packages-built"><a class="header" href="#where-are-packages-built">Where are packages built?</a></h2>
 <p>By default, non-VCS packages are built within <code>/tmp</code> in a semi-randomly named
 directory. This avoids odd collisions during repeated attempts at building a
 package. <code>/tmp</code> is cleared automatically upon a restart of the machine, but for
@@ -862,22 +874,22 @@ in a directory other than <code>/tmp</code>.</p>
 subdirectories with fixed names. This is so that they can be reused during
 upgrades; <code>makepkg</code> is smart enough to do <code>git pull</code> instead of a full <code>git clone</code> in these cases.</p>
 <p><code>--vcspath</code> can be passed to <code>-A</code> to build/store such packages elsewhere.</p>
-<h2><a class="header" href="#where-are-packages-stored" id="where-are-packages-stored">Where are packages stored?</a></h2>
+<h2 id="where-are-packages-stored"><a class="header" href="#where-are-packages-stored">Where are packages stored?</a></h2>
 <p>Once built, all packages are sent to the Pacman cache: <code>/var/cache/pacman/pkg/</code>.</p>
 <p>This directory can grow quite large, but can be cleaned with
 <a href="downgrading.html"><code>-Cc</code></a>.</p>
-<h2><a class="header" href="#what-other-filepaths-are-there" id="what-other-filepaths-are-there">What other filepaths are there?</a></h2>
+<h2 id="what-other-filepaths-are-there"><a class="header" href="#what-other-filepaths-are-there">What other filepaths are there?</a></h2>
 <p>Aura stores historical PKGBUILDs in <code>/var/cache/aura/pkgbuilds/</code>, and saved
 package set states in <code>/var/cache/aura/states/</code>.</p>
-<h1><a class="header" href="#downgrading-packages" id="downgrading-packages">Downgrading Packages</a></h1>
+<h1 id="downgrading-packages"><a class="header" href="#downgrading-packages">Downgrading Packages</a></h1>
 <p>The <code>-C</code> command is used to interact with the Package Cache.</p>
-<h2><a class="header" href="#searching-the-cache" id="searching-the-cache">Searching the Cache</a></h2>
+<h2 id="searching-the-cache"><a class="header" href="#searching-the-cache">Searching the Cache</a></h2>
 <p><code>-Cs</code> can show us what's available in the cache.</p>
 <pre><code>&gt; aura -Cs firefox
 /var/cache/pacman/pkg/firefox-75.0-2-x86_64.pkg.tar.zst
 /var/cache/pacman/pkg/firefox-76.0.1-1-x86_64.pkg.tar.zst
 </code></pre>
-<h2><a class="header" href="#downgrading-or-installing-lost-versions" id="downgrading-or-installing-lost-versions">Downgrading or Installing &quot;Lost&quot; Versions</a></h2>
+<h2 id="downgrading-or-installing-lost-versions"><a class="header" href="#downgrading-or-installing-lost-versions">Downgrading or Installing &quot;Lost&quot; Versions</a></h2>
 <p>Let's say the newest version of some package is somehow broken. Let's downgrade:</p>
 <pre><code>&gt; sudo aura -C firefox
 aura &gt;&gt;= What version of firefox do you want?
@@ -902,7 +914,7 @@ Net Upgrade Size:       -2.08 MiB
 </code></pre>
 <p>In fact, <code>-C</code> works even if we no longer have that package installed. All that
 matters is whether you have a copy of the old version in your cache.</p>
-<h2><a class="header" href="#cleaning-the-cache" id="cleaning-the-cache">Cleaning the Cache</a></h2>
+<h2 id="cleaning-the-cache"><a class="header" href="#cleaning-the-cache">Cleaning the Cache</a></h2>
 <p><code>-Cc</code> can help keep our cache small.</p>
 <pre><code>&gt; sudo aura -Cc 2
 aura &gt;&gt;= The cache contains 2050 packages, consuming 5887 megabytes.
@@ -911,7 +923,7 @@ aura &gt;&gt;= The rest will be deleted. Okay? [Y/n]
 aura &gt;&gt;= Cleaning package cache...
 aura &gt;&gt;= 529 megabytes freed.
 </code></pre>
-<h1><a class="header" href="#managing-orphan-packages" id="managing-orphan-packages">Managing Orphan Packages</a></h1>
+<h1 id="managing-orphan-packages"><a class="header" href="#managing-orphan-packages">Managing Orphan Packages</a></h1>
 <p>Orphan packages are those marked as <code>Installed as a dependency for another package</code>, but which are missing the parent package that depended on them. This
 can occur when a package with many dependencies is installed and then later
 removed via a single <code>-R</code> (without <code>-su</code>). Or when a package is upgraded, and
@@ -919,7 +931,7 @@ the new version no longer requires a certain dependency.</p>
 <p>In these cases, the dependencies are left behind and becomes orphans, chewing up
 disk space.</p>
 <p>The <code>-O</code> command can help deal with these.</p>
-<h2><a class="header" href="#what-packages-have-become-orphans" id="what-packages-have-become-orphans">What packages have become orphans?</a></h2>
+<h2 id="what-packages-have-become-orphans"><a class="header" href="#what-packages-have-become-orphans">What packages have become orphans?</a></h2>
 <pre><code>&gt; aura -O
 python-docopt
 python-flask
@@ -950,7 +962,7 @@ Install Script  : No
 Validated By    : Signature
 </code></pre>
 <p>Sure enough, <code>Required By: None</code>.</p>
-<h2><a class="header" href="#uninstalling-orphans" id="uninstalling-orphans">Uninstalling Orphans</a></h2>
+<h2 id="uninstalling-orphans"><a class="header" href="#uninstalling-orphans">Uninstalling Orphans</a></h2>
 <p>Clearing orphans doesn't just save us space now - it saves the space of all
 future upgrades we won't have to download anymore.</p>
 <p><code>-Oj</code> will uninstall all such packages. Under the hood, it passes <code>-Rsu</code> to
@@ -971,13 +983,13 @@ Total Removed Size:  3.12 MiB
 
 :: Do you want to remove these packages? [Y/n]
 </code></pre>
-<h2><a class="header" href="#adopting-an-orphan" id="adopting-an-orphan">Adopting an Orphan</a></h2>
+<h2 id="adopting-an-orphan"><a class="header" href="#adopting-an-orphan">Adopting an Orphan</a></h2>
 <p>Changing a package's install reason from &quot;dependency&quot; to &quot;explicitly installed&quot;
 is possible via <code>pacman</code> alone, but Aura offers a shorthand:</p>
 <pre><code>&gt; sudo aura -Oa python-path-and-address
 python-path-and-address: install reason has been set to 'explicitly installed'
 </code></pre>
-<h1><a class="header" href="#saving-package-set-snapshots" id="saving-package-set-snapshots">Saving Package Set Snapshots</a></h1>
+<h1 id="saving-package-set-snapshots"><a class="header" href="#saving-package-set-snapshots">Saving Package Set Snapshots</a></h1>
 <p>Arch Linux (and Linux in general) used to have a reputation of breaking every
 time packages were upgraded. Around 2010, Aura's author used to run Arch on a
 Macbook, and such catastrophic breakage <em>did</em> occur every six months or so. But
@@ -985,7 +997,7 @@ fast-forward to the present day, and such problems are rare. Even so, the idea
 of &quot;whole system rollback&quot; is spreading, and even since those early Arch-on-Mac
 days, Aura has had the <code>-B</code> Command for saving and restoring entire package
 sets.</p>
-<h2><a class="header" href="#saving-a-package-set" id="saving-a-package-set">Saving a Package Set</a></h2>
+<h2 id="saving-a-package-set"><a class="header" href="#saving-a-package-set">Saving a Package Set</a></h2>
 <pre><code>&gt; sudo aura -B
 aura &gt;&gt;= Saved package state.
 </code></pre>
@@ -1006,7 +1018,7 @@ aura &gt;&gt;= Saved package state.
 <p>Simple enough - a list of all installed packages with their versions. We'll talk
 about <code>pinned</code> below.</p>
 <p>These files are in JSON format in case other tools wish to read them.</p>
-<h2><a class="header" href="#restoring-a-package-set" id="restoring-a-package-set">Restoring a Package Set</a></h2>
+<h2 id="restoring-a-package-set"><a class="header" href="#restoring-a-package-set">Restoring a Package Set</a></h2>
 <p>I performed a big <code>-Syu</code> of about 250 packages, but wish to roll them all back
 to the saved state I just made above. Let's see that happen:</p>
 <pre><code>&gt; sudo aura -Br
@@ -1058,7 +1070,7 @@ Net Upgrade Size:       -38.46 MiB
 </code></pre>
 <p>It all went smoothly, even rolling back the kernel. Notice that Aura will warn
 you if it couldn't find certain versions to roll back to.</p>
-<h2><a class="header" href="#clearing-out-old-saved-states" id="clearing-out-old-saved-states">Clearing out old Saved States</a></h2>
+<h2 id="clearing-out-old-saved-states"><a class="header" href="#clearing-out-old-saved-states">Clearing out old Saved States</a></h2>
 <p>50 saved states is a little much. I probably don't even have most of the
 packages necessary to roll back to those early states, since I use <code>-Cc</code> often.
 Let's clear out the old ones:</p>
@@ -1083,11 +1095,11 @@ aura &gt;&gt;= 5 package states will be kept. Remove the rest? [Y/n]
 <p>aura &gt;&gt;= 1 of these are pinned, and won't be removed.</p>
 </blockquote>
 <p>Now we can talk about pinning.</p>
-<h2><a class="header" href="#pinning-a-saved-state" id="pinning-a-saved-state">Pinning a Saved State</a></h2>
+<h2 id="pinning-a-saved-state"><a class="header" href="#pinning-a-saved-state">Pinning a Saved State</a></h2>
 <p>If we don't want a certain package state to be removed by <code>-Bc</code> no matter what,
 we can pin it. There is no flag for this, we need to open the <code>.json</code> file of
 the state we wish to pin, and change its <code>pinned</code> field from <code>false</code> to <code>true</code>.</p>
-<h1><a class="header" href="#pkgbuild-security-analysis" id="pkgbuild-security-analysis">PKGBUILD Security Analysis</a></h1>
+<h1 id="pkgbuild-security-analysis"><a class="header" href="#pkgbuild-security-analysis">PKGBUILD Security Analysis</a></h1>
 <p>In 2018 July, the <a href="https://lists.archlinux.org/pipermail/aur-general/2018-July/034151.html">Acroread package was
 compromised</a>.
 While the offending commit is no longer available, the mailing list mentions the
@@ -1127,7 +1139,7 @@ command which can be used to scan any PKGBUILD you give it.</p>
 <p><strong>💡 Note:</strong> The presence of automatic PKGBUILD scanning is not an excuse to
 be lazy! Please continue to check PKGBUILDs yourself!</p>
 </blockquote>
-<h2><a class="header" href="#scanning-a-pkgbuild-from-stdin" id="scanning-a-pkgbuild-from-stdin">Scanning a PKGBUILD from Stdin</a></h2>
+<h2 id="scanning-a-pkgbuild-from-stdin"><a class="header" href="#scanning-a-pkgbuild-from-stdin">Scanning a PKGBUILD from Stdin</a></h2>
 <p>Wondering about the safety of a particular package on the AUR? We don't have to
 try and build it - we can scan the PKGBUILD in isolation:</p>
 <pre><code>&gt; aura -Ap myget | aura -P
@@ -1138,7 +1150,7 @@ aura &gt;&gt;= sudo indicates that someone may be trying to gain root access to 
 aura &gt;&gt;= Potential PKGBUILD vulnerabilities detected.
 </code></pre>
 <p>Recall that <code>-Ap</code> pulls a PKGBUILD from the AUR and prints it to the terminal.</p>
-<h2><a class="header" href="#scanning-a-pkgbuild-file" id="scanning-a-pkgbuild-file">Scanning a PKGBUILD File</a></h2>
+<h2 id="scanning-a-pkgbuild-file"><a class="header" href="#scanning-a-pkgbuild-file">Scanning a PKGBUILD File</a></h2>
 <p><code>-P</code> is also intended as a tool for AUR package maintainers, to help them insure
 that they aren't unintentionally doing something dangerous or suspicious. Let's check
 Aura's own PKGBUILD...</p>
@@ -1146,17 +1158,17 @@ Aura's own PKGBUILD...</p>
 &gt;
 </code></pre>
 <p>No error code! Phew...</p>
-<h2><a class="header" href="#scanning-a-directory" id="scanning-a-directory">Scanning a Directory</a></h2>
+<h2 id="scanning-a-directory"><a class="header" href="#scanning-a-directory">Scanning a Directory</a></h2>
 <p>You can also indicate a directory that you know contains a file named
 <code>PKGBUILD</code>:</p>
 <pre><code>&gt; aura -Pd aura/
 &gt;
 </code></pre>
 <p>Safe again.</p>
-<h1><a class="header" href="#log-interaction" id="log-interaction">Log Interaction</a></h1>
+<h1 id="log-interaction"><a class="header" href="#log-interaction">Log Interaction</a></h1>
 <p>Pacman keeps an extensive log file, but doesn't really offer any way to interact
 with it. Aura has the <code>-L</code> command to perform some interesting lookups.</p>
-<h2><a class="header" href="#view-the-log-file" id="view-the-log-file">View the Log File</a></h2>
+<h2 id="view-the-log-file"><a class="header" href="#view-the-log-file">View the Log File</a></h2>
 <p>To open the entire log file in <code>less</code>:</p>
 <pre><code>&gt; aura -L
 [2016-05-03 04:13] [PACMAN] Running 'pacman -r /mnt -Sy --cachedir=/mnt/var/cache/pacman/pkg base base-devel'
@@ -1179,7 +1191,7 @@ And what was the most recent thing <code>pacman</code> did (press <code>G</code>
 [2020-06-14T09:19:51-0700] [ALPM] running 'update-mime-database.hook'...
 [2020-06-14T09:19:57-0700] [ALPM] running 'xorg-mkfontscale.hook'...
 </code></pre>
-<h2><a class="header" href="#search-the-log-file" id="search-the-log-file">Search the Log File</a></h2>
+<h2 id="search-the-log-file"><a class="header" href="#search-the-log-file">Search the Log File</a></h2>
 <p><code>-Ls</code> returns all log lines that match a given string:</p>
 <pre><code>&gt; aura -Ls firefox
 [2016-05-03 08:45] [PACMAN] Running 'pacman -S firefox'
@@ -1191,7 +1203,7 @@ And what was the most recent thing <code>pacman</code> did (press <code>G</code>
 
 ... etc ...
 </code></pre>
-<h2><a class="header" href="#query-all-logs-for-a-package" id="query-all-logs-for-a-package">Query all Logs for a Package</a></h2>
+<h2 id="query-all-logs-for-a-package"><a class="header" href="#query-all-logs-for-a-package">Query all Logs for a Package</a></h2>
 <p>More interesting than just a raw search is <code>-Li</code>:</p>
 <pre><code>&gt; aura -Li firefox
 Package        : firefox
@@ -1205,7 +1217,7 @@ Recent Actions :
 [2020-06-12T11:41:03-0700] [ALPM] upgraded firefox (75.0-2 -&gt; 77.0.1-1)
 </code></pre>
 <p>Neat! I often use this to check the last time I updated a particular package.</p>
-<h1><a class="header" href="#configuring-aura" id="configuring-aura">Configuring Aura</a></h1>
+<h1 id="configuring-aura"><a class="header" href="#configuring-aura">Configuring Aura</a></h1>
 <p>For certain settings we use all the time (e.g. language, build paths, etc.),
 Aura is configurable via <code>/etc/aura.conf</code>. If you installed Aura from the AUR,
 this file was generated for you automatically. Otherwise, a full template <a href="https://github.com/fosskers/aura/blob/master/aura/doc/aura.conf">is
@@ -1214,15 +1226,15 @@ and contains all instructions.</p>
 <blockquote>
 <p><strong>💡 Tip:</strong> You can check all configuration options in full detail with <code>man aura.conf</code>.</p>
 </blockquote>
-<h1><a class="header" href="#appendix" id="appendix">Appendix</a></h1>
+<h1 id="appendix"><a class="header" href="#appendix">Appendix</a></h1>
 <p>The following pages contain extra notes and knowledge that is not needed for
 ordinary Aura usage.</p>
-<h1><a class="header" href="#language-localisation-guide" id="language-localisation-guide">Language Localisation Guide</a></h1>
+<h1 id="language-localisation-guide"><a class="header" href="#language-localisation-guide">Language Localisation Guide</a></h1>
 <p>Welcome! こんにちは！ Saluton!</p>
 <p>If you're reading this then it's likely that you want to help localise Aura into
 another language. Arch users everywhere can benefit from your contribution, and
 it's a great opportunity to contribute to Open Source.</p>
-<h2><a class="header" href="#what-you-need" id="what-you-need">What You Need</a></h2>
+<h2 id="what-you-need"><a class="header" href="#what-you-need">What You Need</a></h2>
 <ol>
 <li>
 <p><a href="https://github.com/fosskers/aura">The Aura source code</a>.</p>
@@ -1243,8 +1255,8 @@ requests will be easiest if you have a working git/github setup.</p>
 come in.</p>
 </li>
 </ol>
-<h2><a class="header" href="#localisation" id="localisation">Localisation</a></h2>
-<h3><a class="header" href="#step-one---tell-haskell-about-the-new-language" id="step-one---tell-haskell-about-the-new-language">Step One - Tell Haskell About the New Language</a></h3>
+<h2 id="localisation"><a class="header" href="#localisation">Localisation</a></h2>
+<h3 id="step-one---tell-haskell-about-the-new-language"><a class="header" href="#step-one---tell-haskell-about-the-new-language">Step One - Tell Haskell About the New Language</a></h3>
 <p>The languages we have already available to us are defined in <code>lib/Aura/Types.hs</code>.
 You'll notice this entry:</p>
 <pre><code class="language-haskell">data Language = English
@@ -1266,7 +1278,7 @@ First, let's extend our <code>Language</code> type:</p>
               | French  -- Added a pipe character and the new Language name.
                 deriving (Eq, Enum, Ord, Show)
 </code></pre>
-<h3><a class="header" href="#step-two---adding-your-languages-locale-code" id="step-two---adding-your-languages-locale-code">Step Two - Adding your Language's Locale Code</a></h3>
+<h3 id="step-two---adding-your-languages-locale-code"><a class="header" href="#step-two---adding-your-languages-locale-code">Step Two - Adding your Language's Locale Code</a></h3>
 <p>All strings that contain messages for the user are stored in a single source
 file: <code>lib/Aura/Languages.hs</code>. One function here is called <code>langFromLocale</code>:</p>
 <pre><code class="language-haskell">langFromLocale :: T.Text -&gt; Language
@@ -1293,7 +1305,7 @@ langFromLocale = T.take 2 &gt;&gt;&gt; \case
 <p>Your entry <em>must</em> go above the <code>_ -&gt; English</code> line.</p>
 <p>Don't know your locale code? You can find them all in
 <code>/usr/share/i18n/locales</code>.</p>
-<h3><a class="header" href="#step-three---translation" id="step-three---translation">Step Three - Translation</a></h3>
+<h3 id="step-three---translation"><a class="header" href="#step-three---translation">Step Three - Translation</a></h3>
 <p>This is the real work. Let's take a look at a simple message. The user
 is trying to build a package as <code>root</code>... what to tell them?</p>
 <pre><code class="language-haskell">trueRoot_3 :: Language -&gt; T.Text
@@ -1327,7 +1339,7 @@ buildPackages_1 (bt -&gt; p) = \case
 </code></pre>
 <p>Obviously the syntax among languages is different, and so where you insert the
 variables you've been given into the sentence depends on your language.</p>
-<h3><a class="header" href="#step-four---command-line-flag" id="step-four---command-line-flag">Step Four - Command-line Flag</a></h3>
+<h3 id="step-four---command-line-flag"><a class="header" href="#step-four---command-line-flag">Step Four - Command-line Flag</a></h3>
 <p>We choose output languages in Aura by using flags on the command line.
 Japanese, for example, uses the <code>--japanese</code> flag. We'll have to make
 a flag for the new language you're adding too.</p>
@@ -1345,7 +1357,7 @@ language = foldr1 (&lt;|&gt;) $ map (\(f, v) -&gt; flag' v (long f &lt;&gt; hidd
 <p>The convention is to add two flags for each language. One is that language's name
 in English, and the other is its name in its own language (e.g. <code>&quot;croatian&quot;</code> and <code>&quot;hrvatski&quot;</code>).
 The second element of each pair is the same value you added to the <code>Language</code> type.</p>
-<h3><a class="header" href="#step-five---pull-request" id="step-five---pull-request">Step Five - Pull Request</a></h3>
+<h3 id="step-five---pull-request"><a class="header" href="#step-five---pull-request">Step Five - Pull Request</a></h3>
 <p>With the translations complete, you'll need to tell us about it on Github.
 Once your changes are looked over, we'll release a new version of Aura with
 your language included as soon as possible. Provided you followed the above
@@ -1353,12 +1365,12 @@ instructions, this shouldn't take long. Furthermore, chances are we won't be
 able to proofread the translation itself, as we probably don't speak your
 language. You could hide your doomsday take-over plans in the code and no
 one would know.</p>
-<h3><a class="header" href="#step-six---youve-helped-others-who-speak-your-language" id="step-six---youve-helped-others-who-speak-your-language">Step Six - You've Helped Others who Speak your Language</a></h3>
+<h3 id="step-six---youve-helped-others-who-speak-your-language"><a class="header" href="#step-six---youve-helped-others-who-speak-your-language">Step Six - You've Helped Others who Speak your Language</a></h3>
 <p>You've done a great thing by increasing Aura's usability. Your name will be
 included in both Aura's README and in its <code>-V</code> version message.
 Thanks a lot for your hard work!</p>
-<h1><a class="header" href="#faq" id="faq">FAQ</a></h1>
-<h2><a class="header" href="#why-doesnt-package-xyz-build" id="why-doesnt-package-xyz-build">Why doesn't package XYZ build?</a></h2>
+<h1 id="faq"><a class="header" href="#faq">FAQ</a></h1>
+<h2 id="why-doesnt-package-xyz-build"><a class="header" href="#why-doesnt-package-xyz-build">Why doesn't package XYZ build?</a></h2>
 <p>If you're on the most recent version of Aura and are still having problems, this
 could be for a few reasons:</p>
 <ul>
@@ -1379,7 +1391,7 @@ dependency.
 </ul>
 </li>
 </ul>
-<h2><a class="header" href="#how-do-i-debug-a-problem" id="how-do-i-debug-a-problem">How do I debug a problem?</a></h2>
+<h2 id="how-do-i-debug-a-problem"><a class="header" href="#how-do-i-debug-a-problem">How do I debug a problem?</a></h2>
 <p>To display extra output during Aura's operation, pass <code>--log-level=debug</code>. If
 Aura is failing mysteriously somewhere, that output will at least let us know
 how far it got internally.</p>
@@ -1410,10 +1422,10 @@ how far it got internally.</p>
         
 
         
-        
+
         
         <script type="text/javascript">
-            window.playpen_copyable = true;
+            window.playground_copyable = true;
         </script>
         
 

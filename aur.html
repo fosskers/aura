@@ -5,22 +5,36 @@
         <meta charset="UTF-8">
         <title>Installing AUR Packages - The Aura User Guide</title>
         
+        
+
+
+        <!-- Custom HTML head -->
+        
+
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="A full usage guide for Aura.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff" />
 
+        
+        <link rel="icon" href="favicon.svg">
+        
+        
         <link rel="shortcut icon" href="favicon.png">
+        
         <link rel="stylesheet" href="css/variables.css">
         <link rel="stylesheet" href="css/general.css">
         <link rel="stylesheet" href="css/chrome.css">
+        
         <link rel="stylesheet" href="css/print.css" media="print">
+        
 
         <!-- Fonts -->
         <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
-        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+        
+        <link rel="stylesheet" href="fonts/fonts.css">
+        
 
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" href="highlight.css">
@@ -36,7 +50,7 @@
         <!-- Provide site root to javascript -->
         <script type="text/javascript">
             var path_to_root = "";
-            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
 
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
@@ -116,9 +130,11 @@
                     <h1 class="menu-title">The Aura User Guide</h1>
 
                     <div class="right-buttons">
+                        
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
+                        
                         
                         <a href="https://github.com/fosskers/aura" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
@@ -151,7 +167,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#installing-aur-packages" id="installing-aur-packages">Installing AUR Packages</a></h1>
+                        <h1 id="installing-aur-packages"><a class="header" href="#installing-aur-packages">Installing AUR Packages</a></h1>
 <p>Let's walk through the full process of installing an AUR package. This will show
 us how to discover packages, install them, and upgrade them.</p>
 <blockquote>
@@ -162,8 +178,8 @@ us how to discover packages, install them, and upgrade them.</p>
 <p><strong>💡 Tip:</strong> For the full list of all options with detailed descriptions, see
 <code>man aura</code>.</p>
 </blockquote>
-<h2><a class="header" href="#installing-a-package" id="installing-a-package">Installing a Package</a></h2>
-<h3><a class="header" href="#searching-for-a-package" id="searching-for-a-package">Searching for a Package</a></h3>
+<h2 id="installing-a-package"><a class="header" href="#installing-a-package">Installing a Package</a></h2>
+<h3 id="searching-for-a-package"><a class="header" href="#searching-for-a-package">Searching for a Package</a></h3>
 <p>Let's say we want to install a package that can render <code>.md</code> files for us.
 First, we search the AUR for candidates:</p>
 <pre><code>&gt; aura -As readme
@@ -190,7 +206,7 @@ aur/python-grip 4.5.2-1 (13 | 0.14)
     Preview GitHub Markdown files like Readme locally before committing them
 </code></pre>
 <p><code>--abc</code> can be used to sort alphabetically instead.</p>
-<h3><a class="header" href="#scrutinizing-a-package" id="scrutinizing-a-package">Scrutinizing a Package</a></h3>
+<h3 id="scrutinizing-a-package"><a class="header" href="#scrutinizing-a-package">Scrutinizing a Package</a></h3>
 <p>Alright, <code>python-grip</code> looks good. Let's take a closer look...</p>
 <pre><code>&gt; aura -Ai python-grip
 Repository  : aur
@@ -238,7 +254,7 @@ security scanning:</p>
 don't need to do <code>-P</code> yourself - the same check happens automatically before
 building packages with <code>-A</code>. See <a href="security.html">PKGBUILD Security Analysis</a> for
 more information.</p>
-<h3><a class="header" href="#a-normal-install" id="a-normal-install">A Normal Install</a></h3>
+<h3 id="a-normal-install"><a class="header" href="#a-normal-install">A Normal Install</a></h3>
 <pre><code>&gt; sudo aura -A python-grip
 aura &gt;&gt;= Determining dependencies...
 
@@ -302,7 +318,7 @@ hidden.</li>
 <li>If two or more packages don't depend on each other, they'll be built one after
 another and installed at the same time. This avoids needless user prompting.</li>
 </ul>
-<h3><a class="header" href="#a-verbose-install" id="a-verbose-install">A Verbose Install</a></h3>
+<h3 id="a-verbose-install"><a class="header" href="#a-verbose-install">A Verbose Install</a></h3>
 <p>But what if we <em>do</em> want to see the output from <code>makepkg</code>? For long builds (e.g.
 <a href="https://aur.archlinux.org/packages/aseprite/">aseprite</a>), it can be reassuring
 to see the ongoing build output.</p>
@@ -345,7 +361,7 @@ aura &gt;&gt;= Building python-path-and-address...
 ... etc ...
 </code></pre>
 <p>Wonderful.</p>
-<h3><a class="header" href="#automatically-removing-makedepends" id="automatically-removing-makedepends">Automatically Removing <code>makedepends</code></a></h3>
+<h3 id="automatically-removing-makedepends"><a class="header" href="#automatically-removing-makedepends">Automatically Removing <code>makedepends</code></a></h3>
 <p>There's a difference between the dependencies that a package needs to <em>build</em>
 and the dependencies it needs to <em>run</em>. We call the former <em>makedepends</em>. Once a
 package is installed, we no longer need its makedepends sitting around on our
@@ -369,7 +385,7 @@ Net Upgrade Size:      0.00 MiB
 <p>Ah, there were none in this case. Since <code>python-grip</code> is a Python package, it
 never really has <code>makedepends</code>. That's okay - it's a good habit to use <code>-a</code>,
 especially when updating all your AUR packages at once (see below).</p>
-<h3><a class="header" href="#altering-the-pkgbuild-before-building" id="altering-the-pkgbuild-before-building">Altering the PKGBUILD Before Building</a></h3>
+<h3 id="altering-the-pkgbuild-before-building"><a class="header" href="#altering-the-pkgbuild-before-building">Altering the PKGBUILD Before Building</a></h3>
 <p>Sometimes you want to change something specific about how a package is built.
 Without an AUR helper, you'd clone the package from the AUR, edit the PKGBUILD,
 and then run <code>makepkg</code>, handling dependencies yourself.</p>
@@ -417,7 +433,7 @@ succeed after you hotedit), use the <code>--skipdepcheck</code> flag. See issue
 package, it's recommended that you maintain a separate PKGBUILD and call
 <code>makepkg</code> yourself.</li>
 </ul>
-<h2><a class="header" href="#updating-your-aur-packages" id="updating-your-aur-packages">Updating your AUR Packages</a></h2>
+<h2 id="updating-your-aur-packages"><a class="header" href="#updating-your-aur-packages">Updating your AUR Packages</a></h2>
 <p><code>sudo aura -Ayu</code> works, but <code>sudo aura -Auax</code> is a more common way to update
 your installed AUR packages.</p>
 <ul>
@@ -445,7 +461,7 @@ aura &gt;&gt;= Continue? [Y/n]
 you update your system and there is a serious problem, you can roll back with
 <code>-Br</code> and return to the state that was just saved. See <a href="snapshots.html">Package Set
 Snapshots</a> for more detail.</p>
-<h3><a class="header" href="#displaying-pkgbuild-changes" id="displaying-pkgbuild-changes">Displaying PKGBUILD Changes</a></h3>
+<h3 id="displaying-pkgbuild-changes"><a class="header" href="#displaying-pkgbuild-changes">Displaying PKGBUILD Changes</a></h3>
 <p>Hey wait a minute, aren't we supposed to check PKGBUILDs before building
 packages? <code>-k</code> will show us any changes that were made to a PKGBUILD compared to
 the version we have installed:</p>
@@ -490,7 +506,7 @@ aura &gt;&gt;= AUR Packages:
 aseprite
 aura &gt;&gt;= Continue? [Y/n]
 </code></pre>
-<h3><a class="header" href="#including--git-packages" id="including--git-packages">Including <code>*-git</code> Packages</a></h3>
+<h3 id="including--git-packages"><a class="header" href="#including--git-packages">Including <code>*-git</code> Packages</a></h3>
 <p>The AUR has many packages postfixed with <code>-git</code>, <code>-svn</code>, etc. These typically
 pull straight from the <code>master</code> branch of some code respository, and so the idea
 of comparing version numbers to detect updates doesn't work as well.</p>
@@ -522,13 +538,13 @@ so that updates invoke a <code>git pull</code> instead of a full <code>git clone
 be expensive!).</p>
 <p>See <a href="storage.html">the next page</a> for more information.</p>
 </blockquote>
-<h3><a class="header" href="#forcing-a-rebuild" id="forcing-a-rebuild">Forcing a Rebuild</a></h3>
+<h3 id="forcing-a-rebuild"><a class="header" href="#forcing-a-rebuild">Forcing a Rebuild</a></h3>
 <p>By default, Aura won't rebuild a package if the most recent version is already
 installed (or even just available in your package cache). But sometimes you <em>do</em>
 want to force a rebuild. For instance, some <code>-git</code> packages have no concept of a
 version number. Even with <code>--devel</code>, an update will never be detected. In these
 cases, <code>--force</code> will cause the package to be completely rebuilt.</p>
-<h3><a class="header" href="#blindly-accepting-all-prompts" id="blindly-accepting-all-prompts">Blindly Accepting all Prompts</a></h3>
+<h3 id="blindly-accepting-all-prompts"><a class="header" href="#blindly-accepting-all-prompts">Blindly Accepting all Prompts</a></h3>
 <p>Tired of pressing the <code>Enter</code> key? Or maybe you've automated <code>aura</code> into a
 script. In these cases, you may want to accept all prompts automatically.
 <code>pacman</code> exposes the <code>--noconfirm</code> flag for this, which also affects Aura.</p>
@@ -580,10 +596,10 @@ not proceed with building, even if <code>--noconfirm</code> was given.</p>
         
 
         
-        
+
         
         <script type="text/javascript">
-            window.playpen_copyable = true;
+            window.playground_copyable = true;
         </script>
         
 
