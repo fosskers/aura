@@ -1,8 +1,7 @@
 //! All functionality involving the `-A` command.
 
 use crate::error::Error;
-use raur::blocking::Raur;
-use raur_curl::Handle;
+use raur_curl::{Handle, Raur};
 use std::borrow::Cow;
 
 /// View AUR package information.

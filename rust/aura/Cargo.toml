@@ -19,7 +19,6 @@ itertools = "0.10"
 linya = "0.1"
 log = "0.4"
 pacmanconf = "0.2"
-raur = { version = "5.0.1", default-features = false, features = ["blocking-trait"], git = "https://gitlab.com/davidbittner/raur/"}
 raur-curl = { path = "../raur-curl" }
 rayon = "1.5"
 rust-embed = "5.6"
