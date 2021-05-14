@@ -1,3 +1,7 @@
+//! A `curl`-based backend for `raur`.
+
+#![warn(missing_docs)]
+
 use curl::easy::Easy;
 use raur::blocking::Raur;
 use raur::{Package, SearchBy};
@@ -5,6 +9,7 @@ use serde_derive::Deserialize;
 use std::cell::RefCell;
 use std::fmt;
 
+/// A response from the aurweb API.
 #[derive(Deserialize)]
 struct Response {
     #[serde(rename = "type")]
@@ -13,10 +18,14 @@ struct Response {
     results: Vec<Package>,
 }
 
+/// Errors that can occur while calling the aurweb API.
 #[derive(Debug)]
 pub enum Error {
+    /// The call itself failed.
     Curl(curl::Error),
+    /// The query failed on aurweb's end.
     Aur(String),
+    /// This crate failed to parse what aurweb returned.
     Serde(serde_json::Error),
 }
 
@@ -44,6 +53,9 @@ impl fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
+/// Perform calls via `curl` to the aurweb API.
+///
+/// An implementer of the [`raur::Raur`] trait.
 #[derive(Debug)]
 pub struct Handle {
     curl: RefCell<Easy>,
@@ -57,6 +69,7 @@ impl Default for Handle {
 }
 
 impl Handle {
+    /// Initialize a new `curl` session.
     pub fn new() -> Handle {
         Handle {
             curl: RefCell::new(Easy::new()),
@@ -64,6 +77,7 @@ impl Handle {
         }
     }
 
+    /// Like [`new`], but accepts a custom [`curl::Easy`] for advanced configuration.
     pub fn new_with_settings<S: Into<String>>(curl: Easy, url: S) -> Handle {
         Handle {
             curl: RefCell::new(curl),
@@ -71,31 +85,35 @@ impl Handle {
         }
     }
 
+    /// The base URL that this `Handle` intends to call.
     pub fn url(&self) -> &str {
         &self.url
     }
 
     fn perform(curl: &mut Easy) -> Result<Vec<Package>, Error> {
         let mut json = Vec::<u8>::new();
-        let mut transfer = curl.transfer();
-        transfer.write_function(|data| {
-            json.extend(data);
-            Ok(data.len())
-        })?;
 
-        transfer.perform()?;
-        drop(transfer);
+        {
+            let mut transfer = curl.transfer();
+            transfer.write_function(|data| {
+                json.extend(data);
+                Ok(data.len())
+            })?;
+
+            transfer.perform()?;
+        }
 
         let response: Response = serde_json::from_slice(&json)?;
 
-        if response.response_type == "error" {
-            Err(Error::Aur(
-                response
+        match response.response_type.as_str() {
+            "error" => {
+                let err = response
                     .error
-                    .unwrap_or_else(|| "No error message provided".to_string()),
-            ))
-        } else {
-            Ok(response.results)
+                    .unwrap_or_else(|| "No error message provided".to_string());
+
+                Err(Error::Aur(err))
+            }
+            _ => Ok(response.results),
         }
     }
 }
