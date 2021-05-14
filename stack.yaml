@@ -1,4 +1,4 @@
-resolver: lts-17.10
+resolver: lts-17.11
 
 ghc-options:
   $everything: -split-sections -haddock
@@ -6,6 +6,12 @@ ghc-options:
 
 nix:
   shell-file: nix/stack.nix
+
+flags:
+  these:
+    assoc: false
+  strict:
+    assoc: false
 
 packages:
   - aura/

@@ -11,20 +11,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
 
       - name: Install mdbook
-        uses: peaceiris/actions-mdbook@v1
+        uses: peaceiris/actions-mdbook@v1.1.14
         with:
-          mdbook-version: "0.3.7"
+          mdbook-version: "0.4.7"
 
       - name: Generate book from markdown
         run: |
-            cd book
-            mdbook build
+          cd book
+          mdbook build
 
       - name: Publish HTML
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v3.8.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./book/book/
