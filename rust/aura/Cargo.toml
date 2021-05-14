@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 alpm = "1.1"
-aura-arch = { path = "../aura-arch" }
+aura-arch = { path = "../aura-arch" }  # TODO Give these versions.
 aura-core = { path = "../aura-core" }
 chrono = "0.4"
 clap = "3.0.0-beta.2"
@@ -19,6 +19,8 @@ itertools = "0.10"
 linya = "0.1"
 log = "0.4"
 pacmanconf = "0.2"
+raur = { version = "5.0.1", default-features = false, features = ["blocking-trait"], git = "https://gitlab.com/davidbittner/raur/"}
+raur-curl = { path = "../raur-curl" }
 rayon = "1.5"
 rust-embed = "5.6"
 rustyline = "8.0"

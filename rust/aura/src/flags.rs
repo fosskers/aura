@@ -721,6 +721,10 @@ pub(crate) struct Stats {
 #[derive(Clap, Debug)]
 #[clap(short_flag = 'A', long_flag = "aursync")]
 pub(crate) struct Aur {
+    /// View AUR package information.
+    #[clap(group = "aur", long, short, display_order = 1)]
+    pub(crate) info: Vec<String>,
+
     /// Open a given package's AUR package.
     #[clap(group = "aur", long, short, display_order = 1)]
     pub(crate) open: Option<String>,

@@ -24,6 +24,8 @@ pub(crate) enum Error {
     Chrono(chrono::ParseError),
     /// A JSON (de)serialization error.
     JSON(serde_json::Error),
+    /// An error calling the aurweb API.
+    Aur(String),
     /// A boxed dynamic error.
     Boxed(Box<dyn std::error::Error>),
     /// The said "no" at some prompt.
@@ -56,6 +58,7 @@ impl std::fmt::Display for Error {
             Error::Curl(e) => write!(f, "{}", e),
             Error::Chrono(e) => write!(f, "{}", e),
             Error::JSON(e) => write!(f, "{}", e),
+            Error::Aur(e) => write!(f, "{}", e),
             Error::Boxed(e) => write!(f, "{}", e),
             Error::Rejected => write!(f, "The user said no."),
             Error::NoneExist => write!(f, "None of those packages exist."),
@@ -80,6 +83,7 @@ impl std::error::Error for Error {
             Error::Curl(e) => Some(e),
             Error::Chrono(e) => Some(e),
             Error::JSON(e) => Some(e),
+            Error::Aur(_) => None,
             Error::Boxed(_) => None, // TODO `Some` gives a warning.
             Error::Rejected => None,
             Error::NoneExist => None,
@@ -154,5 +158,15 @@ impl From<curl::Error> for Error {
 impl From<serde_json::Error> for Error {
     fn from(error: serde_json::Error) -> Self {
         Error::JSON(error)
+    }
+}
+
+impl From<raur_curl::Error> for Error {
+    fn from(error: raur_curl::Error) -> Self {
+        match error {
+            raur_curl::Error::Curl(e) => Error::Curl(e),
+            raur_curl::Error::Serde(e) => Error::JSON(e),
+            raur_curl::Error::Aur(e) => Error::Aur(e),
+        }
     }
 }
