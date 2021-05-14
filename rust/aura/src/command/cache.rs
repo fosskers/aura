@@ -35,7 +35,7 @@ pub(crate) fn downgrade(
     // Exit early if the user passed no packages.
     if packages.is_empty() {
         red!(fll, "common-no-packages");
-        Err(Error::Silent)?;
+        return Err(Error::Silent);
     }
 
     sudo::escalate_if_needed()?;
@@ -44,7 +44,7 @@ pub(crate) fn downgrade(
     let mut tarballs: HashMap<&str, Vec<PkgPath>> = HashMap::new();
     for pp in aura_core::cache::package_paths(cache)? {
         if let Some(p) = packages.iter().find(|p| p == &&pp.to_package().name) {
-            let paths = tarballs.entry(p).or_insert(Vec::new());
+            let paths = tarballs.entry(p).or_insert_with(Vec::new);
             paths.push(pp);
         }
     }
@@ -58,7 +58,7 @@ pub(crate) fn downgrade(
 
     if to_downgrade.is_empty() {
         red!(fll, "common-no-work");
-        Err(Error::Silent)?;
+        return Err(Error::Silent);
     }
 
     to_downgrade.push(OsStr::new("-U").to_os_string());
@@ -125,7 +125,7 @@ pub(crate) fn info(
     packages
         .iter()
         .filter_map(|p| aura_core::cache::info(path, p).ok())
-        .filter_map(|ci| ci)
+        .flatten()
         .for_each(|ci| {
             let name = fl!(fll, "common-name");
             let ver = fl!(fll, "cache-info-latest");
@@ -341,7 +341,7 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader, alpm: &Alpm, path: &Path) -> R
                 let b_msg = format!("{} {}", n, v.dimmed());
                 let bar = pr.lock().unwrap().bar(bytes as usize, b_msg);
 
-                let mut res = ms.into_iter().filter_map(|m| {
+                let mut res = ms.iter().filter_map(|m| {
                     let url = format!("{}/{}", m, tarball);
                     let mut target = path.to_path_buf();
                     target.push(&tarball);
@@ -349,7 +349,7 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader, alpm: &Alpm, path: &Path) -> R
                 });
 
                 // If the download failed from every mirror, cancel the progress bar.
-                if let None = res.next() {
+                if res.next().is_none() {
                     pr.lock().unwrap().cancel(bar);
                 }
             });
@@ -403,7 +403,7 @@ pub(crate) fn backup(
     // Exit early if the target is an existing file, not a directory.
     if target.is_file() {
         red!(fll, "cache-backup-file", target = ts);
-        Err(Error::Silent)?;
+        return Err(Error::Silent);
     }
 
     // How big is the current cache?

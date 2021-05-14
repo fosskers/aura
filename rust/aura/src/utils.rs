@@ -42,7 +42,7 @@ where
     match Command::new("pacman").args(args).status() {
         Err(e) => Err(Error::IO(e)),
         Ok(es) if es.success() => Ok(()),
-        Ok(_) => Err(Error::PacmanError),
+        Ok(_) => Err(Error::Pacman),
     }
 }
 
@@ -55,7 +55,7 @@ where
     match Command::new("sudo").arg("pacman").args(args).status() {
         Err(e) => Err(Error::IO(e)),
         Ok(es) if es.success() => Ok(()),
-        Ok(_) => Err(Error::PacmanError),
+        Ok(_) => Err(Error::Pacman),
     }
 }
 

@@ -188,7 +188,7 @@ impl std::fmt::Display for PkgGraph<'_> {
         {
             match gname {
                 Some(g) => {
-                    writeln!(f, "")?;
+                    writeln!(f)?;
                     writeln!(f, "    subgraph cluster_{} {{", n)?;
                     writeln!(f, "        label=\"{}\"", g)?;
                     writeln!(f, "        style=dashed;")?;
@@ -241,7 +241,7 @@ impl std::fmt::Display for PkgGraph<'_> {
             }
         }
 
-        writeln!(f, "")?;
+        writeln!(f)?;
 
         // Render edges.
         for e in graph.raw_edges().iter() {

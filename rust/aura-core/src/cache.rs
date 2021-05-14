@@ -278,7 +278,7 @@ pub fn all_versions(cache: &Path) -> Result<HashMap<String, HashSet<String>>, st
 
     for pp in package_paths(cache)? {
         let pkg = Package::from(pp);
-        let set = map.entry(pkg.name).or_insert(HashSet::new());
+        let set = map.entry(pkg.name).or_insert_with(HashSet::new);
         set.insert(pkg.version);
     }
 

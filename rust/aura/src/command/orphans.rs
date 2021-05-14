@@ -31,7 +31,7 @@ pub(crate) fn adopt(
 
     // Exit early if no real packages were given.
     if reals.is_empty() {
-        Err(Error::NoneExist)?;
+        return Err(Error::NoneExist);
     }
 
     for mut p in reals {

@@ -94,7 +94,7 @@ pub(crate) fn groups(alpm: &Alpm) {
     }
 
     let mut v: Vec<_> = groups.into_iter().collect();
-    v.sort();
+    v.sort_unstable();
 
     for p in v {
         println!("{}", p);

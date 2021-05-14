@@ -95,7 +95,7 @@ pub(crate) fn restore(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) -> 
 
     if shots.is_empty() {
         red!(fll, "snapshot-none");
-        Err(Error::Silent)?
+        return Err(Error::Silent);
     }
 
     aura!(fll, "snapshot-select");

@@ -64,7 +64,7 @@ impl Package {
     pub fn from_path(path: &Path) -> Option<Package> {
         path.file_name()
             .and_then(|file| file.to_str())
-            .and_then(|file| file.rsplitn(2, '-').skip(1).next())
+            .and_then(|file| file.rsplitn(2, '-').nth(1))
             .and_then(|pkg| {
                 let mut vec: Vec<_> = pkg.rsplitn(3, '-').collect();
                 let name = vec.last()?.to_string();

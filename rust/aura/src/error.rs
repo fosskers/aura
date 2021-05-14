@@ -23,7 +23,7 @@ pub(crate) enum Error {
     /// An error from `chrono`.
     Chrono(chrono::ParseError),
     /// A JSON (de)serialization error.
-    JSON(serde_json::Error),
+    Json(serde_json::Error),
     /// An error calling the aurweb API.
     Aur(String),
     /// A boxed dynamic error.
@@ -33,7 +33,7 @@ pub(crate) enum Error {
     /// None of the packages specified by the user actually exist.
     NoneExist,
     /// A non-zero exit code was returned from a call to Pacman.
-    PacmanError,
+    Pacman,
     // /// A file IO target already exists.
     // FileConflict,
     /// A miscellaneous shell call failed.
@@ -57,12 +57,12 @@ impl std::fmt::Display for Error {
             Error::PacConf(e) => write!(f, "{}", e),
             Error::Curl(e) => write!(f, "{}", e),
             Error::Chrono(e) => write!(f, "{}", e),
-            Error::JSON(e) => write!(f, "{}", e),
+            Error::Json(e) => write!(f, "{}", e),
             Error::Aur(e) => write!(f, "{}", e),
             Error::Boxed(e) => write!(f, "{}", e),
             Error::Rejected => write!(f, "The user said no."),
             Error::NoneExist => write!(f, "None of those packages exist."),
-            Error::PacmanError => write!(f, "A shell call to Pacman gave a non-zero exit code."),
+            Error::Pacman => write!(f, "A shell call to Pacman gave a non-zero exit code."),
             Error::MiscShell => write!(f, "A miscellaneous shell call failed."),
             // Error::FileConflict => write!(f, "The given file target already exists."),
             Error::Silent => write!(f, ""),
@@ -82,12 +82,12 @@ impl std::error::Error for Error {
             Error::PacConf(e) => Some(e),
             Error::Curl(e) => Some(e),
             Error::Chrono(e) => Some(e),
-            Error::JSON(e) => Some(e),
+            Error::Json(e) => Some(e),
             Error::Aur(_) => None,
             Error::Boxed(_) => None, // TODO `Some` gives a warning.
             Error::Rejected => None,
             Error::NoneExist => None,
-            Error::PacmanError => None,
+            Error::Pacman => None,
             Error::MiscShell => None,
             // Error::FileConflict => None,
             Error::Silent => None,
@@ -157,7 +157,7 @@ impl From<curl::Error> for Error {
 
 impl From<serde_json::Error> for Error {
     fn from(error: serde_json::Error) -> Self {
-        Error::JSON(error)
+        Error::Json(error)
     }
 }
 
@@ -165,7 +165,7 @@ impl From<raur_curl::Error> for Error {
     fn from(error: raur_curl::Error) -> Self {
         match error {
             raur_curl::Error::Curl(e) => Error::Curl(e),
-            raur_curl::Error::Serde(e) => Error::JSON(e),
+            raur_curl::Error::Serde(e) => Error::Json(e),
             raur_curl::Error::Aur(e) => Error::Aur(e),
         }
     }
