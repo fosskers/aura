@@ -2,6 +2,7 @@
 
 use crate::command::misc;
 use crate::error::Error;
+use crate::utils;
 use aura_core as core;
 use chrono::NaiveDate;
 use colored::*;
@@ -40,10 +41,28 @@ pub(crate) fn info(fll: FluentLanguageLoader, path: &Path, pks: Vec<String>) {
         // A width multiplier to aid in proper padding below.
         let lang = fll.current_language().language;
         let m = if lang == "ja" { 2 } else { 1 };
-        println!("{}{:w$} : {}", p.bold(), "", e.package, w = pad(m, l, &p));
-        println!("{}{:w$} : {}", f.bold(), "", e.installed, w = pad(m, l, &f));
-        println!("{}{:w$} : {}", u.bold(), "", e.upgrades, w = pad(m, l, &u));
-        println!("{}{:w$} :", r.bold(), "", w = pad(m, l, &r));
+        println!(
+            "{}{:w$} : {}",
+            p.bold(),
+            "",
+            e.package,
+            w = utils::pad(m, l, &p)
+        );
+        println!(
+            "{}{:w$} : {}",
+            f.bold(),
+            "",
+            e.installed,
+            w = utils::pad(m, l, &f)
+        );
+        println!(
+            "{}{:w$} : {}",
+            u.bold(),
+            "",
+            e.upgrades,
+            w = utils::pad(m, l, &u)
+        );
+        println!("{}{:w$} :", r.bold(), "", w = utils::pad(m, l, &r));
         for r in e.recent {
             println!("{}", r);
         }
@@ -80,8 +99,4 @@ pub(crate) fn view(
     }
 
     Ok(())
-}
-
-fn pad(mult: usize, longest: usize, s: &str) -> usize {
-    mult * (longest - s.chars().count())
 }

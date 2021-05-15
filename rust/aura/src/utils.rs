@@ -1,11 +1,37 @@
 //! Various utility functions.
 
 use crate::error::Error;
+use colored::{ColoredString, Colorize};
 use rustyline::Editor;
 use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::process::Command;
 use std::str::FromStr;
+
+/// A helper for commands like `-Ai`, `-Ci`, etc.
+pub(crate) fn info(pairs: &[(&str, ColoredString)]) {
+    // The longest field.
+    let l = pairs
+        .iter()
+        .map(|(l, _)| l.chars().count())
+        .max()
+        .unwrap_or(0);
+
+    for (label, value) in pairs {
+        println!(
+            "{}{:w$} : {}",
+            label.bold(),
+            "",
+            value,
+            w = pad(1, l, label)
+        );
+    }
+}
+
+// TODO Drop `pub` once other functions use `info` above.
+pub(crate) fn pad(mult: usize, longest: usize, s: &str) -> usize {
+    mult * (longest - s.chars().count())
+}
 
 // TODO Localize the acceptance chars.
 /// Prompt the user for confirmation.
