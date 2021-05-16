@@ -4,11 +4,13 @@ use crate::{error::Error, utils};
 use colored::Colorize;
 use raur_curl::{Handle, Raur};
 use std::borrow::Cow;
+use std::io::BufWriter;
 
 /// View AUR package information.
 pub(crate) fn info(packages: &[String]) -> Result<(), Error> {
     let h = Handle::new();
     let r = h.info(packages)?;
+    let mut w = BufWriter::new(std::io::stdout());
 
     for p in r {
         let pairs = vec![
@@ -47,8 +49,7 @@ pub(crate) fn info(packages: &[String]) -> Result<(), Error> {
                     .unwrap_or_else(|| "None".red()),
             ),
         ];
-        utils::info(&pairs);
-        println!();
+        utils::info(&mut w, &pairs)?;
     }
 
     Ok(())

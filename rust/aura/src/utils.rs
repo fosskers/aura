@@ -4,12 +4,16 @@ use crate::error::Error;
 use colored::{ColoredString, Colorize};
 use rustyline::Editor;
 use std::ffi::OsStr;
+use std::io::Write;
 use std::path::PathBuf;
 use std::process::Command;
 use std::str::FromStr;
 
 /// A helper for commands like `-Ai`, `-Ci`, etc.
-pub(crate) fn info(pairs: &[(&str, ColoredString)]) {
+pub(crate) fn info<F: Write>(
+    f: &mut F,
+    pairs: &[(&str, ColoredString)],
+) -> Result<(), std::io::Error> {
     // The longest field.
     let l = pairs
         .iter()
@@ -18,14 +22,17 @@ pub(crate) fn info(pairs: &[(&str, ColoredString)]) {
         .unwrap_or(0);
 
     for (label, value) in pairs {
-        println!(
+        writeln!(
+            f,
             "{}{:w$} : {}",
             label.bold(),
             "",
             value,
             w = pad(1, l, label)
-        );
+        )?;
     }
+
+    writeln!(f) // A blank line.
 }
 
 // TODO Drop `pub` once other functions use `info` above.
