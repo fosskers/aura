@@ -7,7 +7,7 @@ use alpm::Alpm;
 use aura_core::cache::{CacheSize, PkgPath};
 use chrono::{DateTime, Local};
 use colored::*;
-use i18n_embed::fluent::FluentLanguageLoader;
+use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
 use itertools::Itertools;
 use linya::Progress;
@@ -15,6 +15,7 @@ use log::debug;
 use rayon::prelude::*;
 use std::collections::{HashMap, HashSet};
 use std::ffi::{OsStr, OsString};
+use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use ubyte::ToByteUnit;
@@ -121,51 +122,49 @@ pub(crate) fn info(
     packages: Vec<String>,
 ) -> Result<(), Error> {
     let db = alpm.localdb();
+    let mut w = BufWriter::new(std::io::stdout());
 
-    packages
+    let name = fl!(fll, "common-name");
+    let ver = fl!(fll, "C-i-latest");
+    let created = fl!(fll, "C-i-created");
+    let sig = fl!(fll, "C-i-sig");
+    let size = fl!(fll, "C-i-size");
+    let av = fl!(fll, "C-i-avail");
+    let inst = fl!(fll, "C-i-installed");
+
+    for ci in packages
         .iter()
         .filter_map(|p| aura_core::cache::info(path, p).ok())
         .flatten()
-        .for_each(|ci| {
-            let name = fl!(fll, "common-name");
-            let ver = fl!(fll, "C-i-latest");
-            let created = fl!(fll, "C-i-created");
-            let sig = fl!(fll, "C-i-sig");
-            let size = fl!(fll, "C-i-size");
-            let av = fl!(fll, "C-i-avail");
-            let long = vec![&name, &ver, &created, &sig, &size, &av]
-                .iter()
-                .map(|s| s.len())
-                .max()
-                .unwrap();
-
-            let dt = DateTime::<Local>::from(ci.created).format("%F %T");
-            let is_in = if let Ok(pkg) = db.pkg(ci.name.as_str()) {
-                if ci.version == pkg.version().as_str() {
-                    format!("[{}]", fl!(fll, "C-i-installed")).cyan().bold()
-                } else {
-                    format!("[{}: {}]", fl!(fll, "C-i-installed"), pkg.version())
-                        .yellow()
-                        .bold()
-                }
+    {
+        let dt = DateTime::<Local>::from(ci.created).format("%F %T");
+        let sig_yes_no = if ci.signature {
+            fl!(fll, "common-yes").green().bold()
+        } else {
+            fl!(fll, "common-no").yellow()
+        };
+        let is_in = if let Ok(pkg) = db.pkg(ci.name.as_str()) {
+            if ci.version == pkg.version().as_str() {
+                format!("[{}]", inst).cyan().bold()
             } else {
-                "".normal()
-            };
-            let sig_yes_no = if ci.signature {
-                fl!(fll, "common-yes").green().bold()
-            } else {
-                fl!(fll, "common-no").yellow()
-            };
+                format!("[{}: {}]", inst, pkg.version()).yellow().bold()
+            }
+        } else {
+            "".normal()
+        };
 
-            // TODO Handle non-ASCII padding.
-            println!("{:w$} : {}", name.bold(), ci.name, w = long);
-            println!("{:w$} : {} {}", ver.bold(), ci.version, is_in, w = long);
-            println!("{:w$} : {}", created.bold(), dt, w = long);
-            println!("{:w$} : {}", sig.bold(), sig_yes_no, w = long);
-            println!("{:w$} : {}", size.bold(), ci.size.bytes(), w = long);
-            println!("{:w$} : {}", av.bold(), ci.available.join(", "), w = long);
-            println!();
-        });
+        let pairs = vec![
+            (&name, ci.name.normal()),
+            (&ver, format!("{} {}", ci.version.normal(), is_in).normal()),
+            (&created, format!("{}", dt).normal()),
+            (&sig, sig_yes_no),
+            (&size, format!("{}", ci.size.bytes()).normal()),
+            (&av, ci.available.join(", ").normal()),
+        ];
+
+        crate::utils::info(&mut w, fll.current_language(), &pairs)?;
+        writeln!(w)?;
+    }
 
     Ok(())
 }
