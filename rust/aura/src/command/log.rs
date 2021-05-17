@@ -29,9 +29,9 @@ pub(crate) fn search(path: &Path, term: String) -> Result<(), Error> {
 pub(crate) fn info(fll: FluentLanguageLoader, path: &Path, pks: Vec<String>) {
     for e in pks.into_iter().filter_map(|p| core::log::info(path, p)) {
         let p = fl!(fll, "common-name");
-        let f = fl!(fll, "logs-first");
-        let u = fl!(fll, "logs-upgrades");
-        let r = fl!(fll, "logs-recent");
+        let f = fl!(fll, "L-first");
+        let u = fl!(fll, "L-upgrades");
+        let r = fl!(fll, "L-recent");
         // The longest field.
         let l = vec![&p, &f, &u, &r]
             .iter()

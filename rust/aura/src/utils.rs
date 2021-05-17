@@ -8,13 +8,23 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::process::Command;
 use std::str::FromStr;
+use unic_langid::LanguageIdentifier;
 
 /// A helper for commands like `-Ai`, `-Ci`, etc.
-pub(crate) fn info<W, S>(w: &mut W, pairs: &[(S, ColoredString)]) -> Result<(), std::io::Error>
+pub(crate) fn info<W, S>(
+    w: &mut W,
+    lang: LanguageIdentifier,
+    pairs: &[(S, ColoredString)],
+) -> Result<(), std::io::Error>
 where
     W: Write,
     S: AsRef<str>,
 {
+    // Different languages consume varying char widths in the terminal.
+    //
+    // TODO Account for other languages (Chinese, and what else?)
+    let m = if lang.language == "ja" { 2 } else { 1 };
+
     // The longest field.
     let l = pairs
         .iter()
@@ -24,7 +34,7 @@ where
 
     for (label, value) in pairs {
         let lbl = label.as_ref();
-        writeln!(w, "{}{:w$} : {}", lbl.bold(), "", value, w = pad(1, l, lbl))?;
+        writeln!(w, "{}{:w$} : {}", lbl.bold(), "", value, w = pad(m, l, lbl))?;
     }
 
     writeln!(w) // A blank line.

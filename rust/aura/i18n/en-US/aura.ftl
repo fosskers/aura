@@ -58,9 +58,9 @@ O-abandon = The following orphans and their dependencies will be removed:
 O-adopt = { $package } now marked as explicitly installed.
 
 # Logs (-L)
-logs-first = First Install
-logs-upgrades = Upgrades
-logs-recent = Recent Actions
+L-first = First Install
+L-upgrades = Upgrades
+L-recent = Recent Actions
 
 # System Validation (check)
 check-start = Validating your system.

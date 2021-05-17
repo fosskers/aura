@@ -3,7 +3,7 @@
 use crate::{error::Error, utils};
 use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
-use i18n_embed::fluent::FluentLanguageLoader;
+use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
 use raur_curl::{Handle, Raur};
 use std::borrow::Cow;
@@ -58,7 +58,7 @@ pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<()
             (fl!(fll, "A-i-submitted"), package_date(p.first_submitted)),
             (fl!(fll, "A-i-updated"), package_date(p.last_modified)),
         ];
-        utils::info(&mut w, &pairs)?;
+        utils::info(&mut w, fll.current_language(), &pairs)?;
     }
 
     Ok(())
