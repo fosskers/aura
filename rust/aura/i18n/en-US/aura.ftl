@@ -1,5 +1,24 @@
 language-name = English
 
+# AUR Packages (-A)
+aur-info-version = Version
+aur-info-status = AUR Status
+aur-info-maintainer = Maintainer
+aur-info-project-url = Project URL
+aur-info-license = License
+aur-info-group = Groups
+aur-info-provides = Provides
+aur-info-depends = Depends On
+aur-info-makedeps = Make Deps
+aur-info-optdeps = Optional Deps
+aur-info-checkdeps = Check Deps
+aur-info-votes = Votes
+aur-info-popularity = Popularity
+aur-info-description = Description
+aur-info-keywords = Keywords
+aur-info-submitted = Submitted
+aur-info-updated = Updated
+
 # Snapshots (-B)
 # saveState_1
 snapshot-saved = Saved package state.

@@ -10,29 +10,24 @@ use std::process::Command;
 use std::str::FromStr;
 
 /// A helper for commands like `-Ai`, `-Ci`, etc.
-pub(crate) fn info<F: Write>(
-    f: &mut F,
-    pairs: &[(&str, ColoredString)],
-) -> Result<(), std::io::Error> {
+pub(crate) fn info<W, S>(w: &mut W, pairs: &[(S, ColoredString)]) -> Result<(), std::io::Error>
+where
+    W: Write,
+    S: AsRef<str>,
+{
     // The longest field.
     let l = pairs
         .iter()
-        .map(|(l, _)| l.chars().count())
+        .map(|(l, _)| l.as_ref().chars().count())
         .max()
         .unwrap_or(0);
 
     for (label, value) in pairs {
-        writeln!(
-            f,
-            "{}{:w$} : {}",
-            label.bold(),
-            "",
-            value,
-            w = pad(1, l, label)
-        )?;
+        let lbl = label.as_ref();
+        writeln!(w, "{}{:w$} : {}", lbl.bold(), "", value, w = pad(1, l, lbl))?;
     }
 
-    writeln!(f) // A blank line.
+    writeln!(w) // A blank line.
 }
 
 // TODO Drop `pub` once other functions use `info` above.

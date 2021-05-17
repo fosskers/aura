@@ -2,63 +2,80 @@
 
 use crate::{error::Error, utils};
 use chrono::{Date, TimeZone, Utc};
-use colored::Colorize;
+use colored::{ColoredString, Colorize};
+use i18n_embed::fluent::FluentLanguageLoader;
+use i18n_embed_fl::fl;
 use raur_curl::{Handle, Raur};
 use std::borrow::Cow;
 use std::io::BufWriter;
 
 /// View AUR package information.
-pub(crate) fn info(packages: &[String]) -> Result<(), Error> {
+pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<(), Error> {
     let h = Handle::new();
     let r = h.info(packages)?;
     let mut w = BufWriter::new(std::io::stdout());
 
     for p in r {
-        let pairs = vec![
-            ("Repository", "aur".magenta()),
-            ("Name", p.name.bold()),
-            ("Version", p.version.normal()),
+        let pairs: Vec<(String, ColoredString)> = vec![
+            ("Repository".to_owned(), "aur".magenta()),
+            (fl!(fll, "common-name"), p.name.bold()),
+            (fl!(fll, "aur-info-version"), p.version.normal()),
             (
-                "AUR Status",
+                fl!(fll, "aur-info-status"),
                 match p.out_of_date {
                     None => "Up to Date".green(),
                     Some(_) => "Out of Date!".red(),
                 },
             ),
             (
-                "Maintainer",
+                fl!(fll, "aur-info-maintainer"),
                 match p.maintainer {
                     None => "None".red(),
                     Some(m) => m.normal(),
                 },
             ),
             (
-                "Project URL",
+                fl!(fll, "aur-info-project-url"),
                 p.url.map(|m| m.cyan()).unwrap_or_else(|| "None".red()),
             ),
-            ("AUR URL", package_url(&p.name).normal()),
-            ("License", p.license.join(" ").normal()),
-            ("Groups", p.groups.join(" ").normal()),
-            ("Provides", p.provides.join(" ").normal()),
-            ("Depends On", p.depends.join(" ").normal()),
-            ("Make Deps", p.make_depends.join(" ").normal()),
-            ("Optional Deps", p.opt_depends.join(" ").normal()),
-            ("Check Deps", p.check_depends.join(" ").normal()),
-            ("Votes", format!("{}", p.num_votes).yellow()),
-            ("Popularity", format!("{:.2}", p.popularity).yellow()),
+            ("AUR URL".to_owned(), package_url(&p.name).normal()),
+            (fl!(fll, "aur-info-license"), p.license.join(" ").normal()),
+            (fl!(fll, "aur-info-group"), p.groups.join(" ").normal()),
+            (fl!(fll, "aur-info-provides"), p.provides.join(" ").normal()),
+            (fl!(fll, "aur-info-depends"), p.depends.join(" ").normal()),
             (
-                "Description",
+                fl!(fll, "aur-info-makedeps"),
+                p.make_depends.join(" ").normal(),
+            ),
+            (
+                fl!(fll, "aur-info-optdeps"),
+                p.opt_depends.join(" ").normal(),
+            ),
+            (
+                fl!(fll, "aur-info-checkdeps"),
+                p.check_depends.join(" ").normal(),
+            ),
+            (
+                fl!(fll, "aur-info-votes"),
+                format!("{}", p.num_votes).yellow(),
+            ),
+            (
+                fl!(fll, "aur-info-popularity"),
+                format!("{:.2}", p.popularity).yellow(),
+            ),
+            (
+                fl!(fll, "aur-info-description"),
                 p.description
                     .map(|d| d.normal())
                     .unwrap_or_else(|| "None".red()),
             ),
-            ("Keywords", p.keywords.join(" ").cyan()),
+            (fl!(fll, "aur-info-keywords"), p.keywords.join(" ").cyan()),
             (
-                "Submitted",
+                fl!(fll, "aur-info-submitted"),
                 format!("{}", package_date(p.first_submitted).format("%F")).normal(),
             ),
             (
-                "Updated",
+                fl!(fll, "aur-info-updated"),
                 format!("{}", package_date(p.last_modified).format("%F")).normal(),
             ),
         ];

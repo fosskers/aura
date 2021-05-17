@@ -66,7 +66,7 @@ fn main() -> Result<(), Error> {
         SubCmd::Upgrade(_) => pacman()?,
         SubCmd::Sync(_) => pacman()?,
         // --- AUR Packages --- //
-        SubCmd::Aur(a) if a.info.is_empty().not() => aur::info(&a.info)?,
+        SubCmd::Aur(a) if a.info.is_empty().not() => aur::info(&fll, &a.info)?,
         SubCmd::Aur(a) if a.open.is_some() => aur::open(&a.open.unwrap())?,
         SubCmd::Aur(_) => unimplemented!(),
         // --- Package Sets --- //
