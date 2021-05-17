@@ -35,28 +35,19 @@ pub fn snapshot_dir() -> Result<PathBuf, std::env::VarError> {
 pub(crate) fn save(fll: &FluentLanguageLoader, alpm: &Alpm) -> Result<(), Error> {
     let mut cache = snapshot_dir()?;
     let snap = Snapshot::from_alpm(alpm);
-    // TODO Consider using the raw ISO representation, so that selection in -Br
-    // can be prettier. Namely, a true `DateTime` can be pulled back out of the
-    // name, and then pretty-printed in a human-friendly way on the prompt.
-    //
-    // No! Just use `NaiveDateTime::parse_from_str`!
     let name = format!("{}.json", snap.time.format("%Y.%m(%b).%d.%H.%M.%S"));
     cache.push(name);
 
     let file = BufWriter::new(File::create(cache)?);
     serde_json::to_writer(file, &snap)?;
-    green!(fll, "snapshot-saved");
+    green!(fll, "B-saved");
 
     Ok(())
 }
 
 /// Remove all saveds snapshots that don't have tarballs in the cache.
 pub(crate) fn clean(fll: &FluentLanguageLoader, cache: &Path) -> Result<(), Error> {
-    let msg = format!(
-        "{} {} ",
-        fl!(fll, "snapshot-clean"),
-        fl!(fll, "proceed-yes")
-    );
+    let msg = format!("{} {} ", fl!(fll, "B-clean"), fl!(fll, "proceed-yes"));
     crate::utils::prompt(&a!(msg))?;
 
     let path = snapshot_dir()?;
@@ -94,11 +85,11 @@ pub(crate) fn restore(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) -> 
     let digits = 1 + (shots.len() / 10);
 
     if shots.is_empty() {
-        red!(fll, "snapshot-none");
+        red!(fll, "B-none");
         return Err(Error::Silent);
     }
 
-    aura!(fll, "snapshot-select");
+    aura!(fll, "B-select");
     for (i, ss) in shots.iter().enumerate() {
         let time = ss.time.format("%Y %B %d %T");
         let pinned = ss

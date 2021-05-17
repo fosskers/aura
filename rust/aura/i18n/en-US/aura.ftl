@@ -23,10 +23,10 @@ A-i-updated = Updated
 
 # Snapshots (-B)
 # saveState_1
-snapshot-saved = Saved package state.
-snapshot-clean = Remove stale snapshots?
-snapshot-none = No usable snapshots found.
-snapshot-select = Select a snapshot to restore:
+B-saved = Saved package state.
+B-clean = Remove stale snapshots?
+B-none = No usable snapshots found.
+B-select = Select a snapshot to restore:
 
 # Cache (-C)
 C-size = Current cache size: { $size }
