@@ -29,29 +29,29 @@ snapshot-none = No usable snapshots found.
 snapshot-select = Select a snapshot to restore:
 
 # Cache (-C)
-cache-size = Current cache size: { $size }
+C-size = Current cache size: { $size }
 
-cache-backup-file = { $target } already exists and is not a directory.
-cache-backup-nonempty = Target { $target } exists but is not empty!
+C-b-file = { $target } already exists and is not a directory.
+C-b-nonempty = Target { $target } exists but is not empty!
 # backupCache_4
-cache-backup-target = Backing up cache to { $target }
+C-b-target = Backing up cache to { $target }
 
-cache-info-latest = Latest
-cache-info-created = Created
-cache-info-installed = installed
-cache-info-sig = Signature
-cache-info-size = Tarball Size
-cache-info-avail = Available Versions
+C-i-latest = Latest
+C-i-created = Created
+C-i-installed = installed
+C-i-sig = Signature
+C-i-size = Tarball Size
+C-i-avail = Available Versions
 
 # cleanCache_3 + 4
-cache-clean-keep = { $pkgs } of each package file will be kept. The rest will be deleted.
-cache-clean-freed = { $bytes } freed.
+C-c-keep = { $pkgs } of each package file will be kept. The rest will be deleted.
+C-c-freed = { $bytes } freed.
 
 # getDowngradeChoice_1
-cache-downgrade-which = What version of { $pkg } do you want?
+C-downgrade-which = What version of { $pkg } do you want?
 
-cache-refresh-no-work = Package cache already synchronized.
-cache-invalids = Removing invalid package tarballs.
+C-y-no-work = Package cache already synchronized.
+C-t-invalids = Removing invalid package tarballs.
 
 # Orphans (-O)
 orphans-abandon = The following orphans and their dependencies will be removed:

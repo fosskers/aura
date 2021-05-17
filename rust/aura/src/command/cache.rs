@@ -78,7 +78,7 @@ fn downgrade_one(
     let digits = 1 + (tarballs.len() / 10);
 
     let pkg = package.bold().cyan().to_string();
-    aura!(fll, "cache-downgrade-which", pkg = pkg);
+    aura!(fll, "C-downgrade-which", pkg = pkg);
 
     for (i, pp) in tarballs.iter().enumerate() {
         println!(" {:w$}) {}", i, pp.to_package().version, w = digits);
@@ -92,7 +92,7 @@ fn downgrade_one(
 /// Delete invalid tarballs from the cache.
 pub(crate) fn invalid(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) -> Result<(), Error> {
     sudo::escalate_if_needed()?;
-    aura!(fll, "cache-invalids");
+    aura!(fll, "C-t-invalids");
 
     aura_core::cache::package_paths(cache)?
         .filter(|pp| !aura_arch::is_valid_package(alpm, pp.path()))
@@ -128,11 +128,11 @@ pub(crate) fn info(
         .flatten()
         .for_each(|ci| {
             let name = fl!(fll, "common-name");
-            let ver = fl!(fll, "cache-info-latest");
-            let created = fl!(fll, "cache-info-created");
-            let sig = fl!(fll, "cache-info-sig");
-            let size = fl!(fll, "cache-info-size");
-            let av = fl!(fll, "cache-info-avail");
+            let ver = fl!(fll, "C-i-latest");
+            let created = fl!(fll, "C-i-created");
+            let sig = fl!(fll, "C-i-sig");
+            let size = fl!(fll, "C-i-size");
+            let av = fl!(fll, "C-i-avail");
             let long = vec![&name, &ver, &created, &sig, &size, &av]
                 .iter()
                 .map(|s| s.len())
@@ -142,11 +142,9 @@ pub(crate) fn info(
             let dt = DateTime::<Local>::from(ci.created).format("%F %T");
             let is_in = if let Ok(pkg) = db.pkg(ci.name.as_str()) {
                 if ci.version == pkg.version().as_str() {
-                    format!("[{}]", fl!(fll, "cache-info-installed"))
-                        .cyan()
-                        .bold()
+                    format!("[{}]", fl!(fll, "C-i-installed")).cyan().bold()
                 } else {
-                    format!("[{}: {}]", fl!(fll, "cache-info-installed"), pkg.version())
+                    format!("[{}: {}]", fl!(fll, "C-i-installed"), pkg.version())
                         .yellow()
                         .bold()
                 }
@@ -187,8 +185,8 @@ pub(crate) fn clean(fll: &FluentLanguageLoader, path: &Path, keep: usize) -> Res
 
     let size_before = aura_core::cache::size(path)?;
     let human = format!("{}", size_before.bytes.bytes());
-    aura!(fll, "cache-size", size = human);
-    yellow!(fll, "cache-clean-keep", pkgs = keep);
+    aura!(fll, "C-size", size = human);
+    yellow!(fll, "C-c-keep", pkgs = keep);
 
     // Proceed if the user accepts.
     let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
@@ -207,7 +205,7 @@ pub(crate) fn clean(fll: &FluentLanguageLoader, path: &Path, keep: usize) -> Res
 
     let size_after = aura_core::cache::size(path)?;
     let freed = format!("{}", (size_before.bytes - size_after.bytes).bytes());
-    green!(fll, "cache-clean-freed", bytes = freed);
+    green!(fll, "C-c-freed", bytes = freed);
     Ok(())
 }
 
@@ -220,7 +218,7 @@ pub(crate) fn clean_not_saved(
     // Report the initial size of the cache.
     let size_before = aura_core::cache::size(cache)?;
     let human = format!("{}", size_before.bytes.bytes());
-    aura!(fll, "cache-size", size = human);
+    aura!(fll, "C-size", size = human);
 
     // Proceed if the user accepts.
     let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
@@ -256,7 +254,7 @@ pub(crate) fn clean_not_saved(
     // Report the amount of disk space freed.
     let size_after = aura_core::cache::size(cache)?;
     let freed = format!("{}", (size_before.bytes - size_after.bytes).bytes());
-    green!(fll, "cache-clean-freed", bytes = freed);
+    green!(fll, "C-c-freed", bytes = freed);
 
     Ok(())
 }
@@ -273,7 +271,7 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader, alpm: &Alpm, path: &Path) -> R
     };
 
     if ps.is_empty() {
-        green!(fll, "cache-refresh-no-work");
+        green!(fll, "C-y-no-work");
     } else {
         let long_n = ps.iter().map(|p| p.name().chars().count()).max().unwrap();
         let long_v = ps
@@ -402,21 +400,21 @@ pub(crate) fn backup(
 
     // Exit early if the target is an existing file, not a directory.
     if target.is_file() {
-        red!(fll, "cache-backup-file", target = ts);
+        red!(fll, "C-b-file", target = ts);
         return Err(Error::Silent);
     }
 
     // How big is the current cache?
     let cache_size: CacheSize = aura_core::cache::size(source)?;
     let size = format!("{}", cache_size.bytes.bytes());
-    aura!(fll, "cache-size", size = size);
+    aura!(fll, "C-size", size = size);
 
     // Is the target directory empty?
     let target_count = target.read_dir().map(|d| d.count()).unwrap_or(0);
     if target_count > 0 {
-        yellow!(fll, "cache-backup-nonempty", target = ts);
+        yellow!(fll, "C-b-nonempty", target = ts);
     } else {
-        aura!(fll, "cache-backup-target", target = ts);
+        aura!(fll, "C-b-target", target = ts);
     }
 
     // Proceed if the user accepts.
