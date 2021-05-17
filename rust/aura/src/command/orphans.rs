@@ -36,7 +36,7 @@ pub(crate) fn adopt(
 
     for mut p in reals {
         p.set_reason(PackageReason::Explicit)?;
-        green!(fll, "orphans-adopt", package = p.name());
+        green!(fll, "O-adopt", package = p.name());
     }
 
     Ok(())
@@ -70,7 +70,7 @@ pub(crate) fn remove(alpm: &mut Alpm, fll: FluentLanguageLoader) -> Result<(), E
         // Notify the user of the results.
         let removal = alpm.trans_remove();
         let longest = removal.iter().map(|p| p.name().len()).max().unwrap_or(0);
-        yellow!(fll, "orphans-abandon");
+        yellow!(fll, "O-abandon");
         println!();
         for p in removal {
             let size = format!("{}", p.isize().bytes());

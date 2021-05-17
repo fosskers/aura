@@ -54,8 +54,8 @@ C-y-no-work = Package cache already synchronized.
 C-t-invalids = Removing invalid package tarballs.
 
 # Orphans (-O)
-orphans-abandon = The following orphans and their dependencies will be removed:
-orphans-adopt = { $package } now marked as explicitly installed.
+O-abandon = The following orphans and their dependencies will be removed:
+O-adopt = { $package } now marked as explicitly installed.
 
 # Logs (-L)
 logs-first = First Install
