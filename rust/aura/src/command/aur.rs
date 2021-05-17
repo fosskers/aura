@@ -1,7 +1,7 @@
 //! All functionality involving the `-A` command.
 
 use crate::{error::Error, utils};
-use chrono::{Date, TimeZone, Utc};
+use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
@@ -17,67 +17,46 @@ pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<()
 
     for p in r {
         let pairs: Vec<(String, ColoredString)> = vec![
-            ("Repository".to_owned(), "aur".magenta()),
+            (fl!(fll, "A-i-repo"), "aur".magenta()),
             (fl!(fll, "common-name"), p.name.bold()),
-            (fl!(fll, "aur-info-version"), p.version.normal()),
+            (fl!(fll, "A-i-version"), p.version.normal()),
             (
-                fl!(fll, "aur-info-status"),
+                fl!(fll, "A-i-status"),
                 match p.out_of_date {
                     None => "Up to Date".green(),
                     Some(_) => "Out of Date!".red(),
                 },
             ),
             (
-                fl!(fll, "aur-info-maintainer"),
+                fl!(fll, "A-i-maintainer"),
                 match p.maintainer {
                     None => "None".red(),
                     Some(m) => m.normal(),
                 },
             ),
             (
-                fl!(fll, "aur-info-project-url"),
+                fl!(fll, "A-i-proj-url"),
                 p.url.map(|m| m.cyan()).unwrap_or_else(|| "None".red()),
             ),
-            ("AUR URL".to_owned(), package_url(&p.name).normal()),
-            (fl!(fll, "aur-info-license"), p.license.join(" ").normal()),
-            (fl!(fll, "aur-info-group"), p.groups.join(" ").normal()),
-            (fl!(fll, "aur-info-provides"), p.provides.join(" ").normal()),
-            (fl!(fll, "aur-info-depends"), p.depends.join(" ").normal()),
+            (fl!(fll, "A-i-aur-url"), package_url(&p.name).normal()),
+            (fl!(fll, "A-i-license"), p.license.join(" ").normal()),
+            (fl!(fll, "A-i-group"), p.groups.join(" ").normal()),
+            (fl!(fll, "A-i-provides"), p.provides.join(" ").normal()),
+            (fl!(fll, "A-i-depends"), p.depends.join(" ").normal()),
+            (fl!(fll, "A-i-make"), p.make_depends.join(" ").normal()),
+            (fl!(fll, "A-i-opt"), p.opt_depends.join(" ").normal()),
+            (fl!(fll, "A-i-check"), p.check_depends.join(" ").normal()),
+            (fl!(fll, "A-i-votes"), format!("{}", p.num_votes).yellow()),
+            (fl!(fll, "A-i-pop"), format!("{:.2}", p.popularity).yellow()),
             (
-                fl!(fll, "aur-info-makedeps"),
-                p.make_depends.join(" ").normal(),
-            ),
-            (
-                fl!(fll, "aur-info-optdeps"),
-                p.opt_depends.join(" ").normal(),
-            ),
-            (
-                fl!(fll, "aur-info-checkdeps"),
-                p.check_depends.join(" ").normal(),
-            ),
-            (
-                fl!(fll, "aur-info-votes"),
-                format!("{}", p.num_votes).yellow(),
-            ),
-            (
-                fl!(fll, "aur-info-popularity"),
-                format!("{:.2}", p.popularity).yellow(),
-            ),
-            (
-                fl!(fll, "aur-info-description"),
+                fl!(fll, "A-i-desc"),
                 p.description
                     .map(|d| d.normal())
                     .unwrap_or_else(|| "None".red()),
             ),
-            (fl!(fll, "aur-info-keywords"), p.keywords.join(" ").cyan()),
-            (
-                fl!(fll, "aur-info-submitted"),
-                format!("{}", package_date(p.first_submitted).format("%F")).normal(),
-            ),
-            (
-                fl!(fll, "aur-info-updated"),
-                format!("{}", package_date(p.last_modified).format("%F")).normal(),
-            ),
+            (fl!(fll, "A-i-keywords"), p.keywords.join(" ").cyan()),
+            (fl!(fll, "A-i-submitted"), package_date(p.first_submitted)),
+            (fl!(fll, "A-i-updated"), package_date(p.last_modified)),
         ];
         utils::info(&mut w, &pairs)?;
     }
@@ -98,6 +77,6 @@ fn package_url(package: &str) -> String {
     url.into_owned()
 }
 
-fn package_date(epoch: i64) -> Date<Utc> {
-    Utc.timestamp(epoch, 0).date()
+fn package_date(epoch: i64) -> ColoredString {
+    format!("{}", Utc.timestamp(epoch, 0).date().format("%F")).normal()
 }
