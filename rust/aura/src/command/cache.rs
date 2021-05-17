@@ -153,7 +153,7 @@ pub(crate) fn info(
             "".normal()
         };
 
-        let pairs = vec![
+        let pairs: Vec<(&str, ColoredString)> = vec![
             (&name, ci.name.normal()),
             (&ver, format!("{} {}", ci.version.normal(), is_in).normal()),
             (&created, format!("{}", dt).normal()),

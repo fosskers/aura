@@ -10,17 +10,12 @@ use std::process::Command;
 use std::str::FromStr;
 use unic_langid::LanguageIdentifier;
 
-// TODO The `S` can be turned back into `&str`.
 /// A helper for commands like `-Ai`, `-Ci`, etc.
-pub(crate) fn info<W, S>(
+pub(crate) fn info<W: Write>(
     w: &mut W,
     lang: LanguageIdentifier,
-    pairs: &[(S, ColoredString)],
-) -> Result<(), std::io::Error>
-where
-    W: Write,
-    S: AsRef<str>,
-{
+    pairs: &[(&str, ColoredString)],
+) -> Result<(), std::io::Error> {
     // Different languages consume varying char widths in the terminal.
     //
     // TODO Account for other languages (Chinese, and what else?)
@@ -29,20 +24,18 @@ where
     // The longest field.
     let l = pairs
         .iter()
-        .map(|(l, _)| l.as_ref().chars().count())
+        .map(|(l, _)| l.chars().count())
         .max()
         .unwrap_or(0);
 
-    for (label, value) in pairs {
-        let lbl = label.as_ref();
+    for (lbl, value) in pairs {
         writeln!(w, "{}{:w$} : {}", lbl.bold(), "", value, w = pad(m, l, lbl))?;
     }
 
     Ok(())
 }
 
-// TODO Drop `pub` once other functions use `info` above.
-pub(crate) fn pad(mult: usize, longest: usize, s: &str) -> usize {
+fn pad(mult: usize, longest: usize, s: &str) -> usize {
     mult * (longest - s.chars().count())
 }
 

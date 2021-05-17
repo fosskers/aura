@@ -39,7 +39,7 @@ pub(crate) fn info(
     let r = fl!(fll, "L-recent");
 
     for e in pks.into_iter().filter_map(|p| core::log::info(path, p)) {
-        let pairs = vec![
+        let pairs: Vec<(&str, ColoredString)> = vec![
             (&p, e.package.normal()),
             (&f, e.installed.normal()),
             (&u, format!("{}", e.upgrades).normal()),
