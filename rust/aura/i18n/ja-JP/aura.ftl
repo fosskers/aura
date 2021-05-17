@@ -22,13 +22,13 @@ A-i-submitted = 最初投稿
 A-i-updated = 更新
 
 # Orphans (-O)
-orphans-abandon = The following orphans and their dependencies will be removed:
-orphans-adopt = { $package } now marked as explicitly installed.
+O-abandon = The following orphans and their dependencies will be removed:
+O-adopt = { $package } now marked as explicitly installed.
 
 # Logs (-L)
-logs-first = 初インストール
-logs-upgrades = アップグレード回数
-logs-recent = 近況
+L-first = 初インストール
+L-upgrades = アップグレード回数
+L-recent = 近況
 
 # Common Fields
 common-name = 名前
