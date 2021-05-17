@@ -26,48 +26,34 @@ pub(crate) fn search(path: &Path, term: String) -> Result<(), Error> {
 }
 
 /// Display install/upgrade history for the given packages.
-pub(crate) fn info(fll: FluentLanguageLoader, path: &Path, pks: Vec<String>) {
+pub(crate) fn info(
+    fll: FluentLanguageLoader,
+    path: &Path,
+    pks: Vec<String>,
+) -> Result<(), std::io::Error> {
+    let mut w = BufWriter::new(std::io::stdout());
+
+    let p = fl!(fll, "common-name");
+    let f = fl!(fll, "L-first");
+    let u = fl!(fll, "L-upgrades");
+    let r = fl!(fll, "L-recent");
+
     for e in pks.into_iter().filter_map(|p| core::log::info(path, p)) {
-        let p = fl!(fll, "common-name");
-        let f = fl!(fll, "L-first");
-        let u = fl!(fll, "L-upgrades");
-        let r = fl!(fll, "L-recent");
-        // The longest field.
-        let l = vec![&p, &f, &u, &r]
-            .iter()
-            .map(|s| s.chars().count())
-            .max()
-            .unwrap();
-        // A width multiplier to aid in proper padding below.
-        let lang = fll.current_language().language;
-        let m = if lang == "ja" { 2 } else { 1 };
-        println!(
-            "{}{:w$} : {}",
-            p.bold(),
-            "",
-            e.package,
-            w = utils::pad(m, l, &p)
-        );
-        println!(
-            "{}{:w$} : {}",
-            f.bold(),
-            "",
-            e.installed,
-            w = utils::pad(m, l, &f)
-        );
-        println!(
-            "{}{:w$} : {}",
-            u.bold(),
-            "",
-            e.upgrades,
-            w = utils::pad(m, l, &u)
-        );
-        println!("{}{:w$} :", r.bold(), "", w = utils::pad(m, l, &r));
+        let pairs = vec![
+            (&p, e.package.normal()),
+            (&f, e.installed.normal()),
+            (&u, format!("{}", e.upgrades).normal()),
+            (&r, "".normal()),
+        ];
+
+        utils::info(&mut w, fll.current_language(), &pairs)?;
         for r in e.recent {
-            println!("{}", r);
+            writeln!(w, "{}", r)?;
         }
-        println!();
+        writeln!(w)?;
     }
+
+    Ok(())
 }
 
 /// Output the content of the Pacman/ALPM log, possibly filtered by date.

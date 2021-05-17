@@ -10,6 +10,7 @@ use std::process::Command;
 use std::str::FromStr;
 use unic_langid::LanguageIdentifier;
 
+// TODO The `S` can be turned back into `&str`.
 /// A helper for commands like `-Ai`, `-Ci`, etc.
 pub(crate) fn info<W, S>(
     w: &mut W,
@@ -37,7 +38,7 @@ where
         writeln!(w, "{}{:w$} : {}", lbl.bold(), "", value, w = pad(m, l, lbl))?;
     }
 
-    writeln!(w) // A blank line.
+    Ok(())
 }
 
 // TODO Drop `pub` once other functions use `info` above.

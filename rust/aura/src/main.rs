@@ -87,7 +87,7 @@ fn main() -> Result<(), Error> {
         SubCmd::Cache(c) => cache::downgrade(&fll, cachep, c.packages)?,
         // --- Logs --- //
         SubCmd::Log(l) if l.search.is_some() => log::search(logp, l.search.unwrap())?,
-        SubCmd::Log(l) if !l.info.is_empty() => log::info(fll, logp, l.info),
+        SubCmd::Log(l) if !l.info.is_empty() => log::info(fll, logp, l.info)?,
         SubCmd::Log(l) => log::view(logp, l.before, l.after)?,
         // --- Orphan Packages --- //
         SubCmd::Orphans(o) if o.abandon => orphans::remove(&mut alpm, fll)?,
