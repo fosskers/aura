@@ -27,11 +27,11 @@ pub(crate) struct Args {
         // short = 'b',
         value_name = "path",
         global = true,
-        display_order = 2
+        display_order = 3
     )]
     pub(crate) dbpath: Option<String>,
     /// Set an alternate installation root.
-    #[clap(long, value_name = "path", global = true, display_order = 2)]
+    #[clap(long, value_name = "path", global = true, display_order = 3)]
     pub(crate) root: Option<String>,
     /// Set an alternate log file.
     #[clap(long, value_name = "path", global = true)]
@@ -722,11 +722,11 @@ pub(crate) struct Stats {
 #[clap(short_flag = 'A', long_flag = "aursync")]
 pub(crate) struct Aur {
     /// View AUR package information.
-    #[clap(group = "aur", long, short, display_order = 1)]
+    #[clap(group = "aur", long, short, value_name = "packages", display_order = 1)]
     pub(crate) info: Vec<String>,
 
     /// Search the AUR via search strings. Multiple terms narrow the result.
-    #[clap(group = "aur", long, short, display_order = 1)]
+    #[clap(group = "aur", long, short, value_name = "terms", display_order = 1)]
     pub(crate) search: Vec<String>,
 
     // TODO Avoid boolean blindness.
@@ -734,12 +734,16 @@ pub(crate) struct Aur {
     #[clap(long, display_order = 2)]
     pub(crate) abc: bool,
 
+    /// [-s] Limit the results to N results.
+    #[clap(long, value_name = "N", display_order = 2)]
+    pub(crate) limit: Option<usize>,
+
     /// [-s] Reverse the search results.
     #[clap(long, short, display_order = 2)]
     pub(crate) reverse: bool,
 
     /// Open a given package's AUR package.
-    #[clap(group = "aur", long, short, display_order = 1)]
+    #[clap(group = "aur", long, short, value_name = "package", display_order = 1)]
     pub(crate) open: Option<String>,
 }
 

@@ -91,7 +91,13 @@ pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<()
 /// Search the AUR via a search string.
 ///
 /// Thanks to `clap`, the `terms` slice is guaranteed to be non-empty.
-pub(crate) fn search(alpm: &Alpm, alpha: bool, rev: bool, terms: &[String]) -> Result<(), Error> {
+pub(crate) fn search(
+    alpm: &Alpm,
+    alpha: bool,
+    rev: bool,
+    limit: Option<usize>,
+    terms: &[String],
+) -> Result<(), Error> {
     let db = alpm.localdb();
     let h = Handle::new();
     let rep = "aur/".magenta();
@@ -106,8 +112,9 @@ pub(crate) fn search(alpm: &Alpm, alpha: bool, rev: bool, terms: &[String]) -> R
     if rev {
         r.reverse();
     }
+    let to_take = limit.unwrap_or_else(|| r.len());
 
-    for p in r {
+    for p in r.into_iter().take(to_take) {
         let n = p.name.bold();
         let vot = format!("{}", p.num_votes).yellow();
         let pop = format!("{:.2}", p.popularity).yellow();
