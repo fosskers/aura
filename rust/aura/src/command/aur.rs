@@ -87,15 +87,22 @@ pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<()
     Ok(())
 }
 
-// TODO Do a search per-term and then combine the results.
+// TODO Do a search per-term and then combine (and narrow) the results.
 /// Search the AUR via a search string.
-pub(crate) fn search(alpm: &Alpm, terms: &[String]) -> Result<(), Error> {
+///
+/// Thanks to `clap`, the `terms` slice is guaranteed to be non-empty.
+pub(crate) fn search(alpm: &Alpm, alpha: bool, terms: &[String]) -> Result<(), Error> {
     let db = alpm.localdb();
     let h = Handle::new();
     let rep = "aur/".magenta();
+
+    // Search and sort the results.
     let mut r: Vec<_> = h.search(terms.join(" "))?;
-    r.sort_by_key(|p| p.num_votes);
-    r.reverse();
+    if alpha {
+        r.sort_by(|a, b| a.name.cmp(&b.name));
+    } else {
+        r.sort_by(|a, b| b.num_votes.cmp(&a.num_votes));
+    }
 
     for p in r {
         let n = p.name.bold();
@@ -110,7 +117,6 @@ pub(crate) fn search(alpm: &Alpm, terms: &[String]) -> Result<(), Error> {
             Ok(_) => "[installed]".bold(),
         };
 
-        // TODO Sorting schemes
         // TODO Search term highlighting
         println!("{}{} {} ({} | {}) {}", rep, n, ver, vot, pop, ins);
         println!("    {}", p.description.unwrap_or_else(|| "".to_owned()));
