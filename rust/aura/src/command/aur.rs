@@ -1,6 +1,7 @@
 //! All functionality involving the `-A` command.
 
 use crate::{error::Error, utils};
+use alpm::Alpm;
 use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
@@ -88,30 +89,31 @@ pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<()
 
 // TODO Do a search per-term and then combine the results.
 /// Search the AUR via a search string.
-pub(crate) fn search(terms: &[String]) -> Result<(), Error> {
+pub(crate) fn search(alpm: &Alpm, terms: &[String]) -> Result<(), Error> {
+    let db = alpm.localdb();
     let h = Handle::new();
+    let rep = "aur/".magenta();
     let mut r: Vec<_> = h.search(terms.join(" "))?;
     r.sort_by_key(|p| p.num_votes);
     r.reverse();
-    // let mut w = BufWriter::new(std::io::stdout());
 
     for p in r {
-        // TODO [installed] status
+        let n = p.name.bold();
+        let vot = format!("{}", p.num_votes).yellow();
+        let pop = format!("{:.2}", p.popularity).yellow();
+        let ver = match p.out_of_date {
+            Some(_) => p.version.red(),
+            None => p.version.green(),
+        };
+        let ins = match db.pkg(p.name) {
+            Err(_) => "".normal(),
+            Ok(_) => "[installed]".bold(),
+        };
+
         // TODO Sorting schemes
-        println!(
-            "{}{} {} ({} | {})",
-            "aur/".magenta(),
-            p.name.bold(),
-            if p.out_of_date.is_some() {
-                p.version.red()
-            } else {
-                p.version.green()
-            },
-            format!("{}", p.num_votes).yellow(),
-            format!("{:.2}", p.popularity).yellow()
-        );
+        // TODO Search term highlighting
+        println!("{}{} {} ({} | {}) {}", rep, n, ver, vot, pop, ins);
         println!("    {}", p.description.unwrap_or_else(|| "".to_owned()));
-        // writeln!(w, "{}", p.name)?;
     }
 
     Ok(())
