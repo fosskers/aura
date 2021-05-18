@@ -42,7 +42,7 @@ pub(crate) struct Args {
 
     // --- Aura Language Options --- //
     /// Output in English.
-    #[clap(group = "language", long, global = true, display_order = 2)]
+    #[clap(group = "language", long, global = true, display_order = 3)]
     pub(crate) english: bool,
     /// Output in Japanese (alias: 日本語).
     #[clap(
@@ -50,7 +50,7 @@ pub(crate) struct Args {
         long,
         global = true,
         alias = "日本語",
-        display_order = 2
+        display_order = 3
     )]
     pub(crate) japanese: bool,
     /// Output in German (alias: deutsch).
@@ -59,7 +59,7 @@ pub(crate) struct Args {
         long,
         global = true,
         alias = "deutsch",
-        display_order = 2
+        display_order = 3
     )]
     pub(crate) german: bool,
 
@@ -731,8 +731,12 @@ pub(crate) struct Aur {
 
     // TODO Avoid boolean blindness.
     /// [-s] Sort results alphabetically.
-    #[clap(long)]
+    #[clap(long, display_order = 2)]
     pub(crate) abc: bool,
+
+    /// [-s] Reverse the search results.
+    #[clap(long, short, display_order = 2)]
+    pub(crate) reverse: bool,
 
     /// Open a given package's AUR package.
     #[clap(group = "aur", long, short, display_order = 1)]

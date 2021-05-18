@@ -67,7 +67,9 @@ fn main() -> Result<(), Error> {
         SubCmd::Sync(_) => pacman()?,
         // --- AUR Packages --- //
         SubCmd::Aur(a) if a.info.is_empty().not() => aur::info(&fll, &a.info)?,
-        SubCmd::Aur(a) if a.search.is_empty().not() => aur::search(&alpm, a.abc, &a.search)?,
+        SubCmd::Aur(a) if a.search.is_empty().not() => {
+            aur::search(&alpm, a.abc, a.reverse, &a.search)?
+        }
         SubCmd::Aur(a) if a.open.is_some() => aur::open(&a.open.unwrap())?,
         SubCmd::Aur(_) => unimplemented!(),
         // --- Package Sets --- //
