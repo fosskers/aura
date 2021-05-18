@@ -86,6 +86,37 @@ pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<()
     Ok(())
 }
 
+// TODO Do a search per-term and then combine the results.
+/// Search the AUR via a search string.
+pub(crate) fn search(terms: &[String]) -> Result<(), Error> {
+    let h = Handle::new();
+    let mut r: Vec<_> = h.search(terms.join(" "))?;
+    r.sort_by_key(|p| p.num_votes);
+    r.reverse();
+    // let mut w = BufWriter::new(std::io::stdout());
+
+    for p in r {
+        // TODO [installed] status
+        // TODO Sorting schemes
+        println!(
+            "{}{} {} ({} | {})",
+            "aur/".magenta(),
+            p.name.bold(),
+            if p.out_of_date.is_some() {
+                p.version.red()
+            } else {
+                p.version.green()
+            },
+            format!("{}", p.num_votes).yellow(),
+            format!("{:.2}", p.popularity).yellow()
+        );
+        println!("    {}", p.description.unwrap_or_else(|| "".to_owned()));
+        // writeln!(w, "{}", p.name)?;
+    }
+
+    Ok(())
+}
+
 /// Open a given package's AUR package.
 pub(crate) fn open(package: &str) -> Result<(), Error> {
     let url = package_url(package);

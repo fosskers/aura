@@ -725,6 +725,10 @@ pub(crate) struct Aur {
     #[clap(group = "aur", long, short, display_order = 1)]
     pub(crate) info: Vec<String>,
 
+    /// Search the AUR via a search string.
+    #[clap(group = "aur", long, short, display_order = 1)]
+    pub(crate) search: Vec<String>,
+
     /// Open a given package's AUR package.
     #[clap(group = "aur", long, short, display_order = 1)]
     pub(crate) open: Option<String>,
