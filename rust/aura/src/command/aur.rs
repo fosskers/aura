@@ -7,9 +7,8 @@ use colored::{ColoredString, Colorize};
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
 use raur_curl::{Handle, Raur};
-use rayon::prelude::*;
+use std::borrow::Cow;
 use std::io::{BufWriter, Write};
-use std::{borrow::Cow, collections::HashSet};
 
 /// View AUR package information.
 pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<(), Error> {
@@ -97,42 +96,42 @@ pub(crate) fn search(
     rev: bool,
     limit: Option<usize>,
     quiet: bool,
-    terms: &HashSet<String>,
+    terms: &[String],
 ) -> Result<(), Error> {
     let db = alpm.localdb();
     let rep = "aur/".magenta();
 
-    // Perform a concurrent search for each term.
-    let mut r: Vec<_> = terms
-        .par_iter()
-        .map(|term| Handle::new().search(term))
-        .collect::<Result<Vec<_>, _>>()?
-        .into_iter()
-        .flatten()
-        .filter(|p| {
-            terms.len() == 1
-                || terms.iter().all(|t| {
-                    p.name.contains(t)
-                        || p.description
-                            .as_ref()
-                            .map(|d| d.to_lowercase().contains(t))
-                            .unwrap_or(false)
-                })
-        })
-        .collect();
+    // Search using the largest term.
+    let mut terms = terms.iter().map(|t| t.to_lowercase()).collect::<Vec<_>>();
+    terms.sort_unstable_by_key(|t| t.len());
+    let initial_term = terms.pop().unwrap();
+    let mut matches = Handle::new().search(initial_term)?;
+
+    // filter out packages that don't match other search terms.
+    matches.retain(|m| {
+        let name = m.name.to_lowercase();
+        let description = m
+            .description
+            .as_deref()
+            .map(|s| s.to_lowercase())
+            .unwrap_or_default();
+        terms
+            .iter()
+            .all(|t| name.contains(t) | description.contains(t))
+    });
 
     // Sort and filter the results as requested.
     if alpha {
-        r.sort_by(|a, b| a.name.cmp(&b.name));
+        matches.sort_by(|a, b| a.name.cmp(&b.name));
     } else {
-        r.sort_by(|a, b| b.num_votes.cmp(&a.num_votes));
+        matches.sort_by(|a, b| b.num_votes.cmp(&a.num_votes));
     }
     if rev {
-        r.reverse();
+        matches.reverse();
     }
-    let to_take = limit.unwrap_or_else(|| r.len());
+    let to_take = limit.unwrap_or_else(|| matches.len());
 
-    for p in r.into_iter().take(to_take) {
+    for p in matches.into_iter().take(to_take) {
         if quiet {
             println!("{}", p.name);
         } else {
