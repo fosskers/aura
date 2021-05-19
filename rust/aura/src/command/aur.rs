@@ -7,6 +7,7 @@ use colored::{ColoredString, Colorize};
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
 use raur_curl::{Handle, Raur};
+use rayon::prelude::*;
 use std::borrow::Cow;
 use std::io::{BufWriter, Write};
 
@@ -102,8 +103,15 @@ pub(crate) fn search(
     let h = Handle::new();
     let rep = "aur/".magenta();
 
+    let mut r: Vec<_> = terms
+        .par_iter()
+        .map(|term| Handle::new().search(term))
+        .collect::<Result<Vec<_>, _>>()?
+        .into_iter()
+        .flatten()
+        .collect();
+
     // Search and sort the results.
-    let mut r: Vec<_> = h.search(terms.join(" "))?;
     if alpha {
         r.sort_by(|a, b| a.name.cmp(&b.name));
     } else {
