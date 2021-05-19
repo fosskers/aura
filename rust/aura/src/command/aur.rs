@@ -96,6 +96,7 @@ pub(crate) fn search(
     alpha: bool,
     rev: bool,
     limit: Option<usize>,
+    quiet: bool,
     terms: &HashSet<String>,
 ) -> Result<(), Error> {
     let db = alpm.localdb();
@@ -132,21 +133,25 @@ pub(crate) fn search(
     let to_take = limit.unwrap_or_else(|| r.len());
 
     for p in r.into_iter().take(to_take) {
-        let n = p.name.bold();
-        let vot = format!("{}", p.num_votes).yellow();
-        let pop = format!("{:.2}", p.popularity).yellow();
-        let ver = match p.out_of_date {
-            Some(_) => p.version.red(),
-            None => p.version.green(),
-        };
-        let ins = match db.pkg(p.name) {
-            Err(_) => "".normal(),
-            Ok(_) => "[installed]".bold(),
-        };
+        if quiet {
+            println!("{}", p.name);
+        } else {
+            let n = p.name.bold();
+            let vot = format!("{}", p.num_votes).yellow();
+            let pop = format!("{:.2}", p.popularity).yellow();
+            let ver = match p.out_of_date {
+                Some(_) => p.version.red(),
+                None => p.version.green(),
+            };
+            let ins = match db.pkg(p.name) {
+                Err(_) => "".normal(),
+                Ok(_) => "[installed]".bold(),
+            };
 
-        // TODO Search term highlighting
-        println!("{}{} {} ({} | {}) {}", rep, n, ver, vot, pop, ins);
-        println!("    {}", p.description.unwrap_or_else(|| "".to_owned()));
+            // TODO Search term highlighting
+            println!("{}{} {} ({} | {}) {}", rep, n, ver, vot, pop, ins);
+            println!("    {}", p.description.unwrap_or_else(|| "".to_owned()));
+        }
     }
 
     Ok(())

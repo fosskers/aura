@@ -742,6 +742,10 @@ pub(crate) struct Aur {
     #[clap(long, short, display_order = 2)]
     pub(crate) reverse: bool,
 
+    /// [-s] Only print matching package names.
+    #[clap(long, short, display_order = 2)]
+    pub(crate) quiet: bool,
+
     /// Open a given package's AUR package.
     #[clap(group = "aur", long, short, value_name = "package", display_order = 1)]
     pub(crate) open: Option<String>,

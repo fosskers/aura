@@ -70,7 +70,7 @@ fn main() -> Result<(), Error> {
         SubCmd::Aur(a) if a.search.is_empty().not() => {
             // FIXME It would be great if `clap` could pull arg lists directly into a `HashSet`.
             let terms: HashSet<_> = a.search.into_iter().collect();
-            aur::search(&alpm, a.abc, a.reverse, a.limit, &terms)?
+            aur::search(&alpm, a.abc, a.reverse, a.limit, a.quiet, &terms)?
         }
         SubCmd::Aur(a) if a.open.is_some() => aur::open(&a.open.unwrap())?,
         SubCmd::Aur(_) => unimplemented!(),
