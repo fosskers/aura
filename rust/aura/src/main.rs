@@ -17,7 +17,7 @@ use command::*;
 use error::Error;
 use flags::{SubCmd, AURA_GLOBALS};
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::ops::Not;
 use std::path::{Path, PathBuf};
 
@@ -68,7 +68,9 @@ fn main() -> Result<(), Error> {
         // --- AUR Packages --- //
         SubCmd::Aur(a) if a.info.is_empty().not() => aur::info(&fll, &a.info)?,
         SubCmd::Aur(a) if a.search.is_empty().not() => {
-            aur::search(&alpm, a.abc, a.reverse, a.limit, &a.search)?
+            // FIXME It would be great if `clap` could pull arg lists directly into a `HashSet`.
+            let terms: HashSet<_> = a.search.into_iter().collect();
+            aur::search(&alpm, a.abc, a.reverse, a.limit, &terms)?
         }
         SubCmd::Aur(a) if a.open.is_some() => aur::open(&a.open.unwrap())?,
         SubCmd::Aur(_) => unimplemented!(),

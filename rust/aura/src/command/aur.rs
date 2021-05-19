@@ -8,8 +8,8 @@ use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
 use raur_curl::{Handle, Raur};
 use rayon::prelude::*;
-use std::borrow::Cow;
 use std::io::{BufWriter, Write};
+use std::{borrow::Cow, collections::HashSet};
 
 /// View AUR package information.
 pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<(), Error> {
@@ -88,7 +88,6 @@ pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<()
     Ok(())
 }
 
-// TODO Do a search per-term and then combine (and narrow) the results.
 /// Search the AUR via a search string.
 ///
 /// Thanks to `clap`, the `terms` slice is guaranteed to be non-empty.
@@ -97,21 +96,31 @@ pub(crate) fn search(
     alpha: bool,
     rev: bool,
     limit: Option<usize>,
-    terms: &[String],
+    terms: &HashSet<String>,
 ) -> Result<(), Error> {
     let db = alpm.localdb();
-    let h = Handle::new();
     let rep = "aur/".magenta();
 
+    // Perform a concurrent search for each term.
     let mut r: Vec<_> = terms
         .par_iter()
         .map(|term| Handle::new().search(term))
         .collect::<Result<Vec<_>, _>>()?
         .into_iter()
         .flatten()
+        .filter(|p| {
+            terms.len() == 1
+                || terms.iter().all(|t| {
+                    p.name.contains(t)
+                        || p.description
+                            .as_ref()
+                            .map(|d| d.to_lowercase().contains(t))
+                            .unwrap_or(false)
+                })
+        })
         .collect();
 
-    // Search and sort the results.
+    // Sort and filter the results as requested.
     if alpha {
         r.sort_by(|a, b| a.name.cmp(&b.name));
     } else {
