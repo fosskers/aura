@@ -96,18 +96,22 @@ pub(crate) fn search(
     rev: bool,
     limit: Option<usize>,
     quiet: bool,
-    terms: &[String],
+    mut terms: Vec<String>,
 ) -> Result<(), Error> {
     let db = alpm.localdb();
     let rep = "aur/".magenta();
 
-    // Search using the largest term.
-    let mut terms = terms.iter().map(|t| t.to_lowercase()).collect::<Vec<_>>();
+    // Sanitize the input.
     terms.sort_unstable_by_key(|t| t.len());
-    let initial_term = terms.pop().unwrap();
-    let mut matches = Handle::new().search(initial_term)?;
+    for t in terms.iter_mut() {
+        t.make_ascii_lowercase();
+    }
 
-    // filter out packages that don't match other search terms.
+    // Search using the largest term.
+    let initial_term = terms.pop().unwrap();
+    let mut matches: Vec<_> = Handle::new().search(initial_term)?;
+
+    // Filter out packages that don't match other search terms.
     matches.retain(|m| {
         let name = m.name.to_lowercase();
         let description = m
