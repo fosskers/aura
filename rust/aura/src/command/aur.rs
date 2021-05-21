@@ -153,7 +153,7 @@ pub(crate) fn search(
 
             // TODO Search term highlighting
             println!("{}{} {} ({} | {}) {}", rep, n, ver, vot, pop, ins);
-            println!("    {}", p.description.unwrap_or_else(|| "".to_owned()));
+            println!("    {}", p.description.unwrap_or_default());
         }
     }
 

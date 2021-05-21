@@ -92,10 +92,7 @@ pub(crate) fn restore(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) -> 
     aura!(fll, "B-select");
     for (i, ss) in shots.iter().enumerate() {
         let time = ss.time.format("%Y %B %d %T");
-        let pinned = ss
-            .pinned
-            .then(|| "[pinned]".cyan())
-            .unwrap_or_else(|| "".normal());
+        let pinned = ss.pinned.then(|| "[pinned]".cyan()).unwrap_or_default();
         println!(" {:w$}) {} {}", i, time, pinned, w = digits);
     }
 
