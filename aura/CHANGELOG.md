@@ -51,6 +51,7 @@ This produces the following image:
 - **Breaking:** `-Bc` no longer accepts an integer argument and instead clears
   all stale snapshots. "Stale" means that one or more packages in the snapshot
   is missing a tarball in the package cache.
+- The performance of `-As` has been improved.
 
 #### Removed
 

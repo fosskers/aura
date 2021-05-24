@@ -749,6 +749,11 @@ pub(crate) struct Aur {
     /// Open a given package's AUR package.
     #[clap(group = "aur", long, short, value_name = "package", display_order = 1)]
     pub(crate) open: Option<String>,
+
+    // TODO Long option? Haskell version uses `--downloadonly`.
+    /// Clone a package's AUR repository, but don't build anything.
+    #[clap(group = "aur", short = 'w', value_name = "package", display_order = 1)]
+    pub(crate) wclone: Option<String>,
 }
 
 /// Save and restore the global package state.

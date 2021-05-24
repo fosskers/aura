@@ -7,8 +7,12 @@ use colored::{ColoredString, Colorize};
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
 use raur_curl::{Handle, Raur};
-use std::borrow::Cow;
 use std::io::{BufWriter, Write};
+use std::path::PathBuf;
+use std::{borrow::Cow, process::Command};
+
+/// The base path of the URL.
+pub const AUR_BASE_URL: &str = "https://aur.archlinux.org/";
 
 /// View AUR package information.
 pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<(), Error> {
@@ -168,11 +172,27 @@ pub(crate) fn open(package: &str) -> Result<(), Error> {
 
 /// A package's URL on the AUR.
 fn package_url(package: &str) -> String {
-    let mut url = Cow::from(crate::open::AUR_URL);
+    let mut url = Cow::from(crate::open::AUR_PKG_URL);
     url += package;
     url.into_owned()
 }
 
 fn package_date(epoch: i64) -> ColoredString {
     format!("{}", Utc.timestamp(epoch, 0).date().format("%F")).normal()
+}
+
+// TODO Actually return the path.
+// TODO Display the error in an upstream caller that has `fll` in scope.
+/// Clone a package's AUR repository and return the full path to the clone.
+pub(crate) fn clone_repo(package: &str) -> Result<(), std::io::Error> {
+    let mut url: PathBuf = [AUR_BASE_URL, package].iter().collect();
+    url.set_extension("git");
+
+    Command::new("git")
+        .arg("clone")
+        .arg("--depth=1")
+        .arg(url)
+        .status()?;
+
+    Ok(())
 }

@@ -6,7 +6,7 @@ use std::borrow::Cow;
 const BOOK_URL: &str = "https://fosskers.github.io/aura/";
 const REPO_URL: &str = "https://github.com/fosskers/aura";
 const BUG_URL: &str = "https://github.com/fosskers/aura/issues/new";
-pub const AUR_URL: &str = "https://aur.archlinux.org/packages/";
+pub const AUR_PKG_URL: &str = "https://aur.archlinux.org/packages/";
 
 /// Open the Aura Book.
 pub(crate) fn book() -> Result<(), Error> {
@@ -25,7 +25,7 @@ pub(crate) fn bug() -> Result<(), Error> {
 
 /// Open Aura's AUR page.
 pub(crate) fn aur() -> Result<(), Error> {
-    let mut url = Cow::from(AUR_URL);
+    let mut url = Cow::from(AUR_PKG_URL);
     url += "aura";
     open(&url)
 }
