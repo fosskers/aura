@@ -71,7 +71,7 @@ fn main() -> Result<(), Error> {
             aur::search(&alpm, a.abc, a.reverse, a.limit, a.quiet, a.search)?
         }
         SubCmd::Aur(a) if a.open.is_some() => aur::open(&a.open.unwrap())?,
-        SubCmd::Aur(a) if a.wclone.is_some() => aur::clone_repo(&a.wclone.unwrap())?,
+        SubCmd::Aur(a) if a.wclone.is_empty().not() => aur::clone_repos(&fll, &a.wclone)?,
         SubCmd::Aur(_) => unimplemented!(),
         // --- Package Sets --- //
         SubCmd::Backup(b) if b.clean => snapshot::clean(&fll, cachep)?,

@@ -1,5 +1,6 @@
 //! All functionality involving the `-A` command.
 
+use crate::{aln, aura, green};
 use crate::{error::Error, utils};
 use alpm::Alpm;
 use chrono::{TimeZone, Utc};
@@ -7,8 +8,10 @@ use colored::{ColoredString, Colorize};
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
 use raur_curl::{Handle, Raur};
+use rayon::prelude::*;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
+use std::process::Stdio;
 use std::{borrow::Cow, process::Command};
 
 /// The base path of the URL.
@@ -181,10 +184,27 @@ fn package_date(epoch: i64) -> ColoredString {
     format!("{}", Utc.timestamp(epoch, 0).date().format("%F")).normal()
 }
 
+/// Clone the AUR repository of given packages.
+pub(crate) fn clone_repos(
+    fll: &FluentLanguageLoader,
+    packages: &[String],
+) -> Result<(), std::io::Error> {
+    packages
+        .par_iter()
+        .map(|p| {
+            aura!(fll, "A-w", package = p.as_str());
+            clone_repo(&p)
+        })
+        .collect::<Result<_, _>>()?;
+
+    green!(fll, "common-done");
+    Ok(())
+}
+
 // TODO Actually return the path.
 // TODO Display the error in an upstream caller that has `fll` in scope.
 /// Clone a package's AUR repository and return the full path to the clone.
-pub(crate) fn clone_repo(package: &str) -> Result<(), std::io::Error> {
+fn clone_repo(package: &str) -> Result<(), std::io::Error> {
     let mut url: PathBuf = [AUR_BASE_URL, package].iter().collect();
     url.set_extension("git");
 
@@ -192,6 +212,8 @@ pub(crate) fn clone_repo(package: &str) -> Result<(), std::io::Error> {
         .arg("clone")
         .arg("--depth=1")
         .arg(url)
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
         .status()?;
 
     Ok(())

@@ -21,6 +21,8 @@ A-i-keywords = Keywords
 A-i-submitted = Submitted
 A-i-updated = Updated
 
+A-w = Cloning { $package }...
+
 # Snapshots (-B)
 # saveState_1
 B-saved = Saved package state.
