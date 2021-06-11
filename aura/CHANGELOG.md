@@ -539,12 +539,13 @@ in overall code size.
 ## 1.2.3.2
 
 - Expanded Bash completions:
-  Aura Only
-  _ Expanded completion for all options and search sub-options
-  _ Package completion for -M/--abssync
-  _ Completion for orphans using self-generated list
-  Pacman
-  _ Include completion for all pacman options \* Directory or file completion for some common options
+  - Aura Only:
+    - Expanded completion for all options and search sub-options
+    - Package completion for -M/--abssync
+    - Completion for orphans using self-generated list
+  - Pacman
+    - Include completion for all pacman options
+    - Directory or file completion for some common options
 - Use `--dryrun` with `-A` and `-M` install options to test everything
   up until actual building would occur (dependency checks, etc.)
 
