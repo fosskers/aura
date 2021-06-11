@@ -46,7 +46,7 @@ common commons
     , megaparsec  >=7      && <10
     , rio         ^>=0.1.17
     , text        ^>=1.2
-    , versions    ^>=4.0.1
+    , versions    ^>=5
 
 common libexec
   build-depends:

@@ -17,3 +17,6 @@ packages:
   - aura/
   - aur/
   - aursec/
+
+extra-deps:
+  - versions-5.0.0

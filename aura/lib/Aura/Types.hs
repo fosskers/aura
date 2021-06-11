@@ -192,13 +192,14 @@ pToSP :: Prebuilt -> SimplePkg
 pToSP p = SimplePkg (pName p) (pVersion p)
 
 -- | Attempt to create a `SimplePkg` from filepaths like
---   @\/var\/cache\/pacman\/pkg\/linux-3.2.14-1-x86_64.pkg.tar.xz@
+--   @\/var\/cache\/pacman\/pkg\/linux-3.2.14-1-x86_64.pkg.tar.zst@
 simplepkg :: PackagePath -> Maybe SimplePkg
-simplepkg (PackagePath t) =
-  uncurry SimplePkg <$> bitraverse hush hush (parse n "name" t', parse v "version" t')
+simplepkg (PackagePath t) = do
+  nav <- hush . parse nameAndVer "Name and Version" . T.pack $ takeFileName t
+  uncurry SimplePkg <$> bitraverse hush hush (parse n "name" nav, parse ver "version" nav)
   where
-    t' :: Text
-    t' = T.pack $ takeFileName t
+    nameAndVer :: Parsec Void Text Text
+    nameAndVer = T.pack <$> manyTill anySingle (string "-x86_64" <|> string "-any")
 
     n :: Parsec Void Text PkgName
     n = PkgName . T.pack <$> manyTill anySingle (try finished)
@@ -206,10 +207,15 @@ simplepkg (PackagePath t) =
     -- | Assumes that a version number will never start with a letter,
     -- and that a package name section (i.e. abc-def-ghi) will never start
     -- with a number.
+    finished :: Parsec Void Text Char
     finished = char '-' *> lookAhead digitChar
-    v    = manyTill anySingle (try finished) *> ver
-    ver  = try (fmap Ideal semver' <* post) <|> try (fmap General version' <* post) <|> fmap Complex mess'
-    post = char '-' *> (string "x86_64" <|> string "any") *> string ".pkg.tar.xz"
+
+    ver :: Parsec Void Text Versioning
+    ver = do
+      void $ manyTill anySingle (try finished)
+      choice [ try $ fmap Ideal semver'
+             , try $ fmap General version'
+             , fmap Complex mess' ]
 
 -- | Attempt to create a `SimplePkg` from text like:
 --     xchat 2.8.8-19
