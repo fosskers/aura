@@ -1,6 +1,6 @@
 # Aura Changelog
 
-## Unreleased
+## 3.2.5
 
 #### Changed
 
