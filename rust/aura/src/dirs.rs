@@ -56,3 +56,17 @@ pub(crate) fn clones() -> Result<PathBuf, Error> {
 
     Ok(path)
 }
+
+/// The full path to the build directory.
+///
+/// Create the directory if it doesn't exist.
+pub(crate) fn builds() -> Result<PathBuf, Error> {
+    let mut path = aura_xdg_cache()?;
+    path.push("builds");
+
+    if path.exists().not() {
+        std::fs::create_dir_all(&path)?;
+    }
+
+    Ok(path)
+}
