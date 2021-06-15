@@ -5,7 +5,6 @@ use colored::{ColoredString, Colorize};
 use rustyline::Editor;
 use std::ffi::OsStr;
 use std::io::Write;
-use std::path::PathBuf;
 use std::process::Command;
 use std::str::FromStr;
 use unic_langid::LanguageIdentifier;
@@ -89,29 +88,4 @@ where
         Ok(es) if es.success() => Ok(()),
         Ok(_) => Err(Error::Pacman),
     }
-}
-
-/// Fetch the path value of `$XDG_CACHE_HOME` or provide its default according
-/// to the specification:
-///
-/// > `$XDG_CACHE_HOME` defines the base directory relative to which user specific
-/// > non-essential data files should be stored. If `$XDG_CACHE_HOME` is either not
-/// > set or empty, a default equal to `$HOME/.cache` should be used.
-fn xdg_cache() -> Result<PathBuf, std::env::VarError> {
-    std::env::var("XDG_CACHE_HOME")
-        .map(PathBuf::from)
-        .or_else(|_| {
-            std::env::var("HOME").map(|h| {
-                let mut path = PathBuf::from(h);
-                path.push(".cache");
-                path
-            })
-        })
-}
-
-/// The full path to the Aura cache.
-pub(crate) fn aura_xdg_cache() -> Result<PathBuf, std::env::VarError> {
-    let mut cache = xdg_cache()?;
-    cache.push("aura");
-    Ok(cache)
 }

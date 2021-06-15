@@ -1,10 +1,58 @@
 //! Directories critical to Aura's function.
 
+use crate::error::Error;
+use std::ops::Not;
 use std::path::PathBuf;
 
-/// The full path to package snapshot directory.
-pub fn snapshot() -> Result<PathBuf, std::env::VarError> {
-    let mut path = crate::utils::aura_xdg_cache()?;
+/// Fetch the path value of `$XDG_CACHE_HOME` or provide its default according
+/// to the specification:
+///
+/// > `$XDG_CACHE_HOME` defines the base directory relative to which user specific
+/// > non-essential data files should be stored. If `$XDG_CACHE_HOME` is either not
+/// > set or empty, a default equal to `$HOME/.cache` should be used.
+fn xdg_cache() -> Result<PathBuf, std::env::VarError> {
+    std::env::var("XDG_CACHE_HOME")
+        .map(PathBuf::from)
+        .or_else(|_| {
+            std::env::var("HOME").map(|h| {
+                let mut path = PathBuf::from(h);
+                path.push(".cache");
+                path
+            })
+        })
+}
+
+/// The full path to the Aura cache.
+fn aura_xdg_cache() -> Result<PathBuf, std::env::VarError> {
+    let mut cache = xdg_cache()?;
+    cache.push("aura");
+    Ok(cache)
+}
+
+/// The full path to the package snapshot directory.
+///
+/// Creates the directory if it doesn't exist.
+pub(crate) fn snapshot() -> Result<PathBuf, Error> {
+    let mut path = aura_xdg_cache()?;
     path.push("snapshots");
+
+    if path.exists().not() {
+        std::fs::create_dir_all(&path)?;
+    }
+
+    Ok(path)
+}
+
+/// The full path to the directory of AUR package `git` clones.
+///
+/// Create the directory if it doesn't exist.
+pub(crate) fn clones() -> Result<PathBuf, Error> {
+    let mut path = aura_xdg_cache()?;
+    path.push("packages");
+
+    if path.exists().not() {
+        std::fs::create_dir_all(&path)?;
+    }
+
     Ok(path)
 }
