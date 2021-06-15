@@ -1,5 +1,6 @@
 //! All functionality involving the `-B` command.
 
+use crate::dirs;
 use crate::{a, aln, aura, green, red};
 use crate::{error::Error, utils};
 use alpm::Alpm;
@@ -11,7 +12,7 @@ use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::BufWriter;
 use std::ops::Not;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::{cmp::Ordering, ffi::OsStr};
 
 /// During a `-Br`, the packages to update and/or remove.
@@ -25,15 +26,8 @@ struct StateDiff<'a> {
     to_remove: HashSet<&'a str>,
 }
 
-/// The full path to package snapshot directory.
-pub fn snapshot_dir() -> Result<PathBuf, std::env::VarError> {
-    let mut path = crate::utils::aura_xdg_cache()?;
-    path.push("snapshots");
-    Ok(path)
-}
-
 pub(crate) fn save(fll: &FluentLanguageLoader, alpm: &Alpm) -> Result<(), Error> {
-    let mut cache = snapshot_dir()?;
+    let mut cache = dirs::snapshot()?;
     let snap = Snapshot::from_alpm(alpm);
     let name = format!("{}.json", snap.time.format("%Y.%m(%b).%d.%H.%M.%S"));
     cache.push(name);
@@ -50,7 +44,7 @@ pub(crate) fn clean(fll: &FluentLanguageLoader, cache: &Path) -> Result<(), Erro
     let msg = format!("{} {} ", fl!(fll, "B-clean"), fl!(fll, "proceed-yes"));
     crate::utils::prompt(&a!(msg))?;
 
-    let path = snapshot_dir()?;
+    let path = dirs::snapshot()?;
     let vers = aura_core::cache::all_versions(cache)?;
 
     for (path, snapshot) in aura_core::snapshot::snapshots_with_paths(&path)? {
@@ -65,7 +59,7 @@ pub(crate) fn clean(fll: &FluentLanguageLoader, cache: &Path) -> Result<(), Erro
 
 /// Show all saved package snapshot filenames.
 pub(crate) fn list() -> Result<(), Error> {
-    let snap = snapshot_dir()?;
+    let snap = dirs::snapshot()?;
 
     for (path, _) in aura_core::snapshot::snapshots_with_paths(&snap)? {
         println!("{}", path.display());
@@ -75,7 +69,7 @@ pub(crate) fn list() -> Result<(), Error> {
 }
 
 pub(crate) fn restore(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) -> Result<(), Error> {
-    let snap = snapshot_dir()?;
+    let snap = dirs::snapshot()?;
     let vers = aura_core::cache::all_versions(cache)?;
 
     let mut shots: Vec<_> = aura_core::snapshot::snapshots(&snap)?

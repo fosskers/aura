@@ -49,7 +49,7 @@ fn main() -> Result<(), Error> {
         .cachedir
         .as_deref()
         .unwrap_or_else(|| Path::new(pconf.cache_dir.first().unwrap()));
-    let snapshots: PathBuf = snapshot::snapshot_dir()?;
+    let snapshots: PathBuf = dirs::snapshot()?;
 
     // A handle to ALPM.
     let root = args.root.unwrap_or_else(|| pconf.root_dir.clone());
@@ -119,10 +119,7 @@ fn main() -> Result<(), Error> {
         SubCmd::Deps(d) if d.reverse => deps::reverse(&alpm, d.limit, d.optional, d.packages)?,
         SubCmd::Deps(d) => deps::graph(&alpm, d.limit, d.optional, d.packages)?,
         // --- System Validation --- //
-        SubCmd::Check(_) => {
-            let snapshot_path = snapshot::snapshot_dir()?;
-            check::check(&fll, &alpm, cachep, &snapshot_path);
-        }
+        SubCmd::Check(_) => check::check(&fll, &alpm, cachep, &snapshots),
     }
 
     Ok(())
