@@ -5,7 +5,7 @@ authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2018"
 
 [dependencies]
-alpm = "1.1"
+alpm = "2.0"
 aura-arch = { path = "../aura-arch" }  # TODO Give these versions.
 aura-core = { path = "../aura-core" }
 chrono = "0.4"
@@ -16,9 +16,9 @@ curl = "0.4"
 i18n-embed = { version = "0.12", features = ["fluent-system"] }
 i18n-embed-fl = "0.5"
 itertools = "0.10"
-linya = "0.1"
+linya = "0.2"
 log = "0.4"
-pacmanconf = "0.2"
+pacmanconf = "1.0"
 raur-curl = { path = "../raur-curl" }
 rayon = "1.5"
 rust-embed = "5.6"
