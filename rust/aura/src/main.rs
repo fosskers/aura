@@ -3,6 +3,7 @@
 #![warn(missing_docs)]
 
 pub(crate) mod command;
+pub(crate) mod dirs;
 pub(crate) mod download;
 pub(crate) mod error;
 pub(crate) mod flags;
@@ -10,10 +11,9 @@ pub(crate) mod localization;
 mod macros;
 pub(crate) mod utils;
 
-use ::log::debug;
 use alpm::{Alpm, SigLevel};
 use clap::Clap;
-use command::*;
+use command::{aur, cache, check, conf, deps, log, open, orphans, snapshot, stats};
 use error::Error;
 use flags::{SubCmd, AURA_GLOBALS};
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
@@ -145,7 +145,7 @@ fn pacman() -> Result<(), Error> {
         raws.remove(ix); // Its argument.
     }
 
-    debug!("Passing to Pacman: {:?}", raws);
+    ::log::debug!("Passing to Pacman: {:?}", raws);
     utils::pacman(raws)
 }
 
