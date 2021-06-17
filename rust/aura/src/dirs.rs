@@ -36,7 +36,7 @@ pub(crate) fn snapshot() -> Result<PathBuf, Error> {
     let mut path = aura_xdg_cache()?;
     path.push("snapshots");
 
-    if path.exists().not() {
+    if path.is_dir().not() {
         std::fs::create_dir_all(&path)?;
     }
 
@@ -50,7 +50,7 @@ pub(crate) fn clones() -> Result<PathBuf, Error> {
     let mut path = aura_xdg_cache()?;
     path.push("packages");
 
-    if path.exists().not() {
+    if path.is_dir().not() {
         std::fs::create_dir_all(&path)?;
     }
 
@@ -64,7 +64,7 @@ pub(crate) fn builds() -> Result<PathBuf, Error> {
     let mut path = aura_xdg_cache()?;
     path.push("builds");
 
-    if path.exists().not() {
+    if path.is_dir().not() {
         std::fs::create_dir_all(&path)?;
     }
 
