@@ -193,18 +193,17 @@ pub(crate) fn clone_repos(
         .par_iter()
         .map(|p| {
             aura!(fll, "A-w", package = p.as_str());
-            clone_repo(None, &p)
+            clone_aur_repo(None, &p).map(|_| ()) // FIXME Use `void` when it's merged.
         })
-        .collect::<Result<_, _>>()?;
+        .collect::<Result<(), _>>()?;
 
     green!(fll, "common-done");
     Ok(())
 }
 
-// TODO Actually return the path.
 // TODO Display the error in an upstream caller that has `fll` in scope.
 /// Clone a package's AUR repository and return the full path to the clone.
-fn clone_repo(root: Option<&Path>, package: &str) -> Result<(), std::io::Error> {
+fn clone_aur_repo(root: Option<&Path>, package: &str) -> Result<PathBuf, std::io::Error> {
     let mut url: PathBuf = [AUR_BASE_URL, package].iter().collect();
     url.set_extension("git");
 
@@ -213,24 +212,8 @@ fn clone_repo(root: Option<&Path>, package: &str) -> Result<(), std::io::Error> 
         Some(r) => [r, Path::new(package)].iter().collect(),
     };
 
-    Command::new("git")
-        .arg("clone")
-        .arg("--depth=1")
-        .arg(url)
-        .arg(clone_path)
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .status()?;
-
-    Ok(())
-}
-
-fn pull_repo(clone_dir: &Path, package: &str) -> Result<(), Error> {
-    // Git flags to use:
-    // --quiet
-    // --ff-only
-    // --depth ?
-    todo!()
+    aura_core::git::shallow_clone(&url, &clone_path)?;
+    Ok(clone_path)
 }
 
 /// Quickly check some given packages names against the local cache of package

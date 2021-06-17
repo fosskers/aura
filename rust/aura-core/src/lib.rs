@@ -6,5 +6,6 @@
 pub mod cache;
 pub mod common;
 pub mod deps;
+pub mod git;
 pub mod log;
 pub mod snapshot;
