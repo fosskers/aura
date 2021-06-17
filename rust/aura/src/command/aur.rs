@@ -1,6 +1,6 @@
 //! All functionality involving the `-A` command.
 
-use crate::{aln, aura, green};
+use crate::{aln, aura, dirs, green};
 use crate::{error::Error, utils};
 use alpm::Alpm;
 use chrono::{TimeZone, Utc};
@@ -9,10 +9,10 @@ use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
 use raur_curl::{Handle, Raur};
 use rayon::prelude::*;
+use std::borrow::Cow;
 use std::io::{BufWriter, Write};
-use std::path::PathBuf;
-use std::process::Stdio;
-use std::{borrow::Cow, process::Command};
+use std::path::{Path, PathBuf};
+use std::process::{Command, Stdio};
 
 /// The base path of the URL.
 pub const AUR_BASE_URL: &str = "https://aur.archlinux.org/";
@@ -193,7 +193,7 @@ pub(crate) fn clone_repos(
         .par_iter()
         .map(|p| {
             aura!(fll, "A-w", package = p.as_str());
-            clone_repo(&p)
+            clone_repo(None, &p)
         })
         .collect::<Result<_, _>>()?;
 
@@ -204,17 +204,39 @@ pub(crate) fn clone_repos(
 // TODO Actually return the path.
 // TODO Display the error in an upstream caller that has `fll` in scope.
 /// Clone a package's AUR repository and return the full path to the clone.
-fn clone_repo(package: &str) -> Result<(), std::io::Error> {
+fn clone_repo(root: Option<&Path>, package: &str) -> Result<(), std::io::Error> {
     let mut url: PathBuf = [AUR_BASE_URL, package].iter().collect();
     url.set_extension("git");
+
+    let clone_path: PathBuf = match root {
+        None => PathBuf::from(package),
+        Some(r) => [r, Path::new(package)].iter().collect(),
+    };
 
     Command::new("git")
         .arg("clone")
         .arg("--depth=1")
         .arg(url)
+        .arg(clone_path)
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .status()?;
 
     Ok(())
+}
+
+fn pull_repo(clone_dir: &Path, package: &str) -> Result<(), Error> {
+    // Git flags to use:
+    // --quiet
+    // --ff-only
+    // --depth ?
+    todo!()
+}
+
+/// Quickly check some given packages names against the local cache of package
+/// clones to see if the arguments are real AUR packages.
+fn is_aur_package_fast(clone_dir: &Path, package: &str) -> bool {
+    let mut path = clone_dir.to_path_buf();
+    path.push(package);
+    path.is_dir()
 }
