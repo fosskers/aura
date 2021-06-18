@@ -754,6 +754,10 @@ pub(crate) struct Aur {
     /// Clone a package's AUR repository, but don't build anything.
     #[clap(group = "aur", short = 'w', value_name = "package", display_order = 1)]
     pub(crate) wclone: Vec<String>,
+
+    /// Pull the latest changes for every local copy of an AUR package.
+    #[clap(group = "aur", long, short = 'y', display_order = 1)]
+    pub(crate) refresh: bool,
 }
 
 /// Save and restore the global package state.
