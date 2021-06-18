@@ -34,6 +34,17 @@ impl Monoid for () {
 /// `Result` out of an `Iterator` containing many `Result`s, it will fail on the
 /// first `Err` and short-circuit the iteration. This is suboptimal if we wish
 /// to be made aware of every failure that (would have) occurred.
+///
+/// ```
+/// use aura_core::fp::Validated;
+///
+/// let v: Vec<Result<(), ()>> = vec![Ok(()), Ok(()), Ok(())];
+/// assert_eq!(Validated::Success(()), v.into_iter().collect());
+///
+/// let v: Vec<Result<(), usize>> = vec![Ok(()), Err(1), Ok(()), Err(2), Ok(())];
+/// assert_eq!(Validated::Failure(vec![1,2]), v.into_iter().collect());
+/// ```
+#[derive(Debug, PartialEq, Eq)]
 pub enum Validated<T, E> {
     /// Analogous to `Result::Ok`.
     Success(T),
