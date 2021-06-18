@@ -1,5 +1,6 @@
 //! Functional Programming utilities.
 
+use rayon::iter::{FromParallelIterator, IntoParallelIterator, ParallelIterator};
 use std::iter::FromIterator;
 
 /// Any type that is fundamentally combinable.
@@ -94,5 +95,39 @@ where
                 Validated::Failure(a)
             }
         })
+    }
+}
+
+impl<T, E> FromParallelIterator<Validated<T, E>> for Validated<T, E>
+where
+    T: Send + Monoid,
+    E: Send,
+{
+    fn from_par_iter<I: IntoParallelIterator<Item = Validated<T, E>>>(par_iter: I) -> Self {
+        let z = || Validated::Success(Monoid::empty());
+        par_iter.into_par_iter().reduce(z, |acc, v| acc.add(v))
+    }
+}
+impl<T, E> FromParallelIterator<Result<T, E>> for Validated<T, E>
+where
+    T: Send + Monoid,
+    E: Send,
+{
+    fn from_par_iter<I: IntoParallelIterator<Item = Result<T, E>>>(par_iter: I) -> Self {
+        par_iter
+            .into_par_iter()
+            .fold(
+                || Validated::Success(Monoid::empty()),
+                |acc: Validated<T, E>, v| match (acc, v) {
+                    (Validated::Success(a), Ok(b)) => Validated::Success(a.add(b)),
+                    (Validated::Success(_), Err(e)) => Validated::Failure(vec![e]),
+                    (e @ Validated::Failure(_), Ok(_)) => e,
+                    (Validated::Failure(mut a), Err(b)) => {
+                        a.push(b);
+                        Validated::Failure(a)
+                    }
+                },
+            )
+            .reduce(|| Validated::Success(Monoid::empty()), |acc, v| acc.add(v))
     }
 }
