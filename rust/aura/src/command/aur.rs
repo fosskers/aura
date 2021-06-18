@@ -197,6 +197,21 @@ pub(crate) fn clone_repos(fll: &FluentLanguageLoader, packages: &[String]) -> Re
     Ok(())
 }
 
+pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
+    dirs::clones()?
+        .read_dir()?
+        .filter_map(|rde| rde.ok())
+        .filter(|de| de.file_type().map(|ft| ft.is_dir()).unwrap_or(false))
+        .par_bridge()
+        .map(|de| {
+            // FIXME Use `Validated`
+            aura_core::git::pull(&de.path())
+                .map_err(Error::IO)
+                .and_then(|status| status.success().then(|| ()).ok_or(Error::Git))
+        })
+        .collect()
+}
+
 // TODO Display the error in an upstream caller that has `fll` in scope.
 /// Clone a package's AUR repository and return the full path to the clone.
 fn clone_aur_repo(root: Option<&Path>, package: &str) -> Result<PathBuf, Error> {
