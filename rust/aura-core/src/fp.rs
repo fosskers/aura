@@ -53,6 +53,15 @@ pub enum Validated<T, E> {
     Failure(Vec<E>),
 }
 
+impl<T, E> From<Result<T, E>> for Validated<T, E> {
+    fn from(r: Result<T, E>) -> Self {
+        match r {
+            Ok(a) => Validated::Success(a),
+            Err(e) => Validated::Failure(vec![e]),
+        }
+    }
+}
+
 impl<T, E> Semigroup for Validated<T, E>
 where
     T: Semigroup,
@@ -86,15 +95,8 @@ where
 {
     fn from_iter<I: IntoIterator<Item = Result<T, E>>>(iter: I) -> Self {
         let z = Validated::Success(Monoid::empty());
-        iter.into_iter().fold(z, |acc, v| match (acc, v) {
-            (Validated::Success(a), Ok(b)) => Validated::Success(a.add(b)),
-            (Validated::Success(_), Err(e)) => Validated::Failure(vec![e]),
-            (e @ Validated::Failure(_), Ok(_)) => e,
-            (Validated::Failure(mut a), Err(b)) => {
-                a.push(b);
-                Validated::Failure(a)
-            }
-        })
+        iter.into_iter()
+            .fold(z, |acc, v| acc.add(Validated::from(v)))
     }
 }
 
@@ -108,6 +110,7 @@ where
         par_iter.into_par_iter().reduce(z, |acc, v| acc.add(v))
     }
 }
+
 impl<T, E> FromParallelIterator<Result<T, E>> for Validated<T, E>
 where
     T: Send + Monoid,
@@ -118,15 +121,7 @@ where
             .into_par_iter()
             .fold(
                 || Validated::Success(Monoid::empty()),
-                |acc: Validated<T, E>, v| match (acc, v) {
-                    (Validated::Success(a), Ok(b)) => Validated::Success(a.add(b)),
-                    (Validated::Success(_), Err(e)) => Validated::Failure(vec![e]),
-                    (e @ Validated::Failure(_), Ok(_)) => e,
-                    (Validated::Failure(mut a), Err(b)) => {
-                        a.push(b);
-                        Validated::Failure(a)
-                    }
-                },
+                |acc, v| acc.add(Validated::from(v)),
             )
             .reduce(|| Validated::Success(Monoid::empty()), |acc, v| acc.add(v))
     }
