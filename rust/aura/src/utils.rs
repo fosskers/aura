@@ -89,3 +89,10 @@ where
         Ok(_) => Err(Error::Pacman),
     }
 }
+
+/// Escalate the privileges of the Aura process, if necessary.
+pub(crate) fn sudo() -> Result<(), Error> {
+    sudo::escalate_if_needed()
+        .map(|_| ())
+        .map_err(|_| Error::Sudo)
+}

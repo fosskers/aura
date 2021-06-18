@@ -39,7 +39,7 @@ pub(crate) fn downgrade(
         return Err(Error::Silent);
     }
 
-    sudo::escalate_if_needed()?;
+    crate::utils::sudo()?;
 
     // --- All tarball paths for packages the user asked for --- //
     let mut tarballs: HashMap<&str, Vec<PkgPath>> = HashMap::new();
@@ -92,7 +92,7 @@ fn downgrade_one(
 
 /// Delete invalid tarballs from the cache.
 pub(crate) fn invalid(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) -> Result<(), Error> {
-    sudo::escalate_if_needed()?;
+    crate::utils::sudo()?;
     aura!(fll, "C-t-invalids");
 
     aura_core::cache::package_paths(cache)?
@@ -180,7 +180,7 @@ pub(crate) fn search(path: &Path, term: &str) -> Result<(), Error> {
 
 /// Delete all but `keep`-many old tarballs for each package in the cache.
 pub(crate) fn clean(fll: &FluentLanguageLoader, path: &Path, keep: usize) -> Result<(), Error> {
-    sudo::escalate_if_needed()?;
+    crate::utils::sudo()?;
 
     let size_before = aura_core::cache::size(path)?;
     let human = format!("{}", size_before.bytes.bytes());
@@ -260,7 +260,7 @@ pub(crate) fn clean_not_saved(
 
 /// Download tarballs of installed packages that are missing from the cache.
 pub(crate) fn refresh(fll: &FluentLanguageLoader, alpm: &Alpm, path: &Path) -> Result<(), Error> {
-    sudo::escalate_if_needed()?;
+    crate::utils::sudo()?;
 
     // All installed packages that are missing a tarball in the cache.
     let ps: Vec<alpm::Package> = {

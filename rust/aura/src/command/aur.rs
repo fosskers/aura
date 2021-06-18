@@ -12,7 +12,6 @@ use rayon::prelude::*;
 use std::borrow::Cow;
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
 
 /// The base path of the URL.
 pub const AUR_BASE_URL: &str = "https://aur.archlinux.org/";
@@ -185,10 +184,7 @@ fn package_date(epoch: i64) -> ColoredString {
 }
 
 /// Clone the AUR repository of given packages.
-pub(crate) fn clone_repos(
-    fll: &FluentLanguageLoader,
-    packages: &[String],
-) -> Result<(), std::io::Error> {
+pub(crate) fn clone_repos(fll: &FluentLanguageLoader, packages: &[String]) -> Result<(), Error> {
     packages
         .par_iter()
         .map(|p| {
@@ -203,7 +199,7 @@ pub(crate) fn clone_repos(
 
 // TODO Display the error in an upstream caller that has `fll` in scope.
 /// Clone a package's AUR repository and return the full path to the clone.
-fn clone_aur_repo(root: Option<&Path>, package: &str) -> Result<PathBuf, std::io::Error> {
+fn clone_aur_repo(root: Option<&Path>, package: &str) -> Result<PathBuf, Error> {
     let mut url: PathBuf = [AUR_BASE_URL, package].iter().collect();
     url.set_extension("git");
 
@@ -212,8 +208,9 @@ fn clone_aur_repo(root: Option<&Path>, package: &str) -> Result<PathBuf, std::io
         Some(r) => [r, Path::new(package)].iter().collect(),
     };
 
-    aura_core::git::shallow_clone(&url, &clone_path)?;
-    Ok(clone_path)
+    aura_core::git::shallow_clone(&url, &clone_path)
+        .map_err(Error::IO)
+        .and_then(|status| status.success().then(|| clone_path).ok_or(Error::Git))
 }
 
 /// Quickly check some given packages names against the local cache of package

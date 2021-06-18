@@ -21,7 +21,7 @@ pub(crate) fn adopt(
     fll: FluentLanguageLoader,
     packages: Vec<String>,
 ) -> Result<(), Error> {
-    sudo::escalate_if_needed()?;
+    crate::utils::sudo()?;
 
     let db = alpm.localdb();
     let reals: Vec<_> = packages
@@ -47,7 +47,7 @@ pub(crate) fn adopt(
 /// Will fail if the process does not have permission to create the lockfile,
 /// which usually lives in a root-owned directory.
 pub(crate) fn remove(alpm: &mut Alpm, fll: FluentLanguageLoader) -> Result<(), Error> {
-    sudo::escalate_if_needed()?;
+    crate::utils::sudo()?;
 
     // Check for orphans.
     let orphans: Vec<_> = arch::orphans(alpm).collect();

@@ -26,14 +26,16 @@ pub(crate) enum Error {
     Json(serde_json::Error),
     /// An error calling the aurweb API.
     Aur(String),
-    /// A boxed dynamic error.
-    Boxed(Box<dyn std::error::Error>),
     /// The said "no" at some prompt.
     Rejected,
     /// None of the packages specified by the user actually exist.
     NoneExist,
     /// A non-zero exit code was returned from a call to Pacman.
     Pacman,
+    /// A non-zero exit code was returned from a call to Git.
+    Git,
+    /// We were unable to escalate the process with `sudo`.
+    Sudo,
     // /// A file IO target already exists.
     // FileConflict,
     /// A miscellaneous shell call failed.
@@ -59,10 +61,11 @@ impl std::fmt::Display for Error {
             Error::Chrono(e) => write!(f, "{}", e),
             Error::Json(e) => write!(f, "{}", e),
             Error::Aur(e) => write!(f, "{}", e),
-            Error::Boxed(e) => write!(f, "{}", e),
             Error::Rejected => write!(f, "The user said no."),
             Error::NoneExist => write!(f, "None of those packages exist."),
             Error::Pacman => write!(f, "A shell call to Pacman gave a non-zero exit code."),
+            Error::Git => write!(f, "A shell call to git gave a non-zero exit code."),
+            Error::Sudo => write!(f, "Unable to escalate via sudo."),
             Error::MiscShell => write!(f, "A miscellaneous shell call failed."),
             // Error::FileConflict => write!(f, "The given file target already exists."),
             Error::Silent => write!(f, ""),
@@ -84,10 +87,11 @@ impl std::error::Error for Error {
             Error::Chrono(e) => Some(e),
             Error::Json(e) => Some(e),
             Error::Aur(_) => None,
-            Error::Boxed(_) => None, // TODO `Some` gives a warning.
             Error::Rejected => None,
             Error::NoneExist => None,
             Error::Pacman => None,
+            Error::Git => None,
+            Error::Sudo => None,
             Error::MiscShell => None,
             // Error::FileConflict => None,
             Error::Silent => None,
@@ -140,12 +144,6 @@ impl From<chrono::ParseError> for Error {
 impl From<std::env::VarError> for Error {
     fn from(error: std::env::VarError) -> Self {
         Error::Env(error)
-    }
-}
-
-impl From<Box<dyn std::error::Error>> for Error {
-    fn from(error: Box<dyn std::error::Error>) -> Self {
-        Error::Boxed(error)
     }
 }
 
