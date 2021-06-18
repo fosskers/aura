@@ -205,9 +205,10 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
         .par_bridge()
         .filter_map(|de| de.file_name().into_string().ok().map(|p| (p, de.path())))
         .for_each(|(pkg, path)| {
-            if let None = aura_core::git::pull(&path)
+            if aura_core::git::pull(&path)
                 .ok()
                 .and_then(|status| status.success().then(|| ()))
+                .is_none()
             {
                 red!(fll, "A-y", package = format!("{}", pkg.cyan()));
             }
@@ -233,7 +234,7 @@ fn clone_aur_repo(root: Option<&Path>, package: &str) -> Result<PathBuf, Error> 
             status
                 .success()
                 .then(|| clone_path)
-                .ok_or(Error::GitClone(package.to_string()))
+                .ok_or_else(|| Error::GitClone(package.to_string()))
         })
 }
 

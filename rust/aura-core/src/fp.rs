@@ -12,9 +12,7 @@ pub trait Semigroup {
 }
 
 impl Semigroup for () {
-    fn add(self, _: ()) -> () {
-        ()
-    }
+    fn add(self, _: ()) {}
 }
 
 /// All `Semigroup`s which also have a notion of some "unit" element.
@@ -24,9 +22,7 @@ pub trait Monoid: Semigroup {
 }
 
 impl Monoid for () {
-    fn empty() -> () {
-        ()
-    }
+    fn empty() {}
 }
 
 /// Similar to `Result`, but cumulative in its error type.

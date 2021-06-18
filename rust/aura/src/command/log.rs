@@ -1,6 +1,6 @@
 //! All functionality involving the `-L` command.
 
-#![allow(clippy::clippy::many_single_char_names)]
+#![allow(clippy::many_single_char_names)]
 
 use crate::command::misc;
 use crate::error::Error;

@@ -47,12 +47,12 @@ pub(crate) fn snapshot() -> Result<PathBuf, Error> {
 ///
 /// Creates the directory if it doesn't exist.
 pub(crate) fn clones() -> Result<PathBuf, Error> {
-    let path = std::env::var("AURDEST")
-        .map(PathBuf::from)
-        .or(aura_xdg_cache().map(|mut p| {
+    let path = std::env::var("AURDEST").map(PathBuf::from).or_else(|_| {
+        aura_xdg_cache().map(|mut p| {
             p.push("packages");
             p
-        }))?;
+        })
+    })?;
 
     if path.is_dir().not() {
         std::fs::create_dir_all(&path)?;
