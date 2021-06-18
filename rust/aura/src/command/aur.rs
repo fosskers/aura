@@ -1,6 +1,6 @@
 //! All functionality involving the `-A` command.
 
-use crate::{aln, aura, dirs, green};
+use crate::{aln, aura, dirs, green, red};
 use crate::{error::Error, utils};
 use alpm::Alpm;
 use chrono::{TimeZone, Utc};
@@ -203,13 +203,17 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
         .filter_map(|rde| rde.ok())
         .filter(|de| de.file_type().map(|ft| ft.is_dir()).unwrap_or(false))
         .par_bridge()
-        .map(|de| {
-            // FIXME Use `Validated`
-            aura_core::git::pull(&de.path())
-                .map_err(Error::IO)
-                .and_then(|status| status.success().then(|| ()).ok_or(Error::Git))
-        })
-        .collect()
+        .filter_map(|de| de.file_name().into_string().ok().map(|p| (p, de.path())))
+        .for_each(|(pkg, path)| {
+            if let None = aura_core::git::pull(&path)
+                .ok()
+                .and_then(|status| status.success().then(|| ()))
+            {
+                red!(fll, "A-y", package = format!("{}", pkg.cyan()));
+            }
+        });
+
+    Ok(())
 }
 
 // TODO Display the error in an upstream caller that has `fll` in scope.
@@ -225,7 +229,12 @@ fn clone_aur_repo(root: Option<&Path>, package: &str) -> Result<PathBuf, Error> 
 
     aura_core::git::shallow_clone(&url, &clone_path)
         .map_err(Error::IO)
-        .and_then(|status| status.success().then(|| clone_path).ok_or(Error::Git))
+        .and_then(|status| {
+            status
+                .success()
+                .then(|| clone_path)
+                .ok_or(Error::GitClone(package.to_string()))
+        })
 }
 
 /// Quickly check some given packages names against the local cache of package
