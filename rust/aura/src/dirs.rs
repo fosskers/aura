@@ -45,10 +45,14 @@ pub(crate) fn snapshot() -> Result<PathBuf, Error> {
 
 /// The full path to the directory of AUR package `git` clones.
 ///
-/// Create the directory if it doesn't exist.
+/// Creates the directory if it doesn't exist.
 pub(crate) fn clones() -> Result<PathBuf, Error> {
-    let mut path = aura_xdg_cache()?;
-    path.push("packages");
+    let path = std::env::var("AURDEST")
+        .map(PathBuf::from)
+        .or(aura_xdg_cache().map(|mut p| {
+            p.push("packages");
+            p
+        }))?;
 
     if path.is_dir().not() {
         std::fs::create_dir_all(&path)?;
@@ -59,7 +63,7 @@ pub(crate) fn clones() -> Result<PathBuf, Error> {
 
 /// The full path to the build directory.
 ///
-/// Create the directory if it doesn't exist.
+/// Creates the directory if it doesn't exist.
 pub(crate) fn builds() -> Result<PathBuf, Error> {
     let mut path = aura_xdg_cache()?;
     path.push("builds");
