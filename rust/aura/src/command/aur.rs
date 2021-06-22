@@ -167,7 +167,7 @@ pub(crate) fn search(
 }
 
 /// Open a given package's AUR package.
-pub(crate) fn open(package: &str) -> Result<(), Error> {
+pub(crate) fn open(package: &str) -> Result<(), std::io::Error> {
     let url = package_url(package);
     crate::open::open(&url)
 }

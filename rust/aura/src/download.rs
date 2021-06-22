@@ -1,6 +1,7 @@
 //! Download bytes from the web.
 
 use crate::error::Error;
+use crate::utils::ResultVoid;
 use curl::easy::Easy;
 use linya::{Bar, Progress};
 use std::fs::File;
@@ -40,7 +41,5 @@ pub(crate) fn download_with_progress(
         })?;
     }
 
-    tx.perform()?;
-
-    Ok(())
+    tx.perform().void()
 }

@@ -9,6 +9,32 @@ use std::process::Command;
 use std::str::FromStr;
 use unic_langid::LanguageIdentifier;
 
+/// Injection of the `void` method into [`Result`], which is a common shorthand
+/// for "forgetting" the internal return value of a `Result`. Note that this
+/// also automatically lifts the Error type via [`From`], as it is intended as
+/// the final line of a function where `?` doesn't work.
+///
+/// We assume that only `Result` is ever going to implement this trait. If Rust
+/// had Higher-kinded Types, this would be much simpler and could be applied to
+/// more types.
+pub(crate) trait ResultVoid<E, R> {
+    fn void(self) -> Result<(), R>
+    where
+        R: From<E>;
+}
+
+impl<T, E, R> ResultVoid<E, R> for Result<T, E> {
+    fn void(self) -> Result<(), R>
+    where
+        R: From<E>,
+    {
+        match self {
+            Ok(_) => Ok(()),
+            Err(e) => Err(From::from(e)),
+        }
+    }
+}
+
 /// A helper for commands like `-Ai`, `-Ci`, etc.
 pub(crate) fn info<W: Write>(
     w: &mut W,
@@ -92,7 +118,5 @@ where
 
 /// Escalate the privileges of the Aura process, if necessary.
 pub(crate) fn sudo() -> Result<(), Error> {
-    sudo::escalate_if_needed()
-        .map(|_| ())
-        .map_err(|_| Error::Sudo)
+    sudo::escalate_if_needed().map_err(|_| Error::Sudo).void()
 }

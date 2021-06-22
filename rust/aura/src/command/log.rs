@@ -4,7 +4,7 @@
 
 use crate::command::misc;
 use crate::error::Error;
-use crate::utils;
+use crate::utils::{self, ResultVoid};
 use aura_core as core;
 use chrono::NaiveDate;
 use colored::*;
@@ -23,8 +23,8 @@ pub(crate) fn search(path: &Path, term: String) -> Result<(), Error> {
         .args(args)
         .arg(term)
         .arg(path)
-        .status()?;
-    Ok(())
+        .status()
+        .void()
 }
 
 /// Display install/upgrade history for the given packages.
