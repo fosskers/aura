@@ -23,7 +23,7 @@ A-i-updated = Updated
 
 A-w = Cloning { $package }...
 
-A-y = Failed to pull { $package }.
+A-y = Failed to pull the following packages:
 
 # Snapshots (-B)
 # saveState_1

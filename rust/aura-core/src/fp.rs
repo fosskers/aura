@@ -49,6 +49,17 @@ pub enum Validated<T, E> {
     Failure(Vec<E>),
 }
 
+impl<T, E> Validated<T, E> {
+    /// Was a given `Validated` operation completely successful?
+    pub fn is_success(&self) -> bool {
+        // FIXME Should this also consider the case where the Failure's `Vec` is empty?
+        match self {
+            Validated::Success(_) => true,
+            Validated::Failure(_) => false,
+        }
+    }
+}
+
 impl<T, E> From<Result<T, E>> for Validated<T, E> {
     fn from(r: Result<T, E>) -> Self {
         match r {

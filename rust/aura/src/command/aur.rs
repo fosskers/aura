@@ -1,8 +1,10 @@
 //! All functionality involving the `-A` command.
 
+use crate::error::Error;
+use crate::utils::{self, ResultVoid};
 use crate::{aln, aura, dirs, green, red};
-use crate::{error::Error, utils};
 use alpm::Alpm;
+use aura_core::fp::Validated;
 use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
@@ -183,38 +185,62 @@ fn package_date(epoch: i64) -> ColoredString {
     format!("{}", Utc.timestamp(epoch, 0).date().format("%F")).normal()
 }
 
+// FIXME Report all the errors!
 /// Clone the AUR repository of given packages.
 pub(crate) fn clone_repos(fll: &FluentLanguageLoader, packages: &[String]) -> Result<(), Error> {
     packages
         .par_iter()
         .map(|p| {
             aura!(fll, "A-w", package = p.as_str());
-            clone_aur_repo(None, &p).map(|_| ()) // FIXME Use `void` when it's merged.
+            clone_aur_repo(None, &p).void()
         })
-        .collect::<Result<(), _>>()?;
+        .collect::<Result<(), Error>>()?;
 
     green!(fll, "common-done");
     Ok(())
 }
 
+// TODO For this and `clone_repos`, collect all the error via `Validated` and
+// report them all as a batch at the end of operation. Also provide the reason
+// for the failure.
 pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
-    dirs::clones()?
+    let pulls: Validated<(), Error> = dirs::clones()?
         .read_dir()?
         .filter_map(|rde| rde.ok())
         .filter(|de| de.file_type().map(|ft| ft.is_dir()).unwrap_or(false))
         .par_bridge()
         .filter_map(|de| de.file_name().into_string().ok().map(|p| (p, de.path())))
-        .for_each(|(pkg, path)| {
-            if aura_core::git::pull(&path)
-                .ok()
-                .and_then(|status| status.success().then(|| ()))
-                .is_none()
-            {
-                red!(fll, "A-y", package = format!("{}", pkg.cyan()));
-            }
-        });
+        .map(|(pkg, path)| {
+            aura_core::git::pull(&path)
+                .map_err(|e| Error::With(pkg.clone(), Box::new(Error::IO(e))))
+                .and_then(|status| {
+                    status
+                        .success()
+                        .then(|| ())
+                        .ok_or_else(|| Error::GitPull(pkg))
+                })
+        })
+        .collect();
 
-    Ok(())
+    match pulls {
+        Validated::Success(_) => {
+            green!(fll, "common-done");
+            Ok(())
+        }
+        Validated::Failure(errs) => {
+            red!(fll, "A-y");
+
+            for e in errs {
+                match e {
+                    Error::With(p, e) => eprintln!("  - {}: {}", p, e),
+                    Error::GitPull(p) => eprintln!("  - {}: Git pull failed.", p), // FIXME localize
+                    _ => eprintln!("  - Unexpected Error: {}", e),
+                }
+            }
+
+            Err(Error::Silent)
+        }
+    }
 }
 
 // TODO Display the error in an upstream caller that has `fll` in scope.
