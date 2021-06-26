@@ -176,3 +176,7 @@ impl From<raur_curl::Error> for Error {
         }
     }
 }
+
+pub(crate) struct GitPullError(pub String);
+
+pub(crate) struct GitCloneError(pub String);

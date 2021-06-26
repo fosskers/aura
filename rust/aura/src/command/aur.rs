@@ -1,10 +1,11 @@
 //! All functionality involving the `-A` command.
 
-use crate::error::Error;
+use crate::error::{Error, GitPullError};
 use crate::utils::{self, ResultVoid};
 use crate::{aln, aura, dirs, green, red};
 use alpm::Alpm;
 use aura_core::fp::Validated;
+use aura_core::sums::Two;
 use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
@@ -204,7 +205,7 @@ pub(crate) fn clone_repos(fll: &FluentLanguageLoader, packages: &[String]) -> Re
 // report them all as a batch at the end of operation. Also provide the reason
 // for the failure.
 pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
-    let pulls: Validated<(), Error> = dirs::clones()?
+    let pulls: Validated<(), Two<std::io::Error, GitPullError>> = dirs::clones()?
         .read_dir()?
         .filter_map(|rde| rde.ok())
         .filter(|de| de.file_type().map(|ft| ft.is_dir()).unwrap_or(false))
@@ -212,12 +213,14 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
         .filter_map(|de| de.file_name().into_string().ok().map(|p| (p, de.path())))
         .map(|(pkg, path)| {
             aura_core::git::pull(&path)
-                .map_err(|e| Error::With(pkg.clone(), Box::new(Error::IO(e))))
+                // .map_err(|e| Error::With(pkg.clone(), Box::new(Error::IO(e))))
+                .map_err(Two::A)
                 .and_then(|status| {
                     status
                         .success()
                         .then(|| ())
-                        .ok_or_else(|| Error::GitPull(pkg))
+                        // .ok_or_else(|| Error::GitPull(pkg))
+                        .ok_or_else(|| Two::B(GitPullError(pkg)))
                 })
         })
         .collect();
@@ -232,9 +235,8 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
 
             for e in errs {
                 match e {
-                    Error::With(p, e) => eprintln!("  - {}: {}", p, e),
-                    Error::GitPull(p) => eprintln!("  - {}: Git pull failed.", p), // FIXME localize
-                    _ => eprintln!("  - Unexpected Error: {}", e),
+                    Two::A(e) => eprintln!("  - {}", e),
+                    Two::B(GitPullError(p)) => eprintln!("  - {}: Git pull failed.", p),
                 }
             }
 
