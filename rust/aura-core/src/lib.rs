@@ -10,4 +10,3 @@ pub mod fp;
 pub mod git;
 pub mod log;
 pub mod snapshot;
-pub mod sums;

@@ -1,11 +1,10 @@
 //! All functionality involving the `-A` command.
 
-use crate::error::{Error, GitPullError};
+use crate::error::Error;
 use crate::utils::{self, ResultVoid};
 use crate::{aln, aura, dirs, green, red};
 use alpm::Alpm;
 use aura_core::fp::Validated;
-use aura_core::sums::Two;
 use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
@@ -201,11 +200,9 @@ pub(crate) fn clone_repos(fll: &FluentLanguageLoader, packages: &[String]) -> Re
     Ok(())
 }
 
-// TODO For this and `clone_repos`, collect all the error via `Validated` and
-// report them all as a batch at the end of operation. Also provide the reason
-// for the failure.
+/// Pull the latest commits from every clone in the `packages` directory.
 pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
-    let pulls: Validated<(), Two<std::io::Error, GitPullError>> = dirs::clones()?
+    let pulls: Validated<(), String> = dirs::clones()?
         .read_dir()?
         .filter_map(|rde| rde.ok())
         .filter(|de| de.file_type().map(|ft| ft.is_dir()).unwrap_or(false))
@@ -213,15 +210,8 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
         .filter_map(|de| de.file_name().into_string().ok().map(|p| (p, de.path())))
         .map(|(pkg, path)| {
             aura_core::git::pull(&path)
-                // .map_err(|e| Error::With(pkg.clone(), Box::new(Error::IO(e))))
-                .map_err(Two::A)
-                .and_then(|status| {
-                    status
-                        .success()
-                        .then(|| ())
-                        // .ok_or_else(|| Error::GitPull(pkg))
-                        .ok_or_else(|| Two::B(GitPullError(pkg)))
-                })
+                .map_err(|_| pkg.clone())
+                .and_then(|status| status.success().then(|| ()).ok_or_else(|| pkg))
         })
         .collect();
 
@@ -230,14 +220,11 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
             green!(fll, "common-done");
             Ok(())
         }
-        Validated::Failure(errs) => {
+        Validated::Failure(bads) => {
             red!(fll, "A-y");
 
-            for e in errs {
-                match e {
-                    Two::A(e) => eprintln!("  - {}", e),
-                    Two::B(GitPullError(p)) => eprintln!("  - {}: Git pull failed.", p),
-                }
+            for bad in bads {
+                eprintln!("  - {}", bad);
             }
 
             Err(Error::Silent)
