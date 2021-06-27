@@ -3,6 +3,7 @@
 use std::path::Path;
 use std::process::{Command, ExitStatus, Stdio};
 
+// FIXME This seems to succeed for non-existant repos!
 /// Perform a shallow clone frrom a given repository url, and save it to a given
 /// `Path` on the filesystem.
 pub fn shallow_clone(url: &Path, target: &Path) -> Result<ExitStatus, std::io::Error> {

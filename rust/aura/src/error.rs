@@ -32,8 +32,6 @@ pub(crate) enum Error {
     NoneExist,
     /// A non-zero exit code was returned from a call to Pacman.
     Pacman,
-    /// A non-zero exit code was returned from a call to `git clone`.
-    GitClone(String),
     /// We were unable to escalate the process with `sudo`.
     Sudo,
     // /// A file IO target already exists.
@@ -64,7 +62,6 @@ impl std::fmt::Display for Error {
             Error::Rejected => write!(f, "The user said no."),
             Error::NoneExist => write!(f, "None of those packages exist."),
             Error::Pacman => write!(f, "A shell call to Pacman gave a non-zero exit code."),
-            Error::GitClone(p) => write!(f, "Failed to `git clone` {}.", p),
             Error::Sudo => write!(f, "Unable to escalate via sudo."),
             Error::MiscShell => write!(f, "A miscellaneous shell call failed."),
             // Error::FileConflict => write!(f, "The given file target already exists."),
@@ -90,7 +87,6 @@ impl std::error::Error for Error {
             Error::Rejected => None,
             Error::NoneExist => None,
             Error::Pacman => None,
-            Error::GitClone(_) => None,
             Error::Sudo => None,
             Error::MiscShell => None,
             // Error::FileConflict => None,

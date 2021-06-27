@@ -22,6 +22,7 @@ A-i-submitted = Submitted
 A-i-updated = Updated
 
 A-w = Cloning { $package }...
+A-w-fail = Failed to clone the following packages:
 
 A-y = Failed to pull the following packages:
 

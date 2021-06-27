@@ -185,19 +185,32 @@ fn package_date(epoch: i64) -> ColoredString {
     format!("{}", Utc.timestamp(epoch, 0).date().format("%F")).normal()
 }
 
-// FIXME Report all the errors!
 /// Clone the AUR repository of given packages.
 pub(crate) fn clone_repos(fll: &FluentLanguageLoader, packages: &[String]) -> Result<(), Error> {
-    packages
+    let clones: Validated<(), &str> = packages
         .par_iter()
         .map(|p| {
-            aura!(fll, "A-w", package = p.as_str());
-            clone_aur_repo(None, &p).void()
+            let pkg = p.as_str();
+            aura!(fll, "A-w", package = pkg);
+            clone_aur_repo(None, &p).ok_or(pkg).void()
         })
-        .collect::<Result<(), Error>>()?;
+        .collect();
 
-    green!(fll, "common-done");
-    Ok(())
+    match clones {
+        Validated::Success(_) => {
+            green!(fll, "common-done");
+            Ok(())
+        }
+        Validated::Failure(bads) => {
+            red!(fll, "A-w-fail");
+
+            for bad in bads {
+                eprintln!("  - {}", bad);
+            }
+
+            Err(Error::Silent)
+        }
+    }
 }
 
 /// Pull the latest commits from every clone in the `packages` directory.
@@ -211,7 +224,7 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
         .map(|(pkg, path)| {
             aura_core::git::pull(&path)
                 .map_err(|_| pkg.clone())
-                .and_then(|status| status.success().then(|| ()).ok_or_else(|| pkg))
+                .and_then(|status| status.success().then(|| ()).ok_or(pkg))
         })
         .collect();
 
@@ -232,9 +245,8 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
     }
 }
 
-// TODO Display the error in an upstream caller that has `fll` in scope.
 /// Clone a package's AUR repository and return the full path to the clone.
-fn clone_aur_repo(root: Option<&Path>, package: &str) -> Result<PathBuf, Error> {
+fn clone_aur_repo(root: Option<&Path>, package: &str) -> Option<PathBuf> {
     let mut url: PathBuf = [AUR_BASE_URL, package].iter().collect();
     url.set_extension("git");
 
@@ -244,13 +256,8 @@ fn clone_aur_repo(root: Option<&Path>, package: &str) -> Result<PathBuf, Error> 
     };
 
     aura_core::git::shallow_clone(&url, &clone_path)
-        .map_err(Error::IO)
-        .and_then(|status| {
-            status
-                .success()
-                .then(|| clone_path)
-                .ok_or_else(|| Error::GitClone(package.to_string()))
-        })
+        .ok()
+        .and_then(|status| status.success().then(|| clone_path))
 }
 
 /// Quickly check some given packages names against the local cache of package
