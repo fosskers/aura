@@ -4,7 +4,6 @@ use crate::error::Error;
 use crate::utils::{self, ResultVoid};
 use crate::{aln, aura, dirs, green, red};
 use alpm::Alpm;
-use aura_core::fp::Validated;
 use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
@@ -14,6 +13,7 @@ use rayon::prelude::*;
 use std::borrow::Cow;
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
+use validated::Validated;
 
 /// The base path of the URL.
 pub const AUR_BASE_URL: &str = "https://aur.archlinux.org/";
@@ -197,11 +197,11 @@ pub(crate) fn clone_repos(fll: &FluentLanguageLoader, packages: &[String]) -> Re
         .collect();
 
     match clones {
-        Validated::Success(_) => {
+        Validated::Good(_) => {
             green!(fll, "common-done");
             Ok(())
         }
-        Validated::Failure(bads) => {
+        Validated::Fail(bads) => {
             red!(fll, "A-w-fail");
 
             for bad in bads {
@@ -213,6 +213,7 @@ pub(crate) fn clone_repos(fll: &FluentLanguageLoader, packages: &[String]) -> Re
     }
 }
 
+// TODO Add a progress bar here.
 /// Pull the latest commits from every clone in the `packages` directory.
 pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
     let pulls: Validated<(), String> = dirs::clones()?
@@ -229,11 +230,11 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
         .collect();
 
     match pulls {
-        Validated::Success(_) => {
+        Validated::Good(_) => {
             green!(fll, "common-done");
             Ok(())
         }
-        Validated::Failure(bads) => {
+        Validated::Fail(bads) => {
             red!(fll, "A-y");
 
             for bad in bads {

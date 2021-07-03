@@ -28,6 +28,7 @@ simplelog = "0.10"
 sudo = "0.6"
 ubyte = "0.10"
 unic-langid = { version = "0.9", features = ["macros"] }
+validated = { version = "0.1", features = ["rayon"] }
 webbrowser = "0.5"
 
 [features]
