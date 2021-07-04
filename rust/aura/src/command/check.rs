@@ -1,6 +1,6 @@
 //! Analyze many aspects of your installation for validity.
 
-use crate::{aln, aura, green};
+use crate::{aura, green};
 use alpm::Alpm;
 use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;

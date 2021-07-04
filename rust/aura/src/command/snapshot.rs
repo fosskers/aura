@@ -1,7 +1,7 @@
 //! All functionality involving the `-B` command.
 
 use crate::dirs;
-use crate::{a, aln, aura, green, red};
+use crate::{a, aura, green, red};
 use crate::{error::Error, utils};
 use alpm::Alpm;
 use aura_core::snapshot::Snapshot;

@@ -2,7 +2,7 @@
 
 use crate::download::download_with_progress;
 use crate::error::Error;
-use crate::{a, aln, aura, green, red, yellow};
+use crate::{a, aura, green, red, yellow};
 use alpm::Alpm;
 use aura_core::cache::{CacheSize, PkgPath};
 use chrono::{DateTime, Local};

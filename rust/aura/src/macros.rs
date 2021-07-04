@@ -1,7 +1,5 @@
 //! Macro definitions.
 
-// TODO Combine these macros better.
-
 #[macro_export]
 /// Print a coloured Aura message.
 macro_rules! aln {
@@ -22,10 +20,10 @@ macro_rules! a {
 /// Print a localized Aura message, given some Fluent tag.
 macro_rules! aura {
     ($fll:expr, $msg:expr, $($arg:expr),*) => {
-        aln!(fl!($fll, $msg, $($arg)*));
+        $crate::aln!(i18n_embed_fl::fl!($fll, $msg, $($arg)*));
     };
     ($fll:expr, $msg:expr) => {
-        aln!(fl!($fll, $msg));
+        $crate::aln!(i18n_embed_fl::fl!($fll, $msg));
     };
 }
 
@@ -33,10 +31,10 @@ macro_rules! aura {
 /// Print a localized Aura message in green, given some Fluent tag.
 macro_rules! green {
     ($fll:expr, $msg:expr, $($arg:expr),*) => {
-        aln!(fl!($fll, $msg, $($arg)*).green());
+        $crate::aln!(i18n_embed_fl::fl!($fll, $msg, $($arg)*).green());
     };
     ($fll:expr, $msg:expr) => {
-        aln!(fl!($fll, $msg).green());
+        $crate::aln!(i18n_embed_fl::fl!($fll, $msg).green());
     };
 }
 
@@ -44,10 +42,10 @@ macro_rules! green {
 /// Print a localized Aura message in yellow, given some Fluent tag.
 macro_rules! yellow {
     ($fll:expr, $msg:expr, $($arg:expr),*) => {
-        aln!(fl!($fll, $msg, $($arg)*).yellow());
+        $crate::aln!(i18n_embed_fl::fl!($fll, $msg, $($arg)*).yellow());
     };
     ($fll:expr, $msg:expr) => {
-        aln!(fl!($fll, $msg).yellow());
+        $crate::aln!(i18n_embed_fl::fl!($fll, $msg).yellow());
     };
 }
 
@@ -55,9 +53,9 @@ macro_rules! yellow {
 /// Print a localized Aura message in red, given some Fluent tag.
 macro_rules! red {
     ($fll:expr, $msg:expr, $($arg:expr),*) => {
-        aln!(fl!($fll, $msg, $($arg)*).red());
+        $crate::aln!(i18n_embed_fl::fl!($fll, $msg, $($arg)*).red());
     };
     ($fll:expr, $msg:expr) => {
-        aln!(fl!($fll, $msg).red());
+        $crate::aln!(i18n_embed_fl::fl!($fll, $msg).red());
     };
 }

@@ -1,7 +1,7 @@
 //! All functionality involving the `-O` command.
 
 use crate::error::Error;
-use crate::{a, aln, green, yellow};
+use crate::{a, green, yellow};
 use alpm::{Alpm, PackageReason, TransFlag};
 use aura_arch as arch;
 use colored::*;

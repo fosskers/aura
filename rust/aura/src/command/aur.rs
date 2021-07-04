@@ -2,7 +2,7 @@
 
 use crate::error::Error;
 use crate::utils::{self, ResultVoid};
-use crate::{aln, aura, dirs, green, red};
+use crate::{aura, dirs, green, red};
 use alpm::Alpm;
 use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
