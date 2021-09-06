@@ -569,7 +569,8 @@ manyArgs' = S.fromList <$> many (argument str (metavar "PACKAGES" <> hidden))
 
 language :: Parser Language
 language = foldr1 (<|>) $ NEL.map (\(f, v) -> flag' v (long f <> hidden)) langs
-  where langs = [ ( "japanese",   Japanese ),   ( "日本語",        Japanese )
+  where langs = [ ( "japanese",   Japanese ),   ( "日本語",      Japanese )
+  		        , ( "arabic", 	  Arabic ), 	( "العربية",	Arabic )
                 , ( "polish",     Polish ),     ( "polski",     Polish )
                 , ( "croatian",   Croatian ),   ( "hrvatski",   Croatian )
                 , ( "swedish",    Swedish ),    ( "svenska",    Swedish )
@@ -582,7 +583,7 @@ language = foldr1 (<|>) $ NEL.map (\(f, v) -> flag' v (long f <> hidden)) langs
                 , ( "serbian",    Serbian ),    ( "српски",     Serbian )
                 , ( "norwegian",  Norwegian ),  ( "norsk",      Norwegian )
                 , ( "indonesian", Indonesia )
-                , ( "chinese",    Chinese ),    ( "中文",         Chinese )
+                , ( "chinese",    Chinese ),    ( "中文",       Chinese )
                 , ( "esperanto",  Esperanto )
                 , ( "dutch",      Dutch ),      ( "nederlands", Dutch ) ]
 
