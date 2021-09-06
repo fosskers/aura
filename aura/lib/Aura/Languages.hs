@@ -165,7 +165,7 @@ checkDBLock_1 = \case
 trueRoot_3 :: Language -> Doc AnsiStyle
 trueRoot_3 = \case
     Japanese   -> "「root」としてパッケージを作成するのは「makepkg v4.2」で不可能になりました。"
-    Arabic     -> ".makepkg v4.2 لم يعد ممكنا بناء كمشرف في"
+    Arabic     -> ".makepkg v4.2 البناء كمشرف لم يعد ممكنا في"
     Polish     -> "Od makepkg v4.2, budowanie jako root nie jest dozwolone."
     Turkish    -> "Makepkg v4.2'den itibaren, kök olarak oluşturmak artık mümkün değildir."
     German     -> "Seit makepkg v4.2 ist es nicht mehr möglich als root zu bauen."
@@ -182,7 +182,7 @@ trueRoot_3 = \case
 mustBeRoot_1 :: Language -> Doc AnsiStyle
 mustBeRoot_1 = let sudo = bt @Text "sudo" in \case
     Japanese   -> sudo <> "を使わないとそれができない！"
-    Αrabic     -> "." <> sudo <> " ﻻ يمكن اجاء هذه العملية بدون استخدام"
+    Αrabic     -> "." <> sudo <> " ﻻ يمكن اجراء هذه العملية بدون استخدام"
     Polish     -> "Musisz użyć " <> sudo <> ", żeby to zrobić."
     Turkish    -> sudo <> "kullanmadan bu işlemi gerçekleştiremezsiniz."
     Croatian   -> "Morate koristiti" <> sudo <> "za ovu radnju."
@@ -228,7 +228,7 @@ buildPackages_1 (bt . pnName -> p) = \case
 
 buildPackages_2 :: Language -> Doc AnsiStyle
 buildPackages_2 = \case
-    Arabic     -> ".لن يتم بناء ايا رزمة .'--allsource' عثور"
+    Arabic     -> ".لن يتم بناء اي رزمة .'--allsource' كشف"
     Polish     -> "'--allsource' wykryte. Nie zostaną zbudowane żadne pakiety."
     Turkish    -> "'--allsource' bulundu. Yüklenebilir gerçek paketler oluşturulmayacaktır."
     Spanish    -> "'--allsource' detectado. No se construirán paquetes instalables reales."
@@ -236,7 +236,7 @@ buildPackages_2 = \case
 
 buildPackages_3 :: FilePath -> Language -> Doc AnsiStyle
 buildPackages_3 fp = \case
-    Arabic     -> pretty fp <> ":ملافات نبنت و نسخة الى .src.tar.gz كل"
+    Arabic     -> pretty fp <> ":تم بناؤها ونسخها إلى .src.tar.gz كل ملفات"
     Polish     -> "Wszystkie pliki .src.tar.gz zostały zbudowane i przekopiowane do: " <> pretty fp
     Turkish    -> "Tüm .src.tar.gz dosyaları oluşturuldu ve şuraya kopyalandı: " <> pretty fp
     Spanish    -> "Todos los archivos .src.tar.gz fueron construidos y copiados a: " <> pretty fp
@@ -275,7 +275,7 @@ buildFail_5 = \case
 buildFail_6 :: Language -> Doc AnsiStyle
 buildFail_6 = \case
     Japanese   -> "それでも続行しますか？"
-    Arabic     -> "هل ترغب في الاستمرار؟"
+    Arabic     -> "هل ترغب في الاستمرار على أي حال؟"
     Polish     -> "Czy mimo to chcesz kontynuować?"
     Croatian   -> "Želite li svejedno nastaviti?"
     German     -> "Möchten Sie trotzdem fortfahren?"
@@ -296,7 +296,7 @@ buildFail_6 = \case
 buildFail_7 :: PkgName -> Language -> Doc AnsiStyle
 buildFail_7 (bt . pnName -> p) = \case
     Japanese   -> p <> "のビルドスクリプトを収得できませんでした。"
-    Arabic     -> "." <> p <> " فشل في الحصول على سكربتات البناء باجل"
+    Arabic     -> "." <> p <> " فشل في الحصول على نصوص البناء لأجل"
     Polish     -> "Nie udało się pozyskać skryptów budowania dla " <> p <> "."
     German     -> "Herunterladen der Build-Skripte für " <> p <> " fehlgeschlagen."
     Spanish    -> "No se han podido obtener los scripts de compilación de " <> p <> "."
@@ -313,7 +313,7 @@ buildFail_7 (bt . pnName -> p) = \case
 buildFail_8 :: Language -> Doc AnsiStyle
 buildFail_8 = \case
     Japanese   -> "makepkgは失敗しました。"
-    Arabic     -> ".makepkg فشل في"
+    Arabic     -> ".makepkgهناك فشل في اﻟ"
     Polish     -> "Wystąpił problem z makepkg."
     Spanish    -> "Ocurrió un error al ejecutar makepkg"
     Portuguese -> "Ocorreu um erro ao executar makepkg"
@@ -326,7 +326,7 @@ buildFail_8 = \case
 buildFail_9 :: Language -> Doc AnsiStyle
 buildFail_9 = \case
   Polish    -> "Nie udało się zlokalizować żadnych zbudowanych pakietów (*.pkg.tar.xz)."
-  Arabic    -> ".(*.pkg.tar.xz) فشل اكتشاف اي ملفات البناء"
+  Arabic    -> ".(*.pkg.tar.xz) فشل في اكتشاف اي ملف من ملفات البناء"
   Spanish   -> "Error al detectar todos los archivo de paquete (*.pkg.tar.xz)."
   Italian   -> "Non è stato possibile trovare nessun archivio risultante dalla compilazione del pacchetto (*.pkg.tar.xz)."
   Esperanto -> "Paneis detekti ĉiujn dosierojn de pakaĵoj (*.pkg.tar.xz)."
@@ -336,7 +336,7 @@ buildFail_9 = \case
 buildFail_10 :: Language -> Doc AnsiStyle
 buildFail_10 = \case
   Polish    -> "Nie udało się zbudować żadnego pakietu."
-  Arabic    -> ".فشل بناء كل رزمة"
+  Arabic    -> ".فشل بناء كل الرزم"
   Spanish   -> "Los paquetes no se pudieron construir."
   Italian   -> "Non è stato possibile compilare i pacchetti."
   Esperanto -> "Ĉiuj pakaĵoj paneis munti."
@@ -346,7 +346,7 @@ buildFail_10 = \case
 buildFail_11 :: Language -> Doc AnsiStyle
 buildFail_11 = \case
   Japanese   -> "作成は失敗しました。エラーを見ますか？"
-  Arabic     -> "فشل البناء. هالترغب في روية الخطا؟"
+  Arabic     -> "فشل البناء. هل ترغب في رؤية الخطأ؟"
   Polish     -> "Budowa zakończona niepowodzeniem. Czy chcesz zobaczyć błąd?"
   Spanish    -> "Construcción fallida. ¿Te gustaría ver el error?"
   Italian    -> "La compilazione è fallita. Visionare l'errore?"
@@ -357,7 +357,7 @@ buildFail_11 = \case
 buildFail_12 :: Language -> Doc AnsiStyle
 buildFail_12 = \case
     Polish     -> "Błąd podczas pobierania najnowszych aktualizacji poprzez 'git pull'."
-    Arabic     -> ".اخر تحديث 'git pull' فشل في"
+    Arabic     -> ".على اخر تحديث 'git pull' فشل حصول"
     Spanish    -> "Error al 'git pull' las últimas actualizaciones."
     _          -> "Failed to 'git pull' the latest updates."
 
@@ -368,7 +368,7 @@ buildFail_12 = \case
 getRealPkgConflicts_1 :: PkgName -> PkgName -> Text -> Text -> Language -> Doc AnsiStyle
 getRealPkgConflicts_1 (bt . pnName -> prnt) (bt . pnName -> p) (bt -> r) (bt -> d) = \case
     Japanese   -> "パッケージ" <> p <> "はバージョン" <> d <> "を要するが" <> "一番最新のバージョンは" <> r <> "。"
-    Arabic     -> "." <> r <> "لكن احدث اصظار يكون ," <> p <> "من" <> d <> "تعتمد على الاصدار" <> prnt <> "الرزمة"
+    Arabic     -> prnt <> " الرزمة " <> d <> " تعتمد على النسخة " <> p <> " من " <> r <> " لكن أحدث نسخه هي"
     Polish     -> "Zależność " <> p <> " powinna być w wersji " <> d <> ", ale najnowsza wersja to " <> r <> "."
     Croatian   -> "Zavisnost " <> p <> " zahtjeva verziju " <> d <> ", a najnovija dostupna verzija je " <> r <> "."
     Swedish    -> "Beroendepaketet " <> p <> " kräver version " <> d <> " men den senaste versionen är " <> r <> "."
@@ -389,7 +389,7 @@ getRealPkgConflicts_1 (bt . pnName -> prnt) (bt . pnName -> p) (bt -> r) (bt -> 
 getRealPkgConflicts_2 :: PkgName -> Language -> Doc AnsiStyle
 getRealPkgConflicts_2 (bt . pnName -> p) = \case
   Japanese   -> p <> "は無視されるパッケージ！`pacman.conf`を参考に。"
-  Arabic     -> ".الخاص بك `pacman.conf`نظر الا اﻟ !" <> p <> "جهل"
+  Arabic     -> ".الخاص بك `pacman.conf`انظر الى اﻟ !" <> p <> " ملف مجهول"
   Polish     -> p <> " jest ignorowany! Sprawdź plik `pacman.conf`."
   Croatian   -> p <> " je ignoriran paket! Provjerite svoj `pacman.conf`."
   Swedish    -> p <> " är ett ignorerat paket! Kolla din `pacman.conf`-fil."
@@ -415,7 +415,7 @@ depError _ (VerConflict s) = s
 depError _ (Ignored s)     = s
 depError l (NonExistant (PkgName s) (PkgName par)) = case l of
   Polish     -> "Zależność " <> bt s <> "nie została znaleziona."
-  Arabic     -> ".غير موجود" <> bt s <> " من " <> bt s <> " الاعتماد"
+  Arabic     -> ".غير موجود " <> bt par <> " من " <> bt s <> " الاعتماد"
   Spanish    -> "La dependencia " <> bt s <> " no pudo ser encontrada."
   Portuguese -> "A dependência " <> bt s <> " não foi encontrada."
   Russian    -> "Зависимость " <> bt s <> " не найдена."
@@ -435,7 +435,7 @@ depError l (BrokenProvides (PkgName pkg) (Provides (PkgName pro)) (PkgName n)) =
 missingPkg_3 :: Language -> Doc AnsiStyle
 missingPkg_3 = \case
   Polish     -> "Wystąpił problem podczas reorganizowania grafu zależności. Jeśli widzisz tą wiadomość, coś poszło bardzo nie tak."
-  Arabic     -> ".حدث خطا في اعادة تنظيم الرسم البياني التبعية. اذا رايت هذه الرسالة، في مشكلة كبيرة"
+  Arabic     -> ".حدث خطا في اعادة تنظيم الرسم البياني التبعي. اذا رايت هذه الرسالة، فهناك مشكلة كبيرة"
   Spanish    -> "Se produjo un error al reorganizar el gráfico de dependencia. Si ves esto, algo está muy mal."
   Esperanto  -> "Eraro okazis kiam reorganizi la grafeo de dependeco. Io estas erarega."
   Italian    -> "C'è stato un errore nella riorganizzazione della gerarchia delle dipendenze. Se vedi questo messaggio, qualcosa è andato davvero storto."
@@ -457,7 +457,7 @@ missingPkg_4 pns = \case
 missingPkg_5 :: PkgName -> Language -> Doc AnsiStyle
 missingPkg_5 (PkgName p) = \case
   Polish    -> bt p <> " nie istnieje."
-  Αrabic    -> ".ليسا موجود " <> bt p
+  Αrabic    -> ".ليس موجود " <> bt p
   Spanish   -> bt p <> " no existe."
   Italian   -> bt p <> " non esiste."
   Dutch     -> bt p <> " bestaat niet."
@@ -494,7 +494,7 @@ displayOutputLanguages_1 = \case
 auraCheck_1 :: Language -> Doc AnsiStyle
 auraCheck_1 = \case
     Japanese   -> "Aura が更新されています。Auraだけ先に更新しますか？"
-    Arabic     -> "موجود. هل تريد ان تحدث اولن؟ Aura تحديث الى"
+    Arabic     -> "موجود. هل تريد ان تحدث اولا؟ Aura تحديث الى"
     Polish     -> "Dostępna jest nowa wersja Aura. Czy chcesz ją najpierw aktualizować?"
     Croatian   -> "Dostupna je nova verzija Aura. Želite li prvo ažurirati?"
     German     -> "Ein Update für aura ist verfügbar. Dies zuerst aktualisieren?"
@@ -600,7 +600,7 @@ install_5 = \case
 confirmIgnored_1 :: PkgName -> Language -> Doc AnsiStyle
 confirmIgnored_1 (bt . pnName -> p) = \case
     Japanese   -> p <> "は無視されるはずのパッケージです。それでも続行しますか？"
-    Arabic     -> "محدد لتجهيل. هل تريد ان تحمل على أي حال؟ " <> p
+    Arabic     -> "تم تحديده كمجهول. هل تريد ان تحمل على أي حال؟ " <> p
     Polish     -> p <> " jest oznaczony jako ignorowany. Zainstalować mimo tego?"
     Spanish    -> p <> " está marcado como ignorado. ¿Deseas instalarlo de todas formas?"
     Portuguese -> p <> " está marcado como Ignorado. Deseja instalar mesmo assim?"
@@ -739,7 +739,7 @@ reportPkgbuildDiffs_1 (bt . pnName -> p) = \case
 reportPkgbuildDiffs_3 :: PkgName -> Language -> Doc AnsiStyle
 reportPkgbuildDiffs_3 (bt . pnName -> p) = \case
     Japanese   -> p <> "のPKGBUILD変更報告："
-    Arabic     -> ".لقدتغير PKGBUILD " <> p
+    Arabic     -> "قد تغير PKGBUILD " <> p
     Polish     -> "Zmiany w PKGBUILD dla " <> p <> ":"
     Croatian   -> "Promjene u PKGBUILD-u za " <> p <> ":"
     German     -> "PKGBUILD-Änderungen von " <> p <> ":"
@@ -761,7 +761,7 @@ reportPkgbuildDiffs_3 (bt . pnName -> p) = \case
 reportPkgsToUpgrade_1 :: Language -> Doc AnsiStyle
 reportPkgsToUpgrade_1 = \case
     Japanese   -> "アップグレードするAURパッケージ："
-    Arabic     -> "لتحديث AURرزمة اﻟ"
+    Arabic     -> "للتحديث AURرزمة اﻟ"
     Polish     -> "Pakiety z AUR do zaktualizowania:"
     Croatian   -> "AUR paketi za nadogradnju:"
     Swedish    -> "AUR-paket att uppgradera:"
@@ -783,7 +783,7 @@ reportPkgsToUpgrade_1 = \case
 reportBadDowngradePkgs_1 :: Language -> Doc AnsiStyle
 reportBadDowngradePkgs_1 = \case
     Japanese   -> "このパッケージはキャッシュには入っていないので、ダウングレードできません。"
-    Arabic     -> "ما يلي ليس له إصدارات في ذاكرة التخزين المؤقت ، وبالتالي لا يمكن الرجوع إلى إصدار سابق."
+    Arabic     -> "ما يلي ليس له إصدارات في ذاكرة التخزين المؤقت ، وبالتالي لا يمكن الرجوع إلى الإصدار السابق."
     Polish     -> "Poniższe pakiety nie są zainstalowane i nie mogą być zainstalowane w starszej wersji:"
     Croatian   -> "Sljedeći paketi nisu instalirani te se stoga ne mogu vratiti na stare verzije:"
     Swedish    -> "Följande paket är inte installerade, och kan därför inte bli nergraderade:"
@@ -854,7 +854,7 @@ upgradeAURPkgs_2 = \case
 upgradeAURPkgs_3 :: Language -> Doc AnsiStyle
 upgradeAURPkgs_3 = \case
     Japanese   -> "アップグレードは必要ありません。"
-    Arabic     -> ".AURلا يلذم تحديث حزمة اﻟ"
+    Arabic     -> ".AURلا يلزم تحديث حزمة اﻟ"
     Polish     -> "Nie jest wymagana aktualizacja pakietów z AUR."
     Croatian   -> "Svi AUR paketi su ažurirani."
     Swedish    -> "Inga AUR-paketsuppgraderingar behövs."
@@ -900,7 +900,7 @@ removeMakeDepsAfter_1 = \case
 cleanStates_2 :: Int -> Language -> Doc AnsiStyle
 cleanStates_2 n@(bt . tshow -> s) = \case
     Japanese   -> s <> "個のパッケージ状態記録だけが残される。その他削除？"
-    Arabic     -> "اسيتم احتفاظ بحالات الحزمة. ازالة الباقي؟ " <> s
+    Arabic     -> "سيتم الاحتفاظ بحالات الحزمة.هل تريد ازالة الباقي؟ " <> s
     Polish     -> s <> " stan pakietów zostanie zachowany. Usunąć resztę?"
     Croatian   -> s <> " stanja paketa će biti zadržano. Ukloniti ostatak?"
     German     -> s <> " Paketzustände werden behalten. Den Rest entfernen?"
@@ -967,7 +967,7 @@ cleanStates_5 t = \case
 cleanStates_6 :: Int -> Language -> Doc AnsiStyle
 cleanStates_6 n = \case
   Polish    -> pretty n <+> "jest przypiętych i nie zostanie usuniętych."
-  Arabic    -> ".ازا كاتو مثبتة, لم ينزلون" <+> pretty n
+  Arabic    -> ".اذا كانو مثبتين ولا يمكن ازالتهم " <+> pretty n
   Spanish   -> pretty n <+> "de estos están anclados y no se eliminarán."
   Italian   -> pretty n <+> "di questi sono stati fissati, perciò non saranno rimossi."
   Dutch     -> pretty n <+> "hiervan zijn vastgezet, en worden niet verwijderd."
@@ -976,7 +976,7 @@ cleanStates_6 n = \case
 readState_1 :: Language -> Doc AnsiStyle
 readState_1 = \case
     Polish     -> "Ten plik stanu nie mógł zostać odczytany. Czy jest to prawidłowy plik JSON?"
-    Arabic     -> "صحيح؟ JSON فشل في تحليل ملف الحالة. هل هيا"
+    Arabic     -> "صحيح؟ JSON فشل في تحليل ملف الحالة. هل"
     Spanish    -> "Ese archivo de estado no se pudo analizar. ¿Es un archivo JSON válido?"
     Portuguese -> "O arquivo de estado não pôde ser interpretado. É um arquivo JSON válido?"
     Russian    -> "Это состояние не распознано. Это корректный JSON?"
@@ -1075,7 +1075,7 @@ backupCache_5 (bt . tshow -> n) = \case
 backupCache_6 :: Language -> Doc AnsiStyle
 backupCache_6 = \case
     Japanese   -> "バックアップを実行しますか？"
-    Arabic     -> "هل تريد ان تكميل النسخ الاحتياطي؟"
+    Arabic     -> "هل تريد ان تكمل النسخ الاحتياطي؟"
     Polish     -> "Kontynuować tworzenie kopii zapasowej?"
     Croatian   -> "Nastavi sa stvaranjem sigurnosne kopije?"
     Swedish    -> "Fortsätt med backup?"
@@ -1096,7 +1096,7 @@ backupCache_6 = \case
 backupCache_7 :: Language -> Doc AnsiStyle
 backupCache_7 = \case
     Japanese   -> "バックアップは意図的に阻止されました。"
-    Arabic     -> ".اقاف النسخ التحتياطي يدويا"
+    Arabic     -> ".اقاف النسخ الاحتياطي يدويا"
     Polish     -> "Tworzenie kopii zapasowej zostało przerwane przez użytkownika."
     Croatian   -> "Stvaranje sigurnosne kopije prekinuto od strane korisnika."
     Swedish    -> "Backup avbröts manuellt."
@@ -1117,7 +1117,7 @@ backupCache_7 = \case
 backupCache_8 :: Language -> Doc AnsiStyle
 backupCache_8 = \case
     Japanese   -> "バックアップ中。数分かかるかもしれません。"
-    Arabic     -> "...الانساخ الاحتياطي. هاذه العمليا يمكم ان تاخوذ وقت"
+    Arabic     -> "...النسخ الاحتياطي. هذه العملية يمكن ان تاخذ وقت"
     Polish     -> "Tworzenie kopii zapasowej. To może potrwać kilka minut..."
     Croatian   -> "Stvaranje sigurnosne kopije. Ovo može potrajati nekoliko minuta..."
     Swedish    -> "Tar backup. Det här kan ta ett tag..."
@@ -1160,7 +1160,7 @@ copyAndNotify_1 (cyan . pretty -> n) = \case
 cleanCache_2 :: Language -> Doc AnsiStyle
 cleanCache_2 = \case
     Japanese   -> "パッケージ・キャッシュは完全に削除されます。"
-    Arabic     -> ".هذا سوف تحذف ذاكرة التخزين الموقت للحزمة بالكامل"
+    Arabic     -> ".هذا سوف يحذف ذاكرة التخزين الموقت للحزمة بالكامل"
     Polish     -> "To usunie WSZYSTKIE pakiety z pamięci podręcznej."
     Croatian   -> "Ovo će izbrisati CIJELI cache paketa."
     Swedish    -> "Detta kommer ta bort HELA paket-cachen."
@@ -1202,7 +1202,7 @@ cleanCache_3 n@(bt . tshow -> s) = \case
 cleanCache_4 :: Language -> Doc AnsiStyle
 cleanCache_4 = \case
     Japanese   -> "残りは全部削除されます。承知していますか？"
-    Arabic     -> "سيتم حذف الباقي. تكمل؟"
+    Arabic     -> "سيتم حذف الباقي. هل تريد أن تكمل؟"
     Polish     -> "Wszystko inne zostanie usunięte. Na pewno?"
     Croatian   -> "Ostali paketi će biti izbrisani. Jeste li sigurni?"
     Swedish    -> "Resten kommer att tas bort. Är det OK?"
@@ -1223,7 +1223,7 @@ cleanCache_4 = \case
 cleanCache_5 :: Language -> Doc AnsiStyle
 cleanCache_5 = \case
     Japanese   -> "削除の続行は意図的に阻止されました。"
-    Arabic     -> ".تم احباط تنظيف ذاكرة الموقت يدويا"
+    Arabic     -> ".تم ايقاف تنظيف ذاكرة الموقت يدويا"
     Polish     -> "Czyszczenie pamięci podręcznej zostało przerwane przez użytkownika."
     Croatian   -> "Čišćenje cache-a paketa prekinuto od strane korisnika."
     Swedish    -> "Cache-rensning avbröts manuellt."
@@ -1305,7 +1305,7 @@ cleanNotSaved_1 = \case
 cleanNotSaved_2 :: Int -> Language -> Doc AnsiStyle
 cleanNotSaved_2 n@(cyan . pretty -> s) = \case
     Japanese   -> "「" <> s <> "」の不要パッケージファイルがあります。削除しますか？"
-    Arabic     -> "تم عثور على ملفات الحزمة غير الضرورية. حذفه؟" <> s
+    Arabic     -> "تم العثور على ملفات الحزمة غير الضرورية.هل تريد حذفه؟ " <> s
     Polish     -> s <> " niepotrzebnych plików zostało znalezionych. Usunąć?"
     Croatian   -> s <> " nepotrebnih datoteka pronađeno. Obrisati?"
     German     -> s <> " nicht benötigte Paketdateien gefunden. Löschen?"
@@ -1334,7 +1334,7 @@ logLookUpFields = sequence [ Fields.package
 reportNotInLog_1 :: Language -> Doc AnsiStyle
 reportNotInLog_1 = \case
     Japanese   -> "logファイルには出ていない："
-    Arabic     -> ":لم تظهر هذه في ملف السجل "
+    Arabic     -> ":لم تظهر هذه في ملف السجل"
     Polish     -> "Tych pakietów nie ma w dzienniku:"
     Croatian   -> "Ovih paketa nema u dnevniku:"
     Swedish    -> "Dessa har inte framkommit i loggfiler:"
@@ -1364,7 +1364,7 @@ packageNotFound_1 = \case
 connectFailure_1 :: Language -> Doc AnsiStyle
 connectFailure_1 = \case
   Polish  -> "Nie udało się nawiązać połączenia z AUR. Czy jesteś połączony z internetem?"
-  Arabic  -> "هل انت شابك بالانترنت؟ .AURفشل الاتصال بـ"
+  Arabic  -> "هل انت متصل بالانترنت؟ .AURفشل الاتصال بـ"
   Spanish -> "No se pudo contactar con el AUR. ¿Tienes conexión a internet?"
   Italian -> "Non è stato possibile contattare l'AUR. Il computer è connesso ad internet?"
   Dutch   -> "Contact opnemen met de AUR mislukt. Heeft U een internet connectie?"
@@ -1475,7 +1475,7 @@ orphanedMsg Nothing = red . \case
 saveState_1 :: Language -> Doc AnsiStyle
 saveState_1 = \case
     Japanese   -> "パッケージ状態の保存完了。"
-    Arabic     -> ".حفوظة حالة الحزمة"
+    Arabic     -> ". حالة الحزمة محفوظة"
     Polish     -> "Zachowano stan pakietów"
     Croatian   -> "Stanje paketa spremljeno."
     German     -> "Paketzustand gesichert."
@@ -1497,7 +1497,7 @@ saveState_1 = \case
 restoreState_1 :: Language -> Doc AnsiStyle
 restoreState_1 = \case
     Japanese   -> "対象バージョンがないパッケージ："
-    Arabic     -> ":اصدارات الرجوع المطلوبة غير متوفرة لالحزمة التالية"
+    Arabic     -> ":اصدارات الرجوع المطلوبة غير متوفرة للحزمة التالية"
     Polish     -> "Starsze wersje nie są dostępne dla:"
     Croatian   -> "Tražene stare verzije nisu dostupne za:"
     German     -> "Gewünschte Downgrade-Versionen nicht verfügbar für:"
@@ -1518,7 +1518,7 @@ restoreState_1 = \case
 restoreState_2 :: Language -> Doc AnsiStyle
 restoreState_2 = \case
     Japanese   -> "保存されたパッケージ状態がない。作るには「-B」を。"
-    Arabic     -> "عدم وجود حالة لالرجوع الى. (باجل حفذ الحالة الحاليا -B استخدم)"
+    Arabic     -> "(لحفظ الحالة الحالية -B استخدم) .عدم وجود حالة محفوظة للرجوع إليها"
     Polish     -> "Brak zapisanych stanów do przywrócenia. (Użyj -B by zapisać aktualny stan)"
     Spanish    -> "No hay estados guardados para ser restaurados. (Utilice -B para guardar el estado actual)"
     Portuguese -> "Nenhum estado disponível para ser recuperado. (Utilize -B para salvar o estado atual)"
@@ -1534,7 +1534,7 @@ restoreState_2 = \case
 reinstallAndRemove_1 :: Language -> Doc AnsiStyle
 reinstallAndRemove_1 = \case
     Japanese   -> "パッケージを変更する必要はありません。"
-    Arabic     -> ".لا حذمة تحتاج التغير"
+    Arabic     -> ".لا يوجد حزمة تحتاج التغير"
     Polish     -> "Żaden pakiet nie wymaga zmian"
     Croatian   -> "Nema paketa kojima su potrebne izmjene."
     German     -> "Keine Pakete brauchen Änderungen."
@@ -1598,7 +1598,7 @@ hotEdit_1 :: PkgName -> Language -> Doc AnsiStyle
 hotEdit_1 (bt . pnName -> p) = \case
     Japanese   -> p <> "のPKGBUILDを編成しますか？"
     Polish     -> "Czy chcesz edytować PKGBUILD " <> p <> "?"
-    Arabic     -> "؟" <> p <> " تبع PKGBUILDهل تريد ان تعدل اﻟ"
+    Arabic     -> "؟" <> p <> "التابع ﻟ PKGBUILDهل تريد ان تعدل اﻟ"
     Croatian   -> "Želite li izmjeniti PKGBUILD " <> p <> "?"
     Swedish    -> "Vill du ändra PKGBUILD-filen ifrån " <> p <> "?"
     German     -> "Möchten Sie die PKGBUILD-Datei für " <> p <> " bearbeiten?"
@@ -1618,14 +1618,14 @@ hotEdit_1 (bt . pnName -> p) = \case
 hotEdit_2 :: Language -> Doc AnsiStyle
 hotEdit_2 = \case
   Polish    -> "Czy chcesz edytować plik .install?"
-  Arabic    -> "؟.installهل تريد التعديا ملف اﻟ"
+  Arabic    -> "؟.installهل تريد تعديل ملف اﻟ"
   Spanish   -> "¿Desea editar el archivo .install?"
   _         -> "Would you like to edit the .install file?"
 
 hotEdit_3 :: FilePath -> Language -> Doc AnsiStyle
 hotEdit_3 fp = \case
   Polish    -> "Czy chcesz edytować " <> pretty fp <> "?"
-  Arabic    -> "؟" <> pretty fp <> " هل تريد التعد"
+  Arabic    -> "؟" <> pretty fp <> " هل تريد التعديل"
   Spanish   -> "¿Desea editar " <> pretty fp <> "?"
   _         -> "Would you like to edit " <> pretty fp <> "?"
 
@@ -1635,7 +1635,7 @@ hotEdit_3 fp = \case
 security_1 :: PkgName -> Language -> Doc AnsiStyle
 security_1 (PkgName p) = \case
   Polish    -> "PKGBUILD dla" <+> bt p <+> "był zbyt zawiły do odczytania - może zawierać złośliwy kod."
-  Arabic    -> ".كان معقدا جدا لالتحليل - يقد ان يخفي برنامج ضار" <+> bt p <+> "تبع PKGBUILDاﻟ"
+  Arabic    -> ".كان معقدا جدا للتحليل - يمكن أن يكون تعتيم مشوش للشفرة" <+> bt p <+> "تبع PKGBUILDاﻟ"
   Spanish   -> "El PKGBUILD de" <+> bt p <+> "era demasiado complejo de analizar - puede estar ofuscando código malicioso."
   Italian   -> "Il PKGBUILD di" <+> bt p <+> "è troppo complesso per essere analizzato - è possibile che stia offuscando codice malevolo."
   Dutch     -> "Het PKGBUILD-bestand van" <+> bt p <+> " was te complex om te parseren - het kan schadelijke code versluieren."
@@ -1644,7 +1644,7 @@ security_1 (PkgName p) = \case
 security_2 :: Text -> Language -> Doc AnsiStyle
 security_2 (bt -> t) = \case
   Polish    -> t <+> "może zostać użyty do pobrania arbitralnych skryptów, które nie są śledzone przez ten PKGBUILD."
-  Arabic    -> ".هذه PKGBUILDيقدر ان يحمل ملفات عشروتىية ليسا مسجلة باﻟ" <+> t
+  Arabic    -> ".هذه PKGBUILDيمكن ان يحمل ملفات عشروتىية ليست مسجلة باﻟ" <+> t
   Spanish   -> t <+> "se puede usar para descargar scripts arbitrarios que este PKGBUILD no rastrea."
   Italian   -> t <+> "può essere usato per scaricare script arbitrari non tracciati da questo PKGBUILD."
   Dutch     -> t <+> "kan gebruikt worden om willekeurige scripten te downloaden die niet worden bijgehouden door dit PKGBUILD-bestand."
@@ -1653,7 +1653,7 @@ security_2 (bt -> t) = \case
 security_3 :: Text -> Language -> Doc AnsiStyle
 security_3 (bt -> t) = \case
   Polish    -> t <+> "może zostać użyty do wykonywania arbitralnego kodu, który nie jest śledzony przez ten PKGBUILD."
-  Arabic    -> ".هذه PKGBUILDيقدر ان يستعمل ملفات عشروتىية ليسا مسجلة باﻟ" <+> t
+  Arabic    -> ".هذه PKGBUILDيمكن ان يستعمل ملفات عشروتىية ليست مسجلة باﻟ" <+> t
   Spanish   -> t <+> "se puede usar para ejecutar código arbitrario que este PKGBUILD no rastrea."
   Italian   -> t <+> "può essere usato per eseguire codice arbitrario non tracciato da questo PKGBUILD."
   Dutch     -> t <+> "kan gebruikt worden om willekeurige code uit te voeren die niet worden bijgehouden door dit PKGBUILD-bestand."
@@ -1662,7 +1662,7 @@ security_3 (bt -> t) = \case
 security_4 :: Text -> Language -> Doc AnsiStyle
 security_4 (bt -> t) = \case
   Polish    -> t <+> "wskazuje na to, że ktoś może próbować uzyskać dostęp root'a do twojej maszyny."
-  Arabic    -> ".تشير ان شخصا ما يحاول على وصول الى قوت المسوول على جهازك" <+> t
+  Arabic    -> ".تشير ان شخصا ما يحاول الوصول الى قوت المسؤول على جهازك" <+> t
   Spanish   -> t <+> "indica que alguien puede estar intentando obtener acceso de root a su máquina."
   Italian   -> t <+> "indica che forse qualcuno sta cercando di ottenere accesso alla tua macchina come root."
   Dutch     -> t <+> "geeft aan dat iemand mogelijk root-toegang to uw machine probeert te krijgen."
@@ -1671,7 +1671,7 @@ security_4 (bt -> t) = \case
 security_5 :: PkgName -> Language -> Doc AnsiStyle
 security_5 (PkgName p) = \case
   Polish    -> "UWAGA: PKGBUILD dla " <+> bt p <+> "zawiera wyrażenia bash znajdujące się na czarnej liście."
-  Arabic    -> ".في القاىمة السودء bash في تعبيرات" <+> bt p <+> "باجل PKGBUILDتحذير: اﻟ"
+  Arabic    -> ".في القائمة السودء bash في تعبيرات" <+> bt p <+> "باجل PKGBUILDتحذير: اﻟ"
   Spanish   -> "ADVERTENCIA: El PKGBUILD de" <+> bt p <+> "contiene expresiones bash en la lista negra."
   Italian   -> "ATTENZIONE: Il PKGBUILD di" <+> bt p <+> "contiene espressioni bash presenti nella lista nera."
   Dutch     -> "WAARSCHUWING: De PKGBUILD van" <+> bt p <+> "bevat bash uitdrukkingen die op de zwarte lijst staan."
@@ -1680,7 +1680,7 @@ security_5 (PkgName p) = \case
 security_6 :: Language -> Doc AnsiStyle
 security_6 = \case
   Polish    -> "Czy chcesz zakończyć proces budowania?"
-  Arabic    -> "هل تريد اقاف البني؟"
+  Arabic    -> "هل تريد اقاف البناء؟"
   Spanish   -> "¿Desea salir del proceso de compilación?"
   Italian   -> "Terminare la compilazione?"
   Dutch     -> "Wilt u het bouw process stoppen?"
@@ -1689,7 +1689,7 @@ security_6 = \case
 security_7 :: Language -> Doc AnsiStyle
 security_7 = \case
   Polish    -> "Anulowano dalsze przetwarzanie by uniknąć egzekucji potencjalnie złośliwego kodu bash"
-  Arabic    -> ".الذي يحتمل أن يكون ضارا bash تم الغاء المعالجة الاضافيه لتجنب صطور"
+  Arabic    -> ".الذي يحتمل أن يكون ضارا bash تم الغاء المعالجة الاضافيه لتجنب صدور"
   Spanish   -> "Se canceló el procesamiento posterior para evitar el código bash potencialmente malicioso."
   Italian   -> "Non saranno eseguite altre operazioni al fine di evitare l'esecuzione di codice bash potenzialmente malevolo."
   Dutch     -> "Verdere verwerking geannuleerd om het uitvoeren van potentieel schadelijke bash-code te voorkomen."
@@ -1725,7 +1725,7 @@ security_10 (bt -> t) = \case
 security_11 :: Language -> Doc AnsiStyle
 security_11 = \case
   Polish    -> "Ten PKGBUILD jest zbyt zawiły do odczytania - może ukrywać w sobie złośliwy kod."
-  Arabic    -> ".كان معقدا جدا لالتحليل - يقد ان يخفي برنامج ضار PKGBUILDذالك اﻟ"
+  Arabic    -> ".كان معقدا جدا للتحليل - يمكن ان يخفي برنامج ضار PKGBUILDذلك اﻟ"
   Spanish   -> "Éste PKGBUILD es demasiado complejo para analizar, puede estar ofuscando código malicioso."
   _         -> "That PKGBUILD is too complex to parse - it may be obfuscating malicious code."
 
