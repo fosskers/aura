@@ -223,6 +223,7 @@ Aura is sponsored by these wonderful people:
 [<img class="avatar avatar-user" src="https://avatars.githubusercontent.com/u/81970309?s=70&amp;v=4" alt="@ace-deuce" width="35" height="35">](https://github.com/ace-deuce)
 [<img class="avatar avatar-user" src="https://avatars.githubusercontent.com/u/81332165?s=70&amp;v=4" alt="@tianip220" width="35" height="35">](https://github.com/tianip220)
 [<img class="avatar avatar-user" src="https://avatars.githubusercontent.com/u/5953670?s=70&amp;v=4" alt="@sidagrawal" width="35" height="35">](https://github.com/sidagrawal)
+[<img class="avatar avatar-user" src="https://avatars.githubusercontent.com/u/17126777?s=70&amp;v=4" alt="@da-moon" width="35" height="35">](https://github.com/da-moon)
 
 Aura has been translated by these generous people:
 
