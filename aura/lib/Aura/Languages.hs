@@ -55,26 +55,26 @@ translators = M.fromList
 
 -- These need updating! Or removing...
 languageNames :: Language -> Map Language T.Text
-languageNames = M.fromList . zip [ Japanese, Polish, Croatian, Swedish, German, Spanish, Portuguese, French, Russian, Italian, Serbian, Norwegian, Indonesia, Chinese, Esperanto, Dutch, Turkish ] . \case
-    Japanese   -> [ "日本語", "ポーランド語", "クロアチア語", "スウェーデン語", "ドイツ語", "スペイン語", "ポルトガル語", "フランス語", "ロシア語", "イタリア語", "セルビア語", "ノルウェー語", "インドネシア語", "中国語", "エスペラント", "オランダ語", "トルコ語" ]
-    Arabic     -> [ "اليابانية", "البولندية", "الكرواتية", "السويدية", "الالمانية", "الاصبانية", "البرتغالية", "الفرنسية", "الروسية", "الايطالية", "السيبيرية", "النرويجية", "الاندونيسية", "الصينية", "الاسبرانتو", "الهولندية", "التركية" ]
-    Turkish    -> [ "Japonca", "Lehçe", "Hırvatça", "İsveççe", "Almanca", "İspanyolca", "Portekizce", "Fransızca", "Rusça", "İtalyanca", "Sırpça", "Norveççe", "Endonezce", "Çince", "Esperanto", "Hollandaca", "Türkçe" ]
-    Polish     -> [ "Japanese", "polski", "chorwacki", "szwedzki", "niemiecki", "hiszpański", "portugalski", "francuski", "rosyjski", "włoski", "serbski", "norweski", "indonezyjski", "chiński", "esperanto", "niderlandzki", "Turkish" ]
-    Croatian   -> [ "Japanese", "poljski", "hrvatski", "švedski", "njemački", "španjolski", "portugalski", "francuski", "ruski", "talijanski", "srpski", "norveški", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish" ]
-    Swedish    -> [ "Japanese", "Polska", "Kroatiska", "Svenska", "Tyska", "Spanska", "Portugisiska", "Franska", "Ryska", "Italienska", "Serbiska", "Norska", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish" ]
-    German     -> [ "Japanisch", "Polnisch", "Kroatisch", "Schwedisch", "Deutsch", "Spanisch", "Portugiesisch", "Französisch", "Russisch", "Italienisch", "Serbisch", "Norwegisch", "Indonesisch", "Chinese", "Esperanto", "Dutch", "Turkish" ]
-    Spanish    -> [ "Japanese", "Polaco", "Croata", "Sueco", "Alemán", "Español", "Portugués", "Francés", "Ruso", "Italiano", "Serbio", "Noruego", "Indonesio", "Chinese", "Esperanto", "Dutch", "Turkish" ]
-    Portuguese -> [ "Japonês", "Polonês", "Croata", "Sueco", "Alemão", "Espanhol", "Português", "Francês", "Russo", "Italiano", "Sérvio", "Norueguês", "Indonésio", "Chinês", "Esperanto", "Dutch", "Turkish" ]
-    French     -> [ "Japanese", "Polonais", "Croate", "Suédois", "Allemand", "Espagnol", "Portugais", "Français", "Russe", "Italien", "Serbe", "Norvégien", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish" ]
-    Russian    -> [ "Японский", "Польский", "Хорватский", "Шведский", "Немецкий", "Испанский", "Португальский", "Французский", "Русский", "Итальянский", "Сербский", "Норвежский", "Индонезийский", "Китайский", "Эсперанто", "Dutch", "Turkish" ]
-    Italian    -> [ "Giapponese", "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "Serbo", "Norvegese", "Indonesiano", "Cinese", "Esperanto", "Dutch", "Turkish" ]
-    Serbian    -> [ "Japanese", "Пољски", "Хрватски", "Шведски", "Немачки", "Шпански", "Португалски", "Француски", "Руски", "Италијански", "Српски", "", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish" ]
-    Norwegian  -> [ "Japanese", "Polsk", "Kroatisk", "Svensk", "Tysk", "Spansk", "Portugisisk", "Fransk", "Russisk", "Italiensk", "Serbisk", "Norsk", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish" ]
-    Indonesia  -> [ "Japanese", "Polandia", "Kroasia", "Swedia", "Jerman", "Spanyol", "Portugis", "Prancis", "Rusia", "Italia", "Serbia", "Norwegia", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish" ]
-    Chinese    -> [ "日语", "波兰语", "克罗地亚语", "瑞典语", "德语", "西班牙语", "葡萄牙语", "法语", "俄语", "意大利语", "塞尔维亚语", "挪威语", "印度尼西亚语", "中文", "世界语", "Dutch", "Turkish" ]
-    Esperanto  -> [ "La japana", "La pola", "La kroata", "La sevda", "La germana", "La hispana", "La portugala", "La franca", "La rusa", "La itala", "La serba", "La norvega", "La indonezia", "La ĉina", "Esperanto", "La nederlanda", "Turkish" ]
-    Dutch      -> [ "Japans", "Pools", "Kroatisch", "Zweeds", "Duits", "Spaans", "Portugees", "Frans", "Russisch", "Italiaans", "Servisch", "Noors", "Indonesisch", "Chinees", "Esperanto", "Nederlands", "Turkish" ]
-    _          -> [ "Japanese", "Polish", "Croatian", "Swedish", "German", "Spanish", "Portuguese", "French", "Russian", "Italian", "Serbian", "Norwegian", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish" ]
+languageNames = M.fromList . zip [ Japanese, Polish, Croatian, Swedish, German, Spanish, Portuguese, French, Russian, Italian, Serbian, Norwegian, Indonesia, Chinese, Esperanto, Dutch, Turkish, Arabic ] . \case
+    Japanese   -> [ "日本語", "ポーランド語", "クロアチア語", "スウェーデン語", "ドイツ語", "スペイン語", "ポルトガル語", "フランス語", "ロシア語", "イタリア語", "セルビア語", "ノルウェー語", "インドネシア語", "中国語", "エスペラント", "オランダ語", "トルコ語", "アラビア語" ]
+    Arabic     -> [ "اليابانية", "البولندية", "الكرواتية", "السويدية", "الالمانية", "الاصبانية", "البرتغالية", "الفرنسية", "الروسية", "الايطالية", "السيبيرية", "النرويجية", "الاندونيسية", "الصينية", "الاسبرانتو", "الهولندية", "التركية", "Arabic" ]
+    Turkish    -> [ "Japonca", "Lehçe", "Hırvatça", "İsveççe", "Almanca", "İspanyolca", "Portekizce", "Fransızca", "Rusça", "İtalyanca", "Sırpça", "Norveççe", "Endonezce", "Çince", "Esperanto", "Hollandaca", "Türkçe", "Arabic" ]
+    Polish     -> [ "Japanese", "polski", "chorwacki", "szwedzki", "niemiecki", "hiszpański", "portugalski", "francuski", "rosyjski", "włoski", "serbski", "norweski", "indonezyjski", "chiński", "esperanto", "niderlandzki", "Turkish", "Arabic" ]
+    Croatian   -> [ "Japanese", "poljski", "hrvatski", "švedski", "njemački", "španjolski", "portugalski", "francuski", "ruski", "talijanski", "srpski", "norveški", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish", "Arabic" ]
+    Swedish    -> [ "Japanese", "Polska", "Kroatiska", "Svenska", "Tyska", "Spanska", "Portugisiska", "Franska", "Ryska", "Italienska", "Serbiska", "Norska", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish", "Arabic" ]
+    German     -> [ "Japanisch", "Polnisch", "Kroatisch", "Schwedisch", "Deutsch", "Spanisch", "Portugiesisch", "Französisch", "Russisch", "Italienisch", "Serbisch", "Norwegisch", "Indonesisch", "Chinese", "Esperanto", "Dutch", "Turkish", "Arabic" ]
+    Spanish    -> [ "Japanese", "Polaco", "Croata", "Sueco", "Alemán", "Español", "Portugués", "Francés", "Ruso", "Italiano", "Serbio", "Noruego", "Indonesio", "Chinese", "Esperanto", "Dutch", "Turkish", "Arabic" ]
+    Portuguese -> [ "Japonês", "Polonês", "Croata", "Sueco", "Alemão", "Espanhol", "Português", "Francês", "Russo", "Italiano", "Sérvio", "Norueguês", "Indonésio", "Chinês", "Esperanto", "Dutch", "Turkish", "Arabic" ]
+    French     -> [ "Japanese", "Polonais", "Croate", "Suédois", "Allemand", "Espagnol", "Portugais", "Français", "Russe", "Italien", "Serbe", "Norvégien", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish", "Arabic" ]
+    Russian    -> [ "Японский", "Польский", "Хорватский", "Шведский", "Немецкий", "Испанский", "Португальский", "Французский", "Русский", "Итальянский", "Сербский", "Норвежский", "Индонезийский", "Китайский", "Эсперанто", "Dutch", "Turkish", "Arabic" ]
+    Italian    -> [ "Giapponese", "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "Serbo", "Norvegese", "Indonesiano", "Cinese", "Esperanto", "Dutch", "Turkish", "Arabic" ]
+    Serbian    -> [ "Japanese", "Пољски", "Хрватски", "Шведски", "Немачки", "Шпански", "Португалски", "Француски", "Руски", "Италијански", "Српски", "", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish", "Arabic" ]
+    Norwegian  -> [ "Japanese", "Polsk", "Kroatisk", "Svensk", "Tysk", "Spansk", "Portugisisk", "Fransk", "Russisk", "Italiensk", "Serbisk", "Norsk", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish", "Arabic" ]
+    Indonesia  -> [ "Japanese", "Polandia", "Kroasia", "Swedia", "Jerman", "Spanyol", "Portugis", "Prancis", "Rusia", "Italia", "Serbia", "Norwegia", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish", "Arabic" ]
+    Chinese    -> [ "日语", "波兰语", "克罗地亚语", "瑞典语", "德语", "西班牙语", "葡萄牙语", "法语", "俄语", "意大利语", "塞尔维亚语", "挪威语", "印度尼西亚语", "中文", "世界语", "Dutch", "Turkish", "Arabic" ]
+    Esperanto  -> [ "La japana", "La pola", "La kroata", "La sevda", "La germana", "La hispana", "La portugala", "La franca", "La rusa", "La itala", "La serba", "La norvega", "La indonezia", "La ĉina", "Esperanto", "La nederlanda", "Turkish", "Arabic" ]
+    Dutch      -> [ "Japans", "Pools", "Kroatisch", "Zweeds", "Duits", "Spaans", "Portugees", "Frans", "Russisch", "Italiaans", "Servisch", "Noors", "Indonesisch", "Chinees", "Esperanto", "Nederlands", "Turkish", "Arabic" ]
+    _          -> [ "Japanese", "Polish", "Croatian", "Swedish", "German", "Spanish", "Portuguese", "French", "Russian", "Italian", "Serbian", "Norwegian", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish", "Arabic" ]
 
 translatorMsgTitle :: Language -> Text
 translatorMsgTitle = \case
@@ -161,7 +161,7 @@ checkDBLock_1 = \case
     Esperanto  -> "La datumbazo de pakaĵoj estas ŝlosita. Premu enen-klavo kiam la datumbazo estas malŝlosita por daŭrigi"
     Dutch      -> "De pakket databank is vergrendelt. Druk op enter wanneer het ontgrendelt is."
     _          -> "The package database is locked. Press enter when it's unlocked to continue."
-ف 
+
 trueRoot_3 :: Language -> Doc AnsiStyle
 trueRoot_3 = \case
     Japanese   -> "「root」としてパッケージを作成するのは「makepkg v4.2」で不可能になりました。"
@@ -182,7 +182,7 @@ trueRoot_3 = \case
 mustBeRoot_1 :: Language -> Doc AnsiStyle
 mustBeRoot_1 = let sudo = bt @Text "sudo" in \case
     Japanese   -> sudo <> "を使わないとそれができない！"
-    Αrabic     -> "." <> sudo <> " ﻻ يمكن اجراء هذه العملية بدون استخدام"
+    Arabic     -> "." <> sudo <> " ﻻ يمكن اجراء هذه العملية بدون استخدام"
     Polish     -> "Musisz użyć " <> sudo <> ", żeby to zrobić."
     Turkish    -> sudo <> "kullanmadan bu işlemi gerçekleştiremezsiniz."
     Croatian   -> "Morate koristiti" <> sudo <> "za ovu radnju."
@@ -345,14 +345,14 @@ buildFail_10 = \case
 
 buildFail_11 :: Language -> Doc AnsiStyle
 buildFail_11 = \case
-  Japanese   -> "作成は失敗しました。エラーを見ますか？"
-  Arabic     -> "فشل البناء. هل ترغب في رؤية الخطأ؟"
-  Polish     -> "Budowa zakończona niepowodzeniem. Czy chcesz zobaczyć błąd?"
-  Spanish    -> "Construcción fallida. ¿Te gustaría ver el error?"
-  Italian    -> "La compilazione è fallita. Visionare l'errore?"
-  Esperanto  -> "Muntado paneis. Ĉu vi volas vidi la eraron?"
-  Dutch      -> "Bouwen mislukt. Wilt U de fouten zien?"
-  _          -> "Building failed. Would you like to see the error?"
+  Japanese  -> "作成は失敗しました。エラーを見ますか？"
+  Arabic    -> "فشل البناء. هل ترغب في رؤية الخطأ؟"
+  Polish    -> "Budowa zakończona niepowodzeniem. Czy chcesz zobaczyć błąd?"
+  Spanish   -> "Construcción fallida. ¿Te gustaría ver el error?"
+  Italian   -> "La compilazione è fallita. Visionare l'errore?"
+  Esperanto -> "Muntado paneis. Ĉu vi volas vidi la eraron?"
+  Dutch     -> "Bouwen mislukt. Wilt U de fouten zien?"
+  _         -> "Building failed. Would you like to see the error?"
 
 buildFail_12 :: Language -> Doc AnsiStyle
 buildFail_12 = \case
@@ -445,7 +445,7 @@ missingPkg_3 = \case
 missingPkg_4 :: [NonEmpty PkgName] -> Language -> Doc AnsiStyle
 missingPkg_4 pns = \case
   Polish     -> vsep $ "Następujące cykle zależności zostały wykryte:" : pns'
-  Arabic     -> pns' : ":تم اكتشاف دورات التبعية التالية" $ vsep
+  Arabic     -> vsep $ pns' <> [":تم اكتشاف دورات التبعية التالية"]
   Spanish    -> vsep $ "Se detectaron los siguientes ciclos de dependencia:" : pns'
   Italian    -> vsep $ "Sono stati individuati i seguenti cicli di dipendenza:" : pns'
   Dutch      -> vsep $ "The volgende afhankelijkheidscycli zijn gedetecteerd:" : pns'
@@ -456,12 +456,12 @@ missingPkg_4 pns = \case
 
 missingPkg_5 :: PkgName -> Language -> Doc AnsiStyle
 missingPkg_5 (PkgName p) = \case
-  Polish    -> bt p <> " nie istnieje."
-  Αrabic    -> ".ليس موجود " <> bt p
-  Spanish   -> bt p <> " no existe."
-  Italian   -> bt p <> " non esiste."
-  Dutch     -> bt p <> " bestaat niet."
-  _         -> bt p <> " does not exist."
+  Polish  -> bt p <> " nie istnieje."
+  Arabic  -> ".ليس موجود " <> bt p
+  Spanish -> bt p <> " no existe."
+  Italian -> bt p <> " non esiste."
+  Dutch   -> bt p <> " bestaat niet."
+  _       -> bt p <> " does not exist."
 
 -----------------
 -- aura functions
@@ -578,7 +578,7 @@ install_4 = \case
 install_5 :: Language -> Doc AnsiStyle
 install_5 = \case
     Japanese   -> "従属パッケージを確認中・・・"
-    Αrabic     -> ".تحديد التبعيات"
+    Arabic     -> ".تحديد التبعيات"
     Polish     -> "Ustalanie zależności..."
     Croatian   -> "Određivanje zavisnosti..."
     Swedish    -> "Avgör beroenden..."
@@ -803,11 +803,11 @@ reportBadDowngradePkgs_1 = \case
 
 reportBadDowngradePkgs_2 :: PkgName -> Language -> Doc AnsiStyle
 reportBadDowngradePkgs_2 (PkgName p) = \case
-  Spanish     -> pretty p <+> "no tiene una versión en la caché."
-  Arabic      -> ".ليس  لديه اصدار في الذاكرة التخزين الموقت" <+> pretty p
-  Italian     -> pretty p <+> "non ha alcuna versione nella cache."
-  Dutch       -> pretty p <+> "heeft geen versie in de cache."
-  _ -> pretty p <+> "has no version in the cache."
+  Spanish -> pretty p <+> "no tiene una versión en la caché."
+  Arabic  -> ".ليس  لديه اصدار في الذاكرة التخزين الموقت" <+> pretty p
+  Italian -> pretty p <+> "non ha alcuna versione nella cache."
+  Dutch   -> pretty p <+> "heeft geen versie in de cache."
+  _       -> pretty p <+> "has no version in the cache."
 
 upgradeAURPkgs_1 :: Language -> Doc AnsiStyle
 upgradeAURPkgs_1 = \case
@@ -955,7 +955,7 @@ cleanStates_4 n = \case
 cleanStates_5 :: Text -> Language -> Doc AnsiStyle
 cleanStates_5 t = \case
   Japanese  -> "一番最近に保存されたのは：" <+> pretty t
-  Arabic    -> pretty t <+> ":احدث ما تم حفظه" 
+  Arabic    -> pretty t <+> ":احدث ما تم حفظه"
   Polish    -> "Ostatnio zapisane:" <+> pretty t
   Spanish   -> "Guardado recientemente:" <+> pretty t
   Russian   -> "Последнее сохраненное:" <+> pretty t
@@ -1271,10 +1271,10 @@ cleanCache_7 (bt . tshow -> ps) (bt . tshow -> bytes) = \case
 
 cleanCache_8 :: Word -> Language -> Doc AnsiStyle
 cleanCache_8 (bt . tshow -> bytes) = \case
-   Arabic      -> ".ميغابايت محررة " <> bytes
-   Polish      -> bytes <> " megabajtów zwolnionych."
-   Spanish     -> bytes <> " megabytes liberados."
-   _           -> bytes <> " megabytes freed."
+   Arabic  -> ".ميغابايت محررة " <> bytes
+   Polish  -> bytes <> " megabajtów zwolnionych."
+   Spanish -> bytes <> " megabytes liberados."
+   _       -> bytes <> " megabytes freed."
 
 cleanCache_9 :: Word -> Language -> Doc AnsiStyle
 cleanCache_9 (bt . tshow -> w) = \case
@@ -1376,19 +1376,19 @@ dependencyLookup_1 t = \case
 
 miscAURFailure_1 :: Language -> Doc AnsiStyle
 miscAURFailure_1 = \case
-  Polish    -> "Wystąpił nieznany błąd podczas próby łączenia z AUR."
-  Arabic    -> ".بطريقة غير معروفة AURفشل الاتصال بـ"
-  Spanish   -> "El contacto con el AUR falló de alguna manera desconocida."
-  Italian   -> "C'è stato un errore sconosciuto nel contattare l'AUR."
-  Dutch     -> "Contact opnemen met de AUR is op een onbekende manier mislukt."
-  _         -> "Contacting the AUR failed in some unknown way."
+  Polish  -> "Wystąpił nieznany błąd podczas próby łączenia z AUR."
+  Arabic  -> ".بطريقة غير معروفة AURفشل الاتصال بـ"
+  Spanish -> "El contacto con el AUR falló de alguna manera desconocida."
+  Italian -> "C'è stato un errore sconosciuto nel contattare l'AUR."
+  Dutch   -> "Contact opnemen met de AUR is op een onbekende manier mislukt."
+  _       -> "Contacting the AUR failed in some unknown way."
 
 miscAURFailure_3 :: Language -> Doc AnsiStyle
 miscAURFailure_3 = \case
-  Polish    -> "Plik JSON zwrócony z AUR nie mógł zostać rozszyfrowany."
-  Arabic    -> ".AURالذي تم ارجاعه من اﻟ JSONفشل فك شفرة اﻟ"
-  Spanish   -> "El JSON devuelto por el servidor AUR no se pudo decodificar."
-  _         -> "The JSON returned from the AUR server could not be decoded."
+  Polish  -> "Plik JSON zwrócony z AUR nie mógł zostać rozszyfrowany."
+  Arabic  -> ".AURالذي تم ارجاعه من اﻟ JSONفشل فك شفرة اﻟ"
+  Spanish -> "El JSON devuelto por el servidor AUR no se pudo decodificar."
+  _       -> "The JSON returned from the AUR server could not be decoded."
 
 infoFields :: Language -> [Text]
 infoFields = sequence [ Fields.repository
@@ -1617,17 +1617,17 @@ hotEdit_1 (bt . pnName -> p) = \case
 
 hotEdit_2 :: Language -> Doc AnsiStyle
 hotEdit_2 = \case
-  Polish    -> "Czy chcesz edytować plik .install?"
-  Arabic    -> "؟.installهل تريد تعديل ملف اﻟ"
-  Spanish   -> "¿Desea editar el archivo .install?"
-  _         -> "Would you like to edit the .install file?"
+  Polish  -> "Czy chcesz edytować plik .install?"
+  Arabic  -> "؟.installهل تريد تعديل ملف اﻟ"
+  Spanish -> "¿Desea editar el archivo .install?"
+  _       -> "Would you like to edit the .install file?"
 
 hotEdit_3 :: FilePath -> Language -> Doc AnsiStyle
 hotEdit_3 fp = \case
-  Polish    -> "Czy chcesz edytować " <> pretty fp <> "?"
-  Arabic    -> "؟" <> pretty fp <> " هل تريد التعديل"
-  Spanish   -> "¿Desea editar " <> pretty fp <> "?"
-  _         -> "Would you like to edit " <> pretty fp <> "?"
+  Polish  -> "Czy chcesz edytować " <> pretty fp <> "?"
+  Arabic  -> "؟" <> pretty fp <> " هل تريد التعديل"
+  Spanish -> "¿Desea editar " <> pretty fp <> "?"
+  _       -> "Would you like to edit " <> pretty fp <> "?"
 
 ------------------------------
 -- Pkgbuild Security functions
@@ -1679,12 +1679,12 @@ security_5 (PkgName p) = \case
 
 security_6 :: Language -> Doc AnsiStyle
 security_6 = \case
-  Polish    -> "Czy chcesz zakończyć proces budowania?"
-  Arabic    -> "هل تريد اقاف البناء؟"
-  Spanish   -> "¿Desea salir del proceso de compilación?"
-  Italian   -> "Terminare la compilazione?"
-  Dutch     -> "Wilt u het bouw process stoppen?"
-  _ -> "Do you wish to quit the build process?"
+  Polish  -> "Czy chcesz zakończyć proces budowania?"
+  Arabic  -> "هل تريد اقاف البناء؟"
+  Spanish -> "¿Desea salir del proceso de compilación?"
+  Italian -> "Terminare la compilazione?"
+  Dutch   -> "Wilt u het bouw process stoppen?"
+  _       -> "Do you wish to quit the build process?"
 
 security_7 :: Language -> Doc AnsiStyle
 security_7 = \case
@@ -1731,10 +1731,10 @@ security_11 = \case
 
 security_12 :: Language -> Doc AnsiStyle
 security_12 = \case
-  Polish    -> "Potencjalne luki w bezpieczeństwie wykryte w PKGBUILD"
-  Arabic    -> ".PKGBUILDاحتمال وجود ثغرات امنية في اﻟ"
-  Spanish   -> "Posibles vulnerabilidades de PKGBUILD detectadas."
-  _         -> "Potential PKGBUILD vulnerabilities detected."
+  Polish  -> "Potencjalne luki w bezpieczeństwie wykryte w PKGBUILD"
+  Arabic  -> ".PKGBUILDاحتمال وجود ثغرات امنية في اﻟ"
+  Spanish -> "Posibles vulnerabilidades de PKGBUILD detectadas."
+  _       -> "Potential PKGBUILD vulnerabilities detected."
 
 security_13 :: Word -> Language -> Doc AnsiStyle
 security_13 (bt -> w) = \case
@@ -1745,10 +1745,10 @@ security_13 (bt -> w) = \case
 
 security_14 :: Language -> Doc AnsiStyle
 security_14 = \case
-  Polish    -> "Nie wykryto żadnych luk w bezpieczeństwie."
-  Arabic    -> ".لا تم العثور على نقاط ضعف"
-  Spanish   -> "No se detectaron vulnerabilidades."
-  _         -> "No vulnerabilities detected."
+  Polish  -> "Nie wykryto żadnych luk w bezpieczeństwie."
+  Arabic  -> ".لا تم العثور على نقاط ضعف"
+  Spanish -> "No se detectaron vulnerabilidades."
+  _       -> "No vulnerabilities detected."
 
 -----------------------
 -- Aura/Utils functions

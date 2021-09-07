@@ -5,7 +5,7 @@
 # The Aura Package Manager
 
 | Build                                                              | Release                                                                                      | Downloads                                                               | Languages                                                                                                         |
-|--------------------------------------------------------------------|----------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | ![img](https://github.com/fosskers/aura/workflows/Tests/badge.svg) | [![img](https://img.shields.io/hackage/v/aura.svg)](http://hackage.haskell.org/package/aura) | ![img](https://img.shields.io/github/downloads/fosskers/aura/total.svg) | :uk: :jp: :croatia: :sweden: :de: :es: :portugal: :fr: :ru: :it: :serbia: :norway: :indonesia: :cn: :netherlands: |
 
 Welcome to the main repository for Aura, a secure, multilingual package manager for Arch Linux.
@@ -19,30 +19,31 @@ through [Github Sponsors](https://github.com/sponsors/fosskers) :octocat:. Your
 help goes a long way!
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
+
 **Table of Contents**
 
 - [Aura](#aura)
-    - [What is Aura?](#what-is-aura)
-    - [The Aura Philosophy](#the-aura-philosophy)
-        - [Aura is Pacman](#aura-is-pacman)
-        - [Arch is Arch - AUR is AUR](#arch-is-arch---aur-is-aur)
-        - [Secure Package Building](#secure-package-building)
-        - [Downgradibility](#downgradibility)
-        - [Arch Linux for Everyone](#arch-linux-for-everyone)
-        - [Haskell](#haskell)
-    - [Installation](#installation)
-        - [Prebuilt Binaries](#prebuilt-binaries)
-        - [Building from Source](#building-from-source)
-    - [Sample Usage](#sample-usage)
-        - [Installing Packages](#installing-packages)
-        - [Package Set Snapshots](#package-set-snapshots)
-        - [Downgrading via the Package Cache](#downgrading-via-the-package-cache)
-        - [Searching the Pacman Log](#searching-the-pacman-log)
-        - [Managing Orphan Packages](#managing-orphan-packages)
-        - [PKGBUILD Security Analysis](#pkgbuild-security-analysis)
-    - [Configuration](#configuration)
-    - [Localisation](#localisation)
-    - [Credits](#credits)
+  - [What is Aura?](#what-is-aura)
+  - [The Aura Philosophy](#the-aura-philosophy)
+    - [Aura is Pacman](#aura-is-pacman)
+    - [Arch is Arch - AUR is AUR](#arch-is-arch---aur-is-aur)
+    - [Secure Package Building](#secure-package-building)
+    - [Downgradibility](#downgradibility)
+    - [Arch Linux for Everyone](#arch-linux-for-everyone)
+    - [Haskell](#haskell)
+  - [Installation](#installation)
+    - [Prebuilt Binaries](#prebuilt-binaries)
+    - [Building from Source](#building-from-source)
+  - [Sample Usage](#sample-usage)
+    - [Installing Packages](#installing-packages)
+    - [Package Set Snapshots](#package-set-snapshots)
+    - [Downgrading via the Package Cache](#downgrading-via-the-package-cache)
+    - [Searching the Pacman Log](#searching-the-pacman-log)
+    - [Managing Orphan Packages](#managing-orphan-packages)
+    - [PKGBUILD Security Analysis](#pkgbuild-security-analysis)
+  - [Configuration](#configuration)
+  - [Localisation](#localisation)
+  - [Credits](#credits)
 - [The `aur` Haskell Library](#the-aur-haskell-library)
 - [The `aursec` Tool](#the-aursec-tool)
 
@@ -52,20 +53,20 @@ help goes a long way!
 
 ## What is Aura?
 
-Aura is a package manager for Arch Linux. Its original purpose is as an *AUR
-helper*, in that it automates the process of installing packages from the Arch
+Aura is a package manager for Arch Linux. Its original purpose is as an _AUR
+helper_, in that it automates the process of installing packages from the Arch
 User Repositories. It is, however, capable of much more.
 
 ## The Aura Philosophy
 
 ### Aura is Pacman
 
-Aura doesn't just mimic `pacman`; it *is* `pacman`. All `pacman` operations and
+Aura doesn't just mimic `pacman`; it _is_ `pacman`. All `pacman` operations and
 their sub-options are allowed. Some even hold special meaning in Aura as well.
 
 ### Arch is Arch - AUR is AUR
 
-`-S` yields pacman packages and *only* pacman packages. This agrees with the
+`-S` yields pacman packages and _only_ pacman packages. This agrees with the
 above. In Aura, the `-A` operation is introduced for obtaining AUR packages.
 `-A` comes with sub-options you're used to (`-u`, `-s`, `-i`, etc.).
 
@@ -142,19 +143,19 @@ Full usage information can be found in Aura's man page.
 ### Installing Packages
 
 | Command              | Function                                                                              |
-|----------------------|---------------------------------------------------------------------------------------|
+| -------------------- | ------------------------------------------------------------------------------------- |
 | `aura -A <package>`  | Install an AUR package.                                                               |
 | `aura -Au`           | Upgrade all installed AUR packages.                                                   |
 | `aura -Akuax`        | Author's favourite (upgrades, removes makedeps, shows PKGBUILD diffs, shows progress) |
 | `aura -Ai <package>` | Look up information on an AUR package.                                                |
 | `aura -As <regex>`   | Search the AUR via a regex.                                                           |
 | `aura -Ap <package>` | Display a package's PKGBUILD.                                                         |
-| `aura -Ad <package>` | List a package's dependencies.
+| `aura -Ad <package>` | List a package's dependencies.                                                        |
 
 ### Package Set Snapshots
 
 | Command        | Function                                                        |
-|----------------|-----------------------------------------------------------------|
+| -------------- | --------------------------------------------------------------- |
 | `aura -B`      | Store a JSON record of all installed packages.                  |
 | `aura -Br`     | Restore a saved record. Rolls back and uninstalls as necessary. |
 | `aura -Bc <n>` | Delete all but the most recent `n` saved states.                |
@@ -163,7 +164,7 @@ Full usage information can be found in Aura's man page.
 ### Downgrading via the Package Cache
 
 | Command             | Function                                                            |
-|---------------------|---------------------------------------------------------------------|
+| ------------------- | ------------------------------------------------------------------- |
 | `aura -C <package>` | Downgrade a package.                                                |
 | `aura -Cs <regex>`  | Search the package cache for files that match a regex.              |
 | `aura -Cc <n>`      | Delete all but the most recent `n` versions of each cached package. |
@@ -172,7 +173,7 @@ Full usage information can be found in Aura's man page.
 ### Searching the Pacman Log
 
 | Command              | Function                                         |
-|----------------------|--------------------------------------------------|
+| -------------------- | ------------------------------------------------ |
 | `aura -L`            | View the Pacman log.                             |
 | `aura -Li <package>` | View the install / upgrade history of a package. |
 | `aura -Ls <regex>`   | Search the Pacman log via a regex.               |
@@ -183,7 +184,7 @@ Orphan packages are those whose install reason is marked as "As Dependency", but
 are not actually depended upon by any installed package.
 
 | Command              | Function                                                     |
-|----------------------|--------------------------------------------------------------|
+| -------------------- | ------------------------------------------------------------ |
 | `aura -O`            | Display orphan packages.                                     |
 | `aura -Oa <package>` | Change a package's install reason to `Explicitly installed`. |
 | `aura -Oj`           | Uninstall all orphan packages.                               |
@@ -194,7 +195,7 @@ As mentioned above, the `-P` commands can help us detect bash usage that
 conflicts with the AUR guidelines, as well as outright exploits.
 
 | Command           | Function                                        |
-|-------------------|-------------------------------------------------|
+| ----------------- | ----------------------------------------------- |
 | `aura -P <stdin>` | Analyse a PKGBUILD piped from `-Ap`.            |
 | `aura -Pf <file>` | Analyse a PKGBUILD file.                        |
 | `aura -Pd <dir>`  | Analyse the PKGBUILD file found in a directory. |
@@ -223,11 +224,11 @@ Aura is sponsored by these wonderful people:
 [<img class="avatar avatar-user" src="https://avatars.githubusercontent.com/u/81332165?s=70&amp;v=4" alt="@tianip220" width="35" height="35">](https://github.com/tianip220)
 [<img class="avatar avatar-user" src="https://avatars.githubusercontent.com/u/5953670?s=70&amp;v=4" alt="@sidagrawal" width="35" height="35">](https://github.com/sidagrawal)
 
-
 Aura has been translated by these generous people:
 
 | Language   | Translators                                     |
-|------------|-------------------------------------------------|
+| ---------- | ----------------------------------------------- |
+| Arabic     | "Array in a Matrix"                             |
 | Chinese    | Kai Zhang                                       |
 | Croatian   | Denis Kasak and "stranac"                       |
 | Dutch      | Joris Blanken                                   |
@@ -245,7 +246,6 @@ Aura has been translated by these generous people:
 | Spanish    | Alejandro Gómez, Sergio Conde and Max Ferrer    |
 | Swedish    | Fredrik Haikarainen and Daniel Beecham          |
 | Turkish    | Cihan Alkan                                     |
-| Arabic     | "Array in a Matrix"                             |
 
 Aura's logo is thanks to the designer [Cristiano Vitorino](https://github.com/cristianovitorino).
 
