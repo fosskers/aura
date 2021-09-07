@@ -971,7 +971,7 @@ cleanStates_6 n = \case
   Spanish   -> pretty n <+> "de estos están anclados y no se eliminarán."
   Italian   -> pretty n <+> "di questi sono stati fissati, perciò non saranno rimossi."
   Dutch     -> pretty n <+> "hiervan zijn vastgezet, en worden niet verwijderd."
-  _         -> pretty n <+> "if these are pinned, and won't be removed."
+  _         -> pretty n <+> "of these are pinned, and won't be removed."
 
 readState_1 :: Language -> Doc AnsiStyle
 readState_1 = \case
