@@ -245,6 +245,7 @@ Aura has been translated by these generous people:
 | Spanish    | Alejandro Gómez, Sergio Conde and Max Ferrer    |
 | Swedish    | Fredrik Haikarainen and Daniel Beecham          |
 | Turkish    | Cihan Alkan                                     |
+| Arabic     | "Array in a Matrix"                             |
 
 Aura's logo is thanks to the designer [Cristiano Vitorino](https://github.com/cristianovitorino).
 
