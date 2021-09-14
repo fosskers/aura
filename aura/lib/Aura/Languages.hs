@@ -164,7 +164,7 @@ checkDBLock_1 = \case
     Swedish    -> "Paketdatabasen är låst. Klicka på enter när den är upplåst."
     Esperanto  -> "La datumbazo de pakaĵoj estas ŝlosita. Premu enen-klavo kiam la datumbazo estas malŝlosita por daŭrigi"
     Dutch      -> "De pakket databank is vergrendelt. Druk op enter wanneer het ontgrendelt is."
-    Ukrainian  -> "База даних пакетів заблокована. Натисніть Enter, коли вона розблокується, щоб продовжити"
+    Ukrainian  -> "База даних пакетів заблокована. Натисніть Enter, коли вона розблокується, щоб продовжити."
     _          -> "The package database is locked. Press enter when it's unlocked to continue."
 
 trueRoot_3 :: Language -> Doc AnsiStyle
@@ -182,7 +182,7 @@ trueRoot_3 = \case
     Swedish    -> "I makepkg v4.2 och uppåt är det inte tillåtet att bygga som root."
     Esperanto  -> "Depost makepkg v4.2, konstruanto ĉefuzante ne eblas."
     Dutch      -> "Vanaf makepkg v4.2 is het niet langer mogelijk om als root te bouwen."
-    Ukrainian  -> "З версії makepkg v4.2 збірка від імені root неможлива"
+    Ukrainian  -> "З версії makepkg v4.2 збірка від імені root неможлива."
     _          -> "As of makepkg v4.2, building as root is no longer possible."
 
 mustBeRoot_1 :: Language -> Doc AnsiStyle
@@ -423,7 +423,7 @@ getRealPkgConflicts_2 (bt . pnName -> p) = \case
   Chinese    -> p <> " 是一个被忽略的包！请查看你的 `pacman.conf` 文件。"
   Esperanto  -> p <> " estas malatenta pakaĵo! Vidu vian `pacman.conf` dosieron."
   Dutch      -> p <> " is een genegeerd pakket! Bekijk uw `pacman.conf` file."
-  Ukrainian  -> "Пакунок " <> p <> "буде проігноровано! Перевірте ваш файл `pacman.conf`."
+  Ukrainian  -> "Пакунок " <> p <> " буде проігноровано! Перевірте ваш файл `pacman.conf`."
   _          -> p <> " is an ignored package! See your `pacman.conf` file."
 
 missingPkg_2 :: [DepError] -> Language -> Doc AnsiStyle
@@ -441,7 +441,7 @@ depError l (NonExistant (PkgName s) (PkgName par)) = case l of
   Italian    -> "Non è stato possibile trovare la dipendenza " <> bt s <> "."
   Esperanto  -> "La dependeco " <> bt s <> " de " <> bt par <> " ne povis troviĝi."
   Dutch      -> "Het afhankelijkheid " <> bt s <> "kan niet worden gevonden."
-  Ukrainian  -> "Залежність " <> bt s <> "не було знайдено."
+  Ukrainian  -> "Залежність " <> bt s <> " не було знайдено."
   _          -> "The dependency " <> bt s <> " of " <> bt par <> " couldn't be found."
 depError l (BrokenProvides (PkgName pkg) (Provides (PkgName pro)) (PkgName n)) = case l of
   Arabic     -> "." <> bt pro <> " اللتي تقدم ," <> bt n <> " تحتاج" <> bt pkg <> " الرزمة"
@@ -470,7 +470,7 @@ missingPkg_4 pns = \case
   Spanish    -> vsep $ "Se detectaron los siguientes ciclos de dependencia:" : pns'
   Italian    -> vsep $ "Sono stati individuati i seguenti cicli di dipendenza:" : pns'
   Dutch      -> vsep $ "The volgende afhankelijkheidscycli zijn gedetecteerd:" : pns'
-  Ukrainian  -> vsep $ "Було помічено цикл залежностей: " : pns'
+  Ukrainian  -> vsep $ "Було помічено цикл залежностей:" : pns'
   _ -> vsep $ "The following dependency cycles were detected:" : pns'
   where
     pns' :: [Doc ann]
@@ -679,7 +679,7 @@ reportUnneededPackages_1 = \case
     Swedish    -> "Följande paket är redan installerade:"
     Esperanto  -> "La sekvaj pakaĵoj jam instaliĝas:"
     Dutch      -> "The volgende pakketten zijn al geinstalleerd:"
-    Ukrainian  -> "Наступні пакунки вже вспановлені:"
+    Ukrainian  -> "Наступні пакунки вже встановлені:"
     _          -> "The following packages are already installed:"
 
 reportPkgsToInstall_1 :: Language -> Doc AnsiStyle
@@ -1031,7 +1031,7 @@ readState_1 = \case
     Italian    -> "Non è stato possibile analizzare il file di stato. E' correttamente formattato in JSON?"
     Esperanto  -> "Tiu statdosiero paneis sintake analizi. Ĉu ĝi estas valida JSON?"
     Dutch      -> "Dat statusbestand kon niet worden geparseerd. Is het legale JSON?"
-    Ukrainian  -> "Стан не був розпізнаний правильно. Це точно коректний JSON"
+    Ukrainian  -> "Стан не був розпізнаний правильно. Це точно коректний JSON?"
     _          -> "That state file failed to parse. Is it legal JSON?"
 
 ----------------------------
@@ -1056,7 +1056,7 @@ getDowngradeChoice_1 (bt . pnName -> p) = \case
     Chinese    -> "你希望安装 " <> p <> " 的哪个版本？"
     Esperanto  -> "Kiu versio de " <> p <> " vi volas?"
     Dutch      -> "Welke versie van " <> p <> " wil je?"
-    Ukrainian  -> "Яку версію пакунку " <> p <> " вам потрібно?"
+    Ukrainian  -> "Яку версію пакунку " <> p <> " ви бажаєте?"
     _          -> "What version of " <> p <> " do you want?"
 
 backupCache_3 :: Language -> Doc AnsiStyle
@@ -1722,7 +1722,7 @@ security_1 (PkgName p) = \case
   Spanish   -> "El PKGBUILD de" <+> bt p <+> "era demasiado complejo de analizar - puede estar ofuscando código malicioso."
   Italian   -> "Il PKGBUILD di" <+> bt p <+> "è troppo complesso per essere analizzato - è possibile che stia offuscando codice malevolo."
   Dutch     -> "Het PKGBUILD-bestand van" <+> bt p <+> " was te complex om te parseren - het kan schadelijke code versluieren."
-  Ukrainian -> "PKGBUILD пакунку" <+> bt p <+> "був надто складним для аналізу - він може містити шкідливий код."
+  Ukrainian -> "PKGBUILD пакунку" <+> bt p <+> "був надто складним для аналізу - він може містити замаскований шкідливий код."
   _ -> "The PKGBUILD of" <+> bt p <+> "was too complex to parse - it may be obfuscating malicious code."
 
 security_2 :: Text -> Language -> Doc AnsiStyle
@@ -1773,7 +1773,7 @@ security_6 = \case
   Italian   -> "Terminare la compilazione?"
   Dutch     -> "Wilt u het bouw process stoppen?"
   Ukrainian -> "Бажаєте скасувати процес збірки?"
-  _       -> "Do you wish to quit the build process?"
+  _         -> "Do you wish to quit the build process?"
 
 security_7 :: Language -> Doc AnsiStyle
 security_7 = \case
@@ -1812,7 +1812,7 @@ security_10 (bt -> t) = \case
   Spanish   -> t <+> "implica que alguien estaba tratando de ser astuto con las variables para ocultar comandos maliciosos."
   Italian   -> t <+> "implica che qualcuno stava trafficando con le variabili per nascondere comandi malevoli."
   Dutch     -> t <+> "impliceert dat iemand slim probeerde om te gaan met variabelen om schadelijke opdrachten te verbergen."
-  Ukrainian -> t <+> "- мається на увазі, що хтось намагається обдурити змінними, щоб сховати небеспечні команди."
+  Ukrainian -> t <+> "означає, що хтось намагається обдурити змінними, щоб сховати небеспечні команди."
   _ -> t <+> "implies that someone was trying to be clever with variables to hide malicious commands."
 
 security_11 :: Language -> Doc AnsiStyle
