@@ -13,7 +13,7 @@ jobs:
       - name: Setup GHC
         uses: actions/setup-haskell@v1.1.4
         with:
-          ghc-version: "8.10.4"
+          ghc-version: "8.10.7"
           enable-stack: true
 
       - name: Clone project
