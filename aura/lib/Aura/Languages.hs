@@ -46,7 +46,7 @@ translators = M.fromList
     , (Norwegian,  "\"chinatsun\"")
     , (Indonesia,  "\"pak tua Greg\"")
     , (Chinese,    "Kai Zhang")
-    , (Japanese,   "Onoue Takuro")
+    , (Japanese,   "Onoue Takuro / Colin Woodbury")
     , (Esperanto,  "Zachary Matthews")
     , (Dutch,      "Joris Blanken")
     , (Turkish,    "Cihan Alkan")
@@ -995,7 +995,7 @@ cleanStates_4 n = \case
   Italian   -> "Al momento ci sono" <+> pretty n <+> "stati di pacchetti salvati."
   Esperanto -> "Vi havas " <+> pretty n <+> " konservajn statojn de pakaĵoj."
   Dutch     -> "U heeft momenteel" <+> pretty n <+> "opgeslagen pakketstatussen."
-  Ukrainian -> "Зараз ви маєте " <+> pretty n <+> " збережених станів пакунків." 
+  Ukrainian -> "Зараз ви маєте " <+> pretty n <+> " збережених станів пакунків."
   _         -> "You currently have " <+> pretty n <+> " saved package states."
 
 cleanStates_5 :: Text -> Language -> Doc AnsiStyle
@@ -1693,7 +1693,7 @@ hotEdit_1 (bt . pnName -> p) = \case
     Chinese    -> "你希望编辑 " <> p <> " 的 PKGBUILD 文件吗？"
     Esperanto  -> "Ĉu vi volas redakti la PKGBUILD de " <> p <> "?"
     Dutch      -> "Wilt u het PKGBUILD-bestand van " <> p <> " bewerken?"
-    Ukrainian  -> "Бажаєте відредагувати PKGBUILD для пакунку " <> p <> "?" 
+    Ukrainian  -> "Бажаєте відредагувати PKGBUILD для пакунку " <> p <> "?"
     _          -> "Would you like to edit the PKGBUILD of " <> p <> "?"
 
 hotEdit_2 :: Language -> Doc AnsiStyle
