@@ -1,5 +1,12 @@
 # Aura Changelog
 
+## 3.2.6 (2021-09-17)
+
+#### Added
+
+- Arabic translations thanks to "Array in the Matrix". شكرًا لك!
+- Ukranian translations thanks to Andriy Cherniy. Дякую!
+
 ## 3.2.5
 
 #### Changed
