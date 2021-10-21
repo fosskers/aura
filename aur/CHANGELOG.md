@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.0.7 (2021-10-21)
+
+#### Changed
+
+- Support for `aeson-2`
+
 ## 7.0.6 (2021-02-26)
 
 #### Fixed
