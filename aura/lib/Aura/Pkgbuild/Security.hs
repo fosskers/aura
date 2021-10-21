@@ -3,7 +3,7 @@
 
 -- |
 -- Module    : Aura.Pkgbuild.Security
--- Copyright : (c) Colin Woodbury, 2012 - 2020
+-- Copyright : (c) Colin Woodbury, 2012 - 2021
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --

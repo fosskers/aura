@@ -13,7 +13,7 @@ category:           Linux
 homepage:           https://github.com/fosskers/aura
 author:             Colin Woodbury
 maintainer:         colin@fosskers.ca
-copyright:          2014 - 2020 Colin Woodbury
+copyright:          2014 - 2021 Colin Woodbury
 license:            GPL-3.0-only
 license-file:       LICENSE
 build-type:         Simple
