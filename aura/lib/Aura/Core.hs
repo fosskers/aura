@@ -40,8 +40,8 @@ import           Aura.Shell
 import           Aura.Types
 import           Aura.Utils
 import           Control.Monad.Trans.Maybe
-import           Data.Text.Prettyprint.Doc
-import           Data.Text.Prettyprint.Doc.Render.Terminal
+import           Prettyprinter
+import           Prettyprinter.Render.Terminal
 import           RIO hiding ((<>))
 import qualified RIO.ByteString as B
 import           RIO.Directory (doesFileExist)

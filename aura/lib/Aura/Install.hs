@@ -31,8 +31,8 @@ import           Aura.Settings
 import           Aura.Types
 import           Aura.Utils
 import           Control.Scheduler (Comp(..), traverseConcurrently)
-import           Data.Text.Prettyprint.Doc
-import           Data.Text.Prettyprint.Doc.Render.Terminal
+import           Prettyprinter
+import           Prettyprinter.Render.Terminal
 import           RIO
 import           RIO.Directory (setCurrentDirectory)
 import           RIO.FilePath (takeFileName)

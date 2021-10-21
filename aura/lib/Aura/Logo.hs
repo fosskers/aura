@@ -14,7 +14,7 @@ import           Aura.Languages (translatorMsg)
 import           Aura.Pacman (verMsgPad)
 import           Aura.Settings
 import           Aura.Shell
-import           Data.Text.Prettyprint.Doc
+import           Prettyprinter
 import           RIO
 import qualified RIO.Text as T
 

@@ -12,8 +12,8 @@ import           Aura.Colour
 import           Aura.Languages (whitespace, yesNoMessage, yesPattern)
 import           Aura.Settings
 import           Aura.Types (FailMsg(..), Failure(..), Language)
-import           Data.Text.Prettyprint.Doc
-import           Data.Text.Prettyprint.Doc.Render.Terminal
+import           Prettyprinter
+import           Prettyprinter.Render.Terminal
 import           RIO
 import qualified RIO.ByteString as B
 import qualified RIO.ByteString.Lazy as BL

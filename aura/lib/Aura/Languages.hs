@@ -20,8 +20,8 @@ import           Aura.Colour
 import qualified Aura.Languages.Fields as Fields
 import           Aura.Types
 import           Data.Ratio ((%))
-import           Data.Text.Prettyprint.Doc
-import           Data.Text.Prettyprint.Doc.Render.Terminal
+import           Prettyprinter
+import           Prettyprinter.Render.Terminal
 import           RIO
 import qualified RIO.List as L
 import qualified RIO.Map as M

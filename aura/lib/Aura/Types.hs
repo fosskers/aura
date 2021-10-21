@@ -43,9 +43,9 @@ module Aura.Types
 
 import           Aura.Utils
 import           Data.Aeson (FromJSONKey, ToJSONKey)
-import           Data.Text.Prettyprint.Doc hiding (list, space)
-import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions hiding (Traversal')
+import           Prettyprinter hiding (list, space)
+import           Prettyprinter.Render.Terminal
 import           RIO hiding (try)
 import           RIO.FilePath
 import qualified RIO.Text as T

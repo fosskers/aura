@@ -19,7 +19,7 @@ import           Aura.Languages
 import           Aura.Settings
 import           Aura.Types (PkgName(..))
 import           Aura.Utils
-import           Data.Text.Prettyprint.Doc
+import           Prettyprinter
 import           RIO
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Text as T
