@@ -3,7 +3,35 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: aeson-2.0.1.0@sha256:ee0847af4d1fb9ece3f24f443d8d8406431c32688a57880314ac36617da937eb,6229
+    pantry-tree:
+      size: 37910
+      sha256: e7a9eec09f1ea56548b07c7e82b53bf32a974827ffc402d852c667b5f5d89efd
+  original:
+    hackage: aeson-2.0.1.0
+- completed:
+    hackage: semialign-1.2@sha256:d3e7e3a5fe509f30bf2121d94c54b586217f2dc69a47ffede3633ddbc12cba68,2743
+    pantry-tree:
+      size: 537
+      sha256: 2a3ecc941fdf106385744f78ceae80fa0e7e8adb28042b2a9aaa468687ef9099
+  original:
+    hackage: semialign-1.2
+- completed:
+    hackage: time-compat-1.9.6.1@sha256:cddf1a7654ccc3564d2197e6bf0064254abf792c591a9fa0eaa16e6039036152,4997
+    pantry-tree:
+      size: 4113
+      sha256: f6fc2364a5a2d03c67645d8292cab619922fcfb37003e8e0a636987c593d19bf
+  original:
+    hackage: time-compat-1.9.6.1
+- completed:
+    hackage: hashable-1.3.4.1@sha256:838e92f704bfdafc33246ac5deb8d71e79a21a4c57079b2d0b9a6a5e7e48f480,4193
+    pantry-tree:
+      size: 1248
+      sha256: ca20fbdee2294a57da972e3e7961d884b85e454c77dd5fc2b90c239cefca316e
+  original:
+    hackage: hashable-1.3.4.1
 snapshots:
 - completed:
     size: 586268
