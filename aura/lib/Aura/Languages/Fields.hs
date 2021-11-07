@@ -101,7 +101,7 @@ recentActions = \case
     Romanian   -> "Acțiuni Recente"
     _          -> "Recent Actions"
 
-repository :: Language -> TRxt
+repository :: Language -> Text
 repository = \case
     Japanese   -> "リポジトリ"
     Polish     -> "Repozytorium"
@@ -218,7 +218,7 @@ projectUrl = \case
     Indonesia  -> "URL Proyek"
     Esperanto  -> "URL de Projekto"
     Dutch      -> "Project URL"
-    Romanian   -> "URL de proiect"
+    Romanian   -> "URL al proiectului"
     _          -> "Project URL"
 
 aurUrl :: Language -> Text

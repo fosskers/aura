@@ -52,7 +52,7 @@ translators = M.fromList
     , (Turkish,    "Cihan Alkan")
     , (Arabic,     "\"Array in a Matrix\"")
     , (Ukrainian,  "Andriy Cherniy")
-    , (Romanian,   "90")
+    , (Romanian,   "90", "benone")
     ]
 
 -- These need updating! Or removing...
@@ -188,7 +188,7 @@ trueRoot_3 = \case
     Esperanto  -> "Depost makepkg v4.2, konstruanto ĉefuzante ne eblas."
     Dutch      -> "Vanaf makepkg v4.2 is het niet langer mogelijk om als root te bouwen."
     Ukrainian  -> "З версії makepkg v4.2 збірка від імені root неможлива."
-    Romanian   -> "De makepkg v4.2, compilarea ca root nu mai este posibilă."
+    Romanian   -> "De la versiunea makepkg v4.2 încolo, compilarea ca root nu mai este posibilă."
     _          -> "As of makepkg v4.2, building as root is no longer possible."
 
 mustBeRoot_1 :: Language -> Doc AnsiStyle
@@ -258,7 +258,7 @@ buildPackages_3 fp = \case
     Turkish    -> "Tüm .src.tar.gz dosyaları oluşturuldu ve şuraya kopyalandı: " <> pretty fp
     Spanish    -> "Todos los archivos .src.tar.gz fueron construidos y copiados a: " <> pretty fp
     Ukrainian  -> "Всі архіви .src.tar.gz були зібрані та скопійовані до: " <> pretty fp
-    Romanian   -> "Toate fișele .src.tar.gz sunt construite și copiate către: " <> pretty fp
+    Romanian   -> "Toate fișierele .src.tar.gz au fost construite și copiate către: " <> pretty fp
     _          -> "All .src.tar.gz files were built and copied to: " <> pretty fp
 
 buildPackages_4 :: Language -> Doc AnsiStyle
@@ -361,7 +361,7 @@ buildFail_9 = \case
   Esperanto -> "Paneis detekti ĉiujn dosierojn de pakaĵoj (*.pkg.tar.xz)."
   Dutch     -> "Detecteren van built package files mislukt (*.pkg.tar.xz)."
   Ukrainian -> "Не вдалось знайти жодного файлу пакунку (*.pkg.tar.xz)."
-  Romanian  -> "Nu s-a detectat nici un pachet construit (*.pkg.tax.xz)."
+  Romanian  -> "Nu s-a detectat nici un pachet construit (*.pkg.tar.xz)."
   _         -> "Failed to detect any built package files (*.pkg.tar.xz)."
 
 buildFail_10 :: Language -> Doc AnsiStyle
@@ -422,7 +422,7 @@ getRealPkgConflicts_1 (bt . pnName -> prnt) (bt . pnName -> p) (bt -> r) (bt -> 
     Esperanto  -> "La pakaĵo, " <> prnt <> ", dependas de versio " <> d <> " de " <> p <> ", sed la plej nova versio estas " <> r <> "."
     Dutch      -> "Het pakket " <> prnt <> ", hangt af van versie " <> d <> " van " <> p <> ", maar de meest recente versie is " <> r <> "."
     Ukrainian  -> "Залежність " <> p <> " потребує версію " <> d <> ", проте останньою версією є " <> r <> "."
-    Romanian   -> "Pachetul " <> prnt <> " depinde de versiunea " <> d <> " al pachetului " <> p <> ", dar cea mai nouă versiune este " <> r <> "."
+    Romanian   -> "Pachetul " <> prnt <> " depinde de versiunea " <> d <> " al pachetului " <> p <> ", dar cea mai recentă versiune este " <> r <> "."
     _          -> "The package " <> prnt <> " depends on version " <> d <> " of " <> p <> ", but the most recent version is " <> r <> "."
 
 getRealPkgConflicts_2 :: PkgName -> Language -> Doc AnsiStyle
@@ -445,7 +445,7 @@ getRealPkgConflicts_2 (bt . pnName -> p) = \case
   Esperanto  -> p <> " estas malatenta pakaĵo! Vidu vian `pacman.conf` dosieron."
   Dutch      -> p <> " is een genegeerd pakket! Bekijk uw `pacman.conf` file."
   Ukrainian  -> "Пакунок " <> p <> " буде проігноровано! Перевірте ваш файл `pacman.conf`."
-  Romanian   -> "Pachetul " <> p <> " este ignorat! Verificați fișa `pacman.conf`."
+  Romanian   -> "Pachetul " <> p <> " este ignorat! Verificați fișierul `pacman.conf`."
   _          -> p <> " is an ignored package! See your `pacman.conf` file."
 
 missingPkg_2 :: [DepError] -> Language -> Doc AnsiStyle
@@ -473,7 +473,7 @@ depError l (BrokenProvides (PkgName pkg) (Provides (PkgName pro)) (PkgName n)) =
   Italian    -> "Il pacchetto " <> bt pkg <> " ha bisogno di " <> bt n <> ", che rende disponibile " <> bt pro <> "."
   Dutch      -> "Het pakket" <> bt pkg <> " heeft " <> bt n <> " nodig, die " <> bt pro <> " biedt."
   Ukrainian  -> "Пакунку " <> bt pkg <> " потрібен " <> bt n <> ", який забезпечує " <> bt pro <> "."
-  Romanian   -> "Pachetul " <> bt pkg <> " are nevoie de " <> bt n <> ", care prevede " <> bt pro <> "."
+  Romanian   -> "Pachetul " <> bt pkg <> " are nevoie de " <> bt n <> ", care provizionează " <> bt pro <> "."
   _          -> "The package " <> bt pkg <> " needs " <> bt n <> ", which provides " <> bt pro <> "."
 
 missingPkg_3 :: Language -> Doc AnsiStyle
@@ -495,7 +495,7 @@ missingPkg_4 pns = \case
   Italian    -> vsep $ "Sono stati individuati i seguenti cicli di dipendenza:" : pns'
   Dutch      -> vsep $ "The volgende afhankelijkheidscycli zijn gedetecteerd:" : pns'
   Ukrainian  -> vsep $ "Було помічено цикл залежностей:" : pns'
-  Romanian   -> vsep $ "Aceste cicluri de dependențe a fost detectate:" : pns'
+  Romanian   -> vsep $ "Aceste cicluri de dependență a fost detectate:" : pns'
   _ -> vsep $ "The following dependency cycles were detected:" : pns'
   where
     pns' :: [Doc ann]
@@ -561,7 +561,7 @@ auraCheck_1 = \case
     Esperanto  -> "Ĝisdatigo de Aura estas disponebla. Ĉu ĝisdatigas ĝin?"
     Dutch      -> "Aura update beschikbaar. Eerst updaten?"
     Ukrainian  -> "Доступно оновлення для Aura. Бажаєте оновити її першою?"
-    Romanian   -> "O versiune nouă există pentru Aura. Să se actualizeze înainte de toate?"
+    Romanian   -> "O versiune nouă de Aura este disponibilă. Să se actualizeze înainte de toate?"
     _          -> "Aura update available. Update it first?"
 
 install_2 :: Language -> Doc AnsiStyle
@@ -631,7 +631,7 @@ install_4 = \case
     Esperanto  -> "Instalon ĉesigi permane"
     Dutch      -> "Installatie handmatig afgebroken."
     Ukrainian  -> "Встановлення скасовано користувачем."
-    Romanian   -> "Instalare anulată manual."
+    Romanian   -> "Instalarea anulată manual."
     _          -> "Installation manually aborted."
 
 install_5 :: Language -> Doc AnsiStyle
@@ -854,7 +854,7 @@ reportPkgsToUpgrade_1 = \case
     Esperanto  -> "Pakaĵoj de AUR ĝisdatigi:"
     Dutch      -> "AUR-Pakketten om te upgraden:"
     Ukrainian  -> "Пакунки AUR, готові для оновлення:"
-    Romanian   -> "Pachete AUR de actualizat:"
+    Romanian   -> "Pachete din AUR de actualizat:"
     _          -> "AUR Packages to upgrade:"
 
 -- NEEDS UPDATING
@@ -878,7 +878,7 @@ reportBadDowngradePkgs_1 = \case
     Esperanto  -> "La sekvaj pakaĵoj havas ne kaŝmemorigitajn versiojn, do ĝi ne povas malpromociigi:"
     Dutch      -> "De volgende pakketten hebben geen versie in de cache, en kunnen dus niet gedowngrade worden."
     Ukrainian  -> "Наступних пакунків немає в кеші. Отже, вони не можуть відкотитися до старої версії:"
-    Romanian   -> "Acestea nu au nici o versiune disponibilă în cache, astfel nu pot fi retrogradate:"
+    Romanian   -> "Aceste pachete nu au nici o versiune disponibilă în cache, așa că nu pot fi retrogradate:"
     _          -> "The following have no versions in the cache, and thus can’t be downgraded:"
 
 reportBadDowngradePkgs_2 :: PkgName -> Language -> Doc AnsiStyle
@@ -957,7 +957,7 @@ upgradeAURPkgs_3 = \case
     Esperanto  -> "Ne ĝisdatigoj de pakaĵoj de AUR necesas."
     Dutch      -> "Geen AUR-pakket upgrades vereist."
     Ukrainian  -> "Пакунки AUR не потребують оновлення."
-    Romanian   -> "Nu e nevoie să se actualizeze oricare pachet din AUR."
+    Romanian   -> "Nu e nevoie să se actualizeze nici un pachet din AUR."
     _          -> "No AUR package upgrades necessary."
 
 removeMakeDepsAfter_1 :: Language -> Doc AnsiStyle
@@ -1084,7 +1084,7 @@ readState_1 = \case
     Esperanto  -> "Tiu statdosiero paneis sintake analizi. Ĉu ĝi estas valida JSON?"
     Dutch      -> "Dat statusbestand kon niet worden geparseerd. Is het legale JSON?"
     Ukrainian  -> "Стан не був розпізнаний правильно. Це точно коректний JSON?"
-    Romanian   -> "Acea fișă de stare nu se putea analiza. Este o fișă JSON valabilă?"
+    Romanian   -> "Acel fișier de stare nu se putea analiza. Este un fișier JSON valabil?"
     _          -> "That state file failed to parse. Is it legal JSON?"
 
 ----------------------------
@@ -1110,7 +1110,7 @@ getDowngradeChoice_1 (bt . pnName -> p) = \case
     Esperanto  -> "Kiu versio de " <> p <> " vi volas?"
     Dutch      -> "Welke versie van " <> p <> " wil je?"
     Ukrainian  -> "Яку версію пакунку " <> p <> " ви бажаєте?"
-    Romanian   -> "Care versiune al pachetului " <> p <> " doriți?"
+    Romanian   -> "Care versiune al pachetului " <> p <> " o doriți?"
     _          -> "What version of " <> p <> " do you want?"
 
 backupCache_3 :: Language -> Doc AnsiStyle
@@ -1179,7 +1179,7 @@ backupCache_5 (bt . tshow -> n) = \case
     Esperanto  -> "La dosierojn de la pakaĵoj enarkivigi: " <> n
     Dutch      -> "Pakketbestanden om te back-uppen: " <> n
     Ukrainian  -> "Файли пакунку для резервної копії: " <> n
-    Romanian   -> "Fișe de pachete de copiat de rezervă: " <> n
+    Romanian   -> "Fișiere de pachet pentru copiare de rezervă: " <> n
     _          -> "Package files to backup: " <> n
 
 backupCache_6 :: Language -> Doc AnsiStyle
@@ -1318,7 +1318,7 @@ cleanCache_3 n@(bt . tshow -> s) = \case
     Esperanto  -> s <> " de ĉiu dosiero de pakaĵo teniĝos."
     Dutch      -> s <> " van elk pakketbestand wordt bewaard."
     Ukrainian  -> s <> " версія кожного пакунку залишиться недоторканою."
-    Romanian   -> s <> " din fiecare fișă de pachet vor fi păstrate."
+    Romanian   -> s <> " din fiecare fișier de pachet vor fi păstrate."
     _          -> s <> " of each package file will be kept."
 
 cleanCache_4 :: Language -> Doc AnsiStyle
@@ -1433,7 +1433,7 @@ cleanNotSaved_1 = \case
     Esperanto  -> "Decidas nebezonajn dosierojn de pakaĵoj..."
     Dutch      -> "Overbodige pakketbestanden aan het vaststellen..."
     Ukrainian  -> "Визначачення непотрібних пакунків..."
-    Romanian   -> "Se determin fișe de pachet inutile..."
+    Romanian   -> "Se determin fișiere de pachet inutile..."
     _          -> "Determining unneeded package files..."
 
 -- NEEDS TRANSLATION
@@ -1456,7 +1456,7 @@ cleanNotSaved_2 n@(cyan . pretty -> s) = \case
     Esperanto  -> s <> " nebezonajn dosierojn de pakaĵoj trovis. Ĉu forigi"
     Dutch      -> s <> " overbodige pakketbestanden gevonden. Verwijderen?"
     Ukrainian  -> "Знайдено " <> s <> " непотрібних пакунків. Видалити?"
-    Romanian   -> "S-au găsit " <> s <> " fișe de pachet inutile. Ștergeți?"
+    Romanian   -> "S-au găsit " <> s <> " fișiere de pachet inutile. Ștergeți?"
     _          -> s <> " unneeded package files found. Delete?"
 
 ----------------------------
@@ -1744,7 +1744,7 @@ confParsing_1 = \case
     Esperanto  -> "Ne kapablas sintaske analizi vian dosieron, pacman.conf."
     Dutch      -> "Niet in staat om uw pacman.conf bestand te parseren."
     Ukrainian  -> "Не вдалось зрозуміти вміст файлу pacman.conf."
-    Romanian   -> "Nu se poate analiza fișa pacman.conf."
+    Romanian   -> "Nu se poate analiza fișierul pacman.conf."
     _          -> "Unable to parse your pacman.conf file."
 
 provides_1 :: PkgName -> Language -> Doc AnsiStyle
@@ -1781,7 +1781,7 @@ hotEdit_1 (bt . pnName -> p) = \case
     Esperanto  -> "Ĉu vi volas redakti la PKGBUILD de " <> p <> "?"
     Dutch      -> "Wilt u het PKGBUILD-bestand van " <> p <> " bewerken?"
     Ukrainian  -> "Бажаєте відредагувати PKGBUILD для пакунку " <> p <> "?"
-    Romanian   -> "Doriți să modificați fișa PKGBUILD al pachetului " <> p <> "?"
+    Romanian   -> "Doriți să modificați PKGBUILD-ul pachetului " <> p <> "?"
     _          -> "Would you like to edit the PKGBUILD of " <> p <> "?"
 
 hotEdit_2 :: Language -> Doc AnsiStyle
@@ -1790,7 +1790,7 @@ hotEdit_2 = \case
   Arabic    -> "؟.installهل تريد تعديل ملف اﻟ"
   Spanish   -> "¿Desea editar el archivo .install?"
   Ukrainian -> "Бажаєте відредагувати файл .intall?"
-  Romanian  -> "Doriți să modificați fișa .install?"
+  Romanian  -> "Doriți să modificați fișierul .install?"
   _         -> "Would you like to edit the .install file?"
 
 hotEdit_3 :: FilePath -> Language -> Doc AnsiStyle
