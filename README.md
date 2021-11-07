@@ -248,6 +248,7 @@ Aura has been translated by these generous people:
 | Swedish    | Fredrik Haikarainen and Daniel Beecham          |
 | Turkish    | Cihan Alkan                                     |
 | Ukrainian  | Andriy Cherniy                                  |
+| Romanian   | "90", "benone"                                  |
 
 Aura's logo is thanks to the designer [Cristiano Vitorino](https://github.com/cristianovitorino).
 
