@@ -1,5 +1,11 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Added
+
+- Romanian translations thanks to "90" and "benone". Mulțumesc!
+
 ## 3.2.6 (2021-09-17)
 
 #### Added
