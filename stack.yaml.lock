@@ -5,36 +5,50 @@
 
 packages:
 - completed:
-    hackage: aeson-2.0.1.0@sha256:ee0847af4d1fb9ece3f24f443d8d8406431c32688a57880314ac36617da937eb,6229
+    hackage: aeson-2.0.2.0@sha256:5720fffb7289366029f2b7940e9f8b22a1b4c282f0cef4710685b1d14d76bdc7,6327
     pantry-tree:
       size: 37910
-      sha256: e7a9eec09f1ea56548b07c7e82b53bf32a974827ffc402d852c667b5f5d89efd
+      sha256: 6de8e70acd5ed455ac33d7496e8dbf994067f1f845dd420e7256623b2a8dee8b
   original:
-    hackage: aeson-2.0.1.0
+    hackage: aeson-2.0.2.0
 - completed:
-    hackage: semialign-1.2@sha256:d3e7e3a5fe509f30bf2121d94c54b586217f2dc69a47ffede3633ddbc12cba68,2743
+    hackage: OneTuple-0.3.1@sha256:a848c096c9d29e82ffdd30a9998aa2931cbccb3a1bc137539d80f6174d31603e,2262
     pantry-tree:
-      size: 537
-      sha256: 2a3ecc941fdf106385744f78ceae80fa0e7e8adb28042b2a9aaa468687ef9099
+      size: 506
+      sha256: a685b08622f1fe0641e4f228a290878a1db4f7ef3eb63d00b10e8632097d1e6f
   original:
-    hackage: semialign-1.2
+    hackage: OneTuple-0.3.1
 - completed:
-    hackage: time-compat-1.9.6.1@sha256:cddf1a7654ccc3564d2197e6bf0064254abf792c591a9fa0eaa16e6039036152,4997
-    pantry-tree:
-      size: 4113
-      sha256: f6fc2364a5a2d03c67645d8292cab619922fcfb37003e8e0a636987c593d19bf
-  original:
-    hackage: time-compat-1.9.6.1
-- completed:
-    hackage: hashable-1.3.4.1@sha256:838e92f704bfdafc33246ac5deb8d71e79a21a4c57079b2d0b9a6a5e7e48f480,4193
+    hackage: hashable-1.4.0.1@sha256:0251ad5228be07909a385152a3ff634fac1f892611f89904aea5c5e7af411e5d,4790
     pantry-tree:
       size: 1248
-      sha256: ca20fbdee2294a57da972e3e7961d884b85e454c77dd5fc2b90c239cefca316e
+      sha256: abd289fe989e99d3b40a27e68f727cf6c6ba192906b436ab0c69850c26d1876f
   original:
-    hackage: hashable-1.3.4.1
+    hackage: hashable-1.4.0.1
+- completed:
+    hackage: semialign-1.2.0.1@sha256:0e179b4d3a8eff79001d374d6c91917c6221696b9620f0a4d86852fc6a9b9501,2836
+    pantry-tree:
+      size: 537
+      sha256: 635bbbb517f0c063a4bc2e9e6efdb0e598b9d9fd467f52df81ab3a4af1fd923b
+  original:
+    hackage: semialign-1.2.0.1
+- completed:
+    hackage: text-short-0.1.4@sha256:2c4789148650fdd624b7f7cabfd28b12e4130f1905eb6e3650d4d56d7db42f23,3575
+    pantry-tree:
+      size: 727
+      sha256: 6165735a26a99b116b0a51c86ab8a36db85acaef9892d2ce9e16d986bd7dc5ba
+  original:
+    hackage: text-short-0.1.4
+- completed:
+    hackage: time-compat-1.9.6.1@sha256:42d8f2e08e965e1718917d54ad69e1d06bd4b87d66c41dc7410f59313dba4ed1,5033
+    pantry-tree:
+      size: 4113
+      sha256: b262c5ae8d72d2073d12e1de1863abd234fad8c138df28f32bb51bc232ced608
+  original:
+    hackage: time-compat-1.9.6.1
 snapshots:
 - completed:
-    size: 586268
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/13.yaml
-    sha256: d9e658a22cfe8d87a64fdf219885f942fef5fe2bcb156a9800174911c5da2443
-  original: lts-18.13
+    size: 586296
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/18.yaml
+    sha256: 63539429076b7ebbab6daa7656cfb079393bf644971156dc349d7c0453694ac2
+  original: lts-18.18
