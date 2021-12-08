@@ -11,16 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup GHC
-        uses: actions/setup-haskell@v1.1.4
+        uses: haskell/actions/setup@v1
         with:
           ghc-version: "8.10.7"
           enable-stack: true
+          stack-version: "latest"
 
       - name: Clone project
         uses: actions/checkout@v2.4.0
 
       - name: Cache dependencies
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         with:
           path: ~/.stack
           key: ${{ runner.os }}-stack-${{ hashFiles('stack.yaml') }}
