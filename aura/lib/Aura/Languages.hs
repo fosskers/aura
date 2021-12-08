@@ -52,7 +52,7 @@ translators = M.fromList
     , (Turkish,    "Cihan Alkan")
     , (Arabic,     "\"Array in a Matrix\"")
     , (Ukrainian,  "Andriy Cherniy")
-    , (Romanian,   "90", "benone")
+    , (Romanian,   "90 / benone")
     ]
 
 -- These need updating! Or removing...
@@ -1410,8 +1410,8 @@ cleanCache_8 (bt . tshow -> bytes) = \case
 
 cleanCache_9 :: Word -> Language -> Doc AnsiStyle
 cleanCache_9 (bt . tshow -> w) = \case
-    Romanian  -> w <> " versiuni din fiecare pachet instalat vor fi păstrate."
-    _         -> w <> " versions of each installed package will be kept."
+    Romanian -> w <> " versiuni din fiecare pachet instalat vor fi păstrate."
+    _        -> w <> " versions of each installed package will be kept."
 
 -- NEEDS TRANSLATION
 cleanNotSaved_1 :: Language -> Doc AnsiStyle
