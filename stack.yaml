@@ -1,4 +1,4 @@
-resolver: lts-18.18
+resolver: lts-18.19
 
 ghc-options:
   $everything: -split-sections -haddock
@@ -19,8 +19,9 @@ packages:
   - aursec/
 
 extra-deps:
-  - aeson-2.0.2.0
   - OneTuple-0.3.1
+  - aeson-2.0.2.0
+  - algebraic-graphs-0.6
   - hashable-1.4.0.1
   - semialign-1.2.0.1
   - text-short-0.1.4

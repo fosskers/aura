@@ -5,13 +5,6 @@
 
 packages:
 - completed:
-    hackage: aeson-2.0.2.0@sha256:5720fffb7289366029f2b7940e9f8b22a1b4c282f0cef4710685b1d14d76bdc7,6327
-    pantry-tree:
-      size: 37910
-      sha256: 6de8e70acd5ed455ac33d7496e8dbf994067f1f845dd420e7256623b2a8dee8b
-  original:
-    hackage: aeson-2.0.2.0
-- completed:
     hackage: OneTuple-0.3.1@sha256:a848c096c9d29e82ffdd30a9998aa2931cbccb3a1bc137539d80f6174d31603e,2262
     pantry-tree:
       size: 506
@@ -19,10 +12,24 @@ packages:
   original:
     hackage: OneTuple-0.3.1
 - completed:
-    hackage: hashable-1.4.0.1@sha256:0251ad5228be07909a385152a3ff634fac1f892611f89904aea5c5e7af411e5d,4790
+    hackage: aeson-2.0.2.0@sha256:bb41f39762d6f755431097ce0fa88d817108036e7f1c1ec06fd5990230860c76,6343
+    pantry-tree:
+      size: 37910
+      sha256: 5303edc2f9516c7999c21fbfb218ad180dd91c2ceea570f8bc54818ea9ec1692
+  original:
+    hackage: aeson-2.0.2.0
+- completed:
+    hackage: algebraic-graphs-0.6@sha256:9b05e54b351a5141bc8fe46c095095627c34defc8375aa531a4753091a81f138,8755
+    pantry-tree:
+      size: 4201
+      sha256: 1d22c40b256485ae3ca4ba23606bba2ef0d1b5fd759f9dcdf0e501b0c83f1959
+  original:
+    hackage: algebraic-graphs-0.6
+- completed:
+    hackage: hashable-1.4.0.1@sha256:c35c9c1adc33bcfa31359e33e4c3db98305406eaa460f0e04d628f2a1de19be5,4804
     pantry-tree:
       size: 1248
-      sha256: abd289fe989e99d3b40a27e68f727cf6c6ba192906b436ab0c69850c26d1876f
+      sha256: a1e0d12da785b0c52b8cd755c4aceb75a955ed6d9f3e7c9401aa08c9b2c8032c
   original:
     hackage: hashable-1.4.0.1
 - completed:
@@ -48,7 +55,7 @@ packages:
     hackage: time-compat-1.9.6.1
 snapshots:
 - completed:
-    size: 586296
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/18.yaml
-    sha256: 63539429076b7ebbab6daa7656cfb079393bf644971156dc349d7c0453694ac2
-  original: lts-18.18
+    size: 586103
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/19.yaml
+    sha256: 32716534fff554b7f90762130fdb985cabf29f157758934dd1c8f3892a646430
+  original: lts-18.19

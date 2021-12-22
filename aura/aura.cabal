@@ -89,7 +89,7 @@ library
     Aura.Utils
 
   build-depends:
-    , algebraic-graphs  >=0.1 && <0.6
+    , algebraic-graphs  >=0.1 && <0.7
     , filepath          ^>=1.4
     , hashable          ^>=1.4
     , http-types        >=0.9 && <0.13
