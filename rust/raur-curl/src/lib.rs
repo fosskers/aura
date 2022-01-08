@@ -74,7 +74,7 @@ impl Handle {
     pub fn new() -> Handle {
         Handle {
             curl: RefCell::new(Easy::new()),
-            url: raur::AUR_URL.to_string(),
+            url: raur::AUR_RPC_URL.to_string(),
         }
     }
 

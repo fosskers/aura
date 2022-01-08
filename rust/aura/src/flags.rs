@@ -1,10 +1,9 @@
 //! Types and utilities for parsing flags from the command line.
 
-use std::path::PathBuf;
-
 use chrono::NaiveDate;
-use clap::{crate_version, AppSettings, Clap};
+use clap::{AppSettings, Parser, Subcommand};
 use simplelog::LevelFilter;
+use std::path::PathBuf;
 use unic_langid::{langid, LanguageIdentifier};
 
 /// Global options only applicable to Aura that must be removed from the
@@ -12,13 +11,10 @@ use unic_langid::{langid, LanguageIdentifier};
 pub(crate) const AURA_GLOBALS: &[&str] = &["--english", "--japanese", "--german"];
 
 /// Commandline arguments to the Aura executable.
-#[derive(Clap, Debug)]
-#[clap(version = crate_version!(),
-       author = "Colin Woodbury",
-       about = "Install and manage Arch Linux and AUR packages",
-       setting = AppSettings::VersionlessSubcommands,
-       // setting = AppSettings::UnifiedHelpMessage, // TODO Is this broken?
-       setting = AppSettings::DisableHelpSubcommand)]
+#[derive(Parser, Debug)]
+#[clap(version, author, about)]
+#[clap(global_setting(AppSettings::PropagateVersion))]
+#[clap(global_setting(AppSettings::DisableHelpSubcommand))]
 pub(crate) struct Args {
     // --- Global Pacman Options --- //
     /// Set an alternate database location.
@@ -86,7 +82,7 @@ impl Args {
 }
 
 /// The Aura Package Manager.
-#[derive(Clap, Debug)]
+#[derive(Subcommand, Debug)]
 pub(crate) enum SubCmd {
     // --- Pacman Commands --- //
     /// Operate on the package database.
@@ -129,7 +125,7 @@ pub(crate) enum SubCmd {
 }
 
 /// Synchronize official packages.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(short_flag = 'S', long_flag = "sync")]
 pub(crate) struct Sync {
     /// Remove old packages from cache directory (-cc for all).
@@ -239,7 +235,7 @@ pub(crate) struct Sync {
 // TODO Is it possible to disable subcommand "plan names"? i.e. to have only
 // their long/short variants remain valid (or at least shown in `-h`).
 /// Check if given dependencies are satisfied.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(short_flag = 'T', long_flag = "deptest")]
 pub(crate) struct DepTest {
     /// Be verbose.
@@ -282,7 +278,7 @@ pub(crate) struct DepTest {
 }
 
 /// Upgrade or add packages to the system.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(short_flag = 'U', long_flag = "upgrade")]
 pub(crate) struct Upgrade {
     /// Skip dependency version checks (-dd to skip all checks).
@@ -363,7 +359,7 @@ pub(crate) struct Upgrade {
 
 // TODO `pacman -Fh` does not include the top-level usage line!
 /// Query the files database.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(short_flag = 'F', long_flag = "files")]
 pub(crate) struct Files {
     /// View a list of packages in a repo.
@@ -420,7 +416,7 @@ pub(crate) struct Files {
 }
 
 /// Remove packages from the system.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(short_flag = 'R', long_flag = "remove")]
 pub(crate) struct Remove {
     /// Remove packages and all packages that depend on them.
@@ -494,7 +490,7 @@ pub(crate) struct Remove {
 }
 
 /// Operate on the package database.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(short_flag = 'D', long_flag = "database")]
 pub(crate) struct Database {
     /// Test local database for validity (-kk for sync databases).
@@ -547,7 +543,7 @@ pub(crate) struct Database {
 }
 
 /// Query the package database.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(short_flag = 'Q', long_flag = "query")]
 pub(crate) struct Query {
     /// View the changelog of a package.
@@ -634,7 +630,7 @@ pub(crate) struct Query {
 }
 
 /// Perform security analysis of a PKGBUILD.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(short_flag = 'P', long_flag = "analysis")]
 pub(crate) struct Analysis {
     /// Analyse a given PKGBUILD.
@@ -649,7 +645,7 @@ pub(crate) struct Analysis {
 }
 
 /// Handle orphan packages.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(short_flag = 'O', long_flag = "orphans")]
 pub(crate) struct Orphans {
     /// Mark a package as being explicitly installed.
@@ -661,7 +657,7 @@ pub(crate) struct Orphans {
 }
 
 /// View various configuration settings and files.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub(crate) struct Conf {
     /// Set an alternate Pacman configuration file.
     #[clap(long, value_name = "path")]
@@ -680,7 +676,7 @@ pub(crate) struct Conf {
     pub(crate) pacnew: bool,
 }
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(short_flag = 'L', long_flag = "viewlog")]
 /// View the Pacman/ALPM log.
 pub(crate) struct Log {
@@ -702,7 +698,7 @@ pub(crate) struct Log {
 }
 
 /// View statistics about your machine or Aura itself.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub(crate) struct Stats {
     /// View Aura's localization statistics.
     #[clap(group = "stats", long, short, display_order = 1)]
@@ -718,7 +714,7 @@ pub(crate) struct Stats {
 }
 
 /// Synchronize AUR packages.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(short_flag = 'A', long_flag = "aursync")]
 pub(crate) struct Aur {
     /// View AUR package information.
@@ -761,7 +757,7 @@ pub(crate) struct Aur {
 }
 
 /// Save and restore the global package state.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(short_flag = 'B', long_flag = "backup")]
 pub(crate) struct Backup {
     /// Show all saved package snapshot filenames.
@@ -778,7 +774,7 @@ pub(crate) struct Backup {
 }
 
 /// Manage the package cache.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(short_flag = 'C', long_flag = "cache")]
 pub(crate) struct Cache {
     /// Search the package cache.
@@ -824,7 +820,7 @@ pub(crate) struct Cache {
 }
 
 /// Open various webpages related to Aura.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub(crate) struct Open {
     /// Open the Aura Guide Book.
     #[clap(group = "open", long, short, display_order = 1)]
@@ -844,7 +840,7 @@ pub(crate) struct Open {
 }
 
 /// Output a dependency graph in DOT format.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub(crate) struct Deps {
     /// Display packages that depend on the given args.
     #[clap(long, display_order = 1)]
@@ -863,5 +859,5 @@ pub(crate) struct Deps {
 }
 
 /// Validate your system.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub(crate) struct Check {}

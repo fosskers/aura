@@ -12,7 +12,7 @@ mod macros;
 pub(crate) mod utils;
 
 use alpm::{Alpm, SigLevel};
-use clap::Clap;
+use clap::Parser;
 use command::{aur, cache, check, conf, deps, log, open, orphans, snapshot, stats};
 use error::Error;
 use flags::{SubCmd, AURA_GLOBALS};

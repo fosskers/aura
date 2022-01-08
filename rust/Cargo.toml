@@ -2,7 +2,7 @@
 members = ["aura", "aura-core", "aura-arch", "aura-common", "raur-curl"]
 
 [patch.crates-io]
-# i18n-embed-fl = { git = "https://github.com/fosskers/cargo-i18n", rev = "1f26b5458c75a732fd5b0bd27f88672b2a04b046" }
+raur = { git = "https://gitlab.com/davidbittner/raur/", rev = "9cf07a03489a34f47192992105b55ba9140d9fb7" }
 
 [profile.release]
 lto = true

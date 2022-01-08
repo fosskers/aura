@@ -3,14 +3,15 @@ name = "aura"
 version = "4.0.0-rc1"
 authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2018"
+description = "Install and manage Arch Linux and AUR packages"
 
 [dependencies]
 alpm = "2.0"
 aura-arch = { path = "../aura-arch" }  # TODO Give these versions.
 aura-core = { path = "../aura-core" }
 chrono = "0.4"
-clap = "3.0.0-beta.2"
-clap_generate = "3.0.0-beta.2"
+clap = { version = "3.0", features = ["derive"] }
+clap_generate = "3.0"
 colored = "2.0"
 curl = "0.4"
 i18n-embed = { version = "0.12", features = ["fluent-system"] }
