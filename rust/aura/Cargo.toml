@@ -11,7 +11,7 @@ aura-arch = { path = "../aura-arch" }  # TODO Give these versions.
 aura-core = { path = "../aura-core" }
 chrono = "0.4"
 clap = { version = "3.0", features = ["derive"] }
-clap_generate = "3.0"
+clap_complete = "3.0"
 colored = "2.0"
 curl = "0.4"
 i18n-embed = { version = "0.12", features = ["fluent-system"] }

@@ -12,7 +12,7 @@ macro_rules! aln {
 /// Format a message according to the Aura style.
 macro_rules! a {
     ($msg:expr) => {
-        format!("{} {} {}", "aura".bold(), "::".cyan().bold(), $msg.bold());
+        format!("{} {} {}", "aura".bold(), "::".cyan().bold(), $msg.bold())
     };
 }
 
