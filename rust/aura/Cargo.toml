@@ -6,7 +6,7 @@ edition = "2021"
 description = "Install and manage Arch Linux and AUR packages"
 
 [dependencies]
-alpm = "2.0"
+alpm = "2.2"
 aura-arch = { path = "../aura-arch" }  # TODO Give these versions.
 aura-core = { path = "../aura-core" }
 chrono = "0.4"
@@ -14,18 +14,18 @@ clap = { version = "3.0", features = ["derive"] }
 clap_complete = "3.0"
 colored = "2.0"
 curl = "0.4"
-i18n-embed = { version = "0.12", features = ["fluent-system"] }
-i18n-embed-fl = "0.5"
+i18n-embed = { version = "0.13", features = ["fluent-system"] }
+i18n-embed-fl = "0.6"
 itertools = "0.10"
 linya = "0.2"
 log = "0.4"
 pacmanconf = "1.0"
 raur-curl = { path = "../raur-curl" }
 rayon = "1.5"
-rust-embed = "5.6"
-rustyline = "8.0"
+rust-embed = "6.3"
+rustyline = "9.1"
 serde_json = "1.0"
-simplelog = "0.10"
+simplelog = "0.11"
 sudo = "0.6"
 ubyte = "0.10"
 unic-langid = { version = "0.9", features = ["macros"] }
