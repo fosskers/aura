@@ -44,7 +44,7 @@ pub(crate) fn downgrade(
     // --- All tarball paths for packages the user asked for --- //
     let mut tarballs: HashMap<&str, Vec<PkgPath>> = HashMap::new();
     for pp in aura_core::cache::package_paths(cache)? {
-        if let Some(p) = packages.iter().find(|p| p == &&pp.to_package().name) {
+        if let Some(p) = packages.iter().find(|p| p == &&pp.as_package().name) {
             let paths = tarballs.entry(p).or_insert_with(Vec::new);
             paths.push(pp);
         }
@@ -54,7 +54,7 @@ pub(crate) fn downgrade(
         .iter()
         .filter_map(|p| tarballs.remove(p.as_str()).map(|pps| (p, pps)))
         .filter_map(|(p, pps)| downgrade_one(fll, &p, pps).ok())
-        .map(|pp| PathBuf::from(pp).into_os_string())
+        .map(|pp| pp.into_pathbuf().into_os_string())
         .collect();
 
     if to_downgrade.is_empty() {
@@ -70,19 +70,19 @@ pub(crate) fn downgrade(
     Ok(())
 }
 
-fn downgrade_one(
+fn downgrade_one<'a>(
     fll: &FluentLanguageLoader,
     package: &str,
-    mut tarballs: Vec<PkgPath>,
-) -> Result<PkgPath, Error> {
-    tarballs.sort_by(|a, b| b.to_package().cmp(a.to_package()));
+    mut tarballs: Vec<PkgPath<'a>>,
+) -> Result<PkgPath<'a>, Error> {
+    tarballs.sort_by(|a, b| b.as_package().cmp(a.as_package()));
     let digits = 1 + (tarballs.len() / 10);
 
     let pkg = package.bold().cyan().to_string();
     aura!(fll, "C-downgrade-which", pkg = pkg);
 
     for (i, pp) in tarballs.iter().enumerate() {
-        println!(" {:w$}) {}", i, pp.to_package().version, w = digits);
+        println!(" {:w$}) {}", i, pp.as_package().version, w = digits);
     }
 
     let index = crate::utils::select(">>> ", tarballs.len() - 1)?;
@@ -96,7 +96,7 @@ pub(crate) fn invalid(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) -> 
     aura!(fll, "C-t-invalids");
 
     aura_core::cache::package_paths(cache)?
-        .filter(|pp| !aura_arch::is_valid_package(alpm, pp.path()))
+        .filter(|pp| !aura_arch::is_valid_package(alpm, pp.as_path()))
         .for_each(|pp| {
             let _ = pp.remove(); // TODO Better handling.
         });
@@ -194,7 +194,7 @@ pub(crate) fn clean(fll: &FluentLanguageLoader, path: &Path, keep: usize) -> Res
     // Get all the tarball paths, sort and group them by name, and then remove them.
     aura_core::cache::package_paths(path)?
         .sorted_by(|p0, p1| p1.cmp(&p0)) // Forces a `collect` underneath.
-        .group_by(|pp| pp.to_package().name.clone()) // TODO Naughty clone.
+        .group_by(|pp| pp.as_package().name.clone()) // TODO Naughty clone.
         .into_iter()
         .map(|(_, group)| group.skip(keep)) // Thanks to the reverse-sort above, `group` is already backwards.
         .flatten()
@@ -240,12 +240,12 @@ pub(crate) fn clean_not_saved(
     };
 
     for tarball in tarballs {
-        let p = tarball.to_package();
+        let p = tarball.as_package();
 
         // If no snapshot contains this tarball's particular version, remove it
         // from the filesystem.
-        match snaps.get(&p.name) {
-            Some(vs) if vs.contains(&p.version) => {}
+        match snaps.get(p.name.as_ref()) {
+            Some(vs) if vs.contains(p.version.as_ref()) => {}
             Some(_) | None => tarball.sudo_remove().ok_or(Error::MiscShell)?,
         }
     }

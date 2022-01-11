@@ -73,7 +73,7 @@ fn valid_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) {
     match aura_core::cache::package_paths(cache) {
         Err(_) => unreadable_cache(fll, cache),
         Ok(mut paths) => {
-            let good = paths.all(|pp| aura_arch::is_valid_package(alpm, pp.path()));
+            let good = paths.all(|pp| aura_arch::is_valid_package(alpm, pp.as_path()));
 
             let symbol = if good { GOOD.green() } else { BAD.red() };
             println!("  [{}] {}", symbol, fl!(fll, "check-cache-tarballs"));

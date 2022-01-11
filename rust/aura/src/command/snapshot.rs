@@ -111,13 +111,13 @@ fn restore_snapshot(alpm: &Alpm, cache: &Path, snapshot: Snapshot) -> Result<(),
     if diff.to_add_or_alter.is_empty().not() {
         let tarballs = aura_core::cache::package_paths(cache)?
             .filter(|pp| {
-                let p = pp.to_package();
-                match diff.to_add_or_alter.get(p.name.as_str()) {
+                let p = pp.as_package();
+                match diff.to_add_or_alter.get(p.name.as_ref()) {
                     Some(v) if p.same_version(v) => true,
                     Some(_) | None => false,
                 }
             })
-            .map(|pp| pp.pathbuf().into_os_string());
+            .map(|pp| pp.into_pathbuf().into_os_string());
 
         utils::sudo_pacman(std::iter::once(OsStr::new("-U").to_os_string()).chain(tarballs))?;
     }
