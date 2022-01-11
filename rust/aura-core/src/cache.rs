@@ -4,21 +4,21 @@ use crate::common::Package;
 use alpm::Alpm;
 use std::collections::{HashMap, HashSet};
 use std::ffi::OsString;
-use std::fs::ReadDir;
+use std::fs::{Metadata, ReadDir};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use std::{cmp::Ordering, process::Command};
 
 /// A validated path to a package tarball.
 #[derive(Debug, PartialEq, Eq)]
-pub struct PkgPath {
+pub struct PkgPath<'a> {
     path: PathBuf,
-    pkg: Package,
+    pkg: Package<'a>,
 }
 
-impl PkgPath {
+impl<'a> PkgPath<'a> {
     /// Validate that `PathBuf` has an expected extension.
-    pub fn new(path: PathBuf) -> Option<PkgPath> {
+    pub fn new(path: PathBuf) -> Option<PkgPath<'static>> {
         match Package::from_path(&path) {
             Some(pkg) if is_package(&path) => Some(PkgPath { path, pkg }),
             _ => None,
@@ -36,17 +36,17 @@ impl PkgPath {
     }
 
     /// The internal `Path` of this validated tarball.
-    pub fn path(&self) -> &Path {
+    pub fn as_path(&self) -> &Path {
         &self.path
     }
 
     /// Consume this `PkgPath` to get its inner `PathBuf`.
-    pub fn pathbuf(self) -> PathBuf {
+    pub fn into_pathbuf(self) -> PathBuf {
         self.path
     }
 
     /// Pull a simple package definition from this tarball path.
-    pub fn to_package(&self) -> &Package {
+    pub fn as_package(&self) -> &Package<'a> {
         &self.pkg
     }
 
@@ -72,25 +72,13 @@ impl PkgPath {
     }
 }
 
-impl From<PkgPath> for Package {
-    fn from(pp: PkgPath) -> Self {
-        pp.pkg
-    }
-}
-
-impl From<PkgPath> for PathBuf {
-    fn from(pp: PkgPath) -> Self {
-        pp.path
-    }
-}
-
-impl PartialOrd for PkgPath {
+impl<'a> PartialOrd for PkgPath<'a> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl Ord for PkgPath {
+impl<'a> Ord for PkgPath<'a> {
     fn cmp(&self, other: &Self) -> Ordering {
         self.pkg.cmp(&other.pkg)
     }
@@ -133,7 +121,7 @@ pub struct PkgPaths {
 }
 
 impl Iterator for PkgPaths {
-    type Item = PkgPath;
+    type Item = PkgPath<'static>;
 
     fn next(&mut self) -> Option<Self::Item> {
         match self.read_dir.next()? {
@@ -168,7 +156,11 @@ pub fn search<'a>(cache: &Path, term: &'a str) -> Result<CacheMatches<'a>, std::
 
 /// Yield the [`CacheInfo`], if possible, of the given packages.
 pub fn info(cache: &Path, package: &str) -> Result<Option<CacheInfo>, std::io::Error> {
-    let mut matches: Vec<_> = search(cache, package)?
+    let mut matches: Vec<(PkgPath, Metadata)> = search(cache, package)?
+        // FIXME Mon Jan 10 19:23:07 2022
+        //
+        // Use two `filter_map` steps instead of one in order to avoid the
+        // nesting.
         .filter_map(|path| {
             path.metadata()
                 .ok()
@@ -177,20 +169,22 @@ pub fn info(cache: &Path, package: &str) -> Result<Option<CacheInfo>, std::io::E
         .filter(|(pp, _)| pp.pkg.name == package)
         .collect();
     matches.sort_by(|(p0, _), (p1, _)| p1.cmp(&p0));
-    let available = matches
+
+    let available: Vec<String> = matches
         .iter()
-        .map(|(pp, _)| pp.pkg.version.clone())
+        .map(|(pp, _)| pp.pkg.version.to_string())
         .collect();
 
     match matches.into_iter().next() {
         None => Ok(None),
         Some((pp, meta)) => {
+            let created = meta.created()?;
             let signature = pp.sig_file().exists();
 
             let info = CacheInfo {
-                name: pp.pkg.name,
-                version: pp.pkg.version,
-                created: meta.created()?,
+                name: pp.pkg.name.into_owned(),
+                version: pp.pkg.version.into_owned(),
+                created,
                 signature,
                 size: meta.len(),
                 available,
@@ -277,9 +271,9 @@ pub fn all_versions(cache: &Path) -> Result<HashMap<String, HashSet<String>>, st
     let mut map = HashMap::new();
 
     for pp in package_paths(cache)? {
-        let pkg = Package::from(pp);
-        let set = map.entry(pkg.name).or_insert_with(HashSet::new);
-        set.insert(pkg.version);
+        let pkg = pp.as_package();
+        let set = map.entry(pkg.name.to_string()).or_insert_with(HashSet::new);
+        set.insert(pkg.version.to_string());
     }
 
     Ok(map)
