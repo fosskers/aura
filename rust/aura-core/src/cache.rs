@@ -168,7 +168,7 @@ pub fn info(cache: &Path, package: &str) -> Result<Option<CacheInfo>, std::io::E
         })
         .filter(|(pp, _)| pp.pkg.name == package)
         .collect();
-    matches.sort_by(|(p0, _), (p1, _)| p1.cmp(&p0));
+    matches.sort_by(|(p0, _), (p1, _)| p1.cmp(p0));
 
     let available: Vec<String> = matches
         .iter()

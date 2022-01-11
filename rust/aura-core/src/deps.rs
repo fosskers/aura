@@ -181,7 +181,7 @@ impl std::fmt::Display for PkgGraph<'_> {
         for (n, (gname, group)) in graph
             .node_indices()
             .filter_map(|ix| graph.node_weight(ix).map(|(name, group)| (ix, name, group)))
-            .sorted_by(|a, b| a.2.cmp(&b.2))
+            .sorted_by(|a, b| a.2.cmp(b.2))
             .group_by(|triple| triple.2)
             .into_iter()
             .enumerate()
@@ -198,11 +198,11 @@ impl std::fmt::Display for PkgGraph<'_> {
                     for (ix, name, _) in group {
                         let mut styles = vec!["rounded"];
 
-                        if self.focii.contains(&name) {
+                        if self.focii.contains(name) {
                             styles.push("bold");
                         }
 
-                        if self.foreigns.contains(&name) {
+                        if self.foreigns.contains(name) {
                             styles.push("filled");
                         }
 
@@ -221,11 +221,11 @@ impl std::fmt::Display for PkgGraph<'_> {
                     for (ix, name, _) in group {
                         let mut styles = vec!["rounded"];
 
-                        if self.focii.contains(&name) {
+                        if self.focii.contains(name) {
                             styles.push("bold");
                         }
 
-                        if self.foreigns.contains(&name) {
+                        if self.foreigns.contains(name) {
                             styles.push("filled");
                         }
 
