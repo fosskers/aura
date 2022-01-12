@@ -247,7 +247,7 @@ buildPackages_1 (bt . pnName -> p) = \case
     Dutch      -> "Pakket " <> p <> " aan het bouwen..."
     Ukrainian  -> "Збираємо " <> p <> "..."
     Romanian   -> "Se compilează " <> p <> "..."
-    Czech      -> "Kompilace" <> p <> "..."
+    Czech      -> "Kompilace " <> p <> "..."
     _          -> "Building " <> p <> "..."
 
 buildPackages_2 :: Language -> Doc AnsiStyle
@@ -536,7 +536,7 @@ missingPkg_5 (PkgName p) = \case
   Dutch     -> bt p <> " bestaat niet."
   Ukrainian -> "Пакунок " <> bt p <> " не існує."
   Romanian  -> "Pachetul " <> bt p <> " nu există."
-  Czech     -> bt p <> "neexistuje"
+  Czech     -> bt p <> " neexistuje."
   _         -> bt p <> " does not exist."
 
 -----------------
@@ -1237,7 +1237,7 @@ backupCache_5 (bt . tshow -> n) = \case
     Dutch      -> "Pakketbestanden om te back-uppen: " <> n
     Ukrainian  -> "Файли пакунку для резервної копії: " <> n
     Romanian   -> "Fișiere de pachet pentru copiare de rezervă: " <> n
-    Czech      -> "Soubory k zálohování:" <> n
+    Czech      -> "Soubory k zálohování: " <> n
     _          -> "Package files to backup: " <> n
 
 backupCache_6 :: Language -> Doc AnsiStyle
@@ -1473,7 +1473,7 @@ cleanCache_8 (bt . tshow -> bytes) = \case
     Spanish   -> bytes <> " megabytes liberados."
     Ukrainian -> bytes <> " МБ звільнилось."
     Romanian  -> bytes <> " MB eliberat."
-    Czech     -> "Uvolněné" <> bytes <> "MB"
+    Czech     -> "Uvolněno " <> bytes <> " MB."
     _         -> bytes <> " megabytes freed."
 
 cleanCache_9 :: Word -> Language -> Doc AnsiStyle
@@ -1527,7 +1527,7 @@ cleanNotSaved_2 n@(cyan . pretty -> s) = \case
     Dutch      -> s <> " overbodige pakketbestanden gevonden. Verwijderen?"
     Ukrainian  -> "Знайдено " <> s <> " непотрібних пакунків. Видалити?"
     Romanian   -> "S-au găsit " <> s <> " fișiere de pachet inutile. Ștergeți?"
-    Czech      -> "Nepotřebné soubory balíčků:" <> s <> ". Vymazat?"
+    Czech      -> "Nepotřebné soubory balíčků: " <> s <> ". Vymazat?"
     _          -> s <> " unneeded package files found. Delete?"
 
 ----------------------------
@@ -1570,7 +1570,7 @@ reportNotInLog_1 = \case
 packageNotFound_1 :: Language -> Doc AnsiStyle
 packageNotFound_1 = \case
   Romanian -> "Nu s-a găsit nici un pachet."
-  Czech    -> "Nebyly nalezeny žádné balíčky"
+  Czech    -> "Nebyly nalezeny žádné balíčky."
   _        -> "No packages found."
 
 -- https://github.com/fosskers/aura/issues/498
@@ -1651,7 +1651,7 @@ outOfDateMsg (Just _) = red . \case
     Dutch      -> "Verouderd!"
     Ukrainian  -> "Застарів!"
     Romanian   -> "Neactualizat!"
-    Czech      -> "Zastaralý"
+    Czech      -> "Zastaralý!"
     _          -> "Out of Date!"
 outOfDateMsg Nothing = green . \case
     Japanese   -> "最新"
@@ -1726,7 +1726,7 @@ saveState_1 = \case
     Dutch      -> "Pakketstatus opgeslagen."
     Ukrainian  -> "Стан пакунків збережено."
     Romanian   -> "Stare de pachete salvată."
-    Czech      -> "Stav balíčku byl uložen"
+    Czech      -> "Stav balíčku byl uložen."
     _          -> "Saved package state."
 
 -- NEEDS TRANSLATION
@@ -1869,7 +1869,7 @@ hotEdit_1 (bt . pnName -> p) = \case
     Dutch      -> "Wilt u het PKGBUILD-bestand van " <> p <> " bewerken?"
     Ukrainian  -> "Бажаєте відредагувати PKGBUILD для пакунку " <> p <> "?"
     Romanian   -> "Doriți să modificați PKGBUILD-ul pachetului " <> p <> "?"
-    Czech      -> "Chcete upravit PKGBUILD z" + <> p <> "?"
+    Czech      -> "Chcete upravit PKGBUILD z " <> p <> "?"
     _          -> "Would you like to edit the PKGBUILD of " <> p <> "?"
 
 hotEdit_2 :: Language -> Doc AnsiStyle
@@ -1879,7 +1879,7 @@ hotEdit_2 = \case
   Spanish   -> "¿Desea editar el archivo .install?"
   Ukrainian -> "Бажаєте відредагувати файл .intall?"
   Romanian  -> "Doriți să modificați fișierul .install?"
-  Czech     -> "chcete upravit soubor .install?"
+  Czech     -> "Chcete upravit soubor .install?"
   _         -> "Would you like to edit the .install file?"
 
 hotEdit_3 :: FilePath -> Language -> Doc AnsiStyle
@@ -1889,7 +1889,7 @@ hotEdit_3 fp = \case
   Spanish   -> "¿Desea editar " <> pretty fp <> "?"
   Ukrainian -> "Бажаєте відредагувати " <> pretty fp <> "?"
   Romanian  -> "Doriți să modificați " <> pretty fp <> "?"
-  Czech     -> "Chcete upravit" <> pretty fp <> "?"
+  Czech     -> "Chcete upravit " <> pretty fp <> "?"
   _         -> "Would you like to edit " <> pretty fp <> "?"
 
 ------------------------------
@@ -2052,7 +2052,7 @@ security_14 = \case
   Spanish   -> "No se detectaron vulnerabilidades."
   Ukrainian -> "Ніяких вразливостей не було знайдено."
   Romanian  -> "Nu s-a găsit nici o vulnerabilitate."
-  Czech     -> "Nebyly nalezeny žádné bezpečnostní chyby"
+  Czech     -> "Nebyly nalezeny žádné bezpečnostní chyby."
   _         -> "No vulnerabilities detected."
 
 -----------------------
