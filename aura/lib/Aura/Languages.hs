@@ -53,6 +53,7 @@ translators = M.fromList
     , (Arabic,     "\"Array in a Matrix\"")
     , (Ukrainian,  "Andriy Cherniy")
     , (Romanian,   "90 / benone")
+    , (Czech,      "Daniel Rosel")
     ]
 
 -- These need updating! Or removing...
@@ -78,6 +79,7 @@ languageNames = M.fromList . zip [ Japanese, Polish, Croatian, Swedish, German, 
     Dutch      -> [ "Japans", "Pools", "Kroatisch", "Zweeds", "Duits", "Spaans", "Portugees", "Frans", "Russisch", "Italiaans", "Servisch", "Noors", "Indonesisch", "Chinees", "Esperanto", "Nederlands", "Turkish", "Arabic", "Ukrainian", "Roemeens" ]
     Ukrainian  -> [ "Японська", "Польська", "Хорватська", "Швецька", "Німецька", "Іспанська", "Португальська", "Французька", "Російська", "Італьянська", "Сербська", "Норвезька", "Індонезійська", "Китайська", "Есперанто", "Датська", "Турецька", "Арабська", "Українська", "Румунська" ]
     Romanian   -> [ "Japoneză", "Poloneză", "Croată", "Suedeză", "Germană", "Spaniolă", "Portugheză", "Franceză", "Rusă", "Italiană", "Sârbă", "Norvegiană", "Indoneziană", "Chineză", "Esperanto", "Olandeză", "Turcă", "Arabă", "Ucraineană", "Română" ]
+    Czech      -> [ "Japonština", "Polština", "Chorvatština", "Švédština", "Němčina", "Španělština", "Portugalština", "Francouzština", "Ruština", "Italština", "Srbština", "Norština", "Indonéština", "Čínština", "Esperanto", "Holandština", "Turečtina", "Arabština", "Ukrajinština", "Rumunština"]
     _          -> [ "Japanese", "Polish", "Croatian", "Swedish", "German", "Spanish", "Portuguese", "French", "Russian", "Italian", "Serbian", "Norwegian", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish", "Arabic", "Ukrainian", "Romanian" ]
 
 translatorMsgTitle :: Language -> Text
@@ -102,6 +104,7 @@ translatorMsgTitle = \case
     Dutch      -> "Aura Vertalers:"
     Ukrainian  -> "Перекладачі Aura:"
     Romanian   -> "Traducători Aura:"
+    Czech      -> "Překladači Aury:"
     _          -> "Aura Translators:"
 
 translatorMsg :: Language -> [Text]
@@ -144,6 +147,7 @@ langFromLocale = T.take 2 >>> \case
   "en" -> Just English
   "uk" -> Just Ukrainian
   "ro" -> Just Romanian
+  "cs" -> Just Czech
   _    -> Nothing
 
 ----------------------
@@ -170,6 +174,7 @@ checkDBLock_1 = \case
     Dutch      -> "De pakket databank is vergrendelt. Druk op enter wanneer het ontgrendelt is."
     Ukrainian  -> "База даних пакетів заблокована. Натисніть Enter, коли вона розблокується, щоб продовжити."
     Romanian   -> "Baza de date de pachete este blocată. Apăsați Enter după ce s-a deblocat pentru a continua."
+    Czech      -> "Databáze balíčků je uzamčena. Až bude odemčena, stiskněte Enter pro pokračování."
     _          -> "The package database is locked. Press enter when it's unlocked to continue."
 
 trueRoot_3 :: Language -> Doc AnsiStyle
@@ -189,6 +194,7 @@ trueRoot_3 = \case
     Dutch      -> "Vanaf makepkg v4.2 is het niet langer mogelijk om als root te bouwen."
     Ukrainian  -> "З версії makepkg v4.2 збірка від імені root неможлива."
     Romanian   -> "De la versiunea makepkg v4.2 încolo, compilarea ca root nu mai este posibilă."
+    Czech      -> "Od makepkg v4.2 již není sestavení jako root možné."
     _          -> "As of makepkg v4.2, building as root is no longer possible."
 
 mustBeRoot_1 :: Language -> Doc AnsiStyle
@@ -213,6 +219,7 @@ mustBeRoot_1 = let sudo = bt @Text "sudo" in \case
     Dutch      -> "U kunt deze operatie niet uitvoeren zonder " <> sudo <> " te gebruiken."
     Ukrainian  -> "Для цієї дії, потрібно використати " <> sudo <> "."
     Romanian   -> "Nu se poate folosi această operație asta fără " <> sudo <> "."
+    Czech      -> "Tuto operaci nelze provést bez použití sudo."
     _          -> "You cannot perform this operation without using sudo."
 
 -----------------------
@@ -240,6 +247,7 @@ buildPackages_1 (bt . pnName -> p) = \case
     Dutch      -> "Pakket " <> p <> " aan het bouwen..."
     Ukrainian  -> "Збираємо " <> p <> "..."
     Romanian   -> "Se compilează " <> p <> "..."
+    Czech      -> "Kompilace" <> p <> "..."
     _          -> "Building " <> p <> "..."
 
 buildPackages_2 :: Language -> Doc AnsiStyle
@@ -249,6 +257,7 @@ buildPackages_2 = \case
     Turkish    -> "'--allsource' bulundu. Yüklenebilir gerçek paketler oluşturulmayacaktır."
     Spanish    -> "'--allsource' detectado. No se construirán paquetes instalables reales."
     Romanian   -> "'--allsource' detectat. Nu se va compila oricare pachet instalabil."
+    Czech      -> "Bylo nalezeno '-allsource'. Žádné skutečné instalovatelné balíčky nebudou sestaveny."
     _          -> "'--allsource' detected. No actual installable packages will be built."
 
 buildPackages_3 :: FilePath -> Language -> Doc AnsiStyle
@@ -259,16 +268,19 @@ buildPackages_3 fp = \case
     Spanish    -> "Todos los archivos .src.tar.gz fueron construidos y copiados a: " <> pretty fp
     Ukrainian  -> "Всі архіви .src.tar.gz були зібрані та скопійовані до: " <> pretty fp
     Romanian   -> "Toate fișierele .src.tar.gz au fost construite și copiate către: " <> pretty fp
+    Czech      -> "Všechny soubory .src.tar.gz byly vytvořeny a zkopírovány do: " <> pretty fp
     _          -> "All .src.tar.gz files were built and copied to: " <> pretty fp
 
 buildPackages_4 :: Language -> Doc AnsiStyle
 buildPackages_4 = \case
     Romanian -> bt @Text "--hotedit" <+> "detectat, dar acestea au date în cache și vor fi omise din editare:"
+    Czech    -> bt @Text "--hotedit" <+> "zjištěno, ale následující položky mají položky mezipaměti a budou přeskočeny pro úpravy:"
     _        -> bt @Text "--hotedit" <+> "detected, but the following have cache entries and will be skipped for editing:"
 
 buildPackages_5 :: Language -> Doc AnsiStyle
 buildPackages_5 = \case
     Romanian -> "Se poate folosi" <+> bt @Text "--force" <+> "pentru a trece peste acest comportament."
+    Czech    -> "Můžete použít" <+> bt @Text "--force" <+> "k potlačení tohoto chování."
     _        -> "You can use" <+> bt @Text "--force" <+> "to override this behaviour."
 
 buildFail_5 :: Language -> Doc AnsiStyle
@@ -292,6 +304,7 @@ buildFail_5 = \case
     Dutch      -> "Bouwen is mislukt."
     Ukrainian  -> "Збірка не вдалась."
     Romanian   -> "Compilare nereușită."
+    Czech      -> "Budování se nezdařilo."
     _          -> "Building failed."
 
 -- NEEDS TRANSLATION
@@ -315,6 +328,7 @@ buildFail_6 = \case
     Dutch      -> "Wilt U toch doorgaan?"
     Ukrainian  -> "Ви все одно бажаєте продовжити?"
     Romanian   -> "Doriți oricum să continuați?"
+    Czech      -> "Chcete přesto pokračovat?"
     _          -> "Would you like to continue anyway?"
 
 -- NEEDS TRANSLATION
@@ -335,6 +349,7 @@ buildFail_7 (bt . pnName -> p) = \case
     Dutch      -> "Verkrijgen van bouw scripten mislukt voor " <> p <> "."
     Ukrainian  -> "Не вдалось отримати сценарії збірки для " <> p <> "."
     Romanian   -> "Nu s-au putut obține scripturi de compilare pentru " <> p <> "."
+    Czech      -> "Nepodařilo se získat sestavení skriptů pro " <> p <> "."
     _          -> "Failed to obtain build scripts for " <> p <> "."
 
 buildFail_8 :: Language -> Doc AnsiStyle
@@ -350,6 +365,7 @@ buildFail_8 = \case
     Dutch      -> "Er is een fout opgetreden in makepkg."
     Ukrainian  -> "Сталась помилка makepkg."
     Romanian   -> "A fost o problemă cu makepkg."
+    Czech      -> "Došlo k chybě makepkg."
     _          -> "There was a makepkg failure."
 
 buildFail_9 :: Language -> Doc AnsiStyle
@@ -362,6 +378,7 @@ buildFail_9 = \case
   Dutch     -> "Detecteren van built package files mislukt (*.pkg.tar.xz)."
   Ukrainian -> "Не вдалось знайти жодного файлу пакунку (*.pkg.tar.xz)."
   Romanian  -> "Nu s-a detectat nici un pachet construit (*.pkg.tar.xz)."
+  Czech     -> "Nepodařilo se detekovat žádné soubory zabudovaného balíčku (*.pkg.tar.xz)."
   _         -> "Failed to detect any built package files (*.pkg.tar.xz)."
 
 buildFail_10 :: Language -> Doc AnsiStyle
@@ -374,6 +391,7 @@ buildFail_10 = \case
   Dutch     -> "Het bouwen van alle pakketten is mislukt."
   Ukrainian -> "Жоден пакунок не вдалося зібрати."
   Romanian  -> "Nu s-a putut compila nici un pachet."
+  Czech     -> "Sestavení každého balíčku se nezdařilo."
   _         -> "Every package failed to build."
 
 buildFail_11 :: Language -> Doc AnsiStyle
@@ -387,6 +405,7 @@ buildFail_11 = \case
   Dutch     -> "Bouwen mislukt. Wilt U de fouten zien?"
   Ukrainian -> "Збірка не вдалась. Бажаєте побачити помилку?"
   Romanian  -> "Compilare nereușită. Doriți să vedeți eroarea?"
+  Czech     -> "Budování se nezdařilo. Chcete vidět chybu?"
   _         -> "Building failed. Would you like to see the error?"
 
 buildFail_12 :: Language -> Doc AnsiStyle
@@ -396,6 +415,7 @@ buildFail_12 = \case
     Spanish    -> "Error al 'git pull' las últimas actualizaciones."
     Ukrainian  -> "Не вдалося використати 'git pull' для отримання останніх оновлень."
     Romanian   -> "Nu a reușit 'git pull' să descarce cele mai recente actualizări."
+    Czech      -> "Nepodařilo se 'git stáhnout' nejnovější aktualizace."
     _          -> "Failed to 'git pull' the latest updates."
 
 ------------------------------
@@ -423,6 +443,7 @@ getRealPkgConflicts_1 (bt . pnName -> prnt) (bt . pnName -> p) (bt -> r) (bt -> 
     Dutch      -> "Het pakket " <> prnt <> ", hangt af van versie " <> d <> " van " <> p <> ", maar de meest recente versie is " <> r <> "."
     Ukrainian  -> "Залежність " <> p <> " потребує версію " <> d <> ", проте останньою версією є " <> r <> "."
     Romanian   -> "Pachetul " <> prnt <> " depinde de versiunea " <> d <> " al pachetului " <> p <> ", dar cea mai recentă versiune este " <> r <> "."
+    Czech      -> "Balík " <> prnt <> " závisí na verzi " <> d <> " z " <> p <> ", ale nejnovější verze je " <> r <> "."
     _          -> "The package " <> prnt <> " depends on version " <> d <> " of " <> p <> ", but the most recent version is " <> r <> "."
 
 getRealPkgConflicts_2 :: PkgName -> Language -> Doc AnsiStyle
@@ -446,6 +467,7 @@ getRealPkgConflicts_2 (bt . pnName -> p) = \case
   Dutch      -> p <> " is een genegeerd pakket! Bekijk uw `pacman.conf` file."
   Ukrainian  -> "Пакунок " <> p <> " буде проігноровано! Перевірте ваш файл `pacman.conf`."
   Romanian   -> "Pachetul " <> p <> " este ignorat! Verificați fișierul `pacman.conf`."
+  Czech      -> p <> " je ignorovaný balíček! Podívejte se na svůj soubor `pacman.conf`."
   _          -> p <> " is an ignored package! See your `pacman.conf` file."
 
 missingPkg_2 :: [DepError] -> Language -> Doc AnsiStyle
@@ -464,6 +486,7 @@ depError l (NonExistant (PkgName s) (PkgName par)) = case l of
   Esperanto  -> "La dependeco " <> bt s <> " de " <> bt par <> " ne povis troviĝi."
   Dutch      -> "Het afhankelijkheid " <> bt s <> "kan niet worden gevonden."
   Ukrainian  -> "Залежність " <> bt s <> " не було знайдено."
+  Czech      -> "Nebyla nalezena závislost " <> bt s <> " z " <> bt par <> "."
   _          -> "The dependency " <> bt s <> " of " <> bt par <> " couldn't be found."
 depError l (BrokenProvides (PkgName pkg) (Provides (PkgName pro)) (PkgName n)) = case l of
   Arabic     -> "." <> bt pro <> " اللتي تقدم ," <> bt n <> " تحتاج" <> bt pkg <> " الرزمة"
@@ -474,6 +497,7 @@ depError l (BrokenProvides (PkgName pkg) (Provides (PkgName pro)) (PkgName n)) =
   Dutch      -> "Het pakket" <> bt pkg <> " heeft " <> bt n <> " nodig, die " <> bt pro <> " biedt."
   Ukrainian  -> "Пакунку " <> bt pkg <> " потрібен " <> bt n <> ", який забезпечує " <> bt pro <> "."
   Romanian   -> "Pachetul " <> bt pkg <> " are nevoie de " <> bt n <> ", care provizionează " <> bt pro <> "."
+  Czech      -> "Balík " <> bt pkg <> " potřebuje " <> bt n <> ", který poskytuje " <> bt pro <> "."
   _          -> "The package " <> bt pkg <> " needs " <> bt n <> ", which provides " <> bt pro <> "."
 
 missingPkg_3 :: Language -> Doc AnsiStyle
@@ -485,6 +509,7 @@ missingPkg_3 = \case
   Italian    -> "C'è stato un errore nella riorganizzazione della gerarchia delle dipendenze. Se vedi questo messaggio, qualcosa è andato davvero storto."
   Dutch      -> "Er is een fout opgetreden bij het reorganizeren van de afhankelijkheidsgrafiek. Als U dit ziet, is er iets heel erg mis."
   Romanian   -> "A fost o problemă reorganizând graful de dependențe. Dacă vedeți asta, e foarte rău."
+  Czech      -> "Při reorganizaci grafu závislostí došlo k chybě. Pokud vidíte toto, něco je velmi špatně."
   _          -> "There was an error reorganizing the dependency graph. If you see this, something is very wrong."
 
 missingPkg_4 :: [NonEmpty PkgName] -> Language -> Doc AnsiStyle
@@ -496,6 +521,7 @@ missingPkg_4 pns = \case
   Dutch      -> vsep $ "The volgende afhankelijkheidscycli zijn gedetecteerd:" : pns'
   Ukrainian  -> vsep $ "Було помічено цикл залежностей:" : pns'
   Romanian   -> vsep $ "Aceste cicluri de dependență a fost detectate:" : pns'
+  Czech      -> vsep $ "Byly zjištěny následující cykly závislostí:" : pns'
   _ -> vsep $ "The following dependency cycles were detected:" : pns'
   where
     pns' :: [Doc ann]
@@ -510,6 +536,7 @@ missingPkg_5 (PkgName p) = \case
   Dutch     -> bt p <> " bestaat niet."
   Ukrainian -> "Пакунок " <> bt p <> " не існує."
   Romanian  -> "Pachetul " <> bt p <> " nu există."
+  Czech     -> bt p <> "neexistuje"
   _         -> bt p <> " does not exist."
 
 -----------------
@@ -536,6 +563,7 @@ displayOutputLanguages_1 = \case
     Dutch      -> "De volgende talen zijn beschikbaar:"
     Ukrainian  -> "Доступні наступні мови:"
     Romanian   -> "Aceste pacheturi sunt disponibile:"
+    Czech      -> "K dispozici jsou následující jazyky:"
     _          -> "The following languages are available:"
 
 ----------------------------
@@ -562,6 +590,7 @@ auraCheck_1 = \case
     Dutch      -> "Aura update beschikbaar. Eerst updaten?"
     Ukrainian  -> "Доступно оновлення для Aura. Бажаєте оновити її першою?"
     Romanian   -> "O versiune nouă de Aura este disponibilă. Să se actualizeze înainte de toate?"
+    Czech      -> "K dispozici aktualizace Aury. Nejprve ji aktualizovat?"
     _          -> "Aura update available. Update it first?"
 
 install_2 :: Language -> Doc AnsiStyle
@@ -585,6 +614,7 @@ install_2 = \case
     Dutch      -> "Geen geldige pakketen gespecificeerd."
     Ukrainian  -> "Валідні пакунки не вказані."
     Romanian   -> "Nu s-a specificat nici un pachet valabil."
+    Czech      -> "Nejsou zadány žádné platné balíčky."
     _          -> "No valid packages specified."
 
 install_3 :: Language -> Doc AnsiStyle
@@ -609,6 +639,7 @@ install_3 = \case
     Dutch      -> "Doorgaan?"
     Ukrainian  -> "Продовжити?"
     Romanian   -> "Continuați?"
+    Czech      -> "Pokračovat?"
     _          -> "Continue?"
 
 install_4 :: Language -> Doc AnsiStyle
@@ -632,6 +663,7 @@ install_4 = \case
     Dutch      -> "Installatie handmatig afgebroken."
     Ukrainian  -> "Встановлення скасовано користувачем."
     Romanian   -> "Instalarea anulată manual."
+    Czech      -> "Instalace byla ručně přerušena."
     _          -> "Installation manually aborted."
 
 install_5 :: Language -> Doc AnsiStyle
@@ -655,6 +687,7 @@ install_5 = \case
     Dutch      -> "Afhankelijkheden aan het bepalen..."
     Ukrainian  -> "Визначення залежностей..."
     Romanian   -> "Se determin dependențele..."
+    Czech      -> "Určování závislostí..."
     _          -> "Determining dependencies..."
 
 -- 2014 December  7 @ 14:45 - NEEDS TRANSLATIONS
@@ -672,6 +705,7 @@ confirmIgnored_1 (bt . pnName -> p) = \case
     Esperanto  -> p <> " estas markita kiel malatenta. Ĉu instali?"
     Dutch      -> p <> " is gemarkeerd als genegeerd. Toch installeren?"
     Romanian   -> p <> " e marcat ca ignorat. Să se instaleze oricum?"
+    Czech      -> p <> " je označeno jako ignorováno. Přesto nainstalovat?"
     _          -> p <> " is marked as Ignored. Install anyway?"
 
 -- NEEDS UPDATE TO REFLECT CHANGED ENGLISH
@@ -696,6 +730,7 @@ reportNonPackages_1 = \case
     Dutch      -> "De volgende pakketten zijn geen AUR pakketten:"
     Ukrainian  -> "Нижче вказано те, що не є пакунком AUR:"
     Romanian   -> "Aceste pachete nu se află pe AUR:"
+    Czech      -> "Následující nejsou balíčky AUR:"
     _          -> "The following are not AUR packages:"
 
 -- NEEDS TRANSLATION
@@ -715,6 +750,7 @@ reportUnneededPackages_1 = \case
     Dutch      -> "The volgende pakketten zijn al geinstalleerd:"
     Ukrainian  -> "Наступні пакунки вже встановлені:"
     Romanian   -> "Aceste pachete sunt deja instalate:"
+    Czech      -> "Následující balíčky jsou již nainstalovány:"
     _          -> "The following packages are already installed:"
 
 reportPkgsToInstall_1 :: Language -> Doc AnsiStyle
@@ -738,6 +774,7 @@ reportPkgsToInstall_1 = \case
     Dutch      -> "Repository afhankelijkheden:"
     Ukrainian  -> "Залежності репозиторія:"
     Romanian   -> "Dependențe din repertorii:"
+    Czech      -> "Závislosti úložiště:"
     _          -> "Repository dependencies:"
 
 -- NEEDS AN UPDATE
@@ -762,6 +799,7 @@ reportPkgsToInstall_2 = \case
     Dutch      -> "AUR Pakketten:"
     Ukrainian  -> "Пакунки AUR:"
     Romanian   -> "Pachete din AUR:"
+    Czech      -> "Balíčky AUR:"
     _          -> "AUR Packages:"
 
 reportPkgsToInstall_3 :: Language -> Doc AnsiStyle
@@ -783,6 +821,7 @@ reportPkgsToInstall_3 = \case
     Dutch      -> "AUR-afhankelijkheden:"
     Ukrainian  -> "Залежності в AUR:"
     Romanian   -> "Dependențe din AUR:"
+    Czech      -> "Závislosti AUR:"
     _          -> "AUR dependencies:"
 
 -- NEEDS TRANSLATION
@@ -807,6 +846,7 @@ reportPkgbuildDiffs_1 (bt . pnName -> p) = \case
     Dutch      -> p <> " heeft nog geen opgeslagen PKGBUILD."
     Ukrainian  -> "В " <> p <> " ще не зберігається PKGBUILD."
     Romanian   -> p <> " încă nu are un PKGBUILD descărcat."
+    Czech      -> p <> " ještě nemá uložený PKGBUILD."
     _          -> p <> " has no stored PKGBUILD yet."
 
 -- NEEDS TRANSLATION
@@ -831,6 +871,7 @@ reportPkgbuildDiffs_3 (bt . pnName -> p) = \case
     Dutch      -> p <> " PKGBUILD aanpassingen:"
     Ukrainian  -> "Зміни PKGBUILD в " <> p <> ":"
     Romanian   -> "Schimbări in PKGBUILD pentru " <> p <> ":"
+    Czech      -> "Změny PKGBUILD v " <> p <> ":"
     _          -> p <> " PKGBUILD changes:"
 
 -- NEEDS TRANSLATION
@@ -855,6 +896,7 @@ reportPkgsToUpgrade_1 = \case
     Dutch      -> "AUR-Pakketten om te upgraden:"
     Ukrainian  -> "Пакунки AUR, готові для оновлення:"
     Romanian   -> "Pachete din AUR de actualizat:"
+    Czech      -> "Balíčky AUR k aktualizaci:"
     _          -> "AUR Packages to upgrade:"
 
 -- NEEDS UPDATING
@@ -879,6 +921,7 @@ reportBadDowngradePkgs_1 = \case
     Dutch      -> "De volgende pakketten hebben geen versie in de cache, en kunnen dus niet gedowngrade worden."
     Ukrainian  -> "Наступних пакунків немає в кеші. Отже, вони не можуть відкотитися до старої версії:"
     Romanian   -> "Aceste pachete nu au nici o versiune disponibilă în cache, așa că nu pot fi retrogradate:"
+    Czech      -> "Následující nemají žádné verze v mezipaměti, a proto je nelze downgradovat:"
     _          -> "The following have no versions in the cache, and thus can’t be downgraded:"
 
 reportBadDowngradePkgs_2 :: PkgName -> Language -> Doc AnsiStyle
@@ -889,6 +932,7 @@ reportBadDowngradePkgs_2 (PkgName p) = \case
   Dutch     -> pretty p <+> "heeft geen versie in de cache."
   Ukrainian -> pretty p <+> "не має версії в кеші."
   Romanian  -> pretty p <+> "nu are nici o versiune în cache."
+  Czech     -> pretty p <+> "nemá žádnou verzi v mezipaměti."
   _         -> pretty p <+> "has no version in the cache."
 
 upgradeAURPkgs_1 :: Language -> Doc AnsiStyle
@@ -912,6 +956,7 @@ upgradeAURPkgs_1 = \case
     Dutch      -> "Pakket informatie aan het ophalen..."
     Ukrainian  -> "Збираємо інформацію про пакунок..."
     Romanian   -> "Se obțin informații despre pachete..."
+    Czech      -> "Načítání informací o balíčku..."
     _          -> "Fetching package information..."
 
 upgradeAURPkgs_2 :: Language -> Doc AnsiStyle
@@ -935,6 +980,7 @@ upgradeAURPkgs_2 = \case
     Dutch      -> "Pakket versies aan het vergelijken..."
     Ukrainian  -> "Порівнюємо версії пакунків..."
     Romanian   -> "Se compar versiunile pacheturilor..."
+    Czech      -> "Porovnání verzí balíčků..."
     _          -> "Comparing package versions..."
 
 upgradeAURPkgs_3 :: Language -> Doc AnsiStyle
@@ -958,6 +1004,7 @@ upgradeAURPkgs_3 = \case
     Dutch      -> "Geen AUR-pakket upgrades vereist."
     Ukrainian  -> "Пакунки AUR не потребують оновлення."
     Romanian   -> "Nu e nevoie să se actualizeze nici un pachet din AUR."
+    Czech      -> "Není nutné žádné aktualizace balíčku AUR."
     _          -> "No AUR package upgrades necessary."
 
 removeMakeDepsAfter_1 :: Language -> Doc AnsiStyle
@@ -981,6 +1028,7 @@ removeMakeDepsAfter_1 = \case
     Dutch      -> "Onnodige make afhankelijkheden aan het verwijderen..."
     Ukrainian  -> "Видаляємо непотрібні залежності make..."
     Romanian   -> "Se șterg dependențele de compilare inutile..."
+    Czech      -> "Odstranění nepotřebných make závislostí..."
     _          -> "Removing unneeded make dependencies..."
 
 ----------------------------
@@ -1008,6 +1056,7 @@ cleanStates_2 n@(bt . tshow -> s) = \case
     Dutch      -> s <> " pakketstatussen worden behouden. De rest verwijderen?"
     Ukrainian  -> s <> " стан пакунків будуть залишені. Видалити решту?"
     Romanian   -> "Stările pachetului " <> s <> " vor fi păstrate. Să se șteargă restul?"
+    Czech      -> s <> " stavy balíčků budou zachovány. Odstranit zbytek?"
     _          -> s <> " package states will be kept. Remove the rest?"
 
 -- NEEDS TRANSLATION
@@ -1032,6 +1081,7 @@ cleanStates_3 = \case
     Dutch      -> "Geen pakketstatussen verwijderd."
     Ukrainian  -> "Стани пакунків залишились недоторкані."
     Romanian   -> "Nici o stare de pachet a fost ștearsă."
+    Czech      -> "Nebyly odstraněny žádné stavy balíčku."
     _          -> "No package states were removed."
 
 cleanStates_4 :: Int -> Language -> Doc AnsiStyle
@@ -1046,6 +1096,7 @@ cleanStates_4 n = \case
   Dutch     -> "U heeft momenteel" <+> pretty n <+> "opgeslagen pakketstatussen."
   Ukrainian -> "Зараз ви маєте " <+> pretty n <+> " збережених станів пакунків."
   Romanian  -> "Momentan aveți " <+> pretty n <+> " stări de pachet salvate."
+  Czech     -> "V současné době máte " <+> pretty n <+> " uložených stavů balíčků."
   _         -> "You currently have " <+> pretty n <+> " saved package states."
 
 cleanStates_5 :: Text -> Language -> Doc AnsiStyle
@@ -1060,6 +1111,7 @@ cleanStates_5 t = \case
   Dutch     -> "Meest recent opgeslagen:" <+> pretty t
   Ukrainian -> "Останні збереженні:" <+> pretty t
   Romanian  -> "Cel mai recent salvat:" <+> pretty t
+  Czech     -> "Naposledy uložené:" <+> pretty t
   _         -> "Most recently saved:" <+> pretty t
 
 cleanStates_6 :: Int -> Language -> Doc AnsiStyle
@@ -1071,6 +1123,7 @@ cleanStates_6 n = \case
   Dutch     -> pretty n <+> "hiervan zijn vastgezet, en worden niet verwijderd."
   Ukrainian -> pretty n <+> "були закріплені та залишуться недоторканими."
   Romanian  -> pretty n <+> "dintre astea sunt fixate, și nu vor fi șterse."
+  Czech     -> pretty n <+> "z nich jsou připnuté a nebudou odstraněny."
   _         -> pretty n <+> "of these are pinned, and won't be removed."
 
 readState_1 :: Language -> Doc AnsiStyle
@@ -1085,6 +1138,7 @@ readState_1 = \case
     Dutch      -> "Dat statusbestand kon niet worden geparseerd. Is het legale JSON?"
     Ukrainian  -> "Стан не був розпізнаний правильно. Це точно коректний JSON?"
     Romanian   -> "Acel fișier de stare nu se putea analiza. Este un fișier JSON valabil?"
+    Czech      -> "Tento stavový soubor se nepodařilo analyzovat. Je to legální JSON?"
     _          -> "That state file failed to parse. Is it legal JSON?"
 
 ----------------------------
@@ -1111,6 +1165,7 @@ getDowngradeChoice_1 (bt . pnName -> p) = \case
     Dutch      -> "Welke versie van " <> p <> " wil je?"
     Ukrainian  -> "Яку версію пакунку " <> p <> " ви бажаєте?"
     Romanian   -> "Care versiune al pachetului " <> p <> " o doriți?"
+    Czech      -> "Jakou verzi " <> p <> " chcete?"
     _          -> "What version of " <> p <> " do you want?"
 
 backupCache_3 :: Language -> Doc AnsiStyle
@@ -1134,6 +1189,7 @@ backupCache_3 = \case
     Dutch      -> "De back-up lokatie bestaat niet."
     Ukrainian  -> "Шлях до резервної копії не існує."
     Romanian   -> "Locul de reservă nu există."
+    Czech      -> "Umístění zálohy neexistuje."
     _          -> "The backup location does not exist."
 
 backupCache_4 :: FilePath -> Language -> Doc AnsiStyle
@@ -1157,6 +1213,7 @@ backupCache_4 (bt . T.pack -> dir) = \case
     Dutch      -> "Back-up van cache aan het maken naar " <> dir
     Ukrainian  -> "Зберігаємо резервну копію до " <> dir
     Romanian   -> "Se copiază cache-ul de rezervă către " <> dir
+    Czech      -> "Zálohování mezipaměti do " <> dir
     _          -> "Backing up cache to " <> dir
 
 backupCache_5 :: Int -> Language -> Doc AnsiStyle
@@ -1180,6 +1237,7 @@ backupCache_5 (bt . tshow -> n) = \case
     Dutch      -> "Pakketbestanden om te back-uppen: " <> n
     Ukrainian  -> "Файли пакунку для резервної копії: " <> n
     Romanian   -> "Fișiere de pachet pentru copiare de rezervă: " <> n
+    Czech      -> "Soubory k zálohování:" <> n
     _          -> "Package files to backup: " <> n
 
 backupCache_6 :: Language -> Doc AnsiStyle
@@ -1203,6 +1261,7 @@ backupCache_6 = \case
     Dutch      -> "Doorgaan met back-up?"
     Ukrainian  -> "Продовжити створення резервної копії?"
     Romanian   -> "Continuați cu copiile de rezervă?"
+    Czech      -> "Pokračovat v zálohování."
     _          -> "Proceed with backup?"
 
 backupCache_7 :: Language -> Doc AnsiStyle
@@ -1226,6 +1285,7 @@ backupCache_7 = \case
     Dutch      -> "Back-up handmatig afgebroken."
     Ukrainian  -> "Створення резервної копії перервано користувачем."
     Romanian   -> "Copiarea de rezervă anulată manual."
+    Czech      -> "Zálohování ručně přerušeno."
     _          -> "Backup manually aborted."
 
 backupCache_8 :: Language -> Doc AnsiStyle
@@ -1249,6 +1309,7 @@ backupCache_8 = \case
     Dutch      -> "Aan het back-uppen. Dit kan een aantal minuten duren..."
     Ukrainian  -> "Створюємо резервну копію. Це може зайняти декілька хвилин..."
     Romanian   -> "Se fac copii de rezervă. Ar putea să dureze câteva minute..."
+    Czech      -> "Zálohování. Může to trvat několik minut..."
     _          -> "Backing up. This may take a few minutes..."
 
 copyAndNotify_1 :: Int -> Language -> Doc AnsiStyle
@@ -1273,6 +1334,7 @@ copyAndNotify_1 (cyan . pretty -> n) = \case
     Dutch      -> "Kopiëren #[" <> n <> "]"
     Ukrainian  -> "Копіюємо #[" <> n <> "]"
     Romanian   -> "Se copiază #[" <> n <> "]"
+    Czech      -> "Kopírování #[" <> n <> "]"
     _          -> "Copying #[" <> n <> "]"
 
 cleanCache_2 :: Language -> Doc AnsiStyle
@@ -1296,6 +1358,7 @@ cleanCache_2 = \case
     Dutch      -> "Hiermee wordt de GEHELE pakketcache verwijderd."
     Ukrainian  -> "Ця операція ПОВНІСТЮ видалить кеш пакунків."
     Romanian   -> "Asta va șterge COMPLET cache-ul de pachete."
+    Czech      -> "Tím smažete CELOU mezipaměť balíčku."
     _          -> "This will delete the ENTIRE package cache."
 
 cleanCache_3 :: Word -> Language -> Doc AnsiStyle
@@ -1319,6 +1382,7 @@ cleanCache_3 n@(bt . tshow -> s) = \case
     Dutch      -> s <> " van elk pakketbestand wordt bewaard."
     Ukrainian  -> s <> " версія кожного пакунку залишиться недоторканою."
     Romanian   -> s <> " din fiecare fișier de pachet vor fi păstrate."
+    Czech      -> s <> " každého souboru balíčku bude zachován."
     _          -> s <> " of each package file will be kept."
 
 cleanCache_4 :: Language -> Doc AnsiStyle
@@ -1342,6 +1406,7 @@ cleanCache_4 = \case
     Dutch      -> "De rest wordt verwijderd. OK?"
     Ukrainian  -> "Все інше буде видалено. Гаразд?"
     Romanian   -> "Restul va fi șters. De acord?"
+    Czech      -> "Zbytek bude smazán. Ok?"
     _          -> "The rest will be deleted. Okay?"
 
 cleanCache_5 :: Language -> Doc AnsiStyle
@@ -1365,6 +1430,7 @@ cleanCache_5 = \case
     Dutch      -> "Cachereiniging handmatig afgebroken."
     Ukrainian  -> "Очищення кешу було перервано користувачем."
     Romanian   -> "Curățenia cache-ului anulată manual."
+    Czech      -> "Čištění mezipaměti bylo ručně přerušeno"
     _          -> "Cache cleaning manually aborted."
 
 cleanCache_6 :: Language -> Doc AnsiStyle
@@ -1388,6 +1454,7 @@ cleanCache_6 = \case
     Dutch      -> "Pakketcache aan het reinigen..."
     Ukrainian  -> "Очищуємо кеш пакунків..."
     Romanian   -> "Se curăță cache-ul de pachete..."
+    Czech      -> "Čištění mezipaměti balíčků"
     _          -> "Cleaning package cache..."
 
 cleanCache_7 :: Word -> Word -> Language -> Doc AnsiStyle
@@ -1406,11 +1473,13 @@ cleanCache_8 (bt . tshow -> bytes) = \case
     Spanish   -> bytes <> " megabytes liberados."
     Ukrainian -> bytes <> " МБ звільнилось."
     Romanian  -> bytes <> " MB eliberat."
+    Czech     -> "Uvolněné" <> bytes <> "MB"
     _         -> bytes <> " megabytes freed."
 
 cleanCache_9 :: Word -> Language -> Doc AnsiStyle
 cleanCache_9 (bt . tshow -> w) = \case
     Romanian -> w <> " versiuni din fiecare pachet instalat vor fi păstrate."
+    Czech    -> w <> " verze každého nainstalovaného balíčku budou zachovány."
     _        -> w <> " versions of each installed package will be kept."
 
 -- NEEDS TRANSLATION
@@ -1434,6 +1503,7 @@ cleanNotSaved_1 = \case
     Dutch      -> "Overbodige pakketbestanden aan het vaststellen..."
     Ukrainian  -> "Визначачення непотрібних пакунків..."
     Romanian   -> "Se determin fișiere de pachet inutile..."
+    Czech      -> "Zjišťování nepotřebných souborů balíčků..."
     _          -> "Determining unneeded package files..."
 
 -- NEEDS TRANSLATION
@@ -1457,6 +1527,7 @@ cleanNotSaved_2 n@(cyan . pretty -> s) = \case
     Dutch      -> s <> " overbodige pakketbestanden gevonden. Verwijderen?"
     Ukrainian  -> "Знайдено " <> s <> " непотрібних пакунків. Видалити?"
     Romanian   -> "S-au găsit " <> s <> " fișiere de pachet inutile. Ștergeți?"
+    Czech      -> "Nepotřebné soubory balíčků:" <> s <> ". Vymazat?"
     _          -> s <> " unneeded package files found. Delete?"
 
 ----------------------------
@@ -1489,6 +1560,7 @@ reportNotInLog_1 = \case
     Dutch      -> "Deze zijn niet verschenen in het logbestand:"
     Ukrainian  -> "Наступних пакунків немає в лог файлі:"
     Romanian   -> "Acestea nu au apărut în log:"
+    Czech      -> "Tyto se neobjevily v souboru log:"
     _          -> "These have not appeared in the log file:"
 
 -------------------------------
@@ -1498,6 +1570,7 @@ reportNotInLog_1 = \case
 packageNotFound_1 :: Language -> Doc AnsiStyle
 packageNotFound_1 = \case
   Romanian -> "Nu s-a găsit nici un pachet."
+  Czech    -> "Nebyly nalezeny žádné balíčky"
   _        -> "No packages found."
 
 -- https://github.com/fosskers/aura/issues/498
@@ -1510,11 +1583,13 @@ connectFailure_1 = \case
   Dutch     -> "Contact opnemen met de AUR mislukt. Heeft U een internet connectie?"
   Ukrainian -> "Не вдалося зв'язатись з AUR. У вас є підключення до інтернету?"
   Romanian  -> "Nu s-a putut contacta AUR. Sunteți conectat pe Internet?"
+  Czech     -> "Nepodařilo se kontaktovat AUR server. Máte připojení k internetu?"
   _         -> "Failed to contact the AUR. Do you have an internet connection?"
 
 dependencyLookup_1 :: Text -> Language -> Doc AnsiStyle
 dependencyLookup_1 t = \case
   Romanian  -> vsep ["A fost o problemă cu analiza recursivă de dependențe:", pretty t]
+  Czech     -> vsep ["Při rekurzivním vyhledávání závislostí došlo k problému:", pretty t]
   _         -> vsep ["There was an issue during recursive dependency lookup:", pretty t]
 
 miscAURFailure_1 :: Language -> Doc AnsiStyle
@@ -1526,6 +1601,7 @@ miscAURFailure_1 = \case
   Dutch     -> "Contact opnemen met de AUR is op een onbekende manier mislukt."
   Ukrainian -> "Зв'язок з AUR було обірвано невідомим чином."
   Romanian  -> "Nu s-a putut contacta AUR dintr-un motiv necunoscut."
+  Czech     -> "Kontaktování AUR se nezdařilo neznámým způsobem."
   _         -> "Contacting the AUR failed in some unknown way."
 
 miscAURFailure_3 :: Language -> Doc AnsiStyle
@@ -1535,6 +1611,7 @@ miscAURFailure_3 = \case
   Spanish   -> "El JSON devuelto por el servidor AUR no se pudo decodificar."
   Ukrainian -> "JSON, який повернувся з сервера AUR, неможливо розшифрувати."
   Romanian  -> "JSON-ul întors de server-ul AUR nu putea fi decodat."
+  Czech     -> "JSON vrácený ze serveru AUR nelze dekódovat."
   _         -> "The JSON returned from the AUR server could not be decoded."
 
 infoFields :: Language -> [Text]
@@ -1574,6 +1651,7 @@ outOfDateMsg (Just _) = red . \case
     Dutch      -> "Verouderd!"
     Ukrainian  -> "Застарів!"
     Romanian   -> "Neactualizat!"
+    Czech      -> "Zastaralý"
     _          -> "Out of Date!"
 outOfDateMsg Nothing = green . \case
     Japanese   -> "最新"
@@ -1595,6 +1673,7 @@ outOfDateMsg Nothing = green . \case
     Dutch      -> "Up-to-date"
     Ukrainian  -> "Найновіший"
     Romanian   -> "Actializat"
+    Czech      -> "Aktuální"
     _          -> "Up to Date"
 
 -- NEEDS TRANSLATION
@@ -1619,6 +1698,7 @@ orphanedMsg Nothing = red . \case
     Dutch      -> "Verweest!"
     Ukrainian  -> "Осиротів!"
     Romanian   -> "Orfan!"
+    Czech      -> "Opuštěno!"
     _          -> "Orphaned!"
 
 -----------------------
@@ -1646,6 +1726,7 @@ saveState_1 = \case
     Dutch      -> "Pakketstatus opgeslagen."
     Ukrainian  -> "Стан пакунків збережено."
     Romanian   -> "Stare de pachete salvată."
+    Czech      -> "Stav balíčku byl uložen"
     _          -> "Saved package state."
 
 -- NEEDS TRANSLATION
@@ -1670,6 +1751,7 @@ restoreState_1 = \case
     Dutch      -> "Verzochtte downgrade versies niet beschikbaar voor:"
     Ukrainian  -> "Запитані версії для відкату не доступні для:"
     Romanian   -> "Versiunea solicitată pentru retrogradare nu este disponibilă pentru:"
+    Czech      -> "Požadované nižší verze nejsou k dispozici pro:"
     _          -> "Requested downgrade versions not available for:"
 
 restoreState_2 :: Language -> Doc AnsiStyle
@@ -1687,6 +1769,7 @@ restoreState_2 = \case
     Dutch      -> "Er zijn geen opgeslagen statussen om te herstellen. (Gebruik -B om de huidige staat op te slaan)"
     Ukrainian  -> "Немає збережених станів для відновлення. (Викоривуйте -B для збереження теперішнього стану)"
     Romanian   -> "Nu există vreo stare de recuperat. (Folosiți -B pentru a salva starea actuală)"
+    Czech      -> "Žádné uložené stavy k obnovení. (Pro uložení aktuálního stavu použijte -B)"
     _          -> "No saved states to be restored. (Use -B to save the current state)"
 
 -- NEEDS TRANSLATION
@@ -1711,6 +1794,7 @@ reinstallAndRemove_1 = \case
     Dutch      -> "Er zijn geen pakketten die wijzigingen nodig hebben."
     Ukrainian  -> "Пакунки не потребують оновлення."
     Romanian   -> "Nu trebuie schimbat nici un pachet."
+    Czech      -> "Žádné balíčky není třeba měnit."
     _          -> "No packages need changing."
 
 --------------------------------------
@@ -1728,6 +1812,7 @@ whoIsBuildUser_1 = \case
     Dutch      -> "Kan niet bepalen met welk gebruikers account te bouwen."
     Ukrainian  -> "Не вдається визначити користувача, від імені якого буде проводитись збірка."
     Romanian   -> "Nu se poate determina cu care cont de utilizator să se compileze."
+    Czech      -> "Nelze určit, se kterým uživatelským účtem se má provezt build."
     _          -> "Can't determine which user account to build with."
 
 ------------------------
@@ -1745,6 +1830,7 @@ confParsing_1 = \case
     Dutch      -> "Niet in staat om uw pacman.conf bestand te parseren."
     Ukrainian  -> "Не вдалось зрозуміти вміст файлу pacman.conf."
     Romanian   -> "Nu se poate analiza fișierul pacman.conf."
+    Czech      -> "Nelze analyzovat soubor pacman.conf."
     _          -> "Unable to parse your pacman.conf file."
 
 provides_1 :: PkgName -> Language -> Doc AnsiStyle
@@ -1756,6 +1842,7 @@ provides_1 (bt . pnName -> pro) = \case
     Dutch      -> pro <+> "is vereist als afhankelijkheid, die wordt geleverd door meerdere pakketten. Selecteer er alstublieft een:"
     Ukrainian  -> pro <+> "потрібен як залежність, яка надається декількома пакунками. Оберіть один з них:"
     Romanian   -> pro <+> "este necesar ca dependență, care e provizionat de mai multe pachete. Selectați unul dintre ele:"
+    Czech      -> pro <+> "je vyžadována jako závislost, kterou poskytuje několik balíčků. Prosím vyberte jeden:"
     _          -> pro <+> "is required as a dependency, which is provided by multiple packages. Please select one:"
 
 ----------------------------------
@@ -1782,6 +1869,7 @@ hotEdit_1 (bt . pnName -> p) = \case
     Dutch      -> "Wilt u het PKGBUILD-bestand van " <> p <> " bewerken?"
     Ukrainian  -> "Бажаєте відредагувати PKGBUILD для пакунку " <> p <> "?"
     Romanian   -> "Doriți să modificați PKGBUILD-ul pachetului " <> p <> "?"
+    Czech      -> "Chcete upravit PKGBUILD z" + <> p <> "?"
     _          -> "Would you like to edit the PKGBUILD of " <> p <> "?"
 
 hotEdit_2 :: Language -> Doc AnsiStyle
@@ -1791,6 +1879,7 @@ hotEdit_2 = \case
   Spanish   -> "¿Desea editar el archivo .install?"
   Ukrainian -> "Бажаєте відредагувати файл .intall?"
   Romanian  -> "Doriți să modificați fișierul .install?"
+  Czech     -> "chcete upravit soubor .install?"
   _         -> "Would you like to edit the .install file?"
 
 hotEdit_3 :: FilePath -> Language -> Doc AnsiStyle
@@ -1800,6 +1889,7 @@ hotEdit_3 fp = \case
   Spanish   -> "¿Desea editar " <> pretty fp <> "?"
   Ukrainian -> "Бажаєте відредагувати " <> pretty fp <> "?"
   Romanian  -> "Doriți să modificați " <> pretty fp <> "?"
+  Czech     -> "Chcete upravit" <> pretty fp <> "?"
   _         -> "Would you like to edit " <> pretty fp <> "?"
 
 ------------------------------
@@ -1814,6 +1904,7 @@ security_1 (PkgName p) = \case
   Dutch     -> "Het PKGBUILD-bestand van" <+> bt p <+> " was te complex om te parseren - het kan schadelijke code versluieren."
   Ukrainian -> "PKGBUILD пакунку" <+> bt p <+> "був надто складним для аналізу - він може містити замаскований шкідливий код."
   Romanian  -> "PKGBUILD-ul pachetului" <+> bt p <+> "este prea complicat de analizat - ar putea sa acopere cod rău intenționat."
+  Czech     -> "PKGBUILD z" <+> bt p <+> "byl příliš složitý na analýzu - může obsahovat matoucí škodlivý kód."
   _ -> "The PKGBUILD of" <+> bt p <+> "was too complex to parse - it may be obfuscating malicious code."
 
 security_2 :: Text -> Language -> Doc AnsiStyle
@@ -1825,6 +1916,7 @@ security_2 (bt -> t) = \case
   Dutch     -> t <+> "kan gebruikt worden om willekeurige scripten te downloaden die niet worden bijgehouden door dit PKGBUILD-bestand."
   Ukrainian -> t <+> "може завантажувати довільні скріпти, які не відстежуються цим PKGBUILD."
   Romanian  -> t <+> "se poate folosi pentru a descărca scripturi neurmărite de acest PKGBUILD."
+  Czech     -> t <+> "lze použít ke stažení libovolných skriptů, které tento PKGBUILD nesleduje."
   _ -> t <+> "can be used to download arbitrary scripts that aren't tracked by this PKGBUILD."
 
 security_3 :: Text -> Language -> Doc AnsiStyle
@@ -1836,6 +1928,7 @@ security_3 (bt -> t) = \case
   Dutch     -> t <+> "kan gebruikt worden om willekeurige code uit te voeren die niet worden bijgehouden door dit PKGBUILD-bestand."
   Ukrainian -> t <+> "може виконувати довільний код, який не відстежуються цим PKGBUILD."
   Romanian  -> t <+> "se poate folosi pentru a executa cod arbitrar neurmărit de acest PKGBUILD."
+  Czech     -> t <+> "lze použít ke spuštění libovolného kódu, který tento PKGBUILD nesleduje."
   _ -> t <+> "can be used to execute arbitrary code not tracked by this PKGBUILD."
 
 security_4 :: Text -> Language -> Doc AnsiStyle
@@ -1847,6 +1940,7 @@ security_4 (bt -> t) = \case
   Dutch     -> t <+> "geeft aan dat iemand mogelijk root-toegang to uw machine probeert te krijgen."
   Ukrainian -> t <+> "вказує на те, що хтось може спробувати отримати доступ root до вашої машини."
   Romanian  -> t <+> "indică că cineva are putea încerca să obțină acces root asupra mașinăria dumneavoastră."
+  Czech     -> t <+> "znamená, že se někdo možná pokouší získat přístup root k vašemu počítači."
   _ -> t <+> "indicates that someone may be trying to gain root access to your machine."
 
 security_5 :: PkgName -> Language -> Doc AnsiStyle
@@ -1858,6 +1952,7 @@ security_5 (PkgName p) = \case
   Dutch     -> "WAARSCHUWING: De PKGBUILD van" <+> bt p <+> "bevat bash uitdrukkingen die op de zwarte lijst staan."
   Ukrainian -> "УВАГА! PKGBUILD пакунку" <+> bt p <+> "містить вирази bash, які занесені в чорний список."
   Romanian  -> "ATENȚIE! PKGBUILD-ul pachetului" <+> bt p <+> "conține expresii de bash pe lista neagră."
+  Czech     -> "VAROVÁNÍ: PKGBUILD z" <+> bt p <+> "obsahuje zakazany bash výrazy"
   _ -> "WARNING: The PKGBUILD of" <+> bt p <+> "contains blacklisted bash expressions."
 
 security_6 :: Language -> Doc AnsiStyle
@@ -1869,6 +1964,7 @@ security_6 = \case
   Dutch     -> "Wilt u het bouw process stoppen?"
   Ukrainian -> "Бажаєте скасувати процес збірки?"
   Romanian  -> "Doriți anula procesul de compilare?"
+  Czech     -> "Přejete si ukončit build?"
   _         -> "Do you wish to quit the build process?"
 
 security_7 :: Language -> Doc AnsiStyle
@@ -1880,6 +1976,7 @@ security_7 = \case
   Dutch     -> "Verdere verwerking geannuleerd om het uitvoeren van potentieel schadelijke bash-code te voorkomen."
   Ukrainian -> "Подальша установка скасована, щоб уникнути потенційно шкідливого коду bash."
   Romanian  -> "S-a cancelat procesarea ulterioară pentru a evita cod de bash potențial rău intenționat."
+  Czech     -> "Další proces byl zrušen, aby se zabránilo potenciálně škodlivému bash kódu."
   _ -> "Cancelled further processing to avoid potentially malicious bash code."
 
 security_8 :: Text -> Language -> Doc AnsiStyle
@@ -1891,6 +1988,7 @@ security_8 (bt -> t) = \case
   Dutch     -> t <+> "is een bash-opdracht die is opgenomen in uw PKGBUILD-arrayvelden."
   Ukrainian -> t <+> "- це команда bash, що вбудована в ваші поля масиву PKGBUILD"
   Romanian  -> t <+> "este o comandă bash integrată în matricele din PKGBUILD."
+  Czech     -> t <+> "je bash příkaz vložený do polí pole PKGBUILD."
   _ -> t <+> "is a bash command inlined in your PKGBUILD array fields."
 
 security_9 :: Text -> Language -> Doc AnsiStyle
@@ -1902,6 +2000,7 @@ security_9 (bt -> t) = \case
   Dutch     -> t <+> "is een vreemd ding om in uw arrayvelden te hebben. Is het veilig?"
   Ukrainian -> t <+> "- дивна річ в полях масиву. Це безпечно?"
   Romanian  -> t <+> "e ciudat să se afle în matricele dumneavoastră. Asta este sigur?"
+  Czech     -> t <+> "je zvláštní věc mít v polích. Je to bezpečné?"
   _ -> t <+> "is a strange thing to have in your array fields. Is it safe?"
 
 security_10 :: Text -> Language -> Doc AnsiStyle
@@ -1913,6 +2012,7 @@ security_10 (bt -> t) = \case
   Dutch     -> t <+> "impliceert dat iemand slim probeerde om te gaan met variabelen om schadelijke opdrachten te verbergen."
   Ukrainian -> t <+> "означає, що хтось намагається обдурити змінними, щоб сховати небеспечні команди."
   Romanian  -> t <+> "implică că cineva încearcă să fie șmecher cu variabile pentru a ascunde comenzi rele intenționate."
+  Czech     -> t <+> "naznačuje že se někdo snažil být chytrý s proměnnými, aby skryl škodlivé příkazy."
   _ -> t <+> "implies that someone was trying to be clever with variables to hide malicious commands."
 
 security_11 :: Language -> Doc AnsiStyle
@@ -1922,6 +2022,7 @@ security_11 = \case
   Spanish   -> "Éste PKGBUILD es demasiado complejo para analizar, puede estar ofuscando código malicioso."
   Ukrainian -> "Цей PKGBUILD був надто складним для аналізу - він може містити шкідливий код."
   Romanian  -> "Acel PKGBUILD este prea complicat de analizat - are putea ascunde cod rău intenționat."
+  Czech     -> "Tento PKGBUILD je příliš složitý na to, aby jej bylo možné analyzovat/rezebrat – může obsahovat matoucí škodlivý kód."
   _         -> "That PKGBUILD is too complex to parse - it may be obfuscating malicious code."
 
 security_12 :: Language -> Doc AnsiStyle
@@ -1931,6 +2032,7 @@ security_12 = \case
   Spanish   -> "Posibles vulnerabilidades de PKGBUILD detectadas."
   Ukrainian -> "Потенційні вразливості знайдено в PKGBUILD."
   Romanian  -> "Vulnerabilități potențiale detectate în PKGBUILD."
+  Czech     -> "Byla zjištěna potenciální bezpečnostní chyba v PKGBUILD."
   _         -> "Potential PKGBUILD vulnerabilities detected."
 
 security_13 :: Word -> Language -> Doc AnsiStyle
@@ -1940,6 +2042,7 @@ security_13 (bt -> w) = \case
   Spanish   -> "Comprobando" <+> w <+> "PKGBUILDs por vulnerabilidades..."
   Ukrainian -> "Перевіряємо" <+> w <+> "PKGBUILD-ів на вразливості..."
   Romanian  -> "Se verifică PKGBUILD-uri" <+> w <+> "pentru vulnerabilități..."
+  Czech     -> "Kontrola bezpečnostních chyb v" <+> w <+> "PKGBUILD"
   _         -> "Checking" <+> w <+> "PKGBUILDs for vulnerabilities..."
 
 security_14 :: Language -> Doc AnsiStyle
@@ -1949,6 +2052,7 @@ security_14 = \case
   Spanish   -> "No se detectaron vulnerabilidades."
   Ukrainian -> "Ніяких вразливостей не було знайдено."
   Romanian  -> "Nu s-a găsit nici o vulnerabilitate."
+  Czech     -> "Nebyly nalezeny žádné bezpečnostní chyby"
   _         -> "No vulnerabilities detected."
 
 -----------------------
@@ -1971,6 +2075,7 @@ yesNoMessage = \case
     Dutch      -> "[J/n]"
     Ukrainian  -> "[Т/н]"
     Romanian   -> "[D/n]"
+    Czech      -> "[A,n]"
     _          -> "[Y/n]"
 
 yesPattern :: Language -> [T.Text]
@@ -1990,6 +2095,7 @@ yesPattern lang = map T.toCaseFold $ case lang of
     Dutch      -> ["j", "ja"]
     Ukrainian  -> ["т", "так"]
     Romanian   -> ["d", "da"]
+    Czech      -> ["a", "ano"]
     _          -> ["y", "yes"]
 
 ----------------------
