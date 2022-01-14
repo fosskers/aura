@@ -754,6 +754,9 @@ pub(crate) struct Aur {
     /// Pull the latest changes for every local copy of an AUR package.
     #[clap(group = "aur", long, short = 'y', display_order = 1)]
     pub(crate) refresh: bool,
+
+    /// Packages to install.
+    pub(crate) packages: Vec<String>,
 }
 
 /// Save and restore the global package state.

@@ -49,8 +49,8 @@ impl<'a> Package<'a> {
             // FIXME Mon Jan 10 19:19:47 2022
             //
             // Consider `rsplit_once` etc. here.
-            .and_then(|file| file.rsplitn(2, '-').nth(1))
-            .and_then(|pkg| {
+            .and_then(|file| file.rsplit_once('-'))
+            .and_then(|(pkg, _)| {
                 let mut vec: Vec<_> = pkg.rsplitn(3, '-').collect();
                 let name = vec.last()?.to_string();
                 vec.pop();

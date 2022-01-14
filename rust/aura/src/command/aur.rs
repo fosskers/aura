@@ -2,7 +2,7 @@
 
 use crate::error::Error;
 use crate::utils::{self, ResultVoid};
-use crate::{aura, dirs, green, red};
+use crate::{aln, aura, dirs, green, red};
 use alpm::Alpm;
 use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
@@ -168,7 +168,7 @@ pub(crate) fn search(
     Ok(())
 }
 
-/// Open a given package's AUR package.
+/// Open a given package's AUR package in a browser.
 pub(crate) fn open(package: &str) -> Result<(), std::io::Error> {
     let url = package_url(package);
     crate::open::open(&url)
@@ -186,7 +186,10 @@ fn package_date(epoch: i64) -> ColoredString {
 }
 
 /// Clone the AUR repository of given packages.
-pub(crate) fn clone_repos(fll: &FluentLanguageLoader, packages: &[String]) -> Result<(), Error> {
+pub(crate) fn clone_aur_repos(
+    fll: &FluentLanguageLoader,
+    packages: &[String],
+) -> Result<(), Error> {
     let clones: Validated<(), &str> = packages
         .par_iter()
         .map(|p| {
@@ -246,6 +249,27 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
     }
 }
 
+// TODO Thu Jan 13 17:41:55 2022
+//
+// This will obviously require more arguments.
+pub(crate) fn install(fll: &FluentLanguageLoader, pkgs: &[String]) -> Result<(), Error> {
+    // Exit early if the user passed no packages.
+    if pkgs.is_empty() {
+        red!(fll, "common-no-packages");
+        return Err(Error::Silent);
+    }
+
+    let clone_dir = crate::dirs::clones()?;
+
+    aln!("Are they real?");
+
+    for p in pkgs {
+        println!("{}: {}", p, is_aur_package_fast(&clone_dir, p));
+    }
+
+    Ok(())
+}
+
 /// Clone a package's AUR repository and return the full path to the clone.
 fn clone_aur_repo(root: Option<&Path>, package: &str) -> Option<PathBuf> {
     let mut url: PathBuf = [AUR_BASE_URL, package].iter().collect();
@@ -261,8 +285,11 @@ fn clone_aur_repo(root: Option<&Path>, package: &str) -> Option<PathBuf> {
         .and_then(|status| status.success().then(|| clone_path))
 }
 
-/// Quickly check some given packages names against the local cache of package
-/// clones to see if the arguments are real AUR packages.
+/// Quickly check some given package's name against the local cache of package
+/// clones to see if its a real AUR package.
+///
+/// This of course isn't fool proof, since it doesn't consult the AUR, and thus
+/// the caller should follow up with an AUR call if this returns `false`.
 fn is_aur_package_fast(clone_dir: &Path, package: &str) -> bool {
     let mut path = clone_dir.to_path_buf();
     path.push(package);
