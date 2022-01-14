@@ -3,12 +3,13 @@
 #![warn(missing_docs)]
 
 use curl::easy::Easy;
-use raur::{Package, SearchBy};
+use raur::SearchBy;
 use serde_derive::Deserialize;
 use std::cell::RefCell;
 use std::fmt;
 
 pub use raur::blocking::Raur;
+pub use raur::Package;
 
 /// A response from the aurweb API.
 #[derive(Deserialize)]
