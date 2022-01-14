@@ -3,6 +3,7 @@
 
 #![warn(missing_docs)]
 
+pub mod aur;
 pub mod cache;
 pub mod common;
 pub mod deps;

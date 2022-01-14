@@ -4,24 +4,20 @@ use crate::error::Error;
 use crate::utils::{self, ResultVoid};
 use crate::{aln, aura, dirs, green, red};
 use alpm::Alpm;
+use aura_core::aur::AUR_BASE_URL;
 use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
-use raur_curl::{Handle, Raur};
 use rayon::prelude::*;
 use std::borrow::Cow;
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 use validated::Validated;
 
-/// The base path of the URL.
-pub const AUR_BASE_URL: &str = "https://aur.archlinux.org/";
-
 /// View AUR package information.
 pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<(), Error> {
-    let h = Handle::new();
-    let r = h.info(packages)?;
+    let r = aura_core::aur::info(packages)?;
     let mut w = BufWriter::new(std::io::stdout());
 
     let repo = fl!(fll, "A-i-repo");
@@ -117,7 +113,7 @@ pub(crate) fn search(
 
     // Search using the largest term.
     let initial_term = terms.pop().unwrap();
-    let mut matches: Vec<_> = Handle::new().search(initial_term)?;
+    let mut matches: Vec<_> = aura_core::aur::search(&initial_term)?;
 
     // Filter out packages that don't match other search terms.
     matches.retain(|m| {
@@ -264,7 +260,11 @@ pub(crate) fn install(fll: &FluentLanguageLoader, pkgs: &[String]) -> Result<(),
     aln!("Are they real?");
 
     for p in pkgs {
-        println!("{}: {}", p, is_aur_package_fast(&clone_dir, p));
+        println!(
+            "{}: {}",
+            p,
+            aura_core::aur::is_aur_package_fast(&clone_dir, p)
+        );
     }
 
     Ok(())
@@ -283,15 +283,4 @@ fn clone_aur_repo(root: Option<&Path>, package: &str) -> Option<PathBuf> {
     aura_core::git::shallow_clone(&url, &clone_path)
         .ok()
         .and_then(|status| status.success().then(|| clone_path))
-}
-
-/// Quickly check some given package's name against the local cache of package
-/// clones to see if its a real AUR package.
-///
-/// This of course isn't fool proof, since it doesn't consult the AUR, and thus
-/// the caller should follow up with an AUR call if this returns `false`.
-fn is_aur_package_fast(clone_dir: &Path, package: &str) -> bool {
-    let mut path = clone_dir.to_path_buf();
-    path.push(package);
-    path.is_dir()
 }

@@ -83,6 +83,7 @@ dependencies = [
  "chrono",
  "itertools",
  "petgraph",
+ "raur-curl",
  "rayon",
  "serde",
  "serde_json",
