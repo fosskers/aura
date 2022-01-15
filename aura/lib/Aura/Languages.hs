@@ -705,7 +705,7 @@ confirmIgnored_1 (bt . pnName -> p) = \case
     Esperanto  -> p <> " estas markita kiel malatenta. Ĉu instali?"
     Dutch      -> p <> " is gemarkeerd als genegeerd. Toch installeren?"
     Romanian   -> p <> " e marcat ca ignorat. Să se instaleze oricum?"
-    Vietnamese -> p <> "được đáng dấu là Bỏ qua. Vẫn cài đặt nó?"
+    Vietnamese -> p <> " được đáng dấu là Bỏ qua. Vẫn cài đặt nó?"
     _          -> p <> " is marked as Ignored. Install anyway?"
 
 -- NEEDS UPDATE TO REFLECT CHANGED ENGLISH
