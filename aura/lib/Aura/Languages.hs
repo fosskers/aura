@@ -1870,7 +1870,7 @@ hotEdit_1 (bt . pnName -> p) = \case
     Dutch      -> "Wilt u het PKGBUILD-bestand van " <> p <> " bewerken?"
     Ukrainian  -> "Бажаєте відредагувати PKGBUILD для пакунку " <> p <> "?"
     Romanian   -> "Doriți să modificați PKGBUILD-ul pachetului " <> p <> "?"
-    Vietnamese -> "Bạn có muốn chỉnh sửa PKGBUILD của" <> p <> "?"
+    Vietnamese -> "Bạn có muốn chỉnh sửa PKGBUILD của " <> p <> "?"
     _          -> "Would you like to edit the PKGBUILD of " <> p <> "?"
 
 hotEdit_2 :: Language -> Doc AnsiStyle
