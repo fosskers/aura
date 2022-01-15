@@ -1056,7 +1056,7 @@ cleanStates_2 n@(bt . tshow -> s) = \case
     Dutch      -> s <> " pakketstatussen worden behouden. De rest verwijderen?"
     Ukrainian  -> s <> " стан пакунків будуть залишені. Видалити решту?"
     Romanian   -> "Stările pachetului " <> s <> " vor fi păstrate. Să se șteargă restul?"
-    Vietnamese -> "Trạng thái của gói" <> s <> "sẽ được lưu lại. Loại bỏ phần còn lại?"
+    Vietnamese -> "Trạng thái của gói " <> s <> " sẽ được lưu lại. Loại bỏ phần còn lại?"
     _          -> s <> " package states will be kept. Remove the rest?"
 
 -- NEEDS TRANSLATION
