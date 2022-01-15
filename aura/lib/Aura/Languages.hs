@@ -1123,7 +1123,7 @@ cleanStates_6 n = \case
   Dutch     -> pretty n <+> "hiervan zijn vastgezet, en worden niet verwijderd."
   Ukrainian -> pretty n <+> "були закріплені та залишуться недоторканими."
   Romanian  -> pretty n <+> "dintre astea sunt fixate, și nu vor fi șterse."
-  Vietnamese -> pretty n <+> " trong số chúng đã được ghim, và sẽ không bị loại bỏ."
+  Vietnamese -> pretty n <+> "trong số chúng đã được ghim, và sẽ không bị loại bỏ."
   _         -> pretty n <+> "of these are pinned, and won't be removed."
 
 readState_1 :: Language -> Doc AnsiStyle
