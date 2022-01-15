@@ -2,7 +2,6 @@
 
 module Main ( main ) where
 
-import           Aura.Languages
 import           Aura.Packages.Repository
 import           Aura.Pkgbuild.Security
 import           Aura.Settings.External
@@ -65,13 +64,6 @@ suite conf badRaw goodRaw = testGroup "Unit Tests"
         (r >>= M.lookup "BadLine") @?= Just ["bad"]
         (r >>= M.lookup "OkLine") @?= Just ["ok"]
         (r >>= M.lookup "ParallelDownloads") @?= Just ["5"]
-    ]
-  , testGroup "Aura.Languages"
-    [ testCase "Language names are complete" $ do
-        let languages = [minBound..maxBound] :: [Language]
-        for_ languages $ \lang -> do
-          let names = languageNames lang
-          assertEqual ("Language name map for " ++ show lang ++ " has incorrect number of items") (length languages - 1) (M.size names)
     ]
   , testGroup "Aura.Pkgbuild.Security"
     [ testCase "Parsing - bad.PKGBUILD" $

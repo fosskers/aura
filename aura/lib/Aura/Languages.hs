@@ -1,4 +1,5 @@
 {-# LANGUAGE LambdaCase       #-}
+{-# LANGUAGE TupleSections    #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ViewPatterns     #-}
 
@@ -25,7 +26,6 @@ import           Prettyprinter.Render.Terminal
 import           RIO
 import qualified RIO.List as L
 import qualified RIO.Map as M
-import qualified RIO.Map.Partial as M
 import qualified RIO.Text as T
 
 ---
@@ -56,32 +56,6 @@ translators = M.fromList
     , (Czech,      "Daniel Rosel")
     ]
 
--- These need updating! Or removing...
-languageNames :: Language -> Map Language T.Text
-languageNames = M.fromList . zip [ Japanese, Polish, Croatian, Swedish, German, Spanish, Portuguese, French, Russian, Italian, Serbian, Norwegian, Indonesia, Chinese, Esperanto, Dutch, Turkish, Arabic, Ukrainian, Romanian ] . \case
-    Japanese   -> [ "日本語", "ポーランド語", "クロアチア語", "スウェーデン語", "ドイツ語", "スペイン語", "ポルトガル語", "フランス語", "ロシア語", "イタリア語", "セルビア語", "ノルウェー語", "インドネシア語", "中国語", "エスペラント", "オランダ語", "トルコ語", "アラビア語", "Ukrainian", "ルーマニア語" ]
-    Arabic     -> [ "اليابانية", "البولندية", "الكرواتية", "السويدية", "الالمانية", "الاصبانية", "البرتغالية", "الفرنسية", "الروسية", "الايطالية", "السيبيرية", "النرويجية", "الاندونيسية", "الصينية", "الاسبرانتو", "الهولندية", "التركية", "Arabic", "Ukrainian", "الرومانية" ]
-    Turkish    -> [ "Japonca", "Lehçe", "Hırvatça", "İsveççe", "Almanca", "İspanyolca", "Portekizce", "Fransızca", "Rusça", "İtalyanca", "Sırpça", "Norveççe", "Endonezce", "Çince", "Esperanto", "Hollandaca", "Türkçe", "Arabic", "Ukrainian", "Rumence" ]
-    Polish     -> [ "Japanese", "polski", "chorwacki", "szwedzki", "niemiecki", "hiszpański", "portugalski", "francuski", "rosyjski", "włoski", "serbski", "norweski", "indonezyjski", "chiński", "esperanto", "niderlandzki", "Turkish", "Arabic", "Ukrainian", "rumuński" ]
-    Croatian   -> [ "Japanese", "poljski", "hrvatski", "švedski", "njemački", "španjolski", "portugalski", "francuski", "ruski", "talijanski", "srpski", "norveški", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish", "Arabic", "Ukrainian", "rumunjski" ]
-    Swedish    -> [ "Japanese", "Polska", "Kroatiska", "Svenska", "Tyska", "Spanska", "Portugisiska", "Franska", "Ryska", "Italienska", "Serbiska", "Norska", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish", "Arabic", "Ukrainian", "Rumänska" ]
-    German     -> [ "Japanisch", "Polnisch", "Kroatisch", "Schwedisch", "Deutsch", "Spanisch", "Portugiesisch", "Französisch", "Russisch", "Italienisch", "Serbisch", "Norwegisch", "Indonesisch", "Chinese", "Esperanto", "Dutch", "Turkish", "Arabic", "Ukrainian", "Romanisch" ]
-    Spanish    -> [ "Japanese", "Polaco", "Croata", "Sueco", "Alemán", "Español", "Portugués", "Francés", "Ruso", "Italiano", "Serbio", "Noruego", "Indonesio", "Chinese", "Esperanto", "Dutch", "Turkish", "Arabic", "Ukrainian", "Rumano" ]
-    Portuguese -> [ "Japonês", "Polonês", "Croata", "Sueco", "Alemão", "Espanhol", "Português", "Francês", "Russo", "Italiano", "Sérvio", "Norueguês", "Indonésio", "Chinês", "Esperanto", "Dutch", "Turkish", "Arabic", "Ukrainian", "Romena" ]
-    French     -> [ "Japanese", "Polonais", "Croate", "Suédois", "Allemand", "Espagnol", "Portugais", "Français", "Russe", "Italien", "Serbe", "Norvégien", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish", "Arabic", "Ukrainian", "Roumain" ]
-    Russian    -> [ "Японский", "Польский", "Хорватский", "Шведский", "Немецкий", "Испанский", "Португальский", "Французский", "Русский", "Итальянский", "Сербский", "Норвежский", "Индонезийский", "Китайский", "Эсперанто", "Датский", "Турецкий", "Арабский", "Украинский", "Румынский" ]
-    Italian    -> [ "Giapponese", "Polacco", "Croato", "Svedese", "Tedesco", "Spagnolo", "Portoghese", "Francese", "Russo", "Italiano", "Serbo", "Norvegese", "Indonesiano", "Cinese", "Esperanto", "Dutch", "Turkish", "Arabic", "Ukrainian", "Rumeno" ]
-    Serbian    -> [ "Japanese", "Пољски", "Хрватски", "Шведски", "Немачки", "Шпански", "Португалски", "Француски", "Руски", "Италијански", "Српски", "", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish", "Arabic", "Ukrainian", "Румунски" ]
-    Norwegian  -> [ "Japanese", "Polsk", "Kroatisk", "Svensk", "Tysk", "Spansk", "Portugisisk", "Fransk", "Russisk", "Italiensk", "Serbisk", "Norsk", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish", "Arabic", "Ukrainian", "Rumensk" ]
-    Indonesia  -> [ "Japanese", "Polandia", "Kroasia", "Swedia", "Jerman", "Spanyol", "Portugis", "Prancis", "Rusia", "Italia", "Serbia", "Norwegia", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish", "Arabic", "Ukrainian", "Rumania" ]
-    Chinese    -> [ "日语", "波兰语", "克罗地亚语", "瑞典语", "德语", "西班牙语", "葡萄牙语", "法语", "俄语", "意大利语", "塞尔维亚语", "挪威语", "印度尼西亚语", "中文", "世界语", "Dutch", "Turkish", "Arabic", "Ukrainian", "罗马尼亚语" ]
-    Esperanto  -> [ "La japana", "La pola", "La kroata", "La sevda", "La germana", "La hispana", "La portugala", "La franca", "La rusa", "La itala", "La serba", "La norvega", "La indonezia", "La ĉina", "Esperanto", "La nederlanda", "Turkish", "Arabic", "Ukrainian", "La rumana" ]
-    Dutch      -> [ "Japans", "Pools", "Kroatisch", "Zweeds", "Duits", "Spaans", "Portugees", "Frans", "Russisch", "Italiaans", "Servisch", "Noors", "Indonesisch", "Chinees", "Esperanto", "Nederlands", "Turkish", "Arabic", "Ukrainian", "Roemeens" ]
-    Ukrainian  -> [ "Японська", "Польська", "Хорватська", "Швецька", "Німецька", "Іспанська", "Португальська", "Французька", "Російська", "Італьянська", "Сербська", "Норвезька", "Індонезійська", "Китайська", "Есперанто", "Датська", "Турецька", "Арабська", "Українська", "Румунська" ]
-    Romanian   -> [ "Japoneză", "Poloneză", "Croată", "Suedeză", "Germană", "Spaniolă", "Portugheză", "Franceză", "Rusă", "Italiană", "Sârbă", "Norvegiană", "Indoneziană", "Chineză", "Esperanto", "Olandeză", "Turcă", "Arabă", "Ucraineană", "Română" ]
-    Czech      -> [ "Japonština", "Polština", "Chorvatština", "Švédština", "Němčina", "Španělština", "Portugalština", "Francouzština", "Ruština", "Italština", "Srbština", "Norština", "Indonéština", "Čínština", "Esperanto", "Holandština", "Turečtina", "Arabština", "Ukrajinština", "Rumunština"]
-    _          -> [ "Japanese", "Polish", "Croatian", "Swedish", "German", "Spanish", "Portuguese", "French", "Russian", "Italian", "Serbian", "Norwegian", "Indonesian", "Chinese", "Esperanto", "Dutch", "Turkish", "Arabic", "Ukrainian", "Romanian" ]
-
 translatorMsgTitle :: Language -> Text
 translatorMsgTitle = \case
     Japanese   -> "Auraの翻訳者："
@@ -109,12 +83,15 @@ translatorMsgTitle = \case
 
 translatorMsg :: Language -> [Text]
 translatorMsg lang = title : names
-  where title = translatorMsgTitle lang
-        names = fmap snd . M.toList $
-            M.mapWithKey (\l t -> formatLang (assocLang l t)) translators
-        assocLang lang' translator = (translator, langNames M.! lang')
-        formatLang (translator, lang') = " (" <> lang' <> ") " <> translator
-        langNames = languageNames lang
+  where
+    title :: Text
+    title = translatorMsgTitle lang
+
+    names :: [Text]
+    names = mapMaybe (\l -> formatLang . (,l) <$> M.lookup l translators) [English ..]
+
+    formatLang :: (Text, Language) -> Text
+    formatLang (translator, lang') = " (" <> (T.pack $ show lang') <> ") " <> translator
 
 -- | Make some `Text` cyan. Previous wrapped things in backticks.
 bt :: Pretty a => a -> Doc AnsiStyle
