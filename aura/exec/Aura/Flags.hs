@@ -588,6 +588,7 @@ language = foldr1 (<|>) $ NEL.map (\(f, v) -> flag' v (long f <> hidden)) langs
                 , ( "arabic",     Arabic ),     ( "العربية",    Arabic )
                 , ( "ukrainian",  Ukrainian ),  ( "українська", Ukrainian)
                 , ( "romanian",   Romanian ),   ( "română", Romanian )
+                , ( "vietnamese", Vietnamese )
                 ]
 
 logLevel :: Parser LogLevel

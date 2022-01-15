@@ -36,6 +36,7 @@ package = \case
     Esperanto  -> "Pakaĵo"
     Dutch      -> "Pakket"
     Romanian   -> "Pachet"
+    Vietnamese -> "Gói"
     _          -> "Package"
 
 firstInstall :: Language -> Text
@@ -57,6 +58,7 @@ firstInstall = \case
     Esperanto  -> "Unua Instalo"
     Dutch      -> "Eerste installatie"
     Romanian   -> "Prima instalare"
+    Vietnamese -> "Cài đặt lần đầu"
     _          -> "First Install"
 
 upgrades :: Language -> Text
@@ -78,6 +80,7 @@ upgrades = \case
     Esperanto  -> "Noveldonoj"
     Dutch      -> "Upgrades"
     Romanian   -> "Actualizări"
+    Vietnamese -> "Cập nhật"
     _          -> "Upgrades"
 
 recentActions :: Language -> Text
@@ -99,6 +102,7 @@ recentActions = \case
     Esperanto  -> "Ĵusaj Agoj"
     Dutch      -> "Recente Acties"
     Romanian   -> "Acțiuni Recente"
+    Vietnamese -> "Hoạt động gần nhất"
     _          -> "Recent Actions"
 
 repository :: Language -> Text
@@ -141,6 +145,7 @@ name = \case
     Esperanto  -> "Nomo"
     Dutch      -> "Naam"
     Romanian   -> "Nume"
+    Vietnamese -> "Tên"
     _          -> "Name"
 
 version :: Language -> Text
@@ -162,6 +167,7 @@ version = \case
     Esperanto  -> "Versio"
     Dutch      -> "Versie"
     Romanian   -> "Versiune"
+    Vietnamese -> "Phiên bản"
     _          -> "Version"
 
 aurStatus :: Language -> Text
@@ -181,6 +187,7 @@ aurStatus = \case
     Esperanto  -> "Stato en AUR"
     Dutch      -> "AUR Status"
     Romanian   -> "Stare AUR"
+    Vietnamese -> "Trạng thái AUR"
     _          -> "AUR Status"
 
 -- NEEDS TRANSLATION
@@ -219,6 +226,7 @@ projectUrl = \case
     Esperanto  -> "URL de Projekto"
     Dutch      -> "Project URL"
     Romanian   -> "URL al proiectului"
+    Vietnamese -> "URL của Dự án"
     _          -> "Project URL"
 
 aurUrl :: Language -> Text
@@ -237,6 +245,7 @@ aurUrl = \case
     Esperanto  -> "URL en AUR"
     Dutch      -> "AUR URL"
     Romanian   -> "URL AUR"
+    Vietnamese -> "URL của AUR"
     _          -> "AUR URL"
 
 license :: Language -> Text
@@ -258,6 +267,7 @@ license = \case
     Esperanto  -> "Permesilo"
     Dutch      -> "Licentie"
     Romanian   -> "Licență"
+    Vietnamese -> "Bản quyền"
     _          -> "License"
 
 dependsOn :: Language -> Text
@@ -277,6 +287,7 @@ dependsOn = \case
     Esperanto  -> "Dependi de"
     Dutch      -> "Hangt af van"
     Romanian   -> "Depinde de"
+    Vietnamese -> "Phụ thuộc vào"
     _          -> "Depends On"
 
 buildDeps :: Language -> Text
@@ -314,6 +325,7 @@ votes = \case
     Esperanto  -> "Balotiloj"
     Dutch      -> "Stemmen"
     Romanian   -> "Voturi"
+    Vietnamese -> "Bình chọn"
     _          -> "Votes"
 
 popularity :: Language -> Text
@@ -326,6 +338,7 @@ popularity = \case
     Esperanto  -> "Populareco"
     Dutch      -> "Populairiteit"
     Romanian   -> "Popularitate"
+    Vietnamese -> "Phổ biến"
     _          -> "Popularity"
 
 description :: Language -> Text
@@ -347,4 +360,5 @@ description = \case
     Esperanto  -> "Priskribo"
     Dutch      -> "Beschrijving"
     Romanian   -> "Descriere"
+    Vietnamese -> "Mô tả"
     _          -> "Description"
