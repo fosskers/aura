@@ -521,7 +521,7 @@ missingPkg_4 pns = \case
   Dutch      -> vsep $ "The volgende afhankelijkheidscycli zijn gedetecteerd:" : pns'
   Ukrainian  -> vsep $ "Було помічено цикл залежностей:" : pns'
   Romanian   -> vsep $ "Aceste cicluri de dependență a fost detectate:" : pns'
-  Vietnamese -> vsep $ "Phát hiện chu kỳ gói phụ thuộc: " pns'
+  Vietnamese -> vsep $ "Phát hiện chu kỳ gói phụ thuộc: " : pns'
   _ -> vsep $ "The following dependency cycles were detected:" : pns'
   where
     pns' :: [Doc ann]
