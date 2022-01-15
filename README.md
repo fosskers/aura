@@ -4,9 +4,9 @@
 
 # The Aura Package Manager
 
-| Build                                                              | Release                                                                                      | Downloads                                                               | Languages                                                                                                                                                 |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ![img](https://github.com/fosskers/aura/workflows/Tests/badge.svg) | [![img](https://img.shields.io/hackage/v/aura.svg)](http://hackage.haskell.org/package/aura) | ![img](https://img.shields.io/github/downloads/fosskers/aura/total.svg) | :uk: :jp: :croatia: :sweden: :de: :es: :portugal: :fr: :ru: :it: :serbia: :norway: :indonesia: :cn: :netherlands: :tr: :saudi_arabia: :ukraine: :romania: |
+| Build                                                              | Release                                                                                      | Downloads                                                               | Languages                                                                                                                                                           |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![img](https://github.com/fosskers/aura/workflows/Tests/badge.svg) | [![img](https://img.shields.io/hackage/v/aura.svg)](http://hackage.haskell.org/package/aura) | ![img](https://img.shields.io/github/downloads/fosskers/aura/total.svg) | :uk: :jp: :croatia: :sweden: :de: :es: :portugal: :fr: :ru: :it: :serbia: :norway: :indonesia: :cn: :netherlands: :tr: :saudi_arabia: :ukraine: :romania: :vietnam: |
 
 Welcome to the main repository for Aura, a secure, multilingual package manager for Arch Linux.
 
