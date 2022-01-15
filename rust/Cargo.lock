@@ -82,6 +82,7 @@ dependencies = [
  "aura-arch",
  "chrono",
  "itertools",
+ "log",
  "petgraph",
  "raur-curl",
  "rayon",
