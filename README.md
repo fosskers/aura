@@ -7,8 +7,6 @@
 [![img](https://img.shields.io/hackage/v/aura.svg)](http://hackage.haskell.org/package/aura)
 ![img](https://img.shields.io/github/downloads/fosskers/aura/total.svg)
 
-<b>Available Localisations</b>
-
   <div>
     :uk:
     :jp:
@@ -31,6 +29,8 @@
     :romania:
     :vietnam:
   </div>
+  <br>
+  
 </div>
 
 Welcome to the main repository for Aura, a secure, multilingual package manager for Arch Linux.
