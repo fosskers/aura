@@ -1464,7 +1464,7 @@ cleanCache_7 (bt . tshow -> ps) (bt . tshow -> bytes) = \case
     Spanish    -> "La caché contiene " <> ps <> " paquetes, consumiendo " <> bytes <> " megabytes."
     Ukrainian  -> "Кеш містить " <> ps <> " пакунків, які використовують " <> bytes <> " МБ місця."
     Romanian   -> "Cache-ul conține " <> ps <> " pachete, consumând " <> bytes <> " MB."
-    Vietnamese -> "Có " <> ps <> " gói trong cache, chiếm " <> bytes <> "megabytes."
+    Vietnamese -> "Có " <> ps <> " gói trong cache, chiếm " <> bytes <> " megabytes."
     _          -> "The cache contains " <> ps <> " packages, consuming " <> bytes <> " megabytes."
 
 cleanCache_8 :: Word -> Language -> Doc AnsiStyle
