@@ -846,7 +846,7 @@ reportPkgbuildDiffs_1 (bt . pnName -> p) = \case
     Dutch      -> p <> " heeft nog geen opgeslagen PKGBUILD."
     Ukrainian  -> "В " <> p <> " ще не зберігається PKGBUILD."
     Romanian   -> p <> " încă nu are un PKGBUILD descărcat."
-    Vietnamese -> p <> "không có sẵn PKGBUILD."
+    Vietnamese -> p <> " không có sẵn PKGBUILD."
     _          -> p <> " has no stored PKGBUILD yet."
 
 -- NEEDS TRANSLATION
