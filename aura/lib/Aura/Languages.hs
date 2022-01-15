@@ -536,7 +536,7 @@ missingPkg_5 (PkgName p) = \case
   Dutch     -> bt p <> " bestaat niet."
   Ukrainian -> "Пакунок " <> bt p <> " не існує."
   Romanian  -> "Pachetul " <> bt p <> " nu există."
-  Vietnamese -> bt p <> "không tồn tại."
+  Vietnamese -> bt p <> " không tồn tại."
   _         -> bt p <> " does not exist."
 
 -----------------
