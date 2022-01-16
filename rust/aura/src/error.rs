@@ -3,6 +3,7 @@
 /// Error type for all issues that can occur in the Aura library or executable.
 pub(crate) enum Error {
     A(crate::command::aur::Error),
+    L(crate::command::log::Error),
     Dirs(crate::dirs::Error),
     /// Some IO error, say from reading a file or sending a command to the
     /// shell.
@@ -44,6 +45,12 @@ pub(crate) enum Error {
     /// In theory any relevant error messages have already been localized and
     /// shown to the user.
     Silent,
+}
+
+impl From<crate::command::log::Error> for Error {
+    fn from(v: crate::command::log::Error) -> Self {
+        Self::L(v)
+    }
 }
 
 impl From<crate::dirs::Error> for Error {
@@ -150,6 +157,7 @@ impl std::fmt::Display for Error {
             // Error::FileConflict => write!(f, "The given file target already exists."),
             Error::Silent => write!(f, ""),
             Error::A(e) => write!(f, "{}", e),
+            Error::L(e) => write!(f, "{}", e),
             Error::Dirs(e) => write!(f, "{}", e),
         }
     }

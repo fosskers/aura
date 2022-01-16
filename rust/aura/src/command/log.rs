@@ -3,7 +3,6 @@
 #![allow(clippy::many_single_char_names)]
 
 use crate::command::misc;
-use crate::error::Error;
 use crate::utils::{self, ResultVoid};
 use aura_core as core;
 use chrono::NaiveDate;
@@ -15,6 +14,22 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::path::Path;
 use std::process::Command;
+
+pub enum Error {
+    Io(std::io::Error),
+}
+
+impl From<std::io::Error> for Error {
+    fn from(v: std::io::Error) -> Self {
+        Self::Io(v)
+    }
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        todo!()
+    }
+}
 
 /// Search the Pacman log for a matching string.
 pub(crate) fn search(path: &Path, term: String) -> Result<(), Error> {
