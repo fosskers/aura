@@ -1,6 +1,8 @@
 language-name = English
 
 # AUR Packages (-A)
+A-unreal = { $pkg } is not a real package.
+
 A-i-repo = Repository
 A-i-version = Version
 A-i-status = AUR Status
@@ -88,6 +90,7 @@ common-name = Name
 common-done = Done.
 common-total = Total
 common-no-packages = No packages specified.
+common-no-valid = No valid packages specified.
 common-no-work = Nothing to do.
 
 # Misc.

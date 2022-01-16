@@ -2,7 +2,7 @@
 
 use crate::error::Error;
 use crate::utils::{self, ResultVoid};
-use crate::{aln, aura, dirs, green, red};
+use crate::{aura, dirs, green, red, yellow};
 use alpm::Alpm;
 use aura_core::aur::AUR_BASE_URL;
 use chrono::{TimeZone, Utc};
@@ -255,19 +255,28 @@ pub(crate) fn install(fll: &FluentLanguageLoader, pkgs: &[String]) -> Result<(),
         return Err(Error::Silent);
     }
 
-    let clone_dir = crate::dirs::clones()?;
-
-    aln!("Are they real?");
-
-    for p in pkgs {
-        println!(
-            "{}: {}",
-            p,
-            aura_core::aur::is_aur_package_fast(&clone_dir, p)
-        );
-    }
+    let goods = real_packages(fll, pkgs)?;
 
     Ok(())
+}
+
+fn real_packages<'a>(
+    fll: &FluentLanguageLoader,
+    pkgs: &'a [String],
+) -> Result<Vec<&'a str>, Error> {
+    let clone_dir = crate::dirs::clones()?;
+    let (goods, bads) = aura_core::aur::partition_aur_pkgs(&clone_dir, pkgs)?;
+
+    if goods.good.is_empty() {
+        red!(fll, "common-no-valid");
+        return Err(Error::Silent);
+    }
+
+    for bad in bads.bad {
+        yellow!(fll, "A-unreal", pkg = bad);
+    }
+
+    Ok(goods.good)
 }
 
 /// Clone a package's AUR repository and return the full path to the clone.
