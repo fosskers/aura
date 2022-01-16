@@ -36,6 +36,7 @@ package = \case
     Esperanto  -> "Pakaĵo"
     Dutch      -> "Pakket"
     Romanian   -> "Pachet"
+    Czech      -> "Balíček"
     _          -> "Package"
 
 firstInstall :: Language -> Text
@@ -57,6 +58,7 @@ firstInstall = \case
     Esperanto  -> "Unua Instalo"
     Dutch      -> "Eerste installatie"
     Romanian   -> "Prima instalare"
+    Czech      -> "První instalace"
     _          -> "First Install"
 
 upgrades :: Language -> Text
@@ -78,6 +80,7 @@ upgrades = \case
     Esperanto  -> "Noveldonoj"
     Dutch      -> "Upgrades"
     Romanian   -> "Actualizări"
+    Czech      -> "Aktualizace"
     _          -> "Upgrades"
 
 recentActions :: Language -> Text
@@ -99,6 +102,7 @@ recentActions = \case
     Esperanto  -> "Ĵusaj Agoj"
     Dutch      -> "Recente Acties"
     Romanian   -> "Acțiuni Recente"
+    Czech      -> "Nedávné akce"
     _          -> "Recent Actions"
 
 repository :: Language -> Text
@@ -120,6 +124,7 @@ repository = \case
     Esperanto  -> "Deponejo"
     Dutch      -> "Repository"
     Romanian   -> "Repertoriu"
+    Czech      -> "Úložiště"
     _          -> "Repository"
 
 name :: Language -> Text
@@ -141,6 +146,7 @@ name = \case
     Esperanto  -> "Nomo"
     Dutch      -> "Naam"
     Romanian   -> "Nume"
+    Czech      -> "Název"
     _          -> "Name"
 
 version :: Language -> Text
@@ -162,6 +168,7 @@ version = \case
     Esperanto  -> "Versio"
     Dutch      -> "Versie"
     Romanian   -> "Versiune"
+    Czech      -> "Verze"
     _          -> "Version"
 
 aurStatus :: Language -> Text
@@ -181,6 +188,7 @@ aurStatus = \case
     Esperanto  -> "Stato en AUR"
     Dutch      -> "AUR Status"
     Romanian   -> "Stare AUR"
+    Czech      -> "Stav AUR"
     _          -> "AUR Status"
 
 -- NEEDS TRANSLATION
@@ -198,6 +206,7 @@ maintainer = \case
     Esperanto  -> "Daŭriganto"
     Dutch      -> "Onderhouder"
     Romanian   -> "Întreținător"
+    Czech      -> "Udržovatel"
     _          -> "Maintainer"
 
 projectUrl :: Language -> Text
@@ -219,6 +228,7 @@ projectUrl = \case
     Esperanto  -> "URL de Projekto"
     Dutch      -> "Project URL"
     Romanian   -> "URL al proiectului"
+    Czech      -> "Adresa URL projektu"
     _          -> "Project URL"
 
 aurUrl :: Language -> Text
@@ -237,6 +247,7 @@ aurUrl = \case
     Esperanto  -> "URL en AUR"
     Dutch      -> "AUR URL"
     Romanian   -> "URL AUR"
+    Czech      -> "URL pro AUR"
     _          -> "AUR URL"
 
 license :: Language -> Text
@@ -258,6 +269,7 @@ license = \case
     Esperanto  -> "Permesilo"
     Dutch      -> "Licentie"
     Romanian   -> "Licență"
+    Czech      -> "Licence"
     _          -> "License"
 
 dependsOn :: Language -> Text
@@ -277,6 +289,7 @@ dependsOn = \case
     Esperanto  -> "Dependi de"
     Dutch      -> "Hangt af van"
     Romanian   -> "Depinde de"
+    Czech      -> "Závisí na"
     _          -> "Depends On"
 
 buildDeps :: Language -> Text
@@ -293,6 +306,7 @@ buildDeps = \case
     Esperanto  -> "Muntaj Dependecoj"
     Dutch      -> "Bouw afhankelijkheden"
     Romanian   -> "Dependențe de compilare"
+    Czech      -> "Závislosti kompilace"
     _          -> "Build Deps"
 
 votes :: Language -> Text
@@ -314,6 +328,7 @@ votes = \case
     Esperanto  -> "Balotiloj"
     Dutch      -> "Stemmen"
     Romanian   -> "Voturi"
+    Czech      -> "Hlasy"
     _          -> "Votes"
 
 popularity :: Language -> Text
@@ -326,6 +341,7 @@ popularity = \case
     Esperanto  -> "Populareco"
     Dutch      -> "Populairiteit"
     Romanian   -> "Popularitate"
+    Czech      -> "Popularita"
     _          -> "Popularity"
 
 description :: Language -> Text
@@ -347,4 +363,5 @@ description = \case
     Esperanto  -> "Priskribo"
     Dutch      -> "Beschrijving"
     Romanian   -> "Descriere"
+    Czech      -> "Popis"
     _          -> "Description"
