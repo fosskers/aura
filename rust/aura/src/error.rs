@@ -1,8 +1,9 @@
 //! All errors that can occur in the Aura executable.
 
 /// Error type for all issues that can occur in the Aura library or executable.
-#[derive(Debug)]
 pub(crate) enum Error {
+    A(crate::command::aur::Error),
+    Dirs(crate::dirs::Error),
     /// Some IO error, say from reading a file or sending a command to the
     /// shell.
     IO(std::io::Error),
@@ -45,53 +46,15 @@ pub(crate) enum Error {
     Silent,
 }
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Error::IO(e) => write!(f, "{}", e),
-            Error::Alpm(e) => write!(f, "{}", e),
-            Error::RustyLine(e) => write!(f, "{}", e),
-            Error::I18n(e) => write!(f, "{}", e),
-            Error::Log(e) => write!(f, "{}", e),
-            Error::Env(e) => write!(f, "{}", e),
-            Error::PacConf(e) => write!(f, "{}", e),
-            Error::Curl(e) => write!(f, "{}", e),
-            Error::Chrono(e) => write!(f, "{}", e),
-            Error::Json(e) => write!(f, "{}", e),
-            Error::Aur(e) => write!(f, "{}", e),
-            Error::Rejected => write!(f, "The user said no."),
-            Error::NoneExist => write!(f, "None of those packages exist."),
-            Error::Pacman => write!(f, "A shell call to Pacman gave a non-zero exit code."),
-            Error::Sudo => write!(f, "Unable to escalate via sudo."),
-            Error::MiscShell => write!(f, "A miscellaneous shell call failed."),
-            // Error::FileConflict => write!(f, "The given file target already exists."),
-            Error::Silent => write!(f, ""),
-        }
+impl From<crate::dirs::Error> for Error {
+    fn from(v: crate::dirs::Error) -> Self {
+        Self::Dirs(v)
     }
 }
 
-impl std::error::Error for Error {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        match self {
-            Error::IO(e) => Some(e),
-            Error::Alpm(e) => Some(e),
-            Error::RustyLine(e) => Some(e),
-            Error::I18n(e) => Some(e),
-            Error::Log(e) => Some(e),
-            Error::Env(e) => Some(e),
-            Error::PacConf(e) => Some(e),
-            Error::Curl(e) => Some(e),
-            Error::Chrono(e) => Some(e),
-            Error::Json(e) => Some(e),
-            Error::Aur(_) => None,
-            Error::Rejected => None,
-            Error::NoneExist => None,
-            Error::Pacman => None,
-            Error::Sudo => None,
-            Error::MiscShell => None,
-            // Error::FileConflict => None,
-            Error::Silent => None,
-        }
+impl From<crate::command::aur::Error> for Error {
+    fn from(v: crate::command::aur::Error) -> Self {
+        Self::A(v)
     }
 }
 
@@ -161,6 +124,33 @@ impl From<raur_curl::Error> for Error {
             raur_curl::Error::Curl(e) => Error::Curl(e),
             raur_curl::Error::Serde(e) => Error::Json(e),
             raur_curl::Error::Aur(e) => Error::Aur(e),
+        }
+    }
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Error::IO(e) => write!(f, "{}", e),
+            Error::Alpm(e) => write!(f, "{}", e),
+            Error::RustyLine(e) => write!(f, "{}", e),
+            Error::I18n(e) => write!(f, "{}", e),
+            Error::Log(e) => write!(f, "{}", e),
+            Error::Env(e) => write!(f, "{}", e),
+            Error::PacConf(e) => write!(f, "{}", e),
+            Error::Curl(e) => write!(f, "{}", e),
+            Error::Chrono(e) => write!(f, "{}", e),
+            Error::Json(e) => write!(f, "{}", e),
+            Error::Aur(e) => write!(f, "{}", e),
+            Error::Rejected => write!(f, "The user said no."),
+            Error::NoneExist => write!(f, "None of those packages exist."),
+            Error::Pacman => write!(f, "A shell call to Pacman gave a non-zero exit code."),
+            Error::Sudo => write!(f, "Unable to escalate via sudo."),
+            Error::MiscShell => write!(f, "A miscellaneous shell call failed."),
+            // Error::FileConflict => write!(f, "The given file target already exists."),
+            Error::Silent => write!(f, ""),
+            Error::A(e) => write!(f, "{}", e),
+            Error::Dirs(e) => write!(f, "{}", e),
         }
     }
 }

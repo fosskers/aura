@@ -36,11 +36,14 @@ impl<T, E, R> ResultVoid<E, R> for Result<T, E> {
 }
 
 /// A helper for commands like `-Ai`, `-Ci`, etc.
-pub(crate) fn info<W: Write>(
+pub(crate) fn info<W>(
     w: &mut W,
     lang: LanguageIdentifier,
     pairs: &[(&str, ColoredString)],
-) -> Result<(), std::io::Error> {
+) -> Result<(), std::io::Error>
+where
+    W: Write,
+{
     // Different languages consume varying char widths in the terminal.
     //
     // TODO Account for other languages (Chinese, and what else?)

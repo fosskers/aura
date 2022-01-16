@@ -1,6 +1,5 @@
 //! All functionality involving the `-A` command.
 
-use crate::error::Error;
 use crate::utils::{self, ResultVoid};
 use crate::{aura, dirs, green, red, yellow};
 use alpm::Alpm;
@@ -14,6 +13,44 @@ use std::borrow::Cow;
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 use validated::Validated;
+
+pub enum Error {
+    Raur(raur_curl::Error),
+    Dirs(crate::dirs::Error),
+    Io(std::io::Error),
+
+    /// A silent, miscellaneous error.
+    Silent,
+}
+
+impl From<std::io::Error> for Error {
+    fn from(v: std::io::Error) -> Self {
+        Self::Io(v)
+    }
+}
+
+impl From<crate::dirs::Error> for Error {
+    fn from(v: crate::dirs::Error) -> Self {
+        Self::Dirs(v)
+    }
+}
+
+impl From<raur_curl::Error> for Error {
+    fn from(v: raur_curl::Error) -> Self {
+        Self::Raur(v)
+    }
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::Raur(e) => write!(f, "{}", e),
+            Error::Dirs(e) => write!(f, "{}", e),
+            Error::Io(e) => write!(f, "{}", e),
+            Error::Silent => write!(f, ""),
+        }
+    }
+}
 
 /// View AUR package information.
 pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<(), Error> {
@@ -256,6 +293,7 @@ pub(crate) fn install(fll: &FluentLanguageLoader, pkgs: &[String]) -> Result<(),
     }
 
     let goods = real_packages(fll, pkgs)?;
+    let build_dir = crate::dirs::builds()?;
 
     Ok(())
 }

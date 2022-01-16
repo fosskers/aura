@@ -1,8 +1,34 @@
 //! Directories critical to Aura's function.
 
-use crate::error::Error;
 use std::ops::Not;
 use std::path::PathBuf;
+
+#[derive(Debug)]
+pub enum Error {
+    Io(std::io::Error),
+    Env(std::env::VarError),
+}
+
+impl From<std::env::VarError> for Error {
+    fn from(v: std::env::VarError) -> Self {
+        Self::Env(v)
+    }
+}
+
+impl From<std::io::Error> for Error {
+    fn from(v: std::io::Error) -> Self {
+        Self::Io(v)
+    }
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::Io(e) => write!(f, "{}", e),
+            Error::Env(e) => write!(f, "{}", e),
+        }
+    }
+}
 
 /// Fetch the path value of `$XDG_CACHE_HOME` or provide its default according
 /// to the specification:

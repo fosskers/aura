@@ -15,16 +15,26 @@ use alpm::{Alpm, SigLevel};
 use clap::Parser;
 use command::{aur, cache, check, conf, deps, log, open, orphans, snapshot, stats};
 use error::Error;
-use flags::{SubCmd, AURA_GLOBALS};
+use flags::{Args, SubCmd, AURA_GLOBALS};
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
 use std::collections::HashMap;
 use std::ops::Not;
 use std::path::{Path, PathBuf};
 
-fn main() -> Result<(), Error> {
+fn main() {
     // Parse all CLI input. Exits immediately if invalid input is given.
     let args = flags::Args::parse();
 
+    if let Err(e) = work(args) {
+        // TODO Sat Jan 15 16:53:12 2022
+        //
+        // Localise the error messages.
+        eprintln!("{}", e);
+        std::process::exit(1);
+    }
+}
+
+fn work(args: Args) -> Result<(), Error> {
     // Activate the logger.
     if let Some(l) = args.log_level {
         TermLogger::init(l, Config::default(), TerminalMode::Mixed, ColorChoice::Auto)?;
