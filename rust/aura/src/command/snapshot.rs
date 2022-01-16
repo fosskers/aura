@@ -1,8 +1,6 @@
 //! All functionality involving the `-B` command.
 
-use crate::dirs;
 use crate::{a, aura, green, red};
-use crate::{error::Error, utils};
 use alpm::Alpm;
 use aura_core::snapshot::Snapshot;
 use colored::*;
@@ -14,6 +12,58 @@ use std::io::BufWriter;
 use std::ops::Not;
 use std::path::Path;
 use std::{cmp::Ordering, ffi::OsStr};
+
+pub enum Error {
+    Io(std::io::Error),
+    Dirs(crate::dirs::Error),
+    Pacman(crate::pacman::Error),
+    Readline(rustyline::error::ReadlineError),
+    Json(serde_json::Error),
+    Silent,
+}
+
+impl From<crate::pacman::Error> for Error {
+    fn from(v: crate::pacman::Error) -> Self {
+        Self::Pacman(v)
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(v: serde_json::Error) -> Self {
+        Self::Json(v)
+    }
+}
+
+impl From<crate::dirs::Error> for Error {
+    fn from(v: crate::dirs::Error) -> Self {
+        Self::Dirs(v)
+    }
+}
+
+impl From<rustyline::error::ReadlineError> for Error {
+    fn from(v: rustyline::error::ReadlineError) -> Self {
+        Self::Readline(v)
+    }
+}
+
+impl From<std::io::Error> for Error {
+    fn from(v: std::io::Error) -> Self {
+        Self::Io(v)
+    }
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::Io(e) => write!(f, "{}", e),
+            Error::Dirs(e) => write!(f, "{}", e),
+            Error::Pacman(e) => write!(f, "{}", e),
+            Error::Readline(e) => write!(f, "{}", e),
+            Error::Json(e) => write!(f, "{}", e),
+            Error::Silent => write!(f, ""),
+        }
+    }
+}
 
 /// During a `-Br`, the packages to update and/or remove.
 #[derive(Debug)]
@@ -27,7 +77,7 @@ struct StateDiff<'a> {
 }
 
 pub(crate) fn save(fll: &FluentLanguageLoader, alpm: &Alpm) -> Result<(), Error> {
-    let mut cache = dirs::snapshot()?;
+    let mut cache = crate::dirs::snapshot()?;
     let snap = Snapshot::from_alpm(alpm);
     let name = format!("{}.json", snap.time.format("%Y.%m(%b).%d.%H.%M.%S"));
     cache.push(name);
@@ -44,7 +94,7 @@ pub(crate) fn clean(fll: &FluentLanguageLoader, cache: &Path) -> Result<(), Erro
     let msg = format!("{} {} ", fl!(fll, "B-clean"), fl!(fll, "proceed-yes"));
     crate::utils::prompt(&a!(msg))?;
 
-    let path = dirs::snapshot()?;
+    let path = crate::dirs::snapshot()?;
     let vers = aura_core::cache::all_versions(cache)?;
 
     for (path, snapshot) in aura_core::snapshot::snapshots_with_paths(&path)? {
@@ -59,7 +109,7 @@ pub(crate) fn clean(fll: &FluentLanguageLoader, cache: &Path) -> Result<(), Erro
 
 /// Show all saved package snapshot filenames.
 pub(crate) fn list() -> Result<(), Error> {
-    let snap = dirs::snapshot()?;
+    let snap = crate::dirs::snapshot()?;
 
     for (path, _) in aura_core::snapshot::snapshots_with_paths(&snap)? {
         println!("{}", path.display());
@@ -69,7 +119,7 @@ pub(crate) fn list() -> Result<(), Error> {
 }
 
 pub(crate) fn restore(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) -> Result<(), Error> {
-    let snap = dirs::snapshot()?;
+    let snap = crate::dirs::snapshot()?;
     let vers = aura_core::cache::all_versions(cache)?;
 
     let mut shots: Vec<_> = aura_core::snapshot::snapshots(&snap)?
@@ -119,12 +169,14 @@ fn restore_snapshot(alpm: &Alpm, cache: &Path, snapshot: Snapshot) -> Result<(),
             })
             .map(|pp| pp.into_pathbuf().into_os_string());
 
-        utils::sudo_pacman(std::iter::once(OsStr::new("-U").to_os_string()).chain(tarballs))?;
+        crate::pacman::sudo_pacman(
+            std::iter::once(OsStr::new("-U").to_os_string()).chain(tarballs),
+        )?;
     }
 
     // Remove packages that weren't installed within the chosen snapshot.
     if diff.to_remove.is_empty().not() {
-        utils::sudo_pacman(std::iter::once("-R").chain(diff.to_remove))?;
+        crate::pacman::sudo_pacman(std::iter::once("-R").chain(diff.to_remove))?;
     }
 
     Ok(())

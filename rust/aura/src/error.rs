@@ -3,7 +3,9 @@
 /// Error type for all issues that can occur in the Aura library or executable.
 pub(crate) enum Error {
     A(crate::command::aur::Error),
-    L(crate::command::log::Error),
+    B(crate::command::snapshot::Error),
+    C(crate::command::cache::Error),
+    O(crate::command::orphans::Error),
     Dirs(crate::dirs::Error),
     /// Some IO error, say from reading a file or sending a command to the
     /// shell.
@@ -28,28 +30,31 @@ pub(crate) enum Error {
     Json(serde_json::Error),
     /// An error calling the aurweb API.
     Aur(String),
-    /// The said "no" at some prompt.
-    Rejected,
-    /// None of the packages specified by the user actually exist.
-    NoneExist,
     /// A non-zero exit code was returned from a call to Pacman.
-    Pacman,
-    /// We were unable to escalate the process with `sudo`.
-    Sudo,
-    // /// A file IO target already exists.
-    // FileConflict,
-    /// A miscellaneous shell call failed.
-    MiscShell,
-    /// A silent, miscellaneous error.
-    ///
-    /// In theory any relevant error messages have already been localized and
-    /// shown to the user.
-    Silent,
+    Pacman(crate::pacman::Error),
 }
 
-impl From<crate::command::log::Error> for Error {
-    fn from(v: crate::command::log::Error) -> Self {
-        Self::L(v)
+impl From<crate::pacman::Error> for Error {
+    fn from(v: crate::pacman::Error) -> Self {
+        Self::Pacman(v)
+    }
+}
+
+impl From<crate::command::snapshot::Error> for Error {
+    fn from(v: crate::command::snapshot::Error) -> Self {
+        Self::B(v)
+    }
+}
+
+impl From<crate::command::orphans::Error> for Error {
+    fn from(v: crate::command::orphans::Error) -> Self {
+        Self::O(v)
+    }
+}
+
+impl From<crate::command::cache::Error> for Error {
+    fn from(v: crate::command::cache::Error) -> Self {
+        Self::C(v)
     }
 }
 
@@ -149,16 +154,12 @@ impl std::fmt::Display for Error {
             Error::Chrono(e) => write!(f, "{}", e),
             Error::Json(e) => write!(f, "{}", e),
             Error::Aur(e) => write!(f, "{}", e),
-            Error::Rejected => write!(f, "The user said no."),
-            Error::NoneExist => write!(f, "None of those packages exist."),
-            Error::Pacman => write!(f, "A shell call to Pacman gave a non-zero exit code."),
-            Error::Sudo => write!(f, "Unable to escalate via sudo."),
-            Error::MiscShell => write!(f, "A miscellaneous shell call failed."),
-            // Error::FileConflict => write!(f, "The given file target already exists."),
-            Error::Silent => write!(f, ""),
-            Error::A(e) => write!(f, "{}", e),
-            Error::L(e) => write!(f, "{}", e),
+            Error::Pacman(e) => write!(f, "{}", e),
             Error::Dirs(e) => write!(f, "{}", e),
+            Error::A(e) => write!(f, "{}", e),
+            Error::B(e) => write!(f, "{}", e),
+            Error::C(e) => write!(f, "{}", e),
+            Error::O(e) => write!(f, "{}", e),
         }
     }
 }

@@ -65,10 +65,13 @@ impl<'a> PkgPath<'a> {
     // TODO I'd like it if this could be avoided.
     /// Remove this via a shell call to `rm`.
     pub fn sudo_remove(self) -> Option<()> {
-        match Command::new("sudo").arg("rm").arg(self.path).status() {
-            Ok(es) if es.success() => Some(()),
-            _ => None,
-        }
+        Command::new("sudo")
+            .arg("rm")
+            .arg(self.path)
+            .status()
+            .ok()?
+            .success()
+            .then(|| ())
     }
 }
 

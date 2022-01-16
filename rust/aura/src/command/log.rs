@@ -15,24 +15,8 @@ use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::path::Path;
 use std::process::Command;
 
-pub enum Error {
-    Io(std::io::Error),
-}
-
-impl From<std::io::Error> for Error {
-    fn from(v: std::io::Error) -> Self {
-        Self::Io(v)
-    }
-}
-
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
-
 /// Search the Pacman log for a matching string.
-pub(crate) fn search(path: &Path, term: String) -> Result<(), Error> {
+pub(crate) fn search(path: &Path, term: String) -> Result<(), std::io::Error> {
     let (search, args) = misc::searcher();
     Command::new(search)
         .args(args)
@@ -78,7 +62,7 @@ pub(crate) fn view(
     path: &Path,
     before: Option<NaiveDate>,
     after: Option<NaiveDate>,
-) -> Result<(), Error> {
+) -> Result<(), std::io::Error> {
     let file = BufReader::new(File::open(path)?);
     let mut out = BufWriter::new(std::io::stdout());
 

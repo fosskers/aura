@@ -1,6 +1,5 @@
 //! All functionality involving the `-O` command.
 
-use crate::error::Error;
 use crate::{a, green, yellow};
 use alpm::{Alpm, PackageReason, TransFlag};
 use aura_arch as arch;
@@ -9,6 +8,42 @@ use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use std::collections::HashSet;
 use ubyte::ToByteUnit;
+
+pub enum Error {
+    Alpm(alpm::Error),
+    Readline(rustyline::error::ReadlineError),
+    Sudo(crate::utils::SudoError),
+    NoneExist,
+}
+
+impl From<crate::utils::SudoError> for Error {
+    fn from(v: crate::utils::SudoError) -> Self {
+        Self::Sudo(v)
+    }
+}
+
+impl From<rustyline::error::ReadlineError> for Error {
+    fn from(v: rustyline::error::ReadlineError) -> Self {
+        Self::Readline(v)
+    }
+}
+
+impl From<alpm::Error> for Error {
+    fn from(v: alpm::Error) -> Self {
+        Self::Alpm(v)
+    }
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::Alpm(e) => write!(f, "{}", e),
+            Error::Readline(e) => write!(f, "{}", e),
+            Error::Sudo(e) => write!(f, "{}", e),
+            Error::NoneExist => write!(f, "No such packages exist."),
+        }
+    }
+}
 
 /// Print the name of each orphaned package.
 pub(crate) fn list(alpm: &Alpm) {

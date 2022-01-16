@@ -1,7 +1,6 @@
 //! All functionality involving the `-C` command.
 
 use crate::download::download_with_progress;
-use crate::error::Error;
 use crate::{a, aura, green, red, yellow};
 use alpm::Alpm;
 use aura_core::cache::{CacheSize, PkgPath};
@@ -26,6 +25,52 @@ const FIVE_HUNDRED_MB: i64 = 524_288_000;
 
 /// The date where Arch Linux switched compression schemes from XZ to ZSTD.
 const CMPR_SWITCH: i64 = 1_577_404_800;
+
+pub enum Error {
+    Io(std::io::Error),
+    Readline(rustyline::error::ReadlineError),
+    Sudo(crate::utils::SudoError),
+    Pacman(crate::pacman::Error),
+    MiscShell,
+    Silent,
+}
+
+impl From<crate::pacman::Error> for Error {
+    fn from(v: crate::pacman::Error) -> Self {
+        Self::Pacman(v)
+    }
+}
+
+impl From<crate::utils::SudoError> for Error {
+    fn from(v: crate::utils::SudoError) -> Self {
+        Self::Sudo(v)
+    }
+}
+
+impl From<rustyline::error::ReadlineError> for Error {
+    fn from(v: rustyline::error::ReadlineError) -> Self {
+        Self::Readline(v)
+    }
+}
+
+impl From<std::io::Error> for Error {
+    fn from(v: std::io::Error) -> Self {
+        Self::Io(v)
+    }
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::Io(e) => write!(f, "{}", e),
+            Error::Readline(e) => write!(f, "{}", e),
+            Error::Sudo(e) => write!(f, "{}", e),
+            Error::Pacman(e) => write!(f, "{}", e),
+            Error::MiscShell => write!(f, "A miscellaneous shell call failed."),
+            Error::Silent => write!(f, ""),
+        }
+    }
+}
 
 /// Downgrade the given packages.
 pub(crate) fn downgrade(
@@ -65,7 +110,7 @@ pub(crate) fn downgrade(
     to_downgrade.push(OsStr::new("-U").to_os_string());
     to_downgrade.reverse();
 
-    crate::utils::pacman(to_downgrade)?;
+    crate::pacman::pacman(to_downgrade)?;
     green!(fll, "common-done");
     Ok(())
 }

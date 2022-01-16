@@ -1,6 +1,5 @@
 //! Output a dependency graph in DOT format.
 
-use crate::error::Error;
 use alpm::Alpm;
 use aura_core::deps;
 
@@ -11,7 +10,7 @@ pub(crate) fn graph(
     limit: Option<u8>,
     optional: bool,
     packages: Vec<String>,
-) -> Result<(), Error> {
+) -> Result<(), alpm::Error> {
     let db = alpm.localdb();
     let pkgs: Vec<_> = packages.iter().map(|p| p.as_ref()).collect();
     let foreigns: Vec<_> = aura_arch::foreigns(alpm).map(|p| p.name()).collect();
@@ -28,7 +27,7 @@ pub(crate) fn reverse(
     limit: Option<u8>,
     optional: bool,
     packages: Vec<String>,
-) -> Result<(), Error> {
+) -> Result<(), alpm::Error> {
     let db = alpm.localdb();
     let pkgs: Vec<_> = packages.iter().map(|p| p.as_ref()).collect();
     let foreigns: Vec<_> = aura_arch::foreigns(alpm).map(|p| p.name()).collect();

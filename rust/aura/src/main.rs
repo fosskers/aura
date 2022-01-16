@@ -9,6 +9,7 @@ pub(crate) mod error;
 pub(crate) mod flags;
 pub(crate) mod localization;
 mod macros;
+pub(crate) mod pacman;
 pub(crate) mod utils;
 
 use alpm::{Alpm, SigLevel};
@@ -137,7 +138,7 @@ fn work(args: Args) -> Result<(), Error> {
 }
 
 /// Run a Pacman command.
-fn pacman() -> Result<(), Error> {
+fn pacman() -> Result<(), crate::pacman::Error> {
     let mut raws: Vec<String> = std::env::args()
         .skip(1)
         .filter(|a| !(AURA_GLOBALS.contains(&a.as_str()) || a.starts_with("--log-level=")))
@@ -154,7 +155,7 @@ fn pacman() -> Result<(), Error> {
     }
 
     ::log::debug!("Passing to Pacman: {:?}", raws);
-    utils::pacman(raws)
+    pacman::pacman(raws)
 }
 
 /// Fully initialize an ALPM handle.
