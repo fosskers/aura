@@ -1,6 +1,6 @@
 //! All functionality involving the `-A` command.
 
-use crate::utils::{self, ResultVoid};
+use crate::utils::ResultVoid;
 use crate::{aura, dirs, green, red, yellow};
 use alpm::Alpm;
 use aura_core::aur::{PkgPartition, AUR_BASE_URL};
@@ -19,7 +19,14 @@ pub enum Error {
     Raur(raur_curl::Error),
     Dirs(crate::dirs::Error),
     Io(std::io::Error),
+    Git(aura_core::git::Error),
     Silent,
+}
+
+impl From<aura_core::git::Error> for Error {
+    fn from(v: aura_core::git::Error) -> Self {
+        Self::Git(v)
+    }
 }
 
 impl From<std::io::Error> for Error {
@@ -46,6 +53,7 @@ impl std::fmt::Display for Error {
             Error::Raur(e) => write!(f, "{}", e),
             Error::Dirs(e) => write!(f, "{}", e),
             Error::Io(e) => write!(f, "{}", e),
+            Error::Git(e) => write!(f, "{}", e),
             Error::Silent => write!(f, ""),
         }
     }
@@ -120,7 +128,7 @@ pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<()
             (&sub, package_date(p.first_submitted)),
             (&upd, package_date(p.last_modified)),
         ];
-        utils::info(&mut w, fll.current_language(), &pairs)?;
+        crate::utils::info(&mut w, fll.current_language(), &pairs)?;
         writeln!(w)?;
     }
 
@@ -227,7 +235,7 @@ pub(crate) fn clone_aur_repos(
         .map(|p| {
             let pkg = p.as_str();
             aura!(fll, "A-w", package = pkg);
-            clone_aur_repo(None, &p).ok_or(pkg).void()
+            clone_aur_repo(None, &p).map_err(|_| pkg).void()
         })
         .collect();
 
@@ -257,11 +265,7 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
         .filter(|de| de.file_type().map(|ft| ft.is_dir()).unwrap_or(false))
         .par_bridge()
         .filter_map(|de| de.file_name().into_string().ok().map(|p| (p, de.path())))
-        .map(|(pkg, path)| {
-            aura_core::git::pull(&path)
-                .map_err(|_| pkg.clone())
-                .and_then(|status| status.success().then(|| ()).ok_or(pkg))
-        })
+        .map(|(pkg, path)| aura_core::git::pull(&path).map_err(|_| pkg.clone()))
         .collect();
 
     match pulls {
@@ -298,6 +302,13 @@ pub(crate) fn install(fll: &FluentLanguageLoader, pkgs: &[String]) -> Result<(),
     let clone_dir = crate::dirs::clones()?;
     let build_dir = crate::dirs::builds()?;
 
+    // TODO Sat Jan 15 18:50:43 2022
+    //
+    // Display cloning progress.
+    for p in to_clone {
+        clone_aur_repo(Some(&clone_dir), p)?;
+    }
+
     Ok(())
 }
 
@@ -325,7 +336,7 @@ fn real_packages<'a>(
 }
 
 /// Clone a package's AUR repository and return the full path to the clone.
-fn clone_aur_repo(root: Option<&Path>, package: &str) -> Option<PathBuf> {
+fn clone_aur_repo(root: Option<&Path>, package: &str) -> Result<PathBuf, aura_core::git::Error> {
     let mut url: PathBuf = [AUR_BASE_URL, package].iter().collect();
     url.set_extension("git");
 
@@ -334,7 +345,5 @@ fn clone_aur_repo(root: Option<&Path>, package: &str) -> Option<PathBuf> {
         Some(r) => [r, Path::new(package)].iter().collect(),
     };
 
-    aura_core::git::shallow_clone(&url, &clone_path)
-        .ok()
-        .and_then(|status| status.success().then(|| clone_path))
+    aura_core::git::shallow_clone(&url, &clone_path).map(|_| clone_path)
 }
