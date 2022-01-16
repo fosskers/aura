@@ -1,6 +1,5 @@
 //! Core interactions with the AUR.
 
-use crate::common::{Bad, Good};
 use log::debug;
 use raur_curl::Raur;
 use std::collections::HashSet;
@@ -22,24 +21,39 @@ pub fn search(query: &str) -> Result<Vec<raur_curl::Package>, raur_curl::Error> 
     raur_curl::Handle::new().search(query)
 }
 
+/// The result of inspecting the existance status of a collection of package
+/// names.
+pub struct PkgPartition<'a> {
+    /// These packages already have local clones.
+    pub cloned: Vec<&'a str>,
+    /// These packages still need to be cloned.
+    pub to_clone: Vec<&'a str>,
+    /// These packages don't exist at all!
+    pub not_real: Vec<&'a str>,
+}
+
 /// Given a [`Path`] to an expected directory of AUR package repo clones, check
 /// it and the AUR to determine which of a given collection of packages are
 /// actually real.
 pub fn partition_aur_pkgs<'a, S>(
     clone_dir: &Path,
     packages: &'a [S],
-) -> Result<(Good<Vec<&'a str>>, Bad<Vec<&'a str>>), raur_curl::Error>
+) -> Result<PkgPartition<'a>, raur_curl::Error>
 where
     S: AsRef<str>,
 {
-    let (mut goods, fast_bads): (Vec<&'a str>, Vec<&'a str>) = packages
+    let (cloned, fast_bads): (Vec<&'a str>, Vec<&'a str>) = packages
         .iter()
         .map(|p| p.as_ref())
         .partition(|p| is_aur_package_fast(clone_dir, p));
-    let (slow_goods, bads) = partition_real_pkgs_via_aur(&fast_bads)?;
-    goods.extend(slow_goods.good);
+    let (to_clone, not_real) = partition_real_pkgs_via_aur(&fast_bads)?;
 
-    Ok((Good::new(goods), bads))
+    let part = PkgPartition {
+        cloned,
+        to_clone,
+        not_real,
+    };
+    Ok(part)
 }
 
 /// Quickly check some given package's name against the local cache of package
@@ -56,12 +70,10 @@ fn is_aur_package_fast(clone_dir: &Path, package: &str) -> bool {
 /// Performs an AUR `info` call to determine which packages are real or not.
 fn partition_real_pkgs_via_aur<'a>(
     packages: &[&'a str],
-) -> Result<(Good<Vec<&'a str>>, Bad<Vec<&'a str>>), raur_curl::Error> {
+) -> Result<(Vec<&'a str>, Vec<&'a str>), raur_curl::Error> {
     debug!("AUR call to check for: {:?}", packages);
 
     let info = info(packages)?;
     let reals: HashSet<&str> = info.iter().map(|p| p.name.as_str()).collect();
-    let (goods, bads): (Vec<_>, Vec<_>) = packages.iter().partition(|p| reals.contains(*p));
-
-    Ok((Good::new(goods), Bad::new(bads)))
+    Ok(packages.iter().partition(|p| reals.contains(*p)))
 }

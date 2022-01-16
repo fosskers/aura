@@ -85,29 +85,3 @@ impl<'a> Ord for Package<'a> {
         }
     }
 }
-
-/// Some "successful", "true", or "good" result.
-pub struct Good<T> {
-    /// The good result.
-    pub good: T,
-}
-
-impl<T> Good<T> {
-    /// Construct a `Good`.
-    pub fn new(good: T) -> Good<T> {
-        Good { good }
-    }
-}
-
-/// Some "failed" or "bad" result.
-pub struct Bad<T> {
-    /// The bad results.
-    pub bad: T,
-}
-
-impl<T> Bad<T> {
-    /// Construct a `Bads`.
-    pub fn new(bad: T) -> Bad<T> {
-        Bad { bad }
-    }
-}

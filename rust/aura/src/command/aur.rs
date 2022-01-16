@@ -3,11 +3,12 @@
 use crate::utils::{self, ResultVoid};
 use crate::{aura, dirs, green, red, yellow};
 use alpm::Alpm;
-use aura_core::aur::AUR_BASE_URL;
+use aura_core::aur::{PkgPartition, AUR_BASE_URL};
 use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
+use log::debug;
 use rayon::prelude::*;
 use std::borrow::Cow;
 use std::io::{BufWriter, Write};
@@ -18,8 +19,6 @@ pub enum Error {
     Raur(raur_curl::Error),
     Dirs(crate::dirs::Error),
     Io(std::io::Error),
-
-    /// A silent, miscellaneous error.
     Silent,
 }
 
@@ -292,7 +291,11 @@ pub(crate) fn install(fll: &FluentLanguageLoader, pkgs: &[String]) -> Result<(),
         return Err(Error::Silent);
     }
 
-    let goods = real_packages(fll, pkgs)?;
+    let (cloned, to_clone) = real_packages(fll, pkgs)?;
+    debug!("Already cloned: {:?}", cloned);
+    debug!("To clone: {:?}", to_clone);
+
+    let clone_dir = crate::dirs::clones()?;
     let build_dir = crate::dirs::builds()?;
 
     Ok(())
@@ -301,20 +304,24 @@ pub(crate) fn install(fll: &FluentLanguageLoader, pkgs: &[String]) -> Result<(),
 fn real_packages<'a>(
     fll: &FluentLanguageLoader,
     pkgs: &'a [String],
-) -> Result<Vec<&'a str>, Error> {
+) -> Result<(Vec<&'a str>, Vec<&'a str>), Error> {
     let clone_dir = crate::dirs::clones()?;
-    let (goods, bads) = aura_core::aur::partition_aur_pkgs(&clone_dir, pkgs)?;
+    let PkgPartition {
+        cloned,
+        to_clone,
+        not_real,
+    } = aura_core::aur::partition_aur_pkgs(&clone_dir, pkgs)?;
 
-    if goods.good.is_empty() {
+    if cloned.is_empty() && to_clone.is_empty() {
         red!(fll, "common-no-valid");
         return Err(Error::Silent);
     }
 
-    for bad in bads.bad {
+    for bad in not_real {
         yellow!(fll, "A-unreal", pkg = bad);
     }
 
-    Ok(goods.good)
+    Ok((cloned, to_clone))
 }
 
 /// Clone a package's AUR repository and return the full path to the clone.
