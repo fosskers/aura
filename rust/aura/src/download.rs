@@ -1,6 +1,5 @@
 //! Download bytes from the web.
 
-use crate::error::Error;
 use crate::utils::ResultVoid;
 use curl::easy::Easy;
 use linya::{Bar, Progress};
@@ -8,6 +7,23 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
+
+pub enum Error {
+    Io(std::io::Error),
+    Curl(curl::Error),
+}
+
+impl From<curl::Error> for Error {
+    fn from(v: curl::Error) -> Self {
+        Self::Curl(v)
+    }
+}
+
+impl From<std::io::Error> for Error {
+    fn from(v: std::io::Error) -> Self {
+        Self::Io(v)
+    }
+}
 
 // /// Download the contents of some URL and write them directly to a file.
 // pub(crate) fn download(url: &str, target: &Path) -> Result<(), Error> {
