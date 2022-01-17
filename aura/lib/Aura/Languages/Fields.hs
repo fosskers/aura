@@ -302,7 +302,7 @@ buildDeps = \case
     French     -> "Dépendances de compilation"
     Russian    -> "Зависимости сборки"
     Italian    -> "Dipendenze di compilazione"
-    Norwegian  -> "Bygg avhengigheter"
+    Norwegian  -> "Byggavhengigheter"
     Indonesia  -> "Dependensi bangun"
     Esperanto  -> "Muntaj Dependecoj"
     Dutch      -> "Bouw afhankelijkheden"
