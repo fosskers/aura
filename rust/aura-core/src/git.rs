@@ -3,6 +3,8 @@
 use std::path::Path;
 use std::process::{Command, Stdio};
 
+use log::debug;
+
 /// A git-related error.
 pub enum Error {
     /// Some IO action failed.
@@ -33,6 +35,8 @@ impl std::fmt::Display for Error {
 /// Perform a shallow clone frrom a given repository url, and save it to a given
 /// `Path` on the filesystem.
 pub fn shallow_clone(url: &Path, target: &Path) -> Result<(), Error> {
+    debug!("Cloning {}", url.display());
+
     Command::new("git")
         .arg("clone")
         .arg("--depth=1")
