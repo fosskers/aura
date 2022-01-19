@@ -19,13 +19,6 @@ packages:
   original:
     hackage: aeson-2.0.2.0
 - completed:
-    hackage: algebraic-graphs-0.6@sha256:9b05e54b351a5141bc8fe46c095095627c34defc8375aa531a4753091a81f138,8755
-    pantry-tree:
-      size: 4201
-      sha256: 1d22c40b256485ae3ca4ba23606bba2ef0d1b5fd759f9dcdf0e501b0c83f1959
-  original:
-    hackage: algebraic-graphs-0.6
-- completed:
     hackage: hashable-1.4.0.1@sha256:c35c9c1adc33bcfa31359e33e4c3db98305406eaa460f0e04d628f2a1de19be5,4804
     pantry-tree:
       size: 1248
@@ -40,12 +33,12 @@ packages:
   original:
     hackage: semialign-1.2.0.1
 - completed:
-    hackage: text-short-0.1.4@sha256:2c4789148650fdd624b7f7cabfd28b12e4130f1905eb6e3650d4d56d7db42f23,3575
+    hackage: text-short-0.1.5@sha256:962c6228555debdc46f758d0317dea16e5240d01419b42966674b08a5c3d8fa6,3498
     pantry-tree:
       size: 727
-      sha256: 6165735a26a99b116b0a51c86ab8a36db85acaef9892d2ce9e16d986bd7dc5ba
+      sha256: 1fc6561c4acb94a41e58cd8f8c7cce161c18c5629dac63a54a9c62f9c778c52b
   original:
-    hackage: text-short-0.1.4
+    hackage: text-short-0.1.5
 - completed:
     hackage: time-compat-1.9.6.1@sha256:42d8f2e08e965e1718917d54ad69e1d06bd4b87d66c41dc7410f59313dba4ed1,5033
     pantry-tree:
@@ -55,7 +48,7 @@ packages:
     hackage: time-compat-1.9.6.1
 snapshots:
 - completed:
-    size: 586103
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/19.yaml
-    sha256: 32716534fff554b7f90762130fdb985cabf29f157758934dd1c8f3892a646430
-  original: lts-18.19
+    size: 586120
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/22.yaml
+    sha256: f9970d6f25c63e3e4265aa8e9c69a047ba8919d1107e4996bdd7555b75aad0eb
+  original: lts-18.22
