@@ -61,7 +61,7 @@ impl std::fmt::Display for Error {
 
 /// View AUR package information.
 pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<(), Error> {
-    let r = aura_core::aur::info(packages)?;
+    let r: Vec<raur_curl::Package> = aura_core::aur::info(packages)?;
     let mut w = BufWriter::new(std::io::stdout());
 
     let repo = fl!(fll, "A-i-repo");
@@ -216,9 +216,7 @@ pub(crate) fn open(package: &str) -> Result<(), std::io::Error> {
 
 /// A package's URL on the AUR.
 fn package_url(package: &str) -> String {
-    let mut url = Cow::from(crate::open::AUR_PKG_URL);
-    url += package;
-    url.into_owned()
+    format!("{}{}", crate::open::AUR_PKG_URL, package)
 }
 
 fn package_date(epoch: i64) -> ColoredString {
@@ -305,8 +303,9 @@ pub(crate) fn install(fll: &FluentLanguageLoader, pkgs: &[String]) -> Result<(),
     // TODO Sat Jan 15 18:50:43 2022
     //
     // Display cloning progress.
+    // And use rayon here!
     for p in to_clone {
-        clone_aur_repo(Some(&clone_dir), p)?;
+        clone_aur_repo(Some(&clone_dir), p.as_ref())?;
     }
 
     Ok(())
@@ -315,7 +314,7 @@ pub(crate) fn install(fll: &FluentLanguageLoader, pkgs: &[String]) -> Result<(),
 fn real_packages<'a>(
     fll: &FluentLanguageLoader,
     pkgs: &'a [String],
-) -> Result<(Vec<&'a str>, Vec<&'a str>), Error> {
+) -> Result<(Vec<Cow<'a, str>>, Vec<Cow<'a, str>>), Error> {
     let clone_dir = crate::dirs::clones()?;
     let PkgPartition {
         cloned,
@@ -329,7 +328,8 @@ fn real_packages<'a>(
     }
 
     for bad in not_real {
-        yellow!(fll, "A-unreal", pkg = bad);
+        let name = bad.cyan().to_string();
+        yellow!(fll, "A-unreal", pkg = name);
     }
 
     Ok((cloned, to_clone))
