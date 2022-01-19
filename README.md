@@ -28,6 +28,7 @@
     :ukraine:
     :romania:
     :vietnam:
+    :czech_republic:
   </div>
   <br>
   
@@ -257,6 +258,7 @@ Aura has been translated by these generous people:
 | Arabic     | "Array in a Matrix"                             |
 | Chinese    | Kai Zhang                                       |
 | Croatian   | Denis Kasak and "stranac"                       |
+| Czech      | Daniel Rosel                                    |
 | Dutch      | Joris Blanken                                   |
 | Esperanto  | Zachary "Ghosy" Matthews                        |
 | French     | Ma Jiehong and Fabien Dubosson                  |
@@ -267,13 +269,13 @@ Aura has been translated by these generous people:
 | Norwegian  | "chinatsun"                                     |
 | Polish     | Chris Warrick, Michał Kurek                     |
 | Portuguese | Henry Kupty, Thiago Perrotta, and Wagner Amaral |
+| Romanian   | "90", "benone"                                  |
 | Russian    | Kyrylo Silin, Alexey Kotlyarov                  |
 | Serbian    | Filip Brcic                                     |
 | Spanish    | Alejandro Gómez, Sergio Conde and Max Ferrer    |
 | Swedish    | Fredrik Haikarainen and Daniel Beecham          |
 | Turkish    | Cihan Alkan                                     |
 | Ukrainian  | Andriy Cherniy                                  |
-| Romanian   | "90", "benone"                                  |
 | Vietnamese | "Kritiqual"                                     |
 
 Aura's logo is thanks to the designer [Cristiano Vitorino](https://github.com/cristianovitorino).
