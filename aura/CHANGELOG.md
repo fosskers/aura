@@ -7,6 +7,10 @@
 - Romanian translations thanks to "90" and "benone". Mulțumesc!
 - Vietnamese translations thanks to "Kritiqual". Cảm ơn bạn!
 
+#### Changed
+
+- Updated Norwegian translations.
+
 ## 3.2.6 (2021-09-17)
 
 #### Added
