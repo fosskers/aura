@@ -6,6 +6,7 @@
 
 - Romanian translations thanks to "90" and "benone". Mulțumesc!
 - Vietnamese translations thanks to "Kritiqual". Cảm ơn bạn!
+- Czech translations thanks to Daniel Rosel. Děkuju!
 
 #### Changed
 
