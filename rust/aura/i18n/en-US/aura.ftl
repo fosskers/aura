@@ -1,7 +1,9 @@
 language-name = English
 
 # AUR Packages (-A)
-A-unreal = { $pkg } is not a real package.
+A-install-unreal = { $pkg } is not a real package.
+A-install-cloning = Cloning new packages...
+A-install-pulling = Pulling known packages...
 
 A-i-repo = Repository
 A-i-version = Version

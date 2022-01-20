@@ -19,6 +19,7 @@ i18n-embed-fl = "0.6"
 itertools = "0.10"
 linya = "0.2"
 log = "0.4"
+nonempty = "0.7"
 pacmanconf = "1.0"
 raur-curl = { path = "../raur-curl" }
 rayon = "1.5"

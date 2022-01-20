@@ -9,9 +9,11 @@ use colored::{ColoredString, Colorize};
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
 use log::debug;
+use nonempty::NonEmpty;
 use rayon::prelude::*;
 use std::borrow::Cow;
 use std::io::{BufWriter, Write};
+use std::ops::Not;
 use std::path::{Path, PathBuf};
 use validated::Validated;
 
@@ -20,6 +22,8 @@ pub enum Error {
     Dirs(crate::dirs::Error),
     Io(std::io::Error),
     Git(aura_core::git::Error),
+    Clones(NonEmpty<aura_core::git::Error>),
+    Pulls(NonEmpty<aura_core::git::Error>),
     Silent,
 }
 
@@ -47,6 +51,9 @@ impl From<raur_curl::Error> for Error {
     }
 }
 
+// TODO Thu Jan 20 15:32:13 2022
+//
+// Eventually these will all be deleted when error messages are localised.
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -55,6 +62,18 @@ impl std::fmt::Display for Error {
             Error::Io(e) => write!(f, "{}", e),
             Error::Git(e) => write!(f, "{}", e),
             Error::Silent => write!(f, ""),
+            Error::Clones(es) => {
+                for e in es {
+                    writeln!(f, "{}", e)?;
+                }
+                Ok(())
+            }
+            Error::Pulls(es) => {
+                for e in es {
+                    writeln!(f, "{}", e)?;
+                }
+                Ok(())
+            }
         }
     }
 }
@@ -300,13 +319,31 @@ pub(crate) fn install(fll: &FluentLanguageLoader, pkgs: &[String]) -> Result<(),
     let clone_dir = crate::dirs::clones()?;
     let build_dir = crate::dirs::builds()?;
 
-    // TODO Sat Jan 15 18:50:43 2022
-    //
-    // Display cloning progress.
-    // And use rayon here!
-    for p in to_clone {
-        clone_aur_repo(Some(&clone_dir), p.as_ref())?;
+    if to_clone.is_empty().not() {
+        aura!(fll, "A-install-cloning");
     }
+
+    to_clone
+        .par_iter()
+        .map(|p| clone_aur_repo(Some(&clone_dir), p.as_ref()).void())
+        .collect::<Validated<(), aura_core::git::Error>>()
+        .ok()
+        .map_err(Error::Clones)?;
+
+    if cloned.is_empty().not() {
+        aura!(fll, "A-install-pulling");
+    }
+
+    cloned
+        .par_iter()
+        .map(|p| {
+            let mut path = clone_dir.clone();
+            path.push(p.as_ref());
+            aura_core::git::pull(&path)
+        })
+        .collect::<Validated<(), aura_core::git::Error>>()
+        .ok()
+        .map_err(Error::Pulls)?;
 
     Ok(())
 }
@@ -329,7 +366,7 @@ fn real_packages<'a>(
 
     for bad in not_real {
         let name = bad.cyan().to_string();
-        yellow!(fll, "A-unreal", pkg = name);
+        yellow!(fll, "A-install-unreal", pkg = name);
     }
 
     Ok((cloned, to_clone))

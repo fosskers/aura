@@ -55,14 +55,14 @@ pub fn shallow_clone(url: &Path, target: &Path) -> Result<(), Error> {
 ///
 /// Uses the `--ff-only` merge strategy, so the commit history can't have
 /// diverged from the `origin` or this will fail.
-pub fn pull(clone_dir: &Path) -> Result<(), Error> {
+pub fn pull(dir: &Path) -> Result<(), Error> {
     Command::new("git")
         .arg("pull")
         .arg("--quiet")
         .arg("--ff-only")
         .stdout(Stdio::null())
         .stderr(Stdio::null())
-        .current_dir(clone_dir)
+        .current_dir(dir)
         .status()?
         .success()
         .then(|| ())

@@ -49,6 +49,7 @@ dependencies = [
  "itertools",
  "linya",
  "log",
+ "nonempty",
  "pacmanconf",
  "raur-curl",
  "rayon",
