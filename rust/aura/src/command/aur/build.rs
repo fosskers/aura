@@ -1,7 +1,8 @@
-use crate::aura;
 use crate::utils::ResultVoid;
+use crate::{a, aura, red};
 use colored::Colorize;
 use i18n_embed::fluent::FluentLanguageLoader;
+use i18n_embed_fl::fl;
 use log::debug;
 use nonempty::NonEmpty;
 use srcinfo::Srcinfo;
@@ -19,6 +20,7 @@ pub enum Error {
     Utf8(std::str::Utf8Error),
     FilenameExtraction(PathBuf),
     TarballMove(PathBuf),
+    Cancelled,
     Makepkg,
 }
 
@@ -61,6 +63,7 @@ impl std::fmt::Display for Error {
                 )
             }
             Error::TarballMove(pb) => write!(f, "Failed to move {}", pb.display()),
+            Error::Cancelled => write!(f, "Not proceeding with build."),
         }
     }
 }
@@ -82,7 +85,20 @@ where
     aura!(fll, "A-build-prep");
 
     let to_install = pkg_clones
-        .map(|path| build_one(cache_dir, path.as_ref(), build_dir))
+        .map(
+            |path| match build_one(cache_dir, path.as_ref(), build_dir) {
+                Ok(tbs) => Ok(tbs),
+                Err(e) => {
+                    red!(fll, "A-build-fail");
+                    eprintln!("{}", e);
+                    let msg = format!("{} {} ", fl!(fll, "continue"), fl!(fll, "proceed-yes"));
+                    match crate::utils::prompt(&a!(msg)) {
+                        Some(_) => Ok(vec![]),
+                        None => Err(Error::Cancelled),
+                    }
+                }
+            },
+        )
         .collect::<Result<Vec<Vec<PathBuf>>, Error>>()?
         .into_iter()
         .flatten()

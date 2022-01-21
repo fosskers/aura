@@ -13,6 +13,7 @@ pub enum Error {
     Alpm(alpm::Error),
     Readline(rustyline::error::ReadlineError),
     Sudo(crate::utils::SudoError),
+    Cancelled,
     NoneExist,
 }
 
@@ -41,6 +42,7 @@ impl std::fmt::Display for Error {
             Error::Readline(e) => write!(f, "{}", e),
             Error::Sudo(e) => write!(f, "{}", e),
             Error::NoneExist => write!(f, "No such packages exist."),
+            Error::Cancelled => write!(f, "Action cancelled."),
         }
     }
 }
@@ -123,7 +125,7 @@ pub(crate) fn remove(alpm: &mut Alpm, fll: FluentLanguageLoader) -> Result<(), E
 
         // Proceed with the removal if the user accepts.
         let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
-        crate::utils::prompt(&a!(msg))?;
+        crate::utils::prompt(&a!(msg)).ok_or(Error::Cancelled)?;
         alpm.trans_commit().map_err(|(_, e)| Error::Alpm(e))?;
         alpm.trans_release()?;
         green!(fll, "common-done");

@@ -31,6 +31,7 @@ pub enum Error {
     Readline(rustyline::error::ReadlineError),
     Sudo(crate::utils::SudoError),
     Pacman(crate::pacman::Error),
+    Cancelled,
     MiscShell,
     Silent,
 }
@@ -68,6 +69,7 @@ impl std::fmt::Display for Error {
             Error::Pacman(e) => write!(f, "{}", e),
             Error::MiscShell => write!(f, "A miscellaneous shell call failed."),
             Error::Silent => write!(f, ""),
+            Error::Cancelled => write!(f, "Action cancelled."),
         }
     }
 }
@@ -234,7 +236,7 @@ pub(crate) fn clean(fll: &FluentLanguageLoader, path: &Path, keep: usize) -> Res
 
     // Proceed if the user accepts.
     let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
-    crate::utils::prompt(&a!(msg))?;
+    crate::utils::prompt(&a!(msg)).ok_or(Error::Cancelled)?;
 
     // Get all the tarball paths, sort and group them by name, and then remove them.
     aura_core::cache::package_paths(path)?
@@ -266,7 +268,7 @@ pub(crate) fn clean_not_saved(
 
     // Proceed if the user accepts.
     let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
-    crate::utils::prompt(&a!(msg))?;
+    crate::utils::prompt(&a!(msg)).ok_or(Error::Cancelled)?;
 
     let tarballs = aura_core::cache::package_paths(cache)?;
 
@@ -348,7 +350,7 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader, alpm: &Alpm, path: &Path) -> R
 
         // Proceed if the user accepts.
         let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
-        crate::utils::prompt(&a!(msg))?;
+        crate::utils::prompt(&a!(msg)).ok_or(Error::Cancelled)?;
 
         // Mirrors.
         let mirrors: HashMap<&str, Vec<&str>> = alpm
@@ -463,7 +465,7 @@ pub(crate) fn backup(
 
     // Proceed if the user accepts.
     let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
-    crate::utils::prompt(&a!(msg))?;
+    crate::utils::prompt(&a!(msg)).ok_or(Error::Cancelled)?;
     copy(source, &full, cache_size.files)
 }
 

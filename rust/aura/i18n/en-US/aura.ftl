@@ -6,6 +6,7 @@ A-install-cloning = Cloning new packages...
 A-install-pulling = Pulling known packages...
 
 A-build-prep = Preparing build directories...
+A-build-fail = Package failed to build, citing:
 
 A-i-repo = Repository
 A-i-version = Version
@@ -96,8 +97,10 @@ common-total = Total
 common-no-packages = No packages specified.
 common-no-valid = No valid packages specified.
 common-no-work = Nothing to do.
+common-cancelled = Action cancelled.
 
 # Misc.
 proceed = Proceed?
 proceed-yes = [Y/n]
 proceed-no = [y/N]
+continue = Continue?

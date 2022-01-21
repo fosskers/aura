@@ -19,6 +19,7 @@ pub enum Error {
     Pacman(crate::pacman::Error),
     Readline(rustyline::error::ReadlineError),
     Json(serde_json::Error),
+    Cancelled,
     Silent,
 }
 
@@ -61,6 +62,7 @@ impl std::fmt::Display for Error {
             Error::Readline(e) => write!(f, "{}", e),
             Error::Json(e) => write!(f, "{}", e),
             Error::Silent => write!(f, ""),
+            Error::Cancelled => write!(f, "Action cancelled."),
         }
     }
 }
@@ -92,7 +94,7 @@ pub(crate) fn save(fll: &FluentLanguageLoader, alpm: &Alpm) -> Result<(), Error>
 /// Remove all saveds snapshots that don't have tarballs in the cache.
 pub(crate) fn clean(fll: &FluentLanguageLoader, cache: &Path) -> Result<(), Error> {
     let msg = format!("{} {} ", fl!(fll, "B-clean"), fl!(fll, "proceed-yes"));
-    crate::utils::prompt(&a!(msg))?;
+    crate::utils::prompt(&a!(msg)).ok_or(Error::Cancelled)?;
 
     let path = crate::dirs::snapshot()?;
     let vers = aura_core::cache::all_versions(cache)?;
