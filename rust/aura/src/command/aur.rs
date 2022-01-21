@@ -1,5 +1,7 @@
 //! All functionality involving the `-A` command.
 
+mod build;
+
 use crate::utils::ResultVoid;
 use crate::{aura, dirs, green, red, yellow};
 use alpm::Alpm;
@@ -24,7 +26,14 @@ pub enum Error {
     Git(aura_core::git::Error),
     Clones(NonEmpty<aura_core::git::Error>),
     Pulls(NonEmpty<aura_core::git::Error>),
+    Build(build::Error),
     Silent,
+}
+
+impl From<build::Error> for Error {
+    fn from(v: build::Error) -> Self {
+        Self::Build(v)
+    }
 }
 
 impl From<aura_core::git::Error> for Error {
@@ -74,6 +83,7 @@ impl std::fmt::Display for Error {
                 }
                 Ok(())
             }
+            Error::Build(e) => write!(f, "{}", e),
         }
     }
 }
@@ -323,10 +333,10 @@ pub(crate) fn install(fll: &FluentLanguageLoader, pkgs: &[String]) -> Result<(),
         aura!(fll, "A-install-cloning");
     }
 
-    to_clone
-        .par_iter()
-        .map(|p| clone_aur_repo(Some(&clone_dir), p.as_ref()).void())
-        .collect::<Validated<(), aura_core::git::Error>>()
+    let paths0 = to_clone
+        .into_par_iter()
+        .map(|p| clone_aur_repo(Some(&clone_dir), p.as_ref()))
+        .collect::<Validated<Vec<PathBuf>, aura_core::git::Error>>()
         .ok()
         .map_err(Error::Clones)?;
 
@@ -334,16 +344,18 @@ pub(crate) fn install(fll: &FluentLanguageLoader, pkgs: &[String]) -> Result<(),
         aura!(fll, "A-install-pulling");
     }
 
-    cloned
-        .par_iter()
+    let paths1 = cloned
+        .into_par_iter()
         .map(|p| {
             let mut path = clone_dir.clone();
             path.push(p.as_ref());
-            aura_core::git::pull(&path)
+            aura_core::git::pull(&path).map(|_| path)
         })
-        .collect::<Validated<(), aura_core::git::Error>>()
+        .collect::<Validated<Vec<PathBuf>, aura_core::git::Error>>()
         .ok()
         .map_err(Error::Pulls)?;
+
+    build::build(fll, &build_dir, paths0.into_iter().chain(paths1))?;
 
     Ok(())
 }
