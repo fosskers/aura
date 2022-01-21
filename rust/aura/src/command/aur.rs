@@ -27,7 +27,14 @@ pub enum Error {
     Clones(NonEmpty<aura_core::git::Error>),
     Pulls(NonEmpty<aura_core::git::Error>),
     Build(build::Error),
+    Pacman(crate::pacman::Error),
     Silent,
+}
+
+impl From<crate::pacman::Error> for Error {
+    fn from(v: crate::pacman::Error) -> Self {
+        Self::Pacman(v)
+    }
 }
 
 impl From<build::Error> for Error {
@@ -84,6 +91,7 @@ impl std::fmt::Display for Error {
                 Ok(())
             }
             Error::Build(e) => write!(f, "{}", e),
+            Error::Pacman(e) => write!(f, "{}", e),
         }
     }
 }
@@ -359,7 +367,8 @@ pub(crate) fn install(
         .ok()
         .map_err(Error::Pulls)?;
 
-    build::build(fll, cache_dir, &build_dir, paths0.into_iter().chain(paths1))?;
+    let tarballs = build::build(fll, cache_dir, &build_dir, paths0.into_iter().chain(paths1))?;
+    crate::pacman::pacman_install(tarballs)?;
 
     Ok(())
 }

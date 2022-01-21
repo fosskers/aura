@@ -68,23 +68,28 @@ impl std::fmt::Display for Error {
 // TODO Thu Jan 20 16:13:54 2022
 //
 // Consider parallel builds, but make it opt-in.
+/// Build the given packages and yield paths to their built tarballs.
 pub(crate) fn build<I, T>(
     fll: &FluentLanguageLoader,
     cache_dir: &Path,
     build_dir: &Path,
     pkg_clones: I,
-) -> Result<(), Error>
+) -> Result<Vec<PathBuf>, Error>
 where
     I: Iterator<Item = T>,
     T: AsRef<Path>,
 {
     aura!(fll, "A-build-prep");
 
-    for path in pkg_clones {
-        build_one(cache_dir, path.as_ref(), build_dir)?;
-    }
+    let to_install = pkg_clones
+        .map(|path| build_one(cache_dir, path.as_ref(), build_dir))
+        .collect::<Result<Vec<Vec<PathBuf>>, Error>>()?
+        .into_iter()
+        .flatten()
+        .filter(|path| path.ends_with(".sig").not())
+        .collect();
 
-    Ok(())
+    Ok(to_install)
 }
 
 fn build_one(cache: &Path, clone: &Path, build_root: &Path) -> Result<Vec<PathBuf>, Error> {
