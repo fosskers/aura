@@ -315,7 +315,11 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
 // TODO Thu Jan 13 17:41:55 2022
 //
 // This will obviously require more arguments.
-pub(crate) fn install(fll: &FluentLanguageLoader, pkgs: &[String]) -> Result<(), Error> {
+pub(crate) fn install(
+    fll: &FluentLanguageLoader,
+    cache_dir: &Path,
+    pkgs: &[String],
+) -> Result<(), Error> {
     // Exit early if the user passed no packages.
     if pkgs.is_empty() {
         red!(fll, "common-no-packages");
@@ -355,7 +359,7 @@ pub(crate) fn install(fll: &FluentLanguageLoader, pkgs: &[String]) -> Result<(),
         .ok()
         .map_err(Error::Pulls)?;
 
-    build::build(fll, &build_dir, paths0.into_iter().chain(paths1))?;
+    build::build(fll, cache_dir, &build_dir, paths0.into_iter().chain(paths1))?;
 
     Ok(())
 }
