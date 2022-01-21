@@ -84,7 +84,7 @@ fn work(args: Args) -> Result<(), Error> {
         SubCmd::Aur(a) if a.open.is_some() => aur::open(&a.open.unwrap())?,
         SubCmd::Aur(a) if a.wclone.is_empty().not() => aur::clone_aur_repos(&fll, &a.wclone)?,
         SubCmd::Aur(a) if a.refresh => aur::refresh(&fll)?,
-        SubCmd::Aur(a) => aur::install(&fll, cachep, &a.packages)?,
+        SubCmd::Aur(a) => aur::install(&fll, &a.packages)?,
         // --- Package Sets --- //
         SubCmd::Backup(b) if b.clean => snapshot::clean(&fll, cachep)?,
         SubCmd::Backup(b) if b.list => snapshot::list()?,

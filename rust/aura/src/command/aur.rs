@@ -323,11 +323,7 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
 // TODO Thu Jan 13 17:41:55 2022
 //
 // This will obviously require more arguments.
-pub(crate) fn install(
-    fll: &FluentLanguageLoader,
-    cache_dir: &Path,
-    pkgs: &[String],
-) -> Result<(), Error> {
+pub(crate) fn install(fll: &FluentLanguageLoader, pkgs: &[String]) -> Result<(), Error> {
     // Exit early if the user passed no packages.
     if pkgs.is_empty() {
         red!(fll, "common-no-packages");
@@ -340,6 +336,7 @@ pub(crate) fn install(
 
     let clone_dir = crate::dirs::clones()?;
     let build_dir = crate::dirs::builds()?;
+    let cache_dir = crate::dirs::tarballs()?;
 
     if to_clone.is_empty().not() {
         aura!(fll, "A-install-cloning");
@@ -367,7 +364,12 @@ pub(crate) fn install(
         .ok()
         .map_err(Error::Pulls)?;
 
-    let tarballs = build::build(fll, cache_dir, &build_dir, paths0.into_iter().chain(paths1))?;
+    let tarballs = build::build(
+        fll,
+        &cache_dir,
+        &build_dir,
+        paths0.into_iter().chain(paths1),
+    )?;
     crate::pacman::pacman_install(tarballs)?;
 
     Ok(())

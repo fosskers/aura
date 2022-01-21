@@ -94,3 +94,17 @@ pub(crate) fn builds() -> Result<PathBuf, Error> {
 
     Ok(path)
 }
+
+/// The full path to the Aura-specific tarball cache.
+///
+/// Creates the directory if it doesn't exist.
+pub(crate) fn tarballs() -> Result<PathBuf, Error> {
+    let mut path = aura_xdg_cache()?;
+    path.push("cache");
+
+    if path.is_dir().not() {
+        std::fs::create_dir_all(&path)?;
+    }
+
+    Ok(path)
+}
