@@ -85,20 +85,8 @@ where
     aura!(fll, "A-build-prep");
 
     let to_install = pkg_clones
-        .map(
-            |path| match build_one(cache_dir, path.as_ref(), build_dir) {
-                Ok(tbs) => Ok(tbs),
-                Err(e) => {
-                    red!(fll, "A-build-fail");
-                    eprintln!("{}", e);
-                    let msg = format!("{} {} ", fl!(fll, "continue"), fl!(fll, "proceed-yes"));
-                    match crate::utils::prompt(&a!(msg)) {
-                        Some(_) => Ok(vec![]),
-                        None => Err(Error::Cancelled),
-                    }
-                }
-            },
-        )
+        .map(|path| build_one(cache_dir, path.as_ref(), build_dir))
+        .map(|r| build_check(fll, r))
         .collect::<Result<Vec<Vec<PathBuf>>, Error>>()?
         .into_iter()
         .flatten()
@@ -203,4 +191,22 @@ fn move_tarball(source: &Path, target: &Path) -> Result<(), Error> {
         .success()
         .then(|| ())
         .ok_or_else(|| Error::TarballMove(source.to_path_buf()))
+}
+
+fn build_check(
+    fll: &FluentLanguageLoader,
+    r: Result<Vec<PathBuf>, Error>,
+) -> Result<Vec<PathBuf>, Error> {
+    match r {
+        Ok(tbs) => Ok(tbs),
+        Err(e) => {
+            red!(fll, "A-build-fail");
+            eprintln!("\n  {}\n", e);
+            let msg = format!("{} {} ", fl!(fll, "continue"), fl!(fll, "proceed-yes"));
+            match crate::utils::prompt(&a!(msg)) {
+                Some(_) => Ok(vec![]),
+                None => Err(Error::Cancelled),
+            }
+        }
+    }
 }
