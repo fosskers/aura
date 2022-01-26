@@ -2,6 +2,7 @@
 
 use std::borrow::Cow;
 use std::cmp::Ordering;
+use std::fs::DirEntry;
 use std::path::Path;
 
 /// The simplest form a package.
@@ -84,4 +85,15 @@ impl<'a> Ord for Package<'a> {
             otherwise => otherwise,
         }
     }
+}
+
+/// Like [`Path::read_dir`], but for multiple [`Path`]s at once.
+pub fn read_dirs<P>(paths: &[P]) -> impl Iterator<Item = Result<DirEntry, std::io::Error>> + '_
+where
+    P: AsRef<Path>,
+{
+    paths
+        .into_iter()
+        .filter_map(|path| path.as_ref().read_dir().ok())
+        .flatten()
 }

@@ -151,19 +151,20 @@ pub struct CacheInfo {
     pub available: Vec<String>,
 }
 
-/// All package filenames that match a given string.
-pub fn search<'a>(cache: &Path, term: &'a str) -> Result<CacheMatches<'a>, std::io::Error> {
-    let read_dir = cache.read_dir()?;
-    Ok(CacheMatches { read_dir, term })
+/// All package tarball filenames that match a given string.
+pub fn search<'a, P>(caches: &'a [P], term: &'a str) -> impl Iterator<Item = PathBuf> + 'a
+where
+    P: AsRef<Path>,
+{
+    crate::common::read_dirs(caches)
+        .filter_map(|r| r.ok())
+        .map(|de| de.path())
+        .filter(move |path| path.to_str().map(|s| s.contains(term)).unwrap_or(false))
 }
 
 /// Yield the [`CacheInfo`], if possible, of the given packages.
-pub fn info(cache: &Path, package: &str) -> Result<Option<CacheInfo>, std::io::Error> {
-    let mut matches: Vec<(PkgPath, Metadata)> = search(cache, package)?
-        // FIXME Mon Jan 10 19:23:07 2022
-        //
-        // Use two `filter_map` steps instead of one in order to avoid the
-        // nesting.
+pub fn info(caches: &[&Path], package: &str) -> Result<Option<CacheInfo>, std::io::Error> {
+    let mut matches: Vec<(PkgPath, Metadata)> = search(caches, package)
         .filter_map(|path| {
             path.metadata()
                 .ok()
@@ -198,58 +199,63 @@ pub fn info(cache: &Path, package: &str) -> Result<Option<CacheInfo>, std::io::E
     }
 }
 
-/// The number of files and all bytes consumed by a given `Path`.
-pub fn size(path: &Path) -> Result<CacheSize, std::io::Error> {
-    let (files, bytes) = path
-        .read_dir()?
+/// The number of files and all bytes consumed by files contained in the given
+/// directory `Path`s.
+pub fn size<P>(paths: &[P]) -> CacheSize
+where
+    P: AsRef<Path>,
+{
+    let (files, bytes) = crate::common::read_dirs(paths)
         .filter_map(|de| de.ok())
         .filter(|de| is_package(&de.path()))
         .filter_map(|de| de.metadata().ok())
         .map(|meta| meta.len())
         .fold((0, 0), |(ac, al), l| (ac + 1, al + l));
-    Ok(CacheSize { files, bytes })
+
+    CacheSize { files, bytes }
 }
 
-/// All valid [`PkgPath`]s in the given cache.
-pub fn package_paths(path: &Path) -> Result<PkgPaths, std::io::Error> {
-    let read_dir = path.read_dir()?;
-    Ok(PkgPaths { read_dir })
+/// Valid [`PkgPath`]s in the given caches.
+pub fn package_paths<P>(caches: &[P]) -> impl Iterator<Item = PkgPath<'static>> + '_
+where
+    P: AsRef<Path>,
+{
+    crate::common::read_dirs(caches)
+        .filter_map(|r| r.ok())
+        .map(|de| de.path())
+        .filter_map(PkgPath::new)
 }
 
 /// Installed official packages that have no tarball in the cache.
 pub fn officials_missing_tarballs<'a>(
     alpm: &'a Alpm,
-    path: &Path,
-) -> Result<impl Iterator<Item = alpm::Package<'a>>, std::io::Error> {
-    let groups = all_versions(path)?;
+    caches: &[&Path],
+) -> impl Iterator<Item = alpm::Package<'a>> {
+    let groups = all_versions(caches);
 
-    let missings = aura_arch::officials(alpm).filter(move |p| {
+    aura_arch::officials(alpm).filter(move |p| {
         let pv = p.version().as_str();
         groups
             .get(p.name())
             .map(|vs| !vs.contains(pv))
             .unwrap_or(true)
-    });
-
-    Ok(missings)
+    })
 }
 
 /// Installed packages that have no tarball in the cache.
 pub fn missing_tarballs<'a>(
     alpm: &'a Alpm,
-    path: &Path,
-) -> Result<impl Iterator<Item = alpm::Package<'a>>, std::io::Error> {
-    let groups = all_versions(path)?;
+    caches: &[&Path],
+) -> impl Iterator<Item = alpm::Package<'a>> {
+    let groups = all_versions(caches);
 
-    let missings = alpm.localdb().pkgs().into_iter().filter(move |p| {
+    alpm.localdb().pkgs().into_iter().filter(move |p| {
         let pv = p.version().as_str();
         groups
             .get(p.name())
             .map(|vs| !vs.contains(pv))
             .unwrap_or(true)
-    });
-
-    Ok(missings)
+    })
 }
 
 // TODO Provide a similar function for signature files.
@@ -263,21 +269,18 @@ pub fn missing_tarballs<'a>(
 /// assert!(is_package(Path::new("libebml-1.4.0-1-x86_64.pkg.tar.zst")));
 /// ```
 pub fn is_package(path: &Path) -> bool {
-    match path.to_str() {
-        None => false,
-        Some(s) => s.ends_with(".pkg.tar.zst") || s.ends_with(".pkg.tar.xz"),
-    }
+    path.ends_with(".pkg.tar.zst") || path.ends_with(".pkg.tar.xz")
 }
 
-/// Every version of every package available in the cache.
-pub fn all_versions(cache: &Path) -> Result<HashMap<String, HashSet<String>>, std::io::Error> {
+/// Every version of every package available in the caches.
+pub fn all_versions(caches: &[&Path]) -> HashMap<String, HashSet<String>> {
     let mut map = HashMap::new();
 
-    for pp in package_paths(cache)? {
+    for pp in package_paths(caches) {
         let pkg = pp.as_package();
         let set = map.entry(pkg.name.to_string()).or_insert_with(HashSet::new);
         set.insert(pkg.version.to_string());
     }
 
-    Ok(map)
+    map
 }

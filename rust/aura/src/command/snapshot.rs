@@ -92,12 +92,12 @@ pub(crate) fn save(fll: &FluentLanguageLoader, alpm: &Alpm) -> Result<(), Error>
 }
 
 /// Remove all saveds snapshots that don't have tarballs in the cache.
-pub(crate) fn clean(fll: &FluentLanguageLoader, cache: &Path) -> Result<(), Error> {
+pub(crate) fn clean(fll: &FluentLanguageLoader, caches: &[&Path]) -> Result<(), Error> {
     let msg = format!("{} {} ", fl!(fll, "B-clean"), fl!(fll, "proceed-yes"));
     crate::utils::prompt(&a!(msg)).ok_or(Error::Cancelled)?;
 
     let path = crate::dirs::snapshot()?;
-    let vers = aura_core::cache::all_versions(cache)?;
+    let vers = aura_core::cache::all_versions(caches);
 
     for (path, snapshot) in aura_core::snapshot::snapshots_with_paths(&path)? {
         if snapshot.pinned.not() && snapshot.usable(&vers).not() {
@@ -120,9 +120,13 @@ pub(crate) fn list() -> Result<(), Error> {
     Ok(())
 }
 
-pub(crate) fn restore(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) -> Result<(), Error> {
+pub(crate) fn restore(
+    fll: &FluentLanguageLoader,
+    alpm: &Alpm,
+    caches: &[&Path],
+) -> Result<(), Error> {
     let snap = crate::dirs::snapshot()?;
-    let vers = aura_core::cache::all_versions(cache)?;
+    let vers = aura_core::cache::all_versions(caches);
 
     let mut shots: Vec<_> = aura_core::snapshot::snapshots(&snap)?
         .filter(|ss| ss.usable(&vers))
@@ -143,13 +147,13 @@ pub(crate) fn restore(fll: &FluentLanguageLoader, alpm: &Alpm, cache: &Path) -> 
     }
 
     let index = crate::utils::select(">>> ", shots.len() - 1)?;
-    restore_snapshot(alpm, cache, shots.remove(index))?;
+    restore_snapshot(alpm, caches, shots.remove(index))?;
 
     green!(fll, "common-done");
     Ok(())
 }
 
-fn restore_snapshot(alpm: &Alpm, cache: &Path, snapshot: Snapshot) -> Result<(), Error> {
+fn restore_snapshot(alpm: &Alpm, caches: &[&Path], snapshot: Snapshot) -> Result<(), Error> {
     let installed: HashMap<&str, &str> = alpm
         .localdb()
         .pkgs()
@@ -161,7 +165,7 @@ fn restore_snapshot(alpm: &Alpm, cache: &Path, snapshot: Snapshot) -> Result<(),
     // Alter packages first to avoid potential breakage from the later removal
     // step.
     if diff.to_add_or_alter.is_empty().not() {
-        let tarballs = aura_core::cache::package_paths(cache)?
+        let tarballs = aura_core::cache::package_paths(caches)
             .filter(|pp| {
                 let p = pp.as_package();
                 match diff.to_add_or_alter.get(p.name.as_ref()) {

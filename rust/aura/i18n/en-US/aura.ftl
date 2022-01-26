@@ -63,6 +63,7 @@ C-c-freed = { $bytes } freed.
 C-downgrade-which = What version of { $pkg } do you want?
 
 C-y-no-work = Package cache already synchronized.
+C-y-which-cache = Which cache should receive the downloaded tarballs?
 C-t-invalids = Removing invalid package tarballs.
 
 # Orphans (-O)

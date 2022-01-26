@@ -12,6 +12,7 @@ mod macros;
 pub(crate) mod pacman;
 pub(crate) mod utils;
 
+use ::log::info;
 use alpm::{Alpm, SigLevel};
 use clap::Parser;
 use command::{aur, cache, check, conf, deps, log, open, orphans, snapshot, stats};
@@ -36,12 +37,12 @@ fn main() {
 }
 
 fn work(args: Args) -> Result<(), Error> {
-    // Activate the logger.
+    // --- Terminal Logging --- //
     if let Some(l) = args.log_level {
         TermLogger::init(l, Config::default(), TerminalMode::Mixed, ColorChoice::Auto)?;
     }
 
-    // Establish the language strings to be used.
+    // --- Localisation --- //
     let lang = args.language();
     let fll = localization::load(lang)?;
 
@@ -49,20 +50,32 @@ fn work(args: Args) -> Result<(), Error> {
     // TODO Consider the flag they might have given to change the conf path.
     let pconf = pacmanconf::Config::new()?;
 
-    // Establish common file paths.
-    // let aurap: PathBuf = utils::aura_xdg_cache()?;
+    // --- ALPM/Pacman Logging --- //
     let logp: &Path = args
         .logfile
         .as_deref()
         .unwrap_or_else(|| Path::new(&pconf.log_file));
-    // TODO Allow for multiple cache paths?
-    let cachep: &Path = args
+
+    // --- Tarball Caches --- //
+    let aur_cache = crate::dirs::tarballs()?;
+    let caches: Vec<&Path> = args
         .cachedir
         .as_deref()
-        .unwrap_or_else(|| Path::new(pconf.cache_dir.first().unwrap()));
+        .map(|d| vec![d, &aur_cache])
+        .unwrap_or_else(|| {
+            pconf
+                .cache_dir
+                .iter()
+                .map(Path::new)
+                .chain(std::iter::once(aur_cache.as_ref()))
+                .collect()
+        });
+    info!("Tarball Caches: {:?}", caches);
+
+    // --- Package Set Snapshots --- //
     let snapshots: PathBuf = dirs::snapshot()?;
 
-    // A handle to ALPM.
+    // --- ALPM Handle --- //
     let root = args.root.unwrap_or_else(|| pconf.root_dir.clone());
     let dbpath = args.dbpath.unwrap_or_else(|| pconf.db_path.clone());
     let mut alpm = alpm(&pconf, root, dbpath)?;
@@ -86,21 +99,21 @@ fn work(args: Args) -> Result<(), Error> {
         SubCmd::Aur(a) if a.refresh => aur::refresh(&fll)?,
         SubCmd::Aur(a) => aur::install(&fll, &a.packages)?,
         // --- Package Sets --- //
-        SubCmd::Backup(b) if b.clean => snapshot::clean(&fll, cachep)?,
+        SubCmd::Backup(b) if b.clean => snapshot::clean(&fll, &caches)?,
         SubCmd::Backup(b) if b.list => snapshot::list()?,
-        SubCmd::Backup(b) if b.restore => snapshot::restore(&fll, &alpm, cachep)?,
+        SubCmd::Backup(b) if b.restore => snapshot::restore(&fll, &alpm, &caches)?,
         SubCmd::Backup(_) => snapshot::save(&fll, &alpm)?,
         // --- Cache Management --- //
-        SubCmd::Cache(c) if !c.info.is_empty() => cache::info(&fll, &alpm, cachep, c.info)?,
-        SubCmd::Cache(c) if c.search.is_some() => cache::search(cachep, &c.search.unwrap())?,
-        SubCmd::Cache(c) if c.backup.is_some() => cache::backup(&fll, cachep, &c.backup.unwrap())?,
-        SubCmd::Cache(c) if c.clean.is_some() => cache::clean(&fll, cachep, c.clean.unwrap())?,
-        SubCmd::Cache(c) if c.clean_unsaved => cache::clean_not_saved(&fll, cachep, &snapshots)?,
-        SubCmd::Cache(c) if c.invalid => cache::invalid(&fll, &alpm, cachep)?,
-        SubCmd::Cache(c) if c.list => cache::list(cachep)?,
-        SubCmd::Cache(c) if c.refresh => cache::refresh(&fll, &alpm, cachep)?,
-        SubCmd::Cache(c) if c.missing => cache::missing(&alpm, cachep)?,
-        SubCmd::Cache(c) => cache::downgrade(&fll, cachep, c.packages)?,
+        SubCmd::Cache(c) if !c.info.is_empty() => cache::info(&fll, &alpm, &caches, c.info)?,
+        SubCmd::Cache(c) if c.search.is_some() => cache::search(&caches, &c.search.unwrap())?,
+        SubCmd::Cache(c) if c.backup.is_some() => cache::backup(&fll, &caches, &c.backup.unwrap())?,
+        SubCmd::Cache(c) if c.clean.is_some() => cache::clean(&fll, &caches, c.clean.unwrap())?,
+        SubCmd::Cache(c) if c.clean_unsaved => cache::clean_not_saved(&fll, &caches, &snapshots)?,
+        SubCmd::Cache(c) if c.invalid => cache::invalid(&fll, &alpm, &caches)?,
+        SubCmd::Cache(c) if c.list => cache::list(&caches)?,
+        SubCmd::Cache(c) if c.refresh => cache::refresh(&fll, &alpm, &caches)?,
+        SubCmd::Cache(c) if c.missing => cache::missing(&alpm, &caches),
+        SubCmd::Cache(c) => cache::downgrade(&fll, &caches, c.packages)?,
         // --- Logs --- //
         SubCmd::Log(l) if l.search.is_some() => log::search(logp, l.search.unwrap())?,
         SubCmd::Log(l) if !l.info.is_empty() => log::info(fll, logp, l.info)?,
@@ -131,7 +144,7 @@ fn work(args: Args) -> Result<(), Error> {
         SubCmd::Deps(d) if d.reverse => deps::reverse(&alpm, d.limit, d.optional, d.packages)?,
         SubCmd::Deps(d) => deps::graph(&alpm, d.limit, d.optional, d.packages)?,
         // --- System Validation --- //
-        SubCmd::Check(_) => check::check(&fll, &alpm, cachep, &snapshots),
+        SubCmd::Check(_) => check::check(&fll, &alpm, &caches, &snapshots),
     }
 
     Ok(())
