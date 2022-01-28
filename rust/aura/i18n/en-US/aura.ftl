@@ -77,6 +77,9 @@ L-recent = Recent Actions
 
 # System Validation (check)
 check-start = Validating your system.
+check-conf = Pacman & Makepkg Configuration
+check-conf-parallel = Parallel downloads activated?
+check-conf-parallel-fix = Your { $setting } setting is off, or set to 1. Is that intended?
 check-snapshots = Package Snapshots
 check-snapshots-unreadable = Unable to read snapshot path { $path }
 check-snapshot-usable = All snapshots have corresponding tarballs?

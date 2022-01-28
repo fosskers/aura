@@ -14,20 +14,33 @@ const BAD: &str = "✕";
 pub(crate) fn check(
     fll: &FluentLanguageLoader,
     alpm: &Alpm,
+    pconf: &pacmanconf::Config,
     cache_paths: &[&Path],
     snapshot_path: &Path,
 ) {
     aura!(fll, "check-start");
-    // directories(fll, snapshot_path);
+    pacman_config(fll, pconf);
     snapshots(fll, snapshot_path, cache_paths);
     cache(fll, alpm, cache_paths);
     green!(fll, "common-done");
 }
 
-// fn directories(fll: &FluentLanguageLoader, s_path: &Path) {
-//     aura!(fll, "check-directories");
-//     directory_existance(fll, s_path);
-// }
+fn pacman_config(fll: &FluentLanguageLoader, c: &pacmanconf::Config) {
+    aura!(fll, "check-conf");
+    parallel_downloads(fll, c);
+}
+
+fn parallel_downloads(fll: &FluentLanguageLoader, c: &pacmanconf::Config) {
+    let good = c.parallel_downloads > 1;
+    let symbol = if good { GOOD.green() } else { BAD.red() };
+    println!("  [{}] {}", symbol, fl!(fll, "check-conf-parallel"));
+
+    if !good {
+        let cmd = "ParallelDownloads".bold().cyan().to_string();
+        let msg = fl!(fll, "check-conf-parallel-fix", setting = cmd);
+        println!("      └─ {}", msg);
+    }
+}
 
 fn snapshots(fll: &FluentLanguageLoader, s_path: &Path, t_path: &[&Path]) {
     aura!(fll, "check-snapshots");

@@ -144,7 +144,7 @@ fn work(args: Args) -> Result<(), Error> {
         SubCmd::Deps(d) if d.reverse => deps::reverse(&alpm, d.limit, d.optional, d.packages)?,
         SubCmd::Deps(d) => deps::graph(&alpm, d.limit, d.optional, d.packages)?,
         // --- System Validation --- //
-        SubCmd::Check(_) => check::check(&fll, &alpm, &caches, &snapshots),
+        SubCmd::Check(_) => check::check(&fll, &alpm, &pconf, &caches, &snapshots),
     }
 
     Ok(())
