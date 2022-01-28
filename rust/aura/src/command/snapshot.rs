@@ -99,7 +99,7 @@ pub(crate) fn clean(fll: &FluentLanguageLoader, caches: &[&Path]) -> Result<(), 
     let path = crate::dirs::snapshot()?;
     let vers = aura_core::cache::all_versions(caches);
 
-    for (path, snapshot) in aura_core::snapshot::snapshots_with_paths(&path)? {
+    for (path, snapshot) in aura_core::snapshot::snapshots_with_paths(&path) {
         if snapshot.pinned.not() && snapshot.usable(&vers).not() {
             std::fs::remove_file(path)?;
         }
@@ -113,7 +113,7 @@ pub(crate) fn clean(fll: &FluentLanguageLoader, caches: &[&Path]) -> Result<(), 
 pub(crate) fn list() -> Result<(), Error> {
     let snap = crate::dirs::snapshot()?;
 
-    for (path, _) in aura_core::snapshot::snapshots_with_paths(&snap)? {
+    for (path, _) in aura_core::snapshot::snapshots_with_paths(&snap) {
         println!("{}", path.display());
     }
 
@@ -128,7 +128,7 @@ pub(crate) fn restore(
     let snap = crate::dirs::snapshot()?;
     let vers = aura_core::cache::all_versions(caches);
 
-    let mut shots: Vec<_> = aura_core::snapshot::snapshots(&snap)?
+    let mut shots: Vec<_> = aura_core::snapshot::snapshots(&snap)
         .filter(|ss| ss.usable(&vers))
         .collect();
     shots.sort_by_key(|ss| ss.time);

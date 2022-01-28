@@ -288,7 +288,7 @@ pub(crate) fn clean_not_saved(
     let snaps: HashMap<String, HashSet<String>> = {
         let mut snaps: HashMap<_, HashSet<_>> = HashMap::new();
 
-        for snap in aura_core::snapshot::snapshots(snapshot_dir)? {
+        for snap in aura_core::snapshot::snapshots(snapshot_dir) {
             for (name, ver) in snap.packages.into_iter() {
                 let entry = snaps.entry(name).or_default();
                 entry.insert(ver);

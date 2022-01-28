@@ -4,52 +4,9 @@ use alpm::Alpm;
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
-use std::fs::{File, ReadDir};
+use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
-
-/// An iterator of all legal (but not necessarily usable) [`Snapshot`]s.
-pub struct Snapshots {
-    with_paths: SnapshotsWithPaths,
-}
-
-impl Iterator for Snapshots {
-    type Item = Snapshot;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.with_paths.next().map(|(_, snap)| snap)
-    }
-}
-
-/// All legal [`Snapshot`]s along with the full [`PathBuf`] they was read from.
-pub struct SnapshotsWithPaths {
-    read_dir: ReadDir,
-}
-
-impl Iterator for SnapshotsWithPaths {
-    type Item = (PathBuf, Snapshot);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let next = self
-            .read_dir
-            .next()?
-            .ok()
-            .and_then(|entry| {
-                let p = entry.path();
-                File::open(&p).ok().map(|f| (p, f))
-            })
-            .and_then(|(p, f)| {
-                serde_json::from_reader(BufReader::new(f))
-                    .ok()
-                    .map(|s| (p, s))
-            });
-
-        match next {
-            None => self.next(),
-            n => n,
-        }
-    }
-}
 
 /// All packages installed at some specific [`DateTime`]. Any "pinned" snapshot
 /// should never be considered for deletion.
@@ -101,14 +58,25 @@ impl Snapshot {
 }
 
 /// An iterator of all legal [`Snapshot`]s.
-pub fn snapshots(snapshots_dir: &Path) -> Result<Snapshots, std::io::Error> {
-    let with_paths = snapshots_with_paths(snapshots_dir)?;
-    Ok(Snapshots { with_paths })
+pub fn snapshots(snapshots_dir: &Path) -> impl Iterator<Item = Snapshot> {
+    snapshots_with_paths(snapshots_dir).map(|(_, s)| s)
 }
 
 /// An iterator of all legal [`Snapshot`]s along with the full [`PathBuf`] they
-/// was read from.
-pub fn snapshots_with_paths(snapshots_dir: &Path) -> Result<SnapshotsWithPaths, std::io::Error> {
-    let read_dir = snapshots_dir.read_dir()?;
-    Ok(SnapshotsWithPaths { read_dir })
+/// were read from.
+pub fn snapshots_with_paths(snapshots_dir: &Path) -> impl Iterator<Item = (PathBuf, Snapshot)> {
+    snapshots_dir
+        .read_dir()
+        .into_iter()
+        .flatten()
+        .filter_map(|r| r.ok())
+        .filter_map(|entry| {
+            let p = entry.path();
+            File::open(&p).ok().map(|f| (p, f))
+        })
+        .filter_map(|(p, f)| {
+            serde_json::from_reader(BufReader::new(f))
+                .ok()
+                .map(|s| (p, s))
+        })
 }

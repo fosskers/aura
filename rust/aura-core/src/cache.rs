@@ -4,7 +4,7 @@ use crate::common::Package;
 use alpm::Alpm;
 use std::collections::{HashMap, HashSet};
 use std::ffi::OsString;
-use std::fs::{Metadata, ReadDir};
+use std::fs::Metadata;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use std::{cmp::Ordering, process::Command};
@@ -93,45 +93,6 @@ pub struct CacheSize {
     pub files: usize,
     /// The number of bytes of all files combined.
     pub bytes: u64,
-}
-
-/// An iterator of filepaths that matched some search term.
-pub struct CacheMatches<'a> {
-    read_dir: ReadDir,
-    term: &'a str,
-}
-
-impl<'a> Iterator for CacheMatches<'a> {
-    type Item = PathBuf;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.read_dir.next()? {
-            Err(_) => self.next(),
-            Ok(entry) => {
-                let path = entry.path();
-                match path.to_str() {
-                    Some(s) if s.contains(self.term) => Some(path),
-                    _ => self.next(),
-                }
-            }
-        }
-    }
-}
-
-/// An iterator of all legal package tarballs in the cache.
-pub struct PkgPaths {
-    read_dir: ReadDir,
-}
-
-impl Iterator for PkgPaths {
-    type Item = PkgPath<'static>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.read_dir.next()? {
-            Err(_) => self.next(),
-            Ok(entry) => PkgPath::new(entry.path()).or_else(|| self.next()),
-        }
-    }
 }
 
 /// Cache statistics for a particular package.

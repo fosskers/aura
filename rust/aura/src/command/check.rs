@@ -48,28 +48,24 @@ fn snapshots(fll: &FluentLanguageLoader, s_path: &Path, t_path: &[&Path]) {
 }
 
 fn usable_snapshots(fll: &FluentLanguageLoader, s_path: &Path, t_path: &[&Path]) {
-    match aura_core::snapshot::snapshots(s_path) {
-        Err(_) => unreadable_snapshots(fll, s_path),
-        Ok(ss) => {
-            let vs = aura_core::cache::all_versions(t_path);
-            let (goods, bads): (Vec<_>, Vec<_>) = ss.partition(|s| s.usable(&vs));
-            let good = bads.is_empty();
+    let ss = aura_core::snapshot::snapshots(s_path);
+    let vs = aura_core::cache::all_versions(t_path);
+    let (goods, bads): (Vec<_>, Vec<_>) = ss.partition(|s| s.usable(&vs));
+    let good = bads.is_empty();
 
-            let symbol = if good { GOOD.green() } else { BAD.red() };
-            println!(
-                "  [{}] {} ({}/{})",
-                symbol,
-                fl!(fll, "check-snapshot-usable"),
-                goods.len(),
-                goods.len() + bads.len()
-            );
+    let symbol = if good { GOOD.green() } else { BAD.red() };
+    println!(
+        "  [{}] {} ({}/{})",
+        symbol,
+        fl!(fll, "check-snapshot-usable"),
+        goods.len(),
+        goods.len() + bads.len()
+    );
 
-            if !good {
-                let cmd = "aura -Bc".bold().cyan().to_string();
-                let msg = fl!(fll, "check-snapshot-usable-fix", command = cmd);
-                println!("      └─ {}", msg);
-            }
-        }
+    if !good {
+        let cmd = "aura -Bc".bold().cyan().to_string();
+        let msg = fl!(fll, "check-snapshot-usable-fix", command = cmd);
+        println!("      └─ {}", msg);
     }
 }
 
@@ -133,10 +129,4 @@ fn packages_have_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, caches: &[&Pa
         let msg = fl!(fll, "check-cache-missing-fix", command = cmd);
         println!("      └─ {}", msg);
     }
-}
-
-fn unreadable_snapshots(fll: &FluentLanguageLoader, path: &Path) {
-    let p = path.to_str().unwrap();
-    let msg = fl!(fll, "check-snapshots-unreadable", path = p);
-    println!("  [{}] {}", "✕".red(), msg);
 }
