@@ -62,8 +62,28 @@ fn usable_snapshots(fll: &FluentLanguageLoader, s_path: &Path, t_path: &[&Path])
 
 fn cache(fll: &FluentLanguageLoader, alpm: &Alpm, caches: &[&Path]) {
     aura!(fll, "check-cache");
+    caches_exist(fll, caches);
     packages_have_tarballs(fll, alpm, caches);
     valid_tarballs(fll, alpm, caches);
+}
+
+fn caches_exist(fll: &FluentLanguageLoader, caches: &[&Path]) {
+    let (goods, bads): (Vec<&Path>, Vec<&Path>) = caches.iter().partition(|p| p.is_dir());
+    let good = bads.is_empty();
+    let symbol = if good { GOOD.green() } else { BAD.red() };
+    println!(
+        "  [{}] {} ({}/{})",
+        symbol,
+        fl!(fll, "check-cache-exists"),
+        goods.len(),
+        goods.len() + bads.len()
+    );
+
+    if !good {
+        for bad in bads {
+            println!("      └─ {}", bad.display());
+        }
+    }
 }
 
 /// Is every tarball in the cache valid and loadable by ALPM?

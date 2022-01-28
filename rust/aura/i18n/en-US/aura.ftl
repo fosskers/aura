@@ -83,6 +83,7 @@ check-snapshot-usable = All snapshots have corresponding tarballs?
 check-snapshot-usable-fix = Fix: You can remove old/unusable snapshots with { $command }
 check-cache = Package Tarball Caches
 check-cache-unreadable = Unable to read cache path { $path }
+check-cache-exists = All specified caches exist?
 check-cache-tarballs = All tarballs valid?
 check-cache-tarballs-fix = Fix: You can remove invalid tarballs with { $command }
 check-cache-missing = Every installed package has a tarball?
