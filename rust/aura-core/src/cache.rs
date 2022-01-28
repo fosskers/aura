@@ -269,7 +269,9 @@ pub fn missing_tarballs<'a>(
 /// assert!(is_package(Path::new("libebml-1.4.0-1-x86_64.pkg.tar.zst")));
 /// ```
 pub fn is_package(path: &Path) -> bool {
-    path.ends_with(".pkg.tar.zst") || path.ends_with(".pkg.tar.xz")
+    path.to_str()
+        .map(|p| p.ends_with(".pkg.tar.zst") || p.ends_with(".pkg.tar.xz"))
+        .unwrap_or(false)
 }
 
 /// Every version of every package available in the caches.
