@@ -2,13 +2,20 @@
 
 use alpm::Alpm;
 use log::info;
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
+use std::sync::{Arc, Mutex};
+use validated::Validated;
 
 /// Errors that can occur during dependency resolution.
-pub enum Error {}
+pub enum Error {
+    /// A [`Mutex`] was poisoned and couldn't be unlocked.
+    PoisonedMutex,
+}
 
 /// The results of dependency resolution.
+#[derive(Default)]
 pub struct Resolution<'a> {
     /// Packages to be installed from official repos.
     pub to_install: HashMap<&'a str, Official<'a>>,
@@ -16,6 +23,15 @@ pub struct Resolution<'a> {
     pub to_build: HashMap<&'a str, Buildable<'a>>,
     /// Packages already installed on the system.
     pub satisfied: HashSet<&'a str>,
+}
+
+impl Resolution<'_> {
+    /// Have we already considered the given package?
+    pub fn seen(&self, pkg: &str) -> bool {
+        self.to_install.contains_key(pkg)
+            || self.to_build.contains_key(pkg)
+            || self.satisfied.contains(pkg)
+    }
 }
 
 /// An official ALPM package.
@@ -32,12 +48,39 @@ pub struct Buildable<'a> {
 /// Determine all packages to be built and installed.
 pub fn resolve<'a, 'b, T, S>(alpm: &'a Alpm, pkgs: T) -> Result<Resolution<'a>, Error>
 where
-    T: IntoIterator<Item = S>,
+    T: IntoParallelIterator<Item = S>,
     S: AsRef<str>,
 {
     info!("Resolving dependencies.");
 
+    let res = Arc::new(Mutex::new(Resolution::default()));
+
+    pkgs.into_par_iter()
+        .map(|p| resolve_one(res.clone(), p))
+        .collect::<Validated<(), Error>>();
+
     todo!()
+}
+
+fn resolve_one<'a, S>(
+    // alpm: &'a Alpm,
+    mtx: Arc<Mutex<Resolution<'a>>>,
+    pkg: S,
+) -> Result<(), Error>
+where
+    S: AsRef<str>,
+{
+    let p = pkg.as_ref();
+    let already_seen = {
+        let res = mtx.lock().map_err(|_| Error::PoisonedMutex)?;
+        res.seen(p)
+    };
+
+    if already_seen {
+        Ok(())
+    } else {
+        todo!()
+    }
 }
 
 /// Given a collection of [`Buildable`] packages, determine a tiered order in
