@@ -303,6 +303,9 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
         .map(|(pkg, path)| aura_core::git::pull(&path).map_err(|_| pkg.clone()))
         .collect();
 
+    // FIXME Fri Jan 28 13:07:24 2022
+    //
+    // Return the failed packages in the Error type instead?
     match pulls {
         Validated::Good(_) => {
             green!(fll, "common-done");

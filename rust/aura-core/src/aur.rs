@@ -1,5 +1,7 @@
 //! Core interactions with the AUR.
 
+pub mod dependencies;
+
 use log::debug;
 use raur_curl::Raur;
 use std::borrow::Cow;
