@@ -90,7 +90,7 @@ where
         .collect::<Result<Vec<Vec<PathBuf>>, Error>>()?
         .into_iter()
         .flatten()
-        .filter(|path| path.ends_with(".sig").not())
+        .filter(|path| path.extension().map(|ex| ex != ".sig").unwrap_or(false))
         .collect();
 
     Ok(to_install)
