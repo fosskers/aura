@@ -68,7 +68,7 @@ fn cache(fll: &FluentLanguageLoader, alpm: &Alpm, caches: &[&Path]) {
 }
 
 fn caches_exist(fll: &FluentLanguageLoader, caches: &[&Path]) {
-    let (goods, bads): (Vec<&Path>, Vec<&Path>) = caches.iter().partition(|p| p.is_dir());
+    let (goods, bads): (Vec<&Path>, _) = caches.iter().partition(|p| p.is_dir());
     let good = bads.is_empty();
     let symbol = if good { GOOD.green() } else { BAD.red() };
     println!(
@@ -88,10 +88,17 @@ fn caches_exist(fll: &FluentLanguageLoader, caches: &[&Path]) {
 
 /// Is every tarball in the cache valid and loadable by ALPM?
 fn valid_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, caches: &[&Path]) {
-    let good = aura_core::cache::package_paths(caches)
-        .all(|pp| aura_arch::is_valid_package(alpm, pp.as_path()));
+    let (goods, bads): (Vec<_>, _) = aura_core::cache::package_paths(caches)
+        .partition(|pp| aura_arch::is_valid_package(alpm, pp.as_path()));
+    let good = bads.is_empty();
     let symbol = if good { GOOD.green() } else { BAD.red() };
-    println!("  [{}] {}", symbol, fl!(fll, "check-cache-tarballs"));
+    println!(
+        "  [{}] {} ({}/{})",
+        symbol,
+        fl!(fll, "check-cache-tarballs"),
+        goods.len(),
+        goods.len() + bads.len()
+    );
 
     if !good {
         let cmd = "aura -Ct".bold().cyan().to_string();
