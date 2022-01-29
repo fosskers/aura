@@ -5,4 +5,5 @@ authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2021"
 
 [dependencies]
-alpm = "2.0"
+alpm = "2.2"
+alpm-utils = "1.1"
