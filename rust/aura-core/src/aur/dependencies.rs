@@ -1,7 +1,8 @@
 //! AUR package dependency solving.
 
 use alpm::Alpm;
-use log::info;
+use log::{debug, info};
+use r2d2::{ManageConnection, Pool, PooledConnection};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
@@ -12,6 +13,14 @@ use validated::Validated;
 pub enum Error {
     /// A [`Mutex`] was poisoned and couldn't be unlocked.
     PoisonedMutex,
+    /// An error pulling from the resource pool.
+    R2D2(r2d2::Error),
+}
+
+impl From<r2d2::Error> for Error {
+    fn from(v: r2d2::Error) -> Self {
+        Self::R2D2(v)
+    }
 }
 
 /// The results of dependency resolution.
@@ -46,30 +55,37 @@ pub struct Buildable<'a> {
 }
 
 /// Determine all packages to be built and installed.
-pub fn resolve<'a, 'b, T, S>(alpm: &'a Alpm, pkgs: T) -> Result<Resolution<'a>, Error>
+pub fn resolve<'a, 'b, I, S, M>(pool: Pool<M>, pkgs: I) -> Result<Resolution<'a>, Error>
 where
-    T: IntoParallelIterator<Item = S>,
+    I: IntoParallelIterator<Item = S>,
     S: AsRef<str>,
+    M: ManageConnection<Connection = Alpm>,
 {
     info!("Resolving dependencies.");
 
     let res = Arc::new(Mutex::new(Resolution::default()));
 
     pkgs.into_par_iter()
-        .map(|p| resolve_one(res.clone(), p))
+        .map_with(pool, |pul, pkg| resolve_one(pul, res.clone(), pkg))
         .collect::<Validated<(), Error>>();
 
     todo!()
 }
 
-fn resolve_one<'a, S>(
-    // alpm: &'a Alpm,
+fn resolve_one<'a, S, M>(
+    pool: &mut Pool<M>,
     mtx: Arc<Mutex<Resolution<'a>>>,
     pkg: S,
 ) -> Result<(), Error>
 where
     S: AsRef<str>,
+    M: ManageConnection<Connection = Alpm>,
 {
+    {
+        let alpm = pool.get()?;
+        debug!("{}", alpm.dbpath());
+    }
+
     let p = pkg.as_ref();
     let already_seen = {
         let res = mtx.lock().map_err(|_| Error::PoisonedMutex)?;
