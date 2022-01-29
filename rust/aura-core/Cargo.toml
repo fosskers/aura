@@ -10,6 +10,7 @@ aura-arch = { path = "../aura-arch" }
 chrono = { version = "0.4", features = ["serde"] }
 itertools = "0.10"
 log = "0.4"
+nonempty = "0.7"
 petgraph = { version = "0.6", default-features = false }
 r2d2 = "0.8"
 rayon = "1.5"

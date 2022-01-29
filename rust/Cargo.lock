@@ -85,6 +85,7 @@ dependencies = [
  "chrono",
  "itertools",
  "log",
+ "nonempty",
  "petgraph",
  "r2d2",
  "raur-curl",

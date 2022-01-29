@@ -2,7 +2,8 @@
 
 use alpm::Alpm;
 use log::{debug, info};
-use r2d2::{ManageConnection, Pool, PooledConnection};
+use nonempty::NonEmpty;
+use r2d2::{ManageConnection, Pool};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
@@ -15,6 +16,8 @@ pub enum Error {
     PoisonedMutex,
     /// An error pulling from the resource pool.
     R2D2(r2d2::Error),
+    /// Multiple errors during concurrent dependency resolution.
+    Resolutions(Box<NonEmpty<Error>>),
 }
 
 impl From<r2d2::Error> for Error {
@@ -63,13 +66,20 @@ where
 {
     info!("Resolving dependencies.");
 
-    let res = Arc::new(Mutex::new(Resolution::default()));
+    let arc = Arc::new(Mutex::new(Resolution::default()));
 
     pkgs.into_par_iter()
-        .map_with(pool, |pul, pkg| resolve_one(pul, res.clone(), pkg))
-        .collect::<Validated<(), Error>>();
+        .map_with(pool, |pul, pkg| resolve_one(pul, arc.clone(), pkg))
+        .collect::<Validated<(), Error>>()
+        .ok()
+        .map_err(|es| Error::Resolutions(Box::new(es)))?;
 
-    todo!()
+    let res = Arc::try_unwrap(arc)
+        .map_err(|_| Error::PoisonedMutex)?
+        .into_inner()
+        .map_err(|_| Error::PoisonedMutex)?;
+
+    Ok(res)
 }
 
 fn resolve_one<'a, S, M>(
@@ -104,9 +114,9 @@ where
 ///
 /// This ensures that all dependencies are built and installed before they're
 /// needed.
-pub fn build_order<'a, T>(to_build: T) -> Vec<Vec<Cow<'a, str>>>
+pub fn build_order<'a, I>(to_build: I) -> Vec<Vec<Cow<'a, str>>>
 where
-    T: IntoIterator<Item = Buildable<'a>>,
+    I: IntoIterator<Item = Buildable<'a>>,
 {
     info!("Determining build order.");
 
