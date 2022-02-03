@@ -34,7 +34,7 @@ pub struct Resolution<'a> {
     /// Packages to be built.
     pub to_build: HashMap<&'a str, Buildable<'a>>,
     /// Packages already installed on the system.
-    pub satisfied: HashSet<&'a str>,
+    pub satisfied: HashSet<Cow<'a, str>>,
 }
 
 impl Resolution<'_> {
@@ -58,10 +58,10 @@ pub struct Buildable<'a> {
 }
 
 /// Determine all packages to be built and installed.
-pub fn resolve<'a, 'b, I, S, M>(pool: Pool<M>, pkgs: I) -> Result<Resolution<'a>, Error>
+pub fn resolve<'a, I, S, M>(pool: Pool<M>, pkgs: I) -> Result<Resolution<'a>, Error>
 where
     I: IntoParallelIterator<Item = S>,
-    S: AsRef<str>,
+    S: Into<Cow<'a, str>>,
     M: ManageConnection<Connection = Alpm>,
 {
     info!("Resolving dependencies.");
@@ -88,25 +88,36 @@ fn resolve_one<'a, S, M>(
     pkg: S,
 ) -> Result<(), Error>
 where
-    S: AsRef<str>,
+    S: Into<Cow<'a, str>>,
     M: ManageConnection<Connection = Alpm>,
 {
-    {
-        let alpm = pool.get()?;
-        debug!("{}", alpm.dbpath());
-    }
+    let p = pkg.into();
 
-    let p = pkg.as_ref();
+    // Drops the lock on the `Resolution` as soon as it can.
     let already_seen = {
         let res = mtx.lock().map_err(|_| Error::PoisonedMutex)?;
-        res.seen(p)
+        res.seen(&p)
     };
 
-    if already_seen {
-        Ok(())
-    } else {
-        todo!()
+    if !already_seen {
+        debug!("Resolving dependencies for: {}", p);
+
+        // Checks if the current package is installed and drops the ALPM handle
+        // as soon as possible.
+        let installed = pool.get()?.localdb().pkg(p.as_ref()).is_ok();
+
+        if installed {
+            mtx.lock()
+                .map_err(|_| Error::PoisonedMutex)?
+                .satisfied
+                .insert(p);
+        } else {
+            // Is official or not?
+            debug!("Is it official or not?");
+        }
     }
+
+    Ok(())
 }
 
 /// Given a collection of [`Buildable`] packages, determine a tiered order in

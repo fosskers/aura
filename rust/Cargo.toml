@@ -1,5 +1,12 @@
 [workspace]
-members = ["aura", "aura-core", "aura-arch", "aura-common", "raur-curl"]
+members = [
+# The executable
+"aura",
+# Core libraries
+"aura-core", "aura-arch", "aura-common",
+# Ecosystem libraries
+"raur-curl", "r2d2-alpm"
+]
 
 [patch.crates-io]
 raur = { git = "https://gitlab.com/davidbittner/raur/", rev = "9cf07a03489a34f47192992105b55ba9140d9fb7" }
