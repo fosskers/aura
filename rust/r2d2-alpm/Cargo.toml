@@ -8,3 +8,6 @@ alpm = "2.2"
 alpm-utils = "1.1"
 pacmanconf = "1.0"
 r2d2 = "0.8"
+
+[dev-dependencies]
+rayon = "1.5"

@@ -810,8 +810,7 @@ dependencies = [
 [[package]]
 name = "pacmanconf"
 version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "faba895e4237d5dfd3459a4c0ef807b3510e088d28e7f5fd71a72962af84fef4"
+source = "git+https://github.com/fosskers/pacmanconf.rs?rev=0bb1e2e88cf932e9f2ad12605c340dbb94a5dfd3#0bb1e2e88cf932e9f2ad12605c340dbb94a5dfd3"
 dependencies = [
  "cini",
 ]
@@ -924,6 +923,7 @@ dependencies = [
  "alpm-utils",
  "pacmanconf",
  "r2d2",
+ "rayon",
 ]
 
 [[package]]
