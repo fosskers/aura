@@ -917,6 +917,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "r2d2-alpm"
+version = "0.1.0"
+dependencies = [
+ "alpm",
+ "alpm-utils",
+ "pacmanconf",
+ "r2d2",
+]
+
+[[package]]
 name = "radix_trie"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

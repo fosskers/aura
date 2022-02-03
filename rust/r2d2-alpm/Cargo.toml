@@ -1,0 +1,10 @@
+[package]
+name = "r2d2-alpm"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+alpm = "2.2"
+alpm-utils = "1.1"
+pacmanconf = "1.0"
+r2d2 = "0.8"
