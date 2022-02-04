@@ -22,6 +22,8 @@ linya = "0.2"
 log = "0.4"
 nonempty = "0.7"
 pacmanconf = "1.0"
+r2d2 = "0.8"
+r2d2-alpm = { path = "../r2d2-alpm" }
 raur-curl = { path = "../raur-curl" }
 rayon = "1.5"
 rust-embed = "6.3"

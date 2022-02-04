@@ -12,6 +12,8 @@ use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
 use log::debug;
 use nonempty::NonEmpty;
+use r2d2::Pool;
+use r2d2_alpm::AlpmManager;
 use rayon::prelude::*;
 use std::borrow::Cow;
 use std::io::{BufWriter, Write};
@@ -27,8 +29,22 @@ pub enum Error {
     Clones(NonEmpty<aura_core::git::Error>),
     Pulls(NonEmpty<aura_core::git::Error>),
     Build(build::Error),
+    Deps(aura_core::aur::dependencies::Error),
     Pacman(crate::pacman::Error),
+    R2d2(r2d2::Error),
     Silent,
+}
+
+impl From<aura_core::aur::dependencies::Error> for Error {
+    fn from(v: aura_core::aur::dependencies::Error) -> Self {
+        Self::Deps(v)
+    }
+}
+
+impl From<r2d2::Error> for Error {
+    fn from(v: r2d2::Error) -> Self {
+        Self::R2d2(v)
+    }
 }
 
 impl From<crate::pacman::Error> for Error {
@@ -92,6 +108,8 @@ impl std::fmt::Display for Error {
             }
             Error::Build(e) => write!(f, "{}", e),
             Error::Pacman(e) => write!(f, "{}", e),
+            Error::Deps(e) => write!(f, "{}", e),
+            Error::R2d2(e) => write!(f, "{}", e),
         }
     }
 }
@@ -326,54 +344,69 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
 // TODO Thu Jan 13 17:41:55 2022
 //
 // This will obviously require more arguments.
-pub(crate) fn install(fll: &FluentLanguageLoader, pkgs: &[String]) -> Result<(), Error> {
+pub(crate) fn install(
+    fll: &FluentLanguageLoader,
+    config: pacmanconf::Config,
+    pkgs: &[String],
+) -> Result<(), Error> {
     // Exit early if the user passed no packages.
     if pkgs.is_empty() {
         red!(fll, "common-no-packages");
         return Err(Error::Silent);
     }
 
-    let (cloned, to_clone) = real_packages(fll, pkgs)?;
-    debug!("Already cloned: {:?}", cloned);
-    debug!("To clone: {:?}", to_clone);
+    // let (cloned, to_clone) = real_packages(fll, pkgs)?;
+    // debug!("Already cloned: {:?}", cloned);
+    // debug!("To clone: {:?}", to_clone);
 
-    let clone_dir = crate::dirs::clones()?;
-    let build_dir = crate::dirs::builds()?;
-    let cache_dir = crate::dirs::tarballs()?;
+    // let clone_dir = crate::dirs::clones()?;
+    // let build_dir = crate::dirs::builds()?;
+    // let cache_dir = crate::dirs::tarballs()?;
 
-    if to_clone.is_empty().not() {
-        aura!(fll, "A-install-cloning");
+    // if to_clone.is_empty().not() {
+    //     aura!(fll, "A-install-cloning");
+    // }
+
+    // let paths0 = to_clone
+    //     .into_par_iter()
+    //     .map(|p| clone_aur_repo(Some(&clone_dir), p.as_ref()))
+    //     .collect::<Validated<Vec<PathBuf>, aura_core::git::Error>>()
+    //     .ok()
+    //     .map_err(Error::Clones)?;
+
+    // if cloned.is_empty().not() {
+    //     aura!(fll, "A-install-pulling");
+    // }
+
+    // let paths1 = cloned
+    //     .into_par_iter()
+    //     .map(|p| {
+    //         let mut path = clone_dir.clone();
+    //         path.push(p.as_ref());
+    //         aura_core::git::pull(&path).map(|_| path)
+    //     })
+    //     .collect::<Validated<Vec<PathBuf>, aura_core::git::Error>>()
+    //     .ok()
+    //     .map_err(Error::Pulls)?;
+
+    let mngr = AlpmManager::new(config);
+    let pool = Pool::builder().max_size(4).build(mngr)?;
+    aura!(fll, "A-install-deps");
+    let rslv = aura_core::aur::dependencies::resolve(pool, pkgs)?;
+
+    debug!("Satisfied: {:?}", rslv.satisfied);
+
+    for o in rslv.to_install.values() {
+        debug!("To install: {}", o);
     }
 
-    let paths0 = to_clone
-        .into_par_iter()
-        .map(|p| clone_aur_repo(Some(&clone_dir), p.as_ref()))
-        .collect::<Validated<Vec<PathBuf>, aura_core::git::Error>>()
-        .ok()
-        .map_err(Error::Clones)?;
-
-    if cloned.is_empty().not() {
-        aura!(fll, "A-install-pulling");
-    }
-
-    let paths1 = cloned
-        .into_par_iter()
-        .map(|p| {
-            let mut path = clone_dir.clone();
-            path.push(p.as_ref());
-            aura_core::git::pull(&path).map(|_| path)
-        })
-        .collect::<Validated<Vec<PathBuf>, aura_core::git::Error>>()
-        .ok()
-        .map_err(Error::Pulls)?;
-
-    let tarballs = build::build(
-        fll,
-        &cache_dir,
-        &build_dir,
-        paths0.into_iter().chain(paths1),
-    )?;
-    crate::pacman::pacman_install(tarballs)?;
+    // let tarballs = build::build(
+    //     fll,
+    //     &cache_dir,
+    //     &build_dir,
+    //     paths0.into_iter().chain(paths1),
+    // )?;
+    // crate::pacman::pacman_install(tarballs)?;
 
     Ok(())
 }

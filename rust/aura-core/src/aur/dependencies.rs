@@ -26,6 +26,22 @@ impl From<r2d2::Error> for Error {
     }
 }
 
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::PoisonedMutex => write!(f, "Poisoned Mutex"),
+            Error::R2D2(e) => write!(f, "{}", e),
+            Error::Resolutions(es) => {
+                writeln!(f, "Errors during dependency resolution:")?;
+                for e in (*es).iter() {
+                    writeln!(f, "{}", e)?;
+                }
+                Ok(())
+            }
+        }
+    }
+}
+
 /// The results of dependency resolution.
 #[derive(Default)]
 pub struct Resolution<'a> {
@@ -49,6 +65,12 @@ impl Resolution<'_> {
 /// An official ALPM package.
 pub struct Official<'a>(Cow<'a, str>);
 
+impl std::fmt::Display for Official<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 /// A buildable package from the AUR.
 pub struct Buildable<'a> {
     /// The name of the AUR package.
@@ -64,8 +86,6 @@ where
     S: Into<Cow<'a, str>>,
     M: ManageConnection<Connection = Alpm>,
 {
-    info!("Resolving dependencies.");
-
     let arc = Arc::new(Mutex::new(Resolution::default()));
 
     pkgs.into_par_iter()
