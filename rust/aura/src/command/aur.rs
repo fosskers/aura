@@ -395,10 +395,7 @@ pub(crate) fn install(
     let rslv = aura_core::aur::dependencies::resolve(pool, pkgs)?;
 
     debug!("Satisfied: {:?}", rslv.satisfied);
-
-    for o in rslv.to_install.values() {
-        debug!("To install: {}", o);
-    }
+    debug!("To install: {:?}", rslv.to_install);
 
     // let tarballs = build::build(
     //     fll,

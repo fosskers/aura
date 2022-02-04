@@ -5,7 +5,7 @@ use log::{debug, info};
 use nonempty::NonEmpty;
 use r2d2::{ManageConnection, Pool};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
-use std::borrow::Cow;
+use std::borrow::{Borrow, Cow};
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 use validated::Validated;
@@ -46,7 +46,7 @@ impl std::fmt::Display for Error {
 #[derive(Default)]
 pub struct Resolution<'a> {
     /// Packages to be installed from official repos.
-    pub to_install: HashMap<&'a str, Official<'a>>,
+    pub to_install: HashSet<Official<'a>>,
     /// Packages to be built.
     pub to_build: HashMap<&'a str, Buildable<'a>>,
     /// Packages already installed on the system.
@@ -56,14 +56,21 @@ pub struct Resolution<'a> {
 impl Resolution<'_> {
     /// Have we already considered the given package?
     pub fn seen(&self, pkg: &str) -> bool {
-        self.to_install.contains_key(pkg)
+        self.to_install.contains(pkg)
             || self.to_build.contains_key(pkg)
             || self.satisfied.contains(pkg)
     }
 }
 
 /// An official ALPM package.
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Official<'a>(Cow<'a, str>);
+
+impl Borrow<str> for Official<'_> {
+    fn borrow(&self) -> &str {
+        self.0.as_ref()
+    }
+}
 
 impl std::fmt::Display for Official<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
