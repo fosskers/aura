@@ -56,6 +56,11 @@ impl AlpmManager {
 
         Ok(manager)
     }
+
+    /// An immutable borrow of the inner [`Config`].
+    pub fn config(&self) -> &Config {
+        &self.config
+    }
 }
 
 impl ManageConnection for AlpmManager {
