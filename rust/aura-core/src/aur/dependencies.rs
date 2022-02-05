@@ -64,12 +64,19 @@ pub struct Resolution<'a> {
     pub to_build: HashSet<Buildable<'a>>,
     /// Packages already installed on the system.
     pub satisfied: HashSet<Cow<'a, str>>,
+    /// Packages that are somehow accounted for. A dependency might be provided
+    /// by some package, but under a slightly different name. This also takes
+    /// split packages into account.
+    provided: HashSet<Cow<'a, str>>,
 }
 
 impl Resolution<'_> {
     /// Have we already considered the given package?
     pub fn seen(&self, pkg: &str) -> bool {
-        self.to_install.contains(pkg) || self.to_build.contains(pkg) || self.satisfied.contains(pkg)
+        self.provided.contains(pkg)
+            || self.satisfied.contains(pkg)
+            || self.to_install.contains(pkg)
+            || self.to_build.contains(pkg)
     }
 }
 
@@ -176,22 +183,40 @@ where
                 let path = pull_or_clone(&p)?;
                 let info = Srcinfo::parse_file(path)?;
                 let name = Cow::Owned(info.base.pkgbase);
+                let mut prov = Vec::new();
                 let deps: HashSet<Cow<'_, str>> = info
                     .base
                     .makedepends
                     .into_iter()
                     .chain(info.pkg.depends)
-                    .chain(info.pkgs.into_iter().map(|p| p.depends).flatten())
+                    .chain(
+                        info.pkgs
+                            .into_iter()
+                            .map(|p| {
+                                prov.push(p.pkgname);
+                                p.depends
+                            })
+                            .flatten(),
+                    )
                     .flat_map(|av| av.vec)
                     .map(Cow::Owned)
                     .collect();
 
                 let buildable = Buildable { name, deps };
 
-                mutx.lock()
-                    .map_err(|_| Error::PoisonedMutex)?
-                    .to_build
-                    .insert(buildable);
+                mutx.lock().map_err(|_| Error::PoisonedMutex).map(|mut r| {
+                    r.to_build.insert(buildable);
+
+                    for p in info
+                        .pkg
+                        .provides
+                        .into_iter()
+                        .flat_map(|av| av.vec)
+                        .chain(prov)
+                    {
+                        r.provided.insert(Cow::Owned(p));
+                    }
+                })?;
 
                 // .map(|pkg| resolve_one(pool.clone(), mtx.clone(), pkg))
                 // .collect::<Validated<(), Error>>()
