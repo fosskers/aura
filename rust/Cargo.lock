@@ -94,6 +94,7 @@ name = "aura-core"
 version = "0.1.0"
 dependencies = [
  "alpm",
+ "alpm-utils",
  "aura-arch",
  "chrono",
  "itertools",
@@ -105,6 +106,7 @@ dependencies = [
  "rayon",
  "serde",
  "serde_json",
+ "srcinfo",
  "validated",
 ]
 

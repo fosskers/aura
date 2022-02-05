@@ -1,12 +1,16 @@
 //! AUR package dependency solving.
 
 use alpm::Alpm;
+use alpm_utils::DbListExt;
 use log::{debug, info};
 use nonempty::NonEmpty;
 use r2d2::{ManageConnection, Pool};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use srcinfo::Srcinfo;
 use std::borrow::{Borrow, Cow};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
+use std::hash::Hash;
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use validated::Validated;
 
@@ -16,8 +20,16 @@ pub enum Error {
     PoisonedMutex,
     /// An error pulling from the resource pool.
     R2D2(r2d2::Error),
+    /// An error parsing a `.SRCINFO` file.
+    Srcinfo(srcinfo::Error),
     /// Multiple errors during concurrent dependency resolution.
     Resolutions(Box<NonEmpty<Error>>),
+}
+
+impl From<srcinfo::Error> for Error {
+    fn from(v: srcinfo::Error) -> Self {
+        Self::Srcinfo(v)
+    }
 }
 
 impl From<r2d2::Error> for Error {
@@ -38,6 +50,7 @@ impl std::fmt::Display for Error {
                 }
                 Ok(())
             }
+            Error::Srcinfo(e) => write!(f, "{}", e),
         }
     }
 }
@@ -48,7 +61,7 @@ pub struct Resolution<'a> {
     /// Packages to be installed from official repos.
     pub to_install: HashSet<Official<'a>>,
     /// Packages to be built.
-    pub to_build: HashMap<&'a str, Buildable<'a>>,
+    pub to_build: HashSet<Buildable<'a>>,
     /// Packages already installed on the system.
     pub satisfied: HashSet<Cow<'a, str>>,
 }
@@ -56,9 +69,7 @@ pub struct Resolution<'a> {
 impl Resolution<'_> {
     /// Have we already considered the given package?
     pub fn seen(&self, pkg: &str) -> bool {
-        self.to_install.contains(pkg)
-            || self.to_build.contains_key(pkg)
-            || self.satisfied.contains(pkg)
+        self.to_install.contains(pkg) || self.to_build.contains(pkg) || self.satisfied.contains(pkg)
     }
 }
 
@@ -79,11 +90,24 @@ impl std::fmt::Display for Official<'_> {
 }
 
 /// A buildable package from the AUR.
+#[derive(PartialEq, Eq)]
 pub struct Buildable<'a> {
     /// The name of the AUR package.
     pub name: Cow<'a, str>,
     /// The names of its dependencies.
-    pub deps: Vec<Cow<'a, str>>,
+    pub deps: HashSet<Cow<'a, str>>,
+}
+
+impl Borrow<str> for Buildable<'_> {
+    fn borrow(&self) -> &str {
+        self.name.as_ref()
+    }
+}
+
+impl Hash for Buildable<'_> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+    }
 }
 
 /// Determine all packages to be built and installed.
@@ -96,7 +120,7 @@ where
     let arc = Arc::new(Mutex::new(Resolution::default()));
 
     pkgs.into_par_iter()
-        .map_with(pool, |pul, pkg| resolve_one(pul, arc.clone(), pkg))
+        .map(|pkg| resolve_one(pool.clone(), arc.clone(), pkg))
         .collect::<Validated<(), Error>>()
         .ok()
         .map_err(|es| Error::Resolutions(Box::new(es)))?;
@@ -110,8 +134,8 @@ where
 }
 
 fn resolve_one<'a, S, M>(
-    pool: &mut Pool<M>,
-    mtx: Arc<Mutex<Resolution<'a>>>,
+    pool: Pool<M>,
+    mutx: Arc<Mutex<Resolution<'a>>>,
     pkg: S,
 ) -> Result<(), Error>
 where
@@ -122,7 +146,7 @@ where
 
     // Drops the lock on the `Resolution` as soon as it can.
     let already_seen = {
-        let res = mtx.lock().map_err(|_| Error::PoisonedMutex)?;
+        let res = mutx.lock().map_err(|_| Error::PoisonedMutex)?;
         res.seen(&p)
     };
 
@@ -134,17 +158,54 @@ where
         let installed = pool.get()?.localdb().pkg(p.as_ref()).is_ok();
 
         if installed {
-            mtx.lock()
+            mutx.lock()
                 .map_err(|_| Error::PoisonedMutex)?
                 .satisfied
                 .insert(p);
         } else {
-            // Is official or not?
-            debug!("Is it official or not?");
+            // Same here, re: lock dropping.
+            let official = pool.get()?.syncdbs().pkg(p.as_ref()).is_ok();
+
+            if official {
+                mutx.lock()
+                    .map_err(|_| Error::PoisonedMutex)?
+                    .to_install
+                    .insert(Official(p));
+            } else {
+                debug!("It's an AUR package!");
+                let path = pull_or_clone(&p)?;
+                let info = Srcinfo::parse_file(path)?;
+                let name = Cow::Owned(info.base.pkgbase);
+                let deps: HashSet<Cow<'_, str>> = info
+                    .base
+                    .makedepends
+                    .into_iter()
+                    .chain(info.pkg.depends)
+                    .chain(info.pkgs.into_iter().map(|p| p.depends).flatten())
+                    .flat_map(|av| av.vec)
+                    .map(Cow::Owned)
+                    .collect();
+
+                let buildable = Buildable { name, deps };
+
+                mutx.lock()
+                    .map_err(|_| Error::PoisonedMutex)?
+                    .to_build
+                    .insert(buildable);
+
+                // .map(|pkg| resolve_one(pool.clone(), mtx.clone(), pkg))
+                // .collect::<Validated<(), Error>>()
+                // .ok()
+                // .map_err(|es| Error::Resolutions(Box::new(es)))?;
+            }
         }
     }
 
     Ok(())
+}
+
+fn pull_or_clone(pkg: &str) -> Result<PathBuf, Error> {
+    todo!()
 }
 
 /// Given a collection of [`Buildable`] packages, determine a tiered order in
