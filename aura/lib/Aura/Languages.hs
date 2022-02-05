@@ -55,6 +55,7 @@ translators = M.fromList
     , (Romanian,   "90 / benone")
     , (Vietnamese, "\"Kritiqual\"")
     , (Czech,      "Daniel Rosel")
+    , (Korean,     "\"Nioden\"")
     ]
 
 translatorMsgTitle :: Language -> Text
@@ -81,6 +82,7 @@ translatorMsgTitle = \case
     Romanian   -> "Traducători Aura:"
     Vietnamese -> "Dịch giả của Aura:"
     Czech      -> "Překladači Aury:"
+    Korean     -> "Aura 번역자:"
     _          -> "Aura Translators:"
 
 translatorMsg :: Language -> [Text]
@@ -128,6 +130,7 @@ langFromLocale = T.take 2 >>> \case
   "ro" -> Just Romanian
   "vi" -> Just Vietnamese
   "cs" -> Just Czech
+  "ko" -> Just Korean
   _    -> Nothing
 
 ----------------------
@@ -156,6 +159,7 @@ checkDBLock_1 = \case
     Romanian   -> "Baza de date de pachete este blocată. Apăsați Enter după ce s-a deblocat pentru a continua."
     Vietnamese -> "Cơ sở dữ liệu của gói đã bị khóa. Nhấn Enter sau khi nó được mở khóa để tiếp tục."
     Czech      -> "Databáze balíčků je uzamčena. Až bude odemčena, stiskněte Enter pro pokračování."
+    Korean     -> "패키지 데이터베이스가 잠겨있습니다. 계속하려면 Enter 키를 누르시오."
     _          -> "The package database is locked. Press enter when it's unlocked to continue."
 
 trueRoot_3 :: Language -> Doc AnsiStyle
@@ -177,6 +181,7 @@ trueRoot_3 = \case
     Romanian   -> "De la versiunea makepkg v4.2 încolo, compilarea ca root nu mai este posibilă."
     Vietnamese -> "Kể từ makepkg v4.2, build bằng quyền root không còn khả dụng."
     Czech      -> "Od makepkg v4.2 již není sestavení jako root možné."
+    Korean     -> "makepkg v4.2부터는 루트 권한으로 빌드 할 수 없습니다."
     _          -> "As of makepkg v4.2, building as root is no longer possible."
 
 mustBeRoot_1 :: Language -> Doc AnsiStyle
@@ -203,6 +208,7 @@ mustBeRoot_1 = let sudo = bt @Text "sudo" in \case
     Romanian   -> "Nu se poate folosi această operație asta fără " <> sudo <> "."
     Vietnamese -> "Bạn không thể thực hiện hành động này nếu không dùng " <> sudo <> "."
     Czech      -> "Tuto operaci nelze provést bez použití sudo."
+    Korean     -> "루트 권한으로 실행해야 합니다."
     _          -> "You cannot perform this operation without using sudo."
 
 -----------------------
@@ -232,6 +238,7 @@ buildPackages_1 (bt . pnName -> p) = \case
     Romanian   -> "Se compilează " <> p <> "..."
     Vietnamese -> "Đang build " <> p <> "..."
     Czech      -> "Kompilace " <> p <> "..."
+    Korean     -> p <> "빌드 중..."
     _          -> "Building " <> p <> "..."
 
 buildPackages_2 :: Language -> Doc AnsiStyle
@@ -243,6 +250,7 @@ buildPackages_2 = \case
     Romanian   -> "'--allsource' detectat. Nu se va compila oricare pachet instalabil."
     Vietnamese -> "'--allsource' được sử dụng. Không có gói nào sẽ được build."
     Czech      -> "Bylo nalezeno '-allsource'. Žádné skutečné instalovatelné balíčky nebudou sestaveny."
+    Korean     -> "'--allsource' 감지되었습니다. 실제 설치 가능한 패키지는 빌드되지 않습니다."
     _          -> "'--allsource' detected. No actual installable packages will be built."
 
 buildPackages_3 :: FilePath -> Language -> Doc AnsiStyle
@@ -255,6 +263,7 @@ buildPackages_3 fp = \case
     Romanian   -> "Toate fișierele .src.tar.gz au fost construite și copiate către: " <> pretty fp
     Vietnamese -> "Tất cả các tệp .src.tar.gz đã được build và sao chép tới: " <> pretty fp
     Czech      -> "Všechny soubory .src.tar.gz byly vytvořeny a zkopírovány do: " <> pretty fp
+    Korean     -> "모든 .src.tar.gz 파일은 빌드되고 복사됩니다:" <> pretty fp
     _          -> "All .src.tar.gz files were built and copied to: " <> pretty fp
 
 buildPackages_4 :: Language -> Doc AnsiStyle
@@ -262,6 +271,7 @@ buildPackages_4 = \case
     Romanian -> bt @Text "--hotedit" <+> "detectat, dar acestea au date în cache și vor fi omise din editare:"
     Vietnamese -> bt @Text "--hotedit" <+> "được sử dụng, những gói sau có trong cache và sẽ được bỏ qua để chỉnh sửa:"
     Czech    -> bt @Text "--hotedit" <+> "zjištěno, ale následující položky mají položky mezipaměti a budou přeskočeny pro úpravy:"
+    Korean   -> bt @Text "--hotedit" <+> "감지되었지만 캐시 목록이 있으므로 편집을 위해 건너뜁니다."
     _        -> bt @Text "--hotedit" <+> "detected, but the following have cache entries and will be skipped for editing:"
 
 buildPackages_5 :: Language -> Doc AnsiStyle
@@ -269,6 +279,7 @@ buildPackages_5 = \case
     Romanian -> "Se poate folosi" <+> bt @Text "--force" <+> "pentru a trece peste acest comportament."
     Vietnamese -> "Bạn có thể dùng" <+> bt @Text "--force" <+> "để ghi đè hành động này."
     Czech    -> "Můžete použít" <+> bt @Text "--force" <+> "k potlačení tohoto chování."
+    Korean   -> bt @Text "--force" <+> "를 사용하여 이 동작을 무시할 수 있습니다."
     _        -> "You can use" <+> bt @Text "--force" <+> "to override this behaviour."
 
 buildFail_5 :: Language -> Doc AnsiStyle
@@ -294,6 +305,7 @@ buildFail_5 = \case
     Romanian   -> "Compilare nereușită."
     Vietnamese -> "Build thất bại."
     Czech      -> "Budování se nezdařilo."
+    Korean     -> "빌드 실패"
     _          -> "Building failed."
 
 -- NEEDS TRANSLATION
@@ -319,6 +331,7 @@ buildFail_6 = \case
     Romanian   -> "Doriți oricum să continuați?"
     Vietnamese -> "Bạn có muốn tiếp tục không?"
     Czech      -> "Chcete přesto pokračovat?"
+    Korean     -> "계속하시겠습니까?"
     _          -> "Would you like to continue anyway?"
 
 -- NEEDS TRANSLATION
@@ -341,6 +354,7 @@ buildFail_7 (bt . pnName -> p) = \case
     Romanian   -> "Nu s-au putut obține scripturi de compilare pentru " <> p <> "."
     Vietnamese -> "Không thể lấy tập lệnh build cho " <> p <> "."
     Czech      -> "Nepodařilo se získat sestavení skriptů pro " <> p <> "."
+    Korean     -> p <> "의 빌드 스크립트를 가져올 수 없습니다."
     _          -> "Failed to obtain build scripts for " <> p <> "."
 
 buildFail_8 :: Language -> Doc AnsiStyle
@@ -358,6 +372,7 @@ buildFail_8 = \case
     Romanian   -> "A fost o problemă cu makepkg."
     Vietnamese -> "Có lỗi khi makepkg."
     Czech      -> "Došlo k chybě makepkg."
+    Korean     -> "makepkg를 실패했습니다."
     _          -> "There was a makepkg failure."
 
 buildFail_9 :: Language -> Doc AnsiStyle
@@ -372,6 +387,7 @@ buildFail_9 = \case
   Romanian  -> "Nu s-a detectat nici un pachet construit (*.pkg.tar.xz)."
   Vietnamese -> "Không thể phát hiện các tệp đã được build (*.pkg.tar.xz)."
   Czech     -> "Nepodařilo se detekovat žádné soubory zabudovaného balíčku (*.pkg.tar.xz)."
+  Korean    -> "빌드된 패키지 파일 (*.pkg.tar.xz)을 검색하지 못했습니다."
   _         -> "Failed to detect any built package files (*.pkg.tar.xz)."
 
 buildFail_10 :: Language -> Doc AnsiStyle
@@ -386,6 +402,7 @@ buildFail_10 = \case
   Romanian   -> "Nu s-a putut compila nici un pachet."
   Vietnamese -> "Tất cả các gói build thất bại."
   Czech      -> "Sestavení každého balíčku se nezdařilo."
+  Korean     -> "모든 패키지를 빌드하지 못했습니다."
   _          -> "Every package failed to build."
 
 buildFail_11 :: Language -> Doc AnsiStyle
@@ -401,6 +418,7 @@ buildFail_11 = \case
   Romanian   -> "Compilare nereușită. Doriți să vedeți eroarea?"
   Vietnamese -> "Build thất bại. Bạn có muốn xem lịch sử lỗi?"
   Czech      -> "Budování se nezdařilo. Chcete vidět chybu?"
+  Korean     -> "빌드를 실패했습니다. 오류를 확인하시겠습니까?"
   _          -> "Building failed. Would you like to see the error?"
 
 buildFail_12 :: Language -> Doc AnsiStyle
@@ -412,6 +430,7 @@ buildFail_12 = \case
     Romanian   -> "Nu a reușit 'git pull' să descarce cele mai recente actualizări."
     Vietnamese -> "Thất bại trong việc 'git pull' để cập nhật."
     Czech      -> "Nepodařilo se 'git stáhnout' nejnovější aktualizace."
+    Korean     -> "최신 버전 'git pull'을 실패했습니다."
     _          -> "Failed to 'git pull' the latest updates."
 
 ------------------------------
@@ -466,6 +485,7 @@ getRealPkgConflicts_2 (bt . pnName -> p) = \case
   Romanian   -> "Pachetul " <> p <> " este ignorat! Verificați fișierul `pacman.conf`."
   Vietnamese -> "Gói " <> p <> "đã bị bỏ qua! Hãy xem trong `pacman.conf` của bạn."
   Czech      -> p <> " je ignorovaný balíček! Podívejte se na svůj soubor `pacman.conf`."
+  Korean     -> p <> "은(는) 무시된 패키지입니다! `pacman.conf`를 확인하시오."
   _          -> p <> " is an ignored package! See your `pacman.conf` file."
 
 missingPkg_2 :: [DepError] -> Language -> Doc AnsiStyle
@@ -512,6 +532,7 @@ missingPkg_3 = \case
   Romanian   -> "A fost o problemă reorganizând graful de dependențe. Dacă vedeți asta, e foarte rău."
   Vietnamese -> "Có lỗi trong quá trình xây dựng biểu đồ gói phụ thuộc. Nếu bạn thấy điều này, có gì đó không đúng."
   Czech      -> "Při reorganizaci grafu závislostí došlo k chybě. Pokud vidíte toto, něco je velmi špatně."
+  Korean     -> "종속성 그래프를 재구성하는 동안 오류가 발생했습니다."
   _          -> "There was an error reorganizing the dependency graph. If you see this, something is very wrong."
 
 missingPkg_4 :: [NonEmpty PkgName] -> Language -> Doc AnsiStyle
@@ -541,6 +562,7 @@ missingPkg_5 (PkgName p) = \case
   Romanian   -> "Pachetul " <> bt p <> " nu există."
   Vietnamese -> bt p <> " không tồn tại."
   Czech      -> bt p <> " neexistuje."
+  Korean     -> bt p <> "은(는) 존재하지 않습니다."
   _          -> bt p <> " does not exist."
 
 -----------------
@@ -569,6 +591,7 @@ displayOutputLanguages_1 = \case
     Romanian   -> "Aceste pacheturi sunt disponibile:"
     Vietnamese -> "Ngôn ngữ khả dụng:"
     Czech      -> "K dispozici jsou následující jazyky:"
+    Korean     -> "다음 언어는 이용 가능합니다:"
     _          -> "The following languages are available:"
 
 ----------------------------
@@ -597,6 +620,7 @@ auraCheck_1 = \case
     Romanian   -> "O versiune nouă de Aura este disponibilă. Să se actualizeze înainte de toate?"
     Vietnamese -> "Đã có cập nhật cho Aura. Cập nhật?"
     Czech      -> "K dispozici aktualizace Aury. Nejprve ji aktualizovat?"
+    Korean     -> "Aura의 최신버전이 있습니다. 업데이트를 하시겠습니까?"
     _          -> "Aura update available. Update it first?"
 
 install_2 :: Language -> Doc AnsiStyle
@@ -622,6 +646,7 @@ install_2 = \case
     Romanian   -> "Nu s-a specificat nici un pachet valabil."
     Vietnamese -> "Tên của gói được yêu cầu không đúng."
     Czech      -> "Nejsou zadány žádné platné balíčky."
+    Korean     -> "유효한 패키지가 지정되지 않았습니다."
     _          -> "No valid packages specified."
 
 install_3 :: Language -> Doc AnsiStyle
@@ -648,6 +673,7 @@ install_3 = \case
     Romanian   -> "Continuați?"
     Vietnamese -> "Tiếp tục?"
     Czech      -> "Pokračovat?"
+    Korean     -> "계속하시겠습니까?"
     _          -> "Continue?"
 
 install_4 :: Language -> Doc AnsiStyle
@@ -673,6 +699,7 @@ install_4 = \case
     Romanian   -> "Instalarea anulată manual."
     Vietnamese -> "Quá trình cài đặt được hủy."
     Czech      -> "Instalace byla ručně přerušena."
+    Korean     -> "설치가 중지되었습니다."
     _          -> "Installation manually aborted."
 
 install_5 :: Language -> Doc AnsiStyle
@@ -698,6 +725,7 @@ install_5 = \case
     Romanian   -> "Se determin dependențele..."
     Vietnamese -> "Xác định các gói phụ thuộc..."
     Czech      -> "Určování závislostí..."
+    Korean     -> "종속성 확인 중..."
     _          -> "Determining dependencies..."
 
 -- 2014 December  7 @ 14:45 - NEEDS TRANSLATIONS
@@ -717,6 +745,7 @@ confirmIgnored_1 (bt . pnName -> p) = \case
     Romanian   -> p <> " e marcat ca ignorat. Să se instaleze oricum?"
     Vietnamese -> p <> " được đánh dấu là Bỏ qua. Vẫn cài đặt nó?"
     Czech      -> p <> " je označeno jako ignorováno. Přesto nainstalovat?"
+    Korean     -> p <> "은(는) 무시됨으로 표시됩니다. 설치를 하시겠습니까?"
     _          -> p <> " is marked as Ignored. Install anyway?"
 
 -- NEEDS UPDATE TO REFLECT CHANGED ENGLISH
@@ -743,6 +772,7 @@ reportNonPackages_1 = \case
     Romanian   -> "Aceste pachete nu se află pe AUR:"
     Vietnamese -> "Các gói sau không thuộc AUR:"
     Czech      -> "Následující nejsou balíčky AUR:"
+    Korean     -> "AUR 패키지가 아닙니다:"
     _          -> "The following are not AUR packages:"
 
 -- NEEDS TRANSLATION
@@ -764,6 +794,7 @@ reportUnneededPackages_1 = \case
     Romanian   -> "Aceste pachete sunt deja instalate:"
     Vietnamese -> "Các gói sau đã sẵn sàng cài đặt:"
     Czech      -> "Následující balíčky jsou již nainstalovány:"
+    Korean     -> "아래 패키지는 이미 설치되어 있습니다:"
     _          -> "The following packages are already installed:"
 
 reportPkgsToInstall_1 :: Language -> Doc AnsiStyle
@@ -789,6 +820,7 @@ reportPkgsToInstall_1 = \case
     Romanian   -> "Dependențe din repertorii:"
     Vietnamese -> "Các repo phụ thuộc:"
     Czech      -> "Závislosti úložiště:"
+    Korean     -> "Repository 종속성:"
     _          -> "Repository dependencies:"
 
 -- NEEDS AN UPDATE
@@ -815,6 +847,7 @@ reportPkgsToInstall_2 = \case
     Romanian   -> "Pachete din AUR:"
     Vietnamese -> "Gói AUR:"
     Czech      -> "Balíčky AUR:"
+    Korean     -> "AUR 패키지:"
     _          -> "AUR Packages:"
 
 reportPkgsToInstall_3 :: Language -> Doc AnsiStyle
@@ -838,6 +871,7 @@ reportPkgsToInstall_3 = \case
     Romanian   -> "Dependențe din AUR:"
     Vietnamese -> "Gói phụ thuộc của AUR:"
     Czech      -> "Závislosti AUR:"
+    Korean     -> "AUR 종속성:"
     _          -> "AUR dependencies:"
 
 -- NEEDS TRANSLATION
@@ -864,6 +898,7 @@ reportPkgbuildDiffs_1 (bt . pnName -> p) = \case
     Romanian   -> p <> " încă nu are un PKGBUILD descărcat."
     Vietnamese -> p <> " không có sẵn PKGBUILD."
     Czech      -> p <> " ještě nemá uložený PKGBUILD."
+    Korean     -> p <> "의 PKGBUILD는 저장되지 않았습니다."
     _          -> p <> " has no stored PKGBUILD yet."
 
 -- NEEDS TRANSLATION
@@ -890,6 +925,7 @@ reportPkgbuildDiffs_3 (bt . pnName -> p) = \case
     Romanian   -> "Schimbări in PKGBUILD pentru " <> p <> ":"
     Vietnamese -> "Thay đổi trong PKGBUILD của " <> p <> ":"
     Czech      -> "Změny PKGBUILD v " <> p <> ":"
+    Korean     -> p <> "의 PKGBUILD 변경 사항:"
     _          -> p <> " PKGBUILD changes:"
 
 -- NEEDS TRANSLATION
@@ -916,6 +952,7 @@ reportPkgsToUpgrade_1 = \case
     Romanian   -> "Pachete din AUR de actualizat:"
     Vietnamese -> "Cập nhật các gói AUR:"
     Czech      -> "Balíčky AUR k aktualizaci:"
+    Korean     -> "업그레이드할 AUR 패키지:"
     _          -> "AUR Packages to upgrade:"
 
 -- NEEDS UPDATING
@@ -942,6 +979,7 @@ reportBadDowngradePkgs_1 = \case
     Romanian   -> "Aceste pachete nu au nici o versiune disponibilă în cache, așa că nu pot fi retrogradate:"
     Vietnamese -> "Những gói sau không có bản nào trong cache, vì vậy không thể hạ cấp:"
     Czech      -> "Následující nemají žádné verze v mezipaměti, a proto je nelze downgradovat:"
+    Korean     -> "이 패키지는 캐시에 저장된 다른 버전이 없으므로 다운그레이드를 할 수 없습니다."
     _          -> "The following have no versions in the cache, and thus can’t be downgraded:"
 
 reportBadDowngradePkgs_2 :: PkgName -> Language -> Doc AnsiStyle
@@ -954,6 +992,7 @@ reportBadDowngradePkgs_2 (PkgName p) = \case
   Romanian   -> pretty p <+> "nu are nici o versiune în cache."
   Vietnamese -> pretty p <+> "không có bản nào trong cache."
   Czech      -> pretty p <+> "nemá žádnou verzi v mezipaměti."
+  Korean     -> pretty p <+> "의 캐시에는 저장된 다른 버전이 없습니다."
   _          -> pretty p <+> "has no version in the cache."
 
 upgradeAURPkgs_1 :: Language -> Doc AnsiStyle
@@ -979,6 +1018,7 @@ upgradeAURPkgs_1 = \case
     Romanian   -> "Se obțin informații despre pachete..."
     Vietnamese -> "Cập nhật thông tin của gói..."
     Czech      -> "Načítání informací o balíčku..."
+    Korean     -> "패키지 정보 가져오는 중..."
     _          -> "Fetching package information..."
 
 upgradeAURPkgs_2 :: Language -> Doc AnsiStyle
@@ -1004,6 +1044,7 @@ upgradeAURPkgs_2 = \case
     Romanian   -> "Se compar versiunile pacheturilor..."
     Vietnamese -> "So sánh phiên bản của gói..."
     Czech      -> "Porovnání verzí balíčků..."
+    Korean     -> "패키지 버전 비교 중..."
     _          -> "Comparing package versions..."
 
 upgradeAURPkgs_3 :: Language -> Doc AnsiStyle
@@ -1029,6 +1070,7 @@ upgradeAURPkgs_3 = \case
     Romanian   -> "Nu e nevoie să se actualizeze nici un pachet din AUR."
     Vietnamese -> "Không có cập nhật cho các gói AUR."
     Czech      -> "Není nutné žádné aktualizace balíčku AUR."
+    Korean     -> "업그레이드가 필요하지 않습니다."
     _          -> "No AUR package upgrades necessary."
 
 removeMakeDepsAfter_1 :: Language -> Doc AnsiStyle
@@ -1054,6 +1096,7 @@ removeMakeDepsAfter_1 = \case
     Romanian   -> "Se șterg dependențele de compilare inutile..."
     Vietnamese -> "Loại bỏ các gói phụ thuộc khi make không cần thiết..."
     Czech      -> "Odstranění nepotřebných make závislostí..."
+    Korean     -> "필요없는 make 의존성 제거 중..."
     _          -> "Removing unneeded make dependencies..."
 
 ----------------------------
@@ -1083,6 +1126,7 @@ cleanStates_2 n@(bt . tshow -> s) = \case
     Romanian   -> "Stările pachetului " <> s <> " vor fi păstrate. Să se șteargă restul?"
     Vietnamese -> "Trạng thái của gói " <> s <> " sẽ được lưu lại. Loại bỏ phần còn lại?"
     Czech      -> s <> " stavy balíčků budou zachovány. Odstranit zbytek?"
+    Korean     -> s <> " 패키지는 유지됩니다. 나머지를 제거하시겠습니까?"
     _          -> s <> " package states will be kept. Remove the rest?"
 
 -- NEEDS TRANSLATION
@@ -1109,6 +1153,7 @@ cleanStates_3 = \case
     Romanian   -> "Nici o stare de pachet a fost ștearsă."
     Vietnamese -> "Không có trạng thái gói nào được lưu."
     Czech      -> "Nebyly odstraněny žádné stavy balíčku."
+    Korean     -> "아무 패키지도 삭제되지 않았습니다."
     _          -> "No package states were removed."
 
 cleanStates_4 :: Int -> Language -> Doc AnsiStyle
@@ -1125,6 +1170,7 @@ cleanStates_4 n = \case
   Romanian  -> "Momentan aveți " <+> pretty n <+> " stări de pachet salvate."
   Vietnamese -> "Bạn hiện đã lưu " <+> pretty n <+> " trạng thái gói."
   Czech     -> "V současné době máte " <+> pretty n <+> " uložených stavů balíčků."
+  Korean    -> "현재" <+> pretty n <+> "개의 패키지 상태가 저장되어 있습니다."
   _         -> "You currently have " <+> pretty n <+> " saved package states."
 
 cleanStates_5 :: Text -> Language -> Doc AnsiStyle
@@ -1141,6 +1187,7 @@ cleanStates_5 t = \case
   Romanian   -> "Cel mai recent salvat:" <+> pretty t
   Vietnamese -> "Lần lưu gần nhất:" <+> pretty t
   Czech      -> "Naposledy uložené:" <+> pretty t
+  Korean     -> "최근에 저장된 패키지:" <+> pretty t
   _          -> "Most recently saved:" <+> pretty t
 
 cleanStates_6 :: Int -> Language -> Doc AnsiStyle
@@ -1154,6 +1201,7 @@ cleanStates_6 n = \case
   Romanian  -> pretty n <+> "dintre astea sunt fixate, și nu vor fi șterse."
   Vietnamese -> pretty n <+> "trong số chúng đã được ghim, và sẽ không bị loại bỏ."
   Czech     -> pretty n <+> "z nich jsou připnuté a nebudou odstraněny."
+  Korean    -> pretty n <+> "은(는) 고정되어 삭제되지 않습니다."
   _         -> pretty n <+> "of these are pinned, and won't be removed."
 
 readState_1 :: Language -> Doc AnsiStyle
@@ -1170,6 +1218,7 @@ readState_1 = \case
     Romanian   -> "Acel fișier de stare nu se putea analiza. Este un fișier JSON valabil?"
     Vietnamese -> "Thất bại trong việc lấy dữ liệu từ tệp. Đó có đúng là tệp JSON?"
     Czech      -> "Tento stavový soubor se nepodařilo analyzovat. Je to legální JSON?"
+    Korean     -> "상태 파일을 분석할 수 없습니다. 올바른 JSON 입니까?"
     _          -> "That state file failed to parse. Is it legal JSON?"
 
 ----------------------------
@@ -1198,6 +1247,7 @@ getDowngradeChoice_1 (bt . pnName -> p) = \case
     Romanian   -> "Care versiune al pachetului " <> p <> " o doriți?"
     Vietnamese -> "Bạn muốn sử dụng phiên bản nào của " <> p <> "?"
     Czech      -> "Jakou verzi " <> p <> " chcete?"
+    Korean     -> "어느 " <> p <> " 버전을 설치하시겠습니까?"
     _          -> "What version of " <> p <> " do you want?"
 
 backupCache_3 :: Language -> Doc AnsiStyle
@@ -1223,6 +1273,7 @@ backupCache_3 = \case
     Romanian   -> "Locul de reservă nu există."
     Vietnamese -> "Đường dẫn sao lưu không tồn tại."
     Czech      -> "Umístění zálohy neexistuje."
+    Korean     -> "백업 위치를 찾을 수 없습니다."
     _          -> "The backup location does not exist."
 
 backupCache_4 :: FilePath -> Language -> Doc AnsiStyle
@@ -1248,6 +1299,7 @@ backupCache_4 (bt . T.pack -> dir) = \case
     Romanian   -> "Se copiază cache-ul de rezervă către " <> dir
     Vietnamese -> "Sao lưu cache vào " <> dir
     Czech      -> "Zálohování mezipaměti do " <> dir
+    Korean     -> "캐시를 백업하는 중 " <> dir
     _          -> "Backing up cache to " <> dir
 
 backupCache_5 :: Int -> Language -> Doc AnsiStyle
@@ -1273,6 +1325,7 @@ backupCache_5 (bt . tshow -> n) = \case
     Romanian   -> "Fișiere de pachet pentru copiare de rezervă: " <> n
     Vietnamese -> "Các tệp của gói sẽ được sao lưu: " <> n
     Czech      -> "Soubory k zálohování: " <> n
+    Korean     -> "백업할 패키지 파일: " <> n
     _          -> "Package files to backup: " <> n
 
 backupCache_6 :: Language -> Doc AnsiStyle
@@ -1298,6 +1351,7 @@ backupCache_6 = \case
     Romanian   -> "Continuați cu copiile de rezervă?"
     Vietnamese -> "Tiến hành sao lưu?"
     Czech      -> "Pokračovat v zálohování."
+    Korean     -> "백업 하시겠습니까?"
     _          -> "Proceed with backup?"
 
 backupCache_7 :: Language -> Doc AnsiStyle
@@ -1323,6 +1377,7 @@ backupCache_7 = \case
     Romanian   -> "Copiarea de rezervă anulată manual."
     Vietnamese -> "Quá trình sao lưu được hủy."
     Czech      -> "Zálohování ručně přerušeno."
+    Korean     -> "백업이 중지되었습니다."
     _          -> "Backup manually aborted."
 
 backupCache_8 :: Language -> Doc AnsiStyle
@@ -1348,6 +1403,7 @@ backupCache_8 = \case
     Romanian   -> "Se fac copii de rezervă. Ar putea să dureze câteva minute..."
     Vietnamese -> "Đang sao lưu. Có thể sẽ mất vài phút..."
     Czech      -> "Zálohování. Může to trvat několik minut..."
+    Korean     -> "백업 중입니다. 몇 분 정도 걸릴 수 있습니다..."
     _          -> "Backing up. This may take a few minutes..."
 
 copyAndNotify_1 :: Int -> Language -> Doc AnsiStyle
@@ -1374,6 +1430,7 @@ copyAndNotify_1 (cyan . pretty -> n) = \case
     Romanian   -> "Se copiază #[" <> n <> "]"
     Vietnamese -> "Sao chép #[" <> n <> "]"
     Czech      -> "Kopírování #[" <> n <> "]"
+    Korean     -> "복사중 #[" <> n <> "]"
     _          -> "Copying #[" <> n <> "]"
 
 cleanCache_2 :: Language -> Doc AnsiStyle
@@ -1399,6 +1456,7 @@ cleanCache_2 = \case
     Romanian   -> "Asta va șterge COMPLET cache-ul de pachete."
     Vietnamese -> "Điều này sẽ xóa TOÀN BỘ cache của gói."
     Czech      -> "Tím smažete CELOU mezipaměť balíčku."
+    Korean     -> "모든 패키지 캐시가 삭제됩니다."
     _          -> "This will delete the ENTIRE package cache."
 
 cleanCache_3 :: Word -> Language -> Doc AnsiStyle
@@ -1424,6 +1482,7 @@ cleanCache_3 n@(bt . tshow -> s) = \case
     Romanian   -> s <> " din fiecare fișier de pachet vor fi păstrate."
     Vietnamese -> "Sẽ giữ lại " <> s <> " tệp của gói."
     Czech      -> s <> " každého souboru balíčku bude zachován."
+    Korean     -> "각 패키지 파일에 대해 " <> s <> "개의 파일이 유지되어야 합니다."
     _          -> s <> " of each package file will be kept."
 
 cleanCache_4 :: Language -> Doc AnsiStyle
@@ -1449,6 +1508,7 @@ cleanCache_4 = \case
     Romanian   -> "Restul va fi șters. De acord?"
     Vietnamese -> "Xóa bỏ phần còn lại. Ok?"
     Czech      -> "Zbytek bude smazán. Ok?"
+    Korean     -> "나머지는 모두 삭제됩니다. 계속하시겠습니까?"
     _          -> "The rest will be deleted. Okay?"
 
 cleanCache_5 :: Language -> Doc AnsiStyle
@@ -1474,6 +1534,7 @@ cleanCache_5 = \case
     Romanian   -> "Curățenia cache-ului anulată manual."
     Vietnamese -> "Đã hủy xóa cache."
     Czech      -> "Čištění mezipaměti bylo ručně přerušeno"
+    Korean     -> "캐시 정리가 중지되었습니다."
     _          -> "Cache cleaning manually aborted."
 
 cleanCache_6 :: Language -> Doc AnsiStyle
@@ -1499,6 +1560,7 @@ cleanCache_6 = \case
     Romanian   -> "Se curăță cache-ul de pachete..."
     Vietnamese -> "Xóa cache..."
     Czech      -> "Čištění mezipaměti balíčků"
+    Korean     -> "패키지 캐시 정리 중..."
     _          -> "Cleaning package cache..."
 
 cleanCache_7 :: Word -> Word -> Language -> Doc AnsiStyle
@@ -1509,6 +1571,7 @@ cleanCache_7 (bt . tshow -> ps) (bt . tshow -> bytes) = \case
     Ukrainian  -> "Кеш містить " <> ps <> " пакунків, які використовують " <> bytes <> " МБ місця."
     Romanian   -> "Cache-ul conține " <> ps <> " pachete, consumând " <> bytes <> " MB."
     Vietnamese -> "Có " <> ps <> " gói trong cache, chiếm " <> bytes <> " megabytes."
+    Korean     -> ps <> "개의 패키지는 " <> bytes <> "MB 사용 중입니다."
     _          -> "The cache contains " <> ps <> " packages, consuming " <> bytes <> " megabytes."
 
 cleanCache_8 :: Word -> Language -> Doc AnsiStyle
@@ -1520,6 +1583,7 @@ cleanCache_8 (bt . tshow -> bytes) = \case
     Romanian   -> bytes <> " MB eliberat."
     Vietnamese -> "Giải phóng " <> bytes <> "megabytes."
     Czech      -> "Uvolněno " <> bytes <> " MB."
+    Korean     -> bytes <> " MB 정리되었습니다."
     _          -> bytes <> " megabytes freed."
 
 cleanCache_9 :: Word -> Language -> Doc AnsiStyle
@@ -1527,6 +1591,7 @@ cleanCache_9 (bt . tshow -> w) = \case
     Romanian   -> w <> " versiuni din fiecare pachet instalat vor fi păstrate."
     Vietnamese -> "Sẽ giữ lại " <> w <> " phiên bản của các gói đã cài đặt."
     Czech      -> w <> " verze každého nainstalovaného balíčku budou zachovány."
+    Korean     -> "각각의 설치된 패키지의 " <> w <> "은(는) 유지됩니다."
     _          -> w <> " versions of each installed package will be kept."
 
 -- NEEDS TRANSLATION
@@ -1552,6 +1617,7 @@ cleanNotSaved_1 = \case
     Romanian   -> "Se determin fișiere de pachet inutile..."
     Vietnamese -> "Xác định các tệp của gói không cần thiết..."
     Czech      -> "Zjišťování nepotřebných souborů balíčků..."
+    Korean     -> "필요 없는 패키지 파일 확인 중..."
     _          -> "Determining unneeded package files..."
 
 -- NEEDS TRANSLATION
@@ -1577,6 +1643,7 @@ cleanNotSaved_2 n@(cyan . pretty -> s) = \case
     Romanian   -> "S-au găsit " <> s <> " fișiere de pachet inutile. Ștergeți?"
     Vietnamese -> "Tìm thấy " <> s <> " gói không cần thiết. Xóa bỏ?"
     Czech      -> "Nepotřebné soubory balíčků: " <> s <> ". Vymazat?"
+    Korean     -> s <> "는 필요 없는 패키지 파일입니다. 삭제하시겠습니까?"
     _          -> s <> " unneeded package files found. Delete?"
 
 ----------------------------
@@ -1611,6 +1678,7 @@ reportNotInLog_1 = \case
     Romanian   -> "Acestea nu au apărut în log:"
     Vietnamese -> "Nội dung sau không có trong tệp log:"
     Czech      -> "Tyto se neobjevily v souboru log:"
+    Korean     -> "로그 파일에 나타나지 않음:"
     _          -> "These have not appeared in the log file:"
 
 -------------------------------
@@ -1622,6 +1690,7 @@ packageNotFound_1 = \case
   Romanian   -> "Nu s-a găsit nici un pachet."
   Vietnamese -> "Không tím thấy gói."
   Czech      -> "Nebyly nalezeny žádné balíčky."
+  Korean     -> "패키지를 찾을 수 없습니다."
   _          -> "No packages found."
 
 -- https://github.com/fosskers/aura/issues/498
@@ -1636,6 +1705,7 @@ connectFailure_1 = \case
   Romanian  -> "Nu s-a putut contacta AUR. Sunteți conectat pe Internet?"
   Vietnamese -> "Mất kết nối tới AUR. Bạn có kết nối mạng không?"
   Czech     -> "Nepodařilo se kontaktovat AUR server. Máte připojení k internetu?"
+  Korean    -> "AUR에 접근하지 못했습니다. 인터넷 연결 상태를 확인하십시오."
   _         -> "Failed to contact the AUR. Do you have an internet connection?"
 
 dependencyLookup_1 :: Text -> Language -> Doc AnsiStyle
@@ -1643,6 +1713,7 @@ dependencyLookup_1 t = \case
   Romanian  -> vsep ["A fost o problemă cu analiza recursivă de dependențe:", pretty t]
   Vietnamese -> vsep ["Có lỗi trong quá trình tìm kiếm gói phụ thuộc đệ quy:", pretty t]
   Czech     -> vsep ["Při rekurzivním vyhledávání závislostí došlo k problému:", pretty t]
+  Korean    -> vsep ["재귀 종속성 조회 중 문제가 발생했습니다:", pretty t]
   _         -> vsep ["There was an issue during recursive dependency lookup:", pretty t]
 
 miscAURFailure_1 :: Language -> Doc AnsiStyle
@@ -1656,6 +1727,7 @@ miscAURFailure_1 = \case
   Romanian   -> "Nu s-a putut contacta AUR dintr-un motiv necunoscut."
   Vietnamese -> "Bất ngờ không thể kết nối tới AUR."
   Czech      -> "Kontaktování AUR se nezdařilo neznámým způsobem."
+  Korean     -> "알 수 없는 문제로 AUR에 접근하지 못했습니다."
   _          -> "Contacting the AUR failed in some unknown way."
 
 miscAURFailure_3 :: Language -> Doc AnsiStyle
@@ -1667,6 +1739,7 @@ miscAURFailure_3 = \case
   Romanian   -> "JSON-ul întors de server-ul AUR nu putea fi decodat."
   Vietnamese -> "Không thể giải mã tệp JSON lấy từ máy chủ AUR."
   Czech      -> "JSON vrácený ze serveru AUR nelze dekódovat."
+  Korean     -> "AUR 서버에서 받은 JSON을 디코딩할 수 없습니다."
   _          -> "The JSON returned from the AUR server could not be decoded."
 
 infoFields :: Language -> [Text]
@@ -1708,6 +1781,7 @@ outOfDateMsg (Just _) = red . \case
     Romanian   -> "Neactualizat!"
     Vietnamese -> "Đã cũ!"
     Czech      -> "Zastaralý!"
+    Korean     -> "최신 버전이 아님!"
     _          -> "Out of Date!"
 
 outOfDateMsg Nothing = green . \case
@@ -1732,6 +1806,7 @@ outOfDateMsg Nothing = green . \case
     Romanian   -> "Actializat"
     Vietnamese -> "Mới nhất"
     Czech      -> "Aktuální"
+    Korean     -> "최신 버전"
     _          -> "Up to Date"
 
 -- NEEDS TRANSLATION
@@ -1758,6 +1833,7 @@ orphanedMsg Nothing = red . \case
     Romanian   -> "Orfan!"
     Vietnamese -> "Gói lẻ!"
     Czech      -> "Opuštěno!"
+    Korean     -> "관리되지 않는 패키지입니다!"
     _          -> "Orphaned!"
 
 -----------------------
@@ -1787,6 +1863,7 @@ saveState_1 = \case
     Romanian   -> "Stare de pachete salvată."
     Vietnamese -> "Đã lưu trạng thái gói."
     Czech      -> "Stav balíčku byl uložen."
+    Korean     -> "패키지 상태가 저장되었습니다."
     _          -> "Saved package state."
 
 -- NEEDS TRANSLATION
@@ -1813,6 +1890,7 @@ restoreState_1 = \case
     Romanian   -> "Versiunea solicitată pentru retrogradare nu este disponibilă pentru:"
     Vietnamese -> "Không thể hạ cấp cho:"
     Czech      -> "Požadované nižší verze nejsou k dispozici pro:"
+    Korean     -> "요청한 다운그레이드 버전은 다음 패키지에 사용할 수 없습니다:"
     _          -> "Requested downgrade versions not available for:"
 
 restoreState_2 :: Language -> Doc AnsiStyle
@@ -1832,6 +1910,7 @@ restoreState_2 = \case
     Romanian   -> "Nu există vreo stare de recuperat. (Folosiți -B pentru a salva starea actuală)"
     Vietnamese -> "Không có trạng thái nào có thể lưu. (Dùng -B để lưu trạng thái hiện tại)"
     Czech      -> "Žádné uložené stavy k obnovení. (Pro uložení aktuálního stavu použijte -B)"
+    Korean     -> "복원할 패키지 상태가 없습니다. (-B를 사용해 현재 상태를 저장)"
     _          -> "No saved states to be restored. (Use -B to save the current state)"
 
 -- NEEDS TRANSLATION
@@ -1858,6 +1937,7 @@ reinstallAndRemove_1 = \case
     Romanian   -> "Nu trebuie schimbat nici un pachet."
     Vietnamese -> "Không có gói nào cần thay đổi."
     Czech      -> "Žádné balíčky není třeba měnit."
+    Korean     -> "패키지를 변경할 필요가 없습니다."
     _          -> "No packages need changing."
 
 --------------------------------------
@@ -1877,6 +1957,7 @@ whoIsBuildUser_1 = \case
     Romanian   -> "Nu se poate determina cu care cont de utilizator să se compileze."
     Vietnamese -> "Không thể xác định tài khoản người dùng nào để build."
     Czech      -> "Nelze určit, se kterým uživatelským účtem se má provezt build."
+    Korean     -> "사용자가 컴파일할 것인지 확일할 수 없습니다."
     _          -> "Can't determine which user account to build with."
 
 ------------------------
@@ -1896,6 +1977,7 @@ confParsing_1 = \case
     Romanian   -> "Nu se poate analiza fișierul pacman.conf."
     Vietnamese -> "Không thể lấy dữ liệu từ tệp pacman.conf của bạn."
     Czech      -> "Nelze analyzovat soubor pacman.conf."
+    Korean     -> "pacman.conf 파일 분석에 실패했습니다."
     _          -> "Unable to parse your pacman.conf file."
 
 provides_1 :: PkgName -> Language -> Doc AnsiStyle
@@ -1909,6 +1991,7 @@ provides_1 (bt . pnName -> pro) = \case
     Romanian   -> pro <+> "este necesar ca dependență, care e provizionat de mai multe pachete. Selectați unul dintre ele:"
     Vietnamese -> pro <+> "là gói phụ thuộc, được cung cấp từ nhiều gói khác. Hãy chọn một:"
     Czech      -> pro <+> "je vyžadována jako závislost, kterou poskytuje několik balíčků. Prosím vyberte jeden:"
+    Korean     -> pro <+> "는 종속성으로 필요하며 여러 패키지에서 제공됩니다. 다음 중 하나를 선택하십시오:"
     _          -> pro <+> "is required as a dependency, which is provided by multiple packages. Please select one:"
 
 ----------------------------------
@@ -1937,6 +2020,7 @@ hotEdit_1 (bt . pnName -> p) = \case
     Romanian   -> "Doriți să modificați PKGBUILD-ul pachetului " <> p <> "?"
     Vietnamese -> "Bạn có muốn chỉnh sửa PKGBUILD của " <> p <> "?"
     Czech      -> "Chcete upravit PKGBUILD z " <> p <> "?"
+    Korean     -> p <> "의 PKGBUILD를 편집하시겠습니까?"
     _          -> "Would you like to edit the PKGBUILD of " <> p <> "?"
 
 hotEdit_2 :: Language -> Doc AnsiStyle
@@ -1948,6 +2032,7 @@ hotEdit_2 = \case
   Romanian   -> "Doriți să modificați fișierul .install?"
   Vietnamese -> "Bạn có muốn chỉnh sửa tệp .install?"
   Czech      -> "Chcete upravit soubor .install?"
+  Korean     -> ".install 파일을 수정하시겠습니까?"
   _          -> "Would you like to edit the .install file?"
 
 hotEdit_3 :: FilePath -> Language -> Doc AnsiStyle
@@ -1959,6 +2044,7 @@ hotEdit_3 fp = \case
   Romanian   -> "Doriți să modificați " <> pretty fp <> "?"
   Vietnamese -> "Bạn có muốn chỉnh sửa " <> pretty fp <> "?"
   Czech      -> "Chcete upravit " <> pretty fp <> "?"
+  Korean     -> pretty fp <> "을(를) 수정하시겠습니까?"
   _          -> "Would you like to edit " <> pretty fp <> "?"
 
 ------------------------------
@@ -1975,6 +2061,7 @@ security_1 (PkgName p) = \case
   Romanian  -> "PKGBUILD-ul pachetului" <+> bt p <+> "este prea complicat de analizat - ar putea sa acopere cod rău intenționat."
   Vietnamese -> "PKGBUILD của" <+> bt p <+> "quá khó để đọc - nó có thể chứa đoạn mã nguy hiểm."
   Czech     -> "PKGBUILD z" <+> bt p <+> "byl příliš složitý na analýzu - může obsahovat matoucí škodlivý kód."
+  Korean    -> "이 " <+> bt p <+> " PKGBUILD는 너무 복잡하여 분석할 수 없습니다 - 난독화된 코드일 수 있습니다."
   _         -> "The PKGBUILD of" <+> bt p <+> "was too complex to parse - it may be obfuscating malicious code."
 
 security_2 :: Text -> Language -> Doc AnsiStyle
@@ -1988,6 +2075,7 @@ security_2 (bt -> t) = \case
   Romanian  -> t <+> "se poate folosi pentru a descărca scripturi neurmărite de acest PKGBUILD."
   Vietnamese -> t <+> "có thể dùng để tải xuống các tập lệnh sẽ không được kiểm soát bởi PKGBUILD."
   Czech     -> t <+> "lze použít ke stažení libovolných skriptů, které tento PKGBUILD nesleduje."
+  Korean    -> t <+> "은(는) PKGBUILD에서 추적되지 않는 임의 스크립트를 다운로드하는 데 사용할 수 있습니다."
   _         -> t <+> "can be used to download arbitrary scripts that aren't tracked by this PKGBUILD."
 
 security_3 :: Text -> Language -> Doc AnsiStyle
@@ -2001,6 +2089,7 @@ security_3 (bt -> t) = \case
   Romanian  -> t <+> "se poate folosi pentru a executa cod arbitrar neurmărit de acest PKGBUILD."
   Vietnamese -> t <+> "có thể dùng để chạy các đoạn mã không được kiểm soát bởi PKGBUILD. "
   Czech     -> t <+> "lze použít ke spuštění libovolného kódu, který tento PKGBUILD nesleduje."
+  Korean    -> t <+> "은(는) PKGBUILD에서 추적되지 않는 임의 스크립트를 실행하는 데 사용할 수 있습니다."
   _         -> t <+> "can be used to execute arbitrary code not tracked by this PKGBUILD."
 
 security_4 :: Text -> Language -> Doc AnsiStyle
@@ -2014,6 +2103,7 @@ security_4 (bt -> t) = \case
   Romanian  -> t <+> "indică că cineva are putea încerca să obțină acces root asupra mașinăria dumneavoastră."
   Vietnamese -> t <+> "được xác định là có người đang có giành quyền truy cập vào root trên thiết bị của bạn."
   Czech     -> t <+> "znamená, že se někdo možná pokouší získat přístup root k vašemu počítači."
+  Korean    -> t <+> "은(는) 누군가 컴퓨터에 대한 루트 액세스 권한을 얻으려고 할 수 있음을 나타냅니다."
   _         -> t <+> "indicates that someone may be trying to gain root access to your machine."
 
 security_5 :: PkgName -> Language -> Doc AnsiStyle
@@ -2027,6 +2117,7 @@ security_5 (PkgName p) = \case
   Romanian  -> "ATENȚIE! PKGBUILD-ul pachetului" <+> bt p <+> "conține expresii de bash pe lista neagră."
   Vietnamese -> "CẢNH BÁO: PKGBUILD của" <+> bt p <+> "chứa những câu lệnh bash nguy hiểm."
   Czech     -> "VAROVÁNÍ: PKGBUILD z" <+> bt p <+> "obsahuje zakazany bash výrazy"
+  Korean    -> "경고: " <+> bt p <+> "의 PKGBUILD에는 블랙리스트에 있는 bash 식이 포함되어 있습니다."
   _         -> "WARNING: The PKGBUILD of" <+> bt p <+> "contains blacklisted bash expressions."
 
 security_6 :: Language -> Doc AnsiStyle
@@ -2040,6 +2131,7 @@ security_6 = \case
   Romanian   -> "Doriți anula procesul de compilare?"
   Vietnamese -> "Bạn có muốn dừng quá trình build?"
   Czech      -> "Přejete si ukončit build?"
+  Korean     -> "빌드 프로세스를 종료하시겠습니까?"
   _          -> "Do you wish to quit the build process?"
 
 security_7 :: Language -> Doc AnsiStyle
@@ -2053,6 +2145,7 @@ security_7 = \case
   Romanian  -> "S-a cancelat procesarea ulterioară pentru a evita cod de bash potențial rău intenționat."
   Vietnamese -> "Hãy dừng những quá trình tiếp theo để ngắn đoạn mã bash nguy hiểm."
   Czech     -> "Další proces byl zrušen, aby se zabránilo potenciálně škodlivému bash kódu."
+  Korean    -> "잠재적으로 악의적인 bash 코드를 방지하기 위해 추가 처리가 취소되었습니다."
   _         -> "Cancelled further processing to avoid potentially malicious bash code."
 
 security_8 :: Text -> Language -> Doc AnsiStyle
@@ -2066,6 +2159,7 @@ security_8 (bt -> t) = \case
   Romanian  -> t <+> "este o comandă bash integrată în matricele din PKGBUILD."
   Vietnamese -> t <+> "là lệnh bash được lồng trong mảng của PKGBUILD."
   Czech     -> t <+> "je bash příkaz vložený do polí pole PKGBUILD."
+  Korean    -> t <+> "는 PKGBUILD 배열 필드에 표시된 bash 명령입니다."
   _         -> t <+> "is a bash command inlined in your PKGBUILD array fields."
 
 security_9 :: Text -> Language -> Doc AnsiStyle
@@ -2079,6 +2173,7 @@ security_9 (bt -> t) = \case
   Romanian  -> t <+> "e ciudat să se afle în matricele dumneavoastră. Asta este sigur?"
   Vietnamese -> t <+> "là đoạn mã lạ trong mảng. Nó có an toàn không?"
   Czech     -> t <+> "je zvláštní věc mít v polích. Je to bezpečné?"
+  Korean    -> t <+> "이것은 배열 안에서 볼 수 있는 이상한 것입니다. 안전합니까?"
   _         -> t <+> "is a strange thing to have in your array fields. Is it safe?"
 
 security_10 :: Text -> Language -> Doc AnsiStyle
@@ -2092,6 +2187,7 @@ security_10 (bt -> t) = \case
   Romanian  -> t <+> "implică că cineva încearcă să fie șmecher cu variabile pentru a ascunde comenzi rele intenționate."
   Vietnamese -> t <+> "được xác định là có ai đó đang cố ẩn những câu lệnh nguy hiểm trong các biến."
   Czech     -> t <+> "naznačuje že se někdo snažil být chytrý s proměnnými, aby skryl škodlivé příkazy."
+  Korean    -> t <+> "누군가 악의적인 명령을 숨기기 위해 변수를 교묘하게 다루려고 했다는 것을 암시합니다."
   _         -> t <+> "implies that someone was trying to be clever with variables to hide malicious commands."
 
 security_11 :: Language -> Doc AnsiStyle
@@ -2103,6 +2199,7 @@ security_11 = \case
   Romanian  -> "Acel PKGBUILD este prea complicat de analizat - are putea ascunde cod rău intenționat."
   Vietnamese -> "Không thể đọc PKGBUILD - nó có thể chứa đoạn mã nguy hiểm."
   Czech     -> "Tento PKGBUILD je příliš složitý na to, aby jej bylo možné analyzovat/rezebrat – může obsahovat matoucí škodlivý kód."
+  Korean    -> "이 PKGBUILD는 분석하기에 너무 복잡합니다 - 악성코드를 난독화하고 있을 수 있습니다."
   _         -> "That PKGBUILD is too complex to parse - it may be obfuscating malicious code."
 
 security_12 :: Language -> Doc AnsiStyle
@@ -2114,6 +2211,7 @@ security_12 = \case
   Romanian   -> "Vulnerabilități potențiale detectate în PKGBUILD."
   Vietnamese -> "Phát hiện lỗ hổng trong PKGBUILD."
   Czech      -> "Byla zjištěna potenciální bezpečnostní chyba v PKGBUILD."
+  Korean     -> "잠재적인 PKGBUILD 취약점 발견됨."
   _          -> "Potential PKGBUILD vulnerabilities detected."
 
 security_13 :: Word -> Language -> Doc AnsiStyle
@@ -2125,6 +2223,7 @@ security_13 (bt -> w) = \case
   Romanian  -> "Se verifică PKGBUILD-uri" <+> w <+> "pentru vulnerabilități..."
   Vietnamese -> "Tìm kiếm" <+> w <+> "lỗ hổng trong PKGBUILD..."
   Czech     -> "Kontrola bezpečnostních chyb v" <+> w <+> "PKGBUILD"
+  Korean    -> w <+> "PKGBUILD 취약점 확인 중..."
   _         -> "Checking" <+> w <+> "PKGBUILDs for vulnerabilities..."
 
 security_14 :: Language -> Doc AnsiStyle
@@ -2136,6 +2235,7 @@ security_14 = \case
   Romanian   -> "Nu s-a găsit nici o vulnerabilitate."
   Vietnamese -> "Không tìm thấy lỗ hổng."
   Czech      -> "Nebyly nalezeny žádné bezpečnostní chyby."
+  Korean     -> "발견된 취약점이 없습니다."
   _          -> "No vulnerabilities detected."
 
 -----------------------

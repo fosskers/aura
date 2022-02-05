@@ -275,6 +275,7 @@ data Language = English
               | Romanian
               | Vietnamese
               | Czech
+              | Korean
               deriving (Eq, Enum, Bounded, Ord, Show)
 
 -- | The various ways that dependency resolution can fail.
