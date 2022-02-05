@@ -359,7 +359,7 @@ pub(crate) fn install(
     // debug!("Already cloned: {:?}", cloned);
     // debug!("To clone: {:?}", to_clone);
 
-    // let clone_dir = crate::dirs::clones()?;
+    let clone_dir = crate::dirs::clones()?;
     // let build_dir = crate::dirs::builds()?;
     // let cache_dir = crate::dirs::tarballs()?;
 
@@ -395,7 +395,7 @@ pub(crate) fn install(
     // Set `max_size` based on the user's CPU count.
     let pool = Pool::builder().max_size(4).build(mngr)?;
     aura!(fll, "A-install-deps");
-    let rslv = aura_core::aur::dependencies::resolve(pool, pkgs)?;
+    let rslv = aura_core::aur::dependencies::resolve(pool, &clone_dir, pkgs)?;
 
     debug!("Satisfied: {:?}", rslv.satisfied);
     debug!("To install: {:?}", rslv.to_install);

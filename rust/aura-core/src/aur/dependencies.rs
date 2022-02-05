@@ -10,7 +10,7 @@ use srcinfo::Srcinfo;
 use std::borrow::{Borrow, Cow};
 use std::collections::HashSet;
 use std::hash::Hash;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use validated::Validated;
 
@@ -22,8 +22,16 @@ pub enum Error {
     R2D2(r2d2::Error),
     /// An error parsing a `.SRCINFO` file.
     Srcinfo(srcinfo::Error),
+    /// An error cloning or pulling a repo.
+    Git(crate::git::Error),
     /// Multiple errors during concurrent dependency resolution.
     Resolutions(Box<NonEmpty<Error>>),
+}
+
+impl From<crate::git::Error> for Error {
+    fn from(v: crate::git::Error) -> Self {
+        Self::Git(v)
+    }
 }
 
 impl From<srcinfo::Error> for Error {
@@ -51,6 +59,7 @@ impl std::fmt::Display for Error {
                 Ok(())
             }
             Error::Srcinfo(e) => write!(f, "{}", e),
+            Error::Git(e) => write!(f, "{}", e),
         }
     }
 }
@@ -118,7 +127,11 @@ impl Hash for Buildable<'_> {
 }
 
 /// Determine all packages to be built and installed.
-pub fn resolve<'a, I, S, M>(pool: Pool<M>, pkgs: I) -> Result<Resolution<'a>, Error>
+pub fn resolve<'a, I, S, M>(
+    pool: Pool<M>,
+    clone_dir: &Path,
+    pkgs: I,
+) -> Result<Resolution<'a>, Error>
 where
     I: IntoParallelIterator<Item = S>,
     S: Into<Cow<'a, str>>,
@@ -127,7 +140,7 @@ where
     let arc = Arc::new(Mutex::new(Resolution::default()));
 
     pkgs.into_par_iter()
-        .map(|pkg| resolve_one(pool.clone(), arc.clone(), pkg))
+        .map(|pkg| resolve_one(pool.clone(), arc.clone(), clone_dir, pkg))
         .collect::<Validated<(), Error>>()
         .ok()
         .map_err(|es| Error::Resolutions(Box::new(es)))?;
@@ -143,6 +156,7 @@ where
 fn resolve_one<'a, S, M>(
     pool: Pool<M>,
     mutx: Arc<Mutex<Resolution<'a>>>,
+    clone_dir: &Path,
     pkg: S,
 ) -> Result<(), Error>
 where
@@ -180,7 +194,7 @@ where
                     .insert(Official(p));
             } else {
                 debug!("It's an AUR package!");
-                let path = pull_or_clone(&p)?;
+                let path = pull_or_clone(clone_dir, &p)?;
                 let info = Srcinfo::parse_file(path)?;
                 let name = Cow::Owned(info.base.pkgbase);
                 let mut prov = Vec::new();
@@ -229,8 +243,14 @@ where
     Ok(())
 }
 
-fn pull_or_clone(pkg: &str) -> Result<PathBuf, Error> {
-    todo!()
+fn pull_or_clone(clone_dir: &Path, pkg: &str) -> Result<PathBuf, crate::git::Error> {
+    if super::is_aur_package_fast(clone_dir, pkg) {
+        let path = clone_dir.join(pkg);
+        crate::git::pull(&path)?;
+        Ok(path)
+    } else {
+        todo!()
+    }
 }
 
 /// Given a collection of [`Buildable`] packages, determine a tiered order in
