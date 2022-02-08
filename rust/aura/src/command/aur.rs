@@ -296,7 +296,9 @@ pub(crate) fn clone_aur_repos(
         .map(|p| {
             let pkg = p.as_str();
             aura!(fll, "A-w", package = pkg);
-            clone_aur_repo(None, &p).map_err(|_| pkg).void()
+            aura_core::aur::clone_aur_repo(None, &p)
+                .map_err(|_| pkg)
+                .void()
         })
         .collect();
 
@@ -441,17 +443,4 @@ fn real_packages<'a>(
     }
 
     Ok((cloned, to_clone))
-}
-
-/// Clone a package's AUR repository and return the full path to the clone.
-fn clone_aur_repo(root: Option<&Path>, package: &str) -> Result<PathBuf, aura_core::git::Error> {
-    let mut url: PathBuf = [AUR_BASE_URL, package].iter().collect();
-    url.set_extension("git");
-
-    let clone_path: PathBuf = match root {
-        None => PathBuf::from(package),
-        Some(r) => [r, Path::new(package)].iter().collect(),
-    };
-
-    aura_core::git::shallow_clone(&url, &clone_path).map(|_| clone_path)
 }
