@@ -718,11 +718,25 @@ pub(crate) struct Stats {
 #[clap(short_flag = 'A', long_flag = "aursync")]
 pub(crate) struct Aur {
     /// View AUR package information.
-    #[clap(group = "aur", long, short, value_name = "packages", display_order = 1)]
+    #[clap(
+        group = "aur",
+        long,
+        short,
+        value_name = "packages",
+        multiple_values = true,
+        display_order = 1
+    )]
     pub(crate) info: Vec<String>,
 
     /// Search the AUR via search strings. Multiple terms narrow the result.
-    #[clap(group = "aur", long, short, value_name = "terms", display_order = 1)]
+    #[clap(
+        group = "aur",
+        long,
+        short,
+        value_name = "terms",
+        multiple_values = true,
+        display_order = 1
+    )]
     pub(crate) search: Vec<String>,
 
     // TODO Avoid boolean blindness.
@@ -748,7 +762,13 @@ pub(crate) struct Aur {
 
     // TODO Long option? Haskell version uses `--downloadonly`.
     /// Clone a package's AUR repository, but don't build anything.
-    #[clap(group = "aur", short = 'w', value_name = "package", display_order = 1)]
+    #[clap(
+        group = "aur",
+        short = 'w',
+        value_name = "package",
+        multiple_values = true,
+        display_order = 1
+    )]
     pub(crate) wclone: Vec<String>,
 
     /// Pull the latest changes for every local copy of an AUR package.

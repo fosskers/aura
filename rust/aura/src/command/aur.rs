@@ -10,7 +10,7 @@ use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
-use log::debug;
+use log::{debug, info};
 use nonempty::NonEmpty;
 use r2d2::Pool;
 use r2d2_alpm::AlpmManager;
@@ -116,6 +116,7 @@ impl std::fmt::Display for Error {
 
 /// View AUR package information.
 pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<(), Error> {
+    info!("-Ai on {:?}", packages);
     let r: Vec<raur_curl::Package> = aura_core::aur::info(packages)?;
     let mut w = BufWriter::new(std::io::stdout());
 
@@ -143,7 +144,6 @@ pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<()
     for p in r {
         let pairs: Vec<(&str, ColoredString)> = vec![
             (&repo, "aur".magenta()),
-            // (&name, p.name.bold()),
             (
                 &name,
                 if p.name == p.package_base {
