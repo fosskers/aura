@@ -143,7 +143,15 @@ pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<()
     for p in r {
         let pairs: Vec<(&str, ColoredString)> = vec![
             (&repo, "aur".magenta()),
-            (&name, p.name.bold()),
+            // (&name, p.name.bold()),
+            (
+                &name,
+                if p.name == p.package_base {
+                    p.name.bold()
+                } else {
+                    format!("{} ({})", p.name.bold(), p.package_base.cyan()).normal()
+                },
+            ),
             (&ver, p.version.normal()),
             (
                 &stat,
