@@ -460,6 +460,7 @@ getRealPkgConflicts_1 (bt . pnName -> prnt) (bt . pnName -> p) (bt -> r) (bt -> 
     Romanian   -> "Pachetul " <> prnt <> " depinde de versiunea " <> d <> " al pachetului " <> p <> ", dar cea mai recentă versiune este " <> r <> "."
     Vietnamese -> "Gói " <> prnt <> " phụ thuộc vào bản " <> d <> " của " <> p <> ", nhưng bản mới nhất là " <> r <> "."
     Czech      -> "Balík " <> prnt <> " závisí na verzi " <> d <> " z " <> p <> ", ale nejnovější verze je " <> r <> "."
+    Korean     -> prnt <> " 패키지는 " <> p <> "의 버전 " <> d <> "에 의존하지만 가장 최신 버전은 " <> r <> "입니다."
     _          -> "The package " <> prnt <> " depends on version " <> d <> " of " <> p <> ", but the most recent version is " <> r <> "."
 
 getRealPkgConflicts_2 :: PkgName -> Language -> Doc AnsiStyle
@@ -506,6 +507,7 @@ depError l (NonExistant (PkgName s) (PkgName par)) = case l of
   Ukrainian  -> "Залежність " <> bt s <> " не було знайдено."
   Vietnamese -> "Không thể tìm thấy các gói phụ thuộc của " <> bt s <> "."
   Czech      -> "Nebyla nalezena závislost " <> bt s <> " z " <> bt par <> "."
+  Korean     -> bt par <> "의 종속성 " <> bt s <> "을(를) 찾을 수 없습니다."
   _          -> "The dependency " <> bt s <> " of " <> bt par <> " couldn't be found."
 
 depError l (BrokenProvides (PkgName pkg) (Provides (PkgName pro)) (PkgName n)) = case l of
@@ -519,6 +521,7 @@ depError l (BrokenProvides (PkgName pkg) (Provides (PkgName pro)) (PkgName n)) =
   Romanian   -> "Pachetul " <> bt pkg <> " are nevoie de " <> bt n <> ", care provizionează " <> bt pro <> "."
   Vietnamese -> "Gói " <> bt pkg <> " cần " <> bt n <> ", để cung cấp " <> bt pro <> "."
   Czech      -> "Balík " <> bt pkg <> " potřebuje " <> bt n <> ", který poskytuje " <> bt pro <> "."
+  Korean     -> bt pkg <> " 패키지는 " <> bt pro <> "를 제공하는 " <> bt n <> "이(가) 필요합니다."
   _          -> "The package " <> bt pkg <> " needs " <> bt n <> ", which provides " <> bt pro <> "."
 
 missingPkg_3 :: Language -> Doc AnsiStyle
@@ -546,7 +549,8 @@ missingPkg_4 pns = \case
   Romanian   -> vsep $ "Aceste cicluri de dependență a fost detectate:" : pns'
   Vietnamese -> vsep $ "Phát hiện chu kỳ gói phụ thuộc: " : pns'
   Czech      -> vsep $ "Byly zjištěny následující cykly závislostí:" : pns'
-  _ -> vsep $ "The following dependency cycles were detected:" : pns'
+  Korean     -> vsep $ "다음과 같은 종속성 주기가 발견되었습니다:" : pns '
+  _          -> vsep $ "The following dependency cycles were detected:" : pns'
   where
     pns' :: [Doc ann]
     pns' = map (hsep . map pretty . L.intersperse "=>" . map pnName . toList) pns
@@ -820,7 +824,7 @@ reportPkgsToInstall_1 = \case
     Romanian   -> "Dependențe din repertorii:"
     Vietnamese -> "Các repo phụ thuộc:"
     Czech      -> "Závislosti úložiště:"
-    Korean     -> "Repository 종속성:"
+    Korean     -> "리포지토리 종속성:"
     _          -> "Repository dependencies:"
 
 -- NEEDS AN UPDATE

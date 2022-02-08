@@ -38,6 +38,7 @@ package = \case
     Romanian   -> "Pachet"
     Vietnamese -> "Gói"
     Czech      -> "Balíček"
+    Korean     -> "패키지"
     _          -> "Package"
 
 firstInstall :: Language -> Text
@@ -61,6 +62,7 @@ firstInstall = \case
     Romanian   -> "Prima instalare"
     Vietnamese -> "Cài đặt lần đầu"
     Czech      -> "První instalace"
+    Korean     -> "최초 설치"
     _          -> "First Install"
 
 upgrades :: Language -> Text
@@ -84,6 +86,7 @@ upgrades = \case
     Romanian   -> "Actualizări"
     Vietnamese -> "Cập nhật"
     Czech      -> "Aktualizace"
+    Korean     -> "업그레이드 횟수"
     _          -> "Upgrades"
 
 recentActions :: Language -> Text
@@ -107,6 +110,7 @@ recentActions = \case
     Romanian   -> "Acțiuni Recente"
     Vietnamese -> "Hoạt động gần nhất"
     Czech      -> "Nedávné akce"
+    Korean     -> "근황"
     _          -> "Recent Actions"
 
 repository :: Language -> Text
@@ -129,6 +133,7 @@ repository = \case
     Dutch      -> "Repository"
     Romanian   -> "Repertoriu"
     Czech      -> "Úložiště"
+    Korean     -> "리포지토리"
     _          -> "Repository"
 
 name :: Language -> Text
@@ -152,6 +157,7 @@ name = \case
     Romanian   -> "Nume"
     Vietnamese -> "Tên"
     Czech      -> "Název"
+    Korean     -> "이름"
     _          -> "Name"
 
 version :: Language -> Text
@@ -175,6 +181,7 @@ version = \case
     Romanian   -> "Versiune"
     Vietnamese -> "Phiên bản"
     Czech      -> "Verze"
+    Korean     -> "버전"
     _          -> "Version"
 
 aurStatus :: Language -> Text
@@ -197,6 +204,7 @@ aurStatus = \case
     Romanian   -> "Stare AUR"
     Vietnamese -> "Trạng thái AUR"
     Czech      -> "Stav AUR"
+    Korean     -> "AUR 상태"
     _          -> "AUR Status"
 
 -- NEEDS TRANSLATION
@@ -215,6 +223,7 @@ maintainer = \case
     Dutch      -> "Onderhouder"
     Romanian   -> "Întreținător"
     Czech      -> "Udržovatel"
+    Korean     -> "관리자"
     _          -> "Maintainer"
 
 projectUrl :: Language -> Text
@@ -238,6 +247,7 @@ projectUrl = \case
     Romanian   -> "URL al proiectului"
     Vietnamese -> "URL của Dự án"
     Czech      -> "Adresa URL projektu"
+    Korean     -> "프로젝트 URL"
     _          -> "Project URL"
 
 aurUrl :: Language -> Text
@@ -259,6 +269,7 @@ aurUrl = \case
     Romanian   -> "URL AUR"
     Vietnamese -> "URL của AUR"
     Czech      -> "URL pro AUR"
+    Korean     -> "AUR URL"
     _          -> "AUR URL"
 
 license :: Language -> Text
@@ -282,6 +293,7 @@ license = \case
     Romanian   -> "Licență"
     Vietnamese -> "Bản quyền"
     Czech      -> "Licence"
+    Korean     -> "라이센스"
     _          -> "License"
 
 dependsOn :: Language -> Text
@@ -303,6 +315,7 @@ dependsOn = \case
     Romanian   -> "Depinde de"
     Vietnamese -> "Phụ thuộc vào"
     Czech      -> "Závisí na"
+    Korean     -> "종속 패키지"
     _          -> "Depends On"
 
 buildDeps :: Language -> Text
@@ -321,6 +334,7 @@ buildDeps = \case
     Dutch      -> "Bouw afhankelijkheden"
     Romanian   -> "Dependențe de compilare"
     Czech      -> "Závislosti kompilace"
+    Korean     -> "빌드 종속성"
     _          -> "Build Deps"
 
 votes :: Language -> Text
@@ -344,6 +358,7 @@ votes = \case
     Romanian   -> "Voturi"
     Vietnamese -> "Bình chọn"
     Czech      -> "Hlasy"
+    Korean     -> "투표"
     _          -> "Votes"
 
 popularity :: Language -> Text
@@ -359,6 +374,7 @@ popularity = \case
     Romanian   -> "Popularitate"
     Vietnamese -> "Phổ biến"
     Czech      -> "Popularita"
+    Korean     -> "인기"
     _          -> "Popularity"
 
 description :: Language -> Text
@@ -382,4 +398,5 @@ description = \case
     Romanian   -> "Descriere"
     Vietnamese -> "Mô tả"
     Czech      -> "Popis"
+    Korean     -> "개요"
     _          -> "Description"
