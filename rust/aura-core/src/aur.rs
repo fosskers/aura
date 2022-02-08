@@ -5,7 +5,7 @@ pub mod dependencies;
 use log::debug;
 use raur_curl::Raur;
 use std::borrow::Cow;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 /// The base path of the URL.
 pub const AUR_BASE_URL: &str = "https://aur.archlinux.org/";
@@ -117,4 +117,17 @@ fn partition_real_pkgs_via_aur<'a>(
     };
 
     Ok(part)
+}
+
+/// Clone a package's AUR repository and return the full path to the clone.
+pub fn clone_aur_repo(root: Option<&Path>, package: &str) -> Result<PathBuf, crate::git::Error> {
+    let mut url: PathBuf = [AUR_BASE_URL, package].iter().collect();
+    url.set_extension("git");
+
+    let clone_path: PathBuf = match root {
+        None => PathBuf::from(package),
+        Some(r) => r.join(package),
+    };
+
+    crate::git::shallow_clone(&url, &clone_path).map(|_| clone_path)
 }

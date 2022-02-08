@@ -24,8 +24,20 @@ pub enum Error {
     Srcinfo(srcinfo::Error),
     /// An error cloning or pulling a repo.
     Git(crate::git::Error),
+    /// An error contacting the AUR API.
+    Raur(raur_curl::Error),
     /// Multiple errors during concurrent dependency resolution.
     Resolutions(Box<NonEmpty<Error>>),
+    /// A named dependency does not exist.
+    DoesntExist(String),
+    /// A named dependency of some known package does not exist.
+    DoesntExistWithParent(String, String),
+}
+
+impl From<raur_curl::Error> for Error {
+    fn from(v: raur_curl::Error) -> Self {
+        Self::Raur(v)
+    }
 }
 
 impl From<crate::git::Error> for Error {
@@ -60,6 +72,11 @@ impl std::fmt::Display for Error {
             }
             Error::Srcinfo(e) => write!(f, "{}", e),
             Error::Git(e) => write!(f, "{}", e),
+            Error::Raur(e) => write!(f, "{}", e),
+            Error::DoesntExist(p) => write!(f, "{} is not a known package.", p),
+            Error::DoesntExistWithParent(par, p) => {
+                write!(f, "{}, required by {}, is not a known package.", p, par)
+            }
         }
     }
 }
@@ -140,7 +157,7 @@ where
     let arc = Arc::new(Mutex::new(Resolution::default()));
 
     pkgs.into_par_iter()
-        .map(|pkg| resolve_one(pool.clone(), arc.clone(), clone_dir, pkg))
+        .map(|pkg| resolve_one(pool.clone(), arc.clone(), clone_dir, None, pkg))
         .collect::<Validated<(), Error>>()
         .ok()
         .map_err(|es| Error::Resolutions(Box::new(es)))?;
@@ -157,6 +174,7 @@ fn resolve_one<'a, S, M>(
     pool: Pool<M>,
     mutx: Arc<Mutex<Resolution<'a>>>,
     clone_dir: &Path,
+    parent: Option<&str>,
     pkg: S,
 ) -> Result<(), Error>
 where
@@ -194,7 +212,7 @@ where
                     .insert(Official(p));
             } else {
                 debug!("It's an AUR package!");
-                let path = pull_or_clone(clone_dir, &p)?;
+                let path = pull_or_clone(clone_dir, parent, &p)?;
                 let info = Srcinfo::parse_file(path)?;
                 let name = Cow::Owned(info.base.pkgbase);
                 let mut prov = Vec::new();
@@ -243,13 +261,36 @@ where
     Ok(())
 }
 
-fn pull_or_clone(clone_dir: &Path, pkg: &str) -> Result<PathBuf, crate::git::Error> {
+// FIXME Mon Feb  7 23:07:56 2022
+//
+// If `is_aur_package_fast` succeeds, perhaps we should assume that the clone is
+// up to date and avoid a pull here to speed things up. It may be better to
+// encourage usage of `-Ay`.
+//
+// Of course if there is no local clone, then a fresh one must be done either
+// way, ensuring newness for at least that run.
+//
+// The goal here is to rely on our local clone more, to avoid having to call to
+// the AUR all the time. `-Ai`, perhaps, should also read local clones if they
+// exist. This offers the bonus of `-Ai` functioning offline, like `-Si` does!
+fn pull_or_clone(clone_dir: &Path, parent: Option<&str>, pkg: &str) -> Result<PathBuf, Error> {
     if super::is_aur_package_fast(clone_dir, pkg) {
         let path = clone_dir.join(pkg);
-        crate::git::pull(&path)?;
+        crate::git::pull(&path)?; // Here. Potentially avoid this.
         Ok(path)
     } else {
-        todo!()
+        let info = crate::aur::info(&[pkg])?;
+        let base = info
+            .first()
+            .ok_or_else(|| match parent {
+                Some(par) => Error::DoesntExistWithParent(par.to_string(), pkg.to_string()),
+                None => Error::DoesntExist(pkg.to_string()),
+            })?
+            .package_base
+            .as_str();
+
+        let path = crate::aur::clone_aur_repo(Some(clone_dir), base)?;
+        Ok(path)
     }
 }
 
