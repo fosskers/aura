@@ -157,16 +157,21 @@ where
 {
     let arc = Arc::new(Mutex::new(Resolution::default()));
 
+    let start = Utc::now();
     pkgs.into_par_iter()
         .map(|pkg| resolve_one(pool.clone(), arc.clone(), clone_dir, None, pkg))
         .collect::<Validated<(), Error>>()
         .ok()
         .map_err(|es| Error::Resolutions(Box::new(es)))?;
+    let end = Utc::now();
+    let diff = end.timestamp_millis() - start.timestamp_millis();
 
     let res = Arc::try_unwrap(arc)
         .map_err(|_| Error::PoisonedMutex)?
         .into_inner()
         .map_err(|_| Error::PoisonedMutex)?;
+
+    info!("Resolved dependencies in {}ms.", diff);
 
     Ok(res)
 }
@@ -214,6 +219,9 @@ where
                 .insert(p);
         } else {
             // Same here, re: lock dropping.
+            // TODO Wed Feb  9 22:41:15 2022
+            //
+            // Also need to do `find_satisfier` here!
             let official = pool.get()?.syncdbs().pkg(pr).is_ok();
 
             if official {
@@ -298,7 +306,7 @@ where
 fn pull_or_clone(clone_dir: &Path, parent: Option<&str>, pkg: &str) -> Result<PathBuf, Error> {
     if super::is_aur_package_fast(clone_dir, pkg) {
         let path = clone_dir.join(pkg);
-        crate::git::pull(&path)?; // Here. Potentially avoid this.
+        // crate::git::pull(&path)?; // Here. Potentially avoid this.
         Ok(path)
     } else {
         let info = crate::aur::info(&[pkg])?;
@@ -316,7 +324,7 @@ fn pull_or_clone(clone_dir: &Path, parent: Option<&str>, pkg: &str) -> Result<Pa
         // Avoid the code duplication.
         if super::is_aur_package_fast(clone_dir, base) {
             let path = clone_dir.join(base);
-            crate::git::pull(&path)?; // Here. Potentially avoid this.
+            // crate::git::pull(&path)?; // Here. Potentially avoid this.
             Ok(path)
         } else {
             let path = crate::aur::clone_aur_repo(Some(clone_dir), base)?;
