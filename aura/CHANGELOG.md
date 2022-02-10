@@ -1,5 +1,11 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Added
+
+- Korean translations thanks to "Nioden". 감사합니다!
+
 ## 3.2.7 (2022-01-18)
 
 #### Added
