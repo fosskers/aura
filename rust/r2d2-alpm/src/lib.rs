@@ -31,7 +31,7 @@
 use alpm::Alpm;
 use pacmanconf::Config;
 use r2d2::ManageConnection;
-use std::path::Path;
+use std::ffi::OsStr;
 
 /// Manage multiple [`Alpm`] handles.
 pub struct AlpmManager {
@@ -49,7 +49,7 @@ impl AlpmManager {
     /// the given filepath.
     pub fn from_file<P>(path: P) -> Result<Self, pacmanconf::Error>
     where
-        P: AsRef<Path>,
+        P: AsRef<OsStr>,
     {
         let config = Config::from_file(path)?;
         let manager = Self { config };

@@ -814,7 +814,7 @@ dependencies = [
 [[package]]
 name = "pacmanconf"
 version = "1.0.0"
-source = "git+https://github.com/fosskers/pacmanconf.rs?rev=0bb1e2e88cf932e9f2ad12605c340dbb94a5dfd3#0bb1e2e88cf932e9f2ad12605c340dbb94a5dfd3"
+source = "git+https://github.com/Morganamilo/pacmanconf.rs?rev=a6c6a2ad80dd8a50eb952df255e237ac16f3c46d#a6c6a2ad80dd8a50eb952df255e237ac16f3c46d"
 dependencies = [
  "cini",
 ]

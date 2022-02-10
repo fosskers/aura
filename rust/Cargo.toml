@@ -10,7 +10,7 @@ members = [
 
 [patch.crates-io]
 raur = { git = "https://gitlab.com/davidbittner/raur/", rev = "9cf07a03489a34f47192992105b55ba9140d9fb7" }
-pacmanconf = { git = "https://github.com/fosskers/pacmanconf.rs", rev = "0bb1e2e88cf932e9f2ad12605c340dbb94a5dfd3" }
+pacmanconf = { git = "https://github.com/Morganamilo/pacmanconf.rs", rev = "a6c6a2ad80dd8a50eb952df255e237ac16f3c46d" }
 
 [profile.release]
 lto = true
