@@ -1,18 +1,17 @@
 //! Generalized `git` interaction.
 
-use std::path::Path;
-use std::process::{Command, Stdio};
-
 use log::debug;
+use std::path::{Path, PathBuf};
+use std::process::{Command, Stdio};
 
 /// A git-related error.
 pub enum Error {
     /// Some IO action failed.
     Io(std::io::Error),
     /// A git clone failed.
-    Clone,
+    Clone(PathBuf),
     /// A git pull failed.
-    Pull,
+    Pull(PathBuf),
 }
 
 impl From<std::io::Error> for Error {
@@ -25,8 +24,8 @@ impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Error::Io(e) => write!(f, "{}", e),
-            Error::Clone => write!(f, "A git clone failed."),
-            Error::Pull => write!(f, "A git pull failed."),
+            Error::Clone(p) => write!(f, "A git clone failed: {}", p.display()),
+            Error::Pull(p) => write!(f, "A git pull failed: {}", p.display()),
         }
     }
 }
@@ -47,7 +46,7 @@ pub fn shallow_clone(url: &Path, target: &Path) -> Result<(), Error> {
         .status()?
         .success()
         .then(|| ())
-        .ok_or(Error::Clone)
+        .ok_or_else(|| Error::Clone(url.to_path_buf()))
 }
 
 /// Given a `Path` that is known to be a Git repository, visit it and pull the
@@ -68,5 +67,5 @@ pub fn pull(dir: &Path) -> Result<(), Error> {
         .status()?
         .success()
         .then(|| ())
-        .ok_or(Error::Pull)
+        .ok_or_else(|| Error::Pull(dir.to_path_buf()))
 }

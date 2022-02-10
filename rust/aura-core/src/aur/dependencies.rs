@@ -213,8 +213,9 @@ where
             } else {
                 debug!("It's an AUR package!");
                 let path = pull_or_clone(clone_dir, parent, &p)?;
-                let info = Srcinfo::parse_file(path)?;
-                let name = Cow::Owned(info.base.pkgbase);
+                debug!("Parsing .SRCINFO for {}", p);
+                let info = Srcinfo::parse_file(path.join(".SRCINFO"))?;
+                let name: Cow<'_, str> = Cow::Owned(info.base.pkgbase);
                 let mut prov = Vec::new();
                 let deps: HashSet<Cow<'_, str>> = info
                     .base
@@ -234,26 +235,33 @@ where
                     .map(Cow::Owned)
                     .collect();
 
+                // TODO Try Cow tricks instead?
+                let deps_copy: Vec<&str> = deps.iter().map(|d| d.as_ref()).collect();
+                let parent = name.as_ref();
                 let buildable = Buildable { name, deps };
 
-                mutx.lock().map_err(|_| Error::PoisonedMutex).map(|mut r| {
-                    r.to_build.insert(buildable);
+                // mutx.lock().map_err(|_| Error::PoisonedMutex).map(|mut r| {
+                //     r.to_build.insert(buildable);
 
-                    for p in info
-                        .pkg
-                        .provides
-                        .into_iter()
-                        .flat_map(|av| av.vec)
-                        .chain(prov)
-                    {
-                        r.provided.insert(Cow::Owned(p));
-                    }
-                })?;
+                //     for p in info
+                //         .pkg
+                //         .provides
+                //         .into_iter()
+                //         .flat_map(|av| av.vec)
+                //         .chain(prov)
+                //     {
+                //         r.provided.insert(Cow::Owned(p));
+                //     }
+                // })?;
 
-                // .map(|pkg| resolve_one(pool.clone(), mtx.clone(), pkg))
-                // .collect::<Validated<(), Error>>()
-                // .ok()
-                // .map_err(|es| Error::Resolutions(Box::new(es)))?;
+                // deps_copy
+                //     .into_iter()
+                //     .map(|pkg| {
+                //         resolve_one(pool.clone(), mutx.clone(), clone_dir, Some(parent), pkg)
+                //     })
+                //     .collect::<Validated<(), Error>>()
+                //     .ok()
+                //     .map_err(|es| Error::Resolutions(Box::new(es)))?;
             }
         }
     }
@@ -289,8 +297,17 @@ fn pull_or_clone(clone_dir: &Path, parent: Option<&str>, pkg: &str) -> Result<Pa
             .package_base
             .as_str();
 
-        let path = crate::aur::clone_aur_repo(Some(clone_dir), base)?;
-        Ok(path)
+        // FIXME Wed Feb  9 21:24:27 2022
+        //
+        // Avoid the code duplication.
+        if super::is_aur_package_fast(clone_dir, base) {
+            let path = clone_dir.join(base);
+            crate::git::pull(&path)?; // Here. Potentially avoid this.
+            Ok(path)
+        } else {
+            let path = crate::aur::clone_aur_repo(Some(clone_dir), base)?;
+            Ok(path)
+        }
     }
 }
 
