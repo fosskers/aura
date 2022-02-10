@@ -2,6 +2,7 @@
 
 use alpm::Alpm;
 use alpm_utils::DbListExt;
+use chrono::Utc;
 use log::{debug, info};
 use nonempty::NonEmpty;
 use r2d2::{ManageConnection, Pool};
@@ -182,6 +183,7 @@ where
     M: ManageConnection<Connection = Alpm>,
 {
     let p = pkg.into();
+    let pr = p.as_ref();
 
     // Drops the lock on the `Resolution` as soon as it can.
     let already_seen = {
@@ -192,20 +194,32 @@ where
     if !already_seen {
         debug!("Resolving dependencies for: {}", p);
 
-        // Checks if the current package is installed and drops the ALPM handle
-        // as soon as possible.
-        let installed = pool.get()?.localdb().pkg(p.as_ref()).is_ok();
+        // Checks if the current package is installed or otherwise satisfied by
+        // some package, and then immediately drops the ALPM handle.
+        let satisfied = {
+            let alpm = pool.get()?;
+            let db = alpm.localdb();
+            let start = Utc::now();
+            let res = db.pkg(pr).is_ok() || db.pkgs().find_satisfier(pr).is_some();
+            let end = Utc::now();
+            let diff = end.timestamp_millis() - start.timestamp_millis();
+            debug!("AlpmList::find_satisfier for {} in {}ms", pr, diff);
+            res
+        };
 
-        if installed {
+        if satisfied {
             mutx.lock()
                 .map_err(|_| Error::PoisonedMutex)?
                 .satisfied
                 .insert(p);
         } else {
             // Same here, re: lock dropping.
-            let official = pool.get()?.syncdbs().pkg(p.as_ref()).is_ok();
+            let official = pool.get()?.syncdbs().pkg(pr).is_ok();
 
             if official {
+                // TODO Wed Feb  9 22:10:23 2022
+                //
+                // Recurse on the package for its dependencies.
                 mutx.lock()
                     .map_err(|_| Error::PoisonedMutex)?
                     .to_install
