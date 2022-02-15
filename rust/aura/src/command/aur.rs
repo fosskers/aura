@@ -409,6 +409,7 @@ pub(crate) fn install(
 
     debug!("Satisfied: {:?}", rslv.satisfied);
     debug!("To install: {:?}", rslv.to_install);
+    debug!("To build: {:?}", rslv.to_build);
 
     // let tarballs = build::build(
     //     fll,

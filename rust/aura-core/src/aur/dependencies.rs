@@ -8,7 +8,7 @@ use nonempty::NonEmpty;
 use r2d2::{ManageConnection, Pool};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use srcinfo::Srcinfo;
-use std::borrow::{Borrow, Cow};
+use std::borrow::Borrow;
 use std::collections::HashSet;
 use std::hash::Hash;
 use std::path::{Path, PathBuf};
@@ -84,20 +84,20 @@ impl std::fmt::Display for Error {
 
 /// The results of dependency resolution.
 #[derive(Default)]
-pub struct Resolution<'a> {
+pub struct Resolution {
     /// Packages to be installed from official repos.
-    pub to_install: HashSet<Official<'a>>,
+    pub to_install: HashSet<Official>,
     /// Packages to be built.
-    pub to_build: HashSet<Buildable<'a>>,
+    pub to_build: HashSet<Buildable>,
     /// Packages already installed on the system.
-    pub satisfied: HashSet<Cow<'a, str>>,
+    pub satisfied: HashSet<String>,
     /// Packages that are somehow accounted for. A dependency might be provided
     /// by some package, but under a slightly different name. This also takes
     /// split packages into account.
-    provided: HashSet<Cow<'a, str>>,
+    provided: HashSet<String>,
 }
 
-impl Resolution<'_> {
+impl Resolution {
     /// Have we already considered the given package?
     pub fn seen(&self, pkg: &str) -> bool {
         self.provided.contains(pkg)
@@ -109,15 +109,15 @@ impl Resolution<'_> {
 
 /// An official ALPM package.
 #[derive(Debug, PartialEq, Eq, Hash)]
-pub struct Official<'a>(Cow<'a, str>);
+pub struct Official(String);
 
-impl Borrow<str> for Official<'_> {
+impl Borrow<str> for Official {
     fn borrow(&self) -> &str {
         self.0.as_ref()
     }
 }
 
-impl std::fmt::Display for Official<'_> {
+impl std::fmt::Display for Official {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
@@ -125,34 +125,36 @@ impl std::fmt::Display for Official<'_> {
 
 /// A buildable package from the AUR.
 #[derive(PartialEq, Eq)]
-pub struct Buildable<'a> {
+pub struct Buildable {
     /// The name of the AUR package.
-    pub name: Cow<'a, str>,
+    pub name: String,
     /// The names of its dependencies.
-    pub deps: HashSet<Cow<'a, str>>,
+    pub deps: HashSet<String>,
 }
 
-impl Borrow<str> for Buildable<'_> {
-    fn borrow(&self) -> &str {
-        self.name.as_ref()
+impl std::fmt::Debug for Buildable {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name)
     }
 }
 
-impl Hash for Buildable<'_> {
+impl Borrow<str> for Buildable {
+    fn borrow(&self) -> &str {
+        self.name.as_str()
+    }
+}
+
+impl Hash for Buildable {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.name.hash(state);
     }
 }
 
 /// Determine all packages to be built and installed.
-pub fn resolve<'a, I, S, M>(
-    pool: Pool<M>,
-    clone_dir: &Path,
-    pkgs: I,
-) -> Result<Resolution<'a>, Error>
+pub fn resolve<'a, I, S, M>(pool: Pool<M>, clone_dir: &Path, pkgs: I) -> Result<Resolution, Error>
 where
     I: IntoParallelIterator<Item = S>,
-    S: Into<Cow<'a, str>>,
+    S: Into<String>,
     M: ManageConnection<Connection = Alpm>,
 {
     let arc = Arc::new(Mutex::new(Resolution::default()));
@@ -178,26 +180,26 @@ where
 
 fn resolve_one<'a, S, M>(
     pool: Pool<M>,
-    mutx: Arc<Mutex<Resolution<'a>>>,
+    mutx: Arc<Mutex<Resolution>>,
     clone_dir: &Path,
     parent: Option<&str>,
     pkg: S,
 ) -> Result<(), Error>
 where
-    S: Into<Cow<'a, str>>,
+    S: Into<String>,
     M: ManageConnection<Connection = Alpm>,
 {
-    let p = pkg.into();
-    let pr = p.as_ref();
+    let p_owned = pkg.into();
+    let pr = p_owned.as_ref();
 
     // Drops the lock on the `Resolution` as soon as it can.
     let already_seen = {
         let res = mutx.lock().map_err(|_| Error::PoisonedMutex)?;
-        res.seen(&p)
+        res.seen(pr)
     };
 
     if !already_seen {
-        debug!("Resolving dependencies for: {}", p);
+        debug!("Resolving dependencies for: {}", p_owned);
 
         // Checks if the current package is installed or otherwise satisfied by
         // some package, and then immediately drops the ALPM handle.
@@ -216,7 +218,7 @@ where
             mutx.lock()
                 .map_err(|_| Error::PoisonedMutex)?
                 .satisfied
-                .insert(p);
+                .insert(p_owned);
         } else {
             // Same here, re: lock dropping.
             // TODO Wed Feb  9 22:41:15 2022
@@ -231,15 +233,15 @@ where
                 mutx.lock()
                     .map_err(|_| Error::PoisonedMutex)?
                     .to_install
-                    .insert(Official(p));
+                    .insert(Official(p_owned));
             } else {
                 debug!("It's an AUR package!");
-                let path = pull_or_clone(clone_dir, parent, &p)?;
-                debug!("Parsing .SRCINFO for {}", p);
+                let path = pull_or_clone(clone_dir, parent, &p_owned)?;
+                debug!("Parsing .SRCINFO for {}", p_owned);
                 let info = Srcinfo::parse_file(path.join(".SRCINFO"))?;
-                let name: Cow<'_, str> = Cow::Owned(info.base.pkgbase);
+                let name = info.base.pkgbase;
                 let mut prov = Vec::new();
-                let deps: HashSet<Cow<'_, str>> = info
+                let deps: HashSet<String> = info
                     .base
                     .makedepends
                     .into_iter()
@@ -248,33 +250,33 @@ where
                         info.pkgs
                             .into_iter()
                             .map(|p| {
+                                // Sneak out this package's name as a "provided name".
                                 prov.push(p.pkgname);
                                 p.depends
                             })
                             .flatten(),
                     )
                     .flat_map(|av| av.vec)
-                    .map(Cow::Owned)
                     .collect();
 
                 // TODO Try Cow tricks instead?
                 let deps_copy: Vec<&str> = deps.iter().map(|d| d.as_ref()).collect();
-                let parent = name.as_ref();
+                let parent = name.as_str();
                 let buildable = Buildable { name, deps };
 
-                // mutx.lock().map_err(|_| Error::PoisonedMutex).map(|mut r| {
-                //     r.to_build.insert(buildable);
+                mutx.lock().map_err(|_| Error::PoisonedMutex).map(|mut r| {
+                    r.to_build.insert(buildable);
 
-                //     for p in info
-                //         .pkg
-                //         .provides
-                //         .into_iter()
-                //         .flat_map(|av| av.vec)
-                //         .chain(prov)
-                //     {
-                //         r.provided.insert(Cow::Owned(p));
-                //     }
-                // })?;
+                    for p in info
+                        .pkg
+                        .provides
+                        .into_iter()
+                        .flat_map(|av| av.vec)
+                        .chain(prov)
+                    {
+                        r.provided.insert(p);
+                    }
+                })?;
 
                 // deps_copy
                 //     .into_iter()
@@ -338,9 +340,9 @@ fn pull_or_clone(clone_dir: &Path, parent: Option<&str>, pkg: &str) -> Result<Pa
 ///
 /// This ensures that all dependencies are built and installed before they're
 /// needed.
-pub fn build_order<'a, I>(to_build: I) -> Vec<Vec<Cow<'a, str>>>
+pub fn build_order<I>(to_build: I) -> Vec<Vec<String>>
 where
-    I: IntoIterator<Item = Buildable<'a>>,
+    I: IntoIterator<Item = Buildable>,
 {
     info!("Determining build order.");
 
