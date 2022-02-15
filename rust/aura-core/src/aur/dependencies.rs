@@ -1,5 +1,6 @@
 //! AUR package dependency solving.
 
+use crate::utils::Void;
 use alpm::Alpm;
 use alpm_utils::DbListExt;
 use chrono::Utc;
@@ -259,33 +260,30 @@ where
                     .flat_map(|av| av.vec)
                     .collect();
 
-                // TODO Try Cow tricks instead?
-                let deps_copy: Vec<&str> = deps.iter().map(|d| d.as_ref()).collect();
-                let parent = name.as_str();
+                let deps_copy: Vec<String> = deps.iter().map(|d| d.clone()).collect();
+                let parent = name.clone();
                 let buildable = Buildable { name, deps };
 
                 mutx.lock().map_err(|_| Error::PoisonedMutex).map(|mut r| {
                     r.to_build.insert(buildable);
 
-                    for p in info
-                        .pkg
+                    info.pkg
                         .provides
                         .into_iter()
                         .flat_map(|av| av.vec)
                         .chain(prov)
-                    {
-                        r.provided.insert(p);
-                    }
+                        .for_each(|p| r.provided.insert(p).void())
                 })?;
 
-                // deps_copy
-                //     .into_iter()
-                //     .map(|pkg| {
-                //         resolve_one(pool.clone(), mutx.clone(), clone_dir, Some(parent), pkg)
-                //     })
-                //     .collect::<Validated<(), Error>>()
-                //     .ok()
-                //     .map_err(|es| Error::Resolutions(Box::new(es)))?;
+                deps_copy
+                    .into_iter()
+                    .map(|p| {
+                        let prnt = Some(parent.as_str());
+                        resolve_one(pool.clone(), mutx.clone(), clone_dir, prnt, p)
+                    })
+                    .collect::<Validated<(), Error>>()
+                    .ok()
+                    .map_err(|es| Error::Resolutions(Box::new(es)))?;
             }
         }
     }
@@ -305,7 +303,10 @@ where
 // The goal here is to rely on our local clone more, to avoid having to call to
 // the AUR all the time. `-Ai`, perhaps, should also read local clones if they
 // exist. This offers the bonus of `-Ai` functioning offline, like `-Si` does!
-fn pull_or_clone(clone_dir: &Path, parent: Option<&str>, pkg: &str) -> Result<PathBuf, Error> {
+fn pull_or_clone<S>(clone_dir: &Path, parent: Option<S>, pkg: &str) -> Result<PathBuf, Error>
+where
+    S: Into<String>,
+{
     if super::is_aur_package_fast(clone_dir, pkg) {
         let path = clone_dir.join(pkg);
         // crate::git::pull(&path)?; // Here. Potentially avoid this.
@@ -315,7 +316,7 @@ fn pull_or_clone(clone_dir: &Path, parent: Option<&str>, pkg: &str) -> Result<Pa
         let base = info
             .first()
             .ok_or_else(|| match parent {
-                Some(par) => Error::DoesntExistWithParent(par.to_string(), pkg.to_string()),
+                Some(par) => Error::DoesntExistWithParent(par.into(), pkg.to_string()),
                 None => Error::DoesntExist(pkg.to_string()),
             })?
             .package_base
