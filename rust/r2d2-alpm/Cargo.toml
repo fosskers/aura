@@ -11,8 +11,8 @@ keywords = ["database", "pool", "archlinux", "arch", "alpm", "pacman"]
 
 [dependencies]
 alpm = "2.2"
-alpm-utils = "1.1"
-pacmanconf = "1.0"
+alpm-utils = "2.0"
+pacmanconf = "2.0"
 r2d2 = "0.8"
 
 [dev-dependencies]
