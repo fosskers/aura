@@ -211,7 +211,7 @@ where
             let res = db.pkg(pr).is_ok() || db.pkgs().find_satisfier(pr).is_some();
             let end = Utc::now();
             let diff = end.timestamp_millis() - start.timestamp_millis();
-            debug!("AlpmList::find_satisfier for {} in {}ms", pkg, diff);
+            debug!("Satisfaction for {} in {}ms.", pkg, diff);
             res
         };
 
@@ -222,67 +222,65 @@ where
                 .insert(pkg);
         } else {
             // Same here, re: lock dropping.
-            // TODO Wed Feb  9 22:41:15 2022
-            //
-            // Also need to do `find_satisfier` here!
-            let official = pool.get()?.syncdbs().pkg(pr).is_ok();
-
-            if official {
+            match pool.get()?.syncdbs().find_satisfier(pr) {
                 // TODO Wed Feb  9 22:10:23 2022
                 //
                 // Recurse on the package for its dependencies.
-                mutx.lock()
+                Some(official) => mutx
+                    .lock()
                     .map_err(|_| Error::PoisonedMutex)?
                     .to_install
-                    .insert(Official(pkg));
-            } else {
-                let path = pull_or_clone(clone_dir, parent, &pkg)?;
-                debug!("Parsing .SRCINFO for {}", pkg);
-                let info = Srcinfo::parse_file(path.join(".SRCINFO"))?;
-                let name = info.base.pkgbase;
-                let mut prov = Vec::new();
-                let deps: HashSet<String> = info
-                    .base
-                    .makedepends
-                    .into_iter()
-                    .chain(info.pkg.depends)
-                    .chain(
-                        info.pkgs
-                            .into_iter()
-                            .map(|p| {
-                                // Sneak out this package's name as a "provided name".
-                                prov.push(p.pkgname);
-                                p.depends
-                            })
-                            .flatten(),
-                    )
-                    .flat_map(|av| av.vec)
-                    .collect();
-
-                let deps_copy: Vec<String> = deps.iter().map(|d| d.clone()).collect();
-                let parent = name.clone();
-                let buildable = Buildable { name, deps };
-
-                mutx.lock().map_err(|_| Error::PoisonedMutex).map(|mut r| {
-                    r.to_build.insert(buildable);
-
-                    info.pkg
-                        .provides
+                    .insert(Official(official.name().to_string()))
+                    .void(),
+                None => {
+                    let path = pull_or_clone(clone_dir, parent, &pkg)?;
+                    debug!("Parsing .SRCINFO for {}", pkg);
+                    let info = Srcinfo::parse_file(path.join(".SRCINFO"))?;
+                    let name = info.base.pkgbase;
+                    let mut prov = Vec::new();
+                    let deps: HashSet<String> = info
+                        .base
+                        .makedepends
                         .into_iter()
+                        .chain(info.pkg.depends)
+                        .chain(
+                            info.pkgs
+                                .into_iter()
+                                .map(|p| {
+                                    // Sneak out this package's name as a "provided name".
+                                    prov.push(p.pkgname);
+                                    p.depends
+                                })
+                                .flatten(),
+                        )
                         .flat_map(|av| av.vec)
-                        .chain(prov)
-                        .for_each(|p| r.provided.insert(p).void())
-                })?;
+                        .collect();
 
-                deps_copy
-                    .into_iter()
-                    .map(|p| {
-                        let prnt = Some(parent.as_str());
-                        resolve_one(pool.clone(), mutx.clone(), clone_dir, prnt, p)
-                    })
-                    .collect::<Validated<(), Error>>()
-                    .ok()
-                    .map_err(|es| Error::Resolutions(Box::new(es)))?;
+                    let deps_copy: Vec<String> = deps.iter().map(|d| d.clone()).collect();
+                    let parent = name.clone();
+                    let buildable = Buildable { name, deps };
+
+                    mutx.lock().map_err(|_| Error::PoisonedMutex).map(|mut r| {
+                        r.to_build.insert(buildable);
+
+                        info.pkg
+                            .provides
+                            .into_iter()
+                            .flat_map(|av| av.vec)
+                            .chain(prov)
+                            .for_each(|p| r.provided.insert(p).void())
+                    })?;
+
+                    deps_copy
+                        .into_iter()
+                        .map(|p| {
+                            let prnt = Some(parent.as_str());
+                            resolve_one(pool.clone(), mutx.clone(), clone_dir, prnt, p)
+                        })
+                        .collect::<Validated<(), Error>>()
+                        .ok()
+                        .map_err(|es| Error::Resolutions(Box::new(es)))?;
+                }
             }
         }
     }
