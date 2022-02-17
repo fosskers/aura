@@ -2,7 +2,6 @@
 
 module Main ( main ) where
 
-import           Aura.Languages
 import           Aura.Packages.Repository
 import           Aura.Pkgbuild.Security
 import           Aura.Settings.External
@@ -33,28 +32,28 @@ suite conf badRaw goodRaw = testGroup "Unit Tests"
     , testCase "parseDep - python2-lxml>=3.1.0" $ do
         let pn = "python2-lxml>=3.1.0"
             p = parseDep pn
-        p @?= Just (Dep "python2-lxml" . AtLeast . Ideal $ SemVer 3 1 0 [] [])
+        p @?= Just (Dep "python2-lxml" . AtLeast . Ideal $ SemVer 3 1 0 [] Nothing)
         fmap renderedDep p @?= Just pn
     , testCase "parseDep - foobar>1.2.3" $ do
         let pn = "foobar>1.2.3"
             p = parseDep pn
-        p @?= Just (Dep "foobar" . MoreThan . Ideal $ SemVer 1 2 3 [] [])
+        p @?= Just (Dep "foobar" . MoreThan . Ideal $ SemVer 1 2 3 [] Nothing)
         fmap renderedDep p @?= Just pn
     , testCase "parseDep - foobar=1.2.3" $ do
         let pn = "foobar=1.2.3"
             p = parseDep pn
-        p @?= Just (Dep "foobar" . MustBe . Ideal $ SemVer 1 2 3 [] [])
+        p @?= Just (Dep "foobar" . MustBe . Ideal $ SemVer 1 2 3 [] Nothing)
         fmap renderedDep p @?= Just pn
     ]
   , testGroup "Aura.Types"
     [ testCase "simplepkg"
       $ simplepkg (fromJust $ packagePath "/var/cache/pacman/pkg/linux-is-cool-3.2.14-1-x86_64.pkg.tar.xz")
-      @?= Just (SimplePkg "linux-is-cool" . Ideal $ SemVer 3 2 14 [[Digits 1]] [])
+      @?= Just (SimplePkg "linux-is-cool" . Ideal $ SemVer 3 2 14 [[Digits 1]] Nothing)
     , testCase "simplepkg'"
-      $ simplepkg' "xchat 2.8.8-19" @?= Just (SimplePkg "xchat" . Ideal $ SemVer 2 8 8 [[Digits 19]] [])
+      $ simplepkg' "xchat 2.8.8-19" @?= Just (SimplePkg "xchat" . Ideal $ SemVer 2 8 8 [[Digits 19]] Nothing)
     ]
   , testGroup "Aura.Packages.Repository"
-    [ testCase "extractVersion" $ extractVersion firefox @?= Just (Ideal $ SemVer 60 0 2 [[Digits 1]] [])
+    [ testCase "extractVersion" $ extractVersion firefox @?= Just (Ideal $ SemVer 60 0 2 [[Digits 1]] Nothing)
     ]
   , testGroup "Aura.Pacman"
     [ testCase "Parsing pacman.conf" $ do
@@ -65,13 +64,6 @@ suite conf badRaw goodRaw = testGroup "Unit Tests"
         (r >>= M.lookup "BadLine") @?= Just ["bad"]
         (r >>= M.lookup "OkLine") @?= Just ["ok"]
         (r >>= M.lookup "ParallelDownloads") @?= Just ["5"]
-    ]
-  , testGroup "Aura.Languages"
-    [ testCase "Language names are complete" $ do
-        let languages = [minBound..maxBound] :: [Language]
-        for_ languages $ \lang -> do
-          let names = languageNames lang
-          assertEqual ("Language name map for " ++ show lang ++ " has incorrect number of items") (length languages - 1) (M.size names)
     ]
   , testGroup "Aura.Pkgbuild.Security"
     [ testCase "Parsing - bad.PKGBUILD" $

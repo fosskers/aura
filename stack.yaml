@@ -1,4 +1,4 @@
-resolver: lts-17.11
+resolver: lts-18.24
 
 ghc-options:
   $everything: -split-sections -haddock
@@ -17,3 +17,18 @@ packages:
   - aura/
   - aur/
   - aursec/
+
+extra-deps:
+  - OneTuple-0.3.1
+  - aeson-2.0.3.0
+  - attoparsec-0.14.4
+  - hashable-1.4.0.2
+  - megaparsec-9.2.0
+  - optparse-applicative-0.17.0.0
+  - parsec-3.1.15.0
+  - semialign-1.2.0.1
+  - text-2.0
+  - text-short-0.1.5
+  - time-compat-1.9.6.1
+  - github: fosskers/streaming-commons
+    commit: f2f68271d96942636fe538743e475a609a5a19df

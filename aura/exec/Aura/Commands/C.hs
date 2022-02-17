@@ -1,11 +1,11 @@
+{-# LANGUAGE BangPatterns       #-}
 {-# LANGUAGE LambdaCase         #-}
 {-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE TypeApplications   #-}
-{-# LANGUAGE BangPatterns       #-}
 
 -- |
 -- Module    : Aura.Commands.C
--- Copyright : (c) Colin Woodbury, 2012 - 2020
+-- Copyright : (c) Colin Woodbury, 2012 - 2021
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
@@ -18,8 +18,8 @@ module Aura.Commands.C
   , cleanNotSaved
   , cleanDir ) where
 
-import           Aura.Cache
 import           Aura.Build (vcsStore)
+import           Aura.Cache
 import           Aura.Colour (red)
 import           Aura.Core
 import           Aura.IO
@@ -34,12 +34,12 @@ import           Control.Monad.Trans.Maybe
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           RIO
 import           RIO.Directory
+import           RIO.FilePath
 import qualified RIO.List as L
 import qualified RIO.Map as M
 import qualified RIO.NonEmpty as NEL
 import qualified RIO.Set as S
 import qualified RIO.Text as T
-import           RIO.FilePath
 
 ---
 -- | Interactive. Gives the user a choice as to exactly what versions

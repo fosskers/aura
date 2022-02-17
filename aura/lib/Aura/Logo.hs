@@ -1,6 +1,6 @@
 -- |
 -- Module    : Aura.Logo
--- Copyright : (c) Colin Woodbury, 2012 - 2020
+-- Copyright : (c) Colin Woodbury, 2012 - 2021
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
@@ -14,7 +14,7 @@ import           Aura.Languages (translatorMsg)
 import           Aura.Pacman (verMsgPad)
 import           Aura.Settings
 import           Aura.Shell
-import           Data.Text.Prettyprint.Doc
+import           Prettyprinter
 import           RIO
 import qualified RIO.Text as T
 

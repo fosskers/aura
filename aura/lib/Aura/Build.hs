@@ -3,7 +3,7 @@
 
 -- |
 -- Module    : Aura.Build
--- Copyright : (c) Colin Woodbury, 2012 - 2020
+-- Copyright : (c) Colin Woodbury, 2012 - 2021
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
@@ -70,7 +70,7 @@ installPkgFiles files = do
 -- the user with flags.
 buildPackages :: NonEmpty Buildable -> RIO Env [PackagePath]
 buildPackages bs = mapMaybeA build (NEL.toList bs) >>= \case
-  [] -> throwM . Failure $ FailMsg buildFail_10
+  []    -> throwM . Failure $ FailMsg buildFail_10
   built -> pure . foldMap toList $ mapMaybe builtPPs built
 
 -- | Handles the building of Packages. Fails nicely.

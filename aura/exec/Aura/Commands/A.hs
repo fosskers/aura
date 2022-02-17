@@ -5,7 +5,7 @@
 
 -- |
 -- Module    : Aura.Commands.A
--- Copyright : (c) Colin Woodbury, 2012 - 2020
+-- Copyright : (c) Colin Woodbury, 2012 - 2021
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
@@ -25,8 +25,8 @@ module Aura.Commands.A
 
 import           Aura.Colour
 import           Aura.Core
-import qualified Aura.Install as I
 import           Aura.IO
+import qualified Aura.Install as I
 import           Aura.Languages
 import           Aura.Packages.AUR
 import           Aura.Pkgbuild.Fetch
@@ -36,11 +36,11 @@ import           Aura.Types
 import           Aura.Utils
 import           Control.Scheduler (Comp(..), traverseConcurrently)
 import           Data.Aeson
-import           Data.Text.Prettyprint.Doc
-import           Data.Text.Prettyprint.Doc.Render.Terminal
 import           Data.Versions (Versioning, prettyV, versioning)
 import           Linux.Arch.Aur
 import           Network.HTTP.Client (Manager)
+import           Prettyprinter
+import           Prettyprinter.Render.Terminal
 import           RIO
 import qualified RIO.ByteString as B
 import qualified RIO.ByteString.Lazy as BL

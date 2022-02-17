@@ -2,7 +2,7 @@
 
 -- |
 -- Module    : Aura.Utils
--- Copyright : (c) Colin Woodbury, 2012 - 2020
+-- Copyright : (c) Colin Woodbury, 2012 - 2021
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
@@ -143,16 +143,16 @@ type Traversal' s a = forall f. Applicative f => (a -> f a) -> s -> f s
 data These a b = This a | That b | These a b
 
 instance (Semigroup a, Semigroup b) => Semigroup (These a b) where
-  This x <> This y = This (x <> y)
-  This x <> These z y = These (x <> z) y
-  This x <> That y = These x y
+  This x <> This y       = This (x <> y)
+  This x <> These z y    = These (x <> z) y
+  This x <> That y       = These x y
 
-  That x <> That y = That (x <> y)
-  That x <> This y = These y x
-  That x <> These y z = These y (x <> z)
+  That x <> That y       = That (x <> y)
+  That x <> This y       = These y x
+  That x <> These y z    = These y (x <> z)
 
-  These w x <> This y = These (w <> y) x
-  These w x <> That y = These w (x <> y)
+  These w x <> This y    = These (w <> y) x
+  These w x <> That y    = These w (x <> y)
   These w x <> These y z = These (w <> y) (x <> z)
 
 instance Bifunctor These where

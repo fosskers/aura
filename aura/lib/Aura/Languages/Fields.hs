@@ -4,7 +4,7 @@
 
 -- |
 -- Module    : Aura.Languages.Fields
--- Copyright : (c) Colin Woodbury, 2012 - 2020
+-- Copyright : (c) Colin Woodbury, 2012 - 2021
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
@@ -35,6 +35,10 @@ package = \case
     Indonesia  -> "Paket"
     Esperanto  -> "Pakaĵo"
     Dutch      -> "Pakket"
+    Romanian   -> "Pachet"
+    Vietnamese -> "Gói"
+    Czech      -> "Balíček"
+    Korean     -> "패키지"
     _          -> "Package"
 
 firstInstall :: Language -> Text
@@ -55,6 +59,10 @@ firstInstall = \case
     Indonesia  -> "Versi sistem"
     Esperanto  -> "Unua Instalo"
     Dutch      -> "Eerste installatie"
+    Romanian   -> "Prima instalare"
+    Vietnamese -> "Cài đặt lần đầu"
+    Czech      -> "První instalace"
+    Korean     -> "최초 설치"
     _          -> "First Install"
 
 upgrades :: Language -> Text
@@ -75,6 +83,10 @@ upgrades = \case
     Indonesia  -> "Tingkatkan"
     Esperanto  -> "Noveldonoj"
     Dutch      -> "Upgrades"
+    Romanian   -> "Actualizări"
+    Vietnamese -> "Cập nhật"
+    Czech      -> "Aktualizace"
+    Korean     -> "업그레이드 횟수"
     _          -> "Upgrades"
 
 recentActions :: Language -> Text
@@ -95,6 +107,10 @@ recentActions = \case
     Indonesia  -> "Aksi sekarang"
     Esperanto  -> "Ĵusaj Agoj"
     Dutch      -> "Recente Acties"
+    Romanian   -> "Acțiuni Recente"
+    Vietnamese -> "Hoạt động gần nhất"
+    Czech      -> "Nedávné akce"
+    Korean     -> "근황"
     _          -> "Recent Actions"
 
 repository :: Language -> Text
@@ -115,6 +131,9 @@ repository = \case
     Indonesia  -> "Lumbung"
     Esperanto  -> "Deponejo"
     Dutch      -> "Repository"
+    Romanian   -> "Repertoriu"
+    Czech      -> "Úložiště"
+    Korean     -> "리포지토리"
     _          -> "Repository"
 
 name :: Language -> Text
@@ -135,6 +154,10 @@ name = \case
     Indonesia  -> "Nama"
     Esperanto  -> "Nomo"
     Dutch      -> "Naam"
+    Romanian   -> "Nume"
+    Vietnamese -> "Tên"
+    Czech      -> "Název"
+    Korean     -> "이름"
     _          -> "Name"
 
 version :: Language -> Text
@@ -155,6 +178,10 @@ version = \case
     Indonesia  -> "Versi"
     Esperanto  -> "Versio"
     Dutch      -> "Versie"
+    Romanian   -> "Versiune"
+    Vietnamese -> "Phiên bản"
+    Czech      -> "Verze"
+    Korean     -> "버전"
     _          -> "Version"
 
 aurStatus :: Language -> Text
@@ -170,9 +197,14 @@ aurStatus = \case
     Russian    -> "Статус в AUR"
     Italian    -> "Stato nell'AUR"
     Serbian    -> "Статус у AUR-у"
+    Norwegian  -> "AUR Status"
     Indonesia  -> "Status AUR"
     Esperanto  -> "Stato en AUR"
     Dutch      -> "AUR Status"
+    Romanian   -> "Stare AUR"
+    Vietnamese -> "Trạng thái AUR"
+    Czech      -> "Stav AUR"
+    Korean     -> "AUR 상태"
     _          -> "AUR Status"
 
 -- NEEDS TRANSLATION
@@ -189,6 +221,9 @@ maintainer = \case
     Indonesia  -> "Pemelihara"
     Esperanto  -> "Daŭriganto"
     Dutch      -> "Onderhouder"
+    Romanian   -> "Întreținător"
+    Czech      -> "Udržovatel"
+    Korean     -> "관리자"
     _          -> "Maintainer"
 
 projectUrl :: Language -> Text
@@ -209,6 +244,10 @@ projectUrl = \case
     Indonesia  -> "URL Proyek"
     Esperanto  -> "URL de Projekto"
     Dutch      -> "Project URL"
+    Romanian   -> "URL al proiectului"
+    Vietnamese -> "URL của Dự án"
+    Czech      -> "Adresa URL projektu"
+    Korean     -> "프로젝트 URL"
     _          -> "Project URL"
 
 aurUrl :: Language -> Text
@@ -223,9 +262,14 @@ aurUrl = \case
     Russian    -> "URL в AUR"
     Italian    -> "URL nell'AUR"
     Serbian    -> "Страница у AUR-у"
+    Norwegian  -> "AUR URL"
     Indonesia  -> "URL AUR"
     Esperanto  -> "URL en AUR"
     Dutch      -> "AUR URL"
+    Romanian   -> "URL AUR"
+    Vietnamese -> "URL của AUR"
+    Czech      -> "URL pro AUR"
+    Korean     -> "AUR URL"
     _          -> "AUR URL"
 
 license :: Language -> Text
@@ -246,6 +290,10 @@ license = \case
     Indonesia  -> "Lisensi"
     Esperanto  -> "Permesilo"
     Dutch      -> "Licentie"
+    Romanian   -> "Licență"
+    Vietnamese -> "Bản quyền"
+    Czech      -> "Licence"
+    Korean     -> "라이센스"
     _          -> "License"
 
 dependsOn :: Language -> Text
@@ -264,6 +312,10 @@ dependsOn = \case
     Indonesia  -> "Bergantung pada"
     Esperanto  -> "Dependi de"
     Dutch      -> "Hangt af van"
+    Romanian   -> "Depinde de"
+    Vietnamese -> "Phụ thuộc vào"
+    Czech      -> "Závisí na"
+    Korean     -> "종속 패키지"
     _          -> "Depends On"
 
 buildDeps :: Language -> Text
@@ -276,9 +328,13 @@ buildDeps = \case
     French     -> "Dépendances de compilation"
     Russian    -> "Зависимости сборки"
     Italian    -> "Dipendenze di compilazione"
+    Norwegian  -> "Byggavhengigheter"
     Indonesia  -> "Dependensi bangun"
     Esperanto  -> "Muntaj Dependecoj"
     Dutch      -> "Bouw afhankelijkheden"
+    Romanian   -> "Dependențe de compilare"
+    Czech      -> "Závislosti kompilace"
+    Korean     -> "빌드 종속성"
     _          -> "Build Deps"
 
 votes :: Language -> Text
@@ -299,6 +355,10 @@ votes = \case
     Indonesia  -> "Suara"
     Esperanto  -> "Balotiloj"
     Dutch      -> "Stemmen"
+    Romanian   -> "Voturi"
+    Vietnamese -> "Bình chọn"
+    Czech      -> "Hlasy"
+    Korean     -> "투표"
     _          -> "Votes"
 
 popularity :: Language -> Text
@@ -308,8 +368,13 @@ popularity = \case
     Portuguese -> "Popularidade"
     Turkish    -> "Popülerlik"
     Italian    -> "Popolarità"
+    Norwegian  -> "Popularitet"
     Esperanto  -> "Populareco"
     Dutch      -> "Populairiteit"
+    Romanian   -> "Popularitate"
+    Vietnamese -> "Phổ biến"
+    Czech      -> "Popularita"
+    Korean     -> "인기"
     _          -> "Popularity"
 
 description :: Language -> Text
@@ -330,4 +395,8 @@ description = \case
     Indonesia  -> "Deskripsi"
     Esperanto  -> "Priskribo"
     Dutch      -> "Beschrijving"
+    Romanian   -> "Descriere"
+    Vietnamese -> "Mô tả"
+    Czech      -> "Popis"
+    Korean     -> "개요"
     _          -> "Description"

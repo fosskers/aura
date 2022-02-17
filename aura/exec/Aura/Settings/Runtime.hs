@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012 - 2020 Colin Woodbury <colin@fosskers.ca>
+Copyright 2012 - 2021 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 
@@ -37,7 +37,7 @@ import           Aura.Utils
 import           Network.HTTP.Client (newManager)
 import           Network.HTTP.Client.TLS (tlsManagerSettings)
 import           RIO
-import           RIO.Lens (each, _Left, _Right)
+import           RIO.Lens (_Left, _Right, each)
 import qualified RIO.Map as M
 import qualified RIO.Set as S
 import qualified RIO.Text as T

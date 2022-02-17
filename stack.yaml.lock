@@ -3,10 +3,98 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: OneTuple-0.3.1@sha256:a848c096c9d29e82ffdd30a9998aa2931cbccb3a1bc137539d80f6174d31603e,2262
+    pantry-tree:
+      size: 506
+      sha256: a685b08622f1fe0641e4f228a290878a1db4f7ef3eb63d00b10e8632097d1e6f
+  original:
+    hackage: OneTuple-0.3.1
+- completed:
+    hackage: aeson-2.0.3.0@sha256:130bda8e10dc6dd159b79b306abb10025d7f8b5d9cbc2f7d6d7e6768a0272058,5845
+    pantry-tree:
+      size: 38191
+      sha256: bccfc5a7259a27aad7e4193f367c3d7d67799f42632fdcb90241c1e9fbb0cf40
+  original:
+    hackage: aeson-2.0.3.0
+- completed:
+    hackage: attoparsec-0.14.4@sha256:79584bdada8b730cb5138fca8c35c76fbef75fc1d1e01e6b1d815a5ee9843191,5810
+    pantry-tree:
+      size: 5039
+      sha256: 5b8e087f73d334019252606b1f64b986cef61946a085ccb77c6bc4d038691c48
+  original:
+    hackage: attoparsec-0.14.4
+- completed:
+    hackage: hashable-1.4.0.2@sha256:0cddd0229d1aac305ea0404409c0bbfab81f075817bd74b8b2929eff58333e55,5005
+    pantry-tree:
+      size: 1248
+      sha256: 51dda0aa70849588d074125f324beba1c8736cfa486e7f4a90a798b1d0e6019d
+  original:
+    hackage: hashable-1.4.0.2
+- completed:
+    hackage: megaparsec-9.2.0@sha256:0248397bedfddbb94584925a09ba793cf2327362a3183624bd7bfaed529163cb,3347
+    pantry-tree:
+      size: 1518
+      sha256: 71403f455a514f62cb0c62145b6f6ce19bec34b16ed150a53df02ea9d773d0be
+  original:
+    hackage: megaparsec-9.2.0
+- completed:
+    hackage: optparse-applicative-0.17.0.0@sha256:0713e54cbb341e5cae979e2ac441eb3a5ff42e303001f432bd58c19e5638bdda,4967
+    pantry-tree:
+      size: 3124
+      sha256: 3b4398845ee6718fe2303870a5ab75bd190eb712fed2f22caaae30f790c490fd
+  original:
+    hackage: optparse-applicative-0.17.0.0
+- completed:
+    hackage: parsec-3.1.15.0@sha256:a162d4cc8884014ba35192545cad293af0529fe11497aad8834bbaaa3dfffc26,4429
+    pantry-tree:
+      size: 2630
+      sha256: cbddc1e3c5ada6925354850cc0a8fadcd8643689098a504a0ed25ef9e0b932b8
+  original:
+    hackage: parsec-3.1.15.0
+- completed:
+    hackage: semialign-1.2.0.1@sha256:0e179b4d3a8eff79001d374d6c91917c6221696b9620f0a4d86852fc6a9b9501,2836
+    pantry-tree:
+      size: 537
+      sha256: 635bbbb517f0c063a4bc2e9e6efdb0e598b9d9fd467f52df81ab3a4af1fd923b
+  original:
+    hackage: semialign-1.2.0.1
+- completed:
+    hackage: text-2.0@sha256:86e64bc76fefb8f0f6529d28ddf24b2a29d43591a8b9b7c7094f481a0db2fb7d,7788
+    pantry-tree:
+      size: 7364
+      sha256: 894b84358fbad3cb8c16f224d3d8b7a1d7b6bcae68cda5a9998dd964904a6560
+  original:
+    hackage: text-2.0
+- completed:
+    hackage: text-short-0.1.5@sha256:962c6228555debdc46f758d0317dea16e5240d01419b42966674b08a5c3d8fa6,3498
+    pantry-tree:
+      size: 727
+      sha256: 1fc6561c4acb94a41e58cd8f8c7cce161c18c5629dac63a54a9c62f9c778c52b
+  original:
+    hackage: text-short-0.1.5
+- completed:
+    hackage: time-compat-1.9.6.1@sha256:42d8f2e08e965e1718917d54ad69e1d06bd4b87d66c41dc7410f59313dba4ed1,5033
+    pantry-tree:
+      size: 4113
+      sha256: b262c5ae8d72d2073d12e1de1863abd234fad8c138df28f32bb51bc232ced608
+  original:
+    hackage: time-compat-1.9.6.1
+- completed:
+    size: 85978
+    url: https://github.com/fosskers/streaming-commons/archive/f2f68271d96942636fe538743e475a609a5a19df.tar.gz
+    name: streaming-commons
+    version: 0.2.2.3
+    sha256: 2bb6e05ae4b7bfd590728af77bbcff32368b7fd7cb14632fd9265cf90618a0c8
+    pantry-tree:
+      size: 3113
+      sha256: 9a746c596a1f8001a6c0bde7bf066f99023ddfbb84c9aecbcb260a9109aca7f2
+  original:
+    url: https://github.com/fosskers/streaming-commons/archive/f2f68271d96942636fe538743e475a609a5a19df.tar.gz
 snapshots:
 - completed:
-    size: 567672
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/17/11.yaml
-    sha256: 03181cdbeb671eb605bbcf6f285bea4d094b6ac7433a0e14a9f1dd54ad995938
-  original: lts-17.11
+    size: 587821
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/24.yaml
+    sha256: 06d844ba51e49907bd29cb58b4a5f86ee7587a4cd7e6cf395eeec16cba619ce8
+  original: lts-18.24

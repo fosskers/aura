@@ -1,6 +1,6 @@
 -- |
 -- Module    : Aura.Colour
--- Copyright : (c) Colin Woodbury, 2012 - 2020
+-- Copyright : (c) Colin Woodbury, 2012 - 2021
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
@@ -13,8 +13,8 @@ module Aura.Colour
   , cyan, bCyan, green, yellow, red, magenta
   ) where
 
-import Data.Text.Prettyprint.Doc
-import Data.Text.Prettyprint.Doc.Render.Terminal
+import Prettyprinter
+import Prettyprinter.Render.Terminal
 import RIO
 
 ---

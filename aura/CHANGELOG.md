@@ -1,5 +1,42 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Added
+
+- Korean translations thanks to "Nioden". 감사합니다!
+
+## 3.2.7 (2022-01-18)
+
+#### Added
+
+- Romanian translations thanks to "90" and "benone". Mulțumesc!
+- Vietnamese translations thanks to "Kritiqual". Cảm ơn bạn!
+- Czech translations thanks to Daniel Rosel. Děkuju!
+
+#### Changed
+
+- Updated Norwegian translations.
+
+## 3.2.6 (2021-09-17)
+
+#### Added
+
+- Arabic translations thanks to "Array in the Matrix". شكرًا لك!
+- Ukranian translations thanks to Andriy Cherniy. Дякую!
+
+## 3.2.5
+
+#### Changed
+
+- Expect at least version `5.0` of the `versions` library.
+
+#### Fixed
+
+- Subtle bug involving tarball path parsing. [#713]
+
+[#713]: https://github.com/fosskers/aura/pull/713
+
 ## 3.2.4 (2021-03-10)
 
 #### Fixed
@@ -527,15 +564,15 @@ in overall code size.
 ## 1.2.3.2
 
 - Expanded Bash completions:
-  - Aura Only
+  - Aura Only:
     - Expanded completion for all options and search sub-options
     - Package completion for -M/--abssync
     - Completion for orphans using self-generated list
   - Pacman
-    - Include completion for all pacman options \* Directory or file completion
-      for some common options
-- Use `--dryrun` with `-A` and `-M` install options to test everything up until
-  actual building would occur (dependency checks, etc.)
+    - Include completion for all pacman options
+    - Directory or file completion for some common options
+- Use `--dryrun` with `-A` and `-M` install options to test everything
+  up until actual building would occur (dependency checks, etc.)
 
 ## 1.2.3.1
 

@@ -3,7 +3,7 @@
 
 -- |
 -- Module    : Aura.Pkgbuild.Security
--- Copyright : (c) Colin Woodbury, 2012 - 2020
+-- Copyright : (c) Colin Woodbury, 2012 - 2021
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
@@ -18,13 +18,13 @@ module Aura.Pkgbuild.Security
 import           Aura.Languages
 import           Aura.Types (Language, Pkgbuild(..))
 import           Aura.Utils (hush)
-import           Data.Text.Prettyprint.Doc (Doc)
-import           Data.Text.Prettyprint.Doc.Render.Terminal (AnsiStyle)
 import           Language.Bash.Parse (parse)
 import           Language.Bash.Syntax
 import           Language.Bash.Word
+import           Prettyprinter
+import           Prettyprinter.Render.Terminal
 import           RIO hiding (Word)
-import           RIO.Lens (each, _Just)
+import           RIO.Lens (_Just, each)
 import qualified RIO.Map as M
 import qualified RIO.Text as T
 
