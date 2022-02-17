@@ -6,4 +6,4 @@ edition = "2021"
 
 [dependencies]
 alpm = "2.2"
-alpm-utils = "1.1"
+alpm-utils = "2.0"

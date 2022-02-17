@@ -28,7 +28,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "09329cd59e48e140faceb66ec714d8b5fe28a414327b381ae9a8af47ab29a700"
 dependencies = [
  "alpm",
- "pacmanconf",
+ "pacmanconf 1.0.0",
+]
+
+[[package]]
+name = "alpm-utils"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "01c6892a7ced000868007e9ee99a80680c96f5b3e535e9ade81a54501e391232"
+dependencies = [
+ "alpm",
+ "pacmanconf 2.0.0",
 ]
 
 [[package]]
@@ -60,7 +70,7 @@ dependencies = [
  "linya",
  "log",
  "nonempty",
- "pacmanconf",
+ "pacmanconf 2.0.0",
  "r2d2",
  "r2d2-alpm",
  "raur-curl",
@@ -82,7 +92,7 @@ name = "aura-arch"
 version = "0.1.0"
 dependencies = [
  "alpm",
- "alpm-utils",
+ "alpm-utils 2.0.0",
 ]
 
 [[package]]
@@ -94,7 +104,7 @@ name = "aura-core"
 version = "0.1.0"
 dependencies = [
  "alpm",
- "alpm-utils",
+ "alpm-utils 1.1.2",
  "aura-arch",
  "chrono",
  "itertools",
@@ -168,6 +178,12 @@ name = "cini"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "895f4cd6403d7bd85e13ff3ec635d58183e5e708e7bd70430a91d661b04548e2"
+
+[[package]]
+name = "cini"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8628d1f5b9a7b1196ce1aa660e3ba7e2559d350649cbe94993519c127df667f2"
 
 [[package]]
 name = "clap"
@@ -815,9 +831,19 @@ dependencies = [
 [[package]]
 name = "pacmanconf"
 version = "1.0.0"
-source = "git+https://github.com/Morganamilo/pacmanconf.rs?rev=a6c6a2ad80dd8a50eb952df255e237ac16f3c46d#a6c6a2ad80dd8a50eb952df255e237ac16f3c46d"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "faba895e4237d5dfd3459a4c0ef807b3510e088d28e7f5fd71a72962af84fef4"
 dependencies = [
- "cini",
+ "cini 0.1.1",
+]
+
+[[package]]
+name = "pacmanconf"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba64fdfa5d4589657dc8c8497b67322d8a64c162357ea0359656bfe23eec6185"
+dependencies = [
+ "cini 1.0.0",
 ]
 
 [[package]]
@@ -948,8 +974,8 @@ name = "r2d2-alpm"
 version = "0.1.0"
 dependencies = [
  "alpm",
- "alpm-utils",
- "pacmanconf",
+ "alpm-utils 2.0.0",
+ "pacmanconf 2.0.0",
  "r2d2",
  "rayon",
 ]
@@ -966,8 +992,9 @@ dependencies = [
 
 [[package]]
 name = "raur"
-version = "5.0.1"
-source = "git+https://gitlab.com/davidbittner/raur/?rev=9cf07a03489a34f47192992105b55ba9140d9fb7#9cf07a03489a34f47192992105b55ba9140d9fb7"
+version = "6.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "86e7cb15e8c14377d8d2f8bea32a8b135a5c9d64c5ec4a3ea7cf5d703a4bd227"
 dependencies = [
  "serde",
  "serde_derive",
