@@ -202,8 +202,6 @@ where
     };
 
     if !already_seen {
-        debug!("Resolving dependencies for: {}", pkg);
-
         // Checks if the current package is installed or otherwise satisfied by
         // some package, and then immediately drops the ALPM handle.
         let satisfied = {
@@ -238,7 +236,6 @@ where
                     .to_install
                     .insert(Official(pkg));
             } else {
-                debug!("It's an AUR package!");
                 let path = pull_or_clone(clone_dir, parent, &pkg)?;
                 debug!("Parsing .SRCINFO for {}", pkg);
                 let info = Srcinfo::parse_file(path.join(".SRCINFO"))?;
