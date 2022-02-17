@@ -7,7 +7,7 @@ description = "R2D2 resource pools for managing ALPM connections."
 repository = "https://github.com/fosskers/aura"
 readme = "README.md"
 license = "MIT"
-keywords = ["database", "pool", "archlinux", "arch", "alpm", "pacman"]
+keywords = ["database", "pool", "archlinux", "alpm", "pacman"]
 
 [dependencies]
 alpm = "2.2"
