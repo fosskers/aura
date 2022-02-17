@@ -190,6 +190,10 @@ where
     S: Into<String>,
     M: ManageConnection<Connection = Alpm>,
 {
+    // FIXME Mon Feb 14 21:53:00 2022
+    //
+    // Need to check the pkg name for version data and strip it if it's there.
+
     let p_owned = pkg.into();
     let pr = p_owned.as_ref();
 
