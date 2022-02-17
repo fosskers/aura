@@ -2,7 +2,7 @@ name: Rust
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
 
 env:
@@ -16,7 +16,7 @@ jobs:
       image: archlinux
     steps:
       - name: Install Rust
-        run: pacman -Sy rust gcc openssl pkgconf --noconfirm
+        run: pacman -Sy rust gcc glibc openssl pkgconf --noconfirm
 
       - name: Clone Project
         uses: actions/checkout@v2
