@@ -14,17 +14,17 @@
 //! let mngr = AlpmManager::from_file("/etc/pacman.conf").unwrap();
 //! let pool = Pool::builder().max_size(4).build(mngr).unwrap();
 //!
-//! (0..10).into_par_iter().for_each_with(pool, |p, n| {
+//! (0..10).into_par_iter().for_each(|n| {
 //!     // `Pool::get` will wait for a configurable length
 //!     // of time for a free connection before giving up.
-//!     if let Ok(alpm) = p.get() {
+//!     if let Ok(alpm) = pool.get() {
 //!         // Use the ALPM handle freely here.
 //!     }
 //! });
 //! ```
 //!
-//! Like [`std::sync::Arc`], `Pool` is cheap to [`Clone`], making it ideal for a
-//! number of Rayon methods like `map_with`, etc.
+//! Like [`std::sync::Arc`], `Pool` is cheap to [`Clone`], and can be passed
+//! around freely to subthreads.
 
 #![warn(missing_docs)]
 
