@@ -135,7 +135,9 @@ pub struct Buildable {
 
 impl std::fmt::Debug for Buildable {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.name)
+        f.debug_struct("Buildable")
+            .field("name", &self.name)
+            .finish()
     }
 }
 
@@ -155,7 +157,7 @@ impl Hash for Buildable {
 pub fn resolve<'a, I, S, M>(pool: Pool<M>, clone_dir: &Path, pkgs: I) -> Result<Resolution, Error>
 where
     I: IntoParallelIterator<Item = S>,
-    S: Into<String>,
+    S: AsRef<str> + Into<String>,
     M: ManageConnection<Connection = Alpm>,
 {
     let arc = Arc::new(Mutex::new(Resolution::default()));
@@ -184,27 +186,23 @@ fn resolve_one<'a, S, M>(
     mutx: Arc<Mutex<Resolution>>,
     clone_dir: &Path,
     parent: Option<&str>,
-    pkg: S,
+    pkg_raw: S,
 ) -> Result<(), Error>
 where
-    S: Into<String>,
+    S: AsRef<str> + Into<String>,
     M: ManageConnection<Connection = Alpm>,
 {
-    // FIXME Mon Feb 14 21:53:00 2022
-    //
-    // Need to check the pkg name for version data and strip it if it's there.
-
-    let p_owned = pkg.into();
-    let pr = p_owned.as_ref();
+    let pkg = strip_version(pkg_raw);
+    let pr = pkg.as_str();
 
     // Drops the lock on the `Resolution` as soon as it can.
     let already_seen = {
         let res = mutx.lock().map_err(|_| Error::PoisonedMutex)?;
-        res.seen(pr)
+        res.seen(&pkg)
     };
 
     if !already_seen {
-        debug!("Resolving dependencies for: {}", p_owned);
+        debug!("Resolving dependencies for: {}", pkg);
 
         // Checks if the current package is installed or otherwise satisfied by
         // some package, and then immediately drops the ALPM handle.
@@ -215,7 +213,7 @@ where
             let res = db.pkg(pr).is_ok() || db.pkgs().find_satisfier(pr).is_some();
             let end = Utc::now();
             let diff = end.timestamp_millis() - start.timestamp_millis();
-            debug!("AlpmList::find_satisfier for {} in {}ms", pr, diff);
+            debug!("AlpmList::find_satisfier for {} in {}ms", pkg, diff);
             res
         };
 
@@ -223,7 +221,7 @@ where
             mutx.lock()
                 .map_err(|_| Error::PoisonedMutex)?
                 .satisfied
-                .insert(p_owned);
+                .insert(pkg);
         } else {
             // Same here, re: lock dropping.
             // TODO Wed Feb  9 22:41:15 2022
@@ -238,11 +236,11 @@ where
                 mutx.lock()
                     .map_err(|_| Error::PoisonedMutex)?
                     .to_install
-                    .insert(Official(p_owned));
+                    .insert(Official(pkg));
             } else {
                 debug!("It's an AUR package!");
-                let path = pull_or_clone(clone_dir, parent, &p_owned)?;
-                debug!("Parsing .SRCINFO for {}", p_owned);
+                let path = pull_or_clone(clone_dir, parent, &pkg)?;
+                debug!("Parsing .SRCINFO for {}", pkg);
                 let info = Srcinfo::parse_file(path.join(".SRCINFO"))?;
                 let name = info.base.pkgbase;
                 let mut prov = Vec::new();
@@ -352,4 +350,26 @@ where
     info!("Determining build order.");
 
     todo!()
+}
+
+/// Strip version demands from a dependency string.
+fn strip_version<'a, S>(stri: S) -> String
+where
+    S: AsRef<str> + Into<String>,
+{
+    stri.as_ref()
+        .split_once(['=', '>'])
+        .map(|(good, _)| good.to_string())
+        .unwrap_or_else(|| stri.into())
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn version_stripping() {
+        assert_eq!("gcc6", strip_version("gcc6=6.5.0-7"));
+        assert_eq!("glibc", strip_version("glibc>=2.25"));
+    }
 }
