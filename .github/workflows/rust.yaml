@@ -1,0 +1,32 @@
+name: Rust
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Tests
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux
+    steps:
+      - name: Install Rust
+        run: pacman -Sy rust gcc openssl pkgconf --noconfirm
+
+      - name: Clone Project
+        uses: actions/checkout@v2
+
+      - name: Cache Dependencies
+        uses: Swatinem/rust-cache@v1
+        with:
+          working-directory: rust/
+
+      - name: Build and Test
+        run: |
+          cd rust/
+          cargo test

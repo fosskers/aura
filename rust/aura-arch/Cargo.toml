@@ -1,0 +1,9 @@
+[package]
+name = "aura-arch"
+version = "0.1.0"
+authors = ["Colin Woodbury <colin@fosskers.ca>"]
+edition = "2021"
+
+[dependencies]
+alpm = "2.2"
+alpm-utils = "2.0"

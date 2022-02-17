@@ -77,7 +77,7 @@ With this release, Aura has passed 2,000 commits. Thank you for your ongoing sup
 
 #### Changed
 
-- _Breaking:_ `-As` and `-Ai` will yield an exit code of `1` if no results were
+- **Breaking:** `-As` and `-Ai` will yield an exit code of `1` if no results were
   found. This matches `pacman`.
 - `-As` now accepts multiple search terms to narrow in on specific packages.
 
@@ -803,8 +803,7 @@ in overall code size.
 
 - Compatibility with AUR 2.0 added.
 - Portuguese translation added. Thanks to Henry "Ingvij" Kupty!
-- Support for `pacman-color` added. Run sudo with `-E` a la:
-  sudo -E aura -Ayu
+- Support for `pacman-color` added. Run sudo with `-E` a la: `sudo -E aura -Ayu`
 - Fixed backslash parsing bug in `Bash`.
 
 ## 1.0.2.2

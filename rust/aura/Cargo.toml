@@ -1,0 +1,41 @@
+[package]
+name = "aura"
+version = "4.0.0-rc1"
+authors = ["Colin Woodbury <colin@fosskers.ca>"]
+edition = "2021"
+description = "Install and manage Arch Linux and AUR packages"
+# TODO Include `pacman` as a tag.
+
+[dependencies]
+alpm = "2.2"
+aura-arch = { path = "../aura-arch" }  # TODO Give these versions.
+aura-core = { path = "../aura-core" }
+chrono = "0.4"
+clap = { version = "3.0", features = ["derive"] }
+clap_complete = "3.0"
+colored = "2.0"
+curl = "0.4"
+i18n-embed = { version = "0.13", features = ["fluent-system"] }
+i18n-embed-fl = "0.6"
+itertools = "0.10"
+linya = "0.2"
+log = "0.4"
+nonempty = "0.7"
+pacmanconf = "2.0"
+r2d2 = "0.8"
+r2d2-alpm = { path = "../r2d2-alpm" }
+raur-curl = { path = "../raur-curl" }
+rayon = "1.5"
+rust-embed = "6.3"
+rustyline = "9.1"
+serde_json = "1.0"
+simplelog = "0.11"
+srcinfo = "1.0"
+sudo = "0.6"
+ubyte = "0.10"
+unic-langid = { version = "0.9", features = ["macros"] }
+validated = { version = "0.1", features = ["rayon"] }
+webbrowser = "0.5"
+
+[features]
+git = ["alpm/git"]

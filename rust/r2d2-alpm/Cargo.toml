@@ -1,0 +1,19 @@
+[package]
+name = "r2d2-alpm"
+version = "0.1.0"
+authors = ["Colin Woodbury <colin@fosskers.ca>"]
+edition = "2021"
+description = "R2D2 resource pools for managing ALPM connections."
+repository = "https://github.com/fosskers/aura"
+readme = "README.md"
+license = "MIT"
+keywords = ["database", "pool", "archlinux", "arch", "alpm", "pacman"]
+
+[dependencies]
+alpm = "2.2"
+alpm-utils = "2.0"
+pacmanconf = "2.0"
+r2d2 = "0.8"
+
+[dev-dependencies]
+rayon = "1.5"
