@@ -194,7 +194,6 @@ where
 {
     let pkg = strip_version(pkg_raw);
     let pr = pkg.as_str();
-    debug!("{pr}");
 
     // Drops the lock on the `Resolution` as soon as it can.
     let already_seen = {
@@ -203,18 +202,27 @@ where
     };
 
     if !already_seen {
+        debug!("{pr}");
+
         // Checks if the current package is installed or otherwise satisfied by
         // some package, and then immediately drops the ALPM handle.
-        let satisfied = {
+        let (satisfied, start) = {
+            let state = pool.state();
+            debug!(
+                "Trying to get ALPM handle ({} idle connections)",
+                state.idle_connections
+            );
             let alpm = pool.get()?;
+            debug!("Got a handle.");
             let db = alpm.localdb();
             let start = Utc::now();
             let res = db.pkg(pr).is_ok() || db.pkgs().find_satisfier(pr).is_some();
-            let end = Utc::now();
-            let diff = end.timestamp_millis() - start.timestamp_millis();
-            debug!("Satisfaction for {} in {}ms.", pkg, diff);
-            res
+            (res, start)
         };
+
+        let end = Utc::now();
+        let diff = end.timestamp_millis() - start.timestamp_millis();
+        debug!("Satisfaction ({}) for {} in {}ms.", satisfied, pkg, diff);
 
         if satisfied {
             mutx.lock()
@@ -222,31 +230,47 @@ where
                 .satisfied
                 .insert(pkg);
         } else {
-            // Same here, re: lock dropping.
-            match pool.get()?.syncdbs().find_satisfier(pr) {
-                // TODO Wed Feb  9 22:10:23 2022
-                //
-                // Recurse on the package for its dependencies.
+            let alpm = pool.get()?;
+
+            match alpm.syncdbs().find_satisfier(pr) {
                 Some(official) => {
-                    //
+                    debug!("It was official.");
+
+                    let prnt = official.name().to_string();
+
                     mutx.lock()
                         .map_err(|_| Error::PoisonedMutex)?
                         .to_install
-                        .insert(Official(official.name().to_string()))
+                        .insert(Official(prnt.clone()))
                         .void();
 
-                    official
+                    let deps: Vec<_> = official
                         .depends()
                         .into_iter()
-                        .map(|d| {
-                            let prnt = Some(official.name());
-                            resolve_one(pool.clone(), mutx.clone(), clone_dir, prnt, d.name())
-                        })
+                        .map(|d| d.name().to_string())
+                        .collect();
+
+                    // FIXME Fri Feb 18 15:07:23 2022
+                    //
+                    // Manual drops are a signal of bad design. For the moment
+                    // these are necessary to avoid running out of ALPM handles
+                    // when we recurse.
+                    drop(official);
+                    drop(alpm);
+
+                    deps.into_par_iter()
+                        .map(|d| resolve_one(pool.clone(), mutx.clone(), clone_dir, Some(&prnt), d))
                         .collect::<Validated<(), Error>>()
                         .ok()
                         .map_err(|es| Error::Resolutions(Box::new(es)))?;
                 }
                 None => {
+                    // FIXME Fri Feb 18 15:13:31 2022
+                    //
+                    // Same here as above.
+                    drop(alpm);
+
+                    debug!("It's an AUR package.");
                     let path = pull_or_clone(clone_dir, parent, &pkg)?;
                     debug!("Parsing .SRCINFO for {}", pkg);
                     let info = Srcinfo::parse_file(path.join(".SRCINFO"))?;
@@ -286,7 +310,7 @@ where
                     })?;
 
                     deps_copy
-                        .into_iter()
+                        .into_par_iter()
                         .map(|p| {
                             let prnt = Some(parent.as_str());
                             resolve_one(pool.clone(), mutx.clone(), clone_dir, prnt, p)
