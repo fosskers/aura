@@ -194,6 +194,7 @@ where
 {
     let pkg = strip_version(pkg_raw);
     let pr = pkg.as_str();
+    debug!("{pr}");
 
     // Drops the lock on the `Resolution` as soon as it can.
     let already_seen = {
@@ -226,12 +227,25 @@ where
                 // TODO Wed Feb  9 22:10:23 2022
                 //
                 // Recurse on the package for its dependencies.
-                Some(official) => mutx
-                    .lock()
-                    .map_err(|_| Error::PoisonedMutex)?
-                    .to_install
-                    .insert(Official(official.name().to_string()))
-                    .void(),
+                Some(official) => {
+                    //
+                    mutx.lock()
+                        .map_err(|_| Error::PoisonedMutex)?
+                        .to_install
+                        .insert(Official(official.name().to_string()))
+                        .void();
+
+                    official
+                        .depends()
+                        .into_iter()
+                        .map(|d| {
+                            let prnt = Some(official.name());
+                            resolve_one(pool.clone(), mutx.clone(), clone_dir, prnt, d.name())
+                        })
+                        .collect::<Validated<(), Error>>()
+                        .ok()
+                        .map_err(|es| Error::Resolutions(Box::new(es)))?;
+                }
                 None => {
                     let path = pull_or_clone(clone_dir, parent, &pkg)?;
                     debug!("Parsing .SRCINFO for {}", pkg);
