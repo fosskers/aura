@@ -11,4 +11,5 @@ members = [
 [profile.release]
 lto = true
 panic = "abort"
-# opt-level = "z"  # Reduces final stripped size by ~20%.
+strip = true
+opt-level = "z"  # Reduces final stripped size by ~20%.
