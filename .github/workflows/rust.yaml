@@ -19,7 +19,7 @@ jobs:
         run: pacman -Sy rust gcc glibc openssl pkgconf --noconfirm
 
       - name: Clone Project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Cache Dependencies
         uses: Swatinem/rust-cache@v1
