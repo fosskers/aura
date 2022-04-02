@@ -460,7 +460,7 @@ getRealPkgConflicts_1 (bt . pnName -> prnt) (bt . pnName -> p) (bt -> r) (bt -> 
     Indonesia  -> "Dependensi " <> p <> " meminta versi " <> d <> " namun versi paling baru adalah " <> r <> "."
     Chinese    -> "依赖 " <> p <> " 需要版本 " <> d <> "，但是最新的版本是 " <> r <> "。"
     Esperanto  -> "La pakaĵo, " <> prnt <> ", dependas de versio " <> d <> " de " <> p <> ", sed la plej nova versio estas " <> r <> "."
-    Dutch      -> <> prnt <> " is afhankelijk van versie " <> d <> " van " <> p <> ", maar de nieuwste versie is " <> r <> "."
+    Dutch      -> prnt <> " is afhankelijk van versie " <> d <> " van " <> p <> ", maar de nieuwste versie is " <> r <> "."
     Ukrainian  -> "Залежність " <> p <> " потребує версію " <> d <> ", проте останньою версією є " <> r <> "."
     Romanian   -> "Pachetul " <> prnt <> " depinde de versiunea " <> d <> " al pachetului " <> p <> ", dar cea mai recentă versiune este " <> r <> "."
     Vietnamese -> "Gói " <> prnt <> " phụ thuộc vào bản " <> d <> " của " <> p <> ", nhưng bản mới nhất là " <> r <> "."
@@ -521,7 +521,7 @@ depError l (BrokenProvides (PkgName pkg) (Provides (PkgName pro)) (PkgName n)) =
   Russian    -> "Пакету " <> bt pkg <> " требуется " <> bt n <> ", предоставляющий " <> bt pro <> "."
   Esperanto  -> "La pakaĵo, " <> bt pkg <> " bezonas " <> bt n <> ", kiu donas " <> bt pro <> "."
   Italian    -> "Il pacchetto " <> bt pkg <> " ha bisogno di " <> bt n <> ", che rende disponibile " <> bt pro <> "."
-  Dutch      -> <> bt pkg <> " is afhankelijk van " <> bt n <> ", wat " <> bt pro <> " bevat."
+  Dutch      -> bt pkg <> " is afhankelijk van " <> bt n <> ", wat " <> bt pro <> " bevat."
   Ukrainian  -> "Пакунку " <> bt pkg <> " потрібен " <> bt n <> ", який забезпечує " <> bt pro <> "."
   Romanian   -> "Pachetul " <> bt pkg <> " are nevoie de " <> bt n <> ", care provizionează " <> bt pro <> "."
   Vietnamese -> "Gói " <> bt pkg <> " cần " <> bt n <> ", để cung cấp " <> bt pro <> "."
@@ -1603,7 +1603,7 @@ cleanCache_9 (bt . tshow -> w) = \case
     Vietnamese -> "Sẽ giữ lại " <> w <> " phiên bản của các gói đã cài đặt."
     Czech      -> w <> " verze každého nainstalovaného balíčku budou zachovány."
     Korean     -> "각각의 설치된 패키지의 " <> w <> "은(는) 유지됩니다."
-    Dutch      -> "Er worden" w <> "versies van elke geïnstalleerd pakket bewaard."
+    Dutch      -> "Er worden " <> w <> "versies van elke geïnstalleerd pakket bewaard."
     _          -> w <> " versions of each installed package will be kept."
 
 -- NEEDS TRANSLATION
@@ -1650,7 +1650,7 @@ cleanNotSaved_2 n@(cyan . pretty -> s) = \case
     Chinese    -> "发现了 " <> s <> " 个不需要的包文件。是否删除？"
     Swedish    -> s <> " oanvända paket hittades. Ta bort?"
     Esperanto  -> s <> " nebezonajn dosierojn de pakaĵoj trovis. Ĉu forigi"
-    Dutch      -> "Er zijn" s <> " overbodige pakketbestanden aangetroffen. Wilt u deze bestanden wissen?"
+    Dutch      -> "Er zijn " <> s <> " overbodige pakketbestanden aangetroffen. Wilt u deze bestanden wissen?"
     Ukrainian  -> "Знайдено " <> s <> " непотрібних пакунків. Видалити?"
     Romanian   -> "S-au găsit " <> s <> " fișiere de pachet inutile. Ștergeți?"
     Vietnamese -> "Tìm thấy " <> s <> " gói không cần thiết. Xóa bỏ?"
@@ -2059,7 +2059,7 @@ hotEdit_3 fp = \case
   Vietnamese -> "Bạn có muốn chỉnh sửa " <> pretty fp <> "?"
   Czech      -> "Chcete upravit " <> pretty fp <> "?"
   Korean     -> pretty fp <> "을(를) 수정하시겠습니까?"
-  Dutch      -> "Wilt u " <> pretty fp <> bewerken "?"
+  Dutch      -> "Wilt u " <> pretty fp <> "bewerken?"
   _          -> "Would you like to edit " <> pretty fp <> "?"
 
 ------------------------------
