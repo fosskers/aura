@@ -48,7 +48,7 @@ translators = M.fromList
     , (Chinese,    "Kai Zhang")
     , (Japanese,   "Onoue Takuro / Colin Woodbury")
     , (Esperanto,  "Zachary Matthews")
-    , (Dutch,      "Joris Blanken")
+    , (Dutch,      "Joris Blanken / Heimen Stoffels")
     , (Turkish,    "Cihan Alkan")
     , (Arabic,     "\"Array in a Matrix\"")
     , (Ukrainian,  "Andriy Cherniy")
@@ -77,7 +77,7 @@ translatorMsgTitle = \case
     Indonesia  -> "Penerjemah Aura:"
     Chinese    -> "Aura 的翻译者："
     Esperanto  -> "Tradukistoj de Aura:"
-    Dutch      -> "Aura Vertalers:"
+    Dutch      -> "Aura-vertalers:"
     Ukrainian  -> "Перекладачі Aura:"
     Romanian   -> "Traducători Aura:"
     Vietnamese -> "Dịch giả của Aura:"
@@ -154,7 +154,7 @@ checkDBLock_1 = \case
     Chinese    -> "包数据库已锁定。请在解锁后按下回车以继续。"
     Swedish    -> "Paketdatabasen är låst. Klicka på enter när den är upplåst."
     Esperanto  -> "La datumbazo de pakaĵoj estas ŝlosita. Premu enen-klavo kiam la datumbazo estas malŝlosita por daŭrigi"
-    Dutch      -> "De pakket databank is vergrendelt. Druk op enter wanneer het ontgrendelt is."
+    Dutch      -> "De pakketdatabank is vergrendeld. Druk op enter zodra de databank ontgrendeld is."
     Ukrainian  -> "База даних пакетів заблокована. Натисніть Enter, коли вона розблокується, щоб продовжити."
     Romanian   -> "Baza de date de pachete este blocată. Apăsați Enter după ce s-a deblocat pentru a continua."
     Vietnamese -> "Cơ sở dữ liệu của gói đã bị khóa. Nhấn Enter sau khi nó được mở khóa để tiếp tục."
@@ -176,7 +176,7 @@ trueRoot_3 = \case
     Chinese    -> "自从 makepkg v4.2 以后，就不能以根用户身份构建软件了。"
     Swedish    -> "I makepkg v4.2 och uppåt är det inte tillåtet att bygga som root."
     Esperanto  -> "Depost makepkg v4.2, konstruanto ĉefuzante ne eblas."
-    Dutch      -> "Vanaf makepkg v4.2 is het niet langer mogelijk om als root te bouwen."
+    Dutch      -> "Sinds makepkg v4.2 is het niet meer mogelijk om als root te bouwen."
     Ukrainian  -> "З версії makepkg v4.2 збірка від імені root неможлива."
     Romanian   -> "De la versiunea makepkg v4.2 încolo, compilarea ca root nu mai este posibilă."
     Vietnamese -> "Kể từ makepkg v4.2, build bằng quyền root không còn khả dụng."
@@ -203,7 +203,7 @@ mustBeRoot_1 = let sudo = bt @Text "sudo" in \case
     Indonesia  -> "Anda harus menggunakan " <> sudo <> " untuk melakukannya."
     Chinese    -> "除非是根用户，否则不能执行此操作。"
     Esperanto  -> "Vi ne povas fari ĉi tiun operacion, sen " <> sudo <> "."
-    Dutch      -> "U kunt deze operatie niet uitvoeren zonder " <> sudo <> " te gebruiken."
+    Dutch      -> "U kunt deze actie niet uitvoeren zonder " <> sudo <> " te gebruiken."
     Ukrainian  -> "Для цієї дії, потрібно використати " <> sudo <> "."
     Romanian   -> "Nu se poate folosi această operație asta fără " <> sudo <> "."
     Vietnamese -> "Bạn không thể thực hiện hành động này nếu không dùng " <> sudo <> "."
@@ -233,7 +233,7 @@ buildPackages_1 (bt . pnName -> p) = \case
     Indonesia  -> "Membangun " <> p <> "..."
     Chinese    -> p <> " 正在构建中..."
     Esperanto  -> "Muntanta " <> p <> "..."
-    Dutch      -> "Pakket " <> p <> " aan het bouwen..."
+    Dutch      -> "Bezig met bouwen van " <> p <> "…"
     Ukrainian  -> "Збираємо " <> p <> "..."
     Romanian   -> "Se compilează " <> p <> "..."
     Vietnamese -> "Đang build " <> p <> "..."
@@ -251,6 +251,7 @@ buildPackages_2 = \case
     Vietnamese -> "'--allsource' được sử dụng. Không có gói nào sẽ được build."
     Czech      -> "Bylo nalezeno '-allsource'. Žádné skutečné instalovatelné balíčky nebudou sestaveny."
     Korean     -> "'--allsource' 감지되었습니다. 실제 설치 가능한 패키지는 빌드되지 않습니다."
+    Dutch      -> "--allsource gedetecteerd. Er worden geen installeerbare pakketten gebouwd."
     _          -> "'--allsource' detected. No actual installable packages will be built."
 
 buildPackages_3 :: FilePath -> Language -> Doc AnsiStyle
@@ -263,6 +264,7 @@ buildPackages_3 fp = \case
     Romanian   -> "Toate fișierele .src.tar.gz au fost construite și copiate către: " <> pretty fp
     Vietnamese -> "Tất cả các tệp .src.tar.gz đã được build và sao chép tới: " <> pretty fp
     Czech      -> "Všechny soubory .src.tar.gz byly vytvořeny a zkopírovány do: " <> pretty fp
+    Dutch      -> "Alle .src.tar.gz-bestanden zijn gebouwd en gekopieerd naar " <> pretty fp
     Korean     -> "모든 .src.tar.gz 파일은 빌드되고 복사됩니다:" <> pretty fp
     _          -> "All .src.tar.gz files were built and copied to: " <> pretty fp
 
@@ -272,6 +274,7 @@ buildPackages_4 = \case
     Vietnamese -> bt @Text "--hotedit" <+> "được sử dụng, những gói sau có trong cache và sẽ được bỏ qua để chỉnh sửa:"
     Czech    -> bt @Text "--hotedit" <+> "zjištěno, ale následující položky mají položky mezipaměti a budou přeskočeny pro úpravy:"
     Korean   -> bt @Text "--hotedit" <+> "감지되었지만 캐시 목록이 있으므로 편집을 위해 건너뜁니다."
+    Dutch      -> "--hotedit gedetecteerd. De volgende pakketten zijn gecachet en zullen niet worden bewerkt:"
     _        -> bt @Text "--hotedit" <+> "detected, but the following have cache entries and will be skipped for editing:"
 
 buildPackages_5 :: Language -> Doc AnsiStyle
@@ -280,6 +283,7 @@ buildPackages_5 = \case
     Vietnamese -> "Bạn có thể dùng" <+> bt @Text "--force" <+> "để ghi đè hành động này."
     Czech    -> "Můžete použít" <+> bt @Text "--force" <+> "k potlačení tohoto chování."
     Korean   -> bt @Text "--force" <+> "를 사용하여 이 동작을 무시할 수 있습니다."
+    Dutch      -> "U kunt" <+> bt @Text "--force" <+> "toekennen om dit gedrag te omzeilen."
     _        -> "You can use" <+> bt @Text "--force" <+> "to override this behaviour."
 
 buildFail_5 :: Language -> Doc AnsiStyle
@@ -300,7 +304,7 @@ buildFail_5 = \case
     Indonesia  -> "Proses gagal."
     Chinese    -> "构建失败。"
     Esperanto  -> "Muntado paneis"
-    Dutch      -> "Bouwen is mislukt."
+    Dutch      -> "Het bouwen is mislukt."
     Ukrainian  -> "Збірка не вдалась."
     Romanian   -> "Compilare nereușită."
     Vietnamese -> "Build thất bại."
@@ -326,7 +330,7 @@ buildFail_6 = \case
     Chinese    -> "你仍然希望继续吗？"
     Swedish    -> "Vill du fortsätta ändå?"
     Esperanto  -> "Ĉu vi volas daŭrigi?"
-    Dutch      -> "Wilt U toch doorgaan?"
+    Dutch      -> "Wilt u toch doorgaan?"
     Ukrainian  -> "Ви все одно бажаєте продовжити?"
     Romanian   -> "Doriți oricum să continuați?"
     Vietnamese -> "Bạn có muốn tiếp tục không?"
@@ -349,7 +353,7 @@ buildFail_7 (bt . pnName -> p) = \case
     Chinese    -> "无法获得 " <> p <> " 的构建脚本。"
     Swedish    -> "Kunde inte hämta byggskript för " <> p <> "."
     Esperanto  -> "Paneis akiri muntaj skriptoj de " <> p <> "."
-    Dutch      -> "Verkrijgen van bouw scripten mislukt voor " <> p <> "."
+    Dutch      -> "De bouwscripts van " <> p <> " kunnen niet worden opgehaald."
     Ukrainian  -> "Не вдалось отримати сценарії збірки для " <> p <> "."
     Romanian   -> "Nu s-au putut obține scripturi de compilare pentru " <> p <> "."
     Vietnamese -> "Không thể lấy tập lệnh build cho " <> p <> "."
@@ -382,7 +386,7 @@ buildFail_9 = \case
   Spanish   -> "Error al detectar todos los archivo de paquete (*.pkg.tar.xz)."
   Italian   -> "Non è stato possibile trovare nessun archivio risultante dalla compilazione del pacchetto (*.pkg.tar.xz)."
   Esperanto -> "Paneis detekti ĉiujn dosierojn de pakaĵoj (*.pkg.tar.xz)."
-  Dutch     -> "Detecteren van built package files mislukt (*.pkg.tar.xz)."
+  Dutch     -> "Er zijn geen gebouwde pakketbestanden aangetroffen (*.pkg.tar.xz)."
   Ukrainian -> "Не вдалось знайти жодного файлу пакунку (*.pkg.tar.xz)."
   Romanian  -> "Nu s-a detectat nici un pachet construit (*.pkg.tar.xz)."
   Vietnamese -> "Không thể phát hiện các tệp đã được build (*.pkg.tar.xz)."
@@ -413,7 +417,7 @@ buildFail_11 = \case
   Spanish    -> "Construcción fallida. ¿Te gustaría ver el error?"
   Italian    -> "La compilazione è fallita. Visionare l'errore?"
   Esperanto  -> "Muntado paneis. Ĉu vi volas vidi la eraron?"
-  Dutch      -> "Bouwen mislukt. Wilt U de fouten zien?"
+  Dutch      -> "Het bouwen is mislukt. Wilt u de foutmeldingen bekijken?"
   Ukrainian  -> "Збірка не вдалась. Бажаєте побачити помилку?"
   Romanian   -> "Compilare nereușită. Doriți să vedeți eroarea?"
   Vietnamese -> "Build thất bại. Bạn có muốn xem lịch sử lỗi?"
@@ -431,6 +435,7 @@ buildFail_12 = \case
     Vietnamese -> "Thất bại trong việc 'git pull' để cập nhật."
     Czech      -> "Nepodařilo se 'git stáhnout' nejnovější aktualizace."
     Korean     -> "최신 버전 'git pull'을 실패했습니다."
+    Dutch      -> "Het uitvoeren van ‘git pull’ om de nieuwste bestanden op te halen is mislukt."
     _          -> "Failed to 'git pull' the latest updates."
 
 ------------------------------
@@ -455,7 +460,7 @@ getRealPkgConflicts_1 (bt . pnName -> prnt) (bt . pnName -> p) (bt -> r) (bt -> 
     Indonesia  -> "Dependensi " <> p <> " meminta versi " <> d <> " namun versi paling baru adalah " <> r <> "."
     Chinese    -> "依赖 " <> p <> " 需要版本 " <> d <> "，但是最新的版本是 " <> r <> "。"
     Esperanto  -> "La pakaĵo, " <> prnt <> ", dependas de versio " <> d <> " de " <> p <> ", sed la plej nova versio estas " <> r <> "."
-    Dutch      -> "Het pakket " <> prnt <> ", hangt af van versie " <> d <> " van " <> p <> ", maar de meest recente versie is " <> r <> "."
+    Dutch      -> " <> prnt <> " is afhankelijk van versie " <> d <> " van " <> p <> ", maar de nieuwste versie is " <> r <> "."
     Ukrainian  -> "Залежність " <> p <> " потребує версію " <> d <> ", проте останньою версією є " <> r <> "."
     Romanian   -> "Pachetul " <> prnt <> " depinde de versiunea " <> d <> " al pachetului " <> p <> ", dar cea mai recentă versiune este " <> r <> "."
     Vietnamese -> "Gói " <> prnt <> " phụ thuộc vào bản " <> d <> " của " <> p <> ", nhưng bản mới nhất là " <> r <> "."
@@ -481,7 +486,7 @@ getRealPkgConflicts_2 (bt . pnName -> p) = \case
   Indonesia  -> p <> " merupakan paket yang diabaikan! Lihat `pacman.conf` anda."
   Chinese    -> p <> " 是一个被忽略的包！请查看你的 `pacman.conf` 文件。"
   Esperanto  -> p <> " estas malatenta pakaĵo! Vidu vian `pacman.conf` dosieron."
-  Dutch      -> p <> " is een genegeerd pakket! Bekijk uw `pacman.conf` file."
+  Dutch      -> p <> " wordt genegeerd! Bekijk uw `pacman.conf`-bestand."
   Ukrainian  -> "Пакунок " <> p <> " буде проігноровано! Перевірте ваш файл `pacman.conf`."
   Romanian   -> "Pachetul " <> p <> " este ignorat! Verificați fișierul `pacman.conf`."
   Vietnamese -> "Gói " <> p <> "đã bị bỏ qua! Hãy xem trong `pacman.conf` của bạn."
@@ -503,7 +508,7 @@ depError l (NonExistant (PkgName s) (PkgName par)) = case l of
   Russian    -> "Зависимость " <> bt s <> " не найдена."
   Italian    -> "Non è stato possibile trovare la dipendenza " <> bt s <> "."
   Esperanto  -> "La dependeco " <> bt s <> " de " <> bt par <> " ne povis troviĝi."
-  Dutch      -> "Het afhankelijkheid " <> bt s <> "kan niet worden gevonden."
+  Dutch      -> "De afhankelijkheid " <> bt s <> " van " <> bt par <> " kan niet worden gevonden."
   Ukrainian  -> "Залежність " <> bt s <> " не було знайдено."
   Vietnamese -> "Không thể tìm thấy các gói phụ thuộc của " <> bt s <> "."
   Czech      -> "Nebyla nalezena závislost " <> bt s <> " z " <> bt par <> "."
@@ -516,7 +521,7 @@ depError l (BrokenProvides (PkgName pkg) (Provides (PkgName pro)) (PkgName n)) =
   Russian    -> "Пакету " <> bt pkg <> " требуется " <> bt n <> ", предоставляющий " <> bt pro <> "."
   Esperanto  -> "La pakaĵo, " <> bt pkg <> " bezonas " <> bt n <> ", kiu donas " <> bt pro <> "."
   Italian    -> "Il pacchetto " <> bt pkg <> " ha bisogno di " <> bt n <> ", che rende disponibile " <> bt pro <> "."
-  Dutch      -> "Het pakket" <> bt pkg <> " heeft " <> bt n <> " nodig, die " <> bt pro <> " biedt."
+  Dutch      -> " <> bt pkg <> " is afhankelijk van " <> bt n <> ", wat " <> bt pro <> " bevat."
   Ukrainian  -> "Пакунку " <> bt pkg <> " потрібен " <> bt n <> ", який забезпечує " <> bt pro <> "."
   Romanian   -> "Pachetul " <> bt pkg <> " are nevoie de " <> bt n <> ", care provizionează " <> bt pro <> "."
   Vietnamese -> "Gói " <> bt pkg <> " cần " <> bt n <> ", để cung cấp " <> bt pro <> "."
@@ -531,7 +536,7 @@ missingPkg_3 = \case
   Spanish    -> "Se produjo un error al reorganizar el gráfico de dependencia. Si ves esto, algo está muy mal."
   Esperanto  -> "Eraro okazis kiam reorganizi la grafeo de dependeco. Io estas erarega."
   Italian    -> "C'è stato un errore nella riorganizzazione della gerarchia delle dipendenze. Se vedi questo messaggio, qualcosa è andato davvero storto."
-  Dutch      -> "Er is een fout opgetreden bij het reorganizeren van de afhankelijkheidsgrafiek. Als U dit ziet, is er iets heel erg mis."
+  Dutch      -> "Er is een fout opgetreden tijdens het vernieuwen van de afhankelijkheidsgrafiek. Als u dit ziet, dan is er iets grondig mis."
   Romanian   -> "A fost o problemă reorganizând graful de dependențe. Dacă vedeți asta, e foarte rău."
   Vietnamese -> "Có lỗi trong quá trình xây dựng biểu đồ gói phụ thuộc. Nếu bạn thấy điều này, có gì đó không đúng."
   Czech      -> "Při reorganizaci grafu závislostí došlo k chybě. Pokud vidíte toto, něco je velmi špatně."
@@ -544,7 +549,7 @@ missingPkg_4 pns = \case
   Arabic     -> vsep $ pns' <> [":تم اكتشاف دورات التبعية التالية"]
   Spanish    -> vsep $ "Se detectaron los siguientes ciclos de dependencia:" : pns'
   Italian    -> vsep $ "Sono stati individuati i seguenti cicli di dipendenza:" : pns'
-  Dutch      -> vsep $ "The volgende afhankelijkheidscycli zijn gedetecteerd:" : pns'
+  Dutch      -> vsep $ "De volgende afhankelijkheidscycli zijn gedetecteerd:" : pns'
   Ukrainian  -> vsep $ "Було помічено цикл залежностей:" : pns'
   Romanian   -> vsep $ "Aceste cicluri de dependență a fost detectate:" : pns'
   Vietnamese -> vsep $ "Phát hiện chu kỳ gói phụ thuộc: " : pns'
@@ -619,7 +624,7 @@ auraCheck_1 = \case
     Chinese    -> "Aura 可以升级。先升级 aura？"
     Swedish    -> "Det finns en uppdatering tillgänglig till Aura. Vill du uppdatera Aura först?"
     Esperanto  -> "Ĝisdatigo de Aura estas disponebla. Ĉu ĝisdatigas ĝin?"
-    Dutch      -> "Aura update beschikbaar. Eerst updaten?"
+    Dutch      -> "Er is een update van Aura beschikbaar. Wilt u Aura nu bijwerken?"
     Ukrainian  -> "Доступно оновлення для Aura. Бажаєте оновити її першою?"
     Romanian   -> "O versiune nouă de Aura este disponibilă. Să se actualizeze înainte de toate?"
     Vietnamese -> "Đã có cập nhật cho Aura. Cập nhật?"
@@ -645,7 +650,7 @@ install_2 = \case
     Indonesia  -> "Tidak ada paket valid yang dispesifikkan."
     Chinese    -> "没有指定有效的包。"
     Esperanto  -> "Ne validajn pakaĵojn specifis"
-    Dutch      -> "Geen geldige pakketen gespecificeerd."
+    Dutch      -> "Er zijn geen geldige pakketten opgegeven."
     Ukrainian  -> "Валідні пакунки не вказані."
     Romanian   -> "Nu s-a specificat nici un pachet valabil."
     Vietnamese -> "Tên của gói được yêu cầu không đúng."
@@ -672,7 +677,7 @@ install_3 = \case
     Indonesia  -> "Lanjut?"
     Chinese    -> "继续？"
     Esperanto  -> "Ĉu daŭrigi?"
-    Dutch      -> "Doorgaan?"
+    Dutch      -> "Wilt u doorgaan?"
     Ukrainian  -> "Продовжити?"
     Romanian   -> "Continuați?"
     Vietnamese -> "Tiếp tục?"
@@ -698,7 +703,7 @@ install_4 = \case
     Indonesia  -> "Instalasi dibatalkan secara paksa."
     Chinese    -> "手动安装已中止。"
     Esperanto  -> "Instalon ĉesigi permane"
-    Dutch      -> "Installatie handmatig afgebroken."
+    Dutch      -> "De installatie is handmatig afgebroken."
     Ukrainian  -> "Встановлення скасовано користувачем."
     Romanian   -> "Instalarea anulată manual."
     Vietnamese -> "Quá trình cài đặt được hủy."
@@ -724,7 +729,7 @@ install_5 = \case
     Indonesia  -> "Menentukan dependensi..."
     Chinese    -> "确定依赖中..."
     Esperanto  -> "Difinas dependecojn..."
-    Dutch      -> "Afhankelijkheden aan het bepalen..."
+    Dutch      -> "Bezig met vaststellen van afhankelijkheden…"
     Ukrainian  -> "Визначення залежностей..."
     Romanian   -> "Se determin dependențele..."
     Vietnamese -> "Xác định các gói phụ thuộc..."
@@ -745,7 +750,7 @@ confirmIgnored_1 (bt . pnName -> p) = \case
     Chinese    -> p <> " 已被标记为忽略。仍然安装？"
     Swedish    -> p <> " är markerad som ignorerad. Vill du installera ändå?"
     Esperanto  -> p <> " estas markita kiel malatenta. Ĉu instali?"
-    Dutch      -> p <> " is gemarkeerd als genegeerd. Toch installeren?"
+    Dutch      -> p <> " is gemarkeerd als genegeerd. Wilt u het pakket toch installeren?"
     Romanian   -> p <> " e marcat ca ignorat. Să se instaleze oricum?"
     Vietnamese -> p <> " được đánh dấu là Bỏ qua. Vẫn cài đặt nó?"
     Czech      -> p <> " je označeno jako ignorováno. Přesto nainstalovat?"
@@ -771,7 +776,7 @@ reportNonPackages_1 = \case
     Indonesia  -> "Paket berikut ini bukan merupakan paket AUR:"
     Chinese    -> "以下软件不是 AUR 包："
     Esperanto  -> "La sekvaj ne estas pakaĵoj de la AUR:"
-    Dutch      -> "De volgende pakketten zijn geen AUR pakketten:"
+    Dutch      -> "De volgende pakketten zijn geen AUR-pakketten:"
     Ukrainian  -> "Нижче вказано те, що не є пакунком AUR:"
     Romanian   -> "Aceste pachete nu se află pe AUR:"
     Vietnamese -> "Các gói sau không thuộc AUR:"
@@ -793,7 +798,7 @@ reportUnneededPackages_1 = \case
     Chinese    -> "以下包已被安装："
     Swedish    -> "Följande paket är redan installerade:"
     Esperanto  -> "La sekvaj pakaĵoj jam instaliĝas:"
-    Dutch      -> "The volgende pakketten zijn al geinstalleerd:"
+    Dutch      -> "De volgende pakketten zijn al geinstalleerd:"
     Ukrainian  -> "Наступні пакунки вже встановлені:"
     Romanian   -> "Aceste pachete sunt deja instalate:"
     Vietnamese -> "Các gói sau đã sẵn sàng cài đặt:"
@@ -819,7 +824,7 @@ reportPkgsToInstall_1 = \case
     Indonesia  -> "Dependensi dari repositori:"
     Chinese    -> "仓库依赖："
     Esperanto  -> "Dependecoj de deponejo:"
-    Dutch      -> "Repository afhankelijkheden:"
+    Dutch      -> "Pakketbron-afhankelijkheden:"
     Ukrainian  -> "Залежності репозиторія:"
     Romanian   -> "Dependențe din repertorii:"
     Vietnamese -> "Các repo phụ thuộc:"
@@ -846,7 +851,7 @@ reportPkgsToInstall_2 = \case
     Chinese    -> "AUR 包："
     Swedish    -> "AUR Paket:"
     Esperanto  -> "Pakaĵoj de AUR:"
-    Dutch      -> "AUR Pakketten:"
+    Dutch      -> "AUR-pakketten:"
     Ukrainian  -> "Пакунки AUR:"
     Romanian   -> "Pachete din AUR:"
     Vietnamese -> "Gói AUR:"
@@ -924,7 +929,7 @@ reportPkgbuildDiffs_3 (bt . pnName -> p) = \case
     Chinese    -> p <> " 的 PKGBUILD 变化："
     Swedish    -> "Förändringar i PKGBUILD för " <> p <> ":"
     Esperanto  -> p <> " PKGBUILD ŝanĝoj:"
-    Dutch      -> p <> " PKGBUILD aanpassingen:"
+    Dutch      -> p <> " PKGBUILD-aanpassingen:"
     Ukrainian  -> "Зміни PKGBUILD в " <> p <> ":"
     Romanian   -> "Schimbări in PKGBUILD pentru " <> p <> ":"
     Vietnamese -> "Thay đổi trong PKGBUILD của " <> p <> ":"
@@ -951,7 +956,7 @@ reportPkgsToUpgrade_1 = \case
     Indonesia  -> "Paket AUR yang akan ditingkatkan:"
     Chinese    -> "要升级的 AUR 包："
     Esperanto  -> "Pakaĵoj de AUR ĝisdatigi:"
-    Dutch      -> "AUR-Pakketten om te upgraden:"
+    Dutch      -> "Bij te werken AUR-pakketten:"
     Ukrainian  -> "Пакунки AUR, готові для оновлення:"
     Romanian   -> "Pachete din AUR de actualizat:"
     Vietnamese -> "Cập nhật các gói AUR:"
@@ -978,7 +983,7 @@ reportBadDowngradePkgs_1 = \case
     Indonesia  -> "Berikut ini tidak mempunyai versi pada cache, sehingga tidak akan diturunkan:"
     Chinese    -> "以下包在缓存中没有版本，所以无法被降级："
     Esperanto  -> "La sekvaj pakaĵoj havas ne kaŝmemorigitajn versiojn, do ĝi ne povas malpromociigi:"
-    Dutch      -> "De volgende pakketten hebben geen versie in de cache, en kunnen dus niet gedowngrade worden."
+    Dutch      -> "De volgende pakketten zijn niet gecachet en kunnen daarom niet worden afgewaardeerd."
     Ukrainian  -> "Наступних пакунків немає в кеші. Отже, вони не можуть відкотитися до старої версії:"
     Romanian   -> "Aceste pachete nu au nici o versiune disponibilă în cache, așa că nu pot fi retrogradate:"
     Vietnamese -> "Những gói sau không có bản nào trong cache, vì vậy không thể hạ cấp:"
@@ -991,7 +996,7 @@ reportBadDowngradePkgs_2 (PkgName p) = \case
   Spanish    -> pretty p <+> "no tiene una versión en la caché."
   Arabic     -> ".ليس  لديه اصدار في الذاكرة التخزين الموقت" <+> pretty p
   Italian    -> pretty p <+> "non ha alcuna versione nella cache."
-  Dutch      -> pretty p <+> "heeft geen versie in de cache."
+  Dutch      -> pretty p <+> "is niet gecachet."
   Ukrainian  -> pretty p <+> "не має версії в кеші."
   Romanian   -> pretty p <+> "nu are nici o versiune în cache."
   Vietnamese -> pretty p <+> "không có bản nào trong cache."
@@ -1017,7 +1022,7 @@ upgradeAURPkgs_1 = \case
     Indonesia  -> "Mengambil informasi paket..."
     Chinese    -> "正在获取包信息..."
     Esperanto  -> "Venigas informacion de pakaĵoj..."
-    Dutch      -> "Pakket informatie aan het ophalen..."
+    Dutch      -> "Bezig met ophalen van pakketinformatie…"
     Ukrainian  -> "Збираємо інформацію про пакунок..."
     Romanian   -> "Se obțin informații despre pachete..."
     Vietnamese -> "Cập nhật thông tin của gói..."
@@ -1043,7 +1048,7 @@ upgradeAURPkgs_2 = \case
     Indonesia  -> "Membandingkan versi paket..."
     Chinese    -> "正在比较包的版本..."
     Esperanto  -> "Komparas versiojn de pakaĵoj..."
-    Dutch      -> "Pakket versies aan het vergelijken..."
+    Dutch      -> "Bezig met vergelijken van pakketversies…"
     Ukrainian  -> "Порівнюємо версії пакунків..."
     Romanian   -> "Se compar versiunile pacheturilor..."
     Vietnamese -> "So sánh phiên bản của gói..."
@@ -1069,7 +1074,7 @@ upgradeAURPkgs_3 = \case
     Indonesia  -> "Tidak ada peningkatan AUR yang dibutuhkan."
     Chinese    -> "没有需要升级的 AUR 包。"
     Esperanto  -> "Ne ĝisdatigoj de pakaĵoj de AUR necesas."
-    Dutch      -> "Geen AUR-pakket upgrades vereist."
+    Dutch      -> "Er hoeven geen AUR-pakketten te worden bijgewerkt."
     Ukrainian  -> "Пакунки AUR не потребують оновлення."
     Romanian   -> "Nu e nevoie să se actualizeze nici un pachet din AUR."
     Vietnamese -> "Không có cập nhật cho các gói AUR."
@@ -1095,7 +1100,7 @@ removeMakeDepsAfter_1 = \case
     Indonesia  -> "Menghapus dependensi `make` yang tidak dibutuhkan..."
     Chinese    -> "移除不需要的 make 依赖..."
     Esperanto  -> "Forigas nenecesajn dependecojn de make..."
-    Dutch      -> "Onnodige make afhankelijkheden aan het verwijderen..."
+    Dutch      -> "Bezig met verwijderen van onnodige make-afhankelijkheden…"
     Ukrainian  -> "Видаляємо непотрібні залежності make..."
     Romanian   -> "Se șterg dependențele de compilare inutile..."
     Vietnamese -> "Loại bỏ các gói phụ thuộc khi make không cần thiết..."
@@ -1125,7 +1130,7 @@ cleanStates_2 n@(bt . tshow -> s) = \case
     Chinese    -> s <> " 个包的状态将会保留。删除其它的？"
     Swedish    -> s <> " paket kommer att bevaras. Ta bort resten?"
     Esperanto  -> s <> " statoj de pakaĵoj teniĝas. Ĉu forigi la ceteron?"
-    Dutch      -> s <> " pakketstatussen worden behouden. De rest verwijderen?"
+    Dutch      -> s <> " pakketstatussen worden behouden. Wilt u de rest verwijderen?"
     Ukrainian  -> s <> " стан пакунків будуть залишені. Видалити решту?"
     Romanian   -> "Stările pachetului " <> s <> " vor fi păstrate. Să se șteargă restul?"
     Vietnamese -> "Trạng thái của gói " <> s <> " sẽ được lưu lại. Loại bỏ phần còn lại?"
@@ -1152,7 +1157,7 @@ cleanStates_3 = \case
     Chinese    -> "没有删除任何包。"
     Swedish    -> "Inga paket togs bort."
     Esperanto  -> "Ne statojn de pakaĵoj forigis."
-    Dutch      -> "Geen pakketstatussen verwijderd."
+    Dutch      -> "Er zijn geen pakketstatussen verwijderd."
     Ukrainian  -> "Стани пакунків залишились недоторкані."
     Romanian   -> "Nici o stare de pachet a fost ștearsă."
     Vietnamese -> "Không có trạng thái gói nào được lưu."
@@ -1186,7 +1191,7 @@ cleanStates_5 t = \case
   Russian    -> "Последнее сохраненное:" <+> pretty t
   Italian    -> "Salvato più recentemente:" <+> pretty t
   Esperanto  -> "Lastaj konservaj:" <+> pretty t
-  Dutch      -> "Meest recent opgeslagen:" <+> pretty t
+  Dutch      -> "Onlangs opgeslagen:" <+> pretty t
   Ukrainian  -> "Останні збереженні:" <+> pretty t
   Romanian   -> "Cel mai recent salvat:" <+> pretty t
   Vietnamese -> "Lần lưu gần nhất:" <+> pretty t
@@ -1200,7 +1205,7 @@ cleanStates_6 n = \case
   Arabic    -> ".اذا كانو مثبتين ولا يمكن ازالتهم " <+> pretty n
   Spanish   -> pretty n <+> "de estos están anclados y no se eliminarán."
   Italian   -> pretty n <+> "di questi sono stati fissati, perciò non saranno rimossi."
-  Dutch     -> pretty n <+> "hiervan zijn vastgezet, en worden niet verwijderd."
+  Dutch     -> pretty n <+> "hiervan zijn vastgezet en worden daarom niet verwijderd."
   Ukrainian -> pretty n <+> "були закріплені та залишуться недоторканими."
   Romanian  -> pretty n <+> "dintre astea sunt fixate, și nu vor fi șterse."
   Vietnamese -> pretty n <+> "trong số chúng đã được ghim, và sẽ không bị loại bỏ."
@@ -1217,7 +1222,7 @@ readState_1 = \case
     Russian    -> "Это состояние не распознано. Это корректный JSON?"
     Italian    -> "Non è stato possibile analizzare il file di stato. E' correttamente formattato in JSON?"
     Esperanto  -> "Tiu statdosiero paneis sintake analizi. Ĉu ĝi estas valida JSON?"
-    Dutch      -> "Dat statusbestand kon niet worden geparseerd. Is het legale JSON?"
+    Dutch      -> "Dit statusbestand kan niet worden verwerkt. Bevat het bestand geldige JSON?"
     Ukrainian  -> "Стан не був розпізнаний правильно. Це точно коректний JSON?"
     Romanian   -> "Acel fișier de stare nu se putea analiza. Este un fișier JSON valabil?"
     Vietnamese -> "Thất bại trong việc lấy dữ liệu từ tệp. Đó có đúng là tệp JSON?"
@@ -1246,7 +1251,7 @@ getDowngradeChoice_1 (bt . pnName -> p) = \case
     Indonesia  -> "Versi dari paket " <> p <> " mana yang anda inginkan?"
     Chinese    -> "你希望安装 " <> p <> " 的哪个版本？"
     Esperanto  -> "Kiu versio de " <> p <> " vi volas?"
-    Dutch      -> "Welke versie van " <> p <> " wil je?"
+    Dutch      -> "Welke versie van " <> p <> " wilt u?"
     Ukrainian  -> "Яку версію пакунку " <> p <> " ви бажаєте?"
     Romanian   -> "Care versiune al pachetului " <> p <> " o doriți?"
     Vietnamese -> "Bạn muốn sử dụng phiên bản nào của " <> p <> "?"
@@ -1272,7 +1277,7 @@ backupCache_3 = \case
     Indonesia  -> "Lokasi `backup` tidak ada."
     Chinese    -> "备份位置不存在。"
     Esperanto  -> "La savkopia loko ne ekzistas."
-    Dutch      -> "De back-up lokatie bestaat niet."
+    Dutch      -> "De back-uplocatie bestaat niet."
     Ukrainian  -> "Шлях до резервної копії не існує."
     Romanian   -> "Locul de reservă nu există."
     Vietnamese -> "Đường dẫn sao lưu không tồn tại."
@@ -1298,7 +1303,7 @@ backupCache_4 (bt . T.pack -> dir) = \case
     Indonesia  -> "Melakukan `backup` pada direktori " <> dir
     Chinese    -> "正在将缓存备份到 " <> dir
     Esperanto  -> "Enarkivigas la kaŝdosieron al " <> dir
-    Dutch      -> "Back-up van cache aan het maken naar " <> dir
+    Dutch      -> "Bezig met back-uppen van cache aan naar " <> dir
     Ukrainian  -> "Зберігаємо резервну копію до " <> dir
     Romanian   -> "Se copiază cache-ul de rezervă către " <> dir
     Vietnamese -> "Sao lưu cache vào " <> dir
@@ -1324,7 +1329,7 @@ backupCache_5 (bt . tshow -> n) = \case
     Indonesia  -> "Jumlah paket yang di-`backup`: " <> n
     Chinese    -> "将要备份的包文件：" <> n
     Esperanto  -> "La dosierojn de la pakaĵoj enarkivigi: " <> n
-    Dutch      -> "Pakketbestanden om te back-uppen: " <> n
+    Dutch      -> "Te back-uppen pakketbestanden: " <> n
     Ukrainian  -> "Файли пакунку для резервної копії: " <> n
     Romanian   -> "Fișiere de pachet pentru copiare de rezervă: " <> n
     Vietnamese -> "Các tệp của gói sẽ được sao lưu: " <> n
@@ -1350,7 +1355,7 @@ backupCache_6 = \case
     Indonesia  -> "Lanjutkan dengan `backup`?"
     Chinese    -> "开始备份？"
     Esperanto  -> "Ĉu daŭrigu enarkivigi?"
-    Dutch      -> "Doorgaan met back-up?"
+    Dutch      -> "Wilt u doorgaan met back-uppen?"
     Ukrainian  -> "Продовжити створення резервної копії?"
     Romanian   -> "Continuați cu copiile de rezervă?"
     Vietnamese -> "Tiến hành sao lưu?"
@@ -1376,7 +1381,7 @@ backupCache_7 = \case
     Indonesia  -> "Proses `backup` dibatalkan secara paksa."
     Chinese    -> "手动备份已中止。"
     Esperanto  -> "Enarkivigadon ĉesigis permane."
-    Dutch      -> "Back-up handmatig afgebroken."
+    Dutch      -> "Het back-upproces is handmatig afgebroken."
     Ukrainian  -> "Створення резервної копії перервано користувачем."
     Romanian   -> "Copiarea de rezervă anulată manual."
     Vietnamese -> "Quá trình sao lưu được hủy."
@@ -1402,7 +1407,7 @@ backupCache_8 = \case
     Indonesia  -> "Melakukan `backup`. Proses ini akan berjalan untuk beberapa menit..."
     Chinese    -> "正在备份中。可能需要几分钟的时间..."
     Esperanto  -> "Enarkiviganta. Ĉi tiu eble daŭros dum kelkaj tagoj..."
-    Dutch      -> "Aan het back-uppen. Dit kan een aantal minuten duren..."
+    Dutch      -> "Er wordt een back-up gemaakt. Dit kan enkele minuten duren…"
     Ukrainian  -> "Створюємо резервну копію. Це може зайняти декілька хвилин..."
     Romanian   -> "Se fac copii de rezervă. Ar putea să dureze câteva minute..."
     Vietnamese -> "Đang sao lưu. Có thể sẽ mất vài phút..."
@@ -1429,7 +1434,7 @@ copyAndNotify_1 (cyan . pretty -> n) = \case
     Indonesia  -> "Menyalin #[" <> n <> "]"
     Chinese    -> "正在复制 #[" <> n <> "]"
     Esperanto  -> "Kopianta #[" <> n <> "]"
-    Dutch      -> "Kopiëren #[" <> n <> "]"
+    Dutch      -> "Bezig met kopiëren: #[" <> n <> "]"
     Ukrainian  -> "Копіюємо #[" <> n <> "]"
     Romanian   -> "Se copiază #[" <> n <> "]"
     Vietnamese -> "Sao chép #[" <> n <> "]"
@@ -1455,7 +1460,7 @@ cleanCache_2 = \case
     Indonesia  -> "Akan menghapus SEMUA `cache` paket"
     Chinese    -> "这将会删除全部的包缓存。"
     Esperanto  -> "Ĉi tiu forigos la TUTAN kaŝmemoron de pakaĵoj."
-    Dutch      -> "Hiermee wordt de GEHELE pakketcache verwijderd."
+    Dutch      -> "Hiermee wordt de GEHELE pakketcache gewist."
     Ukrainian  -> "Ця операція ПОВНІСТЮ видалить кеш пакунків."
     Romanian   -> "Asta va șterge COMPLET cache-ul de pachete."
     Vietnamese -> "Điều này sẽ xóa TOÀN BỘ cache của gói."
@@ -1507,7 +1512,7 @@ cleanCache_4 = \case
     Indonesia  -> "Selainnya akan dihapus. Ikhlas kan?"
     Chinese    -> "其余的将会被删除。确定？"
     Esperanto  -> "La cetero foriĝos. Ĉu bone?"
-    Dutch      -> "De rest wordt verwijderd. OK?"
+    Dutch      -> "De rest wordt gewist. Weet u het zeker?"
     Ukrainian  -> "Все інше буде видалено. Гаразд?"
     Romanian   -> "Restul va fi șters. De acord?"
     Vietnamese -> "Xóa bỏ phần còn lại. Ok?"
@@ -1533,7 +1538,7 @@ cleanCache_5 = \case
     Indonesia  -> "Pembersihan `cache` dibatalkan secara paksa."
     Chinese    -> "手动清理缓存已中止。"
     Esperanto  -> "Puriganta Kaŝmemoro ĉesis permane."
-    Dutch      -> "Cachereiniging handmatig afgebroken."
+    Dutch      -> "De cache-opruiming is handmatig afgebroken."
     Ukrainian  -> "Очищення кешу було перервано користувачем."
     Romanian   -> "Curățenia cache-ului anulată manual."
     Vietnamese -> "Đã hủy xóa cache."
@@ -1559,7 +1564,7 @@ cleanCache_6 = \case
     Indonesia  -> "Membersihkan `cache` paket..."
     Chinese    -> "正在清理包缓存..."
     Esperanto  -> "Purigas Kaŝmemoron de pakaĵoj..."
-    Dutch      -> "Pakketcache aan het reinigen..."
+    Dutch      -> "Bezig met opruimen van pakketcache…"
     Ukrainian  -> "Очищуємо кеш пакунків..."
     Romanian   -> "Se curăță cache-ul de pachete..."
     Vietnamese -> "Xóa cache..."
@@ -1576,6 +1581,7 @@ cleanCache_7 (bt . tshow -> ps) (bt . tshow -> bytes) = \case
     Romanian   -> "Cache-ul conține " <> ps <> " pachete, consumând " <> bytes <> " MB."
     Vietnamese -> "Có " <> ps <> " gói trong cache, chiếm " <> bytes <> " megabytes."
     Korean     -> ps <> "개의 패키지는 " <> bytes <> "MB 사용 중입니다."
+    Dutch      -> "De cache bevat " <> ps <> " pakketten, met een totale omvang van " <> bytes <> " megabytes."
     _          -> "The cache contains " <> ps <> " packages, consuming " <> bytes <> " megabytes."
 
 cleanCache_8 :: Word -> Language -> Doc AnsiStyle
@@ -1588,6 +1594,7 @@ cleanCache_8 (bt . tshow -> bytes) = \case
     Vietnamese -> "Giải phóng " <> bytes <> "megabytes."
     Czech      -> "Uvolněno " <> bytes <> " MB."
     Korean     -> bytes <> " MB 정리되었습니다."
+    Dutch      -> bytes <> "megabytes vrijgemaakt."
     _          -> bytes <> " megabytes freed."
 
 cleanCache_9 :: Word -> Language -> Doc AnsiStyle
@@ -1596,6 +1603,7 @@ cleanCache_9 (bt . tshow -> w) = \case
     Vietnamese -> "Sẽ giữ lại " <> w <> " phiên bản của các gói đã cài đặt."
     Czech      -> w <> " verze každého nainstalovaného balíčku budou zachovány."
     Korean     -> "각각의 설치된 패키지의 " <> w <> "은(는) 유지됩니다."
+    Dutch      -> "Er worden" w <> "versies van elke geïnstalleerd pakket bewaard."
     _          -> w <> " versions of each installed package will be kept."
 
 -- NEEDS TRANSLATION
@@ -1616,7 +1624,7 @@ cleanNotSaved_1 = \case
     Chinese    -> "正在确定不需要的包文件..."
     Swedish    -> "Beräknar onödiga paketfiler..."
     Esperanto  -> "Decidas nebezonajn dosierojn de pakaĵoj..."
-    Dutch      -> "Overbodige pakketbestanden aan het vaststellen..."
+    Dutch      -> "Bezig met vaststellen van overbodige pakketbestanden…"
     Ukrainian  -> "Визначачення непотрібних пакунків..."
     Romanian   -> "Se determin fișiere de pachet inutile..."
     Vietnamese -> "Xác định các tệp của gói không cần thiết..."
@@ -1642,7 +1650,7 @@ cleanNotSaved_2 n@(cyan . pretty -> s) = \case
     Chinese    -> "发现了 " <> s <> " 个不需要的包文件。是否删除？"
     Swedish    -> s <> " oanvända paket hittades. Ta bort?"
     Esperanto  -> s <> " nebezonajn dosierojn de pakaĵoj trovis. Ĉu forigi"
-    Dutch      -> s <> " overbodige pakketbestanden gevonden. Verwijderen?"
+    Dutch      -> "Er zijn" s <> " overbodige pakketbestanden aangetroffen. Wilt u deze bestanden wissen?"
     Ukrainian  -> "Знайдено " <> s <> " непотрібних пакунків. Видалити?"
     Romanian   -> "S-au găsit " <> s <> " fișiere de pachet inutile. Ștergeți?"
     Vietnamese -> "Tìm thấy " <> s <> " gói không cần thiết. Xóa bỏ?"
@@ -1677,7 +1685,7 @@ reportNotInLog_1 = \case
     Indonesia  -> "Tidak terlihat pada berkas log:"
     Chinese    -> "这些没有在日志文件中出现："
     Esperanto  -> "Ĉi tiuj ne enestis la protokolajn dosierojn:"
-    Dutch      -> "Deze zijn niet verschenen in het logbestand:"
+    Dutch      -> "Deze zijn niet toegevoegd aan het logboek:"
     Ukrainian  -> "Наступних пакунків немає в лог файлі:"
     Romanian   -> "Acestea nu au apărut în log:"
     Vietnamese -> "Nội dung sau không có trong tệp log:"
@@ -1704,7 +1712,7 @@ connectFailure_1 = \case
   Arabic    -> "هل انت متصل بالانترنت؟ .AURفشل الاتصال بـ"
   Spanish   -> "No se pudo contactar con el AUR. ¿Tienes conexión a internet?"
   Italian   -> "Non è stato possibile contattare l'AUR. Il computer è connesso ad internet?"
-  Dutch     -> "Contact opnemen met de AUR mislukt. Heeft U een internet connectie?"
+  Dutch     -> "Er kan geen verbinding worden gemaakt met de AUR. Bent u verbonden met het internet?"
   Ukrainian -> "Не вдалося зв'язатись з AUR. У вас є підключення до інтернету?"
   Romanian  -> "Nu s-a putut contacta AUR. Sunteți conectat pe Internet?"
   Vietnamese -> "Mất kết nối tới AUR. Bạn có kết nối mạng không?"
@@ -1726,7 +1734,7 @@ miscAURFailure_1 = \case
   Arabic     -> ".بطريقة غير معروفة AURفشل الاتصال بـ"
   Spanish    -> "El contacto con el AUR falló de alguna manera desconocida."
   Italian    -> "C'è stato un errore sconosciuto nel contattare l'AUR."
-  Dutch      -> "Contact opnemen met de AUR is op een onbekende manier mislukt."
+  Dutch      -> "Er kan om onbekende reden geen verbinding worden gemaakt met de AUR."
   Ukrainian  -> "Зв'язок з AUR було обірвано невідомим чином."
   Romanian   -> "Nu s-a putut contacta AUR dintr-un motiv necunoscut."
   Vietnamese -> "Bất ngờ không thể kết nối tới AUR."
@@ -1744,6 +1752,7 @@ miscAURFailure_3 = \case
   Vietnamese -> "Không thể giải mã tệp JSON lấy từ máy chủ AUR."
   Czech      -> "JSON vrácený ze serveru AUR nelze dekódovat."
   Korean     -> "AUR 서버에서 받은 JSON을 디코딩할 수 없습니다."
+  Dutch      -> "De AUR-server stuurde JSON terug die niet kan worden ontsleuteld."
   _          -> "The JSON returned from the AUR server could not be decoded."
 
 infoFields :: Language -> [Text]
@@ -1805,7 +1814,7 @@ outOfDateMsg Nothing = green . \case
     Indonesia  -> "Mutakhir"
     Chinese    -> "最新"
     Esperanto  -> "Ĝisdata"
-    Dutch      -> "Up-to-date"
+    Dutch      -> "Actueel"
     Ukrainian  -> "Найновіший"
     Romanian   -> "Actializat"
     Vietnamese -> "Mới nhất"
@@ -1832,7 +1841,7 @@ orphanedMsg Nothing = red . \case
     Chinese    -> "孤包！"
     Swedish    -> "Föräldralös!"
     Esperanto  -> "Orfita!"
-    Dutch      -> "Verweest!"
+    Dutch      -> "Onteigend!"
     Ukrainian  -> "Осиротів!"
     Romanian   -> "Orfan!"
     Vietnamese -> "Gói lẻ!"
@@ -1862,7 +1871,7 @@ saveState_1 = \case
     Chinese    -> "已保存包状态。"
     Swedish    -> "Det lokala pakettillståndet har sparats."
     Esperanto  -> "Konservita stato de pakaĵo."
-    Dutch      -> "Pakketstatus opgeslagen."
+    Dutch      -> "De pakketstatus is bewaard."
     Ukrainian  -> "Стан пакунків збережено."
     Romanian   -> "Stare de pachete salvată."
     Vietnamese -> "Đã lưu trạng thái gói."
@@ -1889,7 +1898,7 @@ restoreState_1 = \case
     Chinese    -> "请求的降级版本对以下包不可用："
     Swedish    -> "Den begärda nedgraderingen finns inte tillgänglig för:"
     Esperanto  -> "Petitajn malpromociajn versiojn ne estas disponebla de:"
-    Dutch      -> "Verzochtte downgrade versies niet beschikbaar voor:"
+    Dutch      -> "De verzochte afwaardeerversies zijn niet beschikbaar voor:"
     Ukrainian  -> "Запитані версії для відкату не доступні для:"
     Romanian   -> "Versiunea solicitată pentru retrogradare nu este disponibilă pentru:"
     Vietnamese -> "Không thể hạ cấp cho:"
@@ -1909,7 +1918,7 @@ restoreState_2 = \case
     Chinese    -> "没有要恢复的已保存状态。（使用 -B 保存当前状态）"
     Swedish    -> "Inga sparade tillstånd att återhämta. (Använd -B för att spara det nuvarande tillståndet)"
     Esperanto  -> "Ne konservitaj statoj restaŭros. (Uzu -B konservi la aktualan staton)"
-    Dutch      -> "Er zijn geen opgeslagen statussen om te herstellen. (Gebruik -B om de huidige staat op te slaan)"
+    Dutch      -> "Er zijn geen bewaarde statussen om te herstellen. (ken -B toe om de huidige status te bewaren)"
     Ukrainian  -> "Немає збережених станів для відновлення. (Викоривуйте -B для збереження теперішнього стану)"
     Romanian   -> "Nu există vreo stare de recuperat. (Folosiți -B pentru a salva starea actuală)"
     Vietnamese -> "Không có trạng thái nào có thể lưu. (Dùng -B để lưu trạng thái hiện tại)"
@@ -1936,7 +1945,7 @@ reinstallAndRemove_1 = \case
     Chinese    -> "没有包需要改变。"
     Swedish    -> "Inga paket behöver ändras."
     Esperanto  -> "Ne pakaĵoj devas ŝanĝiĝi."
-    Dutch      -> "Er zijn geen pakketten die wijzigingen nodig hebben."
+    Dutch      -> "Er zijn geen pakketten die aangepast moeten worden."
     Ukrainian  -> "Пакунки не потребують оновлення."
     Romanian   -> "Nu trebuie schimbat nici un pachet."
     Vietnamese -> "Không có gói nào cần thay đổi."
@@ -1956,7 +1965,7 @@ whoIsBuildUser_1 = \case
     Russian    -> "Не удается определить, от имени какого пользователя производить сборку."
     Italian    -> "Non è stato possibile determinare l'utente che eseguirà la compilazione."
     Esperanto  -> "Ne povas decidi, per kiu konto de uzanto munti."
-    Dutch      -> "Kan niet bepalen met welk gebruikers account te bouwen."
+    Dutch      -> "Er kan niet worden vastgesteld met welk gebruikersaccount er gebouwd dient te worden."
     Ukrainian  -> "Не вдається визначити користувача, від імені якого буде проводитись збірка."
     Romanian   -> "Nu se poate determina cu care cont de utilizator să se compileze."
     Vietnamese -> "Không thể xác định tài khoản người dùng nào để build."
@@ -1976,7 +1985,7 @@ confParsing_1 = \case
     Russian    -> "Не удается распознать формат вашего файла pacman.conf."
     Italian    -> "Non è stato possibile analizzare il file pacman.conf."
     Esperanto  -> "Ne kapablas sintaske analizi vian dosieron, pacman.conf."
-    Dutch      -> "Niet in staat om uw pacman.conf bestand te parseren."
+    Dutch      -> "Uw pacman.conf-bestand kan niet worden verwerkt."
     Ukrainian  -> "Не вдалось зрозуміти вміст файлу pacman.conf."
     Romanian   -> "Nu se poate analiza fișierul pacman.conf."
     Vietnamese -> "Không thể lấy dữ liệu từ tệp pacman.conf của bạn."
@@ -1990,7 +1999,7 @@ provides_1 (bt . pnName -> pro) = \case
     Arabic     -> ":مطلوب باعتباره تبعية ، والتي يتم توفيرها بواسطة حزم متعددة. رجاءا اختر واحدة" <+> pro
     Spanish    -> pro <+> "se requiere como una dependencia, que es proporcionada por múltiples paquetes. Por favor, seleccione uno:"
     Italian    -> pro <+> "è richiesto come dipendenza; si trova in molteplici pacchetti. Selezionarne uno:"
-    Dutch      -> pro <+> "is vereist als afhankelijkheid, die wordt geleverd door meerdere pakketten. Selecteer er alstublieft een:"
+    Dutch      -> pro <+> "is vereist als afhankelijkheid, maar wordt door meerdere pakketten aangeleverd. Kies 1 pakket:"
     Ukrainian  -> pro <+> "потрібен як залежність, яка надається декількома пакунками. Оберіть один з них:"
     Romanian   -> pro <+> "este necesar ca dependență, care e provizionat de mai multe pachete. Selectați unul dintre ele:"
     Vietnamese -> pro <+> "là gói phụ thuộc, được cung cấp từ nhiều gói khác. Hãy chọn một:"
@@ -2037,6 +2046,7 @@ hotEdit_2 = \case
   Vietnamese -> "Bạn có muốn chỉnh sửa tệp .install?"
   Czech      -> "Chcete upravit soubor .install?"
   Korean     -> ".install 파일을 수정하시겠습니까?"
+  Dutch      -> "Wilt u het .install-bestand bewerken?"
   _          -> "Would you like to edit the .install file?"
 
 hotEdit_3 :: FilePath -> Language -> Doc AnsiStyle
@@ -2049,6 +2059,7 @@ hotEdit_3 fp = \case
   Vietnamese -> "Bạn có muốn chỉnh sửa " <> pretty fp <> "?"
   Czech      -> "Chcete upravit " <> pretty fp <> "?"
   Korean     -> pretty fp <> "을(를) 수정하시겠습니까?"
+  Dutch      -> "Wilt u " <> pretty fp <> bewerken "?"
   _          -> "Would you like to edit " <> pretty fp <> "?"
 
 ------------------------------
@@ -2060,7 +2071,7 @@ security_1 (PkgName p) = \case
   Arabic    -> ".كان معقدا جدا للتحليل - يمكن أن يكون تعتيم مشوش للشفرة" <+> bt p <+> "تبع PKGBUILDاﻟ"
   Spanish   -> "El PKGBUILD de" <+> bt p <+> "era demasiado complejo de analizar - puede estar ofuscando código malicioso."
   Italian   -> "Il PKGBUILD di" <+> bt p <+> "è troppo complesso per essere analizzato - è possibile che stia offuscando codice malevolo."
-  Dutch     -> "Het PKGBUILD-bestand van" <+> bt p <+> " was te complex om te parseren - het kan schadelijke code versluieren."
+  Dutch     -> "Het PKGBUILD-bestand van" <+> bt p <+> " was te complex om te verwerken. Het bestand bevat mogelijk verborgen schadelijke code."
   Ukrainian -> "PKGBUILD пакунку" <+> bt p <+> "був надто складним для аналізу - він може містити замаскований шкідливий код."
   Romanian  -> "PKGBUILD-ul pachetului" <+> bt p <+> "este prea complicat de analizat - ar putea sa acopere cod rău intenționat."
   Vietnamese -> "PKGBUILD của" <+> bt p <+> "quá khó để đọc - nó có thể chứa đoạn mã nguy hiểm."
@@ -2074,7 +2085,7 @@ security_2 (bt -> t) = \case
   Arabic    -> ".هذه PKGBUILDيمكن ان يحمل ملفات عشروتىية ليست مسجلة باﻟ" <+> t
   Spanish   -> t <+> "se puede usar para descargar scripts arbitrarios que este PKGBUILD no rastrea."
   Italian   -> t <+> "può essere usato per scaricare script arbitrari non tracciati da questo PKGBUILD."
-  Dutch     -> t <+> "kan gebruikt worden om willekeurige scripten te downloaden die niet worden bijgehouden door dit PKGBUILD-bestand."
+  Dutch     -> t <+> "kan gebruikt worden om willekeurige scripts te downloaden die niet worden bijgehouden door dit PKGBUILD-bestand."
   Ukrainian -> t <+> "може завантажувати довільні скріпти, які не відстежуються цим PKGBUILD."
   Romanian  -> t <+> "se poate folosi pentru a descărca scripturi neurmărite de acest PKGBUILD."
   Vietnamese -> t <+> "có thể dùng để tải xuống các tập lệnh sẽ không được kiểm soát bởi PKGBUILD."
@@ -2102,7 +2113,7 @@ security_4 (bt -> t) = \case
   Arabic    -> ".تشير ان شخصا ما يحاول الوصول الى قوت المسؤول على جهازك" <+> t
   Spanish   -> t <+> "indica que alguien puede estar intentando obtener acceso de root a su máquina."
   Italian   -> t <+> "indica che forse qualcuno sta cercando di ottenere accesso alla tua macchina come root."
-  Dutch     -> t <+> "geeft aan dat iemand mogelijk root-toegang to uw machine probeert te krijgen."
+  Dutch     -> t <+> "geeft aan dat iemand mogelijk roottoegang tot uw apparaat probeert te krijgen."
   Ukrainian -> t <+> "вказує на те, що хтось може спробувати отримати доступ root до вашої машини."
   Romanian  -> t <+> "indică că cineva are putea încerca să obțină acces root asupra mașinăria dumneavoastră."
   Vietnamese -> t <+> "được xác định là có người đang có giành quyền truy cập vào root trên thiết bị của bạn."
@@ -2116,7 +2127,7 @@ security_5 (PkgName p) = \case
   Arabic    -> ".في القائمة السودء bash في تعبيرات" <+> bt p <+> "باجل PKGBUILDتحذير: اﻟ"
   Spanish   -> "ADVERTENCIA: El PKGBUILD de" <+> bt p <+> "contiene expresiones bash en la lista negra."
   Italian   -> "ATTENZIONE: Il PKGBUILD di" <+> bt p <+> "contiene espressioni bash presenti nella lista nera."
-  Dutch     -> "WAARSCHUWING: De PKGBUILD van" <+> bt p <+> "bevat bash uitdrukkingen die op de zwarte lijst staan."
+  Dutch     -> "WAARSCHUWING: De PKGBUILD van" <+> bt p <+> "bevat bash-uitdrukkingen die op de zwarte lijst staan."
   Ukrainian -> "УВАГА! PKGBUILD пакунку" <+> bt p <+> "містить вирази bash, які занесені в чорний список."
   Romanian  -> "ATENȚIE! PKGBUILD-ul pachetului" <+> bt p <+> "conține expresii de bash pe lista neagră."
   Vietnamese -> "CẢNH BÁO: PKGBUILD của" <+> bt p <+> "chứa những câu lệnh bash nguy hiểm."
@@ -2130,7 +2141,7 @@ security_6 = \case
   Arabic     -> "هل تريد اقاف البناء؟"
   Spanish    -> "¿Desea salir del proceso de compilación?"
   Italian    -> "Terminare la compilazione?"
-  Dutch      -> "Wilt u het bouw process stoppen?"
+  Dutch      -> "Wilt u het bouwproces afbreken?"
   Ukrainian  -> "Бажаєте скасувати процес збірки?"
   Romanian   -> "Doriți anula procesul de compilare?"
   Vietnamese -> "Bạn có muốn dừng quá trình build?"
@@ -2144,7 +2155,7 @@ security_7 = \case
   Arabic    -> ".الذي يحتمل أن يكون ضارا bash تم الغاء المعالجة الاضافيه لتجنب صدور"
   Spanish   -> "Se canceló el procesamiento posterior para evitar el código bash potencialmente malicioso."
   Italian   -> "Non saranno eseguite altre operazioni al fine di evitare l'esecuzione di codice bash potenzialmente malevolo."
-  Dutch     -> "Verdere verwerking geannuleerd om het uitvoeren van potentieel schadelijke bash-code te voorkomen."
+  Dutch     -> "De verdere verwerking is afgebroken om het uitvoeren van potentieel schadelijke bash-code te voorkomen."
   Ukrainian -> "Подальша установка скасована, щоб уникнути потенційно шкідливого коду bash."
   Romanian  -> "S-a cancelat procesarea ulterioară pentru a evita cod de bash potențial rău intenționat."
   Vietnamese -> "Hãy dừng những quá trình tiếp theo để ngắn đoạn mã bash nguy hiểm."
@@ -2158,7 +2169,7 @@ security_8 (bt -> t) = \case
   Arabic    -> ".الخاص بك PKGBUILDمضمن بالحقول المصفوفة باﻟ bash امر" <+> t
   Spanish   -> t <+> "es un comando bash integrado en los campos de la matriz del PKGBUILD."
   Italian   -> t <+> "è un comando bash presente all'interno degli array del tuo PKGBUILD."
-  Dutch     -> t <+> "is een bash-opdracht die is opgenomen in uw PKGBUILD-arrayvelden."
+  Dutch     -> t <+> "is een bash-opdracht die is opgenomen in uw PKGBUILD-reeksvelden."
   Ukrainian -> t <+> "- це команда bash, що вбудована в ваші поля масиву PKGBUILD"
   Romanian  -> t <+> "este o comandă bash integrată în matricele din PKGBUILD."
   Vietnamese -> t <+> "là lệnh bash được lồng trong mảng của PKGBUILD."
@@ -2172,7 +2183,7 @@ security_9 (bt -> t) = \case
   Arabic    -> "شيء غريب ان يكون لديك في الحقول المصفوفة, هل هيا امن؟" <+> t
   Spanish   -> t <+> "es algo extraño para tener en sus campos de matriz. ¿Es seguro?"
   Italian   -> t <+> "è una cosa strana da trovare all'interno degli array. E' sicura?"
-  Dutch     -> t <+> "is een vreemd ding om in uw arrayvelden te hebben. Is het veilig?"
+  Dutch     -> t <+> "is een vreemde eend in de bijt in uw reeksvelden. Is dit wel veilig?"
   Ukrainian -> t <+> "- дивна річ в полях масиву. Це безпечно?"
   Romanian  -> t <+> "e ciudat să se afle în matricele dumneavoastră. Asta este sigur?"
   Vietnamese -> t <+> "là đoạn mã lạ trong mảng. Nó có an toàn không?"
@@ -2186,7 +2197,7 @@ security_10 (bt -> t) = \case
   Arabic    -> ".يعني ان شخصا ما كان يحاول ان يكون ذكيا مع المتغيرات لاخفاء الاوامر الخبيثة" <+> t
   Spanish   -> t <+> "implica que alguien estaba tratando de ser astuto con las variables para ocultar comandos maliciosos."
   Italian   -> t <+> "implica che qualcuno stava trafficando con le variabili per nascondere comandi malevoli."
-  Dutch     -> t <+> "impliceert dat iemand slim probeerde om te gaan met variabelen om schadelijke opdrachten te verbergen."
+  Dutch     -> t <+> "impliceert dat iemand op slinkse wijze probeerde om te gaan met variabelen om schadelijke opdrachten te verbergen."
   Ukrainian -> t <+> "означає, що хтось намагається обдурити змінними, щоб сховати небеспечні команди."
   Romanian  -> t <+> "implică că cineva încearcă să fie șmecher cu variabile pentru a ascunde comenzi rele intenționate."
   Vietnamese -> t <+> "được xác định là có ai đó đang cố ẩn những câu lệnh nguy hiểm trong các biến."
@@ -2204,6 +2215,7 @@ security_11 = \case
   Vietnamese -> "Không thể đọc PKGBUILD - nó có thể chứa đoạn mã nguy hiểm."
   Czech     -> "Tento PKGBUILD je příliš složitý na to, aby jej bylo možné analyzovat/rezebrat – může obsahovat matoucí škodlivý kód."
   Korean    -> "이 PKGBUILD는 분석하기에 너무 복잡합니다 - 악성코드를 난독화하고 있을 수 있습니다."
+  Dutch      -> "Deze PKGBUILD is te complex om te verwerken. Het bestand bevat mogelijk verborgen schadelijke code."
   _         -> "That PKGBUILD is too complex to parse - it may be obfuscating malicious code."
 
 security_12 :: Language -> Doc AnsiStyle
@@ -2216,6 +2228,7 @@ security_12 = \case
   Vietnamese -> "Phát hiện lỗ hổng trong PKGBUILD."
   Czech      -> "Byla zjištěna potenciální bezpečnostní chyba v PKGBUILD."
   Korean     -> "잠재적인 PKGBUILD 취약점 발견됨."
+  Dutch      -> "Er zijn mogelijke kwetsbaarheden aangetroffen in het PKGBUILD-bestand."
   _          -> "Potential PKGBUILD vulnerabilities detected."
 
 security_13 :: Word -> Language -> Doc AnsiStyle
@@ -2228,6 +2241,7 @@ security_13 (bt -> w) = \case
   Vietnamese -> "Tìm kiếm" <+> w <+> "lỗ hổng trong PKGBUILD..."
   Czech     -> "Kontrola bezpečnostních chyb v" <+> w <+> "PKGBUILD"
   Korean    -> w <+> "PKGBUILD 취약점 확인 중..."
+  Dutch      -> "Bezig met controleren van" <+> w <+> "PKGBUILDs op kwetsbaarheden…"
   _         -> "Checking" <+> w <+> "PKGBUILDs for vulnerabilities..."
 
 security_14 :: Language -> Doc AnsiStyle
@@ -2240,6 +2254,7 @@ security_14 = \case
   Vietnamese -> "Không tìm thấy lỗ hổng."
   Czech      -> "Nebyly nalezeny žádné bezpečnostní chyby."
   Korean     -> "발견된 취약점이 없습니다."
+  Dutch      -> "Er zijn geen kwetsbaarheden aangetroffen."
   _          -> "No vulnerabilities detected."
 
 -----------------------
