@@ -260,7 +260,7 @@ Aura has been translated by these generous people:
 | Chinese    | Kai Zhang                                       |
 | Croatian   | Denis Kasak and "stranac"                       |
 | Czech      | Daniel Rosel                                    |
-| Dutch      | Joris Blanken                                   |
+| Dutch      | Joris Blanken / Heimen Stoffels                 |
 | Esperanto  | Zachary "Ghosy" Matthews                        |
 | French     | Ma Jiehong and Fabien Dubosson                  |
 | German     | Lukas Niederbremer and Jonas Platte             |

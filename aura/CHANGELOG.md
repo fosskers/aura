@@ -6,6 +6,10 @@
 
 - Korean translations thanks to "Nioden". 감사합니다!
 
+#### Changed
+
+- Updated Dutch translations thanks to Heimen Stoffels. Dank u zeer!
+
 ## 3.2.7 (2022-01-18)
 
 #### Added
