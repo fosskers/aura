@@ -194,7 +194,7 @@ pullRepo :: User -> RIO Env (Either Failure ())
 pullRepo usr = do
   logDebug "git: Clearing worktree. "
   void . runProcess . setStderr closed . setStdout closed $ proc "git" ["reset", "--hard", "HEAD"]
-  logDebug "git: Pulling repo."
+  logDebug $ "git: Pulling repo as " <> display (user usr)
   ue <- liftIO . getUserEntryForName . T.unpack . user $ usr
   let uid = userID ue
   let gid = userGroupID ue
