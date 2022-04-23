@@ -1,4 +1,4 @@
-resolver: lts-19.1
+resolver: lts-19.4
 
 ghc-options:
   $everything: -split-sections -haddock
