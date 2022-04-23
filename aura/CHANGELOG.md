@@ -1,6 +1,6 @@
 # Aura Changelog
 
-## Unreleased
+## 3.2.8 (2022-04-23)
 
 #### Added
 
@@ -9,6 +9,12 @@
 #### Changed
 
 - Updated Dutch translations thanks to Heimen Stoffels. Dank u zeer!
+
+#### Fixed
+
+- An issue involving `git` permissions. [#760]
+
+[#760]: https://github.com/fosskers/aura/pull/760
 
 ## 3.2.7 (2022-01-18)
 
