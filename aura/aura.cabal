@@ -58,6 +58,7 @@ common libexec
     , scheduler                    >=1.1 && <2.1
     , transformers                 ^>=0.5
     , typed-process                ^>=0.2
+    , unix                         ^>=2.7.2.2
 
 library
   import:          commons, libexec
