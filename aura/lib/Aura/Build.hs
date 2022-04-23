@@ -38,6 +38,7 @@ import qualified RIO.Set as S
 import qualified RIO.Text as T
 import           RIO.Time
 import           System.Process.Typed
+import           System.Posix.User
 
 ---
 
@@ -193,8 +194,11 @@ pullRepo :: User -> RIO Env (Either Failure ())
 pullRepo usr = do
   logDebug "git: Clearing worktree. "
   void . runProcess . setStderr closed . setStdout closed $ proc "git" ["reset", "--hard", "HEAD"]
-  logDebug "git: Pulling repo."
-  ec <- runProcess . setStderr closed . setStdout closed $ proc "git" ["pull"]
+  logDebug $ "git: Pulling repo as " <> display (user usr)
+  ue <- liftIO . getUserEntryForName . T.unpack . user $ usr
+  let uid = userID ue
+  let gid = userGroupID ue
+  ec <- runProcess . setChildUser uid . setChildGroup gid . setStderr closed . setStdout closed $ proc "git" ["pull"]
   case ec of
     ExitFailure _ -> pure . Left . Failure $ FailMsg buildFail_12
     ExitSuccess   -> liftIO (chown usr "." ["-R"]) $> Right ()
