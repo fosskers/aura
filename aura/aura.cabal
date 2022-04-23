@@ -41,7 +41,7 @@ common commons
 
   build-depends:
     , base        >=4.12   && <5
-    , bytestring  ^>=0.10
+    , bytestring  ^>=0.11
     , containers  ^>=0.6
     , megaparsec  >=7      && <10
     , rio         ^>=0.1.17
@@ -97,7 +97,7 @@ library
     , language-bash     >=0.8 && <0.10
     , network-uri       ^>=2.6
     , stm               ^>=2.5
-    , time              >=1.8 && <1.10
+    , time              >=1.8 && <1.12
 
 executable aura
   import:         commons, libexec

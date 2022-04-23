@@ -3,31 +3,10 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages:
-- completed:
-    hackage: hashable-1.4.0.2@sha256:0cddd0229d1aac305ea0404409c0bbfab81f075817bd74b8b2929eff58333e55,5005
-    pantry-tree:
-      size: 1248
-      sha256: 51dda0aa70849588d074125f324beba1c8736cfa486e7f4a90a798b1d0e6019d
-  original:
-    hackage: hashable-1.4.0.2
-- completed:
-    hackage: parsec-3.1.15.0@sha256:a162d4cc8884014ba35192545cad293af0529fe11497aad8834bbaaa3dfffc26,4429
-    pantry-tree:
-      size: 2630
-      sha256: cbddc1e3c5ada6925354850cc0a8fadcd8643689098a504a0ed25ef9e0b932b8
-  original:
-    hackage: parsec-3.1.15.0
-- completed:
-    hackage: text-2.0@sha256:86e64bc76fefb8f0f6529d28ddf24b2a29d43591a8b9b7c7094f481a0db2fb7d,7788
-    pantry-tree:
-      size: 7364
-      sha256: 894b84358fbad3cb8c16f224d3d8b7a1d7b6bcae68cda5a9998dd964904a6560
-  original:
-    hackage: text-2.0
+packages: []
 snapshots:
 - completed:
-    size: 618683
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/19/4.yaml
-    sha256: d4ee004c46ba878d2f304f5d748d493057be579192a8d148527f3ba55c9df57f
-  original: lts-19.4
+    size: 554666
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2022/4/23.yaml
+    sha256: 5d4d9b7736ef03e0a21d2e6c29932d9a49ab19392f3ad8ff69fc2892518711ae
+  original: nightly-2022-04-23
