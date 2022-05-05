@@ -7,6 +7,7 @@ pub mod aur;
 pub mod cache;
 pub mod common;
 pub mod deps;
+pub mod faur;
 pub mod git;
 pub mod log;
 pub mod snapshot;

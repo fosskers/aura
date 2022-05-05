@@ -1,0 +1,133 @@
+[
+  {
+    "CheckDepends": [],
+    "Conflicts": [
+      "aura-bin",
+      "aura-git"
+    ],
+    "Depends": [
+      "gmp",
+      "pacman",
+      "git"
+    ],
+    "Description": "A secure package manager for Arch Linux and the AUR",
+    "FirstSubmitted": 1339580942,
+    "Groups": [],
+    "ID": 1021953,
+    "Keywords": [
+      "AUR",
+      "haskell",
+      "pacman"
+    ],
+    "LastModified": 1642719354,
+    "License": [
+      "GPL3"
+    ],
+    "Maintainer": "fosskers",
+    "MakeDepends": [
+      "stack"
+    ],
+    "Name": "aura",
+    "NumVotes": 163,
+    "OptDepends": [
+      "bash-completion"
+    ],
+    "OutOfDate": null,
+    "PackageBase": "aura",
+    "PackageBaseID": 60019,
+    "Popularity": 1.263601,
+    "Provides": [],
+    "Replaces": [],
+    "URL": "https://github.com/fosskers/aura",
+    "URLPath": "/cgit/aur.git/snapshot/aura.tar.gz",
+    "Version": "3.2.7-1"
+  },
+  {
+    "CheckDepends": [],
+    "Conflicts": [
+      "aura",
+      "aura-git"
+    ],
+    "Depends": [
+      "gmp",
+      "pacman",
+      "git"
+    ],
+    "Description": "A secure package manager for Arch Linux and the AUR - Prebuilt binary",
+    "FirstSubmitted": 1368359427,
+    "Groups": [],
+    "ID": 1021951,
+    "Keywords": [
+      "AUR",
+      "haskell",
+      "pacman"
+    ],
+    "LastModified": 1642719179,
+    "License": [
+      "GPL3"
+    ],
+    "Maintainer": "fosskers",
+    "MakeDepends": [],
+    "Name": "aura-bin",
+    "NumVotes": 165,
+    "OptDepends": [
+      "bash-completion"
+    ],
+    "OutOfDate": null,
+    "PackageBase": "aura-bin",
+    "PackageBaseID": 69882,
+    "Popularity": 0.22797,
+    "Provides": [
+      "aura"
+    ],
+    "Replaces": [],
+    "URL": "https://github.com/fosskers/aura",
+    "URLPath": "/cgit/aur.git/snapshot/aura-bin.tar.gz",
+    "Version": "3.2.7-1"
+  },
+  {
+    "CheckDepends": [],
+    "Conflicts": [
+      "aura",
+      "aura-bin"
+    ],
+    "Depends": [
+      "gmp",
+      "zlib"
+    ],
+    "Description": "A package manager for Arch Linux and its AUR",
+    "FirstSubmitted": 1532906402,
+    "Groups": [],
+    "ID": 923522,
+    "Keywords": [
+      "aur",
+      "aura",
+      "helper",
+      "manager",
+      "package"
+    ],
+    "LastModified": 1624132326,
+    "License": [
+      "GPL3"
+    ],
+    "Maintainer": null,
+    "MakeDepends": [
+      "git",
+      "stack"
+    ],
+    "Name": "aura-git",
+    "NumVotes": 3,
+    "OptDepends": [],
+    "OutOfDate": null,
+    "PackageBase": "aura-git",
+    "PackageBaseID": 134593,
+    "Popularity": 0.0,
+    "Provides": [
+      "aura"
+    ],
+    "Replaces": [],
+    "URL": "https://github.com/aurapm/aura",
+    "URLPath": "/cgit/aur.git/snapshot/aura-git.tar.gz",
+    "Version": "3.2.5.r0.g0e17654b-1"
+  }
+]
