@@ -3,41 +3,41 @@
 use serde::{Deserialize, Serialize};
 
 /// The main `faur` instance.
-pub const FAUR_URL: &str = "https://faur.fosskers.ca/";
+pub const FAUR_URL: &str = "https://faur.fosskers.ca";
 
 /// Package information returned from a `faur` instance. Identical in format to
 /// the AUR's RPC, but yields empty lists for missing fields.
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase", deny_unknown_fields)]
 pub struct Package {
-    check_depends: Vec<String>,
-    conflicts: Vec<String>,
-    depends: Vec<String>,
-    description: Option<String>,
-    first_submitted: u64,
-    groups: Vec<String>,
+    pub check_depends: Vec<String>,
+    pub conflicts: Vec<String>,
+    pub depends: Vec<String>,
+    pub description: Option<String>,
+    pub first_submitted: u64,
+    pub groups: Vec<String>,
     #[serde(rename = "ID")]
-    id: u64,
-    keywords: Vec<String>,
-    last_modified: u64,
-    license: Vec<String>,
-    maintainer: Option<String>,
-    make_depends: Vec<String>,
-    name: String,
-    num_votes: u64,
-    opt_depends: Vec<String>,
-    out_of_date: Option<u64>,
-    package_base: String,
+    pub id: u64,
+    pub keywords: Vec<String>,
+    pub last_modified: u64,
+    pub license: Vec<String>,
+    pub maintainer: Option<String>,
+    pub make_depends: Vec<String>,
+    pub name: String,
+    pub num_votes: u64,
+    pub opt_depends: Vec<String>,
+    pub out_of_date: Option<u64>,
+    pub package_base: String,
     #[serde(rename = "PackageBaseID")]
-    package_base_id: u64,
-    popularity: f64,
-    provides: Vec<String>,
-    replaces: Vec<String>,
+    pub package_base_id: u64,
+    pub popularity: f64,
+    pub provides: Vec<String>,
+    pub replaces: Vec<String>,
     #[serde(rename = "URL")]
-    url: Option<String>,
+    pub url: Option<String>,
     #[serde(rename = "URLPath")]
-    url_path: String,
-    version: String,
+    pub url_path: String,
+    pub version: String,
 }
 
 /// Look up K-many packages by name in a database of N packages: `O(klogn)`

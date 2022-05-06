@@ -23,6 +23,7 @@ use validated::Validated;
 
 pub enum Error {
     Raur(raur_curl::Error),
+    Fetch(crate::fetch::Error),
     Dirs(crate::dirs::Error),
     Io(std::io::Error),
     Git(aura_core::git::Error),
@@ -33,6 +34,12 @@ pub enum Error {
     Pacman(crate::pacman::Error),
     R2d2(r2d2::Error),
     Silent,
+}
+
+impl From<crate::fetch::Error> for Error {
+    fn from(v: crate::fetch::Error) -> Self {
+        Self::Fetch(v)
+    }
 }
 
 impl From<aura_core::aur::dependencies::Error> for Error {
@@ -110,6 +117,7 @@ impl std::fmt::Display for Error {
             Error::Pacman(e) => write!(f, "{}", e),
             Error::Deps(e) => write!(f, "{}", e),
             Error::R2d2(e) => write!(f, "{}", e),
+            Error::Fetch(e) => write!(f, "{}", e),
         }
     }
 }
@@ -117,7 +125,11 @@ impl std::fmt::Display for Error {
 /// View AUR package information.
 pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<(), Error> {
     info!("-Ai on {:?}", packages);
-    let r: Vec<raur_curl::Package> = aura_core::aur::info(packages)?;
+    // let r: Vec<raur_curl::Package> = aura_core::aur::info(packages)?;
+    let r: Vec<aura_core::faur::Package> = aura_core::faur::info(
+        packages.iter().map(|s| s.as_str()),
+        crate::fetch::fetch_json,
+    )?;
     let mut w = BufWriter::new(std::io::stdout());
 
     let repo = fl!(fll, "A-i-repo");
@@ -282,8 +294,13 @@ fn package_url(package: &str) -> String {
     format!("{}{}", crate::open::AUR_PKG_URL, package)
 }
 
-fn package_date(epoch: i64) -> ColoredString {
-    format!("{}", Utc.timestamp(epoch, 0).date().format("%F")).normal()
+fn package_date(epoch: u64) -> ColoredString {
+    // FIXME Thu May  5 22:11:40 2022
+    //
+    // There is a panic risk here with the u64->i64 conversion. In practice it
+    // should never come up, as the timestamps passed in should never be
+    // anywhere near the [`u64::MAX`] value.
+    format!("{}", Utc.timestamp(epoch as i64, 0).date().format("%F")).normal()
 }
 
 /// Clone the AUR repository of given packages.
