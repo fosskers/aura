@@ -107,6 +107,7 @@ dependencies = [
  "alpm-utils 1.1.2",
  "aura-arch",
  "chrono",
+ "disown",
  "itertools",
  "log",
  "nonempty",
@@ -379,6 +380,12 @@ dependencies = [
  "redox_users",
  "winapi",
 ]
+
+[[package]]
+name = "disown"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a5702af1e33e4532aa17e19d17becde57ae619985754ae3cd731f82e7dcd673c"
 
 [[package]]
 name = "either"

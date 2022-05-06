@@ -11,4 +11,3 @@ pub mod faur;
 pub mod git;
 pub mod log;
 pub mod snapshot;
-mod utils;
