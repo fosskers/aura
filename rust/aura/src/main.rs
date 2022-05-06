@@ -6,6 +6,7 @@ pub(crate) mod command;
 pub(crate) mod dirs;
 pub(crate) mod download;
 pub(crate) mod error;
+pub(crate) mod fetch;
 pub(crate) mod flags;
 pub(crate) mod localization;
 mod macros;

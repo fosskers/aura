@@ -77,6 +77,7 @@ dependencies = [
  "rayon",
  "rust-embed",
  "rustyline",
+ "serde",
  "serde_json",
  "simplelog",
  "srcinfo",
