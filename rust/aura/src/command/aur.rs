@@ -230,22 +230,8 @@ pub(crate) fn search(
         t.make_ascii_lowercase();
     }
 
-    // Search using the largest term.
-    let initial_term = terms.pop().unwrap();
-    let mut matches: Vec<_> = aura_core::aur::search(&initial_term)?;
-
-    // Filter out packages that don't match other search terms.
-    matches.retain(|m| {
-        let name = m.name.to_lowercase();
-        let description = m
-            .description
-            .as_deref()
-            .map(|s| s.to_lowercase())
-            .unwrap_or_default();
-        terms
-            .iter()
-            .all(|t| name.contains(t) | description.contains(t))
-    });
+    let mut matches: Vec<aura_core::faur::Package> =
+        aura_core::faur::search(terms.iter().map(|s| s.as_str()), crate::fetch::fetch_json)?;
 
     // Sort and filter the results as requested.
     if alpha {
