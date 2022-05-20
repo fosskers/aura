@@ -1,9 +1,10 @@
 //! AUR package dependency solving.
 
-use crate::utils::Void;
 use alpm::Alpm;
-use alpm_utils::DbListExt;
+// use alpm_utils::DbListExt;
 use chrono::Utc;
+use disown::Disown;
+// use itertools::Itertools;
 use log::{debug, info};
 use nonempty::NonEmpty;
 use r2d2::{ManageConnection, Pool};
@@ -17,7 +18,7 @@ use std::sync::{Arc, Mutex};
 use validated::Validated;
 
 /// Errors that can occur during dependency resolution.
-pub enum Error {
+pub enum Error<E> {
     /// A [`Mutex`] was poisoned and couldn't be unlocked.
     PoisonedMutex,
     /// An error pulling from the resource pool.
@@ -26,41 +27,35 @@ pub enum Error {
     Srcinfo(srcinfo::Error),
     /// An error cloning or pulling a repo.
     Git(crate::git::Error),
-    /// An error contacting the AUR API.
-    Raur(raur_curl::Error),
     /// Multiple errors during concurrent dependency resolution.
-    Resolutions(Box<NonEmpty<Error>>),
+    Resolutions(Box<NonEmpty<Error<E>>>),
     /// A named dependency does not exist.
     DoesntExist(String),
     /// A named dependency of some known package does not exist.
     DoesntExistWithParent(String, String),
+    /// Contacting Faur somehow failed.
+    Faur(E),
 }
 
-impl From<raur_curl::Error> for Error {
-    fn from(v: raur_curl::Error) -> Self {
-        Self::Raur(v)
-    }
-}
-
-impl From<crate::git::Error> for Error {
+impl<E> From<crate::git::Error> for Error<E> {
     fn from(v: crate::git::Error) -> Self {
         Self::Git(v)
     }
 }
 
-impl From<srcinfo::Error> for Error {
+impl<E> From<srcinfo::Error> for Error<E> {
     fn from(v: srcinfo::Error) -> Self {
         Self::Srcinfo(v)
     }
 }
 
-impl From<r2d2::Error> for Error {
+impl<E> From<r2d2::Error> for Error<E> {
     fn from(v: r2d2::Error) -> Self {
         Self::R2D2(v)
     }
 }
 
-impl std::fmt::Display for Error {
+impl<E: std::fmt::Display> std::fmt::Display for Error<E> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Error::PoisonedMutex => write!(f, "Poisoned Mutex"),
@@ -74,11 +69,11 @@ impl std::fmt::Display for Error {
             }
             Error::Srcinfo(e) => write!(f, "{}", e),
             Error::Git(e) => write!(f, "{}", e),
-            Error::Raur(e) => write!(f, "{}", e),
             Error::DoesntExist(p) => write!(f, "{} is not a known package.", p),
             Error::DoesntExistWithParent(par, p) => {
                 write!(f, "{}, required by {}, is not a known package.", p, par)
             }
+            Error::Faur(e) => write!(f, "{}", e),
         }
     }
 }
@@ -154,18 +149,25 @@ impl Hash for Buildable {
 }
 
 /// Determine all packages to be built and installed.
-pub fn resolve<'a, I, S, M>(pool: Pool<M>, clone_dir: &Path, pkgs: I) -> Result<Resolution, Error>
+pub fn resolve<'a, I, S, M, F, E>(
+    pool: Pool<M>,
+    fetch: &F,
+    clone_dir: &Path,
+    pkgs: I,
+) -> Result<Resolution, Error<E>>
 where
     I: IntoParallelIterator<Item = S>,
     S: AsRef<str> + Into<String>,
     M: ManageConnection<Connection = Alpm>,
+    F: Fn(&str) -> Result<Vec<crate::faur::Package>, E> + Sync,
+    E: Send,
 {
     let arc = Arc::new(Mutex::new(Resolution::default()));
 
     let start = Utc::now();
     pkgs.into_par_iter()
-        .map(|pkg| resolve_one(pool.clone(), arc.clone(), clone_dir, None, pkg))
-        .collect::<Validated<(), Error>>()
+        .map(|pkg| resolve_one(pool.clone(), arc.clone(), fetch, clone_dir, None, pkg))
+        .collect::<Validated<(), Error<E>>>()
         .ok()
         .map_err(|es| Error::Resolutions(Box::new(es)))?;
     let end = Utc::now();
@@ -181,16 +183,19 @@ where
     Ok(res)
 }
 
-fn resolve_one<'a, S, M>(
+fn resolve_one<'a, S, M, F, E>(
     pool: Pool<M>,
     mutx: Arc<Mutex<Resolution>>,
+    fetch: &F,
     clone_dir: &Path,
     parent: Option<&str>,
     pkg_raw: S,
-) -> Result<(), Error>
+) -> Result<(), Error<E>>
 where
     S: AsRef<str> + Into<String>,
     M: ManageConnection<Connection = Alpm>,
+    F: Fn(&str) -> Result<Vec<crate::faur::Package>, E> + Sync,
+    E: Send,
 {
     let pkg = strip_version(pkg_raw);
     let pr = pkg.as_str();
@@ -242,7 +247,7 @@ where
                         .map_err(|_| Error::PoisonedMutex)?
                         .to_install
                         .insert(Official(prnt.clone()))
-                        .void();
+                        .disown();
 
                     let deps: Vec<_> = official
                         .depends()
@@ -259,8 +264,17 @@ where
                     drop(alpm);
 
                     deps.into_par_iter()
-                        .map(|d| resolve_one(pool.clone(), mutx.clone(), clone_dir, Some(&prnt), d))
-                        .collect::<Validated<(), Error>>()
+                        .map(|d| {
+                            resolve_one(
+                                pool.clone(),
+                                mutx.clone(),
+                                fetch,
+                                clone_dir,
+                                Some(&prnt),
+                                d,
+                            )
+                        })
+                        .collect::<Validated<(), Error<E>>>()
                         .ok()
                         .map_err(|es| Error::Resolutions(Box::new(es)))?;
                 }
@@ -271,7 +285,7 @@ where
                     drop(alpm);
 
                     debug!("It's an AUR package.");
-                    let path = pull_or_clone(clone_dir, parent, &pkg)?;
+                    let path = pull_or_clone(fetch, clone_dir, parent, &pkg)?;
                     debug!("Parsing .SRCINFO for {}", pkg);
                     let info = Srcinfo::parse_file(path.join(".SRCINFO"))?;
                     let name = info.base.pkgbase;
@@ -306,16 +320,16 @@ where
                             .into_iter()
                             .flat_map(|av| av.vec)
                             .chain(prov)
-                            .for_each(|p| r.provided.insert(p).void())
+                            .for_each(|p| r.provided.insert(p).disown())
                     })?;
 
                     deps_copy
                         .into_par_iter()
                         .map(|p| {
                             let prnt = Some(parent.as_str());
-                            resolve_one(pool.clone(), mutx.clone(), clone_dir, prnt, p)
+                            resolve_one(pool.clone(), mutx.clone(), fetch, clone_dir, prnt, p)
                         })
-                        .collect::<Validated<(), Error>>()
+                        .collect::<Validated<(), Error<E>>>()
                         .ok()
                         .map_err(|es| Error::Resolutions(Box::new(es)))?;
                 }
@@ -338,34 +352,54 @@ where
 // The goal here is to rely on our local clone more, to avoid having to call to
 // the AUR all the time. `-Ai`, perhaps, should also read local clones if they
 // exist. This offers the bonus of `-Ai` functioning offline, like `-Si` does!
-fn pull_or_clone<S>(clone_dir: &Path, parent: Option<S>, pkg: &str) -> Result<PathBuf, Error>
+fn pull_or_clone<S, F, E>(
+    fetch: &F,
+    clone_dir: &Path,
+    parent: Option<S>,
+    pkg: &str,
+) -> Result<PathBuf, Error<E>>
 where
     S: Into<String>,
+    F: Fn(&str) -> Result<Vec<crate::faur::Package>, E>,
 {
     if super::is_aur_package_fast(clone_dir, pkg) {
         let path = clone_dir.join(pkg);
         // crate::git::pull(&path)?; // Here. Potentially avoid this.
         Ok(path)
     } else {
-        let info = crate::aur::info(&[pkg])?;
+        let mut info = crate::faur::info(std::iter::once(pkg), fetch).map_err(Error::Faur)?;
         let base = info
-            .first()
+            .pop() // ASSUMPTION: The list of length-1!
+            .or_else(|| {
+                debug!("Trying extended provider search on {}.", pkg);
+                // FIXME Fri Feb 18 16:48:34 2022
+                //
+                // Use `Iterator::intersperse` once it stabilizes.
+                // let term: String =
+                //     itertools::Itertools::intersperse(pkg.split(['-', '_']), " ").collect();
+                debug!("Attempting search on {}", pkg);
+                crate::faur::search(std::iter::once(pkg), fetch)
+                    .ok()
+                    .and_then(|ps| {
+                        debug!("{} search results for {}", ps.len(), pkg);
+                        ps.into_iter().find(|p| p.provides.iter().any(|x| x == pkg))
+                    })
+            })
             .ok_or_else(|| match parent {
                 Some(par) => Error::DoesntExistWithParent(par.into(), pkg.to_string()),
                 None => Error::DoesntExist(pkg.to_string()),
             })?
-            .package_base
-            .as_str();
+            .package_base;
 
         // FIXME Wed Feb  9 21:24:27 2022
         //
         // Avoid the code duplication.
-        if super::is_aur_package_fast(clone_dir, base) {
+        if super::is_aur_package_fast(clone_dir, &base) {
             let path = clone_dir.join(base);
             // crate::git::pull(&path)?; // Here. Potentially avoid this.
             Ok(path)
         } else {
-            let path = crate::aur::clone_aur_repo(Some(clone_dir), base)?;
+            let path = crate::aur::clone_aur_repo(Some(clone_dir), &base)?;
             Ok(path)
         }
     }

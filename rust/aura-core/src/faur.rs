@@ -41,7 +41,7 @@ pub struct Package {
 }
 
 /// Look up K-many packages by name in a database of N packages: `O(klogn)`
-pub fn info<'a, I, F, E>(pkgs: I, fetch: F) -> Result<Vec<Package>, E>
+pub fn info<'a, I, F, E>(pkgs: I, fetch: &F) -> Result<Vec<Package>, E>
 where
     F: Fn(&str) -> Result<Vec<Package>, E>,
     I: Iterator<Item = &'a str>,
@@ -57,7 +57,7 @@ where
 
 /// Look up packages whose names and/or descriptions contain all of the K-many
 /// given terms: `O(klogn)`
-pub fn search<'a, I, F, E>(terms: I, fetch: F) -> Result<Vec<Package>, E>
+pub fn search<'a, I, F, E>(terms: I, fetch: &F) -> Result<Vec<Package>, E>
 where
     F: Fn(&str) -> Result<Vec<Package>, E>,
     I: Iterator<Item = &'a str>,
@@ -71,7 +71,7 @@ where
 }
 
 /// Look up packages that provide the given "package identity": `O(logn)`
-pub fn provides<F, E>(providing: &str, fetch: F) -> Result<Vec<Package>, E>
+pub fn provides<F, E>(providing: &str, fetch: &F) -> Result<Vec<Package>, E>
 where
     F: Fn(&str) -> Result<Vec<Package>, E>,
 {

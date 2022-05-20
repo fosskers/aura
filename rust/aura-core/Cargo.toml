@@ -16,7 +16,6 @@ nonempty = "0.7"
 petgraph = { version = "0.6", default-features = false }
 r2d2 = "0.8"
 rayon = "1.5"
-raur-curl = { path = "../raur-curl" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 srcinfo = "1.0"

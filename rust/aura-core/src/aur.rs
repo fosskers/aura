@@ -3,25 +3,11 @@
 pub mod dependencies;
 
 use log::debug;
-use raur_curl::Raur;
 use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 
 /// The base path of the URL.
 pub const AUR_BASE_URL: &str = "https://aur.archlinux.org/";
-
-/// AUR package information.
-pub fn info<S>(packages: &[S]) -> Result<Vec<raur_curl::Package>, raur_curl::Error>
-where
-    S: AsRef<str>,
-{
-    raur_curl::Handle::new().info(packages)
-}
-
-/// Search the AUR for packages matching a query.
-pub fn search(query: &str) -> Result<Vec<raur_curl::Package>, raur_curl::Error> {
-    raur_curl::Handle::new().search(query)
-}
 
 /// The result of inspecting the existance status of a collection of package
 /// names.
@@ -37,18 +23,20 @@ pub struct PkgPartition<'a> {
 /// Given a [`Path`] to an expected directory of AUR package repo clones, check
 /// it and the AUR to determine which of a given collection of packages are
 /// actually real.
-pub fn partition_aur_pkgs<'a, S>(
+pub fn partition_aur_pkgs<'a, S, F, E>(
+    fetch: &F,
     clone_dir: &Path,
     packages: &'a [S],
-) -> Result<PkgPartition<'a>, raur_curl::Error>
+) -> Result<PkgPartition<'a>, E>
 where
     S: AsRef<str>,
+    F: Fn(&str) -> Result<Vec<crate::faur::Package>, E>,
 {
     let (cloned, fast_bads): (Vec<Cow<'a, str>>, Vec<Cow<'a, str>>) = packages
         .iter()
         .map(|p| Cow::Borrowed(p.as_ref()))
         .partition(|p| is_aur_package_fast(clone_dir, p));
-    let mut part = partition_real_pkgs_via_aur(clone_dir, fast_bads)?;
+    let mut part = partition_real_pkgs_via_aur(fetch, clone_dir, fast_bads)?;
 
     part.cloned.extend(cloned);
     Ok(part)
@@ -69,13 +57,17 @@ fn is_aur_package_fast(clone_dir: &Path, package: &str) -> bool {
 //
 // If this is ever made `pub`, switch it to a generic `S: AsRef<str>`.
 /// Performs an AUR `info` call to determine which packages are real or not.
-fn partition_real_pkgs_via_aur<'a>(
+fn partition_real_pkgs_via_aur<'a, F, E>(
+    fetch: &F,
     clone_dir: &Path,
     packages: Vec<Cow<'a, str>>,
-) -> Result<PkgPartition<'a>, raur_curl::Error> {
+) -> Result<PkgPartition<'a>, E>
+where
+    F: Fn(&str) -> Result<Vec<crate::faur::Package>, E>,
+{
     debug!("AUR call to check for: {:?}", packages);
 
-    let info: Vec<_> = info(&packages)?;
+    let info: Vec<_> = crate::faur::info(packages.iter().map(|cow| cow.as_ref()), fetch)?;
 
     // First we need to determine which of the AUR-returned packages were
     // actually "split" packages (i.e. those built as a child of another, like

@@ -22,7 +22,6 @@ use std::path::{Path, PathBuf};
 use validated::Validated;
 
 pub enum Error {
-    Raur(raur_curl::Error),
     Fetch(crate::fetch::Error),
     Dirs(crate::dirs::Error),
     Io(std::io::Error),
@@ -30,21 +29,21 @@ pub enum Error {
     Clones(NonEmpty<aura_core::git::Error>),
     Pulls(NonEmpty<aura_core::git::Error>),
     Build(build::Error),
-    Deps(aura_core::aur::dependencies::Error),
+    Deps(aura_core::aur::dependencies::Error<crate::fetch::Error>),
     Pacman(crate::pacman::Error),
     R2d2(r2d2::Error),
     Silent,
 }
 
-impl From<crate::fetch::Error> for Error {
-    fn from(v: crate::fetch::Error) -> Self {
-        Self::Fetch(v)
+impl From<aura_core::aur::dependencies::Error<crate::fetch::Error>> for Error {
+    fn from(v: aura_core::aur::dependencies::Error<crate::fetch::Error>) -> Self {
+        Self::Deps(v)
     }
 }
 
-impl From<aura_core::aur::dependencies::Error> for Error {
-    fn from(v: aura_core::aur::dependencies::Error) -> Self {
-        Self::Deps(v)
+impl From<crate::fetch::Error> for Error {
+    fn from(v: crate::fetch::Error) -> Self {
+        Self::Fetch(v)
     }
 }
 
@@ -84,19 +83,12 @@ impl From<crate::dirs::Error> for Error {
     }
 }
 
-impl From<raur_curl::Error> for Error {
-    fn from(v: raur_curl::Error) -> Self {
-        Self::Raur(v)
-    }
-}
-
 // TODO Thu Jan 20 15:32:13 2022
 //
 // Eventually these will all be deleted when error messages are localised.
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::Raur(e) => write!(f, "{}", e),
             Error::Dirs(e) => write!(f, "{}", e),
             Error::Io(e) => write!(f, "{}", e),
             Error::Git(e) => write!(f, "{}", e),
@@ -125,10 +117,9 @@ impl std::fmt::Display for Error {
 /// View AUR package information.
 pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<(), Error> {
     info!("-Ai on {:?}", packages);
-    // let r: Vec<raur_curl::Package> = aura_core::aur::info(packages)?;
     let r: Vec<aura_core::faur::Package> = aura_core::faur::info(
         packages.iter().map(|s| s.as_str()),
-        crate::fetch::fetch_json,
+        &crate::fetch::fetch_json,
     )?;
     let mut w = BufWriter::new(std::io::stdout());
 
@@ -231,7 +222,7 @@ pub(crate) fn search(
     }
 
     let mut matches: Vec<aura_core::faur::Package> =
-        aura_core::faur::search(terms.iter().map(|s| s.as_str()), crate::fetch::fetch_json)?;
+        aura_core::faur::search(terms.iter().map(|s| s.as_str()), &crate::fetch::fetch_json)?;
 
     // Sort and filter the results as requested.
     if alpha {
@@ -408,7 +399,8 @@ pub(crate) fn install(
     // Set `max_size` based on the user's CPU count.
     let pool = Pool::builder().max_size(4).build(mngr)?;
     aura!(fll, "A-install-deps");
-    let rslv = aura_core::aur::dependencies::resolve(pool, &clone_dir, pkgs)?;
+    let rslv =
+        aura_core::aur::dependencies::resolve(pool, &crate::fetch::fetch_json, &clone_dir, pkgs)?;
 
     debug!("Satisfied: {:?}", rslv.satisfied);
     debug!("To install: {:?}", rslv.to_install);
@@ -434,7 +426,7 @@ fn real_packages<'a>(
         cloned,
         to_clone,
         not_real,
-    } = aura_core::aur::partition_aur_pkgs(&clone_dir, pkgs)?;
+    } = aura_core::aur::partition_aur_pkgs(&crate::fetch::fetch_json, &clone_dir, pkgs)?;
 
     if cloned.is_empty() && to_clone.is_empty() {
         red!(fll, "common-no-valid");

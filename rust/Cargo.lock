@@ -63,7 +63,6 @@ dependencies = [
  "pacmanconf",
  "r2d2",
  "r2d2-alpm",
- "raur-curl",
  "rayon",
  "rust-embed",
  "rustyline",
@@ -104,7 +103,6 @@ dependencies = [
  "nonempty",
  "petgraph",
  "r2d2",
- "raur-curl",
  "rayon",
  "serde",
  "serde_json",
@@ -1200,27 +1198,6 @@ checksum = "c069c179fcdc6a2fe24d8d18305cf085fdbd4f922c041943e203685d6a1c58fd"
 dependencies = [
  "endian-type",
  "nibble_vec",
-]
-
-[[package]]
-name = "raur"
-version = "6.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "86e7cb15e8c14377d8d2f8bea32a8b135a5c9d64c5ec4a3ea7cf5d703a4bd227"
-dependencies = [
- "serde",
- "serde_derive",
-]
-
-[[package]]
-name = "raur-curl"
-version = "0.1.0"
-dependencies = [
- "curl",
- "raur",
- "serde",
- "serde_derive",
- "serde_json",
 ]
 
 [[package]]
