@@ -239,7 +239,7 @@ where
 
             match alpm.syncdbs().find_satisfier(pr) {
                 Some(official) => {
-                    debug!("It was official.");
+                    debug!("{} is an official package.", pr);
 
                     let prnt = official.name().to_string();
 
@@ -284,12 +284,16 @@ where
                     // Same here as above.
                     drop(alpm);
 
-                    debug!("It's an AUR package.");
+                    debug!("{} is an AUR package.", pr);
                     let path = pull_or_clone(fetch, clone_dir, parent, &pkg)?;
                     debug!("Parsing .SRCINFO for {}", pkg);
                     let info = Srcinfo::parse_file(path.join(".SRCINFO"))?;
                     let name = info.base.pkgbase;
+
+                    // --- Package identities provided by this one --- //
                     let mut prov = Vec::new();
+
+                    // --- All possible deps to consider --- //
                     let deps: HashSet<String> = info
                         .base
                         .makedepends
@@ -362,39 +366,43 @@ where
     S: Into<String>,
     F: Fn(&str) -> Result<Vec<crate::faur::Package>, E>,
 {
-    if super::is_aur_package_fast(clone_dir, pkg) {
+    // Best case scenario: We already have a local clone of the requested
+    // dependency.
+    if super::has_local_aur_clone(clone_dir, pkg) {
         let path = clone_dir.join(pkg);
         // crate::git::pull(&path)?; // Here. Potentially avoid this.
         Ok(path)
     } else {
+        // Here, we don't have a local clone of the package, so we need to find
+        // out if it's real.
         let mut info = crate::faur::info(std::iter::once(pkg), fetch).map_err(Error::Faur)?;
         let base = info
-            .pop() // ASSUMPTION: The list of length-1!
+            // ASSUMPTION: The list is a singleton!
+            .pop()
+            // There were no immediate results, but the dependency might be
+            // provided by something else.
             .or_else(|| {
                 debug!("Trying extended provider search on {}.", pkg);
-                // FIXME Fri Feb 18 16:48:34 2022
-                //
-                // Use `Iterator::intersperse` once it stabilizes.
-                // let term: String =
-                //     itertools::Itertools::intersperse(pkg.split(['-', '_']), " ").collect();
-                debug!("Attempting search on {}", pkg);
-                crate::faur::search(std::iter::once(pkg), fetch)
+                crate::faur::provides(pkg, fetch)
                     .ok()
-                    .and_then(|ps| {
-                        debug!("{} search results for {}", ps.len(), pkg);
-                        ps.into_iter().find(|p| p.provides.iter().any(|x| x == pkg))
-                    })
+                    // FIXME Fri May 20 14:13:49 2022
+                    //
+                    // Somehow allow the user a choice of provider, if there are multiple.
+                    // In general this should be unlikely on the AUR for the average user.
+                    .and_then(|mut v| v.pop())
             })
+            // Worst scenario: There wasn't a provider either. Then the
+            // dependency, as requested, simply doesn't exist and we have to
+            // halt the entire process.
             .ok_or_else(|| match parent {
                 Some(par) => Error::DoesntExistWithParent(par.into(), pkg.to_string()),
                 None => Error::DoesntExist(pkg.to_string()),
             })?
             .package_base;
 
-        // FIXME Wed Feb  9 21:24:27 2022
-        //
-        // Avoid the code duplication.
-        if super::is_aur_package_fast(clone_dir, &base) {
+        // Second best scenario: the requested dependency was part of some split
+        // package (etc.) that we already know about.
+        if super::has_local_aur_clone(clone_dir, &base) {
             let path = clone_dir.join(base);
             // crate::git::pull(&path)?; // Here. Potentially avoid this.
             Ok(path)

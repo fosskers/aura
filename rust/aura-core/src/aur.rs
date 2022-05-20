@@ -35,7 +35,7 @@ where
     let (cloned, fast_bads): (Vec<Cow<'a, str>>, Vec<Cow<'a, str>>) = packages
         .iter()
         .map(|p| Cow::Borrowed(p.as_ref()))
-        .partition(|p| is_aur_package_fast(clone_dir, p));
+        .partition(|p| has_local_aur_clone(clone_dir, p));
     let mut part = partition_real_pkgs_via_aur(fetch, clone_dir, fast_bads)?;
 
     part.cloned.extend(cloned);
@@ -47,7 +47,7 @@ where
 ///
 /// This of course isn't fool proof, since it doesn't consult the AUR, and thus
 /// the caller should follow up with an AUR call if this returns `false`.
-fn is_aur_package_fast(clone_dir: &Path, package: &str) -> bool {
+fn has_local_aur_clone(clone_dir: &Path, package: &str) -> bool {
     let mut path = clone_dir.to_path_buf();
     path.push(package);
     path.is_dir()
@@ -78,7 +78,7 @@ where
     // clones, so we need to recheck those.
     let (pkgbase_cloned, pkgbase_to_clone): (Vec<_>, _) = splits
         .into_iter()
-        .partition(|p| is_aur_package_fast(clone_dir, &p.package_base));
+        .partition(|p| has_local_aur_clone(clone_dir, &p.package_base));
 
     // Anything else must not really exist.
     let not_real = packages
