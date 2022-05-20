@@ -5,7 +5,7 @@ mod build;
 use crate::utils::ResultVoid;
 use crate::{aura, dirs, green, red, yellow};
 use alpm::Alpm;
-use aura_core::aur::{PkgPartition, AUR_BASE_URL};
+use aura_core::aur::PkgPartition;
 use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
@@ -17,8 +17,6 @@ use r2d2_alpm::AlpmManager;
 use rayon::prelude::*;
 use std::borrow::Cow;
 use std::io::{BufWriter, Write};
-use std::ops::Not;
-use std::path::{Path, PathBuf};
 use validated::Validated;
 
 pub enum Error {

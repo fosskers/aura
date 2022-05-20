@@ -1,7 +1,7 @@
 //! Types and utilities for parsing flags from the command line.
 
 use chrono::NaiveDate;
-use clap::{AppSettings, Parser, Subcommand};
+use clap::{Parser, Subcommand};
 use simplelog::LevelFilter;
 use std::path::PathBuf;
 use unic_langid::{langid, LanguageIdentifier};
@@ -13,8 +13,7 @@ pub(crate) const AURA_GLOBALS: &[&str] = &["--english", "--japanese", "--german"
 /// Commandline arguments to the Aura executable.
 #[derive(Parser, Debug)]
 #[clap(version, author, about)]
-#[clap(global_setting(AppSettings::PropagateVersion))]
-#[clap(global_setting(AppSettings::DisableHelpSubcommand))]
+#[clap(propagate_version = true, disable_help_subcommand = true)]
 pub(crate) struct Args {
     // --- Global Pacman Options --- //
     /// Set an alternate database location.

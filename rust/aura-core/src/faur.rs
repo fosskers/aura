@@ -10,33 +10,62 @@ pub const FAUR_URL: &str = "https://faur.fosskers.ca";
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase", deny_unknown_fields)]
 pub struct Package {
+    /// Dependencies only necessary for testing.
     pub check_depends: Vec<String>,
+    /// Packages which cannot be installed at the same time as this one.
     pub conflicts: Vec<String>,
+    /// Runtime dependencies.
     pub depends: Vec<String>,
+    /// The general description of the package.
     pub description: Option<String>,
+    /// Timestamp of the first uploading of this package to the AUR.
     pub first_submitted: u64,
+    /// Package groups this package belongs to.
     pub groups: Vec<String>,
+    /// An internal identifier.
     #[serde(rename = "ID")]
     pub id: u64,
+    /// General categories this package belongs to.
     pub keywords: Vec<String>,
+    /// Timestamp of the latest upload of this package.
     pub last_modified: u64,
+    /// The software LICENSE in use by this package.
     pub license: Vec<String>,
+    /// The maintainer of the AUR package.
     pub maintainer: Option<String>,
+    /// Dependencies only necessary at build time.
     pub make_depends: Vec<String>,
+    /// The normal name of this package.
     pub name: String,
+    /// The number of votes received on the AUR.
     pub num_votes: u64,
+    /// Optional runtime depedencies.
     pub opt_depends: Vec<String>,
+    /// Timestamp of an Out-of-date report on the AUR.
     pub out_of_date: Option<u64>,
+    /// In the case of split packages, this is the "parent". Otherwise, this is
+    /// equal to `name`.
     pub package_base: String,
+    /// Internal identifier of the parent package. Equal to `id` if this package
+    /// isn't part of a split package set.
     #[serde(rename = "PackageBaseID")]
     pub package_base_id: u64,
+    /// The value of votes wanes over time. This shows how "hot" the package
+    /// currently is.
     pub popularity: f64,
+    /// Package names that this package "counts as" if installed. For instance,
+    /// `aura-bin` "counts as" `aura` for the purpose of dependency resolution.
     pub provides: Vec<String>,
+    /// If package is installed, the packages named in `replaces` should be
+    /// uninstalled.
     pub replaces: Vec<String>,
+    /// The URL of the original project.
     #[serde(rename = "URL")]
     pub url: Option<String>,
+    /// The URL to the AUR's listing of this package.
     #[serde(rename = "URLPath")]
     pub url_path: String,
+    /// The current version of the package.
     pub version: String,
 }
 
