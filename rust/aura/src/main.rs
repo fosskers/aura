@@ -23,17 +23,21 @@ use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
 use std::collections::HashMap;
 use std::ops::Not;
 use std::path::{Path, PathBuf};
+use std::process::ExitCode;
 
-fn main() {
+fn main() -> ExitCode {
     // Parse all CLI input. Exits immediately if invalid input is given.
     let args = flags::Args::parse();
 
-    if let Err(e) = work(args) {
-        // TODO Sat Jan 15 16:53:12 2022
-        //
-        // Localise the error messages.
-        eprintln!("{}", e);
-        std::process::exit(1);
+    match work(args) {
+        Err(e) => {
+            // TODO Sat Jan 15 16:53:12 2022
+            //
+            // Localise the error messages.
+            eprintln!("{}", e);
+            ExitCode::FAILURE
+        }
+        Ok(_) => ExitCode::SUCCESS,
     }
 }
 
