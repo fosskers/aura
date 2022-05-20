@@ -5,10 +5,11 @@ members = [
 # Core libraries
 "aura-core", "aura-arch", "aura-common",
 # Ecosystem libraries
-"raur-curl", "r2d2-alpm"
+"r2d2-alpm"
 ]
 
 [profile.release]
 lto = true
 panic = "abort"
-# opt-level = "z"  # Reduces final stripped size by ~20%.
+strip = true
+opt-level = "z"  # Reduces final stripped size by ~20%.

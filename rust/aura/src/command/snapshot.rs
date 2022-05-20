@@ -4,6 +4,7 @@ use crate::{a, aura, green, red};
 use alpm::Alpm;
 use aura_core::snapshot::Snapshot;
 use colored::*;
+use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use std::collections::{HashMap, HashSet};
@@ -13,6 +14,7 @@ use std::ops::Not;
 use std::path::Path;
 use std::{cmp::Ordering, ffi::OsStr};
 
+#[derive(FromVariants)]
 pub enum Error {
     Io(std::io::Error),
     Dirs(crate::dirs::Error),
@@ -21,36 +23,6 @@ pub enum Error {
     Json(serde_json::Error),
     Cancelled,
     Silent,
-}
-
-impl From<crate::pacman::Error> for Error {
-    fn from(v: crate::pacman::Error) -> Self {
-        Self::Pacman(v)
-    }
-}
-
-impl From<serde_json::Error> for Error {
-    fn from(v: serde_json::Error) -> Self {
-        Self::Json(v)
-    }
-}
-
-impl From<crate::dirs::Error> for Error {
-    fn from(v: crate::dirs::Error) -> Self {
-        Self::Dirs(v)
-    }
-}
-
-impl From<rustyline::error::ReadlineError> for Error {
-    fn from(v: rustyline::error::ReadlineError) -> Self {
-        Self::Readline(v)
-    }
-}
-
-impl From<std::io::Error> for Error {
-    fn from(v: std::io::Error) -> Self {
-        Self::Io(v)
-    }
 }
 
 impl std::fmt::Display for Error {

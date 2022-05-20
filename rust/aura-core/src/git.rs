@@ -1,23 +1,21 @@
 //! Generalized `git` interaction.
 
+use from_variants::FromVariants;
 use log::debug;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
 /// A git-related error.
+#[derive(FromVariants)]
 pub enum Error {
     /// Some IO action failed.
     Io(std::io::Error),
     /// A git clone failed.
+    #[from_variants(skip)]
     Clone(PathBuf),
     /// A git pull failed.
+    #[from_variants(skip)]
     Pull(PathBuf),
-}
-
-impl From<std::io::Error> for Error {
-    fn from(v: std::io::Error) -> Self {
-        Self::Io(v)
-    }
 }
 
 impl std::fmt::Display for Error {

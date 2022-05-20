@@ -4,35 +4,19 @@ use crate::{a, green, yellow};
 use alpm::{Alpm, PackageReason, TransFlag};
 use aura_arch as arch;
 use colored::*;
+use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use std::collections::HashSet;
 use ubyte::ToByteUnit;
 
+#[derive(FromVariants)]
 pub enum Error {
     Alpm(alpm::Error),
     Readline(rustyline::error::ReadlineError),
     Sudo(crate::utils::SudoError),
     Cancelled,
     NoneExist,
-}
-
-impl From<crate::utils::SudoError> for Error {
-    fn from(v: crate::utils::SudoError) -> Self {
-        Self::Sudo(v)
-    }
-}
-
-impl From<rustyline::error::ReadlineError> for Error {
-    fn from(v: rustyline::error::ReadlineError) -> Self {
-        Self::Readline(v)
-    }
-}
-
-impl From<alpm::Error> for Error {
-    fn from(v: alpm::Error) -> Self {
-        Self::Alpm(v)
-    }
 }
 
 impl std::fmt::Display for Error {

@@ -6,16 +6,17 @@ edition = "2021"
 
 [dependencies]
 alpm = "2.2"
-alpm-utils = "1.1"
+alpm-utils = "2.0"
 aura-arch = { path = "../aura-arch" }
 chrono = { version = "0.4", features = ["serde"] }
+disown = "1.0"
+from_variants = "1.0"
 itertools = "0.10"
 log = "0.4"
 nonempty = "0.7"
 petgraph = { version = "0.6", default-features = false }
 r2d2 = "0.8"
 rayon = "1.5"
-raur-curl = { path = "../raur-curl" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 srcinfo = "1.0"

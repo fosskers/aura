@@ -5,9 +5,10 @@ mod build;
 use crate::utils::ResultVoid;
 use crate::{aura, dirs, green, red, yellow};
 use alpm::Alpm;
-use aura_core::aur::{PkgPartition, AUR_BASE_URL};
+use aura_core::aur::PkgPartition;
 use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
+use from_variants::FromVariants;
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
 use log::{debug, info};
@@ -17,70 +18,23 @@ use r2d2_alpm::AlpmManager;
 use rayon::prelude::*;
 use std::borrow::Cow;
 use std::io::{BufWriter, Write};
-use std::ops::Not;
-use std::path::{Path, PathBuf};
 use validated::Validated;
 
+#[derive(FromVariants)]
 pub enum Error {
-    Raur(raur_curl::Error),
+    Fetch(crate::fetch::Error),
     Dirs(crate::dirs::Error),
     Io(std::io::Error),
     Git(aura_core::git::Error),
+    #[from_variants(skip)]
     Clones(NonEmpty<aura_core::git::Error>),
+    #[from_variants(skip)]
     Pulls(NonEmpty<aura_core::git::Error>),
     Build(build::Error),
-    Deps(aura_core::aur::dependencies::Error),
+    Deps(aura_core::aur::dependencies::Error<crate::fetch::Error>),
     Pacman(crate::pacman::Error),
     R2d2(r2d2::Error),
     Silent,
-}
-
-impl From<aura_core::aur::dependencies::Error> for Error {
-    fn from(v: aura_core::aur::dependencies::Error) -> Self {
-        Self::Deps(v)
-    }
-}
-
-impl From<r2d2::Error> for Error {
-    fn from(v: r2d2::Error) -> Self {
-        Self::R2d2(v)
-    }
-}
-
-impl From<crate::pacman::Error> for Error {
-    fn from(v: crate::pacman::Error) -> Self {
-        Self::Pacman(v)
-    }
-}
-
-impl From<build::Error> for Error {
-    fn from(v: build::Error) -> Self {
-        Self::Build(v)
-    }
-}
-
-impl From<aura_core::git::Error> for Error {
-    fn from(v: aura_core::git::Error) -> Self {
-        Self::Git(v)
-    }
-}
-
-impl From<std::io::Error> for Error {
-    fn from(v: std::io::Error) -> Self {
-        Self::Io(v)
-    }
-}
-
-impl From<crate::dirs::Error> for Error {
-    fn from(v: crate::dirs::Error) -> Self {
-        Self::Dirs(v)
-    }
-}
-
-impl From<raur_curl::Error> for Error {
-    fn from(v: raur_curl::Error) -> Self {
-        Self::Raur(v)
-    }
 }
 
 // TODO Thu Jan 20 15:32:13 2022
@@ -89,7 +43,6 @@ impl From<raur_curl::Error> for Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::Raur(e) => write!(f, "{}", e),
             Error::Dirs(e) => write!(f, "{}", e),
             Error::Io(e) => write!(f, "{}", e),
             Error::Git(e) => write!(f, "{}", e),
@@ -110,6 +63,7 @@ impl std::fmt::Display for Error {
             Error::Pacman(e) => write!(f, "{}", e),
             Error::Deps(e) => write!(f, "{}", e),
             Error::R2d2(e) => write!(f, "{}", e),
+            Error::Fetch(e) => write!(f, "{}", e),
         }
     }
 }
@@ -117,7 +71,10 @@ impl std::fmt::Display for Error {
 /// View AUR package information.
 pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<(), Error> {
     info!("-Ai on {:?}", packages);
-    let r: Vec<raur_curl::Package> = aura_core::aur::info(packages)?;
+    let r: Vec<aura_core::faur::Package> = aura_core::faur::info(
+        packages.iter().map(|s| s.as_str()),
+        &crate::fetch::fetch_json,
+    )?;
     let mut w = BufWriter::new(std::io::stdout());
 
     let repo = fl!(fll, "A-i-repo");
@@ -218,22 +175,8 @@ pub(crate) fn search(
         t.make_ascii_lowercase();
     }
 
-    // Search using the largest term.
-    let initial_term = terms.pop().unwrap();
-    let mut matches: Vec<_> = aura_core::aur::search(&initial_term)?;
-
-    // Filter out packages that don't match other search terms.
-    matches.retain(|m| {
-        let name = m.name.to_lowercase();
-        let description = m
-            .description
-            .as_deref()
-            .map(|s| s.to_lowercase())
-            .unwrap_or_default();
-        terms
-            .iter()
-            .all(|t| name.contains(t) | description.contains(t))
-    });
+    let mut matches: Vec<aura_core::faur::Package> =
+        aura_core::faur::search(terms.iter().map(|s| s.as_str()), &crate::fetch::fetch_json)?;
 
     // Sort and filter the results as requested.
     if alpha {
@@ -282,8 +225,13 @@ fn package_url(package: &str) -> String {
     format!("{}{}", crate::open::AUR_PKG_URL, package)
 }
 
-fn package_date(epoch: i64) -> ColoredString {
-    format!("{}", Utc.timestamp(epoch, 0).date().format("%F")).normal()
+fn package_date(epoch: u64) -> ColoredString {
+    // FIXME Thu May  5 22:11:40 2022
+    //
+    // There is a panic risk here with the u64->i64 conversion. In practice it
+    // should never come up, as the timestamps passed in should never be
+    // anywhere near the [`u64::MAX`] value.
+    format!("{}", Utc.timestamp(epoch as i64, 0).date().format("%F")).normal()
 }
 
 /// Clone the AUR repository of given packages.
@@ -405,7 +353,8 @@ pub(crate) fn install(
     // Set `max_size` based on the user's CPU count.
     let pool = Pool::builder().max_size(4).build(mngr)?;
     aura!(fll, "A-install-deps");
-    let rslv = aura_core::aur::dependencies::resolve(pool, &clone_dir, pkgs)?;
+    let rslv =
+        aura_core::aur::dependencies::resolve(pool, &crate::fetch::fetch_json, &clone_dir, pkgs)?;
 
     debug!("Satisfied: {:?}", rslv.satisfied);
     debug!("To install: {:?}", rslv.to_install);
@@ -431,7 +380,7 @@ fn real_packages<'a>(
         cloned,
         to_clone,
         not_real,
-    } = aura_core::aur::partition_aur_pkgs(&clone_dir, pkgs)?;
+    } = aura_core::aur::partition_aur_pkgs(&crate::fetch::fetch_json, &clone_dir, pkgs)?;
 
     if cloned.is_empty() && to_clone.is_empty() {
         red!(fll, "common-no-valid");
