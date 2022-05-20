@@ -225,8 +225,9 @@ pub(crate) fn clean(
     yellow!(fll, "C-c-keep", pkgs = keep);
 
     // Proceed if the user accepts.
-    let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
-    crate::utils::prompt(&a!(msg)).ok_or(Error::Cancelled)?;
+    crate::utils::proceed(fll)
+        .then(|| ())
+        .ok_or(Error::Cancelled)?;
 
     // Get all the tarball paths, sort and group them by name, and then remove them.
     aura_core::cache::package_paths(caches)
@@ -257,8 +258,9 @@ pub(crate) fn clean_not_saved(
     aura!(fll, "C-size", size = human);
 
     // Proceed if the user accepts.
-    let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
-    crate::utils::prompt(&a!(msg)).ok_or(Error::Cancelled)?;
+    crate::utils::proceed(fll)
+        .then(|| ())
+        .ok_or(Error::Cancelled)?;
 
     let tarballs = aura_core::cache::package_paths(caches);
 
@@ -343,8 +345,9 @@ pub(crate) fn refresh(
         );
 
         // Proceed if the user accepts.
-        let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
-        crate::utils::prompt(&a!(msg)).ok_or(Error::Cancelled)?;
+        crate::utils::proceed(fll)
+            .then(|| ())
+            .ok_or(Error::Cancelled)?;
 
         // Determine target cache.
         aura!(fll, "C-y-which-cache");
@@ -462,8 +465,10 @@ pub(crate) fn backup(
     }
 
     // Proceed if the user accepts.
-    let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
-    crate::utils::prompt(&a!(msg)).ok_or(Error::Cancelled)?;
+    crate::utils::proceed(fll)
+        .then(|| ())
+        .ok_or(Error::Cancelled)?;
+
     copy(sources, &full, cache_size.files)
 }
 

@@ -18,6 +18,7 @@ use r2d2_alpm::AlpmManager;
 use rayon::prelude::*;
 use std::borrow::Cow;
 use std::io::{BufWriter, Write};
+use std::ops::Not;
 use validated::Validated;
 
 #[derive(FromVariants)]
@@ -34,6 +35,7 @@ pub enum Error {
     Deps(aura_core::aur::dependencies::Error<crate::fetch::Error>),
     Pacman(crate::pacman::Error),
     R2d2(r2d2::Error),
+    Cancelled,
     Silent,
 }
 
@@ -64,6 +66,7 @@ impl std::fmt::Display for Error {
             Error::Deps(e) => write!(f, "{}", e),
             Error::R2d2(e) => write!(f, "{}", e),
             Error::Fetch(e) => write!(f, "{}", e),
+            Error::Cancelled => write!(f, "Installation cancelled."),
         }
     }
 }
@@ -359,6 +362,29 @@ pub(crate) fn install(
     debug!("Satisfied: {:?}", rslv.satisfied);
     debug!("To install: {:?}", rslv.to_install);
     debug!("To build: {:?}", rslv.to_build);
+
+    // --- Sort package names alphabetically --- //
+    let to_install = {
+        let mut v: Vec<_> = rslv.to_install.into_iter().collect();
+        v.sort();
+        v
+    };
+    let to_build = {
+        let mut v: Vec<_> = rslv.to_build.into_iter().collect();
+        v.sort_by(|a, b| a.name.cmp(&b.name));
+        v
+    };
+
+    if to_install.is_empty().not() {
+        aura!(fll, "A-install-repo-pkgs");
+        to_install.iter().for_each(|p| println!(" {p}"));
+    }
+    aura!(fll, "A-install-aur-pkgs");
+    to_build.iter().for_each(|p| println!(" {p}"));
+
+    crate::utils::proceed(fll)
+        .then(|| ())
+        .ok_or(Error::Cancelled)?;
 
     // let tarballs = build::build(
     //     fll,

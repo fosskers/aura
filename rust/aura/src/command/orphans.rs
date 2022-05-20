@@ -108,8 +108,10 @@ pub(crate) fn remove(alpm: &mut Alpm, fll: FluentLanguageLoader) -> Result<(), E
         println!("  {:w$} {:>9}\n", "Total", size, w = longest);
 
         // Proceed with the removal if the user accepts.
-        let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
-        crate::utils::prompt(&a!(msg)).ok_or(Error::Cancelled)?;
+        crate::utils::proceed(&fll)
+            .then(|| ())
+            .ok_or(Error::Cancelled)?;
+
         alpm.trans_commit().map_err(|(_, e)| Error::Alpm(e))?;
         alpm.trans_release()?;
         green!(fll, "common-done");

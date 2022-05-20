@@ -104,7 +104,7 @@ impl Resolution {
 }
 
 /// An official ALPM package.
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Official(String);
 
 impl Borrow<str> for Official {
@@ -126,6 +126,12 @@ pub struct Buildable {
     pub name: String,
     /// The names of its dependencies.
     pub deps: HashSet<String>,
+}
+
+impl std::fmt::Display for Buildable {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name)
+    }
 }
 
 impl std::fmt::Debug for Buildable {

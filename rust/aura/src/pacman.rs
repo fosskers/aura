@@ -7,7 +7,8 @@ use std::process::Command;
 #[derive(FromVariants)]
 pub enum Error {
     Io(std::io::Error),
-    Install,
+    InstallFromTarball,
+    InstallFromRepos,
     Misc,
 }
 
@@ -15,7 +16,8 @@ impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Error::Io(e) => write!(f, "{}", e),
-            Error::Install => write!(f, "pacman -U failed"),
+            Error::InstallFromTarball => write!(f, "pacman -U failed"),
+            Error::InstallFromRepos => write!(f, "pacman -S failed"),
             Error::Misc => write!(f, "A call to pacman gave a non-zero exit code"),
         }
     }
@@ -51,17 +53,19 @@ where
 }
 
 /// Call `sudo pacman -U`.
-pub(crate) fn pacman_install<I, S>(args: I) -> Result<(), Error>
+pub(crate) fn pacman_install_from_tarball<'a, I>(args: I) -> Result<(), Error>
 where
-    I: IntoIterator<Item = S>,
-    S: AsRef<OsStr>,
+    I: IntoIterator<Item = &'a str>,
 {
-    Command::new("sudo")
-        .arg("pacman")
-        .arg("-U")
-        .args(args)
-        .status()?
-        .success()
-        .then(|| ())
-        .ok_or(Error::Install)
+    let iter = std::iter::once("-U").chain(args);
+    sudo_pacman(iter).map_err(|_| Error::InstallFromTarball)
+}
+
+/// Call `sudo pacman -S`.
+pub(crate) fn pacman_install_from_repos<'a, I>(args: I) -> Result<(), Error>
+where
+    I: IntoIterator<Item = &'a str>,
+{
+    let iter = std::iter::once("-S").chain(args);
+    sudo_pacman(iter).map_err(|_| Error::InstallFromRepos)
 }
