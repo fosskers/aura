@@ -1,23 +1,13 @@
 //! Fetching data from remote endpoints.
 
 use curl::easy::Easy;
+use from_variants::FromVariants;
 use serde::de::DeserializeOwned;
 
+#[derive(FromVariants)]
 pub enum Error {
     Curl(curl::Error),
     Json(serde_json::Error),
-}
-
-impl From<serde_json::Error> for Error {
-    fn from(v: serde_json::Error) -> Self {
-        Self::Json(v)
-    }
-}
-
-impl From<curl::Error> for Error {
-    fn from(v: curl::Error) -> Self {
-        Self::Curl(v)
-    }
 }
 
 impl std::fmt::Display for Error {

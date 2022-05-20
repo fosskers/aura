@@ -10,6 +10,7 @@ alpm-utils = "2.0"
 aura-arch = { path = "../aura-arch" }
 chrono = { version = "0.4", features = ["serde"] }
 disown = "1.0"
+from_variants = "1.0"
 itertools = "0.10"
 log = "0.4"
 nonempty = "0.7"

@@ -15,6 +15,7 @@ clap = { version = "3.0", features = ["derive"] }
 clap_complete = "3.0"
 colored = "2.0"
 curl = "0.4"
+from_variants = "1.0"
 i18n-embed = { version = "0.13", features = ["fluent-system"] }
 i18n-embed-fl = "0.6"
 itertools = "0.10"

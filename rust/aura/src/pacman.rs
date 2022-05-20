@@ -1,18 +1,14 @@
 //! Sugar for interacting with Pacman.
 
+use from_variants::FromVariants;
 use std::ffi::OsStr;
 use std::process::Command;
 
+#[derive(FromVariants)]
 pub enum Error {
     Io(std::io::Error),
     Install,
     Misc,
-}
-
-impl From<std::io::Error> for Error {
-    fn from(v: std::io::Error) -> Self {
-        Self::Io(v)
-    }
 }
 
 impl std::fmt::Display for Error {

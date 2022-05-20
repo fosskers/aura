@@ -8,6 +8,7 @@ use alpm::Alpm;
 use aura_core::aur::PkgPartition;
 use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
+use from_variants::FromVariants;
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
 use log::{debug, info};
@@ -19,66 +20,21 @@ use std::borrow::Cow;
 use std::io::{BufWriter, Write};
 use validated::Validated;
 
+#[derive(FromVariants)]
 pub enum Error {
     Fetch(crate::fetch::Error),
     Dirs(crate::dirs::Error),
     Io(std::io::Error),
     Git(aura_core::git::Error),
+    #[from_variants(skip)]
     Clones(NonEmpty<aura_core::git::Error>),
+    #[from_variants(skip)]
     Pulls(NonEmpty<aura_core::git::Error>),
     Build(build::Error),
     Deps(aura_core::aur::dependencies::Error<crate::fetch::Error>),
     Pacman(crate::pacman::Error),
     R2d2(r2d2::Error),
     Silent,
-}
-
-impl From<aura_core::aur::dependencies::Error<crate::fetch::Error>> for Error {
-    fn from(v: aura_core::aur::dependencies::Error<crate::fetch::Error>) -> Self {
-        Self::Deps(v)
-    }
-}
-
-impl From<crate::fetch::Error> for Error {
-    fn from(v: crate::fetch::Error) -> Self {
-        Self::Fetch(v)
-    }
-}
-
-impl From<r2d2::Error> for Error {
-    fn from(v: r2d2::Error) -> Self {
-        Self::R2d2(v)
-    }
-}
-
-impl From<crate::pacman::Error> for Error {
-    fn from(v: crate::pacman::Error) -> Self {
-        Self::Pacman(v)
-    }
-}
-
-impl From<build::Error> for Error {
-    fn from(v: build::Error) -> Self {
-        Self::Build(v)
-    }
-}
-
-impl From<aura_core::git::Error> for Error {
-    fn from(v: aura_core::git::Error) -> Self {
-        Self::Git(v)
-    }
-}
-
-impl From<std::io::Error> for Error {
-    fn from(v: std::io::Error) -> Self {
-        Self::Io(v)
-    }
-}
-
-impl From<crate::dirs::Error> for Error {
-    fn from(v: crate::dirs::Error) -> Self {
-        Self::Dirs(v)
-    }
 }
 
 // TODO Thu Jan 20 15:32:13 2022

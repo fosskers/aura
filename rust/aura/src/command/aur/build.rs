@@ -1,6 +1,7 @@
 use crate::utils::ResultVoid;
 use crate::{a, aura, red};
 use colored::Colorize;
+use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use log::debug;
@@ -13,33 +14,19 @@ use std::{
 };
 use validated::Validated;
 
+#[derive(FromVariants)]
 pub enum Error {
     Srcinfo(srcinfo::Error),
     Io(std::io::Error),
+    #[from_variants(skip)]
     Copies(NonEmpty<std::io::Error>),
     Utf8(std::str::Utf8Error),
+    #[from_variants(skip)]
     FilenameExtraction(PathBuf),
+    #[from_variants(skip)]
     TarballMove(PathBuf),
     Cancelled,
     Makepkg,
-}
-
-impl From<std::str::Utf8Error> for Error {
-    fn from(v: std::str::Utf8Error) -> Self {
-        Self::Utf8(v)
-    }
-}
-
-impl From<std::io::Error> for Error {
-    fn from(v: std::io::Error) -> Self {
-        Self::Io(v)
-    }
-}
-
-impl From<srcinfo::Error> for Error {
-    fn from(v: srcinfo::Error) -> Self {
-        Self::Srcinfo(v)
-    }
 }
 
 impl std::fmt::Display for Error {

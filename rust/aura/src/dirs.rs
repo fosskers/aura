@@ -1,24 +1,13 @@
 //! Directories critical to Aura's function.
 
+use from_variants::FromVariants;
 use std::ops::Not;
 use std::path::PathBuf;
 
-#[derive(Debug)]
+#[derive(Debug, FromVariants)]
 pub enum Error {
     Io(std::io::Error),
     Env(std::env::VarError),
-}
-
-impl From<std::env::VarError> for Error {
-    fn from(v: std::env::VarError) -> Self {
-        Self::Env(v)
-    }
-}
-
-impl From<std::io::Error> for Error {
-    fn from(v: std::io::Error) -> Self {
-        Self::Io(v)
-    }
 }
 
 impl std::fmt::Display for Error {

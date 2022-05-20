@@ -6,6 +6,7 @@ use alpm::Alpm;
 use aura_core::cache::{CacheSize, PkgPath};
 use chrono::{DateTime, Local};
 use colored::*;
+use from_variants::FromVariants;
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
 use itertools::Itertools;
@@ -26,6 +27,7 @@ const FIVE_HUNDRED_MB: i64 = 524_288_000;
 /// The date where Arch Linux switched compression schemes from XZ to ZSTD.
 const CMPR_SWITCH: i64 = 1_577_404_800;
 
+#[derive(FromVariants)]
 pub enum Error {
     Io(std::io::Error),
     Readline(rustyline::error::ReadlineError),
@@ -34,30 +36,6 @@ pub enum Error {
     Cancelled,
     MiscShell,
     Silent,
-}
-
-impl From<crate::pacman::Error> for Error {
-    fn from(v: crate::pacman::Error) -> Self {
-        Self::Pacman(v)
-    }
-}
-
-impl From<crate::utils::SudoError> for Error {
-    fn from(v: crate::utils::SudoError) -> Self {
-        Self::Sudo(v)
-    }
-}
-
-impl From<rustyline::error::ReadlineError> for Error {
-    fn from(v: rustyline::error::ReadlineError) -> Self {
-        Self::Readline(v)
-    }
-}
-
-impl From<std::io::Error> for Error {
-    fn from(v: std::io::Error) -> Self {
-        Self::Io(v)
-    }
 }
 
 impl std::fmt::Display for Error {
