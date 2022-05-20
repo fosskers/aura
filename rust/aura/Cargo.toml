@@ -18,7 +18,7 @@ curl = "0.4"
 i18n-embed = { version = "0.13", features = ["fluent-system"] }
 i18n-embed-fl = "0.6"
 itertools = "0.10"
-linya = "0.2"
+linya = "0.3"
 log = "0.4"
 nonempty = "0.7"
 pacmanconf = "2.0"
@@ -30,13 +30,13 @@ rust-embed = "6.3"
 rustyline = "9.1"
 serde = "1.0"
 serde_json = "1.0"
-simplelog = "0.11"
+simplelog = "0.12"
 srcinfo = "1.0"
 sudo = "0.6"
 ubyte = "0.10"
 unic-langid = { version = "0.9", features = ["macros"] }
 validated = { version = "0.1", features = ["rayon"] }
-webbrowser = "0.5"
+webbrowser = "0.7"
 
 [features]
 git = ["alpm/git"]
