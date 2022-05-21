@@ -42,7 +42,7 @@ impl<'a> Package<'a> {
     /// Split a [`Path`] into its package name and version.
     ///
     /// ```
-    /// use aura_core::common::Package;
+    /// use aura_core::Package;
     /// use std::path::Path;
     ///
     /// let path = Path::new("/var/cache/pacman/pkg/aura-bin-3.2.1-1-x86_64.pkg.tar.zst");
