@@ -472,6 +472,7 @@ pub fn build_order<E>(to_build: &[Buildable]) -> Result<Vec<Vec<&str>>, Error<E>
             if group.is_empty().not() {
                 layers.push(group);
             }
+            layers.reverse();
             Ok(layers)
         })
 }
@@ -538,7 +539,7 @@ mod test {
         assert_eq!(1, g.edge_count());
 
         let o = build_order::<()>(&v).unwrap();
-        assert_eq!(vec![vec!["a"], vec!["b"]], o);
+        assert_eq!(vec![vec!["b"], vec!["a"],], o);
     }
 
     #[test]
@@ -570,7 +571,7 @@ mod test {
         for v in o.iter_mut() {
             v.sort();
         }
-        assert_eq!(vec![vec!["a"], vec!["b", "c"], vec!["d"]], o);
+        assert_eq!(vec![vec!["d"], vec!["b", "c"], vec!["a"]], o);
     }
 
     #[test]
@@ -610,6 +611,6 @@ mod test {
         for v in o.iter_mut() {
             v.sort();
         }
-        assert_eq!(vec![vec!["a", "e", "f"], vec!["b", "c"], vec!["d"]], o);
+        assert_eq!(vec![vec!["d"], vec!["b", "c"], vec!["a", "e", "f"]], o);
     }
 }
