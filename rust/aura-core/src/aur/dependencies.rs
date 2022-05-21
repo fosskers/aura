@@ -7,6 +7,7 @@ use disown::Disown;
 // use itertools::Itertools;
 use log::{debug, info};
 use nonempty::NonEmpty;
+use petgraph::Graph;
 use r2d2::{ManageConnection, Pool};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use srcinfo::Srcinfo;
@@ -33,6 +34,10 @@ pub enum Error<E> {
     DoesntExist(String),
     /// A named dependency of some known package does not exist.
     DoesntExistWithParent(String, String),
+    /// The dependency graph was somehow malformed. This should never occur.
+    MalformedGraph,
+    /// There was a cyclic dependency.
+    CyclicDep(String),
     /// Contacting Faur somehow failed.
     Faur(E),
 }
@@ -74,6 +79,8 @@ impl<E: std::fmt::Display> std::fmt::Display for Error<E> {
                 write!(f, "{}, required by {}, is not a known package.", p, par)
             }
             Error::Faur(e) => write!(f, "{}", e),
+            Error::CyclicDep(e) => write!(f, "Cyclic dependency involving {}.", e),
+            Error::MalformedGraph => write!(f, "The dependency graph was somehow malformed."),
         }
     }
 }
@@ -424,12 +431,47 @@ where
 ///
 /// This ensures that all dependencies are built and installed before they're
 /// needed.
-pub fn build_order<I>(to_build: I) -> Vec<Vec<String>>
-where
-    I: IntoIterator<Item = Buildable>,
-{
+pub fn build_order<E>(to_build: &[Buildable]) -> Result<Vec<Vec<&str>>, Error<E>> {
     info!("Determining build order.");
 
+    // --- Determine rough order --- //
+    let graph = dep_graph(to_build);
+    let order = petgraph::algo::toposort(&graph, None).map_err(|cycle| {
+        match graph.node_weight(cycle.node_id()) {
+            None => Error::MalformedGraph,
+            Some(b) => Error::CyclicDep(b.to_string()),
+        }
+    })?;
+    let build: Vec<&&Buildable> = order
+        .into_iter()
+        .map(|ix| graph.node_weight(ix))
+        .collect::<Option<Vec<_>>>()
+        .ok_or(Error::MalformedGraph)?;
+
+    // --- Group by mutual non-dependence --- //
+    let layers = build
+        .into_iter()
+        .fold(
+            (Vec::new(), Vec::new(), HashSet::new()),
+            |(mut layers, mut group, mut deps), buildable| {
+                if deps.contains(&buildable.name) {
+                    layers.push(group);
+                    deps.clear();
+                    (layers, Vec::new(), deps)
+                } else {
+                    group.push(buildable.name.as_str());
+                    deps.extend(&buildable.deps);
+                    (layers, group, deps)
+                }
+            },
+        )
+        .0;
+
+    Ok(layers)
+}
+
+/// Form a proper dependency graph.
+fn dep_graph(to_build: &[Buildable]) -> Graph<&Buildable, ()> {
     todo!()
 }
 

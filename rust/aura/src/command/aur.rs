@@ -386,6 +386,9 @@ pub(crate) fn install(
         .then(|| ())
         .ok_or(Error::Cancelled)?;
 
+    // --- Determine the best build order --- //
+    let order = aura_core::aur::dependencies::build_order(&to_build)?;
+
     // let tarballs = build::build(
     //     fll,
     //     &cache_dir,
