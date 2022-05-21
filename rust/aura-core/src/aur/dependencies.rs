@@ -540,4 +540,76 @@ mod test {
         let o = build_order::<()>(&v).unwrap();
         assert_eq!(vec![vec!["a"], vec!["b"]], o);
     }
+
+    #[test]
+    fn diamond_graph() {
+        let v = vec![
+            Buildable {
+                name: "a".to_string(),
+                deps: vec!["b".to_string(), "c".to_string()].into_iter().collect(),
+            },
+            Buildable {
+                name: "b".to_string(),
+                deps: vec!["d".to_string()].into_iter().collect(),
+            },
+            Buildable {
+                name: "c".to_string(),
+                deps: vec!["d".to_string()].into_iter().collect(),
+            },
+            Buildable {
+                name: "d".to_string(),
+                deps: HashSet::new(),
+            },
+        ];
+
+        let g = dep_graph(&v);
+        assert_eq!(v.len(), g.node_count());
+        assert_eq!(4, g.edge_count());
+
+        let mut o = build_order::<()>(&v).unwrap();
+        for v in o.iter_mut() {
+            v.sort();
+        }
+        assert_eq!(vec![vec!["a"], vec!["b", "c"], vec!["d"]], o);
+    }
+
+    #[test]
+    fn medium_graph() {
+        let v = vec![
+            Buildable {
+                name: "a".to_string(),
+                deps: vec!["b".to_string(), "c".to_string()].into_iter().collect(),
+            },
+            Buildable {
+                name: "b".to_string(),
+                deps: vec!["d".to_string()].into_iter().collect(),
+            },
+            Buildable {
+                name: "c".to_string(),
+                deps: vec!["d".to_string()].into_iter().collect(),
+            },
+            Buildable {
+                name: "e".to_string(),
+                deps: vec!["d".to_string()].into_iter().collect(),
+            },
+            Buildable {
+                name: "d".to_string(),
+                deps: HashSet::new(),
+            },
+            Buildable {
+                name: "f".to_string(),
+                deps: HashSet::new(),
+            },
+        ];
+
+        let g = dep_graph(&v);
+        assert_eq!(v.len(), g.node_count());
+        assert_eq!(5, g.edge_count());
+
+        let mut o = build_order::<()>(&v).unwrap();
+        for v in o.iter_mut() {
+            v.sort();
+        }
+        assert_eq!(vec![vec!["a", "e", "f"], vec!["b", "c"], vec!["d"]], o);
+    }
 }
