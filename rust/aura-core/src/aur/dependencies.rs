@@ -8,7 +8,6 @@ use disown::Disown;
 use log::{debug, info};
 use nonempty::NonEmpty;
 use petgraph::graph::NodeIndex;
-use petgraph::visit::IntoNodeReferences;
 use petgraph::Graph;
 use r2d2::{ManageConnection, Pool};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
@@ -16,6 +15,7 @@ use srcinfo::Srcinfo;
 use std::borrow::Borrow;
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
+use std::ops::Not;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use validated::Validated;
@@ -23,6 +23,7 @@ use validated::Validated;
 use crate::Apply;
 
 /// Errors that can occur during dependency resolution.
+#[derive(Debug)]
 pub enum Error<E> {
     /// A [`Mutex`] was poisoned and couldn't be unlocked.
     PoisonedMutex,
@@ -450,13 +451,15 @@ pub fn build_order<E>(to_build: &[Buildable]) -> Result<Vec<Vec<&str>>, Error<E>
         .collect::<Option<Vec<_>>>()
         .ok_or(Error::MalformedGraph)?
         .into_iter()
+        // --- Split the packages by "layer" --- //
         .fold(
             (Vec::new(), Vec::new(), HashSet::new()),
             |(mut layers, mut group, mut deps), buildable| {
                 if deps.contains(&buildable.name) {
                     layers.push(group);
                     deps.clear();
-                    (layers, Vec::new(), deps)
+                    deps.extend(&buildable.deps);
+                    (layers, vec![buildable.name.as_str()], deps)
                 } else {
                     group.push(buildable.name.as_str());
                     deps.extend(&buildable.deps);
@@ -464,8 +467,13 @@ pub fn build_order<E>(to_build: &[Buildable]) -> Result<Vec<Vec<&str>>, Error<E>
                 }
             },
         )
-        .0
-        .apply(Ok)
+        // --- Account for the final group --- //
+        .apply(|(mut layers, group, _)| {
+            if group.is_empty().not() {
+                layers.push(group);
+            }
+            Ok(layers)
+        })
 }
 
 /// Form a proper dependency graph.
@@ -510,5 +518,26 @@ mod test {
     fn version_stripping() {
         assert_eq!("gcc6", strip_version("gcc6=6.5.0-7"));
         assert_eq!("glibc", strip_version("glibc>=2.25"));
+    }
+
+    #[test]
+    fn trivial_graph() {
+        let v = vec![
+            Buildable {
+                name: "a".to_string(),
+                deps: vec!["b".to_string()].into_iter().collect(),
+            },
+            Buildable {
+                name: "b".to_string(),
+                deps: HashSet::new(),
+            },
+        ];
+
+        let g = dep_graph(&v);
+        assert_eq!(v.len(), g.node_count());
+        assert_eq!(1, g.edge_count());
+
+        let o = build_order::<()>(&v).unwrap();
+        assert_eq!(vec![vec!["a"], vec!["b"]], o);
     }
 }

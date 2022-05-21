@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
 /// A git-related error.
-#[derive(FromVariants)]
+#[derive(Debug, FromVariants)]
 pub enum Error {
     /// Some IO action failed.
     Io(std::io::Error),
