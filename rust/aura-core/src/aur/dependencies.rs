@@ -18,6 +18,8 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use validated::Validated;
 
+use crate::Apply;
+
 /// Errors that can occur during dependency resolution.
 pub enum Error<E> {
     /// A [`Mutex`] was poisoned and couldn't be unlocked.
@@ -434,22 +436,17 @@ where
 pub fn build_order<E>(to_build: &[Buildable]) -> Result<Vec<Vec<&str>>, Error<E>> {
     info!("Determining build order.");
 
-    // --- Determine rough order --- //
     let graph = dep_graph(to_build);
-    let order = petgraph::algo::toposort(&graph, None).map_err(|cycle| {
-        match graph.node_weight(cycle.node_id()) {
+
+    petgraph::algo::toposort(&graph, None)
+        .map_err(|cycle| match graph.node_weight(cycle.node_id()) {
             None => Error::MalformedGraph,
             Some(b) => Error::CyclicDep(b.to_string()),
-        }
-    })?;
-    let build: Vec<&&Buildable> = order
+        })?
         .into_iter()
         .map(|ix| graph.node_weight(ix))
         .collect::<Option<Vec<_>>>()
-        .ok_or(Error::MalformedGraph)?;
-
-    // --- Group by mutual non-dependence --- //
-    let layers = build
+        .ok_or(Error::MalformedGraph)?
         .into_iter()
         .fold(
             (Vec::new(), Vec::new(), HashSet::new()),
@@ -465,9 +462,8 @@ pub fn build_order<E>(to_build: &[Buildable]) -> Result<Vec<Vec<&str>>, Error<E>
                 }
             },
         )
-        .0;
-
-    Ok(layers)
+        .0
+        .apply(Ok)
 }
 
 /// Form a proper dependency graph.

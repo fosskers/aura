@@ -108,3 +108,21 @@ where
         .filter_map(|path| path.as_ref().read_dir().ok())
         .flatten()
 }
+
+/// Apply functions in method-position.
+pub(crate) trait Apply {
+    fn apply<F, U>(self, f: F) -> U
+    where
+        F: FnOnce(Self) -> U,
+        Self: Sized;
+}
+
+impl<T> Apply for T {
+    fn apply<F, U>(self, f: F) -> U
+    where
+        F: FnOnce(Self) -> U,
+        Self: Sized,
+    {
+        f(self)
+    }
+}
