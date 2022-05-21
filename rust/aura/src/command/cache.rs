@@ -484,7 +484,7 @@ fn copy(sources: &[&Path], target: &Path, file_count: usize) -> Result<(), Error
     // Silently succeeds if the directory already exists.
     std::fs::create_dir_all(target)?;
 
-    aura_core::common::read_dirs(sources)
+    aura_core::read_dirs(sources)
         .filter_map(|entry| entry.ok())
         .filter_map(|entry| {
             let from = entry.path();

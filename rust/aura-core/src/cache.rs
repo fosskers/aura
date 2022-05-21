@@ -1,6 +1,6 @@
 //! Cache manipulation internals.
 
-use crate::common::Package;
+use crate::Package;
 use alpm::Alpm;
 use std::collections::{HashMap, HashSet};
 use std::ffi::OsString;
@@ -117,7 +117,7 @@ pub fn search<'a, P>(caches: &'a [P], term: &'a str) -> impl Iterator<Item = Pat
 where
     P: AsRef<Path>,
 {
-    crate::common::read_dirs(caches)
+    crate::read_dirs(caches)
         .filter_map(|r| r.ok())
         .map(|de| de.path())
         .filter(move |path| path.to_str().map(|s| s.contains(term)).unwrap_or(false))
@@ -166,7 +166,7 @@ pub fn size<P>(paths: &[P]) -> CacheSize
 where
     P: AsRef<Path>,
 {
-    let (files, bytes) = crate::common::read_dirs(paths)
+    let (files, bytes) = crate::read_dirs(paths)
         .filter_map(|de| de.ok())
         .filter(|de| is_package(&de.path()))
         .filter_map(|de| de.metadata().ok())
@@ -181,7 +181,7 @@ pub fn package_paths<P>(caches: &[P]) -> impl Iterator<Item = PkgPath<'static>> 
 where
     P: AsRef<Path>,
 {
-    crate::common::read_dirs(caches)
+    crate::read_dirs(caches)
         .filter_map(|r| r.ok())
         .map(|de| de.path())
         .filter_map(PkgPath::new)
