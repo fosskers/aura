@@ -7,12 +7,14 @@ use disown::Disown;
 // use itertools::Itertools;
 use log::{debug, info};
 use nonempty::NonEmpty;
+use petgraph::graph::NodeIndex;
+use petgraph::visit::IntoNodeReferences;
 use petgraph::Graph;
 use r2d2::{ManageConnection, Pool};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use srcinfo::Srcinfo;
 use std::borrow::Borrow;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -468,7 +470,25 @@ pub fn build_order<E>(to_build: &[Buildable]) -> Result<Vec<Vec<&str>>, Error<E>
 
 /// Form a proper dependency graph.
 fn dep_graph(to_build: &[Buildable]) -> Graph<&Buildable, ()> {
-    todo!()
+    let mut graph = Graph::new();
+    let mut map: HashMap<&str, NodeIndex> = HashMap::new();
+
+    for build in to_build {
+        let ix = graph.add_node(build);
+        map.insert(&build.name, ix);
+    }
+
+    for ix in map.values() {
+        if let Some(build) = graph.node_weight(*ix) {
+            for dep in build.deps.iter() {
+                if let Some(oix) = map.get(dep.as_str()) {
+                    graph.add_edge(*ix, *oix, ());
+                }
+            }
+        }
+    }
+
+    graph
 }
 
 /// Strip version demands from a dependency string.
