@@ -245,7 +245,7 @@ instance Ord PackagePath where
 
 -- | Smart constructor for `PackagePath`.
 packagePath :: FilePath -> Maybe PackagePath
-packagePath fp = bool Nothing (Just $ PackagePath fp) $ isAbsolute fp
+packagePath fp = bool Nothing (Just $ PackagePath fp) $ not (isExtensionOf "sig" fp) && isAbsolute fp
 
 -- | The contents of a PKGBUILD file.
 newtype Pkgbuild = Pkgbuild { pkgbuild :: ByteString }

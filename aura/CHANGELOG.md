@@ -1,5 +1,11 @@
 # Aura Changelog
 
+## Unreleased
+
+#### Fixed
+
+- `.sig` files were appearing in `-C` selection options.
+
 ## 3.2.8 (2022-04-23)
 
 #### Added
