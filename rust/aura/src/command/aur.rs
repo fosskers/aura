@@ -14,7 +14,6 @@ use log::{debug, info};
 use r2d2::Pool;
 use r2d2_alpm::AlpmManager;
 use rayon::prelude::*;
-use std::borrow::Borrow;
 use std::io::{BufWriter, Write};
 use std::ops::Not;
 use std::path::{Path, PathBuf};
@@ -345,19 +344,22 @@ pub(crate) fn install(
 
     // --- Install repo dependencies --- //
     crate::pacman::pacman_install_from_repos(
-        std::iter::once("--asdeps")
-            .chain(std::iter::once("--noconfirm"))
-            .chain(to_install.iter().map(|o| o.borrow())),
+        ["--asdeps", "--noconfirm"],
+        to_install.iter().map(|o| o.as_ref()),
     )?;
 
     // --- Build and install each layer of AUR packages --- //
-    for layer in order {
+    let len = order.len();
+    for (i, layer) in order.into_iter().enumerate() {
         let clone_paths = layer
             .into_iter()
             .map(|pkg| [&clone_dir, Path::new(pkg)].iter().collect::<PathBuf>());
 
         let tarballs = build::build(fll, &cache_dir, &build_dir, clone_paths)?;
-        crate::pacman::pacman_install_from_tarball(tarballs)?;
+        let flags = (i + 1 < len)
+            .then(|| ["--asdeps"].as_slice())
+            .unwrap_or_default();
+        crate::pacman::pacman_install_from_tarball(flags, tarballs)?;
     }
 
     Ok(())

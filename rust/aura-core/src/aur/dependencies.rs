@@ -125,6 +125,12 @@ impl Borrow<str> for Official {
     }
 }
 
+impl AsRef<str> for Official {
+    fn as_ref(&self) -> &str {
+        self.0.as_ref()
+    }
+}
+
 impl std::fmt::Display for Official {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)

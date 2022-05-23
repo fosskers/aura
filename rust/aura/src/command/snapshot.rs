@@ -136,6 +136,7 @@ fn restore_snapshot(alpm: &Alpm, caches: &[&Path], snapshot: Snapshot) -> Result
 
     // Alter packages first to avoid potential breakage from the later removal
     // step.
+    let nothing: [&str; 0] = [];
     if diff.to_add_or_alter.is_empty().not() {
         let tarballs = aura_core::cache::package_paths(caches)
             .filter(|pp| {
@@ -147,12 +148,12 @@ fn restore_snapshot(alpm: &Alpm, caches: &[&Path], snapshot: Snapshot) -> Result
             })
             .map(|pp| pp.into_pathbuf().into_os_string());
 
-        crate::pacman::sudo_pacman("-U", tarballs)?;
+        crate::pacman::sudo_pacman("-U", nothing, tarballs)?;
     }
 
     // Remove packages that weren't installed within the chosen snapshot.
     if diff.to_remove.is_empty().not() {
-        crate::pacman::sudo_pacman("-R", diff.to_remove)?;
+        crate::pacman::sudo_pacman("-R", nothing, diff.to_remove)?;
     }
 
     Ok(())
