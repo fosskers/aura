@@ -350,6 +350,9 @@ pub(crate) fn refresh(
 
         // Determine target cache.
         aura!(fll, "C-y-which-cache");
+        for (i, cache) in caches.iter().enumerate() {
+            println!(" {}) {}", i, cache.display());
+        }
         let ix = crate::utils::select(">>> ", caches.len() - 1)?;
         let target_cache = caches[ix];
 
