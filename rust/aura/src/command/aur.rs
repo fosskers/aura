@@ -19,6 +19,7 @@ use rayon::prelude::*;
 use std::borrow::{Borrow, Cow};
 use std::io::{BufWriter, Write};
 use std::ops::Not;
+use std::path::{Path, PathBuf};
 use validated::Validated;
 
 #[derive(FromVariants)]
@@ -316,39 +317,9 @@ pub(crate) fn install(
         return Err(Error::Silent);
     }
 
-    // let (cloned, to_clone) = real_packages(fll, pkgs)?;
-    // debug!("Already cloned: {:?}", cloned);
-    // debug!("To clone: {:?}", to_clone);
-
     let clone_dir = crate::dirs::clones()?;
-    // let build_dir = crate::dirs::builds()?;
-    // let cache_dir = crate::dirs::tarballs()?;
-
-    // if to_clone.is_empty().not() {
-    //     aura!(fll, "A-install-cloning");
-    // }
-
-    // let paths0 = to_clone
-    //     .into_par_iter()
-    //     .map(|p| clone_aur_repo(Some(&clone_dir), p.as_ref()))
-    //     .collect::<Validated<Vec<PathBuf>, aura_core::git::Error>>()
-    //     .ok()
-    //     .map_err(Error::Clones)?;
-
-    // if cloned.is_empty().not() {
-    //     aura!(fll, "A-install-pulling");
-    // }
-
-    // let paths1 = cloned
-    //     .into_par_iter()
-    //     .map(|p| {
-    //         let mut path = clone_dir.clone();
-    //         path.push(p.as_ref());
-    //         aura_core::git::pull(&path).map(|_| path)
-    //     })
-    //     .collect::<Validated<Vec<PathBuf>, aura_core::git::Error>>()
-    //     .ok()
-    //     .map_err(Error::Pulls)?;
+    let build_dir = crate::dirs::builds()?;
+    let cache_dir = crate::dirs::tarballs()?;
 
     let mngr = AlpmManager::new(config);
     // FIXME Fri Feb  4 15:58:38 2022
@@ -397,13 +368,15 @@ pub(crate) fn install(
             .chain(to_install.iter().map(|o| o.borrow())),
     )?;
 
-    // let tarballs = build::build(
-    //     fll,
-    //     &cache_dir,
-    //     &build_dir,
-    //     paths0.into_iter().chain(paths1),
-    // )?;
-    // crate::pacman::pacman_install(tarballs)?;
+    // --- Build and install each layer of AUR packages --- //
+    for layer in order {
+        let clone_paths = layer
+            .into_iter()
+            .map(|pkg| [&clone_dir, Path::new(pkg)].iter().collect::<PathBuf>());
+
+        let tarballs = build::build(fll, &cache_dir, &build_dir, clone_paths)?;
+        crate::pacman::pacman_install_from_tarball(tarballs)?;
+    }
 
     Ok(())
 }

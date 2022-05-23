@@ -136,6 +136,7 @@ fn makepkg(within: &Path) -> Result<Vec<PathBuf>, Error> {
         .then(|| ())
         .ok_or(Error::Makepkg)?;
 
+    // NOTE Outputs absolute paths.
     let bytes = Command::new("makepkg")
         .arg("--packagelist")
         .current_dir(within)

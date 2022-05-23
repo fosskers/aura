@@ -147,14 +147,12 @@ fn restore_snapshot(alpm: &Alpm, caches: &[&Path], snapshot: Snapshot) -> Result
             })
             .map(|pp| pp.into_pathbuf().into_os_string());
 
-        crate::pacman::sudo_pacman(
-            std::iter::once(OsStr::new("-U").to_os_string()).chain(tarballs),
-        )?;
+        crate::pacman::sudo_pacman("-U", tarballs)?;
     }
 
     // Remove packages that weren't installed within the chosen snapshot.
     if diff.to_remove.is_empty().not() {
-        crate::pacman::sudo_pacman(std::iter::once("-R").chain(diff.to_remove))?;
+        crate::pacman::sudo_pacman("-R", diff.to_remove)?;
     }
 
     Ok(())

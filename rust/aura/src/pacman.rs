@@ -38,13 +38,14 @@ where
 }
 
 /// Make an elevated shell call to `pacman`.
-pub(crate) fn sudo_pacman<I, S>(args: I) -> Result<(), Error>
+pub(crate) fn sudo_pacman<I, S>(command: &str, args: I) -> Result<(), Error>
 where
     I: IntoIterator<Item = S>,
     S: AsRef<OsStr>,
 {
     Command::new("sudo")
         .arg("pacman")
+        .arg(command)
         .args(args)
         .status()?
         .success()
@@ -53,12 +54,12 @@ where
 }
 
 /// Call `sudo pacman -U`.
-pub(crate) fn pacman_install_from_tarball<'a, I>(args: I) -> Result<(), Error>
+pub(crate) fn pacman_install_from_tarball<'a, I, S>(args: I) -> Result<(), Error>
 where
-    I: IntoIterator<Item = &'a str>,
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
 {
-    let iter = std::iter::once("-U").chain(args);
-    sudo_pacman(iter).map_err(|_| Error::InstallFromTarball)
+    sudo_pacman("-U", args).map_err(|_| Error::InstallFromTarball)
 }
 
 /// Call `sudo pacman -S`.
@@ -66,6 +67,5 @@ pub(crate) fn pacman_install_from_repos<'a, I>(args: I) -> Result<(), Error>
 where
     I: IntoIterator<Item = &'a str>,
 {
-    let iter = std::iter::once("-S").chain(args);
-    sudo_pacman(iter).map_err(|_| Error::InstallFromRepos)
+    sudo_pacman("-S", args).map_err(|_| Error::InstallFromRepos)
 }
