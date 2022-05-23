@@ -162,7 +162,7 @@ fn copy_to_cache(cache: &Path, tarballs: &[PathBuf]) -> Result<Vec<PathBuf>, Err
                 .ok_or_else(|| Error::FilenameExtraction(tarball.clone()))
                 .and_then(|file| {
                     let target = [cache, file.as_ref()].iter().collect::<PathBuf>();
-                    move_tarball(&tarball, &target).map(|_| target)
+                    move_tarball(tarball, &target).map(|_| target)
                 })
         })
         .collect::<Result<Vec<PathBuf>, Error>>()

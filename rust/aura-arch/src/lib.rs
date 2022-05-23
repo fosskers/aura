@@ -15,7 +15,7 @@ pub const DEFAULT_MAKEPKG_CONF: &str = "/etc/makepkg.conf";
 ///
 /// An orphan is a package that was installed as a dependency, but whose parent
 /// package is no longer installed.
-pub fn orphans<'a>(alpm: &'a Alpm) -> impl Iterator<Item = Package<'a>> {
+pub fn orphans(alpm: &Alpm) -> impl Iterator<Item = Package<'_>> {
     alpm.localdb().pkgs().into_iter().filter(|p| {
         p.reason() == PackageReason::Depend
             && p.required_by().is_empty()
@@ -24,7 +24,7 @@ pub fn orphans<'a>(alpm: &'a Alpm) -> impl Iterator<Item = Package<'a>> {
 }
 
 /// All official packages.
-pub fn officials<'a>(alpm: &'a Alpm) -> impl Iterator<Item = Package<'a>> {
+pub fn officials(alpm: &Alpm) -> impl Iterator<Item = Package<'_>> {
     let syncs = alpm.syncdbs();
 
     alpm.localdb()
@@ -34,7 +34,7 @@ pub fn officials<'a>(alpm: &'a Alpm) -> impl Iterator<Item = Package<'a>> {
 }
 
 /// All foreign packages as an `Iterator`.
-pub fn foreigns<'a>(alpm: &'a Alpm) -> impl Iterator<Item = Package<'a>> {
+pub fn foreigns(alpm: &Alpm) -> impl Iterator<Item = Package<'_>> {
     let syncs = alpm.syncdbs();
 
     alpm.localdb()

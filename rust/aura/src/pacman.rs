@@ -54,7 +54,7 @@ where
 }
 
 /// Call `sudo pacman -U`.
-pub(crate) fn pacman_install_from_tarball<'a, I, S>(args: I) -> Result<(), Error>
+pub(crate) fn pacman_install_from_tarball<I, S>(args: I) -> Result<(), Error>
 where
     I: IntoIterator<Item = S>,
     S: AsRef<OsStr>,

@@ -1,12 +1,11 @@
 //! All functionality involving the `-O` command.
 
-use crate::{a, green, yellow};
+use crate::{green, yellow};
 use alpm::{Alpm, PackageReason, TransFlag};
 use aura_arch as arch;
 use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
-use i18n_embed_fl::fl;
 use std::collections::HashSet;
 use ubyte::ToByteUnit;
 
@@ -33,7 +32,7 @@ impl std::fmt::Display for Error {
 
 /// Print the name of each orphaned package.
 pub(crate) fn list(alpm: &Alpm) {
-    arch::orphans(&alpm).for_each(|o| println!("{}", o.name()))
+    arch::orphans(alpm).for_each(|o| println!("{}", o.name()))
 }
 
 /// Sets a package's install reason to "as explicit". An alias for `-D --asexplicit`.

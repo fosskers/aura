@@ -104,7 +104,7 @@ where
     P: AsRef<Path>,
 {
     paths
-        .into_iter()
+        .iter()
         .filter_map(|path| path.as_ref().read_dir().ok())
         .flatten()
 }

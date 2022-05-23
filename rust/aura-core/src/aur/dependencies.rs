@@ -132,7 +132,7 @@ impl std::fmt::Display for Official {
 }
 
 /// A buildable package from the AUR.
-#[derive(PartialEq, Eq)]
+#[derive(Eq)]
 pub struct Buildable {
     /// The name of the AUR package.
     pub name: String,
@@ -160,6 +160,12 @@ impl Borrow<str> for Buildable {
     }
 }
 
+impl PartialEq for Buildable {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+    }
+}
+
 impl Hash for Buildable {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.name.hash(state);
@@ -167,7 +173,7 @@ impl Hash for Buildable {
 }
 
 /// Determine all packages to be built and installed.
-pub fn resolve<'a, I, S, M, F, E>(
+pub fn resolve<I, S, M, F, E>(
     pool: Pool<M>,
     fetch: &F,
     clone_dir: &Path,
@@ -201,7 +207,7 @@ where
     Ok(res)
 }
 
-fn resolve_one<'a, S, M, F, E>(
+fn resolve_one<S, M, F, E>(
     pool: Pool<M>,
     mutx: Arc<Mutex<Resolution>>,
     fetch: &F,
@@ -278,7 +284,6 @@ where
                     // Manual drops are a signal of bad design. For the moment
                     // these are necessary to avoid running out of ALPM handles
                     // when we recurse.
-                    drop(official);
                     drop(alpm);
 
                     deps.into_par_iter()
@@ -317,20 +322,15 @@ where
                         .makedepends
                         .into_iter()
                         .chain(info.pkg.depends)
-                        .chain(
-                            info.pkgs
-                                .into_iter()
-                                .map(|p| {
-                                    // Sneak out this package's name as a "provided name".
-                                    prov.push(p.pkgname);
-                                    p.depends
-                                })
-                                .flatten(),
-                        )
+                        .chain(info.pkgs.into_iter().flat_map(|p| {
+                            // Sneak out this package's name as a "provided name".
+                            prov.push(p.pkgname);
+                            p.depends
+                        }))
                         .flat_map(|av| av.vec)
                         .collect();
 
-                    let deps_copy: Vec<String> = deps.iter().map(|d| d.clone()).collect();
+                    let deps_copy: Vec<String> = deps.iter().cloned().collect();
                     let parent = name.clone();
                     let buildable = Buildable { name, deps };
 
@@ -501,7 +501,7 @@ fn dep_graph(to_build: &[Buildable]) -> Graph<&Buildable, ()> {
 }
 
 /// Strip version demands from a dependency string.
-fn strip_version<'a, S>(stri: S) -> String
+fn strip_version<S>(stri: S) -> String
 where
     S: AsRef<str> + Into<String>,
 {

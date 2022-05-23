@@ -7,12 +7,12 @@ use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
+use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::BufWriter;
 use std::ops::Not;
 use std::path::Path;
-use std::{cmp::Ordering, ffi::OsStr};
 
 #[derive(FromVariants)]
 pub enum Error {

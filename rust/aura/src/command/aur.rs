@@ -3,20 +3,18 @@
 mod build;
 
 use crate::utils::ResultVoid;
-use crate::{aura, dirs, green, red, yellow};
+use crate::{aura, dirs, green, red};
 use alpm::Alpm;
-use aura_core::aur::PkgPartition;
 use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
 use from_variants::FromVariants;
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
 use log::{debug, info};
-use nonempty::NonEmpty;
 use r2d2::Pool;
 use r2d2_alpm::AlpmManager;
 use rayon::prelude::*;
-use std::borrow::{Borrow, Cow};
+use std::borrow::Borrow;
 use std::io::{BufWriter, Write};
 use std::ops::Not;
 use std::path::{Path, PathBuf};
@@ -28,10 +26,6 @@ pub enum Error {
     Dirs(crate::dirs::Error),
     Io(std::io::Error),
     Git(aura_core::git::Error),
-    #[from_variants(skip)]
-    Clones(NonEmpty<aura_core::git::Error>),
-    #[from_variants(skip)]
-    Pulls(NonEmpty<aura_core::git::Error>),
     Build(build::Error),
     Deps(aura_core::aur::dependencies::Error<crate::fetch::Error>),
     Pacman(crate::pacman::Error),
@@ -50,18 +44,6 @@ impl std::fmt::Display for Error {
             Error::Io(e) => write!(f, "{}", e),
             Error::Git(e) => write!(f, "{}", e),
             Error::Silent => write!(f, ""),
-            Error::Clones(es) => {
-                for e in es {
-                    writeln!(f, "{}", e)?;
-                }
-                Ok(())
-            }
-            Error::Pulls(es) => {
-                for e in es {
-                    writeln!(f, "{}", e)?;
-                }
-                Ok(())
-            }
             Error::Build(e) => write!(f, "{}", e),
             Error::Pacman(e) => write!(f, "{}", e),
             Error::Deps(e) => write!(f, "{}", e),
@@ -191,7 +173,7 @@ pub(crate) fn search(
     if rev {
         matches.reverse();
     }
-    let to_take = limit.unwrap_or_else(|| matches.len());
+    let to_take = limit.unwrap_or(matches.len());
 
     for p in matches.into_iter().take(to_take) {
         if quiet {
@@ -248,7 +230,7 @@ pub(crate) fn clone_aur_repos(
         .map(|p| {
             let pkg = p.as_str();
             aura!(fll, "A-w", package = pkg);
-            aura_core::aur::clone_aur_repo(None, &p)
+            aura_core::aur::clone_aur_repo(None, p)
                 .map_err(|_| pkg)
                 .void()
         })
@@ -379,28 +361,4 @@ pub(crate) fn install(
     }
 
     Ok(())
-}
-
-fn real_packages<'a>(
-    fll: &FluentLanguageLoader,
-    pkgs: &'a [String],
-) -> Result<(Vec<Cow<'a, str>>, Vec<Cow<'a, str>>), Error> {
-    let clone_dir = crate::dirs::clones()?;
-    let PkgPartition {
-        cloned,
-        to_clone,
-        not_real,
-    } = aura_core::aur::partition_aur_pkgs(&crate::fetch::fetch_json, &clone_dir, pkgs)?;
-
-    if cloned.is_empty() && to_clone.is_empty() {
-        red!(fll, "common-no-valid");
-        return Err(Error::Silent);
-    }
-
-    for bad in not_real {
-        let name = bad.cyan().to_string();
-        yellow!(fll, "A-install-unreal", pkg = name);
-    }
-
-    Ok((cloned, to_clone))
 }

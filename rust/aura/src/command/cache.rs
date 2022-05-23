@@ -1,7 +1,7 @@
 //! All functionality involving the `-C` command.
 
 use crate::download::download_with_progress;
-use crate::{a, aura, green, red, yellow};
+use crate::{aura, green, red, yellow};
 use alpm::Alpm;
 use aura_core::cache::{CacheSize, PkgPath};
 use chrono::{DateTime, Local};
@@ -78,7 +78,7 @@ pub(crate) fn downgrade(
     let mut to_downgrade: Vec<OsString> = packages
         .iter()
         .filter_map(|p| tarballs.remove(p.as_str()).map(|pps| (p, pps)))
-        .filter_map(|(p, pps)| downgrade_one(fll, &p, pps).ok())
+        .filter_map(|(p, pps)| downgrade_one(fll, p, pps).ok())
         .map(|pp| pp.into_pathbuf().into_os_string())
         .collect();
 
@@ -231,11 +231,10 @@ pub(crate) fn clean(
 
     // Get all the tarball paths, sort and group them by name, and then remove them.
     aura_core::cache::package_paths(caches)
-        .sorted_by(|p0, p1| p1.cmp(&p0)) // Forces a `collect` underneath.
+        .sorted_by(|p0, p1| p1.cmp(p0)) // Forces a `collect` underneath.
         .group_by(|pp| pp.as_package().name.clone()) // TODO Naughty clone.
         .into_iter()
-        .map(|(_, group)| group.skip(keep)) // Thanks to the reverse-sort above, `group` is already backwards.
-        .flatten()
+        .flat_map(|(_, group)| group.skip(keep)) // Thanks to the reverse-sort above, `group` is already backwards.
         .for_each(|pp| {
             let _ = pp.remove(); // TODO Handle this error better?
         });
