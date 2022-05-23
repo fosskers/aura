@@ -16,7 +16,7 @@ use nonempty::NonEmpty;
 use r2d2::Pool;
 use r2d2_alpm::AlpmManager;
 use rayon::prelude::*;
-use std::borrow::Cow;
+use std::borrow::{Borrow, Cow};
 use std::io::{BufWriter, Write};
 use std::ops::Not;
 use validated::Validated;
@@ -387,8 +387,15 @@ pub(crate) fn install(
         .ok_or(Error::Cancelled)?;
 
     // --- Determine the best build order --- //
-    let order = aura_core::aur::dependencies::build_order(&to_build)?;
+    let order: Vec<Vec<&str>> = aura_core::aur::dependencies::build_order(&to_build)?;
     info!("Build order: {:?}", order);
+
+    // --- Install repo dependencies --- //
+    crate::pacman::pacman_install_from_repos(
+        std::iter::once("--asdeps")
+            .chain(std::iter::once("--noconfirm"))
+            .chain(to_install.iter().map(|o| o.borrow())),
+    )?;
 
     // let tarballs = build::build(
     //     fll,
