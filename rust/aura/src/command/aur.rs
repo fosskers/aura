@@ -343,10 +343,12 @@ pub(crate) fn install(
     info!("Build order: {:?}", order);
 
     // --- Install repo dependencies --- //
-    crate::pacman::pacman_install_from_repos(
-        ["--asdeps", "--noconfirm"],
-        to_install.iter().map(|o| o.as_ref()),
-    )?;
+    if to_install.is_empty().not() {
+        crate::pacman::pacman_install_from_repos(
+            ["--asdeps", "--noconfirm"],
+            to_install.iter().map(|o| o.as_ref()),
+        )?;
+    }
 
     // --- Build and install each layer of AUR packages --- //
     let len = order.len();
