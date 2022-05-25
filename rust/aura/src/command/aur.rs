@@ -30,6 +30,7 @@ pub enum Error {
     Deps(aura_core::aur::dependencies::Error<crate::fetch::Error>),
     Pacman(crate::pacman::Error),
     R2d2(r2d2::Error),
+    Aur(aura_core::aur::Error),
     Cancelled,
     Silent,
 }
@@ -50,6 +51,7 @@ impl std::fmt::Display for Error {
             Error::R2d2(e) => write!(f, "{}", e),
             Error::Fetch(e) => write!(f, "{}", e),
             Error::Cancelled => write!(f, "Installation cancelled."),
+            Error::Aur(e) => write!(f, "{e}"),
         }
     }
 }
@@ -204,14 +206,8 @@ pub(crate) fn search(
 pub(crate) fn pkgbuild(pkg: &str) -> Result<(), Error> {
     let clone_dir = crate::dirs::clones()?;
 
-    // FIXME Wed May 25 12:06:19 2022
-    //
-    // Write function `clone_path_of_pkgbase` since this is now common behaviour.
-    let path: PathBuf = if aura_core::aur::has_local_aur_clone(&clone_dir, pkg) {
-        clone_dir.join(pkg).join("PKGBUILD")
-    } else {
-        todo!()
-    };
+    let path = aura_core::aur::clone_path_of_pkgbase(&clone_dir, pkg, &crate::fetch::fetch_json)?
+        .join("PKGBUILD");
 
     let file = BufReader::new(File::open(path)?);
     let mut out = BufWriter::new(std::io::stdout());

@@ -2,12 +2,37 @@
 
 pub mod dependencies;
 
+use from_variants::FromVariants;
 use log::debug;
 use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 
 /// The base path of the URL.
 pub const AUR_BASE_URL: &str = "https://aur.archlinux.org/";
+
+/// Errors in handling AUR packages.
+#[derive(FromVariants)]
+pub enum Error {
+    /// Some problem involving pulling or cloning.
+    Git(crate::git::Error),
+    /// Calling the Faur failed somehow.
+    FaurFetch,
+    /// A package exists in no way on the AUR.
+    PackageDoesNotExist,
+    /// Somehow the Faur returned too many results.
+    TooManyFaurResults,
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::Git(e) => write!(f, "{e}"),
+            Error::FaurFetch => write!(f, "Calling the Faur utterly failed"),
+            Error::PackageDoesNotExist => write!(f, "Unknown package"),
+            Error::TooManyFaurResults => write!(f, "More results returned from Faur than expected"),
+        }
+    }
+}
 
 /// The result of inspecting the existance status of a collection of package
 /// names.
@@ -120,4 +145,35 @@ pub fn clone_aur_repo(root: Option<&Path>, package: &str) -> Result<PathBuf, cra
     };
 
     crate::git::shallow_clone(&url, &clone_path).map(|_| clone_path)
+}
+
+/// Yield a path to the local git clone of the given package. The path won't
+/// exactly match the original name of the package when it wasn't the original
+/// `pkgbase` (example: gcc6-libs -> gcc6).
+///
+/// Either way, if there was no local clone present, this will cause a `git
+/// clone` to occur.
+pub fn clone_path_of_pkgbase<F, E>(clone_dir: &Path, pkg: &str, fetch: &F) -> Result<PathBuf, Error>
+where
+    F: Fn(&str) -> Result<Vec<crate::faur::Package>, E>,
+{
+    let path: PathBuf = if has_local_aur_clone(clone_dir, pkg) {
+        clone_dir.join(pkg)
+    } else {
+        let ps = crate::faur::info([pkg], fetch).map_err(|_| Error::FaurFetch)?;
+        let fp = match ps.as_slice() {
+            [fp] => Ok(fp),
+            [] => Err(Error::PackageDoesNotExist),
+            [_, _, ..] => Err(Error::TooManyFaurResults),
+        }?;
+
+        if has_local_aur_clone(clone_dir, &fp.package_base) {
+            clone_dir.join(&fp.package_base)
+        } else {
+            let clone = clone_aur_repo(Some(clone_dir), &fp.package_base)?;
+            clone
+        }
+    };
+
+    Ok(path)
 }

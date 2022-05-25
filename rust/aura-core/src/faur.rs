@@ -73,13 +73,13 @@ pub struct Package {
 pub fn info<'a, I, F, E>(pkgs: I, fetch: &F) -> Result<Vec<Package>, E>
 where
     F: Fn(&str) -> Result<Vec<Package>, E>,
-    I: Iterator<Item = &'a str>,
+    I: IntoIterator<Item = &'a str>,
 {
     // FIXME Thu May  5 21:28:31 2022
     //
     // Once `intersperse` stabilises, use that instead of this wasteful Vec
     // allocation.
-    let s: String = pkgs.collect::<Vec<_>>().join(",");
+    let s: String = pkgs.into_iter().collect::<Vec<_>>().join(",");
     let url = format!("{}/packages?names={}", FAUR_URL, s);
     fetch(&url)
 }
@@ -89,12 +89,12 @@ where
 pub fn search<'a, I, F, E>(terms: I, fetch: &F) -> Result<Vec<Package>, E>
 where
     F: Fn(&str) -> Result<Vec<Package>, E>,
-    I: Iterator<Item = &'a str>,
+    I: IntoIterator<Item = &'a str>,
 {
     // FIXME Thu May  5 21:37:15 2022
     //
     // Same as above.
-    let s: String = terms.collect::<Vec<_>>().join(",");
+    let s: String = terms.into_iter().collect::<Vec<_>>().join(",");
     let url = format!("{}/packages?names={}&by=desc", FAUR_URL, s);
     fetch(&url)
 }

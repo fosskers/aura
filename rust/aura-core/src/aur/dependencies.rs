@@ -399,7 +399,7 @@ where
     } else {
         // Here, we don't have a local clone of the package, so we need to find
         // out if it's real.
-        let mut info = crate::faur::info(std::iter::once(pkg), fetch).map_err(Error::Faur)?;
+        let mut info = crate::faur::info([pkg], fetch).map_err(Error::Faur)?;
         let base = info
             // ASSUMPTION: The list is a singleton!
             .pop()
