@@ -759,6 +759,10 @@ pub(crate) struct Aur {
     #[clap(group = "aur", long, short, value_name = "package", display_order = 1)]
     pub(crate) open: Option<String>,
 
+    /// View a package's PKGBUILD.
+    #[clap(group = "aur", long, short, value_name = "package", display_order = 1)]
+    pub(crate) pkgbuild: Option<String>,
+
     // TODO Long option? Haskell version uses `--downloadonly`.
     /// Clone a package's AUR repository, but don't build anything.
     #[clap(

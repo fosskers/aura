@@ -14,7 +14,8 @@ use log::{debug, info};
 use r2d2::Pool;
 use r2d2_alpm::AlpmManager;
 use rayon::prelude::*;
-use std::io::{BufWriter, Write};
+use std::fs::File;
+use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::ops::Not;
 use std::path::{Path, PathBuf};
 use validated::Validated;
@@ -195,6 +196,30 @@ pub(crate) fn search(
             println!("    {}", p.description.unwrap_or_default());
         }
     }
+
+    Ok(())
+}
+
+/// View a package's PKGBUILD.
+pub(crate) fn pkgbuild(pkg: &str) -> Result<(), Error> {
+    let clone_dir = crate::dirs::clones()?;
+
+    // FIXME Wed May 25 12:06:19 2022
+    //
+    // Write function `clone_path_of_pkgbase` since this is now common behaviour.
+    let path: PathBuf = if aura_core::aur::has_local_aur_clone(&clone_dir, pkg) {
+        clone_dir.join(pkg).join("PKGBUILD")
+    } else {
+        todo!()
+    };
+
+    let file = BufReader::new(File::open(path)?);
+    let mut out = BufWriter::new(std::io::stdout());
+
+    file.lines()
+        .filter_map(|line| line.ok())
+        .map(|line| writeln!(out, "{}", line))
+        .collect::<Result<(), std::io::Error>>()?;
 
     Ok(())
 }

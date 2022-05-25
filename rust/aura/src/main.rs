@@ -100,6 +100,7 @@ fn work(args: Args) -> Result<(), Error> {
             aur::search(&alpm, a.abc, a.reverse, a.limit, a.quiet, a.search)?
         }
         SubCmd::Aur(a) if a.open.is_some() => aur::open(&a.open.unwrap())?,
+        SubCmd::Aur(a) if a.pkgbuild.is_some() => aur::pkgbuild(&a.pkgbuild.unwrap())?,
         SubCmd::Aur(a) if a.wclone.is_empty().not() => aur::clone_aur_repos(&fll, &a.wclone)?,
         SubCmd::Aur(a) if a.refresh => aur::refresh(&fll)?,
         SubCmd::Aur(a) => aur::install(&fll, pconf, &a.packages)?,

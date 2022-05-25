@@ -47,10 +47,8 @@ where
 ///
 /// This of course isn't fool proof, since it doesn't consult the AUR, and thus
 /// the caller should follow up with an AUR call if this returns `false`.
-fn has_local_aur_clone(clone_dir: &Path, package: &str) -> bool {
-    let mut path = clone_dir.to_path_buf();
-    path.push(package);
-    path.is_dir()
+pub fn has_local_aur_clone(clone_dir: &Path, pkg: &str) -> bool {
+    clone_dir.join(pkg).is_dir()
 }
 
 // TODO Tue Jan 18 20:13:12 2022
