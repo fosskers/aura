@@ -40,7 +40,7 @@ pub fn foreigns(alpm: &Alpm) -> impl Iterator<Item = Package<'_>> {
     alpm.localdb()
         .pkgs()
         .into_iter()
-        .filter_map(move |p| syncs.pkg(p.name()).is_ok().then(|| p))
+        .filter(move |p| syncs.pkg(p.name()).is_err())
 }
 
 /// Does the given `Path` point to a valid tarball that can can loaded by ALPM?
