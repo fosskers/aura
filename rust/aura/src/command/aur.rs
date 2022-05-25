@@ -14,6 +14,7 @@ use log::{debug, info};
 use r2d2::Pool;
 use r2d2_alpm::AlpmManager;
 use rayon::prelude::*;
+use srcinfo::Srcinfo;
 use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Write};
@@ -32,6 +33,8 @@ pub enum Error {
     Pacman(crate::pacman::Error),
     R2d2(r2d2::Error),
     Aur(aura_core::aur::Error),
+    /// An error parsing a `.SRCINFO` file.
+    Srcinfo(srcinfo::Error),
     Cancelled,
     Silent,
 }
@@ -53,6 +56,7 @@ impl std::fmt::Display for Error {
             Error::Fetch(e) => write!(f, "{}", e),
             Error::Cancelled => write!(f, "Installation cancelled."),
             Error::Aur(e) => write!(f, "{e}"),
+            Error::Srcinfo(e) => write!(f, "{e}"),
         }
     }
 }
@@ -389,6 +393,7 @@ pub(crate) fn install(
     Ok(())
 }
 
+/// Upgrade all installed AUR packages.
 pub(crate) fn upgrade<'a>(fll: &FluentLanguageLoader, alpm: &'a Alpm) -> Result<(), Error> {
     info!("Upgrading all AUR packages.");
     let clone_dir = crate::dirs::clones()?;
@@ -406,6 +411,25 @@ pub(crate) fn upgrade<'a>(fll: &FluentLanguageLoader, alpm: &'a Alpm) -> Result<
     info!("Unique clones: {}", clones.len());
 
     aura!(fll, "A-u-comparing");
+    info!("Reading .SRCINFO files...");
+    let srcinfos = clones
+        .into_par_iter()
+        .map(|path| Srcinfo::parse_file(path.join(".SRCINFO")))
+        .collect::<Result<Vec<_>, srcinfo::Error>>()?;
+    info!("Pulling AUR data...");
+    let from_api: Vec<aura_core::faur::Package> = aura_core::faur::info(
+        srcinfos.iter().map(|p| p.base.pkgbase.as_str()),
+        &crate::fetch::fetch_json,
+    )?;
+    info!("Packages pulled: {}", from_api.len());
+    let db = alpm.localdb();
+    let to_upgrade: Vec<_> = from_api
+        .into_iter()
+        .filter_map(|new| db.pkg(new.name.as_str()).ok().map(|old| (old, new)))
+        .map(|(old, new)| (aura_core::Package::from(old), aura_core::Package::from(new)))
+        .filter(|(old, new)| old < new)
+        .collect();
+    info!("Packages to upgrade: {}", to_upgrade.len());
 
     Ok(())
 }

@@ -89,6 +89,12 @@ impl<'a> From<alpm::Package<'a>> for Package<'a> {
     }
 }
 
+impl From<crate::faur::Package> for Package<'_> {
+    fn from(p: crate::faur::Package) -> Self {
+        Package::new(p.name, p.version)
+    }
+}
+
 impl<'a> PartialOrd for Package<'a> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
