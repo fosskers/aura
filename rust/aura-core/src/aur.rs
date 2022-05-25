@@ -2,7 +2,6 @@
 
 pub mod dependencies;
 
-use from_variants::FromVariants;
 use log::debug;
 use std::borrow::Cow;
 use std::path::{Path, PathBuf};
@@ -11,25 +10,32 @@ use std::path::{Path, PathBuf};
 pub const AUR_BASE_URL: &str = "https://aur.archlinux.org/";
 
 /// Errors in handling AUR packages.
-#[derive(FromVariants)]
 pub enum Error {
     /// Some problem involving pulling or cloning.
     Git(crate::git::Error),
     /// Calling the Faur failed somehow.
-    FaurFetch,
+    FaurFetch(String),
     /// A package exists in no way on the AUR.
-    PackageDoesNotExist,
+    PackageDoesNotExist(String),
     /// Somehow the Faur returned too many results.
-    TooManyFaurResults,
+    TooManyFaurResults(String),
+}
+
+impl From<crate::git::Error> for Error {
+    fn from(v: crate::git::Error) -> Self {
+        Self::Git(v)
+    }
 }
 
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Error::Git(e) => write!(f, "{e}"),
-            Error::FaurFetch => write!(f, "Calling the Faur utterly failed"),
-            Error::PackageDoesNotExist => write!(f, "Unknown package"),
-            Error::TooManyFaurResults => write!(f, "More results returned from Faur than expected"),
+            Error::FaurFetch(p) => write!(f, "Calling the Faur utterly failed: {p}"),
+            Error::PackageDoesNotExist(p) => write!(f, "Unknown package: {p}"),
+            Error::TooManyFaurResults(p) => {
+                write!(f, "More results returned from Faur than expected: {p}")
+            }
         }
     }
 }
@@ -160,11 +166,11 @@ where
     let path: PathBuf = if has_local_aur_clone(clone_dir, pkg) {
         clone_dir.join(pkg)
     } else {
-        let ps = crate::faur::info([pkg], fetch).map_err(|_| Error::FaurFetch)?;
+        let ps = crate::faur::info([pkg], fetch).map_err(|_| Error::FaurFetch(pkg.to_string()))?;
         let fp = match ps.as_slice() {
             [fp] => Ok(fp),
-            [] => Err(Error::PackageDoesNotExist),
-            [_, _, ..] => Err(Error::TooManyFaurResults),
+            [] => Err(Error::PackageDoesNotExist(pkg.to_string())),
+            [_, _, ..] => Err(Error::TooManyFaurResults(pkg.to_string())),
         }?;
 
         if has_local_aur_clone(clone_dir, &fp.package_base) {

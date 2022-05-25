@@ -14,6 +14,7 @@ use log::{debug, info};
 use r2d2::Pool;
 use r2d2_alpm::AlpmManager;
 use rayon::prelude::*;
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::ops::Not;
@@ -384,6 +385,27 @@ pub(crate) fn install(
             .unwrap_or_default();
         crate::pacman::pacman_install_from_tarball(flags, tarballs)?;
     }
+
+    Ok(())
+}
+
+pub(crate) fn upgrade<'a>(fll: &FluentLanguageLoader, alpm: &'a Alpm) -> Result<(), Error> {
+    info!("Upgrading all AUR packages.");
+    let clone_dir = crate::dirs::clones()?;
+
+    let foreigns: Vec<aura_core::Package<'a>> =
+        aura_arch::foreigns(alpm).map(|p| p.into()).collect();
+    info!("Foreign packages: {}", foreigns.len());
+
+    aura!(fll, "A-u-fetch-info");
+    let clones: HashSet<PathBuf> = foreigns
+        .par_iter()
+        .map(|p| p.name.as_ref())
+        .map(|p| aura_core::aur::clone_path_of_pkgbase(&clone_dir, p, &crate::fetch::fetch_json))
+        .collect::<Result<HashSet<_>, aura_core::aur::Error>>()?;
+    info!("Unique clones: {}", clones.len());
+
+    aura!(fll, "A-u-comparing");
 
     Ok(())
 }

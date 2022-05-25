@@ -83,6 +83,12 @@ impl<'a> Package<'a> {
     }
 }
 
+impl<'a> From<alpm::Package<'a>> for Package<'a> {
+    fn from(p: alpm::Package<'a>) -> Self {
+        Package::new(p.name(), p.version().as_str())
+    }
+}
+
 impl<'a> PartialOrd for Package<'a> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))

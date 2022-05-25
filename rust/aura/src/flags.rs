@@ -763,6 +763,14 @@ pub(crate) struct Aur {
     #[clap(group = "aur", long, short, value_name = "package", display_order = 1)]
     pub(crate) pkgbuild: Option<String>,
 
+    /// Upgrade all installed AUR packages.
+    #[clap(group = "aur", long, short = 'u', display_order = 1)]
+    pub(crate) sysupgrade: bool,
+
+    /// [-u] Rebuild all git/svn/hg/etc. packages as well.
+    #[clap(group = "aur", long, display_order = 2)]
+    pub(crate) git: bool,
+
     // TODO Long option? Haskell version uses `--downloadonly`.
     /// Clone a package's AUR repository, but don't build anything.
     #[clap(

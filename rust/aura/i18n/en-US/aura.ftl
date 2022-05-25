@@ -31,6 +31,11 @@ A-i-keywords = Keywords
 A-i-submitted = Submitted
 A-i-updated = Updated
 
+# upgradeAURPkgs_1
+A-u-fetch-info = Fetching package information...
+# upgradeAURPkgs_2
+A-u-comparing = Comparing package versions...
+
 A-w = Cloning { $package }...
 A-w-fail = Failed to clone the following packages:
 
