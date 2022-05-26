@@ -53,6 +53,8 @@ This produces the following image:
   is missing a tarball in the package cache.
 - **Breaking:** The long form of `-Aw` has been changed from `--downloadonly` to
   `--clone`.
+- **Breaking:** `--ignore` is now accepted multiple times with a single package
+  argument, as opposed to the previous `--ignore=foo,bar,baz`.
 - The performance of `-As` has been greatly improved.
 
 #### Removed
