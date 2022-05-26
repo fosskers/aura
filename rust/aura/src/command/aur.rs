@@ -423,13 +423,41 @@ pub(crate) fn upgrade<'a>(fll: &FluentLanguageLoader, alpm: &'a Alpm) -> Result<
     )?;
     info!("Packages pulled: {}", from_api.len());
     let db = alpm.localdb();
-    let to_upgrade: Vec<_> = from_api
+    let mut to_upgrade: Vec<(aura_core::Package<'_>, aura_core::Package<'_>)> = from_api
         .into_iter()
         .filter_map(|new| db.pkg(new.name.as_str()).ok().map(|old| (old, new)))
         .map(|(old, new)| (aura_core::Package::from(old), aura_core::Package::from(new)))
         .filter(|(old, new)| old < new)
         .collect();
     info!("Packages to upgrade: {}", to_upgrade.len());
+
+    if to_upgrade.is_empty() {
+        aura!(fll, "A-u-no-upgrades");
+    } else {
+        aura!(fll, "A-u-to-upgrade");
+        to_upgrade.sort_by(|(a, _), (b, _)| a.name.cmp(&b.name));
+        let longest_name = to_upgrade
+            .iter()
+            .map(|(old, _)| old.name.chars().count())
+            .max()
+            .unwrap_or(0);
+        let longest_version = to_upgrade
+            .iter()
+            .map(|(old, _)| old.version.chars().count())
+            .max()
+            .unwrap_or(0);
+
+        for (old, new) in to_upgrade.iter() {
+            println!(
+                " {:n$} :: {:v$} -> {}",
+                old.name.cyan(),
+                old.version.truecolor(128, 128, 128),
+                new.version.bold(),
+                n = longest_name,
+                v = longest_version,
+            );
+        }
+    }
 
     Ok(())
 }

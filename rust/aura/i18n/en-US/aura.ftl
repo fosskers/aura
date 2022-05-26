@@ -35,6 +35,10 @@ A-i-updated = Updated
 A-u-fetch-info = Fetching package information...
 # upgradeAURPkgs_2
 A-u-comparing = Comparing package versions...
+# upgradeAURPkgs_3
+A-u-no-upgrades = No AUR package upgrades necessary.
+# reportPkgsToUpgrade_1
+A-u-to-upgrade = AUR packages to upgrade:
 
 A-w = Cloning { $package }...
 A-w-fail = Failed to clone the following packages:
