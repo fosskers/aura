@@ -3,7 +3,7 @@
 mod build;
 
 use crate::utils::ResultVoid;
-use crate::{aura, dirs, green, red};
+use crate::{aura, green, red};
 use alpm::Alpm;
 use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
@@ -280,34 +280,21 @@ pub(crate) fn clone_aur_repos(
 
 // TODO Add a progress bar here.
 /// Pull the latest commits from every clone in the `packages` directory.
-pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
-    let pulls: Validated<(), String> = dirs::clones()?
-        .read_dir()?
-        .filter_map(|rde| rde.ok())
-        .filter(|de| de.file_type().map(|ft| ft.is_dir()).unwrap_or(false))
-        .par_bridge()
-        .filter_map(|de| de.file_name().into_string().ok().map(|p| (p, de.path())))
-        .map(|(pkg, path)| aura_core::git::pull(&path).map_err(|_| pkg.clone()))
-        .collect();
+pub(crate) fn refresh(fll: &FluentLanguageLoader, alpm: &Alpm) -> Result<(), Error> {
+    let clone_dir = crate::dirs::clones()?;
 
-    // FIXME Fri Jan 28 13:07:24 2022
-    //
-    // Return the failed packages in the Error type instead?
-    match pulls {
-        Validated::Good(_) => {
-            green!(fll, "common-done");
-            Ok(())
-        }
-        Validated::Fail(bads) => {
-            red!(fll, "A-y");
+    aura_arch::foreigns(alpm)
+        .map(|p| p.name())
+        .collect::<Vec<_>>()
+        .into_par_iter()
+        .map(|p| aura_core::aur::clone_path_of_pkgbase(&clone_dir, p, &crate::fetch::fetch_json))
+        .collect::<Result<HashSet<PathBuf>, aura_core::aur::Error>>()?
+        .into_par_iter()
+        .map(|path| aura_core::git::pull(&path))
+        .collect::<Result<(), aura_core::git::Error>>()?;
 
-            for bad in bads {
-                eprintln!("  - {}", bad);
-            }
-
-            Err(Error::Silent)
-        }
-    }
+    green!(fll, "common-done");
+    Ok(())
 }
 
 // TODO Thu Jan 13 17:41:55 2022
@@ -397,6 +384,7 @@ where
         }
     }
 
+    green!(fll, "common-done");
     Ok(())
 }
 
