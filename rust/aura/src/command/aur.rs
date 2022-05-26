@@ -10,6 +10,7 @@ use colored::{ColoredString, Colorize};
 use from_variants::FromVariants;
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
+use linya::Progress;
 use log::{debug, info};
 use r2d2::Pool;
 use r2d2_alpm::AlpmManager;
@@ -20,6 +21,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::ops::Not;
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 use validated::Validated;
 
 #[derive(FromVariants)]
@@ -278,19 +280,38 @@ pub(crate) fn clone_aur_repos(
     }
 }
 
-// TODO Add a progress bar here.
 /// Pull the latest commits from every clone in the `packages` directory.
 pub(crate) fn refresh(fll: &FluentLanguageLoader, alpm: &Alpm) -> Result<(), Error> {
-    let clone_dir = crate::dirs::clones()?;
+    aura!(fll, "A-y-refreshing");
 
-    aura_arch::foreigns(alpm)
+    let clone_d = crate::dirs::clones()?;
+    let names = aura_arch::foreigns(alpm)
         .map(|p| p.name())
-        .collect::<Vec<_>>()
+        .collect::<Vec<_>>();
+    let mut progress = Progress::new();
+    let clone_bar = progress.bar(names.len(), "Confirming local clones");
+    let mtx = Mutex::new(progress);
+
+    let uniques = names
         .into_par_iter()
-        .map(|p| aura_core::aur::clone_path_of_pkgbase(&clone_dir, p, &crate::fetch::fetch_json))
-        .collect::<Result<HashSet<PathBuf>, aura_core::aur::Error>>()?
+        .map(|p| {
+            let res = aura_core::aur::clone_path_of_pkgbase(&clone_d, p, &crate::fetch::fetch_json);
+            mtx.lock().unwrap().inc_and_draw(&clone_bar, 1);
+            res
+        })
+        .collect::<Result<HashSet<PathBuf>, aura_core::aur::Error>>()?;
+
+    let pull_bar = mtx
+        .lock()
+        .unwrap()
+        .bar(uniques.len(), "Pulling latest commits");
+    uniques
         .into_par_iter()
-        .map(|path| aura_core::git::pull(&path))
+        .map(|path| {
+            let res = aura_core::git::pull(&path);
+            mtx.lock().unwrap().inc_and_draw(&pull_bar, 1);
+            res
+        })
         .collect::<Result<(), aura_core::git::Error>>()?;
 
     green!(fll, "common-done");

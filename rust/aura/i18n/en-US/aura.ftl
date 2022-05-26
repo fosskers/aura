@@ -43,6 +43,7 @@ A-u-to-upgrade = AUR packages to upgrade:
 A-w = Cloning { $package }...
 A-w-fail = Failed to clone the following packages:
 
+A-y-refreshing = Refreshing local clones of installed AUR packages...
 A-y = Failed to pull the following packages:
 
 # Snapshots (-B)
