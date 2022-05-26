@@ -92,7 +92,7 @@ fn build_one(cache: &Path, clone: &Path, build_root: &Path) -> Result<Vec<PathBu
     debug!("Building {}", base);
 
     // --- Prepare the Build Directory --- //
-    let build = [build_root, Path::new(&base)].iter().collect::<PathBuf>();
+    let build = build_root.join(&base);
     std::fs::create_dir_all(&build)?;
 
     // --- Copy non-downloadable `source` files and PKGBUILD --- //
@@ -104,13 +104,19 @@ fn build_one(cache: &Path, clone: &Path, build_root: &Path) -> Result<Vec<PathBu
         .filter(|file| (file.contains("https://") || file.contains("http://")).not())
         .map(|s| s.as_str());
 
+    let install_file: Option<PathBuf> = {
+        let install = Path::new(&base).with_extension("install");
+        clone.join(&install).is_file().then(|| install)
+    };
+
     std::iter::once("PKGBUILD")
+        .chain(install_file.iter().filter_map(|pb| pb.to_str()))
         .chain(to_copy)
         .map(|file| {
             debug!("Copying {}", file);
             let path = Path::new(&file);
-            let source = [clone, path].iter().collect::<PathBuf>();
-            let target = [&build, path].iter().collect::<PathBuf>();
+            let source = clone.join(path);
+            let target = build.join(path);
             std::fs::copy(source, target).void()
         })
         .collect::<Validated<(), std::io::Error>>()

@@ -371,7 +371,7 @@ where
 
     // --- Determine the best build order --- //
     let order: Vec<Vec<&str>> = aura_core::aur::dependencies::build_order(&to_build)?;
-    info!("Build order: {:?}", order);
+    debug!("Build order: {:?}", order);
 
     // --- Install repo dependencies --- //
     if to_install.is_empty().not() {
@@ -408,16 +408,16 @@ pub(crate) fn upgrade<'a>(
     ignore: Vec<String>,
 ) -> Result<(), Error> {
     info!("Upgrading all AUR packages.");
-    info!("Will ignore: {:?}", ignore);
+    debug!("Will ignore: {:?}", ignore);
     let clone_dir = crate::dirs::clones()?;
 
     // --- Query database for all non-repo packages --- //
     let mut foreigns: Vec<aura_core::Package<'a>> =
         aura_arch::foreigns(alpm).map(|p| p.into()).collect();
-    info!("Foreign packages: {}", foreigns.len());
+    debug!("Foreign packages: {}", foreigns.len());
     let ignore: HashSet<_> = ignore.into_iter().collect();
     foreigns.retain(|p| ignore.contains(p.name.as_ref()).not());
-    info!("After excluding ignores: {}", foreigns.len());
+    debug!("After excluding ignores: {}", foreigns.len());
 
     // --- Ensure they all have local clones --- //
     aura!(fll, "A-u-fetch-info");
@@ -426,7 +426,7 @@ pub(crate) fn upgrade<'a>(
         .map(|p| p.name.as_ref())
         .map(|p| aura_core::aur::clone_path_of_pkgbase(&clone_dir, p, &crate::fetch::fetch_json))
         .collect::<Result<HashSet<_>, aura_core::aur::Error>>()?;
-    info!("Unique clones: {}", clones.len());
+    debug!("Unique clones: {}", clones.len());
 
     // --- Compare versions to determine what to upgrade --- //
     aura!(fll, "A-u-comparing");
@@ -440,7 +440,7 @@ pub(crate) fn upgrade<'a>(
         srcinfos.iter().map(|p| p.base.pkgbase.as_str()),
         &crate::fetch::fetch_json,
     )?;
-    info!("Packages pulled: {}", from_api.len());
+    debug!("Packages pulled: {}", from_api.len());
     let db = alpm.localdb();
     let mut to_upgrade: Vec<(aura_core::Package<'_>, aura_core::Package<'_>)> = from_api
         .into_iter()
@@ -448,7 +448,7 @@ pub(crate) fn upgrade<'a>(
         .map(|(old, new)| (aura_core::Package::from(old), aura_core::Package::from(new)))
         .filter(|(old, new)| old < new)
         .collect();
-    info!("Packages to upgrade: {}", to_upgrade.len());
+    debug!("Packages to upgrade: {}", to_upgrade.len());
 
     // --- Report --- //
     if to_upgrade.is_empty() {
