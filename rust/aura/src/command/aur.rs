@@ -313,11 +313,16 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader) -> Result<(), Error> {
 // TODO Thu Jan 13 17:41:55 2022
 //
 // This will obviously require more arguments.
-pub(crate) fn install(
+pub(crate) fn install<'a, I>(
     fll: &FluentLanguageLoader,
     config: pacmanconf::Config,
-    pkgs: &[String],
-) -> Result<(), Error> {
+    raw_pkgs: I,
+) -> Result<(), Error>
+where
+    I: IntoIterator<Item = &'a str>,
+{
+    let pkgs: Vec<_> = raw_pkgs.into_iter().collect();
+
     // Exit early if the user passed no packages.
     if pkgs.is_empty() {
         red!(fll, "common-no-packages");
@@ -394,7 +399,11 @@ pub(crate) fn install(
 }
 
 /// Upgrade all installed AUR packages.
-pub(crate) fn upgrade<'a>(fll: &FluentLanguageLoader, alpm: &'a Alpm) -> Result<(), Error> {
+pub(crate) fn upgrade<'a>(
+    fll: &FluentLanguageLoader,
+    alpm: &'a Alpm,
+    config: pacmanconf::Config,
+) -> Result<(), Error> {
     info!("Upgrading all AUR packages.");
     let clone_dir = crate::dirs::clones()?;
 
@@ -457,6 +466,9 @@ pub(crate) fn upgrade<'a>(fll: &FluentLanguageLoader, alpm: &'a Alpm) -> Result<
                 v = longest_version,
             );
         }
+
+        let names = to_upgrade.iter().map(|(old, _)| old.name.as_ref());
+        install(fll, config, names)?;
     }
 
     Ok(())
