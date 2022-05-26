@@ -22,22 +22,22 @@ pub(crate) struct Args {
         // short = 'b',
         value_name = "path",
         global = true,
-        display_order = 3
+        display_order = 9
     )]
     pub(crate) dbpath: Option<String>,
     /// Set an alternate installation root.
-    #[clap(long, value_name = "path", global = true, display_order = 3)]
+    #[clap(long, value_name = "path", global = true, display_order = 9)]
     pub(crate) root: Option<String>,
     /// Set an alternate log file.
-    #[clap(long, value_name = "path", global = true)]
+    #[clap(long, value_name = "path", global = true, display_order = 9)]
     pub(crate) logfile: Option<PathBuf>,
     /// Set an alternate package cache location.
-    #[clap(long, value_name = "path", global = true)]
+    #[clap(long, value_name = "path", global = true, display_order = 9)]
     pub(crate) cachedir: Option<PathBuf>,
 
     // --- Aura Language Options --- //
     /// Output in English.
-    #[clap(group = "language", long, global = true, display_order = 3)]
+    #[clap(group = "language", long, global = true, display_order = 10)]
     pub(crate) english: bool,
     /// Output in Japanese (alias: 日本語).
     #[clap(
@@ -45,7 +45,7 @@ pub(crate) struct Args {
         long,
         global = true,
         alias = "日本語",
-        display_order = 3
+        display_order = 10
     )]
     pub(crate) japanese: bool,
     /// Output in German (alias: deutsch).
@@ -54,7 +54,7 @@ pub(crate) struct Args {
         long,
         global = true,
         alias = "deutsch",
-        display_order = 3
+        display_order = 10
     )]
     pub(crate) german: bool,
 
@@ -768,13 +768,17 @@ pub(crate) struct Aur {
     pub(crate) sysupgrade: bool,
 
     /// [-u] Rebuild all git/svn/hg/etc. packages as well.
-    #[clap(group = "aur", long, display_order = 2)]
+    #[clap(group = "aur", long, display_order = 3)]
     pub(crate) git: bool,
 
-    // TODO Long option? Haskell version uses `--downloadonly`.
+    /// [-u] Ignore a package upgrade (can be used more than once).
+    #[clap(group = "aur", long, value_name = "package", display_order = 3)]
+    pub(crate) ignore: Vec<String>,
+
     /// Clone a package's AUR repository, but don't build anything.
     #[clap(
         group = "aur",
+        long = "clone",
         short = 'w',
         value_name = "package",
         multiple_values = true,
