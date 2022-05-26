@@ -389,10 +389,12 @@ where
             .map(|pkg| [&clone_dir, Path::new(pkg)].iter().collect::<PathBuf>());
 
         let tarballs = build::build(fll, &cache_dir, &build_dir, clone_paths)?;
-        let flags = (i + 1 < len)
-            .then(|| ["--asdeps"].as_slice())
-            .unwrap_or_default();
-        crate::pacman::pacman_install_from_tarball(flags, tarballs)?;
+        if tarballs.is_empty().not() {
+            let flags = (i + 1 < len)
+                .then(|| ["--asdeps"].as_slice())
+                .unwrap_or_default();
+            crate::pacman::pacman_install_from_tarball(flags, tarballs)?;
+        }
     }
 
     Ok(())

@@ -440,6 +440,11 @@ where
 ///
 /// This ensures that all dependencies are built and installed before they're
 /// needed.
+///
+/// ```
+/// let res = aura_core::aur::dependencies::build_order::<()>(&[]).unwrap();
+/// assert!(res.is_empty());
+/// ```
 pub fn build_order<E>(to_build: &[Buildable]) -> Result<Vec<Vec<&str>>, Error<E>> {
     info!("Determining build order.");
 
