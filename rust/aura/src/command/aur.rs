@@ -407,10 +407,12 @@ pub(crate) fn upgrade<'a>(
     info!("Upgrading all AUR packages.");
     let clone_dir = crate::dirs::clones()?;
 
+    // --- Query database for all non-repo packages --- //
     let foreigns: Vec<aura_core::Package<'a>> =
         aura_arch::foreigns(alpm).map(|p| p.into()).collect();
     info!("Foreign packages: {}", foreigns.len());
 
+    // --- Ensure they all have local clones --- //
     aura!(fll, "A-u-fetch-info");
     let clones: HashSet<PathBuf> = foreigns
         .par_iter()
@@ -419,6 +421,7 @@ pub(crate) fn upgrade<'a>(
         .collect::<Result<HashSet<_>, aura_core::aur::Error>>()?;
     info!("Unique clones: {}", clones.len());
 
+    // --- Compare versions to determine what to upgrade --- //
     aura!(fll, "A-u-comparing");
     info!("Reading .SRCINFO files...");
     let srcinfos = clones
@@ -440,6 +443,7 @@ pub(crate) fn upgrade<'a>(
         .collect();
     info!("Packages to upgrade: {}", to_upgrade.len());
 
+    // --- Report --- //
     if to_upgrade.is_empty() {
         aura!(fll, "A-u-no-upgrades");
     } else {

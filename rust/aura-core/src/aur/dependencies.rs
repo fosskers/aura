@@ -10,7 +10,7 @@ use nonempty::NonEmpty;
 use petgraph::graph::NodeIndex;
 use petgraph::Graph;
 use r2d2::{ManageConnection, Pool};
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
 use srcinfo::Srcinfo;
 use std::borrow::Borrow;
 use std::collections::{HashMap, HashSet};
@@ -179,24 +179,28 @@ impl Hash for Buildable {
 }
 
 /// Determine all packages to be built and installed.
-pub fn resolve<I, S, M, F, E>(
+pub fn resolve<'a, I, M, F, E>(
     pool: Pool<M>,
     fetch: &F,
-    clone_dir: &Path,
+    clone_d: &Path,
     pkgs: I,
 ) -> Result<Resolution, Error<E>>
 where
-    I: IntoParallelIterator<Item = S>,
-    S: AsRef<str> + Into<String>,
+    I: IntoIterator<Item = &'a str>,
     M: ManageConnection<Connection = Alpm>,
     F: Fn(&str) -> Result<Vec<crate::faur::Package>, E> + Sync,
     E: Send,
 {
     let arc = Arc::new(Mutex::new(Resolution::default()));
 
+    // The original packages we asked to have installed. These should not be
+    // immediately counted as "satisfied" (and thus skipped) by the dependency
+    // resolution algorithm.
+    let orig: HashSet<_> = pkgs.into_iter().map(|s| s.as_ref()).collect();
+
     let start = Utc::now();
-    pkgs.into_par_iter()
-        .map(|pkg| resolve_one(pool.clone(), arc.clone(), fetch, clone_dir, None, pkg))
+    orig.par_iter()
+        .map(|pkg| resolve_one(pool.clone(), arc.clone(), fetch, clone_d, &orig, None, pkg))
         .collect::<Validated<(), Error<E>>>()
         .ok()
         .map_err(|es| Error::Resolutions(Box::new(es)))?;
@@ -213,21 +217,21 @@ where
     Ok(res)
 }
 
-fn resolve_one<S, M, F, E>(
+fn resolve_one<M, F, E>(
     pool: Pool<M>,
     mutx: Arc<Mutex<Resolution>>,
     fetch: &F,
-    clone_dir: &Path,
+    clone_d: &Path,
+    orig: &HashSet<&str>,
     parent: Option<&str>,
-    pkg_raw: S,
+    pkg_raw: &str,
 ) -> Result<(), Error<E>>
 where
-    S: AsRef<str> + Into<String>,
     M: ManageConnection<Connection = Alpm>,
     F: Fn(&str) -> Result<Vec<crate::faur::Package>, E> + Sync,
     E: Send,
 {
-    let pkg = strip_version(pkg_raw);
+    let pkg: String = strip_version(pkg_raw);
     let pr = pkg.as_str();
 
     // Drops the lock on the `Resolution` as soon as it can.
@@ -259,7 +263,7 @@ where
         let diff = end.timestamp_millis() - start.timestamp_millis();
         debug!("Satisfaction ({}) for {} in {}ms.", satisfied, pkg, diff);
 
-        if satisfied {
+        if orig.contains(pr).not() && satisfied {
             mutx.lock()
                 .map_err(|_| Error::PoisonedMutex)?
                 .satisfied
@@ -294,14 +298,8 @@ where
 
                     deps.into_par_iter()
                         .map(|d| {
-                            resolve_one(
-                                pool.clone(),
-                                mutx.clone(),
-                                fetch,
-                                clone_dir,
-                                Some(&prnt),
-                                d,
-                            )
+                            let p = Some(prnt.as_str());
+                            resolve_one(pool.clone(), mutx.clone(), fetch, clone_d, orig, p, &d)
                         })
                         .collect::<Validated<(), Error<E>>>()
                         .ok()
@@ -314,7 +312,7 @@ where
                     drop(alpm);
 
                     debug!("{} is an AUR package.", pr);
-                    let path = pull_or_clone(fetch, clone_dir, parent, &pkg)?;
+                    let path = pull_or_clone(fetch, clone_d, parent, &pkg)?;
                     debug!("Parsing .SRCINFO for {}", pkg);
                     let info = Srcinfo::parse_file(path.join(".SRCINFO"))?;
                     let name = info.base.pkgbase;
@@ -355,7 +353,7 @@ where
                         .into_par_iter()
                         .map(|p| {
                             let prnt = Some(parent.as_str());
-                            resolve_one(pool.clone(), mutx.clone(), fetch, clone_dir, prnt, p)
+                            resolve_one(pool.clone(), mutx.clone(), fetch, clone_d, orig, prnt, &p)
                         })
                         .collect::<Validated<(), Error<E>>>()
                         .ok()
@@ -523,6 +521,7 @@ mod test {
 
     #[test]
     fn version_stripping() {
+        assert_eq!("gcc6", strip_version("gcc6"));
         assert_eq!("gcc6", strip_version("gcc6=6.5.0-7"));
         assert_eq!("glibc", strip_version("glibc>=2.25"));
     }
