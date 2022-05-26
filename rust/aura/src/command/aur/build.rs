@@ -61,8 +61,8 @@ impl std::fmt::Display for Error {
 /// Build the given packages and yield paths to their built tarballs.
 pub(crate) fn build<I, T>(
     fll: &FluentLanguageLoader,
-    cache_dir: &Path,
-    build_dir: &Path,
+    cache_d: &Path,
+    build_d: &Path,
     pkg_clones: I,
 ) -> Result<Vec<PathBuf>, Error>
 where
@@ -72,7 +72,7 @@ where
     aura!(fll, "A-build-prep");
 
     let to_install = pkg_clones
-        .map(|path| build_one(cache_dir, path.as_ref(), build_dir))
+        .map(|path| build_one(cache_d, path.as_ref(), build_d))
         .map(|r| build_check(fll, r))
         .collect::<Result<Vec<Vec<PathBuf>>, Error>>()?
         .into_iter()

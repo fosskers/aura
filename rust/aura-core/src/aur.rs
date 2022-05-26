@@ -56,7 +56,7 @@ pub struct PkgPartition<'a> {
 /// actually real.
 pub fn partition_aur_pkgs<'a, S, F, E>(
     fetch: &F,
-    clone_dir: &Path,
+    clone_d: &Path,
     packages: &'a [S],
 ) -> Result<PkgPartition<'a>, E>
 where
@@ -66,8 +66,8 @@ where
     let (cloned, fast_bads): (Vec<Cow<'a, str>>, Vec<Cow<'a, str>>) = packages
         .iter()
         .map(|p| Cow::Borrowed(p.as_ref()))
-        .partition(|p| has_local_aur_clone(clone_dir, p));
-    let mut part = partition_real_pkgs_via_aur(fetch, clone_dir, fast_bads)?;
+        .partition(|p| has_local_aur_clone(clone_d, p));
+    let mut part = partition_real_pkgs_via_aur(fetch, clone_d, fast_bads)?;
 
     part.cloned.extend(cloned);
     Ok(part)
@@ -78,8 +78,8 @@ where
 ///
 /// This of course isn't fool proof, since it doesn't consult the AUR, and thus
 /// the caller should follow up with an AUR call if this returns `false`.
-pub fn has_local_aur_clone(clone_dir: &Path, pkg: &str) -> bool {
-    clone_dir.join(pkg).is_dir()
+pub fn has_local_aur_clone(clone_d: &Path, pkg: &str) -> bool {
+    clone_d.join(pkg).is_dir()
 }
 
 // TODO Tue Jan 18 20:13:12 2022
@@ -88,7 +88,7 @@ pub fn has_local_aur_clone(clone_dir: &Path, pkg: &str) -> bool {
 /// Performs an AUR `info` call to determine which packages are real or not.
 fn partition_real_pkgs_via_aur<'a, F, E>(
     fetch: &F,
-    clone_dir: &Path,
+    clone_d: &Path,
     packages: Vec<Cow<'a, str>>,
 ) -> Result<PkgPartition<'a>, E>
 where
@@ -107,7 +107,7 @@ where
     // clones, so we need to recheck those.
     let (pkgbase_cloned, pkgbase_to_clone): (Vec<_>, _) = splits
         .into_iter()
-        .partition(|p| has_local_aur_clone(clone_dir, &p.package_base));
+        .partition(|p| has_local_aur_clone(clone_d, &p.package_base));
 
     // Anything else must not really exist.
     let not_real = packages
@@ -159,12 +159,12 @@ pub fn clone_aur_repo(root: Option<&Path>, package: &str) -> Result<PathBuf, cra
 ///
 /// Either way, if there was no local clone present, this will cause a `git
 /// clone` to occur.
-pub fn clone_path_of_pkgbase<F, E>(clone_dir: &Path, pkg: &str, fetch: &F) -> Result<PathBuf, Error>
+pub fn clone_path_of_pkgbase<F, E>(clone_d: &Path, pkg: &str, fetch: &F) -> Result<PathBuf, Error>
 where
     F: Fn(&str) -> Result<Vec<crate::faur::Package>, E>,
 {
-    let path: PathBuf = if has_local_aur_clone(clone_dir, pkg) {
-        clone_dir.join(pkg)
+    let path: PathBuf = if has_local_aur_clone(clone_d, pkg) {
+        clone_d.join(pkg)
     } else {
         let ps = crate::faur::info([pkg], fetch).map_err(|_| Error::FaurFetch(pkg.to_string()))?;
         let fp = match ps.as_slice() {
@@ -173,10 +173,10 @@ where
             [_, _, ..] => Err(Error::TooManyFaurResults(pkg.to_string())),
         }?;
 
-        if has_local_aur_clone(clone_dir, &fp.package_base) {
-            clone_dir.join(&fp.package_base)
+        if has_local_aur_clone(clone_d, &fp.package_base) {
+            clone_d.join(&fp.package_base)
         } else {
-            let clone = clone_aur_repo(Some(clone_dir), &fp.package_base)?;
+            let clone = clone_aur_repo(Some(clone_d), &fp.package_base)?;
             clone
         }
     };

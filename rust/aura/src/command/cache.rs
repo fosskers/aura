@@ -249,7 +249,7 @@ pub(crate) fn clean(
 pub(crate) fn clean_not_saved(
     fll: &FluentLanguageLoader,
     caches: &[&Path],
-    snapshot_dir: &Path,
+    snapshot_d: &Path,
 ) -> Result<(), Error> {
     // Report the initial size of the cache.
     let size_before = aura_core::cache::size(caches);
@@ -267,7 +267,7 @@ pub(crate) fn clean_not_saved(
     let snaps: HashMap<String, HashSet<String>> = {
         let mut snaps: HashMap<_, HashSet<_>> = HashMap::new();
 
-        for snap in aura_core::snapshot::snapshots(snapshot_dir) {
+        for snap in aura_core::snapshot::snapshots(snapshot_d) {
             for (name, ver) in snap.packages.into_iter() {
                 let entry = snaps.entry(name).or_default();
                 entry.insert(ver);

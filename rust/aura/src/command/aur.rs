@@ -211,9 +211,9 @@ pub(crate) fn search(
 
 /// View a package's PKGBUILD.
 pub(crate) fn pkgbuild(pkg: &str) -> Result<(), Error> {
-    let clone_dir = crate::dirs::clones()?;
+    let clone_d = crate::dirs::clones()?;
 
-    let path = aura_core::aur::clone_path_of_pkgbase(&clone_dir, pkg, &crate::fetch::fetch_json)?
+    let path = aura_core::aur::clone_path_of_pkgbase(&clone_d, pkg, &crate::fetch::fetch_json)?
         .join("PKGBUILD");
 
     let file = BufReader::new(File::open(path)?);
@@ -337,9 +337,9 @@ where
         return Err(Error::Silent);
     }
 
-    let clone_dir = crate::dirs::clones()?;
-    let build_dir = crate::dirs::builds()?;
-    let cache_dir = crate::dirs::tarballs()?;
+    let clone_d = crate::dirs::clones()?;
+    let build_d = crate::dirs::builds()?;
+    let cache_d = crate::dirs::tarballs()?;
 
     let mngr = AlpmManager::new(config);
     // FIXME Fri Feb  4 15:58:38 2022
@@ -348,7 +348,7 @@ where
     let pool = Pool::builder().max_size(4).build(mngr)?;
     aura!(fll, "A-install-deps");
     let rslv =
-        aura_core::aur::dependencies::resolve(pool, &crate::fetch::fetch_json, &clone_dir, pkgs)?;
+        aura_core::aur::dependencies::resolve(pool, &crate::fetch::fetch_json, &clone_d, pkgs)?;
 
     debug!("Satisfied: {:?}", rslv.satisfied);
     debug!("To install: {:?}", rslv.to_install);
@@ -394,9 +394,9 @@ where
     for (i, layer) in order.into_iter().enumerate() {
         let clone_paths = layer
             .into_iter()
-            .map(|pkg| [&clone_dir, Path::new(pkg)].iter().collect::<PathBuf>());
+            .map(|pkg| [&clone_d, Path::new(pkg)].iter().collect::<PathBuf>());
 
-        let tarballs = build::build(fll, &cache_dir, &build_dir, clone_paths)?;
+        let tarballs = build::build(fll, &cache_d, &build_d, clone_paths)?;
         if tarballs.is_empty().not() {
             let flags = (i + 1 < len)
                 .then(|| ["--asdeps"].as_slice())
@@ -418,7 +418,7 @@ pub(crate) fn upgrade<'a>(
 ) -> Result<(), Error> {
     info!("Upgrading all AUR packages.");
     debug!("Will ignore: {:?}", ignore);
-    let clone_dir = crate::dirs::clones()?;
+    let clone_d = crate::dirs::clones()?;
 
     // --- Query database for all non-repo packages --- //
     let mut foreigns: Vec<aura_core::Package<'a>> =
@@ -433,7 +433,7 @@ pub(crate) fn upgrade<'a>(
     let clones: HashSet<PathBuf> = foreigns
         .par_iter()
         .map(|p| p.name.as_ref())
-        .map(|p| aura_core::aur::clone_path_of_pkgbase(&clone_dir, p, &crate::fetch::fetch_json))
+        .map(|p| aura_core::aur::clone_path_of_pkgbase(&clone_d, p, &crate::fetch::fetch_json))
         .collect::<Result<HashSet<_>, aura_core::aur::Error>>()?;
     debug!("Unique clones: {}", clones.len());
 

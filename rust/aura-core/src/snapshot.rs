@@ -58,14 +58,14 @@ impl Snapshot {
 }
 
 /// An iterator of all legal [`Snapshot`]s.
-pub fn snapshots(snapshots_dir: &Path) -> impl Iterator<Item = Snapshot> {
-    snapshots_with_paths(snapshots_dir).map(|(_, s)| s)
+pub fn snapshots(snapshots_d: &Path) -> impl Iterator<Item = Snapshot> {
+    snapshots_with_paths(snapshots_d).map(|(_, s)| s)
 }
 
 /// An iterator of all legal [`Snapshot`]s along with the full [`PathBuf`] they
 /// were read from.
-pub fn snapshots_with_paths(snapshots_dir: &Path) -> impl Iterator<Item = (PathBuf, Snapshot)> {
-    snapshots_dir
+pub fn snapshots_with_paths(snapshots_d: &Path) -> impl Iterator<Item = (PathBuf, Snapshot)> {
+    snapshots_d
         .read_dir()
         .into_iter()
         .flatten()

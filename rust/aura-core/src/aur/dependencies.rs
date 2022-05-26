@@ -380,7 +380,7 @@ where
 // exist. This offers the bonus of `-Ai` functioning offline, like `-Si` does!
 fn pull_or_clone<S, F, E>(
     fetch: &F,
-    clone_dir: &Path,
+    clone_d: &Path,
     parent: Option<S>,
     pkg: &str,
 ) -> Result<PathBuf, Error<E>>
@@ -390,8 +390,8 @@ where
 {
     // Best case scenario: We already have a local clone of the requested
     // dependency.
-    if super::has_local_aur_clone(clone_dir, pkg) {
-        let path = clone_dir.join(pkg);
+    if super::has_local_aur_clone(clone_d, pkg) {
+        let path = clone_d.join(pkg);
         // crate::git::pull(&path)?; // Here. Potentially avoid this.
         Ok(path)
     } else {
@@ -424,12 +424,12 @@ where
 
         // Second best scenario: the requested dependency was part of some split
         // package (etc.) that we already know about.
-        if super::has_local_aur_clone(clone_dir, &base) {
-            let path = clone_dir.join(base);
+        if super::has_local_aur_clone(clone_d, &base) {
+            let path = clone_d.join(base);
             // crate::git::pull(&path)?; // Here. Potentially avoid this.
             Ok(path)
         } else {
-            let path = crate::aur::clone_aur_repo(Some(clone_dir), &base)?;
+            let path = crate::aur::clone_aur_repo(Some(clone_d), &base)?;
             Ok(path)
         }
     }
