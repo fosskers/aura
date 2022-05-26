@@ -410,9 +410,12 @@ pub(crate) fn upgrade<'a>(
     let clone_dir = crate::dirs::clones()?;
 
     // --- Query database for all non-repo packages --- //
-    let foreigns: Vec<aura_core::Package<'a>> =
+    let mut foreigns: Vec<aura_core::Package<'a>> =
         aura_arch::foreigns(alpm).map(|p| p.into()).collect();
     info!("Foreign packages: {}", foreigns.len());
+    let ignore: HashSet<_> = ignore.into_iter().collect();
+    foreigns.retain(|p| ignore.contains(p.name.as_ref()).not());
+    info!("After excluding ignores: {}", foreigns.len());
 
     // --- Ensure they all have local clones --- //
     aura!(fll, "A-u-fetch-info");
