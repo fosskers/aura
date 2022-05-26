@@ -768,11 +768,16 @@ pub(crate) struct Aur {
     pub(crate) sysupgrade: bool,
 
     /// [-u] Rebuild all git/svn/hg/etc. packages as well.
-    #[clap(group = "aur", long, display_order = 3)]
+    #[clap(long, display_order = 3)]
     pub(crate) git: bool,
 
     /// [-u] Ignore a package upgrade (can be used more than once).
-    #[clap(group = "aur", long, value_name = "package", display_order = 3)]
+    #[clap(
+        long,
+        value_name = "package",
+        multiple_occurrences = true,
+        display_order = 3
+    )]
     pub(crate) ignore: Vec<String>,
 
     /// Clone a package's AUR repository, but don't build anything.

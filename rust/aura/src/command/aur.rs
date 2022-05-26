@@ -403,8 +403,10 @@ pub(crate) fn upgrade<'a>(
     fll: &FluentLanguageLoader,
     alpm: &'a Alpm,
     config: pacmanconf::Config,
+    ignore: Vec<String>,
 ) -> Result<(), Error> {
     info!("Upgrading all AUR packages.");
+    info!("Will ignore: {:?}", ignore);
     let clone_dir = crate::dirs::clones()?;
 
     // --- Query database for all non-repo packages --- //
