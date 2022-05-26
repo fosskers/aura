@@ -415,6 +415,7 @@ pub(crate) fn upgrade<'a>(
     alpm: &'a Alpm,
     config: pacmanconf::Config,
     ignore: Vec<String>,
+    git: bool,
 ) -> Result<(), Error> {
     info!("Upgrading all AUR packages.");
     debug!("Will ignore: {:?}", ignore);
@@ -459,8 +460,24 @@ pub(crate) fn upgrade<'a>(
         .collect();
     debug!("Packages to upgrade: {}", to_upgrade.len());
 
+    // --- Account for VCS packages --- //
+    let vcs: Vec<_> = if git {
+        foreigns
+            .iter()
+            .filter(|p| {
+                let n = p.name.as_ref();
+                n.ends_with("-git") || n.ends_with("-hg") || n.ends_with("-svn")
+            })
+            .filter(|p| to_upgrade.iter().all(|(old, _)| p.name != old.name))
+            .collect()
+    } else {
+        Vec::new()
+    };
+
+    debug!("VCS packages to consider: {:?}", vcs);
+
     // --- Report --- //
-    if to_upgrade.is_empty() {
+    if to_upgrade.is_empty() || (git && to_upgrade.is_empty() && vcs.is_empty()) {
         aura!(fll, "A-u-no-upgrades");
     } else {
         aura!(fll, "A-u-to-upgrade");
@@ -487,7 +504,17 @@ pub(crate) fn upgrade<'a>(
             );
         }
 
-        let names = to_upgrade.iter().map(|(old, _)| old.name.as_ref());
+        if git && vcs.is_empty().not() {
+            aura!(fll, "A-u-git");
+            for p in vcs.iter() {
+                println!(" {}", p.name.cyan());
+            }
+        }
+
+        let names = to_upgrade
+            .iter()
+            .map(|(old, _)| old.name.as_ref())
+            .chain(vcs.iter().map(|p| p.name.as_ref()));
         install(fll, config, names)?;
     }
 

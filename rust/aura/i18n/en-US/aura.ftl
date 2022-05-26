@@ -39,6 +39,7 @@ A-u-comparing = Comparing package versions...
 A-u-no-upgrades = No AUR package upgrades necessary.
 # reportPkgsToUpgrade_1
 A-u-to-upgrade = AUR packages to upgrade:
+A-u-git = VCS packages to rebuild:
 
 A-w = Cloning { $package }...
 A-w-fail = Failed to clone the following packages:
