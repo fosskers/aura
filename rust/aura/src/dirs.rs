@@ -33,8 +33,7 @@ fn xdg_cache() -> Result<PathBuf, std::env::VarError> {
 
 /// The full path to the Aura cache.
 fn aura_xdg_cache() -> Result<PathBuf, std::env::VarError> {
-    let mut cache = xdg_cache()?;
-    cache.push("aura");
+    let cache = xdg_cache()?.join("aura");
     Ok(cache)
 }
 
@@ -42,8 +41,7 @@ fn aura_xdg_cache() -> Result<PathBuf, std::env::VarError> {
 ///
 /// Creates the directory if it doesn't exist.
 pub(crate) fn snapshot() -> Result<PathBuf, Error> {
-    let mut path = aura_xdg_cache()?;
-    path.push("snapshots");
+    let path = aura_xdg_cache()?.join("snapshots");
 
     if path.is_dir().not() {
         std::fs::create_dir_all(&path)?;
@@ -56,12 +54,9 @@ pub(crate) fn snapshot() -> Result<PathBuf, Error> {
 ///
 /// Creates the directory if it doesn't exist.
 pub(crate) fn clones() -> Result<PathBuf, Error> {
-    let path = std::env::var("AURDEST").map(PathBuf::from).or_else(|_| {
-        aura_xdg_cache().map(|mut p| {
-            p.push("packages");
-            p
-        })
-    })?;
+    let path = std::env::var("AURDEST")
+        .map(PathBuf::from)
+        .or_else(|_| aura_xdg_cache().map(|p| p.join("packages")))?;
 
     if path.is_dir().not() {
         std::fs::create_dir_all(&path)?;
@@ -74,8 +69,7 @@ pub(crate) fn clones() -> Result<PathBuf, Error> {
 ///
 /// Creates the directory if it doesn't exist.
 pub(crate) fn builds() -> Result<PathBuf, Error> {
-    let mut path = aura_xdg_cache()?;
-    path.push("builds");
+    let path = aura_xdg_cache()?.join("builds");
 
     if path.is_dir().not() {
         std::fs::create_dir_all(&path)?;
@@ -88,8 +82,7 @@ pub(crate) fn builds() -> Result<PathBuf, Error> {
 ///
 /// Creates the directory if it doesn't exist.
 pub(crate) fn tarballs() -> Result<PathBuf, Error> {
-    let mut path = aura_xdg_cache()?;
-    path.push("cache");
+    let path = aura_xdg_cache()?.join("cache");
 
     if path.is_dir().not() {
         std::fs::create_dir_all(&path)?;
