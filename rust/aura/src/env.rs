@@ -4,7 +4,7 @@ use crate::dirs;
 use from_variants::FromVariants;
 use serde::Deserialize;
 use std::collections::HashSet;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(FromVariants)]
 pub(crate) enum Error {
@@ -73,6 +73,21 @@ impl Env {
         };
 
         Ok(e)
+    }
+
+    /// All tarball caches across the various config sources.
+    pub(crate) fn caches(&self) -> Vec<&Path> {
+        self.pacman
+            .cache_dir
+            .iter()
+            .map(Path::new)
+            .chain(std::iter::once(self.aur.cache.as_ref()))
+            .collect()
+    }
+
+    /// Path to the ALPM log file.
+    pub(crate) fn alpm_log(&self) -> &Path {
+        Path::new(&self.pacman.log_file)
     }
 }
 
