@@ -1,6 +1,6 @@
 //! Analyze many aspects of your installation for validity.
 
-use crate::{aura, green};
+use crate::{aura, env::Env, green};
 use alpm::Alpm;
 use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
@@ -11,17 +11,12 @@ const GOOD: &str = "✓";
 const BAD: &str = "✕";
 
 /// Validate the system.
-pub(crate) fn check(
-    fll: &FluentLanguageLoader,
-    alpm: &Alpm,
-    pconf: &pacmanconf::Config,
-    cache_paths: &[&Path],
-    snapshot_path: &Path,
-) {
+pub(crate) fn check(fll: &FluentLanguageLoader, alpm: &Alpm, env: &Env) {
     aura!(fll, "check-start");
-    pacman_config(fll, pconf);
-    snapshots(fll, snapshot_path, cache_paths);
-    cache(fll, alpm, cache_paths);
+    let caches = env.caches();
+    pacman_config(fll, &env.pacman);
+    snapshots(fll, &env.backups.snapshots, &caches);
+    cache(fll, alpm, &caches);
     green!(fll, "common-done");
 }
 

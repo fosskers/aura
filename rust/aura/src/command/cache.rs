@@ -1,6 +1,7 @@
 //! All functionality involving the `-C` command.
 
 use crate::download::download_with_progress;
+use crate::env::Env;
 use crate::{aura, green, red, yellow};
 use alpm::Alpm;
 use aura_core::cache::{CacheSize, PkgPath};
@@ -246,13 +247,11 @@ pub(crate) fn clean(
 }
 
 /// Delete only those tarballs which aren't present in a snapshot.
-pub(crate) fn clean_not_saved(
-    fll: &FluentLanguageLoader,
-    caches: &[&Path],
-    snapshot_d: &Path,
-) -> Result<(), Error> {
+pub(crate) fn clean_not_saved(fll: &FluentLanguageLoader, env: &Env) -> Result<(), Error> {
+    let caches = env.caches();
+
     // Report the initial size of the cache.
-    let size_before = aura_core::cache::size(caches);
+    let size_before = aura_core::cache::size(&caches);
     let human = format!("{}", size_before.bytes.bytes());
     aura!(fll, "C-size", size = human);
 
@@ -261,13 +260,13 @@ pub(crate) fn clean_not_saved(
         .then(|| ())
         .ok_or(Error::Cancelled)?;
 
-    let tarballs = aura_core::cache::package_paths(caches);
+    let tarballs = aura_core::cache::package_paths(&caches);
 
     // Every package across all snapshots, keyed to all unique versions present.
     let snaps: HashMap<String, HashSet<String>> = {
         let mut snaps: HashMap<_, HashSet<_>> = HashMap::new();
 
-        for snap in aura_core::snapshot::snapshots(snapshot_d) {
+        for snap in aura_core::snapshot::snapshots(&env.backups.snapshots) {
             for (name, ver) in snap.packages.into_iter() {
                 let entry = snaps.entry(name).or_default();
                 entry.insert(ver);
@@ -289,7 +288,7 @@ pub(crate) fn clean_not_saved(
     }
 
     // Report the amount of disk space freed.
-    let size_after = aura_core::cache::size(caches);
+    let size_after = aura_core::cache::size(&caches);
     let freed = format!("{}", (size_before.bytes - size_after.bytes).bytes());
     green!(fll, "C-c-freed", bytes = freed);
 
@@ -432,11 +431,9 @@ fn colour_size(size: i64) -> ColoredString {
 }
 
 /// Backup your package caches to a given directory.
-pub(crate) fn backup(
-    fll: &FluentLanguageLoader,
-    sources: &[&Path],
-    target: &Path,
-) -> Result<(), Error> {
+pub(crate) fn backup(fll: &FluentLanguageLoader, env: &Env, target: &Path) -> Result<(), Error> {
+    let sources = env.caches();
+
     // The full, absolute path to copy files to.
     let full: PathBuf = if target.is_absolute() {
         target.to_path_buf()
@@ -454,7 +451,7 @@ pub(crate) fn backup(
     }
 
     // How big is the current cache?
-    let cache_size: CacheSize = aura_core::cache::size(sources);
+    let cache_size: CacheSize = aura_core::cache::size(&sources);
     let size = format!("{}", cache_size.bytes.bytes());
     aura!(fll, "C-size", size = size);
 
@@ -471,7 +468,7 @@ pub(crate) fn backup(
         .then(|| ())
         .ok_or(Error::Cancelled)?;
 
-    copy(sources, &full, cache_size.files)
+    copy(&sources, &full, cache_size.files)
 }
 
 /// Copy all the cache files concurrently.

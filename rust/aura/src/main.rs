@@ -25,6 +25,8 @@ use std::collections::HashMap;
 use std::ops::Not;
 use std::process::ExitCode;
 
+use crate::flags::Cache;
+
 fn main() -> ExitCode {
     // Parse all CLI input. Exits immediately if invalid input is given.
     let args = flags::Args::parse();
@@ -87,15 +89,9 @@ fn work(args: Args) -> Result<(), Error> {
         // --- Cache Management --- //
         SubCmd::Cache(c) if !c.info.is_empty() => cache::info(&fll, &alpm, &env.caches(), c.info)?,
         SubCmd::Cache(c) if c.search.is_some() => cache::search(&env.caches(), &c.search.unwrap())?,
-        SubCmd::Cache(c) if c.backup.is_some() => {
-            cache::backup(&fll, &env.caches(), &c.backup.unwrap())?
-        }
-        SubCmd::Cache(c) if c.clean.is_some() => {
-            cache::clean(&fll, &env.caches(), c.clean.unwrap())?
-        }
-        SubCmd::Cache(c) if c.clean_unsaved => {
-            cache::clean_not_saved(&fll, &env.caches(), &env.backups.snapshots)?
-        }
+        SubCmd::Cache(c) if c.backup.is_some() => cache::backup(&fll, &env, &c.backup.unwrap())?,
+        SubCmd::Cache(Cache { clean: Some(n), .. }) => cache::clean(&fll, &env.caches(), n)?,
+        SubCmd::Cache(c) if c.clean_unsaved => cache::clean_not_saved(&fll, &env)?,
         SubCmd::Cache(c) if c.invalid => cache::invalid(&fll, &alpm, &env.caches())?,
         SubCmd::Cache(c) if c.list => cache::list(&env.caches())?,
         SubCmd::Cache(c) if c.refresh => cache::refresh(&fll, &alpm, &env.caches())?,
@@ -131,13 +127,7 @@ fn work(args: Args) -> Result<(), Error> {
         SubCmd::Deps(d) if d.reverse => deps::reverse(&alpm, d.limit, d.optional, d.packages)?,
         SubCmd::Deps(d) => deps::graph(&alpm, d.limit, d.optional, d.packages)?,
         // --- System Validation --- //
-        SubCmd::Check(_) => check::check(
-            &fll,
-            &alpm,
-            &env.pacman,
-            &env.caches(),
-            &env.backups.snapshots,
-        ),
+        SubCmd::Check(_) => check::check(&fll, &alpm, &env),
     }
 
     Ok(())
