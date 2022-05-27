@@ -8,6 +8,7 @@ use std::{collections::HashSet, path::PathBuf};
 struct RawEnv {
     general: Option<RawGeneral>,
     aur: Option<RawAur>,
+    backups: Option<RawBackups>,
 }
 
 /// Aura's runtime environment, as a combination of settings specified in its
@@ -17,6 +18,8 @@ pub(crate) struct Env {
     pub(crate) general: General,
     /// Specifics to the building of AUR packages.
     pub(crate) aur: Aur,
+    /// Saving and restoring package states.
+    pub(crate) backups: Backups,
 }
 
 impl TryFrom<RawEnv> for Env {
@@ -32,6 +35,10 @@ impl TryFrom<RawEnv> for Env {
                 .aur
                 .map(|ra| ra.try_into())
                 .unwrap_or_else(|| Aur::try_default())?,
+            backups: raw
+                .backups
+                .map(|rg| rg.try_into())
+                .unwrap_or_else(|| Backups::try_default())?,
         };
 
         Ok(e)
@@ -39,20 +46,14 @@ impl TryFrom<RawEnv> for Env {
 }
 
 #[derive(Deserialize)]
-struct RawGeneral {
-    snapshots: Option<PathBuf>,
-}
+struct RawGeneral {}
 
-pub(crate) struct General {
-    pub(crate) snapshots: PathBuf,
-}
+pub(crate) struct General {}
 
 impl General {
     /// Attempt to form sane defaults.
     fn try_default() -> Result<Self, dirs::Error> {
-        let g = General {
-            snapshots: dirs::snapshot()?,
-        };
+        let g = General {};
         Ok(g)
     }
 }
@@ -60,9 +61,8 @@ impl General {
 impl TryFrom<RawGeneral> for General {
     type Error = dirs::Error;
 
-    fn try_from(raw: RawGeneral) -> Result<Self, Self::Error> {
-        let snapshots = raw.snapshots.map(Ok).unwrap_or_else(|| dirs::snapshot())?;
-        let g = General { snapshots };
+    fn try_from(_: RawGeneral) -> Result<Self, Self::Error> {
+        let g = General {};
 
         Ok(g)
     }
@@ -114,5 +114,35 @@ impl TryFrom<RawAur> for Aur {
         };
 
         Ok(a)
+    }
+}
+
+#[derive(Deserialize)]
+struct RawBackups {
+    snapshots: Option<PathBuf>,
+}
+
+pub(crate) struct Backups {
+    pub(crate) snapshots: PathBuf,
+}
+
+impl Backups {
+    /// Attempt to form sane defaults.
+    fn try_default() -> Result<Self, dirs::Error> {
+        let g = Backups {
+            snapshots: dirs::snapshot()?,
+        };
+        Ok(g)
+    }
+}
+
+impl TryFrom<RawBackups> for Backups {
+    type Error = dirs::Error;
+
+    fn try_from(raw: RawBackups) -> Result<Self, Self::Error> {
+        let snapshots = raw.snapshots.map(Ok).unwrap_or_else(|| dirs::snapshot())?;
+        let g = Backups { snapshots };
+
+        Ok(g)
     }
 }
