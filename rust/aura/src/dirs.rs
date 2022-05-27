@@ -19,6 +19,18 @@ impl std::fmt::Display for Error {
     }
 }
 
+/// Like [`xdg_cache`], but for `XDG_CONFIG_HOME`.
+fn xdg_config() -> Result<PathBuf, std::env::VarError> {
+    std::env::var("XDG_CONFIG_HOME")
+        .map(PathBuf::from)
+        .or_else(|_| std::env::var("HOME").map(|h| [&h, ".config"].iter().collect()))
+}
+
+/// The location of Aura's config file.
+pub(crate) fn aura_config() -> Result<PathBuf, std::env::VarError> {
+    xdg_config().map(|p| p.join("aura.toml"))
+}
+
 /// Fetch the path value of `$XDG_CACHE_HOME` or provide its default according
 /// to the specification:
 ///

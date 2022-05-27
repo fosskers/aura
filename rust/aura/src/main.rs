@@ -14,7 +14,7 @@ mod macros;
 pub(crate) mod pacman;
 pub(crate) mod utils;
 
-use ::log::info;
+use ::log::{debug, info};
 use alpm::{Alpm, SigLevel};
 use clap::Parser;
 use command::{aur, cache, check, conf, deps, log, open, orphans, snapshot, stats};
@@ -51,6 +51,9 @@ fn work(args: Args) -> Result<(), Error> {
     // --- Localisation --- //
     let lang = args.language();
     let fll = localization::load(lang)?;
+
+    let env = crate::env::Env::try_new()?;
+    debug!("{:#?}", env);
 
     // Parse the major configuration files.
     // TODO Consider the flag they might have given to change the conf path.

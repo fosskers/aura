@@ -1,8 +1,31 @@
 //! Aura runtime settings.
 
 use crate::dirs;
+use from_variants::FromVariants;
 use serde::Deserialize;
-use std::{collections::HashSet, path::PathBuf};
+use std::collections::HashSet;
+use std::path::PathBuf;
+
+#[derive(FromVariants)]
+pub(crate) enum Error {
+    Dirs(crate::dirs::Error),
+    PConf(pacmanconf::Error),
+    Env(std::env::VarError),
+    Io(std::io::Error),
+    Toml(toml::de::Error),
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::Dirs(e) => write!(f, "{e}"),
+            Error::PConf(e) => write!(f, "{e}"),
+            Error::Env(e) => write!(f, "{e}"),
+            Error::Io(e) => write!(f, "{e}"),
+            Error::Toml(e) => write!(f, "{e}"),
+        }
+    }
+}
 
 #[derive(Deserialize)]
 struct RawEnv {
@@ -13,6 +36,7 @@ struct RawEnv {
 
 /// Aura's runtime environment, as a combination of settings specified in its
 /// config file, as well as options passed from the command line.
+#[derive(Debug)]
 pub(crate) struct Env {
     /// Settings applicable to no particular subfeature.
     pub(crate) general: General,
@@ -20,25 +44,32 @@ pub(crate) struct Env {
     pub(crate) aur: Aur,
     /// Saving and restoring package states.
     pub(crate) backups: Backups,
+    /// Settings from a `pacman.conf`.
+    pub(crate) pacman: pacmanconf::Config,
 }
 
-impl TryFrom<RawEnv> for Env {
-    type Error = dirs::Error;
+impl Env {
+    pub(crate) fn try_new() -> Result<Self, Error> {
+        // Read the config file, if it's there. We don't actually mind if it isn't,
+        // because sensible defaults can (probably) be set anyway.
+        let config = dirs::aura_config()?;
+        let raw: Option<RawEnv> = std::fs::read_to_string(config)
+            .ok()
+            .and_then(|s| toml::from_str(&s).ok());
+        let (general, aur, backups) = match raw {
+            Some(re) => (
+                re.general.map(|rg| rg.try_into()),
+                re.aur.map(|ra| ra.try_into()),
+                re.backups.map(|rb| rb.try_into()),
+            ),
+            None => (None, None, None),
+        };
 
-    fn try_from(raw: RawEnv) -> Result<Self, Self::Error> {
         let e = Env {
-            general: raw
-                .general
-                .map(|rg| rg.try_into())
-                .unwrap_or_else(|| General::try_default())?,
-            aur: raw
-                .aur
-                .map(|ra| ra.try_into())
-                .unwrap_or_else(|| Aur::try_default())?,
-            backups: raw
-                .backups
-                .map(|rg| rg.try_into())
-                .unwrap_or_else(|| Backups::try_default())?,
+            general: general.unwrap_or_else(|| General::try_default())?,
+            aur: aur.unwrap_or_else(|| Aur::try_default())?,
+            backups: backups.unwrap_or_else(|| Backups::try_default())?,
+            pacman: pacmanconf::Config::new()?,
         };
 
         Ok(e)
@@ -48,6 +79,7 @@ impl TryFrom<RawEnv> for Env {
 #[derive(Deserialize)]
 struct RawGeneral {}
 
+#[derive(Debug)]
 pub(crate) struct General {}
 
 impl General {
@@ -77,6 +109,7 @@ struct RawAur {
     ignores: HashSet<String>,
 }
 
+#[derive(Debug)]
 pub(crate) struct Aur {
     pub(crate) build: PathBuf,
     pub(crate) cache: PathBuf,
@@ -122,6 +155,7 @@ struct RawBackups {
     snapshots: Option<PathBuf>,
 }
 
+#[derive(Debug)]
 pub(crate) struct Backups {
     pub(crate) snapshots: PathBuf,
 }
