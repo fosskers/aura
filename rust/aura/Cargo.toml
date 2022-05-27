@@ -33,6 +33,7 @@ serde_json = "1.0"
 simplelog = "0.12"
 srcinfo = "1.0"
 sudo = "0.6"
+toml = "0.5"
 ubyte = "0.10"
 unic-langid = { version = "0.9", features = ["macros"] }
 validated = { version = "0.1", features = ["rayon"] }
