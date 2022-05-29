@@ -2,6 +2,7 @@
 
 mod build;
 
+use crate::env::Env;
 use crate::utils::ResultVoid;
 use crate::{aura, green, red};
 use alpm::Alpm;
@@ -413,20 +414,18 @@ where
 pub(crate) fn upgrade<'a>(
     fll: &FluentLanguageLoader,
     alpm: &'a Alpm,
-    config: pacmanconf::Config,
-    ignore: Vec<String>,
+    env: Env,
     git: bool,
 ) -> Result<(), Error> {
     info!("Upgrading all AUR packages.");
-    debug!("Will ignore: {:?}", ignore);
+    debug!("Will ignore: {:?}", env.aur.ignores);
     let clone_d = crate::dirs::clones()?;
 
     // --- Query database for all non-repo packages --- //
     let mut foreigns: Vec<aura_core::Package<'a>> =
         aura_arch::foreigns(alpm).map(|p| p.into()).collect();
     debug!("Foreign packages: {}", foreigns.len());
-    let ignore: HashSet<_> = ignore.into_iter().collect();
-    foreigns.retain(|p| ignore.contains(p.name.as_ref()).not());
+    foreigns.retain(|p| env.aur.ignores.contains(p.name.as_ref()).not());
     debug!("After excluding ignores: {}", foreigns.len());
 
     // --- Ensure they all have local clones --- //
@@ -515,7 +514,7 @@ pub(crate) fn upgrade<'a>(
             .iter()
             .map(|(old, _)| old.name.as_ref())
             .chain(vcs.iter().map(|p| p.name.as_ref()));
-        install(fll, config, names)?;
+        install(fll, env.pacman, names)?;
     }
 
     Ok(())
