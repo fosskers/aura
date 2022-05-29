@@ -415,7 +415,6 @@ pub(crate) fn upgrade<'a>(
     fll: &FluentLanguageLoader,
     alpm: &'a Alpm,
     env: Env,
-    git: bool,
 ) -> Result<(), Error> {
     info!("Upgrading all AUR packages.");
     debug!("Will ignore: {:?}", env.aur.ignores);
@@ -460,7 +459,7 @@ pub(crate) fn upgrade<'a>(
     debug!("Packages to upgrade: {}", to_upgrade.len());
 
     // --- Account for VCS packages --- //
-    let vcs: Vec<_> = if git {
+    let vcs: Vec<_> = if env.aur.git {
         foreigns
             .iter()
             .filter(|p| {
@@ -476,7 +475,7 @@ pub(crate) fn upgrade<'a>(
     debug!("VCS packages to consider: {:?}", vcs);
 
     // --- Report --- //
-    if to_upgrade.is_empty() || (git && to_upgrade.is_empty() && vcs.is_empty()) {
+    if to_upgrade.is_empty() || (env.aur.git && to_upgrade.is_empty() && vcs.is_empty()) {
         aura!(fll, "A-u-no-upgrades");
     } else {
         aura!(fll, "A-u-to-upgrade");
@@ -503,7 +502,7 @@ pub(crate) fn upgrade<'a>(
             );
         }
 
-        if git && vcs.is_empty().not() {
+        if env.aur.git && vcs.is_empty().not() {
             aura!(fll, "A-u-git");
             for p in vcs.iter() {
                 println!(" {}", p.name.cyan());

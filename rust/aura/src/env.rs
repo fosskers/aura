@@ -122,6 +122,7 @@ struct RawAur {
     clones: Option<PathBuf>,
     #[serde(default)]
     ignores: HashSet<String>,
+    git: bool,
 }
 
 #[derive(Debug)]
@@ -130,6 +131,8 @@ pub(crate) struct Aur {
     pub(crate) cache: PathBuf,
     pub(crate) clones: PathBuf,
     pub(crate) ignores: HashSet<String>,
+    /// Always rebuild VCS packages with `-Au`?
+    pub(crate) git: bool,
 }
 
 impl Aur {
@@ -140,6 +143,7 @@ impl Aur {
             cache: dirs::tarballs()?,
             clones: dirs::clones()?,
             ignores: HashSet::new(),
+            git: false,
         };
 
         Ok(a)
@@ -159,6 +163,7 @@ impl TryFrom<RawAur> for Aur {
             cache,
             clones,
             ignores: raw.ignores,
+            git: raw.git,
         };
 
         Ok(a)
