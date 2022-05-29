@@ -1,10 +1,12 @@
 //! Analyze many aspects of your installation for validity.
 
-use crate::{aura, env::Env, green};
+use crate::env::{Aur, Env};
+use crate::{aura, green};
 use alpm::Alpm;
 use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
+use std::collections::HashSet;
 use std::path::Path;
 
 const GOOD: &str = "✓";
@@ -14,15 +16,16 @@ const BAD: &str = "✕";
 pub(crate) fn check(fll: &FluentLanguageLoader, alpm: &Alpm, env: &Env) {
     aura!(fll, "check-start");
     let caches = env.caches();
-    pacman_config(fll, &env.pacman);
+    pacman_config(fll, &env.pacman, &env.aur);
     snapshots(fll, &env.backups.snapshots, &caches);
     cache(fll, alpm, &caches);
     green!(fll, "common-done");
 }
 
-fn pacman_config(fll: &FluentLanguageLoader, c: &pacmanconf::Config) {
+fn pacman_config(fll: &FluentLanguageLoader, c: &pacmanconf::Config, a: &Aur) {
     aura!(fll, "check-conf");
     parallel_downloads(fll, c);
+    duplicate_ignores(fll, c, a);
 }
 
 fn parallel_downloads(fll: &FluentLanguageLoader, c: &pacmanconf::Config) {
@@ -33,6 +36,23 @@ fn parallel_downloads(fll: &FluentLanguageLoader, c: &pacmanconf::Config) {
     if !good {
         let cmd = "ParallelDownloads".bold().cyan().to_string();
         let msg = fl!(fll, "check-conf-parallel-fix", setting = cmd);
+        println!("      └─ {}", msg);
+    }
+}
+
+fn duplicate_ignores(fll: &FluentLanguageLoader, c: &pacmanconf::Config, a: &Aur) {
+    let pi: HashSet<_> = c.ignore_pkg.iter().map(|s| s.as_str()).collect();
+    let ai: HashSet<_> = a.ignores.iter().map(|s| s.as_str()).collect();
+    let mut ix = pi.intersection(&ai).copied().collect::<Vec<_>>();
+
+    let good = ix.is_empty();
+    let symbol = if good { GOOD.green() } else { BAD.red() };
+    println!("  [{}] {}", symbol, fl!(fll, "check-conf-ignores"));
+
+    if !good {
+        ix.sort();
+        let ps = ix.join(", ");
+        let msg = fl!(fll, "check-conf-ignores-fix", pkgs = ps);
         println!("      └─ {}", msg);
     }
 }
