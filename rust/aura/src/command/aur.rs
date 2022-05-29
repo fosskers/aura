@@ -475,7 +475,9 @@ pub(crate) fn upgrade<'a>(
     debug!("VCS packages to consider: {:?}", vcs);
 
     // --- Report --- //
-    if to_upgrade.is_empty() || (env.aur.git && to_upgrade.is_empty() && vcs.is_empty()) {
+    if env.aur.git.not() && to_upgrade.is_empty() {
+        aura!(fll, "A-u-no-upgrades");
+    } else if env.aur.git && to_upgrade.is_empty() && vcs.is_empty() {
         aura!(fll, "A-u-no-upgrades");
     } else {
         aura!(fll, "A-u-to-upgrade");
