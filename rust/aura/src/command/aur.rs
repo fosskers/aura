@@ -21,7 +21,7 @@ use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::ops::Not;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::Mutex;
 use validated::Validated;
 
@@ -322,11 +322,7 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader, alpm: &Alpm) -> Result<(), Err
 // TODO Thu Jan 13 17:41:55 2022
 //
 // This will obviously require more arguments.
-pub(crate) fn install<'a, I>(
-    fll: &FluentLanguageLoader,
-    config: pacmanconf::Config,
-    raw_pkgs: I,
-) -> Result<(), Error>
+pub(crate) fn install<'a, I>(fll: &FluentLanguageLoader, env: Env, raw_pkgs: I) -> Result<(), Error>
 where
     I: IntoIterator<Item = &'a str>,
 {
@@ -338,18 +334,18 @@ where
         return Err(Error::Silent);
     }
 
-    let clone_d = crate::dirs::clones()?;
-    let build_d = crate::dirs::builds()?;
-    let cache_d = crate::dirs::tarballs()?;
-
-    let mngr = AlpmManager::new(config);
+    let mngr = AlpmManager::new(env.pacman);
     // FIXME Fri Feb  4 15:58:38 2022
     //
     // Set `max_size` based on the user's CPU count.
     let pool = Pool::builder().max_size(4).build(mngr)?;
     aura!(fll, "A-install-deps");
-    let rslv =
-        aura_core::aur::dependencies::resolve(pool, &crate::fetch::fetch_json, &clone_d, pkgs)?;
+    let rslv = aura_core::aur::dependencies::resolve(
+        pool,
+        &crate::fetch::fetch_json,
+        &env.aur.clones,
+        pkgs,
+    )?;
 
     debug!("Satisfied: {:?}", rslv.satisfied);
     debug!("To install: {:?}", rslv.to_install);
@@ -393,11 +389,9 @@ where
     // --- Build and install each layer of AUR packages --- //
     let len = order.len();
     for (i, layer) in order.into_iter().enumerate() {
-        let clone_paths = layer
-            .into_iter()
-            .map(|pkg| [&clone_d, Path::new(pkg)].iter().collect::<PathBuf>());
+        let clone_paths = layer.into_iter().map(|pkg| env.aur.clones.join(pkg));
 
-        let tarballs = build::build(fll, &cache_d, &build_d, clone_paths)?;
+        let tarballs = build::build(fll, &env.aur.cache, &env.aur.build, clone_paths)?;
         if tarballs.is_empty().not() {
             let flags = (i + 1 < len)
                 .then(|| ["--asdeps"].as_slice())
@@ -515,7 +509,7 @@ pub(crate) fn upgrade<'a>(
             .iter()
             .map(|(old, _)| old.name.as_ref())
             .chain(vcs.iter().map(|p| p.name.as_ref()));
-        install(fll, env.pacman, names)?;
+        install(fll, env, names)?;
     }
 
     Ok(())
