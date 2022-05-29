@@ -122,6 +122,7 @@ struct RawAur {
     clones: Option<PathBuf>,
     #[serde(default)]
     ignores: HashSet<String>,
+    #[serde(default)]
     git: bool,
 }
 
