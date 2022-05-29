@@ -195,3 +195,33 @@ impl TryFrom<RawBackups> for Backups {
         Ok(g)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn empty_config_file() {
+        let e = toml::from_str::<RawEnv>("").unwrap();
+        assert!(e.general.is_none());
+        assert!(e.aur.is_none());
+        assert!(e.backups.is_none());
+    }
+
+    #[test]
+    fn bare_config() {
+        let file = std::fs::read_to_string("tests/bare-config.toml").unwrap();
+        let e = toml::from_str::<RawEnv>(&file).unwrap();
+        assert!(e.general.is_some());
+        assert!(e.aur.is_some());
+        assert!(e.backups.is_some());
+    }
+
+    #[test]
+    fn simple_config() {
+        let file = std::fs::read_to_string("tests/simple-config.toml").unwrap();
+        let aur = toml::from_str::<RawEnv>(&file).unwrap().aur.unwrap();
+        let exp: HashSet<_> = ["foo".to_string(), "bar".to_string()].into();
+        assert_eq!(exp, aur.ignores);
+    }
+}
