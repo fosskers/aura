@@ -21,7 +21,7 @@ use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::ops::Not;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use validated::Validated;
 
@@ -211,9 +211,7 @@ pub(crate) fn search(
 }
 
 /// View a package's PKGBUILD.
-pub(crate) fn pkgbuild(pkg: &str) -> Result<(), Error> {
-    let clone_d = crate::dirs::clones()?;
-
+pub(crate) fn pkgbuild(pkg: &str, clone_d: &Path) -> Result<(), Error> {
     let path = aura_core::aur::clone_path_of_pkgbase(&clone_d, pkg, &crate::fetch::fetch_json)?
         .join("PKGBUILD");
 
@@ -282,10 +280,13 @@ pub(crate) fn clone_aur_repos(
 }
 
 /// Pull the latest commits from every clone in the `packages` directory.
-pub(crate) fn refresh(fll: &FluentLanguageLoader, alpm: &Alpm) -> Result<(), Error> {
+pub(crate) fn refresh(
+    fll: &FluentLanguageLoader,
+    alpm: &Alpm,
+    clone_d: &Path,
+) -> Result<(), Error> {
     aura!(fll, "A-y-refreshing");
 
-    let clone_d = crate::dirs::clones()?;
     let names = aura_arch::foreigns(alpm)
         .map(|p| p.name())
         .collect::<Vec<_>>();
@@ -412,7 +413,6 @@ pub(crate) fn upgrade<'a>(
 ) -> Result<(), Error> {
     info!("Upgrading all AUR packages.");
     debug!("Will ignore: {:?}", env.aur.ignores);
-    let clone_d = crate::dirs::clones()?;
 
     // --- Query database for all non-repo packages --- //
     let mut foreigns: Vec<aura_core::Package<'a>> =
@@ -426,7 +426,9 @@ pub(crate) fn upgrade<'a>(
     let clones: HashSet<PathBuf> = foreigns
         .par_iter()
         .map(|p| p.name.as_ref())
-        .map(|p| aura_core::aur::clone_path_of_pkgbase(&clone_d, p, &crate::fetch::fetch_json))
+        .map(|p| {
+            aura_core::aur::clone_path_of_pkgbase(&env.aur.clones, p, &crate::fetch::fetch_json)
+        })
         .collect::<Result<HashSet<_>, aura_core::aur::Error>>()?;
     debug!("Unique clones: {}", clones.len());
 

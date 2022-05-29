@@ -76,16 +76,22 @@ fn work(args: Args) -> Result<(), Error> {
             aur::search(&alpm, a.abc, a.reverse, a.limit, a.quiet, a.search)?
         }
         SubCmd::Aur(a) if a.open.is_some() => aur::open(&a.open.unwrap())?,
-        SubCmd::Aur(a) if a.pkgbuild.is_some() => aur::pkgbuild(&a.pkgbuild.unwrap())?,
+        SubCmd::Aur(a) if a.pkgbuild.is_some() => {
+            aur::pkgbuild(&a.pkgbuild.unwrap(), &env.aur.clones)?
+        }
         SubCmd::Aur(a) if a.wclone.is_empty().not() => aur::clone_aur_repos(&fll, &a.wclone)?,
-        SubCmd::Aur(a) if a.refresh => aur::refresh(&fll, &alpm)?,
+        SubCmd::Aur(a) if a.refresh => aur::refresh(&fll, &alpm, &env.aur.clones)?,
         SubCmd::Aur(a) if a.sysupgrade => aur::upgrade(&fll, &alpm, env)?,
         SubCmd::Aur(a) => aur::install(&fll, env, a.packages.iter().map(|s| s.as_str()))?,
         // --- Package Sets --- //
-        SubCmd::Backup(b) if b.clean => snapshot::clean(&fll, &env.caches())?,
-        SubCmd::Backup(b) if b.list => snapshot::list()?,
-        SubCmd::Backup(b) if b.restore => snapshot::restore(&fll, &alpm, &env.caches())?,
-        SubCmd::Backup(_) => snapshot::save(&fll, &alpm)?,
+        SubCmd::Backup(b) if b.clean => {
+            snapshot::clean(&fll, &env.caches(), &env.backups.snapshots)?
+        }
+        SubCmd::Backup(b) if b.list => snapshot::list(&env.backups.snapshots)?,
+        SubCmd::Backup(b) if b.restore => {
+            snapshot::restore(&fll, &alpm, &env.caches(), &env.backups.snapshots)?
+        }
+        SubCmd::Backup(_) => snapshot::save(&fll, &alpm, &env.backups.snapshots)?,
         // --- Cache Management --- //
         SubCmd::Cache(c) if !c.info.is_empty() => cache::info(&fll, &alpm, &env.caches(), c.info)?,
         SubCmd::Cache(c) if c.search.is_some() => cache::search(&env.caches(), &c.search.unwrap())?,

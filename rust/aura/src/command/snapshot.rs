@@ -50,13 +50,12 @@ struct StateDiff<'a> {
     to_remove: HashSet<&'a str>,
 }
 
-pub(crate) fn save(fll: &FluentLanguageLoader, alpm: &Alpm) -> Result<(), Error> {
-    let mut cache = crate::dirs::snapshot()?;
+pub(crate) fn save(fll: &FluentLanguageLoader, alpm: &Alpm, snapshots: &Path) -> Result<(), Error> {
     let snap = Snapshot::from_alpm(alpm);
     let name = format!("{}.json", snap.time.format("%Y.%m(%b).%d.%H.%M.%S"));
-    cache.push(name);
+    let path = snapshots.join(name);
 
-    let file = BufWriter::new(File::create(cache)?);
+    let file = BufWriter::new(File::create(path)?);
     serde_json::to_writer(file, &snap)?;
     green!(fll, "B-saved");
 
@@ -64,14 +63,16 @@ pub(crate) fn save(fll: &FluentLanguageLoader, alpm: &Alpm) -> Result<(), Error>
 }
 
 /// Remove all saveds snapshots that don't have tarballs in the cache.
-pub(crate) fn clean(fll: &FluentLanguageLoader, caches: &[&Path]) -> Result<(), Error> {
+pub(crate) fn clean(
+    fll: &FluentLanguageLoader,
+    caches: &[&Path],
+    snapshots: &Path,
+) -> Result<(), Error> {
     let msg = format!("{} {} ", fl!(fll, "B-clean"), fl!(fll, "proceed-yes"));
     crate::utils::prompt(&a!(msg)).ok_or(Error::Cancelled)?;
-
-    let path = crate::dirs::snapshot()?;
     let vers = aura_core::cache::all_versions(caches);
 
-    for (path, snapshot) in aura_core::snapshot::snapshots_with_paths(&path) {
+    for (path, snapshot) in aura_core::snapshot::snapshots_with_paths(&snapshots) {
         if snapshot.pinned.not() && snapshot.usable(&vers).not() {
             std::fs::remove_file(path)?;
         }
@@ -82,10 +83,8 @@ pub(crate) fn clean(fll: &FluentLanguageLoader, caches: &[&Path]) -> Result<(), 
 }
 
 /// Show all saved package snapshot filenames.
-pub(crate) fn list() -> Result<(), Error> {
-    let snap = crate::dirs::snapshot()?;
-
-    for (path, _) in aura_core::snapshot::snapshots_with_paths(&snap) {
+pub(crate) fn list(snapshots: &Path) -> Result<(), Error> {
+    for (path, _) in aura_core::snapshot::snapshots_with_paths(&snapshots) {
         println!("{}", path.display());
     }
 
@@ -96,11 +95,11 @@ pub(crate) fn restore(
     fll: &FluentLanguageLoader,
     alpm: &Alpm,
     caches: &[&Path],
+    snapshots: &Path,
 ) -> Result<(), Error> {
-    let snap = crate::dirs::snapshot()?;
     let vers = aura_core::cache::all_versions(caches);
 
-    let mut shots: Vec<_> = aura_core::snapshot::snapshots(&snap)
+    let mut shots: Vec<_> = aura_core::snapshot::snapshots(&snapshots)
         .filter(|ss| ss.usable(&vers))
         .collect();
     shots.sort_by_key(|ss| ss.time);
