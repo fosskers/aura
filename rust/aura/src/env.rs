@@ -40,7 +40,7 @@ struct RawEnv {
 #[derive(Debug)]
 pub(crate) struct Env {
     /// Settings applicable to no particular subfeature.
-    pub(crate) general: General,
+    pub(crate) _general: General,
     /// Specifics to the building of AUR packages.
     pub(crate) aur: Aur,
     /// Saving and restoring package states.
@@ -67,7 +67,7 @@ impl Env {
         };
 
         let e = Env {
-            general: general.unwrap_or_else(|| General::try_default())?,
+            _general: general.unwrap_or_else(|| General::try_default())?,
             aur: aur.unwrap_or_else(|| Aur::try_default())?,
             backups: backups.unwrap_or_else(|| Backups::try_default())?,
             pacman: pacmanconf::Config::new()?,
@@ -94,6 +94,14 @@ impl Env {
     /// Path to the ALPM log file.
     pub(crate) fn alpm_log(&self) -> &Path {
         Path::new(&self.pacman.log_file)
+    }
+
+    /// Allow CLI flags to override settings from `aura.toml`.
+    pub(crate) fn reconcile_cli(&mut self, flags: &crate::flags::SubCmd) {
+        match flags {
+            crate::flags::SubCmd::Aur(a) => self.aur.reconcile(a),
+            _ => {}
+        }
     }
 }
 
@@ -154,6 +162,16 @@ impl Aur {
         };
 
         Ok(a)
+    }
+
+    fn reconcile(&mut self, flags: &crate::flags::Aur) {
+        if flags.git {
+            self.git = true;
+        }
+
+        // Harmless clone, as we don't expect many "ignores" to be passed on the
+        // command line.
+        self.ignores.extend(flags.ignore.clone());
     }
 }
 

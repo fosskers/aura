@@ -52,7 +52,11 @@ fn work(args: Args) -> Result<(), Error> {
     let fll = localization::load(lang)?;
 
     // --- Runtime Settings --- //
-    let env = crate::env::Env::try_new()?;
+    let env = {
+        let mut env = crate::env::Env::try_new()?;
+        env.reconcile_cli(&args.subcmd);
+        env
+    };
     debug!("{:#?}", env);
 
     match args.subcmd {
