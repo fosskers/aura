@@ -3,7 +3,7 @@
 use crate::dirs;
 use alpm::Alpm;
 use from_variants::FromVariants;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
@@ -37,15 +37,17 @@ struct RawEnv {
 
 /// Aura's runtime environment, as a combination of settings specified in its
 /// config file, as well as options passed from the command line.
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub(crate) struct Env {
     /// Settings applicable to no particular subfeature.
-    pub(crate) _general: General,
+    #[allow(dead_code)]
+    pub(crate) general: General,
     /// Specifics to the building of AUR packages.
     pub(crate) aur: Aur,
     /// Saving and restoring package states.
     pub(crate) backups: Backups,
     /// Settings from a `pacman.conf`.
+    #[serde(skip_serializing)]
     pub(crate) pacman: pacmanconf::Config,
 }
 
@@ -67,7 +69,7 @@ impl Env {
         };
 
         let e = Env {
-            _general: general.unwrap_or_else(General::try_default)?,
+            general: general.unwrap_or_else(General::try_default)?,
             aur: aur.unwrap_or_else(Aur::try_default)?,
             backups: backups.unwrap_or_else(Backups::try_default)?,
             pacman: pacmanconf::Config::new()?,
@@ -108,7 +110,7 @@ impl Env {
 #[derive(Deserialize)]
 struct RawGeneral {}
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub(crate) struct General {}
 
 impl General {
@@ -140,7 +142,7 @@ struct RawAur {
     git: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub(crate) struct Aur {
     pub(crate) build: PathBuf,
     pub(crate) cache: PathBuf,
@@ -200,7 +202,7 @@ struct RawBackups {
     snapshots: Option<PathBuf>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub(crate) struct Backups {
     pub(crate) snapshots: PathBuf,
 }

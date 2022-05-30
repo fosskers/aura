@@ -664,15 +664,18 @@ pub(crate) struct Conf {
     /// View the Pacman conf.
     #[clap(group = "conf", long, short, display_order = 1)]
     pub(crate) pacman: bool,
-    /// View the Aura conf.
+    /// View the contents of ~/.config/aura.toml.
     #[clap(group = "conf", long, short, display_order = 1)]
     pub(crate) aura: bool,
     /// View the Makepkg conf.
     #[clap(group = "conf", long, short, display_order = 1)]
     pub(crate) makepkg: bool,
-    /// List all `.pacnew` files newer than their originals.
+    /// List all .pacnew files newer than their originals.
     #[clap(group = "conf", long = "new", display_order = 1)]
     pub(crate) pacnew: bool,
+    /// Output your current, full Aura config as legal TOML.
+    #[clap(group = "conf", long, short, display_order = 1)]
+    pub(crate) gen: bool,
 }
 
 #[derive(Parser, Debug)]

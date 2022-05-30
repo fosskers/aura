@@ -12,6 +12,7 @@ use std::process::Command;
 pub(crate) enum Error {
     Env(std::env::VarError),
     Io(std::io::Error),
+    Toml(toml::ser::Error),
 }
 
 impl std::fmt::Display for Error {
@@ -19,13 +20,21 @@ impl std::fmt::Display for Error {
         match self {
             Error::Env(e) => write!(f, "{e}"),
             Error::Io(e) => write!(f, "{e}"),
+            Error::Toml(e) => write!(f, "{e}"),
         }
     }
 }
 
-/// General settings.
+/// The raw contents of a runtime `Env`.
 pub(crate) fn general(env: &Env) {
     println!("{:#?}", env);
+}
+
+/// Output your current, full Aura config as legal TOML.
+pub(crate) fn gen(env: &Env) -> Result<(), Error> {
+    let s = toml::ser::to_string_pretty(env)?;
+    println!("{s}");
+    Ok(())
 }
 
 /// Open the `aura.toml` in `bat` or `less`.

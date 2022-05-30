@@ -117,6 +117,7 @@ fn work(args: Args) -> Result<(), Error> {
         SubCmd::Conf(c) if c.pacman => conf::pacman_conf(c)?,
         SubCmd::Conf(c) if c.aura => conf::aura_conf()?,
         SubCmd::Conf(c) if c.makepkg => conf::makepkg_conf()?,
+        SubCmd::Conf(c) if c.gen => conf::gen(&env)?,
         SubCmd::Conf(_) => conf::general(&env),
         // --- Statistics --- //
         SubCmd::Stats(s) if s.lang => stats::localization()?,
