@@ -1,6 +1,7 @@
 //! Aura runtime settings.
 
 use crate::dirs;
+use alpm::Alpm;
 use from_variants::FromVariants;
 use serde::Deserialize;
 use std::collections::HashSet;
@@ -73,6 +74,11 @@ impl Env {
         };
 
         Ok(e)
+    }
+
+    /// Open a new connection to `alpm` instance.
+    pub(crate) fn alpm(&self) -> Result<Alpm, alpm::Error> {
+        alpm_utils::alpm_with_conf(&self.pacman)
     }
 
     /// All tarball caches across the various config sources.

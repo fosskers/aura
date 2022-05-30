@@ -15,13 +15,11 @@ pub(crate) mod pacman;
 pub(crate) mod utils;
 
 use ::log::debug;
-use alpm::{Alpm, SigLevel};
 use clap::Parser;
 use command::{aur, cache, check, conf, deps, log, open, orphans, snapshot, stats};
 use error::Error;
 use flags::{Args, SubCmd, AURA_GLOBALS};
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
-use std::collections::HashMap;
 use std::ops::Not;
 use std::process::ExitCode;
 
@@ -53,13 +51,9 @@ fn work(args: Args) -> Result<(), Error> {
     let lang = args.language();
     let fll = localization::load(lang)?;
 
+    // --- Runtime Settings --- //
     let env = crate::env::Env::try_new()?;
     debug!("{:#?}", env);
-
-    // --- ALPM Handle --- //
-    let root = args.root.unwrap_or_else(|| env.pacman.root_dir.clone());
-    let dbpath = args.dbpath.unwrap_or_else(|| env.pacman.db_path.clone());
-    let mut alpm = alpm(&env.pacman, root, dbpath)?;
 
     match args.subcmd {
         // --- Pacman Commands --- //
@@ -73,15 +67,15 @@ fn work(args: Args) -> Result<(), Error> {
         // --- AUR Packages --- //
         SubCmd::Aur(a) if a.info.is_empty().not() => aur::info(&fll, &a.info)?,
         SubCmd::Aur(a) if a.search.is_empty().not() => {
-            aur::search(&alpm, a.abc, a.reverse, a.limit, a.quiet, a.search)?
+            aur::search(&env.alpm()?, a.abc, a.reverse, a.limit, a.quiet, a.search)?
         }
         SubCmd::Aur(a) if a.open.is_some() => aur::open(&a.open.unwrap())?,
         SubCmd::Aur(a) if a.pkgbuild.is_some() => {
             aur::pkgbuild(&a.pkgbuild.unwrap(), &env.aur.clones)?
         }
         SubCmd::Aur(a) if a.wclone.is_empty().not() => aur::clone_aur_repos(&fll, &a.wclone)?,
-        SubCmd::Aur(a) if a.refresh => aur::refresh(&fll, &alpm, &env.aur.clones)?,
-        SubCmd::Aur(a) if a.sysupgrade => aur::upgrade(&fll, &alpm, env)?,
+        SubCmd::Aur(a) if a.refresh => aur::refresh(&fll, &env.alpm()?, &env.aur.clones)?,
+        SubCmd::Aur(a) if a.sysupgrade => aur::upgrade(&fll, &env.alpm()?, env)?,
         SubCmd::Aur(a) => aur::install(&fll, env, a.packages.iter().map(|s| s.as_str()))?,
         // --- Package Sets --- //
         SubCmd::Backup(b) if b.clean => {
@@ -89,39 +83,41 @@ fn work(args: Args) -> Result<(), Error> {
         }
         SubCmd::Backup(b) if b.list => snapshot::list(&env.backups.snapshots)?,
         SubCmd::Backup(b) if b.restore => {
-            snapshot::restore(&fll, &alpm, &env.caches(), &env.backups.snapshots)?
+            snapshot::restore(&fll, &env.alpm()?, &env.caches(), &env.backups.snapshots)?
         }
-        SubCmd::Backup(_) => snapshot::save(&fll, &alpm, &env.backups.snapshots)?,
+        SubCmd::Backup(_) => snapshot::save(&fll, &env.alpm()?, &env.backups.snapshots)?,
         // --- Cache Management --- //
-        SubCmd::Cache(c) if !c.info.is_empty() => cache::info(&fll, &alpm, &env.caches(), c.info)?,
+        SubCmd::Cache(c) if !c.info.is_empty() => {
+            cache::info(&fll, &env.alpm()?, &env.caches(), c.info)?
+        }
         SubCmd::Cache(c) if c.search.is_some() => cache::search(&env.caches(), &c.search.unwrap())?,
         SubCmd::Cache(c) if c.backup.is_some() => cache::backup(&fll, &env, &c.backup.unwrap())?,
         SubCmd::Cache(Cache { clean: Some(n), .. }) => cache::clean(&fll, &env.caches(), n)?,
         SubCmd::Cache(c) if c.clean_unsaved => cache::clean_not_saved(&fll, &env)?,
-        SubCmd::Cache(c) if c.invalid => cache::invalid(&fll, &alpm, &env.caches())?,
+        SubCmd::Cache(c) if c.invalid => cache::invalid(&fll, &env.alpm()?, &env.caches())?,
         SubCmd::Cache(c) if c.list => cache::list(&env.caches())?,
-        SubCmd::Cache(c) if c.refresh => cache::refresh(&fll, &alpm, &env.caches())?,
-        SubCmd::Cache(c) if c.missing => cache::missing(&alpm, &env.caches()),
+        SubCmd::Cache(c) if c.refresh => cache::refresh(&fll, &env.alpm()?, &env.caches())?,
+        SubCmd::Cache(c) if c.missing => cache::missing(&env.alpm()?, &env.caches()),
         SubCmd::Cache(c) => cache::downgrade(&fll, &env.caches(), c.packages)?,
         // --- Logs --- //
         SubCmd::Log(l) if l.search.is_some() => log::search(env.alpm_log(), l.search.unwrap())?,
         SubCmd::Log(l) if !l.info.is_empty() => log::info(fll, env.alpm_log(), l.info)?,
         SubCmd::Log(l) => log::view(env.alpm_log(), l.before, l.after)?,
         // --- Orphan Packages --- //
-        SubCmd::Orphans(o) if o.abandon => orphans::remove(&mut alpm, fll)?,
-        SubCmd::Orphans(o) if !o.adopt.is_empty() => orphans::adopt(&alpm, fll, o.adopt)?,
-        SubCmd::Orphans(_) => orphans::list(&alpm),
+        SubCmd::Orphans(o) if o.abandon => orphans::remove(&mut env.alpm()?, fll)?,
+        SubCmd::Orphans(o) if !o.adopt.is_empty() => orphans::adopt(&env.alpm()?, fll, o.adopt)?,
+        SubCmd::Orphans(_) => orphans::list(&env.alpm()?),
         // --- PKGBUILD Analysis --- //
         SubCmd::Analysis(_) => unimplemented!(),
         // --- Configuration --- //
         SubCmd::Conf(c) if c.pacman => conf::pacman_conf(c)?,
         SubCmd::Conf(c) if c.aura => unimplemented!(),
         SubCmd::Conf(c) if c.makepkg => conf::makepkg_conf()?,
-        SubCmd::Conf(_) => conf::general(&alpm),
+        SubCmd::Conf(_) => conf::general(&env.alpm()?),
         // --- Statistics --- //
         SubCmd::Stats(s) if s.lang => stats::localization()?,
-        SubCmd::Stats(s) if s.heavy => stats::heavy_packages(&alpm),
-        SubCmd::Stats(s) if s.groups => stats::groups(&alpm),
+        SubCmd::Stats(s) if s.heavy => stats::heavy_packages(&env.alpm()?),
+        SubCmd::Stats(s) if s.groups => stats::groups(&env.alpm()?),
         SubCmd::Stats(_) => unimplemented!(),
         // --- Opening Webpages --- //
         SubCmd::Open(o) if o.docs => open::book()?,
@@ -130,10 +126,12 @@ fn work(args: Args) -> Result<(), Error> {
         SubCmd::Open(o) if o.aur => open::aur()?,
         SubCmd::Open(_) => open::repo()?,
         // --- Dependency Management --- //
-        SubCmd::Deps(d) if d.reverse => deps::reverse(&alpm, d.limit, d.optional, d.packages)?,
-        SubCmd::Deps(d) => deps::graph(&alpm, d.limit, d.optional, d.packages)?,
+        SubCmd::Deps(d) if d.reverse => {
+            deps::reverse(&env.alpm()?, d.limit, d.optional, d.packages)?
+        }
+        SubCmd::Deps(d) => deps::graph(&env.alpm()?, d.limit, d.optional, d.packages)?,
         // --- System Validation --- //
-        SubCmd::Check(_) => check::check(&fll, &alpm, &env),
+        SubCmd::Check(_) => check::check(&fll, &env.alpm()?, &env),
     }
 
     Ok(())
@@ -158,33 +156,4 @@ fn pacman() -> Result<(), crate::pacman::Error> {
 
     ::log::debug!("Passing to Pacman: {:?}", raws);
     pacman::pacman(raws)
-}
-
-/// Fully initialize an ALPM handle.
-fn alpm(conf: &pacmanconf::Config, root: String, dbpath: String) -> Result<Alpm, Error> {
-    let mut alpm = Alpm::new(root, dbpath)?;
-    let mirrors: HashMap<_, _> = conf
-        .repos
-        .iter()
-        .map(|r| (r.name.as_str(), r.servers.as_slice()))
-        .collect();
-
-    // Register official "sync" databases. Without this step, the ALPM handle
-    // can't access the non-local databases.
-    for repo in conf.repos.iter() {
-        // TODO If I ever plan to install packages manually, get the proper
-        // SigLevel from `pacman.conf`.
-        alpm.register_syncdb(repo.name.as_str(), SigLevel::USE_DEFAULT)?;
-    }
-
-    // Associate each registered sync db with mirrors pulled from `pacman.conf`.
-    for db in alpm.syncdbs_mut() {
-        if let Some(ms) = mirrors.get(db.name()) {
-            for mirror in ms.iter() {
-                db.add_server(mirror.as_str())?;
-            }
-        }
-    }
-
-    Ok(alpm)
 }

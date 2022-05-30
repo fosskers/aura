@@ -47,6 +47,7 @@ name = "aura"
 version = "4.0.0-rc1"
 dependencies = [
  "alpm",
+ "alpm-utils",
  "aura-arch",
  "aura-core",
  "chrono",

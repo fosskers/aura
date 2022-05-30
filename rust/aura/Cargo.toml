@@ -8,6 +8,7 @@ description = "Install and manage Arch Linux and AUR packages"
 
 [dependencies]
 alpm = "2.2"
+alpm-utils = "2.0"
 aura-arch = { path = "../aura-arch" }  # TODO Give these versions.
 aura-core = { path = "../aura-core" }
 chrono = "0.4"
