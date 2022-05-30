@@ -24,6 +24,7 @@ pub(crate) enum Error {
     /// An error parsing `pacman.conf`.
     PacConf(pacmanconf::Error),
     Env(crate::env::Error),
+    Conf(crate::conf::Error),
 }
 
 impl std::fmt::Display for Error {
@@ -41,6 +42,7 @@ impl std::fmt::Display for Error {
             Error::C(e) => write!(f, "{}", e),
             Error::O(e) => write!(f, "{}", e),
             Error::Env(e) => write!(f, "{}", e),
+            Error::Conf(e) => write!(f, "{e}"),
         }
     }
 }

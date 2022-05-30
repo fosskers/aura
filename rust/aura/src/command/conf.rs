@@ -1,20 +1,38 @@
 //! Viewing and editing configuration files.
 
 use crate::command::misc;
+use crate::env::Env;
 use crate::flags::Conf;
 use crate::utils::ResultVoid;
-use alpm::Alpm;
+use from_variants::FromVariants;
 use std::env;
 use std::process::Command;
 
-/// General settings.
-pub(crate) fn general(alpm: &Alpm) {
-    for db in alpm.syncdbs() {
-        println!("[{}]", db.name());
-        for server in db.servers() {
-            println!("  {}", server);
+#[derive(FromVariants)]
+pub(crate) enum Error {
+    Env(std::env::VarError),
+    Io(std::io::Error),
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::Env(e) => write!(f, "{e}"),
+            Error::Io(e) => write!(f, "{e}"),
         }
     }
+}
+
+/// General settings.
+pub(crate) fn general(env: &Env) {
+    println!("{:#?}", env);
+}
+
+/// Open the `aura.toml` in `bat` or `less`.
+pub(crate) fn aura_conf() -> Result<(), Error> {
+    let path = crate::dirs::aura_config()?;
+    let prog = misc::viewer();
+    Command::new(prog).arg(path).status().void()
 }
 
 /// Open the `pacman.conf` in `bat` or `less`.

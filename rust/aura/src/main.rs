@@ -112,12 +112,12 @@ fn work(args: Args) -> Result<(), Error> {
         SubCmd::Orphans(o) if !o.adopt.is_empty() => orphans::adopt(&env.alpm()?, fll, o.adopt)?,
         SubCmd::Orphans(_) => orphans::list(&env.alpm()?),
         // --- PKGBUILD Analysis --- //
-        SubCmd::Analysis(_) => unimplemented!(),
+        // SubCmd::Analysis(_) => unimplemented!(),
         // --- Configuration --- //
         SubCmd::Conf(c) if c.pacman => conf::pacman_conf(c)?,
-        SubCmd::Conf(c) if c.aura => unimplemented!(),
+        SubCmd::Conf(c) if c.aura => conf::aura_conf()?,
         SubCmd::Conf(c) if c.makepkg => conf::makepkg_conf()?,
-        SubCmd::Conf(_) => conf::general(&env.alpm()?),
+        SubCmd::Conf(_) => conf::general(&env),
         // --- Statistics --- //
         SubCmd::Stats(s) if s.lang => stats::localization()?,
         SubCmd::Stats(s) if s.heavy => stats::heavy_packages(&env.alpm()?),

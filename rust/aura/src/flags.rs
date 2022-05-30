@@ -110,7 +110,7 @@ pub(crate) enum SubCmd {
     /// Handle orphan packages.
     Orphans(Orphans),
     /// Perform security analysis of a PKGBUILD.
-    Analysis(Analysis),
+    // Analysis(Analysis),
     /// View various configuration settings and files.
     Conf(Conf),
     /// View statistics about your machine or about Aura itself.
