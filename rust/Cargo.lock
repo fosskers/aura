@@ -63,6 +63,7 @@ dependencies = [
  "linya",
  "log",
  "nonempty",
+ "num_cpus",
  "pacmanconf",
  "r2d2",
  "r2d2-alpm",

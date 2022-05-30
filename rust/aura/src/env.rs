@@ -61,7 +61,7 @@ impl Env {
             .and_then(|s| toml::from_str(&s).ok());
         let (general, aur, backups) = match raw {
             Some(re) => (
-                re.general.map(|rg| rg.try_into()),
+                re.general.and_then(|rg| rg.try_into().ok()),
                 re.aur.map(|ra| ra.try_into()),
                 re.backups.map(|rb| rb.try_into()),
             ),
@@ -69,7 +69,7 @@ impl Env {
         };
 
         let e = Env {
-            general: general.unwrap_or_else(General::try_default)?,
+            general: general.unwrap_or_else(General::default),
             aur: aur.unwrap_or_else(Aur::try_default)?,
             backups: backups.unwrap_or_else(Backups::try_default)?,
             pacman: pacmanconf::Config::new()?,
@@ -108,24 +108,30 @@ impl Env {
 }
 
 #[derive(Deserialize)]
-struct RawGeneral {}
+struct RawGeneral {
+    cpus: Option<usize>,
+}
 
 #[derive(Debug, Serialize)]
-pub(crate) struct General {}
+pub(crate) struct General {
+    cpus: usize,
+}
 
-impl General {
-    /// Attempt to form sane defaults.
-    fn try_default() -> Result<Self, dirs::Error> {
-        let g = General {};
-        Ok(g)
+impl Default for General {
+    fn default() -> Self {
+        Self {
+            cpus: num_cpus::get(),
+        }
     }
 }
 
 impl TryFrom<RawGeneral> for General {
-    type Error = dirs::Error;
+    type Error = ();
 
-    fn try_from(_: RawGeneral) -> Result<Self, Self::Error> {
-        let g = General {};
+    fn try_from(raw: RawGeneral) -> Result<Self, Self::Error> {
+        let g = General {
+            cpus: raw.cpus.ok_or(())?,
+        };
 
         Ok(g)
     }
