@@ -6,11 +6,16 @@ use alpm::Alpm;
 use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
+use is_executable::IsExecutable;
 use std::collections::HashSet;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use std::process::Command;
 
 const GOOD: &str = "✓";
 const BAD: &str = "✕";
+const CANCEL: &str = "⊘";
+
+const SECS_IN_DAY: u64 = 60 * 60 * 24;
 
 /// Validate the system.
 pub(crate) fn check(fll: &FluentLanguageLoader, alpm: &Alpm, env: &Env) {
@@ -26,6 +31,7 @@ fn pacman_config(fll: &FluentLanguageLoader, c: &pacmanconf::Config, a: &Aur) {
     aura!(fll, "check-conf");
     parallel_downloads(fll, c);
     duplicate_ignores(fll, c, a);
+    pacnews(fll);
 }
 
 fn parallel_downloads(fll: &FluentLanguageLoader, c: &pacmanconf::Config) {
@@ -144,4 +150,92 @@ fn packages_have_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, caches: &[&Pa
         let msg = fl!(fll, "check-cache-missing-fix", command = cmd);
         println!("      └─ {}", msg);
     }
+}
+
+fn pacnews(fll: &FluentLanguageLoader) {
+    let fd_installed = Path::new("/bin/fd").is_executable();
+
+    if !fd_installed {
+        println!(
+            "  [{}] {}",
+            CANCEL.truecolor(128, 128, 128),
+            fl!(fll, "check-conf-pacnew")
+        );
+        println!(
+            "      └─ {}",
+            fl!(fll, "check-conf-pacnew-fd", fd = "fd".cyan().to_string())
+        );
+    } else {
+        match pacnew_work() {
+            None => {
+                println!(
+                    "  [{}] {}",
+                    CANCEL.truecolor(128, 128, 128),
+                    fl!(fll, "check-conf-pacnew")
+                );
+                println!(
+                    "      └─ {}",
+                    fl!(
+                        fll,
+                        "check-conf-pacnew-broken",
+                        fd = "fd".cyan().to_string()
+                    )
+                );
+            }
+            Some(bads) => {
+                let good = bads.is_empty();
+                let sym = if good { GOOD.green() } else { BAD.red() };
+                println!("  [{}] {}", sym, fl!(fll, "check-conf-pacnew"));
+
+                let len = bads.len();
+                for (i, (path, days)) in bads.into_iter().enumerate() {
+                    let arrow = if i + 1 == len { "└─" } else { "├─" };
+
+                    println!(
+                        "      {} {}",
+                        arrow,
+                        fl!(
+                            fll,
+                            "check-conf-pacnew-old",
+                            path = path.display().to_string().cyan().to_string(),
+                            days = days.to_string().red().to_string(),
+                        ),
+                    );
+                }
+            }
+        }
+    }
+}
+
+/// Attempt to produce a list of paths for which the current in-use config file
+/// is older than its associated `.pacnew`. For each such path, also include how
+/// many days out-of-date it is.
+fn pacnew_work() -> Option<Vec<(PathBuf, u64)>> {
+    let outp = Command::new("fd").args([".pacnew", "/etc"]).output().ok()?;
+    let stdo = std::str::from_utf8(&outp.stdout).ok()?;
+    let bads = stdo
+        .trim()
+        .lines()
+        .map(Path::new)
+        .filter(|p| p.extension() == Some("pacnew".as_ref()))
+        .map(|new| (new.with_extension(""), new))
+        .filter_map(|(orig, new)| {
+            orig.metadata()
+                .ok()
+                .and_then(|o_m| new.metadata().ok().map(|n_m| (orig, o_m, n_m)))
+        })
+        .filter_map(|(orig, o_m, n_m)| {
+            o_m.modified()
+                .ok()
+                .and_then(|o_mod| n_m.modified().ok().map(|n_mod| (orig, o_mod, n_mod)))
+        })
+        .filter(|(_, o_m, n_m)| o_m < n_m)
+        .filter_map(|(orig, o_m, n_m)| {
+            n_m.duration_since(o_m)
+                .ok()
+                .map(|d| (orig, d.as_secs() / SECS_IN_DAY))
+        })
+        .collect();
+
+    Some(bads)
 }
