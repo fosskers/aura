@@ -13,3 +13,4 @@ lto = true
 panic = "abort"
 strip = true
 opt-level = "z"  # Reduces final stripped size by ~20%.
+codegen-units = 1
