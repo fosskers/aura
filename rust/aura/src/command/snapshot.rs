@@ -72,7 +72,7 @@ pub(crate) fn clean(
     crate::utils::prompt(&a!(msg)).ok_or(Error::Cancelled)?;
     let vers = aura_core::cache::all_versions(caches);
 
-    for (path, snapshot) in aura_core::snapshot::snapshots_with_paths(&snapshots) {
+    for (path, snapshot) in aura_core::snapshot::snapshots_with_paths(snapshots) {
         if snapshot.pinned.not() && snapshot.usable(&vers).not() {
             std::fs::remove_file(path)?;
         }
@@ -84,7 +84,7 @@ pub(crate) fn clean(
 
 /// Show all saved package snapshot filenames.
 pub(crate) fn list(snapshots: &Path) -> Result<(), Error> {
-    for (path, _) in aura_core::snapshot::snapshots_with_paths(&snapshots) {
+    for (path, _) in aura_core::snapshot::snapshots_with_paths(snapshots) {
         println!("{}", path.display());
     }
 
@@ -99,7 +99,7 @@ pub(crate) fn restore(
 ) -> Result<(), Error> {
     let vers = aura_core::cache::all_versions(caches);
 
-    let mut shots: Vec<_> = aura_core::snapshot::snapshots(&snapshots)
+    let mut shots: Vec<_> = aura_core::snapshot::snapshots(snapshots)
         .filter(|ss| ss.usable(&vers))
         .collect();
     shots.sort_by_key(|ss| ss.time);

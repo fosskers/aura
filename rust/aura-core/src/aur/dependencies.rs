@@ -196,7 +196,7 @@ where
     // The original packages we asked to have installed. These should not be
     // immediately counted as "satisfied" (and thus skipped) by the dependency
     // resolution algorithm.
-    let orig: HashSet<_> = pkgs.into_iter().map(|s| s.as_ref()).collect();
+    let orig: HashSet<_> = pkgs.into_iter().collect();
 
     let start = Utc::now();
     orig.par_iter()

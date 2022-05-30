@@ -176,8 +176,7 @@ where
         if has_local_aur_clone(clone_d, &fp.package_base) {
             clone_d.join(&fp.package_base)
         } else {
-            let clone = clone_aur_repo(Some(clone_d), &fp.package_base)?;
-            clone
+            clone_aur_repo(Some(clone_d), &fp.package_base)?
         }
     };
 

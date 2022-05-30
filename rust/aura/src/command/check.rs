@@ -50,7 +50,7 @@ fn duplicate_ignores(fll: &FluentLanguageLoader, c: &pacmanconf::Config, a: &Aur
     println!("  [{}] {}", symbol, fl!(fll, "check-conf-ignores"));
 
     if !good {
-        ix.sort();
+        ix.sort_unstable();
         let ps = ix.join(", ");
         let msg = fl!(fll, "check-conf-ignores-fix", pkgs = ps);
         println!("      └─ {}", msg);

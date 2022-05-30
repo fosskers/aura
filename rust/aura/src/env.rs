@@ -67,9 +67,9 @@ impl Env {
         };
 
         let e = Env {
-            _general: general.unwrap_or_else(|| General::try_default())?,
-            aur: aur.unwrap_or_else(|| Aur::try_default())?,
-            backups: backups.unwrap_or_else(|| Backups::try_default())?,
+            _general: general.unwrap_or_else(General::try_default)?,
+            aur: aur.unwrap_or_else(Aur::try_default)?,
+            backups: backups.unwrap_or_else(Backups::try_default)?,
             pacman: pacmanconf::Config::new()?,
         };
 
@@ -179,9 +179,9 @@ impl TryFrom<RawAur> for Aur {
     type Error = dirs::Error;
 
     fn try_from(raw: RawAur) -> Result<Self, Self::Error> {
-        let build = raw.build.map(Ok).unwrap_or_else(|| dirs::builds())?;
-        let cache = raw.cache.map(Ok).unwrap_or_else(|| dirs::tarballs())?;
-        let clones = raw.clones.map(Ok).unwrap_or_else(|| dirs::clones())?;
+        let build = raw.build.map(Ok).unwrap_or_else(dirs::builds)?;
+        let cache = raw.cache.map(Ok).unwrap_or_else(dirs::tarballs)?;
+        let clones = raw.clones.map(Ok).unwrap_or_else(dirs::clones)?;
 
         let a = Aur {
             build,
@@ -219,7 +219,7 @@ impl TryFrom<RawBackups> for Backups {
     type Error = dirs::Error;
 
     fn try_from(raw: RawBackups) -> Result<Self, Self::Error> {
-        let snapshots = raw.snapshots.map(Ok).unwrap_or_else(|| dirs::snapshot())?;
+        let snapshots = raw.snapshots.map(Ok).unwrap_or_else(dirs::snapshot)?;
         let g = Backups { snapshots };
 
         Ok(g)

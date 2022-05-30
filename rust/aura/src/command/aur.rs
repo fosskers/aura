@@ -212,7 +212,7 @@ pub(crate) fn search(
 
 /// View a package's PKGBUILD.
 pub(crate) fn pkgbuild(pkg: &str, clone_d: &Path) -> Result<(), Error> {
-    let path = aura_core::aur::clone_path_of_pkgbase(&clone_d, pkg, &crate::fetch::fetch_json)?
+    let path = aura_core::aur::clone_path_of_pkgbase(clone_d, pkg, &crate::fetch::fetch_json)?
         .join("PKGBUILD");
 
     let file = BufReader::new(File::open(path)?);
@@ -220,8 +220,7 @@ pub(crate) fn pkgbuild(pkg: &str, clone_d: &Path) -> Result<(), Error> {
 
     file.lines()
         .filter_map(|line| line.ok())
-        .map(|line| writeln!(out, "{}", line))
-        .collect::<Result<(), std::io::Error>>()?;
+        .try_for_each(|line| writeln!(out, "{}", line))?;
 
     Ok(())
 }
@@ -297,7 +296,7 @@ pub(crate) fn refresh(
     let uniques = names
         .into_par_iter()
         .map(|p| {
-            let res = aura_core::aur::clone_path_of_pkgbase(&clone_d, p, &crate::fetch::fetch_json);
+            let res = aura_core::aur::clone_path_of_pkgbase(clone_d, p, &crate::fetch::fetch_json);
             mtx.lock().unwrap().inc_and_draw(&clone_bar, 1);
             res
         })
@@ -471,9 +470,7 @@ pub(crate) fn upgrade<'a>(
     debug!("VCS packages to consider: {:?}", vcs);
 
     // --- Report --- //
-    if env.aur.git.not() && to_upgrade.is_empty() {
-        aura!(fll, "A-u-no-upgrades");
-    } else if env.aur.git && to_upgrade.is_empty() && vcs.is_empty() {
+    if to_upgrade.is_empty() && (env.aur.git.not() || (env.aur.git && vcs.is_empty())) {
         aura!(fll, "A-u-no-upgrades");
     } else {
         aura!(fll, "A-u-to-upgrade");
