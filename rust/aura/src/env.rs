@@ -109,18 +109,18 @@ impl Env {
 
 #[derive(Deserialize)]
 struct RawGeneral {
-    cpus: Option<usize>,
+    cpus: Option<u32>,
 }
 
 #[derive(Debug, Serialize)]
 pub(crate) struct General {
-    cpus: usize,
+    pub(crate) cpus: u32,
 }
 
 impl Default for General {
     fn default() -> Self {
         Self {
-            cpus: num_cpus::get(),
+            cpus: num_cpus::get() as u32,
         }
     }
 }

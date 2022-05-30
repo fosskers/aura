@@ -335,10 +335,7 @@ where
     }
 
     let mngr = AlpmManager::new(env.pacman);
-    // FIXME Fri Feb  4 15:58:38 2022
-    //
-    // Set `max_size` based on the user's CPU count.
-    let pool = Pool::builder().max_size(4).build(mngr)?;
+    let pool = Pool::builder().max_size(env.general.cpus).build(mngr)?;
     aura!(fll, "A-install-deps");
     let rslv = aura_core::aur::dependencies::resolve(
         pool,
