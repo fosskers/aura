@@ -13,8 +13,6 @@ use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
 use linya::Progress;
 use log::{debug, info};
-use r2d2::Pool;
-use r2d2_alpm::AlpmManager;
 use rayon::prelude::*;
 use srcinfo::Srcinfo;
 use std::collections::HashSet;
@@ -322,7 +320,11 @@ pub(crate) fn refresh(
 // TODO Thu Jan 13 17:41:55 2022
 //
 // This will obviously require more arguments.
-pub(crate) fn install<'a, I>(fll: &FluentLanguageLoader, env: Env, raw_pkgs: I) -> Result<(), Error>
+pub(crate) fn install<'a, I>(
+    fll: &FluentLanguageLoader,
+    env: &Env,
+    raw_pkgs: I,
+) -> Result<(), Error>
 where
     I: IntoIterator<Item = &'a str>,
 {
@@ -334,8 +336,7 @@ where
         return Err(Error::Silent);
     }
 
-    let mngr = AlpmManager::new(env.pacman);
-    let pool = Pool::builder().max_size(env.general.cpus).build(mngr)?;
+    let pool = env.alpm_pool()?;
     aura!(fll, "A-install-deps");
     let rslv = aura_core::aur::dependencies::resolve(
         pool,
@@ -505,7 +506,7 @@ pub(crate) fn upgrade<'a>(
             .iter()
             .map(|(old, _)| old.name.as_ref())
             .chain(vcs.iter().map(|p| p.name.as_ref()));
-        install(fll, env, names)?;
+        install(fll, &env, names)?;
     }
 
     Ok(())

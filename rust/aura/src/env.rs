@@ -3,6 +3,8 @@
 use crate::dirs;
 use alpm::Alpm;
 use from_variants::FromVariants;
+use r2d2::Pool;
+use r2d2_alpm::AlpmManager;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
@@ -76,6 +78,18 @@ impl Env {
         };
 
         Ok(e)
+    }
+
+    /// Open a series of connections to ALPM handles. The quantity matches the
+    /// number of CPUs available on the machine.
+    pub(crate) fn alpm_pool(&self) -> Result<Pool<AlpmManager>, r2d2::Error> {
+        // FIXME Thu Jun  9 13:53:49 2022
+        //
+        // Unfortunate clone here.
+        let mngr = AlpmManager::new(self.pacman.clone());
+        let pool = Pool::builder().max_size(self.general.cpus).build(mngr)?;
+
+        Ok(pool)
     }
 
     /// Open a new connection to `alpm` instance.
