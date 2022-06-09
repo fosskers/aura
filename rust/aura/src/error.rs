@@ -25,6 +25,7 @@ pub(crate) enum Error {
     PacConf(pacmanconf::Error),
     Env(crate::env::Error),
     Conf(crate::conf::Error),
+    Check(crate::check::Error),
 }
 
 impl std::fmt::Display for Error {
@@ -43,6 +44,7 @@ impl std::fmt::Display for Error {
             Error::O(e) => write!(f, "{}", e),
             Error::Env(e) => write!(f, "{}", e),
             Error::Conf(e) => write!(f, "{e}"),
+            Error::Check(e) => write!(f, "{e}"),
         }
     }
 }

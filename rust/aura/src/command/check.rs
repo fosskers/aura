@@ -4,9 +4,13 @@ use crate::env::{Aur, Env};
 use crate::{aura, green};
 use alpm::Alpm;
 use colored::*;
+use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use is_executable::IsExecutable;
+use r2d2::Pool;
+use r2d2_alpm::AlpmManager;
+use rayon::prelude::*;
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -17,14 +21,34 @@ const CANCEL: &str = "⊘";
 
 const SECS_IN_DAY: u64 = 60 * 60 * 24;
 
+#[derive(FromVariants)]
+pub(crate) enum Error {
+    Alpm(alpm::Error),
+    R2d2(r2d2::Error),
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::Alpm(e) => write!(f, "{e}"),
+            Error::R2d2(e) => write!(f, "{e}"),
+        }
+    }
+}
+
 /// Validate the system.
-pub(crate) fn check(fll: &FluentLanguageLoader, alpm: &Alpm, env: &Env) {
-    aura!(fll, "check-start");
+pub(crate) fn check(fll: &FluentLanguageLoader, env: &Env) -> Result<(), Error> {
     let caches = env.caches();
+    let alpm = env.alpm()?;
+    let pool = env.alpm_pool()?;
+
+    aura!(fll, "check-start");
     pacman_config(fll, &env.pacman, &env.aur);
     snapshots(fll, &env.backups.snapshots, &caches);
-    cache(fll, alpm, &caches);
+    cache(fll, &alpm, pool, &caches);
     green!(fll, "common-done");
+
+    Ok(())
 }
 
 fn pacman_config(fll: &FluentLanguageLoader, c: &pacmanconf::Config, a: &Aur) {
@@ -90,11 +114,11 @@ fn usable_snapshots(fll: &FluentLanguageLoader, s_path: &Path, t_path: &[&Path])
     }
 }
 
-fn cache(fll: &FluentLanguageLoader, alpm: &Alpm, caches: &[&Path]) {
+fn cache(fll: &FluentLanguageLoader, alpm: &Alpm, pool: Pool<AlpmManager>, caches: &[&Path]) {
     aura!(fll, "check-cache");
     caches_exist(fll, caches);
     packages_have_tarballs(fll, alpm, caches);
-    valid_tarballs(fll, alpm, caches);
+    valid_tarballs(fll, pool, caches);
 }
 
 fn caches_exist(fll: &FluentLanguageLoader, caches: &[&Path]) {
@@ -117,9 +141,14 @@ fn caches_exist(fll: &FluentLanguageLoader, caches: &[&Path]) {
 }
 
 /// Is every tarball in the cache valid and loadable by ALPM?
-fn valid_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, caches: &[&Path]) {
-    let (goods, bads): (Vec<_>, _) = aura_core::cache::package_paths(caches)
-        .partition(|pp| aura_arch::is_valid_package(alpm, pp.as_path()));
+fn valid_tarballs(fll: &FluentLanguageLoader, pool: Pool<AlpmManager>, caches: &[&Path]) {
+    let (goods, bads): (Vec<_>, Vec<_>) = aura_core::cache::package_paths(caches)
+        .par_bridge()
+        .partition(|pp| {
+            pool.get()
+                .map(|alpm| aura_arch::is_valid_package(&alpm, pp.as_path()))
+                .unwrap_or(false)
+        });
     let good = bads.is_empty();
     let symbol = if good { GOOD.green() } else { BAD.red() };
     println!(

@@ -134,7 +134,7 @@ fn work(args: Args) -> Result<(), Error> {
         }
         SubCmd::Deps(d) => deps::graph(&env.alpm()?, d.limit, d.optional, d.packages)?,
         // --- System Validation --- //
-        SubCmd::Check(_) => check::check(&fll, &env.alpm()?, &env),
+        SubCmd::Check(_) => check::check(&fll, &env)?,
     }
 
     Ok(())
