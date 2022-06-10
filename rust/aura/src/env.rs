@@ -18,6 +18,7 @@ pub(crate) enum Error {
     Env(std::env::VarError),
     Io(std::io::Error),
     Toml(toml::de::Error),
+    MissingEditor,
 }
 
 impl std::fmt::Display for Error {
@@ -28,6 +29,7 @@ impl std::fmt::Display for Error {
             Error::Env(e) => write!(f, "{e}"),
             Error::Io(e) => write!(f, "{e}"),
             Error::Toml(e) => write!(f, "{e}"),
+            Error::MissingEditor => write!(f, "Provided EDITOR is not on the PATH!"),
         }
     }
 }
@@ -120,6 +122,15 @@ impl Env {
             crate::flags::SubCmd::Aur(a) => self.aur.reconcile(a),
             _ => {}
         }
+    }
+
+    /// Before continuing, confirm that the settled `Env` is valid to use.
+    pub(crate) fn validate(&self) -> Result<(), Error> {
+        if self.aur.hotedit {
+            which::which(&self.general.editor).map_err(|_| Error::MissingEditor)?;
+        }
+
+        Ok(())
     }
 }
 

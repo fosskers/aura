@@ -53,6 +53,7 @@ fn work(args: Args) -> Result<(), Error> {
     let env = {
         let mut env = crate::env::Env::try_new()?;
         env.reconcile_cli(&args.subcmd);
+        env.validate()?;
         env
     };
     debug!("{:#?}", env);
