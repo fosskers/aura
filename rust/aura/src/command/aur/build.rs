@@ -168,6 +168,13 @@ fn overwrite_build_files(
     }
 
     // --- Edit any available .patch files --- //
+    build_d
+        .read_dir()?
+        .filter_map(|de| de.ok())
+        .map(|de| de.path())
+        .filter(|path| path.extension() == Some("patch".as_ref()))
+        .map(|path| edit(editor, path))
+        .collect::<Result<(), Error>>()?;
 
     Ok(())
 }
