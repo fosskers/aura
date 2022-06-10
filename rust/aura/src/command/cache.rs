@@ -2,7 +2,7 @@
 
 use crate::download::download_with_progress;
 use crate::env::Env;
-use crate::{aura, green, red, yellow};
+use crate::{aura, green, proceed, red, yellow};
 use alpm::Alpm;
 use aura_core::cache::{CacheSize, PkgPath};
 use chrono::{DateTime, Local};
@@ -226,9 +226,7 @@ pub(crate) fn clean(
     yellow!(fll, "C-c-keep", pkgs = keep);
 
     // Proceed if the user accepts.
-    crate::utils::proceed(fll)
-        .then(|| ())
-        .ok_or(Error::Cancelled)?;
+    proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
 
     // Get all the tarball paths, sort and group them by name, and then remove them.
     aura_core::cache::package_paths(caches)
@@ -256,9 +254,7 @@ pub(crate) fn clean_not_saved(fll: &FluentLanguageLoader, env: &Env) -> Result<(
     aura!(fll, "C-size", size = human);
 
     // Proceed if the user accepts.
-    crate::utils::proceed(fll)
-        .then(|| ())
-        .ok_or(Error::Cancelled)?;
+    proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
 
     let tarballs = aura_core::cache::package_paths(&caches);
 
@@ -343,9 +339,7 @@ pub(crate) fn refresh(
         );
 
         // Proceed if the user accepts.
-        crate::utils::proceed(fll)
-            .then(|| ())
-            .ok_or(Error::Cancelled)?;
+        proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
 
         // Determine target cache.
         aura!(fll, "C-y-which-cache");
@@ -464,9 +458,7 @@ pub(crate) fn backup(fll: &FluentLanguageLoader, env: &Env, target: &Path) -> Re
     }
 
     // Proceed if the user accepts.
-    crate::utils::proceed(fll)
-        .then(|| ())
-        .ok_or(Error::Cancelled)?;
+    proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
 
     copy(&sources, &full, cache_size.files)
 }

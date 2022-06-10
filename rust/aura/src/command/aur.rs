@@ -4,7 +4,7 @@ mod build;
 
 use crate::env::Env;
 use crate::utils::ResultVoid;
-use crate::{aura, green, red};
+use crate::{aura, green, proceed, red};
 use alpm::Alpm;
 use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
@@ -368,9 +368,8 @@ where
     aura!(fll, "A-install-aur-pkgs");
     to_build.iter().for_each(|p| println!(" {p}"));
 
-    crate::utils::proceed(fll)
-        .then(|| ())
-        .ok_or(Error::Cancelled)?;
+    // Proceed if the user accepts.
+    proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
 
     // --- Determine the best build order --- //
     let order: Vec<Vec<&str>> = aura_core::aur::dependencies::build_order(&to_build)?;
@@ -389,7 +388,14 @@ where
     for (i, layer) in order.into_iter().enumerate() {
         let clone_paths = layer.into_iter().map(|pkg| env.aur.clones.join(pkg));
 
-        let tarballs = build::build(fll, &env.aur.cache, &env.aur.build, clone_paths)?;
+        let tarballs = build::build(
+            fll,
+            &env.aur.cache,
+            &env.aur.build,
+            env.aur.hotedit,
+            &env.general.editor,
+            clone_paths,
+        )?;
         if tarballs.is_empty().not() {
             let flags = (i + 1 < len)
                 .then(|| ["--asdeps"].as_slice())

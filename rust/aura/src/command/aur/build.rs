@@ -1,17 +1,14 @@
 use crate::utils::ResultVoid;
-use crate::{a, aura, red};
+use crate::{aura, proceed, red};
 use colored::Colorize;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
-use i18n_embed_fl::fl;
 use log::debug;
 use nonempty::NonEmpty;
 use srcinfo::Srcinfo;
-use std::{
-    ops::Not,
-    path::{Path, PathBuf},
-    process::Command,
-};
+use std::ops::Not;
+use std::path::{Path, PathBuf};
+use std::process::Command;
 use validated::Validated;
 
 #[derive(FromVariants)]
@@ -63,6 +60,8 @@ pub(crate) fn build<I, T>(
     fll: &FluentLanguageLoader,
     cache_d: &Path,
     build_d: &Path,
+    hotedit: bool,
+    editor: &str,
     pkg_clones: I,
 ) -> Result<Vec<PathBuf>, Error>
 where
@@ -72,7 +71,7 @@ where
     aura!(fll, "A-build-prep");
 
     let to_install = pkg_clones
-        .map(|path| build_one(cache_d, path.as_ref(), build_d))
+        .map(|path| build_one(fll, cache_d, path.as_ref(), hotedit, editor, build_d))
         .map(|r| build_check(fll, r))
         .collect::<Result<Vec<Vec<PathBuf>>, Error>>()?
         .into_iter()
@@ -83,13 +82,20 @@ where
     Ok(to_install)
 }
 
-fn build_one(cache: &Path, clone: &Path, build_root: &Path) -> Result<Vec<PathBuf>, Error> {
+fn build_one(
+    fll: &FluentLanguageLoader,
+    cache: &Path,
+    clone: &Path,
+    hotedit: bool,
+    editor: &str,
+    build_root: &Path,
+) -> Result<Vec<PathBuf>, Error> {
     // --- Parse the .SRCINFO for metadata --- //
     let path = [clone, Path::new(".SRCINFO")].iter().collect::<PathBuf>();
     let info = Srcinfo::parse_file(path)?;
     let base = info.base.pkgbase;
 
-    debug!("Building {}", base);
+    aura!(fll, "A-build-pkg", pkg = base.cyan().bold().to_string());
 
     // --- Prepare the Build Directory --- //
     let build = build_root.join(&base);
@@ -123,12 +129,33 @@ fn build_one(cache: &Path, clone: &Path, build_root: &Path) -> Result<Vec<PathBu
         .ok()
         .map_err(Error::Copies)?;
 
+    if hotedit {
+        overwrite_build_files(fll, editor, &build)?;
+    }
+
     let tarballs = makepkg(&build)?;
     for tb in tarballs.iter() {
         debug!("Built: {}", tb.display());
     }
 
     copy_to_cache(cache, &tarballs)
+}
+
+fn overwrite_build_files(
+    fll: &FluentLanguageLoader,
+    editor: &str,
+    build_d: &Path,
+) -> Result<(), Error> {
+    if proceed!(fll, "A-build-hotedit-pkgbuild").is_some() {
+        let pkgbuild = build_d.join("PKGBUILD");
+        edit(editor, &pkgbuild)?;
+    }
+
+    Ok(())
+}
+
+fn edit(editor: &str, file: &Path) -> Result<(), std::io::Error> {
+    Ok(())
 }
 
 /// Build each package specified by the `PKGBUILD` and yield a list of the built
@@ -196,8 +223,7 @@ fn build_check(
         Err(e) => {
             red!(fll, "A-build-fail");
             eprintln!("\n  {}\n", e);
-            let msg = format!("{} {} ", fl!(fll, "continue"), fl!(fll, "proceed-yes"));
-            match crate::utils::prompt(&a!(msg)) {
+            match proceed!(fll, "continue") {
                 Some(_) => Ok(vec![]),
                 None => Err(Error::Cancelled),
             }

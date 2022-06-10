@@ -1,9 +1,6 @@
 //! Various utility functions.
 
-use crate::a;
 use colored::{ColoredString, Colorize};
-use i18n_embed::fluent::FluentLanguageLoader;
-use i18n_embed_fl::fl;
 use rustyline::Editor;
 use std::io::Write;
 use std::str::FromStr;
@@ -74,12 +71,6 @@ pub(crate) fn prompt(msg: &str) -> Option<()> {
     let line = rl.readline(msg).ok()?;
 
     (line.is_empty() || line == "y" || line == "Y").then(|| ())
-}
-
-/// Only proceed if the user agrees.
-pub(crate) fn proceed(fll: &FluentLanguageLoader) -> bool {
-    let msg = format!("{} {} ", fl!(fll, "proceed"), fl!(fll, "proceed-yes"));
-    prompt(&a!(msg)).is_some()
 }
 
 /// Prompt the user for a numerical selection.

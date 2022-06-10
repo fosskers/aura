@@ -1,12 +1,11 @@
 //! All functionality involving the `-B` command.
 
-use crate::{a, aura, green, red};
+use crate::{aura, green, proceed, red};
 use alpm::Alpm;
 use aura_core::snapshot::Snapshot;
 use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
-use i18n_embed_fl::fl;
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
@@ -68,8 +67,7 @@ pub(crate) fn clean(
     caches: &[&Path],
     snapshots: &Path,
 ) -> Result<(), Error> {
-    let msg = format!("{} {} ", fl!(fll, "B-clean"), fl!(fll, "proceed-yes"));
-    crate::utils::prompt(&a!(msg)).ok_or(Error::Cancelled)?;
+    proceed!(fll, "B-clean").ok_or(Error::Cancelled)?;
     let vers = aura_core::cache::all_versions(caches);
 
     for (path, snapshot) in aura_core::snapshot::snapshots_with_paths(snapshots) {

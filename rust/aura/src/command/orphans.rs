@@ -1,6 +1,6 @@
 //! All functionality involving the `-O` command.
 
-use crate::{green, yellow};
+use crate::{green, proceed, yellow};
 use alpm::{Alpm, PackageReason, TransFlag};
 use aura_arch as arch;
 use colored::*;
@@ -107,9 +107,7 @@ pub(crate) fn remove(alpm: &mut Alpm, fll: FluentLanguageLoader) -> Result<(), E
         println!("  {:w$} {:>9}\n", "Total", size, w = longest);
 
         // Proceed with the removal if the user accepts.
-        crate::utils::proceed(&fll)
-            .then(|| ())
-            .ok_or(Error::Cancelled)?;
+        proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
 
         alpm.trans_commit().map_err(|(_, e)| Error::Alpm(e))?;
         alpm.trans_release()?;

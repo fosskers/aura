@@ -9,6 +9,9 @@ A-install-repo-pkgs = Repository dependencies:
 A-install-aur-pkgs = AUR packages:
 
 A-build-prep = Preparing build directories...
+A-build-pkg = Building { $pkg }...
+# hotEdit_1
+A-build-hotedit-pkgbuild = Would you like to edit the PKGBUILD?
 A-build-fail = Package failed to build, citing:
 
 A-i-repo = Repository
