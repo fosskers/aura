@@ -764,6 +764,10 @@ pub(crate) struct Aur {
     #[clap(group = "aur", long, short, value_name = "package", display_order = 1)]
     pub(crate) pkgbuild: Option<String>,
 
+    /// View/edit PKGBUILDs and related build files before building.
+    #[clap(long, display_order = 4)]
+    pub(crate) hotedit: bool,
+
     /// Upgrade all installed AUR packages.
     #[clap(group = "aur", long, short = 'u', display_order = 1)]
     pub(crate) sysupgrade: bool,

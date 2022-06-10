@@ -160,6 +160,8 @@ struct RawAur {
     ignores: HashSet<String>,
     #[serde(default)]
     git: bool,
+    #[serde(default)]
+    hotedit: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -170,6 +172,8 @@ pub(crate) struct Aur {
     pub(crate) ignores: HashSet<String>,
     /// Always rebuild VCS packages with `-Au`?
     pub(crate) git: bool,
+    /// View/edit PKGBUILDs (etc.) before building.
+    pub(crate) hotedit: bool,
 }
 
 impl Aur {
@@ -181,14 +185,21 @@ impl Aur {
             clones: dirs::clones()?,
             ignores: HashSet::new(),
             git: false,
+            hotedit: false,
         };
 
         Ok(a)
     }
 
+    /// Flags set on the command line should override config settings and other
+    /// defaults.
     fn reconcile(&mut self, flags: &crate::flags::Aur) {
         if flags.git {
             self.git = true;
+        }
+
+        if flags.hotedit {
+            self.hotedit = true;
         }
 
         // Harmless clone, as we don't expect many "ignores" to be passed on the
@@ -211,6 +222,7 @@ impl TryFrom<RawAur> for Aur {
             clones,
             ignores: raw.ignores,
             git: raw.git,
+            hotedit: raw.hotedit,
         };
 
         Ok(a)

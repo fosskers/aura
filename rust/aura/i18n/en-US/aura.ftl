@@ -115,7 +115,7 @@ check-cache-exists = All specified caches exist?
 check-cache-tarballs = All tarballs valid?
 check-cache-tarballs-fix = Fix: You can remove invalid tarballs with { $command }
 check-cache-missing = Every installed package has a tarball?
-check-cache-missing-fix = Fix: You can download missing tarballs with { $command }
+check-cache-missing-fix = Fix: You can download missing official tarballs with { $command }
 
 # Common Fields
 common-yes = Yes
