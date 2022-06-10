@@ -23,6 +23,8 @@ pub enum Error {
     #[from_variants(skip)]
     TarballMove(PathBuf),
     Cancelled,
+    #[from_variants(skip)]
+    EditFail(PathBuf),
     Makepkg,
 }
 
@@ -48,6 +50,7 @@ impl std::fmt::Display for Error {
             }
             Error::TarballMove(pb) => write!(f, "Failed to move {}", pb.display()),
             Error::Cancelled => write!(f, "Not proceeding with build."),
+            Error::EditFail(pb) => write!(f, "Failed to edit {}", pb.display()),
         }
     }
 }
@@ -148,13 +151,20 @@ fn overwrite_build_files(
 ) -> Result<(), Error> {
     if proceed!(fll, "A-build-hotedit-pkgbuild").is_some() {
         let pkgbuild = build_d.join("PKGBUILD");
-        edit(editor, &pkgbuild)?;
+        edit(editor, pkgbuild)?;
     }
 
     Ok(())
 }
 
-fn edit(editor: &str, file: &Path) -> Result<(), std::io::Error> {
+fn edit(editor: &str, file: PathBuf) -> Result<(), Error> {
+    Command::new(editor)
+        .arg(&file)
+        .status()?
+        .success()
+        .then(|| ())
+        .ok_or_else(|| Error::EditFail(file))?;
+
     Ok(())
 }
 
