@@ -7,7 +7,6 @@ use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
-use is_executable::IsExecutable;
 use r2d2::Pool;
 use r2d2_alpm::AlpmManager;
 use rayon::prelude::*;
@@ -202,20 +201,19 @@ fn packages_have_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, caches: &[&Pa
 }
 
 fn pacnews(fll: &FluentLanguageLoader) {
-    let fd_installed = Path::new("/bin/fd").is_executable();
-
-    if !fd_installed {
-        println!(
-            "  [{}] {}",
-            CANCEL.truecolor(128, 128, 128),
-            fl!(fll, "check-conf-pacnew")
-        );
-        println!(
-            "      └─ {}",
-            fl!(fll, "check-missing-exec", exec = "fd".cyan().to_string())
-        );
-    } else {
-        match pacnew_work() {
+    match which::which("fd") {
+        Err(_) => {
+            println!(
+                "  [{}] {}",
+                CANCEL.truecolor(128, 128, 128),
+                fl!(fll, "check-conf-pacnew")
+            );
+            println!(
+                "      └─ {}",
+                fl!(fll, "check-missing-exec", exec = "fd".cyan().to_string())
+            );
+        }
+        Ok(_) => match pacnew_work() {
             None => {
                 println!(
                     "  [{}] {}",
@@ -252,7 +250,7 @@ fn pacnews(fll: &FluentLanguageLoader) {
                     );
                 }
             }
-        }
+        },
     }
 }
 
