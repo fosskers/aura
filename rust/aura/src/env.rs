@@ -9,6 +9,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
+const DEFAULT_EDITOR: &str = "vi";
+
 #[derive(FromVariants)]
 pub(crate) enum Error {
     Dirs(crate::dirs::Error),
@@ -63,7 +65,7 @@ impl Env {
             .and_then(|s| toml::from_str(&s).ok());
         let (general, aur, backups) = match raw {
             Some(re) => (
-                re.general.and_then(|rg| rg.try_into().ok()),
+                re.general.map(|rg| rg.into()),
                 re.aur.map(|ra| ra.try_into()),
                 re.backups.map(|rb| rb.try_into()),
             ),
@@ -124,31 +126,36 @@ impl Env {
 #[derive(Deserialize)]
 struct RawGeneral {
     cpus: Option<u32>,
+    editor: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
 pub(crate) struct General {
     pub(crate) cpus: u32,
+    pub(crate) editor: String,
 }
 
 impl Default for General {
     fn default() -> Self {
         Self {
             cpus: num_cpus::get() as u32,
+            editor: editor(),
         }
     }
 }
 
-impl TryFrom<RawGeneral> for General {
-    type Error = ();
-
-    fn try_from(raw: RawGeneral) -> Result<Self, Self::Error> {
-        let g = General {
-            cpus: raw.cpus.ok_or(())?,
-        };
-
-        Ok(g)
+impl From<RawGeneral> for General {
+    fn from(raw: RawGeneral) -> Self {
+        General {
+            cpus: raw.cpus.unwrap_or_else(|| num_cpus::get() as u32),
+            editor: raw.editor.unwrap_or_else(|| editor()),
+        }
     }
+}
+
+/// The editor program to call in certain situations.
+fn editor() -> String {
+    std::env::var("EDITOR").unwrap_or_else(|_| DEFAULT_EDITOR.to_string())
 }
 
 #[derive(Deserialize)]
