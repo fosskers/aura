@@ -41,6 +41,7 @@ ubyte = "0.10"
 unic-langid = { version = "0.9", features = ["macros"] }
 validated = { version = "0.1", features = ["rayon"] }
 webbrowser = "0.7"
+which = "4.2"
 
 [features]
 git = ["alpm/git"]

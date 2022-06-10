@@ -91,13 +91,17 @@ L-recent = Recent Actions
 
 # System Validation (check)
 check-start = Validating your system.
+check-missing-exec = Fix: Please install { $exec } and/or ensure it's on your PATH.
+check-env = Environment
+check-env-editor = EDITOR variable set?
+check-env-editor-exec = EDITOR value ({ $exec }) is executable?
+check-env-editor-vi = Backup editor vi is executable?
 check-conf = Pacman & Makepkg Configuration
 check-conf-parallel = Parallel downloads activated?
 check-conf-parallel-fix = Your { $setting } setting is off, or set to 1. Is that intended?
 check-conf-ignores = No overlapping ignored packages?
 check-conf-ignores-fix = The following packages are ignored in both pacman.conf and aura.toml: { $pkgs }
 check-conf-pacnew = All .pacnew files accounted for?
-check-conf-pacnew-fd = Fix: Please install { $fd }.
 check-conf-pacnew-broken = Error: Call to { $fd } utterly failed.
 check-conf-pacnew-old = { $path } is older than its .pacnew by { $days } days.
 check-snapshots = Package Snapshots

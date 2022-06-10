@@ -16,6 +16,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 const GOOD: &str = "✓";
+const WARN: &str = "!";
 const BAD: &str = "✕";
 const CANCEL: &str = "⊘";
 
@@ -43,6 +44,7 @@ pub(crate) fn check(fll: &FluentLanguageLoader, env: &Env) -> Result<(), Error> 
     let pool = env.alpm_pool()?;
 
     aura!(fll, "check-start");
+    environment(fll);
     pacman_config(fll, &env.pacman, &env.aur);
     snapshots(fll, &env.backups.snapshots, &caches);
     cache(fll, &alpm, pool, &caches);
@@ -50,6 +52,61 @@ pub(crate) fn check(fll: &FluentLanguageLoader, env: &Env) -> Result<(), Error> 
 
     Ok(())
 }
+
+fn environment(fll: &FluentLanguageLoader) {
+    aura!(fll, "check-env");
+    editor(fll);
+}
+
+fn editor(fll: &FluentLanguageLoader) {
+    let edit = std::env::var("EDITOR");
+
+    // Blocked off to avoid shadowing below.
+    {
+        let good = edit.is_ok();
+        let symb = if good { GOOD.green() } else { WARN.yellow() };
+        println!("  [{}] {}", symb, fl!(fll, "check-env-editor"));
+    }
+
+    if let Ok(e) = edit.as_deref() {
+        let good = which::which(e).is_ok();
+        let symb = if good { GOOD.green() } else { BAD.red() };
+        println!(
+            "  [{}] {}",
+            symb,
+            fl!(fll, "check-env-editor-exec", exec = e)
+        );
+
+        if !good {
+            let msg = fl!(fll, "check-missing-exec", exec = e.cyan().to_string());
+            println!("      └─ {}", msg);
+        }
+    } else {
+        let good = which::which("vi").is_ok();
+        let symb = if good { GOOD.green() } else { BAD.red() };
+        println!("  [{}] {}", symb, fl!(fll, "check-env-editor-vi"));
+
+        if !good {
+            let msg = fl!(fll, "check-missing-exec", exec = "vi".cyan().to_string());
+            println!("      └─ {}", msg);
+        }
+    }
+}
+
+// fn executable(fll: &FluentLanguageLoader, e: &str) {
+//     let good = which::which(e).is_ok();
+//     let symb = if good { GOOD.green() } else { BAD.red() };
+//     println!(
+//         "  [{}] {}",
+//         symb,
+//         fl!(fll, "check-env-editor-exec", exec = e)
+//     );
+
+//     if !good {
+//         let msg = fl!(fll, "check-missing-exec", exec = e.cyan().to_string());
+//         println!("      └─ {}", msg);
+//     }
+// }
 
 fn pacman_config(fll: &FluentLanguageLoader, c: &pacmanconf::Config, a: &Aur) {
     aura!(fll, "check-conf");
@@ -192,7 +249,7 @@ fn pacnews(fll: &FluentLanguageLoader) {
         );
         println!(
             "      └─ {}",
-            fl!(fll, "check-conf-pacnew-fd", fd = "fd".cyan().to_string())
+            fl!(fll, "check-missing-exec", exec = "fd".cyan().to_string())
         );
     } else {
         match pacnew_work() {
