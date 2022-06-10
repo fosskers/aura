@@ -96,6 +96,7 @@ check-env = Environment
 check-env-editor = EDITOR variable set?
 check-env-editor-exec = EDITOR value ({ $exec }) is executable?
 check-env-editor-vi = Backup editor vi is executable?
+check-env-installed = { $exec } installed and executable?
 check-conf = Pacman & Makepkg Configuration
 check-conf-parallel = Parallel downloads activated?
 check-conf-parallel-fix = Your { $setting } setting is off, or set to 1. Is that intended?

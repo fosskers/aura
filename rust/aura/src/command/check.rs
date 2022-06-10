@@ -55,6 +55,9 @@ pub(crate) fn check(fll: &FluentLanguageLoader, env: &Env) -> Result<(), Error> 
 fn environment(fll: &FluentLanguageLoader) {
     aura!(fll, "check-env");
     editor(fll);
+    executable!(fll, "git", "check-env-installed", exec = "git");
+    executable!(fll, "fd", "check-env-installed", exec = "fd");
+    executable!(fll, "diff", "check-env-installed", exec = "diff");
 }
 
 fn editor(fll: &FluentLanguageLoader) {

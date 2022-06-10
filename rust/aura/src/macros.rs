@@ -75,7 +75,7 @@ macro_rules! executable {
         );
 
         if !good {
-            let msg = fl!($fll, "check-missing-exec", exec = $exec.cyan().to_string());
+            let msg = fl!($fll, "check-missing-exec", exec = $exec.cyan().bold().to_string());
             println!("      └─ {}", msg);
         }
     };
@@ -89,7 +89,7 @@ macro_rules! executable {
         );
 
         if !good {
-            let msg = fl!($fll, "check-missing-exec", exec = $exec.cyan().to_string());
+            let msg = fl!($fll, "check-missing-exec", exec = $exec.cyan().bold().to_string());
             println!("      └─ {}", msg);
         }
 
