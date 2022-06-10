@@ -1,7 +1,7 @@
 //! Analyze many aspects of your installation for validity.
 
 use crate::env::{Aur, Env};
-use crate::{aura, green};
+use crate::{aura, executable, green};
 use alpm::Alpm;
 use colored::*;
 use from_variants::FromVariants;
@@ -15,10 +15,10 @@ use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-const GOOD: &str = "✓";
-const WARN: &str = "!";
-const BAD: &str = "✕";
-const CANCEL: &str = "⊘";
+pub(crate) const GOOD: &str = "✓";
+pub(crate) const WARN: &str = "!";
+pub(crate) const BAD: &str = "✕";
+pub(crate) const CANCEL: &str = "⊘";
 
 const SECS_IN_DAY: u64 = 60 * 60 * 24;
 
@@ -60,53 +60,16 @@ fn environment(fll: &FluentLanguageLoader) {
 
 fn editor(fll: &FluentLanguageLoader) {
     let edit = std::env::var("EDITOR");
-
-    // Blocked off to avoid shadowing below.
-    {
-        let good = edit.is_ok();
-        let symb = if good { GOOD.green() } else { WARN.yellow() };
-        println!("  [{}] {}", symb, fl!(fll, "check-env-editor"));
-    }
+    let good = edit.is_ok();
+    let symb = if good { GOOD.green() } else { WARN.yellow() };
+    println!("  [{}] {}", symb, fl!(fll, "check-env-editor"));
 
     if let Ok(e) = edit.as_deref() {
-        let good = which::which(e).is_ok();
-        let symb = if good { GOOD.green() } else { BAD.red() };
-        println!(
-            "  [{}] {}",
-            symb,
-            fl!(fll, "check-env-editor-exec", exec = e)
-        );
-
-        if !good {
-            let msg = fl!(fll, "check-missing-exec", exec = e.cyan().to_string());
-            println!("      └─ {}", msg);
-        }
+        executable!(fll, e, "check-env-editor-exec", exec = e);
     } else {
-        let good = which::which("vi").is_ok();
-        let symb = if good { GOOD.green() } else { BAD.red() };
-        println!("  [{}] {}", symb, fl!(fll, "check-env-editor-vi"));
-
-        if !good {
-            let msg = fl!(fll, "check-missing-exec", exec = "vi".cyan().to_string());
-            println!("      └─ {}", msg);
-        }
+        executable!(fll, "vi", "check-env-editor-vi");
     }
 }
-
-// fn executable(fll: &FluentLanguageLoader, e: &str) {
-//     let good = which::which(e).is_ok();
-//     let symb = if good { GOOD.green() } else { BAD.red() };
-//     println!(
-//         "  [{}] {}",
-//         symb,
-//         fl!(fll, "check-env-editor-exec", exec = e)
-//     );
-
-//     if !good {
-//         let msg = fl!(fll, "check-missing-exec", exec = e.cyan().to_string());
-//         println!("      └─ {}", msg);
-//     }
-// }
 
 fn pacman_config(fll: &FluentLanguageLoader, c: &pacmanconf::Config, a: &Aur) {
     aura!(fll, "check-conf");

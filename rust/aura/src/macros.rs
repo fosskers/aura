@@ -59,3 +59,39 @@ macro_rules! red {
         $crate::aln!(i18n_embed_fl::fl!($fll, $msg).red());
     };
 }
+
+#[macro_export]
+/// Detect an executable or warn if it's missing.
+///
+/// Used by the `check` module.
+macro_rules! executable {
+    ($fll:expr, $exec:expr, $msg:expr, $($arg:expr),*) => {
+        let good = which::which($exec).is_ok();
+        let symb = if good { crate::command::check::GOOD.green() } else { crate::command::check::BAD.red() };
+        println!(
+            "  [{}] {}",
+            symb,
+            i18n_embed_fl::fl!($fll, $msg, $($arg)*)
+        );
+
+        if !good {
+            let msg = fl!($fll, "check-missing-exec", exec = $exec.cyan().to_string());
+            println!("      └─ {}", msg);
+        }
+    };
+    ($fll:expr, $exec:expr, $msg:expr) => {
+        let good = which::which($exec).is_ok();
+        let symb = if good { crate::command::check::GOOD.green() } else { crate::command::check::BAD.red() };
+        println!(
+            "  [{}] {}",
+            symb,
+            i18n_embed_fl::fl!($fll, $msg)
+        );
+
+        if !good {
+            let msg = fl!($fll, "check-missing-exec", exec = $exec.cyan().to_string());
+            println!("      └─ {}", msg);
+        }
+
+    };
+}
