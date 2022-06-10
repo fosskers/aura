@@ -133,7 +133,7 @@ fn build_one(
         .map_err(Error::Copies)?;
 
     if hotedit {
-        overwrite_build_files(fll, editor, &build)?;
+        overwrite_build_files(fll, editor, &build, &base)?;
     }
 
     let tarballs = makepkg(&build)?;
@@ -148,11 +148,26 @@ fn overwrite_build_files(
     fll: &FluentLanguageLoader,
     editor: &str,
     build_d: &Path,
+    pkgbase: &str,
 ) -> Result<(), Error> {
+    // --- Edit the PKGBUILD in-place --- //
     if proceed!(fll, "A-build-hotedit-pkgbuild").is_some() {
         let pkgbuild = build_d.join("PKGBUILD");
         edit(editor, pkgbuild)?;
     }
+
+    // --- Edit the post-build `.install` file, if there is one --- //
+    let install = {
+        let mut install = build_d.join(pkgbase);
+        install.set_extension("install");
+        install
+    };
+
+    if install.is_file() && proceed!(fll, "A-build-hotedit-install").is_some() {
+        edit(editor, install)?;
+    }
+
+    // --- Edit any available .patch files --- //
 
     Ok(())
 }
