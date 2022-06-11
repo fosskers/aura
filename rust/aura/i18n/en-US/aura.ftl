@@ -10,6 +10,7 @@ A-install-aur-pkgs = AUR packages:
 
 A-build-prep = Preparing build directories...
 A-build-pkg = Building { $pkg }...
+A-build-diff = Display diffs of build files?
 A-build-hotedit-pkgbuild = Edit the PKGBUILD?
 A-build-hotedit-install = Edit the .install file?
 A-build-fail = Package failed to build, citing:

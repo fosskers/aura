@@ -397,6 +397,8 @@ where
             fll,
             &env.aur.cache,
             &env.aur.build,
+            &env.aur.hashes,
+            env.aur.diff,
             env.aur.hotedit,
             &env.general.editor,
             clone_paths,
@@ -417,14 +419,6 @@ where
 
     green!(fll, "common-done");
     Ok(())
-}
-
-/// What AUR repo git hash is associated with the last time a given package was
-/// installed?
-fn hash_of_last_install(hashes: &Path, pkgbase: &str) -> Result<String, Error> {
-    let path = hashes.join(pkgbase);
-    let hash = aura_core::git::hash(&path)?;
-    Ok(hash)
 }
 
 fn update_hash(hashes: &Path, clone: &Path) -> Result<(), Error> {

@@ -3,7 +3,7 @@ use crate::{aura, proceed, red};
 use colored::Colorize;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
-use log::debug;
+use log::{debug, warn};
 use nonempty::NonEmpty;
 use srcinfo::Srcinfo;
 use std::ops::Not;
@@ -15,6 +15,7 @@ use validated::Validated;
 pub enum Error {
     Srcinfo(srcinfo::Error),
     Io(std::io::Error),
+    Git(aura_core::git::Error),
     #[from_variants(skip)]
     Copies(NonEmpty<std::io::Error>),
     Utf8(std::str::Utf8Error),
@@ -51,6 +52,7 @@ impl std::fmt::Display for Error {
             Error::TarballMove(pb) => write!(f, "Failed to move {}", pb.display()),
             Error::Cancelled => write!(f, "Not proceeding with build."),
             Error::EditFail(pb) => write!(f, "Failed to edit {}", pb.display()),
+            Error::Git(e) => write!(f, "{e}"),
         }
     }
 }
@@ -69,6 +71,8 @@ pub(crate) fn build<I>(
     fll: &FluentLanguageLoader,
     cache_d: &Path,
     build_d: &Path,
+    hashes_d: &Path,
+    diff: bool,
     hotedit: bool,
     editor: &str,
     pkg_clones: I,
@@ -79,7 +83,7 @@ where
     aura!(fll, "A-build-prep");
 
     let to_install = pkg_clones
-        .map(|path| build_one(fll, cache_d, path, hotedit, editor, build_d))
+        .map(|path| build_one(fll, cache_d, hashes_d, path, diff, hotedit, editor, build_d))
         .map(|r| build_check(fll, r))
         .collect::<Result<Vec<Option<Built>>, Error>>()?
         .into_iter()
@@ -92,7 +96,9 @@ where
 fn build_one(
     fll: &FluentLanguageLoader,
     cache: &Path,
+    hashes: &Path,
     clone: PathBuf,
+    diff: bool,
     hotedit: bool,
     editor: &str,
     build_root: &Path,
@@ -136,6 +142,10 @@ fn build_one(
         .ok()
         .map_err(Error::Copies)?;
 
+    if diff {
+        show_diffs(fll, hashes, &clone, &base)?;
+    }
+
     if hotedit {
         overwrite_build_files(fll, editor, &build, &base)?;
     }
@@ -155,6 +165,34 @@ fn build_one(
     };
 
     Ok(Built { clone, tarballs })
+}
+
+fn show_diffs(
+    fll: &FluentLanguageLoader,
+    hashes: &Path,
+    clone: &Path,
+    pkgbase: &str,
+) -> Result<(), Error> {
+    // Silently skip over any hashes that couldn't be read. This is mostly
+    // likely due to the package being installed for the first time, thus having
+    // no history to compare to.
+    match hash_of_last_install(hashes, pkgbase) {
+        Err(e) => warn!("Couldn't read latest hash of {}: {}", pkgbase, e),
+        Ok(hash) => {
+            if proceed!(fll, "A-build-diff").is_some() {
+                aura_core::git::diff(clone, &hash)?;
+            }
+        }
+    }
+
+    Ok(())
+}
+
+/// What AUR repo git hash is associated with the last time a given package was
+/// installed?
+fn hash_of_last_install(hashes: &Path, pkgbase: &str) -> Result<String, std::io::Error> {
+    let path = hashes.join(pkgbase);
+    std::fs::read_to_string(path).map(|s| s.trim().to_string())
 }
 
 fn overwrite_build_files(
