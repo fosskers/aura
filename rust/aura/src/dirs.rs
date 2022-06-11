@@ -102,3 +102,17 @@ pub(crate) fn tarballs() -> Result<PathBuf, Error> {
 
     Ok(path)
 }
+
+/// The full path to the directory of git hashes that indicate the last time an
+/// AUR package was built and installed.
+///
+/// Creates the directory if it doesn't exist.
+pub(crate) fn hashes() -> Result<PathBuf, Error> {
+    let path = aura_xdg_cache()?.join("hashes");
+
+    if path.is_dir().not() {
+        std::fs::create_dir_all(&path)?;
+    }
+
+    Ok(path)
+}
