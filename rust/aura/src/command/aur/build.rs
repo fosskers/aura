@@ -69,11 +69,7 @@ pub(crate) struct Built {
 /// Build the given packages and yield paths to their built tarballs.
 pub(crate) fn build<I>(
     fll: &FluentLanguageLoader,
-    cache_d: &Path,
-    build_d: &Path,
-    hashes_d: &Path,
-    diff: bool,
-    hotedit: bool,
+    aur: &crate::env::Aur,
     editor: &str,
     pkg_clones: I,
 ) -> Result<Vec<Built>, Error>
@@ -83,7 +79,7 @@ where
     aura!(fll, "A-build-prep");
 
     let to_install = pkg_clones
-        .map(|path| build_one(fll, cache_d, hashes_d, path, diff, hotedit, editor, build_d))
+        .map(|path| build_one(fll, aur, editor, path))
         .map(|r| build_check(fll, r))
         .collect::<Result<Vec<Option<Built>>, Error>>()?
         .into_iter()
@@ -95,13 +91,9 @@ where
 
 fn build_one(
     fll: &FluentLanguageLoader,
-    cache: &Path,
-    hashes: &Path,
-    clone: PathBuf,
-    diff: bool,
-    hotedit: bool,
+    aur: &crate::env::Aur,
     editor: &str,
-    build_root: &Path,
+    clone: PathBuf,
 ) -> Result<Built, Error> {
     // --- Parse the .SRCINFO for metadata --- //
     let path = clone.join(".SRCINFO");
@@ -111,7 +103,7 @@ fn build_one(
     aura!(fll, "A-build-pkg", pkg = base.cyan().bold().to_string());
 
     // --- Prepare the Build Directory --- //
-    let build = build_root.join(&base);
+    let build = aur.build.join(&base);
     std::fs::create_dir_all(&build)?;
 
     // --- Copy non-downloadable `source` files and PKGBUILD --- //
@@ -142,11 +134,11 @@ fn build_one(
         .ok()
         .map_err(Error::Copies)?;
 
-    if diff {
-        show_diffs(fll, hashes, &clone, &base)?;
+    if aur.diff {
+        show_diffs(fll, &aur.hashes, &clone, &base)?;
     }
 
-    if hotedit {
+    if aur.hotedit {
         overwrite_build_files(fll, editor, &build, &base)?;
     }
 
@@ -158,7 +150,7 @@ fn build_one(
         }
 
         // --- Copy all build artifacts to the cache, and then ignore any sig files --- //
-        copy_to_cache(cache, &tarballs)?
+        copy_to_cache(&aur.cache, &tarballs)?
             .into_iter()
             .filter(|path| path.extension().map(|ex| ex != "sig").unwrap_or(false))
             .collect::<Vec<_>>()

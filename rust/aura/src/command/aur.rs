@@ -392,17 +392,8 @@ where
     let len = order.len();
     for (i, layer) in order.into_iter().enumerate() {
         let clone_paths = layer.into_iter().map(|pkg| env.aur.clones.join(pkg));
+        let builts = build::build(fll, &env.aur, &env.general.editor, clone_paths)?;
 
-        let builts = build::build(
-            fll,
-            &env.aur.cache,
-            &env.aur.build,
-            &env.aur.hashes,
-            env.aur.diff,
-            env.aur.hotedit,
-            &env.general.editor,
-            clone_paths,
-        )?;
         if builts.is_empty().not() {
             let flags = (i + 1 < len)
                 .then(|| ["--asdeps"].as_slice())
