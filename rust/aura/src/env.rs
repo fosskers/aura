@@ -181,6 +181,8 @@ struct RawAur {
     git: bool,
     #[serde(default)]
     hotedit: bool,
+    #[serde(default)]
+    diff: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -194,6 +196,8 @@ pub(crate) struct Aur {
     pub(crate) git: bool,
     /// View/edit PKGBUILDs (etc.) before building.
     pub(crate) hotedit: bool,
+    /// View diffs of PKGBUILDs (etc.) before building.
+    pub(crate) diff: bool,
 }
 
 impl Aur {
@@ -207,6 +211,7 @@ impl Aur {
             ignores: HashSet::new(),
             git: false,
             hotedit: false,
+            diff: false,
         };
 
         Ok(a)
@@ -221,6 +226,10 @@ impl Aur {
 
         if flags.hotedit {
             self.hotedit = true;
+        }
+
+        if flags.diff {
+            self.diff = true;
         }
 
         // Harmless clone, as we don't expect many "ignores" to be passed on the
@@ -246,6 +255,7 @@ impl TryFrom<RawAur> for Aur {
             ignores: raw.ignores,
             git: raw.git,
             hotedit: raw.hotedit,
+            diff: raw.diff,
         };
 
         Ok(a)

@@ -768,6 +768,10 @@ pub(crate) struct Aur {
     #[clap(long, display_order = 4)]
     pub(crate) hotedit: bool,
 
+    /// View diffs of PKGBUILDs and related build files before building.
+    #[clap(long, short = 'k', display_order = 4)]
+    pub(crate) diff: bool,
+
     /// Upgrade all installed AUR packages.
     #[clap(group = "aur", long, short = 'u', display_order = 1)]
     pub(crate) sysupgrade: bool,
