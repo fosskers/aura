@@ -122,7 +122,8 @@ where
 }
 
 /// Apply functions in method-position.
-pub(crate) trait Apply {
+pub trait Apply {
+    /// Apply a given function in method-position.
     fn apply<F, U>(self, f: F) -> U
     where
         F: FnOnce(Self) -> U,

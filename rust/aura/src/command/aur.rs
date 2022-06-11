@@ -388,7 +388,7 @@ where
     for (i, layer) in order.into_iter().enumerate() {
         let clone_paths = layer.into_iter().map(|pkg| env.aur.clones.join(pkg));
 
-        let tarballs = build::build(
+        let builts = build::build(
             fll,
             &env.aur.cache,
             &env.aur.build,
@@ -396,10 +396,11 @@ where
             &env.general.editor,
             clone_paths,
         )?;
-        if tarballs.is_empty().not() {
+        if builts.is_empty().not() {
             let flags = (i + 1 < len)
                 .then(|| ["--asdeps"].as_slice())
                 .unwrap_or_default();
+            let tarballs = builts.iter().flat_map(|b| &b.tarballs);
             crate::pacman::pacman_install_from_tarball(flags, tarballs)?;
         }
     }

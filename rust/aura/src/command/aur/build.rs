@@ -55,31 +55,35 @@ impl std::fmt::Display for Error {
     }
 }
 
+/// The results of a successful build.
+pub(crate) struct Built {
+    pub(crate) clone: PathBuf,
+    pub(crate) tarballs: Vec<PathBuf>,
+}
+
 // TODO Thu Jan 20 16:13:54 2022
 //
 // Consider parallel builds, but make it opt-in.
 /// Build the given packages and yield paths to their built tarballs.
-pub(crate) fn build<I, T>(
+pub(crate) fn build<I>(
     fll: &FluentLanguageLoader,
     cache_d: &Path,
     build_d: &Path,
     hotedit: bool,
     editor: &str,
     pkg_clones: I,
-) -> Result<Vec<PathBuf>, Error>
+) -> Result<Vec<Built>, Error>
 where
-    I: Iterator<Item = T>,
-    T: AsRef<Path>,
+    I: Iterator<Item = PathBuf>,
 {
     aura!(fll, "A-build-prep");
 
     let to_install = pkg_clones
-        .map(|path| build_one(fll, cache_d, path.as_ref(), hotedit, editor, build_d))
+        .map(|path| build_one(fll, cache_d, path, hotedit, editor, build_d))
         .map(|r| build_check(fll, r))
-        .collect::<Result<Vec<Vec<PathBuf>>, Error>>()?
+        .collect::<Result<Vec<Option<Built>>, Error>>()?
         .into_iter()
         .flatten()
-        .filter(|path| path.extension().map(|ex| ex != ".sig").unwrap_or(false))
         .collect();
 
     Ok(to_install)
@@ -88,13 +92,13 @@ where
 fn build_one(
     fll: &FluentLanguageLoader,
     cache: &Path,
-    clone: &Path,
+    clone: PathBuf,
     hotedit: bool,
     editor: &str,
     build_root: &Path,
-) -> Result<Vec<PathBuf>, Error> {
+) -> Result<Built, Error> {
     // --- Parse the .SRCINFO for metadata --- //
-    let path = [clone, Path::new(".SRCINFO")].iter().collect::<PathBuf>();
+    let path = clone.join(".SRCINFO");
     let info = Srcinfo::parse_file(path)?;
     let base = info.base.pkgbase;
 
@@ -136,12 +140,21 @@ fn build_one(
         overwrite_build_files(fll, editor, &build, &base)?;
     }
 
-    let tarballs = makepkg(&build)?;
-    for tb in tarballs.iter() {
-        debug!("Built: {}", tb.display());
-    }
+    let tarballs = {
+        let tarballs = makepkg(&build)?;
 
-    copy_to_cache(cache, &tarballs)
+        for tb in tarballs.iter() {
+            debug!("Built: {}", tb.display());
+        }
+
+        // --- Copy all build artifacts to the cache, and then ignore any sig files --- //
+        copy_to_cache(cache, &tarballs)?
+            .into_iter()
+            .filter(|path| path.extension().map(|ex| ex != "sig").unwrap_or(false))
+            .collect::<Vec<_>>()
+    };
+
+    Ok(Built { clone, tarballs })
 }
 
 fn overwrite_build_files(
@@ -226,7 +239,7 @@ fn copy_to_cache(cache: &Path, tarballs: &[PathBuf]) -> Result<Vec<PathBuf>, Err
                 .file_name()
                 .ok_or_else(|| Error::FilenameExtraction(tarball.clone()))
                 .and_then(|file| {
-                    let target = [cache, file.as_ref()].iter().collect::<PathBuf>();
+                    let target = cache.join(file);
                     move_tarball(tarball, &target).map(|_| target)
                 })
         })
@@ -248,15 +261,15 @@ fn move_tarball(source: &Path, target: &Path) -> Result<(), Error> {
 
 fn build_check(
     fll: &FluentLanguageLoader,
-    r: Result<Vec<PathBuf>, Error>,
-) -> Result<Vec<PathBuf>, Error> {
+    r: Result<Built, Error>,
+) -> Result<Option<Built>, Error> {
     match r {
-        Ok(tbs) => Ok(tbs),
+        Ok(tbs) => Ok(Some(tbs)),
         Err(e) => {
             red!(fll, "A-build-fail");
             eprintln!("\n  {}\n", e);
             match proceed!(fll, "continue") {
-                Some(_) => Ok(vec![]),
+                Some(_) => Ok(None),
                 None => Err(Error::Cancelled),
             }
         }
