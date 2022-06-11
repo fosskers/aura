@@ -36,6 +36,8 @@ pub enum Error {
     Aur(aura_core::aur::Error),
     /// An error parsing a `.SRCINFO` file.
     Srcinfo(srcinfo::Error),
+    #[from_variants(skip)]
+    PathComponent(PathBuf),
     Cancelled,
     Silent,
 }
@@ -58,6 +60,9 @@ impl std::fmt::Display for Error {
             Error::Cancelled => write!(f, "Installation cancelled."),
             Error::Aur(e) => write!(f, "{e}"),
             Error::Srcinfo(e) => write!(f, "{e}"),
+            Error::PathComponent(pb) => {
+                write!(f, "Failed to extract final component of: {}", pb.display())
+            }
         }
     }
 }
@@ -402,10 +407,35 @@ where
                 .unwrap_or_default();
             let tarballs = builts.iter().flat_map(|b| &b.tarballs);
             crate::pacman::pacman_install_from_tarball(flags, tarballs)?;
+
+            builts
+                .into_iter()
+                .map(|b| update_hash(&env.aur.hashes, &b.clone))
+                .collect::<Result<(), Error>>()?;
         }
     }
 
     green!(fll, "common-done");
+    Ok(())
+}
+
+/// What AUR repo git hash is associated with the last time a given package was
+/// installed?
+fn hash_of_last_install(hashes: &Path, pkgbase: &str) -> Result<String, Error> {
+    let path = hashes.join(pkgbase);
+    let hash = aura_core::git::hash(&path)?;
+    Ok(hash)
+}
+
+fn update_hash(hashes: &Path, clone: &Path) -> Result<(), Error> {
+    let hash = aura_core::git::hash(clone)?;
+    let base = clone
+        .components()
+        .last()
+        .map(|c| c.as_os_str())
+        .ok_or_else(|| Error::PathComponent(clone.to_path_buf()))?;
+
+    std::fs::write(hashes.join(base), hash)?;
     Ok(())
 }
 
