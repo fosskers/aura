@@ -1,5 +1,6 @@
 //! Generalized `git` interaction.
 
+use crate::Apply;
 use from_variants::FromVariants;
 use log::debug;
 use std::path::{Path, PathBuf};
@@ -16,6 +17,7 @@ pub enum Error {
     /// A git pull failed.
     #[from_variants(skip)]
     Pull(PathBuf),
+    Utf8(std::string::FromUtf8Error),
 }
 
 impl std::fmt::Display for Error {
@@ -24,6 +26,7 @@ impl std::fmt::Display for Error {
             Error::Io(e) => write!(f, "{}", e),
             Error::Clone(p) => write!(f, "A git clone failed: {}", p.display()),
             Error::Pull(p) => write!(f, "A git pull failed: {}", p.display()),
+            Error::Utf8(e) => write!(f, "{e}"),
         }
     }
 }
@@ -66,4 +69,17 @@ pub fn pull(dir: &Path) -> Result<(), Error> {
         .success()
         .then(|| ())
         .ok_or_else(|| Error::Pull(dir.to_path_buf()))
+}
+
+/// Given a `Path` to a known local git repo, find out the hash of its latest
+/// commit.
+pub fn hash(dir: &Path) -> Result<String, Error> {
+    Command::new("git")
+        .arg("rev-parse")
+        .arg("HEAD")
+        .current_dir(dir)
+        .output()?
+        .stdout
+        .apply(String::from_utf8)
+        .map_err(|e| e.into())
 }
