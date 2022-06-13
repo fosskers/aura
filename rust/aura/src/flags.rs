@@ -126,38 +126,68 @@ pub(crate) enum SubCmd {
 #[clap(short_flag = 'S', long_flag = "sync")]
 pub(crate) struct Sync {
     /// Remove old packages from cache directory (-cc for all).
-    #[clap(long, short, parse(from_occurrences), display_order = 1)]
+    #[clap(
+        group = "sync",
+        long,
+        short,
+        parse(from_occurrences),
+        display_order = 1
+    )]
     pub(crate) clean: u8,
     /// Skip dependency version checks (-dd to skip all checks).
-    #[clap(long, short = 'd', parse(from_occurrences), display_order = 1)]
+    #[clap(long, short = 'd', parse(from_occurrences), display_order = 2)]
     nodeps: u8,
     /// View all members of a package group (-gg to view all groups and members).
-    #[clap(long, short, parse(from_occurrences), display_order = 1)]
+    #[clap(
+        group = "sync",
+        long,
+        short,
+        parse(from_occurrences),
+        display_order = 1
+    )]
     groups: u8,
-    /// View package information (-ii for extended information).
-    #[clap(long, short, parse(from_occurrences), display_order = 1)]
-    info: u8,
+    /// View package information.
+    #[clap(
+        group = "sync",
+        long,
+        short,
+        value_name = "packages",
+        display_order = 1
+    )]
+    pub(crate) info: Vec<String>,
     /// View a list of packages in a repo.
-    #[clap(long, short, display_order = 1)]
-    list: bool,
+    #[clap(group = "sync", long, short, value_name = "repo", display_order = 1)]
+    pub(crate) list: Option<String>,
     /// Print the targets instead of performing the operation.
-    #[clap(long, short, display_order = 1)]
+    #[clap(long, short, display_order = 2)]
     print: bool,
     /// Show less information for query and search.
-    #[clap(long, short, display_order = 1)]
+    #[clap(long, short, display_order = 2)]
     quiet: bool,
     /// Search remote repositories for matchings strings.
-    #[clap(long, short, display_order = 1)]
-    search: bool,
+    #[clap(group = "sync", long, short, value_name = "terms", display_order = 1)]
+    pub(crate) search: Vec<String>,
     /// Upgrade installed packages (-uu enables downgrades).
-    #[clap(long, short = 'u', parse(from_occurrences), display_order = 1)]
-    sysupgrade: u8,
+    #[clap(
+        group = "sync",
+        long,
+        short = 'u',
+        parse(from_occurrences),
+        display_order = 1
+    )]
+    pub(crate) sysupgrade: u8,
     /// Be verbose.
-    #[clap(long, short, display_order = 1)]
+    #[clap(long, short, display_order = 2)]
     verbose: bool,
     /// Download packages but do not install/upgrade anything.
-    #[clap(long, short = 'w', display_order = 1)]
-    downloadonly: bool,
+    #[clap(
+        group = "sync",
+        long,
+        short = 'w',
+        value_name = "packages",
+        display_order = 1
+    )]
+    downloadonly: Vec<String>,
     /// Download fresh package databases from the server (-yy to force a refresh even if up to date).
     #[clap(long, short = 'y', parse(from_occurrences), display_order = 1)]
     refresh: u8,
