@@ -44,7 +44,9 @@ pub(crate) fn check(fll: &FluentLanguageLoader, env: &Env) -> Result<(), Error> 
 
     aura!(fll, "check-start");
     environment(fll);
+    aura_config(fll);
     pacman_config(fll, &env.pacman, &env.aur);
+    makepkg_config(fll);
     snapshots(fll, &env.backups.snapshots, &caches);
     cache(fll, &alpm, pool, &caches);
     green!(fll, "common-done");
@@ -74,12 +76,20 @@ fn editor(fll: &FluentLanguageLoader) {
 }
 
 fn pacman_config(fll: &FluentLanguageLoader, c: &pacmanconf::Config, a: &Aur) {
-    aura!(fll, "check-conf");
-    parsable_aura_toml(fll);
+    aura!(fll, "check-pconf");
     parallel_downloads(fll, c);
     duplicate_ignores(fll, c, a);
-    packager_set(fll);
     pacnews(fll);
+}
+
+fn makepkg_config(fll: &FluentLanguageLoader) {
+    aura!(fll, "check-mconf");
+    packager_set(fll);
+}
+
+fn aura_config(fll: &FluentLanguageLoader) {
+    aura!(fll, "check-aconf");
+    parsable_aura_toml(fll);
 }
 
 fn parsable_aura_toml(fll: &FluentLanguageLoader) {
@@ -87,18 +97,18 @@ fn parsable_aura_toml(fll: &FluentLanguageLoader) {
         .map(|file| file.is_file())
         .unwrap_or(false);
     let symbol = if exists { GOOD.green() } else { WARN.yellow() };
-    println!("  [{}] {}", symbol, fl!(fll, "check-conf-aura-exists"));
+    println!("  [{}] {}", symbol, fl!(fll, "check-aconf-aura-exists"));
 
     if exists {
         let parsable = crate::env::parsable_env();
         let symbol = if parsable { GOOD.green() } else { BAD.red() };
-        println!("  [{}] {}", symbol, fl!(fll, "check-conf-aura-parse"));
+        println!("  [{}] {}", symbol, fl!(fll, "check-aconf-aura-parse"));
     } else {
         let cmd = "aura conf --gen > ~/.config/aura.toml"
             .bold()
             .cyan()
             .to_string();
-        let msg = fl!(fll, "check-conf-aura-exists-fix", cmd = cmd);
+        let msg = fl!(fll, "check-aconf-aura-exists-fix", cmd = cmd);
         println!("      └─ {}", msg);
     }
 }
@@ -122,11 +132,11 @@ fn packager_set(fll: &FluentLanguageLoader) {
 fn parallel_downloads(fll: &FluentLanguageLoader, c: &pacmanconf::Config) {
     let good = c.parallel_downloads > 1;
     let symbol = if good { GOOD.green() } else { BAD.red() };
-    println!("  [{}] {}", symbol, fl!(fll, "check-conf-parallel"));
+    println!("  [{}] {}", symbol, fl!(fll, "check-pconf-parallel"));
 
     if !good {
         let cmd = "ParallelDownloads".bold().cyan().to_string();
-        let msg = fl!(fll, "check-conf-parallel-fix", setting = cmd);
+        let msg = fl!(fll, "check-pconf-parallel-fix", setting = cmd);
         println!("      └─ {}", msg);
     }
 }
@@ -138,12 +148,12 @@ fn duplicate_ignores(fll: &FluentLanguageLoader, c: &pacmanconf::Config, a: &Aur
 
     let good = ix.is_empty();
     let symbol = if good { GOOD.green() } else { BAD.red() };
-    println!("  [{}] {}", symbol, fl!(fll, "check-conf-ignores"));
+    println!("  [{}] {}", symbol, fl!(fll, "check-pconf-ignores"));
 
     if !good {
         ix.sort_unstable();
         let ps = ix.join(", ");
-        let msg = fl!(fll, "check-conf-ignores-fix", pkgs = ps);
+        let msg = fl!(fll, "check-pconf-ignores-fix", pkgs = ps);
         println!("      └─ {}", msg);
     }
 }
@@ -248,7 +258,7 @@ fn pacnews(fll: &FluentLanguageLoader) {
             println!(
                 "  [{}] {}",
                 CANCEL.truecolor(128, 128, 128),
-                fl!(fll, "check-conf-pacnew")
+                fl!(fll, "check-pconf-pacnew")
             );
             println!(
                 "      └─ {}",
@@ -260,13 +270,13 @@ fn pacnews(fll: &FluentLanguageLoader) {
                 println!(
                     "  [{}] {}",
                     CANCEL.truecolor(128, 128, 128),
-                    fl!(fll, "check-conf-pacnew")
+                    fl!(fll, "check-pconf-pacnew")
                 );
                 println!(
                     "      └─ {}",
                     fl!(
                         fll,
-                        "check-conf-pacnew-broken",
+                        "check-pconf-pacnew-broken",
                         fd = "fd".cyan().to_string()
                     )
                 );
@@ -274,7 +284,7 @@ fn pacnews(fll: &FluentLanguageLoader) {
             Some(bads) => {
                 let good = bads.is_empty();
                 let sym = if good { GOOD.green() } else { BAD.red() };
-                println!("  [{}] {}", sym, fl!(fll, "check-conf-pacnew"));
+                println!("  [{}] {}", sym, fl!(fll, "check-pconf-pacnew"));
 
                 let len = bads.len();
                 for (i, (path, days)) in bads.into_iter().enumerate() {
@@ -285,7 +295,7 @@ fn pacnews(fll: &FluentLanguageLoader) {
                         arrow,
                         fl!(
                             fll,
-                            "check-conf-pacnew-old",
+                            "check-pconf-pacnew-old",
                             path = path.display().to_string().cyan().to_string(),
                             days = days.to_string().red().to_string(),
                         ),
