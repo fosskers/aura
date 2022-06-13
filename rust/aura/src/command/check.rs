@@ -57,7 +57,6 @@ fn environment(fll: &FluentLanguageLoader) {
     editor(fll);
     executable!(fll, "git", "check-env-installed", exec = "git");
     executable!(fll, "fd", "check-env-installed", exec = "fd");
-    executable!(fll, "diff", "check-env-installed", exec = "diff");
 }
 
 fn editor(fll: &FluentLanguageLoader) {
@@ -75,9 +74,31 @@ fn editor(fll: &FluentLanguageLoader) {
 
 fn pacman_config(fll: &FluentLanguageLoader, c: &pacmanconf::Config, a: &Aur) {
     aura!(fll, "check-conf");
+    parsable_aura_toml(fll);
     parallel_downloads(fll, c);
     duplicate_ignores(fll, c, a);
     pacnews(fll);
+}
+
+fn parsable_aura_toml(fll: &FluentLanguageLoader) {
+    let exists = crate::dirs::aura_config()
+        .map(|file| file.is_file())
+        .unwrap_or(false);
+    let symbol = if exists { GOOD.green() } else { WARN.yellow() };
+    println!("  [{}] {}", symbol, fl!(fll, "check-conf-aura-exists"));
+
+    if exists {
+        let parsable = crate::env::parsable_env();
+        let symbol = if parsable { GOOD.green() } else { BAD.red() };
+        println!("  [{}] {}", symbol, fl!(fll, "check-conf-aura-parse"));
+    } else {
+        let cmd = "aura conf --gen > ~/.config/aura.toml"
+            .bold()
+            .cyan()
+            .to_string();
+        let msg = fl!(fll, "check-conf-aura-exists-fix", cmd = cmd);
+        println!("      └─ {}", msg);
+    }
 }
 
 fn parallel_downloads(fll: &FluentLanguageLoader, c: &pacmanconf::Config) {

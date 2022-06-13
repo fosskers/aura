@@ -41,6 +41,21 @@ struct RawEnv {
     backups: Option<RawBackups>,
 }
 
+impl RawEnv {
+    /// Attempt to read and parse settings from the filesystem.
+    fn try_new() -> Result<Self, Error> {
+        let config: PathBuf = dirs::aura_config()?;
+        let s = std::fs::read_to_string(config)?;
+        let e = toml::from_str(&s)?;
+        Ok(e)
+    }
+}
+
+/// Can the `aura.toml` be parsed?
+pub(crate) fn parsable_env() -> bool {
+    RawEnv::try_new().is_ok()
+}
+
 /// Aura's runtime environment, as a combination of settings specified in its
 /// config file, as well as options passed from the command line.
 #[derive(Debug, Serialize)]
@@ -61,10 +76,7 @@ impl Env {
     pub(crate) fn try_new() -> Result<Self, Error> {
         // Read the config file, if it's there. We don't actually mind if it isn't,
         // because sensible defaults can (probably) be set anyway.
-        let config = dirs::aura_config()?;
-        let raw: Option<RawEnv> = std::fs::read_to_string(config)
-            .ok()
-            .and_then(|s| toml::from_str(&s).ok());
+        let raw: Option<RawEnv> = RawEnv::try_new().ok();
         let (general, aur, backups) = match raw {
             Some(re) => (
                 re.general.map(|rg| rg.into()),
