@@ -59,19 +59,12 @@ fn work(args: Args) -> Result<(), Error> {
     debug!("{:#?}", env);
 
     match args.subcmd {
-        // --- Official Packages --- //
-        SubCmd::Sync(s) if s.sysupgrade > 0 => pacman(true)?,
-        SubCmd::Sync(s) if s.info.is_empty().not() => pacman(false)?,
-        SubCmd::Sync(s) if s.search.is_empty().not() => pacman(false)?,
-        SubCmd::Sync(s) if s.list.is_some() => pacman(false)?,
-        SubCmd::Sync(s) if s.downloadonly.is_empty().not() => pacman(true)?,
-        SubCmd::Sync(s) if s.clean > 0 => pacman(true)?,
-        SubCmd::Sync(_) => pacman(true)?,
-        // --- Other Pacman Commands --- //
+        // --- Pacman Commands --- //
         SubCmd::Database(_) => pacman(false)?,
         SubCmd::Files(_) => pacman(false)?,
         SubCmd::Query(_) => pacman(false)?,
         SubCmd::Remove(_) => pacman(true)?,
+        SubCmd::Sync(s) => pacman(s.needs_sudo())?,
         SubCmd::DepTest(_) => pacman(false)?,
         SubCmd::Upgrade(_) => pacman(true)?,
         // --- AUR Packages --- //

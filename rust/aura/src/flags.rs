@@ -3,6 +3,7 @@
 use chrono::NaiveDate;
 use clap::{Parser, Subcommand};
 use simplelog::LevelFilter;
+use std::ops::Not;
 use std::path::PathBuf;
 use unic_langid::{langid, LanguageIdentifier};
 
@@ -133,7 +134,7 @@ pub(crate) struct Sync {
         parse(from_occurrences),
         display_order = 1
     )]
-    pub(crate) clean: u8,
+    clean: u8,
     /// Skip dependency version checks (-dd to skip all checks).
     #[clap(long, short = 'd', parse(from_occurrences), display_order = 2)]
     nodeps: u8,
@@ -154,10 +155,10 @@ pub(crate) struct Sync {
         value_name = "packages",
         display_order = 1
     )]
-    pub(crate) info: Vec<String>,
+    info: Vec<String>,
     /// View a list of packages in a repo.
     #[clap(group = "sync", long, short, value_name = "repo", display_order = 1)]
-    pub(crate) list: Option<String>,
+    list: Option<String>,
     /// Print the targets instead of performing the operation.
     #[clap(long, short, display_order = 2)]
     print: bool,
@@ -166,7 +167,7 @@ pub(crate) struct Sync {
     quiet: bool,
     /// Search remote repositories for matchings strings.
     #[clap(group = "sync", long, short, value_name = "terms", display_order = 1)]
-    pub(crate) search: Vec<String>,
+    search: Vec<String>,
     /// Upgrade installed packages (-uu enables downgrades).
     #[clap(
         group = "sync",
@@ -175,7 +176,7 @@ pub(crate) struct Sync {
         parse(from_occurrences),
         display_order = 1
     )]
-    pub(crate) sysupgrade: u8,
+    sysupgrade: u8,
     /// Be verbose.
     #[clap(long, short, display_order = 2)]
     verbose: bool,
@@ -187,7 +188,7 @@ pub(crate) struct Sync {
         value_name = "packages",
         display_order = 1
     )]
-    pub(crate) downloadonly: Vec<String>,
+    downloadonly: Vec<String>,
     /// Download fresh package databases from the server (-yy to force a refresh even if up to date).
     #[clap(long, short = 'y', parse(from_occurrences), display_order = 1)]
     refresh: u8,
@@ -256,6 +257,17 @@ pub(crate) struct Sync {
     sysroot: bool,
     /// Packages to search/install.
     packages: Vec<String>,
+}
+
+impl Sync {
+    /// Does this `-S` subflag need sudo?
+    pub(crate) fn needs_sudo(&self) -> bool {
+        if self.info.is_empty().not() || self.search.is_empty().not() || self.list.is_some() {
+            false
+        } else {
+            true
+        }
+    }
 }
 
 // TODO Reconcile `pacman -Th` and the manpage entry for -T.
