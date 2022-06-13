@@ -59,14 +59,21 @@ fn work(args: Args) -> Result<(), Error> {
     debug!("{:#?}", env);
 
     match args.subcmd {
-        // --- Pacman Commands --- //
-        SubCmd::Database(_) => pacman()?,
-        SubCmd::Files(_) => pacman()?,
-        SubCmd::Query(_) => pacman()?,
-        SubCmd::Remove(_) => pacman()?,
-        SubCmd::DepTest(_) => pacman()?,
-        SubCmd::Upgrade(_) => pacman()?,
-        SubCmd::Sync(_) => pacman()?,
+        // --- Official Packages --- //
+        SubCmd::Sync(s) if s.sysupgrade > 0 => pacman(true)?,
+        SubCmd::Sync(s) if s.info.is_empty().not() => pacman(false)?,
+        SubCmd::Sync(s) if s.search.is_empty().not() => pacman(false)?,
+        SubCmd::Sync(s) if s.list.is_some() => pacman(false)?,
+        SubCmd::Sync(s) if s.downloadonly.is_empty().not() => pacman(true)?,
+        SubCmd::Sync(s) if s.clean > 0 => pacman(true)?,
+        SubCmd::Sync(_) => pacman(true)?,
+        // --- Other Pacman Commands --- //
+        SubCmd::Database(_) => pacman(false)?,
+        SubCmd::Files(_) => pacman(false)?,
+        SubCmd::Query(_) => pacman(false)?,
+        SubCmd::Remove(_) => pacman(true)?,
+        SubCmd::DepTest(_) => pacman(false)?,
+        SubCmd::Upgrade(_) => pacman(true)?,
         // --- AUR Packages --- //
         SubCmd::Aur(a) if a.info.is_empty().not() => aur::info(&fll, &a.info)?,
         SubCmd::Aur(a) if a.search.is_empty().not() => {
@@ -142,7 +149,7 @@ fn work(args: Args) -> Result<(), Error> {
 }
 
 /// Run a Pacman command.
-fn pacman() -> Result<(), crate::pacman::Error> {
+fn pacman(sudo: bool) -> Result<(), crate::pacman::Error> {
     let mut raws: Vec<String> = std::env::args()
         .skip(1)
         .filter(|a| !(AURA_GLOBALS.contains(&a.as_str()) || a.starts_with("--log-level=")))
@@ -159,5 +166,9 @@ fn pacman() -> Result<(), crate::pacman::Error> {
     }
 
     ::log::debug!("Passing to Pacman: {:?}", raws);
-    pacman::pacman(raws)
+    if sudo {
+        pacman::sudo_pacman_batch(raws)
+    } else {
+        pacman::pacman(raws)
+    }
 }

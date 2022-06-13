@@ -187,7 +187,7 @@ pub(crate) struct Sync {
         value_name = "packages",
         display_order = 1
     )]
-    downloadonly: Vec<String>,
+    pub(crate) downloadonly: Vec<String>,
     /// Download fresh package databases from the server (-yy to force a refresh even if up to date).
     #[clap(long, short = 'y', parse(from_occurrences), display_order = 1)]
     refresh: u8,

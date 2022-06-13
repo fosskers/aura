@@ -165,6 +165,8 @@ pub(crate) fn search(
     quiet: bool,
     mut terms: Vec<String>,
 ) -> Result<(), Error> {
+    debug!("Searching for: {:?}", terms);
+
     let db = alpm.localdb();
     let rep = "aur/".magenta();
 
@@ -174,8 +176,12 @@ pub(crate) fn search(
         t.make_ascii_lowercase();
     }
 
+    debug!("Sanitized terms: {:?}", terms);
+
     let mut matches: Vec<aura_core::faur::Package> =
         aura_core::faur::search(terms.iter().map(|s| s.as_str()), &crate::fetch::fetch_json)?;
+
+    debug!("Search matches: {}", matches.len());
 
     // Sort and filter the results as requested.
     if alpha {

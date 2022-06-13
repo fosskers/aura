@@ -56,6 +56,21 @@ where
         .ok_or(Error::Misc)
 }
 
+/// Make an elevated shell call to `pacman`, passing all arguments to pacman as-is.
+pub(crate) fn sudo_pacman_batch<I, S>(args: I) -> Result<(), Error>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+{
+    Command::new("sudo")
+        .arg("pacman")
+        .args(args)
+        .status()?
+        .success()
+        .then(|| ())
+        .ok_or(Error::Misc)
+}
+
 /// Call `sudo pacman -U`.
 pub(crate) fn pacman_install_from_tarball<I, J, S, T>(flags: I, args: J) -> Result<(), Error>
 where
