@@ -112,6 +112,7 @@ check-conf-pacnew-old = { $path } is older than its .pacnew by { $days } days.
 check-conf-aura-exists = Aura config file exists?
 check-conf-aura-exists-fix = Fix: Consider { $cmd }
 check-conf-aura-parse = Aura config file can be parsed?
+check-mconf-packager = PACKAGER set?
 check-snapshots = Package Snapshots
 check-snapshots-unreadable = Unable to read snapshot path { $path }
 check-snapshot-usable = All snapshots have corresponding tarballs?

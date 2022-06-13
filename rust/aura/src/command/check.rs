@@ -57,6 +57,7 @@ fn environment(fll: &FluentLanguageLoader) {
     editor(fll);
     executable!(fll, "git", "check-env-installed", exec = "git");
     executable!(fll, "fd", "check-env-installed", exec = "fd");
+    executable!(fll, "rg", "check-env-installed", exec = "rg");
 }
 
 fn editor(fll: &FluentLanguageLoader) {
@@ -77,6 +78,7 @@ fn pacman_config(fll: &FluentLanguageLoader, c: &pacmanconf::Config, a: &Aur) {
     parsable_aura_toml(fll);
     parallel_downloads(fll, c);
     duplicate_ignores(fll, c, a);
+    packager_set(fll);
     pacnews(fll);
 }
 
@@ -99,6 +101,22 @@ fn parsable_aura_toml(fll: &FluentLanguageLoader) {
         let msg = fl!(fll, "check-conf-aura-exists-fix", cmd = cmd);
         println!("      └─ {}", msg);
     }
+}
+
+fn packager_set(fll: &FluentLanguageLoader) {
+    let (cmd, args) = crate::command::misc::searcher();
+    let good = Command::new(cmd)
+        .args(args)
+        .arg("PACKAGER")
+        .arg("/etc/makepkg.conf")
+        .output()
+        .ok()
+        .map(|o| o.stdout)
+        .and_then(|stdout| String::from_utf8(stdout).ok())
+        .map(|s| s.trim().lines().any(|line| line.starts_with("PACKAGER=")))
+        .unwrap_or(false);
+    let symbol = if good { GOOD.green() } else { BAD.red() };
+    println!("  [{}] {}", symbol, fl!(fll, "check-mconf-packager"));
 }
 
 fn parallel_downloads(fll: &FluentLanguageLoader, c: &pacmanconf::Config) {
