@@ -1,13 +1,18 @@
 //! Statistics about the user's machine or about Aura itself.
 
-use crate::error::Error;
 use crate::localization;
 use alpm::Alpm;
 use colored::*;
+use from_variants::FromVariants;
 use i18n_embed_fl::fl;
 use std::collections::{HashMap, HashSet};
 use ubyte::ToByteUnit;
 use unic_langid::{langid, LanguageIdentifier};
+
+#[derive(FromVariants)]
+pub(crate) enum Error {
+    Load(i18n_embed::I18nEmbedError),
+}
 
 /// Raw contents of loaded localizations.
 pub(crate) fn localization() -> Result<(), Error> {

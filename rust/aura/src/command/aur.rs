@@ -235,7 +235,7 @@ pub(crate) fn pkgbuild(pkg: &str, clone_d: &Path) -> Result<(), Error> {
 }
 
 /// Open a given package's AUR package in a browser.
-pub(crate) fn open(package: &str) -> Result<(), std::io::Error> {
+pub(crate) fn open(package: &str) -> Result<(), crate::open::Error> {
     let url = package_url(package);
     crate::open::open(&url)
 }

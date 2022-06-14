@@ -30,6 +30,12 @@ struct Translations;
 // nl-NL Dutch
 // ??? Esperanto ???
 
+/// Any type whose contents can be localised in a meaningful way.
+pub(crate) trait Localised {
+    /// Localise the content of a type.
+    fn localise(&self, fll: &FluentLanguageLoader) -> String;
+}
+
 /// Load the localizations for a particular language, or just fallback to
 /// English.
 ///
@@ -78,19 +84,24 @@ pub(crate) fn available_languages() -> Vec<LanguageIdentifier> {
     vec
 }
 
-/// Prove that localizations don't contain extra fields that aren't expected in
-/// English, the base language.
-#[test]
-fn no_extra_localizations() {
-    let english = load(None).unwrap();
-    let all = load_all().unwrap();
-    for lang in available_languages() {
-        all.get(&lang).unwrap().with_message_iter(&lang, |msgs| {
-            for msg in msgs {
-                if !english.has(msg.id.name) {
-                    panic!("{} has extra field: {}", lang, msg.id.name);
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    /// Prove that localizations don't contain extra fields that aren't expected in
+    /// English, the base language.
+    #[test]
+    fn no_extra_localizations() {
+        let english = load(None).unwrap();
+        let all = load_all().unwrap();
+        for lang in available_languages() {
+            all.get(&lang).unwrap().with_message_iter(&lang, |msgs| {
+                for msg in msgs {
+                    if !english.has(msg.id.name) {
+                        panic!("{} has extra field: {}", lang, msg.id.name);
+                    }
                 }
-            }
-        })
+            })
+        }
     }
 }

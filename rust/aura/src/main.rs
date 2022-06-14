@@ -14,11 +14,14 @@ mod macros;
 pub(crate) mod pacman;
 pub(crate) mod utils;
 
+use crate::command::{aur, cache, check, conf, deps, log, open, orphans, snapshot, stats};
+use crate::error::Error;
+use crate::flags::{Args, Cache, SubCmd, AURA_GLOBALS};
+use crate::localization::Localised;
 use ::log::debug;
 use clap::Parser;
-use command::{aur, cache, check, conf, deps, log, open, orphans, snapshot, stats};
-use error::Error;
-use flags::{Args, Cache, SubCmd, AURA_GLOBALS};
+use colored::Colorize;
+use i18n_embed::fluent::FluentLanguageLoader;
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
 use std::ops::Not;
 use std::process::ExitCode;
@@ -27,27 +30,28 @@ fn main() -> ExitCode {
     // Parse all CLI input. Exits immediately if invalid input is given.
     let args = flags::Args::parse();
 
-    match work(args) {
+    // --- Localisation --- //
+    match localization::load(args.language()) {
         Err(e) => {
-            // TODO Sat Jan 15 16:53:12 2022
-            //
-            // Localise the error messages.
-            eprintln!("{}", e);
+            aln!("Failed to localise Aura!".red());
+            println!("\n  {}", e);
             ExitCode::FAILURE
         }
-        Ok(_) => ExitCode::SUCCESS,
+        Ok(fll) => match work(args, &fll) {
+            Err(e) => {
+                aln!(e.localise(&fll).red());
+                ExitCode::FAILURE
+            }
+            Ok(_) => ExitCode::SUCCESS,
+        },
     }
 }
 
-fn work(args: Args) -> Result<(), Error> {
+fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
     // --- Terminal Logging --- //
     if let Some(l) = args.log_level {
         TermLogger::init(l, Config::default(), TerminalMode::Mixed, ColorChoice::Auto)?;
     }
-
-    // --- Localisation --- //
-    let lang = args.language();
-    let fll = localization::load(lang)?;
 
     // --- Runtime Settings --- //
     let env = {

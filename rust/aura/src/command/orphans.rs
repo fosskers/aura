@@ -38,7 +38,7 @@ pub(crate) fn list(alpm: &Alpm) {
 /// Sets a package's install reason to "as explicit". An alias for `-D --asexplicit`.
 pub(crate) fn adopt(
     alpm: &Alpm,
-    fll: FluentLanguageLoader,
+    fll: &FluentLanguageLoader,
     packages: Vec<String>,
 ) -> Result<(), Error> {
     crate::utils::sudo()?;
@@ -66,7 +66,7 @@ pub(crate) fn adopt(
 ///
 /// Will fail if the process does not have permission to create the lockfile,
 /// which usually lives in a root-owned directory.
-pub(crate) fn remove(alpm: &mut Alpm, fll: FluentLanguageLoader) -> Result<(), Error> {
+pub(crate) fn remove(alpm: &mut Alpm, fll: &FluentLanguageLoader) -> Result<(), Error> {
     crate::utils::sudo()?;
 
     // Check for orphans.

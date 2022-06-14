@@ -3,7 +3,7 @@
 #![allow(clippy::many_single_char_names)]
 
 use crate::command::misc;
-use crate::utils::{self, ResultVoid};
+use crate::utils::ResultVoid;
 use aura_core as core;
 use chrono::NaiveDate;
 use colored::*;
@@ -15,20 +15,31 @@ use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::path::Path;
 use std::process::Command;
 
+pub(crate) enum Error {
+    Search(std::io::Error),
+    View(std::io::Error),
+    Info(std::io::Error),
+}
+
 /// Search the Pacman log for a matching string.
-pub(crate) fn search(path: &Path, term: String) -> Result<(), std::io::Error> {
+pub(crate) fn search(path: &Path, term: String) -> Result<(), Error> {
     let (search, args) = misc::searcher();
     Command::new(search)
         .args(args)
         .arg(term)
         .arg(path)
         .status()
+        .map_err(Error::Search)
         .void()
 }
 
 /// Display install/upgrade history for the given packages.
-pub(crate) fn info(
-    fll: FluentLanguageLoader,
+pub(crate) fn info(fll: &FluentLanguageLoader, path: &Path, pks: Vec<String>) -> Result<(), Error> {
+    info_work(fll, path, pks).map_err(Error::Info)
+}
+
+fn info_work(
+    fll: &FluentLanguageLoader,
     path: &Path,
     pks: Vec<String>,
 ) -> Result<(), std::io::Error> {
@@ -47,7 +58,7 @@ pub(crate) fn info(
             (&r, "".normal()),
         ];
 
-        utils::info(&mut w, fll.current_language(), &pairs)?;
+        crate::utils::info(&mut w, fll.current_language(), &pairs)?;
         for r in e.recent {
             writeln!(w, "{}", r)?;
         }
@@ -59,6 +70,14 @@ pub(crate) fn info(
 
 /// Output the content of the Pacman/ALPM log, possibly filtered by date.
 pub(crate) fn view(
+    path: &Path,
+    before: Option<NaiveDate>,
+    after: Option<NaiveDate>,
+) -> Result<(), Error> {
+    view_work(path, before, after).map_err(Error::View)
+}
+
+fn view_work(
     path: &Path,
     before: Option<NaiveDate>,
     after: Option<NaiveDate>,
