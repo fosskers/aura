@@ -63,7 +63,7 @@ fn work(args: Args) -> Result<(), Error> {
         SubCmd::Database(_) => pacman(false)?,
         SubCmd::Files(_) => pacman(false)?,
         SubCmd::Query(_) => pacman(false)?,
-        SubCmd::Remove(_) => pacman(true)?,
+        SubCmd::Remove(r) => pacman(r.needs_sudo())?,
         SubCmd::Sync(s) => pacman(s.needs_sudo())?,
         SubCmd::DepTest(_) => pacman(false)?,
         SubCmd::Upgrade(_) => pacman(true)?,

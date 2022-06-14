@@ -528,6 +528,17 @@ pub(crate) struct Remove {
     packages: Vec<String>,
 }
 
+impl Remove {
+    /// Does this `-R` subflag need sudo?
+    pub(crate) fn needs_sudo(&self) -> bool {
+        if self.print {
+            false
+        } else {
+            true
+        }
+    }
+}
+
 /// Operate on the package database.
 #[derive(Parser, Debug)]
 #[clap(short_flag = 'D', long_flag = "database")]
