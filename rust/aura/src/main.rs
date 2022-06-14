@@ -61,7 +61,7 @@ fn work(args: Args) -> Result<(), Error> {
     match args.subcmd {
         // --- Pacman Commands --- //
         SubCmd::Database(_) => pacman(false)?,
-        SubCmd::Files(_) => pacman(false)?,
+        SubCmd::Files(f) => pacman(f.needs_sudo())?,
         SubCmd::Query(_) => pacman(false)?,
         SubCmd::Remove(r) => pacman(r.needs_sudo())?,
         SubCmd::Sync(s) => pacman(s.needs_sudo())?,

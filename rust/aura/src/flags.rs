@@ -412,7 +412,7 @@ impl Upgrade {
 #[derive(Parser, Debug)]
 #[clap(short_flag = 'F', long_flag = "files")]
 pub(crate) struct Files {
-    /// View a list of packages in a repo.
+    /// View a list of files belonging to a package.
     #[clap(long, short, display_order = 1)]
     list: bool,
     /// Show less information for query and search.
@@ -425,8 +425,8 @@ pub(crate) struct Files {
     #[clap(long, short = 'x', display_order = 1)]
     regex: bool,
     /// Download fresh package databases from the server (-yy to force a refresh even if up to date).
-    #[clap(long, short = 'y', display_order = 1)]
-    refresh: bool,
+    #[clap(long, short = 'y', parse(from_occurrences), display_order = 1)]
+    refresh: u8,
     /// Set an alternate architecture.
     #[clap(long)]
     arch: Option<String>,
@@ -463,6 +463,12 @@ pub(crate) struct Files {
     sysroot: bool,
     /// Files to search.
     files: Vec<String>,
+}
+
+impl Files {
+    pub(crate) fn needs_sudo(&self) -> bool {
+        self.refresh > 0
+    }
 }
 
 /// Remove packages from the system.
