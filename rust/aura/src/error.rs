@@ -2,6 +2,7 @@
 
 use crate::localization::Localised;
 use from_variants::FromVariants;
+use i18n_embed::fluent::FluentLanguageLoader;
 
 /// Error type for all issues that can occur in the Aura library or executable.
 #[derive(FromVariants)]
@@ -28,7 +29,7 @@ pub(crate) enum Error {
 }
 
 impl Localised for Error {
-    fn localise(&self, fll: &i18n_embed::fluent::FluentLanguageLoader) -> String {
+    fn localise(&self, fll: &FluentLanguageLoader) -> String {
         match self {
             Error::A(_) => todo!(),
             Error::B(_) => todo!(),
@@ -44,7 +45,7 @@ impl Localised for Error {
             Error::Conf(_) => todo!(),
             Error::Check(_) => todo!(),
             Error::Open(_) => todo!(),
-            Error::Stats(_) => todo!(),
+            Error::Stats(e) => e.localise(fll),
         }
     }
 }

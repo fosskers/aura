@@ -93,6 +93,9 @@ L-first = First Install
 L-upgrades = Upgrades
 L-recent = Recent Actions
 
+# System Statistics (stats)
+stats-local = Failed to load language data.
+
 # System Validation (check)
 check-start = Validating your system.
 check-missing-exec = Fix: Please install { $exec } and/or ensure it's on your PATH.
