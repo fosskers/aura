@@ -66,7 +66,7 @@ fn work(args: Args) -> Result<(), Error> {
         SubCmd::Remove(r) => pacman(r.needs_sudo())?,
         SubCmd::Sync(s) => pacman(s.needs_sudo())?,
         SubCmd::DepTest(_) => pacman(false)?,
-        SubCmd::Upgrade(_) => pacman(true)?,
+        SubCmd::Upgrade(u) => pacman(u.needs_sudo())?,
         // --- AUR Packages --- //
         SubCmd::Aur(a) if a.info.is_empty().not() => aur::info(&fll, &a.info)?,
         SubCmd::Aur(a) if a.search.is_empty().not() => {

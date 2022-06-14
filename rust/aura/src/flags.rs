@@ -262,7 +262,11 @@ pub(crate) struct Sync {
 impl Sync {
     /// Does this `-S` subflag need sudo?
     pub(crate) fn needs_sudo(&self) -> bool {
-        if self.info.is_empty().not() || self.search.is_empty().not() || self.list.is_some() {
+        if self.info.is_empty().not()
+            || self.search.is_empty().not()
+            || self.list.is_some()
+            || self.print
+        {
             false
         } else {
             true
@@ -394,6 +398,13 @@ pub(crate) struct Upgrade {
     sysroot: bool,
     /// Packages to install, either a tarball or a URL.
     packages: Vec<String>,
+}
+
+impl Upgrade {
+    /// Does this `-U` subflag need sudo?
+    pub(crate) fn needs_sudo(&self) -> bool {
+        self.print.not()
+    }
 }
 
 // TODO `pacman -Fh` does not include the top-level usage line!
@@ -531,11 +542,7 @@ pub(crate) struct Remove {
 impl Remove {
     /// Does this `-R` subflag need sudo?
     pub(crate) fn needs_sudo(&self) -> bool {
-        if self.print {
-            false
-        } else {
-            true
-        }
+        self.print.not()
     }
 }
 
