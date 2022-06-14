@@ -560,19 +560,19 @@ pub(crate) struct Database {
     #[clap(long, short = 'k', multiple_occurrences = true, display_order = 1)]
     check: bool,
     /// Show less information for query and search.
-    #[clap(long, short, display_order = 1)]
+    #[clap(long, short, display_order = 2)]
     quiet: bool,
     /// Be verbose.
-    #[clap(long, short, display_order = 1)]
+    #[clap(long, short, display_order = 2)]
     verbose: bool,
     /// Set an alternate architecture.
     #[clap(long)]
     arch: Option<String>,
-    /// Install packages as non-explicitly installed.
-    #[clap(long)]
+    /// Mark packages as non-explicitly installed.
+    #[clap(long, display_order = 1)]
     asdeps: bool,
-    /// Install pacakges as explicitly installed.
-    #[clap(long)]
+    /// Mark pacakges as explicitly installed.
+    #[clap(long, display_order = 1)]
     asexplicit: bool,
     /// Colorize the output.
     #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
@@ -603,6 +603,12 @@ pub(crate) struct Database {
     sysroot: bool,
     /// Packages to modify.
     packages: Vec<String>,
+}
+
+impl Database {
+    pub(crate) fn needs_sudo(&self) -> bool {
+        self.asdeps || self.asexplicit
+    }
 }
 
 /// Query the package database.
