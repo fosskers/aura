@@ -44,7 +44,7 @@ impl Error {
             Error::PacConf(_) => todo!(),
             Error::Env(_) => todo!(),
             Error::Conf(_) => todo!(),
-            Error::Check(_) => todo!(),
+            Error::Check(e) => e.nested(),
             Error::Open(e) => e.nested(),
             Error::Stats(e) => e.nested(),
         }
@@ -66,7 +66,7 @@ impl Localised for Error {
             Error::PacConf(_) => todo!(),
             Error::Env(_) => todo!(),
             Error::Conf(_) => todo!(),
-            Error::Check(_) => todo!(),
+            Error::Check(e) => e.localise(fll),
             Error::Open(e) => e.localise(fll),
             Error::Stats(e) => e.localise(fll),
         }

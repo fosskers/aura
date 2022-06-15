@@ -1,12 +1,14 @@
 //! Analyze many aspects of your installation for validity.
 
 use crate::env::{Aur, Env};
+use crate::localization::Localised;
 use crate::{aura, executable, green};
 use alpm::Alpm;
 use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
+use log::error;
 use r2d2::Pool;
 use r2d2_alpm::AlpmManager;
 use rayon::prelude::*;
@@ -23,15 +25,24 @@ const SECS_IN_DAY: u64 = 60 * 60 * 24;
 
 #[derive(FromVariants)]
 pub(crate) enum Error {
-    Alpm(alpm::Error),
-    R2d2(r2d2::Error),
+    OpenAlpm(alpm::Error),
+    NewPool(r2d2::Error),
 }
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl Error {
+    pub(crate) fn nested(&self) {
         match self {
-            Error::Alpm(e) => write!(f, "{e}"),
-            Error::R2d2(e) => write!(f, "{e}"),
+            Error::OpenAlpm(e) => error!("{e}"),
+            Error::NewPool(e) => error!("{e}"),
+        }
+    }
+}
+
+impl Localised for Error {
+    fn localise(&self, fll: &FluentLanguageLoader) -> String {
+        match self {
+            Error::OpenAlpm(_) => fl!(fll, "err-alpm"),
+            Error::NewPool(_) => fl!(fll, "err-pool"),
         }
     }
 }
