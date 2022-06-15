@@ -6,6 +6,7 @@ use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
+use log::error;
 use std::collections::{HashMap, HashSet};
 use ubyte::ToByteUnit;
 use unic_langid::{langid, LanguageIdentifier};
@@ -13,6 +14,14 @@ use unic_langid::{langid, LanguageIdentifier};
 #[derive(FromVariants)]
 pub(crate) enum Error {
     LangLoad(i18n_embed::I18nEmbedError),
+}
+
+impl Error {
+    pub(crate) fn nested(&self) {
+        match self {
+            Error::LangLoad(e) => error!("{e}"),
+        }
+    }
 }
 
 impl Localised for Error {

@@ -39,6 +39,7 @@ fn main() -> ExitCode {
         }
         Ok(fll) => match work(args, &fll) {
             Err(e) => {
+                e.nested();
                 aln!(e.localise(&fll).red());
                 ExitCode::FAILURE
             }

@@ -28,6 +28,29 @@ pub(crate) enum Error {
     Stats(crate::stats::Error),
 }
 
+impl Error {
+    /// Log nested errors.
+    pub(crate) fn nested(&self) {
+        match self {
+            Error::A(_) => todo!(),
+            Error::B(_) => todo!(),
+            Error::C(_) => todo!(),
+            Error::L(_) => todo!(),
+            Error::O(_) => todo!(),
+            Error::Dirs(_) => todo!(),
+            Error::Pacman(_) => todo!(),
+            Error::Alpm(_) => todo!(),
+            Error::TerminalLogger(_) => todo!(),
+            Error::PacConf(_) => todo!(),
+            Error::Env(_) => todo!(),
+            Error::Conf(_) => todo!(),
+            Error::Check(_) => todo!(),
+            Error::Open(e) => e.nested(),
+            Error::Stats(e) => e.nested(),
+        }
+    }
+}
+
 impl Localised for Error {
     fn localise(&self, fll: &FluentLanguageLoader) -> String {
         match self {
@@ -44,7 +67,7 @@ impl Localised for Error {
             Error::Env(_) => todo!(),
             Error::Conf(_) => todo!(),
             Error::Check(_) => todo!(),
-            Error::Open(_) => todo!(),
+            Error::Open(e) => e.localise(fll),
             Error::Stats(e) => e.localise(fll),
         }
     }

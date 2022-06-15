@@ -1,5 +1,8 @@
 //! Open various webpages related to Aura.
 
+use crate::localization::Localised;
+use i18n_embed_fl::fl;
+use log::error;
 use std::borrow::Cow;
 
 const BOOK_URL: &str = "https://fosskers.github.io/aura/";
@@ -9,6 +12,22 @@ pub const AUR_PKG_URL: &str = "https://aur.archlinux.org/packages/";
 
 pub(crate) enum Error {
     CouldntOpen(String, std::io::Error),
+}
+
+impl Error {
+    pub(crate) fn nested(&self) {
+        match self {
+            Error::CouldntOpen(_, e) => error!("{e}"),
+        }
+    }
+}
+
+impl Localised for Error {
+    fn localise(&self, fll: &i18n_embed::fluent::FluentLanguageLoader) -> String {
+        match self {
+            Error::CouldntOpen(url, _) => fl!(fll, "open-err", url = url.as_str()),
+        }
+    }
 }
 
 /// Open the Aura Book.

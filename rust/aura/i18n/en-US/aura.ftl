@@ -93,6 +93,9 @@ L-first = First Install
 L-upgrades = Upgrades
 L-recent = Recent Actions
 
+# Opening Pages (open)
+open-err = Failed to open { $url }.
+
 # System Statistics (stats)
 stats-local = Failed to load language data.
 
