@@ -3,17 +3,40 @@
 use crate::command::misc;
 use crate::env::Env;
 use crate::flags::Conf;
+use crate::localization::Localised;
 use crate::utils::ResultVoid;
 use from_variants::FromVariants;
+use i18n_embed_fl::fl;
+use log::error;
 use std::env;
 use std::process::Command;
 
 #[derive(FromVariants)]
 pub(crate) enum Error {
-    Env(std::env::VarError),
-    Toml(toml::ser::Error),
+    PathToAuraConfig(std::env::VarError),
+    SerializeEnv(toml::ser::Error),
     #[from_variants(skip)]
     CouldntOpen(String, std::io::Error),
+}
+
+impl Error {
+    pub(crate) fn nested(&self) {
+        match self {
+            Error::PathToAuraConfig(e) => error!("{e}"),
+            Error::SerializeEnv(e) => error!("{e}"),
+            Error::CouldntOpen(_, e) => error!("{e}"),
+        }
+    }
+}
+
+impl Localised for Error {
+    fn localise(&self, fll: &i18n_embed::fluent::FluentLanguageLoader) -> String {
+        match self {
+            Error::PathToAuraConfig(_) => fl!(fll, "err-config-path"),
+            Error::SerializeEnv(_) => fl!(fll, "conf-toml-err"),
+            Error::CouldntOpen(p, _) => fl!(fll, "open-err", url = p.as_str()),
+        }
+    }
 }
 
 /// The raw contents of a runtime `Env`.

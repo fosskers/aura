@@ -133,9 +133,13 @@ check-cache-tarballs-fix = Fix: You can remove invalid tarballs with { $command 
 check-cache-missing = Every installed package has a tarball?
 check-cache-missing-fix = Fix: You can download missing official tarballs with { $command }
 
+# Configuration (conf)
+conf-toml-err = Failed to serialize current config.
+
 # Common Errors
 err-alpm = Failed to open ALPM handle.
 err-pool = Failed to create an ALPM connection pool.
+err-config-path = Failed to determine the path to Aura's config file.
 
 # Common Fields
 common-yes = Yes
