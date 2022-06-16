@@ -13,7 +13,7 @@ use std::process::Command;
 
 #[derive(FromVariants)]
 pub(crate) enum Error {
-    PathToAuraConfig(std::env::VarError),
+    PathToAuraConfig(crate::dirs::Error),
     SerializeEnv(toml::ser::Error),
     #[from_variants(skip)]
     CouldntOpen(String, std::io::Error),
@@ -22,7 +22,7 @@ pub(crate) enum Error {
 impl Error {
     pub(crate) fn nested(&self) {
         match self {
-            Error::PathToAuraConfig(e) => error!("{e}"),
+            Error::PathToAuraConfig(e) => e.nested(),
             Error::SerializeEnv(e) => error!("{e}"),
             Error::CouldntOpen(_, e) => error!("{e}"),
         }

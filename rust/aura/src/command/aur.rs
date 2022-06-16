@@ -42,30 +42,27 @@ pub enum Error {
     Silent,
 }
 
-// TODO Thu Jan 20 15:32:13 2022
-//
-// Eventually these will all be deleted when error messages are localised.
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Error::Dirs(e) => write!(f, "{}", e),
-            Error::Io(e) => write!(f, "{}", e),
-            Error::Git(e) => write!(f, "{}", e),
-            Error::Silent => write!(f, ""),
-            Error::Build(e) => write!(f, "{}", e),
-            Error::Pacman(e) => write!(f, "{}", e),
-            Error::Deps(e) => write!(f, "{}", e),
-            Error::R2d2(e) => write!(f, "{}", e),
-            Error::Fetch(e) => write!(f, "{}", e),
-            Error::Cancelled => write!(f, "Installation cancelled."),
-            Error::Aur(e) => write!(f, "{e}"),
-            Error::Srcinfo(e) => write!(f, "{e}"),
-            Error::PathComponent(pb) => {
-                write!(f, "Failed to extract final component of: {}", pb.display())
-            }
-        }
-    }
-}
+// impl std::fmt::Display for Error {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         match self {
+//             Error::Dirs(e) => write!(f, "{}", e),
+//             Error::Io(e) => write!(f, "{}", e),
+//             Error::Git(e) => write!(f, "{}", e),
+//             Error::Silent => write!(f, ""),
+//             Error::Build(e) => write!(f, "{}", e),
+//             Error::Pacman(e) => write!(f, "{}", e),
+//             Error::Deps(e) => write!(f, "{}", e),
+//             Error::R2d2(e) => write!(f, "{}", e),
+//             Error::Fetch(e) => write!(f, "{}", e),
+//             Error::Cancelled => write!(f, "Installation cancelled."),
+//             Error::Aur(e) => write!(f, "{e}"),
+//             Error::Srcinfo(e) => write!(f, "{e}"),
+//             Error::PathComponent(pb) => {
+//                 write!(f, "Failed to extract final component of: {}", pb.display())
+//             }
+//         }
+//     }
+// }
 
 /// View AUR package information.
 pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<(), Error> {

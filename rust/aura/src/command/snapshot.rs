@@ -24,19 +24,19 @@ pub enum Error {
     Silent,
 }
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Error::Io(e) => write!(f, "{}", e),
-            Error::Dirs(e) => write!(f, "{}", e),
-            Error::Pacman(e) => write!(f, "{}", e),
-            Error::Readline(e) => write!(f, "{}", e),
-            Error::Json(e) => write!(f, "{}", e),
-            Error::Silent => write!(f, ""),
-            Error::Cancelled => write!(f, "Action cancelled."),
-        }
-    }
-}
+// impl std::fmt::Display for Error {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         match self {
+//             Error::Io(e) => write!(f, "{}", e),
+//             Error::Dirs(e) => write!(f, "{}", e),
+//             Error::Pacman(e) => write!(f, "{}", e),
+//             Error::Readline(e) => write!(f, "{}", e),
+//             Error::Json(e) => write!(f, "{}", e),
+//             Error::Silent => write!(f, ""),
+//             Error::Cancelled => write!(f, "Action cancelled."),
+//         }
+//     }
+// }
 
 /// During a `-Br`, the packages to update and/or remove.
 #[derive(Debug)]

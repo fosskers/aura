@@ -136,6 +136,15 @@ check-cache-missing-fix = Fix: You can download missing official tarballs with {
 # Configuration (conf)
 conf-toml-err = Failed to serialize current config.
 
+# Runtime Environment
+env-missing-editor = Provided EDITOR is not on the PATH.
+env-pconf = Failed to parse your pacman.conf file.
+
+# Aura-specific Directories
+dir-mkdir = Failed to create the directory { $dir }.
+dir-home = Unable to determine Aura's config directory.
+dir-cache = Unable to determine Aura's cache directory.
+
 # Common Errors
 err-alpm = Failed to open ALPM handle.
 err-pool = Failed to create an ALPM connection pool.
