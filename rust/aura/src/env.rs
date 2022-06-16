@@ -5,6 +5,7 @@ use crate::localization::Localised;
 use alpm::Alpm;
 use from_variants::FromVariants;
 use i18n_embed_fl::fl;
+use log::error;
 use r2d2::Pool;
 use r2d2_alpm::AlpmManager;
 use serde::{Deserialize, Serialize};
@@ -17,7 +18,21 @@ const DEFAULT_EDITOR: &str = "vi";
 pub(crate) enum Error {
     Dirs(crate::dirs::Error),
     PConf(pacmanconf::Error),
+    Alpm(alpm::Error),
+    R2d2(r2d2::Error),
     MissingEditor,
+}
+
+impl Error {
+    pub(crate) fn nested(&self) {
+        match self {
+            Error::Dirs(e) => e.nested(),
+            Error::PConf(e) => error!("{e}"),
+            Error::MissingEditor => {}
+            Error::Alpm(e) => error!("{e}"),
+            Error::R2d2(e) => error!("{e}"),
+        }
+    }
 }
 
 impl Localised for Error {
@@ -26,6 +41,8 @@ impl Localised for Error {
             Error::Dirs(e) => e.localise(fll),
             Error::PConf(_) => fl!(fll, "env-pconf"),
             Error::MissingEditor => fl!(fll, "env-missing-editor"),
+            Error::Alpm(_) => fl!(fll, "err-alpm"),
+            Error::R2d2(_) => fl!(fll, "err-pool"),
         }
     }
 }
@@ -94,7 +111,7 @@ impl Env {
 
     /// Open a series of connections to ALPM handles. The quantity matches the
     /// number of CPUs available on the machine.
-    pub(crate) fn alpm_pool(&self) -> Result<Pool<AlpmManager>, r2d2::Error> {
+    pub(crate) fn alpm_pool(&self) -> Result<Pool<AlpmManager>, Error> {
         // FIXME Thu Jun  9 13:53:49 2022
         //
         // Unfortunate clone here.
@@ -105,8 +122,8 @@ impl Env {
     }
 
     /// Open a new connection to `alpm` instance.
-    pub(crate) fn alpm(&self) -> Result<Alpm, alpm::Error> {
-        alpm_utils::alpm_with_conf(&self.pacman)
+    pub(crate) fn alpm(&self) -> Result<Alpm, Error> {
+        alpm_utils::alpm_with_conf(&self.pacman).map_err(Error::Alpm)
     }
 
     /// All tarball caches across the various config sources.

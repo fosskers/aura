@@ -8,7 +8,6 @@ use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
-use log::error;
 use r2d2::Pool;
 use r2d2_alpm::AlpmManager;
 use rayon::prelude::*;
@@ -25,15 +24,13 @@ const SECS_IN_DAY: u64 = 60 * 60 * 24;
 
 #[derive(FromVariants)]
 pub(crate) enum Error {
-    OpenAlpm(alpm::Error),
-    NewPool(r2d2::Error),
+    Env(crate::env::Error),
 }
 
 impl Error {
     pub(crate) fn nested(&self) {
         match self {
-            Error::OpenAlpm(e) => error!("{e}"),
-            Error::NewPool(e) => error!("{e}"),
+            Error::Env(e) => e.nested(),
         }
     }
 }
@@ -41,8 +38,7 @@ impl Error {
 impl Localised for Error {
     fn localise(&self, fll: &FluentLanguageLoader) -> String {
         match self {
-            Error::OpenAlpm(_) => fl!(fll, "err-alpm"),
-            Error::NewPool(_) => fl!(fll, "err-pool"),
+            Error::Env(e) => e.localise(fll),
         }
     }
 }

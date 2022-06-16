@@ -15,12 +15,6 @@ pub(crate) enum Error {
     Dirs(crate::dirs::Error),
     /// A non-zero exit code was returned from a call to Pacman.
     Pacman(crate::pacman::Error),
-    /// An error occurred within the `alpm` C code.
-    Alpm(alpm::Error),
-    /// An error during logger initialization.
-    TerminalLogger(log::SetLoggerError),
-    /// An error parsing `pacman.conf`.
-    PacConf(pacmanconf::Error),
     Env(crate::env::Error),
     Conf(crate::conf::Error),
     Check(crate::check::Error),
@@ -39,10 +33,7 @@ impl Error {
             Error::O(_) => todo!(),
             Error::Dirs(e) => e.nested(),
             Error::Pacman(_) => todo!(),
-            Error::Alpm(_) => todo!(),
-            Error::TerminalLogger(_) => todo!(),
-            Error::PacConf(_) => todo!(),
-            Error::Env(_) => todo!(),
+            Error::Env(e) => e.nested(),
             Error::Conf(e) => e.nested(),
             Error::Check(e) => e.nested(),
             Error::Open(e) => e.nested(),
@@ -61,9 +52,6 @@ impl Localised for Error {
             Error::O(_) => todo!(),
             Error::Dirs(e) => e.localise(fll),
             Error::Pacman(_) => todo!(),
-            Error::Alpm(_) => todo!(),
-            Error::TerminalLogger(_) => todo!(),
-            Error::PacConf(_) => todo!(),
             Error::Env(e) => e.localise(fll),
             Error::Conf(e) => e.localise(fll),
             Error::Check(e) => e.localise(fll),

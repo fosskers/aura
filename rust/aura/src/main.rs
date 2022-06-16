@@ -51,7 +51,10 @@ fn main() -> ExitCode {
 fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
     // --- Terminal Logging --- //
     if let Some(l) = args.log_level {
-        TermLogger::init(l, Config::default(), TerminalMode::Mixed, ColorChoice::Auto)?;
+        // Silently ignore logger init failure. Realistically it should never
+        // fail, since its docs claim this only occurs when a logger has been
+        // previously initialized.
+        let _ = TermLogger::init(l, Config::default(), TerminalMode::Mixed, ColorChoice::Auto);
     }
 
     // --- Runtime Settings --- //
@@ -136,9 +139,9 @@ fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
         SubCmd::Open(_) => open::repo()?,
         // --- Dependency Management --- //
         SubCmd::Deps(d) if d.reverse => {
-            deps::reverse(&env.alpm()?, d.limit, d.optional, d.packages)?
+            deps::reverse(&env.alpm()?, d.limit, d.optional, d.packages)
         }
-        SubCmd::Deps(d) => deps::graph(&env.alpm()?, d.limit, d.optional, d.packages)?,
+        SubCmd::Deps(d) => deps::graph(&env.alpm()?, d.limit, d.optional, d.packages),
         // --- System Validation --- //
         SubCmd::Check(_) => check::check(&fll, &env)?,
     }

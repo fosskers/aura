@@ -24,7 +24,7 @@ use std::sync::Mutex;
 use validated::Validated;
 
 #[derive(FromVariants)]
-pub enum Error {
+pub(crate) enum Error {
     Fetch(crate::fetch::Error),
     Dirs(crate::dirs::Error),
     Io(std::io::Error),
@@ -32,7 +32,7 @@ pub enum Error {
     Build(build::Error),
     Deps(aura_core::aur::dependencies::Error<crate::fetch::Error>),
     Pacman(crate::pacman::Error),
-    R2d2(r2d2::Error),
+    Env(crate::env::Error),
     Aur(aura_core::aur::Error),
     /// An error parsing a `.SRCINFO` file.
     Srcinfo(srcinfo::Error),
