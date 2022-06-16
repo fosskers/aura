@@ -86,7 +86,8 @@ C-t-invalids = Removing invalid package tarballs.
 
 # Orphans (-O)
 O-abandon = The following orphans and their dependencies will be removed:
-O-adopt = { $package } now marked as explicitly installed.
+O-adopt = { $pkg } now marked as explicitly installed.
+O-explicit-err = Failed to mark { $pkg } as explicitly installed.
 
 # Logs (-L)
 L-first = First Install
@@ -146,6 +147,9 @@ pacman-u = A call to pacman -U failed.
 pacman-s = A call to pacman -S failed.
 pacman-misc = A call to pacman gave a non-zero exit code.
 
+# ALPM
+alpm-tx= "An ALPM transaction failed."
+
 # Aura-specific Directories
 dir-mkdir = Failed to create the directory { $dir }.
 dir-home = Unable to determine Aura's config directory.
@@ -155,6 +159,9 @@ dir-cache = Unable to determine Aura's cache directory.
 err-alpm = Failed to open ALPM handle.
 err-pool = Failed to create an ALPM connection pool.
 err-config-path = Failed to determine the path to Aura's config file.
+err-none-exist = None of the specified packages exist.
+err-sudo = Failed to raise privileges.
+err-user-input = Failed to get user input.
 
 # Common Fields
 common-yes = Yes

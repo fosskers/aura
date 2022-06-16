@@ -1,6 +1,8 @@
 //! Various utility functions.
 
+use crate::localization::Localised;
 use colored::{ColoredString, Colorize};
+use i18n_embed_fl::fl;
 use rustyline::Editor;
 use std::io::Write;
 use std::str::FromStr;
@@ -88,11 +90,15 @@ pub(crate) fn select(msg: &str, max: usize) -> Result<usize, rustyline::error::R
     }
 }
 
-pub struct SudoError;
+pub(crate) struct SudoError;
 
-impl std::fmt::Display for SudoError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Failed to raise privileges.")
+impl SudoError {
+    pub(crate) fn nested(&self) {}
+}
+
+impl Localised for SudoError {
+    fn localise(&self, fll: &i18n_embed::fluent::FluentLanguageLoader) -> String {
+        fl!(fll, "err-sudo")
     }
 }
 
