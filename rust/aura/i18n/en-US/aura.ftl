@@ -140,6 +140,12 @@ conf-toml-err = Failed to serialize current config.
 env-missing-editor = Provided EDITOR is not on the PATH.
 env-pconf = Failed to parse your pacman.conf file.
 
+# Pacman Calls
+pacman-external = A call to pacman utterly failed.
+pacman-u = A call to pacman -U failed.
+pacman-s = A call to pacman -S failed.
+pacman-misc = A call to pacman gave a non-zero exit code.
+
 # Aura-specific Directories
 dir-mkdir = Failed to create the directory { $dir }.
 dir-home = Unable to determine Aura's config directory.

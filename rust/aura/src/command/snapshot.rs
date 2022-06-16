@@ -14,7 +14,7 @@ use std::ops::Not;
 use std::path::Path;
 
 #[derive(FromVariants)]
-pub enum Error {
+pub(crate) enum Error {
     Io(std::io::Error),
     Dirs(crate::dirs::Error),
     Pacman(crate::pacman::Error),

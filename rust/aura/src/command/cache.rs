@@ -29,7 +29,7 @@ const FIVE_HUNDRED_MB: i64 = 524_288_000;
 const CMPR_SWITCH: i64 = 1_577_404_800;
 
 #[derive(FromVariants)]
-pub enum Error {
+pub(crate) enum Error {
     Io(std::io::Error),
     Readline(rustyline::error::ReadlineError),
     Sudo(crate::utils::SudoError),
@@ -39,19 +39,19 @@ pub enum Error {
     Silent,
 }
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Error::Io(e) => write!(f, "{}", e),
-            Error::Readline(e) => write!(f, "{}", e),
-            Error::Sudo(e) => write!(f, "{}", e),
-            Error::Pacman(e) => write!(f, "{}", e),
-            Error::MiscShell => write!(f, "A miscellaneous shell call failed."),
-            Error::Silent => write!(f, ""),
-            Error::Cancelled => write!(f, "Action cancelled."),
-        }
-    }
-}
+// impl std::fmt::Display for Error {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         match self {
+//             Error::Io(e) => write!(f, "{}", e),
+//             Error::Readline(e) => write!(f, "{}", e),
+//             Error::Sudo(e) => write!(f, "{}", e),
+//             Error::Pacman(e) => write!(f, "{}", e),
+//             Error::MiscShell => write!(f, "A miscellaneous shell call failed."),
+//             Error::Silent => write!(f, ""),
+//             Error::Cancelled => write!(f, "Action cancelled."),
+//         }
+//     }
+// }
 
 /// Downgrade the given packages.
 pub(crate) fn downgrade(

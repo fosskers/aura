@@ -1,24 +1,36 @@
 //! Sugar for interacting with Pacman.
 
-use from_variants::FromVariants;
+use crate::localization::Localised;
+use i18n_embed_fl::fl;
+use log::error;
 use std::ffi::OsStr;
 use std::process::Command;
 
-#[derive(FromVariants)]
-pub enum Error {
-    Io(std::io::Error),
+pub(crate) enum Error {
+    ExternalCmd(std::io::Error),
     InstallFromTarball,
     InstallFromRepos,
     Misc,
 }
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl Error {
+    pub(crate) fn nested(&self) {
         match self {
-            Error::Io(e) => write!(f, "{}", e),
-            Error::InstallFromTarball => write!(f, "pacman -U failed"),
-            Error::InstallFromRepos => write!(f, "pacman -S failed"),
-            Error::Misc => write!(f, "A call to pacman gave a non-zero exit code"),
+            Error::ExternalCmd(e) => error!("{e}"),
+            Error::InstallFromTarball => {}
+            Error::InstallFromRepos => {}
+            Error::Misc => {}
+        }
+    }
+}
+
+impl Localised for Error {
+    fn localise(&self, fll: &i18n_embed::fluent::FluentLanguageLoader) -> String {
+        match self {
+            Error::ExternalCmd(_) => fl!(fll, "pacman-external"),
+            Error::InstallFromTarball => fl!(fll, "pacman-u"),
+            Error::InstallFromRepos => fl!(fll, "pacman-s"),
+            Error::Misc => fl!(fll, "pacman-misc"),
         }
     }
 }
@@ -31,7 +43,8 @@ where
 {
     Command::new("pacman")
         .args(args)
-        .status()?
+        .status()
+        .map_err(Error::ExternalCmd)?
         .success()
         .then(|| ())
         .ok_or(Error::Misc)
@@ -50,7 +63,8 @@ where
         .arg(command)
         .args(flags)
         .args(args)
-        .status()?
+        .status()
+        .map_err(Error::ExternalCmd)?
         .success()
         .then(|| ())
         .ok_or(Error::Misc)
@@ -65,7 +79,8 @@ where
     Command::new("sudo")
         .arg("pacman")
         .args(args)
-        .status()?
+        .status()
+        .map_err(Error::ExternalCmd)?
         .success()
         .then(|| ())
         .ok_or(Error::Misc)
