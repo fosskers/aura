@@ -3,6 +3,7 @@
 #![allow(clippy::many_single_char_names)]
 
 use crate::command::misc;
+use crate::localization::Localised;
 use crate::utils::ResultVoid;
 use aura_core as core;
 use chrono::NaiveDate;
@@ -10,15 +11,39 @@ use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed::LanguageLoader;
 use i18n_embed_fl::fl;
+use log::error;
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::path::Path;
 use std::process::Command;
 
 pub(crate) enum Error {
-    Search(std::io::Error),
+    Search(&'static str, std::io::Error),
     View(std::io::Error),
     Info(std::io::Error),
+}
+
+impl Error {
+    pub(crate) fn nested(&self) {
+        match self {
+            Error::Search(_, e) => error!("{e}"),
+            Error::View(e) => error!("{e}"),
+            Error::Info(e) => error!("{e}"),
+        }
+    }
+}
+
+impl Localised for Error {
+    fn localise(&self, fll: &FluentLanguageLoader) -> String {
+        match self {
+            // FIXME Fri Jun 17 14:47:05 2022
+            //
+            // Strange clone, or else Fluent complains about a &&str.
+            Error::Search(s, _) => fl!(fll, "L-search-err", cmd = s.clone()),
+            Error::View(_) => fl!(fll, "L-view-err"),
+            Error::Info(_) => fl!(fll, "err-write"),
+        }
+    }
 }
 
 /// Search the Pacman log for a matching string.
@@ -29,7 +54,7 @@ pub(crate) fn search(path: &Path, term: String) -> Result<(), Error> {
         .arg(term)
         .arg(path)
         .status()
-        .map_err(Error::Search)
+        .map_err(|e| Error::Search(search, e))
         .void()
 }
 

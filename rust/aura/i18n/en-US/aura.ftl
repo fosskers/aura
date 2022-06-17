@@ -93,6 +93,8 @@ O-explicit-err = Failed to mark { $pkg } as explicitly installed.
 L-first = First Install
 L-upgrades = Upgrades
 L-recent = Recent Actions
+L-search-err = Searching your logs via { $cmd } failed.
+L-view-err = Failed to open your ALPM log.
 
 # Opening Pages (open)
 open-err = Failed to open { $url }.
@@ -162,6 +164,7 @@ err-config-path = Failed to determine the path to Aura's config file.
 err-none-exist = None of the specified packages exist.
 err-sudo = Failed to raise privileges.
 err-user-input = Failed to get user input.
+err-write = Somehow failed to write to stdout.
 
 # Common Fields
 common-yes = Yes
