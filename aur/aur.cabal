@@ -36,7 +36,7 @@ library
   hs-source-dirs:  lib
   exposed-modules: Linux.Arch.Aur
   build-depends:
-    , aeson       >=0.9  && <2.1
+    , aeson       >=0.9  && <2.2
     , bytestring
     , hashable    >= 1.2
     , http-types  ^>=0.12

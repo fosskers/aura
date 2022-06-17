@@ -1,5 +1,5 @@
 # resolver: lts-19.4
-resolver: nightly-2022-04-23
+resolver: nightly-2022-06-17
 
 ghc-options:
   $everything: -split-sections -haddock
@@ -18,3 +18,7 @@ packages:
   - aura/
   - aur/
   - aursec/
+
+extra-deps:
+  - aeson-2.1.0.0
+  - generically-0.1

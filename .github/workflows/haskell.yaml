@@ -13,7 +13,7 @@ jobs:
       - name: Setup GHC
         uses: haskell/actions/setup@v2
         with:
-          ghc-version: "8.10.7"
+          ghc-version: "9.2.3"
           enable-stack: true
           stack-version: "latest"
 
