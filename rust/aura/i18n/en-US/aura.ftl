@@ -60,11 +60,13 @@ B-select = Select a snapshot to restore:
 
 # Cache (-C)
 C-size = Current cache size: { $size }
+C-not-saved = Failed to delete { $path }.
 
 C-b-file = { $target } already exists and is not a directory.
 C-b-nonempty = Target { $target } exists but is not empty!
 # backupCache_4
 C-b-target = Backing up cache to { $target }
+C-b-curr = Failed to read current directory.
 
 C-i-latest = Latest
 C-i-created = Created
@@ -165,6 +167,7 @@ err-none-exist = None of the specified packages exist.
 err-sudo = Failed to raise privileges.
 err-user-input = Failed to get user input.
 err-write = Somehow failed to write to stdout.
+err-read-dir = Failed to read directory { $dir }.
 
 # Common Fields
 common-yes = Yes

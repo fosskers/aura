@@ -28,7 +28,7 @@ impl Error {
         match self {
             Error::A(_) => todo!(),
             Error::B(_) => todo!(),
-            Error::C(_) => todo!(),
+            Error::C(e) => e.nested(),
             Error::L(e) => e.nested(),
             Error::O(e) => e.nested(),
             Error::Dirs(e) => e.nested(),
@@ -47,7 +47,7 @@ impl Localised for Error {
         match self {
             Error::A(_) => todo!(),
             Error::B(_) => todo!(),
-            Error::C(_) => todo!(),
+            Error::C(e) => e.localise(fll),
             Error::L(e) => e.localise(fll),
             Error::O(e) => e.localise(fll),
             Error::Dirs(e) => e.localise(fll),

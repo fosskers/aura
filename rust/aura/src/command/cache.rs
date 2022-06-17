@@ -2,7 +2,8 @@
 
 use crate::download::download_with_progress;
 use crate::env::Env;
-use crate::{aura, green, proceed, red, yellow};
+use crate::localization::Localised;
+use crate::{aura, green, proceed, yellow};
 use alpm::Alpm;
 use aura_core::cache::{CacheSize, PkgPath};
 use chrono::{DateTime, Local};
@@ -12,7 +13,7 @@ use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
 use itertools::Itertools;
 use linya::Progress;
-use log::debug;
+use log::{debug, error};
 use rayon::prelude::*;
 use std::collections::{HashMap, HashSet};
 use std::ffi::{OsStr, OsString};
@@ -30,28 +31,63 @@ const CMPR_SWITCH: i64 = 1_577_404_800;
 
 #[derive(FromVariants)]
 pub(crate) enum Error {
-    Io(std::io::Error),
     Readline(rustyline::error::ReadlineError),
     Sudo(crate::utils::SudoError),
     Pacman(crate::pacman::Error),
     Cancelled,
-    MiscShell,
-    Silent,
+    NoPackages,
+    NothingToDo,
+    #[from_variants(skip)]
+    AlreadyExists(PathBuf),
+    #[from_variants(skip)]
+    Delete(PathBuf),
+    #[from_variants(skip)]
+    ReadDir(PathBuf),
+    #[from_variants(skip)]
+    Stdout(std::io::Error),
+    #[from_variants(skip)]
+    CurrDir(std::io::Error),
+    #[from_variants(skip)]
+    Mkdir(PathBuf, std::io::Error),
 }
 
-// impl std::fmt::Display for Error {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         match self {
-//             Error::Io(e) => write!(f, "{}", e),
-//             Error::Readline(e) => write!(f, "{}", e),
-//             Error::Sudo(e) => write!(f, "{}", e),
-//             Error::Pacman(e) => write!(f, "{}", e),
-//             Error::MiscShell => write!(f, "A miscellaneous shell call failed."),
-//             Error::Silent => write!(f, ""),
-//             Error::Cancelled => write!(f, "Action cancelled."),
-//         }
-//     }
-// }
+impl Error {
+    pub(crate) fn nested(&self) {
+        match self {
+            Error::Readline(e) => error!("{e}"),
+            Error::Sudo(e) => e.nested(),
+            Error::Pacman(e) => e.nested(),
+            Error::Cancelled => {}
+            Error::NoPackages => {}
+            Error::NothingToDo => {}
+            Error::AlreadyExists(_) => {}
+            Error::Delete(_) => {}
+            Error::ReadDir(_) => {}
+            Error::Stdout(e) => error!("{e}"),
+            Error::CurrDir(e) => error!("{e}"),
+            Error::Mkdir(_, e) => error!("{e}"),
+        }
+    }
+}
+
+impl Localised for Error {
+    fn localise(&self, fll: &FluentLanguageLoader) -> String {
+        match self {
+            Error::Readline(_) => fl!(fll, "err-user-input"),
+            Error::Sudo(e) => e.localise(fll),
+            Error::Pacman(e) => e.localise(fll),
+            Error::Cancelled => fl!(fll, "common-cancelled"),
+            Error::NoPackages => fl!(fll, "common-no-packages"),
+            Error::NothingToDo => fl!(fll, "common-no-work"),
+            Error::AlreadyExists(p) => fl!(fll, "C-b-file", target = p.display().to_string()),
+            Error::Delete(p) => fl!(fll, "C-not-saved", path = p.display().to_string()),
+            Error::ReadDir(p) => fl!(fll, "err-read-dir", dir = p.display().to_string()),
+            Error::Stdout(_) => fl!(fll, "err-write"),
+            Error::CurrDir(_) => fl!(fll, "C-b-curr"),
+            Error::Mkdir(p, _) => fl!(fll, "dir-mkdir", dir = p.display().to_string()),
+        }
+    }
+}
 
 /// Downgrade the given packages.
 pub(crate) fn downgrade(
@@ -61,8 +97,7 @@ pub(crate) fn downgrade(
 ) -> Result<(), Error> {
     // Exit early if the user passed no packages.
     if packages.is_empty() {
-        red!(fll, "common-no-packages");
-        return Err(Error::Silent);
+        return Err(Error::NoPackages);
     }
 
     crate::utils::sudo()?;
@@ -84,8 +119,7 @@ pub(crate) fn downgrade(
         .collect();
 
     if to_downgrade.is_empty() {
-        red!(fll, "common-no-work");
-        return Err(Error::Silent);
+        return Err(Error::NothingToDo);
     }
 
     to_downgrade.push(OsStr::new("-U").to_os_string());
@@ -141,9 +175,10 @@ pub(crate) fn invalid(
 /// Print the contents of the package caches.
 pub(crate) fn list(caches: &[&Path]) -> Result<(), Error> {
     for path in caches {
-        for de in path.read_dir()?.filter_map(|de| de.ok()) {
-            println!("{}", de.path().display());
-        }
+        path.read_dir()
+            .map_err(|_| Error::ReadDir(path.to_path_buf()))?
+            .filter_map(|de| de.ok())
+            .for_each(|de| println!("{}", de.path().display()));
     }
 
     Ok(())
@@ -197,8 +232,8 @@ pub(crate) fn info(
             (&av, ci.available.join(", ").normal()),
         ];
 
-        crate::utils::info(&mut w, fll.current_language(), &pairs)?;
-        writeln!(w)?;
+        crate::utils::info(&mut w, fll.current_language(), &pairs).map_err(Error::Stdout)?;
+        writeln!(w).map_err(Error::Stdout)?;
     }
 
     Ok(())
@@ -279,7 +314,7 @@ pub(crate) fn clean_not_saved(fll: &FluentLanguageLoader, env: &Env) -> Result<(
         // from the filesystem.
         match snaps.get(p.name.as_ref()) {
             Some(vs) if vs.contains(p.version.as_ref()) => {}
-            Some(_) | None => tarball.sudo_remove().ok_or(Error::MiscShell)?,
+            Some(_) | None => tarball.sudo_remove().map_err(|pb| Error::Delete(pb))?,
         }
     }
 
@@ -432,16 +467,15 @@ pub(crate) fn backup(fll: &FluentLanguageLoader, env: &Env, target: &Path) -> Re
     let full: PathBuf = if target.is_absolute() {
         target.to_path_buf()
     } else {
-        let mut curr = std::env::current_dir()?;
-        curr.push(target);
-        curr
+        std::env::current_dir()
+            .map_err(Error::CurrDir)?
+            .join(target)
     };
     let ts = full.to_str().unwrap();
 
     // Exit early if the target is an existing file, not a directory.
     if target.is_file() {
-        red!(fll, "C-b-file", target = ts);
-        return Err(Error::Silent);
+        return Err(Error::AlreadyExists(target.to_path_buf()));
     }
 
     // How big is the current cache?
@@ -473,7 +507,7 @@ fn copy(sources: &[&Path], target: &Path, file_count: usize) -> Result<(), Error
     let bar = pb.lock().unwrap().bar(file_count, "File Copying"); // TODO Localize.
 
     // Silently succeeds if the directory already exists.
-    std::fs::create_dir_all(target)?;
+    std::fs::create_dir_all(target).map_err(|e| Error::Mkdir(target.to_path_buf(), e))?;
 
     aura_core::read_dirs(sources)
         .filter_map(|entry| entry.ok())
