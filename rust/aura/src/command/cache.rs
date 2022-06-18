@@ -80,7 +80,7 @@ impl Localised for Error {
             Error::NoPackages => fl!(fll, "common-no-packages"),
             Error::NothingToDo => fl!(fll, "common-no-work"),
             Error::AlreadyExists(p) => fl!(fll, "C-b-file", target = p.display().to_string()),
-            Error::Delete(p) => fl!(fll, "C-not-saved", path = p.display().to_string()),
+            Error::Delete(p) => fl!(fll, "err-del-file", file = p.display().to_string()),
             Error::ReadDir(p) => fl!(fll, "err-read-dir", dir = p.display().to_string()),
             Error::Stdout(_) => fl!(fll, "err-write"),
             Error::CurrDir(_) => fl!(fll, "C-b-curr"),

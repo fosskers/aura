@@ -27,7 +27,7 @@ impl Error {
     pub(crate) fn nested(&self) {
         match self {
             Error::A(_) => todo!(),
-            Error::B(_) => todo!(),
+            Error::B(e) => e.nested(),
             Error::C(e) => e.nested(),
             Error::L(e) => e.nested(),
             Error::O(e) => e.nested(),
@@ -46,7 +46,7 @@ impl Localised for Error {
     fn localise(&self, fll: &FluentLanguageLoader) -> String {
         match self {
             Error::A(_) => todo!(),
-            Error::B(_) => todo!(),
+            Error::B(e) => e.localise(fll),
             Error::C(e) => e.localise(fll),
             Error::L(e) => e.localise(fll),
             Error::O(e) => e.localise(fll),

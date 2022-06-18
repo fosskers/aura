@@ -60,7 +60,6 @@ B-select = Select a snapshot to restore:
 
 # Cache (-C)
 C-size = Current cache size: { $size }
-C-not-saved = Failed to delete { $path }.
 
 C-b-file = { $target } already exists and is not a directory.
 C-b-nonempty = Target { $target } exists but is not empty!
@@ -168,6 +167,9 @@ err-sudo = Failed to raise privileges.
 err-user-input = Failed to get user input.
 err-write = Somehow failed to write to stdout.
 err-read-dir = Failed to read directory { $dir }.
+err-del-file = Failed to delete { $file }.
+err-open-file = Failed to open file handle to { $file }.
+err-json-write = Failed to write JSON to { $file }.
 
 # Common Fields
 common-yes = Yes
