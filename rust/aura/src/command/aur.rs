@@ -3,7 +3,8 @@
 mod build;
 
 use crate::env::Env;
-use crate::utils::ResultVoid;
+use crate::localization::Localised;
+use crate::utils::{PathStr, ResultVoid};
 use crate::{aura, green, proceed, red};
 use alpm::Alpm;
 use chrono::{TimeZone, Utc};
@@ -42,27 +43,25 @@ pub(crate) enum Error {
     Silent,
 }
 
-// impl std::fmt::Display for Error {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         match self {
-//             Error::Dirs(e) => write!(f, "{}", e),
-//             Error::Io(e) => write!(f, "{}", e),
-//             Error::Git(e) => write!(f, "{}", e),
-//             Error::Silent => write!(f, ""),
-//             Error::Build(e) => write!(f, "{}", e),
-//             Error::Pacman(e) => write!(f, "{}", e),
-//             Error::Deps(e) => write!(f, "{}", e),
-//             Error::R2d2(e) => write!(f, "{}", e),
-//             Error::Fetch(e) => write!(f, "{}", e),
-//             Error::Cancelled => write!(f, "Installation cancelled."),
-//             Error::Aur(e) => write!(f, "{e}"),
-//             Error::Srcinfo(e) => write!(f, "{e}"),
-//             Error::PathComponent(pb) => {
-//                 write!(f, "Failed to extract final component of: {}", pb.display())
-//             }
-//         }
-//     }
-// }
+impl Localised for Error {
+    fn localise(&self, fll: &FluentLanguageLoader) -> String {
+        match self {
+            Error::Fetch(e) => e.localise(fll),
+            Error::Dirs(e) => e.localise(fll),
+            Error::Io(_) => todo!(),
+            Error::Git(_) => todo!(),
+            Error::Build(e) => e.localise(fll),
+            Error::Deps(_) => todo!(),
+            Error::Pacman(e) => e.localise(fll),
+            Error::Env(e) => e.localise(fll),
+            Error::Aur(_) => todo!(),
+            Error::Srcinfo(_) => todo!(),
+            Error::PathComponent(p) => fl!(fll, "A-install-path-comp", path = p.utf8()),
+            Error::Cancelled => fl!(fll, "common-cancelled"),
+            Error::Silent => todo!(),
+        }
+    }
+}
 
 /// View AUR package information.
 pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<(), Error> {

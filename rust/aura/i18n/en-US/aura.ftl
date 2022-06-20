@@ -7,6 +7,7 @@ A-install-pulling = Pulling known packages...
 A-install-deps = Resolving dependencies...
 A-install-repo-pkgs = Repository dependencies:
 A-install-aur-pkgs = AUR packages:
+A-install-path-comp = Failed to extract final component of: { $path }
 
 A-build-prep = Preparing build directories...
 A-build-pkg = Building { $pkg }...
@@ -14,6 +15,12 @@ A-build-diff = Display diffs of build files?
 A-build-hotedit-pkgbuild = Edit the PKGBUILD?
 A-build-hotedit-install = Edit the .install file?
 A-build-fail = Package failed to build, citing:
+A-build-e-makepkg = makepkg failed.
+A-build-e-edit = Failed to edit: { $file }
+A-build-e-tarball = Failed to move: { $file }
+A-build-e-filename = Failed to etract filename from: { $file }
+A-build-e-copies = Failed to copy build files.
+A-build-pkglist = Failed to determine makepkg output paths from: { $dir }
 
 A-i-repo = Repository
 A-i-version = Version
@@ -126,11 +133,11 @@ check-aconf-aura-parse = Aura config file can be parsed?
 check-mconf = Makepkg Configuration
 check-mconf-packager = PACKAGER set?
 check-snapshots = Package Snapshots
-check-snapshots-unreadable = Unable to read snapshot path { $path }
+check-snapshots-unreadable = Unable to read snapshot path: { $path }
 check-snapshot-usable = All snapshots have corresponding tarballs?
 check-snapshot-usable-fix = Fix: You can remove old/unusable snapshots with { $command }
 check-cache = Package Tarball Caches
-check-cache-unreadable = Unable to read cache path { $path }
+check-cache-unreadable = Unable to read cache path: { $path }
 check-cache-exists = All specified caches exist?
 check-cache-tarballs = All tarballs valid?
 check-cache-tarballs-fix = Fix: You can remove invalid tarballs with { $command }
@@ -151,12 +158,19 @@ pacman-s = A call to pacman -S failed.
 pacman-misc = A call to pacman gave a non-zero exit code.
 
 # ALPM
-alpm-tx= "An ALPM transaction failed."
+alpm-tx = "An ALPM transaction failed."
 
 # Aura-specific Directories
-dir-mkdir = Failed to create the directory { $dir }.
+dir-mkdir = Failed to create the directory: { $dir }.
 dir-home = Unable to determine Aura's config directory.
 dir-cache = Unable to determine Aura's cache directory.
+
+# Git Operations
+git-diff = A git diff failed for: { $file }
+git-hash = Reading a git hash into Rust failed.
+git-pull = A git pull failed: { $dir }
+git-clone = A git clone failed: { $dir }
+git-io = Calling git somehow failed.
 
 # Common Errors
 err-alpm = Failed to open ALPM handle.
@@ -166,10 +180,14 @@ err-none-exist = None of the specified packages exist.
 err-sudo = Failed to raise privileges.
 err-user-input = Failed to get user input.
 err-write = Somehow failed to write to stdout.
-err-read-dir = Failed to read directory { $dir }.
-err-del-file = Failed to delete { $file }.
-err-open-file = Failed to open file handle to { $file }.
-err-json-write = Failed to write JSON to { $file }.
+err-read-dir = Failed to read directory: { $dir }
+err-del-file = Failed to delete: { $file }
+err-open-file = Failed to open file handle to: { $file }
+err-json-write = Failed to write JSON to: { $file }
+err-json-decode = Failed to decode JSON from: { $url }
+err-curl = A CURL transaction failed.
+err-utf8 = A UTF-8 conversion failed.
+err-srcinfo = Failed to parse .SRCINFO: { $file }
 
 # Common Fields
 common-yes = Yes

@@ -45,7 +45,7 @@ impl Error {
 impl Localised for Error {
     fn localise(&self, fll: &FluentLanguageLoader) -> String {
         match self {
-            Error::A(_) => todo!(),
+            Error::A(e) => e.localise(fll),
             Error::B(e) => e.localise(fll),
             Error::C(e) => e.localise(fll),
             Error::L(e) => e.localise(fll),

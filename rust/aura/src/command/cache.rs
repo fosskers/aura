@@ -3,6 +3,7 @@
 use crate::download::download_with_progress;
 use crate::env::Env;
 use crate::localization::Localised;
+use crate::utils::PathStr;
 use crate::{aura, green, proceed, yellow};
 use alpm::Alpm;
 use aura_core::cache::{CacheSize, PkgPath};
@@ -79,12 +80,12 @@ impl Localised for Error {
             Error::Cancelled => fl!(fll, "common-cancelled"),
             Error::NoPackages => fl!(fll, "common-no-packages"),
             Error::NothingToDo => fl!(fll, "common-no-work"),
-            Error::AlreadyExists(p) => fl!(fll, "C-b-file", target = p.display().to_string()),
-            Error::Delete(p) => fl!(fll, "err-del-file", file = p.display().to_string()),
-            Error::ReadDir(p) => fl!(fll, "err-read-dir", dir = p.display().to_string()),
+            Error::AlreadyExists(p) => fl!(fll, "C-b-file", target = p.utf8()),
+            Error::Delete(p) => fl!(fll, "err-del-file", file = p.utf8()),
+            Error::ReadDir(p) => fl!(fll, "err-read-dir", dir = p.utf8()),
             Error::Stdout(_) => fl!(fll, "err-write"),
             Error::CurrDir(_) => fl!(fll, "C-b-curr"),
-            Error::Mkdir(p, _) => fl!(fll, "dir-mkdir", dir = p.display().to_string()),
+            Error::Mkdir(p, _) => fl!(fll, "dir-mkdir", dir = p.utf8()),
         }
     }
 }

@@ -2,6 +2,7 @@
 
 use crate::env::{Aur, Env};
 use crate::localization::Localised;
+use crate::utils::PathStr;
 use crate::{aura, executable, green};
 use alpm::Alpm;
 use colored::*;
@@ -303,7 +304,7 @@ fn pacnews(fll: &FluentLanguageLoader) {
                         fl!(
                             fll,
                             "check-pconf-pacnew-old",
-                            path = path.display().to_string().cyan().to_string(),
+                            path = path.utf8().cyan().to_string(),
                             days = days.to_string().red().to_string(),
                         ),
                     );

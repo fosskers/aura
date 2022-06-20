@@ -4,7 +4,7 @@ use crate::command::misc;
 use crate::env::Env;
 use crate::flags::Conf;
 use crate::localization::Localised;
-use crate::utils::ResultVoid;
+use crate::utils::{PathStr, ResultVoid};
 use from_variants::FromVariants;
 use i18n_embed_fl::fl;
 use log::error;
@@ -59,7 +59,7 @@ pub(crate) fn aura_conf() -> Result<(), Error> {
     Command::new(prog)
         .arg(&path)
         .status()
-        .map_err(|e| Error::CouldntOpen(path.display().to_string(), e))
+        .map_err(|e| Error::CouldntOpen(path.utf8(), e))
         .void()
 }
 

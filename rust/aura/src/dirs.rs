@@ -1,6 +1,7 @@
 //! Directories critical to Aura's function.
 
 use crate::localization::Localised;
+use crate::utils::PathStr;
 use i18n_embed_fl::fl;
 use log::error;
 use std::ops::Not;
@@ -26,7 +27,7 @@ impl Error {
 impl Localised for Error {
     fn localise(&self, fll: &i18n_embed::fluent::FluentLanguageLoader) -> String {
         match self {
-            Error::Mkdir(p, _) => fl!(fll, "dir-mkdir", dir = p.display().to_string()),
+            Error::Mkdir(p, _) => fl!(fll, "dir-mkdir", dir = p.utf8()),
             Error::XdgHome(_) => fl!(fll, "dir-home"),
             Error::XdgCache(_) => fl!(fll, "dir-cache"),
         }

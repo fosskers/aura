@@ -1,8 +1,9 @@
-use crate::utils::ResultVoid;
+use crate::localization::Localised;
+use crate::utils::{PathStr, ResultVoid};
 use crate::{aura, proceed, red};
 use colored::Colorize;
-use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
+use i18n_embed_fl::fl;
 use log::{debug, warn};
 use nonempty::NonEmpty;
 use srcinfo::Srcinfo;
@@ -11,48 +12,42 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use validated::Validated;
 
-#[derive(FromVariants)]
-pub enum Error {
-    Srcinfo(srcinfo::Error),
-    Io(std::io::Error),
-    Git(aura_core::git::Error),
-    #[from_variants(skip)]
-    Copies(NonEmpty<std::io::Error>),
+pub(crate) enum Error {
+    Srcinfo(PathBuf, srcinfo::Error),
+    GitDiff(aura_core::git::Error),
+    CopyBuildFiles(NonEmpty<std::io::Error>),
     Utf8(std::str::Utf8Error),
-    #[from_variants(skip)]
     FilenameExtraction(PathBuf),
-    #[from_variants(skip)]
     TarballMove(PathBuf),
-    Cancelled,
-    #[from_variants(skip)]
     EditFail(PathBuf),
+    CreateDir(PathBuf, std::io::Error),
+    ReadDir(PathBuf, std::io::Error),
+    Pkglist(PathBuf, std::io::Error),
     Makepkg,
+    Cancelled,
 }
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl Localised for Error {
+    fn localise(&self, fll: &FluentLanguageLoader) -> String {
         match self {
-            Error::Srcinfo(e) => write!(f, "{}", e),
-            Error::Io(e) => write!(f, "{}", e),
-            Error::Copies(es) => {
-                for e in es {
-                    writeln!(f, "{}", e)?;
-                }
-                Ok(())
-            }
-            Error::Makepkg => write!(f, "makepkg failed"),
-            Error::Utf8(e) => write!(f, "{}", e),
-            Error::FilenameExtraction(pb) => {
-                write!(
-                    f,
-                    "ANOMALY: Failed to extract filename from {}",
-                    pb.display()
-                )
-            }
-            Error::TarballMove(pb) => write!(f, "Failed to move {}", pb.display()),
-            Error::Cancelled => write!(f, "Not proceeding with build."),
-            Error::EditFail(pb) => write!(f, "Failed to edit {}", pb.display()),
-            Error::Git(e) => write!(f, "{e}"),
+            Error::Srcinfo(p, _) => fl!(fll, "err-srcinfo", file = p.utf8()),
+            Error::GitDiff(e) => match e {
+                aura_core::git::Error::Io(_) => fl!(fll, "git-io"),
+                aura_core::git::Error::Clone(p) => fl!(fll, "git-clone", dir = p.utf8()),
+                aura_core::git::Error::Pull(p) => fl!(fll, "git-pull", dir = p.utf8()),
+                aura_core::git::Error::Diff(p) => fl!(fll, "git-diff", file = p.utf8()),
+                aura_core::git::Error::ReadHash(_) => fl!(fll, "git-hash"),
+            },
+            Error::CopyBuildFiles(_) => fl!(fll, "A-build-e-copies"),
+            Error::Utf8(_) => fl!(fll, "err-utf8"),
+            Error::FilenameExtraction(p) => fl!(fll, "A-build-e-filename", file = p.utf8()),
+            Error::TarballMove(p) => fl!(fll, "A-build-e-tarball", file = p.utf8()),
+            Error::Cancelled => fl!(fll, "common-cancelled"),
+            Error::EditFail(p) => fl!(fll, "A-build-e-edit", file = p.utf8()),
+            Error::Makepkg => fl!(fll, "A-build-e-makepkg"),
+            Error::CreateDir(p, _) => fl!(fll, "dir-mkdir", dir = p.utf8()),
+            Error::ReadDir(p, _) => fl!(fll, "err-read-dir", dir = p.utf8()),
+            Error::Pkglist(p, _) => fl!(fll, "A-build-pkglist", dir = p.utf8()),
         }
     }
 }
@@ -97,14 +92,14 @@ fn build_one(
 ) -> Result<Built, Error> {
     // --- Parse the .SRCINFO for metadata --- //
     let path = clone.join(".SRCINFO");
-    let info = Srcinfo::parse_file(path)?;
+    let info = Srcinfo::parse_file(&path).map_err(|e| Error::Srcinfo(path, e))?;
     let base = info.base.pkgbase;
 
     aura!(fll, "A-build-pkg", pkg = base.cyan().bold().to_string());
 
     // --- Prepare the Build Directory --- //
     let build = aur.build.join(&base);
-    std::fs::create_dir_all(&build)?;
+    std::fs::create_dir_all(&build).map_err(|e| Error::CreateDir(build.clone(), e))?;
 
     // --- Copy non-downloadable `source` files and PKGBUILD --- //
     let to_copy = info
@@ -132,7 +127,7 @@ fn build_one(
         })
         .collect::<Validated<(), std::io::Error>>()
         .ok()
-        .map_err(Error::Copies)?;
+        .map_err(Error::CopyBuildFiles)?;
 
     if aur.diff {
         show_diffs(fll, &aur.hashes, &clone, &base)?;
@@ -172,7 +167,7 @@ fn show_diffs(
         Err(e) => warn!("Couldn't read latest hash of {}: {}", pkgbase, e),
         Ok(hash) => {
             if proceed!(fll, "A-build-diff").is_some() {
-                aura_core::git::diff(clone, &hash)?;
+                aura_core::git::diff(clone, &hash).map_err(Error::GitDiff)?;
             }
         }
     }
@@ -212,7 +207,8 @@ fn overwrite_build_files(
 
     // --- Edit any available .patch files --- //
     build_d
-        .read_dir()?
+        .read_dir()
+        .map_err(|e| Error::ReadDir(build_d.to_path_buf(), e))?
         .filter_map(|de| de.ok())
         .map(|de| de.path())
         .filter(|path| path.extension() == Some("patch".as_ref()))
@@ -225,7 +221,8 @@ fn overwrite_build_files(
 fn edit(editor: &str, file: PathBuf) -> Result<(), Error> {
     Command::new(editor)
         .arg(&file)
-        .status()?
+        .status()
+        .map_err(|_| Error::EditFail(file.clone()))?
         .success()
         .then(|| ())
         .ok_or_else(|| Error::EditFail(file))?;
@@ -239,7 +236,11 @@ fn makepkg(within: &Path) -> Result<Vec<PathBuf>, Error> {
     Command::new("makepkg")
         .arg("-f") // TODO Remove or rethink
         .current_dir(within)
-        .status()?
+        .status()
+        // FIXME Tue Jun 21 14:00:15 2022
+        //
+        // This should probably collect the error.
+        .map_err(|_| Error::Makepkg)?
         .success()
         .then(|| ())
         .ok_or(Error::Makepkg)?;
@@ -248,10 +249,12 @@ fn makepkg(within: &Path) -> Result<Vec<PathBuf>, Error> {
     let bytes = Command::new("makepkg")
         .arg("--packagelist")
         .current_dir(within)
-        .output()?
+        .output()
+        .map_err(|e| Error::Pkglist(within.to_path_buf(), e))?
         .stdout;
 
-    let tarballs = std::str::from_utf8(&bytes)?
+    let tarballs = std::str::from_utf8(&bytes)
+        .map_err(Error::Utf8)?
         .lines()
         .map(|line| [line].iter().collect())
         .collect();
@@ -283,7 +286,11 @@ fn move_tarball(source: &Path, target: &Path) -> Result<(), Error> {
     Command::new("mv")
         .arg(source)
         .arg(target)
-        .status()?
+        .status()
+        // FIXME Tue Jun 21 14:04:58 2022
+        //
+        // The error should probably be collected here too.
+        .map_err(|_| Error::TarballMove(source.to_path_buf()))?
         .success()
         .then(|| ())
         .ok_or_else(|| Error::TarballMove(source.to_path_buf()))
@@ -297,7 +304,7 @@ fn build_check(
         Ok(tbs) => Ok(Some(tbs)),
         Err(e) => {
             red!(fll, "A-build-fail");
-            eprintln!("\n  {}\n", e);
+            eprintln!("\n  {}\n", e.localise(fll));
             match proceed!(fll, "continue") {
                 Some(_) => Ok(None),
                 None => Err(Error::Cancelled),

@@ -1,6 +1,7 @@
 //! All functionality involving the `-B` command.
 
 use crate::localization::Localised;
+use crate::utils::PathStr;
 use crate::{aura, green, proceed};
 use alpm::Alpm;
 use aura_core::snapshot::Snapshot;
@@ -52,11 +53,11 @@ impl Localised for Error {
             Error::Dirs(e) => e.localise(fll),
             Error::Pacman(e) => e.localise(fll),
             Error::Readline(_) => fl!(fll, "err-user-input"),
-            Error::JsonWrite(p, _) => fl!(fll, "err-json-write", file = p.display().to_string()),
+            Error::JsonWrite(p, _) => fl!(fll, "err-json-write", file = p.utf8()),
             Error::Cancelled => fl!(fll, "common-cancelled"),
             Error::NoSnapshots => fl!(fll, "B-none"),
-            Error::DeleteFile(p, _) => fl!(fll, "err-del-file", file = p.display().to_string()),
-            Error::OpenFile(p, _) => fl!(fll, "err-open-file", file = p.display().to_string()),
+            Error::DeleteFile(p, _) => fl!(fll, "err-del-file", file = p.utf8()),
+            Error::OpenFile(p, _) => fl!(fll, "err-open-file", file = p.utf8()),
         }
     }
 }

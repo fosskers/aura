@@ -5,6 +5,7 @@ use colored::{ColoredString, Colorize};
 use i18n_embed_fl::fl;
 use rustyline::Editor;
 use std::io::Write;
+use std::path::Path;
 use std::str::FromStr;
 use unic_langid::LanguageIdentifier;
 
@@ -31,6 +32,20 @@ impl<T, E, R> ResultVoid<E, R> for Result<T, E> {
             Ok(_) => Ok(()),
             Err(e) => Err(From::from(e)),
         }
+    }
+}
+
+/// Produce a proper UTF-8 `String` from a `Path`-like type.
+pub(crate) trait PathStr {
+    fn utf8(&self) -> String;
+}
+
+impl<T> PathStr for T
+where
+    T: AsRef<Path>,
+{
+    fn utf8(&self) -> String {
+        self.as_ref().display().to_string()
     }
 }
 
