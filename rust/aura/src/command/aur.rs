@@ -5,7 +5,7 @@ mod build;
 use crate::env::Env;
 use crate::localization::Localised;
 use crate::utils::{PathStr, ResultVoid};
-use crate::{aura, green, proceed, red};
+use crate::{aura, green, proceed};
 use alpm::Alpm;
 use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
@@ -22,25 +22,28 @@ use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::ops::Not;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
-use validated::Validated;
 
 #[derive(FromVariants)]
 pub(crate) enum Error {
     Fetch(crate::fetch::Error),
     Dirs(crate::dirs::Error),
-    Io(std::io::Error),
     Git(aura_core::git::Error),
     Build(build::Error),
     Deps(aura_core::aur::dependencies::Error<crate::fetch::Error>),
     Pacman(crate::pacman::Error),
     Env(crate::env::Error),
     Aur(aura_core::aur::Error),
-    /// An error parsing a `.SRCINFO` file.
-    Srcinfo(srcinfo::Error),
+    #[from_variants(skip)]
+    Srcinfo(PathBuf, srcinfo::Error),
     #[from_variants(skip)]
     PathComponent(PathBuf),
+    #[from_variants(skip)]
+    FileOpen(PathBuf, std::io::Error),
+    #[from_variants(skip)]
+    FileWrite(PathBuf, std::io::Error),
+    NoPackages,
     Cancelled,
-    Silent,
+    Stdout,
 }
 
 impl Localised for Error {
@@ -48,17 +51,19 @@ impl Localised for Error {
         match self {
             Error::Fetch(e) => e.localise(fll),
             Error::Dirs(e) => e.localise(fll),
-            Error::Io(_) => todo!(),
-            Error::Git(_) => todo!(),
+            Error::Git(e) => e.localise(fll),
             Error::Build(e) => e.localise(fll),
-            Error::Deps(_) => todo!(),
+            Error::Deps(e) => e.localise(fll),
             Error::Pacman(e) => e.localise(fll),
             Error::Env(e) => e.localise(fll),
-            Error::Aur(_) => todo!(),
-            Error::Srcinfo(_) => todo!(),
+            Error::Aur(e) => e.localise(fll),
+            Error::Srcinfo(p, _) => fl!(fll, "err-srcinfo", file = p.utf8()),
             Error::PathComponent(p) => fl!(fll, "A-install-path-comp", path = p.utf8()),
             Error::Cancelled => fl!(fll, "common-cancelled"),
-            Error::Silent => todo!(),
+            Error::NoPackages => fl!(fll, "common-no-packages"),
+            Error::Stdout => fl!(fll, "err-write"),
+            Error::FileOpen(p, _) => fl!(fll, "err-file-open", file = p.utf8()),
+            Error::FileWrite(p, _) => fl!(fll, "err-file-write", file = p.utf8()),
         }
     }
 }
@@ -143,8 +148,8 @@ pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<()
             (&sub, package_date(p.first_submitted)),
             (&upd, package_date(p.last_modified)),
         ];
-        crate::utils::info(&mut w, fll.current_language(), &pairs)?;
-        writeln!(w)?;
+        crate::utils::info(&mut w, fll.current_language(), &pairs).map_err(|_| Error::Stdout)?;
+        writeln!(w).map_err(|_| Error::Stdout)?;
     }
 
     Ok(())
@@ -220,12 +225,13 @@ pub(crate) fn pkgbuild(pkg: &str, clone_d: &Path) -> Result<(), Error> {
     let path = aura_core::aur::clone_path_of_pkgbase(clone_d, pkg, &crate::fetch::fetch_json)?
         .join("PKGBUILD");
 
-    let file = BufReader::new(File::open(path)?);
+    let file = BufReader::new(File::open(&path).map_err(|e| Error::FileOpen(path, e))?);
     let mut out = BufWriter::new(std::io::stdout());
 
     file.lines()
         .filter_map(|line| line.ok())
-        .try_for_each(|line| writeln!(out, "{}", line))?;
+        .try_for_each(|line| writeln!(out, "{}", line))
+        .map_err(|_| Error::Stdout)?;
 
     Ok(())
 }
@@ -251,36 +257,18 @@ fn package_date(epoch: u64) -> ColoredString {
 }
 
 /// Clone the AUR repository of given packages.
-pub(crate) fn clone_aur_repos(
-    fll: &FluentLanguageLoader,
-    packages: &[String],
-) -> Result<(), Error> {
-    let clones: Validated<(), &str> = packages
-        .par_iter()
+pub(crate) fn clone_aur_repos(fll: &FluentLanguageLoader, pkgs: &[String]) -> Result<(), Error> {
+    pkgs.par_iter()
         .map(|p| {
             let pkg = p.as_str();
             aura!(fll, "A-w", package = pkg);
-            aura_core::aur::clone_aur_repo(None, p)
-                .map_err(|_| pkg)
-                .void()
+            aura_core::aur::clone_aur_repo(None, p).void()
         })
-        .collect();
+        .collect::<Result<(), aura_core::git::Error>>()
+        .map_err(Error::Git)?;
 
-    match clones {
-        Validated::Good(_) => {
-            green!(fll, "common-done");
-            Ok(())
-        }
-        Validated::Fail(bads) => {
-            red!(fll, "A-w-fail");
-
-            for bad in bads {
-                eprintln!("  - {}", bad);
-            }
-
-            Err(Error::Silent)
-        }
-    }
+    green!(fll, "common-done");
+    Ok(())
 }
 
 /// Pull the latest commits from every clone in the `packages` directory.
@@ -339,8 +327,7 @@ where
 
     // Exit early if the user passed no packages.
     if pkgs.is_empty() {
-        red!(fll, "common-no-packages");
-        return Err(Error::Silent);
+        return Err(Error::NoPackages);
     }
 
     let pool = env.alpm_pool()?;
@@ -422,7 +409,8 @@ fn update_hash(hashes: &Path, clone: &Path) -> Result<(), Error> {
         .map(|c| c.as_os_str())
         .ok_or_else(|| Error::PathComponent(clone.to_path_buf()))?;
 
-    std::fs::write(hashes.join(base), hash)?;
+    let full = hashes.join(base);
+    std::fs::write(&full, hash).map_err(|e| Error::FileWrite(full, e))?;
     Ok(())
 }
 
@@ -458,8 +446,11 @@ pub(crate) fn upgrade<'a>(
     info!("Reading .SRCINFO files...");
     let srcinfos = clones
         .into_par_iter()
-        .map(|path| Srcinfo::parse_file(path.join(".SRCINFO")))
-        .collect::<Result<Vec<_>, srcinfo::Error>>()?;
+        .map(|path| {
+            let full = path.join(".SRCINFO");
+            Srcinfo::parse_file(&full).map_err(|e| Error::Srcinfo(full, e))
+        })
+        .collect::<Result<Vec<_>, Error>>()?;
     info!("Pulling AUR data...");
     let from_api: Vec<aura_core::faur::Package> = aura_core::faur::info(
         srcinfos.iter().map(|p| p.base.pkgbase.as_str()),

@@ -81,7 +81,7 @@ impl Localised for Error {
             Error::NoPackages => fl!(fll, "common-no-packages"),
             Error::NothingToDo => fl!(fll, "common-no-work"),
             Error::AlreadyExists(p) => fl!(fll, "C-b-file", target = p.utf8()),
-            Error::Delete(p) => fl!(fll, "err-del-file", file = p.utf8()),
+            Error::Delete(p) => fl!(fll, "err-file-del", file = p.utf8()),
             Error::ReadDir(p) => fl!(fll, "err-read-dir", dir = p.utf8()),
             Error::Stdout(_) => fl!(fll, "err-write"),
             Error::CurrDir(_) => fl!(fll, "C-b-curr"),

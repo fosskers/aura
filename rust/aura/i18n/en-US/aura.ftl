@@ -172,22 +172,28 @@ git-pull = A git pull failed: { $dir }
 git-clone = A git clone failed: { $dir }
 git-io = Calling git somehow failed.
 
+# Faur Calls
+faur-fetch = Calling the Faur utterly failed: { $pkg }
+faur-unknown = Unknown package: { $pkg }
+faur-too-many = More results returned from Faur than expected: { $pkg }
+
 # Common Errors
 err-alpm = Failed to open ALPM handle.
-err-pool = Failed to create an ALPM connection pool.
 err-config-path = Failed to determine the path to Aura's config file.
+err-curl = A CURL transaction failed.
+err-file-del = Failed to delete: { $file }
+err-file-open = Failed to open file handle to: { $file }
+err-file-write = Failed to write file: { $file }
+err-json-decode = Failed to decode JSON from: { $url }
+err-json-write = Failed to write JSON to: { $file }
 err-none-exist = None of the specified packages exist.
+err-pool = Failed to create an ALPM connection pool.
+err-read-dir = Failed to read directory: { $dir }
+err-srcinfo = Failed to parse .SRCINFO: { $file }
 err-sudo = Failed to raise privileges.
 err-user-input = Failed to get user input.
-err-write = Somehow failed to write to stdout.
-err-read-dir = Failed to read directory: { $dir }
-err-del-file = Failed to delete: { $file }
-err-open-file = Failed to open file handle to: { $file }
-err-json-write = Failed to write JSON to: { $file }
-err-json-decode = Failed to decode JSON from: { $url }
-err-curl = A CURL transaction failed.
 err-utf8 = A UTF-8 conversion failed.
-err-srcinfo = Failed to parse .SRCINFO: { $file }
+err-write = Somehow failed to write to stdout.
 
 # Common Fields
 common-yes = Yes

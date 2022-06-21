@@ -1,7 +1,9 @@
 //! Utilities for localizing messages printed by the Aura executable.
 
+use crate::utils::PathStr;
 use i18n_embed::fluent::{fluent_language_loader, FluentLanguageLoader};
 use i18n_embed::{I18nEmbedError, LanguageLoader};
+use i18n_embed_fl::fl;
 use rust_embed::RustEmbed;
 use std::collections::HashMap;
 use unic_langid::LanguageIdentifier;
@@ -34,6 +36,53 @@ struct Translations;
 pub(crate) trait Localised {
     /// Localise the content of a type.
     fn localise(&self, fll: &FluentLanguageLoader) -> String;
+}
+
+impl Localised for aura_core::git::Error {
+    fn localise(&self, fll: &FluentLanguageLoader) -> String {
+        match self {
+            aura_core::git::Error::Io(_) => fl!(fll, "git-io"),
+            aura_core::git::Error::Clone(p) => fl!(fll, "git-clone", dir = p.utf8()),
+            aura_core::git::Error::Pull(p) => fl!(fll, "git-pull", dir = p.utf8()),
+            aura_core::git::Error::Diff(p) => fl!(fll, "git-diff", file = p.utf8()),
+            aura_core::git::Error::ReadHash(_) => fl!(fll, "git-hash"),
+        }
+    }
+}
+
+impl Localised for aura_core::aur::Error {
+    fn localise(&self, fll: &FluentLanguageLoader) -> String {
+        match self {
+            aura_core::aur::Error::Git(e) => e.localise(fll),
+            aura_core::aur::Error::FaurFetch(p) => fl!(fll, "faur-fetch", pkg = p.as_str()),
+            aura_core::aur::Error::PackageDoesNotExist(p) => {
+                fl!(fll, "faur-unknown", pkg = p.as_str())
+            }
+            aura_core::aur::Error::TooManyFaurResults(p) => {
+                fl!(fll, "faur-too-many", pkg = p.as_str())
+            }
+        }
+    }
+}
+
+impl<E> Localised for aura_core::aur::dependencies::Error<E>
+where
+    E: Localised,
+{
+    fn localise(&self, fll: &FluentLanguageLoader) -> String {
+        match self {
+            aura_core::aur::dependencies::Error::PoisonedMutex => todo!(),
+            aura_core::aur::dependencies::Error::R2D2(_) => todo!(),
+            aura_core::aur::dependencies::Error::Srcinfo(_) => todo!(),
+            aura_core::aur::dependencies::Error::Git(_) => todo!(),
+            aura_core::aur::dependencies::Error::Resolutions(_) => todo!(),
+            aura_core::aur::dependencies::Error::DoesntExist(_) => todo!(),
+            aura_core::aur::dependencies::Error::DoesntExistWithParent(_, _) => todo!(),
+            aura_core::aur::dependencies::Error::MalformedGraph => todo!(),
+            aura_core::aur::dependencies::Error::CyclicDep(_) => todo!(),
+            aura_core::aur::dependencies::Error::Faur(_) => todo!(),
+        }
+    }
 }
 
 /// Load the localizations for a particular language, or just fallback to

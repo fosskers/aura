@@ -31,13 +31,7 @@ impl Localised for Error {
     fn localise(&self, fll: &FluentLanguageLoader) -> String {
         match self {
             Error::Srcinfo(p, _) => fl!(fll, "err-srcinfo", file = p.utf8()),
-            Error::GitDiff(e) => match e {
-                aura_core::git::Error::Io(_) => fl!(fll, "git-io"),
-                aura_core::git::Error::Clone(p) => fl!(fll, "git-clone", dir = p.utf8()),
-                aura_core::git::Error::Pull(p) => fl!(fll, "git-pull", dir = p.utf8()),
-                aura_core::git::Error::Diff(p) => fl!(fll, "git-diff", file = p.utf8()),
-                aura_core::git::Error::ReadHash(_) => fl!(fll, "git-hash"),
-            },
+            Error::GitDiff(e) => e.localise(fll),
             Error::CopyBuildFiles(_) => fl!(fll, "A-build-e-copies"),
             Error::Utf8(_) => fl!(fll, "err-utf8"),
             Error::FilenameExtraction(p) => fl!(fll, "A-build-e-filename", file = p.utf8()),

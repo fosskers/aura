@@ -56,8 +56,8 @@ impl Localised for Error {
             Error::JsonWrite(p, _) => fl!(fll, "err-json-write", file = p.utf8()),
             Error::Cancelled => fl!(fll, "common-cancelled"),
             Error::NoSnapshots => fl!(fll, "B-none"),
-            Error::DeleteFile(p, _) => fl!(fll, "err-del-file", file = p.utf8()),
-            Error::OpenFile(p, _) => fl!(fll, "err-open-file", file = p.utf8()),
+            Error::DeleteFile(p, _) => fl!(fll, "err-file-del", file = p.utf8()),
+            Error::OpenFile(p, _) => fl!(fll, "err-file-open", file = p.utf8()),
         }
     }
 }
