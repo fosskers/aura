@@ -12,6 +12,13 @@ packages:
   original:
     hackage: aeson-2.1.0.0
 - completed:
+    hackage: algebraic-graphs-0.7@sha256:d7703fb764ec14bbf7e2ee6296045d8bc1ddb9c1acdcd1841c6299cc6b5955fb,8618
+    pantry-tree:
+      size: 4347
+      sha256: 5caf69702b46f7be7744f357bc59bd56c0ae61a1addfcfc3b10b289629deb3db
+  original:
+    hackage: algebraic-graphs-0.7
+- completed:
     hackage: generically-0.1@sha256:16d54a08bcdf708395c2200a28ffcba55e90479dc96ed617dbb94f0411f7a7af,1024
     pantry-tree:
       size: 232

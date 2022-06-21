@@ -21,4 +21,5 @@ packages:
 
 extra-deps:
   - aeson-2.1.0.0
+  - algebraic-graphs-0.7
   - generically-0.1
