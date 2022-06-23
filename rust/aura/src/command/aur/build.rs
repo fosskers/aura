@@ -1,10 +1,11 @@
+use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::{PathStr, ResultVoid};
 use crate::{aura, proceed, red};
 use colored::Colorize;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
-use log::{debug, warn};
+use log::{debug, error, warn};
 use nonempty::NonEmpty;
 use srcinfo::Srcinfo;
 use std::ops::Not;
@@ -25,6 +26,29 @@ pub(crate) enum Error {
     Pkglist(PathBuf, std::io::Error),
     Makepkg,
     Cancelled,
+}
+
+impl Nested for Error {
+    fn nested(&self) {
+        match self {
+            Error::Srcinfo(_, e) => error!("{e}"),
+            Error::GitDiff(e) => e.nested(),
+            Error::CopyBuildFiles(es) => {
+                for e in es {
+                    error!("{e}");
+                }
+            }
+            Error::Utf8(e) => error!("{e}"),
+            Error::FilenameExtraction(_) => {}
+            Error::TarballMove(_) => {}
+            Error::EditFail(_) => {}
+            Error::CreateDir(_, e) => error!("{e}"),
+            Error::ReadDir(_, e) => error!("{e}"),
+            Error::Pkglist(_, e) => error!("{e}"),
+            Error::Makepkg => {}
+            Error::Cancelled => {}
+        }
+    }
 }
 
 impl Localised for Error {

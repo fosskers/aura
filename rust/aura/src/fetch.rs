@@ -1,10 +1,12 @@
 //! Fetching data from remote endpoints.
 
+use crate::error::Nested;
 use crate::localization::Localised;
 use curl::easy::Easy;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
+use log::error;
 use serde::de::DeserializeOwned;
 
 #[derive(FromVariants)]
@@ -12,6 +14,15 @@ pub enum Error {
     Curl(curl::Error),
     #[from_variants(skip)]
     Json(String, serde_json::Error),
+}
+
+impl Nested for Error {
+    fn nested(&self) {
+        match self {
+            Error::Curl(e) => error!("{e}"),
+            Error::Json(_, e) => error!("{e}"),
+        }
+    }
 }
 
 impl Localised for Error {

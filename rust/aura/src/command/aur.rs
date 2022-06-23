@@ -3,6 +3,7 @@
 mod build;
 
 use crate::env::Env;
+use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::{PathStr, ResultVoid};
 use crate::{aura, green, proceed};
@@ -13,7 +14,7 @@ use from_variants::FromVariants;
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
 use i18n_embed_fl::fl;
 use linya::Progress;
-use log::{debug, info};
+use log::{debug, error, info};
 use rayon::prelude::*;
 use srcinfo::Srcinfo;
 use std::collections::HashSet;
@@ -44,6 +45,28 @@ pub(crate) enum Error {
     NoPackages,
     Cancelled,
     Stdout,
+}
+
+impl Nested for Error {
+    fn nested(&self) {
+        match self {
+            Error::Fetch(e) => e.nested(),
+            Error::Dirs(e) => e.nested(),
+            Error::Git(e) => e.nested(),
+            Error::Build(e) => e.nested(),
+            Error::Deps(e) => e.nested(),
+            Error::Pacman(e) => e.nested(),
+            Error::Env(e) => e.nested(),
+            Error::Aur(e) => e.nested(),
+            Error::Srcinfo(_, e) => error!("{e}"),
+            Error::PathComponent(_) => {}
+            Error::FileOpen(_, e) => error!("{e}"),
+            Error::FileWrite(_, e) => error!("{e}"),
+            Error::NoPackages => {}
+            Error::Cancelled => {}
+            Error::Stdout => {}
+        }
+    }
 }
 
 impl Localised for Error {

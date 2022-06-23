@@ -1,8 +1,10 @@
 //! All errors that can occur in the Aura executable.
 
 use crate::localization::Localised;
+use aura_core::aur::dependencies as deps;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
+use log::error;
 
 /// Error type for all issues that can occur in the Aura library or executable.
 #[derive(FromVariants)]
@@ -26,7 +28,7 @@ impl Nested for Error {
     /// Log nested errors.
     fn nested(&self) {
         match self {
-            Error::A(_) => todo!(),
+            Error::A(e) => e.nested(),
             Error::B(e) => e.nested(),
             Error::C(e) => e.nested(),
             Error::L(e) => e.nested(),
@@ -68,4 +70,47 @@ impl Localised for Error {
 /// to the error handling facilities of the application.
 pub(crate) trait Nested {
     fn nested(&self);
+}
+
+impl Nested for aura_core::git::Error {
+    fn nested(&self) {
+        match self {
+            aura_core::git::Error::Io(e) => error!("{e}"),
+            aura_core::git::Error::Clone(_) => {}
+            aura_core::git::Error::Pull(_) => {}
+            aura_core::git::Error::Diff(_) => {}
+            aura_core::git::Error::ReadHash(e) => error!("{e}"),
+        }
+    }
+}
+
+impl Nested for aura_core::aur::Error {
+    fn nested(&self) {
+        match self {
+            aura_core::aur::Error::Git(e) => e.nested(),
+            aura_core::aur::Error::FaurFetch(_) => {}
+            aura_core::aur::Error::PackageDoesNotExist(_) => {}
+            aura_core::aur::Error::TooManyFaurResults(_) => {}
+        }
+    }
+}
+
+impl<E> Nested for deps::Error<E>
+where
+    E: Nested,
+{
+    fn nested(&self) {
+        match self {
+            deps::Error::PoisonedMutex => {}
+            deps::Error::R2D2(e) => error!("{e}"),
+            deps::Error::Srcinfo(_, e) => error!("{e}"),
+            deps::Error::Git(e) => e.nested(),
+            deps::Error::Resolutions(es) => es.iter().for_each(|e| e.nested()),
+            deps::Error::DoesntExist(_) => {}
+            deps::Error::DoesntExistWithParent(_, _) => {}
+            deps::Error::MalformedGraph => {}
+            deps::Error::CyclicDep(_) => {}
+            deps::Error::Faur(e) => e.nested(),
+        }
+    }
 }
