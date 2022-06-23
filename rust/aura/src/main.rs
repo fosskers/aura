@@ -15,7 +15,7 @@ pub(crate) mod pacman;
 pub(crate) mod utils;
 
 use crate::command::{aur, cache, check, conf, deps, log, open, orphans, snapshot, stats};
-use crate::error::Error;
+use crate::error::{Error, Nested};
 use crate::flags::{Args, Cache, SubCmd, AURA_GLOBALS};
 use crate::localization::Localised;
 use ::log::debug;

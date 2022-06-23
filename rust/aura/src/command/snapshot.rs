@@ -1,5 +1,6 @@
 //! All functionality involving the `-B` command.
 
+use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::PathStr;
 use crate::{aura, green, proceed};
@@ -32,8 +33,8 @@ pub(crate) enum Error {
     NoSnapshots,
 }
 
-impl Error {
-    pub(crate) fn nested(&self) {
+impl Nested for Error {
+    fn nested(&self) {
         match self {
             Error::Dirs(e) => e.nested(),
             Error::Pacman(e) => e.nested(),

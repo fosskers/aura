@@ -1,5 +1,6 @@
 //! Sugar for interacting with Pacman.
 
+use crate::error::Nested;
 use crate::localization::Localised;
 use i18n_embed_fl::fl;
 use log::error;
@@ -13,8 +14,8 @@ pub(crate) enum Error {
     Misc,
 }
 
-impl Error {
-    pub(crate) fn nested(&self) {
+impl Nested for Error {
+    fn nested(&self) {
         match self {
             Error::ExternalCmd(e) => error!("{e}"),
             Error::InstallFromTarball => {}

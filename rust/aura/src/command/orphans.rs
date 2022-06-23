@@ -1,6 +1,8 @@
 //! All functionality involving the `-O` command.
 
-use crate::{green, localization::Localised, proceed, yellow};
+use crate::error::Nested;
+use crate::localization::Localised;
+use crate::{green, proceed, yellow};
 use alpm::{Alpm, PackageReason, TransFlag};
 use aura_arch as arch;
 use colored::*;
@@ -23,8 +25,8 @@ pub(crate) enum Error {
     NoneExist,
 }
 
-impl Error {
-    pub(crate) fn nested(&self) {
+impl Nested for Error {
+    fn nested(&self) {
         match self {
             Error::SetExplicit(_, e) => error!("{e}"),
             Error::Readline(e) => error!("{e}"),

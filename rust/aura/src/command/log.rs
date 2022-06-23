@@ -3,6 +3,7 @@
 #![allow(clippy::many_single_char_names)]
 
 use crate::command::misc;
+use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::ResultVoid;
 use aura_core as core;
@@ -23,8 +24,8 @@ pub(crate) enum Error {
     Info(std::io::Error),
 }
 
-impl Error {
-    pub(crate) fn nested(&self) {
+impl Nested for Error {
+    fn nested(&self) {
         match self {
             Error::Search(_, e) => error!("{e}"),
             Error::View(e) => error!("{e}"),

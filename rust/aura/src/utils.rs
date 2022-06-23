@@ -1,5 +1,6 @@
 //! Various utility functions.
 
+use crate::error::Nested;
 use crate::localization::Localised;
 use colored::{ColoredString, Colorize};
 use i18n_embed_fl::fl;
@@ -107,8 +108,8 @@ pub(crate) fn select(msg: &str, max: usize) -> Result<usize, rustyline::error::R
 
 pub(crate) struct SudoError;
 
-impl SudoError {
-    pub(crate) fn nested(&self) {}
+impl Nested for SudoError {
+    fn nested(&self) {}
 }
 
 impl Localised for SudoError {

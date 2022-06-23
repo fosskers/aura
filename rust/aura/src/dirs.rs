@@ -1,5 +1,6 @@
 //! Directories critical to Aura's function.
 
+use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::PathStr;
 use i18n_embed_fl::fl;
@@ -14,8 +15,8 @@ pub enum Error {
     XdgCache(std::env::VarError),
 }
 
-impl Error {
-    pub(crate) fn nested(&self) {
+impl Nested for Error {
+    fn nested(&self) {
         match self {
             Error::Mkdir(_, e) => error!("{e}"),
             Error::XdgHome(e) => error!("{e}"),

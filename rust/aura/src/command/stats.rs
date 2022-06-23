@@ -1,5 +1,6 @@
 //! Statistics about the user's machine or about Aura itself.
 
+use crate::error::Nested;
 use crate::localization::{self, Localised};
 use alpm::Alpm;
 use colored::*;
@@ -16,8 +17,8 @@ pub(crate) enum Error {
     LangLoad(i18n_embed::I18nEmbedError),
 }
 
-impl Error {
-    pub(crate) fn nested(&self) {
+impl Nested for Error {
+    fn nested(&self) {
         match self {
             Error::LangLoad(e) => error!("{e}"),
         }

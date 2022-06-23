@@ -1,6 +1,7 @@
 //! Analyze many aspects of your installation for validity.
 
 use crate::env::{Aur, Env};
+use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::PathStr;
 use crate::{aura, executable, green};
@@ -28,8 +29,8 @@ pub(crate) enum Error {
     Env(crate::env::Error),
 }
 
-impl Error {
-    pub(crate) fn nested(&self) {
+impl Nested for Error {
+    fn nested(&self) {
         match self {
             Error::Env(e) => e.nested(),
         }

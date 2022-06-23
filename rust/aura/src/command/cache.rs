@@ -2,6 +2,7 @@
 
 use crate::download::download_with_progress;
 use crate::env::Env;
+use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::PathStr;
 use crate::{aura, green, proceed, yellow};
@@ -52,8 +53,8 @@ pub(crate) enum Error {
     Mkdir(PathBuf, std::io::Error),
 }
 
-impl Error {
-    pub(crate) fn nested(&self) {
+impl Nested for Error {
+    fn nested(&self) {
         match self {
             Error::Readline(e) => error!("{e}"),
             Error::Sudo(e) => e.nested(),

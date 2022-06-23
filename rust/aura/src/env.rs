@@ -1,6 +1,7 @@
 //! Aura runtime settings.
 
 use crate::dirs;
+use crate::error::Nested;
 use crate::localization::Localised;
 use alpm::Alpm;
 use from_variants::FromVariants;
@@ -23,8 +24,8 @@ pub(crate) enum Error {
     MissingEditor,
 }
 
-impl Error {
-    pub(crate) fn nested(&self) {
+impl Nested for Error {
+    fn nested(&self) {
         match self {
             Error::Dirs(e) => e.nested(),
             Error::PConf(e) => error!("{e}"),

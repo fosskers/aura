@@ -2,6 +2,7 @@
 
 use crate::command::misc;
 use crate::env::Env;
+use crate::error::Nested;
 use crate::flags::Conf;
 use crate::localization::Localised;
 use crate::utils::{PathStr, ResultVoid};
@@ -19,8 +20,8 @@ pub(crate) enum Error {
     CouldntOpen(String, std::io::Error),
 }
 
-impl Error {
-    pub(crate) fn nested(&self) {
+impl Nested for Error {
+    fn nested(&self) {
         match self {
             Error::PathToAuraConfig(e) => e.nested(),
             Error::SerializeEnv(e) => error!("{e}"),

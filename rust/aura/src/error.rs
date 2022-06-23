@@ -22,9 +22,9 @@ pub(crate) enum Error {
     Stats(crate::stats::Error),
 }
 
-impl Error {
+impl Nested for Error {
     /// Log nested errors.
-    pub(crate) fn nested(&self) {
+    fn nested(&self) {
         match self {
             Error::A(_) => todo!(),
             Error::B(e) => e.nested(),
@@ -59,4 +59,13 @@ impl Localised for Error {
             Error::Stats(e) => e.localise(fll),
         }
     }
+}
+
+/// Do something with the nested errors of this type.
+///
+/// Quite weak as far as typeclasses go; it's entirely lawless. It's entire
+/// purpose is to be able to render errors out of lib crates that have no access
+/// to the error handling facilities of the application.
+pub(crate) trait Nested {
+    fn nested(&self);
 }
