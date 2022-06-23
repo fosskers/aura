@@ -3,7 +3,7 @@ members = [
 # The executable
 "aura",
 # Core libraries
-"aura-core", "aura-arch", "aura-common",
+"aura-core", "aura-arch",
 # Ecosystem libraries
 "r2d2-alpm"
 ]

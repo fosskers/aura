@@ -91,10 +91,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "aura-common"
-version = "0.1.0"
-
-[[package]]
 name = "aura-core"
 version = "0.1.0"
 dependencies = [
