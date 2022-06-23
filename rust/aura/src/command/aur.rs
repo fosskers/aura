@@ -331,13 +331,9 @@ pub(crate) fn refresh(
         })
         .collect::<Result<(), aura_core::git::Error>>()?;
 
-    green!(fll, "common-done");
     Ok(())
 }
 
-// TODO Thu Jan 13 17:41:55 2022
-//
-// This will obviously require more arguments.
 pub(crate) fn install<'a, I>(
     fll: &FluentLanguageLoader,
     env: &Env,
@@ -442,9 +438,14 @@ pub(crate) fn upgrade<'a>(
     fll: &FluentLanguageLoader,
     alpm: &'a Alpm,
     env: Env,
+    refresh_also: bool,
 ) -> Result<(), Error> {
     info!("Upgrading all AUR packages.");
     debug!("Will ignore: {:?}", env.aur.ignores);
+
+    if refresh_also {
+        refresh(fll, alpm, &env.aur.clones)?;
+    }
 
     // --- Query database for all non-repo packages --- //
     let mut foreigns: Vec<aura_core::Package<'a>> =

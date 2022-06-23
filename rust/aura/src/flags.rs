@@ -885,7 +885,7 @@ pub(crate) struct Aur {
     pub(crate) wclone: Vec<String>,
 
     /// Pull the latest changes for every local copy of an AUR package.
-    #[clap(group = "aur", long, short = 'y', display_order = 1)]
+    #[clap(long, short = 'y', display_order = 1)]
     pub(crate) refresh: bool,
 
     /// Packages to install.
