@@ -66,7 +66,7 @@ pub(crate) fn localization() -> Result<(), Error> {
         };
         let pad = long - visual_len(&lang, &n);
         println!(
-            "{} [{}]{:w$} {:02}/{} ({:.2}%)",
+            "{} [{}]{:w$} {:03}/{} ({:.2}%)",
             l,
             n,
             "",

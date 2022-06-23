@@ -18,7 +18,7 @@ A-build-fail = Package failed to build, citing:
 A-build-e-makepkg = makepkg failed.
 A-build-e-edit = Failed to edit: { $file }
 A-build-e-tarball = Failed to move: { $file }
-A-build-e-filename = Failed to etract filename from: { $file }
+A-build-e-filename = Failed to extract filename from: { $file }
 A-build-e-copies = Failed to copy build files.
 A-build-pkglist = Failed to determine makepkg output paths from: { $dir }
 
