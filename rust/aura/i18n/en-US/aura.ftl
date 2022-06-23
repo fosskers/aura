@@ -165,6 +165,13 @@ dir-mkdir = Failed to create the directory: { $dir }.
 dir-home = Unable to determine Aura's config directory.
 dir-cache = Unable to determine Aura's cache directory.
 
+# Dependency Resolution
+dep-exist = The package { $pkg } does not exist.
+dep-exist-par = The dependency { $pkg } of { $par } does not exist.
+dep-graph = The dependency graph was somehow malformed.
+dep-cycle = There was a cyclic dependency involving: { $pkg }
+dep-multi = There were multiple errors during dependency resolution.
+
 # Git Operations
 git-diff = A git diff failed for: { $file }
 git-hash = Reading a git hash into Rust failed.
@@ -187,13 +194,15 @@ err-file-write = Failed to write file: { $file }
 err-json-decode = Failed to decode JSON from: { $url }
 err-json-write = Failed to write JSON to: { $file }
 err-none-exist = None of the specified packages exist.
-err-pool = Failed to create an ALPM connection pool.
+err-pool-create = Failed to create an ALPM connection pool.
+err-pool-get = Failed to get an ALPM handle from the connection pool.
 err-read-dir = Failed to read directory: { $dir }
 err-srcinfo = Failed to parse .SRCINFO: { $file }
 err-sudo = Failed to raise privileges.
 err-user-input = Failed to get user input.
 err-utf8 = A UTF-8 conversion failed.
 err-write = Somehow failed to write to stdout.
+err-mutex = A mutex was poisoned.
 
 # Common Fields
 common-yes = Yes

@@ -1,6 +1,8 @@
 //! Utilities for localizing messages printed by the Aura executable.
 
 use crate::utils::PathStr;
+use aura_core::aur::dependencies as deps;
+use aura_core::Apply;
 use i18n_embed::fluent::{fluent_language_loader, FluentLanguageLoader};
 use i18n_embed::{I18nEmbedError, LanguageLoader};
 use i18n_embed_fl::fl;
@@ -65,22 +67,35 @@ impl Localised for aura_core::aur::Error {
     }
 }
 
-impl<E> Localised for aura_core::aur::dependencies::Error<E>
+impl<E> Localised for deps::Error<E>
 where
     E: Localised,
 {
     fn localise(&self, fll: &FluentLanguageLoader) -> String {
         match self {
-            aura_core::aur::dependencies::Error::PoisonedMutex => todo!(),
-            aura_core::aur::dependencies::Error::R2D2(_) => todo!(),
-            aura_core::aur::dependencies::Error::Srcinfo(_) => todo!(),
-            aura_core::aur::dependencies::Error::Git(_) => todo!(),
-            aura_core::aur::dependencies::Error::Resolutions(_) => todo!(),
-            aura_core::aur::dependencies::Error::DoesntExist(_) => todo!(),
-            aura_core::aur::dependencies::Error::DoesntExistWithParent(_, _) => todo!(),
-            aura_core::aur::dependencies::Error::MalformedGraph => todo!(),
-            aura_core::aur::dependencies::Error::CyclicDep(_) => todo!(),
-            aura_core::aur::dependencies::Error::Faur(_) => todo!(),
+            deps::Error::PoisonedMutex => fl!(fll, "err-mutex"),
+            deps::Error::R2D2(_) => fl!(fll, "err-pool-get"),
+            deps::Error::Srcinfo(p, _) => fl!(fll, "err-srcinfo", file = p.utf8()),
+            deps::Error::Git(e) => e.localise(fll),
+            deps::Error::Resolutions(es) => {
+                let iter = es.iter().map(|e| format!(" - {}", e.localise(fll)));
+
+                [fl!(fll, "dep-multi"), "".to_string()]
+                    .into_iter()
+                    .chain(iter)
+                    // FIXME Thu Jun 23 10:21:03 2022
+                    //
+                    // Use built-in `intersperse` once it stabilizes.
+                    .apply(|i| itertools::intersperse(i, "\n".to_string()))
+                    .collect()
+            }
+            deps::Error::DoesntExist(p) => fl!(fll, "dep-exist", pkg = p.as_str()),
+            deps::Error::DoesntExistWithParent(a, b) => {
+                fl!(fll, "dep-exist-par", pkg = a.as_str(), par = b.as_str())
+            }
+            deps::Error::MalformedGraph => fl!(fll, "dep-graph"),
+            deps::Error::CyclicDep(p) => fl!(fll, "dep-cycle", pkg = p.as_str()),
+            deps::Error::Faur(e) => e.localise(fll),
         }
     }
 }

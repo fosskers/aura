@@ -42,7 +42,7 @@ impl Localised for Error {
             Error::PConf(_) => fl!(fll, "env-pconf"),
             Error::MissingEditor => fl!(fll, "env-missing-editor"),
             Error::Alpm(_) => fl!(fll, "err-alpm"),
-            Error::R2d2(_) => fl!(fll, "err-pool"),
+            Error::R2d2(_) => fl!(fll, "err-pool-create"),
         }
     }
 }
