@@ -7,6 +7,7 @@ A-install-pulling = Pulling known packages...
 A-install-deps = Resolving dependencies...
 A-install-repo-pkgs = Repository dependencies:
 A-install-aur-pkgs = AUR packages:
+A-install-path-comp = Failed to extract final component of: { $path }
 
 A-build-prep = Preparing build directories...
 A-build-pkg = Building { $pkg }...
@@ -14,6 +15,12 @@ A-build-diff = Display diffs of build files?
 A-build-hotedit-pkgbuild = Edit the PKGBUILD?
 A-build-hotedit-install = Edit the .install file?
 A-build-fail = Package failed to build, citing:
+A-build-e-makepkg = makepkg failed.
+A-build-e-edit = Failed to edit: { $file }
+A-build-e-tarball = Failed to move: { $file }
+A-build-e-filename = Failed to etract filename from: { $file }
+A-build-e-copies = Failed to copy build files.
+A-build-pkglist = Failed to determine makepkg output paths from: { $dir }
 
 A-i-repo = Repository
 A-i-version = Version
@@ -65,6 +72,7 @@ C-b-file = { $target } already exists and is not a directory.
 C-b-nonempty = Target { $target } exists but is not empty!
 # backupCache_4
 C-b-target = Backing up cache to { $target }
+C-b-curr = Failed to read current directory.
 
 C-i-latest = Latest
 C-i-created = Created
@@ -86,12 +94,21 @@ C-t-invalids = Removing invalid package tarballs.
 
 # Orphans (-O)
 O-abandon = The following orphans and their dependencies will be removed:
-O-adopt = { $package } now marked as explicitly installed.
+O-adopt = { $pkg } now marked as explicitly installed.
+O-explicit-err = Failed to mark { $pkg } as explicitly installed.
 
 # Logs (-L)
 L-first = First Install
 L-upgrades = Upgrades
 L-recent = Recent Actions
+L-search-err = Searching your logs via { $cmd } failed.
+L-view-err = Failed to open your ALPM log.
+
+# Opening Pages (open)
+open-err = Failed to open { $url }.
+
+# System Statistics (stats)
+stats-local = Failed to load language data.
 
 # System Validation (check)
 check-start = Validating your system.
@@ -116,16 +133,76 @@ check-aconf-aura-parse = Aura config file can be parsed?
 check-mconf = Makepkg Configuration
 check-mconf-packager = PACKAGER set?
 check-snapshots = Package Snapshots
-check-snapshots-unreadable = Unable to read snapshot path { $path }
+check-snapshots-unreadable = Unable to read snapshot path: { $path }
 check-snapshot-usable = All snapshots have corresponding tarballs?
 check-snapshot-usable-fix = Fix: You can remove old/unusable snapshots with { $command }
 check-cache = Package Tarball Caches
-check-cache-unreadable = Unable to read cache path { $path }
+check-cache-unreadable = Unable to read cache path: { $path }
 check-cache-exists = All specified caches exist?
 check-cache-tarballs = All tarballs valid?
 check-cache-tarballs-fix = Fix: You can remove invalid tarballs with { $command }
 check-cache-missing = Every installed package has a tarball?
 check-cache-missing-fix = Fix: You can download missing official tarballs with { $command }
+
+# Configuration (conf)
+conf-toml-err = Failed to serialize current config.
+
+# Runtime Environment
+env-missing-editor = Provided EDITOR is not on the PATH.
+env-pconf = Failed to parse your pacman.conf file.
+
+# Pacman Calls
+pacman-external = A call to pacman utterly failed.
+pacman-u = A call to pacman -U failed.
+pacman-s = A call to pacman -S failed.
+pacman-misc = A call to pacman gave a non-zero exit code.
+
+# ALPM
+alpm-tx = "An ALPM transaction failed."
+
+# Aura-specific Directories
+dir-mkdir = Failed to create the directory: { $dir }.
+dir-home = Unable to determine Aura's config directory.
+dir-cache = Unable to determine Aura's cache directory.
+
+# Dependency Resolution
+dep-exist = The package { $pkg } does not exist.
+dep-exist-par = The dependency { $pkg } of { $par } does not exist.
+dep-graph = The dependency graph was somehow malformed.
+dep-cycle = There was a cyclic dependency involving: { $pkg }
+dep-multi = There were multiple errors during dependency resolution.
+
+# Git Operations
+git-diff = A git diff failed for: { $file }
+git-hash = Reading a git hash into Rust failed.
+git-pull = A git pull failed: { $dir }
+git-clone = A git clone failed: { $dir }
+git-io = Calling git somehow failed.
+
+# Faur Calls
+faur-fetch = Calling the Faur utterly failed: { $pkg }
+faur-unknown = Unknown package: { $pkg }
+faur-too-many = More results returned from Faur than expected: { $pkg }
+
+# Common Errors
+err-alpm = Failed to open ALPM handle.
+err-config-path = Failed to determine the path to Aura's config file.
+err-curl = A CURL transaction failed.
+err-file-del = Failed to delete: { $file }
+err-file-open = Failed to open file handle to: { $file }
+err-file-write = Failed to write file: { $file }
+err-json-decode = Failed to decode JSON from: { $url }
+err-json-write = Failed to write JSON to: { $file }
+err-none-exist = None of the specified packages exist.
+err-pool-create = Failed to create an ALPM connection pool.
+err-pool-get = Failed to get an ALPM handle from the connection pool.
+err-read-dir = Failed to read directory: { $dir }
+err-srcinfo = Failed to parse .SRCINFO: { $file }
+err-sudo = Failed to raise privileges.
+err-user-input = Failed to get user input.
+err-utf8 = A UTF-8 conversion failed.
+err-write = Somehow failed to write to stdout.
+err-mutex = A mutex was poisoned.
 
 # Common Fields
 common-yes = Yes

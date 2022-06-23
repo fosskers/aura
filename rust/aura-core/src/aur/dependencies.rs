@@ -1,10 +1,9 @@
 //! AUR package dependency solving.
 
+use crate::Apply;
 use alpm::Alpm;
-// use alpm_utils::DbListExt;
 use chrono::Utc;
 use disown::Disown;
-// use itertools::Itertools;
 use log::{debug, info};
 use nonempty::NonEmpty;
 use petgraph::graph::NodeIndex;
@@ -20,8 +19,6 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use validated::Validated;
 
-use crate::Apply;
-
 /// Errors that can occur during dependency resolution.
 #[derive(Debug)]
 pub enum Error<E> {
@@ -30,7 +27,7 @@ pub enum Error<E> {
     /// An error pulling from the resource pool.
     R2D2(r2d2::Error),
     /// An error parsing a `.SRCINFO` file.
-    Srcinfo(srcinfo::Error),
+    Srcinfo(PathBuf, srcinfo::Error),
     /// An error cloning or pulling a repo.
     Git(crate::git::Error),
     /// Multiple errors during concurrent dependency resolution.
@@ -53,12 +50,6 @@ impl<E> From<crate::git::Error> for Error<E> {
     }
 }
 
-impl<E> From<srcinfo::Error> for Error<E> {
-    fn from(v: srcinfo::Error) -> Self {
-        Self::Srcinfo(v)
-    }
-}
-
 impl<E> From<r2d2::Error> for Error<E> {
     fn from(v: r2d2::Error) -> Self {
         Self::R2D2(v)
@@ -77,7 +68,7 @@ impl<E: std::fmt::Display> std::fmt::Display for Error<E> {
                 }
                 Ok(())
             }
-            Error::Srcinfo(e) => write!(f, "{}", e),
+            Error::Srcinfo(_, e) => write!(f, "{}", e),
             Error::Git(e) => write!(f, "{}", e),
             Error::DoesntExist(p) => write!(f, "{} is not a known package.", p),
             Error::DoesntExistWithParent(par, p) => {
@@ -314,7 +305,8 @@ where
                     debug!("{} is an AUR package.", pr);
                     let path = pull_or_clone(fetch, clone_d, parent, &pkg)?;
                     debug!("Parsing .SRCINFO for {}", pkg);
-                    let info = Srcinfo::parse_file(path.join(".SRCINFO"))?;
+                    let full = path.join(".SRCINFO");
+                    let info = Srcinfo::parse_file(&full).map_err(|e| Error::Srcinfo(full, e))?;
                     let name = info.base.pkgbase;
 
                     // --- Package identities provided by this one --- //

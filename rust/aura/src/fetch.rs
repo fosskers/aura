@@ -1,20 +1,35 @@
 //! Fetching data from remote endpoints.
 
+use crate::error::Nested;
+use crate::localization::Localised;
 use curl::easy::Easy;
 use from_variants::FromVariants;
+use i18n_embed::fluent::FluentLanguageLoader;
+use i18n_embed_fl::fl;
+use log::error;
 use serde::de::DeserializeOwned;
 
 #[derive(FromVariants)]
 pub enum Error {
     Curl(curl::Error),
-    Json(serde_json::Error),
+    #[from_variants(skip)]
+    Json(String, serde_json::Error),
 }
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl Nested for Error {
+    fn nested(&self) {
         match self {
-            Error::Curl(e) => write!(f, "{}", e),
-            Error::Json(e) => write!(f, "{}", e),
+            Error::Curl(e) => error!("{e}"),
+            Error::Json(_, e) => error!("{e}"),
+        }
+    }
+}
+
+impl Localised for Error {
+    fn localise(&self, fll: &FluentLanguageLoader) -> String {
+        match self {
+            Error::Curl(_) => fl!(fll, "err-curl"),
+            Error::Json(url, _) => fl!(fll, "err-json-decode", url = url.as_str()),
         }
     }
 }
@@ -39,6 +54,6 @@ where
         tx.perform()?;
     }
 
-    let json = serde_json::from_slice(&data)?;
+    let json = serde_json::from_slice(&data).map_err(|e| Error::Json(url.to_string(), e))?;
     Ok(json)
 }

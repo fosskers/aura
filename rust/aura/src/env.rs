@@ -1,8 +1,12 @@
 //! Aura runtime settings.
 
 use crate::dirs;
+use crate::error::Nested;
+use crate::localization::Localised;
 use alpm::Alpm;
 use from_variants::FromVariants;
+use i18n_embed_fl::fl;
+use log::error;
 use r2d2::Pool;
 use r2d2_alpm::AlpmManager;
 use serde::{Deserialize, Serialize};
@@ -15,21 +19,31 @@ const DEFAULT_EDITOR: &str = "vi";
 pub(crate) enum Error {
     Dirs(crate::dirs::Error),
     PConf(pacmanconf::Error),
-    Env(std::env::VarError),
-    Io(std::io::Error),
-    Toml(toml::de::Error),
+    Alpm(alpm::Error),
+    R2d2(r2d2::Error),
     MissingEditor,
 }
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl Nested for Error {
+    fn nested(&self) {
         match self {
-            Error::Dirs(e) => write!(f, "{e}"),
-            Error::PConf(e) => write!(f, "{e}"),
-            Error::Env(e) => write!(f, "{e}"),
-            Error::Io(e) => write!(f, "{e}"),
-            Error::Toml(e) => write!(f, "{e}"),
-            Error::MissingEditor => write!(f, "Provided EDITOR is not on the PATH!"),
+            Error::Dirs(e) => e.nested(),
+            Error::PConf(e) => error!("{e}"),
+            Error::MissingEditor => {}
+            Error::Alpm(e) => error!("{e}"),
+            Error::R2d2(e) => error!("{e}"),
+        }
+    }
+}
+
+impl Localised for Error {
+    fn localise(&self, fll: &i18n_embed::fluent::FluentLanguageLoader) -> String {
+        match self {
+            Error::Dirs(e) => e.localise(fll),
+            Error::PConf(_) => fl!(fll, "env-pconf"),
+            Error::MissingEditor => fl!(fll, "env-missing-editor"),
+            Error::Alpm(_) => fl!(fll, "err-alpm"),
+            Error::R2d2(_) => fl!(fll, "err-pool-create"),
         }
     }
 }
@@ -43,17 +57,17 @@ struct RawEnv {
 
 impl RawEnv {
     /// Attempt to read and parse settings from the filesystem.
-    fn try_new() -> Result<Self, Error> {
-        let config: PathBuf = dirs::aura_config()?;
-        let s = std::fs::read_to_string(config)?;
-        let e = toml::from_str(&s)?;
-        Ok(e)
+    fn try_new() -> Option<Self> {
+        let config: PathBuf = dirs::aura_config().ok()?;
+        let s = std::fs::read_to_string(config).ok()?;
+        let e = toml::from_str(&s).ok()?;
+        Some(e)
     }
 }
 
 /// Can the `aura.toml` be parsed?
 pub(crate) fn parsable_env() -> bool {
-    RawEnv::try_new().is_ok()
+    RawEnv::try_new().is_some()
 }
 
 /// Aura's runtime environment, as a combination of settings specified in its
@@ -76,7 +90,7 @@ impl Env {
     pub(crate) fn try_new() -> Result<Self, Error> {
         // Read the config file, if it's there. We don't actually mind if it isn't,
         // because sensible defaults can (probably) be set anyway.
-        let raw: Option<RawEnv> = RawEnv::try_new().ok();
+        let raw: Option<RawEnv> = RawEnv::try_new();
         let (general, aur, backups) = match raw {
             Some(re) => (
                 re.general.map(|rg| rg.into()),
@@ -90,7 +104,7 @@ impl Env {
             general: general.unwrap_or_else(General::default),
             aur: aur.unwrap_or_else(Aur::try_default)?,
             backups: backups.unwrap_or_else(Backups::try_default)?,
-            pacman: pacmanconf::Config::new()?,
+            pacman: pacmanconf::Config::new().map_err(Error::PConf)?,
         };
 
         Ok(e)
@@ -98,7 +112,7 @@ impl Env {
 
     /// Open a series of connections to ALPM handles. The quantity matches the
     /// number of CPUs available on the machine.
-    pub(crate) fn alpm_pool(&self) -> Result<Pool<AlpmManager>, r2d2::Error> {
+    pub(crate) fn alpm_pool(&self) -> Result<Pool<AlpmManager>, Error> {
         // FIXME Thu Jun  9 13:53:49 2022
         //
         // Unfortunate clone here.
@@ -109,8 +123,8 @@ impl Env {
     }
 
     /// Open a new connection to `alpm` instance.
-    pub(crate) fn alpm(&self) -> Result<Alpm, alpm::Error> {
-        alpm_utils::alpm_with_conf(&self.pacman)
+    pub(crate) fn alpm(&self) -> Result<Alpm, Error> {
+        alpm_utils::alpm_with_conf(&self.pacman).map_err(Error::Alpm)
     }
 
     /// All tarball caches across the various config sources.

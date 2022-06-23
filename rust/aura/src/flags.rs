@@ -86,29 +86,41 @@ impl Args {
 pub(crate) enum SubCmd {
     // --- Pacman Commands --- //
     /// Operate on the package database.
+    #[clap(display_order = 1)]
     Database(Database),
     /// Query the files database.
+    #[clap(display_order = 1)]
     Files(Files),
     /// Query the package database.
+    #[clap(display_order = 1)]
     Query(Query),
     /// Remove packages from the system.
+    #[clap(display_order = 1)]
     Remove(Remove),
     /// Synchronize official packages.
+    #[clap(display_order = 1)]
     Sync(Sync),
     /// Check if given dependencies are satisfied.
+    #[clap(display_order = 1)]
     DepTest(DepTest),
     /// Upgrade or add packages to the system.
+    #[clap(display_order = 1)]
     Upgrade(Upgrade),
     // --- Aura Commands --- //
     /// Synchronize AUR packages.
+    #[clap(display_order = 1)]
     Aur(Aur),
     /// Save and restore the global package state.
+    #[clap(display_order = 1)]
     Backup(Backup),
     /// Manage the package cache.
+    #[clap(display_order = 1)]
     Cache(Cache),
     /// View the Pacman/ALPM log.
+    #[clap(display_order = 1)]
     Log(Log),
     /// Handle orphan packages.
+    #[clap(display_order = 1)]
     Orphans(Orphans),
     /// View various configuration settings and files.
     Conf(Conf),

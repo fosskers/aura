@@ -2,25 +2,40 @@
 
 use crate::command::misc;
 use crate::env::Env;
+use crate::error::Nested;
 use crate::flags::Conf;
-use crate::utils::ResultVoid;
+use crate::localization::Localised;
+use crate::utils::{PathStr, ResultVoid};
 use from_variants::FromVariants;
+use i18n_embed_fl::fl;
+use log::error;
 use std::env;
 use std::process::Command;
 
 #[derive(FromVariants)]
 pub(crate) enum Error {
-    Env(std::env::VarError),
-    Io(std::io::Error),
-    Toml(toml::ser::Error),
+    PathToAuraConfig(crate::dirs::Error),
+    SerializeEnv(toml::ser::Error),
+    #[from_variants(skip)]
+    CouldntOpen(String, std::io::Error),
 }
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl Nested for Error {
+    fn nested(&self) {
         match self {
-            Error::Env(e) => write!(f, "{e}"),
-            Error::Io(e) => write!(f, "{e}"),
-            Error::Toml(e) => write!(f, "{e}"),
+            Error::PathToAuraConfig(e) => e.nested(),
+            Error::SerializeEnv(e) => error!("{e}"),
+            Error::CouldntOpen(_, e) => error!("{e}"),
+        }
+    }
+}
+
+impl Localised for Error {
+    fn localise(&self, fll: &i18n_embed::fluent::FluentLanguageLoader) -> String {
+        match self {
+            Error::PathToAuraConfig(_) => fl!(fll, "err-config-path"),
+            Error::SerializeEnv(_) => fl!(fll, "conf-toml-err"),
+            Error::CouldntOpen(p, _) => fl!(fll, "open-err", url = p.as_str()),
         }
     }
 }
@@ -41,22 +56,37 @@ pub(crate) fn gen(env: &Env) -> Result<(), Error> {
 pub(crate) fn aura_conf() -> Result<(), Error> {
     let path = crate::dirs::aura_config()?;
     let prog = misc::viewer();
-    Command::new(prog).arg(path).status().void()
+
+    Command::new(prog)
+        .arg(&path)
+        .status()
+        .map_err(|e| Error::CouldntOpen(path.utf8(), e))
+        .void()
 }
 
 /// Open the `pacman.conf` in `bat` or `less`.
-pub(crate) fn pacman_conf(c: Conf) -> Result<(), std::io::Error> {
+pub(crate) fn pacman_conf(c: Conf) -> Result<(), Error> {
     let conf = c
         .config
         .unwrap_or_else(|| aura_arch::DEFAULT_PAC_CONF.to_string());
     let prog = misc::viewer();
-    Command::new(prog).arg(conf).status().void()
+
+    Command::new(prog)
+        .arg(&conf)
+        .status()
+        .map_err(|e| Error::CouldntOpen(conf, e))
+        .void()
 }
 
 /// Open the `makepkg.conf` in `bat` or `less`.
-pub(crate) fn makepkg_conf() -> Result<(), std::io::Error> {
+pub(crate) fn makepkg_conf() -> Result<(), Error> {
     let conf =
         env::var("MAKEPKG_CONF").unwrap_or_else(|_| aura_arch::DEFAULT_MAKEPKG_CONF.to_string());
     let prog = misc::viewer();
-    Command::new(prog).arg(conf).status().void()
+
+    Command::new(prog)
+        .arg(&conf)
+        .status()
+        .map_err(|e| Error::CouldntOpen(conf, e))
+        .void()
 }

@@ -64,14 +64,11 @@ impl<'a> PkgPath<'a> {
 
     // TODO I'd like it if this could be avoided.
     /// Remove this via a shell call to `rm`.
-    pub fn sudo_remove(self) -> Option<()> {
-        Command::new("sudo")
-            .arg("rm")
-            .arg(self.path)
-            .status()
-            .ok()?
-            .success()
-            .then(|| ())
+    pub fn sudo_remove(self) -> Result<(), PathBuf> {
+        match Command::new("sudo").arg("rm").arg(&self.path).status() {
+            Ok(s) if s.success() => Ok(()),
+            Ok(_) | Err(_) => Err(self.path),
+        }
     }
 }
 

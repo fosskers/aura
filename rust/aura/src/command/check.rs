@@ -1,6 +1,9 @@
 //! Analyze many aspects of your installation for validity.
 
 use crate::env::{Aur, Env};
+use crate::error::Nested;
+use crate::localization::Localised;
+use crate::utils::PathStr;
 use crate::{aura, executable, green};
 use alpm::Alpm;
 use colored::*;
@@ -23,15 +26,21 @@ const SECS_IN_DAY: u64 = 60 * 60 * 24;
 
 #[derive(FromVariants)]
 pub(crate) enum Error {
-    Alpm(alpm::Error),
-    R2d2(r2d2::Error),
+    Env(crate::env::Error),
 }
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl Nested for Error {
+    fn nested(&self) {
         match self {
-            Error::Alpm(e) => write!(f, "{e}"),
-            Error::R2d2(e) => write!(f, "{e}"),
+            Error::Env(e) => e.nested(),
+        }
+    }
+}
+
+impl Localised for Error {
+    fn localise(&self, fll: &FluentLanguageLoader) -> String {
+        match self {
+            Error::Env(e) => e.localise(fll),
         }
     }
 }
@@ -296,7 +305,7 @@ fn pacnews(fll: &FluentLanguageLoader) {
                         fl!(
                             fll,
                             "check-pconf-pacnew-old",
-                            path = path.display().to_string().cyan().to_string(),
+                            path = path.utf8().cyan().to_string(),
                             days = days.to_string().red().to_string(),
                         ),
                     );

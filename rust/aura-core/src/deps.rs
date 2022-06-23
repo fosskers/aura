@@ -49,7 +49,7 @@ impl<'a> PkgGraph<'a> {
         optional: bool,
         foreigns: &'a [&'a str],
         focii: &'a [&'a str],
-    ) -> Result<PkgGraph<'a>, alpm::Error> {
+    ) -> PkgGraph<'a> {
         let mut graph = Graph::default();
         let mut indices = HashMap::new();
 
@@ -57,11 +57,11 @@ impl<'a> PkgGraph<'a> {
             PkgGraph::add_dep(db, &mut graph, &mut indices, limit, optional, p);
         }
 
-        Ok(PkgGraph {
+        PkgGraph {
             graph,
             focii,
             foreigns,
-        })
+        }
     }
 
     /// Create a new `PkgGraph` of given packages and all packages that require them.
@@ -71,7 +71,7 @@ impl<'a> PkgGraph<'a> {
         optional: bool,
         foreigns: &'a [&'a str],
         focii: &'a [&'a str],
-    ) -> Result<PkgGraph<'a>, alpm::Error> {
+    ) -> PkgGraph<'a> {
         let mut graph = Graph::default();
         let mut indices = HashMap::new();
 
@@ -79,11 +79,11 @@ impl<'a> PkgGraph<'a> {
             PkgGraph::add_parent(db, &mut graph, &mut indices, limit, optional, p);
         }
 
-        Ok(PkgGraph {
+        PkgGraph {
             graph,
             focii,
             foreigns,
-        })
+        }
     }
 
     /// Recursively add dependencies to the package `Graph`.

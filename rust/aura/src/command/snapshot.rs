@@ -1,39 +1,64 @@
 //! All functionality involving the `-B` command.
 
-use crate::{aura, green, proceed, red};
+use crate::error::Nested;
+use crate::localization::Localised;
+use crate::utils::PathStr;
+use crate::{aura, green, proceed};
 use alpm::Alpm;
 use aura_core::snapshot::Snapshot;
 use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
+use i18n_embed_fl::fl;
+use log::error;
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::BufWriter;
 use std::ops::Not;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[derive(FromVariants)]
-pub enum Error {
-    Io(std::io::Error),
+pub(crate) enum Error {
     Dirs(crate::dirs::Error),
     Pacman(crate::pacman::Error),
     Readline(rustyline::error::ReadlineError),
-    Json(serde_json::Error),
+    #[from_variants(skip)]
+    JsonWrite(PathBuf, serde_json::Error),
+    #[from_variants(skip)]
+    DeleteFile(PathBuf, std::io::Error),
+    #[from_variants(skip)]
+    OpenFile(PathBuf, std::io::Error),
     Cancelled,
-    Silent,
+    NoSnapshots,
 }
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl Nested for Error {
+    fn nested(&self) {
         match self {
-            Error::Io(e) => write!(f, "{}", e),
-            Error::Dirs(e) => write!(f, "{}", e),
-            Error::Pacman(e) => write!(f, "{}", e),
-            Error::Readline(e) => write!(f, "{}", e),
-            Error::Json(e) => write!(f, "{}", e),
-            Error::Silent => write!(f, ""),
-            Error::Cancelled => write!(f, "Action cancelled."),
+            Error::Dirs(e) => e.nested(),
+            Error::Pacman(e) => e.nested(),
+            Error::Readline(e) => error!("{e}"),
+            Error::JsonWrite(_, e) => error!("{e}"),
+            Error::DeleteFile(_, e) => error!("{e}"),
+            Error::OpenFile(_, e) => error!("{e}"),
+            Error::Cancelled => {}
+            Error::NoSnapshots => {}
+        }
+    }
+}
+
+impl Localised for Error {
+    fn localise(&self, fll: &FluentLanguageLoader) -> String {
+        match self {
+            Error::Dirs(e) => e.localise(fll),
+            Error::Pacman(e) => e.localise(fll),
+            Error::Readline(_) => fl!(fll, "err-user-input"),
+            Error::JsonWrite(p, _) => fl!(fll, "err-json-write", file = p.utf8()),
+            Error::Cancelled => fl!(fll, "common-cancelled"),
+            Error::NoSnapshots => fl!(fll, "B-none"),
+            Error::DeleteFile(p, _) => fl!(fll, "err-file-del", file = p.utf8()),
+            Error::OpenFile(p, _) => fl!(fll, "err-file-open", file = p.utf8()),
         }
     }
 }
@@ -54,8 +79,8 @@ pub(crate) fn save(fll: &FluentLanguageLoader, alpm: &Alpm, snapshots: &Path) ->
     let name = format!("{}.json", snap.time.format("%Y.%m(%b).%d.%H.%M.%S"));
     let path = snapshots.join(name);
 
-    let file = BufWriter::new(File::create(path)?);
-    serde_json::to_writer(file, &snap)?;
+    let file = BufWriter::new(File::create(&path).map_err(|e| Error::OpenFile(path.clone(), e))?);
+    serde_json::to_writer(file, &snap).map_err(|e| Error::JsonWrite(path, e))?;
     green!(fll, "B-saved");
 
     Ok(())
@@ -72,7 +97,7 @@ pub(crate) fn clean(
 
     for (path, snapshot) in aura_core::snapshot::snapshots_with_paths(snapshots) {
         if snapshot.pinned.not() && snapshot.usable(&vers).not() {
-            std::fs::remove_file(path)?;
+            std::fs::remove_file(&path).map_err(|e| Error::DeleteFile(path, e))?;
         }
     }
 
@@ -104,8 +129,7 @@ pub(crate) fn restore(
     let digits = 1 + (shots.len() / 10);
 
     if shots.is_empty() {
-        red!(fll, "B-none");
-        return Err(Error::Silent);
+        return Err(Error::NoSnapshots);
     }
 
     aura!(fll, "B-select");
