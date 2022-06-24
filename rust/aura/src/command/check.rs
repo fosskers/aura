@@ -136,6 +136,12 @@ fn packager_set(fll: &FluentLanguageLoader) {
         .unwrap_or(false);
     let symbol = if good { GOOD.green() } else { BAD.red() };
     println!("  [{}] {}", symbol, fl!(fll, "check-mconf-packager"));
+
+    if !good {
+        let cmd = "PACKAGER=\"You <you@foo.com>\"".cyan().to_string();
+        let msg = fl!(fll, "check-mconf-packager-fix", cmd = cmd);
+        println!("      └─ {}", msg);
+    }
 }
 
 fn parallel_downloads(fll: &FluentLanguageLoader, c: &pacmanconf::Config) {
