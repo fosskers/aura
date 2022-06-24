@@ -2,7 +2,6 @@
 
 use crate::Apply;
 use alpm::Alpm;
-use chrono::Utc;
 use disown::Disown;
 use log::{debug, info};
 use nonempty::NonEmpty;
@@ -17,6 +16,7 @@ use std::hash::Hash;
 use std::ops::Not;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
+use time::OffsetDateTime;
 use validated::Validated;
 
 /// Errors that can occur during dependency resolution.
@@ -189,21 +189,21 @@ where
     // resolution algorithm.
     let orig: HashSet<_> = pkgs.into_iter().collect();
 
-    let start = Utc::now();
+    let start = OffsetDateTime::now_utc();
     orig.par_iter()
         .map(|pkg| resolve_one(pool.clone(), arc.clone(), fetch, clone_d, &orig, None, pkg))
         .collect::<Validated<(), Error<E>>>()
         .ok()
         .map_err(|es| Error::Resolutions(Box::new(es)))?;
-    let end = Utc::now();
-    let diff = end.timestamp_millis() - start.timestamp_millis();
+    let end = OffsetDateTime::now_utc();
+    let diff = end.unix_timestamp() - start.unix_timestamp();
 
     let res = Arc::try_unwrap(arc)
         .map_err(|_| Error::PoisonedMutex)?
         .into_inner()
         .map_err(|_| Error::PoisonedMutex)?;
 
-    info!("Resolved dependencies in {}ms.", diff);
+    info!("Resolved dependencies in {}s.", diff);
 
     Ok(res)
 }
@@ -236,7 +236,7 @@ where
 
         // Checks if the current package is installed or otherwise satisfied by
         // some package, and then immediately drops the ALPM handle.
-        let (satisfied, start) = {
+        let satisfied = {
             let state = pool.state();
             debug!(
                 "Trying to get ALPM handle ({} idle connections)",
@@ -245,14 +245,10 @@ where
             let alpm = pool.get()?;
             debug!("Got a handle.");
             let db = alpm.localdb();
-            let start = Utc::now();
-            let res = db.pkg(pr).is_ok() || db.pkgs().find_satisfier(pr).is_some();
-            (res, start)
+            db.pkg(pr).is_ok() || db.pkgs().find_satisfier(pr).is_some()
         };
 
-        let end = Utc::now();
-        let diff = end.timestamp_millis() - start.timestamp_millis();
-        debug!("Satisfaction ({}) for {} in {}ms.", satisfied, pkg, diff);
+        debug!("Satisfaction ({}) for {}.", satisfied, pkg);
 
         if orig.contains(pr).not() && satisfied {
             mutx.lock()

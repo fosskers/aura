@@ -1,19 +1,19 @@
 //! Snapshot manipulation internals.
 
 use alpm::Alpm;
-use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
+use time::OffsetDateTime;
 
 /// All packages installed at some specific [`DateTime`]. Any "pinned" snapshot
 /// should never be considered for deletion.
 #[derive(Serialize, Deserialize)]
 pub struct Snapshot {
     /// The local date and time of when this snapshot was taken.
-    pub time: DateTime<Local>,
+    pub time: OffsetDateTime,
     /// Should this `Snapshot` never be removed?
     pub pinned: bool,
     /// Every package name in the `Snapshot`, with its version.
@@ -23,8 +23,8 @@ pub struct Snapshot {
 impl Snapshot {
     /// Given a handle to ALPM, take a snapshot of all currently installed
     /// packages and their versions.
-    pub fn from_alpm(alpm: &Alpm) -> Snapshot {
-        let time = Local::now();
+    pub fn from_alpm(alpm: &Alpm) -> Result<Snapshot, time::error::IndeterminateOffset> {
+        let time = OffsetDateTime::now_local()?;
         let packages = alpm
             .localdb()
             .pkgs()
@@ -32,11 +32,13 @@ impl Snapshot {
             .map(|p| (p.name().to_owned(), p.version().as_str().to_owned()))
             .collect();
 
-        Snapshot {
+        let snap = Snapshot {
             time,
             pinned: false,
             packages,
-        }
+        };
+
+        Ok(snap)
     }
 
     /// Does this `Snapshot` match what is currently installed?

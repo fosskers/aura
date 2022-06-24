@@ -8,7 +8,6 @@ edition = "2021"
 alpm = "2.2"
 alpm-utils = "2.0"
 aura-arch = { path = "../aura-arch" }
-chrono = { version = "0.4", features = ["serde"] }
 disown = "1.0"
 from_variants = "1.0"
 itertools = "0.10"
@@ -20,4 +19,5 @@ rayon = "1.5"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 srcinfo = "1.0"
+time = { version = "0.3", features = ["serde"] }
 validated = { version = "0.1", features = ["rayon"] }
