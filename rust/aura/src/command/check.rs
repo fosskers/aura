@@ -151,8 +151,11 @@ fn parallel_downloads(fll: &FluentLanguageLoader, c: &pacmanconf::Config) {
 
     if !good {
         let cmd = "ParallelDownloads".bold().cyan().to_string();
-        let cores = num_cpus::get();
-        let msg = fl!(fll, "check-pconf-par-fix", setting = cmd, cores = cores);
+        let fix = format!("ParallelDownloads = {}", num_cpus::get())
+            .bold()
+            .cyan()
+            .to_string();
+        let msg = fl!(fll, "check-pconf-par-fix", setting = cmd, set = fix);
         println!("      └─ {}", msg);
     }
 }
