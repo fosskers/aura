@@ -1,7 +1,7 @@
 use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::{PathStr, ResultVoid};
-use crate::{aura, proceed, red};
+use crate::{aura, proceed, red, yellow};
 use colored::Colorize;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
@@ -108,6 +108,13 @@ fn build_one(
     editor: &str,
     clone: PathBuf,
 ) -> Result<Built, Error> {
+    // Attempt a quick `git pull` to avoid the issue of building stale versions
+    // of a package if the user forgot to `-Ay` recently.
+    if let Err(e) = aura_core::git::pull(&clone) {
+        warn!("{e}");
+        yellow!(fll, "A-build-pull");
+    }
+
     // --- Parse the .SRCINFO for metadata --- //
     let path = clone.join(".SRCINFO");
     let info = Srcinfo::parse_file(&path).map_err(|e| Error::Srcinfo(path, e))?;
