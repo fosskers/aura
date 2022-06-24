@@ -16,26 +16,6 @@ pub(crate) const AURA_GLOBALS: &[&str] = &["--english", "--japanese", "--german"
 #[clap(version, author, about)]
 #[clap(propagate_version = true, disable_help_subcommand = true)]
 pub(crate) struct Args {
-    // --- Global Pacman Options --- //
-    /// Set an alternate database location.
-    #[clap(
-        long,
-        // short = 'b',
-        value_name = "path",
-        global = true,
-        display_order = 9
-    )]
-    pub(crate) dbpath: Option<String>,
-    /// Set an alternate installation root.
-    #[clap(long, value_name = "path", global = true, display_order = 9)]
-    pub(crate) root: Option<String>,
-    /// Set an alternate log file.
-    #[clap(long, value_name = "path", global = true, display_order = 9)]
-    pub(crate) logfile: Option<PathBuf>,
-    /// Set an alternate package cache location.
-    #[clap(long, value_name = "path", global = true, display_order = 9)]
-    pub(crate) cachedir: Option<PathBuf>,
-
     // --- Aura Language Options --- //
     /// Output in English.
     #[clap(group = "language", long, global = true, display_order = 10)]
@@ -216,6 +196,9 @@ pub(crate) struct Sync {
     /// Add a virtual package to satisfy dependencies.
     #[clap(long, value_name = "package=version")]
     assumed_installed: Option<String>,
+    /// Set an alternate package cache location.
+    #[clap(long, value_name = "path")]
+    cachedir: Option<PathBuf>,
     /// Colorize the output.
     #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
     color: Option<String>,
@@ -228,6 +211,9 @@ pub(crate) struct Sync {
     /// Only modify database entries, not package files.
     #[clap(long)]
     dbonly: bool,
+    /// Set an alternate database location.
+    #[clap(long, short = 'b', value_name = "path")]
+    dbpath: Option<String>,
     /// Display Pacman debug messages.
     #[clap(long)]
     debug: bool,
@@ -246,6 +232,9 @@ pub(crate) struct Sync {
     /// Ignore a group ugrade (can be used more than once).
     #[clap(long, value_name = "grp")]
     ignoregroup: Option<String>,
+    /// Set an alternate log file.
+    #[clap(long, value_name = "path")]
+    logfile: Option<PathBuf>,
     /// Do not reinstall up to date packages.
     #[clap(long)]
     needed: bool,
@@ -264,6 +253,9 @@ pub(crate) struct Sync {
     /// Specify how the targets should be printed.
     #[clap(long, value_name = "string")]
     print_format: Option<String>,
+    /// Set an alternate installation root.
+    #[clap(long, value_name = "path")]
+    root: Option<String>,
     /// Operate on a mounted guest system (root-only).
     #[clap(long)]
     sysroot: bool,
@@ -308,6 +300,9 @@ pub(crate) struct DepTest {
     /// Always ask for confirmation.
     #[clap(long)]
     confirm: bool,
+    /// Set an alternate database location.
+    #[clap(long, short = 'b', value_name = "path")]
+    dbpath: Option<String>,
     /// Display Pacman debug messages.
     #[clap(long)]
     debug: bool,
@@ -322,9 +317,15 @@ pub(crate) struct DepTest {
     /// Set an alternate hook location.
     #[clap(long, value_name = "dir")]
     hookdir: Option<String>,
+    /// Set an alternate log file.
+    #[clap(long, value_name = "path")]
+    logfile: Option<PathBuf>,
     /// Do not ask for any confirmation.
     #[clap(long)]
     noconfirm: bool,
+    /// Set an alternate installation root.
+    #[clap(long, value_name = "path")]
+    root: Option<String>,
     /// Operate on a mounted guest system (root-only).
     #[clap(long)]
     sysroot: bool,
@@ -369,6 +370,9 @@ pub(crate) struct Upgrade {
     /// Only modify database entries, not package files.
     #[clap(long)]
     dbonly: bool,
+    /// Set an alternate database location.
+    #[clap(long, short = 'b', value_name = "path")]
+    dbpath: Option<String>,
     /// Display Pacman debug messages.
     #[clap(long)]
     debug: bool,
@@ -387,6 +391,9 @@ pub(crate) struct Upgrade {
     /// Ignore a group ugrade (can be used more than once).
     #[clap(long, value_name = "grp")]
     ignoregroup: Option<String>,
+    /// Set an alternate log file.
+    #[clap(long, value_name = "path")]
+    logfile: Option<PathBuf>,
     /// Do not reinstall up to date packages.
     #[clap(long)]
     needed: bool,
@@ -405,6 +412,9 @@ pub(crate) struct Upgrade {
     /// Specify how the targets should be printed.
     #[clap(long, value_name = "string")]
     print_format: Option<String>,
+    /// Set an alternate installation root.
+    #[clap(long, value_name = "path")]
+    root: Option<String>,
     /// Operate on a mounted guest system (root-only).
     #[clap(long)]
     sysroot: bool,
@@ -454,6 +464,9 @@ pub(crate) struct Files {
     /// Display Pacman debug messages.
     #[clap(long)]
     debug: bool,
+    /// Set an alternate database location.
+    #[clap(long, short = 'b', value_name = "path")]
+    dbpath: Option<String>,
     // TODO Here too.
     /// Use relaxed timeouts for download.
     #[clap(long)]
@@ -464,12 +477,18 @@ pub(crate) struct Files {
     /// Set an alternate hook location.
     #[clap(long, value_name = "dir")]
     hookdir: Option<String>,
+    /// Set an alternate log file.
+    #[clap(long, value_name = "path")]
+    logfile: Option<PathBuf>,
     /// Produce machine-readable output.
     #[clap(long)]
     machinereadable: bool,
     /// Do not ask for any confirmation.
     #[clap(long)]
     noconfirm: bool,
+    /// Set an alternate installation root.
+    #[clap(long, value_name = "path")]
+    root: Option<String>,
     /// Operate on a mounted guest system (root-only).
     #[clap(long)]
     sysroot: bool,
@@ -514,6 +533,9 @@ pub(crate) struct Remove {
     /// Add a virtual package to satisfy dependencies.
     #[clap(long, value_name = "package=version")]
     assumed_installed: Option<String>,
+    /// Set an alternate package cache location.
+    #[clap(long, value_name = "path")]
+    cachedir: Option<PathBuf>,
     /// Colorize the output.
     #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
     color: Option<String>,
@@ -526,6 +548,9 @@ pub(crate) struct Remove {
     /// Only modify database entries, not package files.
     #[clap(long)]
     dbonly: bool,
+    /// Set an alternate database location.
+    #[clap(long, short = 'b', value_name = "path")]
+    dbpath: Option<String>,
     /// Display Pacman debug messages.
     #[clap(long)]
     debug: bool,
@@ -538,6 +563,9 @@ pub(crate) struct Remove {
     /// Set an alternate hook location.
     #[clap(long, value_name = "dir")]
     hookdir: Option<String>,
+    /// Set an alternate log file.
+    #[clap(long, value_name = "path")]
+    logfile: Option<PathBuf>,
     /// Do not ask for any confirmation.
     #[clap(long)]
     noconfirm: bool,
@@ -550,6 +578,9 @@ pub(crate) struct Remove {
     /// Specify how the targets should be printed.
     #[clap(long, value_name = "string")]
     print_format: Option<String>,
+    /// Set an alternate installation root.
+    #[clap(long, value_name = "path")]
+    root: Option<String>,
     /// Operate on a mounted guest system (root-only).
     #[clap(long)]
     sysroot: bool,
@@ -595,6 +626,9 @@ pub(crate) struct Database {
     /// Always ask for confirmation.
     #[clap(long)]
     confirm: bool,
+    /// Set an alternate database location.
+    #[clap(long, short = 'b', value_name = "path")]
+    dbpath: Option<String>,
     /// Display Pacman debug messages.
     #[clap(long)]
     debug: bool,
@@ -607,9 +641,15 @@ pub(crate) struct Database {
     /// Set an alternate hook location.
     #[clap(long, value_name = "dir")]
     hookdir: Option<String>,
+    /// Set an alternate log file.
+    #[clap(long, value_name = "path")]
+    logfile: Option<PathBuf>,
     /// Do not ask for any confirmation.
     #[clap(long)]
     noconfirm: bool,
+    /// Set an alternate installation root.
+    #[clap(long, value_name = "path")]
+    root: Option<String>,
     /// Operate on a mounted guest system (root-only).
     #[clap(long)]
     sysroot: bool,
@@ -679,6 +719,9 @@ pub(crate) struct Query {
     /// Set an alternate architecture.
     #[clap(long)]
     arch: Option<String>,
+    /// Set an alternate package cache location.
+    #[clap(long, value_name = "path")]
+    cachedir: Option<PathBuf>,
     /// Colorize the output.
     #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
     color: Option<String>,
@@ -691,6 +734,9 @@ pub(crate) struct Query {
     /// Display Pacman debug messages.
     #[clap(long)]
     debug: bool,
+    /// Set an alternate database location.
+    #[clap(long, short = 'b', value_name = "path")]
+    dbpath: Option<String>,
     /// Use relaxed timeouts for download.
     #[clap(long)]
     disable_download_timeout: bool,
@@ -700,9 +746,15 @@ pub(crate) struct Query {
     /// Set an alternate hook location.
     #[clap(long, value_name = "dir")]
     hookdir: Option<String>,
+    /// Set an alternate log file.
+    #[clap(long, value_name = "path")]
+    logfile: Option<PathBuf>,
     /// Do not ask for any confirmation.
     #[clap(long)]
     noconfirm: bool,
+    /// Set an alternate installation root.
+    #[clap(long, value_name = "path")]
+    root: Option<String>,
     /// Operate on a mounted guest system (root-only).
     #[clap(long)]
     sysroot: bool,
@@ -779,6 +831,10 @@ pub(crate) struct Log {
     /// Only display log entries from after the given date.
     #[clap(long, short, value_name = "YYYY-MM-DD")]
     pub(crate) after: Option<NaiveDate>,
+
+    /// Set an alternate log file.
+    #[clap(long, value_name = "path")]
+    logfile: Option<PathBuf>,
 }
 
 /// View statistics about your machine or Aura itself.
