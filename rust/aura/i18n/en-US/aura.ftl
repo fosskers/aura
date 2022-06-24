@@ -126,7 +126,12 @@ check-pconf-ignores = No overlapping ignored packages?
 check-pconf-ignores-fix = The following packages are ignored in both pacman.conf and aura.toml: { $pkgs }
 check-pconf-pacnew = All .pacnew files accounted for?
 check-pconf-pacnew-broken = Error: Call to { $fd } utterly failed.
-check-pconf-pacnew-old = { $path } is older than its .pacnew by { $days } days.
+
+check-pconf-pacnew-old = { $path } is older than its .pacnew by { $days ->
+    [one] 1 day.
+   *[many] {$days} days.
+}
+
 check-aconf = Aura Configuration
 check-aconf-aura-exists = Aura config file exists?
 check-aconf-aura-exists-fix = Fix: Consider { $cmd }
