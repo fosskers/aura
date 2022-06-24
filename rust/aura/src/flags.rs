@@ -1,11 +1,12 @@
 //! Types and utilities for parsing flags from the command line.
 
-use chrono::NaiveDate;
 use clap::{Parser, Subcommand};
 use simplelog::LevelFilter;
 use std::ops::Not;
 use std::path::PathBuf;
 use unic_langid::{langid, LanguageIdentifier};
+
+use crate::utils::Date;
 
 /// Global options only applicable to Aura that must be removed from the
 /// top-level args list before sending it to Pacman.
@@ -826,11 +827,11 @@ pub(crate) struct Log {
 
     /// Only display log entries from before the given date.
     #[clap(long, short, value_name = "YYYY-MM-DD")]
-    pub(crate) before: Option<NaiveDate>,
+    pub(crate) before: Option<Date>,
 
     /// Only display log entries from after the given date.
     #[clap(long, short, value_name = "YYYY-MM-DD")]
-    pub(crate) after: Option<NaiveDate>,
+    pub(crate) after: Option<Date>,
 
     /// Set an alternate log file.
     #[clap(long, value_name = "path")]

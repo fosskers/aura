@@ -11,7 +11,6 @@ alpm = "2.2"
 alpm-utils = "2.0"
 aura-arch = { path = "../aura-arch" }  # TODO Give these versions.
 aura-core = { path = "../aura-core" }
-chrono = "0.4"
 clap = { version = "3.0", features = ["derive"] }
 clap_complete = "3.0"
 colored = "2.0"
@@ -35,6 +34,7 @@ serde_json = "1.0"
 simplelog = "0.12"
 srcinfo = "1.0"
 sudo = "0.6"
+time = { version = "0.3", features = ["parsing"] }
 toml = "0.5"
 ubyte = "0.10"
 unic-langid = { version = "0.9", features = ["macros"] }

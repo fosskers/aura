@@ -8,7 +8,6 @@ use crate::utils::PathStr;
 use crate::{aura, green, proceed, yellow};
 use alpm::Alpm;
 use aura_core::cache::{CacheSize, PkgPath};
-use chrono::{DateTime, Local};
 use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
@@ -22,6 +21,8 @@ use std::ffi::{OsStr, OsString};
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
+use time::macros::format_description;
+use time::OffsetDateTime;
 use ubyte::ToByteUnit;
 
 const FIFTY_MB: i64 = 52_428_800;
@@ -51,6 +52,7 @@ pub(crate) enum Error {
     CurrDir(std::io::Error),
     #[from_variants(skip)]
     Mkdir(PathBuf, std::io::Error),
+    Date(time::error::Format),
 }
 
 impl Nested for Error {
@@ -68,6 +70,7 @@ impl Nested for Error {
             Error::Stdout(e) => error!("{e}"),
             Error::CurrDir(e) => error!("{e}"),
             Error::Mkdir(_, e) => error!("{e}"),
+            Error::Date(e) => error!("{e}"),
         }
     }
 }
@@ -87,6 +90,7 @@ impl Localised for Error {
             Error::Stdout(_) => fl!(fll, "err-write"),
             Error::CurrDir(_) => fl!(fll, "C-b-curr"),
             Error::Mkdir(p, _) => fl!(fll, "dir-mkdir", dir = p.utf8()),
+            Error::Date(_) => fl!(fll, "err-time-format"),
         }
     }
 }
@@ -209,7 +213,9 @@ pub(crate) fn info(
         .filter_map(|p| aura_core::cache::info(caches, p).ok())
         .flatten()
     {
-        let dt = DateTime::<Local>::from(ci.created).format("%F %T");
+        let dt = OffsetDateTime::from(ci.created).format(format_description!(
+            "[year]-[month]-[day] [hour]-[minute]-[second]"
+        ))?;
         let sig_yes_no = if ci.signature {
             fl!(fll, "common-yes").green().bold()
         } else {

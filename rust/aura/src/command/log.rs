@@ -5,9 +5,7 @@
 use crate::command::misc;
 use crate::error::Nested;
 use crate::localization::Localised;
-use crate::utils::ResultVoid;
-use aura_core as core;
-use chrono::NaiveDate;
+use crate::utils::{Date, ResultVoid};
 use colored::*;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed::LanguageLoader;
@@ -76,7 +74,10 @@ fn info_work(
     let u = fl!(fll, "L-upgrades");
     let r = fl!(fll, "L-recent");
 
-    for e in pks.into_iter().filter_map(|p| core::log::info(path, p)) {
+    for e in pks
+        .into_iter()
+        .filter_map(|p| aura_core::log::info(path, p))
+    {
         let pairs: Vec<(&str, ColoredString)> = vec![
             (&p, e.package.normal()),
             (&f, e.installed.normal()),
@@ -95,19 +96,11 @@ fn info_work(
 }
 
 /// Output the content of the Pacman/ALPM log, possibly filtered by date.
-pub(crate) fn view(
-    path: &Path,
-    before: Option<NaiveDate>,
-    after: Option<NaiveDate>,
-) -> Result<(), Error> {
+pub(crate) fn view(path: &Path, before: Option<Date>, after: Option<Date>) -> Result<(), Error> {
     view_work(path, before, after).map_err(Error::View)
 }
 
-fn view_work(
-    path: &Path,
-    before: Option<NaiveDate>,
-    after: Option<NaiveDate>,
-) -> Result<(), std::io::Error> {
+fn view_work(path: &Path, before: Option<Date>, after: Option<Date>) -> Result<(), std::io::Error> {
     let file = BufReader::new(File::open(path)?);
     let mut out = BufWriter::new(std::io::stdout());
 
@@ -117,13 +110,17 @@ fn view_work(
             .chars()
             .skip(1)
             .take(10)
-            .collect::<String>() // TODO Avoid the collect somehow?
-            .parse::<NaiveDate>()
+            // FIXME Fri Jun 24 11:22:42 2022
+            //
+            // Avoid this collect somehow. Couldn't it be done with a slice
+            // range, or does UTF-8 mess that up?
+            .collect::<String>()
+            .parse::<Date>()
         {
-            match (after, before) {
-                (Some(a), Some(b)) if date >= a && date < b => writeln!(out, "{}", line)?,
-                (Some(a), None) if date >= a => writeln!(out, "{}", line)?,
-                (None, Some(b)) if date < b => writeln!(out, "{}", line)?,
+            match (&after, &before) {
+                (Some(a), Some(b)) if date.0 >= a.0 && date.0 < b.0 => writeln!(out, "{}", line)?,
+                (Some(a), None) if date.0 >= a.0 => writeln!(out, "{}", line)?,
+                (None, Some(b)) if date.0 < b.0 => writeln!(out, "{}", line)?,
                 (None, None) => writeln!(out, "{}", line)?,
                 (_, _) => {}
             }

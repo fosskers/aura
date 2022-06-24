@@ -8,7 +8,6 @@ use crate::localization::Localised;
 use crate::utils::{PathStr, ResultVoid};
 use crate::{aura, green, proceed};
 use alpm::Alpm;
-use chrono::{TimeZone, Utc};
 use colored::{ColoredString, Colorize};
 use from_variants::FromVariants;
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
@@ -23,6 +22,7 @@ use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::ops::Not;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
+use time::OffsetDateTime;
 
 #[derive(FromVariants)]
 pub(crate) enum Error {
@@ -42,6 +42,7 @@ pub(crate) enum Error {
     FileOpen(PathBuf, std::io::Error),
     #[from_variants(skip)]
     FileWrite(PathBuf, std::io::Error),
+    DateConv(time::error::ComponentRange),
     NoPackages,
     Cancelled,
     Stdout,
@@ -65,6 +66,7 @@ impl Nested for Error {
             Error::NoPackages => {}
             Error::Cancelled => {}
             Error::Stdout => {}
+            Error::DateConv(e) => error!("{e}"),
         }
     }
 }
@@ -87,6 +89,7 @@ impl Localised for Error {
             Error::Stdout => fl!(fll, "err-write"),
             Error::FileOpen(p, _) => fl!(fll, "err-file-open", file = p.utf8()),
             Error::FileWrite(p, _) => fl!(fll, "err-file-write", file = p.utf8()),
+            Error::DateConv(_) => fl!(fll, "err-time-conv"),
         }
     }
 }
@@ -168,8 +171,8 @@ pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<()
                     .unwrap_or_else(|| "None".red()),
             ),
             (&keys, p.keywords.join(" ").cyan()),
-            (&sub, package_date(p.first_submitted)),
-            (&upd, package_date(p.last_modified)),
+            (&sub, package_date(p.first_submitted)?),
+            (&upd, package_date(p.last_modified)?),
         ];
         crate::utils::info(&mut w, fll.current_language(), &pairs).map_err(|_| Error::Stdout)?;
         writeln!(w).map_err(|_| Error::Stdout)?;
@@ -270,13 +273,14 @@ fn package_url(package: &str) -> String {
     format!("{}{}", crate::open::AUR_PKG_URL, package)
 }
 
-fn package_date(epoch: u64) -> ColoredString {
+fn package_date(epoch: u64) -> Result<ColoredString, Error> {
     // FIXME Thu May  5 22:11:40 2022
     //
     // There is a panic risk here with the u64->i64 conversion. In practice it
     // should never come up, as the timestamps passed in should never be
     // anywhere near the [`u64::MAX`] value.
-    format!("{}", Utc.timestamp(epoch as i64, 0).date().format("%F")).normal()
+    let date = OffsetDateTime::from_unix_timestamp(epoch as i64)?.date();
+    Ok(format!("{}", date).normal())
 }
 
 /// Clone the AUR repository of given packages.

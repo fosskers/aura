@@ -195,16 +195,18 @@ err-file-open = Failed to open file handle to: { $file }
 err-file-write = Failed to write file: { $file }
 err-json-decode = Failed to decode JSON from: { $url }
 err-json-write = Failed to write JSON to: { $file }
+err-mutex = A mutex was poisoned.
 err-none-exist = None of the specified packages exist.
 err-pool-create = Failed to create an ALPM connection pool.
 err-pool-get = Failed to get an ALPM handle from the connection pool.
 err-read-dir = Failed to read directory: { $dir }
 err-srcinfo = Failed to parse .SRCINFO: { $file }
 err-sudo = Failed to raise privileges.
+err-time-conv = Failed to convert a timestamp.
+err-time-format = Failed to format a time string.
 err-user-input = Failed to get user input.
 err-utf8 = A UTF-8 conversion failed.
 err-write = Somehow failed to write to stdout.
-err-mutex = A mutex was poisoned.
 
 # Common Fields
 common-yes = Yes
