@@ -141,11 +141,12 @@ fn packager_set(fll: &FluentLanguageLoader) {
 fn parallel_downloads(fll: &FluentLanguageLoader, c: &pacmanconf::Config) {
     let good = c.parallel_downloads > 1;
     let symbol = if good { GOOD.green() } else { BAD.red() };
-    println!("  [{}] {}", symbol, fl!(fll, "check-pconf-parallel"));
+    println!("  [{}] {}", symbol, fl!(fll, "check-pconf-par"));
 
     if !good {
         let cmd = "ParallelDownloads".bold().cyan().to_string();
-        let msg = fl!(fll, "check-pconf-parallel-fix", setting = cmd);
+        let cores = num_cpus::get();
+        let msg = fl!(fll, "check-pconf-par-fix", setting = cmd, cores = cores);
         println!("      └─ {}", msg);
     }
 }

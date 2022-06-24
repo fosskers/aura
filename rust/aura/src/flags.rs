@@ -987,7 +987,7 @@ pub(crate) struct Deps {
     pub(crate) optional: bool,
 
     /// The number of layers up or down to allow.
-    #[clap(long, display_order = 1)]
+    #[clap(long, value_name = "n", display_order = 1)]
     pub(crate) limit: Option<u8>,
 
     /// Packages to focus on.

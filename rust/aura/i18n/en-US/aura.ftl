@@ -118,9 +118,9 @@ check-env-editor = EDITOR variable set?
 check-env-editor-exec = EDITOR value ({ $exec }) is executable?
 check-env-editor-vi = Backup editor vi is executable?
 check-env-installed = { $exec } installed and executable?
-check-pconf = Pacman Configuration
-check-pconf-parallel = Parallel downloads activated?
-check-pconf-parallel-fix = Your { $setting } setting is off, or set to 1. Is that intended?
+check-pconf = Pacman Configuration (/etc/pacman.conf)
+check-pconf-par = Parallel downloads activated?
+check-pconf-par-fix = { $setting } is off, or set to 1. Set `ParallelDownloads = { $cores }` for faster tarball fetching.
 check-pconf-ignores = No overlapping ignored packages?
 check-pconf-ignores-fix = The following packages are ignored in both pacman.conf and aura.toml: { $pkgs }
 check-pconf-pacnew = All .pacnew files accounted for?
