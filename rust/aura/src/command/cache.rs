@@ -17,7 +17,7 @@ use linya::Progress;
 use log::{debug, error};
 use rayon::prelude::*;
 use std::collections::{HashMap, HashSet};
-use std::ffi::{OsStr, OsString};
+use std::ffi::OsString;
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -106,8 +106,6 @@ pub(crate) fn downgrade(
         return Err(Error::NoPackages);
     }
 
-    crate::utils::sudo()?;
-
     // --- All tarball paths for packages the user asked for --- //
     let mut tarballs: HashMap<&str, Vec<PkgPath>> = HashMap::new();
     for pp in aura_core::cache::package_paths(caches) {
@@ -117,7 +115,7 @@ pub(crate) fn downgrade(
         }
     }
 
-    let mut to_downgrade: Vec<OsString> = packages
+    let to_downgrade: Vec<OsString> = packages
         .iter()
         .filter_map(|p| tarballs.remove(p.as_str()).map(|pps| (p, pps)))
         .filter_map(|(p, pps)| downgrade_one(fll, p, pps).ok())
@@ -128,10 +126,8 @@ pub(crate) fn downgrade(
         return Err(Error::NothingToDo);
     }
 
-    to_downgrade.push(OsStr::new("-U").to_os_string());
-    to_downgrade.reverse();
-
-    crate::pacman::pacman(to_downgrade)?;
+    let nothing: [&str; 0] = [];
+    crate::pacman::sudo_pacman("-U", nothing, to_downgrade)?;
     green!(fll, "common-done");
     Ok(())
 }
