@@ -22,6 +22,7 @@ A-build-e-filename = Failed to extract filename from: { $file }
 A-build-e-copies = Failed to copy build files.
 A-build-pkglist = Failed to determine makepkg output paths from: { $dir }
 A-build-pull = Failed to pull latest commits - you may be building an old version!
+A-build-continue = Continue building other packages?
 
 A-i-repo = Repository
 A-i-version = Version
@@ -232,4 +233,3 @@ common-cancelled = Action cancelled.
 proceed = Proceed?
 proceed-yes = [Y/n]
 proceed-no = [y/N]
-continue = Continue?

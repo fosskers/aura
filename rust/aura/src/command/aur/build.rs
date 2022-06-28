@@ -330,7 +330,7 @@ fn build_check(
         Err(e) => {
             red!(fll, "A-build-fail");
             eprintln!("\n  {}\n", e.localise(fll));
-            match proceed!(fll, "continue") {
+            match proceed!(fll, "A-build-continue") {
                 Some(_) => Ok(None),
                 None => Err(Error::Cancelled),
             }
