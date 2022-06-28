@@ -258,11 +258,17 @@ fn valid_tarballs(fll: &FluentLanguageLoader, pool: Pool<AlpmManager>, caches: &
 
 /// Does every installed package have a tarball in the cache?
 fn packages_have_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, caches: &[&Path]) {
-    let is_bad = aura_core::cache::missing_tarballs(alpm, caches)
-        .next()
-        .is_some();
+    let all_installed = alpm.localdb().pkgs().into_iter().count();
+    let bads = aura_core::cache::missing_tarballs(alpm, caches).count();
+    let is_bad = bads > 0;
     let symbol = if is_bad { BAD.red() } else { GOOD.green() };
-    println!("  [{}] {}", symbol, fl!(fll, "check-cache-missing"));
+    println!(
+        "  [{}] {} ({}/{})",
+        symbol,
+        fl!(fll, "check-cache-missing"),
+        all_installed - bads,
+        all_installed
+    );
 
     if is_bad {
         let cmd = "aura -Cy".bold().cyan().to_string();

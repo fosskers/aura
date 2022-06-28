@@ -205,7 +205,7 @@ pub fn missing_tarballs<'a>(
     alpm: &'a Alpm,
     caches: &[&Path],
 ) -> impl Iterator<Item = alpm::Package<'a>> {
-    let groups = all_versions(caches);
+    let groups: HashMap<String, HashSet<String>> = all_versions(caches);
 
     alpm.localdb().pkgs().into_iter().filter(move |p| {
         let pv = p.version().as_str();
