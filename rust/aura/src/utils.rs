@@ -6,6 +6,7 @@ use colored::{ColoredString, Colorize};
 use i18n_embed_fl::fl;
 use rustyline::Editor;
 use std::io::Write;
+use std::iter::Peekable;
 use std::path::Path;
 use std::str::FromStr;
 use unic_langid::LanguageIdentifier;
@@ -137,4 +138,47 @@ impl FromStr for Date {
         )
         .map(Date)
     }
+}
+
+/// An [`Iterator`] that knows if the current iteration step is the last one.
+/// Utilizes [`Peekable`] under the hood, so note that this forces the iteration
+/// of the next element.
+pub(crate) struct Progress<I>
+where
+    I: Iterator,
+{
+    iter: Peekable<I>,
+}
+
+impl<I> Progress<I>
+where
+    I: Iterator,
+{
+    /// Construct a new `Marked` iterator.
+    pub(crate) fn new(iter: I) -> Self {
+        Progress {
+            iter: iter.peekable(),
+        }
+    }
+}
+
+impl<I> Iterator for Progress<I>
+where
+    I: Iterator,
+{
+    type Item = Iteration<I::Item>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.iter.next() {
+            Some(t) if self.iter.peek().is_none() => Some(Iteration::Final(t)),
+            Some(t) => Some(Iteration::Middle(t)),
+            None => None,
+        }
+    }
+}
+
+/// How far along an iteration are we?
+pub(crate) enum Iteration<T> {
+    Middle(T),
+    Final(T),
 }
