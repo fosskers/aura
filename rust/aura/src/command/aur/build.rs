@@ -84,6 +84,7 @@ pub(crate) fn build<I>(
     fll: &FluentLanguageLoader,
     aur: &crate::env::Aur,
     editor: &str,
+    is_single: bool,
     pkg_clones: I,
 ) -> Result<Vec<Built>, Error>
 where
@@ -93,7 +94,7 @@ where
 
     let to_install = pkg_clones
         .map(|path| build_one(fll, aur, editor, path))
-        .map(|r| build_check(fll, r))
+        .map(|r| build_check(fll, is_single, r))
         .collect::<Result<Vec<Option<Built>>, Error>>()?
         .into_iter()
         .flatten()
@@ -323,6 +324,7 @@ fn move_tarball(source: &Path, target: &Path) -> Result<(), Error> {
 
 fn build_check(
     fll: &FluentLanguageLoader,
+    is_single: bool,
     r: Result<Built, Error>,
 ) -> Result<Option<Built>, Error> {
     match r {
@@ -330,9 +332,11 @@ fn build_check(
         Err(e) => {
             red!(fll, "A-build-fail");
             eprintln!("\n  {}\n", e.localise(fll));
-            match proceed!(fll, "A-build-continue") {
-                Some(_) => Ok(None),
-                None => Err(Error::Cancelled),
+
+            if is_single || proceed!(fll, "A-build-continue").is_none() {
+                Err(Error::Cancelled)
+            } else {
+                Ok(None)
             }
         }
     }

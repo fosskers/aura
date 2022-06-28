@@ -143,26 +143,26 @@ impl FromStr for Date {
 /// An [`Iterator`] that knows if the current iteration step is the last one.
 /// Utilizes [`Peekable`] under the hood, so note that this forces the iteration
 /// of the next element.
-pub(crate) struct Progress<I>
+pub(crate) struct Finished<I>
 where
     I: Iterator,
 {
     iter: Peekable<I>,
 }
 
-impl<I> Progress<I>
+impl<I> Finished<I>
 where
     I: Iterator,
 {
     /// Construct a new `Marked` iterator.
     pub(crate) fn new(iter: I) -> Self {
-        Progress {
+        Finished {
             iter: iter.peekable(),
         }
     }
 }
 
-impl<I> Iterator for Progress<I>
+impl<I> Iterator for Finished<I>
 where
     I: Iterator,
 {
@@ -181,4 +181,17 @@ where
 pub(crate) enum Iteration<T> {
     Middle(T),
     Final(T),
+}
+
+impl<T> Iteration<T> {
+    pub(crate) fn inner(self) -> T {
+        match self {
+            Iteration::Middle(t) => t,
+            Iteration::Final(t) => t,
+        }
+    }
+
+    pub(crate) fn is_last(&self) -> bool {
+        matches!(self, Iteration::Final(_))
+    }
 }

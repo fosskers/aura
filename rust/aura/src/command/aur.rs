@@ -5,9 +5,10 @@ mod build;
 use crate::env::Env;
 use crate::error::Nested;
 use crate::localization::Localised;
-use crate::utils::{PathStr, ResultVoid};
+use crate::utils::{Finished, PathStr, ResultVoid};
 use crate::{aura, green, proceed};
 use alpm::Alpm;
+use aura_core::Apply;
 use colored::{ColoredString, Colorize};
 use from_variants::FromVariants;
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
@@ -401,15 +402,20 @@ where
     }
 
     // --- Build and install each layer of AUR packages --- //
-    let len = order.len();
-    for (i, layer) in order.into_iter().enumerate() {
+    let is_single = to_build.len() == 1;
+    for raw_layer in order.into_iter().apply(Finished::new) {
+        let done = raw_layer.is_last();
+        let layer = raw_layer.inner();
         let clone_paths = layer.into_iter().map(|pkg| env.aur.clones.join(pkg));
-        let builts = build::build(fll, &env.aur, &env.general.editor, clone_paths)?;
+        let builts = build::build(fll, &env.aur, &env.general.editor, is_single, clone_paths)?;
 
         if builts.is_empty().not() {
-            let flags = (i + 1 < len)
-                .then(|| ["--asdeps"].as_slice())
-                .unwrap_or_default();
+            // FIXME Tue Jun 28 15:04:10 2022
+            //
+            // Chances are that this condition is wrong. It's conceivable that a
+            // binary package could slip into an early installation layer. This
+            // needs to be confirmed, though.
+            let flags = (!done).then(|| ["--asdeps"].as_slice()).unwrap_or_default();
             let tarballs = builts.iter().flat_map(|b| &b.tarballs);
             crate::pacman::pacman_install_from_tarball(flags, tarballs)?;
 
