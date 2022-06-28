@@ -150,6 +150,8 @@ check-cache-tarballs = All tarballs valid?
 check-cache-tarballs-fix = Fix: You can remove invalid tarballs with { $command }
 check-cache-missing = Every installed official package has a tarball?
 check-cache-missing-fix = Fix: You can download missing official tarballs with { $command }
+check-cache-missing-for = Every installed AUR package has a tarball?
+check-cache-missing-for-fix = Fix: View the missing packages with { $cmd } and reinstall them manually.
 
 # Configuration (conf)
 conf-toml-err = Failed to serialize current config.

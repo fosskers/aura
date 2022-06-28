@@ -205,6 +205,22 @@ pub fn officials_missing_tarballs<'a>(
     })
 }
 
+/// Installed foreign packages that have no tarball in the cache.
+pub fn foreigns_missing_tarballs<'a>(
+    alpm: &'a Alpm,
+    caches: &[&Path],
+) -> impl Iterator<Item = alpm::Package<'a>> {
+    let groups = all_versions(caches);
+
+    aura_arch::foreigns(alpm).filter(move |p| {
+        let pv = p.version().as_str();
+        groups
+            .get(p.name())
+            .map(|vs| !vs.contains(pv))
+            .unwrap_or(true)
+    })
+}
+
 /// Installed packages that have no tarball in the cache.
 pub fn missing_tarballs<'a>(
     alpm: &'a Alpm,

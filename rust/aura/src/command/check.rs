@@ -10,7 +10,6 @@ use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
-use log::debug;
 use r2d2::Pool;
 use r2d2_alpm::AlpmManager;
 use rayon::prelude::*;
@@ -209,6 +208,7 @@ fn cache(fll: &FluentLanguageLoader, alpm: &Alpm, pool: Pool<AlpmManager>, cache
     aura!(fll, "check-cache");
     caches_exist(fll, caches);
     official_packages_have_tarballs(fll, alpm, caches);
+    foreign_packages_have_tarballs(fll, alpm, caches);
     valid_tarballs(fll, pool, caches);
 }
 
@@ -276,10 +276,26 @@ fn official_packages_have_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, cach
         let msg = fl!(fll, "check-cache-missing-fix", command = cmd);
         println!("      └─ {}", msg);
     }
+}
 
-    #[cfg(debug_assertions)]
-    for bad in bads {
-        debug!("{}", bad.name());
+/// Does every installed foreign package have a tarball in the cache?
+fn foreign_packages_have_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, caches: &[&Path]) {
+    let all_installed = aura_arch::foreigns(alpm).count();
+    let bads: Vec<_> = aura_core::cache::foreigns_missing_tarballs(alpm, caches).collect();
+    let is_bad = bads.len() > 0;
+    let symbol = if is_bad { BAD.red() } else { GOOD.green() };
+    println!(
+        "  [{}] {} ({}/{})",
+        symbol,
+        fl!(fll, "check-cache-missing-for"),
+        all_installed - bads.len(),
+        all_installed
+    );
+
+    if is_bad {
+        let cmd = "aura -Cm".bold().cyan().to_string();
+        let msg = fl!(fll, "check-cache-missing-for-fix", cmd = cmd);
+        println!("      └─ {}", msg);
     }
 }
 
