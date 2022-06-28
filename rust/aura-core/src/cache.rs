@@ -117,7 +117,12 @@ where
     crate::read_dirs(caches)
         .filter_map(|r| r.ok())
         .map(|de| de.path())
-        .filter(move |path| path.to_str().map(|s| s.contains(term)).unwrap_or(false))
+        .filter(move |path| {
+            path.file_name()
+                .and_then(|s| s.to_str())
+                .map(|s| s.contains(term))
+                .unwrap_or(false)
+        })
 }
 
 /// Yield the [`CacheInfo`], if possible, of the given packages.
