@@ -124,22 +124,6 @@ pub(crate) fn sudo() -> Result<(), SudoError> {
     sudo::escalate_if_needed().map_err(|_| SudoError).void()
 }
 
-/// A wrapper around [`time::Date`] to supply some trait instances.
-#[derive(Debug)]
-pub(crate) struct Date(pub time::Date);
-
-impl FromStr for Date {
-    type Err = time::error::Parse;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        time::Date::parse(
-            s,
-            &time::macros::format_description!("[year]-[month]-[day]"),
-        )
-        .map(Date)
-    }
-}
-
 /// An [`Iterator`] that knows if the current iteration step is the last one.
 /// Utilizes [`Peekable`] under the hood, so note that this forces the iteration
 /// of the next element.

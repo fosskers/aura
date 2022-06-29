@@ -51,7 +51,6 @@ dependencies = [
  "aura-arch",
  "aura-core",
  "clap",
- "clap_complete",
  "colored",
  "curl",
  "from_variants",
@@ -187,15 +186,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "clap_complete"
-version = "3.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c09fbb00fb6e20e92f785598ecbf0c118f269737490c57af28b1ed07f392be16"
-dependencies = [
- "clap",
-]
-
-[[package]]
 name = "clap_derive"
 version = "3.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -215,6 +205,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "87eba3c8c7f42ef17f6c659fc7416d0f4758cd3e58861ee63c5fa4a4dde649e4"
 dependencies = [
  "os_str_bytes",
+]
+
+[[package]]
+name = "clap_mangen"
+version = "0.1.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "937efe4451c32be4ccb3e19549cbb1ea5cb85197f39b87a9662ca1d7b1765d1d"
+dependencies = [
+ "clap",
+ "roff",
 ]
 
 [[package]]
@@ -415,6 +415,15 @@ name = "disown"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a5702af1e33e4532aa17e19d17becde57ae619985754ae3cd731f82e7dcd673c"
+
+[[package]]
+name = "doc-gen"
+version = "0.1.0"
+dependencies = [
+ "aura",
+ "clap",
+ "clap_mangen",
+]
 
 [[package]]
 name = "either"
@@ -1200,6 +1209,12 @@ dependencies = [
  "redox_syscall",
  "thiserror",
 ]
+
+[[package]]
+name = "roff"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b833d8d034ea094b1ea68aa6d5c740e0d04bad9d16568d08ba6f76823a114316"
 
 [[package]]
 name = "rust-embed"

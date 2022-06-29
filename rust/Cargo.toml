@@ -5,7 +5,9 @@ members = [
 # Core libraries
 "aura-core", "aura-arch",
 # Ecosystem libraries
-"r2d2-alpm"
+"r2d2-alpm",
+# Documentation Generation
+"doc-gen"
 ]
 
 [profile.release]

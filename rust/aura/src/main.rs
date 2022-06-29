@@ -8,7 +8,6 @@ pub(crate) mod download;
 pub(crate) mod env;
 pub(crate) mod error;
 pub(crate) mod fetch;
-pub(crate) mod flags;
 pub(crate) mod localization;
 mod macros;
 pub(crate) mod pacman;
@@ -16,9 +15,9 @@ pub(crate) mod utils;
 
 use crate::command::{aur, cache, check, conf, deps, log, open, orphans, snapshot, stats};
 use crate::error::{Error, Nested};
-use crate::flags::{Args, Cache, SubCmd, AURA_GLOBALS};
 use crate::localization::Localised;
 use ::log::debug;
+use aura::flags::{Args, Cache, SubCmd, AURA_GLOBALS};
 use clap::Parser;
 use colored::Colorize;
 use i18n_embed::fluent::FluentLanguageLoader;
@@ -28,7 +27,7 @@ use std::process::ExitCode;
 
 fn main() -> ExitCode {
     // Parse all CLI input. Exits immediately if invalid input is given.
-    let args = flags::Args::parse();
+    let args = aura::flags::Args::parse();
 
     // --- Localisation --- //
     match localization::load(args.language()) {

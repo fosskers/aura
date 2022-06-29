@@ -12,7 +12,6 @@ alpm-utils = "2.0"
 aura-arch = { path = "../aura-arch" }  # TODO Give these versions.
 aura-core = { path = "../aura-core" }
 clap = { version = "3.0", features = ["derive"] }
-clap_complete = "3.0"
 colored = "2.0"
 curl = "0.4"
 from_variants = "1.0"

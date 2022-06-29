@@ -143,9 +143,9 @@ impl Env {
     }
 
     /// Allow CLI flags to override settings from `aura.toml`.
-    pub(crate) fn reconcile_cli(&mut self, flags: &crate::flags::SubCmd) {
+    pub(crate) fn reconcile_cli(&mut self, flags: &aura::flags::SubCmd) {
         match flags {
-            crate::flags::SubCmd::Aur(a) => self.aur.reconcile(a),
+            aura::flags::SubCmd::Aur(a) => self.aur.reconcile(a),
             _ => {}
         }
     }
@@ -245,7 +245,7 @@ impl Aur {
 
     /// Flags set on the command line should override config settings and other
     /// defaults.
-    fn reconcile(&mut self, flags: &crate::flags::Aur) {
+    fn reconcile(&mut self, flags: &aura::flags::Aur) {
         if flags.git {
             self.git = true;
         }
