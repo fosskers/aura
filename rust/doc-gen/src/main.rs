@@ -7,7 +7,7 @@ use std::path::Path;
 const DIR: &str = "man-pages";
 
 fn main() -> std::io::Result<()> {
-    let pages = [
+    [
         (Args::command(), "aura.1"),
         (Database::command(), "aura-database.1"),
         (Files::command(), "aura-files.1"),
@@ -26,13 +26,10 @@ fn main() -> std::io::Result<()> {
         (Open::command(), "aura-open.1"),
         (Deps::command(), "aura-deps.1"),
         (Check::command(), "aura-check.1"),
-    ];
-
-    for (cmd, path) in pages {
-        work(cmd, path)?;
-    }
-
-    Ok(())
+    ]
+    .into_iter()
+    .map(|(cmd, path)| work(cmd, path))
+    .collect::<Result<(), _>>()
 }
 
 /// Render and output the manpage for some given Clap [`Command`].
