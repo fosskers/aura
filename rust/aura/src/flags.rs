@@ -102,16 +102,16 @@ pub enum SubCmd {
     /// Handle orphan packages.
     #[clap(display_order = 1)]
     Orphans(Orphans),
-    /// View various configuration settings and files.
-    Conf(Conf),
-    /// View statistics about your machine or about Aura itself.
-    Stats(Stats),
-    /// Open various webpages related to Aura.
-    Open(Open),
-    /// Output a dependency graph in DOT format.
-    Deps(Deps),
     /// Validate your system.
     Check(Check),
+    /// View various configuration settings and files.
+    Conf(Conf),
+    /// Output a dependency graph in DOT format.
+    Deps(Deps),
+    /// Open various webpages related to Aura.
+    Open(Open),
+    /// View statistics about your machine or about Aura itself.
+    Stats(Stats),
 }
 
 /// Synchronize official packages.
