@@ -230,7 +230,7 @@ pub(crate) fn info(
         let pairs: Vec<(&str, ColoredString)> = vec![
             (&name, ci.name.normal()),
             (&ver, format!("{} {}", ci.version.normal(), is_in).normal()),
-            (&created, format!("{}", dt).normal()),
+            (&created, dt.to_string().normal()),
             (&sig, sig_yes_no),
             (&size, format!("{}", ci.size.bytes()).normal()),
             (&av, ci.available.join(", ").normal()),
@@ -318,7 +318,7 @@ pub(crate) fn clean_not_saved(fll: &FluentLanguageLoader, env: &Env) -> Result<(
         // from the filesystem.
         match snaps.get(p.name.as_ref()) {
             Some(vs) if vs.contains(p.version.as_ref()) => {}
-            Some(_) | None => tarball.sudo_remove().map_err(|pb| Error::Delete(pb))?,
+            Some(_) | None => tarball.sudo_remove().map_err(Error::Delete)?,
         }
     }
 

@@ -421,8 +421,7 @@ where
 
             builts
                 .into_iter()
-                .map(|b| update_hash(&env.aur.hashes, &b.clone))
-                .collect::<Result<(), Error>>()?;
+                .try_for_each(|b| update_hash(&env.aur.hashes, &b.clone))?;
         }
     }
 

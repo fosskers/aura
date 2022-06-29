@@ -99,11 +99,11 @@ macro_rules! executable {
 /// Ask for permission to proceed, but with a custom message.
 macro_rules! proceed {
     ($fll:expr, $msg:expr) => {{
-        let foo = format!(
+        let formatted = format!(
             "{} {} ",
             i18n_embed_fl::fl!($fll, $msg),
             i18n_embed_fl::fl!($fll, "proceed-yes")
         );
-        crate::utils::prompt(&$crate::a!(foo))
+        crate::utils::prompt(&$crate::a!(formatted))
     }};
 }

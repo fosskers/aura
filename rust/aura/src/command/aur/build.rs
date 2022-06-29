@@ -238,8 +238,7 @@ fn overwrite_build_files(
         .filter_map(|de| de.ok())
         .map(|de| de.path())
         .filter(|path| path.extension() == Some("patch".as_ref()))
-        .map(|path| edit(editor, path))
-        .collect::<Result<(), Error>>()?;
+        .try_for_each(|path| edit(editor, path))?;
 
     Ok(())
 }
@@ -251,7 +250,7 @@ fn edit(editor: &str, file: PathBuf) -> Result<(), Error> {
         .map_err(|_| Error::EditFail(file.clone()))?
         .success()
         .then(|| ())
-        .ok_or_else(|| Error::EditFail(file))?;
+        .ok_or(Error::EditFail(file))?;
 
     Ok(())
 }

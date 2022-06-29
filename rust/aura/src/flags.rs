@@ -266,15 +266,11 @@ pub struct Sync {
 impl Sync {
     /// Does this `-S` subflag need sudo?
     pub fn needs_sudo(&self) -> bool {
-        if self.info.is_empty().not()
+        (self.info.is_empty().not()
             || self.search.is_empty().not()
             || self.list.is_some()
-            || self.print
-        {
-            false
-        } else {
-            true
-        }
+            || self.print)
+            .not()
     }
 }
 

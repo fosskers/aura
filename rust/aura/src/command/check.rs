@@ -14,6 +14,7 @@ use r2d2::Pool;
 use r2d2_alpm::AlpmManager;
 use rayon::prelude::*;
 use std::collections::HashSet;
+use std::ops::Not;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -261,7 +262,7 @@ fn valid_tarballs(fll: &FluentLanguageLoader, pool: Pool<AlpmManager>, caches: &
 fn official_packages_have_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, caches: &[&Path]) {
     let all_installed = aura_arch::officials(alpm).count();
     let bads: Vec<_> = aura_core::cache::officials_missing_tarballs(alpm, caches).collect();
-    let is_bad = bads.len() > 0;
+    let is_bad = bads.is_empty().not();
     let symbol = if is_bad { BAD.red() } else { GOOD.green() };
     println!(
         "  [{}] {} ({}/{})",
@@ -282,7 +283,7 @@ fn official_packages_have_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, cach
 fn foreign_packages_have_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, caches: &[&Path]) {
     let all_installed = aura_arch::foreigns(alpm).count();
     let bads: Vec<_> = aura_core::cache::foreigns_missing_tarballs(alpm, caches).collect();
-    let is_bad = bads.len() > 0;
+    let is_bad = bads.is_empty().not();
     let symbol = if is_bad { BAD.red() } else { GOOD.green() };
     println!(
         "  [{}] {} ({}/{})",

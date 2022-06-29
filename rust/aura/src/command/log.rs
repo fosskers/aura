@@ -14,6 +14,7 @@ use i18n_embed_fl::fl;
 use log::error;
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Write};
+use std::ops::Deref;
 use std::path::Path;
 use std::process::Command;
 
@@ -36,10 +37,7 @@ impl Nested for Error {
 impl Localised for Error {
     fn localise(&self, fll: &FluentLanguageLoader) -> String {
         match self {
-            // FIXME Fri Jun 17 14:47:05 2022
-            //
-            // Strange clone, or else Fluent complains about a &&str.
-            Error::Search(s, _) => fl!(fll, "L-search-err", cmd = s.clone()),
+            Error::Search(s, _) => fl!(fll, "L-search-err", cmd = s.deref()),
             Error::View(_) => fl!(fll, "L-view-err"),
             Error::Info(_) => fl!(fll, "err-write"),
         }

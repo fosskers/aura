@@ -75,7 +75,7 @@ fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
         SubCmd::DepTest(_) => pacman(false)?,
         SubCmd::Upgrade(u) => pacman(u.needs_sudo())?,
         // --- AUR Packages --- //
-        SubCmd::Aur(a) if a.info.is_empty().not() => aur::info(&fll, &a.info)?,
+        SubCmd::Aur(a) if a.info.is_empty().not() => aur::info(fll, &a.info)?,
         SubCmd::Aur(a) if a.search.is_empty().not() => {
             aur::search(&env.alpm()?, a.abc, a.reverse, a.limit, a.quiet, a.search)?
         }
@@ -83,32 +83,32 @@ fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
         SubCmd::Aur(a) if a.pkgbuild.is_some() => {
             aur::pkgbuild(&a.pkgbuild.unwrap(), &env.aur.clones)?
         }
-        SubCmd::Aur(a) if a.wclone.is_empty().not() => aur::clone_aur_repos(&fll, &a.wclone)?,
-        SubCmd::Aur(a) if a.sysupgrade => aur::upgrade(&fll, &env.alpm()?, env, a.refresh)?,
-        SubCmd::Aur(a) if a.refresh => aur::refresh(&fll, &env.alpm()?, &env.aur.clones)?,
-        SubCmd::Aur(a) => aur::install(&fll, &env, a.packages.iter().map(|s| s.as_str()))?,
+        SubCmd::Aur(a) if a.wclone.is_empty().not() => aur::clone_aur_repos(fll, &a.wclone)?,
+        SubCmd::Aur(a) if a.sysupgrade => aur::upgrade(fll, &env.alpm()?, env, a.refresh)?,
+        SubCmd::Aur(a) if a.refresh => aur::refresh(fll, &env.alpm()?, &env.aur.clones)?,
+        SubCmd::Aur(a) => aur::install(fll, &env, a.packages.iter().map(|s| s.as_str()))?,
         // --- Package Sets --- //
         SubCmd::Backup(b) if b.clean => {
-            snapshot::clean(&fll, &env.caches(), &env.backups.snapshots)?
+            snapshot::clean(fll, &env.caches(), &env.backups.snapshots)?
         }
         SubCmd::Backup(b) if b.list => snapshot::list(&env.backups.snapshots)?,
         SubCmd::Backup(b) if b.restore => {
-            snapshot::restore(&fll, &env.alpm()?, &env.caches(), &env.backups.snapshots)?
+            snapshot::restore(fll, &env.alpm()?, &env.caches(), &env.backups.snapshots)?
         }
-        SubCmd::Backup(_) => snapshot::save(&fll, &env.alpm()?, &env.backups.snapshots)?,
+        SubCmd::Backup(_) => snapshot::save(fll, &env.alpm()?, &env.backups.snapshots)?,
         // --- Cache Management --- //
         SubCmd::Cache(c) if !c.info.is_empty() => {
-            cache::info(&fll, &env.alpm()?, &env.caches(), c.info)?
+            cache::info(fll, &env.alpm()?, &env.caches(), c.info)?
         }
         SubCmd::Cache(c) if c.search.is_some() => cache::search(&env.caches(), &c.search.unwrap())?,
-        SubCmd::Cache(c) if c.backup.is_some() => cache::backup(&fll, &env, &c.backup.unwrap())?,
-        SubCmd::Cache(Cache { clean: Some(n), .. }) => cache::clean(&fll, &env.caches(), n)?,
-        SubCmd::Cache(c) if c.clean_unsaved => cache::clean_not_saved(&fll, &env)?,
-        SubCmd::Cache(c) if c.invalid => cache::invalid(&fll, &env.alpm()?, &env.caches())?,
+        SubCmd::Cache(c) if c.backup.is_some() => cache::backup(fll, &env, &c.backup.unwrap())?,
+        SubCmd::Cache(Cache { clean: Some(n), .. }) => cache::clean(fll, &env.caches(), n)?,
+        SubCmd::Cache(c) if c.clean_unsaved => cache::clean_not_saved(fll, &env)?,
+        SubCmd::Cache(c) if c.invalid => cache::invalid(fll, &env.alpm()?, &env.caches())?,
         SubCmd::Cache(c) if c.list => cache::list(&env.caches())?,
-        SubCmd::Cache(c) if c.refresh => cache::refresh(&fll, &env.alpm()?, &env.caches())?,
+        SubCmd::Cache(c) if c.refresh => cache::refresh(fll, &env.alpm()?, &env.caches())?,
         SubCmd::Cache(c) if c.missing => cache::missing(&env.alpm()?, &env.caches()),
-        SubCmd::Cache(c) => cache::downgrade(&fll, &env.caches(), c.packages)?,
+        SubCmd::Cache(c) => cache::downgrade(fll, &env.caches(), c.packages)?,
         // --- Logs --- //
         SubCmd::Log(l) if l.search.is_some() => log::search(env.alpm_log(), l.search.unwrap())?,
         SubCmd::Log(l) if !l.info.is_empty() => log::info(fll, env.alpm_log(), l.info)?,
@@ -142,7 +142,7 @@ fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
         }
         SubCmd::Deps(d) => deps::graph(&env.alpm()?, d.limit, d.optional, d.packages),
         // --- System Validation --- //
-        SubCmd::Check(_) => check::check(&fll, &env)?,
+        SubCmd::Check(_) => check::check(fll, &env)?,
     }
 
     Ok(())

@@ -28,8 +28,7 @@ fn main() -> std::io::Result<()> {
         (Check::command(), "aura-check.1"),
     ]
     .into_iter()
-    .map(|(cmd, path)| work(cmd, path))
-    .collect::<Result<(), _>>()
+    .try_for_each(|(cmd, path)| work(cmd, path))
 }
 
 /// Render and output the manpage for some given Clap [`Command`].

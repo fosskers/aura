@@ -101,7 +101,7 @@ impl Env {
         };
 
         let e = Env {
-            general: general.unwrap_or_else(General::default),
+            general: general.unwrap_or_default(),
             aur: aur.unwrap_or_else(Aur::try_default)?,
             backups: backups.unwrap_or_else(Backups::try_default)?,
             pacman: pacmanconf::Config::new().map_err(Error::PConf)?,
@@ -144,9 +144,8 @@ impl Env {
 
     /// Allow CLI flags to override settings from `aura.toml`.
     pub(crate) fn reconcile_cli(&mut self, flags: &aura::flags::SubCmd) {
-        match flags {
-            aura::flags::SubCmd::Aur(a) => self.aur.reconcile(a),
-            _ => {}
+        if let aura::flags::SubCmd::Aur(a) = flags {
+            self.aur.reconcile(a)
         }
     }
 
@@ -185,7 +184,7 @@ impl From<RawGeneral> for General {
     fn from(raw: RawGeneral) -> Self {
         General {
             cpus: raw.cpus.unwrap_or_else(|| num_cpus::get() as u32),
-            editor: raw.editor.unwrap_or_else(|| editor()),
+            editor: raw.editor.unwrap_or_else(editor),
         }
     }
 }
