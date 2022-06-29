@@ -1,0 +1,31 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH aura 1  "aura " 
+.SH NAME
+aura \- View various configuration settings and files
+.SH SYNOPSIS
+\fBaura\fR [\fB\-h\fR|\fB\-\-help\fR] [\fB\-\-config\fR] [\fB\-p\fR|\fB\-\-pacman\fR] [\fB\-a\fR|\fB\-\-aura\fR] [\fB\-m\fR|\fB\-\-makepkg\fR] [\fB\-\-new\fR] [\fB\-g\fR|\fB\-\-gen\fR] 
+.SH DESCRIPTION
+View various configuration settings and files
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help information
+.TP
+\fB\-\-config\fR=\fIpath\fR
+Set an alternate Pacman configuration file
+.TP
+\fB\-p\fR, \fB\-\-pacman\fR
+View the Pacman conf
+.TP
+\fB\-a\fR, \fB\-\-aura\fR
+View the contents of ~/.config/aura.toml
+.TP
+\fB\-m\fR, \fB\-\-makepkg\fR
+View the Makepkg conf
+.TP
+\fB\-\-new\fR
+List all .pacnew files newer than their originals
+.TP
+\fB\-g\fR, \fB\-\-gen\fR
+Output your current, full Aura config as legal TOML

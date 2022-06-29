@@ -1,0 +1,22 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH aura 1  "aura " 
+.SH NAME
+aura \- Save and restore the global package state
+.SH SYNOPSIS
+\fBaura\fR [\fB\-h\fR|\fB\-\-help\fR] [\fB\-l\fR|\fB\-\-list\fR] [\fB\-c\fR|\fB\-\-clean\fR] [\fB\-r\fR|\fB\-\-restore\fR] 
+.SH DESCRIPTION
+Save and restore the global package state
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help information
+.TP
+\fB\-l\fR, \fB\-\-list\fR
+Show all saved package snapshot filenames
+.TP
+\fB\-c\fR, \fB\-\-clean\fR
+Remove all snapshots without matching tarballs in the cache
+.TP
+\fB\-r\fR, \fB\-\-restore\fR
+Restore to a previous package snapshot

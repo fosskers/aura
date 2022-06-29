@@ -1,0 +1,43 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH aura 1  "aura " 
+.SH NAME
+aura \- Manage the package cache
+.SH SYNOPSIS
+\fBaura\fR [\fB\-h\fR|\fB\-\-help\fR] [\fB\-s\fR|\fB\-\-search\fR] [\fB\-b\fR|\fB\-\-backup\fR] [\fB\-c\fR|\fB\-\-clean\fR] [\fB\-\-notsaved\fR] [\fB\-i\fR|\fB\-\-info\fR] [\fB\-l\fR|\fB\-\-list\fR] [\fB\-y\fR|\fB\-\-refresh\fR] [\fB\-t\fR|\fB\-\-invalid\fR] [\fB\-m\fR|\fB\-\-missing\fR] [\fIPACKAGES\fR] 
+.SH DESCRIPTION
+Manage the package cache
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help information
+.TP
+\fB\-s\fR, \fB\-\-search\fR=\fIterm\fR
+Search the package cache
+.TP
+\fB\-b\fR, \fB\-\-backup\fR=\fItarget\fR
+Back up the package cache to a given directory
+.TP
+\fB\-c\fR, \fB\-\-clean\fR=\fIN\fR
+Save the most recent <N> versions of a package
+.TP
+\fB\-\-notsaved\fR
+Delete only those tarballs which aren\*(Aqt present in a snapshot
+.TP
+\fB\-i\fR, \fB\-\-info\fR=\fIpkg(s)\fR
+Look up specific packages for info on their cache entries
+.TP
+\fB\-l\fR, \fB\-\-list\fR
+Print the contents of the package cache
+.TP
+\fB\-y\fR, \fB\-\-refresh\fR
+Download tarballs of installed packages that are missing from the cache
+.TP
+\fB\-t\fR, \fB\-\-invalid\fR
+Delete invalid tarballs from the cache
+.TP
+\fB\-m\fR, \fB\-\-missing\fR
+Display packages that don\*(Aqt have a tarball in the cache
+.TP
+[\fIPACKAGES\fR]
+Packages to downgrade

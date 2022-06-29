@@ -1,0 +1,25 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH aura 1  "aura " 
+.SH NAME
+aura \- Output a dependency graph in DOT format
+.SH SYNOPSIS
+\fBaura\fR [\fB\-h\fR|\fB\-\-help\fR] [\fB\-\-reverse\fR] [\fB\-o\fR|\fB\-\-optional\fR] [\fB\-\-limit\fR] [\fIPACKAGES\fR] 
+.SH DESCRIPTION
+Output a dependency graph in DOT format
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help information
+.TP
+\fB\-\-reverse\fR
+Display packages that depend on the given args
+.TP
+\fB\-o\fR, \fB\-\-optional\fR
+Include optional dependencies
+.TP
+\fB\-\-limit\fR=\fIn\fR
+The number of layers up or down to allow
+.TP
+[\fIPACKAGES\fR]
+Packages to focus on

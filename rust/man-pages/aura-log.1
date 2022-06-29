@@ -1,0 +1,28 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH aura 1  "aura " 
+.SH NAME
+aura \- View the Pacman/ALPM log
+.SH SYNOPSIS
+\fBaura\fR [\fB\-h\fR|\fB\-\-help\fR] [\fB\-i\fR|\fB\-\-info\fR] [\fB\-s\fR|\fB\-\-search\fR] [\fB\-b\fR|\fB\-\-before\fR] [\fB\-a\fR|\fB\-\-after\fR] [\fB\-\-logfile\fR] 
+.SH DESCRIPTION
+View the Pacman/ALPM log
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help information
+.TP
+\fB\-i\fR, \fB\-\-info\fR=\fIpackages\fR
+Display install/upgrade history for the given packages
+.TP
+\fB\-s\fR, \fB\-\-search\fR=\fIterm\fR
+Search the Pacman log for a matching string
+.TP
+\fB\-b\fR, \fB\-\-before\fR=\fIYYYY\-MM\-DD\fR
+Only display log entries from before the given date
+.TP
+\fB\-a\fR, \fB\-\-after\fR=\fIYYYY\-MM\-DD\fR
+Only display log entries from after the given date
+.TP
+\fB\-\-logfile\fR=\fIpath\fR
+Set an alternate log file

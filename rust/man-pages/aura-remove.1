@@ -1,0 +1,94 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH aura 1  "aura " 
+.SH NAME
+aura \- Remove packages from the system
+.SH SYNOPSIS
+\fBaura\fR [\fB\-h\fR|\fB\-\-help\fR] [\fB\-c\fR|\fB\-\-cascade\fR] [\fB\-d\fR|\fB\-\-nodeps\fR] [\fB\-n\fR|\fB\-\-nosave\fR] [\fB\-p\fR|\fB\-\-print\fR] [\fB\-s\fR|\fB\-\-recursive\fR] [\fB\-u\fR|\fB\-\-unneeded\fR] [\fB\-v\fR|\fB\-\-verbose\fR] [\fB\-\-arch\fR] [\fB\-\-assumed\-installed\fR] [\fB\-\-cachedir\fR] [\fB\-\-color\fR] [\fB\-\-config\fR] [\fB\-\-confirm\fR] [\fB\-\-dbonly\fR] [\fB\-b\fR|\fB\-\-dbpath\fR] [\fB\-\-debug\fR] [\fB\-\-disable\-download\-timeout\fR] [\fB\-\-gpgdir\fR] [\fB\-\-hookdir\fR] [\fB\-\-logfile\fR] [\fB\-\-noconfirm\fR] [\fB\-\-noprogressbar\fR] [\fB\-\-noscriptlet\fR] [\fB\-\-print\-format\fR] [\fB\-\-root\fR] [\fB\-\-sysroot\fR] [\fIPACKAGES\fR] 
+.SH DESCRIPTION
+Remove packages from the system
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help information
+.TP
+\fB\-c\fR, \fB\-\-cascade\fR
+Remove packages and all packages that depend on them
+.TP
+\fB\-d\fR, \fB\-\-nodeps\fR
+Skip dependency version checks (\-dd to skip all checks)
+.TP
+\fB\-n\fR, \fB\-\-nosave\fR
+Remove configuration files
+.TP
+\fB\-p\fR, \fB\-\-print\fR
+Print the targets instead of performing the operation
+.TP
+\fB\-s\fR, \fB\-\-recursive\fR
+Remove unnecessary dependencies (\-ss includes explicitly installed dependencies)
+.TP
+\fB\-u\fR, \fB\-\-unneeded\fR
+Remove unneeded packages
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Be verbose
+.TP
+\fB\-\-arch\fR=\fIARCH\fR
+Set an alternate architecture
+.TP
+\fB\-\-assumed\-installed\fR=\fIpackage=version\fR
+Add a virtual package to satisfy dependencies
+.TP
+\fB\-\-cachedir\fR=\fIpath\fR
+Set an alternate package cache location
+.TP
+\fB\-\-color\fR=\fIwhen\fR
+Colorize the output
+.TP
+\fB\-\-config\fR=\fIpath\fR
+Set an alternate Pacman configuration file
+.TP
+\fB\-\-confirm\fR
+Always ask for confirmation
+.TP
+\fB\-\-dbonly\fR
+Only modify database entries, not package files
+.TP
+\fB\-b\fR, \fB\-\-dbpath\fR=\fIpath\fR
+Set an alternate database location
+.TP
+\fB\-\-debug\fR
+Display Pacman debug messages
+.TP
+\fB\-\-disable\-download\-timeout\fR
+Use relaxed timeouts for download
+.TP
+\fB\-\-gpgdir\fR=\fIpath\fR
+Set an alternate home directory for GnuPG
+.TP
+\fB\-\-hookdir\fR=\fIdir\fR
+Set an alternate hook location
+.TP
+\fB\-\-logfile\fR=\fIpath\fR
+Set an alternate log file
+.TP
+\fB\-\-noconfirm\fR
+Do not ask for any confirmation
+.TP
+\fB\-\-noprogressbar\fR
+Do not show a progress bar when downloading files
+.TP
+\fB\-\-noscriptlet\fR
+Do not execute the install scriptlet if one exists
+.TP
+\fB\-\-print\-format\fR=\fIstring\fR
+Specify how the targets should be printed
+.TP
+\fB\-\-root\fR=\fIpath\fR
+Set an alternate installation root
+.TP
+\fB\-\-sysroot\fR
+Operate on a mounted guest system (root\-only)
+.TP
+[\fIPACKAGES\fR]
+Packages to remove

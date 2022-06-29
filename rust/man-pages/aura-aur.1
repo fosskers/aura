@@ -1,0 +1,61 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH aura 1  "aura " 
+.SH NAME
+aura \- Synchronize AUR packages
+.SH SYNOPSIS
+\fBaura\fR [\fB\-h\fR|\fB\-\-help\fR] [\fB\-i\fR|\fB\-\-info\fR] [\fB\-s\fR|\fB\-\-search\fR] [\fB\-\-abc\fR] [\fB\-\-limit\fR] [\fB\-r\fR|\fB\-\-reverse\fR] [\fB\-q\fR|\fB\-\-quiet\fR] [\fB\-o\fR|\fB\-\-open\fR] [\fB\-p\fR|\fB\-\-pkgbuild\fR] [\fB\-\-hotedit\fR] [\fB\-k\fR|\fB\-\-diff\fR] [\fB\-u\fR|\fB\-\-sysupgrade\fR] [\fB\-\-git\fR] [\fB\-\-ignore\fR] [\fB\-w\fR|\fB\-\-clone\fR] [\fB\-y\fR|\fB\-\-refresh\fR] [\fIPACKAGES\fR] 
+.SH DESCRIPTION
+Synchronize AUR packages
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help information
+.TP
+\fB\-i\fR, \fB\-\-info\fR=\fIpackages\fR
+View AUR package information
+.TP
+\fB\-s\fR, \fB\-\-search\fR=\fIterms\fR
+Search the AUR via search strings. Multiple terms narrow the result
+.TP
+\fB\-\-abc\fR
+[\-s] Sort results alphabetically
+.TP
+\fB\-\-limit\fR=\fIN\fR
+[\-s] Limit the results to N results
+.TP
+\fB\-r\fR, \fB\-\-reverse\fR
+[\-s] Reverse the search results
+.TP
+\fB\-q\fR, \fB\-\-quiet\fR
+[\-s] Only print matching package names
+.TP
+\fB\-o\fR, \fB\-\-open\fR=\fIpackage\fR
+Open a given package\*(Aqs AUR package
+.TP
+\fB\-p\fR, \fB\-\-pkgbuild\fR=\fIpackage\fR
+View a package\*(Aqs PKGBUILD
+.TP
+\fB\-\-hotedit\fR
+View/edit PKGBUILDs and related build files before building
+.TP
+\fB\-k\fR, \fB\-\-diff\fR
+View diffs of PKGBUILDs and related build files before building
+.TP
+\fB\-u\fR, \fB\-\-sysupgrade\fR
+Upgrade all installed AUR packages
+.TP
+\fB\-\-git\fR
+[\-u] Rebuild all git/svn/hg/etc. packages as well
+.TP
+\fB\-\-ignore\fR=\fIpackage\fR
+[\-u] Ignore a package upgrade (can be used more than once)
+.TP
+\fB\-w\fR, \fB\-\-clone\fR=\fIpackage\fR
+Clone a package\*(Aqs AUR repository, but don\*(Aqt build anything
+.TP
+\fB\-y\fR, \fB\-\-refresh\fR
+Pull the latest changes for every local copy of an AUR package
+.TP
+[\fIPACKAGES\fR]
+Packages to install
