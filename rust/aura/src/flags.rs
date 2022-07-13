@@ -936,6 +936,10 @@ pub struct Aur {
     )]
     pub wclone: Vec<String>,
 
+    /// Deprecated.
+    #[clap(long, short = 'x', display_order = 1)]
+    pub unsuppress: bool,
+
     /// Pull the latest changes for every local copy of an AUR package.
     #[clap(long, short = 'y', display_order = 1)]
     pub refresh: bool,

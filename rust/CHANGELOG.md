@@ -56,6 +56,7 @@ This produces the following image:
 - **Breaking:** `--ignore` is now accepted multiple times with a single package
   argument, as opposed to the previous `--ignore=foo,bar,baz`.
 - The performance of `-As` has been greatly improved.
+- `-Ax` now does nothing - build output is unsuppressed by default.
 
 #### Removed
 
