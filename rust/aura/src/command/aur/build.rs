@@ -137,7 +137,12 @@ fn build_one(
         .map(|s| s.as_str());
 
     let install_file: Option<PathBuf> = {
-        let install = Path::new(&base).with_extension("install");
+        let install = info
+            .pkg
+            .install
+            .as_deref()
+            .map(PathBuf::from)
+            .unwrap_or_else(|| Path::new(&base).with_extension("install"));
         clone.join(&install).is_file().then(|| install)
     };
 
