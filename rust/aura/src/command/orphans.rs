@@ -53,7 +53,7 @@ impl Localised for Error {
 
 /// Print the name of each orphaned package.
 pub(crate) fn list(alpm: &Alpm) {
-    arch::orphans(alpm).for_each(|o| println!("{}", o.name()))
+    arch::orphans(alpm).for_each(|o| println!("{} {}", o.name(), o.version()))
 }
 
 /// Sets a package's install reason to "as explicit". An alias for `-D --asexplicit`.
