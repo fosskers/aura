@@ -14,6 +14,13 @@ pub const AURA_GLOBALS: &[&str] = &["--english", "--japanese", "--german"];
 /// Commandline arguments to the Aura executable.
 #[derive(Parser, Debug)]
 #[clap(version, author, about)]
+#[clap(long_about = "
+Aura is a system management tool for Arch Linux and its derivatives.
+
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions; see 'aura open --license' for details.
+")]
 #[clap(propagate_version = true, disable_help_subcommand = true)]
 pub struct Args {
     // --- Aura Language Options --- //
