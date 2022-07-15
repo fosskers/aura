@@ -11,6 +11,9 @@ use std::path::Path;
 use std::str::FromStr;
 use unic_langid::LanguageIdentifier;
 
+/// An empty array to satisfy typechecking in a few places around the codebase.
+pub(crate) const NOTHING: [&str; 0] = [];
+
 /// Injection of the `void` method into [`Result`], which is a common shorthand
 /// for "forgetting" the internal return value of a `Result`. Note that this
 /// also automatically lifts the Error type via [`From`], as it is intended as

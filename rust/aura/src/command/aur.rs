@@ -5,7 +5,7 @@ mod build;
 use crate::env::Env;
 use crate::error::Nested;
 use crate::localization::Localised;
-use crate::utils::{Finished, PathStr, ResultVoid};
+use crate::utils::{Finished, PathStr, ResultVoid, NOTHING};
 use crate::{aura, green, proceed};
 use alpm::Alpm;
 use aura_core::Apply;
@@ -362,8 +362,7 @@ where
         // Another handle must be opened, or else the change in orphan packages won't be detected.
         let alpm = env.alpm()?;
         let after: HashSet<_> = aura_arch::orphans(&alpm).map(|p| p.name()).collect();
-        let nothing: [&str; 0] = [];
-        crate::pacman::sudo_pacman("-Rsu", nothing, after.difference(&before))?;
+        crate::pacman::sudo_pacman("-Rsu", NOTHING, after.difference(&before))?;
     } else {
         install_work(fll, env, pkgs)?;
     }

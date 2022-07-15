@@ -4,7 +4,7 @@ use crate::download::download_with_progress;
 use crate::env::Env;
 use crate::error::Nested;
 use crate::localization::Localised;
-use crate::utils::PathStr;
+use crate::utils::{PathStr, NOTHING};
 use crate::{aura, green, proceed, yellow};
 use alpm::Alpm;
 use aura_core::cache::{CacheSize, PkgPath};
@@ -126,8 +126,7 @@ pub(crate) fn downgrade(
         return Err(Error::NothingToDo);
     }
 
-    let nothing: [&str; 0] = [];
-    crate::pacman::sudo_pacman("-U", nothing, to_downgrade)?;
+    crate::pacman::sudo_pacman("-U", NOTHING, to_downgrade)?;
     green!(fll, "common-done");
     Ok(())
 }
