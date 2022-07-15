@@ -915,6 +915,10 @@ pub struct Aur {
     #[clap(long, short = 'k', display_order = 4)]
     pub diff: bool,
 
+    /// Remove makedeps after building.
+    #[clap(long, short = 'a', display_order = 4)]
+    pub delmakedeps: bool,
+
     /// Upgrade all installed AUR packages.
     #[clap(group = "aur", long, short = 'u', display_order = 1)]
     pub sysupgrade: bool,

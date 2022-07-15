@@ -354,6 +354,27 @@ where
         return Err(Error::NoPackages);
     }
 
+    // `-a` was used, or was otherwise specified in config.
+    if env.aur.delmakedeps {
+        let alpm = env.alpm()?;
+        let before: HashSet<_> = aura_arch::orphans(&alpm).map(|p| p.name()).collect();
+        install_work(fll, env, pkgs)?;
+        // Another handle must be opened, or else the change in orphan packages won't be detected.
+        let alpm = env.alpm()?;
+        let after: HashSet<_> = aura_arch::orphans(&alpm).map(|p| p.name()).collect();
+        let nothing: [&str; 0] = [];
+        crate::pacman::sudo_pacman("-Rsu", nothing, after.difference(&before))?;
+    } else {
+        install_work(fll, env, pkgs)?;
+    }
+
+    Ok(())
+}
+
+fn install_work<'a, I>(fll: &FluentLanguageLoader, env: &Env, pkgs: I) -> Result<(), Error>
+where
+    I: IntoIterator<Item = &'a str>,
+{
     let pool = env.alpm_pool()?;
     aura!(fll, "A-install-deps");
     let rslv = aura_core::aur::dependencies::resolve(

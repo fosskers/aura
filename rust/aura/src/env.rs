@@ -208,6 +208,8 @@ struct RawAur {
     hotedit: bool,
     #[serde(default)]
     diff: bool,
+    #[serde(default)]
+    delmakedeps: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -223,6 +225,8 @@ pub(crate) struct Aur {
     pub(crate) hotedit: bool,
     /// View diffs of PKGBUILDs (etc.) before building.
     pub(crate) diff: bool,
+    /// Delete makedeps after building.
+    pub(crate) delmakedeps: bool,
 }
 
 impl Aur {
@@ -237,6 +241,7 @@ impl Aur {
             git: false,
             hotedit: false,
             diff: false,
+            delmakedeps: false,
         };
 
         Ok(a)
@@ -255,6 +260,10 @@ impl Aur {
 
         if flags.diff {
             self.diff = true;
+        }
+
+        if flags.delmakedeps {
+            self.delmakedeps = true;
         }
 
         // Harmless clone, as we don't expect many "ignores" to be passed on the
@@ -281,6 +290,7 @@ impl TryFrom<RawAur> for Aur {
             git: raw.git,
             hotedit: raw.hotedit,
             diff: raw.diff,
+            delmakedeps: raw.delmakedeps,
         };
 
         Ok(a)
