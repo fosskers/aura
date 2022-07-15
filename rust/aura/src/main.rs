@@ -1,4 +1,31 @@
 //! The Aura Package Manager.
+//!
+//! Copyright 2012 - 2022 Colin Woodbury <colin@fosskers.ca>
+//!
+//! This file is part of Aura.
+//!
+//! Aura is free s
+//!
+//!              oftwar
+//!         e:youcanredist
+//!      ributeitand/ormodify
+//!     itunderthetermsoftheGN
+//!    UGeneralPublicLicenseasp
+//!   ublishedbytheFreeSoftw
+//!  areFoundation,either     ver        sio        n3o        fth
+//!  eLicense,or(atyou       ropti      on)an      ylate      rvers
+//! ion.Auraisdistr         ibutedi    nthehop    ethatit    willbeu
+//!  seful,butWITHOUTA       NYWAR      RANTY      ;with      outev
+//!  entheimpliedwarranty     ofM        ERC        HAN        TAB
+//!   ILITYorFITNESSFORAPART
+//!    ICULARPURPOSE.SeetheGNUG
+//!     eneralPublicLicensefor
+//!      moredetails.Youshoul
+//!         dhavereceiveda
+//!              copyof
+//!
+//! the GNU General Public License
+//! along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 #![warn(missing_docs)]
 
