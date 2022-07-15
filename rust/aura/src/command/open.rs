@@ -9,6 +9,7 @@ use std::borrow::Cow;
 const BOOK_URL: &str = "https://fosskers.github.io/aura/";
 const REPO_URL: &str = "https://github.com/fosskers/aura";
 const BUG_URL: &str = "https://github.com/fosskers/aura/issues/new";
+const LIC_URL: &str = "https://github.com/fosskers/aura/blob/master/aura/LICENSE";
 pub const AUR_PKG_URL: &str = "https://aur.archlinux.org/packages/";
 
 pub(crate) enum Error {
@@ -51,6 +52,11 @@ pub(crate) fn aur() -> Result<(), Error> {
     let mut url = Cow::from(AUR_PKG_URL);
     url += "aura";
     open(&url)
+}
+
+/// Open Aura's LICENSE file.
+pub(crate) fn license() -> Result<(), Error> {
+    open(LIC_URL)
 }
 
 /// Open a given URL in a browser.

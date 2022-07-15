@@ -1033,6 +1033,10 @@ pub struct Open {
     #[clap(group = "open", long, short, display_order = 1)]
     pub bug: bool,
 
+    /// Open Aura's LICENSE file.
+    #[clap(group = "open", long, short, display_order = 1)]
+    pub license: bool,
+
     /// Open Aura's AUR page.
     #[clap(group = "open", long, short, display_order = 1)]
     pub aur: bool,

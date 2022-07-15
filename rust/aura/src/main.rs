@@ -162,6 +162,7 @@ fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
         SubCmd::Open(o) if o.repo => open::repo()?,
         SubCmd::Open(o) if o.bug => open::bug()?,
         SubCmd::Open(o) if o.aur => open::aur()?,
+        SubCmd::Open(o) if o.license => open::license()?,
         SubCmd::Open(_) => open::repo()?,
         // --- Dependency Management --- //
         SubCmd::Deps(d) if d.reverse => {
