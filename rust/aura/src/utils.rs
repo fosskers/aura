@@ -89,7 +89,7 @@ fn pad(mult: usize, longest: usize, s: &str) -> usize {
 // TODO Localize the acceptance chars.
 /// Prompt the user for confirmation.
 pub(crate) fn prompt(msg: &str) -> Option<()> {
-    let mut rl = Editor::<()>::new();
+    let mut rl = Editor::<()>::new().ok()?;
     let line = rl.readline(msg).ok()?;
 
     (line.is_empty() || line == "y" || line == "Y").then(|| ())
@@ -97,7 +97,7 @@ pub(crate) fn prompt(msg: &str) -> Option<()> {
 
 /// Prompt the user for a numerical selection.
 pub(crate) fn select(msg: &str, max: usize) -> Result<usize, rustyline::error::ReadlineError> {
-    let mut rl = Editor::<()>::new();
+    let mut rl = Editor::<()>::new()?;
 
     loop {
         let raw = rl.readline(msg)?;

@@ -20,14 +20,14 @@ i18n-embed-fl = "0.6"
 itertools = "0.10"
 linya = "0.3"
 log = "0.4"
-nonempty = "0.7"
+nonempty = "0.8"
 num_cpus = "1.0"
 pacmanconf = "2.0"
 r2d2 = "0.8"
 r2d2-alpm = { path = "../r2d2-alpm" }
 rayon = "1.5"
 rust-embed = "6.3"
-rustyline = "9.1"
+rustyline = "10"
 serde = "1.0"
 serde_json = "1.0"
 simplelog = "0.12"
@@ -37,7 +37,7 @@ time = { version = "0.3", features = ["parsing"] }
 toml = "0.5"
 ubyte = "0.10"
 unic-langid = { version = "0.9", features = ["macros"] }
-validated = { version = "0.1", features = ["rayon"] }
+validated = { version = "0.2", features = ["rayon"] }
 webbrowser = "0.7"
 which = "4.2"
 
