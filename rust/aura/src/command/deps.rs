@@ -8,7 +8,7 @@ use aura_core::deps;
 pub(crate) fn graph(alpm: &Alpm, limit: Option<u8>, optional: bool, packages: Vec<String>) {
     let db = alpm.localdb();
     let pkgs: Vec<_> = packages.iter().map(|p| p.as_ref()).collect();
-    let foreigns: Vec<_> = aura_arch::foreigns(alpm).map(|p| p.name()).collect();
+    let foreigns: Vec<_> = alpm_utils::alpm::foreigns(alpm).map(|p| p.name()).collect();
     let graph = deps::PkgGraph::by_deps(&db, limit, optional, &foreigns, &pkgs);
 
     println!("{}", graph);
@@ -19,7 +19,7 @@ pub(crate) fn graph(alpm: &Alpm, limit: Option<u8>, optional: bool, packages: Ve
 pub(crate) fn reverse(alpm: &Alpm, limit: Option<u8>, optional: bool, packages: Vec<String>) {
     let db = alpm.localdb();
     let pkgs: Vec<_> = packages.iter().map(|p| p.as_ref()).collect();
-    let foreigns: Vec<_> = aura_arch::foreigns(alpm).map(|p| p.name()).collect();
+    let foreigns: Vec<_> = alpm_utils::alpm::foreigns(alpm).map(|p| p.name()).collect();
     let graph = deps::PkgGraph::by_parents(&db, limit, optional, &foreigns, &pkgs);
 
     println!("{}", graph);

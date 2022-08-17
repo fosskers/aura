@@ -164,7 +164,7 @@ pub(crate) fn invalid(
     //
     // Use `Validated` here.
     aura_core::cache::package_paths(caches)
-        .filter(|pp| !aura_arch::is_valid_package(alpm, pp.as_path()))
+        .filter(|pp| !alpm_utils::alpm::is_valid_package(alpm, pp.as_path()))
         .for_each(|pp| {
             let _ = pp.remove(); // TODO Better handling.
         });

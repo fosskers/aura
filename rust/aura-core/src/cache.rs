@@ -196,7 +196,7 @@ pub fn officials_missing_tarballs<'a>(
 ) -> impl Iterator<Item = alpm::Package<'a>> {
     let groups = all_versions(caches);
 
-    aura_arch::officials(alpm).filter(move |p| {
+    alpm_utils::alpm::officials(alpm).filter(move |p| {
         let pv = p.version().as_str();
         groups
             .get(p.name())
@@ -212,7 +212,7 @@ pub fn foreigns_missing_tarballs<'a>(
 ) -> impl Iterator<Item = alpm::Package<'a>> {
     let groups = all_versions(caches);
 
-    aura_arch::foreigns(alpm).filter(move |p| {
+    alpm_utils::alpm::foreigns(alpm).filter(move |p| {
         let pv = p.version().as_str();
         groups
             .get(p.name())

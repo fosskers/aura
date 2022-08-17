@@ -3,12 +3,16 @@ members = [
 # The executable
 "aura",
 # Core libraries
-"aura-core", "aura-arch",
+"aura-core",
 # Ecosystem libraries
 "r2d2-alpm",
 # Documentation Generation
 "doc-gen"
 ]
+
+[patch.crates-io]
+alpm-utils = { git = "https://github.com/fosskers/alpm.rs", branch = "colin/alpm-extensions" }
+alpm = { git = "https://github.com/fosskers/alpm.rs", branch = "colin/alpm-extensions" }
 
 [profile.release]
 lto = true

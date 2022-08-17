@@ -7,10 +7,11 @@ description = "Install and manage Arch Linux and AUR packages"
 # TODO Include `pacman` as a tag.
 
 [dependencies]
+aura-core = { version = "0.1", path = "../aura-core" }
+r2d2-alpm = { version = "0.1", path = "../r2d2-alpm" }
+
 alpm = "2.2"
 alpm-utils = "2.0"
-aura-arch = { path = "../aura-arch" }  # TODO Give these versions.
-aura-core = { path = "../aura-core" }
 clap = { version = "3.0", features = ["derive"] }
 colored = "2.0"
 curl = "0.4"
@@ -24,7 +25,6 @@ nonempty = "0.8"
 num_cpus = "1.0"
 pacmanconf = "2.0"
 r2d2 = "0.8"
-r2d2-alpm = { path = "../r2d2-alpm" }
 rayon = "1.5"
 rust-embed = "6.3"
 rustyline = "10"

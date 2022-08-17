@@ -4,7 +4,7 @@ use crate::error::Nested;
 use crate::localization::Localised;
 use crate::{green, proceed, yellow};
 use alpm::{Alpm, PackageReason, TransFlag};
-use aura_arch as arch;
+use alpm_utils::alpm as arch;
 use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;

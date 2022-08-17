@@ -5,8 +5,7 @@ version = 3
 [[package]]
 name = "alpm"
 version = "2.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bedac9e074b9368777268cff76c02d8b26d3e567642a52379aadd5c5e204e120"
+source = "git+https://github.com/fosskers/alpm.rs?branch=colin/alpm-extensions#c2b5d93c3c0f4906926e3c6b9b897ceee85deb3a"
 dependencies = [
  "alpm-sys",
  "bitflags",
@@ -15,8 +14,7 @@ dependencies = [
 [[package]]
 name = "alpm-sys"
 version = "2.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fee1afe3484685ecedf03aefd7904428befed7815687e48aa4b21b3417eeecf0"
+source = "git+https://github.com/fosskers/alpm.rs?branch=colin/alpm-extensions#c2b5d93c3c0f4906926e3c6b9b897ceee85deb3a"
 dependencies = [
  "pkg-config",
 ]
@@ -24,8 +22,7 @@ dependencies = [
 [[package]]
 name = "alpm-utils"
 version = "2.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "01c6892a7ced000868007e9ee99a80680c96f5b3e535e9ade81a54501e391232"
+source = "git+https://github.com/fosskers/alpm.rs?branch=colin/alpm-extensions#c2b5d93c3c0f4906926e3c6b9b897ceee85deb3a"
 dependencies = [
  "alpm",
  "pacmanconf",
@@ -48,7 +45,6 @@ version = "4.0.0-alpha1"
 dependencies = [
  "alpm",
  "alpm-utils",
- "aura-arch",
  "aura-core",
  "clap",
  "colored",
@@ -82,20 +78,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "aura-arch"
-version = "0.1.0"
-dependencies = [
- "alpm",
- "alpm-utils",
-]
-
-[[package]]
 name = "aura-core"
 version = "0.1.0"
 dependencies = [
  "alpm",
  "alpm-utils",
- "aura-arch",
  "disown",
  "from_variants",
  "itertools",
