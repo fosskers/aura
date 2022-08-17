@@ -67,7 +67,7 @@ macro_rules! red {
 macro_rules! executable {
     ($fll:expr, $exec:expr, $msg:expr, $($arg:expr),*) => {
         let good = which::which($exec).is_ok();
-        let symb = if good { crate::command::check::GOOD.green() } else { crate::command::check::BAD.red() };
+        let symb = if good { $crate::command::check::GOOD.green() } else { $crate::command::check::BAD.red() };
         println!(
             "  [{}] {}",
             symb,
@@ -81,7 +81,7 @@ macro_rules! executable {
     };
     ($fll:expr, $exec:expr, $msg:expr) => {
         let good = which::which($exec).is_ok();
-        let symb = if good { crate::command::check::GOOD.green() } else { crate::command::check::BAD.red() };
+        let symb = if good { $crate::command::check::GOOD.green() } else { $crate::command::check::BAD.red() };
         println!(
             "  [{}] {}",
             symb,
@@ -104,6 +104,6 @@ macro_rules! proceed {
             i18n_embed_fl::fl!($fll, $msg),
             i18n_embed_fl::fl!($fll, "proceed-yes")
         );
-        crate::utils::prompt(&$crate::a!(formatted))
+        $crate::utils::prompt(&$crate::a!(formatted))
     }};
 }
