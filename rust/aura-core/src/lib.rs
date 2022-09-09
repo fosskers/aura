@@ -16,6 +16,8 @@ use std::cmp::Ordering;
 use std::fs::DirEntry;
 use std::path::Path;
 
+use alpm::{Alpm, PackageReason, SigLevel};
+
 /// The simplest form a package.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Package<'a> {
@@ -137,5 +139,25 @@ impl<T> Apply for T {
         Self: Sized,
     {
         f(self)
+    }
+}
+
+/// All orphaned packages.
+///
+/// An orphan is a package that was installed as a dependency, but whose parent
+/// package is no longer installed.
+pub fn orphans(alpm: &Alpm) -> impl Iterator<Item = alpm::Package<'_>> {
+    alpm.localdb().pkgs().into_iter().filter(|p| {
+        p.reason() == PackageReason::Depend
+            && p.required_by().is_empty()
+            && p.optional_for().is_empty()
+    })
+}
+
+/// Does the given `Path` point to a valid tarball that can can loaded by ALPM?
+pub fn is_valid_package(alpm: &Alpm, path: &Path) -> bool {
+    match path.to_str() {
+        None => false,
+        Some(p) => path.exists() && alpm.pkg_load(p, true, SigLevel::USE_DEFAULT).is_ok(),
     }
 }

@@ -307,7 +307,7 @@ pub(crate) fn refresh(
 ) -> Result<(), Error> {
     aura!(fll, "A-y-refreshing");
 
-    let names = alpm_utils::alpm::foreigns(alpm)
+    let names = alpm_utils::foreign_packages(alpm)
         .map(|p| p.name())
         .collect::<Vec<_>>();
     let mut progress = Progress::new();
@@ -357,11 +357,11 @@ where
     // `-a` was used, or was otherwise specified in config.
     if env.aur.delmakedeps {
         let alpm = env.alpm()?;
-        let before: HashSet<_> = alpm_utils::alpm::orphans(&alpm).map(|p| p.name()).collect();
+        let before: HashSet<_> = aura_core::orphans(&alpm).map(|p| p.name()).collect();
         install_work(fll, env, pkgs)?;
         // Another handle must be opened, or else the change in orphan packages won't be detected.
         let alpm = env.alpm()?;
-        let after: HashSet<_> = alpm_utils::alpm::orphans(&alpm).map(|p| p.name()).collect();
+        let after: HashSet<_> = aura_core::orphans(&alpm).map(|p| p.name()).collect();
         crate::pacman::sudo_pacman("-Rsu", NOTHING, after.difference(&before))?;
     } else {
         install_work(fll, env, pkgs)?;
@@ -472,8 +472,9 @@ pub(crate) fn upgrade<'a>(
     debug!("Will ignore: {:?}", env.aur.ignores);
 
     // --- Query database for all non-repo packages --- //
-    let mut foreigns: Vec<aura_core::Package<'a>> =
-        alpm_utils::alpm::foreigns(alpm).map(|p| p.into()).collect();
+    let mut foreigns: Vec<aura_core::Package<'a>> = alpm_utils::foreign_packages(alpm)
+        .map(|p| p.into())
+        .collect();
     debug!("Foreign packages: {}", foreigns.len());
     foreigns.retain(|p| env.aur.ignores.contains(p.name.as_ref()).not());
     debug!("After excluding ignores: {}", foreigns.len());

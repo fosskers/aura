@@ -4,7 +4,6 @@ use crate::error::Nested;
 use crate::localization::Localised;
 use crate::{green, proceed, yellow};
 use alpm::{Alpm, PackageReason, TransFlag};
-use alpm_utils::alpm as arch;
 use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
@@ -53,7 +52,7 @@ impl Localised for Error {
 
 /// Print the name of each orphaned package.
 pub(crate) fn list(alpm: &Alpm) {
-    arch::orphans(alpm).for_each(|o| println!("{} {}", o.name(), o.version()))
+    aura_core::orphans(alpm).for_each(|o| println!("{} {}", o.name(), o.version()))
 }
 
 /// Sets a package's install reason to "as explicit". An alias for `-D --asexplicit`.
@@ -92,7 +91,7 @@ pub(crate) fn remove(alpm: &mut Alpm, fll: &FluentLanguageLoader) -> Result<(), 
     crate::utils::sudo()?;
 
     // Check for orphans.
-    let orphans: Vec<_> = arch::orphans(alpm).collect();
+    let orphans: Vec<_> = aura_core::orphans(alpm).collect();
     if !orphans.is_empty() {
         // Copy the name of each original orphan.
         let names: HashSet<_> = orphans.iter().map(|p| p.name().to_string()).collect();
