@@ -143,7 +143,7 @@ fn build_one(
             .as_deref()
             .map(PathBuf::from)
             .unwrap_or_else(|| Path::new(&base).with_extension("install"));
-        clone.join(&install).is_file().then(|| install)
+        clone.join(&install).is_file().then_some(install)
     };
 
     std::iter::once("PKGBUILD")
@@ -254,7 +254,7 @@ fn edit(editor: &str, file: PathBuf) -> Result<(), Error> {
         .status()
         .map_err(|_| Error::EditFail(file.clone()))?
         .success()
-        .then(|| ())
+        .then_some(())
         .ok_or(Error::EditFail(file))?;
 
     Ok(())
@@ -272,7 +272,7 @@ fn makepkg(within: &Path) -> Result<Vec<PathBuf>, Error> {
         // This should probably collect the error.
         .map_err(|_| Error::Makepkg)?
         .success()
-        .then(|| ())
+        .then_some(())
         .ok_or(Error::Makepkg)?;
 
     // NOTE Outputs absolute paths.
@@ -322,7 +322,7 @@ fn move_tarball(source: &Path, target: &Path) -> Result<(), Error> {
         // The error should probably be collected here too.
         .map_err(|_| Error::TarballMove(source.to_path_buf()))?
         .success()
-        .then(|| ())
+        .then_some(())
         .ok_or_else(|| Error::TarballMove(source.to_path_buf()))
 }
 

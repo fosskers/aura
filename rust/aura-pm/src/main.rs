@@ -187,7 +187,7 @@ fn pacman(sudo: bool) -> Result<(), crate::pacman::Error> {
     if let Some(ix) = raws
         .iter()
         .enumerate()
-        .find_map(|(i, v)| (v == "--log-level").then(|| i))
+        .find_map(|(i, v)| (v == "--log-level").then_some(i))
     {
         raws.remove(ix); // --log-level
         raws.remove(ix); // Its argument.

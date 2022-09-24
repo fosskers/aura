@@ -47,7 +47,7 @@ where
         .status()
         .map_err(Error::ExternalCmd)?
         .success()
-        .then(|| ())
+        .then_some(())
         .ok_or(Error::Misc)
 }
 
@@ -67,7 +67,7 @@ where
         .status()
         .map_err(Error::ExternalCmd)?
         .success()
-        .then(|| ())
+        .then_some(())
         .ok_or(Error::Misc)
 }
 
@@ -83,7 +83,7 @@ where
         .status()
         .map_err(Error::ExternalCmd)?
         .success()
-        .then(|| ())
+        .then_some(())
         .ok_or(Error::Misc)
 }
 

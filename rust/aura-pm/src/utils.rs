@@ -92,7 +92,7 @@ pub(crate) fn prompt(msg: &str) -> Option<()> {
     let mut rl = Editor::<()>::new().ok()?;
     let line = rl.readline(msg).ok()?;
 
-    (line.is_empty() || line == "y" || line == "Y").then(|| ())
+    (line.is_empty() || line == "y" || line == "Y").then_some(())
 }
 
 /// Prompt the user for a numerical selection.

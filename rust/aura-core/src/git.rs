@@ -51,7 +51,7 @@ pub fn shallow_clone(url: &Path, target: &Path) -> Result<(), Error> {
         .stderr(Stdio::null())
         .status()?
         .success()
-        .then(|| ())
+        .then_some(())
         .ok_or_else(|| Error::Clone(url.to_path_buf()))
 }
 
@@ -72,7 +72,7 @@ pub fn pull(dir: &Path) -> Result<(), Error> {
         .current_dir(dir)
         .status()?
         .success()
-        .then(|| ())
+        .then_some(())
         .ok_or_else(|| Error::Pull(dir.to_path_buf()))
 }
 
@@ -101,6 +101,6 @@ pub fn diff(dir: &Path, hash: &str) -> Result<(), Error> {
         .current_dir(dir)
         .status()?
         .success()
-        .then(|| ())
+        .then_some(())
         .ok_or_else(|| Error::Diff(dir.to_path_buf()))
 }
