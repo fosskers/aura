@@ -1,6 +1,6 @@
 [package]
 name = "aura-pm"
-version = "4.0.0-alpha2"
+version = "4.0.0-alpha3"
 authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2021"
 description = "Install and manage Arch Linux packages."
@@ -50,3 +50,10 @@ which = "4.2"
 
 [features]
 git = ["alpm/git"]
+
+[profile.release]
+lto = true
+panic = "abort"
+strip = true
+opt-level = "z"  # Reduces final stripped size by ~20%.
+codegen-units = 1
