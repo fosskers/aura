@@ -24,9 +24,11 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.stack
-          key: ${{ runner.os }}-stack-${{ hashFiles('stack.yaml') }}
+          key: ${{ runner.os }}-stack-${{ hashFiles('haskell/stack.yaml') }}
           restore-keys: |
             ${{ runner.os }}-stack-
 
       - name: Build and run tests
-        run: "stack test --fast --no-terminal --system-ghc"
+        run: |
+          cd haskell/
+          stack test --fast --no-terminal --system-ghc
