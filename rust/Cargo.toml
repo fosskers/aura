@@ -1,7 +1,7 @@
 [workspace]
 members = [
 # The executable
-"aura",
+"aura-pm",
 # Core libraries
 "aura-core",
 # Ecosystem libraries

@@ -1,4 +1,4 @@
-use aura::flags::*;
+use aura_pm::flags::*;
 use clap::{Command, CommandFactory};
 use clap_mangen::Man;
 use std::fs::File;

@@ -5,7 +5,7 @@ use crate::env::Env;
 use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::{PathStr, ResultVoid};
-use aura::flags::Conf;
+use aura_pm::flags::Conf;
 use from_variants::FromVariants;
 use i18n_embed_fl::fl;
 use log::error;

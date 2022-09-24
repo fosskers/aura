@@ -44,7 +44,7 @@ use crate::command::{aur, cache, check, conf, deps, log, open, orphans, snapshot
 use crate::error::{Error, Nested};
 use crate::localization::Localised;
 use ::log::debug;
-use aura::flags::{Args, Cache, SubCmd, AURA_GLOBALS};
+use aura_pm::flags::{Args, Cache, SubCmd, AURA_GLOBALS};
 use clap::Parser;
 use colored::Colorize;
 use i18n_embed::fluent::FluentLanguageLoader;
@@ -54,7 +54,7 @@ use std::process::ExitCode;
 
 fn main() -> ExitCode {
     // Parse all CLI input. Exits immediately if invalid input is given.
-    let args = aura::flags::Args::parse();
+    let args = aura_pm::flags::Args::parse();
 
     // --- Localisation --- //
     match localization::load(args.language()) {

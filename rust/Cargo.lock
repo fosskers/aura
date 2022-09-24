@@ -43,7 +43,28 @@ dependencies = [
 ]
 
 [[package]]
-name = "aura"
+name = "aura-core"
+version = "0.1.0"
+dependencies = [
+ "alpm",
+ "alpm-utils",
+ "disown",
+ "from_variants",
+ "itertools",
+ "log",
+ "nonempty",
+ "petgraph",
+ "r2d2",
+ "rayon",
+ "serde",
+ "serde_json",
+ "srcinfo",
+ "time",
+ "validated",
+]
+
+[[package]]
+name = "aura-pm"
 version = "4.0.0-alpha2"
 dependencies = [
  "alpm",
@@ -78,27 +99,6 @@ dependencies = [
  "validated",
  "webbrowser",
  "which",
-]
-
-[[package]]
-name = "aura-core"
-version = "0.1.0"
-dependencies = [
- "alpm",
- "alpm-utils",
- "disown",
- "from_variants",
- "itertools",
- "log",
- "nonempty",
- "petgraph",
- "r2d2",
- "rayon",
- "serde",
- "serde_json",
- "srcinfo",
- "time",
- "validated",
 ]
 
 [[package]]
@@ -422,7 +422,7 @@ checksum = "a5702af1e33e4532aa17e19d17becde57ae619985754ae3cd731f82e7dcd673c"
 name = "doc-gen"
 version = "0.1.0"
 dependencies = [
- "aura",
+ "aura-pm",
  "clap",
  "clap_mangen",
 ]

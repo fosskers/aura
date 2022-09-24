@@ -1,10 +1,17 @@
 [package]
-name = "aura"
+name = "aura-pm"
 version = "4.0.0-alpha2"
 authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2021"
-description = "Install and manage Arch Linux and AUR packages"
-# TODO Include `pacman` as a tag.
+description = "Install and manage Arch Linux packages."
+repository = "https://github.com/fosskers/aura"
+readme = "README.md"
+license = "GPL-3.0-only"
+keywords = ["archlinux", "alpm", "aur", "pacman"]
+
+[[bin]]
+name = "aura"
+path = "src/main.rs"
 
 [dependencies]
 aura-core = { version = "0.1", path = "../aura-core" }
