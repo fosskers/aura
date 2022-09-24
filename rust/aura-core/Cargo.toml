@@ -3,6 +3,11 @@ name = "aura-core"
 version = "0.1.0"
 authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2021"
+description = "Core types and logic for extended Arch Linux package managers."
+repository = "https://github.com/fosskers/aura"
+readme = "README.md"
+license = "GPL3"
+keywords = ["archlinux", "alpm", "aur", "pacman"]
 
 [dependencies]
 alpm = "2.2"
