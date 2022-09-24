@@ -362,7 +362,10 @@ where
         // Another handle must be opened, or else the change in orphan packages won't be detected.
         let alpm = env.alpm()?;
         let after: HashSet<_> = aura_core::orphans(&alpm).map(|p| p.name()).collect();
-        crate::pacman::sudo_pacman("-Rsu", NOTHING, after.difference(&before))?;
+        let diff: Vec<_> = after.difference(&before).collect();
+        if diff.is_empty().not() {
+            crate::pacman::sudo_pacman("-Rsu", NOTHING, diff)?;
+        }
     } else {
         install_work(fll, env, pkgs)?;
     }
