@@ -6,7 +6,7 @@ edition = "2021"
 description = "Core types and logic for extended Arch Linux package managers."
 repository = "https://github.com/fosskers/aura"
 readme = "README.md"
-license = "GPL3"
+license = "GPL-3.0-only"
 keywords = ["archlinux", "alpm", "aur", "pacman"]
 
 [dependencies]
