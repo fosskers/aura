@@ -260,7 +260,7 @@ fn valid_tarballs(fll: &FluentLanguageLoader, pool: Pool<AlpmManager>, caches: &
 
 /// Does every installed package have a tarball in the cache?
 fn official_packages_have_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, caches: &[&Path]) {
-    let all_installed = alpm_utils::native_packages(alpm).count();
+    let all_installed = aura_core::native_packages(alpm).count();
     let bads: Vec<_> = aura_core::cache::officials_missing_tarballs(alpm, caches).collect();
     let is_bad = bads.is_empty().not();
     let symbol = if is_bad { BAD.red() } else { GOOD.green() };
@@ -281,7 +281,7 @@ fn official_packages_have_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, cach
 
 /// Does every installed foreign package have a tarball in the cache?
 fn foreign_packages_have_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, caches: &[&Path]) {
-    let all_installed = alpm_utils::foreign_packages(alpm).count();
+    let all_installed = aura_core::foreign_packages(alpm).count();
     let bads: Vec<_> = aura_core::cache::foreigns_missing_tarballs(alpm, caches).collect();
     let is_bad = bads.is_empty().not();
     let symbol = if is_bad { BAD.red() } else { GOOD.green() };

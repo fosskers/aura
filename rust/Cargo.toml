@@ -10,9 +10,9 @@ members = [
 "doc-gen"
 ]
 
-[patch.crates-io]
-alpm-utils = { git = "https://github.com/fosskers/alpm.rs", branch = "colin/alpm-extensions" }
-alpm = { git = "https://github.com/fosskers/alpm.rs", branch = "colin/alpm-extensions" }
+# [patch.crates-io]
+# alpm-utils = { git = "https://github.com/fosskers/alpm.rs", branch = "colin/alpm-extensions" }
+# alpm = { git = "https://github.com/fosskers/alpm.rs", branch = "colin/alpm-extensions" }
 
 [profile.release]
 lto = true

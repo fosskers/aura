@@ -307,7 +307,7 @@ pub(crate) fn refresh(
 ) -> Result<(), Error> {
     aura!(fll, "A-y-refreshing");
 
-    let names = alpm_utils::foreign_packages(alpm)
+    let names = aura_core::foreign_packages(alpm)
         .map(|p| p.name())
         .collect::<Vec<_>>();
     let mut progress = Progress::new();
@@ -472,7 +472,7 @@ pub(crate) fn upgrade<'a>(
     debug!("Will ignore: {:?}", env.aur.ignores);
 
     // --- Query database for all non-repo packages --- //
-    let mut foreigns: Vec<aura_core::Package<'a>> = alpm_utils::foreign_packages(alpm)
+    let mut foreigns: Vec<aura_core::Package<'a>> = aura_core::foreign_packages(alpm)
         .map(|p| p.into())
         .collect();
     debug!("Foreign packages: {}", foreigns.len());
