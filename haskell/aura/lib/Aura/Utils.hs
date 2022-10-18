@@ -155,6 +155,11 @@ instance (Semigroup a, Semigroup b) => Semigroup (These a b) where
   These w x <> That y    = These w (x <> y)
   These w x <> These y z = These (w <> y) (x <> z)
 
+instance Functor (These a) where
+  fmap _ (This x)    = This x
+  fmap f (That y)    = That (f y)
+  fmap f (These x y) = These x (f y)
+
 instance Bifunctor These where
   bimap f _ (This x)    = This (f x)
   bimap _ g (That y)    = That (g y)
