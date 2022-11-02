@@ -44,7 +44,7 @@ dependencies = [
 
 [[package]]
 name = "aura-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "alpm",
  "alpm-utils",
