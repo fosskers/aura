@@ -1,6 +1,6 @@
 [package]
 name = "aura-pm"
-version = "4.0.0-alpha4"
+version = "4.0.0-alpha5"
 authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2021"
 description = "Install and manage Arch Linux packages."
@@ -44,7 +44,7 @@ time = { version = "0.3", features = ["parsing"] }
 toml = "0.5"
 ubyte = "0.10"
 unic-langid = { version = "0.9", features = ["macros"] }
-validated = { version = "0.2", features = ["rayon"] }
+validated = { version = "0.3", features = ["rayon"] }
 webbrowser = "0.7"
 which = "4.2"
 
