@@ -8,7 +8,7 @@ pub const FAUR_URL: &str = "https://faur.fosskers.ca";
 /// Package information returned from a `faur` instance. Identical in format to
 /// the AUR's RPC, but yields empty lists for missing fields.
 #[derive(Deserialize, Serialize)]
-#[serde(rename_all = "PascalCase", deny_unknown_fields)]
+#[serde(rename_all = "PascalCase")]
 pub struct Package {
     /// Dependencies only necessary for testing.
     pub check_depends: Vec<String>,
