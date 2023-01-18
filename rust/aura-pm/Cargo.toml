@@ -45,7 +45,7 @@ toml = "0.5"
 ubyte = "0.10"
 unic-langid = { version = "0.9", features = ["macros"] }
 validated = { version = "0.3", features = ["rayon"] }
-webbrowser = "0.7"
+webbrowser = "0.8"
 which = "4.2"
 
 [features]
