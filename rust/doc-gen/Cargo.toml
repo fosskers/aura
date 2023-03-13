@@ -5,5 +5,5 @@ edition = "2021"
 
 [dependencies]
 aura-pm = { path = "../aura-pm" }
-clap = { version = "3.0", features = ["derive"] }
+clap = { version = "3.2", features = ["derive"] }
 clap_mangen = "0.1"
