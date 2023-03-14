@@ -34,14 +34,14 @@ pacmanconf = "2.0"
 r2d2 = "0.8"
 rayon = "1.7"
 rust-embed = "6.6"
-rustyline = "10"
+rustyline = "11"
 serde = "1.0"
 serde_json = "1.0"
 simplelog = "0.12"
 srcinfo = "1.1"
 sudo = "0.6"
 time = { version = "0.3", features = ["parsing"] }
-toml = "0.5"
+toml = "0.7"
 ubyte = "0.10"
 unic-langid = { version = "0.9", features = ["macros"] }
 validated = { version = "0.3", features = ["rayon"] }
