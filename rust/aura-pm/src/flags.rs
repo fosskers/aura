@@ -1,7 +1,7 @@
 //! Types and utilities for parsing flags from the command line.
 
 use crate::Date;
-use clap::{Parser, Subcommand};
+use clap::{ArgAction, Parser, Subcommand};
 use simplelog::LevelFilter;
 use std::ops::Not;
 use std::path::PathBuf;
@@ -48,7 +48,7 @@ pub struct Args {
 
     // --- Other Aura Options --- //
     /// Minimum level of Aura log messages to display.
-    #[clap(long, value_name = "level", possible_values = &["debug", "info", "warn", "error"], global = true)]
+    #[clap(long, value_name = "level", value_parser = ["debug", "info", "warn", "error"], global = true)]
     pub log_level: Option<LevelFilter>,
     /// The Pacman/Aura subcommand to run.
     #[clap(subcommand)]
@@ -130,19 +130,19 @@ pub struct Sync {
         group = "sync",
         long,
         short,
-        parse(from_occurrences),
+        action(ArgAction::Count),
         display_order = 1
     )]
     clean: u8,
     /// Skip dependency version checks (-dd to skip all checks).
-    #[clap(long, short = 'd', parse(from_occurrences), display_order = 2)]
+    #[clap(long, short = 'd', action(ArgAction::Count), display_order = 2)]
     nodeps: u8,
     /// View all members of a package group (-gg to view all groups and members).
     #[clap(
         group = "sync",
         long,
         short,
-        parse(from_occurrences),
+        action(ArgAction::Count),
         display_order = 1
     )]
     groups: u8,
@@ -172,7 +172,7 @@ pub struct Sync {
         group = "sync",
         long,
         short = 'u',
-        parse(from_occurrences),
+        action(ArgAction::Count),
         display_order = 1
     )]
     sysupgrade: u8,
@@ -189,7 +189,7 @@ pub struct Sync {
     )]
     downloadonly: Vec<String>,
     /// Download fresh package databases from the server (-yy to force a refresh even if up to date).
-    #[clap(long, short = 'y', parse(from_occurrences), display_order = 1)]
+    #[clap(long, short = 'y', action(ArgAction::Count), display_order = 1)]
     refresh: u8,
     /// Set an alternate architecture.
     #[clap(long)]
@@ -207,7 +207,7 @@ pub struct Sync {
     #[clap(long, value_name = "path")]
     cachedir: Option<PathBuf>,
     /// Colorize the output.
-    #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
+    #[clap(long, value_name = "when", value_parser = ["always", "never", "auto"])]
     color: Option<String>,
     /// Set an alternate Pacman configuration file.
     #[clap(long, value_name = "path")]
@@ -295,7 +295,7 @@ pub struct DepTest {
     #[clap(long)]
     arch: Option<String>,
     /// Colorize the output.
-    #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
+    #[clap(long, value_name = "when", value_parser = ["always", "never", "auto"])]
     color: Option<String>,
     /// Set an alternate Pacman configuration file.
     #[clap(long, value_name = "path")]
@@ -362,7 +362,7 @@ pub struct Upgrade {
     #[clap(long, value_name = "package=version")]
     assumed_installed: Option<String>,
     /// Colorize the output.
-    #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
+    #[clap(long, value_name = "when", value_parser = ["always", "never", "auto"])]
     color: Option<String>,
     /// Set an alternate Pacman configuration file.
     #[clap(long, value_name = "path")]
@@ -450,13 +450,13 @@ pub struct Files {
     #[clap(long, short = 'x', display_order = 1)]
     regex: bool,
     /// Download fresh package databases from the server (-yy to force a refresh even if up to date).
-    #[clap(long, short = 'y', parse(from_occurrences), display_order = 1)]
+    #[clap(long, short = 'y', action(ArgAction::Count), display_order = 1)]
     refresh: u8,
     /// Set an alternate architecture.
     #[clap(long)]
     arch: Option<String>,
     /// Colorize the output.
-    #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
+    #[clap(long, value_name = "when", value_parser = ["always", "never", "auto"])]
     color: Option<String>,
     /// Set an alternate Pacman configuration file.
     #[clap(long, value_name = "path")]
@@ -540,7 +540,7 @@ pub struct Remove {
     #[clap(long, value_name = "path")]
     cachedir: Option<PathBuf>,
     /// Colorize the output.
-    #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
+    #[clap(long, value_name = "when", value_parser = ["always", "never", "auto"])]
     color: Option<String>,
     /// Set an alternate Pacman configuration file.
     #[clap(long, value_name = "path")]
@@ -603,8 +603,8 @@ impl Remove {
 #[clap(short_flag = 'D', long_flag = "database")]
 pub struct Database {
     /// Test local database for validity (-kk for sync databases).
-    #[clap(long, short = 'k', multiple_occurrences = true, display_order = 1)]
-    check: bool,
+    #[clap(long, short = 'k', action(ArgAction::Count), display_order = 1)]
+    check: u8,
     /// Show less information for query and search.
     #[clap(long, short, display_order = 2)]
     quiet: bool,
@@ -621,7 +621,7 @@ pub struct Database {
     #[clap(long, display_order = 1)]
     asexplicit: bool,
     /// Colorize the output.
-    #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
+    #[clap(long, value_name = "when", value_parser = ["always", "never", "auto"])]
     color: Option<String>,
     /// Set an alternate Pacman configuration file.
     #[clap(long, value_name = "path")]
@@ -686,8 +686,8 @@ pub struct Query {
     #[clap(long, short, display_order = 1)]
     info: bool,
     /// Check that package files exist (-kk for file properties).
-    #[clap(long, short = 'k', multiple_occurrences = true, display_order = 1)]
-    check: bool,
+    #[clap(long, short = 'k', action(ArgAction::Count), display_order = 1)]
+    check: u8,
     /// List the files owned by the queried package.
     #[clap(long, short, display_order = 1)]
     list: bool,
@@ -726,7 +726,7 @@ pub struct Query {
     #[clap(long, value_name = "path")]
     cachedir: Option<PathBuf>,
     /// Colorize the output.
-    #[clap(long, value_name = "when", possible_values = &["always", "never", "auto"])]
+    #[clap(long, value_name = "when", value_parser = ["always", "never", "auto"])]
     color: Option<String>,
     /// Set an alternate Pacman configuration file.
     #[clap(long, value_name = "path")]
@@ -866,7 +866,7 @@ pub struct Aur {
         long,
         short,
         value_name = "packages",
-        multiple_values = true,
+        action(ArgAction::Append),
         display_order = 1
     )]
     pub info: Vec<String>,
@@ -877,7 +877,7 @@ pub struct Aur {
         long,
         short,
         value_name = "terms",
-        multiple_values = true,
+        action(ArgAction::Append),
         display_order = 1
     )]
     pub search: Vec<String>,
@@ -931,7 +931,7 @@ pub struct Aur {
     #[clap(
         long,
         value_name = "package",
-        multiple_occurrences = true,
+        action(ArgAction::Append),
         display_order = 3
     )]
     pub ignore: Vec<String>,
@@ -942,7 +942,7 @@ pub struct Aur {
         long = "clone",
         short = 'w',
         value_name = "package",
-        multiple_values = true,
+        action(ArgAction::Append),
         display_order = 1
     )]
     pub wclone: Vec<String>,

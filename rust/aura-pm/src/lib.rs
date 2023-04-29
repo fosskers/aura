@@ -5,7 +5,7 @@ pub mod flags;
 use std::str::FromStr;
 
 /// A wrapper around [`time::Date`] to supply some trait instances.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Date(pub time::Date);
 
 impl FromStr for Date {
