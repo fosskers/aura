@@ -25,7 +25,7 @@ pub fn info(path: &Path, package: String) -> Option<LogEntry> {
     let patt = format!(" {} (", package);
     let hits = read
         .lines()
-        .filter_map(|line| line.ok())
+        .map_while(Result::ok)
         .filter(|line| line.contains(&patt))
         .collect::<Vec<_>>();
 

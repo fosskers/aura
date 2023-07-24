@@ -37,6 +37,7 @@ impl Nested for Error {
 impl Localised for Error {
     fn localise(&self, fll: &FluentLanguageLoader) -> String {
         match self {
+            #[allow(suspicious_double_ref_op)]
             Error::Search(s, _) => fl!(fll, "L-search-err", cmd = s.deref()),
             Error::View(_) => fl!(fll, "L-view-err"),
             Error::Info(_) => fl!(fll, "err-write"),

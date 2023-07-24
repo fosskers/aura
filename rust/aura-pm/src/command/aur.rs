@@ -256,7 +256,7 @@ pub(crate) fn pkgbuild(pkg: &str, clone_d: &Path) -> Result<(), Error> {
     let mut out = BufWriter::new(std::io::stdout());
 
     file.lines()
-        .filter_map(|line| line.ok())
+        .map_while(Result::ok)
         .try_for_each(|line| writeln!(out, "{}", line))
         .map_err(|_| Error::Stdout)?;
 
