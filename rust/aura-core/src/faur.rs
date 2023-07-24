@@ -35,6 +35,7 @@ pub struct Package {
     /// Timestamp of the latest upload of this package.
     pub last_modified: u64,
     /// The software LICENSE in use by this package.
+    #[serde(default)]
     pub license: Vec<String>,
     /// The maintainer of the AUR package.
     pub maintainer: Option<String>,
