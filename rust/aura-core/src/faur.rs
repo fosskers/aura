@@ -11,21 +11,26 @@ pub const FAUR_URL: &str = "https://faur.fosskers.ca";
 #[serde(rename_all = "PascalCase")]
 pub struct Package {
     /// Dependencies only necessary for testing.
+    #[serde(default)]
     pub check_depends: Vec<String>,
     /// Packages which cannot be installed at the same time as this one.
+    #[serde(default)]
     pub conflicts: Vec<String>,
     /// Runtime dependencies.
+    #[serde(default)]
     pub depends: Vec<String>,
     /// The general description of the package.
     pub description: Option<String>,
     /// Timestamp of the first uploading of this package to the AUR.
     pub first_submitted: u64,
     /// Package groups this package belongs to.
+    #[serde(default)]
     pub groups: Vec<String>,
     /// An internal identifier.
     #[serde(rename = "ID")]
     pub id: u64,
     /// General categories this package belongs to.
+    #[serde(default)]
     pub keywords: Vec<String>,
     /// Timestamp of the latest upload of this package.
     pub last_modified: u64,
@@ -34,12 +39,14 @@ pub struct Package {
     /// The maintainer of the AUR package.
     pub maintainer: Option<String>,
     /// Dependencies only necessary at build time.
+    #[serde(default)]
     pub make_depends: Vec<String>,
     /// The normal name of this package.
     pub name: String,
     /// The number of votes received on the AUR.
     pub num_votes: u64,
     /// Optional runtime depedencies.
+    #[serde(default)]
     pub opt_depends: Vec<String>,
     /// Timestamp of an Out-of-date report on the AUR.
     pub out_of_date: Option<u64>,
@@ -55,9 +62,11 @@ pub struct Package {
     pub popularity: f64,
     /// Package names that this package "counts as" if installed. For instance,
     /// `aura-bin` "counts as" `aura` for the purpose of dependency resolution.
+    #[serde(default)]
     pub provides: Vec<String>,
     /// If package is installed, the packages named in `replaces` should be
     /// uninstalled.
+    #[serde(default)]
     pub replaces: Vec<String>,
     /// The URL of the original project.
     #[serde(rename = "URL")]
