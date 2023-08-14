@@ -40,11 +40,6 @@ Welcome to the main repository for Aura, a secure, multilingual package manager 
 Check out [The Aura Book](https://fosskers.github.io/aura/) for all knowledge
 and usage instructions!
 
-If Aura has made your life easier, please consider [buying me a
-coffee](https://www.buymeacoffee.com/fosskers) :coffee: or supporting Aura
-through [Github Sponsors](https://github.com/sponsors/fosskers) :octocat:. Your
-help goes a long way!
-
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 
 **Table of Contents**
@@ -69,6 +64,7 @@ help goes a long way!
     - [Managing Orphan Packages](#managing-orphan-packages)
     - [PKGBUILD Security Analysis](#pkgbuild-security-analysis)
   - [Configuration](#configuration)
+  - [Mailing List](#mailing-list)
   - [Localisation](#localisation)
   - [Credits](#credits)
 - [The `aur` Haskell Library](#the-aur-haskell-library)
@@ -235,6 +231,10 @@ isn't present. A template config file [can be found here](aura/doc/aura.conf)
 and contains all instructions. If you install Aura via its AUR package, this
 file is added for you.
 
+## Mailing List
+
+You can join Aura's mailing list here: https://lists.sr.ht/~fosskers/aura
+
 ## Localisation
 
 As mentioned in the Philosophy above, adding new languages to Aura is quite
@@ -244,13 +244,6 @@ to Aura, please see the
 Aura Book.
 
 ## Credits
-
-Aura is sponsored by these wonderful people:
-
-[<img class="avatar avatar-user" src="https://avatars.githubusercontent.com/u/81970309?s=70&amp;v=4" alt="@ace-deuce" width="35" height="35">](https://github.com/ace-deuce)
-[<img class="avatar avatar-user" src="https://avatars.githubusercontent.com/u/81332165?s=70&amp;v=4" alt="@tianip220" width="35" height="35">](https://github.com/tianip220)
-[<img class="avatar avatar-user" src="https://avatars.githubusercontent.com/u/5953670?s=70&amp;v=4" alt="@sidagrawal" width="35" height="35">](https://github.com/sidagrawal)
-[<img class="avatar avatar-user" src="https://avatars.githubusercontent.com/u/17126777?s=70&amp;v=4" alt="@da-moon" width="35" height="35">](https://github.com/da-moon)
 
 Aura has been translated by these generous people:
 
