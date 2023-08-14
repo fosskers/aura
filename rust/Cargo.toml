@@ -7,7 +7,7 @@ members = [
 # Ecosystem libraries
 "r2d2-alpm",
 # Documentation Generation
-"doc-gen"
+# "doc-gen"
 ]
 
 [profile.release]

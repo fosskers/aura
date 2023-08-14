@@ -4,7 +4,7 @@ use crate::Apply;
 use alpm::Alpm;
 use disown::Disown;
 use log::{debug, info};
-use nonempty::NonEmpty;
+use nonempty_collections::NEVec;
 use petgraph::graph::NodeIndex;
 use petgraph::Graph;
 use r2d2::{ManageConnection, Pool};
@@ -31,7 +31,7 @@ pub enum Error<E> {
     /// An error cloning or pulling a repo.
     Git(crate::git::Error),
     /// Multiple errors during concurrent dependency resolution.
-    Resolutions(Box<NonEmpty<Error<E>>>),
+    Resolutions(Box<NEVec<Error<E>>>),
     /// A named dependency does not exist.
     DoesntExist(String),
     /// A named dependency of some known package does not exist.

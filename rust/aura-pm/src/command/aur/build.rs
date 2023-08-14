@@ -6,7 +6,7 @@ use colored::Colorize;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use log::{debug, error, warn};
-use nonempty::NonEmpty;
+use nonempty_collections::NEVec;
 use srcinfo::Srcinfo;
 use std::ops::Not;
 use std::path::{Path, PathBuf};
@@ -16,7 +16,7 @@ use validated::Validated;
 pub(crate) enum Error {
     Srcinfo(PathBuf, srcinfo::Error),
     GitDiff(aura_core::git::Error),
-    CopyBuildFiles(NonEmpty<std::io::Error>),
+    CopyBuildFiles(NEVec<std::io::Error>),
     Utf8(std::str::Utf8Error),
     FilenameExtraction(PathBuf),
     TarballMove(PathBuf),

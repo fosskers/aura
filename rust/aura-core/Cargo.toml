@@ -14,9 +14,9 @@ alpm = "2.2"
 alpm-utils = "2.0"
 disown = "1.0"
 from_variants = "1.0"
-itertools = "0.10"
+itertools = "0.11"
 log = "0.4"
-nonempty = "0.8"
+nonempty-collections = "0.1.1"
 petgraph = { version = "0.6", default-features = false }
 r2d2 = "0.8"
 rayon = "1.7"
@@ -24,4 +24,4 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 srcinfo = "1.1"
 time = { version = "0.3", features = ["serde", "local-offset"] }
-validated = { version = "0.3", features = ["rayon"] }
+validated = { version = "0.4", features = ["rayon"] }

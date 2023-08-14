@@ -6,6 +6,7 @@ use aura_core::Apply;
 use i18n_embed::fluent::{fluent_language_loader, FluentLanguageLoader};
 use i18n_embed::{I18nEmbedError, LanguageLoader};
 use i18n_embed_fl::fl;
+use nonempty_collections::*;
 use rust_embed::RustEmbed;
 use std::collections::HashMap;
 use unic_langid::LanguageIdentifier;
