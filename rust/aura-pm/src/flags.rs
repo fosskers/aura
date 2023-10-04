@@ -790,6 +790,9 @@ pub struct Orphans {
     /// Uninstall all orphan packages.
     #[clap(group = "orphans", long, short = 'j')]
     pub abandon: bool,
+    /// Display all explicitly installed, top-level packages.
+    #[clap(group = "orphans", long, short = 'e')]
+    pub elderly: bool,
 }
 
 /// View various configuration settings and files.

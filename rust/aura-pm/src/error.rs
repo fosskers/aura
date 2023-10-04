@@ -12,7 +12,7 @@ pub(crate) enum Error {
     A(crate::command::aur::Error),
     B(crate::command::snapshot::Error),
     C(crate::command::cache::Error),
-    L(crate::log::Error),
+    L(crate::command::log::Error),
     O(crate::command::orphans::Error),
     Dirs(crate::dirs::Error),
     /// A non-zero exit code was returned from a call to Pacman.

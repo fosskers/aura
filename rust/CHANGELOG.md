@@ -24,6 +24,8 @@ Tarball Size       : 72.09MiB
 Available Versions : 5.8.13.arch1-1, 5.8.10.arch1-1
 ```
 
+- `-Oe` to display explicitly installed, top-level (i.e. unrequired) packages.
+  Useful for detecting packages that you no longer need installed.
 - `deps` command for analyzing dependency connections. Generates output in
   [Graphviz DOT format](https://en.wikipedia.org/wiki/DOT_%28graph_description_language%29),
   and can be used like so:

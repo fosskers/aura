@@ -1,6 +1,6 @@
 //! The Aura Package Manager.
 //!
-//! Copyright 2012 - 2022 Colin Woodbury <colin@fosskers.ca>
+//! Copyright 2012 - 2023 Colin Woodbury <colin@fosskers.ca>
 //!
 //! This file is part of Aura.
 //!
@@ -40,14 +40,14 @@ mod macros;
 pub(crate) mod pacman;
 pub(crate) mod utils;
 
-use crate::command::{aur, cache, check, conf, deps, log, open, orphans, snapshot, stats};
+use crate::command::{aur, cache, check, conf, deps, log as llog, open, orphans, snapshot, stats};
 use crate::error::{Error, Nested};
 use crate::localization::Localised;
-use ::log::debug;
 use aura_pm::flags::{Args, Cache, SubCmd, AURA_GLOBALS};
 use clap::Parser;
 use colored::Colorize;
 use i18n_embed::fluent::FluentLanguageLoader;
+use log::debug;
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
 use std::ops::Not;
 use std::process::ExitCode;
@@ -137,12 +137,13 @@ fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
         SubCmd::Cache(c) if c.missing => cache::missing(&env.alpm()?, &env.caches()),
         SubCmd::Cache(c) => cache::downgrade(fll, &env.caches(), c.packages)?,
         // --- Logs --- //
-        SubCmd::Log(l) if l.search.is_some() => log::search(env.alpm_log(), l.search.unwrap())?,
-        SubCmd::Log(l) if !l.info.is_empty() => log::info(fll, env.alpm_log(), l.info)?,
-        SubCmd::Log(l) => log::view(env.alpm_log(), l.before, l.after)?,
+        SubCmd::Log(l) if l.search.is_some() => llog::search(env.alpm_log(), l.search.unwrap())?,
+        SubCmd::Log(l) if !l.info.is_empty() => llog::info(fll, env.alpm_log(), l.info)?,
+        SubCmd::Log(l) => llog::view(env.alpm_log(), l.before, l.after)?,
         // --- Orphan Packages --- //
         SubCmd::Orphans(o) if o.abandon => orphans::remove(&mut env.alpm()?, fll)?,
         SubCmd::Orphans(o) if !o.adopt.is_empty() => orphans::adopt(&env.alpm()?, fll, o.adopt)?,
+        SubCmd::Orphans(o) if o.elderly => orphans::elderly(&env.alpm()?),
         SubCmd::Orphans(_) => orphans::list(&env.alpm()?),
         // --- PKGBUILD Analysis --- //
         // SubCmd::Analysis(_) => unimplemented!(),

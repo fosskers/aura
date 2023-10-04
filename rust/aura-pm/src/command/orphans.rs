@@ -55,6 +55,13 @@ pub(crate) fn list(alpm: &Alpm) {
     aura_core::orphans(alpm).for_each(|o| println!("{} {}", o.name(), o.version()))
 }
 
+/// Print the name of each "elderly" package. In theory these are all explicitly
+/// installed applications, but occasionally packages are installed by mistake
+/// or forgotten. We want to identify such packages for removal.
+pub(crate) fn elderly(alpm: &Alpm) {
+    aura_core::elderly(alpm).for_each(|o| println!("{} {}", o.name(), o.version()))
+}
+
 /// Sets a package's install reason to "as explicit". An alias for `-D --asexplicit`.
 pub(crate) fn adopt(
     alpm: &Alpm,
