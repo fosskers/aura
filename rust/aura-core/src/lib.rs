@@ -155,6 +155,19 @@ pub fn orphans(alpm: &Alpm) -> impl Iterator<Item = alpm::Package<'_>> {
     })
 }
 
+/// All packages neither required nor optionally required by any other package,
+/// but are marked as explicitly installed. So in theory these are all
+/// standalone applications, but occasionally some packages get installed by
+/// mistake, forgotten, or mislabelled, and then just hang around on the system
+/// forever, receiving pointless updates.
+pub fn elderly(alpm: &Alpm) -> impl Iterator<Item = alpm::Package<'_>> {
+    alpm.localdb().pkgs().into_iter().filter(|p| {
+        p.reason() == PackageReason::Explicit
+            && p.required_by().is_empty()
+            && p.optional_for().is_empty()
+    })
+}
+
 /// Does the given `Path` point to a valid tarball that can can loaded by ALPM?
 pub fn is_valid_package(alpm: &Alpm, path: &Path) -> bool {
     match path.to_str() {
