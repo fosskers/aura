@@ -87,7 +87,7 @@ checksum = "bddcadddf5e9015d310179a59bb28c4d4b9920ad0f11e8e14dbadf654890c9a6"
 
 [[package]]
 name = "aura-core"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "alpm",
  "alpm-utils",
@@ -108,7 +108,7 @@ dependencies = [
 
 [[package]]
 name = "aura-pm"
-version = "4.0.0-alpha8"
+version = "4.0.0-alpha9"
 dependencies = [
  "alpm",
  "alpm-utils",
