@@ -53,6 +53,7 @@ struct RawEnv {
     general: Option<RawGeneral>,
     aur: Option<RawAur>,
     backups: Option<RawBackups>,
+    home: Option<Home>,
 }
 
 impl RawEnv {
@@ -81,6 +82,8 @@ pub(crate) struct Env {
     pub(crate) aur: Aur,
     /// Saving and restoring package states.
     pub(crate) backups: Backups,
+    /// Managing consistently installed packages and their config.
+    pub(crate) home: Option<Home>,
     /// Settings from a `pacman.conf`.
     #[serde(skip_serializing)]
     pub(crate) pacman: pacmanconf::Config,
@@ -91,13 +94,14 @@ impl Env {
         // Read the config file, if it's there. We don't actually mind if it isn't,
         // because sensible defaults can (probably) be set anyway.
         let raw: Option<RawEnv> = RawEnv::try_new();
-        let (general, aur, backups) = match raw {
+        let (general, aur, backups, home) = match raw {
             Some(re) => (
                 re.general.map(|rg| rg.into()),
                 re.aur.map(|ra| ra.try_into()),
                 re.backups.map(|rb| rb.try_into()),
+                re.home,
             ),
-            None => (None, None, None),
+            None => (None, None, None, None),
         };
 
         let e = Env {
@@ -105,6 +109,7 @@ impl Env {
             aur: aur.unwrap_or_else(Aur::try_default)?,
             backups: backups.unwrap_or_else(Backups::try_default)?,
             pacman: pacmanconf::Config::new().map_err(Error::PConf)?,
+            home,
         };
 
         Ok(e)
@@ -342,6 +347,16 @@ impl TryFrom<RawBackups> for Backups {
     }
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+pub(crate) struct Home {
+    #[serde(default)]
+    packages: Vec<String>,
+    #[serde(default)]
+    aur: Vec<String>,
+    #[serde(default)]
+    links: Vec<(String, String)>,
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -369,5 +384,21 @@ mod test {
         let aur = toml::from_str::<RawEnv>(&file).unwrap().aur.unwrap();
         let exp: HashSet<_> = ["foo".to_string(), "bar".to_string()].into();
         assert_eq!(exp, aur.ignores);
+    }
+
+    #[test]
+    fn home() {
+        let file = std::fs::read_to_string("tests/home.toml").unwrap();
+        let home = toml::from_str::<RawEnv>(&file).unwrap().home.unwrap();
+
+        assert_eq!(home.packages, ["a", "b"]);
+        assert_eq!(home.aur, ["c", "d"]);
+        assert_eq!(
+            home.links,
+            [(
+                "sway/config".to_string(),
+                "/home/colin/dotfiles/sway/config".to_string()
+            )]
+        );
     }
 }

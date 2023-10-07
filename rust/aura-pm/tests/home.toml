@@ -1,0 +1,9 @@
+[aur]
+ignores = ["foo", "bar", "foo"]
+
+[home]
+packages = ["a", "b"]
+aur = ["c", "d"]
+links = [
+  ["sway/config", "/home/colin/dotfiles/sway/config"],
+]
