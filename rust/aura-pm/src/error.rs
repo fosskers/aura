@@ -22,6 +22,7 @@ pub(crate) enum Error {
     Check(crate::check::Error),
     Open(crate::open::Error),
     Stats(crate::stats::Error),
+    Home(crate::home::Error),
 }
 
 impl Nested for Error {
@@ -40,6 +41,7 @@ impl Nested for Error {
             Error::Check(e) => e.nested(),
             Error::Open(e) => e.nested(),
             Error::Stats(e) => e.nested(),
+            Error::Home(e) => e.nested(),
         }
     }
 }
@@ -59,13 +61,14 @@ impl Localised for Error {
             Error::Check(e) => e.localise(fll),
             Error::Open(e) => e.localise(fll),
             Error::Stats(e) => e.localise(fll),
+            Error::Home(e) => e.localise(fll),
         }
     }
 }
 
 /// Do something with the nested errors of this type.
 ///
-/// Quite weak as far as typeclasses go; it's entirely lawless. It's entire
+/// Quite weak as far as typeclasses go; it's entirely lawless. It's whole
 /// purpose is to be able to render errors out of lib crates that have no access
 /// to the error handling facilities of the application.
 pub(crate) trait Nested {

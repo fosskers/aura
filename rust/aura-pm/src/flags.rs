@@ -115,6 +115,8 @@ pub enum SubCmd {
     Conf(Conf),
     /// Output a dependency graph in DOT format.
     Deps(Deps),
+    /// Manage a consistent system environment.
+    Home(Home),
     /// Open various webpages related to Aura.
     Open(Open),
     /// View statistics about your machine or about Aura itself.
@@ -858,6 +860,10 @@ pub struct Stats {
     #[clap(group = "stats", long, display_order = 1)]
     pub heavy: bool,
 }
+
+/// Manage a consistent system environment.
+#[derive(Parser, Debug)]
+pub struct Home;
 
 /// Synchronize AUR packages.
 #[derive(Parser, Debug)]

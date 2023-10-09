@@ -11,6 +11,7 @@ use r2d2::Pool;
 use r2d2_alpm::AlpmManager;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
+use std::ops::Not;
 use std::path::{Path, PathBuf};
 
 const DEFAULT_EDITOR: &str = "vi";
@@ -48,7 +49,7 @@ impl Localised for Error {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct RawEnv {
     general: Option<RawGeneral>,
     aur: Option<RawAur>,
@@ -94,6 +95,7 @@ impl Env {
         // Read the config file, if it's there. We don't actually mind if it isn't,
         // because sensible defaults can (probably) be set anyway.
         let raw: Option<RawEnv> = RawEnv::try_new();
+
         let (general, aur, backups, home) = match raw {
             Some(re) => (
                 re.general.map(|rg| rg.into()),
@@ -164,7 +166,7 @@ impl Env {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct RawGeneral {
     cpus: Option<u32>,
     editor: Option<String>,
@@ -199,7 +201,7 @@ fn editor() -> String {
     std::env::var("EDITOR").unwrap_or_else(|_| DEFAULT_EDITOR.to_string())
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct RawAur {
     build: Option<PathBuf>,
     cache: Option<PathBuf>,
@@ -316,7 +318,7 @@ impl TryFrom<RawAur> for Aur {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct RawBackups {
     snapshots: Option<PathBuf>,
 }
@@ -354,7 +356,56 @@ pub(crate) struct Home {
     #[serde(default)]
     aur: Vec<String>,
     #[serde(default)]
-    links: Vec<(String, String)>,
+    pub(crate) links: Vec<Symlink>,
+}
+
+#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(transparent)]
+pub(crate) struct Symlink((String, String));
+
+impl Symlink {
+    pub(crate) fn to(&self) -> &str {
+        self.0 .0.as_str()
+    }
+
+    pub(crate) fn from(&self) -> &str {
+        self.0 .1.as_str()
+    }
+
+    pub(crate) fn established(&self, xdg_config: &Path) -> bool {
+        let path = xdg_config.join(self.to());
+
+        // If the symlink exists but the file it points to does not, then
+        // `metadata` will yield an `Err`. `symlink_metadata` however would
+        // always succeed in such a case.
+        path.is_symlink() && path.metadata().is_ok()
+    }
+
+    pub(crate) fn status(&self, xdg_config: &Path) -> LinkStatus {
+        let path = xdg_config.join(self.to());
+
+        match path {
+            _ if path.exists().not() => LinkStatus::NoLink,
+            _ if path.is_symlink().not() => LinkStatus::NotALink,
+            _ if path.metadata().is_err() => LinkStatus::NoTarget,
+            _ => LinkStatus::Established,
+        }
+    }
+}
+
+/// The status of a [`Symlink`].
+#[derive(Debug)]
+pub(crate) enum LinkStatus {
+    /// The symlink file does not exist.
+    NoLink,
+    /// There is a file here, but it's not a symlink.
+    NotALink,
+    /// The symlink exists but the file it points to does not.
+    NoTarget,
+    /// The symlink exists but points to an unexpected file.
+    WrongTarget(PathBuf),
+    /// The symlink is established and has the expected target.
+    Established,
 }
 
 #[cfg(test)]
@@ -395,10 +446,10 @@ mod test {
         assert_eq!(home.aur, ["c", "d"]);
         assert_eq!(
             home.links,
-            [(
+            [Symlink((
                 "sway/config".to_string(),
                 "/home/colin/dotfiles/sway/config".to_string()
-            )]
+            ))]
         );
     }
 }
