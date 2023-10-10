@@ -399,7 +399,7 @@ impl Symlink {
 }
 
 /// The status of a [`Symlink`].
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub(crate) enum LinkStatus {
     /// There is a file here, but it's not a symlink.
     NotALink,

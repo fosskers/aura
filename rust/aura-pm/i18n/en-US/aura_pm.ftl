@@ -137,6 +137,7 @@ check-aconf = Aura Configuration
 check-aconf-aura-exists = Aura config file exists?
 check-aconf-aura-exists-fix = Fix: Consider { $cmd }
 check-aconf-aura-parse = Aura config file can be parsed?
+check-aconf-good-links = All [home] symlinks established?
 check-mconf = Makepkg Configuration (/etc/makepkg.conf)
 check-mconf-packager = PACKAGER set?
 check-mconf-packager-fix = Set { $cmd } within /etc/makepkg.conf

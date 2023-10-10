@@ -1,6 +1,6 @@
 //! Analyze many aspects of your installation for validity.
 
-use crate::env::{Aur, Env};
+use crate::env::{Aur, Env, Home};
 use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::PathStr;
@@ -54,7 +54,7 @@ pub(crate) fn check(fll: &FluentLanguageLoader, env: &Env) -> Result<(), Error> 
 
     aura!(fll, "check-start");
     environment(fll);
-    aura_config(fll);
+    aura_config(fll, &env);
     pacman_config(fll, &env.pacman, &env.aur);
     makepkg_config(fll);
     snapshots(fll, &env.backups.snapshots, &caches);
@@ -97,9 +97,19 @@ fn makepkg_config(fll: &FluentLanguageLoader) {
     packager_set(fll);
 }
 
-fn aura_config(fll: &FluentLanguageLoader) {
+fn aura_config(fll: &FluentLanguageLoader, env: &Env) {
     aura!(fll, "check-aconf");
     parsable_aura_toml(fll);
+
+    if let Some(home) = env.home.as_ref() {
+        established_links(fll, home, &env.xdg_config);
+    }
+}
+
+fn established_links(fll: &FluentLanguageLoader, home: &Home, xdg_config: &Path) {
+    let good = crate::home::links_established(home, xdg_config);
+    let symbol = if good { GOOD.green() } else { BAD.red() };
+    println!("  [{}] {}", symbol, fl!(fll, "check-aconf-good-links"));
 }
 
 fn parsable_aura_toml(fll: &FluentLanguageLoader) {
