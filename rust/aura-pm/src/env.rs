@@ -88,6 +88,9 @@ pub(crate) struct Env {
     /// Settings from a `pacman.conf`.
     #[serde(skip_serializing)]
     pub(crate) pacman: pacmanconf::Config,
+    /// Usually `~/.config/`.
+    #[serde(skip_serializing)]
+    pub(crate) xdg_config: PathBuf,
 }
 
 impl Env {
@@ -112,6 +115,7 @@ impl Env {
             backups: backups.unwrap_or_else(Backups::try_default)?,
             pacman: pacmanconf::Config::new().map_err(Error::PConf)?,
             home,
+            xdg_config: dirs::xdg_config()?,
         };
 
         Ok(e)
@@ -364,31 +368,32 @@ pub(crate) struct Home {
 pub(crate) struct Symlink((String, String));
 
 impl Symlink {
-    pub(crate) fn to(&self) -> &str {
-        self.0 .0.as_str()
+    /// The location of the underlying file pointed to by the symlink.
+    pub(crate) fn to(&self) -> &Path {
+        Path::new(self.0 .1.as_str())
     }
 
-    pub(crate) fn from(&self) -> &str {
-        self.0 .1.as_str()
+    /// The locatin of the symlink itself.
+    pub(crate) fn from(&self) -> &Path {
+        Path::new(self.0 .0.as_str())
     }
 
-    pub(crate) fn established(&self, xdg_config: &Path) -> bool {
-        let path = xdg_config.join(self.to());
-
-        // If the symlink exists but the file it points to does not, then
-        // `metadata` will yield an `Err`. `symlink_metadata` however would
-        // always succeed in such a case.
-        path.is_symlink() && path.metadata().is_ok()
-    }
-
+    /// A symlink as defined in a `[home]` block (see [`crate::command::home`])
+    /// is making a claim about a symlink it wants or expects to exist on the
+    /// filesystem. Aura will take these definitions and create them if it can,
+    /// but it's possible that those would conflict with existing symlinks on
+    /// the system. In that case, the `home` command should be halted and the
+    /// user warned.
     pub(crate) fn status(&self, xdg_config: &Path) -> LinkStatus {
-        let path = xdg_config.join(self.to());
+        let path = xdg_config.join(self.from());
 
         match path {
-            _ if path.exists().not() => LinkStatus::NoLink,
-            _ if path.is_symlink().not() => LinkStatus::NotALink,
-            _ if path.metadata().is_err() => LinkStatus::NoTarget,
-            _ => LinkStatus::Established,
+            p if p.is_symlink().not() => LinkStatus::NotALink,
+            p if p.metadata().is_err() => LinkStatus::NoTarget,
+            p => match (p.canonicalize(), self.to().canonicalize()) {
+                (Ok(a), Ok(b)) if a == b => LinkStatus::Established,
+                _ => LinkStatus::WrongTarget,
+            },
         }
     }
 }
@@ -396,14 +401,12 @@ impl Symlink {
 /// The status of a [`Symlink`].
 #[derive(Debug)]
 pub(crate) enum LinkStatus {
-    /// The symlink file does not exist.
-    NoLink,
     /// There is a file here, but it's not a symlink.
     NotALink,
     /// The symlink exists but the file it points to does not.
     NoTarget,
     /// The symlink exists but points to an unexpected file.
-    WrongTarget(PathBuf),
+    WrongTarget,
     /// The symlink is established and has the expected target.
     Established,
 }
