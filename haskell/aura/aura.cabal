@@ -46,7 +46,7 @@ common commons
     , megaparsec  >=7      && <10
     , rio         ^>=0.1.17
     , text        >=1.2 && < 1.3 || ^>= 2.0
-    , versions    ^>=5
+    , versions    ^>=6
 
 common libexec
   build-depends:
@@ -97,7 +97,7 @@ library
     , language-bash     >=0.8 && <0.10
     , network-uri       ^>=2.6
     , stm               ^>=2.5
-    , time              >=1.8 && <1.12
+    , time              >=1.8 && <1.13
 
 executable aura
   import:         commons, libexec

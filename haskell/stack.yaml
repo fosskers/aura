@@ -1,25 +1,10 @@
-# resolver: lts-19.4
-resolver: nightly-2022-06-17
+resolver: lts-21.15
 
 ghc-options:
   $everything: -split-sections -haddock
   $locals: -fwrite-ide-info -hiedir=.hie -fmax-relevant-binds=0
 
-nix:
-  shell-file: nix/stack.nix
-
-flags:
-  these:
-    assoc: false
-  strict:
-    assoc: false
-
 packages:
   - aura/
   - aur/
   - aursec/
-
-extra-deps:
-  - aeson-2.1.0.0
-  - algebraic-graphs-0.7
-  - generically-0.1

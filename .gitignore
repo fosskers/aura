@@ -19,6 +19,7 @@ weeder.dhall
 .hlint.yaml
 book/book/*
 rust/target/*
+haskell/.stack-work/*
 
 # Nix
 .envrc

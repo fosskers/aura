@@ -97,7 +97,7 @@ translatorMsg lang = title : names
     names = mapMaybe (\l -> formatLang . (,l) <$> M.lookup l translators) [English ..]
 
     formatLang :: (Text, Language) -> Text
-    formatLang (translator, lang') = " (" <> (T.pack $ show lang') <> ") " <> translator
+    formatLang (translator, lang') = " (" <> T.pack (show lang') <> ") " <> translator
 
 -- | Make some `Text` cyan. Previous wrapped things in backticks.
 bt :: Pretty a => a -> Doc AnsiStyle
@@ -1262,7 +1262,7 @@ cleanStates_6 n = \case
   Vietnamese -> pretty n <+> "trong số chúng đã được ghim, và sẽ không bị loại bỏ."
   Czech      -> pretty n <+> "z nich jsou připnuté a nebudou odstraněny."
   Korean     -> pretty n <+> "은(는) 고정되어 삭제되지 않습니다."
-  Hindi      -> "इनमें से" pretty n <+> "को पिन कर दिया गया है, और हटाया नहीं जाएगा।"
+  Hindi      -> "इनमें से" <+> pretty n <+> "को पिन कर दिया गया है, और हटाया नहीं जाएगा।"
   _          -> pretty n <+> "of these are pinned, and won't be removed."
 
 readState_1 :: Language -> Doc AnsiStyle
@@ -1364,7 +1364,7 @@ backupCache_4 (bt . T.pack -> dir) = \case
     Vietnamese -> "Sao lưu cache vào " <> dir
     Czech      -> "Zálohování mezipaměti do " <> dir
     Korean     -> "캐시를 백업하는 중 " <> dir
-    Hindi      -> "कैश का बैकअप " <> dir "में लिया जा रहा है।"
+    Hindi      -> "कैश का बैकअप " <> dir <> " में लिया जा रहा है।"
     _          -> "Backing up cache to " <> dir
 
 backupCache_5 :: Int -> Language -> Doc AnsiStyle

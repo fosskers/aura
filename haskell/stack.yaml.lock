@@ -3,31 +3,10 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages:
-- completed:
-    hackage: aeson-2.1.0.0@sha256:b0bdd457ff05f0924f6055e5265a5a70e8f719f6e92b3c98a6af922495539ef2,5937
-    pantry-tree:
-      size: 38191
-      sha256: 416127fd578b11c2bbb3cabdce212d939f040ddf390c54caebf4ceda02222872
-  original:
-    hackage: aeson-2.1.0.0
-- completed:
-    hackage: algebraic-graphs-0.7@sha256:d7703fb764ec14bbf7e2ee6296045d8bc1ddb9c1acdcd1841c6299cc6b5955fb,8618
-    pantry-tree:
-      size: 4347
-      sha256: 5caf69702b46f7be7744f357bc59bd56c0ae61a1addfcfc3b10b289629deb3db
-  original:
-    hackage: algebraic-graphs-0.7
-- completed:
-    hackage: generically-0.1@sha256:16d54a08bcdf708395c2200a28ffcba55e90479dc96ed617dbb94f0411f7a7af,1024
-    pantry-tree:
-      size: 232
-      sha256: 302b140ee5ccf6754ab96154486051f9ab989d3cbaa7c9674e1e9f0de7cdd07b
-  original:
-    hackage: generically-0.1
+packages: []
 snapshots:
 - completed:
-    size: 612911
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2022/6/17.yaml
-    sha256: 3d05f99c0504845bd62d28a5613dfd7a5e77af92b9f373f7faeb1c20d8e97c30
-  original: nightly-2022-06-17
+    sha256: 350737ef1c4c748f4c7ff56b6e74f2f6d15039a2f148662a8ec1aded016b80d0
+    size: 640033
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/15.yaml
+  original: lts-21.15

@@ -171,8 +171,8 @@ realPkgConflicts ss parent pkg dep
     | isVersionConflict reqVer curVer = Just $ VerConflict failMsg2
     | otherwise                       = Nothing
     where pn       = pname pkg
-          curVer   = pver pkg & release .~ []
-          reqVer   = dDemand dep & _VersionDemand . release .~ []
+          curVer   = pver pkg & release .~ Nothing
+          reqVer   = dDemand dep & _VersionDemand . release .~ Nothing
           lang     = langOf ss
           toIgnore = ignoresOf ss
           failMsg1 = getRealPkgConflicts_2 pn lang
