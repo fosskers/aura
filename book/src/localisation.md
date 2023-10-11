@@ -135,6 +135,9 @@ buildPackages_1 (bt -> p) = \case
 Obviously the syntax among languages is different, and so where you insert the
 variables you've been given into the sentence depends on your language.
 
+Reminder: There are two main files to add translations to:
+`lib/Aura/Languages.hs` and `lib/Aura/Languages/Fields.hs`.
+
 ### Step Four - Command-line Flag
 
 We choose output languages in Aura by using flags on the command line.

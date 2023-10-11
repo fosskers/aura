@@ -30,6 +30,7 @@
     :vietnam:
     :czech_republic:
     :kr:
+    :in:
   </div>
   <br>
   
@@ -248,7 +249,7 @@ Aura Book.
 Aura has been translated by these generous people:
 
 | Language   | Translators                                     |
-| ---------- | ----------------------------------------------- |
+|------------|-------------------------------------------------|
 | Arabic     | "Array in a Matrix"                             |
 | Chinese    | Kai Zhang                                       |
 | Croatian   | Denis Kasak and "stranac"                       |
@@ -257,6 +258,7 @@ Aura has been translated by these generous people:
 | Esperanto  | Zachary "Ghosy" Matthews                        |
 | French     | Ma Jiehong and Fabien Dubosson                  |
 | German     | Lukas Niederbremer and Jonas Platte             |
+| Hindi      | "yozachar"                                      |
 | Indonesian | "pak tua Greg"                                  |
 | Italian    | Bob Valantin and Cristian Tentella              |
 | Japanese   | Colin Woodbury and Onoue Takuro                 |

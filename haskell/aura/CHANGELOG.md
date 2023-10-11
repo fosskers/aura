@@ -1,5 +1,11 @@
 # Aura Changelog
 
+## Unrelease
+
+#### Added
+
+- Hindi translations thanks to "yozachar". धन्यवाद!
+
 ## 3.2.9 (2022-05-23)
 
 #### Fixed
