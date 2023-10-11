@@ -48,7 +48,7 @@ pub struct Args {
 
     // --- Other Aura Options --- //
     /// Minimum level of Aura log messages to display.
-    #[clap(long, value_name = "level", value_parser = ["debug", "info", "warn", "error"], global = true)]
+    #[clap(long, value_name = "level", global = true)]
     pub log_level: Option<LevelFilter>,
     /// The Pacman/Aura subcommand to run.
     #[clap(subcommand)]
@@ -154,6 +154,7 @@ pub struct Sync {
         long,
         short,
         value_name = "packages",
+        num_args = 1..,
         display_order = 1
     )]
     info: Vec<String>,
@@ -167,7 +168,7 @@ pub struct Sync {
     #[clap(long, short, display_order = 2)]
     quiet: bool,
     /// Search remote repositories for matchings strings.
-    #[clap(group = "sync", long, short, value_name = "terms", display_order = 1)]
+    #[clap(group = "sync", long, short, value_name = "terms", num_args = 1.., display_order = 1)]
     search: Vec<String>,
     /// Upgrade installed packages (-uu enables downgrades).
     #[clap(
@@ -187,6 +188,7 @@ pub struct Sync {
         long,
         short = 'w',
         value_name = "packages",
+        num_args = 1..,
         display_order = 1
     )]
     downloadonly: Vec<String>,
@@ -787,7 +789,7 @@ pub struct Analysis {
 #[clap(short_flag = 'O', long_flag = "orphans")]
 pub struct Orphans {
     /// Mark a package as being explicitly installed.
-    #[clap(group = "orphans", long, short, value_name = "packages")]
+    #[clap(group = "orphans", long, short, num_args = 1.., value_name = "packages")]
     pub adopt: Vec<String>,
     /// Uninstall all orphan packages.
     #[clap(group = "orphans", long, short = 'j')]
@@ -825,7 +827,7 @@ pub struct Conf {
 /// View the Pacman/ALPM log.
 pub struct Log {
     /// Display install/upgrade history for the given packages.
-    #[clap(group = "log", long, short, value_name = "packages", display_order = 1)]
+    #[clap(group = "log", long, short, value_name = "packages", num_args = 1.., display_order = 1)]
     pub info: Vec<String>,
 
     /// Search the Pacman log for a matching string.
@@ -875,7 +877,7 @@ pub struct Aur {
         long,
         short,
         value_name = "packages",
-        action(ArgAction::Append),
+        num_args = 1..,
         display_order = 1
     )]
     pub info: Vec<String>,
@@ -886,7 +888,7 @@ pub struct Aur {
         long,
         short,
         value_name = "terms",
-        action(ArgAction::Append),
+        num_args = 1..,
         display_order = 1
     )]
     pub search: Vec<String>,
@@ -941,6 +943,7 @@ pub struct Aur {
         long,
         value_name = "package",
         action(ArgAction::Append),
+        num_args = 0..,
         display_order = 3
     )]
     pub ignore: Vec<String>,
@@ -951,7 +954,7 @@ pub struct Aur {
         long = "clone",
         short = 'w',
         value_name = "package",
-        action(ArgAction::Append),
+        num_args = 1..,
         display_order = 1
     )]
     pub wclone: Vec<String>,
@@ -1012,7 +1015,7 @@ pub struct Cache {
     pub clean_unsaved: bool,
 
     /// Look up specific packages for info on their cache entries.
-    #[clap(group = "cache", short, long, value_name = "pkg(s)", display_order = 1)]
+    #[clap(group = "cache", short, long, value_name = "pkg(s)", num_args = 1.., display_order = 1)]
     pub info: Vec<String>,
 
     /// Print the contents of the package cache.

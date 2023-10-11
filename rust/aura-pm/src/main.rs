@@ -85,6 +85,8 @@ fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
         let _ = TermLogger::init(l, Config::default(), TerminalMode::Mixed, ColorChoice::Auto);
     }
 
+    debug!("{:?}", args);
+
     // --- Runtime Settings --- //
     let env = {
         let mut env = crate::env::Env::try_new()?;
