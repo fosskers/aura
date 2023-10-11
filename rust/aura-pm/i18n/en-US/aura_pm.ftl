@@ -158,6 +158,10 @@ check-cache-missing-for-fix = Fix: View the missing packages with { $cmd } and r
 # Configuration (conf)
 conf-toml-err = Failed to serialize current config.
 
+# Home (home)
+home-nodef = No [home] definition in aura.toml.
+home-non-existant = These packages do not exist: { $pkgs }
+
 # Runtime Environment
 env-missing-editor = Provided EDITOR is not on the PATH.
 env-pconf = Failed to parse your pacman.conf file.

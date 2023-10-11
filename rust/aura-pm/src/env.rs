@@ -356,9 +356,9 @@ impl TryFrom<RawBackups> for Backups {
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct Home {
     #[serde(default)]
-    packages: Vec<String>,
+    pub(crate) packages: Vec<String>,
     #[serde(default)]
-    aur: Vec<String>,
+    pub(crate) aur: Vec<String>,
     #[serde(default)]
     pub(crate) links: Vec<Symlink>,
 }

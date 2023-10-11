@@ -175,7 +175,7 @@ fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
         // --- System Validation --- //
         SubCmd::Check(_) => check::check(fll, &env)?,
         // --- Consistent System --- //
-        SubCmd::Home(_) => home::apply(&env)?,
+        SubCmd::Home(_) => home::apply(&env, &env.alpm()?)?,
     }
 
     Ok(())
