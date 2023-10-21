@@ -486,7 +486,7 @@ getRealPkgConflicts_1 (bt . pnName -> prnt) (bt . pnName -> p) (bt -> r) (bt -> 
     Serbian    -> "Зависност " <> p <> " захтева верзију " <> d <> ", али најновија верзија је " <> r <> "."
     Norwegian  -> "Avhengigheten " <> p <> " krever versjon " <> d <>", men den nyeste versjonen er " <> r <> "."
     Indonesia  -> "Dependensi " <> p <> " meminta versi " <> d <> " namun versi paling baru adalah " <> r <> "."
-    Chinese    -> "依赖 " <> p <> " 依赖于版本 " <> d <> "，但最新版本是 " <> r <> "。"
+    Chinese    ->  p <> " 依赖于版本 " <> d <> "，但最新版本是 " <> r <> "。"
     Esperanto  -> "La pakaĵo, " <> prnt <> ", dependas de versio " <> d <> " de " <> p <> ", sed la plej nova versio estas " <> r <> "."
     Dutch      -> prnt <> " is afhankelijk van versie " <> d <> " van " <> p <> ", maar de nieuwste versie is " <> r <> "."
     Ukrainian  -> "Залежність " <> p <> " потребує версію " <> d <> ", проте останньою версією є " <> r <> "."
