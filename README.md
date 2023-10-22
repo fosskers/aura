@@ -154,7 +154,7 @@ for Haskell to compile Aura yourself. Then:
 ```bash
 git clone https://github.com/fosskers/aura.git
 cd aura
-stack install -- aura
+stack --stack-yaml=haskell/stack.yaml install -- aura
 ```
 
 This may take a while to initially build all of Aura's dependencies. Once
