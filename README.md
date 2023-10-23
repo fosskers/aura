@@ -153,12 +153,21 @@ for Haskell to compile Aura yourself. Then:
 
 ```bash
 git clone https://github.com/fosskers/aura.git
-cd aura
-stack --stack-yaml=haskell/stack.yaml install -- aura
+cd aura/haskell
+stack install -- aura
 ```
 
 This may take a while to initially build all of Aura's dependencies. Once
 complete, your `aura` binary will be available in `/home/YOU/.local/bin/`.
+
+Alteratively, you can try the Alpha of Aura's new version:
+
+```bash
+cd rust
+cargo install --path .
+```
+
+This will install the binary to `/home/YOU/.cargo/bin/`.
 
 ## Sample Usage
 
