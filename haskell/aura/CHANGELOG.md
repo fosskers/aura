@@ -1,10 +1,15 @@
 # Aura Changelog
 
-## Unrelease
+## Unreleased
 
 #### Added
 
 - Hindi translations thanks to "yozachar". धन्यवाद!
+
+#### Fixed
+
+- Corrections made to the Mandarin Chinese translation.
+- Updated dependencies.
 
 ## 3.2.9 (2022-05-23)
 
