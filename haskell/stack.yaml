@@ -8,3 +8,6 @@ packages:
   - aura/
   - aur/
   - aursec/
+
+extra-deps:
+  - versions-6.0.3

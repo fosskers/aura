@@ -260,10 +260,10 @@ Aura has been translated by these generous people:
 | Language   | Translators                                     |
 |------------|-------------------------------------------------|
 | Arabic     | "Array in a Matrix"                             |
-| Chinese    | Kai Zhang                                       |
+| Chinese    | Kai Zhang and Alex3236                          |
 | Croatian   | Denis Kasak and "stranac"                       |
 | Czech      | Daniel Rosel                                    |
-| Dutch      | Joris Blanken / Heimen Stoffels                 |
+| Dutch      | Joris Blanken and Heimen Stoffels               |
 | Esperanto  | Zachary "Ghosy" Matthews                        |
 | French     | Ma Jiehong and Fabien Dubosson                  |
 | German     | Lukas Niederbremer and Jonas Platte             |

@@ -40,6 +40,7 @@ package = \case
     Czech      -> "Balíček"
     Korean     -> "패키지"
     Hindi      -> "पैकेज"
+    Chinese    -> "包"
     _          -> "Package"
 
 firstInstall :: Language -> Text
@@ -65,6 +66,7 @@ firstInstall = \case
     Czech      -> "První instalace"
     Korean     -> "최초 설치"
     Hindi      -> "प्रथम इंस्टाल"
+    Chinese    -> "初次安装"
     _          -> "First Install"
 
 upgrades :: Language -> Text
@@ -90,6 +92,7 @@ upgrades = \case
     Czech      -> "Aktualizace"
     Korean     -> "업그레이드 횟수"
     Hindi      -> "अपग्रेड"
+    Chinese    -> "更新数量"
     _          -> "Upgrades"
 
 recentActions :: Language -> Text
@@ -115,6 +118,7 @@ recentActions = \case
     Czech      -> "Nedávné akce"
     Korean     -> "근황"
     Hindi      -> "हाल की कार्रवाइयां"
+    Chinese    -> "近况"
     _          -> "Recent Actions"
 
 repository :: Language -> Text
@@ -139,6 +143,7 @@ repository = \case
     Czech      -> "Úložiště"
     Korean     -> "리포지토리"
     Hindi      -> "रिपॉजिटरी"
+    Chinese    -> "仓库"
     _          -> "Repository"
 
 name :: Language -> Text
@@ -164,6 +169,7 @@ name = \case
     Czech      -> "Název"
     Korean     -> "이름"
     Hindi      -> "नाम"
+    Chinese    -> "名称"
     _          -> "Name"
 
 version :: Language -> Text
@@ -189,6 +195,7 @@ version = \case
     Czech      -> "Verze"
     Korean     -> "버전"
     Hindi      -> "संस्करण"
+    Chinese    -> "版本"
     _          -> "Version"
 
 aurStatus :: Language -> Text
@@ -213,6 +220,7 @@ aurStatus = \case
     Czech      -> "Stav AUR"
     Korean     -> "AUR 상태"
     Hindi      -> "AUR स्थिति"
+    Chinese    -> "AUR 状态"
     _          -> "AUR Status"
 
 -- NEEDS TRANSLATION
@@ -233,6 +241,7 @@ maintainer = \case
     Czech      -> "Udržovatel"
     Korean     -> "관리자"
     Hindi      -> "मेंटेनर"
+    Chinese    -> "维护者"
     _          -> "Maintainer"
 
 projectUrl :: Language -> Text
@@ -258,6 +267,7 @@ projectUrl = \case
     Czech      -> "Adresa URL projektu"
     Korean     -> "프로젝트 URL"
     Hindi      -> "प्रोजेक्ट URL"
+    Chinese    -> "项目 URL"
     _          -> "Project URL"
 
 aurUrl :: Language -> Text
@@ -281,6 +291,7 @@ aurUrl = \case
     Czech      -> "URL pro AUR"
     Korean     -> "AUR URL"
     Hindi      -> "AUR URL"
+    Chinese    -> "AUR URL"
     _          -> "AUR URL"
 
 license :: Language -> Text
@@ -306,6 +317,7 @@ license = \case
     Czech      -> "Licence"
     Korean     -> "라이센스"
     Hindi      -> "लाइसेंस"
+    Chinese    -> "许可"
     _          -> "License"
 
 dependsOn :: Language -> Text
@@ -329,6 +341,7 @@ dependsOn = \case
     Czech      -> "Závisí na"
     Korean     -> "종속 패키지"
     Hindi      -> "निर्भर करता है"
+    Chinese    -> "依赖于"
     _          -> "Depends On"
 
 buildDeps :: Language -> Text
@@ -349,6 +362,7 @@ buildDeps = \case
     Czech      -> "Závislosti kompilace"
     Korean     -> "빌드 종속성"
     Hindi      -> "बिल्ड निर्भरताएँ"
+    Chinese    -> "构建依赖"
     _          -> "Build Deps"
 
 votes :: Language -> Text
@@ -374,6 +388,7 @@ votes = \case
     Czech      -> "Hlasy"
     Korean     -> "투표"
     Hindi      -> "वोट"
+    Chinese    -> "票数"
     _          -> "Votes"
 
 popularity :: Language -> Text
@@ -391,6 +406,7 @@ popularity = \case
     Czech      -> "Popularita"
     Korean     -> "인기"
     Hindi      -> "लोकप्रियता"
+    Chinese    -> "人气"
     _          -> "Popularity"
 
 description :: Language -> Text
@@ -416,4 +432,5 @@ description = \case
     Czech      -> "Popis"
     Korean     -> "개요"
     Hindi      -> "विवरण"
+    Chinese    -> "简介"
     _          -> "Description"
