@@ -267,7 +267,7 @@ projectUrl = \case
     Czech      -> "Adresa URL projektu"
     Korean     -> "프로젝트 URL"
     Hindi      -> "प्रोजेक्ट URL"
-    Chines     -> "项目 URL"
+    Chinese    -> "项目 URL"
     _          -> "Project URL"
 
 aurUrl :: Language -> Text

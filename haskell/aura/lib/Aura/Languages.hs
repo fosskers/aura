@@ -1826,7 +1826,7 @@ dependencyLookup_1 t = \case
   Czech      -> vsep ["Při rekurzivním vyhledávání závislostí došlo k problému:", pretty t]
   Korean     -> vsep ["재귀 종속성 조회 중 문제가 발생했습니다:", pretty t]
   Hindi      -> vsep ["पुनरावर्ती निर्भरता लुकअप के दौरान एक समस्या थी:", pretty t]
-  Chinese    -> vesp ["在递归依赖查找中遇到了问题：", pretty t]
+  Chinese    -> vsep ["在递归依赖查找中遇到了问题：", pretty t]
   _          -> vsep ["There was an issue during recursive dependency lookup:", pretty t]
 
 miscAURFailure_1 :: Language -> Doc AnsiStyle
