@@ -161,6 +161,9 @@ conf-toml-err = Failed to serialize current config.
 # Home (home)
 home-nodef = No [home] definition in aura.toml.
 home-non-existant = These packages do not exist: { $pkgs }
+home-not-a-link = File already exists and is not a symlink: { $file }
+home-no-target = Symlink at { $file } points to a non-existent file.
+home-wrong-target = Symlink at { $file } points to an unexpected target.
 
 # Runtime Environment
 env-missing-editor = Provided EDITOR is not on the PATH.

@@ -378,6 +378,11 @@ impl Symlink {
         Path::new(self.0 .0.as_str())
     }
 
+    /// An absolute rendering of the path of the symlink.
+    pub(crate) fn pretty(&self, xdg_config: &Path) -> PathBuf {
+        xdg_config.join(self.from())
+    }
+
     /// A symlink as defined in a `[home]` block (see [`crate::command::home`])
     /// is making a claim about a symlink it wants or expects to exist on the
     /// filesystem. Aura will take these definitions and create them if it can,
@@ -385,9 +390,10 @@ impl Symlink {
     /// the system. In that case, the `home` command should be halted and the
     /// user warned.
     pub(crate) fn status(&self, xdg_config: &Path) -> LinkStatus {
-        let path = xdg_config.join(self.from());
+        let path = self.pretty(xdg_config);
 
         match path {
+            p if p.exists().not() => LinkStatus::NothingThere,
             p if p.is_symlink().not() => LinkStatus::NotALink,
             p if p.metadata().is_err() => LinkStatus::NoTarget,
             p => match (p.canonicalize(), self.to().canonicalize()) {
@@ -401,6 +407,8 @@ impl Symlink {
 /// The status of a [`Symlink`].
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) enum LinkStatus {
+    /// There is no file nor symlink found there.
+    NothingThere,
     /// There is a file here, but it's not a symlink.
     NotALink,
     /// The symlink exists but the file it points to does not.

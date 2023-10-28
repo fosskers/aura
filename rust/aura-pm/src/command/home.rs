@@ -14,17 +14,17 @@ use alpm::Alpm;
 use alpm_utils::DbListExt;
 use i18n_embed_fl::fl;
 use nonempty_collections::NEVec;
-use std::path::Path;
+use std::ops::Not;
+use std::path::{Path, PathBuf};
 use validated::Validated;
-
-// Scenarios:
-// - A new package has been added and isn't yet installed: install if exists.
-// - A package was removed since the last invocation of `home`: do nothing.
 
 pub(crate) enum Error {
     NoHome,
     /// The user specified packages that don't exist.
     NonExistant(NEVec<String>),
+    NotALink(PathBuf),
+    NoTarget(PathBuf),
+    WrongTarget(PathBuf),
 }
 
 impl Nested for Error {
@@ -43,6 +43,11 @@ impl Localised for Error {
                     .join(", ");
 
                 fl!(fll, "home-non-existant", pkgs = pkgs)
+            }
+            Error::NotALink(p) => fl!(fll, "home-not-a-link", file = format!("{}", p.display())),
+            Error::NoTarget(p) => fl!(fll, "home-no-target", file = format!("{}", p.display())),
+            Error::WrongTarget(p) => {
+                fl!(fll, "home-wrong-target", file = format!("{}", p.display()))
             }
         }
     }
@@ -64,8 +69,30 @@ pub(crate) fn apply(env: &Env, alpm: &Alpm) -> Result<(), Error> {
                 .ok()
                 .map_err(Error::NonExistant)?;
 
+            let config = env.xdg_config.as_path();
+
+            println!("Packages to install:");
             for p in packages {
                 println!("{p}");
+            }
+
+            let to_establish = home
+                .links
+                .iter()
+                .filter_map(|sl| match sl.status(config) {
+                    LinkStatus::NotALink => Some(Err(Error::NotALink(sl.pretty(config)))),
+                    LinkStatus::NoTarget => Some(Err(Error::NoTarget(sl.pretty(config)))),
+                    LinkStatus::WrongTarget => Some(Err(Error::WrongTarget(sl.pretty(config)))),
+                    // A symlink is ready to be made.
+                    LinkStatus::NothingThere => Some(Ok(sl)),
+                    // We can safely ignore established, correct symlinks.
+                    LinkStatus::Established => None,
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+
+            if to_establish.is_empty().not() {
+                println!("Links to establish:");
+                println!("{:?}", to_establish);
             }
 
             Ok(())
