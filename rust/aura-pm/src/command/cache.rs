@@ -110,7 +110,7 @@ pub(crate) fn downgrade(
     let mut tarballs: HashMap<&str, Vec<PkgPath>> = HashMap::new();
     for pp in aura_core::cache::package_paths(caches) {
         if let Some(p) = packages.iter().find(|p| p == &&pp.as_package().name) {
-            let paths = tarballs.entry(p).or_insert_with(Vec::new);
+            let paths = tarballs.entry(p).or_default();
             paths.push(pp);
         }
     }
