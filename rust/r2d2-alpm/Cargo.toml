@@ -16,4 +16,4 @@ pacmanconf = "2.0"
 r2d2 = "0.8"
 
 [dev-dependencies]
-rayon = "1.7"
+rayon = "1.8"
