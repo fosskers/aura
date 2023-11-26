@@ -108,7 +108,7 @@ dependencies = [
 
 [[package]]
 name = "aura-pm"
-version = "4.0.0-alpha9"
+version = "4.0.0-alpha10"
 dependencies = [
  "alpm",
  "alpm-utils",
