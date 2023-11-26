@@ -202,10 +202,15 @@ struct RawAur {
     hashes: Option<PathBuf>,
     #[serde(default)]
     ignores: HashSet<String>,
+    #[serde(default)]
     git: bool,
+    #[serde(default)]
     hotedit: bool,
+    #[serde(default)]
     diff: bool,
+    #[serde(default)]
     delmakedeps: bool,
+    #[serde(default)]
     noconfirm: bool,
 }
 
