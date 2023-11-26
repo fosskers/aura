@@ -3,7 +3,6 @@
 
 # The Aura Package Manager
 
-![img](https://github.com/fosskers/aura/workflows/Tests/badge.svg)
 [![img](https://img.shields.io/hackage/v/aura.svg)](http://hackage.haskell.org/package/aura)
 ![img](https://img.shields.io/github/downloads/fosskers/aura/total.svg)
 
