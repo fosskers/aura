@@ -409,8 +409,10 @@ where
     aura!(fll, "A-install-aur-pkgs");
     to_build.iter().for_each(|p| println!(" {p}"));
 
-    // Proceed if the user accepts.
-    proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
+    if env.aur.noconfirm.not() {
+        // Proceed if the user accepts.
+        proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
+    }
 
     // --- Determine the best build order --- //
     let order: Vec<Vec<&str>> = aura_core::aur::dependencies::build_order(&to_build)?;

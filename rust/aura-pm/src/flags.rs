@@ -958,6 +958,10 @@ pub struct Aur {
     #[clap(long, short = 'y', display_order = 1)]
     pub refresh: bool,
 
+    /// Do not ask for any confirmation.
+    #[clap(long, display_order = 4)]
+    pub noconfirm: bool,
+
     /// Packages to install.
     pub packages: Vec<String>,
 }

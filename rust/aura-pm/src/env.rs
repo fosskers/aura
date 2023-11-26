@@ -202,14 +202,11 @@ struct RawAur {
     hashes: Option<PathBuf>,
     #[serde(default)]
     ignores: HashSet<String>,
-    #[serde(default)]
     git: bool,
-    #[serde(default)]
     hotedit: bool,
-    #[serde(default)]
     diff: bool,
-    #[serde(default)]
     delmakedeps: bool,
+    noconfirm: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -227,6 +224,8 @@ pub(crate) struct Aur {
     pub(crate) diff: bool,
     /// Delete makedeps after building.
     pub(crate) delmakedeps: bool,
+    /// Don't ask the user for confirmation.
+    pub(crate) noconfirm: bool,
 }
 
 impl Aur {
@@ -242,6 +241,7 @@ impl Aur {
             hotedit: false,
             diff: false,
             delmakedeps: false,
+            noconfirm: false,
         };
 
         Ok(a)
@@ -250,6 +250,10 @@ impl Aur {
     /// Flags set on the command line should override config settings and other
     /// defaults.
     fn reconcile(&mut self, flags: &aura_pm::flags::Aur) {
+        // NOTE 2023-11-26 It may be tempting to save two lines here by blindly
+        // setting `self.git` to whatever is found in the `flags` value, but
+        // that would cause problems in the case of `true` being set in config,
+        // while `false` is used as the default value when no flag were given.
         if flags.git {
             self.git = true;
         }
@@ -264,6 +268,10 @@ impl Aur {
 
         if flags.delmakedeps {
             self.delmakedeps = true;
+        }
+
+        if flags.noconfirm {
+            self.noconfirm = true;
         }
 
         // Harmless clone, as we don't expect many "ignores" to be passed on the
@@ -291,6 +299,7 @@ impl TryFrom<RawAur> for Aur {
             hotedit: raw.hotedit,
             diff: raw.diff,
             delmakedeps: raw.delmakedeps,
+            noconfirm: raw.noconfirm,
         };
 
         Ok(a)
