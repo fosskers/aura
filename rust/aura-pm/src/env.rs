@@ -378,8 +378,12 @@ impl Symlink {
         Path::new(self.0 .0.as_str())
     }
 
+    pub(crate) fn str_of_from(&self) -> &str {
+        self.0 .0.as_str()
+    }
+
     /// An absolute rendering of the path of the symlink.
-    pub(crate) fn pretty(&self, xdg_config: &Path) -> PathBuf {
+    pub(crate) fn absolute(&self, xdg_config: &Path) -> PathBuf {
         xdg_config.join(self.from())
     }
 
@@ -390,7 +394,7 @@ impl Symlink {
     /// the system. In that case, the `home` command should be halted and the
     /// user warned.
     pub(crate) fn status(&self, xdg_config: &Path) -> LinkStatus {
-        let path = self.pretty(xdg_config);
+        let path = self.absolute(xdg_config);
 
         match path {
             p if p.exists().not() => LinkStatus::NothingThere,

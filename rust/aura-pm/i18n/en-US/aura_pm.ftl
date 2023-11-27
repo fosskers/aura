@@ -164,6 +164,9 @@ home-non-existant = These packages do not exist: { $pkgs }
 home-not-a-link = File already exists and is not a symlink: { $file }
 home-no-target = Symlink at { $file } points to a non-existent file.
 home-wrong-target = Symlink at { $file } points to an unexpected target.
+home-determine = Determining packages and symlinks...
+home-to-install = Repository packages to install:
+home-symlinks = Symlinks to establish:
 
 # Runtime Environment
 env-missing-editor = Provided EDITOR is not on the PATH.

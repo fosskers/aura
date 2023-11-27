@@ -10,8 +10,11 @@
 use crate::env::{Env, Home, LinkStatus};
 use crate::error::Nested;
 use crate::localization::Localised;
+use crate::{aura, proceed};
 use alpm::Alpm;
 use alpm_utils::DbListExt;
+use colored::*;
+use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use nonempty_collections::NEVec;
 use std::ops::Not;
@@ -25,6 +28,7 @@ pub(crate) enum Error {
     NotALink(PathBuf),
     NoTarget(PathBuf),
     WrongTarget(PathBuf),
+    Cancelled,
 }
 
 impl Nested for Error {
@@ -49,6 +53,7 @@ impl Localised for Error {
             Error::WrongTarget(p) => {
                 fl!(fll, "home-wrong-target", file = format!("{}", p.display()))
             }
+            Error::Cancelled => fl!(fll, "common-cancelled"),
         }
     }
 }
@@ -61,43 +66,64 @@ pub(crate) fn links_established(home: &Home, xdg_config: &Path) -> bool {
 }
 
 /// Install all missing, expected packages, and establish any specified symlinks.
-pub(crate) fn apply(env: &Env, alpm: &Alpm) -> Result<(), Error> {
-    match env.home.as_ref() {
-        None => Err(Error::NoHome),
-        Some(home) => {
-            let packages = pkgs_to_install(home, alpm)
-                .ok()
-                .map_err(Error::NonExistant)?;
+pub(crate) fn apply(fll: &FluentLanguageLoader, env: &Env, alpm: &Alpm) -> Result<(), Error> {
+    let home = env.home.as_ref().ok_or(Error::NoHome)?;
 
-            let config = env.xdg_config.as_path();
+    aura!(fll, "home-determine");
 
-            println!("Packages to install:");
-            for p in packages {
-                println!("{p}");
-            }
+    let packages = pkgs_to_install(home, alpm)
+        .ok()
+        .map_err(Error::NonExistant)?;
 
-            let to_establish = home
-                .links
-                .iter()
-                .filter_map(|sl| match sl.status(config) {
-                    LinkStatus::NotALink => Some(Err(Error::NotALink(sl.pretty(config)))),
-                    LinkStatus::NoTarget => Some(Err(Error::NoTarget(sl.pretty(config)))),
-                    LinkStatus::WrongTarget => Some(Err(Error::WrongTarget(sl.pretty(config)))),
-                    // A symlink is ready to be made.
-                    LinkStatus::NothingThere => Some(Ok(sl)),
-                    // We can safely ignore established, correct symlinks.
-                    LinkStatus::Established => None,
-                })
-                .collect::<Result<Vec<_>, _>>()?;
+    if packages.is_empty().not() {
+        aura!(fll, "home-to-install");
 
-            if to_establish.is_empty().not() {
-                println!("Links to establish:");
-                println!("{:?}", to_establish);
-            }
-
-            Ok(())
+        for p in packages.iter() {
+            println!(" {p}");
         }
     }
+
+    let config = env.xdg_config.as_path();
+
+    let to_establish = home
+        .links
+        .iter()
+        .filter_map(|sl| match sl.status(config) {
+            LinkStatus::NotALink => Some(Err(Error::NotALink(sl.absolute(config)))),
+            LinkStatus::NoTarget => Some(Err(Error::NoTarget(sl.absolute(config)))),
+            LinkStatus::WrongTarget => Some(Err(Error::WrongTarget(sl.absolute(config)))),
+            // A symlink is ready to be made.
+            LinkStatus::NothingThere => Some(Ok(sl)),
+            // We can safely ignore established, correct symlinks.
+            LinkStatus::Established => None,
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+
+    if to_establish.is_empty().not() {
+        aura!(fll, "home-symlinks");
+
+        // To align the rendering of the symlinks.
+        let longest = to_establish
+            .iter()
+            .map(|sl| sl.str_of_from().chars().count())
+            .max()
+            .unwrap_or(0);
+
+        for sl in to_establish.iter() {
+            println!(
+                " {:w$} -> {}",
+                sl.from().display(),
+                sl.to().display(),
+                w = longest
+            );
+        }
+    }
+
+    if packages.is_empty().not() || to_establish.is_empty().not() {
+        proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
+    }
+
+    Ok(())
 }
 
 fn pkgs_to_install<'a>(home: &'a Home, alpm: &Alpm) -> Validated<Vec<&'a str>, String> {
