@@ -11,6 +11,7 @@ use r2d2::Pool;
 use r2d2_alpm::AlpmManager;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
+use std::ops::Not;
 use std::path::{Path, PathBuf};
 
 const DEFAULT_EDITOR: &str = "vi";
@@ -48,11 +49,12 @@ impl Localised for Error {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct RawEnv {
     general: Option<RawGeneral>,
     aur: Option<RawAur>,
     backups: Option<RawBackups>,
+    home: Option<Home>,
 }
 
 impl RawEnv {
@@ -81,9 +83,14 @@ pub(crate) struct Env {
     pub(crate) aur: Aur,
     /// Saving and restoring package states.
     pub(crate) backups: Backups,
+    /// Managing consistently installed packages and their config.
+    pub(crate) home: Option<Home>,
     /// Settings from a `pacman.conf`.
     #[serde(skip_serializing)]
     pub(crate) pacman: pacmanconf::Config,
+    /// Usually `~/.config/`.
+    #[serde(skip_serializing)]
+    pub(crate) xdg_config: PathBuf,
 }
 
 impl Env {
@@ -91,13 +98,15 @@ impl Env {
         // Read the config file, if it's there. We don't actually mind if it isn't,
         // because sensible defaults can (probably) be set anyway.
         let raw: Option<RawEnv> = RawEnv::try_new();
-        let (general, aur, backups) = match raw {
+
+        let (general, aur, backups, home) = match raw {
             Some(re) => (
                 re.general.map(|rg| rg.into()),
                 re.aur.map(|ra| ra.try_into()),
                 re.backups.map(|rb| rb.try_into()),
+                re.home,
             ),
-            None => (None, None, None),
+            None => (None, None, None, None),
         };
 
         let e = Env {
@@ -105,6 +114,8 @@ impl Env {
             aur: aur.unwrap_or_else(Aur::try_default)?,
             backups: backups.unwrap_or_else(Backups::try_default)?,
             pacman: pacmanconf::Config::new().map_err(Error::PConf)?,
+            home,
+            xdg_config: dirs::xdg_config()?,
         };
 
         Ok(e)
@@ -159,7 +170,7 @@ impl Env {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct RawGeneral {
     cpus: Option<u32>,
     editor: Option<String>,
@@ -194,7 +205,7 @@ fn editor() -> String {
     std::env::var("EDITOR").unwrap_or_else(|_| DEFAULT_EDITOR.to_string())
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct RawAur {
     build: Option<PathBuf>,
     cache: Option<PathBuf>,
@@ -311,7 +322,7 @@ impl TryFrom<RawAur> for Aur {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct RawBackups {
     snapshots: Option<PathBuf>,
 }
@@ -342,6 +353,76 @@ impl TryFrom<RawBackups> for Backups {
     }
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+pub(crate) struct Home {
+    #[serde(default)]
+    pub(crate) packages: Vec<String>,
+    #[serde(default)]
+    pub(crate) aur: Vec<String>,
+    #[serde(default)]
+    pub(crate) links: Vec<Symlink>,
+}
+
+#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(transparent)]
+pub(crate) struct Symlink((String, String));
+
+impl Symlink {
+    /// The location of the underlying file pointed to by the symlink.
+    pub(crate) fn to(&self) -> &Path {
+        Path::new(self.0 .1.as_str())
+    }
+
+    /// The locatin of the symlink itself.
+    pub(crate) fn from(&self) -> &Path {
+        Path::new(self.0 .0.as_str())
+    }
+
+    pub(crate) fn str_of_from(&self) -> &str {
+        self.0 .0.as_str()
+    }
+
+    /// An absolute rendering of the path of the symlink.
+    pub(crate) fn absolute(&self, xdg_config: &Path) -> PathBuf {
+        xdg_config.join(self.from())
+    }
+
+    /// A symlink as defined in a `[home]` block (see [`crate::command::home`])
+    /// is making a claim about a symlink it wants or expects to exist on the
+    /// filesystem. Aura will take these definitions and create them if it can,
+    /// but it's possible that those would conflict with existing symlinks on
+    /// the system. In that case, the `home` command should be halted and the
+    /// user warned.
+    pub(crate) fn status(&self, xdg_config: &Path) -> LinkStatus {
+        let path = self.absolute(xdg_config);
+
+        match path {
+            p if p.exists().not() => LinkStatus::NothingThere,
+            p if p.is_symlink().not() => LinkStatus::NotALink,
+            p if p.metadata().is_err() => LinkStatus::NoTarget,
+            p => match (p.canonicalize(), self.to().canonicalize()) {
+                (Ok(a), Ok(b)) if a == b => LinkStatus::Established,
+                _ => LinkStatus::WrongTarget,
+            },
+        }
+    }
+}
+
+/// The status of a [`Symlink`].
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) enum LinkStatus {
+    /// There is no file nor symlink found there.
+    NothingThere,
+    /// There is a file here, but it's not a symlink.
+    NotALink,
+    /// The symlink exists but the file it points to does not.
+    NoTarget,
+    /// The symlink exists but points to an unexpected file.
+    WrongTarget,
+    /// The symlink is established and has the expected target.
+    Established,
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -369,5 +450,21 @@ mod test {
         let aur = toml::from_str::<RawEnv>(&file).unwrap().aur.unwrap();
         let exp: HashSet<_> = ["foo".to_string(), "bar".to_string()].into();
         assert_eq!(exp, aur.ignores);
+    }
+
+    #[test]
+    fn home() {
+        let file = std::fs::read_to_string("tests/home.toml").unwrap();
+        let home = toml::from_str::<RawEnv>(&file).unwrap().home.unwrap();
+
+        assert_eq!(home.packages, ["a", "b"]);
+        assert_eq!(home.aur, ["c", "d"]);
+        assert_eq!(
+            home.links,
+            [Symlink((
+                "sway/config".to_string(),
+                "/home/colin/dotfiles/sway/config".to_string()
+            ))]
+        );
     }
 }

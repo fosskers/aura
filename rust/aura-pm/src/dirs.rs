@@ -36,7 +36,7 @@ impl Localised for Error {
 }
 
 /// Like [`xdg_cache`], but for `XDG_CONFIG_HOME`.
-fn xdg_config() -> Result<PathBuf, Error> {
+pub(crate) fn xdg_config() -> Result<PathBuf, Error> {
     std::env::var("XDG_CONFIG_HOME")
         .map(PathBuf::from)
         .or_else(|_| std::env::var("HOME").map(|h| [&h, ".config"].iter().collect()))

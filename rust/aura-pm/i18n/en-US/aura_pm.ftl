@@ -137,6 +137,7 @@ check-aconf = Aura Configuration
 check-aconf-aura-exists = Aura config file exists?
 check-aconf-aura-exists-fix = Fix: Consider { $cmd }
 check-aconf-aura-parse = Aura config file can be parsed?
+check-aconf-good-links = All [home] symlinks established?
 check-mconf = Makepkg Configuration (/etc/makepkg.conf)
 check-mconf-packager = PACKAGER set?
 check-mconf-packager-fix = Set { $cmd } within /etc/makepkg.conf
@@ -156,6 +157,16 @@ check-cache-missing-for-fix = Fix: View the missing packages with { $cmd } and r
 
 # Configuration (conf)
 conf-toml-err = Failed to serialize current config.
+
+# Home (home)
+home-nodef = No [home] definition in aura.toml.
+home-non-existant = These packages do not exist: { $pkgs }
+home-not-a-link = File already exists and is not a symlink: { $file }
+home-no-target = Symlink at { $file } points to a non-existent file.
+home-wrong-target = Symlink at { $file } points to an unexpected target.
+home-determine = Determining packages and symlinks...
+home-to-install = Repository packages to install:
+home-symlinks = Symlinks to establish:
 
 # Runtime Environment
 env-missing-editor = Provided EDITOR is not on the PATH.
