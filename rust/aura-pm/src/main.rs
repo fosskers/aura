@@ -91,6 +91,7 @@ fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
         env
     };
     debug!("{:#?}", env);
+    debug!("{:#?}", args);
 
     match args.subcmd {
         // --- Pacman Commands --- //
