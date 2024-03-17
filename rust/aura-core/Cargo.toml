@@ -10,8 +10,8 @@ license = "GPL-3.0-only"
 keywords = ["archlinux", "alpm", "aur", "pacman"]
 
 [dependencies]
-alpm = "2.2"
-alpm-utils = "2.0"
+alpm = "3.0"
+alpm-utils = "3.0"
 disown = "1.0"
 from_variants = "1.0"
 itertools = "0.12"

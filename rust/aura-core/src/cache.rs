@@ -193,7 +193,7 @@ where
 pub fn officials_missing_tarballs<'a>(
     alpm: &'a Alpm,
     caches: &[&Path],
-) -> impl Iterator<Item = alpm::Package<'a>> {
+) -> impl Iterator<Item = &'a alpm::Package> {
     let groups = all_versions(caches);
 
     crate::native_packages(alpm).filter(move |p| {
@@ -209,7 +209,7 @@ pub fn officials_missing_tarballs<'a>(
 pub fn foreigns_missing_tarballs<'a>(
     alpm: &'a Alpm,
     caches: &[&Path],
-) -> impl Iterator<Item = alpm::Package<'a>> {
+) -> impl Iterator<Item = &'a alpm::Package> {
     let groups = all_versions(caches);
 
     crate::foreign_packages(alpm).filter(move |p| {
@@ -225,7 +225,7 @@ pub fn foreigns_missing_tarballs<'a>(
 pub fn missing_tarballs<'a>(
     alpm: &'a Alpm,
     caches: &[&Path],
-) -> impl Iterator<Item = alpm::Package<'a>> {
+) -> impl Iterator<Item = &'a alpm::Package> {
     let groups: HashMap<String, HashSet<String>> = all_versions(caches);
 
     alpm.localdb().pkgs().into_iter().filter(move |p| {

@@ -17,8 +17,8 @@ path = "src/main.rs"
 aura-core = { version = "0.2", path = "../aura-core" }
 r2d2-alpm = { version = "0.1", path = "../r2d2-alpm" }
 
-alpm = "2.2"
-alpm-utils = "2.0"
+alpm = "3.0"
+alpm-utils = "3.0"
 clap = { version = "4.4", features = ["derive"] }
 colored = "2.0"
 curl = "0.4"

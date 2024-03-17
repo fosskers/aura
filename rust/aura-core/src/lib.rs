@@ -86,8 +86,8 @@ impl<'a> Package<'a> {
     }
 }
 
-impl<'a> From<alpm::Package<'a>> for Package<'a> {
-    fn from(p: alpm::Package<'a>) -> Self {
+impl<'a> From<&'a alpm::Package> for Package<'a> {
+    fn from(p: &'a alpm::Package) -> Self {
         Package::new(p.name(), p.version().as_str())
     }
 }
@@ -147,7 +147,7 @@ impl<T> Apply for T {
 ///
 /// An orphan is a package that was installed as a dependency, but whose parent
 /// package is no longer installed.
-pub fn orphans(alpm: &Alpm) -> impl Iterator<Item = alpm::Package<'_>> {
+pub fn orphans<'a>(alpm: &'a Alpm) -> impl Iterator<Item = &'a alpm::Package> {
     alpm.localdb().pkgs().into_iter().filter(|p| {
         p.reason() == PackageReason::Depend
             && p.required_by().is_empty()
@@ -160,7 +160,7 @@ pub fn orphans(alpm: &Alpm) -> impl Iterator<Item = alpm::Package<'_>> {
 /// standalone applications, but occasionally some packages get installed by
 /// mistake, forgotten, or mislabelled, and then just hang around on the system
 /// forever, receiving pointless updates.
-pub fn elderly(alpm: &Alpm) -> impl Iterator<Item = alpm::Package<'_>> {
+pub fn elderly<'a>(alpm: &'a Alpm) -> impl Iterator<Item = &'a alpm::Package> {
     alpm.localdb().pkgs().into_iter().filter(|p| {
         p.reason() == PackageReason::Explicit
             && p.required_by().is_empty()
@@ -177,7 +177,7 @@ pub fn is_valid_package(alpm: &Alpm, path: &Path) -> bool {
 }
 
 /// All official packages.
-pub fn native_packages(alpm: &Alpm) -> impl Iterator<Item = alpm::Package<'_>> {
+pub fn native_packages<'a>(alpm: &'a Alpm) -> impl Iterator<Item = &'a alpm::Package> {
     let syncs = alpm.syncdbs();
 
     alpm.localdb()
@@ -187,7 +187,7 @@ pub fn native_packages(alpm: &Alpm) -> impl Iterator<Item = alpm::Package<'_>> {
 }
 
 /// All foreign packages as an `Iterator`.
-pub fn foreign_packages(alpm: &Alpm) -> impl Iterator<Item = alpm::Package<'_>> {
+pub fn foreign_packages<'a>(alpm: &'a Alpm) -> impl Iterator<Item = &'a alpm::Package> {
     let syncs = alpm.syncdbs();
 
     alpm.localdb()
