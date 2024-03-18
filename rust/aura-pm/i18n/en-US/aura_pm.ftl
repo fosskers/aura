@@ -167,9 +167,6 @@ pacman-u = A call to pacman -U failed.
 pacman-s = A call to pacman -S failed.
 pacman-misc = A call to pacman gave a non-zero exit code.
 
-# ALPM
-alpm-tx = "An ALPM transaction failed."
-
 # Aura-specific Directories
 dir-mkdir = Failed to create the directory: { $dir }.
 dir-home = Unable to determine Aura's config directory.
@@ -205,8 +202,6 @@ err-json-decode = Failed to decode JSON from: { $url }
 err-json-write = Failed to write JSON to: { $file }
 err-mutex = A mutex was poisoned.
 err-none-exist = None of the specified packages exist.
-err-pool-create = Failed to create an ALPM connection pool.
-err-pool-get = Failed to get an ALPM handle from the connection pool.
 err-read-dir = Failed to read directory: { $dir }
 err-srcinfo = Failed to parse .SRCINFO: { $file }
 err-sudo = Failed to raise privileges.

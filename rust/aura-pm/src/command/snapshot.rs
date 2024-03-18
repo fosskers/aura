@@ -4,8 +4,8 @@ use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::{PathStr, NOTHING};
 use crate::{aura, green, proceed};
-use alpm::Alpm;
 use aura_core::snapshot::Snapshot;
+use aura_core::Alpm;
 use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
@@ -158,6 +158,7 @@ pub(crate) fn restore(
 
 fn restore_snapshot(alpm: &Alpm, caches: &[&Path], snapshot: Snapshot) -> Result<(), Error> {
     let installed: HashMap<&str, &str> = alpm
+        .as_ref()
         .localdb()
         .pkgs()
         .iter()

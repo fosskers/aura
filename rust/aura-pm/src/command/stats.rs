@@ -2,7 +2,7 @@
 
 use crate::error::Nested;
 use crate::localization::{self, Localised};
-use alpm::Alpm;
+use aura_core::Alpm;
 use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
@@ -90,7 +90,7 @@ fn visual_len(lang: &LanguageIdentifier, msg: &str) -> usize {
 
 /// Display the Top 10 packages with the biggest installation footprint.
 pub(crate) fn heavy_packages(alpm: &Alpm) {
-    let db = alpm.localdb();
+    let db = alpm.as_ref().localdb();
     let mut sizes: Vec<(&str, i64)> = db.pkgs().iter().map(|p| (p.name(), p.isize())).collect();
     sizes.sort_by_key(|(_, size)| *size);
     sizes.reverse();
@@ -108,7 +108,7 @@ pub(crate) fn heavy_packages(alpm: &Alpm) {
 
 /// Display the unique groups found installed on the system.
 pub(crate) fn groups(alpm: &Alpm) {
-    let db = alpm.localdb();
+    let db = alpm.as_ref().localdb();
     let mut groups = HashSet::new();
 
     for p in db.pkgs() {

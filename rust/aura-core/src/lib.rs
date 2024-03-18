@@ -11,13 +11,37 @@ pub mod git;
 pub mod log;
 pub mod snapshot;
 
+use alpm::{PackageReason, SigLevel};
+use alpm_utils::DbListExt;
 use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::fs::DirEntry;
 use std::path::Path;
+use std::sync::Arc;
 
-use alpm::{Alpm, PackageReason, SigLevel};
-use alpm_utils::DbListExt;
+/// A thread-safe(?) wrapper around a raw [`alpm::Alpm`].
+#[derive(Clone)]
+pub struct Alpm {
+    alpm: Arc<alpm::Alpm>,
+}
+
+impl Alpm {
+    /// Construct a new `Alpm` wrapper from an open connection.
+    pub fn new(alpm: alpm::Alpm) -> Self {
+        Self {
+            alpm: Arc::new(alpm),
+        }
+    }
+}
+
+impl AsRef<alpm::Alpm> for Alpm {
+    fn as_ref(&self) -> &alpm::Alpm {
+        self.alpm.as_ref()
+    }
+}
+
+unsafe impl Send for Alpm {}
+unsafe impl Sync for Alpm {}
 
 /// The simplest form a package.
 #[derive(Debug, PartialEq, Eq)]
@@ -147,8 +171,11 @@ impl<T> Apply for T {
 ///
 /// An orphan is a package that was installed as a dependency, but whose parent
 /// package is no longer installed.
-pub fn orphans<'a>(alpm: &'a Alpm) -> impl Iterator<Item = &'a alpm::Package> {
-    alpm.localdb().pkgs().into_iter().filter(|p| {
+pub fn orphans<'a, A>(alpm: &'a A) -> impl Iterator<Item = &'a alpm::Package>
+where
+    A: AsRef<alpm::Alpm>,
+{
+    alpm.as_ref().localdb().pkgs().into_iter().filter(|p| {
         p.reason() == PackageReason::Depend
             && p.required_by().is_empty()
             && p.optional_for().is_empty()
@@ -160,8 +187,11 @@ pub fn orphans<'a>(alpm: &'a Alpm) -> impl Iterator<Item = &'a alpm::Package> {
 /// standalone applications, but occasionally some packages get installed by
 /// mistake, forgotten, or mislabelled, and then just hang around on the system
 /// forever, receiving pointless updates.
-pub fn elderly<'a>(alpm: &'a Alpm) -> impl Iterator<Item = &'a alpm::Package> {
-    alpm.localdb().pkgs().into_iter().filter(|p| {
+pub fn elderly<'a, A>(alpm: &'a A) -> impl Iterator<Item = &'a alpm::Package>
+where
+    A: AsRef<alpm::Alpm>,
+{
+    alpm.as_ref().localdb().pkgs().into_iter().filter(|p| {
         p.reason() == PackageReason::Explicit
             && p.required_by().is_empty()
             && p.optional_for().is_empty()
@@ -169,28 +199,42 @@ pub fn elderly<'a>(alpm: &'a Alpm) -> impl Iterator<Item = &'a alpm::Package> {
 }
 
 /// Does the given `Path` point to a valid tarball that can can loaded by ALPM?
-pub fn is_valid_package(alpm: &Alpm, path: &Path) -> bool {
+pub fn is_valid_package<A>(alpm: A, path: &Path) -> bool
+where
+    A: AsRef<alpm::Alpm>,
+{
+    let sig = SigLevel::USE_DEFAULT;
+
+    // TODO 2024-03-18 Refactor to use `is_some_and`.
     match path.to_str() {
         None => false,
-        Some(p) => path.exists() && alpm.pkg_load(p, true, SigLevel::USE_DEFAULT).is_ok(),
+        Some(p) => path.exists() && alpm.as_ref().pkg_load(p, true, sig).is_ok(),
     }
 }
 
 /// All official packages.
-pub fn native_packages<'a>(alpm: &'a Alpm) -> impl Iterator<Item = &'a alpm::Package> {
-    let syncs = alpm.syncdbs();
+pub fn native_packages<'a, A>(alpm: &'a A) -> impl Iterator<Item = &'a alpm::Package>
+where
+    A: AsRef<alpm::Alpm>,
+{
+    let syncs = alpm.as_ref().syncdbs();
 
-    alpm.localdb()
+    alpm.as_ref()
+        .localdb()
         .pkgs()
         .into_iter()
         .filter_map(move |p| syncs.pkg(p.name()).ok())
 }
 
 /// All foreign packages as an `Iterator`.
-pub fn foreign_packages<'a>(alpm: &'a Alpm) -> impl Iterator<Item = &'a alpm::Package> {
-    let syncs = alpm.syncdbs();
+pub fn foreign_packages<'a, A>(alpm: &'a A) -> impl Iterator<Item = &'a alpm::Package>
+where
+    A: AsRef<alpm::Alpm>,
+{
+    let syncs = alpm.as_ref().syncdbs();
 
-    alpm.localdb()
+    alpm.as_ref()
+        .localdb()
         .pkgs()
         .into_iter()
         .filter(move |p| syncs.pkg(p.name()).is_err())

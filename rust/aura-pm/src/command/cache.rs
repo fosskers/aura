@@ -6,8 +6,8 @@ use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::{PathStr, NOTHING};
 use crate::{aura, green, proceed, yellow};
-use alpm::Alpm;
 use aura_core::cache::{CacheSize, PkgPath};
+use aura_core::Alpm;
 use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
@@ -192,7 +192,7 @@ pub(crate) fn info(
     caches: &[&Path],
     packages: Vec<String>,
 ) -> Result<(), Error> {
-    let db = alpm.localdb();
+    let db = alpm.as_ref().localdb();
     let mut w = BufWriter::new(std::io::stdout());
 
     let name = fl!(fll, "common-name");
@@ -338,7 +338,7 @@ pub(crate) fn refresh(
     crate::utils::sudo()?;
 
     // All installed packages that are missing a tarball in the cache.
-    let ps: Vec<alpm::Package> = {
+    let ps: Vec<&alpm::Package> = {
         let mut ps: Vec<_> = aura_core::cache::officials_missing_tarballs(alpm, caches).collect();
         ps.sort_by(|a, b| a.name().cmp(b.name()));
         ps
@@ -389,6 +389,7 @@ pub(crate) fn refresh(
 
         // Mirrors.
         let mirrors: HashMap<&str, Vec<&str>> = alpm
+            .as_ref()
             .syncdbs()
             .iter()
             .map(|db| (db.name(), db.servers().into_iter().collect()))

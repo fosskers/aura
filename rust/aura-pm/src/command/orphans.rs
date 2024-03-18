@@ -1,16 +1,17 @@
 //! All functionality involving the `-O` command.
 
 use crate::error::Nested;
+use crate::green;
 use crate::localization::Localised;
-use crate::{green, proceed, yellow};
-use alpm::{Alpm, PackageReason, TransFlag};
+use crate::utils::NOTHING;
+use alpm::PackageReason;
+use aura_core::{Alpm, Apply};
 use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use log::error;
-use std::collections::HashSet;
-use ubyte::ToByteUnit;
+use std::ops::Not;
 
 #[derive(FromVariants)]
 pub(crate) enum Error {
@@ -18,10 +19,8 @@ pub(crate) enum Error {
     SetExplicit(String, alpm::Error),
     Readline(rustyline::error::ReadlineError),
     Sudo(crate::utils::SudoError),
-    #[from_variants(skip)]
-    AlpmTx(alpm::Error),
-    Cancelled,
     NoneExist,
+    Removal(crate::pacman::Error),
 }
 
 impl Nested for Error {
@@ -30,9 +29,8 @@ impl Nested for Error {
             Error::SetExplicit(_, e) => error!("{e}"),
             Error::Readline(e) => error!("{e}"),
             Error::Sudo(e) => e.nested(),
-            Error::AlpmTx(e) => error!("{e}"),
-            Error::Cancelled => {}
             Error::NoneExist => {}
+            Error::Removal(e) => e.nested(),
         }
     }
 }
@@ -42,10 +40,9 @@ impl Localised for Error {
         match self {
             Error::Readline(_) => fl!(fll, "err-user-input"),
             Error::Sudo(e) => e.localise(fll),
-            Error::Cancelled => fl!(fll, "common-cancelled"),
             Error::NoneExist => fl!(fll, "err-none-exist"),
             Error::SetExplicit(p, _) => fl!(fll, "O-explicit-err", pkg = p.as_str()),
-            Error::AlpmTx(_) => fl!(fll, "alpm-tx"),
+            Error::Removal(e) => e.localise(fll),
         }
     }
 }
@@ -66,11 +63,12 @@ pub(crate) fn elderly(alpm: &Alpm) {
 pub(crate) fn adopt(
     alpm: &Alpm,
     fll: &FluentLanguageLoader,
+    // TODO 2024-03-18 Make this NEVec.
     packages: Vec<String>,
 ) -> Result<(), Error> {
     crate::utils::sudo()?;
 
-    let db = alpm.localdb();
+    let db = alpm.as_ref().localdb();
     let reals: Vec<_> = packages
         .into_iter()
         .filter_map(|p| db.pkg(p).ok())
@@ -81,7 +79,7 @@ pub(crate) fn adopt(
         return Err(Error::NoneExist);
     }
 
-    for mut p in reals {
+    for p in reals {
         p.set_reason(PackageReason::Explicit)
             .map_err(|e| Error::SetExplicit(p.name().to_string(), e))?;
         green!(fll, "O-adopt", pkg = p.name());
@@ -94,51 +92,16 @@ pub(crate) fn adopt(
 ///
 /// Will fail if the process does not have permission to create the lockfile,
 /// which usually lives in a root-owned directory.
-pub(crate) fn remove(alpm: &mut Alpm, fll: &FluentLanguageLoader) -> Result<(), Error> {
-    crate::utils::sudo()?;
-
-    // Check for orphans.
+pub(crate) fn remove(alpm: &Alpm, fll: &FluentLanguageLoader) -> Result<(), Error> {
     let orphans: Vec<_> = aura_core::orphans(alpm).collect();
-    if !orphans.is_empty() {
-        // Copy the name of each original orphan.
-        let names: HashSet<_> = orphans.iter().map(|p| p.name().to_string()).collect();
 
-        // Initialize the transaction.
-        let mut flag = TransFlag::RECURSE;
-        flag.insert(TransFlag::UNNEEDED);
-        alpm.trans_init(flag).map_err(Error::AlpmTx)?;
+    if orphans.is_empty().not() {
+        orphans
+            .iter()
+            .map(|p| p.name())
+            .apply(|names| crate::pacman::sudo_pacman("-Rsu", NOTHING, names))
+            .map_err(Error::Removal)?;
 
-        for p in orphans {
-            alpm.trans_remove_pkg(p).map_err(Error::AlpmTx)?;
-        }
-
-        // Advance the transaction, calculating the effects of the TransFlags.
-        alpm.trans_prepare().map_err(|(_, e)| Error::AlpmTx(e))?;
-
-        // Notify the user of the results.
-        let removal = alpm.trans_remove();
-        let longest = removal.iter().map(|p| p.name().len()).max().unwrap_or(0);
-        yellow!(fll, "O-abandon");
-        println!();
-        for p in removal {
-            let size = format!("{}", p.isize().bytes());
-            if names.contains(p.name()) {
-                print!("  {:w$} ", p.name().cyan(), w = longest);
-                println!("{:>9}", size);
-            } else {
-                println!("  {:w$} {:>9}", p.name(), size, w = longest);
-            }
-        }
-        println!("  {:-<w$}", "-".magenta(), w = longest + 10);
-        let total: i64 = removal.iter().map(|p| p.isize()).sum();
-        let size = format!("{}", total.bytes());
-        println!("  {:w$} {:>9}\n", "Total", size, w = longest);
-
-        // Proceed with the removal if the user accepts.
-        proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
-
-        alpm.trans_commit().map_err(|(_, e)| Error::AlpmTx(e))?;
-        alpm.trans_release().map_err(Error::AlpmTx)?;
         green!(fll, "common-done");
     }
 

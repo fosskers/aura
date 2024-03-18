@@ -7,8 +7,7 @@ use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::{Finished, PathStr, ResultVoid, NOTHING};
 use crate::{aura, green, proceed};
-use alpm::Alpm;
-use aura_core::Apply;
+use aura_core::{Alpm, Apply};
 use colored::{ColoredString, Colorize};
 use from_variants::FromVariants;
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
@@ -195,7 +194,7 @@ pub(crate) fn search(
 ) -> Result<(), Error> {
     debug!("Searching for: {:?}", terms);
 
-    let db = alpm.localdb();
+    let db = alpm.as_ref().localdb();
     let rep = "aur/".magenta();
 
     // Sanitize the input.
@@ -377,10 +376,10 @@ fn install_work<'a, I>(fll: &FluentLanguageLoader, env: &Env, pkgs: I) -> Result
 where
     I: IntoIterator<Item = &'a str>,
 {
-    let pool = env.alpm_pool()?;
+    let alpm = env.alpm()?;
     aura!(fll, "A-install-deps");
     let rslv = aura_core::aur::dependencies::resolve(
-        pool,
+        alpm,
         &crate::fetch::fetch_json,
         &env.aur.clones,
         pkgs,
@@ -511,7 +510,7 @@ pub(crate) fn upgrade<'a>(
         &crate::fetch::fetch_json,
     )?;
     debug!("Packages pulled: {}", from_api.len());
-    let db = alpm.localdb();
+    let db = alpm.as_ref().localdb();
     let mut to_upgrade: Vec<(aura_core::Package<'_>, aura_core::Package<'_>)> = from_api
         .into_iter()
         .filter_map(|new| db.pkg(new.name.as_str()).ok().map(|old| (old, new)))

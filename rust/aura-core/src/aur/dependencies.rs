@@ -1,13 +1,11 @@
 //! AUR package dependency solving.
 
-use crate::Apply;
-use alpm::Alpm;
+use crate::{Alpm, Apply};
 use disown::Disown;
 use log::{debug, info};
 use nonempty_collections::NEVec;
 use petgraph::graph::NodeIndex;
 use petgraph::Graph;
-use r2d2::{ManageConnection, Pool};
 use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
 use srcinfo::Srcinfo;
 use std::borrow::Borrow;
@@ -24,8 +22,6 @@ use validated::Validated;
 pub enum Error<E> {
     /// A [`Mutex`] was poisoned and couldn't be unlocked.
     PoisonedMutex,
-    /// An error pulling from the resource pool.
-    R2D2(r2d2::Error),
     /// An error parsing a `.SRCINFO` file.
     Srcinfo(PathBuf, srcinfo::Error),
     /// An error cloning or pulling a repo.
@@ -50,17 +46,10 @@ impl<E> From<crate::git::Error> for Error<E> {
     }
 }
 
-impl<E> From<r2d2::Error> for Error<E> {
-    fn from(v: r2d2::Error) -> Self {
-        Self::R2D2(v)
-    }
-}
-
 impl<E: std::fmt::Display> std::fmt::Display for Error<E> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Error::PoisonedMutex => write!(f, "Poisoned Mutex"),
-            Error::R2D2(e) => write!(f, "{}", e),
             Error::Resolutions(es) => {
                 writeln!(f, "Errors during dependency resolution:")?;
                 for e in (*es).iter() {
@@ -170,15 +159,14 @@ impl Hash for Buildable {
 }
 
 /// Determine all packages to be built and installed.
-pub fn resolve<'a, I, M, F, E>(
-    pool: Pool<M>,
+pub fn resolve<'a, I, F, E>(
+    alpm: Alpm,
     fetch: &F,
     clone_d: &Path,
     pkgs: I,
 ) -> Result<Resolution, Error<E>>
 where
     I: IntoIterator<Item = &'a str>,
-    M: ManageConnection<Connection = Alpm>,
     F: Fn(&str) -> Result<Vec<crate::faur::Package>, E> + Sync,
     E: Send,
 {
@@ -191,7 +179,7 @@ where
 
     let start = OffsetDateTime::now_utc();
     orig.par_iter()
-        .map(|pkg| resolve_one(pool.clone(), arc.clone(), fetch, clone_d, &orig, None, pkg))
+        .map(|pkg| resolve_one(alpm.clone(), arc.clone(), fetch, clone_d, &orig, None, pkg))
         .collect::<Validated<(), Error<E>>>()
         .ok()
         .map_err(|es| Error::Resolutions(Box::new(es)))?;
@@ -208,8 +196,8 @@ where
     Ok(res)
 }
 
-fn resolve_one<M, F, E>(
-    pool: Pool<M>,
+fn resolve_one<F, E>(
+    alpm: Alpm,
     mutx: Arc<Mutex<Resolution>>,
     fetch: &F,
     clone_d: &Path,
@@ -218,7 +206,6 @@ fn resolve_one<M, F, E>(
     pkg_raw: &str,
 ) -> Result<(), Error<E>>
 where
-    M: ManageConnection<Connection = Alpm>,
     F: Fn(&str) -> Result<Vec<crate::faur::Package>, E> + Sync,
     E: Send,
 {
@@ -237,14 +224,7 @@ where
         // Checks if the current package is installed or otherwise satisfied by
         // some package, and then immediately drops the ALPM handle.
         let satisfied = {
-            let state = pool.state();
-            debug!(
-                "Trying to get ALPM handle ({} idle connections)",
-                state.idle_connections
-            );
-            let alpm = pool.get()?;
-            debug!("Got a handle.");
-            let db = alpm.localdb();
+            let db = alpm.as_ref().localdb();
             db.pkg(pr).is_ok() || db.pkgs().find_satisfier(pr).is_some()
         };
 
@@ -256,9 +236,7 @@ where
                 .satisfied
                 .insert(pkg);
         } else {
-            let alpm = pool.get()?;
-
-            match alpm.syncdbs().find_satisfier(pr) {
+            match alpm.as_ref().syncdbs().find_satisfier(pr) {
                 Some(official) => {
                     debug!("{} is an official package.", pr);
 
@@ -276,28 +254,16 @@ where
                         .map(|d| d.name().to_string())
                         .collect();
 
-                    // FIXME Fri Feb 18 15:07:23 2022
-                    //
-                    // Manual drops are a signal of bad design. For the moment
-                    // these are necessary to avoid running out of ALPM handles
-                    // when we recurse.
-                    drop(alpm);
-
                     deps.into_par_iter()
                         .map(|d| {
                             let p = Some(prnt.as_str());
-                            resolve_one(pool.clone(), mutx.clone(), fetch, clone_d, orig, p, &d)
+                            resolve_one(alpm.clone(), mutx.clone(), fetch, clone_d, orig, p, &d)
                         })
                         .collect::<Validated<(), Error<E>>>()
                         .ok()
                         .map_err(|es| Error::Resolutions(Box::new(es)))?;
                 }
                 None => {
-                    // FIXME Fri Feb 18 15:13:31 2022
-                    //
-                    // Same here as above.
-                    drop(alpm);
-
                     debug!("{} is an AUR package.", pr);
                     let path = pull_or_clone(fetch, clone_d, parent, &pkg)?;
                     debug!("Parsing .SRCINFO for {}", pkg);
@@ -341,7 +307,7 @@ where
                         .into_par_iter()
                         .map(|p| {
                             let prnt = Some(parent.as_str());
-                            resolve_one(pool.clone(), mutx.clone(), fetch, clone_d, orig, prnt, &p)
+                            resolve_one(alpm.clone(), mutx.clone(), fetch, clone_d, orig, prnt, &p)
                         })
                         .collect::<Validated<(), Error<E>>>()
                         .ok()

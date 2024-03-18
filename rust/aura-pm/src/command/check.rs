@@ -5,13 +5,11 @@ use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::PathStr;
 use crate::{aura, executable, green};
-use alpm::Alpm;
+use aura_core::Alpm;
 use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
-use r2d2::Pool;
-use r2d2_alpm::AlpmManager;
 use rayon::prelude::*;
 use std::collections::HashSet;
 use std::ops::Not;
@@ -50,7 +48,6 @@ impl Localised for Error {
 pub(crate) fn check(fll: &FluentLanguageLoader, env: &Env) -> Result<(), Error> {
     let caches = env.caches();
     let alpm = env.alpm()?;
-    let pool = env.alpm_pool()?;
 
     aura!(fll, "check-start");
     environment(fll);
@@ -58,7 +55,7 @@ pub(crate) fn check(fll: &FluentLanguageLoader, env: &Env) -> Result<(), Error> 
     pacman_config(fll, &env.pacman, &env.aur);
     makepkg_config(fll);
     snapshots(fll, &env.backups.snapshots, &caches);
-    cache(fll, &alpm, pool, &caches);
+    cache(fll, &alpm, &caches);
     green!(fll, "common-done");
 
     Ok(())
@@ -205,12 +202,12 @@ fn usable_snapshots(fll: &FluentLanguageLoader, s_path: &Path, t_path: &[&Path])
     }
 }
 
-fn cache(fll: &FluentLanguageLoader, alpm: &Alpm, pool: Pool<AlpmManager>, caches: &[&Path]) {
+fn cache(fll: &FluentLanguageLoader, alpm: &Alpm, caches: &[&Path]) {
     aura!(fll, "check-cache");
     caches_exist(fll, caches);
     official_packages_have_tarballs(fll, alpm, caches);
     foreign_packages_have_tarballs(fll, alpm, caches);
-    valid_tarballs(fll, pool, caches);
+    valid_tarballs(fll, alpm, caches);
 }
 
 fn caches_exist(fll: &FluentLanguageLoader, caches: &[&Path]) {
@@ -233,14 +230,10 @@ fn caches_exist(fll: &FluentLanguageLoader, caches: &[&Path]) {
 }
 
 /// Is every tarball in the cache valid and loadable by ALPM?
-fn valid_tarballs(fll: &FluentLanguageLoader, pool: Pool<AlpmManager>, caches: &[&Path]) {
+fn valid_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, caches: &[&Path]) {
     let (goods, bads): (Vec<_>, Vec<_>) = aura_core::cache::package_paths(caches)
         .par_bridge()
-        .partition(|pp| {
-            pool.get()
-                .map(|alpm| aura_core::is_valid_package(&alpm, pp.as_path()))
-                .unwrap_or(false)
-        });
+        .partition(|pp| aura_core::is_valid_package(&alpm, pp.as_path()));
     let good = bads.is_empty();
     let symbol = if good { GOOD.green() } else { BAD.red() };
     println!(

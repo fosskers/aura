@@ -1,7 +1,6 @@
 //! Cache manipulation internals.
 
-use crate::Package;
-use alpm::Alpm;
+use crate::{Alpm, Package};
 use std::collections::{HashMap, HashSet};
 use std::ffi::OsString;
 use std::fs::Metadata;
@@ -228,7 +227,7 @@ pub fn missing_tarballs<'a>(
 ) -> impl Iterator<Item = &'a alpm::Package> {
     let groups: HashMap<String, HashSet<String>> = all_versions(caches);
 
-    alpm.localdb().pkgs().into_iter().filter(move |p| {
+    alpm.as_ref().localdb().pkgs().into_iter().filter(move |p| {
         let pv = p.version().as_str();
         groups
             .get(p.name())

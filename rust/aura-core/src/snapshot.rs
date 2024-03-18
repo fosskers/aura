@@ -1,12 +1,13 @@
 //! Snapshot manipulation internals.
 
-use alpm::Alpm;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use time::OffsetDateTime;
+
+use crate::Alpm;
 
 /// All packages installed at some specific [`DateTime`]. Any "pinned" snapshot
 /// should never be considered for deletion.
@@ -26,6 +27,7 @@ impl Snapshot {
     pub fn from_alpm(alpm: &Alpm) -> Result<Snapshot, time::error::IndeterminateOffset> {
         let time = OffsetDateTime::now_local()?;
         let packages = alpm
+            .as_ref()
             .localdb()
             .pkgs()
             .iter()
@@ -43,7 +45,8 @@ impl Snapshot {
 
     /// Does this `Snapshot` match what is currently installed?
     pub fn current(&self, alpm: &Alpm) -> bool {
-        alpm.localdb()
+        alpm.as_ref()
+            .localdb()
             .pkgs()
             .iter()
             .all(|p| self.packages.contains_key(p.name()))

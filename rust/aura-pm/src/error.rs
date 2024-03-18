@@ -102,7 +102,6 @@ where
     fn nested(&self) {
         match self {
             deps::Error::PoisonedMutex => {}
-            deps::Error::R2D2(e) => error!("{e}"),
             deps::Error::Srcinfo(_, e) => error!("{e}"),
             deps::Error::Git(e) => e.nested(),
             deps::Error::Resolutions(es) => es.iter().into_iter().for_each(|e| e.nested()),
