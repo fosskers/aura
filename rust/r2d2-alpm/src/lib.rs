@@ -28,10 +28,40 @@
 
 #![warn(missing_docs)]
 
-use alpm::Alpm;
 use pacmanconf::Config;
 use r2d2::ManageConnection;
 use std::ffi::OsStr;
+
+/// A thread-safe wrapper around a raw [`alpm::Alpm`].
+pub struct Alpm {
+    /// A wrapper around an inner database handle.
+    ///
+    /// At the moment, this handle type isn't `Send`, so we have to trick the
+    /// compiler into allowing this, such that we can implement
+    /// [`ManageConnection`] for it.
+    pub alpm: alpm::Alpm,
+}
+
+impl Alpm {
+    /// Attempt a database connection via some configuration.
+    pub fn from_config(config: &Config) -> Result<Alpm, alpm::Error> {
+        alpm_utils::alpm_with_conf(&config).map(Alpm::from)
+    }
+}
+
+impl From<alpm::Alpm> for Alpm {
+    fn from(alpm: alpm::Alpm) -> Self {
+        Alpm { alpm }
+    }
+}
+
+impl AsRef<alpm::Alpm> for Alpm {
+    fn as_ref(&self) -> &alpm::Alpm {
+        &self.alpm
+    }
+}
+
+unsafe impl Send for Alpm {}
 
 /// Manage multiple [`Alpm`] handles.
 pub struct AlpmManager {
@@ -68,7 +98,7 @@ impl ManageConnection for AlpmManager {
     type Error = alpm::Error;
 
     fn connect(&self) -> Result<Self::Connection, Self::Error> {
-        alpm_utils::alpm_with_conf(&self.config)
+        alpm_utils::alpm_with_conf(&self.config).map(Alpm::from)
     }
 
     fn is_valid(&self, _: &mut Self::Connection) -> Result<(), Self::Error> {

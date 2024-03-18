@@ -1,6 +1,8 @@
 //! Cache manipulation internals.
 
-use crate::{Alpm, Package};
+use r2d2_alpm::Alpm;
+
+use crate::Package;
 use std::collections::{HashMap, HashSet};
 use std::ffi::OsString;
 use std::fs::Metadata;

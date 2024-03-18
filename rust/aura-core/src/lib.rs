@@ -17,31 +17,6 @@ use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::fs::DirEntry;
 use std::path::Path;
-use std::sync::Arc;
-
-/// A thread-safe(?) wrapper around a raw [`alpm::Alpm`].
-#[derive(Clone)]
-pub struct Alpm {
-    alpm: Arc<alpm::Alpm>,
-}
-
-impl Alpm {
-    /// Construct a new `Alpm` wrapper from an open connection.
-    pub fn new(alpm: alpm::Alpm) -> Self {
-        Self {
-            alpm: Arc::new(alpm),
-        }
-    }
-}
-
-impl AsRef<alpm::Alpm> for Alpm {
-    fn as_ref(&self) -> &alpm::Alpm {
-        self.alpm.as_ref()
-    }
-}
-
-unsafe impl Send for Alpm {}
-unsafe impl Sync for Alpm {}
 
 /// The simplest form a package.
 #[derive(Debug, PartialEq, Eq)]

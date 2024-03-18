@@ -15,6 +15,7 @@ path = "src/main.rs"
 
 [dependencies]
 aura-core = { version = "0.2", path = "../aura-core" }
+r2d2-alpm = { version = "0.2", path = "../r2d2-alpm" }
 
 alpm = "3.0"
 alpm-utils = "3.0"
@@ -30,6 +31,7 @@ log = "0.4"
 nonempty-collections = "0.1.4"
 num_cpus = "1.16"
 pacmanconf = "2.0"
+r2d2 = "0.8"
 rayon = "1.8"
 rust-embed = "8.0"
 rustyline = "12"

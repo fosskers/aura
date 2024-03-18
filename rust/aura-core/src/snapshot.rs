@@ -1,13 +1,12 @@
 //! Snapshot manipulation internals.
 
+use r2d2_alpm::Alpm;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use time::OffsetDateTime;
-
-use crate::Alpm;
 
 /// All packages installed at some specific [`DateTime`]. Any "pinned" snapshot
 /// should never be considered for deletion.

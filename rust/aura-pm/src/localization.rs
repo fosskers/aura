@@ -75,6 +75,7 @@ where
     fn localise(&self, fll: &FluentLanguageLoader) -> String {
         match self {
             deps::Error::PoisonedMutex => fl!(fll, "err-mutex"),
+            deps::Error::R2D2(_) => fl!(fll, "err-pool-get"),
             deps::Error::Srcinfo(p, _) => fl!(fll, "err-srcinfo", file = p.utf8()),
             deps::Error::Git(e) => e.localise(fll),
             deps::Error::Resolutions(es) => {

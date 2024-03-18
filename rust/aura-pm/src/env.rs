@@ -3,10 +3,11 @@
 use crate::dirs;
 use crate::error::Nested;
 use crate::localization::Localised;
-use aura_core::Alpm;
 use from_variants::FromVariants;
 use i18n_embed_fl::fl;
 use log::error;
+use r2d2::Pool;
+use r2d2_alpm::{Alpm, AlpmManager};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
@@ -18,6 +19,7 @@ pub(crate) enum Error {
     Dirs(crate::dirs::Error),
     PConf(pacmanconf::Error),
     Alpm(alpm::Error),
+    R2d2(r2d2::Error),
     MissingEditor,
 }
 
@@ -28,6 +30,7 @@ impl Nested for Error {
             Error::PConf(e) => error!("{e}"),
             Error::MissingEditor => {}
             Error::Alpm(e) => error!("{e}"),
+            Error::R2d2(e) => error!("{e}"),
         }
     }
 }
@@ -39,6 +42,7 @@ impl Localised for Error {
             Error::PConf(_) => fl!(fll, "env-pconf"),
             Error::MissingEditor => fl!(fll, "env-missing-editor"),
             Error::Alpm(_) => fl!(fll, "err-alpm"),
+            Error::R2d2(_) => fl!(fll, "err-pool-create"),
         }
     }
 }
@@ -105,11 +109,21 @@ impl Env {
         Ok(e)
     }
 
+    /// Open a series of connections to ALPM handles. The quantity matches the
+    /// number of CPUs available on the machine.
+    pub(crate) fn alpm_pool(&self) -> Result<Pool<AlpmManager>, Error> {
+        // FIXME Thu Jun  9 13:53:49 2022
+        //
+        // Unfortunate clone here.
+        let mngr = AlpmManager::new(self.pacman.clone());
+        let pool = Pool::builder().max_size(self.general.cpus).build(mngr)?;
+
+        Ok(pool)
+    }
+
     /// Open a new connection to `alpm` instance.
     pub(crate) fn alpm(&self) -> Result<Alpm, Error> {
-        alpm_utils::alpm_with_conf(&self.pacman)
-            .map_err(Error::Alpm)
-            .map(Alpm::new)
+        Alpm::from_config(&self.pacman).map_err(Error::Alpm)
     }
 
     /// All tarball caches across the various config sources.

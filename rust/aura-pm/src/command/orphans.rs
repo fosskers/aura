@@ -5,12 +5,13 @@ use crate::green;
 use crate::localization::Localised;
 use crate::utils::NOTHING;
 use alpm::PackageReason;
-use aura_core::{Alpm, Apply};
+use aura_core::Apply;
 use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use log::error;
+use r2d2_alpm::Alpm;
 use std::ops::Not;
 
 #[derive(FromVariants)]

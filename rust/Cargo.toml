@@ -5,7 +5,7 @@ members = [
 # Core libraries
 "aura-core",
 # Ecosystem libraries
-# "r2d2-alpm",
+"r2d2-alpm",
 # Documentation Generation
 # "doc-gen"
 ]
