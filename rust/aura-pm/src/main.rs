@@ -142,7 +142,7 @@ fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
         SubCmd::Log(l) if !l.info.is_empty() => llog::info(fll, env.alpm_log(), l.info)?,
         SubCmd::Log(l) => llog::view(env.alpm_log(), l.before, l.after)?,
         // --- Orphan Packages --- //
-        SubCmd::Orphans(o) if o.abandon => orphans::remove(&mut env.alpm()?, fll)?,
+        SubCmd::Orphans(o) if o.abandon => orphans::remove(&env.alpm()?, fll)?,
         SubCmd::Orphans(o) if !o.adopt.is_empty() => orphans::adopt(&env.alpm()?, fll, o.adopt)?,
         SubCmd::Orphans(o) if o.elderly => orphans::elderly(&env.alpm()?),
         SubCmd::Orphans(_) => orphans::list(&env.alpm()?),

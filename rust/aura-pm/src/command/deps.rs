@@ -11,7 +11,7 @@ pub(crate) fn graph(alpm: &Alpm, limit: Option<u8>, optional: bool, packages: Ve
     let foreigns: Vec<_> = aura_core::foreign_packages(alpm)
         .map(|p| p.name())
         .collect();
-    let graph = deps::PkgGraph::by_deps(&db, limit, optional, &foreigns, &pkgs);
+    let graph = deps::PkgGraph::by_deps(db, limit, optional, &foreigns, &pkgs);
 
     println!("{}", graph);
 }
@@ -24,7 +24,7 @@ pub(crate) fn reverse(alpm: &Alpm, limit: Option<u8>, optional: bool, packages: 
     let foreigns: Vec<_> = aura_core::foreign_packages(alpm)
         .map(|p| p.name())
         .collect();
-    let graph = deps::PkgGraph::by_parents(&db, limit, optional, &foreigns, &pkgs);
+    let graph = deps::PkgGraph::by_parents(db, limit, optional, &foreigns, &pkgs);
 
     println!("{}", graph);
 }

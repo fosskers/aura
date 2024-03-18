@@ -45,7 +45,7 @@ pub struct Alpm {
 impl Alpm {
     /// Attempt a database connection via some configuration.
     pub fn from_config(config: &Config) -> Result<Alpm, alpm::Error> {
-        alpm_utils::alpm_with_conf(&config).map(Alpm::from)
+        alpm_utils::alpm_with_conf(config).map(Alpm::from)
     }
 }
 

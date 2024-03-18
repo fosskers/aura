@@ -146,7 +146,7 @@ impl<T> Apply for T {
 ///
 /// An orphan is a package that was installed as a dependency, but whose parent
 /// package is no longer installed.
-pub fn orphans<'a, A>(alpm: &'a A) -> impl Iterator<Item = &'a alpm::Package>
+pub fn orphans<A>(alpm: &A) -> impl Iterator<Item = &alpm::Package>
 where
     A: AsRef<alpm::Alpm>,
 {
@@ -162,7 +162,7 @@ where
 /// standalone applications, but occasionally some packages get installed by
 /// mistake, forgotten, or mislabelled, and then just hang around on the system
 /// forever, receiving pointless updates.
-pub fn elderly<'a, A>(alpm: &'a A) -> impl Iterator<Item = &'a alpm::Package>
+pub fn elderly<A>(alpm: &A) -> impl Iterator<Item = &alpm::Package>
 where
     A: AsRef<alpm::Alpm>,
 {
@@ -188,7 +188,7 @@ where
 }
 
 /// All official packages.
-pub fn native_packages<'a, A>(alpm: &'a A) -> impl Iterator<Item = &'a alpm::Package>
+pub fn native_packages<A>(alpm: &A) -> impl Iterator<Item = &alpm::Package>
 where
     A: AsRef<alpm::Alpm>,
 {
@@ -202,7 +202,7 @@ where
 }
 
 /// All foreign packages as an `Iterator`.
-pub fn foreign_packages<'a, A>(alpm: &'a A) -> impl Iterator<Item = &'a alpm::Package>
+pub fn foreign_packages<A>(alpm: &A) -> impl Iterator<Item = &alpm::Package>
 where
     A: AsRef<alpm::Alpm>,
 {
