@@ -964,6 +964,10 @@ pub struct Aur {
     #[clap(long, display_order = 4)]
     pub noconfirm: bool,
 
+    /// Do not consider checkdeps when building packages.
+    #[clap(long, display_order = 4)]
+    pub nocheck: bool,
+
     /// Packages to install.
     pub packages: Vec<String>,
 }

@@ -211,6 +211,8 @@ struct RawAur {
     delmakedeps: bool,
     #[serde(default)]
     noconfirm: bool,
+    #[serde(default)]
+    nocheck: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -230,6 +232,9 @@ pub(crate) struct Aur {
     pub(crate) delmakedeps: bool,
     /// Don't ask the user for confirmation.
     pub(crate) noconfirm: bool,
+    /// Don't consider "checkdeps" during dependency resolution and when calling
+    /// `makepkg`.
+    pub(crate) nocheck: bool,
 }
 
 impl Aur {
@@ -246,6 +251,7 @@ impl Aur {
             diff: false,
             delmakedeps: false,
             noconfirm: false,
+            nocheck: false,
         };
 
         Ok(a)
@@ -278,6 +284,10 @@ impl Aur {
             self.noconfirm = true;
         }
 
+        if flags.nocheck {
+            self.nocheck = true;
+        }
+
         // Harmless clone, as we don't expect many "ignores" to be passed on the
         // command line.
         self.ignores.extend(flags.ignore.clone());
@@ -304,6 +314,7 @@ impl TryFrom<RawAur> for Aur {
             diff: raw.diff,
             delmakedeps: raw.delmakedeps,
             noconfirm: raw.noconfirm,
+            nocheck: raw.nocheck,
         };
 
         Ok(a)
