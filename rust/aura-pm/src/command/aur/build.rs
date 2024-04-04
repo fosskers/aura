@@ -169,7 +169,7 @@ fn build_one(
     }
 
     let tarballs = {
-        let tarballs = makepkg(&build)?;
+        let tarballs = makepkg(&build, aur.nocheck)?;
 
         for tb in tarballs.iter() {
             debug!("Built: {}", tb.display());
@@ -262,10 +262,15 @@ fn edit(editor: &str, file: PathBuf) -> Result<(), Error> {
 
 /// Build each package specified by the `PKGBUILD` and yield a list of the built
 /// tarballs.
-fn makepkg(within: &Path) -> Result<Vec<PathBuf>, Error> {
-    Command::new("makepkg")
-        .arg("-f") // TODO Remove or rethink
-        .current_dir(within)
+fn makepkg(within: &Path, nocheck: bool) -> Result<Vec<PathBuf>, Error> {
+    let mut cmd = Command::new("makepkg");
+    cmd.arg("-f"); // TODO Remove or rethink
+
+    if nocheck {
+        cmd.arg("--nocheck");
+    }
+
+    cmd.current_dir(within)
         .status()
         // FIXME Tue Jun 21 14:00:15 2022
         //
