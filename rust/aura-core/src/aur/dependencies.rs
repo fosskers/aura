@@ -174,6 +174,7 @@ pub fn resolve<'a, I, M, F, E>(
     pool: Pool<M>,
     fetch: &F,
     clone_d: &Path,
+    nocheck: bool,
     pkgs: I,
 ) -> Result<Resolution, Error<E>>
 where
@@ -191,7 +192,10 @@ where
 
     let start = OffsetDateTime::now_utc();
     orig.par_iter()
-        .map(|pkg| resolve_one(pool.clone(), arc.clone(), fetch, clone_d, &orig, None, pkg))
+        .map(|pkg| {
+            let pool = pool.clone();
+            resolve_one(pool, arc.clone(), fetch, clone_d, &orig, None, pkg, nocheck)
+        })
         .collect::<Validated<(), Error<E>>>()
         .ok()
         .map_err(|es| Error::Resolutions(Box::new(es)))?;
@@ -216,6 +220,7 @@ fn resolve_one<M, F, E>(
     orig: &HashSet<&str>,
     parent: Option<&str>,
     pkg_raw: &str,
+    nocheck: bool,
 ) -> Result<(), Error<E>>
 where
     M: ManageConnection<Connection = Alpm>,
@@ -270,6 +275,8 @@ where
                         .insert(Official(prnt.clone()))
                         .disown();
 
+                    // Since this is an official, prebuilt package, we don't
+                    // need to consider its makedeps or checkdeps.
                     let deps: Vec<_> = official
                         .depends()
                         .into_iter()
@@ -286,7 +293,8 @@ where
                     deps.into_par_iter()
                         .map(|d| {
                             let p = Some(prnt.as_str());
-                            resolve_one(pool.clone(), mutx.clone(), fetch, clone_d, orig, p, &d)
+                            let pool = pool.clone();
+                            resolve_one(pool, mutx.clone(), fetch, clone_d, orig, p, &d, nocheck)
                         })
                         .collect::<Validated<(), Error<E>>>()
                         .ok()
@@ -319,6 +327,7 @@ where
                             prov.push(p.pkgname);
                             p.depends
                         }))
+                        .chain(respect_checkdeps(nocheck, info.base.checkdepends))
                         .flat_map(|av| av.vec)
                         .collect();
 
@@ -341,7 +350,8 @@ where
                         .into_par_iter()
                         .map(|p| {
                             let prnt = Some(parent.as_str());
-                            resolve_one(pool.clone(), mutx.clone(), fetch, clone_d, orig, prnt, &p)
+                            let pool = pool.clone();
+                            resolve_one(pool, mutx.clone(), fetch, clone_d, orig, prnt, &p, nocheck)
                         })
                         .collect::<Validated<(), Error<E>>>()
                         .ok()
@@ -352,6 +362,15 @@ where
     }
 
     Ok(())
+}
+
+/// Consider "checkdeps" as well, unless specifically instructed not to.
+fn respect_checkdeps<T>(nocheck: bool, deps: Vec<T>) -> Vec<T> {
+    if nocheck {
+        Vec::new()
+    } else {
+        deps
+    }
 }
 
 // FIXME Mon Feb  7 23:07:56 2022

@@ -383,6 +383,7 @@ where
         pool,
         &crate::fetch::fetch_json,
         &env.aur.clones,
+        env.aur.nocheck,
         pkgs,
     )?;
 
