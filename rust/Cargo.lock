@@ -87,7 +87,7 @@ checksum = "7b3d0060af21e8d11a926981cc00c6c1541aa91dd64b9f881985c3da1094425f"
 
 [[package]]
 name = "aura-core"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "alpm",
  "alpm-utils",
