@@ -1,5 +1,6 @@
 //! Sugar for interacting with Pacman.
 
+use crate::env::Env;
 use crate::error::Nested;
 use crate::localization::Localised;
 use i18n_embed_fl::fl;
@@ -52,14 +53,19 @@ where
 }
 
 /// Make an elevated shell call to `pacman`.
-pub(crate) fn sudo_pacman<I, J, S, T>(command: &str, flags: I, args: J) -> Result<(), Error>
+pub(crate) fn sudo_pacman<I, J, S, T>(
+    env: &Env,
+    command: &str,
+    flags: I,
+    args: J,
+) -> Result<(), Error>
 where
     I: IntoIterator<Item = S>,
     J: IntoIterator<Item = T>,
     S: AsRef<OsStr>,
     T: AsRef<OsStr>,
 {
-    Command::new("sudo")
+    Command::new(env.sudo())
         .arg("pacman")
         .arg(command)
         .args(flags)
@@ -72,12 +78,12 @@ where
 }
 
 /// Make an elevated shell call to `pacman`, passing all arguments to pacman as-is.
-pub(crate) fn sudo_pacman_batch<I, S>(args: I) -> Result<(), Error>
+pub(crate) fn sudo_pacman_batch<I, S>(env: &Env, args: I) -> Result<(), Error>
 where
     I: IntoIterator<Item = S>,
     S: AsRef<OsStr>,
 {
-    Command::new("sudo")
+    Command::new(env.sudo())
         .arg("pacman")
         .args(args)
         .status()
@@ -88,23 +94,31 @@ where
 }
 
 /// Call `sudo pacman -U`.
-pub(crate) fn pacman_install_from_tarball<I, J, S, T>(flags: I, args: J) -> Result<(), Error>
+pub(crate) fn pacman_install_from_tarball<I, J, S, T>(
+    env: &Env,
+    flags: I,
+    args: J,
+) -> Result<(), Error>
 where
     I: IntoIterator<Item = S>,
     J: IntoIterator<Item = T>,
     S: AsRef<OsStr>,
     T: AsRef<OsStr>,
 {
-    sudo_pacman("-U", flags, args).map_err(|_| Error::InstallFromTarball)
+    sudo_pacman(env, "-U", flags, args).map_err(|_| Error::InstallFromTarball)
 }
 
 /// Call `sudo pacman -S`.
-pub(crate) fn pacman_install_from_repos<I, J, S, T>(flags: I, args: J) -> Result<(), Error>
+pub(crate) fn pacman_install_from_repos<I, J, S, T>(
+    env: &Env,
+    flags: I,
+    args: J,
+) -> Result<(), Error>
 where
     I: IntoIterator<Item = S>,
     J: IntoIterator<Item = T>,
     S: AsRef<OsStr>,
     T: AsRef<OsStr>,
 {
-    sudo_pacman("-S", flags, args).map_err(|_| Error::InstallFromRepos)
+    sudo_pacman(env, "-S", flags, args).map_err(|_| Error::InstallFromRepos)
 }

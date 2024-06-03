@@ -46,6 +46,7 @@ use crate::localization::Localised;
 use aura_pm::flags::{Args, Cache, SubCmd, AURA_GLOBALS};
 use clap::Parser;
 use colored::Colorize;
+use env::Env;
 use i18n_embed::fluent::FluentLanguageLoader;
 use log::debug;
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
@@ -95,13 +96,13 @@ fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
 
     match args.subcmd {
         // --- Pacman Commands --- //
-        SubCmd::Database(d) => pacman(d.needs_sudo())?,
-        SubCmd::Files(f) => pacman(f.needs_sudo())?,
-        SubCmd::Query(_) => pacman(false)?,
-        SubCmd::Remove(r) => pacman(r.needs_sudo())?,
-        SubCmd::Sync(s) => pacman(s.needs_sudo())?,
-        SubCmd::DepTest(_) => pacman(false)?,
-        SubCmd::Upgrade(u) => pacman(u.needs_sudo())?,
+        SubCmd::Database(d) => pacman(&env, d.needs_sudo())?,
+        SubCmd::Files(f) => pacman(&env, f.needs_sudo())?,
+        SubCmd::Query(_) => pacman(&env, false)?,
+        SubCmd::Remove(r) => pacman(&env, r.needs_sudo())?,
+        SubCmd::Sync(s) => pacman(&env, s.needs_sudo())?,
+        SubCmd::DepTest(_) => pacman(&env, false)?,
+        SubCmd::Upgrade(u) => pacman(&env, u.needs_sudo())?,
         // --- AUR Packages --- //
         SubCmd::Aur(a) if a.info.is_empty().not() => aur::info(fll, &a.info)?,
         SubCmd::Aur(a) if a.search.is_empty().not() => {
@@ -120,9 +121,7 @@ fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
             snapshot::clean(fll, &env.caches(), &env.backups.snapshots)?
         }
         SubCmd::Backup(b) if b.list => snapshot::list(&env.backups.snapshots)?,
-        SubCmd::Backup(b) if b.restore => {
-            snapshot::restore(fll, &env.alpm()?, &env.caches(), &env.backups.snapshots)?
-        }
+        SubCmd::Backup(b) if b.restore => snapshot::restore(&env, fll, &env.alpm()?)?,
         SubCmd::Backup(_) => snapshot::save(fll, &env.alpm()?, &env.backups.snapshots)?,
         // --- Cache Management --- //
         SubCmd::Cache(c) if !c.info.is_empty() => {
@@ -136,13 +135,13 @@ fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
         SubCmd::Cache(c) if c.list => cache::list(&env.caches())?,
         SubCmd::Cache(c) if c.refresh => cache::refresh(&env, fll, &env.alpm()?)?,
         SubCmd::Cache(c) if c.missing => cache::missing(&env.alpm()?, &env.caches()),
-        SubCmd::Cache(c) => cache::downgrade(fll, &env.caches(), c.packages)?,
+        SubCmd::Cache(c) => cache::downgrade(&env, fll, c.packages)?,
         // --- Logs --- //
         SubCmd::Log(l) if l.search.is_some() => llog::search(env.alpm_log(), l.search.unwrap())?,
         SubCmd::Log(l) if !l.info.is_empty() => llog::info(fll, env.alpm_log(), l.info)?,
         SubCmd::Log(l) => llog::view(env.alpm_log(), l.before, l.after)?,
         // --- Orphan Packages --- //
-        SubCmd::Orphans(o) if o.abandon => orphans::remove(&env.alpm()?, fll)?,
+        SubCmd::Orphans(o) if o.abandon => orphans::remove(&env, &env.alpm()?, fll)?,
         SubCmd::Orphans(o) if !o.adopt.is_empty() => {
             orphans::adopt(&env, &env.alpm()?, fll, o.adopt)?
         }
@@ -181,7 +180,7 @@ fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
 }
 
 /// Run a Pacman command.
-fn pacman(sudo: bool) -> Result<(), crate::pacman::Error> {
+fn pacman(env: &Env, sudo: bool) -> Result<(), crate::pacman::Error> {
     let mut raws: Vec<String> = std::env::args()
         .skip(1)
         .filter(|a| !(AURA_GLOBALS.contains(&a.as_str()) || a.starts_with("--log-level=")))
@@ -199,7 +198,7 @@ fn pacman(sudo: bool) -> Result<(), crate::pacman::Error> {
 
     ::log::debug!("Passing to Pacman: {:?}", raws);
     if sudo {
-        pacman::sudo_pacman_batch(raws)
+        pacman::sudo_pacman_batch(env, raws)
     } else {
         pacman::pacman(raws)
     }

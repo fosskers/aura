@@ -364,7 +364,7 @@ where
         let after: HashSet<_> = aura_core::orphans(&alpm).map(|p| p.name()).collect();
         let diff: Vec<_> = after.difference(&before).collect();
         if diff.is_empty().not() {
-            crate::pacman::sudo_pacman("-Rsu", NOTHING, diff)?;
+            crate::pacman::sudo_pacman(env, "-Rsu", NOTHING, diff)?;
         }
     } else {
         install_work(fll, env, pkgs)?;
@@ -422,6 +422,7 @@ where
     // --- Install repo dependencies --- //
     if to_install.is_empty().not() {
         crate::pacman::pacman_install_from_repos(
+            env,
             ["--asdeps", "--noconfirm"],
             to_install.iter().map(|o| o.as_ref()),
         )?;
@@ -443,7 +444,7 @@ where
             // needs to be confirmed, though.
             let flags = (!done).then(|| ["--asdeps"].as_slice()).unwrap_or_default();
             let tarballs = builts.iter().flat_map(|b| &b.tarballs);
-            crate::pacman::pacman_install_from_tarball(flags, tarballs)?;
+            crate::pacman::pacman_install_from_tarball(env, flags, tarballs)?;
 
             builts
                 .into_iter()

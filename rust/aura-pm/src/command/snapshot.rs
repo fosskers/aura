@@ -1,5 +1,6 @@
 //! All functionality involving the `-B` command.
 
+use crate::env::Env;
 use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::{PathStr, NOTHING};
@@ -123,13 +124,10 @@ pub(crate) fn list(snapshots: &Path) -> Result<(), Error> {
     Ok(())
 }
 
-pub(crate) fn restore(
-    fll: &FluentLanguageLoader,
-    alpm: &Alpm,
-    caches: &[&Path],
-    snapshots: &Path,
-) -> Result<(), Error> {
-    let vers = aura_core::cache::all_versions(caches);
+pub(crate) fn restore(env: &Env, fll: &FluentLanguageLoader, alpm: &Alpm) -> Result<(), Error> {
+    let caches = env.caches();
+    let snapshots = &env.backups.snapshots;
+    let vers = aura_core::cache::all_versions(&caches);
 
     let mut shots: Vec<_> = aura_core::snapshot::snapshots(snapshots)
         .filter(|ss| ss.usable(&vers))
@@ -150,13 +148,18 @@ pub(crate) fn restore(
     }
 
     let index = crate::utils::select(">>> ", shots.len() - 1)?;
-    restore_snapshot(alpm, caches, shots.remove(index))?;
+    restore_snapshot(env, alpm, &caches, shots.remove(index))?;
 
     green!(fll, "common-done");
     Ok(())
 }
 
-fn restore_snapshot(alpm: &Alpm, caches: &[&Path], snapshot: Snapshot) -> Result<(), Error> {
+fn restore_snapshot(
+    env: &Env,
+    alpm: &Alpm,
+    caches: &[&Path],
+    snapshot: Snapshot,
+) -> Result<(), Error> {
     let installed: HashMap<&str, &str> = alpm
         .as_ref()
         .localdb()
@@ -179,12 +182,12 @@ fn restore_snapshot(alpm: &Alpm, caches: &[&Path], snapshot: Snapshot) -> Result
             })
             .map(|pp| pp.into_pathbuf().into_os_string());
 
-        crate::pacman::sudo_pacman("-U", NOTHING, tarballs)?;
+        crate::pacman::sudo_pacman(env, "-U", NOTHING, tarballs)?;
     }
 
     // Remove packages that weren't installed within the chosen snapshot.
     if diff.to_remove.is_empty().not() {
-        crate::pacman::sudo_pacman("-R", NOTHING, diff.to_remove)?;
+        crate::pacman::sudo_pacman(env, "-R", NOTHING, diff.to_remove)?;
     }
 
     Ok(())

@@ -95,14 +95,14 @@ pub(crate) fn adopt(
 ///
 /// Will fail if the process does not have permission to create the lockfile,
 /// which usually lives in a root-owned directory.
-pub(crate) fn remove(alpm: &Alpm, fll: &FluentLanguageLoader) -> Result<(), Error> {
+pub(crate) fn remove(env: &Env, alpm: &Alpm, fll: &FluentLanguageLoader) -> Result<(), Error> {
     let orphans: Vec<_> = aura_core::orphans(alpm).collect();
 
     if orphans.is_empty().not() {
         orphans
             .iter()
             .map(|p| p.name())
-            .apply(|names| crate::pacman::sudo_pacman("-Rsu", NOTHING, names))
+            .apply(|names| crate::pacman::sudo_pacman(env, "-Rsu", NOTHING, names))
             .map_err(Error::Removal)?;
 
         green!(fll, "common-done");

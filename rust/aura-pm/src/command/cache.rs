@@ -97,8 +97,8 @@ impl Localised for Error {
 
 /// Downgrade the given packages.
 pub(crate) fn downgrade(
+    env: &Env,
     fll: &FluentLanguageLoader,
-    caches: &[&Path],
     packages: Vec<String>,
 ) -> Result<(), Error> {
     // Exit early if the user passed no packages.
@@ -106,9 +106,11 @@ pub(crate) fn downgrade(
         return Err(Error::NoPackages);
     }
 
+    let caches = env.caches();
+
     // --- All tarball paths for packages the user asked for --- //
     let mut tarballs: HashMap<&str, Vec<PkgPath>> = HashMap::new();
-    for pp in aura_core::cache::package_paths(caches) {
+    for pp in aura_core::cache::package_paths(&caches) {
         if let Some(p) = packages.iter().find(|p| p == &&pp.as_package().name) {
             let paths = tarballs.entry(p).or_default();
             paths.push(pp);
@@ -126,7 +128,7 @@ pub(crate) fn downgrade(
         return Err(Error::NothingToDo);
     }
 
-    crate::pacman::sudo_pacman("-U", NOTHING, to_downgrade)?;
+    crate::pacman::sudo_pacman(env, "-U", NOTHING, to_downgrade)?;
     green!(fll, "common-done");
     Ok(())
 }

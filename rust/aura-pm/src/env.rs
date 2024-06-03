@@ -117,6 +117,15 @@ impl Env {
         Ok(e)
     }
 
+    /// The "sudo string" to be prefixed to certain shell calls.
+    pub(crate) fn sudo(&self) -> &'static str {
+        if self.general.doas {
+            "doas"
+        } else {
+            "sudo"
+        }
+    }
+
     /// Open a series of connections to ALPM handles. The quantity matches the
     /// number of CPUs available on the machine.
     pub(crate) fn alpm_pool(&self) -> Result<Pool<AlpmManager>, Error> {
