@@ -182,7 +182,7 @@ impl std::fmt::Display for PkgGraph<'_> {
             .node_indices()
             .filter_map(|ix| graph.node_weight(ix).map(|(name, group)| (ix, name, group)))
             .sorted_by(|a, b| a.2.cmp(b.2))
-            .group_by(|triple| triple.2)
+            .chunk_by(|triple| triple.2)
             .into_iter()
             .enumerate()
         {

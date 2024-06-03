@@ -24,17 +24,17 @@ colored = "2.0"
 curl = "0.4"
 from_variants = "1.0"
 i18n-embed = { version = "0.14", features = ["fluent-system"] }
-i18n-embed-fl = "0.7"
-itertools = "0.12"
+i18n-embed-fl = "0.8"
+itertools = "0.13"
 linya = "0.3"
 log = "0.4"
-nonempty-collections = "0.1.4"
+nonempty-collections = "0.2.5"
 num_cpus = "1.16"
 pacmanconf = "2.0"
 r2d2 = "0.8"
 rayon = "1.8"
 rust-embed = "8.0"
-rustyline = "12"
+rustyline = "14"
 serde = "1.0"
 serde_json = "1.0"
 simplelog = "0.12"
@@ -45,8 +45,8 @@ toml = "0.8"
 ubyte = "0.10"
 unic-langid = { version = "0.9", features = ["macros"] }
 validated = { version = "0.4", features = ["rayon"] }
-webbrowser = "0.8"
-which = "5.0"
+webbrowser = "1.0"
+which = "6.0"
 
 [features]
 git = ["alpm/git"]

@@ -269,7 +269,7 @@ pub(crate) fn clean(
     // Get all the tarball paths, sort and group them by name, and then remove them.
     aura_core::cache::package_paths(caches)
         .sorted_by(|p0, p1| p1.cmp(p0)) // Forces a `collect` underneath.
-        .group_by(|pp| pp.as_package().name.clone()) // TODO Naughty clone.
+        .chunk_by(|pp| pp.as_package().name.clone()) // TODO Naughty clone.
         .into_iter()
         .flat_map(|(_, group)| group.skip(keep)) // Thanks to the reverse-sort above, `group` is already backwards.
         .for_each(|pp| {
