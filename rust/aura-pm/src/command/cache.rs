@@ -153,11 +153,12 @@ fn downgrade_one<'a>(
 
 /// Delete invalid tarballs from the cache.
 pub(crate) fn invalid(
+    env: &Env,
     fll: &FluentLanguageLoader,
     alpm: &Alpm,
     caches: &[&Path],
 ) -> Result<(), Error> {
-    crate::utils::sudo()?;
+    crate::utils::sudo(env)?;
     aura!(fll, "C-t-invalids");
 
     // FIXME Thu Jan 27 15:24:44 2022
@@ -251,14 +252,13 @@ pub(crate) fn search(caches: &[&Path], term: &str) -> Result<(), Error> {
 }
 
 /// Delete all but `keep`-many old tarballs for each package in the cache.
-pub(crate) fn clean(
-    fll: &FluentLanguageLoader,
-    caches: &[&Path],
-    keep: usize,
-) -> Result<(), Error> {
-    crate::utils::sudo()?;
+pub(crate) fn clean(env: &Env, fll: &FluentLanguageLoader, keep: usize) -> Result<(), Error> {
+    crate::utils::sudo(env)?;
 
-    let size_before = aura_core::cache::size(caches);
+    // FIXME 2024-06-04 This probably doesn't preserve local user caches!
+    let caches = env.caches();
+
+    let size_before = aura_core::cache::size(&caches);
     let human = format!("{}", size_before.bytes.bytes());
     aura!(fll, "C-size", size = human);
     yellow!(fll, "C-c-keep", pkgs = keep);
@@ -267,7 +267,7 @@ pub(crate) fn clean(
     proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
 
     // Get all the tarball paths, sort and group them by name, and then remove them.
-    aura_core::cache::package_paths(caches)
+    aura_core::cache::package_paths(&caches)
         .sorted_by(|p0, p1| p1.cmp(p0)) // Forces a `collect` underneath.
         .chunk_by(|pp| pp.as_package().name.clone()) // TODO Naughty clone.
         .into_iter()
@@ -276,7 +276,7 @@ pub(crate) fn clean(
             let _ = pp.remove(); // TODO Handle this error better?
         });
 
-    let size_after = aura_core::cache::size(caches);
+    let size_after = aura_core::cache::size(&caches);
     let freed = format!("{}", (size_before.bytes - size_after.bytes).bytes());
     green!(fll, "C-c-freed", bytes = freed);
     Ok(())
@@ -330,16 +330,15 @@ pub(crate) fn clean_not_saved(fll: &FluentLanguageLoader, env: &Env) -> Result<(
 }
 
 /// Download tarballs of installed packages that are missing from the cache.
-pub(crate) fn refresh(
-    fll: &FluentLanguageLoader,
-    alpm: &Alpm,
-    caches: &[&Path],
-) -> Result<(), Error> {
-    crate::utils::sudo()?;
+pub(crate) fn refresh(env: &Env, fll: &FluentLanguageLoader, alpm: &Alpm) -> Result<(), Error> {
+    crate::utils::sudo(env)?;
+
+    // FIXME 2024-06-04 This probably doesn't conserve local cache paths!
+    let caches = env.caches();
 
     // All installed packages that are missing a tarball in the cache.
     let ps: Vec<&alpm::Package> = {
-        let mut ps: Vec<_> = aura_core::cache::officials_missing_tarballs(alpm, caches).collect();
+        let mut ps: Vec<_> = aura_core::cache::officials_missing_tarballs(alpm, &caches).collect();
         ps.sort_by(|a, b| a.name().cmp(b.name()));
         ps
     };

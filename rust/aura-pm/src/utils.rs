@@ -1,5 +1,6 @@
 //! Various utility functions.
 
+use crate::env::Env;
 use crate::error::Nested;
 use crate::localization::Localised;
 use colored::{ColoredString, Colorize};
@@ -123,8 +124,12 @@ impl Localised for SudoError {
 }
 
 /// Escalate the privileges of the Aura process, if necessary.
-pub(crate) fn sudo() -> Result<(), SudoError> {
-    karen::escalate_if_needed().map_err(|_| SudoError).void()
+pub(crate) fn sudo(env: &Env) -> Result<(), SudoError> {
+    if env.general.doas {
+        karen::doas().map_err(|_| SudoError).void()
+    } else {
+        karen::escalate_if_needed().map_err(|_| SudoError).void()
+    }
 }
 
 /// An [`Iterator`] that knows if the current iteration step is the last one.

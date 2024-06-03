@@ -1,5 +1,6 @@
 //! All functionality involving the `-O` command.
 
+use crate::env::Env;
 use crate::error::Nested;
 use crate::green;
 use crate::localization::Localised;
@@ -62,12 +63,13 @@ pub(crate) fn elderly(alpm: &Alpm) {
 
 /// Sets a package's install reason to "as explicit". An alias for `-D --asexplicit`.
 pub(crate) fn adopt(
+    env: &Env,
     alpm: &Alpm,
     fll: &FluentLanguageLoader,
     // TODO 2024-03-18 Make this NEVec.
     packages: Vec<String>,
 ) -> Result<(), Error> {
-    crate::utils::sudo()?;
+    crate::utils::sudo(env)?;
 
     let db = alpm.as_ref().localdb();
     let reals: Vec<_> = packages

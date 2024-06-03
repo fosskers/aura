@@ -170,12 +170,14 @@ impl Env {
 struct RawGeneral {
     cpus: Option<u32>,
     editor: Option<String>,
+    doas: Option<bool>,
 }
 
 #[derive(Debug, Serialize)]
 pub(crate) struct General {
     pub(crate) cpus: u32,
     pub(crate) editor: String,
+    pub(crate) doas: bool,
 }
 
 impl Default for General {
@@ -183,6 +185,7 @@ impl Default for General {
         Self {
             cpus: num_cpus::get() as u32,
             editor: editor(),
+            doas: false,
         }
     }
 }
@@ -192,6 +195,7 @@ impl From<RawGeneral> for General {
         General {
             cpus: raw.cpus.unwrap_or_else(|| num_cpus::get() as u32),
             editor: raw.editor.unwrap_or_else(editor),
+            doas: raw.doas.unwrap_or(false),
         }
     }
 }

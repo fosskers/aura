@@ -130,11 +130,11 @@ fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
         }
         SubCmd::Cache(c) if c.search.is_some() => cache::search(&env.caches(), &c.search.unwrap())?,
         SubCmd::Cache(c) if c.backup.is_some() => cache::backup(fll, &env, &c.backup.unwrap())?,
-        SubCmd::Cache(Cache { clean: Some(n), .. }) => cache::clean(fll, &env.caches(), n)?,
+        SubCmd::Cache(Cache { clean: Some(n), .. }) => cache::clean(&env, fll, n)?,
         SubCmd::Cache(c) if c.clean_unsaved => cache::clean_not_saved(fll, &env)?,
-        SubCmd::Cache(c) if c.invalid => cache::invalid(fll, &env.alpm()?, &env.caches())?,
+        SubCmd::Cache(c) if c.invalid => cache::invalid(&env, fll, &env.alpm()?, &env.caches())?,
         SubCmd::Cache(c) if c.list => cache::list(&env.caches())?,
-        SubCmd::Cache(c) if c.refresh => cache::refresh(fll, &env.alpm()?, &env.caches())?,
+        SubCmd::Cache(c) if c.refresh => cache::refresh(&env, fll, &env.alpm()?)?,
         SubCmd::Cache(c) if c.missing => cache::missing(&env.alpm()?, &env.caches()),
         SubCmd::Cache(c) => cache::downgrade(fll, &env.caches(), c.packages)?,
         // --- Logs --- //
@@ -143,7 +143,9 @@ fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
         SubCmd::Log(l) => llog::view(env.alpm_log(), l.before, l.after)?,
         // --- Orphan Packages --- //
         SubCmd::Orphans(o) if o.abandon => orphans::remove(&env.alpm()?, fll)?,
-        SubCmd::Orphans(o) if !o.adopt.is_empty() => orphans::adopt(&env.alpm()?, fll, o.adopt)?,
+        SubCmd::Orphans(o) if !o.adopt.is_empty() => {
+            orphans::adopt(&env, &env.alpm()?, fll, o.adopt)?
+        }
         SubCmd::Orphans(o) if o.elderly => orphans::elderly(&env.alpm()?),
         SubCmd::Orphans(_) => orphans::list(&env.alpm()?),
         // --- PKGBUILD Analysis --- //
