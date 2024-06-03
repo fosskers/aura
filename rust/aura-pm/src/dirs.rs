@@ -45,6 +45,11 @@ fn xdg_config() -> Result<PathBuf, Error> {
 
 /// The location of Aura's config file.
 pub(crate) fn aura_config() -> Result<PathBuf, Error> {
+    xdg_config().map(|p| p.join("aura").join("config.toml"))
+}
+
+/// The previous location of Aura's config file.
+pub(crate) fn aura_config_old() -> Result<PathBuf, Error> {
     xdg_config().map(|p| p.join("aura.toml"))
 }
 

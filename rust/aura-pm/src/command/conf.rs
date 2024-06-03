@@ -59,7 +59,7 @@ pub(crate) fn gen(env: &Env) -> Result<(), Error> {
     Ok(())
 }
 
-/// Open the `aura.toml` in `bat` or `less`.
+/// Open the `$XDG_HOME/aura/config.toml` in `bat` or `less`.
 pub(crate) fn aura_conf() -> Result<(), Error> {
     let path = crate::dirs::aura_config()?;
     let prog = misc::viewer();

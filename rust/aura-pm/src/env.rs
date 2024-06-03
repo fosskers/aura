@@ -5,7 +5,7 @@ use crate::error::Nested;
 use crate::localization::Localised;
 use from_variants::FromVariants;
 use i18n_embed_fl::fl;
-use log::error;
+use log::{debug, error};
 use r2d2::Pool;
 use r2d2_alpm::{Alpm, AlpmManager};
 use serde::{Deserialize, Serialize};
@@ -57,10 +57,18 @@ struct RawEnv {
 impl RawEnv {
     /// Attempt to read and parse settings from the filesystem.
     fn try_new() -> Option<Self> {
-        let config: PathBuf = dirs::aura_config().ok()?;
+        let config: PathBuf = {
+            let c = dirs::aura_config().ok()?;
+            if c.is_file() {
+                c
+            } else {
+                dirs::aura_config_old().ok()?
+            }
+        };
+
+        debug!("Reading: {}", config.display());
         let s = std::fs::read_to_string(config).ok()?;
-        let e = toml::from_str(&s).ok()?;
-        Some(e)
+        toml::from_str(&s).ok()
     }
 }
 
