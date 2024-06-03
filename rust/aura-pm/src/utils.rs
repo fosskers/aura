@@ -124,7 +124,7 @@ impl Localised for SudoError {
 
 /// Escalate the privileges of the Aura process, if necessary.
 pub(crate) fn sudo() -> Result<(), SudoError> {
-    sudo::escalate_if_needed().map_err(|_| SudoError).void()
+    karen::escalate_if_needed().map_err(|_| SudoError).void()
 }
 
 /// An [`Iterator`] that knows if the current iteration step is the last one.
