@@ -56,13 +56,14 @@ where
 }
 
 /// A helper for commands like `-Ai`, `-Ci`, etc.
-pub(crate) fn info<W>(
+pub(crate) fn info<W, S>(
     w: &mut W,
     lang: LanguageIdentifier,
-    pairs: &[(&str, ColoredString)],
+    pairs: &[(S, ColoredString)],
 ) -> Result<(), std::io::Error>
 where
     W: Write,
+    S: AsRef<str>,
 {
     // Different languages consume varying char widths in the terminal.
     //
@@ -72,11 +73,12 @@ where
     // The longest field.
     let l = pairs
         .iter()
-        .map(|(l, _)| l.chars().count())
+        .map(|(l, _)| l.as_ref().chars().count())
         .max()
         .unwrap_or(0);
 
     for (lbl, value) in pairs {
+        let lbl = lbl.as_ref();
         writeln!(w, "{}{:w$} : {}", lbl.bold(), "", value, w = pad(m, l, lbl))?;
     }
 

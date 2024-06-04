@@ -17,6 +17,7 @@ use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::fs::DirEntry;
 use std::path::Path;
+use walkdir::WalkDir;
 
 /// The simplest form a package.
 #[derive(Debug, PartialEq, Eq)]
@@ -213,4 +214,17 @@ where
         .pkgs()
         .into_iter()
         .filter(move |p| syncs.pkg(p.name()).is_err())
+}
+
+/// The number of bytes contained by all files in a directory. Recursive.
+pub fn recursive_dir_size<P>(path: P) -> u64
+where
+    P: AsRef<Path>,
+{
+    WalkDir::new(path)
+        .into_iter()
+        .filter_map(|de| de.ok())
+        .filter_map(|de| de.metadata().ok())
+        .map(|meta| meta.len())
+        .sum()
 }

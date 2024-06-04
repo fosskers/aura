@@ -106,6 +106,7 @@ dependencies = [
  "srcinfo",
  "time",
  "validated",
+ "walkdir",
 ]
 
 [[package]]

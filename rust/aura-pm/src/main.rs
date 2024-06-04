@@ -159,7 +159,7 @@ fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
         SubCmd::Stats(s) if s.lang => stats::localization()?,
         SubCmd::Stats(s) if s.heavy => stats::heavy_packages(&env.alpm()?),
         SubCmd::Stats(s) if s.groups => stats::groups(&env.alpm()?),
-        SubCmd::Stats(_) => unimplemented!(),
+        SubCmd::Stats(_) => stats::stats(&env, fll)?,
         // --- Opening Webpages --- //
         SubCmd::Open(o) if o.docs => open::book()?,
         SubCmd::Open(o) if o.repo => open::repo()?,
