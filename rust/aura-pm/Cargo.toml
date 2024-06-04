@@ -47,6 +47,7 @@ unic-langid = { version = "0.9", features = ["macros"] }
 validated = { version = "0.4", features = ["rayon"] }
 webbrowser = "1.0"
 which = "6.0"
+whoami = "1.5"
 
 [features]
 git = ["alpm/git"]

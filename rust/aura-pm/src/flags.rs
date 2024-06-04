@@ -998,7 +998,6 @@ pub struct Cache {
     pub search: Option<String>,
 
     // TODO Make other options elsewhere that expect a path have `PathBuf` too.
-    // TODO Restore the `short` flag for this option after resolving the conflict with `--dbpath`!
     /// Back up the package cache to a given directory.
     #[clap(group = "cache", long, short, value_name = "target", display_order = 1)]
     pub backup: Option<PathBuf>,

@@ -111,6 +111,10 @@ open-err = Failed to open { $url }.
 
 # System Statistics (stats)
 stats-local = Failed to load language data.
+stats-host = Host
+stats-user = User
+stats-distro = Distribution
+stats-editor = Editor
 stats-pkgs = Installed packages
 stats-aura-cache = Aura Package Cache
 stats-pacman-cache = Pacman Package Cache

@@ -113,6 +113,15 @@ pub(crate) fn stats(env: &Env, fll: &FluentLanguageLoader) -> Result<(), Error> 
     let aura_build_bytes = aura_core::recursive_dir_size(&env.aur.build);
 
     let pairs = vec![
+        (
+            fl!(fll, "stats-host"),
+            whoami::fallible::hostname()
+                .unwrap_or_else(|_| "Unknown".to_string())
+                .normal(),
+        ),
+        (fl!(fll, "stats-user"), whoami::username().normal()),
+        (fl!(fll, "stats-distro"), whoami::distro().normal()),
+        (fl!(fll, "stats-editor"), env.general.editor.normal()),
         (fl!(fll, "stats-pkgs"), pkgs.to_string().normal()),
         (
             fl!(fll, "stats-pacman-cache"),
