@@ -31,7 +31,7 @@ impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Error::Git(e) => write!(f, "{e}"),
-            Error::FaurFetch(p) => write!(f, "Calling the Faur utterly failed: {p}"),
+            Error::FaurFetch(p) => write!(f, "Calling the metadata server utterly failed: {p}"),
             Error::PackageDoesNotExist(p) => write!(f, "Unknown package: {p}"),
             Error::TooManyFaurResults(p) => {
                 write!(f, "More results returned from Faur than expected: {p}")

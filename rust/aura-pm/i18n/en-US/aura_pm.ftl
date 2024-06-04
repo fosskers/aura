@@ -191,7 +191,7 @@ git-clone = A git clone failed: { $dir }
 git-io = Calling git somehow failed.
 
 # Faur Calls
-faur-fetch = Calling the Faur utterly failed: { $pkg }
+faur-fetch = Calling the metadata server utterly failed: { $pkg }
 faur-unknown = Unknown package: { $pkg }
 faur-too-many = More results returned from Faur than expected: { $pkg }
 

@@ -6,7 +6,7 @@ use curl::easy::Easy;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
-use log::error;
+use log::{debug, error};
 use serde::de::DeserializeOwned;
 
 #[derive(FromVariants)]
@@ -39,6 +39,8 @@ pub(crate) fn fetch_json<T>(url: &str) -> Result<T, Error>
 where
     T: DeserializeOwned,
 {
+    debug!("CURL calling {url}");
+
     let mut handle = Easy::new();
     let mut data = Vec::new();
     handle.url(url)?;
