@@ -160,8 +160,9 @@ pub(crate) fn invalid(
     alpm: &Alpm,
     caches: &[&Path],
 ) -> Result<(), Error> {
-    crate::utils::sudo(env)?;
     aura!(fll, "C-t-invalids");
+
+    let elevation = env.sudo();
 
     // FIXME Thu Jan 27 15:24:44 2022
     //
@@ -169,7 +170,7 @@ pub(crate) fn invalid(
     aura_core::cache::package_paths(caches)
         .filter(|pp| !aura_core::is_valid_package(alpm, pp.as_path()))
         .for_each(|pp| {
-            let _ = pp.remove(); // TODO Better handling.
+            let _ = pp.sudo_remove_with_sig(elevation); // TODO Better handling.
         });
 
     green!(fll, "common-done");
@@ -255,10 +256,8 @@ pub(crate) fn search(caches: &[&Path], term: &str) -> Result<(), Error> {
 
 /// Delete all but `keep`-many old tarballs for each package in the cache.
 pub(crate) fn clean(env: &Env, fll: &FluentLanguageLoader, keep: usize) -> Result<(), Error> {
-    crate::utils::sudo(env)?;
-
-    // FIXME 2024-06-04 This probably doesn't preserve local user caches!
     let caches = env.caches();
+    debug!("Caches: {:?}", caches);
 
     let size_before = aura_core::cache::size(&caches);
     let human = format!("{}", size_before.bytes.bytes());
@@ -268,6 +267,8 @@ pub(crate) fn clean(env: &Env, fll: &FluentLanguageLoader, keep: usize) -> Resul
     // Proceed if the user accepts.
     proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
 
+    let elevation = env.sudo();
+
     // Get all the tarball paths, sort and group them by name, and then remove them.
     aura_core::cache::package_paths(&caches)
         .sorted_by(|p0, p1| p1.cmp(p0)) // Forces a `collect` underneath.
@@ -275,7 +276,7 @@ pub(crate) fn clean(env: &Env, fll: &FluentLanguageLoader, keep: usize) -> Resul
         .into_iter()
         .flat_map(|(_, group)| group.skip(keep)) // Thanks to the reverse-sort above, `group` is already backwards.
         .for_each(|pp| {
-            let _ = pp.remove(); // TODO Handle this error better?
+            let _ = pp.sudo_remove_with_sig(elevation); // TODO Handle this error better?
         });
 
     let size_after = aura_core::cache::size(&caches);
@@ -312,6 +313,8 @@ pub(crate) fn clean_not_saved(fll: &FluentLanguageLoader, env: &Env) -> Result<(
         snaps
     };
 
+    let elevation = env.sudo();
+
     for tarball in tarballs {
         let p = tarball.as_package();
 
@@ -319,7 +322,7 @@ pub(crate) fn clean_not_saved(fll: &FluentLanguageLoader, env: &Env) -> Result<(
         // from the filesystem.
         match snaps.get(p.name.as_ref()) {
             Some(vs) if vs.contains(p.version.as_ref()) => {}
-            Some(_) | None => tarball.sudo_remove().map_err(Error::Delete)?,
+            Some(_) | None => tarball.sudo_remove(elevation).map_err(Error::Delete)?,
         }
     }
 
