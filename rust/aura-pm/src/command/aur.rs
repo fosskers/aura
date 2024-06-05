@@ -347,7 +347,18 @@ pub(crate) fn install<'a, I>(
 where
     I: IntoIterator<Item = &'a str>,
 {
-    let pkgs: Vec<_> = raw_pkgs.into_iter().collect();
+    let pkgs: Vec<_> = raw_pkgs
+        .into_iter()
+        .filter(|p| {
+            // Prompt if the user specified packages that are marked "ignored".
+            if env.aur.ignores.contains(*p) {
+                let pkg = p.bold().cyan().to_string();
+                proceed!(fll, "A-install-ignored", file = pkg).is_some()
+            } else {
+                true
+            }
+        })
+        .collect();
 
     // Exit early if the user passed no packages.
     if pkgs.is_empty() {
