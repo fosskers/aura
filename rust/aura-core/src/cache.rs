@@ -51,25 +51,25 @@ impl<'a> PkgPath<'a> {
         &self.pkg
     }
 
-    /// Delete this `PkgPath` and its `.sig` file, if there is one.
-    pub fn remove(self) -> Result<(), std::io::Error> {
-        std::fs::remove_file(&self.path)?;
-
-        let sig = self.sig_file();
-        if sig.exists() {
-            std::fs::remove_file(sig)?;
-        }
-
-        Ok(())
-    }
-
     // TODO I'd like it if this could be avoided.
     /// Remove this via a shell call to `rm`.
-    pub fn sudo_remove(self) -> Result<(), PathBuf> {
-        match Command::new("sudo").arg("rm").arg(&self.path).status() {
+    pub fn sudo_remove(self, elevation: &str) -> Result<(), PathBuf> {
+        match Command::new(elevation).arg("rm").arg(&self.path).status() {
             Ok(s) if s.success() => Ok(()),
             Ok(_) | Err(_) => Err(self.path),
         }
+    }
+
+    /// Delete this `PkgPath` and its `.sig` file, if there is one.
+    pub fn sudo_remove_with_sig(self, elevation: &str) -> Result<(), std::io::Error> {
+        Command::new(elevation).arg("rm").arg(&self.path).status()?;
+
+        let sig = self.sig_file();
+        if sig.exists() {
+            Command::new(elevation).arg("rm").arg(sig).status()?;
+        }
+
+        Ok(())
     }
 }
 
