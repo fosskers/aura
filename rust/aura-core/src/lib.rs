@@ -13,6 +13,7 @@ pub mod snapshot;
 
 use alpm::{AlpmList, Db, PackageReason, SigLevel};
 use alpm_utils::DbListExt;
+use r2d2_alpm::Alpm;
 use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::fs::DirEntry;
@@ -36,12 +37,42 @@ impl DbLike for Db {
     }
 }
 
-impl DbLike for AlpmList<'_, &alpm::Db> {
+impl DbLike for AlpmList<'_, &Db> {
     fn get_pkg<'a, S>(&'a self, name: S) -> Result<&'a alpm::Package, alpm::Error>
     where
         S: Into<Vec<u8>>,
     {
         self.pkg(name)
+    }
+}
+
+/// A combination of both database sources.
+pub struct Dbs<'a, 'b> {
+    local: &'a Db,
+    syncs: AlpmList<'b, &'a Db>,
+}
+
+impl<'a, 'b> Dbs<'a, 'b> {
+    /// Form a combination of all available package databases.
+    pub fn from_alpm(alpm: &'a Alpm) -> Dbs<'a, 'a> {
+        Dbs {
+            local: alpm.as_ref().localdb(),
+            syncs: alpm.as_ref().syncdbs(),
+        }
+    }
+}
+
+impl<'b, 'c> DbLike for Dbs<'b, 'c> {
+    fn get_pkg<'a, S>(&'a self, name: S) -> Result<&'a alpm::Package, alpm::Error>
+    where
+        S: Into<Vec<u8>>,
+    {
+        let v = name.into();
+
+        self.local
+            // FIXME 2024-06-07 Unfortunate clone.
+            .get_pkg(v.clone())
+            .or_else(|_| self.syncs.get_pkg(v))
     }
 }
 
