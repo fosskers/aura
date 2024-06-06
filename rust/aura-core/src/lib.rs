@@ -19,6 +19,32 @@ use std::fs::DirEntry;
 use std::path::Path;
 use walkdir::WalkDir;
 
+/// Types that act like a package database.
+pub trait DbLike {
+    /// A simple package lookup.
+    fn get_pkg<'a, S>(&'a self, name: S) -> Result<&'a alpm::Package, alpm::Error>
+    where
+        S: Into<Vec<u8>>;
+}
+
+impl DbLike for alpm::Db {
+    fn get_pkg<'a, S>(&'a self, name: S) -> Result<&'a alpm::Package, alpm::Error>
+    where
+        S: Into<Vec<u8>>,
+    {
+        self.pkg(name)
+    }
+}
+
+impl DbLike for alpm::AlpmList<'_, &alpm::Db> {
+    fn get_pkg<'a, S>(&'a self, name: S) -> Result<&'a alpm::Package, alpm::Error>
+    where
+        S: Into<Vec<u8>>,
+    {
+        self.pkg(name)
+    }
+}
+
 /// The simplest form a package.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Package<'a> {

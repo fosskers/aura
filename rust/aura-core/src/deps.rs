@@ -2,6 +2,7 @@
 
 use alpm::Db;
 use itertools::Itertools;
+use log::debug;
 use petgraph::{graph::NodeIndex, Directed, Graph};
 use std::collections::HashMap;
 
@@ -74,6 +75,8 @@ impl<'a> PkgGraph<'a> {
     ) -> PkgGraph<'a> {
         let mut graph = Graph::default();
         let mut indices = HashMap::new();
+
+        debug!("Focii: {:?}", focii);
 
         for p in focii {
             PkgGraph::add_parent(db, &mut graph, &mut indices, limit, optional, p);
