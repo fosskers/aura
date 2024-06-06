@@ -1,10 +1,11 @@
 //! Dependency analysis internals.
 
-use alpm::Db;
 use itertools::Itertools;
 use log::debug;
 use petgraph::{graph::NodeIndex, Directed, Graph};
 use std::collections::HashMap;
+
+use crate::DbLike;
 
 /// A dependency relationship between parent and child.
 pub enum DepType {
@@ -44,13 +45,16 @@ pub struct PkgGraph<'a> {
 
 impl<'a> PkgGraph<'a> {
     /// Create a new `PkgGraph` of given packages and all their dependencies.
-    pub fn by_deps(
-        db: &'a Db,
+    pub fn by_deps<D>(
+        db: &'a D,
         limit: Option<u8>,
         optional: bool,
         foreigns: &'a [&'a str],
         focii: &'a [&'a str],
-    ) -> PkgGraph<'a> {
+    ) -> PkgGraph<'a>
+    where
+        D: DbLike,
+    {
         let mut graph = Graph::default();
         let mut indices = HashMap::new();
 
@@ -66,13 +70,16 @@ impl<'a> PkgGraph<'a> {
     }
 
     /// Create a new `PkgGraph` of given packages and all packages that require them.
-    pub fn by_parents(
-        db: &'a Db,
+    pub fn by_parents<D>(
+        db: &'a D,
         limit: Option<u8>,
         optional: bool,
         foreigns: &'a [&'a str],
         focii: &'a [&'a str],
-    ) -> PkgGraph<'a> {
+    ) -> PkgGraph<'a>
+    where
+        D: DbLike,
+    {
         let mut graph = Graph::default();
         let mut indices = HashMap::new();
 
@@ -90,16 +97,19 @@ impl<'a> PkgGraph<'a> {
     }
 
     /// Recursively add dependencies to the package `Graph`.
-    fn add_dep(
-        db: &'a Db,
+    fn add_dep<D>(
+        db: &'a D,
         graph: &mut Graph<(&'a str, Option<Group<'a>>), DepType, Directed, u16>,
         indices: &mut HashMap<&'a str, NodeIndex<u16>>,
         limit: Option<u8>,
         optional: bool,
         parent: &'a str,
-    ) -> Option<NodeIndex<u16>> {
+    ) -> Option<NodeIndex<u16>>
+    where
+        D: DbLike,
+    {
         indices.get(parent).cloned().or_else(|| {
-            db.pkg(parent).ok().map(|p| {
+            db.get_pkg(parent).ok().map(|p| {
                 let ix = graph.add_node((parent, p.groups().first()));
                 indices.insert(parent, ix);
                 let next = limit.map(|l| l - 1);
@@ -130,8 +140,8 @@ impl<'a> PkgGraph<'a> {
         })
     }
 
-    fn add_parent(
-        db: &'a Db,
+    fn add_parent<D>(
+        db: &'a D,
         graph: &mut Graph<(&'a str, Option<Group<'a>>), DepType, Directed, u16>,
         indices: &mut HashMap<&'a str, NodeIndex<u16>>,
         limit: Option<u8>,
@@ -139,9 +149,12 @@ impl<'a> PkgGraph<'a> {
         // No lifetime because `required_by` yields owned Strings, which can't
         // have a `'a` lifetime.
         child: &str,
-    ) -> Option<NodeIndex<u16>> {
+    ) -> Option<NodeIndex<u16>>
+    where
+        D: DbLike,
+    {
         indices.get(child).cloned().or_else(|| {
-            db.pkg(child).ok().map(|p| {
+            db.get_pkg(child).ok().map(|p| {
                 // We pull the name back out of the summoned `Package` instead
                 // of using the given `child: &str` to avoid lifetime issues.
                 let name = p.name();

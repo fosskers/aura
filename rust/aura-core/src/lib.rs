@@ -11,7 +11,7 @@ pub mod git;
 pub mod log;
 pub mod snapshot;
 
-use alpm::{PackageReason, SigLevel};
+use alpm::{AlpmList, Db, PackageReason, SigLevel};
 use alpm_utils::DbListExt;
 use std::borrow::Cow;
 use std::cmp::Ordering;
@@ -27,7 +27,7 @@ pub trait DbLike {
         S: Into<Vec<u8>>;
 }
 
-impl DbLike for alpm::Db {
+impl DbLike for Db {
     fn get_pkg<'a, S>(&'a self, name: S) -> Result<&'a alpm::Package, alpm::Error>
     where
         S: Into<Vec<u8>>,
@@ -36,7 +36,7 @@ impl DbLike for alpm::Db {
     }
 }
 
-impl DbLike for alpm::AlpmList<'_, &alpm::Db> {
+impl DbLike for AlpmList<'_, &alpm::Db> {
     fn get_pkg<'a, S>(&'a self, name: S) -> Result<&'a alpm::Package, alpm::Error>
     where
         S: Into<Vec<u8>>,
