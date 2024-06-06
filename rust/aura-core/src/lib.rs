@@ -26,6 +26,11 @@ pub trait DbLike {
     fn get_pkg<'a, S>(&'a self, name: S) -> Result<&'a alpm::Package, alpm::Error>
     where
         S: Into<Vec<u8>>;
+
+    /// Find a package that provides some name.
+    fn provides<'a, S>(&'a self, name: S) -> Option<&'a alpm::Package>
+    where
+        S: Into<Vec<u8>>;
 }
 
 impl DbLike for Db {
@@ -35,6 +40,13 @@ impl DbLike for Db {
     {
         self.pkg(name)
     }
+
+    fn provides<'a, S>(&'a self, _: S) -> Option<&'a alpm::Package>
+    where
+        S: Into<Vec<u8>>,
+    {
+        None
+    }
 }
 
 impl DbLike for AlpmList<'_, &Db> {
@@ -43,6 +55,13 @@ impl DbLike for AlpmList<'_, &Db> {
         S: Into<Vec<u8>>,
     {
         self.pkg(name)
+    }
+
+    fn provides<'a, S>(&'a self, name: S) -> Option<&'a alpm::Package>
+    where
+        S: Into<Vec<u8>>,
+    {
+        self.find_satisfier(name)
     }
 }
 
@@ -73,6 +92,13 @@ impl<'b, 'c> DbLike for Dbs<'b, 'c> {
             // FIXME 2024-06-07 Unfortunate clone.
             .get_pkg(v.clone())
             .or_else(|_| self.syncs.get_pkg(v))
+    }
+
+    fn provides<'a, S>(&'a self, name: S) -> Option<&'a alpm::Package>
+    where
+        S: Into<Vec<u8>>,
+    {
+        self.syncs.find_satisfier(name)
     }
 }
 
