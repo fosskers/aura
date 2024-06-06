@@ -283,7 +283,7 @@ where
                         .map(|d| d.name().to_string())
                         .collect();
 
-                    // FIXME Fri Feb 18 15:07:23 2022
+                    // FIXME Fri Feb 18 2022 Avoid manual drops.
                     //
                     // Manual drops are a signal of bad design. For the moment
                     // these are necessary to avoid running out of ALPM handles
@@ -301,9 +301,7 @@ where
                         .map_err(|es| Error::Resolutions(Box::new(es)))?;
                 }
                 None => {
-                    // FIXME Fri Feb 18 15:13:31 2022
-                    //
-                    // Same here as above.
+                    // FIXME Fri Feb 18 2022 Same here as above.
                     drop(alpm);
 
                     debug!("{} is an AUR package.", pr);
@@ -373,7 +371,7 @@ fn respect_checkdeps<T>(nocheck: bool, deps: Vec<T>) -> Vec<T> {
     }
 }
 
-// FIXME Mon Feb  7 23:07:56 2022
+// FIXME Mon Feb 7 2022 pull_or_clone
 //
 // If `is_aur_package_fast` succeeds, perhaps we should assume that the clone is
 // up to date and avoid a pull here to speed things up. It may be better to
@@ -414,9 +412,7 @@ where
                 debug!("Trying extended provider search on {}.", pkg);
                 crate::faur::provides(pkg, fetch)
                     .ok()
-                    // FIXME Fri May 20 14:13:49 2022
-                    //
-                    // Somehow allow the user a choice of provider, if there are multiple.
+                    // FIXME Fri May 20 2022 Somehow allow the user a choice of provider, if there are multiple.
                     // In general this should be unlikely on the AUR for the average user.
                     .and_then(|mut v| v.pop())
             })

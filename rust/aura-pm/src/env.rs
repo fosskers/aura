@@ -129,9 +129,7 @@ impl Env {
     /// Open a series of connections to ALPM handles. The quantity matches the
     /// number of CPUs available on the machine.
     pub(crate) fn alpm_pool(&self) -> Result<Pool<AlpmManager>, Error> {
-        // FIXME Thu Jun  9 13:53:49 2022
-        //
-        // Unfortunate clone here.
+        // FIXME Thu Jun  9 2022 Unfortunate clone here.
         let mngr = AlpmManager::new(self.pacman.clone());
         let pool = Pool::builder().max_size(self.general.cpus).build(mngr)?;
 

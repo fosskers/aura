@@ -164,9 +164,7 @@ pub(crate) fn invalid(
 
     let elevation = env.sudo();
 
-    // FIXME Thu Jan 27 15:24:44 2022
-    //
-    // Use `Validated` here.
+    // FIXME Thu Jan 27 2022 Use `Validated` here.
     aura_core::cache::package_paths(caches)
         .filter(|pp| !aura_core::is_valid_package(alpm, pp.as_path()))
         .for_each(|pp| {
@@ -339,6 +337,9 @@ pub(crate) fn refresh(env: &Env, fll: &FluentLanguageLoader, alpm: &Alpm) -> Res
     crate::utils::sudo(env)?;
 
     // FIXME 2024-06-04 This probably doesn't conserve local cache paths!
+    //
+    // 2024-06-07 But it _would_ conserve the main pacman cache, which is
+    // probably what we actually care about with -Cy.
     let caches = env.caches();
 
     // All installed packages that are missing a tarball in the cache.

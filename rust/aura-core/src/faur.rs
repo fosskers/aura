@@ -85,10 +85,7 @@ where
     F: Fn(&str) -> Result<Vec<Package>, E>,
     I: IntoIterator<Item = &'a str>,
 {
-    // FIXME Thu May  5 21:28:31 2022
-    //
-    // Once `intersperse` stabilises, use that instead of this wasteful Vec
-    // allocation.
+    // FIXME Thu May  5 2022 Use `intersperse` once it stabilises.
     let s: String = pkgs.into_iter().collect::<Vec<_>>().join(",");
     let url = format!("{}/packages?names={}", FAUR_URL, s);
     fetch(&url)
@@ -101,9 +98,7 @@ where
     F: Fn(&str) -> Result<Vec<Package>, E>,
     I: IntoIterator<Item = &'a str>,
 {
-    // FIXME Thu May  5 21:37:15 2022
-    //
-    // Same as above.
+    // FIXME Thu May  5 2022 Same as above.
     let s: String = terms.into_iter().collect::<Vec<_>>().join(",");
     let url = format!("{}/packages?names={}&by=desc", FAUR_URL, s);
     fetch(&url)

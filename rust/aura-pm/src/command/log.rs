@@ -110,10 +110,8 @@ fn view_work(path: &Path, before: Option<Date>, after: Option<Date>) -> Result<(
             .chars()
             .skip(1)
             .take(10)
-            // FIXME Fri Jun 24 11:22:42 2022
-            //
-            // Avoid this collect somehow. Couldn't it be done with a slice
-            // range, or does UTF-8 mess that up?
+            // FIXME Fri Jun 24 2022 Avoid this collect somehow.
+            // Couldn't it be done with a slice range, or does UTF-8 mess that up?
             .collect::<String>()
             .parse::<Date>()
         {

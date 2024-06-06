@@ -84,9 +84,7 @@ where
                 [fl!(fll, "dep-multi"), "".to_string()]
                     .into_iter()
                     .chain(iter)
-                    // FIXME Thu Jun 23 10:21:03 2022
-                    //
-                    // Use built-in `intersperse` once it stabilizes.
+                    // FIXME Thu Jun 23 2022 Use built-in `intersperse` once it stabilizes.
                     .apply(|i| itertools::intersperse(i, "\n".to_string()))
                     .collect()
             }

@@ -144,9 +144,7 @@ impl<'a> Package<'a> {
     pub fn from_path(path: &Path) -> Option<Package<'static>> {
         path.file_name()
             .and_then(|file| file.to_str())
-            // FIXME Mon Jan 10 19:19:47 2022
-            //
-            // Consider `rsplit_once` etc. here.
+            // FIXME Mon Jan 10 2022 Consider `rsplit_once` etc. here.
             .and_then(|file| file.rsplit_once('-'))
             .and_then(|(pkg, _)| {
                 let mut vec: Vec<_> = pkg.rsplitn(3, '-').collect();
