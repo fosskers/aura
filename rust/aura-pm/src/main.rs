@@ -44,6 +44,7 @@ use crate::command::{aur, cache, check, conf, deps, log as llog, open, orphans, 
 use crate::error::{Error, Nested};
 use crate::localization::Localised;
 use aura_pm::flags::{Args, Cache, SubCmd, AURA_GLOBALS};
+use aura_pm::ENGLISH;
 use clap::Parser;
 use colored::Colorize;
 use env::Env;
@@ -56,26 +57,55 @@ use std::process::ExitCode;
 fn main() -> ExitCode {
     // Parse all CLI input. Exits immediately if invalid input is given.
     let args = aura_pm::flags::Args::parse();
+    debug!("{:#?}", args);
 
-    // --- Localisation --- //
-    match localization::load(args.language()) {
+    // --- Runtime Settings --- //
+    match env(&args) {
         Err(e) => {
-            aln!("Failed to localise Aura!".red());
-            println!("\n  {}", e);
+            match localization::load(Some(ENGLISH)) {
+                Err(e1) => {
+                    aln!("Aura utterly failed to establish a runtime environment.".red());
+                    println!("\n  {}", e1);
+                }
+                Ok(fll) => {
+                    aln!(e.localise(&fll).red());
+                }
+            }
+
             ExitCode::FAILURE
         }
-        Ok(fll) => match work(args, &fll) {
-            Err(e) => {
-                e.nested();
-                aln!(e.localise(&fll).red());
-                ExitCode::FAILURE
+        Ok(env) => {
+            debug!("{:#?}", env);
+
+            // --- Localisation --- //
+            match localization::load(Some(env.general.language.clone())) {
+                Err(e) => {
+                    aln!("Runtime environment loaded, but failed to localise Aura!".red());
+                    println!("\n  {}", e);
+                    ExitCode::FAILURE
+                }
+                Ok(fll) => match work(args, env, &fll) {
+                    Err(e) => {
+                        e.nested();
+                        aln!(e.localise(&fll).red());
+                        ExitCode::FAILURE
+                    }
+                    Ok(_) => ExitCode::SUCCESS,
+                },
             }
-            Ok(_) => ExitCode::SUCCESS,
-        },
+        }
     }
 }
 
-fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
+/// Initialize the runtime environment.
+fn env(args: &Args) -> Result<Env, Error> {
+    let mut env = crate::env::Env::try_new()?;
+    env.reconcile_cli(&args);
+    env.validate()?;
+    Ok(env)
+}
+
+fn work(args: Args, env: Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
     // --- Terminal Logging --- //
     if let Some(l) = args.log_level {
         // Silently ignore logger init failure. Realistically it should never
@@ -83,16 +113,6 @@ fn work(args: Args, fll: &FluentLanguageLoader) -> Result<(), Error> {
         // previously initialized.
         let _ = TermLogger::init(l, Config::default(), TerminalMode::Mixed, ColorChoice::Auto);
     }
-
-    // --- Runtime Settings --- //
-    let env = {
-        let mut env = crate::env::Env::try_new()?;
-        env.reconcile_cli(&args.subcmd);
-        env.validate()?;
-        env
-    };
-    debug!("{:#?}", env);
-    debug!("{:#?}", args);
 
     match args.subcmd {
         // --- Pacman Commands --- //

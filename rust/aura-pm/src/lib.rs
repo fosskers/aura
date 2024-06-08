@@ -4,6 +4,8 @@ pub mod flags;
 
 use std::str::FromStr;
 
+use unic_langid::{langid, LanguageIdentifier};
+
 /// A wrapper around [`time::Date`] to supply some trait instances.
 #[derive(Debug, Clone)]
 pub struct Date(pub time::Date);
@@ -19,3 +21,7 @@ impl FromStr for Date {
         .map(Date)
     }
 }
+
+pub const ENGLISH: LanguageIdentifier = langid!("en-US");
+pub const GERMAN: LanguageIdentifier = langid!("de-DE");
+pub const JAPANESE: LanguageIdentifier = langid!("ja-JP");

@@ -1,11 +1,11 @@
 //! Types and utilities for parsing flags from the command line.
 
-use crate::Date;
+use crate::{Date, ENGLISH, GERMAN, JAPANESE};
 use clap::{ArgAction, Parser, Subcommand};
 use simplelog::LevelFilter;
 use std::ops::Not;
 use std::path::PathBuf;
-use unic_langid::{langid, LanguageIdentifier};
+use unic_langid::LanguageIdentifier;
 
 /// Global options only applicable to Aura that must be removed from the
 /// top-level args list before sending it to Pacman.
@@ -60,9 +60,9 @@ impl Args {
     /// corresponding standardized language code.
     pub fn language(&self) -> Option<LanguageIdentifier> {
         match () {
-            _ if self.english => Some(langid!("en-US")),
-            _ if self.german => Some(langid!("de-DE")),
-            _ if self.japanese => Some(langid!("ja-JP")),
+            _ if self.english => Some(ENGLISH),
+            _ if self.german => Some(GERMAN),
+            _ if self.japanese => Some(JAPANESE),
             _ => None,
         }
     }

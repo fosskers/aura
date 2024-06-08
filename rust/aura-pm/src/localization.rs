@@ -3,15 +3,14 @@
 use crate::utils::PathStr;
 use aura_core::aur::dependencies as deps;
 use aura_core::Apply;
+use aura_pm::{ENGLISH, GERMAN, JAPANESE};
 use i18n_embed::fluent::{fluent_language_loader, FluentLanguageLoader};
 use i18n_embed::{I18nEmbedError, LanguageLoader};
 use i18n_embed_fl::fl;
 use nonempty_collections::*;
 use rust_embed::RustEmbed;
 use std::collections::HashMap;
-use unic_langid::{langid, LanguageIdentifier};
-
-pub(crate) const ENGLISH: LanguageIdentifier = langid!("en-US");
+use unic_langid::LanguageIdentifier;
 
 #[derive(RustEmbed)]
 #[folder = "i18n"]
@@ -43,9 +42,9 @@ where
     S: AsRef<str>,
 {
     match code.as_ref() {
-        "en-US" => Some(langid!("en-US")),
-        "de-DE" => Some(langid!("de-DE")),
-        "ja-JP" => Some(langid!("ja-JP")),
+        "en-US" => Some(ENGLISH),
+        "de-DE" => Some(GERMAN),
+        "ja-JP" => Some(JAPANESE),
         _ => None,
     }
 }

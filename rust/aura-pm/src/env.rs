@@ -2,7 +2,8 @@
 
 use crate::dirs;
 use crate::error::Nested;
-use crate::localization::{identifier_from_code, Localised, ENGLISH};
+use crate::localization::{identifier_from_code, Localised};
+use aura_pm::ENGLISH;
 use from_variants::FromVariants;
 use i18n_embed_fl::fl;
 use log::{debug, error};
@@ -158,9 +159,15 @@ impl Env {
     }
 
     /// Allow CLI flags to override settings from `aura.toml`.
-    pub(crate) fn reconcile_cli(&mut self, flags: &aura_pm::flags::SubCmd) {
-        if let aura_pm::flags::SubCmd::Aur(a) = flags {
+    pub(crate) fn reconcile_cli(&mut self, flags: &aura_pm::flags::Args) {
+        if let aura_pm::flags::SubCmd::Aur(a) = &flags.subcmd {
             self.aur.reconcile(a)
+        }
+
+        // Specifying a language on the command line overrides all other
+        // settings.
+        if let Some(l) = flags.language() {
+            self.general.language = l;
         }
     }
 
@@ -207,11 +214,25 @@ impl From<RawGeneral> for General {
             cpus: raw.cpus.unwrap_or_else(|| num_cpus::get() as u32),
             editor: raw.editor.unwrap_or_else(editor),
             doas: raw.doas.unwrap_or(false),
+            // Precedence: We check config first for a language setting. If
+            // nothing, we check the environment. If nothing, we fall back to
+            // English. This can further be overridden by CLI flags.
             language: raw
                 .language
                 .and_then(identifier_from_code)
+                .or_else(|| language())
                 .unwrap_or(ENGLISH),
         }
+    }
+}
+
+/// An attempt to fetch a language setting from environment variables.
+fn language() -> Option<LanguageIdentifier> {
+    let raw = std::env::var("LANG").ok()?;
+
+    match raw.as_str() {
+        "en_US.UTF-8" => Some(ENGLISH),
+        _ => None,
     }
 }
 
