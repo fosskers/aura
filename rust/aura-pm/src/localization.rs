@@ -9,7 +9,9 @@ use i18n_embed_fl::fl;
 use nonempty_collections::*;
 use rust_embed::RustEmbed;
 use std::collections::HashMap;
-use unic_langid::LanguageIdentifier;
+use unic_langid::{langid, LanguageIdentifier};
+
+pub(crate) const ENGLISH: LanguageIdentifier = langid!("en-US");
 
 #[derive(RustEmbed)]
 #[folder = "i18n"]
@@ -34,6 +36,19 @@ struct Translations;
 // zh-CN Chinese
 // nl-NL Dutch
 // ??? Esperanto ???
+
+/// Parsing of [`LanguageIdentifier`]s that we are known to support.
+pub(crate) fn identifier_from_code<S>(code: S) -> Option<LanguageIdentifier>
+where
+    S: AsRef<str>,
+{
+    match code.as_ref() {
+        "en-US" => Some(langid!("en-US")),
+        "de-DE" => Some(langid!("de-DE")),
+        "ja-JP" => Some(langid!("ja-JP")),
+        _ => None,
+    }
+}
 
 /// Any type whose contents can be localised in a meaningful way.
 pub(crate) trait Localised {

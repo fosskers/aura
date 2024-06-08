@@ -2,7 +2,7 @@
 
 use crate::dirs;
 use crate::error::Nested;
-use crate::localization::Localised;
+use crate::localization::{identifier_from_code, Localised, ENGLISH};
 use from_variants::FromVariants;
 use i18n_embed_fl::fl;
 use log::{debug, error};
@@ -11,6 +11,7 @@ use r2d2_alpm::{Alpm, AlpmManager};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
+use unic_langid::LanguageIdentifier;
 
 const DEFAULT_EDITOR: &str = "vi";
 
@@ -178,6 +179,7 @@ struct RawGeneral {
     cpus: Option<u32>,
     editor: Option<String>,
     doas: Option<bool>,
+    language: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -185,6 +187,7 @@ pub(crate) struct General {
     pub(crate) cpus: u32,
     pub(crate) editor: String,
     pub(crate) doas: bool,
+    pub(crate) language: LanguageIdentifier,
 }
 
 impl Default for General {
@@ -193,6 +196,7 @@ impl Default for General {
             cpus: num_cpus::get() as u32,
             editor: editor(),
             doas: false,
+            language: ENGLISH,
         }
     }
 }
@@ -203,6 +207,10 @@ impl From<RawGeneral> for General {
             cpus: raw.cpus.unwrap_or_else(|| num_cpus::get() as u32),
             editor: raw.editor.unwrap_or_else(editor),
             doas: raw.doas.unwrap_or(false),
+            language: raw
+                .language
+                .and_then(identifier_from_code)
+                .unwrap_or(ENGLISH),
         }
     }
 }
