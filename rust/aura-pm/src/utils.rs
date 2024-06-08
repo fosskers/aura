@@ -125,13 +125,13 @@ impl Localised for SudoError {
     }
 }
 
-/// Escalate the privileges of the Aura process, if necessary.
+/// Escalate the privileges of the entire Aura process, if necessary.
 pub(crate) fn sudo(env: &Env) -> Result<(), SudoError> {
-    if env.general.doas {
-        karen::doas().map_err(|_| SudoError).void()
-    } else {
-        karen::escalate_if_needed().map_err(|_| SudoError).void()
-    }
+    karen::builder()
+        .wrapper(env.sudo())
+        .with_env(&["LANG", "EDITOR"])
+        .map_err(|_| SudoError)
+        .void()
 }
 
 /// An [`Iterator`] that knows if the current iteration step is the last one.
