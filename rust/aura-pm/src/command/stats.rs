@@ -111,6 +111,7 @@ pub(crate) fn stats(env: &Env, fll: &FluentLanguageLoader) -> Result<(), Error> 
         .map(aura_core::recursive_dir_size)
         .sum();
     let aura_build_bytes = aura_core::recursive_dir_size(&env.aur.build);
+    let tmp_bytes = aura_core::recursive_dir_size("/tmp");
 
     let pairs = vec![
         (
@@ -134,6 +135,10 @@ pub(crate) fn stats(env: &Env, fll: &FluentLanguageLoader) -> Result<(), Error> 
         (
             fl!(fll, "stats-aura-build"),
             format!("{}", aura_build_bytes.bytes()).normal(),
+        ),
+        (
+            fl!(fll, "stats-tmp"),
+            format!("{}", tmp_bytes.bytes()).normal(),
         ),
     ];
 

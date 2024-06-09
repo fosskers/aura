@@ -120,6 +120,7 @@ stats-pkgs = Installed packages
 stats-aura-cache = Aura Package Cache
 stats-pacman-cache = Pacman Package Cache
 stats-aura-build = Aura Build Cache
+stats-tmp = /tmp Directory
 
 # System Validation (check)
 check-start = Validating your system.
