@@ -170,6 +170,9 @@ check-cache-missing = Every installed official package has a tarball?
 check-cache-missing-fix = Fix: You can download missing official tarballs with { $command }
 check-cache-missing-for = Every installed AUR package has a tarball?
 check-cache-missing-for-fix = Fix: View the missing packages with { $cmd } and reinstall them manually.
+check-pkgs = Package Status
+check-pkgs-old = All explicitly installed, non-dep packages are up to date?
+check-pkgs-old-warn = { $pkg } was last updated { $days } ago.
 
 # Configuration (conf)
 conf-toml-err = Failed to serialize current config.

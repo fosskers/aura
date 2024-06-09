@@ -5,6 +5,7 @@ use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::PathStr;
 use crate::{aura, executable, green};
+use alpm::PackageReason;
 use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
@@ -16,6 +17,7 @@ use std::collections::HashSet;
 use std::ops::Not;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub(crate) const GOOD: &str = "✓";
 pub(crate) const WARN: &str = "!";
@@ -58,6 +60,7 @@ pub(crate) fn check(fll: &FluentLanguageLoader, env: &Env) -> Result<(), Error> 
     makepkg_config(fll);
     snapshots(fll, &env.backups.snapshots, &caches);
     cache(fll, &alpm, pool, &caches);
+    packages(fll, &alpm);
     green!(fll, "common-done");
 
     Ok(())
@@ -449,4 +452,57 @@ fn pacnew_work() -> Option<Vec<(PathBuf, u64)>> {
         .collect();
 
     Some(bads)
+}
+
+fn packages(fll: &FluentLanguageLoader, alpm: &Alpm) {
+    aura!(fll, "check-pkgs");
+    old_packages(fll, alpm);
+}
+
+fn old_packages(fll: &FluentLanguageLoader, alpm: &Alpm) {
+    let now = SystemTime::now();
+
+    if let Ok(dur) = now.duration_since(UNIX_EPOCH) {
+        let sec = dur.as_secs();
+
+        let old: Vec<_> = alpm
+            .as_ref()
+            .localdb()
+            .pkgs()
+            .into_iter()
+            // Only consider packages that you explicitly installed...
+            .filter(|p| p.reason() == PackageReason::Explicit)
+            // ...and aren't required by anything.
+            .filter(|p| p.required_by().is_empty())
+            .filter_map(|p| {
+                p.install_date().and_then(|id| {
+                    let diff = (sec - id as u64) / SECS_IN_DAY;
+                    if diff > 365 {
+                        Some((p, diff))
+                    } else {
+                        None
+                    }
+                })
+            })
+            .collect();
+
+        let good = old.is_empty();
+        let symb = if good { GOOD.green() } else { WARN.yellow() };
+        println!("  [{}] {}", symb, fl!(fll, "check-pkgs-old"));
+
+        let len = old.len();
+        for (i, (p, diff)) in old.into_iter().enumerate() {
+            let pkg = p.name().cyan().to_string();
+
+            let day = if diff < 365 * 2 {
+                diff.to_string().yellow().to_string()
+            } else {
+                diff.to_string().red().to_string()
+            };
+
+            let msg = fl!(fll, "check-pkgs-old-warn", pkg = pkg, days = day);
+            let arrow = if i + 1 == len { "└─" } else { "├─" };
+            println!("      {} {}", arrow, msg);
+        }
+    }
 }
