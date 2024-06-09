@@ -67,9 +67,35 @@ fn environment(fll: &FluentLanguageLoader) {
     aura!(fll, "check-env");
     lang(fll);
     editor(fll);
+    java(fll);
     executable!(fll, "git", "check-env-installed", exec = "git");
     executable!(fll, "fd", "check-env-installed", exec = "fd");
     executable!(fll, "rg", "check-env-installed", exec = "rg");
+}
+
+fn java(fll: &FluentLanguageLoader) {
+    match which::which("archlinux-java") {
+        Err(_) => {
+            let msg = fl!(fll, "check-env-java-bin");
+            println!("  [{}] {}", WARN.yellow(), msg);
+            let pkg = "jdk-openjdk".cyan().to_string();
+            let msg = fl!(fll, "check-env-java-bin-fix", pkg = pkg);
+            println!("      └─ {}", msg);
+        }
+        Ok(_) => {
+            let good = crate::utils::cmd_lines("archlinux-java", &["status"])
+                .map(|lines| lines.last().starts_with("No Java environment").not())
+                .unwrap_or(false);
+            let symb = if good { GOOD.green() } else { BAD.red() };
+            println!("  [{}] {}", symb, fl!(fll, "check-env-java-set"));
+
+            if !good {
+                let cmd = "archlinux-java --help".cyan().to_string();
+                let msg = fl!(fll, "check-env-java-set-fix", cmd = cmd);
+                println!("      └─ {}", msg);
+            }
+        }
+    }
 }
 
 fn lang(fll: &FluentLanguageLoader) {
@@ -82,19 +108,14 @@ fn lang(fll: &FluentLanguageLoader) {
             println!("      └─ {}", msg);
         }
         Ok(lang) => {
-            let good = Command::new("locale")
-                .arg("-a")
-                .output()
-                .ok()
-                .map(|o| o.stdout)
-                .and_then(|stdout| String::from_utf8(stdout).ok())
-                .map(|s| s.lines().any(|line| same_lang(&lang, line.trim())))
+            let good = crate::utils::cmd_lines("locale", &["-a"])
+                .map(|lines| lines.into_iter().any(|line| same_lang(&lang, &line)))
                 .unwrap_or(false);
 
             let symb = if good { GOOD.green() } else { BAD.red() };
             let cmd = "locale -a".cyan().to_string();
             let msg = fl!(fll, "check-env-lang", cmd = cmd, lang = lang.clone());
-            println!("  [{}] {}", symb, msg,);
+            println!("  [{}] {}", symb, msg);
 
             if !good {
                 let file = "/etc/locale.gen".cyan().to_string();

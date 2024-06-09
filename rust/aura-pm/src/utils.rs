@@ -5,10 +5,12 @@ use crate::error::Nested;
 use crate::localization::Localised;
 use colored::{ColoredString, Colorize};
 use i18n_embed_fl::fl;
+use nonempty_collections::NEVec;
 use rustyline::Editor;
 use std::io::Write;
 use std::iter::Peekable;
 use std::path::Path;
+use std::process::Command;
 use std::str::FromStr;
 use unic_langid::LanguageIdentifier;
 
@@ -188,4 +190,25 @@ impl<T> Iteration<T> {
     pub(crate) fn is_last(&self) -> bool {
         matches!(self, Iteration::Final(_))
     }
+}
+
+/// The lines out output from some shell command.
+///
+/// Slightly wasteful in terms of allocations, so should be used only for
+/// commands whose output is known not to be that long.
+pub(crate) fn cmd_lines(cmd: &str, args: &[&str]) -> Option<NEVec<String>> {
+    Command::new(cmd)
+        .args(args)
+        .output()
+        .ok()
+        .map(|o| o.stdout)
+        .and_then(|stdout| String::from_utf8(stdout).ok())
+        .and_then(|s| {
+            let v = s
+                .lines()
+                .map(|line| line.trim().to_string())
+                .collect::<Vec<_>>();
+
+            NEVec::from_vec(v)
+        })
 }
