@@ -474,6 +474,7 @@ fn old_packages(fll: &FluentLanguageLoader, alpm: &Alpm) {
             .filter(|p| p.reason() == PackageReason::Explicit)
             // ...and aren't required by anything.
             .filter(|p| p.required_by().is_empty())
+            .filter(|p| p.optional_for().is_empty())
             .filter_map(|p| {
                 p.install_date().and_then(|id| {
                     let diff = (sec - id as u64) / SECS_IN_DAY;
