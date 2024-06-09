@@ -65,10 +65,54 @@ pub(crate) fn check(fll: &FluentLanguageLoader, env: &Env) -> Result<(), Error> 
 
 fn environment(fll: &FluentLanguageLoader) {
     aura!(fll, "check-env");
+    lang(fll);
     editor(fll);
     executable!(fll, "git", "check-env-installed", exec = "git");
     executable!(fll, "fd", "check-env-installed", exec = "fd");
     executable!(fll, "rg", "check-env-installed", exec = "rg");
+}
+
+fn lang(fll: &FluentLanguageLoader) {
+    match std::env::var("LANG") {
+        Err(_) => {
+            let cmd = "locale -a".cyan().to_string();
+            let msg = fl!(fll, "check-env-lang", cmd = cmd, lang = "???");
+            println!("  [{}] {}", BAD.red(), msg);
+            let msg = fl!(fll, "check-env-lang-fix2");
+            println!("      └─ {}", msg);
+        }
+        Ok(lang) => {
+            let good = Command::new("locale")
+                .arg("-a")
+                .output()
+                .ok()
+                .map(|o| o.stdout)
+                .and_then(|stdout| String::from_utf8(stdout).ok())
+                .map(|s| s.lines().any(|line| same_lang(&lang, line.trim())))
+                .unwrap_or(false);
+
+            let symb = if good { GOOD.green() } else { BAD.red() };
+            let cmd = "locale -a".cyan().to_string();
+            let msg = fl!(fll, "check-env-lang", cmd = cmd, lang = lang.clone());
+            println!("  [{}] {}", symb, msg,);
+
+            if !good {
+                let file = "/etc/locale.gen".cyan().to_string();
+                let lnge = lang.cyan().to_string();
+                let msg = fl!(fll, "check-env-lang-fix", file = file, lang = lnge);
+                println!("      └─ {}", msg);
+            }
+        }
+    }
+}
+
+/// Whether the LANG variable content can be considered the same as a given line
+/// from `locale -a`.
+fn same_lang(lang: &str, locale: &str) -> bool {
+    match (lang.split_once('.'), locale.split_once('.')) {
+        (Some((l0, "UTF-8")), Some((l1, "utf8"))) => l0 == l1,
+        _ => false,
+    }
 }
 
 fn editor(fll: &FluentLanguageLoader) {
