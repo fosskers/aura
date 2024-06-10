@@ -67,7 +67,7 @@ fn xdg_cache() -> Result<PathBuf, Error> {
 }
 
 /// The full path to the Aura cache.
-fn aura_xdg_cache() -> Result<PathBuf, Error> {
+pub(crate) fn aura_xdg_cache() -> Result<PathBuf, Error> {
     let cache = xdg_cache()?.join("aura");
     Ok(cache)
 }

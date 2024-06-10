@@ -146,7 +146,8 @@ fn editor(fll: &FluentLanguageLoader) {
     println!("  [{}] {}", symb, fl!(fll, "check-env-editor"));
 
     if let Ok(e) = edit.as_deref() {
-        executable!(fll, e, "check-env-editor-exec", exec = e);
+        let exec = e.cyan().to_string();
+        executable!(fll, e, "check-env-editor-exec", exec = exec);
     } else {
         executable!(fll, "vi", "check-env-editor-vi");
     }
@@ -167,6 +168,20 @@ fn makepkg_config(fll: &FluentLanguageLoader) {
 fn aura_config(fll: &FluentLanguageLoader) {
     aura!(fll, "check-aconf");
     parsable_aura_toml(fll);
+    old_aura_dirs(fll);
+}
+
+fn old_aura_dirs(fll: &FluentLanguageLoader) {
+    let good = Path::new("/var/cache/aura").is_dir().not();
+    let symbol = if good { GOOD.green() } else { WARN.yellow() };
+    println!("  [{}] {}", symbol, fl!(fll, "check-aconf-old-dirs"));
+
+    if let Ok(cache) = crate::dirs::aura_xdg_cache() {
+        let old = "/var/cache/aura".bold().yellow().to_string();
+        let new = cache.display().to_string().bold().cyan().to_string();
+        let msg = fl!(fll, "check-aconf-old-dirs-fix", old = old, new = new);
+        println!("      └─ {}", msg);
+    }
 }
 
 fn parsable_aura_toml(fll: &FluentLanguageLoader) {
