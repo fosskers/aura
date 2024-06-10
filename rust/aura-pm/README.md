@@ -10,5 +10,5 @@ Since this crate is still in the Alpha phase, you'll need to specify the version
 yourself when installing it via `cargo`:
 
 ```
-cargo install aura-pm --version 4.0.0-beta02
+cargo install aura-pm --version 4.0.0-beta03
 ```

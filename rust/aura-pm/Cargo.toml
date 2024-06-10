@@ -1,6 +1,6 @@
 [package]
 name = "aura-pm"
-version = "4.0.0-beta02"
+version = "4.0.0-beta03"
 authors = ["Colin Woodbury <colin@fosskers.ca>"]
 edition = "2021"
 description = "Install and manage Arch Linux packages."
@@ -14,11 +14,10 @@ name = "aura"
 path = "src/main.rs"
 
 [dependencies]
-aura-core = { version = "0.4", path = "../aura-core" }
+aura-core = { version = "0.5", path = "../aura-core" }
 r2d2-alpm = { version = "0.2", path = "../r2d2-alpm" }
 
 alpm = "3.0"
-alpm-utils = "3.0"
 clap = { version = "4.4", features = ["derive"] }
 colored = "2.0"
 curl = "0.4"
