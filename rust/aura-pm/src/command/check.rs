@@ -169,6 +169,7 @@ fn aura_config(fll: &FluentLanguageLoader) {
     aura!(fll, "check-aconf");
     parsable_aura_toml(fll);
     old_aura_dirs(fll);
+    old_aura_conf(fll);
 }
 
 fn old_aura_dirs(fll: &FluentLanguageLoader) {
@@ -176,11 +177,36 @@ fn old_aura_dirs(fll: &FluentLanguageLoader) {
     let symbol = if good { GOOD.green() } else { WARN.yellow() };
     println!("  [{}] {}", symbol, fl!(fll, "check-aconf-old-dirs"));
 
-    if let Ok(cache) = crate::dirs::aura_xdg_cache() {
-        let old = "/var/cache/aura".bold().yellow().to_string();
-        let new = cache.display().to_string().bold().cyan().to_string();
-        let msg = fl!(fll, "check-aconf-old-dirs-fix", old = old, new = new);
-        println!("      └─ {}", msg);
+    if !good {
+        if let Ok(cache) = crate::dirs::aura_xdg_cache() {
+            let old = "/var/cache/aura".bold().yellow().to_string();
+            let new = cache.display().to_string().bold().cyan().to_string();
+            let msg = fl!(fll, "common-replace", old = old, new = new);
+            println!("      └─ {}", msg);
+        }
+    }
+}
+
+fn old_aura_conf(fll: &FluentLanguageLoader) {
+    if let Ok(xdg) = crate::dirs::xdg_config() {
+        let user = xdg.join("aura").join("aura.conf");
+        let files = [Path::new("/etc/aura.conf"), &user];
+        let exists: Vec<_> = files.into_iter().filter(|p| p.is_file()).collect();
+        let good = exists.is_empty();
+        let symbol = if good { GOOD.green() } else { WARN.yellow() };
+        println!("  [{}] {}", symbol, fl!(fll, "check-aconf-old-conf"));
+
+        if let Ok(aura) = crate::dirs::aura_config() {
+            let new = aura.display().to_string().bold().cyan().to_string();
+
+            let len = exists.len();
+            for (i, file) in exists.into_iter().enumerate() {
+                let old = file.display().to_string().bold().yellow().to_string();
+                let msg = fl!(fll, "common-replace", old = old, new = new.as_str());
+                let arrow = if i + 1 == len { "└─" } else { "├─" };
+                println!("      {} {}", arrow, msg);
+            }
+        }
     }
 }
 

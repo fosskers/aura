@@ -155,7 +155,7 @@ check-aconf-aura-exists = Aura config file exists?
 check-aconf-aura-exists-fix = Fix: Consider { $cmd }
 check-aconf-aura-parse = Aura config file can be parsed?
 check-aconf-old-dirs = No old Aura directories exist?
-check-aconf-old-dirs-fix = You can delete { $old } in favour of { $new }.
+check-aconf-old-conf = No old Aura config files exist?
 check-mconf = Makepkg Configuration (/etc/makepkg.conf)
 check-mconf-packager = PACKAGER set?
 check-mconf-packager-fix = Set { $cmd } within /etc/makepkg.conf
@@ -247,6 +247,7 @@ common-no-packages = No packages specified.
 common-no-valid = No valid packages specified.
 common-no-work = Nothing to do.
 common-cancelled = Action cancelled.
+common-replace = You can delete { $old } in favour of { $new }.
 
 # Misc.
 proceed = Proceed?
