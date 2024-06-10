@@ -1,4 +1,4 @@
-resolver: lts-21.15
+resolver: lts-21.25
 
 ghc-options:
   $everything: -split-sections -haddock
@@ -10,4 +10,4 @@ packages:
   - aursec/
 
 extra-deps:
-  - versions-6.0.3
+  - versions-6.0.7
