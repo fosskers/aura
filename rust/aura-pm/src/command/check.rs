@@ -2,7 +2,7 @@
 
 use crate::env::{Aur, Env};
 use crate::error::Nested;
-use crate::localization::Localised;
+use crate::localization::{identifier_from_code, locale_to_code, Localised};
 use crate::utils::PathStr;
 use crate::{aura, executable, green};
 use alpm::PackageReason;
@@ -126,15 +126,25 @@ fn lang(fll: &FluentLanguageLoader) {
                 let msg = fl!(fll, "check-env-lang-fix", file = file, lang = lnge);
                 println!("      └─ {}", msg);
             }
+
+            aura_knows_lang(fll, &lang);
         }
     }
+}
+
+fn aura_knows_lang(fll: &FluentLanguageLoader, lang: &str) {
+    let good = locale_to_code(lang)
+        .and_then(identifier_from_code)
+        .is_some();
+    let symb = if good { GOOD.green() } else { WARN.yellow() };
+    println!("  [{}] {}", symb, fl!(fll, "check-env-lang-known"));
 }
 
 /// Whether the LANG variable content can be considered the same as a given line
 /// from `locale -a`.
 fn same_lang(lang: &str, locale: &str) -> bool {
-    match (lang.split_once('.'), locale.split_once('.')) {
-        (Some((l0, "UTF-8")), Some((l1, "utf8"))) => l0 == l1,
+    match (locale_to_code(lang), locale_to_code(locale)) {
+        (Some(l0), Some(l1)) => l0 == l1,
         _ => false,
     }
 }

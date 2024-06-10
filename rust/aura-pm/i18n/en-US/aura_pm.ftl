@@ -133,6 +133,7 @@ check-env-installed = { $exec } installed and executable?
 check-env-lang = { $cmd } contains LANG value? ({ $lang })
 check-env-lang-fix = Update your { $file } to include { $lang }.
 check-env-lang-fix2 = Set your LANG variable!
+check-env-lang-known = Aura is localised to your LANG?
 check-env-java-bin = Java tooling installed?
 check-env-java-bin-fix = Considering installing { $pkg }.
 check-env-java-set = Java environment set?

@@ -49,6 +49,18 @@ where
     }
 }
 
+/// Convert from the format found in `/etc/locale.gen` or `locale -a` to the
+/// format parsable by us to produce [`LanguageIdentifier`]s.
+pub(crate) fn locale_to_code<S>(locale: S) -> Option<String>
+where
+    S: AsRef<str>,
+{
+    locale
+        .as_ref()
+        .split_once('.')
+        .map(|(code, _)| code.replace('_', "-"))
+}
+
 /// Any type whose contents can be localised in a meaningful way.
 pub(crate) trait Localised {
     /// Localise the content of a type.
@@ -180,5 +192,10 @@ mod test {
                 }
             })
         }
+    }
+
+    #[test]
+    fn locale_parsing() {
+        assert!(locale_to_code("en_US.UTF8").is_some());
     }
 }
