@@ -222,7 +222,7 @@ fn parsable_aura_toml(fll: &FluentLanguageLoader) {
         let symbol = if parsable { GOOD.green() } else { BAD.red() };
         println!("  [{}] {}", symbol, fl!(fll, "check-aconf-aura-parse"));
     } else {
-        let cmd = "aura conf --gen > ~/.config/aura.toml"
+        let cmd = "aura conf --gen > ~/.config/aura/config.toml"
             .bold()
             .cyan()
             .to_string();
