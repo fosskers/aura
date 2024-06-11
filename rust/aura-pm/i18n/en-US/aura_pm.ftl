@@ -16,6 +16,7 @@ A-build-diff = Display diffs of build files?
 A-build-hotedit-pkgbuild = Edit the PKGBUILD?
 A-build-hotedit-install = Edit the .install file?
 A-build-fail = Package failed to build, citing:
+A-build-e-pkgctl = Building within an isolated chroot failed.
 A-build-e-makepkg = makepkg failed.
 A-build-e-edit = Failed to edit: { $file }
 A-build-e-tarball = Failed to move: { $file }

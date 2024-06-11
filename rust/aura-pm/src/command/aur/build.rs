@@ -25,6 +25,7 @@ pub(crate) enum Error {
     ReadDir(PathBuf, std::io::Error),
     Pkglist(PathBuf, std::io::Error),
     Makepkg,
+    PkgctlBuild,
     Cancelled,
 }
 
@@ -47,6 +48,7 @@ impl Nested for Error {
             Error::Pkglist(_, e) => error!("{e}"),
             Error::Makepkg => {}
             Error::Cancelled => {}
+            Error::PkgctlBuild => {}
         }
     }
 }
@@ -63,6 +65,7 @@ impl Localised for Error {
             Error::Cancelled => fl!(fll, "common-cancelled"),
             Error::EditFail(p) => fl!(fll, "A-build-e-edit", file = p.utf8()),
             Error::Makepkg => fl!(fll, "A-build-e-makepkg"),
+            Error::PkgctlBuild => fl!(fll, "A-build-e-pkgctl"),
             Error::CreateDir(p, _) => fl!(fll, "dir-mkdir", dir = p.utf8()),
             Error::ReadDir(p, _) => fl!(fll, "err-read-dir", dir = p.utf8()),
             Error::Pkglist(p, _) => fl!(fll, "A-build-pkglist", dir = p.utf8()),
@@ -79,11 +82,18 @@ pub(crate) struct Built {
 // TODO Thu Jan 20 16:13:54 2022
 //
 // Consider parallel builds, but make it opt-in.
+//
+// 2024-06-12
+//
+// Really? Given that certain packages themselves build with multiple threads,
+// this sounds like a recipe for problems.
 /// Build the given packages and yield paths to their built tarballs.
 pub(crate) fn build<I>(
     fll: &FluentLanguageLoader,
     aur: &crate::env::Aur,
     editor: &str,
+    // Was there only ever one package to be built? If so, we don't prompt the
+    // user with a "will you continue?" message if the build fails.
     is_single: bool,
     pkg_clones: I,
 ) -> Result<Vec<Built>, Error>
@@ -124,8 +134,8 @@ fn build_one(
     aura!(fll, "A-build-pkg", pkg = base.cyan().bold().to_string());
 
     // --- Prepare the Build Directory --- //
-    let build = aur.build.join(&base);
-    std::fs::create_dir_all(&build).map_err(|e| Error::CreateDir(build.clone(), e))?;
+    let build_dir = aur.build.join(&base);
+    std::fs::create_dir_all(&build_dir).map_err(|e| Error::CreateDir(build_dir.clone(), e))?;
 
     // --- Copy non-downloadable `source` files and PKGBUILD --- //
     let to_copy = info
@@ -153,7 +163,7 @@ fn build_one(
             debug!("Copying {}", file);
             let path = Path::new(&file);
             let source = clone.join(path);
-            let target = build.join(path);
+            let target = build_dir.join(path);
             std::fs::copy(source, target).void()
         })
         .collect::<Validated<(), std::io::Error>>()
@@ -165,11 +175,15 @@ fn build_one(
     }
 
     if aur.hotedit {
-        overwrite_build_files(fll, editor, &build, &base)?;
+        overwrite_build_files(fll, editor, &build_dir, &base)?;
     }
 
     let tarballs = {
-        let tarballs = makepkg(&build, aur.nocheck)?;
+        let tarballs = if aur.chroot.contains(&base) {
+            pkgctl_build(&build_dir)
+        } else {
+            makepkg(&build_dir, aur.nocheck)
+        }?;
 
         for tb in tarballs.iter() {
             debug!("Built: {}", tb.display());
@@ -260,11 +274,33 @@ fn edit(editor: &str, file: PathBuf) -> Result<(), Error> {
     Ok(())
 }
 
+fn pkgctl_build(within: &Path) -> Result<Vec<PathBuf>, Error> {
+    debug!("Running `pkgctl build` within {}", within.display());
+
+    Command::new("pkgctl")
+        .arg("build")
+        .current_dir(within)
+        .status()
+        .map_err(|_| Error::PkgctlBuild)?
+        .success()
+        .then_some(())
+        .ok_or(Error::PkgctlBuild)?;
+
+    tarball_paths(within)
+}
+
 /// Build each package specified by the `PKGBUILD` and yield a list of the built
 /// tarballs.
 fn makepkg(within: &Path, nocheck: bool) -> Result<Vec<PathBuf>, Error> {
     let mut cmd = Command::new("makepkg");
-    cmd.arg("-f"); // TODO Remove or rethink
+
+    // TODO Remove or rethink
+    //
+    // 2024-06-12
+    //
+    // Yes, this isn't enough to get around packages that don't want to be
+    // configured more than once.
+    cmd.arg("-f");
 
     if nocheck {
         cmd.arg("--nocheck");
@@ -280,6 +316,10 @@ fn makepkg(within: &Path, nocheck: bool) -> Result<Vec<PathBuf>, Error> {
         .then_some(())
         .ok_or(Error::Makepkg)?;
 
+    tarball_paths(within)
+}
+
+fn tarball_paths(within: &Path) -> Result<Vec<PathBuf>, Error> {
     // NOTE Outputs absolute paths.
     let bytes = Command::new("makepkg")
         .arg("--packagelist")
