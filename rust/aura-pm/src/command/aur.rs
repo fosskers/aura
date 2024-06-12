@@ -6,7 +6,7 @@ use crate::env::Env;
 use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::{Finished, PathStr, ResultVoid, NOTHING};
-use crate::{aura, green, proceed};
+use crate::{aura, green, proceed, yellow};
 use aura_core::Apply;
 use colored::{ColoredString, Colorize};
 use from_variants::FromVariants;
@@ -502,8 +502,21 @@ pub(crate) fn upgrade<'a>(
     let clones: HashSet<PathBuf> = foreigns
         .par_iter()
         .map(|p| p.name.as_ref())
-        .map(|p| {
-            aura_core::aur::clone_path_of_pkgbase(&env.aur.clones, p, &crate::fetch::fetch_json)
+        .filter_map(|p| {
+            let rpath = aura_core::aur::clone_path_of_pkgbase(
+                &env.aur.clones,
+                p,
+                &crate::fetch::fetch_json,
+            );
+
+            match rpath {
+                Ok(path) => Some(Ok(path)),
+                Err(aura_core::aur::Error::PackageDoesNotExist(p)) => {
+                    yellow!(fll, "faur-unknown", pkg = p);
+                    None
+                }
+                Err(e) => Some(Err(e)),
+            }
         })
         .collect::<Result<HashSet<_>, aura_core::aur::Error>>()?;
     debug!("Unique clones: {}", clones.len());
