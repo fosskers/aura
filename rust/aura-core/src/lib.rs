@@ -8,16 +8,18 @@ pub mod cache;
 pub mod deps;
 pub mod faur;
 pub mod git;
-pub mod log;
+pub mod logs;
 pub mod snapshot;
 
 use alpm::{AlpmList, Db, PackageReason, SigLevel};
 use alpm_utils::DbListExt;
+use log::debug;
 use r2d2_alpm::Alpm;
 use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::fs::DirEntry;
 use std::path::Path;
+use versions::Versioning;
 use walkdir::WalkDir;
 
 /// Types that act like a package database.
@@ -108,20 +110,22 @@ pub struct Package<'a> {
     /// The name of the package.
     pub name: Cow<'a, str>,
     /// The version of the package.
-    pub version: Cow<'a, str>,
+    pub version: Versioning,
 }
 
 impl<'a> Package<'a> {
     /// Construct a new `Package`.
-    pub fn new<S, T>(name: S, version: T) -> Package<'a>
+    pub fn new<S, T>(name: S, version: T) -> Option<Package<'a>>
     where
         S: Into<Cow<'a, str>>,
-        T: Into<Cow<'a, str>>,
+        T: AsRef<str>,
     {
-        Package {
+        let p = Package {
             name: name.into(),
-            version: version.into(),
-        }
+            version: Versioning::new(version)?,
+        };
+
+        Some(p)
     }
 
     // TODO Avoid the extra String allocation.
@@ -134,12 +138,12 @@ impl<'a> Package<'a> {
     /// let path = Path::new("/var/cache/pacman/pkg/aura-bin-3.2.1-1-x86_64.pkg.tar.zst");
     /// let pkg = Package::from_path(path).unwrap();
     /// assert_eq!("aura-bin", pkg.name);
-    /// assert_eq!("3.2.1-1", pkg.version);
+    /// assert_eq!("3.2.1-1", pkg.version.to_string());
     ///
     /// let simple = Path::new("aura-bin-3.2.1-1-x86_64.pkg.tar.zst");
     /// let pkg = Package::from_path(simple).unwrap();
     /// assert_eq!("aura-bin", pkg.name);
-    /// assert_eq!("3.2.1-1", pkg.version);
+    /// assert_eq!("3.2.1-1", pkg.version.to_string());
     /// ```
     pub fn from_path(path: &Path) -> Option<Package<'static>> {
         path.file_name()
@@ -153,29 +157,44 @@ impl<'a> Package<'a> {
                 vec.reverse();
                 let version = vec.join("-");
 
-                Some(Package::new(name, version))
+                Package::new(name, version)
             })
     }
 
     /// Does some given version string have the same value as the one in this
     /// `Package`?
     pub fn same_version(&self, other: &str) -> bool {
-        match alpm::vercmp(other, &self.version) {
-            Ordering::Equal => true,
-            Ordering::Less | Ordering::Greater => false,
+        Versioning::new(other)
+            .map(|o| self.version.cmp(&o).is_eq())
+            .unwrap_or(false)
+    }
+
+    /// Attempt to convert from package data from ALPM.
+    ///
+    /// Can fail if the supplied version number was somehow so ridiculous that
+    /// even a `Mess` couldn't handle it.
+    pub fn from_alpm(pkg: &'a alpm::Package) -> Option<Package<'a>> {
+        match Package::new(pkg.name(), pkg.version()) {
+            Some(p) => Some(p),
+            None => {
+                debug!("from_alpm: failed to parse {}", pkg.version().as_str());
+                None
+            }
         }
     }
-}
 
-impl<'a> From<&'a alpm::Package> for Package<'a> {
-    fn from(p: &'a alpm::Package) -> Self {
-        Package::new(p.name(), p.version().as_str())
-    }
-}
-
-impl From<crate::faur::Package> for Package<'_> {
-    fn from(p: crate::faur::Package) -> Self {
-        Package::new(p.name, p.version)
+    /// Attempt to convert from package data from the AUR.
+    ///
+    /// Can fail if the supplied version number was somehow so ridiculous that
+    /// even a `Mess` couldn't handle it.
+    pub fn from_faur(pkg: crate::faur::Package) -> Option<Package<'static>> {
+        match Package::new(pkg.name, &pkg.version) {
+            Some(p) => Some(p),
+            None => {
+                debug!("from_faur: failed to parse {}", pkg.version);
+                None
+            }
+        }
     }
 }
 
@@ -188,7 +207,7 @@ impl<'a> PartialOrd for Package<'a> {
 impl<'a> Ord for Package<'a> {
     fn cmp(&self, other: &Self) -> Ordering {
         match self.name.cmp(&other.name) {
-            Ordering::Equal => alpm::vercmp(self.version.as_ref(), other.version.as_ref()),
+            Ordering::Equal => self.version.cmp(&other.version),
             otherwise => otherwise,
         }
     }

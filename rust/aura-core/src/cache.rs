@@ -126,17 +126,30 @@ where
         })
 }
 
-/// Yield the [`CacheInfo`], if possible, of the given packages.
-pub fn info(caches: &[&Path], package: &str) -> Result<Option<CacheInfo>, std::io::Error> {
-    let mut matches: Vec<(PkgPath, Metadata)> = search(caches, package)
+/// Paths to the tarballs corresponding to a given package name.
+///
+/// Results are sorted by version.
+pub fn matching(
+    caches: &[&Path],
+    package: &str,
+) -> Result<Vec<(PkgPath<'static>, Metadata)>, std::io::Error> {
+    let mut matches = search(caches, package)
         .filter_map(|path| {
             path.metadata()
                 .ok()
                 .and_then(|meta| PkgPath::new(path).map(|pp| (pp, meta)))
         })
         .filter(|(pp, _)| pp.pkg.name == package)
-        .collect();
-    matches.sort_by(|(p0, _), (p1, _)| p1.cmp(p0));
+        .collect::<Vec<_>>();
+    matches.sort_by(|(p0, _), (p1, _)| p0.cmp(p1));
+
+    Ok(matches)
+}
+
+/// Yield the [`CacheInfo`], if possible, of the given packages.
+pub fn info(caches: &[&Path], package: &str) -> Result<Option<CacheInfo>, std::io::Error> {
+    let mut matches = matching(caches, package)?;
+    matches.reverse();
 
     let available: Vec<String> = matches
         .iter()
@@ -151,7 +164,7 @@ pub fn info(caches: &[&Path], package: &str) -> Result<Option<CacheInfo>, std::i
 
             let info = CacheInfo {
                 name: pp.pkg.name.into_owned(),
-                version: pp.pkg.version.into_owned(),
+                version: pp.pkg.version.to_string(),
                 created,
                 signature,
                 size: meta.len(),

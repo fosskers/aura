@@ -319,7 +319,7 @@ pub(crate) fn clean_not_saved(fll: &FluentLanguageLoader, env: &Env) -> Result<(
         // If no snapshot contains this tarball's particular version, remove it
         // from the filesystem.
         match snaps.get(p.name.as_ref()) {
-            Some(vs) if vs.contains(p.version.as_ref()) => {}
+            Some(vs) if vs.contains(&p.version.to_string()) => {}
             Some(_) | None => tarball.sudo_remove(elevation).map_err(Error::Delete)?,
         }
     }

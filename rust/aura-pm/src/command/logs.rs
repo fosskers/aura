@@ -76,7 +76,7 @@ fn info_work(
 
     for e in pks
         .into_iter()
-        .filter_map(|p| aura_core::log::info(path, p))
+        .filter_map(|p| aura_core::logs::info(path, p))
     {
         let pairs: Vec<(&str, ColoredString)> = vec![
             (&p, e.package.normal()),

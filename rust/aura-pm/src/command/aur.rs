@@ -7,7 +7,7 @@ use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::{Finished, PathStr, ResultVoid, NOTHING};
 use crate::{aura, green, proceed, yellow};
-use aura_core::Apply;
+use aura_core::{Apply, Package};
 use colored::{ColoredString, Colorize};
 use from_variants::FromVariants;
 use i18n_embed::{fluent::FluentLanguageLoader, LanguageLoader};
@@ -491,7 +491,7 @@ pub(crate) fn upgrade<'a>(
 
     // --- Query database for all non-repo packages --- //
     let mut foreigns: Vec<aura_core::Package<'a>> = aura_core::foreign_packages(alpm)
-        .map(|p| p.into())
+        .filter_map(aura_core::Package::from_alpm)
         .collect();
     debug!("Foreign packages: {}", foreigns.len());
     foreigns.retain(|p| env.aur.ignores.contains(p.name.as_ref()).not());
@@ -541,7 +541,12 @@ pub(crate) fn upgrade<'a>(
     let mut to_upgrade: Vec<(aura_core::Package<'_>, aura_core::Package<'_>)> = from_api
         .into_iter()
         .filter_map(|new| db.pkg(new.name.as_str()).ok().map(|old| (old, new)))
-        .map(|(old, new)| (aura_core::Package::from(old), aura_core::Package::from(new)))
+        .filter_map(
+            |(old, new)| match (Package::from_alpm(old), Package::from_faur(new)) {
+                (Some(o), Some(n)) => Some((o, n)),
+                _ => None,
+            },
+        )
         .filter(|(old, new)| old < new)
         .collect();
     debug!("Packages to upgrade: {}", to_upgrade.len());
@@ -575,7 +580,7 @@ pub(crate) fn upgrade<'a>(
             .unwrap_or(0);
         let longest_version = to_upgrade
             .iter()
-            .map(|(old, _)| old.version.chars().count())
+            .map(|(old, _)| old.version.to_string().chars().count())
             .max()
             .unwrap_or(0);
 
@@ -583,8 +588,8 @@ pub(crate) fn upgrade<'a>(
             println!(
                 " {:n$} :: {:v$} -> {}",
                 old.name.cyan(),
-                old.version.truecolor(128, 128, 128),
-                new.version.bold(),
+                old.version.to_string().truecolor(128, 128, 128),
+                new.version.to_string().bold(),
                 n = longest_name,
                 v = longest_version,
             );

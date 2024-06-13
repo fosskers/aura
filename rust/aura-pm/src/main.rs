@@ -40,7 +40,7 @@ mod macros;
 pub(crate) mod pacman;
 pub(crate) mod utils;
 
-use crate::command::{aur, cache, check, conf, deps, log as llog, open, orphans, snapshot, stats};
+use crate::command::{aur, cache, check, conf, deps, logs, open, orphans, snapshot, stats};
 use crate::error::{Error, Nested};
 use crate::localization::Localised;
 use aura_pm::flags::{Args, Cache, SubCmd, AURA_GLOBALS};
@@ -157,9 +157,9 @@ fn work(args: Args, env: Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
         SubCmd::Cache(c) if c.missing => cache::missing(&env.alpm()?, &env.caches()),
         SubCmd::Cache(c) => cache::downgrade(&env, fll, c.packages)?,
         // --- Logs --- //
-        SubCmd::Log(l) if l.search.is_some() => llog::search(env.alpm_log(), l.search.unwrap())?,
-        SubCmd::Log(l) if !l.info.is_empty() => llog::info(fll, env.alpm_log(), l.info)?,
-        SubCmd::Log(l) => llog::view(env.alpm_log(), l.before, l.after)?,
+        SubCmd::Log(l) if l.search.is_some() => logs::search(env.alpm_log(), l.search.unwrap())?,
+        SubCmd::Log(l) if !l.info.is_empty() => logs::info(fll, env.alpm_log(), l.info)?,
+        SubCmd::Log(l) => logs::view(env.alpm_log(), l.before, l.after)?,
         // --- Orphan Packages --- //
         SubCmd::Orphans(o) if o.abandon => orphans::remove(&env, &env.alpm()?, fll)?,
         SubCmd::Orphans(o) if !o.adopt.is_empty() => {
