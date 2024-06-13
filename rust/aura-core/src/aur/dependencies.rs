@@ -212,6 +212,7 @@ where
     Ok(res)
 }
 
+#[allow(clippy::too_many_arguments)]
 fn resolve_one<M, F, E>(
     pool: Pool<M>,
     mutx: Arc<Mutex<Resolution>>,

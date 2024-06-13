@@ -220,7 +220,7 @@ impl From<RawGeneral> for General {
             language: raw
                 .language
                 .and_then(identifier_from_code)
-                .or_else(|| language())
+                .or_else(language)
                 .unwrap_or(ENGLISH),
         }
     }

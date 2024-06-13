@@ -25,25 +25,25 @@ use walkdir::WalkDir;
 /// Types that act like a package database.
 pub trait DbLike {
     /// A simple package lookup.
-    fn get_pkg<'a, S>(&'a self, name: S) -> Result<&'a alpm::Package, alpm::Error>
+    fn get_pkg<S>(&self, name: S) -> Result<&alpm::Package, alpm::Error>
     where
         S: Into<Vec<u8>>;
 
     /// Find a package that provides some name.
-    fn provides<'a, S>(&'a self, name: S) -> Option<&'a alpm::Package>
+    fn provides<S>(&self, name: S) -> Option<&alpm::Package>
     where
         S: Into<Vec<u8>>;
 }
 
 impl DbLike for Db {
-    fn get_pkg<'a, S>(&'a self, name: S) -> Result<&'a alpm::Package, alpm::Error>
+    fn get_pkg<S>(&self, name: S) -> Result<&alpm::Package, alpm::Error>
     where
         S: Into<Vec<u8>>,
     {
         self.pkg(name)
     }
 
-    fn provides<'a, S>(&'a self, _: S) -> Option<&'a alpm::Package>
+    fn provides<S>(&self, _: S) -> Option<&alpm::Package>
     where
         S: Into<Vec<u8>>,
     {
@@ -52,14 +52,14 @@ impl DbLike for Db {
 }
 
 impl DbLike for AlpmList<'_, &Db> {
-    fn get_pkg<'a, S>(&'a self, name: S) -> Result<&'a alpm::Package, alpm::Error>
+    fn get_pkg<S>(&self, name: S) -> Result<&alpm::Package, alpm::Error>
     where
         S: Into<Vec<u8>>,
     {
         self.pkg(name)
     }
 
-    fn provides<'a, S>(&'a self, name: S) -> Option<&'a alpm::Package>
+    fn provides<S>(&self, name: S) -> Option<&alpm::Package>
     where
         S: Into<Vec<u8>>,
     {
@@ -84,7 +84,7 @@ impl<'a, 'b> Dbs<'a, 'b> {
 }
 
 impl<'b, 'c> DbLike for Dbs<'b, 'c> {
-    fn get_pkg<'a, S>(&'a self, name: S) -> Result<&'a alpm::Package, alpm::Error>
+    fn get_pkg<S>(&self, name: S) -> Result<&alpm::Package, alpm::Error>
     where
         S: Into<Vec<u8>>,
     {
@@ -96,7 +96,7 @@ impl<'b, 'c> DbLike for Dbs<'b, 'c> {
             .or_else(|_| self.syncs.get_pkg(v))
     }
 
-    fn provides<'a, S>(&'a self, name: S) -> Option<&'a alpm::Package>
+    fn provides<S>(&self, name: S) -> Option<&alpm::Package>
     where
         S: Into<Vec<u8>>,
     {

@@ -100,7 +100,7 @@ fn main() -> ExitCode {
 /// Initialize the runtime environment.
 fn env(args: &Args) -> Result<Env, Error> {
     let mut env = crate::env::Env::try_new()?;
-    env.reconcile_cli(&args);
+    env.reconcile_cli(args);
     env.validate()?;
     Ok(env)
 }
