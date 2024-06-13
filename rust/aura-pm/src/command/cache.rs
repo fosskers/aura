@@ -133,11 +133,11 @@ pub(crate) fn downgrade(
     Ok(())
 }
 
-fn downgrade_one<'a>(
+fn downgrade_one(
     fll: &FluentLanguageLoader,
     package: &str,
-    mut tarballs: Vec<PkgPath<'a>>,
-) -> Result<PkgPath<'a>, Error> {
+    mut tarballs: Vec<PkgPath>,
+) -> Result<PkgPath, Error> {
     tarballs.sort_by(|a, b| b.as_package().cmp(a.as_package()));
     let digits = 1 + (tarballs.len() / 10);
 

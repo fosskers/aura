@@ -12,14 +12,14 @@ use std::{cmp::Ordering, process::Command};
 
 /// A validated path to a package tarball.
 #[derive(Debug, PartialEq, Eq)]
-pub struct PkgPath<'a> {
+pub struct PkgPath {
     path: PathBuf,
-    pkg: Package<'a>,
+    pkg: Package<'static>,
 }
 
-impl<'a> PkgPath<'a> {
+impl PkgPath {
     /// Validate that `PathBuf` has an expected extension.
-    pub fn new(path: PathBuf) -> Option<PkgPath<'static>> {
+    pub fn new(path: PathBuf) -> Option<PkgPath> {
         match Package::from_path(&path) {
             Some(pkg) if is_package(&path) => Some(PkgPath { path, pkg }),
             _ => None,
@@ -47,7 +47,7 @@ impl<'a> PkgPath<'a> {
     }
 
     /// Pull a simple package definition from this tarball path.
-    pub fn as_package(&self) -> &Package<'a> {
+    pub fn as_package(&self) -> &Package<'static> {
         &self.pkg
     }
 
@@ -73,13 +73,13 @@ impl<'a> PkgPath<'a> {
     }
 }
 
-impl<'a> PartialOrd for PkgPath<'a> {
+impl PartialOrd for PkgPath {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<'a> Ord for PkgPath<'a> {
+impl Ord for PkgPath {
     fn cmp(&self, other: &Self) -> Ordering {
         self.pkg.cmp(&other.pkg)
     }
@@ -132,7 +132,7 @@ where
 pub fn matching(
     caches: &[&Path],
     package: &str,
-) -> Result<Vec<(PkgPath<'static>, Metadata)>, std::io::Error> {
+) -> Result<Vec<(PkgPath, Metadata)>, std::io::Error> {
     let mut matches = search(caches, package)
         .filter_map(|path| {
             path.metadata()
@@ -193,7 +193,7 @@ where
 }
 
 /// Valid [`PkgPath`]s in the given caches.
-pub fn package_paths<P>(caches: &[P]) -> impl Iterator<Item = PkgPath<'static>> + '_
+pub fn package_paths<P>(caches: &[P]) -> impl Iterator<Item = PkgPath> + '_
 where
     P: AsRef<Path>,
 {
