@@ -129,26 +129,23 @@ where
 /// Paths to the tarballs corresponding to a given package name.
 ///
 /// Results are sorted by version.
-pub fn matching(
-    caches: &[&Path],
-    package: &str,
-) -> Result<Vec<(PkgPath, Metadata)>, std::io::Error> {
-    let mut matches = search(caches, package)
+pub fn matching(caches: &[&Path], pkg: &str) -> Vec<(PkgPath, Metadata)> {
+    let mut matches = search(caches, pkg)
         .filter_map(|path| {
             path.metadata()
                 .ok()
                 .and_then(|meta| PkgPath::new(path).map(|pp| (pp, meta)))
         })
-        .filter(|(pp, _)| pp.pkg.name == package)
+        .filter(|(pp, _)| pp.pkg.name == pkg)
         .collect::<Vec<_>>();
     matches.sort_by(|(p0, _), (p1, _)| p0.cmp(p1));
 
-    Ok(matches)
+    matches
 }
 
 /// Yield the [`CacheInfo`], if possible, of the given packages.
 pub fn info(caches: &[&Path], package: &str) -> Result<Option<CacheInfo>, std::io::Error> {
-    let mut matches = matching(caches, package)?;
+    let mut matches = matching(caches, package);
     matches.reverse();
 
     let available: Vec<String> = matches

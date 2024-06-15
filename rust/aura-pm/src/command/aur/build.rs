@@ -2,11 +2,13 @@ use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::{PathStr, ResultVoid};
 use crate::{aura, proceed, red, yellow};
+use aura_core::cache::PkgPath;
 use colored::Colorize;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use log::{debug, error, warn};
 use nonempty_collections::NEVec;
+use r2d2_alpm::Alpm;
 use srcinfo::Srcinfo;
 use std::ops::Not;
 use std::path::{Path, PathBuf};
@@ -90,7 +92,9 @@ pub(crate) struct Built {
 /// Build the given packages and yield paths to their built tarballs.
 pub(crate) fn build<I>(
     fll: &FluentLanguageLoader,
+    caches: &[&Path],
     aur: &crate::env::Aur,
+    alpm: &Alpm,
     editor: &str,
     // Was there only ever one package to be built? If so, we don't prompt the
     // user with a "will you continue?" message if the build fails.
@@ -103,7 +107,7 @@ where
     aura!(fll, "A-build-prep");
 
     let to_install = pkg_clones
-        .map(|path| build_one(fll, aur, editor, path))
+        .map(|path| build_one(fll, caches, aur, alpm, editor, path))
         .map(|r| build_check(fll, is_single, r))
         .collect::<Result<Vec<Option<Built>>, Error>>()?
         .into_iter()
@@ -115,7 +119,9 @@ where
 
 fn build_one(
     fll: &FluentLanguageLoader,
+    caches: &[&Path],
     aur: &crate::env::Aur,
+    alpm: &Alpm,
     editor: &str,
     clone: PathBuf,
 ) -> Result<Built, Error> {
@@ -135,6 +141,9 @@ fn build_one(
 
     // --- Prepare the Build Directory --- //
     let build_dir = aur.build.join(&base);
+    // TODO 2024-06-13 Consider giving the option to wipe the build dir every time.
+    //
+    // Sometimes certain packages don't want to have `configure` ran more than once, etc.
     std::fs::create_dir_all(&build_dir).map_err(|e| Error::CreateDir(build_dir.clone(), e))?;
 
     // --- Copy non-downloadable `source` files and PKGBUILD --- //
@@ -180,7 +189,21 @@ fn build_one(
 
     let tarballs = {
         let tarballs = if aur.chroot.contains(&base) {
-            pkgctl_build(&build_dir)
+            let dbs = alpm.as_ref().syncdbs();
+            let aur_deps: Vec<_> = info
+                .base
+                .makedepends
+                .into_iter()
+                .flat_map(|av| av.vec)
+                .chain(info.pkg.depends.into_iter().flat_map(|av| av.vec))
+                .filter(|s| dbs.find_satisfier(s.as_str()).is_none())
+                // `pop` fetches the last item in the Vec, which should be the
+                // most recent version of the package.
+                .filter_map(|p| aura_core::cache::matching(caches, &p).pop())
+                .map(|(pp, _)| pp)
+                .collect();
+
+            pkgctl_build(&build_dir, &aur_deps)
         } else {
             makepkg(&build_dir, aur.nocheck)
         }?;
@@ -274,12 +297,19 @@ fn edit(editor: &str, file: PathBuf) -> Result<(), Error> {
     Ok(())
 }
 
-fn pkgctl_build(within: &Path) -> Result<Vec<PathBuf>, Error> {
+fn pkgctl_build(within: &Path, deps: &[PkgPath]) -> Result<Vec<PathBuf>, Error> {
     debug!("Running `pkgctl build` within {}", within.display());
+    debug!("AUR deps to inject: {:?}", deps);
 
-    Command::new("pkgctl")
-        .arg("build")
-        .current_dir(within)
+    let mut cmd = Command::new("pkgctl");
+    cmd.arg("build");
+
+    for dep in deps {
+        cmd.arg("-I");
+        cmd.arg(dep.as_path());
+    }
+
+    cmd.current_dir(within)
         .status()
         .map_err(|_| Error::PkgctlBuild)?
         .success()

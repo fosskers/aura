@@ -441,11 +441,22 @@ where
 
     // --- Build and install each layer of AUR packages --- //
     let is_single = to_build.len() == 1;
+    let caches = env.caches();
+    let alpm = env.alpm()?;
     for raw_layer in order.into_iter().apply(Finished::new) {
         let done = raw_layer.is_last();
         let layer = raw_layer.inner();
         let clone_paths = layer.into_iter().map(|pkg| env.aur.clones.join(pkg));
-        let builts = build::build(fll, &env.aur, &env.general.editor, is_single, clone_paths)?;
+
+        let builts = build::build(
+            fll,
+            &caches,
+            &env.aur,
+            &alpm,
+            &env.general.editor,
+            is_single,
+            clone_paths,
+        )?;
 
         if builts.is_empty().not() {
             // FIXME Tue Jun 28 15:04:10 2022

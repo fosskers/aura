@@ -133,7 +133,7 @@ impl std::fmt::Display for Official {
 pub struct Buildable {
     /// The name of the AUR package.
     pub name: String,
-    /// The names of its dependencies.
+    /// The names of its dependencies, both official and AUR.
     pub deps: HashSet<String>,
 }
 
@@ -460,6 +460,8 @@ pub fn build_order<E>(to_build: &[Buildable]) -> Result<Vec<Vec<&str>>, Error<E>
             Some(b) => Error::CyclicDep(b.to_string()),
         })?
         .into_iter()
+        // Least-depended-upon to most-dependend-upon ordering. We reverse the
+        // order again at the very end.
         .map(|ix| graph.node_weight(ix))
         .collect::<Option<Vec<_>>>()
         .ok_or(Error::MalformedGraph)?
@@ -469,11 +471,19 @@ pub fn build_order<E>(to_build: &[Buildable]) -> Result<Vec<Vec<&str>>, Error<E>
             (Vec::new(), Vec::new(), HashSet::new()),
             |(mut layers, mut group, mut deps), buildable| {
                 if deps.contains(&buildable.name) {
+                    // Then, this buildable can't be built in the same layer as
+                    // the previously considered packages. We thus construct a
+                    // new layer.
                     layers.push(group);
                     deps.clear();
                     deps.extend(&buildable.deps);
                     (layers, vec![buildable.name.as_str()], deps)
                 } else {
+                    // While all of the Buildable's official (non-AUR) deps are
+                    // also included in its `deps` field, only its own name is
+                    // ever added to the build order "group", and thus we never
+                    // try to mistakenly build an official package as an AUR
+                    // one.
                     group.push(buildable.name.as_str());
                     deps.extend(&buildable.deps);
                     (layers, group, deps)
@@ -485,6 +495,7 @@ pub fn build_order<E>(to_build: &[Buildable]) -> Result<Vec<Vec<&str>>, Error<E>
             if group.is_empty().not() {
                 layers.push(group);
             }
+            // The most-dependend-upon packages will now come first.
             layers.reverse();
             Ok(layers)
         })
