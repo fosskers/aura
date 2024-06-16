@@ -1,9 +1,6 @@
 language-name = English
 
 # AUR Packages (-A)
-A-install-unreal = { $pkg } is not a real package.
-A-install-cloning = Cloning new packages...
-A-install-pulling = Pulling known packages...
 A-install-deps = Resolving dependencies...
 A-install-repo-pkgs = Repository dependencies:
 A-install-aur-pkgs = AUR packages:
@@ -57,7 +54,6 @@ A-u-to-upgrade = AUR packages to upgrade:
 A-u-git = VCS packages to rebuild:
 
 A-w = Cloning { $package }...
-A-w-fail = Failed to clone the following packages:
 
 A-y-refreshing = Refreshing local clones of installed AUR packages...
 A-y = Failed to pull the following packages:
@@ -97,7 +93,6 @@ C-y-which-cache = Which cache should receive the downloaded tarballs?
 C-t-invalids = Removing invalid package tarballs.
 
 # Orphans (-O)
-O-abandon = The following orphans and their dependencies will be removed:
 O-adopt = { $pkg } now marked as explicitly installed.
 O-explicit-err = Failed to mark { $pkg } as explicitly installed.
 
@@ -162,11 +157,9 @@ check-mconf = Makepkg Configuration (/etc/makepkg.conf)
 check-mconf-packager = PACKAGER set?
 check-mconf-packager-fix = Set { $cmd } within /etc/makepkg.conf
 check-snapshots = Package Snapshots
-check-snapshots-unreadable = Unable to read snapshot path: { $path }
 check-snapshot-usable = All snapshots have corresponding tarballs?
 check-snapshot-usable-fix = Fix: You can remove old/unusable snapshots with { $command }
 check-cache = Package Tarball Caches
-check-cache-unreadable = Unable to read cache path: { $path }
 check-cache-exists = All specified caches exist?
 check-cache-tarballs = All tarballs valid?
 check-cache-tarballs-fix = Fix: You can remove invalid tarballs with { $command }
@@ -241,12 +234,10 @@ err-write = Somehow failed to write to stdout.
 # Common Fields
 common-yes = Yes
 common-no = No
-common-none = None
 common-name = Name
 common-done = Done.
 common-total = Total
 common-no-packages = No packages specified.
-common-no-valid = No valid packages specified.
 common-no-work = Nothing to do.
 common-cancelled = Action cancelled.
 common-replace = You can delete { $old } in favour of { $new }.
@@ -254,4 +245,3 @@ common-replace = You can delete { $old } in favour of { $new }.
 # Misc.
 proceed = Proceed?
 proceed-yes = [Y/n]
-proceed-no = [y/N]

@@ -22,7 +22,6 @@ A-i-submitted = 最初投稿
 A-i-updated = 更新
 
 # Orphans (-O)
-O-abandon = The following orphans and their dependencies will be removed:
 O-adopt = { $package } now marked as explicitly installed.
 
 # Logs (-L)
