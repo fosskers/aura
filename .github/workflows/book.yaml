@@ -2,8 +2,9 @@ name: Book
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
+    paths:
+      - "book/**"
 
 jobs:
   book:

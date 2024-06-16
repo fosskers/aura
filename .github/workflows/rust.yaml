@@ -3,7 +3,13 @@ name: Rust
 on:
   push:
     branches: [master]
+    paths:
+      - "rust/**/Cargo.toml"
+      - "rust/**/*.rs"
   pull_request:
+    paths:
+      - "rust/**/Cargo.toml"
+      - "rust/**/*.rs"
 
 env:
   CARGO_TERM_COLOR: always

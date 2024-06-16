@@ -1,9 +1,16 @@
 name: Haskell
 on:
   pull_request:
+    paths:
+      - "haskell/stack.yaml"
+      - "haskell/**/*.cabal"
+      - "haskell/**/*.hs"
   push:
-    branches:
-      - master
+    branches: [master]
+    paths:
+      - "haskell/stack.yaml"
+      - "haskell/**/*.cabal"
+      - "haskell/**/*.hs"
 
 jobs:
   build:
