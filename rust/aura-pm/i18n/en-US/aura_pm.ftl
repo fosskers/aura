@@ -114,10 +114,6 @@ C-y-no-work = Package cache already synchronized.
 C-y-which-cache = Which cache should receive the downloaded tarballs?
 C-t-invalids = Removing invalid package tarballs.
 
-# Orphans (-O)
-O-adopt = { $pkg } now marked as explicitly installed.
-O-explicit-err = Failed to mark { $pkg } as explicitly installed.
-
 # Logs (-L)
 # firstInstall
 L-first = First Install
@@ -127,6 +123,10 @@ L-upgrades = Upgrades
 L-recent = Recent Actions
 L-search-err = Searching your logs via { $cmd } failed.
 L-view-err = Failed to open your ALPM log.
+
+# Orphans (-O)
+O-adopt = { $pkg } now marked as explicitly installed.
+O-explicit-err = Failed to mark { $pkg } as explicitly installed.
 
 # Opening Pages (open)
 open-err = Failed to open { $url }.
