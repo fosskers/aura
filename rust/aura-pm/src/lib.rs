@@ -25,3 +25,4 @@ impl FromStr for Date {
 pub const ENGLISH: LanguageIdentifier = langid!("en-US");
 pub const GERMAN: LanguageIdentifier = langid!("de-DE");
 pub const JAPANESE: LanguageIdentifier = langid!("ja-JP");
+pub const POLISH: LanguageIdentifier = langid!("pl-PL");

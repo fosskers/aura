@@ -3,7 +3,7 @@
 use crate::utils::PathStr;
 use aura_core::aur::dependencies as deps;
 use aura_core::Apply;
-use aura_pm::{ENGLISH, GERMAN, JAPANESE};
+use aura_pm::{ENGLISH, GERMAN, JAPANESE, POLISH};
 use i18n_embed::fluent::{fluent_language_loader, FluentLanguageLoader};
 use i18n_embed::{I18nEmbedError, LanguageLoader};
 use i18n_embed_fl::fl;
@@ -16,11 +16,7 @@ use unic_langid::LanguageIdentifier;
 #[folder = "i18n"]
 struct Translations;
 
-// TODO Pull `LANG`, etc., variables from the environment myself. There are
-// libraries that do this, but they incur heavy dependencies.
-
 // TODO
-// pl-PL Polish
 // hr-HR Crotian
 // sv-SE Swedish
 // de-DE German
@@ -45,6 +41,7 @@ where
         "en-US" => Some(ENGLISH),
         "de-DE" => Some(GERMAN),
         "ja-JP" => Some(JAPANESE),
+        "pl-PL" => Some(POLISH),
         _ => None,
     }
 }
