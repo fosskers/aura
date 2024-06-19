@@ -3,7 +3,7 @@
 use crate::utils::PathStr;
 use aura_core::aur::dependencies as deps;
 use aura_core::Apply;
-use aura_pm::{CROATIAN, ENGLISH, GERMAN, JAPANESE, POLISH, SPANISH, SWEDISH};
+use aura_pm::{CROATIAN, ENGLISH, GERMAN, JAPANESE, POLISH, PORTUGUESE, SPANISH, SWEDISH};
 use i18n_embed::fluent::{fluent_language_loader, FluentLanguageLoader};
 use i18n_embed::{I18nEmbedError, LanguageLoader};
 use i18n_embed_fl::fl;
@@ -41,6 +41,7 @@ where
         "sv-SE" => Some(SWEDISH),
         "de-DE" => Some(GERMAN),
         "es-ES" => Some(SPANISH),
+        "pt-PT" => Some(PORTUGUESE),
         _ => None,
     }
 }
