@@ -27,3 +27,4 @@ pub const ENGLISH: LanguageIdentifier = langid!("en-US");
 pub const GERMAN: LanguageIdentifier = langid!("de-DE");
 pub const JAPANESE: LanguageIdentifier = langid!("ja-JP");
 pub const POLISH: LanguageIdentifier = langid!("pl-PL");
+pub const SWEDISH: LanguageIdentifier = langid!("sv-SE");

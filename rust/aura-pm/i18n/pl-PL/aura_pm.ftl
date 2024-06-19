@@ -75,7 +75,7 @@ C-b-target = Tworzenie kopii zapasowej pamięci podręcznej w { $target }
 # C-i-size = Tarball Size
 # C-i-avail = Available Versions
 
-C-c-keep = { $pkgs } wersji każdego pakietu zostanie zachowane. Wszystko inne zostanie usunięte. Na pewno?
+C-c-keep = { $pkgs } wersji każdego pakietu zostanie zachowane. Wszystko inne zostanie usunięte.
 C-c-freed = { $bytes } zwolnionych.
 
 C-downgrade-which = Którą wersję pakietu { $pkg } zainstalować?

@@ -3,7 +3,7 @@
 use crate::dirs;
 use crate::error::Nested;
 use crate::localization::{identifier_from_code, Localised};
-use aura_pm::{CROATIAN, ENGLISH, GERMAN, JAPANESE, POLISH};
+use aura_pm::{CROATIAN, ENGLISH, GERMAN, JAPANESE, POLISH, SWEDISH};
 use from_variants::FromVariants;
 use i18n_embed_fl::fl;
 use log::{debug, error};
@@ -232,10 +232,11 @@ fn language() -> Option<LanguageIdentifier> {
 
     match raw.as_str() {
         "en_US.UTF-8" => Some(ENGLISH),
-        "de_DE.UTF-8" => Some(GERMAN),
         "ja_JP.UTF-8" => Some(JAPANESE),
         "pl_PL.UTF-8" => Some(POLISH),
         "hr_HR.UTF-8" => Some(CROATIAN),
+        "sv_SE.UTF-8" => Some(SWEDISH),
+        "de_DE.UTF-8" => Some(GERMAN),
         _ => None,
     }
 }

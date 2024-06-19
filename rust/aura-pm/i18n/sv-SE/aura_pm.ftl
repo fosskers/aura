@@ -1,52 +1,52 @@
-language-name = 日本語
+language-name = Svenska
 
 # AUR Packages (-A)
-A-install-deps = 従属パッケージを確認中・・・
-A-install-repo-pkgs = Pacmanの従属パッケージ：
-A-install-aur-pkgs = AURのパッケージ:
+A-install-deps = Avgör beroenden...
+A-install-repo-pkgs = Beroenden ifrån lager:
+A-install-aur-pkgs = AUR Paket:
 # A-install-path-comp = Failed to extract final component of: { $path }
-A-install-ignored = { $file } は無視されるはずのパッケージです。それでも続行しますか？
+A-install-ignored = { $file } är markerad som ignorerad. Vill du installera ändå?
 
 # A-build-prep = Preparing build directories...
-A-build-pkg = { $pkg } を作成中・・・
+A-build-pkg = Bygger paket { $pkg }...
 # A-build-diff = Display diffs of build files?
 # A-build-hotedit-pkgbuild = Edit the PKGBUILD?
 # A-build-hotedit-install = Edit the .install file?
-A-build-fail = パッケージ作成に失敗しました。
+A-build-fail = Gick inte att bygga paket.
 # A-build-e-pkgctl = Building within an isolated chroot failed.
-A-build-e-makepkg = makepkgは失敗しました。
+# A-build-e-makepkg = makepkg failed.
 # A-build-e-edit = Failed to edit: { $file }
 # A-build-e-tarball = Failed to move: { $file }
 # A-build-e-filename = Failed to extract filename from: { $file }
 # A-build-e-copies = Failed to copy build files.
 # A-build-pkglist = Failed to determine makepkg output paths from: { $dir }
 # A-build-pull = Failed to pull latest commits - you may be building an old version!
-A-build-continue = それでも続行しますか？
+A-build-continue = Vill du fortsätta ändå?
 
-A-i-repo = リポジトリ
-A-i-version = バージョン
-A-i-status = パッケージ状態
-A-i-maintainer = 管理者
-A-i-proj-url = プロジェクト
-A-i-aur-url = パッケージページ
-A-i-license = ライセンス
-A-i-group = グループ
-A-i-provides = 供給
-A-i-depends = 従属パッケージ
-A-i-make = コンパイル時の
-A-i-opt = 任意の
-A-i-check = テスト用の
-A-i-votes = 投票数
-A-i-pop = 人気
-A-i-desc = 概要
-A-i-keywords = キーワード
-A-i-submitted = 最初投稿
-A-i-updated = 更新
+A-i-repo = Repository
+A-i-version = Version
+# A-i-status = AUR Status
+# A-i-maintainer = Maintainer
+A-i-proj-url = Projekt URL
+# A-i-aur-url = AUR URL
+A-i-license = Licens
+# A-i-group = Groups
+# A-i-provides = Provides
+# A-i-depends = Depends On
+# A-i-make = Make Deps
+# A-i-opt = Optional Deps
+# A-i-check = Check Deps
+A-i-votes = Röster
+# A-i-pop = Popularity
+A-i-desc = Beskrivning
+# A-i-keywords = Keywords
+# A-i-submitted = Submitted
+# A-i-updated = Updated
 
-A-u-fetch-info = パッケージ情報をダウンロード中・・・
-A-u-comparing = バージョンを比較中・・・
-A-u-no-upgrades = アップグレードは必要ありません。
-A-u-to-upgrade = アップグレードするAURパッケージ：
+A-u-fetch-info = Hämtar paketinformation...
+A-u-comparing = Jämför paket-versioner...
+A-u-no-upgrades = Inga AUR-paketsuppgraderingar behövs.
+A-u-to-upgrade = AUR-paket att uppgradera:
 # A-u-git = VCS packages to rebuild:
 
 # A-w = Cloning { $package }...
@@ -55,7 +55,7 @@ A-u-to-upgrade = アップグレードするAURパッケージ：
 # A-y = Failed to pull the following packages:
 
 # Snapshots (-B)
-B-saved = パッケージ状態の保存完了。
+B-saved = Det lokala pakettillståndet har sparats.
 # B-clean = Remove stale snapshots?
 # B-none = No usable snapshots found.
 # B-select = Select a snapshot to restore:
@@ -65,7 +65,7 @@ B-saved = パッケージ状態の保存完了。
 
 # C-b-file = { $target } already exists and is not a directory.
 # C-b-nonempty = Target { $target } exists but is not empty!
-C-b-target = キャッシュのバックアップ先： { $target }
+C-b-target = Tar backup på cache-filer till { $target }
 # C-b-curr = Failed to read current directory.
 
 # C-i-latest = Latest
@@ -75,19 +75,21 @@ C-b-target = キャッシュのバックアップ先： { $target }
 # C-i-size = Tarball Size
 # C-i-avail = Available Versions
 
-C-c-keep = パッケージ・ファイルは { $pkgs } 個保存されます。 残りは全部削除されます。
+C-c-keep = { $pkgs } av varje paketfil kommer att sparas. Resten kommer att tas bort.
 # C-c-freed = { $bytes } freed.
 
-C-downgrade-which = { $pkg } はどのバージョンにしますか？
+C-downgrade-which = Vilken version av { $pkg } vill du ha?
 
 # C-y-no-work = Package cache already synchronized.
 # C-y-which-cache = Which cache should receive the downloaded tarballs?
 # C-t-invalids = Removing invalid package tarballs.
 
 # Logs (-L)
-L-first = 初インストール
-L-upgrades = アップグレード回数
-L-recent = 近況
+L-first = Första installation
+L-upgrades = Uppgraderingar
+L-recent = Nyliga händelser
+# L-search-err = Searching your logs via { $cmd } failed.
+# L-view-err = Failed to open your ALPM log.
 
 # Orphans (-O)
 # O-adopt = { $pkg } now marked as explicitly installed.
@@ -135,7 +137,7 @@ L-recent = 近況
 # check-pconf-pacnew-old = { $path } is older than its .pacnew by { $days ->
 #    [one] 1 day.
 #   *[many] {$days} days.
-#}
+# }
 
 # check-aconf = Aura Configuration
 # check-aconf-aura-exists = Aura config file exists?
@@ -224,8 +226,7 @@ L-recent = 近況
 # Common Fields
 # common-yes = Yes
 # common-no = No
-# common-name = 名前
-# common-name = Name
+common-name = Namn
 # common-done = Done.
 # common-total = Total
 # common-no-packages = No packages specified.
