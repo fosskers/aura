@@ -1,6 +1,6 @@
 //! Types and utilities for parsing flags from the command line.
 
-use crate::{Date, ENGLISH, GERMAN, JAPANESE, POLISH};
+use crate::{Date, CROATIAN, ENGLISH, GERMAN, JAPANESE, POLISH};
 use clap::{ArgAction, Parser, Subcommand};
 use simplelog::LevelFilter;
 use std::ops::Not;
@@ -54,6 +54,15 @@ pub struct Args {
         display_order = 10
     )]
     pub polish: bool,
+    /// Output in Croatian (alias: hrvatski).
+    #[clap(
+        group = "language",
+        long,
+        global = true,
+        alias = "hrvatski",
+        display_order = 10
+    )]
+    pub croatian: bool,
 
     // --- Other Aura Options --- //
     /// Minimum level of Aura log messages to display.
@@ -73,6 +82,7 @@ impl Args {
             _ if self.german => Some(GERMAN),
             _ if self.japanese => Some(JAPANESE),
             _ if self.polish => Some(POLISH),
+            _ if self.croatian => Some(CROATIAN),
             _ => None,
         }
     }
