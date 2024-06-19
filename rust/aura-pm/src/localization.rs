@@ -17,7 +17,6 @@ use unic_langid::LanguageIdentifier;
 struct Translations;
 
 // TODO
-// de-DE German
 // es-ES Spanish
 // pt-PT Portuguese
 // fr-FR French
