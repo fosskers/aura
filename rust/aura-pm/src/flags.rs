@@ -2,7 +2,7 @@
 
 use crate::{
     Date, CROATIAN, ENGLISH, FRENCH, GERMAN, ITALIAN, JAPANESE, POLISH, PORTUGUESE, RUSSIAN,
-    SPANISH, SWEDISH,
+    SERBIAN, SPANISH, SWEDISH,
 };
 use clap::{ArgAction, Parser, Subcommand};
 use simplelog::LevelFilter;
@@ -120,6 +120,15 @@ pub struct Args {
         display_order = 10
     )]
     pub italian: bool,
+    /// Output in Serbian (alias: cрпски).
+    #[clap(
+        group = "language",
+        long,
+        global = true,
+        alias = "cрпски",
+        display_order = 10
+    )]
+    pub serbian: bool,
 
     // --- Other Aura Options --- //
     /// Minimum level of Aura log messages to display.
@@ -146,6 +155,7 @@ impl Args {
             _ if self.french => Some(FRENCH),
             _ if self.russian => Some(RUSSIAN),
             _ if self.italian => Some(ITALIAN),
+            _ if self.serbian => Some(SERBIAN),
             _ => None,
         }
     }

@@ -4,8 +4,8 @@ use crate::dirs;
 use crate::error::Nested;
 use crate::localization::{identifier_from_code, Localised};
 use aura_pm::{
-    CROATIAN, ENGLISH, FRENCH, GERMAN, ITALIAN, JAPANESE, POLISH, PORTUGUESE, RUSSIAN, SPANISH,
-    SWEDISH,
+    CROATIAN, ENGLISH, FRENCH, GERMAN, ITALIAN, JAPANESE, POLISH, PORTUGUESE, RUSSIAN, SERBIAN,
+    SPANISH, SWEDISH,
 };
 use from_variants::FromVariants;
 use i18n_embed_fl::fl;
@@ -245,6 +245,7 @@ fn language() -> Option<LanguageIdentifier> {
         "fr_FR.UTF-8" => Some(FRENCH),
         "ru_RU.UTF-8" => Some(RUSSIAN),
         "it_IT.UTF-8" => Some(ITALIAN),
+        "sr-RS.UTF-8" => Some(SERBIAN),
         _ => None,
     }
 }
