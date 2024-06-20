@@ -31,3 +31,4 @@ pub const SWEDISH: LanguageIdentifier = langid!("sv-SE");
 pub const SPANISH: LanguageIdentifier = langid!("es-ES");
 pub const PORTUGUESE: LanguageIdentifier = langid!("pt-PT");
 pub const FRENCH: LanguageIdentifier = langid!("fr-FR");
+pub const RUSSIAN: LanguageIdentifier = langid!("ru-RU");
