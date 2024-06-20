@@ -1,8 +1,8 @@
 //! Types and utilities for parsing flags from the command line.
 
 use crate::{
-    Date, CROATIAN, ENGLISH, FRENCH, GERMAN, JAPANESE, POLISH, PORTUGUESE, RUSSIAN, SPANISH,
-    SWEDISH,
+    Date, CROATIAN, ENGLISH, FRENCH, GERMAN, ITALIAN, JAPANESE, POLISH, PORTUGUESE, RUSSIAN,
+    SPANISH, SWEDISH,
 };
 use clap::{ArgAction, Parser, Subcommand};
 use simplelog::LevelFilter;
@@ -111,10 +111,19 @@ pub struct Args {
         display_order = 10
     )]
     pub russian: bool,
+    /// Output in Italian (alias: italiano).
+    #[clap(
+        group = "language",
+        long,
+        global = true,
+        alias = "italiano",
+        display_order = 10
+    )]
+    pub italian: bool,
 
     // --- Other Aura Options --- //
     /// Minimum level of Aura log messages to display.
-    #[clap(long, value_name = "level", global = true)]
+    #[clap(long, value_name = "level", global = true, display_order = 9)]
     pub log_level: Option<LevelFilter>,
     /// The Pacman/Aura subcommand to run.
     #[clap(subcommand)]
@@ -136,6 +145,7 @@ impl Args {
             _ if self.portuguese => Some(PORTUGUESE),
             _ if self.french => Some(FRENCH),
             _ if self.russian => Some(RUSSIAN),
+            _ if self.italian => Some(ITALIAN),
             _ => None,
         }
     }
