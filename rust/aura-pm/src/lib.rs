@@ -38,3 +38,4 @@ pub const NORWEGIAN: LanguageIdentifier = langid!("no-NO");
 pub const INDONESIAN: LanguageIdentifier = langid!("id-ID");
 pub const SIMPLIFIED_CHINESE: LanguageIdentifier = langid!("zh-CN");
 pub const ESPERANTO: LanguageIdentifier = langid!("eo-EO");
+pub const DUTCH: LanguageIdentifier = langid!("nl-NL");

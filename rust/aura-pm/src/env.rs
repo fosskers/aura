@@ -3,10 +3,6 @@
 use crate::dirs;
 use crate::error::Nested;
 use crate::localization::{identifier_from_code, Localised};
-use aura_pm::{
-    CROATIAN, ENGLISH, ESPERANTO, FRENCH, GERMAN, INDONESIAN, ITALIAN, JAPANESE, NORWEGIAN, POLISH,
-    PORTUGUESE, RUSSIAN, SERBIAN, SIMPLIFIED_CHINESE, SPANISH, SWEDISH,
-};
 use from_variants::FromVariants;
 use i18n_embed_fl::fl;
 use log::{debug, error};
@@ -206,7 +202,7 @@ impl Default for General {
             cpus: num_cpus::get() as u32,
             editor: editor(),
             doas: false,
-            language: ENGLISH,
+            language: aura_pm::ENGLISH,
         }
     }
 }
@@ -224,7 +220,7 @@ impl From<RawGeneral> for General {
                 .language
                 .and_then(identifier_from_code)
                 .or_else(language)
-                .unwrap_or(ENGLISH),
+                .unwrap_or(aura_pm::ENGLISH),
         }
     }
 }
@@ -235,22 +231,23 @@ fn language() -> Option<LanguageIdentifier> {
 
     // TODO 2024-06-22 Parse out locale so we can avoid countries.
     match raw.as_str() {
-        "en_US.UTF-8" => Some(ENGLISH),
-        "ja_JP.UTF-8" => Some(JAPANESE),
-        "pl_PL.UTF-8" => Some(POLISH),
-        "hr_HR.UTF-8" => Some(CROATIAN),
-        "sv_SE.UTF-8" => Some(SWEDISH),
-        "de_DE.UTF-8" => Some(GERMAN),
-        "es_ES.UTF-8" => Some(SPANISH),
-        "pt_PT.UTF-8" => Some(PORTUGUESE),
-        "fr_FR.UTF-8" => Some(FRENCH),
-        "ru_RU.UTF-8" => Some(RUSSIAN),
-        "it_IT.UTF-8" => Some(ITALIAN),
-        "sr-RS.UTF-8" => Some(SERBIAN),
-        "no-NO.UTF-8" => Some(NORWEGIAN),
-        "id_ID.UTF-8" => Some(INDONESIAN),
-        "zh_CN.UTF-8" => Some(SIMPLIFIED_CHINESE),
-        "eo.UTF-8" => Some(ESPERANTO),
+        "en_US.UTF-8" => Some(aura_pm::ENGLISH),
+        "ja_JP.UTF-8" => Some(aura_pm::JAPANESE),
+        "pl_PL.UTF-8" => Some(aura_pm::POLISH),
+        "hr_HR.UTF-8" => Some(aura_pm::CROATIAN),
+        "sv_SE.UTF-8" => Some(aura_pm::SWEDISH),
+        "de_DE.UTF-8" => Some(aura_pm::GERMAN),
+        "es_ES.UTF-8" => Some(aura_pm::SPANISH),
+        "pt_PT.UTF-8" => Some(aura_pm::PORTUGUESE),
+        "fr_FR.UTF-8" => Some(aura_pm::FRENCH),
+        "ru_RU.UTF-8" => Some(aura_pm::RUSSIAN),
+        "it_IT.UTF-8" => Some(aura_pm::ITALIAN),
+        "sr-RS.UTF-8" => Some(aura_pm::SERBIAN),
+        "no-NO.UTF-8" => Some(aura_pm::NORWEGIAN),
+        "id_ID.UTF-8" => Some(aura_pm::INDONESIAN),
+        "zh_CN.UTF-8" => Some(aura_pm::SIMPLIFIED_CHINESE),
+        "eo.UTF-8" => Some(aura_pm::ESPERANTO),
+        "nl_NL.UTF-8" => Some(aura_pm::DUTCH),
         _ => None,
     }
 }

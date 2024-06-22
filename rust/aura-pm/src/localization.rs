@@ -3,14 +3,9 @@
 use crate::utils::PathStr;
 use aura_core::aur::dependencies as deps;
 use aura_core::Apply;
-use aura_pm::{
-    CROATIAN, ENGLISH, ESPERANTO, FRENCH, GERMAN, INDONESIAN, ITALIAN, JAPANESE, NORWEGIAN, POLISH,
-    PORTUGUESE, RUSSIAN, SERBIAN, SIMPLIFIED_CHINESE, SPANISH, SWEDISH,
-};
 use i18n_embed::fluent::{fluent_language_loader, FluentLanguageLoader};
 use i18n_embed::{I18nEmbedError, LanguageLoader};
 use i18n_embed_fl::fl;
-use log::debug;
 use nonempty_collections::*;
 use rust_embed::RustEmbed;
 use std::collections::HashMap;
@@ -25,26 +20,25 @@ pub(crate) fn identifier_from_code<S>(code: S) -> Option<LanguageIdentifier>
 where
     S: AsRef<str>,
 {
-    debug!("PARSY PARSE: {}", code.as_ref());
-
     // TODO 2024-06-22 Here too.
     match code.as_ref() {
-        "en-US" => Some(ENGLISH),
-        "ja-JP" => Some(JAPANESE),
-        "pl-PL" => Some(POLISH),
-        "hr-HR" => Some(CROATIAN),
-        "sv-SE" => Some(SWEDISH),
-        "de-DE" => Some(GERMAN),
-        "es-ES" => Some(SPANISH),
-        "pt-PT" => Some(PORTUGUESE),
-        "fr-FR" => Some(FRENCH),
-        "ru-RU" => Some(RUSSIAN),
-        "it-IT" => Some(ITALIAN),
-        "sr-RS" => Some(SERBIAN),
-        "no-NO" => Some(NORWEGIAN),
-        "id-ID" => Some(INDONESIAN),
-        "zh-CN" => Some(SIMPLIFIED_CHINESE),
-        "eo" => Some(ESPERANTO),
+        "en-US" => Some(aura_pm::ENGLISH),
+        "ja-JP" => Some(aura_pm::JAPANESE),
+        "pl-PL" => Some(aura_pm::POLISH),
+        "hr-HR" => Some(aura_pm::CROATIAN),
+        "sv-SE" => Some(aura_pm::SWEDISH),
+        "de-DE" => Some(aura_pm::GERMAN),
+        "es-ES" => Some(aura_pm::SPANISH),
+        "pt-PT" => Some(aura_pm::PORTUGUESE),
+        "fr-FR" => Some(aura_pm::FRENCH),
+        "ru-RU" => Some(aura_pm::RUSSIAN),
+        "it-IT" => Some(aura_pm::ITALIAN),
+        "sr-RS" => Some(aura_pm::SERBIAN),
+        "no-NO" => Some(aura_pm::NORWEGIAN),
+        "id-ID" => Some(aura_pm::INDONESIAN),
+        "zh-CN" => Some(aura_pm::SIMPLIFIED_CHINESE),
+        "eo" => Some(aura_pm::ESPERANTO),
+        "nl-NL" => Some(aura_pm::DUTCH),
         _ => None,
     }
 }

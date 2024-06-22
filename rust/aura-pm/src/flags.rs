@@ -1,9 +1,6 @@
 //! Types and utilities for parsing flags from the command line.
 
-use crate::{
-    Date, CROATIAN, ENGLISH, ESPERANTO, FRENCH, GERMAN, INDONESIAN, ITALIAN, JAPANESE, NORWEGIAN,
-    POLISH, PORTUGUESE, RUSSIAN, SERBIAN, SIMPLIFIED_CHINESE, SPANISH, SWEDISH,
-};
+use crate::Date;
 use clap::{ArgAction, Parser, Subcommand};
 use simplelog::LevelFilter;
 use std::ops::Not;
@@ -182,6 +179,15 @@ pub struct Args {
     /// Output in Esperanto.
     #[clap(group = "language", long, global = true, display_order = 10)]
     pub esperanto: bool,
+    /// Output in Dutch (alias: nederlands).
+    #[clap(
+        group = "language",
+        long,
+        global = true,
+        alias = "nederlands",
+        display_order = 10
+    )]
+    pub dutch: bool,
 
     // --- Other Aura Options --- //
     /// Minimum level of Aura log messages to display.
@@ -197,22 +203,23 @@ impl Args {
     /// corresponding standardized language code.
     pub fn language(&self) -> Option<LanguageIdentifier> {
         match () {
-            _ if self.english => Some(ENGLISH),
-            _ if self.japanese => Some(JAPANESE),
-            _ if self.polish => Some(POLISH),
-            _ if self.croatian => Some(CROATIAN),
-            _ if self.swedish => Some(SWEDISH),
-            _ if self.german => Some(GERMAN),
-            _ if self.spanish => Some(SPANISH),
-            _ if self.portuguese => Some(PORTUGUESE),
-            _ if self.french => Some(FRENCH),
-            _ if self.russian => Some(RUSSIAN),
-            _ if self.italian => Some(ITALIAN),
-            _ if self.serbian => Some(SERBIAN),
-            _ if self.norwegian => Some(NORWEGIAN),
-            _ if self.indonesian => Some(INDONESIAN),
-            _ if self.simplified_chinese => Some(SIMPLIFIED_CHINESE),
-            _ if self.esperanto => Some(ESPERANTO),
+            _ if self.english => Some(crate::ENGLISH),
+            _ if self.japanese => Some(crate::JAPANESE),
+            _ if self.polish => Some(crate::POLISH),
+            _ if self.croatian => Some(crate::CROATIAN),
+            _ if self.swedish => Some(crate::SWEDISH),
+            _ if self.german => Some(crate::GERMAN),
+            _ if self.spanish => Some(crate::SPANISH),
+            _ if self.portuguese => Some(crate::PORTUGUESE),
+            _ if self.french => Some(crate::FRENCH),
+            _ if self.russian => Some(crate::RUSSIAN),
+            _ if self.italian => Some(crate::ITALIAN),
+            _ if self.serbian => Some(crate::SERBIAN),
+            _ if self.norwegian => Some(crate::NORWEGIAN),
+            _ if self.indonesian => Some(crate::INDONESIAN),
+            _ if self.simplified_chinese => Some(crate::SIMPLIFIED_CHINESE),
+            _ if self.esperanto => Some(crate::ESPERANTO),
+            _ if self.dutch => Some(crate::DUTCH),
             _ => None,
         }
     }
