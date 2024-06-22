@@ -69,7 +69,7 @@ make ss (User usr) pc = do
   (ec, se) <- runIt ss pc
   -- Fetch the filenames of the built tarballs.
   (_, out, _) <- readProcess $ proc "sudo" ["-u", T.unpack usr, makepkgCmd, "--packagelist"]
-  let fs = map T.unpack . T.lines . decodeUtf8Lenient $ BL.toStrict out
+  fs <- filterM doesFileExist . map T.unpack . T.lines . decodeUtf8Lenient $ BL.toStrict out
   pure (ec, se, fs)
 
 runIt :: MonadIO m

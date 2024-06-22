@@ -362,6 +362,7 @@ fn tarball_paths(within: &Path) -> Result<Vec<PathBuf>, Error> {
         .map_err(Error::Utf8)?
         .lines()
         .map(|line| [line].iter().collect())
+        .filter(|path: &PathBuf| path.exists())
         .collect();
 
     Ok(tarballs)
