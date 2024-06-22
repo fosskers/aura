@@ -1,8 +1,8 @@
 //! Types and utilities for parsing flags from the command line.
 
 use crate::{
-    Date, CROATIAN, ENGLISH, FRENCH, GERMAN, ITALIAN, JAPANESE, NORWEGIAN, POLISH, PORTUGUESE,
-    RUSSIAN, SERBIAN, SPANISH, SWEDISH,
+    Date, CROATIAN, ENGLISH, FRENCH, GERMAN, INDONESIAN, ITALIAN, JAPANESE, NORWEGIAN, POLISH,
+    PORTUGUESE, RUSSIAN, SERBIAN, SPANISH, SWEDISH,
 };
 use clap::{ArgAction, Parser, Subcommand};
 use simplelog::LevelFilter;
@@ -12,7 +12,34 @@ use unic_langid::LanguageIdentifier;
 
 /// Global options only applicable to Aura that must be removed from the
 /// top-level args list before sending it to Pacman.
-pub const AURA_GLOBALS: &[&str] = &["--english", "--japanese", "--german"];
+pub const AURA_GLOBALS: &[&str] = &[
+    "--english",
+    "--japanese",
+    "--日本語",
+    "--german",
+    "--deutsch",
+    "--polish",
+    "--polski",
+    "--croatian",
+    "--hrvatski",
+    "--swedish",
+    "--svenska",
+    "--spanish",
+    "--español",
+    "--portuguese",
+    "--português",
+    "--french",
+    "--français",
+    "--russian",
+    "--русский",
+    "--italian",
+    "--italiano",
+    "--serbian",
+    "--cрпски",
+    "--norwegian",
+    "--norsk",
+    "--indonesian",
+];
 
 /// Commandline arguments to the Aura executable.
 #[derive(Parser, Debug)]
@@ -129,7 +156,7 @@ pub struct Args {
         display_order = 10
     )]
     pub serbian: bool,
-    /// Output in Norwegian (alias: norskрпски).
+    /// Output in Norwegian (alias: norsk).
     #[clap(
         group = "language",
         long,
@@ -138,6 +165,9 @@ pub struct Args {
         display_order = 10
     )]
     pub norwegian: bool,
+    /// Output in Indonesian.
+    #[clap(group = "language", long, global = true, display_order = 10)]
+    pub indonesian: bool,
 
     // --- Other Aura Options --- //
     /// Minimum level of Aura log messages to display.
@@ -166,6 +196,7 @@ impl Args {
             _ if self.italian => Some(ITALIAN),
             _ if self.serbian => Some(SERBIAN),
             _ if self.norwegian => Some(NORWEGIAN),
+            _ if self.indonesian => Some(INDONESIAN),
             _ => None,
         }
     }

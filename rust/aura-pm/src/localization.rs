@@ -4,8 +4,8 @@ use crate::utils::PathStr;
 use aura_core::aur::dependencies as deps;
 use aura_core::Apply;
 use aura_pm::{
-    CROATIAN, ENGLISH, FRENCH, GERMAN, ITALIAN, JAPANESE, NORWEGIAN, POLISH, PORTUGUESE, RUSSIAN,
-    SERBIAN, SPANISH, SWEDISH,
+    CROATIAN, ENGLISH, FRENCH, GERMAN, INDONESIAN, ITALIAN, JAPANESE, NORWEGIAN, POLISH,
+    PORTUGUESE, RUSSIAN, SERBIAN, SPANISH, SWEDISH,
 };
 use i18n_embed::fluent::{fluent_language_loader, FluentLanguageLoader};
 use i18n_embed::{I18nEmbedError, LanguageLoader};
@@ -20,7 +20,6 @@ use unic_langid::LanguageIdentifier;
 struct Translations;
 
 // TODO
-// id-ID Indonesian
 // zh-CN Chinese
 // nl-NL Dutch
 // ??? Esperanto ???
@@ -44,6 +43,7 @@ where
         "it-IT" => Some(ITALIAN),
         "sr-RS" => Some(SERBIAN),
         "no-NO" => Some(NORWEGIAN),
+        "id-ID" => Some(INDONESIAN),
         _ => None,
     }
 }
