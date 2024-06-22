@@ -4,7 +4,7 @@ use crate::dirs;
 use crate::error::Nested;
 use crate::localization::{identifier_from_code, Localised};
 use aura_pm::{
-    CROATIAN, ENGLISH, FRENCH, GERMAN, INDONESIAN, ITALIAN, JAPANESE, NORWEGIAN, POLISH,
+    CROATIAN, ENGLISH, ESPERANTO, FRENCH, GERMAN, INDONESIAN, ITALIAN, JAPANESE, NORWEGIAN, POLISH,
     PORTUGUESE, RUSSIAN, SERBIAN, SIMPLIFIED_CHINESE, SPANISH, SWEDISH,
 };
 use from_variants::FromVariants;
@@ -184,7 +184,7 @@ impl Env {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct RawGeneral {
     cpus: Option<u32>,
     editor: Option<String>,
@@ -250,6 +250,7 @@ fn language() -> Option<LanguageIdentifier> {
         "no-NO.UTF-8" => Some(NORWEGIAN),
         "id_ID.UTF-8" => Some(INDONESIAN),
         "zh_CN.UTF-8" => Some(SIMPLIFIED_CHINESE),
+        "eo.UTF-8" => Some(ESPERANTO),
         _ => None,
     }
 }

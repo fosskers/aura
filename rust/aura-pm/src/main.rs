@@ -49,7 +49,8 @@ use clap::Parser;
 use colored::Colorize;
 use env::Env;
 use i18n_embed::fluent::FluentLanguageLoader;
-use log::debug;
+use i18n_embed::LanguageLoader;
+use log::{debug, info};
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
 use std::ops::Not;
 use std::process::ExitCode;
@@ -57,6 +58,15 @@ use std::process::ExitCode;
 fn main() -> ExitCode {
     // Parse all CLI input. Exits immediately if invalid input is given.
     let args = aura_pm::flags::Args::parse();
+
+    // --- Terminal Logging --- //
+    if let Some(l) = args.log_level {
+        // Silently ignore logger init failure. Realistically it should never
+        // fail, since its docs claim this only occurs when a logger has been
+        // previously initialized.
+        let _ = TermLogger::init(l, Config::default(), TerminalMode::Mixed, ColorChoice::Auto);
+    }
+
     debug!("{:#?}", args);
 
     // --- Runtime Settings --- //
@@ -75,7 +85,7 @@ fn main() -> ExitCode {
             ExitCode::FAILURE
         }
         Ok(env) => {
-            debug!("{:#?}", env);
+            // debug!("{:#?}", env);
 
             // --- Localisation --- //
             match localization::load(Some(env.general.language.clone())) {
@@ -106,13 +116,7 @@ fn env(args: &Args) -> Result<Env, Error> {
 }
 
 fn work(args: Args, env: Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
-    // --- Terminal Logging --- //
-    if let Some(l) = args.log_level {
-        // Silently ignore logger init failure. Realistically it should never
-        // fail, since its docs claim this only occurs when a logger has been
-        // previously initialized.
-        let _ = TermLogger::init(l, Config::default(), TerminalMode::Mixed, ColorChoice::Auto);
-    }
+    info!("Language: {}", fll.current_language().language.as_str());
 
     match args.subcmd {
         // --- Pacman Commands --- //

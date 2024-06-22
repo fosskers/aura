@@ -4,12 +4,13 @@ use crate::utils::PathStr;
 use aura_core::aur::dependencies as deps;
 use aura_core::Apply;
 use aura_pm::{
-    CROATIAN, ENGLISH, FRENCH, GERMAN, INDONESIAN, ITALIAN, JAPANESE, NORWEGIAN, POLISH,
+    CROATIAN, ENGLISH, ESPERANTO, FRENCH, GERMAN, INDONESIAN, ITALIAN, JAPANESE, NORWEGIAN, POLISH,
     PORTUGUESE, RUSSIAN, SERBIAN, SIMPLIFIED_CHINESE, SPANISH, SWEDISH,
 };
 use i18n_embed::fluent::{fluent_language_loader, FluentLanguageLoader};
 use i18n_embed::{I18nEmbedError, LanguageLoader};
 use i18n_embed_fl::fl;
+use log::debug;
 use nonempty_collections::*;
 use rust_embed::RustEmbed;
 use std::collections::HashMap;
@@ -19,15 +20,13 @@ use unic_langid::LanguageIdentifier;
 #[folder = "i18n"]
 struct Translations;
 
-// TODO
-// nl-NL Dutch
-// ??? Esperanto ???
-
 /// Parsing of [`LanguageIdentifier`]s that we are known to support.
 pub(crate) fn identifier_from_code<S>(code: S) -> Option<LanguageIdentifier>
 where
     S: AsRef<str>,
 {
+    debug!("PARSY PARSE: {}", code.as_ref());
+
     // TODO 2024-06-22 Here too.
     match code.as_ref() {
         "en-US" => Some(ENGLISH),
@@ -45,6 +44,7 @@ where
         "no-NO" => Some(NORWEGIAN),
         "id-ID" => Some(INDONESIAN),
         "zh-CN" => Some(SIMPLIFIED_CHINESE),
+        "eo" => Some(ESPERANTO),
         _ => None,
     }
 }
