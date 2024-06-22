@@ -5,7 +5,7 @@ use crate::error::Nested;
 use crate::localization::{identifier_from_code, Localised};
 use aura_pm::{
     CROATIAN, ENGLISH, FRENCH, GERMAN, INDONESIAN, ITALIAN, JAPANESE, NORWEGIAN, POLISH,
-    PORTUGUESE, RUSSIAN, SERBIAN, SPANISH, SWEDISH,
+    PORTUGUESE, RUSSIAN, SERBIAN, SIMPLIFIED_CHINESE, SPANISH, SWEDISH,
 };
 use from_variants::FromVariants;
 use i18n_embed_fl::fl;
@@ -233,6 +233,7 @@ impl From<RawGeneral> for General {
 fn language() -> Option<LanguageIdentifier> {
     let raw = std::env::var("LANG").ok()?;
 
+    // TODO 2024-06-22 Parse out locale so we can avoid countries.
     match raw.as_str() {
         "en_US.UTF-8" => Some(ENGLISH),
         "ja_JP.UTF-8" => Some(JAPANESE),
@@ -248,6 +249,7 @@ fn language() -> Option<LanguageIdentifier> {
         "sr-RS.UTF-8" => Some(SERBIAN),
         "no-NO.UTF-8" => Some(NORWEGIAN),
         "id_ID.UTF-8" => Some(INDONESIAN),
+        "zh_CN.UTF-8" => Some(SIMPLIFIED_CHINESE),
         _ => None,
     }
 }

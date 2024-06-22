@@ -2,7 +2,7 @@
 
 use crate::{
     Date, CROATIAN, ENGLISH, FRENCH, GERMAN, INDONESIAN, ITALIAN, JAPANESE, NORWEGIAN, POLISH,
-    PORTUGUESE, RUSSIAN, SERBIAN, SPANISH, SWEDISH,
+    PORTUGUESE, RUSSIAN, SERBIAN, SIMPLIFIED_CHINESE, SPANISH, SWEDISH,
 };
 use clap::{ArgAction, Parser, Subcommand};
 use simplelog::LevelFilter;
@@ -39,6 +39,8 @@ pub const AURA_GLOBALS: &[&str] = &[
     "--norwegian",
     "--norsk",
     "--indonesian",
+    "--chinese",
+    "--中文",
 ];
 
 /// Commandline arguments to the Aura executable.
@@ -168,6 +170,15 @@ pub struct Args {
     /// Output in Indonesian.
     #[clap(group = "language", long, global = true, display_order = 10)]
     pub indonesian: bool,
+    /// Output in Simplified Chinese (alias: 简体字).
+    #[clap(
+        group = "language",
+        long,
+        global = true,
+        alias = "简体字",
+        display_order = 10
+    )]
+    pub simplified_chinese: bool,
 
     // --- Other Aura Options --- //
     /// Minimum level of Aura log messages to display.
@@ -197,6 +208,7 @@ impl Args {
             _ if self.serbian => Some(SERBIAN),
             _ if self.norwegian => Some(NORWEGIAN),
             _ if self.indonesian => Some(INDONESIAN),
+            _ if self.simplified_chinese => Some(SIMPLIFIED_CHINESE),
             _ => None,
         }
     }

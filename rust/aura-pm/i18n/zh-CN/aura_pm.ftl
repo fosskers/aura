@@ -1,52 +1,54 @@
-language-name = 日本語
+language-name = 简体字
 
 # AUR Packages (-A)
-A-install-deps = 従属パッケージを確認中・・・
-A-install-repo-pkgs = Pacmanの従属パッケージ：
-A-install-aur-pkgs = AURのパッケージ:
+A-install-deps = 确定依赖中...
+A-install-repo-pkgs = 仓库依赖：
+A-install-aur-pkgs = AUR 包：
 # A-install-path-comp = Failed to extract final component of: { $path }
-A-install-ignored = { $file } は無視されるはずのパッケージです。それでも続行しますか？
+A-install-ignored = { $file } 已被标记为忽略。仍要安装吗？
 
 # A-build-prep = Preparing build directories...
-A-build-pkg = { $pkg } を作成中・・・
+A-build-pkg = { $pkg } 正在构建中...
 # A-build-diff = Display diffs of build files?
 # A-build-hotedit-pkgbuild = Edit the PKGBUILD?
-# A-build-hotedit-install = Edit the .install file?
-A-build-fail = パッケージ作成に失敗しました。
+A-build-hotedit-install = 要编辑 .install 文件吗？
+A-build-fail = 构建失败。
 # A-build-e-pkgctl = Building within an isolated chroot failed.
-A-build-e-makepkg = makepkgは失敗しました。
+A-build-e-makepkg = makepkg 失败。
+# A-build-e-makepkg = makepkg failed.
 # A-build-e-edit = Failed to edit: { $file }
 # A-build-e-tarball = Failed to move: { $file }
 # A-build-e-filename = Failed to extract filename from: { $file }
 # A-build-e-copies = Failed to copy build files.
 # A-build-pkglist = Failed to determine makepkg output paths from: { $dir }
-# A-build-pull = Failed to pull latest commits - you may be building an old version!
-A-build-continue = それでも続行しますか？
+A-build-pull = 未能从 'git pull' 获取最新更新。
+A-build-continue = 仍要继续吗？
 
-A-i-repo = リポジトリ
-A-i-version = バージョン
-A-i-status = パッケージ状態
-A-i-maintainer = 管理者
-A-i-proj-url = プロジェクト
-A-i-aur-url = パッケージページ
-A-i-license = ライセンス
-A-i-group = グループ
-A-i-provides = 供給
-A-i-depends = 従属パッケージ
-A-i-make = コンパイル時の
-A-i-opt = 任意の
-A-i-check = テスト用の
-A-i-votes = 投票数
-A-i-pop = 人気
-A-i-desc = 概要
-A-i-keywords = キーワード
-A-i-submitted = 最初投稿
-A-i-updated = 更新
+A-i-repo = 仓库
+A-i-version = 版本
+A-i-status = AUR 状态
+A-i-maintainer = 维护者
+A-i-proj-url = 项目 URL
+A-i-aur-url = AUR URL
+A-i-license = 许可
+# A-i-group = Groups
+# A-i-provides = Provides
+A-i-depends = 依赖于
+# A-i-make = Make Deps
+# A-i-opt = Optional Deps
+# A-i-check = Check Deps
+A-i-votes = 票数
+A-i-pop = 人气
+# description
+A-i-desc = 简介
+# A-i-keywords = Keywords
+# A-i-submitted = Submitted
+# A-i-updated = Updated
 
-A-u-fetch-info = パッケージ情報をダウンロード中・・・
-A-u-comparing = バージョンを比較中・・・
-A-u-no-upgrades = アップグレードは必要ありません。
-A-u-to-upgrade = アップグレードするAURパッケージ：
+A-u-fetch-info = 正在获取包信息...
+A-u-comparing = 正在比较包的版本...
+A-u-no-upgrades = 没有需要升级的 AUR 包。
+A-u-to-upgrade = 要升级的 AUR 包：
 # A-u-git = VCS packages to rebuild:
 
 # A-w = Cloning { $package }...
@@ -55,7 +57,7 @@ A-u-to-upgrade = アップグレードするAURパッケージ：
 # A-y = Failed to pull the following packages:
 
 # Snapshots (-B)
-B-saved = パッケージ状態の保存完了。
+B-saved = 已保存包状态。
 # B-clean = Remove stale snapshots?
 # B-none = No usable snapshots found.
 # B-select = Select a snapshot to restore:
@@ -65,7 +67,7 @@ B-saved = パッケージ状態の保存完了。
 
 # C-b-file = { $target } already exists and is not a directory.
 # C-b-nonempty = Target { $target } exists but is not empty!
-C-b-target = キャッシュのバックアップ先： { $target }
+C-b-target = 正在将缓存备份到 { $target }
 # C-b-curr = Failed to read current directory.
 
 # C-i-latest = Latest
@@ -75,19 +77,21 @@ C-b-target = キャッシュのバックアップ先： { $target }
 # C-i-size = Tarball Size
 # C-i-avail = Available Versions
 
-C-c-keep = パッケージ・ファイルは { $pkgs } 個保存されます。 残りは全部削除されます。
-# C-c-freed = { $bytes } freed.
+C-c-keep = 每个包文件将会保存 { $pkgs } 个版本。其余的将被删除。
+C-c-freed = 已释放 { $bytes }。
 
-C-downgrade-which = { $pkg } はどのバージョンにしますか？
+C-downgrade-which = 要安装哪个版本的 { $pkg }？
 
 # C-y-no-work = Package cache already synchronized.
 # C-y-which-cache = Which cache should receive the downloaded tarballs?
 # C-t-invalids = Removing invalid package tarballs.
 
 # Logs (-L)
-L-first = 初インストール
-L-upgrades = アップグレード回数
-L-recent = 近況
+L-first = 初次安装
+L-upgrades = 更新数量
+L-recent = 近况
+# L-search-err = Searching your logs via { $cmd } failed.
+# L-view-err = Failed to open your ALPM log.
 
 # Orphans (-O)
 # O-adopt = { $pkg } now marked as explicitly installed.
@@ -135,7 +139,7 @@ L-recent = 近況
 # check-pconf-pacnew-old = { $path } is older than its .pacnew by { $days ->
 #    [one] 1 day.
 #   *[many] {$days} days.
-#}
+# }
 
 # check-aconf = Aura Configuration
 # check-aconf-aura-exists = Aura config file exists?
@@ -166,7 +170,7 @@ L-recent = 近況
 
 # Runtime Environment
 # env-missing-editor = Provided EDITOR is not on the PATH.
-# env-pconf = Failed to parse your pacman.conf file.
+env-pconf = pacman.conf 文件无法解析。
 
 # Pacman Calls
 # pacman-external = A call to pacman utterly failed.
@@ -224,7 +228,7 @@ L-recent = 近況
 # Common Fields
 # common-yes = Yes
 # common-no = No
-common-name = 名前
+common-name = 名称
 # common-done = Done.
 # common-total = Total
 # common-no-packages = No packages specified.

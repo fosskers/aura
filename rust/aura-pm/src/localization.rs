@@ -5,7 +5,7 @@ use aura_core::aur::dependencies as deps;
 use aura_core::Apply;
 use aura_pm::{
     CROATIAN, ENGLISH, FRENCH, GERMAN, INDONESIAN, ITALIAN, JAPANESE, NORWEGIAN, POLISH,
-    PORTUGUESE, RUSSIAN, SERBIAN, SPANISH, SWEDISH,
+    PORTUGUESE, RUSSIAN, SERBIAN, SIMPLIFIED_CHINESE, SPANISH, SWEDISH,
 };
 use i18n_embed::fluent::{fluent_language_loader, FluentLanguageLoader};
 use i18n_embed::{I18nEmbedError, LanguageLoader};
@@ -20,7 +20,6 @@ use unic_langid::LanguageIdentifier;
 struct Translations;
 
 // TODO
-// zh-CN Chinese
 // nl-NL Dutch
 // ??? Esperanto ???
 
@@ -29,6 +28,7 @@ pub(crate) fn identifier_from_code<S>(code: S) -> Option<LanguageIdentifier>
 where
     S: AsRef<str>,
 {
+    // TODO 2024-06-22 Here too.
     match code.as_ref() {
         "en-US" => Some(ENGLISH),
         "ja-JP" => Some(JAPANESE),
@@ -44,6 +44,7 @@ where
         "sr-RS" => Some(SERBIAN),
         "no-NO" => Some(NORWEGIAN),
         "id-ID" => Some(INDONESIAN),
+        "zh-CN" => Some(SIMPLIFIED_CHINESE),
         _ => None,
     }
 }
@@ -54,6 +55,7 @@ pub(crate) fn locale_to_code<S>(locale: S) -> Option<String>
 where
     S: AsRef<str>,
 {
+    // TODO 2024-06-22 Parse out just the locale, not the country.
     locale
         .as_ref()
         .split_once('.')

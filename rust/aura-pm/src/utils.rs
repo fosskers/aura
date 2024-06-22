@@ -68,9 +68,10 @@ where
     S: AsRef<str>,
 {
     // Different languages consume varying char widths in the terminal.
-    //
-    // TODO Account for other languages (Chinese, and what else?)
-    let m = if lang.language == "ja" { 2 } else { 1 };
+    let m = match lang.language.as_str() {
+        "ja" | "zh" => 2,
+        _ => 1,
+    };
 
     // The longest field.
     let l = pairs
