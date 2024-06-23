@@ -195,6 +195,15 @@ pub struct Args {
     /// Output in Turkish.
     #[clap(group = "language", long, global = true, display_order = 10)]
     pub turkish: bool,
+    /// Output in Arabic (alias: العربية).
+    #[clap(
+        group = "language",
+        long,
+        global = true,
+        alias = "العربية",
+        display_order = 10
+    )]
+    pub arabic: bool,
 
     // --- Other Aura Options --- //
     /// Minimum level of Aura log messages to display.
@@ -228,6 +237,7 @@ impl Args {
             _ if self.esperanto => Some(crate::ESPERANTO),
             _ if self.dutch => Some(crate::DUTCH),
             _ if self.turkish => Some(crate::TURKISH),
+            _ if self.arabic => Some(crate::ARABIC),
             _ => None,
         }
     }

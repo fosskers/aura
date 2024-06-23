@@ -249,6 +249,7 @@ fn language() -> Option<LanguageIdentifier> {
         "eo.UTF-8" => Some(aura_pm::ESPERANTO),
         "nl_NL.UTF-8" => Some(aura_pm::DUTCH),
         "tr_TR.UTF-8" => Some(aura_pm::TURKISH),
+        "ar_SA.UTF-8" => Some(aura_pm::ARABIC),
         _ => None,
     }
 }

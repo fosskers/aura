@@ -40,3 +40,4 @@ pub const SIMPLIFIED_CHINESE: LanguageIdentifier = langid!("zh-CN");
 pub const ESPERANTO: LanguageIdentifier = langid!("eo-EO");
 pub const DUTCH: LanguageIdentifier = langid!("nl-NL");
 pub const TURKISH: LanguageIdentifier = langid!("tr-TR");
+pub const ARABIC: LanguageIdentifier = langid!("ar-SA");
