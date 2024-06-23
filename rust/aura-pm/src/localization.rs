@@ -15,6 +15,8 @@ use unic_langid::LanguageIdentifier;
 #[folder = "i18n"]
 struct Translations;
 
+// TODO 2024-06-22 There should only be one place doing str->Language conversion.
+// Currently there are two. The other is in `env.rs`.
 /// Parsing of [`LanguageIdentifier`]s that we are known to support.
 pub(crate) fn identifier_from_code<S>(code: S) -> Option<LanguageIdentifier>
 where
@@ -39,6 +41,7 @@ where
         "zh-CN" => Some(aura_pm::SIMPLIFIED_CHINESE),
         "eo" => Some(aura_pm::ESPERANTO),
         "nl-NL" => Some(aura_pm::DUTCH),
+        "tr-TR" => Some(aura_pm::TURKISH),
         _ => None,
     }
 }

@@ -36,8 +36,12 @@ pub const AURA_GLOBALS: &[&str] = &[
     "--norwegian",
     "--norsk",
     "--indonesian",
-    "--chinese",
-    "--中文",
+    "--simplified-chinese",
+    "--简体字",
+    "--esperanto",
+    "--dutch",
+    "--nederlands",
+    "--turkish",
 ];
 
 /// Commandline arguments to the Aura executable.
@@ -188,6 +192,9 @@ pub struct Args {
         display_order = 10
     )]
     pub dutch: bool,
+    /// Output in Turkish.
+    #[clap(group = "language", long, global = true, display_order = 10)]
+    pub turkish: bool,
 
     // --- Other Aura Options --- //
     /// Minimum level of Aura log messages to display.
@@ -220,6 +227,7 @@ impl Args {
             _ if self.simplified_chinese => Some(crate::SIMPLIFIED_CHINESE),
             _ if self.esperanto => Some(crate::ESPERANTO),
             _ if self.dutch => Some(crate::DUTCH),
+            _ if self.turkish => Some(crate::TURKISH),
             _ => None,
         }
     }

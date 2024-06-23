@@ -1,19 +1,18 @@
-# TODO What's the name for Indonesian in Indonesian?
-language-name = Indonesian
+# TODO What's the name for Turkish in Turkish?
+language-name = Turkish
 
 # AUR Packages (-A)
-A-install-deps = Menentukan dependensi...
-A-install-repo-pkgs = Dependensi dari repositori:
-A-install-aur-pkgs = AUR Paket:
+# A-install-deps = Determining dependencies...
+# A-install-repo-pkgs = Repository dependencies:
+A-install-aur-pkgs = AUR Paketleri:
 # A-install-path-comp = Failed to extract final component of: { $path }
 # A-install-ignored = { $file } is marked "ignored". Install anyway?
 
 # A-build-prep = Preparing build directories...
-A-build-pkg = Membangun { $pkg }...
+A-build-pkg = İnşa ediliyor { $pkg }...
 # A-build-diff = Display diffs of build files?
 # A-build-hotedit-pkgbuild = Edit the PKGBUILD?
 # A-build-hotedit-install = Edit the .install file?
-A-build-fail = Proses gagal.
 # A-build-fail = Package failed to build, citing:
 # A-build-e-pkgctl = Building within an isolated chroot failed.
 # A-build-e-makepkg = makepkg failed.
@@ -23,32 +22,32 @@ A-build-fail = Proses gagal.
 # A-build-e-copies = Failed to copy build files.
 # A-build-pkglist = Failed to determine makepkg output paths from: { $dir }
 # A-build-pull = Failed to pull latest commits - you may be building an old version!
-A-build-continue = Apakah anda tetap ingin melanjutkan?
+# A-build-continue = Continue building other packages?
 
-A-i-repo = Lumbung
-A-i-version = Versi
-A-i-status = Status AUR
-A-i-maintainer = Pemelihara
-A-i-proj-url = URL Proyek
-A-i-aur-url = URL AUR
-A-i-license = Lisensi
+A-i-repo = Depo
+A-i-version = Sürüm
+A-i-status = AUR Durumu
+A-i-maintainer = Sağlayıcı
+A-i-proj-url = Proje URL'si
+A-i-aur-url = AUR URL
+A-i-license = Lisans
 # A-i-group = Groups
 # A-i-provides = Provides
-A-i-depends = Bergantung pada
+A-i-depends = Gerekler
 # A-i-make = Make Deps
 # A-i-opt = Optional Deps
 # A-i-check = Check Deps
-A-i-votes = Suara
-# A-i-pop = Popularity
-A-i-desc = Deskripsi
+A-i-votes = Oylar
+A-i-pop = Popülerlik
+A-i-desc = Tanım
 # A-i-keywords = Keywords
 # A-i-submitted = Submitted
 # A-i-updated = Updated
 
-A-u-fetch-info = Mengambil informasi paket...
-A-u-comparing = Membandingkan versi paket...
-A-u-no-upgrades = Tidak ada peningkatan AUR yang dibutuhkan.
-A-u-to-upgrade = Paket AUR yang akan ditingkatkan:
+# A-u-fetch-info = Fetching package information...
+# A-u-comparing = Comparing package versions...
+# A-u-no-upgrades = No AUR package upgrades necessary.
+# A-u-to-upgrade = AUR packages to upgrade:
 # A-u-git = VCS packages to rebuild:
 
 # A-w = Cloning { $package }...
@@ -57,7 +56,7 @@ A-u-to-upgrade = Paket AUR yang akan ditingkatkan:
 # A-y = Failed to pull the following packages:
 
 # Snapshots (-B)
-B-saved = Kondisi paket tersimpan.
+# B-saved = Saved package state.
 # B-clean = Remove stale snapshots?
 # B-none = No usable snapshots found.
 # B-select = Select a snapshot to restore:
@@ -67,7 +66,7 @@ B-saved = Kondisi paket tersimpan.
 
 # C-b-file = { $target } already exists and is not a directory.
 # C-b-nonempty = Target { $target } exists but is not empty!
-C-b-target = Melakukan `backup` pada direktori { $target }
+# C-b-target = Backing up cache to { $target }
 # C-b-curr = Failed to read current directory.
 
 # C-i-latest = Latest
@@ -77,19 +76,19 @@ C-b-target = Melakukan `backup` pada direktori { $target }
 # C-i-size = Tarball Size
 # C-i-avail = Available Versions
 
-C-c-keep = { $pkgs } berkas dari tiap paket akan disimpan. Selainnya akan dihapus.
+# C-c-keep = { $pkgs } of each package file will be kept. The rest will be deleted.
 # C-c-freed = { $bytes } freed.
 
-C-downgrade-which = Versi dari paket { $pkg } mana yang anda inginkan?
+# C-downgrade-which = What version of { $pkg } do you want?
 
 # C-y-no-work = Package cache already synchronized.
 # C-y-which-cache = Which cache should receive the downloaded tarballs?
 # C-t-invalids = Removing invalid package tarballs.
 
 # Logs (-L)
-L-first = Versi sistem
-L-upgrades = Tingkatkan
-L-recent = Aksi sekarang
+L-first = İlk Kurulum
+L-upgrades = Güncellemeler
+L-recent = Güncel Eylem
 # L-search-err = Searching your logs via { $cmd } failed.
 # L-view-err = Failed to open your ALPM log.
 
@@ -226,9 +225,9 @@ L-recent = Aksi sekarang
 # err-write = Somehow failed to write to stdout.
 
 # Common Fields
-# common-yes = Yes
+common-yes = Evet
 # common-no = No
-common-name = Nama
+common-name = İsim
 # common-done = Done.
 # common-total = Total
 # common-no-packages = No packages specified.
@@ -238,4 +237,4 @@ common-name = Nama
 
 # Misc.
 # proceed = Proceed?
-# proceed-yes = [Y/n]
+proceed-yes = [E/n]
