@@ -44,6 +44,7 @@ where
         "tr-TR" => Some(aura_pm::TURKISH),
         "uk-UA" => Some(aura_pm::UKRAINIAN),
         "ro-RO" => Some(aura_pm::ROMANIAN),
+        "vi-VN" => Some(aura_pm::VIETNAMESE),
         _ => None,
     }
 }
