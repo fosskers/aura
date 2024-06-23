@@ -204,6 +204,15 @@ pub struct Args {
         display_order = 10
     )]
     pub arabic: bool,
+    /// Output in Ukrainian (alias: українська).
+    #[clap(
+        group = "language",
+        long,
+        global = true,
+        alias = "українська",
+        display_order = 10
+    )]
+    pub ukrainian: bool,
 
     // --- Other Aura Options --- //
     /// Minimum level of Aura log messages to display.
@@ -238,6 +247,7 @@ impl Args {
             _ if self.dutch => Some(crate::DUTCH),
             _ if self.turkish => Some(crate::TURKISH),
             _ if self.arabic => Some(crate::ARABIC),
+            _ if self.ukrainian => Some(crate::UKRAINIAN),
             _ => None,
         }
     }

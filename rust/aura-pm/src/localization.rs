@@ -42,7 +42,7 @@ where
         "eo" => Some(aura_pm::ESPERANTO),
         "nl-NL" => Some(aura_pm::DUTCH),
         "tr-TR" => Some(aura_pm::TURKISH),
-        "ar-SA" => Some(aura_pm::ARABIC),
+        "uk-UA" => Some(aura_pm::UKRAINIAN),
         _ => None,
     }
 }

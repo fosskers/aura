@@ -250,6 +250,7 @@ fn language() -> Option<LanguageIdentifier> {
         "nl_NL.UTF-8" => Some(aura_pm::DUTCH),
         "tr_TR.UTF-8" => Some(aura_pm::TURKISH),
         "ar_SA.UTF-8" => Some(aura_pm::ARABIC),
+        "uk_UA.UTF-8" => Some(aura_pm::UKRAINIAN),
         _ => None,
     }
 }
