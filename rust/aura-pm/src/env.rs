@@ -253,6 +253,7 @@ fn language() -> Option<LanguageIdentifier> {
         "uk_UA.UTF-8" => Some(aura_pm::UKRAINIAN),
         "ro_RO.UTF-8" => Some(aura_pm::ROMANIAN),
         "vi_VN.UTF-8" => Some(aura_pm::VIETNAMESE),
+        "cs_CZ.UTF-8" => Some(aura_pm::CZECH),
         _ => None,
     }
 }
