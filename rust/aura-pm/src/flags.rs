@@ -243,6 +243,15 @@ pub struct Args {
         display_order = 10
     )]
     pub korean: bool,
+    /// Output in Hindi (alias: हिंदी).
+    #[clap(
+        group = "language",
+        long,
+        global = true,
+        alias = "हिंदी",
+        display_order = 10
+    )]
+    pub hindi: bool,
 
     // --- Other Aura Options --- //
     /// Minimum level of Aura log messages to display.
@@ -282,6 +291,7 @@ impl Args {
             _ if self.vietnamese => Some(crate::VIETNAMESE),
             _ if self.czech => Some(crate::CZECH),
             _ if self.korean => Some(crate::KOREAN),
+            _ if self.hindi => Some(crate::HINDI),
             _ => None,
         }
     }
