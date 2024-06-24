@@ -42,6 +42,16 @@ pub const AURA_GLOBALS: &[&str] = &[
     "--dutch",
     "--nederlands",
     "--turkish",
+    "--ukrainian",
+    "--українська",
+    "--romanian",
+    "--română",
+    "--czech",
+    "--český",
+    "--korean",
+    "--한국어",
+    "--hindi",
+    "--हिंदी",
 ];
 
 /// Commandline arguments to the Aura executable.
