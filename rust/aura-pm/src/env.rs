@@ -2,7 +2,7 @@
 
 use crate::dirs;
 use crate::error::Nested;
-use crate::localization::{identifier_from_code, Localised};
+use crate::localization::{identifier_from_locale, Localised};
 use from_variants::FromVariants;
 use i18n_embed_fl::fl;
 use log::{debug, error};
@@ -218,7 +218,7 @@ impl From<RawGeneral> for General {
             // English. This can further be overridden by CLI flags.
             language: raw
                 .language
-                .and_then(identifier_from_code)
+                .and_then(identifier_from_locale)
                 .or_else(language)
                 .unwrap_or(aura_pm::ENGLISH),
         }
@@ -227,35 +227,7 @@ impl From<RawGeneral> for General {
 
 /// An attempt to fetch a language setting from environment variables.
 fn language() -> Option<LanguageIdentifier> {
-    let raw = std::env::var("LANG").ok()?;
-
-    // TODO 2024-06-22 Parse out locale so we can avoid countries.
-    match raw.as_str() {
-        "en_US.UTF-8" => Some(aura_pm::ENGLISH),
-        "ja_JP.UTF-8" => Some(aura_pm::JAPANESE),
-        "pl_PL.UTF-8" => Some(aura_pm::POLISH),
-        "hr_HR.UTF-8" => Some(aura_pm::CROATIAN),
-        "sv_SE.UTF-8" => Some(aura_pm::SWEDISH),
-        "de_DE.UTF-8" => Some(aura_pm::GERMAN),
-        "es_ES.UTF-8" => Some(aura_pm::SPANISH),
-        "pt_PT.UTF-8" => Some(aura_pm::PORTUGUESE),
-        "fr_FR.UTF-8" => Some(aura_pm::FRENCH),
-        "ru_RU.UTF-8" => Some(aura_pm::RUSSIAN),
-        "it_IT.UTF-8" => Some(aura_pm::ITALIAN),
-        "sr-RS.UTF-8" => Some(aura_pm::SERBIAN),
-        "no-NO.UTF-8" => Some(aura_pm::NORWEGIAN),
-        "id_ID.UTF-8" => Some(aura_pm::INDONESIAN),
-        "zh_CN.UTF-8" => Some(aura_pm::SIMPLIFIED_CHINESE),
-        "eo.UTF-8" => Some(aura_pm::ESPERANTO),
-        "nl_NL.UTF-8" => Some(aura_pm::DUTCH),
-        "tr_TR.UTF-8" => Some(aura_pm::TURKISH),
-        "ar_SA.UTF-8" => Some(aura_pm::ARABIC),
-        "uk_UA.UTF-8" => Some(aura_pm::UKRAINIAN),
-        "ro_RO.UTF-8" => Some(aura_pm::ROMANIAN),
-        "vi_VN.UTF-8" => Some(aura_pm::VIETNAMESE),
-        "cs_CZ.UTF-8" => Some(aura_pm::CZECH),
-        _ => None,
-    }
+    std::env::var("LANG").ok().and_then(identifier_from_locale)
 }
 
 /// The editor program to call in certain situations.

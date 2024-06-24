@@ -15,52 +15,51 @@ use unic_langid::LanguageIdentifier;
 #[folder = "i18n"]
 struct Translations;
 
-// TODO 2024-06-22 There should only be one place doing str->Language conversion.
-// Currently there are two. The other is in `env.rs`.
 /// Parsing of [`LanguageIdentifier`]s that we are known to support.
-pub(crate) fn identifier_from_code<S>(code: S) -> Option<LanguageIdentifier>
+pub(crate) fn identifier_from_locale<S>(locale: S) -> Option<LanguageIdentifier>
 where
     S: AsRef<str>,
 {
-    // TODO 2024-06-22 Here too.
-    match code.as_ref() {
-        "en-US" => Some(aura_pm::ENGLISH),
-        "ja-JP" => Some(aura_pm::JAPANESE),
-        "pl-PL" => Some(aura_pm::POLISH),
-        "hr-HR" => Some(aura_pm::CROATIAN),
-        "sv-SE" => Some(aura_pm::SWEDISH),
-        "de-DE" => Some(aura_pm::GERMAN),
-        "es-ES" => Some(aura_pm::SPANISH),
-        "pt-PT" => Some(aura_pm::PORTUGUESE),
-        "fr-FR" => Some(aura_pm::FRENCH),
-        "ru-RU" => Some(aura_pm::RUSSIAN),
-        "it-IT" => Some(aura_pm::ITALIAN),
-        "sr-RS" => Some(aura_pm::SERBIAN),
-        "no-NO" => Some(aura_pm::NORWEGIAN),
-        "id-ID" => Some(aura_pm::INDONESIAN),
-        "zh-CN" => Some(aura_pm::SIMPLIFIED_CHINESE),
-        "eo" => Some(aura_pm::ESPERANTO),
-        "nl-NL" => Some(aura_pm::DUTCH),
-        "tr-TR" => Some(aura_pm::TURKISH),
-        "uk-UA" => Some(aura_pm::UKRAINIAN),
-        "ro-RO" => Some(aura_pm::ROMANIAN),
-        "vi-VN" => Some(aura_pm::VIETNAMESE),
-        "cs-CZ" => Some(aura_pm::CZECH),
+    match code_and_country(locale.as_ref()) {
+        ("en", _) => Some(aura_pm::ENGLISH),
+        ("ja", _) => Some(aura_pm::JAPANESE),
+        ("pl", _) => Some(aura_pm::POLISH),
+        ("hr", _) => Some(aura_pm::CROATIAN),
+        ("sv", _) => Some(aura_pm::SWEDISH),
+        ("de", _) => Some(aura_pm::GERMAN),
+        ("es", _) => Some(aura_pm::SPANISH),
+        ("pt", _) => Some(aura_pm::PORTUGUESE),
+        ("fr", _) => Some(aura_pm::FRENCH),
+        ("ru", _) => Some(aura_pm::RUSSIAN),
+        ("it", _) => Some(aura_pm::ITALIAN),
+        ("sr", _) => Some(aura_pm::SERBIAN),
+        ("no", _) => Some(aura_pm::NORWEGIAN),
+        ("id", _) => Some(aura_pm::INDONESIAN),
+        // Mainland China.
+        ("zh", Some("CN")) => Some(aura_pm::SIMPLIFIED_CHINESE),
+        ("eo", _) => Some(aura_pm::ESPERANTO),
+        ("nl", _) => Some(aura_pm::DUTCH),
+        ("tr", _) => Some(aura_pm::TURKISH),
+        ("uk", _) => Some(aura_pm::UKRAINIAN),
+        ("ro", _) => Some(aura_pm::ROMANIAN),
+        ("vi", _) => Some(aura_pm::VIETNAMESE),
+        ("cs", _) => Some(aura_pm::CZECH),
         _ => None,
     }
 }
 
-/// Convert from the format found in `/etc/locale.gen` or `locale -a` to the
-/// format parsable by us to produce [`LanguageIdentifier`]s.
-pub(crate) fn locale_to_code<S>(locale: S) -> Option<String>
-where
-    S: AsRef<str>,
-{
-    // TODO 2024-06-22 Parse out just the locale, not the country.
-    locale
-        .as_ref()
-        .split_once('.')
-        .map(|(code, _)| code.replace('_', "-"))
+/// Convert from the format found in `/etc/locale.gen`, `locale -a`, or `LANG`
+/// to the format parsable by us to produce [`LanguageIdentifier`]s.
+pub(crate) fn code_and_country(locale: &str) -> (&str, Option<&str>) {
+    let lokale = match locale.split_once('.') {
+        Some((loc, _)) => loc,
+        _ => locale,
+    };
+
+    match lokale.split_once(['-', '_']) {
+        Some((l, c)) => (l, Some(c)),
+        None => (lokale, None),
+    }
 }
 
 /// Any type whose contents can be localised in a meaningful way.
@@ -198,6 +197,8 @@ mod test {
 
     #[test]
     fn locale_parsing() {
-        assert!(locale_to_code("en_US.UTF8").is_some());
+        assert_eq!(("en", Some("US")), code_and_country("en_US.UTF-8"));
+        assert_eq!(("en", Some("US")), code_and_country("en-US.UTF-8"));
+        assert_eq!(("en", None), code_and_country("en"));
     }
 }
