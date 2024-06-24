@@ -358,6 +358,8 @@ pub enum SubCmd {
     Open(Open),
     /// View statistics about your machine or about Aura itself.
     Stats(Stats),
+    /// The people behind Aura.
+    Thanks,
 }
 
 /// Synchronize official packages.

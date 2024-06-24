@@ -11,3 +11,4 @@ pub(crate) mod open;
 pub(crate) mod orphans;
 pub(crate) mod snapshot;
 pub(crate) mod stats;
+pub(crate) mod thanks;

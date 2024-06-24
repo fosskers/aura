@@ -11,6 +11,36 @@ use rust_embed::RustEmbed;
 use std::collections::HashMap;
 use unic_langid::LanguageIdentifier;
 
+pub(crate) const TRANSLATORS: &[(&str, &str)] = &[
+    ("Polish", "Chris Warrick / Michał Kurek"),
+    ("Croatian", "Denis Kasak / \"stranac\""),
+    ("Swedish", "Fredrik Haikarainen / Daniel Beecham"),
+    ("German", "Lukas Niederbremer / Jonas Platte"),
+    ("Spanish", "Alejandro Gómez / Sergio Conde / Max Ferrer"),
+    (
+        "Portuguese",
+        "Henry Kupty / Thiago Perrotta / Wagner Amaral",
+    ),
+    ("French", "Ma Jiehong / Fabien Dubosson"),
+    ("Russian", "Kyrylo Silin / Alexey Kotlyarov"),
+    ("Italian", "Bob Valantin / Cristian Tentella"),
+    ("Serbian", "Filip Brcic"),
+    ("Norwegian", "\"chinatsun\""),
+    ("Indonesia", "\"pak tua Greg\""),
+    ("Chinese", "Kai Zhang / Alex3236"),
+    ("Japanese", "Onoue Takuro / Colin Woodbury"),
+    ("Esperanto", "Zachary Matthews"),
+    ("Dutch", "Joris Blanken / Heimen Stoffels"),
+    ("Turkish", "Cihan Alkan"),
+    ("Arabic", "\"Array in a Matrix\""),
+    ("Ukrainian", "Andriy Cherniy"),
+    ("Romanian", "90 / benone"),
+    ("Vietnamese", "\"Kritiqual\""),
+    ("Czech", "Daniel Rosel"),
+    ("Korean", "\"Nioden\""),
+    ("Hindi", "@yozachar"),
+];
+
 #[derive(RustEmbed)]
 #[folder = "i18n"]
 struct Translations;

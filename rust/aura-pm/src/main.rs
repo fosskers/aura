@@ -40,7 +40,7 @@ mod macros;
 pub(crate) mod pacman;
 pub(crate) mod utils;
 
-use crate::command::{aur, cache, check, conf, deps, logs, open, orphans, snapshot, stats};
+use crate::command::{aur, cache, check, conf, deps, logs, open, orphans, snapshot, stats, thanks};
 use crate::error::{Error, Nested};
 use crate::localization::Localised;
 use aura_pm::flags::{Args, Cache, SubCmd, AURA_GLOBALS};
@@ -198,6 +198,8 @@ fn work(args: Args, env: Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
         SubCmd::Deps(d) => deps::graph(&env.alpm()?, d.limit, d.optional, d.packages),
         // --- System Validation --- //
         SubCmd::Check(_) => check::check(fll, &env)?,
+        // --- Credits --- //
+        SubCmd::Thanks => thanks::thanks(fll),
     }
 
     Ok(())
