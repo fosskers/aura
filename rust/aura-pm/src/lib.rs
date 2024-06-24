@@ -45,3 +45,4 @@ pub const UKRAINIAN: LanguageIdentifier = langid!("uk-UA");
 pub const ROMANIAN: LanguageIdentifier = langid!("ro-RO");
 pub const VIETNAMESE: LanguageIdentifier = langid!("vi-VN");
 pub const CZECH: LanguageIdentifier = langid!("cs-CZ");
+pub const KOREAN: LanguageIdentifier = langid!("ko-KR");

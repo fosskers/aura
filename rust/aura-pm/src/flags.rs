@@ -234,6 +234,15 @@ pub struct Args {
         display_order = 10
     )]
     pub czech: bool,
+    /// Output in Korean (alias: 한국어).
+    #[clap(
+        group = "language",
+        long,
+        global = true,
+        alias = "한국어",
+        display_order = 10
+    )]
+    pub korean: bool,
 
     // --- Other Aura Options --- //
     /// Minimum level of Aura log messages to display.
@@ -272,6 +281,7 @@ impl Args {
             _ if self.romanian => Some(crate::ROMANIAN),
             _ if self.vietnamese => Some(crate::VIETNAMESE),
             _ if self.czech => Some(crate::CZECH),
+            _ if self.korean => Some(crate::KOREAN),
             _ => None,
         }
     }

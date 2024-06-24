@@ -218,16 +218,11 @@ impl From<RawGeneral> for General {
             // English. This can further be overridden by CLI flags.
             language: raw
                 .language
+                .or_else(|| std::env::var("LANG").ok())
                 .and_then(identifier_from_locale)
-                .or_else(language)
                 .unwrap_or(aura_pm::ENGLISH),
         }
     }
-}
-
-/// An attempt to fetch a language setting from environment variables.
-fn language() -> Option<LanguageIdentifier> {
-    std::env::var("LANG").ok().and_then(identifier_from_locale)
 }
 
 /// The editor program to call in certain situations.

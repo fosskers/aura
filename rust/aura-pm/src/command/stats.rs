@@ -92,7 +92,7 @@ pub(crate) fn localization() -> Result<(), Error> {
 fn visual_len(lang: &LanguageIdentifier, msg: &str) -> usize {
     let raw = msg.chars().count();
     match lang.language.as_str() {
-        "ja" | "zh" => raw * 2,
+        "ja" | "ko" | "zh" => raw * 2,
         _ => raw,
     }
 }

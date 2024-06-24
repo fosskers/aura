@@ -69,7 +69,7 @@ where
 {
     // Different languages consume varying char widths in the terminal.
     let m = match lang.language.as_str() {
-        "ja" | "zh" => 2,
+        "ja" | "ko" | "zh" => 2,
         _ => 1,
     };
 
