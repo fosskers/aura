@@ -244,4 +244,6 @@ common-name = Nazwa
 
 # Misc.
 # proceed = Proceed?
-proceed-yes = [T/n]
+proceed-affirmative = t
+proceed-affirmative-alt = T
+proceed-negative = n

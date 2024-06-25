@@ -247,4 +247,6 @@ env-pconf = .الخاص بك pacman.confفشل تحليل ملف اﻟ
 
 # Misc.
 # proceed = Proceed?
-# proceed-yes = [Y/n]
+# proceed-affirmative = y
+# proceed-affirmative-alt = Y
+# proceed-negative = n

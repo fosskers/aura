@@ -245,4 +245,6 @@ common-yes = так
 
 # Misc.
 # proceed = Proceed?
-proceed-yes = [Т/н]
+# proceed-affirmative = y
+proceed-affirmative-alt = Т
+proceed-negative = н

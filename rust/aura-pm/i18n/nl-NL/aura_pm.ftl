@@ -245,4 +245,6 @@ common-name = Naam
 
 # Misc.
 # proceed = Proceed?
-proceed-yes = [J/n]
+proceed-affirmative = j
+proceed-affirmative-alt = J
+proceed-negative = n

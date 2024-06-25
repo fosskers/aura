@@ -246,4 +246,6 @@ common-name = 名称
 
 # Misc.
 # proceed = Proceed?
-# proceed-yes = [Y/n]
+# proceed-affirmative = y
+# proceed-affirmative-alt = Y
+# proceed-negative = n

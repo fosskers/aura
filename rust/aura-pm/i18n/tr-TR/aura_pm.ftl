@@ -245,4 +245,6 @@ common-name = İsim
 
 # Misc.
 # proceed = Proceed?
-proceed-yes = [E/n]
+proceed-affirmative = e
+proceed-affirmative-alt = E
+proceed-negative = n

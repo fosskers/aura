@@ -245,4 +245,6 @@ common-name = नाम
 
 # Misc.
 # proceed = Proceed?
-proceed-yes = [य/न]
+proceed-affirmative = य
+proceed-affirmative-alt = य
+proceed-negative = न

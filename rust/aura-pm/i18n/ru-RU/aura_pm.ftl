@@ -246,4 +246,6 @@ common-name = Название
 
 # Misc.
 # proceed = Proceed?
-proceed-yes = [Д/н]
+# proceed-affirmative = y
+proceed-affirmative-alt = Д
+proceed-negative = н

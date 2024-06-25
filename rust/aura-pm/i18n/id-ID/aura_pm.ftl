@@ -246,4 +246,6 @@ common-name = Nama
 
 # Misc.
 # proceed = Proceed?
-# proceed-yes = [Y/n]
+# proceed-affirmative = y
+# proceed-affirmative-alt = Y
+# proceed-negative = n

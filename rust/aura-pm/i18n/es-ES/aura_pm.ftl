@@ -244,4 +244,6 @@ common-name = Nombre
 
 # Misc.
 # proceed = Proceed?
-proceed-yes = [S/n]
+proceed-affirmative = s
+proceed-affirmative-alt = S
+proceed-negative = n
