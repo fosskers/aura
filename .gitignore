@@ -24,3 +24,6 @@ haskell/.stack-work/*
 # Nix
 .envrc
 /result*
+
+# Lisp
+lisp/.qlot/*

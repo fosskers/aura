@@ -1,0 +1,13 @@
+#+title: Aura - Lisp helper code
+
+The Lisp code here is for scripting various tasks related to Aura development;
+it isn't Aura itself.
+
+Assuming you have [[https://archlinux.org/packages/extra/x86_64/sbcl/][Common Lisp]] installed, you can optionally install [[https://aur.archlinux.org/packages/qlot][Qlot]] to
+manage dependencies. Then:
+
+#+begin_src bash
+qlot install
+#+end_src
+
+and the code will be ready to use.
