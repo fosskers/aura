@@ -72,10 +72,11 @@
         (english (msg-labels *english*)))
     (format t "--- ALL MISSING LOCALISATIONS (~A English) --~%" (length english))
     (dolist (dir localisation-dirs)
-      (format t "~A~%" dir)
       (let* ((path (p:join dir "aura_pm.ftl"))
              (lbls (lenient-msg-labels path))
              (diff (set-difference english lbls :test #'string-equal)))
+        (when diff
+          (format t "~A~%" dir))
         (dolist (label diff)
           (format t "  ~A~%" label))))))
 

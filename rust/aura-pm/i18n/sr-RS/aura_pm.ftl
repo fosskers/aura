@@ -164,6 +164,14 @@ L-recent = Недавне радње
 # check-pkgs-old = All explicitly installed, non-dep packages are up to date?
 # check-pkgs-old-warn = { $pkg } was last updated { $days } ago.
 
+# Thanks
+# thanks-you = Thank you for using Aura.
+# thanks-colin = Aura by Colin Woodbury, 2012 - 2024
+# thanks-pacman = Thank you to the Pacman and Arch Linux teams for providing a solid foundation.
+# thanks-everyone = Thank you to Aura's contributors, donators, and users.
+# thanks-logo = Aura's logo by Cristiano Vitorino.
+# thanks-translators = Aura is localised by:
+
 # Configuration (conf)
 # conf-toml-err = Failed to serialize current config.
 

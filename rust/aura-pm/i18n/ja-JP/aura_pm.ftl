@@ -88,6 +88,8 @@ C-downgrade-which = { $pkg } はどのバージョンにしますか？
 L-first = 初インストール
 L-upgrades = アップグレード回数
 L-recent = 近況
+# L-search-err = Searching your logs via { $cmd } failed.
+# L-view-err = Failed to open your ALPM log.
 
 # Orphans (-O)
 # O-adopt = { $pkg } now marked as explicitly installed.
@@ -160,6 +162,14 @@ L-recent = 近況
 # check-pkgs = Package Status
 # check-pkgs-old = All explicitly installed, non-dep packages are up to date?
 # check-pkgs-old-warn = { $pkg } was last updated { $days } ago.
+
+# Thanks
+# thanks-you = Thank you for using Aura.
+# thanks-colin = Aura by Colin Woodbury, 2012 - 2024
+# thanks-pacman = Thank you to the Pacman and Arch Linux teams for providing a solid foundation.
+# thanks-everyone = Thank you to Aura's contributors, donators, and users.
+# thanks-logo = Aura's logo by Cristiano Vitorino.
+# thanks-translators = Aura is localised by:
 
 # Configuration (conf)
 # conf-toml-err = Failed to serialize current config.
