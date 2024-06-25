@@ -4,6 +4,7 @@ use crate::env::Env;
 use crate::error::Nested;
 use crate::localization::Localised;
 use colored::{ColoredString, Colorize};
+use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use nonempty_collections::NEVec;
 use rustyline::Editor;
@@ -92,13 +93,14 @@ fn pad(mult: usize, longest: usize, s: &str) -> usize {
     mult * (longest - s.chars().count())
 }
 
-// TODO Localize the acceptance chars.
 /// Prompt the user for confirmation.
-pub(crate) fn prompt(msg: &str) -> Option<()> {
+pub(crate) fn prompt(fll: &FluentLanguageLoader, msg: &str) -> Option<()> {
     let mut rl = Editor::<(), _>::new().ok()?;
     let line = rl.readline(msg).ok()?;
+    let accept_small = fl!(fll, "proceed-affirmative");
+    let accept_large = fl!(fll, "proceed-affirmative-alt");
 
-    (line.is_empty() || line == "y" || line == "Y").then_some(())
+    (line.is_empty() || line == accept_small || line == accept_large).then_some(())
 }
 
 /// Prompt the user for a numerical selection.
@@ -123,7 +125,7 @@ impl Nested for SudoError {
 }
 
 impl Localised for SudoError {
-    fn localise(&self, fll: &i18n_embed::fluent::FluentLanguageLoader) -> String {
+    fn localise(&self, fll: &FluentLanguageLoader) -> String {
         fl!(fll, "err-sudo")
     }
 }

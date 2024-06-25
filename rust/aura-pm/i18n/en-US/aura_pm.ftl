@@ -280,5 +280,6 @@ common-replace = You can delete { $old } in favour of { $new }.
 
 # Misc.
 proceed = Proceed?
-# yesNoMessage
-proceed-yes = [Y/n]
+proceed-affirmative = y
+proceed-affirmative-alt = Y
+proceed-negative = n
