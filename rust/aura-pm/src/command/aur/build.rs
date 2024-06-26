@@ -361,8 +361,8 @@ fn tarball_paths(within: &Path) -> Result<Vec<PathBuf>, Error> {
     let tarballs = std::str::from_utf8(&bytes)
         .map_err(Error::Utf8)?
         .lines()
-        .map(|line| [line].iter().collect())
-        .filter(|path: &PathBuf| path.exists())
+        .map(PathBuf::from)
+        .filter(|path| path.exists())
         .collect();
 
     Ok(tarballs)
