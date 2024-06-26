@@ -222,7 +222,7 @@ fn pacman(env: &Env, sudo: bool) -> Result<(), crate::pacman::Error> {
         raws.remove(ix); // Its argument.
     }
 
-    ::log::debug!("Passing to Pacman: {:?}", raws);
+    debug!("Passing to Pacman: {:?}", raws);
     if sudo {
         pacman::sudo_pacman_batch(env, raws)
     } else {

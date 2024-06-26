@@ -24,6 +24,7 @@ use time::macros::format_description;
 pub(crate) enum Error {
     Dirs(crate::dirs::Error),
     Pacman(crate::pacman::Error),
+    #[from_variants(skip)]
     Readline(rustyline::error::ReadlineError),
     #[from_variants(skip)]
     JsonWrite(PathBuf, serde_json::Error),
@@ -31,7 +32,9 @@ pub(crate) enum Error {
     DeleteFile(PathBuf, std::io::Error),
     #[from_variants(skip)]
     OpenFile(PathBuf, std::io::Error),
+    #[from_variants(skip)]
     TimeLocal(time::error::IndeterminateOffset),
+    #[from_variants(skip)]
     TimeFormat(time::error::Format),
     Cancelled,
     NoSnapshots,
@@ -83,10 +86,13 @@ struct StateDiff<'a> {
 }
 
 pub(crate) fn save(fll: &FluentLanguageLoader, alpm: &Alpm, snapshots: &Path) -> Result<(), Error> {
-    let snap = Snapshot::from_alpm(alpm)?;
+    let snap = Snapshot::from_alpm(alpm).map_err(Error::TimeLocal)?;
     let form =
         format_description!("[year].[month]([month repr:short]).[day].[hour].[minute].[second]");
-    let name = format!("{}.json", snap.time.format(form)?);
+    let name = format!(
+        "{}.json",
+        snap.time.format(form).map_err(Error::TimeFormat)?
+    );
     let path = snapshots.join(name);
 
     let file = BufWriter::new(File::create(&path).map_err(|e| Error::OpenFile(path.clone(), e))?);
@@ -142,12 +148,12 @@ pub(crate) fn restore(env: &Env, fll: &FluentLanguageLoader, alpm: &Alpm) -> Res
     aura!(fll, "B-select");
     for (i, ss) in shots.iter().enumerate() {
         let form = format_description!("[year]-[month]-[day] [hour]-[minute]-[second]");
-        let time = ss.time.format(form)?;
+        let time = ss.time.format(form).map_err(Error::TimeFormat)?;
         let pinned = ss.pinned.then(|| "[pinned]".cyan()).unwrap_or_default();
         println!(" {:w$}) {} {}", i, time, pinned, w = digits);
     }
 
-    let index = crate::utils::select(">>> ", shots.len() - 1)?;
+    let index = crate::utils::select(">>> ", shots.len() - 1).map_err(Error::Readline)?;
     restore_snapshot(env, alpm, &caches, shots.remove(index))?;
 
     green!(fll, "common-done");

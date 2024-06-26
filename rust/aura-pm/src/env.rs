@@ -18,8 +18,11 @@ const DEFAULT_EDITOR: &str = "vi";
 #[derive(FromVariants)]
 pub(crate) enum Error {
     Dirs(crate::dirs::Error),
+    #[from_variants(skip)]
     PConf(pacmanconf::Error),
+    #[from_variants(skip)]
     Alpm(alpm::Error),
+    #[from_variants(skip)]
     R2d2(r2d2::Error),
     MissingEditor,
 }
@@ -132,7 +135,10 @@ impl Env {
     pub(crate) fn alpm_pool(&self) -> Result<Pool<AlpmManager>, Error> {
         // FIXME Thu Jun  9 2022 Unfortunate clone here.
         let mngr = AlpmManager::new(self.pacman.clone());
-        let pool = Pool::builder().max_size(self.general.cpus).build(mngr)?;
+        let pool = Pool::builder()
+            .max_size(self.general.cpus)
+            .build(mngr)
+            .map_err(Error::R2d2)?;
 
         Ok(pool)
     }

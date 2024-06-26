@@ -19,7 +19,6 @@ use std::ops::Not;
 pub(crate) enum Error {
     #[from_variants(skip)]
     SetExplicit(String, alpm::Error),
-    Readline(rustyline::error::ReadlineError),
     Sudo(crate::utils::SudoError),
     NoneExist,
     Removal(crate::pacman::Error),
@@ -29,7 +28,6 @@ impl Nested for Error {
     fn nested(&self) {
         match self {
             Error::SetExplicit(_, e) => error!("{e}"),
-            Error::Readline(e) => error!("{e}"),
             Error::Sudo(e) => e.nested(),
             Error::NoneExist => {}
             Error::Removal(e) => e.nested(),
@@ -40,7 +38,6 @@ impl Nested for Error {
 impl Localised for Error {
     fn localise(&self, fll: &FluentLanguageLoader) -> String {
         match self {
-            Error::Readline(_) => fl!(fll, "err-user-input"),
             Error::Sudo(e) => e.localise(fll),
             Error::NoneExist => fl!(fll, "err-none-exist"),
             Error::SetExplicit(p, _) => fl!(fll, "O-explicit-err", pkg = p.as_str()),

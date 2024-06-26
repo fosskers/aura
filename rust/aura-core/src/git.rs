@@ -21,6 +21,7 @@ pub enum Error {
     #[from_variants(skip)]
     Diff(PathBuf),
     /// Converting a git hash to a Rust string failed.
+    #[from_variants(skip)]
     ReadHash(std::string::FromUtf8Error),
 }
 

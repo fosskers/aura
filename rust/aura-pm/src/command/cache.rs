@@ -34,6 +34,7 @@ const CMPR_SWITCH: i64 = 1_577_404_800;
 
 #[derive(FromVariants)]
 pub(crate) enum Error {
+    #[from_variants(skip)]
     Readline(rustyline::error::ReadlineError),
     Sudo(crate::utils::SudoError),
     Pacman(crate::pacman::Error),
@@ -148,7 +149,7 @@ fn downgrade_one(
         println!(" {:w$}) {}", i, pp.as_package().version, w = digits);
     }
 
-    let index = crate::utils::select(">>> ", tarballs.len() - 1)?;
+    let index = crate::utils::select(">>> ", tarballs.len() - 1).map_err(Error::Readline)?;
 
     Ok(tarballs.remove(index))
 }
@@ -389,7 +390,7 @@ pub(crate) fn refresh(env: &Env, fll: &FluentLanguageLoader, alpm: &Alpm) -> Res
         for (i, cache) in caches.iter().enumerate() {
             println!(" {}) {}", i, cache.display());
         }
-        let ix = crate::utils::select(">>> ", caches.len() - 1)?;
+        let ix = crate::utils::select(">>> ", caches.len() - 1).map_err(Error::Readline)?;
         let target_cache = caches[ix];
 
         // Mirrors.

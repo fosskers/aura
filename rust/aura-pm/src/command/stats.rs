@@ -17,6 +17,7 @@ use unic_langid::{langid, LanguageIdentifier};
 
 #[derive(FromVariants)]
 pub(crate) enum Error {
+    #[from_variants(skip)]
     LangLoad(i18n_embed::I18nEmbedError),
     Env(crate::env::Error),
     Stdout,
@@ -44,7 +45,8 @@ impl Localised for Error {
 
 /// Raw contents of loaded localizations.
 pub(crate) fn localization() -> Result<(), Error> {
-    let stats: HashMap<LanguageIdentifier, (String, usize)> = localization::load_all()?
+    let stats: HashMap<LanguageIdentifier, (String, usize)> = localization::load_all()
+        .map_err(Error::LangLoad)?
         .into_iter()
         .map(|(lang, fll)| {
             let count = fll.with_message_iter(&lang, |iter| iter.count());

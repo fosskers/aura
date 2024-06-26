@@ -22,6 +22,7 @@ const DEFAULT_MAKEPKG_CONF: &str = "/etc/makepkg.conf";
 #[derive(FromVariants)]
 pub(crate) enum Error {
     PathToAuraConfig(crate::dirs::Error),
+    #[from_variants(skip)]
     SerializeEnv(toml::ser::Error),
     #[from_variants(skip)]
     CouldntOpen(String, std::io::Error),
@@ -54,7 +55,7 @@ pub(crate) fn general(env: &Env) {
 
 /// Output your current, full Aura config as legal TOML.
 pub(crate) fn gen(env: &Env) -> Result<(), Error> {
-    let s = toml::ser::to_string_pretty(env)?;
+    let s = toml::ser::to_string_pretty(env).map_err(Error::SerializeEnv)?;
     println!("{s}");
     Ok(())
 }

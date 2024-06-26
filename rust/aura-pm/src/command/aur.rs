@@ -43,6 +43,7 @@ pub(crate) enum Error {
     FileOpen(PathBuf, std::io::Error),
     #[from_variants(skip)]
     FileWrite(PathBuf, std::io::Error),
+    #[from_variants(skip)]
     DateConv(time::error::ComponentRange),
     NoPackages,
     Cancelled,
@@ -280,7 +281,9 @@ fn package_date(epoch: u64) -> Result<ColoredString, Error> {
     // There is a panic risk here with the u64->i64 conversion. In practice it
     // should never come up, as the timestamps passed in should never be
     // anywhere near the [`u64::MAX`] value.
-    let date = OffsetDateTime::from_unix_timestamp(epoch as i64)?.date();
+    let date = OffsetDateTime::from_unix_timestamp(epoch as i64)
+        .map_err(Error::DateConv)?
+        .date();
     Ok(format!("{}", date).normal())
 }
 
