@@ -6,6 +6,7 @@ on:
     paths:
       - "rust/**/Cargo.toml"
       - "rust/**/*.rs"
+      - ".github/workflows/rust.yaml"
   pull_request:
     paths:
       - "rust/**/Cargo.toml"
@@ -19,7 +20,7 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     container:
-      image: archlinux
+      image: ghcr.io/archlinux/archlinux:latest
     steps:
       - name: Install Rust
         run: pacman -Sy rust gcc glibc openssl pkgconf --noconfirm

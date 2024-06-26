@@ -11,6 +11,7 @@ on:
       - "haskell/stack.yaml"
       - "haskell/**/*.cabal"
       - "haskell/**/*.hs"
+      - ".github/workflows/haskell.yaml"
 
 jobs:
   build:
