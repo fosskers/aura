@@ -110,6 +110,16 @@ impl Resolution {
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Official(String);
 
+impl Official {
+    /// Construct an `Official`.
+    pub fn new<S>(s: S) -> Self
+    where
+        S: Into<String>,
+    {
+        Official(s.into())
+    }
+}
+
 impl Borrow<str> for Official {
     fn borrow(&self) -> &str {
         self.0.as_ref()
@@ -169,6 +179,25 @@ impl Hash for Buildable {
     }
 }
 
+fn confirm_base_devel<M, E>(pool: Pool<M>, mutx: Arc<Mutex<Resolution>>) -> Result<(), Error<E>>
+where
+    M: ManageConnection<Connection = Alpm>,
+{
+    let alpm = pool.get()?;
+    let db = alpm.alpm.localdb();
+
+    if db.pkg("base-devel").is_err() {
+        let p = Official::new("base-devel");
+
+        mutx.lock()
+            .map_err(|_| Error::PoisonedMutex)?
+            .to_install
+            .insert(p);
+    }
+
+    Ok(())
+}
+
 /// Determine all packages to be built and installed.
 pub fn resolve<'a, I, M, F, E>(
     pool: Pool<M>,
@@ -184,6 +213,11 @@ where
     E: Send,
 {
     let arc = Arc::new(Mutex::new(Resolution::default()));
+
+    // The Arch Wiki states that `base-devel` is to be considered an implicit
+    // (make-)dependency of every other package. Here we add it automatically if
+    // the user doesn't have it installed.
+    confirm_base_devel(pool.clone(), arc.clone())?;
 
     // The original packages we asked to have installed. These should not be
     // immediately counted as "satisfied" (and thus skipped) by the dependency
@@ -273,8 +307,7 @@ where
                     mutx.lock()
                         .map_err(|_| Error::PoisonedMutex)?
                         .to_install
-                        .insert(Official(prnt.clone()))
-                        .disown();
+                        .insert(Official::new(&prnt));
 
                     // Since this is an official, prebuilt package, we don't
                     // need to consider its makedeps or checkdeps.
