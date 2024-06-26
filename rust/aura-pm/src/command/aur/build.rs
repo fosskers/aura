@@ -155,18 +155,15 @@ fn build_one(
         .filter(|file| (file.contains("https://") || file.contains("http://")).not())
         .map(|s| s.as_str());
 
-    let install_file: Option<PathBuf> = {
-        let install = info
-            .pkg
-            .install
-            .as_deref()
-            .map(PathBuf::from)
-            .unwrap_or_else(|| Path::new(&base).with_extension("install"));
-        clone.join(&install).is_file().then_some(install)
-    };
+    let install_files: Vec<_> = info
+        .pkg
+        .install
+        .as_deref()
+        .map(|s| vec![PathBuf::from(s)])
+        .unwrap_or_else(|| all_install_files(&clone));
 
     std::iter::once("PKGBUILD")
-        .chain(install_file.iter().filter_map(|pb| pb.to_str()))
+        .chain(install_files.iter().filter_map(|pb| pb.to_str()))
         .chain(to_copy)
         .map(|file| {
             debug!("Copying {}", file);
@@ -220,6 +217,24 @@ fn build_one(
     };
 
     Ok(Built { clone, tarballs })
+}
+
+/// The PKGBUILD author didn't specify any explicit in the `install` field, but
+/// there may be some "install files" lying around anyway. These have
+/// inconsistent naming schemes across packages, so we just grab anything that
+/// ends with `.install`.
+fn all_install_files(clone: &Path) -> Vec<PathBuf> {
+    clone
+        .read_dir()
+        .map(|dir| {
+            dir.filter_map(|de| de.ok())
+                .map(|de| de.path())
+                .filter(|p| p.extension().and_then(|s| s.to_str()) == Some("install"))
+                .filter_map(|p| p.file_name().map(|s| s.to_os_string()))
+                .map(PathBuf::from)
+                .collect()
+        })
+        .unwrap_or_default()
 }
 
 fn show_diffs(
