@@ -200,5 +200,7 @@ cleanDir :: RIO Env ()
 cleanDir = do
   ss <- asks settings
   let !vcsPath = fromMaybe vcsStore . vcsPathOf $ buildConfigOf ss
-  notify ss cleanCache_6
-  listDirectory vcsPath >>= traverse_ (removeDirectoryRecursive . (</>) vcsPath)
+  exists <- doesDirectoryExist vcsPath
+  when exists $ do
+    notify ss cleanCache_6
+    listDirectory vcsPath >>= traverse_ (removeDirectoryRecursive . (</>) vcsPath)
