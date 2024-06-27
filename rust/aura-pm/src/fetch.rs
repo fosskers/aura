@@ -28,7 +28,7 @@ impl Nested for Error {
 impl Localised for Error {
     fn localise(&self, fll: &FluentLanguageLoader) -> String {
         match self {
-            Error::Curl(_) => fl!(fll, "err-curl"),
+            Error::Curl(e) => fl!(fll, "err-curl", err = e.to_string()),
             Error::Json(url, _) => fl!(fll, "err-json-decode", url = url.as_str()),
         }
     }

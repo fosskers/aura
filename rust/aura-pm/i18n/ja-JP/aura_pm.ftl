@@ -207,7 +207,7 @@ faur-too-many = 予想より Faur から結果がですぎた： { $pkg }
 # Common Errors
 err-alpm = ALPM のハンドルを開けなかった。
 err-config-path = Aura の設定ファイルの在処を特定できなった。
-err-curl = CURL がなぜか失敗した。
+err-curl = CURL がなぜか失敗した: { $err }
 err-file-del = 削除に失敗した： { $file }
 err-file-open = ファイルとして開けなかった： { $file }
 err-file-write = 書き込みが失敗した： { $file }

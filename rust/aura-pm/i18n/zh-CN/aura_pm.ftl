@@ -213,7 +213,7 @@ env-pconf = pacman.conf 文件无法解析。
 # Common Errors
 # err-alpm = Failed to open ALPM handle.
 # err-config-path = Failed to determine the path to Aura's config file.
-# err-curl = A CURL transaction failed.
+# err-curl = A CURL transation failed: { $err }
 # err-file-del = Failed to delete: { $file }
 # err-file-open = Failed to open file handle to: { $file }
 # err-file-write = Failed to write file: { $file }
