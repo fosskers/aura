@@ -1,14 +1,13 @@
-*.prof
-*.svg
-*.txt
-AUR-SECURITY.*
-TAGS
-flames
-aur-pkgs/*
-.hlint.yaml
-book/book/*
+# Rust
 rust/target/*
+
+# Haskell
 haskell/.stack-work/*
+*.dump-hi
+.hlint.yaml
+
+# The Aura Guide
+book/book/*
 
 # Nix
 .envrc
@@ -16,3 +15,12 @@ haskell/.stack-work/*
 
 # Lisp
 lisp/.qlot/*
+
+# Misc.
+*.prof
+*.svg
+*.txt
+AUR-SECURITY.*
+TAGS
+flames
+aur-pkgs/*
