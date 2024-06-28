@@ -4,7 +4,7 @@
 # The Aura Package Manager
 
 [![img](https://img.shields.io/hackage/v/aura.svg)](http://hackage.haskell.org/package/aura)
-![Crates.io Version](https://img.shields.io/crates/v/aura-pm)
+[![Crates.io Version](https://img.shields.io/crates/v/aura-pm)](https://crates.io/crates/aura-pm)
 ![img](https://img.shields.io/github/downloads/fosskers/aura/total.svg)
 
   <div>
