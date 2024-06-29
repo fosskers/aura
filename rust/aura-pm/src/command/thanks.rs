@@ -8,11 +8,11 @@ pub(crate) fn thanks(fll: &FluentLanguageLoader) {
     println!("{}", fl!(fll, "thanks-you"));
     println!("{}", fl!(fll, "thanks-pacman"));
     println!("{}", fl!(fll, "thanks-everyone"));
-    println!("");
+    println!();
     println!("{}", fl!(fll, "thanks-colin"));
     println!("{}", fl!(fll, "thanks-logo"));
     println!("{}", fl!(fll, "thanks-translators"));
-    println!("");
+    println!();
 
     let longest = TRANSLATORS
         .iter()

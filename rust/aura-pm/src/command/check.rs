@@ -141,9 +141,9 @@ fn aura_knows_lang(fll: &FluentLanguageLoader, lang: &str) {
 /// Whether the LANG variable content can be considered the same as a given line
 /// from `locale -a`.
 fn same_lang(lang: &str, locale: &str) -> bool {
-    match (code_and_country(lang), code_and_country(locale)) {
-        ((l0, _), (l1, _)) => l0 == l1,
-    }
+    let ((l0, _), (l1, _)) = (code_and_country(lang), code_and_country(locale));
+
+    l0 == l1
 }
 
 fn editor(fll: &FluentLanguageLoader) {

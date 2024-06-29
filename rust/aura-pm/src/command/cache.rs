@@ -430,7 +430,7 @@ pub(crate) fn refresh(env: &Env, fll: &FluentLanguageLoader, alpm: &Alpm) -> Res
                 let mut res = ms.iter().filter_map(|m| {
                     let url = format!("{}/{}", m, tarball);
                     let target = target_cache.join(&tarball);
-                    download_with_progress(&url, &target, Some((pr.clone(), &bar))).ok()
+                    download_with_progress(&url, &target, Some((pr.clone(), &bar)))
                 });
 
                 // If the download failed from every mirror, cancel the progress bar.
