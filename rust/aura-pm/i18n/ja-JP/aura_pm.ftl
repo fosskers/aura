@@ -222,7 +222,6 @@ err-srcinfo = .SRCINFO のパースが失敗した： { $file }
 err-sudo = 権限を上げられなかった。
 err-time-conv = タイムスタンプを変換できなかった。
 err-time-format = 時刻の文字列のフォーマットが失敗した。
-err-time-local = 現在の時刻を特定できなった。
 err-user-input = ユーザーの入力がなぜか失敗した。
 err-utf8 = UTF-8 変換が失敗した。
 err-write = stdout への書き込みがなぜか失敗した。

@@ -227,7 +227,6 @@ env-pconf = pacman.conf 파일 분석에 실패했습니다.
 # err-sudo = Failed to raise privileges.
 # err-time-conv = Failed to convert a timestamp.
 # err-time-format = Failed to format a time string.
-# err-time-local = Failed to determine local time.
 # err-user-input = Failed to get user input.
 # err-utf8 = A UTF-8 conversion failed.
 # err-write = Somehow failed to write to stdout.
