@@ -23,8 +23,9 @@ pub struct Snapshot {
 impl Snapshot {
     /// Given a handle to ALPM, take a snapshot of all currently installed
     /// packages and their versions.
-    pub fn from_alpm(alpm: &Alpm) -> Result<Snapshot, time::error::IndeterminateOffset> {
-        let time = OffsetDateTime::now_local()?;
+    pub fn from_alpm(alpm: &Alpm) -> Snapshot {
+        let time = OffsetDateTime::now_utc();
+
         let packages = alpm
             .as_ref()
             .localdb()
@@ -33,13 +34,11 @@ impl Snapshot {
             .map(|p| (p.name().to_owned(), p.version().as_str().to_owned()))
             .collect();
 
-        let snap = Snapshot {
+        Snapshot {
             time,
             pinned: false,
             packages,
-        };
-
-        Ok(snap)
+        }
     }
 
     /// Does this `Snapshot` match what is currently installed?
