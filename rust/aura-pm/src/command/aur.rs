@@ -183,6 +183,27 @@ pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<()
     Ok(())
 }
 
+pub(crate) fn provides<S>(
+    alpm: &Alpm,
+    alpha: bool,
+    rev: bool,
+    limit: Option<usize>,
+    quiet: bool,
+    providing: S,
+) -> Result<(), Error>
+where
+    S: AsRef<str>,
+{
+    let mut matches: Vec<aura_core::faur::Package> =
+        aura_core::faur::provides(providing, &crate::fetch::fetch_json)?;
+
+    matches.sort_by(|a, b| a.name.cmp(&b.name));
+
+    render_search(alpm, alpha, rev, limit, quiet, matches);
+
+    Ok(())
+}
+
 /// Search the AUR via a search string.
 ///
 /// Thanks to `clap`, the `terms` slice is guaranteed to be non-empty.
@@ -196,9 +217,6 @@ pub(crate) fn search(
 ) -> Result<(), Error> {
     debug!("Searching for: {:?}", terms);
 
-    let db = alpm.alpm.localdb();
-    let rep = "aur/".magenta();
-
     // Sanitize the input.
     terms.sort_unstable_by_key(|t| t.len());
     for t in terms.iter_mut() {
@@ -207,10 +225,27 @@ pub(crate) fn search(
 
     debug!("Sanitized terms: {:?}", terms);
 
-    let mut matches: Vec<aura_core::faur::Package> =
+    let matches: Vec<aura_core::faur::Package> =
         aura_core::faur::search(terms.iter().map(|s| s.as_str()), &crate::fetch::fetch_json)?;
 
     debug!("Search matches: {}", matches.len());
+
+    render_search(alpm, alpha, rev, limit, quiet, matches);
+
+    Ok(())
+}
+
+/// Render some search results. Orders by vote count by default.
+fn render_search(
+    alpm: &Alpm,
+    alpha: bool,
+    rev: bool,
+    limit: Option<usize>,
+    quiet: bool,
+    mut matches: Vec<aura_core::faur::Package>,
+) {
+    let db = alpm.alpm.localdb();
+    let rep = "aur/".magenta();
 
     // Sort and filter the results as requested.
     if alpha {
@@ -244,8 +279,6 @@ pub(crate) fn search(
             println!("    {}", p.description.unwrap_or_default());
         }
     }
-
-    Ok(())
 }
 
 /// View a package's PKGBUILD.

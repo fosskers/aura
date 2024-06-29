@@ -1128,6 +1128,16 @@ pub struct Aur {
     )]
     pub search: Vec<String>,
 
+    /// Search the AUR for packages that "provide" some package identity.
+    #[clap(
+        group = "aur",
+        long,
+        short = 'v',
+        value_name = "package",
+        display_order = 1
+    )]
+    pub provides: Option<String>,
+
     // TODO Avoid boolean blindness.
     /// [-s] Sort results alphabetically.
     #[clap(long, display_order = 2)]

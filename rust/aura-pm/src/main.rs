@@ -132,6 +132,14 @@ fn work(args: Args, env: Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
         SubCmd::Aur(a) if a.search.is_empty().not() => {
             aur::search(&env.alpm()?, a.abc, a.reverse, a.limit, a.quiet, a.search)?
         }
+        SubCmd::Aur(a) if a.provides.is_some() => aur::provides(
+            &env.alpm()?,
+            a.abc,
+            a.reverse,
+            a.limit,
+            a.quiet,
+            a.provides.unwrap(),
+        )?,
         SubCmd::Aur(a) if a.open.is_some() => aur::open(&a.open.unwrap())?,
         SubCmd::Aur(a) if a.pkgbuild.is_some() => {
             aur::pkgbuild(&a.pkgbuild.unwrap(), &env.aur.clones)?

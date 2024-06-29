@@ -105,11 +105,13 @@ where
 }
 
 /// Look up packages that provide the given "package identity": `O(logn)`
-pub fn provides<F, E>(providing: &str, fetch: &F) -> Result<Vec<Package>, E>
+pub fn provides<S, F, E>(providing: S, fetch: &F) -> Result<Vec<Package>, E>
 where
+    S: AsRef<str>,
     F: Fn(&str) -> Result<Vec<Package>, E>,
 {
-    let url = format!("{}/packages?names={}&by=prov", FAUR_URL, providing);
+    let p = providing.as_ref();
+    let url = format!("{}/packages?names={}&by=prov", FAUR_URL, p);
     fetch(&url)
 }
 
