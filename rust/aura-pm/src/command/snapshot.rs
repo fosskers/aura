@@ -33,8 +33,6 @@ pub(crate) enum Error {
     #[from_variants(skip)]
     OpenFile(PathBuf, std::io::Error),
     #[from_variants(skip)]
-    TimeLocal(time::error::IndeterminateOffset),
-    #[from_variants(skip)]
     TimeFormat(time::error::Format),
     Cancelled,
     NoSnapshots,
@@ -51,7 +49,6 @@ impl Nested for Error {
             Error::OpenFile(_, e) => error!("{e}"),
             Error::Cancelled => {}
             Error::NoSnapshots => {}
-            Error::TimeLocal(e) => error!("{e}"),
             Error::TimeFormat(e) => error!("{e}"),
         }
     }
@@ -68,7 +65,6 @@ impl Localised for Error {
             Error::NoSnapshots => fl!(fll, "B-none"),
             Error::DeleteFile(p, _) => fl!(fll, "err-file-del", file = p.utf8()),
             Error::OpenFile(p, _) => fl!(fll, "err-file-open", file = p.utf8()),
-            Error::TimeLocal(_) => fl!(fll, "err-time-local"),
             Error::TimeFormat(_) => fl!(fll, "err-time-format"),
         }
     }
@@ -86,7 +82,7 @@ struct StateDiff<'a> {
 }
 
 pub(crate) fn save(fll: &FluentLanguageLoader, alpm: &Alpm, snapshots: &Path) -> Result<(), Error> {
-    let snap = Snapshot::from_alpm(alpm).map_err(Error::TimeLocal)?;
+    let snap = Snapshot::from_alpm(alpm);
     let form =
         format_description!("[year].[month]([month repr:short]).[day].[hour].[minute].[second]");
     let name = format!(

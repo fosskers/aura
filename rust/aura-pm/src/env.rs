@@ -374,11 +374,19 @@ impl TryFrom<RawAur> for Aur {
 #[derive(Deserialize)]
 struct RawBackups {
     snapshots: Option<PathBuf>,
+
+    #[serde(default = "on_by_default")]
+    automatic: bool,
+}
+
+fn on_by_default() -> bool {
+    true
 }
 
 #[derive(Debug, Serialize)]
 pub(crate) struct Backups {
     pub(crate) snapshots: PathBuf,
+    pub(crate) automatic: bool,
 }
 
 impl Backups {
@@ -386,7 +394,9 @@ impl Backups {
     fn try_default() -> Result<Self, dirs::Error> {
         let g = Backups {
             snapshots: dirs::snapshot()?,
+            automatic: true,
         };
+
         Ok(g)
     }
 }
@@ -395,10 +405,12 @@ impl TryFrom<RawBackups> for Backups {
     type Error = dirs::Error;
 
     fn try_from(raw: RawBackups) -> Result<Self, Self::Error> {
-        let snapshots = raw.snapshots.map(Ok).unwrap_or_else(dirs::snapshot)?;
-        let g = Backups { snapshots };
+        let b = Backups {
+            snapshots: raw.snapshots.map(Ok).unwrap_or_else(dirs::snapshot)?,
+            automatic: raw.automatic,
+        };
 
-        Ok(g)
+        Ok(b)
     }
 }
 

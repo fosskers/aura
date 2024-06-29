@@ -40,6 +40,7 @@ mod macros;
 pub(crate) mod pacman;
 pub(crate) mod utils;
 
+use crate::command::aur::Mode;
 use crate::command::{aur, cache, check, conf, deps, logs, open, orphans, snapshot, stats, thanks};
 use crate::error::{Error, Nested};
 use crate::localization::Localised;
@@ -147,7 +148,12 @@ fn work(args: Args, env: Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
         SubCmd::Aur(a) if a.wclone.is_empty().not() => aur::clone_aur_repos(fll, &a.wclone)?,
         SubCmd::Aur(a) if a.sysupgrade => aur::upgrade(fll, &env.alpm()?, env)?,
         SubCmd::Aur(a) if a.refresh => aur::refresh(fll, &env.alpm()?, &env.aur.clones)?,
-        SubCmd::Aur(a) => aur::install(fll, &env, a.packages.iter().map(|s| s.as_str()))?,
+        SubCmd::Aur(a) => aur::install(
+            fll,
+            &env,
+            Mode::Install,
+            a.packages.iter().map(|s| s.as_str()),
+        )?,
         // --- Package Sets --- //
         SubCmd::Backup(b) if b.clean => {
             snapshot::clean(fll, &env.caches(), &env.backups.snapshots)?

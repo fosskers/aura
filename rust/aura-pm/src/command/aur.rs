@@ -27,6 +27,7 @@ use time::OffsetDateTime;
 
 #[derive(FromVariants)]
 pub(crate) enum Error {
+    Backup(crate::command::snapshot::Error),
     Fetch(crate::fetch::Error),
     Dirs(crate::dirs::Error),
     Git(aura_core::git::Error),
@@ -69,6 +70,7 @@ impl Nested for Error {
             Error::Cancelled => {}
             Error::Stdout => {}
             Error::DateConv(e) => error!("{e}"),
+            Error::Backup(e) => e.nested(),
         }
     }
 }
@@ -92,8 +94,15 @@ impl Localised for Error {
             Error::FileOpen(p, _) => fl!(fll, "err-file-open", file = p.utf8()),
             Error::FileWrite(p, _) => fl!(fll, "err-file-write", file = p.utf8()),
             Error::DateConv(_) => fl!(fll, "err-time-conv"),
+            Error::Backup(e) => e.localise(fll),
         }
     }
+}
+
+/// Whether this build process is a one-off build, or part of a complete upgrade.
+pub(crate) enum Mode {
+    Install,
+    Upgrade,
 }
 
 /// View AUR package information.
@@ -378,6 +387,7 @@ pub(crate) fn refresh(
 pub(crate) fn install<'a, I>(
     fll: &FluentLanguageLoader,
     env: &Env,
+    mode: Mode,
     raw_pkgs: I,
 ) -> Result<(), Error>
 where
@@ -405,7 +415,7 @@ where
     if env.aur.delmakedeps {
         let alpm = env.alpm()?;
         let before: HashSet<_> = aura_core::orphans(&alpm).map(|p| p.name()).collect();
-        install_work(fll, env, pkgs)?;
+        install_work(fll, env, mode, pkgs)?;
         // Another handle must be opened, or else the change in orphan packages won't be detected.
         let alpm = env.alpm()?;
         let after: HashSet<_> = aura_core::orphans(&alpm).map(|p| p.name()).collect();
@@ -418,13 +428,18 @@ where
             crate::pacman::sudo_pacman(env, "-Rsu", NOTHING, diff)?;
         }
     } else {
-        install_work(fll, env, pkgs)?;
+        install_work(fll, env, mode, pkgs)?;
     }
 
     Ok(())
 }
 
-fn install_work<'a, I>(fll: &FluentLanguageLoader, env: &Env, pkgs: I) -> Result<(), Error>
+fn install_work<'a, I>(
+    fll: &FluentLanguageLoader,
+    env: &Env,
+    mode: Mode,
+    pkgs: I,
+) -> Result<(), Error>
 where
     I: IntoIterator<Item = &'a str>,
 {
@@ -464,6 +479,10 @@ where
     if env.aur.noconfirm.not() {
         // Proceed if the user accepts.
         proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
+    }
+
+    if matches!(mode, Mode::Upgrade) && env.backups.automatic {
+        crate::command::snapshot::save(fll, &env.alpm()?, env.backups.snapshots.as_path())?;
     }
 
     // --- Determine the best build order --- //
@@ -657,7 +676,7 @@ pub(crate) fn upgrade<'a>(
             .iter()
             .map(|(old, _)| old.name.as_ref())
             .chain(vcs.iter().map(|p| p.name.as_ref()));
-        install(fll, &env, names)?;
+        install(fll, &env, Mode::Upgrade, names)?;
     }
 
     Ok(())
