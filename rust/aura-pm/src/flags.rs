@@ -756,8 +756,8 @@ pub struct Remove {
     #[clap(long, short, display_order = 1)]
     cascade: bool,
     /// Skip dependency version checks (-dd to skip all checks).
-    #[clap(long, short = 'd', display_order = 1)]
-    nodeps: bool,
+    #[clap(long, short = 'd', action = ArgAction::Count, display_order = 1)]
+    nodeps: u8,
     /// Remove configuration files.
     #[clap(long, short = 'n', display_order = 1)]
     nosave: bool,
@@ -765,8 +765,8 @@ pub struct Remove {
     #[clap(long, short, display_order = 1)]
     print: bool,
     /// Remove unnecessary dependencies (-ss includes explicitly installed dependencies).
-    #[clap(long, short = 's', display_order = 1)]
-    recursive: bool,
+    #[clap(long, short = 's', action = ArgAction::Count, display_order = 1)]
+    recursive: u8,
     /// Remove unneeded packages.
     #[clap(long, short, display_order = 1)]
     unneeded: bool,

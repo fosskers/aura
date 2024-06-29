@@ -55,7 +55,7 @@
 (defun unused-localisations ()
   "All localisations left over which are no longer used in the original English."
   (let ((localisation-dirs (uiop:subdirectories *loc-dirs*)))
-    (format t "--- ALL UNUSED LOCALISATIONS --~%")
+    (format t "--- ALL UNUSED LOCALISATIONS ---~%")
     (dolist (dir localisation-dirs)
       (format t "~A~%" dir)
       (let* ((path (p:join dir "aura_pm.ftl"))
@@ -70,7 +70,7 @@
   "Localisation strings which were set in the English, but not copied over to the others."
   (let ((localisation-dirs (uiop:subdirectories *loc-dirs*))
         (english (msg-labels *english*)))
-    (format t "--- ALL MISSING LOCALISATIONS (~A English) --~%" (length english))
+    (format t "--- ALL MISSING LOCALISATIONS (~A English) ---~%" (length english))
     (dolist (dir localisation-dirs)
       (let* ((path (p:join dir "aura_pm.ftl"))
              (lbls (lenient-msg-labels path))
