@@ -1138,20 +1138,19 @@ pub struct Aur {
     )]
     pub provides: Option<String>,
 
-    // TODO Avoid boolean blindness.
-    /// [-s] Sort results alphabetically.
+    /// [-s/-v] Sort results alphabetically.
     #[clap(long, display_order = 2)]
     pub abc: bool,
 
-    /// [-s] Limit the results to N results.
+    /// [-s/-v] Limit the results to N results.
     #[clap(long, value_name = "N", display_order = 2)]
     pub limit: Option<usize>,
 
-    /// [-s] Reverse the search results.
+    /// [-s/-v] Reverse the search results.
     #[clap(long, short, display_order = 2)]
     pub reverse: bool,
 
-    /// [-s] Only print matching package names.
+    /// [-s/-v] Only print matching package names.
     #[clap(long, short, display_order = 2)]
     pub quiet: bool,
 
@@ -1192,6 +1191,10 @@ pub struct Aur {
     )]
     pub ignore: Vec<String>,
 
+    /// [-u] Show available upgrades, but do not perform them.
+    #[clap(long, short = 'd', display_order = 3)]
+    pub dryrun: bool,
+
     /// Clone a package's AUR repository, but don't build anything.
     #[clap(
         group = "aur",
@@ -1205,6 +1208,7 @@ pub struct Aur {
 
     /// Deprecated.
     #[clap(long, short = 'x', display_order = 1)]
+    #[deprecated(since = "4.0.0", note = "Makepkg output is now shown by default.")]
     pub unsuppress: bool,
 
     /// Pull the latest changes for every local copy of an AUR package.

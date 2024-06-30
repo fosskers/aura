@@ -555,6 +555,7 @@ pub(crate) fn upgrade<'a>(
     fll: &FluentLanguageLoader,
     alpm: &'a Alpm,
     env: Env,
+    dryrun: bool,
 ) -> Result<(), Error> {
     info!("Upgrading all AUR packages.");
     debug!("Will ignore: {:?}", env.aur.ignores);
@@ -568,7 +569,9 @@ pub(crate) fn upgrade<'a>(
     debug!("After excluding ignores: {}", foreigns.len());
 
     // --- Ensure they all have local clones --- //
-    aura!(fll, "A-u-fetch-info");
+    if dryrun.not() {
+        aura!(fll, "A-u-fetch-info");
+    }
     let clones: HashSet<PathBuf> = foreigns
         .par_iter()
         .map(|p| p.name.as_ref())
@@ -582,7 +585,9 @@ pub(crate) fn upgrade<'a>(
             match rpath {
                 Ok(path) => Some(Ok(path)),
                 Err(aura_core::aur::Error::PackageDoesNotExist(p)) => {
-                    yellow!(fll, "faur-unknown", pkg = p);
+                    if dryrun.not() {
+                        yellow!(fll, "faur-unknown", pkg = p);
+                    }
                     None
                 }
                 Err(e) => Some(Err(e)),
@@ -592,7 +597,9 @@ pub(crate) fn upgrade<'a>(
     debug!("Unique clones: {}", clones.len());
 
     // --- Compare versions to determine what to upgrade --- //
-    aura!(fll, "A-u-comparing");
+    if dryrun.not() {
+        aura!(fll, "A-u-comparing");
+    }
     info!("Reading .SRCINFO files...");
     let srcinfos = clones
         .into_par_iter()
@@ -639,9 +646,13 @@ pub(crate) fn upgrade<'a>(
 
     // --- Report --- //
     if to_upgrade.is_empty() && (env.aur.git.not() || (env.aur.git && vcs.is_empty())) {
-        aura!(fll, "A-u-no-upgrades");
+        if dryrun.not() {
+            aura!(fll, "A-u-no-upgrades");
+        }
     } else {
-        aura!(fll, "A-u-to-upgrade");
+        if dryrun.not() {
+            aura!(fll, "A-u-to-upgrade");
+        }
         to_upgrade.sort_by(|(a, _), (b, _)| a.name.cmp(&b.name));
         let longest_name = to_upgrade
             .iter()
@@ -665,6 +676,12 @@ pub(crate) fn upgrade<'a>(
             );
         }
 
+        // We've printed the packages that have available upgrades, so now bail
+        // early before anything else can happen.
+        if dryrun {
+            return Ok(());
+        }
+
         if env.aur.git && vcs.is_empty().not() {
             aura!(fll, "A-u-git");
             for p in vcs.iter() {
@@ -676,6 +693,7 @@ pub(crate) fn upgrade<'a>(
             .iter()
             .map(|(old, _)| old.name.as_ref())
             .chain(vcs.iter().map(|p| p.name.as_ref()));
+
         install(fll, &env, Mode::Upgrade, names)?;
     }
 

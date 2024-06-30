@@ -447,7 +447,7 @@ where
                 crate::faur::provides(pkg, fetch)
                     .ok()
                     // FIXME Fri May 20 2022 Somehow allow the user a choice of provider, if there are multiple.
-                    // In general this should be unlikely on the AUR for the average user.
+                    // In general this should be unlikely on the AUR for the average user, especially for dependencies.
                     .and_then(|mut v| v.pop())
             })
             // Worst scenario: There wasn't a provider either. Then the
