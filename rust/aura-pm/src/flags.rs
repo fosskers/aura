@@ -406,9 +406,9 @@ pub struct Sync {
     /// Show less information for query and search.
     #[clap(long, short, display_order = 2)]
     quiet: bool,
-    /// Search remote repositories for matchings strings.
-    #[clap(group = "sync", long, short, value_name = "terms", num_args = 1.., display_order = 1)]
-    search: Vec<String>,
+    /// Search remote repositories for matching strings.
+    #[clap(group = "sync", long, short, display_order = 1)]
+    search: bool,
     /// Upgrade installed packages (-uu enables downgrades).
     #[clap(
         group = "sync",
@@ -516,11 +516,7 @@ pub struct Sync {
 impl Sync {
     /// Does this `-S` subflag need sudo?
     pub fn needs_sudo(&self) -> bool {
-        (self.info.is_empty().not()
-            || self.search.is_empty().not()
-            || self.list.is_some()
-            || self.print)
-            .not()
+        (self.info.is_empty().not() || self.search || self.list.is_some() || self.print).not()
     }
 }
 
