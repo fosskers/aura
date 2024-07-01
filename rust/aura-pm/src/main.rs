@@ -1,6 +1,6 @@
 //! The Aura Package Manager.
 //!
-//! Copyright 2012 - 2023 Colin Woodbury <colin@fosskers.ca>
+//! Copyright 2012 - 2024 Colin Woodbury <colin@fosskers.ca>
 //!
 //! This file is part of Aura.
 //!
@@ -37,6 +37,7 @@ pub(crate) mod error;
 pub(crate) mod fetch;
 pub(crate) mod localization;
 mod macros;
+pub(crate) mod makepkg;
 pub(crate) mod pacman;
 pub(crate) mod utils;
 
@@ -188,9 +189,9 @@ fn work(args: Args, env: Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
         // --- PKGBUILD Analysis --- //
         // SubCmd::Analysis(_) => unimplemented!(),
         // --- Configuration --- //
-        SubCmd::Conf(c) if c.pacman => conf::pacman_conf(c)?,
-        SubCmd::Conf(c) if c.aura => conf::aura_conf()?,
-        SubCmd::Conf(c) if c.makepkg => conf::makepkg_conf()?,
+        SubCmd::Conf(c) if c.pacman => conf::open_pacman_conf(c)?,
+        SubCmd::Conf(c) if c.aura => conf::open_aura_conf()?,
+        SubCmd::Conf(c) if c.makepkg => conf::open_makepkg_conf()?,
         SubCmd::Conf(c) if c.gen => conf::gen(&env)?,
         SubCmd::Conf(_) => conf::general(&env),
         // --- Statistics --- //

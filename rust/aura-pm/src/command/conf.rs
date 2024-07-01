@@ -9,15 +9,11 @@ use aura_pm::flags::Conf;
 use from_variants::FromVariants;
 use i18n_embed_fl::fl;
 use log::error;
-use std::env;
+use std::path::PathBuf;
 use std::process::Command;
 
 /// The default filepath of the Pacman configuration.
 const DEFAULT_PAC_CONF: &str = "/etc/pacman.conf";
-
-// TODO Handle the other potential default locations.
-/// The default filepath of the Makepkg configuration.
-const DEFAULT_MAKEPKG_CONF: &str = "/etc/makepkg.conf";
 
 #[derive(FromVariants)]
 pub(crate) enum Error {
@@ -25,7 +21,7 @@ pub(crate) enum Error {
     #[from_variants(skip)]
     SerializeEnv(toml::ser::Error),
     #[from_variants(skip)]
-    CouldntOpen(String, std::io::Error),
+    CouldntOpen(PathBuf, std::io::Error),
 }
 
 impl Nested for Error {
@@ -43,7 +39,7 @@ impl Localised for Error {
         match self {
             Error::PathToAuraConfig(_) => fl!(fll, "err-config-path"),
             Error::SerializeEnv(_) => fl!(fll, "conf-toml-err"),
-            Error::CouldntOpen(p, _) => fl!(fll, "open-err", url = p.as_str()),
+            Error::CouldntOpen(p, _) => fl!(fll, "open-err", url = p.utf8()),
         }
     }
 }
@@ -61,20 +57,20 @@ pub(crate) fn gen(env: &Env) -> Result<(), Error> {
 }
 
 /// Open the `$XDG_HOME/aura/config.toml` in `bat` or `less`.
-pub(crate) fn aura_conf() -> Result<(), Error> {
+pub(crate) fn open_aura_conf() -> Result<(), Error> {
     let path = crate::dirs::aura_config()?;
     let prog = misc::viewer();
 
     Command::new(prog)
         .arg(&path)
         .status()
-        .map_err(|e| Error::CouldntOpen(path.utf8(), e))
+        .map_err(|e| Error::CouldntOpen(path, e))
         .void()
 }
 
 /// Open the `pacman.conf` in `bat` or `less`.
-pub(crate) fn pacman_conf(c: Conf) -> Result<(), Error> {
-    let conf = c.config.unwrap_or_else(|| DEFAULT_PAC_CONF.to_string());
+pub(crate) fn open_pacman_conf(c: Conf) -> Result<(), Error> {
+    let conf = c.config.unwrap_or_else(|| PathBuf::from(DEFAULT_PAC_CONF));
     let prog = misc::viewer();
 
     Command::new(prog)
@@ -85,13 +81,13 @@ pub(crate) fn pacman_conf(c: Conf) -> Result<(), Error> {
 }
 
 /// Open the `makepkg.conf` in `bat` or `less`.
-pub(crate) fn makepkg_conf() -> Result<(), Error> {
-    let conf = env::var("MAKEPKG_CONF").unwrap_or_else(|_| DEFAULT_MAKEPKG_CONF.to_string());
+pub(crate) fn open_makepkg_conf() -> Result<(), Error> {
+    let path = crate::makepkg::conf_location();
     let prog = misc::viewer();
 
     Command::new(prog)
-        .arg(&conf)
+        .arg(&path)
         .status()
-        .map_err(|e| Error::CouldntOpen(conf, e))
+        .map_err(|e| Error::CouldntOpen(path, e))
         .void()
 }

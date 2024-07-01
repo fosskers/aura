@@ -3,13 +3,15 @@
 use crate::dirs;
 use crate::error::Nested;
 use crate::localization::{identifier_from_locale, Localised};
+use crate::makepkg::Makepkg;
 use from_variants::FromVariants;
 use i18n_embed_fl::fl;
-use log::{debug, error};
+use log::{debug, error, warn};
 use r2d2::Pool;
 use r2d2_alpm::{Alpm, AlpmManager};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
+use std::ops::Not;
 use std::path::{Path, PathBuf};
 use unic_langid::LanguageIdentifier;
 
@@ -95,6 +97,9 @@ pub(crate) struct Env {
     /// Settings from a `pacman.conf`.
     #[serde(skip_serializing)]
     pub(crate) pacman: pacmanconf::Config,
+    /// Settings from a `makepkg.conf`.
+    #[serde(skip_serializing)]
+    pub(crate) makepkg: Option<Makepkg>,
 }
 
 impl Env {
@@ -111,11 +116,20 @@ impl Env {
             None => (None, None, None),
         };
 
+        let makepkg = match crate::makepkg::Makepkg::new() {
+            Ok(m) => Some(m),
+            Err(e) => {
+                warn!("Unable to parse makepkg.conf: {e}");
+                None
+            }
+        };
+
         let e = Env {
             general: general.unwrap_or_default(),
             aur: aur.unwrap_or_else(Aur::try_default)?,
             backups: backups.unwrap_or_else(Backups::try_default)?,
             pacman: pacmanconf::Config::new().map_err(Error::PConf)?,
+            makepkg,
         };
 
         Ok(e)
@@ -166,7 +180,7 @@ impl Env {
     /// Allow CLI flags to override settings from `aura.toml`.
     pub(crate) fn reconcile_cli(&mut self, flags: &aura_pm::flags::Args) {
         if let aura_pm::flags::SubCmd::Aur(a) = &flags.subcmd {
-            self.aur.reconcile(a)
+            self.aur.reconcile(self.makepkg.as_ref(), a)
         }
 
         // Specifying a language on the command line overrides all other
@@ -308,7 +322,7 @@ impl Aur {
 
     /// Flags set on the command line should override config settings and other
     /// defaults.
-    fn reconcile(&mut self, flags: &aura_pm::flags::Aur) {
+    fn reconcile(&mut self, makepkg: Option<&Makepkg>, flags: &aura_pm::flags::Aur) {
         // NOTE 2023-11-26 It may be tempting to save two lines here by blindly
         // setting `self.git` to whatever is found in the `flags` value, but
         // that would cause problems in the case of `true` being set in config,
@@ -333,7 +347,10 @@ impl Aur {
             self.noconfirm = true;
         }
 
-        if flags.nocheck {
+        // NOTE If `check` were found in `makepkg.conf`, then the flag should
+        // override it. If `!check` were found or there were nothing, then the
+        // flag agrees with it and `false` is taken.
+        if flags.nocheck || makepkg.map(|m| m.check.not()).unwrap_or(false) {
             self.nocheck = true;
         }
 

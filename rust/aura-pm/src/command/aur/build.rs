@@ -340,6 +340,11 @@ fn makepkg(within: &Path, nocheck: bool) -> Result<Vec<PathBuf>, Error> {
     //
     // Yes, this isn't enough to get around packages that don't want to be
     // configured more than once.
+    //
+    // 2024-07-01
+    //
+    // The issues is that we _do_ want to leave build artefacts behind in
+    // general to speed up rebuilds.
     cmd.arg("-f");
 
     if nocheck {

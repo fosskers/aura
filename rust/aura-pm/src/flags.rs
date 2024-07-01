@@ -1039,7 +1039,7 @@ pub struct Orphans {
 pub struct Conf {
     /// Set an alternate Pacman configuration file.
     #[clap(long, value_name = "path")]
-    pub config: Option<String>,
+    pub config: Option<PathBuf>,
     /// View the Pacman conf.
     #[clap(group = "conf", long, short, display_order = 1)]
     pub pacman: bool,
