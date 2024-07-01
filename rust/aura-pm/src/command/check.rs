@@ -57,7 +57,7 @@ pub(crate) fn check(fll: &FluentLanguageLoader, env: &Env) -> Result<(), Error> 
     environment(fll);
     aura_config(fll);
     pacman_config(fll, &env.pacman, &env.aur);
-    makepkg_config(fll);
+    makepkg_config(fll, &env);
     snapshots(fll, &env.backups.snapshots, &caches);
     cache(fll, &alpm, pool, &caches);
     packages(fll, &alpm);
@@ -167,9 +167,9 @@ fn pacman_config(fll: &FluentLanguageLoader, c: &pacmanconf::Config, a: &Aur) {
     pacnews(fll);
 }
 
-fn makepkg_config(fll: &FluentLanguageLoader) {
+fn makepkg_config(fll: &FluentLanguageLoader, env: &Env) {
     aura!(fll, "check-mconf");
-    packager_set(fll);
+    packager_set(fll, env);
 }
 
 fn aura_config(fll: &FluentLanguageLoader) {
@@ -238,18 +238,13 @@ fn parsable_aura_toml(fll: &FluentLanguageLoader) {
     }
 }
 
-fn packager_set(fll: &FluentLanguageLoader) {
-    let (cmd, args) = crate::command::misc::searcher();
-    let good = Command::new(cmd)
-        .args(args)
-        .arg("PACKAGER")
-        .arg("/etc/makepkg.conf")
-        .output()
-        .ok()
-        .map(|o| o.stdout)
-        .and_then(|stdout| String::from_utf8(stdout).ok())
-        .map(|s| s.trim().lines().any(|line| line.starts_with("PACKAGER=")))
-        .unwrap_or(false);
+fn packager_set(fll: &FluentLanguageLoader, env: &Env) {
+    let good = env
+        .makepkg
+        .as_ref()
+        .and_then(|m| m.packager.as_deref())
+        .is_some();
+
     let symbol = if good { GOOD.green() } else { BAD.red() };
     println!("  [{}] {}", symbol, fl!(fll, "check-mconf-packager"));
 
