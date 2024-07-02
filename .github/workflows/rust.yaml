@@ -31,7 +31,7 @@ jobs:
       - name: Cache Dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          working-directory: rust/
+          workspaces: "rust -> target"
 
       - name: Build and Test
         run: |
