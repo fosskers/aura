@@ -3,8 +3,10 @@
 use crate::utils::PathStr;
 use aura_core::aur::dependencies as deps;
 use aura_core::Apply;
-use i18n_embed::fluent::{fluent_language_loader, FluentLanguageLoader};
-use i18n_embed::{I18nEmbedError, LanguageLoader};
+use i18n_embed::fluent::fluent_language_loader;
+use i18n_embed::fluent::FluentLanguageLoader;
+use i18n_embed::I18nEmbedError;
+use i18n_embed::LanguageLoader;
 use i18n_embed_fl::fl;
 use nonempty_collections::*;
 use rust_embed::RustEmbed;
@@ -137,10 +139,11 @@ where
             deps::Error::R2D2(_) => fl!(fll, "err-pool-get"),
             deps::Error::Srcinfo(p, _) => fl!(fll, "err-srcinfo", file = p.utf8()),
             deps::Error::Git(e) => e.localise(fll),
-            deps::Error::Resolutions(es) => {
-                let iter = es.iter().map(|e| format!(" - {}", e.localise(fll)));
+            e @ deps::Error::Resolutions(_) => {
+                let ne = e.inner_errors();
+                let iter = ne.iter().map(|e| format!(" - {}", e.localise(fll)));
 
-                [fl!(fll, "dep-multi"), "".to_string()]
+                [fl!(fll, "dep-multi")]
                     .into_iter()
                     .chain(iter)
                     // FIXME Thu Jun 23 2022 Use built-in `intersperse` once it stabilizes.
