@@ -11,7 +11,10 @@ pub mod git;
 pub mod logs;
 pub mod snapshot;
 
-use alpm::{AlpmList, Db, PackageReason, SigLevel};
+use alpm::AlpmList;
+use alpm::Db;
+use alpm::PackageReason;
+use alpm::SigLevel;
 use alpm_utils::DbListExt;
 use log::debug;
 use r2d2_alpm::Alpm;

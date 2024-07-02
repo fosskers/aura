@@ -2,20 +2,29 @@
 
 use crate::Apply;
 use disown::Disown;
-use log::{debug, info};
+use log::debug;
+use log::info;
+use nonempty_collections::nev;
 use nonempty_collections::NEVec;
+use nonempty_collections::NonEmptyIterator;
 use petgraph::graph::NodeIndex;
 use petgraph::Graph;
-use r2d2::{ManageConnection, Pool};
+use r2d2::ManageConnection;
+use r2d2::Pool;
 use r2d2_alpm::Alpm;
-use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
+use rayon::iter::IntoParallelIterator;
+use rayon::iter::IntoParallelRefIterator;
+use rayon::iter::ParallelIterator;
 use srcinfo::Srcinfo;
 use std::borrow::Borrow;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
+use std::collections::HashSet;
 use std::hash::Hash;
 use std::ops::Not;
-use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex};
+use std::path::Path;
+use std::path::PathBuf;
+use std::sync::Arc;
+use std::sync::Mutex;
 use time::OffsetDateTime;
 use validated::Validated;
 
@@ -44,39 +53,12 @@ pub enum Error<E> {
     Faur(E),
 }
 
-impl<E> From<crate::git::Error> for Error<E> {
-    fn from(v: crate::git::Error) -> Self {
-        Self::Git(v)
-    }
-}
-
-impl<E> From<r2d2::Error> for Error<E> {
-    fn from(v: r2d2::Error) -> Self {
-        Self::R2D2(v)
-    }
-}
-
-impl<E: std::fmt::Display> std::fmt::Display for Error<E> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<E> Error<E> {
+    /// A flattened list of all inner error values.
+    pub fn inner_errors(&self) -> NEVec<&Self> {
         match self {
-            Error::PoisonedMutex => write!(f, "Poisoned Mutex"),
-            Error::R2D2(e) => write!(f, "{}", e),
-            Error::Resolutions(es) => {
-                writeln!(f, "Errors during dependency resolution:")?;
-                for e in (*es).iter() {
-                    writeln!(f, "{}", e)?;
-                }
-                Ok(())
-            }
-            Error::Srcinfo(_, e) => write!(f, "{}", e),
-            Error::Git(e) => write!(f, "{}", e),
-            Error::DoesntExist(p) => write!(f, "{} is not a known package.", p),
-            Error::DoesntExistWithParent(par, p) => {
-                write!(f, "{}, required by {}, is not a known package.", p, par)
-            }
-            Error::Faur(e) => write!(f, "{}", e),
-            Error::CyclicDep(e) => write!(f, "Cyclic dependency involving {}.", e),
-            Error::MalformedGraph => write!(f, "The dependency graph was somehow malformed."),
+            Error::Resolutions(bx) => bx.as_ref().iter().flat_map(|e| e.inner_errors()).collect(),
+            otherwise => nev![otherwise],
         }
     }
 }
@@ -183,7 +165,7 @@ fn confirm_base_devel<M, E>(pool: Pool<M>, mutx: Arc<Mutex<Resolution>>) -> Resu
 where
     M: ManageConnection<Connection = Alpm>,
 {
-    let alpm = pool.get()?;
+    let alpm = pool.get().map_err(Error::R2D2)?;
     let db = alpm.alpm.localdb();
 
     if db.pkg("base-devel").is_err() {
@@ -282,7 +264,7 @@ where
                 "Trying to get ALPM handle ({} idle connections)",
                 state.idle_connections
             );
-            let alpm = pool.get()?;
+            let alpm = pool.get().map_err(Error::R2D2)?;
             debug!("Got a handle.");
             let db = alpm.alpm.localdb();
             db.pkg(pr).is_ok() || db.pkgs().find_satisfier(pr).is_some()
@@ -296,7 +278,7 @@ where
                 .satisfied
                 .insert(pkg);
         } else {
-            let alpm = pool.get()?;
+            let alpm = pool.get().map_err(Error::R2D2)?;
 
             match alpm.alpm.syncdbs().find_satisfier(pr) {
                 Some(official) => {
@@ -466,7 +448,7 @@ where
             // crate::git::pull(&path)?; // Here. Potentially avoid this.
             Ok(path)
         } else {
-            let path = crate::aur::clone_aur_repo(Some(clone_d), &base)?;
+            let path = crate::aur::clone_aur_repo(Some(clone_d), &base).map_err(Error::Git)?;
             Ok(path)
         }
     }
