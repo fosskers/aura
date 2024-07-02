@@ -1,0 +1,28 @@
+edition = "2021"
+
+unstable_features = true
+
+# This produces superior git diffs.
+imports_granularity = "Item"
+
+# Imports without empty lines are cleaner.
+group_imports = "One"
+
+format_code_in_doc_comments = true
+
+# To unify style.
+reorder_impl_items = true
+
+# To unify style.
+format_macro_matchers = true
+
+# To unify style.
+format_strings = true
+
+# The default value (60) is too small for some cases.
+single_line_if_else_max_width = 80
+single_line_let_else_max_width = 80
+
+# Clippy warns about this, it's better to set it to true to avoid the warning.
+use_field_init_shorthand = true
+
