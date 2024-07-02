@@ -16,9 +16,6 @@ reorder_impl_items = true
 # To unify style.
 format_macro_matchers = true
 
-# To unify style.
-format_strings = true
-
 # The default value (60) is too small for some cases.
 single_line_if_else_max_width = 80
 single_line_let_else_max_width = 80

@@ -1,10 +1,13 @@
 //! All functionality involving the `-B` command.
 
+use crate::aura;
 use crate::env::Env;
 use crate::error::Nested;
+use crate::green;
 use crate::localization::Localised;
-use crate::utils::{PathStr, NOTHING};
-use crate::{aura, green, proceed};
+use crate::proceed;
+use crate::utils::PathStr;
+use crate::utils::NOTHING;
 use aura_core::snapshot::Snapshot;
 use colored::*;
 use from_variants::FromVariants;
@@ -13,11 +16,13 @@ use i18n_embed_fl::fl;
 use log::error;
 use r2d2_alpm::Alpm;
 use std::cmp::Ordering;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::BufWriter;
 use std::ops::Not;
-use std::path::{Path, PathBuf};
+use std::path::Path;
+use std::path::PathBuf;
 use time::macros::format_description;
 
 #[derive(FromVariants)]

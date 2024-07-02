@@ -2,17 +2,23 @@
 
 use crate::dirs;
 use crate::error::Nested;
-use crate::localization::{identifier_from_locale, Localised};
+use crate::localization::identifier_from_locale;
+use crate::localization::Localised;
 use crate::makepkg::Makepkg;
 use from_variants::FromVariants;
 use i18n_embed_fl::fl;
-use log::{debug, error, warn};
+use log::debug;
+use log::error;
+use log::warn;
 use r2d2::Pool;
-use r2d2_alpm::{Alpm, AlpmManager};
-use serde::{Deserialize, Serialize};
+use r2d2_alpm::Alpm;
+use r2d2_alpm::AlpmManager;
+use serde::Deserialize;
+use serde::Serialize;
 use std::collections::HashSet;
 use std::ops::Not;
-use std::path::{Path, PathBuf};
+use std::path::Path;
+use std::path::PathBuf;
 use unic_langid::LanguageIdentifier;
 
 const DEFAULT_EDITOR: &str = "vi";

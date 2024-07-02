@@ -1,6 +1,7 @@
 //! Core interactions with a [faur](https://git.sr.ht/~fosskers/faur) instance.
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 
 /// The main `faur` instance.
 pub const FAUR_URL: &str = "https://faur.fosskers.ca";

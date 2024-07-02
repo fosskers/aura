@@ -3,7 +3,8 @@
 use crate::env::Env;
 use crate::error::Nested;
 use crate::localization::Localised;
-use colored::{ColoredString, Colorize};
+use colored::ColoredString;
+use colored::Colorize;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use nonempty_collections::NEVec;

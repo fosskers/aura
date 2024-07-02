@@ -2,7 +2,8 @@
 
 use crate::env::Env;
 use crate::error::Nested;
-use crate::localization::{self, Localised};
+use crate::localization::Localised;
+use crate::localization::{self};
 use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
@@ -10,10 +11,12 @@ use i18n_embed::LanguageLoader;
 use i18n_embed_fl::fl;
 use log::error;
 use r2d2_alpm::Alpm;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
+use std::collections::HashSet;
 use std::io::BufWriter;
 use ubyte::ToByteUnit;
-use unic_langid::{langid, LanguageIdentifier};
+use unic_langid::langid;
+use unic_langid::LanguageIdentifier;
 
 #[derive(FromVariants)]
 pub(crate) enum Error {

@@ -1,14 +1,16 @@
 //! Cache manipulation internals.
 
-use r2d2_alpm::Alpm;
-
 use crate::Package;
-use std::collections::{HashMap, HashSet};
+use r2d2_alpm::Alpm;
+use std::cmp::Ordering;
+use std::collections::HashMap;
+use std::collections::HashSet;
 use std::ffi::OsString;
 use std::fs::Metadata;
-use std::path::{Path, PathBuf};
+use std::path::Path;
+use std::path::PathBuf;
+use std::process::Command;
 use std::time::SystemTime;
-use std::{cmp::Ordering, process::Command};
 
 /// A validated path to a package tarball.
 #[derive(Debug, PartialEq, Eq)]

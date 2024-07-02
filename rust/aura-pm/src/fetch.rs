@@ -6,7 +6,8 @@ use curl::easy::Easy;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
-use log::{debug, error};
+use log::debug;
+use log::error;
 use serde::de::DeserializeOwned;
 
 #[derive(FromVariants)]

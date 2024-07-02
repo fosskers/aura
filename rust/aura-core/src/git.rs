@@ -3,8 +3,10 @@
 use crate::Apply;
 use from_variants::FromVariants;
 use log::debug;
-use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::path::Path;
+use std::path::PathBuf;
+use std::process::Command;
+use std::process::Stdio;
 
 /// A git-related error.
 #[derive(Debug, FromVariants)]

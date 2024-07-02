@@ -1,11 +1,13 @@
 //! Download bytes from the web.
 
 use curl::easy::Easy;
-use linya::{Bar, Progress};
+use linya::Bar;
+use linya::Progress;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use std::sync::Mutex;
 
 // #[derive(FromVariants)]
 // pub(crate) enum Error {

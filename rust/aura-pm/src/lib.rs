@@ -3,8 +3,8 @@
 pub mod flags;
 
 use std::str::FromStr;
-
-use unic_langid::{langid, LanguageIdentifier};
+use unic_langid::langid;
+use unic_langid::LanguageIdentifier;
 
 /// A wrapper around [`time::Date`] to supply some trait instances.
 #[derive(Debug, Clone)]

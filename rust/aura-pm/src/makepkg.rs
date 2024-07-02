@@ -3,7 +3,8 @@
 
 use aura_core::Apply;
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::BufRead;
+use std::io::BufReader;
 use std::ops::Not;
 use std::path::PathBuf;
 

@@ -1,17 +1,24 @@
+use crate::aura;
 use crate::error::Nested;
 use crate::localization::Localised;
-use crate::utils::{PathStr, ResultVoid};
-use crate::{aura, proceed, red, yellow};
+use crate::proceed;
+use crate::red;
+use crate::utils::PathStr;
+use crate::utils::ResultVoid;
+use crate::yellow;
 use aura_core::cache::PkgPath;
 use colored::Colorize;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
-use log::{debug, error, warn};
+use log::debug;
+use log::error;
+use log::warn;
 use nonempty_collections::NEVec;
 use r2d2_alpm::Alpm;
 use srcinfo::Srcinfo;
 use std::ops::Not;
-use std::path::{Path, PathBuf};
+use std::path::Path;
+use std::path::PathBuf;
 use std::process::Command;
 use validated::Validated;
 

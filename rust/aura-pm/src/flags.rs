@@ -1,7 +1,9 @@
 //! Types and utilities for parsing flags from the command line.
 
 use crate::Date;
-use clap::{ArgAction, Parser, Subcommand};
+use clap::ArgAction;
+use clap::Parser;
+use clap::Subcommand;
 use simplelog::LevelFilter;
 use std::ops::Not;
 use std::path::PathBuf;

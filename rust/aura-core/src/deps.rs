@@ -1,11 +1,12 @@
 //! Dependency analysis internals.
 
+use crate::DbLike;
 use itertools::Itertools;
 use log::debug;
-use petgraph::{graph::NodeIndex, Directed, Graph};
+use petgraph::graph::NodeIndex;
+use petgraph::Directed;
+use petgraph::Graph;
 use std::collections::HashMap;
-
-use crate::DbLike;
 
 /// A dependency relationship between parent and child.
 pub enum DepType {

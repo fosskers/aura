@@ -4,7 +4,8 @@ pub mod dependencies;
 
 use log::debug;
 use std::borrow::Cow;
-use std::path::{Path, PathBuf};
+use std::path::Path;
+use std::path::PathBuf;
 
 /// The base path of the URL.
 pub const AUR_BASE_URL: &str = "https://aur.archlinux.org/";

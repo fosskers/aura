@@ -1,23 +1,31 @@
 //! Analyze many aspects of your installation for validity.
 
-use crate::env::{Aur, Env};
+use crate::aura;
+use crate::env::Aur;
+use crate::env::Env;
 use crate::error::Nested;
-use crate::localization::{code_and_country, identifier_from_locale, Localised};
+use crate::executable;
+use crate::green;
+use crate::localization::code_and_country;
+use crate::localization::identifier_from_locale;
+use crate::localization::Localised;
 use crate::utils::PathStr;
-use crate::{aura, executable, green};
 use alpm::PackageReason;
 use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use r2d2::Pool;
-use r2d2_alpm::{Alpm, AlpmManager};
+use r2d2_alpm::Alpm;
+use r2d2_alpm::AlpmManager;
 use rayon::prelude::*;
 use std::collections::HashSet;
 use std::ops::Not;
-use std::path::{Path, PathBuf};
+use std::path::Path;
+use std::path::PathBuf;
 use std::process::Command;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::SystemTime;
+use std::time::UNIX_EPOCH;
 
 pub(crate) const GOOD: &str = "✓";
 pub(crate) const WARN: &str = "!";

@@ -1,6 +1,7 @@
 //! Output a dependency graph in DOT format.
 
-use aura_core::{deps, Dbs};
+use aura_core::deps;
+use aura_core::Dbs;
 use r2d2_alpm::Alpm;
 
 /// Given some packages to focus on, print their combined dependency graph in
