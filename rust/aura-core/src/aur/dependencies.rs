@@ -48,7 +48,7 @@ pub enum Error<E> {
     /// The dependency graph was somehow malformed. This should never occur.
     MalformedGraph,
     /// There was a cyclic dependency.
-    CyclicDep(String),
+    CyclicDep(Vec<String>),
     /// Contacting Faur somehow failed.
     Faur(E),
 }
@@ -254,18 +254,18 @@ where
     };
 
     if !already_seen {
-        debug!("{pr}");
+        // debug!("{pr}");
 
         // Checks if the current package is installed or otherwise satisfied by
         // some package, and then immediately drops the ALPM handle.
         let satisfied = {
-            let state = pool.state();
-            debug!(
-                "Trying to get ALPM handle ({} idle connections)",
-                state.idle_connections
-            );
+            // let state = pool.state();
+            // debug!(
+            //     "Trying to get ALPM handle ({} idle connections)",
+            //     state.idle_connections
+            // );
             let alpm = pool.get().map_err(Error::R2D2)?;
-            debug!("Got a handle.");
+            // debug!("Got a handle.");
             let db = alpm.alpm.localdb();
             db.pkg(pr).is_ok() || db.pkgs().find_satisfier(pr).is_some()
         };
@@ -478,9 +478,13 @@ pub fn build_order<E>(to_build: &[Buildable]) -> Result<Vec<Vec<&str>>, Error<E>
     let graph = dep_graph(to_build);
 
     petgraph::algo::toposort(&graph, None)
-        .map_err(|cycle| match graph.node_weight(cycle.node_id()) {
-            None => Error::MalformedGraph,
-            Some(b) => Error::CyclicDep(b.to_string()),
+        .map_err(|cycle| {
+            shortest_cycle(cycle.node_id(), &graph)
+                .into_iter()
+                .filter_map(|ix| graph.node_weight(ix))
+                .map(|b| b.to_string())
+                .collect::<Vec<_>>()
+                .apply(Error::CyclicDep)
         })?
         .into_iter()
         // Least-depended-upon to most-dependend-upon ordering. We reverse the
@@ -522,6 +526,16 @@ pub fn build_order<E>(to_build: &[Buildable]) -> Result<Vec<Vec<&str>>, Error<E>
             layers.reverse();
             Ok(layers)
         })
+}
+
+fn shortest_cycle<N, E>(ix: NodeIndex, graph: &Graph<N, E>) -> Vec<NodeIndex> {
+    petgraph::algo::all_simple_paths::<Vec<_>, _>(&graph, ix, ix, 0, None)
+        .fold(None, |acc, cycle| match acc {
+            None => Some(cycle),
+            Some(v) if cycle.len() < v.len() => Some(cycle),
+            _ => acc,
+        })
+        .unwrap_or_default()
 }
 
 /// Form a proper dependency graph.

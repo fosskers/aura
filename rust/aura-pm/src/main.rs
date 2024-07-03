@@ -28,6 +28,7 @@
 //! along with Aura.  If not, see <http://www.gnu.org/licenses/>.
 
 #![warn(missing_docs)]
+#![feature(iter_intersperse)]
 
 pub(crate) mod command;
 pub(crate) mod dirs;

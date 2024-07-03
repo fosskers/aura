@@ -161,7 +161,15 @@ where
                 fl!(fll, "dep-exist-par", pkg = a.as_str(), par = b.as_str())
             }
             deps::Error::MalformedGraph => fl!(fll, "dep-graph"),
-            deps::Error::CyclicDep(p) => fl!(fll, "dep-cycle", pkg = p.as_str()),
+            deps::Error::CyclicDep(cycle) => {
+                let rendered: String = cycle
+                    .iter()
+                    .map(|s| s.as_str())
+                    .intersperse(" => ")
+                    .collect();
+
+                fl!(fll, "dep-cycle", cycle = rendered)
+            }
             deps::Error::Faur(e) => e.localise(fll),
         }
     }
