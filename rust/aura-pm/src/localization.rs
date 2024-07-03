@@ -11,6 +11,7 @@ use i18n_embed_fl::fl;
 use nonempty_collections::*;
 use rust_embed::RustEmbed;
 use std::collections::HashMap;
+use std::num::NonZeroUsize;
 use unic_langid::LanguageIdentifier;
 
 pub(crate) const TRANSLATORS: &[(&str, &str)] = &[
@@ -141,14 +142,19 @@ where
             deps::Error::Git(e) => e.localise(fll),
             e @ deps::Error::Resolutions(_) => {
                 let ne = e.inner_errors();
-                let iter = ne.iter().map(|e| format!(" - {}", e.localise(fll)));
 
-                [fl!(fll, "dep-multi")]
-                    .into_iter()
-                    .chain(iter)
-                    // FIXME Thu Jun 23 2022 Use built-in `intersperse` once it stabilizes.
-                    .apply(|i| itertools::intersperse(i, "\n".to_string()))
-                    .collect()
+                if ne.len() == NonZeroUsize::MIN {
+                    ne.head.localise(fll)
+                } else {
+                    let iter = ne.iter().map(|e| format!(" - {}", e.localise(fll)));
+
+                    [fl!(fll, "dep-multi")]
+                        .into_iter()
+                        .chain(iter)
+                        // FIXME Thu Jun 23 2022 Use built-in `intersperse` once it stabilizes.
+                        .apply(|i| itertools::intersperse(i, "\n".to_string()))
+                        .collect()
+                }
             }
             deps::Error::DoesntExist(p) => fl!(fll, "dep-exist", pkg = p.as_str()),
             deps::Error::DoesntExistWithParent(a, b) => {
