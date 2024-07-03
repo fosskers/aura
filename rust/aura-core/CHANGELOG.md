@@ -1,5 +1,20 @@
 # aura-core
 
+## 0.7.0 (2024-07-04)
+
+#### Fixed
+
+- `base-devel` is always added as a dependency if missing from the system.
+- Ignore inter-dependencies between split packages.
+
+#### Changed
+
+- Snapshot timestamps are now based on UTC.
+
+#### Removed
+
+- Removed the `Apply` trait. Use [applying](https://lib.rs/crates/applying) instead.
+
 ## 0.5.0 (2024-06-11)
 
 #### Changed
