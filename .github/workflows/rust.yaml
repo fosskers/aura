@@ -23,9 +23,7 @@ jobs:
       image: ghcr.io/archlinux/archlinux:latest
     steps:
       - name: Install Rust
-        run: |
-          pacman -Sy rustup gcc glibc openssl pkgconf --noconfirm
-          rustup default nightly
+        run: pacman -Sy rust gcc glibc openssl pkgconf --noconfirm
 
       - name: Clone Project
         uses: actions/checkout@v4
@@ -38,4 +36,4 @@ jobs:
       - name: Build and Test
         run: |
           cd rust/
-          cargo +nightly test
+          cargo test

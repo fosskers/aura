@@ -165,7 +165,7 @@ where
                 let rendered: String = cycle
                     .iter()
                     .map(|s| s.as_str())
-                    .intersperse(" => ")
+                    .apply(|iter| itertools::intersperse(iter, " => "))
                     .collect();
 
                 fl!(fll, "dep-cycle", cycle = rendered)
