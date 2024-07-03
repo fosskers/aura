@@ -41,7 +41,7 @@ impl Makepkg {
             .map_err(Error::Io)?
             .apply(BufReader::new)
             .lines()
-            .filter_map(|line| line.ok())
+            .map_while(Result::ok)
             .map(|line| line.trim().to_string())
             .filter(|line| line.is_empty().not())
             .filter(|line| line.starts_with('#').not())

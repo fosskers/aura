@@ -65,7 +65,7 @@ pub(crate) fn check(fll: &FluentLanguageLoader, env: &Env) -> Result<(), Error> 
     environment(fll);
     aura_config(fll);
     pacman_config(fll, &env.pacman, &env.aur);
-    makepkg_config(fll, &env);
+    makepkg_config(fll, env);
     snapshots(fll, &env.backups.snapshots, &caches);
     cache(fll, &alpm, pool, &caches);
     packages(fll, &alpm);
