@@ -320,7 +320,7 @@ where
                     // FIXME Fri Feb 18 2022 Same here as above.
                     drop(alpm);
 
-                    debug!("{} is an AUR package.", pr);
+                    debug!("{} is may be an AUR package.", pr);
                     let path = pull_or_clone(fetch, clone_d, parent, &pkg)?;
                     debug!("Parsing .SRCINFO for {}", pkg);
                     let full = path.join(".SRCINFO");
@@ -328,7 +328,7 @@ where
                     let name = info.base.pkgbase;
 
                     // --- Package identities provided by this one --- //
-                    let mut prov = Vec::new();
+                    let prov: HashSet<_> = info.pkgs.iter().map(|p| p.pkgname.clone()).collect();
 
                     // --- All possible deps to consider --- //
                     let deps: HashSet<String> = info
@@ -336,14 +336,22 @@ where
                         .makedepends
                         .into_iter()
                         .chain(info.pkg.depends)
-                        .chain(info.pkgs.into_iter().flat_map(|p| {
-                            // Sneak out this package's name as a "provided name".
-                            prov.push(p.pkgname);
-                            p.depends
-                        }))
+                        .chain(info.pkgs.into_iter().flat_map(|p| p.depends))
                         .chain(respect_checkdeps(nocheck, info.base.checkdepends))
                         .flat_map(|av| av.vec)
+                        // To prevent false detection of dependency cycles
+                        // during build preparation.
+                        //
+                        // Consider the case of `mingw-w64-harfbuzz-icu`, a
+                        // split package found within `mingw-w64-harfbuzz`. The
+                        // former depends on the latter (at runtime), but they
+                        // are built as a pair during the same `makepkg`
+                        // invocation. So we don't have to consider normal
+                        // dependency relationships between them.
+                        .filter(|p| prov.contains(p).not())
                         .collect();
+
+                    debug!("{} ({}) => {:?}", pr, name, deps);
 
                     let deps_copy: Vec<String> = deps.iter().cloned().collect();
                     let parent = name.clone();
