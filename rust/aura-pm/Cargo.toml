@@ -18,6 +18,7 @@ aura-core = { version = "0.6", path = "../aura-core" }
 r2d2-alpm = { version = "0.2", path = "../r2d2-alpm" }
 
 alpm = "3.0"
+applying = "1.0.0"
 clap = { version = "4.4", features = ["derive"] }
 colored = "2.0"
 curl = "0.4"

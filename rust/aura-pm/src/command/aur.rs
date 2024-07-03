@@ -13,7 +13,7 @@ use crate::utils::PathStr;
 use crate::utils::ResultVoid;
 use crate::utils::NOTHING;
 use crate::yellow;
-use aura_core::Apply;
+use applying::Apply;
 use aura_core::Package;
 use colored::ColoredString;
 use colored::Colorize;

@@ -227,25 +227,6 @@ where
         .flatten()
 }
 
-/// Apply functions in method-position.
-pub trait Apply {
-    /// Apply a given function in method-position.
-    fn apply<F, U>(self, f: F) -> U
-    where
-        F: FnOnce(Self) -> U,
-        Self: Sized;
-}
-
-impl<T> Apply for T {
-    fn apply<F, U>(self, f: F) -> U
-    where
-        F: FnOnce(Self) -> U,
-        Self: Sized,
-    {
-        f(self)
-    }
-}
-
 /// All orphaned packages.
 ///
 /// An orphan is a package that was installed as a dependency, but whose parent

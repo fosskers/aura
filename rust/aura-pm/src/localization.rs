@@ -1,8 +1,8 @@
 //! Utilities for localizing messages printed by the Aura executable.
 
 use crate::utils::PathStr;
+use applying::Apply;
 use aura_core::aur::dependencies as deps;
-use aura_core::Apply;
 use i18n_embed::fluent::fluent_language_loader;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed::I18nEmbedError;

@@ -1,7 +1,7 @@
 //! Parsing values from the user's `makepkg.conf`, where ever that happens to
 //! be.
 
-use aura_core::Apply;
+use applying::Apply;
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;

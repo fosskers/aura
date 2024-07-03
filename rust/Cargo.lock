@@ -81,6 +81,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "applying"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "530c57d434fe87458af93afee12b1d51e5d8971b1345fa674b8145ab2519ef40"
+
+[[package]]
 name = "arc-swap"
 version = "1.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -92,6 +98,7 @@ version = "0.6.0"
 dependencies = [
  "alpm",
  "alpm-utils",
+ "applying",
  "disown",
  "from_variants",
  "itertools",
@@ -115,6 +122,7 @@ name = "aura-pm"
 version = "4.0.0-beta04"
 dependencies = [
  "alpm",
+ "applying",
  "aura-core",
  "clap",
  "colored",

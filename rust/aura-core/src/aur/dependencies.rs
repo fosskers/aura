@@ -1,6 +1,6 @@
 //! AUR package dependency solving.
 
-use crate::Apply;
+use applying::Apply;
 use disown::Disown;
 use log::debug;
 use log::info;

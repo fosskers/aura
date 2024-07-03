@@ -6,7 +6,7 @@ use crate::green;
 use crate::localization::Localised;
 use crate::utils::NOTHING;
 use alpm::PackageReason;
-use aura_core::Apply;
+use applying::Apply;
 use colored::*;
 use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;

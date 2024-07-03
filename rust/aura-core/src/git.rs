@@ -1,6 +1,6 @@
 //! Generalized `git` interaction.
 
-use crate::Apply;
+use applying::Apply;
 use from_variants::FromVariants;
 use log::debug;
 use std::path::Path;
