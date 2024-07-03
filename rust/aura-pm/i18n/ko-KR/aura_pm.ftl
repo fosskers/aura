@@ -194,7 +194,7 @@ env-pconf = pacman.conf 파일 분석에 실패했습니다.
 # dep-exist = The package { $pkg } does not exist.
 # dep-exist-par = The dependency { $pkg } of { $par } does not exist.
 # dep-graph = The dependency graph was somehow malformed.
-# dep-cycle = There was a cyclic dependency involving: { $pkg }
+# dep-cycle = Dependency cycle detected: { $cycle }
 # dep-multi = There were multiple errors during dependency resolution.
 
 # Git Operations

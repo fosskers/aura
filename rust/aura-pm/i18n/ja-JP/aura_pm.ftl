@@ -189,7 +189,7 @@ dir-cache = Aura のキャッシュフォルダを特定できなかった。
 dep-exist = { $pkg } は存在しない。
 dep-exist-par = { $par } の依存 { $pkg } は存在しない。
 dep-graph = 依存グラフはなぜか妙な形になっている。
-dep-cycle = { $pkg } を絡む依存問題がある。
+dep-cycle = 依存サイクルが発見された： { $cycle }
 dep-multi = 依存計算で複数のエラーが発生した。
 
 # Git Operations
