@@ -339,6 +339,7 @@ where
                         .chain(info.pkgs.into_iter().flat_map(|p| p.depends))
                         .chain(respect_checkdeps(nocheck, info.base.checkdepends))
                         .flat_map(|av| av.vec)
+                        .map(strip_version)
                         // To prevent false detection of dependency cycles
                         // during build preparation.
                         //
