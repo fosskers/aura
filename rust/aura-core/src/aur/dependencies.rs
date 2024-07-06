@@ -5,6 +5,7 @@ use disown::Disown;
 use log::debug;
 use log::info;
 use nonempty_collections::nev;
+use nonempty_collections::NESet;
 use nonempty_collections::NEVec;
 use nonempty_collections::NonEmptyIterator;
 use petgraph::graph::NodeIndex;
@@ -181,15 +182,14 @@ where
 }
 
 /// Determine all packages to be built and installed.
-pub fn resolve<'a, I, M, F, E>(
+pub fn resolve<'a, M, F, E>(
     pool: Pool<M>,
     fetch: &F,
     clone_d: &Path,
     nocheck: bool,
-    pkgs: I,
+    pkgs: &HashSet<&str>,
 ) -> Result<Resolution, Error<E>>
 where
-    I: IntoIterator<Item = &'a str>,
     M: ManageConnection<Connection = Alpm>,
     F: Fn(&str) -> Result<Vec<crate::faur::Package>, E> + Sync,
     E: Send,
@@ -201,16 +201,11 @@ where
     // the user doesn't have it installed.
     confirm_base_devel(pool.clone(), arc.clone())?;
 
-    // The original packages we asked to have installed. These should not be
-    // immediately counted as "satisfied" (and thus skipped) by the dependency
-    // resolution algorithm.
-    let orig: HashSet<_> = pkgs.into_iter().collect();
-
     let start = OffsetDateTime::now_utc();
-    orig.par_iter()
+    pkgs.par_iter()
         .map(|pkg| {
             let pool = pool.clone();
-            resolve_one(pool, arc.clone(), fetch, clone_d, &orig, None, pkg, nocheck)
+            resolve_one(pool, arc.clone(), fetch, clone_d, pkgs, None, pkg, nocheck)
         })
         .collect::<Validated<(), Error<E>>>()
         .ok()
@@ -366,6 +361,7 @@ where
                             .into_iter()
                             .flat_map(|av| av.vec)
                             .chain(prov)
+                            .map(strip_version)
                             .for_each(|p| r.provided.insert(p).disown())
                     })?;
 
@@ -562,7 +558,7 @@ fn dep_graph(to_build: &[Buildable]) -> Graph<&Buildable, ()> {
     graph
 }
 
-/// Strip version demands from a dependency string.
+/// Strip version demands from a dependency string, if any.
 fn strip_version<S>(stri: S) -> String
 where
     S: AsRef<str> + Into<String>,
@@ -573,9 +569,88 @@ where
         .unwrap_or_else(|| stri.into())
 }
 
+/// Interdependency relationships just within a given package.
+pub struct Interdeps<'a>(HashMap<&'a str, Vec<&'a str>>);
+
+impl<'a> Interdeps<'a> {
+    /// Construct a mapping of interdependency relationships given a specific [`Srcinfo`].
+    pub fn from_srcinfo(srcinfo: &'a Srcinfo) -> Self {
+        let reals: HashSet<_> = srcinfo.pkgs.iter().map(|p| p.pkgname.as_str()).collect();
+
+        srcinfo
+            .pkgs
+            .iter()
+            .map(|p| {
+                let ds = p
+                    .depends
+                    .iter()
+                    .flat_map(|av| av.vec.as_slice())
+                    .filter(|d| reals.contains(d.as_str()))
+                    .map(|s| s.as_str())
+                    .collect();
+                (p.pkgname.as_str(), ds)
+            })
+            .collect::<HashMap<_, _>>()
+            .apply(Interdeps)
+    }
+
+    /// Starting from some given package name, all the packages that belong to
+    /// its transitive chain of dependencies.
+    pub fn transitive(&'a self, head: &'a str) -> Option<NESet<&'a str>> {
+        let mut chain = self.transitive_work(head, HashSet::new());
+
+        if chain.is_empty() {
+            None
+        } else {
+            chain.insert(head);
+            NESet::from_set(chain)
+        }
+    }
+
+    fn transitive_work(&'a self, dep: &'a str, curr: HashSet<&'a str>) -> HashSet<&'a str> {
+        match self.0.get(dep) {
+            None => curr,
+            Some(deps) => deps.iter().fold(curr, |mut acc, d| {
+                // Prevents infinite recursion, even though we don't expect
+                // there to be dependency cycles in any place where this would
+                // be used.
+                if acc.contains(d) {
+                    acc
+                } else {
+                    acc.insert(d);
+                    self.transitive_work(d, acc)
+                }
+            }),
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
+    use nonempty_collections::nes;
+
+    #[test]
+    fn interdeps() {
+        let qlot = Srcinfo::parse_file("tests/qlot.SRCINFO").unwrap();
+        let deps = Interdeps::from_srcinfo(&qlot);
+        let mut expt = HashMap::new();
+        expt.insert("qlot", Vec::new());
+        assert_eq!(expt, deps.0);
+
+        let nx = Srcinfo::parse_file("tests/nx.SRCINFO").unwrap();
+        let deps = Interdeps::from_srcinfo(&nx);
+        let mut expt = HashMap::new();
+        expt.insert("libxcomp", Vec::new());
+        expt.insert("nxproxy", vec!["libxcomp"]);
+        expt.insert("nx-x11", vec!["libxcomp"]);
+        expt.insert("nxagent", vec!["nx-x11", "libxcomp"]);
+        expt.insert("nx-headers", Vec::new());
+        assert_eq!(expt, deps.0);
+
+        let trans = deps.transitive("nxproxy").unwrap();
+        assert_eq!(nes!["nxproxy", "libxcomp"], trans);
+    }
 
     #[test]
     fn version_stripping() {
