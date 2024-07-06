@@ -362,6 +362,8 @@ pub enum SubCmd {
     Stats(Stats),
     /// The people behind Aura.
     Thanks,
+    /// State of Free Software installed on the system.
+    Free(Free),
 }
 
 /// Synchronize official packages.
@@ -1098,6 +1100,14 @@ pub struct Stats {
     /// View the Top 10 heaviest installed packages.
     #[clap(group = "stats", long, display_order = 1)]
     pub heavy: bool,
+}
+
+/// State of Free Software installed on the system.
+#[derive(Parser, Debug)]
+pub struct Free {
+    /// Consider only Copyleft licenses.
+    #[clap(long, display_order = 1)]
+    pub copyleft: bool,
 }
 
 /// Synchronize AUR packages.

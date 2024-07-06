@@ -63,6 +63,7 @@ use aura_pm::flags::AURA_GLOBALS;
 use aura_pm::ENGLISH;
 use clap::Parser;
 use colored::Colorize;
+use command::free;
 use env::Env;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed::LanguageLoader;
@@ -233,6 +234,9 @@ fn work(args: Args, env: Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
         SubCmd::Check(_) => check::check(fll, &env)?,
         // --- Credits --- //
         SubCmd::Thanks => thanks::thanks(fll),
+        // --- Free Software --- //
+        SubCmd::Free(f) if f.copyleft => free::copyleft(&env.alpm()?),
+        SubCmd::Free(_) => free::free(&env.alpm()?),
     }
 
     Ok(())
