@@ -408,7 +408,7 @@ pub(crate) fn install<'a, I>(
 where
     I: IntoIterator<Item = &'a str>,
 {
-    let pkgs: Vec<_> = raw_pkgs
+    let pkgs: HashSet<_> = raw_pkgs
         .into_iter()
         .filter(|p| {
             // Prompt if the user specified packages that are marked "ignored".
@@ -430,7 +430,7 @@ where
     if env.aur.delmakedeps {
         let alpm = env.alpm()?;
         let before: HashSet<_> = aura_core::orphans(&alpm).map(|p| p.name()).collect();
-        install_work(fll, env, mode, pkgs)?;
+        install_work(fll, env, mode, &pkgs)?;
         // Another handle must be opened, or else the change in orphan packages won't be detected.
         let alpm = env.alpm()?;
         let after: HashSet<_> = aura_core::orphans(&alpm).map(|p| p.name()).collect();
@@ -443,21 +443,18 @@ where
             crate::pacman::sudo_pacman(env, "-Rsu", NOTHING, diff)?;
         }
     } else {
-        install_work(fll, env, mode, pkgs)?;
+        install_work(fll, env, mode, &pkgs)?;
     }
 
     Ok(())
 }
 
-fn install_work<'a, I>(
+fn install_work<'a>(
     fll: &FluentLanguageLoader,
     env: &Env,
     mode: Mode,
-    pkgs: I,
-) -> Result<(), Error>
-where
-    I: IntoIterator<Item = &'a str>,
-{
+    pkgs: &HashSet<&str>,
+) -> Result<(), Error> {
     let pool = env.alpm_pool()?;
     aura!(fll, "A-install-deps");
     let rslv = aura_core::aur::dependencies::resolve(
@@ -529,6 +526,7 @@ where
             &alpm,
             &env.general.editor,
             is_single,
+            pkgs,
             clone_paths,
         )?;
 
@@ -539,7 +537,9 @@ where
             // binary package could slip into an early installation layer. This
             // needs to be confirmed, though.
             let flags = (!done).then(|| ["--asdeps"].as_slice()).unwrap_or_default();
-            let tarballs = builts.iter().flat_map(|b| &b.tarballs);
+            let tarballs = builts
+                .iter()
+                .flat_map(|b| b.tarballs.iter().map(|pp| pp.as_path()));
             crate::pacman::pacman_install_from_tarball(env, flags, tarballs)?;
 
             builts

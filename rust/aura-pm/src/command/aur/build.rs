@@ -6,6 +6,7 @@ use crate::red;
 use crate::utils::PathStr;
 use crate::utils::ResultVoid;
 use crate::yellow;
+use aura_core::aur::dependencies::Interdeps;
 use aura_core::cache::PkgPath;
 use colored::Colorize;
 use i18n_embed::fluent::FluentLanguageLoader;
@@ -13,9 +14,12 @@ use i18n_embed_fl::fl;
 use log::debug;
 use log::error;
 use log::warn;
+use nonempty_collections::NESet;
 use nonempty_collections::NEVec;
+use nonempty_collections::NonEmptyIterator;
 use r2d2_alpm::Alpm;
 use srcinfo::Srcinfo;
+use std::collections::HashSet;
 use std::ops::Not;
 use std::path::Path;
 use std::path::PathBuf;
@@ -85,7 +89,7 @@ impl Localised for Error {
 /// The results of a successful build.
 pub(crate) struct Built {
     pub(crate) clone: PathBuf,
-    pub(crate) tarballs: Vec<PathBuf>,
+    pub(crate) tarballs: Vec<PkgPath>,
 }
 
 // TODO Thu Jan 20 16:13:54 2022
@@ -106,6 +110,7 @@ pub(crate) fn build<I>(
     // Was there only ever one package to be built? If so, we don't prompt the
     // user with a "will you continue?" message if the build fails.
     is_single: bool,
+    requested: &HashSet<&str>,
     pkg_clones: I,
 ) -> Result<Vec<Built>, Error>
 where
@@ -114,7 +119,7 @@ where
     aura!(fll, "A-build-prep");
 
     let to_install = pkg_clones
-        .map(|path| build_one(fll, caches, aur, alpm, editor, path))
+        .map(|path| build_one(fll, caches, aur, alpm, editor, requested, path))
         .map(|r| build_check(fll, is_single, r))
         .collect::<Result<Vec<Option<Built>>, Error>>()?
         .into_iter()
@@ -130,6 +135,7 @@ fn build_one(
     aur: &crate::env::Aur,
     alpm: &Alpm,
     editor: &str,
+    requested: &HashSet<&str>,
     clone: PathBuf,
 ) -> Result<Built, Error> {
     // Attempt a quick `git pull` to avoid the issue of building stale versions
@@ -142,7 +148,7 @@ fn build_one(
     // --- Parse the .SRCINFO for metadata --- //
     let path = clone.join(".SRCINFO");
     let info = Srcinfo::parse_file(&path).map_err(|e| Error::Srcinfo(path, e))?;
-    let base = info.base.pkgbase;
+    let base = info.base.pkgbase.as_str();
 
     aura!(fll, "A-build-pkg", pkg = base.cyan().bold().to_string());
 
@@ -187,14 +193,14 @@ fn build_one(
     }
 
     let tarballs = {
-        let tarballs = if aur.chroot.contains(&base) {
+        let tarballs = if aur.chroot.contains(base) {
             let dbs = alpm.as_ref().syncdbs();
             let aur_deps: Vec<_> = info
                 .base
                 .makedepends
-                .into_iter()
-                .flat_map(|av| av.vec)
-                .chain(info.pkg.depends.into_iter().flat_map(|av| av.vec))
+                .iter()
+                .flat_map(|av| av.vec.as_slice())
+                .chain(info.pkg.depends.iter().flat_map(|av| av.vec.as_slice()))
                 .filter(|s| dbs.find_satisfier(s.as_str()).is_none())
                 // `pop` fetches the last item in the Vec, which should be the
                 // most recent version of the package.
@@ -208,13 +214,41 @@ fn build_one(
         }?;
 
         for tb in tarballs.iter() {
-            debug!("Built: {}", tb.display());
+            debug!("Built: {}", tb.as_path().display());
         }
 
+        // Filter according to the original packages asked for.
+        let interdeps = Interdeps::from_srcinfo(&info);
+
+        let special: Option<NESet<_>> = requested.iter().fold(None, |acc, req| {
+            let set = interdeps.transitive(req);
+
+            match (acc, set) {
+                (None, None) => None,
+                (None, Some(s)) => Some(s),
+                (Some(a), None) => Some(a),
+                (Some(a), Some(s)) => Some(a.union(&s).map(|x| *x).collect()),
+            }
+        });
+
+        // FIXME 2024-07-06 I suspect this doesn't account for "debug" packages.
+        let tars_to_copy = match special {
+            None => tarballs,
+            Some(s) => tarballs
+                .into_iter()
+                .filter(|pp| s.contains(pp.as_package().name.as_ref()))
+                .collect(),
+        };
+
         // --- Copy all build artifacts to the cache, and then ignore any sig files --- //
-        copy_to_cache(&aur.cache, &tarballs)?
+        copy_to_cache(&aur.cache, tars_to_copy)?
             .into_iter()
-            .filter(|path| path.extension().map(|ex| ex != "sig").unwrap_or(false))
+            .filter(|path| {
+                path.as_path()
+                    .extension()
+                    .map(|ex| ex != "sig")
+                    .unwrap_or(false)
+            })
             .collect::<Vec<_>>()
     };
 
@@ -314,7 +348,7 @@ fn edit(editor: &str, file: PathBuf) -> Result<(), Error> {
     Ok(())
 }
 
-fn pkgctl_build(within: &Path, deps: &[PkgPath]) -> Result<Vec<PathBuf>, Error> {
+fn pkgctl_build(within: &Path, deps: &[PkgPath]) -> Result<Vec<PkgPath>, Error> {
     debug!("Running `pkgctl build` within {}", within.display());
     debug!("AUR deps to inject: {:?}", deps);
 
@@ -338,7 +372,7 @@ fn pkgctl_build(within: &Path, deps: &[PkgPath]) -> Result<Vec<PathBuf>, Error> 
 
 /// Build each package specified by the `PKGBUILD` and yield a list of the built
 /// tarballs.
-fn makepkg(within: &Path, nocheck: bool) -> Result<Vec<PathBuf>, Error> {
+fn makepkg(within: &Path, nocheck: bool) -> Result<Vec<PkgPath>, Error> {
     let mut cmd = Command::new("makepkg");
 
     // TODO Remove or rethink
@@ -371,7 +405,7 @@ fn makepkg(within: &Path, nocheck: bool) -> Result<Vec<PathBuf>, Error> {
     tarball_paths(within)
 }
 
-fn tarball_paths(within: &Path) -> Result<Vec<PathBuf>, Error> {
+fn tarball_paths(within: &Path) -> Result<Vec<PkgPath>, Error> {
     // NOTE Outputs absolute paths.
     let bytes = Command::new("makepkg")
         .arg("--packagelist")
@@ -385,6 +419,7 @@ fn tarball_paths(within: &Path) -> Result<Vec<PathBuf>, Error> {
         .lines()
         .map(PathBuf::from)
         .filter(|path| path.exists())
+        .filter_map(PkgPath::new)
         .collect();
 
     Ok(tarballs)
@@ -392,19 +427,23 @@ fn tarball_paths(within: &Path) -> Result<Vec<PathBuf>, Error> {
 
 /// Copy each built package tarball (and any signature files) to the package
 /// cache, and return a list of the moved files.
-fn copy_to_cache(cache: &Path, tarballs: &[PathBuf]) -> Result<Vec<PathBuf>, Error> {
+fn copy_to_cache(cache: &Path, tarballs: Vec<PkgPath>) -> Result<Vec<PkgPath>, Error> {
     tarballs
-        .iter()
+        .into_iter()
         .map(|tarball| {
-            tarball
-                .file_name()
-                .ok_or_else(|| Error::FilenameExtraction(tarball.clone()))
+            let path = tarball.into_pathbuf();
+
+            path.file_name()
+                .ok_or_else(|| Error::FilenameExtraction(path.clone()))
                 .and_then(|file| {
                     let target = cache.join(file);
-                    move_tarball(tarball, &target).map(|_| target)
+                    move_tarball(&path, &target).and_then(|_| {
+                        PkgPath::new(target.clone())
+                            .ok_or_else(|| Error::FilenameExtraction(target))
+                    })
                 })
         })
-        .collect::<Result<Vec<PathBuf>, Error>>()
+        .collect::<Result<Vec<_>, Error>>()
 }
 
 /// Move a given [`Path`] to some other location. We do this because renames
