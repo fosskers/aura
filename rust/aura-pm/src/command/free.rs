@@ -117,11 +117,15 @@ fn parse_licenses(raw: &str) -> HashSet<&str> {
 }
 
 fn parse_prefix(lic: &str) -> &str {
-    lic.split_once('-')
-        .map(|(l, _)| l)
-        .unwrap_or(lic)
-        .apply(|s| s.trim())
-        .apply(trim_numbers)
+    if lic.starts_with("LicenseRef") {
+        lic.trim()
+    } else {
+        lic.split_once('-')
+            .map(|(l, _)| l)
+            .unwrap_or(lic)
+            .apply(|s| s.trim())
+            .apply(trim_numbers)
+    }
 }
 
 fn trim_numbers(lic: &str) -> &str {
@@ -137,6 +141,7 @@ mod tests {
         assert_eq!("MPL", parse_prefix("MPL-1.1"));
         assert_eq!("MPL", parse_prefix("MPL"));
         assert_eq!("GPL", parse_prefix("GPL2.1"));
+        assert_eq!("LicenseRef-Java", parse_prefix("LicenseRef-Java"));
     }
 
     #[test]

@@ -1106,7 +1106,7 @@ pub struct Stats {
 #[derive(Parser, Debug)]
 pub struct Free {
     /// Consider only Copyleft licenses.
-    #[clap(long, display_order = 1)]
+    #[clap(long, short = 'l', display_order = 1)]
     pub copyleft: bool,
 }
 
