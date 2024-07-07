@@ -81,15 +81,15 @@ const FOSS_LICENSES: &[&str] = &[
     "NOKIA",
 ];
 
-pub fn free(alpm: &Alpm) {
-    find_and_print(alpm, FOSS_LICENSES);
+pub fn free(alpm: &Alpm, lenient: bool) {
+    find_and_print(alpm, lenient, FOSS_LICENSES);
 }
 
-pub fn copyleft(alpm: &Alpm) {
-    find_and_print(alpm, COPYLEFT);
+pub fn copyleft(alpm: &Alpm, lenient: bool) {
+    find_and_print(alpm, lenient, COPYLEFT);
 }
 
-fn find_and_print(alpm: &Alpm, licenses: &[&str]) {
+fn find_and_print(alpm: &Alpm, lenient: bool, licenses: &[&str]) {
     let lics: HashSet<_> = licenses
         .into_iter()
         .map(|s| s.to_ascii_uppercase())
@@ -100,7 +100,13 @@ fn find_and_print(alpm: &Alpm, licenses: &[&str]) {
 
         if ls
             .iter()
-            .any(|l| lics.contains(&l.to_ascii_uppercase()))
+            .any(|l| {
+                lics.contains(&l.to_ascii_uppercase())
+                    || (lenient
+                        && split_custom(l)
+                            .map(|c| lics.contains(&c.to_ascii_uppercase()))
+                            .unwrap_or(false))
+            })
             .not()
         {
             let s: String = itertools::intersperse(ls, ", ").collect();
@@ -132,9 +138,18 @@ fn trim_numbers(lic: &str) -> &str {
     lic.trim_end_matches(|c: char| c == '.' || c.is_ascii_digit())
 }
 
+fn split_custom(lic: &str) -> Option<&str> {
+    lic.split_once("custom:").map(|(_, l)| l)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn custom() {
+        assert_eq!(Some("BSD"), split_custom("custom:BSD"));
+    }
 
     #[test]
     fn prefix() {

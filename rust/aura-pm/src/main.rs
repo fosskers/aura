@@ -235,8 +235,8 @@ fn work(args: Args, env: Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
         // --- Credits --- //
         SubCmd::Thanks => thanks::thanks(fll),
         // --- Free Software --- //
-        SubCmd::Free(f) if f.copyleft => free::copyleft(&env.alpm()?),
-        SubCmd::Free(_) => free::free(&env.alpm()?),
+        SubCmd::Free(f) if f.copyleft => free::copyleft(&env.alpm()?, f.lenient),
+        SubCmd::Free(f) => free::free(&env.alpm()?, f.lenient),
     }
 
     Ok(())

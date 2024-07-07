@@ -1106,8 +1106,11 @@ pub struct Stats {
 #[derive(Parser, Debug)]
 pub struct Free {
     /// Consider only Copyleft licenses.
-    #[clap(long, short = 'l', display_order = 1)]
+    #[clap(long, display_order = 1)]
     pub copyleft: bool,
+    /// Allow FOSS-derived custom licenses.
+    #[clap(long, display_order = 2)]
+    pub lenient: bool,
 }
 
 /// Synchronize AUR packages.
