@@ -9,104 +9,105 @@ const COPYLEFT: &[&str] = &[
     "GPL", "AGPL", "LGPL", "MPL", "EUPL", "OSL", "EPL", "CPL", "IPL",
 ];
 
-// As found here: https://opensource.org/licenses
+// References:
+//
+// - https://www.gnu.org/licenses/license-list.html
+// - https://opensource.org/licenses
+// - https://en.wikipedia.org/wiki/Comparison_of_free_and_open-source_software_licences#Approvals
+//
+// Rejected by FSF:
+// - NASA
+// - RPL (Reciprocal Public License)
+//
+// Unmentioned by FSF:
+// - LiLiQ
+// - MirOS
+// - Motosoto
+// - MulanPSL
+// - Multics
+// - NGPL (Nethack)
+// - NPOSL
+// - NTP
+// - OGTSL (Open Group testing)
+// - OSET
+// - PostgreSQL
+// - RSCPL
+// - SimPL
+// - UCL (Upstream)
+// - VSL (Vovida)
+// - Xnet
+//
+// Not approved by OSI:
+// - Ruby License
+// - WTFPL
 const FOSS_LICENSES: &[&str] = &[
     "0BSD",
-    "AAL",
-    "AFL",
+    "AFL", // Academic Free License
     "AGPL",
-    "APSL",
+    "APSL", // Apple
     "Apache",
     "Artistic",
     "BSD",
-    "BSL",
-    "BlueOak",
-    "CAL",
+    "BSL", // Boost
     "CECILL",
     "CPAL",
-    "CPL",
-    "ECL",
-    "EFL",
-    "EPL",
-    "EUPL",
+    "CPL",  // Common Public Licenses
+    "ECL",  // Educational Community License
+    "EFL",  // Eiffel
+    "EPL",  // Eclipse
+    "EUPL", // European Union
     "GPL",
-    "IPA",
-    "ISC",
-    "IPL",
+    "IPA", // IPA font license
+    "ISC", // Internet Systems Consortium
+    "IPL", // IBM Public License
     "LGPL",
-    "LPPL",
-    "LiLiQ",
+    "LPPL", // Latex
     "MIT",
-    "MPL",
-    "MirOS",
-    "Motosoto",
-    "MulanPSL",
-    "Multics",
-    "NCSA",
-    "NPOSL",
-    "NTP",
-    "OFL",
-    "OLDAP",
-    "OSET",
-    "OSL",
+    "MPL",   // Mozilla
+    "NCSA",  // University of Illinois
+    "OFL",   // SIL Open Font License
+    "OLDAP", // OpenLDAP
+    "OSL",   // Open Software License
     "PHP",
-    "PostgreSQL",
-    "RPSL",
-    "RSCPL",
-    "SPL",
-    "SimPL",
+    "RPSL", // RealNetworks Public Source Licenses
+    "SPL",  // Sun
     "Sleepycat",
-    "UCL",
-    "UPL",
+    "UPL", // Universal Permissive License
     "Unlicense",
-    "VSL",
-    "Xnet",
     "Zlib",
     "eCos",
-    "QPL",
-    "PSF",
-    "NGPL",
+    "QPL", // Q Public Licenses
+    "PSF", // Python
     "NOKIA",
-    "OGTSL",
 ];
 
 pub fn free(alpm: &Alpm) {
-    let lics: HashSet<_> = FOSS_LICENSES.into_iter().map(|s| *s).collect();
-
-    println!("Not using FOSS licenses:");
-
-    for p in alpm.as_ref().localdb().pkgs() {
-        let ls: HashSet<_> = p.licenses().iter().flat_map(parse_licenses).collect();
-
-        if ls.iter().any(|l| lics.contains(l)).not() {
-            println!("{}: {:?}", p.name(), ls);
-        }
-    }
+    find_and_print(alpm, FOSS_LICENSES);
 }
 
 pub fn copyleft(alpm: &Alpm) {
-    let lics: HashSet<_> = COPYLEFT.into_iter().map(|s| *s).collect();
+    find_and_print(alpm, COPYLEFT);
+}
 
-    println!("Not using Copyleft licenses:");
+fn find_and_print(alpm: &Alpm, licenses: &[&str]) {
+    let lics: HashSet<_> = licenses
+        .into_iter()
+        .map(|s| s.to_ascii_uppercase())
+        .collect();
 
     for p in alpm.as_ref().localdb().pkgs() {
         let ls: HashSet<_> = p.licenses().iter().flat_map(parse_licenses).collect();
 
-        if ls.iter().any(|l| lics.contains(l)).not() {
-            println!("{}: {:?}", p.name(), ls);
+        if ls
+            .iter()
+            .any(|l| lics.contains(&l.to_ascii_uppercase()))
+            .not()
+        {
+            let s: String = itertools::intersperse(ls, ", ").collect();
+            println!("{}: {}", p.name(), s);
         }
     }
 }
-
-// /// All licenses currently associated with installed packages.
-// fn licenses(alpm: &Alpm) -> HashSet<&str> {
-//     alpm.as_ref()
-//         .localdb()
-//         .pkgs()
-//         .iter()
-//         .flat_map(|p| p.licenses())
-//         .collect()
-// }
 
 fn parse_licenses(raw: &str) -> HashSet<&str> {
     raw.split("AND")
