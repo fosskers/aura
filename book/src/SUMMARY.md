@@ -11,7 +11,6 @@
   - [Downgrading Packages](./downgrading.md)
   - [Managing Orphan Packages](./orphans.md)
   - [Package Set Snapshots](./snapshots.md)
-  - [PKGBUILD Security Analysis](./security.md)
   - [Log Interaction](./log.md)
 - [Configuration](./configuration.md)
 - [Appendix](./appendix.md)

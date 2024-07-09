@@ -3,6 +3,10 @@
 > **💡 Did you know?** Aura has a manpage with every flag explained in detail.
 > Check it out in your terminal with `man aura`.
 
+> **❗ Attention:** As of the 4.x series, `sudo` is no longer necessary when
+> running Aura. When escalated privileges are required, Aura will automatically
+> prompt you.
+
 ## Pacman Commands
 
 First and foremost, Aura is compatible with `pacman`. This gives us access to
@@ -10,31 +14,36 @@ the following **Commands**:
 
 - `-S`: Search and install official packages.
 ```
-> sudo aura -S firefox
+> aura -S firefox
 ```
+
 - `-Q`: Query the database of installed packages.
 ```
 > aura -Qi firefox
 Name            : firefox
-Version         : 76.0.1-1
-Description     : Standalone web browser from mozilla.org
+Version         : 127.0.2-1
+Description     : Fast, Private & Safe Web Browser
 ... etc ...
 ```
+
 - `-R`: Remove installed packages.
 ```
-> sudo aura -R firefox
+> aura -R firefox
 ```
+
 - `-U`: Install a manually built package.
 ```
 > makepkg
 ... building ...
-> sudo aura -U aura-bin-3.1.1-1-x86_64.pkg.tar.xz
+> aura -U aura-4.0.0-1-x86_64.pkg.tar.xz
 ```
+
 - `-D`: Interact with Pacman's database directly.
 ```
 > aura -Dk
 No database errors have been found!
 ```
+
 - `-F`: Make queries regarding files owned by packages.
 ```
 > aura -Fl firefox
@@ -52,7 +61,6 @@ firefox usr/lib/firefox/application.ini
 > aura -T firefox "qt>100"
 qt>100
 ```
-- `-V`: Display a fun version message.
 
 See [the next page](pacman.md) for a list of common Pacman idioms.
 
@@ -62,47 +70,99 @@ Aura also provides a number of new Commands:
 
 - [`-A`](aur.md): Search and install packages from the AUR.
 ```
-> sudo aura -A zoom
+> aura -A qlot
 ```
+
 - [`-B`](snapshots.md): Create and restore snapshots of installed packages.
 ```
-> sudo aura -B
-aura >>= Saved package state.
+> aura -B
+aura :: Saved package state.
 ```
+
 - [`-C`](downgrading.md): Downgrade installed packages.
 ```
-> sudo aura -C aura-bin
-aura >>= What version of aura-bin do you want?
-1. /var/cache/pacman/pkg/aura-bin-2.3.0-1-x86_64.pkg.tar.xz
-2. /var/cache/pacman/pkg/aura-bin-3.0.0-1-x86_64.pkg.tar.xz
-3. /var/cache/pacman/pkg/aura-bin-3.0.0-2-x86_64.pkg.tar.xz
-4. /var/cache/pacman/pkg/aura-bin-3.1.1-1-x86_64.pkg.tar.xz
+> aura -C qlot
+aura :: What version of qlot do you want?
+ 0) 1.5.6-1
+ 1) 1.5.1-1
 >>
 ```
-- [`-L`](log.md): Search and inspect the Pacman log.
+
+- [`-L`](log.md): Search and inspect the ALPM log.
 ```
 > aura -Li firefox
-Package        : firefox
+Name           : firefox
 First Install  : 2016-05-03 08:46
-Upgrades       : 75
-Recent Actions :
-[2020-04-08T14:26:09-0700] [ALPM] upgraded firefox (74.0-2 -> 75.0-1)
-[2020-05-04T09:20:53-0700] [ALPM] upgraded firefox (75.0-1 -> 75.0-2)
-[2020-05-18T08:39:43-0700] [ALPM] upgraded firefox (75.0-2 -> 76.0.1-1)
+Upgrades       : 176
+Recent Actions : 
+[2024-02-24T07:29:46+0900] [ALPM] upgraded firefox (122.0.1-1 -> 123.0-1)
+[2024-03-11T16:42:37+0900] [ALPM] upgraded firefox (123.0-1 -> 123.0.1-1)
+[2024-03-24T15:03:33+0900] [ALPM] upgraded firefox (123.0.1-1 -> 124.0.1-1)
 ```
+
 - [`-O`](orphans.md): Handle "orphans" - dependencies whose parent package is no
   longer installed.
 ```
 > aura -O
-ruby-bundler
-vim
+asar 3.2.8-1
 ```
-- [`-P`](security.md): Perform security analysis of PKGBUILDs.
-```
-> aura -Ap myget | aura -P
 
-    sudo pacman -S aurvote
-
-aura >>= sudo indicates that someone may be trying to gain root access to your machine.
-aura >>= Potential PKGBUILD vulnerabilities detected.
+- `check`: Validate your system.
 ```
+> aura check
+aura :: Validating your system.
+aura :: Environment
+  [✓] locale -a contains LANG value? (en_US.UTF-8)
+  [✓] Aura is localised to your LANG?
+  [✓] EDITOR variable set?
+  [✓] EDITOR value (emacs) is executable?
+  [✓] Java environment set?
+... etc. ...
+```
+
+- `conf`: Inspect or generate Aura configuration.
+```
+> aura conf --gen > ~/.config/aura/config.toml
+```
+
+- `deps`: View the dependency graph of given packages.
+```
+> aura deps gcc --reverse --limit=3 | dot -Tpng > deps.png
+```
+<p align="center">
+  <img src="gcc-deps.png">
+</p>
+
+- `open`: Open various webpages related to Aura.
+```
+> aura open --docs
+```
+
+- `stats`: View statistics about your machine and Aura itself.
+```
+> aura stats
+Host                 : yumi
+User                 : colin
+Distribution         : Arch Linux
+Editor               : emacs
+Installed packages   : 1144
+Pacman Package Cache : 7.05GiB
+Aura Package Cache   : 1.29GiB
+Aura Build Cache     : 6.49GiB
+/tmp Directory       : 11.31MiB
+```
+
+- `thanks`: The people behind Aura.
+- `free`: List packages with potentially non-free software Licenses.
+```
+> aura free
+adobe-source-code-pro-fonts: custom
+aspell-en: custom
+blas: custom
+boost: custom
+boost-libs: custom
+cantarell-fonts: custom:SIL
+... etc. ...
+```
+
+
