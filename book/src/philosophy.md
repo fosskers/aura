@@ -28,9 +28,9 @@ automatically.
 ### Independence
 
 Aura has its own configuration file, its own local package cache, and its own
-[Metadata Server][faur] called the Faur. The Faur in particular keeps traffic
-off the main AUR server and allows us to provide unique package lookup schemes
-not otherwise available.
+[Metadata Server][faur] called the Faur. The Faur in particular helps reduce
+traffic to the main AUR server and allows us to provide unique package lookup
+schemes not otherwise available.
 
 ### Arch Linux for Everyone
 
