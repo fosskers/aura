@@ -227,9 +227,9 @@ fn work(args: Args, env: Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
         SubCmd::Open(_) => open::repo()?,
         // --- Dependency Management --- //
         SubCmd::Deps(d) if d.reverse => {
-            deps::reverse(&env.alpm()?, d.limit, d.optional, d.packages)
+            deps::reverse(&env.alpm()?, d.limit, d.optional, d.raw, d.packages)?
         }
-        SubCmd::Deps(d) => deps::graph(&env.alpm()?, d.limit, d.optional, d.packages),
+        SubCmd::Deps(d) => deps::graph(&env.alpm()?, d.limit, d.optional, d.raw, d.packages),
         // --- System Validation --- //
         SubCmd::Check(_) => check::check(fll, &env)?,
         // --- Credits --- //

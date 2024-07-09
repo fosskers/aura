@@ -207,6 +207,9 @@ thanks-translators = Aura is localised by:
 # Configuration (conf)
 conf-toml-err = Failed to serialize current config.
 
+# Dependencies (deps)
+deps-io = Call to dot somehow failed.
+
 # Runtime Environment
 env-missing-editor = Provided EDITOR is not on the PATH.
 # confParsing_1

@@ -8,7 +8,7 @@ use std::borrow::Cow;
 
 const BOOK_URL: &str = "https://fosskers.github.io/aura/";
 const REPO_URL: &str = "https://github.com/fosskers/aura";
-const BUG_URL: &str = "https://github.com/fosskers/aura/issues/new";
+const ISSUE_URL: &str = "https://github.com/fosskers/aura/issues/new";
 const LIC_URL: &str = "https://github.com/fosskers/aura/blob/master/aura/LICENSE";
 pub const AUR_PKG_URL: &str = "https://aur.archlinux.org/packages/";
 
@@ -44,7 +44,7 @@ pub(crate) fn repo() -> Result<(), Error> {
 
 /// File a bug report for Aura.
 pub(crate) fn bug() -> Result<(), Error> {
-    open(BUG_URL)
+    open(ISSUE_URL)
 }
 
 /// Open Aura's AUR page.

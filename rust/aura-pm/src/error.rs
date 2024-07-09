@@ -22,6 +22,7 @@ pub(crate) enum Error {
     Check(crate::check::Error),
     Open(crate::open::Error),
     Stats(crate::stats::Error),
+    Deps(crate::deps::Error),
 }
 
 impl Nested for Error {
@@ -40,6 +41,7 @@ impl Nested for Error {
             Error::Check(e) => e.nested(),
             Error::Open(e) => e.nested(),
             Error::Stats(e) => e.nested(),
+            Error::Deps(e) => e.nested(),
         }
     }
 }
@@ -59,6 +61,7 @@ impl Localised for Error {
             Error::Check(e) => e.localise(fll),
             Error::Open(e) => e.localise(fll),
             Error::Stats(e) => e.localise(fll),
+            Error::Deps(e) => e.localise(fll),
         }
     }
 }

@@ -1324,7 +1324,7 @@ pub struct Open {
     pub aur: bool,
 }
 
-/// Output a dependency graph in DOT format.
+/// Output a dependency graph PNG.
 #[derive(Parser, Debug)]
 pub struct Deps {
     /// Display packages that depend on the given args.
@@ -1338,6 +1338,10 @@ pub struct Deps {
     /// The number of layers up or down to allow.
     #[clap(long, value_name = "n", display_order = 1)]
     pub limit: Option<u8>,
+
+    /// Print the raw DOT output.
+    #[clap(long, display_order = 2)]
+    pub raw: bool,
 
     /// Packages to focus on.
     pub packages: Vec<String>,
