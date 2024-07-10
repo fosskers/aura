@@ -127,10 +127,10 @@ aura :: Environment
 
 - `deps`: View the dependency graph of given packages.
 ```
-> aura deps gcc --reverse --limit=3 | dot -Tpng > deps.png
+> aura deps gcc --reverse --optional --limit=3 --open
 ```
 <p align="center">
-  <img src="gcc-deps.png">
+  <img src="gcc.png">
 </p>
 
 - `open`: Open various webpages related to Aura.
@@ -152,8 +152,8 @@ Aura Build Cache     : 6.49GiB
 /tmp Directory       : 11.31MiB
 ```
 
-- `thanks`: The people behind Aura.
-- `free`: List packages with potentially non-free software Licenses.
+- `thanks`: Credit to the Pacman team, Aura's authors, and Aura's translators.
+- `free`: List packages with potentially non-free software licenses.
 ```
 > aura free
 adobe-source-code-pro-fonts: custom

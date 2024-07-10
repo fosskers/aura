@@ -65,3 +65,29 @@ This will build and install the binary to `/home/YOU/.cargo/bin/`.
 Keep in mind that this variant of Aura won't be tracked in `pacman`'s database,
 and so it will be easier to miss updates. It also does not install completions
 or other documentation files like manpages.
+
+## Post-installation
+
+The first thing you should do is run `check`:
+
+```bash
+aura check
+```
+
+This will scan your system for irregularities and suggest fixes. Second, you
+should generate an Aura config file:
+
+```bash
+aura conf --gen > ~/.config/aura/config.toml
+```
+
+Consider setting the `language` field here, if you wish to use Aura in a
+language other than English. The available language codes are viewable via:
+
+```bash
+aura stats --lang
+```
+
+Aura will also automatically detect your locale via `LANG`, so you only need to
+set `language` if you want a custom combination of system language and Aura
+language.
