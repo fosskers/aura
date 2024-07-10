@@ -174,6 +174,9 @@ L-recent = Ostatnie akcje
 # Configuration (conf)
 # conf-toml-err = Failed to serialize current config.
 
+# Dependencies (deps)
+# deps-io = Failed to generate the dependency image.
+
 # Runtime Environment
 # env-missing-editor = Provided EDITOR is not on the PATH.
 env-pconf = Nie udało się odczytać twojego pliku pacman.conf.

@@ -170,6 +170,9 @@ thanks-translators = Aura の翻訳者：
 # Configuration (conf)
 conf-toml-err = 現在の設定をなぜか書き込めなかった。
 
+# Dependencies (deps)
+deps-io = 依存画像を作成できなかった。
+
 # Runtime Environment
 env-missing-editor = EDITOR はパスにない。
 env-pconf = pacman.conf をパースできなかった。

@@ -175,6 +175,9 @@ L-recent = 근황
 # Configuration (conf)
 # conf-toml-err = Failed to serialize current config.
 
+# Dependencies (deps)
+# deps-io = Failed to generate the dependency image.
+
 # Runtime Environment
 # env-missing-editor = Provided EDITOR is not on the PATH.
 env-pconf = pacman.conf 파일 분석에 실패했습니다.
