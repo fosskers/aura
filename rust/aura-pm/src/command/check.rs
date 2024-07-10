@@ -82,6 +82,7 @@ fn environment(fll: &FluentLanguageLoader) {
     executable!(fll, "git", "check-env-installed", exec = "git");
     executable!(fll, "fd", "check-env-installed", exec = "fd");
     executable!(fll, "rg", "check-env-installed", exec = "rg");
+    executable!(fll, "xdg-open", "check-env-installed", exec = "xdg-open");
 }
 
 fn java(fll: &FluentLanguageLoader) {
