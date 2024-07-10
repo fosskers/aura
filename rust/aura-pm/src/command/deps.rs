@@ -3,6 +3,7 @@
 use crate::error::Nested;
 use crate::localization::Localised;
 use aura_core::deps;
+use aura_core::deps::PkgGraph;
 use aura_core::Dbs;
 use i18n_embed_fl::fl;
 use log::error;
@@ -41,8 +42,9 @@ pub(crate) fn graph(
     limit: Option<u8>,
     optional: bool,
     raw: bool,
+    open: bool,
     packages: Vec<String>,
-) {
+) -> Result<(), Error> {
     let db = Dbs::from_alpm(alpm);
     let pkgs: Vec<_> = packages.iter().map(|p| p.as_ref()).collect();
     let foreigns: Vec<_> = aura_core::foreign_packages(alpm)
@@ -52,7 +54,11 @@ pub(crate) fn graph(
 
     if raw {
         println!("{}", graph);
+    } else {
+        render(graph, &packages, open)?;
     }
+
+    Ok(())
 }
 
 /// Like [`graph`], but display all packages that depend on the given ones
@@ -62,6 +68,7 @@ pub(crate) fn reverse(
     limit: Option<u8>,
     optional: bool,
     raw: bool,
+    open: bool,
     packages: Vec<String>,
 ) -> Result<(), Error> {
     let db = Dbs::from_alpm(alpm);
@@ -74,27 +81,40 @@ pub(crate) fn reverse(
     if raw {
         println!("{}", graph);
     } else {
-        let name = if packages.is_empty() {
-            "deps.png".to_string()
-        } else {
-            let mut s: String =
-                itertools::intersperse(packages.iter().map(|s| s.as_str()), "-").collect();
-            s.push_str(".png");
-            s
-        };
+        render(graph, &packages, open)?;
+    }
 
-        let mut child = Command::new("dot")
-            .arg("-Tpng")
-            .arg("-o")
+    Ok(())
+}
+
+fn render(graph: PkgGraph, packages: &[String], open: bool) -> Result<(), Error> {
+    let name = if packages.is_empty() {
+        "deps.png".to_string()
+    } else {
+        let mut s: String =
+            itertools::intersperse(packages.iter().map(|s| s.as_str()), "-").collect();
+        s.push_str(".png");
+        s
+    };
+
+    let mut child = Command::new("dot")
+        .arg("-Tpng")
+        .arg("-o")
+        .arg(&name)
+        .stdin(Stdio::piped())
+        .spawn()
+        .map_err(Error::Io)?;
+
+    let g_string = graph.to_string();
+    let mut stdin = child.stdin.take().ok_or(Error::Stdin)?;
+    std::thread::spawn(move || stdin.write_all(g_string.as_bytes()));
+    child.wait().map_err(Error::Io)?;
+
+    if open {
+        Command::new("xdg-open")
             .arg(name)
-            .stdin(Stdio::piped())
-            .spawn()
+            .status()
             .map_err(Error::Io)?;
-
-        let g_string = graph.to_string();
-        let mut stdin = child.stdin.take().ok_or(Error::Stdin)?;
-        std::thread::spawn(move || stdin.write_all(g_string.as_bytes()));
-        child.wait().map_err(Error::Io)?;
     }
 
     Ok(())

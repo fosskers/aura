@@ -1343,6 +1343,10 @@ pub struct Deps {
     #[clap(long, display_order = 2)]
     pub raw: bool,
 
+    /// Open the output image automatically.
+    #[clap(long, conflicts_with = "raw", display_order = 2)]
+    pub open: bool,
+
     /// Packages to focus on.
     pub packages: Vec<String>,
 }
