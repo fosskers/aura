@@ -2,6 +2,7 @@
 
 mod build;
 
+use crate::aln;
 use crate::aura;
 use crate::env::Env;
 use crate::error::Nested;
@@ -39,6 +40,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Mutex;
 use time::OffsetDateTime;
+use validated::Validated;
 
 #[derive(FromVariants)]
 pub(crate) enum Error {
@@ -64,6 +66,8 @@ pub(crate) enum Error {
     NoPackages,
     Cancelled,
     Stdout,
+    #[from_variants(skip)]
+    ReadDir(PathBuf, std::io::Error),
 }
 
 impl Nested for Error {
@@ -86,6 +90,7 @@ impl Nested for Error {
             Error::Stdout => {}
             Error::DateConv(e) => error!("{e}"),
             Error::Backup(e) => e.nested(),
+            Error::ReadDir(_, e) => error!("{e}"),
         }
     }
 }
@@ -110,6 +115,7 @@ impl Localised for Error {
             Error::FileWrite(p, _) => fl!(fll, "err-file-write", file = p.utf8()),
             Error::DateConv(_) => fl!(fll, "err-time-conv"),
             Error::Backup(e) => e.localise(fll),
+            Error::ReadDir(p, _) => fl!(fll, "err-read-dir", dir = p.utf8()),
         }
     }
 }
@@ -360,41 +366,36 @@ pub(crate) fn clone_aur_repos(fll: &FluentLanguageLoader, pkgs: &[String]) -> Re
 }
 
 /// Pull the latest commits from every clone in the `packages` directory.
-pub(crate) fn refresh(
-    fll: &FluentLanguageLoader,
-    alpm: &Alpm,
-    clone_d: &Path,
-) -> Result<(), Error> {
+pub(crate) fn refresh(fll: &FluentLanguageLoader, clone_d: &Path) -> Result<(), Error> {
     aura!(fll, "A-y-refreshing");
 
-    let names = aura_core::foreign_packages(alpm)
-        .map(|p| p.name())
-        .collect::<Vec<_>>();
-    let mut progress = Progress::new();
-    let clone_bar = progress.bar(names.len(), "Confirming local clones");
-    let mtx = Mutex::new(progress);
+    let uniques: HashSet<_> = clone_d
+        .read_dir()
+        .map_err(|e| Error::ReadDir(clone_d.to_path_buf(), e))?
+        .filter_map(|de| de.ok())
+        .map(|de| de.path())
+        .collect();
 
-    let uniques = names
-        .into_par_iter()
-        .map(|p| {
-            let res = aura_core::aur::clone_path_of_pkgbase(clone_d, p, &crate::fetch::fetch_json);
-            mtx.lock().unwrap().inc_and_draw(&clone_bar, 1);
-            res
-        })
-        .collect::<Result<HashSet<PathBuf>, aura_core::aur::Error>>()?;
-
-    let pull_bar = mtx
+    let progress = Mutex::new(Progress::new());
+    let pull_bar = progress
         .lock()
         .unwrap()
         .bar(uniques.len(), "Pulling latest commits");
-    uniques
+
+    if let Validated::Fail(errors) = uniques
         .into_par_iter()
         .map(|path| {
             let res = aura_core::git::pull(&path);
-            mtx.lock().unwrap().inc_and_draw(&pull_bar, 1);
+            progress.lock().unwrap().inc_and_draw(&pull_bar, 1);
             res
         })
-        .collect::<Result<(), aura_core::git::Error>>()?;
+        .collect::<Validated<(), aura_core::git::Error>>()
+    {
+        for error in errors {
+            let msg = error.localise(fll);
+            aln!(msg.yellow());
+        }
+    }
 
     Ok(())
 }

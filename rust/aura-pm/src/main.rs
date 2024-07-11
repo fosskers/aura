@@ -167,7 +167,7 @@ fn work(args: Args, env: Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
         }
         SubCmd::Aur(a) if a.wclone.is_empty().not() => aur::clone_aur_repos(fll, &a.wclone)?,
         SubCmd::Aur(a) if a.sysupgrade => aur::upgrade(fll, &env.alpm()?, env, a.dryrun)?,
-        SubCmd::Aur(a) if a.refresh => aur::refresh(fll, &env.alpm()?, &env.aur.clones)?,
+        SubCmd::Aur(a) if a.refresh => aur::refresh(fll, &env.aur.clones)?,
         SubCmd::Aur(a) => aur::install(
             fll,
             &env,
