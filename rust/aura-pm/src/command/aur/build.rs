@@ -1,3 +1,4 @@
+use crate::aln;
 use crate::aura;
 use crate::error::Nested;
 use crate::localization::Localised;
@@ -192,6 +193,10 @@ fn build_one(
         overwrite_build_files(fll, editor, &build_dir, &base)?;
     }
 
+    if aur.shellcheck {
+        shellcheck(fll, &build_dir)?;
+    }
+
     let tarballs = {
         let tarballs = if aur.chroot.contains(base) {
             let dbs = alpm.as_ref().syncdbs();
@@ -299,6 +304,29 @@ fn show_diffs(
 fn hash_of_last_install(hashes: &Path, pkgbase: &str) -> Result<String, std::io::Error> {
     let path = hashes.join(pkgbase);
     std::fs::read_to_string(path).map(|s| s.trim().to_string())
+}
+
+fn shellcheck(fll: &FluentLanguageLoader, build_d: &Path) -> Result<(), Error> {
+    let status = Command::new("shellcheck")
+        .current_dir(build_d)
+        .arg("--severity=error")
+        .arg("--shell=bash")
+        .arg("PKGBUILD")
+        .status();
+
+    match status {
+        Ok(s) if s.success().not() => {
+            proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
+        }
+        Err(e) => {
+            let msg = e.to_string().yellow();
+            aln!(msg);
+            proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
+        }
+        Ok(_) => {}
+    }
+
+    Ok(())
 }
 
 fn overwrite_build_files(
