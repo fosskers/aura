@@ -51,8 +51,8 @@ A-u-to-upgrade = Balíčky AUR k aktualizaci:
 
 # A-w = Cloning { $package }...
 
-# A-y-refreshing = Refreshing local clones of installed AUR packages...
-# A-y = Failed to pull the following packages:
+# A-y-refreshing = Refreshing local clones of known AUR packages...
+# A-y-pulling = Pulling latest commits
 
 # Snapshots (-B)
 B-saved = Stav balíčku byl uložen.

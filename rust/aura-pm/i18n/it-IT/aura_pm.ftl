@@ -52,8 +52,8 @@ A-u-to-upgrade = Pacchetti dell'AUR da aggiornare:
 
 # A-w = Cloning { $package }...
 
-# A-y-refreshing = Refreshing local clones of installed AUR packages...
-# A-y = Failed to pull the following packages:
+# A-y-refreshing = Refreshing local clones of known AUR packages...
+# A-y-pulling = Pulling latest commits
 
 # Snapshots (-B)
 B-saved = Stato del pacchetto salvato.

@@ -52,7 +52,7 @@ A-u-git = 再ビルドするVCSパッケージ:
 A-w = git clone中…
 
 A-y-refreshing = ローカルAURパッケージのgit cloneを更新中…
-A-y = 以下のパッケージをpullできなかった：
+A-y-pulling = 最新のコミットをpull中
 
 # Snapshots (-B)
 B-saved = パッケージ状態の保存に成功した。

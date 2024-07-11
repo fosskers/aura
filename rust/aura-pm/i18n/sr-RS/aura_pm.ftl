@@ -52,8 +52,8 @@ A-u-to-upgrade = Пакети из AUR-а за надоградњу:
 
 # A-w = Cloning { $package }...
 
-# A-y-refreshing = Refreshing local clones of installed AUR packages...
-# A-y = Failed to pull the following packages:
+# A-y-refreshing = Refreshing local clones of known AUR packages...
+# A-y-pulling = Pulling latest commits
 
 # Snapshots (-B)
 B-saved = Сачувано стање пакета.

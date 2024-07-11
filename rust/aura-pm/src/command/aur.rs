@@ -380,7 +380,7 @@ pub(crate) fn refresh(fll: &FluentLanguageLoader, clone_d: &Path) -> Result<(), 
     let pull_bar = progress
         .lock()
         .unwrap()
-        .bar(uniques.len(), "Pulling latest commits");
+        .bar(uniques.len(), fl!(fll, "A-y-pulling"));
 
     if let Validated::Fail(errors) = uniques
         .into_par_iter()
