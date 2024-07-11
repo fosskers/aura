@@ -133,6 +133,18 @@ aura :: Environment
   <img src="gcc.png">
 </p>
 
+- `free`: List installed packages with potentially non-free software licenses.
+```
+> aura free
+adobe-source-code-pro-fonts: custom
+aspell-en: custom
+blas: custom
+boost: custom
+boost-libs: custom
+cantarell-fonts: custom:SIL
+... etc. ...
+```
+
 - `open`: Open various webpages related to Aura.
 ```
 > aura open --docs
@@ -153,16 +165,3 @@ Aura Build Cache     : 6.49GiB
 ```
 
 - `thanks`: Credit to the Pacman team, Aura's authors, and Aura's translators.
-- `free`: List packages with potentially non-free software licenses.
-```
-> aura free
-adobe-source-code-pro-fonts: custom
-aspell-en: custom
-blas: custom
-boost: custom
-boost-libs: custom
-cantarell-fonts: custom:SIL
-... etc. ...
-```
-
-

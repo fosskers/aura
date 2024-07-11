@@ -4,7 +4,7 @@ Let's walk through the full process of installing an AUR package. This will show
 us how to discover packages, install them, and upgrade them.
 
 > **💡 Tip:** Just want to update all your AUR packages? Aura's author uses
-> `sudo aura -Auax`.
+> `aura -Au`. Remember, no need to call `sudo` yourself.
 
 > **💡 Tip:** For the full list of all options with detailed descriptions, see
 > `man aura`.
@@ -13,35 +13,35 @@ us how to discover packages, install them, and upgrade them.
 
 ### Searching for a Package
 
-Let's say we want to install a package that can render `.md` files for us.
-First, we search the AUR for candidates:
+Let's say we want to install a package that can render `.md` README files for
+us. First, we search the AUR for candidates:
 
 ```
 > aura -As readme
-aur/gtk3-mushrooms 3.24.11-1 (28 | 1.29)
-    GTK3 patched for classic desktops like XFCE or MATE. Please see README.
-aur/python-grip-git 4.5.2-1 (15 | 0.00)
-    Preview GitHub Markdown files like Readme locally before committing them.
-aur/python-grip 4.5.2-1 (13 | 0.14)
+aur/python-grip 4.6.1-1 (22 | 0.00) 
     Preview GitHub Markdown files like Readme locally before committing them
-aur/gtk3-classic 3.24.14-1 (7 | 1.63)
-    GTK3 patched for classic desktops like XFCE or MATE. Please see README.
-aur/ruby-github-markup 3.0.4-1 (4 | 0.00)
+aur/python-grip-git 4.5.2-1 (15 | 0.00) 
+    Preview GitHub Markdown files like Readme locally before committing them.
+aur/ruby-github-markup 4.0.2-1 (4 | 0.00) 
     The code GitHub uses to render README.markup
+aur/k810-conf 0.1-9 (3 | 0.00) 
+    Logitech K810 Keyboard Configurator, change function keys (F-keys) behavior. Read USAGE at https://aur.archlinux.org/cgit/aur.git/tree/README.md?h=k810-conf
+aur/cargo-readme 3.3.1-1 (3 | 0.24) 
+    A cargo subcommand to generate README.md content from doc comments
 ... etc ...
 ```
 
 By default, results are ordered by their vote count. If `-As` filled the screen
-and we only wish to see a few results, we can filter with `--head`:
+and we only wish to see a few results, we can filter with `--limit`:
 
 ```
-> aura -As readme --head 3
-aur/gtk3-mushrooms 3.24.11-1 (28 | 1.28)
-    GTK3 patched for classic desktops like XFCE or MATE. Please see README.
-aur/python-grip-git 4.5.2-1 (15 | 0.00)
-    Preview GitHub Markdown files like Readme locally before committing them.
-aur/python-grip 4.5.2-1 (13 | 0.14)
+> aura -As readme --limit 3
+aur/python-grip 4.6.1-1 (22 | 0.00) 
     Preview GitHub Markdown files like Readme locally before committing them
+aur/python-grip-git 4.5.2-1 (15 | 0.00) 
+    Preview GitHub Markdown files like Readme locally before committing them.
+aur/ruby-github-markup 4.0.2-1 (4 | 0.00) 
+    The code GitHub uses to render README.markup
 ```
 
 `--abc` can be used to sort alphabetically instead.
@@ -52,29 +52,37 @@ Alright, `python-grip` looks good. Let's take a closer look...
 
 ```
 > aura -Ai python-grip
-Repository  : aur
-Name        : python-grip
-Version     : 4.5.2-1
-AUR Status  : Up to Date
-Maintainer  : craftyguy
-Project URL : https://github.com/joeyespo/grip
-AUR URL     : https://aur.archlinux.org/packages/python-grip
-License     : MIT
-Depends On  : python python-docopt python-flask python-markdown python-path-and-address python-pygments python-requests
-Build Deps  : python-setuptools
-Votes       : 13
-Popularity  : 0.14
-Description : Preview GitHub Markdown files like Readme locally before committing them
+Repository    : aur
+Name          : python-grip
+Version       : 4.6.1-1
+AUR Status    : Up to Date
+Maintainer    : pancho
+Project URL   : https://github.com/joeyespo/grip
+AUR URL       : https://aur.archlinux.org/packages/python-grip
+License       : MIT
+Groups        : 
+Provides      : 
+Depends On    : python python-docopt python-flask python-markdown python-path-and-address python-pygments python-requests
+Make Deps     : python-setuptools
+Optional Deps : 
+Check Deps    : 
+Votes         : 22
+Popularity    : 0.00
+Description   : Preview GitHub Markdown files like Readme locally before committing them
+Keywords      : 
+Submitted     : 2017-02-09
+Updated       : 2022-04-17
 ```
 
 Does the PKGBUILD look alright?
 
 ```
 > aura -Ap python-grip
-# Maintainer: Clayton Craft <clayton at craftyguy dot net>
+# Maintainer: pancho horrillo <pancho at pancho dot name>
+# Contributor: Clayton Craft <clayton at craftyguy dot net>
 
 pkgname=python-grip
-pkgver=4.5.2
+pkgver=4.6.1
 pkgrel=1
 pkgdesc="Preview GitHub Markdown files like Readme locally before committing them"
 arch=('any')
@@ -84,7 +92,7 @@ depends=('python' 'python-docopt' 'python-flask' 'python-markdown'
          'python-path-and-address' 'python-pygments' 'python-requests')
 makedepends=('python-setuptools')
 source=("$pkgname-$pkgver.tar.gz::https://github.com/joeyespo/grip/archive/v$pkgver.tar.gz")
-sha256sums=('bdf8949f33470e9ef9e3f09596b72cda968116ff32f0280baabe837c2ad1b29b')
+sha256sums=('6bc3883f63395c566101187bc1f1d103641c99913b7122f942d56e108e649d83')
 
 package() {
   cd grip-$pkgver
@@ -93,133 +101,45 @@ package() {
 }
 ```
 
-Looks good, but let's make sure we didn't miss anything by using Aura's PKGBUILD
-security scanning:
+Nothing nefarious here. 
 
-```
-> aura -Ap python-grip | aura -P
-```
-
-Okay, no output and no error code, so we should be safe to proceed. Normally you
-don't need to do `-P` yourself - the same check happens automatically before
-building packages with `-A`. See [PKGBUILD Security Analysis](security.md) for
-more information.
+> **💡 Tip:** It's important to confirm the content of the PKGBUILD like this,
+> as these are raw Bash commands that will be executed on your system during the
+> build process.
 
 ### A Normal Install
 
 ```
-> sudo aura -A python-grip
-aura >>= Determining dependencies...
+> aura -A python-grip
+aura :: Determining dependencies...
+aura :: Repository dependencies:
+ python-docopt
+aura :: AUR packages:
+ python-grip
+ python-path-and-address
+aura :: Proceed? [Y/n] 
 
-aura >>= Repository dependencies:
-python-docopt
-python-flask
-aura >>= AUR dependencies:
-python-path-and-address
-aura >>= AUR Packages:
-python-grip
-aura >>= Continue? [Y/n]
-resolving dependencies...
-looking for conflicting packages...
-
-Package (4)                    New Version  Net Change
-
-community/python-itsdangerous  1.1.0-4        0.11 MiB
-community/python-werkzeug      1.0.1-2        2.13 MiB
-community/python-docopt        0.6.2-7        0.08 MiB
-community/python-flask         1.1.2-2        0.80 MiB
-
-Total Installed Size:  3.11 MiB
-
-:: Proceed with installation? [Y/n]
 ... pacman output ...
 
-aura >>= Building python-path-and-address...
-loading packages...
-resolving dependencies...
-looking for conflicting packages...
+aura :: Preparing build directories...
+aura :: Building python-path-and-address...
 
-Package (1)              New Version  Net Change
+... makepkg output ...
 
-python-path-and-address  2.0.1-1        0.01 MiB
-
-Total Installed Size:  0.01 MiB
-
-:: Proceed with installation? [Y/n]
-... pacman output ...
-
-aura >>= Building python-grip...
-loading packages...
-resolving dependencies...
-looking for conflicting packages...
-
-Package (1)  New Version  Net Change
-
-python-grip  4.5.2-1        0.34 MiB
-
-Total Installed Size:  0.34 MiB
-
-:: Proceed with installation? [Y/n]
-... pacman output ...
+aura :: Done.
 ```
 
 A few things to note:
 
 - `python-grip` has both official and AUR dependencies. These have to be built
   and installed in a specific order for `python-grip` to even build.
-- Aura calls `makepkg` under the hood. By default, the output of `makepkg` is
-  hidden.
+- Under the hood, Aura calls `makepkg` to drive the build and `pacman` to
+  finalise the installation.
 - If two or more packages don't depend on each other, they'll be built one after
   another and installed at the same time. This avoids needless user prompting.
 
-### A Verbose Install
-
-But what if we *do* want to see the output from `makepkg`? For long builds (e.g.
-[aseprite](https://aur.archlinux.org/packages/aseprite/)), it can be reassuring
-to see the ongoing build output.
-
-Let's add `-x` to `-A`:
-
-```
-> sudo aura -Ax python-grip
-aura >>= Determining dependencies...
-
-aura >>= Repository dependencies:
-python-docopt
-python-flask
-aura >>= AUR dependencies:
-python-path-and-address
-aura >>= AUR Packages:
-python-grip
-aura >>= Continue? [Y/n]
-
-... pacman output ...
-
-aura >>= Building python-path-and-address...
-==> Making package: python-path-and-address 2.0.1-1 (Fri 12 Jun 2020 09:39:46 AM PDT)
-==> Checking runtime dependencies...
-==> Checking buildtime dependencies...
-==> Retrieving sources...
-  -> Downloading v2.0.1.tar.gz...
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100   133  100   133    0     0     70      0  0:00:01  0:00:01 --:--:--    70
-100  5130    0  5130    0     0   2197      0 --:--:--  0:00:02 --:--:--  2197
-==> Validating source files with md5sums...
-    v2.0.1.tar.gz ... Passed
-==> Extracting sources...
-  -> Extracting v2.0.1.tar.gz with bsdtar
-==> Entering fakeroot environment...
-==> Starting package()...
-
-... makepkg output ...
-
-==> Finished making: python-path-and-address 2.0.1-1 (Fri 12 Jun 2020 09:39:49 AM PDT)
-
-... etc ...
-```
-
-Wonderful.
+> **💡 Tip:** Aura used to have an option `-x` to expose `makepkg` output. This
+> is now the default.
 
 ### Automatically Removing `makedepends`
 
@@ -229,61 +149,57 @@ package is installed, we no longer need its makedepends sitting around on our
 machine. Adding `-a` to `-A` will automatically clear them out:
 
 ```
-> sudo aura -Axa python-grip
-aura >>= Determining dependencies...
+> aura -Aa grimshot
+aura :: Determining dependencies...
+aura :: Repository dependencies:
+ scdoc
+aura :: AUR packages:
+ grimshot
+aura :: Proceed? [Y/n] 
 
 ... the usual ...
 
-Package (1)  Old Version  New Version  Net Change
+aura :: Done.
+checking dependencies...
 
-python-grip  4.5.2-1      4.5.2-1        0.00 MiB
+Packages (1) scdoc-1.11.3-1
 
-Total Installed Size:  0.34 MiB
-Net Upgrade Size:      0.00 MiB
+Total Removed Size:  0.03 MiB
 
-:: Proceed with installation? [Y/n]
-
-... pacman output ...
+:: Do you want to remove these packages? [Y/n] 
 ```
 
-Ah, there were none in this case. Since `python-grip` is a Python package, it
-never really has `makedepends`. That's okay - it's a good habit to use `-a`,
-especially when updating all your AUR packages at once (see below).
+`scdoc` was only necessary during the build, so we're prompted to uninstall it.
+
+If you'd like to turn this behaviour on permanently, you can set it within
+config:
+
+```toml
+[aur]
+delmakedeps = true
+```
 
 ### Altering the PKGBUILD Before Building
 
 Sometimes you want to change something specific about how a package is built.
-Without an AUR helper, you'd clone the package from the AUR, edit the PKGBUILD,
-and then run `makepkg`, handling dependencies yourself.
+Without a tool like Aura, you'd clone the package from the AUR, edit the
+PKGBUILD, and then run `makepkg`, handling dependencies yourself.
 
 Aura's `--hotedit` flag will let you edit a PKGBUILD on-the-fly. In the example
-below, I added `echo "I CHANGED THE PKGBUILD"` to the build commands:
+below, I add `echo "I CHANGED THE PKGBUILD"` to the build commands:
 
 ```
-> sudo aura -Axa python-grip --hotedit
-aura >>= Determining dependencies...
+> aura -Aa python-grip --hotedit
+aura :: Determining dependencies...
 
 ... the usual ...
 
-aura >>= Building python-grip...
-aura >>= Would you like to edit the PKGBUILD of python-grip? [Y/n]
+aura :: Building python-grip...
+aura :: Edit the PKGBUILD? [Y/n] 
 
-... Your EDITOR opens, and your changes are saved to the real PKGBUILD file ...
+... Your EDITOR opens, and you save your changes to the real PKGBUILD file ...
 
-==> Making package: python-grip 4.5.2-1 (Fri 12 Jun 2020 09:52:26 AM PDT)
-==> Checking runtime dependencies...
-==> Checking buildtime dependencies...
-==> Retrieving sources...
-  -> Downloading python-grip-4.5.2.tar.gz...
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100   121  100   121    0     0    288      0 --:--:-- --:--:-- --:--:--   289
-100  174k    0  174k    0     0   165k      0 --:--:--  0:00:01 --:--:--  938k
-==> Validating source files with sha256sums...
-    python-grip-4.5.2.tar.gz ... Passed
-==> Extracting sources...
-  -> Extracting python-grip-4.5.2.tar.gz with bsdtar
-==> Entering fakeroot environment...
+==> Making package: python-grip 4.6.1-1 (Sat 13 Jul 2024 07:08:37 AM JST)
 ==> Starting package()...
 I CHANGED THE PKGBUILD
 
@@ -303,37 +219,41 @@ Some things to note:
   package, it's recommended that you maintain a separate PKGBUILD and call
   `makepkg` yourself.
 
+If you'd like to always be prompted for hoteditting, you can set it within
+config:
+
+```toml
+[aur]
+hotedit = true
+```
+
 ## Updating your AUR Packages
 
-`sudo aura -Ayu` works, but `sudo aura -Auax` is a more common way to update
-your installed AUR packages.
-
-- `-A`: Only consider AUR packages.
-- `-u`: Update all packages that can be.
-- `-a`: Uninstall unneeded makedepends afterward.
-- `-x`: Display `makepkg` output as we go.
+`aura -Au` is the standard command, ran without `sudo`.
 
 ```
-> sudo aura -Auax
-aura >>= Fetching package information...
-aura >>= Comparing package versions...
-aura >>= AUR Packages to upgrade:
-aseprite :: 1.2.16.2-3 -> 1.2.19.2-1
+> aura -Au
+aura :: Fetching package information...
+aura :: Comparing package versions...
+aura :: AUR packages to upgrade:
+ ghcup-hs-bin :: 0.1.22.0-1       -> 0.1.30.0-1
+ tic-80-git   :: r2633.687fb340-1 -> r2883.3cf27c5e-1
+ yed          :: 1:3.23.2-1       -> 1:3.24-1
+aura :: Determining dependencies...
+aura :: Repository dependencies:
 
-aura >>= Saved package state.
-aura >>= Determining dependencies...
+... redacted ...
 
-aura >>= Repository dependencies:
-ninja
-aura >>= AUR Packages:
-aseprite
-aura >>= Continue? [Y/n]
+aura :: AUR packages:
+ ghcup-hs-bin
+ tic-80-git
+ yed
+aura :: Proceed? [Y/n]
 ```
 
-Note that `-u` automatically invoked a saving of the current package state. If
-you update your system and there is a serious problem, you can roll back with
-`-Br` and return to the state that was just saved. See [Package Set
-Snapshots](snapshots.md) for more detail.
+The options that apply to normal `-A`, like `-a` and `--hotedit`, also apply
+here. Of course, its simplest to set those in config if you know your
+preferences. See `man aura` or `aura -Ah` for more options.
 
 ### Displaying PKGBUILD Changes
 
@@ -342,94 +262,146 @@ packages? `-k` will show us any changes that were made to a PKGBUILD compared to
 the version we have installed:
 
 ```diff
-> sudo aura -Auaxk
-aura >>= Fetching package information...
-aura >>= Comparing package versions...
-aura >>= AUR Packages to upgrade:
-aseprite :: 1.2.16.2-3 -> 1.2.19.2-1
+> aura -Auk
+aura :: Fetching package information...
+aura :: Comparing package versions...
+aura :: AUR packages to upgrade:
+ ghcup-hs-bin :: 0.1.22.0-1 -> 0.1.30.0-1
+ yed          :: 1:3.23.2-1 -> 1:3.24-1
+aura :: Determining dependencies...
+aura :: AUR packages:
+ ghcup-hs-bin
+ yed
+aura :: Proceed? [Y/n] 
+aura :: Preparing build directories...
+aura :: Building yed...
+aura :: Display diffs of build files? [Y/n] 
+diff --git a/.SRCINFO b/.SRCINFO
+index bc810a7..32f1f1f 100644
+--- a/.SRCINFO
++++ b/.SRCINFO
+@@ -1,6 +1,6 @@
+ pkgbase = yed
+        pkgdesc = Very powerful graph editor written in java
+-       pkgver = 3.23.2
++       pkgver = 3.24
+        pkgrel = 1
+        epoch = 1
+        url = http://www.yworks.com/en/products_yed_about.html
+@@ -9,11 +9,11 @@ pkgbase = yed
+        license = custom
+        depends = hicolor-icon-theme
+        depends = java-runtime
+-       source = https://www.yworks.com/resources/yed/demo/yEd-3.23.2.zip
++       source = https://www.yworks.com/resources/yed/demo/yEd-3.24.zip
+        source = yed.desktop
+        source = yed
+        source = graphml+xml-mime.xml
+-       sha256sums = 4f96611718df696de2f33eeb2cd78bfbbdacce52390afea8d00441b6fb175e20
++       sha256sums = 842909f6e4c15399b660f316056499e63e931f95ade43d850045d852d3128947
+        sha256sums = cc6957cde6eba0d82ea523b0257f8c91fd1e330a1e2ad7d64890e48a2450aa98
+        sha256sums = 731b54c6e731704efe9847d78e2df474d59042452ace29d2786d76891295249e
+        sha256sums = e751b69ed8a25faf46d4e4016ed8f1774abc88679067934a6081348e3d6fc332
+diff --git a/PKGBUILD b/PKGBUILD
+index f9ea04e..cb06126 100644
+--- a/PKGBUILD
++++ b/PKGBUILD
+@@ -10,7 +10,7 @@
+ # https://github.com/michaellass/AUR
+ 
+ pkgname=yed
+-pkgver=3.23.2
++pkgver=3.24
+ pkgrel=1
+ epoch=1
+ pkgdesc='Very powerful graph editor written in java'
+@@ -22,7 +22,7 @@ source=("https://www.yworks.com/resources/yed/demo/yEd-${pkgver}.zip"
+         'yed.desktop'
+         'yed'
+         'graphml+xml-mime.xml')
+-sha256sums=('4f96611718df696de2f33eeb2cd78bfbbdacce52390afea8d00441b6fb175e20'
++sha256sums=('842909f6e4c15399b660f316056499e63e931f95ade43d850045d852d3128947'
+             'cc6957cde6eba0d82ea523b0257f8c91fd1e330a1e2ad7d64890e48a2450aa98'
+             '731b54c6e731704efe9847d78e2df474d59042452ace29d2786d76891295249e'
+             'e751b69ed8a25faf46d4e4016ed8f1774abc88679067934a6081348e3d6fc332')
+aura :: Proceed? [Y/n]
+```
 
-aura >>= Saved package state.
-aura >>= aseprite PKGBUILD changes:
---- /var/cache/aura/pkgbuilds/aseprite.pb	2020-02-26 14:11:52.427913916 -0800
-+++ /tmp/new.pb	2020-06-12 10:19:55.564270161 -0700
-@@ -7,50 +7,57 @@
- # Contributor: Kamil Biduś <kamil.bidus@gmail.com>
+Once again, nothing evil-looking here. If you'd like to always see diffs like
+this, you can set it within config:
 
- pkgname=aseprite
--pkgver=1.2.16.2
--pkgrel=3
-+pkgver=1.2.19.2
-+pkgrel=1
- pkgdesc='Create animated sprites and pixel art'
--arch=('x86_64' 'i686')
-+arch=('x86_64')
- url="http://www.aseprite.org/"
- license=('custom')
--depends=('cmark' 'pixman' 'curl' 'giflib' 'zlib' 'libpng' 'libjpeg-turbo' 'tinyxml' 'freetype2'
--         'harfbuzz' 'nettle' 'fontconfig' 'libxcursor' 'desktop-file-utils' 'hicolor-icon-theme')
--makedepends=('cmake' 'ninja' 'git' 'python2')
-+depends=('cmark' 'curl' 'giflib' 'zlib' 'libpng' 'tinyxml' 'freetype2' 'fontconfig' 'libxcursor'
-+         'hicolor-icon-theme')
-+makedepends=('cmake' 'ninja' 'git' 'python2' 'freeglut' 'xorgproto' 'libxi' 'harfbuzz-icu'
-+             'nettle')
-
-... etc ...
-
-aura >>= Determining dependencies...
-
-aura >>= Repository dependencies:
-ninja
-aura >>= AUR Packages:
-aseprite
-aura >>= Continue? [Y/n]
+```toml
+[aur]
+diff = true
 ```
 
 ### Including `*-git` Packages
 
 The AUR has many packages postfixed with `-git`, `-svn`, etc. These typically
-pull straight from the `master` branch of some code respository, and so the idea
-of comparing version numbers to detect updates doesn't work as well.
+pull straight from the `master` branch of some code respository, and so
+comparing version numbers to detect updates doesn't always work.
 
-`--devel` will consider all such packages for updates:
+`--git` will consider all such packages for updates:
 
 ```
-> sudo aura -Auax --devel
-aura >>= Fetching package information...
-aura >>= Comparing package versions...
-aura >>= AUR Packages to upgrade:
-aseprite    :: 1.2.16.2-3 -> 1.2.19.2-1
-libumem-git
-
-aura >>= Saved package state.
-aura >>= Determining dependencies...
-
-aura >>= Repository dependencies:
-ninja
-aura >>= AUR Packages:
-aseprite
-libumem-git
-aura >>= Continue? [Y/n]
+> aura -Au --git
+aura :: Fetching package information...
+aura :: Comparing package versions...
+aura :: AUR packages to upgrade:
+ ghcup-hs-bin :: 0.1.22.0-1 -> 0.1.30.0-1
+ yed          :: 1:3.23.2-1 -> 1:3.24-1
+aura :: VCS packages to rebuild:
+ clasp-cl-git
+ libmgba-git
+ mgba-qt-git
+ timelineproject-hg
+aura :: Determining dependencies...
+aura :: Repository dependencies:
+ qt6-tools
+aura :: AUR packages:
+ clasp-cl-git
+ ghcup-hs-bin
+ mgba-git
+ timelineproject-hg
+ yed
+aura :: Proceed? [Y/n] 
 ```
 
-Notice that no `a -> b` version number update was shown for the `-git` package.
+If you'd like to always consider such packages with `-u`, you can set it within
+config:
 
-> **💡 Note:** Usually packages are built in semi-randomly named directories
-> within `/tmp`, which is cleared upon every reboot of the machine. (Pass
-> `-c`/`--clean` to `-A` to be proactive about clearing these directories.)
->
-> "VCS" packages on the other hand are stored elsewhere and given fixed names,
-> so that updates invoke a `git pull` instead of a full `git clone` (which may
-> be expensive!).
->
-> See [the next page](storage.md) for more information.
+```toml
+[aur]
+git = true
+```
 
-### Forcing a Rebuild
+### PKGBUILD Analysis
 
-By default, Aura won't rebuild a package if the most recent version is already
-installed (or even just available in your package cache). But sometimes you *do*
-want to force a rebuild. For instance, some `-git` packages have no concept of a
-version number. Even with `--devel`, an update will never be detected. In these
-cases, `--force` will cause the package to be completely rebuilt.
+If requested, Aura will run [Shellcheck](https://www.shellcheck.net/) on
+PKGBUILDs to check for oddities:
+
+```
+> aura -A goverlay-git --shellcheck
+
+... the usual ...
+
+aura :: Building goverlay-git...
+
+In PKGBUILD line 32:
+  for i in "${pkgname%-git}.lpi"; do
+           ^-------------------^ SC2066 (error): Since you double quoted this, it will not word split, and the loop will only run once.
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2066 -- Since you double quoted this, it ...
+aura :: Proceed? [Y/n]
+```
+
+If you'd like to always run `shellcheck` this way, you can set it within config:
+
+```toml
+[aur]
+shellcheck = true
+```
 
 ### Blindly Accepting all Prompts
 
@@ -437,7 +409,3 @@ Tired of pressing the `Enter` key? Or maybe you've automated `aura` into a
 script. In these cases, you may want to accept all prompts automatically.
 `pacman` exposes the `--noconfirm` flag for this, which also affects Aura.
 
-> **💡 Note:** If a PKGBUILD vulnerability was detected, Aura **will exit** and
-> not proceed with building, even if `--noconfirm` was given.
->
-> See [PKGBUILD Security Analysis](security.md) for more information.

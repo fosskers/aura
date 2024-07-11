@@ -13,6 +13,8 @@ package analysis, and automated AUR package installation.
 New to Aura? Check out [Aura's Philosophy](philosophy.md) or just jump right
 into [Installation](install.md)!
 
+Aura is licensed under the terms of the GPLv3.
+
 > **💡 Tip:** You can press `s` at any time to search this book.
 
 ## Contact

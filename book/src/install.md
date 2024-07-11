@@ -1,8 +1,10 @@
 # Installation
 
 Aura is software specific to [Arch Linux](https://www.archlinux.org/). It should
-also work on Arch-derivatives like [Manjaro](https://manjaro.org/), but would
-not be useful on any other Linux distribution.
+also work on
+[Arch-derivatives](https://wiki.archlinux.org/title/Arch-based_distributions)
+like [Manjaro](https://manjaro.org/), but would not be useful on any other Linux
+distribution.
 
 There are several `aura` packages available. Aura was originally written in
 Haskell, but a [port to Rust](https://github.com/fosskers/aura/discussions/657)
