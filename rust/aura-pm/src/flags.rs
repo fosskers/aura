@@ -1177,6 +1177,10 @@ pub struct Aur {
     #[clap(long, display_order = 4)]
     pub hotedit: bool,
 
+    /// Run shellcheck on PKGBUILDs before building.
+    #[clap(long, display_order = 4)]
+    pub shellcheck: bool,
+
     /// View diffs of PKGBUILDs and related build files before building.
     #[clap(long, short = 'k', display_order = 4)]
     pub diff: bool,

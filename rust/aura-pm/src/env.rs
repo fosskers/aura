@@ -271,6 +271,8 @@ struct RawAur {
     #[serde(default)]
     hotedit: bool,
     #[serde(default)]
+    shellcheck: bool,
+    #[serde(default)]
     diff: bool,
     #[serde(default)]
     delmakedeps: bool,
@@ -294,6 +296,8 @@ pub(crate) struct Aur {
     pub(crate) git: bool,
     /// View/edit PKGBUILDs (etc.) before building.
     pub(crate) hotedit: bool,
+    /// Run shellcheck over PKGBUILDs before building.
+    pub(crate) shellcheck: bool,
     /// View diffs of PKGBUILDs (etc.) before building.
     pub(crate) diff: bool,
     /// Delete makedeps after building.
@@ -317,6 +321,7 @@ impl Aur {
             ignores: HashSet::new(),
             git: false,
             hotedit: false,
+            shellcheck: false,
             diff: false,
             delmakedeps: false,
             noconfirm: false,
@@ -339,6 +344,10 @@ impl Aur {
 
         if flags.hotedit {
             self.hotedit = true;
+        }
+
+        if flags.shellcheck {
+            self.shellcheck = true;
         }
 
         if flags.diff {
@@ -384,6 +393,7 @@ impl TryFrom<RawAur> for Aur {
             ignores: raw.ignores,
             git: raw.git,
             hotedit: raw.hotedit,
+            shellcheck: raw.shellcheck,
             diff: raw.diff,
             delmakedeps: raw.delmakedeps,
             noconfirm: raw.noconfirm,
