@@ -292,6 +292,7 @@ fn show_diffs(
         Ok(hash) => {
             if proceed!(fll, "A-build-diff").is_some() {
                 aura_core::git::diff(clone, &hash).map_err(Error::GitDiff)?;
+                proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
             }
         }
     }
