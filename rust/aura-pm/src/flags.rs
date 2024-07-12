@@ -70,7 +70,13 @@ under certain conditions; see 'aura open --license' for details.
 pub struct Args {
     // --- Aura Language Options --- //
     /// Output in English.
-    #[clap(group = "language", long, global = true, display_order = 10)]
+    #[clap(
+        group = "language",
+        long,
+        global = true,
+        hide_short_help = true,
+        display_order = 10
+    )]
     pub english: bool,
     /// Output in Japanese (alias: 日本語).
     #[clap(
@@ -78,6 +84,7 @@ pub struct Args {
         long,
         global = true,
         alias = "日本語",
+        hide_short_help = true,
         display_order = 10
     )]
     pub japanese: bool,
@@ -87,6 +94,7 @@ pub struct Args {
         long,
         global = true,
         alias = "deutsch",
+        hide_short_help = true,
         display_order = 10
     )]
     pub german: bool,
@@ -96,6 +104,7 @@ pub struct Args {
         long,
         global = true,
         alias = "polski",
+        hide_short_help = true,
         display_order = 10
     )]
     pub polish: bool,
@@ -105,6 +114,7 @@ pub struct Args {
         long,
         global = true,
         alias = "hrvatski",
+        hide_short_help = true,
         display_order = 10
     )]
     pub croatian: bool,
@@ -114,6 +124,7 @@ pub struct Args {
         long,
         global = true,
         alias = "svenska",
+        hide_short_help = true,
         display_order = 10
     )]
     pub swedish: bool,
@@ -123,6 +134,7 @@ pub struct Args {
         long,
         global = true,
         alias = "español",
+        hide_short_help = true,
         display_order = 10
     )]
     pub spanish: bool,
@@ -132,6 +144,7 @@ pub struct Args {
         long,
         global = true,
         alias = "português",
+        hide_short_help = true,
         display_order = 10
     )]
     pub portuguese: bool,
@@ -141,6 +154,7 @@ pub struct Args {
         long,
         global = true,
         alias = "français",
+        hide_short_help = true,
         display_order = 10
     )]
     pub french: bool,
@@ -150,6 +164,7 @@ pub struct Args {
         long,
         global = true,
         alias = "русский",
+        hide_short_help = true,
         display_order = 10
     )]
     pub russian: bool,
@@ -159,6 +174,7 @@ pub struct Args {
         long,
         global = true,
         alias = "italiano",
+        hide_short_help = true,
         display_order = 10
     )]
     pub italian: bool,
@@ -168,6 +184,7 @@ pub struct Args {
         long,
         global = true,
         alias = "cрпски",
+        hide_short_help = true,
         display_order = 10
     )]
     pub serbian: bool,
@@ -177,11 +194,18 @@ pub struct Args {
         long,
         global = true,
         alias = "norsk",
+        hide_short_help = true,
         display_order = 10
     )]
     pub norwegian: bool,
     /// Output in Indonesian.
-    #[clap(group = "language", long, global = true, display_order = 10)]
+    #[clap(
+        group = "language",
+        long,
+        global = true,
+        hide_short_help = true,
+        display_order = 10
+    )]
     pub indonesian: bool,
     /// Output in Simplified Chinese (alias: 简体字).
     #[clap(
@@ -189,11 +213,18 @@ pub struct Args {
         long,
         global = true,
         alias = "简体字",
+        hide_short_help = true,
         display_order = 10
     )]
     pub simplified_chinese: bool,
     /// Output in Esperanto.
-    #[clap(group = "language", long, global = true, display_order = 10)]
+    #[clap(
+        group = "language",
+        long,
+        global = true,
+        hide_short_help = true,
+        display_order = 10
+    )]
     pub esperanto: bool,
     /// Output in Dutch (alias: nederlands).
     #[clap(
@@ -201,11 +232,18 @@ pub struct Args {
         long,
         global = true,
         alias = "nederlands",
+        hide_short_help = true,
         display_order = 10
     )]
     pub dutch: bool,
     /// Output in Turkish.
-    #[clap(group = "language", long, global = true, display_order = 10)]
+    #[clap(
+        group = "language",
+        long,
+        global = true,
+        hide_short_help = true,
+        display_order = 10
+    )]
     pub turkish: bool,
     /// Output in Arabic (alias: العربية).
     #[clap(
@@ -213,6 +251,7 @@ pub struct Args {
         long,
         global = true,
         alias = "العربية",
+        hide_short_help = true,
         display_order = 10
     )]
     pub arabic: bool,
@@ -222,6 +261,7 @@ pub struct Args {
         long,
         global = true,
         alias = "українська",
+        hide_short_help = true,
         display_order = 10
     )]
     pub ukrainian: bool,
@@ -231,11 +271,18 @@ pub struct Args {
         long,
         global = true,
         alias = "română",
+        hide_short_help = true,
         display_order = 10
     )]
     pub romanian: bool,
     /// Output in Vietnamese.
-    #[clap(group = "language", long, global = true, display_order = 10)]
+    #[clap(
+        group = "language",
+        long,
+        global = true,
+        hide_short_help = true,
+        display_order = 10
+    )]
     pub vietnamese: bool,
     /// Output in Czech (alias: český).
     #[clap(
@@ -243,6 +290,7 @@ pub struct Args {
         long,
         global = true,
         alias = "český",
+        hide_short_help = true,
         display_order = 10
     )]
     pub czech: bool,
@@ -252,6 +300,7 @@ pub struct Args {
         long,
         global = true,
         alias = "한국어",
+        hide_short_help = true,
         display_order = 10
     )]
     pub korean: bool,
@@ -261,6 +310,7 @@ pub struct Args {
         long,
         global = true,
         alias = "हिंदी",
+        hide_short_help = true,
         display_order = 10
     )]
     pub hindi: bool,
@@ -1231,15 +1281,15 @@ pub struct Aur {
     pub refresh: bool,
 
     /// Do not ask for any confirmation.
-    #[clap(long, display_order = 4)]
+    #[clap(long, display_order = 5)]
     pub noconfirm: bool,
 
     /// Do not consider checkdeps when building packages.
-    #[clap(long, display_order = 4)]
+    #[clap(long, display_order = 5)]
     pub nocheck: bool,
 
     /// Perform no dependency resolution.
-    #[clap(long, display_order = 4)]
+    #[clap(long, display_order = 5)]
     pub skipdepcheck: bool,
 
     /// Packages to install.
