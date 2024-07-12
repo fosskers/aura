@@ -15,6 +15,7 @@ use crate::utils::ResultVoid;
 use crate::utils::NOTHING;
 use crate::yellow;
 use applying::Apply;
+use aura_core::aur::dependencies::Resolution;
 use aura_core::Package;
 use colored::ColoredString;
 use colored::Colorize;
@@ -458,13 +459,18 @@ fn install_work<'a>(
 ) -> Result<(), Error> {
     let pool = env.alpm_pool()?;
     aura!(fll, "A-install-deps");
-    let rslv = aura_core::aur::dependencies::resolve(
-        pool,
-        &crate::fetch::fetch_json,
-        &env.aur.clones,
-        env.aur.nocheck,
-        pkgs,
-    )?;
+
+    let rslv = if env.aur.skipdepcheck {
+        Resolution::build_these(pkgs)
+    } else {
+        aura_core::aur::dependencies::resolve(
+            pool,
+            &crate::fetch::fetch_json,
+            &env.aur.clones,
+            env.aur.nocheck,
+            pkgs,
+        )?
+    };
 
     debug!("Satisfied: {:?}", rslv.satisfied);
     debug!("To install: {:?}", rslv.to_install);

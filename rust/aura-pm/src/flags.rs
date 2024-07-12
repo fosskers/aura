@@ -1238,6 +1238,10 @@ pub struct Aur {
     #[clap(long, display_order = 4)]
     pub nocheck: bool,
 
+    /// Perform no dependency resolution.
+    #[clap(long, display_order = 4)]
+    pub skipdepcheck: bool,
+
     /// Packages to install.
     pub packages: Vec<String>,
 }

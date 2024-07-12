@@ -87,6 +87,30 @@ impl Resolution {
             || self.to_install.contains(pkg)
             || self.to_build.contains(pkg)
     }
+
+    /// Set the given packages as the ones to build without any other
+    /// considerations.
+    pub fn build_these<I, S>(pkgs: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<str>,
+    {
+        let to_build = pkgs
+            .into_iter()
+            .map(|s| {
+                let name = s.as_ref().into();
+                let deps = HashSet::new();
+                Buildable { name, deps }
+            })
+            .collect();
+
+        Resolution {
+            to_install: HashSet::new(),
+            to_build,
+            satisfied: HashSet::new(),
+            provided: HashSet::new(),
+        }
+    }
 }
 
 /// An official ALPM package.

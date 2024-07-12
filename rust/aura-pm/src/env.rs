@@ -307,6 +307,8 @@ pub(crate) struct Aur {
     /// Don't consider "checkdeps" during dependency resolution and when calling
     /// `makepkg`.
     pub(crate) nocheck: bool,
+    /// Perform no dependency resolution.
+    pub(crate) skipdepcheck: bool,
 }
 
 impl Aur {
@@ -326,6 +328,7 @@ impl Aur {
             delmakedeps: false,
             noconfirm: false,
             nocheck: false,
+            skipdepcheck: false,
         };
 
         Ok(a)
@@ -369,6 +372,10 @@ impl Aur {
             self.nocheck = true;
         }
 
+        if flags.skipdepcheck {
+            self.skipdepcheck = true;
+        }
+
         // Harmless clone, as we don't expect many "ignores" to be passed on the
         // command line.
         self.ignores.extend(flags.ignore.clone());
@@ -398,6 +405,7 @@ impl TryFrom<RawAur> for Aur {
             delmakedeps: raw.delmakedeps,
             noconfirm: raw.noconfirm,
             nocheck: raw.nocheck,
+            skipdepcheck: false,
         };
 
         Ok(a)
