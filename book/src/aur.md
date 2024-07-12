@@ -403,6 +403,21 @@ If you'd like to always run `shellcheck` this way, you can set it within config:
 shellcheck = true
 ```
 
+### Jailed Building via `pkgctl build`
+
+For extra security, you can build packages in a `chroot`. This ensures that the
+build process will not affect your existing filesystem. For the moment, this
+option is gated by configuration; no CLI flag is available:
+
+```toml
+[aur]
+chroot = ["fortls", "timelineproject-hg"]
+```
+
+This means that when these particular packages are built, it will be done in a
+`chroot`. Transitive AUR dependencies will be injected properly into the build
+environment.
+
 ### Blindly Accepting all Prompts
 
 Tired of pressing the `Enter` key? Or maybe you've automated `aura` into a

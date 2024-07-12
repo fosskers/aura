@@ -1,35 +1,27 @@
 # Package Storage Locations
 
 This page explains all important filepaths for Aura. Build paths can [be
-configured](configuration.md) in `aura.conf` or changed dynamically with CLI
-flags.
+configured](configuration.md) in `~/.config/aura/config.toml`.
 
 ## Where are packages built?
 
-By default, non-VCS packages are built within `/tmp` in a semi-randomly named
-directory. This avoids odd collisions during repeated attempts at building a
-package. `/tmp` is cleared automatically upon a restart of the machine, but for
-users who don't restart often, `-c`/`--clean` can be passed to `-A` to delete
-these build directories proactively.
-
-`--build` can be passed to `-A` with an **absolute** filepath to build packages
-in a directory other than `/tmp`.
-
-VCS packages (i.e. `*-git`) are built and stored in `/var/cache/aura/vcs/` in
-subdirectories with fixed names. This is so that they can be reused during
-upgrades; `makepkg` is smart enough to do `git pull` instead of a full `git
-clone` in these cases.
-
-`--vcspath` can be passed to `-A` to build/store such packages elsewhere.
+By default, packages are built within `~/.cache/aura/builds/`. Were a package
+specified in the `chroot` list in config, then it will instead be built in a
+`chroot`.
 
 ## Where are packages stored?
 
-Once built, all packages are sent to the Pacman cache: `/var/cache/pacman/pkg/`.
+Once built, all packages are sent to Aura's cache: `~/.cache/aura/cache/`.
 
 This directory can grow quite large, but can be cleaned with
-[`-Cc`](downgrading.md).
+[`-Cc`](downgrading.md). See also `aura stats` for a view of various
+Aura-related directory sizes.
 
 ## What other filepaths are there?
 
-Aura stores historical PKGBUILDs in `/var/cache/aura/pkgbuilds/`, and saved
-package set states in `/var/cache/aura/states/`.
+Aura stores clones of known AUR packages in `~/.cache/aura/packages/`, and saved
+package set states in `~/.cache/aura/snapshots/`.
+
+Also also reads your `pacman` and `makepkg` configuration, which are generally
+expected to be at `/etc/pacman.conf` and `/etc/makepkg.conf` respectively, but
+it will respect the usual environment variables that alter those paths.
