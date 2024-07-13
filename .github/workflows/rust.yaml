@@ -36,4 +36,4 @@ jobs:
       - name: Build and Test
         run: |
           cd rust/
-          cargo test
+          cargo test --locked
