@@ -12,6 +12,7 @@
   - [Managing Orphan Packages](./orphans.md)
   - [Package Set Snapshots](./snapshots.md)
   - [Log Interaction](./log.md)
+  - [Dependency Analysis](./deps.md)
 - [Configuration](./configuration.md)
 - [Appendix](./appendix.md)
   - [Localisation Guide](./localisation.md)
