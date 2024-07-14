@@ -59,7 +59,7 @@ future upgrades we won't have to download anymore.
 `-O` list above.
 
 ```
-> sudo aura -Oj
+> aura -Oj
 checking dependencies...
 
 Package (5)              Old Version  Net Change
@@ -81,6 +81,27 @@ Changing a package's install reason from "dependency" to "explicitly installed"
 is possible via `pacman` alone, but Aura offers a shorthand:
 
 ```
-> sudo aura -Oa python-path-and-address
+> aura -Oa python-path-and-address
 python-path-and-address: install reason has been set to 'explicitly installed'
 ```
+
+## Forgotten Top-level Packages
+
+The dual concept of the "orphan" would be the "elderly"; in this case, top-level
+packages which aren't depended on by anything else.
+
+```
+> aura -Oe
+abcl 1.9.2-1
+alsa-utils 1.2.12-1
+anki 2.1.66-1
+aspell-en 2020.12.07-1
+babashka-bin 1.3.191-1
+base 3-2
+base-devel 1-1
+... etc ...
+```
+
+If you notice anything here that you don't remember installing or that you don't
+need anymore, you can remove it. Consider also `aura check` for a list of such
+top-level packages that haven't been updated in the past year.
