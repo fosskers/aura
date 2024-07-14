@@ -7,7 +7,7 @@ could be for a few reasons:
 
 - There is something wrong with the upstream package source files or a
   dependency.
-  - Try checking the comments on the AUR page for that package.
+  - Try checking the comments on the AUR page for that package: `aura -Ao <pkg>`
 - The build environment of that package is somehow polluted.
   - Try deleting everything found in `~/.cache/aura/builds/<naughty-package>/`.
 - You've found a real bug in Aura.
@@ -44,28 +44,25 @@ usual AUR RPC, but offers new endpoints. The primary functionality I required
 was "provides"-based lookup, but for AUR packages. The simplest way to achieve
 that was to write my own server, so I did.
 
-An example of "provides"-based searching would be:
+An example of provides-based searching would be:
 
-> I want to know all of the packages that think they are `emacs`.
+> I want to know all of the packages that think they are `gcc`.
 
 We can search that like so:
 
 ```
-> aura -Av emacs
-aur/emacs-git 30.0.50.169253-1 (104 | 0.00) 
-    GNU Emacs. Development master branch.
-aur/emacs28-git 28.3.151685-1 (10 | 0.00) 
-    The extensible, customizable, self-documenting real-time display editor, emacs-28 release branch
-aur/emacs-pretest 29.1-0.90 (7 | 0.00) 
-    The extensible, customizable, self-documenting real-time display editor. Pretest version
-aur/emacs29-git 29.2.50.165993-1 (7 | 0.00) 
-    GNU Emacs. Development emacs29 release branch.
-... etc ...
+> aura -Av gcc
+aur/gcc-git 13.0.0_r197401.g33be3ee36a7-1 (15 | 0.00) 
+    The GNU Compiler Collection - C and C++ frontends (git version)
+aur/gccrs-git 14.0.1_r213484.g646046091b7-1 (2 | 0.00) 
+    The GNU Compiler Collection - C and C++ frontends (git version)
+aur/gcc-snapshot 15.0.1.snapshot20240707-1 (1 | 0.32) 
+    The GNU Compiler Collection - C and C++ frontends (snapshot)
 ```
 
-Any of these packages, if installed, "provides" the "package identity" of
-`emacs`. Should another package require `emacs` as a dependency, any of these
-will satisfy the resolver.
+Any of these packages, if installed, "provides" the "package identity" of `gcc`.
+Should another package require `gcc` as a dependency, any of these will satisfy
+the resolver.
 
 Having Aura communicate with a server under my control also helps reduce the
 load on the AUR RPC.

@@ -8,6 +8,8 @@ defaults, can be generated via:
 aura conf --gen > ~/.config/aura/config.toml
 ```
 
+Here are the specifics of each field.
+
 ## General Settings
 
 Governed within the `[general]` section.
