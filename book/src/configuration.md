@@ -1,10 +1,52 @@
 # Configuring Aura
 
 For certain settings we use all the time (e.g. language, build paths, etc.),
-Aura is configurable via `/etc/aura.conf`. If you installed Aura from the AUR,
-this file was generated for you automatically. Otherwise, a full template [is
-available here](https://github.com/fosskers/aura/blob/master/haskell/aura/doc/aura.conf)
-and contains all instructions.
+Aura is configurable via `~/.config/aura/config.toml`. This file, with sensible
+defaults, can be generated via:
 
-> **💡 Tip:** You can check all configuration options in full detail with `man
-> aura.conf`.
+```
+aura conf --gen > ~/.config/aura/config.toml
+```
+
+## General Settings
+
+Governed within the `[general]` section.
+
+| Field      | Type   | Purpose                                                         |
+|:-----------|:-------|:----------------------------------------------------------------|
+| `cpus`     | int    | Affects parallelism in various algorithms.                      |
+| `editor`   | string | The editor opened with `--hotedit`, etc.                        |
+| `doas`     | bool   | Privilege escalation occurs via `doas`, not `sudo`.             |
+| `language` | string | A code to specify the human language of Aura's output messages. |
+
+See `aura stats --lang` for available language codes.
+
+## AUR Package Building 
+
+Governed within the `[aur]` section.
+
+| Field          | Type        | Purpose                                                      |
+|:---------------|:------------|:-------------------------------------------------------------|
+| `build`        | string      | A path to the build cache Aura should use.                   |
+| `cache`        | string      | A path in which to store built package tarballs.             |
+| `clones`       | string      | A path in which to clone package metadata.                   |
+| `hashes`       | string      | A path in which to store the git hash of the latest build.   |
+| `chroot`       | string list | Packages to build with `pkgctl build` in a chroot.           |
+| `ignores`      | string list | Packages to never update.                                    |
+| `git`          | bool        | Force update all VCS packages during `-Au`.                  |
+| `hotedit`      | bool        | Prompt to edit build files (PKGBUILD, etc.) before building. |
+| `shellcheck`   | bool        | Run `shellcheck` over PKGBUILDs before building.             |
+| `diff`         | bool        | Display PKGBUILD diffs during upgrades.                      |
+| `delmakedeps`  | bool        | Remove makedeps after building.                              |
+| `noconfirm`    | bool        | Automatically accept all prompts.                            |
+| `nocheck`      | bool        | Don't run the `check()` function while building.             |
+| `skipdepcheck` | bool        | Don't perform dependency checking at all.                    |
+
+## Package Snapshots
+
+Governed within the `[backups]` section.
+
+| Field       | Type   | Purpose                                     |
+|:------------|:-------|:--------------------------------------------|
+| `snapshots` | string | A path in which to store snapshot files.    |
+| `automatic` | bool   | Automatically save a snapshot during `-Au`. |
