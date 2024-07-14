@@ -1,76 +1,51 @@
 language-name = English
 
 # AUR Packages (-A)
-# install_5
 A-install-deps = Determining dependencies...
-# reportPkgsToInstall_1
 A-install-repo-pkgs = Repository dependencies:
-# reportPkgsToInstall_2
 A-install-aur-pkgs = AUR packages:
 A-install-path-comp = Failed to extract final component of: { $path }
-# confirmIgnored_1
 A-install-ignored = { $file } is marked "ignored". Install anyway?
 
 A-build-prep = Preparing build directories...
-# buildPackages_1
 A-build-pkg = Building { $pkg }...
 A-build-diff = Display diffs of build files?
 A-build-hotedit-pkgbuild = Edit the PKGBUILD?
-# hotEdit_2
 A-build-hotedit-install = Edit the .install file?
-# buildFail_5
 A-build-fail = Package failed to build, citing:
 A-build-e-pkgctl = Building within an isolated chroot failed.
-# buildFail_8
 A-build-e-makepkg = makepkg failed.
 A-build-e-edit = Failed to edit: { $file }
 A-build-e-tarball = Failed to move: { $file }
 A-build-e-filename = Failed to extract filename from: { $file }
 A-build-e-copies = Failed to copy build files.
 A-build-pkglist = Failed to determine makepkg output paths from: { $dir }
-# buildFail_12
 A-build-pull = Failed to pull latest commits - you may be building an old version!
-# buildFail_6
 A-build-continue = Continue building other packages?
 
-# repository
 A-i-repo = Repository
-# version
 A-i-version = Version
-# aurStatus
 A-i-status = AUR Status
-# maintainer
 A-i-maintainer = Maintainer
-# projectUrl
 A-i-proj-url = Project URL
-# aurUrl
 A-i-aur-url = AUR URL
-# license
 A-i-license = License
 A-i-group = Groups
 A-i-provides = Provides
-# dependsOn
 A-i-depends = Depends On
 A-i-make = Make Deps
 A-i-opt = Optional Deps
 A-i-check = Check Deps
-# votes
 A-i-votes = Votes
-# popularity
 A-i-pop = Popularity
-# description
 A-i-desc = Description
 A-i-keywords = Keywords
 A-i-submitted = Submitted
 A-i-updated = Updated
 
-# upgradeAURPkgs_1
 A-u-fetch-info = Fetching package information...
-# upgradeAURPkgs_2
 A-u-comparing = Comparing package versions...
-# upgradeAURPkgs_3
 A-u-no-upgrades = No AUR package upgrades necessary.
-# reportPkgsToUpgrade_1
 A-u-to-upgrade = AUR packages to upgrade:
 A-u-git = VCS packages to rebuild:
 
@@ -80,7 +55,6 @@ A-y-refreshing = Refreshing local clones of known AUR packages...
 A-y-pulling = Pulling latest commits
 
 # Snapshots (-B)
-# saveState_1
 B-saved = Saved package state.
 B-clean = Remove stale snapshots?
 B-none = No usable snapshots found.
@@ -91,7 +65,6 @@ C-size = Current cache size: { $size }
 
 C-b-file = { $target } already exists and is not a directory.
 C-b-nonempty = Target { $target } exists but is not empty!
-# backupCache_4
 C-b-target = Backing up cache to { $target }
 C-b-curr = Failed to read current directory.
 
@@ -102,12 +75,9 @@ C-i-sig = Signature
 C-i-size = Tarball Size
 C-i-avail = Available Versions
 
-# cleanCache_3 + 4
 C-c-keep = { $pkgs } of each package file will be kept. The rest will be deleted.
-# cleanCache_8 but remove "megabytes".
 C-c-freed = { $bytes } freed.
 
-# getDowngradeChoice_1
 C-downgrade-which = What version of { $pkg } do you want?
 
 C-y-no-work = Package cache already synchronized.
@@ -115,11 +85,8 @@ C-y-which-cache = Which cache should receive the downloaded tarballs?
 C-t-invalids = Removing invalid package tarballs.
 
 # Logs (-L)
-# firstInstall
 L-first = First Install
-# upgrades
 L-upgrades = Upgrades
-# recentActions
 L-recent = Recent Actions
 L-search-err = Searching your logs via { $cmd } failed.
 L-view-err = Failed to open your ALPM log.
@@ -212,7 +179,6 @@ deps-io = Failed to generate the dependency image.
 
 # Runtime Environment
 env-missing-editor = Provided EDITOR is not on the PATH.
-# confParsing_1
 env-pconf = Failed to parse your pacman.conf file.
 
 # Pacman Calls
@@ -268,10 +234,8 @@ err-utf8 = A UTF-8 conversion failed.
 err-write = Somehow failed to write to stdout.
 
 # Common Fields
-# yesPattern
 common-yes = Yes
 common-no = No
-# name
 common-name = Name
 common-done = Done.
 common-total = Total
