@@ -4,15 +4,16 @@
 
 # The Aura User Guide
 
-Welcome to the User Guide for Aura, a secure, multilingual package manager for
-Arch Linux.
+Welcome to the User Guide for Aura, a multilingual package manager for Arch Linux.
 
-Aura's original purpose is as an _AUR helper_, in that it automates the process
-of installing packages from the Arch User Repositories. It is, however, capable
-of much more.
+Aura helps you install and manage software on your system. It provides all the
+functionality that `pacman` does, plus more, including system sanity checks,
+package analysis, and automated AUR package installation.
 
 New to Aura? Check out [Aura's Philosophy](philosophy.md) or just jump right
 into [Installation](install.md)!
+
+Aura is licensed under the terms of the GPLv3.
 
 > **💡 Tip:** You can press `s` at any time to search this book.
 

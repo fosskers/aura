@@ -15,23 +15,24 @@ page](aur.md).
 ### Install an official package
 
 ```
-sudo aura -S firefox
+aura -S firefox
 ```
 
-> **💡 Note:** Like with `pacman`, `sudo` must be used for all "admin" actions.
+> **💡 Note:** Unlike with `pacman`, prefixing with `sudo` is not necessary for
+> "admin" actions. Aura knows when `sudo` is necessary and will prompt you.
 
 ### Update all official packages
 
 The classic command.
 
 ```
-sudo aura -Syu
+aura -Syu
 ```
 
 ### Install a package built with `makepkg`
 
 ```
-sudo aura -U foobar-1.2.3-1-x86_64.pkg.tar.xz
+aura -U foobar-1.2.3-1-x86_64.pkg.tar.xz
 ```
 
 ## Removing Packages
@@ -44,7 +45,7 @@ From the manpage of `pacman`:
 > and it helps keep a clean system without orphans.
 
 ```
-sudo aura -Rsu firefox
+aura -Rsu firefox
 ```
 
 ### The package and everything that depends on it
@@ -52,7 +53,7 @@ sudo aura -Rsu firefox
 Use this with care. See `man pacman` for more details.
 
 ```
-sudo aura -Rcu firefox
+aura -Rcu firefox
 ```
 
 ## Querying your System
@@ -67,11 +68,11 @@ aura -Qi firefox
 
 ```
 > aura -Qs browser
-local/chromium 83.0.4103.61-1
-    A web browser built for speed, simplicity, and security
-local/firefox 76.0.1-1
-    Standalone web browser from mozilla.org
-local/qt5-webengine 5.14.2-3 (qt qt5)
+local/firefox 127.0.2-1
+    Fast, Private & Safe Web Browser
+local/mathjax 3.2.2-1
+    An open source JavaScript display engine for mathematics that works in all modern browsers
+local/qt6-webengine 6.7.2-1 (qt6)
     Provides support for web applications using the Chromium browser project
 ```
 
@@ -79,18 +80,18 @@ local/qt5-webengine 5.14.2-3 (qt qt5)
 
 ```
 > aura -Q
-a52dec 0.7.4-11
-aalib 1.4rc5-14
-accounts-qml-module 0.7-2
-acetoneiso2 2.3-10
+aalib 1.4rc5-18
+abcl 1.9.2-1
+abseil-cpp 20240116.2-2
+acl 2.3.2-1
 ... etc ...
 ```
 
 ### Discovering what package owns a certain file
 
 ```
-> aura -Qo /usr/bin/firefox
-/usr/bin/firefox is owned by firefox 76.0.1-1
+> aura -Qo firefox
+/usr/bin/firefox is owned by firefox 127.0.2-1
 ```
 
 ### Discovering which files are brought in by a package
@@ -116,22 +117,35 @@ firefox /usr/bin/firefox
 firefox /usr/lib/firefox/firefox-bin
 ```
 
+### Listing all installed "foreign" packages
+
+```
+> aura -Qm
+abcl 1.9.2-1
+anki 2.1.66-1
+babashka-bin 1.3.191-1
+bashate 2.1.1-1
+ccextractor 0.94-3
+ccl 1.12.2-4
+... etc ...
+```
+
 ## Clearing your Package Cache
 
-Pacman and Aura store built packages in `/var/cache/pacman/pkg/`. This directory
-can grow quite large, but the following commands can help selectively clear it.
+Pacman stores its built packages in `/var/cache/pacman/pkg/`. This directory can
+grow quite large, but the following commands can help selectively clear it.
 
 > **💡 Tip:** The Aura command `-Cc` offers additional control over clearing
-> the cache.
+> the cache, and targets Aura's cache as well.
 
 ### Removing the tarballs of uninstalled packages
 
 ```
-sudo aura -Sc
+aura -Sc
 ```
 
 ### Removing *all* tarballs
 
 ```
-sudo aura -Scc
+aura -Scc
 ```

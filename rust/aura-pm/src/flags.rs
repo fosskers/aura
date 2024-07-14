@@ -1204,7 +1204,7 @@ pub struct Aur {
     pub abc: bool,
 
     /// [-s/-v] Limit the results to N results.
-    #[clap(long, value_name = "N", display_order = 2)]
+    #[clap(long, value_name = "N", display_order = 2, alias = "head")]
     pub limit: Option<usize>,
 
     /// [-s/-v] Reverse the search results.
@@ -1244,7 +1244,7 @@ pub struct Aur {
     pub sysupgrade: bool,
 
     /// [-u] Rebuild all git/svn/hg/etc. packages as well.
-    #[clap(long, display_order = 3)]
+    #[clap(long, display_order = 3, alias = "devel")]
     pub git: bool,
 
     /// [-u] Ignore a package upgrade (can be used more than once).

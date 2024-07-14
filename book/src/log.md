@@ -5,10 +5,10 @@ with it. Aura has the `-L` command to perform some interesting lookups.
 
 ## View the Log File
 
-To open the entire log file in `less`:
+To print the content of the entire log file:
 
 ```
-> aura -L
+> aura -L | bat
 [2016-05-03 04:13] [PACMAN] Running 'pacman -r /mnt -Sy --cachedir=/mnt/var/cache/pacman/pkg base base-devel'
 [2016-05-03 04:13] [PACMAN] synchronizing package lists
 [2016-05-03 04:26] [ALPM] transaction started
@@ -21,16 +21,16 @@ To open the entire log file in `less`:
 ... etc ...
 ```
 
-A blast from the past! Looks like a set up Arch on this laptop in 2016.
-And what was the most recent thing `pacman` did (press `G`)?
+A blast from the past! Looks like I set up Arch on this laptop in 2016.
+And what was the most recent thing that happened (pressing `G`)?
 
 ```
 ... etc ...
-
-[2020-06-14T09:19:43-0700] [ALPM] running 'update-ca-trust.hook'...
-[2020-06-14T09:19:51-0700] [ALPM] running 'update-desktop-database.hook'...
-[2020-06-14T09:19:51-0700] [ALPM] running 'update-mime-database.hook'...
-[2020-06-14T09:19:57-0700] [ALPM] running 'xorg-mkfontscale.hook'...
+[2024-07-14T13:53:16+0900] [ALPM] transaction completed
+[2024-07-14T13:53:16+0900] [ALPM] running '30-systemd-daemon-reload-system.hook'...
+[2024-07-14T13:53:16+0900] [ALPM] running '30-systemd-update.hook'...
+[2024-07-14T13:53:16+0900] [ALPM] running 'gtk-update-icon-cache.hook'...
+[2024-07-14T13:53:16+0900] [ALPM] running 'update-desktop-database.hook'...
 ```
 
 ## Search the Log File
@@ -55,15 +55,15 @@ More interesting than just a raw search is `-Li`:
 
 ```
 > aura -Li firefox
-Package        : firefox
+Name           : firefox
 First Install  : 2016-05-03 08:46
-Upgrades       : 76
-Recent Actions :
-[2020-04-08T14:26:09-0700] [ALPM] upgraded firefox (74.0-2 -> 75.0-1)
-[2020-05-04T09:20:53-0700] [ALPM] upgraded firefox (75.0-1 -> 75.0-2)
-[2020-05-18T08:39:43-0700] [ALPM] upgraded firefox (75.0-2 -> 76.0.1-1)
-[2020-06-12T11:39:58-0700] [ALPM] downgraded firefox (76.0.1-1 -> 75.0-2)
-[2020-06-12T11:41:03-0700] [ALPM] upgraded firefox (75.0-2 -> 77.0.1-1)
+Upgrades       : 176
+Recent Actions : 
+[2024-02-24T07:29:46+0900] [ALPM] upgraded firefox (122.0.1-1 -> 123.0-1)
+[2024-03-11T16:42:37+0900] [ALPM] upgraded firefox (123.0-1 -> 123.0.1-1)
+[2024-03-24T15:03:33+0900] [ALPM] upgraded firefox (123.0.1-1 -> 124.0.1-1)
+[2024-06-03T05:18:15+0900] [ALPM] upgraded firefox (124.0.1-1 -> 126.0.1-1)
+[2024-06-29T13:17:29+0900] [ALPM] upgraded firefox (126.0.1-1 -> 127.0.2-1)
 ```
 
 Neat! I often use this to check the last time I updated a particular package.

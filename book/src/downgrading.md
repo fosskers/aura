@@ -4,39 +4,47 @@ The `-C` command is used to interact with the Package Cache.
 
 ## Searching the Cache
 
-`-Cs` can show us what's available in the cache.
+`-Cs` shows us what's available in the cache.
 
 ```
 > aura -Cs firefox
-/var/cache/pacman/pkg/firefox-75.0-2-x86_64.pkg.tar.zst
-/var/cache/pacman/pkg/firefox-76.0.1-1-x86_64.pkg.tar.zst
+/var/cache/pacman/pkg/firefox-127.0.2-1-x86_64.pkg.tar.zst
+/var/cache/pacman/pkg/firefox-126.0.1-1-x86_64.pkg.tar.zst
 ```
 
-## Downgrading or Installing "Lost" Versions
+We can get more intelligent output via `-Ci`:
+
+```
+> aura -Ci firefox
+Name               : firefox
+Latest             : 127.0.2-1 [installed]
+Created            : 2024-06-29 04-12-38
+Signature          : Yes
+Tarball Size       : 69.01MiB
+Available Versions : 127.0.2-1, 126.0.1-1
+```
+
+## Downgrading
 
 Let's say the newest version of some package is somehow broken. Let's downgrade:
 
 ```
-> sudo aura -C firefox
-aura >>= What version of firefox do you want?
-1. /var/cache/pacman/pkg/firefox-75.0-2-x86_64.pkg.tar.zst
-2. /var/cache/pacman/pkg/firefox-76.0.1-1-x86_64.pkg.tar.zst
->> 1
+> aura -C firefox
+aura :: What version of firefox do you want?
+ 0) 127.0.2-1
+ 1) 126.0.1-1
+>>> 1
 loading packages...
-warning: downgrading package firefox (76.0.1-1 => 75.0-2)
+warning: downgrading package firefox (127.0.2-1 => 126.0.1-1)
 resolving dependencies...
 looking for conflicting packages...
 
-Package (1)  Old Version  New Version  Net Change
+Packages (1) firefox-126.0.1-1
 
-firefox      76.0.1-1     75.0-2        -2.08 MiB
-
-Total Installed Size:  184.97 MiB
-Net Upgrade Size:       -2.08 MiB
+Total Installed Size:  239.53 MiB
+Net Upgrade Size:       -1.34 MiB
 
 :: Proceed with installation? [Y/n]
-
-... pacman output ...
 ```
 
 In fact, `-C` works even if we no longer have that package installed. All that
@@ -47,10 +55,9 @@ matters is whether you have a copy of the old version in your cache.
 `-Cc` can help keep our cache small.
 
 ```
-> sudo aura -Cc 2
-aura >>= The cache contains 2050 packages, consuming 5887 megabytes.
-aura >>= 2 of each package file will be kept.
-aura >>= The rest will be deleted. Okay? [Y/n]
-aura >>= Cleaning package cache...
-aura >>= 529 megabytes freed.
+> aura -Cc 2
+aura :: Current cache size: 8.31GiB
+aura :: 2 of each package file will be kept. The rest will be deleted.
+aura :: Proceed? [Y/n] 
+aura :: 34.45MiB freed.
 ```
