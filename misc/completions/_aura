@@ -1,56 +1,55 @@
 #compdef aura
 
-# Zsh completion file for Aura, based on pacman's
-# copy this file to /usr/share/site-functions/_aura
+# Zsh completion file for Aura, based on pacman's.
+# Copy this file to /usr/share/zsh/site-functions/_aura
 
 typeset -A opt_args
 setopt extendedglob
 
 # options for passing to _arguments: main aura commands
 _aura_opts_commands=(
-    {-A,--aursync}'[Install and manage AUR packages]'
-    {-B,--save}'[Manage the global package state]'
-    {-C,--downgrade}'[Manage the package cache]'
-    {-L,--viewlog}'[Analyse the pacman log file]'
-    {-M,--abssync}'[Build and install from the ABS tree]'
-    {-O,--orphans}'[Manage orphan packages]'
-    {-Q,--query}'[Query the package database]'
-    {-R,--remove}'[Remove a packags]'
-    {-S,--sync}'[Synchronize repo packages]'
-    {-U,--upgrade}'[Upgrade packages]'
+    {-A,aur,--aursync}'[Install and manage AUR packages]'
+    {-B,backup,--save}'[Manage the global package state]'
+    {-C,cache,--downgrade}'[Manage the package cache]'
+	{-D,database,--database}'[Operate on the package database]'
+	{-F,files,--files}'[Query the files database]'
+    {-L,log,--viewlog}'[Analyse the pacman log file]'
+    {-O,orpahns,--orphans}'[Manage orphan packages]'
+    {-Q,query,--query}'[Query the package database]'
+    {-R,remove,--remove}'[Remove a packags]'
+    {-S,sync,--sync}'[Synchronize repo packages]'
+	{-T,dep-test,--deptest}'[Check if given dependencies are satisfied]'
+    {-U,upgrade,--upgrade}'[Upgrade packages]'
     {-V,--version}'[Display version information]'
-    '--viewconf[View the pacman config file read-only]'
-    '--languages[Display available output languages]'
+    {check}'[Validate your system]'
+    {conf}'[View various configuration settings and files]'
+    {deps}'[Output a dependency graph]'
+    {free}'[The state of Free Software installed on the system]'
+    {open}'[Open various webpages related to Aura]'
+    {thanks}'[The people behind Aura]'
     '(-h --help)'{-h,--help}'[Help message]'
 )
 
 # options for passing to _arguments: options common to all commands
 _aura_opts_common=(
-    {-b,--dbpath}'[Alternate database location]:database_location:_files -/'
-    '--color[colorize the output]:color options:(always never auto)'
     {-h,--help}'[Display syntax for the given operation]'
-    {-r,--root}'[Set alternate installation root]:installation root:_files -/'
-    {-v,--verbose}'[Be more verbose]'
-    '--cachedir[Alternate package cache location]:cache_location:_files -/'
-    '--config[An alternate configuration file]:config file:_files'
-    '--debug[Display debug messages]'
-    '--gpgdir[Set an alternate home directory for GnuPG]:_files -/'
-    '--logfile[An alternate log file]:config file:_files'
-    '--noconfirm[Do not ask for confirmation]'
-    '--no-pp[Do not use powerpill]'
-    '--noprogressbar[Do not show a progress bar when downloading files]'
-    '--noscriptlet[Do not execute the install scriptlet if one exists]'
-    '--print[Only print the targets instead of performing the operation]'
+    '--log-level[Minimum level of Aura log messages to display]'
 )
 
 # options for passing to _arguments: options for --upgrade commands
 _aura_opts_pkgfile=(
-    '*-d[Skip dependency checks]'
-    '*--nodeps[Skip dependency checks]'
-    '--dbonly[Only remove database entry, do not remove files]'
-    '--force[Overwrite conflicting files]'
-    '--needed[Do not reinstall up to date packages]'
-    '*:package file:_files -g "*.pkg.tar*~*.sig(.,@)"'
+	'*-d[Skip dependency checks]'
+	'*--nodeps[Skip dependency checks]'
+	'*--assume-installed[Add virtual package to satisfy dependencies]'
+	'--dbonly[Only remove database entry, do not remove files]'
+	'--needed[Do not reinstall up to date packages]'
+	'--asdeps[mark packages as non-explicitly installed]'
+	'--asexplicit[mark packages as explicitly installed]'
+	{-p,--print}'[Only print the targets instead of performing the operation]'
+	'*--ignore[Ignore a package upgrade]:package: _pacman_completions_all_packages'
+	'*--ignoregroup[Ignore a group upgrade]:package group:_pacman_completions_all_groups'
+	'--print-format[Specify how the targets should be printed]'
+	'*:package file:_files -g "*.pkg.tar*~*.sig(.,@)"'
 )
 
 # options for passing to _arguments: subactions for --query command
@@ -64,28 +63,31 @@ _aura_opts_query_actions=(
 
 # options for passing to _arguments: options for --query and subcommands
 _aura_opts_query_modifiers=(
-    {-c,--changelog}'[List package changelog]'
-    {-d,--deps}'[List packages installed as dependencies]'
-    {-e,--explicit}'[List packages explicitly installed]'
-    {\*-i,\*--info}'-i[View package information]'
-    #'-ii[View package information including backup files]'
-    {\*-k,\*--check}'[Check package files]'
-    {-l,--list}'-l[List package contents]'
-    {-m,--foreign}'-m[List installed packages not found in sync db(s)]'
-    {-n,--native}'[List installed packages found in sync db(s)]'
-    {-q,--quiet}'[Display less information for certain operations.]'
-    {-t,--unrequired}'[List packages not required by any package]'
-    {-u,--upgrades}'[List packages that can be upgraded]'
+	{-c,--changelog}'[List package changelog]'
+	{-d,--deps}'[List packages installed as dependencies]'
+	{-e,--explicit}'[List packages explicitly installed]'
+	{\*-i,\*--info}'[View package information]'
+	{\*-k,\*--check}'[Check package files]'
+	{-l,--list}'[List package contents]'
+	{-m,--foreign}'[List installed packages not found in sync db(s)]'
+	{-n,--native}'[List installed packages found in sync db(s)]'
+	{-q,--quiet}'[Show less information for query and search]'
+	{-t,--unrequired}'[List packages not required by any package]'
+	{-u,--upgrades}'[List packages that can be upgraded]'
 )
 
 # options for passing to _arguments: options for --remove command
 _aura_opts_remove=(
-    {-c,--cascade}'[Remove all dependent packages]'
-    {*-d,*--nodeps}'[Skip dependency checks]'
-    {-n,--nosave}'[Remove protected configuration files]'
-    {\*-s,\*--recursive}'[Remove dependencies not required by other packages]'
-    '--dbonly[Only remove database entry, do not remove files]'
-    '*:installed package:_aura_completions_installed_packages'
+	{-c,--cascade}'[Remove all dependent packages]'
+	{-d,--nodeps}'[Skip dependency checks]'
+	'*--assume-installed[Add virtual package to satisfy dependencies]'
+	{-n,--nosave}'[Remove protected configuration files]'
+	{-p,--print}'[Only print the targets instead of performing the operation]'
+	{\*-s,\*--recursive}'[Remove dependencies not required by other packages]'
+	{-u,--unneeded}'[Remove unneeded packages]'
+	'--dbonly[Only remove database entry, do not remove files]'
+	'--print-format[Specify how the targets should be printed]'
+	'*:installed package:_aura_completions_installed_packages'
 )
 
 # options for passing to _arguments: options for commands dealing with the database
@@ -97,62 +99,68 @@ _aura_opts_database=(
 
 # options for passing to _arguments: options for --sync command
 _aura_opts_sync_actions=(
-    '(-S --sync)'{-S,--sync}
-    {\*-c,\*--clean}'[Remove old packages from cache]:\*:clean:->sync_clean'
-    #'*-cc[Remove all packages from cache]:*:clean:->sync_clean'
-    {-g,--groups}'[View all members of a package group]:*:package groups:->sync_group'
-    {-s,--search}'[Search package names and descriptions]:*:search text:->sync_search'
-    '--dbonly[Only remove database entry, do not remove files]'
-    '--needed[Do not reinstall up to date packages]'
-    '--recursive[Reinstall all dependencies of target packages]'
+	'(-S --sync)'{-S,--sync}
+	{\*-c,\*--clean}'[Remove old packages from cache]:\*:clean:->sync_clean'
+	{-g,--groups}'[View all members of a package group]:*:package groups:->sync_group'
+	{-s,--search}'[Search package names and descriptions]:*:search text:->sync_search'
+	'--dbonly[Only remove database entry, do not remove files]'
+	'--needed[Do not reinstall up to date packages]'
+	'--recursive[Reinstall all dependencies of target packages]'
 )
 
 # options for passing to _arguments: options for --sync command
 _aura_opts_sync_modifiers=(
-    {\*-d,\*--nodeps}'[Skip dependency checks]'
-    {\*-i,\*--info}'[View package information]'
-    {-l,--list}'[List all packages in a repository]'
-    {-p,--print}'[Print download URIs for each package to be installed]'
-    {\*-u,\*--sysupgrade}'[Upgrade all out-of-date packages]'
-    {-w,--downloadonly}'[Download packages only]'
-    {\*-y,\*--refresh}'[Download fresh package databases]'
-    '*--ignore[Ignore a package upgrade]:package: _aura_completions_all_packages'
-    '*--ignoregroup[Ignore a group upgrade]:package group:_aura_completions_all_groups'
-    '--asdeps[Install packages as non-explicitly installed]'
-    '--asexplicit[Install packages as explicitly installed]'
-    '--force[Overwrite conflicting files]'
-
-    #'-q[Display less information for certain operations.]'
+	{\*-d,\*--nodeps}'[Skip dependency checks]'
+	'*--assume-installed[Add virtual package to satisfy dependencies]'
+	{\*-i,\*--info}'[View package information]'
+	{-l,--list}'[List all packages in a repository]'
+	{-p,--print}'[Print download URIs for each package to be installed]'
+	{-q,--quiet}'[Show less information for query and search]'
+	{\*-u,\*--sysupgrade}'[Upgrade all out-of-date packages]'
+	{-w,--downloadonly}'[Download packages only]'
+	{\*-y,\*--refresh}'[Download fresh package databases]'
+	'*--ignore[Ignore a package upgrade]:package: _aura_completions_all_packages'
+	'*--ignoregroup[Ignore a group upgrade]:package group:_aura_completions_all_groups'
+	'--asdeps[Install packages as non-explicitly installed]'
+	'--asexplicit[Install packages as explicitly installed]'
+	'--print-format[Specify how the targets should be printed]'
 )
 
 # options for passing to _arguments: options for --aursync command
 _aura_opts_aursync_actions=(
     '(-A --aursync)'{-A,--aursync}
+    {-i,--info}'[Display AUR package information]'
+    {-o,--open}'[Open the AUR page of a given package]'
     {-p,--pkgbuild}'[Display an AUR package''s PKGBUILD]'
     {-s,--search}'[Search AUR package names and descriptions]'
-    {-w,--downloadonly}'[Download an AUR package''s source tarball]'
+    {-u,--sysupgrade}'[Upgrade all installed AUR packages]'
+    {-v,--provides}'[Search for packages that provide some package identity]'
+    {-w,--clone}'[Download an AUR package''s source tarball]'
+    {-y,--refresh}'[Pull the latest changes for every local copy of AUR pkgs]'
 )
 
 # options for passing to _arguments: options for --aursync command
 _aura_opts_aursync_modifiers=(
     {-a,--delmakedeps}'[Uninstall unneeded build deps after installation]'
-    {-d,--deps}'[Display package dependencies. Recursive for AUR packages]'
-    {\*-i,\*--info}'[Display AUR package information]'
+    {-d,--dryrun}'[Show available upgrades, but do not perform them]'
     {-k,--diff}'[Show PKGBUILD diffs when upgrading]'
-    {-u,--sysupgrade}'[Upgrade all installed AUR packages]'
-    {-x,--unsuppress}'[Unsuppress makepkg output during building]'
-    '*--aurignore[Ignore AUR packages when installing]:package: _aura_completions_aur_packages'
-    '--build[Build packages in specified path]'
-    '--builduser[Use specified user to build packages]'
-    {--dev,--devel}'[With -Au, also upgrades all development packages]'
-    "--dryrun[Perform checks, but don't build]"
+    '--git[Rebuild all git/svn/hg/etc. packages as well]'
+    '--ignore[Ignore a package upgrade]'
     '--hotedit[Prompt user to edit PKGBUILD before dep checks]'
-    '--ignorearch[makepkg will ignore processor architecture]'
+    '--shellcheck[Run shellcheck on PKGBUILDs before building]'
+    '--nocheck[Do not consider checkdeps when building]'
+    '--skipdepcheck[Perform no dependency resolution]'
+    '--abc[Sort search results alphabetically]'
+    '--limit[Limit search results to N results]'
+    {-q,--quiet}'[Only print matching package names]'
+    {-r,--reverse}'[Reverse the search results]'
+    '--noconfirm[Do not ask for any confirmation]'
 )
 
 # options for passing to _arguments: options for --save commands
 _aura_opts_save=(
     {-c,--clean}'[Given n, save n recent package states and remove the rest]'
+    {-l,--list}'[Show all saved package snapshot filenames]'
     {-r,--restore}'[Restore a previously saved package state]'
 )
 
@@ -160,20 +168,53 @@ _aura_opts_save=(
 _aura_opts_downgrade=(
     {-b,--backup}'[Backup the cache to a given directory]'
     {-c,--clean}'[Given n, save n versions of each package file]'
+    {-i,--info}'[Look up specific packages for their cache info]'
+    {-l,--list}'[Print the contents of the package cache]'
+    {-m,--missing}'[Display packages that have no tarball in the cache]'
+    '--notsaved[Delete only those tarballs not present in a snapshot]'
     {-s,--search}'[Search the cache via a regex]'
+    {-t,--invalid}'[Delete invalid tarballs from the cache]'
+    {-y,--refresh}'[Download tarballs of installed packages that are missing from the cache]'
     '*:installed package:_aura_completions_installed_packages'
 )
 
 # options for passing to _arguments: options for --viewlog commands
-typeset -a _aura_opts_viewlog
 _aura_opts_viewlog=(
     '-i[View package installation history.]'
     '-s[Search log file via a regex.]'
 )
 
+_aura_opts_viewlog_modifiers=(
+    {-b,--before}'[Only display entries from before the given date.]'
+    {-a,--after}'[Only display entries from after the given date.]'
+    '--logfile[Set an alternate log file]'
+)
+
 # options for passing to _arguments: options for --orphans commands
-typeset -a _aura_opts_orphans
-_aura_opts_orphans=( '-j[Uninstall all orphan packages.]' )
+_aura_opts_orphans=(
+    {-a,--adopt}'[Mark a package as explicitly installed]'
+    {-j,--adandon}'[Uninstall all orphan packages]'
+    {-e,--elderly}'[Display all explicitly installed, top-level packages]'
+)
+
+_aura_opts_conf=(
+    {-a,--aura}'[View the contents of your Aura config file]'
+    {-g,--gen}'[Output your current, full Aura config as legal TOML]'
+    {-m,--makepkg}'[View the Makepkg conf]'
+    {-p,--pacman}'[View the Pacman conf]'
+)
+
+_aura_opts_conf_modifiers=(
+    '--config[Set an alternate Pacman configuration file]'
+)
+
+_aura_ops_deps=(
+    {-l,--limit}'[The number of layers up or down to allow]'
+    {-o,--optional}'[Include optional dependencies]'
+    {-r,--reverse}'[Display packages that depend on the given args]'
+    '--open[Open the output image automatically]'
+    '--raw[Print the raw DOT output]'
+)
 
 # handles --help subcommand
 _aura_action_help() {
