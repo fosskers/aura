@@ -79,11 +79,12 @@ fn environment(fll: &FluentLanguageLoader) {
     lang(fll);
     editor(fll);
     java(fll);
-    executable!(fll, "git", "check-env-exec", exec = "git");
+    executable!(fll, "bat", "check-env-exec", exec = "bat");
     executable!(fll, "fd", "check-env-exec", exec = "fd");
+    executable!(fll, "git", "check-env-exec", exec = "git");
     executable!(fll, "rg", "check-env-exec", exec = "rg");
-    executable!(fll, "xdg-open", "check-env-exec", exec = "xdg-open");
     executable!(fll, "shellcheck", "check-env-exec", exec = "shellcheck");
+    executable!(fll, "xdg-open", "check-env-exec", exec = "xdg-open");
 }
 
 fn java(fll: &FluentLanguageLoader) {
@@ -421,8 +422,8 @@ fn foreign_packages_have_tarballs(fll: &FluentLanguageLoader, alpm: &Alpm, cache
 }
 
 fn pacnews(fll: &FluentLanguageLoader) {
-    match which::which("fd") {
-        Err(_) => {
+    match pacnew_work() {
+        None => {
             println!(
                 "  [{}] {}",
                 CANCEL.truecolor(128, 128, 128),
@@ -430,47 +431,34 @@ fn pacnews(fll: &FluentLanguageLoader) {
             );
             println!(
                 "      └─ {}",
-                fl!(fll, "check-missing-exec", exec = "fd".cyan().to_string())
+                fl!(
+                    fll,
+                    "check-pconf-pacnew-broken",
+                    fd = "fd".cyan().to_string()
+                )
             );
         }
-        Ok(_) => match pacnew_work() {
-            None => {
+        Some(bads) => {
+            let good = bads.is_empty();
+            let sym = if good { GOOD.green() } else { BAD.red() };
+            println!("  [{}] {}", sym, fl!(fll, "check-pconf-pacnew"));
+
+            let len = bads.len();
+            for (i, (path, days)) in bads.into_iter().enumerate() {
+                let arrow = if i + 1 == len { "└─" } else { "├─" };
+
                 println!(
-                    "  [{}] {}",
-                    CANCEL.truecolor(128, 128, 128),
-                    fl!(fll, "check-pconf-pacnew")
-                );
-                println!(
-                    "      └─ {}",
+                    "      {} {}",
+                    arrow,
                     fl!(
                         fll,
-                        "check-pconf-pacnew-broken",
-                        fd = "fd".cyan().to_string()
-                    )
+                        "check-pconf-pacnew-old",
+                        path = path.utf8().cyan().to_string(),
+                        days = days.to_string().red().to_string(),
+                    ),
                 );
             }
-            Some(bads) => {
-                let good = bads.is_empty();
-                let sym = if good { GOOD.green() } else { BAD.red() };
-                println!("  [{}] {}", sym, fl!(fll, "check-pconf-pacnew"));
-
-                let len = bads.len();
-                for (i, (path, days)) in bads.into_iter().enumerate() {
-                    let arrow = if i + 1 == len { "└─" } else { "├─" };
-
-                    println!(
-                        "      {} {}",
-                        arrow,
-                        fl!(
-                            fll,
-                            "check-pconf-pacnew-old",
-                            path = path.utf8().cyan().to_string(),
-                            days = days.to_string().red().to_string(),
-                        ),
-                    );
-                }
-            }
-        },
+        }
     }
 }
 
@@ -478,7 +466,17 @@ fn pacnews(fll: &FluentLanguageLoader) {
 /// is older than its associated `.pacnew`. For each such path, also include how
 /// many days out-of-date it is.
 fn pacnew_work() -> Option<Vec<(PathBuf, u64)>> {
-    let outp = Command::new("fd").args([".pacnew", "/etc"]).output().ok()?;
+    let mut cmd = if Path::new("/bin/fd").exists() {
+        let mut c = Command::new("fd");
+        c.args([".pacnew", "/etc"]);
+        c
+    } else {
+        let mut c = Command::new("find");
+        c.arg("/etc").arg("-name").arg("*.pacnew");
+        c
+    };
+
+    let outp = cmd.output().ok()?;
     let stdo = std::str::from_utf8(&outp.stdout).ok()?;
     let bads = stdo
         .trim()
