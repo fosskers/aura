@@ -1095,15 +1095,12 @@ pub struct Conf {
     /// View the Pacman conf.
     #[clap(group = "conf", long, short, display_order = 1)]
     pub pacman: bool,
-    /// View the contents of ~/.config/aura.toml.
+    /// View the contents of ~/.config/aura/config.toml.
     #[clap(group = "conf", long, short, display_order = 1)]
     pub aura: bool,
     /// View the Makepkg conf.
     #[clap(group = "conf", long, short, display_order = 1)]
     pub makepkg: bool,
-    /// List all .pacnew files newer than their originals.
-    #[clap(group = "conf", long = "new", display_order = 1)]
-    pub pacnew: bool,
     /// Output your current, full Aura config as legal TOML.
     #[clap(group = "conf", long, short, display_order = 1)]
     pub gen: bool,
@@ -1368,7 +1365,7 @@ pub struct Cache {
 #[derive(Parser, Debug)]
 pub struct Deps {
     /// Display packages that depend on the given args.
-    #[clap(long, display_order = 1)]
+    #[clap(long, short, display_order = 1)]
     pub reverse: bool,
 
     /// Include optional dependencies.
@@ -1376,7 +1373,7 @@ pub struct Deps {
     pub optional: bool,
 
     /// The number of layers up or down to allow.
-    #[clap(long, value_name = "n", display_order = 1)]
+    #[clap(long, short, value_name = "n", display_order = 1)]
     pub limit: Option<u8>,
 
     /// Print the raw DOT output.
