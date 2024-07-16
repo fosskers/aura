@@ -1,6 +1,6 @@
 cabal-version:      2.2
 name:               aura
-version:            3.2.9
+version:            3.2.10
 synopsis:           A secure package manager for Arch Linux and the AUR.
 description:
   Aura is a package manager for Arch Linux. It connects to both the
@@ -19,11 +19,11 @@ build-type:         Simple
 extra-source-files:
   README.md
   CHANGELOG.md
-  doc/aura.8
-  doc/aura.conf
-  doc/aura.conf.5
-  doc/completions/bashcompletion.sh
-  doc/completions/_aura
+  misc/aura.8
+  misc/aura.conf
+  misc/aura.conf.5
+  misc/completions/bashcompletion.sh
+  misc/completions/_aura
   test/pacman.conf
   test/good.PKGBUILD
   test/bad.PKGBUILD
