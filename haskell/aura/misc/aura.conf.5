@@ -1,0 +1,150 @@
+'\" t
+.\" Man page for `aura.conf`
+.\" Written by Colin Woodbury <colin@fosskers.ca>
+.
+.TH aura.conf 5 "2021 January" "Aura" "Aura Manual"
+.
+.de SAMPLE      \" Indented example - on its own paragraph.
+.  P
+.  RS
+.  EX
+..
+.de ESAMPLE     \" End of Indented example.
+.  EE
+.  RE
+..
+.de RSAMPLE     \" Relative sample - even more indented example.
+.  RS
+.  SAMPLE
+..
+.de ERSAMPLE    \" End of Relative sample.
+.  ESAMPLE
+.  RE
+..
+.
+.SH NAME
+.
+aura.conf \- aura package manager configuration file
+.
+.SH SYNOPSIS
+.
+/etc/aura.conf
+.
+.SH DESCRIPTION
+.
+Aura can be configured at runtime by commandline flags,
+but for users who use the same options all the time
+(say, build paths or language flags) this can be verbose.
+.I aura.conf
+lets you make these common settings permanent.
+.
+.SH EXAMPLE
+.
+Overview of options in
+.IR aura.conf :
+.
+.SAMPLE
+#
+# aura.conf
+#
+
+#[ Language ]
+language = en
+
+#[ Build Settings ]
+user = <you>
+buildpath = /tmp
+vcspath = /var/cache/aura/vcs
+
+#[ Misc. ]
+editor = vi
+.ESAMPLE
+.
+.SH OPTIONS
+.
+.TP
+.B language
+.
+Aura can be used in different human languages.
+This field must be a 2-letter language code,
+similar to those used in LOCALE.
+The available codes are:
+.
+.TS \" Tab-separated
+box;
+l l.
+Code	Language
+
+nl	Dutch
+en	English
+de	German
+nb	Norwegian
+sv	Swedish
+
+fr	French
+it	Italian
+pt	Portuguese
+es	Spanish
+ro	Romanian
+
+hr	Croatian
+cs	Czech
+pl	Polish
+ru	Russian
+sr	Serbian
+uk	Ukrainian
+
+ar	Arabic
+
+zh	Chinese
+id	Indonesian
+ja	Japanese
+vi	Vietnamese
+
+eo	Esperanto
+.TE
+.
+.TP
+.B user
+.
+The real, non-sudo user to build packages as.
+.
+.TP
+.B buildpath
+.
+The location on the filesystem in which to build packages.
+.
+.TP
+.B allsourcepath
+.
+The location on the filesystem in which to save "source packages" built with
+.BR \-\-allsource .
+.
+.TP
+.B vcspath
+.
+The location on the filesystem in which to store the cloned repositories of
+\fI*-git\fR, etc., packages.
+.
+.TP
+.B analyse
+.
+Aura automatically scans PKGBUILDs for malicious bash usage
+and other "bad practices".
+Set this to
+.B False
+to turn off.
+.
+.TP
+.B editor
+.
+The editor to use during
+.BR \-\-hotedit .
+.
+.SH SEE ALSO
+.
+.BR aura (8)
+.
+.SH AUTHOR
+.
+Colin Woodbury <colin@fosskers.ca>

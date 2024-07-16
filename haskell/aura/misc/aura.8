@@ -1,0 +1,730 @@
+'\" t
+.\" Man page for `aura`
+.\" Written by Colin Woodbury <colin@fosskers.ca>
+.
+.TH aura 8 "2021 September" "Aura" "Aura Manual"
+.
+.de SAMPLE      \" Indented example - on its own paragraph.
+.  P
+.  RS
+.  EX
+..
+.de ESAMPLE     \" End of Indented example.
+.  EE
+.  RE
+..
+.de RSAMPLE     \" Relative sample - even more indented example.
+.  RS
+.  SAMPLE
+..
+.de ERSAMPLE    \" End of Relative sample.
+.  ESAMPLE
+.  RE
+..
+.
+.ds ellipsis \&.\|.\|.\&
+.\" Format repeatable parameter (1 or more) with ellipsis.
+.ds multi                 \fI\\$1\fP\fR\\ \\*[ellipsis]\fP
+.\" Format optional repeatable parameter (0 or more)
+.\" with ellipsis and square brackets.
+.ds multi-optional \fR[\fP\fI\\$1\fP\fR\\ \\*[ellipsis]]\fP
+.ds packages          \\*[multi          packages]
+.ds packages-optional \\*[multi-optional packages]
+.
+.SH NAME
+.
+aura \- package manager utility and AUR helper
+.
+.SH SYNOPSIS
+.
+.SY aura
+.I OPERATION
+\*[multi-optional OPTIONS]
+\*[multi-optional targets]
+.YS
+.
+.SH DESCRIPTION
+.
+.B aura
+is a secure, multilingual package manager for Arch Linux written in Haskell.
+.
+It connects to both the official Arch repositories and to the
+Arch User Repositories (AUR),
+allowing easy control of all packages on an Arch system.
+.
+Aura allows
+.I all
+pacman operations and provides
+.I new
+custom ones for dealing with AUR packages.
+.
+.SH OPERATIONS
+.
+.TP
+.BR \-A ", " \-\-aursync " \*[packages-optional]"
+.
+Perform actions involving the
+.BR A UR.
+.
+Default action installs packages from the AUR.
+.
+.IP
+During building, makepkg output is
+.I not
+shown by default.
+.
+After building, the built
+.I *.pkg.tar.xz
+file is moved to the package cache and installed from there.
+.
+This allows for easy AUR package downgrading.
+.
+.TP
+.BR -B ", " \-\-save
+.
+Manage the saving and restoring of the global package state.
+.
+Default action stores a record of all currently installed packages and their
+versions.
+.
+.TP
+.BR -C ", " \-\-downgrade " \*[packages-optional]"
+.
+Perform actions involving the package
+.BR C ache.
+.
+Default action downgrades specified
+.IR packages .
+.
+.IP
+This process is interactive, allowing the user to choose from any previous
+version they have available in the package cache.
+.
+.TP
+.BR \-L ", " \-\-viewlog
+.
+Perform actions involving the pacman
+.BR L ogfile.
+.
+Default action opens the log for read-only viewing.
+.
+.TP
+.BR \-O ", " \-\-orphans " \*[packages-optional]"
+.
+Perform actions involving
+.BR O rphan
+packages.
+.
+Default action is to list the current orphans.
+.
+.IP
+Orphan packages are packages installed as dependencies,
+but are no longer required by any other package.
+.
+.TP
+.BR \-P ", " \-\-analysis
+.
+Perform security analysis of a
+.BR P KGBUILD.
+.
+Default action reads PKGBUILD from stdin.
+.
+.IP
+Useful for package maintainers and sysadmins to verify the safety of the
+PKGBUILD files that they write.
+.
+To test any package on the AUR, try the following:
+.
+.RSAMPLE
+.BI "aura -Ap " "package" " | aura -P"
+.ERSAMPLE
+.
+.SH AUR SYNC OPTIONS (\fR\-A\fP)
+.
+.TP
+.BR \-a ", " \-\-delmakedeps
+.
+Uninstalls build dependencies that are no longer required after installing the
+main package.
+.
+This prevents the creation of orphan packages.
+.
+Also note that while the package itself will be uninstalled,
+its package file will remain in the cache.
+.
+.TP
+.BR \-c ", " \-\-clean
+.
+After a package's tarball has been built and copied to the package cache,
+delete its build directory immediately.
+.
+.TP
+.BR \-d ", " \-\-deps " \*[packages]"
+.
+View all dependencies of
+.IR packages .
+.
+This process is recursive for AUR packages,
+so all dependencies of dependencies (and so on) will also be shown.
+.
+This can aid the pre-install package research process.
+.
+.TP
+.BR \-i ", " \-\-info " \*[packages]"
+.
+View information about AUR
+.IR packages .
+.
+.TP
+.BR \-k ", " \-\-diff
+.
+Show PKGBUILD diffs.
+.
+When upgrading, using this option will compare the most and second-most recent
+PKGBUILDs and output changes in colour.
+.
+.TP
+.BR \-p ", " \-\-pkgbuild " \*[packages]"
+.
+View PKGBUILDs of AUR
+.IR packages .
+.
+Use this before installing new packages to confirm that the build scripts
+aren't doing anything fishy.
+.
+.TP
+.BR \-q ", " \-\-quiet
+.
+Display less information about certain
+.B \-A
+operations
+(this is useful when processing Aura's output in a script).
+.
+In particular, search and view dependencies will only show uncoloured package
+names.
+.
+.TP
+.BR \-s ", " \-\-search " \*[multi word]"
+.
+Search AUR for packages containing
+.IR word s
+(not regex) in their names or descriptions.
+.
+Multiple terms will narrow down the search.
+.
+Results are sorted by votes.
+.
+Suboptions:
+.
+.RS
+.
+.  TP
+.  B \-\-abc
+.
+Sorts results alphabetically.
+.
+.  TP
+.  BR \-\-head [ =\fIN\fR ]
+.
+Only show the first
+.I N
+results.
+.I N
+defaults to 10.
+.
+.  TP
+.  BR \-\-tail [ =\fIN\fR ]
+.
+Only show the last
+.I N
+results.
+.I N
+defaults to 10.
+.
+.  TP
+.  BR \-r ", " \-\-both
+.
+Show results from the official repos as well.
+.
+.RE
+.
+.TP
+.BR \-u ", " \-\-sysupgrade
+.
+Upgrade all installed AUR packages.
+.B -Au
+is like
+.B -Su
+but for AUR packages.
+.
+.TP
+.BR \-w ", " \-\-downloadonly " \*[packages]"
+.
+Retrieve AUR
+.I packages
+source tarballs,
+but do not build/install/upgrade anything.
+.
+.TP
+.BR \-x ", " \-\-unsuppress
+.
+Unsuppress
+.BR makepkg (8)
+output during building.
+.
+By default this output is suppressed for a more silent install.
+.
+Note that when this option isn't used,
+.B makepkg
+output is actually collected and printed if any errors occur.
+.
+.TP
+.B \-\-json \*[packages]
+.
+Query the AUR RPC for
+.I packages
+info as raw JSON.
+.
+Good for debugging.
+.
+.TP
+.BI \-\-build " path"
+.
+Specify build
+.I path
+when building AUR packages.
+.
+Only the
+.I full
+path of a pre-existing directory can be used.
+.
+Example:
+.
+.RSAMPLE
+aura -A foo --build=/full/path/to/build/location/
+.ERSAMPLE
+.
+.TP
+.BI \-\-builduser " user"
+.
+Specify the
+.I user
+to build packages as.
+.
+This can be useful when logged in as root and a build user is available.
+.
+.TP
+.B \-\-devel
+.
+When ran with
+.BR \-Au ,
+adds all development packages to the queue of packages to upgrade.
+.
+Devel packages are those pulled directly from online repositories,
+via git / mercurial / etc.
+.
+.TP
+.B \-\-dryrun
+.
+When ran with
+.BR \-A " or " \-Au ,
+update checks,
+PKGBUILD diffs,
+and dependency checks will be performed,
+but nothing will be built.
+.
+Also usable with
+.BR \-M .
+.
+.TP
+.B \-\-force
+.
+Always (re)build the specified packages.
+.
+Usually Aura will not rebuild packages whose versions are already available in
+the local package cache.
+.
+.TP
+.B \-\-hotedit
+.
+Before building, prompt the user if they wish to view/edit the
+.IR PKGBUILD ,
+as well as any
+.IR .install " or " .patch
+files.
+.
+However, research into packages (and by extension, their PKGBUILDs) should be
+done by the user before any building occurs.
+.
+Please use
+.BR \-Ap " and " \-Ad
+for this,
+as they will be much faster at presenting information than searching the AUR
+website manually.
+.
+Note that, since aura is run through sudo,
+your local value of
+.RB $ EDITOR
+may not be preserved.
+.
+Run as
+\(lqsudo
+.B \-E
+aura -A --hotedit \*[ellipsis]\(rq
+to preserve your environment.
+.
+To always allow environment variables to be passed,
+have a look at the
+.IR env_reset " and " env_keep
+options in
+.BR sudoers (5).
+.
+.TP
+.B \-\-skipdepcheck
+.
+Perform no dependency solving.
+.
+Consider this when using
+.B \-\-hotedit
+to avoid building annoying dependencies that aren't necessary for your special
+use-case.
+.
+.TP
+.BI \-\-vcspath " path"
+.
+Save the cloned sources of VCS packages (i.e.\& those that end in
+.IR *-git ,
+etc.) in the given
+.IR path ,
+instead of the default
+.IR /var/cache/aura/vcs/ .
+.
+.SH GLOBAL PACKAGE STATE OPTIONS (\fR\-B\fP)
+.
+.TP
+.BR \-c ", " \-\-clean \c
+.I " states-to-retain
+.
+Retains a given number of the most recently saved package states and removes the
+rest.
+.
+.TP
+.BR \-r ", " \-\-restore
+.
+Restores a record kept with
+.BR \-B .
+.
+Attempts to downgrade any packages that were upgraded since the chosen save.
+.
+Will remove any that weren't installed at the time.
+.
+.TP
+.BR \-l ", " \-\-list
+.
+Show all saved package state filenames.
+.
+.SH DOWNGRADE OPTIONS (\fR\-C\fP)
+.
+.TP
+.BR \-b ", " \-\-backup \c
+.I " path
+.
+Backup the package cache to a given directory.
+.
+The given directory must already exist.
+.
+During copying, progress will be shown.
+.
+If the copy takes too long,
+you may want to reduce the number of older versions of each package by using
+.BR \-Cc .
+.
+.TP
+.BR \-c ", " \-\-clean \c
+.I " versions-to-retain
+.
+Retains a given number of package versions for each package,
+and deletes the rest from the package cache.
+.
+Count is made from the most recent version, so using:
+.
+.RSAMPLE
+aura -Cc 3
+.ERSAMPLE
+.
+.IP
+would save the three most recent versions of each package file.
+.
+Giving the number 0 as an argument is identical to
+.BR \-Scc .
+.
+.TP
+.B \-\-notsaved
+.
+Remove only those package files which are not saved in a package record (a la
+.BR \-B ).
+.
+.TP
+.BR \-s ", " \-\-search \c
+.I " regex
+.
+Search the package cache via a
+.IR regex .
+.
+Any package name that matches the regex will be output as-is.
+.
+.SH LOGFILE OPTIONS (\fR\-L\fP)
+.
+.TP
+.BR \-i ", " \-\-info " \*[packages]"
+.
+Displays install/upgrade history for given
+.IR packages .
+.
+Under the \(lqRecent Actions\(rq section,
+only the last five entries will be displayed.
+.
+If there are less than five actions ever performed with the package,
+what is available will be printed.
+.
+.TP
+.BR \-s ", " \-\-search \c
+.I " regex
+.
+Search the pacman log file via a
+.IR regex .
+.
+Useful for singling out any and all actions performed on a package.
+.
+.SH ORPHAN PACKAGE OPTIONS (\fR\-O\fP)
+.
+.TP
+.BR \-a ", " \-\-adopt " \*[packages]"
+.
+Mark
+.I packages
+as being explicitly installed (i.e.\& it's not a dependency).
+.
+.TP
+.BR \-j ", " \-\-abandon
+.
+Uninstall all orphan packages.
+.
+.SH ANALYSIS OPTIONS (\fR\-P\fP)
+.
+.TP
+.BR \-f ", " \-\-file \c
+.I " path
+.
+Analyse a PKGBUILD at the specified
+.IR path .
+.
+.TP
+.BR \-d ", " \-\-dir \c
+.I " path
+.
+Analyse a
+.IR path /PKGBUILD
+found in the specified directory.
+.
+.TP
+.BR \-a ", " \-\-audit
+.
+Analyse the PKGBUILDs of all locally installed AUR packages.
+.
+.SH PACMAN / AURA DUAL FUNCTIONALITY OPTIONS
+.
+.TP
+.B \-\-noconfirm
+.
+Never ask for any Aura or Pacman confirmation.
+.
+Any time a prompt would appear,
+say before building or installation,
+it is assumed the user answered in whatever way would progress the program.
+.
+.TP
+.B \-\-needed
+.
+Don't rebuild/reinstall packages that are already up to date.
+.
+.TP
+.B \-\-debug
+.
+View some handy debugging information.
+.
+.TP
+.BI \-\-color " when"
+.
+Specify when to enable colouring.
+.
+Without this flag, both Aura and Pacman will attempt to colour text if the
+terminal allows it.
+.
+Otherwise, you can pass
+.BR always " or " never
+to be specific about your wants.
+.
+.TP
+.BI \-\-overwrite " glob"
+.
+If there are file conflicts during installation,
+overwrite conflicting files that match the given
+.I glob
+pattern.
+.
+.SH EXPOSED MAKEPKG OPTIONS
+.
+.TP
+.B \-\-ignorearch
+.
+Ignores processor architecture when building packages.
+.
+.TP
+.B \-\-allsource
+.
+Creates a
+.I .src
+file containing all the downloaded sources (code, etc.\&)
+and stores it at
+.IR /var/cache/aura/src/ .
+.
+To change the location where sources are stored,
+use the
+.B \-\-allsourcepath
+flag on command line or via
+.BR aura.conf (5).
+.
+.TP
+.B \-\-skipinteg
+.
+Skip package source integrity checks (hash sums).
+.
+.TP
+.B \-\-skippgpcheck
+.
+Skip all PGP checks.
+.
+.SH LANGUAGE OPTIONS
+.
+Aura is available in multiple languages.
+.
+As options, they can be used with either their English names or their real
+names written in their native characters.
+.
+The available languages are, in option form:
+.
+.TS \" Tab-separated
+l l.
+\fB\-\-english\fP	(default)
+\fB\-\-japanese\fP	\fB\-\-日本語\fP
+\fB\-\-polish\fP	\fB\-\-polski\fP
+\fB\-\-croatian\fP	\fB\-\-hrvatski\fP
+\fB\-\-swedish\fP	\fB\-\-svenska\fP
+\fB\-\-german\fP	\fB\-\-deutsch\fP
+\fB\-\-spanish\fP	\fB\-\-español\fP
+\fB\-\-portuguese\fP	\fB\-\-português\fP
+\fB\-\-french\fP	\fB\-\-français\fP
+\fB\-\-russian\fP	\fB\-\-русский\fP
+\fB\-\-italian\fP	\fB\-\-italiano\fP
+\fB\-\-serbian\fP	\fB\-\-српски\fP
+\fB\-\-norwegian\fP	\fB\-\-norsk\fP
+\fB\-\-indonesian\fP
+\fB\-\-chinese\fP	\fB\-\-中文\fP
+\fB\-\-esperanto\fP
+\fB\-\-dutch\fP	\fB\-\-nederlands\fP
+\fB\-\-romanian\fP	\fB\-\-română\fP
+\fB\-\-vietnamese\fP
+\fB\-\-czech\fP	\fB\-\-čeština\fP
+.TE
+.
+.SH PRO TIPS
+.
+.IP \(bu 2n
+.
+If you build a package and then choose not to install it,
+the built package file will still be moved to the cache.
+You can then install it whenever you want with
+.BR \-C .
+.
+.IP \(bu 2n
+.
+Research packages using
+.BR \-Ad \ ( \-\-deps ),
+.BR \-Ai \ ( \-\-info )
+and
+.BR \-Ap \ ( \-\-pkgbuild )!
+.
+.IP \(bu 2n
+.
+When upgrading, use
+.B \-Akua
+instead of just
+.BR \-Au .
+.
+This will remove make deps, as well as show PKGBUILD diffs before building.
+.
+.SH SEE ALSO
+.
+.BR aura.conf (5),
+.BR pacman (8),
+.BR pacman.conf (5),
+.BR makepkg (8)
+.
+.SH BUGS
+.
+It is not recommended to install non-AUR packages with pacman or aura.
+.
+Aura will assume they are AUR packages during a
+.B \-Au
+and attempt to upgrade them.
+.
+If a name collision occurs (that is, if there is a legitimate AUR package with
+the same name as the one you installed) previous installations could be
+overwritten.
+.
+.SH AUTHOR
+.
+Colin Woodbury <colin@fosskers.ca>
+.
+.SH CONTRIBUTORS
+.
+.TS \" Tab-separated
+l .
+Chris Warrick
+Brayden Banks
+Denis Kasak
+Edwin Marshall
+Jimmy Brisson
+Kyle Raftogianis
+Nicholas Clarke
+.TE
+.
+.SH TRANSLATORS
+.
+.TS \" Tab-separated
+c l .
+Polish	Chris Warrick and Michał Kurek
+Croatian	Denis Kasak and "stranac"
+Swedish	Fredrik Haikarainen and Daniel Beecham
+German	Lukas Niederbremer
+Spanish	Alejandro Gómez, Sergio Conde, and Max Ferrer
+Portuguese	Henry Kupty, Thiago Perrotta, and Wagner Amaral
+French	Ma Jiehong and Fabien Dubosson
+Russian	Kyrylo Silin and Alexey Kotlyarov
+Italian	Bob Valantin and Cristian Tentella
+Serbian	Filip Brcic
+Norwegian	"chinatsun"
+Indonesian	"pak tua Greg"
+Chinese	Kai Zhang
+Japanese	Onoue Takuro and Colin Woodbury
+Esperanto	Zachary Matthews
+Dutch	Joris Blanken and Heimen Stoffels
+Turkish	Cihan Alkan
+Arabic	"Array in a Matrix"
+Ukrainian	Andriy Cherniy
+Romanian	"90" and "benone"
+Vietnamese	"Kritiqual"
+Czech	Daniel Rosel
+Korean	"Nioden"
+.TE

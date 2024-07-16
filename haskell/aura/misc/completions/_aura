@@ -1,0 +1,590 @@
+#compdef aura
+
+# Zsh completion file for Aura, based on pacman's
+# copy this file to /usr/share/site-functions/_aura
+
+typeset -A opt_args
+setopt extendedglob
+
+# options for passing to _arguments: main aura commands
+_aura_opts_commands=(
+    {-A,--aursync}'[Install and manage AUR packages]'
+    {-B,--save}'[Manage the global package state]'
+    {-C,--downgrade}'[Manage the package cache]'
+    {-L,--viewlog}'[Analyse the pacman log file]'
+    {-M,--abssync}'[Build and install from the ABS tree]'
+    {-O,--orphans}'[Manage orphan packages]'
+    {-Q,--query}'[Query the package database]'
+    {-R,--remove}'[Remove a packags]'
+    {-S,--sync}'[Synchronize repo packages]'
+    {-U,--upgrade}'[Upgrade packages]'
+    {-V,--version}'[Display version information]'
+    '--viewconf[View the pacman config file read-only]'
+    '--languages[Display available output languages]'
+    '(-h --help)'{-h,--help}'[Help message]'
+)
+
+# options for passing to _arguments: options common to all commands
+_aura_opts_common=(
+    {-b,--dbpath}'[Alternate database location]:database_location:_files -/'
+    '--color[colorize the output]:color options:(always never auto)'
+    {-h,--help}'[Display syntax for the given operation]'
+    {-r,--root}'[Set alternate installation root]:installation root:_files -/'
+    {-v,--verbose}'[Be more verbose]'
+    '--cachedir[Alternate package cache location]:cache_location:_files -/'
+    '--config[An alternate configuration file]:config file:_files'
+    '--debug[Display debug messages]'
+    '--gpgdir[Set an alternate home directory for GnuPG]:_files -/'
+    '--logfile[An alternate log file]:config file:_files'
+    '--noconfirm[Do not ask for confirmation]'
+    '--no-pp[Do not use powerpill]'
+    '--noprogressbar[Do not show a progress bar when downloading files]'
+    '--noscriptlet[Do not execute the install scriptlet if one exists]'
+    '--print[Only print the targets instead of performing the operation]'
+)
+
+# options for passing to _arguments: options for --upgrade commands
+_aura_opts_pkgfile=(
+    '*-d[Skip dependency checks]'
+    '*--nodeps[Skip dependency checks]'
+    '--dbonly[Only remove database entry, do not remove files]'
+    '--force[Overwrite conflicting files]'
+    '--needed[Do not reinstall up to date packages]'
+    '*:package file:_files -g "*.pkg.tar*~*.sig(.,@)"'
+)
+
+# options for passing to _arguments: subactions for --query command
+_aura_opts_query_actions=(
+    '(-Q --query)'{-Q,--query}
+    {-g,--groups}'[View all members of a package group]:*:package groups:->query_group'
+    {-o,--owns}'[Query the package that owns a file]:file:_files'
+    {-p,--file}'[Package file to query]:*:package file:->query_file'
+    {-s,--search}'[Search package names and descriptions]:*:search text:->query_search'
+)
+
+# options for passing to _arguments: options for --query and subcommands
+_aura_opts_query_modifiers=(
+    {-c,--changelog}'[List package changelog]'
+    {-d,--deps}'[List packages installed as dependencies]'
+    {-e,--explicit}'[List packages explicitly installed]'
+    {\*-i,\*--info}'-i[View package information]'
+    #'-ii[View package information including backup files]'
+    {\*-k,\*--check}'[Check package files]'
+    {-l,--list}'-l[List package contents]'
+    {-m,--foreign}'-m[List installed packages not found in sync db(s)]'
+    {-n,--native}'[List installed packages found in sync db(s)]'
+    {-q,--quiet}'[Display less information for certain operations.]'
+    {-t,--unrequired}'[List packages not required by any package]'
+    {-u,--upgrades}'[List packages that can be upgraded]'
+)
+
+# options for passing to _arguments: options for --remove command
+_aura_opts_remove=(
+    {-c,--cascade}'[Remove all dependent packages]'
+    {*-d,*--nodeps}'[Skip dependency checks]'
+    {-n,--nosave}'[Remove protected configuration files]'
+    {\*-s,\*--recursive}'[Remove dependencies not required by other packages]'
+    '--dbonly[Only remove database entry, do not remove files]'
+    '*:installed package:_aura_completions_installed_packages'
+)
+
+# options for passing to _arguments: options for commands dealing with the database
+_aura_opts_database=(
+    '--asdeps[mark packages as non-explicitly installed]'
+    '--asexplicit[mark packages as explicitly installed]'
+    '*:installed package:_aura_completions_installed_packages'
+)
+
+# options for passing to _arguments: options for --sync command
+_aura_opts_sync_actions=(
+    '(-S --sync)'{-S,--sync}
+    {\*-c,\*--clean}'[Remove old packages from cache]:\*:clean:->sync_clean'
+    #'*-cc[Remove all packages from cache]:*:clean:->sync_clean'
+    {-g,--groups}'[View all members of a package group]:*:package groups:->sync_group'
+    {-s,--search}'[Search package names and descriptions]:*:search text:->sync_search'
+    '--dbonly[Only remove database entry, do not remove files]'
+    '--needed[Do not reinstall up to date packages]'
+    '--recursive[Reinstall all dependencies of target packages]'
+)
+
+# options for passing to _arguments: options for --sync command
+_aura_opts_sync_modifiers=(
+    {\*-d,\*--nodeps}'[Skip dependency checks]'
+    {\*-i,\*--info}'[View package information]'
+    {-l,--list}'[List all packages in a repository]'
+    {-p,--print}'[Print download URIs for each package to be installed]'
+    {\*-u,\*--sysupgrade}'[Upgrade all out-of-date packages]'
+    {-w,--downloadonly}'[Download packages only]'
+    {\*-y,\*--refresh}'[Download fresh package databases]'
+    '*--ignore[Ignore a package upgrade]:package: _aura_completions_all_packages'
+    '*--ignoregroup[Ignore a group upgrade]:package group:_aura_completions_all_groups'
+    '--asdeps[Install packages as non-explicitly installed]'
+    '--asexplicit[Install packages as explicitly installed]'
+    '--force[Overwrite conflicting files]'
+
+    #'-q[Display less information for certain operations.]'
+)
+
+# options for passing to _arguments: options for --aursync command
+_aura_opts_aursync_actions=(
+    '(-A --aursync)'{-A,--aursync}
+    {-p,--pkgbuild}'[Display an AUR package''s PKGBUILD]'
+    {-s,--search}'[Search AUR package names and descriptions]'
+    {-w,--downloadonly}'[Download an AUR package''s source tarball]'
+)
+
+# options for passing to _arguments: options for --aursync command
+_aura_opts_aursync_modifiers=(
+    {-a,--delmakedeps}'[Uninstall unneeded build deps after installation]'
+    {-d,--deps}'[Display package dependencies. Recursive for AUR packages]'
+    {\*-i,\*--info}'[Display AUR package information]'
+    {-k,--diff}'[Show PKGBUILD diffs when upgrading]'
+    {-u,--sysupgrade}'[Upgrade all installed AUR packages]'
+    {-x,--unsuppress}'[Unsuppress makepkg output during building]'
+    '*--aurignore[Ignore AUR packages when installing]:package: _aura_completions_aur_packages'
+    '--build[Build packages in specified path]'
+    '--builduser[Use specified user to build packages]'
+    {--dev,--devel}'[With -Au, also upgrades all development packages]'
+    "--dryrun[Perform checks, but don't build]"
+    '--hotedit[Prompt user to edit PKGBUILD before dep checks]'
+    '--ignorearch[makepkg will ignore processor architecture]'
+)
+
+# options for passing to _arguments: options for --save commands
+_aura_opts_save=(
+    {-c,--clean}'[Given n, save n recent package states and remove the rest]'
+    {-r,--restore}'[Restore a previously saved package state]'
+)
+
+# options for passing to _arguments: options for --downgrade commands
+_aura_opts_downgrade=(
+    {-b,--backup}'[Backup the cache to a given directory]'
+    {-c,--clean}'[Given n, save n versions of each package file]'
+    {-s,--search}'[Search the cache via a regex]'
+    '*:installed package:_aura_completions_installed_packages'
+)
+
+# options for passing to _arguments: options for --viewlog commands
+typeset -a _aura_opts_viewlog
+_aura_opts_viewlog=(
+    '-i[View package installation history.]'
+    '-s[Search log file via a regex.]'
+)
+
+# options for passing to _arguments: options for --orphans commands
+typeset -a _aura_opts_orphans
+_aura_opts_orphans=( '-j[Uninstall all orphan packages.]' )
+
+# handles --help subcommand
+_aura_action_help() {
+    _arguments -s : \
+        "$_aura_opts_commands[@]"
+}
+
+# handles cases where no subcommand has yet been given
+_aura_action_none() {
+    _arguments -s : \
+        "$_aura_opts_commands[@]"
+}
+
+# handles --query subcommand
+_aura_action_query() {
+    local context state line
+    typeset -A opt_args
+
+    case $state in
+        query_file)
+            _arguments -s : \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_query_modifiers[@]" \
+                '*:package file:_files -g "*.pkg.tar*~*.sig(.,@)"'
+            ;;
+        query_group)
+            _arguments -s : \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_query_modifiers[@]" \
+                '*:groups:_aura_completions_installed_groups'
+            ;;
+        query_owner)
+            _arguments -s : \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_query_modifiers[@]" \
+                '*:file:_files'
+            ;;
+        query_search)
+            _arguments -s : \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_query_modifiers[@]" \
+                '*:search text: '
+            ;;
+        *)
+            _arguments -s : \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_query_actions[@]" \
+                "$_aura_opts_query_modifiers[@]" \
+                '*:package:_aura_completions_installed_packages'
+            ;;
+    esac
+}
+
+# handles --remove subcommand
+_aura_action_remove() {
+    _arguments -s : \
+        '(--remove -R)'{-R,--remove} \
+        "$_aura_opts_common[@]" \
+        "$_aura_opts_remove[@]"
+}
+
+# handles --database subcommand
+_aura_actions_database() {
+    _arguments -s : \
+        '(--database -D)'{-D,--database} \
+        "$_aura_opts_common[@]" \
+        "$_aura_opts_database[@]"
+}
+
+# handles --deptest subcommand
+_aura_action_deptest() {
+    _arguments -s : \
+        '(--deptest)-T' \
+        "$_aura_opts_aura_common[@]" \
+        ":packages:_aura_all_packages"
+}
+
+# handles --sync subcommand
+_aura_action_sync() {
+    local context state line
+    typeset -A opt_args
+
+    case $state in
+        sync_clean)
+            _arguments -s : \
+                {\*-c,\*--clean}'[Remove old packages from cache]'
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_sync_modifiers[@]" \
+                ;;
+        sync_group)
+            _arguments -s : \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_sync_modifiers[@]" \
+                '(-g --group)'{-g,--groups} \
+                '*:package group:_aura_completions_all_groups'
+            ;;
+        sync_search)
+            _arguments -s : \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_sync_modifiers[@]" \
+                '*:search text: '
+            ;;
+        *)
+            _arguments -s : \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_sync_actions[@]" \
+                "$_aura_opts_sync_modifiers[@]" \
+                '*:package:_aura_completions_repo_packages'
+            ;;
+    esac
+}
+
+# handles --upgrade subcommand
+_aura_action_upgrade() {
+    _arguments -s : \
+        '(-U --upgrade)'{-U,--upgrade} \
+        "$_aura_opts_common[@]" \
+        "$_aura_opts_pkgfile[@]"
+}
+
+# handles --version subcommand
+_aura_action_version() {
+    # no further arguments
+    return 0
+}
+
+# provides completions for package groups
+_aura_completions_all_groups() {
+    local -a cmd groups
+    _aura_get_command
+    groups=( $(_call_program groups $cmd[@] -Sg) )
+    typeset -U groups
+    compadd "$@" -a groups
+}
+
+# provides completions for packages available from repositories
+# these can be specified as either 'package' or 'repository/package'
+_aura_completions_repo_packages() {
+    local -a cmd packages repositories packages_long
+    _aura_get_command
+
+    if compset -P '*/'; then
+        packages=( $(_call_program packages $cmd[@] -Sql ${words[CURRENT]%/*}) )
+        typeset -U packages
+        _wanted repo_packages expl "repository/package" compadd ${(@)packages}
+    else
+        packages=( $(_call_program packages $cmd[@] -Sql) )
+        typeset -U packages
+        _wanted packages expl "packages" compadd - "${(@)packages}"
+
+        repositories=( aur ${(o)${${${(M)${(f)"$(</etc/pacman.conf)"}:#\[*}/\[/}/\]/}:#options} )
+        typeset -U repositories
+        _wanted repo_packages expl "repository/package" compadd -S "/" $repositories
+    fi
+}
+
+# provides completions for packages in the AUR
+_aura_completions_aur_packages() {
+    local -a cmd packages repositories packages_long
+    _aura_get_command
+
+    packages=()
+    if [[ -d /var/aur ]]; then
+        packages=( $(ls /var/aur) )
+    fi
+    typeset -U packages
+    _wanted aur_packages expl "packages" compadd - "${(@)packages}"
+}
+
+# provides completions for packages available from repositories and the AUR
+# these can be specied as either 'package' or 'repository/package'
+_aura_completions_all_packages() {
+    _alternative : \
+        'aurpkgs:aur packages:_aura_completions_aur_packages' \
+        'repopkgs:repository packages:_aura_completions_repo_packages'
+}
+
+_aura_all_packages() {
+    _alternative : \
+        'localpkgs:local packages:_aura_completions_installed_packages' \
+        'aurpkgs:aur packages:_aura_completions_aur_packages' \
+        'repopkgs:repository packages:_aura_completions_repo_packages'
+}
+
+# provides completions for package groups
+_aura_completions_installed_groups() {
+    local -a cmd groups
+    _aura_get_command
+    groups=(${(o)${(f)"$(_call_program groups $cmd[@] -Qg)"}% *})
+    typeset -U groups
+    compadd "$@" -a groups
+}
+
+# provides completions for installed packages
+_aura_completions_installed_packages() {
+    local -a cmd packages packages_long
+    packages_long=(/var/lib/pacman/local/*(/))
+    packages=( ${${packages_long#/var/lib/pacman/local/}%-*-*} )
+    compadd "$@" -a packages
+}
+
+# provides completions for repository names
+_aura_completions_repositories() {
+    local -a cmd repositories
+    repositories=(${(o)${${${(M)${(f)"$(</etc/pacman.conf)"}:#\[*}/\[/}/\]/}:#options})
+    # Uniq the array
+    typeset -U repositories
+    compadd "$@" -a repositories
+}
+
+# builds command for invoking pacman in a _call_program command - extracts
+# relevant options already specified (config file, etc)
+# $cmd must be declared by calling function
+_aura_get_command() {
+    # this is mostly nicked from _perforce
+    cmd=( "aura" "2>/dev/null" )
+    integer i
+    for (( i = 2; i < CURRENT - 1; i++ )); do
+        if [[ ${words[i]} = "--config" || ${words[i]} = "--root" ]]; then
+            cmd+=( ${words[i,i+1]} )
+        fi
+    done
+}
+
+_aura_comp() {
+    local -a args cmds
+    local tmp
+    args=( ${${${(M)words:#-*}#-}:#-*} )
+    _message 'now what'
+    for tmp in $words; do
+        cmds+=("${${_aura_opts_commands[(r)*$tmp\[*]%%\[*}#*\)}")
+    done
+    case $args in #$words[2] in
+        h*)
+            if (( ${(c)#args} <= 1 && ${(w)#cmds} <= 1 )); then
+                _aura_action_help
+            else
+                _message "no more arguments"
+            fi
+            ;;
+        *h*)
+            _message "no more arguments"
+            ;;
+        D*)
+            _aura_action_database
+            ;;
+        Q*g*) # ipkg groups
+            _arguments -s : \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_query_modifiers[@]" \
+                '*:groups:_aura_completions_installed_groups'
+            ;;
+        Q*o*) # file
+            _arguments -s : \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_query_modifiers[@]" \
+                '*:package file:_files'
+            ;;
+        Q*p*) # file *.pkg.tar.*
+            _arguments -s : \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_query_modifiers[@]" \
+                '*:package file:_files -g "*.pkg.tar*~*.sig(.,@)"'
+            ;;
+        T*)
+            _aura_action_deptest
+            ;;
+        Q*)
+            _aura_action_query
+            ;;
+        R*)
+            _aura_action_remove
+            ;;
+        S*c*)
+            _arguments -s : \
+                '(-S --sync)'{-S,--sync} \
+                '(-c --clean)'{\*-c,\*--clean}'[Remove all files from the cache]' \
+                "$_aura_opts_common[@]"
+            ;;
+        S*l*) # repos
+            _arguments -s : \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_sync_modifiers[@]" \
+                '*:package repo:_aura_completions_repositories' \
+                ;;
+        S*g*) # pkg groups
+            _arguments -s : \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_sync_modifiers[@]" \
+                '*:package group:_aura_completions_all_groups'
+            ;;
+        S*s)
+            _arguments -s : \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_sync_modifiers[@]" \
+                '*:search text: '
+                ;;
+        S*)
+            _aura_action_sync
+            ;;
+        U*)
+            _aura_action_upgrade
+            ;;
+        V*)
+            _aura_action_version
+            ;;
+        A*)
+            _arguments -s : \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_aursync_modifiers[@]" \
+                "$_aura_opts_aursync_actions[@]" \
+                '*:package:_aura_completions_aur_packages'
+                ;;
+        B*)
+            _arguments -s : \
+                '(-B --save)'{-B,--save} \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_save[@]"
+      ;;
+        C*)
+            _arguments -s : \
+                '(-C --downgrade)'{-C,--downgrade} \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_downgrade[@]"
+            ;;
+        L*)
+            _arguments -s : \
+                '(-L --viewlog)'{-L,--viewlog} \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_viewlog[@]"
+            ;;
+        M*)
+            _arguments -s : \
+                '(-M --abssync)'{-M,--abssync} \
+                "$_aura_opts_common[@]"
+            ;;
+        O*)
+            _arguments -s : \
+                '(-O --orphans)'{-O,--orphans} \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_orphans[@]"
+            ;;
+        *)
+            case ${(M)words:#--*} in
+                *--help*)
+                    if (( ${(W)#cmds} == 1 )); then
+                        _aura_action_help
+                    else
+                        return 0
+                    fi
+                    ;;
+                *--sync*)
+                    _aura_action_sync
+                    ;;
+                *--query*)
+                    _aura_action_query
+                    ;;
+                *--remove*)
+                    _aura_action_remove
+                    ;;
+                *--deptest*)
+                    _aura_action_deptest
+                    ;;
+                *--database*)
+                    _aura_action_database
+                    ;;
+                *--version*)
+                    _aura_action_version
+                    ;;
+                *--upgrade*)
+                    _aura_action_upgrade
+                    ;;
+
+                *--aursync*)
+                    _arguments -s : \
+                        "$_aura_opts_common[@]" \
+                        "$_aura_opts_aursync_modifiers[@]" \
+                        "$_aura_opts_aursync_actions[@]" \
+                        '*:package:_aura_completions_aur_packages'
+                    ;;
+                *--save*)
+                    _arguments -s : \
+                        '(-B --save)'{-B,--save} \
+                        "$_aura_opts_common[@]" \
+                        "$_aura_opts_save[@]"
+                    ;;
+                *--downgrade*)
+                    _arguments -s : \
+                        '(-C --downgrade)'{-C,--downgrade} \
+                        "$_aura_opts_common[@]" \
+                        "$_aura_opts_downgrade[@]"
+                    ;;
+                *--viewlog*)
+                    _arguments -s : \
+                        '(-L --viewlog)'{-L,--viewlog} \
+                        "$_aura_opts_common[@]" \
+                        "$_aura_opts_viewlog[@]"
+                    ;;
+                *--orphans*)
+                    _arguments -s : \
+                        '(-O --orphans)'{-O,--orphans} \
+                        "$_aura_opts_common[@]" \
+                        "$_aura_opts_orphans[@]"
+                    ;;
+                *)
+                    _aura_action_none
+                    ;;
+            esac
+            ;;
+    esac
+}
+
+# run the main dispatcher
+_aura_comp "$@"
