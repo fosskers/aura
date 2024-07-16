@@ -2,7 +2,7 @@
 
 {-
 
-Copyright 2012 - 2021 Colin Woodbury <colin@fosskers.ca>
+Copyright 2012 - 2024 Colin Woodbury <colin@fosskers.ca>
 
 This file is part of Aura.
 

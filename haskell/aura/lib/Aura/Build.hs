@@ -3,7 +3,7 @@
 
 -- |
 -- Module    : Aura.Build
--- Copyright : (c) Colin Woodbury, 2012 - 2021
+-- Copyright : (c) Colin Woodbury, 2012 - 2024
 -- License   : GPL3
 -- Maintainer: Colin Woodbury <colin@fosskers.ca>
 --
