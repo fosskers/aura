@@ -2,6 +2,7 @@
 
 use crate::error::Nested;
 use crate::localization::Localised;
+use applying::Apply;
 use aura_core::deps;
 use aura_core::deps::PkgGraph;
 use aura_core::Dbs;
@@ -9,6 +10,8 @@ use i18n_embed_fl::fl;
 use log::error;
 use r2d2_alpm::Alpm;
 use std::io::Write;
+use std::path::Path;
+use std::path::PathBuf;
 use std::process::Command;
 use std::process::Stdio;
 
@@ -87,20 +90,22 @@ pub(crate) fn reverse(
     Ok(())
 }
 
-fn render(graph: PkgGraph, packages: &[String], open: bool) -> Result<(), Error> {
-    let name = if packages.is_empty() {
-        "deps.png".to_string()
+fn render(graph: PkgGraph, pkgs: &[String], open: bool) -> Result<(), Error> {
+    let name: PathBuf = if pkgs.is_empty() {
+        PathBuf::from("deps.png")
     } else {
-        let mut s: String =
-            itertools::intersperse(packages.iter().map(|s| s.as_str()), "-").collect();
-        s.push_str(".png");
-        s
+        itertools::intersperse(pkgs.iter().map(|s| s.as_str()), "-")
+            .collect::<String>()
+            .apply(PathBuf::from)
+            .apply(|p| p.with_extension("png"))
     };
+
+    let path = if open { Path::new("/tmp").join(name) } else { name };
 
     let mut child = Command::new("dot")
         .arg("-Tpng")
         .arg("-o")
-        .arg(&name)
+        .arg(&path)
         .stdin(Stdio::piped())
         .spawn()
         .map_err(Error::Io)?;
@@ -112,7 +117,7 @@ fn render(graph: PkgGraph, packages: &[String], open: bool) -> Result<(), Error>
 
     if open {
         Command::new("xdg-open")
-            .arg(name)
+            .arg(path)
             .status()
             .map_err(Error::Io)?;
     }
