@@ -8,25 +8,25 @@ setopt extendedglob
 
 # options for passing to _arguments: main aura commands
 _aura_opts_commands=(
-    {-A,aur,--aursync}'[Install and manage AUR packages]'
-    {-B,backup,--save}'[Manage the global package state]'
-    {-C,cache,--downgrade}'[Manage the package cache]'
-	{-D,database,--database}'[Operate on the package database]'
-	{-F,files,--files}'[Query the files database]'
-    {-L,log,--viewlog}'[Analyse the pacman log file]'
-    {-O,orpahns,--orphans}'[Manage orphan packages]'
-    {-Q,query,--query}'[Query the package database]'
-    {-R,remove,--remove}'[Remove a packags]'
-    {-S,sync,--sync}'[Synchronize repo packages]'
-	{-T,dep-test,--deptest}'[Check if given dependencies are satisfied]'
-    {-U,upgrade,--upgrade}'[Upgrade packages]'
+    {-A,--aursync}'[Install and manage AUR packages]'
+    {-B,--save}'[Manage the global package state]'
+    {-C,--downgrade}'[Manage the package cache]'
+    {-D,--database}'[Operate on the package database]'
+    {-F,--files}'[Query the files database]'
+    {-L,--viewlog}'[Analyse the pacman log file]'
+    {-O,--orphans}'[Manage orphan packages]'
+    {-Q,--query}'[Query the package database]'
+    {-R,--remove}'[Remove a packags]'
+    {-S,--sync}'[Synchronize repo packages]'
+    {-T,--deptest}'[Check if given dependencies are satisfied]'
+    {-U,--upgrade}'[Upgrade packages]'
     {-V,--version}'[Display version information]'
-    {check}'[Validate your system]'
-    {conf}'[View various configuration settings and files]'
-    {deps}'[Output a dependency graph]'
-    {free}'[The state of Free Software installed on the system]'
-    {open}'[Open various webpages related to Aura]'
-    {thanks}'[The people behind Aura]'
+    # {check}'[Validate your system]'
+    # {conf}'[View various configuration settings and files]'
+    # {deps}'[Output a dependency graph]'
+    # {free}'[The state of Free Software installed on the system]'
+    # {stats}'[View statistics about your machine or about Aura itself]'
+    # {thanks}'[The people behind Aura]'
     '(-h --help)'{-h,--help}'[Help message]'
 )
 
@@ -38,18 +38,18 @@ _aura_opts_common=(
 
 # options for passing to _arguments: options for --upgrade commands
 _aura_opts_pkgfile=(
-	'*-d[Skip dependency checks]'
-	'*--nodeps[Skip dependency checks]'
-	'*--assume-installed[Add virtual package to satisfy dependencies]'
-	'--dbonly[Only remove database entry, do not remove files]'
-	'--needed[Do not reinstall up to date packages]'
-	'--asdeps[mark packages as non-explicitly installed]'
-	'--asexplicit[mark packages as explicitly installed]'
-	{-p,--print}'[Only print the targets instead of performing the operation]'
-	'*--ignore[Ignore a package upgrade]:package: _pacman_completions_all_packages'
-	'*--ignoregroup[Ignore a group upgrade]:package group:_pacman_completions_all_groups'
-	'--print-format[Specify how the targets should be printed]'
-	'*:package file:_files -g "*.pkg.tar*~*.sig(.,@)"'
+    '*-d[Skip dependency checks]'
+    '*--nodeps[Skip dependency checks]'
+    '*--assume-installed[Add virtual package to satisfy dependencies]'
+    '--dbonly[Only remove database entry, do not remove files]'
+    '--needed[Do not reinstall up to date packages]'
+    '--asdeps[mark packages as non-explicitly installed]'
+    '--asexplicit[mark packages as explicitly installed]'
+    {-p,--print}'[Only print the targets instead of performing the operation]'
+    '*--ignore[Ignore a package upgrade]:package: _pacman_completions_all_packages'
+    '*--ignoregroup[Ignore a group upgrade]:package group:_pacman_completions_all_groups'
+    '--print-format[Specify how the targets should be printed]'
+    '*:package file:_files -g "*.pkg.tar*~*.sig(.,@)"'
 )
 
 # options for passing to _arguments: subactions for --query command
@@ -63,31 +63,31 @@ _aura_opts_query_actions=(
 
 # options for passing to _arguments: options for --query and subcommands
 _aura_opts_query_modifiers=(
-	{-c,--changelog}'[List package changelog]'
-	{-d,--deps}'[List packages installed as dependencies]'
-	{-e,--explicit}'[List packages explicitly installed]'
-	{\*-i,\*--info}'[View package information]'
-	{\*-k,\*--check}'[Check package files]'
-	{-l,--list}'[List package contents]'
-	{-m,--foreign}'[List installed packages not found in sync db(s)]'
-	{-n,--native}'[List installed packages found in sync db(s)]'
-	{-q,--quiet}'[Show less information for query and search]'
-	{-t,--unrequired}'[List packages not required by any package]'
-	{-u,--upgrades}'[List packages that can be upgraded]'
+    {-c,--changelog}'[List package changelog]'
+    {-d,--deps}'[List packages installed as dependencies]'
+    {-e,--explicit}'[List packages explicitly installed]'
+    {\*-i,\*--info}'[View package information]'
+    {\*-k,\*--check}'[Check package files]'
+    {-l,--list}'[List package contents]'
+    {-m,--foreign}'[List installed packages not found in sync db(s)]'
+    {-n,--native}'[List installed packages found in sync db(s)]'
+    {-q,--quiet}'[Show less information for query and search]'
+    {-t,--unrequired}'[List packages not required by any package]'
+    {-u,--upgrades}'[List packages that can be upgraded]'
 )
 
 # options for passing to _arguments: options for --remove command
 _aura_opts_remove=(
-	{-c,--cascade}'[Remove all dependent packages]'
-	{-d,--nodeps}'[Skip dependency checks]'
-	'*--assume-installed[Add virtual package to satisfy dependencies]'
-	{-n,--nosave}'[Remove protected configuration files]'
-	{-p,--print}'[Only print the targets instead of performing the operation]'
-	{\*-s,\*--recursive}'[Remove dependencies not required by other packages]'
-	{-u,--unneeded}'[Remove unneeded packages]'
-	'--dbonly[Only remove database entry, do not remove files]'
-	'--print-format[Specify how the targets should be printed]'
-	'*:installed package:_aura_completions_installed_packages'
+    {-c,--cascade}'[Remove all dependent packages]'
+    {-d,--nodeps}'[Skip dependency checks]'
+    '*--assume-installed[Add virtual package to satisfy dependencies]'
+    {-n,--nosave}'[Remove protected configuration files]'
+    {-p,--print}'[Only print the targets instead of performing the operation]'
+    {\*-s,\*--recursive}'[Remove dependencies not required by other packages]'
+    {-u,--unneeded}'[Remove unneeded packages]'
+    '--dbonly[Only remove database entry, do not remove files]'
+    '--print-format[Specify how the targets should be printed]'
+    '*:installed package:_aura_completions_installed_packages'
 )
 
 # options for passing to _arguments: options for commands dealing with the database
@@ -97,33 +97,41 @@ _aura_opts_database=(
     '*:installed package:_aura_completions_installed_packages'
 )
 
+_aura_opts_files=(
+    {-l,--list}'[List the files owned by the queried package]:package:_pacman_completions_all_packages'
+    {-x,--regex}'[Enable searching using regular expressions]:regex:'
+    {-y,--refresh}'[Download fresh files databases from the server]'
+    '--machinereadable[Produce machine-readable output]'
+    {-q,--quiet}'[Show less information for query and search]'
+)
+
 # options for passing to _arguments: options for --sync command
 _aura_opts_sync_actions=(
-	'(-S --sync)'{-S,--sync}
-	{\*-c,\*--clean}'[Remove old packages from cache]:\*:clean:->sync_clean'
-	{-g,--groups}'[View all members of a package group]:*:package groups:->sync_group'
-	{-s,--search}'[Search package names and descriptions]:*:search text:->sync_search'
-	'--dbonly[Only remove database entry, do not remove files]'
-	'--needed[Do not reinstall up to date packages]'
-	'--recursive[Reinstall all dependencies of target packages]'
+    '(-S --sync)'{-S,--sync}
+    {\*-c,\*--clean}'[Remove old packages from cache]:\*:clean:->sync_clean'
+    {-g,--groups}'[View all members of a package group]:*:package groups:->sync_group'
+    {-s,--search}'[Search package names and descriptions]:*:search text:->sync_search'
+    '--dbonly[Only remove database entry, do not remove files]'
+    '--needed[Do not reinstall up to date packages]'
+    '--recursive[Reinstall all dependencies of target packages]'
 )
 
 # options for passing to _arguments: options for --sync command
 _aura_opts_sync_modifiers=(
-	{\*-d,\*--nodeps}'[Skip dependency checks]'
-	'*--assume-installed[Add virtual package to satisfy dependencies]'
-	{\*-i,\*--info}'[View package information]'
-	{-l,--list}'[List all packages in a repository]'
-	{-p,--print}'[Print download URIs for each package to be installed]'
-	{-q,--quiet}'[Show less information for query and search]'
-	{\*-u,\*--sysupgrade}'[Upgrade all out-of-date packages]'
-	{-w,--downloadonly}'[Download packages only]'
-	{\*-y,\*--refresh}'[Download fresh package databases]'
-	'*--ignore[Ignore a package upgrade]:package: _aura_completions_all_packages'
-	'*--ignoregroup[Ignore a group upgrade]:package group:_aura_completions_all_groups'
-	'--asdeps[Install packages as non-explicitly installed]'
-	'--asexplicit[Install packages as explicitly installed]'
-	'--print-format[Specify how the targets should be printed]'
+    {\*-d,\*--nodeps}'[Skip dependency checks]'
+    '*--assume-installed[Add virtual package to satisfy dependencies]'
+    {\*-i,\*--info}'[View package information]'
+    {-l,--list}'[List all packages in a repository]'
+    {-p,--print}'[Print download URIs for each package to be installed]'
+    {-q,--quiet}'[Show less information for query and search]'
+    {\*-u,\*--sysupgrade}'[Upgrade all out-of-date packages]'
+    {-w,--downloadonly}'[Download packages only]'
+    {\*-y,\*--refresh}'[Download fresh package databases]'
+    '*--ignore[Ignore a package upgrade]:package: _aura_completions_all_packages'
+    '*--ignoregroup[Ignore a group upgrade]:package group:_aura_completions_all_groups'
+    '--asdeps[Install packages as non-explicitly installed]'
+    '--asexplicit[Install packages as explicitly installed]'
+    '--print-format[Specify how the targets should be printed]'
 )
 
 # options for passing to _arguments: options for --aursync command
@@ -147,6 +155,8 @@ _aura_opts_aursync_modifiers=(
     '--git[Rebuild all git/svn/hg/etc. packages as well]'
     '--ignore[Ignore a package upgrade]'
     '--hotedit[Prompt user to edit PKGBUILD before dep checks]'
+    '--build[The path in which to build packages]'
+    '--builduser[The user to build as]'
     '--shellcheck[Run shellcheck on PKGBUILDs before building]'
     '--nocheck[Do not consider checkdeps when building]'
     '--skipdepcheck[Perform no dependency resolution]'
@@ -214,6 +224,17 @@ _aura_ops_deps=(
     {-r,--reverse}'[Display packages that depend on the given args]'
     '--open[Open the output image automatically]'
     '--raw[Print the raw DOT output]'
+)
+
+_aura_ops_free=(
+    '--copyleft[Consider only Copyleft licenses]'
+    '--lenient[Allow FOSS-derived custom licenses]'
+)
+
+_aura_ops_stats=(
+    {-g,--groups}'[View all installed package groups]'
+    '--heavy[View the Top 10 heaviest package installations]'
+    {-l,--lang}'[View Aura''s localisation statistics]'
 )
 
 # handles --help subcommand
@@ -284,6 +305,14 @@ _aura_actions_database() {
         "$_aura_opts_database[@]"
 }
 
+# handles --files subcommand
+_aura_action_files() {
+    _arguments -s : \
+        '(--files -F)'{-F,--files} \
+        "$_aura_opts_common[@]" \
+        "$_aura_opts_files[@]"
+}
+
 # handles --deptest subcommand
 _aura_action_deptest() {
     _arguments -s : \
@@ -296,13 +325,20 @@ _aura_action_deptest() {
 _aura_action_sync() {
     local context state line
     typeset -A opt_args
+    if (( $+words[(r)--clean] )); then
+        state=sync_clean
+    elif (( $+words[(r)--groups] )); then
+        state=sync_group
+    elif (( $+words[(r)--search] )); then
+        state=sync_search
+    fi
 
     case $state in
         sync_clean)
             _arguments -s : \
-                {\*-c,\*--clean}'[Remove old packages from cache]'
+                {\*-c,\*--clean}'[Remove old packages from cache]' \
                 "$_aura_opts_common[@]" \
-                "$_aura_opts_sync_modifiers[@]" \
+                "$_aura_opts_sync_modifiers[@]"
                 ;;
         sync_group)
             _arguments -s : \
@@ -322,7 +358,7 @@ _aura_action_sync() {
                 "$_aura_opts_common[@]" \
                 "$_aura_opts_sync_actions[@]" \
                 "$_aura_opts_sync_modifiers[@]" \
-                '*:package:_aura_completions_repo_packages'
+                '*:package:_aura_completions_all_packages'
             ;;
     esac
 }
@@ -347,25 +383,38 @@ _aura_completions_all_groups() {
     _aura_get_command
     groups=( $(_call_program groups $cmd[@] -Sg) )
     typeset -U groups
-    compadd "$@" -a groups
+
+    if [[ ${words[CURRENT-1]} == '--ignoregroup' ]]; then
+        _sequence compadd -S ',' "$@" -a groups
+    else
+        compadd "$@" -a groups
+    fi
 }
 
 # provides completions for packages available from repositories
 # these can be specified as either 'package' or 'repository/package'
 _aura_completions_repo_packages() {
-    local -a cmd packages repositories packages_long
+    local -a seq sep cmd packages repositories packages_long
     _aura_get_command
 
-    if compset -P '*/'; then
+    if [[ ${words[CURRENT-1]} == '--ignore' ]]; then
+        seq='_sequence'
+        sep=(-S ',')
+    else
+        seq=
+        sep=()
+    fi
+
+    if compset -P1 '*/*'; then
         packages=( $(_call_program packages $cmd[@] -Sql ${words[CURRENT]%/*}) )
         typeset -U packages
-        _wanted repo_packages expl "repository/package" compadd ${(@)packages}
+        ${seq} _wanted repo_packages expl "repository/package" compadd ${sep[@]} ${(@)packages}
     else
         packages=( $(_call_program packages $cmd[@] -Sql) )
         typeset -U packages
-        _wanted packages expl "packages" compadd - "${(@)packages}"
+        ${seq} _wanted packages expl "packages" compadd ${sep[@]} - "${(@)packages}"
 
-        repositories=( aur ${(o)${${${(M)${(f)"$(</etc/pacman.conf)"}:#\[*}/\[/}/\]/}:#options} )
+        repositories=($(pacman-conf --repo-list))
         typeset -U repositories
         _wanted repo_packages expl "repository/package" compadd -S "/" $repositories
     fi
@@ -377,8 +426,8 @@ _aura_completions_aur_packages() {
     _aura_get_command
 
     packages=()
-    if [[ -d /var/aur ]]; then
-        packages=( $(ls /var/aur) )
+    if [[ -d ~/.cache/aura/packages/ ]]; then
+        packages=( $(ls ~/.cache/aura/packages/) )
     fi
     typeset -U packages
     _wanted aur_packages expl "packages" compadd - "${(@)packages}"
@@ -419,13 +468,13 @@ _aura_completions_installed_packages() {
 # provides completions for repository names
 _aura_completions_repositories() {
     local -a cmd repositories
-    repositories=(${(o)${${${(M)${(f)"$(</etc/pacman.conf)"}:#\[*}/\[/}/\]/}:#options})
+    repositories=($(pacman-conf --repo-list))
     # Uniq the array
     typeset -U repositories
     compadd "$@" -a repositories
 }
 
-# builds command for invoking pacman in a _call_program command - extracts
+# builds command for invoking aura in a _call_program command - extracts
 # relevant options already specified (config file, etc)
 # $cmd must be declared by calling function
 _aura_get_command() {
@@ -433,6 +482,7 @@ _aura_get_command() {
     cmd=( "aura" "2>/dev/null" )
     integer i
     for (( i = 2; i < CURRENT - 1; i++ )); do
+        # FIXME 2024-07-26 Probably not relevant for Aura.
         if [[ ${words[i]} = "--config" || ${words[i]} = "--root" ]]; then
             cmd+=( ${words[i,i+1]} )
         fi
@@ -460,6 +510,9 @@ _aura_comp() {
             ;;
         D*)
             _aura_action_database
+            ;;
+        F*)
+            _aura_action_files
             ;;
         Q*g*) # ipkg groups
             _arguments -s : \
@@ -533,7 +586,7 @@ _aura_comp() {
                 '(-B --save)'{-B,--save} \
                 "$_aura_opts_common[@]" \
                 "$_aura_opts_save[@]"
-      ;;
+                ;;
         C*)
             _arguments -s : \
                 '(-C --downgrade)'{-C,--downgrade} \
@@ -546,16 +599,35 @@ _aura_comp() {
                 "$_aura_opts_common[@]" \
                 "$_aura_opts_viewlog[@]"
             ;;
-        M*)
-            _arguments -s : \
-                '(-M --abssync)'{-M,--abssync} \
-                "$_aura_opts_common[@]"
-            ;;
         O*)
             _arguments -s : \
                 '(-O --orphans)'{-O,--orphans} \
                 "$_aura_opts_common[@]" \
                 "$_aura_opts_orphans[@]"
+            ;;
+        conf)
+            _arguments -s : \
+                '(conf)'{conf} \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_conf"
+            ;;
+        deps*)
+            _arguments -s : \
+                '(deps)'{deps} \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_deps"
+            ;;
+        free)
+            _arguments -s : \
+                '(free)'{free} \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_free"
+            ;;
+        stats)
+            _arguments -s : \
+                '(stats)'{stats} \
+                "$_aura_opts_common[@]" \
+                "$_aura_opts_stats"
             ;;
         *)
             case ${(M)words:#--*} in

@@ -406,12 +406,12 @@ pub enum SubCmd {
     Conf(Conf),
     /// Output a dependency graph in DOT format.
     Deps(Deps),
+    /// State of Free Software installed on the system.
+    Free(Free),
     /// View statistics about your machine or about Aura itself.
     Stats(Stats),
     /// The people behind Aura.
     Thanks,
-    /// State of Free Software installed on the system.
-    Free(Free),
 }
 
 /// Synchronize official packages.
