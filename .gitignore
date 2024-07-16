@@ -2,7 +2,8 @@
 rust/target/*
 
 # Haskell
-haskell/.stack-work/*
+haskell/**/.stack-work/*
+haskell/**/.hie/*
 *.dump-hi
 .hlint.yaml
 
