@@ -5,10 +5,12 @@
 #### Added
 
 - Hindi translations thanks to "yozachar". धन्यवाद!
+- A `--turkish` flag to activate the Turkish localisations.
 
 #### Fixed
 
 - Corrections made to the Mandarin Chinese translation.
+- Don't attempt to remove VCS dirs if they don't exist.
 - Updated dependencies.
 
 ## 3.2.9 (2022-05-23)
