@@ -43,7 +43,7 @@ karen = "0.1"
 time = { version = "0.3", features = ["parsing"] }
 toml = "0.8"
 ubyte = "0.10"
-unic-langid = { version = "0.9", features = ["macros"] }
+unic-langid = { version = "0.9", features = ["macros", "serde"] }
 validated = { version = "0.4", features = ["rayon"] }
 webbrowser = "1.0"
 which = "6.0"

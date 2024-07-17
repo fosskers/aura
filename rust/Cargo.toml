@@ -9,7 +9,7 @@ members = [
 # Documentation Generation
 # "doc-gen"
 ]
-resolver = "1"
+resolver = "2"
 
 [profile.release]
 lto = true
