@@ -8,7 +8,6 @@ pub(crate) mod deps;
 pub(crate) mod free;
 pub(crate) mod logs;
 pub(crate) mod misc;
-pub(crate) mod open;
 pub(crate) mod orphans;
 pub(crate) mod snapshot;
 pub(crate) mod stats;

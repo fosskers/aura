@@ -17,7 +17,6 @@ pub(crate) enum Error {
     Env(crate::env::Error),
     Conf(crate::conf::Error),
     Check(crate::check::Error),
-    Open(crate::open::Error),
     Stats(crate::stats::Error),
     Deps(crate::deps::Error),
 }
@@ -25,12 +24,6 @@ pub(crate) enum Error {
 impl From<crate::deps::Error> for Error {
     fn from(v: crate::deps::Error) -> Self {
         Self::Deps(v)
-    }
-}
-
-impl From<crate::open::Error> for Error {
-    fn from(v: crate::open::Error) -> Self {
-        Self::Open(v)
     }
 }
 
@@ -101,7 +94,6 @@ impl Nested for Error {
             Error::Env(e) => e.nested(),
             Error::Conf(e) => e.nested(),
             Error::Check(e) => e.nested(),
-            Error::Open(e) => e.nested(),
             Error::Stats(e) => e.nested(),
             Error::Deps(e) => e.nested(),
         }
@@ -120,7 +112,6 @@ impl Localised for Error {
             Error::Env(e) => e.localise(fll),
             Error::Conf(e) => e.localise(fll),
             Error::Check(e) => e.localise(fll),
-            Error::Open(e) => e.localise(fll),
             Error::Stats(e) => e.localise(fll),
             Error::Deps(e) => e.localise(fll),
         }

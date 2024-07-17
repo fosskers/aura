@@ -48,7 +48,6 @@ use crate::command::check;
 use crate::command::conf;
 use crate::command::deps;
 use crate::command::logs;
-use crate::command::open;
 use crate::command::orphans;
 use crate::command::snapshot;
 use crate::command::stats;
@@ -218,13 +217,6 @@ fn work(args: Args, env: Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
         SubCmd::Stats(s) if s.heavy => stats::heavy_packages(&env.alpm()?),
         SubCmd::Stats(s) if s.groups => stats::groups(&env.alpm()?),
         SubCmd::Stats(_) => stats::stats(&env, fll)?,
-        // --- Opening Webpages --- //
-        SubCmd::Open(o) if o.docs => open::book()?,
-        SubCmd::Open(o) if o.repo => open::repo()?,
-        SubCmd::Open(o) if o.bug => open::bug()?,
-        SubCmd::Open(o) if o.aur => open::aur()?,
-        SubCmd::Open(o) if o.license => open::license()?,
-        SubCmd::Open(_) => open::repo()?,
         // --- Dependency Management --- //
         SubCmd::Deps(d) if d.reverse => {
             deps::reverse(&env.alpm()?, d.limit, d.optional, d.raw, d.open, d.packages)?

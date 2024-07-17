@@ -38,9 +38,12 @@ use std::io::Write;
 use std::ops::Not;
 use std::path::Path;
 use std::path::PathBuf;
+use std::process::Command;
 use std::sync::Mutex;
 use time::OffsetDateTime;
 use validated::Validated;
+
+const AUR_PKG_URL: &str = "https://aur.archlinux.org/packages/";
 
 pub(crate) enum Error {
     Backup(crate::command::snapshot::Error),
@@ -60,6 +63,7 @@ pub(crate) enum Error {
     Cancelled,
     Stdout,
     ReadDir(PathBuf, std::io::Error),
+    CouldntOpen(String, std::io::Error),
 }
 
 impl Nested for Error {
@@ -82,6 +86,7 @@ impl Nested for Error {
             Error::DateConv(e) => error!("{e}"),
             Error::Backup(e) => e.nested(),
             Error::ReadDir(_, e) => error!("{e}"),
+            Error::CouldntOpen(_, e) => error!("{e}"),
         }
     }
 }
@@ -106,6 +111,7 @@ impl Localised for Error {
             Error::DateConv(_) => fl!(fll, "err-time-conv"),
             Error::Backup(e) => e.localise(fll),
             Error::ReadDir(p, _) => fl!(fll, "err-read-dir", dir = p.utf8()),
+            Error::CouldntOpen(url, _) => fl!(fll, "open-err", url = url),
         }
     }
 }
@@ -321,14 +327,18 @@ pub(crate) fn pkgbuild(pkg: &str, clone_d: &Path) -> Result<(), Error> {
 }
 
 /// Open a given package's AUR package in a browser.
-pub(crate) fn open(package: &str) -> Result<(), crate::open::Error> {
+pub(crate) fn open(package: &str) -> Result<(), Error> {
     let url = package_url(package);
-    crate::open::open(&url)
+    Command::new("xdg-open")
+        .arg(&url)
+        .status()
+        .map_err(|e| Error::CouldntOpen(url, e))?;
+    Ok(())
 }
 
 /// A package's URL on the AUR.
 fn package_url(package: &str) -> String {
-    format!("{}{}", crate::open::AUR_PKG_URL, package)
+    format!("{}{}", AUR_PKG_URL, package)
 }
 
 fn package_date(epoch: u64) -> Result<ColoredString, Error> {
