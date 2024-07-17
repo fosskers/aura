@@ -102,6 +102,7 @@ pub(crate) struct Built {
 // Really? Given that certain packages themselves build with multiple threads,
 // this sounds like a recipe for problems.
 /// Build the given packages and yield paths to their built tarballs.
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn build<I>(
     fll: &FluentLanguageLoader,
     caches: &[&Path],
@@ -154,7 +155,7 @@ fn build_one(
     aura!(fll, "A-build-pkg", pkg = base.cyan().bold().to_string());
 
     // --- Prepare the Build Directory --- //
-    let build_dir = aur.build.join(&base);
+    let build_dir = aur.build.join(base);
     // TODO 2024-06-13 Consider giving the option to wipe the build dir every time.
     //
     // Sometimes certain packages don't want to have `configure` ran more than once, etc.
@@ -186,11 +187,11 @@ fn build_one(
         .map_err(Error::CopyBuildFiles)?;
 
     if aur.diff {
-        show_diffs(fll, &aur.hashes, &clone, &base)?;
+        show_diffs(fll, &aur.hashes, &clone, base)?;
     }
 
     if aur.hotedit {
-        overwrite_build_files(fll, editor, &build_dir, &base)?;
+        overwrite_build_files(fll, editor, &build_dir, base)?;
     }
 
     if aur.shellcheck {
@@ -209,7 +210,7 @@ fn build_one(
                 .filter(|s| dbs.find_satisfier(s.as_str()).is_none())
                 // `pop` fetches the last item in the Vec, which should be the
                 // most recent version of the package.
-                .filter_map(|p| aura_core::cache::matching(caches, &p).pop())
+                .filter_map(|p| aura_core::cache::matching(caches, p).pop())
                 .map(|(pp, _)| pp)
                 .collect();
 

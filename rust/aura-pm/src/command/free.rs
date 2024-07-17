@@ -90,10 +90,7 @@ pub fn copyleft(alpm: &Alpm, lenient: bool) {
 }
 
 fn find_and_print(alpm: &Alpm, lenient: bool, licenses: &[&str]) {
-    let lics: HashSet<_> = licenses
-        .into_iter()
-        .map(|s| s.to_ascii_uppercase())
-        .collect();
+    let lics: HashSet<_> = licenses.iter().map(|s| s.to_ascii_uppercase()).collect();
 
     for p in alpm.as_ref().localdb().pkgs() {
         let ls: HashSet<_> = p.licenses().iter().flat_map(parse_licenses).collect();

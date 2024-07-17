@@ -443,7 +443,7 @@ where
     Ok(())
 }
 
-fn install_work<'a>(
+fn install_work(
     fll: &FluentLanguageLoader,
     env: &Env,
     mode: Mode,

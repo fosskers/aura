@@ -206,7 +206,7 @@ where
 }
 
 /// Determine all packages to be built and installed.
-pub fn resolve<'a, M, F, E>(
+pub fn resolve<M, F, E>(
     pool: Pool<M>,
     fetch: &F,
     clone_d: &Path,
