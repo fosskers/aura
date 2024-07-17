@@ -22,7 +22,6 @@ applying = "1.0.0"
 clap = { version = "4.4", features = ["derive"] }
 colored = "2.0"
 curl = "0.4"
-from_variants = "1.0"
 i18n-embed = { version = "0.14", features = ["fluent-system"] }
 i18n-embed-fl = "0.8"
 itertools = "0.13"

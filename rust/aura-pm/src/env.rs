@@ -5,7 +5,6 @@ use crate::error::Nested;
 use crate::localization::identifier_from_locale;
 use crate::localization::Localised;
 use crate::makepkg::Makepkg;
-use from_variants::FromVariants;
 use i18n_embed_fl::fl;
 use log::debug;
 use log::error;
@@ -23,14 +22,10 @@ use unic_langid::LanguageIdentifier;
 
 const DEFAULT_EDITOR: &str = "vi";
 
-#[derive(FromVariants)]
 pub(crate) enum Error {
     Dirs(crate::dirs::Error),
-    #[from_variants(skip)]
     PConf(pacmanconf::Error),
-    #[from_variants(skip)]
     Alpm(alpm::Error),
-    #[from_variants(skip)]
     R2d2(r2d2::Error),
     MissingEditor,
 }
@@ -132,8 +127,10 @@ impl Env {
 
         let e = Env {
             general: general.unwrap_or_default(),
-            aur: aur.unwrap_or_else(Aur::try_default)?,
-            backups: backups.unwrap_or_else(Backups::try_default)?,
+            aur: aur.unwrap_or_else(Aur::try_default).map_err(Error::Dirs)?,
+            backups: backups
+                .unwrap_or_else(Backups::try_default)
+                .map_err(Error::Dirs)?,
             pacman: pacmanconf::Config::new().map_err(Error::PConf)?,
             makepkg,
         };

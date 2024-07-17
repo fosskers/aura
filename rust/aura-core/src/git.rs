@@ -1,7 +1,6 @@
 //! Generalized `git` interaction.
 
 use applying::Apply;
-use from_variants::FromVariants;
 use log::debug;
 use std::path::Path;
 use std::path::PathBuf;
@@ -9,21 +8,17 @@ use std::process::Command;
 use std::process::Stdio;
 
 /// A git-related error.
-#[derive(Debug, FromVariants)]
+#[derive(Debug)]
 pub enum Error {
     /// Some IO action failed.
     Io(std::io::Error),
     /// A git clone failed.
-    #[from_variants(skip)]
     Clone(PathBuf),
     /// A git pull failed.
-    #[from_variants(skip)]
     Pull(PathBuf),
     /// A git diff failed.
-    #[from_variants(skip)]
     Diff(PathBuf),
     /// Converting a git hash to a Rust string failed.
-    #[from_variants(skip)]
     ReadHash(std::string::FromUtf8Error),
 }
 
@@ -52,7 +47,8 @@ pub fn shallow_clone(url: &Path, target: &Path) -> Result<(), Error> {
         .arg(target)
         .stdout(Stdio::null())
         .stderr(Stdio::null())
-        .status()?
+        .status()
+        .map_err(Error::Io)?
         .success()
         .then_some(())
         .ok_or_else(|| Error::Clone(url.to_path_buf()))
@@ -73,7 +69,8 @@ pub fn pull(dir: &Path) -> Result<(), Error> {
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .current_dir(dir)
-        .status()?
+        .status()
+        .map_err(Error::Io)?
         .success()
         .then_some(())
         .ok_or_else(|| Error::Pull(dir.to_path_buf()))
@@ -88,7 +85,8 @@ pub fn hash(dir: &Path) -> Result<String, Error> {
         .arg("rev-parse")
         .arg("HEAD")
         .current_dir(dir)
-        .output()?
+        .output()
+        .map_err(Error::Io)?
         .stdout
         .apply(String::from_utf8)
         .map_err(Error::ReadHash)
@@ -102,7 +100,8 @@ pub fn diff(dir: &Path, hash: &str) -> Result<(), Error> {
         .arg("diff")
         .arg(hash)
         .current_dir(dir)
-        .status()?
+        .status()
+        .map_err(Error::Io)?
         .success()
         .then_some(())
         .ok_or_else(|| Error::Diff(dir.to_path_buf()))

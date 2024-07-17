@@ -3,17 +3,14 @@
 use crate::error::Nested;
 use crate::localization::Localised;
 use curl::easy::Easy;
-use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use log::debug;
 use log::error;
 use serde::de::DeserializeOwned;
 
-#[derive(FromVariants)]
 pub enum Error {
     Curl(curl::Error),
-    #[from_variants(skip)]
     Json(String, serde_json::Error),
 }
 
@@ -44,8 +41,8 @@ where
 
     let mut handle = Easy::new();
     let mut data = Vec::new();
-    handle.url(url)?;
-    handle.fail_on_error(true)?;
+    handle.url(url).map_err(Error::Curl)?;
+    handle.fail_on_error(true).map_err(Error::Curl)?;
 
     // Blocked off to allow `data` to be borrowed again down below.
     {
@@ -53,8 +50,9 @@ where
         tx.write_function(|bytes| {
             data.extend_from_slice(bytes);
             Ok(bytes.len())
-        })?;
-        tx.perform()?;
+        })
+        .map_err(Error::Curl)?;
+        tx.perform().map_err(Error::Curl)?;
     }
 
     let json = serde_json::from_slice(&data).map_err(|e| Error::Json(url.to_string(), e))?;

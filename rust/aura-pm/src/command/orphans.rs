@@ -8,16 +8,13 @@ use crate::utils::NOTHING;
 use alpm::PackageReason;
 use applying::Apply;
 use colored::*;
-use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use log::error;
 use r2d2_alpm::Alpm;
 use std::ops::Not;
 
-#[derive(FromVariants)]
 pub(crate) enum Error {
-    #[from_variants(skip)]
     SetExplicit(String, alpm::Error),
     Sudo(crate::utils::SudoError),
     NoneExist,
@@ -66,7 +63,7 @@ pub(crate) fn adopt(
     // TODO 2024-03-18 Make this NEVec.
     packages: Vec<String>,
 ) -> Result<(), Error> {
-    crate::utils::sudo(env)?;
+    crate::utils::sudo(env).map_err(Error::Sudo)?;
 
     let db = alpm.as_ref().localdb();
     let reals: Vec<_> = packages

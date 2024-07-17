@@ -12,7 +12,6 @@ use crate::localization::Localised;
 use crate::utils::PathStr;
 use alpm::PackageReason;
 use colored::*;
-use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use r2d2::Pool;
@@ -34,7 +33,6 @@ pub(crate) const CANCEL: &str = "⊘";
 
 const SECS_IN_DAY: u64 = 60 * 60 * 24;
 
-#[derive(FromVariants)]
 pub(crate) enum Error {
     Env(crate::env::Error),
 }
@@ -58,8 +56,8 @@ impl Localised for Error {
 /// Validate the system.
 pub(crate) fn check(fll: &FluentLanguageLoader, env: &Env) -> Result<(), Error> {
     let caches = env.caches();
-    let alpm = env.alpm()?;
-    let pool = env.alpm_pool()?;
+    let alpm = env.alpm().map_err(Error::Env)?;
+    let pool = env.alpm_pool().map_err(Error::Env)?;
 
     aura!(fll, "check-start");
     environment(fll);

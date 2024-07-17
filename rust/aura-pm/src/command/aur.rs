@@ -19,7 +19,6 @@ use aura_core::aur::dependencies::Resolution;
 use aura_core::Package;
 use colored::ColoredString;
 use colored::Colorize;
-use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed::LanguageLoader;
 use i18n_embed_fl::fl;
@@ -43,31 +42,23 @@ use std::sync::Mutex;
 use time::OffsetDateTime;
 use validated::Validated;
 
-#[derive(FromVariants)]
 pub(crate) enum Error {
     Backup(crate::command::snapshot::Error),
     Fetch(crate::fetch::Error),
-    Dirs(crate::dirs::Error),
     Git(aura_core::git::Error),
     Build(build::Error),
     Deps(aura_core::aur::dependencies::Error<crate::fetch::Error>),
     Pacman(crate::pacman::Error),
     Env(crate::env::Error),
     Aur(aura_core::aur::Error),
-    #[from_variants(skip)]
     Srcinfo(PathBuf, srcinfo::Error),
-    #[from_variants(skip)]
     PathComponent(PathBuf),
-    #[from_variants(skip)]
     FileOpen(PathBuf, std::io::Error),
-    #[from_variants(skip)]
     FileWrite(PathBuf, std::io::Error),
-    #[from_variants(skip)]
     DateConv(time::error::ComponentRange),
     NoPackages,
     Cancelled,
     Stdout,
-    #[from_variants(skip)]
     ReadDir(PathBuf, std::io::Error),
 }
 
@@ -75,7 +66,6 @@ impl Nested for Error {
     fn nested(&self) {
         match self {
             Error::Fetch(e) => e.nested(),
-            Error::Dirs(e) => e.nested(),
             Error::Git(e) => e.nested(),
             Error::Build(e) => e.nested(),
             Error::Deps(e) => e.nested(),
@@ -100,7 +90,6 @@ impl Localised for Error {
     fn localise(&self, fll: &FluentLanguageLoader) -> String {
         match self {
             Error::Fetch(e) => e.localise(fll),
-            Error::Dirs(e) => e.localise(fll),
             Error::Git(e) => e.localise(fll),
             Error::Build(e) => e.localise(fll),
             Error::Deps(e) => e.localise(fll),
@@ -133,7 +122,8 @@ pub(crate) fn info(fll: &FluentLanguageLoader, packages: &[String]) -> Result<()
     let r: Vec<aura_core::faur::Package> = aura_core::faur::info(
         packages.iter().map(|s| s.as_str()),
         &crate::fetch::fetch_json,
-    )?;
+    )
+    .map_err(Error::Fetch)?;
     let mut w = BufWriter::new(std::io::stdout());
 
     let repo = fl!(fll, "A-i-repo");
@@ -226,7 +216,7 @@ where
     S: AsRef<str>,
 {
     let mut matches: Vec<aura_core::faur::Package> =
-        aura_core::faur::provides(providing, &crate::fetch::fetch_json)?;
+        aura_core::faur::provides(providing, &crate::fetch::fetch_json).map_err(Error::Fetch)?;
 
     matches.sort_by(|a, b| a.name.cmp(&b.name));
 
@@ -257,7 +247,8 @@ pub(crate) fn search(
     debug!("Sanitized terms: {:?}", terms);
 
     let matches: Vec<aura_core::faur::Package> =
-        aura_core::faur::search(terms.iter().map(|s| s.as_str()), &crate::fetch::fetch_json)?;
+        aura_core::faur::search(terms.iter().map(|s| s.as_str()), &crate::fetch::fetch_json)
+            .map_err(Error::Fetch)?;
 
     debug!("Search matches: {}", matches.len());
 
@@ -314,7 +305,8 @@ fn render_search(
 
 /// View a package's PKGBUILD.
 pub(crate) fn pkgbuild(pkg: &str, clone_d: &Path) -> Result<(), Error> {
-    let path = aura_core::aur::clone_path_of_pkgbase(clone_d, pkg, &crate::fetch::fetch_json)?
+    let path = aura_core::aur::clone_path_of_pkgbase(clone_d, pkg, &crate::fetch::fetch_json)
+        .map_err(Error::Aur)?
         .join("PKGBUILD");
 
     let file = BufReader::new(File::open(&path).map_err(|e| Error::FileOpen(path, e))?);
@@ -430,11 +422,11 @@ where
 
     // `-a` was used, or was otherwise specified in config.
     if env.aur.delmakedeps {
-        let alpm = env.alpm()?;
+        let alpm = env.alpm().map_err(Error::Env)?;
         let before: HashSet<_> = aura_core::orphans(&alpm).map(|p| p.name()).collect();
         install_work(fll, env, mode, &pkgs)?;
         // Another handle must be opened, or else the change in orphan packages won't be detected.
-        let alpm = env.alpm()?;
+        let alpm = env.alpm().map_err(Error::Env)?;
         let after: HashSet<_> = aura_core::orphans(&alpm).map(|p| p.name()).collect();
         let mut diff: Vec<_> = after.difference(&before).collect();
         // `base-devel` is added automatically to the build if the user didn't
@@ -442,7 +434,7 @@ where
         // again, so we avoid that here.
         diff.retain(|p| **p != "base-devel");
         if diff.is_empty().not() {
-            crate::pacman::sudo_pacman(env, "-Rsu", NOTHING, diff)?;
+            crate::pacman::sudo_pacman(env, "-Rsu", NOTHING, diff).map_err(Error::Pacman)?;
         }
     } else {
         install_work(fll, env, mode, &pkgs)?;
@@ -457,7 +449,7 @@ fn install_work<'a>(
     mode: Mode,
     pkgs: &HashSet<&str>,
 ) -> Result<(), Error> {
-    let pool = env.alpm_pool()?;
+    let pool = env.alpm_pool().map_err(Error::Env)?;
     aura!(fll, "A-install-deps");
 
     let rslv = if env.aur.skipdepcheck {
@@ -469,7 +461,8 @@ fn install_work<'a>(
             &env.aur.clones,
             env.aur.nocheck,
             pkgs,
-        )?
+        )
+        .map_err(Error::Deps)?
     };
 
     debug!("Satisfied: {:?}", rslv.satisfied);
@@ -501,11 +494,14 @@ fn install_work<'a>(
     }
 
     if matches!(mode, Mode::Upgrade) && env.backups.automatic {
-        crate::command::snapshot::save(fll, &env.alpm()?, env.backups.snapshots.as_path())?;
+        let alpm = env.alpm().map_err(Error::Env)?;
+        crate::command::snapshot::save(fll, &alpm, env.backups.snapshots.as_path())
+            .map_err(Error::Backup)?;
     }
 
     // --- Determine the best build order --- //
-    let order: Vec<Vec<&str>> = aura_core::aur::dependencies::build_order(&to_build)?;
+    let order: Vec<Vec<&str>> =
+        aura_core::aur::dependencies::build_order(&to_build).map_err(Error::Deps)?;
     debug!("Build order: {:?}", order);
 
     // --- Install repo dependencies --- //
@@ -514,13 +510,14 @@ fn install_work<'a>(
             env,
             ["--asdeps", "--noconfirm"],
             to_install.iter().map(|o| o.as_ref()),
-        )?;
+        )
+        .map_err(Error::Pacman)?;
     }
 
     // --- Build and install each layer of AUR packages --- //
     let is_single = to_build.len() == 1;
     let caches = env.caches();
-    let alpm = env.alpm()?;
+    let alpm = env.alpm().map_err(Error::Env)?;
     for raw_layer in order.into_iter().apply(Finished::new) {
         let done = raw_layer.is_last();
         let layer = raw_layer.inner();
@@ -535,7 +532,8 @@ fn install_work<'a>(
             is_single,
             pkgs,
             clone_paths,
-        )?;
+        )
+        .map_err(Error::Build)?;
 
         if builts.is_empty().not() {
             // FIXME Tue Jun 28 15:04:10 2022
@@ -547,7 +545,8 @@ fn install_work<'a>(
             let tarballs = builts
                 .iter()
                 .flat_map(|b| b.tarballs.iter().map(|pp| pp.as_path()));
-            crate::pacman::pacman_install_from_tarball(env, flags, tarballs)?;
+            crate::pacman::pacman_install_from_tarball(env, flags, tarballs)
+                .map_err(Error::Pacman)?;
 
             builts
                 .into_iter()
@@ -560,7 +559,7 @@ fn install_work<'a>(
 }
 
 fn update_hash(hashes: &Path, clone: &Path) -> Result<(), Error> {
-    let hash = aura_core::git::hash(clone)?;
+    let hash = aura_core::git::hash(clone).map_err(Error::Git)?;
     let base = clone
         .components()
         .last()
@@ -615,7 +614,8 @@ pub(crate) fn upgrade<'a>(
                 Err(e) => Some(Err(e)),
             }
         })
-        .collect::<Result<HashSet<_>, aura_core::aur::Error>>()?;
+        .collect::<Result<HashSet<_>, aura_core::aur::Error>>()
+        .map_err(Error::Aur)?;
     debug!("Unique clones: {}", clones.len());
 
     // --- Compare versions to determine what to upgrade --- //
@@ -634,7 +634,8 @@ pub(crate) fn upgrade<'a>(
     let from_api: Vec<aura_core::faur::Package> = aura_core::faur::info(
         srcinfos.iter().map(|p| p.base.pkgbase.as_str()),
         &crate::fetch::fetch_json,
-    )?;
+    )
+    .map_err(Error::Fetch)?;
     debug!("Packages pulled: {}", from_api.len());
     let db = alpm.alpm.localdb();
     let mut to_upgrade: Vec<(aura_core::Package<'_>, aura_core::Package<'_>)> = from_api

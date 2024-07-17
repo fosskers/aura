@@ -10,7 +10,6 @@ use crate::utils::PathStr;
 use crate::utils::NOTHING;
 use aura_core::snapshot::Snapshot;
 use colored::*;
-use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use log::error;
@@ -25,19 +24,12 @@ use std::path::Path;
 use std::path::PathBuf;
 use time::macros::format_description;
 
-#[derive(FromVariants)]
 pub(crate) enum Error {
-    Dirs(crate::dirs::Error),
     Pacman(crate::pacman::Error),
-    #[from_variants(skip)]
     Readline(rustyline::error::ReadlineError),
-    #[from_variants(skip)]
     JsonWrite(PathBuf, serde_json::Error),
-    #[from_variants(skip)]
     DeleteFile(PathBuf, std::io::Error),
-    #[from_variants(skip)]
     OpenFile(PathBuf, std::io::Error),
-    #[from_variants(skip)]
     TimeFormat(time::error::Format),
     Cancelled,
     NoSnapshots,
@@ -46,7 +38,6 @@ pub(crate) enum Error {
 impl Nested for Error {
     fn nested(&self) {
         match self {
-            Error::Dirs(e) => e.nested(),
             Error::Pacman(e) => e.nested(),
             Error::Readline(e) => error!("{e}"),
             Error::JsonWrite(_, e) => error!("{e}"),
@@ -62,7 +53,6 @@ impl Nested for Error {
 impl Localised for Error {
     fn localise(&self, fll: &FluentLanguageLoader) -> String {
         match self {
-            Error::Dirs(e) => e.localise(fll),
             Error::Pacman(e) => e.localise(fll),
             Error::Readline(_) => fl!(fll, "err-user-input"),
             Error::JsonWrite(p, _) => fl!(fll, "err-json-write", file = p.utf8()),
@@ -189,12 +179,12 @@ fn restore_snapshot(
             })
             .map(|pp| pp.into_pathbuf().into_os_string());
 
-        crate::pacman::sudo_pacman(env, "-U", NOTHING, tarballs)?;
+        crate::pacman::sudo_pacman(env, "-U", NOTHING, tarballs).map_err(Error::Pacman)?;
     }
 
     // Remove packages that weren't installed within the chosen snapshot.
     if diff.to_remove.is_empty().not() {
-        crate::pacman::sudo_pacman(env, "-R", NOTHING, diff.to_remove)?;
+        crate::pacman::sudo_pacman(env, "-R", NOTHING, diff.to_remove).map_err(Error::Pacman)?;
     }
 
     Ok(())

@@ -13,7 +13,6 @@ use crate::yellow;
 use aura_core::cache::CacheSize;
 use aura_core::cache::PkgPath;
 use colored::*;
-use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed::LanguageLoader;
 use i18n_embed_fl::fl;
@@ -43,26 +42,18 @@ const FIVE_HUNDRED_MB: i64 = 524_288_000;
 /// The date where Arch Linux switched compression schemes from XZ to ZSTD.
 const CMPR_SWITCH: i64 = 1_577_404_800;
 
-#[derive(FromVariants)]
 pub(crate) enum Error {
-    #[from_variants(skip)]
     Readline(rustyline::error::ReadlineError),
     Sudo(crate::utils::SudoError),
     Pacman(crate::pacman::Error),
     Cancelled,
     NoPackages,
     NothingToDo,
-    #[from_variants(skip)]
     AlreadyExists(PathBuf),
-    #[from_variants(skip)]
     Delete(PathBuf),
-    #[from_variants(skip)]
     ReadDir(PathBuf),
-    #[from_variants(skip)]
     Stdout(std::io::Error),
-    #[from_variants(skip)]
     CurrDir(std::io::Error),
-    #[from_variants(skip)]
     Mkdir(PathBuf, std::io::Error),
     Date(time::error::Format),
 }
@@ -140,7 +131,7 @@ pub(crate) fn downgrade(
         return Err(Error::NothingToDo);
     }
 
-    crate::pacman::sudo_pacman(env, "-U", NOTHING, to_downgrade)?;
+    crate::pacman::sudo_pacman(env, "-U", NOTHING, to_downgrade).map_err(Error::Pacman)?;
     green!(fll, "common-done");
     Ok(())
 }
@@ -217,14 +208,16 @@ pub(crate) fn info(
     let av = fl!(fll, "C-i-avail");
     let inst = fl!(fll, "C-i-installed");
 
+    let fmt = format_description!("[year]-[month]-[day] [hour]-[minute]-[second]");
+
     for ci in packages
         .iter()
         .filter_map(|p| aura_core::cache::info(caches, p).ok())
         .flatten()
     {
-        let dt = OffsetDateTime::from(ci.created).format(format_description!(
-            "[year]-[month]-[day] [hour]-[minute]-[second]"
-        ))?;
+        let dt = OffsetDateTime::from(ci.created)
+            .format(&fmt)
+            .map_err(Error::Date)?;
         let sig_yes_no = if ci.signature {
             fl!(fll, "common-yes").green().bold()
         } else {
@@ -346,7 +339,7 @@ pub(crate) fn clean_not_saved(fll: &FluentLanguageLoader, env: &Env) -> Result<(
 
 /// Download tarballs of installed packages that are missing from the cache.
 pub(crate) fn refresh(env: &Env, fll: &FluentLanguageLoader, alpm: &Alpm) -> Result<(), Error> {
-    crate::utils::sudo(env)?;
+    crate::utils::sudo(env).map_err(Error::Sudo)?;
 
     // FIXME 2024-06-04 This probably doesn't conserve local cache paths!
     //

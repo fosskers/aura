@@ -7,7 +7,6 @@ use crate::localization::Localised;
 use crate::utils::PathStr;
 use crate::utils::ResultVoid;
 use aura_pm::flags::Conf;
-use from_variants::FromVariants;
 use i18n_embed_fl::fl;
 use log::error;
 use std::path::PathBuf;
@@ -16,12 +15,9 @@ use std::process::Command;
 /// The default filepath of the Pacman configuration.
 const DEFAULT_PAC_CONF: &str = "/etc/pacman.conf";
 
-#[derive(FromVariants)]
 pub(crate) enum Error {
     PathToAuraConfig(crate::dirs::Error),
-    #[from_variants(skip)]
     SerializeEnv(toml::ser::Error),
-    #[from_variants(skip)]
     CouldntOpen(PathBuf, std::io::Error),
 }
 
@@ -59,7 +55,7 @@ pub(crate) fn gen(env: &Env) -> Result<(), Error> {
 
 /// Open the `$XDG_HOME/aura/config.toml` in `bat` or `less`.
 pub(crate) fn open_aura_conf() -> Result<(), Error> {
-    let path = crate::dirs::aura_config()?;
+    let path = crate::dirs::aura_config().map_err(Error::PathToAuraConfig)?;
     let prog = misc::viewer();
 
     Command::new(prog)

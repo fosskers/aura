@@ -233,7 +233,7 @@ fn work(args: Args, env: Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
             deps::graph(&env.alpm()?, d.limit, d.optional, d.raw, d.open, d.packages)?
         }
         // --- System Validation --- //
-        SubCmd::Check(_) => check::check(fll, &env)?,
+        SubCmd::Check(_) => check::check(fll, &env).map_err(Error::Check)?,
         // --- Credits --- //
         SubCmd::Thanks => thanks::thanks(fll),
         // --- Free Software --- //

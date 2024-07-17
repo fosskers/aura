@@ -5,7 +5,6 @@ use crate::error::Nested;
 use crate::localization::Localised;
 use crate::localization::{self};
 use colored::*;
-use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed::LanguageLoader;
 use i18n_embed_fl::fl;
@@ -18,9 +17,7 @@ use ubyte::ToByteUnit;
 use unic_langid::langid;
 use unic_langid::LanguageIdentifier;
 
-#[derive(FromVariants)]
 pub(crate) enum Error {
-    #[from_variants(skip)]
     LangLoad(i18n_embed::I18nEmbedError),
     Env(crate::env::Error),
     Stdout,
@@ -104,7 +101,7 @@ fn visual_len(lang: &LanguageIdentifier, msg: &str) -> usize {
 
 /// Basic stats about the current machine.
 pub(crate) fn stats(env: &Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
-    let alpm = env.alpm()?;
+    let alpm = env.alpm().map_err(Error::Env)?;
     let mut w = BufWriter::new(std::io::stdout());
 
     let pkgs = installed_packages(&alpm);

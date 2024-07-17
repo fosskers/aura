@@ -2,19 +2,16 @@
 
 use crate::localization::Localised;
 use aura_core::aur::dependencies as deps;
-use from_variants::FromVariants;
 use i18n_embed::fluent::FluentLanguageLoader;
 use log::error;
 
 /// Error type for all issues that can occur in the Aura library or executable.
-#[derive(FromVariants)]
 pub(crate) enum Error {
     A(crate::command::aur::Error),
     B(crate::command::snapshot::Error),
     C(crate::command::cache::Error),
     L(crate::command::logs::Error),
     O(crate::command::orphans::Error),
-    Dirs(crate::dirs::Error),
     /// A non-zero exit code was returned from a call to Pacman.
     Pacman(crate::pacman::Error),
     Env(crate::env::Error),
@@ -23,6 +20,72 @@ pub(crate) enum Error {
     Open(crate::open::Error),
     Stats(crate::stats::Error),
     Deps(crate::deps::Error),
+}
+
+impl From<crate::deps::Error> for Error {
+    fn from(v: crate::deps::Error) -> Self {
+        Self::Deps(v)
+    }
+}
+
+impl From<crate::open::Error> for Error {
+    fn from(v: crate::open::Error) -> Self {
+        Self::Open(v)
+    }
+}
+
+impl From<crate::stats::Error> for Error {
+    fn from(v: crate::stats::Error) -> Self {
+        Self::Stats(v)
+    }
+}
+
+impl From<crate::conf::Error> for Error {
+    fn from(v: crate::conf::Error) -> Self {
+        Self::Conf(v)
+    }
+}
+
+impl From<crate::command::orphans::Error> for Error {
+    fn from(v: crate::command::orphans::Error) -> Self {
+        Self::O(v)
+    }
+}
+
+impl From<crate::command::logs::Error> for Error {
+    fn from(v: crate::command::logs::Error) -> Self {
+        Self::L(v)
+    }
+}
+
+impl From<crate::command::cache::Error> for Error {
+    fn from(v: crate::command::cache::Error) -> Self {
+        Self::C(v)
+    }
+}
+
+impl From<crate::command::snapshot::Error> for Error {
+    fn from(v: crate::command::snapshot::Error) -> Self {
+        Self::B(v)
+    }
+}
+
+impl From<crate::env::Error> for Error {
+    fn from(v: crate::env::Error) -> Self {
+        Self::Env(v)
+    }
+}
+
+impl From<crate::command::aur::Error> for Error {
+    fn from(v: crate::command::aur::Error) -> Self {
+        Self::A(v)
+    }
+}
+
+impl From<crate::pacman::Error> for Error {
+    fn from(v: crate::pacman::Error) -> Self {
+        Self::Pacman(v)
+    }
 }
 
 impl Nested for Error {
@@ -34,7 +97,6 @@ impl Nested for Error {
             Error::C(e) => e.nested(),
             Error::L(e) => e.nested(),
             Error::O(e) => e.nested(),
-            Error::Dirs(e) => e.nested(),
             Error::Pacman(e) => e.nested(),
             Error::Env(e) => e.nested(),
             Error::Conf(e) => e.nested(),
@@ -54,7 +116,6 @@ impl Localised for Error {
             Error::C(e) => e.localise(fll),
             Error::L(e) => e.localise(fll),
             Error::O(e) => e.localise(fll),
-            Error::Dirs(e) => e.localise(fll),
             Error::Pacman(e) => e.localise(fll),
             Error::Env(e) => e.localise(fll),
             Error::Conf(e) => e.localise(fll),
