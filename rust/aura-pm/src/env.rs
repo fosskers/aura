@@ -362,6 +362,10 @@ impl Aur {
             self.noconfirm = true;
         }
 
+        if let Some(pb) = flags.build.as_deref() {
+            self.build = pb.to_path_buf();
+        }
+
         // NOTE If `check` were found in `makepkg.conf`, then the flag should
         // override it. If `!check` were found or there were nothing, then the
         // flag agrees with it and `false` is taken.

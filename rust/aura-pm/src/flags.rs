@@ -1221,6 +1221,14 @@ pub struct Aur {
     #[clap(group = "aur", long, short, value_name = "package", display_order = 1)]
     pub pkgbuild: Option<String>,
 
+    /// The path in which to build packages.
+    #[clap(long, display_order = 4, value_name = "path")]
+    pub build: Option<PathBuf>,
+
+    /// View diffs of PKGBUILDs and related build files before building.
+    #[clap(long, short = 'k', display_order = 4)]
+    pub diff: bool,
+
     /// View/edit PKGBUILDs and related build files before building.
     #[clap(long, display_order = 4)]
     pub hotedit: bool,
@@ -1228,10 +1236,6 @@ pub struct Aur {
     /// Run shellcheck on PKGBUILDs before building.
     #[clap(long, display_order = 4)]
     pub shellcheck: bool,
-
-    /// View diffs of PKGBUILDs and related build files before building.
-    #[clap(long, short = 'k', display_order = 4)]
-    pub diff: bool,
 
     /// Remove makedeps after building.
     #[clap(long, short = 'a', display_order = 4)]
