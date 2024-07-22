@@ -7,6 +7,7 @@ use colored::ColoredString;
 use colored::Colorize;
 use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
+use karen::RunningAs;
 use nonempty_collections::NEVec;
 use rustyline::Editor;
 use std::io::Write;
@@ -138,6 +139,11 @@ pub(crate) fn sudo(env: &Env) -> Result<(), SudoError> {
         .with_env(&["LANG", "EDITOR"])
         .map_err(|_| SudoError)
         .void()
+}
+
+/// Is Aura being run by the root user?
+pub(crate) fn is_root_user() -> bool {
+    matches!(karen::check(), RunningAs::Root)
 }
 
 /// An [`Iterator`] that knows if the current iteration step is the last one.

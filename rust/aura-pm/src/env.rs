@@ -101,6 +101,7 @@ pub(crate) struct Env {
     /// Settings from a `makepkg.conf`.
     #[serde(skip_serializing)]
     pub(crate) makepkg: Option<Makepkg>,
+    pub(crate) is_root: bool,
 }
 
 impl Env {
@@ -125,7 +126,7 @@ impl Env {
             }
         };
 
-        let e = Env {
+        let mut e = Env {
             general: general.unwrap_or_default(),
             aur: aur.unwrap_or_else(Aur::try_default).map_err(Error::Dirs)?,
             backups: backups
@@ -133,7 +134,17 @@ impl Env {
                 .map_err(Error::Dirs)?,
             pacman: pacmanconf::Config::new().map_err(Error::PConf)?,
             makepkg,
+            is_root: crate::utils::is_root_user(),
         };
+
+        // Special override. When running as root, we intend to build as
+        // `nobody`. By building in `/tmp` we avoid:
+        //
+        // 1. The fact that the `$HOME` of `nobody` is `/`.
+        // 2. `mkdir -p` fails if under `/root/.cache/`.
+        if e.is_root {
+            e.aur.build = PathBuf::from("/tmp/aura/builds");
+        }
 
         Ok(e)
     }

@@ -536,7 +536,7 @@ fn install_work(
         let builts = build::build(
             fll,
             &caches,
-            &env.aur,
+            env,
             &alpm,
             &env.general.editor,
             is_single,

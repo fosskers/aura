@@ -1,5 +1,6 @@
 use crate::aln;
 use crate::aura;
+use crate::env::Env;
 use crate::error::Nested;
 use crate::localization::Localised;
 use crate::proceed;
@@ -41,6 +42,7 @@ pub(crate) enum Error {
     Makepkg,
     PkgctlBuild,
     Cancelled,
+    Permissions(PathBuf),
 }
 
 impl Nested for Error {
@@ -63,6 +65,7 @@ impl Nested for Error {
             Error::Makepkg => {}
             Error::Cancelled => {}
             Error::PkgctlBuild => {}
+            Error::Permissions(_) => {}
         }
     }
 }
@@ -83,6 +86,7 @@ impl Localised for Error {
             Error::CreateDir(p, _) => fl!(fll, "dir-mkdir", dir = p.utf8()),
             Error::ReadDir(p, _) => fl!(fll, "err-read-dir", dir = p.utf8()),
             Error::Pkglist(p, _) => fl!(fll, "A-build-pkglist", dir = p.utf8()),
+            Error::Permissions(p) => fl!(fll, "A-build-e-perm", dir = p.utf8()),
         }
     }
 }
@@ -106,7 +110,7 @@ pub(crate) struct Built {
 pub(crate) fn build<I>(
     fll: &FluentLanguageLoader,
     caches: &[&Path],
-    aur: &crate::env::Aur,
+    env: &Env,
     alpm: &Alpm,
     editor: &str,
     // Was there only ever one package to be built? If so, we don't prompt the
@@ -121,7 +125,7 @@ where
     aura!(fll, "A-build-prep");
 
     let to_install = pkg_clones
-        .map(|path| build_one(fll, caches, aur, alpm, editor, requested, path))
+        .map(|path| build_one(fll, caches, env, alpm, editor, requested, path))
         .map(|r| build_check(fll, is_single, r))
         .collect::<Result<Vec<Option<Built>>, Error>>()?
         .into_iter()
@@ -134,7 +138,7 @@ where
 fn build_one(
     fll: &FluentLanguageLoader,
     caches: &[&Path],
-    aur: &crate::env::Aur,
+    env: &Env,
     alpm: &Alpm,
     editor: &str,
     requested: &HashSet<&str>,
@@ -155,7 +159,7 @@ fn build_one(
     aura!(fll, "A-build-pkg", pkg = base.cyan().bold().to_string());
 
     // --- Prepare the Build Directory --- //
-    let build_dir = aur.build.join(base);
+    let build_dir = env.aur.build.join(base);
     // TODO 2024-06-13 Consider giving the option to wipe the build dir every time.
     //
     // Sometimes certain packages don't want to have `configure` ran more than once, etc.
@@ -186,20 +190,26 @@ fn build_one(
         .ok()
         .map_err(Error::CopyBuildFiles)?;
 
-    if aur.diff {
-        show_diffs(fll, &aur.hashes, &clone, base)?;
+    if env.aur.diff {
+        show_diffs(fll, &env.aur.hashes, &clone, base)?;
     }
 
-    if aur.hotedit {
+    if env.aur.hotedit {
         overwrite_build_files(fll, editor, &build_dir, base)?;
     }
 
-    if aur.shellcheck {
+    if env.aur.shellcheck {
         shellcheck(fll, &build_dir)?;
     }
 
     let tarballs = {
-        let tarballs = if aur.chroot.contains(base) {
+        // NOTE 2024-07-23 `pkgctl build` cannot be used as root, as it invokes
+        // `makepkg` internally. Nor can it be used by proxy through `nobody`,
+        // since the `$HOME` value of `nobody` is `/` and `pkgctl` attempts to
+        // `mkdir -p` from there, which it can't. Hacking `HOME=/tmp` also
+        // doesn't work, since the user of `pkgbuild build` needs to be a sudoer
+        // in order to download packages for the chroot.
+        let tarballs = if env.is_root.not() && env.aur.chroot.contains(base) {
             let dbs = alpm.as_ref().syncdbs();
             let aur_deps: Vec<_> = info
                 .base
@@ -216,7 +226,7 @@ fn build_one(
 
             pkgctl_build(&build_dir, &aur_deps)
         } else {
-            makepkg(&build_dir, aur.nocheck)
+            makepkg(env, &build_dir)
         }?;
 
         for tb in tarballs.iter() {
@@ -247,7 +257,7 @@ fn build_one(
         };
 
         // --- Copy all build artifacts to the cache, and then ignore any sig files --- //
-        copy_to_cache(&aur.cache, tars_to_copy)?
+        copy_to_cache(&env.aur.cache, tars_to_copy)?
             .into_iter()
             .filter(|path| {
                 path.as_path()
@@ -397,13 +407,22 @@ fn pkgctl_build(within: &Path, deps: &[PkgPath]) -> Result<Vec<PkgPath>, Error> 
         .then_some(())
         .ok_or(Error::PkgctlBuild)?;
 
-    tarball_paths(within)
+    tarball_paths(false, within)
 }
 
 /// Build each package specified by the `PKGBUILD` and yield a list of the built
 /// tarballs.
-fn makepkg(within: &Path, nocheck: bool) -> Result<Vec<PkgPath>, Error> {
-    let mut cmd = Command::new("makepkg");
+fn makepkg(env: &Env, within: &Path) -> Result<Vec<PkgPath>, Error> {
+    let mut cmd = if env.is_root {
+        // Assumption: The `nobody` user always exists.
+        nobody_permissions(within)?;
+
+        let mut c = Command::new(env.sudo());
+        c.arg("-u").arg("nobody").arg("makepkg");
+        c
+    } else {
+        Command::new("makepkg")
+    };
 
     // TODO Remove or rethink
     //
@@ -418,9 +437,11 @@ fn makepkg(within: &Path, nocheck: bool) -> Result<Vec<PkgPath>, Error> {
     // general to speed up rebuilds.
     cmd.arg("-f");
 
-    if nocheck {
+    if env.aur.nocheck {
         cmd.arg("--nocheck");
     }
+
+    debug!("Running makepkg within: {}", within.display());
 
     cmd.current_dir(within)
         .status()
@@ -432,13 +453,44 @@ fn makepkg(within: &Path, nocheck: bool) -> Result<Vec<PkgPath>, Error> {
         .then_some(())
         .ok_or(Error::Makepkg)?;
 
-    tarball_paths(within)
+    tarball_paths(env.is_root, within)
 }
 
-fn tarball_paths(within: &Path) -> Result<Vec<PkgPath>, Error> {
+/// Grant write permissions to the given build directory for the `nobody` user.
+/// This should only occur when Aura is being run by the true root user.
+fn nobody_permissions(within: &Path) -> Result<(), Error> {
+    debug!("Setting a+w permissions within: {}", within.display());
+
+    let status = Command::new("chown")
+        .arg("-R")
+        .arg("nobody")
+        .arg(within)
+        .status()
+        .map_err(|_| Error::Permissions(within.to_path_buf()))?;
+
+    if status.success() {
+        Ok(())
+    } else {
+        Err(Error::Permissions(within.to_path_buf()))
+    }
+}
+
+fn tarball_paths(is_root: bool, within: &Path) -> Result<Vec<PkgPath>, Error> {
+    let mut cmd = if is_root {
+        let mut c = Command::new("sudo");
+        c.arg("-u")
+            .arg("nobody")
+            .arg("makepkg")
+            .arg("--packagelist");
+        c
+    } else {
+        let mut c = Command::new("makepkg");
+        c.arg("--packagelist");
+        c
+    };
+
     // NOTE Outputs absolute paths.
-    let bytes = Command::new("makepkg")
-        .arg("--packagelist")
+    let bytes = cmd
         .current_dir(within)
         .output()
         .map_err(|e| Error::Pkglist(within.to_path_buf(), e))?
