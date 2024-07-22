@@ -14,7 +14,7 @@ name = "aura"
 path = "src/main.rs"
 
 [dependencies]
-aura-core = { version = "0.7", path = "../aura-core" }
+aura-core = { version = "0.7.1", path = "../aura-core" }
 r2d2-alpm = { version = "0.2", path = "../r2d2-alpm" }
 
 alpm = "3.0"
