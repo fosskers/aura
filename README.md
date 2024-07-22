@@ -41,6 +41,9 @@ Welcome to the main repository for Aura, a secure, multilingual package manager 
 Check out [The Aura Book](https://fosskers.github.io/aura/) for all knowledge
 and usage instructions!
 
+> 💡 Aura's port to Rust is nearly complete. If you want early access, try out
+> the [aura-git](https://aur.archlinux.org/packages/aura-git) package.
+
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 
 **Table of Contents**
