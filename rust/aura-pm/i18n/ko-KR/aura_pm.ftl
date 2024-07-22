@@ -19,6 +19,7 @@ A-build-e-makepkg = makepkg를 실패했습니다.
 # A-build-e-tarball = Failed to move: { $file }
 # A-build-e-filename = Failed to extract filename from: { $file }
 # A-build-e-copies = Failed to copy build files.
+# A-build-e-perm = Failed to set file permissions for: { $dir }
 # A-build-pkglist = Failed to determine makepkg output paths from: { $dir }
 A-build-pull = 최신 버전 'git pull'을 실패했습니다.
 A-build-continue = 계속하시겠습니까?

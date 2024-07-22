@@ -19,6 +19,7 @@ A-build-e-edit = { $file } の編集が失敗した。
 A-build-e-tarball = { $file } の移動が失敗した。
 A-build-e-filename = { $file } のファイル名を抽出できなかった。
 A-build-e-copies = ビルドファイルをコピーできなかった。
+A-build-e-perm = { $dir } の所有権移動に失敗した。
 A-build-pkglist = { $dir } から、makepkgの出力ファイルを発見できなった。
 A-build-pull = 最新のコミットをダウンロードできなった。やや古いバージョンがビルドされる可能性あり！
 A-build-continue = それでも続行する？

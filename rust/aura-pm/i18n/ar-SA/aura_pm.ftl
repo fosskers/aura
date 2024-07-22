@@ -20,6 +20,7 @@ A-build-e-makepkg = .makepkgهناك فشل في اﻟ
 # A-build-e-tarball = Failed to move: { $file }
 # A-build-e-filename = Failed to extract filename from: { $file }
 # A-build-e-copies = Failed to copy build files.
+# A-build-e-perm = Failed to set file permissions for: { $dir }
 # A-build-pkglist = Failed to determine makepkg output paths from: { $dir }
 A-build-pull = .على اخر تحديث 'git pull' فشل حصول
 A-build-continue = هل ترغب في الاستمرار على أي حال؟

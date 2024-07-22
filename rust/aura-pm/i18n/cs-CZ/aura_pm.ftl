@@ -19,6 +19,7 @@ A-build-e-makepkg = Došlo k chybě makepkg.
 # A-build-e-tarball = Failed to move: { $file }
 # A-build-e-filename = Failed to extract filename from: { $file }
 # A-build-e-copies = Failed to copy build files.
+# A-build-e-perm = Failed to set file permissions for: { $dir }
 # A-build-pkglist = Failed to determine makepkg output paths from: { $dir }
 A-build-pull = Nepodařilo se 'git stáhnout' nejnovější aktualizace.
 A-build-continue = Chcete přesto pokračovat?
