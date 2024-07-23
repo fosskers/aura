@@ -43,7 +43,7 @@ const FIVE_HUNDRED_MB: i64 = 524_288_000;
 const CMPR_SWITCH: i64 = 1_577_404_800;
 
 pub(crate) enum Error {
-    Readline(rustyline::error::ReadlineError),
+    Readline(std::io::Error),
     Sudo(crate::utils::SudoError),
     Pacman(crate::pacman::Error),
     Cancelled,

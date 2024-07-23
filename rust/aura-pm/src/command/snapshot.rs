@@ -26,7 +26,7 @@ use time::macros::format_description;
 
 pub(crate) enum Error {
     Pacman(crate::pacman::Error),
-    Readline(rustyline::error::ReadlineError),
+    Readline(std::io::Error),
     JsonWrite(PathBuf, serde_json::Error),
     DeleteFile(PathBuf, std::io::Error),
     OpenFile(PathBuf, std::io::Error),

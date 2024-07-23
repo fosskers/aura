@@ -9,7 +9,6 @@ use i18n_embed::fluent::FluentLanguageLoader;
 use i18n_embed_fl::fl;
 use karen::RunningAs;
 use nonempty_collections::NEVec;
-use rustyline::Editor;
 use std::io::Write;
 use std::iter::Peekable;
 use std::path::Path;
@@ -97,25 +96,38 @@ fn pad(mult: usize, longest: usize, s: &str) -> usize {
 
 /// Prompt the user for confirmation.
 pub(crate) fn prompt(fll: &FluentLanguageLoader, msg: &str) -> Option<()> {
-    let mut rl = Editor::<(), _>::new().ok()?;
-    let line = rl.readline(msg).ok()?;
-    let accept_small = fl!(fll, "proceed-affirmative");
-    let accept_large = fl!(fll, "proceed-affirmative-alt");
+    print!("{msg}");
+    std::io::stdout().flush().ok()?;
 
-    (line.is_empty() || line == accept_small || line == accept_large).then_some(())
+    let mut input = String::new();
+    match std::io::stdin().read_line(&mut input) {
+        Err(_) => todo!(),
+        Ok(_) => {
+            let line = input.trim();
+            let accept_small = fl!(fll, "proceed-affirmative");
+            let accept_large = fl!(fll, "proceed-affirmative-alt");
+            (line.is_empty() || line == accept_small || line == accept_large).then_some(())
+        }
+    }
 }
 
 /// Prompt the user for a numerical selection.
-pub(crate) fn select(msg: &str, max: usize) -> Result<usize, rustyline::error::ReadlineError> {
-    let mut rl = Editor::<(), _>::new()?;
+pub(crate) fn select(msg: &str, max: usize) -> Result<usize, std::io::Error> {
+    let mut input = String::new();
+    let stdin = std::io::stdin();
+    let mut stdout = std::io::stdout();
 
     loop {
-        let raw = rl.readline(msg)?;
+        print!("{msg}");
+        stdout.flush()?;
+        stdin.read_line(&mut input)?;
 
-        if let Ok(num) = usize::from_str(&raw) {
+        if let Ok(num) = usize::from_str(input.trim()) {
             if max >= num {
                 return Ok(num);
             }
+        } else {
+            input.clear();
         }
     }
 }
