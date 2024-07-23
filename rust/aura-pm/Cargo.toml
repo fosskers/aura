@@ -20,7 +20,7 @@ r2d2-alpm = { version = "0.2", path = "../r2d2-alpm" }
 alpm = "3.0"
 applying = "1.0.0"
 basic-toml = "0.1"
-clap = { version = "4.4", features = ["derive"] }
+clap = { version = "4.5", default-features = false, features = ["std", "derive", "help", "usage", "error-context"] }
 colored = "2.0"
 curl = "0.4"
 i18n-embed = { version = "0.14", features = ["fluent-system"] }
