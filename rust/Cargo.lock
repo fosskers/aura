@@ -99,7 +99,6 @@ dependencies = [
  "alpm",
  "alpm-utils",
  "applying",
- "disown",
  "itertools",
  "log",
  "nonempty-collections",
@@ -374,12 +373,6 @@ dependencies = [
  "block-buffer",
  "crypto-common",
 ]
-
-[[package]]
-name = "disown"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5702af1e33e4532aa17e19d17becde57ae619985754ae3cd731f82e7dcd673c"
 
 [[package]]
 name = "displaydoc"

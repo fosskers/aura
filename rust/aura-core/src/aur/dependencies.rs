@@ -1,7 +1,6 @@
 //! AUR package dependency solving.
 
 use applying::Apply;
-use disown::Disown;
 use log::debug;
 use log::info;
 use nonempty_collections::nev;
@@ -386,7 +385,9 @@ where
                             .flat_map(|av| av.vec)
                             .chain(prov)
                             .map(strip_version)
-                            .for_each(|p| r.provided.insert(p).disown())
+                            .for_each(|p| {
+                                r.provided.insert(p);
+                            })
                     })?;
 
                     deps_copy
