@@ -17,7 +17,7 @@ const DEFAULT_PAC_CONF: &str = "/etc/pacman.conf";
 
 pub(crate) enum Error {
     PathToAuraConfig(crate::dirs::Error),
-    SerializeEnv(toml::ser::Error),
+    SerializeEnv(basic_toml::Error),
     CouldntOpen(PathBuf, std::io::Error),
 }
 
@@ -48,7 +48,7 @@ pub(crate) fn general(env: &Env) {
 
 /// Output your current, full Aura config as legal TOML.
 pub(crate) fn gen(env: &Env) -> Result<(), Error> {
-    let s = toml::ser::to_string_pretty(env).map_err(Error::SerializeEnv)?;
+    let s = basic_toml::to_string(env).map_err(Error::SerializeEnv)?;
     println!("{s}");
     Ok(())
 }

@@ -75,7 +75,7 @@ impl RawEnv {
 
         debug!("Reading: {}", config.display());
         let s = std::fs::read_to_string(config).ok()?;
-        toml::from_str(&s).ok()
+        basic_toml::from_str(&s).ok()
     }
 }
 
@@ -109,6 +109,7 @@ impl Env {
         // Read the config file, if it's there. We don't actually mind if it isn't,
         // because sensible defaults can (probably) be set anyway.
         let raw: Option<RawEnv> = RawEnv::try_new();
+        debug!("Raw config parse successful: {}", raw.is_some());
         let (general, aur, backups) = match raw {
             Some(re) => (
                 re.general.map(|rg| rg.into()),
@@ -473,7 +474,7 @@ mod test {
 
     #[test]
     fn empty_config_file() {
-        let e = toml::from_str::<RawEnv>("").unwrap();
+        let e = basic_toml::from_str::<RawEnv>("").unwrap();
         assert!(e.general.is_none());
         assert!(e.aur.is_none());
         assert!(e.backups.is_none());
@@ -482,7 +483,7 @@ mod test {
     #[test]
     fn bare_config() {
         let file = std::fs::read_to_string("tests/bare-config.toml").unwrap();
-        let e = toml::from_str::<RawEnv>(&file).unwrap();
+        let e = basic_toml::from_str::<RawEnv>(&file).unwrap();
         assert!(e.general.is_some());
         assert!(e.aur.is_some());
         assert!(e.backups.is_some());
@@ -491,7 +492,7 @@ mod test {
     #[test]
     fn simple_config() {
         let file = std::fs::read_to_string("tests/simple-config.toml").unwrap();
-        let aur = toml::from_str::<RawEnv>(&file).unwrap().aur.unwrap();
+        let aur = basic_toml::from_str::<RawEnv>(&file).unwrap().aur.unwrap();
         let exp: HashSet<_> = ["foo".to_string(), "bar".to_string()].into();
         assert_eq!(exp, aur.ignores);
     }
