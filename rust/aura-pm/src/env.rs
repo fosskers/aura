@@ -101,6 +101,8 @@ pub(crate) struct Env {
     /// Settings from a `makepkg.conf`.
     #[serde(skip_serializing)]
     pub(crate) makepkg: Option<Makepkg>,
+    /// Is Aura being run by by the root user?
+    #[serde(skip_serializing)]
     pub(crate) is_root: bool,
 }
 
