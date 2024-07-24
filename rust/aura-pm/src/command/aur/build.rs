@@ -407,18 +407,24 @@ fn pkgctl_build(within: &Path, deps: &[PkgPath]) -> Result<Vec<PkgPath>, Error> 
         .then_some(())
         .ok_or(Error::PkgctlBuild)?;
 
-    tarball_paths(false, within)
+    tarball_paths(None, within)
 }
 
 /// Build each package specified by the `PKGBUILD` and yield a list of the built
 /// tarballs.
 fn makepkg(env: &Env, within: &Path) -> Result<Vec<PkgPath>, Error> {
-    let mut cmd = if env.is_root {
+    let user = match env.aur.builduser.as_deref() {
+        Some(u) => Some(u),
         // Assumption: The `nobody` user always exists.
-        nobody_permissions(within)?;
+        None if env.is_root => Some("nobody"),
+        None => None,
+    };
+
+    let mut cmd = if let Some(u) = user {
+        user_permissions(within, u)?;
 
         let mut c = Command::new(env.sudo());
-        c.arg("-u").arg("nobody").arg("makepkg");
+        c.arg("-u").arg(u).arg("makepkg");
         c
     } else {
         Command::new("makepkg")
@@ -453,17 +459,16 @@ fn makepkg(env: &Env, within: &Path) -> Result<Vec<PkgPath>, Error> {
         .then_some(())
         .ok_or(Error::Makepkg)?;
 
-    tarball_paths(env.is_root, within)
+    tarball_paths(user, within)
 }
 
-/// Grant write permissions to the given build directory for the `nobody` user.
-/// This should only occur when Aura is being run by the true root user.
-fn nobody_permissions(within: &Path) -> Result<(), Error> {
+/// Grant write permissions to the given build directory for the given build user.
+fn user_permissions(within: &Path, user: &str) -> Result<(), Error> {
     debug!("Setting a+w permissions within: {}", within.display());
 
     let status = Command::new("chown")
         .arg("-R")
-        .arg("nobody")
+        .arg(user)
         .arg(within)
         .status()
         .map_err(|_| Error::Permissions(within.to_path_buf()))?;
@@ -475,13 +480,10 @@ fn nobody_permissions(within: &Path) -> Result<(), Error> {
     }
 }
 
-fn tarball_paths(is_root: bool, within: &Path) -> Result<Vec<PkgPath>, Error> {
-    let mut cmd = if is_root {
+fn tarball_paths(build_user: Option<&str>, within: &Path) -> Result<Vec<PkgPath>, Error> {
+    let mut cmd = if let Some(user) = build_user {
         let mut c = Command::new("sudo");
-        c.arg("-u")
-            .arg("nobody")
-            .arg("makepkg")
-            .arg("--packagelist");
+        c.arg("-u").arg(user).arg("makepkg").arg("--packagelist");
         c
     } else {
         let mut c = Command::new("makepkg");

@@ -33,6 +33,7 @@ Governed within the `[aur]` section.
 | `cache`        | string      | A path in which to store built package tarballs.             |
 | `clones`       | string      | A path in which to clone package metadata.                   |
 | `hashes`       | string      | A path in which to store the git hash of the latest build.   |
+| `builduser`    | string      | An alternate user to build as.                               |
 | `chroot`       | string list | Packages to build with `pkgctl build` in a chroot.           |
 | `ignores`      | string list | Packages to never update.                                    |
 | `git`          | bool        | Force update all VCS packages during `-Au`.                  |

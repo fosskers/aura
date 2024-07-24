@@ -1225,6 +1225,10 @@ pub struct Aur {
     #[clap(long, display_order = 4, value_name = "path")]
     pub build: Option<PathBuf>,
 
+    /// The user to build as.
+    #[clap(long, display_order = 4, value_name = "user")]
+    pub builduser: Option<String>,
+
     /// View diffs of PKGBUILDs and related build files before building.
     #[clap(long, short = 'k', display_order = 4)]
     pub diff: bool,

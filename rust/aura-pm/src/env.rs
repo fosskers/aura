@@ -273,6 +273,7 @@ struct RawAur {
     cache: Option<PathBuf>,
     clones: Option<PathBuf>,
     hashes: Option<PathBuf>,
+    builduser: Option<String>,
     #[serde(default)]
     chroot: HashSet<String>,
     #[serde(default)]
@@ -299,6 +300,7 @@ pub(crate) struct Aur {
     pub(crate) cache: PathBuf,
     pub(crate) clones: PathBuf,
     pub(crate) hashes: PathBuf,
+    pub(crate) builduser: Option<String>,
     /// Packages to build via `pkgctl build`.
     pub(crate) chroot: HashSet<String>,
     /// Packages to ignore entirely.
@@ -330,6 +332,7 @@ impl Aur {
             cache: dirs::tarballs()?,
             clones: dirs::clones()?,
             hashes: dirs::hashes()?,
+            builduser: None,
             chroot: HashSet::new(),
             ignores: HashSet::new(),
             git: false,
@@ -380,6 +383,10 @@ impl Aur {
             self.build = pb.to_path_buf();
         }
 
+        if let Some(bu) = flags.builduser.as_deref() {
+            self.builduser = Some(bu.to_string());
+        }
+
         // NOTE If `check` were found in `makepkg.conf`, then the flag should
         // override it. If `!check` were found or there were nothing, then the
         // flag agrees with it and `false` is taken.
@@ -411,6 +418,7 @@ impl TryFrom<RawAur> for Aur {
             cache,
             clones,
             hashes,
+            builduser: raw.builduser,
             chroot: raw.chroot,
             ignores: raw.ignores,
             git: raw.git,
