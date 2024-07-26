@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Downgrading Packages - The Aura User Guide</title>
+        <title>Migration Guide (v3 to v4) - The Aura User Guide</title>
 
 
         <!-- Custom HTML head -->
@@ -88,7 +88,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="philosophy.html"><strong aria-hidden="true">1.</strong> Philosophy</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="usage.html"><strong aria-hidden="true">3.</strong> Usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="pacman.html"><strong aria-hidden="true">3.1.</strong> Aura-as-Pacman</a></li><li class="chapter-item expanded "><a href="aur.html"><strong aria-hidden="true">3.2.</strong> Installing AUR Packages</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="storage.html"><strong aria-hidden="true">3.2.1.</strong> Package Storage Locations</a></li></ol></li><li class="chapter-item expanded "><a href="downgrading.html" class="active"><strong aria-hidden="true">3.3.</strong> Downgrading Packages</a></li><li class="chapter-item expanded "><a href="orphans.html"><strong aria-hidden="true">3.4.</strong> Managing Orphan Packages</a></li><li class="chapter-item expanded "><a href="snapshots.html"><strong aria-hidden="true">3.5.</strong> Package Set Snapshots</a></li><li class="chapter-item expanded "><a href="log.html"><strong aria-hidden="true">3.6.</strong> Log Interaction</a></li><li class="chapter-item expanded "><a href="deps.html"><strong aria-hidden="true">3.7.</strong> Dependency Analysis</a></li></ol></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">4.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">5.</strong> Appendix</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="localisation.html"><strong aria-hidden="true">5.1.</strong> Localisation Guide</a></li><li class="chapter-item expanded "><a href="migration.html"><strong aria-hidden="true">5.2.</strong> Migration Guide (v3 to v4)</a></li><li class="chapter-item expanded "><a href="faq.html"><strong aria-hidden="true">5.3.</strong> FAQ</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="philosophy.html"><strong aria-hidden="true">1.</strong> Philosophy</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="usage.html"><strong aria-hidden="true">3.</strong> Usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="pacman.html"><strong aria-hidden="true">3.1.</strong> Aura-as-Pacman</a></li><li class="chapter-item expanded "><a href="aur.html"><strong aria-hidden="true">3.2.</strong> Installing AUR Packages</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="storage.html"><strong aria-hidden="true">3.2.1.</strong> Package Storage Locations</a></li></ol></li><li class="chapter-item expanded "><a href="downgrading.html"><strong aria-hidden="true">3.3.</strong> Downgrading Packages</a></li><li class="chapter-item expanded "><a href="orphans.html"><strong aria-hidden="true">3.4.</strong> Managing Orphan Packages</a></li><li class="chapter-item expanded "><a href="snapshots.html"><strong aria-hidden="true">3.5.</strong> Package Set Snapshots</a></li><li class="chapter-item expanded "><a href="log.html"><strong aria-hidden="true">3.6.</strong> Log Interaction</a></li><li class="chapter-item expanded "><a href="deps.html"><strong aria-hidden="true">3.7.</strong> Dependency Analysis</a></li></ol></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">4.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">5.</strong> Appendix</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="localisation.html"><strong aria-hidden="true">5.1.</strong> Localisation Guide</a></li><li class="chapter-item expanded "><a href="migration.html" class="active"><strong aria-hidden="true">5.2.</strong> Migration Guide (v3 to v4)</a></li><li class="chapter-item expanded "><a href="faq.html"><strong aria-hidden="true">5.3.</strong> FAQ</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -176,62 +176,67 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="downgrading-packages"><a class="header" href="#downgrading-packages">Downgrading Packages</a></h1>
-<p>The <code>-C</code> command is used to interact with the Package Cache.</p>
-<h2 id="searching-the-cache"><a class="header" href="#searching-the-cache">Searching the Cache</a></h2>
-<p><code>-Cs</code> shows us what's available in the cache.</p>
-<pre><code>&gt; aura -Cs firefox
-/var/cache/pacman/pkg/firefox-127.0.2-1-x86_64.pkg.tar.zst
-/var/cache/pacman/pkg/firefox-126.0.1-1-x86_64.pkg.tar.zst
+                        <h1 id="migration-guide"><a class="header" href="#migration-guide">Migration Guide</a></h1>
+<p>v4 is a complete overhaul for Aura. Care has been taken to maintain prior usage
+patterns, but there are some changes that the user should be aware of. If you're
+new to Aura, you can skip this entirely and move straight to <a href="usage.html">Usage</a>.</p>
+<p>If you notice that something other than what is mentioned here used to work but
+no longer does, please <a href="https://github.com/fosskers/aura/issues">report it</a>.</p>
+<h2 id="sudo"><a class="header" href="#sudo">sudo</a></h2>
+<p>You no longer need to run Aura with <code>sudo</code> for "administrative" tasks. So:</p>
+<pre><code>&gt; aura -S firefox
 </code></pre>
-<p>We can get more intelligent output via <code>-Ci</code>:</p>
-<pre><code>&gt; aura -Ci firefox
-Name               : firefox
-Latest             : 127.0.2-1 [installed]
-Created            : 2024-06-29 04-12-38
-Signature          : Yes
-Tarball Size       : 69.01MiB
-Available Versions : 127.0.2-1, 126.0.1-1
+<p>"just works", and you'll be prompted for a password as necessary. This is true
+for all Aura commands.</p>
+<h2 id="package-building"><a class="header" href="#package-building">Package Building</a></h2>
+<h3 id="build-user-and-build-directory"><a class="header" href="#build-user-and-build-directory">Build User and Build Directory</a></h3>
+<p>Since <code>sudo</code> is no longer necessary, Aura runs entirely as your personal user,
+and thus <code>makepkg</code> is also invoked internally entirely as you. There are no
+longer any internal user switching hacks just to build packages. This fixes a
+number of historical bugs.</p>
+<p>Aura packages were previously built in <code>/tmp/</code>, but now they are built in
+<code>~/.cache/aura/builds/</code> by default. Aura also keeps its own cache, whereas
+previously all built package tarballs were moved to the pacman cache under
+<code>/var/</code>. Doing everything as the local user in the user's own section of the
+filesystem ensures that special permissions are never necessary.</p>
+<p>An exception to the above is when <code>aura</code> is run as the <code>root</code> user, for example
+on remote servers or within Docker containers. In these cases, <code>root</code> is
+detected and packages are built under <code>/tmp/</code> as the <code>nobody</code> user. Since
+<code>nobody</code> has no <code>$HOME</code> and no permissions to write anywhere else, this helps
+ensure that package building cannot harm your wider system.</p>
+<h3 id="makepkg-output-suppression-with--x"><a class="header" href="#makepkg-output-suppression-with--x">Makepkg output suppression with <code>-x</code></a></h3>
+<p><code>makepkg</code> output is now shown by default and cannot be hidden. <code>-x</code> is still
+provided to prevent old scripts from breaking, but it has no effect.</p>
+<h3 id="pkgbuild-diff-viewing-with--k"><a class="header" href="#pkgbuild-diff-viewing-with--k">PKGBUILD diff viewing with <code>-k</code></a></h3>
+<p>You are now prompted after the diff is printed so that you actually have a
+chance to read what has changed.</p>
+<h3 id="pkgbuild-analysis"><a class="header" href="#pkgbuild-analysis">PKGBUILD Analysis</a></h3>
+<p>The <code>-P</code> command has been removed entirely. Further, automatic analysis that
+occurred before building is now done through <code>shellcheck</code>.</p>
+<h2 id="configuration"><a class="header" href="#configuration">Configuration</a></h2>
+<p>Previously Aura was configured in <code>/etc/aura.conf</code> using a custom format. Now
+configuration files exist per-user in <code>~/.config/aura/config.toml</code> and use the
+TOML format. A fresh configuration file can be generated via:</p>
+<pre><code>aura conf --gen &gt; ~/.config/aura/config.toml
 </code></pre>
-<h2 id="downgrading"><a class="header" href="#downgrading">Downgrading</a></h2>
-<p>Let's say the newest version of some package is somehow broken. Let's downgrade:</p>
-<pre><code>&gt; aura -C firefox
-aura :: What version of firefox do you want?
- 0) 127.0.2-1
- 1) 126.0.1-1
-&gt;&gt;&gt; 1
-loading packages...
-warning: downgrading package firefox (127.0.2-1 =&gt; 126.0.1-1)
-resolving dependencies...
-looking for conflicting packages...
-
-Packages (1) firefox-126.0.1-1
-
-Total Installed Size:  239.53 MiB
-Net Upgrade Size:       -1.34 MiB
-
-:: Proceed with installation? [Y/n]
-</code></pre>
-<p>In fact, <code>-C</code> works even if we no longer have that package installed. All that
-matters is whether you have a copy of the old version in your cache.</p>
-<h2 id="cleaning-the-cache"><a class="header" href="#cleaning-the-cache">Cleaning the Cache</a></h2>
-<p><code>-Cc</code> can help keep our cache small.</p>
-<pre><code>&gt; aura -Cc 2
-aura :: Current cache size: 8.31GiB
-aura :: 2 of each package file will be kept. The rest will be deleted.
-aura :: Proceed? [Y/n] 
-aura :: 34.45MiB freed.
+<h3 id="locale"><a class="header" href="#locale">Locale</a></h3>
+<p>Aura will auto-detect your system's language from your <code>$LANG</code> variable, but
+it's still possible to override this with the <code>language</code> field. Previously the
+language code was just the language portion (e.g. <code>hi</code>), but now it requires the
+country portion as well (e.g. <code>hi-IN</code>, Hindi from India). Acceptable values can
+been found in the output of:</p>
+<pre><code>aura stats --lang
 </code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="storage.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="localisation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="orphans.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="faq.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -241,11 +246,11 @@ aura :: 34.45MiB freed.
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="storage.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="localisation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="orphans.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="faq.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

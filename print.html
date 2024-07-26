@@ -89,7 +89,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="philosophy.html"><strong aria-hidden="true">1.</strong> Philosophy</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="usage.html"><strong aria-hidden="true">3.</strong> Usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="pacman.html"><strong aria-hidden="true">3.1.</strong> Aura-as-Pacman</a></li><li class="chapter-item expanded "><a href="aur.html"><strong aria-hidden="true">3.2.</strong> Installing AUR Packages</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="storage.html"><strong aria-hidden="true">3.2.1.</strong> Package Storage Locations</a></li></ol></li><li class="chapter-item expanded "><a href="downgrading.html"><strong aria-hidden="true">3.3.</strong> Downgrading Packages</a></li><li class="chapter-item expanded "><a href="orphans.html"><strong aria-hidden="true">3.4.</strong> Managing Orphan Packages</a></li><li class="chapter-item expanded "><a href="snapshots.html"><strong aria-hidden="true">3.5.</strong> Package Set Snapshots</a></li><li class="chapter-item expanded "><a href="log.html"><strong aria-hidden="true">3.6.</strong> Log Interaction</a></li><li class="chapter-item expanded "><a href="deps.html"><strong aria-hidden="true">3.7.</strong> Dependency Analysis</a></li></ol></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">4.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">5.</strong> Appendix</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="localisation.html"><strong aria-hidden="true">5.1.</strong> Localisation Guide</a></li><li class="chapter-item expanded "><a href="faq.html"><strong aria-hidden="true">5.2.</strong> FAQ</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="philosophy.html"><strong aria-hidden="true">1.</strong> Philosophy</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="usage.html"><strong aria-hidden="true">3.</strong> Usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="pacman.html"><strong aria-hidden="true">3.1.</strong> Aura-as-Pacman</a></li><li class="chapter-item expanded "><a href="aur.html"><strong aria-hidden="true">3.2.</strong> Installing AUR Packages</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="storage.html"><strong aria-hidden="true">3.2.1.</strong> Package Storage Locations</a></li></ol></li><li class="chapter-item expanded "><a href="downgrading.html"><strong aria-hidden="true">3.3.</strong> Downgrading Packages</a></li><li class="chapter-item expanded "><a href="orphans.html"><strong aria-hidden="true">3.4.</strong> Managing Orphan Packages</a></li><li class="chapter-item expanded "><a href="snapshots.html"><strong aria-hidden="true">3.5.</strong> Package Set Snapshots</a></li><li class="chapter-item expanded "><a href="log.html"><strong aria-hidden="true">3.6.</strong> Log Interaction</a></li><li class="chapter-item expanded "><a href="deps.html"><strong aria-hidden="true">3.7.</strong> Dependency Analysis</a></li></ol></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">4.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">5.</strong> Appendix</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="localisation.html"><strong aria-hidden="true">5.1.</strong> Localisation Guide</a></li><li class="chapter-item expanded "><a href="migration.html"><strong aria-hidden="true">5.2.</strong> Migration Guide (v3 to v4)</a></li><li class="chapter-item expanded "><a href="faq.html"><strong aria-hidden="true">5.3.</strong> FAQ</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -754,7 +754,7 @@ config:</p>
 hotedit = true
 </code></pre>
 <h2 id="updating-your-aur-packages"><a class="header" href="#updating-your-aur-packages">Updating your AUR Packages</a></h2>
-<p><code>aura -Au</code> is the standard command, ran without <code>sudo</code>.</p>
+<p><code>aura -Au</code> is the standard command, and is run without <code>sudo</code>.</p>
 <pre><code>&gt; aura -Au
 aura :: Fetching package information...
 aura :: Comparing package versions...
@@ -774,7 +774,7 @@ aura :: AUR packages:
 aura :: Proceed? [Y/n]
 </code></pre>
 <p>The options that apply to normal <code>-A</code>, like <code>-a</code> and <code>--hotedit</code>, also apply
-here. Of course, its simplest to set those in config if you know your
+here. Of course, it's simplest to set those in config if you know your
 preferences. See <code>man aura</code> or <code>aura -Ah</code> for more options.</p>
 <h3 id="displaying-pkgbuild-changes"><a class="header" href="#displaying-pkgbuild-changes">Displaying PKGBUILD Changes</a></h3>
 <p>Hey wait a minute, aren't we supposed to check PKGBUILDs before building
@@ -912,6 +912,11 @@ chroot = ["fortls", "timelineproject-hg"]
 <p>This means that when these particular packages are built, it will be done in a
 <code>chroot</code>. Transitive AUR dependencies will be injected properly into the build
 environment.</p>
+<h3 id="using-a-build-user"><a class="header" href="#using-a-build-user">Using a "build user"</a></h3>
+<p>The flags <code>--build</code> and <code>--builduser</code> can be used to alter where the building
+occurs and under which user it occurs, respectively. While usually not necessary
+by default, these can be useful for system administrators who want stricter
+control.</p>
 <h3 id="blindly-accepting-all-prompts"><a class="header" href="#blindly-accepting-all-prompts">Blindly Accepting all Prompts</a></h3>
 <p>Tired of pressing the <code>Enter</code> key? Or maybe you've automated <code>aura</code> into a
 script. In these cases, you may want to accept all prompts automatically.
@@ -1438,6 +1443,57 @@ instance, the various <code>zh</code> Chinese languages), Aura's code can be alt
 specifically dispatch on that country. Please bring it up when discussing your
 submission.</p>
 <p>If you're still unsure, please ask.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="migration-guide"><a class="header" href="#migration-guide">Migration Guide</a></h1>
+<p>v4 is a complete overhaul for Aura. Care has been taken to maintain prior usage
+patterns, but there are some changes that the user should be aware of. If you're
+new to Aura, you can skip this entirely and move straight to <a href="usage.html">Usage</a>.</p>
+<p>If you notice that something other than what is mentioned here used to work but
+no longer does, please <a href="https://github.com/fosskers/aura/issues">report it</a>.</p>
+<h2 id="sudo"><a class="header" href="#sudo">sudo</a></h2>
+<p>You no longer need to run Aura with <code>sudo</code> for "administrative" tasks. So:</p>
+<pre><code>&gt; aura -S firefox
+</code></pre>
+<p>"just works", and you'll be prompted for a password as necessary. This is true
+for all Aura commands.</p>
+<h2 id="package-building"><a class="header" href="#package-building">Package Building</a></h2>
+<h3 id="build-user-and-build-directory"><a class="header" href="#build-user-and-build-directory">Build User and Build Directory</a></h3>
+<p>Since <code>sudo</code> is no longer necessary, Aura runs entirely as your personal user,
+and thus <code>makepkg</code> is also invoked internally entirely as you. There are no
+longer any internal user switching hacks just to build packages. This fixes a
+number of historical bugs.</p>
+<p>Aura packages were previously built in <code>/tmp/</code>, but now they are built in
+<code>~/.cache/aura/builds/</code> by default. Aura also keeps its own cache, whereas
+previously all built package tarballs were moved to the pacman cache under
+<code>/var/</code>. Doing everything as the local user in the user's own section of the
+filesystem ensures that special permissions are never necessary.</p>
+<p>An exception to the above is when <code>aura</code> is run as the <code>root</code> user, for example
+on remote servers or within Docker containers. In these cases, <code>root</code> is
+detected and packages are built under <code>/tmp/</code> as the <code>nobody</code> user. Since
+<code>nobody</code> has no <code>$HOME</code> and no permissions to write anywhere else, this helps
+ensure that package building cannot harm your wider system.</p>
+<h3 id="makepkg-output-suppression-with--x"><a class="header" href="#makepkg-output-suppression-with--x">Makepkg output suppression with <code>-x</code></a></h3>
+<p><code>makepkg</code> output is now shown by default and cannot be hidden. <code>-x</code> is still
+provided to prevent old scripts from breaking, but it has no effect.</p>
+<h3 id="pkgbuild-diff-viewing-with--k"><a class="header" href="#pkgbuild-diff-viewing-with--k">PKGBUILD diff viewing with <code>-k</code></a></h3>
+<p>You are now prompted after the diff is printed so that you actually have a
+chance to read what has changed.</p>
+<h3 id="pkgbuild-analysis-1"><a class="header" href="#pkgbuild-analysis-1">PKGBUILD Analysis</a></h3>
+<p>The <code>-P</code> command has been removed entirely. Further, automatic analysis that
+occurred before building is now done through <code>shellcheck</code>.</p>
+<h2 id="configuration"><a class="header" href="#configuration">Configuration</a></h2>
+<p>Previously Aura was configured in <code>/etc/aura.conf</code> using a custom format. Now
+configuration files exist per-user in <code>~/.config/aura/config.toml</code> and use the
+TOML format. A fresh configuration file can be generated via:</p>
+<pre><code>aura conf --gen &gt; ~/.config/aura/config.toml
+</code></pre>
+<h3 id="locale"><a class="header" href="#locale">Locale</a></h3>
+<p>Aura will auto-detect your system's language from your <code>$LANG</code> variable, but
+it's still possible to override this with the <code>language</code> field. Previously the
+language code was just the language portion (e.g. <code>hi</code>), but now it requires the
+country portion as well (e.g. <code>hi-IN</code>, Hindi from India). Acceptable values can
+been found in the output of:</p>
+<pre><code>aura stats --lang
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="faq"><a class="header" href="#faq">FAQ</a></h1>
 <h2 id="why-doesnt-package-xyz-build"><a class="header" href="#why-doesnt-package-xyz-build">Why doesn't package XYZ build?</a></h2>
 <p>If you're on the most recent version of Aura and are still having problems, this

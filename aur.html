@@ -88,7 +88,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="philosophy.html"><strong aria-hidden="true">1.</strong> Philosophy</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="usage.html"><strong aria-hidden="true">3.</strong> Usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="pacman.html"><strong aria-hidden="true">3.1.</strong> Aura-as-Pacman</a></li><li class="chapter-item expanded "><a href="aur.html" class="active"><strong aria-hidden="true">3.2.</strong> Installing AUR Packages</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="storage.html"><strong aria-hidden="true">3.2.1.</strong> Package Storage Locations</a></li></ol></li><li class="chapter-item expanded "><a href="downgrading.html"><strong aria-hidden="true">3.3.</strong> Downgrading Packages</a></li><li class="chapter-item expanded "><a href="orphans.html"><strong aria-hidden="true">3.4.</strong> Managing Orphan Packages</a></li><li class="chapter-item expanded "><a href="snapshots.html"><strong aria-hidden="true">3.5.</strong> Package Set Snapshots</a></li><li class="chapter-item expanded "><a href="log.html"><strong aria-hidden="true">3.6.</strong> Log Interaction</a></li><li class="chapter-item expanded "><a href="deps.html"><strong aria-hidden="true">3.7.</strong> Dependency Analysis</a></li></ol></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">4.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">5.</strong> Appendix</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="localisation.html"><strong aria-hidden="true">5.1.</strong> Localisation Guide</a></li><li class="chapter-item expanded "><a href="faq.html"><strong aria-hidden="true">5.2.</strong> FAQ</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="philosophy.html"><strong aria-hidden="true">1.</strong> Philosophy</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="usage.html"><strong aria-hidden="true">3.</strong> Usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="pacman.html"><strong aria-hidden="true">3.1.</strong> Aura-as-Pacman</a></li><li class="chapter-item expanded "><a href="aur.html" class="active"><strong aria-hidden="true">3.2.</strong> Installing AUR Packages</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="storage.html"><strong aria-hidden="true">3.2.1.</strong> Package Storage Locations</a></li></ol></li><li class="chapter-item expanded "><a href="downgrading.html"><strong aria-hidden="true">3.3.</strong> Downgrading Packages</a></li><li class="chapter-item expanded "><a href="orphans.html"><strong aria-hidden="true">3.4.</strong> Managing Orphan Packages</a></li><li class="chapter-item expanded "><a href="snapshots.html"><strong aria-hidden="true">3.5.</strong> Package Set Snapshots</a></li><li class="chapter-item expanded "><a href="log.html"><strong aria-hidden="true">3.6.</strong> Log Interaction</a></li><li class="chapter-item expanded "><a href="deps.html"><strong aria-hidden="true">3.7.</strong> Dependency Analysis</a></li></ol></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">4.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="appendix.html"><strong aria-hidden="true">5.</strong> Appendix</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="localisation.html"><strong aria-hidden="true">5.1.</strong> Localisation Guide</a></li><li class="chapter-item expanded "><a href="migration.html"><strong aria-hidden="true">5.2.</strong> Migration Guide (v3 to v4)</a></li><li class="chapter-item expanded "><a href="faq.html"><strong aria-hidden="true">5.3.</strong> FAQ</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -372,7 +372,7 @@ config:</p>
 hotedit = true
 </code></pre>
 <h2 id="updating-your-aur-packages"><a class="header" href="#updating-your-aur-packages">Updating your AUR Packages</a></h2>
-<p><code>aura -Au</code> is the standard command, ran without <code>sudo</code>.</p>
+<p><code>aura -Au</code> is the standard command, and is run without <code>sudo</code>.</p>
 <pre><code>&gt; aura -Au
 aura :: Fetching package information...
 aura :: Comparing package versions...
@@ -392,7 +392,7 @@ aura :: AUR packages:
 aura :: Proceed? [Y/n]
 </code></pre>
 <p>The options that apply to normal <code>-A</code>, like <code>-a</code> and <code>--hotedit</code>, also apply
-here. Of course, its simplest to set those in config if you know your
+here. Of course, it's simplest to set those in config if you know your
 preferences. See <code>man aura</code> or <code>aura -Ah</code> for more options.</p>
 <h3 id="displaying-pkgbuild-changes"><a class="header" href="#displaying-pkgbuild-changes">Displaying PKGBUILD Changes</a></h3>
 <p>Hey wait a minute, aren't we supposed to check PKGBUILDs before building
@@ -530,6 +530,11 @@ chroot = ["fortls", "timelineproject-hg"]
 <p>This means that when these particular packages are built, it will be done in a
 <code>chroot</code>. Transitive AUR dependencies will be injected properly into the build
 environment.</p>
+<h3 id="using-a-build-user"><a class="header" href="#using-a-build-user">Using a "build user"</a></h3>
+<p>The flags <code>--build</code> and <code>--builduser</code> can be used to alter where the building
+occurs and under which user it occurs, respectively. While usually not necessary
+by default, these can be useful for system administrators who want stricter
+control.</p>
 <h3 id="blindly-accepting-all-prompts"><a class="header" href="#blindly-accepting-all-prompts">Blindly Accepting all Prompts</a></h3>
 <p>Tired of pressing the <code>Enter</code> key? Or maybe you've automated <code>aura</code> into a
 script. In these cases, you may want to accept all prompts automatically.
