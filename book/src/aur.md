@@ -229,7 +229,7 @@ hotedit = true
 
 ## Updating your AUR Packages
 
-`aura -Au` is the standard command, ran without `sudo`.
+`aura -Au` is the standard command, and is run without `sudo`.
 
 ```
 > aura -Au
@@ -252,7 +252,7 @@ aura :: Proceed? [Y/n]
 ```
 
 The options that apply to normal `-A`, like `-a` and `--hotedit`, also apply
-here. Of course, its simplest to set those in config if you know your
+here. Of course, it's simplest to set those in config if you know your
 preferences. See `man aura` or `aura -Ah` for more options.
 
 ### Displaying PKGBUILD Changes
@@ -417,6 +417,13 @@ chroot = ["fortls", "timelineproject-hg"]
 This means that when these particular packages are built, it will be done in a
 `chroot`. Transitive AUR dependencies will be injected properly into the build
 environment.
+
+### Using a "build user"
+
+The flags `--build` and `--builduser` can be used to alter where the building
+occurs and under which user it occurs, respectively. While usually not necessary
+by default, these can be useful for system administrators who want stricter
+control.
 
 ### Blindly Accepting all Prompts
 

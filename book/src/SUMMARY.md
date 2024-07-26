@@ -16,4 +16,5 @@
 - [Configuration](./configuration.md)
 - [Appendix](./appendix.md)
   - [Localisation Guide](./localisation.md)
+  - [Migration Guide (v3 to v4)](./migration.md)
   - [FAQ](./faq.md)
