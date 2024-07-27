@@ -299,7 +299,7 @@ another and installed at the same time. This avoids needless user prompting.</li
 </ul>
 <blockquote>
 <p><strong>💡 Tip:</strong> Aura used to have an option <code>-x</code> to expose <code>makepkg</code> output. This
-is now the default.</p>
+is now the default behaviour.</p>
 </blockquote>
 <h3 id="automatically-removing-makedepends"><a class="header" href="#automatically-removing-makedepends">Automatically Removing <code>makedepends</code></a></h3>
 <p>There's a difference between the dependencies that a package needs to <em>build</em>
@@ -371,6 +371,46 @@ config:</p>
 <pre><code class="language-toml">[aur]
 hotedit = true
 </code></pre>
+<h3 id="pkgbuild-analysis"><a class="header" href="#pkgbuild-analysis">PKGBUILD Analysis</a></h3>
+<p>If requested, Aura will run <a href="https://www.shellcheck.net/">Shellcheck</a> on
+PKGBUILDs to check for oddities:</p>
+<pre><code>&gt; aura -A goverlay-git --shellcheck
+
+... the usual ...
+
+aura :: Building goverlay-git...
+
+In PKGBUILD line 32:
+  for i in "${pkgname%-git}.lpi"; do
+           ^-------------------^ SC2066 (error): Since you double quoted this, it will not word split, and the loop will only run once.
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2066 -- Since you double quoted this, it ...
+aura :: Proceed? [Y/n]
+</code></pre>
+<p>If you'd like to always run <code>shellcheck</code> this way, you can set it within config:</p>
+<pre><code class="language-toml">[aur]
+shellcheck = true
+</code></pre>
+<h3 id="jailed-building-via-pkgctl-build"><a class="header" href="#jailed-building-via-pkgctl-build">Jailed Building via <code>pkgctl build</code></a></h3>
+<p>For extra security, you can build packages in a <code>chroot</code>. This ensures that the
+build process will not affect your existing filesystem. For the moment, this
+option is gated by configuration; no CLI flag is available:</p>
+<pre><code class="language-toml">[aur]
+chroot = ["fortls", "timelineproject-hg"]
+</code></pre>
+<p>This means that when these particular packages are built, it will be done in a
+<code>chroot</code>. Transitive AUR dependencies will be injected properly into the build
+environment.</p>
+<h3 id="using-a-build-user"><a class="header" href="#using-a-build-user">Using a "build user"</a></h3>
+<p>The flags <code>--build</code> and <code>--builduser</code> can be used to alter where the building
+occurs and under which user it occurs, respectively. While usually not necessary
+by default, these can be useful for system administrators who want stricter
+control.</p>
+<h3 id="blindly-accepting-all-prompts"><a class="header" href="#blindly-accepting-all-prompts">Blindly Accepting all Prompts</a></h3>
+<p>Tired of pressing the <code>Enter</code> key? Or maybe you've automated <code>aura</code> into a
+script. In these cases, you may want to accept all prompts automatically.
+<code>pacman</code> exposes the <code>--noconfirm</code> flag for this, which also affects Aura.</p>
 <h2 id="updating-your-aur-packages"><a class="header" href="#updating-your-aur-packages">Updating your AUR Packages</a></h2>
 <p><code>aura -Au</code> is the standard command, and is run without <code>sudo</code>.</p>
 <pre><code>&gt; aura -Au
@@ -499,46 +539,6 @@ config:</p>
 <pre><code class="language-toml">[aur]
 git = true
 </code></pre>
-<h3 id="pkgbuild-analysis"><a class="header" href="#pkgbuild-analysis">PKGBUILD Analysis</a></h3>
-<p>If requested, Aura will run <a href="https://www.shellcheck.net/">Shellcheck</a> on
-PKGBUILDs to check for oddities:</p>
-<pre><code>&gt; aura -A goverlay-git --shellcheck
-
-... the usual ...
-
-aura :: Building goverlay-git...
-
-In PKGBUILD line 32:
-  for i in "${pkgname%-git}.lpi"; do
-           ^-------------------^ SC2066 (error): Since you double quoted this, it will not word split, and the loop will only run once.
-
-For more information:
-  https://www.shellcheck.net/wiki/SC2066 -- Since you double quoted this, it ...
-aura :: Proceed? [Y/n]
-</code></pre>
-<p>If you'd like to always run <code>shellcheck</code> this way, you can set it within config:</p>
-<pre><code class="language-toml">[aur]
-shellcheck = true
-</code></pre>
-<h3 id="jailed-building-via-pkgctl-build"><a class="header" href="#jailed-building-via-pkgctl-build">Jailed Building via <code>pkgctl build</code></a></h3>
-<p>For extra security, you can build packages in a <code>chroot</code>. This ensures that the
-build process will not affect your existing filesystem. For the moment, this
-option is gated by configuration; no CLI flag is available:</p>
-<pre><code class="language-toml">[aur]
-chroot = ["fortls", "timelineproject-hg"]
-</code></pre>
-<p>This means that when these particular packages are built, it will be done in a
-<code>chroot</code>. Transitive AUR dependencies will be injected properly into the build
-environment.</p>
-<h3 id="using-a-build-user"><a class="header" href="#using-a-build-user">Using a "build user"</a></h3>
-<p>The flags <code>--build</code> and <code>--builduser</code> can be used to alter where the building
-occurs and under which user it occurs, respectively. While usually not necessary
-by default, these can be useful for system administrators who want stricter
-control.</p>
-<h3 id="blindly-accepting-all-prompts"><a class="header" href="#blindly-accepting-all-prompts">Blindly Accepting all Prompts</a></h3>
-<p>Tired of pressing the <code>Enter</code> key? Or maybe you've automated <code>aura</code> into a
-script. In these cases, you may want to accept all prompts automatically.
-<code>pacman</code> exposes the <code>--noconfirm</code> flag for this, which also affects Aura.</p>
 
                     </main>
 
