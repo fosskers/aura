@@ -42,8 +42,11 @@ system sanity checks, package analysis, and automated AUR package
 installation.
 
 @menu
-* Philosophy::    Guiding principles for Aura's development.
-* Installation::  Installing Aura from the AUR.
+* Philosophy::     Guiding principles for Aura's development.
+* Installation::   Installing Aura from the AUR.
+* Usage::          All Aura commands.
+* Configuration::  Customising runtime behaviour.
+* Appendix::       Localisation Guide, FAQs, etc.
 * Index::
 @end menu
 
@@ -196,6 +199,279 @@ aura stats --lang
 Aura will also automatically detect your locale via @code{LANG}, so you
 only need to set @code{language} if you want a custom combination of
 system language and Aura language.
+
+@node Usage
+@chapter Usage
+
+@quotation
+@strong{Attention}: As of the 4.x series, @code{sudo} is no longer
+necessary when running Aura. When escalated privileges are required,
+Aura will automatically prompt you.
+@end quotation
+
+@node Basics
+@section Basics
+@cindex Basic Usage
+
+@heading Pacman Commands
+@cindex Simple Pacman Commands
+
+First and foremost, Aura is compatible with @code{pacman}. This gives us
+access to the following commands:
+
+@itemize @bullet
+@item
+@code{-S}: Search and install official packages.
+
+@example
+> aura -S firefox
+@end example
+
+@item
+@code{-Q}: Query the database of installed packages.
+
+@example
+> aura -Qi firefox
+Name            : firefox
+Version         : 127.0.2-1
+Description     : Fast, Private & Safe Web Browser
+... etc ...
+@end example
+
+@item
+@code{-R}: Remove installed packages.
+
+@example
+> aura -R firefox
+@end example
+
+@item
+@code{-U}: Install a manually built package.
+
+@example
+> makepkg
+... building ...
+> aura -U aura-4.0.0-1-x86_64.pkg.tar.xz
+@end example
+
+@item
+@code{-D}: Interact with Pacman's database directly.
+
+@example
+> aura -Dk
+No database errors have been found!
+@end example
+
+@item
+@code{-F}: Make queries regarding files owned by packages.
+
+@example
+> aura -Fl firefox
+firefox usr/
+firefox usr/bin/
+firefox usr/bin/firefox
+firefox usr/lib/
+firefox usr/lib/firefox/
+firefox usr/lib/firefox/Throbber-small.gif
+firefox usr/lib/firefox/application.ini
+... etc ...
+@end example
+
+@item
+@code{-T}: Check if a dependency is satisfied.
+
+@example
+> aura -T firefox "qt>100"
+qt>100
+@end example
+@end itemize
+
+See @ref{Aura-as-Pacman} for a list of common Pacman idioms.
+
+@heading Aura Commands
+@cindex Simple Aura Commands
+
+Aura also provides a number of new commands.
+
+@itemize @bullet
+@item
+@code{-A}: Search and install packages from the AUR.
+
+@example
+> aura -A qlot
+@end example
+
+@ref{Installing AUR Packages}.
+
+@item
+@code{-B`}: Create and restore snapshots of installed packages.
+
+@example
+> aura -B
+aura :: Saved package state.
+@end example
+
+@ref{Package Set Snapshots}.
+
+@item
+@code{-C}: Downgrade installed packages.
+
+@example
+> aura -C qlot
+aura :: What version of qlot do you want?
+ 0) 1.5.6-1
+ 1) 1.5.1-1
+>>
+@end example
+
+@ref{Downgrading Packages}.
+
+@item
+@code{-L}: Search and inspect the ALPM log.
+
+@example
+> aura -Li firefox
+Name           : firefox
+First Install  : 2016-05-03 08:46
+Upgrades       : 176
+Recent Actions :
+[2024-02-24T07:29:46+0900] [ALPM] upgraded firefox (122.0.1-1 -> 123.0-1)
+[2024-03-11T16:42:37+0900] [ALPM] upgraded firefox (123.0-1 -> 123.0.1-1)
+[2024-03-24T15:03:33+0900] [ALPM] upgraded firefox (123.0.1-1 -> 124.0.1-1)
+@end example
+
+@ref{Log Interaction}.
+
+@item
+@code{-O}: Handle "orphans" - dependencies whose parent package is no
+  longer installed.
+
+@example
+> aura -O
+asar 3.2.8-1
+@end example
+
+@ref{Managing Orphan Packages}.
+
+@item
+@code{check}: Validate your system.
+
+@example
+> aura check
+aura :: Validating your system.
+aura :: Environment
+  [✓] locale -a contains LANG value? (en_US.UTF-8)
+  [✓] Aura is localised to your LANG?
+  [✓] EDITOR variable set?
+  [✓] EDITOR value (emacs) is executable?
+  [✓] Java environment set?
+... etc. ...
+@end example
+
+@item
+@code{conf}: Inspect or generate Aura configuration.
+
+@example
+> aura conf --gen > ~/.config/aura/config.toml
+@end example
+
+@ref{Configuration}.
+
+@item
+@code{deps}: View the dependency graph of given packages.
+
+@example
+> aura deps gcc --reverse --optional --limit=3 --open
+@end example
+
+@ref{Dependency Analysis}.
+
+@item
+@code{free}: List installed packages with potentially non-free software
+licenses.
+
+@example
+> aura free
+adobe-source-code-pro-fonts: custom
+aspell-en: custom
+blas: custom
+boost: custom
+boost-libs: custom
+cantarell-fonts: custom:SIL
+... etc. ...
+@end example
+
+@item
+@code{stats}: View statistics about your machine and Aura itself.
+
+@example
+> aura stats
+Host                 : yumi
+User                 : colin
+Distribution         : Arch Linux
+Editor               : emacs
+Installed packages   : 1144
+Pacman Package Cache : 7.05GiB
+Aura Package Cache   : 1.29GiB
+Aura Build Cache     : 6.49GiB
+/tmp Directory       : 11.31MiB
+@end example
+
+@item
+@code{thanks}: Credit to the Pacman team, Aura's authors, and Aura's
+translators.
+
+@end itemize
+
+@node Aura-as-Pacman
+@section Aura-as-Pacman
+@cindex Aura as a drop-in replacement for Pacman
+
+@node Installing AUR Packages
+@section Installing AUR Packages
+@cindex Installing AUR Packages
+
+@node Package Storage Locations
+@subsection Package Storage Locations
+@cindex Package Storage Locations
+
+@node Downgrading Packages
+@section Downgrading Packages
+@cindex Downgrading Packages
+
+@node Managing Orphan Packages
+@section Managing Orphan Packages
+@cindex Managing Orphan Packages
+
+@node Package Set Snapshots
+@section Package Set Snapshots
+@cindex Package Set Snapshots
+
+@node Log Interaction
+@section Log Interaction
+@cindex Log Interaction
+
+@node Dependency Analysis
+@section Dependency Analysis
+@cindex Dependency Analysis
+
+@node Configuration
+@chapter Configuration
+
+@node Appendix
+@chapter Appendix
+
+@node Localisation Guide
+@section Localisation Guide
+@cindex Localisating Aura
+
+@node Migration Guide
+@section Migration Guide (v3 to v4)
+@cindex Migrating from Aura 3 to Aura 4
+
+@node FAQ
+@section Frequently Asked Questions
+@cindex Frequently Asked Questions
 
 @node Index
 @unnumbered Index

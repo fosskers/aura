@@ -145,11 +145,6 @@ cantarell-fonts: custom:SIL
 ... etc. ...
 ```
 
-- `open`: Open various webpages related to Aura.
-```
-> aura open --docs
-```
-
 - `stats`: View statistics about your machine and Aura itself.
 ```
 > aura stats
