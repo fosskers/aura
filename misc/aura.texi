@@ -1,8 +1,13 @@
 \input texinfo
 @settitle Aura
+@dircategory Arch Linux
+@direntry
+* Aura: (aura).  A package manager for Arch Linux and the AUR.
+@end direntry
+@paragraphindent 0
 
 @copying
-Aura
+Aura - A package manager for Arch Linux and the AUR.
 
 Copyright @copyright{} 2012 - 2024 Colin Woodbury
 
@@ -47,7 +52,7 @@ installation.
 * Usage::          All Aura commands.
 * Configuration::  Customising runtime behaviour.
 * Appendix::       Localisation Guide, FAQs, etc.
-* Index::
+* Index::          All available topics.
 @end menu
 
 @node Philosophy
@@ -112,7 +117,7 @@ series.
 
 @node From the AUR
 @section From the AUR
-@cindex Installing from the AUR
+@cindex Installing Aura from the AUR
 
 @heading The Tagged Release
 
@@ -324,7 +329,7 @@ aura :: What version of qlot do you want?
 >>
 @end example
 
-@ref{Downgrading Packages}.
+@ref{Cache Handling and Downgrading}.
 
 @item
 @code{-L}: Search and inspect the ALPM log.
@@ -427,21 +432,885 @@ translators.
 @section Aura-as-Pacman
 @cindex Aura as a drop-in replacement for Pacman
 
+@code{aura} can be used in place of @code{pacman} in all situations. At
+the very least, this is two fewer letters to type!
+
+Below are some common @code{pacman} idioms for managing your system. The
+list is a handy reference but not exhaustive. For everything that
+@code{pacman} is capable of, see @code{man pacman}.
+
+To find out how to use Aura to interact with the AUR, see
+@ref{Installing AUR Packages}.
+
+@node Installing and updating official packages
+@subsection Installing and updating official packages
+@cindex Installing and updating official packages
+
+@quotation
+Note: Unlike with @code{pacman}, prefixing with @code{sudo} is not
+necessary for "admin" actions. Aura knows when @code{sudo} is necessary
+and will prompt you.
+@end quotation
+
+Install an official package:
+
+@example
+aura -S firefox
+@end example
+
+Update all official packages:
+
+@example
+aura -Syu
+@end example
+
+Install a package built with @code{makepkg}:
+
+@example
+aura -U foobar-1.2.3-1-x86_64.pkg.tar.xz
+@end example
+
+@node Removing Packages
+@subsection Removing Packages
+@cindex Removing Packages
+
+The package and all unneeded dependencies:
+
+@example
+aura -Rsu firefox
+@end example
+
+The package and everything that depends on it:
+
+@example
+aura -Rcu firefox
+@end example
+
+@node Querying your System
+@subsection Querying your System
+@cindex Querying your System
+
+Searching an exact package:
+
+@example
+aura -Qi firefox
+@end example
+
+Searching a local package by description:
+
+@example
+> aura -Qs browser
+local/firefox 127.0.2-1
+    Fast, Private & Safe Web Browser
+local/mathjax 3.2.2-1
+    An open source JavaScript display engine for mathematics that works in all modern browsers
+local/qt6-webengine 6.7.2-1 (qt6)
+    Provides support for web applications using the Chromium browser project
+@end example
+
+Producing a list of installed packages:
+
+@example
+> aura -Q
+aalib 1.4rc5-18
+abcl 1.9.2-1
+abseil-cpp 20240116.2-2
+acl 2.3.2-1
+... etc ...
+@end example
+
+@cindex Print the package which owns a given file
+Discovering what package owns a certain file:
+
+@example
+> aura -Qo firefox
+/usr/bin/firefox is owned by firefox 127.0.2-1
+@end example
+
+@cindex List all files owned by a package
+Discovering which files are brought in by a package:
+
+@example
+> aura -Ql firefox
+firefox /usr/
+firefox /usr/bin/
+firefox /usr/bin/firefox
+firefox /usr/lib/
+firefox /usr/lib/firefox/
+firefox /usr/lib/firefox/Throbber-small.gif
+firefox /usr/lib/firefox/application.ini
+... etc ...
+@end example
+
+You can use @code{grep} to filter what you're looking for:
+
+@example
+> aura -Ql firefox | grep bin
+firefox /usr/bin/
+firefox /usr/bin/firefox
+firefox /usr/lib/firefox/firefox-bin
+@end example
+
+@cindex Listing foreign packages
+Listing all installed "foreign" packages:
+
+@example
+> aura -Qm
+abcl 1.9.2-1
+anki 2.1.66-1
+babashka-bin 1.3.191-1
+bashate 2.1.1-1
+ccextractor 0.94-3
+ccl 1.12.2-4
+... etc ...
+@end example
+
+@node Clearing your Package Cache
+@subsection Clearing your Package Cache
+
+Pacman stores its built packages in @code{/var/cache/pacman/pkg/}. This
+directory can grow quite large, but the following commands can help
+selectively clear it.
+
+@quotation
+@strong{Tip}: The Aura command @code{-Cc} offers additional control over
+clearing the cache, and targets Aura's cache as well.
+@end quotation
+
+Removing the tarballs of uninstalled packages:
+
+@example
+aura -Sc
+@end example
+
+Removing *all* tarballs:
+
+@example
+aura -Scc
+@end example
+
 @node Installing AUR Packages
 @section Installing AUR Packages
 @cindex Installing AUR Packages
 
+Let's walk through the full process of installing an AUR package. This
+will show us how to discover packages, install them, and upgrade them.
+
+@quotation
+@strong{Tip}: Just want to update all your AUR packages? Aura's author
+uses @code{aura -Au}. Remember, no need to call @code{sudo} yourself.
+@end quotation
+
+@quotation
+@strong{Tip}: For the full list of all options with detailed
+descriptions, see @code{aura -Ah}.
+@end quotation
+
+@node Example Installation Process
+@subsection Example Installation Process
+
+The general order is search, confirm, install.
+
+@node Searching for an AUR Package
+@subsubsection Searching for an AUR Package
+@cindex Searching for an AUR Package
+
+Let's say we want to install a package that can render @code{.md} README
+files for us. First, we search the AUR for candidates:
+
+@example
+> aura -As readme
+aur/python-grip 4.6.1-1 (22 | 0.00)
+    Preview GitHub Markdown files like Readme locally before committing them
+aur/python-grip-git 4.5.2-1 (15 | 0.00)
+    Preview GitHub Markdown files like Readme locally before committing them.
+aur/ruby-github-markup 4.0.2-1 (4 | 0.00)
+    The code GitHub uses to render README.markup
+aur/k810-conf 0.1-9 (3 | 0.00)
+    Logitech K810 Keyboard Configurator, change function keys (F-keys) behavior. Read USAGE at https://aur.archlinux.org/cgit/aur.git/tree/README.md?h=k810-conf
+aur/cargo-readme 3.3.1-1 (3 | 0.24)
+    A cargo subcommand to generate README.md content from doc comments
+... etc ...
+@end example
+
+By default, results are ordered by their vote count. If @code{-As}
+filled the screen and we only wish to see a few results, we can filter
+with @code{--limit}:
+
+@example
+> aura -As readme --limit 3
+aur/python-grip 4.6.1-1 (22 | 0.00)
+    Preview GitHub Markdown files like Readme locally before committing them
+aur/python-grip-git 4.5.2-1 (15 | 0.00)
+    Preview GitHub Markdown files like Readme locally before committing them.
+aur/ruby-github-markup 4.0.2-1 (4 | 0.00)
+    The code GitHub uses to render README.markup
+@end example
+
+@code{--abc} can be used to sort alphabetically instead.
+
+@node Scrutinizing a Package
+@subsubsection Scrutinizing a Package
+@cindex Scrutinizing a Package
+
+Alright, @code{python-grip} looks good. Let's take a closer look...
+
+@example
+> aura -Ai python-grip
+Repository    : aur
+Name          : python-grip
+Version       : 4.6.1-1
+AUR Status    : Up to Date
+Maintainer    : pancho
+Project URL   : https://github.com/joeyespo/grip
+AUR URL       : https://aur.archlinux.org/packages/python-grip
+License       : MIT
+Groups        :
+Provides      :
+Depends On    : python python-docopt python-flask python-markdown python-path-and-address python-pygments python-requests
+Make Deps     : python-setuptools
+Optional Deps :
+Check Deps    :
+Votes         : 22
+Popularity    : 0.00
+Description   : Preview GitHub Markdown files like Readme locally before committing them
+Keywords      :
+Submitted     : 2017-02-09
+Updated       : 2022-04-17
+@end example
+
+Does the PKGBUILD look alright?
+
+@example
+> aura -Ap python-grip
+# Maintainer: pancho horrillo <pancho at pancho dot name>
+# Contributor: Clayton Craft <clayton at craftyguy dot net>
+
+pkgname=python-grip
+pkgver=4.6.1
+pkgrel=1
+pkgdesc="Preview GitHub Markdown files like Readme locally before committing them"
+arch=('any')
+license=('MIT')
+url="https://github.com/joeyespo/grip"
+depends=('python' 'python-docopt' 'python-flask' 'python-markdown'
+         'python-path-and-address' 'python-pygments' 'python-requests')
+makedepends=('python-setuptools')
+source=("$pkgname-$pkgver.tar.gz::https://github.com/joeyespo/grip/archive/v$pkgver.tar.gz")
+sha256sums=('6bc3883f63395c566101187bc1f1d103641c99913b7122f942d56e108e649d83')
+
+package() @{
+  cd grip-$pkgver
+  python setup.py install --root="$pkgdir" --optimize=1
+  install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+@}
+@end example
+
+Nothing nefarious here.
+
+@quotation
+@strong{Tip}: It's important to confirm the content of the PKGBUILD like
+this, as these are raw Bash commands that will be executed on your
+system during the build process.
+@end quotation
+
+@node A Normal Install
+@subsubsection A Normal Install
+@cindex -A, A normal installation
+
+We're confident that this is a safe package to build, so we do:
+
+@example
+> aura -A python-grip
+aura :: Determining dependencies...
+aura :: Repository dependencies:
+ python-docopt
+aura :: AUR packages:
+ python-grip
+ python-path-and-address
+aura :: Proceed? [Y/n]
+
+... pacman output ...
+
+aura :: Preparing build directories...
+aura :: Building python-path-and-address...
+
+... makepkg output ...
+
+aura :: Done.
+@end example
+
+A few things to note:
+
+@itemize @bullet
+@item
+@code{python-grip} has both official and AUR dependencies. These have to
+be built and installed in a specific order for @code{python-grip} to even
+build.
+@item
+Under the hood, Aura calls @code{makepkg} to drive the build and @code{pacman} to
+finalise the installation.
+@item
+If two or more packages don't depend on each other, they'll be built one
+after another and installed at the same time. This avoids needless user
+prompting.
+@end itemize
+
+@cindex -x, makepkg output
+@quotation
+@strong{Tip}: Aura used to have an option @code{-x} to expose
+@code{makepkg} output. This is now the default behaviour.
+@end quotation
+
+@node Automatically removing makedepends
+@subsubsection Automatically removing makedepends
+@cindex -a, Automatically removing makedepends
+
+There's a difference between the dependencies that a package needs to
+build and the dependencies it needs to run. We call the former
+"makedepends". Once a package is installed, we no longer need its
+makedepends sitting around on our machine. Adding @code{-a} to @code{-A}
+will automatically clear them out:
+
+@example
+> aura -Aa grimshot
+aura :: Determining dependencies...
+aura :: Repository dependencies:
+ scdoc
+aura :: AUR packages:
+ grimshot
+aura :: Proceed? [Y/n]
+
+... the usual ...
+
+aura :: Done.
+checking dependencies...
+
+Packages (1) scdoc-1.11.3-1
+
+Total Removed Size:  0.03 MiB
+
+:: Do you want to remove these packages? [Y/n]
+@end example
+
+@code{scdoc} was only necessary during the build, so we're prompted to
+uninstall it.
+
+If you'd like to turn this behaviour on permanently, you can set it
+within config:
+
+@example
+[aur]
+delmakedeps = true
+@end example
+
+@node Altering the PKGBUILD before building
+@subsubsection Altering the PKGBUILD before building
+@cindex hotedit, Altering the PKGBUILD before building
+
+Sometimes you want to change something specific about how a package is
+built. Without a tool like Aura, you'd clone the package from the AUR,
+edit the PKGBUILD, and then run @code{makepkg}, handling dependencies
+yourself.
+
+Aura's @code{--hotedit} flag will let you edit a PKGBUILD on-the-fly. In
+the example below, I add @code{echo "I CHANGED THE PKGBUILD"} to the
+build commands:
+
+@example
+> aura -Aa python-grip --hotedit
+aura :: Determining dependencies...
+
+... the usual ...
+
+aura :: Building python-grip...
+aura :: Edit the PKGBUILD? [Y/n]
+
+... Your EDITOR opens, and you save your changes to the real PKGBUILD file ...
+
+==> Making package: python-grip 4.6.1-1 (Sat 13 Jul 2024 07:08:37 AM JST)
+==> Starting package()...
+I CHANGED THE PKGBUILD
+
+... normal makepkg output, etc ...
+@end example
+
+Some things to note:
+
+@itemize @bullet
+@item
+If @code{.install} or @code{.patch} files are present, @code{--hotedit}
+will also prompt you to edit those.
+@item
+You can change the dependency lists, but this will only affect
+@code{makepkg}'s dependency resolution, not Aura's. If you want Aura to
+skip dependency checks completely because you know you're right (and you
+know @code{makepkg} will succeed after you hotedit), use the
+@code{--skipdepcheck} flag. See issue
+@url{https://github.com/fosskers/aura/issues/605} for more information.
+@item
+If you want customizations to a PKGBUILD to apply to all future builds
+of a package, it's recommended that you maintain a separate PKGBUILD and
+call @code{makepkg} yourself.
+@end itemize
+
+If you'd like to always be prompted for hoteditting, you can set it
+within config:
+
+@example
+[aur]
+hotedit = true
+@end example
+
+@node PKGBUILD Analysis
+@subsubsection PKGBUILD Analysis
+@cindex shellcheck, PKGBUILD Analysis
+
+If requested, Aura will run @url{https://www.shellcheck.net/,
+Shellcheck} on PKGBUILDs to check for oddities:
+
+@example
+> aura -A goverlay-git --shellcheck
+
+... the usual ...
+
+aura :: Building goverlay-git...
+
+In PKGBUILD line 32:
+  for i in "$@{pkgname%-git@}.lpi"; do
+           ^-------------------^ SC2066 (error): Since you double quoted this, it will not word split, and the loop will only run once.
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2066 -- Since you double quoted this, it ...
+aura :: Proceed? [Y/n]
+@end example
+
+If you'd like to always run @code{shellcheck} this way, you can set it
+within config:
+
+@example
+[aur]
+shellcheck = true
+@end example
+
+@node Jailed Building via pkgctl
+@subsubsection Jailed Building via pkgctl
+@cindex Jailed Building via pkgctl
+
+For extra security, you can build packages in a @code{chroot}. This
+ensures that the build process will not affect your existing filesystem.
+For the moment, this option is gated by configuration; no CLI flag is
+available:
+
+@example
+[aur]
+chroot = ["fortls", "timelineproject-hg"]
+@end example
+
+This means that when these particular packages are built, it will be
+done in a @code{chroot}. Transitive AUR dependencies will be injected
+properly into the build environment.
+
+@node Using a "build user"
+@subsubsection Using a "build user"
+@cindex build, builduser, Using a "build user"
+
+The flags @code{--build} and @code{--builduser} can be used to alter
+where the building occurs and under which user it occurs, respectively.
+While usually not necessary by default, these can be useful for system
+administrators who want stricter control.
+
+@node Blindly Accepting all Prompts
+@subsubsection Blindly Accepting all Prompts
+@cindex noconfirm, Accept all prompts
+
+Tired of pressing the @code{Enter} key? Or maybe you've automated
+@code{aura} into a script. In these cases, you may want to accept all
+prompts automatically. @code{pacman} exposes the @code{--noconfirm} flag
+for this, which also affects Aura.
+
+@node Updating your AUR Packages
+@subsection Updating your AUR Packages
+@cindex Updating your AUR Packages
+
+@code{aura -Au} is the standard command, and is run without @code{sudo}.
+
+@example
+> aura -Au
+aura :: Fetching package information...
+aura :: Comparing package versions...
+aura :: AUR packages to upgrade:
+ ghcup-hs-bin :: 0.1.22.0-1       -> 0.1.30.0-1
+ tic-80-git   :: r2633.687fb340-1 -> r2883.3cf27c5e-1
+ yed          :: 1:3.23.2-1       -> 1:3.24-1
+aura :: Determining dependencies...
+aura :: Repository dependencies:
+
+... redacted ...
+
+aura :: AUR packages:
+ ghcup-hs-bin
+ tic-80-git
+ yed
+aura :: Proceed? [Y/n]
+@end example
+
+The options that apply to normal @code{-A}, like @code{-a} and
+@code{--hotedit}, also apply here. Of course, it's simplest to set those
+in config if you know your preferences. See @code{aura -Ah} for more
+options.
+
+@node Displaying PKGBUILD Changes
+@subsubsection Displaying PKGBUILD Changes
+@cindex -k, Displaying PKGBUILD Changes
+
+Hey wait a minute, aren't we supposed to check PKGBUILDs before building
+packages? @code{-k} will show us any changes that were made to a
+PKGBUILD compared to the version we have installed:
+
+@example
+> aura -Auk
+aura :: Fetching package information...
+aura :: Comparing package versions...
+aura :: AUR packages to upgrade:
+ ghcup-hs-bin :: 0.1.22.0-1 -> 0.1.30.0-1
+ yed          :: 1:3.23.2-1 -> 1:3.24-1
+aura :: Determining dependencies...
+aura :: AUR packages:
+ ghcup-hs-bin
+ yed
+aura :: Proceed? [Y/n]
+aura :: Preparing build directories...
+aura :: Building yed...
+aura :: Display diffs of build files? [Y/n]
+diff --git a/.SRCINFO b/.SRCINFO
+index bc810a7..32f1f1f 100644
+--- a/.SRCINFO
++++ b/.SRCINFO
+@@ -1,6 +1,6 @@
+ pkgbase = yed
+        pkgdesc = Very powerful graph editor written in java
+-       pkgver = 3.23.2
++       pkgver = 3.24
+        pkgrel = 1
+        epoch = 1
+        url = http://www.yworks.com/en/products_yed_about.html
+@@ -9,11 +9,11 @@ pkgbase = yed
+        license = custom
+        depends = hicolor-icon-theme
+        depends = java-runtime
+-       source = https://www.yworks.com/resources/yed/demo/yEd-3.23.2.zip
++       source = https://www.yworks.com/resources/yed/demo/yEd-3.24.zip
+        source = yed.desktop
+        source = yed
+        source = graphml+xml-mime.xml
+-       sha256sums = 4f96611718df696de2f33eeb2cd78bfbbdacce52390afea8d00441b6fb175e20
++       sha256sums = 842909f6e4c15399b660f316056499e63e931f95ade43d850045d852d3128947
+        sha256sums = cc6957cde6eba0d82ea523b0257f8c91fd1e330a1e2ad7d64890e48a2450aa98
+        sha256sums = 731b54c6e731704efe9847d78e2df474d59042452ace29d2786d76891295249e
+        sha256sums = e751b69ed8a25faf46d4e4016ed8f1774abc88679067934a6081348e3d6fc332
+diff --git a/PKGBUILD b/PKGBUILD
+index f9ea04e..cb06126 100644
+--- a/PKGBUILD
++++ b/PKGBUILD
+@@ -10,7 +10,7 @@
+ # https://github.com/michaellass/AUR
+
+ pkgname=yed
+-pkgver=3.23.2
++pkgver=3.24
+ pkgrel=1
+ epoch=1
+ pkgdesc='Very powerful graph editor written in java'
+@@ -22,7 +22,7 @@ source=("https://www.yworks.com/resources/yed/demo/yEd-$@{pkgver@}.zip"
+         'yed.desktop'
+         'yed'
+         'graphml+xml-mime.xml')
+-sha256sums=('4f96611718df696de2f33eeb2cd78bfbbdacce52390afea8d00441b6fb175e20'
++sha256sums=('842909f6e4c15399b660f316056499e63e931f95ade43d850045d852d3128947'
+             'cc6957cde6eba0d82ea523b0257f8c91fd1e330a1e2ad7d64890e48a2450aa98'
+             '731b54c6e731704efe9847d78e2df474d59042452ace29d2786d76891295249e'
+             'e751b69ed8a25faf46d4e4016ed8f1774abc88679067934a6081348e3d6fc332')
+aura :: Proceed? [Y/n]
+@end example
+
+Once again, nothing evil-looking here. If you'd like to always see diffs
+like this, you can set it within config:
+
+@example
+[aur]
+diff = true
+@end example
+
+@node Including *-git Packages
+@subsubsection Including *-git Packages
+@cindex Including *-git Packages
+
+The AUR has many packages postfixed with @code{-git}, @code{-svn}, etc.
+These typically pull straight from the @code{master} branch of some code
+respository, and so comparing version numbers to detect updates doesn't
+always work.
+
+@code{--git} will consider all such packages for updates:
+
+@example
+> aura -Au --git
+aura :: Fetching package information...
+aura :: Comparing package versions...
+aura :: AUR packages to upgrade:
+ ghcup-hs-bin :: 0.1.22.0-1 -> 0.1.30.0-1
+ yed          :: 1:3.23.2-1 -> 1:3.24-1
+aura :: VCS packages to rebuild:
+ clasp-cl-git
+ libmgba-git
+ mgba-qt-git
+ timelineproject-hg
+aura :: Determining dependencies...
+aura :: Repository dependencies:
+ qt6-tools
+aura :: AUR packages:
+ clasp-cl-git
+ ghcup-hs-bin
+ mgba-git
+ timelineproject-hg
+ yed
+aura :: Proceed? [Y/n]
+@end example
+
+If you'd like to always consider such packages with @code{-u}, you can
+set it within config:
+
+@example
+[aur]
+git = true
+@end example
+
+
 @node Package Storage Locations
 @subsection Package Storage Locations
-@cindex Package Storage Locations
+@cindex directories, Package Storage Locations
 
-@node Downgrading Packages
-@section Downgrading Packages
-@cindex Downgrading Packages
+This page explains all important filepaths for Aura. Build paths can be
+configured in @code{~/.config/aura/config.toml}, see
+@ref{Configuration}.
+
+@heading Where are packages built?
+
+By default, packages are built within @code{~/.cache/aura/builds/}. Were
+a package specified in the @code{chroot} list in config, then it will
+instead be built in a @code{chroot}.
+
+@heading Where are packages stored?
+
+Once built, all packages are sent to Aura's cache:
+@code{~/.cache/aura/cache/}.
+
+This directory can grow quite large, but can be cleaned with @code{-Cc}
+(see @ref{Cache Handling and Downgrading}). See also @code{aura stats}
+for a view of various Aura-related directory sizes.
+
+@heading What other filepaths are there?
+
+Aura stores clones of known AUR packages in
+@code{~/.cache/aura/packages/}, and saved package set states in
+@code{~/.cache/aura/snapshots/}.
+
+Also also reads your @code{pacman} and @code{makepkg} configuration,
+which are generally expected to be at @code{/etc/pacman.conf} and
+@code{/etc/makepkg.conf} respectively, but it will respect the usual
+environment variables that alter those paths.
+
+@node Cache Handling and Downgrading
+@section Cache Handling and Downgrading
+@cindex Cache Handling and Downgrading
+
+The @code{-C} command is used to interact with the Package Cache. It
+takes into account both the official Pacman cache and Aura's.
+
+@node Searching the Cache
+@subsection Searching the Cache
+@cindex -Ci, -Cs, Searching the Cache
+
+@code{-Cs} shows us what's available in the cache.
+
+@example
+> aura -Cs firefox
+/var/cache/pacman/pkg/firefox-127.0.2-1-x86_64.pkg.tar.zst
+/var/cache/pacman/pkg/firefox-126.0.1-1-x86_64.pkg.tar.zst
+@end example
+
+We can get more intelligent output via @code{-Ci}:
+
+@example
+> aura -Ci firefox
+Name               : firefox
+Latest             : 127.0.2-1 [installed]
+Created            : 2024-06-29 04-12-38
+Signature          : Yes
+Tarball Size       : 69.01MiB
+Available Versions : 127.0.2-1, 126.0.1-1
+@end example
+
+@node Downgrading a Package
+@subsection Downgrading a Package
+@cindex -C, Downgrading a Package
+
+Let's say the newest version of some package is somehow broken. Let's
+downgrade:
+
+@example
+> aura -C firefox
+aura :: What version of firefox do you want?
+ 0) 127.0.2-1
+ 1) 126.0.1-1
+>>> 1
+loading packages...
+warning: downgrading package firefox (127.0.2-1 => 126.0.1-1)
+resolving dependencies...
+looking for conflicting packages...
+
+Packages (1) firefox-126.0.1-1
+
+Total Installed Size:  239.53 MiB
+Net Upgrade Size:       -1.34 MiB
+
+:: Proceed with installation? [Y/n]
+@end example
+
+In fact, @code{-C} works even if we no longer have that package
+installed. All that matters is whether you have a copy of the old
+version in your cache.
+
+@node Cleaning the Cache
+@subsection Cleaning the Cache
+@cindex -Cc, Cleaning the Cache
+
+@code{-Cc} can help keep our cache small.
+
+@example
+> aura -Cc 2
+aura :: Current cache size: 8.31GiB
+aura :: 2 of each package file will be kept. The rest will be deleted.
+aura :: Proceed? [Y/n]
+aura :: 34.45MiB freed.
+@end example
 
 @node Managing Orphan Packages
 @section Managing Orphan Packages
-@cindex Managing Orphan Packages
+@cindex -O, Managing Orphan Packages
+
+Orphan packages are those marked as @code{Installed as a dependency for
+another package}, but which are missing the parent package that depended
+on them. This can occur when a package with many dependencies is
+installed and then later removed via a single @code{-R} (without
+@code{-su}). Or when a package is upgraded, and the new version no
+longer requires a certain dependency.
+
+In these cases, the dependencies are left behind and becomes orphans,
+chewing up disk space.
+
+The @code{-O} command can help deal with these.
+
+@example
+> aura -O
+python-docopt
+python-flask
+python-path-and-address
+@end example
+
+Weird! Are they really not needed?
+
+@example
+> aura -Qi python-docopt
+Name            : python-docopt
+Version         : 0.6.2-7
+Description     : Pythonic argument parser, that will make you smile
+Architecture    : any
+URL             : https://github.com/docopt/docopt
+Licenses        : MIT
+Groups          : None
+Provides        : None
+Depends On      : python
+Optional Deps   : None
+Required By     : None
+Optional For    : None
+Conflicts With  : None
+Replaces        : None
+Installed Size  : 83.17 KiB
+Packager        : Evangelos Foutras <evangelos@@foutrelis.com>
+Build Date      : Thu Oct 31 09:48:34 2019
+Install Date    : Fri Jun 12 09:43:12 2020
+Install Reason  : Installed as a dependency for another package
+Install Script  : No
+Validated By    : Signature
+@end example
+
+Sure enough, @code{Required By: None}.
+
+@node Uninstalling Orphans
+@subsection Uninstalling Orphans
+@cindex -Oj, Uninstalling Orphans
+
+Clearing orphans doesn't just save us space now - it saves the space of
+all future upgrades we won't have to download anymore.
+
+@code{-Oj} will uninstall all such packages. Under the hood, it passes
+@code{-Rsu} to @code{pacman}, hence there are more packages to uninstall
+than first appeared in the @code{-O} list previously.
+
+@example
+> aura -Oj
+checking dependencies...
+
+Package (5)              Old Version  Net Change
+
+python-itsdangerous      1.1.0-4       -0.11 MiB
+python-werkzeug          1.0.1-2       -2.13 MiB
+python-docopt            0.6.2-7       -0.08 MiB
+python-flask             1.1.2-2       -0.80 MiB
+python-path-and-address  2.0.1-1       -0.01 MiB
+
+Total Removed Size:  3.12 MiB
+
+:: Do you want to remove these packages? [Y/n]
+@end example
+
+@node Adopting an Orphan
+@subsection Adopting an Orphan
+@cindex -Oa, Adopting an Orphan
+
+Changing a package's install reason from "dependency" to "explicitly
+installed" is possible via @code{pacman} alone, but Aura offers a
+shorthand:
+
+@example
+> aura -Oa python-path-and-address
+python-path-and-address: install reason has been set to 'explicitly installed'
+@end example
+
+@node Forgotten Top-level Packages
+@subsection Forgotten Top-level Packages
+@cindex -Oe, Forgotten Top-level Packages
+
+The dual concept of the "orphan" would be the "elderly"; in this case,
+top-level packages which aren't depended on by anything else.
+
+@example
+> aura -Oe
+abcl 1.9.2-1
+alsa-utils 1.2.12-1
+anki 2.1.66-1
+aspell-en 2020.12.07-1
+babashka-bin 1.3.191-1
+base 3-2
+base-devel 1-1
+... etc ...
+@end example
+
+If you notice anything here that you don't remember installing or that
+you don't need anymore, you can remove it. Consider also @code{aura
+check} for a list of such top-level packages that haven't been updated
+in the past year.
 
 @node Package Set Snapshots
 @section Package Set Snapshots

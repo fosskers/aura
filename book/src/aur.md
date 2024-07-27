@@ -139,7 +139,7 @@ A few things to note:
   another and installed at the same time. This avoids needless user prompting.
 
 > **💡 Tip:** Aura used to have an option `-x` to expose `makepkg` output. This
-> is now the default.
+> is now the default behaviour.
 
 ### Automatically Removing `makedepends`
 
@@ -226,6 +226,62 @@ config:
 [aur]
 hotedit = true
 ```
+
+### PKGBUILD Analysis
+
+If requested, Aura will run [Shellcheck](https://www.shellcheck.net/) on
+PKGBUILDs to check for oddities:
+
+```
+> aura -A goverlay-git --shellcheck
+
+... the usual ...
+
+aura :: Building goverlay-git...
+
+In PKGBUILD line 32:
+  for i in "${pkgname%-git}.lpi"; do
+           ^-------------------^ SC2066 (error): Since you double quoted this, it will not word split, and the loop will only run once.
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2066 -- Since you double quoted this, it ...
+aura :: Proceed? [Y/n]
+```
+
+If you'd like to always run `shellcheck` this way, you can set it within config:
+
+```toml
+[aur]
+shellcheck = true
+```
+
+### Jailed Building via `pkgctl build`
+
+For extra security, you can build packages in a `chroot`. This ensures that the
+build process will not affect your existing filesystem. For the moment, this
+option is gated by configuration; no CLI flag is available:
+
+```toml
+[aur]
+chroot = ["fortls", "timelineproject-hg"]
+```
+
+This means that when these particular packages are built, it will be done in a
+`chroot`. Transitive AUR dependencies will be injected properly into the build
+environment.
+
+### Using a "build user"
+
+The flags `--build` and `--builduser` can be used to alter where the building
+occurs and under which user it occurs, respectively. While usually not necessary
+by default, these can be useful for system administrators who want stricter
+control.
+
+### Blindly Accepting all Prompts
+
+Tired of pressing the `Enter` key? Or maybe you've automated `aura` into a
+script. In these cases, you may want to accept all prompts automatically.
+`pacman` exposes the `--noconfirm` flag for this, which also affects Aura.
 
 ## Updating your AUR Packages
 
@@ -374,60 +430,3 @@ config:
 [aur]
 git = true
 ```
-
-### PKGBUILD Analysis
-
-If requested, Aura will run [Shellcheck](https://www.shellcheck.net/) on
-PKGBUILDs to check for oddities:
-
-```
-> aura -A goverlay-git --shellcheck
-
-... the usual ...
-
-aura :: Building goverlay-git...
-
-In PKGBUILD line 32:
-  for i in "${pkgname%-git}.lpi"; do
-           ^-------------------^ SC2066 (error): Since you double quoted this, it will not word split, and the loop will only run once.
-
-For more information:
-  https://www.shellcheck.net/wiki/SC2066 -- Since you double quoted this, it ...
-aura :: Proceed? [Y/n]
-```
-
-If you'd like to always run `shellcheck` this way, you can set it within config:
-
-```toml
-[aur]
-shellcheck = true
-```
-
-### Jailed Building via `pkgctl build`
-
-For extra security, you can build packages in a `chroot`. This ensures that the
-build process will not affect your existing filesystem. For the moment, this
-option is gated by configuration; no CLI flag is available:
-
-```toml
-[aur]
-chroot = ["fortls", "timelineproject-hg"]
-```
-
-This means that when these particular packages are built, it will be done in a
-`chroot`. Transitive AUR dependencies will be injected properly into the build
-environment.
-
-### Using a "build user"
-
-The flags `--build` and `--builduser` can be used to alter where the building
-occurs and under which user it occurs, respectively. While usually not necessary
-by default, these can be useful for system administrators who want stricter
-control.
-
-### Blindly Accepting all Prompts
-
-Tired of pressing the `Enter` key? Or maybe you've automated `aura` into a
-script. In these cases, you may want to accept all prompts automatically.
-`pacman` exposes the `--noconfirm` flag for this, which also affects Aura.
-
