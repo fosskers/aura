@@ -32,7 +32,7 @@ Aura has its own configuration file, its own local package cache, and its own
 traffic to the main AUR server and allows us to provide unique package lookup
 schemes not otherwise available.
 
-### Arch Linux for Everyone
+### Multilingualism
 
 English is the dominant language of computing and the internet. That said, it's
 natural that some people are going to be more comfortable working in their

@@ -1,0 +1,204 @@
+\input texinfo
+@settitle Aura
+
+@copying
+Aura
+
+Copyright @copyright{} 2012 - 2024 Colin Woodbury
+
+@quotation
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+@end quotation
+@end copying
+
+@titlepage
+@title Aura User Guide
+@page
+@vskip 0pt plus 1fill
+@insertcopying
+@end titlepage
+
+@contents
+
+@node Top
+@top Aura User Guide
+
+Aura 4.0.0 by Colin Woodbury and contributors, 2012 - 2024
+
+Aura helps you install and manage software on your system. It provides
+all the functionality that @code{pacman} does, plus more, including
+system sanity checks, package analysis, and automated AUR package
+installation.
+
+@menu
+* Philosophy::    Guiding principles for Aura's development.
+* Installation::  Installing Aura from the AUR.
+* Index::
+@end menu
+
+@node Philosophy
+@chapter Philosophy
+@cindex Guiding principles for Aura's development @subentry philosophy
+
+The Aura project began in 2012 as an answer to the shortcomings of
+programs often called @emph{AUR helpers}. Certain ground rules were set
+in the beginning to guide development. They are:
+
+@heading Aura is Pacman
+
+Aura doesn't just mimic @code{pacman}; it @strong{is} @code{pacman}. All
+@code{pacman} operations and their sub-options are accepted, as-is.
+
+@heading Arch is Arch - AUR is AUR
+
+Aura does not augment or alter Pacman's commands in any way.
+
+@code{-S} yields repository packages and @emph{only} those. In Aura, the
+@code{-A} operation is introduced for obtaining AUR packages. @code{-A}
+comes with sub-options you're used to (@code{-u}, @code{-s}, @code{-i},
+etc.) and adds new ones to enhance AUR interaction.
+
+@heading Downgradibility
+
+Aura allows you to downgrade individual packages to previous versions
+with @code{-C}. It also handles snapshots of your entire system, so that
+you can roll back whole sets of packages when problems arise. The option
+@code{-B} will save a package state, and @code{-Br} will restore a state
+you select. @code{-Au} also invokes a save automatically.
+
+@heading Independence
+
+Aura has its own configuration file, its own local package cache, and
+its own @url{https://git.sr.ht/~fosskers/faur, Metadata Server} called
+the Faur. The Faur in particular helps reduce traffic to the main AUR
+server and allows us to provide unique package lookup schemes not
+otherwise available.
+
+@heading Multilingualism
+
+English is the dominant language of computing and the internet. That
+said, it's natural that some people are going to be more comfortable
+working in their native language. From the beginning, Aura has been
+built with multiple-language support in mind, making it very easy to add
+new ones via the @url{https://projectfluent.org/,,Project Fluent}
+format.
+
+@node Installation
+@chapter Installation
+@cindex Installing Aura
+
+Aura is software specific to @url{https://www.archlinux.org/,,Arch
+Linux}. It should also work on Arch-derivatives like
+@url{https://manjaro.org/, Manjaro}, but would not be useful on any
+other Linux distribution.
+
+There are several @code{aura} packages available. Aura was originally
+written in Haskell, but a port to Rust was released in 2024 as the `4.x`
+series.
+
+@node From the AUR
+@section From the AUR
+@cindex Installing from the AUR
+
+@heading The Tagged Release
+
+The recommended package is simply named @code{aura}. It uses
+@code{cargo} to build a fresh binary on your machine, based on releases
+made to Rust's crates.io.
+
+@example
+git clone https://aur.archlinux.org/aura.git
+cd aura
+makepkg -s
+sudo pacman -U <the-package-file-that-makepkg-produces>
+@end example
+
+@heading The git-based Build
+
+If instead you'd like to directly track updates to Aura's @code{master}
+branch, install the git variant:
+
+@example
+git clone https://aur.archlinux.org/aura-git.git
+cd aura-git
+makepkg -s
+sudo pacman -U <the-package-file-that-makepkg-produces>
+@end example
+
+@heading The Prebuilt Binary
+
+Finally, if you don't wish to build Aura yourself or want to avoid any
+trace of Rust tooling on your machine, there is a prebuilt binary of
+Aura for @code{x86_64} machines:
+
+@example
+git clone https://aur.archlinux.org/aura-bin.git
+cd aura-bin
+makepkg -s
+sudo pacman -U <the-package-file-that-makepkg-produces>
+@end example
+
+@node Building from Source
+@section Building from Source
+@cindex Building Aura yourself
+
+If you already have Rust tooling installed on your machine and/or wish
+to help develop Aura, you can also install it manually:
+
+@example
+git clone https://github.com/fosskers/aura.git
+cd aura/rust
+cargo install --path aura-pm
+@end example
+
+This will build and install the binary to @code{/home/YOU/.cargo/bin/}.
+
+Keep in mind that this variant of Aura won't be tracked in Pacman's
+database, and so it will be easier to miss updates. It also does not
+install completions or other documentation files like manpages.
+
+@node Post-installation
+@section Post-installation
+@cindex Post-installation
+
+The first thing you should do is run @code{check}:
+
+@example
+aura check
+@end example
+
+This will scan your system for irregularities and suggest fixes. Second,
+you should generate an Aura config file:
+
+@example
+aura conf --gen > ~/.config/aura/config.toml
+@end example
+
+Consider setting the @code{language} field here, if you wish to use Aura
+in a language other than English. The available language codes are
+viewable via:
+
+@example
+aura stats --lang
+@end example
+
+Aura will also automatically detect your locale via @code{LANG}, so you
+only need to set @code{language} if you want a custom combination of
+system language and Aura language.
+
+@node Index
+@unnumbered Index
+@printindex cp
+
+@bye
