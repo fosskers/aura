@@ -46,6 +46,23 @@ all the functionality that @code{pacman} does, plus more, including
 system sanity checks, package analysis, and automated AUR package
 installation.
 
+If you opened this manual on the command line via @code{info aura}, you
+can navigate it as follows:
+
+@itemize @bullet
+@item g: Jump to a manual page. Supports TAB completion.
+@item i: Jump to an entry in the Index. Supports TAB completion.
+@item m: Select a menu item. Supports TAB completion.
+@item [: Go to the next page.
+@item ]: Go to the previous page.
+@item u: Jump up one level.
+@item t: Jump to the top of the manual.
+@item H: View more @code{info} command help.
+@end itemize
+
+If you're reading this in Emacs, then your bindings may be different
+from the above.
+
 @menu
 * Philosophy::     Guiding principles for Aura's development.
 * Installation::   Installing Aura from the AUR.
