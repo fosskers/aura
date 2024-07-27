@@ -41,6 +41,7 @@ Governed within the `[aur]` section.
 | `shellcheck`   | bool        | Run `shellcheck` over PKGBUILDs before building.             |
 | `diff`         | bool        | Display PKGBUILD diffs during upgrades.                      |
 | `delmakedeps`  | bool        | Remove makedeps after building.                              |
+| `clean`        | bool        | Delete a package's build directory after building.           |
 | `noconfirm`    | bool        | Automatically accept all prompts.                            |
 | `nocheck`      | bool        | Don't run the `check()` function while building.             |
 | `skipdepcheck` | bool        | Don't perform dependency checking at all.                    |

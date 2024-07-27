@@ -1210,7 +1210,7 @@ pub struct Aur {
     #[clap(long, short, display_order = 2)]
     pub quiet: bool,
 
-    /// Open a given package's AUR package.
+    /// Open a given package's AUR page.
     #[clap(group = "aur", long, short, value_name = "package", display_order = 1)]
     pub open: Option<String>,
 
@@ -1241,6 +1241,10 @@ pub struct Aur {
     /// Remove makedeps after building.
     #[clap(long, short = 'a', display_order = 4)]
     pub delmakedeps: bool,
+
+    /// Delete a package's build directory after the built tarball has been copied.
+    #[clap(long, short, display_order = 4)]
+    pub clean: bool,
 
     /// Upgrade all installed AUR packages.
     #[clap(group = "aur", long, short = 'u', display_order = 1)]

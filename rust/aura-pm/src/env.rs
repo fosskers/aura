@@ -289,6 +289,8 @@ struct RawAur {
     #[serde(default)]
     delmakedeps: bool,
     #[serde(default)]
+    clean: bool,
+    #[serde(default)]
     noconfirm: bool,
     #[serde(default)]
     nocheck: bool,
@@ -315,6 +317,8 @@ pub(crate) struct Aur {
     pub(crate) diff: bool,
     /// Delete makedeps after building.
     pub(crate) delmakedeps: bool,
+    /// Delete a package's build directory after the built tarball has been copied.
+    pub(crate) clean: bool,
     /// Don't ask the user for confirmation.
     pub(crate) noconfirm: bool,
     /// Don't consider "checkdeps" during dependency resolution and when calling
@@ -340,6 +344,7 @@ impl Aur {
             shellcheck: false,
             diff: false,
             delmakedeps: false,
+            clean: false,
             noconfirm: false,
             nocheck: false,
             skipdepcheck: false,
@@ -426,6 +431,7 @@ impl TryFrom<RawAur> for Aur {
             shellcheck: raw.shellcheck,
             diff: raw.diff,
             delmakedeps: raw.delmakedeps,
+            clean: raw.clean,
             noconfirm: raw.noconfirm,
             nocheck: raw.nocheck,
             skipdepcheck: false,

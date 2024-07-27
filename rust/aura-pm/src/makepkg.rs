@@ -71,7 +71,7 @@ fn extract_value(line: &str) -> Option<&str> {
 }
 
 fn extract_list(s: &str) -> Vec<&str> {
-    s.trim_matches(&['(', ')']).split(' ').collect()
+    s.trim_matches(['(', ')']).split(' ').collect()
 }
 
 pub(crate) fn conf_location() -> PathBuf {

@@ -160,9 +160,6 @@ fn build_one(
 
     // --- Prepare the Build Directory --- //
     let build_dir = env.aur.build.join(base);
-    // TODO 2024-06-13 Consider giving the option to wipe the build dir every time.
-    //
-    // Sometimes certain packages don't want to have `configure` ran more than once, etc.
     std::fs::create_dir_all(&build_dir).map_err(|e| Error::CreateDir(build_dir.clone(), e))?;
 
     // --- Copy non-downloadable `source` files and PKGBUILD --- //
@@ -267,6 +264,15 @@ fn build_one(
             })
             .collect::<Vec<_>>()
     };
+
+    if env.aur.clean {
+        // NOTE 2024-07-27 As a matter of policy, this call failing should not
+        // fail the entire rest of the build process, so we just catch it and
+        // warn.
+        if let Err(e) = Command::new("rm").arg("-rf").arg(&build_dir).status() {
+            warn!("Removing build dir {} failed: {}", build_dir.display(), e);
+        }
+    }
 
     Ok(Built { clone, tarballs })
 }

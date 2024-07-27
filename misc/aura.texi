@@ -1635,6 +1635,9 @@ See @code{aura stats --lang} for available language codes.
 @item delmakedeps
 @tab bool
 @tab Remove makedeps after building
+@item clean
+@tab bool
+@tab Delete a package's build directory after building
 @item noconfirm
 @tab bool
 @tab Automatically accept all prompts
