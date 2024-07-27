@@ -444,7 +444,7 @@ To find out how to use Aura to interact with the AUR, see
 
 @node Installing and updating official packages
 @subsection Installing and updating official packages
-@cindex Installing and updating official packages
+@cindex -S, -U, Installing and updating official packages
 
 @quotation
 Note: Unlike with @code{pacman}, prefixing with @code{sudo} is not
@@ -472,7 +472,7 @@ aura -U foobar-1.2.3-1-x86_64.pkg.tar.xz
 
 @node Removing Packages
 @subsection Removing Packages
-@cindex Removing Packages
+@cindex -R, Removing Packages
 
 The package and all unneeded dependencies:
 
@@ -488,7 +488,7 @@ aura -Rcu firefox
 
 @node Querying your System
 @subsection Querying your System
-@cindex Querying your System
+@cindex -Q, Querying your System
 
 Searching an exact package:
 
@@ -613,7 +613,7 @@ The general order is search, confirm, install.
 
 @node Searching for an AUR Package
 @subsubsection Searching for an AUR Package
-@cindex Searching for an AUR Package
+@cindex -As, Searching for an AUR Package
 
 Let's say we want to install a package that can render @code{.md} README
 files for us. First, we search the AUR for candidates:
@@ -651,7 +651,7 @@ aur/ruby-github-markup 4.0.2-1 (4 | 0.00)
 
 @node Scrutinizing a Package
 @subsubsection Scrutinizing a Package
-@cindex Scrutinizing a Package
+@cindex -Ai, -Ap, Scrutinizing a Package
 
 Alright, @code{python-grip} looks good. Let's take a closer look...
 
@@ -764,7 +764,7 @@ prompting.
 
 @node Automatically removing makedepends
 @subsubsection Automatically removing makedepends
-@cindex -a, Automatically removing makedepends
+@cindex -Aa, -a, Automatically removing makedepends
 
 There's a difference between the dependencies that a package needs to
 build and the dependencies it needs to run. We call the former
@@ -931,7 +931,7 @@ for this, which also affects Aura.
 
 @node Updating your AUR Packages
 @subsection Updating your AUR Packages
-@cindex Updating your AUR Packages
+@cindex -Au, -u, Updating your AUR Packages
 
 @code{aura -Au} is the standard command, and is run without @code{sudo}.
 
@@ -1316,16 +1316,331 @@ in the past year.
 @section Package Set Snapshots
 @cindex Package Set Snapshots
 
+Arch Linux (and Linux in general) used to have a reputation of breaking
+every time packages were upgraded. Around 2010, Aura's author used to
+run Arch on a Macbook, and such catastrophic breakage @emph{did} occur
+every six months or so. But fast-forward to the present day, and such
+problems are rare. Even so, the idea of "whole system rollback" is
+spreading, and even since those early Arch-on-Mac days, Aura has had the
+@code{-B} command for saving and restoring entire package sets.
+
+@node Saving a Package Set
+@subsection Saving a Package Set
+@cindex -B, Saving a Package Set
+
+@example
+> aura -B
+aura :: Saved package state.
+@end example
+
+This saves a file like @code{2024.07(Jul).09.21.07.02.json} to
+@code{~/.cache/aura/snapshots/}. If we take a peek inside, we see:
+
+@example
+@{
+  "time": [2024, 196, 3, 54, 43, 311735304, 0, 0, 0],
+  "pinned": false,
+  "packages": @{
+    "libmm-glib": "1.22.0-1",
+    "fcitx5-mozc": "2.26.4632.102.g4d2e3bd-2",
+    "graphviz": "11.0.0-1",
+    "mailcap": "2.1.54-1",
+    "libsm": "1.2.4-1",
+    "containerd": "1.7.18-1",
+... etc ...
+@end example
+
+Simple enough - a list of all installed packages with their versions.
+We'll talk about @code{pinned} later.
+
+These files are in JSON format in case other tools wish to read them.
+
+@node Restoring a Package Set
+@subsection Restoring a Package Set
+@cindex -Br, Restoring a Package Set
+
+Let's say I removed some packages a few days ago but am now having
+issues, and I want to rollback to the system state I had at the time.
+Let's see that happen:
+
+@example
+> aura -Br
+aura :: Select a snapshot to restore:
+ 0) 2024-07-09 21-07-02
+ 1) 2024-07-12 22-56-43
+ 2) 2024-07-12 22-59-18
+ 3) 2024-07-12 23-04-25
+ 4) 2024-07-12 23-19-29 [pinned]
+ 5) 2024-07-14 03-54-37
+ 6) 2024-07-14 03-54-43
+>>> 0
+loading packages...
+resolving dependencies...
+looking for conflicting packages...
+
+Packages (21) asar-3.2.8-1  cdparanoia-10.2-9  grimshot-1.9-1  gst-plugins-base-1.24.5-2
+              kirigami2-5.116.0-1  meson-1.4.1-1  mgba-qt-git-0.11.0.r8251.6853080b9-1
+              mgba-sdl-0.10.3-2  musl-1.2.5-1  neofetch-7.1.0-2  ninja-1.12.1-1  pkgstats-3.2.18-1
+              python-tqdm-4.66.4-1  qt5-graphicaleffects-5.15.14-1  qt5-multimedia-5.15.14+kde+r2-1
+              qt5-quickcontrols-5.15.14-1  qt5-quickcontrols2-5.15.14+kde+r5-1  typst-1:0.11.1-1
+              webui-2.5.0+beta.1+14+gb65608df-1  xf86-input-libinput-1.4.0-1  xorg-server-21.1.13-1
+
+Total Installed Size:  86.50 MiB
+
+:: Proceed with installation? [Y/n]
+@end example
+
+This reinstalls the old versions of those packages and removes anything
+currently installed that wasn't at the time of the snapshot.
+
+@node Clearing out old Saved States
+@subsection Clearing out old Saved States
+@cindex -Bc, Clearing out old Saved States
+
+Especially if you have automatic state-saving with @code{-Au} turned on,
+these snapshot files can build up quickly. You might not even have most
+of the packages necessary to roll back to those early states if you've
+recently used @code{-Cc}. Let's clear out the old, unusable ones:
+
+@example
+> aura -Bc
+aura :: Remove stale snapshots? [Y/n]
+aura :: Done.
+@end example
+
+"Stale" refers to snapshots for which the corresponding tarball of some
+package no longer exists on your system. You can confirm the overall
+state of your snapshots with @code{aura check}.
+
+If you have edited a snapshot file to change the @code{pinned} field to
+@code{true}, then @code{-Bc} will never remove it.
+
 @node Log Interaction
 @section Log Interaction
 @cindex Log Interaction
+
+Pacman keeps an extensive log file, but doesn't really offer any way to
+interact with it. Aura has the @code{-L} command to perform some
+interesting lookups.
+
+@node View the Log File
+@subsection View the Log File
+@cindex -L, View the Log File
+
+To print the content of the entire log file:
+
+@example
+> aura -L | bat
+[2016-05-03 04:13] [PACMAN] Running 'pacman -r /mnt -Sy --cachedir=/mnt/var/cache/pacman/pkg base base-devel'
+[2016-05-03 04:13] [PACMAN] synchronizing package lists
+[2016-05-03 04:26] [ALPM] transaction started
+[2016-05-03 04:26] [ALPM] installed linux-api-headers (4.4.1-1)
+[2016-05-03 04:26] [ALPM] installed tzdata (2016d-1)
+[2016-05-03 04:26] [ALPM] installed iana-etc (20160314-1)
+[2016-05-03 04:26] [ALPM] installed filesystem (2015.09-1)
+[2016-05-03 04:26] [ALPM] installed glibc (2.23-1)
+... etc ...
+@end example
+
+A blast from the past! Looks like I set up Arch on this laptop in 2016.
+And what was the most recent thing that happened (pressing @code{G})?
+
+@example
+... etc ...
+[2024-07-14T13:53:16+0900] [ALPM] transaction completed
+[2024-07-14T13:53:16+0900] [ALPM] running '30-systemd-daemon-reload-system.hook'...
+[2024-07-14T13:53:16+0900] [ALPM] running '30-systemd-update.hook'...
+[2024-07-14T13:53:16+0900] [ALPM] running 'gtk-update-icon-cache.hook'...
+[2024-07-14T13:53:16+0900] [ALPM] running 'update-desktop-database.hook'...
+@end example
+
+@node Search the Log File
+@subsection Search the Log File
+@cindex -Ls, Search the Log File
+
+@code{-Ls} returns all log lines that match a given string:
+
+@example
+> aura -Ls firefox
+[2016-05-03 08:45] [PACMAN] Running 'pacman -S firefox'
+[2016-05-03 08:46] [ALPM] installed firefox (46.0-2)
+[2016-05-07 11:09] [ALPM] upgraded firefox (46.0-2 -> 46.0.1-1)
+[2016-06-19 14:30] [ALPM] upgraded firefox (46.0.1-1 -> 47.0-1)
+[2016-06-23 15:46] [ALPM] upgraded firefox (47.0-1 -> 47.0-2)
+[2016-07-25 07:25] [ALPM] upgraded firefox (47.0-2 -> 47.0.1-1)
+... etc ...
+@end example
+
+@node Query all Logs for a Package
+@subsection Query all Logs for a Package
+@cindex -Li, Query all Logs for a Package
+
+More interesting than just a raw search is @code{-Li}:
+
+@example
+> aura -Li firefox
+Name           : firefox
+First Install  : 2016-05-03 08:46
+Upgrades       : 176
+Recent Actions :
+[2024-02-24T07:29:46+0900] [ALPM] upgraded firefox (122.0.1-1 -> 123.0-1)
+[2024-03-11T16:42:37+0900] [ALPM] upgraded firefox (123.0-1 -> 123.0.1-1)
+[2024-03-24T15:03:33+0900] [ALPM] upgraded firefox (123.0.1-1 -> 124.0.1-1)
+[2024-06-03T05:18:15+0900] [ALPM] upgraded firefox (124.0.1-1 -> 126.0.1-1)
+[2024-06-29T13:17:29+0900] [ALPM] upgraded firefox (126.0.1-1 -> 127.0.2-1)
+@end example
+
+Neat! I often use this to check the last time I updated a particular
+package.
 
 @node Dependency Analysis
 @section Dependency Analysis
 @cindex Dependency Analysis
 
+Sometimes you might notice a certain package that you don't recognize
+nonetheless being updated, and you'd like to know where it came from. Or
+perhaps you'd like to know what the affect of installing some package
+might be, in terms of dependency load. The output of @code{-Qi} and
+@code{-Si} includes dependency information, but only one layer deep in
+either direction. In these cases, @code{aura deps} is a useful command.
+
+@node Displaying Dependencies
+@subsection Displaying Dependencies
+@cindex deps, Displaying Dependencies
+
+Try these commands for yourself to view their image-based output.
+
+@example
+> aura deps sbcl --open
+@end example
+
+It looks like @code{sbcl} is fairly self-contained. Many packages are
+not, and their output needs to be limited to render usefully. For
+instance...
+
+@example
+> aura deps gcc --open
+@end example
+
+Hmm, too big. Let's try again, but with @code{--limit} this time:
+
+@example
+> aura deps gcc --limit=3 --open
+@end example
+
+If you notice this command taking a long time, halt it and add
+@code{--limit}.
+
+@node Display Reverse Dependencies
+@subsection Display Reverse Dependencies
+@cindex Display Reverse Dependencies
+
+If we're curious what chain a packages depends on something, we can review that with @code{--reverse}:
+
+@example
+> aura deps gcc --reverse --open
+@end example
+
+Note that cyan nodes indicate AUR packages.
+
 @node Configuration
 @chapter Configuration
+
+For certain settings we use all the time (e.g. language, build paths,
+etc.), Aura is configurable via @code{~/.config/aura/config.toml}. This
+file, with sensible defaults, can be generated via:
+
+@example
+aura conf --gen > ~/.config/aura/config.toml
+@end example
+
+Below are the specifics of each field.
+
+@heading General Settings
+@cindex [general], configuration block
+
+@multitable @columnfractions .18 .18 .63
+@headitem Field @tab Type @tab Purpose
+@item cpus
+@tab int
+@tab Affects parallelism in various algorithms
+@item editor
+@tab string
+@tab The editor opened with @code{--hotedit}
+@item doas
+@tab bool
+@tab Privilege escalation occurs via @code{doas}, not sudo
+@item language
+@tab string
+@tab A code to specify the human language of Aura's output messages
+@end multitable
+
+See @code{aura stats --lang} for available language codes.
+
+@heading AUR Package Building
+@cindex [aur], configuration block
+
+@multitable @columnfractions .18 .18 .63
+@headitem Field @tab Type @tab Purpose
+@item build
+@tab string
+@tab A path to the build cache Aura should use
+@item cache
+@tab string
+@tab A path in which to store built package tarballs
+@item clones
+@tab string
+@tab A path in which to clone package metadata
+@item hashes
+@tab string
+@tab A path in which to store the git hash of the latest build
+@item builduser
+@tab string
+@tab An alternate user to build as
+@item chroot
+@tab string list
+@tab Packages to build with @code{pkgctl build} in a chroot
+@item ignores
+@tab string list
+@tab Packages to never update
+@item git
+@tab bool
+@tab Force update all VCS packages during @code{-Au}
+@item hotedit
+@tab bool
+@tab Prompt to edit build files (PKGBUILD, etc.) before building
+@item shellcheck
+@tab bool
+@tab Run @code{shellcheck} over PKGBUILDs before building
+@item diff
+@tab bool
+@tab Display PKGBUILD diffs during upgrades
+@item delmakedeps
+@tab bool
+@tab Remove makedeps after building
+@item noconfirm
+@tab bool
+@tab Automatically accept all prompts
+@item nocheck
+@tab bool
+@tab Don't run the @code{check()} function while building
+@item skipdepcheck
+@tab bool
+@tab Don't perform dependency checking at all
+@end multitable
+
+@heading Package Snapshots
+@cindex [backups], configuration block
+
+@multitable @columnfractions .18 .18 .63
+@headitem Field @tab Type @tab Purpose
+@item snapshots
+@tab string
+@tab A path in which to store snapshot files
+@item automatic
+@tab bool
+@tab Automatically save a snapshot during @code{-Au}
+@end multitable
 
 @node Appendix
 @chapter Appendix
