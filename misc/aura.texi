@@ -1647,15 +1647,341 @@ See @code{aura stats --lang} for available language codes.
 
 @node Localisation Guide
 @section Localisation Guide
-@cindex Localisating Aura
+@cindex Localising Aura
 
-@node Migration Guide
-@section Migration Guide (v3 to v4)
-@cindex Migrating from Aura 3 to Aura 4
+Welcome! こんにちは! Saluton!
+
+If you're reading this then it's likely that you want to help localise
+Aura into another language. Arch users everywhere can benefit from your
+contribution, and it's a great opportunity to contribute to Free
+Software.
+
+What you need:
+
+@enumerate
+@item
+@url{https://github.com/fosskers/aura, The Aura source code}.
+@item
+An editor. Whichever one you like.
+@item
+@code{git}. As Aura is hosted on github, cloning, making changes and
+adding pull requests will be easiest if you have a working git/github
+setup.
+@item
+A brain (hopefully yours) with a language in it. As for me, no hablo
+español, Я не могу говорить по-русски, nor do I يتكلم العربية, so that's
+where you come in.
+@end enumerate
+
+@node Localisation
+@subsection Localisation
+
+The first thing to determine is whether you are extending some existing
+translations or writing a new set. If you're extending an existing set,
+skip to Step Two, @ref{Translate the English}.
+
+Aura utilises Mozilla's @url{https://projectfluent.org/, Fluent Project}
+for localisation. The format is text-based and straight-forward, and
+also allows for special plural handling. See the
+@url{https://projectfluent.org/fluent/guide/, Fluent Guide} for more
+information.
+
+In the examples below, we will pretend to add localisations for Latin.
+
+@node Establish a new Localisation File
+@subsubsection Establish a new Localisation File
+
+You will find all localisation files under @code{rust/aura-pm/i18n/}.
+There is a subdirectory for each language. To add one for Latin, we
+first @url{https://simplelocalize.io/data/locales/, look up its locale
+code} and find it to be @code{la-VA}, associated with Vatican City.
+
+@example
+mkdir la-VA
+cp en-US/aura_pm.ftl la-VA/
+@end example
+
+We have copied over the English translations as a base.
+
+@node Translate the English
+@subsubsection Translate the English
+
+The top section of the file looks like:
+
+@example
+language-name = English
+
+# AUR Packages (-A)
+A-install-deps = Determining dependencies...
+A-install-repo-pkgs = Repository dependencies:
+A-install-aur-pkgs = AUR packages:
+A-install-path-comp = Failed to extract final component of: @{ $path @}
+A-install-ignored = @{ $file @} is marked "ignored". Install anyway?
+@end example
+
+@code{language-name} is important. This is the output used in @code{aura
+stats --lang}. We could make this:
+
+@example
+language-name = Lingua Latina
+@end example
+
+Then we continue, line by line, replacing the original English with
+Latin. For example:
+
+@example
+A-build-continue = Permanere aliis packages aedificationem?
+@end example
+
+Some lines have "slots" of the format @code{@{ $foo @}}, where a value
+coming from Aura will be used to complete the message:
+
+@example
++A-build-e-filename = Defecit e filename eliciunt: @{ $file @}
+-A-build-e-filename = Failed to extract filename from: @{ $file @}
+@end example
+
+@quotation
+@strong{Tip}: If you don't translate every line, Fluent will
+automatically fall back to English for the ones that are missing. No
+error will occur.
+@end quotation
+
+If you add a @code{#} to the beginning of a line, that will make it a
+"comment", thus disabling it.
+
+@example
+# Note: Translate this after I finish conquering the barbarian hordes.
+# A-u-fetch-info = Fetching package information...
+@end example
+
+@node Tell the Rust Code about the New Language
+@subsubsection (Optional) Tell the Rust Code about the New Language
+
+If you're capable with Rust, you can register the new language yourself.
+Otherwise, I will do it after you submit your translations.
+
+First, in @code{rust/aura-pm/src/lib.rs}, we tell the Rust about the new locale:
+
+@example
+pub const LATIN: LanguageIdentifier = langid!("la-VA");
+@end example
+
+Then, within @code{rust/aura-pm/src/localization.rs}, we update the
+@code{identifier_from_locale} function to include the language code for
+Latin:
+
+@example
+pub(crate) fn identifier_from_locale<S>(locale: S) -> Option<LanguageIdentifier>
+where
+    S: AsRef<str>,
+@{
+    match code_and_country(locale.as_ref()) @{
+        ("en", _) => Some(aura_pm::ENGLISH),
+        // ... other languages ...
+        ("la", _) => Some(aura_pm::LATIN),
+        _ => None,
+    @}
+@}
+@end example
+
+Next, we add a command-line flag for Latin within
+@code{rust/aura-pm/src/flags.rs}:
+
+@example
+pub struct Args @{
+    /// Output in Latin (alias: Latinus).
+    #[clap(
+        group = "language",
+        long,
+        global = true,
+        alias = "latinus",
+        hide_short_help = true,
+        display_order = 10
+    )]
+    pub latin: bool,
+    // ... more flags ...
+@end example
+
+Thanks to the @code{alias}, we can turn on Latin with either
+@code{--latin} or @code{--latinus}. Make sure to add both variants to
+the @code{AURA_GLOBALS} list. This is important for interaction with
+Pacman.
+
+Finally, back in @code{localization.rs}, we can give credit to ourselves
+for having added Latin:
+
+@example
+pub(crate) const TRANSLATORS: &[(&str, &str)] = &[
+    // ... other languages ...
+    ("Korean", "\"Nioden\""),
+    ("Latin", "Maximus Decimus Meridius")
+    ("Norwegian", "\"chinatsun\""),
+    // ... other languages ...
+];
+@end example
+
+Strength and honour, General.
+
+@node Open a Pull Request
+@subsubsection Open a Pull Request
+
+With the translations complete, you'll need to tell us about it on
+Github. Once your changes are looked over, we'll release a new version
+of Aura with your language included as soon as possible. Provided you
+followed the above instructions, this shouldn't take long. Furthermore,
+chances are we won't be able to proofread the translation itself, as we
+probably don't speak your language. You could hide your doomsday
+take-over plans in the code and no one would know.
+
+You've done a great thing by increasing Aura's usability. Your name will
+be included in both Aura's README and in its @code{thanks} message. Thank you
+for your hard work!
+
+@node Questions regarding Localisation
+@subsection Questions regarding Localisation
+@cindex Questions regarding Localisation
+
+@heading How do I test my translations?
+
+You will need to do Step Three first. See @ref{Tell the Rust Code about
+the New Language}. To view your translation progress, you can run:
+
+@example
+cargo run -- stats --lang
+@end example
+
+To see your translations in action, run some command:
+
+@example
+cargo run -- -Au --latin
+@end example
+
+@heading Which locale code should I choose?
+
+@quotation
+My language is associated with multiple countries. Which locale code
+should I choose?
+@end quotation
+
+The general rule is "the country it came from". This applies to
+languages like Spanish and Portuguese, whose countries established
+colonies across the world that now outpopulate their land of origin.
+German and French as well, which have strong footholds in Europe across
+many countries. The exception is English, as @code{en-US} is the dominant
+locale of technology and the internet.
+
+If the country and language name don't match, then pick the place with
+the most native speakers. This would apply to languages like Farsi
+(Persian), primarily spoken in Iran.
+
+If the language has a language code but not any associated country, like
+Esperanto, then invent one (e.g. `eo-EO`). Fluent
+@url{https://github.com/kellpossible/cargo-i18n/issues/52, won't know
+the difference}.
+
+If for political reasons you have difficulty recognizing the country
+currently associated with the language, we ask you to put those concerns
+aside at least for the naming of the directory. Within Aura's code,
+output messages are selected based on the language portion of the locale
+only, not the country, so you're free to set it as you wish. Further, if
+you wish to provide separate localisations for a specific country whose
+language is shared across many (for instance, the various @code{zh}
+Chinese languages), Aura's code can be altered to specifically dispatch
+on that country. Please bring it up when discussing your submission.
+
+If you're still unsure, please ask.
 
 @node FAQ
 @section Frequently Asked Questions
-@cindex Frequently Asked Questions
+@cindex faq, Frequently Asked Questions
+
+@heading Why doesn't package XYZ build?
+
+If you're on the most recent version of Aura and are still having
+problems, this could be for a few reasons:
+
+@itemize @bullet
+@item
+There is something wrong with the upstream package source files or a
+dependency. Try checking the comments on the AUR page for that package:
+@code{aura -Ao <pkg>}
+@item
+The build environment of that package is somehow polluted. Try deleting
+everything found in @code{~/.cache/aura/builds/<naughty-package>/}.
+@item
+You've found a real bug in Aura.
+@url{https://github.com/fosskers/aura/issues, PLease report it!}
+@end itemize
+
+@heading How do I debug a problem?
+@cindex How to debug
+
+To display extra output during Aura's operation, pass
+@code{--log-level=info}. If Aura is failing mysteriously somewhere, that
+output will at least let us know how far it got internally. Even more
+detail will be printed with @code{--log-level=debug}.
+
+@heading Why did you rewrite Aura in Rust?
+@cindex Why rust?
+
+Haskell is an excellent language. However, I had specific reasons to
+move to Rust:
+
+@enumerate
+@item
+To gain access to the `alpm` bindings already available for Rust.
+@item
+To open up Aura to more potential contributors.
+@item
+To reduce Aura's binary size.
+@item
+To improve Aura's CLI interface and `--help` messages.
+@item
+To improve Aura's performance.
+@end enumerate
+
+If you're thinking that I could have done any of that in Haskell, you
+may be right, but I didn't want to.
+
+See also the @url{https://github.com/fosskers/aura/discussions/657, original discussion}.
+
+@heading Why did you write a custom metadata server?
+@cindex faur
+
+@url{https://git.sr.ht/~fosskers/faur, The Faur} yields the same JSON
+format as the usual AUR RPC, but offers new endpoints. The primary
+functionality I required was "provides"-based lookup, but for AUR
+packages. The simplest way to achieve that was to write my own server,
+so I did.
+
+An example of provides-based searching would be:
+
+@quotation
+I want to know all of the packages that think they are @code{gcc}.
+@end quotation
+
+We can search that like so:
+
+@example
+> aura -Av gcc
+aur/gcc-git 13.0.0_r197401.g33be3ee36a7-1 (15 | 0.00)
+    The GNU Compiler Collection - C and C++ frontends (git version)
+aur/gccrs-git 14.0.1_r213484.g646046091b7-1 (2 | 0.00)
+    The GNU Compiler Collection - C and C++ frontends (git version)
+aur/gcc-snapshot 15.0.1.snapshot20240707-1 (1 | 0.32)
+    The GNU Compiler Collection - C and C++ frontends (snapshot)
+@end example
+
+Any of these packages, if installed, "provides" the "package identity"
+of @code{gcc}. Should another package require @code{gcc} as a
+dependency, any of these will satisfy the resolver.
+
+Having Aura communicate with a server under my control also helps reduce
+the load on the AUR RPC.
+
+Note that the data in the Faur is at any time no more than 1 hour older
+than that found on the AUR.
 
 @node Index
 @unnumbered Index
