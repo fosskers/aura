@@ -1227,7 +1227,7 @@ pub struct Aur {
     pub builduser: Option<String>,
 
     /// View diffs of PKGBUILDs and related build files before building.
-    #[clap(long, short = 'k', display_order = 4)]
+    #[clap(long, short = 'k', display_order = 3)]
     pub diff: bool,
 
     /// View/edit PKGBUILDs and related build files before building.

@@ -33,7 +33,7 @@
 .
 .SH NAME
 .
-aura \- package manager utility and AUR helper
+aura \- A package manager for Arch Linux and the AUR
 .
 .SH SYNOPSIS
 .
@@ -46,7 +46,7 @@ aura \- package manager utility and AUR helper
 .SH DESCRIPTION
 .
 .B aura
-is a secure, multilingual package manager for Arch Linux written in Haskell.
+is a multilingual package manager for Arch Linux.
 .
 It connects to both the official Arch repositories and to the
 Arch User Repositories (AUR),
@@ -58,6 +58,14 @@ pacman operations and provides
 .I new
 custom ones for dealing with AUR packages.
 .
+.P
+Unlike pacman, it is never necessary to prefix aura with sudo. Aura is
+internally aware of when sudo is necessary and will prompt the user.
+.
+.P
+Commands below labeled (Pacman) are wrapped Pacman commands and are not
+documented further here. See the man page of pacman for those.
+.
 .SH OPERATIONS
 .
 .TP
@@ -67,11 +75,6 @@ Perform actions involving the
 .BR A UR.
 .
 Default action installs packages from the AUR.
-.
-.IP
-During building, makepkg output is
-.I not
-shown by default.
 .
 After building, the built
 .I *.pkg.tar.xz
@@ -101,6 +104,16 @@ This process is interactive, allowing the user to choose from any previous
 version they have available in the package cache.
 .
 .TP
+.BR -D ", " \-\-database " \*[packages-optional]"
+.
+(Pacman) Operate on the package database.
+.
+.TP
+.BR \-F ", " \-\-files " \*[packages-optional]"
+.
+(Pacman) Query the files database.
+.
+.TP
 .BR \-L ", " \-\-viewlog
 .
 Perform actions involving the pacman
@@ -122,22 +135,54 @@ Orphan packages are packages installed as dependencies,
 but are no longer required by any other package.
 .
 .TP
-.BR \-P ", " \-\-analysis
+.BR \-Q ", " \-\-query " \*[packages-optional]"
 .
-Perform security analysis of a
-.BR P KGBUILD.
+(Pacman) Query the package database.
 .
-Default action reads PKGBUILD from stdin.
+.TP
+.BR \-R ", " \-\-remove " \*[packages-optional]"
 .
-.IP
-Useful for package maintainers and sysadmins to verify the safety of the
-PKGBUILD files that they write.
+(Pacman) Remove packages from the system.
 .
-To test any package on the AUR, try the following:
+.TP
+.BR \-S ", " \-\-sync " \*[packages-optional]"
 .
-.RSAMPLE
-.BI "aura -Ap " "package" " | aura -P"
-.ERSAMPLE
+(Pacman) Synchronize official packages.
+.
+.TP
+.BR \-U ", " \-\-upgrade " \*[packages-optional]"
+.
+(Pacman) Upgrade or add packages to the system.
+.
+.TP
+.BR check
+.
+Validate your system.
+.
+.TP
+.BR conf
+.
+View various configuration settings and files.
+.
+.TP
+.BR deps
+.
+Display a dependency graph.
+.
+.TP
+.BR free
+.
+State of Free Software installed on the system.
+.
+.TP
+.BR stats
+.
+View statistics about your machine or about Aura itself.
+.
+.TP
+.BR thanks
+.
+The people behind Aura.
 .
 .SH AUR SYNC OPTIONS (\fR\-A\fP)
 .
@@ -159,29 +204,15 @@ After a package's tarball has been built and copied to the package cache,
 delete its build directory immediately.
 .
 .TP
-.BR \-d ", " \-\-deps " \*[packages]"
-.
-View all dependencies of
-.IR packages .
-.
-This process is recursive for AUR packages,
-so all dependencies of dependencies (and so on) will also be shown.
-.
-This can aid the pre-install package research process.
-.
-.TP
 .BR \-i ", " \-\-info " \*[packages]"
 .
 View information about AUR
 .IR packages .
 .
 .TP
-.BR \-k ", " \-\-diff
+.BR \-o ", " \-\-open " \*[packages]"
 .
-Show PKGBUILD diffs.
-.
-When upgrading, using this option will compare the most and second-most recent
-PKGBUILDs and output changes in colour.
+Open the given package's AUR page in a browser.
 .
 .TP
 .BR \-p ", " \-\-pkgbuild " \*[packages]"
@@ -193,20 +224,9 @@ Use this before installing new packages to confirm that the build scripts
 aren't doing anything fishy.
 .
 .TP
-.BR \-q ", " \-\-quiet
-.
-Display less information about certain
-.B \-A
-operations
-(this is useful when processing Aura's output in a script).
-.
-In particular, search and view dependencies will only show uncoloured package
-names.
-.
-.TP
 .BR \-s ", " \-\-search " \*[multi word]"
 .
-Search AUR for packages containing
+Search the AUR for packages containing
 .IR word s
 (not regex) in their names or descriptions.
 .
@@ -224,27 +244,21 @@ Suboptions:
 Sorts results alphabetically.
 .
 .  TP
-.  BR \-\-head [ =\fIN\fR ]
+.  BR \-\-limit =\fIN\fR
 .
 Only show the first
 .I N
 results.
-.I N
-defaults to 10.
 .
 .  TP
-.  BR \-\-tail [ =\fIN\fR ]
+.  BR \-q ", " \-\-quiet
 .
-Only show the last
-.I N
-results.
-.I N
-defaults to 10.
+Only print matching package names.
 .
 .  TP
-.  BR \-r ", " \-\-both
+.  BR \-r ", " \-\-reverse
 .
-Show results from the official repos as well.
+Reverse the order of the search results.
 .
 .RE
 .
@@ -252,40 +266,57 @@ Show results from the official repos as well.
 .BR \-u ", " \-\-sysupgrade
 .
 Upgrade all installed AUR packages.
-.B -Au
-is like
-.B -Su
-but for AUR packages.
+.
+Suboptions:
+.
+.RS
+.
+.  TP
+.  BR \-d ", " \-\-dryrun
+.
+Show available upgrades, but do not perform them.
+.
+.  TP
+.  BR \-k ", " \-\-diff
+.
+View diffs of PKGBUILDs before building.
+.
+.  TP
+.  BR \-\-ignore \ \fIpackage\fR
+.
+Don't consider a given package for upgrades. Can be passed more than once. See also the \fBignores\fR list in Aura's configuration to ensure that certain packages are never upgraded.
+.
+.  TP
+.  BR \-\-git
+.
+Rebuild all git/svn/hg/etc. packages as well.
+.
+.RE
 .
 .TP
-.BR \-w ", " \-\-downloadonly " \*[packages]"
+.BR \-v ", " \-\-provides \ \fIpackage\fR
 .
-Retrieve AUR
-.I packages
-source tarballs,
-but do not build/install/upgrade anything.
+Search the AUR for packages that "provide" some package identity. The same
+suboptions available for \fI\-s\fR also apply here. Example:
 .
-.TP
-.BR \-x ", " \-\-unsuppress
+.RSAMPLE
+aura -Av gcc
+.ERSAMPLE
 .
-Unsuppress
-.BR makepkg (8)
-output during building.
-.
-By default this output is suppressed for a more silent install.
-.
-Note that when this option isn't used,
-.B makepkg
-output is actually collected and printed if any errors occur.
+.IP
+This would yield a list of packages that "are" gcc for the purposes of
+dependency resolution.
 .
 .TP
-.B \-\-json \*[packages]
+.BR \-w ", " \-\-clone " \*[packages]"
 .
-Query the AUR RPC for
-.I packages
-info as raw JSON.
+Clone the repository of the given package(s).
 .
-Good for debugging.
+.
+.TP
+.BR \-y ", " \-\-refresh
+.
+Pull the latest changes for every local copy of an AUR package.
 .
 .TP
 .BI \-\-build " path"
@@ -293,16 +324,6 @@ Good for debugging.
 Specify build
 .I path
 when building AUR packages.
-.
-Only the
-.I full
-path of a pre-existing directory can be used.
-.
-Example:
-.
-.RSAMPLE
-aura -A foo --build=/full/path/to/build/location/
-.ERSAMPLE
 .
 .TP
 .BI \-\-builduser " user"
@@ -312,37 +333,6 @@ Specify the
 to build packages as.
 .
 This can be useful when logged in as root and a build user is available.
-.
-.TP
-.B \-\-devel
-.
-When ran with
-.BR \-Au ,
-adds all development packages to the queue of packages to upgrade.
-.
-Devel packages are those pulled directly from online repositories,
-via git / mercurial / etc.
-.
-.TP
-.B \-\-dryrun
-.
-When ran with
-.BR \-A " or " \-Au ,
-update checks,
-PKGBUILD diffs,
-and dependency checks will be performed,
-but nothing will be built.
-.
-Also usable with
-.BR \-M .
-.
-.TP
-.B \-\-force
-.
-Always (re)build the specified packages.
-.
-Usually Aura will not rebuild packages whose versions are already available in
-the local package cache.
 .
 .TP
 .B \-\-hotedit
@@ -357,27 +347,21 @@ However, research into packages (and by extension, their PKGBUILDs) should be
 done by the user before any building occurs.
 .
 Please use
-.BR \-Ap " and " \-Ad
+.BR \-Ai " and " \-Ap
 for this,
 as they will be much faster at presenting information than searching the AUR
 website manually.
 .
-Note that, since aura is run through sudo,
-your local value of
-.RB $ EDITOR
-may not be preserved.
+.TP
+.B \-\-nocheck
 .
-Run as
-\(lqsudo
-.B \-E
-aura -A --hotedit \*[ellipsis]\(rq
-to preserve your environment.
+Do not consider checkdeps when building packages. This will also be passed down
+to makepkg, such that the check() function of the PKGBUILD will not run.
 .
-To always allow environment variables to be passed,
-have a look at the
-.IR env_reset " and " env_keep
-options in
-.BR sudoers (5).
+.TP
+.B \-\-shellcheck
+.
+Run shellcheck on PKGBUILDs before building.
 .
 .TP
 .B \-\-skipdepcheck
@@ -388,16 +372,6 @@ Consider this when using
 .B \-\-hotedit
 to avoid building annoying dependencies that aren't necessary for your special
 use-case.
-.
-.TP
-.BI \-\-vcspath " path"
-.
-Save the cloned sources of VCS packages (i.e.\& those that end in
-.IR *-git ,
-etc.) in the given
-.IR path ,
-instead of the default
-.IR /var/cache/aura/vcs/ .
 .
 .SH GLOBAL PACKAGE STATE OPTIONS (\fR\-B\fP)
 .
