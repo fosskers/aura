@@ -2,7 +2,7 @@
 .\" Man page for `aura`
 .\" Written by Colin Woodbury <colin@fosskers.ca>
 .
-.TH aura 8 "2021 September" "Aura" "Aura Manual"
+.TH aura 8 "2024 July" "Aura" "Aura"
 .
 .de SAMPLE      \" Indented example - on its own paragraph.
 .  P
@@ -81,6 +81,12 @@ After building, the built
 file is moved to the package cache and installed from there.
 .
 This allows for easy AUR package downgrading.
+.
+.IP
+Packages are built within a local directory as the user who invoked Aura.
+However, when Aura is run as the \fBroot\fR user, actual package building will
+occur as the \fBnobody\fR user within \fB/tmp\fR. See \fB\-\-build\fR and
+\fB\-\-builduser\fR for how to modify this behaviour.
 .
 .TP
 .BR -B ", " \-\-save
@@ -377,10 +383,15 @@ use-case.
 .
 .TP
 .BR \-c ", " \-\-clean \c
-.I " states-to-retain
+.I " states-to-retain "
 .
 Retains a given number of the most recently saved package states and removes the
 rest.
+.
+.TP
+.BR \-l ", " \-\-list
+.
+Show all saved package state filenames.
 .
 .TP
 .BR \-r ", " \-\-restore
@@ -392,16 +403,11 @@ Attempts to downgrade any packages that were upgraded since the chosen save.
 .
 Will remove any that weren't installed at the time.
 .
-.TP
-.BR \-l ", " \-\-list
-.
-Show all saved package state filenames.
-.
 .SH DOWNGRADE OPTIONS (\fR\-C\fP)
 .
 .TP
 .BR \-b ", " \-\-backup \c
-.I " path
+.I " path "
 .
 Backup the package cache to a given directory.
 .
@@ -415,7 +421,7 @@ you may want to reduce the number of older versions of each package by using
 .
 .TP
 .BR \-c ", " \-\-clean \c
-.I " versions-to-retain
+.I " versions-to-retain "
 .
 Retains a given number of package versions for each package,
 and deletes the rest from the package cache.
@@ -433,6 +439,20 @@ Giving the number 0 as an argument is identical to
 .BR \-Scc .
 .
 .TP
+.BR \-i ", " \-\-info " \*[packages]"
+.
+Look up specific packages for into on their cache entries.
+.
+.TP
+.BR \-l ", " \-\-list
+.
+Print the contents of the package cache.
+.TP
+.BR \-m ", " \-\-missing
+.
+Display packages that don't have a tarball in the cache.
+.
+.TP
 .B \-\-notsaved
 .
 Remove only those package files which are not saved in a package record (a la
@@ -440,12 +460,14 @@ Remove only those package files which are not saved in a package record (a la
 .
 .TP
 .BR \-s ", " \-\-search \c
-.I " regex
+.I " term "
 .
-Search the package cache via a
-.IR regex .
+Search the package cache via a verbatim search term.
 .
-Any package name that matches the regex will be output as-is.
+.TP
+.BR \-t ", " \-\-invalid
+.
+Delete invalid tarballs from the cache.
 .
 .SH LOGFILE OPTIONS (\fR\-L\fP)
 .
@@ -616,6 +638,22 @@ l l.
 .
 .IP \(bu 2n
 .
+After first installation, run:
+.
+.RSAMPLE
+aura conf --gen > ~/.config/aura/config.toml
+.ERSAMPLE
+.
+.IP
+to generate a configuration file that you can customise.
+.
+.IP \(bu 2n
+.
+Use \fBaura check\fR to keep an eye on some aspects of the health of your
+system.
+.
+.IP \(bu 2n
+.
 If you build a package and then choose not to install it,
 the built package file will still be moved to the cache.
 You can then install it whenever you want with
@@ -624,7 +662,6 @@ You can then install it whenever you want with
 .IP \(bu 2n
 .
 Research packages using
-.BR \-Ad \ ( \-\-deps ),
 .BR \-Ai \ ( \-\-info )
 and
 .BR \-Ap \ ( \-\-pkgbuild )!
@@ -636,14 +673,20 @@ When upgrading, use
 instead of just
 .BR \-Au .
 .
-This will remove make deps, as well as show PKGBUILD diffs before building.
+This will remove makedeps, as well as show PKGBUILD diffs before building. The
+effects of \fB\-k\fR and \fB\-a\fR can however be enabled permanently in Aura's
+config.
 .
 .SH SEE ALSO
 .
-.BR aura.conf (5),
 .BR pacman (8),
 .BR pacman.conf (5),
 .BR makepkg (8)
+.
+.P
+Apart from the various flags described here, the Aura Manual available via
+.B info aura
+contains more detailed usage information.
 .
 .SH BUGS
 .
