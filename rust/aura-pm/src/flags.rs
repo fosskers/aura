@@ -1288,13 +1288,21 @@ pub struct Aur {
     #[clap(long, display_order = 5)]
     pub noconfirm: bool,
 
-    /// Do not consider checkdeps when building packages.
+    /// (Makepkg) Do not run the check() function the PKGBUILD.
     #[clap(long, display_order = 5)]
     pub nocheck: bool,
 
     /// Perform no dependency resolution.
     #[clap(long, display_order = 5)]
     pub skipdepcheck: bool,
+
+    /// (Makepkg) Do not perform any verification checks on source files.
+    #[clap(long, display_order = 5)]
+    pub skipinteg: bool,
+
+    /// (Makepkg) Do not verify source files with PGP signatures.
+    #[clap(long, display_order = 5)]
+    pub skippgpcheck: bool,
 
     /// Packages to install.
     pub packages: Vec<String>,

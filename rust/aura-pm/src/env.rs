@@ -326,6 +326,12 @@ pub(crate) struct Aur {
     pub(crate) nocheck: bool,
     /// Perform no dependency resolution.
     pub(crate) skipdepcheck: bool,
+    /// (Makepkg) Do not perform any verification checks on source files.
+    #[serde(skip_serializing)]
+    pub(crate) skipinteg: bool,
+    /// (Makepkg) Do not verify source files with PGP signatures.
+    #[serde(skip_serializing)]
+    pub(crate) skippgpcheck: bool,
 }
 
 impl Aur {
@@ -348,6 +354,8 @@ impl Aur {
             noconfirm: false,
             nocheck: false,
             skipdepcheck: false,
+            skipinteg: false,
+            skippgpcheck: false,
         };
 
         Ok(a)
@@ -403,6 +411,14 @@ impl Aur {
             self.skipdepcheck = true;
         }
 
+        if flags.skipinteg {
+            self.skipinteg = true;
+        }
+
+        if flags.skippgpcheck {
+            self.skippgpcheck = true;
+        }
+
         // Harmless clone, as we don't expect many "ignores" to be passed on the
         // command line.
         self.ignores.extend(flags.ignore.clone());
@@ -435,6 +451,8 @@ impl TryFrom<RawAur> for Aur {
             noconfirm: raw.noconfirm,
             nocheck: raw.nocheck,
             skipdepcheck: false,
+            skipinteg: false,
+            skippgpcheck: false,
         };
 
         Ok(a)

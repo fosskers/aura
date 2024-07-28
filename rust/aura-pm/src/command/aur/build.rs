@@ -453,6 +453,14 @@ fn makepkg(env: &Env, within: &Path) -> Result<Vec<PkgPath>, Error> {
         cmd.arg("--nocheck");
     }
 
+    if env.aur.skipinteg {
+        cmd.arg("--skipinteg");
+    }
+
+    if env.aur.skippgpcheck {
+        cmd.arg("--skippgpcheck");
+    }
+
     debug!("Running makepkg within: {}", within.display());
 
     cmd.current_dir(within)
