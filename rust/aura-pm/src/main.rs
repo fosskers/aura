@@ -206,7 +206,7 @@ fn work(args: Args, env: Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
         // --- PKGBUILD Analysis --- //
         // SubCmd::Analysis(_) => unimplemented!(),
         // --- Configuration --- //
-        SubCmd::Conf(c) if c.pacman => conf::open_pacman_conf(c)?,
+        SubCmd::Conf(c) if c.pacman => conf::open_pacman_conf()?,
         SubCmd::Conf(c) if c.aura => conf::open_aura_conf()?,
         SubCmd::Conf(c) if c.makepkg => conf::open_makepkg_conf()?,
         SubCmd::Conf(c) if c.gen => conf::gen(&env)?,

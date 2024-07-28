@@ -6,9 +6,9 @@ use crate::error::Nested;
 use crate::localization::Localised;
 use crate::utils::PathStr;
 use crate::utils::ResultVoid;
-use aura_pm::flags::Conf;
 use i18n_embed_fl::fl;
 use log::error;
+use std::path::Path;
 use std::path::PathBuf;
 use std::process::Command;
 
@@ -66,14 +66,14 @@ pub(crate) fn open_aura_conf() -> Result<(), Error> {
 }
 
 /// Open the `pacman.conf` in `bat` or `less`.
-pub(crate) fn open_pacman_conf(c: Conf) -> Result<(), Error> {
-    let conf = c.config.unwrap_or_else(|| PathBuf::from(DEFAULT_PAC_CONF));
+pub(crate) fn open_pacman_conf() -> Result<(), Error> {
+    let conf = Path::new(DEFAULT_PAC_CONF);
     let prog = misc::viewer();
 
     Command::new(prog)
         .arg(&conf)
         .status()
-        .map_err(|e| Error::CouldntOpen(conf, e))
+        .map_err(|e| Error::CouldntOpen(conf.to_path_buf(), e))
         .void()
 }
 

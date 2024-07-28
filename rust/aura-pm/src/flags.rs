@@ -1089,9 +1089,6 @@ pub struct Orphans {
 /// View various configuration settings and files.
 #[derive(Parser, Debug)]
 pub struct Conf {
-    /// Set an alternate Pacman configuration file.
-    #[clap(long, value_name = "path")]
-    pub config: Option<PathBuf>,
     /// View the Pacman conf.
     #[clap(group = "conf", long, short, display_order = 1)]
     pub pacman: bool,
