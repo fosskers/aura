@@ -31,7 +31,6 @@
 
 pub(crate) mod command;
 pub(crate) mod dirs;
-pub(crate) mod download;
 pub(crate) mod env;
 pub(crate) mod error;
 pub(crate) mod fetch;

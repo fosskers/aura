@@ -1,7 +1,6 @@
 //! All functionality involving the `-C` command.
 
 use crate::aura;
-use crate::download::download_with_progress;
 use crate::env::Env;
 use crate::error::Nested;
 use crate::green;
@@ -35,16 +34,8 @@ use time::macros::format_description;
 use time::OffsetDateTime;
 use ubyte::ToByteUnit;
 
-const FIFTY_MB: i64 = 52_428_800;
-
-const FIVE_HUNDRED_MB: i64 = 524_288_000;
-
-/// The date where Arch Linux switched compression schemes from XZ to ZSTD.
-const CMPR_SWITCH: i64 = 1_577_404_800;
-
 pub(crate) enum Error {
     Readline(std::io::Error),
-    Sudo(crate::utils::SudoError),
     Pacman(crate::pacman::Error),
     Cancelled,
     NoPackages,
@@ -62,7 +53,6 @@ impl Nested for Error {
     fn nested(&self) {
         match self {
             Error::Readline(e) => error!("{e}"),
-            Error::Sudo(e) => e.nested(),
             Error::Pacman(e) => e.nested(),
             Error::Cancelled => {}
             Error::NoPackages => {}
@@ -82,7 +72,6 @@ impl Localised for Error {
     fn localise(&self, fll: &FluentLanguageLoader) -> String {
         match self {
             Error::Readline(_) => fl!(fll, "err-user-input"),
-            Error::Sudo(e) => e.localise(fll),
             Error::Pacman(e) => e.localise(fll),
             Error::Cancelled => fl!(fll, "common-cancelled"),
             Error::NoPackages => fl!(fll, "common-no-packages"),
@@ -339,12 +328,6 @@ pub(crate) fn clean_not_saved(fll: &FluentLanguageLoader, env: &Env) -> Result<(
 
 /// Download tarballs of installed packages that are missing from the cache.
 pub(crate) fn refresh(env: &Env, fll: &FluentLanguageLoader, alpm: &Alpm) -> Result<(), Error> {
-    crate::utils::sudo(env).map_err(Error::Sudo)?;
-
-    // FIXME 2024-06-04 This probably doesn't conserve local cache paths!
-    //
-    // 2024-06-07 But it _would_ conserve the main pacman cache, which is
-    // probably what we actually care about with -Cy.
     let caches = env.caches();
 
     // All installed packages that are missing a tarball in the cache.
@@ -357,120 +340,11 @@ pub(crate) fn refresh(env: &Env, fll: &FluentLanguageLoader, alpm: &Alpm) -> Res
     if ps.is_empty() {
         green!(fll, "C-y-no-work");
     } else {
-        let long_n = ps.iter().map(|p| p.name().chars().count()).max().unwrap();
-        let long_v = ps
-            .iter()
-            .map(|p| p.version().as_str().chars().count())
-            .max()
-            .unwrap();
-        // TODO Localize.
-        let p = format!("Package ({})", ps.len()).bold();
-        let v = "Version".bold();
-        let s = "Download Size";
-        let total = colour_size(ps.iter().map(|p| p.download_size()).sum());
-        let span = long_n + long_v;
-
-        // Display a summary.
-        println!("{:n$} {:v$} {}\n", p, v, s.bold(), n = long_n, v = long_v);
-        for p in ps.iter() {
-            let n = p.name();
-            let v = p.version().as_str();
-            let s = colour_size(p.download_size());
-            println!("{:n$} {:v$} {:>9}", n, v, s, n = long_n, v = long_v);
-        }
-        println!("{:-<w$}", "-".magenta(), w = span + s.chars().count());
-        println!(
-            "{:w$} {:>9}\n",
-            fl!(fll, "common-total").bold(),
-            total,
-            w = span + 1
-        );
-
-        // Proceed if the user accepts.
-        proceed!(fll, "proceed").ok_or(Error::Cancelled)?;
-
-        // Determine target cache.
-        aura!(fll, "C-y-which-cache");
-        for (i, cache) in caches.iter().enumerate() {
-            println!(" {}) {}", i, cache.display());
-        }
-        let ix = crate::utils::select(">>> ", caches.len() - 1).map_err(Error::Readline)?;
-        let target_cache = caches[ix];
-
-        // Mirrors.
-        let mirrors: HashMap<&str, Vec<&str>> = alpm
-            .as_ref()
-            .syncdbs()
-            .iter()
-            .map(|db| (db.name(), db.servers().into_iter().collect()))
-            .collect();
-
-        // Syncable package values.
-        let syncables: Vec<_> = ps
-            .iter()
-            .filter_map(|p| match (p.db(), package_tarball(p)) {
-                (Some(db), Some(tarball)) => mirrors.get(db.name()).map(|ms| {
-                    (
-                        p.name(),
-                        p.version().as_str(),
-                        p.download_size(),
-                        tarball,
-                        ms,
-                    )
-                }),
-                _ => None,
-            })
-            .collect();
-
-        let progress = Arc::new(Mutex::new(Progress::new()));
-
-        // Concurrently download every expected tarball.
-        syncables
-            .into_par_iter()
-            .for_each_with(progress, |pr, (n, v, bytes, tarball, ms)| {
-                let b_msg = format!("{} {}", n, v.dimmed());
-                let bar = pr.lock().unwrap().bar(bytes as usize, b_msg);
-
-                let mut res = ms.iter().filter_map(|m| {
-                    let url = format!("{}/{}", m, tarball);
-                    let target = target_cache.join(&tarball);
-                    download_with_progress(&url, &target, Some((pr.clone(), &bar)))
-                });
-
-                // If the download failed from every mirror, cancel the progress bar.
-                if res.next().is_none() {
-                    pr.lock().unwrap().cancel(bar);
-                }
-            });
-
-        green!(fll, "common-done");
+        crate::pacman::sudo_pacman(env, "-S", ["-w"], ps.iter().map(|p| p.name()))
+            .map_err(Error::Pacman)?;
     }
 
     Ok(())
-}
-
-/// The form of a given `Package`'s tarball that we'd expect to find on a mirror.
-///
-/// May fail, since `Package`s are not guaranteed to have an architecture field.
-fn package_tarball(pkg: &alpm::Package) -> Option<String> {
-    let name = pkg.name();
-    let ver = pkg.version().as_str();
-    let arch = pkg.arch()?;
-    let date = pkg.build_date();
-    let ext = if date < CMPR_SWITCH { "xz" } else { "zst" };
-    let tarball = format!("{}-{}-{}.pkg.tar.{}", name, ver, arch, ext);
-    Some(tarball)
-}
-
-/// Colour a size string depending on the count of bytes.
-fn colour_size(size: i64) -> ColoredString {
-    if size >= FIVE_HUNDRED_MB {
-        size.bytes().to_string().red()
-    } else if size >= FIFTY_MB {
-        size.bytes().to_string().yellow()
-    } else {
-        size.bytes().to_string().normal()
-    }
 }
 
 /// Backup your package caches to a given directory.
