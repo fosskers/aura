@@ -1562,6 +1562,7 @@ Note that cyan nodes indicate AUR packages.
 
 @node Configuration
 @chapter Configuration
+@cindex Configuration
 
 For certain settings we use all the time (e.g. language, build paths,
 etc.), Aura is configurable via @code{~/.config/aura/config.toml}. This

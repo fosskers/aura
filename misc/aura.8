@@ -64,12 +64,17 @@ internally aware of when sudo is necessary and will prompt the user.
 .
 .P
 Commands below labeled (Pacman) are wrapped Pacman commands and are not
-documented further here. See the man page of pacman for those.
+documented further here. See \fBman pacman\fR for those.
+.
+.P
+This document is strictly a description of Aura's command-line interface. For
+in-depth usage examples and more detailed discussions of various system
+management tasks, see \fBinfo aura\fR.
 .
 .SH OPERATIONS
 .
 .TP
-.BR \-A ", " \-\-aursync " \*[packages-optional]"
+.BR \-A ", " \-\-aursync ", " aur " \*[packages-optional]"
 .
 Perform actions involving the
 .BR A UR.
@@ -89,7 +94,7 @@ occur as the \fBnobody\fR user within \fB/tmp\fR. See \fB\-\-build\fR and
 \fB\-\-builduser\fR for how to modify this behaviour.
 .
 .TP
-.BR -B ", " \-\-save
+.BR -B ", " \-\-backup ", " backup
 .
 Manage the saving and restoring of the global package state.
 .
@@ -97,7 +102,7 @@ Default action stores a record of all currently installed packages and their
 versions.
 .
 .TP
-.BR -C ", " \-\-downgrade " \*[packages-optional]"
+.BR -C ", " \-\-cache ", " cache " \*[packages-optional]"
 .
 Perform actions involving the package
 .BR C ache.
@@ -110,17 +115,17 @@ This process is interactive, allowing the user to choose from any previous
 version they have available in the package cache.
 .
 .TP
-.BR -D ", " \-\-database " \*[packages-optional]"
+.BR -D ", " \-\-database ", " database " \*[packages-optional]"
 .
 (Pacman) Operate on the package database.
 .
 .TP
-.BR \-F ", " \-\-files " \*[packages-optional]"
+.BR \-F ", " \-\-files ", " files " \*[packages-optional]"
 .
 (Pacman) Query the files database.
 .
 .TP
-.BR \-L ", " \-\-viewlog
+.BR \-L ", " \-\-viewlog ", " log
 .
 Perform actions involving the pacman
 .BR L ogfile.
@@ -128,7 +133,7 @@ Perform actions involving the pacman
 Default action opens the log for read-only viewing.
 .
 .TP
-.BR \-O ", " \-\-orphans " \*[packages-optional]"
+.BR \-O ", " \-\-orphans ", " orphans " \*[packages-optional]"
 .
 Perform actions involving
 .BR O rphan
@@ -141,22 +146,22 @@ Orphan packages are packages installed as dependencies,
 but are no longer required by any other package.
 .
 .TP
-.BR \-Q ", " \-\-query " \*[packages-optional]"
+.BR \-Q ", " \-\-query ", " query " \*[packages-optional]"
 .
 (Pacman) Query the package database.
 .
 .TP
-.BR \-R ", " \-\-remove " \*[packages-optional]"
+.BR \-R ", " \-\-remove ", " remove " \*[packages-optional]"
 .
 (Pacman) Remove packages from the system.
 .
 .TP
-.BR \-S ", " \-\-sync " \*[packages-optional]"
+.BR \-S ", " \-\-sync ", " sync " \*[packages-optional]"
 .
 (Pacman) Synchronize official packages.
 .
 .TP
-.BR \-U ", " \-\-upgrade " \*[packages-optional]"
+.BR \-U ", " \-\-upgrade ", " upgrade " \*[packages-optional]"
 .
 (Pacman) Upgrade or add packages to the system.
 .
@@ -168,22 +173,46 @@ Validate your system.
 .TP
 .BR conf
 .
-View various configuration settings and files.
+View various configuration settings and files. The default action displays all
+currently loaded settings as a pretty-printed Rust structure.
+.
+.IP
+Detailed information involving Aura's configuration can be found in the Aura
+Guide via \fBinfo aura\fR under the heading \fBConfiguration\fR.
 .
 .TP
 .BR deps
 .
-Display a dependency graph.
+Display a dependency graph of given packages. Useful for identifying why a
+certain package exists on your system. Outputs a \fB.png\fR file to the current
+directory by default, but with \fB\-\-open\fR will output to \fB/tmp\fR and open
+the image in the default viewer instead.
+.
+.IP
+If the image isn't opening in the viewer you prefer, consider altering it in
+\fI~/.config/mimeapps.list\fR. For instance:
+.
+.RSAMPLE
+[Default Applications]
+image/png=swayimg.desktop
+.ERSAMPLE
+.
+.IP
+The available \fB.desktop\fR entries can be found in \fI/usr/share/applications/\fR.
 .
 .TP
 .BR free
 .
-State of Free Software installed on the system.
+View the state of Free Software installed on the system. This displays a list of
+packages that have non-FOSS or otherwise unknown licenses. For the purposes of
+this command, "FOSS License" means anything which has been approved by both the
+FSF and the OSI.
 .
 .TP
 .BR stats
 .
-View statistics about your machine or about Aura itself.
+View statistics about your machine or about Aura itself. The default action
+displays various environment values and directory sizes relevant to Aura.
 .
 .TP
 .BR thanks
@@ -365,6 +394,11 @@ Do not consider checkdeps when building packages. This will also be passed down
 to makepkg, such that the check() function of the PKGBUILD will not run.
 .
 .TP
+.BR \-\-noconfirm
+.
+Do not ask for any confirmation.
+.
+.TP
 .B \-\-shellcheck
 .
 Run shellcheck on PKGBUILDs before building.
@@ -403,7 +437,7 @@ Attempts to downgrade any packages that were upgraded since the chosen save.
 .
 Will remove any that weren't installed at the time.
 .
-.SH DOWNGRADE OPTIONS (\fR\-C\fP)
+.SH PACKAGE CACHE OPTIONS (\fR\-C\fP)
 .
 .TP
 .BR \-b ", " \-\-backup \c
@@ -453,9 +487,9 @@ Print the contents of the package cache.
 Display packages that don't have a tarball in the cache.
 .
 .TP
-.B \-\-notsaved
+.BR \-n ", " \-\-notsaved
 .
-Remove only those package files which are not saved in a package record (a la
+Delete tarballs which are not saved in any package record (a la
 .BR \-B ).
 .
 .TP
@@ -467,9 +501,27 @@ Search the package cache via a verbatim search term.
 .TP
 .BR \-t ", " \-\-invalid
 .
-Delete invalid tarballs from the cache.
+Delete invalid tarballs from the cache. Here "invalid" means "can't be opened by ALPM".
+.
+.TP
+.BR \-y ", " \-\-refresh
+.
+Download tarballs of installed packages that are missing from the cache. This is
+important for interaction with \fB\-Br\fR, which can't function if expected
+tarballs are missing. Use \fBaura check\fR to confirm the status of both the
+cache and the saved snapshots.
 .
 .SH LOGFILE OPTIONS (\fR\-L\fP)
+.
+.TP
+.BR \-a ", " \-\-after \ \fIYYYY-MM-DD\fR
+.
+When used with \fI\-L\fR, only display log entries from after the given date.
+.
+.TP
+.BR \-b ", " \-\-before \ \fIYYYY-MM-DD\fR
+.
+When used with \fI\-L\fR, only display log entries from before the given date.
 .
 .TP
 .BR \-i ", " \-\-info " \*[packages]"
@@ -485,10 +537,9 @@ what is available will be printed.
 .
 .TP
 .BR \-s ", " \-\-search \c
-.I " regex
+.I " term "
 .
-Search the pacman log file via a
-.IR regex .
+Search the pacman log file via a search term.
 .
 Useful for singling out any and all actions performed on a package.
 .
@@ -502,72 +553,115 @@ Mark
 as being explicitly installed (i.e.\& it's not a dependency).
 .
 .TP
+.BR \-e ", " \-\-elderly
+.
+Display all explicitly installed, top-level packages. If you notice something
+that you don't remember installing or perhaps don't need anymore, you can then
+uninstall it.
+.
+.TP
 .BR \-j ", " \-\-abandon
 .
 Uninstall all orphan packages.
 .
-.SH ANALYSIS OPTIONS (\fR\-P\fP)
+.SH CONFIGURATION (conf)
 .
 .TP
-.BR \-f ", " \-\-file \c
-.I " path
+.BR \-a ", " \-\-aura
 .
-Analyse a PKGBUILD at the specified
-.IR path .
+View the contents of ~/.config/aura/config.toml.
 .
 .TP
-.BR \-d ", " \-\-dir \c
-.I " path
+.BR \-g ", " \-\-gen
 .
-Analyse a
-.IR path /PKGBUILD
-found in the specified directory.
+Output your current, full Aura config as legal TOML. After your first install,
+you should run the following:
 .
-.TP
-.BR \-a ", " \-\-audit
-.
-Analyse the PKGBUILDs of all locally installed AUR packages.
-.
-.SH PACMAN / AURA DUAL FUNCTIONALITY OPTIONS
+.RSAMPLE
+aura conf --gen > ~/.config/aura/config.toml
+.ERSAMPLE
 .
 .TP
-.B \-\-noconfirm
+.BR \-m ", " \-\-makepkg
 .
-Never ask for any Aura or Pacman confirmation.
+View the Makepkg configuration file. This respects the value of \fBMAKEPKG_CONF\fR.
+.TP
+.BR \-p ", " \-\-pacman
 .
-Any time a prompt would appear,
-say before building or installation,
-it is assumed the user answered in whatever way would progress the program.
+View the Pacman configuration file.
+.
+.SH DEPENDENCY ANALYSIS (deps)
 .
 .TP
-.B \-\-needed
+.BR \-l ", " \-\-limit =\fIN\fR
 .
-Don't rebuild/reinstall packages that are already up to date.
-.
-.TP
-.B \-\-debug
-.
-View some handy debugging information.
+The number of layers up or down to allow. Without this, you may notice that
+calls to \fBdeps\fR for certain packages take a long time, or produce a massive,
+unusable image.
 .
 .TP
-.BI \-\-color " when"
+.BR \-o ", " \-\-optional
 .
-Specify when to enable colouring.
-.
-Without this flag, both Aura and Pacman will attempt to colour text if the
-terminal allows it.
-.
-Otherwise, you can pass
-.BR always " or " never
-to be specific about your wants.
+Include optional dependencies. These will be referenced with a dotted line in
+the image.
 .
 .TP
-.BI \-\-overwrite " glob"
+.BR \-r ", " \-\-reverse
 .
-If there are file conflicts during installation,
-overwrite conflicting files that match the given
-.I glob
-pattern.
+The opposite of normal operation, this displays packages that depend on the
+given arguments. Good for answering questions like "What depends on foo?"
+.
+.TP
+.BR \-\-open
+.
+Open the output image automatically.
+.TP
+.BR \-\-raw
+.
+Print the raw DOT output instead of producing an image file.
+.
+.SH FREE SOFTWARE LICENSES (free)
+.
+.TP
+.BR \-\-copyleft
+.
+Consider only Copyleft licenses.
+.
+.TP
+.BR \-\-lenient
+.
+Allow FOSS-derived custom licenses.
+.
+.SH SYSTEM STATISTICS (stats)
+.
+.TP
+.BR \-g ", " \-\-groups
+.
+View all installed package groups.
+.
+.TP
+.BR \-\-heavy
+.
+View the Top 10 heaviest installed packages.
+.
+.TP
+.BR \-l ", " \-\-lang
+.
+View Aura's localisation statistics. The language codes displayed here can be
+used in the \fBlanguage\fR field of Aura's configuration.
+.
+.SH OTHER GLOBAL OPTIONS
+.
+.TP
+.BR \-h ", " \-\-help
+.
+Display basic help. Can be used with any top-level Operation.
+.
+.TP
+.B \-\-log-level \fIlevel\fR
+.
+Minimum level of Aura log messages to display. Available values are \fBdebug\fR,
+\fBinfo\fR, \fBwarn\fR, and \fBerror\fR.
 .
 .SH EXPOSED MAKEPKG OPTIONS
 .
