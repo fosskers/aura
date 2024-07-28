@@ -1342,8 +1342,8 @@ pub struct Cache {
     #[clap(group = "cache", short, long, value_name = "N", display_order = 1)]
     pub clean: Option<usize>,
 
-    /// Delete only those tarballs which aren't present in a snapshot.
-    #[clap(group = "cache", long = "notsaved", display_order = 1)]
+    /// [-c] Delete only those tarballs which aren't present in a snapshot.
+    #[clap(group = "cache", long = "notsaved", short = 'n', display_order = 1)]
     pub clean_unsaved: bool,
 
     /// Look up specific packages for info on their cache entries.
