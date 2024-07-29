@@ -166,6 +166,11 @@ but are no longer required by any other package.
 (Pacman) Upgrade or add packages to the system.
 .
 .TP
+.BR \-V ", " \-\-version
+.
+Print Aura's current version number.
+.
+.TP
 .BR check
 .
 Validate your system.
@@ -390,8 +395,8 @@ website manually.
 .TP
 .B \-\-nocheck
 .
-Do not consider checkdeps when building packages. This will also be passed down
-to makepkg, such that the check() function of the PKGBUILD will not run.
+(Makepkg) Do not consider checkdeps when resolving dependencies, nor run the
+check() function of the PKGBUILD.
 .
 .TP
 .BR \-\-noconfirm
@@ -412,6 +417,16 @@ Consider this when using
 .B \-\-hotedit
 to avoid building annoying dependencies that aren't necessary for your special
 use-case.
+.
+.TP
+.B \-\-skipinteg
+.
+(Makepkg) Do not perform any verification checks on source files.
+.
+.TP
+.B \-\-skippgpcheck
+.
+(Makepkg) Do not verify associated PGP signatures.
 .
 .SH GLOBAL PACKAGE STATE OPTIONS (\fR\-B\fP)
 .
@@ -663,38 +678,6 @@ Display basic help. Can be used with any top-level Operation.
 Minimum level of Aura log messages to display. Available values are \fBdebug\fR,
 \fBinfo\fR, \fBwarn\fR, and \fBerror\fR.
 .
-.SH EXPOSED MAKEPKG OPTIONS
-.
-.TP
-.B \-\-ignorearch
-.
-Ignores processor architecture when building packages.
-.
-.TP
-.B \-\-allsource
-.
-Creates a
-.I .src
-file containing all the downloaded sources (code, etc.\&)
-and stores it at
-.IR /var/cache/aura/src/ .
-.
-To change the location where sources are stored,
-use the
-.B \-\-allsourcepath
-flag on command line or via
-.BR aura.conf (5).
-.
-.TP
-.B \-\-skipinteg
-.
-Skip package source integrity checks (hash sums).
-.
-.TP
-.B \-\-skippgpcheck
-.
-Skip all PGP checks.
-.
 .SH LANGUAGE OPTIONS
 .
 Aura is available in multiple languages.
@@ -704,29 +687,46 @@ names written in their native characters.
 .
 The available languages are, in option form:
 .
+.P
 .TS \" Tab-separated
 l l.
-\fB\-\-english\fP	(default)
-\fB\-\-japanese\fP	\fB\-\-日本語\fP
-\fB\-\-polish\fP	\fB\-\-polski\fP
+\fB\-\-arabic\fP
 \fB\-\-croatian\fP	\fB\-\-hrvatski\fP
-\fB\-\-swedish\fP	\fB\-\-svenska\fP
-\fB\-\-german\fP	\fB\-\-deutsch\fP
-\fB\-\-spanish\fP	\fB\-\-español\fP
-\fB\-\-portuguese\fP	\fB\-\-português\fP
-\fB\-\-french\fP	\fB\-\-français\fP
-\fB\-\-russian\fP	\fB\-\-русский\fP
-\fB\-\-italian\fP	\fB\-\-italiano\fP
-\fB\-\-serbian\fP	\fB\-\-српски\fP
-\fB\-\-norwegian\fP	\fB\-\-norsk\fP
-\fB\-\-indonesian\fP
-\fB\-\-chinese\fP	\fB\-\-中文\fP
-\fB\-\-esperanto\fP
-\fB\-\-dutch\fP	\fB\-\-nederlands\fP
-\fB\-\-romanian\fP	\fB\-\-română\fP
-\fB\-\-vietnamese\fP
 \fB\-\-czech\fP	\fB\-\-čeština\fP
+\fB\-\-dutch\fP	\fB\-\-nederlands\fP
+\fB\-\-english\fP	(default)
+\fB\-\-esperanto\fP
+\fB\-\-french\fP	\fB\-\-français\fP
+\fB\-\-german\fP	\fB\-\-deutsch\fP
+\fB\-\-hindi\fP	\fB\-\-हिंदी\fP
+\fB\-\-indonesian\fP
+\fB\-\-italian\fP	\fB\-\-italiano\fP
+\fB\-\-japanese\fP	\fB\-\-日本語\fP
+\fB\-\-korean\fP	\fB\-\-한국어\fP
+\fB\-\-norwegian\fP	\fB\-\-norsk\fP
+\fB\-\-polish\fP	\fB\-\-polski\fP
+\fB\-\-portuguese\fP	\fB\-\-português\fP
+\fB\-\-romanian\fP	\fB\-\-română\fP
+\fB\-\-russian\fP	\fB\-\-русский\fP
+\fB\-\-serbian\fP	\fB\-\-српски\fP
+\fB\-\-simplified-chinese\fP	\fB\-\-简体字\fP
+\fB\-\-spanish\fP	\fB\-\-español\fP
+\fB\-\-swedish\fP	\fB\-\-svenska\fP
+\fB\-\-turkish\fP
+\fB\-\-ukranian\fP	\fB\-\-українська\fP
+\fB\-\-vietnamese\fP
 .TE
+.
+.P
+Note that these flags are not the expected way to alter Aura's language for
+normal usage. If your locale is set to something that Aura recognizes, it will
+automatically alter its output language. Otherwise, you're able to set the
+\fBlanguage\fR field within configuration. The available language codes can be
+viewed in the output of \fBaura stats --lang\fR.
+.
+.P
+See the \fBLocalisation\fR topic within \fBinfo aura\fR for instructions on
+adding a new language to Aura.
 .
 .SH PRO TIPS
 .
@@ -778,9 +778,9 @@ config.
 .BR makepkg (8)
 .
 .P
-Apart from the various flags described here, the Aura Manual available via
+Apart from the various flags described here, the Aura Manual is available via
 .B info aura
-contains more detailed usage information.
+and contains more detailed usage information.
 .
 .SH BUGS
 .
@@ -838,4 +838,5 @@ Romanian	"90" and "benone"
 Vietnamese	"Kritiqual"
 Czech	Daniel Rosel
 Korean	"Nioden"
+Hindi	"@yozachar"
 .TE

@@ -44,10 +44,12 @@ pub const AURA_GLOBALS: &[&str] = &[
     "--dutch",
     "--nederlands",
     "--turkish",
+    "--arabic",
     "--ukrainian",
     "--українська",
     "--romanian",
     "--română",
+    "--vietnamese",
     "--czech",
     "--český",
     "--korean",
@@ -245,12 +247,11 @@ pub struct Args {
         display_order = 10
     )]
     pub turkish: bool,
-    /// Output in Arabic (alias: العربية).
+    /// Output in Arabic.
     #[clap(
         group = "language",
         long,
         global = true,
-        alias = "العربية",
         hide_short_help = true,
         display_order = 10
     )]
