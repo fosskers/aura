@@ -36,217 +36,291 @@
   
 </div>
 
-Welcome to the main repository for Aura, a secure, multilingual package manager for Arch Linux.
+Welcome to the main repository for Aura, a multilingual package manager for Arch Linux.
 
-Check out [The Aura Book](https://fosskers.github.io/aura/) for all knowledge
-and usage instructions!
+Looking for help? Try:
+
+- [The Aura Book](https://fosskers.github.io/aura/) for the online Manual.
+- `info aura` for an offline variant of the Book.
+- `man aura` for a detailed explanation of the entire command-line interface.
+- `aura -h` for simple CLI help.
+
+Looking to migrate from Aura 3 to Aura 4? See the [Migration
+Guide](https://fosskers.github.io/aura/migration.html).
 
 > 💡 Aura's port to Rust is nearly complete. If you want early access, try out
 > the [aura-git](https://aur.archlinux.org/packages/aura-git) package.
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
-
 **Table of Contents**
 
-- [Aura](#aura)
-  - [What is Aura?](#what-is-aura)
-  - [The Aura Philosophy](#the-aura-philosophy)
-    - [Aura is Pacman](#aura-is-pacman)
-    - [Arch is Arch - AUR is AUR](#arch-is-arch---aur-is-aur)
-    - [Secure Package Building](#secure-package-building)
-    - [Downgradibility](#downgradibility)
-    - [Arch Linux for Everyone](#arch-linux-for-everyone)
-    - [Haskell](#haskell)
-  - [Installation](#installation)
-    - [Prebuilt Binaries](#prebuilt-binaries)
-    - [Building from Source](#building-from-source)
-  - [Sample Usage](#sample-usage)
-    - [Installing Packages](#installing-packages)
-    - [Package Set Snapshots](#package-set-snapshots)
-    - [Downgrading via the Package Cache](#downgrading-via-the-package-cache)
-    - [Searching the Pacman Log](#searching-the-pacman-log)
-    - [Managing Orphan Packages](#managing-orphan-packages)
-    - [PKGBUILD Security Analysis](#pkgbuild-security-analysis)
-  - [Configuration](#configuration)
-  - [Mailing List](#mailing-list)
-  - [Localisation](#localisation)
-  - [Credits](#credits)
-- [The `aur` Haskell Library](#the-aur-haskell-library)
-- [The `aursec` Tool](#the-aursec-tool)
+ - [What is Aura?](#what-is-aura)
+ - [The Aura Philosophy](#the-aura-philosophy)
+     - [Aura is Pacman](#aura-is-pacman)
+     - [Arch is Arch - AUR is AUR](#arch-is-arch---aur-is-aur)
+     - [Downgradibility](#downgradibility)
+     - [Independence](#independence)
+     - [Multilingualism](#multilingualism)
+ - [Installation](#installation)
+     - [From the AUR](#from-the-aur)
+         - [The Tagged Release](#the-tagged-release)
+         - [The `git`-based Build](#the-git-based-build)
+         - [The Prebuilt Binary](#the-prebuilt-binary)
+     - [Building from Source](#building-from-source)
+     - [Post-installation](#post-installation)
+ - [Sample Usage](#sample-usage)
+ - [Configuration](#configuration)
+ - [Localisation](#localisation)
+ - [Credits](#credits)
 
 <!-- markdown-toc end -->
 
-# Aura
-
 ## What is Aura?
 
-Aura is a package manager for Arch Linux. Its original purpose is as an _AUR
-helper_, in that it automates the process of installing packages from the Arch
-User Repositories. It is, however, capable of much more.
+Aura is a package manager for Arch Linux. Its original purpose was in
+supplementing Pacman to support the building of AUR packages, but since its
+creation in 2012 it has since evolved to enable a variety of use cases.
 
 ## The Aura Philosophy
 
 ### Aura is Pacman
 
-Aura doesn't just mimic `pacman`; it _is_ `pacman`. All `pacman` operations and
-their sub-options are allowed. Some even hold special meaning in Aura as well.
+Aura doesn't just mimic `pacman`; it *is* `pacman`. All `pacman` operations and
+their sub-options are accepted, as-is.
 
 ### Arch is Arch - AUR is AUR
 
-`-S` yields pacman packages and _only_ pacman packages. This agrees with the
-above. In Aura, the `-A` operation is introduced for obtaining AUR packages.
-`-A` comes with sub-options you're used to (`-u`, `-s`, `-i`, etc.).
+Aura does not augment or alter `pacman`'s commands in any way.
 
-### Secure Package Building
-
-PKGBUILDs from the AUR can contain anything. It's a user's responsibility to
-verify the contents of a PKGBUILD before building, but people can make mistakes
-and overlook details. Aura scans PKGBUILDs before building to detect bash misuse
-and other exploits. The `-P` command is also provided for scanning your own
-PKGBUILDs.
-
-Also, while pre-build PKGBUILD editing is not default behaviour, this can be
-achieved with `--hotedit`.
+`-S` yields repository packages and <u>only</u> those. In Aura, the `-A` operation is
+introduced for obtaining AUR packages. `-A` comes with sub-options you're used
+to (`-u`, `-s`, `-i`, etc.) and adds new ones to enhance AUR interaction.
 
 ### Downgradibility
 
 Aura allows you to downgrade individual packages to previous versions with `-C`.
 It also handles snapshots of your entire system, so that you can roll back whole
 sets of packages when problems arise. The option `-B` will save a package state,
-and `-Br` will restore a state you select. `-Su` and `-Au` also invoke a save
+and `-Br` will restore a state you select. `-Au` also invokes a save
 automatically.
 
-### Arch Linux for Everyone
+### Independence
+
+Aura has its own configuration file, its own local package cache, and its own
+[Metadata Server][faur] called the Faur. The Faur in particular helps reduce
+traffic to the main AUR server and allows us to provide unique package lookup
+schemes not otherwise available.
+
+### Multilingualism
 
 English is the dominant language of computing and the internet. That said, it's
 natural that some people are going to be more comfortable working in their
 native language. From the beginning, Aura has been built with multiple-language
-support in mind, making it very easy to add new ones.
+support in mind, making it very easy to add new ones via the [Project
+Fluent][fluent] format.
 
-### Haskell
-
-Aura is written in Haskell, which means easy development and beautiful code.
-Please feel free to use it as a Haskell reference. Aura code demonstrates:
-
-- Parser combinators (`megaparsec`)
-- CLI flag handling (`optparse-applicative`)
-- Concurrency (`scheduler`)
-- Shell interaction (`typed-process`)
-- Pretty printing (`prettyprinter`)
-- Logging (`rio`)
-- Modern Haskell project architecture (config, CI, distribution)
+[faur]: https://git.sr.ht/~fosskers/faur
+[fluent]: https://projectfluent.org/
 
 ## Installation
 
-### Prebuilt Binaries
+### From the AUR
 
-It is recommended to install the prebuilt binary of Aura:
+#### The Tagged Release
+
+[The recommended package](https://aur.archlinux.org/packages/aura) is simply
+named `aura`. It uses `cargo` to build a fresh binary on your machine, based on
+releases made to Rust's [crates.io](https://crates.io/crates/aura-pm).
+
+```bash
+git clone https://aur.archlinux.org/aura.git
+cd aura
+makepkg -s
+sudo pacman -U <the-package-file-that-makepkg-produces>
+```
+
+#### The `git`-based Build
+
+If instead you'd like to directly track updates to Aura's `master` branch, install
+[the `git` variant](https://aur.archlinux.org/packages/aura-git):
+
+```bash
+git clone https://aur.archlinux.org/aura-git.git
+cd aura-git
+makepkg -s
+sudo pacman -U <the-package-file-that-makepkg-produces>
+```
+
+#### The Prebuilt Binary
+
+Finally, if you don't wish to build Aura yourself or want to avoid any trace of
+Rust tooling on your machine, there is a [prebuilt
+binary](https://aur.archlinux.org/packages/aura-bin/) of Aura for `x86_64`
+machines:
 
 ```bash
 git clone https://aur.archlinux.org/aura-bin.git
 cd aura-bin
-makepkg
+makepkg -s
 sudo pacman -U <the-package-file-that-makepkg-produces>
 ```
 
 ### Building from Source
 
-You will need the [Stack Tool](https://docs.haskellstack.org/en/stable/README/)
-for Haskell to compile Aura yourself. Then:
+If you already have Rust tooling installed on your machine and/or wish to help
+develop Aura, you can also install it manually:
 
 ```bash
 git clone https://github.com/fosskers/aura.git
-cd aura/haskell
-stack install -- aura
+cd aura/rust
+cargo install --path aura-pm
 ```
 
-This may take a while to initially build all of Aura's dependencies. Once
-complete, your `aura` binary will be available in `/home/YOU/.local/bin/`.
+This will build and install the binary to `/home/YOU/.cargo/bin/`.
 
-Alteratively, you can try the Alpha of Aura's new version:
+Keep in mind that this variant of Aura won't be tracked in `pacman`'s database,
+and so it will be easier to miss updates. It also does not install completions
+or other documentation files like manpages.
+
+### Post-installation
+
+The first thing you should do is run `check`:
 
 ```bash
-cd rust
-cargo install --path .
+aura check
 ```
 
-This will install the binary to `/home/YOU/.cargo/bin/`.
+This will scan your system for irregularities and suggest fixes. Second, you
+should generate an Aura config file:
+
+```bash
+aura conf --gen > ~/.config/aura/config.toml
+```
+
+Consider setting the `language` field here, if you wish to use Aura in a
+language other than English. The available language codes are viewable via:
+
+```bash
+aura stats --lang
+```
+
+Aura will also automatically detect your locale via `LANG`, so you only need to
+set `language` if you want a custom combination of system language and Aura
+language.
 
 ## Sample Usage
 
-Full usage information can be found in Aura's man page.
+Full usage information can be found in Aura's man page and within [The
+Book](https://fosskers.github.io/aura/usage.html).
 
-### Installing Packages
+> **❗ Attention:** As of the 4.x series, `sudo` is no longer necessary when
+> running Aura. When escalated privileges are required, Aura will automatically
+> prompt you.
 
-| Command              | Function                                                                              |
-| -------------------- | ------------------------------------------------------------------------------------- |
-| `aura -A <package>`  | Install an AUR package.                                                               |
-| `aura -Au`           | Upgrade all installed AUR packages.                                                   |
-| `aura -Akuax`        | Author's favourite (upgrades, removes makedeps, shows PKGBUILD diffs, shows progress) |
-| `aura -Ai <package>` | Look up information on an AUR package.                                                |
-| `aura -As <regex>`   | Search the AUR via a regex.                                                           |
-| `aura -Ap <package>` | Display a package's PKGBUILD.                                                         |
-| `aura -Ad <package>` | List a package's dependencies.                                                        |
+- [`-A`](https://fosskers.github.io/aura/aur.html): Search and install packages from the AUR.
+```
+> aura -A qlot
+```
 
-### Package Set Snapshots
+- [`-B`](https://fosskers.github.io/aura/snapshots.html): Create and restore snapshots of installed packages.
+```
+> aura -B
+aura :: Saved package state.
+```
 
-| Command        | Function                                                        |
-| -------------- | --------------------------------------------------------------- |
-| `aura -B`      | Store a JSON record of all installed packages.                  |
-| `aura -Br`     | Restore a saved record. Rolls back and uninstalls as necessary. |
-| `aura -Bc <n>` | Delete all but the most recent `n` saved states.                |
-| `aura -Bl`     | Show all saved package state filenames.                         |
+- [`-C`](https://fosskers.github.io/aura/downgrading.html): Downgrade installed packages.
+```
+> aura -C qlot
+aura :: What version of qlot do you want?
+ 0) 1.5.6-1
+ 1) 1.5.1-1
+>>
+```
 
-### Downgrading via the Package Cache
+- [`-L`](https://fosskers.github.io/aura/log.html): Search and inspect the ALPM log.
+```
+> aura -Li firefox
+Name           : firefox
+First Install  : 2016-05-03 08:46
+Upgrades       : 176
+Recent Actions : 
+[2024-02-24T07:29:46+0900] [ALPM] upgraded firefox (122.0.1-1 -> 123.0-1)
+[2024-03-11T16:42:37+0900] [ALPM] upgraded firefox (123.0-1 -> 123.0.1-1)
+[2024-03-24T15:03:33+0900] [ALPM] upgraded firefox (123.0.1-1 -> 124.0.1-1)
+```
 
-| Command             | Function                                                            |
-| ------------------- | ------------------------------------------------------------------- |
-| `aura -C <package>` | Downgrade a package.                                                |
-| `aura -Cs <regex>`  | Search the package cache for files that match a regex.              |
-| `aura -Cc <n>`      | Delete all but the most recent `n` versions of each cached package. |
-| `aura -Cv`          | Delete all of the `/var/cache/aura/vcs` cache                       |
+- [`-O`](https://fosskers.github.io/aura/orphans.html): Handle "orphans" - dependencies whose parent package is no
+  longer installed.
+```
+> aura -O
+asar 3.2.8-1
+```
 
-### Searching the Pacman Log
+- `check`: Validate your system.
+```
+> aura check
+aura :: Validating your system.
+aura :: Environment
+  [✓] locale -a contains LANG value? (en_US.UTF-8)
+  [✓] Aura is localised to your LANG?
+  [✓] EDITOR variable set?
+  [✓] EDITOR value (emacs) is executable?
+  [✓] Java environment set?
+... etc. ...
+```
 
-| Command              | Function                                         |
-| -------------------- | ------------------------------------------------ |
-| `aura -L`            | View the Pacman log.                             |
-| `aura -Li <package>` | View the install / upgrade history of a package. |
-| `aura -Ls <regex>`   | Search the Pacman log via a regex.               |
+- [`conf`](https://fosskers.github.io/aura/configuration.html): Inspect or generate Aura configuration.
+```
+> aura conf --gen > ~/.config/aura/config.toml
+```
 
-### Managing Orphan Packages
+- [`deps`](https://fosskers.github.io/aura/deps.html): View the dependency graph of given packages.
+```
+> aura deps gcc --reverse --optional --limit=3 --open
+```
+<p align="center">
+  <img src="book/src/gcc.png">
+</p>
 
-Orphan packages are those whose install reason is marked as "As Dependency", but
-are not actually depended upon by any installed package.
+- `free`: List installed packages with potentially non-free software licenses.
+```
+> aura free
+adobe-source-code-pro-fonts: custom
+aspell-en: custom
+blas: custom
+boost: custom
+boost-libs: custom
+cantarell-fonts: custom:SIL
+... etc. ...
+```
 
-| Command              | Function                                                     |
-| -------------------- | ------------------------------------------------------------ |
-| `aura -O`            | Display orphan packages.                                     |
-| `aura -Oa <package>` | Change a package's install reason to `Explicitly installed`. |
-| `aura -Oj`           | Uninstall all orphan packages.                               |
+- `stats`: View statistics about your machine and Aura itself.
+```
+> aura stats
+Host                 : yumi
+User                 : colin
+Distribution         : Arch Linux
+Editor               : emacs
+Installed packages   : 1144
+Pacman Package Cache : 7.05GiB
+Aura Package Cache   : 1.29GiB
+Aura Build Cache     : 6.49GiB
+/tmp Directory       : 11.31MiB
+```
 
-### PKGBUILD Security Analysis
-
-As mentioned above, the `-P` commands can help us detect bash usage that
-conflicts with the AUR guidelines, as well as outright exploits.
-
-| Command           | Function                                        |
-| ----------------- | ----------------------------------------------- |
-| `aura -P <stdin>` | Analyse a PKGBUILD piped from `-Ap`.            |
-| `aura -Pf <file>` | Analyse a PKGBUILD file.                        |
-| `aura -Pd <dir>`  | Analyse the PKGBUILD file found in a directory. |
-| `aura -Pa`        | Analyse all locally installed AUR packages.     |
+- `thanks`: Credit to the Pacman team, Aura's authors, and Aura's translators.
 
 ## Configuration
 
-Aura looks for a configuration file at `/etc/aura.conf`, but won't break if one
-isn't present. A template config file [can be found here](aura/doc/aura.conf)
-and contains all instructions. If you install Aura via its AUR package, this
-file is added for you.
+Aura looks for a configuration file at `~/.config/aura/config.toml`, but won't
+break if one isn't present. To generate one:
 
-## Mailing List
+``` bash
+aura conf --gen > ~/.config/aura/config.toml
+```
 
-You can join Aura's mailing list here: https://lists.sr.ht/~fosskers/aura
+Configuration details can be found in [The
+Book](https://fosskers.github.io/aura/configuration.html) or within `info aura`.
 
 ## Localisation
 
@@ -289,11 +363,3 @@ Aura has been translated by these generous people:
 
 Aura's logo is thanks to the designer [Cristiano Vitorino](https://github.com/cristianovitorino).
 
-# The `aur` Haskell Library
-
-A library for accessing the AUR.
-
-# The `aursec` Tool
-
-Performs a sweep of all PKGBUILDs on the [AUR](https://aur.archlinux.org/),
-looking for Bash misuse.
