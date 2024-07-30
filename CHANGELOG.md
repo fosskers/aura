@@ -6,6 +6,9 @@ Aura 4 represents a signicant body of work to port Aura from Haskell to Rust.
 The motivations for this rewrite are [discussed here][motivation]. Overall, Aura
 is now much more performant and has a 4x smaller binary.
 
+The main [aura][aura] package, not `aura-bin`, is now the recommended means of
+installation.
+
 It is no longer necessary to run `aura` with `sudo`. Aura is now internally
 aware of when `sudo` is necessary and will prompt you as needed.
 
@@ -25,6 +28,7 @@ used on remote servers and within Docker containers.
 For existing users, further details involving the transition from v3 to v4 are
 available in the [Migration Guide][migration].
 
+[aura]: https://aur.archlinux.org/packages/aura
 [motivation]: https://fosskers.github.io/aura/faq.html#why-did-you-rewrite-aura-in-rust
 [migration]: https://fosskers.github.io/aura/migration.html
 

@@ -6,9 +6,10 @@ Guide](https://fosskers.github.io/aura/).
 
 ## Installation
 
-Since this crate is still only a Release Candidate, you'll need to specify the
-version yourself when installing it via `cargo`:
+```
+cargo install aura-pm
+```
 
-```
-cargo install aura-pm --version 4.0.0-rc3
-```
+This will install the executable `aura` to `~/.cargo/bin/`. However, as this
+will not include manual files or completions, it is recommended that you install
+Aura via the official AUR packages.
