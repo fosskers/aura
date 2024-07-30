@@ -1,5 +1,9 @@
 # aura-core
 
+## 0.8.0 (2024-07-31)
+
+A final lockstep release for Aura 4.
+
 ## 0.7.0 (2024-07-04)
 
 #### Fixed
