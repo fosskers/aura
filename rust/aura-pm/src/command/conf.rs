@@ -71,7 +71,7 @@ pub(crate) fn open_pacman_conf() -> Result<(), Error> {
     let prog = misc::viewer();
 
     Command::new(prog)
-        .arg(&conf)
+        .arg(conf)
         .status()
         .map_err(|e| Error::CouldntOpen(conf.to_path_buf(), e))
         .void()
