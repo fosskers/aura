@@ -794,6 +794,13 @@ If a name collision occurs (that is, if there is a legitimate AUR package with
 the same name as the one you installed) previous installations could be
 overwritten.
 .
+.P
+You may occasionally notice that Aura doesn't detect new package versions
+immediately after they are updated on the AUR. This is because Aura fetches
+package metadata from a dedicated server, not the AUR directly. The dedicated
+server refreshes its database every hour, so in these cases we ask you to be
+patient.
+.
 .SH AUTHOR
 .
 Colin Woodbury <colin@fosskers.ca>
