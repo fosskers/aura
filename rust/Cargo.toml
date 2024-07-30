@@ -6,8 +6,6 @@ members = [
 "aura-core",
 # Ecosystem libraries
 "r2d2-alpm",
-# Documentation Generation
-# "doc-gen"
 ]
 resolver = "2"
 

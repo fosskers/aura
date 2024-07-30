@@ -1,9 +1,0 @@
-[package]
-name = "doc-gen"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-aura-pm = { path = "../aura-pm" }
-clap = { version = "3.2", features = ["derive"] }
-clap_mangen = "0.1"
