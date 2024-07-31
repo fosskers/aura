@@ -1244,6 +1244,10 @@ pub struct Aur {
     #[clap(long, short, display_order = 4)]
     pub clean: bool,
 
+    /// Give installed packages the "non-explicit" status.
+    #[clap(long, display_order = 4)]
+    pub asdeps: bool,
+
     /// Upgrade all installed AUR packages.
     #[clap(group = "aur", long, short = 'u', display_order = 1)]
     pub sysupgrade: bool,

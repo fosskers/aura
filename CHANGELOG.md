@@ -4,7 +4,9 @@
 
 #### Added
 
-- `-As --reverse` can be turned on permanently in config.
+- `-A`:
+  - `-s --reverse` can be turned on permanently in config.
+  - `--asdeps` reinstated.
 
 ## 4.0.0 (2024-07-31)
 

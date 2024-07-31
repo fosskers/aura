@@ -551,7 +551,9 @@ fn install_work(
             // Chances are that this condition is wrong. It's conceivable that a
             // binary package could slip into an early installation layer. This
             // needs to be confirmed, though.
-            let flags = (!done).then(|| ["--asdeps"].as_slice()).unwrap_or_default();
+            let flags = (!done || (matches!(mode, Mode::Install) && env.aur.asdeps))
+                .then(|| ["--asdeps"].as_slice())
+                .unwrap_or_default();
             let tarballs = builts
                 .iter()
                 .flat_map(|b| b.tarballs.iter().map(|pp| pp.as_path()));

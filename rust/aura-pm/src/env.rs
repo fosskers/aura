@@ -336,6 +336,9 @@ pub(crate) struct Aur {
     pub(crate) skippgpcheck: bool,
     /// Always reverse the search results.
     pub(crate) reverse: bool,
+    /// Give installed packages the "non-explicit" status.
+    #[serde(skip_serializing)]
+    pub(crate) asdeps: bool,
 }
 
 impl Aur {
@@ -361,6 +364,7 @@ impl Aur {
             skipinteg: false,
             skippgpcheck: false,
             reverse: false,
+            asdeps: false,
         };
 
         Ok(a)
@@ -428,6 +432,10 @@ impl Aur {
             self.reverse = true;
         }
 
+        if flags.asdeps {
+            self.asdeps = true;
+        }
+
         // Harmless clone, as we don't expect many "ignores" to be passed on the
         // command line.
         self.ignores.extend(flags.ignore.clone());
@@ -463,6 +471,7 @@ impl TryFrom<RawAur> for Aur {
             skipinteg: false,
             skippgpcheck: false,
             reverse: raw.reverse,
+            asdeps: false,
         };
 
         Ok(a)
