@@ -1953,6 +1953,8 @@ move to Rust:
 @item
 To gain access to the `alpm` bindings already available for Rust.
 @item
+To make Aura easier to install.
+@item
 To open up Aura to more potential contributors.
 @item
 To reduce Aura's binary size.

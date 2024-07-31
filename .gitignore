@@ -9,6 +9,8 @@ haskell/**/.hie/*
 
 # The Aura Guide
 book/book/*
+misc/dir
+misc/*.info
 
 # Nix
 .envrc

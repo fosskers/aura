@@ -26,10 +26,11 @@ Haskell is an excellent language. However, I had specific reasons to move to
 Rust:
 
 1. To gain access to the `alpm` bindings already available for Rust.
-2. To open up Aura to more potential contributors.
-3. To reduce Aura's binary size.
-4. To improve Aura's CLI interface and `--help` messages.
-5. To improve Aura's performance.
+2. To make Aura easier to install.
+3. To open up Aura to more potential contributors.
+4. To reduce Aura's binary size.
+5. To improve Aura's CLI interface and `--help` messages.
+6. To improve Aura's performance.
 
 > You could have done any of that in Haskell.
 
