@@ -66,9 +66,10 @@ Aura is a system management tool for Arch Linux and its derivatives.
 
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to redistribute it
-under certain conditions; see 'aura open --license' for details.
+under certain conditions.
 ")]
-#[clap(propagate_version = true, disable_help_subcommand = true)]
+#[clap(propagate_version = false, disable_help_subcommand = true)]
+#[clap(display_name = "aura")]
 pub struct Args {
     // --- Aura Language Options --- //
     /// Output in English.
