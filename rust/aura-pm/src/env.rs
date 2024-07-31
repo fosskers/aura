@@ -294,6 +294,8 @@ struct RawAur {
     noconfirm: bool,
     #[serde(default)]
     nocheck: bool,
+    #[serde(default)]
+    reverse: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -332,6 +334,8 @@ pub(crate) struct Aur {
     /// (Makepkg) Do not verify source files with PGP signatures.
     #[serde(skip_serializing)]
     pub(crate) skippgpcheck: bool,
+    /// Always reverse the search results.
+    pub(crate) reverse: bool,
 }
 
 impl Aur {
@@ -356,6 +360,7 @@ impl Aur {
             skipdepcheck: false,
             skipinteg: false,
             skippgpcheck: false,
+            reverse: false,
         };
 
         Ok(a)
@@ -419,6 +424,10 @@ impl Aur {
             self.skippgpcheck = true;
         }
 
+        if flags.reverse {
+            self.reverse = true;
+        }
+
         // Harmless clone, as we don't expect many "ignores" to be passed on the
         // command line.
         self.ignores.extend(flags.ignore.clone());
@@ -453,6 +462,7 @@ impl TryFrom<RawAur> for Aur {
             skipdepcheck: false,
             skipinteg: false,
             skippgpcheck: false,
+            reverse: raw.reverse,
         };
 
         Ok(a)

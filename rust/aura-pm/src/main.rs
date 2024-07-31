@@ -148,9 +148,14 @@ fn work(args: Args, env: Env, fll: &FluentLanguageLoader) -> Result<(), Error> {
         SubCmd::Upgrade(u) => pacman(&env, u.needs_sudo())?,
         // --- AUR Packages --- //
         SubCmd::Aur(a) if a.info.is_empty().not() => aur::info(fll, &a.info)?,
-        SubCmd::Aur(a) if a.search.is_empty().not() => {
-            aur::search(&env.alpm()?, a.abc, a.reverse, a.limit, a.quiet, a.search)?
-        }
+        SubCmd::Aur(a) if a.search.is_empty().not() => aur::search(
+            &env.alpm()?,
+            a.abc,
+            env.aur.reverse,
+            a.limit,
+            a.quiet,
+            a.search,
+        )?,
         SubCmd::Aur(a) if a.provides.is_some() => aur::provides(
             &env.alpm()?,
             a.abc,

@@ -1648,6 +1648,9 @@ See @code{aura stats --lang} for available language codes.
 @item skipdepcheck
 @tab bool
 @tab Don't perform dependency checking at all
+@item reverse
+@tab bool
+@tab Always reverse the search results
 @end multitable
 
 @heading Package Snapshots
